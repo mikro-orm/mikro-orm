@@ -61,7 +61,7 @@ export default defineConfig({
     globalSetup: './tests/globalSetup.ts',
     disableConsoleIntercept: true,
     clearMocks: true,
-    isolate: false,
+    // isolate: false,
     testTimeout: 60_000,
     hookTimeout: 60_000,
     alias: [
@@ -69,6 +69,7 @@ export default defineConfig({
       { find: '@mikro-orm/sql-highlighter', replacement: new URL('/node_modules/@mikro-orm/sql-highlighter', import.meta.url).pathname },
       { find: 'mikro-orm', replacement: new URL('./packages/mikro-orm/src', import.meta.url).pathname },
       { find: '@mikro-orm/core/file-discovery', replacement: new URL('/packages/core/src/metadata/discover-entities.ts', import.meta.url).pathname },
+      { find: '@mikro-orm/core/fs-utils', replacement: new URL('/packages/core/src/utils/fs-utils.ts', import.meta.url).pathname },
       { find: '@mikro-orm/decorators/es', replacement: new URL('/packages/decorators/src/es/index.ts', import.meta.url).pathname },
       { find: '@mikro-orm/decorators/legacy', replacement: new URL('/packages/decorators/src/legacy/index.ts', import.meta.url).pathname },
       { find: /^@mikro-orm\/(.*)$/, replacement: new URL('./packages/$1/src', import.meta.url).pathname },

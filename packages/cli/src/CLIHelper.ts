@@ -1,18 +1,18 @@
 import { extname, join } from 'node:path';
-import { pathToFileURL } from 'node:url';
 import yargs from 'yargs';
 import {
-  type EntityManagerType,
-  type EntityManager,
   colors,
-  ConfigurationLoader,
-  MikroORM,
-  Utils,
   Configuration,
+  type EntityManager,
+  type EntityManagerType,
   type IDatabaseDriver,
+  loadEnvironmentVars,
   lookupExtensions,
+  MikroORM,
   type Options,
+  Utils,
 } from '@mikro-orm/core';
+import { fs } from '@mikro-orm/core/fs-utils';
 
 /**
  * @internal
@@ -23,7 +23,7 @@ export class CLIHelper {
    * Gets a named configuration
    *
    * @param contextName Load a config with the given `contextName` value. Used when config file exports array or factory function. Setting it to "default" matches also config objects without `contextName` set.
-   * @param paths Array of possible paths for a configuration file. Files will be checked in order, and the first existing one will be used. Defaults to the output of {@link ConfigurationLoader.getConfigPaths}.
+   * @param paths Array of possible paths for a configuration file. Files will be checked in order, and the first existing one will be used. Defaults to the output of {@link fs.getConfigPaths}.
    * @param options Additional options to augment the final configuration with.
    */
   static async getConfiguration<
@@ -31,7 +31,7 @@ export class CLIHelper {
     EM extends D[typeof EntityManagerType] & EntityManager<D> = D[typeof EntityManagerType] & EntityManager<D>,
   >(contextName?: string, paths?: string[], options: Partial<Options<D>> = {}): Promise<Configuration<D, EM>> {
     paths ??= await this.getConfigPaths();
-    const deps = await ConfigurationLoader.getORMPackages();
+    const deps = await fs.getORMPackages();
 
     if (!deps.has('@mikro-orm/cli') && !process.env.MIKRO_ORM_ALLOW_GLOBAL_CLI) {
       throw new Error('@mikro-orm/cli needs to be installed as a local dependency!');
@@ -157,7 +157,7 @@ export class CLIHelper {
   }
 
   static async getSettings(): Promise<Settings> {
-    const config = await ConfigurationLoader.getPackageConfig();
+    const config = await fs.getPackageConfig();
     const settings = { ...config['mikro-orm'] } as Settings;
     const bool = (v: string) => ['true', 't', '1'].includes(v.toLowerCase());
     settings.preferTs = process.env.MIKRO_ORM_CLI_PREFER_TS != null ? bool(process.env.MIKRO_ORM_CLI_PREFER_TS) : settings.preferTs;
@@ -188,8 +188,8 @@ export class CLIHelper {
       paths.push('./mikro-orm.config.ts');
     }
 
-    const distDir = Utils.pathExists(process.cwd() + '/dist');
-    const buildDir = Utils.pathExists(process.cwd() + '/build');
+    const distDir = fs.pathExists(process.cwd() + '/dist');
+    const buildDir = fs.pathExists(process.cwd() + '/build');
     /* v8 ignore next */
     const path = distDir ? 'dist' : (buildDir ? 'build' : 'src');
     paths.push(`./${path}/mikro-orm.config.js`);
@@ -204,7 +204,7 @@ export class CLIHelper {
       path = Utils.absolutePath(path);
       path = Utils.normalizePath(path);
 
-      if (Utils.pathExists(path)) {
+      if (fs.pathExists(path)) {
         const config = await Utils.dynamicImport(path);
         /* v8 ignore next */
         return [path, await (config.default ?? config)];
@@ -214,7 +214,7 @@ export class CLIHelper {
   }
 
   private static async loadEnvironmentVars<D extends IDatabaseDriver>(): Promise<Partial<Options<D>>> {
-    const ret = ConfigurationLoader.loadEnvironmentVars();
+    const ret = loadEnvironmentVars();
 
     /* v8 ignore next */
     switch (process.env.MIKRO_ORM_TYPE) {
@@ -236,7 +236,7 @@ export class CLIHelper {
     CLIHelper.dump(`   - mikro-orm ${colors.green(version)}`);
     CLIHelper.dump(`   - node ${colors.green(process.versions.node)}`);
 
-    if (Utils.pathExists(process.cwd() + '/package.json')) {
+    if (fs.pathExists(process.cwd() + '/package.json')) {
       /* v8 ignore if */
       if (process.versions.bun) {
         CLIHelper.dump(`   - typescript via bun`);
@@ -253,7 +253,7 @@ export class CLIHelper {
   static async getModuleVersion(name: string): Promise<string> {
     try {
       const path = `${this.resolveModulePath(name)}/package.json`;
-      const pkg = Utils.readJSONSync(path);
+      const pkg = fs.readJSONSync(path);
       return colors.green(pkg.version);
     } catch {
       return '';
@@ -270,7 +270,7 @@ export class CLIHelper {
       from = join(from, '__fake.js');
     }
 
-    const path = Utils.normalizePath(import.meta.resolve(id, pathToFileURL(from)));
+    const path = Utils.normalizePath(import.meta.resolve(id, fs.pathToFileURL(from)));
     const parts = path.split('/');
     const idx = parts.lastIndexOf(id) + 1;
     parts.splice(idx, parts.length - idx);
@@ -351,7 +351,7 @@ export class CLIHelper {
   }
 
   static async isESM(): Promise<boolean> {
-    const config = await ConfigurationLoader.getPackageConfig();
+    const config = await fs.getPackageConfig();
     const type = config?.type ?? '';
 
     return type === 'module';

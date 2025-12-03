@@ -3,7 +3,7 @@ import { type EntitySchema } from './metadata/EntitySchema.js';
 import { MetadataDiscovery } from './metadata/MetadataDiscovery.js';
 import { MetadataStorage } from './metadata/MetadataStorage.js';
 import { Configuration, type Options } from './utils/Configuration.js';
-import { ConfigurationLoader } from './utils/ConfigurationLoader.js';
+import { loadEnvironmentVars } from './utils/env-vars.js';
 import { Utils } from './utils/Utils.js';
 import { type Logger } from './logging/Logger.js';
 import { colors } from './logging/colors.js';
@@ -122,7 +122,7 @@ export class MikroORM<
    * - no support for folder based discovery
    */
   constructor(options: Options<Driver, EM, Entities>) {
-    const env = ConfigurationLoader.loadEnvironmentVars<Driver>();
+    const env = loadEnvironmentVars<Driver>();
     options = Utils.merge(options, env);
     this.config = new Configuration(options);
     const discovery = this.config.get('discovery');

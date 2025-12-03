@@ -1,4 +1,5 @@
 import { existsSync, readFileSync, writeFileSync, unlinkSync } from 'node:fs';
+import { fs } from '@mikro-orm/core/fs-utils';
 
 import type { SyncCacheAdapter } from './CacheAdapter.js';
 import { Utils } from '../utils/Utils.js';
@@ -23,7 +24,7 @@ export class FileCacheAdapter implements SyncCacheAdapter {
       return null;
     }
 
-    const payload = Utils.readJSONSync(path);
+    const payload = fs.readJSONSync(path);
     const hash = this.getHash(payload.origin);
 
     if (!hash || payload.hash !== hash) {
@@ -60,7 +61,7 @@ export class FileCacheAdapter implements SyncCacheAdapter {
    */
   clear(): void {
     const path = this.path('*');
-    const files = Utils.glob(path);
+    const files = fs.glob(path);
     files.forEach(file => unlinkSync(file));
     this.cache = {};
   }
@@ -81,7 +82,7 @@ export class FileCacheAdapter implements SyncCacheAdapter {
   }
 
   private path(name: string): string {
-    Utils.ensureDir(this.options.cacheDir);
+    fs.ensureDir(this.options.cacheDir);
     return `${this.options.cacheDir}/${name}.json`;
   }
 

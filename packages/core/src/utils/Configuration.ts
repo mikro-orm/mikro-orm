@@ -104,7 +104,6 @@ const DEFAULTS = {
   driverOptions: {},
   migrations: {
     tableName: 'mikro_orm_migrations',
-    path: './migrations',
     glob: '!(*.d).{js,ts,cjs}',
     silent: false,
     transactional: true,
@@ -155,7 +154,6 @@ const DEFAULTS = {
   metadataProvider: MetadataProvider,
   highlighter: new NullHighlighter(),
   seeder: {
-    path: './seeders',
     defaultSeeder: 'DatabaseSeeder',
     glob: '!(*.d).{js,ts}',
     emit: 'ts',
@@ -180,6 +178,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver, EM exten
     }
 
     this.options = Utils.mergeConfig({} as RequiredOptions<D, EM>, DEFAULTS, options);
+    // FIXME?
     this.options.baseDir = Utils.absolutePath(this.options.baseDir);
 
     if (validate) {
@@ -199,7 +198,6 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver, EM exten
       this.driver = new this.options.driver!(this);
       this.platform = this.driver.getPlatform() as ReturnType<D['getPlatform']>;
       this.platform.setConfig(this);
-      this.detectSourceFolder(options);
       this.init(validate);
     }
   }
@@ -418,39 +416,6 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver, EM exten
   private sync(): void {
     process.env.MIKRO_ORM_COLORS = '' + this.options.colors;
     this.logger.setDebugMode(this.options.debug);
-  }
-
-  /**
-   * Checks if `src` folder exists, it so, tries to adjust the migrations and seeders paths automatically to use it.
-   * If there is a `dist` or `build` folder, it will be used for the JS variant (`path` option), while the `src` folder will be
-   * used for the TS variant (`pathTs` option).
-   *
-   * If the default folder exists (e.g. `/migrations`), the config will respect that, so this auto-detection should not
-   * break existing projects, only help with the new ones.
-   */
-  private detectSourceFolder(options: Options): void {
-    if (!Utils.pathExists(this.options.baseDir + '/src')) {
-      return;
-    }
-
-    const migrationsPathExists = Utils.pathExists(this.options.baseDir + '/' + this.options.migrations.path);
-    const seedersPathExists = Utils.pathExists(this.options.baseDir + '/' + this.options.seeder.path);
-    const distDir = Utils.pathExists(this.options.baseDir + '/dist');
-    const buildDir = Utils.pathExists(this.options.baseDir + '/build');
-    // if neither `dist` nor `build` exist, we use the `src` folder as it might be a JS project without building, but with `src` folder
-    const path = distDir ? './dist' : (buildDir ? './build' : './src');
-
-    // only if the user did not provide any values and if the default path does not exist
-    if (!options.migrations?.path && !options.migrations?.pathTs && !migrationsPathExists) {
-      this.options.migrations.path = `${path}/migrations`;
-      this.options.migrations.pathTs = './src/migrations';
-    }
-
-    // only if the user did not provide any values and if the default path does not exist
-    if (!options.seeder?.path && !options.seeder?.pathTs && !seedersPathExists) {
-      this.options.seeder.path = `${path}/seeders`;
-      this.options.seeder.pathTs = './src/seeders';
-    }
   }
 
   private validateOptions(): void {
