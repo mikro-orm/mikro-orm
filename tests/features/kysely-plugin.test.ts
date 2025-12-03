@@ -51,7 +51,7 @@ describe('custom kysely plugin', () => {
         entities: [Person, Pet, Toy],
         dbName: ':memory:',
       });
-      await orm.getSchemaGenerator().createSchema();
+      await orm.schema.create();
       kysely = orm.em.getKysely({
         tableNamingStrategy: 'entity',
         convertValues: true,
@@ -271,7 +271,7 @@ describe('custom kysely plugin', () => {
         entities: [Person, Pet, Toy],
         dbName: ':memory:',
       });
-      await orm.getSchemaGenerator().createSchema();
+      await orm.schema.create();
       kysely = orm.em.getKysely({
         columnNamingStrategy: 'property',
         convertValues: true,
@@ -683,7 +683,7 @@ describe('custom kysely plugin', () => {
         entities: [Person, Pet, Toy],
         dbName: ':memory:',
       });
-      await orm.getSchemaGenerator().createSchema();
+      await orm.schema.create();
       kysely = orm.em.getKysely({
         tableNamingStrategy: 'entity',
         columnNamingStrategy: 'property',
@@ -858,7 +858,7 @@ describe('custom kysely plugin', () => {
         entities: [Person, Pet, Toy],
         dbName: ':memory:',
       });
-      await orm.getSchemaGenerator().createSchema();
+      await orm.schema.create();
       kysely = orm.em.getKysely({
         tableNamingStrategy: 'entity',
         columnNamingStrategy: 'property',
@@ -1078,7 +1078,7 @@ describe('custom kysely plugin', () => {
         entities: [Person, Pet, Toy],
         dbName: ':memory:',
       });
-      await orm.getSchemaGenerator().createSchema();
+      await orm.schema.create();
       kysely = orm.em.getKysely({
         // tableNamingStrategy: 'table', // default
         // columnNamingStrategy: 'column', // default
