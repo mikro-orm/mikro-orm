@@ -11,6 +11,8 @@ exports[`onCreate and onUpdate in embeddables (GH 2283 and 2391) result mapper 1
   if (typeof result.audit1_archived !== 'undefined') {
     if (result.audit1_archived == null || result.audit1_archived instanceof Date) {
       ret.audit1_archived = result.audit1_archived;
+    } else if (typeof result.audit1_archived === 'bigint') {
+      ret.audit1_archived = parseDate(Number(result.audit1_archived));
     } else {
       ret.audit1_archived = parseDate(result.audit1_archived);
     }
@@ -19,6 +21,8 @@ exports[`onCreate and onUpdate in embeddables (GH 2283 and 2391) result mapper 1
   if (typeof result.audit1_updated !== 'undefined') {
     if (result.audit1_updated == null || result.audit1_updated instanceof Date) {
       ret.audit1_updated = result.audit1_updated;
+    } else if (typeof result.audit1_updated === 'bigint') {
+      ret.audit1_updated = parseDate(Number(result.audit1_updated));
     } else {
       ret.audit1_updated = parseDate(result.audit1_updated);
     }
@@ -27,6 +31,8 @@ exports[`onCreate and onUpdate in embeddables (GH 2283 and 2391) result mapper 1
   if (typeof result.audit1_created !== 'undefined') {
     if (result.audit1_created == null || result.audit1_created instanceof Date) {
       ret.audit1_created = result.audit1_created;
+    } else if (typeof result.audit1_created === 'bigint') {
+      ret.audit1_created = parseDate(Number(result.audit1_created));
     } else {
       ret.audit1_created = parseDate(result.audit1_created);
     }
@@ -35,6 +41,8 @@ exports[`onCreate and onUpdate in embeddables (GH 2283 and 2391) result mapper 1
   if (typeof result.audit1_nested_audit1_archived !== 'undefined') {
     if (result.audit1_nested_audit1_archived == null || result.audit1_nested_audit1_archived instanceof Date) {
       ret.audit1_nested_audit1_archived = result.audit1_nested_audit1_archived;
+    } else if (typeof result.audit1_nested_audit1_archived === 'bigint') {
+      ret.audit1_nested_audit1_archived = parseDate(Number(result.audit1_nested_audit1_archived));
     } else {
       ret.audit1_nested_audit1_archived = parseDate(result.audit1_nested_audit1_archived);
     }
@@ -43,6 +51,8 @@ exports[`onCreate and onUpdate in embeddables (GH 2283 and 2391) result mapper 1
   if (typeof result.audit1_nested_audit1_updated !== 'undefined') {
     if (result.audit1_nested_audit1_updated == null || result.audit1_nested_audit1_updated instanceof Date) {
       ret.audit1_nested_audit1_updated = result.audit1_nested_audit1_updated;
+    } else if (typeof result.audit1_nested_audit1_updated === 'bigint') {
+      ret.audit1_nested_audit1_updated = parseDate(Number(result.audit1_nested_audit1_updated));
     } else {
       ret.audit1_nested_audit1_updated = parseDate(result.audit1_nested_audit1_updated);
     }
@@ -51,6 +61,8 @@ exports[`onCreate and onUpdate in embeddables (GH 2283 and 2391) result mapper 1
   if (typeof result.audit1_nested_audit1_created !== 'undefined') {
     if (result.audit1_nested_audit1_created == null || result.audit1_nested_audit1_created instanceof Date) {
       ret.audit1_nested_audit1_created = result.audit1_nested_audit1_created;
+    } else if (typeof result.audit1_nested_audit1_created === 'bigint') {
+      ret.audit1_nested_audit1_created = parseDate(Number(result.audit1_nested_audit1_created));
     } else {
       ret.audit1_nested_audit1_created = parseDate(result.audit1_nested_audit1_created);
     }
