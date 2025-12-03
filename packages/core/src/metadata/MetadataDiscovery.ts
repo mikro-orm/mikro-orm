@@ -206,7 +206,7 @@ export class MetadataDiscovery {
 
     for (const entity of targets!) {
       if (typeof entity === 'string') {
-        const { discoverEntities } = await import('@mikro-orm/core/file-discovery' + '');
+        const { discoverEntities } = await import('@mikro-orm/core/file-discovery');
         processed.push(...await discoverEntities(entity, { baseDir }));
       } else {
         processed.push(entity);
