@@ -7,10 +7,8 @@ import {
   type FilterQuery,
   type Primary,
   type Transaction,
-  Utils,
 } from '@mikro-orm/core';
 import { type AbstractSqlDriver } from './AbstractSqlDriver';
-import { type AbstractSqlPlatform } from './AbstractSqlPlatform';
 
 class InsertStatement<Entity> {
 
@@ -53,8 +51,8 @@ class DeleteStatement<Entity> {
 
 export class PivotCollectionPersister<Entity extends object> {
 
-  private readonly platform: AbstractSqlPlatform;
   private readonly inserts = new Map<string, InsertStatement<Entity>>();
+  private readonly upserts = new Map<string, InsertStatement<Entity>>();
   private readonly deletes = new Map<string, DeleteStatement<Entity>>();
   private readonly batchSize: number;
   private order = 0;
@@ -66,7 +64,6 @@ export class PivotCollectionPersister<Entity extends object> {
     private readonly schema?: string,
     private readonly loggerContext?: Dictionary,
   ) {
-    this.platform = this.driver.getPlatform();
     this.batchSize = this.driver.config.get('batchSize');
   }
 
@@ -75,9 +72,14 @@ export class PivotCollectionPersister<Entity extends object> {
     insertDiff: Primary<Entity>[][],
     deleteDiff: Primary<Entity>[][] | boolean,
     pks: Primary<Entity>[],
+    isInitialized = true,
   ) {
     if (insertDiff.length) {
-      this.enqueueInsert(prop, insertDiff, pks);
+      if (isInitialized) {
+        this.enqueueInsert(prop, insertDiff, pks);
+      } else {
+        this.enqueueUpsert(prop, insertDiff, pks);
+      }
     }
 
     if (deleteDiff === true || (Array.isArray(deleteDiff) && deleteDiff.length)) {
@@ -87,18 +89,33 @@ export class PivotCollectionPersister<Entity extends object> {
 
   private enqueueInsert(prop: EntityProperty<Entity>, insertDiff: Primary<Entity>[][], pks: Primary<Entity>[]) {
     for (const fks of insertDiff) {
-      const data = prop.owner ? [...fks, ...pks] : [...pks, ...fks];
-      const keys = prop.owner
-        ? [...prop.inverseJoinColumns, ...prop.joinColumns]
-        : [...prop.joinColumns, ...prop.inverseJoinColumns];
-
-      const statement = new InsertStatement(keys, data, this.order++);
+      const statement = this.createInsertStatement(prop, fks, pks);
       const hash = statement.getHash();
 
       if (prop.owner || !this.inserts.has(hash)) {
         this.inserts.set(hash, statement);
       }
     }
+  }
+
+  private enqueueUpsert(prop: EntityProperty<Entity>, insertDiff: Primary<Entity>[][], pks: Primary<Entity>[]) {
+    for (const fks of insertDiff) {
+      const statement = this.createInsertStatement(prop, fks, pks);
+      const hash = statement.getHash();
+
+      if (prop.owner || !this.upserts.has(hash)) {
+        this.upserts.set(hash, statement);
+      }
+    }
+  }
+
+  private createInsertStatement(prop: EntityProperty<Entity>, fks: Primary<Entity>[], pks: Primary<Entity>[]) {
+    const data = prop.owner ? [...fks, ...pks] : [...pks, ...fks];
+    const keys = prop.owner
+      ? [...prop.inverseJoinColumns, ...prop.joinColumns]
+      : [...prop.joinColumns, ...prop.inverseJoinColumns];
+
+    return new InsertStatement(keys, data, this.order++);
   }
 
   private enqueueDelete(prop: EntityProperty<Entity>, deleteDiff: Primary<Entity>[][] | true, pks: Primary<Entity>[]) {
@@ -118,6 +135,16 @@ export class PivotCollectionPersister<Entity extends object> {
       const statement = new DeleteStatement(keys as EntityKey<Entity>[], data as FilterQuery<Entity>);
       this.deletes.set(statement.getHash(), statement);
     }
+  }
+
+  private collectStatements(statements: Map<string, InsertStatement<Entity>>): EntityData<Entity>[] {
+    const items: EntityData<Entity>[] = [];
+
+    for (const statement of statements.values()) {
+      items[statement.order] = statement.getData();
+    }
+
+    return items.filter(Boolean);
   }
 
   async execute(): Promise<void> {
@@ -140,22 +167,11 @@ export class PivotCollectionPersister<Entity extends object> {
       }
     }
 
-    if (this.inserts.size === 0) {
-      return;
-    }
+    if (this.inserts.size > 0) {
+      const filtered = this.collectStatements(this.inserts);
 
-    let items: EntityData<Entity>[] = [];
-
-    for (const insert of this.inserts.values()) {
-      items[insert.order] = insert.getData();
-    }
-
-    items = items.filter(i => i);
-
-    /* istanbul ignore else */
-    if (this.platform.allowsMultiInsert()) {
-      for (let i = 0; i < items.length; i += this.batchSize) {
-        const chunk = items.slice(i, i + this.batchSize);
+      for (let i = 0; i < filtered.length; i += this.batchSize) {
+        const chunk = filtered.slice(i, i + this.batchSize);
         await this.driver.nativeInsertMany<Entity>(this.meta.className, chunk, {
           ctx: this.ctx,
           schema: this.schema,
@@ -164,13 +180,23 @@ export class PivotCollectionPersister<Entity extends object> {
           loggerContext: this.loggerContext,
         });
       }
-    } else {
-      await Utils.runSerial(items, item => {
-        return this.driver.createQueryBuilder(this.meta.className, this.ctx, 'write', false, this.loggerContext)
-          .withSchema(this.schema)
-          .insert(item)
-          .execute('run', false);
-      });
+    }
+
+    if (this.upserts.size > 0) {
+      const filtered = this.collectStatements(this.upserts);
+
+      for (let i = 0; i < filtered.length; i += this.batchSize) {
+        const chunk = filtered.slice(i, i + this.batchSize);
+        await this.driver.nativeUpdateMany<Entity>(this.meta.className, [], chunk, {
+          ctx: this.ctx,
+          schema: this.schema,
+          convertCustomTypes: false,
+          processCollections: false,
+          upsert: true,
+          onConflictAction: 'ignore',
+          loggerContext: this.loggerContext,
+        });
+      }
     }
   }
 
