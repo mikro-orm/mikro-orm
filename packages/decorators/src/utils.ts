@@ -7,7 +7,8 @@ import {
   EntityManager,
   EntityRepository,
   MikroORM,
-  MetadataError, MetadataStorage,
+  MetadataError,
+  MetadataStorage,
 } from '@mikro-orm/core';
 
 /**

@@ -6,7 +6,10 @@
   "exports": {
     "./package.json": "./package.json",
     ".": "./src/index.ts",
-    "./file-discovery": "./src/metadata/discover-entities.ts"
+    "./file-discovery": {
+      "node": "./src/metadata/discover-entities.ts",
+      "browser": "./src/not-supported.ts"
+    }
   },
   "repository": {
     "type": "git",
