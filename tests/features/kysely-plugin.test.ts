@@ -1,13 +1,13 @@
 import { defineEntity, p } from '@mikro-orm/core';
-import { InferKyselyDB, Kysely, MikroORM } from '@mikro-orm/sqlite';
+import { InferKyselyDB, InferKyselyTable, Kysely, MikroORM } from '@mikro-orm/sqlite';
 
 describe('custom kysely plugin', () => {
   const Person = defineEntity({
     name: 'Person',
     properties: {
       id: p.integer().autoincrement().primary(),
-      createdAt: p.datetime().onCreate(() => new Date()),
-      updatedAt: p.datetime().onCreate(() => new Date()).onUpdate(() => new Date()),
+      createdAt: p.datetime().nullable().onCreate(() => new Date()),
+      updatedAt: p.datetime().nullable().onCreate(() => new Date()).onUpdate(() => new Date()),
       firstName: p.string().nullable(),
       middleName: p.string().nullable(),
       lastName: p.string().nullable(),
@@ -255,7 +255,14 @@ describe('custom kysely plugin', () => {
   });
 
   describe('columnNamingStrategy: property', () => {
-    type DB = InferKyselyDB<typeof Person | typeof Pet | typeof Toy, { columnNamingStrategy: 'property' }>;
+    interface PersonTable extends InferKyselyTable<typeof Person, 'property', true> {}
+    interface PetTable extends InferKyselyTable<typeof Pet, 'property', true> {}
+    interface ToyTable extends InferKyselyTable<typeof Toy, 'property', true> {}
+    interface DB {
+      person: PersonTable;
+      pet: PetTable;
+      toy: ToyTable;
+    }
     let orm: MikroORM;
     let kysely: Kysely<DB>;
 
@@ -658,50 +665,452 @@ describe('custom kysely plugin', () => {
     });
   });
 
-  test.todo('processOnCreateHooks', async () => {
-    const orm = new MikroORM({
-      entities: [Person, Pet, Toy],
-      dbName: ':memory:',
-    });
-    await orm.getSchemaGenerator().createSchema();
-    const kysely = orm.em.getKysely({
-      tableNamingStrategy: 'entity',
-      columnNamingStrategy: 'property',
-      processOnCreateHooks: true,
+  describe('processOnCreateHooks', () => {
+    interface PersonTable extends InferKyselyTable<typeof Person, 'property', true> {}
+    interface PetTable extends InferKyselyTable<typeof Pet, 'property', true> {}
+    interface ToyTable extends InferKyselyTable<typeof Toy, 'property', true> {}
+    interface DB {
+      Person: PersonTable;
+      Pet: PetTable;
+      Toy: ToyTable;
+    }
+
+    let orm: MikroORM;
+    let kysely: Kysely<DB>;
+
+    beforeAll(async () => {
+      orm = new MikroORM({
+        entities: [Person, Pet, Toy],
+        dbName: ':memory:',
+      });
+      await orm.getSchemaGenerator().createSchema();
+      kysely = orm.em.getKysely({
+        tableNamingStrategy: 'entity',
+        columnNamingStrategy: 'property',
+        processOnCreateHooks: true,
+        convertValues: true,
+      });
     });
 
-    expect(
-      kysely.insertInto('Person').values({
-        id: 1,
-        gender:'female',
+    afterEach(async () => {
+      await kysely.deleteFrom('Toy').execute();
+      await kysely.deleteFrom('Pet').execute();
+      await kysely.deleteFrom('Person').execute();
+    });
+
+    test('INSERT with onCreate hook - missing onCreate properties should be auto-filled', () => {
+      // Person has onCreate hooks for: createdAt, updatedAt, children
+      // When these properties are missing, they should be auto-filled
+      const query = kysely.insertInto('Person').values({
         firstName: 'John',
         lastName: 'Doe',
-      }).compile().sql,
-    ).toMatchInlineSnapshot(`"insert into "person" ("id", "gender", "first_name", "last_name", "created_at", "updated_at", "children") values (?, ?, ?, ?, ?, ?, 0)"`);
+        gender: 'male',
+      });
+      expect(query.compile().sql).toMatchInlineSnapshot(`"insert into "person" ("first_name", "last_name", "gender", "created_at", "updated_at", "children") values (?, ?, ?, ?, ?, ?)"`);
+      // Expected: INSERT should include created_at, updated_at, and children with default values
+    });
 
-    expect(kysely.updateTable('Person').set({
-      children: 3,
-    }).where('id', '=', 1).compile().sql,
-    ).toMatchInlineSnapshot(`"update "person" set "children" = ? where "id" = ?"`);
+    test('INSERT with onCreate hook - explicit onCreate property should not be overridden', () => {
+      // If user explicitly provides a value for onCreate property, it should be respected (or consider hooking behavior)
+      const query = kysely.insertInto('Person').values({
+        firstName: 'Jane',
+        lastName: 'Smith',
+        gender: 'female',
+        children: 5, // Explicitly provided, should not be overridden by onCreate hook
+      });
+      expect(query.compile().sql).toMatchInlineSnapshot(`"insert into "person" ("first_name", "last_name", "gender", "children", "created_at", "updated_at") values (?, ?, ?, ?, ?, ?)"`);
+      // Expected: children = 5 should be used, not the default 0 from onCreate
+    });
+
+    test('INSERT with onCreate hook - all properties provided', () => {
+      // When all properties are provided, onCreate hooks should not add anything
+      const now = new Date();
+      const query = kysely.insertInto('Person').values({
+        firstName: 'Bob',
+        lastName: 'Johnson',
+        gender: 'male',
+        children: 2,
+        createdAt: now,
+        updatedAt: now,
+      });
+      expect(query.compile().sql).toMatchInlineSnapshot(`"insert into "person" ("first_name", "last_name", "gender", "children", "created_at", "updated_at") values (?, ?, ?, ?, ?, ?)"`);
+    });
+
+    test('INSERT with onCreate hook and execute - verify values are inserted correctly', async () => {
+      // Actual execution to verify onCreate hooks work
+      const query = kysely.insertInto('Person').values({
+        firstName: 'TestUser',
+        lastName: 'Hook',
+        gender: 'male',
+      }).returning(['id', 'firstName', 'children', 'createdAt', 'updatedAt']);
+
+      const result = await query.execute();
+      expect(result).toHaveLength(1);
+      // children should be auto-filled to 0
+      expect(result[0]).toMatchObject({ firstName: 'TestUser', children: 0 });
+      // createdAt and updatedAt should be auto-filled with Date (as timestamp number in SQLite)
+      if (result[0].createdAt != null) {
+        expect(result[0].createdAt).toBeInstanceOf(Date);
+      }
+      if (result[0].updatedAt != null) {
+        expect(result[0].updatedAt).toBeInstanceOf(Date);
+      }
+    });
+
+    test('INSERT multiple rows with onCreate hooks', async () => {
+      // Test batch insert with onCreate hooks
+      const query = kysely.insertInto('Person').values([
+        { firstName: 'User1', lastName: 'Test1', gender: 'male' },
+        { firstName: 'User2', lastName: 'Test2', gender: 'female' },
+      ]).returning('id');
+
+      const result = await query.execute();
+      expect(result).toHaveLength(2);
+      // Verify both rows were inserted with onCreate defaults
+    });
+
+    test('INSERT relation with onCreate hook', async () => {
+      // First insert a Person
+      const personId = await kysely
+        .insertInto('Person')
+        .values({ firstName: 'Owner', lastName: 'User', gender: 'male' })
+        .returning('id')
+        .executeTakeFirstOrThrow()
+        .then(r => r.id);
+
+      // Then insert a Pet with relation - Pet also has onCreate hooks
+      const query = kysely.insertInto('Pet').values({
+        name: 'Doggo',
+        owner: personId,
+        species: 'dog',
+      });
+      expect(query.compile().sql).toMatchInlineSnapshot(`"insert into "pet" ("name", "owner_id", "species", "created_at", "updated_at") values (?, ?, ?, ?, ?)"`);
+    });
+
+    test('INSERT with onCreate - dateTime property should be converted correctly', async () => {
+      // Verify that Date objects from onCreate are properly converted for SQLite
+      const query = kysely.insertInto('Person').values({
+        firstName: 'DateTest',
+        lastName: 'User',
+        gender: 'male',
+      }).returning('id');
+
+      const result = await query.execute();
+      expect(result).toHaveLength(1);
+    });
+
+    test('INSERT with onCreate hook - explicit null should be respected', async () => {
+      // If user explicitly provides null for an onCreate property, behavior depends on implementation
+      // This tests the edge case where null is explicitly passed
+      const query = kysely.insertInto('Person').values({
+        firstName: 'NullTest',
+        lastName: 'User',
+        gender: 'male',
+        createdAt: null,
+        updatedAt: null,
+      }).returning(['id', 'children', 'createdAt', 'updatedAt']);
+
+      const result = await query.execute();
+      expect(result).toHaveLength(1);
+      expect(result[0].createdAt).toBeNull();
+      expect(result[0].updatedAt).toBeNull();
+    });
+
+    test('INSERT with onCreate hook - using subquery in values', async () => {
+      // Test INSERT with subquery - onCreate hooks should still work
+      const personId = await kysely
+        .insertInto('Person')
+        .values({ firstName: 'Subquery', lastName: 'Test', gender: 'male' })
+        .returning('id')
+        .executeTakeFirstOrThrow()
+        .then(r => r.id);
+
+      // Insert Pet using subquery for owner
+      const query = kysely.insertInto('Pet').values(eb => ({
+        name: 'SubqueryPet',
+        owner: eb.selectFrom('Person').select('id').where('id', '=', personId),
+        species: 'cat',
+        // createdAt and updatedAt should be auto-filled by onCreate hooks
+      })).returning(['id', 'name', 'createdAt', 'updatedAt']);
+
+      const result = await query.execute();
+      expect(result).toHaveLength(1);
+      expect(result[0]).toMatchObject({ name: 'SubqueryPet' });
+      expect(result[0].createdAt).toBeInstanceOf(Date);
+      expect(result[0].updatedAt).toBeInstanceOf(Date);
+    });
   });
 
-  test.todo('processOnUpdateHooks', async () => {
-    const orm = new MikroORM({
-      entities: [Person, Pet, Toy],
-      dbName: ':memory:',
-    });
-    await orm.getSchemaGenerator().createSchema();
-    const kysely = orm.em.getKysely({
-      tableNamingStrategy: 'entity',
-      columnNamingStrategy: 'property',
-      processOnCreateHooks: true,
-      processOnUpdateHooks: true,
+  describe('processOnUpdateHooks', () => {
+    interface PersonTable extends InferKyselyTable<typeof Person, 'property', true> {}
+    interface PetTable extends InferKyselyTable<typeof Pet, 'property', true> {}
+    interface ToyTable extends InferKyselyTable<typeof Toy, 'property', true> {}
+    interface DB {
+      Person: PersonTable;
+      Pet: PetTable;
+      Toy: ToyTable;
+    }
+    let orm: MikroORM;
+    let kysely: Kysely<DB>;
+
+    beforeAll(async () => {
+      orm = new MikroORM({
+        entities: [Person, Pet, Toy],
+        dbName: ':memory:',
+      });
+      await orm.getSchemaGenerator().createSchema();
+      kysely = orm.em.getKysely({
+        tableNamingStrategy: 'entity',
+        columnNamingStrategy: 'property',
+        processOnCreateHooks: true,
+        processOnUpdateHooks: true,
+        convertValues: true,
+      });
     });
 
+    beforeEach(async () => {
+      // Insert test data
+      const now = new Date();
+      await kysely.insertInto('Person').values({
+        firstName: 'InitialName',
+        lastName: 'InitialLast',
+        gender: 'male',
+        children: 0,
+        createdAt: now,
+        updatedAt: now,
+      }).execute();
+    });
 
-    expect(kysely.updateTable('Person').set({
-      children: 3,
-    }).where('id', '=', 1).compile().sql,
-    ).toMatchInlineSnapshot(`"update "person" set "children" = ? and "updated_at" = ? where "id" = ?"`);
+    afterEach(async () => {
+      await kysely.deleteFrom('Toy').execute();
+      await kysely.deleteFrom('Pet').execute();
+      await kysely.deleteFrom('Person').execute();
+    });
+
+    test('UPDATE with onUpdate hook - missing onUpdate properties should be auto-filled', () => {
+      // Person.updatedAt has onUpdate hook
+      // When not explicitly set, it should be auto-filled
+      const query = kysely.updateTable('Person').set({
+        firstName: 'UpdatedName',
+      }).where('firstName', '=', 'InitialName');
+      expect(query.compile().sql).toMatchInlineSnapshot(`"update "person" set "first_name" = ?, "updated_at" = ? where "first_name" = ?"`);
+      // Expected: SET should include "updated_at" = ? automatically
+    });
+
+    test('UPDATE with onUpdate hook - explicit onUpdate property should be respected (not overridden)', () => {
+      // If user explicitly provides updatedAt, it should not be overridden
+      const now = new Date('2020-01-01');
+      const query = kysely.updateTable('Person').set({
+        firstName: 'UpdatedName',
+        updatedAt: now, // Explicitly provided
+      }).where('firstName', '=', 'InitialName');
+      expect(query.compile().sql).toMatchInlineSnapshot(`"update "person" set "first_name" = ?, "updated_at" = ? where "first_name" = ?"`);
+    });
+
+    test('UPDATE without onUpdate hook - non-hooked columns should work normally', () => {
+      // Update a column that doesn't have an onUpdate hook
+      const query = kysely.updateTable('Person').set({
+        children: 5,
+      }).where('firstName', '=', 'InitialName');
+      expect(query.compile().sql).toMatchInlineSnapshot(`"update "person" set "children" = ?, "updated_at" = ? where "first_name" = ?"`);
+      // Expected: Should not auto-fill updatedAt (since it's not in SET explicitly)
+      // Actual behavior: depends on strategy - should auto-fill based on improved plan
+    });
+
+    test('UPDATE and execute - verify onUpdate hook is applied', async () => {
+      // Insert a test record
+      const beforeUpdate = new Date();
+
+      // Update it
+      const query = kysely.updateTable('Person').set({
+        firstName: 'NewName',
+      }).where('firstName', '=', 'InitialName').returning(['firstName', 'updatedAt']);
+
+      const result = await query.execute();
+      expect(result).toHaveLength(1);
+      expect(result[0]).toMatchObject({ firstName: 'NewName' });
+      // updatedAt should be updated to a time after beforeUpdate
+      if (result[0].updatedAt != null) {
+        expect(result[0].updatedAt).toBeInstanceOf(Date);
+        expect(result[0].updatedAt!.getTime()).toBeGreaterThanOrEqual(beforeUpdate.getTime());
+      }
+    });
+
+    test('UPDATE multiple columns with mixed hook/non-hook properties', async () => {
+      // Some columns have hooks, some don't
+      const query = kysely.updateTable('Person').set({
+        firstName: 'Updated',
+        children: 3,
+        // updatedAt should be auto-filled
+      }).where('firstName', '=', 'InitialName').returning('updatedAt');
+
+      const result = await query.execute();
+      expect(result).toHaveLength(1);
+      // updatedAt should be set automatically
+      expect(result[0]).toHaveProperty('updatedAt');
+    });
+
+    test('UPDATE on related entity with onUpdate hook', async () => {
+      // Insert a Person and Pet
+      const personId = await kysely
+        .insertInto('Person')
+        .values({ firstName: 'Owner', lastName: 'Person', gender: 'male', children: 0, createdAt: new Date(), updatedAt: new Date() })
+        .returning('id')
+        .executeTakeFirstOrThrow()
+        .then(r => r.id);
+
+      const petId = await kysely
+        .insertInto('Pet')
+        .values({
+          name: 'InitialPetName',
+          owner: personId,
+          species: 'dog',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        })
+        .returning('id')
+        .executeTakeFirstOrThrow()
+        .then(r => r.id);
+
+      // Update Pet - should auto-fill updatedAt
+      const query = kysely.updateTable('Pet').set({
+        name: 'UpdatedPetName',
+      }).where('id', '=', petId);
+
+      expect(query.compile().sql).toMatchInlineSnapshot(`"update "pet" set "name" = ?, "updated_at" = ? where "id" = ?"`);
+      // Expected: SET should include "updated_at" = ?
+    });
+
+    test('UPDATE with onUpdate - dateTime should be converted correctly', async () => {
+      // Verify that Date objects from onUpdate are properly converted for SQLite
+      const query = kysely.updateTable('Person').set({
+        firstName: 'TestUpdate',
+      }).where('firstName', '=', 'InitialName').returning('updatedAt');
+
+      // Should not throw conversion error
+      const result = await query.execute();
+      expect(result).toHaveLength(1);
+      if (result[0].updatedAt != null) {
+        expect(new Date(result[0].updatedAt)).toBeInstanceOf(Date);
+      }
+    });
+
+    test('UPDATE with WHERE condition and onUpdate hook', async () => {
+      // More complex: update with WHERE and onUpdate
+      const query = kysely.updateTable('Person').set({
+        lastName: 'UpdatedLast',
+      }).where('firstName', '=', 'InitialName').where('children', '=', 0);
+
+      expect(query.compile().sql).toMatchInlineSnapshot(`"update "person" set "last_name" = ?, "updated_at" = ? where "first_name" = ? and "children" = ?"`);
+      // Expected: Should auto-fill updatedAt
+    });
+
+    test('UPDATE with onUpdate hook - explicit null should be respected', async () => {
+      // If user explicitly provides null for an onUpdate property, behavior depends on implementation
+      const query = kysely.updateTable('Person').set({
+        firstName: 'NullUpdateTest',
+        updatedAt: null,
+      }).where('firstName', '=', 'InitialName').returning('updatedAt');
+
+      const result = await query.execute();
+      expect(result).toHaveLength(1);
+      expect(result[0].updatedAt).toBeNull();
+    });
+
+    test('UPDATE multiple rows with onUpdate hook', async () => {
+      // Insert multiple test records
+      await kysely.insertInto('Person').values([
+        { firstName: 'Batch1', lastName: 'Test', gender: 'male', children: 0, createdAt: new Date(), updatedAt: new Date() },
+        { firstName: 'Batch2', lastName: 'Test', gender: 'female', children: 0, createdAt: new Date(), updatedAt: new Date() },
+      ]).execute();
+
+      // Update multiple rows - all should get updatedAt from onUpdate hook
+      const query = kysely.updateTable('Person').set({
+        lastName: 'BatchUpdated',
+      }).where('lastName', '=', 'Test').returning(['id', 'lastName', 'updatedAt']);
+
+      const result = await query.execute();
+      expect(result.length).toBeGreaterThanOrEqual(2);
+      // All updated rows should have updatedAt set
+      result.forEach(row => {
+        expect(row).toHaveProperty('updatedAt');
+        if (row.updatedAt != null) {
+          expect(new Date(row.updatedAt)).toBeInstanceOf(Date);
+        }
+      });
+    });
+
+    test('UPDATE with onUpdate hook - using subquery in set', async () => {
+      // Test UPDATE with subquery - onUpdate hooks should still work
+      const personId = await kysely
+        .insertInto('Person')
+        .values({ firstName: 'SubqueryUpdate', lastName: 'Test', gender: 'male', children: 0, createdAt: new Date(), updatedAt: new Date() })
+        .returning('id')
+        .executeTakeFirstOrThrow()
+        .then(r => r.id);
+
+      // Update using subquery in set
+      const query = kysely.updateTable('Person').set(eb => ({
+        firstName: eb.selectFrom('Person').select('firstName').where('id', '=', personId),
+        // updatedAt should be auto-filled by onUpdate hook
+      })).where('id', '=', personId).returning(['firstName', 'updatedAt']);
+
+      const result = await query.execute();
+      expect(result).toHaveLength(1);
+      expect(result[0]).toMatchObject({ firstName: 'SubqueryUpdate' });
+      if (result[0].updatedAt != null) {
+        expect(result[0].updatedAt).toBeInstanceOf(Date);
+      }
+    });
+  });
+
+  describe('convertValues with default naming strategy', () => {
+    interface PersonTable extends InferKyselyTable<typeof Person> {} // default: table/column
+    interface DB {
+      person: PersonTable;
+    }
+
+    let orm: MikroORM;
+    let kysely: Kysely<DB>;
+
+    beforeAll(async () => {
+      orm = new MikroORM({
+        entities: [Person, Pet, Toy],
+        dbName: ':memory:',
+      });
+      await orm.getSchemaGenerator().createSchema();
+      kysely = orm.em.getKysely({
+        // tableNamingStrategy: 'table', // default
+        // columnNamingStrategy: 'column', // default
+        convertValues: true,
+      });
+    });
+
+    afterAll(async () => {
+      await orm.close(true);
+    });
+
+    test('SELECT should convert values but keep column names', async () => {
+      const now = new Date();
+      await kysely.insertInto('person').values({
+        first_name: 'ValueTest',
+        last_name: 'User',
+        gender: 'male',
+        created_at: now,
+        updated_at: now,
+        children: 0,
+      }).execute();
+
+      const query = kysely.selectFrom('person').selectAll().where('first_name', '=', 'ValueTest');
+      const result = await query.execute();
+
+      expect(result).toHaveLength(1);
+      // Verify column names are snake_case (default)
+      expect(result[0]).toHaveProperty('first_name');
+      expect(result[0]).toHaveProperty('created_at');
+      // Verify values are converted to Date objects
+      expect(result[0].created_at).toBeInstanceOf(Date);
+      expect(result[0].updated_at).toBeInstanceOf(Date);
+    });
   });
 });

@@ -25,6 +25,7 @@ import {
   ValuesNode,
 } from 'kysely';
 import type { MikroPluginOptions } from './index.js';
+import type { SqlEntityManager } from '../SqlEntityManager.js';
 import type { AbstractSqlPlatform } from '../AbstractSqlPlatform.js';
 
 export class MikroTransformer extends OperationNodeTransformer {
@@ -42,12 +43,16 @@ export class MikroTransformer extends OperationNodeTransformer {
    */
   protected readonly subqueryAliasMap: Map<string, EntityMetadata | undefined> = new Map();
 
+  protected readonly metadata: MetadataStorage;
+  protected readonly platform: AbstractSqlPlatform;
+
   constructor(
-    protected readonly metadata: MetadataStorage,
-    protected readonly platform: AbstractSqlPlatform,
-    protected readonly options: Pick<MikroPluginOptions, 'columnNamingStrategy' | 'tableNamingStrategy' | 'convertValues'> = {},
+    protected readonly em: SqlEntityManager,
+    protected readonly options: MikroPluginOptions = {},
   ) {
     super();
+    this.metadata = em.getMetadata();
+    this.platform = em.getDriver().getPlatform();
   }
 
   protected override transformSelectQuery(
@@ -104,9 +109,12 @@ export class MikroTransformer extends OperationNodeTransformer {
           }
         }
       }
-      const nodeWithConvertedValues = this.options.convertValues && entityMeta
-        ? this.processInsertValues(node, entityMeta)
+      const nodeWithHooks = this.options.processOnCreateHooks && entityMeta
+        ? this.processOnCreateHooks(node, entityMeta)
         : node;
+      const nodeWithConvertedValues = this.options.convertValues && entityMeta
+        ? this.processInsertValues(nodeWithHooks, entityMeta)
+        : nodeWithHooks;
       return super.transformInsertQuery(nodeWithConvertedValues, queryId);
     } finally {
       this.contextStack.pop();
@@ -140,9 +148,12 @@ export class MikroTransformer extends OperationNodeTransformer {
         }
       }
 
-      const nodeWithConvertedValues = this.options.convertValues && entityMeta
-        ? this.processUpdateValues(node, entityMeta)
+      const nodeWithHooks = this.options.processOnUpdateHooks && entityMeta
+        ? this.processOnUpdateHooks(node, entityMeta)
         : node;
+      const nodeWithConvertedValues = this.options.convertValues && entityMeta
+        ? this.processUpdateValues(nodeWithHooks, entityMeta)
+        : nodeWithHooks;
       return super.transformUpdateQuery(nodeWithConvertedValues, queryId);
     } finally {
       this.contextStack.pop();
@@ -223,7 +234,7 @@ export class MikroTransformer extends OperationNodeTransformer {
 
       if (ownerMeta) {
         const prop = ownerMeta.properties[node.name];
-        const fieldName = (prop as any)?.fieldName || (prop as any)?.fieldNames?.[0];
+        const fieldName = (prop as any)?.fieldName || prop?.fieldNames?.[0];
         if (fieldName) {
           return {
             ...node,
@@ -281,6 +292,92 @@ export class MikroTransformer extends OperationNodeTransformer {
     }
 
     return undefined;
+  }
+
+  protected processOnCreateHooks(node: InsertQueryNode, meta: EntityMetadata): InsertQueryNode {
+    if (!node.columns || !node.values || !ValuesNode.is(node.values)) {
+      return node;
+    }
+
+    const existingProps = new Set<string>();
+    for (const col of node.columns) {
+      const prop = this.findProperty(meta, this.normalizeColumnName(col.column));
+      if (prop) {
+        existingProps.add(prop.name);
+      }
+    }
+
+    const missingProps = meta.props.filter(prop => prop.onCreate && !existingProps.has(prop.name));
+
+    if (missingProps.length === 0) {
+      return node;
+    }
+
+    const newColumns = [...node.columns];
+    for (const prop of missingProps) {
+      newColumns.push(ColumnNode.create(prop.name));
+    }
+
+    const newRows = node.values.values.map(row => {
+      const valuesToAdd = missingProps.map(prop => {
+        const val = prop.onCreate!(undefined as any, this.em);
+        return val;
+      });
+
+      if (ValueListNode.is(row)) {
+        const newValues = [...row.values, ...valuesToAdd.map(v => ValueNode.create(v))];
+        return ValueListNode.create(newValues);
+      }
+
+      if (PrimitiveValueListNode.is(row)) {
+        const newValues = [...row.values, ...valuesToAdd];
+        return PrimitiveValueListNode.create(newValues);
+      }
+
+      return row;
+    });
+
+    return {
+      ...node,
+      columns: Object.freeze(newColumns),
+      values: ValuesNode.create(newRows),
+    };
+  }
+
+  protected processOnUpdateHooks(node: UpdateQueryNode, meta: EntityMetadata): UpdateQueryNode {
+    if (!node.updates) {
+      return node;
+    }
+
+    const existingProps = new Set<string>();
+    for (const update of node.updates) {
+      if (ColumnNode.is(update.column)) {
+        const prop = this.findProperty(meta, this.normalizeColumnName(update.column.column));
+        if (prop) {
+          existingProps.add(prop.name);
+        }
+      }
+    }
+
+    const missingProps = meta.props.filter(prop => prop.onUpdate && !existingProps.has(prop.name));
+
+    if (missingProps.length === 0) {
+      return node;
+    }
+
+    const newUpdates = [...node.updates];
+    for (const prop of missingProps) {
+      const val = prop.onUpdate!(undefined as any, this.em);
+      newUpdates.push(ColumnUpdateNode.create(
+        ColumnNode.create(prop.name),
+        ValueNode.create(val),
+      ));
+    }
+
+    return {
+      ...node,
+      updates: Object.freeze(newUpdates),
+    };
   }
 
   protected processInsertValues(node: InsertQueryNode, meta: EntityMetadata): InsertQueryNode {
@@ -845,8 +942,8 @@ export class MikroTransformer extends OperationNodeTransformer {
     rows: Record<string, any>[] | undefined,
     node: SelectQueryNode | InsertQueryNode | UpdateQueryNode | DeleteQueryNode | undefined,
   ): Record<string, any>[] | undefined {
-    // Only transform if columnNamingStrategy is 'property' and we have data
-    if (this.options.columnNamingStrategy !== 'property' || !rows || rows.length === 0 || !node) {
+    // Only transform if columnNamingStrategy is 'property' or convertValues is true, and we have data
+    if ((this.options.columnNamingStrategy !== 'property' && !this.options.convertValues) || !rows || rows.length === 0 || !node) {
       return rows;
     }
 
@@ -857,9 +954,8 @@ export class MikroTransformer extends OperationNodeTransformer {
     if (entityMap.size === 0) {
       return rows;
     }
-    // ... rest of function
 
-    // Build a global mapping from database field names to property names
+    // Build a global mapping from database field names to property objects
     const fieldToPropertyMap = this.buildGlobalFieldMap(entityMap);
     const relationFieldMap = this.buildGlobalRelationFieldMap(entityMap);
 
@@ -867,8 +963,8 @@ export class MikroTransformer extends OperationNodeTransformer {
     return rows.map(row => this.transformRow(row, fieldToPropertyMap, relationFieldMap));
   }
 
-  protected buildGlobalFieldMap(entityMap: Map<string, EntityMetadata>): Record<string, string> {
-    const map: Record<string, string> = {};
+  protected buildGlobalFieldMap(entityMap: Map<string, EntityMetadata>): Record<string, EntityProperty> {
+    const map: Record<string, EntityProperty> = {};
     for (const meta of entityMap.values()) {
       Object.assign(map, this.buildFieldToPropertyMap(meta));
     }
@@ -884,16 +980,16 @@ export class MikroTransformer extends OperationNodeTransformer {
   }
 
   /**
-   * Build a mapping from database field names to property names
-   * Format: { 'field_name': 'propertyName' }
+   * Build a mapping from database field names to property objects
+   * Format: { 'field_name': EntityProperty }
    */
-  protected buildFieldToPropertyMap(meta: EntityMetadata): Record<string, string> {
-    const map: Record<string, string> = {};
+  protected buildFieldToPropertyMap(meta: EntityMetadata): Record<string, EntityProperty> {
+    const map: Record<string, EntityProperty> = {};
 
     for (const prop of meta.props) {
       if (prop.fieldNames && prop.fieldNames.length > 0) {
         const fieldName = prop.fieldNames[0];
-        map[fieldName] = prop.name;
+        map[fieldName] = prop;
       }
     }
 
@@ -926,28 +1022,55 @@ export class MikroTransformer extends OperationNodeTransformer {
    */
   protected transformRow(
     row: Record<string, any>,
-    fieldToPropertyMap: Record<string, string>,
+    fieldToPropertyMap: Record<string, EntityProperty>,
     relationFieldMap: Record<string, string>,
   ): Record<string, any> {
     const transformed: Record<string, any> = { ...row };
 
-    // First pass: map regular fields from fieldName to propertyName
-    for (const [fieldName, propertyName] of Object.entries(fieldToPropertyMap)) {
-      if (fieldName in transformed && !(propertyName in transformed)) {
-        // Only rename if the property name doesn't already exist (avoid overwrites)
-        transformed[propertyName] = transformed[fieldName];
-        delete transformed[fieldName];
+    // First pass: map regular fields from fieldName to propertyName and convert values
+    for (const [fieldName, prop] of Object.entries(fieldToPropertyMap)) {
+      if (fieldName in transformed) {
+        let value = transformed[fieldName];
+
+        // 1. Value conversion (if enabled)
+        if (this.options.convertValues && value != null) {
+          if (prop.customType) {
+            value = prop.customType.convertToJSValue(value, this.platform);
+          } else if (prop.runtimeType === 'Date') {
+            // SQLite stores dates as numbers (timestamps) or strings.
+            // platform.parseDate handles this.
+            if (!(value instanceof Date)) {
+              value = this.platform.parseDate(value);
+            }
+          }
+        }
+
+        // 2. Rename (if columnNamingStrategy is 'property' and names differ)
+        if (this.options.columnNamingStrategy === 'property' && prop.name !== fieldName) {
+          // Only rename if the property name doesn't already exist (avoid overwrites)
+          if (!(prop.name in transformed)) {
+            transformed[prop.name] = value;
+            delete transformed[fieldName];
+          } else {
+            // If propertyName already exists, just update the value if it was converted
+            transformed[prop.name] = value;
+          }
+        } else {
+          // If not renaming, just update the value if it was converted
+          transformed[fieldName] = value;
+        }
       }
     }
 
     // Second pass: handle relation fields
-    // For foreign key fields, optionally move them to relation property name
-    // But only if user didn't explicitly alias or select both
-    for (const [fieldName, relationPropertyName] of Object.entries(relationFieldMap)) {
-      if (fieldName in transformed && !(relationPropertyName in transformed)) {
-        // Move the foreign key value to the relation property name
-        transformed[relationPropertyName] = transformed[fieldName];
-        delete transformed[fieldName];
+    // Only run if columnNamingStrategy is 'property', as we don't want to rename FKs otherwise
+    if (this.options.columnNamingStrategy === 'property') {
+      for (const [fieldName, relationPropertyName] of Object.entries(relationFieldMap)) {
+        if (fieldName in transformed && !(relationPropertyName in transformed)) {
+          // Move the foreign key value to the relation property name
+          transformed[relationPropertyName] = transformed[fieldName];
+          delete transformed[fieldName];
+        }
       }
     }
 

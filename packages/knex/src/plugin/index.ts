@@ -1,4 +1,3 @@
-import type { MetadataStorage } from '@mikro-orm/core';
 import {
   type KyselyPlugin,
   type PluginTransformQueryArgs,
@@ -16,7 +15,7 @@ import {
   DeleteQueryNode as DeleteQueryNodeClass,
 } from 'kysely';
 import  { MikroTransformer } from './transformer.js';
-import type { AbstractSqlPlatform } from '../AbstractSqlPlatform.js';
+import type { SqlEntityManager } from '../SqlEntityManager.js';
 
 /**
  * Cache for query transformation data
@@ -67,11 +66,10 @@ export class MikroPlugin implements KyselyPlugin {
   protected readonly transformer: MikroTransformer;
 
   constructor(
-    protected readonly metadata: MetadataStorage,
-    protected readonly platform: AbstractSqlPlatform,
+    protected readonly em: SqlEntityManager,
     protected readonly options: MikroPluginOptions = {},
   ) {
-    this.transformer = new MikroTransformer(metadata, platform, options);
+    this.transformer = new MikroTransformer(em, options);
   }
 
   transformQuery(args: PluginTransformQueryArgs): RootOperationNode {
@@ -88,8 +86,8 @@ export class MikroPlugin implements KyselyPlugin {
   }
 
   async transformResult(args: PluginTransformResultArgs): Promise<QueryResult<UnknownRow>> {
-    // Only transform results if columnNamingStrategy is 'property'
-    if (this.options.columnNamingStrategy !== 'property') {
+    // Only transform results if columnNamingStrategy is 'property' or convertValues is true
+    if (this.options.columnNamingStrategy !== 'property' && !this.options.convertValues) {
       return args.result;
     }
 
