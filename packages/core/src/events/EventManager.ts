@@ -5,25 +5,35 @@ import { EventType, EventTypeMap, type TransactionEventType } from '../enums';
 
 export class EventManager {
 
-  private readonly listeners: { [K in EventType]?: EventSubscriber[] } = {};
-  private readonly entities: Map<EventSubscriber, string[]> = new Map();
-  private readonly cache: Map<number, boolean> = new Map();
-  private readonly subscribers: EventSubscriber[] = [];
+  private readonly listeners: { [K in EventType]?: Set<EventSubscriber> } = {};
+  private readonly entities = new Map<EventSubscriber, Set<string>>();
+  private readonly cache = new Map<number, boolean>();
+  private readonly subscribers = new Set<EventSubscriber>();
 
-  constructor(subscribers: EventSubscriber[]) {
-    subscribers.forEach(subscriber => this.registerSubscriber(subscriber));
+  constructor(subscribers: Iterable<EventSubscriber>) {
+    for (const subscriber of subscribers) {
+      this.registerSubscriber(subscriber);
+    }
   }
 
   registerSubscriber(subscriber: EventSubscriber): void {
-    this.subscribers.push(subscriber);
+    if (this.subscribers.has(subscriber)) {
+      return;
+    }
+
+    this.subscribers.add(subscriber);
     this.entities.set(subscriber, this.getSubscribedEntities(subscriber));
     this.cache.clear();
     Utils.keys(EventType)
       .filter(event => event in subscriber)
       .forEach(event => {
-        this.listeners[event] ??= [];
-        this.listeners[event]!.push(subscriber);
+        this.listeners[event] ??= new Set();
+        this.listeners[event]!.add(subscriber);
       });
+  }
+
+  getSubscribers(): Set<EventSubscriber> {
+    return this.subscribers;
   }
 
   dispatchEvent<T extends object>(event: TransactionEventType, args: TransactionEventArgs, meta?: EntityMetadata<T>): unknown;
@@ -42,10 +52,10 @@ export class EventManager {
       return handler!.bind(entity);
     }));
 
-    for (const listener of this.listeners[event] || []) {
+    for (const listener of this.listeners[event] ?? new Set()) {
       const entities = this.entities.get(listener)!;
 
-      if (entities.length === 0 || !entity || entities.includes(entity.constructor.name)) {
+      if (entities.size === 0 || !entity || entities.has(entity.constructor.name)) {
         listeners.push(listener[event]!.bind(listener) as AsyncFunction);
       }
     }
@@ -71,10 +81,10 @@ export class EventManager {
       return true;
     }
 
-    for (const listener of this.listeners[event] ?? []) {
+    for (const listener of this.listeners[event] ?? new Set()) {
       const entities = this.entities.get(listener)!;
 
-      if (entities.length === 0 || entities.includes(meta.className)) {
+      if (entities.size === 0 || entities.has(meta.className)) {
         this.cache.set(cacheKey, true);
         return true;
       }
@@ -88,12 +98,12 @@ export class EventManager {
     return new EventManager(this.subscribers);
   }
 
-  private getSubscribedEntities(listener: EventSubscriber): string[] {
+  private getSubscribedEntities(listener: EventSubscriber): Set<string> {
     if (!listener.getSubscribedEntities) {
-      return [];
+      return new Set();
     }
 
-    return listener.getSubscribedEntities().map(name => Utils.className(name));
+    return new Set(listener.getSubscribedEntities().map(name => Utils.className(name)));
   }
 
 }
