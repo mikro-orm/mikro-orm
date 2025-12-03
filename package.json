@@ -92,6 +92,7 @@
     "ignoreDeps": [
       "mysql",
       "@docusaurus/*",
+      "@apify/docusaurus-plugin-typedoc-api",
       "ts-jest",
       "typedoc"
     ]
