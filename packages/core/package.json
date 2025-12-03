@@ -9,6 +9,10 @@
     "./file-discovery": {
       "node": "./src/metadata/discover-entities.ts",
       "browser": "./src/not-supported.ts"
+    },
+    "./fs-utils": {
+      "node": "./src/utils/fs-utils.ts",
+      "browser": "./src/not-supported.ts"
     }
   },
   "repository": {

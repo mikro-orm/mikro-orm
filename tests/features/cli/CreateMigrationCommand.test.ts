@@ -1,4 +1,4 @@
-(global as any).process.env.FORCE_COLOR = 0;
+process.env.FORCE_COLOR = '0';
 
 import { Migrator } from '@mikro-orm/migrations';
 import { MikroORM } from '@mikro-orm/core';

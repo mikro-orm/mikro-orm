@@ -1,4 +1,5 @@
 import { basename } from 'node:path';
+import { fs } from '@mikro-orm/core/fs-utils';
 
 import { type Constructor } from '../typings.js';
 import { Utils } from '../utils/Utils.js';
@@ -33,7 +34,7 @@ async function getEntityClassOrSchema(filepath: string, allTargets: Map<Construc
 export async function discoverEntities(paths: string | string[], options?: { baseDir?: string }): Promise<Iterable<EntitySchema | Constructor>> {
   paths = Utils.asArray(paths).map(path => Utils.normalizePath(path));
   const baseDir = options?.baseDir ?? process.cwd();
-  const files = Utils.glob(paths, Utils.normalizePath(baseDir));
+  const files = fs.glob(paths, Utils.normalizePath(baseDir));
   const found = new Map<Constructor | EntitySchema, string>();
 
   for (const filepath of files) {

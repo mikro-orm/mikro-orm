@@ -1,19 +1,19 @@
-import { readFile } from 'node:fs/promises';
-import { createRequire } from 'node:module';
-import { extname, join, resolve } from 'node:path';
+import { extname, join } from 'node:path';
 import yargs from 'yargs';
 import {
-  type EntityManagerType,
-  type EntityManager,
   colors,
-  ConfigurationLoader,
-  MikroORM,
-  Utils,
   Configuration,
-  type IDatabaseDriver,
-  type Options,
   type Dictionary,
+  type EntityManager,
+  type EntityManagerType,
+  type IDatabaseDriver,
+  loadEnvironmentVars,
+  lookupExtensions,
+  MikroORM,
+  type Options,
+  Utils,
 } from '@mikro-orm/core';
+import { fs } from '@mikro-orm/core/fs-utils';
 
 /**
  * @internal
@@ -24,14 +24,15 @@ export class CLIHelper {
    * Gets a named configuration
    *
    * @param contextName Load a config with the given `contextName` value. Used when config file exports array or factory function. Setting it to "default" matches also config objects without `contextName` set.
-   * @param paths Array of possible paths for a configuration file. Files will be checked in order, and the first existing one will be used. Defaults to the output of {@link ConfigurationLoader.getConfigPaths}.
+   * @param paths Array of possible paths for a configuration file. Files will be checked in order, and the first existing one will be used. Defaults to the output of {@link fs.getConfigPaths}.
    * @param options Additional options to augment the final configuration with.
    */
   static async getConfiguration<
     D extends IDatabaseDriver = IDatabaseDriver,
     EM extends D[typeof EntityManagerType] & EntityManager<D> = D[typeof EntityManagerType] & EntityManager<D>,
-  >(contextName?: string, paths = this.getConfigPaths(), options: Partial<Options<D>> = {}): Promise<Configuration<D, EM>> {
-    const deps = ConfigurationLoader.getORMPackages();
+  >(contextName?: string, paths?: string[], options: Partial<Options<D>> = {}): Promise<Configuration<D, EM>> {
+    paths ??= await this.getConfigPaths();
+    const deps = await fs.getORMPackages();
 
     if (!deps.has('@mikro-orm/cli') && !process.env.MIKRO_ORM_ALLOW_GLOBAL_CLI) {
       throw new Error('@mikro-orm/cli needs to be installed as a local dependency!');
@@ -39,6 +40,7 @@ export class CLIHelper {
 
     contextName ??= process.env.MIKRO_ORM_CONTEXT_NAME ?? 'default';
     const env = await this.loadEnvironmentVars();
+    await lookupExtensions(options);
 
     const configFinder = (cfg: unknown) => {
       return typeof cfg === 'object' && cfg !== null && ('contextName' in cfg ? cfg.contextName === contextName : (contextName === 'default'));
@@ -100,14 +102,14 @@ export class CLIHelper {
       }
     }
 
-    const esmConfigOptions = this.isESM() ? { entityGenerator: { esmImport: true } } : {};
+    const esmConfigOptions = await this.isESM() ? { entityGenerator: { esmImport: true } } : {};
 
     return new Configuration(Utils.mergeConfig({}, esmConfigOptions, tmp, options, env));
   }
 
   static async getORM<D extends IDatabaseDriver = IDatabaseDriver>(contextName?: string, configPaths?: string[], opts: Partial<Options<D>> = {}): Promise<MikroORM<D>> {
     const options = await this.getConfiguration<D>(contextName, configPaths, opts);
-    const settings = this.getSettings();
+    const settings = await this.getSettings();
     options.set('allowGlobalContext', true);
     options.set('debug', !!settings.verbose);
     options.getLogger().setDebugMode(!!settings.verbose);
@@ -138,10 +140,6 @@ export class CLIHelper {
     }
   }
 
-  static getNodeVersion(): string {
-    return process.versions.node;
-  }
-
   static getDriverDependencies(config: Configuration): string[] {
     try {
       return config.getDriver().getDependencies();
@@ -159,8 +157,8 @@ export class CLIHelper {
     console.log(text);
   }
 
-  static getSettings(): Settings {
-    const config = ConfigurationLoader.getPackageConfig();
+  static async getSettings(): Promise<Settings> {
+    const config = await fs.getPackageConfig();
     const settings = { ...config['mikro-orm'] } as Settings;
     const bool = (v: string) => ['true', 't', '1'].includes(v.toLowerCase());
     settings.preferTs = process.env.MIKRO_ORM_CLI_PREFER_TS != null ? bool(process.env.MIKRO_ORM_CLI_PREFER_TS) : settings.preferTs;
@@ -175,8 +173,8 @@ export class CLIHelper {
     return settings;
   }
 
-  static getConfigPaths(): string[] {
-    const settings = this.getSettings();
+  static async getConfigPaths(): Promise<string[]> {
+    const settings = await this.getSettings();
     const typeScriptSupport = settings.preferTs ?? Utils.detectTypeScriptSupport();
     const paths: string[] = [];
 
@@ -191,8 +189,8 @@ export class CLIHelper {
       paths.push('./mikro-orm.config.ts');
     }
 
-    const distDir = Utils.pathExists(process.cwd() + '/dist');
-    const buildDir = Utils.pathExists(process.cwd() + '/build');
+    const distDir = fs.pathExists(process.cwd() + '/dist');
+    const buildDir = fs.pathExists(process.cwd() + '/build');
     /* v8 ignore next */
     const path = distDir ? 'dist' : (buildDir ? 'build' : 'src');
     paths.push(`./${path}/mikro-orm.config.js`);
@@ -207,7 +205,7 @@ export class CLIHelper {
       path = Utils.absolutePath(path);
       path = Utils.normalizePath(path);
 
-      if (Utils.pathExists(path)) {
+      if (fs.pathExists(path)) {
         const config = await Utils.dynamicImport(path);
         /* v8 ignore next */
         return [path, await (config.default ?? config)];
@@ -217,7 +215,7 @@ export class CLIHelper {
   }
 
   private static async loadEnvironmentVars<D extends IDatabaseDriver>(): Promise<Partial<Options<D>>> {
-    const ret = ConfigurationLoader.loadEnvironmentVars();
+    const ret = loadEnvironmentVars<D>();
 
     // only to keep some sort of back compatibility with those using env vars only, to support `MIKRO_ORM_TYPE`
     const PLATFORMS = {
@@ -243,9 +241,9 @@ export class CLIHelper {
     const version = Utils.getORMVersion();
     CLIHelper.dump(' - dependencies:');
     CLIHelper.dump(`   - mikro-orm ${colors.green(version)}`);
-    CLIHelper.dump(`   - node ${colors.green(CLIHelper.getNodeVersion())}`);
+    CLIHelper.dump(`   - node ${colors.green(process.versions.node)}`);
 
-    if (Utils.pathExists(process.cwd() + '/package.json')) {
+    if (fs.pathExists(process.cwd() + '/package.json')) {
       /* v8 ignore next 3 */
       if (process.versions.bun) {
         CLIHelper.dump(`   - typescript via bun`);
@@ -261,16 +259,11 @@ export class CLIHelper {
 
   static async getModuleVersion(name: string): Promise<string> {
     try {
-      const pkg = Utils.requireFrom<{ version: string }>(`${name}/package.json`);
+      const path = `${this.resolveModulePath(name)}/package.json`;
+      const pkg = fs.readJSONSync(path);
       return colors.green(pkg.version);
     } catch {
-      try {
-        const path = `${this.resolveModulePath(name)}/package.json`;
-        const pkg = await readFile(path, { encoding: 'utf8' });
-        return colors.green(JSON.parse(pkg).version);
-      } catch {
-        return '';
-      }
+      return '';
     }
   }
 
@@ -284,7 +277,7 @@ export class CLIHelper {
       from = join(from, '__fake.js');
     }
 
-    const path = Utils.normalizePath(createRequire(resolve(from)).resolve(id));
+    const path = Utils.normalizePath(import.meta.resolve(id, fs.pathToFileURL(from)));
     const parts = path.split('/');
     const idx = parts.lastIndexOf(id) + 1;
     parts.splice(idx, parts.length - idx);
@@ -332,10 +325,6 @@ export class CLIHelper {
     process.env.TSIMP_PROJECT ??= configPath;
     process.env.MIKRO_ORM_CLI_ALWAYS_ALLOW_TS ??= '1';
 
-    const isEsm = this.isESM();
-    /* v8 ignore next */
-    const importMethod = isEsm ? 'tryImport' : 'tryRequire';
-
     const explicitLoader = tsLoader ?? process.env.MIKRO_ORM_CLI_TS_LOADER ?? 'auto';
     const loaders = {
       swc: { esm: '@swc-node/register/esm-register', cjs: '@swc-node/register' },
@@ -350,9 +339,10 @@ export class CLIHelper {
       }
 
       const { esm, cjs, cb } = loaders[loader] as { esm: string; cjs: string; cb?: (mod: any) => void };
+      const isEsm = await this.isESM();
       /* v8 ignore next */
       const module = isEsm ? esm : cjs;
-      const mod = await Utils[importMethod]({ module });
+      const mod = await Utils.tryImport({ module });
 
       if (mod) {
         cb?.(mod);
@@ -367,8 +357,8 @@ export class CLIHelper {
     return false;
   }
 
-  static isESM(): boolean {
-    const config = ConfigurationLoader.getPackageConfig();
+  static async isESM(): Promise<boolean> {
+    const config = await fs.getPackageConfig();
     const type = config?.type ?? '';
 
     return type === 'module';

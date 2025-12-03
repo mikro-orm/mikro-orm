@@ -3,12 +3,37 @@ import { type EntitySchema } from './metadata/EntitySchema.js';
 import { MetadataDiscovery } from './metadata/MetadataDiscovery.js';
 import { MetadataStorage } from './metadata/MetadataStorage.js';
 import { Configuration, type Options } from './utils/Configuration.js';
-import { ConfigurationLoader } from './utils/ConfigurationLoader.js';
+import { loadEnvironmentVars } from './utils/env-vars.js';
 import { Utils } from './utils/Utils.js';
 import { type Logger } from './logging/Logger.js';
 import { colors } from './logging/colors.js';
 import type { EntityManager } from './EntityManager.js';
 import type { AnyEntity, Constructor, EntityClass, EntityMetadata, EntityName, IEntityGenerator, IMigrator, ISeedManager } from './typings.js';
+
+const knownExtensions = [
+  ['SeedManager', '@mikro-orm/seeder'],
+  ['Migrator', '@mikro-orm/migrations'],
+  ['Migrator', '@mikro-orm/migrations-mongodb'],
+  ['EntityGenerator', '@mikro-orm/entity-generator'],
+];
+
+export async function lookupExtensions(options: Options): Promise<void> {
+  const extensions = [...options.extensions ?? []];
+
+  for (const extension of knownExtensions) {
+    if (extensions.some(ext => (ext as any).name === extension[0])) {
+      continue;
+    }
+
+    const module = await Utils.tryImport({ module: extension[1] });
+
+    if (module?.[extension[0]]) {
+      extensions.push(module[extension[0]]);
+    }
+  }
+
+  options.extensions = extensions;
+}
 
 /**
  * Helper class for bootstrapping the MikroORM.
@@ -41,8 +66,10 @@ export class MikroORM<
       throw new Error(`options parameter is required`);
     }
 
+    options = { ...options };
     options.discovery ??= {};
     options.discovery.skipSyncDiscovery ??= true;
+    await lookupExtensions(options);
     const orm = new this<D, EM, Entities>(options);
     const preferTs = orm.config.get('preferTs', Utils.detectTypeScriptSupport());
     orm.metadata = await orm.discovery.discover(preferTs);
@@ -58,14 +85,13 @@ export class MikroORM<
    * - no support for folder based discovery
    */
   constructor(options: Options<Driver, EM, Entities>) {
-    const env = ConfigurationLoader.loadEnvironmentVars<Driver>();
-    const coreVersion = ConfigurationLoader.checkPackageVersion();
+    const env = loadEnvironmentVars<Driver>();
     options = Utils.merge(options, env);
     this.config = new Configuration(options);
     const discovery = this.config.get('discovery');
     this.driver = this.config.getDriver();
     this.logger = this.config.getLogger();
-    this.logger.log('info', `MikroORM version: ${colors.green(coreVersion)}`);
+    this.logger.log('info', `MikroORM version: ${colors.green(Utils.getORMVersion())}`);
     this.discovery = new MetadataDiscovery(new MetadataStorage(), this.driver.getPlatform(), this.config);
     this.driver.getPlatform().init(this);
 

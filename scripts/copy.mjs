@@ -145,6 +145,11 @@ copy('README.md', root, target);
 copy('LICENSE',  root, target);
 copy('package.json', process.cwd(), target);
 
+if (resolve(process.cwd()) === resolve(root, 'packages/core')) {
+  const { version } = require(pkgPath);
+  rewrite(resolve(target, 'utils/Utils.js'), pkg => pkg.replace('[[MIKRO_ORM_VERSION]]', version));
+}
+
 if (resolve(process.cwd()) === resolve(root, 'packages/cli')) {
   copy('cli.js', target, target, 'cli');
 }
@@ -152,4 +157,3 @@ if (resolve(process.cwd()) === resolve(root, 'packages/cli')) {
 rewrite(resolve(target, 'package.json'), pkg => {
   return pkg.replace(/dist\//g, '').replace(/src\/(.*)\.ts/g, '$1.js');
 });
-rewrite(resolve(target, 'utils.js'), pkg => pkg.replace('../package.json', './package.json'));

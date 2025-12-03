@@ -1,5 +1,4 @@
 export * from './Configuration.js';
-export * from './ConfigurationLoader.js';
 export * from './Cursor.js';
 export * from './DataloaderUtils.js';
 export * from './Utils.js';
@@ -11,4 +10,5 @@ export * from './NullHighlighter.js';
 export * from './EntityComparator.js';
 export * from './AbstractSchemaGenerator.js';
 export * from './RawQueryFragment.js';
+export * from './env-vars.js';
 export * from './upsert-utils.js';
