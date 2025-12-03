@@ -55,8 +55,9 @@ export class SqlEntityManager<Driver extends AbstractSqlDriver = AbstractSqlDriv
     if (options.columnNamingStrategy != null
          || options.tableNamingStrategy != null
          || options.processOnCreateHooks != null
-         || options.processOnUpdateHooks != null) {
-      kysely = kysely.withPlugin(new MikroPlugin(this.metadata, options));
+         || options.processOnUpdateHooks != null
+         || options.convertValues != null) {
+      kysely = kysely.withPlugin(new MikroPlugin(this.metadata, this.driver.getPlatform(), options));
     }
     return kysely;
   }

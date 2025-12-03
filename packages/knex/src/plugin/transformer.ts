@@ -1,4 +1,4 @@
-import type { EntityMetadata, MetadataStorage } from '@mikro-orm/core';
+import { type EntityMetadata, type EntityProperty, type MetadataStorage, isRaw } from '@mikro-orm/core';
 import {
   type CommonTableExpressionNameNode,
   type DeleteQueryNode,
@@ -16,11 +16,16 @@ import {
   ColumnNode,
   ColumnUpdateNode,
   OperationNodeTransformer,
+  PrimitiveValueListNode,
   ReferenceNode as ReferenceNodeClass,
   SchemableIdentifierNode,
   TableNode as TableNodeClass,
+  ValueListNode,
+  ValueNode,
+  ValuesNode,
 } from 'kysely';
 import type { MikroPluginOptions } from './index.js';
+import type { AbstractSqlPlatform } from '../AbstractSqlPlatform.js';
 
 export class MikroTransformer extends OperationNodeTransformer {
 
@@ -39,7 +44,8 @@ export class MikroTransformer extends OperationNodeTransformer {
 
   constructor(
     protected readonly metadata: MetadataStorage,
-    protected readonly options: Pick<MikroPluginOptions, 'columnNamingStrategy' | 'tableNamingStrategy'> = {},
+    protected readonly platform: AbstractSqlPlatform,
+    protected readonly options: Pick<MikroPluginOptions, 'columnNamingStrategy' | 'tableNamingStrategy' | 'convertValues'> = {},
   ) {
     super();
   }
@@ -87,16 +93,21 @@ export class MikroTransformer extends OperationNodeTransformer {
     this.contextStack.push(currentContext);
 
     try {
+      let entityMeta: EntityMetadata | undefined;
       if (node.into) {
         const tableName = this.getTableName(node.into);
         if (tableName) {
           const meta = this.findEntityMetadata(tableName);
           if (meta) {
+            entityMeta = meta;
             currentContext.set(meta.tableName, meta);
           }
         }
       }
-      return super.transformInsertQuery(node, queryId);
+      const nodeWithConvertedValues = this.options.convertValues && entityMeta
+        ? this.processInsertValues(node, entityMeta)
+        : node;
+      return super.transformInsertQuery(nodeWithConvertedValues, queryId);
     } finally {
       this.contextStack.pop();
     }
@@ -110,11 +121,13 @@ export class MikroTransformer extends OperationNodeTransformer {
     this.contextStack.push(currentContext);
 
     try {
+      let entityMeta: EntityMetadata | undefined;
       if (node.table && TableNodeClass.is(node.table)) {
         const tableName = this.getTableName(node.table as TableNode);
         if (tableName) {
           const meta = this.findEntityMetadata(tableName);
           if (meta) {
+            entityMeta = meta;
             currentContext.set(meta.tableName, meta);
           }
         }
@@ -127,7 +140,10 @@ export class MikroTransformer extends OperationNodeTransformer {
         }
       }
 
-      return super.transformUpdateQuery(node, queryId);
+      const nodeWithConvertedValues = this.options.convertValues && entityMeta
+        ? this.processUpdateValues(node, entityMeta)
+        : node;
+      return super.transformUpdateQuery(nodeWithConvertedValues, queryId);
     } finally {
       this.contextStack.pop();
     }
@@ -265,6 +281,187 @@ export class MikroTransformer extends OperationNodeTransformer {
     }
 
     return undefined;
+  }
+
+  protected processInsertValues(node: InsertQueryNode, meta: EntityMetadata): InsertQueryNode {
+    if (!node.columns?.length || !node.values || !ValuesNode.is(node.values)) {
+      return node;
+    }
+
+    const columnProps = this.mapColumnsToProperties(node.columns, meta);
+    let changed = false;
+
+    const convertedRows = node.values.values.map(row => {
+      if (ValueListNode.is(row)) {
+        const converted = this.convertValueListRow(row, columnProps);
+        if (converted !== row) {
+          changed = true;
+        }
+        return converted;
+      }
+
+      if (PrimitiveValueListNode.is(row)) {
+        const converted = this.convertPrimitiveValueListRow(row, columnProps);
+        if (converted !== row) {
+          changed = true;
+        }
+        return converted;
+      }
+
+      return row;
+    });
+
+    if (!changed) {
+      return node;
+    }
+
+    return {
+      ...node,
+      values: ValuesNode.create(convertedRows),
+    };
+  }
+
+  protected processUpdateValues(node: UpdateQueryNode, meta: EntityMetadata): UpdateQueryNode {
+    if (!node.updates?.length) {
+      return node;
+    }
+
+    let changed = false;
+
+    const convertedUpdates = node.updates.map(updateNode => {
+      const columnName = ColumnNode.is(updateNode.column)
+        ? this.normalizeColumnName(updateNode.column.column)
+        : undefined;
+      const property = this.findProperty(meta, columnName);
+
+      if (ValueNode.is(updateNode.value)) {
+        const convertedValue = this.convertScalarValue(property, updateNode.value.value);
+        if (convertedValue !== updateNode.value.value) {
+          changed = true;
+          const newValueNode = updateNode.value.immediate
+            ? ValueNode.createImmediate(convertedValue)
+            : ValueNode.create(convertedValue);
+          return {
+            ...updateNode,
+            value: newValueNode,
+          };
+        }
+      }
+
+      return updateNode;
+    });
+
+    if (!changed) {
+      return node;
+    }
+
+    return {
+      ...node,
+      updates: convertedUpdates,
+    };
+  }
+
+  protected mapColumnsToProperties(columns: readonly ColumnNode[], meta: EntityMetadata): (EntityProperty | undefined)[] {
+    return columns.map(column => {
+      const columnName = this.normalizeColumnName(column.column);
+      return this.findProperty(meta, columnName);
+    });
+  }
+
+  protected normalizeColumnName(identifier: IdentifierNode): string {
+    const name = identifier.name;
+    if (!name.includes('.')) {
+      return name;
+    }
+
+    const parts = name.split('.');
+    return parts[parts.length - 1] ?? name;
+  }
+
+  protected findProperty(meta: EntityMetadata | undefined, columnName?: string): EntityProperty | undefined {
+    if (!meta || !columnName) {
+      return undefined;
+    }
+
+    if (meta.properties[columnName]) {
+      return meta.properties[columnName];
+    }
+
+    return meta.props.find(prop => prop.fieldNames?.includes(columnName));
+  }
+
+  protected convertValueListRow(row: ValueListNode, columnProps: (EntityProperty | undefined)[]): ValueListNode {
+    if (row.values.length !== columnProps.length) {
+      return row;
+    }
+
+    let changed = false;
+    const convertedValues = row.values.map((valueNode, idx) => {
+      if (!ValueNode.is(valueNode)) {
+        return valueNode;
+      }
+
+      const converted = this.convertScalarValue(columnProps[idx], valueNode.value);
+      if (converted !== valueNode.value) {
+        changed = true;
+        return valueNode.immediate ? ValueNode.createImmediate(converted) : ValueNode.create(converted);
+      }
+
+      return valueNode;
+    });
+
+    if (!changed) {
+      return row;
+    }
+
+    return ValueListNode.create(convertedValues);
+  }
+
+  protected convertPrimitiveValueListRow(row: PrimitiveValueListNode, columnProps: (EntityProperty | undefined)[]): PrimitiveValueListNode {
+    if (row.values.length !== columnProps.length) {
+      return row;
+    }
+
+    let changed = false;
+    const convertedValues = row.values.map((value, idx) => {
+      const converted = this.convertScalarValue(columnProps[idx], value);
+      if (converted !== value) {
+        changed = true;
+      }
+      return converted;
+    });
+
+    if (!changed) {
+      return row;
+    }
+
+    return PrimitiveValueListNode.create(convertedValues);
+  }
+
+  protected convertScalarValue(prop: EntityProperty | undefined, value: unknown): unknown {
+    if (value == null) {
+      return value;
+    }
+
+    if (typeof value === 'object') {
+      if (isRaw(value)) {
+        return value;
+      }
+
+      if ('kind' in (value as Record<string, unknown>)) {
+        return value;
+      }
+    }
+
+    if (prop?.customType && !isRaw(value)) {
+      return prop.customType.convertToDatabaseValue(value, this.platform, { fromQuery: true, key: prop.name, mode: 'query' });
+    }
+
+    if (value instanceof Date) {
+      return this.platform.processDateProperty(value);
+    }
+
+    return value;
   }
 
   /**
