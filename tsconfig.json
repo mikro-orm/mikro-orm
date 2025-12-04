@@ -7,6 +7,7 @@
     "sourceMap": true,
     "paths": {
       "@mikro-orm/*": ["packages/*/src"],
+      "@mikro-orm/core/fs-utils": ["packages/core/src/utils/fs-utils.ts"],
       "@mikro-orm/decorators/es": ["packages/decorators/src/es/index.ts"],
       "@mikro-orm/decorators/legacy": ["packages/decorators/src/legacy/index.ts"],
       "@mikro-orm/core/file-discovery": ["packages/core/src/metadata/discover-entities.ts"]

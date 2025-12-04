@@ -5,8 +5,8 @@ export class GeneratedCacheAdapter implements CacheAdapter {
 
   private readonly data = new Map<string, { data: Dictionary }>();
 
-  constructor(private readonly options: { data: Dictionary }) {
-    this.data = new Map<string, { data: any }>(Object.entries(options.data));
+  constructor(options: { data: Dictionary }) {
+    this.data = new Map(Object.entries(options.data));
   }
 
   /**

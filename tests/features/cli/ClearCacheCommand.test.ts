@@ -1,4 +1,5 @@
-import { Configuration, FileCacheAdapter } from '@mikro-orm/core';
+import { Configuration } from '@mikro-orm/core';
+import { FileCacheAdapter } from '@mikro-orm/core/fs-utils';
 import { MySqlDriver } from '@mikro-orm/mysql';
 import { CLIHelper } from '@mikro-orm/cli';
 
@@ -13,7 +14,7 @@ describe('ClearCacheCommand', () => {
   beforeEach(() => {
     vi.spyOn(CLIHelper, 'dump').mockImplementation(i => i);
     getConfigurationMock = vi.spyOn(CLIHelper, 'getConfiguration');
-    getConfigurationMock.mockResolvedValue(new Configuration({ driver: MySqlDriver, metadataCache: { enabled: true }, getDriver: () => ({ getPlatform: vi.fn() }) } as any, false));
+    getConfigurationMock.mockResolvedValue(new Configuration({ driver: MySqlDriver, metadataCache: { enabled: true, adapter: FileCacheAdapter }, getDriver: () => ({ getPlatform: vi.fn() }) } as any, false));
     clearMock = vi.spyOn(FileCacheAdapter.prototype, 'clear');
   });
 

@@ -1,9 +1,11 @@
 import {
-  type EntityKey, type EntityMetadata,
+  type EntityKey,
+  type EntityMetadata,
   type EntityName,
   type EntityProperty,
   type OneToManyOptions,
   type OneToOneOptions,
+  type Ref,
   ReferenceKind,
 } from '@mikro-orm/core';
 import { processDecoratorParameters, validateSingleDecorator } from '../utils.js';
@@ -15,7 +17,7 @@ export function OneToOne<Target extends object, Owner extends object>(
 ) {
   const mappedBy = typeof mappedByOrOptions === 'object' ? mappedByOrOptions.mappedBy : mappedByOrOptions;
   options = typeof mappedByOrOptions === 'object' ? { ...mappedByOrOptions, ...options } : options;
-  return function (_: unknown, context: ClassFieldDecoratorContext<Owner, Target>) {
+  return function (_: unknown, context: ClassFieldDecoratorContext<Owner, Target | Ref<Target> | null | undefined>) {
     const meta = context.metadata as Partial<EntityMetadata<Owner>>;
     meta.properties ??= {} as Record<EntityKey<Owner>, EntityProperty<Owner>>;
     validateSingleDecorator(meta as any, context.name as string, ReferenceKind.ONE_TO_ONE);

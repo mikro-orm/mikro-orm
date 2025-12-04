@@ -1,1 +1,1 @@
-export { UmzugMigration, MigrateOptions, MigrationResult, MigrationRow } from '@mikro-orm/core';
+export type { UmzugMigration, MigrateOptions, MigrationResult, MigrationRow } from '@mikro-orm/core';

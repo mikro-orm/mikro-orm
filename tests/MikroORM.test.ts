@@ -1,6 +1,6 @@
 process.env.FORCE_COLOR = '0';
 
-import { MikroORM, NullCacheAdapter, Utils } from '@mikro-orm/core';
+import { MikroORM, NullCacheAdapter } from '@mikro-orm/core';
 import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { BASE_DIR } from './helpers.js';
 import { Author, Test } from './entities/index.js';
@@ -9,7 +9,10 @@ import { BaseEntity2 } from './entities-sql/BaseEntity2.js';
 import { MsSqlDriver } from '@mikro-orm/mssql';
 import { MySqlDriver } from '@mikro-orm/mysql';
 import { SqliteDriver } from '@mikro-orm/sqlite';
-import { MongoDriver } from '@mikro-orm/mongodb';
+import { MongoDriver, MikroORM as MongoMikroORM } from '@mikro-orm/mongodb';
+import { SeedManager } from '@mikro-orm/seeder';
+import { Migrator } from '@mikro-orm/migrations-mongodb';
+import { fs } from '@mikro-orm/core/fs-utils';
 
 describe('MikroORM', () => {
 
@@ -26,17 +29,20 @@ describe('MikroORM', () => {
   });
 
   test('source folder detection', async () => {
-    const pathExistsMock = vi.spyOn(Utils, 'pathExists');
+    const pathExistsMock = vi.spyOn(fs, 'pathExists');
 
     pathExistsMock.mockImplementation(path => !!path.match(/src$/));
-    const orm1 = await MikroORM.init({
+    const orm1 = await MongoMikroORM.init({
       metadataProvider: ReflectMetadataProvider,
-      driver: MongoDriver,
       dbName: 'test',
       baseDir: import.meta.dirname + '/../packages/core',
       entities: [import.meta.dirname + '/entities'],
       clientUrl: 'test',
+      // mongo migrator won't be registered automatically, since the sql one is available too and it takes precedence
+      extensions: [Migrator],
     });
+    expect(orm1.migrator).toBeInstanceOf(Migrator);
+    expect(orm1.seeder).toBeInstanceOf(SeedManager);
     expect(orm1.config.get('migrations')).toMatchObject({
       path: './src/migrations',
       pathTs: './src/migrations',
@@ -54,7 +60,10 @@ describe('MikroORM', () => {
       baseDir: import.meta.dirname + '/../packages/core',
       entities: [import.meta.dirname + '/entities'],
       clientUrl: 'test',
+      extensions: [SeedManager, Migrator],
     });
+    expect(orm2.migrator).toBeInstanceOf(Migrator);
+    expect(orm2.seeder).toBeInstanceOf(SeedManager);
     expect(orm2.config.get('migrations')).toMatchObject({
       path: './dist/migrations',
       pathTs: './src/migrations',
@@ -72,7 +81,10 @@ describe('MikroORM', () => {
       baseDir: import.meta.dirname + '/../packages/core',
       entities: [import.meta.dirname + '/entities'],
       clientUrl: 'test',
+      extensions: [SeedManager, Migrator],
     });
+    expect(orm3.migrator).toBeInstanceOf(Migrator);
+    expect(orm3.seeder).toBeInstanceOf(SeedManager);
     expect(orm3.config.get('migrations')).toMatchObject({
       path: './build/migrations',
       pathTs: './src/migrations',

@@ -8,6 +8,7 @@ import {
   type IDatabaseDriver,
   type EntityManager,
   type EntityManagerType,
+  type IMigrator,
 } from '@mikro-orm/core';
 import { MongoDriver } from './MongoDriver.js';
 import type { MongoEntityManager } from './MongoEntityManager.js';
@@ -48,6 +49,13 @@ export class MongoMikroORM<
    */
   constructor(options: Options<MongoDriver, EM, Entities>) {
     super(defineMongoConfig(options));
+  }
+
+  /**
+   * Gets the Migrator.
+   */
+  override get migrator(): IMigrator {
+    return this.driver.getPlatform().getExtension('Migrator', '@mikro-orm/migrator', '@mikro-orm/migrations-mongodb', this.em);
   }
 
 }

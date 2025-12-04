@@ -1,4 +1,4 @@
-(global as any).process.env.FORCE_COLOR = 0;
+process.env.FORCE_COLOR = '0';
 import { rm } from 'node:fs/promises';
 import { Umzug } from 'umzug';
 import { DatabaseSchema, DatabaseTable, MetadataStorage, MikroORM, raw } from '@mikro-orm/postgresql';

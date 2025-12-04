@@ -1,5 +1,6 @@
 import { pathToFileURL } from 'node:url';
 import { compareObjects, EntityMetadata, MikroORM, ObjectId, sql, Utils } from '@mikro-orm/mongodb';
+import { fs } from '@mikro-orm/core/fs-utils';
 
 import { lookupPathFromDecorator } from '../packages/decorators/src/utils.js';
 import { Author } from './entities/index.js';
@@ -256,9 +257,9 @@ describe('Utils', () => {
   });
 
   test('pathExists wrapper', async () => {
-    expect(Utils.pathExists('LIC*')).toBe(true);
-    expect(Utils.pathExists('tests')).toBe(true);
-    expect(Utils.pathExists('tests/**/*.ts')).toBe(true);
+    expect(fs.pathExists('LIC*')).toBe(true);
+    expect(fs.pathExists('tests')).toBe(true);
+    expect(fs.pathExists('tests/**/*.ts')).toBe(true);
   });
 
   test('isPlainObject', async () => {
@@ -588,20 +589,6 @@ describe('Utils', () => {
     spy.mockImplementation(() => 'C:/www/my-project/src/entities/Customer.ts');
     expect(lookupPathFromDecorator('Customer', stack1)).toBe('C:/www/my-project/src/entities/Customer.ts');
     spy.mockRestore();
-  });
-
-  test('tryRequire', () => {
-    const warnSpy = vi.spyOn(console, 'warn');
-    warnSpy.mockImplementationOnce(i => i);
-    const ret = Utils.tryRequire({ module: 'not-existing-dep', warning: 'not found' });
-    expect(ret).toBeUndefined();
-    expect(warnSpy).toHaveBeenCalledWith('not found');
-
-    const requireFromSpy = vi.spyOn(Utils, 'requireFrom');
-    requireFromSpy.mockImplementationOnce(() => { throw new Error('some other issue'); });
-    expect(() => {
-      return Utils.tryRequire({ module: 'not-existing-dep', warning: 'not found', allowError: 'Cannot find module' });
-    }).toThrow('some other issue');
   });
 
   test('tryImport', async () => {

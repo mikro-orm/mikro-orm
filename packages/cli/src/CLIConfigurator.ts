@@ -1,4 +1,5 @@
-import { ConfigurationLoader, Utils } from '@mikro-orm/core';
+import { Utils } from '@mikro-orm/core';
+import { fs } from '@mikro-orm/core/fs-utils';
 import yargs, { type CommandModule } from 'yargs';
 import { ClearCacheCommand } from './commands/ClearCacheCommand.js';
 import { CreateDatabaseCommand } from './commands/CreateDatabaseCommand.js';
@@ -48,8 +49,8 @@ function createBasicConfig() {
 }
 
 export async function configure() {
-  ConfigurationLoader.checkPackageVersion();
-  const settings = CLIHelper.getSettings();
+  await fs.checkPackageVersion();
+  const settings = await CLIHelper.getSettings();
   const version = Utils.getORMVersion();
 
   if (settings.preferTs !== false) {

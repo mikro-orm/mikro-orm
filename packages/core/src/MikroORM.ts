@@ -3,15 +3,73 @@ import { type EntitySchema } from './metadata/EntitySchema.js';
 import { MetadataDiscovery } from './metadata/MetadataDiscovery.js';
 import { MetadataStorage } from './metadata/MetadataStorage.js';
 import { Configuration, type Options } from './utils/Configuration.js';
-import { ConfigurationLoader } from './utils/ConfigurationLoader.js';
+import { loadEnvironmentVars } from './utils/env-vars.js';
 import { Utils } from './utils/Utils.js';
 import { type Logger } from './logging/Logger.js';
 import { colors } from './logging/colors.js';
 import type { EntityManager } from './EntityManager.js';
 import type { AnyEntity, Constructor, EntityClass, EntityMetadata, EntityName, IEntityGenerator, IMigrator, ISeedManager } from './typings.js';
 
+const knownExtensions = [
+  ['SeedManager', '@mikro-orm/seeder'],
+  ['Migrator', '@mikro-orm/migrations'],
+  ['Migrator', '@mikro-orm/migrations-mongodb'],
+  ['EntityGenerator', '@mikro-orm/entity-generator'],
+];
+
+/** @internal */
+export async function lookupExtensions(options: Options): Promise<void> {
+  const extensions = [...options.extensions ?? []];
+
+  for (const extension of knownExtensions) {
+    if (extensions.some(ext => (ext as any).name === extension[0])) {
+      continue;
+    }
+
+    const module = await Utils.tryImport({ module: extension[1] });
+
+    if (module?.[extension[0]]) {
+      extensions.push(module[extension[0]]);
+    }
+  }
+
+  options.extensions = extensions;
+
+  const metadataCacheEnabled = options.metadataCache?.enabled || options.metadataProvider?.useCache?.();
+
+  if (metadataCacheEnabled && !options.metadataCache?.adapter) {
+    options.metadataCache ??= {};
+    options.metadataCache.adapter = await import('@mikro-orm/core/fs-utils').then(mod => mod.FileCacheAdapter);
+  }
+}
+
 /**
- * Helper class for bootstrapping the MikroORM.
+ * The main class used to configure and bootstrap the ORM.
+ *
+ * @example
+ * ```ts
+ * // import from driver package
+ * import { MikroORM, defineEntity, p } from '@mikro-orm/sqlite';
+ *
+ * const User = defineEntity({
+ *   name: 'User',
+ *   properties: {
+ *     id: p.integer().primary(),
+ *     name: p.string(),
+ *   },
+ * });
+ *
+ * const orm = new MikroORM({
+ *   entities: [User],
+ *   dbName: 'my.db',
+ * });
+ * await orm.schema.update();
+ *
+ * const em = orm.em.fork();
+ * const u1 = em.create(User, { name: 'John' });
+ * const u2 = em.create(User, { name: 'Ben' });
+ * await em.flush();
+ * ```
  */
 export class MikroORM<
   Driver extends IDatabaseDriver = IDatabaseDriver,
@@ -41,8 +99,10 @@ export class MikroORM<
       throw new Error(`options parameter is required`);
     }
 
+    options = { ...options };
     options.discovery ??= {};
     options.discovery.skipSyncDiscovery ??= true;
+    await lookupExtensions(options);
     const orm = new this<D, EM, Entities>(options);
     const preferTs = orm.config.get('preferTs', Utils.detectTypeScriptSupport());
     orm.metadata = await orm.discovery.discover(preferTs);
@@ -58,14 +118,13 @@ export class MikroORM<
    * - no support for folder based discovery
    */
   constructor(options: Options<Driver, EM, Entities>) {
-    const env = ConfigurationLoader.loadEnvironmentVars<Driver>();
-    const coreVersion = ConfigurationLoader.checkPackageVersion();
+    const env = loadEnvironmentVars<Driver>();
     options = Utils.merge(options, env);
     this.config = new Configuration(options);
     const discovery = this.config.get('discovery');
     this.driver = this.config.getDriver();
     this.logger = this.config.getLogger();
-    this.logger.log('info', `MikroORM version: ${colors.green(coreVersion)}`);
+    this.logger.log('info', `MikroORM version: ${colors.green(Utils.getORMVersion())}`);
     this.discovery = new MetadataDiscovery(new MetadataStorage(), this.driver.getPlatform(), this.config);
     this.driver.getPlatform().init(this);
 
@@ -107,7 +166,7 @@ export class MikroORM<
   }
 
   /**
-   * Checks whether the database connection is active, returns .
+   * Checks whether the database connection is active, returns the reason if not.
    */
   async checkConnection(): Promise<{ ok: true } | { ok: false; reason: string; error?: Error }> {
     return this.driver.getConnection().checkConnection();
@@ -118,15 +177,8 @@ export class MikroORM<
    */
   async close(force = false): Promise<void> {
     await this.driver.close(force);
-
-    if (this.config.getMetadataCacheAdapter()?.close) {
-      await this.config.getMetadataCacheAdapter().close!();
-    }
-
-    if (this.config.getResultCacheAdapter()?.close) {
-      await this.config.getResultCacheAdapter().close!();
-    }
-
+    await this.config.getMetadataCacheAdapter().close?.();
+    await this.config.getResultCacheAdapter().close?.();
   }
 
   /**

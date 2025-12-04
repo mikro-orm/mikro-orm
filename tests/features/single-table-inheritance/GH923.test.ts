@@ -1,9 +1,8 @@
-import { MikroORM } from '@mikro-orm/core';
 import { Entity, Enum, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
-import { SqliteDriver } from '@mikro-orm/sqlite';
+import { MikroORM } from '@mikro-orm/sqlite';
 
 @Entity({ discriminatorColumn: 'type', abstract: true })
-export abstract class Person {
+abstract class Person {
 
   @PrimaryKey()
   id!: string;
@@ -14,7 +13,7 @@ export abstract class Person {
 }
 
 @Entity({ discriminatorValue: 'chef' })
-export class Chef extends Person {
+class Chef extends Person {
 
   @Property()
   kitchen?: string;
@@ -22,7 +21,7 @@ export class Chef extends Person {
 }
 
 @Entity({ discriminatorValue: 'gardener' })
-export class Gardener extends Person {
+class Gardener extends Person {
 
   @Property()
   plant?: string;
@@ -30,7 +29,7 @@ export class Gardener extends Person {
 }
 
 @Entity({ discriminatorValue: 'teacher' })
-export class Teacher extends Person {
+class Teacher extends Person {
 
   @Property()
   subject?: string;
@@ -43,7 +42,6 @@ describe('GH issue 923', () => {
     const orm = await MikroORM.init({
       metadataProvider: ReflectMetadataProvider,
       entities: [Person, Chef, Teacher, Gardener],
-      driver: SqliteDriver,
       dbName: ':memory:',
     });
     const meta = orm.getMetadata().get('Person');
@@ -54,7 +52,6 @@ describe('GH issue 923', () => {
     const orm = await MikroORM.init({
       metadataProvider: ReflectMetadataProvider,
       entities: [Chef, Teacher, Gardener, Person],
-      driver: SqliteDriver,
       dbName: ':memory:',
     });
     const meta = orm.getMetadata().get('Person');
@@ -65,7 +62,6 @@ describe('GH issue 923', () => {
     const orm = await MikroORM.init({
       metadataProvider: ReflectMetadataProvider,
       entities: [Chef, Teacher, Person, Gardener],
-      driver: SqliteDriver,
       dbName: ':memory:',
     });
     const meta = orm.getMetadata().get('Person');
@@ -76,7 +72,6 @@ describe('GH issue 923', () => {
     const orm = await MikroORM.init({
       metadataProvider: ReflectMetadataProvider,
       entities: [Chef, Person, Teacher, Gardener],
-      driver: SqliteDriver,
       dbName: ':memory:',
     });
     const meta = orm.getMetadata().get('Person');

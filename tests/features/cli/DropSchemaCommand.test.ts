@@ -1,6 +1,6 @@
 import { beforeEach } from 'vitest';
 
-(global as any).process.env.FORCE_COLOR = 0;
+process.env.FORCE_COLOR = '0';
 
 import { MikroORM } from '@mikro-orm/core';
 import { SchemaGenerator, SqliteDriver } from '@mikro-orm/sqlite';

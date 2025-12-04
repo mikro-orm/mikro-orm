@@ -5,8 +5,9 @@ import { MetadataStorage } from '@mikro-orm/core';
 
 process.env.MIKRO_ORM_ALLOW_GLOBAL_CONTEXT = '1';
 process.env.MIKRO_ORM_ALLOW_GLOBAL_CLI = '1';
-process.env.MIKRO_ORM_ALLOW_VERSION_MISMATCH = '1';
+// process.env.MIKRO_ORM_ALLOW_VERSION_MISMATCH = '1';
 process.env.MIKRO_ORM_CLI_TS_CONFIG_PATH = './tests/tsconfig.dummy.json';
+process.env.MIKRO_ORM_VERSION = await import('../packages/core/package.json').then(i => i.version);
 
 vi.resetModules();
 vi.restoreAllMocks();
