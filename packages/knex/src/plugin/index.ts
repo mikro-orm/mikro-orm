@@ -4,11 +4,7 @@ import {
   type PluginTransformResultArgs,
   type QueryResult,
   type RootOperationNode,
-  type SelectQueryNode,
   type UnknownRow,
-  type InsertQueryNode,
-  type UpdateQueryNode,
-  type DeleteQueryNode,
   SelectQueryNode as SelectQueryNodeClass,
   InsertQueryNode as InsertQueryNodeClass,
   UpdateQueryNode as UpdateQueryNodeClass,
@@ -16,16 +12,15 @@ import {
 } from 'kysely';
 import  { MikroTransformer } from './transformer.js';
 import type { SqlEntityManager } from '../SqlEntityManager.js';
+import type { EntityMetadata } from '@mikro-orm/core';
 
 /**
  * Cache for query transformation data
  * Stores the query node and metadata about tables/aliases
  */
 interface QueryTransformCache {
-  node: SelectQueryNode | InsertQueryNode | UpdateQueryNode | DeleteQueryNode;
+  entityMap: Map<string, EntityMetadata>;
 }
-
-const queryNodeCache = new WeakMap<any, QueryTransformCache>();
 
 export interface MikroPluginOptions {
   /**
@@ -63,6 +58,8 @@ export interface MikroPluginOptions {
 
 export class MikroPlugin implements KyselyPlugin {
 
+  protected static queryNodeCache = new WeakMap<any, QueryTransformCache>();
+
   protected readonly transformer: MikroTransformer;
 
   constructor(
@@ -73,16 +70,21 @@ export class MikroPlugin implements KyselyPlugin {
   }
 
   transformQuery(args: PluginTransformQueryArgs): RootOperationNode {
-    // Cache the query node if it is one we can process (for use in transformResult)
+    this.transformer.reset();
+
+    const result = this.transformer.transformNode(args.node, args.queryId);
+
+    // Cache the entity map if it is one we can process (for use in transformResult)
     if (
       SelectQueryNodeClass.is(args.node) ||
       InsertQueryNodeClass.is(args.node) ||
       UpdateQueryNodeClass.is(args.node) ||
       DeleteQueryNodeClass.is(args.node)
     ) {
-      queryNodeCache.set(args.queryId, { node: args.node as SelectQueryNode | InsertQueryNode | UpdateQueryNode | DeleteQueryNode });
+      MikroPlugin.queryNodeCache.set(args.queryId, { entityMap: this.transformer.getOutputEntityMap() });
     }
-    return this.transformer.transformNode(args.node, args.queryId);
+
+    return result;
   }
 
   async transformResult(args: PluginTransformResultArgs): Promise<QueryResult<UnknownRow>> {
@@ -92,7 +94,7 @@ export class MikroPlugin implements KyselyPlugin {
     }
 
     // Retrieve the cached query node and metadata
-    const cache = queryNodeCache.get(args.queryId);
+    const cache = MikroPlugin.queryNodeCache.get(args.queryId);
     if (!cache) {
       return args.result;
     }
@@ -100,7 +102,7 @@ export class MikroPlugin implements KyselyPlugin {
     // Transform the result rows using the transformer
     const transformedRows = this.transformer.transformResult(
       (args.result.rows as any) ?? [],
-      cache.node,
+      cache.entityMap,
     );
 
     return {

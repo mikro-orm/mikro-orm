@@ -1,4 +1,11 @@
-import { type EntityMetadata, type EntityProperty, type MetadataStorage, ReferenceKind, isRaw } from '@mikro-orm/core';
+import {
+  type Dictionary,
+  type EntityMetadata,
+  type EntityProperty,
+  type MetadataStorage,
+  ReferenceKind,
+  isRaw,
+} from '@mikro-orm/core';
 import {
   type CommonTableExpressionNameNode,
   type DeleteQueryNode,
@@ -44,6 +51,12 @@ export class MikroTransformer extends OperationNodeTransformer {
   protected readonly metadata: MetadataStorage;
   protected readonly platform: AbstractSqlPlatform;
 
+  /**
+   * Global map of all entities involved in the query.
+   * Populated during AST transformation and used for result transformation.
+   */
+  protected readonly entityMap = new Map<string, EntityMetadata>();
+
   constructor(
     protected readonly em: SqlEntityManager,
     protected readonly options: MikroPluginOptions = {},
@@ -51,6 +64,15 @@ export class MikroTransformer extends OperationNodeTransformer {
     super();
     this.metadata = em.getMetadata();
     this.platform = em.getDriver().getPlatform();
+  }
+
+  reset(): void {
+    this.subqueryAliasMap.clear();
+    this.entityMap.clear();
+  }
+
+  getOutputEntityMap(): Map<string, EntityMetadata> {
+    return this.entityMap;
   }
 
   protected override transformSelectQuery(
@@ -104,6 +126,7 @@ export class MikroTransformer extends OperationNodeTransformer {
           if (meta) {
             entityMeta = meta;
             currentContext.set(meta.tableName, meta);
+            this.entityMap.set(meta.tableName, meta);
           }
         }
       }
@@ -113,7 +136,44 @@ export class MikroTransformer extends OperationNodeTransformer {
       const nodeWithConvertedValues = this.options.convertValues && entityMeta
         ? this.processInsertValues(nodeWithHooks, entityMeta)
         : nodeWithHooks;
-      return super.transformInsertQuery(nodeWithConvertedValues, queryId);
+      // Handle ON CONFLICT clause
+      let finalNode = nodeWithConvertedValues;
+
+      if (node.onConflict?.updates && entityMeta) {
+        // Create a temporary UpdateQueryNode to reuse processOnUpdateHooks and processUpdateValues
+        // We only care about the updates part
+        const tempUpdateNode: UpdateQueryNode = {
+          kind: 'UpdateQueryNode',
+          table: node.into, // Dummy table
+          updates: node.onConflict.updates,
+        };
+
+        const updatesWithHooks = this.options.processOnUpdateHooks
+          ? this.processOnUpdateHooks(tempUpdateNode, entityMeta).updates
+          : node.onConflict.updates;
+
+        const tempUpdateNodeWithHooks: UpdateQueryNode = {
+           ...tempUpdateNode,
+           updates: updatesWithHooks,
+        };
+
+        const updatesWithConvertedValues = this.options.convertValues
+          ? this.processUpdateValues(tempUpdateNodeWithHooks, entityMeta).updates
+          : updatesWithHooks;
+
+        if (updatesWithConvertedValues && updatesWithConvertedValues !== node.onConflict.updates) {
+           // Construct the new OnConflictNode with updated values
+           finalNode = {
+            ...finalNode,
+            onConflict: {
+              ...node.onConflict,
+              updates: updatesWithConvertedValues,
+            },
+          };
+        }
+      }
+
+      return super.transformInsertQuery(finalNode, queryId);
     } finally {
       this.contextStack.pop();
     }
@@ -135,6 +195,7 @@ export class MikroTransformer extends OperationNodeTransformer {
           if (meta) {
             entityMeta = meta;
             currentContext.set(meta.tableName, meta);
+            this.entityMap.set(meta.tableName, meta);
           }
         }
       }
@@ -175,6 +236,7 @@ export class MikroTransformer extends OperationNodeTransformer {
             const meta = this.findEntityMetadata(tableName);
             if (meta) {
               currentContext.set(meta.tableName, meta);
+              this.entityMap.set(meta.tableName, meta);
             }
           }
         }
@@ -232,7 +294,7 @@ export class MikroTransformer extends OperationNodeTransformer {
 
       if (ownerMeta) {
         const prop = ownerMeta.properties[node.name];
-        const fieldName = (prop as any)?.fieldName || prop?.fieldNames?.[0];
+        const fieldName = prop?.fieldNames?.[0];
         if (fieldName) {
           return {
             ...node,
@@ -318,7 +380,7 @@ export class MikroTransformer extends OperationNodeTransformer {
 
     const newRows = node.values.values.map(row => {
       const valuesToAdd = missingProps.map(prop => {
-        const val = prop.onCreate!(undefined as any, this.em);
+        const val = prop.onCreate!(undefined, this.em);
         return val;
       });
 
@@ -365,7 +427,7 @@ export class MikroTransformer extends OperationNodeTransformer {
 
     const newUpdates = [...node.updates];
     for (const prop of missingProps) {
-      const val = prop.onUpdate!(undefined as any, this.em);
+      const val = prop.onUpdate!(undefined, this.em);
       newUpdates.push(ColumnUpdateNode.create(
         ColumnNode.create(prop.name),
         ValueNode.create(val),
@@ -384,23 +446,47 @@ export class MikroTransformer extends OperationNodeTransformer {
     }
 
     const columnProps = this.mapColumnsToProperties(node.columns, meta);
+    const shouldConvert = this.shouldConvertValues();
     let changed = false;
 
     const convertedRows = node.values.values.map(row => {
       if (ValueListNode.is(row)) {
-        const converted = this.convertValueListRow(row, columnProps);
-        if (converted !== row) {
-          changed = true;
+        if (row.values.length !== columnProps.length) {
+          return row;
         }
-        return converted;
+
+        const values = row.values.map((valueNode, idx) => {
+          if (!ValueNode.is(valueNode)) {
+            return valueNode;
+          }
+
+          const converted = this.prepareInputValue(columnProps[idx], valueNode.value, shouldConvert);
+          if (converted === valueNode.value) {
+            return valueNode;
+          }
+
+          changed = true;
+          return valueNode.immediate ? ValueNode.createImmediate(converted) : ValueNode.create(converted);
+        });
+
+        return ValueListNode.create(values);
       }
 
       if (PrimitiveValueListNode.is(row)) {
-        const converted = this.convertPrimitiveValueListRow(row, columnProps);
-        if (converted !== row) {
-          changed = true;
+        if (row.values.length !== columnProps.length) {
+          return row;
         }
-        return converted;
+
+        const values = row.values.map((value, idx) => {
+          const converted = this.prepareInputValue(columnProps[idx], value, shouldConvert);
+          if (converted !== value) {
+            changed = true;
+          }
+
+          return converted;
+        });
+
+        return PrimitiveValueListNode.create(values);
       }
 
       return row;
@@ -421,29 +507,33 @@ export class MikroTransformer extends OperationNodeTransformer {
       return node;
     }
 
+    const shouldConvert = this.shouldConvertValues();
     let changed = false;
 
-    const convertedUpdates = node.updates.map(updateNode => {
+    const updates = node.updates.map(updateNode => {
+      if (!ValueNode.is(updateNode.value)) {
+        return updateNode;
+      }
+
       const columnName = ColumnNode.is(updateNode.column)
         ? this.normalizeColumnName(updateNode.column.column)
         : undefined;
       const property = this.findProperty(meta, columnName);
+      const converted = this.prepareInputValue(property, updateNode.value.value, shouldConvert);
 
-      if (ValueNode.is(updateNode.value)) {
-        const convertedValue = this.convertScalarValue(property, updateNode.value.value);
-        if (convertedValue !== updateNode.value.value) {
-          changed = true;
-          const newValueNode = updateNode.value.immediate
-            ? ValueNode.createImmediate(convertedValue)
-            : ValueNode.create(convertedValue);
-          return {
-            ...updateNode,
-            value: newValueNode,
-          };
-        }
+      if (converted === updateNode.value.value) {
+        return updateNode;
       }
 
-      return updateNode;
+      changed = true;
+      const newValueNode = updateNode.value.immediate
+        ? ValueNode.createImmediate(converted)
+        : ValueNode.create(converted);
+
+      return {
+        ...updateNode,
+        value: newValueNode,
+      };
     });
 
     if (!changed) {
@@ -452,7 +542,7 @@ export class MikroTransformer extends OperationNodeTransformer {
 
     return {
       ...node,
-      updates: convertedUpdates,
+      updates,
     };
   }
 
@@ -485,71 +575,27 @@ export class MikroTransformer extends OperationNodeTransformer {
     return meta.props.find(prop => prop.fieldNames?.includes(columnName));
   }
 
-  protected convertValueListRow(row: ValueListNode, columnProps: (EntityProperty | undefined)[]): ValueListNode {
-    if (row.values.length !== columnProps.length) {
-      return row;
-    }
-
-    let changed = false;
-    const convertedValues = row.values.map((valueNode, idx) => {
-      if (!ValueNode.is(valueNode)) {
-        return valueNode;
-      }
-
-      const converted = this.convertScalarValue(columnProps[idx], valueNode.value);
-      if (converted !== valueNode.value) {
-        changed = true;
-        return valueNode.immediate ? ValueNode.createImmediate(converted) : ValueNode.create(converted);
-      }
-
-      return valueNode;
-    });
-
-    if (!changed) {
-      return row;
-    }
-
-    return ValueListNode.create(convertedValues);
+  protected shouldConvertValues(): boolean {
+    return !!this.options.convertValues;
   }
 
-  protected convertPrimitiveValueListRow(row: PrimitiveValueListNode, columnProps: (EntityProperty | undefined)[]): PrimitiveValueListNode {
-    if (row.values.length !== columnProps.length) {
-      return row;
-    }
-
-    let changed = false;
-    const convertedValues = row.values.map((value, idx) => {
-      const converted = this.convertScalarValue(columnProps[idx], value);
-      if (converted !== value) {
-        changed = true;
-      }
-      return converted;
-    });
-
-    if (!changed) {
-      return row;
-    }
-
-    return PrimitiveValueListNode.create(convertedValues);
-  }
-
-  protected convertScalarValue(prop: EntityProperty | undefined, value: unknown): unknown {
-    if (value == null) {
+  protected prepareInputValue(prop: EntityProperty | undefined, value: unknown, enabled: boolean): unknown {
+    if (!enabled || !prop || value == null) {
       return value;
     }
 
-    if (typeof value === 'object') {
+    if (typeof value === 'object' && value !== null) {
       if (isRaw(value)) {
         return value;
       }
 
-      if ('kind' in (value as Record<string, unknown>)) {
+      if ('kind' in (value as Dictionary)) {
         return value;
       }
     }
 
-    if (prop?.customType && !isRaw(value)) {
-      return prop.customType.convertToDatabaseValue(value, this.platform, { fromQuery: true, key: prop.name, mode: 'query' });
+    if (prop.customType && !isRaw(value)) {
+      return prop.customType.convertToDatabaseValue(value, this.platform, { fromQuery: true, key: prop.name, mode: 'query-data' });
     }
 
     if (value instanceof Date) {
@@ -595,6 +641,9 @@ export class MikroTransformer extends OperationNodeTransformer {
           const sourceMeta = this.extractSourceTableFromSelectQuery(cte.expression as SelectQueryNode);
           if (sourceMeta) {
             this.subqueryAliasMap.set(cteName, sourceMeta);
+            // Add CTE to entityMap so it can be used for result transformation if needed
+            // (though CTEs usually don't appear in result rows directly, but their columns might)
+            this.entityMap.set(cteName, sourceMeta);
           }
         }
       }
@@ -629,6 +678,9 @@ export class MikroTransformer extends OperationNodeTransformer {
           const aliasName = this.extractAliasName(from.alias);
           if (aliasName) {
             context.set(aliasName, meta);
+            if (meta) {
+              this.entityMap.set(aliasName, meta);
+            }
             // Also map the alias in subqueryAliasMap if the table name is a CTE
             if (this.subqueryAliasMap.has(tableName)) {
               this.subqueryAliasMap.set(aliasName, this.subqueryAliasMap.get(tableName));
@@ -659,6 +711,9 @@ export class MikroTransformer extends OperationNodeTransformer {
       if (tableName) {
         const meta = this.findEntityMetadata(tableName);
         context.set(tableName, meta);
+        if (meta) {
+          this.entityMap.set(tableName, meta);
+        }
       }
     }
   }
@@ -681,6 +736,9 @@ export class MikroTransformer extends OperationNodeTransformer {
           const aliasName = this.extractAliasName(joinTable.alias);
           if (aliasName) {
             context.set(aliasName, meta);
+            if (meta) {
+              this.entityMap.set(aliasName, meta);
+            }
             // Also map the alias in subqueryAliasMap if the table name is a CTE
             if (this.subqueryAliasMap.has(tableName)) {
               this.subqueryAliasMap.set(aliasName, this.subqueryAliasMap.get(tableName));
@@ -711,6 +769,9 @@ export class MikroTransformer extends OperationNodeTransformer {
       if (tableName) {
         const meta = this.findEntityMetadata(tableName);
         context.set(tableName, meta);
+        if (meta) {
+          this.entityMap.set(tableName, meta);
+        }
       }
     }
   }
@@ -840,113 +901,17 @@ export class MikroTransformer extends OperationNodeTransformer {
   }
 
   /**
-   * Build a map of all entities involved in the query (from FROM, JOINs, WITHs)
-   */
-  protected buildEntityMapFromQuery(node: SelectQueryNode | InsertQueryNode | UpdateQueryNode | DeleteQueryNode): Map<string, EntityMetadata> {
-    const entityMap = new Map<string, EntityMetadata>();
-
-    // 1. Process WITH (CTEs)
-    // We need to resolve CTEs to their source entities to map their columns
-    if (node.with) {
-      for (const cte of node.with.expressions) {
-        const cteName = this.getCTEName(cte.name);
-        if (cteName && cte.expression?.kind === 'SelectQueryNode') {
-          const meta = this.extractPrimaryTableFromQuery(cte.expression as SelectQueryNode);
-          if (meta) {
-            entityMap.set(cteName, meta);
-          }
-        }
-      }
-    }
-
-    // Helper to process a table node (TableNode or AliasNode)
-    const processNode = (n: any) => {
-      let tableName: string | undefined;
-      let alias: string | undefined;
-      let meta: EntityMetadata | undefined;
-
-      if (AliasNode.is(n)) {
-        alias = this.extractAliasName(n.alias);
-        if (TableNode.is(n.node)) {
-          tableName = this.getTableName(n.node);
-        } else if (n.node?.kind === 'SelectQueryNode') {
-           // Subquery with alias
-           // Try to extract metadata from subquery
-           meta = this.extractPrimaryTableFromQuery(n.node as SelectQueryNode);
-        }
-      } else if (TableNode.is(n)) {
-        tableName = this.getTableName(n);
-      }
-
-      if (tableName) {
-        // Check if table name refers to a CTE
-        if (entityMap.has(tableName)) {
-          meta = entityMap.get(tableName);
-        } else {
-          meta = this.findEntityMetadata(tableName);
-        }
-      }
-
-      if (meta) {
-        if (alias) {
-          entityMap.set(alias, meta);
-        }
-        if (tableName) {
-          entityMap.set(tableName, meta);
-        }
-      }
-    };
-
-    // 2. Process main table(s)
-    if (this.isSelectQueryNode(node) && node.from?.froms) {
-      node.from.froms.forEach(processNode);
-    } else if (this.isInsertQueryNode(node) && node.into) {
-      processNode(node.into);
-    } else if (this.isUpdateQueryNode(node) && node.table) {
-      processNode(node.table);
-    } else if (this.isDeleteQueryNode(node) && node.from?.froms) {
-      node.from.froms.forEach(processNode);
-    }
-
-    // 3. Process JOINs
-    if ((this.isSelectQueryNode(node) || this.isUpdateQueryNode(node) || this.isDeleteQueryNode(node)) && node.joins) {
-      node.joins.forEach(join => processNode(join.table));
-    }
-
-    return entityMap;
-  }
-
-  protected isSelectQueryNode(node: any): node is SelectQueryNode {
-    return node.kind === 'SelectQueryNode';
-  }
-
-  protected isInsertQueryNode(node: any): node is InsertQueryNode {
-    return node.kind === 'InsertQueryNode';
-  }
-
-  protected isUpdateQueryNode(node: any): node is UpdateQueryNode {
-    return node.kind === 'UpdateQueryNode';
-  }
-
-  protected isDeleteQueryNode(node: any): node is DeleteQueryNode {
-    return node.kind === 'DeleteQueryNode';
-  }
-
-  /**
    * Transform result rows by mapping database column names to property names
    * This is called for SELECT queries when columnNamingStrategy is 'property'
    */
   transformResult(
     rows: Record<string, any>[] | undefined,
-    node: SelectQueryNode | InsertQueryNode | UpdateQueryNode | DeleteQueryNode | undefined,
+    entityMap: Map<string, EntityMetadata>,
   ): Record<string, any>[] | undefined {
     // Only transform if columnNamingStrategy is 'property' or convertValues is true, and we have data
-    if ((this.options.columnNamingStrategy !== 'property' && !this.options.convertValues) || !rows || rows.length === 0 || !node) {
+    if ((this.options.columnNamingStrategy !== 'property' && !this.options.convertValues) || !rows || rows.length === 0) {
       return rows;
     }
-
-    // Build a global map of all involved entities
-    const entityMap = this.buildEntityMapFromQuery(node);
 
     // If no entities found (e.g. raw query without known tables), return rows as is
     if (entityMap.size === 0) {
@@ -963,16 +928,16 @@ export class MikroTransformer extends OperationNodeTransformer {
 
   protected buildGlobalFieldMap(entityMap: Map<string, EntityMetadata>): Record<string, EntityProperty> {
     const map: Record<string, EntityProperty> = {};
-    for (const meta of entityMap.values()) {
-      Object.assign(map, this.buildFieldToPropertyMap(meta));
+    for (const [alias, meta] of entityMap.entries()) {
+      Object.assign(map, this.buildFieldToPropertyMap(meta, alias));
     }
     return map;
   }
 
   protected buildGlobalRelationFieldMap(entityMap: Map<string, EntityMetadata>): Record<string, string> {
     const map: Record<string, string> = {};
-    for (const meta of entityMap.values()) {
-      Object.assign(map, this.buildRelationFieldMap(meta));
+    for (const [alias, meta] of entityMap.entries()) {
+      Object.assign(map, this.buildRelationFieldMap(meta, alias));
     }
     return map;
   }
@@ -981,13 +946,37 @@ export class MikroTransformer extends OperationNodeTransformer {
    * Build a mapping from database field names to property objects
    * Format: { 'field_name': EntityProperty }
    */
-  protected buildFieldToPropertyMap(meta: EntityMetadata): Record<string, EntityProperty> {
+  protected buildFieldToPropertyMap(meta: EntityMetadata, alias?: string): Record<string, EntityProperty> {
     const map: Record<string, EntityProperty> = {};
 
     for (const prop of meta.props) {
       if (prop.fieldNames && prop.fieldNames.length > 0) {
-        const fieldName = prop.fieldNames[0];
-        map[fieldName] = prop;
+        for (const fieldName of prop.fieldNames) {
+          if (!(fieldName in map)) {
+            map[fieldName] = prop;
+          }
+
+          if (alias) {
+            const dotted = `${alias}.${fieldName}`;
+            if (!(dotted in map)) {
+              map[dotted] = prop;
+            }
+
+            const underscored = `${alias}_${fieldName}`;
+            if (!(underscored in map)) {
+              map[underscored] = prop;
+            }
+
+            const doubleUnderscored = `${alias}__${fieldName}`;
+            if (!(doubleUnderscored in map)) {
+              map[doubleUnderscored] = prop;
+            }
+          }
+        }
+      }
+
+      if (!(prop.name in map)) {
+        map[prop.name] = prop;
       }
     }
 
@@ -999,7 +988,7 @@ export class MikroTransformer extends OperationNodeTransformer {
    * For ManyToOne relations, we need to map from the foreign key field to the relation property
    * Format: { 'foreign_key_field': 'relationPropertyName' }
    */
-  protected buildRelationFieldMap(meta: EntityMetadata): Record<string, string> {
+  protected buildRelationFieldMap(meta: EntityMetadata, alias?: string): Record<string, string> {
     const map: Record<string, string> = {};
 
     for (const prop of meta.props) {
@@ -1008,6 +997,12 @@ export class MikroTransformer extends OperationNodeTransformer {
         if (prop.fieldNames && prop.fieldNames.length > 0) {
           const fieldName = prop.fieldNames[0];
           map[fieldName] = prop.name;
+
+          if (alias) {
+            map[`${alias}.${fieldName}`] = prop.name;
+            map[`${alias}_${fieldName}`] = prop.name;
+            map[`${alias}__${fieldName}`] = prop.name;
+          }
         }
       }
     }
@@ -1027,36 +1022,25 @@ export class MikroTransformer extends OperationNodeTransformer {
 
     // First pass: map regular fields from fieldName to propertyName and convert values
     for (const [fieldName, prop] of Object.entries(fieldToPropertyMap)) {
-      if (fieldName in transformed) {
-        let value = transformed[fieldName];
+      if (!(fieldName in transformed)) {
+        continue;
+      }
 
-        // 1. Value conversion (if enabled)
-        if (this.options.convertValues && value != null) {
-          if (prop.customType) {
-            value = prop.customType.convertToJSValue(value, this.platform);
-          } else if (prop.runtimeType === 'Date') {
-            // SQLite stores dates as numbers (timestamps) or strings.
-            // platform.parseDate handles this.
-            if (!(value instanceof Date)) {
-              value = this.platform.parseDate(value);
-            }
-          }
-        }
+      const converted = this.prepareOutputValue(prop, transformed[fieldName]);
 
-        // 2. Rename (if columnNamingStrategy is 'property' and names differ)
-        if (this.options.columnNamingStrategy === 'property' && prop.name !== fieldName) {
-          // Only rename if the property name doesn't already exist (avoid overwrites)
-          if (!(prop.name in transformed)) {
-            transformed[prop.name] = value;
-            delete transformed[fieldName];
-          } else {
-            // If propertyName already exists, just update the value if it was converted
-            transformed[prop.name] = value;
-          }
+      if (this.options.columnNamingStrategy === 'property' && prop.name !== fieldName) {
+        if (!(prop.name in transformed)) {
+          transformed[prop.name] = converted;
         } else {
-          // If not renaming, just update the value if it was converted
-          transformed[fieldName] = value;
+          transformed[prop.name] = converted;
         }
+
+        delete transformed[fieldName];
+        continue;
+      }
+
+      if (this.options.convertValues) {
+        transformed[fieldName] = converted;
       }
     }
 
@@ -1073,6 +1057,49 @@ export class MikroTransformer extends OperationNodeTransformer {
     }
 
     return transformed;
+  }
+
+  protected prepareOutputValue(prop: EntityProperty | undefined, value: unknown): unknown {
+    if (!this.options.convertValues || !prop || value == null) {
+      return value;
+    }
+
+    if (prop.customType) {
+      return prop.customType.convertToJSValue(value, this.platform);
+    }
+
+    // Aligned with EntityComparator.getResultMapper logic
+    if (prop.runtimeType === 'boolean') {
+      // Use !! conversion like EntityComparator: value == null ? value : !!value
+      return value == null ? value : !!value;
+    }
+
+    if (prop.runtimeType === 'Date' && !this.platform.isNumericProperty(prop)) {
+      // Aligned with EntityComparator: exclude numeric timestamp properties
+      // If already Date instance or null, return as is
+      if (value == null || value instanceof Date) {
+        return value;
+      }
+
+      // Handle timezone like EntityComparator.parseDate
+      const tz = this.platform.getTimezone();
+      if (!tz || tz === 'local') {
+        return this.platform.parseDate(value as string | number);
+      }
+
+      // For non-local timezone, check if value already has timezone info
+      // Number (timestamp) doesn't need timezone handling, string needs check
+      if (typeof value === 'number' || (typeof value === 'string' && (value.includes('+') || value.lastIndexOf('-') > 10 || value.endsWith('Z')))) {
+        return this.platform.parseDate(value as string | number);
+      }
+
+      // Append timezone if not present (only for string values)
+      return this.platform.parseDate((value as string) + tz);
+    }
+
+    // For all other runtimeTypes (number, string, bigint, Buffer, object, any, etc.)
+    // EntityComparator just assigns directly without conversion
+    return value;
   }
 
 }
