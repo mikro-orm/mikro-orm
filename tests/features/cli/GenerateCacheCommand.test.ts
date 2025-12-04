@@ -1,4 +1,5 @@
-import type { MetadataStorage } from '@mikro-orm/core';
+import { FileCacheAdapter } from '@mikro-orm/core/fs-utils';
+import { MetadataStorage } from '@mikro-orm/core';
 import { Configuration, MetadataDiscovery } from '@mikro-orm/core';
 import { CLIHelper } from '@mikro-orm/cli';
 import { GenerateCacheCommand } from '../../../packages/cli/src/commands/GenerateCacheCommand.js';
@@ -8,7 +9,7 @@ describe('GenerateCacheCommand', () => {
 
   test('handler', async () => {
     const getConfigurationMock = vi.spyOn(CLIHelper, 'getConfiguration');
-    getConfigurationMock.mockResolvedValue(new Configuration({ driver: MySqlDriver, metadataCache: { enabled: true }, getDriver: () => ({ getPlatform: vi.fn() }) } as any, false));
+    getConfigurationMock.mockResolvedValue(new Configuration({ driver: MySqlDriver, metadataCache: { enabled: true, adapter: FileCacheAdapter }, getDriver: () => ({ getPlatform: vi.fn() }) } as any, false));
     const discoverMock = vi.spyOn(MetadataDiscovery.prototype, 'discover');
     discoverMock.mockResolvedValue({} as MetadataStorage);
     vi.spyOn(CLIHelper, 'dump').mockImplementation(i => i);

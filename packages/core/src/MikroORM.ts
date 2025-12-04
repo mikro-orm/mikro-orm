@@ -17,6 +17,7 @@ const knownExtensions = [
   ['EntityGenerator', '@mikro-orm/entity-generator'],
 ];
 
+/** @internal */
 export async function lookupExtensions(options: Options): Promise<void> {
   const extensions = [...options.extensions ?? []];
 
@@ -33,10 +34,42 @@ export async function lookupExtensions(options: Options): Promise<void> {
   }
 
   options.extensions = extensions;
+
+  const metadataCacheEnabled = options.metadataCache?.enabled || options.metadataProvider?.useCache?.();
+
+  if (metadataCacheEnabled && !options.metadataCache?.adapter) {
+    options.metadataCache ??= {};
+    options.metadataCache.adapter = await import('@mikro-orm/core/fs-utils').then(mod => mod.FileCacheAdapter);
+  }
 }
 
 /**
- * Helper class for bootstrapping the MikroORM.
+ * The main class used to configure and bootstrap the ORM.
+ *
+ * @example
+ * ```ts
+ * // import from driver package
+ * import { MikroORM, defineEntity, p } from '@mikro-orm/sqlite';
+ *
+ * const User = defineEntity({
+ *   name: 'User',
+ *   properties: {
+ *     id: p.integer().primary(),
+ *     name: p.string(),
+ *   },
+ * });
+ *
+ * const orm = new MikroORM({
+ *   entities: [User],
+ *   dbName: 'my.db',
+ * });
+ * await orm.schema.update();
+ *
+ * const em = orm.em.fork();
+ * const u1 = em.create(User, { name: 'John' });
+ * const u2 = em.create(User, { name: 'Ben' });
+ * await em.flush();
+ * ```
  */
 export class MikroORM<
   Driver extends IDatabaseDriver = IDatabaseDriver,
@@ -133,7 +166,7 @@ export class MikroORM<
   }
 
   /**
-   * Checks whether the database connection is active, returns .
+   * Checks whether the database connection is active, returns the reason if not.
    */
   async checkConnection(): Promise<{ ok: true } | { ok: false; reason: string; error?: Error }> {
     return this.driver.getConnection().checkConnection();
@@ -144,15 +177,8 @@ export class MikroORM<
    */
   async close(force = false): Promise<void> {
     await this.driver.close(force);
-
-    if (this.config.getMetadataCacheAdapter()?.close) {
-      await this.config.getMetadataCacheAdapter().close!();
-    }
-
-    if (this.config.getResultCacheAdapter()?.close) {
-      await this.config.getResultCacheAdapter().close!();
-    }
-
+    await this.config.getMetadataCacheAdapter().close?.();
+    await this.config.getResultCacheAdapter().close?.();
   }
 
   /**

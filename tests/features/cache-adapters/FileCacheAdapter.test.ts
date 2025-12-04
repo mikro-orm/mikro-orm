@@ -1,6 +1,5 @@
 import { writeFileSync } from 'node:fs';
-import { FileCacheAdapter } from '@mikro-orm/core';
-import { fs } from '@mikro-orm/core/fs-utils';
+import { FileCacheAdapter, fs } from '@mikro-orm/core/fs-utils';
 import { TEMP_DIR } from '../../helpers.js';
 
 describe('FileCacheAdapter', () => {

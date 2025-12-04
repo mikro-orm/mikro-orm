@@ -10,9 +10,13 @@ export class FileCacheAdapter implements SyncCacheAdapter {
   private readonly VERSION = Utils.getORMVersion();
   private cache: Dictionary = {};
 
-  constructor(private readonly options: { cacheDir: string; combined?: boolean | string },
-              private readonly baseDir: string,
-              private readonly pretty = false) { }
+  constructor(
+    private readonly options: { cacheDir: string; combined?: boolean | string } = {} as any,
+    private readonly baseDir: string,
+    private readonly pretty = false,
+  ) {
+    this.options.cacheDir ??= process.cwd() + '/temp';
+  }
 
   /**
    * @inheritDoc

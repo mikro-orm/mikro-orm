@@ -114,3 +114,5 @@ export const fs = {
   },
 
 };
+
+export * from '../cache/FileCacheAdapter.js';
