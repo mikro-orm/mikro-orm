@@ -11,8 +11,10 @@ import { MySqlDriver } from '@mikro-orm/mysql';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 import { MongoDriver, MikroORM as MongoMikroORM } from '@mikro-orm/mongodb';
 import { SeedManager } from '@mikro-orm/seeder';
-import { Migrator } from '@mikro-orm/migrations-mongodb';
+import { Migrator } from '@mikro-orm/migrations';
+import { Migrator as MongoMigrator } from '@mikro-orm/migrations-mongodb';
 import { fs } from '@mikro-orm/core/fs-utils';
+import { discoverEntities, fs as fs2 } from '../packages/core/src/not-supported.js';
 
 describe('MikroORM', () => {
 
@@ -39,9 +41,9 @@ describe('MikroORM', () => {
       entities: [import.meta.dirname + '/entities'],
       clientUrl: 'test',
       // mongo migrator won't be registered automatically, since the sql one is available too and it takes precedence
-      extensions: [Migrator],
+      extensions: [MongoMigrator],
     });
-    expect(orm1.migrator).toBeInstanceOf(Migrator);
+    expect(orm1.migrator).toBeInstanceOf(MongoMigrator);
     expect(orm1.seeder).toBeInstanceOf(SeedManager);
     expect(orm1.config.get('migrations')).toMatchObject({
       path: './src/migrations',
@@ -55,12 +57,11 @@ describe('MikroORM', () => {
     pathExistsMock.mockImplementation(path => !!path.match(/src|dist$/));
     const orm2 = await MikroORM.init({
       metadataProvider: ReflectMetadataProvider,
-      driver: MongoDriver,
+      driver: SqliteDriver,
       dbName: 'test',
       baseDir: import.meta.dirname + '/../packages/core',
       entities: [import.meta.dirname + '/entities'],
       clientUrl: 'test',
-      extensions: [SeedManager, Migrator],
     });
     expect(orm2.migrator).toBeInstanceOf(Migrator);
     expect(orm2.seeder).toBeInstanceOf(SeedManager);
@@ -81,9 +82,9 @@ describe('MikroORM', () => {
       baseDir: import.meta.dirname + '/../packages/core',
       entities: [import.meta.dirname + '/entities'],
       clientUrl: 'test',
-      extensions: [SeedManager, Migrator],
+      extensions: [SeedManager, MongoMigrator],
     });
-    expect(orm3.migrator).toBeInstanceOf(Migrator);
+    expect(orm3.migrator).toBeInstanceOf(MongoMigrator);
     expect(orm3.seeder).toBeInstanceOf(SeedManager);
     expect(orm3.config.get('migrations')).toMatchObject({
       path: './build/migrations',
@@ -276,6 +277,11 @@ describe('MikroORM', () => {
     expect(closed).toBe(0);
     await orm.close();
     expect(closed).toBe(2);
+  });
+
+  test('not supported', async () => {
+    expect(() => discoverEntities()).toThrow('Folder-based discovery is not supported in this environment.');
+    expect(() => (fs2 as any).glob('*')).toThrow('File system is not supported in this environment.');
   });
 
 });

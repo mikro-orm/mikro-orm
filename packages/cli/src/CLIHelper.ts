@@ -1,4 +1,5 @@
 import { extname, join } from 'node:path';
+import { pathToFileURL } from 'node:url';
 import yargs from 'yargs';
 import {
   colors,
@@ -270,7 +271,7 @@ export class CLIHelper {
       from = join(from, '__fake.js');
     }
 
-    const path = Utils.normalizePath(import.meta.resolve(id, fs.pathToFileURL(from)));
+    const path = Utils.normalizePath(import.meta.resolve(id, pathToFileURL(from)));
     const parts = path.split('/');
     const idx = parts.lastIndexOf(id) + 1;
     parts.splice(idx, parts.length - idx);

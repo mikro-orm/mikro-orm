@@ -211,7 +211,7 @@ describe('CLIHelper', () => {
     await expect(CLIHelper.getConfiguration()).rejects.toThrow(`@mikro-orm/cli needs to be installed as a local dependency!`);
   });
 
-  test.skip('gets ORM configuration [no mikro-orm.config]', async () => {
+  test('gets ORM configuration [no mikro-orm.config]', async () => {
     delete process.env.MIKRO_ORM_ALLOW_GLOBAL_CONTEXT;
     await expect(CLIHelper.getConfiguration()).rejects.toThrow(`MikroORM config file not found in ['./src/mikro-orm.config.ts', './mikro-orm.config.ts', './src/mikro-orm.config.js', './mikro-orm.config.js']`);
 
@@ -487,7 +487,7 @@ Maybe you want to check, or regenerate your yarn.lock or package-lock.json file?
     expect(CLIHelper.getDriverDependencies(await CLIHelper.getConfiguration('default', await CLIHelper.getConfigPaths()))).toEqual(['mongodb']);
   });
 
-  test.skip('dumpDependencies', async () => {
+  test('dumpDependencies', async () => {
     const cwd = process.cwd;
     process.cwd = () => '/foo/bar';
     const logSpy = vi.spyOn(console, 'log');
@@ -529,7 +529,7 @@ Maybe you want to check, or regenerate your yarn.lock or package-lock.json file?
     });
   });
 
-  test.skip('getPackageConfig checks parent folders for package.json', async () => {
+  test('getPackageConfig checks parent folders for package.json', async () => {
     getPackageConfigMock.mockRestore();
     pkg['mikro-orm'] = { preferTs: true };
 

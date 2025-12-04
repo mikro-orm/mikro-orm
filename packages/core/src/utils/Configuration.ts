@@ -1,5 +1,4 @@
 import type { NamingStrategy } from '../naming-strategy/NamingStrategy.js';
-import { FileCacheAdapter } from '../cache/FileCacheAdapter.js';
 import { NullCacheAdapter } from '../cache/NullCacheAdapter.js';
 import { type CacheAdapter, type SyncCacheAdapter } from '../cache/CacheAdapter.js';
 import type { EntityRepository } from '../entity/EntityRepository.js';
@@ -135,17 +134,14 @@ const DEFAULTS = {
     entityDefinition: 'defineEntity',
     decorators: 'legacy',
     enumMode: 'dictionary',
+    /* v8 ignore next */
     fileName: (className: string) => className,
     onlyPurePivotTables: false,
     outputPurePivotTables: false,
     readOnlyPivotTables: false,
     useCoreBaseEntity: false,
   },
-  metadataCache: {
-    pretty: false,
-    adapter: FileCacheAdapter,
-    options: { cacheDir: process.cwd() + '/temp' },
-  },
+  metadataCache: {},
   resultCache: {
     adapter: MemoryCacheAdapter,
     expiration: 1000, // 1s
@@ -178,7 +174,6 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver, EM exten
     }
 
     this.options = Utils.mergeConfig({} as RequiredOptions<D, EM>, DEFAULTS, options);
-    // FIXME?
     this.options.baseDir = Utils.absolutePath(this.options.baseDir);
 
     if (validate) {
@@ -359,19 +354,20 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver, EM exten
   }
 
   private init(validate: boolean): void {
-    if (!this.getMetadataProvider().useCache()) {
-      this.options.metadataCache.adapter = NullCacheAdapter;
+    const useCache = this.getMetadataProvider().useCache();
+    const metadataCache = this.options.metadataCache;
+
+    if (!useCache) {
+      metadataCache.adapter = NullCacheAdapter;
     }
 
-    if (!('enabled' in this.options.metadataCache)) {
-      this.options.metadataCache.enabled = this.getMetadataProvider().useCache();
-    }
-
-    if (!this.options.clientUrl) {
-      this.options.clientUrl = this.platform.getDefaultClientUrl();
-    }
-
+    metadataCache.enabled ??= useCache;
+    this.options.clientUrl ??= this.platform.getDefaultClientUrl();
     this.options.implicitTransactions ??= this.platform.usesImplicitTransactions();
+
+    if (metadataCache.enabled && !metadataCache.adapter) {
+      throw new Error('No metadata cache adapter specified, please fill in `metadataCache.adapter` option or use the async MikroORM.init() method which can autoload it.');
+    }
 
     try {
       const url = new URL(this.options.clientUrl);
@@ -1126,8 +1122,7 @@ export interface Options<
      */
     pretty?: boolean;
     /**
-     * Cache adapter class to use.
-     * @default FileCacheAdapter
+     * Cache adapter class to use. When cache is enabled, and no adapter is provided explicitly, {@link FileCacheAdapter} is used automatically - but only if you use the async `MikroORM.init()` method.
      */
     adapter?: { new(...params: any[]): SyncCacheAdapter };
     /**
@@ -1167,7 +1162,7 @@ export interface Options<
    * @default ReflectMetadataProvider
    * @see https://mikro-orm.io/docs/metadata-providers
    */
-  metadataProvider?: { new(config: Configuration): MetadataProvider };
+  metadataProvider?: { new(config: Configuration): MetadataProvider; useCache?: MetadataProvider['useCache'] };
   /**
    * Seeder configuration options.
    * @see https://mikro-orm.io/docs/seeding

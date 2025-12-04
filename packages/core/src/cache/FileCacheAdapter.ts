@@ -1,5 +1,5 @@
 import { existsSync, readFileSync, writeFileSync, unlinkSync } from 'node:fs';
-import { fs } from '@mikro-orm/core/fs-utils';
+import { fs } from '../utils/fs-utils.js';
 
 import type { SyncCacheAdapter } from './CacheAdapter.js';
 import { Utils } from '../utils/Utils.js';
@@ -10,9 +10,13 @@ export class FileCacheAdapter implements SyncCacheAdapter {
   private readonly VERSION = Utils.getORMVersion();
   private cache: Dictionary = {};
 
-  constructor(private readonly options: { cacheDir: string; combined?: boolean | string },
-              private readonly baseDir: string,
-              private readonly pretty = false) { }
+  constructor(
+    private readonly options: { cacheDir: string; combined?: boolean | string } = {} as any,
+    private readonly baseDir: string,
+    private readonly pretty = false,
+  ) {
+    this.options.cacheDir ??= process.cwd() + '/temp';
+  }
 
   /**
    * @inheritDoc

@@ -1,5 +1,5 @@
 import { basename } from 'node:path';
-import { fs } from '@mikro-orm/core/fs-utils';
+import { fs } from '../utils/fs-utils.js';
 
 import { type Constructor } from '../typings.js';
 import { Utils } from '../utils/Utils.js';

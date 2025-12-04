@@ -93,6 +93,7 @@ export class Migrator implements IMigrator {
     const distDir = fs.pathExists(baseDir + '/dist');
     const buildDir = fs.pathExists(baseDir + '/build');
     // if neither `dist` nor `build` exist, we use the `src` folder as it might be a JS project without building, but with `src` folder
+    /* v8 ignore next */
     const path = distDir ? './dist' : (buildDir ? './build' : './src');
 
     // only if the user did not provide any values and if the default path does not exist
@@ -198,6 +199,7 @@ export class Migrator implements IMigrator {
       migrations,
     });
 
+    /* v8 ignore else */
     if (!this.options.silent) {
       const logger = this.config.getLogger();
       this.umzug.on('migrating', event => logger.log('migrator', `Processing '${event.name}'`, { enabled: true }));

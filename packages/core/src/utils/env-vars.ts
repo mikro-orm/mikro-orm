@@ -1,10 +1,9 @@
-import type { IDatabaseDriver } from '../drivers/IDatabaseDriver.js';
 import type { Dictionary } from '../typings.js';
 import { type Options } from './Configuration.js';
 import { Utils } from './Utils.js';
 
 /** @internal */
-export function loadEnvironmentVars<D extends IDatabaseDriver>(): Partial<Options<D>> {
+export function loadEnvironmentVars(): Partial<Options> {
   const ret: Dictionary = {};
 
   const getEnvKey = (key: string, envPrefix = 'MIKRO_ORM_') => {

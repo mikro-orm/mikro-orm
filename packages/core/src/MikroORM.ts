@@ -44,6 +44,13 @@ export async function lookupExtensions(options: Options): Promise<void> {
   }
 
   options.extensions = extensions;
+
+  const metadataCacheEnabled = options.metadataCache?.enabled || options.metadataProvider?.useCache?.();
+
+  if (metadataCacheEnabled) {
+    options.metadataCache ??= {};
+    options.metadataCache.adapter ??= await import('@mikro-orm/core/fs-utils').then(m => m.FileCacheAdapter);
+  }
 }
 
 
@@ -122,7 +129,7 @@ export class MikroORM<
    * - no support for folder based discovery
    */
   constructor(options: Options<Driver, EM, Entities>) {
-    const env = loadEnvironmentVars<Driver>();
+    const env = loadEnvironmentVars();
     options = Utils.merge(options, env);
     this.config = new Configuration(options);
     const discovery = this.config.get('discovery');

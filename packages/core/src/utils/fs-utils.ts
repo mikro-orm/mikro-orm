@@ -1,19 +1,18 @@
 import { existsSync, globSync, mkdirSync, readFileSync, realpathSync, statSync } from 'node:fs';
 import { join } from 'node:path';
-import { fileURLToPath, pathToFileURL } from 'node:url'; // replace Utils.fileURLToPath with this
-import { colors, type Dictionary, Utils } from '@mikro-orm/core';
+import { fileURLToPath } from 'node:url';
+import { Utils } from './Utils.js';
+import { type Dictionary } from '../typings.js';
+import { colors } from '../logging/colors.js';
 
 export const fs = {
   pathExists(path: string): boolean {
     if (/[*?[\]]/.test(path)) {
-      const found = globSync(path);
-      return found.length > 0;
+      return globSync(path).length > 0;
     }
 
     return existsSync(path);
   },
-
-  pathToFileURL,
 
   ensureDir(path: string): void {
     if (!existsSync(path)) {
@@ -28,7 +27,7 @@ export const fs = {
 
   glob(input: string | string[], cwd?: string): string[] {
     if (Array.isArray(input)) {
-      return input.flatMap(paths => fs.glob(paths, cwd));
+      return input.flatMap(paths => this.glob(paths, cwd));
     }
 
     const hasGlobChars = /[*?[\]]/.test(input);
@@ -51,10 +50,11 @@ export const fs = {
   },
 
   async getPackageConfig<T extends Dictionary>(basePath = process.cwd()): Promise<T> {
-    if (fs.pathExists(`${basePath}/package.json`)) {
+    if (this.pathExists(`${basePath}/package.json`)) {
       try {
         return await Utils.dynamicImport<T>(`${basePath}/package.json`);
       } catch (e) {
+        /* v8 ignore next */
         return {} as T;
       }
     }
@@ -66,11 +66,11 @@ export const fs = {
       return {} as T;
     }
 
-    return fs.getPackageConfig(parentFolder);
+    return this.getPackageConfig(parentFolder);
   },
 
   async getORMPackages(): Promise<Set<string>> {
-    const pkg = await fs.getPackageConfig();
+    const pkg = await this.getPackageConfig();
     return new Set([
       ...Object.keys(pkg.dependencies ?? {}),
       ...Object.keys(pkg.devDependencies ?? {}),
@@ -80,7 +80,7 @@ export const fs = {
   getORMPackageVersion(name: string): string | undefined {
     try {
       const path = import.meta.resolve(`${name}/package.json`);
-      const pkg = fs.readJSONSync(fileURLToPath(path));
+      const pkg = this.readJSONSync(fileURLToPath(path));
       return pkg?.version;
     } catch (e) {
       return undefined;
@@ -95,12 +95,12 @@ export const fs = {
       return;
     }
 
-    const deps = await fs.getORMPackages();
+    const deps = await this.getORMPackages();
     const exceptions = new Set(['nestjs', 'sql-highlighter', 'mongo-highlighter']);
     const ormPackages = [...deps].filter(d => d.startsWith('@mikro-orm/') && d !== '@mikro-orm/core' && !exceptions.has(d.substring('@mikro-orm/'.length)));
 
     for (const ormPackage of ormPackages) {
-      const version = fs.getORMPackageVersion(ormPackage);
+      const version = this.getORMPackageVersion(ormPackage);
 
       if (version != null && version !== coreVersion) {
         throw new Error(
@@ -114,3 +114,5 @@ export const fs = {
   },
 
 };
+
+export * from '../cache/FileCacheAdapter.js';
