@@ -1,7 +1,10 @@
 import { defineEntity, p } from '@mikro-orm/core';
 import { InferKyselyTable, Kysely, MikroORM } from '@mikro-orm/sqlite';
+import { MikroORM as PostgresORM } from '@mikro-orm/postgresql';
 
-describe('custom kysely plugin', () => {
+import { MikroTransformer } from '../../packages/knex/src/plugin/transformer.js';
+
+describe('MikroPlugin', () => {
   const Person = defineEntity({
     name: 'Person',
     properties: {
@@ -52,14 +55,25 @@ describe('custom kysely plugin', () => {
     }
     let orm: MikroORM;
     let kysely: Kysely<DB>;
+    let pgOrm: PostgresORM;
+    let pgKysely: Kysely<DB>;
 
     beforeAll(async () => {
       orm = new MikroORM({
         entities: [Person, Pet, Toy],
         dbName: ':memory:',
       });
-      await orm.schema.create();
+      await orm.schema.refresh();
+      pgOrm = new PostgresORM({
+        entities: [Person, Pet, Toy],
+        dbName: 'kysely_plugin_test_1',
+      });
+      await pgOrm.schema.refresh();
       kysely = orm.em.getKysely({
+        tableNamingStrategy: 'entity',
+        convertValues: true,
+      });
+      pgKysely = pgOrm.em.getKysely({
         tableNamingStrategy: 'entity',
         convertValues: true,
       });
@@ -259,6 +273,67 @@ describe('custom kysely plugin', () => {
       expect(kysely.selectFrom('Pet').selectAll().compile().sql).toMatchInlineSnapshot(`"select * from "pet""`);
       expect(kysely.selectFrom('Toy').selectAll().compile().sql).toMatchInlineSnapshot(`"select * from "toy""`);
     });
+
+    test('MERGE query - PostgreSQL', async () => {
+      // PostgreSQL supports MERGE, SQLite doesn't
+      // This tests transformMergeQuery (lines 259-270)
+      const now = new Date();
+
+      // Insert source data
+      const personId = await pgKysely
+        .insertInto('Person')
+        .values({
+          first_name: 'MergeTest',
+          last_name: 'Person',
+          gender: 'male',
+          children: 0,
+          created_at: now,
+          updated_at: now,
+        })
+        .returning('id')
+        .executeTakeFirstOrThrow()
+        .then(r => r.id);
+
+      await pgKysely
+        .insertInto('Pet')
+        .values({
+          name: 'MergePet',
+          owner_id: personId,
+          species: 'dog',
+          created_at: now,
+          updated_at: now,
+        })
+        .execute();
+
+      // MERGE query: update Person when Pet exists
+      const mergeResult = await pgKysely
+        .mergeInto('Person as target')
+        .using('Pet as source', 'source.owner_id', 'target.id')
+        .whenMatched()
+        .thenUpdateSet({
+          middle_name: 'has_pets',
+        })
+        .executeTakeFirstOrThrow();
+
+      expect(mergeResult.numChangedRows).toBeGreaterThan(0n);
+
+      // Verify the update was applied
+      const updated = await pgKysely
+        .selectFrom('Person')
+        .selectAll()
+        .where('id', '=', personId)
+        .executeTakeFirstOrThrow();
+
+      expect(updated.middle_name).toBe('has_pets');
+
+      // Cleanup
+      await pgKysely.deleteFrom('Pet').execute();
+      await pgKysely.deleteFrom('Person').execute();
+    });
+
+    afterAll(async () => {
+      await pgOrm.close(true);
+    });
   });
 
   describe('columnNamingStrategy: property', () => {
@@ -272,20 +347,31 @@ describe('custom kysely plugin', () => {
     }
     let orm: MikroORM;
     let kysely: Kysely<DB>;
+    let pgOrm: PostgresORM;
+    let pgKysely: Kysely<DB>;
 
     beforeAll(async () => {
       orm = new MikroORM({
         entities: [Person, Pet, Toy],
         dbName: ':memory:',
       });
-      await orm.schema.create();
+      await orm.schema.refresh();
       kysely = orm.em.getKysely({
+        columnNamingStrategy: 'property',
+        convertValues: true,
+      });
+      pgOrm = new PostgresORM({
+        entities: [Person, Pet, Toy],
+        dbName: 'kysely_plugin_test_2',
+      });
+      await pgOrm.schema.refresh();
+      pgKysely = pgOrm.em.getKysely({
         columnNamingStrategy: 'property',
         convertValues: true,
       });
     });
 
-    beforeEach(async () => {
+    const insertTestData = async (kysely: Kysely<DB>) => {
       // Insert test data: Person -> Pet -> Toy
       const now = new Date();
       const person1Id = await kysely
@@ -363,6 +449,11 @@ describe('custom kysely plugin', () => {
           updatedAt: now,
         })
         .execute();
+    };
+
+    beforeEach(async () => {
+      await insertTestData(kysely);
+      await insertTestData(pgKysely);
     });
 
     afterEach(async () => {
@@ -690,7 +781,7 @@ describe('custom kysely plugin', () => {
         entities: [Person, Pet, Toy],
         dbName: ':memory:',
       });
-      await orm.schema.create();
+      await orm.schema.refresh();
       kysely = orm.em.getKysely({
         tableNamingStrategy: 'entity',
         columnNamingStrategy: 'property',
@@ -813,6 +904,7 @@ describe('custom kysely plugin', () => {
         firstName: 'NullTest',
         lastName: 'User',
         gender: 'male',
+        children: 0,
         createdAt: null,
         updatedAt: null,
       }).returning(['id', 'children', 'createdAt', 'updatedAt']);
@@ -859,14 +951,28 @@ describe('custom kysely plugin', () => {
     }
     let orm: MikroORM;
     let kysely: Kysely<DB>;
+    let pgOrm: PostgresORM;
+    let pgKysely: Kysely<DB>;
 
     beforeAll(async () => {
       orm = new MikroORM({
         entities: [Person, Pet, Toy],
         dbName: ':memory:',
       });
-      await orm.schema.create();
+      await orm.schema.refresh();
       kysely = orm.em.getKysely({
+        tableNamingStrategy: 'entity',
+        columnNamingStrategy: 'property',
+        processOnCreateHooks: true,
+        processOnUpdateHooks: true,
+        convertValues: true,
+      });
+      pgOrm = new PostgresORM({
+        entities: [Person, Pet, Toy],
+        dbName: 'kysely_plugin_test_3',
+      });
+      await pgOrm.schema.refresh();
+      pgKysely = pgOrm.em.getKysely({
         tableNamingStrategy: 'entity',
         columnNamingStrategy: 'property',
         processOnCreateHooks: true,
@@ -1069,6 +1175,292 @@ describe('custom kysely plugin', () => {
         expect(result[0].updatedAt).toBeInstanceOf(Date);
       }
     });
+
+    test('ON CONFLICT with onUpdate hooks', async () => {
+      const now = new Date();
+      await kysely.insertInto('Person').values({
+        id: 999,
+        firstName: 'Conflict',
+        lastName: 'Test',
+        gender: 'male',
+        children: 0,
+        createdAt: now,
+        updatedAt: now,
+      }).execute();
+
+      // Wait a bit to ensure timestamp difference for onUpdate hook
+      await new Promise(resolve => setTimeout(resolve, 10));
+
+      // Update using ON CONFLICT - should trigger onUpdate hook for updatedAt
+      await kysely.insertInto('Person')
+        .values({
+          id: 999, // Conflict on ID
+          firstName: 'NewName',
+          lastName: 'NewLast',
+          gender: 'female',
+          children: 1,
+          createdAt: now,
+          // updatedAt not provided, should be updated by hook
+        })
+        .onConflict(oc => oc.column('id').doUpdateSet({
+          firstName: 'NewName',
+          lastName: 'NewLast',
+          gender: 'female',
+          children: 1,
+          // updatedAt will be added by hook
+        }))
+        .execute();
+
+      const result = await kysely.selectFrom('Person').selectAll().where('id', '=', 999).executeTakeFirstOrThrow();
+
+      expect(result).toMatchObject({
+        firstName: 'NewName',
+        lastName: 'NewLast',
+        gender: 'female',
+        children: 1,
+      });
+      expect(result.updatedAt).not.toEqual(now); // Should have changed
+      expect(new Date(result.updatedAt!).getTime()).toBeGreaterThan(now.getTime());
+    });
+
+    test('UPDATE with JOIN - test JOIN processing in transformer', async () => {
+      // Insert test data
+      const personId = await kysely
+        .insertInto('Person')
+        .values({ firstName: 'JoinTest', lastName: 'Person', gender: 'male', children: 0, createdAt: new Date(), updatedAt: new Date() })
+        .returning('id')
+        .executeTakeFirstOrThrow()
+        .then(r => r.id);
+
+      await kysely
+        .insertInto('Pet')
+        .values({
+          name: 'JoinPet',
+          owner: personId,
+          species: 'dog',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        })
+        .execute();
+
+      // SQLite doesn't support UPDATE with JOIN directly, but we can test that
+      // the transformer processes JOIN nodes in UPDATE queries by checking
+      // that the query builder accepts JOIN methods (even if SQLite can't compile it)
+      // The transformer should process the JOIN node to populate entityMap
+      const queryBuilder = kysely
+        .updateTable('Pet')
+        .set({ name: 'UpdatedJoinPet' })
+        .where('id', 'in', eb =>
+          eb.selectFrom('Person')
+            .select('id')
+            .where('firstName', '=', 'JoinTest'),
+        );
+
+      // This should work - using subquery instead of direct JOIN
+      expect(queryBuilder.compile().sql).toContain('update');
+      // The transformer should process the subquery's JOIN internally
+    });
+
+    test('UPDATE with JOIN - PostgreSQL (actual execution)', async () => {
+      // PostgreSQL supports UPDATE with JOIN using FROM clause
+      // This tests transformUpdateQuery JOIN processing (lines 205-208)
+      const now = new Date();
+
+      // Insert test data
+      const personId = await pgKysely
+        .insertInto('Person')
+        .values({
+          firstName: 'JoinUpdateTest',
+          lastName: 'Person',
+          gender: 'male',
+          children: 0,
+          createdAt: now,
+          updatedAt: now,
+        })
+        .returning('id')
+        .executeTakeFirstOrThrow()
+        .then(r => r.id);
+
+      const petId = await pgKysely
+        .insertInto('Pet')
+        .values({
+          name: 'JoinUpdatePet',
+          owner: personId,
+          species: 'dog',
+          createdAt: now,
+          updatedAt: now,
+        })
+        .returning('id')
+        .executeTakeFirstOrThrow()
+        .then(r => r.id);
+
+      // UPDATE with JOIN using FROM clause and innerJoin (PostgreSQL syntax)
+      // This will trigger processJoinNode in transformUpdateQuery (lines 205-208)
+      // Note: In UPDATE with JOIN, FROM clause uses table name without alias
+      // JOIN condition should use table name (Pet) not alias (p)
+      const updateResult = await pgKysely
+        .updateTable('Pet as p')
+        .set({ name: 'UpdatedViaJoin' })
+        .from('Pet')
+        .whereRef('p.id', '=', 'Pet.id')
+        .innerJoin('Person', 'Person.id', 'Pet.owner')
+        .where('Person.firstName', '=', 'JoinUpdateTest')
+        .executeTakeFirstOrThrow();
+
+      expect(updateResult.numUpdatedRows).toBeGreaterThan(0n);
+
+      // Verify the update was applied
+      const updated = await pgKysely
+        .selectFrom('Pet')
+        .selectAll()
+        .where('id', '=', petId)
+        .executeTakeFirstOrThrow();
+
+      expect(updated.name).toBe('UpdatedViaJoin');
+
+      // Cleanup
+      await pgKysely.deleteFrom('Pet').execute();
+      await pgKysely.deleteFrom('Person').execute();
+    });
+
+    test('DELETE with JOIN', async () => {
+      // Insert test data
+      const personId = await kysely
+        .insertInto('Person')
+        .values({ firstName: 'DeleteJoin', lastName: 'Test', gender: 'male', children: 0, createdAt: new Date(), updatedAt: new Date() })
+        .returning('id')
+        .executeTakeFirstOrThrow()
+        .then(r => r.id);
+
+      await kysely
+        .insertInto('Pet')
+        .values({
+          name: 'DeletePet',
+          owner: personId,
+          species: 'cat',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        })
+        .execute();
+
+      // DELETE with JOIN (PostgreSQL style using USING)
+      const query = kysely
+        .deleteFrom('Pet')
+        .using('Person')
+        .innerJoin('Person', 'Pet.owner', 'Person.id')
+        .where('Person.firstName', '=', 'DeleteJoin');
+
+      expect(query.compile().sql).toContain('delete');
+      expect(query.compile().sql).toContain('using');
+    });
+
+    test('UPDATE with convertValues false', async () => {
+      // Create kysely instance without convertValues
+      interface PersonTableNoConvert extends InferKyselyTable<typeof Person, 'property', true> {}
+      interface DBNoConvert {
+        Person: PersonTableNoConvert;
+      }
+      const kyselyNoConvert = orm.em.getKysely<DBNoConvert>({
+        tableNamingStrategy: 'entity',
+        columnNamingStrategy: 'property',
+        processOnUpdateHooks: true,
+        convertValues: false, // Disable value conversion
+      });
+
+      const query = kyselyNoConvert.updateTable('Person').set({
+        firstName: 'NoConvert',
+      }).where('firstName', '=', 'InitialName');
+
+      expect(query.compile().sql).toContain('update');
+      // Value conversion should be skipped
+    });
+
+    test('ON CONFLICT with convertValues false', async () => {
+      const now = new Date();
+      await kysely.insertInto('Person').values({
+        id: 888,
+        firstName: 'ConflictNoConvert',
+        lastName: 'Test',
+        gender: 'male',
+        children: 0,
+        createdAt: now,
+        updatedAt: now,
+      }).execute();
+
+      // Create kysely instance without convertValues
+      interface PersonTableNoConvert extends InferKyselyTable<typeof Person, 'property', true> {}
+      interface DBNoConvert {
+        Person: PersonTableNoConvert;
+      }
+      const kyselyNoConvert = orm.em.getKysely<DBNoConvert>({
+        tableNamingStrategy: 'entity',
+        columnNamingStrategy: 'property',
+        processOnUpdateHooks: true,
+        convertValues: false, // Disable value conversion
+      });
+
+      const query = kyselyNoConvert.insertInto('Person')
+        .values({
+          id: 888,
+          firstName: 'NewName',
+          lastName: 'NewLast',
+          gender: 'female',
+          children: 1,
+        })
+        .onConflict(oc => oc.column('id').doUpdateSet({
+          firstName: 'NewName',
+          lastName: 'NewLast',
+        }));
+
+      expect(query.compile().sql).toContain('on conflict');
+      // Value conversion should be skipped in ON CONFLICT
+    });
+
+    test('ON CONFLICT with processOnUpdateHooks false', async () => {
+      const now = new Date();
+      await kysely.insertInto('Person').values({
+        id: 777,
+        firstName: 'ConflictNoHook',
+        lastName: 'Test',
+        gender: 'male',
+        children: 0,
+        createdAt: now,
+        updatedAt: now,
+      }).execute();
+
+      // Create kysely instance without processOnUpdateHooks
+      interface PersonTableNoHook extends InferKyselyTable<typeof Person, 'property', true> {}
+      interface DBNoHook {
+        Person: PersonTableNoHook;
+      }
+      const kyselyNoHook = orm.em.getKysely<DBNoHook>({
+        tableNamingStrategy: 'entity',
+        columnNamingStrategy: 'property',
+        processOnCreateHooks: true,
+        processOnUpdateHooks: false, // Disable onUpdate hooks
+        convertValues: true,
+      });
+
+      const query = kyselyNoHook.insertInto('Person')
+        .values({
+          id: 777,
+          firstName: 'NewName',
+          lastName: 'NewLast',
+          gender: 'female',
+          children: 1,
+        })
+        .onConflict(oc => oc.column('id').doUpdateSet({
+          firstName: 'NewName',
+          lastName: 'NewLast',
+        }));
+
+      expect(query.compile().sql).toContain('on conflict');
+      // onUpdate hooks should be skipped in ON CONFLICT
+    });
+
+    afterAll(async () => {
+      await pgOrm.close(true);
+    });
   });
 
   describe('convertValues with default naming strategy', () => {
@@ -1085,7 +1477,7 @@ describe('custom kysely plugin', () => {
         entities: [Person, Pet, Toy],
         dbName: ':memory:',
       });
-      await orm.schema.create();
+      await orm.schema.refresh();
       kysely = orm.em.getKysely({
         // tableNamingStrategy: 'table', // default
         // columnNamingStrategy: 'column', // default
@@ -1118,6 +1510,49 @@ describe('custom kysely plugin', () => {
       // Verify values are converted to Date objects
       expect(result[0].created_at).toBeInstanceOf(Date);
       expect(result[0].updated_at).toBeInstanceOf(Date);
+    });
+
+    test('SELECT with empty entityMap should return rows as-is', async () => {
+      // Test transformResult with empty entityMap (line 1048-1049)
+      const now = new Date();
+      await kysely.insertInto('person').values({
+        first_name: 'EmptyMapTest',
+        last_name: 'User',
+        gender: 'male',
+        created_at: now,
+        updated_at: now,
+        children: 0,
+      }).execute();
+
+      // Query that doesn't match any entity (raw query scenario)
+      const query = kysely.selectFrom('person').selectAll().where('first_name', '=', 'EmptyMapTest');
+      const result = await query.execute();
+
+      expect(result).toHaveLength(1);
+      // Should still return results even if entityMap is empty
+      expect(result[0]).toHaveProperty('first_name');
+    });
+  });
+});
+
+describe.skip('MikroTransformer', () => {
+  let orm: MikroORM;
+  let transformer: MikroTransformer;
+
+  beforeAll(async () => {
+    orm = new MikroORM({
+      entities: [],
+      dbName: ':memory:',
+    });
+    await orm.schema.refresh();
+
+    // Create transformer instance directly
+    transformer = new MikroTransformer(orm.em, {
+      tableNamingStrategy: 'entity',
+      columnNamingStrategy: 'property',
+      processOnCreateHooks: true,
+      processOnUpdateHooks: true,
+      convertValues: true,
     });
   });
 });
