@@ -1,7 +1,7 @@
-import { defineEntity, p } from '@mikro-orm/core';
+import { defineEntity, p, ReferenceKind } from '@mikro-orm/core';
 import { vi } from 'vitest';
 import { InferKyselyTable, Kysely, MikroORM } from '@mikro-orm/sqlite';
-import { ColumnNode, ValueListNode, ValueNode, ValuesNode } from 'kysely';
+import { ColumnNode, PrimitiveValueListNode, ValueListNode, ValueNode, ValuesNode } from 'kysely';
 import { MikroORM as PostgresORM } from '@mikro-orm/postgresql';
 
 import { MikroTransformer } from '../../packages/knex/src/plugin/transformer.js';
@@ -733,6 +733,25 @@ describe('MikroPlugin', () => {
       expect(result).toHaveLength(2);
       expect(result[0]).toMatchObject({ firstName: 'Jane', count: 1 });
       expect(result[1]).toMatchObject({ firstName: 'John', count: 1 });
+    });
+
+    test('CTE alias resolved via subquery alias map (findOwnerEntityInContext)', async () => {
+      const query = kysely
+        .with('active_people', db =>
+          db.selectFrom('person')
+            .select(['id', 'firstName'])
+            .where('firstName', 'is not', null),
+        )
+        .selectFrom('active_people as ap')
+        .select(['ap.firstName'])
+        .orderBy('ap.firstName');
+
+      expect(query.compile().sql).toMatchInlineSnapshot(`"with "active_people" as (select "id", "first_name" from "person" where "first_name" is not null) select "ap"."first_name" from "active_people" as "ap" order by "ap"."first_name""`);
+
+      const result = await query.execute();
+      expect(result).toHaveLength(2);
+      expect(result[0]).toHaveProperty('firstName', 'Jane');
+      expect(result[1]).toHaveProperty('firstName', 'John');
     });
 
     test('recursive CTE', async () => {
@@ -1750,5 +1769,196 @@ describe('MikroTransformer', () => {
 
   test('findOwnerEntityInContext returns undefined when context stack is empty', () => {
     expect(transformer.findOwnerEntityInContext()).toBeUndefined();
+  });
+
+  describe('prepareInputValue raw bypass', () => {
+    test('returns raw object as-is without conversion', () => {
+      const meta = getMeta();
+      const rawVal = { __raw: 'select 1' };
+      const prop = meta.properties.payload;
+      const result = transformer.prepareInputValue(prop, rawVal, true);
+      expect(result).toBe(rawVal);
+    });
+  });
+
+  describe('processInsertValues defensive branches', () => {
+    test('returns original when columns missing or values not ValuesNode', () => {
+      const meta = getMeta();
+      const nodeNoColumns: any = { kind: 'InsertQueryNode', values: ValuesNode.create([]) };
+      const nodeNonValues: any = { kind: 'InsertQueryNode', columns: [ColumnNode.create('id')], values: { kind: 'NotValuesNode' } };
+
+      expect(transformer.processInsertValues(nodeNoColumns, meta)).toBe(nodeNoColumns);
+      expect(transformer.processInsertValues(nodeNonValues, meta)).toBe(nodeNonValues);
+    });
+
+    test('keeps primitive length mismatch and unknown rows intact', () => {
+      const meta = getMeta();
+      const node: any = {
+        kind: 'InsertQueryNode',
+        columns: [ColumnNode.create('id'), ColumnNode.create('name')],
+        values: ValuesNode.create([
+          PrimitiveValueListNode.create([1]), // length mismatch
+          { kind: 'UnknownRow' } as any, // not ValueList/PrimitiveValueList
+        ]),
+      };
+
+      const result = transformer.processInsertValues(node, meta);
+      expect(result).toBe(node);
+    });
+  });
+
+  describe('processUpdateValues defensive branches', () => {
+    test('skips conversion when column is not ColumnNode', () => {
+      const meta = getMeta();
+      const node: any = {
+        kind: 'UpdateQueryNode',
+        updates: [{
+          column: { kind: 'NotColumn' } as any,
+          value: ValueNode.create('value'),
+        }],
+      };
+
+      expect(transformer.processUpdateValues(node, meta)).toBe(node);
+    });
+
+    test('preserves immediate flag after conversion', () => {
+      const meta = getMeta();
+      const platform = orm.em.getDriver().getPlatform();
+      const spy = vi.spyOn(platform, 'processDateProperty').mockReturnValue('processed-date' as any);
+
+      const node: any = {
+        kind: 'UpdateQueryNode',
+        updates: [{
+          column: ColumnNode.create('created_at'),
+          value: ValueNode.createImmediate(new Date('2024-01-01')),
+        }],
+      };
+
+      const result: any = transformer.processUpdateValues(node, meta);
+      expect(result).not.toBe(node);
+      expect(result.updates[0].value.immediate).toBe(true);
+      expect(result.updates[0].value.value).toBe('processed-date');
+      expect(spy).toHaveBeenCalled();
+    });
+  });
+
+  describe('context and result mapping defensive branches', () => {
+    test('findOwnerEntityInContext returns undefined when context has only undefined aliases', () => {
+      const ctx = new Map<string, any>();
+      ctx.set('a', undefined);
+      (transformer as any).contextStack.push(ctx);
+      expect(transformer.findOwnerEntityInContext()).toBeUndefined();
+      (transformer as any).contextStack.pop();
+    });
+
+    test('processFromItem with subquery alias and unknown alias types', () => {
+      const context = new Map<string, any>();
+      const subqueryAlias = {
+        kind: 'AliasNode',
+        node: {
+          kind: 'SelectQueryNode',
+          from: {
+            froms: [{
+              kind: 'TableNode',
+              table: { kind: 'SchemableIdentifierNode', schema: undefined, identifier: { kind: 'IdentifierNode', name: 'test_entity' } },
+            }],
+          },
+        },
+        alias: { kind: 'IdentifierNode', name: 'sq' },
+      };
+      const unknownAlias = {
+        kind: 'AliasNode',
+        node: { kind: 'UnknownNode' },
+        alias: { kind: 'IdentifierNode', name: 'u' },
+      };
+
+      (transformer as any).processFromItem(subqueryAlias, context);
+      (transformer as any).processFromItem(unknownAlias, context);
+
+      expect(context.has('sq')).toBe(true); // should be set to undefined
+      expect(context.has('u')).toBe(true);
+      expect((transformer as any).subqueryAliasMap.get('sq')).toBeDefined();
+    });
+
+    test('processJoinNode with non-table alias and table without metadata', () => {
+      const context = new Map<string, any>();
+      const joinUnknownAlias = {
+        kind: 'JoinNode',
+        table: {
+          kind: 'AliasNode',
+          node: { kind: 'UnknownNode' },
+          alias: { kind: 'IdentifierNode', name: 'ua' },
+        },
+      };
+      const tableWithoutMeta = {
+        kind: 'JoinNode',
+        table: {
+          kind: 'TableNode',
+          table: { kind: 'SchemableIdentifierNode', schema: undefined, identifier: { kind: 'IdentifierNode', name: 'non_existing_table' } },
+        },
+      };
+
+      (transformer as any).processJoinNode(joinUnknownAlias, context);
+      (transformer as any).processJoinNode(tableWithoutMeta, context);
+
+      expect(context.has('ua')).toBe(true);
+      expect(context.get('non_existing_table')).toBeUndefined();
+    });
+
+    test('extractSourceTableFromSelectQuery returns undefined without FROM', () => {
+      const selectNode: any = { kind: 'SelectQueryNode' };
+      expect((transformer as any).extractSourceTableFromSelectQuery(selectNode)).toBeUndefined();
+    });
+
+    test('extractSourceTableFromSelectQuery returns undefined when FROM is unknown node', () => {
+      const selectNode: any = { kind: 'SelectQueryNode', from: { froms: [{ kind: 'UnknownNode' }] } };
+      expect((transformer as any).extractSourceTableFromSelectQuery(selectNode)).toBeUndefined();
+    });
+
+    test('transformResult returns rows as-is when entityMap empty', () => {
+      const rows = [{ a: 1 }];
+      const result = transformer.transformResult(rows as any, new Map());
+      expect(result).toBe(rows);
+    });
+
+    test('transformRow overwrites existing property and moves relation field', () => {
+      const fakeMeta: any = {
+        tableName: 'pet',
+        props: [
+          { name: 'firstName', fieldNames: ['first_name'], kind: ReferenceKind.SCALAR, properties: undefined },
+          { name: 'owner', fieldNames: ['owner_id'], kind: ReferenceKind.MANY_TO_ONE, properties: undefined },
+        ],
+        properties: {
+          firstName: { name: 'firstName', fieldNames: ['first_name'], kind: ReferenceKind.SCALAR },
+          owner: { name: 'owner', fieldNames: ['owner_id'], kind: ReferenceKind.MANY_TO_ONE },
+        },
+      };
+      const entityMap = new Map<string, any>();
+      entityMap.set(fakeMeta.tableName, fakeMeta);
+      const transformerWithProperty = new MikroTransformer(orm.em, { columnNamingStrategy: 'property', convertValues: false });
+
+      const rows = [{
+        first_name: 'Overwritten',
+        firstName: 'KeepMe',
+        owner_id: 123,
+      }];
+
+      const result = transformerWithProperty.transformResult(rows as any, entityMap)!;
+      expect(result[0].firstName).toBe('Overwritten'); // overwritten
+      expect(result[0].owner).toBe(123); // moved from owner_id
+      expect(result[0].owner_id).toBeUndefined();
+    });
+
+    test('transformRow relation mover runs when property map is empty', () => {
+      const transformerWithProperty = new MikroTransformer(orm.em, { columnNamingStrategy: 'property' });
+      const row = { owner_id: 55 };
+      const mapped = transformerWithProperty.transformRow(
+        row,
+        {},
+        { owner_id: 'owner' },
+      );
+      expect(mapped.owner).toBe(55);
+      expect(mapped.owner_id).toBeUndefined();
+    });
   });
 });

@@ -7,8 +7,6 @@ import {
   isRaw,
 } from '@mikro-orm/core';
 import {
-  type OperationNode,
- type UnknownRow,
   type CommonTableExpressionNameNode,
   type DeleteQueryNode,
   type IdentifierNode,
@@ -29,7 +27,8 @@ import {
   TableNode,
   ValueListNode,
   ValueNode,
-  ValuesNode } from 'kysely';
+  ValuesNode,
+} from 'kysely';
 import type { MikroPluginOptions } from './index.js';
 import type { SqlEntityManager } from '../SqlEntityManager.js';
 import type { AbstractSqlPlatform } from '../AbstractSqlPlatform.js';
@@ -691,7 +690,7 @@ export class MikroTransformer extends OperationNodeTransformer {
    * Process a FROM item (can be TableNode or AliasNode)
    */
   processFromItem(
-    from: OperationNode,
+    from: any, // OperationNode type - can be TableNode, AliasNode, or SelectQueryNode
     context: Map<string, EntityMetadata | undefined>,
   ): void {
     if (AliasNode.is(from)) {
@@ -884,9 +883,9 @@ export class MikroTransformer extends OperationNodeTransformer {
    * This is called for SELECT queries when columnNamingStrategy is 'property'
    */
   transformResult(
-    rows: UnknownRow[] | undefined,
+    rows: Record<string, any>[] | undefined,
     entityMap: Map<string, EntityMetadata>,
-  ): UnknownRow[] | undefined {
+  ): Record<string, any>[] | undefined {
     // Only transform if columnNamingStrategy is 'property' or convertValues is true, and we have data
     if ((this.options.columnNamingStrategy !== 'property' && !this.options.convertValues) || !rows || rows.length === 0) {
       return rows;
@@ -993,11 +992,11 @@ export class MikroTransformer extends OperationNodeTransformer {
    * Transform a single row by mapping column names to property names
    */
   transformRow(
-    row: UnknownRow,
+    row: Record<string, any>,
     fieldToPropertyMap: Record<string, EntityProperty>,
     relationFieldMap: Record<string, string>,
-  ): UnknownRow {
-    const transformed: UnknownRow = { ...row };
+  ): Record<string, any> {
+    const transformed: Record<string, any> = { ...row };
 
     // First pass: map regular fields from fieldName to propertyName and convert values
     for (const [fieldName, prop] of Object.entries(fieldToPropertyMap)) {
