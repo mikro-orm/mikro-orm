@@ -5,6 +5,7 @@ import { ColumnNode, PrimitiveValueListNode, ValueListNode, ValueNode, ValuesNod
 import { MikroORM as PostgresORM } from '@mikro-orm/postgresql';
 
 import { MikroTransformer } from '../../packages/knex/src/plugin/transformer.js';
+import { MikroPlugin } from '../../packages/knex/src/plugin/index.js';
 
 describe('MikroPlugin', () => {
   const Person = defineEntity({
@@ -1639,6 +1640,19 @@ describe('MikroPlugin', () => {
       expect(rows?.[0]?.created_at).toBeInstanceOf(Date);
     });
   });
+
+  test('transformResult returns original when conversion disabled', async () => {
+    const localOrm = new MikroORM({
+      entities: [Person],
+      dbName: ':memory:',
+    });
+    await localOrm.schema.refresh();
+    const plugin = new MikroPlugin(localOrm.em as any, {});
+    const originalResult: any = { rows: [{ id: 1 }], numAffectedRows: undefined };
+    const res = await plugin.transformResult({ queryId: {}, result: originalResult } as any);
+    expect(res).toBe(originalResult);
+    await localOrm.close(true);
+  });
 });
 
 describe('MikroTransformer', () => {
@@ -1961,4 +1975,5 @@ describe('MikroTransformer', () => {
       expect(mapped.owner_id).toBeUndefined();
     });
   });
+
 });
