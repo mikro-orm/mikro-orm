@@ -1,5 +1,7 @@
 import { defineEntity, p } from '@mikro-orm/core';
+import { vi } from 'vitest';
 import { InferKyselyTable, Kysely, MikroORM } from '@mikro-orm/sqlite';
+import { ColumnNode, ValueListNode, ValueNode, ValuesNode } from 'kysely';
 import { MikroORM as PostgresORM } from '@mikro-orm/postgresql';
 
 import { MikroTransformer } from '../../packages/knex/src/plugin/transformer.js';
@@ -41,6 +43,16 @@ describe('MikroPlugin', () => {
       name: p.string(),
       price: p.float(),
       pet: p.manyToOne(Pet),
+    },
+  });
+
+  const TypeEntity = defineEntity({
+    name: 'TypeEntity',
+    properties: {
+      id: p.integer().primary().autoincrement(),
+      createdAt: p.datetime().nullable(),
+      flag: p.boolean().nullable(),
+      payload: p.json().nullable(),
     },
   });
 
@@ -1533,26 +1545,210 @@ describe('MikroPlugin', () => {
       expect(result[0]).toHaveProperty('first_name');
     });
   });
+
+  describe('type conversions and timezone handling', () => {
+    interface TypeTable extends InferKyselyTable<typeof TypeEntity, 'property', true> {}
+    interface DB {
+      TypeEntity: TypeTable;
+    }
+
+    let orm: MikroORM;
+    let kysely: Kysely<DB>;
+
+    beforeAll(async () => {
+      orm = new MikroORM({
+        entities: [TypeEntity],
+        dbName: ':memory:',
+      });
+      await orm.schema.refresh();
+      kysely = orm.em.getKysely({
+        tableNamingStrategy: 'entity',
+        columnNamingStrategy: 'property',
+        convertValues: true,
+      });
+    });
+
+    afterEach(async () => {
+      await kysely.deleteFrom('TypeEntity').execute();
+      vi.restoreAllMocks();
+    });
+
+    afterAll(async () => {
+      await orm.close(true);
+    });
+
+    test('boolean and json custom type conversion', async () => {
+      const now = new Date('2024-01-01T00:00:00Z');
+      const inserted = await kysely
+        .insertInto('TypeEntity')
+        .values({
+          flag: 1 as any,
+          payload: JSON.stringify({ foo: 'bar', nested: { answer: 42 } }),
+          createdAt: now,
+        })
+        .returning('id')
+        .executeTakeFirstOrThrow();
+
+      const row = await kysely
+        .selectFrom('TypeEntity')
+        .selectAll()
+        .where('id', '=', inserted.id)
+        .executeTakeFirstOrThrow();
+
+      expect(row.flag).toBe(true);
+      const parsedPayload = typeof row.payload === 'string' ? JSON.parse(row.payload) : row.payload;
+      expect(parsedPayload).toEqual({ foo: 'bar', nested: { answer: 42 } });
+      expect(row.createdAt).toBeInstanceOf(Date);
+    });
+
+    test('timezone conversion when value has no timezone information', () => {
+      const platform = orm.em.getDriver().getPlatform();
+      const parseSpy = vi.spyOn(platform, 'parseDate');
+      vi.spyOn(platform, 'getTimezone').mockReturnValue('+05:00');
+
+      const transformer = new MikroTransformer(orm.em, { convertValues: true });
+      const meta = orm.getMetadata().find(TypeEntity.name)!;
+      const entityMap = new Map<string, typeof meta>();
+      entityMap.set(meta.tableName, meta);
+
+      const rows = transformer.transformResult(
+        [{ created_at: '2024-01-01 10:00:00' }] as any,
+        entityMap,
+      );
+
+      expect(parseSpy).toHaveBeenCalledWith('2024-01-01 10:00:00+05:00');
+      expect(rows?.[0]?.created_at).toBeInstanceOf(Date);
+    });
+  });
 });
 
-describe.skip('MikroTransformer', () => {
+describe('MikroTransformer', () => {
+  const TestEntity = defineEntity({
+    name: 'TestEntity',
+    properties: {
+      id: p.integer().primary().autoincrement(),
+      name: p.string(),
+      createdAt: p.datetime().onCreate(() => new Date()),
+      updatedAt: p.datetime().nullable().onUpdate(() => new Date()),
+      flag: p.boolean().nullable(),
+      payload: p.json().nullable(),
+    },
+  });
+
   let orm: MikroORM;
   let transformer: MikroTransformer;
+  const getMeta = () => orm.getMetadata().find(TestEntity.name)!;
 
   beforeAll(async () => {
     orm = new MikroORM({
-      entities: [],
+      entities: [TestEntity],
       dbName: ':memory:',
     });
     await orm.schema.refresh();
+  });
 
-    // Create transformer instance directly
-    transformer = new MikroTransformer(orm.em, {
-      tableNamingStrategy: 'entity',
-      columnNamingStrategy: 'property',
-      processOnCreateHooks: true,
-      processOnUpdateHooks: true,
-      convertValues: true,
-    });
+  afterAll(async () => {
+    await orm.close(true);
+  });
+
+  beforeEach(() => {
+    transformer = new MikroTransformer(orm.em, { convertValues: true });
+    vi.restoreAllMocks();
+  });
+
+  test('normalizeColumnName handles dotted identifiers', () => {
+    expect(transformer.normalizeColumnName({ name: 't.created_at' } as any)).toBe('created_at');
+    expect(transformer.normalizeColumnName({ name: 'created_at' } as any)).toBe('created_at');
+  });
+
+  test('findProperty returns undefined for missing meta or column', () => {
+    expect(transformer.findProperty(undefined as any, 'id')).toBeUndefined();
+    expect(transformer.findProperty(getMeta(), undefined)).toBeUndefined();
+  });
+
+  test('processOnCreateHooks returns original node when columns or values missing', () => {
+    const node = { kind: 'InsertQueryNode' } as any;
+    expect(transformer.processOnCreateHooks(node, getMeta())).toBe(node);
+  });
+
+  test('processOnCreateHooks keeps unknown row types intact', () => {
+    const node: any = {
+      kind: 'InsertQueryNode',
+      columns: [ColumnNode.create('id')],
+      values: ValuesNode.create([{ kind: 'UnknownRow' } as any]),
+    };
+
+    const result = transformer.processOnCreateHooks(node, getMeta());
+    expect(result.values && ValuesNode.is(result.values)).toBe(true);
+    if (result.values && ValuesNode.is(result.values)) {
+      expect(result.values.values[0]).toEqual({ kind: 'UnknownRow' });
+    }
+    expect(result.columns).toHaveLength(2); // adds missing onCreate column
+  });
+
+  test('processOnUpdateHooks returns original when no updates', () => {
+    const node = { kind: 'UpdateQueryNode' } as any;
+    expect(transformer.processOnUpdateHooks(node, getMeta())).toBe(node);
+  });
+
+  test('processInsertValues returns original when value length mismatches columns', () => {
+    const node: any = {
+      kind: 'InsertQueryNode',
+      columns: [ColumnNode.create('id'), ColumnNode.create('name')],
+      values: ValuesNode.create([
+        ValueListNode.create([
+          ValueNode.create(1),
+        ]),
+      ]),
+    };
+
+    expect(transformer.processInsertValues(node, getMeta())).toBe(node);
+  });
+
+  test('processUpdateValues returns original when updates missing or value is not ValueNode', () => {
+    const noUpdates = { kind: 'UpdateQueryNode' } as any;
+    expect(transformer.processUpdateValues(noUpdates, getMeta())).toBe(noUpdates);
+
+    const nodeWithNonValue = {
+      kind: 'UpdateQueryNode',
+      updates: [
+        {
+          column: ColumnNode.create('name'),
+          value: { kind: 'NotValueNode' },
+        },
+      ],
+    } as any;
+
+    expect(transformer.processUpdateValues(nodeWithNonValue, getMeta())).toBe(nodeWithNonValue);
+  });
+
+  test('prepareInputValue handles special values and custom types', () => {
+    const platform = orm.em.getDriver().getPlatform();
+    const processDateSpy = vi.spyOn(platform, 'processDateProperty').mockReturnValue('processed-date' as any);
+
+    const propWithCustom = { name: 'payload', customType: { convertToDatabaseValue: vi.fn().mockReturnValue('db-json') } } as any;
+    const propWithDate = { name: 'createdAt', customType: undefined } as any;
+
+    expect(transformer.prepareInputValue(propWithCustom, { foo: 'bar' }, true)).toBe('db-json');
+    expect(transformer.prepareInputValue(propWithDate, new Date(), true)).toBe('processed-date');
+
+    // Object with "kind" should be returned as-is
+    const valueWithKind = { kind: 'ValueNode' };
+    expect(transformer.prepareInputValue(propWithDate, valueWithKind, true)).toBe(valueWithKind);
+
+    expect(processDateSpy).toHaveBeenCalled();
+  });
+
+  test('getTableName/getCTEName/extractAliasName handle invalid nodes', () => {
+    expect(transformer.getTableName(undefined)).toBeUndefined();
+    const tableLike = { kind: 'TableNode', table: { kind: 'SchemableIdentifierNode' } } as any;
+    expect(transformer.getTableName(tableLike)).toBeUndefined();
+
+    expect(transformer.getCTEName({ table: { kind: 'IdentifierNode' } } as any)).toBeUndefined();
+    expect(transformer.extractAliasName('alias')).toBeUndefined();
+  });
+
+  test('findOwnerEntityInContext returns undefined when context stack is empty', () => {
+    expect(transformer.findOwnerEntityInContext()).toBeUndefined();
   });
 });

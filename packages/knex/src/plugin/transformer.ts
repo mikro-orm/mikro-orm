@@ -879,57 +879,6 @@ export class MikroTransformer extends OperationNodeTransformer {
   }
 
   /**
-   * Extract the primary table metadata from a SELECT query at the top level
-   * This is called in transformQuery to determine the main entity being queried
-   * Supports CTE resolution by recursively inspecting WITH clauses
-   */
-  extractPrimaryTableFromQuery(selectNode: SelectQueryNode): EntityMetadata | undefined {
-    if (!selectNode.from?.froms || selectNode.from.froms.length === 0) {
-      return undefined;
-    }
-
-    // Get the first FROM table or CTE reference
-    const firstFrom = selectNode.from.froms[0];
-    let sourceTableName: string | undefined;
-
-    if (AliasNode.is(firstFrom) && TableNode.is(firstFrom.node)) {
-      sourceTableName = this.getTableName(firstFrom.node);
-    } else if (TableNode.is(firstFrom)) {
-      sourceTableName = this.getTableName(firstFrom);
-    }
-
-    if (!sourceTableName) {
-      return undefined;
-    }
-
-    // 1. Try to find entity metadata directly
-    const meta = this.findEntityMetadata(sourceTableName);
-    if (meta) {
-      return meta;
-    }
-
-    // 2. Try to resolve CTEs
-    if (selectNode.with) {
-      for (const cte of selectNode.with.expressions) {
-        // Check if this CTE matches the table name
-        const cteName = this.getCTEName(cte.name);
-        if (cteName === sourceTableName && cte.expression?.kind === 'SelectQueryNode') {
-          // Recursively resolve the CTE source
-          // Prevent infinite recursion for recursive CTEs by checking if the source table is the same as CTE name
-          // (Simple cycle detection)
-          const cteSelect = cte.expression as SelectQueryNode;
-          const cteSourceMeta = this.extractPrimaryTableFromQuery(cteSelect);
-          if (cteSourceMeta) {
-            return cteSourceMeta;
-          }
-        }
-      }
-    }
-
-    return undefined;
-  }
-
-  /**
    * Transform result rows by mapping database column names to property names
    * This is called for SELECT queries when columnNamingStrategy is 'property'
    */
