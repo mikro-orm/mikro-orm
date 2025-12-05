@@ -99,7 +99,7 @@ const kysely = orm.em.getKysely({
 });
 ```
 
-### tableNamingStrategy Option
+### `tableNamingStrategy`
 
 This option controls how you reference tables in Kysely queries.
 
@@ -117,7 +117,7 @@ await kysely.selectFrom('User').selectAll().execute();
 // Generated SQL: select * from "users"
 ```
 
-### columnNamingStrategy Option
+### `columnNamingStrategy`
 
 This option controls how you reference columns in Kysely queries and how results are mapped.
 
@@ -142,7 +142,7 @@ const users = await kysely
 console.log(users[0].firstName); // 'John'
 ```
 
-### processOnCreateHooks Option
+### `processOnCreateHooks`
 
 Boolean, defaults to `false`.
 
@@ -161,7 +161,7 @@ await kysely.insertInto('user').values({ name: 'John' }).execute();
 // insert into "user" ("name", "created_at") values (?, ?)
 ```
 
-### processOnUpdateHooks Option
+### `processOnUpdateHooks`
 
 Boolean, defaults to `false`.
 
@@ -183,7 +183,7 @@ await kysely
 // update "user" set "name" = ?, "updated_at" = ? where "id" = ?
 ```
 
-### convertValues Option
+### `convertValues`
 
 Boolean, defaults to `false`.
 
