@@ -20,8 +20,7 @@ const kysely = orm.em.getKysely();
 When you define entities using `defineEntity` and pass them to the ORM, `getKysely()` automatically infers table structures from entity metadata, providing full type safety without manually defining interfaces.
 
 ```ts
-import { defineEntity, p } from '@mikro-orm/core';
-import { MikroORM } from '@mikro-orm/postgresql'; // or any other SQL driver package
+import { MikroORM, defineEntity, p } from '@mikro-orm/core';
 
 const User = defineEntity({
   name: 'User',
