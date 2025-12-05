@@ -71,7 +71,7 @@ const jon = em.create(Author, {
 });
 
 // this will trigger auto flush and insert the entity, then query for it
-const jon2 = await em.findOne(Author, 1);
+const jon2 = await em.findOne(Author, jon.id);
 console.log(jon === jon2); // true
 await em.flush(); // this is a no-op
 ```
