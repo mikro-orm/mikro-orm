@@ -1,11 +1,9 @@
 import { defineEntity, p, ReferenceKind } from '@mikro-orm/core';
 import { vi } from 'vitest';
-import { InferKyselyTable, Kysely, MikroORM } from '@mikro-orm/sqlite';
+import { InferKyselyTable, Kysely, MikroORM, MikroPluginOptions, MikroPlugin } from '@mikro-orm/sqlite';
 import { ColumnNode, PrimitiveValueListNode, ValueListNode, ValueNode, ValuesNode } from 'kysely';
 import { MikroORM as PostgresORM } from '@mikro-orm/postgresql';
-
 import { MikroTransformer } from '../../packages/knex/src/plugin/transformer.js';
-import { MikroPlugin } from '../../packages/knex/src/plugin/index.js';
 
 describe('MikroPlugin', () => {
   const Person = defineEntity({
@@ -58,9 +56,13 @@ describe('MikroPlugin', () => {
   });
 
   describe('tableNamingStrategy: entity', () => {
-    interface PersonTable extends InferKyselyTable<typeof Person, 'underscore'> {}
-    interface PetTable extends InferKyselyTable<typeof Pet, 'underscore'> {}
-    interface ToyTable extends InferKyselyTable<typeof Toy, 'underscore'> {}
+    const options = {
+      tableNamingStrategy: 'entity',
+      convertValues: true,
+    } satisfies MikroPluginOptions;
+    interface PersonTable extends InferKyselyTable<typeof Person, typeof options> {}
+    interface PetTable extends InferKyselyTable<typeof Pet, typeof options> {}
+    interface ToyTable extends InferKyselyTable<typeof Toy, typeof options> {}
     interface DB {
       Person: PersonTable;
       Pet: PetTable;
@@ -350,9 +352,9 @@ describe('MikroPlugin', () => {
   });
 
   describe('columnNamingStrategy: property', () => {
-    interface PersonTable extends InferKyselyTable<typeof Person, 'property', true> {}
-    interface PetTable extends InferKyselyTable<typeof Pet, 'property', true> {}
-    interface ToyTable extends InferKyselyTable<typeof Toy, 'property', true> {}
+    interface PersonTable extends InferKyselyTable<typeof Person, { columnNamingStrategy: 'property'; processOnCreateHooks: true }> {}
+    interface PetTable extends InferKyselyTable<typeof Pet, { columnNamingStrategy: 'property'; processOnCreateHooks: true }> {}
+    interface ToyTable extends InferKyselyTable<typeof Toy, { columnNamingStrategy: 'property'; processOnCreateHooks: true }> {}
     interface DB {
       person: PersonTable;
       pet: PetTable;
@@ -796,9 +798,9 @@ describe('MikroPlugin', () => {
   });
 
   describe('processOnCreateHooks', () => {
-    interface PersonTable extends InferKyselyTable<typeof Person, 'property', true> {}
-    interface PetTable extends InferKyselyTable<typeof Pet, 'property', true> {}
-    interface ToyTable extends InferKyselyTable<typeof Toy, 'property', true> {}
+    interface PersonTable extends InferKyselyTable<typeof Person, { columnNamingStrategy: 'property'; processOnCreateHooks: true }> {}
+    interface PetTable extends InferKyselyTable<typeof Pet, { columnNamingStrategy: 'property'; processOnCreateHooks: true }> {}
+    interface ToyTable extends InferKyselyTable<typeof Toy, { columnNamingStrategy: 'property'; processOnCreateHooks: true }> {}
     interface DB {
       Person: PersonTable;
       Pet: PetTable;
@@ -973,9 +975,9 @@ describe('MikroPlugin', () => {
   });
 
   describe('processOnUpdateHooks', () => {
-    interface PersonTable extends InferKyselyTable<typeof Person, 'property', true> {}
-    interface PetTable extends InferKyselyTable<typeof Pet, 'property', true> {}
-    interface ToyTable extends InferKyselyTable<typeof Toy, 'property', true> {}
+    interface PersonTable extends InferKyselyTable<typeof Person, { columnNamingStrategy: 'property'; processOnCreateHooks: true }> {}
+    interface PetTable extends InferKyselyTable<typeof Pet, { columnNamingStrategy: 'property'; processOnCreateHooks: true }> {}
+    interface ToyTable extends InferKyselyTable<typeof Toy, { columnNamingStrategy: 'property'; processOnCreateHooks: true }> {}
     interface DB {
       Person: PersonTable;
       Pet: PetTable;
@@ -1388,7 +1390,7 @@ describe('MikroPlugin', () => {
 
     test('UPDATE with convertValues false', async () => {
       // Create kysely instance without convertValues
-      interface PersonTableNoConvert extends InferKyselyTable<typeof Person, 'property', true> {}
+      interface PersonTableNoConvert extends InferKyselyTable<typeof Person, { columnNamingStrategy: 'property'; processOnCreateHooks: true }> {}
       interface DBNoConvert {
         Person: PersonTableNoConvert;
       }
@@ -1420,7 +1422,7 @@ describe('MikroPlugin', () => {
       }).execute();
 
       // Create kysely instance without convertValues
-      interface PersonTableNoConvert extends InferKyselyTable<typeof Person, 'property', true> {}
+      interface PersonTableNoConvert extends InferKyselyTable<typeof Person, { columnNamingStrategy: 'property'; processOnCreateHooks: true }> {}
       interface DBNoConvert {
         Person: PersonTableNoConvert;
       }
@@ -1461,7 +1463,7 @@ describe('MikroPlugin', () => {
       }).execute();
 
       // Create kysely instance without processOnUpdateHooks
-      interface PersonTableNoHook extends InferKyselyTable<typeof Person, 'property', true> {}
+      interface PersonTableNoHook extends InferKyselyTable<typeof Person, { columnNamingStrategy: 'property'; processOnCreateHooks: true }> {}
       interface DBNoHook {
         Person: PersonTableNoHook;
       }
@@ -1567,7 +1569,7 @@ describe('MikroPlugin', () => {
   });
 
   describe('type conversions and timezone handling', () => {
-    interface TypeTable extends InferKyselyTable<typeof TypeEntity, 'property', true> {}
+    interface TypeTable extends InferKyselyTable<typeof TypeEntity, { columnNamingStrategy: 'property'; processOnCreateHooks: true }> {}
     interface DB {
       TypeEntity: TypeTable;
     }

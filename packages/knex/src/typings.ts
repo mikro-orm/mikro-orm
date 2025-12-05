@@ -236,12 +236,19 @@ export type MapByName<T extends { name: string; tableName?: string }> = {
 
 export type MapValueAsTable<TMap extends Record<string, any>, TOptions extends MikroPluginOptions = {}> = {
   [K in keyof TMap as TransformName<K, TOptions['tableNamingStrategy'] extends 'entity' ? 'entity' : 'underscore' >]:
-    InferKyselyTable<TMap[K], TOptions['columnNamingStrategy'] extends 'property' ? 'property' : 'underscore', TOptions['processOnCreateHooks'] extends true ? true : false>
+    InferKyselyTable<TMap[K], TOptions>
 };
 
-export type InferKyselyTable<TSchema extends EntitySchemaWithMeta, TNamingStrategy extends 'underscore' | 'property' = 'underscore', TProcessOnCreate extends boolean = false> = ExcludeNever<{
-  -readonly [K in keyof InferEntityProperties<TSchema> as TransformColumnName<K, TNamingStrategy, MaybeReturnType<InferEntityProperties<TSchema>[K]>>]:
-    InferColumnValue<MaybeReturnType<InferEntityProperties<TSchema>[K]>, TProcessOnCreate>;
+export type InferKyselyTable<TSchema extends EntitySchemaWithMeta, TOptions extends MikroPluginOptions = {}> = ExcludeNever<{
+  -readonly [K in keyof InferEntityProperties<TSchema> as TransformColumnName<
+    K,
+    TOptions['columnNamingStrategy'] extends 'property' ? 'property' : 'underscore',
+    MaybeReturnType<InferEntityProperties<TSchema>[K]>
+  >]:
+    InferColumnValue<
+      MaybeReturnType<InferEntityProperties<TSchema>[K]>,
+      TOptions['processOnCreateHooks'] extends true ? true : false
+    >;
 }>;
 
 type TransformName<TName, TNamingStrategy extends 'underscore' | 'entity'> =
