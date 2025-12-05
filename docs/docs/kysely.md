@@ -3,13 +3,13 @@ title: Using Kysely
 sidebar_label: Kysely
 ---
 
-MikroORM provides first-class integration with [Kysely](https://kysely.dev/), a type-safe SQL query builder. Through this integration, you can obtain a configured Kysely instance directly from `EntityManager`, leveraging MikroORM's metadata to drive Kysely's query transformation and type inference.
+MikroORM provides first-class integration with [Kysely](https://kysely.dev/), a type-safe SQL query builder. Through this integration, you can get a configured Kysely instance directly from `EntityManager`, leveraging MikroORM's metadata to drive Kysely's query transformation and type inference.
 
 This allows you to write lower-level SQL queries while maintaining type safety and reusing entity relationships and hooks defined in MikroORM.
 
 ## Initializing Kysely Instance
 
-You can obtain a Kysely instance through the `em.getKysely()` method.
+You can get a Kysely instance through the `em.getKysely()` method.
 
 ```ts
 const kysely = orm.em.getKysely();
