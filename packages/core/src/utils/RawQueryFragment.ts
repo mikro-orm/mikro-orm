@@ -101,8 +101,8 @@ export class RawQueryFragment {
     }
   }
 
-  /* v8 ignore next 8 */
   /** @ignore */
+  /* v8 ignore next */
   [inspect.custom]() {
     if (this.params) {
       return { sql: this.sql, params: this.params };

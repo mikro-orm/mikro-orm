@@ -219,7 +219,7 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
       return;
     }
 
-    /* v8 ignore next 4 */
+    /* v8 ignore next */
     if (key === '$and') {
       o.$and.push({ [key]: value });
       return;

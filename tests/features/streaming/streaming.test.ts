@@ -13,6 +13,7 @@ import { PLATFORMS } from '../../bootstrap.js';
 
 const options = {
   sqlite: { dbName: ':memory:' },
+  libsql: { dbName: ':memory:' },
   mysql: { port: 3308 },
   mariadb: { port: 3309 },
   postgresql: {},

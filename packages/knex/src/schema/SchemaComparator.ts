@@ -390,7 +390,7 @@ export class SchemaComparator {
       const removedColumnName = removedColumn.name;
       const addedColumnName = addedColumn.name;
 
-      /* v8 ignore next 3 */
+      /* v8 ignore next */
       if (tableDifferences.renamedColumns[removedColumnName]) {
         continue;
       }
@@ -655,7 +655,7 @@ export class SchemaComparator {
   }
 
   parseJsonDefault(defaultValue?: string | null): Dictionary | string | null {
-    /* v8 ignore next 3 */
+    /* v8 ignore next */
     if (!defaultValue) {
       return null;
     }

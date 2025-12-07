@@ -103,7 +103,7 @@ export class SchemaCommandFactory {
       const m = `get${method.substr(0, 1).toUpperCase()}${method.substr(1)}SchemaSQL` as 'getCreateSchemaSQL' | 'getUpdateSchemaSQL' | 'getDropSchemaSQL';
       const dump = await orm.schema[m](params);
 
-      /* v8 ignore next 3 */
+      /* v8 ignore if */
       if (dump) {
         CLIHelper.dump(dump, orm.config);
         successMessage = '';

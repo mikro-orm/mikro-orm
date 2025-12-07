@@ -64,7 +64,7 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
       return true;
     }
 
-    /* v8 ignore next 3 */
+    /* v8 ignore next */
     if (options?.clear) {
       await this.clear({ ...options, clearIdentityMap: false });
     }
@@ -106,7 +106,7 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
       const created: string[] = [];
 
       for (const [enumName, enumOptions] of Object.entries(toSchema.getNativeEnums())) {
-        /* v8 ignore next 3 */
+        /* v8 ignore next */
         if (created.includes(enumName)) {
           continue;
         }
@@ -154,7 +154,7 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
 
   override async clear(options?: ClearDatabaseOptions): Promise<void> {
     // truncate by default, so no value is considered as true
-    /* v8 ignore next 3 */
+    /* v8 ignore next */
     if (options?.truncate === false) {
       return super.clear(options);
     }

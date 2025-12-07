@@ -194,7 +194,7 @@ export class DataloaderUtils {
         const entities = resultsMap.get(key);
         if (entities == null) {
           // Should never happen
-          /* v8 ignore next 3 */
+          /* v8 ignore next */
           throw new Error('Cannot match results');
         }
         return entities.filter(DataloaderUtils.getColFilter(col));
@@ -258,7 +258,7 @@ export class DataloaderUtils {
 
       return (this.DataLoader ??= DataLoader);
     } catch {
-      /* v8 ignore next 2 */
+      /* v8 ignore next */
       throw new Error('DataLoader is not found, make sure `dataloader` package is installed in your project\'s dependencies.');
     }
   }

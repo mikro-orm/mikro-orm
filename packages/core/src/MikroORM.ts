@@ -10,8 +10,70 @@ import { colors } from './logging/colors.js';
 import type { EntityManager } from './EntityManager.js';
 import type { AnyEntity, Constructor, EntityClass, EntityMetadata, EntityName, IEntityGenerator, IMigrator, ISeedManager } from './typings.js';
 
+async function registerExtension(name: string, mod: Promise<any>, extensions: Options['extensions']): Promise<void> {
+  /* v8 ignore next */
+  const resolved = await mod.catch(() => null);
+  const module = resolved?.[name];
+
+  /* v8 ignore else */
+  if (module) {
+    extensions!.push(module);
+  }
+}
+
+/** @internal */
+export async function lookupExtensions(options: Options): Promise<void> {
+  const extensions = options.extensions ?? [];
+  const exists = (name: string) => extensions.some(ext => (ext as any).name === name);
+
+  if (!exists('SeedManager')) {
+    await registerExtension('SeedManager', import('@mikro-orm/seeder'), extensions);
+  }
+
+  if (!exists('Migrator')) {
+    await registerExtension('Migrator', import('@mikro-orm/migrations'), extensions);
+  }
+
+  /* v8 ignore if */
+  if (!exists('Migrator')) {
+    await registerExtension('Migrator', import('@mikro-orm/migrations-mongodb'), extensions);
+  }
+
+  if (!exists('EntityGenerator')) {
+    await registerExtension('EntityGenerator', import('@mikro-orm/entity-generator'), extensions);
+  }
+
+  options.extensions = extensions;
+}
+
+
 /**
- * Helper class for bootstrapping the MikroORM.
+ * The main class used to configure and bootstrap the ORM.
+ *
+ * @example
+ * ```ts
+ * // import from driver package
+ * import { MikroORM, defineEntity, p } from '@mikro-orm/sqlite';
+ *
+ * const User = defineEntity({
+ *   name: 'User',
+ *   properties: {
+ *     id: p.integer().primary(),
+ *     name: p.string(),
+ *   },
+ * });
+ *
+ * const orm = new MikroORM({
+ *   entities: [User],
+ *   dbName: 'my.db',
+ * });
+ * await orm.schema.update();
+ *
+ * const em = orm.em.fork();
+ * const u1 = em.create(User, { name: 'John' });
+ * const u2 = em.create(User, { name: 'Ben' });
+ * await em.flush();
+ * ```
  */
 export class MikroORM<
   Driver extends IDatabaseDriver = IDatabaseDriver,
@@ -36,13 +98,15 @@ export class MikroORM<
     EM extends D[typeof EntityManagerType] & EntityManager<D> = D[typeof EntityManagerType] & EntityManager<D>,
     Entities extends (string | EntityClass<AnyEntity> | EntitySchema)[] = (string | EntityClass<AnyEntity> | EntitySchema)[],
   >(options: Options<D, EM, Entities>): Promise<MikroORM<D, EM, Entities>> {
-    /* v8 ignore next 3 */
+    /* v8 ignore next */
     if (!options) {
       throw new Error(`options parameter is required`);
     }
 
+    options = { ...options };
     options.discovery ??= {};
     options.discovery.skipSyncDiscovery ??= true;
+    await lookupExtensions(options);
     const orm = new this<D, EM, Entities>(options);
     const preferTs = orm.config.get('preferTs', Utils.detectTypeScriptSupport());
     orm.metadata = await orm.discovery.discover(preferTs);
@@ -59,13 +123,12 @@ export class MikroORM<
    */
   constructor(options: Options<Driver, EM, Entities>) {
     const env = ConfigurationLoader.loadEnvironmentVars<Driver>();
-    const coreVersion = ConfigurationLoader.checkPackageVersion();
     options = Utils.merge(options, env);
     this.config = new Configuration(options);
     const discovery = this.config.get('discovery');
     this.driver = this.config.getDriver();
     this.logger = this.config.getLogger();
-    this.logger.log('info', `MikroORM version: ${colors.green(coreVersion)}`);
+    this.logger.log('info', `MikroORM version: ${colors.green(Utils.getORMVersion())}`);
     this.discovery = new MetadataDiscovery(new MetadataStorage(), this.driver.getPlatform(), this.config);
     this.driver.getPlatform().init(this);
 
@@ -91,7 +154,7 @@ export class MikroORM<
    * Reconnects, possibly to a different database.
    */
   async reconnect(options: Partial<Options<Driver, EM, Entities>> = {}): Promise<void> {
-    /* v8 ignore next 3 */
+    /* v8 ignore next */
     for (const key of Utils.keys(options)) {
       this.config.set(key, options[key]!);
     }
@@ -107,7 +170,7 @@ export class MikroORM<
   }
 
   /**
-   * Checks whether the database connection is active, returns .
+   * Checks whether the database connection is active, returns the reason if not.
    */
   async checkConnection(): Promise<{ ok: true } | { ok: false; reason: string; error?: Error }> {
     return this.driver.getConnection().checkConnection();
@@ -118,15 +181,8 @@ export class MikroORM<
    */
   async close(force = false): Promise<void> {
     await this.driver.close(force);
-
-    if (this.config.getMetadataCacheAdapter()?.close) {
-      await this.config.getMetadataCacheAdapter().close!();
-    }
-
-    if (this.config.getResultCacheAdapter()?.close) {
-      await this.config.getResultCacheAdapter().close!();
-    }
-
+    await this.config.getMetadataCacheAdapter().close?.();
+    await this.config.getResultCacheAdapter().close?.();
   }
 
   /**

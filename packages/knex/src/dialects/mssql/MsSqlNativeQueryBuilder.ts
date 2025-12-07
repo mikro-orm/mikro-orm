@@ -195,7 +195,7 @@ export class MsSqlNativeQueryBuilder extends NativeQueryBuilder {
     }
 
     if (this.options.offset != null) {
-      /* v8 ignore next 3 */
+      /* v8 ignore next */
       if (!this.options.orderBy) {
         throw new Error('Order by clause is required for pagination');
       }

@@ -72,7 +72,7 @@ export class EntityComparator {
   getPkGetter<T>(meta: EntityMetadata<T>) {
     const exists = this.pkGetters.get(meta.className);
 
-    /* v8 ignore next 3 */
+    /* v8 ignore next */
     if (exists) {
       return exists;
     }
@@ -132,7 +132,7 @@ export class EntityComparator {
   getPkGetterConverted<T>(meta: EntityMetadata<T>) {
     const exists = this.pkGettersConverted.get(meta.className);
 
-    /* v8 ignore next 3 */
+    /* v8 ignore next */
     if (exists) {
       return exists;
     }
@@ -186,7 +186,7 @@ export class EntityComparator {
   getPkSerializer<T>(meta: EntityMetadata<T>) {
     const exists = this.pkSerializers.get(meta.className);
 
-    /* v8 ignore next 3 */
+    /* v8 ignore next */
     if (exists) {
       return exists;
     }
@@ -583,7 +583,7 @@ export class EntityComparator {
   private registerCustomType<T>(prop: EntityProperty<T>, context: Map<string, any>) {
     const convertorKey = this.safeKey(prop.name);
     context.set(`convertToDatabaseValue_${convertorKey}`, (val: any) => {
-      /* v8 ignore next 3 */
+      /* v8 ignore next */
       if (RawQueryFragment.isKnownFragment(val)) {
         return val;
       }

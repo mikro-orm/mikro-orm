@@ -65,7 +65,7 @@ export class MariaDbQueryBuilder<
     subQuery.finalized = true;
     const innerQuery = subQuery.as(this.mainAlias.aliasName).clear('select').select(pks);
 
-    /* v8 ignore start */
+    /* v8 ignore next */
     if (addToSelect.length > 0) {
       addToSelect.forEach(prop => {
         const field = this._fields!.find(field => {
@@ -88,7 +88,6 @@ export class MariaDbQueryBuilder<
         }
       });
     }
-    /* v8 ignore stop */
 
     // multiple sub-queries are needed to get around mysql limitations with order by + limit + where in + group by (o.O)
     // https://stackoverflow.com/questions/17892762/mysql-this-version-of-mysql-doesnt-yet-support-limit-in-all-any-some-subqu
@@ -119,7 +118,7 @@ export class MariaDbQueryBuilder<
     for (const [key, join] of Object.entries(this._joins)) {
       const path = join.path?.replace(/\[populate]|\[pivot]|:ref/g, '').replace(new RegExp(`^${meta.className}.`), '');
 
-      /* v8 ignore next 3 */
+      /* v8 ignore next */
       if (!populate.has(path ?? '') && !orderByAliases.includes(join.alias)) {
         delete this._joins[key];
       }

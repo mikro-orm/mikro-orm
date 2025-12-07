@@ -60,7 +60,7 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
   }
 
   override convertDateToJSValue(value: string | Date): string {
-    /* v8 ignore next 3 */
+    /* v8 ignore next */
     if (typeof value === 'string') {
       return value;
     }
@@ -210,7 +210,7 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
     const cast = (key: string) => raw(type in types ? `cast(${key} as ${types[type]})` : key);
     const quoteKey = (key: string) => key.match(/^[a-z]\w*$/i) ? key : `"${key}"`;
 
-    /* v8 ignore next 3 */
+    /* v8 ignore next */
     if (path.length === 0) {
       return cast(`json_value(${root}, '$.${b.map(quoteKey).join('.')}')`);
     }
@@ -219,7 +219,7 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
   }
 
   override normalizePrimaryKey<T extends number | string = number | string>(data: Primary<T> | IPrimaryKey | string): T {
-    /* v8 ignore next 3 */
+    /* v8 ignore next */
     if (data instanceof UnicodeString) {
       return data.value as T;
     }
@@ -263,7 +263,7 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
     return SqlString.escape(value);
   }
 
-  /* v8 ignore next 3: kept for type inference only */
+  /* v8 ignore next: kept for type inference only */
   override getSchemaGenerator(driver: IDatabaseDriver, em?: EntityManager): MsSqlSchemaGenerator {
     return new MsSqlSchemaGenerator(em ?? driver as any);
   }

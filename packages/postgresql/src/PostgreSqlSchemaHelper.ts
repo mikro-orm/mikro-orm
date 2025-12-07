@@ -269,7 +269,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
         return match[1];
       }
 
-      /* v8 ignore next 8 */
+      /* v8 ignore next */
       switch (value) {
         case 'r': return 'RESTRICT';
         case 'c': return 'CASCADE';
@@ -386,7 +386,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
         const m3 = m2[1].match(/('[^']*'::text)/g);
         let items: (string | undefined)[];
 
-        /* v8 ignore next 5 */
+        /* v8 ignore next */
         if (m3) {
           items = m3.map((item: string) => item.trim().match(/^\(?'(.*)'/)?.[1]);
         } else {

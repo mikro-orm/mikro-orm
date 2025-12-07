@@ -69,7 +69,7 @@ export abstract class AbstractSchemaGenerator<D extends IDatabaseDriver> impleme
   }
 
   protected clearIdentityMap(): void {
-    /* v8 ignore next 3 */
+    /* v8 ignore next */
     if (!this.em) {
       return;
     }
