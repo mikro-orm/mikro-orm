@@ -3,7 +3,7 @@ import { type EntitySchema } from './metadata/EntitySchema.js';
 import { MetadataDiscovery } from './metadata/MetadataDiscovery.js';
 import { MetadataStorage } from './metadata/MetadataStorage.js';
 import { Configuration, type Options } from './utils/Configuration.js';
-import { ConfigurationLoader } from './utils/ConfigurationLoader.js';
+import { loadEnvironmentVars } from './utils/env-vars.js';
 import { Utils } from './utils/Utils.js';
 import { type Logger } from './logging/Logger.js';
 import { colors } from './logging/colors.js';
@@ -44,6 +44,13 @@ export async function lookupExtensions(options: Options): Promise<void> {
   }
 
   options.extensions = extensions;
+
+  const metadataCacheEnabled = options.metadataCache?.enabled || options.metadataProvider?.useCache?.();
+
+  if (metadataCacheEnabled) {
+    options.metadataCache ??= {};
+    options.metadataCache.adapter ??= await import('@mikro-orm/core/fs-utils').then(m => m.FileCacheAdapter);
+  }
 }
 
 
@@ -122,7 +129,7 @@ export class MikroORM<
    * - no support for folder based discovery
    */
   constructor(options: Options<Driver, EM, Entities>) {
-    const env = ConfigurationLoader.loadEnvironmentVars<Driver>();
+    const env = loadEnvironmentVars();
     options = Utils.merge(options, env);
     this.config = new Configuration(options);
     const discovery = this.config.get('discovery');

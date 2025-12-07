@@ -1,4 +1,5 @@
-import { type EntityMetadata,
+import {
+  type EntityMetadata,
   ReferenceKind,
   type ManyToOneOptions,
   type EntityKey,

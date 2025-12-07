@@ -19,6 +19,7 @@ import {
   type Transaction,
   Utils,
 } from '@mikro-orm/core';
+import { fs } from '@mikro-orm/core/fs-utils';
 import type { EntityManager, MongoDriver } from '@mikro-orm/mongodb';
 import type { Migration } from './Migration.js';
 import { MigrationRunner } from './MigrationRunner.js';
@@ -42,6 +43,7 @@ export class Migrator implements IMigrator {
     this.driver = this.em.getDriver();
     this.config = this.em.config;
     this.options = this.config.get('migrations');
+    this.detectSourceFolder();
 
     /* v8 ignore next */
     const key = (this.config.get('preferTs', Utils.detectTypeScriptSupport()) && this.options.pathTs) ? 'pathTs' : 'path';
@@ -51,6 +53,37 @@ export class Migrator implements IMigrator {
 
   static register(orm: MikroORM): void {
     orm.config.registerExtension('@mikro-orm/migrator', () => new Migrator(orm.em as EntityManager));
+  }
+
+  /**
+   * Checks if `src` folder exists, it so, tries to adjust the migrations and seeders paths automatically to use it.
+   * If there is a `dist` or `build` folder, it will be used for the JS variant (`path` option), while the `src` folder will be
+   * used for the TS variant (`pathTs` option).
+   *
+   * If the default folder exists (e.g. `/migrations`), the config will respect that, so this auto-detection should not
+   * break existing projects, only help with the new ones.
+   */
+  private detectSourceFolder(): void {
+    const baseDir = this.config.get('baseDir');
+    const defaultPath = './migrations';
+
+    if (!fs.pathExists(baseDir + '/src')) {
+      this.options.path ??= defaultPath;
+      return;
+    }
+
+    const exists = fs.pathExists(`${baseDir}/${defaultPath}`);
+    const distDir = fs.pathExists(baseDir + '/dist');
+    const buildDir = fs.pathExists(baseDir + '/build');
+    // if neither `dist` nor `build` exist, we use the `src` folder as it might be a JS project without building, but with `src` folder
+    /* v8 ignore next */
+    const path = distDir ? './dist' : (buildDir ? './build' : './src');
+
+    // only if the user did not provide any values and if the default path does not exist
+    if (!this.options.path && !this.options.pathTs && !exists) {
+      this.options.path = `${path}/migrations`;
+      this.options.pathTs = './src/migrations';
+    }
   }
 
   /**
@@ -254,7 +287,7 @@ export class Migrator implements IMigrator {
 
   private ensureMigrationsDirExists() {
     if (!this.options.migrationsList) {
-      Utils.ensureDir(this.absolutePath);
+      fs.ensureDir(this.absolutePath);
     }
   }
 
