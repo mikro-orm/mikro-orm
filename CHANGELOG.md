@@ -3,6 +3,29 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.6.2](https://github.com/mikro-orm/mikro-orm/compare/v6.6.1...v6.6.2) (2025-12-07)
+
+
+### Bug Fixes
+
+* **core:** deprecate some EM and MikroORM methods ([551b1df](https://github.com/mikro-orm/mikro-orm/commit/551b1df61f816af45c5adc0841dea0c481f4765d))
+* **core:** fix joining embedded entity with virtual property ([2a76b1d](https://github.com/mikro-orm/mikro-orm/commit/2a76b1da7cb641659c340fd4c121ec90da94d925)), closes [#7023](https://github.com/mikro-orm/mikro-orm/issues/7023)
+* **core:** handle `BigInt` in `Date` hydration ([#7003](https://github.com/mikro-orm/mikro-orm/issues/7003)) ([236b429](https://github.com/mikro-orm/mikro-orm/commit/236b429d07869871d5436d6c841ad45d985b3538)), closes [#7002](https://github.com/mikro-orm/mikro-orm/issues/7002)
+
+
+### Features
+
+* **core:** use upsert when adding items to not initialized M:N collections ([#7019](https://github.com/mikro-orm/mikro-orm/issues/7019)) ([268f378](https://github.com/mikro-orm/mikro-orm/commit/268f3789110b83c8b59e321f55e55fa937ade925)), closes [#6625](https://github.com/mikro-orm/mikro-orm/issues/6625)
+
+
+### Performance Improvements
+
+* **core:** store subscribers in `Set` to deduplicate them by identity ([#7010](https://github.com/mikro-orm/mikro-orm/issues/7010)) ([a41c498](https://github.com/mikro-orm/mikro-orm/commit/a41c49884c8c958acb3d4576d0f301ed0d5c38bf)), closes [#7009](https://github.com/mikro-orm/mikro-orm/issues/7009)
+
+
+
+
+
 ## [6.6.1](https://github.com/mikro-orm/mikro-orm/compare/v6.6.0...v6.6.1) (2025-11-25)
 
 
