@@ -165,7 +165,7 @@ export class QueryHelper {
 
     where = QueryHelper.processParams(where) ?? {};
 
-    /* v8 ignore next 3 */
+    /* v8 ignore next */
     if (!root && Utils.isPrimaryKey<T>(where)) {
       return where;
     }

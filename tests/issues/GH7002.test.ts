@@ -4,7 +4,7 @@ import { EntityComparator, EntityData, MikroORM } from '@mikro-orm/sqlite';
 @Entity()
 class GH7002 {
 
-  @PrimaryKey()
+  @PrimaryKey({ type: 'integer' })
   id!: number;
 
   @Property({ type: 'Date' })

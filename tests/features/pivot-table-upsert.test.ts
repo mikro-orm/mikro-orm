@@ -56,12 +56,12 @@ describe('pivot table with uninitialized collection (GH issue)', () => {
       entities: [Author, Book, Student, Course, Enrollment],
       dbName: ':memory:',
     });
-    await orm.schema.createSchema();
+    await orm.schema.create();
   });
 
   afterAll(() => orm.close(true));
 
-  beforeEach(() => orm.schema.clearDatabase());
+  beforeEach(() => orm.schema.clear());
 
   test('should not create duplicate pivot table entries when collection is not initialized', async () => {
     const author = orm.em.create(Author, { name: 'John Doe' });

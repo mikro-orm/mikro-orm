@@ -19,7 +19,7 @@ export class PostgreSqlExceptionConverter extends ExceptionConverter {
       exception.message += '\n - hint: ' + exception.hint;
     }
 
-    /* v8 ignore start */
+    /* v8 ignore next */
     switch (exception.code) {
       case '40001':
       case '40P01':
@@ -51,7 +51,6 @@ export class PostgreSqlExceptionConverter extends ExceptionConverter {
       case '42P07':
         return new TableExistsException(exception);
     }
-    /* v8 ignore stop */
 
     return super.convertException(exception);
   }

@@ -61,7 +61,7 @@ export class MongoPlatform extends Platform {
     return super.getExtension(extensionName, extensionKey, moduleName, em);
   }
 
-  /* v8 ignore next 3: kept for type inference only */
+  /* v8 ignore next: kept for type inference only */
   override getSchemaGenerator(driver: IDatabaseDriver, em?: EntityManager): MongoSchemaGenerator {
     return new MongoSchemaGenerator(em ?? driver as any);
   }

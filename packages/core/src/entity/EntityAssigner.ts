@@ -171,7 +171,7 @@ export class EntityAssigner {
     const meta2 = helper(ref).__meta;
     const prop2 = meta2.properties[prop.inversedBy || prop.mappedBy];
 
-    /* v8 ignore next 7 */
+    /* v8 ignore next */
     if (prop2 && !ref![prop2.name]) {
       if (Reference.isReference<T>(ref)) {
         ref.unwrap()[prop2.name] = Reference.wrapReference(entity, prop2) as EntityValue<T>;
@@ -230,7 +230,7 @@ export class EntityAssigner {
         return this.createCollectionItem<U, C>(item, em, prop, invalid, options);
       }
 
-      /* v8 ignore next 3 */
+      /* v8 ignore next */
       if (options.updateNestedEntities && !options.updateByPrimaryKey && collection[idx] && helper(collection[idx])?.isInitialized()) {
         return EntityAssigner.assign(collection[idx], item, options);
       }

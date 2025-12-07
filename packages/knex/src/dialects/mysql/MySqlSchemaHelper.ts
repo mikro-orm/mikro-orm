@@ -105,7 +105,7 @@ export class MySqlSchemaHelper extends SchemaHelper {
   }
 
   override getCreateIndexSQL(tableName: string, index: IndexDef, partialExpression = false): string {
-    /* v8 ignore next 3 */
+    /* v8 ignore next */
     if (index.expression && !partialExpression) {
       return index.expression;
     }
@@ -184,7 +184,7 @@ export class MySqlSchemaHelper extends SchemaHelper {
   }
 
   async getAllChecks(connection: AbstractSqlConnection, tables: Table[]): Promise<Dictionary<CheckDef[]>> {
-    /* v8 ignore next 3 */
+    /* v8 ignore next */
     if (!(await this.supportsCheckConstraints(connection))) {
       return {};
     }

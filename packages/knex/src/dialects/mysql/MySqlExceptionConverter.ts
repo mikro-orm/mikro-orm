@@ -12,7 +12,7 @@ export class MySqlExceptionConverter extends ExceptionConverter {
    * @see https://github.com/doctrine/dbal/blob/master/src/Driver/AbstractMySQLDriver.php
    */
   override convertException(exception: Error & Dictionary): DriverException {
-    /* v8 ignore start */
+    /* v8 ignore next */
     switch (exception.errno) {
       case 1213:
         return new DeadlockException(exception);
@@ -81,7 +81,6 @@ export class MySqlExceptionConverter extends ExceptionConverter {
       case 1566:
         return new NotNullConstraintViolationException(exception);
     }
-    /* v8 ignore stop */
 
     return super.convertException(exception);
   }

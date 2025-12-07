@@ -1,5 +1,4 @@
-import { createRequire } from 'node:module';
-import { extname, isAbsolute, join, normalize, relative, resolve } from 'node:path';
+import { isAbsolute, join, normalize, relative } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { existsSync, globSync, statSync, mkdirSync, readFileSync } from 'node:fs';
 import { clone } from './clone.js';
@@ -58,7 +57,7 @@ export function compareObjects(a: any, b: any) {
     return timeA === timeB;
   }
 
-  /* v8 ignore next 9 */
+  /* v8 ignore next */
   if (
     (typeof a === 'function' && typeof b === 'function') ||
     (typeof a === 'object' && a.client && ['Ref', 'Raw'].includes(a.constructor.name) && typeof b === 'object' && b.client && ['Ref', 'Raw'].includes(b.constructor.name)) || // knex qb
@@ -161,7 +160,7 @@ const equalsFn = equals;
 
 export function parseJsonSafe<T = unknown>(value: unknown): T {
   if (typeof value === 'string') {
-    /* v8 ignore next 6 */
+    /* v8 ignore next */
     try {
       return JSON.parse(value);
     } catch {
@@ -299,7 +298,7 @@ export class Utils {
             continue;
           }
 
-          /* v8 ignore next 3 */
+          /* v8 ignore next */
           if (!(key in target)) {
             Object.assign(target, { [key]: {} });
           }
@@ -513,7 +512,7 @@ export class Utils {
   }
 
   static getPrimaryKeyValues<T>(entity: T, meta: EntityMetadata<T>, allowScalar = false, convertCustomTypes = false) {
-    /* v8 ignore next 3 */
+    /* v8 ignore next */
     if (entity == null) {
       return entity;
     }
@@ -692,7 +691,7 @@ export class Utils {
    * Tries to detect TypeScript support.
    */
   static detectTypeScriptSupport(): boolean {
-    /* v8 ignore next 7 */
+    /* v8 ignore next */
     return process.argv[0].endsWith('ts-node') // running via ts-node directly
       || !!process.env.MIKRO_ORM_CLI_ALWAYS_ALLOW_TS // forced explicitly or enabled via `registerTypeScriptSupport()`
       || !!process.env.TS_JEST // check if ts-jest is used (works only with v27.0.4+)
@@ -957,19 +956,6 @@ export class Utils {
     return false;
   }
 
-  /**
-   * Require a module from a specific location
-   * @param id The module to require
-   * @param [from] Location to start the node resolution
-   */
-  static requireFrom<T extends Dictionary>(id: string, from = process.cwd()): T {
-    if (!extname(from)) {
-      from = join(from, '__fake.js');
-    }
-
-    return createRequire(resolve(from))(id);
-  }
-
   static async dynamicImport<T = any>(id: string): Promise<T> {
     /* v8 ignore next */
     const specifier = id.startsWith('file://') ? id : pathToFileURL(id).href;
@@ -988,24 +974,13 @@ export class Utils {
   }
 
   static getORMVersion(): string {
-    try {
-      // this works during development where we have `src` folder
-      return this.requireFrom('../../package.json', import.meta.dirname).version;
-      /* v8 ignore next 5 */
-    } catch {
-      try {
-        // this works in production build where we do not have the `src` folder
-        return this.requireFrom('../package.json', import.meta.dirname).version;
-      } catch {
-        return 'N/A';
-      }
-    }
+    return '[[MIKRO_ORM_VERSION]]';
   }
 
   static createFunction(context: Map<string, any>, code: string) {
     try {
       return new Function(...context.keys(), `'use strict';\n` + code)(...context.values());
-      /* v8 ignore next 5 */
+      /* v8 ignore next */
     } catch (e) {
       // eslint-disable-next-line no-console
       console.error(code);
@@ -1017,7 +992,7 @@ export class Utils {
     try {
       return fn(...args);
     } catch (e: any) {
-      /* v8 ignore start */
+      /* v8 ignore next */
       if ([SyntaxError, TypeError, EvalError, ReferenceError].some(t => e instanceof t)) {
         const position = e.stack.match(/<anonymous>:(\d+):(\d+)/);
         let code = fn.toString();
@@ -1037,7 +1012,6 @@ export class Utils {
         // eslint-disable-next-line no-console
         console.error(`JIT runtime error: ${e.message}\n\n${code}`);
       }
-      /* v8 ignore stop */
 
       throw e;
     }
@@ -1131,26 +1105,6 @@ export class Utils {
           target = target[k];
         }
       }
-    }
-  }
-
-  static tryRequire<T extends Dictionary = any>({ module, from, allowError, warning }: { module: string; warning?: string; from?: string; allowError?: string }): T | undefined {
-    allowError ??= `Cannot find module '${module}'`;
-    from ??= process.cwd();
-
-    try {
-      return Utils.requireFrom<T>(module, from);
-    } catch (err: any) {
-      if (err.message.includes(allowError)) {
-        if (warning) {
-          // eslint-disable-next-line no-console
-          console.warn(warning);
-        }
-
-        return undefined;
-      }
-
-      throw err;
     }
   }
 

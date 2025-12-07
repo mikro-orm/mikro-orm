@@ -23,7 +23,7 @@ export abstract class AbstractNamingStrategy implements NamingStrategy {
   }
 
   indexName(tableName: string, columns: string[], type: 'primary' | 'foreign' | 'unique' | 'index' | 'sequence' | 'check' | 'default'): string {
-    /* v8 ignore next 3 */
+    /* v8 ignore next */
     if (tableName.includes('.')) {
       tableName = tableName.substring(tableName.indexOf('.') + 1);
     }

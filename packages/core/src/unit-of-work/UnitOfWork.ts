@@ -551,7 +551,7 @@ export class UnitOfWork {
     for (const entity of this.removeStack) {
       const wrapped = helper(entity);
 
-      /* v8 ignore next 3 */
+      /* v8 ignore next */
       if (wrapped.__processing) {
         continue;
       }

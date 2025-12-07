@@ -15,7 +15,7 @@ describe('EventManager', () => {
   let orm: MikroORM;
 
   beforeEach(async () => {
-    orm = await MikroORM.init({
+    orm = new MikroORM({
       entities: [User],
       subscribers: new Set([new UserSubscriber()]),
       dbName: `:memory:`,

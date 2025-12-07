@@ -485,7 +485,7 @@ export class MsSqlSchemaHelper extends SchemaHelper {
   }
 
   override getCreateIndexSQL(tableName: string, index: IndexDef, partialExpression = false): string {
-    /* v8 ignore next 3 */
+    /* v8 ignore next */
     if (index.expression && !partialExpression) {
       return index.expression;
     }

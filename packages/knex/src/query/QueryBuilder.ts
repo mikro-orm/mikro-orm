@@ -505,7 +505,7 @@ export class QueryBuilder<
    * Apply filters to the QB where condition.
    */
   async applyFilters(filterOptions: FilterOptions = {}): Promise<void> {
-    /* v8 ignore next 3 */
+    /* v8 ignore next */
     if (!this.em) {
       throw new Error('Cannot apply filters, this QueryBuilder is not attached to an EntityManager');
     }
@@ -1308,7 +1308,7 @@ export class QueryBuilder<
 
     delete RawQueryFragment.cloneRegistry;
 
-    /* v8 ignore next 3 */
+    /* v8 ignore next */
     if (this._fields && reset !== true && !reset.includes('_fields')) {
       qb._fields = [...this._fields];
     }
@@ -1483,7 +1483,7 @@ export class QueryBuilder<
       const [a, f] = this.helper.splitField(field as EntityKey<T>);
       const prop = this.helper.getProperty(f, a);
 
-      /* v8 ignore next 3 */
+      /* v8 ignore next */
       if (prop && [ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(prop.kind)) {
         return;
       }
@@ -1915,7 +1915,7 @@ export class QueryBuilder<
           return false;
         });
 
-        /* v8 ignore next 3 */
+        /* v8 ignore next */
         if (field instanceof RawQueryFragment) {
           innerQuery.select(field);
         } else if (field instanceof NativeQueryBuilder) {
@@ -2048,7 +2048,7 @@ export class QueryBuilder<
   }
 
   private ensureFromClause(): void {
-    /* v8 ignore next 3 */
+    /* v8 ignore next */
     if (!this._mainAlias) {
       throw new Error(`Cannot proceed to build a query because the main alias is not set.`);
     }
@@ -2060,8 +2060,8 @@ export class QueryBuilder<
     }
   }
 
-  /* v8 ignore start */
   /** @ignore */
+  /* v8 ignore next */
   [inspect.custom](depth = 2) {
     const object = { ...this } as Dictionary;
     const hidden = ['metadata', 'driver', 'context', 'platform', 'type'];
@@ -2096,7 +2096,6 @@ export class QueryBuilder<
 
     return ret === '[Object]' ? `[${name}]` : name + ' ' + ret;
   }
-  /* v8 ignore stop */
 
 }
 

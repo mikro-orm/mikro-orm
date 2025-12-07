@@ -446,7 +446,7 @@ export class EntityFactory {
       }
 
       if (prop?.kind === ReferenceKind.EMBEDDED && value) {
-        /* v8 ignore next 3 */
+        /* v8 ignore next */
         if (Utils.isEntity<T>(value)) {
           return value;
         }

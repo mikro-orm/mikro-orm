@@ -51,7 +51,7 @@ export class QueryBuilderHelper {
       return raw(field.sql, field.params);
     }
 
-    /* v8 ignore next 3 */
+    /* v8 ignore next */
     if (typeof field !== 'string') {
       return field;
     }
@@ -541,7 +541,7 @@ export class QueryBuilderHelper {
     // operators
     const op = Object.keys(QueryOperator).find(op => op in value);
 
-    /* v8 ignore next 3 */
+    /* v8 ignore next */
     if (!op) {
       throw new Error(`Invalid query condition: ${inspect(cond, { depth: 5 })}`);
     }
@@ -586,7 +586,7 @@ export class QueryBuilderHelper {
     const prop = this.getProperty(f, a);
 
     if (op === '$fulltext') {
-      /* v8 ignore next 3 */
+      /* v8 ignore next */
       if (!prop) {
         throw new Error(`Cannot use $fulltext operator on ${key}, property not found`);
       }

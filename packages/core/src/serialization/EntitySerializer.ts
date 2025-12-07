@@ -165,7 +165,7 @@ export class EntitySerializer {
   }
 
   private static propertyName<T>(meta: EntityMetadata<T>, prop: EntityKey<T>): EntityKey<T> {
-    /* v8 ignore next 3 */
+    /* v8 ignore next */
     if (meta.properties[prop]?.serializedName) {
       return meta.properties[prop].serializedName as EntityKey<T>;
     }
@@ -195,7 +195,7 @@ export class EntitySerializer {
       return returnValue as EntityValue<T>;
     }
 
-    /* v8 ignore next 3 */
+    /* v8 ignore next */
     if (!options.ignoreSerializers && serializer) {
       return serializer(value);
     }
@@ -212,7 +212,7 @@ export class EntitySerializer {
       return value.unwrap();
     }
 
-    /* v8 ignore next 9 */
+    /* v8 ignore next */
     if (property?.kind === ReferenceKind.EMBEDDED) {
       if (Array.isArray(value)) {
         return (value as object[]).map(item => helper(item).toJSON()) as EntityValue<T>;

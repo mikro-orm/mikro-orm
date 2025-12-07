@@ -75,7 +75,7 @@ export class MongoConnection extends Connection {
       this.client = new MongoClient(this.config.get('clientUrl'), this.mapOptions(driverOptions as MongoClientOptions));
       await this.client.connect();
       const onCreateConnection = this.options.onCreateConnection ?? this.config.get('onCreateConnection');
-      /* v8 ignore next 3 */
+      /* v8 ignore next */
       this.client.on('connectionCreated', () => {
         void onCreateConnection?.(this.client);
       });

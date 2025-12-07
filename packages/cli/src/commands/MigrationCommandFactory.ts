@@ -183,7 +183,7 @@ export class MigrationCommandFactory {
       CLIHelper.dump(colors.green('up:'));
       CLIHelper.dump(ret.diff.up.map(sql => '  ' + sql).join('\n'), config);
 
-      /* v8 ignore next 3 */
+      /* v8 ignore if */
       if (config.getDriver().getPlatform().supportsDownMigrations()) {
         CLIHelper.dump(colors.green('down:'));
         CLIHelper.dump(ret.diff.down.map(sql => '  ' + sql).join('\n'), config);

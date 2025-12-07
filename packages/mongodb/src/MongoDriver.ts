@@ -142,7 +142,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
       return meta.expression(em, where, options) as EntityData<T>[];
     }
 
-    /* v8 ignore next 2 */
+    /* v8 ignore next */
     return super.findVirtual(entityName, where, options);
   }
 
@@ -157,12 +157,12 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
       return;
     }
 
-    /* v8 ignore next 2 */
+    /* v8 ignore next */
     return super.findVirtual(entityName, where, options);
   }
 
   async count<T extends object>(entityName: string, where: FilterQuery<T>, options: CountOptions<T> = {}, ctx?: Transaction<ClientSession>): Promise<number> {
-    /* v8 ignore next 3 */
+    /* v8 ignore next */
     if (this.metadata.find(entityName)?.virtual) {
       return this.countVirtual(entityName, where, options);
     }
@@ -309,7 +309,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
       for (let i = 0; i < copiedData.$and.length; i++) {
         const and = copiedData.$and[i];
         if ('$fulltext' in and) {
-          /* v8 ignore next 3 */
+          /* v8 ignore next */
           if ('$fulltext' in copiedData) {
             throw new Error('Cannot merge multiple $fulltext conditions to top level of the query object.');
           }
@@ -334,7 +334,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
 
     Utils.keys(copiedData).forEach(k => {
       if (k in GroupOperator) {
-        /* v8 ignore next 5 */
+        /* v8 ignore next */
         if (Array.isArray(copiedData[k])) {
           copiedData[k] = (copiedData[k] as any[]).map(v => this.renameFields(entityName, v));
         } else {
@@ -427,7 +427,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
 
     if (fields) {
       for (let field of fields) {
-        /* v8 ignore next 3 */
+        /* v8 ignore next */
         if (Utils.isPlainObject(field)) {
           continue;
         }
@@ -438,7 +438,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
 
         let prop = meta.properties[field as EntityKey<T>];
 
-        /* v8 ignore start */
+        /* v8 ignore next */
         if (prop) {
           if (!prop.fieldNames) {
             continue;
@@ -452,7 +452,6 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
         } else {
           ret.push(field as keyof T & string);
         }
-        /* v8 ignore stop */
       }
 
       ret.unshift(...meta.primaryKeys.filter(pk => !fields.includes(pk)));
