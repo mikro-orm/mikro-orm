@@ -31,6 +31,11 @@ function getValue(o: Dictionary, prop: EntityProperty) {
     return o[prop.embedded[0]]?.[prop.embedded[1]];
   }
 
+  /* v8 ignore next */
+  if (prop.ref) {
+    return o[prop.name]?.unwrap();
+  }
+
   return o[prop.name];
 }
 
