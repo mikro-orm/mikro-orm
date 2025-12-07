@@ -64,7 +64,7 @@ export class ObjectHydrator extends Hydrator {
 
     const registerCustomType = <T>(prop: EntityProperty<T>, convertorKey: string, method: 'convertToDatabaseValue' | 'convertToJSValue', context: Map<string, any>) => {
       context.set(`${method}_${convertorKey}`, (val: any) => {
-        /* v8 ignore next 3 */
+        /* v8 ignore next */
         if (RawQueryFragment.isKnownFragment(val)) {
           return val;
         }

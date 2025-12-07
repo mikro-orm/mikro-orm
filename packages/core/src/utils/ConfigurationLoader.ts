@@ -112,6 +112,7 @@ export class ConfigurationLoader {
       try {
         return await Utils.dynamicImport<T>(`${basePath}/package.json`);
       } catch (e) {
+        /* v8 ignore next */
         return {} as T;
       }
     }

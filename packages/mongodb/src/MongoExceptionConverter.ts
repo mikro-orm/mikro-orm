@@ -1,7 +1,6 @@
 import { UniqueConstraintViolationException, ExceptionConverter, TableExistsException, type Dictionary, type DriverException } from '@mikro-orm/core';
 
-/* v8 ignore start */
-
+/* v8 ignore next */
 export class MongoExceptionConverter extends ExceptionConverter {
 
   /**
@@ -19,5 +18,3 @@ export class MongoExceptionConverter extends ExceptionConverter {
   }
 
 }
-
-/* v8 ignore stop */

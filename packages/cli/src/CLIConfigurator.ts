@@ -55,7 +55,7 @@ export async function configure() {
   if (settings.preferTs !== false) {
     const preferTs = await CLIHelper.registerTypeScriptSupport(settings.tsConfigPath, settings.tsLoader);
 
-    /* v8 ignore next 3 */
+    /* v8 ignore next */
     if (!preferTs) {
       process.env.MIKRO_ORM_CLI_PREFER_TS ??= '0';
     }

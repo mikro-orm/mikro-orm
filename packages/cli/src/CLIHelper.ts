@@ -237,7 +237,7 @@ export class CLIHelper {
     CLIHelper.dump(`   - node ${colors.green(process.versions.node)}`);
 
     if (Utils.pathExists(process.cwd() + '/package.json')) {
-      /* v8 ignore next 3 */
+      /* v8 ignore if */
       if (process.versions.bun) {
         CLIHelper.dump(`   - typescript via bun`);
       } else {
@@ -309,7 +309,7 @@ export class CLIHelper {
    * This method is used only in CLI context.
    */
   static async registerTypeScriptSupport(configPath = 'tsconfig.json', tsLoader?: 'swc' | 'tsx' | 'jiti' | 'tsimp' | 'auto'): Promise<boolean> {
-    /* v8 ignore next 3 */
+    /* v8 ignore if */
     if (process.versions.bun) {
       return true;
     }
@@ -357,7 +357,7 @@ export class CLIHelper {
     return type === 'module';
   }
 
-  /* v8 ignore next 3 */
+  /* v8 ignore next */
   static showHelp() {
     yargs(process.argv.slice(2)).showHelp();
   }

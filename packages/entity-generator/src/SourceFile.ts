@@ -845,7 +845,7 @@ export class SourceFile {
     }
 
     // those are already included in the `columnType` in most cases, and when that option is present, they would be ignored anyway
-    /* v8 ignore next 4 */
+    /* v8 ignore next */
     if (mappedColumnType instanceof DecimalType && !options.columnType) {
       assign('precision');
       assign('scale');

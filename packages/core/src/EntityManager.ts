@@ -356,7 +356,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       return { where: {} as ObjectQuery<Entity>, populateWhere: options.populateWhere as 'all' };
     }
 
-    /* v8 ignore next 3 */
+    /* v8 ignore next */
     if (options.populateWhere === PopulateHint.INFER) {
       return { where, populateWhere: options.populateWhere as 'infer' };
     }
@@ -1275,7 +1275,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
           return this.comparator.matching(entityName, cond as EntityKey, tmp);
         });
 
-        /* v8 ignore next 3 */
+        /* v8 ignore next */
         if (!row) {
           throw new Error(`Cannot find matching entity for condition ${JSON.stringify(cond)}`);
         }
@@ -1301,7 +1301,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
             return this.comparator.matching(entityName, cond, pk);
           });
 
-          /* v8 ignore next 3 */
+          /* v8 ignore next */
           if (!row) {
             throw new Error(`Cannot find matching entity for condition ${JSON.stringify(cond)}`);
           }
@@ -2216,7 +2216,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
 
     if (typeof options.populate !== 'boolean') {
       options.populate = Utils.asArray(options.populate).map(field => {
-        /* v8 ignore next 3 */
+        /* v8 ignore next */
         if (typeof field === 'boolean' || field === PopulatePath.ALL) {
           return [{ field: meta.primaryKeys[0], strategy: options.strategy, all: !!field }]; //
         }

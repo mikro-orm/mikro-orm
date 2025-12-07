@@ -366,7 +366,7 @@ export abstract class Platform {
     return path.join('.');
   }
 
-  /* v8 ignore next 3 */
+  /* v8 ignore next */
   getJsonIndexDefinition(index: { columnNames: string[] }): string[] {
     return index.columnNames;
   }
@@ -410,7 +410,7 @@ export abstract class Platform {
   parseDate(value: string | number): Date {
     const date = new Date(value);
 
-    /* v8 ignore next 3 */
+    /* v8 ignore next */
     if (isNaN(date.getTime())) {
       return value as unknown as Date;
     }
@@ -449,11 +449,11 @@ export abstract class Platform {
       return extension;
     }
 
-    /* v8 ignore next 2 */
+    /* v8 ignore next */
     throw new Error(`${extensionName} extension not registered. Provide it in the ORM config, or use the async \`MikroORM.init()\` method to load extensions automatically.`);
   }
 
-  /* v8 ignore next 3: kept for type inference only */
+  /* v8 ignore next: kept for type inference only */
   getSchemaGenerator(driver: IDatabaseDriver, em?: EntityManager): ISchemaGenerator {
     throw new Error(`${driver.constructor.name} does not support SchemaGenerator`);
   }
@@ -476,7 +476,7 @@ export abstract class Platform {
     return value;
   }
 
-  /* v8 ignore next 3 */
+  /* v8 ignore next */
   escape(value: any): string {
     return value;
   }
@@ -666,8 +666,8 @@ export abstract class Platform {
     return this;
   }
 
-  /* v8 ignore next 4 */
   /** @ignore */
+  /* v8 ignore next */
   [inspect.custom]() {
     return `[${this.constructor.name}]`;
   }

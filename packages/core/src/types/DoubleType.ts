@@ -7,7 +7,7 @@ import type { EntityProperty } from '../typings.js';
  */
 export class DoubleType extends Type<number | string, string> {
 
-  /* v8 ignore next 7 */
+  /* v8 ignore next */
   override convertToJSValue(value: string): number | string {
     if (this.prop?.runtimeType === 'number') {
       return +value;

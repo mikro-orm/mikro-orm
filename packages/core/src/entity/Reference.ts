@@ -276,8 +276,8 @@ export class ScalarReference<Value> {
     return this.initialized;
   }
 
-  /* v8 ignore next 4 */
   /** @ignore */
+  /* v8 ignore next */
   [inspect.custom]() {
     return this.initialized ? `Ref<${inspect(this.value)}>` : `Ref<?>`;
   }

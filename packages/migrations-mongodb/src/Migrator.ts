@@ -68,14 +68,11 @@ export class Migrator implements IMigrator {
     };
   }
 
-  /* v8 ignore start */
-  /**
-   * @inheritDoc
-   */
+  /** @inheritDoc */
+  /* v8 ignore next */
   async checkSchema(): Promise<boolean> {
     return true;
   }
-  /* v8 ignore stop */
 
   /**
    * @inheritDoc
@@ -109,7 +106,7 @@ export class Migrator implements IMigrator {
       resolve: (params: MigrationParams<any>) => this.resolve(params),
     };
 
-    /* v8 ignore next 8 */
+    /* v8 ignore next */
     if (this.options.migrationsList) {
       migrations = this.options.migrationsList.map(migration => {
         if (typeof migration === 'function') {
@@ -133,7 +130,7 @@ export class Migrator implements IMigrator {
       this.umzug.on('reverted', event => logger.log('migrator', `Reverted '${event.name}'`, { enabled: true }));
     }
 
-    /* v8 ignore next 3 */
+    /* v8 ignore next */
     if (this.options.generator) {
       this.generator = new this.options.generator(this.driver, this.config.getNamingStrategy(), this.options);
     } else if (this.options.emit === 'js' || this.options.emit === 'cjs') {

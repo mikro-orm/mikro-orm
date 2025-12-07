@@ -40,7 +40,7 @@ export class SerializationContext<T extends object> {
   leave<U>(entityName: string, prop: string) {
     const last = this.path.pop();
 
-    /* v8 ignore next 3 */
+    /* v8 ignore next */
     if (last?.[0] !== entityName || last[1] !== prop) {
       throw new Error(`Trying to leave wrong property: ${entityName}.${prop} instead of ${last?.join('.')}`);
     }
@@ -119,7 +119,7 @@ export class SerializationContext<T extends object> {
     let fields: string[] = [...this.fields];
 
     for (const segment of this.path) {
-      /* v8 ignore next 3 */
+      /* v8 ignore next */
       if (fields.length === 0) {
         return true;
       }

@@ -94,7 +94,7 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
   }
 
   override getBigIntTypeDeclarationSQL(column: { autoincrement?: boolean }): string {
-    /* v8 ignore next 3 */
+    /* v8 ignore next */
     if (column.autoincrement) {
       return `bigserial`;
     }
@@ -115,7 +115,7 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
       return `:column: @@ plainto_tsquery('${prop.customType.regconfig}', :query)`;
     }
 
-    /* v8 ignore next 3 */
+    /* v8 ignore next */
     if (prop.columnTypes[0] === 'tsvector') {
       return `:column: @@ plainto_tsquery('simple', :query)`;
     }
@@ -186,7 +186,7 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
   }
 
   override getRegExpOperator(val?: unknown, flags?: string): string {
-    /* v8 ignore next 3 */
+    /* v8 ignore next */
     if ((val instanceof RegExp && val.flags.includes('i')) || flags?.includes('i')) {
       return '~*';
     }
@@ -194,7 +194,7 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
     return '~';
   }
 
-  /* v8 ignore next 8 */
+  /* v8 ignore next */
   override getRegExpValue(val: RegExp): { $re: string; $flags?: string } {
     if (val.flags.includes('i')) {
       return { $re: val.source, $flags: val.flags };
@@ -220,7 +220,7 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
   }
 
   override getEnumTypeDeclarationSQL(column: { fieldNames: string[]; items?: unknown[]; nativeEnumName?: string }): string {
-    /* v8 ignore next 3 */
+    /* v8 ignore next */
     if (column.nativeEnumName) {
       return column.nativeEnumName;
     }
@@ -383,7 +383,7 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
     let year = date.getFullYear();
     const isBCYear = year < 1;
 
-    /* v8 ignore next 3 */
+    /* v8 ignore next */
     if (isBCYear) {
       year = Math.abs(year) + 1;
     }
@@ -392,7 +392,7 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
     const timePart = `${this.pad(date.getHours(), 2)}:${this.pad(date.getMinutes(), 2)}:${this.pad(date.getSeconds(), 2)}.${this.pad(date.getMilliseconds(), 3)}`;
     let ret = `${datePart}T${timePart}`;
 
-    /* v8 ignore next 4 */
+    /* v8 ignore next */
     if (offset < 0) {
       ret += '-';
       offset *= -1;
@@ -402,7 +402,7 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
 
     ret += this.pad(Math.floor(offset / 60), 2) + ':' + this.pad(offset % 60, 2);
 
-    /* v8 ignore next 3 */
+    /* v8 ignore next */
     if (isBCYear) {
       ret += ' BC';
     }
@@ -495,7 +495,7 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
       return new Date(value);
     }
 
-    /* v8 ignore next 3 */
+    /* v8 ignore next */
     if (typeof value === 'number') {
       return new Date(value);
     }
@@ -503,7 +503,7 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
     // @ts-ignore fix wrong type resolution during build
     const parsed = parseDate(value);
 
-    /* v8 ignore next 3 */
+    /* v8 ignore next */
     if (parsed === null) {
       return value as unknown as Date;
     }

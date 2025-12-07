@@ -53,7 +53,7 @@ export class MySqlConnection extends AbstractSqlConnection {
       try {
         await ctx.releaseSavepoint(ctx.savepointName as string).execute();
       } catch (e: any) {
-        /* v8 ignore next 5 */
+        /* v8 ignore next */
         // https://github.com/knex/knex/issues/805
         if (e.errno !== 1305) {
           throw e;

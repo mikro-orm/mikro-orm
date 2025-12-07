@@ -98,7 +98,7 @@ export class MikroORM<
     EM extends D[typeof EntityManagerType] & EntityManager<D> = D[typeof EntityManagerType] & EntityManager<D>,
     Entities extends (string | EntityClass<AnyEntity> | EntitySchema)[] = (string | EntityClass<AnyEntity> | EntitySchema)[],
   >(options: Options<D, EM, Entities>): Promise<MikroORM<D, EM, Entities>> {
-    /* v8 ignore next 3 */
+    /* v8 ignore next */
     if (!options) {
       throw new Error(`options parameter is required`);
     }
@@ -154,7 +154,7 @@ export class MikroORM<
    * Reconnects, possibly to a different database.
    */
   async reconnect(options: Partial<Options<Driver, EM, Entities>> = {}): Promise<void> {
-    /* v8 ignore next 3 */
+    /* v8 ignore next */
     for (const key of Utils.keys(options)) {
       this.config.set(key, options[key]!);
     }
