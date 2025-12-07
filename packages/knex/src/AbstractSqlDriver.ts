@@ -1275,7 +1275,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       return Object.entries(prop.embeddedProps).flatMap(([name, childProp]) => {
         const childFields = explicitFields ? Utils.extractChildElements(explicitFields as string[], prop.name) : [];
 
-        if (childFields.length > 0 && !this.shouldHaveColumn(prop.targetMeta!, { ...childProp, name }, [], childFields)) {
+        if (!this.shouldHaveColumn(prop.targetMeta!, { ...childProp, name }, [], childFields.length > 0 ? childFields : undefined)) {
           return [];
         }
 
@@ -1667,6 +1667,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
           const aliased = this.platform.quoteIdentifier(prop.fieldNames[0]);
           ret.push(raw(`${prop.formula!(a)} as ${aliased}`));
         }
+
         if (!prop.object && (prop.hasConvertToDatabaseValueSQL || prop.hasConvertToJSValueSQL)) {
           ret.push(prop.name);
         }
