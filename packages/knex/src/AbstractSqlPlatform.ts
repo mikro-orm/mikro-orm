@@ -43,13 +43,13 @@ export abstract class AbstractSqlPlatform extends Platform {
     SqlSchemaGenerator.register(orm);
   }
 
-  /* v8 ignore next 3: kept for type inference only */
+  /* v8 ignore next: kept for type inference only */
   override getSchemaGenerator(driver: IDatabaseDriver, em?: EntityManager): SqlSchemaGenerator {
     return new SqlSchemaGenerator(em ?? driver as any);
   }
 
-  /* v8 ignore next 4 */
   /** @internal */
+  /* v8 ignore next */
   createNativeQueryBuilder(): NativeQueryBuilder {
     return new NativeQueryBuilder(this);
   }

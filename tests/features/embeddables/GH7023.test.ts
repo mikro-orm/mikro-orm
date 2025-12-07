@@ -47,7 +47,7 @@ beforeAll(async () => {
     entities: [User, Company],
     metadataProvider: ReflectMetadataProvider,
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(async () => {

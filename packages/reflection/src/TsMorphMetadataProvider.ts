@@ -102,7 +102,7 @@ export class TsMorphMetadataProvider extends MetadataProvider {
     const source = this.getExistingSourceFile(meta.path);
     const cls = source.getClass(meta.className);
 
-    /* v8 ignore next 3 */
+    /* v8 ignore next */
     if (!cls) {
       throw new MetadataError(`Source class for entity ${meta.className} not found. Verify you have 'compilerOptions.declaration' enabled in your 'tsconfig.json'. If you are using webpack, see https://bit.ly/35pPDNn`);
     }
@@ -143,7 +143,7 @@ export class TsMorphMetadataProvider extends MetadataProvider {
     if (tsType.isArray()) {
       prop.array = true;
 
-      /* v8 ignore next 3 */
+      /* v8 ignore next */
       if (tsType.getArrayElementType()!.isEnum()) {
         prop.items = tsType.getArrayElementType()!.getUnionTypes().map(t => t.getLiteralValueOrThrow()) as string[];
       }
@@ -258,7 +258,7 @@ export class TsMorphMetadataProvider extends MetadataProvider {
     // will be already `.ts`, so no change is needed. `.js` files will get renamed to `.d.ts` files as they will be used as a source for
     // the ts-morph reflection.
     for (const meta of Utils.values(MetadataStorage.getMetadata())) {
-      /* v8 ignore next 3 */
+      /* v8 ignore next */
       const path = meta.path.match(/\.[jt]s$/)
         ? meta.path.replace(/\.js$/, '.d.ts')
         : `${meta.path}.d.ts`; // when entities are bundled, their paths are just their names

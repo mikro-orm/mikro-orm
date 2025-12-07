@@ -13,7 +13,7 @@ export class TSMigrationGenerator extends MigrationGenerator {
     diff.up.forEach(sql => ret += this.createStatement(sql, 4));
     ret += `  }\n\n`;
 
-    /* v8 ignore next 5 */
+    /* v8 ignore next */
     if (diff.down.length > 0) {
       ret += `  async down(): Promise<void> {\n`;
       diff.down.forEach(sql => ret += this.createStatement(sql, 4));

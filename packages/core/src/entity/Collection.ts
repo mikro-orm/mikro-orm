@@ -46,7 +46,7 @@ export class Collection<T extends object, O extends object = object> {
   private _populated?: boolean;
 
   constructor(readonly owner: O, items?: T[], initialized = true) {
-    /* v8 ignore next 5 */
+    /* v8 ignore next */
     if (items) {
       let i = 0;
       this.items = new Set(items);
@@ -797,7 +797,7 @@ export class Collection<T extends object, O extends object = object> {
     if (!this._property) {
       const meta = wrap(this.owner, true).__meta;
 
-      /* v8 ignore next 3 */
+      /* v8 ignore next */
       if (!meta) {
         throw MetadataError.fromUnknownEntity(this.owner.constructor.name, 'Collection.property getter, maybe you just forgot to initialize the ORM?');
       }

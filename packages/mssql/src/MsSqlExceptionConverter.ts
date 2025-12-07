@@ -20,7 +20,7 @@ export class MsSqlExceptionConverter extends ExceptionConverter {
   override convertException(exception: Error & Dictionary): DriverException {
     let errno = exception.number;
 
-    /* v8 ignore next 5 */
+    /* v8 ignore next */
     if ('errors' in exception && Array.isArray(exception.errors) && typeof exception.errors[0] === 'object' && 'message' in exception.errors[0]) {
       exception.message += '\n' + exception.errors.map(e => e.message).join('\n');
       errno ??= exception.errors[0].number;

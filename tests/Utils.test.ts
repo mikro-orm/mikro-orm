@@ -590,20 +590,6 @@ describe('Utils', () => {
     spy.mockRestore();
   });
 
-  test('tryRequire', () => {
-    const warnSpy = vi.spyOn(console, 'warn');
-    warnSpy.mockImplementationOnce(i => i);
-    const ret = Utils.tryRequire({ module: 'not-existing-dep', warning: 'not found' });
-    expect(ret).toBeUndefined();
-    expect(warnSpy).toHaveBeenCalledWith('not found');
-
-    const requireFromSpy = vi.spyOn(Utils, 'requireFrom');
-    requireFromSpy.mockImplementationOnce(() => { throw new Error('some other issue'); });
-    expect(() => {
-      return Utils.tryRequire({ module: 'not-existing-dep', warning: 'not found', allowError: 'Cannot find module' });
-    }).toThrow('some other issue');
-  });
-
   test('tryImport', async () => {
     const warnSpy = vi.spyOn(console, 'warn');
     warnSpy.mockImplementationOnce(i => i);

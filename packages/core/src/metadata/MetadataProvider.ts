@@ -30,7 +30,7 @@ export class MetadataProvider {
     Object.values(cache.properties).forEach(prop => {
       const metaProp = meta.properties[prop.name];
 
-      /* v8 ignore next 3 */
+      /* v8 ignore next */
       if (metaProp?.enum && Array.isArray(metaProp.items)) {
         delete prop.items;
       }

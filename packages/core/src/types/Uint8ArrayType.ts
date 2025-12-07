@@ -13,7 +13,7 @@ export class Uint8ArrayType extends Type<Uint8Array | null> {
   }
 
   override convertToJSValue(value: Buffer): Uint8Array | null {
-    /* v8 ignore next 3 */
+    /* v8 ignore next */
     if (!value) {
       return value;
     }

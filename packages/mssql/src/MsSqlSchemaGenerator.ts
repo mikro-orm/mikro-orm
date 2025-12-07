@@ -9,7 +9,7 @@ export class MsSqlSchemaGenerator extends SchemaGenerator {
 
   override async clear(options?: ClearDatabaseOptions): Promise<void> {
     // truncate by default, so no value is considered as true
-    /* v8 ignore next 3 */
+    /* v8 ignore next */
     if (options?.truncate === false) {
       return super.clear(options);
     }

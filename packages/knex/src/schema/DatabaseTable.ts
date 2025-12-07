@@ -96,7 +96,7 @@ export class DatabaseTable {
       if (mappedType instanceof DecimalType) {
         const match = prop.columnTypes[idx].match(/\w+\((\d+), ?(\d+)\)/);
 
-        /* v8 ignore next 5 */
+        /* v8 ignore next */
         if (match) {
           prop.precision ??= +match[1];
           prop.scale ??= +match[2];

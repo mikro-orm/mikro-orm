@@ -156,7 +156,7 @@ export class SqliteSchemaHelper extends SchemaHelper {
   }
 
   override getCreateIndexSQL(tableName: string, index: IndexDef): string {
-    /* v8 ignore next 3 */
+    /* v8 ignore next */
     if (index.expression) {
       return index.expression;
     }
@@ -182,7 +182,7 @@ export class SqliteSchemaHelper extends SchemaHelper {
     // extract all columns definitions
     let columnsDef = sql.replaceAll('\n', '').match(new RegExp(`create table [\`"']?.*?[\`"']? \\((.*)\\)`, 'i'))?.[1];
 
-    /* v8 ignore start */
+    /* v8 ignore next */
     if (columnsDef) {
       if (columnsDef.includes(', constraint ')) {
         constraints.push(...columnsDef.substring(columnsDef.indexOf(', constraint') + 2).split(', '));
@@ -200,7 +200,6 @@ export class SqliteSchemaHelper extends SchemaHelper {
         }
       }
     }
-    /* v8 ignore stop */
 
     return { columns, constraints };
   }
@@ -253,7 +252,7 @@ export class SqliteSchemaHelper extends SchemaHelper {
       // `type` text check (`type` in ('local', 'global')
       const match = item.match(/[`["']([^`\]"']+)[`\]"'] text check \(.* \((.*)\)/i);
 
-      /* v8 ignore next 3 */
+      /* v8 ignore next */
       if (match) {
         o[match[1]] = match[2].split(',').map((item: string) => item.trim().match(/^\(?'(.*)'/)![1]);
       }
@@ -410,7 +409,7 @@ export class SqliteSchemaHelper extends SchemaHelper {
       this.append(ret, this.dropIndex(diff.name, index));
     }
 
-    /* v8 ignore next 3 */
+    /* v8 ignore next */
     if (!safe && Object.values(diff.removedColumns).length > 0) {
       this.append(ret, this.getDropColumnsSQL(tableName, Object.values(diff.removedColumns), schemaName));
     }

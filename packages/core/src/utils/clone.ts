@@ -154,7 +154,7 @@ export function clone<T>(parent: T, respectCustomCloneMethod = true): T {
         const symbol = symbols[i];
         const descriptor = Object.getOwnPropertyDescriptor(parent, symbol);
 
-        /* v8 ignore next 3 */
+        /* v8 ignore next */
         if (descriptor && !descriptor.enumerable) {
           continue;
         }

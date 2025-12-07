@@ -11,7 +11,7 @@ export class DecimalType<Mode extends 'number' | 'string' = 'string'> extends Ty
     super();
   }
 
-  /* v8 ignore next 7 */
+  /* v8 ignore next */
   override convertToJSValue(value: string): JSTypeByMode<Mode> {
     if ((this.mode ?? this.prop?.runtimeType) === 'number') {
       return +value as JSTypeByMode<Mode>;
@@ -25,7 +25,7 @@ export class DecimalType<Mode extends 'number' | 'string' = 'string'> extends Ty
   }
 
   private format(val: string | number) {
-    /* v8 ignore next 3 */
+    /* v8 ignore next */
     if (this.prop?.scale == null) {
       return +val;
     }

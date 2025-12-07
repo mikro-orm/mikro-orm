@@ -282,7 +282,7 @@ export class MetadataDiscovery {
         this.discoverReferences([parent], false);
       }
 
-      /* v8 ignore next 3 */
+      /* v8 ignore next */
       if (!meta.class) {
         continue;
       }
@@ -479,7 +479,7 @@ export class MetadataDiscovery {
         prop.columnTypes = prop.joinColumns.flatMap(field => {
           const matched = meta.props.find(p => p.fieldNames?.includes(field));
 
-          /* v8 ignore next 3 */
+          /* v8 ignore next */
           if (!matched) {
             throw MetadataError.fromWrongForeignKey(meta, prop, 'columnTypes');
           }
@@ -675,7 +675,7 @@ export class MetadataDiscovery {
       [first, second] = pks;
     } else if (fks.length >= 2) {
       [first, second] = fks;
-    /* v8 ignore next 3 */
+    /* v8 ignore next */
     } else {
       return [];
     }
@@ -1241,7 +1241,7 @@ export class MetadataDiscovery {
       return prop.defaultRaw;
     }
 
-    /* v8 ignore next 3 */
+    /* v8 ignore next */
     if (prop.default != null) {
       return '' + this.platform.quoteVersionValue(prop.default as number, prop);
     }

@@ -48,14 +48,14 @@ function createBasicConfig() {
 }
 
 export async function configure() {
-  ConfigurationLoader.checkPackageVersion();
-  const settings = CLIHelper.getSettings();
+  await ConfigurationLoader.checkPackageVersion();
+  const settings = await CLIHelper.getSettings();
   const version = Utils.getORMVersion();
 
   if (settings.preferTs !== false) {
     const preferTs = await CLIHelper.registerTypeScriptSupport(settings.tsConfigPath, settings.tsLoader);
 
-    /* v8 ignore next 3 */
+    /* v8 ignore next */
     if (!preferTs) {
       process.env.MIKRO_ORM_CLI_PREFER_TS ??= '0';
     }

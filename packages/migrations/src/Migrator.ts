@@ -242,7 +242,7 @@ export class Migrator implements IMigrator {
     this.ensureMigrationsDirExists();
     const created = await this.schemaGenerator.ensureDatabase();
 
-    /* v8 ignore next 3 */
+    /* v8 ignore next */
     if (created) {
       this.createUmzug();
     }
