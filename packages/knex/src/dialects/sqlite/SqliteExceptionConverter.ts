@@ -3,7 +3,6 @@ import {
   NotNullConstraintViolationException, ReadOnlyException, SyntaxErrorException, TableExistsException, TableNotFoundException, UniqueConstraintViolationException, ForeignKeyConstraintViolationException, type Dictionary, type DriverException,
 } from '@mikro-orm/core';
 
-/* v8 ignore next */
 export class SqliteExceptionConverter extends ExceptionConverter {
 
   /**
@@ -12,6 +11,7 @@ export class SqliteExceptionConverter extends ExceptionConverter {
    * @see https://github.com/doctrine/dbal/blob/master/src/Driver/AbstractSQLiteDriver.php
    */
   override convertException(exception: Error & Dictionary): DriverException {
+    /* v8 ignore next */
     if (exception.message.includes('database is locked')) {
       return new LockWaitTimeoutException(exception);
     }
@@ -29,6 +29,7 @@ export class SqliteExceptionConverter extends ExceptionConverter {
       return new NotNullConstraintViolationException(exception);
     }
 
+    /* v8 ignore next */
     if (exception.message.includes('CHECK constraint failed')) {
       return new CheckConstraintViolationException(exception);
     }
@@ -53,10 +54,12 @@ export class SqliteExceptionConverter extends ExceptionConverter {
       return new SyntaxErrorException(exception);
     }
 
+    /* v8 ignore next */
     if (exception.message.includes('attempt to write a readonly database')) {
       return new ReadOnlyException(exception);
     }
 
+    /* v8 ignore next */
     if (exception.message.includes('unable to open database file')) {
       return new ConnectionException(exception);
     }

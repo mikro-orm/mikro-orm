@@ -1,6 +1,6 @@
 process.env.FORCE_COLOR = '0';
 
-import { MikroORM, NullCacheAdapter, Utils } from '@mikro-orm/core';
+import { MikroORM, NullCacheAdapter } from '@mikro-orm/core';
 import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { BASE_DIR } from './helpers.js';
 import { Author, Test } from './entities/index.js';
@@ -9,7 +9,12 @@ import { BaseEntity2 } from './entities-sql/BaseEntity2.js';
 import { MsSqlDriver } from '@mikro-orm/mssql';
 import { MySqlDriver } from '@mikro-orm/mysql';
 import { SqliteDriver } from '@mikro-orm/sqlite';
-import { MongoDriver } from '@mikro-orm/mongodb';
+import { MongoDriver, MikroORM as MongoMikroORM } from '@mikro-orm/mongodb';
+import { SeedManager } from '@mikro-orm/seeder';
+import { Migrator } from '@mikro-orm/migrations';
+import { Migrator as MongoMigrator } from '@mikro-orm/migrations-mongodb';
+import { fs } from '@mikro-orm/core/fs-utils';
+import { discoverEntities, fs as fs2 } from '../packages/core/src/not-supported.js';
 
 describe('MikroORM', () => {
 
@@ -26,17 +31,20 @@ describe('MikroORM', () => {
   });
 
   test('source folder detection', async () => {
-    const pathExistsMock = vi.spyOn(Utils, 'pathExists');
+    const pathExistsMock = vi.spyOn(fs, 'pathExists');
 
     pathExistsMock.mockImplementation(path => !!path.match(/src$/));
-    const orm1 = await MikroORM.init({
+    const orm1 = await MongoMikroORM.init({
       metadataProvider: ReflectMetadataProvider,
-      driver: MongoDriver,
       dbName: 'test',
       baseDir: import.meta.dirname + '/../packages/core',
       entities: [import.meta.dirname + '/entities'],
       clientUrl: 'test',
+      // mongo migrator won't be registered automatically, since the sql one is available too and it takes precedence
+      extensions: [MongoMigrator],
     });
+    expect(orm1.migrator).toBeInstanceOf(MongoMigrator);
+    expect(orm1.seeder).toBeInstanceOf(SeedManager);
     expect(orm1.config.get('migrations')).toMatchObject({
       path: './src/migrations',
       pathTs: './src/migrations',
@@ -49,12 +57,14 @@ describe('MikroORM', () => {
     pathExistsMock.mockImplementation(path => !!path.match(/src|dist$/));
     const orm2 = await MikroORM.init({
       metadataProvider: ReflectMetadataProvider,
-      driver: MongoDriver,
+      driver: SqliteDriver,
       dbName: 'test',
       baseDir: import.meta.dirname + '/../packages/core',
       entities: [import.meta.dirname + '/entities'],
       clientUrl: 'test',
     });
+    expect(orm2.migrator).toBeInstanceOf(Migrator);
+    expect(orm2.seeder).toBeInstanceOf(SeedManager);
     expect(orm2.config.get('migrations')).toMatchObject({
       path: './dist/migrations',
       pathTs: './src/migrations',
@@ -72,7 +82,10 @@ describe('MikroORM', () => {
       baseDir: import.meta.dirname + '/../packages/core',
       entities: [import.meta.dirname + '/entities'],
       clientUrl: 'test',
+      extensions: [SeedManager, MongoMigrator],
     });
+    expect(orm3.migrator).toBeInstanceOf(MongoMigrator);
+    expect(orm3.seeder).toBeInstanceOf(SeedManager);
     expect(orm3.config.get('migrations')).toMatchObject({
       path: './build/migrations',
       pathTs: './src/migrations',
@@ -264,6 +277,11 @@ describe('MikroORM', () => {
     expect(closed).toBe(0);
     await orm.close();
     expect(closed).toBe(2);
+  });
+
+  test('not supported', async () => {
+    expect(() => discoverEntities()).toThrow('Folder-based discovery is not supported in this environment.');
+    expect(() => (fs2 as any).glob('*')).toThrow('File system is not supported in this environment.');
   });
 
 });

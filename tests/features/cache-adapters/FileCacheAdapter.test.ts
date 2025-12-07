@@ -1,12 +1,12 @@
 import { writeFileSync } from 'node:fs';
-import { FileCacheAdapter, Utils } from '@mikro-orm/core';
+import { FileCacheAdapter, fs } from '@mikro-orm/core/fs-utils';
 import { TEMP_DIR } from '../../helpers.js';
 
 describe('FileCacheAdapter', () => {
   const tempdir = TEMP_DIR + '/foo';
 
   beforeAll(async () => {
-    Utils.ensureDir(tempdir);
+    fs.ensureDir(tempdir);
   });
 
   test('should ignore old cache', async () => {

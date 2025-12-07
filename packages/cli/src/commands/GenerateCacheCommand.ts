@@ -1,5 +1,6 @@
 import type { ArgumentsCamelCase, Argv } from 'yargs';
-import { MetadataDiscovery, MetadataStorage, colors, FileCacheAdapter } from '@mikro-orm/core';
+import { MetadataDiscovery, MetadataStorage, colors } from '@mikro-orm/core';
+import { FileCacheAdapter } from '@mikro-orm/core/fs-utils';
 import type { BaseArgs, BaseCommand } from '../CLIConfigurator.js';
 import { CLIHelper } from '../CLIHelper.js';
 

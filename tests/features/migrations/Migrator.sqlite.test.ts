@@ -1,4 +1,4 @@
-(global as any).process.env.FORCE_COLOR = 0;
+process.env.FORCE_COLOR = '0';
 import { Umzug } from 'umzug';
 import { MetadataStorage, MikroORM, raw } from '@mikro-orm/core';
 import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';

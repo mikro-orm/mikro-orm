@@ -1,4 +1,4 @@
-(global as any).process.env.FORCE_COLOR = 0;
+process.env.FORCE_COLOR = '0';
 import { Umzug } from 'umzug';
 import { MetadataStorage, MikroORM, raw, SimpleLogger, UmzugMigration } from '@mikro-orm/core';
 import { Migration, MigrationStorage, Migrator } from '@mikro-orm/migrations';
