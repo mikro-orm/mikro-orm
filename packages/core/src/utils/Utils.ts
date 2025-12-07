@@ -1,5 +1,4 @@
-import { createRequire } from 'node:module';
-import { extname, isAbsolute, join, normalize, relative, resolve } from 'node:path';
+import { isAbsolute, join, normalize, relative } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { existsSync, globSync, statSync, mkdirSync, readFileSync } from 'node:fs';
 import { clone } from './clone.js';
@@ -957,19 +956,6 @@ export class Utils {
     return false;
   }
 
-  /**
-   * Require a module from a specific location
-   * @param id The module to require
-   * @param [from] Location to start the node resolution
-   */
-  static requireFrom<T extends Dictionary>(id: string, from = process.cwd()): T {
-    if (!extname(from)) {
-      from = join(from, '__fake.js');
-    }
-
-    return createRequire(resolve(from))(id);
-  }
-
   static async dynamicImport<T = any>(id: string): Promise<T> {
     /* v8 ignore next */
     const specifier = id.startsWith('file://') ? id : pathToFileURL(id).href;
@@ -988,18 +974,7 @@ export class Utils {
   }
 
   static getORMVersion(): string {
-    try {
-      // this works during development where we have `src` folder
-      return this.requireFrom('../../package.json', import.meta.dirname).version;
-      /* v8 ignore next 5 */
-    } catch {
-      try {
-        // this works in production build where we do not have the `src` folder
-        return this.requireFrom('../package.json', import.meta.dirname).version;
-      } catch {
-        return 'N/A';
-      }
-    }
+    return '[[MIKRO_ORM_VERSION]]';
   }
 
   static createFunction(context: Map<string, any>, code: string) {
@@ -1131,26 +1106,6 @@ export class Utils {
           target = target[k];
         }
       }
-    }
-  }
-
-  static tryRequire<T extends Dictionary = any>({ module, from, allowError, warning }: { module: string; warning?: string; from?: string; allowError?: string }): T | undefined {
-    allowError ??= `Cannot find module '${module}'`;
-    from ??= process.cwd();
-
-    try {
-      return Utils.requireFrom<T>(module, from);
-    } catch (err: any) {
-      if (err.message.includes(allowError)) {
-        if (warning) {
-          // eslint-disable-next-line no-console
-          console.warn(warning);
-        }
-
-        return undefined;
-      }
-
-      throw err;
     }
   }
 

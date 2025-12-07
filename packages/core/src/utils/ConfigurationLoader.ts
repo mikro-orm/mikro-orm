@@ -1,4 +1,5 @@
 import { realpathSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import type { IDatabaseDriver } from '../drivers/IDatabaseDriver.js';
 import type { Dictionary } from '../typings.js';
 import { type Options } from './Configuration.js';
@@ -106,13 +107,12 @@ export class ConfigurationLoader {
     return ret;
   }
 
-  static getPackageConfig(basePath = process.cwd()): Dictionary {
+  static async getPackageConfig<T extends Dictionary>(basePath = process.cwd()): Promise<T> {
     if (Utils.pathExists(`${basePath}/package.json`)) {
-      /* v8 ignore next 5 */
       try {
-        return Utils.readJSONSync(`${basePath}/package.json`);
-      } catch {
-        return {};
+        return await Utils.dynamicImport<T>(`${basePath}/package.json`);
+      } catch (e) {
+        return {} as T;
       }
     }
 
@@ -120,14 +120,14 @@ export class ConfigurationLoader {
 
     // we reached the root folder
     if (basePath === parentFolder) {
-      return {};
+      return {} as T;
     }
 
     return this.getPackageConfig(parentFolder);
   }
 
-  static getORMPackages(): Set<string> {
-    const pkg = this.getPackageConfig();
+  static async getORMPackages(): Promise<Set<string>> {
+    const pkg = await this.getPackageConfig();
     return new Set([
       ...Object.keys(pkg.dependencies ?? {}),
       ...Object.keys(pkg.devDependencies ?? {}),
@@ -136,7 +136,8 @@ export class ConfigurationLoader {
 
   static getORMPackageVersion(name: string): string | undefined {
     try {
-      const pkg = Utils.requireFrom(`${name}/package.json`);
+      const path = import.meta.resolve(`${name}/package.json`);
+      const pkg = Utils.readJSONSync(fileURLToPath(path));
       /* v8 ignore next */
       return pkg?.version;
     } catch (e) {
@@ -145,14 +146,14 @@ export class ConfigurationLoader {
   }
 
   // inspired by https://github.com/facebook/docusaurus/pull/3386
-  static checkPackageVersion(): string {
+  static async checkPackageVersion(): Promise<string> {
     const coreVersion = Utils.getORMVersion();
 
     if (process.env.MIKRO_ORM_ALLOW_VERSION_MISMATCH || coreVersion === 'N/A') {
       return coreVersion;
     }
 
-    const deps = this.getORMPackages();
+    const deps = await this.getORMPackages();
     const exceptions = new Set(['nestjs', 'sql-highlighter', 'mongo-highlighter']);
     const ormPackages = [...deps].filter(d => d.startsWith('@mikro-orm/') && d !== '@mikro-orm/core' && !exceptions.has(d.substring('@mikro-orm/'.length)));
 

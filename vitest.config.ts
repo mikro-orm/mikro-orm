@@ -47,8 +47,6 @@ export default defineConfig({
     ],
     globals: true,
     coverage: {
-      provider: 'v8',
-      reporter: ['text', 'lcov', 'cobertura'],
       include: [
         'packages/*/src/**/*.ts',
       ],

@@ -58,8 +58,6 @@ const DEFAULTS = {
     checkNonPersistentCompositeProps: true,
     inferDefaultValues: true,
   },
-  strict: false,
-  validate: false,
   validateRequired: true,
   context: (name: string) => RequestContext.getEntityManager(name),
   contextName: 'default',

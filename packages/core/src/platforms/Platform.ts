@@ -43,7 +43,7 @@ import {
   UnknownType,
   UuidType,
 } from '../types/index.js';
-import { parseJsonSafe, Utils } from '../utils/Utils.js';
+import { parseJsonSafe } from '../utils/Utils.js';
 import { ReferenceKind } from '../enums.js';
 import type { MikroORM } from '../MikroORM.js';
 import type { TransformContext } from '../types/Type.js';
@@ -449,19 +449,8 @@ export abstract class Platform {
       return extension;
     }
 
-    /* v8 ignore next 4 */
-    const module = Utils.tryRequire({
-      module: moduleName,
-      warning: `Please install ${moduleName} package.`,
-    });
-
-    /* v8 ignore next 3 */
-    if (module) {
-      return this.config.getCachedService(module[extensionName], em);
-    }
-
     /* v8 ignore next 2 */
-    throw new Error(`${extensionName} extension not registered.`);
+    throw new Error(`${extensionName} extension not registered. Provide it in the ORM config, or use the async \`MikroORM.init()\` method to load extensions automatically.`);
   }
 
   /* v8 ignore next 3: kept for type inference only */

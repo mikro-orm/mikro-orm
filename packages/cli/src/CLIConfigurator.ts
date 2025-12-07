@@ -48,8 +48,8 @@ function createBasicConfig() {
 }
 
 export async function configure() {
-  ConfigurationLoader.checkPackageVersion();
-  const settings = CLIHelper.getSettings();
+  await ConfigurationLoader.checkPackageVersion();
+  const settings = await CLIHelper.getSettings();
   const version = Utils.getORMVersion();
 
   if (settings.preferTs !== false) {
