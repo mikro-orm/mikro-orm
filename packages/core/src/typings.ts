@@ -601,7 +601,7 @@ export class EntityMetadata<T = any> {
     this.properties[prop.name!] = prop as EntityProperty<T>;
     this.propertyOrder.set(prop.name!, this.props.length);
 
-    /* v8 ignore next 3 */
+    /* v8 ignore next */
     if (sync) {
       this.sync();
     }
@@ -611,7 +611,7 @@ export class EntityMetadata<T = any> {
     delete this.properties[name as EntityKey<T>];
     this.propertyOrder.delete(name);
 
-    /* v8 ignore next 3 */
+    /* v8 ignore next */
     if (sync) {
       this.sync();
     }
@@ -782,7 +782,7 @@ export class EntityMetadata<T = any> {
       prop.index = false;
     }
 
-    /* v8 ignore next 4 */
+    /* v8 ignore next */
     if (owner && prop.fieldNames.length > 1 && prop.unique) {
       this.uniques.push({ properties: prop.name });
       prop.unique = false;

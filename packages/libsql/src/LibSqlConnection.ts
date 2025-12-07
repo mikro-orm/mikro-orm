@@ -32,7 +32,7 @@ export class LibSqlConnection extends BaseSqliteConnection {
     });
   }
 
-  /* v8 ignore next 4 */
+  /* v8 ignore next */
   override async loadFile(path: string): Promise<void> {
     await this.ensureConnection();
     this.database.exec((await readFile(path)).toString());

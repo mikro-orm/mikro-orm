@@ -200,14 +200,13 @@ export class Cursor<
     });
   }
 
-  /* v8 ignore start */
   /** @ignore */
+  /* v8 ignore next */
   [inspect.custom]() {
     const type = this.items[0]?.constructor.name;
     const { items, startCursor, endCursor, hasPrevPage, hasNextPage, totalCount, length } = this;
     const options = inspect({ startCursor, endCursor, totalCount, hasPrevPage, hasNextPage, items, length }, { depth: 0 });
     return `Cursor${type ? `<${type}>` : ''} ${options.replace('items: [Array]', 'items: [...]')}`;
   }
-  /* v8 ignore stop */
 
 }

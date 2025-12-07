@@ -23,9 +23,9 @@ describe('DebugCommand', () => {
 
     const globbyMock = vi.spyOn(Utils, 'pathExists');
     globbyMock.mockReturnValue(true);
-    getSettings.mockReturnValue({});
+    getSettings.mockResolvedValue({});
     getConfiguration.mockResolvedValue(new Configuration(defineConfig({}), false));
-    getConfigPaths.mockReturnValue(['./path/orm-config.ts']);
+    getConfigPaths.mockResolvedValue(['./path/orm-config.ts']);
     await expect(cmd.handler({ contextName: 'default' } as any)).resolves.toBeUndefined();
     expect(dumpDependencies).toHaveBeenCalledTimes(1);
     expect(dump.mock.calls).toEqual([
@@ -40,7 +40,7 @@ describe('DebugCommand', () => {
       [' - database connection successful'],
     ]);
 
-    getSettings.mockReturnValue({ preferTs: true });
+    getSettings.mockResolvedValue({ preferTs: true });
     globbyMock.mockImplementation(path => path.endsWith('entities-1') || path.endsWith('orm-config.ts'));
     getConfiguration.mockResolvedValue(new Configuration(defineConfig({ preferTs: true, entities: ['./dist/entities-1', './dist/entities-2'], entitiesTs: ['./src/entities-1', './src/entities-2'] }), false));
     dump.mock.calls.length = 0;
@@ -117,9 +117,9 @@ describe('DebugCommand', () => {
 
     globbyMock.mockReturnValue(false);
     dump.mock.calls.length = 0;
-    getSettings.mockReturnValue({});
+    getSettings.mockResolvedValue({});
     getConfiguration.mockResolvedValue(new Configuration(defineConfig({}), false));
-    getConfigPaths.mockReturnValue(['./path/orm-config.ts']);
+    getConfigPaths.mockResolvedValue(['./path/orm-config.ts']);
     const connectionMock = vi.spyOn(CLIHelper, 'isDBConnected');
     connectionMock.mockImplementation(async (_, reason) => reason ? 'host not found' : false as never);
     await expect(cmd.handler({ contextName: 'default' } as any)).resolves.toBeUndefined();

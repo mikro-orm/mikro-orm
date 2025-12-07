@@ -4,7 +4,7 @@ import type { Platform } from '../platforms/Platform.js';
 import type { MetadataStorage } from '../metadata/MetadataStorage.js';
 import type { Configuration } from '../utils/Configuration.js';
 
-/* v8 ignore start */
+/* v8 ignore next */
 export abstract class Hydrator implements IHydrator {
 
   protected running = false;
@@ -56,4 +56,3 @@ export abstract class Hydrator implements IHydrator {
   }
 
 }
-/* v8 ignore stop */

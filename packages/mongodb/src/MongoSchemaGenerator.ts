@@ -25,7 +25,7 @@ export class MongoSchemaGenerator extends AbstractSchemaGenerator<MongoDriver> {
     const existing = await this.connection.listCollections();
     const metadata = this.getOrderedMetadata();
 
-    /* v8 ignore start */
+    /* v8 ignore next */
     const promises = metadata
       .filter(meta => !existing.includes(meta.collection))
       .map(meta => this.connection.createCollection(meta.collection).catch(err => {
@@ -36,7 +36,6 @@ export class MongoSchemaGenerator extends AbstractSchemaGenerator<MongoDriver> {
           throw err;
         }
       }));
-    /* v8 ignore stop */
 
     if (options.ensureIndexes) {
       await this.ensureIndexes({ ensureCollections: false });
@@ -91,7 +90,7 @@ export class MongoSchemaGenerator extends AbstractSchemaGenerator<MongoDriver> {
       for (const index of indexes) {
         const isIdIndex = index.key._id === 1 && Utils.getObjectKeysSize(index.key) === 1;
 
-        /* v8 ignore next 3 */
+        /* v8 ignore next */
         if (!isIdIndex && !options?.skipIndexes?.find(idx => idx.collection === collection.name && idx.indexName === index.name)) {
           promises.push(this.executeQuery(db.collection(collection.name), 'dropIndex', index.name));
         }

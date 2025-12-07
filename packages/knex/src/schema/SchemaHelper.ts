@@ -104,7 +104,7 @@ export abstract class SchemaHelper {
   }
 
   getCreateIndexSQL(tableName: string, index: IndexDef): string {
-    /* v8 ignore next 3 */
+    /* v8 ignore next */
     if (index.expression) {
       return index.expression;
     }
@@ -190,7 +190,7 @@ export abstract class SchemaHelper {
       ret.push(this.dropConstraint(diff.name, check.name));
     }
 
-    /* v8 ignore next 3 */
+    /* v8 ignore next */
     if (!safe && Object.values(diff.removedColumns).length > 0) {
       ret.push(this.getDropColumnsSQL(tableName, Object.values(diff.removedColumns), schemaName));
     }
@@ -299,7 +299,7 @@ export abstract class SchemaHelper {
     return pkIndex?.keyName !== defaultName;
   }
 
-  /* v8 ignore next 3 */
+  /* v8 ignore next */
   castColumn(name: string, type: string): string {
     return '';
   }
@@ -447,12 +447,12 @@ export abstract class SchemaHelper {
     return `drop database if exists ${this.quote(name)}`;
   }
 
-  /* v8 ignore next 3 */
+  /* v8 ignore next */
   getCreateNamespaceSQL(name: string): string {
     return `create schema if not exists ${this.quote(name)}`;
   }
 
-  /* v8 ignore next 3 */
+  /* v8 ignore next */
   getDropNamespaceSQL(name: string): string {
     return `drop schema if exists ${this.quote(name)}`;
   }
@@ -612,7 +612,7 @@ export abstract class SchemaHelper {
     const [schemaName, tableName] = this.splitTableName(referencedTableName);
     schema = schemaName ?? schema ?? this.platform.getConfig().get('schema');
 
-    /* v8 ignore next 3 */
+    /* v8 ignore next */
     if (schema && schemaName === '*') {
       return `${schema}.${referencedTableName.replace(/^\*\./, '')}`;
     }

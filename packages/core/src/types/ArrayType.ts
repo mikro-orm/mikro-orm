@@ -21,7 +21,7 @@ export class ArrayType<T = string> extends Type<T[] | null, string | null> {
       return platform.marshallArray(value.map(i => this.toDbValue(i)));
     }
 
-    /* v8 ignore next 3 */
+    /* v8 ignore next */
     if (context?.fromQuery) {
       return value;
     }

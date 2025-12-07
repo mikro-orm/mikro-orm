@@ -94,7 +94,7 @@ export class EntityLoader {
     populate = this.normalizePopulate<Entity>(entityName, populate as true, options.strategy, options.lookup);
     const invalid = populate.find(({ field }) => !this.em.canPopulate(entityName, field));
 
-    /* v8 ignore next 3 */
+    /* v8 ignore next */
     if (options.validate && invalid) {
       throw ValidationError.invalidPropertyName(entityName, invalid.field);
     }
@@ -616,7 +616,7 @@ export class EntityLoader {
         const propName = parts.shift();
         const childPropName = parts.join('.') as EntityField<Entity>;
 
-        /* v8 ignore next 3 */
+        /* v8 ignore next */
         if (propName === prop.name) {
           ret.push(childPropName);
         }
@@ -684,7 +684,7 @@ export class EntityLoader {
 
     const [f, ...r] = field.split('.');
 
-    /* v8 ignore next 3 */
+    /* v8 ignore next */
     if (!wrapped.__loadedProperties.has(f) || !wrapped.__meta.properties[f]?.targetMeta) {
       return false;
     }
@@ -726,7 +726,7 @@ export class EntityLoader {
   }
 
   private filterByReferences<Entity extends object>(entities: Entity[], field: keyof Entity, refresh: boolean): Entity[] {
-    /* v8 ignore next 3 */
+    /* v8 ignore next */
     if (refresh) {
       return entities;
     }

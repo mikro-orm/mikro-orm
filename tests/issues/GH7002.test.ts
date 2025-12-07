@@ -1,9 +1,10 @@
-import { Entity, EntityComparator, EntityData, MikroORM, PrimaryKey, Property } from '@mikro-orm/sqlite';
+import { Entity, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
+import { EntityComparator, EntityData, MikroORM } from '@mikro-orm/sqlite';
 
 @Entity()
 class GH7002 {
 
-  @PrimaryKey()
+  @PrimaryKey({ type: 'integer' })
   id!: number;
 
   @Property({ type: 'Date' })

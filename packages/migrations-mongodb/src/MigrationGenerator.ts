@@ -31,10 +31,8 @@ export abstract class MigrationGenerator implements IMigrationGenerator {
     return [ret, fileName];
   }
 
-  /* v8 ignore start */
-  /**
-   * @inheritDoc
-   */
+  /** @inheritDoc */
+  /* v8 ignore next */
   createStatement(query: string, padLeft: number): string {
     if (query) {
       const padding = ' '.repeat(padLeft);
@@ -43,7 +41,6 @@ export abstract class MigrationGenerator implements IMigrationGenerator {
 
     return '\n';
   }
-  /* v8 ignore stop */
 
   /**
    * @inheritDoc

@@ -57,7 +57,7 @@ export class MsSqlConnection extends AbstractSqlConnection {
       server: options.host!,
     } as ConnectionConfiguration;
 
-    /* v8 ignore next 6 */
+    /* v8 ignore next */
     if (ret.server.includes('\\')) {
       const [host, ...name] = ret.server.split('\\');
       ret.server = host;

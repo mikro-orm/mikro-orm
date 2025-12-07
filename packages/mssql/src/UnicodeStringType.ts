@@ -32,7 +32,7 @@ export class UnicodeStringType extends Type<string | null, string | null> {
   }
 
   override convertToJSValue(value: string | null | UnicodeString): string | null {
-    /* v8 ignore next 3 */
+    /* v8 ignore next */
     if (value instanceof UnicodeString) {
       return value.value;
     }

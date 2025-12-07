@@ -15,7 +15,7 @@ export function validateProperty<T extends object>(prop: EntityProperty, givenVa
   const givenType = Utils.getObjectType(givenValue);
 
   if (prop.enum && prop.items) {
-    /* v8 ignore next 3 */
+    /* v8 ignore next */
     if (!prop.items.some(it => it === givenValue)) {
       throw ValidationError.fromWrongPropertyType(entity, propName, expectedType, givenType, givenValue);
     }

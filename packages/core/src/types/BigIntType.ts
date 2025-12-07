@@ -21,7 +21,7 @@ export class BigIntType<Mode extends 'bigint' | 'number' | 'string' = 'bigint'> 
   }
 
   override convertToJSValue(value: string | bigint | null | undefined): JSTypeByMode<Mode> | null | undefined {
-    /* v8 ignore next 3 */
+    /* v8 ignore next */
     if (value == null) {
       return value;
     }

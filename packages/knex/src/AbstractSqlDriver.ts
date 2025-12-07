@@ -209,7 +209,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
   protected async findFromVirtual<T extends object>(entityName: string, where: ObjectQuery<T>, options: FindOptions<T, any> | CountOptions<T, any>, type: QueryType): Promise<EntityData<T>[] | number> {
     const meta = this.metadata.get<T>(entityName);
 
-    /* v8 ignore next 3 */
+    /* v8 ignore next */
     if (!meta.expression) {
       return type === QueryType.SELECT ? [] : 0;
     }
@@ -235,14 +235,14 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       return this.wrapVirtualExpressionInSubquery(meta, expr, where, options as FindOptions<T, any>, type);
     }
 
-    /* v8 ignore next 2 */
+    /* v8 ignore next */
     return res as EntityData<T>[];
   }
 
   protected async *streamFromVirtual<T extends object>(entityName: EntityName<T>, where: FilterQuery<T>, options: StreamOptions<T, any>): AsyncIterableIterator<EntityData<T>> {
     const meta = this.metadata.get<T>(entityName);
 
-    /* v8 ignore next 3 */
+    /* v8 ignore next */
     if (!meta.expression) {
       return;
     }
@@ -272,7 +272,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       return;
     }
 
-    /* v8 ignore next 2 */
+    /* v8 ignore next */
     yield* res as EntityData<T>[];
   }
 
@@ -323,7 +323,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
   override mapResult<T extends object>(result: EntityData<T>, meta: EntityMetadata<T>, populate: PopulateOptions<T>[] = [], qb?: QueryBuilder<T, any, any, any>, map: Dictionary = {}): EntityData<T> | null {
     const ret = super.mapResult(result, meta);
 
-    /* v8 ignore next 3 */
+    /* v8 ignore next */
     if (!ret) {
       return null;
     }
@@ -343,7 +343,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       const [propName, ref] = hint.field.split(':', 2) as [EntityKey<T>, string | undefined];
       const prop = meta.properties[propName];
 
-      /* v8 ignore next 3 */
+      /* v8 ignore next */
       if (!prop) {
         return;
       }
@@ -362,7 +362,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
 
       const relationAlias = qb.getAliasForJoinPath(path, { matchPopulateJoins: true });
 
-      /* v8 ignore next 3 */
+      /* v8 ignore next */
       if (!relationAlias) {
         return;
       }
@@ -424,7 +424,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       meta2.props
         .filter(prop => !ref && prop.persist === false && prop.fieldNames)
         .forEach(prop => {
-          /* v8 ignore next 3 */
+          /* v8 ignore next */
           if (prop.fieldNames.length > 1) { // composite keys
             relationPojo[prop.name as EntityKey<T>] = prop.fieldNames.map(name => root![`${relationAlias}__${name}` as EntityKey<T>]) as EntityDataValue<T>;
           } else {
@@ -696,7 +696,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     const res = await this.execute<QueryResult<T>>(sql, params, 'run', options.ctx, options.loggerContext);
     let pk: any[];
 
-    /* v8 ignore next 3 */
+    /* v8 ignore next */
     if (pks.length > 1) { // owner has composite pk
       pk = data.map(d => Utils.getPrimaryKeyCond(d as T, pks));
     } else {
@@ -1003,7 +1003,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
           continue;
         }
 
-        /* v8 ignore next 5 */
+        /* v8 ignore next */
         const query = qb.update({ [coll.property.mappedBy]: pks })
           .where({ [cols.join(Utils.PK_SEPARATOR)]: { $in: insertDiff } });
 

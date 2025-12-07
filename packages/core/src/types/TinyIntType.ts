@@ -12,7 +12,7 @@ export class TinyIntType extends Type<number | null | undefined, number | null |
     return 'number';
   }
 
-  /* v8 ignore next 3 */
+  /* v8 ignore next */
   override ensureComparable(): boolean {
     return false;
   }

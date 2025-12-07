@@ -82,12 +82,12 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
     return new EntityManagerClass(this.config, this, this.metadata, useContext);
   }
 
-  /* v8 ignore next 3 */
+  /* v8 ignore next */
   async findVirtual<T extends object>(entityName: EntityName<T>, where: FilterQuery<T>, options: FindOptions<T, any, any, any>): Promise<EntityData<T>[]> {
     throw new Error(`Virtual entities are not supported by ${this.constructor.name} driver.`);
   }
 
-  /* v8 ignore next 3 */
+  /* v8 ignore next */
   async countVirtual<T extends object>(entityName: string, where: FilterQuery<T>, options: CountOptions<T, any>): Promise<number> {
     throw new Error(`Counting virtual entities is not supported by ${this.constructor.name} driver.`);
   }
@@ -110,7 +110,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
         continue;
       }
 
-      /* v8 ignore next 3 */
+      /* v8 ignore next */
       const pk = coll.property.targetMeta!.primaryKeys[0];
       const data = { [coll.property.name]: coll.getIdentifiers(pk) } as EntityData<T>;
       await this.nativeUpdate<T>(coll.owner.constructor.name, helper(coll.owner).getPrimaryKey() as FilterQuery<T>, data, options);
@@ -366,7 +366,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
   }
 
   protected inlineEmbeddables<T extends object>(meta: EntityMetadata<T>, data: T, where?: boolean): void {
-    /* v8 ignore next 3 */
+    /* v8 ignore next */
     if (data == null) {
       return;
     }
