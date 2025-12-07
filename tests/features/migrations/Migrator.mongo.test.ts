@@ -1,4 +1,4 @@
-(global as any).process.env.FORCE_COLOR = 0;
+process.env.FORCE_COLOR = '0';
 import { Umzug } from 'umzug';
 import type { MikroORM, UmzugMigration } from '@mikro-orm/core';
 import { Migration, Migrator } from '@mikro-orm/migrations-mongodb';

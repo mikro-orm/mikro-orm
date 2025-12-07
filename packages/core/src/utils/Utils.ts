@@ -1,6 +1,5 @@
-import { isAbsolute, join, normalize, relative } from 'node:path';
+import { isAbsolute, normalize, relative } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import { existsSync, globSync, statSync, mkdirSync, readFileSync } from 'node:fs';
 import { clone } from './clone.js';
 import type {
   Dictionary,
@@ -770,6 +769,7 @@ export class Utils {
    */
   static normalizePath(...parts: string[]): string {
     let start = 0;
+
     for (let i = 0; i < parts.length; i++) {
       const part = parts[i];
       if (isAbsolute(part)) {
@@ -779,6 +779,7 @@ export class Utils {
         parts[i] = Utils.fileURLToPath(part);
       }
     }
+
     if (start > 0) {
       parts = parts.slice(start);
     }
@@ -876,39 +877,6 @@ export class Utils {
     return Math.round(Math.random() * (max - min)) + min;
   }
 
-  static glob(input: string | string[], cwd?: string): string[] {
-    if (Array.isArray(input)) {
-      return input.flatMap(paths => this.glob(paths, cwd));
-    }
-
-    const hasGlobChars = /[*?[\]]/.test(input);
-
-    if (!hasGlobChars) {
-      try {
-        const s = statSync(cwd ? Utils.normalizePath(cwd, input) : input);
-
-        if (s.isDirectory()) {
-          const files = globSync(join(input, '**'), { cwd, withFileTypes: true });
-          return files.filter(f => f.isFile()).map(f => join(f.parentPath, f.name));
-        }
-      } catch {
-        // ignore
-      }
-    }
-
-    const files = globSync(input, { cwd, withFileTypes: true });
-    return files.filter(f => f.isFile()).map(f => join(f.parentPath, f.name));
-  }
-
-  static pathExists(path: string): boolean {
-    if (/[*?[\]]/.test(path)) {
-      const found = globSync(path);
-      return found.length > 0;
-    }
-
-    return existsSync(path);
-  }
-
   /**
    * Extracts all possible values of a TS enum. Works with both string and numeric enums.
    */
@@ -960,17 +928,6 @@ export class Utils {
     /* v8 ignore next */
     const specifier = id.startsWith('file://') ? id : pathToFileURL(id).href;
     return this.dynamicImportProvider(specifier);
-  }
-
-  static ensureDir(path: string): void {
-    if (!existsSync(path)) {
-      mkdirSync(path, { recursive: true });
-    }
-  }
-
-  static readJSONSync(path: string): Dictionary {
-    const file = readFileSync(path);
-    return JSON.parse(file.toString());
   }
 
   static getORMVersion(): string {

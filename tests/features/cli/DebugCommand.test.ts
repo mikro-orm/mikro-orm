@@ -1,8 +1,9 @@
 import { defineConfig } from '@mikro-orm/mongodb';
 
-(global as any).process.env.FORCE_COLOR = 0;
+process.env.FORCE_COLOR = '0';
 
 import { Configuration, Utils } from '@mikro-orm/core';
+import { fs } from '@mikro-orm/core/fs-utils';
 import { CLIHelper } from '@mikro-orm/cli';
 import { DebugCommand } from '../../../packages/cli/src/commands/DebugCommand.js';
 import FooBar from '../../entities/FooBar.js';
@@ -21,8 +22,8 @@ describe('DebugCommand', () => {
 
     const cmd = new DebugCommand();
 
-    const globbyMock = vi.spyOn(Utils, 'pathExists');
-    globbyMock.mockReturnValue(true);
+    const pathExistsMock = vi.spyOn(fs, 'pathExists');
+    pathExistsMock.mockReturnValue(true);
     getSettings.mockResolvedValue({});
     getConfiguration.mockResolvedValue(new Configuration(defineConfig({}), false));
     getConfigPaths.mockResolvedValue(['./path/orm-config.ts']);
@@ -41,7 +42,7 @@ describe('DebugCommand', () => {
     ]);
 
     getSettings.mockResolvedValue({ preferTs: true });
-    globbyMock.mockImplementation(path => path.endsWith('entities-1') || path.endsWith('orm-config.ts'));
+    pathExistsMock.mockImplementation(path => path.endsWith('entities-1') || path.endsWith('orm-config.ts'));
     getConfiguration.mockResolvedValue(new Configuration(defineConfig({ preferTs: true, entities: ['./dist/entities-1', './dist/entities-2'], entitiesTs: ['./src/entities-1', './src/entities-2'] }), false));
     dump.mock.calls.length = 0;
     await expect(cmd.handler({ contextName: 'default' } as any)).resolves.toBeUndefined();
@@ -97,7 +98,7 @@ describe('DebugCommand', () => {
       ['- configuration not found (test error message)'],
     ]);
 
-    globbyMock.mockReturnValue(false);
+    pathExistsMock.mockReturnValue(false);
     dump.mock.calls.length = 0;
     await expect(cmd.handler({ contextName: 'default' } as any)).resolves.toBeUndefined();
     expect(dumpDependencies).toHaveBeenCalledTimes(5);
@@ -115,7 +116,7 @@ describe('DebugCommand', () => {
       [' - will use `entities` array (contains 2 references and 0 paths)'],
     ]);
 
-    globbyMock.mockReturnValue(false);
+    pathExistsMock.mockReturnValue(false);
     dump.mock.calls.length = 0;
     getSettings.mockResolvedValue({});
     getConfiguration.mockResolvedValue(new Configuration(defineConfig({}), false));
@@ -135,6 +136,6 @@ describe('DebugCommand', () => {
       [`   - mongodb ${await CLIHelper.getModuleVersion('mongodb')}`],
       [' - database connection failed (host not found)'],
     ]);
-    globbyMock.mockRestore();
+    pathExistsMock.mockRestore();
   });
 });

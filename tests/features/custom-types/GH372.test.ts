@@ -2,7 +2,7 @@ import { mockLogger } from '../../helpers.js';
 import { MikroORM, raw, Raw, Type } from '@mikro-orm/postgresql';
 import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
-(global as any).process.env.FORCE_COLOR = 0;
+process.env.FORCE_COLOR = '0';
 
 type Point = { x: number; y: number };
 

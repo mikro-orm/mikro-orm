@@ -1,5 +1,4 @@
 import type { NamingStrategy } from '../naming-strategy/NamingStrategy.js';
-import { FileCacheAdapter } from '../cache/FileCacheAdapter.js';
 import { NullCacheAdapter } from '../cache/NullCacheAdapter.js';
 import { type CacheAdapter, type SyncCacheAdapter } from '../cache/CacheAdapter.js';
 import type { EntityRepository } from '../entity/EntityRepository.js';
@@ -104,7 +103,6 @@ const DEFAULTS = {
   driverOptions: {},
   migrations: {
     tableName: 'mikro_orm_migrations',
-    path: './migrations',
     glob: '!(*.d).{js,ts,cjs}',
     silent: false,
     transactional: true,
@@ -136,17 +134,14 @@ const DEFAULTS = {
     entityDefinition: 'defineEntity',
     decorators: 'legacy',
     enumMode: 'dictionary',
+    /* v8 ignore next */
     fileName: (className: string) => className,
     onlyPurePivotTables: false,
     outputPurePivotTables: false,
     readOnlyPivotTables: false,
     useCoreBaseEntity: false,
   },
-  metadataCache: {
-    pretty: false,
-    adapter: FileCacheAdapter,
-    options: { cacheDir: process.cwd() + '/temp' },
-  },
+  metadataCache: {},
   resultCache: {
     adapter: MemoryCacheAdapter,
     expiration: 1000, // 1s
@@ -155,7 +150,6 @@ const DEFAULTS = {
   metadataProvider: MetadataProvider,
   highlighter: new NullHighlighter(),
   seeder: {
-    path: './seeders',
     defaultSeeder: 'DatabaseSeeder',
     glob: '!(*.d).{js,ts}',
     emit: 'ts',
@@ -199,7 +193,6 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver, EM exten
       this.driver = new this.options.driver!(this);
       this.platform = this.driver.getPlatform() as ReturnType<D['getPlatform']>;
       this.platform.setConfig(this);
-      this.detectSourceFolder(options);
       this.init(validate);
     }
   }
@@ -361,19 +354,20 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver, EM exten
   }
 
   private init(validate: boolean): void {
-    if (!this.getMetadataProvider().useCache()) {
-      this.options.metadataCache.adapter = NullCacheAdapter;
+    const useCache = this.getMetadataProvider().useCache();
+    const metadataCache = this.options.metadataCache;
+
+    if (!useCache) {
+      metadataCache.adapter = NullCacheAdapter;
     }
 
-    if (!('enabled' in this.options.metadataCache)) {
-      this.options.metadataCache.enabled = this.getMetadataProvider().useCache();
-    }
-
-    if (!this.options.clientUrl) {
-      this.options.clientUrl = this.platform.getDefaultClientUrl();
-    }
-
+    metadataCache.enabled ??= useCache;
+    this.options.clientUrl ??= this.platform.getDefaultClientUrl();
     this.options.implicitTransactions ??= this.platform.usesImplicitTransactions();
+
+    if (metadataCache.enabled && !metadataCache.adapter) {
+      throw new Error('No metadata cache adapter specified, please fill in `metadataCache.adapter` option or use the async MikroORM.init() method which can autoload it.');
+    }
 
     try {
       const url = new URL(this.options.clientUrl);
@@ -418,39 +412,6 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver, EM exten
   private sync(): void {
     process.env.MIKRO_ORM_COLORS = '' + this.options.colors;
     this.logger.setDebugMode(this.options.debug);
-  }
-
-  /**
-   * Checks if `src` folder exists, it so, tries to adjust the migrations and seeders paths automatically to use it.
-   * If there is a `dist` or `build` folder, it will be used for the JS variant (`path` option), while the `src` folder will be
-   * used for the TS variant (`pathTs` option).
-   *
-   * If the default folder exists (e.g. `/migrations`), the config will respect that, so this auto-detection should not
-   * break existing projects, only help with the new ones.
-   */
-  private detectSourceFolder(options: Options): void {
-    if (!Utils.pathExists(this.options.baseDir + '/src')) {
-      return;
-    }
-
-    const migrationsPathExists = Utils.pathExists(this.options.baseDir + '/' + this.options.migrations.path);
-    const seedersPathExists = Utils.pathExists(this.options.baseDir + '/' + this.options.seeder.path);
-    const distDir = Utils.pathExists(this.options.baseDir + '/dist');
-    const buildDir = Utils.pathExists(this.options.baseDir + '/build');
-    // if neither `dist` nor `build` exist, we use the `src` folder as it might be a JS project without building, but with `src` folder
-    const path = distDir ? './dist' : (buildDir ? './build' : './src');
-
-    // only if the user did not provide any values and if the default path does not exist
-    if (!options.migrations?.path && !options.migrations?.pathTs && !migrationsPathExists) {
-      this.options.migrations.path = `${path}/migrations`;
-      this.options.migrations.pathTs = './src/migrations';
-    }
-
-    // only if the user did not provide any values and if the default path does not exist
-    if (!options.seeder?.path && !options.seeder?.pathTs && !seedersPathExists) {
-      this.options.seeder.path = `${path}/seeders`;
-      this.options.seeder.pathTs = './src/seeders';
-    }
   }
 
   private validateOptions(): void {
@@ -1161,8 +1122,7 @@ export interface Options<
      */
     pretty?: boolean;
     /**
-     * Cache adapter class to use.
-     * @default FileCacheAdapter
+     * Cache adapter class to use. When cache is enabled, and no adapter is provided explicitly, {@link FileCacheAdapter} is used automatically - but only if you use the async `MikroORM.init()` method.
      */
     adapter?: { new(...params: any[]): SyncCacheAdapter };
     /**
@@ -1202,7 +1162,7 @@ export interface Options<
    * @default ReflectMetadataProvider
    * @see https://mikro-orm.io/docs/metadata-providers
    */
-  metadataProvider?: { new(config: Configuration): MetadataProvider };
+  metadataProvider?: { new(config: Configuration): MetadataProvider; useCache?: MetadataProvider['useCache'] };
   /**
    * Seeder configuration options.
    * @see https://mikro-orm.io/docs/seeding
