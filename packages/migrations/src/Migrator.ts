@@ -24,6 +24,7 @@ import {
   UnknownType,
   Utils,
 } from '@mikro-orm/core';
+import { fs } from '@mikro-orm/core/fs-utils';
 import {
   type AbstractSqlDriver,
   DatabaseSchema,
@@ -56,6 +57,7 @@ export class Migrator implements IMigrator {
     this.config = this.em.config;
     this.options = this.config.get('migrations');
     this.schemaGenerator = this.config.getExtension('@mikro-orm/schema-generator')!;
+    this.detectSourceFolder();
 
     /* v8 ignore next */
     const key = (this.config.get('preferTs', Utils.detectTypeScriptSupport()) && this.options.pathTs) ? 'pathTs' : 'path';
@@ -68,6 +70,37 @@ export class Migrator implements IMigrator {
     const snapshotName = this.options.snapshotName ?? `.snapshot-${dbName}`;
     this.snapshotPath = Utils.normalizePath(absoluteSnapshotPath, `${snapshotName}.json`);
     this.createUmzug();
+  }
+
+  /**
+   * Checks if `src` folder exists, it so, tries to adjust the migrations and seeders paths automatically to use it.
+   * If there is a `dist` or `build` folder, it will be used for the JS variant (`path` option), while the `src` folder will be
+   * used for the TS variant (`pathTs` option).
+   *
+   * If the default folder exists (e.g. `/migrations`), the config will respect that, so this auto-detection should not
+   * break existing projects, only help with the new ones.
+   */
+  private detectSourceFolder(): void {
+    const baseDir = this.config.get('baseDir');
+    const defaultPath = './migrations';
+
+    if (!fs.pathExists(baseDir + '/src')) {
+      this.options.path ??= defaultPath;
+      return;
+    }
+
+    const exists = fs.pathExists(`${baseDir}/${defaultPath}`);
+    const distDir = fs.pathExists(baseDir + '/dist');
+    const buildDir = fs.pathExists(baseDir + '/build');
+    // if neither `dist` nor `build` exist, we use the `src` folder as it might be a JS project without building, but with `src` folder
+    /* v8 ignore next */
+    const path = distDir ? './dist' : (buildDir ? './build' : './src');
+
+    // only if the user did not provide any values and if the default path does not exist
+    if (!this.options.path && !this.options.pathTs && !exists) {
+      this.options.path = `${path}/migrations`;
+      this.options.pathTs = './src/migrations';
+    }
   }
 
   static register(orm: MikroORM): void {
@@ -166,6 +199,7 @@ export class Migrator implements IMigrator {
       migrations,
     });
 
+    /* v8 ignore else */
     if (!this.options.silent) {
       const logger = this.config.getLogger();
       this.umzug.on('migrating', event => logger.log('migrator', `Processing '${event.name}'`, { enabled: true }));
@@ -297,7 +331,7 @@ export class Migrator implements IMigrator {
       return undefined;
     }
 
-    const data = Utils.readJSONSync(this.snapshotPath);
+    const data = fs.readJSONSync(this.snapshotPath);
     const schema = new DatabaseSchema(this.driver.getPlatform(), this.config.get('schema'));
     const { tables, namespaces, ...rest } = data;
     const tableInstances = tables.map((tbl: Dictionary) => {
@@ -426,7 +460,7 @@ export class Migrator implements IMigrator {
 
   private ensureMigrationsDirExists() {
     if (!this.options.migrationsList) {
-      Utils.ensureDir(this.absolutePath);
+      fs.ensureDir(this.absolutePath);
     }
   }
 

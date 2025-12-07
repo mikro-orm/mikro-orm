@@ -17,6 +17,7 @@ import {
   type EntityManager,
   type SchemaHelper,
 } from '@mikro-orm/knex';
+import { fs } from '@mikro-orm/core/fs-utils';
 import { dirname, join } from 'node:path';
 import { writeFile } from 'node:fs/promises';
 import { DefineEntitySourceFile } from './DefineEntitySourceFile.js';
@@ -81,7 +82,7 @@ export class EntityGenerator {
     const files = this.sources.map(file => [file.getBaseName(), file.generate()]);
 
     if (options.save) {
-      Utils.ensureDir(baseDir);
+      fs.ensureDir(baseDir);
       const promises = [];
 
       for (const [fileName, data] of files) {
@@ -89,7 +90,7 @@ export class EntityGenerator {
           const fileDir = dirname(fileName);
 
           if (fileDir !== '.') {
-            Utils.ensureDir(join(baseDir, fileDir));
+            fs.ensureDir(join(baseDir, fileDir));
         }
         await writeFile(join(baseDir, fileName), data, { flush: true });
         })());

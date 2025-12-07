@@ -1,3 +1,4 @@
+import { extname } from 'node:path';
 import { ComputedPropertyName, ModuleKind, NoSubstitutionTemplateLiteral, Project, StringLiteral, type PropertyDeclaration, type SourceFile } from 'ts-morph';
 import {
   type EntityMetadata,
@@ -5,7 +6,9 @@ import {
   MetadataError,
   MetadataProvider,
   MetadataStorage,
+  RawQueryFragment,
   ReferenceKind,
+  Type,
   Utils,
 } from '@mikro-orm/core';
 
@@ -14,8 +17,12 @@ export class TsMorphMetadataProvider extends MetadataProvider {
   private project!: Project;
   private sources!: SourceFile[];
 
+  static override useCache(): boolean {
+    return true;
+  }
+
   override useCache(): boolean {
-    return this.config.get('metadataCache').enabled ?? true;
+    return this.config.get('metadataCache').enabled ?? TsMorphMetadataProvider.useCache();
   }
 
   override loadEntityMetadata(meta: EntityMetadata): void {
@@ -41,7 +48,7 @@ export class TsMorphMetadataProvider extends MetadataProvider {
     for (const prop of Object.values(meta.properties)) {
       const type = this.extractType(prop);
       this.initPropertyType(meta, prop);
-      prop.type = type || prop.type;
+      prop.type = type ?? prop.type;
     }
   }
 
@@ -232,7 +239,7 @@ export class TsMorphMetadataProvider extends MetadataProvider {
         skipAddingFilesFromTsConfig: true,
         compilerOptions: {
           strictNullChecks: true,
-          module: ModuleKind.Node16,
+          module: ModuleKind.Node20,
         },
       });
     } catch (e: any) {
@@ -240,17 +247,14 @@ export class TsMorphMetadataProvider extends MetadataProvider {
       this.project = new Project({
         compilerOptions: {
           strictNullChecks: true,
-          module: ModuleKind.Node16,
+          module: ModuleKind.Node20,
         },
       });
     }
   }
 
   private initSourceFiles(): void {
-    if (!this.project) {
-      this.initProject();
-    }
-
+    this.initProject();
     this.sources = [];
 
     // All entity files are first required during the discovery, before we reach here, so it is safe to get the parts from the global
@@ -268,6 +272,61 @@ export class TsMorphMetadataProvider extends MetadataProvider {
         this.sources.push(sourceFile);
       }
     }
+  }
+
+  override loadFromCache(meta: EntityMetadata, cache: EntityMetadata): void {
+    Object.values(cache.properties).forEach(prop => {
+      const metaProp = meta.properties[prop.name];
+
+      /* v8 ignore next 3 */
+      if (metaProp?.enum && Array.isArray(metaProp.items)) {
+        delete prop.items;
+      }
+    });
+
+    Utils.mergeConfig(meta, cache);
+  }
+
+  override saveToCache(meta: EntityMetadata): void {
+    if (!this.useCache()) {
+      return;
+    }
+
+    Reflect.deleteProperty(meta, 'root'); // to allow caching (as root can contain cycles)
+    const copy = Utils.copy(meta, false);
+
+    for (const prop of copy.props) {
+      if (Type.isMappedType(prop.type)) {
+        Reflect.deleteProperty(prop, 'type');
+        Reflect.deleteProperty(prop, 'customType');
+      }
+
+      if (prop.default) {
+        const raw = RawQueryFragment.getKnownFragment(prop.default as string);
+
+        if (raw) {
+          prop.defaultRaw ??= this.config.getPlatform().formatQuery(raw.sql, raw.params);
+          Reflect.deleteProperty(prop, 'default');
+        }
+      }
+
+      Reflect.deleteProperty(prop, 'targetMeta');
+    }
+
+    ([
+      'prototype', 'props', 'referencingProperties', 'propertyOrder', 'relations',
+      'concurrencyCheckKeys', 'checks',
+    ] as const).forEach(key => delete copy[key]);
+
+    // base entity without properties might not have path, but nothing to cache there
+    if (meta.path) {
+      this.config.getMetadataCacheAdapter().set(this.getCacheKey(meta), copy, meta.path);
+    }
+  }
+
+  override getCacheKey(meta: Pick<EntityMetadata, 'className' | 'path'>): string {
+    /* v8 ignore next */
+    return meta.className + (meta.path ? extname(meta.path) : '');
   }
 
 }

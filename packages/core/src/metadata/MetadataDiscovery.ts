@@ -1,5 +1,3 @@
-import { extname } from 'node:path';
-
 import {
   type Constructor,
   type Dictionary,
@@ -12,7 +10,6 @@ import type { Configuration } from '../utils/Configuration.js';
 import { MetadataValidator } from './MetadataValidator.js';
 import type { MetadataProvider } from './MetadataProvider.js';
 import type { NamingStrategy } from '../naming-strategy/NamingStrategy.js';
-import type { SyncCacheAdapter } from '../cache/CacheAdapter.js';
 import { MetadataStorage } from './MetadataStorage.js';
 import { EntitySchema } from './EntitySchema.js';
 import { Cascade, type EventType, ReferenceKind } from '../enums.js';
@@ -27,7 +24,6 @@ export class MetadataDiscovery {
 
   private readonly namingStrategy: NamingStrategy;
   private readonly metadataProvider: MetadataProvider;
-  private readonly cache: SyncCacheAdapter;
   private readonly logger: Logger;
   private readonly schemaHelper: unknown;
   private readonly validator = new MetadataValidator();
@@ -40,7 +36,6 @@ export class MetadataDiscovery {
   ) {
     this.namingStrategy = this.config.getNamingStrategy();
     this.metadataProvider = this.config.getMetadataProvider();
-    this.cache = this.config.getMetadataCacheAdapter();
     this.logger = this.config.getLogger();
     this.schemaHelper = this.platform.getSchemaHelper();
   }
@@ -184,12 +179,7 @@ export class MetadataDiscovery {
     }
 
     discovered.forEach(meta => meta.sync(true));
-    const combinedCachePath = this.cache.combine?.();
-
-    // override the path in the options, so we can log it from the CLI in `cache:generate` command
-    if (combinedCachePath) {
-      this.config.get('metadataCache').combined = combinedCachePath;
-    }
+    this.metadataProvider.combineCache();
 
     return discovered.map(meta => {
       meta = this.metadata.get(meta.className);
@@ -365,12 +355,10 @@ export class MetadataDiscovery {
     this.logger.log('discovery', `- processing entity ${colors.cyan(meta.className)}${colors.grey(path ? ` (${path})` : '')}`);
     const root = this.getRootEntity(meta);
     schema.meta.path = Utils.relativePath(meta.path, this.config.get('baseDir'));
-    const cache = this.metadataProvider.useCache() && meta.path && this.cache.get(meta.className + extname(meta.path));
+    const cache = this.metadataProvider.getCachedMetadata(meta, root);
 
     if (cache) {
       this.logger.log('discovery', `- using cached metadata for entity ${colors.cyan(meta.className)}`);
-      this.metadataProvider.loadFromCache(meta, cache);
-      meta.root = root;
       this.discovered.push(meta);
 
       return;
@@ -389,46 +377,9 @@ export class MetadataDiscovery {
       meta.collection = this.namingStrategy.classToTableName(entityName!);
     }
 
-    delete (meta as any).root; // to allow caching (as root can contain cycles)
-    this.saveToCache(meta);
+    this.metadataProvider.saveToCache(meta);
     meta.root = root;
     this.discovered.push(meta);
-  }
-
-  private saveToCache<T>(meta: EntityMetadata<T>): void {
-    if (!this.metadataProvider.useCache()) {
-      return;
-    }
-
-    const copy = Utils.copy(meta, false);
-
-    for (const prop of copy.props) {
-      if (Type.isMappedType(prop.type)) {
-        Reflect.deleteProperty(prop, 'type');
-        Reflect.deleteProperty(prop, 'customType');
-      }
-
-      if (prop.default) {
-        const raw = RawQueryFragment.getKnownFragment(prop.default as string);
-
-        if (raw) {
-          prop.defaultRaw ??= this.platform.formatQuery(raw.sql, raw.params);
-          Reflect.deleteProperty(prop, 'default');
-        }
-      }
-
-      Reflect.deleteProperty(prop, 'targetMeta');
-    }
-
-    ([
-      'prototype', 'props', 'referencingProperties', 'propertyOrder', 'relations',
-      'concurrencyCheckKeys', 'checks',
-    ] as const).forEach(key => delete copy[key]);
-
-    // base entity without properties might not have path, but nothing to cache there
-    if (meta.path) {
-      this.cache.set(meta.className + extname(meta.path), copy, meta.path);
-    }
   }
 
   private initNullability(prop: EntityProperty): void {
