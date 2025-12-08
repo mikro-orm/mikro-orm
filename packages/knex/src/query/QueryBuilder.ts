@@ -1,4 +1,3 @@
-import { inspect } from 'node:util';
 import {
   type AnyEntity,
   type ConnectionType,
@@ -40,6 +39,7 @@ import {
   type Transaction,
   Utils,
   ValidationError,
+  inspect,
 } from '@mikro-orm/core';
 import { JoinType, QueryType } from './enums.js';
 import type { AbstractSqlDriver } from '../AbstractSqlDriver.js';
@@ -2062,7 +2062,7 @@ export class QueryBuilder<
 
   /** @ignore */
   /* v8 ignore next */
-  [inspect.custom](depth = 2) {
+  [Symbol.for('nodejs.util.inspect.custom')](depth = 2) {
     const object = { ...this } as Dictionary;
     const hidden = ['metadata', 'driver', 'context', 'platform', 'type'];
     Object.keys(object).filter(k => k.startsWith('_')).forEach(k => delete object[k]);

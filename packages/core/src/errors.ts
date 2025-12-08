@@ -1,5 +1,5 @@
-import { inspect } from 'node:util';
 import type { AnyEntity, Constructor, Dictionary, EntityMetadata, EntityProperty, IPrimaryKey } from './typings.js';
+import { inspect } from './logging/inspect.js';
 
 export class ValidationError<T extends AnyEntity = AnyEntity> extends Error {
 
@@ -64,6 +64,14 @@ export class ValidationError<T extends AnyEntity = AnyEntity> extends Error {
     return new ValidationError(`Entity '${entityName}' does not have property '${invalid}'`);
   }
 
+  static invalidCollectionValues(entityName: string, propName: string, invalid: unknown): ValidationError {
+    return new ValidationError(`Invalid collection values provided for '${entityName}.${propName}' in ${entityName}.assign(): ${inspect(invalid)}`);
+  }
+
+  static invalidEnumArrayItems(entityName: string, invalid: unknown): ValidationError {
+    return new ValidationError(`Invalid enum array items provided in ${entityName}: ${inspect(invalid)}`);
+  }
+
   static invalidType(type: Constructor<any>, value: any, mode: string): ValidationError {
     const valueType = Object.prototype.toString.call(value).match(/\[object (\w+)]/)![1].toLowerCase();
 
@@ -123,6 +131,11 @@ export class ValidationError<T extends AnyEntity = AnyEntity> extends Error {
 
   static invalidEmbeddableQuery(className: string, propName: string, embeddableType: string): ValidationError {
     return new ValidationError(`Invalid query for entity '${className}', property '${propName}' does not exist in embeddable '${embeddableType}'`);
+  }
+
+  /* v8 ignore next */
+  static invalidQueryCondition(cond: unknown): ValidationError {
+    return new ValidationError(`Invalid query condition: ${inspect(cond, { depth: 5 })}`);
   }
 
 }
@@ -285,6 +298,11 @@ export class NotFoundError<T extends AnyEntity = AnyEntity> extends ValidationEr
 
   static findExactlyOneFailed(name: string, where: Dictionary | IPrimaryKey): NotFoundError {
     return new NotFoundError(`Wrong number of ${name} entities found for query ${inspect(where)}, expected exactly one`);
+  }
+
+  static failedToLoadProperty(name: string, propName: string, where: unknown): NotFoundError {
+    const whereString = typeof where === 'object' ? inspect(where) : where;
+    return new NotFoundError(`${name} (${whereString}) failed to load property '${propName}'`);
   }
 
 }

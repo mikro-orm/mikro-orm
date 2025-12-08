@@ -188,6 +188,7 @@ export class TsMorphMetadataProvider extends MetadataProvider {
     const outDir = this.project.getCompilerOptions().outDir;
     let path = tsPath;
 
+    /* v8 ignore next */
     if (outDir != null) {
       const outDirRelative = Utils.relativePath(outDir, baseDir);
       path = path.replace(new RegExp(`^${outDirRelative}`), '');

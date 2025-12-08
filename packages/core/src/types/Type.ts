@@ -1,6 +1,6 @@
-import { inspect } from 'node:util';
 import type { Platform } from '../platforms/Platform.js';
 import type { Constructor, EntityMetadata, EntityProperty } from '../typings.js';
+import { inspect } from '../logging/inspect.js';
 
 export interface TransformContext {
   fromQuery?: boolean;
@@ -127,7 +127,7 @@ export abstract class Type<JSType = string, DBType = JSType> {
   }
 
   /** @ignore */
-  [inspect.custom](depth = 2) {
+  [Symbol.for('nodejs.util.inspect.custom')](depth = 2) {
     const object = { ...this };
     const hidden = ['prop', 'platform', 'meta'] as const;
     hidden.forEach(k => delete object[k]);

@@ -1,4 +1,3 @@
-import { inspect } from 'node:util';
 import { ArrayType } from './ArrayType.js';
 import type { Platform } from '../platforms/Platform.js';
 import { ValidationError } from '../errors.js';
@@ -26,7 +25,7 @@ export class EnumArrayType<T extends string | number = string> extends ArrayType
       const invalid = value.filter(v => !this.items!.includes(v));
 
       if (invalid.length > 0) {
-        throw new ValidationError(`Invalid enum array items provided in ${this.owner}: ${inspect(invalid)}`);
+        throw ValidationError.invalidEnumArrayItems(this.owner, invalid);
       }
     }
 

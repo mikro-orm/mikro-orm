@@ -1,4 +1,3 @@
-import { inspect } from 'node:util';
 import type {
   AnyEntity,
   Dictionary,
@@ -24,6 +23,7 @@ import type { CountOptions, FindOptions, LoadHint } from '../drivers/IDatabaseDr
 import { helper, wrap } from './wrap.js';
 import type { EntityLoaderOptions } from './EntityLoader.js';
 import { QueryHelper } from '../utils/QueryHelper.js';
+import { inspect } from '../logging/inspect.js';
 
 export interface MatchingOptions<T extends object, P extends string = never> extends FindOptions<T, P> {
   where?: FilterQuery<T>;
@@ -887,7 +887,7 @@ export class Collection<T extends object, O extends object = object> {
   }
 
   /** @ignore */
-  [inspect.custom](depth = 2) {
+  [Symbol.for('nodejs.util.inspect.custom')](depth = 2) {
     const object = { ...this } as Dictionary;
     const hidden = ['items', 'owner', '_property', '_count', 'snapshot', '_populated', '_lazyInitialized', '_em', 'readonly', 'partial'];
     hidden.forEach(k => delete object[k]);

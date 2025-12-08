@@ -4,7 +4,7 @@ import { MikroORM } from '@mikro-orm/sqlite';
 @Entity()
 class User {
 
-  @PrimaryKey()
+  @PrimaryKey({ type: 'number' })
   id!: number;
 
 }

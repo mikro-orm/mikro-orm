@@ -1,5 +1,3 @@
-import { inspect } from 'node:util';
-
 import type { EntityManager } from '../EntityManager.js';
 import {
   type AnyEntity,
@@ -21,6 +19,7 @@ import { Utils } from '../utils/Utils.js';
 import { WrappedEntity } from './WrappedEntity.js';
 import { ReferenceKind } from '../enums.js';
 import { helper } from './wrap.js';
+import { inspect } from '../logging/inspect.js';
 
 /**
  * @internal
@@ -139,7 +138,7 @@ export class EntityHelper {
 
   static defineCustomInspect<T extends object>(meta: EntityMetadata<T>): void {
     // @ts-ignore
-    meta.prototype[inspect.custom] ??= function (this: T, depth = 2) {
+    meta.prototype[Symbol.for('nodejs.util.inspect.custom')] ??= function (this: T, depth = 2) {
       const object = {} as any;
       const keys = new Set(Utils.keys(this));
 
@@ -161,7 +160,7 @@ export class EntityHelper {
         .filter(prop => object[prop.name] === undefined)
         .forEach(prop => delete object[prop.name]);
       const ret = inspect(object, { depth });
-      let name = (this).constructor.name;
+      let name = this.constructor.name;
 
       const showEM = ['true', 't', '1'].includes(process.env.MIKRO_ORM_LOG_EM_ID?.toString().toLowerCase() ?? '');
 
