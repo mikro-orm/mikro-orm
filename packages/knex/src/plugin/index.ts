@@ -22,7 +22,7 @@ interface QueryTransformCache {
   entityMap: Map<string, EntityMetadata>;
 }
 
-export interface MikroPluginOptions {
+export interface MikroKyselyPluginOptions {
   /**
    * Use database table names ('table') or entity names ('entity') in queries.
    *
@@ -56,7 +56,7 @@ export interface MikroPluginOptions {
 }
 
 
-export class MikroPlugin implements KyselyPlugin {
+export class MikroKyselyPlugin implements KyselyPlugin {
 
   protected static queryNodeCache = new WeakMap<any, QueryTransformCache>();
 
@@ -64,7 +64,7 @@ export class MikroPlugin implements KyselyPlugin {
 
   constructor(
     protected readonly em: SqlEntityManager,
-    protected readonly options: MikroPluginOptions = {},
+    protected readonly options: MikroKyselyPluginOptions = {},
   ) {
     this.transformer = new MikroTransformer(em, options);
   }
@@ -81,7 +81,7 @@ export class MikroPlugin implements KyselyPlugin {
       UpdateQueryNodeClass.is(args.node) ||
       DeleteQueryNodeClass.is(args.node)
     ) {
-      MikroPlugin.queryNodeCache.set(args.queryId, { entityMap: this.transformer.getOutputEntityMap() });
+      MikroKyselyPlugin.queryNodeCache.set(args.queryId, { entityMap: this.transformer.getOutputEntityMap() });
     }
 
     return result;
@@ -94,7 +94,7 @@ export class MikroPlugin implements KyselyPlugin {
     }
 
     // Retrieve the cached query node and metadata
-    const cache = MikroPlugin.queryNodeCache.get(args.queryId);
+    const cache = MikroKyselyPlugin.queryNodeCache.get(args.queryId);
     if (!cache) {
       return args.result;
     }

@@ -22,7 +22,7 @@ import type { DatabaseSchema } from './schema/DatabaseSchema.js';
 import type { DatabaseTable } from './schema/DatabaseTable.js';
 import type { QueryBuilder } from './query/QueryBuilder.js';
 import type { NativeQueryBuilder } from './query/NativeQueryBuilder.js';
-import type { MikroPluginOptions } from './plugin/index.js';
+import type { MikroKyselyPluginOptions } from './plugin/index.js';
 
 export interface Table {
   table_name: string;
@@ -221,7 +221,7 @@ export type InferEntityProperties<Schema> =
   Schema extends EntitySchemaWithMeta<any, any, any, any, infer Properties> ? Properties :
   never;
 
-export type InferKyselyDB<TEntities extends { name: string }, TOptions extends MikroPluginOptions = {}> = MapValueAsTable<MapByName<TEntities>, TOptions>;
+export type InferKyselyDB<TEntities extends { name: string }, TOptions extends MikroKyselyPluginOptions = {}> = MapValueAsTable<MapByName<TEntities>, TOptions>;
 
 export type InferDBFromKysely<TKysely extends Kysely<any>> = TKysely extends Kysely<infer TDB> ? TDB : never;
 
@@ -234,12 +234,12 @@ export type MapByName<T extends { name: string; tableName?: string }> = {
   [P in T as PreferStringLiteral<NonNullable<P['tableName']>, P['name']>]: P
 };
 
-export type MapValueAsTable<TMap extends Record<string, any>, TOptions extends MikroPluginOptions = {}> = {
+export type MapValueAsTable<TMap extends Record<string, any>, TOptions extends MikroKyselyPluginOptions = {}> = {
   [K in keyof TMap as TransformName<K, TOptions['tableNamingStrategy'] extends 'entity' ? 'entity' : 'underscore' >]:
     InferKyselyTable<TMap[K], TOptions>
 };
 
-export type InferKyselyTable<TSchema extends EntitySchemaWithMeta, TOptions extends MikroPluginOptions = {}> = ExcludeNever<{
+export type InferKyselyTable<TSchema extends EntitySchemaWithMeta, TOptions extends MikroKyselyPluginOptions = {}> = ExcludeNever<{
   -readonly [K in keyof InferEntityProperties<TSchema> as TransformColumnName<
     K,
     TOptions['columnNamingStrategy'] extends 'property' ? 'property' : 'underscore',

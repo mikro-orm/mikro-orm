@@ -56,7 +56,7 @@ For tables not defined with `defineEntity`, you can manually declare their table
 import { MikroORM, InferKyselyTable } from '@mikro-orm/postgresql';
 
 // Plugin options consistent with getKysely (adjust as needed)
-const mikroPluginOptions = {
+const mikroKyselyPluginOptions = {
   tableNamingStrategy: 'entity',
   convertValues: true,
 } as const;
@@ -69,13 +69,13 @@ interface ManualViewTable {
 
 // Build complete database interface
 interface MixedDatabase {
-  user: InferKyselyTable<typeof User, typeof mikroPluginOptions>; // use inferred type
-  post: InferKyselyTable<typeof Post, typeof mikroPluginOptions>; // use inferred type
+  user: InferKyselyTable<typeof User, typeof mikroKyselyPluginOptions>; // use inferred type
+  post: InferKyselyTable<typeof Post, typeof mikroKyselyPluginOptions>; // use inferred type
   view_stats: ManualViewTable;                                    // use manual type
 }
 
 // Get instance with mixed types
-const kysely = orm.em.getKysely<MixedDatabase>(mikroPluginOptions);
+const kysely = orm.em.getKysely<MixedDatabase>(mikroKyselyPluginOptions);
 
 // Now you can type-safely query all tables
 const user = await kysely.selectFrom('user').selectAll().executeTakeFirst();
@@ -83,9 +83,9 @@ const post = await kysely.selectFrom('post').selectAll().executeTakeFirst();
 const stats = await kysely.selectFrom('view_stats').selectAll().executeTakeFirst();
 ```
 
-## MikroPlugin
+## MikroKyselyPlugin
 
-The instance returned by `em.getKysely()` has `MikroPlugin` built-in. This plugin intercepts Kysely's query compilation and result processing phases to support MikroORM-specific features.
+The instance returned by `em.getKysely()` has `MikroKyselyPlugin` built-in. This plugin intercepts Kysely's query compilation and result processing phases to support MikroORM-specific features.
 
 You can enable these features by passing a configuration object to `getKysely()`:
 

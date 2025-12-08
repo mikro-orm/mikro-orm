@@ -18,9 +18,9 @@ import type { QueryBuilder } from './query/QueryBuilder.js';
 import type { SqlEntityRepository } from './SqlEntityRepository.js';
 import type { Kysely } from 'kysely';
 import type { InferKyselyDB } from './typings.js';
-import { MikroPlugin, type MikroPluginOptions } from './plugin/index.js';
+import { MikroKyselyPlugin, type MikroKyselyPluginOptions } from './plugin/index.js';
 
-export interface GetKyselyOptions extends MikroPluginOptions {
+export interface GetKyselyOptions extends MikroKyselyPluginOptions {
   type?: ConnectionType;
 }
 
@@ -57,7 +57,7 @@ export class SqlEntityManager<Driver extends AbstractSqlDriver = AbstractSqlDriv
          || options.processOnCreateHooks != null
          || options.processOnUpdateHooks != null
          || options.convertValues != null) {
-      kysely = kysely.withPlugin(new MikroPlugin(this, options));
+      kysely = kysely.withPlugin(new MikroKyselyPlugin(this, options));
     }
     return kysely;
   }

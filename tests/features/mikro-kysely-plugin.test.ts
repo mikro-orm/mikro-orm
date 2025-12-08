@@ -1,11 +1,11 @@
 import { defineEntity, p, ReferenceKind } from '@mikro-orm/core';
 import { vi } from 'vitest';
-import { InferKyselyTable, Kysely, MikroORM, MikroPluginOptions, MikroPlugin } from '@mikro-orm/sqlite';
+import { InferKyselyTable, Kysely, MikroORM, MikroKyselyPluginOptions, MikroKyselyPlugin } from '@mikro-orm/sqlite';
 import { ColumnNode, PrimitiveValueListNode, ValueListNode, ValueNode, ValuesNode } from 'kysely';
 import { MikroORM as PostgresORM } from '@mikro-orm/postgresql';
 import { MikroTransformer } from '../../packages/knex/src/plugin/transformer.js';
 
-describe('MikroPlugin', () => {
+describe('MikroKyselyPlugin', () => {
   const Person = defineEntity({
     name: 'Person',
     properties: {
@@ -59,7 +59,7 @@ describe('MikroPlugin', () => {
     const options = {
       tableNamingStrategy: 'entity',
       convertValues: true,
-    } satisfies MikroPluginOptions;
+    } satisfies MikroKyselyPluginOptions;
     interface PersonTable extends InferKyselyTable<typeof Person, typeof options> {}
     interface PetTable extends InferKyselyTable<typeof Pet, typeof options> {}
     interface ToyTable extends InferKyselyTable<typeof Toy, typeof options> {}
@@ -1649,7 +1649,7 @@ describe('MikroPlugin', () => {
       dbName: ':memory:',
     });
     await localOrm.schema.refresh();
-    const plugin = new MikroPlugin(localOrm.em as any, {});
+    const plugin = new MikroKyselyPlugin(localOrm.em as any, {});
     const originalResult: any = { rows: [{ id: 1 }], numAffectedRows: undefined };
     const res = await plugin.transformResult({ queryId: {}, result: originalResult } as any);
     expect(res).toBe(originalResult);

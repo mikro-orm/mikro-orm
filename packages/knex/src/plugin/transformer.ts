@@ -29,7 +29,7 @@ import {
   ValueNode,
   ValuesNode,
 } from 'kysely';
-import type { MikroPluginOptions } from './index.js';
+import type { MikroKyselyPluginOptions } from './index.js';
 import type { SqlEntityManager } from '../SqlEntityManager.js';
 import type { AbstractSqlPlatform } from '../AbstractSqlPlatform.js';
 
@@ -59,7 +59,7 @@ export class MikroTransformer extends OperationNodeTransformer {
 
   constructor(
     protected readonly em: SqlEntityManager,
-    protected readonly options: MikroPluginOptions = {},
+    protected readonly options: MikroKyselyPluginOptions = {},
   ) {
     super();
     this.metadata = em.getMetadata();
