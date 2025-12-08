@@ -1,5 +1,5 @@
 import { pathToFileURL } from 'node:url';
-import { compareObjects, EntityMetadata, MikroORM, ObjectId, sql, Utils } from '@mikro-orm/mongodb';
+import { compareObjects, EntityMetadata, MikroORM, ObjectId, path, sql, Utils } from '@mikro-orm/mongodb';
 import { fs } from '@mikro-orm/core/fs-utils';
 
 import { lookupPathFromDecorator } from '../packages/decorators/src/utils.js';
@@ -214,46 +214,46 @@ describe('Utils', () => {
   });
 
   test('normalizePath', () => {
-    expect(Utils.normalizePath()).toBe('.');
-    expect(Utils.normalizePath('./test')).toBe('./test');
-    expect(Utils.normalizePath('./test/foo/bar/')).toBe('./test/foo/bar');
-    expect(Utils.normalizePath('test/')).toBe('./test');
-    expect(Utils.normalizePath('/test')).toBe('/test');
-    expect(Utils.normalizePath('./foo', '/test')).toBe('/test');
+    expect(path.normalizePath()).toBe('.');
+    expect(path.normalizePath('./test')).toBe('./test');
+    expect(path.normalizePath('./test/foo/bar/')).toBe('./test/foo/bar');
+    expect(path.normalizePath('test/')).toBe('./test');
+    expect(path.normalizePath('/test')).toBe('/test');
+    expect(path.normalizePath('./foo', '/test')).toBe('/test');
   });
 
   test('normalizePath [posix]', () => {
-    const spy = vi.spyOn(Utils, 'fileURLToPath');
+    const spy = vi.spyOn(path, 'fileURLToPath');
     spy.mockImplementation(() => '/test');
-    expect(Utils.normalizePath('file:///test')).toBe('/test');
-    expect(Utils.normalizePath('./foo', 'file:///test')).toBe('/test');
+    expect(path.normalizePath('file:///test')).toBe('/test');
+    expect(path.normalizePath('./foo', 'file:///test')).toBe('/test');
     spy.mockRestore();
   });
 
   test('normalizePath [windows]', () => {
-    const spy = vi.spyOn(Utils, 'fileURLToPath');
+    const spy = vi.spyOn(path, 'fileURLToPath');
     spy.mockImplementation(() => 'C:/test');
-    expect(Utils.normalizePath('file:///C:/test')).toBe('C:/test');
-    expect(Utils.normalizePath('./foo', 'file:///C:/test')).toBe('C:/test');
+    expect(path.normalizePath('file:///C:/test')).toBe('/C:/test');
+    expect(path.normalizePath('./foo', 'file:///C:/test')).toBe('/C:/test');
     spy.mockRestore();
   });
 
   test('relativePath', () => {
-    expect(Utils.relativePath('./test', process.cwd())).toBe('./test');
-    expect(Utils.relativePath('test', process.cwd())).toBe('./test');
-    expect(Utils.relativePath(process.cwd() + '/tests/', process.cwd())).toBe('./tests');
-    expect(Utils.relativePath(process.cwd() + '/tests/cli/', process.cwd())).toBe('./tests/cli');
-    expect(Utils.relativePath(pathToFileURL(process.cwd() + '/tests/cli/').href, process.cwd())).toBe('./tests/cli');
-    expect(Utils.relativePath(process.cwd() + '/tests/cli/', pathToFileURL(process.cwd()).href)).toBe('./tests/cli');
+    expect(path.relativePath('./test', process.cwd())).toBe('./test');
+    expect(path.relativePath('test', process.cwd())).toBe('./test');
+    expect(path.relativePath(process.cwd() + '/tests/', process.cwd())).toBe('./tests');
+    expect(path.relativePath(process.cwd() + '/tests/cli/', process.cwd())).toBe('./tests/cli');
+    expect(path.relativePath(pathToFileURL(process.cwd() + '/tests/cli/').href, process.cwd())).toBe('./tests/cli');
+    expect(path.relativePath(process.cwd() + '/tests/cli/', pathToFileURL(process.cwd()).href)).toBe('./tests/cli');
   });
 
   test('absolutePath', () => {
-    expect(Utils.absolutePath('./test')).toBe(Utils.normalizePath(process.cwd() + '/test'));
-    expect(Utils.absolutePath('test')).toBe(Utils.normalizePath(process.cwd() + '/test'));
-    expect(Utils.absolutePath(process.cwd() + '/tests/')).toBe(Utils.normalizePath(process.cwd() + '/tests'));
-    expect(Utils.absolutePath('./tests/cli')).toBe(Utils.normalizePath(process.cwd() + '/tests/cli'));
-    expect(Utils.absolutePath('')).toBe(Utils.normalizePath(process.cwd()));
-    expect(Utils.absolutePath(pathToFileURL(process.cwd() + '/tests/').href)).toBe(Utils.normalizePath(process.cwd() + '/tests'));
+    expect(path.absolutePath('./test')).toBe(path.normalizePath(process.cwd() + '/test'));
+    expect(path.absolutePath('test')).toBe(path.normalizePath(process.cwd() + '/test'));
+    expect(path.absolutePath(process.cwd() + '/tests/')).toBe(path.normalizePath(process.cwd() + '/tests'));
+    expect(path.absolutePath('./tests/cli')).toBe(path.normalizePath(process.cwd() + '/tests/cli'));
+    expect(path.absolutePath('')).toBe(path.normalizePath(process.cwd()));
+    expect(path.absolutePath(pathToFileURL(process.cwd() + '/tests/').href)).toBe(path.normalizePath(process.cwd() + '/tests'));
   });
 
   test('pathExists wrapper', async () => {
@@ -547,11 +547,11 @@ describe('Utils', () => {
       '    at Module.load (internal/modules/cjs/loader.js:790:32)',
       '    at Function.Module._load (internal/modules/cjs/loader.js:703:12)',
     ];
-    expect(lookupPathFromDecorator('Customer', stack1)).toBe('C:/www/my-project/src/entities/Customer.ts');
+    expect(lookupPathFromDecorator('Customer', stack1)).toBe('/C:/www/my-project/src/entities/Customer.ts');
   });
 
   test('lookup path from decorator loaded from an ES module [posix]', () => {
-    const spy = vi.spyOn(Utils, 'fileURLToPath');
+    const spy = vi.spyOn(path, 'fileURLToPath');
     spy.mockImplementation(() => 'C:/test');
     // with tslib, via ts-node
     const stack1 = [
@@ -572,7 +572,7 @@ describe('Utils', () => {
   });
 
   test('lookup path from decorator loaded from an ES module [windows]', () => {
-    const spy = vi.spyOn(Utils, 'fileURLToPath');
+    const spy = vi.spyOn(path, 'fileURLToPath');
     // with tslib, via ts-node
     const stack1 = [
       '    at Function.lookupPathFromDecorator (C:\\www\\my-project\\node_modules\\mikro-orm\\dist\\utils\\Utils.js:175:26)',
@@ -587,7 +587,7 @@ describe('Utils', () => {
       '    at Function.Module._load (internal/modules/cjs/loader.js:703:12)',
     ];
     spy.mockImplementation(() => 'C:/www/my-project/src/entities/Customer.ts');
-    expect(lookupPathFromDecorator('Customer', stack1)).toBe('C:/www/my-project/src/entities/Customer.ts');
+    expect(lookupPathFromDecorator('Customer', stack1)).toBe('/C:/www/my-project/src/entities/Customer.ts');
     spy.mockRestore();
   });
 

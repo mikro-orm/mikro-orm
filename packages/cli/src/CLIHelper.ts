@@ -1,5 +1,4 @@
 import { extname, join } from 'node:path';
-import { pathToFileURL } from 'node:url';
 import yargs from 'yargs';
 import {
   colors,
@@ -12,8 +11,11 @@ import {
   MikroORM,
   type Options,
   Utils,
+  path,
 } from '@mikro-orm/core';
 import { fs } from '@mikro-orm/core/fs-utils';
+
+const { normalizePath, absolutePath, pathToFileURL } = path;
 
 /**
  * @internal
@@ -202,8 +204,8 @@ export class CLIHelper {
 
   private static async getConfigFile(paths: string[]): Promise<[string, unknown] | []> {
     for (let path of paths) {
-      path = Utils.absolutePath(path);
-      path = Utils.normalizePath(path);
+      path = absolutePath(path);
+      path = normalizePath(path);
 
       if (fs.pathExists(path)) {
         const config = await Utils.dynamicImport(path);
@@ -271,7 +273,7 @@ export class CLIHelper {
       from = join(from, '__fake.js');
     }
 
-    const path = Utils.normalizePath(import.meta.resolve(id, pathToFileURL(from)));
+    const path = normalizePath(import.meta.resolve(id, pathToFileURL(from)));
     const parts = path.split('/');
     const idx = parts.lastIndexOf(id) + 1;
     parts.splice(idx, parts.length - idx);

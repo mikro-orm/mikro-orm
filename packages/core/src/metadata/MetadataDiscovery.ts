@@ -19,6 +19,9 @@ import { t, Type } from '../types/index.js';
 import { colors } from '../logging/colors.js';
 import { raw, RawQueryFragment } from '../utils/RawQueryFragment.js';
 import type { Logger } from '../logging/Logger.js';
+import { path } from '../utils/path-utils.js';
+
+const { relativePath } = path;
 
 export class MetadataDiscovery {
 
@@ -320,7 +323,7 @@ export class MetadataDiscovery {
 
     if (path) {
       const meta = Utils.copy(MetadataStorage.getMetadata(entity.name, path), false);
-      meta.path = Utils.relativePath(path, this.config.get('baseDir'));
+      meta.path = relativePath(path, this.config.get('baseDir'));
       this.metadata.set(entity.name, meta);
     }
 
@@ -354,7 +357,7 @@ export class MetadataDiscovery {
     const path = meta.path;
     this.logger.log('discovery', `- processing entity ${colors.cyan(meta.className)}${colors.grey(path ? ` (${path})` : '')}`);
     const root = this.getRootEntity(meta);
-    schema.meta.path = Utils.relativePath(meta.path, this.config.get('baseDir'));
+    schema.meta.path = relativePath(meta.path, this.config.get('baseDir'));
     const cache = this.metadataProvider.getCachedMetadata(meta, root);
 
     if (cache) {

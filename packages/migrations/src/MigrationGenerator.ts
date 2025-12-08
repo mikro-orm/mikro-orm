@@ -3,11 +3,13 @@ import {
   type MaybePromise,
   type MigrationsOptions,
   type NamingStrategy,
-  Utils,
+  path,
 } from '@mikro-orm/core';
 import type { AbstractSqlDriver } from '@mikro-orm/knex';
 import { fs } from '@mikro-orm/core/fs-utils';
 import { writeFile } from 'node:fs/promises';
+
+const { normalizePath } = path;
 
 export abstract class MigrationGenerator implements IMigrationGenerator {
 
@@ -21,7 +23,7 @@ export abstract class MigrationGenerator implements IMigrationGenerator {
   async generate(diff: { up: string[]; down: string[] }, path?: string, name?: string): Promise<[string, string]> {
     /* v8 ignore next */
     const defaultPath = this.options.emit === 'ts' && this.options.pathTs ? this.options.pathTs : this.options.path!;
-    path = Utils.normalizePath(this.driver.config.get('baseDir'), path ?? defaultPath);
+    path = normalizePath(this.driver.config.get('baseDir'), path ?? defaultPath);
     fs.ensureDir(path);
     const timestamp = new Date().toISOString().replace(/[-T:]|\.\d{3}z$/ig, '');
     const className = this.namingStrategy.classToMigrationName(timestamp, name);

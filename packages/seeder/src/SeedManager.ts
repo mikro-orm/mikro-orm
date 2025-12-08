@@ -4,6 +4,7 @@ import {
   type EntityManager,
   type ISeedManager,
   type MikroORM,
+  path,
   type SeederOptions,
   Utils,
 } from '@mikro-orm/core';
@@ -11,6 +12,8 @@ import { fs } from '@mikro-orm/core/fs-utils';
 import { writeFile } from 'node:fs/promises';
 import { glob } from 'tinyglobby';
 import type { Seeder } from './Seeder.js';
+
+const { absolutePath, relativePath } = path;
 
 export class SeedManager implements ISeedManager {
 
@@ -26,7 +29,7 @@ export class SeedManager implements ISeedManager {
     this.detectSourceFolder();
     /* v8 ignore next */
     const key = (this.config.get('preferTs', Utils.detectTypeScriptSupport()) && this.options.pathTs) ? 'pathTs' : 'path';
-    this.absolutePath = Utils.absolutePath(this.options[key]!, this.config.get('baseDir'));
+    this.absolutePath = absolutePath(this.options[key]!, this.config.get('baseDir'));
   }
 
   static register(orm: MikroORM): void {
@@ -92,7 +95,7 @@ export class SeedManager implements ISeedManager {
       const seederClass = classMap.get(className);
 
       if (!seederClass) {
-        throw new Error(`Seeder class ${className} not found in ${Utils.relativePath(path, process.cwd())}`);
+        throw new Error(`Seeder class ${className} not found in ${relativePath(path, process.cwd())}`);
       }
 
       await this.seed(seederClass);

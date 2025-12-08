@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url';
 import { Utils } from './Utils.js';
 import { type Dictionary } from '../typings.js';
 import { colors } from '../logging/colors.js';
+import { path } from './path-utils.js';
 
 export const fs = {
   pathExists(path: string): boolean {
@@ -34,7 +35,7 @@ export const fs = {
 
     if (!hasGlobChars) {
       try {
-        const s = statSync(cwd ? Utils.normalizePath(cwd, input) : input);
+        const s = statSync(cwd ? path.normalizePath(cwd, input) : input);
 
         if (s.isDirectory()) {
           const files = globSync(join(input, '**'), { cwd, withFileTypes: true });
