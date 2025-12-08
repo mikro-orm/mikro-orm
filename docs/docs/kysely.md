@@ -71,7 +71,7 @@ interface ManualViewTable {
 interface MixedDatabase {
   user: InferKyselyTable<typeof User, typeof mikroPluginOptions>; // use inferred type
   post: InferKyselyTable<typeof Post, typeof mikroPluginOptions>; // use inferred type
-  view_stats: ManualViewTable;                                     // use manual type
+  view_stats: ManualViewTable;                                    // use manual type
 }
 
 // Get instance with mixed types
