@@ -231,7 +231,7 @@ export class CLIHelper {
     return ret as Options<D>;
   }
 
-  static async dumpDependencies() {
+  static dumpDependencies() {
     const version = Utils.getORMVersion();
     CLIHelper.dump(' - dependencies:');
     CLIHelper.dump(`   - mikro-orm ${colors.green(version)}`);
@@ -242,7 +242,7 @@ export class CLIHelper {
       if (process.versions.bun) {
         CLIHelper.dump(`   - typescript via bun`);
       } else {
-        CLIHelper.dump(`   - typescript ${await CLIHelper.getModuleVersion('typescript')}`);
+        CLIHelper.dump(`   - typescript ${CLIHelper.getModuleVersion('typescript')}`);
       }
 
       CLIHelper.dump(' - package.json ' + colors.green('found'));
@@ -251,7 +251,7 @@ export class CLIHelper {
     }
   }
 
-  static async getModuleVersion(name: string): Promise<string> {
+  static getModuleVersion(name: string): string {
     try {
       const path = `${this.resolveModulePath(name)}/package.json`;
       const pkg = fs.readJSONSync(path);
