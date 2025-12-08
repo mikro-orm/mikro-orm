@@ -102,6 +102,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
 
   async syncCollections<T extends object, O extends object>(collections: Iterable<Collection<T, O>>, options?: DriverMethodOptions): Promise<void> {
     for (const coll of collections) {
+      /* v8 ignore else */
       if (!coll.property.owner) {
         if (coll.getSnapshot() === undefined) {
           throw ValidationError.cannotModifyInverseCollection(coll.owner, coll.property);
@@ -111,9 +112,11 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
       }
 
       /* v8 ignore next */
-      const pk = coll.property.targetMeta!.primaryKeys[0];
-      const data = { [coll.property.name]: coll.getIdentifiers(pk) } as EntityData<T>;
-      await this.nativeUpdate<T>(coll.owner.constructor.name, helper(coll.owner).getPrimaryKey() as FilterQuery<T>, data, options);
+      {
+        const pk = coll.property.targetMeta!.primaryKeys[0];
+        const data = { [coll.property.name]: coll.getIdentifiers(pk) } as EntityData<T>;
+        await this.nativeUpdate<T>(coll.owner.constructor.name, helper(coll.owner).getPrimaryKey() as FilterQuery<T>, data, options);
+      }
     }
   }
 
