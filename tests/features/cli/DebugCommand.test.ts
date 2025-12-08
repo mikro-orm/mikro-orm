@@ -37,7 +37,7 @@ describe('DebugCommand', () => {
       [' - searched for config name: default'],
       [' - configuration found'],
       [' - driver dependencies:'],
-      [`   - mongodb ${await CLIHelper.getModuleVersion('mongodb')}`],
+      [`   - mongodb ${CLIHelper.getModuleVersion('mongodb')}`],
       [' - database connection successful'],
     ]);
 
@@ -55,7 +55,7 @@ describe('DebugCommand', () => {
       [' - searched for config name: default'],
       [' - configuration found'],
       [' - driver dependencies:'],
-      [`   - mongodb ${await CLIHelper.getModuleVersion('mongodb')}`],
+      [`   - mongodb ${CLIHelper.getModuleVersion('mongodb')}`],
       [' - database connection successful'],
       [' - `preferTs` flag explicitly set to true, will use `entitiesTs` array (this value should be set to `false` when running compiled code!)'],
       [' - could use `entities` array (contains 0 references and 2 paths)'],
@@ -79,7 +79,7 @@ describe('DebugCommand', () => {
       [' - searched for config name: default'],
       [' - configuration found'],
       [' - driver dependencies:'],
-      [`   - mongodb ${await CLIHelper.getModuleVersion('mongodb')}`],
+      [`   - mongodb ${CLIHelper.getModuleVersion('mongodb')}`],
       [' - database connection successful'],
       [' - `preferTs` flag explicitly set to false, will use `entities` array'],
       [' - will use `entities` array (contains 2 references and 0 paths)'],
@@ -110,7 +110,7 @@ describe('DebugCommand', () => {
       [' - searched for config name: default'],
       [' - configuration found'],
       [' - driver dependencies:'],
-      [`   - mongodb ${await CLIHelper.getModuleVersion('mongodb')}`],
+      [`   - mongodb ${CLIHelper.getModuleVersion('mongodb')}`],
       [' - database connection successful'],
       [' - `preferTs` flag explicitly set to false, will use `entities` array'],
       [' - will use `entities` array (contains 2 references and 0 paths)'],
@@ -133,7 +133,7 @@ describe('DebugCommand', () => {
       [' - searched for config name: default'],
       [' - configuration found'],
       [' - driver dependencies:'],
-      [`   - mongodb ${await CLIHelper.getModuleVersion('mongodb')}`],
+      [`   - mongodb ${CLIHelper.getModuleVersion('mongodb')}`],
       [' - database connection failed (host not found)'],
     ]);
     pathExistsMock.mockRestore();

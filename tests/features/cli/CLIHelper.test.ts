@@ -473,9 +473,9 @@ Maybe you want to check, or regenerate your yarn.lock or package-lock.json file?
 
   test('getModuleVersion', async () => {
     readJSONSyncMock.mockRestore();
-    await expect(CLIHelper.getModuleVersion('pg')).resolves.toMatch(/\d+\.\d+\.\d+/);
-    await expect(CLIHelper.getModuleVersion('mysql2')).resolves.toMatch(/\d+\.\d+\.\d+/);
-    await expect(CLIHelper.getModuleVersion('does-not-exist')).resolves.toBe('');
+    expect(CLIHelper.getModuleVersion('pg')).toMatch(/\d+\.\d+\.\d+/);
+    expect(CLIHelper.getModuleVersion('mysql2')).toMatch(/\d+\.\d+\.\d+/);
+    expect(CLIHelper.getModuleVersion('does-not-exist')).toBe('');
   });
 
   test('getDriverDependencies', async () => {
@@ -492,7 +492,7 @@ Maybe you want to check, or regenerate your yarn.lock or package-lock.json file?
     process.cwd = () => '/foo/bar';
     const logSpy = vi.spyOn(console, 'log');
     logSpy.mockImplementation(i => i);
-    await CLIHelper.dumpDependencies();
+    CLIHelper.dumpDependencies();
     expect(logSpy.mock.calls[0][0]).toBe(' - dependencies:');
     expect(logSpy.mock.calls[1][0]).toMatch('- mikro-orm');
     expect(logSpy.mock.calls[2][0]).toMatch(/ {3}- node [.\w]+/);
@@ -502,7 +502,7 @@ Maybe you want to check, or regenerate your yarn.lock or package-lock.json file?
     logSpy.mock.calls.length = 0;
     pathExistsMock.mockReturnValue(true);
     readJSONSyncMock.mockRestore();
-    await CLIHelper.dumpDependencies();
+    CLIHelper.dumpDependencies();
     expect(logSpy.mock.calls[0][0]).toBe(' - dependencies:');
     expect(logSpy.mock.calls[1][0]).toMatch('- mikro-orm');
     expect(logSpy.mock.calls[2][0]).toMatch(/ {3}- node [.\w]+/);
@@ -548,7 +548,7 @@ Maybe you want to check, or regenerate your yarn.lock or package-lock.json file?
     expect(CLIHelper.isESM()).toBe(true);
 
     const packageSpy = vi.spyOn(fs, 'getPackageConfig');
-    packageSpy.mockResolvedValueOnce({});
+    packageSpy.mockReturnValueOnce({});
     expect(CLIHelper.isESM()).toBe(false);
 
     pathExistsMock.mockImplementation(async path => {
