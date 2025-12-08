@@ -14,5 +14,6 @@ export { raw } from './query/index.js';
 export * from './schema/index.js';
 export * from './dialects/index.js';
 export * from './typings.js';
+export * from './plugin/index.js';
 export { SqlEntityManager as EntityManager } from './SqlEntityManager.js';
 export { SqlEntityRepository as EntityRepository } from './SqlEntityRepository.js';
