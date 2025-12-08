@@ -48,7 +48,7 @@ const result = await kysely
   .execute();
 ```
 
-### Mixing InferKyselyTable with Manual Type Declarations
+### Mixing `InferKyselyTable` with Manual Type Declarations
 
 For tables not defined with `defineEntity`, you can manually declare their table structure.
 
