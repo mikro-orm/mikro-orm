@@ -1,4 +1,3 @@
-import { inspect } from 'node:util';
 import {
   ALIAS_REPLACEMENT,
   ALIAS_REPLACEMENT_RE,
@@ -20,6 +19,7 @@ import {
   RawQueryFragment,
   ReferenceKind,
   Utils,
+  ValidationError,
 } from '@mikro-orm/core';
 import { JoinType, QueryType } from './enums.js';
 import type { Field, JoinOptions } from '../typings.js';
@@ -543,7 +543,7 @@ export class QueryBuilderHelper {
 
     /* v8 ignore next */
     if (!op) {
-      throw new Error(`Invalid query condition: ${inspect(cond, { depth: 5 })}`);
+      throw ValidationError.invalidQueryCondition(cond);
     }
 
     const replacement = this.getOperatorReplacement(op, value);

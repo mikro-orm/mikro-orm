@@ -1,4 +1,3 @@
-import { inspect } from 'node:util';
 import type { Dictionary, EntityKey, EntityMetadata, FilterObject, Loaded } from '../typings.js';
 import type { FindByCursorOptions, OrderDefinition } from '../drivers/IDatabaseDriver.js';
 import { Utils } from './Utils.js';
@@ -7,6 +6,7 @@ import { Reference } from '../entity/Reference.js';
 import { helper } from '../entity/wrap.js';
 import { RawQueryFragment } from '../utils/RawQueryFragment.js';
 import { CursorError } from '../errors.js';
+import { inspect } from '../logging/inspect.js';
 
 /**
  * As an alternative to the offset-based pagination with `limit` and `offset`, we can paginate based on a cursor.
@@ -202,7 +202,7 @@ export class Cursor<
 
   /** @ignore */
   /* v8 ignore next */
-  [inspect.custom]() {
+  [Symbol.for('nodejs.util.inspect.custom')]() {
     const type = this.items[0]?.constructor.name;
     const { items, startCursor, endCursor, hasPrevPage, hasNextPage, totalCount, length } = this;
     const options = inspect({ startCursor, endCursor, totalCount, hasPrevPage, hasNextPage, items, length }, { depth: 0 });

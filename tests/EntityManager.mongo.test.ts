@@ -1017,7 +1017,7 @@ describe('EntityManagerMongo', () => {
 
     // merge detached author
     orm.em.clear();
-    const cachedAuthor2 = orm.em.merge(author);
+    const cachedAuthor2 = orm.em.merge(author, { disableContextResolution: true });
     expect(cachedAuthor2).toBe(cachedAuthor2.favouriteBook?.author);
     expect([...orm.em.getUnitOfWork().getIdentityMap().keys()]).toEqual([
       'Author-' + author.id,

@@ -1,7 +1,7 @@
-import { inspect } from 'node:util';
 import type { EntityData, EntityMetadata, EntityDictionary, Primary, Dictionary, EntityKey } from '../typings.js';
 import { helper } from '../entity/wrap.js';
 import { Utils } from '../utils/Utils.js';
+import { inspect } from '../logging/inspect.js';
 
 export class ChangeSet<T extends object> {
 
@@ -51,7 +51,7 @@ export class ChangeSet<T extends object> {
   }
 
   /** @ignore */
-  [inspect.custom](depth = 2) {
+  [Symbol.for('nodejs.util.inspect.custom')](depth = 2) {
     const object = { ...this } as Dictionary;
     const hidden = ['meta', 'serializedPrimaryKey'];
     hidden.forEach(k => delete object[k]);

@@ -19,9 +19,9 @@ import {
   type UniqueOptions,
   UnknownType,
   Utils,
+  inspect,
 } from '@mikro-orm/core';
 import { parse, relative } from 'node:path';
-import { inspect } from 'node:util';
 import { POSSIBLE_TYPE_IMPORTS } from './CoreImportsHelper.js';
 
 /**
