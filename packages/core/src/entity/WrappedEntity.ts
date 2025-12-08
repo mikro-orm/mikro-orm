@@ -1,5 +1,4 @@
 import type { PopulatePath } from '../enums.js';
-import { inspect } from 'node:util';
 import type { EntityManager } from '../EntityManager.js';
 import type {
   AnyEntity,
@@ -270,7 +269,7 @@ export class WrappedEntity<Entity extends object> {
   }
 
   /** @ignore */
-  [inspect.custom]() {
+  [Symbol.for('nodejs.util.inspect.custom')]() {
     return `[WrappedEntity<${this.__meta!.className}>]`;
   }
 

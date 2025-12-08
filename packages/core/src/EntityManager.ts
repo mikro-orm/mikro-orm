@@ -1,4 +1,3 @@
-import { inspect } from 'node:util';
 import { type Configuration } from './utils/Configuration.js';
 import { getOnConflictReturningFields, getWhereCondition } from './utils/upsert-utils.js';
 import { Utils } from './utils/Utils.js';
@@ -2426,7 +2425,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
   }
 
   /** @ignore */
-  [inspect.custom]() {
+  [Symbol.for('nodejs.util.inspect.custom')]() {
     return `[EntityManager<${this.id}>]`;
   }
 

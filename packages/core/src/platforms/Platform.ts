@@ -1,4 +1,3 @@
-import { inspect } from 'node:util';
 import { clone } from '../utils/clone.js';
 import { EntityRepository } from '../entity/EntityRepository.js';
 import { type NamingStrategy } from '../naming-strategy/NamingStrategy.js';
@@ -668,7 +667,7 @@ export abstract class Platform {
 
   /** @ignore */
   /* v8 ignore next */
-  [inspect.custom]() {
+  [Symbol.for('nodejs.util.inspect.custom')]() {
     return `[${this.constructor.name}]`;
   }
 
