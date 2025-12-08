@@ -146,16 +146,14 @@ copy('LICENSE',  root, target);
 copy('package.json', process.cwd(), target);
 
 if (resolve(process.cwd()) === resolve(root, 'packages/core')) {
-  const { version } = require(pkgPath);
+  const version = options.canary ? await getNextVersion() : require(pkgPath).version;
   rewrite(resolve(target, 'utils/Utils.js'), pkg => pkg.replace('[[MIKRO_ORM_VERSION]]', version));
-  rewrite(resolve(target, 'MikroORM.js'), pkg => {
-    return pkg
+  rewrite(resolve(target, 'MikroORM.js'), pkg => pkg
       // do not use string literals, so bundlers won't try to resolve the extensions automatically
-      .replace(`import('@mikro-orm/seeder')`, `import('@mikro-orm/seeder' + '')`)
-      .replace(`import('@mikro-orm/migrations')`, `import('@mikro-orm/migrations' + '')`)
-      .replace(`import('@mikro-orm/migrations-mongodb')`, `import('@mikro-orm/migrations-mongodb' + '')`)
-      .replace(`import('@mikro-orm/entity-generator')`, `import('@mikro-orm/entity-generator' + '')`);
-  });
+      .replace(`import('@mikro-orm/seeder')`, `import((() => '@mikro-orm/seeder')())`)
+      .replace(`import('@mikro-orm/migrations')`, `import((() => '@mikro-orm/migrations')())`)
+      .replace(`import('@mikro-orm/migrations-mongodb')`, `import((() => '@mikro-orm/migrations-mongodb')())`)
+      .replace(`import('@mikro-orm/entity-generator')`, `import((() => '@mikro-orm/entity-generator')())`));
 }
 
 if (resolve(process.cwd()) === resolve(root, 'packages/cli')) {

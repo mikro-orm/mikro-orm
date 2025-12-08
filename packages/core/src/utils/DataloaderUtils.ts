@@ -253,7 +253,7 @@ export class DataloaderUtils {
     }
 
     try {
-      const mod = await import('dataloader' + '');
+      const mod = await import('dataloader');
       const DataLoader = mod.default;
 
       return (this.DataLoader ??= DataLoader);
