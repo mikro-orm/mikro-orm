@@ -47,7 +47,7 @@ export default defineConfig({
     ],
     globals: true,
     coverage: {
-      reporter: ['text', 'lcov', 'cobertura'],
+      reporter: ['clover', 'json', 'lcov', 'text'],
       include: [
         'packages/*/src/**/*.ts',
       ],
