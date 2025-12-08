@@ -1,4 +1,3 @@
-import { inspect } from 'node:util';
 import type { Collection } from 'mongodb';
 import {
   AbstractSchemaGenerator,
@@ -9,6 +8,7 @@ import {
   type EntityProperty,
   type MikroORM,
   Utils,
+  inspect,
 } from '@mikro-orm/core';
 import type { MongoDriver } from './MongoDriver.js';
 import type { MongoEntityManager } from './MongoEntityManager.js';

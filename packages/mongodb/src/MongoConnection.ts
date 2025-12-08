@@ -17,7 +17,6 @@ import {
   type UpdateFilter,
   type UpdateResult,
 } from 'mongodb';
-import { inspect } from 'node:util';
 import {
   type AnyEntity,
   type Configuration,
@@ -40,6 +39,7 @@ import {
   type UpsertOptions,
   Utils,
   ValidationError,
+  inspect,
 } from '@mikro-orm/core';
 
 export class MongoConnection extends Connection {
@@ -51,12 +51,12 @@ export class MongoConnection extends Connection {
     super(config, options, type);
 
     // @ts-ignore
-    ObjectId.prototype[inspect.custom] = function () {
+    ObjectId.prototype[Symbol.for('nodejs.util.inspect.custom')] = function () {
       return `ObjectId('${this.toHexString()}')`;
     };
 
     // @ts-ignore
-    Date.prototype[inspect.custom] = function () {
+    Date.prototype[Symbol.for('nodejs.util.inspect.custom')] = function () {
       return `ISODate('${this.toISOString()}')`;
     };
   }

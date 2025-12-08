@@ -1,4 +1,3 @@
-import { inspect } from 'node:util';
 import { Collection } from './Collection.js';
 import type { EntityManager } from '../EntityManager.js';
 import type { Platform } from '../platforms/Platform.js';
@@ -22,6 +21,7 @@ import { ReferenceKind, SCALAR_TYPES } from '../enums.js';
 import { validateProperty } from './validators.js';
 import { helper, wrap } from './wrap.js';
 import { EntityHelper } from './EntityHelper.js';
+import { ValidationError } from '../errors.js';
 
 export class EntityAssigner {
 
@@ -240,7 +240,7 @@ export class EntityAssigner {
 
     if (invalid.length > 0) {
       const name = (entity as object).constructor.name;
-      throw new Error(`Invalid collection values provided for '${name}.${prop.name}' in ${name}.assign(): ${inspect(invalid)}`);
+      throw ValidationError.invalidCollectionValues(name, prop.name, invalid);
     }
 
     if (Array.isArray(value)) {

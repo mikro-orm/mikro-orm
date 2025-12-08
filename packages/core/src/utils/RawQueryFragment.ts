@@ -1,5 +1,4 @@
 import { AsyncLocalStorage } from 'node:async_hooks';
-import { inspect } from 'node:util';
 import { Utils } from './Utils.js';
 import type { AnyString, Dictionary, EntityKey } from '../typings.js';
 
@@ -103,7 +102,7 @@ export class RawQueryFragment {
 
   /** @ignore */
   /* v8 ignore next */
-  [inspect.custom]() {
+  [Symbol.for('nodejs.util.inspect.custom')]() {
     if (this.params) {
       return { sql: this.sql, params: this.params };
     }

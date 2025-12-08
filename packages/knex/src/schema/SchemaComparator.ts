@@ -1,4 +1,3 @@
-import { inspect } from 'node:util';
 import {
   ArrayType,
   BooleanType,
@@ -9,6 +8,7 @@ import {
   type Dictionary,
   type EntityProperty,
   type Logger,
+  inspect,
 } from '@mikro-orm/core';
 import type { Column, ForeignKey, IndexDef, SchemaDifference, TableDifference } from '../typings.js';
 import type { DatabaseSchema } from './DatabaseSchema.js';

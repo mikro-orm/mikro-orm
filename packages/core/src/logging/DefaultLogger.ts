@@ -72,6 +72,7 @@ export class DefaultLogger implements Logger {
     if (namespace === 'deprecated') {
       const { ignoreDeprecations = false } = this.options;
       return Array.isArray(ignoreDeprecations)
+        /* v8 ignore next */
         ? !ignoreDeprecations.includes(context?.label ?? '')
         : !ignoreDeprecations;
     }

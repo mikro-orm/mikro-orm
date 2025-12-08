@@ -1,4 +1,3 @@
-import { inspect } from 'node:util';
 import {
   type Dictionary,
   type EntityKey,
@@ -7,6 +6,7 @@ import {
   RawQueryFragment,
   ReferenceKind,
   Utils,
+  inspect,
 } from '@mikro-orm/core';
 import type { ICriteriaNode, ICriteriaNodeProcessOptions, IQueryBuilder } from '../typings.js';
 
@@ -145,7 +145,7 @@ export class CriteriaNode<T extends object> implements ICriteriaNode<T> {
   }
 
   /** @ignore */
-  [inspect.custom]() {
+  [Symbol.for('nodejs.util.inspect.custom')]() {
     const o: Dictionary = {};
     (['entityName', 'key', 'index', 'payload'] as const)
       .filter(k => this[k] !== undefined)

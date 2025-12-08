@@ -1,4 +1,3 @@
-import { inspect } from 'node:util';
 import type {
   AddEager,
   AddOptional,
@@ -18,6 +17,7 @@ import { Utils } from '../utils/Utils.js';
 import { QueryHelper } from '../utils/QueryHelper.js';
 import type { FindOneOptions, FindOneOrFailOptions } from '../drivers/IDatabaseDriver.js';
 import { NotFoundError } from '../errors.js';
+import { inspect } from '../logging/inspect.js';
 
 export class Reference<T extends object> {
 
@@ -197,7 +197,7 @@ export class Reference<T extends object> {
   }
 
   /** @ignore */
-  [inspect.custom](depth = 2) {
+  [Symbol.for('nodejs.util.inspect.custom')](depth = 2) {
     const object = { ...this };
     const hidden = ['meta', 'property'];
     hidden.forEach(k => delete object[k as keyof this]);
@@ -249,9 +249,7 @@ export class ScalarReference<Value> {
       const wrapped = helper(this.entity!);
       options.failHandler ??= wrapped.__em!.config.get('findOneOrFailHandler');
       const entityName = this.entity!.constructor.name;
-      const where = wrapped.getPrimaryKey();
-      const whereString = typeof where === 'object' ? inspect(where) : where;
-      throw new NotFoundError(`${entityName} (${whereString}) failed to load property '${this.property}'`);
+      throw NotFoundError.failedToLoadProperty(entityName, this.property!, wrapped.getPrimaryKey());
     }
 
     return ret;
@@ -278,7 +276,7 @@ export class ScalarReference<Value> {
 
   /** @ignore */
   /* v8 ignore next */
-  [inspect.custom]() {
+  [Symbol.for('nodejs.util.inspect.custom')]() {
     return this.initialized ? `Ref<${inspect(this.value)}>` : `Ref<?>`;
   }
 
