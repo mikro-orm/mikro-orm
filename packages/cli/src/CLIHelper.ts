@@ -32,7 +32,7 @@ export class CLIHelper {
     EM extends D[typeof EntityManagerType] & EntityManager<D> = D[typeof EntityManagerType] & EntityManager<D>,
   >(contextName?: string, paths?: string[], options: Partial<Options<D>> = {}): Promise<Configuration<D, EM>> {
     paths ??= await this.getConfigPaths();
-    const deps = await fs.getORMPackages();
+    const deps = fs.getORMPackages();
 
     if (!deps.has('@mikro-orm/cli') && !process.env.MIKRO_ORM_ALLOW_GLOBAL_CLI) {
       throw new Error('@mikro-orm/cli needs to be installed as a local dependency!');
@@ -102,14 +102,14 @@ export class CLIHelper {
       }
     }
 
-    const esmConfigOptions = await this.isESM() ? { entityGenerator: { esmImport: true } } : {};
+    const esmConfigOptions = this.isESM() ? { entityGenerator: { esmImport: true } } : {};
 
     return new Configuration(Utils.mergeConfig({}, esmConfigOptions, tmp, options, env));
   }
 
   static async getORM<D extends IDatabaseDriver = IDatabaseDriver>(contextName?: string, configPaths?: string[], opts: Partial<Options<D>> = {}): Promise<MikroORM<D>> {
     const options = await this.getConfiguration<D>(contextName, configPaths, opts);
-    const settings = await this.getSettings();
+    const settings = this.getSettings();
     options.set('allowGlobalContext', true);
     options.set('debug', !!settings.verbose);
     options.getLogger().setDebugMode(!!settings.verbose);
@@ -157,8 +157,8 @@ export class CLIHelper {
     console.log(text);
   }
 
-  static async getSettings(): Promise<Settings> {
-    const config = await fs.getPackageConfig();
+  static getSettings(): Settings {
+    const config = fs.getPackageConfig();
     const settings = { ...config['mikro-orm'] } as Settings;
     const bool = (v: string) => ['true', 't', '1'].includes(v.toLowerCase());
     settings.preferTs = process.env.MIKRO_ORM_CLI_PREFER_TS != null ? bool(process.env.MIKRO_ORM_CLI_PREFER_TS) : settings.preferTs;
@@ -174,7 +174,7 @@ export class CLIHelper {
   }
 
   static async getConfigPaths(): Promise<string[]> {
-    const settings = await this.getSettings();
+    const settings = this.getSettings();
     const typeScriptSupport = settings.preferTs ?? Utils.detectTypeScriptSupport();
     const paths: string[] = [];
 
@@ -333,7 +333,7 @@ export class CLIHelper {
       }
 
       const { esm, cjs, cb } = loaders[loader] as { esm: string; cjs: string; cb?: (mod: any) => void };
-      const isEsm = await this.isESM();
+      const isEsm = this.isESM();
       /* v8 ignore next */
       const module = isEsm ? esm : cjs;
       const mod = await Utils.tryImport({ module });
@@ -351,8 +351,8 @@ export class CLIHelper {
     return false;
   }
 
-  static async isESM(): Promise<boolean> {
-    const config = await fs.getPackageConfig();
+  static isESM(): boolean {
+    const config = fs.getPackageConfig();
     const type = config?.type ?? '';
 
     return type === 'module';
