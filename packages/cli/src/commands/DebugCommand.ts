@@ -14,8 +14,8 @@ export class DebugCommand implements BaseCommand {
    */
   async handler(args: ArgumentsCamelCase<BaseArgs>) {
     CLIHelper.dump(`Current ${colors.cyan('MikroORM')} CLI configuration`);
-    await CLIHelper.dumpDependencies();
-    const settings = await CLIHelper.getSettings();
+    CLIHelper.dumpDependencies();
+    const settings = CLIHelper.getSettings();
 
     if (!process.versions.bun && settings.preferTs !== false) {
       const loader = process.env.MIKRO_ORM_CLI_TS_LOADER ?? 'auto';
@@ -34,7 +34,7 @@ export class DebugCommand implements BaseCommand {
 
       CLIHelper.dump(' - driver dependencies:');
       for (const driver of drivers) {
-        CLIHelper.dump(`   - ${driver} ${await CLIHelper.getModuleVersion(driver)}`);
+        CLIHelper.dump(`   - ${driver} ${CLIHelper.getModuleVersion(driver)}`);
       }
 
       const isConnected = await CLIHelper.isDBConnected(config, true);
