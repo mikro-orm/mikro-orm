@@ -41,6 +41,7 @@ import { MemoryCacheAdapter } from '../cache/MemoryCacheAdapter.js';
 import { EntityComparator } from './EntityComparator.js';
 import type { Type } from '../types/Type.js';
 import type { MikroORM } from '../MikroORM.js';
+import { path } from './path-utils.js';
 
 const DEFAULTS = {
   pool: {},
@@ -174,7 +175,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver, EM exten
     }
 
     this.options = Utils.mergeConfig({} as RequiredOptions<D, EM>, DEFAULTS, options);
-    this.options.baseDir = Utils.absolutePath(this.options.baseDir);
+    this.options.baseDir = path.absolutePath(this.options.baseDir);
 
     if (validate) {
       this.validateOptions();

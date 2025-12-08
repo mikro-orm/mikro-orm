@@ -10,7 +10,10 @@ import {
   ReferenceKind,
   Type,
   Utils,
+  path,
 } from '@mikro-orm/core';
+
+const { normalizePath, relativePath } = path;
 
 export class TsMorphMetadataProvider extends MetadataProvider {
 
@@ -190,7 +193,7 @@ export class TsMorphMetadataProvider extends MetadataProvider {
 
     /* v8 ignore next */
     if (outDir != null) {
-      const outDirRelative = Utils.relativePath(outDir, baseDir);
+      const outDirRelative = relativePath(outDir, baseDir);
       path = path.replace(new RegExp(`^${outDirRelative}`), '');
     }
 
@@ -236,7 +239,7 @@ export class TsMorphMetadataProvider extends MetadataProvider {
 
     try {
       this.project = new Project({
-        tsConfigFilePath: Utils.normalizePath(process.cwd(), tsConfigFilePath),
+        tsConfigFilePath: normalizePath(process.cwd(), tsConfigFilePath),
         skipAddingFilesFromTsConfig: true,
         compilerOptions: {
           strictNullChecks: true,

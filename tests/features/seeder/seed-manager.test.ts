@@ -1,5 +1,5 @@
 import { readFile, rm } from 'node:fs/promises';
-import { MikroORM, Utils } from '@mikro-orm/core';
+import { MikroORM, path } from '@mikro-orm/core';
 import { SeedManager } from '@mikro-orm/seeder';
 import { SchemaGenerator } from '@mikro-orm/sqlite';
 import { initORMSqlite } from '../../bootstrap.js';
@@ -58,11 +58,11 @@ describe('Seeder', () => {
 
   test('createSeeder (TS)', async () => {
     const options = orm.config.get('seeder');
-    options.path = Utils.normalizePath(process.cwd()) + '/temp/seeders';
+    options.path = path.normalizePath(process.cwd()) + '/temp/seeders';
     options.defaultSeeder = 'DatabaseSeeder';
     orm.config.set('seeder', options);
     const seederFile = await orm.seeder.create('Publisher3Seeder');
-    expect(seederFile).toBe(Utils.normalizePath(process.cwd()) + `/temp/seeders/Publisher3Seeder.ts`);
+    expect(seederFile).toBe(path.normalizePath(process.cwd()) + `/temp/seeders/Publisher3Seeder.ts`);
     const fileContents = await readFile(seederFile, 'utf8');
     expect(fileContents).toContain('export class Publisher3Seeder extends Seeder {');
     await rm(seederFile);
@@ -70,12 +70,12 @@ describe('Seeder', () => {
 
   test('createSeeder (JS)', async () => {
     const options = orm.config.get('seeder');
-    options.path = Utils.normalizePath(process.cwd()) + '/temp/seeders';
+    options.path = path.normalizePath(process.cwd()) + '/temp/seeders';
     options.emit = 'js';
     options.defaultSeeder = 'DatabaseSeeder';
     orm.config.set('seeder', options);
     const seederFile = await orm.seeder.create('Publisher3Seeder');
-    expect(seederFile).toBe(Utils.normalizePath(process.cwd()) + `/temp/seeders/Publisher3Seeder.js`);
+    expect(seederFile).toBe(path.normalizePath(process.cwd()) + `/temp/seeders/Publisher3Seeder.js`);
     const fileContents = await readFile(seederFile, 'utf8');
     expect(fileContents).toContain('exports.Publisher3Seeder = Publisher3Seeder;');
     await rm(seederFile);

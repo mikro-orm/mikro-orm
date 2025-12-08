@@ -1,9 +1,11 @@
 import { type MockInstance } from 'vitest';
-import { MikroORM } from '@mikro-orm/core';
+import { MikroORM, path } from '@mikro-orm/core';
 import { configure, CLIHelper } from '@mikro-orm/cli';
 import { fs } from '@mikro-orm/core/fs-utils';
 import { Configuration, Options, Utils, MongoDriver } from '@mikro-orm/mongodb';
 import { SchemaCommandFactory } from '../../../packages/cli/src/commands/SchemaCommandFactory.js';
+
+const { normalizePath } = path;
 
 const pkg = { 'type': 'module', 'mikro-orm': {} } as any;
 vi.mock(`./package.json`, () => ({ default: pkg }));
@@ -270,7 +272,7 @@ Maybe you want to check, or regenerate your yarn.lock or package-lock.json file?
 
   test('gets ORM configuration [from package.json] with promise', async () => {
     pathExistsMock.mockReturnValue(true);
-    pkg['mikro-orm'].configPaths = [`${Utils.normalizePath(process.cwd())}/mikro-orm-async.config.js`];
+    pkg['mikro-orm'].configPaths = [`${normalizePath(process.cwd())}/mikro-orm-async.config.js`];
     const conf = await CLIHelper.getConfiguration();
     expect(conf).toBeInstanceOf(Configuration);
     expect(conf.get('dbName')).toBe('foo_bar');
@@ -280,7 +282,7 @@ Maybe you want to check, or regenerate your yarn.lock or package-lock.json file?
 
   test('gets ORM configuration [from package.json] by contextName from factory', async () => {
     pathExistsMock.mockReturnValue(true);
-    pkg['mikro-orm'].configPaths = [`${Utils.normalizePath(process.cwd())}/mikro-orm-factory.config.js`];
+    pkg['mikro-orm'].configPaths = [`${normalizePath(process.cwd())}/mikro-orm-factory.config.js`];
 
     const conf = await CLIHelper.getConfiguration();
     expect(conf).toBeInstanceOf(Configuration);
@@ -301,7 +303,7 @@ Maybe you want to check, or regenerate your yarn.lock or package-lock.json file?
 
   test('gets ORM configuration [from package.json] by contextName from array', async () => {
     pathExistsMock.mockReturnValue(true);
-    pkg['mikro-orm'].configPaths = [`${Utils.normalizePath(process.cwd())}/mikro-orm-array.config.js`];
+    pkg['mikro-orm'].configPaths = [`${normalizePath(process.cwd())}/mikro-orm-array.config.js`];
 
     const conf = await CLIHelper.getConfiguration();
     expect(conf).toBeInstanceOf(Configuration);
@@ -324,7 +326,7 @@ Maybe you want to check, or regenerate your yarn.lock or package-lock.json file?
 
   test('fail to get ORM configuration [from package.json] because of duplicate config name', async () => {
     pathExistsMock.mockReturnValue(true);
-    pkg['mikro-orm'].configPaths = [`${Utils.normalizePath(process.cwd())}/mikro-orm-array-invalid.config.js`];
+    pkg['mikro-orm'].configPaths = [`${normalizePath(process.cwd())}/mikro-orm-array-invalid.config.js`];
 
     await expect(async () => {
       return await CLIHelper.getConfiguration();
@@ -335,7 +337,7 @@ Maybe you want to check, or regenerate your yarn.lock or package-lock.json file?
 
   test('gets ORM configuration [from package.json] by contextName from array with factories', async () => {
     pathExistsMock.mockReturnValue(true);
-    pkg['mikro-orm'].configPaths = [`${Utils.normalizePath(process.cwd())}/mikro-orm-factory-array.config.js`];
+    pkg['mikro-orm'].configPaths = [`${normalizePath(process.cwd())}/mikro-orm-factory-array.config.js`];
 
     const conf = await CLIHelper.getConfiguration();
     expect(conf).toBeInstanceOf(Configuration);
@@ -364,7 +366,7 @@ Maybe you want to check, or regenerate your yarn.lock or package-lock.json file?
 
   test('fail to get ORM configuration [from package.json] because of invalid default export', async () => {
     pathExistsMock.mockReturnValue(true);
-    pkg['mikro-orm'].configPaths = [`${Utils.normalizePath(process.cwd())}/mikro-orm-invalid.config.js`];
+    pkg['mikro-orm'].configPaths = [`${normalizePath(process.cwd())}/mikro-orm-invalid.config.js`];
 
     await expect(async () => {
       return await CLIHelper.getConfiguration();
@@ -376,7 +378,7 @@ Maybe you want to check, or regenerate your yarn.lock or package-lock.json file?
   test('gets ORM configuration [from package.json] with rejected promise', async () => {
     expect.assertions(1);
     pathExistsMock.mockReturnValue(true);
-    pkg['mikro-orm'].configPaths = [`${Utils.normalizePath(process.cwd())}/mikro-orm-async-catch.config.js`];
+    pkg['mikro-orm'].configPaths = [`${normalizePath(process.cwd())}/mikro-orm-async-catch.config.js`];
     await expect(CLIHelper.getConfiguration()).rejects.toEqual('FooError');
     delete pkg['mikro-orm'].configPaths;
   });
@@ -411,7 +413,7 @@ Maybe you want to check, or regenerate your yarn.lock or package-lock.json file?
         return true;
       }
 
-      return (path as string).endsWith(Utils.normalizePath(process.cwd() + '/mikro-orm.config.ts'));
+      return (path as string).endsWith(normalizePath(process.cwd() + '/mikro-orm.config.ts'));
     });
     pkg['mikro-orm'].preferTs = true;
     await expect(CLIHelper.getORM()).rejects.toThrow('No entities were discovered');

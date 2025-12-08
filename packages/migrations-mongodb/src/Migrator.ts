@@ -16,6 +16,7 @@ import {
   type MigrationsOptions,
   type MigratorEvent,
   type MikroORM,
+  path,
   type Transaction,
   Utils,
 } from '@mikro-orm/core';
@@ -47,7 +48,7 @@ export class Migrator implements IMigrator {
 
     /* v8 ignore next */
     const key = (this.config.get('preferTs', Utils.detectTypeScriptSupport()) && this.options.pathTs) ? 'pathTs' : 'path';
-    this.absolutePath = Utils.absolutePath(this.options[key]!, this.config.get('baseDir'));
+    this.absolutePath = path.absolutePath(this.options[key]!, this.config.get('baseDir'));
     this.createUmzug();
   }
 

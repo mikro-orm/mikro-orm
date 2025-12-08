@@ -32,3 +32,4 @@ export * from './types/index.js';
 export * from './naming-strategy/index.js';
 export * from './metadata/index.js';
 export * from './cache/index.js';
+export * from './utils/path-utils.js';

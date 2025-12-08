@@ -1,13 +1,16 @@
 import { basename } from 'node:path';
 import { fs } from '../utils/fs-utils.js';
+import { path } from '../utils/path-utils.js';
 
 import { type Constructor } from '../typings.js';
 import { Utils } from '../utils/Utils.js';
 import { MetadataStorage } from './MetadataStorage.js';
 import { EntitySchema } from './EntitySchema.js';
 
+const { normalizePath } = path;
+
 async function getEntityClassOrSchema(filepath: string, allTargets: Map<Constructor | EntitySchema, string>, baseDir: string): Promise<void> {
-  const path = Utils.normalizePath(baseDir, filepath);
+  const path = normalizePath(baseDir, filepath);
   const exports = await Utils.dynamicImport(path);
   const targets = Object.values<Constructor | EntitySchema>(exports);
 
@@ -32,9 +35,9 @@ async function getEntityClassOrSchema(filepath: string, allTargets: Map<Construc
 }
 
 export async function discoverEntities(paths: string | string[], options?: { baseDir?: string }): Promise<Iterable<EntitySchema | Constructor>> {
-  paths = Utils.asArray(paths).map(path => Utils.normalizePath(path));
+  paths = Utils.asArray(paths).map(path => normalizePath(path));
   const baseDir = options?.baseDir ?? process.cwd();
-  const files = fs.glob(paths, Utils.normalizePath(baseDir));
+  const files = fs.glob(paths, normalizePath(baseDir));
   const found = new Map<Constructor | EntitySchema, string>();
 
   for (const filepath of files) {

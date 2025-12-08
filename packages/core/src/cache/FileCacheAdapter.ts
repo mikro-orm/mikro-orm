@@ -1,5 +1,6 @@
 import { existsSync, readFileSync, writeFileSync, unlinkSync } from 'node:fs';
 import { fs } from '../utils/fs-utils.js';
+import { path } from '../utils/path-utils.js';
 
 import type { SyncCacheAdapter } from './CacheAdapter.js';
 import { Utils } from '../utils/Utils.js';
@@ -75,14 +76,15 @@ export class FileCacheAdapter implements SyncCacheAdapter {
       return;
     }
 
-    let path = typeof this.options.combined === 'string'
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    let path_ = typeof this.options.combined === 'string'
       ? this.options.combined
       : './metadata.json';
-    path = Utils.normalizePath(this.options.cacheDir, path);
-    this.options.combined = path; // override in the options, so we can log it from the CLI in `cache:generate` command
-    writeFileSync(path, JSON.stringify(this.cache, null, this.pretty ? 2 : undefined));
+    path_ = path.normalizePath(this.options.cacheDir, path_);
+    this.options.combined = path_; // override in the options, so we can log it from the CLI in `cache:generate` command
+    writeFileSync(path_, JSON.stringify(this.cache, null, this.pretty ? 2 : undefined));
 
-    return path;
+    return path_;
   }
 
   private path(name: string): string {
@@ -91,7 +93,7 @@ export class FileCacheAdapter implements SyncCacheAdapter {
   }
 
   private getHash(origin: string): string | null {
-    origin = Utils.absolutePath(origin, this.baseDir);
+    origin = path.absolutePath(origin, this.baseDir);
 
     if (!existsSync(origin)) {
       return null;

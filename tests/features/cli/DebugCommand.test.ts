@@ -1,8 +1,6 @@
-import { defineConfig } from '@mikro-orm/mongodb';
-
 process.env.FORCE_COLOR = '0';
 
-import { Configuration, Utils } from '@mikro-orm/core';
+import { Configuration, defineConfig, path } from '@mikro-orm/mongodb';
 import { fs } from '@mikro-orm/core/fs-utils';
 import { CLIHelper } from '@mikro-orm/cli';
 import { DebugCommand } from '../../../packages/cli/src/commands/DebugCommand.js';
@@ -33,7 +31,7 @@ describe('DebugCommand', () => {
       ['Current MikroORM CLI configuration'],
       [' - TypeScript support enabled (auto)'],
       [' - searched config paths:'],
-      [`   - ${Utils.normalizePath(process.cwd() + '/path/orm-config.ts') } (found)`],
+      [`   - ${path.normalizePath(process.cwd() + '/path/orm-config.ts') } (found)`],
       [' - searched for config name: default'],
       [' - configuration found'],
       [' - driver dependencies:'],
@@ -51,7 +49,7 @@ describe('DebugCommand', () => {
       ['Current MikroORM CLI configuration'],
       [' - TypeScript support enabled (auto)'],
       [' - searched config paths:'],
-      [`   - ${Utils.normalizePath(process.cwd() + '/path/orm-config.ts') } (found)`],
+      [`   - ${path.normalizePath(process.cwd() + '/path/orm-config.ts') } (found)`],
       [' - searched for config name: default'],
       [' - configuration found'],
       [' - driver dependencies:'],
@@ -59,11 +57,11 @@ describe('DebugCommand', () => {
       [' - database connection successful'],
       [' - `preferTs` flag explicitly set to true, will use `entitiesTs` array (this value should be set to `false` when running compiled code!)'],
       [' - could use `entities` array (contains 0 references and 2 paths)'],
-      [`   - ${Utils.normalizePath(process.cwd() + '/dist/entities-1') } (found)`],
-      [`   - ${Utils.normalizePath(process.cwd() + '/dist/entities-2') } (not found)`],
+      [`   - ${path.normalizePath(process.cwd() + '/dist/entities-1') } (found)`],
+      [`   - ${path.normalizePath(process.cwd() + '/dist/entities-2') } (not found)`],
       [' - will use `entitiesTs` array (contains 0 references and 2 paths)'],
-      [`   - ${Utils.normalizePath(process.cwd() + '/src/entities-1') } (found)`],
-      [`   - ${Utils.normalizePath(process.cwd() + '/src/entities-2') } (not found)`],
+      [`   - ${path.normalizePath(process.cwd() + '/src/entities-1') } (found)`],
+      [`   - ${path.normalizePath(process.cwd() + '/src/entities-2') } (not found)`],
     ];
     expect(dump.mock.calls).toEqual(expected);
 
@@ -75,7 +73,7 @@ describe('DebugCommand', () => {
       ['Current MikroORM CLI configuration'],
       [' - TypeScript support enabled (auto)'],
       [' - searched config paths:'],
-      [`   - ${Utils.normalizePath(process.cwd() + '/path/orm-config.ts') } (found)`],
+      [`   - ${path.normalizePath(process.cwd() + '/path/orm-config.ts') } (found)`],
       [' - searched for config name: default'],
       [' - configuration found'],
       [' - driver dependencies:'],
@@ -93,7 +91,7 @@ describe('DebugCommand', () => {
       ['Current MikroORM CLI configuration'],
       [' - TypeScript support enabled (auto)'],
       [' - searched config paths:'],
-      [`   - ${Utils.normalizePath(process.cwd() + '/path/orm-config.ts') } (found)`],
+      [`   - ${path.normalizePath(process.cwd() + '/path/orm-config.ts') } (found)`],
       [' - searched for config name: default'],
       ['- configuration not found (test error message)'],
     ]);
@@ -106,7 +104,7 @@ describe('DebugCommand', () => {
       ['Current MikroORM CLI configuration'],
       [' - TypeScript support enabled (auto)'],
       [' - searched config paths:'],
-      [`   - ${Utils.normalizePath(process.cwd() + '/path/orm-config.ts') } (not found)`],
+      [`   - ${path.normalizePath(process.cwd() + '/path/orm-config.ts') } (not found)`],
       [' - searched for config name: default'],
       [' - configuration found'],
       [' - driver dependencies:'],
@@ -129,7 +127,7 @@ describe('DebugCommand', () => {
       ['Current MikroORM CLI configuration'],
       [' - TypeScript support enabled (auto)'],
       [' - searched config paths:'],
-      [`   - ${Utils.normalizePath(process.cwd() + '/path/orm-config.ts') } (not found)`],
+      [`   - ${path.normalizePath(process.cwd() + '/path/orm-config.ts') } (not found)`],
       [' - searched for config name: default'],
       [' - configuration found'],
       [' - driver dependencies:'],
