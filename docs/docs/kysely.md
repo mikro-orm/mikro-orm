@@ -32,7 +32,7 @@ const User = defineEntity({
 });
 
 // Pass entities directly to the ORM
-const orm = await MikroORM.init({
+const orm = new MikroORM({
   dbName: ':memory:',
   entities: [User],
 });
