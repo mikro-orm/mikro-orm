@@ -1613,13 +1613,6 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     const dataIsEntity = Utils.isEntity<Entity>(data);
-
-    if (options.keepIdentity && entity && dataIsEntity && entity !== data) {
-      helper(entity).__data = helper(data).__data;
-      helper(entity).__originalEntityData = helper(data).__originalEntityData;
-      return entity;
-    }
-
     entity = dataIsEntity ? data : em.entityFactory.create<Entity>(entityName, data as EntityData<Entity>, { merge: true, ...options });
     const visited = options.cascade ? undefined : new Set([entity]);
     em.unitOfWork.merge(entity, visited);
@@ -2462,7 +2455,6 @@ export interface MergeOptions {
   convertCustomTypes?: boolean;
   schema?: string;
   disableContextResolution?: boolean;
-  keepIdentity?: boolean;
   validate?: boolean;
   cascade?: boolean; /** @default true */
 }
