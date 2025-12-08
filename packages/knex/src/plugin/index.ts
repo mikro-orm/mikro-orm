@@ -10,7 +10,7 @@ import {
   UpdateQueryNode as UpdateQueryNodeClass,
   DeleteQueryNode as DeleteQueryNodeClass,
 } from 'kysely';
-import  { MikroTransformer } from './transformer.js';
+import { MikroTransformer } from './transformer.js';
 import type { SqlEntityManager } from '../SqlEntityManager.js';
 import type { EntityMetadata } from '@mikro-orm/core';
 
