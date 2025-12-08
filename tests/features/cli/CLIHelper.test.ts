@@ -225,22 +225,22 @@ describe('CLIHelper', () => {
   test('disallows version mismatch of ORM packages', async () => {
     delete process.env.MIKRO_ORM_ALLOW_VERSION_MISMATCH;
     const spy = vi.spyOn(fs, 'getORMPackages');
-    spy.mockResolvedValueOnce(new Set(['@mikro-orm/weird-package']));
+    spy.mockReturnValueOnce(new Set(['@mikro-orm/weird-package']));
     const spy3 = vi.spyOn(Utils, 'getORMVersion');
     spy3.mockReturnValue('5.0.0');
 
-    await expect(fs.checkPackageVersion()).resolves.not.toThrow();
+    expect(() => fs.checkPackageVersion()).not.toThrow();
 
-    spy.mockResolvedValueOnce(new Set(['@mikro-orm/weird-package']));
+    spy.mockReturnValueOnce(new Set(['@mikro-orm/weird-package']));
     const spy2 = vi.spyOn(fs, 'getORMPackageVersion');
     spy2.mockReturnValueOnce('1.2.3');
 
-    await expect(fs.checkPackageVersion()).rejects.toThrow(`Bad @mikro-orm/weird-package version 1.2.3.
+    expect(() => fs.checkPackageVersion()).toThrow(`Bad @mikro-orm/weird-package version 1.2.3.
 All official @mikro-orm/* packages need to have the exact same version as @mikro-orm/core (5.0.0).
 Only exceptions are packages that don't live in the 'mikro-orm' repository: nestjs, sql-highlighter, mongo-highlighter.
 Maybe you want to check, or regenerate your yarn.lock or package-lock.json file?`);
 
-    await expect(fs.checkPackageVersion()).resolves.not.toThrow();
+    expect(() => fs.checkPackageVersion()).not.toThrow();
     spy.mockRestore();
     spy2.mockRestore();
     spy3.mockRestore();
@@ -518,12 +518,12 @@ Maybe you want to check, or regenerate your yarn.lock or package-lock.json file?
     });
     pkg['mikro-orm'] = undefined;
 
-    await expect(CLIHelper.getSettings()).resolves.toEqual({});
+    expect(CLIHelper.getSettings()).toEqual({});
     await expect(CLIHelper.getConfiguration('default', await CLIHelper.getConfigPaths())).resolves.toBeInstanceOf(Configuration);
 
     process.env.MIKRO_ORM_CLI_PREFER_TS = '1';
     process.env.MIKRO_ORM_CLI_TS_CONFIG_PATH = 'foo/tsconfig.json';
-    await expect(CLIHelper.getSettings()).resolves.toEqual({
+    expect(CLIHelper.getSettings()).toEqual({
       preferTs: true,
       tsConfigPath: 'foo/tsconfig.json',
     });
@@ -534,22 +534,22 @@ Maybe you want to check, or regenerate your yarn.lock or package-lock.json file?
     pkg['mikro-orm'] = { preferTs: true };
 
     // lookup the root package.json in CWD
-    const ret1 = await fs.getPackageConfig(import.meta.dirname);
+    const ret1 = fs.getPackageConfig(import.meta.dirname);
     expect(ret1['mikro-orm'].preferTs).toBe(true);
 
     // check we fallback to `{}` if we reach root folder
-    const ret2 = await fs.getPackageConfig(process.cwd() + '/../..');
+    const ret2 = fs.getPackageConfig(process.cwd() + '/../..');
     expect(ret2).toEqual({});
 
     pkg['mikro-orm'] = undefined;
   });
 
   test('isESM', async () => {
-    await expect(CLIHelper.isESM()).resolves.toBe(true);
+    expect(CLIHelper.isESM()).toBe(true);
 
     const packageSpy = vi.spyOn(fs, 'getPackageConfig');
     packageSpy.mockResolvedValueOnce({});
-    await expect(CLIHelper.isESM()).resolves.toBe(false);
+    expect(CLIHelper.isESM()).toBe(false);
 
     pathExistsMock.mockImplementation(async path => {
       const str = path as string;

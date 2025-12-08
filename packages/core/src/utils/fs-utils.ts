@@ -49,10 +49,11 @@ export const fs = {
     return files.filter(f => f.isFile()).map(f => join(f.parentPath, f.name));
   },
 
-  async getPackageConfig<T extends Dictionary>(basePath = process.cwd()): Promise<T> {
+  getPackageConfig<T extends Dictionary>(basePath = process.cwd()): T {
     if (this.pathExists(`${basePath}/package.json`)) {
       try {
-        return await Utils.dynamicImport<T>(`${basePath}/package.json`);
+        const path = import.meta.resolve(`${basePath}/package.json`);
+        return this.readJSONSync(fileURLToPath(path));
       } catch (e) {
         /* v8 ignore next */
         return {} as T;
@@ -69,8 +70,8 @@ export const fs = {
     return this.getPackageConfig(parentFolder);
   },
 
-  async getORMPackages(): Promise<Set<string>> {
-    const pkg = await this.getPackageConfig();
+  getORMPackages(): Set<string> {
+    const pkg = this.getPackageConfig();
     return new Set([
       ...Object.keys(pkg.dependencies ?? {}),
       ...Object.keys(pkg.devDependencies ?? {}),
@@ -88,14 +89,14 @@ export const fs = {
   },
 
   // inspired by https://github.com/facebook/docusaurus/pull/3386
-  async checkPackageVersion(): Promise<void> {
+  checkPackageVersion(): void {
     const coreVersion = Utils.getORMVersion();
 
     if (process.env.MIKRO_ORM_ALLOW_VERSION_MISMATCH || coreVersion === '[[MIKRO_ORM_VERSION]]') {
       return;
     }
 
-    const deps = await this.getORMPackages();
+    const deps = this.getORMPackages();
     const exceptions = new Set(['nestjs', 'sql-highlighter', 'mongo-highlighter']);
     const ormPackages = [...deps].filter(d => d.startsWith('@mikro-orm/') && d !== '@mikro-orm/core' && !exceptions.has(d.substring('@mikro-orm/'.length)));
 
