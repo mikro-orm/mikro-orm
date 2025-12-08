@@ -47,7 +47,7 @@ export default defineConfig({
     ],
     globals: true,
     coverage: {
-      reporter: ['html', 'lcov'],
+      reporter: ['text', 'lcov', 'cobertura'],
       include: [
         'packages/*/src/**/*.ts',
       ],
