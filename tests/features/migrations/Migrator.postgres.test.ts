@@ -57,6 +57,11 @@ describe('Migrator (postgres)', () => {
       driver: PostgreSqlDriver,
       schema: 'custom',
       logger: () => void 0,
+      schemaGenerator: {
+        skipTables: [
+          'configuration2',
+        ],
+      },
       migrations: { path: BASE_DIR + '/../temp/migrations-456', snapshot: false },
       extensions: [Migrator],
     });
@@ -440,7 +445,6 @@ describe('Migrator (postgres)', () => {
     });
     expect(calls).toMatchSnapshot('all-or-nothing-disabled');
   });
-
 });
 
 test('ensureTable when the schema does not exist', async () => {
