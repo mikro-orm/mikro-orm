@@ -821,6 +821,24 @@ describe('defineEntity', () => {
 
     expect(Foo.meta).toEqual(asSnapshot(FooSchema.meta));
   });
+
+  it('should define entity with unique constraint', () => {
+    const Category = defineEntity({
+      name: 'Category',
+      uniques: [
+        { properties: ['name', 'children'], expression:() => `` },
+      ],
+      properties: {
+        id: p.integer().primary(),
+        name: p.string(),
+        description: p.string().length(2048).nullable(),
+        metadata: p.json<Record<string, any>>().default('{}'),
+        isShopEnabled: p.boolean(),
+        parentCategory: () => p.manyToOne(Category).nullable(),
+        children: () => p.oneToMany(Category).mappedBy('parentCategory'),
+      },
+    });
+  });
 });
 
 describe('PropertyOptionsBuilder', () => {
