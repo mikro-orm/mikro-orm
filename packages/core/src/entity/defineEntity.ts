@@ -21,6 +21,7 @@ import type {
   Primary,
   EntityClass,
   Ref,
+  IndexCallback,
 } from '../typings';
 import type { ScalarReference } from './Reference';
 import type { SerializeOptions } from '../serialization/EntitySerializer';
@@ -699,15 +700,44 @@ function getBuilderOptions(builder: any) {
   return '~options' in builder ? builder['~options'] : builder;
 }
 
-export function defineEntity<Properties extends Record<string, any>, const PK extends (keyof Properties)[] | undefined = undefined, Base = never>(
-  meta: Omit<Partial<EntityMetadata<InferEntityFromProperties<Properties, PK>>>, 'properties' | 'extends' | 'primaryKeys' | 'hooks'> & {
-    name: string;
-    extends?: EntityName<Base>;
-    properties: Properties | ((properties: typeof propertyBuilders) => Properties);
-    primaryKeys?: PK & InferPrimaryKey<Properties>[];
-    hooks?: DefineEntityHooks<InferEntityFromProperties<Properties, PK>>;
-  },
-): EntitySchema<InferEntityFromProperties<Properties, PK>, Base>;
+export interface EntityMetadataWithProperties<
+  TProperties extends Record<string, any>,
+  TPK extends (keyof TProperties)[] | undefined = undefined,
+  TBase = never
+> extends Omit<Partial<EntityMetadata<InferEntityFromProperties<TProperties, TPK>>>, 'properties' | 'extends' | 'primaryKeys' | 'hooks' | 'discriminatorColumn' | 'versionProperty' | 'concurrencyCheckKeys' | 'serializedPrimaryKey' | 'indexes' | 'uniques' > {
+  name: string;
+  extends?: EntityName<TBase>;
+  properties: TProperties | ((properties: typeof propertyBuilders) => TProperties);
+  primaryKeys?: TPK & InferPrimaryKey<TProperties>[];
+  hooks?: DefineEntityHooks<InferEntityFromProperties<TProperties, TPK>>;
+  // use keyof TProperties instead of EntityKey<T> to avoid circular type inference
+  discriminatorColumn?: keyof TProperties;
+  versionProperty?: keyof TProperties;
+  concurrencyCheckKeys?: Set<keyof TProperties>;
+  serializedPrimaryKey?: keyof TProperties;
+  indexes?: {
+    properties?: keyof TProperties | (keyof TProperties)[];
+    name?: string;
+    type?: string;
+    options?: Dictionary;
+    expression?: string | IndexCallback<InferEntityFromProperties<TProperties, TPK>>;
+  }[];
+  uniques?: {
+    properties?: keyof TProperties | (keyof TProperties)[];
+    name?: string;
+    options?: Dictionary;
+    expression?: string | IndexCallback<InferEntityFromProperties<TProperties, TPK>>;
+    deferMode?: DeferMode | `${DeferMode}`;
+  }[];
+}
+
+export function defineEntity<
+  TProperties extends Record<string, any>,
+  const TPK extends (keyof TProperties)[] | undefined = undefined,
+  TBase = never
+>(
+  meta: EntityMetadataWithProperties<TProperties, TPK, TBase>,
+): EntitySchema<InferEntityFromProperties<TProperties, TPK>, TBase>;
 
 export function defineEntity<Entity = any, Base = never>(
   meta: Omit<Partial<EntityMetadata<Entity>>, 'properties' | 'extends'> & {
@@ -721,7 +751,7 @@ export function defineEntity(
   meta: Omit<Partial<EntityMetadata>, 'properties' | 'extends'> & {
     extends?: EntityName<any>;
     properties: Record<string, any> | ((properties: typeof propertyBuilders) => Record<string, any>);
-  },
+  } | EntityMetadataWithProperties<any, any, any>,
 ): EntitySchema<any, any> {
   const { properties: propertiesOrGetter, ...options } = meta;
   const propertyOptions = typeof propertiesOrGetter === 'function' ? propertiesOrGetter(propertyBuilders) : propertiesOrGetter;
