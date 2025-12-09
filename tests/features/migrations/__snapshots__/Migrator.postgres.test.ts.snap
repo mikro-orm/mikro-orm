@@ -51,6 +51,8 @@ export class Migration20191013214813 extends Migration {
 
     this.addSql(\`create table "custom"."publisher2_tests" ("id" serial primary key, "publisher2_id" int not null, "test2_id" int not null);\`);
 
+    this.addSql(\`create table "custom"."configuration2" ("property" varchar(255) not null, "test_id" int not null, "value" varchar(255) not null, constraint "configuration2_pkey" primary key ("property", "test_id"));\`);
+
     this.addSql(\`create table "custom"."test2_bars" ("test2_id" int not null, "foo_bar2_id" int not null, constraint "test2_bars_pkey" primary key ("test2_id", "foo_bar2_id"));\`);
 
     this.addSql(\`alter table "custom"."foo_bar2" add constraint "foo_bar2_baz_id_foreign" foreign key ("baz_id") references "custom"."foo_baz2" ("id") on update cascade on delete set null;\`);
@@ -84,6 +86,8 @@ export class Migration20191013214813 extends Migration {
 
     this.addSql(\`alter table "custom"."publisher2_tests" add constraint "publisher2_tests_publisher2_id_foreign" foreign key ("publisher2_id") references "custom"."publisher2" ("id") on update cascade on delete cascade;\`);
     this.addSql(\`alter table "custom"."publisher2_tests" add constraint "publisher2_tests_test2_id_foreign" foreign key ("test2_id") references "custom"."test2" ("id") on update cascade on delete cascade;\`);
+
+    this.addSql(\`alter table "custom"."configuration2" add constraint "configuration2_test_id_foreign" foreign key ("test_id") references "custom"."test2" ("id") on update cascade;\`);
 
     this.addSql(\`alter table "custom"."test2_bars" add constraint "test2_bars_test2_id_foreign" foreign key ("test2_id") references "custom"."test2" ("id") on update cascade on delete cascade;\`);
     this.addSql(\`alter table "custom"."test2_bars" add constraint "test2_bars_foo_bar2_id_foreign" foreign key ("foo_bar2_id") references "custom"."foo_bar2" ("id") on update cascade on delete cascade;\`);
@@ -138,6 +142,8 @@ export class Migration20191013214813 extends Migration {
       "",
       "create table "custom"."publisher2_tests" ("id" serial primary key, "publisher2_id" int not null, "test2_id" int not null);",
       "",
+      "create table "custom"."configuration2" ("property" varchar(255) not null, "test_id" int not null, "value" varchar(255) not null, constraint "configuration2_pkey" primary key ("property", "test_id"));",
+      "",
       "create table "custom"."test2_bars" ("test2_id" int not null, "foo_bar2_id" int not null, constraint "test2_bars_pkey" primary key ("test2_id", "foo_bar2_id"));",
       "",
       "alter table "custom"."foo_bar2" add constraint "foo_bar2_baz_id_foreign" foreign key ("baz_id") references "custom"."foo_baz2" ("id") on update cascade on delete set null;",
@@ -171,6 +177,8 @@ export class Migration20191013214813 extends Migration {
       "",
       "alter table "custom"."publisher2_tests" add constraint "publisher2_tests_publisher2_id_foreign" foreign key ("publisher2_id") references "custom"."publisher2" ("id") on update cascade on delete cascade;",
       "alter table "custom"."publisher2_tests" add constraint "publisher2_tests_test2_id_foreign" foreign key ("test2_id") references "custom"."test2" ("id") on update cascade on delete cascade;",
+      "",
+      "alter table "custom"."configuration2" add constraint "configuration2_test_id_foreign" foreign key ("test_id") references "custom"."test2" ("id") on update cascade;",
       "",
       "alter table "custom"."test2_bars" add constraint "test2_bars_test2_id_foreign" foreign key ("test2_id") references "custom"."test2" ("id") on update cascade on delete cascade;",
       "alter table "custom"."test2_bars" add constraint "test2_bars_foo_bar2_id_foreign" foreign key ("foo_bar2_id") references "custom"."foo_bar2" ("id") on update cascade on delete cascade;",
@@ -231,6 +239,8 @@ export class Migration20191013214813 extends Migration {
 
     this.addSql(\`create table "custom"."publisher2_tests" ("id" serial primary key, "publisher2_id" int not null, "test2_id" int not null);\`);
 
+    this.addSql(\`create table "custom"."configuration2" ("property" varchar(255) not null, "test_id" int not null, "value" varchar(255) not null, constraint "configuration2_pkey" primary key ("property", "test_id"));\`);
+
     this.addSql(\`create table "custom"."test2_bars" ("test2_id" int not null, "foo_bar2_id" int not null, constraint "test2_bars_pkey" primary key ("test2_id", "foo_bar2_id"));\`);
 
     this.addSql(\`alter table "custom"."foo_bar2" add constraint "foo_bar2_baz_id_foreign" foreign key ("baz_id") references "custom"."foo_baz2" ("id") on update cascade on delete set null;\`);
@@ -264,6 +274,8 @@ export class Migration20191013214813 extends Migration {
 
     this.addSql(\`alter table "custom"."publisher2_tests" add constraint "publisher2_tests_publisher2_id_foreign" foreign key ("publisher2_id") references "custom"."publisher2" ("id") on update cascade on delete cascade;\`);
     this.addSql(\`alter table "custom"."publisher2_tests" add constraint "publisher2_tests_test2_id_foreign" foreign key ("test2_id") references "custom"."test2" ("id") on update cascade on delete cascade;\`);
+
+    this.addSql(\`alter table "custom"."configuration2" add constraint "configuration2_test_id_foreign" foreign key ("test_id") references "custom"."test2" ("id") on update cascade;\`);
 
     this.addSql(\`alter table "custom"."test2_bars" add constraint "test2_bars_test2_id_foreign" foreign key ("test2_id") references "custom"."test2" ("id") on update cascade on delete cascade;\`);
     this.addSql(\`alter table "custom"."test2_bars" add constraint "test2_bars_foo_bar2_id_foreign" foreign key ("foo_bar2_id") references "custom"."foo_bar2" ("id") on update cascade on delete cascade;\`);
@@ -318,6 +330,8 @@ export class Migration20191013214813 extends Migration {
       "",
       "create table "custom"."publisher2_tests" ("id" serial primary key, "publisher2_id" int not null, "test2_id" int not null);",
       "",
+      "create table "custom"."configuration2" ("property" varchar(255) not null, "test_id" int not null, "value" varchar(255) not null, constraint "configuration2_pkey" primary key ("property", "test_id"));",
+      "",
       "create table "custom"."test2_bars" ("test2_id" int not null, "foo_bar2_id" int not null, constraint "test2_bars_pkey" primary key ("test2_id", "foo_bar2_id"));",
       "",
       "alter table "custom"."foo_bar2" add constraint "foo_bar2_baz_id_foreign" foreign key ("baz_id") references "custom"."foo_baz2" ("id") on update cascade on delete set null;",
@@ -351,6 +365,8 @@ export class Migration20191013214813 extends Migration {
       "",
       "alter table "custom"."publisher2_tests" add constraint "publisher2_tests_publisher2_id_foreign" foreign key ("publisher2_id") references "custom"."publisher2" ("id") on update cascade on delete cascade;",
       "alter table "custom"."publisher2_tests" add constraint "publisher2_tests_test2_id_foreign" foreign key ("test2_id") references "custom"."test2" ("id") on update cascade on delete cascade;",
+      "",
+      "alter table "custom"."configuration2" add constraint "configuration2_test_id_foreign" foreign key ("test_id") references "custom"."test2" ("id") on update cascade;",
       "",
       "alter table "custom"."test2_bars" add constraint "test2_bars_test2_id_foreign" foreign key ("test2_id") references "custom"."test2" ("id") on update cascade on delete cascade;",
       "alter table "custom"."test2_bars" add constraint "test2_bars_foo_bar2_id_foreign" foreign key ("foo_bar2_id") references "custom"."foo_bar2" ("id") on update cascade on delete cascade;",
