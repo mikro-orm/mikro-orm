@@ -826,7 +826,14 @@ describe('defineEntity', () => {
     const Category = defineEntity({
       name: 'Category',
       uniques: [
-        { properties: ['name', 'children'], expression:() => `` },
+        { properties: ['name', 'children'] },
+      ],
+      indexes: [
+        {
+          name: 'unique_name_children',
+          expression: (table, columns) =>
+            `create unique index ${table.name}_${columns.name}_${columns.children} on ${table.name} (${columns.name}, ${columns.children})`,
+        },
       ],
       properties: {
         id: p.integer().primary(),

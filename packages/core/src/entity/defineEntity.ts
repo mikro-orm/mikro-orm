@@ -717,7 +717,8 @@ export interface EntityMetadataWithProperties<
   serializedPrimaryKey?: keyof TProperties;
   indexes?: {
     properties?: keyof TProperties | (keyof TProperties)[];
-    name?: string; type?: string;
+    name?: string;
+    type?: string;
     options?: Dictionary;
     expression?: string | IndexCallback<InferEntityFromProperties<TProperties, TPK>>;
   }[];
@@ -726,6 +727,7 @@ export interface EntityMetadataWithProperties<
     name?: string;
     options?: Dictionary;
     expression?: string | IndexCallback<InferEntityFromProperties<TProperties, TPK>>;
+    deferMode?: DeferMode | `${DeferMode}`;
   }[];
 }
 
