@@ -440,21 +440,6 @@ describe('Migrator (postgres)', () => {
     });
     expect(calls).toMatchSnapshot('all-or-nothing-disabled');
   });
-
-  test('respects the skipTable option when diffing schemas', async () => {
-    orm.config.set('schemaGenerator', {
-      skipTables: ['book2', 'custom.test2', 'custom.undefined_table'],
-    });
-
-    const dateMock = jest.spyOn(Date.prototype, 'toISOString');
-    dateMock.mockReturnValue('2019-10-13T21:48:13.382Z');
-    const migrator = orm.migrator;
-    const migration = await migrator.createMigration();
-    expect(migration).toMatchSnapshot('migration-dump');
-    await remove(process.cwd() + '/temp/migrations-456/' + migration.fileName);
-
-    orm.config.set('schemaGenerator', {});
-  });
 });
 
 test('ensureTable when the schema does not exist', async () => {

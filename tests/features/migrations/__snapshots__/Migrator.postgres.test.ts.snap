@@ -832,7 +832,7 @@ exports[`Migrator (postgres) up/down with explicit transaction: explicit-tx 1`] 
 ]
 `;
 
-exports[`respects the skipTable option when diffing schemas: migration-dump-with-skip-tables 1`] = `
+exports[`respects the skipTables option when diffing schemas: migration-dump-with-skip-tables 1`] = `
 {
   "code": "import { Migration } from '@mikro-orm/migrations';
 
