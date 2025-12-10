@@ -464,20 +464,16 @@ test('ensureTable when the schema does not exist', async () => {
   await orm.close();
 });
 
-// The general idea here is to setup a database, run some manual schema changes and verify that a secondary diff via the
-//  Migrator is able to respect the `skipTables` option.
-// Going with this approach to narrow the scope of the snapshot we generate and use to verify that the changes are correct.
 test('respects the skipTables option when diffing schemas', async () => {
   const baseConfig = {
     entities: [Author2, Address2, Book2, BookTag2, Publisher2, Test2, FooBar2, FooBaz2, FooParam2, Configuration2],
     dbName: `mikro_orm_test_migrations3`,
     driver: PostgreSqlDriver,
     schema: 'custom',
-    logger: () => void 0,
     extensions: [Migrator],
     migrations: { path: BASE_DIR + '/../temp/migrations-456', snapshot: false },
   };
-  const initOrm =  await MikroORM.init<PostgreSqlDriver>(baseConfig);
+  const initOrm =  await MikroORM.init(baseConfig);
 
   await initOrm.schema.refreshDatabase();
   await initOrm.schema.execute('alter table "custom"."book2" add column "foo" varchar null default \'lol\';');
@@ -488,7 +484,7 @@ test('respects the skipTables option when diffing schemas', async () => {
 
   // Two ORM instances here because updates to the schemaGenerator option and syncing won't actually make its way to the
   //  Migrator's SqlSchemaGenerator instance because that is initialized ahead of time when the orm instance is defined.
-  const updatedOrm = await MikroORM.init<PostgreSqlDriver>({
+  const updatedOrm = await MikroORM.init({
     ...baseConfig,
     schemaGenerator: {
       skipTables: ['book2'],
