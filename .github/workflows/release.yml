@@ -30,7 +30,7 @@ concurrency:
 jobs:
   manual-release:
     if: github.event_name == 'workflow_dispatch'
-    name: 'Release: ${{ inputs.custom_version || inputs.version }}'
+    name: Release ${{ inputs.custom_version || inputs.version }}
     runs-on: ubuntu-latest
 
     steps:
@@ -78,7 +78,7 @@ jobs:
 
   canary-release:
     if: github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success'
-    name: 'Release: canary'
+    name: Release canary
     runs-on: ubuntu-latest
 
     steps:
@@ -98,9 +98,6 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           cache: yarn
-          registry-url: 'https://registry.npmjs.org'
-          always-auth: false
-          provenance: true
 
       - name: Configure git
         run: |
