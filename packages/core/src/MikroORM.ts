@@ -184,18 +184,9 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver, EM extends En
    * Closes the database connection.
    */
   async close(force = false): Promise<void> {
-    if (await this.isConnected()) {
-      await this.driver.close(force);
-    }
-
-    if (this.config.getMetadataCacheAdapter()?.close) {
-      await this.config.getMetadataCacheAdapter().close!();
-    }
-
-    if (this.config.getResultCacheAdapter()?.close) {
-      await this.config.getResultCacheAdapter().close!();
-    }
-
+    await this.driver.close(force);
+    await this.config.getMetadataCacheAdapter()?.close?.();
+    await this.config.getResultCacheAdapter()?.close?.();
   }
 
   /**
