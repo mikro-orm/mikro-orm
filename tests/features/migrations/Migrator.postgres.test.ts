@@ -440,7 +440,6 @@ describe('Migrator (postgres)', () => {
     });
     expect(calls).toMatchSnapshot('all-or-nothing-disabled');
   });
-
 });
 
 test('ensureTable when the schema does not exist', async () => {
@@ -463,4 +462,42 @@ test('ensureTable when the schema does not exist', async () => {
   expect(mock.mock.calls[2][0]).toMatch(`create schema if not exists "custom2"`);
   expect(mock.mock.calls[3][0]).toMatch(`create table "custom2"."mikro_orm_migrations" ("id" serial primary key, "name" varchar(255), "executed_at" timestamptz default CURRENT_TIMESTAMP)`);
   await orm.close();
+});
+
+test('respects the skipTables option when diffing schemas', async () => {
+  const baseConfig = {
+    entities: [Author2, Address2, Book2, BookTag2, Publisher2, Test2, FooBar2, FooBaz2, FooParam2, Configuration2],
+    dbName: `mikro_orm_test_migrations3`,
+    driver: PostgreSqlDriver,
+    schema: 'custom',
+    extensions: [Migrator],
+    migrations: { path: BASE_DIR + '/../temp/migrations-456', snapshot: false },
+  };
+  const initOrm =  await MikroORM.init(baseConfig);
+
+  await initOrm.schema.refreshDatabase();
+  await initOrm.schema.execute('alter table "custom"."book2" add column "foo" varchar null default \'lol\';');
+  await initOrm.schema.execute('alter table "custom"."book2" alter column "double" type numeric using ("double"::numeric);');
+  await initOrm.schema.execute('alter table "custom"."test2" add column "path" polygon null default null;');
+  await remove(process.cwd() + '/temp/migrations-456');
+  await initOrm.close();
+
+  // Two ORM instances here because updates to the schemaGenerator option and syncing won't actually make its way to the
+  //  Migrator's SqlSchemaGenerator instance because that is initialized ahead of time when the orm instance is defined.
+  const updatedOrm = await MikroORM.init({
+    ...baseConfig,
+    schemaGenerator: {
+      skipTables: ['book2'],
+    },
+  });
+
+  const dateMock = jest.spyOn(Date.prototype, 'toISOString');
+  dateMock.mockReturnValue('2019-10-13T21:48:13.382Z');
+  const migrator = updatedOrm.migrator;
+  const migration = await migrator.createMigration();
+  // This should only include changes to "test2" since the orm instance here has been told to ignore "book2"
+  expect(migration).toMatchSnapshot('migration-dump-with-skip-tables');
+  await remove(process.cwd() + '/temp/migrations-456/' + migration.fileName);
+
+  await updatedOrm.close();
 });
