@@ -1,137 +1,71 @@
-name: Release @latest
+name: Release
 
 on:
   workflow_dispatch:
     inputs:
       version:
-        description: The version to bump (if you choose custom, please include it under custom version)
+        description: Version bump strategy
         required: true
-        default: 'patch'
+        default: patch
         type: choice
-        options:
-          - "patch"
-          - "minor"
-          - "major"
-          - "custom"
+        options: [ patch, minor, major, custom ]
       custom_version:
-        description: The custom version to bump to (only for "custom" type)
+        description: Custom version (only when version=custom)
         required: false
         type: string
-        default: ''
+
+  workflow_run:
+    workflows: [ 'tests' ]
+    types: [ completed ]
+    branches: [ master ]
+
+permissions:
+  contents: write
+  id-token: write
+  pull-requests: write
+
+concurrency:
+  group: release
 
 jobs:
-  # Test before releasing to ensure we don't release a broken version
-  test:
-    name: Test
-    if: (!contains(github.event.head_commit.message, '[skip ci]'))
-    strategy:
-      fail-fast: true
-      matrix:
-        os: [ ubuntu-latest ]
-        node-version: [ 18, 20, 22, 24 ]
-
-    runs-on: ${{ matrix.os }}
-
-    steps:
-      - name: Cancel Workflow Action
-        uses: styfle/cancel-workflow-action@0.12.1
-        with:
-          access_token: ${{ github.token }}
-
-      - name: Checkout repository
-        uses: actions/checkout@v6
-
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v6
-        with:
-          node-version: ${{ matrix.node-version }}
-          package-manager-cache: false
-
-      - name: Enable corepack
-        run: |
-          corepack enable
-          corepack prepare yarn@stable --activate
-
-      # Yarn dependencies cannot be cached until yarn is installed
-      # WORKAROUND: https://github.com/actions/setup-node/issues/531
-      - name: Extract cached dependencies
-        uses: actions/setup-node@v6
-        with:
-          cache: yarn
-
-      - name: Install
-        run: yarn
-
-      - name: Init docker
-        run: |
-          docker compose up -d --wait
-
-      - name: Tests
-        run: yarn test
-
-  release:
-    name: "Bump MikroORM: ${{ inputs.version }} version (${{ inputs.custom_version || 'n/a' }} custom version)"
-    if: (!contains(github.event.head_commit.message, '[skip ci]'))
+  manual-release:
+    if: github.event_name == 'workflow_dispatch'
+    name: 'Release: ${{ inputs.custom_version || inputs.version }}'
     runs-on: ubuntu-latest
-    needs: [ test ]
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v6
+      - uses: actions/checkout@v6
         with:
-          token: ${{ secrets.GH_TOKEN }}
           fetch-depth: 0
 
-      - name: Use Node.js 22
-        uses: actions/setup-node@v6
+      - uses: actions/setup-node@v6
         with:
           node-version: 24
           package-manager-cache: false
 
-      - name: Enable corepack
-        run: |
+      - run: |
           corepack enable
+          corepack prepare yarn@stable --activate
 
-      # Yarn dependencies cannot be cached until yarn is installed
-      # WORKAROUND: https://github.com/actions/setup-node/issues/531
-      - name: Extract cached dependencies
-        uses: actions/setup-node@v6
+      - uses: actions/setup-node@v6
         with:
           cache: yarn
+          registry-url: 'https://registry.npmjs.org'
+          always-auth: false
+          provenance: true
 
-      - name: Install Dependencies
+      - run: yarn
+      - run: yarn build
+
+      - name: Configure git
         run: |
-          corepack prepare yarn@stable --activate
-          yarn
+          git config --global user.name 'MikroORM Release Bot'
+          git config --global user.email 'noreply@mikro-orm.io'
 
-      - name: Build
-        run: yarn build
+      - name: Bump version
+        run: yarn lerna version ${{ github.event.inputs.custom_version || github.event.inputs.version }} --force-publish --yes
 
-      - name: Setup git user and npm
-        run: |
-          git config --global user.name "Martin Adamek"
-          git config --global user.email "banan23@gmail.com"
-
-          echo "access=public" > .npmrc
-          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" >> .npmrc
-
-      - name: Bump version to custom version
-        if: ${{ github.event.inputs.version == 'custom' && github.event.inputs.custom_version != '' }}
-        run: yarn lerna version ${{ github.event.inputs.custom_version }} --force-publish --yes
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-          GIT_USER: "banan23@gmail.com:${{ secrets.GH_TOKEN }}"
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
-
-      - name: Bump version to ${{ github.event.inputs.version }} version
-        if: ${{ github.event.inputs.version != 'custom' }}
-        run: yarn lerna version ${{ github.event.inputs.version }} --force-publish --yes
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-          GIT_USER: "banan23@gmail.com:${{ secrets.GH_TOKEN }}"
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
-
-      - name: Pin versions in internal dependencies and update lockfile
+      - name: Pin versions
         run: |
           yarn release:pin-versions
           yarn install --no-immutable
@@ -139,9 +73,44 @@ jobs:
           git diff-index --quiet HEAD || git commit -m 'chore(release): update internal dependencies [skip ci]'
           git push
 
-      - name: Publish packages
-        run: yarn publish:prod --yes --no-verify-access
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-          GIT_USER: "banan23@gmail.com:${{ secrets.GH_TOKEN }}"
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+      - name: Publish to npm
+        run: yarn publish:prod --yes
+
+  canary-release:
+    if: github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success'
+    name: 'Release: canary'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          package-manager-cache: false
+
+      - run: |
+          corepack enable
+          corepack prepare yarn@stable --activate
+
+      - uses: actions/setup-node@v6
+        with:
+          cache: yarn
+          registry-url: 'https://registry.npmjs.org'
+          always-auth: false
+          provenance: true
+
+      - name: Configure git
+        run: |
+          git config --global user.name 'MikroORM Release Bot'
+          git config --global user.email 'noreply@mikro-orm.io'
+
+      - run: |
+          yarn
+          yarn build
+          yarn lerna run copy -- -- --canary
+          git commit -am 'chore: bump canary versions [skip ci]'
+          git fetch --depth=1 origin +refs/tags/*:refs/tags/*
+          yarn publish:next --yes
