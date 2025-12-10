@@ -1948,8 +1948,8 @@ __metadata:
     "@types/esprima": "npm:4.0.6"
     "@types/fs-extra": "npm:11.0.4"
     "@types/jest": "npm:29.5.14"
-    "@types/node": "npm:24.10.2"
-    "@types/pg": "npm:8.15.6"
+    "@types/node": "npm:24.10.3"
+    "@types/pg": "npm:8.16.0"
     "@types/semver": "npm:^7.5.8"
     "@types/sqlstring": "npm:2.3.2"
     "@types/uuid": "npm:11.0.0"
@@ -2999,12 +2999,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:24.10.2":
-  version: 24.10.2
-  resolution: "@types/node@npm:24.10.2"
+"@types/node@npm:24.10.3":
+  version: 24.10.3
+  resolution: "@types/node@npm:24.10.3"
   dependencies:
     undici-types: "npm:~7.16.0"
-  checksum: 10/75b34e33087dc707aa76723f7269cd66acd2fae4272d127544ad20f295e7537dbd1e4a4405717b3093aeae2ff8ae35283fdec826a4f593273e326bb3deae588d
+  checksum: 10/b5f3f3431b333d077fe8f656edc2a352597a0c83a21157d7cbf2811d20ba31ecf31182aaf5013f83b72bf94e368ece736e76ff0e578ceee6a30b43a666b5071f
   languageName: node
   linkType: hard
 
@@ -3015,14 +3015,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/pg@npm:8.15.6":
-  version: 8.15.6
-  resolution: "@types/pg@npm:8.15.6"
+"@types/pg@npm:8.16.0":
+  version: 8.16.0
+  resolution: "@types/pg@npm:8.16.0"
   dependencies:
     "@types/node": "npm:*"
     pg-protocol: "npm:*"
     pg-types: "npm:^2.2.0"
-  checksum: 10/4bc1bb274e0fc105be93e3a9cc8c9aa57fc50b78ed78a56348468157332daaecd71fcab762ee620c766510ffbc7018b56ca394787d6d41ff1726b152770aa532
+  checksum: 10/c03346fbe87728a237f30a3d0a436b86ede88e1dc471782bf679a4d74d67ee2a96f953e7c04d73841d21b9db43a5bf2ccdf2cd4c75450ea57efd947049809b3a
   languageName: node
   linkType: hard
 
