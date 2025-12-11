@@ -836,7 +836,7 @@ exports[`Migrator (postgres) > up/down with explicit transaction > explicit-tx 1
 ]
 `;
 
-exports[`respects the skipTables option when diffing schemas: migration-dump-with-skip-tables 1`] = `
+exports[`respects the skipTables option when diffing schemas > migration-dump-with-skip-tables 1`] = `
 {
   "code": "import { Migration } from '@mikro-orm/migrations';
 
@@ -847,14 +847,14 @@ export class Migration20191013214813 extends Migration {
   }
 
   override async down(): Promise<void> {
-    this.addSql(\`alter table "custom"."test2" add column "path" polygon null;\`);
+    this.addSql(\`alter table "custom"."test2" add "path" polygon null;\`);
   }
 
 }
 ",
   "diff": {
     "down": [
-      "alter table "custom"."test2" add column "path" polygon null;",
+      "alter table "custom"."test2" add "path" polygon null;",
     ],
     "up": [
       "alter table "custom"."test2" drop column "path";",
