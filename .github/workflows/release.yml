@@ -13,11 +13,25 @@ on:
         description: Custom version (only when version=custom)
         required: false
         type: string
+      dist-tag:
+        description: NPM dist-tag (prod or next)
+        required: false
+        type: string
+        default: 'prod'
+      ref:
+        description: Git ref to publish (branch, tag, or commit SHA)
+        type: string
+        default: 'master'
 
-  workflow_run:
-    workflows: [ 'tests' ]
-    types: [ completed ]
-    branches: [ master, v7 ]
+  workflow_call:
+    inputs:
+      ref:
+        description: Git ref to publish (branch, tag, or commit SHA)
+        required: true
+        type: string
+      dist-tag:
+        description: NPM dist-tag (prod or next)
+        type: string
 
 permissions:
   contents: write
@@ -32,7 +46,7 @@ env:
 
 jobs:
   manual-release:
-    if: github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'workflow_dispatch' && inputs.dist-tag == 'prod'
     name: Release ${{ inputs.custom_version || inputs.version }}
     runs-on: ubuntu-latest
 
@@ -40,6 +54,7 @@ jobs:
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0
+          ref: ${{ inputs.ref }}
           token: ${{ secrets.GH_TOKEN }}
 
       - uses: actions/setup-node@v6
@@ -81,7 +96,7 @@ jobs:
         run: yarn publish:prod --yes
 
   canary-release:
-    if: github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success'
+    if: inputs.dist-tag == 'next'
     name: Release canary
     runs-on: ubuntu-latest
 
@@ -89,6 +104,7 @@ jobs:
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0
+          ref: ${{ inputs.ref }}
 
       - uses: actions/setup-node@v6
         with:

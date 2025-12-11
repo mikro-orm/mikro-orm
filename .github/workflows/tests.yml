@@ -184,6 +184,13 @@ jobs:
         env:
           RETRY_TESTS: 1
 
+      - name: Trigger release workflow (canary)
+        uses: peter-evans/repository-dispatch@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          repository: mikro-orm/mikro-orm
+          event-type: trigger-release
+
       - name: Codecov
         uses: codecov/codecov-action@v5
         with:
@@ -191,3 +198,18 @@ jobs:
 
       - name: Teardown docker
         run: docker compose down
+
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    needs: [build, test, lint, docs]
+    steps:
+      - name: Publish packages
+        uses: apify/workflows/execute-workflow@main
+        with:
+          workflow: release.yml
+          inputs: >
+            {
+              "ref": "${{ steps.commit.outputs.commit_long_sha || github.sha }}",
+              "dist-tag": "next"
+            }
