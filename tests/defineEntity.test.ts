@@ -837,7 +837,7 @@ describe('defineEntity', () => {
     const Category = defineEntity({
       name: 'Category',
       uniques: [
-        { properties: ['name', 'children'] } as any, // FIXME
+        { properties: ['name', 'children'] },
       ],
       indexes: [
         {
