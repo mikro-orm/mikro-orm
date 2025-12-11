@@ -701,18 +701,17 @@ function getBuilderOptions(builder: any) {
 export interface EntityMetadataWithProperties<
   TName extends string,
   TTableName extends string,
-  TClassName extends string,
   TProperties extends Record<string, any>,
   TPK extends (keyof TProperties)[] | undefined = undefined,
-  TBase = never
-> extends Omit<Partial<EntityMetadata<InferEntityFromProperties<TProperties, TPK>>>, 'properties' | 'extends' | 'primaryKeys' | 'hooks' | 'discriminatorColumn' | 'versionProperty' | 'concurrencyCheckKeys' | 'serializedPrimaryKey' | 'indexes' | 'uniques' | 'className' | 'tableName'> {
-  name?: TName;
+  TBase = never,
+> extends Omit<Partial<EntityMetadata<InferEntityFromProperties<TProperties, TPK>>>, 'properties' | 'extends' | 'primaryKeys' | 'hooks' | 'discriminatorColumn' | 'versionProperty' | 'concurrencyCheckKeys' | 'serializedPrimaryKey' | 'indexes' | 'uniques' > {
+  name: TName;
   tableName?: TTableName;
-  className?: TClassName;
   extends?: EntityName<TBase>;
   properties: TProperties | ((properties: typeof propertyBuilders) => TProperties);
   primaryKeys?: TPK & InferPrimaryKey<TProperties>[];
   hooks?: DefineEntityHooks<InferEntityFromProperties<TProperties, TPK>>;
+
   // use keyof TProperties instead of EntityKey<T> to avoid circular type inference
   discriminatorColumn?: keyof TProperties;
   versionProperty?: keyof TProperties;
@@ -734,15 +733,14 @@ export interface EntityMetadataWithProperties<
   }[];
 }
 
-export function defineEntity<const TName extends string, const TTableName extends string, const TProperties extends Record<string, any>, const TPK extends (keyof TProperties)[] | undefined = undefined, const TBase = never>(
-  meta: Omit<Partial<EntityMetadata<InferEntityFromProperties<TProperties, TPK>>>, 'properties' | 'extends' | 'primaryKeys' | 'hooks'> & {
-    name: TName;
-    tableName?: TTableName;
-    extends?: EntityName<TBase>;
-    properties: TProperties | ((properties: typeof propertyBuilders) => TProperties);
-    primaryKeys?: TPK & InferPrimaryKey<TProperties>[];
-    hooks?: DefineEntityHooks<InferEntityFromProperties<TProperties, TPK>>;
-  },
+export function defineEntity<
+  const TName extends string,
+  const TTableName extends string,
+  const TProperties extends Record<string, any>,
+  const TPK extends (keyof TProperties)[] | undefined = undefined,
+  const TBase = never,
+>(
+  meta: EntityMetadataWithProperties<TName, TTableName, TProperties, TPK, TBase>,
 ): EntitySchemaWithMeta<TName, TTableName, InferEntityFromProperties<TProperties, TPK>, TBase, TProperties>;
 
 export function defineEntity<const TEntity = any, const TProperties extends Record<string, any> = Record<string, any>, const TClassName extends string = string, const TTableName extends string = string, const TBase = never>(
@@ -759,7 +757,7 @@ export function defineEntity(
   meta: Omit<Partial<EntityMetadata>, 'properties' | 'extends'> & {
     extends?: EntityName<any>;
     properties: Record<string, any> | ((properties: typeof propertyBuilders) => Record<string, any>);
-  },
+  } | EntityMetadataWithProperties<any, any, any, any, any>,
 ): EntitySchemaWithMeta<any, any, any, any, any> {
   const { properties: propertiesOrGetter, ...options } = meta;
   const propertyOptions = typeof propertiesOrGetter === 'function' ? propertiesOrGetter(propertyBuilders) : propertiesOrGetter;
