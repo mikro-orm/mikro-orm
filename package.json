@@ -117,7 +117,7 @@
     "@types/semver": "^7.5.8",
     "@types/sqlstring": "2.3.2",
     "@types/uuid": "11.0.0",
-    "bson": "^6.10.4",
+    "bson": "^7.0.0",
     "conditional-type-checks": "1.0.6",
     "eslint": "9.39.1",
     "eslint-plugin-import": "2.32.0",

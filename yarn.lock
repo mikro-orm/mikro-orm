@@ -1875,7 +1875,7 @@ __metadata:
   resolution: "@mikro-orm/mongodb@workspace:packages/mongodb"
   dependencies:
     "@mikro-orm/core": "npm:^6.6.2"
-    bson: "npm:^6.10.4"
+    bson: "npm:^7.0.0"
     mongodb: "npm:6.20.0"
   peerDependencies:
     "@mikro-orm/core": ^6.0.0
@@ -1953,7 +1953,7 @@ __metadata:
     "@types/semver": "npm:^7.5.8"
     "@types/sqlstring": "npm:2.3.2"
     "@types/uuid": "npm:11.0.0"
-    bson: "npm:^6.10.4"
+    bson: "npm:^7.0.0"
     conditional-type-checks: "npm:1.0.6"
     eslint: "npm:9.39.1"
     eslint-plugin-import: "npm:2.32.0"
@@ -4083,6 +4083,13 @@ __metadata:
   version: 6.10.4
   resolution: "bson@npm:6.10.4"
   checksum: 10/8a79a452219a13898358a5abc93e32bc3805236334f962661da121ce15bd5cade27718ba3310ee2a143ff508489b08467eed172ecb2a658cb8d2e94fdb76b215
+  languageName: node
+  linkType: hard
+
+"bson@npm:^7.0.0":
+  version: 7.0.0
+  resolution: "bson@npm:7.0.0"
+  checksum: 10/83e7339d2b49fdde5bb35109f69d8dac1f87ed81d339aad3e2029b21eba592c6fdb60e4c9e0af60367ee5fc7aecedeb107b2b042bccb931289eb5b88736eee29
   languageName: node
   linkType: hard
 
