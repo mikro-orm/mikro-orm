@@ -473,6 +473,7 @@ test('respects the skipTables option when diffing schemas', async () => {
     dbName: `mikro_orm_test_migrations3`,
     schema: 'custom',
     extensions: [Migrator],
+    metadataProvider: ReflectMetadataProvider,
     migrations: { path: BASE_DIR + '/../temp/migrations-456', snapshot: false },
   };
   const initOrm =  await MikroORM.init(baseConfig);
@@ -481,7 +482,7 @@ test('respects the skipTables option when diffing schemas', async () => {
   await initOrm.schema.execute('alter table "custom"."book2" add column "foo" varchar null default \'lol\';');
   await initOrm.schema.execute('alter table "custom"."book2" alter column "double" type numeric using ("double"::numeric);');
   await initOrm.schema.execute('alter table "custom"."test2" add column "path" polygon null default null;');
-  await rm(process.cwd() + '/temp/migrations-456');
+  await rm(process.cwd() + '/temp/migrations-456', { force: true, recursive: true });
   await initOrm.close();
 
   // Two ORM instances here because updates to the schemaGenerator option and syncing won't actually make its way to the
@@ -499,7 +500,7 @@ test('respects the skipTables option when diffing schemas', async () => {
   const migration = await migrator.create();
   // This should only include changes to "test2" since the orm instance here has been told to ignore "book2"
   expect(migration).toMatchSnapshot('migration-dump-with-skip-tables');
-  await rm(process.cwd() + '/temp/migrations-456/' + migration.fileName);
+  await rm(process.cwd() + '/temp/migrations-456/' + migration.fileName, { force: true, recursive: true });
 
   await updatedOrm.close();
 });
