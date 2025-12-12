@@ -1,5 +1,4 @@
 import { CompiledQuery, type ControlledTransaction, type Dialect, Kysely } from 'kysely';
-import { readFile } from 'node:fs/promises';
 import {
   type AnyEntity,
   Connection,
@@ -248,6 +247,7 @@ export abstract class AbstractSqlConnection extends Connection {
    */
   async loadFile(path: string): Promise<void> {
     await this.ensureConnection();
+    const { readFile } = globalThis.process.getBuiltinModule('node:fs/promises');
     const buf = await readFile(path);
 
     try {

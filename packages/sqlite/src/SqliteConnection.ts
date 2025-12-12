@@ -1,7 +1,6 @@
 import { BaseSqliteConnection, type Dictionary } from '@mikro-orm/knex';
 import { type Dialect, SqliteDialect } from 'kysely';
 import Database from 'better-sqlite3';
-import { readFile } from 'node:fs/promises';
 
 export class SqliteConnection extends BaseSqliteConnection {
 
@@ -18,6 +17,7 @@ export class SqliteConnection extends BaseSqliteConnection {
 
   override async loadFile(path: string): Promise<void> {
     await this.ensureConnection();
+    const { readFile } = globalThis.process.getBuiltinModule('node:fs/promises');
     this.database.exec((await readFile(path)).toString());
   }
 

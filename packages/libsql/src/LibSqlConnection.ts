@@ -1,5 +1,4 @@
 import { BaseSqliteConnection, type Dictionary } from '@mikro-orm/knex';
-import { readFile } from 'node:fs/promises';
 import Database, { type Options } from 'libsql';
 import { LibSqlDialect } from './LibSqlDialect.js';
 
@@ -22,6 +21,7 @@ export class LibSqlConnection extends BaseSqliteConnection {
   /* v8 ignore next */
   override async loadFile(path: string): Promise<void> {
     await this.ensureConnection();
+    const { readFile } = globalThis.process.getBuiltinModule('node:fs/promises');
     this.database.exec((await readFile(path)).toString());
   }
 
