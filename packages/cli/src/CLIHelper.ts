@@ -1,5 +1,6 @@
 import { extname, join } from 'node:path';
-import { pathToFileURL } from 'node:url';
+import { createRequire } from 'node:module';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import yargs from 'yargs';
 import {
   colors,
@@ -31,6 +32,7 @@ export class CLIHelper {
     D extends IDatabaseDriver = IDatabaseDriver,
     EM extends D[typeof EntityManagerType] & EntityManager<D> = D[typeof EntityManagerType] & EntityManager<D>,
   >(contextName?: string, paths?: string[], options: Partial<Options<D>> = {}): Promise<Configuration<D, EM>> {
+    this.commonJSCompat(options);
     paths ??= await this.getConfigPaths();
     const deps = fs.getORMPackages();
 
@@ -106,6 +108,18 @@ export class CLIHelper {
     await lookupExtensions(tmp);
 
     return new Configuration(Utils.mergeConfig({}, esmConfigOptions, tmp, options, env));
+  }
+
+  static commonJSCompat(options: Partial<Options>): void {
+    if (this.isESM()) {
+      return;
+    }
+
+    /* v8 ignore next */
+    options.dynamicImportProvider ??= id => {
+      id = fileURLToPath(id);
+      return createRequire(process.cwd())(id);
+    };
   }
 
   static async getORM<D extends IDatabaseDriver = IDatabaseDriver>(contextName?: string, configPaths?: string[], opts: Partial<Options<D>> = {}): Promise<MikroORM<D>> {
@@ -322,10 +336,10 @@ export class CLIHelper {
 
     const explicitLoader = tsLoader ?? process.env.MIKRO_ORM_CLI_TS_LOADER ?? 'auto';
     const loaders = {
-      swc: { module: '@swc-node/register/esm-register' },
-      tsx: { module: 'tsx/esm/api', cb: (tsx: any) => tsx.register({ tsconfig: configPath }) },
-      jiti: { module: 'jiti/register', cb: () => Utils.dynamicImportProvider = id => import(id).then(mod => mod?.default ?? mod) },
-      tsimp: { module: 'tsimp/import' },
+      swc: { esm: '@swc-node/register/esm-register', cjs: '@swc-node/register' },
+      tsx: { esm: 'tsx/esm/api', cjs: 'tsx/cjs/api', cb: (tsx: any) => tsx.register({ tsconfig: configPath }) },
+      jiti: { esm: 'jiti/register', cjs: 'jiti/register', cb: () => Utils.dynamicImportProvider = id => import(id).then(mod => mod?.default ?? mod) },
+      tsimp: { esm: 'tsimp/import', cjs: 'tsimp/import' },
     } as const;
 
     for (const loader of Utils.keys(loaders)) {
@@ -333,7 +347,10 @@ export class CLIHelper {
         continue;
       }
 
-      const { module, cb } = loaders[loader] as { module: string; cb?: (mod: any) => void };
+      const { esm, cjs, cb } = loaders[loader] as { esm: string; cjs: string; cb?: (mod: any) => void };
+      const isEsm = this.isESM();
+      /* v8 ignore next */
+      const module = isEsm ? esm : cjs;
       const mod = await Utils.tryImport({ module });
 
       if (mod) {
