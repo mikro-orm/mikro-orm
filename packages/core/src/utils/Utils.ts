@@ -174,6 +174,7 @@ export function parseJsonSafe<T = unknown>(value: unknown): T {
 export class Utils {
 
   static readonly PK_SEPARATOR = '~~~';
+  static readonly #ORM_VERSION = '[[MIKRO_ORM_VERSION]]';
 
   /* v8 ignore next */
   static dynamicImportProvider = (id: string) => import(id);
@@ -931,7 +932,7 @@ export class Utils {
   }
 
   static getORMVersion(): string {
-    return '[[MIKRO_ORM_VERSION]]';
+    return this.#ORM_VERSION;
   }
 
   static createFunction(context: Map<string, any>, code: string) {

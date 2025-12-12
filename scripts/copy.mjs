@@ -147,7 +147,7 @@ copy('package.json', process.cwd(), target);
 
 if (resolve(process.cwd()) === resolve(root, 'packages/core')) {
   const version = options.canary ? await getNextVersion() : require(pkgPath).version;
-  rewrite(resolve(target, 'utils/Utils.js'), pkg => pkg.replace('[[MIKRO_ORM_VERSION]]', version));
+  rewrite(resolve(target, 'utils/Utils.js'), pkg => pkg.replace(/#ORM_VERSION = '.*'/, `#ORM_VERSION = '${version}'`));
   rewrite(resolve(target, 'MikroORM.js'), pkg => pkg
       // do not use string literals, so bundlers won't try to resolve the extensions automatically
       .replace(`import('@mikro-orm/seeder')`, `import((() => '@mikro-orm/seeder')())`)
