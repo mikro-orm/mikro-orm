@@ -8,7 +8,7 @@ import {
   DatabaseTable,
 } from '@mikro-orm/knex';
 import type { MigrationParams, UmzugStorage } from 'umzug';
-import * as path from 'node:path';
+import { parse } from 'node:path';
 import type { MigrationRow } from './typings.js';
 
 export class MigrationStorage implements UmzugStorage {
@@ -113,7 +113,7 @@ export class MigrationStorage implements UmzugStorage {
    * @internal
    */
   getMigrationName(name: string) {
-    const parsedName = path.parse(name);
+    const parsedName = parse(name);
 
     if (['.js', '.ts'].includes(parsedName.ext)) {
       // strip extension
