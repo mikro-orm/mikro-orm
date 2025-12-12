@@ -103,6 +103,7 @@ export class CLIHelper {
     }
 
     const esmConfigOptions = this.isESM() ? { entityGenerator: { esmImport: true } } : {};
+    await lookupExtensions(tmp);
 
     return new Configuration(Utils.mergeConfig({}, esmConfigOptions, tmp, options, env));
   }
@@ -321,10 +322,10 @@ export class CLIHelper {
 
     const explicitLoader = tsLoader ?? process.env.MIKRO_ORM_CLI_TS_LOADER ?? 'auto';
     const loaders = {
-      swc: { esm: '@swc-node/register/esm-register', cjs: '@swc-node/register' },
-      tsx: { esm: 'tsx/esm/api', cjs: 'tsx/cjs/api', cb: (tsx: any) => tsx.register({ tsconfig: configPath }) },
-      jiti: { esm: 'jiti/register', cjs: 'jiti/register', cb: () => Utils.dynamicImportProvider = id => import(id).then(mod => mod?.default ?? mod) },
-      tsimp: { esm: 'tsimp/import', cjs: 'tsimp/import' },
+      swc: { module: '@swc-node/register/esm-register' },
+      tsx: { module: 'tsx/esm/api', cb: (tsx: any) => tsx.register({ tsconfig: configPath }) },
+      jiti: { module: 'jiti/register', cb: () => Utils.dynamicImportProvider = id => import(id).then(mod => mod?.default ?? mod) },
+      tsimp: { module: 'tsimp/import' },
     } as const;
 
     for (const loader of Utils.keys(loaders)) {
@@ -332,10 +333,7 @@ export class CLIHelper {
         continue;
       }
 
-      const { esm, cjs, cb } = loaders[loader] as { esm: string; cjs: string; cb?: (mod: any) => void };
-      const isEsm = this.isESM();
-      /* v8 ignore next */
-      const module = isEsm ? esm : cjs;
+      const { module, cb } = loaders[loader] as { module: string; cb?: (mod: any) => void };
       const mod = await Utils.tryImport({ module });
 
       if (mod) {
