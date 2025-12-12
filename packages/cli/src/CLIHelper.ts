@@ -116,7 +116,7 @@ export class CLIHelper {
     }
 
     /* v8 ignore next */
-    options.dynamicImportProvider ??= id => {
+    Utils.dynamicImportProvider = options.dynamicImportProvider ??= id => {
       id = fileURLToPath(id);
       return createRequire(process.cwd())(id);
     };
