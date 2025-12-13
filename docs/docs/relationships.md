@@ -40,7 +40,16 @@ There are multiple ways how to define the relationship, all of the following is 
 export class Book {
 
   @ManyToOne() // plain decorator is enough, type will be sniffed via reflection!
-  author!: Author;
+  author1!: Author;
+
+  @ManyToOne(() => Author) // you can specify type manually as a callback
+  author2!: Author;
+
+  @ManyToOne('Author') // or as a string
+  author3!: Author;
+
+  @ManyToOne({ entity: () => Author }) // or use options object
+  author4!: Author;
 
 }
 ```
@@ -121,7 +130,16 @@ Again, all of the following is equivalent:
 export class Author {
 
   @OneToMany(() => Book, book => book.author)
-  books = new Collection<Book>(this);
+  books1 = new Collection<Book>(this);
+
+  @OneToMany('Book', 'author')
+  books2 = new Collection<Book>(this);
+
+  @OneToMany({ mappedBy: book => book.author }) // referenced entity type can be sniffed too
+  books3 = new Collection<Book>(this);
+
+  @OneToMany({ entity: () => Book, mappedBy: 'author', orphanRemoval: true })
+  books4 = new Collection<Book>(this);
 
 }
 ```
@@ -179,7 +197,7 @@ export const Author = new EntitySchema<IAuthor>({
 
 As you can see, OneToMany is the inverse side of ManyToOne (which is the owning side). More about how collections work can be found on [collections page](./collections.md).
 
-You can also specify how operations on given entity should [cascade](./cascading.md) to the referred entities. There is also more aggressive remove mode called [Orphan Removal](./cascading.md#orphan-removal).
+You can also specify how operations on given entity should [cascade](./cascading.md) to the referred entities. There is also more aggressive remove mode called [Orphan Removal](./cascading.md#orphan-removal) (`books4` example).
 
 ## OneToOne
 
@@ -402,12 +420,22 @@ Here are examples of how you can define ManyToMany relationship:
 @Entity()
 export class Book {
 
+  // when none of `owner/inversedBy/mappedBy` is provided, it will be considered owning side
   @ManyToMany()
-  tags = new Collection<BookTag>(this);
+  tags1 = new Collection<BookTag>(this);
+
+  @ManyToMany(() => BookTag, 'books', { owner: true })
+  tags2 = new Collection<BookTag>(this);
+
+  @ManyToMany(() => BookTag, 'books', { owner: true })
+  tags3 = new Collection<BookTag>(this);
+
+  @ManyToMany(() => BookTag, 'books', { owner: true })
+  tags4 = new Collection<BookTag>(this);
 
   // to define uni-directional many to many
   @ManyToMany(() => Author)
-  friends = new Collection<Author>(this);
+  friends: Collection<Author> = new Collection<Author>(this);
 
 }
 ```
