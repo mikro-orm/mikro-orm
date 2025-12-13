@@ -1,4 +1,4 @@
-export * from '@mikro-orm/knex';
+export * from '@mikro-orm/sql';
 export * from './PostgreSqlConnection.js';
 export * from './PostgreSqlDriver.js';
 export * from './PostgreSqlPlatform.js';

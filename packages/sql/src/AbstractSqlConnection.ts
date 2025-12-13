@@ -245,7 +245,7 @@ export abstract class AbstractSqlConnection extends Connection {
   /**
    * Execute raw SQL queries from file
    */
-  async loadFile(path: string): Promise<void> {
+  override async loadFile(path: string): Promise<void> {
     await this.ensureConnection();
     const { readFile } = globalThis.process.getBuiltinModule('node:fs/promises');
     const buf = await readFile(path);

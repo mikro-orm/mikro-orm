@@ -16,7 +16,7 @@ import {
   DatabaseSchema,
   type EntityManager,
   type SchemaHelper,
-} from '@mikro-orm/knex';
+} from '@mikro-orm/sql';
 import { fs } from '@mikro-orm/core/fs-utils';
 import { dirname, join } from 'node:path';
 import { writeFile } from 'node:fs/promises';

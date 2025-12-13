@@ -14,7 +14,7 @@ import {
   Type,
   Utils,
 } from '@mikro-orm/core';
-import { AbstractSqlPlatform, type IndexDef, PostgreSqlNativeQueryBuilder } from '@mikro-orm/knex';
+import { AbstractSqlPlatform, type IndexDef, PostgreSqlNativeQueryBuilder } from '@mikro-orm/sql';
 import { PostgreSqlSchemaHelper } from './PostgreSqlSchemaHelper.js';
 import { PostgreSqlExceptionConverter } from './PostgreSqlExceptionConverter.js';
 import { FullTextType } from './types/FullTextType.js';

@@ -1,6 +1,6 @@
 // @ts-ignore
 import SqlString from 'sqlstring-sqlite';
-import { BaseSqlitePlatform } from '@mikro-orm/knex';
+import { BaseSqlitePlatform } from '@mikro-orm/sql';
 
 export class SqlitePlatform extends BaseSqlitePlatform {
 

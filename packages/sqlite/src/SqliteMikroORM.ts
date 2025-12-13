@@ -9,7 +9,7 @@ import {
   type EntityManager,
   type EntityManagerType,
 } from '@mikro-orm/core';
-import type { SqlEntityManager } from '@mikro-orm/knex';
+import type { SqlEntityManager } from '@mikro-orm/sql';
 import { SqliteDriver } from './SqliteDriver.js';
 
 export type SqliteOptions<

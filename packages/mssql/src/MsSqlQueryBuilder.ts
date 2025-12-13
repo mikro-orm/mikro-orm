@@ -1,5 +1,5 @@
 import { type AnyEntity, QueryFlag, type RequiredEntityData, Utils } from '@mikro-orm/core';
-import { type InsertQueryBuilder, QueryBuilder } from '@mikro-orm/knex';
+import { type InsertQueryBuilder, QueryBuilder } from '@mikro-orm/sql';
 
 export class MsSqlQueryBuilder<
   Entity extends object = AnyEntity,

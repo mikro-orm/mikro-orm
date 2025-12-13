@@ -1,6 +1,6 @@
 import { existsSync } from 'node:fs';
 import { rm } from 'node:fs/promises';
-import { DatabaseTable } from '@mikro-orm/knex';
+import { DatabaseTable } from '@mikro-orm/sql';
 import { initORMPostgreSql } from '../../bootstrap.js';
 
 describe('EntityGenerator', () => {

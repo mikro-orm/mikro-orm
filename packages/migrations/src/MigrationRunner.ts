@@ -1,5 +1,5 @@
 import { type Configuration, type MigrationsOptions, type Transaction, Utils } from '@mikro-orm/core';
-import type { AbstractSqlConnection, AbstractSqlDriver, SchemaHelper } from '@mikro-orm/knex';
+import type { AbstractSqlConnection, AbstractSqlDriver, SchemaHelper } from '@mikro-orm/sql';
 import type { Migration } from './Migration.js';
 
 export class MigrationRunner {

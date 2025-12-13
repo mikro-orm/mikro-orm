@@ -10,7 +10,7 @@ import {
   type IndexDef,
   type Table,
   type TableDifference,
-} from '@mikro-orm/knex';
+} from '@mikro-orm/sql';
 
 export class PostgreSqlSchemaHelper extends SchemaHelper {
 

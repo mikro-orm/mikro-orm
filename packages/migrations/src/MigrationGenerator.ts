@@ -5,7 +5,7 @@ import {
   type NamingStrategy,
   Utils,
 } from '@mikro-orm/core';
-import type { AbstractSqlDriver } from '@mikro-orm/knex';
+import type { AbstractSqlDriver } from '@mikro-orm/sql';
 import { fs } from '@mikro-orm/core/fs-utils';
 import { writeFile } from 'node:fs/promises';
 

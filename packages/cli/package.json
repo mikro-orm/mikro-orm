@@ -54,13 +54,7 @@
   },
   "dependencies": {
     "@mikro-orm/core": "6.6.2",
-    "@mikro-orm/knex": "6.6.2",
-    "mikro-orm": "6.6.1",
+    "mikro-orm": "6.6.2",
     "yargs": "17.7.2"
-  },
-  "devDependencies": {
-    "@mikro-orm/entity-generator": "^6.6.2",
-    "@mikro-orm/migrations": "^6.6.2",
-    "@mikro-orm/seeder": "^6.6.2"
   }
 }

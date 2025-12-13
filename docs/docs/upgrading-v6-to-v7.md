@@ -44,6 +44,8 @@ The `ReflectMetadataProvider` has been moved to the `@mikro-orm/decorators/legac
 
 ## `knex` replaced with `kysely` as query runner
 
+- `@mikro-orm/knex` package is renamed to `@mikro-orm/sql`
+- `@mikro-orm/knex-compat` package is introduced, with a `raw` helper version which supports knex queries
 - `@mikro-orm/better-sqlite` driver is removed
 - `@mikro-orm/sqlite` driver uses `better-sqlite3` internally
 - `@mikro-orm/mariadb` driver uses `mysql2` internally (but still comes with MariaDB specific JSON and schema handling)

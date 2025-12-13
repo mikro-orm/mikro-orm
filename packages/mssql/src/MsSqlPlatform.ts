@@ -15,7 +15,7 @@ import {
   raw,
   RawQueryFragment,
   Type,
-} from '@mikro-orm/knex';
+} from '@mikro-orm/sql';
 // @ts-expect-error no types available
 import SqlString from 'tsqlstring';
 import { MsSqlSchemaHelper } from './MsSqlSchemaHelper.js';

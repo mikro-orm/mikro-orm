@@ -2,7 +2,7 @@ import { Pool, type PoolConfig, TypeOverrides } from 'pg';
 import Cursor from 'pg-cursor';
 import { PostgresDialect } from 'kysely';
 import array from 'postgres-array';
-import { AbstractSqlConnection, Utils } from '@mikro-orm/knex';
+import { AbstractSqlConnection, Utils } from '@mikro-orm/sql';
 
 export class PostgreSqlConnection extends AbstractSqlConnection {
 

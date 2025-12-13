@@ -1,6 +1,6 @@
 import { type ControlledTransaction, MysqlDialect } from 'kysely';
 import { createPool, type PoolOptions } from 'mysql2';
-import { type ConnectionConfig, Utils, AbstractSqlConnection, type TransactionEventBroadcaster } from '@mikro-orm/knex';
+import { type ConnectionConfig, Utils, AbstractSqlConnection, type TransactionEventBroadcaster } from '@mikro-orm/sql';
 
 export class MySqlConnection extends AbstractSqlConnection {
 

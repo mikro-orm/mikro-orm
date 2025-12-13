@@ -1,4 +1,4 @@
-import { type AnyString, type Dictionary, type EntityKey, type RawQueryFragment, type QueryBuilder, raw as raw_, Utils } from '@mikro-orm/knex';
+import { type AnyString, type Dictionary, type EntityKey, type RawQueryFragment, type QueryBuilder, raw as raw_, Utils } from '@mikro-orm/sql';
 import type { SelectQueryBuilder } from 'kysely';
 
 /**

@@ -1,6 +1,6 @@
 /**
  * @packageDocumentation
- * @module knex
+ * @module sql
  */
 export { Kysely } from 'kysely';
 export * from '@mikro-orm/core';

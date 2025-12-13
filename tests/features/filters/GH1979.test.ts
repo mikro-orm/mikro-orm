@@ -1,6 +1,6 @@
 import { MikroORM } from '@mikro-orm/core';
 import { Entity, Filter, Index, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
-import type { AbstractSqlDriver, EntityManager } from '@mikro-orm/knex';
+import type { AbstractSqlDriver, EntityManager } from '@mikro-orm/sql';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity({ discriminatorColumn: 'type', abstract: true })

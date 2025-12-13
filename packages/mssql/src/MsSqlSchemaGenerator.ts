@@ -1,4 +1,4 @@
-import { type ClearDatabaseOptions, type DropSchemaOptions, type MikroORM, SchemaGenerator } from '@mikro-orm/knex';
+import { type ClearDatabaseOptions, type DropSchemaOptions, type MikroORM, SchemaGenerator } from '@mikro-orm/sql';
 import type { MsSqlDriver } from './MsSqlDriver.js';
 
 export class MsSqlSchemaGenerator extends SchemaGenerator {

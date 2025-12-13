@@ -1,8 +1,8 @@
 import 'reflect-metadata';
 import { LoadStrategy, MikroORM, Options, SimpleLogger, Utils } from '@mikro-orm/core';
 import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
-import { AbstractSqlDriver } from '@mikro-orm/knex';
-import { SqlEntityRepository } from '@mikro-orm/knex';
+import { AbstractSqlDriver } from '@mikro-orm/sql';
+import { SqlEntityRepository } from '@mikro-orm/sql';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 import { MongoDriver } from '@mikro-orm/mongodb';
 import { Migrator } from '@mikro-orm/migrations';
