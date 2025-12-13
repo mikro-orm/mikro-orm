@@ -195,7 +195,7 @@ describe('Utils', () => {
     const meta = orm.getMetadata(Author);
     expect(Utils.extractPK('abcd')).toBe('abcd');
     expect(Utils.extractPK(123)).toBe(123);
-    const id = new ObjectId(1);
+    const id = new ObjectId('111111111111111111111111');
     expect(Utils.extractPK(id)).toBe(id);
     expect(Utils.extractPK({ id }, meta)).toBe(id);
     expect(Utils.extractPK({ _id: id }, meta)).toBe(id);
