@@ -1380,11 +1380,7 @@ __metadata:
   resolution: "@mikro-orm/cli@workspace:packages/cli"
   dependencies:
     "@mikro-orm/core": "npm:6.6.2"
-    "@mikro-orm/entity-generator": "npm:^6.6.2"
-    "@mikro-orm/knex": "npm:6.6.2"
-    "@mikro-orm/migrations": "npm:^6.6.2"
-    "@mikro-orm/seeder": "npm:^6.6.2"
-    mikro-orm: "npm:6.6.1"
+    mikro-orm: "npm:6.6.2"
     yargs: "npm:17.7.2"
   bin:
     mikro-orm: ./dist/cli
@@ -1416,26 +1412,25 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@mikro-orm/entity-generator@npm:^6.6.2, @mikro-orm/entity-generator@workspace:packages/entity-generator":
+"@mikro-orm/entity-generator@workspace:packages/entity-generator":
   version: 0.0.0-use.local
   resolution: "@mikro-orm/entity-generator@workspace:packages/entity-generator"
   dependencies:
     "@mikro-orm/core": "npm:^6.6.2"
-    "@mikro-orm/knex": "npm:6.6.2"
+    "@mikro-orm/sql": "npm:6.6.2"
   peerDependencies:
     "@mikro-orm/core": ^6.0.0
   languageName: unknown
   linkType: soft
 
-"@mikro-orm/knex@npm:6.6.2, @mikro-orm/knex@workspace:packages/knex":
+"@mikro-orm/knex-compat@workspace:packages/knex-compat":
   version: 0.0.0-use.local
-  resolution: "@mikro-orm/knex@workspace:packages/knex"
+  resolution: "@mikro-orm/knex-compat@workspace:packages/knex-compat"
   dependencies:
-    "@mikro-orm/core": "npm:^6.6.2"
-    kysely: "npm:0.28.8"
-    sqlstring: "npm:2.3.3"
+    "@mikro-orm/sql": "npm:^6.6.2"
   peerDependencies:
-    "@mikro-orm/core": ^6.0.0
+    "@mikro-orm/sql": ^6.0.0
+    knex: ^3.0.0
   languageName: unknown
   linkType: soft
 
@@ -1444,7 +1439,7 @@ __metadata:
   resolution: "@mikro-orm/libsql@workspace:packages/libsql"
   dependencies:
     "@mikro-orm/core": "npm:^6.6.2"
-    "@mikro-orm/knex": "npm:6.6.2"
+    "@mikro-orm/sql": "npm:6.6.2"
     kysely: "npm:0.28.8"
     libsql: "npm:0.5.22"
     sqlstring-sqlite: "npm:0.1.1"
@@ -1480,12 +1475,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@mikro-orm/migrations@npm:^6.6.2, @mikro-orm/migrations@workspace:packages/migrations":
+"@mikro-orm/migrations@workspace:packages/migrations":
   version: 0.0.0-use.local
   resolution: "@mikro-orm/migrations@workspace:packages/migrations"
   dependencies:
     "@mikro-orm/core": "npm:^6.6.2"
-    "@mikro-orm/knex": "npm:6.6.2"
+    "@mikro-orm/sql": "npm:6.6.2"
     umzug: "npm:3.8.2"
   peerDependencies:
     "@mikro-orm/core": ^6.0.0
@@ -1517,7 +1512,7 @@ __metadata:
   resolution: "@mikro-orm/mssql@workspace:packages/mssql"
   dependencies:
     "@mikro-orm/core": "npm:^6.6.2"
-    "@mikro-orm/knex": "npm:6.6.2"
+    "@mikro-orm/sql": "npm:6.6.2"
     kysely: "npm:0.28.8"
     tarn: "npm:3.0.2"
     tedious: "npm:19.1.3"
@@ -1533,7 +1528,7 @@ __metadata:
   resolution: "@mikro-orm/mysql@workspace:packages/mysql"
   dependencies:
     "@mikro-orm/core": "npm:^6.6.2"
-    "@mikro-orm/knex": "npm:6.6.2"
+    "@mikro-orm/sql": "npm:6.6.2"
     kysely: "npm:0.28.8"
     mysql2: "npm:3.15.3"
   peerDependencies:
@@ -1547,7 +1542,7 @@ __metadata:
   resolution: "@mikro-orm/postgresql@workspace:packages/postgresql"
   dependencies:
     "@mikro-orm/core": "npm:^6.6.2"
-    "@mikro-orm/knex": "npm:6.6.2"
+    "@mikro-orm/sql": "npm:6.6.2"
     kysely: "npm:0.28.8"
     pg: "npm:8.16.3"
     pg-cursor: "npm:2.15.3"
@@ -1604,6 +1599,7 @@ __metadata:
     guid-typescript: "npm:1.0.9"
     husky: "npm:9.1.7"
     jiti: "npm:2.6.1"
+    knex: "npm:3.1.0"
     lerna: "npm:9.0.3"
     lint-staged: "npm:16.2.7"
     mongodb-memory-server-core: "npm:10.4.1"
@@ -1619,7 +1615,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@mikro-orm/seeder@npm:^6.6.2, @mikro-orm/seeder@workspace:packages/seeder":
+"@mikro-orm/seeder@workspace:packages/seeder":
   version: 0.0.0-use.local
   resolution: "@mikro-orm/seeder@workspace:packages/seeder"
   dependencies:
@@ -1639,12 +1635,24 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@mikro-orm/sql@npm:6.6.2, @mikro-orm/sql@npm:^6.6.2, @mikro-orm/sql@workspace:packages/sql":
+  version: 0.0.0-use.local
+  resolution: "@mikro-orm/sql@workspace:packages/sql"
+  dependencies:
+    "@mikro-orm/core": "npm:^6.6.2"
+    kysely: "npm:0.28.8"
+    sqlstring: "npm:2.3.3"
+  peerDependencies:
+    "@mikro-orm/core": ^6.0.0
+  languageName: unknown
+  linkType: soft
+
 "@mikro-orm/sqlite@workspace:packages/sqlite":
   version: 0.0.0-use.local
   resolution: "@mikro-orm/sqlite@workspace:packages/sqlite"
   dependencies:
     "@mikro-orm/core": "npm:^6.6.2"
-    "@mikro-orm/knex": "npm:6.6.2"
+    "@mikro-orm/sql": "npm:6.6.2"
     better-sqlite3: "npm:11.8.1"
     kysely: "npm:0.28.8"
     sqlstring-sqlite: "npm:0.1.1"
@@ -4378,6 +4386,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"colorette@npm:2.0.19":
+  version: 2.0.19
+  resolution: "colorette@npm:2.0.19"
+  checksum: 10/6e2606435cd30e1cae8fc6601b024fdd809e20515c57ce1e588d0518403cff0c98abf807912ba543645a9188af36763b69b67e353d47397f24a1c961aba300bd
+  languageName: node
+  linkType: hard
+
 "colorette@npm:^2.0.20":
   version: 2.0.20
   resolution: "colorette@npm:2.0.20"
@@ -4401,6 +4416,13 @@ __metadata:
   dependencies:
     delayed-stream: "npm:~1.0.0"
   checksum: 10/2e969e637d05d09fa50b02d74c83a1186f6914aae89e6653b62595cc75a221464f884f55f231b8f4df7a49537fba60bdc0427acd2bf324c09a1dbb84837e36e4
+  languageName: node
+  linkType: hard
+
+"commander@npm:^10.0.0":
+  version: 10.0.1
+  resolution: "commander@npm:10.0.1"
+  checksum: 10/8799faa84a30da985802e661cc9856adfaee324d4b138413013ef7f087e8d7924b144c30a1f1405475f0909f467665cd9e1ce13270a2f41b141dab0b7a58f3fb
   languageName: node
   linkType: hard
 
@@ -4720,6 +4742,18 @@ __metadata:
     supports-color:
       optional: true
   checksum: 10/9ada3434ea2993800bd9a1e320bd4aa7af69659fb51cca685d390949434bc0a8873c21ed7c9b852af6f2455a55c6d050aa3937d52b3c69f796dab666f762acad
+  languageName: node
+  linkType: hard
+
+"debug@npm:4.3.4":
+  version: 4.3.4
+  resolution: "debug@npm:4.3.4"
+  dependencies:
+    ms: "npm:2.1.2"
+  peerDependenciesMeta:
+    supports-color:
+      optional: true
+  checksum: 10/0073c3bcbd9cb7d71dd5f6b55be8701af42df3e56e911186dfa46fac3a5b9eb7ce7f377dd1d3be6db8977221f8eb333d945216f645cf56f6b688cd484837d255
   languageName: node
   linkType: hard
 
@@ -5468,6 +5502,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"esm@npm:^3.2.25":
+  version: 3.2.25
+  resolution: "esm@npm:3.2.25"
+  checksum: 10/ee96b8202b76dd1841c55e8a066608d6f0ae0333012be5c77829ccadcd21114283b4d7bf9ac1b8c09853258829c7843e9c6d7e0594acbc5e813cb37d82728d4b
+  languageName: node
+  linkType: hard
+
 "espree@npm:^10.0.1, espree@npm:^10.4.0":
   version: 10.4.0
   resolution: "espree@npm:10.4.0"
@@ -6007,6 +6048,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"get-package-type@npm:^0.1.0":
+  version: 0.1.0
+  resolution: "get-package-type@npm:0.1.0"
+  checksum: 10/bba0811116d11e56d702682ddef7c73ba3481f114590e705fc549f4d868972263896af313c57a25c076e3c0d567e11d919a64ba1b30c879be985fc9d44f96148
+  languageName: node
+  linkType: hard
+
 "get-pkg-repo@npm:^4.2.1":
   version: 4.2.1
   resolution: "get-pkg-repo@npm:4.2.1"
@@ -6069,6 +6117,13 @@ __metadata:
   dependencies:
     resolve-pkg-maps: "npm:^1.0.0"
   checksum: 10/3603c6da30e312636e4c20461e779114c9126601d1eca70ee4e36e3e3c00e3c21892d2d920027333afa2cc9e20998a436b14abe03a53cde40742581cb0e9ceb2
+  languageName: node
+  linkType: hard
+
+"getopts@npm:2.3.0":
+  version: 2.3.0
+  resolution: "getopts@npm:2.3.0"
+  checksum: 10/64c7494d05d6b6205f3351336d9c000265e3f84975ab1bb2b500ff9488eb506bad1d04fa8d2687fd7d81379846e9a500409f8e4b9e20dc604c785abd9b5cf7fd
   languageName: node
   linkType: hard
 
@@ -6654,6 +6709,13 @@ __metadata:
     hasown: "npm:^2.0.2"
     side-channel: "npm:^1.1.0"
   checksum: 10/1d5219273a3dab61b165eddf358815eefc463207db33c20fcfca54717da02e3f492003757721f972fd0bf21e4b426cab389c5427b99ceea4b8b670dc88ee6d4a
+  languageName: node
+  linkType: hard
+
+"interpret@npm:^2.2.0":
+  version: 2.2.0
+  resolution: "interpret@npm:2.2.0"
+  checksum: 10/a62d4de5c1f8ab1fd0ccc8a1a8cca8dc31e14928b70364f0787576fe4639c0c463bd79cfe58c9bd9f54db9b7e53d3e646e68fb7627c6b65e3b0e3893156c5126
   languageName: node
   linkType: hard
 
@@ -7455,6 +7517,45 @@ __metadata:
   languageName: node
   linkType: hard
 
+"knex@npm:3.1.0":
+  version: 3.1.0
+  resolution: "knex@npm:3.1.0"
+  dependencies:
+    colorette: "npm:2.0.19"
+    commander: "npm:^10.0.0"
+    debug: "npm:4.3.4"
+    escalade: "npm:^3.1.1"
+    esm: "npm:^3.2.25"
+    get-package-type: "npm:^0.1.0"
+    getopts: "npm:2.3.0"
+    interpret: "npm:^2.2.0"
+    lodash: "npm:^4.17.21"
+    pg-connection-string: "npm:2.6.2"
+    rechoir: "npm:^0.8.0"
+    resolve-from: "npm:^5.0.0"
+    tarn: "npm:^3.0.2"
+    tildify: "npm:2.0.0"
+  peerDependenciesMeta:
+    better-sqlite3:
+      optional: true
+    mysql:
+      optional: true
+    mysql2:
+      optional: true
+    pg:
+      optional: true
+    pg-native:
+      optional: true
+    sqlite3:
+      optional: true
+    tedious:
+      optional: true
+  bin:
+    knex: bin/cli.js
+  checksum: 10/12eb978ebec9944d6d0225d33d31d44feb54046b3a02f9f14dfa33a4e665a54d784290991b17a68fd8141a14a3336b325c7706af35557f845dae9e500f3c8aae
+  languageName: node
+  linkType: hard
+
 "kysely@npm:0.28.8":
   version: 0.28.8
   resolution: "kysely@npm:0.28.8"
@@ -7849,6 +7950,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"lodash@npm:^4.17.21":
+  version: 4.17.21
+  resolution: "lodash@npm:4.17.21"
+  checksum: 10/c08619c038846ea6ac754abd6dd29d2568aa705feb69339e836dfa8d8b09abbb2f859371e86863eda41848221f9af43714491467b5b0299122431e202bb0c532
+  languageName: node
+  linkType: hard
+
 "log-symbols@npm:^4.0.0":
   version: 4.1.0
   resolution: "log-symbols@npm:4.1.0"
@@ -8087,14 +8195,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mikro-orm@npm:6.6.1":
-  version: 6.6.1
-  resolution: "mikro-orm@npm:6.6.1"
-  checksum: 10/87537c90ef17fbeb5cb31c26031fb6e0ac4b8991fa4fadfd453c7ed1da37bae0bc1352daba21c907819be6dde05429978a3972d0886ae7ff8efee998bb992fdc
-  languageName: node
-  linkType: hard
-
-"mikro-orm@workspace:packages/mikro-orm":
+"mikro-orm@npm:6.6.2, mikro-orm@workspace:packages/mikro-orm":
   version: 0.0.0-use.local
   resolution: "mikro-orm@workspace:packages/mikro-orm"
   languageName: unknown
@@ -8427,6 +8528,13 @@ __metadata:
     socks:
       optional: true
   checksum: 10/2718cdd4433bc3847f01a2ffae3a7e7ea8499035be4fccaf76278cbe3f915f2dd6c53135be0e3cc2cdd8e27a0b957da49e337d9b96b53e6287ec8971cea96b4b
+  languageName: node
+  linkType: hard
+
+"ms@npm:2.1.2":
+  version: 2.1.2
+  resolution: "ms@npm:2.1.2"
+  checksum: 10/673cdb2c3133eb050c745908d8ce632ed2c02d85640e2edb3ace856a2266a813b30c613569bf3354fdf4ea7d1a1494add3bfa95e2713baa27d0c2c71fc44f58f
   languageName: node
   linkType: hard
 
@@ -9483,6 +9591,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"pg-connection-string@npm:2.6.2":
+  version: 2.6.2
+  resolution: "pg-connection-string@npm:2.6.2"
+  checksum: 10/22265882c3b6f2320785378d0760b051294a684989163d5a1cde4009e64e84448d7bf67d9a7b9e7f69440c3ee9e2212f9aa10dd17ad6773f6143c6020cebbcb5
+  languageName: node
+  linkType: hard
+
 "pg-connection-string@npm:^2.9.1":
   version: 2.9.1
   resolution: "pg-connection-string@npm:2.9.1"
@@ -10022,6 +10137,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"rechoir@npm:^0.8.0":
+  version: 0.8.0
+  resolution: "rechoir@npm:0.8.0"
+  dependencies:
+    resolve: "npm:^1.20.0"
+  checksum: 10/ad3caed8afdefbc33fbc30e6d22b86c35b3d51c2005546f4e79bcc03c074df804b3640ad18945e6bef9ed12caedc035655ec1082f64a5e94c849ff939dc0a788
+  languageName: node
+  linkType: hard
+
 "redent@npm:^3.0.0":
   version: 3.0.0
   resolution: "redent@npm:3.0.0"
@@ -10140,7 +10264,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"resolve@npm:^1.10.0, resolve@npm:^1.22.4, resolve@npm:~1.22.1":
+"resolve@npm:^1.10.0, resolve@npm:^1.20.0, resolve@npm:^1.22.4, resolve@npm:~1.22.1":
   version: 1.22.11
   resolution: "resolve@npm:1.22.11"
   dependencies:
@@ -10153,7 +10277,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"resolve@patch:resolve@npm%3A^1.10.0#optional!builtin<compat/resolve>, resolve@patch:resolve@npm%3A^1.22.4#optional!builtin<compat/resolve>, resolve@patch:resolve@npm%3A~1.22.1#optional!builtin<compat/resolve>":
+"resolve@patch:resolve@npm%3A^1.10.0#optional!builtin<compat/resolve>, resolve@patch:resolve@npm%3A^1.20.0#optional!builtin<compat/resolve>, resolve@patch:resolve@npm%3A^1.22.4#optional!builtin<compat/resolve>, resolve@patch:resolve@npm%3A~1.22.1#optional!builtin<compat/resolve>":
   version: 1.22.11
   resolution: "resolve@patch:resolve@npm%3A1.22.11#optional!builtin<compat/resolve>::version=1.22.11&hash=c3c19d"
   dependencies:
@@ -11132,7 +11256,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tarn@npm:3.0.2":
+"tarn@npm:3.0.2, tarn@npm:^3.0.2":
   version: 3.0.2
   resolution: "tarn@npm:3.0.2"
   checksum: 10/7476ca83a39e0e4b1d951725b6c42071f16fdd65c456936c305500af00731861de0a20e41e59b54cf410b979722816db43acd137a5a580c3c8e48a73f389b523
@@ -11210,6 +11334,13 @@ __metadata:
   version: 2.3.8
   resolution: "through@npm:2.3.8"
   checksum: 10/5da78346f70139a7d213b65a0106f3c398d6bc5301f9248b5275f420abc2c4b1e77c2abc72d218dedc28c41efb2e7c312cb76a7730d04f9c2d37d247da3f4198
+  languageName: node
+  linkType: hard
+
+"tildify@npm:2.0.0":
+  version: 2.0.0
+  resolution: "tildify@npm:2.0.0"
+  checksum: 10/0f5fee93624c4afdf75ee224c3b65aece4817ba5317fd70f49eaf084ea720d73556a6ef3f50079425a773ba3b93805b4524d14057841d4e4336516fdbe80635b
   languageName: node
   linkType: hard
 

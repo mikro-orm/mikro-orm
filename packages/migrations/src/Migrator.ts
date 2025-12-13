@@ -31,7 +31,7 @@ import {
   DatabaseTable,
   type EntityManager,
   type SqlSchemaGenerator,
-} from '@mikro-orm/knex';
+} from '@mikro-orm/sql';
 import type { Migration } from './Migration.js';
 import { MigrationRunner } from './MigrationRunner.js';
 import { MigrationStorage } from './MigrationStorage.js';

@@ -1,4 +1,4 @@
-import { BaseSqliteConnection, type Dictionary } from '@mikro-orm/knex';
+import { BaseSqliteConnection, type Dictionary } from '@mikro-orm/sql';
 import Database, { type Options } from 'libsql';
 import { LibSqlDialect } from './LibSqlDialect.js';
 

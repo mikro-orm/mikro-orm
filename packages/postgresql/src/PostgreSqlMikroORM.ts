@@ -9,7 +9,7 @@ import {
   type EntityManager,
   type EntityManagerType,
 } from '@mikro-orm/core';
-import type { SqlEntityManager } from '@mikro-orm/knex';
+import type { SqlEntityManager } from '@mikro-orm/sql';
 import { PostgreSqlDriver } from './PostgreSqlDriver.js';
 
 export type PostgreSqlOptions<

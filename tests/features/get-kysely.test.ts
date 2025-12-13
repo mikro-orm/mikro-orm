@@ -1,5 +1,5 @@
 import { defineEntity, p, PrimaryKeyProp } from '@mikro-orm/core';
-import { InferDBFromKysely, InferKyselyDB, InferKyselyTable } from '@mikro-orm/knex';
+import { InferDBFromKysely, InferKyselyDB, InferKyselyTable } from '@mikro-orm/sql';
 import { MikroORM } from '@mikro-orm/sqlite';
 
 describe('InferKyselyDB', () => {

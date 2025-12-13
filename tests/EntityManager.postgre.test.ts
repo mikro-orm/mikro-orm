@@ -35,6 +35,8 @@ import {
   ValidationError,
   wrap,
 } from '@mikro-orm/postgresql';
+import knex from 'knex';
+import { raw as rawKnex } from '@mikro-orm/knex-compat';
 import {
   Address2,
   Author2,
@@ -2779,6 +2781,20 @@ describe('EntityManagerPostgre', () => {
     await orm.em.find(Author2, { books: { $in: raw(qb2) } });
     expect(mock.mock.calls[0][0]).toMatch('where "b2"."uuid_pk" in (select "b"."uuid_pk" from "book2" as "b" where "b"."author_id" = 1)');
     expect(mock.mock.calls[1][0]).toMatch('where "b2"."uuid_pk" in (select "b"."uuid_pk" from "book2" as "b" where "b"."author_id" = 1)');
+  });
+
+  test('em.find with knex query', async () => {
+    const qb1 = orm.em.createQueryBuilder(Book2, 'b').select('b.uuid').where({ author: 1 });
+    const mock = mockLogger(orm);
+    await orm.em.find(Author2, { books: { $in: rawKnex(qb1) } });
+    const pg = knex({ client: 'pg' });
+    const raw1 = pg.raw('select "b"."uuid_pk" from "book2" as "b" where "b"."author_id" = 2');
+    await orm.em.find(Author2, { books: { $in: rawKnex(raw1) } });
+    const raw2 = pg.select('b.uuid_pk').from({ b: 'book2' }).where('b.author_id', 3);
+    await orm.em.find(Author2, { books: { $in: rawKnex(raw2) } });
+    expect(mock.mock.calls[0][0]).toMatch('where "b2"."uuid_pk" in (select "b"."uuid_pk" from "book2" as "b" where "b"."author_id" = 1)');
+    expect(mock.mock.calls[1][0]).toMatch('where "b2"."uuid_pk" in (select "b"."uuid_pk" from "book2" as "b" where "b"."author_id" = 2)');
+    expect(mock.mock.calls[2][0]).toMatch('where "b2"."uuid_pk" in (select "b"."uuid_pk" from "book2" as "b" where "b"."author_id" = 3)');
   });
 
 });

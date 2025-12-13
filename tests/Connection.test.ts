@@ -37,6 +37,7 @@ describe('Connection', () => {
     await expect(conn.begin()).rejects.toThrow('Transactions are not supported by current driver');
     await expect(conn.commit({} as any)).rejects.toThrow('Transactions are not supported by current driver');
     await expect(conn.rollback({} as any)).rejects.toThrow('Transactions are not supported by current driver');
+    await expect(conn.loadFile('...')).rejects.toThrow('Loading SQL files is not supported by current driver');
   });
 
   test('special characters in username and password', async () => {

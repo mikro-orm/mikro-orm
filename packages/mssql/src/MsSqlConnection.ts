@@ -3,7 +3,7 @@ import {
   type ConnectionConfig,
   type TransactionEventBroadcaster,
   Utils,
-} from '@mikro-orm/knex';
+} from '@mikro-orm/sql';
 import { type ControlledTransaction, MssqlDialect } from 'kysely';
 import type { ConnectionConfiguration } from 'tedious';
 import * as Tedious from 'tedious';

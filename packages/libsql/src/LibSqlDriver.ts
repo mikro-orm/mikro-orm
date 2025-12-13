@@ -1,5 +1,5 @@
 import type { Configuration } from '@mikro-orm/core';
-import { AbstractSqlDriver } from '@mikro-orm/knex';
+import { AbstractSqlDriver } from '@mikro-orm/sql';
 import { LibSqlConnection } from './LibSqlConnection.js';
 import { LibSqlPlatform } from './LibSqlPlatform.js';
 

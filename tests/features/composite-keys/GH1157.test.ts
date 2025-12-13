@@ -7,7 +7,7 @@ import {
   PrimaryKey,
   ReflectMetadataProvider,
 } from '@mikro-orm/decorators/legacy';
-import type { AbstractSqlDriver } from '@mikro-orm/knex';
+import type { AbstractSqlDriver } from '@mikro-orm/sql';
 import { v4 } from 'uuid';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 

@@ -50,7 +50,7 @@
     "access": "public"
   },
   "dependencies": {
-    "@mikro-orm/knex": "6.6.2",
+    "@mikro-orm/sql": "6.6.2",
     "pg": "8.16.3",
     "pg-cursor": "2.15.3",
     "postgres-array": "3.0.4",

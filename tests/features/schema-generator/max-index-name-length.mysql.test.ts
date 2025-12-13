@@ -1,8 +1,7 @@
 import { Collection, MikroORM } from '@mikro-orm/core';
 import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
-import type { AbstractSqlDriver } from '@mikro-orm/knex';
+import type { AbstractSqlDriver } from '@mikro-orm/sql';
 import { MySqlDriver } from '@mikro-orm/mysql';
-
 
 @Entity({ tableName: 'very_long_table_name_64_chars_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx' })
 class ChildEntity {

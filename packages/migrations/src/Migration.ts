@@ -1,5 +1,5 @@
 import { type Configuration, type RawQueryFragment, type Transaction } from '@mikro-orm/core';
-import type { AbstractSqlDriver, EntityManager, NativeQueryBuilder } from '@mikro-orm/knex';
+import type { AbstractSqlDriver, EntityManager, NativeQueryBuilder } from '@mikro-orm/sql';
 
 export type Query = string | NativeQueryBuilder | RawQueryFragment;
 

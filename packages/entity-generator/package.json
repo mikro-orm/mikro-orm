@@ -50,7 +50,7 @@
     "access": "public"
   },
   "dependencies": {
-    "@mikro-orm/knex": "6.6.2"
+    "@mikro-orm/sql": "6.6.2"
   },
   "devDependencies": {
     "@mikro-orm/core": "^6.6.2"

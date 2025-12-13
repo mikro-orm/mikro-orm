@@ -65,6 +65,13 @@ export abstract class Connection {
     }
   }
 
+  /**
+   * Load schema dump from file and execute it. Not supported by MongoDB driver.
+   */
+  async loadFile(path: string): Promise<void> {
+    throw new Error(`Loading SQL files is not supported by current driver`);
+  }
+
   protected async onConnect(): Promise<void> {
     const schemaGenerator = this.config.getExtension<ISchemaGenerator>('@mikro-orm/schema-generator');
 

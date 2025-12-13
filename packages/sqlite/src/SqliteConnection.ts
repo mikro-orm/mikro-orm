@@ -1,4 +1,4 @@
-import { BaseSqliteConnection, type Dictionary } from '@mikro-orm/knex';
+import { BaseSqliteConnection, type Dictionary } from '@mikro-orm/sql';
 import { type Dialect, SqliteDialect } from 'kysely';
 import Database from 'better-sqlite3';
 

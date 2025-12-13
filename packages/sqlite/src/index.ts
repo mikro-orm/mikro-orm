@@ -1,4 +1,4 @@
-export * from '@mikro-orm/knex';
+export * from '@mikro-orm/sql';
 export * from './SqliteConnection.js';
 export * from './SqliteDriver.js';
 export * from './SqlitePlatform.js';

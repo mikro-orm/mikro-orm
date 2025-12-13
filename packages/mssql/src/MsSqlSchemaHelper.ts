@@ -16,7 +16,7 @@ import {
   TextType,
   type Type,
   Utils,
-} from '@mikro-orm/knex';
+} from '@mikro-orm/sql';
 import { UnicodeStringType } from './UnicodeStringType.js';
 
 export class MsSqlSchemaHelper extends SchemaHelper {
