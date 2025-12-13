@@ -40,16 +40,7 @@ There are multiple ways how to define the relationship, all of the following is 
 export class Book {
 
   @ManyToOne() // plain decorator is enough, type will be sniffed via reflection!
-  author1!: Author;
-
-  @ManyToOne(() => Author) // you can specify type manually as a callback
-  author2!: Author;
-
-  @ManyToOne('Author') // or as a string
-  author3!: Author;
-
-  @ManyToOne({ entity: () => Author }) // or use options object
-  author4!: Author;
+  author!: Author;
 
 }
 ```
@@ -62,16 +53,7 @@ export class Book {
 export class Book {
 
   @ManyToOne() // plain decorator is enough, type will be sniffed via ts-morph!
-  author1!: Author;
-
-  @ManyToOne() // with ts-morph, type is inferred automatically
-  author2!: Author;
-
-  @ManyToOne() // ts-morph makes the definition simpler
-  author3!: Author;
-
-  @ManyToOne() // you can still use options if needed
-  author4!: Author;
+  author!: Author;
 
 }
 ```
@@ -85,11 +67,8 @@ import { defineEntity, InferEntity } from '@mikro-orm/core';
 export const Book = defineEntity({
   name: 'Book',
   properties: p => ({
-    id: p.integer().primary().autoincrement(),
-    author1: () => p.manyToOne(Author),
-    author2: () => p.manyToOne(Author),
-    author3: () => p.manyToOne(Author),
-    author4: () => p.manyToOne(Author),
+    id: p.integer().primary(),
+    author: () => p.manyToOne(Author),
   }),
 });
 
@@ -102,20 +81,14 @@ export interface IBook extends InferEntity<typeof Book> {}
 ```ts
 export interface IBook {
   id: number;
-  author1: Author;
-  author2: Author;
-  author3: Author;
-  author4: Author;
+  author: Author;
 }
 
 export const Book = new EntitySchema<IBook>({
   name: 'Book',
   properties: {
     id: { type: 'number', primary: true },
-    author1: { kind: 'm:1', entity: 'Author' },
-    author2: { kind: 'm:1', entity: 'Author' },
-    author3: { kind: 'm:1', entity: 'Author' },
-    author4: { kind: 'm:1', entity: 'Author' },
+    author: { kind: 'm:1', entity: 'Author' },
   },
 });
 ```
@@ -148,16 +121,7 @@ Again, all of the following is equivalent:
 export class Author {
 
   @OneToMany(() => Book, book => book.author)
-  books1 = new Collection<Book>(this);
-
-  @OneToMany('Book', 'author')
-  books2 = new Collection<Book>(this);
-
-  @OneToMany({ mappedBy: book => book.author }) // referenced entity type can be sniffed too
-  books3 = new Collection<Book>(this);
-
-  @OneToMany({ entity: () => Book, mappedBy: 'author', orphanRemoval: true })
-  books4 = new Collection<Book>(this);
+  books = new Collection<Book>(this);
 
 }
 ```
@@ -170,16 +134,7 @@ export class Author {
 export class Author {
 
   @OneToMany(() => Book, book => book.author)
-  books1 = new Collection<Book>(this);
-
-  @OneToMany(() => Book, book => book.author)
-  books2 = new Collection<Book>(this);
-
-  @OneToMany({ mappedBy: book => book.author }) // referenced entity type can be sniffed via ts-morph
-  books3 = new Collection<Book>(this);
-
-  @OneToMany({ mappedBy: book => book.author, orphanRemoval: true })
-  books4 = new Collection<Book>(this);
+  books = new Collection<Book>(this);
 
 }
 ```
@@ -193,11 +148,8 @@ import { defineEntity, InferEntity } from '@mikro-orm/core';
 export const Author = defineEntity({
   name: 'Author',
   properties: p => ({
-    id: p.integer().primary().autoincrement(),
-    books1: () => p.oneToMany(Book).mappedBy('author'),
-    books2: () => p.oneToMany(Book).mappedBy('author'),
-    books3: () => p.oneToMany(Book).mappedBy('author'),
-    books4: () => p.oneToMany(Book).mappedBy('author').orphanRemoval(),
+    id: p.integer().primary(),
+    books: () => p.oneToMany(Book).mappedBy('author'),
   }),
 });
 
@@ -210,20 +162,14 @@ export interface IAuthor extends InferEntity<typeof Author> {}
 ```ts
 export interface IAuthor {
   id: number;
-  books1: Collection<Book>;
-  books2: Collection<Book>;
-  books3: Collection<Book>;
-  books4: Collection<Book>;
+  books: Collection<Book>;
 }
 
 export const Author = new EntitySchema<IAuthor>({
   name: 'Author',
   properties: {
     id: { type: 'number', primary: true },
-    books1: { kind: '1:m', entity: () => Book, mappedBy: 'author' },
-    books2: { kind: '1:m', entity: () => Book, mappedBy: 'author' },
-    books3: { kind: '1:m', entity: () => Book, mappedBy: 'author' },
-    books4: { kind: '1:m', entity: () => Book, mappedBy: 'author', orphanRemoval: true },
+    books: { kind: '1:m', entity: () => Book, mappedBy: 'author' },
   },
 });
 ```
@@ -233,7 +179,7 @@ export const Author = new EntitySchema<IAuthor>({
 
 As you can see, OneToMany is the inverse side of ManyToOne (which is the owning side). More about how collections work can be found on [collections page](./collections.md).
 
-You can also specify how operations on given entity should [cascade](./cascading.md) to the referred entities. There is also more aggressive remove mode called [Orphan Removal](./cascading.md#orphan-removal) (`books4` example).
+You can also specify how operations on given entity should [cascade](./cascading.md) to the referred entities. There is also more aggressive remove mode called [Orphan Removal](./cascading.md#orphan-removal).
 
 ## OneToOne
 
@@ -305,7 +251,7 @@ import { defineEntity, InferEntity } from '@mikro-orm/core';
 export const User = defineEntity({
   name: 'User',
   properties: p => ({
-    id: p.integer().primary().autoincrement(),
+    id: p.integer().primary(),
     // when none of `owner/inversedBy/mappedBy` is provided, it will be considered owning side
     bestFriend1: () => p.oneToOne(User),
     // side with `inversedBy` is the owning one, to define inverse side use `mappedBy`
@@ -398,7 +344,7 @@ import { defineEntity, InferEntity } from '@mikro-orm/core';
 export const User = defineEntity({
   name: 'User',
   properties: p => ({
-    id: p.integer().primary().autoincrement(),
+    id: p.integer().primary(),
     bestFriend1: () => p.oneToOne(User).mappedBy('bestFriend1').orphanRemoval(),
     bestFriend2: () => p.oneToOne(User).mappedBy('bestFriend2').orphanRemoval(),
   }),
@@ -456,22 +402,12 @@ Here are examples of how you can define ManyToMany relationship:
 @Entity()
 export class Book {
 
-  // when none of `owner/inversedBy/mappedBy` is provided, it will be considered owning side
   @ManyToMany()
-  tags1 = new Collection<BookTag>(this);
-
-  @ManyToMany(() => BookTag, 'books', { owner: true })
-  tags2 = new Collection<BookTag>(this);
-
-  @ManyToMany(() => BookTag, 'books', { owner: true })
-  tags3 = new Collection<BookTag>(this);
-
-  @ManyToMany(() => BookTag, 'books', { owner: true })
-  tags4 = new Collection<BookTag>(this);
+  tags = new Collection<BookTag>(this);
 
   // to define uni-directional many to many
   @ManyToMany(() => Author)
-  friends: Collection<Author> = new Collection<Author>(this);
+  friends = new Collection<Author>(this);
 
 }
 ```
@@ -483,18 +419,8 @@ export class Book {
 @Entity()
 export class Book {
 
-  // when none of `owner/inversedBy/mappedBy` is provided, it will be considered owning side
   @ManyToMany()
-  tags1 = new Collection<BookTag>(this);
-
-  @ManyToMany(() => BookTag, 'books', { owner: true })
-  tags2 = new Collection<BookTag>(this);
-
-  @ManyToMany(() => BookTag, 'books', { owner: true })
-  tags3 = new Collection<BookTag>(this);
-
-  @ManyToMany(() => BookTag, 'books', { owner: true })
-  tags4 = new Collection<BookTag>(this);
+  tags = new Collection<BookTag>(this);
 
   // to define uni-directional many to many
   @ManyToMany()
@@ -512,12 +438,9 @@ import { defineEntity, InferEntity } from '@mikro-orm/core';
 export const Book = defineEntity({
   name: 'Book',
   properties: p => ({
-    id: p.integer().primary().autoincrement(),
+    id: p.integer().primary(),
     // when none of `owner/inversedBy/mappedBy` is provided, it will be considered owning side
-    tags1: () => p.manyToMany(BookTag),
-    tags2: () => p.manyToMany(BookTag).owner(),
-    tags3: () => p.manyToMany(BookTag).owner(),
-    tags4: () => p.manyToMany(BookTag).owner(),
+    tags: () => p.manyToMany(BookTag),
     // to define uni-directional many to many, simply omit `mappedBy`
     friends: () => p.manyToMany(Author),
   }),
@@ -532,10 +455,7 @@ export interface IBook extends InferEntity<typeof Book> {}
 ```ts
 export interface IBook {
   id: number;
-  tags1: Collection<BookTag>;
-  tags2: Collection<BookTag>;
-  tags3: Collection<BookTag>;
-  tags4: Collection<BookTag>;
+  tags: Collection<BookTag>;
   friends: Collection<Author>;
 }
 
@@ -543,11 +463,7 @@ export const Book = new EntitySchema<IBook>({
   name: 'Book',
   properties: {
     id: { type: 'number', primary: true },
-    // when none of `owner/inversedBy/mappedBy` is provided, it will be considered owning side
-    tags1: { kind: 'm:n', entity: 'BookTag' },
-    tags2: { kind: 'm:n', entity: 'BookTag', owner: true },
-    tags3: { kind: 'm:n', entity: 'BookTag', owner: true },
-    tags4: { kind: 'm:n', entity: 'BookTag', owner: true },
+    tags: { kind: 'm:n', entity: 'BookTag' },
     // to define uni-directional many to many, simply omit `mappedBy`
     friends: { kind: 'm:n', entity: 'Author' },
   },
@@ -605,7 +521,7 @@ import { defineEntity, InferEntity } from '@mikro-orm/core';
 export const BookTag = defineEntity({
   name: 'BookTag',
   properties: p => ({
-    id: p.integer().primary().autoincrement(),
+    id: p.integer().primary(),
     // inverse side has to point to the owning side via `mappedBy`
     books: () => p.manyToMany(Book).mappedBy('tags'),
   }),
@@ -694,7 +610,7 @@ import { defineEntity, InferEntity } from '@mikro-orm/core';
 export const Book = defineEntity({
   name: 'Book',
   properties: p => ({
-    id: p.integer().primary().autoincrement(),
+    id: p.integer().primary(),
     author: () => p.manyToOne(Author),
   }),
 });
@@ -777,7 +693,7 @@ import { defineEntity, InferEntity } from '@mikro-orm/core';
 export const Book = defineEntity({
   name: 'Book',
   properties: p => ({
-    id: p.integer().primary().autoincrement(),
+    id: p.integer().primary(),
     author: () => p.manyToOne(Author).foreignKeyName('my_custom_name'),
   }),
 });
@@ -854,7 +770,7 @@ import { defineEntity, InferEntity } from '@mikro-orm/core';
 export const Book = defineEntity({
   name: 'Book',
   properties: p => ({
-    id: p.integer().primary().autoincrement(),
+    id: p.integer().primary(),
     author: () => p.manyToOne(Author).createForeignKeyConstraint(false),
   }),
 });
