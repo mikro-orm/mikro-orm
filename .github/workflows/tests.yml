@@ -201,6 +201,7 @@ jobs:
 
   release:
     name: Release
+    if: github.ref == 'refs/heads/master' ||  github.ref == 'refs/heads/v7'
     runs-on: ubuntu-latest
     needs: [build, test, lint, docs]
     steps:
