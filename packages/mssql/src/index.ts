@@ -1,4 +1,4 @@
-export * from '@mikro-orm/knex';
+export * from '@mikro-orm/sql';
 export * from './MsSqlConnection.js';
 export * from './MsSqlDriver.js';
 export * from './MsSqlPlatform.js';

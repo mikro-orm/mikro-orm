@@ -3,7 +3,7 @@ import { vi } from 'vitest';
 import { InferKyselyTable, Kysely, MikroORM, MikroKyselyPluginOptions, MikroKyselyPlugin } from '@mikro-orm/sqlite';
 import { ColumnNode, PrimitiveValueListNode, ValueListNode, ValueNode, ValuesNode } from 'kysely';
 import { MikroORM as PostgresORM } from '@mikro-orm/postgresql';
-import { MikroTransformer } from '../../packages/knex/src/plugin/transformer.js';
+import { MikroTransformer } from '../../packages/sql/src/plugin/transformer.js';
 
 describe('MikroKyselyPlugin', () => {
   const Person = defineEntity({

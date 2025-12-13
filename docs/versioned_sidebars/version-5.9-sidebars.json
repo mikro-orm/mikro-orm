@@ -88,17 +88,17 @@
         {
           "type": "link",
           "label": "EntityManager API",
-          "href": "/api/next/core/class/EntityManager"
+          "href": "/api/5.9/core/class/EntityManager"
         },
         {
           "type": "link",
           "label": "EntityRepository API",
-          "href": "/api/next/core/class/EntityRepository"
+          "href": "/api/5.9/core/class/EntityRepository"
         },
         {
           "type": "link",
           "label": "QueryBuilder API",
-          "href": "/api/next/knex/class/QueryBuilder"
+          "href": "/api/5.9/knex/class/QueryBuilder"
         },
         "decorators",
         "configuration"

@@ -9,7 +9,7 @@ import {
   Property,
   ReflectMetadataProvider,
 } from '@mikro-orm/decorators/legacy';
-import type { AbstractSqlDriver } from '@mikro-orm/knex';
+import type { AbstractSqlDriver } from '@mikro-orm/sql';
 import { mockLogger } from '../../helpers.js';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 

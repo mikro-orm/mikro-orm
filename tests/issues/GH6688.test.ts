@@ -1,4 +1,4 @@
-import { MikroORM, t, Opt, Utils, AbstractSqlDriver } from '@mikro-orm/knex';
+import { MikroORM, t, Opt, Utils, AbstractSqlDriver } from '@mikro-orm/sql';
 import { Embeddable, Embedded, Entity, Enum, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { PLATFORMS } from '../bootstrap.js';
 

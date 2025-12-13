@@ -6,7 +6,7 @@ import {
   type AbstractSqlPlatform,
   type SchemaHelper,
   DatabaseTable,
-} from '@mikro-orm/knex';
+} from '@mikro-orm/sql';
 import type { MigrationParams, UmzugStorage } from 'umzug';
 import { parse } from 'node:path';
 import type { MigrationRow } from './typings.js';

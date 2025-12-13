@@ -1,5 +1,5 @@
 import { Configuration, QueryOrder } from '@mikro-orm/core';
-import { EntityRepository } from '@mikro-orm/knex';
+import { EntityRepository } from '@mikro-orm/sql';
 import { Author, Publisher } from './entities/index.js';
 import { MongoDriver, MongoEntityRepository } from '@mikro-orm/mongodb';
 

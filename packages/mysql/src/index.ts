@@ -1,4 +1,4 @@
-export * from '@mikro-orm/knex';
+export * from '@mikro-orm/sql';
 export * from './MySqlDriver.js';
 export * from './MySqlConnection.js';
 export {

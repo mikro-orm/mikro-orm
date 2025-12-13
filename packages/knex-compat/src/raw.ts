@@ -1,5 +1,5 @@
-import { type AnyString, type Dictionary, type EntityKey, type RawQueryFragment, type QueryBuilder, raw as raw_, Utils } from '@mikro-orm/sql';
-import type { SelectQueryBuilder } from 'kysely';
+import { type AnyString, type Dictionary, type EntityKey, type RawQueryFragment, raw, Utils, type QueryBuilder } from '@mikro-orm/sql';
+import type { Knex } from 'knex';
 
 /**
  * Creates raw SQL query fragment that can be assigned to a property or part of a filter. This fragment is represented
@@ -56,12 +56,11 @@ import type { SelectQueryBuilder } from 'kysely';
  * export class Author { ... }
  * ```
  */
-export function raw<T extends object = any, R = any>(sql: SelectQueryBuilder<any, any, any> | QueryBuilder<T> | EntityKey<T> | EntityKey<T>[] | AnyString | ((alias: string) => string) | RawQueryFragment, params?: readonly unknown[] | Dictionary<unknown>): NoInfer<R> {
-  if (Utils.isObject<SelectQueryBuilder<any, any, any>>(sql) && 'compile' in sql) {
-    const query = sql.compile();
-    const processed = query.sql.replaceAll(/\$\d+/g, '?');
-    return raw_(processed, query.parameters);
+export function rawKnex<T extends object = any, R = any>(sql: Knex.QueryBuilder | Knex.Raw | QueryBuilder<T> | EntityKey<T> | EntityKey<T>[] | AnyString | ((alias: string) => string) | RawQueryFragment, params?: readonly unknown[] | Dictionary<unknown>): NoInfer<R> {
+  if (Utils.isObject<Knex.QueryBuilder | Knex.Raw>(sql) && 'toSQL' in sql) {
+    const query = sql.toSQL();
+    return raw(query.sql, query.bindings);
   }
 
-  return raw_(sql, params);
+  return raw(sql, params);
 }

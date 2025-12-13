@@ -13,7 +13,7 @@ import {
   Utils,
   isRaw,
 } from '@mikro-orm/core';
-import { AbstractSqlDriver, type SqlEntityManager } from '@mikro-orm/knex';
+import { AbstractSqlDriver, type SqlEntityManager } from '@mikro-orm/sql';
 import { MsSqlConnection } from './MsSqlConnection.js';
 import { MsSqlPlatform } from './MsSqlPlatform.js';
 import { MsSqlQueryBuilder } from './MsSqlQueryBuilder.js';

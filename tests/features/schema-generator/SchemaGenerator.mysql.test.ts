@@ -1,6 +1,6 @@
 import { EntitySchema, EnumType, MikroORM, ReferenceKind, Type, Utils } from '@mikro-orm/core';
 import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
-import { SchemaGenerator } from '@mikro-orm/knex';
+import { SchemaGenerator } from '@mikro-orm/sql';
 import { BASE_DIR, initORMMySql } from '../../bootstrap.js';
 import { Address2, Author2, Book2, BookTag2, Configuration2, FooBar2, FooBaz2, Publisher2, Test2 } from '../../entities-sql/index.js';
 import { BaseEntity22 } from '../../entities-sql/BaseEntity22.js';
