@@ -469,7 +469,7 @@ export class Book {
   @ManyToMany(() => BookTag, 'books', { owner: true })
   tags4 = new Collection<BookTag>(this);
 
-  // to define uni-directional many to many, simply provide only
+  // to define uni-directional many to many
   @ManyToMany(() => Author)
   friends: Collection<Author> = new Collection<Author>(this);
 
@@ -496,7 +496,7 @@ export class Book {
   @ManyToMany(() => BookTag, 'books', { owner: true })
   tags4 = new Collection<BookTag>(this);
 
-  // to define uni-directional many to many, simply provide only
+  // to define uni-directional many to many
   @ManyToMany()
   friends = new Collection<Author>(this);
 
@@ -883,7 +883,7 @@ export const Book = new EntitySchema<IBook>({
   </TabItem>
 </Tabs>
 
-Note that if you globally disable the creation of all foreign key contraints by setting `createForeignKeyConstraints` to `false`, then no foreign key constraint is created whatsoever on any relation.
+Note that if you globally disable the creation of all foreign key constraints by setting `createForeignKeyConstraints` to `false`, then no foreign key constraint is created whatsoever on any relation.
 
 ```ts
 const orm = await MikroORM.init({
