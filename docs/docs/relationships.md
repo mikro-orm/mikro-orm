@@ -39,17 +39,14 @@ There are multiple ways how to define the relationship, all of the following is 
 @Entity()
 export class Book {
 
-  @ManyToOne() // plain decorator is enough, type will be sniffed via reflection!
+  @ManyToOne(() => Author) // you need to specify type via callback
   author1!: Author;
 
-  @ManyToOne(() => Author) // you can specify type manually as a callback
+  @ManyToOne('Author') // or as a string
   author2!: Author;
 
-  @ManyToOne('Author') // or as a string
-  author3!: Author;
-
   @ManyToOne({ entity: () => Author }) // or use options object
-  author4!: Author;
+  author3!: Author;
 
 }
 ```
@@ -420,8 +417,7 @@ Here are examples of how you can define ManyToMany relationship:
 @Entity()
 export class Book {
 
-  // when none of `owner/inversedBy/mappedBy` is provided, it will be considered owning side
-  @ManyToMany()
+  @ManyToMany(() => BookTag, 'books')
   tags1 = new Collection<BookTag>(this);
 
   @ManyToMany(() => BookTag, 'books', { owner: true })
@@ -429,9 +425,6 @@ export class Book {
 
   @ManyToMany(() => BookTag, 'books', { owner: true })
   tags3 = new Collection<BookTag>(this);
-
-  @ManyToMany(() => BookTag, 'books', { owner: true })
-  tags4 = new Collection<BookTag>(this);
 
   // to define uni-directional many to many
   @ManyToMany(() => Author)
