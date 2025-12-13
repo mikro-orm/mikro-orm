@@ -75,7 +75,7 @@ export class MongoPlatform extends Platform {
   }
 
   override denormalizePrimaryKey(data: number | string): IPrimaryKey {
-    return new ObjectId(data);
+    return new ObjectId('' + data);
   }
 
   override usesImplicitTransactions(): boolean {
