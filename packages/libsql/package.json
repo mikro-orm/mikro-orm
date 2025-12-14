@@ -51,15 +51,14 @@
   },
   "dependencies": {
     "@mikro-orm/sql": "6.6.2",
+    "kysely": "0.28.9",
     "libsql": "0.5.22",
     "sqlstring-sqlite": "0.1.1"
   },
   "devDependencies": {
-    "@mikro-orm/core": "^6.6.2",
-    "kysely": "0.28.9"
+    "@mikro-orm/core": "^6.6.2"
   },
   "peerDependencies": {
-    "@mikro-orm/core": "^6.0.0",
-    "kysely": "*"
+    "@mikro-orm/core": "^6.0.0"
   }
 }
