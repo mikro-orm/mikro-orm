@@ -51,6 +51,7 @@
   },
   "dependencies": {
     "@mikro-orm/sql": "6.6.3",
+    "kysely": "0.28.9",
     "pg": "8.16.3",
     "pg-cursor": "2.15.3",
     "postgres-array": "3.0.4",
@@ -58,11 +59,9 @@
     "postgres-interval": "4.0.2"
   },
   "devDependencies": {
-    "@mikro-orm/core": "^6.6.3",
-    "kysely": "0.28.9"
+    "@mikro-orm/core": "^6.6.3"
   },
   "peerDependencies": {
-    "@mikro-orm/core": "^6.0.0",
-    "kysely": "*"
+    "@mikro-orm/core": "^6.0.0"
   }
 }

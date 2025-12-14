@@ -50,14 +50,13 @@
     "access": "public"
   },
   "dependencies": {
-    "@mikro-orm/mysql": "6.6.3"
-  },
-  "devDependencies": {
-    "@mikro-orm/core": "^6.6.3",
+    "@mikro-orm/mysql": "6.6.3",
     "kysely": "0.28.9"
   },
+  "devDependencies": {
+    "@mikro-orm/core": "^6.6.3"
+  },
   "peerDependencies": {
-    "@mikro-orm/core": "^6.0.0",
-    "kysely": "*"
+    "@mikro-orm/core": "^6.0.0"
   }
 }

@@ -1426,7 +1426,6 @@ __metadata:
     sqlstring-sqlite: "npm:0.1.1"
   peerDependencies:
     "@mikro-orm/core": ^6.0.0
-    kysely: "*"
   languageName: unknown
   linkType: soft
 
@@ -1439,7 +1438,6 @@ __metadata:
     kysely: "npm:0.28.9"
   peerDependencies:
     "@mikro-orm/core": ^6.0.0
-    kysely: "*"
   languageName: unknown
   linkType: soft
 
@@ -1500,7 +1498,6 @@ __metadata:
     tsqlstring: "npm:1.0.1"
   peerDependencies:
     "@mikro-orm/core": ^6.0.0
-    kysely: "*"
   languageName: unknown
   linkType: soft
 
@@ -1515,7 +1512,6 @@ __metadata:
     sqlstring: "npm:2.3.3"
   peerDependencies:
     "@mikro-orm/core": ^6.0.0
-    kysely: "*"
   languageName: unknown
   linkType: soft
 
@@ -1533,7 +1529,6 @@ __metadata:
     postgres-interval: "npm:4.0.2"
   peerDependencies:
     "@mikro-orm/core": ^6.0.0
-    kysely: "*"
   languageName: unknown
   linkType: soft
 
@@ -1640,7 +1635,6 @@ __metadata:
     sqlstring-sqlite: "npm:0.1.1"
   peerDependencies:
     "@mikro-orm/core": ^6.0.0
-    kysely: "*"
   languageName: unknown
   linkType: soft
 
