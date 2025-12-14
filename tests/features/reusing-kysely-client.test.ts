@@ -8,8 +8,9 @@ test('should allow reusing kysely connection', async () => {
     dbName: ':memory:',
     entities: [Car2, CarOwner2, User2, Sandwich],
   });
-  await orm.connect();
   const kysely = orm.em.getKysely();
+  expect(kysely).toBeDefined();
+  await orm.connect();
 
   const orm2 = await MikroORM.init({
     metadataProvider: ReflectMetadataProvider,
@@ -23,7 +24,7 @@ test('should allow reusing kysely connection', async () => {
     metadataProvider: ReflectMetadataProvider,
     dbName: ':memory:',
     entities: [Car2, CarOwner2, User2, Sandwich],
-    driverOptions: async () => kysely,
+    driverOptions: () => kysely,
   });
   await orm3.connect();
 
@@ -31,7 +32,7 @@ test('should allow reusing kysely connection', async () => {
     metadataProvider: ReflectMetadataProvider,
     dbName: ':memory:',
     entities: [Car2, CarOwner2, User2, Sandwich],
-    driverOptions: async () => orm3.driver.getConnection().createKyselyDialect({}),
+    driverOptions: () => orm3.driver.getConnection().createKyselyDialect({}),
   });
   await orm4.connect();
 
