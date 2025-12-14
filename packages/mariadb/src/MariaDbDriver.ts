@@ -1,7 +1,16 @@
-import { type AnyEntity, type Configuration, type ConnectionType, type LoggingOptions, type Transaction, QueryFlag } from '@mikro-orm/core';
+import {
+  type AnyEntity,
+  type Configuration,
+  type ConnectionType,
+  type LoggingOptions,
+  type Transaction,
+  QueryFlag,
+  type Constructor,
+} from '@mikro-orm/core';
 import { MySqlDriver, type SqlEntityManager } from '@mikro-orm/mysql';
 import { MariaDbPlatform } from './MariaDbPlatform.js';
 import { MariaDbQueryBuilder } from './MariaDbQueryBuilder.js';
+import { MariaDbMikroORM } from './MariaDbMikroORM.js';
 
 export class MariaDbDriver extends MySqlDriver {
 
@@ -22,6 +31,11 @@ export class MariaDbDriver extends MySqlDriver {
     }
 
     return qb;
+  }
+
+  /** @inheritDoc */
+  override getORMClass(): Constructor<MariaDbMikroORM> {
+    return MariaDbMikroORM;
   }
 
 }

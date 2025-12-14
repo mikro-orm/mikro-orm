@@ -28,7 +28,7 @@ import { mockLogger } from '../../helpers.js';
 import { PLATFORMS } from '../../bootstrap.js';
 
 @Entity()
-export class Author {
+class Author {
 
   [OptionalProps]?: 'foo';
 
@@ -71,7 +71,7 @@ export class Author {
 }
 
 @Entity()
-export class Book {
+class Book {
 
   static id = 1;
 
@@ -93,7 +93,7 @@ export class Book {
 
 @Entity()
 @Unique({ properties: ['author', 'name'] })
-export class FooBar {
+class FooBar {
 
   static id = 1;
 
@@ -117,7 +117,7 @@ export class FooBar {
 }
 
 @Entity()
-export class FooBarWithEmbeddable {
+class FooBarWithEmbeddable {
 
   static id = 1;
 
@@ -130,7 +130,7 @@ export class FooBarWithEmbeddable {
 }
 
 @Embeddable()
-export class FooBarEmbeddable {
+class FooBarEmbeddable {
 
   @Property({ nullable: true })
   name?: string;

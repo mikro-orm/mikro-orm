@@ -1,9 +1,9 @@
 import { LockMode, MikroORM, ref, ValidationError, wrap } from '@mikro-orm/mongodb';
 import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
-import { Author, Book, BookTag, Publisher, Test } from './entities/index.js';
-import { BASE_DIR } from './bootstrap.js';
-import FooBar from './entities/FooBar.js';
+import { Author, Book, BookTag, Publisher, Test } from '../../entities/index.js';
+import { BASE_DIR } from '../../bootstrap.js';
+import FooBar from '../../entities/FooBar.js';
 
 describe('EntityManagerMongo2', () => {
 
@@ -20,6 +20,7 @@ describe('EntityManagerMongo2', () => {
   beforeEach(async () => orm.schema.clear());
 
   test('isConnected()', async () => {
+    expect(orm.driver.getORMClass()).toBe(MikroORM);
     expect(await orm.isConnected()).toBe(true);
     expect(await orm.checkConnection()).toEqual({
       ok: true,

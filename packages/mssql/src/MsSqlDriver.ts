@@ -12,11 +12,13 @@ import {
   type Transaction,
   Utils,
   isRaw,
+  type Constructor,
 } from '@mikro-orm/core';
 import { AbstractSqlDriver, type SqlEntityManager } from '@mikro-orm/sql';
 import { MsSqlConnection } from './MsSqlConnection.js';
 import { MsSqlPlatform } from './MsSqlPlatform.js';
 import { MsSqlQueryBuilder } from './MsSqlQueryBuilder.js';
+import { MsSqlMikroORM } from './MsSqlMikroORM.js';
 
 export class MsSqlDriver extends AbstractSqlDriver<MsSqlConnection> {
 
@@ -103,6 +105,11 @@ export class MsSqlDriver extends AbstractSqlDriver<MsSqlConnection> {
     outputSql += `drop table #out`;
 
     return outputSql;
+  }
+
+  /** @inheritDoc */
+  override getORMClass(): Constructor<MsSqlMikroORM> {
+    return MsSqlMikroORM;
   }
 
 }

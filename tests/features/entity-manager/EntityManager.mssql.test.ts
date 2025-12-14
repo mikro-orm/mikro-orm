@@ -20,8 +20,9 @@ import {
   UniqueConstraintViolationException,
   ValidationError,
   wrap,
-} from '@mikro-orm/core';
-import { MsSqlDriver, UnicodeString } from '@mikro-orm/mssql';
+  MsSqlDriver,
+  UnicodeString,
+} from '@mikro-orm/mssql';
 import {
   Address2,
   Author2,
@@ -33,12 +34,12 @@ import {
   PublisherType,
   PublisherType2,
   Test2,
-} from './entities-mssql/index.js';
-import { initORMMsSql, mockLogger } from './bootstrap.js';
+} from '../../entities-mssql/index.js';
+import { initORMMsSql, mockLogger } from '../../bootstrap.js';
 
 describe('EntityManagerMsSql', () => {
 
-  let orm: MikroORM<MsSqlDriver>;
+  let orm: MikroORM;
 
   beforeAll(async () => orm = await initORMMsSql());
   beforeEach(async () => orm.schema.clear());
@@ -48,6 +49,7 @@ describe('EntityManagerMsSql', () => {
   });
 
   test('isConnected()', async () => {
+    expect(orm.driver.getORMClass()).toBe(MikroORM);
     await expect(orm.isConnected()).resolves.toBe(true);
     await orm.close(true);
     await expect(orm.isConnected()).resolves.toBe(false);
@@ -257,7 +259,6 @@ describe('EntityManagerMsSql', () => {
   });
 
   test('should load entities', async () => {
-    expect(orm).toBeInstanceOf(MikroORM);
     expect(orm.em).toBeInstanceOf(EntityManager);
 
     const god = new Author2('God', 'hello@heaven.god');

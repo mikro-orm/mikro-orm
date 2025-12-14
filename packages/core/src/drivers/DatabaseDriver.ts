@@ -14,6 +14,7 @@ import {
 } from './IDatabaseDriver.js';
 import type {
   ConnectionType,
+  Constructor,
   Dictionary,
   EntityData,
   EntityDictionary,
@@ -42,6 +43,7 @@ import { DriverException } from '../exceptions.js';
 import { helper } from '../entity/wrap.js';
 import type { Logger } from '../logging/Logger.js';
 import { JsonType } from '../types/JsonType.js';
+import { MikroORM } from '../MikroORM.js';
 
 export abstract class DatabaseDriver<C extends Connection> implements IDatabaseDriver<C> {
 
@@ -525,6 +527,11 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
     const schemaName = meta?.schema === '*' ? this.config.getSchema() : meta?.schema;
 
     return options?.schema ?? options?.parentSchema ?? schemaName ?? this.config.getSchema();
+  }
+
+  /** @internal */
+  getORMClass(): Constructor<MikroORM> {
+    return MikroORM;
   }
 
 }
