@@ -10,8 +10,8 @@ test('should allow reusing mongo connection', async () => {
     dbName: 'mikro_orm_test',
     entities: [Author, schema],
   });
-  await orm.connect();
   const mongo = orm.em.getConnection().getClient();
+  await orm.connect();
 
   const orm2 = await MikroORM.init({
     metadataProvider: ReflectMetadataProvider,
@@ -27,7 +27,7 @@ test('should allow reusing mongo connection', async () => {
     driver: MongoDriver,
     dbName: 'mikro_orm_test',
     entities: [Author, schema],
-    driverOptions: async () => mongo,
+    driverOptions: () => mongo,
   });
   await orm3.connect();
 

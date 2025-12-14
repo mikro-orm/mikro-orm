@@ -44,8 +44,8 @@ import {
 
 export class MongoConnection extends Connection {
 
-  protected client!: MongoClient;
-  protected db!: Db;
+  #client?: MongoClient;
+  #db?: Db;
 
   constructor(config: Configuration, options?: ConnectionOptions, type: ConnectionType = 'write') {
     super(config, options, type);
@@ -62,26 +62,7 @@ export class MongoConnection extends Connection {
   }
 
   async connect(options?: { skipOnConnect?: boolean }): Promise<void> {
-    let driverOptions = this.options.driverOptions ?? this.config.get('driverOptions');
-
-    if (typeof driverOptions === 'function') {
-      driverOptions = await driverOptions();
-    }
-
-    if (driverOptions instanceof MongoClient) {
-      this.logger.log('info', 'Reusing MongoClient provided via `driverOptions`');
-      this.client = driverOptions;
-    } else {
-      this.client = new MongoClient(this.config.get('clientUrl'), this.mapOptions(driverOptions as MongoClientOptions));
-      await this.client.connect();
-      const onCreateConnection = this.options.onCreateConnection ?? this.config.get('onCreateConnection');
-      /* v8 ignore next */
-      this.client.on('connectionCreated', () => {
-        void onCreateConnection?.(this.client);
-      });
-    }
-
-    this.db = this.client.db(this.config.get('dbName'));
+    this.getClient();
     this.connected = true;
 
     if (options?.skipOnConnect !== true) {
@@ -89,15 +70,38 @@ export class MongoConnection extends Connection {
     }
   }
 
+  createClient(): void {
+    let driverOptions = this.options.driverOptions ?? this.config.get('driverOptions');
+
+    if (typeof driverOptions === 'function') {
+      driverOptions = driverOptions();
+    }
+
+    if (driverOptions instanceof MongoClient) {
+      this.logger.log('info', 'Reusing MongoClient provided via `driverOptions`');
+      this.#client = driverOptions;
+    } else {
+      this.#client = new MongoClient(this.config.get('clientUrl'), this.mapOptions(driverOptions as MongoClientOptions));
+      const onCreateConnection = this.options.onCreateConnection ?? this.config.get('onCreateConnection');
+      /* v8 ignore next */
+      this.#client.on('connectionCreated', () => {
+        void onCreateConnection?.(this.#client);
+      });
+    }
+
+    this.#db = this.#client.db(this.config.get('dbName'));
+  }
+
   override async close(force?: boolean): Promise<void> {
-    await this.client?.close(force);
+    await this.#client?.close(force);
     this.connected = false;
+    this.#client = undefined;
   }
 
   async isConnected(): Promise<boolean> {
     try {
-      const res = await this.db?.command({ ping: 1 });
-      return this.connected = !!res.ok;
+      const res = await this.#db?.command({ ping: 1 });
+      return this.connected = !!res?.ok;
     } catch (error) {
       return this.connected = false;
     }
@@ -105,8 +109,8 @@ export class MongoConnection extends Connection {
 
   async checkConnection(): Promise<{ ok: true } | { ok: false; reason: string; error?: Error }> {
     try {
-      const res = await this.db?.command({ ping: 1 });
-      return res.ok
+      const res = await this.#db?.command({ ping: 1 });
+      return res?.ok
         ? { ok: true }
         : { ok: false, reason: 'Ping reply does not feature "ok" property, or it evaluates to "false"' };
     } catch (error: any) {
@@ -115,24 +119,28 @@ export class MongoConnection extends Connection {
   }
 
   getClient(): MongoClient {
-    return this.client;
+    if (!this.#client) {
+      this.createClient();
+    }
+
+    return this.#client!;
   }
 
   getCollection<T extends object>(name: EntityName<T>): Collection<T> {
-    return this.db.collection<T>(this.getCollectionName(name));
+    return this.getDb().collection<T>(this.getCollectionName(name));
   }
 
   async createCollection<T extends object>(name: EntityName<T>): Promise<Collection<T>> {
-    return this.db.createCollection(this.getCollectionName(name));
+    return this.getDb().createCollection(this.getCollectionName(name));
   }
 
   async listCollections(): Promise<string[]> {
-    const collections = await this.db.listCollections({}, { nameOnly: true }).toArray();
+    const collections = await this.getDb().listCollections({}, { nameOnly: true }).toArray();
     return collections.map(c => c.name);
   }
 
   async dropCollection(name: EntityName<AnyEntity>): Promise<boolean> {
-    return this.db.dropCollection(this.getCollectionName(name));
+    return this.getDb().dropCollection(this.getCollectionName(name));
   }
 
   mapOptions(overrides: MongoClientOptions): MongoClientOptions {
@@ -161,7 +169,8 @@ export class MongoConnection extends Connection {
   }
 
   getDb(): Db {
-    return this.db;
+    this.#db ??= this.getClient().db(this.config.get('dbName'));
+    return this.#db;
   }
 
   async execute(query: string): Promise<any> {
@@ -296,7 +305,7 @@ export class MongoConnection extends Connection {
     if (!ctx) {
       await eventBroadcaster?.dispatchEvent(EventType.beforeTransactionStart);
     }
-    const session = ctx || this.client.startSession();
+    const session = ctx || this.getClient().startSession();
     session.startTransaction(txOptions);
     this.logQuery('db.begin();');
     await eventBroadcaster?.dispatchEvent(EventType.afterTransactionStart, session);

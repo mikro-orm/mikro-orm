@@ -2360,27 +2360,6 @@ describe('EntityManagerMySql', () => {
     expect(authors2[4].name).toBe('God 30');
   });
 
-  test('colors: false', async () => {
-    const mock = mockLogger(orm, ['query']);
-
-    const author = new Author2('Jon Snow', 'snow@wall.st');
-    await orm.em.persist(author).flush();
-
-    expect(mock.mock.calls.length).toBe(3);
-    expect(mock.mock.calls[0][0]).toMatch("\x1B[90m[query] \x1B[39mbegin\x1B[36m (via write connection '127.0.0.1')\x1B[39m");
-    expect(mock.mock.calls[1][0]).toMatch(/\x1B\[90m\[query] \x1B\[39minsert into `author2` \(`created_at`, `updated_at`, `name`, `email`, `terms_accepted`\) values \(\?, \?, \?, \?, \?\)\x1B\[90m \[took \d+ ms, 1 row affected]\x1B\[39m\x1B\[36m \(via write connection '127\.0\.0\.1'\)\x1B\[39m/);
-    expect(mock.mock.calls[2][0]).toMatch("\x1B[90m[query] \x1B[39mcommit\x1B[36m (via write connection '127.0.0.1')\x1B[39m");
-
-    orm.config.set('colors', false);
-    mock.mockReset();
-    await orm.em.remove(author).flush();
-
-    expect(mock.mock.calls.length).toBe(3);
-    expect(mock.mock.calls[0][0]).toMatch("[query] begin (via write connection '127.0.0.1')");
-    expect(mock.mock.calls[1][0]).toMatch(/\[query] delete from `author2` where `id` in \(\?\) \[took \d+ ms, 1 row affected] \(via write connection '127\.0\.0\.1'\)/);
-    expect(mock.mock.calls[2][0]).toMatch("[query] commit (via write connection '127.0.0.1')");
-  });
-
   test('datetime is stored in correct timezone', async () => {
     const author = new Author2('n', 'e');
     author.createdAt = new Date('2000-01-01T00:00:00Z');

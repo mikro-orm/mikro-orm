@@ -431,6 +431,10 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver, EM exten
     if (this.options.entities.length === 0 && this.options.discovery.warnWhenNoEntities) {
       throw new Error('No entities found, please use `entities` option');
     }
+
+    if (typeof this.options.driverOptions === 'function' && this.options.driverOptions.constructor.name === 'AsyncFunction') {
+      throw new Error('`driverOptions` callback cannot be async');
+    }
   }
 
 }
