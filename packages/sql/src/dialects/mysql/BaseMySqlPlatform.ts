@@ -15,7 +15,7 @@ import { AbstractSqlPlatform } from '../../AbstractSqlPlatform.js';
 import type { IndexDef } from '../../typings.js';
 import { MySqlNativeQueryBuilder } from './MySqlNativeQueryBuilder.js';
 
-export class MySqlPlatform extends AbstractSqlPlatform {
+export class BaseMySqlPlatform extends AbstractSqlPlatform {
 
   protected override readonly schemaHelper: MySqlSchemaHelper = new MySqlSchemaHelper(this);
   protected override readonly exceptionConverter = new MySqlExceptionConverter();

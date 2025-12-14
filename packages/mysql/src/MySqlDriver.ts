@@ -11,9 +11,10 @@ import {
   type UpsertManyOptions,
   Utils,
 } from '@mikro-orm/core';
-import { AbstractSqlDriver, MySqlPlatform } from '@mikro-orm/sql';
+import { AbstractSqlDriver } from '@mikro-orm/sql';
 import { MySqlConnection } from './MySqlConnection.js';
 import { MySqlMikroORM } from './MySqlMikroORM.js';
+import { MySqlPlatform } from './MySqlPlatform.js';
 
 export class MySqlDriver extends AbstractSqlDriver<MySqlConnection, MySqlPlatform> {
 
