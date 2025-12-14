@@ -365,7 +365,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver, EM exten
     this.options.clientUrl ??= this.platform.getDefaultClientUrl();
     this.options.implicitTransactions ??= this.platform.usesImplicitTransactions();
 
-    if (metadataCache.enabled && !metadataCache.adapter) {
+    if (validate && metadataCache.enabled && !metadataCache.adapter) {
       throw new Error('No metadata cache adapter specified, please fill in `metadataCache.adapter` option or use the async MikroORM.init() method which can autoload it.');
     }
 
