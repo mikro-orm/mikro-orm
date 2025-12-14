@@ -56,7 +56,7 @@
   },
   "devDependencies": {
     "@mikro-orm/core": "^6.6.2",
-    "kysely": "0.28.8"
+    "kysely": "0.28.9"
   },
   "peerDependencies": {
     "@mikro-orm/core": "^6.0.0",
