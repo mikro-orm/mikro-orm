@@ -8,7 +8,6 @@ import {
   type IsolationLevel,
   type LogContext,
   type LoggingOptions,
-  type MaybePromise,
   type QueryResult,
   RawQueryFragment,
   type Transaction,
@@ -21,33 +20,36 @@ import { NativeQueryBuilder } from './query/NativeQueryBuilder.js';
 export abstract class AbstractSqlConnection extends Connection {
 
   declare protected platform: AbstractSqlPlatform;
-  protected client!: Kysely<any>;
+  #client?: Kysely<any>;
 
-  abstract createKyselyDialect(overrides: Dictionary): MaybePromise<Dialect>;
+  abstract createKyselyDialect(overrides: Dictionary): Dialect;
 
   async connect(options?: { skipOnConnect?: boolean }): Promise<void> {
-    let driverOptions = this.options.driverOptions ?? this.config.get('driverOptions')!;
-
-    if (typeof driverOptions === 'function') {
-      driverOptions = await driverOptions();
-    }
-
-    if (driverOptions instanceof Kysely) {
-      this.logger.log('info', 'Reusing Kysely client provided via `driverOptions`');
-      this.client = driverOptions;
-    } else if ('createDriver' in driverOptions) {
-      this.logger.log('info', 'Reusing Kysely dialect provided via `driverOptions`');
-      this.client = new Kysely<any>({ dialect: driverOptions as Dialect });
-    } else {
-      this.client = new Kysely<any>({
-        dialect: await this.createKyselyDialect(driverOptions),
-      });
-    }
-
+    this.getClient();
     this.connected = true;
 
     if (options?.skipOnConnect !== true) {
       await this.onConnect();
+    }
+  }
+
+  createKysely(): void {
+    let driverOptions = this.options.driverOptions ?? this.config.get('driverOptions')!;
+
+    if (typeof driverOptions === 'function') {
+      driverOptions = driverOptions();
+    }
+
+    if (driverOptions instanceof Kysely) {
+      this.logger.log('info', 'Reusing Kysely client provided via `driverOptions`');
+      this.#client = driverOptions;
+    } else if ('createDriver' in driverOptions) {
+      this.logger.log('info', 'Reusing Kysely dialect provided via `driverOptions`');
+      this.#client = new Kysely<any>({ dialect: driverOptions as Dialect });
+    } else {
+      this.#client = new Kysely<any>({
+        dialect: this.createKyselyDialect(driverOptions),
+      });
     }
   }
 
@@ -56,8 +58,9 @@ export abstract class AbstractSqlConnection extends Connection {
    */
   override async close(force?: boolean): Promise<void> {
     await super.close(force);
-    await this.client?.destroy();
+    await this.#client?.destroy();
     this.connected = false;
+    this.#client = undefined;
   }
 
   /**
@@ -77,7 +80,7 @@ export abstract class AbstractSqlConnection extends Connection {
     }
 
     try {
-      await this.client.executeQuery(CompiledQuery.raw('select 1'));
+      await this.getClient().executeQuery(CompiledQuery.raw('select 1'));
       return { ok: true };
     } catch (error: any) {
       return { ok: false, reason: error.message, error };
@@ -85,7 +88,11 @@ export abstract class AbstractSqlConnection extends Connection {
   }
 
   getClient<T = any>(): Kysely<T> {
-    return this.client;
+    if (!this.#client) {
+      this.createKysely();
+    }
+
+    return this.#client!;
   }
 
   override async transactional<T>(cb: (trx: Transaction<ControlledTransaction<any, any>>) => Promise<T>, options: { isolationLevel?: IsolationLevel; readOnly?: boolean; ctx?: ControlledTransaction<any>; eventBroadcaster?: TransactionEventBroadcaster; loggerContext?: LogContext } = {}): Promise<T> {
@@ -119,7 +126,7 @@ export abstract class AbstractSqlConnection extends Connection {
 
     await this.ensureConnection();
     await options.eventBroadcaster?.dispatchEvent(EventType.beforeTransactionStart);
-    let trxBuilder = this.client.startTransaction();
+    let trxBuilder = this.getClient().startTransaction();
 
     if (options.isolationLevel) {
       trxBuilder = trxBuilder.setIsolationLevel(options.isolationLevel);
@@ -203,7 +210,7 @@ export abstract class AbstractSqlConnection extends Connection {
 
     return this.executeQuery<T>(sql, async () => {
       const compiled = CompiledQuery.raw(q.formatted);
-      const res = await (ctx ?? this.client).executeQuery(compiled);
+      const res = await (ctx ?? this.#client).executeQuery(compiled);
       return this.transformRawResult<T>(res, method);
     }, { ...q, ...loggerContext });
   }
@@ -223,7 +230,7 @@ export abstract class AbstractSqlConnection extends Connection {
     } as unknown as CompiledQuery;
 
     try {
-      const res = (ctx ?? this.client).getExecutor().stream(compiled, 1);
+      const res = (ctx ?? this.getClient()).getExecutor().stream(compiled, 1);
 
       this.logQuery(sql, {
         sql, params,
@@ -252,7 +259,7 @@ export abstract class AbstractSqlConnection extends Connection {
 
     try {
       const raw = CompiledQuery.raw(buf.toString());
-      await this.client.executeQuery(raw);
+      await this.getClient().executeQuery(raw);
     } catch (e) {
       /* v8 ignore next */
       throw this.platform.getExceptionConverter().convertException(e as Error);

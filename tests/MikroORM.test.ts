@@ -172,6 +172,22 @@ describe('MikroORM', () => {
     })).rejects.toThrow(err);
   });
 
+  test('should throw when async callback provided in `driverOptions`', async () => {
+    const err = '`driverOptions` callback cannot be async';
+    await expect(MikroORM.init({
+      driver: SqliteDriver, dbName: ':memory:', entities: [Author2, BaseEntity2],
+      driverOptions: async () => ({}),
+    })).rejects.toThrow(err);
+  });
+
+  test('should throw when async callback provided in `driverOptions`', async () => {
+    const err = '`driverOptions` callback cannot be async';
+    await expect(MikroORM.init({
+      driver: MongoDriver, dbName: 'dbname', entities: [Author2, BaseEntity2],
+      driverOptions: async () => ({}),
+    })).rejects.toThrow(err);
+  });
+
   test('folder based discover with multiple entities in single file', async () => {
     const orm = await MikroORM.init({
       metadataProvider: ReflectMetadataProvider,
