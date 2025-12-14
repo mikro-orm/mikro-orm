@@ -1,5 +1,5 @@
 import { raw, Type, type TransformContext, type RawQueryFragment } from '@mikro-orm/core';
-import type { PostgreSqlPlatform } from '../PostgreSqlPlatform.js';
+import type { BasePostgreSqlPlatform } from './BasePostgreSqlPlatform.js';
 
 // Postgres has four levels of full text weights
 // https://www.postgresql.org/docs/current/textsearch-controls.html
@@ -27,7 +27,7 @@ export class FullTextType extends Type<string | WeightedFullTextValue, string | 
   // Use convertToDatabaseValue to prepare insert queries as this method has
   // access to the raw JS value. Return Knex#raw to prevent QueryBuilderHelper#mapData
   // from sanitizing the returned chaing of SQL functions.
-  override convertToDatabaseValue(value: string | WeightedFullTextValue, platform: PostgreSqlPlatform, context?: TransformContext | boolean): string | null | RawQueryFragment {
+  override convertToDatabaseValue(value: string | WeightedFullTextValue, platform: BasePostgreSqlPlatform, context?: TransformContext | boolean): string | null | RawQueryFragment {
     // Don't convert to values from select queries to the to_tsvector notation
     // these should be compared as string using a special oparator or function
     // this behaviour is defined in Platform#getFullTextWhereClause.

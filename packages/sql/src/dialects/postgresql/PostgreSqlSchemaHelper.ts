@@ -1,16 +1,9 @@
 import { type EntityProperty, EnumType, Type, Utils, type Dictionary, DeferMode } from '@mikro-orm/core';
-import {
-  SchemaHelper,
-  type AbstractSqlConnection,
-  type CheckDef,
-  type Column,
-  type DatabaseSchema,
-  type DatabaseTable,
-  type ForeignKey,
-  type IndexDef,
-  type Table,
-  type TableDifference,
-} from '@mikro-orm/sql';
+import { SchemaHelper } from '../../schema/SchemaHelper.js';
+import type { AbstractSqlConnection } from '../../AbstractSqlConnection.js';
+import type { CheckDef, Column, ForeignKey, IndexDef, Table, TableDifference } from '../../typings.js';
+import type { DatabaseSchema } from '../../schema/DatabaseSchema.js';
+import type { DatabaseTable } from '../../schema/DatabaseTable.js';
 
 export class PostgreSqlSchemaHelper extends SchemaHelper {
 
