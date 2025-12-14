@@ -1,3 +1,4 @@
+import SqlString from 'sqlstring';
 import {
   Utils,
   type SimpleColumnMeta,
@@ -155,6 +156,10 @@ export class MySqlPlatform extends AbstractSqlPlatform {
     ret.push(`${column} ${dir.replace(/(\s|nulls|first|last)*/gi, '')}`);
 
     return ret;
+  }
+
+  override escape(value: any): string {
+    return SqlString.escape(value, true, this.timezone);
   }
 
   override getDefaultClientUrl(): string {

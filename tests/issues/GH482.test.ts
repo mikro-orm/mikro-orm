@@ -114,13 +114,13 @@ describe('GH issue 482', () => {
     expect(mock.mock.calls[1][0]).toMatch(`insert into "job" ("id", "optional") values ('2', '1')`);
     expect(mock.mock.calls[2][0]).toMatch('commit');
     expect(mock.mock.calls[3][0]).toMatch('begin');
-    expect(mock.mock.calls[4][0]).toMatch(`update "job" set "optional" = NULL where "id" = '2'`);
+    expect(mock.mock.calls[4][0]).toMatch(`update "job" set "optional" = null where "id" = '2'`);
     expect(mock.mock.calls[5][0]).toMatch('commit');
     expect(mock.mock.calls[6][0]).toMatch('begin');
     expect(mock.mock.calls[7][0]).toMatch(`update "job" set "optional" = '1' where "id" = '2'`);
     expect(mock.mock.calls[8][0]).toMatch('commit');
     expect(mock.mock.calls[9][0]).toMatch('begin');
-    expect(mock.mock.calls[10][0]).toMatch(`update "job" set "optional" = NULL where "id" = '2'`);
+    expect(mock.mock.calls[10][0]).toMatch(`update "job" set "optional" = null where "id" = '2'`);
     expect(mock.mock.calls[11][0]).toMatch('commit');
   });
 

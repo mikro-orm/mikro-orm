@@ -50,8 +50,7 @@
     "access": "public"
   },
   "dependencies": {
-    "kysely": "0.28.9",
-    "sqlstring": "2.3.3"
+    "kysely": "0.28.9"
   },
   "devDependencies": {
     "@mikro-orm/core": "^6.6.2"
