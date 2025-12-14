@@ -1,12 +1,14 @@
 import { setTimeout } from 'node:timers/promises';
 import {
   Collection,
+  defineEntity,
   EntityManager,
   EntityName,
   InvalidFieldNameException,
   LockMode,
   NonUniqueFieldNameException,
   NotNullConstraintViolationException,
+  p,
   QueryOrder,
   raw,
   SyntaxErrorException,
@@ -16,9 +18,10 @@ import {
   ValidationError,
   wrap,
 } from '@mikro-orm/core';
-import { MikroORM } from '@mikro-orm/sqlite';
-import { initORMSqlite, mockLogger } from './bootstrap.js';
-import type { IPublisher4, ITest4 } from './entities-schema/index.js';
+import { MikroORM as SqliteMikroORM } from '@mikro-orm/sqlite';
+import { MikroORM as LibSqlMikroORM } from '@mikro-orm/libsql';
+import { initORMSqlite, mockLogger } from '../../bootstrap.js';
+import type { IPublisher4, ITest4 } from '../../entities-schema/index.js';
 import {
   Author4,
   BaseEntity4,
@@ -28,17 +31,19 @@ import {
   Publisher4,
   PublisherType,
   Test4,
-} from './entities-schema/index.js';
+} from '../../entities-schema/index.js';
 
 describe.each(['sqlite', 'libsql'] as const)('EntityManager (%s)', driver => {
 
-  let orm: MikroORM;
+  let orm: SqliteMikroORM | LibSqlMikroORM;
 
-  beforeAll(async () => orm = await initORMSqlite(driver));
+  beforeAll(async () => orm = await initORMSqlite<any>(driver));
   beforeEach(async () => orm.schema.clear());
   afterAll(async () => orm.close(true));
 
   test('isConnected()', async () => {
+    const MikroORM = driver === 'sqlite' ? SqliteMikroORM : LibSqlMikroORM;
+    expect(orm.driver.getORMClass()).toBe(MikroORM);
     expect(await orm.isConnected()).toBe(true);
     expect(await orm.checkConnection()).toEqual({
       ok: true,
@@ -1600,6 +1605,28 @@ describe.each(['sqlite', 'libsql'] as const)('EntityManager (%s)', driver => {
     expect(Author4.afterDestroyCalled).toBe(4);
     expect(BaseEntity4.beforeDestroyCalled).toBe(4);
     expect(BaseEntity4.afterDestroyCalled).toBe(4);
+  });
+
+  test('fts5 table', async () => {
+    await orm.schema.execute('create virtual table book5 using fts5(id, title, created_at)');
+    const Book5 = defineEntity({
+      name: 'Book5',
+      properties: {
+        id: p.integer().primary(),
+        title: p.string(),
+      },
+    });
+    orm.discoverEntity(Book5);
+
+    await orm.em.insertMany(Book5, [
+      { title: 'My Life on The Wall, part 1' },
+      { title: 'My Life on The Wall, part 1' },
+      { title: 'My Life on The Wall, part 1' },
+      { title: 'My Life on an island, part 4' },
+      { title: 'My Death in a grass field, part 5' },
+    ]);
+    const res = await orm.em.find(Book5, { title: { $fulltext: 'life wall' } });
+    expect(res).toHaveLength(3);
   });
 
 });

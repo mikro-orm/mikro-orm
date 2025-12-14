@@ -1,6 +1,7 @@
 import { type ClientSession, ObjectId } from 'mongodb';
 import {
   type Configuration,
+  type Constructor,
   type CountOptions,
   DatabaseDriver,
   type Dictionary,
@@ -30,6 +31,7 @@ import {
 import { MongoConnection } from './MongoConnection.js';
 import { MongoPlatform } from './MongoPlatform.js';
 import { MongoEntityManager } from './MongoEntityManager.js';
+import { MongoMikroORM } from './MongoMikroORM.js';
 
 export class MongoDriver extends DatabaseDriver<MongoConnection> {
 
@@ -477,6 +479,11 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     } else {
       data[versionProperty.name as EntityKey<T>] ??= update ? { $inc: 1 } : 1;
     }
+  }
+
+  /** @inheritDoc */
+  override getORMClass(): Constructor<MongoMikroORM> {
+    return MongoMikroORM;
   }
 
 }

@@ -21,8 +21,10 @@ import {
   UniqueConstraintViolationException,
   ValidationError,
   wrap,
-} from '@mikro-orm/core';
-import { MySqlDriver, raw, ScalarReference } from '@mikro-orm/mysql';
+  raw,
+  ScalarReference,
+  MySqlDriver,
+} from '@mikro-orm/mysql';
 import {
   Address2,
   Author2,
@@ -33,18 +35,18 @@ import {
   Publisher2,
   PublisherType,
   Test2,
-} from './entities-sql/index.js';
-import { initORMMySql, mockLogger } from './bootstrap.js';
-import { Author2Subscriber } from './subscribers/Author2Subscriber.js';
-import { EverythingSubscriber } from './subscribers/EverythingSubscriber.js';
-import { FlushSubscriber } from './subscribers/FlushSubscriber.js';
-import { Test2Subscriber } from './subscribers/Test2Subscriber.js';
+} from '../../entities-sql/index.js';
+import { initORMMySql, mockLogger } from '../../bootstrap.js';
+import { Author2Subscriber } from '../../subscribers/Author2Subscriber.js';
+import { EverythingSubscriber } from '../../subscribers/EverythingSubscriber.js';
+import { FlushSubscriber } from '../../subscribers/FlushSubscriber.js';
+import { Test2Subscriber } from '../../subscribers/Test2Subscriber.js';
 
 describe('EntityManagerMySql', () => {
 
-  let orm: MikroORM<MySqlDriver>;
+  let orm: MikroORM;
 
-  beforeAll(async () => orm = await initORMMySql('mysql', {}, true));
+  beforeAll(async () => orm = await initORMMySql<any>('mysql', {}, true));
   beforeEach(async () => orm.schema.clear());
   afterEach(() => {
     expect(RawQueryFragment.checkCacheSize()).toBe(0);
@@ -60,6 +62,7 @@ describe('EntityManagerMySql', () => {
   });
 
   test('isConnected()', async () => {
+    expect(orm.driver.getORMClass()).toBe(MikroORM);
     expect(await orm.isConnected()).toBe(true);
     expect(await orm.checkConnection()).toEqual({
       ok: true,
@@ -501,7 +504,6 @@ describe('EntityManagerMySql', () => {
   });
 
   test('should load entities', async () => {
-    expect(orm).toBeInstanceOf(MikroORM);
     expect(orm.em).toBeInstanceOf(EntityManager);
 
     const god = new Author2('God', 'hello@heaven.god');

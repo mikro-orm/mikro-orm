@@ -1,12 +1,12 @@
 import { v4 } from 'uuid';
-import { Collection, EntityManager, MikroORM, QueryFlag, QueryOrder, Reference, wrap } from '@mikro-orm/core';
-import { MariaDbDriver } from '@mikro-orm/mariadb';
-import { Author2, Book2, BookTag2, Publisher2, PublisherType } from './entities-sql/index.js';
-import { initORMMySql, mockLogger } from './bootstrap.js';
+import { Collection, EntityManager, QueryFlag, QueryOrder, Reference, wrap } from '@mikro-orm/core';
+import { MariaDbDriver, MikroORM } from '@mikro-orm/mariadb';
+import { Author2, Book2, BookTag2, Publisher2, PublisherType } from '../../entities-sql/index.js';
+import { initORMMySql, mockLogger } from '../../bootstrap.js';
 
 describe('EntityManagerMariaDb', () => {
 
-  let orm: MikroORM<MariaDbDriver>;
+  let orm: MikroORM;
 
   beforeAll(async () => orm = await initORMMySql<MariaDbDriver>('mariadb', {}, true));
   beforeEach(async () => orm.schema.clear());
@@ -16,6 +16,7 @@ describe('EntityManagerMariaDb', () => {
   });
 
   test('isConnected()', async () => {
+    expect(orm.driver.getORMClass()).toBe(MikroORM);
     expect(await orm.isConnected()).toBe(true);
     expect(await orm.checkConnection()).toEqual({
       ok: true,
@@ -97,7 +98,6 @@ describe('EntityManagerMariaDb', () => {
   });
 
   test('should load entities', async () => {
-    expect(orm).toBeInstanceOf(MikroORM);
     expect(orm.em).toBeInstanceOf(EntityManager);
 
     const god = new Author2('God', 'hello@heaven.god');

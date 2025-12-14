@@ -49,10 +49,10 @@ import {
   PublisherType,
   PublisherType2,
   Test2,
-} from './entities-sql/index.js';
-import { initORMPostgreSql, mockLogger } from './bootstrap.js';
+} from '../../entities-sql/index.js';
+import { initORMPostgreSql, mockLogger } from '../../bootstrap.js';
 import { performance } from 'node:perf_hooks';
-import { Test2Subscriber } from './subscribers/Test2Subscriber.js';
+import { Test2Subscriber } from '../../subscribers/Test2Subscriber.js';
 
 describe('EntityManagerPostgre', () => {
 
@@ -88,6 +88,7 @@ describe('EntityManagerPostgre', () => {
   });
 
   test('isConnected()', async () => {
+    expect(orm.driver.getORMClass()).toBe(MikroORM);
     expect(await orm.isConnected()).toBe(true);
     expect(await orm.checkConnection()).toEqual({
       ok: true,

@@ -1,4 +1,3 @@
-/* eslint-disable dot-notation */
 import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import {
   Collection,
@@ -19,11 +18,11 @@ import {
   wrap,
 } from '@mikro-orm/mongodb';
 
-import { Author, Book, BookTag, Publisher, PublisherType, Test } from './entities/index.js';
-import { AuthorRepository } from './repositories/AuthorRepository.js';
-import { initORMMongo, mockLogger } from './bootstrap.js';
-import FooBar from './entities/FooBar.js';
-import { FooBaz } from './entities/FooBaz.js';
+import { Author, Book, BookTag, Publisher, PublisherType, Test } from '../../entities/index.js';
+import { AuthorRepository } from '../../repositories/AuthorRepository.js';
+import { initORMMongo, mockLogger } from '../../bootstrap.js';
+import FooBar from '../../entities/FooBar.js';
+import { FooBaz } from '../../entities/FooBaz.js';
 
 describe('EntityManagerMongo', () => {
 
@@ -38,6 +37,7 @@ describe('EntityManagerMongo', () => {
 
   test('should load entities', async () => {
     expect(orm.em).toBeInstanceOf(EntityManager);
+    expect(orm.driver.getORMClass()).toBe(MikroORM);
 
     const god = new Author('God', 'hello@heaven.god');
     const bible = new Book('Bible', god);
@@ -1905,10 +1905,12 @@ describe('EntityManagerMongo', () => {
     expect(ref2).toBe(ref3);
 
     expect(ref3.unwrap()).toBe(author);
-    ref3['set'](author2);
+    // @ts-ignore
+    ref3.set(author2);
     expect(ref3.unwrap()).toBe(author2);
     expect(ref3.id).toBe(author2.id);
-    ref3['set'](Reference.create(author));
+    // @ts-ignore
+    ref3.set(Reference.create(author));
     expect(ref3.id).toBe(author.id);
 
     const ent = await ref.loadOrFail();

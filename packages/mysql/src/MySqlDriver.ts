@@ -1,5 +1,6 @@
 import {
   type Configuration,
+  type Constructor,
   type Dictionary,
   type EntityDictionary,
   type EntityKey,
@@ -12,6 +13,7 @@ import {
 } from '@mikro-orm/core';
 import { AbstractSqlDriver, MySqlPlatform } from '@mikro-orm/sql';
 import { MySqlConnection } from './MySqlConnection.js';
+import { MySqlMikroORM } from './MySqlMikroORM.js';
 
 export class MySqlDriver extends AbstractSqlDriver<MySqlConnection, MySqlPlatform> {
 
@@ -76,6 +78,11 @@ export class MySqlDriver extends AbstractSqlDriver<MySqlConnection, MySqlPlatfor
     res.row = res.rows![0];
 
     return res;
+  }
+
+  /** @inheritDoc */
+  override getORMClass(): Constructor<MySqlMikroORM> {
+    return MySqlMikroORM;
   }
 
 }
