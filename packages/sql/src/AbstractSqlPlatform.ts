@@ -1,4 +1,3 @@
-import SqlString from 'sqlstring';
 import {
   type Constructor,
   type EntityManager,
@@ -92,10 +91,6 @@ export abstract class AbstractSqlPlatform extends Platform {
     }
 
     return this.escape(value);
-  }
-
-  override escape(value: any): string {
-    return SqlString.escape(value, true, this.timezone);
   }
 
   override getSearchJsonPropertySQL(path: string, type: string, aliased: boolean): string {

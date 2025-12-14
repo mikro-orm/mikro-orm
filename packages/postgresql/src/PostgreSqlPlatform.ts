@@ -337,6 +337,10 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
   }
 
   override escape(value: any): string {
+    if (typeof value === 'bigint') {
+      value = value.toString();
+    }
+
     if (typeof value === 'string') {
       return Client.prototype.escapeLiteral(value);
     }
@@ -353,7 +357,7 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
       return value.map(v => this.escape(v)).join(', ');
     }
 
-    return super.escape(value);
+    return value;
   }
 
   private pad(number: number, digits: number): string {

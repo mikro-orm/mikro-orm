@@ -1445,11 +1445,6 @@ describe('EntityManagerPostgre', () => {
       'from "book2_tags" as "b0" ' +
       `where "b0"."book_tag2_id" in ('1') ` +
       'order by "b0"."order" asc');
-    // expect(mock.mock.calls[1][0]).toMatch('select "b0"."order", "b0"."book2_uuid_pk", "b0"."book_tag2_id", "b1"."uuid_pk" as "b1__uuid_pk" ' +
-    //   'from "book2_tags" as "b0" ' +
-    //   'inner join "book2" as "b1" on "b0"."book2_uuid_pk" = "b1"."uuid_pk" ' +
-    //   `where "b0"."book_tag2_id" in ('1') ` +
-    //   'order by "b0"."order" asc');
     expect(bt2.books.isInitialized()).toBe(true);
     expect(bt2.books.isInitialized(true)).toBe(false);
     expect(wrap(bt2.books[0]).isInitialized()).toBe(false);
@@ -1918,7 +1913,7 @@ describe('EntityManagerPostgre', () => {
     await orm.em.flush();
 
     expect(mock.mock.calls[0][0]).toMatch('begin');
-    expect(mock.mock.calls[1][0]).toMatch(/update "author2" set "favourite_author_id" = NULL, "updated_at" = '.*' where "id" = 2/);
+    expect(mock.mock.calls[1][0]).toMatch(/update "author2" set "favourite_author_id" = null, "updated_at" = '.*' where "id" = 2/);
     expect(mock.mock.calls[2][0]).toMatch('commit');
 
     expect(ref2.favouriteAuthor).toBeNull();
