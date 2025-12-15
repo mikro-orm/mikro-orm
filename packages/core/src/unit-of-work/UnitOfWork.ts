@@ -1,4 +1,3 @@
-import { AsyncLocalStorage } from 'node:async_hooks';
 import type {
   AnyEntity,
   Dictionary,
@@ -29,10 +28,13 @@ import { type EventManager } from '../events/EventManager.js';
 import { TransactionEventBroadcaster } from '../events/TransactionEventBroadcaster.js';
 import { IdentityMap } from './IdentityMap.js';
 import type { LockOptions } from '../drivers/IDatabaseDriver.js';
-import type { EntityComparator, MetadataStorage, Platform } from '@mikro-orm/core';
+import { createAsyncContext } from '../utils/AsyncContext.js';
+import type { EntityComparator } from '../utils/EntityComparator.js';
+import type { MetadataStorage } from '../metadata/MetadataStorage.js';
+import type { Platform } from '../platforms/Platform.js';
 
 // to deal with validation for flush inside flush hooks and `Promise.all`
-const insideFlush = new AsyncLocalStorage<boolean>();
+const insideFlush = createAsyncContext<boolean>();
 
 export class UnitOfWork {
 

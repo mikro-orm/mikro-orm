@@ -1,9 +1,9 @@
-import { AsyncLocalStorage } from 'node:async_hooks';
 import type { EntityManager } from '../EntityManager.js';
+import { createAsyncContext } from './AsyncContext.js';
 
 export class TransactionContext {
 
-  private static storage = new AsyncLocalStorage<TransactionContext>();
+  private static storage = createAsyncContext<TransactionContext>();
   readonly id: number;
 
   constructor(readonly em: EntityManager) {

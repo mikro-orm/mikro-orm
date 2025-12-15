@@ -1,11 +1,11 @@
-import { AsyncLocalStorage } from 'node:async_hooks';
 import { Utils } from './Utils.js';
 import type { AnyString, Dictionary, EntityKey } from '../typings.js';
+import { createAsyncContext } from './AsyncContext.js';
 
 export class RawQueryFragment {
 
   static #rawQueryCache = new Map<string, RawQueryFragment>();
-  static #storage = new AsyncLocalStorage<Set<string>>();
+  static #storage = createAsyncContext<Set<string>>();
   static #index = 0n;
   static cloneRegistry?: Set<string>;
 
