@@ -638,7 +638,7 @@ export class EntityComparator {
         ret += `      ret${dataKey} = null;\n`;
         ret += `    } else if (typeof entity${entityKey} !== 'undefined') {\n`;
         ret += `      const identifier = entity${entityKey}.__helper.__identifier;\n`;
-        ret += `      if (identifier instanceof EntityIdentifier && identifier.getValue() == null) {\n`;
+        ret += `      if (identifier instanceof EntityIdentifier && !entity${entityKey}.__helper.hasPrimaryKey()) {\n`;
         ret += `        ret${dataKey} = identifier;\n`;
         ret += `      } else {\n`;
         ret += `        ret${dataKey} = toArray(entity${entityKey}.__helper.getPrimaryKey(true));\n`;
