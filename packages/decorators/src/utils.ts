@@ -1,14 +1,14 @@
 import {
-  type ReferenceKind,
-  type EntityMetadata,
   type Dictionary,
-  Utils,
-  type MaybePromise,
   EntityManager,
+  type EntityMetadata,
   EntityRepository,
-  MikroORM,
+  type MaybePromise,
   MetadataError,
   MetadataStorage,
+  MikroORM,
+  type ReferenceKind,
+  Utils,
 } from '@mikro-orm/core';
 
 /**
@@ -108,7 +108,7 @@ export function lookupPathFromDecorator(name: string, stack?: string[]): string 
   if (line === -1) {
     // here we handle bun which stack is different from nodejs so we search for reflect-metadata
     // Different bun versions might have different stack traces. The "last index" works for both 1.2.6 and 1.2.7.
-    const reflectLine = stack.findLastIndex(line => Utils.normalizePath(line).includes('node_modules/reflect-metadata/Reflect.js'));
+    const reflectLine = stack.findLastIndex(line => line.replace(/\\/g, '/').includes('node_modules/reflect-metadata/Reflect.js'));
 
     if (reflectLine === -1 || reflectLine + 2 >= stack.length || !stack[reflectLine + 1].includes('bun:wrap')) {
       return name;
@@ -121,13 +121,13 @@ export function lookupPathFromDecorator(name: string, stack?: string[]): string 
     line++;
   }
 
-  if (Utils.normalizePath(stack[line]).includes('node_modules/tslib/tslib')) {
+  if (stack[line].replace(/\\/g, '/').includes('node_modules/tslib/tslib')) {
     line++;
   }
 
   try {
     const re = stack[line].match(/\(.+\)/i) ? /\((.*):\d+:\d+\)/ : /at\s*(.*):\d+:\d+$/;
-    return Utils.normalizePath(stack[line].match(re)![1]);
+    return stack[line].match(re)![1];
   } catch {
     return name;
   }

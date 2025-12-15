@@ -320,7 +320,7 @@ export class MetadataDiscovery {
 
     if (path) {
       const meta = Utils.copy(MetadataStorage.getMetadata(entity.name, path), false);
-      meta.path = Utils.relativePath(path, this.config.get('baseDir'));
+      meta.path = path;
       this.metadata.set(entity.name, meta);
     }
 
@@ -354,7 +354,7 @@ export class MetadataDiscovery {
     const path = meta.path;
     this.logger.log('discovery', `- processing entity ${colors.cyan(meta.className)}${colors.grey(path ? ` (${path})` : '')}`);
     const root = this.getRootEntity(meta);
-    schema.meta.path = Utils.relativePath(meta.path, this.config.get('baseDir'));
+    schema.meta.path = meta.path;
     const cache = this.metadataProvider.getCachedMetadata(meta, root);
 
     if (cache) {

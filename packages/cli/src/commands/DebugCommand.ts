@@ -1,5 +1,5 @@
 import type { ArgumentsCamelCase } from 'yargs';
-import { colors, Utils } from '@mikro-orm/core';
+import { colors } from '@mikro-orm/core';
 import { fs } from '@mikro-orm/core/fs-utils';
 import type { BaseArgs, BaseCommand } from '../CLIConfigurator.js';
 import { CLIHelper } from '../CLIHelper.js';
@@ -85,8 +85,8 @@ export class DebugCommand implements BaseCommand {
 
   private static async checkPaths(paths: string[], failedColor: 'red' | 'yellow', baseDir?: string): Promise<void> {
     for (let path of paths) {
-      path = Utils.absolutePath(path, baseDir);
-      path = Utils.normalizePath(path);
+      path = fs.absolutePath(path, baseDir);
+      path = fs.normalizePath(path);
 
       if (fs.pathExists(path)) {
         CLIHelper.dump(`   - ${path} (${colors.green('found')})`);

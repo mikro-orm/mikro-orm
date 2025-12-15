@@ -7,8 +7,8 @@ import { MetadataStorage } from './MetadataStorage.js';
 import { EntitySchema } from './EntitySchema.js';
 
 async function getEntityClassOrSchema(filepath: string, allTargets: Map<Constructor | EntitySchema, string>, baseDir: string): Promise<void> {
-  const path = Utils.normalizePath(baseDir, filepath);
-  const exports = await Utils.dynamicImport(path);
+  const path = fs.normalizePath(baseDir, filepath);
+  const exports = await fs.dynamicImport(path);
   const targets = Object.values<Constructor | EntitySchema>(exports);
 
   // ignore class implementations that are linked from an EntitySchema
@@ -32,9 +32,9 @@ async function getEntityClassOrSchema(filepath: string, allTargets: Map<Construc
 }
 
 export async function discoverEntities(paths: string | string[], options?: { baseDir?: string }): Promise<Iterable<EntitySchema | Constructor>> {
-  paths = Utils.asArray(paths).map(path => Utils.normalizePath(path));
-  const baseDir = options?.baseDir ?? process.cwd();
-  const files = fs.glob(paths, Utils.normalizePath(baseDir));
+  paths = Utils.asArray(paths).map(path => fs.normalizePath(path));
+  const baseDir = fs.absolutePath(options?.baseDir ?? process.cwd());
+  const files = fs.glob(paths, fs.normalizePath(baseDir));
   const found = new Map<Constructor | EntitySchema, string>();
 
   for (const filepath of files) {

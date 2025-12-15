@@ -116,7 +116,7 @@ export class CLIHelper {
     }
 
     /* v8 ignore next */
-    Utils.dynamicImportProvider = options.dynamicImportProvider ??= id => {
+    (globalThis as any).dynamicImportProvider = options.dynamicImportProvider ??= id => {
       id = fileURLToPath(id);
       return createRequire(process.cwd())(id);
     };
@@ -217,11 +217,11 @@ export class CLIHelper {
 
   private static async getConfigFile(paths: string[]): Promise<[string, unknown] | []> {
     for (let path of paths) {
-      path = Utils.absolutePath(path);
-      path = Utils.normalizePath(path);
+      path = fs.absolutePath(path);
+      path = fs.normalizePath(path);
 
       if (fs.pathExists(path)) {
-        const config = await Utils.dynamicImport(path);
+        const config = await fs.dynamicImport(path);
         /* v8 ignore next */
         return [path, await (config.default ?? config)];
       }
@@ -286,7 +286,7 @@ export class CLIHelper {
       from = join(from, '__fake.js');
     }
 
-    const path = Utils.normalizePath(import.meta.resolve(id, pathToFileURL(from)));
+    const path = fs.normalizePath(import.meta.resolve(id, pathToFileURL(from)));
     const parts = path.split('/');
     const idx = parts.lastIndexOf(id) + 1;
     parts.splice(idx, parts.length - idx);
@@ -338,8 +338,10 @@ export class CLIHelper {
     const loaders = {
       swc: { esm: '@swc-node/register/esm-register', cjs: '@swc-node/register' },
       tsx: { esm: 'tsx/esm/api', cjs: 'tsx/cjs/api', cb: (tsx: any) => tsx.register({ tsconfig: configPath }) },
-      jiti: { esm: 'jiti/register', cjs: 'jiti/register', cb: () => Utils.dynamicImportProvider = id => import(id).then(mod => mod?.default ?? mod) },
-      tsimp: { esm: 'tsimp/import', cjs: 'tsimp/import' },
+      jiti: { cjs: 'jiti/register', cb: () => {
+        return (globalThis as any).dynamicImportProvider = (id: string) => import(id).then(mod => mod?.default ?? mod);
+      } },
+      tsimp: { cjs: 'tsimp/import' },
     } as const;
 
     for (const loader of Utils.keys(loaders)) {
@@ -349,8 +351,7 @@ export class CLIHelper {
 
       const { esm, cjs, cb } = loaders[loader] as { esm: string; cjs: string; cb?: (mod: any) => void };
       const isEsm = this.isESM();
-      /* v8 ignore next */
-      const module = isEsm ? esm : cjs;
+      const module = isEsm && esm ? esm : cjs;
       const mod = await Utils.tryImport({ module });
 
       if (mod) {

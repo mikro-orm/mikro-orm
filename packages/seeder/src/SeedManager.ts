@@ -26,7 +26,7 @@ export class SeedManager implements ISeedManager {
     this.detectSourceFolder();
     /* v8 ignore next */
     const key = (this.config.get('preferTs', Utils.detectTypeScriptSupport()) && this.options.pathTs) ? 'pathTs' : 'path';
-    this.absolutePath = Utils.absolutePath(this.options[key]!, this.config.get('baseDir'));
+    this.absolutePath = fs.absolutePath(this.options[key]!, this.config.get('baseDir'));
   }
 
   static register(orm: MikroORM): void {
@@ -81,7 +81,7 @@ export class SeedManager implements ISeedManager {
     const classMap = new Map<string, Constructor<Seeder>>();
 
     for (const path of files) {
-      const exports = await Utils.dynamicImport(path);
+      const exports = await fs.dynamicImport(path);
 
       for (const name of Object.keys(exports)) {
         classMap.set(name, exports[name]);
@@ -92,7 +92,7 @@ export class SeedManager implements ISeedManager {
       const seederClass = classMap.get(className);
 
       if (!seederClass) {
-        throw new Error(`Seeder class ${className} not found in ${Utils.relativePath(path, process.cwd())}`);
+        throw new Error(`Seeder class ${className} not found in ${fs.relativePath(path, process.cwd())}`);
       }
 
       await this.seed(seederClass);

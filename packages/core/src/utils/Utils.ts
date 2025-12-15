@@ -1,5 +1,3 @@
-import { isAbsolute, normalize, relative } from 'node:path';
-import { fileURLToPath, pathToFileURL } from 'node:url';
 import { clone } from './clone.js';
 import type {
   Dictionary,
@@ -175,9 +173,6 @@ export class Utils {
 
   static readonly PK_SEPARATOR = '~~~';
   static readonly #ORM_VERSION = '[[MIKRO_ORM_VERSION]]';
-
-  /* v8 ignore next */
-  static dynamicImportProvider = (id: string) => import(id);
 
   /**
    * Checks if the argument is instance of `Object`. Returns false for arrays.
@@ -756,77 +751,6 @@ export class Utils {
     return item?.__collection;
   }
 
-  static fileURLToPath(url: string | URL) {
-    // expose `fileURLToPath` on Utils so that it can be properly mocked in tests
-    return fileURLToPath(url);
-  }
-
-  /**
-   * Resolves and normalizes a series of path parts relative to each preceding part.
-   * If any part is a `file:` URL, it is converted to a local path. If any part is an
-   * absolute path, it replaces preceding paths (similar to `path.resolve` in NodeJS).
-   * Trailing directory separators are removed, and all directory separators are converted
-   * to POSIX-style separators (`/`).
-   */
-  static normalizePath(...parts: string[]): string {
-    let start = 0;
-
-    for (let i = 0; i < parts.length; i++) {
-      const part = parts[i];
-      if (isAbsolute(part)) {
-        start = i;
-      } else if (part.startsWith('file:')) {
-        start = i;
-        parts[i] = Utils.fileURLToPath(part);
-      }
-    }
-
-    if (start > 0) {
-      parts = parts.slice(start);
-    }
-
-    let path = parts.join('/').replace(/\\/g, '/').replace(/\/$/, '');
-    path = normalize(path).replace(/\\/g, '/');
-
-    return (path.match(/^[/.]|[a-zA-Z]:/) || path.startsWith('!')) ? path : './' + path;
-  }
-
-  /**
-   * Determines the relative path between two paths. If either path is a `file:` URL,
-   * it is converted to a local path.
-   */
-  static relativePath(path: string, relativeTo: string): string {
-    if (!path) {
-      return path;
-    }
-
-    path = Utils.normalizePath(path);
-
-    if (path.startsWith('.')) {
-      return path;
-    }
-
-    path = relative(Utils.normalizePath(relativeTo), path);
-
-    return Utils.normalizePath(path);
-  }
-
-  /**
-   * Computes the absolute path to for the given path relative to the provided base directory.
-   * If either `path` or `baseDir` are `file:` URLs, they are converted to local paths.
-   */
-  static absolutePath(path: string, baseDir = process.cwd()): string {
-    if (!path) {
-      return Utils.normalizePath(baseDir);
-    }
-
-    if (!isAbsolute(path) && !path.startsWith('file://')) {
-      path = baseDir + '/' + path;
-    }
-
-    return Utils.normalizePath(path);
-  }
-
   // FNV-1a 64-bit
   static hash(data: string, length?: number): string {
     let h1 = 0xcbf29ce484222325n;
@@ -923,12 +847,6 @@ export class Utils {
     }
 
     return false;
-  }
-
-  static async dynamicImport<T = any>(id: string): Promise<T> {
-    /* v8 ignore next */
-    const specifier = id.startsWith('file://') ? id : pathToFileURL(id).href;
-    return this.dynamicImportProvider(specifier);
   }
 
   static getORMVersion(): string {
