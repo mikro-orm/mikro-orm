@@ -636,13 +636,10 @@ export class EntityComparator {
         context.set('EntityIdentifier', EntityIdentifier);
         ret += `    if (entity${entityKey} === null) {\n`;
         ret += `      ret${dataKey} = null;\n`;
+        ret += `    } else if (entity${entityKey}?.__helper.__identifier && !entity${entityKey}.__helper.hasPrimaryKey()) {\n`;
+        ret += `      ret${dataKey} = entity${entityKey}?.__helper.__identifier;\n`;
         ret += `    } else if (typeof entity${entityKey} !== 'undefined') {\n`;
-        ret += `      const identifier = entity${entityKey}.__helper.__identifier;\n`;
-        ret += `      if (identifier instanceof EntityIdentifier && !entity${entityKey}.__helper.hasPrimaryKey()) {\n`;
-        ret += `        ret${dataKey} = identifier;\n`;
-        ret += `      } else {\n`;
-        ret += `        ret${dataKey} = toArray(entity${entityKey}.__helper.getPrimaryKey(true));\n`;
-        ret += `      }\n`;
+        ret += `      ret${dataKey} = toArray(entity${entityKey}.__helper.getPrimaryKey(true));\n`;
         ret += `    }\n`;
       }
 
