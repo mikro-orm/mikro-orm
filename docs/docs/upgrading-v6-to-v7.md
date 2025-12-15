@@ -299,3 +299,14 @@ The `processOnCreateHooksEarly` option is now enabled by default. `onCreate` hoo
 ## `validate` and `strict` options removed
 
 Both are now enabled by default, and the auto-fixing mechanism is removed. This means that if you try to map a raw result from the database, it needs to be correctly typed. One example where this can happen is when you use some aggregation function like `sum`, in some dialects like postgres, it produces strings by default, which are no longer mappable to a `number` property by default.
+
+## `Connection.loadFile` method removed
+
+A new method is introduced to execute a schema dump called `Connection.executeDump`. Loading of the dump from a file is now the user's responsibility.
+
+```diff
+-await orm.driver.getConnection().loadFile('schema.sql');
++import { readFile } from 'node:fs/promises';
++const buf = await readFile('schema.sql');
++await orm.driver.getConnection().executeDump(buf.toString());`
+```

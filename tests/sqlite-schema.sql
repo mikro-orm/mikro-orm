@@ -11,7 +11,11 @@ drop table if exists `test3`;
 drop table if exists `book3_to_book_tag3`;
 drop table if exists `publisher3_to_test3`;
 
-create table `test3` (`id` integer not null primary key autoincrement, `name` text null, `version` integer not null default 1);
+create table `test3` (
+  `id` integer not null primary key autoincrement,
+  `name` text null,
+  `version` integer not null default 1
+);
 
 create table `publisher3` (`id` integer not null primary key autoincrement, `name` text not null, `type` text not null);
 
