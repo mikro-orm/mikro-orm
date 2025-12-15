@@ -15,6 +15,7 @@ import type { Platform } from '../platforms';
 import { compareArrays, compareBooleans, compareBuffers, compareObjects, equals, parseJsonSafe, Utils } from './Utils';
 import { JsonType } from '../types/JsonType';
 import { RawQueryFragment } from './RawQueryFragment';
+import { EntityIdentifier } from '../entity/EntityIdentifier';
 
 type Comparator<T> = (a: T, b: T, options?: { includeInverseSides?: boolean }) => EntityData<T>;
 type ResultMapper<T> = (result: EntityData<T>) => EntityData<T> | null;
@@ -632,8 +633,11 @@ export class EntityComparator {
         };
 
         context.set('toArray', toArray);
+        context.set('EntityIdentifier', EntityIdentifier);
         ret += `    if (entity${entityKey} === null) {\n`;
         ret += `      ret${dataKey} = null;\n`;
+        ret += `    } else if (entity${entityKey}?.__helper.__identifier && !entity${entityKey}.__helper.hasPrimaryKey()) {\n`;
+        ret += `      ret${dataKey} = entity${entityKey}?.__helper.__identifier;\n`;
         ret += `    } else if (typeof entity${entityKey} !== 'undefined') {\n`;
         ret += `      ret${dataKey} = toArray(entity${entityKey}.__helper.getPrimaryKey(true));\n`;
         ret += `    }\n`;

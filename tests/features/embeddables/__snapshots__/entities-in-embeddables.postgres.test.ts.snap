@@ -39,6 +39,8 @@ exports[`embedded entities in postgres diffing 1`] = `
         if (typeof entity.profile1 !== 'undefined' && typeof entity.profile1.identity !== 'undefined' && typeof entity.profile1.identity.meta !== 'undefined') {
           if (entity.profile1.identity.meta.source === null) {
             ret.profile1_identity_meta_source = null;
+          } else if (entity.profile1.identity.meta.source?.__helper.__identifier && !entity.profile1.identity.meta.source.__helper.hasPrimaryKey()) {
+            ret.profile1_identity_meta_source = entity.profile1.identity.meta.source?.__helper.__identifier;
           } else if (typeof entity.profile1.identity.meta.source !== 'undefined') {
             ret.profile1_identity_meta_source = toArray(entity.profile1.identity.meta.source.__helper.getPrimaryKey(true));
           }
@@ -64,6 +66,8 @@ exports[`embedded entities in postgres diffing 1`] = `
               if (typeof entity.profile1 !== 'undefined' && typeof entity.profile1.identity !== 'undefined' && typeof entity.profile1.identity.links !== 'undefined' && typeof entity.profile1.identity.links[idx_0].meta !== 'undefined') {
                 if (entity.profile1.identity.links[idx_0].meta.source === null) {
                   ret.profile1_identity_links[idx_0].meta.source = null;
+                } else if (entity.profile1.identity.links[idx_0].meta.source?.__helper.__identifier && !entity.profile1.identity.links[idx_0].meta.source.__helper.hasPrimaryKey()) {
+                  ret.profile1_identity_links[idx_0].meta.source = entity.profile1.identity.links[idx_0].meta.source?.__helper.__identifier;
                 } else if (typeof entity.profile1.identity.links[idx_0].meta.source !== 'undefined') {
                   ret.profile1_identity_links[idx_0].meta.source = toArray(entity.profile1.identity.links[idx_0].meta.source.__helper.getPrimaryKey(true));
                 }
@@ -83,6 +87,8 @@ exports[`embedded entities in postgres diffing 1`] = `
                   if (typeof entity.profile1 !== 'undefined' && typeof entity.profile1.identity !== 'undefined' && typeof entity.profile1.identity.links !== 'undefined' && typeof entity.profile1.identity.links[idx_0].metas !== 'undefined') {
                     if (entity.profile1.identity.links[idx_0].metas[idx_1].source === null) {
                       ret.profile1_identity_links[idx_0].metas[idx_1].source = null;
+                    } else if (entity.profile1.identity.links[idx_0].metas[idx_1].source?.__helper.__identifier && !entity.profile1.identity.links[idx_0].metas[idx_1].source.__helper.hasPrimaryKey()) {
+                      ret.profile1_identity_links[idx_0].metas[idx_1].source = entity.profile1.identity.links[idx_0].metas[idx_1].source?.__helper.__identifier;
                     } else if (typeof entity.profile1.identity.links[idx_0].metas[idx_1].source !== 'undefined') {
                       ret.profile1_identity_links[idx_0].metas[idx_1].source = toArray(entity.profile1.identity.links[idx_0].metas[idx_1].source.__helper.getPrimaryKey(true));
                     }
@@ -95,6 +101,8 @@ exports[`embedded entities in postgres diffing 1`] = `
             if (typeof entity.profile1 !== 'undefined' && typeof entity.profile1.identity !== 'undefined' && typeof entity.profile1.identity.links !== 'undefined') {
               if (entity.profile1.identity.links[idx_0].source === null) {
                 ret.profile1_identity_links[idx_0].source = null;
+              } else if (entity.profile1.identity.links[idx_0].source?.__helper.__identifier && !entity.profile1.identity.links[idx_0].source.__helper.hasPrimaryKey()) {
+                ret.profile1_identity_links[idx_0].source = entity.profile1.identity.links[idx_0].source?.__helper.__identifier;
               } else if (typeof entity.profile1.identity.links[idx_0].source !== 'undefined') {
                 ret.profile1_identity_links[idx_0].source = toArray(entity.profile1.identity.links[idx_0].source.__helper.getPrimaryKey(true));
               }
@@ -108,6 +116,8 @@ exports[`embedded entities in postgres diffing 1`] = `
       if (typeof entity.profile1 !== 'undefined' && typeof entity.profile1.identity !== 'undefined') {
         if (entity.profile1.identity.source === null) {
           ret.profile1_identity_source = null;
+        } else if (entity.profile1.identity.source?.__helper.__identifier && !entity.profile1.identity.source.__helper.hasPrimaryKey()) {
+          ret.profile1_identity_source = entity.profile1.identity.source?.__helper.__identifier;
         } else if (typeof entity.profile1.identity.source !== 'undefined') {
           ret.profile1_identity_source = toArray(entity.profile1.identity.source.__helper.getPrimaryKey(true));
         }
@@ -118,6 +128,8 @@ exports[`embedded entities in postgres diffing 1`] = `
     if (typeof entity.profile1 !== 'undefined') {
       if (entity.profile1.source === null) {
         ret.profile1_source = null;
+      } else if (entity.profile1.source?.__helper.__identifier && !entity.profile1.source.__helper.hasPrimaryKey()) {
+        ret.profile1_source = entity.profile1.source?.__helper.__identifier;
       } else if (typeof entity.profile1.source !== 'undefined') {
         ret.profile1_source = toArray(entity.profile1.source.__helper.getPrimaryKey(true));
       }
@@ -143,6 +155,8 @@ exports[`embedded entities in postgres diffing 1`] = `
         if (typeof entity.profile2 !== 'undefined' && typeof entity.profile2.identity !== 'undefined' && typeof entity.profile2.identity.meta !== 'undefined') {
           if (entity.profile2.identity.meta.source === null) {
             ret.profile2.identity.meta.source = null;
+          } else if (entity.profile2.identity.meta.source?.__helper.__identifier && !entity.profile2.identity.meta.source.__helper.hasPrimaryKey()) {
+            ret.profile2.identity.meta.source = entity.profile2.identity.meta.source?.__helper.__identifier;
           } else if (typeof entity.profile2.identity.meta.source !== 'undefined') {
             ret.profile2.identity.meta.source = toArray(entity.profile2.identity.meta.source.__helper.getPrimaryKey(true));
           }
@@ -168,6 +182,8 @@ exports[`embedded entities in postgres diffing 1`] = `
               if (typeof entity.profile2 !== 'undefined' && typeof entity.profile2.identity !== 'undefined' && typeof entity.profile2.identity.links !== 'undefined' && typeof entity.profile2.identity.links[idx_2].meta !== 'undefined') {
                 if (entity.profile2.identity.links[idx_2].meta.source === null) {
                   ret.profile2.identity.links[idx_2].meta.source = null;
+                } else if (entity.profile2.identity.links[idx_2].meta.source?.__helper.__identifier && !entity.profile2.identity.links[idx_2].meta.source.__helper.hasPrimaryKey()) {
+                  ret.profile2.identity.links[idx_2].meta.source = entity.profile2.identity.links[idx_2].meta.source?.__helper.__identifier;
                 } else if (typeof entity.profile2.identity.links[idx_2].meta.source !== 'undefined') {
                   ret.profile2.identity.links[idx_2].meta.source = toArray(entity.profile2.identity.links[idx_2].meta.source.__helper.getPrimaryKey(true));
                 }
@@ -187,6 +203,8 @@ exports[`embedded entities in postgres diffing 1`] = `
                   if (typeof entity.profile2 !== 'undefined' && typeof entity.profile2.identity !== 'undefined' && typeof entity.profile2.identity.links !== 'undefined' && typeof entity.profile2.identity.links[idx_2].metas !== 'undefined') {
                     if (entity.profile2.identity.links[idx_2].metas[idx_3].source === null) {
                       ret.profile2.identity.links[idx_2].metas[idx_3].source = null;
+                    } else if (entity.profile2.identity.links[idx_2].metas[idx_3].source?.__helper.__identifier && !entity.profile2.identity.links[idx_2].metas[idx_3].source.__helper.hasPrimaryKey()) {
+                      ret.profile2.identity.links[idx_2].metas[idx_3].source = entity.profile2.identity.links[idx_2].metas[idx_3].source?.__helper.__identifier;
                     } else if (typeof entity.profile2.identity.links[idx_2].metas[idx_3].source !== 'undefined') {
                       ret.profile2.identity.links[idx_2].metas[idx_3].source = toArray(entity.profile2.identity.links[idx_2].metas[idx_3].source.__helper.getPrimaryKey(true));
                     }
@@ -199,6 +217,8 @@ exports[`embedded entities in postgres diffing 1`] = `
             if (typeof entity.profile2 !== 'undefined' && typeof entity.profile2.identity !== 'undefined' && typeof entity.profile2.identity.links !== 'undefined') {
               if (entity.profile2.identity.links[idx_2].source === null) {
                 ret.profile2.identity.links[idx_2].source = null;
+              } else if (entity.profile2.identity.links[idx_2].source?.__helper.__identifier && !entity.profile2.identity.links[idx_2].source.__helper.hasPrimaryKey()) {
+                ret.profile2.identity.links[idx_2].source = entity.profile2.identity.links[idx_2].source?.__helper.__identifier;
               } else if (typeof entity.profile2.identity.links[idx_2].source !== 'undefined') {
                 ret.profile2.identity.links[idx_2].source = toArray(entity.profile2.identity.links[idx_2].source.__helper.getPrimaryKey(true));
               }
@@ -211,6 +231,8 @@ exports[`embedded entities in postgres diffing 1`] = `
       if (typeof entity.profile2 !== 'undefined' && typeof entity.profile2.identity !== 'undefined') {
         if (entity.profile2.identity.source === null) {
           ret.profile2.identity.source = null;
+        } else if (entity.profile2.identity.source?.__helper.__identifier && !entity.profile2.identity.source.__helper.hasPrimaryKey()) {
+          ret.profile2.identity.source = entity.profile2.identity.source?.__helper.__identifier;
         } else if (typeof entity.profile2.identity.source !== 'undefined') {
           ret.profile2.identity.source = toArray(entity.profile2.identity.source.__helper.getPrimaryKey(true));
         }
@@ -221,6 +243,8 @@ exports[`embedded entities in postgres diffing 1`] = `
     if (typeof entity.profile2 !== 'undefined') {
       if (entity.profile2.source === null) {
         ret.profile2.source = null;
+      } else if (entity.profile2.source?.__helper.__identifier && !entity.profile2.source.__helper.hasPrimaryKey()) {
+        ret.profile2.source = entity.profile2.source?.__helper.__identifier;
       } else if (typeof entity.profile2.source !== 'undefined') {
         ret.profile2.source = toArray(entity.profile2.source.__helper.getPrimaryKey(true));
       }
