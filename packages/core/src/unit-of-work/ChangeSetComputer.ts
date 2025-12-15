@@ -3,6 +3,7 @@ import type { MetadataStorage } from '../metadata';
 import type { AnyEntity, EntityData, EntityKey, EntityProperty, EntityValue } from '../typings';
 import { ChangeSet, ChangeSetType } from './ChangeSet';
 import { helper, type Collection, type EntityValidator, type Reference } from '../entity';
+import { EntityIdentifier } from '../entity/EntityIdentifier';
 import type { Platform } from '../platforms';
 import { ReferenceKind } from '../enums';
 import type { EntityManager } from '../EntityManager';
@@ -75,6 +76,16 @@ export class ChangeSetComputer {
 
       // Recompute the changeset, we need to merge this as here we ignore relations.
       const diff = this.computePayload(entity, true);
+
+      // Don't overwrite EntityIdentifier instances with undefined values from the diff
+      // This preserves FK references to unpersisted entities that will be resolved after INSERT
+      for (const key of Utils.keys(diff)) {
+        const currentValue = changeSet.payload[key];
+        if (currentValue instanceof EntityIdentifier && (diff[key] === null || diff[key] === undefined)) {
+          delete diff[key];
+        }
+      }
+
       Utils.merge(changeSet.payload, diff);
     }
 
