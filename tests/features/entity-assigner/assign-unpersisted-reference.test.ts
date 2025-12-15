@@ -5,81 +5,34 @@ import {
   wrap,
 } from '@mikro-orm/sqlite';
 
-enum OrderCreditNoteStatus {
-  Active = 'Active',
-  Redeemed = 'Redeemed',
-  Expired = 'Expired',
-}
-
-const Client = defineEntity({
-  name: 'Client',
-  tableName: 'clients',
+const Publisher = defineEntity({
+  name: 'Publisher',
   properties: {
     id: p.integer().primary(),
     name: p.string(),
-    createdAt: p.datetime().defaultRaw('current_timestamp'),
-    updatedAt: p
-      .datetime()
-      .defaultRaw('current_timestamp')
-      .onUpdate(() => new Date()),
   },
 });
 
-const ClientUser = defineEntity({
-  name: 'ClientUser',
-  tableName: 'client_users',
+const Book = defineEntity({
+  name: 'Book',
+  properties: {
+    id: p.integer().primary(),
+    title: p.string(),
+    publisher: () => p.manyToOne(Publisher),
+  },
+});
+
+const Author = defineEntity({
+  name: 'Author',
   properties: {
     id: p.integer().primary(),
     name: p.string(),
-    createdAt: p.datetime().defaultRaw('current_timestamp'),
-    updatedAt: p
-      .datetime()
-      .defaultRaw('current_timestamp')
-      .onUpdate(() => new Date()),
+    email: p.string().nullable(),
+    age: p.integer().nullable(),
+    favoriteBook: () => p.manyToOne(Book).nullable(),
+    favoriteBookAssignedAt: p.datetime().nullable(),
+    mentor: () => p.manyToOne(Author).nullable(),
   },
-});
-
-const Order = defineEntity({
-  name: 'Order',
-  tableName: 'orders',
-  properties: {
-    id: p.integer().primary(),
-    barcode: p.string(),
-    totalAmount: p.decimal(),
-    createdAt: p.datetime().defaultRaw('current_timestamp'),
-    updatedAt: p
-      .datetime()
-      .defaultRaw('current_timestamp')
-      .onUpdate(() => new Date()),
-  },
-});
-
-const OrderCreditNote = defineEntity({
-  name: 'OrderCreditNote',
-  tableName: 'order_credit_notes',
-  properties: {
-    id: p.integer().primary(),
-    client: () => p.manyToOne(Client),
-    chainAdmin: () => p.manyToOne(Client),
-    clientUser: () => p.manyToOne(ClientUser),
-    status: p
-      .enum(() => OrderCreditNoteStatus)
-      .default(OrderCreditNoteStatus.Active),
-    redeemedBy: () => p.manyToOne(ClientUser).nullable(),
-    order: () => p.manyToOne(Order),
-    redeemedOrder: () => p.manyToOne(Order).nullable(),
-    code: p.string().length(50).index(),
-    amount: p.decimal(),
-    remainingAmount: p.decimal(),
-    expiresAt: p.datetime(),
-    redeemedAt: p.datetime().nullable(),
-    createdAt: p.datetime().defaultRaw('current_timestamp'),
-    updatedAt: p
-      .datetime()
-      .defaultRaw('current_timestamp')
-      .onUpdate(() => new Date()),
-  },
-  uniques: [{ properties: ['chainAdmin', 'code'] }],
 });
 
 describe('assign() with getReference() and unpersisted ManyToOne relations', () => {
@@ -87,11 +40,10 @@ describe('assign() with getReference() and unpersisted ManyToOne relations', () 
 
   beforeAll(async () => {
     orm = await MikroORM.init({
-      entities: [Client, ClientUser, Order, OrderCreditNote],
+      entities: [Author, Book, Publisher],
       dbName: ':memory:',
     });
 
-    await orm.schema.dropSchema();
     await orm.schema.createSchema();
   });
 
@@ -99,203 +51,178 @@ describe('assign() with getReference() and unpersisted ManyToOne relations', () 
   beforeEach(() => orm.schema.clearDatabase());
 
   test('getReference + assign correctly handles unpersisted relation FK', async () => {
-    // Setup: Create existing credit note in DB
-    const client = orm.em.create(Client, { name: 'Store A' });
-    const user = orm.em.create(ClientUser, { name: 'Cashier 1' });
-    const returnOrder = orm.em.create(Order, {
-      barcode: 'RET-001',
-      totalAmount: '50.00',
-    });
-
-    const creditNote = orm.em.create(OrderCreditNote, {
-      client,
-      chainAdmin: client,
-      clientUser: user,
-      order: returnOrder,
-      code: 'CN-001',
-      amount: '50.00',
-      remainingAmount: '50.00',
-      expiresAt: new Date(),
-      status: OrderCreditNoteStatus.Active,
-    });
-
+    // Setup: Create existing author in DB
+    const author = orm.em.create(Author, { name: 'John Doe' });
     await orm.em.flush();
-    const creditNoteId = creditNote.id;
-    const userId = user.id;
+    const authorId = author.id;
     orm.em.clear();
 
-    // Action: Create new order and update credit note using getReference
-    const newOrder = orm.em.create(Order, {
-      barcode: 'ORD-001',
-      totalAmount: '200.00',
+    // Action: Create new book with unpersisted publisher and assign to author using getReference
+    const newPublisher = orm.em.create(Publisher, { name: 'Tech Books Inc' });
+    const newBook = orm.em.create(Book, {
+      title: 'Learning MikroORM',
+      publisher: newPublisher, // Unpersisted publisher
     });
 
-    const creditNoteRef = orm.em.getReference(OrderCreditNote, creditNoteId);
-
-    wrap(creditNoteRef).assign({
-      status: OrderCreditNoteStatus.Redeemed,
-      redeemedBy: userId,
-      redeemedOrder: newOrder, // Unpersisted entity
-      remainingAmount: '0.00',
-      redeemedAt: new Date(),
+    const authorRef = orm.em.getReference(Author, authorId);
+    wrap(authorRef).assign({
+      email: 'john.updated@example.com',
+      age: 35,
+      favoriteBook: newBook, // Unpersisted book with unpersisted publisher
+      favoriteBookAssignedAt: new Date('2024-01-15'),
     });
 
     await orm.em.flush();
     orm.em.clear();
 
-    // Verify: redeemedOrder FK is correctly set
-    const result = await orm.em.findOneOrFail(OrderCreditNote, creditNoteId, {
-      populate: ['redeemedOrder', 'redeemedBy'],
+    // Verify: all fields including favoriteBook FK are correctly set
+    const result = await orm.em.findOneOrFail(Author, authorId, {
+      populate: ['favoriteBook.publisher'],
     });
 
-    // All of these should work
-    expect(result.status).toBe(OrderCreditNoteStatus.Redeemed);
-    expect(result.remainingAmount).toBe('0');
-    expect(result.redeemedBy).toBeDefined();
-    expect(result.redeemedOrder).toBeDefined();
-    expect(result.redeemedOrder?.barcode).toBe('ORD-001');
+    // Scalar fields should be updated
+    expect(result.email).toBe('john.updated@example.com');
+    expect(result.age).toBe(35);
+    expect(result.favoriteBookAssignedAt).toEqual(new Date('2024-01-15'));
+    // Unpersisted relation should work
+    expect(result.favoriteBook).toBeDefined();
+    expect(result.favoriteBook?.title).toBe('Learning MikroORM');
+    expect(result.favoriteBook?.publisher).toBeDefined();
+    expect(result.favoriteBook?.publisher.name).toBe('Tech Books Inc');
   });
 
   test('workaround: loading entity instead of getReference works', async () => {
-    // Setup: Create existing credit note in DB
-    const client = orm.em.create(Client, { name: 'Store A' });
-    const user = orm.em.create(ClientUser, { name: 'Cashier 1' });
-    const returnOrder = orm.em.create(Order, {
-      barcode: 'RET-002',
-      totalAmount: '50.00',
-    });
-
-    const creditNote = orm.em.create(OrderCreditNote, {
-      client,
-      chainAdmin: client,
-      clientUser: user,
-      order: returnOrder,
-      code: 'CN-002',
-      amount: '50.00',
-      remainingAmount: '50.00',
-      expiresAt: new Date(),
-      status: OrderCreditNoteStatus.Active,
-    });
-
+    // Setup: Create existing author in DB
+    const author = orm.em.create(Author, { name: 'Jane Smith' });
     await orm.em.flush();
-    const creditNoteId = creditNote.id;
-    const userId = user.id;
+    const authorId = author.id;
     orm.em.clear();
 
-    // Action: Create new order and update credit note using loaded entity
-    const newOrder = orm.em.create(Order, {
-      barcode: 'ORD-002',
-      totalAmount: '200.00',
+    // Action: Create new book with unpersisted publisher and assign to loaded author
+    const newPublisher = orm.em.create(Publisher, { name: 'Science Publishers' });
+    const newBook = orm.em.create(Book, {
+      title: 'Advanced ORM Patterns',
+      publisher: newPublisher, // Unpersisted publisher
     });
 
     // Load entity instead of using getReference
-    const loadedCreditNote = await orm.em.findOneOrFail(
-      OrderCreditNote,
-      creditNoteId,
-    );
-
-    wrap(loadedCreditNote).assign({
-      status: OrderCreditNoteStatus.Redeemed,
-      redeemedBy: userId,
-      redeemedOrder: newOrder, // Works with loaded entity
-      remainingAmount: '0',
-      redeemedAt: new Date(),
+    const loadedAuthor = await orm.em.findOneOrFail(Author, authorId);
+    wrap(loadedAuthor).assign({
+      email: 'jane.updated@example.com',
+      age: 42,
+      favoriteBook: newBook, // Works with loaded entity
+      favoriteBookAssignedAt: new Date('2024-02-20'),
     });
 
     await orm.em.flush();
     orm.em.clear();
 
-    // Verify: redeemedOrder is correctly set
-    const result = await orm.em.findOneOrFail(OrderCreditNote, creditNoteId, {
-      populate: ['redeemedOrder', 'redeemedBy'],
+    // Verify: all fields are correctly set
+    const result = await orm.em.findOneOrFail(Author, authorId, {
+      populate: ['favoriteBook.publisher'],
     });
 
-    // All work
-    expect(result.status).toBe(OrderCreditNoteStatus.Redeemed);
-    expect(result.remainingAmount).toBe('0');
-    expect(result.redeemedBy).toBeDefined();
-    expect(result.redeemedOrder).toBeDefined();
-    expect(result.redeemedOrder?.barcode).toBe('ORD-002');
+    expect(result.email).toBe('jane.updated@example.com');
+    expect(result.age).toBe(42);
+    expect(result.favoriteBookAssignedAt).toEqual(new Date('2024-02-20'));
+    expect(result.favoriteBook).toBeDefined();
+    expect(result.favoriteBook?.title).toBe('Advanced ORM Patterns');
+    expect(result.favoriteBook?.publisher).toBeDefined();
+    expect(result.favoriteBook?.publisher.name).toBe('Science Publishers');
   });
 
   test('multiple entities in loop with getReference and unpersisted relations', async () => {
-    // Setup: Create multiple existing credit notes
-    const client = orm.em.create(Client, { name: 'Store A' });
-    const user = orm.em.create(ClientUser, { name: 'Cashier 1' });
-
-    const returnOrder1 = orm.em.create(Order, {
-      barcode: 'RET-003',
-      totalAmount: '30.00',
-    });
-    const returnOrder2 = orm.em.create(Order, {
-      barcode: 'RET-004',
-      totalAmount: '20.00',
-    });
-
-    const creditNote1 = orm.em.create(OrderCreditNote, {
-      client,
-      chainAdmin: client,
-      clientUser: user,
-      order: returnOrder1,
-      code: 'CN-003',
-      amount: '30.00',
-      remainingAmount: '30.00',
-      expiresAt: new Date(),
-      status: OrderCreditNoteStatus.Active,
-    });
-
-    const creditNote2 = orm.em.create(OrderCreditNote, {
-      client,
-      chainAdmin: client,
-      clientUser: user,
-      order: returnOrder2,
-      code: 'CN-004',
-      amount: '20.00',
-      remainingAmount: '20.00',
-      expiresAt: new Date(),
-      status: OrderCreditNoteStatus.Active,
-    });
+    // Setup: Create multiple existing authors
+    const author1 = orm.em.create(Author, { name: 'Alice Brown' });
+    const author2 = orm.em.create(Author, { name: 'Bob Wilson' });
 
     await orm.em.flush();
-    const creditNoteIds = [creditNote1.id, creditNote2.id];
-    const userId = user.id;
+    const authorIds = [author1.id, author2.id];
     orm.em.clear();
 
-    // Action: Create new order and update multiple credit notes using getReference in loop
-    const newOrder = orm.em.create(Order, {
-      barcode: 'ORD-003',
-      totalAmount: '100.00',
+    // Action: Create new book with unpersisted publisher and assign to multiple authors in loop
+    const sharedPublisher = orm.em.create(Publisher, { name: 'Global Press' });
+    const sharedBook = orm.em.create(Book, {
+      title: 'TypeScript Mastery',
+      publisher: sharedPublisher, // Unpersisted publisher
     });
 
-    for (const creditNoteId of creditNoteIds) {
-      const creditNoteRef = orm.em.getReference(OrderCreditNote, creditNoteId);
-
-      wrap(creditNoteRef).assign({
-        status: OrderCreditNoteStatus.Redeemed,
-        redeemedBy: userId,
-        redeemedOrder: newOrder, // Unpersisted entity
-        remainingAmount: '0',
+    for (const [index, authorId] of authorIds.entries()) {
+      const authorRef = orm.em.getReference(Author, authorId);
+      wrap(authorRef).assign({
+        email: `author${index + 1}@example.com`,
+        age: 30 + index,
+        favoriteBook: sharedBook, // Unpersisted book
+        favoriteBookAssignedAt: new Date('2024-03-10'),
       });
     }
 
     await orm.em.flush();
     orm.em.clear();
 
-    // Verify: Both credit notes correctly reference the new order
+    // Verify: Both authors correctly reference the same book
     const results = await orm.em.find(
-      OrderCreditNote,
+      Author,
       {
-        id: { $in: creditNoteIds },
+        id: { $in: authorIds },
       },
       {
-        populate: ['redeemedOrder'],
+        populate: ['favoriteBook.publisher'],
       },
     );
 
-    for (const result of results) {
-      expect(result.status).toBe(OrderCreditNoteStatus.Redeemed);
-      expect(result.redeemedOrder).toBeDefined();
-      expect(result.redeemedOrder?.barcode).toBe('ORD-003');
+    for (const [index, result] of results.entries()) {
+      expect(result.email).toBe(`author${index + 1}@example.com`);
+      expect(result.age).toBe(30 + index);
+      expect(result.favoriteBookAssignedAt).toEqual(new Date('2024-03-10'));
+      expect(result.favoriteBook).toBeDefined();
+      expect(result.favoriteBook?.title).toBe('TypeScript Mastery');
+      expect(result.favoriteBook?.publisher).toBeDefined();
+      expect(result.favoriteBook?.publisher.name).toBe('Global Press');
     }
+  });
+
+  test('mixing persisted FK (as PK) and unpersisted entity in same assign', async () => {
+    // Setup: Create mentor and author in DB
+    const mentor = orm.em.create(Author, { name: 'Senior Developer', email: 'mentor@example.com' });
+    const author = orm.em.create(Author, { name: 'Junior Developer' });
+    await orm.em.flush();
+    const authorId = author.id;
+    const mentorId = mentor.id;
+    orm.em.clear();
+
+    // Action: Assign both a persisted FK (mentor as PK) and unpersisted entity (book)
+    const newPublisher = orm.em.create(Publisher, { name: 'Learning Press' });
+    const newBook = orm.em.create(Book, {
+      title: 'Getting Started',
+      publisher: newPublisher,
+    });
+
+    const authorRef = orm.em.getReference(Author, authorId);
+    wrap(authorRef).assign({
+      mentor: mentorId, // Persisted FK as PK value
+      favoriteBook: newBook, // Unpersisted entity
+      age: 25,
+    });
+
+    await orm.em.flush();
+    orm.em.clear();
+
+    // Verify: Both relations should be correctly set
+    const result = await orm.em.findOneOrFail(Author, authorId, {
+      populate: ['mentor', 'favoriteBook.publisher'],
+    });
+
+    // Persisted FK should work
+    expect(result.mentor).toBeDefined();
+    expect(result.mentor?.id).toBe(mentorId);
+    expect(result.mentor?.name).toBe('Senior Developer');
+    // Unpersisted entity should work
+    expect(result.favoriteBook).toBeDefined();
+    expect(result.favoriteBook?.title).toBe('Getting Started');
+    expect(result.favoriteBook?.publisher).toBeDefined();
+    expect(result.favoriteBook?.publisher.name).toBe('Learning Press');
+    // Scalar field should work
+    expect(result.age).toBe(25);
   });
 });
