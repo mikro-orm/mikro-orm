@@ -26,8 +26,34 @@ export const fs = {
   },
 
   glob(input: string | string[], cwd?: string): string[] {
+    const patterns = Array.isArray(input) ? input : [input];
+    const positive: string[] = [];
+    const negative: string[] = [];
+
+    for (const p of patterns) {
+      if (p.startsWith('!')) {
+        negative.push(p.slice(1));
+      } else {
+        positive.push(p);
+      }
+    }
+
+    const included = new Set(this.resolveGlob(positive, cwd));
+
+    if (included.size > 0 && negative.length > 0) {
+      const excluded = this.resolveGlob(negative, cwd);
+
+      for (const file of excluded) {
+        included.delete(file);
+      }
+    }
+
+    return [...included];
+  },
+
+  resolveGlob(input: string | string[], cwd?: string): string[] {
     if (Array.isArray(input)) {
-      return input.flatMap(paths => this.glob(paths, cwd));
+      return input.flatMap(paths => this.resolveGlob(paths, cwd));
     }
 
     const hasGlobChars = /[*?[\]]/.test(input);
@@ -114,8 +140,6 @@ export const fs = {
     }
   },
 
-  fileURLToPath,
-
   /**
    * Resolves and normalizes a series of path parts relative to each preceding part.
    * If any part is a `file:` URL, it is converted to a local path. If any part is an
@@ -132,7 +156,7 @@ export const fs = {
         start = i;
       } else if (part.startsWith('file:')) {
         start = i;
-        parts[i] = this.fileURLToPath(part);
+        parts[i] = fileURLToPath(part);
       }
     }
 

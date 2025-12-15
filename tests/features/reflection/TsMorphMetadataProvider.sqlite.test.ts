@@ -1,4 +1,4 @@
-import { Options, Configuration, MikroORM } from '@mikro-orm/mongodb';
+import { Options, Configuration, MikroORM } from '@mikro-orm/sqlite';
 import type { PrimaryProperty, EntityMetadata } from '@mikro-orm/core';
 import { Collection as Collection_, Reference as Reference_, ReferenceKind, EnumArrayType } from '@mikro-orm/core';
 import { TsMorphMetadataProvider } from '@mikro-orm/reflection';
@@ -21,7 +21,9 @@ describe('TsMorphMetadataProvider', () => {
       metadataProvider: TsMorphMetadataProvider,
     });
 
-    expect(Object.keys(orm.getMetadata().getAll()).sort()).toEqual(['Author', 'Book', 'BookTag', 'FooBar', 'FooBaz', 'Publisher', 'Test']);
+    expect(Object.keys(orm.getMetadata().getAll()).sort()).toEqual([
+      'Author', 'Book', 'BookTag', 'FooBar', 'FooBaz', 'Publisher', 'Test', 'author_friends', 'book_tags', 'publisher_tests',
+    ]);
     await orm.close();
   });
 
@@ -35,7 +37,9 @@ describe('TsMorphMetadataProvider', () => {
       metadataProvider: TsMorphMetadataProvider,
     });
 
-    expect(Object.keys(orm.getMetadata().getAll()).sort()).toEqual(['Author', 'Book', 'BookTag', 'FooBar', 'FooBaz', 'Publisher', 'Test']);
+    expect(Object.keys(orm.getMetadata().getAll()).sort()).toEqual([
+      'Author', 'Book', 'BookTag', 'FooBar', 'FooBaz', 'Publisher', 'Test', 'author_friends', 'book_tags', 'publisher_tests',
+    ]);
     await orm.close();
   });
 

@@ -2,7 +2,7 @@ import { BeforeCreate, Entity, Enum, ManyToMany, OneToMany, PrimaryKey, Property
 import { ObjectId } from 'bson';
 import type { Book } from './Book.js';
 import type { Test } from './Test.js';
-import { Collection } from '../TsMorphMetadataProvider.test.js';
+import { Collection } from '../TsMorphMetadataProvider.sqlite.test.js';
 import { PublisherType } from './PublisherType.js';
 
 export enum PublisherType2 {

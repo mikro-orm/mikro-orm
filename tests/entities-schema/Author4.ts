@@ -43,6 +43,12 @@ export class Author4 extends BaseEntity4 {
   static beforeDestroyCalled = 0;
   static afterDestroyCalled = 0;
 
+  constructor(name: string, email: string) {
+    super();
+    this.name = name;
+    this.email = email;
+  }
+
   async beforeCreate(args: EventArgs<this>) {
     this.version = 1;
     await args.em.findOne('Book4', { title: { $ne: null } }); // test this won't cause failures (GH #1503)

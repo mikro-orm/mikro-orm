@@ -1,11 +1,11 @@
+import { platform } from 'node:os';
 import { pathToFileURL } from 'node:url';
-import { compareObjects, EntityMetadata, MikroORM, ObjectId, sql, Utils } from '@mikro-orm/mongodb';
+import { compareObjects, EntityMetadata, MikroORM, sql, Utils } from '@mikro-orm/sqlite';
 import { fs } from '@mikro-orm/core/fs-utils';
 
 import { lookupPathFromDecorator } from '../packages/decorators/src/utils.js';
-import { Author } from './entities/index.js';
-import { initORMMongo } from './bootstrap.js';
-import FooBar from './entities/FooBar.js';
+import { Author4 } from './entities-schema/Author4.js';
+import { initORMSqlite } from './bootstrap.js';
 
 class Test {}
 
@@ -13,7 +13,7 @@ describe('Utils', () => {
 
   let orm: MikroORM;
 
-  beforeAll(async () => orm = await initORMMongo());
+  beforeAll(async () => orm = await initORMSqlite());
   beforeEach(async () => orm.schema.clear());
 
   test('getObjectType', () => {
@@ -45,8 +45,8 @@ describe('Utils', () => {
   });
 
   test('isEntity', () => {
-    expect(Utils.isEntity(Author.prototype)).toBe(true);
-    expect(Utils.isEntity(new Author('a', 'b'))).toBe(true);
+    expect(Utils.isEntity(Author4.prototype)).toBe(true);
+    expect(Utils.isEntity(new Author4('a', 'b'))).toBe(true);
   });
 
   test('equals', () => {
@@ -70,7 +70,7 @@ describe('Utils', () => {
     expect(compareObjects(Object.create(null), {})).toBe(true);
     expect(compareObjects({ a: Object.create(null) }, { a: {} })).toBe(true);
     expect(compareObjects({}, Object.create(null))).toBe(true);
-    expect(compareObjects(new Test(), new Author('n', 'e'))).toBe(false);
+    expect(compareObjects(new Test(), new Author4('n', 'e'))).toBe(false);
     expect(compareObjects(sql`select 1`, sql`select 1`)).toBe(true);
     expect(compareObjects(sql`select ${1}`, sql`select ${1}`)).toBe(true);
     expect(compareObjects(sql`select ${1}`, sql`select ${2}`)).toBe(false);
@@ -176,8 +176,7 @@ describe('Utils', () => {
 
   test('getConstructorParams', () => {
     expect(Utils.getConstructorParams(Test)).toEqual(undefined);
-    expect(Utils.getConstructorParams(FooBar)).toEqual(undefined);
-    expect(Utils.getConstructorParams(Author)).toEqual(['name', 'email']);
+    expect(Utils.getConstructorParams(Author4)).toEqual(['name', 'email']);
     expect(Utils.getConstructorParams('')).toEqual(undefined);
     expect(Utils.getConstructorParams('constructor')).toEqual(undefined);
   });
@@ -189,20 +188,6 @@ describe('Utils', () => {
     const prop2 = { test: 'foo' } as any;
     Utils.defaultValue(prop2, 'test', 'default');
     expect(prop2.test).toBe('foo');
-  });
-
-  test('extractPK with PK id/_id', () => {
-    const meta = orm.getMetadata(Author);
-    expect(Utils.extractPK('abcd')).toBe('abcd');
-    expect(Utils.extractPK(123)).toBe(123);
-    const id = new ObjectId('111111111111111111111111');
-    expect(Utils.extractPK(id)).toBe(id);
-    expect(Utils.extractPK({ id }, meta)).toBe(id);
-    expect(Utils.extractPK({ _id: id }, meta)).toBe(id);
-    expect(Utils.extractPK({ foo: 'bar' })).toBeNull();
-    const t = new Test();
-    expect(Utils.extractPK(t)).toBe(t);
-    expect(Utils.extractPK(true)).toBeNull();
   });
 
   test('extractPK with PK uuid', () => {
@@ -222,20 +207,15 @@ describe('Utils', () => {
     expect(fs.normalizePath('./foo', '/test')).toBe('/test');
   });
 
-  test('normalizePath [posix]', () => {
-    const spy = vi.spyOn(fs, 'fileURLToPath');
-    spy.mockImplementation(() => '/test');
+  test.skipIf(platform() === 'win32')('normalizePath [posix]', () => {
     expect(fs.normalizePath('file:///test')).toBe('/test');
     expect(fs.normalizePath('./foo', 'file:///test')).toBe('/test');
-    spy.mockRestore();
   });
 
   test('normalizePath [windows]', () => {
-    const spy = vi.spyOn(fs, 'fileURLToPath');
-    spy.mockImplementation(() => 'C:/test');
-    expect(fs.normalizePath('file:///C:/test')).toBe('C:/test');
-    expect(fs.normalizePath('./foo', 'file:///C:/test')).toBe('C:/test');
-    spy.mockRestore();
+    const expected = platform() === 'win32' ? 'C:/test' : '/C:/test';
+    expect(fs.normalizePath('file:///C:/test')).toBe(expected);
+    expect(fs.normalizePath('./foo', 'file:///C:/test')).toBe(expected);
   });
 
   test('relativePath', () => {
