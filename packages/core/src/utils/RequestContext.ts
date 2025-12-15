@@ -1,13 +1,13 @@
-import { AsyncLocalStorage } from 'node:async_hooks';
 import type { EntityManager } from '../EntityManager.js';
 import { type LoggingOptions } from '../logging/Logger.js';
+import { createAsyncContext } from './AsyncContext.js';
 
 /**
  * Uses `AsyncLocalStorage` to create async context that holds the current EM fork.
  */
 export class RequestContext {
 
-  private static storage = new AsyncLocalStorage<RequestContext>();
+  private static storage = createAsyncContext<RequestContext>();
   private static counter = 1;
   readonly id = RequestContext.counter++;
 
