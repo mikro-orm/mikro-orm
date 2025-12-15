@@ -1,8 +1,8 @@
 import 'reflect-metadata';
+import { readFile } from 'node:fs/promises';
 import { LoadStrategy, MikroORM, Options, SimpleLogger, Utils } from '@mikro-orm/core';
 import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
-import { AbstractSqlDriver } from '@mikro-orm/sql';
-import { SqlEntityRepository } from '@mikro-orm/sql';
+import { AbstractSqlDriver, SqlEntityRepository } from '@mikro-orm/sql';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 import { MongoDriver } from '@mikro-orm/mongodb';
 import { Migrator } from '@mikro-orm/migrations';
@@ -34,7 +34,17 @@ import {
   Test2,
   User2,
 } from './entities-sql/index.js';
-import { Author4, BaseEntity4, Book4, BookTag4, FooBar4, FooBaz4, IdentitySchema, Publisher4, Test4 } from './entities-schema/index.js';
+import {
+  Author4,
+  BaseEntity4,
+  Book4,
+  BookTag4,
+  FooBar4,
+  FooBaz4,
+  IdentitySchema,
+  Publisher4,
+  Test4,
+} from './entities-schema/index.js';
 import { Author2Subscriber } from './subscribers/Author2Subscriber.js';
 import { Test2Subscriber } from './subscribers/Test2Subscriber.js';
 import { EverythingSubscriber } from './subscribers/EverythingSubscriber.js';
@@ -108,12 +118,10 @@ export async function initORMMySql<D extends MySqlDriver | MariaDbDriver = MySql
     extensions: [Migrator, SeedManager, EntityGenerator],
     subscribers: new Set([new Test2Subscriber()]),
   }, additionalOptions));
-
-  await orm.schema.ensureDatabase();
-  const connection = orm.em.getConnection();
+  const buf = await readFile(import.meta.dirname + '/mysql-schema.sql');
 
   if (createSchema) {
-    await connection.loadFile(import.meta.dirname + '/mysql-schema.sql');
+    await orm.em.getConnection().executeDump(buf.toString());
   }
 
   if (!simple) {
@@ -122,7 +130,7 @@ export async function initORMMySql<D extends MySqlDriver | MariaDbDriver = MySql
     await orm.reconnect();
 
     if (createSchema) {
-      await connection.loadFile(import.meta.dirname + '/mysql-schema.sql');
+      await orm.em.getConnection().executeDump(buf.toString());
     }
 
     await orm.close(true);
@@ -158,9 +166,8 @@ export async function initORMPostgreSql(loadStrategy = LoadStrategy.SELECT_IN, e
     onQuery: sql => `/* foo */ ${sql}`,
   });
 
-  await orm.schema.ensureDatabase();
-  const connection = orm.em.getConnection();
-  await connection.loadFile(import.meta.dirname + '/postgre-schema.sql');
+  const buf = await readFile(import.meta.dirname + '/postgre-schema.sql');
+  await orm.em.getConnection().executeDump(buf.toString());
   Author2Subscriber.log.length = 0;
   Test2Subscriber.log.length = 0;
   EverythingSubscriber.log.length = 0;
@@ -210,8 +217,8 @@ export async function initORMSqlite<D extends AbstractSqlDriver>(type: 'sqlite' 
     migrations: { path: BASE_DIR + '/../temp/migrations-3', snapshot: false },
     extensions: [Migrator, SeedManager, EntityGenerator],
   });
-  const connection = orm.em.getConnection();
-  await connection.loadFile(import.meta.dirname + '/sqlite-schema.sql');
+  const buf = await readFile(import.meta.dirname + '/sqlite-schema.sql');
+  await orm.em.getConnection().executeDump(buf.toString());
   await orm.schema.update();
 
   return orm;

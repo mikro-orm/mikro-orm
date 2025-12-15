@@ -1,3 +1,4 @@
+import { readFile } from 'node:fs/promises';
 import { colors } from '@mikro-orm/core';
 import type { ArgumentsCamelCase } from 'yargs';
 import type { BaseArgs, BaseCommand } from '../CLIConfigurator.js';
@@ -15,7 +16,8 @@ export class ImportCommand implements BaseCommand<ImportArgs> {
    */
   async handler(args: ArgumentsCamelCase<ImportArgs>) {
     const orm = await CLIHelper.getORM(args.contextName, args.config, { multipleStatements: true });
-    await orm.em.getConnection().loadFile(args.file);
+    const buf = await readFile(args.file);
+    await orm.em.getConnection().executeDump(buf.toString());
     CLIHelper.dump(colors.green(`File ${args.file} successfully imported`));
     await orm.close(true);
   }

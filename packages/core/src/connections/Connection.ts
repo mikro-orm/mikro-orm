@@ -66,10 +66,11 @@ export abstract class Connection {
   }
 
   /**
-   * Load schema dump from file and execute it. Not supported by MongoDB driver.
+   * Execute raw SQL queries, handy from running schema dump loaded from a file.
+   * This method doesn't support transactions, as opposed to `orm.schema.execute()`, which is used internally.
    */
-  async loadFile(path: string): Promise<void> {
-    throw new Error(`Loading SQL files is not supported by current driver`);
+  async executeDump(dump: string): Promise<void> {
+    throw new Error(`Executing SQL dumps is not supported by current driver`);
   }
 
   protected async onConnect(): Promise<void> {
