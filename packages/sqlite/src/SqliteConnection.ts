@@ -15,10 +15,10 @@ export class SqliteConnection extends BaseSqliteConnection {
     });
   }
 
-  override async loadFile(path: string): Promise<void> {
+  /** @inheritDoc */
+  override async executeDump(dump: string): Promise<void> {
     await this.ensureConnection();
-    const { readFile } = globalThis.process.getBuiltinModule('node:fs/promises');
-    this.database.exec((await readFile(path)).toString());
+    this.database.exec(dump);
   }
 
 }

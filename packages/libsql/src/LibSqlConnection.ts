@@ -9,7 +9,6 @@ export class LibSqlConnection extends BaseSqliteConnection {
   override createKyselyDialect(options: Dictionary & Options) {
     const dbName = options.url ?? this.config.get('dbName');
     options.authToken ??= this.config.get('password');
-
     return new LibSqlDialect({
       database: async () => {
         return this.database = new Database(dbName, options);
@@ -18,11 +17,10 @@ export class LibSqlConnection extends BaseSqliteConnection {
     });
   }
 
-  /* v8 ignore next */
-  override async loadFile(path: string): Promise<void> {
+  /** @inheritDoc */
+  override async executeDump(source: string): Promise<void> {
     await this.ensureConnection();
-    const { readFile } = globalThis.process.getBuiltinModule('node:fs/promises');
-    this.database.exec((await readFile(path)).toString());
+    this.database.exec(source);
   }
 
 }
