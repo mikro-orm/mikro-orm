@@ -1176,13 +1176,8 @@ export class QueryBuilder<
     return ret;
   }
 
-  clone(reset?: boolean | string[]): QueryBuilder<Entity> {
+  clone(reset?: boolean | string[], preserve?: string[]): QueryBuilder<Entity> {
     const qb = new QueryBuilder<Entity>(this.mainAlias.entityName, this.metadata, this.driver, this.context, this.mainAlias.aliasName, this.connectionType, this.em);
-
-    if (reset === true) {
-      return qb;
-    }
-
     reset = reset || [];
 
     // clone array/object properties
@@ -1195,7 +1190,7 @@ export class QueryBuilder<
     RawQueryFragment.cloneRegistry = this.rawFragments;
 
     for (const prop of Object.keys(this)) {
-      if (reset.includes(prop) || prop === '_helper') {
+      if (!preserve?.includes(prop) && (reset === true || reset.includes(prop) || prop === '_helper')) {
         continue;
       }
 
@@ -1205,7 +1200,7 @@ export class QueryBuilder<
     delete RawQueryFragment.cloneRegistry;
 
     /* istanbul ignore else */
-    if (this._fields && !reset.includes('_fields')) {
+    if (this._fields && reset !== true && !reset.includes('_fields')) {
       qb._fields = [...this._fields];
     }
 

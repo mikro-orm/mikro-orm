@@ -99,7 +99,8 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
 
     const populate = this.autoJoinOneToOneOwner(meta, options.populate as unknown as PopulateOptions<T>[], options.fields);
     const joinedProps = this.joinedProps(meta, populate, options);
-    const qb = this.createQueryBuilder<T>(entityName, options.ctx, options.connectionType, false, options.logging);
+    const qb = this.createQueryBuilder<T>(entityName, options.ctx, options.connectionType, false, options.logging)
+      .withSchema(this.getSchemaName(meta, options));
     const fields = this.buildFields(meta, populate, joinedProps, qb, qb.alias, options);
     const orderBy = this.buildOrderBy(qb, meta, populate, options);
     const populateWhere = this.buildPopulateWhere(meta, joinedProps, options);
@@ -124,8 +125,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       .having(options.having!)
       .indexHint(options.indexHint!)
       .comment(options.comments!)
-      .hintComment(options.hintComments!)
-      .withSchema(this.getSchemaName(meta, options));
+      .hintComment(options.hintComments!);
 
     if (isCursorPagination) {
       const { orderBy: newOrderBy, where } = this.processCursorOptions(meta, options, orderBy);

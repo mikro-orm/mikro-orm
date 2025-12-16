@@ -153,7 +153,6 @@ export async function initORMPostgreSql(loadStrategy = LoadStrategy.SELECT_IN, e
     forceUtcTimezone: true,
     autoJoinOneToOneOwner: false,
     logger: i => i,
-    metadataCache: { enabled: true },
     migrations: { path: BASE_DIR + '/../temp/migrations', snapshot: false },
     forceEntityConstructor: [FooBar2],
     loadStrategy,

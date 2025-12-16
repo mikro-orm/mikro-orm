@@ -54,7 +54,7 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
           }
 
           const payload = (this.payload[key] as CriteriaNode<T>).unwrap();
-          const qb2 = qb.clone(true);
+          const qb2 = qb.clone(true, ['_schema']);
           const sub = qb2
             .from(parentMeta.className)
             .innerJoin(this.key!, qb2.getNextAlias(this.prop!.type))

@@ -177,11 +177,12 @@ export interface IQueryBuilder<T> {
   getAliasForJoinPath(path: string, options?: ICriteriaNodeProcessOptions): string | undefined;
   getJoinForPath(path?: string, options?: ICriteriaNodeProcessOptions): JoinOptions | undefined;
   getNextAlias(entityName?: string): string;
-  clone(reset?: boolean): IQueryBuilder<T>;
+  clone(reset?: boolean | string[], preserve?: string[]): IQueryBuilder<T>;
   setFlag(flag: QueryFlag): this;
   unsetFlag(flag: QueryFlag): this;
   hasFlag(flag: QueryFlag): boolean;
   scheduleFilterCheck(path: string): void;
+  withSchema(schema: string): this;
 }
 
 export interface ICriteriaNodeProcessOptions {
