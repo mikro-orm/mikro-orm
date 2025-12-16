@@ -193,14 +193,19 @@ export class MetadataDiscovery {
     const { entities, entitiesTs, baseDir } = this.config.getAll();
     const targets = (preferTs && entitiesTs.length > 0) ? entitiesTs : entities;
     const processed: (EntitySchema | EntityClass<any>)[] = [];
+    const paths: string[] = [];
 
     for (const entity of targets!) {
       if (typeof entity === 'string') {
-        const { discoverEntities } = await import('@mikro-orm/core/file-discovery');
-        processed.push(...await discoverEntities(entity, { baseDir }));
+        paths.push(entity);
       } else {
         processed.push(entity);
       }
+    }
+
+    if (paths.length > 0) {
+      const { discoverEntities } = await import('@mikro-orm/core/file-discovery');
+      processed.push(...await discoverEntities(paths, { baseDir }));
     }
 
     return this.discoverReferences(processed);
@@ -320,7 +325,7 @@ export class MetadataDiscovery {
 
     if (path) {
       const meta = Utils.copy(MetadataStorage.getMetadata(entity.name, path), false);
-      meta.path = Utils.relativePath(path, this.config.get('baseDir'));
+      meta.path = path;
       this.metadata.set(entity.name, meta);
     }
 
@@ -354,7 +359,7 @@ export class MetadataDiscovery {
     const path = meta.path;
     this.logger.log('discovery', `- processing entity ${colors.cyan(meta.className)}${colors.grey(path ? ` (${path})` : '')}`);
     const root = this.getRootEntity(meta);
-    schema.meta.path = Utils.relativePath(meta.path, this.config.get('baseDir'));
+    schema.meta.path = meta.path;
     const cache = this.metadataProvider.getCachedMetadata(meta, root);
 
     if (cache) {

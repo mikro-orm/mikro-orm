@@ -34,17 +34,6 @@ import {
   Test2,
   User2,
 } from './entities-sql/index.js';
-import {
-  Author4,
-  BaseEntity4,
-  Book4,
-  BookTag4,
-  FooBar4,
-  FooBaz4,
-  IdentitySchema,
-  Publisher4,
-  Test4,
-} from './entities-schema/index.js';
 import { Author2Subscriber } from './subscribers/Author2Subscriber.js';
 import { Test2Subscriber } from './subscribers/Test2Subscriber.js';
 import { EverythingSubscriber } from './subscribers/EverythingSubscriber.js';
@@ -203,8 +192,8 @@ export async function initORMMsSql(additionalOptions: Partial<Options<MsSqlDrive
 }
 
 export async function initORMSqlite<D extends AbstractSqlDriver>(type: 'sqlite' | 'libsql' = 'sqlite') {
-  const orm = new MikroORM<D>({
-    entities: [Author4, Book4, BookTag4, Publisher4, Test4, FooBar4, FooBaz4, IdentitySchema, BaseEntity4],
+  const orm = await MikroORM.init<D>({
+    entities: ['entities-schema', '!**/User4.ts'],
     dbName: ':memory:',
     baseDir: BASE_DIR,
     driver: PLATFORMS[type] as any,

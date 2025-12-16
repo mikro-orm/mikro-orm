@@ -61,14 +61,14 @@ export class Migrator implements IMigrator {
 
     /* v8 ignore next */
     const key = (this.config.get('preferTs', Utils.detectTypeScriptSupport()) && this.options.pathTs) ? 'pathTs' : 'path';
-    this.absolutePath = Utils.absolutePath(this.options[key]!, this.config.get('baseDir'));
+    this.absolutePath = fs.absolutePath(this.options[key]!, this.config.get('baseDir'));
     // for snapshots, we always want to use the path based on `emit` option, regardless of whether we run in TS context
     /* v8 ignore next */
     const snapshotPath = this.options.emit === 'ts' && this.options.pathTs ? this.options.pathTs : this.options.path!;
-    const absoluteSnapshotPath = Utils.absolutePath(snapshotPath, this.config.get('baseDir'));
+    const absoluteSnapshotPath = fs.absolutePath(snapshotPath, this.config.get('baseDir'));
     const dbName = basename(this.config.get('dbName'));
     const snapshotName = this.options.snapshotName ?? `.snapshot-${dbName}`;
-    this.snapshotPath = Utils.normalizePath(absoluteSnapshotPath, `${snapshotName}.json`);
+    this.snapshotPath = fs.normalizePath(absoluteSnapshotPath, `${snapshotName}.json`);
     this.createUmzug();
   }
 
@@ -312,7 +312,7 @@ export class Migrator implements IMigrator {
 
   protected resolve(params: MigrationParams<any>): RunnableMigration<any> {
     const createMigrationHandler = async (method: 'up' | 'down') => {
-      const migration = await Utils.dynamicImport(params.path!);
+      const migration = await fs.dynamicImport(params.path!);
       const MigrationClass = Object.values(migration).find(cls => typeof cls === 'function' && typeof cls.constructor === 'function') as Constructor<Migration>;
       const instance = new MigrationClass(this.driver, this.config);
 

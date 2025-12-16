@@ -7,7 +7,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 import { DateType, Collection, Cascade } from '@mikro-orm/core';
 import { Entity, ManyToMany, ManyToOne, OneToMany, Property } from '@mikro-orm/decorators/legacy';
 import { BaseEntity } from './BaseEntity.js';
-// import { Collection } from '../TsMorphMetadataProvider.test.js';
+// import { Collection } from '../TsMorphMetadataProvider.sqlite.test.js';
 let Author = class Author extends BaseEntity {
     name;
     email;

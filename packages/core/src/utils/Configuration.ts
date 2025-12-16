@@ -170,11 +170,10 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver, EM exten
 
   constructor(options: Options, validate = true) {
     if (options.dynamicImportProvider) {
-      Utils.dynamicImportProvider = options.dynamicImportProvider;
+      (globalThis as any).dynamicImportProvider = options.dynamicImportProvider;
     }
 
     this.options = Utils.mergeConfig({} as RequiredOptions<D, EM>, DEFAULTS, options);
-    this.options.baseDir = Utils.absolutePath(this.options.baseDir);
 
     if (validate) {
       this.validateOptions();

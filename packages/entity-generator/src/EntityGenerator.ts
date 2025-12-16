@@ -54,7 +54,7 @@ export class EntityGenerator {
     const schema = await DatabaseSchema.create(this.connection, this.platform, this.config, undefined, undefined, options.takeTables, options.skipTables);
     const metadata = await this.getEntityMetadata(schema, options);
     const defaultPath = `${this.config.get('baseDir')}/generated-entities`;
-    const baseDir = Utils.normalizePath(options.path ?? defaultPath);
+    const baseDir = fs.normalizePath(options.path ?? defaultPath);
     this.sources.length = 0;
 
     const map = {

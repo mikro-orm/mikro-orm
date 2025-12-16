@@ -3,7 +3,7 @@ import { Entity, ManyToMany, ManyToOne, Property } from '@mikro-orm/decorators/l
 import type { Publisher } from './Publisher.js';
 import { Author } from './Author.js';
 import type { BookTag } from './BookTag.js';
-import { Collection, Ref } from '../TsMorphMetadataProvider.test.js';
+import { Collection, Ref } from '../TsMorphMetadataProvider.sqlite.test.js';
 import { BaseEntity3 } from './BaseEntity3.js';
 
 @Entity()
