@@ -78,7 +78,7 @@ describe('EntityManagerPostgre', () => {
     orm.em.clear();
   }
 
-  beforeAll(async () => orm = await initORMPostgreSql());
+  beforeAll(async () => orm = await initORMPostgreSql('select-in', [], true));
   beforeEach(async () => orm.schema.clearDatabase());
   afterEach(() => expect(RawQueryFragment.checkCacheSize()).toBe(0));
   afterAll(async () => {

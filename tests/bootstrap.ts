@@ -142,7 +142,7 @@ export async function initORMMySql<D extends MySqlDriver | MariaDbDriver = MySql
   return orm as MikroORM<D>;
 }
 
-export async function initORMPostgreSql(loadStrategy = LoadStrategy.SELECT_IN, entities: any[] = []) {
+export async function initORMPostgreSql(loadStrategy = LoadStrategy.SELECT_IN, entities: any[] = [], cache = false) {
   const dbName = `mikro_orm_test_${(Math.random() + 1).toString(36).substring(2)}`;
   const orm = MikroORM.initSync({
     entities: [Author2, Address2, Book2, BookTag2, Publisher2, Test2, FooBar2, FooBaz2, FooParam2, Label2, Configuration2, ...entities],
@@ -153,6 +153,7 @@ export async function initORMPostgreSql(loadStrategy = LoadStrategy.SELECT_IN, e
     forceUtcTimezone: true,
     autoJoinOneToOneOwner: false,
     logger: i => i,
+    metadataCache: { enabled: cache },
     migrations: { path: BASE_DIR + '/../temp/migrations', snapshot: false },
     forceEntityConstructor: [FooBar2],
     loadStrategy,
