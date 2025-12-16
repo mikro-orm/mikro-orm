@@ -11,6 +11,7 @@ import {
   Type,
   Utils,
 } from '@mikro-orm/core';
+import { fs } from '@mikro-orm/core/fs-utils';
 
 export class TsMorphMetadataProvider extends MetadataProvider {
 
@@ -190,7 +191,7 @@ export class TsMorphMetadataProvider extends MetadataProvider {
 
     /* v8 ignore next */
     if (outDir != null) {
-      const outDirRelative = Utils.relativePath(outDir, baseDir);
+      const outDirRelative = fs.relativePath(outDir, baseDir);
       path = path.replace(new RegExp(`^${outDirRelative}`), '');
     }
 
@@ -198,7 +199,7 @@ export class TsMorphMetadataProvider extends MetadataProvider {
     const source = this.sources.find(s => s.getFilePath().endsWith(path));
 
     if (!source && validate) {
-      throw new MetadataError(`Source file '${tsPath}' not found. Check your 'entitiesTs' option and verify you have 'compilerOptions.declaration' enabled in your 'tsconfig.json'. If you are using webpack, see https://bit.ly/35pPDNn`);
+      throw new MetadataError(`Source file '${fs.relativePath(tsPath, baseDir)}' not found. Check your 'entitiesTs' option and verify you have 'compilerOptions.declaration' enabled in your 'tsconfig.json'. If you are using webpack, see https://bit.ly/35pPDNn`);
     }
 
     return source;
@@ -236,7 +237,7 @@ export class TsMorphMetadataProvider extends MetadataProvider {
 
     try {
       this.project = new Project({
-        tsConfigFilePath: Utils.normalizePath(process.cwd(), tsConfigFilePath),
+        tsConfigFilePath: fs.normalizePath(process.cwd(), tsConfigFilePath),
         skipAddingFilesFromTsConfig: true,
         compilerOptions: {
           strictNullChecks: true,
@@ -321,6 +322,7 @@ export class TsMorphMetadataProvider extends MetadataProvider {
 
     // base entity without properties might not have path, but nothing to cache there
     if (meta.path) {
+      meta.path = fs.relativePath(meta.path, this.config.get('baseDir'));
       this.config.getMetadataCacheAdapter().set(this.getCacheKey(meta), copy, meta.path);
     }
   }

@@ -78,7 +78,7 @@ export class FileCacheAdapter implements SyncCacheAdapter {
     let path = typeof this.options.combined === 'string'
       ? this.options.combined
       : './metadata.json';
-    path = Utils.normalizePath(this.options.cacheDir, path);
+    path = fs.normalizePath(this.options.cacheDir, path);
     this.options.combined = path; // override in the options, so we can log it from the CLI in `cache:generate` command
     writeFileSync(path, JSON.stringify(this.cache, null, this.pretty ? 2 : undefined));
 
@@ -91,7 +91,7 @@ export class FileCacheAdapter implements SyncCacheAdapter {
   }
 
   private getHash(origin: string): string | null {
-    origin = Utils.absolutePath(origin, this.baseDir);
+    origin = fs.absolutePath(origin, this.baseDir);
 
     if (!existsSync(origin)) {
       return null;

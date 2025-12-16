@@ -1,11 +1,11 @@
+import { platform } from 'node:os';
 import { pathToFileURL } from 'node:url';
-import { compareObjects, EntityMetadata, MikroORM, ObjectId, sql, Utils } from '@mikro-orm/mongodb';
+import { compareObjects, EntityMetadata, MikroORM, sql, Utils } from '@mikro-orm/sqlite';
 import { fs } from '@mikro-orm/core/fs-utils';
 
 import { lookupPathFromDecorator } from '../packages/decorators/src/utils.js';
-import { Author } from './entities/index.js';
-import { initORMMongo } from './bootstrap.js';
-import FooBar from './entities/FooBar.js';
+import { Author4 } from './entities-schema/Author4.js';
+import { initORMSqlite } from './bootstrap.js';
 
 class Test {}
 
@@ -13,7 +13,7 @@ describe('Utils', () => {
 
   let orm: MikroORM;
 
-  beforeAll(async () => orm = await initORMMongo());
+  beforeAll(async () => orm = await initORMSqlite());
   beforeEach(async () => orm.schema.clear());
 
   test('getObjectType', () => {
@@ -45,8 +45,8 @@ describe('Utils', () => {
   });
 
   test('isEntity', () => {
-    expect(Utils.isEntity(Author.prototype)).toBe(true);
-    expect(Utils.isEntity(new Author('a', 'b'))).toBe(true);
+    expect(Utils.isEntity(Author4.prototype)).toBe(true);
+    expect(Utils.isEntity(new Author4('a', 'b'))).toBe(true);
   });
 
   test('equals', () => {
@@ -70,7 +70,7 @@ describe('Utils', () => {
     expect(compareObjects(Object.create(null), {})).toBe(true);
     expect(compareObjects({ a: Object.create(null) }, { a: {} })).toBe(true);
     expect(compareObjects({}, Object.create(null))).toBe(true);
-    expect(compareObjects(new Test(), new Author('n', 'e'))).toBe(false);
+    expect(compareObjects(new Test(), new Author4('n', 'e'))).toBe(false);
     expect(compareObjects(sql`select 1`, sql`select 1`)).toBe(true);
     expect(compareObjects(sql`select ${1}`, sql`select ${1}`)).toBe(true);
     expect(compareObjects(sql`select ${1}`, sql`select ${2}`)).toBe(false);
@@ -176,8 +176,7 @@ describe('Utils', () => {
 
   test('getConstructorParams', () => {
     expect(Utils.getConstructorParams(Test)).toEqual(undefined);
-    expect(Utils.getConstructorParams(FooBar)).toEqual(undefined);
-    expect(Utils.getConstructorParams(Author)).toEqual(['name', 'email']);
+    expect(Utils.getConstructorParams(Author4)).toEqual(['name', 'email']);
     expect(Utils.getConstructorParams('')).toEqual(undefined);
     expect(Utils.getConstructorParams('constructor')).toEqual(undefined);
   });
@@ -191,20 +190,6 @@ describe('Utils', () => {
     expect(prop2.test).toBe('foo');
   });
 
-  test('extractPK with PK id/_id', () => {
-    const meta = orm.getMetadata(Author);
-    expect(Utils.extractPK('abcd')).toBe('abcd');
-    expect(Utils.extractPK(123)).toBe(123);
-    const id = new ObjectId('111111111111111111111111');
-    expect(Utils.extractPK(id)).toBe(id);
-    expect(Utils.extractPK({ id }, meta)).toBe(id);
-    expect(Utils.extractPK({ _id: id }, meta)).toBe(id);
-    expect(Utils.extractPK({ foo: 'bar' })).toBeNull();
-    const t = new Test();
-    expect(Utils.extractPK(t)).toBe(t);
-    expect(Utils.extractPK(true)).toBeNull();
-  });
-
   test('extractPK with PK uuid', () => {
     const meta = { primaryKeys: ['uuid'] } as EntityMetadata;
     expect(Utils.extractPK({ id: '...' }, meta)).toBeNull();
@@ -214,46 +199,42 @@ describe('Utils', () => {
   });
 
   test('normalizePath', () => {
-    expect(Utils.normalizePath()).toBe('.');
-    expect(Utils.normalizePath('./test')).toBe('./test');
-    expect(Utils.normalizePath('./test/foo/bar/')).toBe('./test/foo/bar');
-    expect(Utils.normalizePath('test/')).toBe('./test');
-    expect(Utils.normalizePath('/test')).toBe('/test');
-    expect(Utils.normalizePath('./foo', '/test')).toBe('/test');
+    expect(fs.normalizePath()).toBe('.');
+    expect(fs.normalizePath('./test')).toBe('./test');
+    expect(fs.normalizePath('./test/foo/bar/')).toBe('./test/foo/bar');
+    expect(fs.normalizePath('test/')).toBe('./test');
+    expect(fs.normalizePath('/test')).toBe('/test');
+    expect(fs.normalizePath('./foo', '/test')).toBe('/test');
   });
 
-  test('normalizePath [posix]', () => {
-    const spy = vi.spyOn(Utils, 'fileURLToPath');
-    spy.mockImplementation(() => '/test');
-    expect(Utils.normalizePath('file:///test')).toBe('/test');
-    expect(Utils.normalizePath('./foo', 'file:///test')).toBe('/test');
-    spy.mockRestore();
+  test.skipIf(platform() === 'win32')('normalizePath [posix]', () => {
+    expect(fs.normalizePath('file:///test')).toBe('/test');
+    expect(fs.normalizePath('./foo', 'file:///test')).toBe('/test');
   });
 
   test('normalizePath [windows]', () => {
-    const spy = vi.spyOn(Utils, 'fileURLToPath');
-    spy.mockImplementation(() => 'C:/test');
-    expect(Utils.normalizePath('file:///C:/test')).toBe('C:/test');
-    expect(Utils.normalizePath('./foo', 'file:///C:/test')).toBe('C:/test');
-    spy.mockRestore();
+    const expected = platform() === 'win32' ? 'C:/test' : '/C:/test';
+    expect(fs.normalizePath('file:///C:/test')).toBe(expected);
+    expect(fs.normalizePath('./foo', 'file:///C:/test')).toBe(expected);
   });
 
   test('relativePath', () => {
-    expect(Utils.relativePath('./test', process.cwd())).toBe('./test');
-    expect(Utils.relativePath('test', process.cwd())).toBe('./test');
-    expect(Utils.relativePath(process.cwd() + '/tests/', process.cwd())).toBe('./tests');
-    expect(Utils.relativePath(process.cwd() + '/tests/cli/', process.cwd())).toBe('./tests/cli');
-    expect(Utils.relativePath(pathToFileURL(process.cwd() + '/tests/cli/').href, process.cwd())).toBe('./tests/cli');
-    expect(Utils.relativePath(process.cwd() + '/tests/cli/', pathToFileURL(process.cwd()).href)).toBe('./tests/cli');
+    expect(fs.relativePath('', process.cwd())).toBe('');
+    expect(fs.relativePath('./test', process.cwd())).toBe('./test');
+    expect(fs.relativePath('test', process.cwd())).toBe('./test');
+    expect(fs.relativePath(process.cwd() + '/tests/', process.cwd())).toBe('./tests');
+    expect(fs.relativePath(process.cwd() + '/tests/cli/', process.cwd())).toBe('./tests/cli');
+    expect(fs.relativePath(pathToFileURL(process.cwd() + '/tests/cli/').href, process.cwd())).toBe('./tests/cli');
+    expect(fs.relativePath(process.cwd() + '/tests/cli/', pathToFileURL(process.cwd()).href)).toBe('./tests/cli');
   });
 
   test('absolutePath', () => {
-    expect(Utils.absolutePath('./test')).toBe(Utils.normalizePath(process.cwd() + '/test'));
-    expect(Utils.absolutePath('test')).toBe(Utils.normalizePath(process.cwd() + '/test'));
-    expect(Utils.absolutePath(process.cwd() + '/tests/')).toBe(Utils.normalizePath(process.cwd() + '/tests'));
-    expect(Utils.absolutePath('./tests/cli')).toBe(Utils.normalizePath(process.cwd() + '/tests/cli'));
-    expect(Utils.absolutePath('')).toBe(Utils.normalizePath(process.cwd()));
-    expect(Utils.absolutePath(pathToFileURL(process.cwd() + '/tests/').href)).toBe(Utils.normalizePath(process.cwd() + '/tests'));
+    expect(fs.absolutePath('./test')).toBe(fs.normalizePath(process.cwd() + '/test'));
+    expect(fs.absolutePath('test')).toBe(fs.normalizePath(process.cwd() + '/test'));
+    expect(fs.absolutePath(process.cwd() + '/tests/')).toBe(fs.normalizePath(process.cwd() + '/tests'));
+    expect(fs.absolutePath('./tests/cli')).toBe(fs.normalizePath(process.cwd() + '/tests/cli'));
+    expect(fs.absolutePath('')).toBe(fs.normalizePath(process.cwd()));
+    expect(fs.absolutePath(pathToFileURL(process.cwd() + '/tests/').href)).toBe(fs.normalizePath(process.cwd() + '/tests'));
   });
 
   test('pathExists wrapper', async () => {
@@ -547,12 +528,10 @@ describe('Utils', () => {
       '    at Module.load (internal/modules/cjs/loader.js:790:32)',
       '    at Function.Module._load (internal/modules/cjs/loader.js:703:12)',
     ];
-    expect(lookupPathFromDecorator('Customer', stack1)).toBe('C:/www/my-project/src/entities/Customer.ts');
+    expect(lookupPathFromDecorator('Customer', stack1)).toBe('C:\\www\\my-project\\src\\entities\\Customer.ts');
   });
 
   test('lookup path from decorator loaded from an ES module [posix]', () => {
-    const spy = vi.spyOn(Utils, 'fileURLToPath');
-    spy.mockImplementation(() => 'C:/test');
     // with tslib, via ts-node
     const stack1 = [
       '    at Function.lookupPathFromDecorator (/usr/local/var/www/my-project/node_modules/mikro-orm/dist/utils/Utils.js:170:23)',
@@ -566,13 +545,10 @@ describe('Utils', () => {
       '    at Module._extensions.js (internal/modules/cjs/loader.js:787:10)',
       '    at Object.require.extensions.<computed> [as .ts] (/usr/local/var/www/my-project/node_modules/ts-node/src/index.ts:476:12)',
     ];
-    spy.mockImplementation(() => '/usr/local/var/www/my-project/src/entities/Customer.ts');
-    expect(lookupPathFromDecorator('Customer', stack1)).toBe('/usr/local/var/www/my-project/src/entities/Customer.ts');
-    spy.mockRestore();
+    expect(lookupPathFromDecorator('Customer', stack1)).toBe('file:///usr/local/var/www/my-project/src/entities/Customer.ts');
   });
 
   test('lookup path from decorator loaded from an ES module [windows]', () => {
-    const spy = vi.spyOn(Utils, 'fileURLToPath');
     // with tslib, via ts-node
     const stack1 = [
       '    at Function.lookupPathFromDecorator (C:\\www\\my-project\\node_modules\\mikro-orm\\dist\\utils\\Utils.js:175:26)',
@@ -586,9 +562,7 @@ describe('Utils', () => {
       '    at Module.load (internal/modules/cjs/loader.js:790:32)',
       '    at Function.Module._load (internal/modules/cjs/loader.js:703:12)',
     ];
-    spy.mockImplementation(() => 'C:/www/my-project/src/entities/Customer.ts');
-    expect(lookupPathFromDecorator('Customer', stack1)).toBe('C:/www/my-project/src/entities/Customer.ts');
-    spy.mockRestore();
+    expect(lookupPathFromDecorator('Customer', stack1)).toBe('file:///C:/www/my-project/src/entities/Customer.ts');
   });
 
   test('tryImport', async () => {

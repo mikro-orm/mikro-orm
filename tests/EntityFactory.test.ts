@@ -21,9 +21,7 @@ describe('EntityFactory', () => {
 
   test('should load entities', async () => {
     const metadata = orm.getMetadata().getAll();
-    expect(metadata).toBeInstanceOf(Object);
-    expect(metadata[Author.name]).toBeInstanceOf(Object);
-    expect(metadata[Author.name].path).toBe('./entities/Author.ts');
+    expect(metadata[Author.name].path).toMatch('/tests/entities/Author.ts');
     expect(metadata[Author.name].properties).toBeInstanceOf(Object);
     expect(metadata[Author.name].properties.books.type).toBe(Book.name);
     expect(metadata[Author.name].properties.books.kind).toBe(ReferenceKind.ONE_TO_MANY);
