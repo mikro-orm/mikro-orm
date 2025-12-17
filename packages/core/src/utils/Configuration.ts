@@ -41,6 +41,7 @@ import { MemoryCacheAdapter } from '../cache/MemoryCacheAdapter.js';
 import { EntityComparator } from './EntityComparator.js';
 import type { Type } from '../types/Type.js';
 import type { MikroORM } from '../MikroORM.js';
+import { setEnv } from './env-vars.js';
 
 const DEFAULTS = {
   pool: {},
@@ -66,7 +67,7 @@ const DEFAULTS = {
   colors: true,
   findOneOrFailHandler: (entityName: string, where: Dictionary | IPrimaryKey) => NotFoundError.findOneFailed(entityName, where),
   findExactlyOneOrFailHandler: (entityName: string, where: Dictionary | IPrimaryKey) => NotFoundError.findExactlyOneFailed(entityName, where),
-  baseDir: process.cwd(),
+  baseDir: globalThis.process?.cwd?.(),
   hydrator: ObjectHydrator,
   flushMode: FlushMode.AUTO,
   loadStrategy: LoadStrategy.BALANCED,
@@ -409,7 +410,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver, EM exten
   }
 
   private sync(): void {
-    process.env.MIKRO_ORM_COLORS = '' + this.options.colors;
+    setEnv('MIKRO_ORM_COLORS', this.options.colors);
     this.logger.setDebugMode(this.options.debug);
   }
 

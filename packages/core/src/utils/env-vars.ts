@@ -3,6 +3,18 @@ import { type Options } from './Configuration.js';
 import { Utils } from './Utils.js';
 
 /** @internal */
+export function setEnv(key: string, value: unknown): void {
+  if (globalThis.process?.env) {
+    globalThis.process.env[key] = String(value);
+  }
+}
+
+/** @internal */
+export function getEnv(key: string): string | undefined {
+  return globalThis.process?.env?.[key];
+}
+
+/** @internal */
 export function loadEnvironmentVars(): Partial<Options> {
   const ret: Dictionary = {};
 
@@ -18,8 +30,9 @@ export function loadEnvironmentVars(): Partial<Options> {
   const read = (o: Dictionary, envPrefix: string, key: string, mapper: (v: string) => unknown = v => v) => {
     const envKey = getEnvKey(key, envPrefix);
 
-    if (envKey in process.env) {
-      o[key] = mapper(process.env[envKey]!);
+    /* v8 ignore next */
+    if (envKey in (globalThis.process?.env ?? {})) {
+      o[key] = mapper(getEnv(envKey)!);
     }
   };
   const cleanup = (o: Dictionary, k: string) => Utils.hasObjectKeys(o[k]) ? {} : delete o[k];

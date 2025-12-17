@@ -20,6 +20,7 @@ import { WrappedEntity } from './WrappedEntity.js';
 import { ReferenceKind } from '../enums.js';
 import { helper } from './wrap.js';
 import { inspect } from '../logging/inspect.js';
+import { getEnv } from '../utils/env-vars.js';
 
 /**
  * @internal
@@ -162,7 +163,7 @@ export class EntityHelper {
       const ret = inspect(object, { depth });
       let name = this.constructor.name;
 
-      const showEM = ['true', 't', '1'].includes(process.env.MIKRO_ORM_LOG_EM_ID?.toString().toLowerCase() ?? '');
+      const showEM = ['true', 't', '1'].includes(getEnv('MIKRO_ORM_LOG_EM_ID')?.toLowerCase() ?? '');
 
       if (showEM) {
         if (helper(this).__em) {
