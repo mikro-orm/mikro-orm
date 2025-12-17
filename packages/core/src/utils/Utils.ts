@@ -687,13 +687,16 @@ export class Utils {
    */
   static detectTypeScriptSupport(): boolean {
     /* v8 ignore next */
+    const process = globalThis.process ?? {};
+
+    /* v8 ignore next */
     return process.argv[0].endsWith('ts-node') // running via ts-node directly
-      || !!process.env.MIKRO_ORM_CLI_ALWAYS_ALLOW_TS // forced explicitly or enabled via `registerTypeScriptSupport()`
-      || !!process.env.TS_JEST // check if ts-jest is used (works only with v27.0.4+)
-      || !!process.env.VITEST // check if vitest is used
-      || !!process.versions.bun // check if bun is used
-      || process.argv.slice(1).some(arg => arg.match(/\.([mc]?ts|tsx)$/)) // executing `.ts` file
-      || process.execArgv.some(arg => {
+      || !!process.env?.MIKRO_ORM_CLI_ALWAYS_ALLOW_TS // forced explicitly or enabled via `registerTypeScriptSupport()`
+      || !!process.env?.TS_JEST // check if ts-jest is used
+      || !!process.env?.VITEST // check if vitest is used
+      || !!process.versions?.bun // check if bun is used
+      || process.argv?.slice(1).some(arg => arg.match(/\.([mc]?ts|tsx)$/)) // executing `.ts` file
+      || process.execArgv?.some(arg => {
         return arg.includes('ts-node') // check for ts-node loader
           || arg.includes('@swc-node/register') // check for swc-node/register loader
           || arg.includes('node_modules/tsx/'); // check for tsx loader

@@ -1,9 +1,11 @@
-const bool = (v?: string) => v && ['true', 't', '1'].includes(v.toLowerCase());
-const boolIfDefined = (v?: string) => v != null ? bool(v) : true;
-const enabled = () => !bool(process.env.NO_COLOR)
-  && !bool(process.env.MIKRO_ORM_NO_COLOR)
-  && boolIfDefined(process.env.FORCE_COLOR)
-  && boolIfDefined(process.env.MIKRO_ORM_COLORS);
+import { getEnv } from '../utils/env-vars.js';
+
+const bool = (k: string) => ['true', 't', '1'].includes(getEnv(k)?.toLowerCase() ?? '');
+const boolIfDefined = (k: string) => getEnv(k) != null ? bool(k) : true;
+const enabled = () => !bool('NO_COLOR')
+  && !bool('MIKRO_ORM_NO_COLOR')
+  && boolIfDefined('FORCE_COLOR')
+  && boolIfDefined('MIKRO_ORM_COLORS');
 const wrap = (fn: (text: string) => string) => (text: string) => enabled() ? fn(text) : text;
 
 /** @internal */
