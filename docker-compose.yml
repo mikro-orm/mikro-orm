@@ -6,7 +6,7 @@ services:
       - "7687:7687"
       - "7474:7474"
     environment:
-      NEO4J_AUTH: neo4j/test
+      NEO4J_AUTH: neo4j/testtest
       NEO4J_dbms_default__listen__address: 0.0.0.0
       NEO4J_dbms_default__advertised__address: localhost
     healthcheck:

@@ -1,42 +1,132 @@
-import { Entity, ManyToMany, ManyToOne, Property, type EntityOptions, type ManyToManyOptions, type ManyToOneOptions } from '@mikro-orm/core';
-import type { Dictionary } from '@mikro-orm/core';
+import { MetadataStorage, Property, type AnyEntity, type EntityOptions } from '@mikro-orm/core';
 
 export type RelationshipDirection = 'IN' | 'OUT';
 
 export interface RelationshipOptions {
   type: string;
   direction: RelationshipDirection;
-  properties?: Dictionary<unknown>;
 }
 
-export interface Neo4jManyToOneOptions<T> extends ManyToOneOptions<T> {
-  relationship: RelationshipOptions;
-}
-
-export interface Neo4jManyToManyOptions<T> extends ManyToManyOptions<T> {
-  relationship: RelationshipOptions;
+export interface Neo4jNodeOptions {
+  /**
+   * Additional Neo4j labels for this node.
+   * The primary label is derived from the collection name.
+   * Example: labels: ['Employee', 'Manager'] would create nodes with :Person:Employee:Manager
+   */
+  labels?: string[];
 }
 
 /**
- * Alias for @Entity oriented to graph semantics.
+ * Decorator to mark an entity as a Neo4j node.
+ * Must be used together with @Entity decorator.
+ * Supports multiple Neo4j labels via the labels option.
+ *
+ * @example
+ * @Entity()
+ * @Node()
+ * class Person { ... }
+ *
+ * @example
+ * @Entity()
+ * @Node({ labels: ['Employee', 'Manager'] })
+ * class Executive { ... }
  */
-export const node = (options?: EntityOptions<any>): ClassDecorator => Entity(options ?? {} as any);
+export const Node = (options?: Neo4jNodeOptions): ClassDecorator => {
+  return function (target: any) {
+    const meta = MetadataStorage.getMetadataFromDecorator(target);
+    if (meta) {
+      (meta as any).neo4jNode = true;
+      if (options?.labels) {
+        (meta as any).neo4jLabels = options.labels;
+      }
+    }
+  };
+};
+
+// Store relationship metadata separate from MikroORM's metadata system
+const relationshipMetadata = new WeakMap<Function, Map<string, RelationshipOptions>>();
 
 /**
- * Many-to-one relationship with Neo4j relationship metadata (type + direction).
+ * Decorator to mark a relationship property with Neo4j metadata (type + direction).
+ * Must be used together with @ManyToOne or @OneToOne decorator.
+ *
+ * @example
+ * @ManyToOne(() => Category, { ref: true })
+ * @Rel({ type: 'PART_OF', direction: 'OUT' })
+ * category?: Ref<Category>;
  */
-export const rel = <T>(entity: string | (() => T), options: Neo4jManyToOneOptions<T>) => {
-  return ManyToOne(entity as any, { ...options, custom: { relationship: options.relationship } });
+export const Rel = (options: RelationshipOptions) => {
+  return function (target: AnyEntity, propertyName: string) {
+    // Store metadata in a separate WeakMap to avoid interfering with MikroORM decorators
+    let props = relationshipMetadata.get(target.constructor);
+    if (!props) {
+      props = new Map();
+      relationshipMetadata.set(target.constructor, props);
+    }
+    props.set(propertyName, options);
+  };
 };
 
 /**
- * Many-to-many relationship with Neo4j relationship metadata (type + direction).
+ * Decorator to mark a many-to-many relationship property with Neo4j metadata (type + direction).
+ * Must be used together with @ManyToMany decorator.
+ *
+ * @example
+ * @ManyToMany(() => Tag)
+ * @RelMany({ type: 'HAS_TAG', direction: 'OUT' })
+ * tags = new Collection<Tag>(this);
  */
-export const relMany = <T>(entity: string | (() => T), options: Neo4jManyToManyOptions<T>) => {
-  return ManyToMany(entity as any, { ...options, custom: { relationship: options.relationship } });
+export const RelMany = (options: RelationshipOptions) => {
+  return function (target: AnyEntity, propertyName: string) {
+    // Store metadata in a separate WeakMap to avoid interfering with MikroORM decorators
+    let props = relationshipMetadata.get(target.constructor);
+    if (!props) {
+      props = new Map();
+      relationshipMetadata.set(target.constructor, props);
+    }
+    props.set(propertyName, options);
+  };
 };
+
+/**
+ * Get relationship options for a property.
+ * Used internally by the Neo4j driver.
+ * @internal
+ */
+export function getRelationshipMetadata(entityClass: Function, propertyName: string): RelationshipOptions | undefined {
+  const props = relationshipMetadata.get(entityClass);
+  return props?.get(propertyName);
+}
 
 /**
  * Simple property helper for nodes.
  */
-export const field = Property;
+export const Field = Property;
+
+export interface Neo4jRelationshipOptions extends EntityOptions<any> {
+  /**
+   * The relationship type in Neo4j.
+   * Example: 'ACTED_IN', 'COMPLETED', etc.
+   */
+  type?: string;
+}
+
+/**
+ * Marks an entity as a Neo4j relationship with properties.
+ * Must be used together with @Entity decorator.
+ * Example:
+ * @Entity()
+ * @RelationshipProperties({ type: 'ACTED_IN' })
+ * class ActedIn {
+ *   @Property() roles!: string[];
+ * }
+ */
+export const RelationshipProperties = (options?: Neo4jRelationshipOptions): ClassDecorator => {
+  return function (target: any) {
+    const meta = MetadataStorage.getMetadataFromDecorator(target);
+    if (meta) {
+      (meta as any).neo4jRelationshipEntity = true;
+      (meta as any).neo4jRelationshipType = options?.type;
+    }
+  };
+};

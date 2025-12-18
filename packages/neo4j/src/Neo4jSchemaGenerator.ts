@@ -1,18 +1,22 @@
-import { AbstractSchemaGenerator, type CreateSchemaOptions } from '@mikro-orm/core';
+import {
+  AbstractSchemaGenerator,
+  type CreateSchemaOptions,
+  type MikroORM,
+} from '@mikro-orm/core';
 import type { Neo4jDriver } from './Neo4jDriver';
-import type { Neo4jEntityManager } from './Neo4jEntityManager';
 
 export class Neo4jSchemaGenerator extends AbstractSchemaGenerator<Neo4jDriver> {
 
-  constructor(em: Neo4jDriver | Neo4jEntityManager) {
-    super(em);
+  static register(orm: MikroORM): void {
+    orm.config.registerExtension(
+      '@mikro-orm/schema-generator',
+      () => new Neo4jSchemaGenerator(orm.em),
+    );
   }
 
-  static register(): void {
-    // no-op for now; hook for future extension
-  }
-
-  override async createSchema(_options: CreateSchemaOptions = {}): Promise<void> {
+  override async createSchema(
+    _options: CreateSchemaOptions = {},
+  ): Promise<void> {
     // Neo4j is schemaless for nodes/relationships; indexes can be added later
   }
 

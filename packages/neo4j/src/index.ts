@@ -14,3 +14,4 @@ export {
 } from './Neo4jMikroORM';
 export * from '@mikro-orm/core';
 export * from './decorators';
+export { Rel, Field, Node, RelMany, RelationshipProperties, getRelationshipMetadata, type Neo4jNodeOptions, type Neo4jRelationshipOptions, type RelationshipOptions } from './decorators';

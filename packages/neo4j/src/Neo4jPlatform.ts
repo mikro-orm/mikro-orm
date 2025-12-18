@@ -1,5 +1,4 @@
-import { Platform, type Constructor, type EntityManager, type EntityProperty, type IPrimaryKey, type PopulateOptions } from '@mikro-orm/core';
-import { type Dictionary } from '@mikro-orm/core';
+import { Platform, type Constructor, type EntityManager, type EntityProperty, type IPrimaryKey, type PopulateOptions, type Dictionary } from '@mikro-orm/core';
 import { Neo4jExceptionConverter } from './Neo4jExceptionConverter';
 import { Neo4jSchemaGenerator } from './Neo4jSchemaGenerator';
 import { Neo4jEntityRepository } from './Neo4jEntityRepository';
@@ -20,8 +19,8 @@ export class Neo4jPlatform extends Platform {
     return Neo4jEntityRepository as unknown as Constructor<any>;
   }
 
-  override lookupExtensions(): void {
-    // no-op for now; schema generator registered lazily in driver
+  override lookupExtensions(orm: any): void {
+    Neo4jSchemaGenerator.register(orm);
   }
 
   override getExtension<T>(extensionName: string, extensionKey: string, moduleName: string, em: EntityManager): T {
