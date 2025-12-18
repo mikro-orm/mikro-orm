@@ -1,0 +1,59 @@
+{
+  "name": "@mikro-orm/neo4j",
+  "version": "6.6.2",
+  "description": "Neo4j driver for MikroORM (OGM-style graph support)",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "typings": "dist/index.d.ts",
+  "exports": {
+    "./package.json": "./package.json",
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.mjs"
+      },
+      "require": "./dist/index.js"
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/mikro-orm/mikro-orm.git"
+  },
+  "keywords": [
+    "orm",
+    "ogm",
+    "neo4j",
+    "graph",
+    "cypher",
+    "typescript",
+    "javascript",
+    "mikro-orm"
+  ],
+  "author": "Martin Adámek",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/mikro-orm/mikro-orm/issues"
+  },
+  "homepage": "https://mikro-orm.io",
+  "engines": {
+    "node": ">= 18.12.0"
+  },
+  "scripts": {
+    "build": "yarn clean && yarn compile && yarn copy && yarn run -T gen-esm-wrapper dist/index.js dist/index.mjs",
+    "clean": "yarn run -T rimraf ./dist",
+    "compile": "yarn run -T tsc -p tsconfig.build.json",
+    "copy": "node ../../scripts/copy.mjs"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "neo4j-driver": "^5.26.0"
+  },
+  "devDependencies": {
+    "@mikro-orm/core": "^6.6.2"
+  },
+  "peerDependencies": {
+    "@mikro-orm/core": "^6.0.0"
+  }
+}
