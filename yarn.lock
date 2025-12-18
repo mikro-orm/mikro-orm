@@ -1919,6 +1919,7 @@ __metadata:
   resolution: "@mikro-orm/neo4j@workspace:packages/neo4j"
   dependencies:
     "@mikro-orm/core": "npm:^6.6.2"
+    "@neo4j/cypher-builder": "npm:^2.11.0"
     neo4j-driver: "npm:^5.26.0"
   peerDependencies:
     "@mikro-orm/core": ^6.0.0
@@ -2048,6 +2049,13 @@ __metadata:
     "@emnapi/runtime": "npm:^1.1.0"
     "@tybys/wasm-util": "npm:^0.9.0"
   checksum: 10/af335867eca9696b0dbb1b8439878e0408a853c42419cd71d2c5dcf9f7c9f6a8549ea88b3a31b9544bb3a9376e5742f3268e58ee066925d3726bd76a121eb8a6
+  languageName: node
+  linkType: hard
+
+"@neo4j/cypher-builder@npm:^2.11.0":
+  version: 2.11.0
+  resolution: "@neo4j/cypher-builder@npm:2.11.0"
+  checksum: 10/f9e463bcbe99d854a5249128586414acaa6b438b32cd7e8e23e9b144a6b28a5b2cb509eeebd4b1846e863b38e931351ccbc9242aae2a82e1b0cbc91e3ec68d0f
   languageName: node
   linkType: hard
 

@@ -5,6 +5,7 @@ export * from './Neo4jPlatform';
 export * from './Neo4jEntityManager';
 export * from './Neo4jEntityRepository';
 export * from './Neo4jSchemaGenerator';
+export * from './Neo4jQueryBuilder';
 export { Neo4jEntityManager as EntityManager } from './Neo4jEntityManager';
 export { Neo4jEntityRepository as EntityRepository } from './Neo4jEntityRepository';
 export {

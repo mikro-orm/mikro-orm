@@ -7,6 +7,7 @@ import {
 } from '@mikro-orm/core';
 import type { Neo4jDriver } from './Neo4jDriver';
 import type { Neo4jEntityRepository } from './Neo4jEntityRepository';
+import { Neo4jQueryBuilder } from './Neo4jQueryBuilder';
 
 export class Neo4jEntityManager<
   Driver extends Neo4jDriver = Neo4jDriver
@@ -76,6 +77,38 @@ export class Neo4jEntityManager<
     params?: Record<string, unknown>,
   ): Promise<T[]> {
     return this.run<T>(cypher, params);
+  }
+
+  /**
+   * Creates a Neo4jQueryBuilder instance for building Cypher queries programmatically.
+   *
+   * @param entityName - Optional entity name to automatically set node labels
+   * @returns Neo4jQueryBuilder instance
+   *
+   * @example
+   * ```typescript
+   * // Simple query
+   * const movies = await em.createQueryBuilder<Movie>('Movie')
+   *   .match()
+   *   .where('title', 'The Matrix')
+   *   .return(['title', 'released'])
+   *   .execute();
+   *
+   * // Advanced query with relationships
+   * const qb = em.createQueryBuilder<Movie>('Movie');
+   * const node = qb.getNode();
+   * const titleProp = node.property('title');
+   *
+   * const result = await qb
+   *   .match()
+   *   .related('ACTED_IN', 'left', 'Person')
+   *   .where(qb.getCypher().eq(titleProp, new qb.getCypher().Param('The Matrix')))
+   *   .return(['title', 'released'])
+   *   .execute();
+   * ```
+   */
+  createQueryBuilder<T = any>(entityName?: EntityName<T>): Neo4jQueryBuilder<T> {
+    return new Neo4jQueryBuilder<T>(entityName, this);
   }
 
   override getConnection(type?: any): ReturnType<Driver['getConnection']> {

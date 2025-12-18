@@ -48,6 +48,7 @@
     "access": "public"
   },
   "dependencies": {
+    "@neo4j/cypher-builder": "^2.11.0",
     "neo4j-driver": "^5.26.0"
   },
   "devDependencies": {
