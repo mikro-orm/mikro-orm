@@ -1,7 +1,7 @@
 import * as Cypher from '@neo4j/cypher-builder';
 import type { EntityName, EntityClass } from '@mikro-orm/core';
 import type { Neo4jEntityManager } from './Neo4jEntityManager';
-import { getRelationshipMetadata } from './decorators';
+import { Neo4jCypherBuilder } from './Neo4jCypherBuilder';
 
 export interface QueryBuilderResult<T = any> {
   cypher: string;
@@ -416,7 +416,7 @@ export class Neo4jQueryBuilder<T = any> {
       const propertyName = optionsOrDirection as string;
 
       // Extract relationship type and direction from decorator metadata
-      const relType = this.getRelationshipType(sourceEntity, propertyName);
+      const relType = this.getRelationshipType(sourceEntity, propertyName, false);
       if (!relType) {
         throw new Error(
           `No @Rel or @RelMany decorator found on ${sourceEntity.name}.${propertyName}. ` +
@@ -867,6 +867,47 @@ export class Neo4jQueryBuilder<T = any> {
   }
 
   /**
+   * Builds and executes the query, returning all matching results.
+   * Alias for execute() with more intuitive naming.
+   * Requires an EntityManager to be provided during construction.
+   *
+   * @returns Promise with array of query results
+   * @example
+   * ```typescript
+   * const movies = await qb.match().where('released', 1999).getMany();
+   * ```
+   */
+  async getMany(): Promise<T[]> {
+    return this.execute();
+  }
+
+  /**
+   * Builds and executes the query, returning the first result or null.
+   * Automatically adds LIMIT 1 to the query.
+   * Requires an EntityManager to be provided during construction.
+   *
+   * @returns Promise with single result or null if not found
+   * @example
+   * ```typescript
+   * const movie = await qb.match().where('title', 'The Matrix').getOne();
+   * ```
+   */
+  async getOne(): Promise<T | null> {
+    if (!this.em) {
+      throw new Error(
+        'Cannot execute query without an EntityManager. Use build() and execute manually.',
+      );
+    }
+
+    // Ensure we only fetch one result
+    this.limit(1);
+
+    const { cypher, params } = this.build();
+    const result = await (this.em as any).run(cypher, params) as T[];
+    return result.length > 0 ? result[0] : null;
+  }
+
+  /**
    * Converts properties object to Cypher parameters.
    */
   private convertPropertiesToParams(
@@ -908,12 +949,7 @@ export class Neo4jQueryBuilder<T = any> {
       return [name];
     }
 
-    const labels = [meta.collection];
-    const additionalLabels = (meta as any).neo4jLabels;
-    if (additionalLabels && Array.isArray(additionalLabels)) {
-      labels.push(...additionalLabels);
-    }
-    return labels;
+    return Neo4jCypherBuilder.getNodeLabels(meta);
   }
 
   /**
@@ -923,9 +959,9 @@ export class Neo4jQueryBuilder<T = any> {
   private getRelationshipType(
     sourceEntity: EntityClass<any>,
     propertyName: string,
+    allowFallback = true,
   ): string | undefined {
-    const relMetadata = getRelationshipMetadata(sourceEntity, propertyName);
-    return relMetadata?.type;
+    return Neo4jCypherBuilder.getRelationshipType(sourceEntity, propertyName, allowFallback);
   }
 
   /**
@@ -935,11 +971,11 @@ export class Neo4jQueryBuilder<T = any> {
     sourceEntity: EntityClass<any>,
     propertyName: string,
   ): 'left' | 'right' | 'undirected' | undefined {
-    const relMetadata = getRelationshipMetadata(sourceEntity, propertyName);
-    if (!relMetadata) {
+    const direction = Neo4jCypherBuilder.getRelationshipDirection(sourceEntity, propertyName);
+    if (!direction) {
       return undefined;
     }
-    return relMetadata.direction === 'IN' ? 'left' : 'right';
+    return direction === 'IN' ? 'left' : 'right';
   }
 
 }

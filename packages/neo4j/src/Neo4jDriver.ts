@@ -21,11 +21,14 @@ import { type Dictionary,
   type QueryOrderMap,
   type Transaction,
   ReferenceKind,
-type  AnyEntity  } from '@mikro-orm/core';
+  type AnyEntity,
+  Collection  } from '@mikro-orm/core';
 import { Neo4jConnection } from './Neo4jConnection';
 import { Neo4jPlatform } from './Neo4jPlatform';
 import { Neo4jEntityManager } from './Neo4jEntityManager';
+import { Neo4jCypherBuilder } from './Neo4jCypherBuilder';
 import { getRelationshipMetadata } from './decorators';
+import Cypher from '@neo4j/cypher-builder';
 
 interface Neo4jQueryOptions<T> {
   where?: FilterQuery<T>;
@@ -78,31 +81,53 @@ export class Neo4jDriver extends DatabaseDriver<Neo4jConnection> {
 
   override async count<T extends object>(entityName: string, where: FilterQuery<T>, options: CountOptions<T> = {}): Promise<number> {
     const meta = this.metadata.find<T>(entityName)!;
-    const query = this.buildMatch(meta, { where });
-    const cypher = query.cypher.replace('RETURN node', 'RETURN count(node) as total');
-    const res = await this.connection.executeRaw(cypher, query.params, options.ctx);
+    const labels = Neo4jCypherBuilder.getNodeLabels(meta);
+    const node = new Cypher.Node();
+    const pattern = new Cypher.Pattern(node, { labels });
+    let query: any = new Cypher.Match(pattern);
+
+    // Apply WHERE
+    if (where && Object.keys(where).length > 0) {
+      const whereClauses = this.buildWhereClauses(node, where);
+      if (whereClauses.length > 0) {
+        query = query.where(Cypher.and(...whereClauses));
+      }
+    }
+
+    // Return count
+    query = query.return([Cypher.count(node), 'total']);
+    const { cypher, params } = query.build();
+    const res = await this.connection.executeRaw(cypher, params, options.ctx);
     const rec = res.records[0];
-    return rec?.get('total').toNumber ? rec.get('total').toNumber() : Number(rec?.get('total') ?? 0);
+    const total = rec?.get('total');
+    return total?.toNumber ? total.toNumber() : Number(total ?? 0);
   }
 
   override async nativeInsert<T extends object>(entityName: string, data: EntityDictionary<T>, options: NativeInsertUpdateOptions<T> = {}): Promise<QueryResult<T>> {
     const meta = this.metadata.find<T>(entityName)!;
 
     // Check if this is a relationship entity (pivot entity with @RelationshipProperties)
-    if ((meta as any).neo4jRelationshipEntity) {
+    if (Neo4jCypherBuilder.isRelationshipEntity(meta)) {
       return this.insertRelationshipEntity(meta, data, options);
     }
 
     const payload = this.preparePayload(meta, data);
-    const props = this.formatProps(payload.nodeProps);
-    const labels = this.getNodeLabels(meta);
-    const cypher = `CREATE (node${labels} ${props}) RETURN node`;
-    const res = await this.connection.executeRaw(cypher, payload.params, options.ctx);
-    const node = res.records[0].get('node');
-    if (payload.relations.length) {
-      await this.persistRelations(node.properties.id, payload.relations, options.ctx);
+    const labels = Neo4jCypherBuilder.getNodeLabels(meta);
+    const node = new Cypher.Node();
+    const props: Record<string, any> = {};
+    for (const [key, value] of Object.entries(payload.nodeProps)) {
+      props[key] = new Cypher.Param(value);
     }
-    return this.transformResult(meta, node.properties as EntityData<T>);
+    const pattern = new Cypher.Pattern(node, { labels, properties: props });
+    const query = new Cypher.Create(pattern).return(node);
+    const { cypher, params } = query.build();
+    const res = await this.connection.executeRaw(cypher, params, options.ctx);
+    // Get the node from the first key in the record (cypher-builder auto-generates names like 'this0')
+    const resultNode = res.records[0].get(res.records[0].keys[0]);
+    if (payload.relations.length) {
+      await this.persistRelations(meta, resultNode.properties.id, payload.relations, options.ctx);
+    }
+    return this.transformResult(meta, resultNode.properties as EntityData<T>);
   }
 
   override async nativeInsertMany<T extends object>(entityName: string, data: EntityDictionary<T>[], options: NativeInsertUpdateManyOptions<T> = {}): Promise<QueryResult<T>> {
@@ -117,16 +142,34 @@ export class Neo4jDriver extends DatabaseDriver<Neo4jConnection> {
   override async nativeUpdate<T extends object>(entityName: string, where: FilterQuery<T>, data: EntityDictionary<T>, options: NativeInsertUpdateOptions<T> = {}): Promise<QueryResult<T>> {
     const meta = this.metadata.find<T>(entityName)!;
     const payload = this.preparePayload(meta, data, true);
-    const whereQuery = this.buildWhere(where);
-    const labels = this.getNodeLabels(meta);
-    const cypher = `MATCH (node${labels}) ${whereQuery.where} SET node += $props RETURN node`;
-    const params = { ...whereQuery.params, props: payload.nodeProps };
-    const res = await this.connection.executeRaw(cypher, params, options.ctx);
-    const node = res.records[0]?.get('node');
-    if (node && payload.relations.length) {
-      await this.persistRelations(node.properties.id, payload.relations, options.ctx, true);
+    const labels = Neo4jCypherBuilder.getNodeLabels(meta);
+    const node = new Cypher.Node();
+    const pattern = new Cypher.Pattern(node, { labels });
+    let query: any = new Cypher.Match(pattern);
+
+    const whereClauses = this.buildWhereClauses(node, where);
+    if (whereClauses.length > 0) {
+      query = query.where(Cypher.and(...whereClauses));
     }
-    return node ? this.transformResult(meta, node.properties as EntityData<T>) : { affectedRows: 0 } as any;
+
+    // Set individual properties to avoid overwriting the entire node
+    if (Object.keys(payload.nodeProps).length > 0) {
+      const setters = Object.entries(payload.nodeProps).map(([key, value]) =>
+        [node.property(key), new Cypher.Param(value)],
+      );
+      query = query.set(...setters);
+    }
+
+    query = query.return(node);
+    const { cypher, params } = query.build();
+    const res = await this.connection.executeRaw(cypher, params, options.ctx);
+    // Get the node from the first key in the record
+    const resultNode = res.records[0]?.get(res.records[0]?.keys[0]);
+    if (resultNode && payload.relations.length) {
+      const idValue = this.convertNeo4jValue(resultNode.properties?.id);
+      await this.persistRelations(meta, idValue, payload.relations, options.ctx, true);
+    }
+    return resultNode ? this.transformResult(meta, resultNode.properties as EntityData<T>) : { affectedRows: 0 } as any;
   }
 
   override async nativeUpdateMany<T extends object>(entityName: string, where: FilterQuery<T>[], data: EntityDictionary<T>[], options: NativeInsertUpdateManyOptions<T> = {}): Promise<QueryResult<T>> {
@@ -142,11 +185,21 @@ export class Neo4jDriver extends DatabaseDriver<Neo4jConnection> {
 
   override async nativeDelete<T extends object>(entityName: string, where: FilterQuery<T>, options: DeleteOptions<T> = {}): Promise<QueryResult<T>> {
     const meta = this.metadata.find<T>(entityName)!;
-    const whereQuery = this.buildWhere(where);
-    const labels = this.getNodeLabels(meta);
-    const cypher = `MATCH (node${labels}) ${whereQuery.where} DETACH DELETE node RETURN count(*) as total`;
-    const res = await this.connection.executeRaw(cypher, whereQuery.params, options.ctx);
-    const total = res.records[0]?.get('total');
+    const labels = Neo4jCypherBuilder.getNodeLabels(meta);
+    const node = new Cypher.Node();
+    const pattern = new Cypher.Pattern(node, { labels });
+    let query: any = new Cypher.Match(pattern);
+
+    const whereClauses = this.buildWhereClauses(node, where);
+    if (whereClauses.length > 0) {
+      query = query.where(Cypher.and(...whereClauses));
+    }
+
+    query = query.detachDelete(node).return(Cypher.count(node));
+    const { cypher, params } = query.build();
+    const res = await this.connection.executeRaw(cypher, params, options.ctx);
+    // Get the count from the first key in the record
+    const total = res.records[0]?.get(res.records[0]?.keys[0]);
     return { affectedRows: total?.toNumber ? total.toNumber() : Number(total ?? 0) } as any;
   }
 
@@ -204,76 +257,136 @@ export class Neo4jDriver extends DatabaseDriver<Neo4jConnection> {
       return null as any;
     }
     const props = node.properties ?? node;
-    return this.mapResult(props, meta) as EntityData<T>;
+    // Convert Neo4j types before mapping
+    const converted = this.convertNeo4jRecord(props);
+    return this.mapResult(converted, meta) as EntityData<T>;
   }
 
   private buildMatch<T extends object>(meta: EntityMetadata<T>, options: Neo4jQueryOptions<T>): { cypher: string; params: Dictionary } {
-    const where = this.buildWhere(options.where ?? {});
-    const order = this.buildOrderBy(options.orderBy);
-    const limit = options.limit ? 'LIMIT $limit' : '';
-    const offset = options.offset ? 'SKIP $offset' : '';
-    const params: Dictionary = { ...where.params };
-    // Neo4j requires limit and offset to be integers, not floats
-    if (options.limit != null) { params.limit = Math.floor(options.limit); }
-    if (options.offset != null) { params.offset = Math.floor(options.offset); }
-    const labels = this.getNodeLabels(meta);
-    const cypher = `MATCH (node${labels}) ${where.where} RETURN node ${order} ${offset} ${limit}`.trim();
+    const labels = Neo4jCypherBuilder.getNodeLabels(meta);
+    const node = new Cypher.Node();
+    const pattern = new Cypher.Pattern(node, { labels });
+    // Return node with an alias so we can retrieve it later
+    let query: any = new Cypher.Match(pattern).return([node, 'node']);
+
+    // Apply WHERE
+    if (options.where && Object.keys(options.where).length > 0) {
+      const whereClauses = this.buildWhereClauses(node, options.where);
+      if (whereClauses.length > 0) {
+        query = query.where(Cypher.and(...whereClauses));
+      }
+    }
+
+    // Apply ORDER BY
+    if (options.orderBy) {
+      const orderClauses = this.buildOrderClauses(node, options.orderBy);
+      for (const orderClause of orderClauses) {
+        query = query.orderBy(orderClause);
+      }
+    }
+
+    // Apply SKIP and LIMIT
+    if (options.offset != null) {
+      query = query.skip(Math.floor(options.offset));
+    }
+    if (options.limit != null) {
+      query = query.limit(Math.floor(options.limit));
+    }
+
+    const { cypher, params } = query.build();
     return { cypher, params };
   }
 
   private buildMatchWithPopulate<T extends object>(meta: EntityMetadata<T>, options: Neo4jQueryOptions<T>, populate?: readonly string[]): { cypher: string; params: Dictionary } {
-    const where = this.buildWhere(options.where ?? {});
-    const order = this.buildOrderBy(options.orderBy);
-    const limit = options.limit ? 'LIMIT $limit' : '';
-    const offset = options.offset ? 'SKIP $offset' : '';
-    const params: Dictionary = { ...where.params };
-    if (options.limit != null) { params.limit = Math.floor(options.limit); }
-    if (options.offset != null) { params.offset = Math.floor(options.offset); }
+    const labels = Neo4jCypherBuilder.getNodeLabels(meta);
+    const node = new Cypher.Node();
+    const pattern = new Cypher.Pattern(node, { labels });
+    let query: any = new Cypher.Match(pattern);
 
-    const labels = this.getNodeLabels(meta);
-    let cypher = `MATCH (node${labels}) ${where.where}`.trim();
-    const returnParts = ['node'];
+    // Apply WHERE
+    if (options.where && Object.keys(options.where).length > 0) {
+      const whereClauses = this.buildWhereClauses(node, options.where);
+      if (whereClauses.length > 0) {
+        query = query.where(Cypher.and(...whereClauses));
+      }
+    }
+
+    // Return node with 'node' alias for consistent retrieval
+    const returnVars: any[] = [[node, 'node']];
 
     // Add OPTIONAL MATCH for each populated relationship
     if (populate && populate.length > 0) {
       for (const fieldName of populate) {
         const prop = meta.properties[fieldName as keyof typeof meta.properties];
+        if (!prop) { continue; }
 
-        // Get relationship metadata from WeakMap
-        const relMetadata = getRelationshipMetadata(meta.class, fieldName);
-        const relType = relMetadata?.type ?? (prop as any).custom?.relationship?.type ?? fieldName.toUpperCase();
-        const direction = relMetadata?.direction ?? (prop as any).custom?.relationship?.direction ?? 'OUT';
+        const relType = Neo4jCypherBuilder.getRelationshipType(meta, prop);
+        const direction = Neo4jCypherBuilder.getRelationshipDirection(meta.class, fieldName);
 
-        if (prop && (prop.kind === ReferenceKind.MANY_TO_ONE || prop.kind === ReferenceKind.ONE_TO_ONE)) {
-          const targetLabel = prop.targetMeta?.collection ?? prop.type;
-          const relAlias = `rel_${fieldName}`;
-          const arrow = direction === 'OUT' ? '->' : direction === 'IN' ? '<-' : '-';
-          cypher += ` OPTIONAL MATCH (node)${arrow === '<-' ? '<' : ''}-[:${relType}]-${arrow === '->' ? '>' : ''}(${relAlias}:${targetLabel})`;
-          returnParts.push(relAlias);
-        } else if (prop && prop.kind === ReferenceKind.MANY_TO_MANY) {
-          const targetLabel = prop.targetMeta?.collection ?? prop.type;
-          const relAlias = `rel_${fieldName}`;
-          const relVarAlias = `r_${fieldName}`;
-          const arrow = direction === 'OUT' ? '->' : direction === 'IN' ? '<-' : '-';
+        if (prop.kind === ReferenceKind.MANY_TO_ONE || prop.kind === ReferenceKind.ONE_TO_ONE) {
+          const targetLabels = prop.targetMeta ? Neo4jCypherBuilder.getNodeLabels(prop.targetMeta) : [prop.type];
+          const targetNode = new Cypher.Node();
+          const rel = new Cypher.Relationship();
 
-          // Check if this M:N uses a pivot entity (relationship properties)
-          if (prop.pivotEntity) {
-            // With pivot entity, we need to capture both the target node AND the relationship
-            // For Actor -> Movie via ActedIn: (node)-[r:ACTED_IN]->(target)
-            // The relationship 'r' contains the pivot entity properties (roles, etc.)
-            cypher += ` OPTIONAL MATCH (node)${arrow === '<-' ? '<' : ''}-[${relVarAlias}:${relType}]-${arrow === '->' ? '>' : ''}(${relAlias}:${targetLabel})`;
-            // Return both the target nodes and the relationships as collections
-            returnParts.push(`collect({node: ${relAlias}, rel: ${relVarAlias}}) as ${relAlias}`);
+          let relPattern;
+          if (direction === 'OUT') {
+            relPattern = new Cypher.Pattern(node).related(rel, { type: relType, direction: 'right' }).to(targetNode, { labels: targetLabels });
+          } else if (direction === 'IN') {
+            relPattern = new Cypher.Pattern(targetNode, { labels: targetLabels }).related(rel, { type: relType, direction: 'right' }).to(node);
           } else {
-            // Without pivot entity, standard M:N
-            cypher += ` OPTIONAL MATCH (node)${arrow === '<-' ? '<' : ''}-[:${relType}]-${arrow === '->' ? '>' : ''}(${relAlias}:${targetLabel})`;
-            returnParts.push(`collect(${relAlias}) as ${relAlias}`);
+            relPattern = new Cypher.Pattern(node).related(rel, { type: relType }).to(targetNode, { labels: targetLabels });
+          }
+
+          query = query.optionalMatch(relPattern);
+          // Return with alias matching what hydrateWithRelations expects
+          returnVars.push([targetNode, `rel_${fieldName}`]);
+        } else if (prop.kind === ReferenceKind.MANY_TO_MANY) {
+          const targetLabels = prop.targetMeta ? Neo4jCypherBuilder.getNodeLabels(prop.targetMeta) : [prop.type];
+          const targetNode = new Cypher.Node();
+          const rel = new Cypher.Relationship();
+
+          let relPattern;
+          if (direction === 'OUT') {
+            relPattern = new Cypher.Pattern(node).related(rel, { type: relType, direction: 'right' }).to(targetNode, { labels: targetLabels });
+          } else if (direction === 'IN') {
+            relPattern = new Cypher.Pattern(targetNode, { labels: targetLabels }).related(rel, { type: relType, direction: 'right' }).to(node);
+          } else {
+            relPattern = new Cypher.Pattern(node).related(rel, { type: relType }).to(targetNode, { labels: targetLabels });
+          }
+
+          query = query.optionalMatch(relPattern);
+
+          if (prop.pivotEntity) {
+            // With pivot: collect both target and relationship with alias
+            returnVars.push([Cypher.collect(targetNode), `rel_${fieldName}`]);
+            returnVars.push([Cypher.collect(rel), `relProps_${fieldName}`]);
+          } else {
+            // Without pivot: collect nodes with alias
+            returnVars.push([Cypher.collect(targetNode), `rel_${fieldName}`]);
           }
         }
       }
     }
 
-    cypher = `${cypher} RETURN ${returnParts.join(', ')} ${order} ${offset} ${limit}`.trim();
+    query = query.return(...returnVars);
+
+    // Apply ORDER BY
+    if (options.orderBy) {
+      const orderClauses = this.buildOrderClauses(node, options.orderBy);
+      for (const orderClause of orderClauses) {
+        query = query.orderBy(orderClause);
+      }
+    }
+
+    // Apply SKIP and LIMIT
+    if (options.offset != null) {
+      query = query.skip(Math.floor(options.offset));
+    }
+    if (options.limit != null) {
+      query = query.limit(Math.floor(options.limit));
+    }
+
+    const { cypher, params } = query.build();
     return { cypher, params };
   }
 
@@ -342,61 +455,60 @@ export class Neo4jDriver extends DatabaseDriver<Neo4jConnection> {
     return result;
   }
 
-  private paramCounter = 0;
 
-  private buildWhere<T extends object>(where: FilterQuery<T>, resetCounter = true): { where: string; params: Dictionary } {
-    if (resetCounter) {
-      this.paramCounter = 0;
-    }
-
+  private buildWhereClauses<T extends object>(node: Cypher.Node, where: FilterQuery<T>): Cypher.Predicate[] {
     if (!where || (typeof where === 'object' && Object.keys(where).length === 0)) {
-      return { where: '', params: {} };
+      return [];
     }
 
-    const clauses: string[] = [];
-    const params: Dictionary = {};
+    const clauses: Cypher.Predicate[] = [];
     Object.entries(where as Dictionary).forEach(([key, value]) => {
       if (key === '$and' && Array.isArray(value)) {
-        const nested = value.map(v => this.buildWhere(v as FilterQuery<T>, false));
-        const innerClauses = nested.map(n => n.where.replace(/^WHERE\s+/, '')).filter(Boolean);
-        if (innerClauses.length > 0) {
-          clauses.push('(' + innerClauses.join(' AND ') + ')');
+        const nested = value.flatMap(v => this.buildWhereClauses(node, v as FilterQuery<T>));
+        if (nested.length > 0) {
+          const andClause = Cypher.and(...nested);
+          if (andClause) {
+            clauses.push(andClause);
+          }
         }
-        Object.assign(params, ...nested.map(n => n.params));
         return;
       }
       if (key === '$or' && Array.isArray(value)) {
-        const nested = value.map(v => this.buildWhere(v as FilterQuery<T>, false));
-        const innerClauses = nested.map(n => n.where.replace(/^WHERE\s+/, '')).filter(Boolean);
-        if (innerClauses.length > 0) {
-          clauses.push('(' + innerClauses.join(' OR ') + ')');
+        const nested = value.flatMap(v => this.buildWhereClauses(node, v as FilterQuery<T>));
+        if (nested.length > 0) {
+          const orClause = Cypher.or(...nested);
+          if (orClause) {
+            clauses.push(orClause);
+          }
         }
-        Object.assign(params, ...nested.map(n => n.params));
         return;
       }
-      const paramKey = `w_${this.paramCounter++}`;
-      clauses.push(`node.${key} = $${paramKey}`);
-      params[paramKey] = value;
+      clauses.push(Cypher.eq(node.property(key), new Cypher.Param(value)));
     });
 
-    return { where: clauses.length ? `WHERE ${clauses.join(' AND ')}` : '', params };
+    return clauses;
   }
 
-  private buildOrderBy<T extends object>(orderBy?: QueryOrderMap<T> | QueryOrderMap<T>[]): string {
+  private buildOrderClauses<T extends object>(node: Cypher.Node, orderBy?: QueryOrderMap<T> | QueryOrderMap<T>[]): any[] {
     if (!orderBy || (Array.isArray(orderBy) && orderBy.length === 0)) {
-      return '';
+      return [];
     }
-    const parts: string[] = [];
+    const parts: any[] = [];
     const arr = Array.isArray(orderBy) ? orderBy : [orderBy];
     for (const ob of arr) {
       Object.entries(ob as Dictionary).forEach(([field, dir]) => {
-        parts.push(`node.${field} ${String(dir).toUpperCase() === 'ASC' ? 'ASC' : 'DESC'}`);
+        const prop = node.property(field);
+        // Create proper tuple for orderBy clause
+        const sortItem = String(dir).toUpperCase() === 'DESC'
+          ? ([prop, 'DESC'] as [any, 'DESC'])
+          : ([prop, 'ASC'] as [any, 'ASC']);
+        parts.push(sortItem);
       });
     }
-    return parts.length ? 'ORDER BY ' + parts.join(', ') : '';
+    return parts;
   }
 
-  private preparePayload<T extends object>(meta: EntityMetadata<T>, data: EntityDictionary<T>, partial = false): { nodeProps: Dictionary; relations: { prop: EntityProperty<T>; target: EntityName<AnyEntity> | string; direction: 'IN' | 'OUT'; type: string; value: unknown }[]; params: Dictionary } {
+  private preparePayload<T extends object>(meta: EntityMetadata<T>, data: EntityDictionary<T>, partial = false): { nodeProps: Dictionary; relations: { prop: EntityProperty<T>; target: EntityName<AnyEntity> | string; direction: 'IN' | 'OUT'; type: string; value: unknown }[] } {
     const nodeProps: Dictionary = {};
     const relations: { prop: EntityProperty<T>; target: EntityName<AnyEntity> | string; direction: 'IN' | 'OUT'; type: string; value: unknown }[] = [];
 
@@ -428,12 +540,14 @@ export class Neo4jDriver extends DatabaseDriver<Neo4jConnection> {
 
       if (prop.kind === ReferenceKind.MANY_TO_MANY) {
         const val = (data as Dictionary)[prop.name];
-        if (Array.isArray(val)) {
+        // Handle both arrays and Collections
+        const items = val instanceof Collection ? val.getItems() : (Array.isArray(val) ? val : []);
+        if (items.length > 0) {
           // Get relationship metadata from WeakMap or fallback to custom property
           const relMetadata = getRelationshipMetadata(meta.class, prop.name);
           const relationship = relMetadata ?? (prop as any).custom?.relationship as { type?: string; direction?: 'IN' | 'OUT' } | undefined;
           const relType = relationship?.type ?? prop.name.toUpperCase();
-          val.forEach((item: any) => {
+          items.forEach((item: any) => {
             const idVal = typeof item === 'object' && item !== null ? item[prop.targetMeta!.primaryKeys[0]] ?? item : item;
             relations.push({ prop, target: prop.type, direction: relationship?.direction ?? 'OUT', type: relType, value: idVal });
           });
@@ -447,20 +561,12 @@ export class Neo4jDriver extends DatabaseDriver<Neo4jConnection> {
       }
     }
 
-    return { nodeProps, relations, params: { props: nodeProps } };
+    return { nodeProps, relations };
   }
 
   private async insertRelationshipEntity<T extends object>(meta: EntityMetadata<T>, data: EntityDictionary<T>, options: NativeInsertUpdateOptions<T>): Promise<QueryResult<T>> {
     // A relationship entity connects two nodes and stores properties on the relationship
-    // Find the two @ManyToOne properties (source and target nodes)
-    const props = Object.values(meta.properties) as EntityProperty<T>[];
-    const manyToOneProps = props.filter(p => p.kind === ReferenceKind.MANY_TO_ONE);
-
-    if (manyToOneProps.length !== 2) {
-      throw new Error(`Relationship entity ${meta.className} must have exactly 2 @ManyToOne properties`);
-    }
-
-    const [sourceProp, targetProp] = manyToOneProps;
+    const [sourceProp, targetProp] = Neo4jCypherBuilder.getRelationshipEntityEnds(meta);
     const sourceId = (data as any)[sourceProp.name]?.[sourceProp.targetMeta!.primaryKeys[0]] ?? (data as any)[sourceProp.name];
     const targetId = (data as any)[targetProp.name]?.[targetProp.targetMeta!.primaryKeys[0]] ?? (data as any)[targetProp.name];
 
@@ -469,7 +575,7 @@ export class Neo4jDriver extends DatabaseDriver<Neo4jConnection> {
     }
 
     // Get relationship type from metadata or decorator
-    const relType = (meta as any).neo4jRelationshipType ?? meta.className.toUpperCase();
+    const relType = Neo4jCypherBuilder.getRelationshipEntityType(meta);
 
     // Get relationship properties (all properties except the ManyToOne refs and primary key)
     const relProps: Dictionary = {};
@@ -477,6 +583,7 @@ export class Neo4jDriver extends DatabaseDriver<Neo4jConnection> {
     const id = (data as Dictionary)[pk.name] ?? crypto.randomUUID();
     relProps[pk.name] = id;
 
+    const props = Object.values(meta.properties) as EntityProperty<T>[];
     for (const prop of props) {
       if (prop.kind === ReferenceKind.MANY_TO_ONE || prop.primary) {
         continue;
@@ -491,25 +598,38 @@ export class Neo4jDriver extends DatabaseDriver<Neo4jConnection> {
       }
     }
 
-    // Create the relationship with properties
-    const sourceLabel = sourceProp.targetMeta?.collection ?? sourceProp.type;
-    const targetLabel = targetProp.targetMeta?.collection ?? targetProp.type;
+    // Create the relationship with properties using Pattern API
+    const sourceLabels = sourceProp.targetMeta ? Neo4jCypherBuilder.getNodeLabels(sourceProp.targetMeta) : [sourceProp.type];
+    const targetLabels = targetProp.targetMeta ? Neo4jCypherBuilder.getNodeLabels(targetProp.targetMeta) : [targetProp.type];
 
-    // For relationship properties, we need to use SET instead of inline properties
-    // to properly handle arrays and other complex types
-    const cypher = `
-      MATCH (a:${sourceLabel} {id: $sourceId}), (b:${targetLabel} {id: $targetId})
-      MERGE (a)-[r:${relType}]->(b)
-      SET r = $props
-      RETURN r
-    `.trim();
+    const aNode = new Cypher.Node();
+    const bNode = new Cypher.Node();
+    const rel = new Cypher.Relationship();
 
-    // Pass properties as a single object parameter
-    const params: Dictionary = { sourceId, targetId, props: relProps };
+    const aPattern = new Cypher.Pattern(aNode, { labels: sourceLabels });
+    const bPattern = new Cypher.Pattern(bNode, { labels: targetLabels });
+
+    // Match both nodes with combined WHERE clause
+    let matchQuery: any = new Cypher.Match(aPattern);
+    matchQuery = matchQuery.match(bPattern);
+    matchQuery = matchQuery.where(Cypher.and(
+      Cypher.eq(aNode.property('id'), new Cypher.Param(sourceId)),
+      Cypher.eq(bNode.property('id'), new Cypher.Param(targetId)),
+    ));
+
+    const mergePattern = new Cypher.Pattern(aNode).related(rel, { type: relType }).to(bNode);
+
+    const query = matchQuery
+      .merge(mergePattern)
+      .set([rel, new Cypher.Param(relProps)])
+      .return(rel);
+
+    const { cypher, params } = query.build();
     const res = await this.connection.executeRaw(cypher, params, options.ctx);
-    const rel = res.records[0]?.get('r');
+    // Get the relationship from the first key in the record
+    const resultRel = res.records[0]?.get(res.records[0]?.keys[0]);
 
-    if (!rel) {
+    if (!resultRel) {
       return { affectedRows: 0 } as any;
     }
 
@@ -517,34 +637,44 @@ export class Neo4jDriver extends DatabaseDriver<Neo4jConnection> {
     return this.transformResult(meta, { ...relProps, ...data } as EntityData<T>);
   }
 
-  private async persistRelations<T extends object>(sourceId: string, relations: { prop: EntityProperty<T>; target: EntityName<AnyEntity> | string; direction: 'IN' | 'OUT'; type: string; value: unknown }[], ctx?: Transaction, replace = false): Promise<void> {
+  private async persistRelations<T extends object>(sourceMeta: EntityMetadata<T>, sourceId: string, relations: { prop: EntityProperty<T>; target: EntityName<AnyEntity> | string; direction: 'IN' | 'OUT'; type: string; value: unknown }[], ctx?: Transaction, replace = false): Promise<void> {
     if (!relations.length) { return; }
 
-    for (const rel of relations) {
+    for (let i = 0; i < relations.length; i++) {
+      const rel = relations[i];
       const type = rel.type;
-      const targetLabel = rel.prop.targetMeta?.collection ?? rel.prop.type;
+      const sourceLabels = Neo4jCypherBuilder.getNodeLabels(sourceMeta);
+      const targetLabels = rel.prop.targetMeta ? Neo4jCypherBuilder.getNodeLabels(rel.prop.targetMeta) : [rel.prop.type];
       const relDir = rel.direction ?? 'OUT';
-      const base = relDir === 'OUT'
-        ? 'MATCH (a {id: $aId}), (b:' + targetLabel + ' {id: $bId})'
-        : 'MATCH (b {id: $aId}), (a:' + targetLabel + ' {id: $bId})';
-
-      // Delete existing relationship if replace=true (use separate variable name 'r1')
-      if (replace) {
-        const deleteCypher = `${base} OPTIONAL MATCH (a)-[r1:${type}]->(b) DELETE r1`;
-        await this.connection.executeRaw(deleteCypher, { aId: sourceId, bId: rel.value }, ctx);
-      }
 
       // Create/merge new relationship
-      const createCypher = `${base} MERGE ${relDir === 'OUT' ? '(a)-[r:' + type + ']->(b)' : '(a)<-[r:' + type + ']-(b)'}`;
-      await this.connection.executeRaw(createCypher, { aId: sourceId, bId: rel.value }, ctx);
+      const aNode = new Cypher.Node();
+      const bNode = new Cypher.Node();
+      const newRel = new Cypher.Relationship();
+
+      const aPattern = new Cypher.Pattern(aNode, { labels: sourceLabels });
+      const bPattern = new Cypher.Pattern(bNode, { labels: targetLabels });
+      const mergePattern = relDir === 'OUT'
+        ? new Cypher.Pattern(aNode).related(newRel, { type }).to(bNode)
+        : new Cypher.Pattern(bNode).related(newRel, { type }).to(aNode);
+
+      // Build query: MATCH (a) MATCH (b:Label) WHERE a.id=$p1 AND b.id=$p2 MERGE (a)-[r:TYPE]->(b)
+      const sourceIdParam = new Cypher.Param(sourceId);
+      const targetIdParam = new Cypher.Param(rel.value);
+
+      let createQuery: any = new Cypher.Match(aPattern);
+      createQuery = createQuery.match(bPattern);
+      createQuery = createQuery.where(Cypher.and(
+        Cypher.eq(aNode.property('id'), sourceIdParam),
+        Cypher.eq(bNode.property('id'), targetIdParam),
+      ));
+      createQuery = createQuery.merge(mergePattern).return(newRel);
+
+      const { cypher: createCypher, params: createParams } = createQuery.build();
+      await this.connection.executeRaw(createCypher, createParams, ctx);
     }
   }
 
-  private formatProps(props: Dictionary): string {
-    const keys = Object.keys(props);
-    const assignments = keys.map(k => `${k}: $props.${k}`);
-    return `{ ${assignments.join(', ')} }`;
-  }
 
   private getNodeLabels<T extends object>(meta: EntityMetadata<T>): string {
     const labels = [meta.collection];
