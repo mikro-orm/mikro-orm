@@ -103,4 +103,24 @@ export class Neo4jCypherBuilder {
     return [manyToOneProps[0], manyToOneProps[1]];
   }
 
+  /**
+   * Formats node labels as a Cypher label string (:Label1:Label2).
+   */
+  static getNodeLabelsString<T extends object>(meta: EntityMetadata<T>): string {
+    const labels = this.getNodeLabels(meta);
+    return ':' + labels.join(':');
+  }
+
+  /**
+   * Converts Neo4j relationship direction to QueryBuilder direction format.
+   * @param direction - Neo4j direction ('IN' or 'OUT')
+   * @returns QueryBuilder direction ('left', 'right', or 'undirected')
+   */
+  static convertDirection(direction: 'IN' | 'OUT' | undefined): 'left' | 'right' | 'undirected' | undefined {
+    if (!direction) {
+      return undefined;
+    }
+    return direction === 'IN' ? 'left' : 'right';
+  }
+
 }

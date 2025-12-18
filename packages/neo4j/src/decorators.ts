@@ -48,12 +48,19 @@ const relationshipMetadata = new WeakMap<Function, Map<string, RelationshipOptio
 
 /**
  * Decorator to mark a relationship property with Neo4j metadata (type + direction).
- * Must be used together with @ManyToOne or @OneToOne decorator.
+ * Works with @ManyToOne, @OneToOne, @ManyToMany, and @OneToMany decorators.
  *
  * @example
+ * // Many-to-one relationship
  * @ManyToOne(() => Category, { ref: true })
  * @Rel({ type: 'PART_OF', direction: 'OUT' })
  * category?: Ref<Category>;
+ *
+ * @example
+ * // Many-to-many relationship
+ * @ManyToMany(() => Tag)
+ * @Rel({ type: 'HAS_TAG', direction: 'OUT' })
+ * tags = new Collection<Tag>(this);
  */
 export const Rel = (options: RelationshipOptions) => {
   return function (target: AnyEntity, propertyName: string) {
@@ -68,25 +75,9 @@ export const Rel = (options: RelationshipOptions) => {
 };
 
 /**
- * Decorator to mark a many-to-many relationship property with Neo4j metadata (type + direction).
- * Must be used together with @ManyToMany decorator.
- *
- * @example
- * @ManyToMany(() => Tag)
- * @RelMany({ type: 'HAS_TAG', direction: 'OUT' })
- * tags = new Collection<Tag>(this);
+ * @deprecated Use @Rel instead. RelMany is now an alias for Rel.
  */
-export const RelMany = (options: RelationshipOptions) => {
-  return function (target: AnyEntity, propertyName: string) {
-    // Store metadata in a separate WeakMap to avoid interfering with MikroORM decorators
-    let props = relationshipMetadata.get(target.constructor);
-    if (!props) {
-      props = new Map();
-      relationshipMetadata.set(target.constructor, props);
-    }
-    props.set(propertyName, options);
-  };
-};
+export const RelMany = Rel;
 
 /**
  * Get relationship options for a property.

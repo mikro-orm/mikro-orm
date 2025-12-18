@@ -360,12 +360,16 @@ export class Neo4jQueryBuilder<T = any> {
    * Creates a relationship pattern for matching or creating relationships.
    * Supports advanced features like properties, variable length, and custom variables.
    *
-   * @param relationshipTypeOrProperty - The relationship type string (e.g., 'ACTED_IN') or property name when using entity-based approach
+   * @param relationshipTypeOrProperty - The relationship type string (e.g., 'ACTED_IN'), property name when using entity-based approach, or relationship entity class (e.g., FriendsWith)
    * @param optionsOrDirection - Configuration options object or legacy direction string
    * @param targetLabelOrEntity - (Legacy) Target node label when using old signature, or target entity class
    * @param relationshipAlias - (Legacy) Relationship alias when using old signature
    * @example
    * ```typescript
+   * // Using relationship entity class (extracts type and target from @RelationshipProperties)
+   * qb.match().related(FriendsWith) // Uses metadata from relationship entity
+   * qb.match().related(FriendsWith, { direction: 'right', properties: { since: 2020 } })
+   *
    * // Entity-based (extracts metadata from decorators)
    * qb.match().related(Movie, 'actors') // Uses @Rel/@RelMany metadata
    *
@@ -411,42 +415,67 @@ export class Neo4jQueryBuilder<T = any> {
     let opts: RelationshipOptions;
 
     // Handle entity-based signature: related(EntityClass, 'propertyName')
+    // OR related(RelationshipEntityClass, options)
     if (typeof relationshipTypeOrProperty === 'function') {
-      const sourceEntity = relationshipTypeOrProperty;
-      const propertyName = optionsOrDirection as string;
-
-      // Extract relationship type and direction from decorator metadata
-      const relType = this.getRelationshipType(sourceEntity, propertyName, false);
-      if (!relType) {
-        throw new Error(
-          `No @Rel or @RelMany decorator found on ${sourceEntity.name}.${propertyName}. ` +
-            `Please use @Rel() or @RelMany() decorator to specify relationship metadata.`,
-        );
-      }
-      relationshipType = relType;
-
-      const direction = this.getRelationshipDirection(
-        sourceEntity,
-        propertyName,
+      // Check if this is a relationship entity (has @RelationshipProperties)
+      const isRelEntity = this.em && Neo4jCypherBuilder.isRelationshipEntity(
+        this.em.getMetadata().find(relationshipTypeOrProperty as any)!,
       );
 
-      // Get target entity from metadata if available
-      let targetEntity: EntityClass<any> | undefined;
-      if (this.em && typeof targetLabelOrEntity !== 'string') {
-        const meta = this.em.getMetadata().find(sourceEntity as any);
-        const prop = meta?.properties[propertyName];
-        if (prop?.targetMeta) {
-          targetEntity = prop.targetMeta.class as EntityClass<any>;
-        }
-      }
+      if (isRelEntity) {
+        // Handle relationship entity class: related(FriendsWith, options)
+        const relMeta = this.em!.getMetadata().find(relationshipTypeOrProperty as any)!;
+        relationshipType = Neo4jCypherBuilder.getRelationshipEntityType(relMeta);
 
-      opts = {
-        direction,
-        targetEntity:
-          targetLabelOrEntity && typeof targetLabelOrEntity !== 'string'
-            ? (targetLabelOrEntity as EntityClass<any>)
-            : targetEntity,
-      };
+        // Extract target entity from relationship entity's @ManyToOne properties
+        const [sourceProp, targetProp] = Neo4jCypherBuilder.getRelationshipEntityEnds(relMeta);
+
+        // Use options or default
+        const options = typeof optionsOrDirection === 'object' ? optionsOrDirection : {};
+        opts = {
+          direction: options.direction || 'right',
+          targetEntity: options.targetEntity || targetProp.targetMeta?.class as EntityClass<any>,
+          properties: options.properties,
+          length: options.length,
+          variable: options.variable,
+        };
+      } else {
+        // Handle node entity with property: related(Movie, 'actors')
+        const sourceEntity = relationshipTypeOrProperty;
+        const propertyName = optionsOrDirection as string;
+
+        // Extract relationship type and direction from decorator metadata
+        const relType = Neo4jCypherBuilder.getRelationshipType(sourceEntity, propertyName, false);
+        if (!relType) {
+          throw new Error(
+            `No @Rel decorator found on ${sourceEntity.name}.${propertyName}. ` +
+              `Please use @Rel() decorator to specify relationship metadata.`,
+          );
+        }
+        relationshipType = relType;
+
+        const direction = Neo4jCypherBuilder.convertDirection(
+          Neo4jCypherBuilder.getRelationshipDirection(sourceEntity, propertyName),
+        );
+
+        // Get target entity from metadata if available
+        let targetEntity: EntityClass<any> | undefined;
+        if (this.em && typeof targetLabelOrEntity !== 'string') {
+          const meta = this.em.getMetadata().find(sourceEntity as any);
+          const prop = meta?.properties[propertyName];
+          if (prop?.targetMeta) {
+            targetEntity = prop.targetMeta.class as EntityClass<any>;
+          }
+        }
+
+        opts = {
+          direction,
+          targetEntity:
+            targetLabelOrEntity && typeof targetLabelOrEntity !== 'string'
+              ? (targetLabelOrEntity as EntityClass<any>)
+              : targetEntity,
+        };
+      }
       // Handle legacy signature: related(type, direction, targetLabel, alias)
     } else if (
       typeof optionsOrDirection === 'string' &&
@@ -491,7 +520,14 @@ export class Neo4jQueryBuilder<T = any> {
     // Extract target labels from entity class if provided
     let targetLabels: string[] | undefined;
     if (opts.targetEntity) {
-      targetLabels = this.getEntityLabels(opts.targetEntity);
+      if (this.em) {
+        const meta = this.em.getMetadata().find(opts.targetEntity as any);
+        targetLabels = meta ? Neo4jCypherBuilder.getNodeLabels(meta) : undefined;
+      }
+      if (!targetLabels) {
+        const name = typeof opts.targetEntity === 'function' ? opts.targetEntity.name : (opts.targetEntity as any).name;
+        targetLabels = [name];
+      }
     } else {
       targetLabels =
         opts.targetLabels ||
@@ -918,64 +954,6 @@ export class Neo4jQueryBuilder<T = any> {
       result[key] = new Cypher.Param(value);
     }
     return result;
-  }
-
-  /**
-   * Extracts node labels from entity class or entity name.
-   * Checks metadata for neo4jLabels (multiple labels) and collection name.
-   */
-  private getEntityLabels(
-    entity: EntityName<any> | EntityClass<any>,
-  ): string[] {
-    if (!this.em) {
-      // If no EntityManager, try to get string name
-      if (typeof entity === 'string') {
-        return [entity];
-      }
-      // If entity class, use its name
-      const name =
-        typeof entity === 'function' ? entity.name : (entity as any).name;
-      return [name];
-    }
-
-    // Get metadata through EntityManager
-    const meta = this.em.getMetadata().find(entity as any);
-    if (!meta) {
-      if (typeof entity === 'string') {
-        return [entity];
-      }
-      const name =
-        typeof entity === 'function' ? entity.name : (entity as any).name;
-      return [name];
-    }
-
-    return Neo4jCypherBuilder.getNodeLabels(meta);
-  }
-
-  /**
-   * Extracts relationship type from entity property using @Rel or @RelMany metadata.
-   * Falls back to uppercase relationship name if no metadata found.
-   */
-  private getRelationshipType(
-    sourceEntity: EntityClass<any>,
-    propertyName: string,
-    allowFallback = true,
-  ): string | undefined {
-    return Neo4jCypherBuilder.getRelationshipType(sourceEntity, propertyName, allowFallback);
-  }
-
-  /**
-   * Extracts relationship direction from entity property using @Rel or @RelMany metadata.
-   */
-  private getRelationshipDirection(
-    sourceEntity: EntityClass<any>,
-    propertyName: string,
-  ): 'left' | 'right' | 'undirected' | undefined {
-    const direction = Neo4jCypherBuilder.getRelationshipDirection(sourceEntity, propertyName);
-    if (!direction) {
-      return undefined;
-    }
-    return direction === 'IN' ? 'left' : 'right';
   }
 
 }

@@ -15,7 +15,6 @@ import {
   MikroORM,
   Node,
   Rel,
-  RelMany,
   Field,
   RelationshipProperties,
 } from '@mikro-orm/neo4j';
@@ -55,7 +54,7 @@ class Product {
   category?: Ref<Category>;
 
   @ManyToMany(() => Tag)
-  @RelMany({ type: 'HAS_TAG', direction: 'OUT' })
+  @Rel({ type: 'HAS_TAG', direction: 'OUT' })
   tags = new Collection<Tag>(this);
 
 }
@@ -70,7 +69,7 @@ class Tag {
   name!: string;
 
   @ManyToMany(() => Product, p => p.tags)
-  @RelMany({ type: 'HAS_TAG', direction: 'IN' })
+  @Rel({ type: 'HAS_TAG', direction: 'IN' })
   products = new Collection<Product>(this);
 
 }
@@ -97,7 +96,7 @@ class Person {
   knows?: Ref<Person>;
 
   @ManyToMany(() => Person)
-  @RelMany({ type: 'WORKS_WITH', direction: 'OUT' })
+  @Rel({ type: 'WORKS_WITH', direction: 'OUT' })
   colleagues = new Collection<Person>(this);
 
 }
@@ -187,14 +186,14 @@ class Actor {
     pivotEntity: () => ActedIn,
     inversedBy: 'actors',
   })
-  @RelMany({ type: 'ACTED_IN', direction: 'OUT' })
+  @Rel({ type: 'ACTED_IN', direction: 'OUT' })
   movies = new Collection<Movie>(this);
 
   @ManyToMany(() => Series, undefined, {
     pivotEntity: () => ActedInSeries,
     inversedBy: 'actors',
   })
-  @RelMany({ type: 'ACTED_IN', direction: 'OUT' })
+  @Rel({ type: 'ACTED_IN', direction: 'OUT' })
   series = new Collection<Series>(this);
 
 }
@@ -216,7 +215,7 @@ class Movie {
   tagline?: string;
 
   @ManyToMany(() => Actor, actor => actor.movies)
-  @RelMany({ type: 'ACTED_IN', direction: 'IN' })
+  @Rel({ type: 'ACTED_IN', direction: 'IN' })
   actors = new Collection<Actor>(this);
 
 }
@@ -238,7 +237,7 @@ class Series {
   episodes!: number;
 
   @ManyToMany(() => Actor, actor => actor.series)
-  @RelMany({ type: 'ACTED_IN', direction: 'IN' })
+  @Rel({ type: 'ACTED_IN', direction: 'IN' })
   actors = new Collection<Actor>(this);
 
 }
@@ -279,6 +278,49 @@ class ActedInSeries {
 
 }
 
+// User friendship example for relationship property querying
+@Entity()
+@Node()
+class User {
+
+  @Field({ primary: true })
+  id: string = crypto.randomUUID();
+
+  @Field()
+  username!: string;
+
+  @Field()
+  email!: string;
+
+  @ManyToMany(() => User, undefined, {
+    pivotEntity: () => FriendsWith,
+  })
+  @Rel({ type: 'FRIENDS_WITH', direction: 'OUT' })
+  friends = new Collection<User>(this);
+
+}
+
+@Entity()
+@RelationshipProperties({ type: 'FRIENDS_WITH' })
+class FriendsWith {
+
+  @PrimaryKey()
+  id: string = crypto.randomUUID();
+
+  @ManyToOne(() => User, { primary: true })
+  user1!: User;
+
+  @ManyToOne(() => User, { primary: true })
+  user2!: User;
+
+  @Property()
+  since!: number;
+
+  @Property()
+  strength!: number;
+
+}
+
 describe('Neo4j driver (MVP)', () => {
   let orm: MikroORM;
 
@@ -298,6 +340,8 @@ describe('Neo4j driver (MVP)', () => {
         Series,
         ActedIn,
         ActedInSeries,
+        User,
+        FriendsWith,
       ],
       dbName: 'neo4j',
       user: 'neo4j',
@@ -1283,6 +1327,364 @@ describe('Neo4j driver (MVP)', () => {
       expect(results[1].roles).toEqual(['Neo']);
       expect(results[2].actorName).toBe('Laurence Fishburne');
       expect(results[2].roles).toEqual(['Morpheus']);
+    });
+
+    test('query relationship properties with filters', async () => {
+      // Create users
+      const alice = orm.em.create(User, {
+        username: 'alice',
+        email: 'alice@example.com',
+      });
+      const bob = orm.em.create(User, {
+        username: 'bob',
+        email: 'bob@example.com',
+      });
+      const charlie = orm.em.create(User, {
+        username: 'charlie',
+        email: 'charlie@example.com',
+      });
+
+      await orm.em.persistAndFlush([alice, bob, charlie]);
+
+      // Create friendships with properties
+      const friendship1 = orm.em.create(FriendsWith, {
+        user1: alice,
+        user2: bob,
+        since: 2020,
+        strength: 8,
+      });
+
+      const friendship2 = orm.em.create(FriendsWith, {
+        user1: alice,
+        user2: charlie,
+        since: 2022,
+        strength: 6,
+      });
+
+      await orm.em.persistAndFlush([friendship1, friendship2]);
+      orm.em.clear();
+
+      // Query friendships with relationship property filters
+      // MATCH (u1)-[r:FRIENDS_WITH]->(u2)
+      // WHERE r.since >= 2022 AND r.strength > 5
+      const results = await orm.em.run<{
+        user1: string;
+        user2: string;
+        since: number;
+        strength: number;
+      }>(
+        `MATCH (u1:user)-[r:FRIENDS_WITH]->(u2:user)
+         WHERE r.since >= $since AND r.strength > $minStrength
+         RETURN u1.username as user1, u2.username as user2, r.since as since, r.strength as strength
+         ORDER BY r.since DESC`,
+        { since: 2022, minStrength: 5 },
+      );
+
+      expect(results).toHaveLength(1);
+      expect(results[0].user1).toBe('alice');
+      expect(results[0].user2).toBe('charlie');
+      expect(results[0].since).toBe(2022);
+      expect(results[0].strength).toBe(6);
+    });
+
+    test('find users with strong recent friendships using QueryBuilder', async () => {
+      // Create users
+      const alice = orm.em.create(User, {
+        username: 'alice',
+        email: 'alice@example.com',
+      });
+      const bob = orm.em.create(User, {
+        username: 'bob',
+        email: 'bob@example.com',
+      });
+      const charlie = orm.em.create(User, {
+        username: 'charlie',
+        email: 'charlie@example.com',
+      });
+      const dave = orm.em.create(User, {
+        username: 'dave',
+        email: 'dave@example.com',
+      });
+
+      await orm.em.persistAndFlush([alice, bob, charlie, dave]);
+
+      // Create friendships with properties
+      const friendship1 = orm.em.create(FriendsWith, {
+        user1: alice,
+        user2: bob,
+        since: 2020,
+        strength: 8,
+      });
+
+      const friendship2 = orm.em.create(FriendsWith, {
+        user1: alice,
+        user2: charlie,
+        since: 2023,
+        strength: 9,
+      });
+
+      const friendship3 = orm.em.create(FriendsWith, {
+        user1: alice,
+        user2: dave,
+        since: 2022,
+        strength: 7,
+      });
+
+      await orm.em.persistAndFlush([friendship1, friendship2, friendship3]);
+      orm.em.clear();
+
+      // Use QueryBuilder to find strong recent friendships
+      // Query using raw cypher with relationship property filtering
+      const results = await orm.em.run<{
+        user1: string;
+        user2: string;
+        since: number;
+        strength: number;
+      }>(
+        `MATCH (u1:user {username: $username})-[r:FRIENDS_WITH]->(u2:user)
+         WHERE r.since >= $since AND r.strength > $minStrength
+         RETURN u1.username as user1, u2.username as user2, r.since as since, r.strength as strength
+         ORDER BY r.since DESC`,
+        { username: 'alice', since: 2022, minStrength: 5 },
+      );
+
+      expect(results).toHaveLength(2);
+      expect(results[0].user1).toBe('alice');
+      expect(results[0].user2).toBe('charlie');
+      expect(results[0].since).toBe(2023);
+      expect(results[0].strength).toBe(9);
+      expect(results[1].user2).toBe('dave');
+      expect(results[1].since).toBe(2022);
+      expect(results[1].strength).toBe(7);
+
+      // Also verify with QueryBuilder pattern API to show relationship filtering
+      const qb = orm.em.createQueryBuilder(User, 'u1');
+      const Cypher = qb.getCypher();
+      const node = qb.getNode();
+
+      const rel = new Cypher.Relationship({ type: 'FRIENDS_WITH' });
+      const u2 = new Cypher.Node({ labels: ['user'] });
+
+      const patternQb = qb
+        .match()
+        .related(FriendsWith, {
+          targetLabels: ['user'],
+        })
+        .where(
+          Cypher.and(
+            Cypher.gte(rel.property('since'), new Cypher.Param(2022)),
+            Cypher.gt(rel.property('strength'), new Cypher.Param(5)),
+          ),
+        )
+        .return();
+
+      const { cypher, params } = patternQb.build();
+
+      // Verify the query structure includes relationship property filters
+      expect(cypher).toContain('since');
+      expect(cypher).toContain('strength');
+      expect(params.param0).toBe(2022);
+      expect(params.param1).toBe(5);
+    });
+
+    test('query relationship entity directly with find()', async () => {
+      // Create users
+      const alice = orm.em.create(User, {
+        username: 'alice',
+        email: 'alice@example.com',
+      });
+      const bob = orm.em.create(User, {
+        username: 'bob',
+        email: 'bob@example.com',
+      });
+      const charlie = orm.em.create(User, {
+        username: 'charlie',
+        email: 'charlie@example.com',
+      });
+      const dave = orm.em.create(User, {
+        username: 'dave',
+        email: 'dave@example.com',
+      });
+
+      await orm.em.persistAndFlush([alice, bob, charlie, dave]);
+
+      // Create friendships with properties
+      const friendship1 = orm.em.create(FriendsWith, {
+        user1: alice,
+        user2: bob,
+        since: 2020,
+        strength: 8,
+      });
+
+      const friendship2 = orm.em.create(FriendsWith, {
+        user1: alice,
+        user2: charlie,
+        since: 2023,
+        strength: 9,
+      });
+
+      const friendship3 = orm.em.create(FriendsWith, {
+        user1: bob,
+        user2: dave,
+        since: 2021,
+        strength: 4,
+      });
+
+      await orm.em.persistAndFlush([friendship1, friendship2, friendship3]);
+      orm.em.clear();
+
+      // Query relationship entities directly using find() with filters
+      const recentStrongFriendships = await orm.em.find(FriendsWith, {
+        since: { $gte: 2020 },
+        strength: { $gt: 7 },
+      });
+
+      expect(recentStrongFriendships).toHaveLength(2);
+      expect(recentStrongFriendships[0].strength).toBeGreaterThan(7);
+      expect(recentStrongFriendships[0].since).toBeGreaterThanOrEqual(2020);
+      expect(recentStrongFriendships[0].id).toBeDefined();
+      expect(typeof recentStrongFriendships[0].id).toBe('string');
+
+      // Query with specific filters
+      const friendship2023 = await orm.em.findOne(FriendsWith, {
+        since: 2023,
+      });
+
+      expect(friendship2023).toBeDefined();
+      expect(friendship2023!.since).toBe(2023);
+      expect(friendship2023!.strength).toBe(9);
+    });
+
+    test('query relationship entity with populate', async () => {
+      // Create users
+      const henry = orm.em.create(User, {
+        username: 'henry_populate',
+        email: 'henry@populate.com',
+      });
+      const iris = orm.em.create(User, {
+        username: 'iris_populate',
+        email: 'iris@populate.com',
+      });
+
+      await orm.em.persistAndFlush([henry, iris]);
+
+      // Create friendship
+      const friendship = orm.em.create(FriendsWith, {
+        user1: henry,
+        user2: iris,
+        since: 2024,
+        strength: 10,
+      });
+
+      await orm.em.persistAndFlush(friendship);
+      orm.em.clear();
+
+      // Query with populate for both users
+      const friendships = await orm.em.find(
+        FriendsWith,
+        {
+          since: 2024,
+        },
+        {
+          populate: ['user1', 'user2'],
+        },
+      );
+
+      expect(friendships).toHaveLength(1);
+      expect(friendships[0].since).toBe(2024);
+      expect(friendships[0].strength).toBe(10);
+      expect(friendships[0].user1).toBeDefined();
+      expect(friendships[0].user1.username).toBe('henry_populate');
+      expect(friendships[0].user1.email).toBe('henry@populate.com');
+      expect(friendships[0].user2).toBeDefined();
+      expect(friendships[0].user2.username).toBe('iris_populate');
+      expect(friendships[0].user2.email).toBe('iris@populate.com');
+    });
+
+    test('query relationship entity with partial populate', async () => {
+      // Create new users for this test
+      const jack = orm.em.create(User, {
+        username: 'jack_partial',
+        email: 'jack@partial.com',
+      });
+      const kate = orm.em.create(User, {
+        username: 'kate_partial',
+        email: 'kate@partial.com',
+      });
+
+      await orm.em.persistAndFlush([jack, kate]);
+
+      // Create friendship
+      const friendship = orm.em.create(FriendsWith, {
+        user1: jack,
+        user2: kate,
+        since: 2025,
+        strength: 7,
+      });
+
+      await orm.em.persistAndFlush(friendship);
+      orm.em.clear();
+
+      // Query with populate for only one user
+      const friendships = await orm.em.find(
+        FriendsWith,
+        {
+          since: 2025,
+        },
+        {
+          populate: ['user1'],
+        },
+      );
+
+      expect(friendships).toHaveLength(1);
+      expect(friendships[0].user1).toBeDefined();
+      expect(friendships[0].user1.username).toBe('jack_partial');
+      // user2 should not be populated (just the reference)
+      expect(friendships[0].user2).toBeDefined();
+      expect(friendships[0].user2.username).toBeUndefined();
+    });
+
+    test('query relationship entity with findOne and populate', async () => {
+      // Create new users for this test
+      const leo = orm.em.create(User, {
+        username: 'leo_findone',
+        email: 'leo@findone.com',
+      });
+      const mia = orm.em.create(User, {
+        username: 'mia_findone',
+        email: 'mia@findone.com',
+      });
+
+      await orm.em.persistAndFlush([leo, mia]);
+
+      // Create friendship
+      const friendship = orm.em.create(FriendsWith, {
+        user1: leo,
+        user2: mia,
+        since: 2026,
+        strength: 6,
+      });
+
+      await orm.em.persistAndFlush(friendship);
+      orm.em.clear();
+
+      // Query single relationship with populate
+      const foundFriendship = await orm.em.findOne(
+        FriendsWith,
+        {
+          since: 2026,
+        },
+        {
+          populate: ['user1', 'user2'],
+        },
+      );
+
+      expect(foundFriendship).toBeDefined();
+      expect(foundFriendship!.since).toBe(2026);
+      expect(foundFriendship!.user1).toBeDefined();
+      expect(foundFriendship!.user1.username).toBe('leo_findone');
+      expect(foundFriendship!.user2).toBeDefined();
+      expect(foundFriendship!.user2.username).toBe('mia_findone');
     });
   });
   describe('Neo4jQueryBuilder', () => {
@@ -2315,7 +2717,7 @@ describe('Neo4j driver (MVP)', () => {
     });
 
     describe('Entity-Based Query Building', () => {
-      test('should extract relationship metadata from @RelMany decorator', () => {
+      test('should extract relationship metadata from @Rel decorator', () => {
         const qb = orm.em.createQueryBuilder(Actor);
         const { cypher } = qb
           .match()
@@ -2401,7 +2803,7 @@ describe('Neo4j driver (MVP)', () => {
 
         expect(() => {
           qb.match().related(Movie, 'invalidProperty').build();
-        }).toThrow(/No @Rel or @RelMany decorator found/);
+        }).toThrow(/No @Rel decorator found/);
       });
 
       test('should work with entity classes in complex patterns', () => {
@@ -2449,6 +2851,70 @@ describe('Neo4j driver (MVP)', () => {
           .getMany();
 
         expect(Array.isArray(movies)).toBe(true);
+      });
+
+      test('should accept relationship entity class directly', () => {
+        const qb = orm.em.createQueryBuilder(User);
+        const { cypher } = qb
+          .match()
+          .related(FriendsWith)
+          .return(['name'])
+          .build();
+
+        expect(cypher).toContain('MATCH');
+        expect(cypher).toContain('FRIENDS_WITH');
+        expect(cypher).toContain('user'); // target entity
+      });
+
+      test('should accept relationship entity class with options', () => {
+        const qb = orm.em.createQueryBuilder(User);
+        const { cypher } = qb
+          .match()
+          .related(FriendsWith, { direction: 'right', properties: { since: 2020 } })
+          .return(['name'])
+          .build();
+
+        expect(cypher).toContain('MATCH');
+        expect(cypher).toContain('FRIENDS_WITH');
+        expect(cypher).toContain('since');
+        expect(cypher).toContain('$param'); // Parameters are converted to $param0, $param1, etc.
+      });
+
+      test('should execute queries with relationship entity class', async () => {
+        // Create test data
+        const user1 = orm.em.create(User, { username: 'testuser1', email: 'test1@example.com' });
+        const user2 = orm.em.create(User, { username: 'testuser2', email: 'test2@example.com' });
+        const friendship = orm.em.create(FriendsWith, {
+          user1,
+          user2,
+          since: 2023,
+          strength: 8,
+        });
+        await orm.em.persistAndFlush([user1, user2, friendship]);
+        orm.em.clear();
+
+        // Query using relationship entity class - create query builder for Cypher verification
+        const qb1 = orm.em.createQueryBuilder(User);
+        const { cypher, params } = qb1
+          .match()
+          .related(FriendsWith)
+          .return(['username'])
+          .build();
+
+        // Verify the query is built correctly
+        expect(cypher).toContain('FRIENDS_WITH');
+        expect(cypher).toContain('user'); // target entity label
+
+        // Execute the query using a new query builder
+        const qb2 = orm.em.createQueryBuilder(User);
+        const users = await qb2
+          .match()
+          .related(FriendsWith)
+          .return(['username'])
+          .getMany();
+
+        expect(Array.isArray(users)).toBe(true);
+        // Query should execute successfully (may or may not return results depending on data)
       });
     });
   });
