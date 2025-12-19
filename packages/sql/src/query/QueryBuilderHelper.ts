@@ -310,7 +310,7 @@ export class QueryBuilderHelper {
 
     if (subquery.sql) {
       conditions.push(subquery.sql);
-      params.push(...subquery.params);
+      subquery.params.forEach(p => params.push(p));
     }
 
     if (conditions.length > 0) {
@@ -437,7 +437,7 @@ export class QueryBuilderHelper {
       if (k === '$not') {
         const res = this._appendQueryCondition(type, cond[k]);
         parts.push(`not (${res.sql})`);
-        params.push(...res.params);
+        res.params.forEach(p => params.push(p));
         continue;
       }
 
@@ -455,7 +455,7 @@ export class QueryBuilderHelper {
     }
 
     parts.push(operator === '$or' ? `(${res.sql})` : res.sql);
-    params.push(...res.params);
+    res.params.forEach(p => params.push(p));
   }
 
   private appendQuerySubCondition(type: QueryType, cond: any, key: string | RawQueryFragmentSymbol): { sql: string; params: unknown[] } {
@@ -633,7 +633,7 @@ export class QueryBuilderHelper {
         const item = prop.customType.convertToDatabaseValue(value, this.platform, { fromQuery: true, key, mode: 'query' });
         params.push(item);
       } else {
-        params.push(...value);
+        value.forEach(p => params.push(p));
       }
 
       return `(${value.map(() => '?').join(', ')})`;

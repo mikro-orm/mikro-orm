@@ -1573,7 +1573,7 @@ export abstract class AbstractSqlDriver<
     }
 
     return [...fieldEntries, ...rawEntries];
-  }  
+  }
 
   protected buildPopulateOrderBy<T extends object>(qb: QueryBuilder<T, any, any, any>, meta: EntityMetadata<T>, populateOrderBy: QueryOrderMap<T>[], parentPath: string, explicit: boolean, parentAlias = qb.alias): QueryOrderMap<T>[] {
     const orderBy: QueryOrderMap<T>[] = [];
