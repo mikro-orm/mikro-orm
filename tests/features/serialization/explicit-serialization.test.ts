@@ -317,4 +317,25 @@ test('explicit serialization with convertCustomTypes option', async () => {
     expect(book).toHaveProperty('uuid');
     expect(book).toHaveProperty('title');
   });
+
+  // Test unpopulated collection with custom type PKs (covers processCollection with custom types)
+  orm.em.clear();
+  const jonUnpopulatedBooks = await orm.em.findOneOrFail(Author2, author);
+  await orm.em.populate(jonUnpopulatedBooks, ['books']); // Initialize collection but don't populate items
+
+  const o7 = wrap(jonUnpopulatedBooks).serialize({ populate: [], convertCustomTypes: false });
+  expect(Array.isArray(o7.books)).toBe(true);
+  expect(o7.books.length).toBe(3);
+  // With convertCustomTypes: false, should use toJSON on UUID custom type
+  o7.books.forEach((bookId: any) => {
+    expect(typeof bookId).toBe('string'); // UUID toJSON returns string
+  });
+
+  const o8 = wrap(jonUnpopulatedBooks).serialize({ populate: [], convertCustomTypes: true });
+  expect(Array.isArray(o8.books)).toBe(true);
+  expect(o8.books).toHaveLength(3);
+  // With convertCustomTypes: true, should use convertToDatabaseValue on UUID custom type
+  o8.books.forEach((bookId: any) => {
+    expect(typeof bookId).toBe('string'); // UUID convertToDatabaseValue also returns string
+  });
 });
