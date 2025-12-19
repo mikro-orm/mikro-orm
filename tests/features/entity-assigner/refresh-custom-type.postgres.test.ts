@@ -76,6 +76,7 @@ describe('em.refresh() with custom types', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      dbName: 'refresh_custom_type',
       entities: [Author, Book, Publisher],
     });
 
