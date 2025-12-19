@@ -768,20 +768,22 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       return null;
     }
 
+    const meta = wrapped.__meta;
+    const hasCustomTypes = meta.props.some(p => p.customType && !p.customType.platform);
     let found = false;
 
     for (const e of fork.unitOfWork.getIdentityMap()) {
       const ref = em.getReference(e.constructor.name, helper(e).getPrimaryKey());
-      const data = helper(e).serialize();
-      em.config.getHydrator(this.metadata).hydrate(ref, helper(ref).__meta, data, em.entityFactory, 'full', false, false);
-      Utils.merge(helper(ref).__originalEntityData, this.comparator.prepareEntity(ref));
+      const data = helper(e).serialize({ ignoreSerializers: true, includeHidden: true, convertCustomTypes: hasCustomTypes });
+      em.config.getHydrator(this.metadata).hydrate(ref, helper(ref).__meta, data, em.entityFactory, 'full', false, hasCustomTypes);
+      Utils.merge(helper(ref).__originalEntityData, this.comparator.prepareEntity(e as Entity));
       found ||= ref === entity;
     }
 
     if (!found) {
-      const data = helper(reloaded).serialize();
-      em.config.getHydrator(this.metadata).hydrate(entity, wrapped.__meta, data, em.entityFactory, 'full', false, false);
-      Utils.merge(wrapped.__originalEntityData, this.comparator.prepareEntity(entity));
+      const data = helper(reloaded).serialize({ ignoreSerializers: true, includeHidden: true, convertCustomTypes: hasCustomTypes }) as object;
+      em.config.getHydrator(this.metadata).hydrate(entity, wrapped.__meta, data, em.entityFactory, 'full', false, hasCustomTypes);
+      Utils.merge(wrapped.__originalEntityData, this.comparator.prepareEntity(reloaded as Entity));
     }
 
     return entity as any;

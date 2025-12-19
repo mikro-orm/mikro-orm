@@ -203,6 +203,9 @@ export class EntitySerializer {
     const customType = property?.customType;
 
     if (customType) {
+      if (options.convertCustomTypes) {
+        return customType.convertToDatabaseValue(value, wrapped.__platform, { mode: 'serialization' });
+      }
       return customType.toJSON(value, wrapped.__platform);
     }
 
@@ -233,7 +236,11 @@ export class EntitySerializer {
     let pk = wrapped.getPrimaryKey()!;
 
     if (prop.customType) {
-      pk = prop.customType.toJSON(pk, wrapped.__platform);
+      if (options.convertCustomTypes) {
+        pk = prop.customType.convertToDatabaseValue(pk, wrapped.__platform, { mode: 'serialization' });
+      } else {
+        pk = prop.customType.toJSON(pk, wrapped.__platform);
+      }
     }
 
     if (options.forceObject || wrapped.__config.get('serialization').forceObject) {
@@ -271,7 +278,11 @@ export class EntitySerializer {
       let pk = wrapped.getPrimaryKey()!;
 
       if (prop.customType) {
-        pk = prop.customType.toJSON(pk, wrapped.__platform);
+        if (options.convertCustomTypes) {
+          pk = prop.customType.convertToDatabaseValue(pk, wrapped.__platform, { mode: 'serialization' });
+        } else {
+          pk = prop.customType.toJSON(pk, wrapped.__platform);
+        }
       }
 
       if (options.forceObject || wrapped.__config.get('serialization').forceObject) {
@@ -305,6 +316,9 @@ export interface SerializeOptions<T, P extends string = never, E extends string 
 
   /** Only include properties for a specific group. If a property does not specify any group, it will be included, otherwise only properties with a matching group are included. */
   groups?: string[];
+
+  /** Convert custom types to their database representation instead of using toJSON. */
+  convertCustomTypes?: boolean;
 }
 
 /**
