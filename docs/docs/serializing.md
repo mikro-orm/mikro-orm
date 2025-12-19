@@ -196,6 +196,9 @@ interface SerializeOptions<T extends object, P extends string = never, E extends
 
   /** Only include properties for a specific group. If a property does not specify any group, it will be included, otherwise only properties with a matching group are included. */
   groups?: string[];
+
+  /** Convert custom types to their database representation. By default, the `Type.toJSON` method is invoked instead. */
+  convertCustomTypes?: boolean;
 }
 ```
 

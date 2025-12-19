@@ -273,3 +273,69 @@ test('explicit serialization with not initialized properties', async () => {
     uuid: jon.favouriteBook!.uuid,
   });
 });
+
+test('explicit serialization with convertCustomTypes option', async () => {
+  const { author } = await createEntities();
+  const jon = await orm.em.findOneOrFail(Author2, author, { populate: ['*'] })!;
+  jon.age = 34;
+
+  // Test that the option is passed through to serialization
+  const o1 = wrap(jon).serialize({ populate: ['favouriteBook'], convertCustomTypes: false });
+  expect(o1.favouriteBook).toMatchObject({
+    uuid: jon.favouriteBook!.uuid,
+    double: 123.45,
+  });
+
+  const o2 = wrap(jon).serialize({ populate: ['favouriteBook'], convertCustomTypes: true });
+  expect(o2.favouriteBook).toMatchObject({
+    uuid: jon.favouriteBook!.uuid,
+    double: 123.45, // double type returns number in both toJSON and convertToDatabaseValue
+  });
+
+  // Test on unpopulated FK reference
+  orm.em.clear();
+  const jonUnpopulated = await orm.em.findOneOrFail(Author2, author);
+
+  const o3 = wrap(jonUnpopulated).serialize({ convertCustomTypes: false });
+  expect(o3.favouriteBook).toBe(jon.favouriteBook!.uuid);
+
+  const o4 = wrap(jonUnpopulated).serialize({ convertCustomTypes: true });
+  expect(o4.favouriteBook).toBe(jon.favouriteBook!.uuid);
+
+  // Test with collection - ensure convertCustomTypes option doesn't break collection serialization
+  orm.em.clear();
+  const jonWithBooks = await orm.em.findOneOrFail(Author2, author, { populate: ['books'] });
+
+  const o5 = wrap(jonWithBooks).serialize({ populate: [] });
+  expect(Array.isArray(o5.books)).toBe(true);
+  expect(o5.books.length).toBe(3);
+
+  const o6 = wrap(jonWithBooks).serialize({ populate: ['books'], convertCustomTypes: true });
+  expect(Array.isArray(o6.books)).toBe(true);
+  expect(o6.books.length).toBe(3);
+  o6.books.forEach((book: any) => {
+    expect(book).toHaveProperty('uuid');
+    expect(book).toHaveProperty('title');
+  });
+
+  // Test unpopulated collection with custom type PKs (covers processCollection with custom types)
+  orm.em.clear();
+  const jonUnpopulatedBooks = await orm.em.findOneOrFail(Author2, author);
+  await orm.em.populate(jonUnpopulatedBooks, ['books']); // Initialize collection but don't populate items
+
+  const o7 = wrap(jonUnpopulatedBooks).serialize({ populate: [], convertCustomTypes: false });
+  expect(Array.isArray(o7.books)).toBe(true);
+  expect(o7.books.length).toBe(3);
+  // With convertCustomTypes: false, should use toJSON on UUID custom type
+  o7.books.forEach((bookId: any) => {
+    expect(typeof bookId).toBe('string'); // UUID toJSON returns string
+  });
+
+  const o8 = wrap(jonUnpopulatedBooks).serialize({ populate: [], convertCustomTypes: true });
+  expect(Array.isArray(o8.books)).toBe(true);
+  expect(o8.books).toHaveLength(3);
+  // With convertCustomTypes: true, should use convertToDatabaseValue on UUID custom type
+  o8.books.forEach((bookId: any) => {
+    expect(typeof bookId).toBe('string'); // UUID convertToDatabaseValue also returns string
+  });
+});

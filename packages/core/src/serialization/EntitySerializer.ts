@@ -27,7 +27,7 @@ function isVisible<T extends object>(meta: EntityMetadata<T>, propName: EntityKe
   const prop = meta.properties[propName];
 
   if (options.groups && prop?.groups) {
-     return prop.groups.some(g => options.groups!.includes(g));
+    return prop.groups.some(g => options.groups!.includes(g));
   }
 
   if (Array.isArray(options.populate) && options.populate?.find(item => item === propName || item.startsWith(propName + '.') || item === '*')) {
@@ -200,13 +200,23 @@ export class EntitySerializer {
       }
     }
 
-    const customType = property?.customType;
-
-    if (customType) {
-      return customType.toJSON(value, wrapped.__platform);
+    if (property.customType) {
+      return this.processCustomType(value, property, wrapped.__platform, options.convertCustomTypes);
     }
 
     return wrapped.__platform.normalizePrimaryKey(value as unknown as IPrimaryKey) as unknown as EntityValue<T>;
+  }
+
+  private static processCustomType<T, V>(value: V, prop: EntityProperty<T>, platform: Platform, convertCustomTypes?: boolean): V {
+    if (!prop.customType) {
+      return value;
+    }
+
+    if (convertCustomTypes) {
+      return prop.customType.convertToDatabaseValue(value, platform, { mode: 'serialization' });
+    }
+
+    return prop.customType.toJSON(value, platform);
   }
 
   private static extractChildOptions<T extends object, U extends object>(options: SerializeOptions<T, any, any>, prop: EntityKey<T>): SerializeOptions<U> {
@@ -230,11 +240,7 @@ export class EntitySerializer {
       return this.serialize(child, childOptions) as EntityValue<T>;
     }
 
-    let pk = wrapped.getPrimaryKey()!;
-
-    if (prop.customType) {
-      pk = prop.customType.toJSON(pk, wrapped.__platform);
-    }
+    const pk = this.processCustomType(wrapped.getPrimaryKey()!, prop, wrapped.__platform, options.convertCustomTypes);
 
     if (options.forceObject || wrapped.__config.get('serialization').forceObject) {
       return Utils.primaryKeyToObject(meta, pk, visible) as EntityValue<T>;
@@ -268,11 +274,7 @@ export class EntitySerializer {
         return this.serialize(item, this.extractChildOptions(options, prop.name));
       }
 
-      let pk = wrapped.getPrimaryKey()!;
-
-      if (prop.customType) {
-        pk = prop.customType.toJSON(pk, wrapped.__platform);
-      }
+      const pk = this.processCustomType(wrapped.getPrimaryKey()!, prop, wrapped.__platform, options.convertCustomTypes);
 
       if (options.forceObject || wrapped.__config.get('serialization').forceObject) {
         return Utils.primaryKeyToObject(wrapped.__meta, pk) as EntityValue<T>;
@@ -305,6 +307,9 @@ export interface SerializeOptions<T, P extends string = never, E extends string 
 
   /** Only include properties for a specific group. If a property does not specify any group, it will be included, otherwise only properties with a matching group are included. */
   groups?: string[];
+
+  /** Convert custom types to their database representation. By default, the `Type.toJSON` method is invoked instead. */
+  convertCustomTypes?: boolean;
 }
 
 /**
