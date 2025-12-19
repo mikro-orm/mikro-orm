@@ -27,7 +27,7 @@ function isVisible<T extends object>(meta: EntityMetadata<T>, propName: EntityKe
   const prop = meta.properties[propName];
 
   if (options.groups && prop?.groups) {
-     return prop.groups.some(g => options.groups!.includes(g));
+    return prop.groups.some(g => options.groups!.includes(g));
   }
 
   if (Array.isArray(options.populate) && options.populate?.find(item => item === propName || item.startsWith(propName + '.') || item === '*')) {
@@ -200,16 +200,23 @@ export class EntitySerializer {
       }
     }
 
-    const customType = property?.customType;
-
-    if (customType) {
-      if (options.convertCustomTypes) {
-        return customType.convertToDatabaseValue(value, wrapped.__platform, { mode: 'serialization' });
-      }
-      return customType.toJSON(value, wrapped.__platform);
+    if (property.customType) {
+      return this.processCustomType(value, property, wrapped.__platform, options.convertCustomTypes);
     }
 
     return wrapped.__platform.normalizePrimaryKey(value as unknown as IPrimaryKey) as unknown as EntityValue<T>;
+  }
+
+  private static processCustomType<T, V>(value: V, prop: EntityProperty<T>, platform: Platform, convertCustomTypes?: boolean): V {
+    if (!prop.customType) {
+      return value;
+    }
+
+    if (convertCustomTypes) {
+      return prop.customType.convertToDatabaseValue(value, platform, { mode: 'serialization' });
+    }
+
+    return prop.customType.toJSON(value, platform);
   }
 
   private static extractChildOptions<T extends object, U extends object>(options: SerializeOptions<T, any, any>, prop: EntityKey<T>): SerializeOptions<U> {
@@ -233,15 +240,7 @@ export class EntitySerializer {
       return this.serialize(child, childOptions) as EntityValue<T>;
     }
 
-    let pk = wrapped.getPrimaryKey()!;
-
-    if (prop.customType) {
-      if (options.convertCustomTypes) {
-        pk = prop.customType.convertToDatabaseValue(pk, wrapped.__platform, { mode: 'serialization' });
-      } else {
-        pk = prop.customType.toJSON(pk, wrapped.__platform);
-      }
-    }
+    const pk = this.processCustomType(wrapped.getPrimaryKey()!, prop, wrapped.__platform, options.convertCustomTypes);
 
     if (options.forceObject || wrapped.__config.get('serialization').forceObject) {
       return Utils.primaryKeyToObject(meta, pk, visible) as EntityValue<T>;
@@ -275,15 +274,7 @@ export class EntitySerializer {
         return this.serialize(item, this.extractChildOptions(options, prop.name));
       }
 
-      let pk = wrapped.getPrimaryKey()!;
-
-      if (prop.customType) {
-        if (options.convertCustomTypes) {
-          pk = prop.customType.convertToDatabaseValue(pk, wrapped.__platform, { mode: 'serialization' });
-        } else {
-          pk = prop.customType.toJSON(pk, wrapped.__platform);
-        }
-      }
+      const pk = this.processCustomType(wrapped.getPrimaryKey()!, prop, wrapped.__platform, options.convertCustomTypes);
 
       if (options.forceObject || wrapped.__config.get('serialization').forceObject) {
         return Utils.primaryKeyToObject(wrapped.__meta, pk) as EntityValue<T>;
