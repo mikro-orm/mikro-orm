@@ -462,7 +462,7 @@ export abstract class Platform {
   }
 
   quoteIdentifier(id: string | { toString: () => string }, quote = '`'): string {
-    const raw = RawQueryFragment.getKnownFragment(id as string);
+    const raw = RawQueryFragment.getKnownFragment(id);
 
     if (raw) {
       return this.formatQuery(raw.sql, raw.params);

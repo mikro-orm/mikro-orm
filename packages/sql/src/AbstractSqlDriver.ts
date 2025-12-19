@@ -65,8 +65,12 @@ import { JoinType, QueryType } from './query/enums.js';
 import { SqlEntityManager } from './SqlEntityManager.js';
 import type { Field } from './typings.js';
 import { PivotCollectionPersister } from './PivotCollectionPersister.js';
+import { inspect } from 'node:util';
 
-export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection = AbstractSqlConnection, Platform extends AbstractSqlPlatform = AbstractSqlPlatform> extends DatabaseDriver<Connection> {
+export abstract class AbstractSqlDriver<
+  Connection extends AbstractSqlConnection = AbstractSqlConnection,
+  Platform extends AbstractSqlPlatform = AbstractSqlPlatform,
+> extends DatabaseDriver<Connection> {
 
   override [EntityManagerType]!: SqlEntityManager<this>;
 
@@ -279,7 +283,12 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
   protected async wrapVirtualExpressionInSubquery<T extends object>(meta: EntityMetadata<T>, expression: string, where: FilterQuery<T>, options: FindOptions<T, any>, type: QueryType): Promise<T[] | number> {
     const qb = await this.createQueryBuilderFromOptions(meta, where, options);
     qb.setFlag(QueryFlag.DISABLE_PAGINATE);
-    const isCursorPagination = [options.first, options.last, options.before, options.after].some(v => v != null);
+    const isCursorPagination = [
+      options.first,
+      options.last,
+      options.before,
+      options.after,
+    ].some(v => v != null);
     const native = qb.getNativeQuery(false);
 
     if (type === QueryType.COUNT) {
@@ -428,7 +437,8 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
           if (prop.fieldNames.length > 1) { // composite keys
             relationPojo[prop.name as EntityKey<T>] = prop.fieldNames.map(name => root![`${relationAlias}__${name}` as EntityKey<T>]) as EntityDataValue<T>;
           } else {
-            const alias = `${relationAlias}__${prop.fieldNames[0]}` as EntityKey<T>;
+            const alias =
+              `${relationAlias}__${prop.fieldNames[0]}` as EntityKey<T>;
             relationPojo[prop.name] = root![alias] as EntityDataValue<T>;
           }
         });
@@ -1073,7 +1083,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       populateWhere: undefined,
       // @ts-ignore
       _populateWhere: 'infer',
-      populateFilter: !Utils.isEmpty(options?.populateFilter) ? { [pivotProp2.name]: options?.populateFilter } : undefined,
+      populateFilter: !Utils.isEmpty(options?.populateFilter) || RawQueryFragment.hasObjectFragments(options?.populateFilter) ? { [pivotProp2.name]: options?.populateFilter } : undefined,
     });
 
     const map: Dictionary<T[]> = {};
@@ -1092,17 +1102,17 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
   }
 
   private getPivotOrderBy<T>(prop: EntityProperty<T>, pivotProp: EntityProperty, orderBy?: OrderDefinition<T>, parentOrderBy?: OrderDefinition<T>): QueryOrderMap<T>[] {
-    if (!Utils.isEmpty(orderBy)) {
+    if (!Utils.isEmpty(orderBy) || RawQueryFragment.hasObjectFragments(orderBy)) {
       return Utils.asArray(orderBy).map(o => ({ [pivotProp.name]: o } as QueryOrderMap<T>));
     }
 
     if (prop.kind === ReferenceKind.MANY_TO_MANY && Utils.asArray(parentOrderBy).some(o => o[prop.name])) {
       return Utils.asArray(parentOrderBy)
         .filter(o => o[prop.name])
-        .map(o => ({ [pivotProp.name]: o[prop.name] } as QueryOrderMap<T>));
+        .map(o => ({ [pivotProp.name]: o[prop.name] }) as QueryOrderMap<T>);
     }
 
-    if (!Utils.isEmpty(prop.orderBy)) {
+    if (!Utils.isEmpty(prop.orderBy) || RawQueryFragment.hasObjectFragments(prop.orderBy)) {
       return Utils.asArray(prop.orderBy).map(o => ({ [pivotProp.name]: o } as QueryOrderMap<T>));
     }
 
@@ -1483,25 +1493,25 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       const [propName] = hint.field.split(':', 2) as [EntityKey<T>];
       const prop = meta.properties[propName];
 
-      if (!Utils.isEmpty(prop.where)) {
+      if (!Utils.isEmpty(prop.where) || RawQueryFragment.hasObjectFragments(prop.where)) {
         where[prop.name] = Utils.copy(prop.where);
       }
 
       if (hint.children) {
         const inner = this.buildPopulateWhere(prop.targetMeta!, hint.children as any, {});
 
-        if (!Utils.isEmpty(inner)) {
+        if (!Utils.isEmpty(inner) || RawQueryFragment.hasObjectFragments(inner)) {
           where[prop.name] ??= {} as any;
           Object.assign(where[prop.name] as object, inner);
         }
       }
     }
 
-    if (Utils.isEmpty(options.populateWhere)) {
+    if (Utils.isEmpty(options.populateWhere) && !RawQueryFragment.hasObjectFragments(options.populateWhere)) {
       return where;
     }
 
-    if (Utils.isEmpty(where)) {
+    if (Utils.isEmpty(where) && !RawQueryFragment.hasObjectFragments(where)) {
       return options.populateWhere as ObjectQuery<T>;
     }
 
@@ -1515,11 +1525,55 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     // as `options.populateWhere` will be always recomputed to respect filters
     const populateWhereAll = (options as Dictionary)._populateWhere !== 'infer' && !Utils.isEmpty((options as Dictionary)._populateWhere);
     const path = (populateWhereAll ? '[populate]' : '') + meta.className;
+    const optionsOrderBy = Utils.asArray(options.orderBy).map(orderBy => Object.fromEntries(this.getQueryOrderEntries(orderBy!)));
     const populateOrderBy = this.buildPopulateOrderBy(qb, meta, Utils.asArray<QueryOrderMap<T>>(options.populateOrderBy ?? options.orderBy), path, !!options.populateOrderBy);
     const joinedPropsOrderBy = this.buildJoinedPropsOrderBy(qb, meta, joinedProps, options, path);
 
-    return [...Utils.asArray(options.orderBy), ...populateOrderBy, ...joinedPropsOrderBy] as QueryOrderMap<T>[];
+    return [...optionsOrderBy, ...populateOrderBy, ...joinedPropsOrderBy] as QueryOrderMap<T>[];
   }
+
+  protected getQueryOrderEntries<T extends object, OrderMap extends QueryOrderMap<T> = QueryOrderMap<T>>(orderBy: OrderMap) {
+    const keys = Utils.getObjectQueryKeys(orderBy);
+
+    const { fieldEntries, rawEntries } = keys.reduce(
+      (acc, key) => {
+        if (typeof key === 'string') {
+          acc.fieldEntries.push([key, orderBy[key]]);
+        } else {
+          acc.rawEntries.push([
+            RawQueryFragment.getKnownFragment(key)!,
+            orderBy[key as unknown as keyof OrderMap],
+          ]);
+        }
+
+        return acc;
+      },
+      {
+        fieldEntries: [] as [keyof OrderMap, OrderMap[keyof OrderMap]][],
+        rawEntries: [] as [RawQueryFragment, OrderMap[keyof OrderMap]][],
+      },
+    );
+
+    if (fieldEntries.length > 0 && rawEntries.length > 0) {
+      const example = [
+        ...fieldEntries.map(([key, value]) => ({ [key]: value })),
+        ...rawEntries.map(([raw, value]) => ({
+          [raw as unknown as symbol]: value,
+        })),
+      ];
+
+      throw new Error(
+        [
+          `Invalid "orderBy": You are mixing field-based keys and raw SQL fragments inside a single object.`,
+          `This is not allowed because object key order cannot reliably preserve evaluation order.`,
+          `To fix this, split them into separate objects inside an array:`,
+          `orderBy: ${inspect(example, { depth: 5 })}`,
+        ].join('\n'),
+      );
+    }
+
+    return [...fieldEntries, ...rawEntries];
+  }  
 
   protected buildPopulateOrderBy<T extends object>(qb: QueryBuilder<T, any, any, any>, meta: EntityMetadata<T>, populateOrderBy: QueryOrderMap<T>[], parentPath: string, explicit: boolean, parentAlias = qb.alias): QueryOrderMap<T>[] {
     const orderBy: QueryOrderMap<T>[] = [];
@@ -1527,28 +1581,23 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     for (let i = 0; i < populateOrderBy.length; i++) {
       const orderHint = populateOrderBy[i];
 
-      for (const propName of Utils.keys(orderHint)) {
-        const raw = RawQueryFragment.getKnownFragment(propName, explicit);
-
-        if (raw) {
-          const sql = raw.sql.replace(new RegExp(ALIAS_REPLACEMENT_RE, 'g'), parentAlias);
-          const raw2 = new RawQueryFragment(sql, raw.params);
-          orderBy.push({ [raw2 as EntityKey]: orderHint[propName] } as QueryOrderMap<T>);
+      for (const [field, childOrder] of this.getQueryOrderEntries(orderHint)) {
+        if (field instanceof RawQueryFragment) {
+          const sql = field.sql.replace(new RegExp(ALIAS_REPLACEMENT_RE, 'g'), parentAlias);
+          orderBy.push({ [raw(sql, field.params)]: childOrder } as QueryOrderMap<T>);
           continue;
         }
 
-        const prop = meta.properties[propName];
+        const prop = meta.properties[field];
 
         if (!prop) {
-          throw new Error(`Trying to order by not existing property ${meta.className}.${propName}`);
+          throw new Error(`Trying to order by not existing property ${meta.className}.${field}`);
         }
 
         let path = parentPath;
         const meta2 = this.metadata.find<T>(prop.type)!;
-        const childOrder = orderHint[prop.name] as Dictionary;
-
         if (prop.kind !== ReferenceKind.SCALAR && (![ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind) || !prop.owner || Utils.isPlainObject(childOrder))) {
-          path += `.${propName}`;
+          path += `.${field}`;
         }
 
         if (prop.kind === ReferenceKind.MANY_TO_MANY && typeof childOrder !== 'object') {
@@ -1580,10 +1629,10 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
           continue;
         }
 
-        const order = typeof childOrder === 'object' ? childOrder[propName] : childOrder;
+        const order = typeof childOrder === 'object' ? childOrder[field as EntityKey] : childOrder;
 
         if (order) {
-          orderBy.push({ [`${propAlias}.${propName}` as EntityKey]: order } as QueryOrderMap<T>);
+          orderBy.push({ [`${propAlias}.${field}` as EntityKey]: order } as QueryOrderMap<T>);
         }
       }
     }
@@ -1617,17 +1666,14 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
 
       if (propOrderBy) {
         for (const item of Utils.asArray(propOrderBy)) {
-          for (const field of Utils.keys(item)) {
-            const rawField = RawQueryFragment.getKnownFragment(field, false);
-
-            if (rawField) {
-              const sql = propAlias ? rawField.sql.replace(new RegExp(ALIAS_REPLACEMENT_RE, 'g'), propAlias) : rawField.sql;
-              const raw2 = raw(sql, rawField.params);
-              orderBy.push({ [raw2.toString()]: item[field] } as QueryOrderMap<T>);
+          for (const [field, order] of this.getQueryOrderEntries(item)) {
+            if (field instanceof RawQueryFragment) {
+              const sql = propAlias ? field.sql.replace(new RegExp(ALIAS_REPLACEMENT_RE, 'g'), propAlias) : field.sql;
+              orderBy.push({ [raw(sql, field.params)]: order } as QueryOrderMap<T>);
               continue;
             }
 
-            orderBy.push({ [`${propAlias}.${field}` as EntityKey]: item[field] } as QueryOrderMap<T>);
+            orderBy.push({ [`${propAlias}.${field}` as EntityKey]: order } as QueryOrderMap<T>);
           }
         }
       }

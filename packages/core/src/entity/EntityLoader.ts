@@ -30,8 +30,8 @@ import type { MetadataStorage } from '../metadata/MetadataStorage.js';
 import type { Platform } from '../platforms/Platform.js';
 import { helper } from './wrap.js';
 import type { LoggingOptions } from '../logging/Logger.js';
-import { raw, RawQueryFragment } from '../utils/RawQueryFragment.js';
 import { expandDotPaths } from './utils.js';
+import { RawQueryFragment } from '../utils/RawQueryFragment.js';
 
 export type EntityLoaderOptions<Entity, Fields extends string = PopulatePath.ALL, Excludes extends string = never> = {
   where?: FilterQuery<Entity>;
@@ -347,32 +347,15 @@ export class EntityLoader {
       populateWhere = await this.extractChildCondition({ where: populateWhere } as any, prop);
     }
 
-    if (!Utils.isEmpty(prop.where)) {
+    if (!Utils.isEmpty(prop.where) || RawQueryFragment.hasObjectFragments(prop.where)) {
       where = { $and: [where, prop.where] } as FilterQuery<Entity>;
     }
 
-    const propOrderBy: QueryOrderMap<Entity>[] = [];
-
-    if (prop.orderBy) {
-      for (const item of Utils.asArray(prop.orderBy)) {
-        for (const field of Utils.keys(item)) {
-          const rawField = RawQueryFragment.getKnownFragment(field, false);
-
-          if (rawField) {
-            const raw2 = raw(rawField.sql, rawField.params);
-            propOrderBy.push({ [raw2.toString()]: item[field] } as QueryOrderMap<Entity>);
-            continue;
-          }
-
-          propOrderBy.push({ [field]: item[field] } as QueryOrderMap<Entity>);
-        }
-      }
-    }
-
-    const orderBy = [...Utils.asArray(options.orderBy), ...propOrderBy].filter((order, idx, array) => {
+    const orderBy = [...Utils.asArray(options.orderBy), ...Utils.asArray(prop.orderBy)].filter((order, idx, array) => {
       // skip consecutive ordering with the same key to get around mongo issues
-      return idx === 0 || !Utils.equals(Object.keys(array[idx - 1]), Object.keys(order));
+      return idx === 0 || !Utils.equals(Utils.getObjectQueryKeys(array[idx - 1]), Utils.getObjectQueryKeys(order));
     });
+
     const items = await this.em.find(prop.type, where, {
       filters, convertCustomTypes, lockMode, populateWhere, logging,
       orderBy,
@@ -569,7 +552,7 @@ export class EntityLoader {
       if (where[op]) {
         const child = where[op]
           .map((cond: Dictionary) => cond[prop.name])
-          .filter((sub: unknown) => sub != null && !(Utils.isPlainObject(sub) && Object.keys(sub).every(key => Utils.isOperator(key, false))))
+          .filter((sub: unknown) => sub != null && !(Utils.isPlainObject(sub) && Utils.getObjectQueryKeys(sub).every(key => Utils.isOperator(key, false))))
           .map((cond: Dictionary) => {
             if (Utils.isPrimaryKey(cond)) {
               return { [pk]: cond };

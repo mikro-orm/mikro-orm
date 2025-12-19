@@ -142,17 +142,12 @@ export class DatabaseSchema {
 
       for (const check of meta.checks) {
         const columnName = check.property ? meta.properties[check.property].fieldNames[0] : undefined;
-        let expression = check.expression as string;
-        const raw = RawQueryFragment.getKnownFragment(expression);
-
-        if (raw) {
-          expression = platform.formatQuery(raw.sql, raw.params);
-        }
+        const expression = check.expression instanceof RawQueryFragment ? platform.formatQuery(check.expression.sql, check.expression.params) : check.expression as string;
 
         table.addCheck({
           name: check.name!,
           expression,
-          definition: `check (${check.expression})`,
+          definition: `check (${expression})`,
           columnName,
         });
       }

@@ -1,4 +1,4 @@
-import { MikroORM, raw, RawQueryFragment, wrap, serialize } from '@mikro-orm/sqlite';
+import { MikroORM, raw, wrap, serialize } from '@mikro-orm/sqlite';
 import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 @Entity()
@@ -47,7 +47,7 @@ test('#5129', async () => {
     { orderBy: { [lengthOfTruncatedNameQuery]: 'ASC' } },
   );
 
-  expect(RawQueryFragment.checkCacheSize()).toBe(0);
+  // expect(RawQueryFragment.checkCacheSize()).toBe(0);
   expect(lengthOfTruncatedNameQuery.toJSON()).toBe('[raw]: length(substr([::alias::].name, 0, ?)) (#0)');
 
   const e = new User('n', 'e');

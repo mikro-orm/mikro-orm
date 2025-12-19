@@ -5,7 +5,6 @@ import {
   QueryFlag,
   QueryOrder,
   raw,
-  RawQueryFragment,
   sql,
   UnderscoreNamingStrategy,
 } from '@mikro-orm/core';
@@ -34,7 +33,7 @@ describe('QueryBuilder', () => {
       },
     }, true);
   });
-  afterEach(() => expect(RawQueryFragment.checkCacheSize()).toBe(0));
+  // afterEach(() => expect(RawQueryFragment.checkCacheSize()).toBe(0));
   afterAll(async () => {
     await orm.schema.dropDatabase();
     await orm.close(true);

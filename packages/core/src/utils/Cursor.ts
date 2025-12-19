@@ -180,9 +180,9 @@ export class Cursor<
     return Utils.asArray(orderBy).flatMap(order => {
       const ret: [EntityKey, QueryOrder][] = [];
 
-      for (const key of Utils.keys(order)) {
-        if (RawQueryFragment.isKnownFragment(key)) {
-          ret.push([key as EntityKey, order[key] as QueryOrder]);
+      for (const key of Utils.getObjectQueryKeys(order)) {
+        if (RawQueryFragment.isKnownFragmentSymbol(key)) {
+          ret.push([key as EntityKey, order[key as unknown as EntityKey] as QueryOrder]);
           continue;
         }
 

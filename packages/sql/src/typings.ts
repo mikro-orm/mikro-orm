@@ -201,7 +201,7 @@ export interface ICriteriaNodeProcessOptions {
 export interface ICriteriaNode<T extends object> {
   readonly entityName: string;
   readonly parent?: ICriteriaNode<T> | undefined;
-  readonly key?: string | undefined;
+  readonly key?: string | symbol | undefined;
   readonly strict?: boolean;
   payload: any;
   prop?: EntityProperty;

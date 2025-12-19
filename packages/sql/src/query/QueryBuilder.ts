@@ -203,8 +203,6 @@ export class QueryBuilder<
   declare __populateWhere?: ObjectQuery<Entity> | PopulateHint | `${PopulateHint}`;
   /** @internal */
   _populateMap: Dictionary<string> = {};
-  /** @internal */
-  readonly rawFragments = new Set<string>();
 
   protected aliasCounter = 0;
   protected flags: Set<QueryFlag> = new Set([QueryFlag.CONVERT_CUSTOM_TYPES]);
@@ -537,7 +535,7 @@ export class QueryBuilder<
       filterOptions = QueryHelper.mergePropertyFilters(join.prop.filters, filterOptions);
       const cond = await em.applyFilters(join.prop.type, join.cond, filterOptions, 'read');
 
-      if (Utils.hasObjectKeys(cond)) {
+      if (Utils.hasObjectKeys(cond) || RawQueryFragment.hasObjectFragments(cond)) {
         // remove nested filters, we only care about scalars here, nesting would require another join branch
         for (const key of Object.keys(cond)) {
           if (Utils.isPlainObject(cond[key]) && Object.keys(cond[key]).every(k => !(Utils.isOperator(k) && !['$some', '$none', '$every'].includes(k)))) {
@@ -545,7 +543,7 @@ export class QueryBuilder<
           }
         }
 
-        if (Utils.hasObjectKeys(join.cond)) {
+        if (Utils.hasObjectKeys(join.cond) || RawQueryFragment.hasObjectFragments(join.cond)) {
           /* v8 ignore next */
           join.cond = { $and: [join.cond, cond] };
         } else {
@@ -568,13 +566,12 @@ export class QueryBuilder<
   }
 
   where(cond: QBFilterQuery<Entity>, operator?: keyof typeof GroupOperator): this;
-  where(cond: string, params?: any[], operator?: keyof typeof GroupOperator): this;
-  where(cond: QBFilterQuery<Entity> | string, params?: keyof typeof GroupOperator | any[], operator?: keyof typeof GroupOperator): this {
+  where(cond: string | RawQueryFragment, params?: any[], operator?: keyof typeof GroupOperator): this;
+  where(cond: QBFilterQuery<Entity> | string | RawQueryFragment, params?: keyof typeof GroupOperator | any[], operator?: keyof typeof GroupOperator): this {
     this.ensureNotFinalized();
-    const rawField = RawQueryFragment.getKnownFragment(cond as string);
 
-    if (rawField) {
-      const sql = this.platform.formatQuery(rawField.sql, rawField.params);
+    if (cond instanceof RawQueryFragment) {
+      const sql = this.platform.formatQuery(cond.sql, cond.params);
       cond = { [raw(`(${sql})`)]: Utils.asArray(params) };
       operator ??= '$and';
     } else if (typeof cond === 'string') {
@@ -593,7 +590,7 @@ export class QueryBuilder<
     }
 
     const op = operator || params as keyof typeof GroupOperator;
-    const topLevel = !op || !Utils.hasObjectKeys(this._cond);
+    const topLevel = !op || !(Utils.hasObjectKeys(this._cond) || RawQueryFragment.hasObjectFragments(this._cond));
     const criteriaNode = CriteriaNodeFactory.createNode<Entity>(this.metadata, this.mainAlias.entityName, cond);
     const ignoreBranching = this.__populateWhere === 'infer';
 
@@ -621,14 +618,14 @@ export class QueryBuilder<
   }
 
   andWhere(cond: QBFilterQuery<Entity>): this;
-  andWhere(cond: string, params?: any[]): this;
-  andWhere(cond: QBFilterQuery<Entity> | string, params?: any[]): this {
+  andWhere(cond: string | RawQueryFragment, params?: any[]): this;
+  andWhere(cond: QBFilterQuery<Entity> | string | RawQueryFragment, params?: any[]): this {
     return this.where(cond as string, params, '$and');
   }
 
   orWhere(cond: QBFilterQuery<Entity>): this;
-  orWhere(cond: string, params?: any[]): this;
-  orWhere(cond: QBFilterQuery<Entity> | string, params?: any[]): this {
+  orWhere(cond: string | RawQueryFragment, params?: any[]): this;
+  orWhere(cond: QBFilterQuery<Entity> | string | RawQueryFragment, params?: any[]): this {
     return this.where(cond as string, params, '$or');
   }
 
@@ -883,10 +880,11 @@ export class QueryBuilder<
     this._query = {} as any;
     this.finalize();
     const qb = this.getQueryBase(processVirtualEntity);
+    const isNotEmptyObject = (obj: Dictionary) => Utils.hasObjectKeys(obj) || RawQueryFragment.hasObjectFragments(obj);
 
     Utils.runIfNotEmpty(() => this.helper.appendQueryCondition(this.type, this._cond, qb), this._cond && !this._onConflict);
-    Utils.runIfNotEmpty(() => qb.groupBy(this.prepareFields(this._groupBy, 'groupBy')), this._groupBy);
-    Utils.runIfNotEmpty(() => this.helper.appendQueryCondition(this.type, this._having, qb, undefined, 'having'), this._having);
+    Utils.runIfNotEmpty(() => qb.groupBy(this.prepareFields(this._groupBy, 'groupBy')), isNotEmptyObject(this._groupBy));
+    Utils.runIfNotEmpty(() => this.helper.appendQueryCondition(this.type, this._having, qb, undefined, 'having'), isNotEmptyObject(this._having));
     Utils.runIfNotEmpty(() => {
       const queryOrder = this.helper.getQueryOrder(this.type, this._orderBy as FlatQueryOrderMap[], this._populateMap);
 
@@ -895,7 +893,7 @@ export class QueryBuilder<
         qb.orderBy(sql);
         return;
       }
-    }, this._orderBy);
+    }, isNotEmptyObject(this._orderBy));
     Utils.runIfNotEmpty(() => qb.limit(this._limit!), this._limit != null);
     Utils.runIfNotEmpty(() => qb.offset(this._offset!), this._offset);
     Utils.runIfNotEmpty(() => qb.comment(this._comments), this._comments);
@@ -907,17 +905,8 @@ export class QueryBuilder<
     }
 
     this.helper.finalize(this.type, qb, this.mainAlias.metadata, this._data, this._returning);
-    this.clearRawFragmentsCache();
 
     return this._query!.qb = qb;
-  }
-
-  /**
-   * @internal
-   */
-  clearRawFragmentsCache(): void {
-    this.rawFragments.forEach(key => RawQueryFragment.remove(key));
-    this.rawFragments.clear();
   }
 
   /**
@@ -1298,10 +1287,8 @@ export class QueryBuilder<
     const properties = [
       'flags', '_populate', '_populateWhere', '_populateFilter', '__populateWhere', '_populateMap', '_joins', '_joinedProps', '_cond', '_data', '_orderBy',
       '_schema', '_indexHint', '_cache', 'subQueries', 'lockMode', 'lockTables', '_groupBy', '_having', '_returning',
-      '_comments', '_hintComments', 'rawFragments', 'aliasCounter',
+      '_comments', '_hintComments', 'aliasCounter',
     ];
-
-    RawQueryFragment.cloneRegistry = this.rawFragments;
 
     for (const prop of Object.keys(this)) {
       if (reset.includes(prop) || ['_helper', '_query'].includes(prop)) {
@@ -1311,9 +1298,7 @@ export class QueryBuilder<
       (qb as any)[prop] = properties.includes(prop) ? Utils.copy(this[prop as keyof this]) : this[prop as keyof this];
     }
 
-    delete RawQueryFragment.cloneRegistry;
-
-    /* v8 ignore next */
+    /* v8 ignore next 3 */
     if (this._fields && !reset.includes('_fields')) {
       qb._fields = [...this._fields];
     }
@@ -1466,13 +1451,6 @@ export class QueryBuilder<
     };
 
     fields.forEach(field => {
-      const rawField = RawQueryFragment.getKnownFragment(field as string, false);
-
-      if (rawField) {
-        ret.push(rawField);
-        return;
-      }
-
       if (typeof field !== 'string') {
         ret.push(field);
         return;
@@ -1539,11 +1517,7 @@ export class QueryBuilder<
 
     for (const f of Object.keys(this._populateMap)) {
       if (type === 'where' && this._joins[f]) {
-        const cols = this.helper.mapJoinColumns(this.type, this._joins[f]);
-
-        for (const col of cols) {
-          ret.push(col as string);
-        }
+        ret.push(...this.helper.mapJoinColumns(this.type, this._joins[f]));
       }
     }
 
@@ -1876,15 +1850,15 @@ export class QueryBuilder<
       const orderBy = [];
 
       for (const orderMap of this._orderBy) {
-        for (const [field, direction] of Object.entries(orderMap)) {
-          if (RawQueryFragment.isKnownFragment(field)) {
-            const rawField = RawQueryFragment.getKnownFragment(field, false)!;
-            this.rawFragments.add(field);
-            orderBy.push({ [rawField.clone() as any]: direction });
+        for (const field of Utils.getObjectQueryKeys(orderMap)) {
+          const direction = orderMap[field as EntityKey<Entity>];
+
+          if (RawQueryFragment.isKnownFragmentSymbol(field)) {
+            orderBy.push({ [field]: direction });
             continue;
           }
 
-          const [a, f] = this.helper.splitField(field as EntityKey<Entity>);
+          const [a, f] = this.helper.splitField<Entity>(field);
           const prop = this.helper.getProperty(f, a);
           const type = this.platform.castColumn(prop);
           const fieldName = this.helper.mapper(field, this.type, undefined, null);
@@ -1938,7 +1912,7 @@ export class QueryBuilder<
     this._limit = undefined;
     this._offset = undefined;
 
-    if (!this._fields!.some(f => RawQueryFragment.isKnownFragment(f as string))) {
+    if (!this._fields!.some(field => field instanceof RawQueryFragment)) {
       this.pruneExtraJoins(meta);
     }
 
