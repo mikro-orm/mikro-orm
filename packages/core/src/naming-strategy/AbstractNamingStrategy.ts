@@ -104,13 +104,13 @@ export abstract class AbstractNamingStrategy implements NamingStrategy {
     return entityName[0].toLowerCase() + entityName.substring(1) + suffix;
   }
 
-  abstract classToTableName(entityName: string): string;
+  abstract classToTableName(entityName: string, tableName?: string): string;
 
   abstract joinColumnName(propertyName: string): string;
 
-  abstract joinKeyColumnName(entityName: string, referencedColumnName?: string): string;
+  abstract joinKeyColumnName(entityName: string, referencedColumnName?: string, composite?: boolean, tableName?: string): string;
 
-  abstract joinTableName(sourceEntity: string, targetEntity: string, propertyName?: string): string;
+  abstract joinTableName(sourceEntity: string, targetEntity: string, propertyName?: string, tableName?: string): string;
 
   abstract propertyToColumnName(propertyName: string, object?: boolean): string;
 

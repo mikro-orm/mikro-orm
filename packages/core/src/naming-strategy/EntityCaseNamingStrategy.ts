@@ -5,15 +5,16 @@ import { AbstractNamingStrategy } from './AbstractNamingStrategy.js';
  */
 export class EntityCaseNamingStrategy extends AbstractNamingStrategy {
 
-  classToTableName(entityName: string): string {
-    return entityName;
+  classToTableName(entityName: string, tableName?: string): string {
+    return tableName ?? entityName;
   }
 
   joinColumnName(propertyName: string): string {
     return propertyName;
   }
 
-  joinKeyColumnName(entityName: string, referencedColumnName?: string, composite = false): string {
+  joinKeyColumnName(entityName: string, referencedColumnName?: string, composite?: boolean, tableName?: string): string {
+    entityName = this.classToTableName(entityName, tableName);
     const name = entityName.substr(0, 1).toLowerCase() + entityName.substr(1);
 
     if (composite && referencedColumnName) {
@@ -23,8 +24,8 @@ export class EntityCaseNamingStrategy extends AbstractNamingStrategy {
     return name;
   }
 
-  joinTableName(sourceEntity: string, targetEntity: string, propertyName: string): string {
-    return this.classToTableName(sourceEntity) + '_' + this.propertyToColumnName(propertyName);
+  joinTableName(sourceEntity: string, targetEntity: string, propertyName: string, tableName?: string): string {
+    return this.classToTableName(sourceEntity, tableName) + '_' + this.propertyToColumnName(propertyName);
   }
 
   propertyToColumnName(propertyName: string): string {

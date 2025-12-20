@@ -10,7 +10,7 @@ export interface NamingStrategy {
   /**
    * Return a table name for an entity class
    */
-  classToTableName(entityName: string): string;
+  classToTableName(entityName: string, tableName?: string): string;
 
   /**
    * Return a migration name. This name should allow ordering.
@@ -80,12 +80,12 @@ export interface NamingStrategy {
   /**
    * Return a join table name
    */
-  joinTableName(sourceEntity: string, targetEntity: string, propertyName: string): string;
+  joinTableName(sourceEntity: string, targetEntity: string, propertyName: string, tableName?: string): string;
 
   /**
    * Return the foreign key column name for the given parameters
    */
-  joinKeyColumnName(entityName: string, referencedColumnName?: string, composite?: boolean): string;
+  joinKeyColumnName(entityName: string, referencedColumnName?: string, composite?: boolean, tableName?: string): string;
 
   /**
    * Returns key/constraint name for the given type. Some drivers might not support all the types (e.g. mysql and sqlite enforce the PK name).

@@ -73,11 +73,6 @@ export class EntitySchema<Entity = any, Base = never> {
       EntitySchema.REGISTRY.set(meta.class, this);
     }
 
-    if (meta.tableName || meta.collection) {
-      Utils.renameKey(meta, 'tableName', 'collection');
-      meta.tableName = meta.collection;
-    }
-
     Object.assign(this._meta, { className: meta.name }, meta);
     this._meta.root ??= this._meta;
   }
@@ -303,7 +298,7 @@ export class EntitySchema<Entity = any, Base = never> {
 
     if (tableName?.includes('.') && !this._meta.schema) {
       this._meta.schema = tableName.substring(0, tableName.indexOf('.'));
-      this._meta.collection = tableName.substring(tableName.indexOf('.') + 1);
+      this._meta.tableName = tableName.substring(tableName.indexOf('.') + 1);
     }
 
     this.initProperties();

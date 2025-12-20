@@ -480,8 +480,8 @@ export class SourceFile {
   protected getEntityDeclOptions() {
     const options: EntityOptions<unknown> = {};
 
-    if (this.meta.collection !== this.namingStrategy.classToTableName(this.meta.className)) {
-      options.tableName = this.quote(this.meta.collection);
+    if (this.meta.tableName !== this.namingStrategy.classToTableName(this.meta.className)) {
+      options.tableName = this.quote(this.meta.tableName);
     }
 
     if (this.meta.schema && this.meta.schema !== this.platform.getDefaultSchemaName()) {
@@ -888,7 +888,7 @@ export class SourceFile {
       return;
     }
 
-    if (prop.pivotTable !== this.namingStrategy.joinTableName(this.meta.collection, prop.type, prop.name)) {
+    if (prop.pivotTable !== this.namingStrategy.joinTableName(this.meta.collection, prop.type, prop.name, this.meta.tableName)) {
       options.pivotTable = this.quote(prop.pivotTable);
     }
 

@@ -377,9 +377,9 @@ export class MetadataDiscovery {
     // if the definition is using EntitySchema we still want it to go through the metadata provider to validate no types are missing
     this.metadataProvider.loadEntityMetadata(meta);
 
-    if (!meta.collection && meta.name) {
+    if (!meta.tableName && meta.name) {
       const entityName = root.discriminatorColumn ? root.name : meta.name;
-      meta.collection = this.namingStrategy.classToTableName(entityName!);
+      meta.tableName = this.namingStrategy.classToTableName(entityName!);
     }
 
     this.metadataProvider.saveToCache(meta);
@@ -510,7 +510,7 @@ export class MetadataDiscovery {
     }
 
     if (!prop.pivotTable && prop.owner && this.platform.usesPivotTable()) {
-      prop.pivotTable = this.namingStrategy.joinTableName(meta.tableName, meta2.tableName, prop.name);
+      prop.pivotTable = this.namingStrategy.joinTableName(meta.className, meta2.tableName, prop.name, meta.tableName);
     }
 
     if (prop.mappedBy) {
@@ -525,14 +525,14 @@ export class MetadataDiscovery {
     }
 
     prop.referencedColumnNames ??= Utils.flatten(meta.primaryKeys.map(primaryKey => meta.properties[primaryKey].fieldNames));
-    prop.joinColumns ??= prop.referencedColumnNames.map(referencedColumnName => this.namingStrategy.joinKeyColumnName(meta.root.className, referencedColumnName, meta.compositePK));
+    prop.joinColumns ??= prop.referencedColumnNames.map(referencedColumnName => this.namingStrategy.joinKeyColumnName(meta.root.className, referencedColumnName, meta.compositePK, meta.root.tableName));
     prop.inverseJoinColumns ??= this.initManyToOneFieldName(prop, meta2.root.className);
   }
 
   private initManyToOneFields(prop: EntityProperty): void {
     const meta2 = this.metadata.get(prop.type);
     const fieldNames = Utils.flatten(meta2.primaryKeys.map(primaryKey => meta2.properties[primaryKey].fieldNames));
-    Utils.defaultValue(prop, 'referencedTableName', meta2.collection);
+    Utils.defaultValue(prop, 'referencedTableName', meta2.tableName);
 
     if (!prop.joinColumns) {
       prop.joinColumns = fieldNames.map(fieldName => this.namingStrategy.joinKeyColumnName(prop.name, fieldName, fieldNames.length > 1));
@@ -710,8 +710,8 @@ export class MetadataDiscovery {
 
     // handle self-referenced m:n with same default field names
     if (meta.className === targetType && prop.joinColumns.every((joinColumn, idx) => joinColumn === prop.inverseJoinColumns[idx])) {
-      prop.joinColumns = prop.referencedColumnNames.map(name => this.namingStrategy.joinKeyColumnName(meta.className + '_1', name, meta.compositePK));
-      prop.inverseJoinColumns = prop.referencedColumnNames.map(name => this.namingStrategy.joinKeyColumnName(meta.className + '_2', name, meta.compositePK));
+      prop.joinColumns = prop.referencedColumnNames.map(name => this.namingStrategy.joinKeyColumnName(meta.tableName + '_1', name, meta.compositePK));
+      prop.inverseJoinColumns = prop.referencedColumnNames.map(name => this.namingStrategy.joinKeyColumnName(meta.tableName + '_2', name, meta.compositePK));
 
       if (prop.inversedBy) {
         const prop2 = this.metadata.get(targetType).properties[prop.inversedBy];
@@ -1114,7 +1114,7 @@ export class MetadataDiscovery {
       meta.root.addProperty(newProp);
     });
 
-    meta.collection = meta.root.collection;
+    meta.tableName = meta.root.tableName;
     meta.root.indexes = Utils.unique([...meta.root.indexes, ...meta.indexes]);
     meta.root.uniques = Utils.unique([...meta.root.uniques, ...meta.uniques]);
     meta.root.checks = Utils.unique([...meta.root.checks, ...meta.checks]);
