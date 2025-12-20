@@ -50,6 +50,7 @@
     "test": "vitest --run",
     "test:sqlite": "vitest --run **/*.sqlite.test.ts **/*.win.test.ts",
     "test:fast": "vitest --run --exclude='tests/features/schema-generator'",
+    "bench": "tsx tests/bench/basic.bench.ts",
     "clean-tests": "rimraf temp tests/generated-entities",
     "tsc-check-tests": "tsc --noEmit --project tests/tsconfig.json",
     "coverage": "yarn clean-tests && yarn test --coverage",
@@ -112,7 +113,7 @@
     "@mikro-orm/sql-highlighter": "1.0.1",
     "@stylistic/eslint-plugin": "5.5.0",
     "@swc-node/register": "1.11.1",
-    "@swc/core": "1.15.3",
+    "@swc/core": "1.15.7",
     "@types/better-sqlite3": "7.6.13",
     "@types/node": "24.10.2",
     "@types/pg": "8.15.6",
@@ -122,7 +123,7 @@
     "@types/sqlstring": "2.3.2",
     "@types/uuid": "11.0.0",
     "@types/yargs": "17.0.33",
-    "@vitest/coverage-v8": "4.0.15",
+    "@vitest/coverage-v8": "4.0.16",
     "bson": "7.0.0",
     "conditional-type-checks": "1.0.6",
     "dataloader": "2.2.3",
@@ -131,7 +132,6 @@
     "eslint-plugin-unicorn": "62.0.0",
     "eslint-plugin-unused-imports": "4.3.0",
     "globals": "16.5.0",
-    "guid-typescript": "1.0.9",
     "husky": "9.1.7",
     "jiti": "2.6.1",
     "knex": "3.1.0",
@@ -146,7 +146,7 @@
     "typescript-eslint": "8.49.0",
     "unplugin-swc": "1.5.9",
     "uuid": "11.1.0",
-    "vitest": "4.0.15"
+    "vitest": "4.0.16"
   },
   "packageManager": "yarn@4.12.0"
 }
