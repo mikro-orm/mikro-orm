@@ -318,27 +318,27 @@ Use `first` and `after` for forward pagination, or `last` and `before` for backw
     - POJO/entity instance
 
 ```ts
-const currentCursor = await em.findByCursor(User, {}, {
+const currentCursor = await em.findByCursor(User, {
   first: 10,
   after: previousCursor, // cursor instance
   orderBy: { id: 'desc' },
 });
 
 // to fetch next page
-const nextCursor = await em.findByCursor(User, {}, {
+const nextCursor = await em.findByCursor(User, {
   first: 10,
   after: currentCursor.endCursor, // opaque string
   orderBy: { id: 'desc' },
 });
 
 // to fetch next page
-const nextCursor2 = await em.findByCursor(User, {}, {
+const nextCursor2 = await em.findByCursor(User, {
   first: 10,
   after: { id: lastSeenId }, // entity-like POJO
   orderBy: { id: 'desc' },
 });
 
-const currentCursorWithoutCount = await em.findByCursor(User, {}, {
+const currentCursorWithoutCount = await em.findByCursor(User, {
   first: 10,
   after: previousCursor, // cursor instance
   orderBy: { id: 'desc' },
