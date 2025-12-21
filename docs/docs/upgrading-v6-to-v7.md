@@ -316,6 +316,6 @@ A new method is introduced to execute a schema dump called `Connection.executeDu
 The `where` parameter is now moved to the options object.
 
 ```diff
--em.findByCursor(entityName, where: FilterQuery, options: FindByCursorOptions): Promise<Cursor>;
-+em.findByCursor(entityName, options: FindByCursorOptions): Promise<Cursor>;
+-const cursor = await em.findByCursor(User, { email: '...' }, { first: 3 });
++const cursor = await em.findByCursor(User, { first: 3, where: { email: '...' } });
 ```
