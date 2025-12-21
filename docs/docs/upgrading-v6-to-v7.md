@@ -310,3 +310,12 @@ A new method is introduced to execute a schema dump called `Connection.executeDu
 +const buf = await readFile('schema.sql');
 +await orm.driver.getConnection().executeDump(buf.toString());`
 ```
+
+## `em.findByCursor` signature changed
+
+The `where` parameter is now moved to the options object.
+
+```diff
+-em.findByCursor(entityName, where: FilterQuery, options: FindByCursorOptions): Promise<Cursor>;
++em.findByCursor(entityName, options: FindByCursorOptions): Promise<Cursor>;
+```

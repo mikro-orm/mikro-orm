@@ -53,19 +53,19 @@ test('cursor ordering by scalar ref', async () => {
   await orm.em.flush();
   orm.em.clear();
 
-  const firstPage = await orm.em.findByCursor(User, {}, { orderBy: [{ nameScalarRef: 'ASC' }], first: 2 });
+  const firstPage = await orm.em.findByCursor(User, { orderBy: [{ nameScalarRef: 'ASC' }], first: 2 });
   expect(firstPage.length).toBe(2);
   expect(firstPage.totalCount).toBe(userCount);
   expect(firstPage.hasNextPage).toBe(true);
   expect(base64Decode(firstPage.endCursor!)).toBe('["2 - user"]');
 
-  const secondPage = await orm.em.findByCursor(User, {}, { orderBy: [{ nameScalarRef: 'ASC' }], first: 2, after: firstPage });
+  const secondPage = await orm.em.findByCursor(User, { orderBy: [{ nameScalarRef: 'ASC' }], first: 2, after: firstPage });
   expect(secondPage.length).toBe(2);
   expect(secondPage.totalCount).toBe(userCount);
   expect(secondPage.hasNextPage).toBe(true);
   expect(base64Decode(secondPage.endCursor!)).toBe('["4 - user"]');
 
-  const finalPage = await orm.em.findByCursor(User, {}, { orderBy: [{ nameScalarRef: 'ASC' }], first: 2, after: secondPage });
+  const finalPage = await orm.em.findByCursor(User, { orderBy: [{ nameScalarRef: 'ASC' }], first: 2, after: secondPage });
   expect(finalPage.length).toBe(1);
   expect(finalPage.totalCount).toBe(userCount);
   expect(finalPage.hasNextPage).toBe(false);

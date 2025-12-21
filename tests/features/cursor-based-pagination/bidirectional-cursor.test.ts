@@ -64,7 +64,7 @@ describe.each(['sqlite', 'mysql', 'postgresql', 'mongo'] as const)('bidrectional
     const mock = mockLogger(orm, ['query', 'query-params']);
 
     // 1. page (first / forward)
-    const cursor1 = await orm.em.findByCursor(User, {}, {
+    const cursor1 = await orm.em.findByCursor(User, {
       first: 3,
       orderBy: { id: 'asc' },
     });
@@ -85,7 +85,7 @@ describe.each(['sqlite', 'mysql', 'postgresql', 'mongo'] as const)('bidrectional
     mock.mockReset();
 
     // 2. page (mid / forward)
-    const cursor2 = await orm.em.findByCursor(User, {}, {
+    const cursor2 = await orm.em.findByCursor(User, {
       first: 3,
       after: cursor1,
       orderBy: { id: 'asc' },
@@ -107,7 +107,7 @@ describe.each(['sqlite', 'mysql', 'postgresql', 'mongo'] as const)('bidrectional
     mock.mockReset();
 
     // 3. page (last / forward)
-    const cursor3 = await orm.em.findByCursor(User, {}, {
+    const cursor3 = await orm.em.findByCursor(User, {
       first: 3,
       after: cursor2,
       orderBy: { id: 'asc' },
@@ -129,7 +129,7 @@ describe.each(['sqlite', 'mysql', 'postgresql', 'mongo'] as const)('bidrectional
     mock.mockReset();
 
     // 4. page (mid / backward)
-    const cursor4 = await orm.em.findByCursor(User, {}, {
+    const cursor4 = await orm.em.findByCursor(User, {
       last: 3,
       before: cursor3,
       orderBy: { id: 'asc' },
@@ -151,7 +151,7 @@ describe.each(['sqlite', 'mysql', 'postgresql', 'mongo'] as const)('bidrectional
     mock.mockReset();
 
     // 5. page (first / backward)
-    const cursor5 = await orm.em.findByCursor(User, {}, {
+    const cursor5 = await orm.em.findByCursor(User, {
       last: 3,
       before: cursor4,
       orderBy: { id: 'asc' },
@@ -177,7 +177,7 @@ describe.each(['sqlite', 'mysql', 'postgresql', 'mongo'] as const)('bidrectional
     const mock = mockLogger(orm, ['query', 'query-params']);
 
     // 1. page (last / backward)
-    const cursor1 = await orm.em.findByCursor(User, {}, {
+    const cursor1 = await orm.em.findByCursor(User, {
       last: 3,
       orderBy: { id: 'asc' },
     });
@@ -198,7 +198,7 @@ describe.each(['sqlite', 'mysql', 'postgresql', 'mongo'] as const)('bidrectional
     mock.mockReset();
 
     // 2. page (mid / backward)
-    const cursor2 = await orm.em.findByCursor(User, {}, {
+    const cursor2 = await orm.em.findByCursor(User, {
       last: 3,
       before: cursor1,
       orderBy: { id: 'asc' },
@@ -220,7 +220,7 @@ describe.each(['sqlite', 'mysql', 'postgresql', 'mongo'] as const)('bidrectional
     mock.mockReset();
 
     // 3. page (first / backward)
-    const cursor3 = await orm.em.findByCursor(User, {}, {
+    const cursor3 = await orm.em.findByCursor(User, {
       last: 3,
       before: cursor2,
       orderBy: { id: 'asc' },
@@ -242,7 +242,7 @@ describe.each(['sqlite', 'mysql', 'postgresql', 'mongo'] as const)('bidrectional
     mock.mockReset();
 
     // 4. page (mid / forward)
-    const cursor4 = await orm.em.findByCursor(User, {}, {
+    const cursor4 = await orm.em.findByCursor(User, {
       first: 3,
       after: cursor3,
       orderBy: { id: 'asc' },
@@ -264,7 +264,7 @@ describe.each(['sqlite', 'mysql', 'postgresql', 'mongo'] as const)('bidrectional
     mock.mockReset();
 
     // 5. page (last / forward)
-    const cursor5 = await orm.em.findByCursor(User, {}, {
+    const cursor5 = await orm.em.findByCursor(User, {
       first: 3,
       after: cursor4,
       orderBy: { id: 'asc' },
@@ -290,7 +290,7 @@ describe.each(['sqlite', 'mysql', 'postgresql', 'mongo'] as const)('bidrectional
     const mock = mockLogger(orm, ['query', 'query-params']);
 
     // 1. page (first / forward)
-    const cursor1 = await orm.em.findByCursor(User, {}, {
+    const cursor1 = await orm.em.findByCursor(User, {
       first: 3,
       orderBy: { id: 'desc' },
     });
@@ -311,7 +311,7 @@ describe.each(['sqlite', 'mysql', 'postgresql', 'mongo'] as const)('bidrectional
     mock.mockReset();
 
     // 2. page (mid / forward)
-    const cursor2 = await orm.em.findByCursor(User, {}, {
+    const cursor2 = await orm.em.findByCursor(User, {
       first: 3,
       after: cursor1,
       orderBy: { id: 'desc' },
@@ -333,7 +333,7 @@ describe.each(['sqlite', 'mysql', 'postgresql', 'mongo'] as const)('bidrectional
     mock.mockReset();
 
     // 3. page (last / forward)
-    const cursor3 = await orm.em.findByCursor(User, {}, {
+    const cursor3 = await orm.em.findByCursor(User, {
       first: 3,
       after: cursor2,
       orderBy: { id: 'desc' },
@@ -355,7 +355,7 @@ describe.each(['sqlite', 'mysql', 'postgresql', 'mongo'] as const)('bidrectional
     mock.mockReset();
 
     // 4. page (mid / backward)
-    const cursor4 = await orm.em.findByCursor(User, {}, {
+    const cursor4 = await orm.em.findByCursor(User, {
       last: 3,
       before: cursor3,
       orderBy: { id: 'desc' },
@@ -377,7 +377,7 @@ describe.each(['sqlite', 'mysql', 'postgresql', 'mongo'] as const)('bidrectional
     mock.mockReset();
 
     // 5. page (first / backward)
-    const cursor5 = await orm.em.findByCursor(User, {}, {
+    const cursor5 = await orm.em.findByCursor(User, {
       last: 3,
       before: cursor4,
       orderBy: { id: 'desc' },
@@ -403,7 +403,7 @@ describe.each(['sqlite', 'mysql', 'postgresql', 'mongo'] as const)('bidrectional
     const mock = mockLogger(orm, ['query', 'query-params']);
 
     // 1. page (last / backward)
-    const cursor1 = await orm.em.findByCursor(User, {}, {
+    const cursor1 = await orm.em.findByCursor(User, {
       last: 3,
       orderBy: { id: 'desc' },
     });
@@ -424,7 +424,7 @@ describe.each(['sqlite', 'mysql', 'postgresql', 'mongo'] as const)('bidrectional
     mock.mockReset();
 
     // 2. page (mid / backward)
-    const cursor2 = await orm.em.findByCursor(User, {}, {
+    const cursor2 = await orm.em.findByCursor(User, {
       last: 3,
       before: cursor1,
       orderBy: { id: 'desc' },
@@ -446,7 +446,7 @@ describe.each(['sqlite', 'mysql', 'postgresql', 'mongo'] as const)('bidrectional
     mock.mockReset();
 
     // 3. page (first / backward)
-    const cursor3 = await orm.em.findByCursor(User, {}, {
+    const cursor3 = await orm.em.findByCursor(User, {
       last: 3,
       before: cursor2,
       orderBy: { id: 'desc' },
@@ -468,7 +468,7 @@ describe.each(['sqlite', 'mysql', 'postgresql', 'mongo'] as const)('bidrectional
     mock.mockReset();
 
     // 4. page (mid / forward)
-    const cursor4 = await orm.em.findByCursor(User, {}, {
+    const cursor4 = await orm.em.findByCursor(User, {
       first: 3,
       after: cursor3,
       orderBy: { id: 'desc' },
@@ -491,7 +491,7 @@ describe.each(['sqlite', 'mysql', 'postgresql', 'mongo'] as const)('bidrectional
     mock.mockReset();
 
     // 5. page (last / forward)
-    const cursor5 = await orm.em.findByCursor(User, {}, {
+    const cursor5 = await orm.em.findByCursor(User, {
       first: 3,
       after: cursor4,
       orderBy: { id: 'desc' },
