@@ -312,12 +312,12 @@ You can define multiple database connections by registering multiple `MikroOrmMo
   imports: [
     MikroOrmModule.forRoot({
       contextName: 'db1',
-      registerRequestContext: false, // disable automatatic middleware
+      registerRequestContext: false, // disable automatic middleware
       ...
     }),
     MikroOrmModule.forRoot({
       contextName: 'db2',
-      registerRequestContext: false, // disable automatatic middleware
+      registerRequestContext: false, // disable automatic middleware
       ...
     }),
     MikroOrmModule.forMiddleware()
