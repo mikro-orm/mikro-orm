@@ -45,7 +45,7 @@ test('empty result with findByCursor and orderBy with Date', async () => {
   const all = await orm.em.findAll(EntityForFindByCursorTest);
   expect(all.length).toBe(5);
 
-  const curOne = await orm.em.findByCursor(EntityForFindByCursorTest, {}, {
+  const curOne = await orm.em.findByCursor(EntityForFindByCursorTest, {
     first: 3,
     orderBy: { myDate: 'ASC' },
   });
@@ -54,7 +54,7 @@ test('empty result with findByCursor and orderBy with Date', async () => {
 
   orm.em.clear();
 
-  const curTwo = await orm.em.findByCursor(EntityForFindByCursorTest, {}, {
+  const curTwo = await orm.em.findByCursor(EntityForFindByCursorTest, {
     first: 3,
     after: curOne,
     orderBy: { myDate: 'ASC' },

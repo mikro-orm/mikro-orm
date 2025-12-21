@@ -84,12 +84,12 @@ afterAll(async () => {
 });
 
 test('findByCursor with virtual entity', async () => {
-  const cursor1 = await orm.em.fork().findByCursor(UserBookSummary, {}, { orderBy: { id: QueryOrder.ASC }, first: 3 });
+  const cursor1 = await orm.em.fork().findByCursor(UserBookSummary, { orderBy: { id: QueryOrder.ASC }, first: 3 });
   expect(cursor1.length).toBe(3);
   expect(cursor1.totalCount).toBe(5);
   expect(cursor1.items.map(item => item.id)).toEqual([1, 2, 3]);
 
-  const cursor2 = await orm.em.fork().findByCursor(UserBookSummary, {}, { orderBy: { id: QueryOrder.ASC }, last: 3 });
+  const cursor2 = await orm.em.fork().findByCursor(UserBookSummary, { orderBy: { id: QueryOrder.ASC }, last: 3 });
   expect(cursor2.length).toBe(3);
   expect(cursor2.totalCount).toBe(5);
   expect(cursor2.items.map(item => item.id)).toEqual([3, 4, 5]);

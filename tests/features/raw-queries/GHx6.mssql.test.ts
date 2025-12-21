@@ -139,7 +139,7 @@ test('qb.joinAndSelect', async () => {
 
 test('em.findByCursor', async () => {
   const mock = mockLogger(orm);
-  await orm.em.findByCursor(Tag, {}, {
+  await orm.em.findByCursor(Tag, {
     populate: ['job'],
     first: 3,
     orderBy: {

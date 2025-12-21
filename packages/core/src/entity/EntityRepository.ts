@@ -154,8 +154,8 @@ export class EntityRepository<Entity extends object> {
     Fields extends string = '*',
     Excludes extends string = never,
     IncludeCount extends boolean = true,
-  >(where: FilterQuery<Entity>, options: FindByCursorOptions<Entity, Hint, Fields, Excludes, IncludeCount>): Promise<Cursor<Entity, Hint, Fields, Excludes, IncludeCount>> {
-    return this.getEntityManager().findByCursor(this.entityName, where, options);
+  >(options: FindByCursorOptions<Entity, Hint, Fields, Excludes, IncludeCount>): Promise<Cursor<Entity, Hint, Fields, Excludes, IncludeCount>> {
+    return this.getEntityManager().findByCursor(this.entityName, options);
   }
 
   /**
