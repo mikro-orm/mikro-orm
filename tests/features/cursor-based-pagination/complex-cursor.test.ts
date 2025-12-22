@@ -79,8 +79,9 @@ describe.each(['sqlite', 'mysql', 'postgresql', 'mssql', 'mongo'] as const)('sim
     const orderBy = { name: 'desc', age: 'asc', email: 'asc' } as const;
 
     // 1. page
-    const cursor1 = await orm.em.findByCursor(User, where, {
+    const cursor1 = await orm.em.findByCursor(User, {
       first: 10,
+      where,
       orderBy,
     });
     expect(cursor1).toBeInstanceOf(Cursor);
@@ -107,9 +108,10 @@ describe.each(['sqlite', 'mysql', 'postgresql', 'mssql', 'mongo'] as const)('sim
     mock.mockReset();
 
     // 2. page
-    const cursor2 = await orm.em.findByCursor(User, where, {
+    const cursor2 = await orm.em.findByCursor(User, {
       first: 10,
       after: cursor1,
+      where,
       orderBy,
     });
     expect(cursor2).toBeInstanceOf(Cursor);
@@ -146,9 +148,10 @@ describe.each(['sqlite', 'mysql', 'postgresql', 'mssql', 'mongo'] as const)('sim
     const orderBy = { bestFriend: { email: 'asc', name: 'asc' }, name: 'desc', age: 'asc', email: 'asc' } as const;
 
     // 1. page
-    const cursor1 = await orm.em.findByCursor(User, where, {
+    const cursor1 = await orm.em.findByCursor(User, {
       last: 5,
       orderBy,
+      where,
       populate: ['bestFriend'],
     });
     expect(cursor1).toBeInstanceOf(Cursor);
@@ -170,9 +173,10 @@ describe.each(['sqlite', 'mysql', 'postgresql', 'mssql', 'mongo'] as const)('sim
     mock.mockReset();
 
     // 2. page
-    const cursor2 = await orm.em.findByCursor(User, where, {
+    const cursor2 = await orm.em.findByCursor(User, {
       last: 5,
       before: cursor1,
+      where,
       orderBy,
       populate: ['bestFriend'],
     });

@@ -673,21 +673,21 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
    *     - POJO/entity instance
    *
    * ```ts
-   * const currentCursor = await em.findByCursor(User, {}, {
+   * const currentCursor = await em.findByCursor(User, {
    *   first: 10,
    *   after: previousCursor, // cursor instance
    *   orderBy: { id: 'desc' },
    * });
    *
    * // to fetch next page
-   * const nextCursor = await em.findByCursor(User, {}, {
+   * const nextCursor = await em.findByCursor(User, {
    *   first: 10,
    *   after: currentCursor.endCursor, // opaque string
    *   orderBy: { id: 'desc' },
    * });
    *
    * // to fetch next page
-   * const nextCursor2 = await em.findByCursor(User, {}, {
+   * const nextCursor2 = await em.findByCursor(User, {
    *   first: 10,
    *   after: { id: lastSeenId }, // entity-like POJO
    *   orderBy: { id: 'desc' },
@@ -721,18 +721,19 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     Fields extends string = '*',
     Excludes extends string = never,
     IncludeCount extends boolean = true,
-  >(entityName: EntityName<Entity>, where: FilterQuery<NoInfer<Entity>>, options: FindByCursorOptions<Entity, Hint, Fields, Excludes, IncludeCount>): Promise<Cursor<Entity, Hint, Fields, Excludes, IncludeCount>> {
+  >(entityName: EntityName<Entity>, options: FindByCursorOptions<Entity, Hint, Fields, Excludes, IncludeCount>): Promise<Cursor<Entity, Hint, Fields, Excludes, IncludeCount>> {
     const em = this.getContext(false);
     entityName = Utils.className(entityName);
     options.overfetch ??= true;
+    options.where ??= {};
 
     if (Utils.isEmpty(options.orderBy) && !RawQueryFragment.hasObjectFragments(options.orderBy)) {
       throw new Error('Explicit `orderBy` option required');
     }
 
     const [entities, count] = options.includeCount !== false
-      ? await em.findAndCount(entityName, where, options)
-      : [await em.find(entityName, where, options)];
+      ? await em.findAndCount(entityName, options.where, options)
+      : [await em.find(entityName, options.where, options)];
     return new Cursor(
       entities,
       count as IncludeCount extends true ? number : undefined,

@@ -65,7 +65,7 @@ describe.each(['ts-enum', 'union-type', 'dictionary'] as const)('EntityGenerator
 test('table name with underscore using entitySchema [mysql]', async () => {
   const orm = await MikroORM.init({
     metadataProvider: ReflectMetadataProvider,
-    dbName: '3285',
+    dbName: '3285-1',
     port: 3308,
     discovery: { warnWhenNoEntities: false },
     extensions: [EntityGenerator],
@@ -87,7 +87,7 @@ test('table name with underscore using entitySchema [mysql]', async () => {
 test('numeric nullable columns with null default [mysql]', async () => {
   const orm = await MikroORM.init({
     metadataProvider: ReflectMetadataProvider,
-    dbName: '3285',
+    dbName: '3285-2',
     port: 3308,
     discovery: { warnWhenNoEntities: false },
     extensions: [EntityGenerator],
@@ -122,7 +122,7 @@ test('numeric nullable columns with null default [mariadb]', async () => {
 test('enum with default value [mysql]', async () => {
   const orm = await MikroORM.init({
     metadataProvider: ReflectMetadataProvider,
-    dbName: '3285',
+    dbName: '3285-3',
     port: 3308,
     discovery: { warnWhenNoEntities: false },
     extensions: [EntityGenerator],
@@ -138,7 +138,7 @@ test('enum with default value [mysql]', async () => {
 test('generate OptionalProps and include properties for columns that are not nullable, but have defaults', async () => {
   const orm = await MikroORM.init({
     metadataProvider: ReflectMetadataProvider,
-    dbName: '3285',
+    dbName: '3285-4',
     port: 3308,
     discovery: { warnWhenNoEntities: false },
     extensions: [EntityGenerator],

@@ -82,9 +82,9 @@ afterAll(async () => {
 });
 
 test('validate missing populate hint', async () => {
-  const res = await orm.em.findByCursor(OrgMembership, {}, { orderBy: { user: { name: QueryOrder.ASC } }, first: 1 });
+  const res = await orm.em.findByCursor(OrgMembership, { orderBy: { user: { name: QueryOrder.ASC } }, first: 1 });
   expect(() => res.startCursor).toThrow(`Cannot create cursor, value for 'User.name' is missing.`);
-  const goodCursor = await orm.em.findByCursor(OrgMembership, {}, {
+  const goodCursor = await orm.em.findByCursor(OrgMembership, {
     orderBy: { user: { name: QueryOrder.ASC } },
     populate: ['user'],
     first: 1,
@@ -94,7 +94,7 @@ test('validate missing populate hint', async () => {
 });
 
 test('cursor from multiple order by clauses', async () => {
-  const cursor1 = await orm.em.findByCursor(OrgMembership, {}, {
+  const cursor1 = await orm.em.findByCursor(OrgMembership, {
     populate: ['user'],
     orderBy: [
       { user: { name: QueryOrder.ASC } },
@@ -104,7 +104,7 @@ test('cursor from multiple order by clauses', async () => {
   });
   expect(cursor1.items[0].user.$.email).toBe('foo');
 
-  const cursor2 = await orm.em.findByCursor(OrgMembership, {}, {
+  const cursor2 = await orm.em.findByCursor(OrgMembership, {
     populate: ['user'],
     orderBy: [
       { user: { name: QueryOrder.ASC } },
@@ -115,7 +115,7 @@ test('cursor from multiple order by clauses', async () => {
   });
   expect(cursor2.items[0].user.$.email).toBe('bar');
 
-  const cursor3 = await orm.em.findByCursor(OrgMembership, {}, {
+  const cursor3 = await orm.em.findByCursor(OrgMembership, {
     populate: ['user'],
     orderBy: [
       { user: { name: QueryOrder.ASC } },

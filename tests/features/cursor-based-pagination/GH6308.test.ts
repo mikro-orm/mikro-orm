@@ -52,7 +52,7 @@ afterAll(async () => {
 });
 
 test('cursor pagination when some properties are missing', async () => {
-  await expect(orm.em.findByCursor(Book, {}, {
+  await expect(orm.em.findByCursor(Book, {
     first: 5,
     after: {
       id: 16,
@@ -67,7 +67,7 @@ test('cursor pagination when some properties are missing', async () => {
     ],
   })).rejects.toThrow(`Invalid cursor condition, value for 'Book.metadata' is missing.`);
 
-  await expect(orm.em.findByCursor(Book, {}, {
+  await expect(orm.em.findByCursor(Book, {
     first: 5,
     after: {
       metadata: {
@@ -87,7 +87,7 @@ test('cursor pagination when some properties are missing', async () => {
 });
 
 test('cursor pagination with relations', async () => {
-  const cursor = await orm.em.findByCursor(Book, {}, {
+  const cursor = await orm.em.findByCursor(Book, {
     first: 5,
     after: {
       metadata: {
