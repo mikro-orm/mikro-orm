@@ -410,7 +410,7 @@ const book = await em.findOne(Book, 1);
 console.log(book.author.myPrimaryKey); // ok, returns the PK
 ```
 
-For MongoDB, define the PK generic type argument as `'id' | '_id'` to access both `string` and `ObjectId` PK values:
+For MongoDB, both `id` and `_id` PK values are available on the `Ref` type by default, as a `string` and `ObjectId` respectively:
 
 <Tabs
 groupId="entity-def"
@@ -435,7 +435,7 @@ export class Book {
   id!: string;
 
   @ManyToOne(() => Author, { ref: true })
-  author!: Ref<Author, 'id' | '_id'>;
+  author!: Ref<Author>;
 
 }
 ```
@@ -454,7 +454,7 @@ export class Book {
   id!: string;
 
   @ManyToOne()
-  author!: Ref<Author, 'id' | '_id'>;
+  author!: Ref<Author>;
 
 }
 ```
@@ -484,7 +484,7 @@ export interface IBook extends InferEntity<typeof Book> {}
 export interface IBook {
   _id: ObjectId;
   id: string;
-  author: Ref<IAuthor, 'id' | '_id'>;
+  author: Ref<IAuthor>;
 }
 
 export const Book = new EntitySchema<IBook>({
