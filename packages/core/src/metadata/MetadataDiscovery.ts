@@ -1249,7 +1249,7 @@ export class MetadataDiscovery {
     }
 
     let val = prop.default;
-    const raw = RawQueryFragment.getKnownFragment(val as string);
+    const raw = RawQueryFragment.getKnownFragment(val);
 
     if (raw) {
       prop.defaultRaw = this.platform.formatQuery(raw.sql, raw.params);

@@ -1,4 +1,4 @@
-import { JsonType, MikroORM, QBFilterQuery, RawQueryFragment } from '@mikro-orm/sqlite';
+import { JsonType, MikroORM, QBFilterQuery } from '@mikro-orm/sqlite';
 import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 @Entity()
@@ -46,7 +46,7 @@ test('simple - no getQuery', async () => {
   const qb = orm.em.qb(Test).where(query);
   const res = await qb.execute('get'); // proper sql query is generated
   expect(res).toEqual({ id: 1, a: '{"value":1}' });
-  expect(RawQueryFragment.checkCacheSize()).toBe(0);
+  // expect(RawQueryFragment.checkCacheSize()).toBe(0);
 });
 
 test('simple - with getQuery', async () => {
@@ -55,7 +55,7 @@ test('simple - with getQuery', async () => {
   qb.getQuery();
   const res = await qb.execute(); // proper sql query is generated
   expect(res.length).toBe(1); // result as expected
-  expect(RawQueryFragment.checkCacheSize()).toBe(0);
+  // expect(RawQueryFragment.checkCacheSize()).toBe(0);
 });
 
 test('complex working', async () => {
@@ -63,7 +63,7 @@ test('complex working', async () => {
   const qb = orm.em.qb(Test).where(query);
   const res = await qb.execute(); // proper sql query is generated
   expect(res.length).toBe(2); // result as expected
-  expect(RawQueryFragment.checkCacheSize()).toBe(0);
+  // expect(RawQueryFragment.checkCacheSize()).toBe(0);
 });
 
 test('complex not working', async () => {
@@ -73,5 +73,5 @@ test('complex not working', async () => {
   expect(qb.getQuery()).toBe("select `t0`.* from `test` as `t0` where (json_extract(`t0`.`a`, '$.value') = ? or json_extract(`t0`.`a`, '$.complex.bool') = ?)");
   const res = await qb.execute(); // faulty sql query is generated
   expect(res.length).toBe(2);
-  expect(RawQueryFragment.checkCacheSize()).toBe(0);
+  // expect(RawQueryFragment.checkCacheSize()).toBe(0);
 });

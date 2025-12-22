@@ -71,8 +71,7 @@ export class NativeQueryBuilder {
 
   from(tableName: string | RawQueryFragment | NativeQueryBuilder, options?: TableOptions) {
     if (tableName instanceof NativeQueryBuilder) {
-      const { sql, params } = tableName.compile();
-      tableName = raw(sql, params);
+      tableName = tableName.toRaw();
     }
 
     if (typeof tableName === 'string') {

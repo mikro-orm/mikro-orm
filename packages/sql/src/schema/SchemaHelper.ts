@@ -417,15 +417,13 @@ export abstract class SchemaHelper {
     }, {});
   }
 
-  normalizeDefaultValue(defaultValue: string, length?: number, defaultValues: Dictionary<string[]> = {}): string | number {
+  normalizeDefaultValue(defaultValue: string | RawQueryFragment, length?: number, defaultValues: Dictionary<string[]> = {}): string | number {
     if (defaultValue == null) {
       return defaultValue;
     }
 
-    const raw = RawQueryFragment.getKnownFragment(defaultValue);
-
-    if (raw) {
-      return this.platform.formatQuery(raw.sql, raw.params);
+    if (defaultValue instanceof RawQueryFragment) {
+      return this.platform.formatQuery(defaultValue.sql, defaultValue.params);
     }
 
     const genericValue = defaultValue.replace(/\(\d+\)/, '(?)').toLowerCase();

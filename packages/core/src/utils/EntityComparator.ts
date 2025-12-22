@@ -729,7 +729,14 @@ export class EntityComparator {
     if (prop.customType) {
       if (prop.customType.compareValues) {
         const idx = this.tmpIndex++;
-        context.set(`compareValues_${idx}`, (a: unknown, b: unknown) => prop.customType!.compareValues!(a, b));
+        context.set(`compareValues_${idx}`, (a: unknown, b: unknown) => {
+          if (RawQueryFragment.isKnownFragment(a) || RawQueryFragment.isKnownFragment(b)) {
+            // TODO: improve comparison of raw query fragments
+            return a === b;
+          }
+
+          return prop.customType!.compareValues!(a, b);
+        });
         return this.getGenericComparator(this.wrap(prop.name), `!compareValues_${idx}(last${this.wrap(prop.name)}, current${this.wrap(prop.name)})`);
       }
 

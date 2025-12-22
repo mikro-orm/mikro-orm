@@ -23,7 +23,7 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
     const matchPopulateJoins = options?.matchPopulateJoins || (this.prop && [ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(this.prop!.kind));
     const nestedAlias = qb.getAliasForJoinPath(this.getPath(), { ...options, matchPopulateJoins });
     const ownerAlias = options?.alias || qb.alias;
-    const keys = Object.keys(this.payload);
+    const keys = Utils.getObjectQueryKeys(this.payload);
     let alias = options?.alias;
 
     if (nestedAlias) {
@@ -31,7 +31,7 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
     }
 
     if (this.shouldAutoJoin(qb, nestedAlias)) {
-      if (keys.some(k => ['$some', '$none', '$every'].includes(k))) {
+      if (keys.some(k => ['$some', '$none', '$every'].includes(k as string))) {
         if (![ReferenceKind.MANY_TO_MANY, ReferenceKind.ONE_TO_MANY].includes(this.prop!.kind)) {
           // ignore collection operators when used on a non-relational property - this can happen when they get into
           // populateWhere via `infer` on m:n properties with select-in strategy
@@ -50,7 +50,7 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
         });
 
         for (const key of keys) {
-          if (!['$some', '$none', '$every'].includes(key)) {
+          if (typeof key !== 'string' || !['$some', '$none', '$every'].includes(key)) {
             throw new Error('Mixing collection operators with other filters is not allowed.');
           }
 
@@ -58,7 +58,7 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
           const qb2 = qb.clone(true);
           const sub = qb2
             .from(parentMeta.className)
-            .innerJoin(this.key!, qb2.getNextAlias(this.prop!.type))
+            .innerJoin(this.key! as string, qb2.getNextAlias(this.prop!.type))
             .select(parentMeta.primaryKeys);
 
           if (key === '$every') {
@@ -107,11 +107,11 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
       const childNode = this.payload[field] as CriteriaNode<T>;
       const payload = childNode.process(qb, { ...options, alias: this.prop ? alias : ownerAlias });
       const operator = Utils.isOperator(field);
-      const isRawField = RawQueryFragment.isKnownFragment(field);
+      const isRawField = RawQueryFragment.isKnownFragmentSymbol(field);
       // we need to keep the prefixing for formulas otherwise we would lose aliasing context when nesting inside group operators
       const virtual = childNode.prop?.persist === false && !childNode.prop?.formula;
       // if key is missing, we are inside group operator and we need to prefix with alias
-      const primaryKey = this.key && this.metadata.find(this.entityName)?.primaryKeys.includes(field);
+      const primaryKey = this.key && this.metadata.find(this.entityName)?.primaryKeys.includes(field as string);
       const isToOne = childNode.prop && [ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(childNode.prop.kind);
 
       if (childNode.shouldInline(payload)) {
@@ -134,14 +134,14 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
   }
 
   override isStrict(): boolean {
-    return this.strict || Object.keys(this.payload).some(key => {
-      return this.payload[key as keyof typeof this.payload].isStrict();
+    return this.strict || Utils.getObjectQueryKeys(this.payload).some(key => {
+      return this.payload[key].isStrict();
     });
   }
 
   override unwrap(): any {
-    return Object.keys(this.payload).reduce((o, field) => {
-      o[field] = this.payload[field].unwrap();
+    return Utils.getObjectQueryKeys(this.payload).reduce((o, field) => {
+      o[field as string] = this.payload[field].unwrap();
       return o;
     }, {} as Dictionary);
   }
@@ -149,14 +149,14 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
   override willAutoJoin(qb: IQueryBuilder<T>, alias?: string, options?: ICriteriaNodeProcessOptions) {
     const nestedAlias = qb.getAliasForJoinPath(this.getPath(), options);
     const ownerAlias = alias || qb.alias;
-    const keys = Object.keys(this.payload);
+    const keys = Utils.getObjectQueryKeys(this.payload);
 
     if (nestedAlias) {
       alias = nestedAlias;
     }
 
     if (this.shouldAutoJoin(qb, nestedAlias)) {
-      return !keys.some(k => ['$some', '$none', '$every'].includes(k));
+      return !keys.some(k => ['$some', '$none', '$every'].includes(k as string));
     }
 
     return keys.some(field => {
@@ -166,9 +166,9 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
   }
 
   override shouldInline(payload: any): boolean {
-    const customExpression = RawQueryFragment.isKnownFragment(this.key!);
+    const customExpression = RawQueryFragment.isKnownFragmentSymbol(this.key);
     const scalar = Utils.isPrimaryKey(payload) || payload as unknown instanceof RegExp || payload as unknown instanceof Date || customExpression;
-    const operator = Utils.isObject(payload) && Object.keys(payload).every(k => Utils.isOperator(k, false));
+    const operator = Utils.isObject(payload) && Utils.getObjectQueryKeys(payload).every(k => Utils.isOperator(k, false));
 
     return !!this.prop && this.prop.kind !== ReferenceKind.SCALAR && !scalar && !operator;
   }
@@ -182,9 +182,9 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
 
   private inlineArrayChildPayload(obj: Dictionary, payload: Dictionary[], k: string, prop: EntityProperty, childAlias?: string, alias?: string) {
     const key = this.getChildKey(k as EntityKey, prop, childAlias);
-    const value = payload.map((child: Dictionary) => Object.keys(child).reduce((inner, childKey) => {
-      const key = (this.isPrefixed(childKey) || Utils.isOperator(childKey)) ? childKey : this.aliased(childKey, childAlias);
-      inner[key] = child[childKey];
+    const value = payload.map((child: Dictionary) => Utils.getObjectQueryKeys(child).reduce((inner, childKey) => {
+      const key = (RawQueryFragment.isKnownFragmentSymbol(childKey) || this.isPrefixed(childKey) || Utils.isOperator(childKey)) ? childKey : this.aliased(childKey, childAlias);
+      inner[key as string] = child[childKey as string];
 
       return inner;
     }, {} as Dictionary));
@@ -195,8 +195,10 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
   private inlineChildPayload<T>(o: Dictionary, payload: Dictionary, field: EntityKey<T>, alias?: string, childAlias?: string) {
     const prop = this.metadata.find<T>(this.entityName)!.properties[field];
 
-    for (const k of Object.keys(payload)) {
-      if (Utils.isOperator(k, false)) {
+    for (const k of Utils.getObjectQueryKeys(payload)) {
+      if (RawQueryFragment.isKnownFragmentSymbol(k)) {
+        o[k as unknown as string] = payload[k as unknown as string];
+      } else if (Utils.isOperator(k, false)) {
         const tmp = payload[k];
         delete payload[k];
         o[this.aliased(field, alias)] = { [k]: tmp, ...o[this.aliased(field, alias)] };
@@ -205,8 +207,6 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
       } else if (this.isPrefixed(k) || Utils.isOperator(k) || !childAlias) {
         const key = this.getChildKey(k as EntityKey, prop, childAlias, alias);
         this.inlineCondition(key, o, payload[k]);
-      } else if (RawQueryFragment.isKnownFragment(k)) {
-        o[k] = payload[k];
       } else {
         o[this.aliased(k, childAlias)] = payload[k];
       }
@@ -236,13 +236,13 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
       return false;
     }
 
-    const keys = Object.keys(this.payload);
+    const keys = Utils.getObjectQueryKeys(this.payload);
 
-    if (keys.every(k => k.includes('.') && k.startsWith(`${qb.alias}.`))) {
+    if (keys.every(k => typeof k === 'string' && k.includes('.') && k.startsWith(`${qb.alias}.`))) {
       return false;
     }
 
-    if (keys.some(k => ['$some', '$none', '$every'].includes(k))) {
+    if (keys.some(k => ['$some', '$none', '$every'].includes(k as string))) {
       return true;
     }
 
@@ -251,7 +251,7 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
     const knownKey = [ReferenceKind.SCALAR, ReferenceKind.MANY_TO_ONE, ReferenceKind.EMBEDDED].includes(this.prop.kind) || (this.prop.kind === ReferenceKind.ONE_TO_ONE && this.prop.owner);
     const operatorKeys = knownKey && keys.every(key => Utils.isOperator(key, false));
     const primaryKeys = knownKey && keys.every(key => {
-      if (!meta.primaryKeys.includes(key)) {
+      if (typeof key !== 'string' || !meta.primaryKeys.includes(key)) {
         return false;
       }
 
@@ -259,7 +259,7 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
         return true;
       }
 
-      return Object.keys(this.payload[key].payload).every(k => meta.properties[key].targetMeta!.primaryKeys.includes(k));
+      return Utils.getObjectQueryKeys(this.payload[key].payload).every(k => typeof k === 'string' && meta.properties[key].targetMeta!.primaryKeys.includes(k));
     });
 
     return !primaryKeys && !nestedAlias && !operatorKeys && !embeddable;
@@ -267,9 +267,9 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
 
   private autoJoin<T>(qb: IQueryBuilder<T>, alias: string, options?: ICriteriaNodeProcessOptions): string {
     const nestedAlias = qb.getNextAlias(this.prop?.pivotTable ?? this.entityName);
-    const customExpression = RawQueryFragment.isKnownFragment(this.key!);
+    const customExpression = RawQueryFragment.isKnownFragmentSymbol(this.key);
     const scalar = Utils.isPrimaryKey(this.payload) || this.payload as unknown instanceof RegExp || this.payload as unknown instanceof Date || customExpression;
-    const operator = Utils.isPlainObject(this.payload) && Object.keys(this.payload).every(k => Utils.isOperator(k, false));
+    const operator = Utils.isPlainObject(this.payload) && Utils.getObjectQueryKeys(this.payload).every(k => Utils.isOperator(k, false));
     const field = `${alias}.${this.prop!.name}`;
     const method = qb.hasFlag(QueryFlag.INFER_POPULATE) ? 'joinAndSelect' : 'join';
     const path = this.getPath();

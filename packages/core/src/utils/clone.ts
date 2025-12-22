@@ -4,8 +4,6 @@
  * @internal
  */
 
-import { RawQueryFragment } from './RawQueryFragment.js';
-
 /**
  * Get the property descriptor of a property on an object or its prototype chain.
  *
@@ -39,12 +37,6 @@ export function clone<T>(parent: T, respectCustomCloneMethod = true): T {
     // cloning null always returns null
     if (parent === null) {
       return null;
-    }
-
-    const raw = RawQueryFragment.getKnownFragment(parent, false);
-
-    if (raw && respectCustomCloneMethod) {
-      return raw.clone();
     }
 
     if (typeof parent !== 'object') {
@@ -136,31 +128,21 @@ export function clone<T>(parent: T, respectCustomCloneMethod = true): T {
         continue;
       }
 
-      const raw = RawQueryFragment.getKnownFragment(i, false);
-
-      if (raw && respectCustomCloneMethod) {
-        const i2 = raw.clone().toString();
-        (child as any)[i2] = _clone(parent[i]);
-        continue;
-      }
-
       (child as any)[i] = _clone(parent[i]);
     }
 
-    if (Object.getOwnPropertySymbols) {
-      const symbols = Object.getOwnPropertySymbols(parent);
+    const symbols = Object.getOwnPropertySymbols(parent);
 
-      for (let i = 0; i < symbols.length; i++) {
-        const symbol = symbols[i];
-        const descriptor = Object.getOwnPropertyDescriptor(parent, symbol);
+    for (let i = 0; i < symbols.length; i++) {
+      const symbol = symbols[i];
+      const descriptor = Object.getOwnPropertyDescriptor(parent, symbol);
 
         /* v8 ignore next */
         if (descriptor && !descriptor.enumerable) {
           continue;
         }
 
-        (child as any)[symbol] = _clone(parent[symbol]);
-      }
+      (child as any)[symbol] = _clone(parent[symbol]);
     }
 
     return child;

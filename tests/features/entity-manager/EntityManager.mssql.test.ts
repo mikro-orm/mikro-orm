@@ -1439,7 +1439,7 @@ describe('EntityManagerMsSql', () => {
       },
     }, { populate: ['perex'] });
     expect(books1).toHaveLength(2);
-    expect(mock.mock.calls[0][0]).toMatch(`select [b0].*, ([b0].[price] * 1.19) as [price_taxed] from [book2] as [b0] inner join [author2] as [a1] on [b0].[author_id] = [a1].[id] where [b0].[author_id] is not null and upper(title) in ('B1', 'B2') and a1.age like '%2%'`);
+    expect(mock.mock.calls[0][0]).toMatch(`select [b0].*, ([b0].[price] * 1.19) as [price_taxed] from [book2] as [b0] inner join [author2] as [a1] on [b0].[author_id] = [a1].[id] where [b0].[author_id] is not null and a1.age like '%2%' and upper(title) in ('B1', 'B2')`);
     orm.em.clear();
 
     const books2 = await orm.em.find(Book2, {

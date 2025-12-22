@@ -1,7 +1,7 @@
 import type { Dictionary, EntityData, EntityMetadata, EntityProperty, FilterQuery } from '../typings.js';
 import { Utils } from '../utils/Utils.js';
 import { ValidationError } from '../errors.js';
-import { isRaw } from '../utils/RawQueryFragment.js';
+import { isRaw, RawQueryFragment } from '../utils/RawQueryFragment.js';
 import { SCALAR_TYPES } from '../enums.js';
 
 /** @internal */
@@ -72,7 +72,7 @@ export function validatePrimaryKey<T>(entity: EntityData<T>, meta: EntityMetadat
 
 /** @internal */
 export function validateEmptyWhere<T>(where: FilterQuery<T>): void {
-  if (Utils.isEmpty(where)) {
+  if (Utils.isEmpty(where) && !RawQueryFragment.hasObjectFragments(where)) {
     throw new Error(`You cannot call 'EntityManager.findOne()' with empty 'where' parameter`);
   }
 }
