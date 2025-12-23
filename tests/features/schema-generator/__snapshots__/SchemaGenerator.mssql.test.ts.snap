@@ -181,6 +181,12 @@ if object_id('[base_user2]', 'U') is not null DROP TABLE [base_user2];
 
 exports[`SchemaGenerator generate schema from metadata [mssql]: mssql-update-schema-dump 1`] = `""`;
 
+exports[`SchemaGenerator refreshDatabase [mssql]: mssql-update-schema-enums-1 1`] = `
+"CREATE TABLE [new_table] ([id] int identity(1,1) not null primary key, [enum_test] nvarchar(100) not null);
+
+"
+`;
+
 exports[`SchemaGenerator rename column [mssql]: mssql-update-schema-rename-column 1`] = `
 "alter table [author2] drop constraint [author2_favourite_author_id_foreign];
 
@@ -190,6 +196,185 @@ exec sp_rename 'author2.age', 'age_in_years', 'COLUMN';
 exec sp_rename 'author2.favourite_author_id', 'favourite_writer_id', 'COLUMN';
 alter table [author2] add constraint [author2_favourite_writer_id_foreign] foreign key ([favourite_writer_id]) references [author2] ([id]);
 CREATE INDEX [author2_name_age_in_years_index] ON [author2] ([name], [age_in_years]);
+
+"
+`;
+
+exports[`SchemaGenerator update schema [mssql]: mssql-create-schema-dump 1`] = `
+"CREATE TABLE [base_user2] ([id] int identity(1,1) not null primary key, [first_name] nvarchar(100) not null, [last_name] nvarchar(100) not null, [type] nvarchar(100) check ([type] in ('employee', 'manager', 'owner')) not null, [owner_prop] nvarchar(255) null, [favourite_employee_id] int null, [favourite_manager_id] int null, [employee_prop] int null, [manager_prop] nvarchar(255) null);
+CREATE INDEX [base_user2_type_index] ON [base_user2] ([type]);
+CREATE UNIQUE INDEX [base_user2_favourite_manager_id_unique] ON [base_user2] ([favourite_manager_id]) WHERE [favourite_manager_id] IS NOT NULL;
+
+CREATE TABLE [book_tag2] ([id] bigint identity(1,1) not null primary key, [name] nvarchar(50) not null);
+
+CREATE TABLE [car2] ([name] nvarchar(100) not null, [year] int not null, [price] int not null, CONSTRAINT [car2_pkey] PRIMARY KEY ([name], [year]));
+CREATE INDEX [car2_name_index] ON [car2] ([name]);
+CREATE INDEX [car2_year_index] ON [car2] ([year]);
+
+CREATE TABLE [car_owner2] ([id] int identity(1,1) not null primary key, [name] nvarchar(255) not null, [car_name] nvarchar(100) not null, [car_year] int not null);
+CREATE INDEX [car_owner2_car_name_car_year_index] ON [car_owner2] ([car_name], [car_year]);
+
+CREATE TABLE [dummy2] ([id] int identity(1,1) not null primary key);
+
+CREATE TABLE [foo_baz2] ([id] int identity(1,1) not null primary key, [name] nvarchar(255) not null, [code] varchar(255) not null, [version] datetime2(3) not null CONSTRAINT [foo_baz2_version_default] DEFAULT current_timestamp);
+
+CREATE TABLE [foo_bar2] ([id] int identity(1,1) not null primary key, [name] nvarchar(255) not null, [baz_id] int null, [foo_bar_id] int null, [version] datetime2(0) not null CONSTRAINT [foo_bar2_version_default] DEFAULT current_timestamp, [blob] varbinary(max) null, [array] text null, [object] nvarchar(max) null);
+CREATE UNIQUE INDEX [foo_bar2_baz_id_unique] ON [foo_bar2] ([baz_id]) WHERE [baz_id] IS NOT NULL;
+CREATE UNIQUE INDEX [foo_bar2_foo_bar_id_unique] ON [foo_bar2] ([foo_bar_id]) WHERE [foo_bar_id] IS NOT NULL;
+
+CREATE TABLE [foo_param2] ([bar_id] int not null, [baz_id] int not null, [value] nvarchar(255) not null, CONSTRAINT [foo_param2_pkey] PRIMARY KEY ([bar_id], [baz_id]));
+
+CREATE TABLE [publisher2] ([id] int identity(1,1) not null primary key, [name] nvarchar(255) not null CONSTRAINT [publisher2_name_default] DEFAULT 'asd', [type] nvarchar(100) check ([type] in ('local', 'global')) not null CONSTRAINT [publisher2_type_default] DEFAULT 'local', [type2] nvarchar(100) check ([type2] in ('LOCAL', 'GLOBAL')) not null CONSTRAINT [publisher2_type2_default] DEFAULT 'LOCAL', [enum1] tinyint null, [enum2] tinyint null, [enum3] tinyint null, [enum4] nvarchar(100) check ([enum4] in ('a', 'b', 'c')) null);
+
+CREATE TABLE [author2] ([id] int identity(1,1) not null primary key, [created_at] datetime2(3) not null CONSTRAINT [author2_created_at_default] DEFAULT current_timestamp, [updated_at] datetime2(3) not null CONSTRAINT [author2_updated_at_default] DEFAULT current_timestamp, [name] nvarchar(255) not null, [email] nvarchar(255) not null, [age] int null, [terms_accepted] bit not null CONSTRAINT [author2_terms_accepted_default] DEFAULT 0, [optional] bit null, [identities] text null, [born] date null, [born_time] time null, [favourite_book_uuid_pk] uniqueidentifier null, [favourite_author_id] int null);
+CREATE INDEX [custom_email_index_name] ON [author2] ([email]);
+CREATE UNIQUE INDEX [custom_email_unique_name] ON [author2] ([email]) WHERE [email] IS NOT NULL;
+CREATE INDEX [author2_terms_accepted_index] ON [author2] ([terms_accepted]);
+CREATE INDEX [author2_born_index] ON [author2] ([born]);
+CREATE INDEX [born_time_idx] ON [author2] ([born_time]);
+CREATE INDEX [custom_idx_name_123] ON [author2] ([name]);
+CREATE INDEX [author2_name_age_index] ON [author2] ([name], [age]);
+CREATE UNIQUE INDEX [author2_name_email_unique] ON [author2] ([name], [email]) WHERE [name] IS NOT NULL AND [email] IS NOT NULL;
+
+CREATE TABLE [book2] ([uuid_pk] uniqueidentifier not null, [created_at] datetime2(3) not null CONSTRAINT [book2_created_at_default] DEFAULT current_timestamp, [isbn] nchar(13) null, [title] nvarchar(255) null CONSTRAINT [book2_title_default] DEFAULT '', [perex] text null, [price] numeric(8,2) null, [float] float(24) null, [float36] float(36) null, [double] float(53) null, [meta] nvarchar(max) null, [author_id] int not null, [publisher_id] int null, CONSTRAINT [book2_pkey] PRIMARY KEY ([uuid_pk]));
+CREATE UNIQUE INDEX [book2_isbn_unique] ON [book2] ([isbn]) WHERE [isbn] IS NOT NULL;
+
+CREATE TABLE [book2_tags] ([order] int identity(1,1) not null primary key, [book2_uuid_pk] uniqueidentifier not null, [book_tag2_id] bigint not null);
+
+CREATE TABLE [book_to_tag_unordered] ([book2_uuid_pk] uniqueidentifier not null, [book_tag2_id] bigint not null, CONSTRAINT [book_to_tag_unordered_pkey] PRIMARY KEY ([book2_uuid_pk], [book_tag2_id]));
+
+CREATE TABLE [author2_following] ([author2_1_id] int not null, [author2_2_id] int not null, CONSTRAINT [author2_following_pkey] PRIMARY KEY ([author2_1_id], [author2_2_id]));
+
+CREATE TABLE [author_to_friend] ([author2_1_id] int not null, [author2_2_id] int not null, CONSTRAINT [author_to_friend_pkey] PRIMARY KEY ([author2_1_id], [author2_2_id]));
+
+CREATE TABLE [address2] ([author_id] int not null, [value] nvarchar(255) not null, CONSTRAINT [address2_pkey] PRIMARY KEY ([author_id]));
+IF EXISTS(SELECT * FROM sys.fn_listextendedproperty(N'MS_Description', N'Schema', N'dbo', N'Table', N'address2', NULL, NULL))
+  EXEC sys.sp_updateextendedproperty N'MS_Description', N'This is address table', N'Schema', N'dbo', N'Table', N'address2'
+ELSE
+  EXEC sys.sp_addextendedproperty N'MS_Description', N'This is address table', N'Schema', N'dbo', N'Table', N'address2';
+IF EXISTS(SELECT * FROM sys.fn_listextendedproperty(N'MS_Description', N'Schema', N'dbo', N'Table', N'address2', N'Column', N'value'))
+  EXEC sys.sp_updateextendedproperty N'MS_Description', N'This is address property', N'Schema', N'dbo', N'Table', N'address2', N'Column', N'value'
+ELSE
+  EXEC sys.sp_addextendedproperty N'MS_Description', N'This is address property', N'Schema', N'dbo', N'Table', N'address2', N'Column', N'value';
+
+CREATE TABLE [sandwich] ([id] int identity(1,1) not null primary key, [name] nvarchar(255) not null, [price] int not null);
+
+CREATE TABLE [test2] ([id] int identity(1,1) not null primary key, [name] nvarchar(255) null, [book_uuid_pk] uniqueidentifier null, [version] int not null CONSTRAINT [test2_version_default] DEFAULT 1);
+CREATE UNIQUE INDEX [test2_book_uuid_pk_unique] ON [test2] ([book_uuid_pk]) WHERE [book_uuid_pk] IS NOT NULL;
+
+CREATE TABLE [publisher2_tests] ([id] int identity(1,1) not null primary key, [publisher2_id] int not null, [test2_id] int not null);
+
+CREATE TABLE [configuration2] ([property] nvarchar(255) not null, [test_id] int not null, [value] nvarchar(255) not null, CONSTRAINT [configuration2_pkey] PRIMARY KEY ([property], [test_id]));
+
+CREATE TABLE [user2] ([first_name] nvarchar(100) not null, [last_name] nvarchar(100) not null, [foo] int null, [favourite_car_name] nvarchar(100) null, [favourite_car_year] int null, CONSTRAINT [user2_pkey] PRIMARY KEY ([first_name], [last_name]));
+CREATE UNIQUE INDEX [user2_favourite_car_name_favourite_car_year_unique] ON [user2] ([favourite_car_name], [favourite_car_year]) WHERE [favourite_car_name] IS NOT NULL AND [favourite_car_year] IS NOT NULL;
+
+CREATE TABLE [user2_cars] ([user2_first_name] nvarchar(100) not null, [user2_last_name] nvarchar(100) not null, [car2_name] nvarchar(100) not null, [car2_year] int not null, CONSTRAINT [user2_cars_pkey] PRIMARY KEY ([user2_first_name], [user2_last_name], [car2_name], [car2_year]));
+
+CREATE TABLE [user2_sandwiches] ([user2_first_name] nvarchar(100) not null, [user2_last_name] nvarchar(100) not null, [sandwich_id] int not null, CONSTRAINT [user2_sandwiches_pkey] PRIMARY KEY ([user2_first_name], [user2_last_name], [sandwich_id]));
+
+alter table [base_user2] add constraint [base_user2_favourite_employee_id_foreign] foreign key ([favourite_employee_id]) references [base_user2] ([id]);
+alter table [base_user2] add constraint [base_user2_favourite_manager_id_foreign] foreign key ([favourite_manager_id]) references [base_user2] ([id]);
+
+alter table [car_owner2] add constraint [car_owner2_car_name_car_year_foreign] foreign key ([car_name], [car_year]) references [car2] ([name], [year]) on update cascade;
+
+alter table [foo_bar2] add constraint [foo_bar2_baz_id_foreign] foreign key ([baz_id]) references [foo_baz2] ([id]) on update cascade on delete set null;
+alter table [foo_bar2] add constraint [foo_bar2_foo_bar_id_foreign] foreign key ([foo_bar_id]) references [foo_bar2] ([id]);
+
+alter table [foo_param2] add constraint [foo_param2_bar_id_foreign] foreign key ([bar_id]) references [foo_bar2] ([id]) on update cascade;
+alter table [foo_param2] add constraint [foo_param2_baz_id_foreign] foreign key ([baz_id]) references [foo_baz2] ([id]) on update no action on delete no action;
+
+alter table [author2] add constraint [author2_favourite_book_uuid_pk_foreign] foreign key ([favourite_book_uuid_pk]) references [book2] ([uuid_pk]) on update no action on delete cascade;
+alter table [author2] add constraint [author2_favourite_author_id_foreign] foreign key ([favourite_author_id]) references [author2] ([id]);
+
+alter table [book2] add constraint [book2_author_id_foreign] foreign key ([author_id]) references [author2] ([id]);
+alter table [book2] add constraint [book2_publisher_id_foreign] foreign key ([publisher_id]) references [publisher2] ([id]) on update cascade on delete cascade;
+
+alter table [book2_tags] add constraint [book2_tags_book2_uuid_pk_foreign] foreign key ([book2_uuid_pk]) references [book2] ([uuid_pk]) on update cascade on delete cascade;
+alter table [book2_tags] add constraint [book2_tags_book_tag2_id_foreign] foreign key ([book_tag2_id]) references [book_tag2] ([id]) on update cascade on delete cascade;
+
+alter table [book_to_tag_unordered] add constraint [book_to_tag_unordered_book2_uuid_pk_foreign] foreign key ([book2_uuid_pk]) references [book2] ([uuid_pk]) on update cascade on delete cascade;
+alter table [book_to_tag_unordered] add constraint [book_to_tag_unordered_book_tag2_id_foreign] foreign key ([book_tag2_id]) references [book_tag2] ([id]) on update cascade on delete cascade;
+
+alter table [author2_following] add constraint [author2_following_author2_1_id_foreign] foreign key ([author2_1_id]) references [author2] ([id]) on update no action on delete no action;
+alter table [author2_following] add constraint [author2_following_author2_2_id_foreign] foreign key ([author2_2_id]) references [author2] ([id]) on update no action on delete no action;
+
+alter table [author_to_friend] add constraint [author_to_friend_author2_1_id_foreign] foreign key ([author2_1_id]) references [author2] ([id]) on update no action on delete no action;
+alter table [author_to_friend] add constraint [author_to_friend_author2_2_id_foreign] foreign key ([author2_2_id]) references [author2] ([id]) on update no action on delete no action;
+
+alter table [address2] add constraint [address2_author_id_foreign] foreign key ([author_id]) references [author2] ([id]) on update cascade on delete cascade;
+
+alter table [test2] add constraint [test2_book_uuid_pk_foreign] foreign key ([book_uuid_pk]) references [book2] ([uuid_pk]) on delete no action;
+
+alter table [publisher2_tests] add constraint [publisher2_tests_publisher2_id_foreign] foreign key ([publisher2_id]) references [publisher2] ([id]) on update cascade on delete cascade;
+alter table [publisher2_tests] add constraint [publisher2_tests_test2_id_foreign] foreign key ([test2_id]) references [test2] ([id]) on update cascade on delete cascade;
+
+alter table [configuration2] add constraint [configuration2_test_id_foreign] foreign key ([test_id]) references [test2] ([id]) on update cascade;
+
+alter table [user2] add constraint [user2_favourite_car_name_favourite_car_year_foreign] foreign key ([favourite_car_name], [favourite_car_year]) references [car2] ([name], [year]) on update cascade on delete set null;
+
+alter table [user2_cars] add constraint [user2_cars_user2_first_name_user2_last_name_foreign] foreign key ([user2_first_name], [user2_last_name]) references [user2] ([first_name], [last_name]) on update no action on delete no action;
+alter table [user2_cars] add constraint [user2_cars_car2_name_car2_year_foreign] foreign key ([car2_name], [car2_year]) references [car2] ([name], [year]) on update no action on delete no action;
+
+alter table [user2_sandwiches] add constraint [user2_sandwiches_user2_first_name_user2_last_name_foreign] foreign key ([user2_first_name], [user2_last_name]) references [user2] ([first_name], [last_name]) on update cascade on delete cascade;
+alter table [user2_sandwiches] add constraint [user2_sandwiches_sandwich_id_foreign] foreign key ([sandwich_id]) references [sandwich] ([id]) on update cascade on delete cascade;
+
+"
+`;
+
+exports[`SchemaGenerator update schema [mssql]: mssql-drop-schema-dump 1`] = `
+"alter table [user2_sandwiches] drop constraint [user2_sandwiches_sandwich_id_foreign];
+alter table [user2_sandwiches] drop constraint [user2_sandwiches_user2_first_name_user2_last_name_foreign];
+alter table [user2_cars] drop constraint [user2_cars_car2_name_car2_year_foreign];
+alter table [user2_cars] drop constraint [user2_cars_user2_first_name_user2_last_name_foreign];
+alter table [user2] drop constraint [user2_favourite_car_name_favourite_car_year_foreign];
+alter table [configuration2] drop constraint [configuration2_test_id_foreign];
+alter table [publisher2_tests] drop constraint [publisher2_tests_publisher2_id_foreign];
+alter table [publisher2_tests] drop constraint [publisher2_tests_test2_id_foreign];
+alter table [test2] drop constraint [test2_book_uuid_pk_foreign];
+alter table [address2] drop constraint [address2_author_id_foreign];
+alter table [author_to_friend] drop constraint [author_to_friend_author2_1_id_foreign];
+alter table [author_to_friend] drop constraint [author_to_friend_author2_2_id_foreign];
+alter table [author2_following] drop constraint [author2_following_author2_1_id_foreign];
+alter table [author2_following] drop constraint [author2_following_author2_2_id_foreign];
+alter table [book_to_tag_unordered] drop constraint [book_to_tag_unordered_book_tag2_id_foreign];
+alter table [book_to_tag_unordered] drop constraint [book_to_tag_unordered_book2_uuid_pk_foreign];
+alter table [book2_tags] drop constraint [book2_tags_book_tag2_id_foreign];
+alter table [book2_tags] drop constraint [book2_tags_book2_uuid_pk_foreign];
+alter table [book2] drop constraint [book2_author_id_foreign];
+alter table [book2] drop constraint [book2_publisher_id_foreign];
+alter table [author2] drop constraint [author2_favourite_author_id_foreign];
+alter table [author2] drop constraint [author2_favourite_book_uuid_pk_foreign];
+alter table [foo_param2] drop constraint [foo_param2_bar_id_foreign];
+alter table [foo_param2] drop constraint [foo_param2_baz_id_foreign];
+alter table [foo_bar2] drop constraint [foo_bar2_foo_bar_id_foreign];
+alter table [foo_bar2] drop constraint [foo_bar2_baz_id_foreign];
+alter table [car_owner2] drop constraint [car_owner2_car_name_car_year_foreign];
+alter table [base_user2] drop constraint [base_user2_favourite_employee_id_foreign];
+alter table [base_user2] drop constraint [base_user2_favourite_manager_id_foreign];
+if object_id('[user2_sandwiches]', 'U') is not null DROP TABLE [user2_sandwiches];
+if object_id('[user2_cars]', 'U') is not null DROP TABLE [user2_cars];
+if object_id('[user2]', 'U') is not null DROP TABLE [user2];
+if object_id('[configuration2]', 'U') is not null DROP TABLE [configuration2];
+if object_id('[publisher2_tests]', 'U') is not null DROP TABLE [publisher2_tests];
+if object_id('[test2]', 'U') is not null DROP TABLE [test2];
+if object_id('[sandwich]', 'U') is not null DROP TABLE [sandwich];
+if object_id('[address2]', 'U') is not null DROP TABLE [address2];
+if object_id('[author_to_friend]', 'U') is not null DROP TABLE [author_to_friend];
+if object_id('[author2_following]', 'U') is not null DROP TABLE [author2_following];
+if object_id('[book_to_tag_unordered]', 'U') is not null DROP TABLE [book_to_tag_unordered];
+if object_id('[book2_tags]', 'U') is not null DROP TABLE [book2_tags];
+if object_id('[book2]', 'U') is not null DROP TABLE [book2];
+if object_id('[author2]', 'U') is not null DROP TABLE [author2];
+if object_id('[publisher2]', 'U') is not null DROP TABLE [publisher2];
+if object_id('[foo_param2]', 'U') is not null DROP TABLE [foo_param2];
+if object_id('[foo_bar2]', 'U') is not null DROP TABLE [foo_bar2];
+if object_id('[foo_baz2]', 'U') is not null DROP TABLE [foo_baz2];
+if object_id('[dummy2]', 'U') is not null DROP TABLE [dummy2];
+if object_id('[car_owner2]', 'U') is not null DROP TABLE [car_owner2];
+if object_id('[car2]', 'U') is not null DROP TABLE [car2];
+if object_id('[book_tag2]', 'U') is not null DROP TABLE [book_tag2];
+if object_id('[base_user2]', 'U') is not null DROP TABLE [base_user2];
 
 "
 `;
@@ -313,6 +498,8 @@ exports[`SchemaGenerator update schema [mssql]: mssql-update-schema-drop-unique 
 
 "
 `;
+
+exports[`SchemaGenerator update schema [mssql]: mssql-update-schema-dump 1`] = `""`;
 
 exports[`SchemaGenerator update schema enums [mssql]: mssql-update-schema-enums-1 1`] = `
 "CREATE TABLE [new_table] ([id] int identity(1,1) not null primary key, [enum_test] nvarchar(100) not null);
