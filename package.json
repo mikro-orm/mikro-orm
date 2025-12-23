@@ -132,12 +132,12 @@
     "lerna": "9.0.3",
     "lint-staged": "16.2.7",
     "mongodb": "6.20.0",
-    "mongodb-memory-server-core": "11.0.0",
+    "mongodb-memory-server-core": "11.0.1",
     "rimraf": "6.1.2",
     "ts-jest": "29.2.0",
     "ts-node": "10.9.2",
     "typescript": "5.9.3",
-    "typescript-eslint": "8.50.0",
+    "typescript-eslint": "8.50.1",
     "uuid": "11.1.0"
   },
   "packageManager": "yarn@4.12.0"
