@@ -109,6 +109,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver, EM exten
     hashAlgorithm: 'md5',
     debug: false,
     ignoreDeprecations: false,
+    slowQueryThreshold: 200,
     verbose: false,
     driverOptions: {},
     migrations: {
@@ -200,6 +201,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver, EM exten
       usesReplicas: (this.options.replicas?.length ?? 0) > 0,
       highlighter: this.options.highlighter,
       writer: this.options.logger,
+      slowQueryThreshold: this.options.slowQueryThreshold
     });
 
     if (this.options.driver) {
@@ -655,6 +657,7 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver, EM
   debug: boolean | LoggerNamespace[];
   ignoreDeprecations: boolean | string[];
   highlighter: Highlighter;
+  slowQueryThreshold: number
   /**
    * Using this option, you can force the ORM to use the TS options regardless of whether the TypeScript support
    * is detected or not. This effectively means using `entitiesTs` for discovery and `pathTs` for migrations and
