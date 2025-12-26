@@ -529,7 +529,7 @@ export class UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys extends
   }
 
   /** Set pivot entity for this relation (see {@doclink collections#custom-pivot-table-entity | Custom pivot table entity}). */
-  pivotEntity(pivotEntity: string | (() => EntityName<any>)): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
+  pivotEntity(pivotEntity: () => EntityName): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
     return this.assignOptions({ pivotEntity });
   }
 
@@ -663,31 +663,31 @@ const propertyBuilders = {
       items,
     }),
 
-  embedded: <Target extends EntitySchemaWithMeta<any, any, any, any, any> | EntityClass<any> | EntitySchemaWithMeta<any, any, any, any, any>[] | EntityClass<any>[]>(target: Target) =>
+  embedded: <Target extends EntitySchemaWithMeta<any, any, any, any, any> | EntityClass | EntitySchemaWithMeta<any, any, any, any, any>[] | EntityClass[]>(target: Target) =>
     new UniversalPropertyOptionsBuilder<InferEntity<Target extends (infer T)[] ? T : Target>, EmptyOptions, IncludeKeysForEmbeddedOptions>({
       entity: () => target as any,
       kind: 'embedded',
     }),
 
-  manyToMany: <Target extends EntitySchemaWithMeta<any, any, any, any, any> | EntityClass<any>>(target: Target) =>
+  manyToMany: <Target extends EntitySchemaWithMeta<any, any, any, any, any> | EntityClass>(target: Target) =>
     new UniversalPropertyOptionsBuilder<InferEntity<Target>, EmptyOptions & { kind: 'm:n' }, IncludeKeysForManyToManyOptions>({
       entity: () => target as any,
       kind: 'm:n',
     }),
 
-  manyToOne: <Target extends EntitySchemaWithMeta<any, any, any, any, any> | EntityClass<any>>(target: Target) =>
+  manyToOne: <Target extends EntitySchemaWithMeta<any, any, any, any, any> | EntityClass>(target: Target) =>
     new UniversalPropertyOptionsBuilder<InferEntity<Target>, EmptyOptions & { kind: 'm:1' }, IncludeKeysForManyToOneOptions>({
       entity: () => target as any,
       kind: 'm:1',
     }),
 
-  oneToMany: <Target extends EntitySchemaWithMeta<any, any, any, any, any> | EntityClass<any>>(target: Target) =>
+  oneToMany: <Target extends EntitySchemaWithMeta<any, any, any, any, any> | EntityClass>(target: Target) =>
     new OneToManyOptionsBuilderOnlyMappedBy<InferEntity<Target>>({
       entity: () => target as any,
       kind: '1:m',
     }),
 
-  oneToOne: <Target extends EntitySchemaWithMeta<any, any, any, any, any> | EntityClass<any>>(target: Target) =>
+  oneToOne: <Target extends EntitySchemaWithMeta<any, any, any, any, any> | EntityClass>(target: Target) =>
     new UniversalPropertyOptionsBuilder<InferEntity<Target>, EmptyOptions & { kind: '1:1' }, IncludeKeysForOneToOneOptions>({
       entity: () => target as any,
       kind: '1:1',
@@ -755,7 +755,7 @@ export function defineEntity<const TEntity = any, const TProperties extends Reco
 
 export function defineEntity(
   meta: Omit<Partial<EntityMetadata>, 'properties' | 'extends'> & {
-    extends?: EntityName<any>;
+    extends?: EntityName;
     properties: Record<string, any> | ((properties: typeof propertyBuilders) => Record<string, any>);
   } | EntityMetadataWithProperties<any, any, any, any, any>,
 ): EntitySchemaWithMeta<any, any, any, any, any> {
@@ -886,4 +886,3 @@ type MaybeHidden<Value, Options> = Options extends { hidden: true } ? Hidden<Val
 type ValueOf<T extends Dictionary> = T[keyof T];
 
 type IsUnion<T, U = T> = T extends U ? ([U] extends [T] ? false : true) : false;
-

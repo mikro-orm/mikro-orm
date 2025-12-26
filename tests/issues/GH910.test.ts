@@ -45,7 +45,7 @@ export class Cart {
   @PrimaryKey()
   readonly id: string;
 
-  @OneToMany({ entity: 'CartItem', mappedBy: 'cart', cascade: [Cascade.MERGE, Cascade.PERSIST] })
+  @OneToMany({ entity: () => CartItem, mappedBy: 'cart', cascade: [Cascade.MERGE, Cascade.PERSIST] })
   readonly items = new Collection<CartItem>(this);
 
   constructor(id: string, items: CartItem[]) {
@@ -66,7 +66,7 @@ export class Cart {
 @Entity()
 export class CartItem {
 
-  @ManyToOne({ primary: true, entity: 'Cart' })
+  @ManyToOne({ primary: true, entity: () => Cart })
   readonly cart!: Cart;
 
   @PrimaryKey({ type: SkuType })

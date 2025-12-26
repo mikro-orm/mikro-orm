@@ -326,7 +326,7 @@ export interface PropertyOptions<Owner> {
 
 export interface ReferenceOptions<Owner, Target> extends PropertyOptions<Owner> {
   /** Set target entity type. */
-  entity?: string | (() => EntityName<Target>);
+  entity?: () => EntityName<Target>;
 
   /** Set what actions on owning entity should be cascaded to the relationship. Defaults to [Cascade.PERSIST, Cascade.MERGE] (see {@doclink cascading}). */
   cascade?: Cascade[];
@@ -493,7 +493,7 @@ export interface ManyToManyOptions<Owner, Target> extends ReferenceOptions<Owner
   pivotTable?: string;
 
   /** Set pivot entity for this relation (see {@doclink collections#custom-pivot-table-entity | Custom pivot table entity}). */
-  pivotEntity?: string | (() => EntityName<any>);
+  pivotEntity?: () => EntityName;
 
   /** Override the default database column name on the owning side (see {@doclink naming-strategy | Naming Strategy}). This option is only for simple properties represented by a single column. */
   joinColumn?: string;
@@ -524,7 +524,7 @@ export interface ManyToManyOptions<Owner, Target> extends ReferenceOptions<Owner
 }
 
 export interface EmbeddedOptions<Owner, Target> extends PropertyOptions<Owner> {
-  entity?: string | (() => EntityName<Target> | EntityName<Target>[]);
+  entity?: () => EntityName<Target> | EntityName<Target>[];
   prefix?: string | boolean;
   prefixMode?: EmbeddedPrefixMode;
   object?: boolean;

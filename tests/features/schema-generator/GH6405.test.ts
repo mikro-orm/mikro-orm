@@ -11,7 +11,7 @@ class Customer {
   @Property()
   name!: string;
 
-  @OneToMany({ entity: 'License', mappedBy: 'customer' })
+  @OneToMany({ entity: () => License, mappedBy: 'customer' })
   licenses = new Collection<License>(this);
 
 }

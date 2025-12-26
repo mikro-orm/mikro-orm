@@ -118,7 +118,7 @@ export class EntityAssigner {
           const pk = Utils.extractPK(value, prop.targetMeta);
 
           if (pk) {
-            const ref = options.em!.getReference(prop.type, pk as Primary<T>, options);
+            const ref = options.em!.getReference(prop.targetMeta!.class, pk as Primary<T>, options);
             // if the PK differs, we want to change the target entity, not update it
             const wrappedChild = helper(ref);
             const sameTarget = wrappedChild.getSerializedPrimaryKey() === wrapped.getSerializedPrimaryKey();
@@ -193,11 +193,11 @@ export class EntityAssigner {
     if (Utils.isEntity(value, true)) {
       entity[prop.name] = Reference.wrapReference(value as T, prop) as EntityValue<T>;
     } else if (Utils.isPrimaryKey(value, true) && EntityAssigner.validateEM(em)) {
-      entity[prop.name] = prop.mapToPk ? value as EntityValue<T> : Reference.wrapReference(em.getReference<T>(prop.type, value as Primary<T>, options), prop) as EntityValue<T>;
+      entity[prop.name] = prop.mapToPk ? value as EntityValue<T> : Reference.wrapReference(em.getReference<T>(prop.targetMeta!.class, value as Primary<T>, options), prop) as EntityValue<T>;
     } else if (Utils.isPlainObject(value) && options.merge && EntityAssigner.validateEM(em)) {
-      entity[prop.name] = Reference.wrapReference(em.merge(prop.type, value as T, options) as T, prop) as EntityValue<T>;
+      entity[prop.name] = Reference.wrapReference(em.merge(prop.targetMeta!.class, value as T, options) as T, prop) as EntityValue<T>;
     } else if (Utils.isPlainObject(value) && EntityAssigner.validateEM(em)) {
-      entity[prop.name] = Reference.wrapReference(em.create(prop.type, value as T, options) as T, prop) as EntityValue<T>;
+      entity[prop.name] = Reference.wrapReference(em.create(prop.targetMeta!.class, value as T, options) as T, prop) as EntityValue<T>;
     } else {
       const name = (entity as object).constructor.name;
       throw new Error(`Invalid reference value provided for '${name}.${prop.name}' in ${name}.assign(): ${JSON.stringify(value)}`);
@@ -220,7 +220,7 @@ export class EntityAssigner {
         const pk = Utils.extractPK(item, prop.targetMeta);
 
         if (pk && EntityAssigner.validateEM(em)) {
-          const ref = em.getUnitOfWork().getById(prop.type, pk as Primary<U>, options.schema);
+          const ref = em.getUnitOfWork().getById(prop.targetMeta!.class, pk as Primary<U>, options.schema);
 
           if (ref) {
             return EntityAssigner.assign(ref, item as any, options);
@@ -271,7 +271,7 @@ export class EntityAssigner {
       });
     }
 
-    const create = () => EntityAssigner.validateEM(em) && em!.getEntityFactory().createEmbeddable<T>(prop.type, value, {
+    const create = () => EntityAssigner.validateEM(em) && em!.getEntityFactory().createEmbeddable<T>(prop.targetMeta!.class, value, {
       convertCustomTypes: options.convertCustomTypes,
       newEntity: options.mergeEmbeddedProperties ? !('propName' in entity) : true,
     });
@@ -288,15 +288,15 @@ export class EntityAssigner {
     }
 
     if (Utils.isPrimaryKey(item) && EntityAssigner.validateEM(em)) {
-      return em.getReference(prop.type, item, options) as T;
+      return em.getReference(prop.targetMeta!.class, item, options) as T;
     }
 
     if (Utils.isPlainObject(item) && options.merge && EntityAssigner.validateEM(em)) {
-      return em.merge<T>(prop.type, item as EntityData<T>, options);
+      return em.merge<T>(prop.targetMeta!.class, item as EntityData<T>, options);
     }
 
     if (Utils.isPlainObject(item) && EntityAssigner.validateEM(em)) {
-      return em.create<T, C>(prop.type, item as RequiredEntityData<T, never, C>, options as AssignOptions<C>);
+      return em.create<T, C>(prop.targetMeta!.class, item as RequiredEntityData<T, never, C>, options as AssignOptions<C>);
     }
 
     invalid.push(item);

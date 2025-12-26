@@ -10,7 +10,7 @@ class Name {
   @Property()
   name!: string;
 
-  @ManyToMany({ entity: 'User', pivotTable: 'userNames', mappedBy: 'names' })
+  @ManyToMany({ entity: () => User, pivotTable: 'userNames', mappedBy: 'names' })
   users = new Collection<User>(this);
 
   constructor(name: string) {
@@ -25,7 +25,7 @@ class User {
   @PrimaryKey()
   id!: number;
 
-  @ManyToMany({ entity: 'Name', pivotTable: 'userNames', joinColumn: 'name', inverseJoinColumn: 'user' })
+  @ManyToMany({ entity: () => Name, pivotTable: 'userNames', joinColumn: 'name', inverseJoinColumn: 'user' })
   names = new Collection<Name>(this);
 
 }

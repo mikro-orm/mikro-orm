@@ -17,7 +17,7 @@ export class Manager {
   @Property()
   name!: string;
 
-  @ManyToOne('Project', { ref: true })
+  @ManyToOne(() => Project, { ref: true })
   project!: Ref<Project>;
 
   constructor(name: string) {
@@ -35,7 +35,7 @@ export class Owner {
   @Property()
   name!: string;
 
-  @ManyToOne('Risk', { ref: true })
+  @ManyToOne(() => Risk, { ref: true })
   risk!: Ref<Risk>;
 
   constructor(name: string) {
@@ -56,7 +56,7 @@ export class Risk {
   @OneToMany(() => Owner, owner => owner.risk)
   owners = new Collection<Owner>(this);
 
-  @ManyToOne('Project', { ref: true })
+  @ManyToOne(() => Project, { ref: true })
   project!: Ref<Project>;
 
   constructor(value: string) {

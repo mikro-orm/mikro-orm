@@ -189,29 +189,29 @@ bench('EntitySchema', () => {
     name: 'Foo',
     properties: {
       name: { type: 'string', primary: true },
-      toOne: { kind: '1:1', entity: 'Foo' },
-      toOneNullable: { kind: '1:1', entity: 'Foo', nullable: true },
-      toOneRef: { kind: '1:1', entity: 'Foo', ref: true },
+      toOne: { kind: '1:1', entity: () => FooSchema as any },
+      toOneNullable: { kind: '1:1', entity: () => FooSchema as any, nullable: true },
+      toOneRef: { kind: '1:1', entity: () => FooSchema as any, ref: true },
       toOneRefNullable: {
         kind: '1:1',
-        entity: 'Foo',
+        entity: () => FooSchema as any,
         ref: true,
         nullable: true,
       },
-      toOnePk: { kind: '1:1', entity: 'Foo', mapToPk: true },
+      toOnePk: { kind: '1:1', entity: () => FooSchema as any, mapToPk: true },
       toOnePkNullable: {
         kind: '1:1',
-        entity: 'Foo',
+        entity: () => FooSchema as any,
         mapToPk: true,
         nullable: true,
       },
-      scalarRef: { kind: '1:1', entity: 'string', ref: true },
+      scalarRef: { kind: '1:1', entity: () => FooSchema as any, ref: true },
       scalarRefNullable: {
         kind: '1:1',
-        entity: 'string',
+        entity: () => FooSchema as any,
         ref: true,
         nullable: true,
       },
-    },
+    } as any,
   });
 }).types([5211, 'instantiations']);

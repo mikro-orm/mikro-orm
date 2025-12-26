@@ -163,7 +163,7 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
     const schema = options?.schema ?? this.config.get('schema', this.platform.getDefaultSchemaName());
 
     for (const meta of this.getOrderedMetadata(schema).reverse()) {
-      await this.driver.createQueryBuilder(meta.className, this.em?.getTransactionContext(), 'write', false)
+      await this.driver.createQueryBuilder(meta.class, this.em?.getTransactionContext(), 'write', false)
         .withSchema(schema)
         .truncate()
         .execute();
@@ -267,7 +267,7 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
     const toSchema = this.getTargetSchema(options.schema);
     const schemas = toSchema.getNamespaces();
     const fromSchema = options.fromSchema ?? (await DatabaseSchema.create(this.connection, this.platform, this.config, options.schema, schemas, undefined, this.options.skipTables));
-    const wildcardSchemaTables = Object.values(this.metadata.getAll()).filter(meta => meta.schema === '*').map(meta => meta.tableName);
+    const wildcardSchemaTables = [...this.metadata.getAll().values()].filter(meta => meta.schema === '*').map(meta => meta.tableName);
     fromSchema.prune(options.schema, wildcardSchemaTables);
     toSchema.prune(options.schema, wildcardSchemaTables);
 

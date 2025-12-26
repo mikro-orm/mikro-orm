@@ -60,9 +60,9 @@ export class EntityHelper {
   }
 
   /**
-   * As a performance optimization, we create entity state methods in a lazy manner. We first add
+   * As a performance optimization, we create entity state methods lazily. We first add
    * the `null` value to the prototype to reserve space in memory. Then we define a setter on the
-   * prototype, that will be executed exactly once per entity instance. There we redefine given
+   * prototype that will be executed exactly once per entity instance. There we redefine the given
    * property on the entity instance, so shadowing the prototype setter.
    */
   private static defineBaseProperties<T extends object>(meta: EntityMetadata<T>, prototype: T, em: EntityManager) {

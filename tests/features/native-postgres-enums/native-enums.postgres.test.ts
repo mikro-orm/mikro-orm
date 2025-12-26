@@ -67,7 +67,6 @@ describe('native enums in postgres', () => {
   afterAll(() => orm.close());
 
   test('generate schema from metadata [postgres]', async () => {
-    orm.getMetadata().reset('NewTable');
     await orm.em.execute('drop schema if exists different_schema cascade');
     const dump = await orm.schema.getCreateSchemaSQL();
     expect(dump).toMatchSnapshot('postgres-schema-dump');
@@ -107,7 +106,7 @@ describe('native enums in postgres', () => {
       name: 'NewTable',
       tableName: 'new_table',
     }).init().meta;
-    orm.getMetadata().set('NewTable', newTableMeta);
+    orm.getMetadata().set(newTableMeta.class, newTableMeta);
     let diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff).toMatchSnapshot('postgres-update-schema-enums-1');
     await orm.schema.execute(diff);

@@ -4,6 +4,7 @@ import type {
   Dictionary,
   EntityKey,
   EntityMetadata,
+  EntityName,
   EntityProperty,
   EntityValue,
   FilterKey,
@@ -66,7 +67,7 @@ export class EntityLoader {
    * Loads specified relations in batch.
    * This will execute one query for each relation, that will populate it on all the specified entities.
    */
-  async populate<Entity extends object, Fields extends string = PopulatePath.ALL>(entityName: string, entities: Entity[], populate: PopulateOptions<Entity>[] | boolean, options: EntityLoaderOptions<Entity, Fields>): Promise<void> {
+  async populate<Entity extends object, Fields extends string = PopulatePath.ALL>(entityName: EntityName<Entity>, entities: Entity[], populate: PopulateOptions<Entity>[] | boolean, options: EntityLoaderOptions<Entity, Fields>): Promise<void> {
     if (entities.length === 0 || Utils.isEmpty(populate)) {
       return this.setSerializationContext(entities, populate, options);
     }
@@ -114,7 +115,7 @@ export class EntityLoader {
     }
   }
 
-  normalizePopulate<Entity>(entityName: string, populate: (PopulateOptions<Entity> | boolean)[] | PopulateOptions<Entity> | boolean, strategy?: LoadStrategy, lookup = true): PopulateOptions<Entity>[] {
+  normalizePopulate<Entity>(entityName: EntityName<Entity>, populate: (PopulateOptions<Entity> | boolean)[] | PopulateOptions<Entity> | boolean, strategy?: LoadStrategy, lookup = true): PopulateOptions<Entity>[] {
     const meta = this.metadata.find(entityName)!;
     let normalized = Utils.asArray(populate).map(field => {
       return typeof field === 'boolean' || field.field === PopulatePath.ALL ? { all: !!field, field: meta.primaryKeys[0] } as PopulateOptions<Entity> : field;
@@ -184,7 +185,7 @@ export class EntityLoader {
   /**
    * preload everything in one call (this will update already existing references in IM)
    */
-  private async populateMany<Entity extends object>(entityName: string, entities: Entity[], populate: PopulateOptions<Entity>, options: Required<EntityLoaderOptions<Entity>>): Promise<AnyEntity[]> {
+  private async populateMany<Entity extends object>(entityName: EntityName<Entity>, entities: Entity[], populate: PopulateOptions<Entity>, options: Required<EntityLoaderOptions<Entity>>): Promise<AnyEntity[]> {
     const [field, ref] = populate.field.split(':', 2) as [EntityKey<Entity>, string | undefined];
     const meta = this.metadata.find<Entity>(entityName)!;
     const prop = meta.properties[field];
@@ -240,7 +241,7 @@ export class EntityLoader {
     const where = this.mergePrimaryCondition<Entity>(ids as Entity[], pk, options, meta, this.metadata, this.driver.getPlatform());
     const { filters, convertCustomTypes, lockMode, strategy, populateWhere, connectionType, logging, fields } = options;
 
-    await this.em.find(meta.className, where, {
+    await this.em.find(meta.class, where, {
       filters, convertCustomTypes, lockMode, strategy, populateWhere, connectionType, logging,
       fields: fields as never[],
       populate: [],
@@ -270,7 +271,7 @@ export class EntityLoader {
       const pk = child.__helper.__data[prop.mappedBy] ?? child[prop.mappedBy];
 
       if (pk) {
-        const key = helper(mapToPk ? this.em.getReference(prop.type, pk) : pk).getSerializedPrimaryKey();
+        const key = helper(mapToPk ? this.em.getReference(prop.targetMeta!.class, pk) : pk).getSerializedPrimaryKey();
         map[key]?.push(child as Entity);
       }
     }
@@ -356,7 +357,7 @@ export class EntityLoader {
       return idx === 0 || !Utils.equals(Utils.getObjectQueryKeys(array[idx - 1]), Utils.getObjectQueryKeys(order));
     });
 
-    const items = await this.em.find(prop.type, where, {
+    const items = await this.em.find(meta.class, where, {
       filters, convertCustomTypes, lockMode, populateWhere, logging,
       orderBy,
       populate: populate.children as never ?? populate.all ?? [],
@@ -403,7 +404,7 @@ export class EntityLoader {
   }
 
   private mergePrimaryCondition<Entity extends object>(ids: Entity[], pk: FilterKey<Entity>, options: EntityLoaderOptions<Entity>, meta: EntityMetadata, metadata: MetadataStorage, platform: Platform): FilterQuery<Entity> {
-    const cond1 = QueryHelper.processWhere<Entity>({ where: { [pk]: { $in: ids } } as FilterQuery<Entity>, entityName: meta.className, metadata, platform, convertCustomTypes: !options.convertCustomTypes });
+    const cond1 = QueryHelper.processWhere<Entity>({ where: { [pk]: { $in: ids } } as FilterQuery<Entity>, entityName: meta.class, metadata, platform, convertCustomTypes: !options.convertCustomTypes });
     const where = { ...options.where } as Dictionary;
     Utils.dropUndefinedProperties(where);
 
@@ -412,7 +413,7 @@ export class EntityLoader {
       : { ...cond1, ...where };
   }
 
-  private async populateField<Entity extends object>(entityName: string, entities: Entity[], populate: PopulateOptions<Entity>, options: Required<EntityLoaderOptions<Entity>>): Promise<void> {
+  private async populateField<Entity extends object>(entityName: EntityName<Entity>, entities: Entity[], populate: PopulateOptions<Entity>, options: Required<EntityLoaderOptions<Entity>>): Promise<void> {
     const field = populate.field.split(':')[0] as EntityKey<Entity>;
     const prop = this.metadata.find(entityName)!.properties[field] as EntityProperty<Entity>;
 
@@ -466,7 +467,12 @@ export class EntityLoader {
       visited.add(entity);
     }
 
-    await this.populate<Entity>(prop.type, unique, populate.children ?? populate.all as any, {
+    // skip lazy scalar properties
+    if (!prop.targetMeta) {
+      return;
+    }
+
+    await this.populate<Entity>(prop.targetMeta!.class, unique, populate.children ?? populate.all as any, {
       where: await this.extractChildCondition(options, prop, false) as FilterQuery<Entity>,
       orderBy: innerOrderBy as QueryOrderMap<Entity>[],
       fields,
@@ -516,13 +522,13 @@ export class EntityLoader {
     for (const entity of (filtered as AnyEntity[])) {
       const items = map[entity.__helper!.getSerializedPrimaryKey()].map(item => {
         if (pivotJoin) {
-          return this.em.getReference(prop.type, item, {
+          return this.em.getReference(prop.targetMeta!.class, item, {
             convertCustomTypes: true,
             schema: options.schema ?? this.em.config.get('schema'),
           });
         }
 
-        const entity = this.em.getEntityFactory().create(prop.type, item, {
+        const entity = this.em.getEntityFactory().create(prop.targetMeta!.class, item, {
           refresh,
           merge: true,
           convertCustomTypes: true,
@@ -540,12 +546,7 @@ export class EntityLoader {
   private async extractChildCondition<Entity>(options: Required<EntityLoaderOptions<Entity>>, prop: EntityProperty<Entity>, filters = false) {
     const where = options.where as Dictionary;
     const subCond = Utils.isPlainObject(where[prop.name]) ? where[prop.name] : {};
-    const meta2 = this.metadata.find(prop.type);
-
-    if (!meta2) {
-      return {};
-    }
-
+    const meta2 = prop.targetMeta!;
     const pk = Utils.getPrimaryKeyHash(meta2.primaryKeys);
 
     ['$and', '$or'].forEach(op => {
@@ -578,7 +579,7 @@ export class EntityLoader {
     }
 
     if (filters) {
-      return this.em.applyFilters(prop.type, subCond, options.filters, 'read', options);
+      return this.em.applyFilters(meta2.class, subCond, options.filters, 'read', options);
     }
 
     return subCond;
@@ -717,7 +718,7 @@ export class EntityLoader {
     return entities.filter(e => e[field] !== null && !(e[field] as AnyEntity)?.__helper?.__initialized);
   }
 
-  private lookupAllRelationships<Entity>(entityName: string): PopulateOptions<Entity>[] {
+  private lookupAllRelationships<Entity>(entityName: EntityName<Entity>): PopulateOptions<Entity>[] {
     const ret: PopulateOptions<Entity>[] = [];
     const meta = this.metadata.find<Entity>(entityName)!;
 
@@ -742,18 +743,18 @@ export class EntityLoader {
     return `${this.getRelationName(meta, meta.properties[prop.embedded[0]])}.${prop.embedded[1]}` as EntityKey<Entity>;
   }
 
-  private lookupEagerLoadedRelationships<Entity>(entityName: string, populate: PopulateOptions<Entity>[], strategy?: LoadStrategy, prefix = '', visited: string[] = []): PopulateOptions<Entity>[] {
+  private lookupEagerLoadedRelationships<Entity>(entityName: EntityName<Entity>, populate: PopulateOptions<Entity>[], strategy?: LoadStrategy, prefix = '', visited: EntityMetadata[] = []): PopulateOptions<Entity>[] {
     const meta = this.metadata.find<Entity>(entityName);
 
     if (!meta && !prefix) {
       return populate;
     }
 
-    if (visited.includes(entityName) || !meta) {
+    if (!meta || visited.includes(meta)) {
       return [];
     }
 
-    visited.push(entityName);
+    visited.push(meta);
     const ret: PopulateOptions<Entity>[] = prefix === '' ? [...populate] : [];
 
     meta.relations
@@ -768,12 +769,12 @@ export class EntityLoader {
         const field = this.getRelationName(meta, prop);
         const prefixed = prefix ? `${prefix}.${field}` as EntityKey<Entity> : field;
         const nestedPopulate = populate.filter(p => p.field === prop.name).flatMap(p => p.children).filter(Boolean);
-        const nested = this.lookupEagerLoadedRelationships<Entity>(prop.type, nestedPopulate as any, strategy, prefixed, visited.slice());
+        const nested = this.lookupEagerLoadedRelationships<Entity>(prop.targetMeta!.class, nestedPopulate as any, strategy, prefixed, visited.slice());
 
         if (nested.length > 0) {
           ret.push(...nested);
         } else {
-          const selfReferencing = [meta.className, meta.root.className, ...visited].includes(prop.type) && prop.eager;
+          const selfReferencing = [meta.className, meta.root.className, ...visited.map(m => m.className)].includes(prop.type) && prop.eager;
           ret.push({
             field: prefixed,
             // enforce select-in strategy for self-referencing relations

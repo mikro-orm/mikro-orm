@@ -97,7 +97,7 @@ export abstract class AbstractSqlDriver<
     const connectionType = this.resolveConnectionType({ ctx: options.ctx, connectionType: options.connectionType });
     const populate = this.autoJoinOneToOneOwner(meta, options.populate as unknown as PopulateOptions<T>[], options.fields);
     const joinedProps = this.joinedProps(meta, populate, options);
-    const qb = this.createQueryBuilder<T>(meta.className, options.ctx, connectionType, false, options.logging, undefined, options.em as any);
+    const qb = this.createQueryBuilder(meta.class, options.ctx, connectionType, false, options.logging, undefined, options.em as any);
     const fields = this.buildFields(meta, populate, joinedProps, qb, qb.alias, options);
     const orderBy = this.buildOrderBy(qb, meta, populate, options);
     const populateWhere = this.buildPopulateWhere(meta, joinedProps, options);
@@ -147,11 +147,11 @@ export abstract class AbstractSqlDriver<
     return qb;
   }
 
-  async find<T extends object, P extends string = never, F extends string = PopulatePath.ALL, E extends string = never>(entityName: string, where: ObjectQuery<T>, options: FindOptions<T, P, F, E> = {}): Promise<EntityData<T>[]> {
+  async find<T extends object, P extends string = never, F extends string = PopulatePath.ALL, E extends string = never>(entityName: EntityName<T>, where: ObjectQuery<T>, options: FindOptions<T, P, F, E> = {}): Promise<EntityData<T>[]> {
     options = { populate: [], orderBy: [], ...options };
-    const meta = this.metadata.find<T>(entityName)!;
+    const meta = this.metadata.get(entityName);
 
-    if (meta?.virtual) {
+    if (meta.virtual) {
       return this.findVirtual<T>(entityName, where, options);
     }
 
@@ -165,7 +165,7 @@ export abstract class AbstractSqlDriver<
     return result;
   }
 
-  async findOne<T extends object, P extends string = never, F extends string = PopulatePath.ALL, E extends string = never>(entityName: string, where: ObjectQuery<T>, options?: FindOneOptions<T, P, F, E>): Promise<EntityData<T> | null> {
+  async findOne<T extends object, P extends string = never, F extends string = PopulatePath.ALL, E extends string = never>(entityName: EntityName<T>, where: ObjectQuery<T>, options?: FindOneOptions<T, P, F, E>): Promise<EntityData<T> | null> {
     const opts = { populate: [], ...options } as FindOptions<T>;
     const meta = this.metadata.find(entityName)!;
     const populate = this.autoJoinOneToOneOwner(meta, opts.populate as unknown as PopulateOptions<T>[], opts.fields);
@@ -201,15 +201,15 @@ export abstract class AbstractSqlDriver<
     return false;
   }
 
-  override async findVirtual<T extends object>(entityName: string, where: ObjectQuery<T>, options: FindOptions<T, any, any, any>): Promise<EntityData<T>[]> {
+  override async findVirtual<T extends object>(entityName: EntityName<T>, where: ObjectQuery<T>, options: FindOptions<T, any, any, any>): Promise<EntityData<T>[]> {
     return this.findFromVirtual(entityName, where, options, QueryType.SELECT) as Promise<EntityData<T>[]>;
   }
 
-  override async countVirtual<T extends object>(entityName: string, where: ObjectQuery<T>, options: CountOptions<T, any>): Promise<number> {
+  override async countVirtual<T extends object>(entityName: EntityName<T>, where: ObjectQuery<T>, options: CountOptions<T, any>): Promise<number> {
     return this.findFromVirtual(entityName, where, options, QueryType.COUNT) as Promise<number>;
   }
 
-  protected async findFromVirtual<T extends object>(entityName: string, where: ObjectQuery<T>, options: FindOptions<T, any> | CountOptions<T, any>, type: QueryType): Promise<EntityData<T>[] | number> {
+  protected async findFromVirtual<T extends object>(entityName: EntityName<T>, where: ObjectQuery<T>, options: FindOptions<T, any> | CountOptions<T, any>, type: QueryType): Promise<EntityData<T>[] | number> {
     const meta = this.metadata.get<T>(entityName);
 
     /* v8 ignore next */
@@ -358,7 +358,7 @@ export abstract class AbstractSqlDriver<
       }
 
       const pivotRefJoin = prop.kind === ReferenceKind.MANY_TO_MANY && ref;
-      const meta2 = this.metadata.find<T>(prop.type)!;
+      const meta2 = prop.targetMeta as EntityMetadata<T>;
       let path = parentJoinPath ? `${parentJoinPath}.${prop.name}` : `${meta.name}.${prop.name}`;
 
       if (!parentJoinPath) {
@@ -473,9 +473,9 @@ export abstract class AbstractSqlDriver<
             const item = parseJsonSafe(relationPojo[prop.name]);
 
             if (Array.isArray(item)) {
-              relationPojo[prop.name] = item.map(row => row == null ? row : this.comparator.mapResult(prop.type, row)) as EntityDataValue<T>;
+              relationPojo[prop.name] = item.map(row => row == null ? row : this.comparator.mapResult(prop.targetMeta!, row)) as EntityDataValue<T>;
             } else {
-              relationPojo[prop.name] = item == null ? item : this.comparator.mapResult(prop.type, item) as EntityDataValue<T>;
+              relationPojo[prop.name] = item == null ? item : this.comparator.mapResult(prop.targetMeta!, item) as EntityDataValue<T>;
             }
           }
         }
@@ -507,7 +507,7 @@ export abstract class AbstractSqlDriver<
     });
   }
 
-  async count<T extends object>(entityName: string, where: any, options: CountOptions<T> = {}): Promise<number> {
+  async count<T extends object>(entityName: EntityName<T>, where: any, options: CountOptions<T> = {}): Promise<number> {
     const meta = this.metadata.get(entityName);
 
     if (meta.virtual) {
@@ -545,38 +545,37 @@ export abstract class AbstractSqlDriver<
     return this.rethrow(qb.getCount());
   }
 
-  async nativeInsert<T extends object>(entityName: string, data: EntityDictionary<T>, options: NativeInsertUpdateOptions<T> = {}): Promise<QueryResult<T>> {
+  async nativeInsert<T extends object>(entityName: EntityName<T>, data: EntityDictionary<T>, options: NativeInsertUpdateOptions<T> = {}): Promise<QueryResult<T>> {
     options.convertCustomTypes ??= true;
-    const meta = this.metadata.find<T>(entityName)!;
-    const collections = this.extractManyToMany(entityName, data);
-    const pks = meta?.primaryKeys ?? [this.config.getNamingStrategy().referenceColumnName()];
-    const qb = this.createQueryBuilder<T>(entityName, options.ctx, 'write', options.convertCustomTypes, options.loggerContext).withSchema(this.getSchemaName(meta, options));
+    const meta = this.metadata.get(entityName);
+    const collections = this.extractManyToMany(meta, data);
+    const qb = this.createQueryBuilder(entityName, options.ctx, 'write', options.convertCustomTypes, options.loggerContext).withSchema(this.getSchemaName(meta, options));
     const res = await this.rethrow(qb.insert(data as unknown as RequiredEntityData<T>).execute('run', false));
     res.row = res.row || {};
     let pk: any;
 
-    if (pks.length > 1) { // owner has composite pk
-      pk = Utils.getPrimaryKeyCond(data as T, pks);
+    if (meta.primaryKeys.length > 1) { // owner has composite pk
+      pk = Utils.getPrimaryKeyCond(data as T, meta.primaryKeys);
     } else {
       /* v8 ignore next */
-      res.insertId = data[pks[0]] ?? res.insertId ?? res.row[pks[0]];
+      res.insertId = data[meta.primaryKeys[0]] ?? res.insertId ?? res.row[meta.primaryKeys[0]];
       pk = [res.insertId];
     }
 
-    await this.processManyToMany<T>(meta, pk, collections, false, options);
+    await this.processManyToMany(meta, pk, collections, false, options);
 
     return res;
   }
 
-  async nativeInsertMany<T extends object>(entityName: string, data: EntityDictionary<T>[], options: NativeInsertUpdateManyOptions<T> = {}, transform?: (sql: string) => string): Promise<QueryResult<T>> {
+  async nativeInsertMany<T extends object>(entityName: EntityName<T>, data: EntityDictionary<T>[], options: NativeInsertUpdateManyOptions<T> = {}, transform?: (sql: string) => string): Promise<QueryResult<T>> {
     options.processCollections ??= true;
     options.convertCustomTypes ??= true;
-    const meta = this.metadata.find<T>(entityName)?.root;
-    const collections = options.processCollections ? data.map(d => this.extractManyToMany(entityName, d)) : [];
-    const pks = this.getPrimaryKeyFields(entityName) as EntityKey<T>[];
+    const meta = this.metadata.get(entityName).root;
+    const collections = options.processCollections ? data.map(d => this.extractManyToMany(meta, d)) : [];
+    const pks = this.getPrimaryKeyFields(meta);
     const set = new Set<EntityKey<T>>();
     data.forEach(row => Utils.keys(row).forEach(k => set.add(k)));
-    const props = [...set].map(name => meta?.properties[name] ?? { name, fieldNames: [name] }) as EntityProperty<T>[];
+    const props = [...set].map(name => meta.properties[name] ?? { name, fieldNames: [name] }) as EntityProperty<T>[];
     let fields = Utils.flatten(props.map(prop => prop.fieldNames));
     const duplicates = Utils.findDuplicates(fields);
     const params: unknown[] = [];
@@ -585,12 +584,11 @@ export abstract class AbstractSqlDriver<
       fields = Utils.unique(fields);
     }
 
-    /* v8 ignore next */
-    const tableName = meta ? this.getTableName(meta, options) : this.platform.quoteIdentifier(entityName);
+    const tableName = this.getTableName(meta, options);
     let sql = `insert into ${tableName} `;
     sql += fields.length > 0 ? '(' + fields.map(k => this.platform.quoteIdentifier(k)).join(', ') + ')' : `(${this.platform.quoteIdentifier(pks[0])})`;
 
-    if (meta && this.platform.usesOutputStatement()) {
+    if (this.platform.usesOutputStatement()) {
       const returningProps = meta.props
         .filter(prop => prop.persist !== false && prop.defaultRaw || prop.autoincrement || prop.generated)
         .filter(prop => !(prop.name in data[0]) || isRaw(data[0][prop.name]));
@@ -708,7 +706,7 @@ export abstract class AbstractSqlDriver<
 
     /* v8 ignore next */
     if (pks.length > 1) { // owner has composite pk
-      pk = data.map(d => Utils.getPrimaryKeyCond(d as T, pks));
+      pk = data.map(d => Utils.getPrimaryKeyCond(d as T, pks as EntityKey<T>[]));
     } else {
       res.row ??= {};
       res.rows ??= [];
@@ -723,16 +721,16 @@ export abstract class AbstractSqlDriver<
     return res;
   }
 
-  async nativeUpdate<T extends object>(entityName: string, where: FilterQuery<T>, data: EntityDictionary<T>, options: NativeInsertUpdateOptions<T> & UpsertOptions<T> = {}): Promise<QueryResult<T>> {
+  async nativeUpdate<T extends object>(entityName: EntityName<T>, where: FilterQuery<T>, data: EntityDictionary<T>, options: NativeInsertUpdateOptions<T> & UpsertOptions<T> = {}): Promise<QueryResult<T>> {
     options.convertCustomTypes ??= true;
-    const meta = this.metadata.find<T>(entityName);
-    const pks = this.getPrimaryKeyFields(entityName);
-    const collections = this.extractManyToMany(entityName, data);
+    const meta = this.metadata.get(entityName);
+    const pks = this.getPrimaryKeyFields(meta);
+    const collections = this.extractManyToMany(meta, data);
     let res = { affectedRows: 0, insertId: 0, row: {} } as QueryResult<T>;
 
     if (Utils.isPrimaryKey(where) && pks.length === 1) {
       /* v8 ignore next */
-      where = { [meta?.primaryKeys[0] ?? pks[0]]: where } as FilterQuery<T>;
+      where = { [meta.primaryKeys[0] ?? pks[0]]: where } as FilterQuery<T>;
     }
 
     if (Utils.hasObjectKeys(data)) {
@@ -760,7 +758,7 @@ export abstract class AbstractSqlDriver<
 
         // reload generated columns and version fields
         const returning: string[] = [];
-        meta?.props
+        meta.props
           .filter(prop => (prop.generated && !prop.primary) || prop.version)
           .forEach(prop => returning.push(prop.name));
 
@@ -777,7 +775,7 @@ export abstract class AbstractSqlDriver<
     return res;
   }
 
-  override async nativeUpdateMany<T extends object>(entityName: string, where: FilterQuery<T>[], data: EntityDictionary<T>[], options: NativeInsertUpdateManyOptions<T> & UpsertManyOptions<T> = {}): Promise<QueryResult<T>> {
+  override async nativeUpdateMany<T extends object>(entityName: EntityName<T>, where: FilterQuery<T>[], data: EntityDictionary<T>[], options: NativeInsertUpdateManyOptions<T> & UpsertManyOptions<T> = {}): Promise<QueryResult<T>> {
     options.processCollections ??= true;
     options.convertCustomTypes ??= true;
     const meta = this.metadata.get<T>(entityName);
@@ -802,7 +800,7 @@ export abstract class AbstractSqlDriver<
       return this.rethrow(qb.execute('run', false));
     }
 
-    const collections = options.processCollections ? data.map(d => this.extractManyToMany(entityName, d)) : [];
+    const collections = options.processCollections ? data.map(d => this.extractManyToMany(meta, d)) : [];
     const keys = new Set<EntityKey<T>>();
     const fields = new Set<string>();
     const returning = new Set<EntityKey<T>>();
@@ -818,7 +816,7 @@ export abstract class AbstractSqlDriver<
     }
 
     // reload generated columns and version fields
-    meta?.props
+    meta.props
       .filter(prop => prop.generated || prop.version || prop.primary)
       .forEach(prop => returning.add(prop.name));
 
@@ -928,9 +926,9 @@ export abstract class AbstractSqlDriver<
     return res;
   }
 
-  async nativeDelete<T extends object>(entityName: string, where: FilterQuery<T> | string | any, options: DeleteOptions<T> = {}): Promise<QueryResult<T>> {
-    const meta = this.metadata.find(entityName);
-    const pks = this.getPrimaryKeyFields(entityName);
+  async nativeDelete<T extends object>(entityName: EntityName<T>, where: FilterQuery<T> | string | any, options: DeleteOptions<T> = {}): Promise<QueryResult<T>> {
+    const meta = this.metadata.get(entityName);
+    const pks = this.getPrimaryKeyFields(meta);
 
     if (Utils.isPrimaryKey(where) && pks.length === 1) {
       where = { [pks[0]]: where };
@@ -993,7 +991,7 @@ export abstract class AbstractSqlDriver<
 
       if (coll.property.kind === ReferenceKind.ONE_TO_MANY) {
         const cols = coll.property.referencedColumnNames;
-        const qb = this.createQueryBuilder(coll.property.type, options?.ctx, 'write')
+        const qb = this.createQueryBuilder(coll.property.targetMeta!.class, options?.ctx, 'write')
           .withSchema(this.getSchemaName(meta, options));
 
         if (coll.getSnapshot() === undefined) {
@@ -1021,7 +1019,6 @@ export abstract class AbstractSqlDriver<
         continue;
       }
 
-      /* v8 ignore next */
       const pivotMeta = this.metadata.find(coll.property.pivotEntity)!;
       let schema = pivotMeta.schema;
 
@@ -1052,10 +1049,10 @@ export abstract class AbstractSqlDriver<
       return {};
     }
 
-    const pivotMeta = this.metadata.find(prop.pivotEntity)!;
+    const pivotMeta = this.metadata.get(prop.pivotEntity);
     const pivotProp1 = pivotMeta.relations[prop.owner ? 1 : 0];
     const pivotProp2 = pivotMeta.relations[prop.owner ? 0 : 1];
-    const ownerMeta = this.metadata.find(pivotProp2.type)!;
+    const ownerMeta = pivotProp2.targetMeta as EntityMetadata<O>;
 
     const cond = {
       [pivotProp2.name]: { $in: ownerMeta.compositePK ? owners : owners.map(o => o[0]) },
@@ -1073,7 +1070,7 @@ export abstract class AbstractSqlDriver<
     const fields = pivotJoin
       ? [pivotProp1.name, pivotProp2.name] as any[]
       : [pivotProp1.name, pivotProp2.name, ...childFields];
-    const res = await this.find(pivotMeta.className, where, {
+    const res = await this.find(pivotMeta.class, where, {
       ctx,
       ...options,
       fields,
@@ -1129,9 +1126,9 @@ export abstract class AbstractSqlDriver<
 
   async *stream<T extends object>(entityName: EntityName<T>, where: FilterQuery<T>, options: StreamOptions<T, any, any, any>): AsyncIterableIterator<T> {
     options = { populate: [], orderBy: [], ...options };
-    const meta = this.metadata.find<T>(entityName)!;
+    const meta = this.metadata.get(entityName);
 
-    if (meta?.virtual) {
+    if (meta.virtual) {
       yield* this.streamFromVirtual(entityName, where, options as any) as AsyncIterableIterator<T>;
       return;
     }
@@ -1297,7 +1294,7 @@ export abstract class AbstractSqlDriver<
         continue;
       }
 
-      const meta2 = this.metadata.find<T>(prop.type)!;
+      const meta2 = prop.targetMeta as EntityMetadata<T>;
       const pivotRefJoin = prop.kind === ReferenceKind.MANY_TO_MANY && ref;
       const tableAlias = qb.getNextAlias(prop.name);
       const field = `${options.parentTableAlias}.${prop.name}`;
@@ -1446,31 +1443,23 @@ export abstract class AbstractSqlDriver<
     return 'write';
   }
 
-  protected extractManyToMany<T>(entityName: string, data: EntityDictionary<T>): EntityData<T> {
-    if (!this.metadata.has(entityName)) {
-      return {};
-    }
-
+  protected extractManyToMany<T>(meta: EntityMetadata<T>, data: EntityDictionary<T>): EntityData<T> {
     const ret: EntityData<T> = {};
 
-    this.metadata.find<T>(entityName)!.relations.forEach(prop => {
+    for (const prop of meta.relations) {
       if (prop.kind === ReferenceKind.MANY_TO_MANY && data[prop.name]) {
         ret[prop.name] = data[prop.name].map((item: Primary<T>) => Utils.asArray(item));
         delete data[prop.name];
       }
-    });
+    }
 
     return ret;
   }
 
-  protected async processManyToMany<T extends object>(meta: EntityMetadata<T> | undefined, pks: Primary<T>[], collections: EntityData<T>, clear: boolean, options?: DriverMethodOptions) {
-    if (!meta) {
-      return;
-    }
-
+  protected async processManyToMany<T extends object>(meta: EntityMetadata<T>, pks: Primary<T>[], collections: EntityData<T>, clear: boolean, options?: DriverMethodOptions) {
     for (const prop of meta.relations) {
       if (collections[prop.name]) {
-        const pivotMeta = this.metadata.find(prop.pivotEntity)!;
+        const pivotMeta = this.metadata.get(prop.pivotEntity);
         const persister = new PivotCollectionPersister(pivotMeta, this, options?.ctx, options?.schema, options?.loggerContext);
         persister.enqueueUpdate(prop, collections[prop.name] as Primary<T>[][], clear, pks);
         await this.rethrow(persister.execute());
@@ -1480,7 +1469,7 @@ export abstract class AbstractSqlDriver<
 
   override async lockPessimistic<T extends object>(entity: T, options: LockOptions): Promise<void> {
     const meta = helper(entity).__meta;
-    const qb = this.createQueryBuilder((entity as object).constructor.name, options.ctx, undefined, undefined, options.logging).withSchema(options.schema ?? meta.schema);
+    const qb = this.createQueryBuilder(meta.class, options.ctx, undefined, undefined, options.logging).withSchema(options.schema ?? meta.schema);
     const cond = Utils.getPrimaryKeyCond(entity, meta.primaryKeys);
     qb.select(raw('1')).where(cond!).setLockMode(options.lockMode, options.lockTableAliases);
     await this.rethrow(qb.execute());
@@ -1555,7 +1544,7 @@ export abstract class AbstractSqlDriver<
         }
 
         let path = parentPath;
-        const meta2 = this.metadata.find<T>(prop.type)!;
+        const meta2 = prop.targetMeta!;
         if (prop.kind !== ReferenceKind.SCALAR && (![ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind) || !prop.owner || Utils.isPlainObject(childOrder))) {
           path += `.${field}`;
         }
@@ -1617,7 +1606,7 @@ export abstract class AbstractSqlDriver<
       const join = qb.getJoinForPath(path, { matchPopulateJoins: true });
       const propAlias = qb.getAliasForJoinPath(join ?? path, { matchPopulateJoins: true });
 
-      const meta2 = this.metadata.find<T>(prop.type)!;
+      const meta2 = prop.targetMeta!;
 
       if (prop.kind === ReferenceKind.MANY_TO_MANY && prop.fixedOrder && join) {
         const alias = ref ? propAlias : join.ownerAlias;
@@ -1721,7 +1710,7 @@ export abstract class AbstractSqlDriver<
         const prop = QueryHelper.findProperty<T>(rootPropName, {
           metadata: this.metadata,
           platform: this.platform,
-          entityName: meta.className,
+          entityName: meta.class,
           where: {} as FilterQuery<T>,
           aliasMap: qb.getAliasMap(),
         });

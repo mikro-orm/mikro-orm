@@ -129,8 +129,8 @@ describe('polymorphic embeddables in sqlite', () => {
 
   test(`diffing`, async () => {
     const hydrator = orm.config.getHydrator(orm.getMetadata()) as ObjectHydrator;
-    expect(hydrator.getEntityHydrator(orm.getMetadata().get('Owner'), 'full').toString()).toMatchSnapshot();
-    expect(orm.em.getComparator().getSnapshotGenerator('Owner').toString()).toMatchSnapshot();
+    expect(hydrator.getEntityHydrator(orm.getMetadata().get(Owner), 'full').toString()).toMatchSnapshot();
+    expect(orm.em.getComparator().getSnapshotGenerator(Owner).toString()).toMatchSnapshot();
   });
 
   test(`working with polymorphic embeddables`, async () => {

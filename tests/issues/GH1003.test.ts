@@ -8,7 +8,7 @@ class Parent extends BaseEntity {
   @PrimaryKey()
   id!: string;
 
-  @OneToMany({ entity: 'Child', mappedBy: 'parent' })
+  @OneToMany({ entity: () => Child, mappedBy: 'parent' })
   children = new Collection<Child>(this);
 
 }

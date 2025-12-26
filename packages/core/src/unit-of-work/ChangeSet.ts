@@ -8,13 +8,14 @@ export class ChangeSet<T extends object> {
   private primaryKey?: Primary<T> | null;
   private serializedPrimaryKey?: string;
 
-  constructor(public entity: T,
-              public type: ChangeSetType,
-              public payload: EntityDictionary<T>,
-              public meta: EntityMetadata<T>) {
-    this.name = meta.className;
-    this.rootName = meta.root.className;
-    this.collection = meta.root.collection;
+  constructor(
+    public entity: T,
+    public type: ChangeSetType,
+    public payload: EntityDictionary<T>,
+    public meta: EntityMetadata<T>,
+  ) {
+    this.meta = meta;
+    this.rootMeta = meta.root;
     this.schema = helper(entity).__schema ?? meta.root.schema;
   }
 
@@ -65,9 +66,8 @@ export class ChangeSet<T extends object> {
 }
 
 export interface ChangeSet<T> {
-  name: string;
-  rootName: string;
-  collection: string;
+  meta: EntityMetadata<T>;
+  rootMeta: EntityMetadata<T>;
   schema?: string;
   type: ChangeSetType;
   entity: T;

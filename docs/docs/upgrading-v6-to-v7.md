@@ -56,6 +56,22 @@ The `ReflectMetadataProvider` has been moved to the `@mikro-orm/decorators/legac
 
 Use `em.persist(entity).flush()` and `em.remove(entity).flush()` instead.
 
+## String references are no longer supported
+
+Previously, it was possible to use string references in many places, e.g. when calling `em.find('User')`. This is no longer supported, use class reference, or EntitySchema reference.
+
+```diff
+-em.find('User');
++em.find(User);
+```
+
+This applies to entity definition too.
+
+```diff
+-@ManyToOne('User')
++@ManyToOne(() => User)
+```
+
 ## TypeScript support in CLI
 
 TypeScript support was previously provided by `ts-node`. In v7, the CLI supports various TS loaders:
@@ -327,4 +343,13 @@ The `where` parameter is now moved to the options object.
 ```diff
 -const cursor = await em.findByCursor(User, { email: '...' }, { first: 3 });
 +const cursor = await em.findByCursor(User, { first: 3, where: { email: '...' } });
+```
+
+## `qb.as()` signature changed
+
+Previosly, it was possible to prefix the alias with target entity name. This is now done via two parameter signature instead:
+
+```diff
+-qb.as('User.fullName');
++qb.as(User, 'fullName');
 ```

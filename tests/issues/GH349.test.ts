@@ -128,7 +128,7 @@ describe('GH issue 349', () => {
     orm.em.clear();
     const getA = await orm.em.findOneOrFail(A, a1._id);
     expect(getA._id).not.toBeInstanceOf(ObjectId);
-    const getA2 = await orm.em.getDriver().findOne<A>(A.name, a1._id);
+    const getA2 = await orm.em.getDriver().findOne(A, a1._id);
     expect(getA2!._id).not.toBeInstanceOf(ObjectId);
   });
 

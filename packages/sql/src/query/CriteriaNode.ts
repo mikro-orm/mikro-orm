@@ -8,6 +8,7 @@ import {
   ReferenceKind,
   Utils,
   inspect,
+  type EntityName,
 } from '@mikro-orm/core';
 import type { ICriteriaNode, ICriteriaNodeProcessOptions, IQueryBuilder } from '../typings.js';
 
@@ -22,12 +23,14 @@ export class CriteriaNode<T extends object> implements ICriteriaNode<T> {
   prop?: EntityProperty<T>;
   index?: number;
 
-  constructor(protected readonly metadata: MetadataStorage,
-              readonly entityName: string,
-              readonly parent?: ICriteriaNode<T>,
-              readonly key?: EntityKey<T> | RawQueryFragmentSymbol,
-              validate = true,
-              readonly strict = false) {
+  constructor(
+    protected readonly metadata: MetadataStorage,
+    readonly entityName: EntityName<T>,
+    readonly parent?: ICriteriaNode<T>,
+    readonly key?: EntityKey<T> | RawQueryFragmentSymbol,
+    validate = true,
+    readonly strict = false,
+  ) {
     const meta = parent && metadata.find<T>(parent.entityName);
 
     if (meta && key && !RawQueryFragment.isKnownFragmentSymbol(key)) {
@@ -43,7 +46,7 @@ export class CriteriaNode<T extends object> implements ICriteriaNode<T> {
 
         // do not validate if the key is prefixed or type casted (e.g. `k::text`)
         if (validate && !isProp && !k.includes('.') && !k.includes('::') && !Utils.isOperator(k)) {
-          throw new Error(`Trying to query by not existing property ${entityName}.${k}`);
+          throw new Error(`Trying to query by not existing property ${Utils.className(entityName)}.${k}`);
         }
       }
     }
@@ -105,7 +108,7 @@ export class CriteriaNode<T extends object> implements ICriteriaNode<T> {
   getPath(addIndex = false): string {
     // use index on parent only if we are processing to-many relation
     const addParentIndex = this.prop && [ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(this.prop.kind);
-    const parentPath = this.parent?.getPath(addParentIndex) ?? this.entityName;
+    const parentPath = this.parent?.getPath(addParentIndex) ?? Utils.className(this.entityName);
     const index = addIndex && this.index != null ? `[${this.index}]` : '';
     // ignore group operators to allow easier mapping (e.g. for orderBy)
     const key = this.key && !RawQueryFragment.isKnownFragmentSymbol(this.key) && !['$and', '$or', '$not'].includes(this.key) ? '.' + this.key : '';
@@ -144,6 +147,7 @@ export class CriteriaNode<T extends object> implements ICriteriaNode<T> {
   }
 
   /** @ignore */
+  /* v8 ignore next */
   [Symbol.for('nodejs.util.inspect.custom')]() {
     const o: Dictionary = {};
     (['entityName', 'key', 'index', 'payload'] as const)

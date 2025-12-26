@@ -69,7 +69,6 @@ class RoleAdmin extends Role<'admin'> {
   @ManyToOne(() => Group, { ref: true })
   group!: EntityRef<Group>;
 
-
   @Property({ getter: true, persist: false })
   get fkGroup(): Opt<number> {
     return this.group.id;

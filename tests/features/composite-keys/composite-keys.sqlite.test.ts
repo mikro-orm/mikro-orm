@@ -4,7 +4,7 @@ import { AbstractSqlConnection, SqliteDriver } from '@mikro-orm/sqlite';
 import { mockLogger } from '../../helpers.js';
 
 @Entity()
-export class FooBar2 {
+class FooBar2 {
 
   @PrimaryKey()
   id!: number;
@@ -19,7 +19,7 @@ export class FooBar2 {
 }
 
 @Entity()
-export class FooBaz2 {
+class FooBaz2 {
 
   @PrimaryKey()
   id!: number;
@@ -34,7 +34,7 @@ export class FooBaz2 {
 }
 
 @Entity()
-export class FooParam2 {
+class FooParam2 {
 
   @ManyToOne(() => FooBar2, { primary: true })
   bar!: FooBar2;
@@ -59,12 +59,12 @@ export class FooParam2 {
 }
 
 @Entity()
-export class Configuration2 {
+class Configuration2 {
 
   @PrimaryKey()
   property: string;
 
-  @ManyToOne('Test2', { primary: true })
+  @ManyToOne(() => Test2, { primary: true })
   test: any;
 
   @Property()
@@ -79,7 +79,7 @@ export class Configuration2 {
 }
 
 @Entity()
-export class Test2 {
+class Test2 {
 
   @PrimaryKey()
   id!: number;
@@ -104,7 +104,7 @@ export class Test2 {
 }
 
 @Entity()
-export class Author2 {
+class Author2 {
 
   @PrimaryKey()
   id!: number;
@@ -112,7 +112,7 @@ export class Author2 {
   @Property()
   name: string;
 
-  @OneToOne('Address2', 'author', { cascade: [Cascade.ALL] })
+  @OneToOne(() => Address2, 'author', { cascade: [Cascade.ALL] })
   address?: any;
 
   constructor(name: string) {
@@ -122,7 +122,7 @@ export class Author2 {
 }
 
 @Entity({ comment: 'This is address table' })
-export class Address2 {
+class Address2 {
 
   @OneToOne({ entity: () => Author2, primary: true, joinColumn: 'author_id', unique: 'address2_author_id_unique' })
   author: Author2;
@@ -138,7 +138,7 @@ export class Address2 {
 }
 
 @Entity()
-export class Car2 {
+class Car2 {
 
   @PrimaryKey({ length: 100 })
   name: string;
@@ -149,7 +149,7 @@ export class Car2 {
   @Property()
   price: number;
 
-  @ManyToMany('User2', 'cars')
+  @ManyToMany(() => User2, 'cars')
   users = new Collection<User2>(this);
 
   [PrimaryKeyProp]?: ['name', 'year'];
@@ -163,7 +163,7 @@ export class Car2 {
 }
 
 @Entity()
-export class User2 {
+class User2 {
 
   @PrimaryKey({ length: 100 })
   firstName: string;
@@ -177,7 +177,7 @@ export class User2 {
   @ManyToMany(() => Car2)
   cars = new Collection<Car2>(this);
 
-  @ManyToMany('Sandwich')
+  @ManyToMany(() => Sandwich)
   sandwiches = new Collection<Sandwich>(this);
 
   @OneToOne({ entity: () => Car2, nullable: true })
@@ -193,7 +193,7 @@ export class User2 {
 }
 
 @Entity()
-export class Sandwich {
+class Sandwich {
 
   @PrimaryKey()
   id!: number;
@@ -215,7 +215,7 @@ export class Sandwich {
 }
 
 @Entity()
-export class CarOwner2 {
+class CarOwner2 {
 
   @PrimaryKey()
   id!: number;

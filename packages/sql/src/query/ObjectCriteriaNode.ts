@@ -57,8 +57,8 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
           const payload = (this.payload[key] as CriteriaNode<T>).unwrap();
           const qb2 = qb.clone(true);
           const sub = qb2
-            .from(parentMeta.className)
-            .innerJoin(this.key! as string, qb2.getNextAlias(this.prop!.type))
+            .from(parentMeta.class)
+            .innerJoin(this.key! as string, qb2.getNextAlias(this.prop!.targetMeta!.class))
             .select(parentMeta.primaryKeys);
 
           if (key === '$every') {
@@ -111,7 +111,7 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
       // we need to keep the prefixing for formulas otherwise we would lose aliasing context when nesting inside group operators
       const virtual = childNode.prop?.persist === false && !childNode.prop?.formula;
       // if key is missing, we are inside group operator and we need to prefix with alias
-      const primaryKey = this.key && this.metadata.find(this.entityName)?.primaryKeys.includes(field as string);
+      const primaryKey = this.key && this.metadata.find(this.entityName)?.primaryKeys.includes(field as EntityKey);
       const isToOne = childNode.prop && [ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(childNode.prop.kind);
 
       if (childNode.shouldInline(payload)) {
@@ -126,7 +126,7 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
       } else if (primaryKey || virtual || operator || field.includes('.') || ![QueryType.SELECT, QueryType.COUNT].includes(qb.type)) {
         this.inlineCondition(field.replaceAll(ALIAS_REPLACEMENT, alias!), o, payload);
       } else {
-        this.inlineCondition(`${alias}.${field}`, o, payload);
+        this.inlineCondition(`${alias ?? qb.alias}.${field}`, o, payload);
       }
 
       return o;
@@ -192,8 +192,8 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
     this.inlineCondition(key, obj, value);
   }
 
-  private inlineChildPayload<T>(o: Dictionary, payload: Dictionary, field: EntityKey<T>, alias?: string, childAlias?: string) {
-    const prop = this.metadata.find<T>(this.entityName)!.properties[field];
+  private inlineChildPayload(o: Dictionary, payload: Dictionary, field: EntityKey<T>, alias?: string, childAlias?: string) {
+    const prop = this.metadata.find(this.entityName)!.properties[field];
 
     for (const k of Utils.getObjectQueryKeys(payload)) {
       if (RawQueryFragment.isKnownFragmentSymbol(k)) {
@@ -236,7 +236,7 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
       return false;
     }
 
-    const keys = Utils.getObjectQueryKeys(this.payload);
+    const keys = Utils.getObjectQueryKeys(this.payload) as EntityKey<T>[];
 
     if (keys.every(k => typeof k === 'string' && k.includes('.') && k.startsWith(`${qb.alias}.`))) {
       return false;
@@ -265,8 +265,8 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
     return !primaryKeys && !nestedAlias && !operatorKeys && !embeddable;
   }
 
-  private autoJoin<T>(qb: IQueryBuilder<T>, alias: string, options?: ICriteriaNodeProcessOptions): string {
-    const nestedAlias = qb.getNextAlias(this.prop?.pivotTable ?? this.entityName);
+  private autoJoin(qb: IQueryBuilder<T>, alias: string, options?: ICriteriaNodeProcessOptions): string {
+    const nestedAlias = qb.getNextAlias(this.prop?.pivotEntity ?? this.entityName);
     const rawField = RawQueryFragment.isKnownFragmentSymbol(this.key);
     const scalar = Utils.isPrimaryKey(this.payload) || this.payload as unknown instanceof RegExp || this.payload as unknown instanceof Date || rawField;
     const operator = Utils.isPlainObject(this.payload) && Utils.getObjectQueryKeys(this.payload).every(k => Utils.isOperator(k, false));

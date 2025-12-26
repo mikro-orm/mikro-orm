@@ -46,7 +46,7 @@ beforeAll(async () => {
   orm = await MikroORM.init({
     metadataProvider: ReflectMetadataProvider,
     entities: [Book],
-    dbName: `:memory:`,
+    dbName: ':memory:',
   });
 
   await orm.schema.refresh();

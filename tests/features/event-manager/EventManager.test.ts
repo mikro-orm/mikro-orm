@@ -18,7 +18,7 @@ describe('EventManager', () => {
     orm = new MikroORM({
       entities: [User],
       subscribers: new Set([new UserSubscriber()]),
-      dbName: `:memory:`,
+      dbName: ':memory:',
     });
   });
 

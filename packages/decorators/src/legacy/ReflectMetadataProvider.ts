@@ -1,16 +1,26 @@
 import 'reflect-metadata';
-import { type EntityMetadata, type EntityProperty, MetadataProvider, ReferenceKind, Utils } from '@mikro-orm/core';
+import {
+  type EntityClass,
+  type EntityMetadata,
+  type EntityProperty,
+  EntitySchema,
+  MetadataProvider,
+  ReferenceKind,
+  Utils,
+} from '@mikro-orm/core';
 
 export class ReflectMetadataProvider extends MetadataProvider {
 
   override loadEntityMetadata(meta: EntityMetadata): void {
     // load types and column names
     for (const prop of meta.props) {
+      /* v8 ignore next */
       if (typeof prop.entity === 'string') {
-        prop.type = prop.entity;
+        throw new Error(`Relation target needs to be an entity class or EntitySchema instance, '${prop.entity}' given instead for ${meta.className}.${prop.name}.`);
       } else if (prop.entity) {
-        const tmp = prop.entity();
+        const tmp = prop.entity() as EntityClass;
         prop.type = Array.isArray(tmp) ? tmp.map(t => Utils.className(t)).sort().join(' | ') : Utils.className(tmp);
+        prop.target = tmp instanceof EntitySchema ? tmp.meta.class : tmp;
       } else {
         this.initPropertyType(meta, prop);
       }
@@ -41,6 +51,7 @@ export class ReflectMetadataProvider extends MetadataProvider {
 
     prop.type ??= typeName;
     prop.runtimeType ??= typeName;
+    prop.target = type;
   }
 
 }

@@ -50,7 +50,7 @@ beforeAll(async () => {
   orm = await MikroORM.init({
     metadataProvider: ReflectMetadataProvider,
     entities: [LegacyUser],
-    dbName: `:memory:`,
+    dbName: ':memory:',
   });
   await orm.schema.refresh();
 });

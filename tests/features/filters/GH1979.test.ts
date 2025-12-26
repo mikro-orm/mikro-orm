@@ -65,7 +65,7 @@ describe('GH issue 1979', () => {
     orm = await MikroORM.init({
       metadataProvider: ReflectMetadataProvider,
       entities: [Benefit, Profit, Lost],
-      dbName: `:memory:`,
+      dbName: ':memory:',
       driver: SqliteDriver,
     });
 

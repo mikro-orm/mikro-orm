@@ -15,7 +15,7 @@ class User {
   @PrimaryKey()
   id!: bigint;
 
-  @OneToMany('UserOrganization', 'user')
+  @OneToMany(() => UserOrganization, 'user')
   organizations = new Collection<UserOrganization>(this);
 
 }
@@ -47,7 +47,7 @@ describe('GH issue 940, 1117', () => {
     orm = await MikroORM.init({
       metadataProvider: ReflectMetadataProvider,
       entities: [User, UserOrganization],
-      dbName: `:memory:`,
+      dbName: ':memory:',
     });
     await orm.schema.create();
   });

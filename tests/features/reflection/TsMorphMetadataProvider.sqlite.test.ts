@@ -1,5 +1,5 @@
-import { Options, Configuration, MikroORM } from '@mikro-orm/sqlite';
-import type { PrimaryProperty, EntityMetadata } from '@mikro-orm/core';
+import { Options, Configuration, MikroORM, Utils } from '@mikro-orm/sqlite';
+import { type PrimaryProperty, EntityMetadata } from '@mikro-orm/core';
 import { Collection as Collection_, Reference as Reference_, ReferenceKind, EnumArrayType } from '@mikro-orm/core';
 import { TsMorphMetadataProvider } from '@mikro-orm/reflection';
 import { Author, Book, Publisher, BaseEntity, BaseEntity3, BookTagSchema, Test, FooBaz } from './entities/index.js';
@@ -21,7 +21,7 @@ describe('TsMorphMetadataProvider', () => {
       metadataProvider: TsMorphMetadataProvider,
     });
 
-    expect(Object.keys(orm.getMetadata().getAll()).sort()).toEqual([
+    expect([...orm.getMetadata().getAll().keys()].map(e => Utils.className(e)).sort()).toEqual([
       'Author', 'Book', 'BookTag', 'FooBar', 'FooBaz', 'Publisher', 'Test', 'author_friends', 'book_tags', 'publisher_tests',
     ]);
     await orm.close();
@@ -37,7 +37,7 @@ describe('TsMorphMetadataProvider', () => {
       metadataProvider: TsMorphMetadataProvider,
     });
 
-    expect(Object.keys(orm.getMetadata().getAll()).sort()).toEqual([
+    expect([...orm.getMetadata().getAll().keys()].map(e => Utils.className(e)).sort()).toEqual([
       'Author', 'Book', 'BookTag', 'FooBar', 'FooBaz', 'Publisher', 'Test', 'author_friends', 'book_tags', 'publisher_tests',
     ]);
     await orm.close();
@@ -67,27 +67,27 @@ describe('TsMorphMetadataProvider', () => {
     });
 
     const metadata = orm.getMetadata().getAll();
-    expect(metadata).toBeInstanceOf(Object);
-    expect(metadata[Author.name]).toBeInstanceOf(Object);
-    expect(metadata[Author.name].path).toMatch('/entities/Author.ts');
-    expect(metadata[Author.name].properties).toBeInstanceOf(Object);
-    expect(metadata[Author.name].properties.books.type).toBe(Book.name);
-    expect(metadata[Author.name].properties.books.kind).toBe(ReferenceKind.ONE_TO_MANY);
-    expect(metadata[Author.name].properties.identities.array).toBe(true);
-    expect(metadata[Author.name].properties.identities.type).toBe('string[]');
-    expect(metadata[Author.name].properties.foo.type).toBe('string');
-    expect(metadata[Author.name].properties.age.type).toBe('number');
-    expect(metadata[Author.name].properties.age.optional).toBe(true);
-    expect(metadata[Author.name].properties.age.nullable).toBe(true); // nullable is sniffed via ts-morph too
-    expect(metadata[Book.name].properties.author.type).toBe(Author.name);
-    expect(metadata[Book.name].properties.author.kind).toBe(ReferenceKind.MANY_TO_ONE);
-    expect(metadata[Book.name].properties.metaArray.type).toBe('any[]');
-    expect(metadata[Book.name].properties.metaArray.array).toBe(true);
-    expect(metadata[Book.name].properties.metaArrayOfStrings.type).toBe('string[]');
-    expect(metadata[Book.name].properties.metaArrayOfStrings.array).toBe(true);
-    expect(metadata[Publisher.name].properties.tests.owner).toBe(true);
-    expect(metadata[Publisher.name].properties.types.customType).toBeInstanceOf(EnumArrayType);
-    expect(metadata[Publisher.name].properties.types2.customType).toBeInstanceOf(EnumArrayType);
+    expect(metadata).toBeInstanceOf(Map);
+    expect(metadata.get(Author)).toBeInstanceOf(EntityMetadata);
+    expect(metadata.get(Author)?.path).toMatch('/entities/Author.ts');
+    expect(metadata.get(Author)?.properties).toBeInstanceOf(Object);
+    expect(metadata.get(Author)?.properties.books.type).toBe(Book.name);
+    expect(metadata.get(Author)?.properties.books.kind).toBe(ReferenceKind.ONE_TO_MANY);
+    expect(metadata.get(Author)?.properties.identities.array).toBe(true);
+    expect(metadata.get(Author)?.properties.identities.type).toBe('string[]');
+    expect(metadata.get(Author)?.properties.foo.type).toBe('string');
+    expect(metadata.get(Author)?.properties.age.type).toBe('number');
+    expect(metadata.get(Author)?.properties.age.optional).toBe(true);
+    expect(metadata.get(Author)?.properties.age.nullable).toBe(true); // nullable is sniffed via ts-morph too
+    expect(metadata.get(Book)?.properties.author.type).toBe(Author.name);
+    expect(metadata.get(Book)?.properties.author.kind).toBe(ReferenceKind.MANY_TO_ONE);
+    expect(metadata.get(Book)?.properties.metaArray.type).toBe('any[]');
+    expect(metadata.get(Book)?.properties.metaArray.array).toBe(true);
+    expect(metadata.get(Book)?.properties.metaArrayOfStrings.type).toBe('string[]');
+    expect(metadata.get(Book)?.properties.metaArrayOfStrings.array).toBe(true);
+    expect(metadata.get(Publisher)?.properties.tests.owner).toBe(true);
+    expect(metadata.get(Publisher)?.properties.types.customType).toBeInstanceOf(EnumArrayType);
+    expect(metadata.get(Publisher)?.properties.types2.customType).toBeInstanceOf(EnumArrayType);
 
     // customType should be re-hydrated when loading metadata from cache
     const provider = new TsMorphMetadataProvider(orm.config);

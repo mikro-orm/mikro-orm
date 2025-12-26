@@ -36,7 +36,7 @@ const ContentSchema = new EntitySchema<Content>({
     type: { type: 'string' },
     archives: {
       kind: 'm:n',
-      entity: () => 'Archive',
+      entity: () => Archive,
       mappedBy: 'items',
       owner: false,
     },
@@ -51,7 +51,7 @@ const ArchiveSchema = new EntitySchema<Archive, Content>({
   properties: {
     items: {
       kind: 'm:n',
-      entity: () => 'Content',
+      entity: () => Content,
       owner: true,
       pivotTable: 'content_archive',
       joinColumn: 'archive_id',

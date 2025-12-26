@@ -85,12 +85,12 @@ describe('dropping tables with FKs in postgres', () => {
     const orm = await MikroORM.init({
       metadataProvider: ReflectMetadataProvider,
       entities: [Sequence0, Door],
-      dbName: `:memory:`,
+      dbName: ':memory:',
       metadataCache: { enabled: false },
     });
     await orm.schema.refresh();
 
-    orm.discoverEntity(Sequence1, 'Sequence0');
+    orm.discoverEntity(Sequence1, Sequence0);
     const diff1 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff1).toMatchSnapshot();
     await orm.schema.execute(diff1);
@@ -177,19 +177,19 @@ describe('updating tables with FKs in sqlite', () => {
     await orm.schema.execute('drop table if exists book');
     await orm.schema.create();
 
-    orm.discoverEntity(Book41, 'Book3');
+    orm.discoverEntity(Book41, Book3);
     const diff1 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff1).toMatchSnapshot();
     await orm.schema.execute(diff1);
     await expect(orm.schema.getUpdateSchemaSQL({ wrap: false })).resolves.toBe('');
 
-    orm.discoverEntity(Book42, 'Book41');
+    orm.discoverEntity(Book42, Book41);
     const diff2 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff2).toMatchSnapshot();
     await orm.schema.execute(diff2);
     await expect(orm.schema.getUpdateSchemaSQL({ wrap: false })).resolves.toBe('');
 
-    orm.discoverEntity(Book4, 'Book42');
+    orm.discoverEntity(Book4, Book42);
     const diff3 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff3).toMatchSnapshot();
     await orm.schema.execute(diff3);

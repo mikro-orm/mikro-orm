@@ -4,6 +4,7 @@ import type {
   Dictionary,
   EntityKey,
   EntityMetadata,
+  EntityName,
   EntityProperty,
   EntityValue,
   FilterDef,
@@ -138,7 +139,7 @@ export class QueryHelper {
     }
 
     Object.keys(where).forEach(k => {
-      const meta2 = metadata.find(meta.properties[k as EntityKey<T>]?.type) || meta;
+      const meta2 = metadata.find(meta.properties[k as EntityKey<T>]?.targetMeta?.class as any) || meta;
 
       if (this.inlinePrimaryKeyObjects(where[k], meta2, metadata, k)) {
         where[k] = Utils.getPrimaryKeyValues(where[k], meta2, true);
@@ -175,7 +176,7 @@ export class QueryHelper {
     }
 
     if (Array.isArray(where) && root) {
-      const rootPrimaryKey = meta ? Utils.getPrimaryKeyHash(meta.primaryKeys) : entityName;
+      const rootPrimaryKey = meta ? Utils.getPrimaryKeyHash(meta.primaryKeys) : Utils.className(entityName);
       let cond = { [rootPrimaryKey]: { $in: where } } as FilterQuery<T>;
 
       // @ts-ignore
@@ -238,7 +239,7 @@ export class QueryHelper {
         o[key as string] = QueryHelper.processWhere({
           ...options,
           where: value as FilterQuery<T>,
-          entityName: prop?.type ?? entityName,
+          entityName: prop?.targetMeta?.class ?? entityName,
           root: false,
         });
       } else {
@@ -249,7 +250,7 @@ export class QueryHelper {
     }, {} as Dictionary) as FilterQuery<T>;
   }
 
-  static getActiveFilters(entityName: string, options: FilterOptions | undefined, filters: Dictionary<FilterDef>): FilterDef[] {
+  static getActiveFilters<T>(meta: EntityMetadata<T>, options: FilterOptions | undefined, filters: Dictionary<FilterDef>): FilterDef[] {
     if (options === false) {
       return [];
     }
@@ -263,7 +264,7 @@ export class QueryHelper {
     }
 
     return Object.keys(filters)
-      .filter(f => QueryHelper.isFilterActive(entityName, f, filters[f], opts))
+      .filter(f => QueryHelper.isFilterActive(meta, f, filters[f], opts))
       .map(f => {
         filters[f].name = f;
         return filters[f];
@@ -292,8 +293,8 @@ export class QueryHelper {
     return Utils.mergeConfig({}, propFilters, options);
   }
 
-  static isFilterActive(entityName: string, filterName: string, filter: FilterDef, options: Dictionary<boolean | Dictionary>): boolean {
-    if (filter.entity && !(filter.entity as string[]).includes(entityName)) {
+  static isFilterActive<T>(meta: EntityMetadata<T>, filterName: string, filter: FilterDef, options: Dictionary<boolean | Dictionary>): boolean {
+    if (filter.entity && !(filter.entity as string[]).includes(meta.className)) {
       return false;
     }
 
@@ -385,11 +386,11 @@ export class QueryHelper {
 
 interface ProcessWhereOptions<T> {
   where: FilterQuery<T>;
-  entityName: string;
+  entityName: EntityName<T>;
   metadata: MetadataStorage;
   platform: Platform;
   aliased?: boolean;
-  aliasMap?: Dictionary<string>;
+  aliasMap?: Dictionary<EntityName>;
   convertCustomTypes?: boolean;
   root?: boolean;
   type?: 'where' | 'orderBy';

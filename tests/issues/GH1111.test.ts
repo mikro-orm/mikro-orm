@@ -25,7 +25,7 @@ class A {
   @OneToOne({ entity: () => Node, ref: true, primary: true, deleteRule: 'cascade', updateRule: 'cascade' })
   node!: Ref<Node>;
 
-  @OneToMany('B', 'a', { eager: true, orphanRemoval: true })
+  @OneToMany(() => B, 'a', { eager: true, orphanRemoval: true })
   bs = new Collection<B>(this);
 
   @Property()

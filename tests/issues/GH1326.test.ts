@@ -18,7 +18,7 @@ export class Driver {
   @Property()
   name!: string;
 
-  @OneToMany('License', 'driver')
+  @OneToMany(() => License, 'driver')
   licenses = new Collection<License>(this);
 
 }
@@ -32,7 +32,7 @@ export class LicenseType {
   @Property()
   name!: string;
 
-  @OneToMany('License', 'licenseType')
+  @OneToMany(() => License, 'licenseType')
   licenses = new Collection<License>(this);
 
 }
@@ -49,7 +49,7 @@ export class License {
   @ManyToOne(() => Driver, { inversedBy: 'licenses', ref: true })
   driver!: Ref<Driver>;
 
-  @ManyToOne('LicenseType', { inversedBy: 'licenses', ref: true })
+  @ManyToOne(() => LicenseType, { inversedBy: 'licenses', ref: true })
   licenseType!: Ref<LicenseType>;
 
 }

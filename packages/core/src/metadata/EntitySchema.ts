@@ -33,8 +33,8 @@ import type {
 } from './types.js';
 
 type TypeType = string | NumberConstructor | StringConstructor | BooleanConstructor | DateConstructor | ArrayConstructor | Constructor<Type<any>> | Type<any>;
-type TypeDef<Target> = { type: TypeType } | { entity: string | (() => string | EntityName<Target>) };
-type EmbeddedTypeDef<Target> = { type: TypeType } | { entity: string | (() => string | EntityName<Target> | EntityName<Target>[]) };
+type TypeDef<Target> = { type: TypeType } | { entity: () => EntityName<Target> };
+type EmbeddedTypeDef<Target> = { type: TypeType } | { entity: () => EntityName<Target> | EntityName<Target>[] };
 export type EntitySchemaProperty<Target, Owner> =
   | ({ kind: ReferenceKind.MANY_TO_ONE | 'm:1' } & TypeDef<Target> & ManyToOneOptions<Owner, Target>)
   | ({ kind: ReferenceKind.ONE_TO_ONE | '1:1' } & TypeDef<Target> & OneToOneOptions<Owner, Target>)
@@ -58,7 +58,7 @@ export class EntitySchema<Entity = any, Base = never> {
    */
   static REGISTRY = new Map<AnyEntity, EntitySchema>();
 
-  private readonly _meta = new EntityMetadata<Entity>();
+  private readonly _meta: EntityMetadata<Entity>;
   private internal = false;
   private initialized = false;
 
@@ -69,12 +69,15 @@ export class EntitySchema<Entity = any, Base = never> {
       meta.abstract ??= false;
     }
 
+    this._meta = new EntityMetadata<Entity>({
+      className: meta.name,
+      ...(meta as Partial<EntityMetadata<Entity>>),
+    });
+    this._meta.root ??= this._meta;
+
     if (meta.class && !(meta as Dictionary).internal) {
       EntitySchema.REGISTRY.set(meta.class, this);
     }
-
-    Object.assign(this._meta, { className: meta.name }, meta);
-    this._meta.root ??= this._meta;
   }
 
   static fromMetadata<T = AnyEntity, U = never>(meta: EntityMetadata<T> | DeepPartial<EntityMetadata<T>>): EntitySchema<T, U> {
@@ -86,7 +89,7 @@ export class EntitySchema<Entity = any, Base = never> {
 
   addProperty(name: EntityKey<Entity>, type?: TypeType, options: PropertyOptions<Entity> | EntityProperty<Entity> = {}): void {
     this.renameCompositeOptions(name, options);
-    const prop = { name, kind: ReferenceKind.SCALAR, ...options, type: this.normalizeType(options, type) } as EntityProperty<Entity>;
+    const prop = { name, kind: ReferenceKind.SCALAR, ...options, ...this.normalizeType(options, type) } as EntityProperty<Entity>;
 
     if (type && Type.isMappedType((type as Constructor).prototype)) {
       prop.type = type as string;
@@ -152,8 +155,8 @@ export class EntitySchema<Entity = any, Base = never> {
 
     this._meta.properties[name] = {
       name,
-      type: this.normalizeType(options),
       kind: ReferenceKind.EMBEDDED,
+      ...this.normalizeType(options),
       ...options,
     } as EntityProperty<Entity>;
   }
@@ -236,26 +239,28 @@ export class EntitySchema<Entity = any, Base = never> {
     this._meta.repository = repository as () => Constructor<EntityRepository<any>>;
   }
 
-  setExtends(base: EntityName<any>): void {
-    this._meta.extends = base as string;
+  setExtends(base: EntityName): void {
+    this._meta.extends = base;
   }
 
-  setClass(proto: EntityClass<Entity>) {
-    const sameClass = this._meta.className === proto.name;
-    this._meta.class = proto;
-    this._meta.prototype = proto.prototype;
-    this._meta.className = proto.name;
+  setClass(cls: EntityClass<Entity>) {
+    const sameClass = this._meta.className === cls.name;
+    this._meta.class = cls;
+    this._meta.prototype = cls.prototype;
+    this._meta.className = this._meta.name ?? cls.name;
 
     if (!sameClass || !this._meta.constructorParams) {
-      this._meta.constructorParams = Utils.getConstructorParams(proto) as EntityKey<Entity>[];
+      this._meta.constructorParams = Utils.getConstructorParams(cls) as EntityKey<Entity>[];
     }
 
     if (!this.internal) {
-      EntitySchema.REGISTRY.set(proto, this);
+      EntitySchema.REGISTRY.set(cls, this);
     }
 
-    if (Object.getPrototypeOf(proto) !== BaseEntity) {
-      this._meta.extends = this._meta.extends || Object.getPrototypeOf(proto).name || undefined;
+    const base = Object.getPrototypeOf(cls);
+
+    if (base !== BaseEntity) {
+      this._meta.extends ??= base.name ? base : undefined;
     }
   }
 
@@ -263,7 +268,7 @@ export class EntitySchema<Entity = any, Base = never> {
     return this._meta;
   }
 
-  get name(): EntityName<Entity>  {
+  get name(): string | EntityName<Entity>  {
     return this._meta.className;
   }
 
@@ -281,11 +286,6 @@ export class EntitySchema<Entity = any, Base = never> {
   init() {
     if (this.initialized) {
       return this;
-    }
-
-    if (!this._meta.class) {
-      const name = this.name as string;
-      this._meta.class = ({ [name]: class {} })[name] as Constructor<Entity>;
     }
 
     this.setClass(this._meta.class);
@@ -327,7 +327,7 @@ export class EntitySchema<Entity = any, Base = never> {
           this.addManyToOne<any>(name, options.type, options);
           break;
         case ReferenceKind.MANY_TO_MANY:
-          this.addManyToMany<any>(name, options.type, options);
+          this.addManyToMany<any>(name, options.type, options as unknown as ManyToManyOptions<any, any>);
           break;
         case ReferenceKind.EMBEDDED:
           this.addEmbedded(name, options as EmbeddedOptions<any, any>);
@@ -370,11 +370,14 @@ export class EntitySchema<Entity = any, Base = never> {
 
   private normalizeType(options: PropertyOptions<Entity> | EntityProperty | EmbeddedOptions<Entity, any>, type?: string | any | Constructor<Type>) {
     if ('entity' in options) {
+      /* v8 ignore next */
       if (typeof options.entity === 'string') {
-        type = options.type = options.entity;
+        throw new Error(`Relation target needs to be an entity class or EntitySchema instance, string '${options.entity}' given instead for ${this._meta.className}.${options.name}.`);
       } else if (options.entity) {
         const tmp = options.entity();
         type = options.type = Array.isArray(tmp) ? tmp.map(t => Utils.className(t)).sort().join(' | ') : Utils.className(tmp);
+        const target = tmp instanceof EntitySchema ? tmp.meta.class : tmp;
+        return { type, target };
       }
     }
 
@@ -386,7 +389,7 @@ export class EntitySchema<Entity = any, Base = never> {
       type = type.toLowerCase();
     }
 
-    return type;
+    return { type };
   }
 
   private createProperty<T>(kind: ReferenceKind, options: PropertyOptions<T> | EntityProperty): EntityProperty<T> {

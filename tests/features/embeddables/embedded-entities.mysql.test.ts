@@ -109,40 +109,40 @@ describe('embedded entities in mysql', () => {
   afterAll(() => orm.close(true));
 
   test('metadata', async () => {
-    expect(orm.getMetadata().get('Address1').embeddable).toBe(true);
-    expect(orm.getMetadata().get('Address1').properties).toMatchObject({
+    expect(orm.getMetadata(Address1).embeddable).toBe(true);
+    expect(orm.getMetadata(Address1).properties).toMatchObject({
       street: { name: 'street', type: 'string' },
       postalCode: { name: 'postalCode', type: 'string' },
       city: { name: 'city', type: 'string' },
       country: { name: 'country', type: 'string' },
     });
-    expect(orm.getMetadata().get('User').properties.address1).toMatchObject({
+    expect(orm.getMetadata(User).properties.address1).toMatchObject({
       name: 'address1',
       kind: ReferenceKind.EMBEDDED,
       type: 'Address1',
     });
-    expect(orm.getMetadata().get('User').properties.address1_street).toMatchObject({
+    expect(orm.getMetadata<any>(User).properties.address1_street).toMatchObject({
       name: 'address1_street',
       kind: ReferenceKind.SCALAR,
       type: 'string',
     });
-    expect(orm.getMetadata().get('User').properties.address2).toMatchObject({
+    expect(orm.getMetadata(User).properties.address2).toMatchObject({
       name: 'address2',
       kind: ReferenceKind.EMBEDDED,
       type: 'Address2',
     });
-    expect(orm.getMetadata().get('User').properties.address2_street).toMatchObject({
+    expect(orm.getMetadata<any>(User).properties.address2_street).toMatchObject({
       name: 'address2_street',
       kind: ReferenceKind.SCALAR,
       type: 'string',
       nullable: true,
     });
-    expect(orm.getMetadata().get('User').properties.address3).toMatchObject({
+    expect(orm.getMetadata(User).properties.address3).toMatchObject({
       name: 'address3',
       kind: ReferenceKind.EMBEDDED,
       type: 'Address1',
     });
-    expect(orm.getMetadata().get('User').properties['address4~street']).toMatchObject({
+    expect(orm.getMetadata<any>(User).properties['address4~street']).toMatchObject({
       name: 'address4~street',
       kind: ReferenceKind.SCALAR,
       type: 'string',

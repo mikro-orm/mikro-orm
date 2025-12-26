@@ -413,7 +413,7 @@ describe('check typings', () => {
 
     const em = { findOne: vi.fn() as any } as EntityManager;
 
-    await em.findOne('MessageRecipient' as EntityName<MessageRecipient>, '1', {
+    await em.findOne({ name: 'MessageRecipient' } as EntityName<MessageRecipient>, '1', {
       populate: ['message', 'message.phoneService', 'message.phoneService.phoneServiceVendor'],
     });
   });
@@ -608,7 +608,7 @@ describe('check typings', () => {
     }
 
     const em = { findOne: vi.fn() as any } as EntityManager;
-    const res: Loaded<MemberNotification> | null = await em.findOne('MemberNotification' as EntityName<MemberNotification>, {} as MemberNotification | string);
+    const res: Loaded<MemberNotification> | null = await em.findOne({ name: 'MemberNotification' } as EntityName<MemberNotification>, {} as MemberNotification | string);
   });
 
   test('Ref.load() returns Loaded type (#3755)', async () => {

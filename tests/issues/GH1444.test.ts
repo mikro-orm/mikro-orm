@@ -28,7 +28,7 @@ describe('GH issue 1444', () => {
     orm = await MikroORM.init({
       metadataProvider: ReflectMetadataProvider,
       entities: [A],
-      dbName: `:memory:`,
+      dbName: ':memory:',
     });
     await orm.schema.create();
   });

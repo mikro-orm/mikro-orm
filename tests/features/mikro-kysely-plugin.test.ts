@@ -1629,7 +1629,7 @@ describe('MikroKyselyPlugin', () => {
       vi.spyOn(platform, 'getTimezone').mockReturnValue('+05:00');
 
       const transformer = new MikroTransformer(orm.em, { convertValues: true });
-      const meta = orm.getMetadata().find(TypeEntity.name)!;
+      const meta = orm.getMetadata().find(TypeEntity)!;
       const entityMap = new Map<string, typeof meta>();
       entityMap.set(meta.tableName, meta);
 
@@ -1672,7 +1672,7 @@ describe('MikroTransformer', () => {
 
   let orm: MikroORM;
   let transformer: MikroTransformer;
-  const getMeta = () => orm.getMetadata().find(TestEntity.name)!;
+  const getMeta = () => orm.getMetadata().find(TestEntity)!;
 
   beforeAll(async () => {
     orm = new MikroORM({

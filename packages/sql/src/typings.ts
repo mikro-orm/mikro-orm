@@ -10,7 +10,6 @@ import type {
   QueryOrderMap,
   Type,
   QueryFlag,
-  AnyEntity,
   EntityName,
   EntitySchemaWithMeta,
   Primary,
@@ -157,7 +156,7 @@ export interface IQueryBuilder<T> {
   helper: any;
   select(fields: Field<T> | Field<T>[], distinct?: boolean): this;
   addSelect(fields: string | string[]): this;
-  from<T extends AnyEntity<T> = AnyEntity>(target: EntityName<T> | IQueryBuilder<T>, aliasName?: string): IQueryBuilder<T>;
+  from<T extends object>(target: EntityName<T> | IQueryBuilder<T>, aliasName?: string): IQueryBuilder<T>;
   insert(data: any): this;
   update(data: any): this;
   delete(cond?: QBFilterQuery): this;
@@ -181,7 +180,7 @@ export interface IQueryBuilder<T> {
   having(cond?: QBFilterQuery | string, params?: any[]): this;
   getAliasForJoinPath(path: string, options?: ICriteriaNodeProcessOptions): string | undefined;
   getJoinForPath(path?: string, options?: ICriteriaNodeProcessOptions): JoinOptions | undefined;
-  getNextAlias(entityName?: string): string;
+  getNextAlias(entityName?: string | EntityName<T>): string;
   clone(reset?: boolean): IQueryBuilder<T>;
   setFlag(flag: QueryFlag): this;
   unsetFlag(flag: QueryFlag): this;
@@ -199,7 +198,7 @@ export interface ICriteriaNodeProcessOptions {
 }
 
 export interface ICriteriaNode<T extends object> {
-  readonly entityName: string;
+  readonly entityName: EntityName<T>;
   readonly parent?: ICriteriaNode<T> | undefined;
   readonly key?: string | symbol | undefined;
   readonly strict?: boolean;

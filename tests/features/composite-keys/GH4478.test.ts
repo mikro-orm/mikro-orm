@@ -52,7 +52,7 @@ beforeAll(async () => {
   orm = await MikroORM.init({
     metadataProvider: ReflectMetadataProvider,
     entities: [StudentAllocation],
-    dbName: `:memory:`,
+    dbName: ':memory:',
     loggerFactory: SimpleLogger.create,
   });
   await orm.schema.create();

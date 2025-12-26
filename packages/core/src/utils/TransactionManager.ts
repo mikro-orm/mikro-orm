@@ -216,7 +216,7 @@ export class TransactionManager {
       const wrapped = helper(entity);
       const meta = wrapped.__meta;
       // eslint-disable-next-line dot-notation
-      const parentEntity = parentUoW.getById(meta.className, wrapped.getPrimaryKey(), parent['_schema'], true);
+      const parentEntity = parentUoW.getById(meta.class, wrapped.getPrimaryKey(), parent['_schema'], true);
 
       if (parentEntity && parentEntity !== entity) {
         const parentWrapped = helper(parentEntity);

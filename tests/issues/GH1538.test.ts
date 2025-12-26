@@ -10,7 +10,7 @@ export class Author {
   @Property({ nullable: true })
   name!: string;
 
-  @OneToMany('Post', 'author', {
+  @OneToMany(() => Post, 'author', {
     orphanRemoval: true,
   })
   post = new Collection<Post>(this);
@@ -56,7 +56,7 @@ describe('GH issue 1538', () => {
     const qb1 = orm.em.createQueryBuilder(Post, 'b')
       .count('b.id', true)
       .where({ author: sql.ref('a.id') })
-      .as('Author.postTotal');
+      .as(Author, 'postTotal');
     const qb2 = orm.em.createQueryBuilder(Author, 'a');
     qb2.select(['*', qb1]).orderBy({ postTotal: 'desc' });
     expect(qb2.getFormattedQuery()).toBe('select `a`.*, (select count(distinct `b`.`id`) as `count` from `post` as `b` where `b`.`author_id` = `a`.`id`) as `post_total` from `author` as `a` order by `post_total` desc');

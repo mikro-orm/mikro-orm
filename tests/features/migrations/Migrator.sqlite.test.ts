@@ -126,7 +126,7 @@ describe('Migrator (sqlite)', () => {
     const err2 = `Some tables already exist in your schema, remove them first to create the initial migration: author4, book4`;
     await expect(migrator.createInitial(undefined)).rejects.toThrow(err2);
 
-    metadataMock.mockReturnValueOnce({});
+    metadataMock.mockReturnValueOnce(new Map());
     const err3 = `No entities found`;
     await expect(migrator.createInitial(undefined)).rejects.toThrow(err3);
 

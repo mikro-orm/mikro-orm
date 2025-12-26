@@ -99,7 +99,7 @@ describe('embedded entities in mongo', () => {
     const createCollection = vi.spyOn(MongoConnection.prototype, 'createCollection');
     createCollection.mockResolvedValue({} as any);
     await orm.schema.create();
-    expect(createCollection.mock.calls.map(c => c[0])).toEqual(['user']);
+    expect(createCollection.mock.calls.map(c => c[0])).toEqual([User]);
     createCollection.mockRestore();
   });
 
@@ -142,7 +142,7 @@ describe('embedded entities in mongo', () => {
   });
 
   test('diffing', async () => {
-    expect(orm.em.getComparator().getSnapshotGenerator('User').toString()).toMatchSnapshot();
+    expect(orm.em.getComparator().getSnapshotGenerator(User).toString()).toMatchSnapshot();
   });
 
   test('unique constraints', async () => {

@@ -10,7 +10,7 @@ import {
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 @Entity()
-export class Customer {
+class Customer {
 
   @PrimaryKey()
   id!: number;
@@ -18,13 +18,13 @@ export class Customer {
   @Property()
   name!: string;
 
-  @OneToMany({ entity: 'License', mappedBy: 'customer' })
+  @OneToMany({ entity: () => License, mappedBy: 'customer' })
   licenses = new Collection<License>(this);
 
 }
 
 @Entity()
-export class License {
+class License {
 
   @PrimaryKey()
   id!: number;

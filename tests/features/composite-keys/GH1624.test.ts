@@ -14,10 +14,10 @@ export class Organization {
   @Property({ columnType: 'varchar' })
   name!: string;
 
-  @OneToMany({ entity: 'User', mappedBy: 'organization', cascade: [] })
+  @OneToMany({ entity: () => User, mappedBy: 'organization', cascade: [] })
   users = new Collection<User>(this);
 
-  @OneToMany({ entity: 'Program', mappedBy: 'organization', cascade: [] })
+  @OneToMany({ entity: () => Program, mappedBy: 'organization', cascade: [] })
   programs = new Collection<Program>(this);
 
   constructor(value: Partial<Organization> = {}) {
@@ -51,7 +51,7 @@ export class User {
   @Property({ columnType: 'varchar' })
   email!: string;
 
-  @OneToMany({ entity: 'UserRole', mappedBy: 'user' })
+  @OneToMany({ entity: () => UserRole, mappedBy: 'user' })
   userRoles = new Collection<UserRole>(this);
 
   [PrimaryKeyProp]?: ['id', 'organization'];
@@ -71,7 +71,7 @@ export class Role {
   @Property({ columnType: 'varchar' })
   name!: string;
 
-  @OneToMany({ entity: 'UserRole', mappedBy: 'role' })
+  @OneToMany({ entity: () => UserRole, mappedBy: 'role' })
   userRoles = new Collection<UserRole>(this);
 
   constructor(value: Partial<Role> = {}) {
@@ -125,7 +125,7 @@ export class Program {
   })
   organization!: Ref<Organization>;
 
-  @OneToMany({ entity: 'Site', mappedBy: 'program', cascade: [] })
+  @OneToMany({ entity: () => Site, mappedBy: 'program', cascade: [] })
   sites = new Collection<Site, Program>(this);
 
   @Property({ columnType: 'varchar' })

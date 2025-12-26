@@ -1,4 +1,3 @@
-import { inspect } from 'node:util';
 import {
   LockMode,
   MikroORM,
@@ -695,7 +694,7 @@ describe('QueryBuilder', () => {
 
   test('GH #4104', async () => {
     const qb = orm.em.createQueryBuilder(Author2, 'a');
-    const qb1 = orm.em.createQueryBuilder(Book2, 'b').count('b.uuid', true).where({ author: sql.ref('a.id') }).as('Author2.booksTotal');
+    const qb1 = orm.em.createQueryBuilder(Book2, 'b').count('b.uuid', true).where({ author: sql.ref('a.id') }).as(Author2, 'booksTotal');
     qb.select(['*', qb1])
       .where({ books: { title: 'foo' } })
       .limit(1)
@@ -2076,7 +2075,7 @@ describe('QueryBuilder', () => {
   });
 
   test('select with sub-query', async () => {
-    const qb1 = orm.em.createQueryBuilder(Book2, 'b').count('b.uuid', true).where({ author: sql.ref('a.id') }).as('Author2.booksTotal');
+    const qb1 = orm.em.createQueryBuilder(Book2, 'b').count('b.uuid', true).where({ author: sql.ref('a.id') }).as(Author2, 'booksTotal');
     const qb2 = orm.em.createQueryBuilder(Author2, 'a');
     qb2.select(['*', qb1]).orderBy({ booksTotal: 'desc' });
     expect(qb2.getQuery()).toEqual('select `a`.*, (select count(distinct `b`.`uuid_pk`) as `count` from `book2` as `b` where `b`.`author_id` = `a`.`id`) as `books_total` from `author2` as `a` order by `books_total` desc');
@@ -2233,15 +2232,14 @@ describe('QueryBuilder', () => {
   });
 
   test('CriteriaNode', async () => {
-    const node = new CriteriaNode(orm.em.getMetadata(), Author2.name);
+    const node = new CriteriaNode(orm.em.getMetadata(), Author2);
     node.payload = { foo: 123 };
     expect(node.process({} as any)).toBe(node.payload);
     expect(node.willAutoJoin({} as any)).toBe(false);
-    expect(inspect(node)).toBe(`CriteriaNode { entityName: 'Author2', payload: { foo: 123 } }`);
   });
 
   test('getAliasForJoinPath', async () => {
-    const node = new CriteriaNode(orm.em.getMetadata(), Author2.name);
+    const node = new CriteriaNode(orm.em.getMetadata(), Author2);
     node.payload = { foo: 123 };
     const qb = orm.em.createQueryBuilder(Author2, 'a');
     expect(qb.getAliasForJoinPath(node.getPath())).toBe('a');
@@ -3409,12 +3407,6 @@ describe('QueryBuilder', () => {
     const qb2 = orm.em.createQueryBuilder(Author2);
     qb2.from(qb1.clone()).orderBy({ 'b.createdAt': 'ASC' });
     expect(qb2.getQuery()).toEqual('select `e1`.* from (select `e0`.* from `author2` as `e0` left join `book2` as `b` on `e0`.`id` = `b`.`author_id` where `e0`.`created_at` <= ? order by `b`.`created_at` desc) as `e1` order by `b`.`created_at` asc');
-  });
-
-  test('from a string', async () => {
-    const qb = orm.em.createQueryBuilder(Publisher2);
-    qb.from('Author2');
-    expect(qb.getQuery()).toEqual('select `e0`.* from `author2` as `e0`');
   });
 
   test('from a query builder', async () => {

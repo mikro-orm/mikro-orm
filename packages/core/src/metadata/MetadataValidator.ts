@@ -10,8 +10,8 @@ import type { MetadataStorage } from './MetadataStorage.js';
  */
 export class MetadataValidator {
 
-  validateEntityDefinition<T>(metadata: MetadataStorage, name: string, options: MetadataDiscoveryOptions): void {
-    const meta = metadata.get<T>(name);
+  validateEntityDefinition<T>(metadata: MetadataStorage, name: EntityName<T>, options: MetadataDiscoveryOptions): void {
+    const meta = metadata.get(name);
 
     if (meta.virtual || meta.expression) {
       for (const prop of Utils.values(meta.properties)) {
@@ -39,10 +39,10 @@ export class MetadataValidator {
 
     for (const prop of Utils.values(meta.properties)) {
       if (prop.kind !== ReferenceKind.SCALAR) {
-        this.validateReference(meta, prop, metadata, options);
-        this.validateBidirectional(meta, prop, metadata);
-      } else if (metadata.has(prop.type)) {
-        throw MetadataError.propertyTargetsEntityType(meta, prop, metadata.get(prop.type));
+        this.validateReference(meta, prop, options);
+        this.validateBidirectional(meta, prop);
+      } else if (metadata.getByClassName(prop.type, false)) {
+        throw MetadataError.propertyTargetsEntityType(meta, prop, metadata.getByClassName(prop.type));
       }
     }
   }
@@ -79,7 +79,7 @@ export class MetadataValidator {
       .replace(/\((.*)\)/, '$1');   // unwrap union types
 
     const name = <T> (p: EntityName<T> | (() => EntityName<T>)): string => {
-      if (typeof p === 'function') {
+      if (typeof p === 'function' && !p.prototype) {
         return Utils.className((p as () => EntityName<T>)());
       }
 
@@ -109,13 +109,13 @@ export class MetadataValidator {
     });
   }
 
-  private validateReference(meta: EntityMetadata, prop: EntityProperty, metadata: MetadataStorage, options: MetadataDiscoveryOptions): void {
+  private validateReference(meta: EntityMetadata, prop: EntityProperty, options: MetadataDiscoveryOptions): void {
     // references do have types
     if (!prop.type) {
       throw MetadataError.fromWrongTypeDefinition(meta, prop);
     }
 
-    const targetMeta = metadata.find(prop.type);
+    const targetMeta = prop.targetMeta;
 
     // references do have type of known entity
     if (!targetMeta) {
@@ -131,31 +131,29 @@ export class MetadataValidator {
     }
   }
 
-  private validateBidirectional(meta: EntityMetadata, prop: EntityProperty, metadata: MetadataStorage): void {
+  private validateBidirectional(meta: EntityMetadata, prop: EntityProperty): void {
     if (prop.inversedBy) {
-      const inverse = metadata.get(prop.type).properties[prop.inversedBy];
-      this.validateOwningSide(meta, prop, inverse, metadata);
+      this.validateOwningSide(meta, prop);
     } else if (prop.mappedBy) {
-      const inverse = metadata.get(prop.type).properties[prop.mappedBy];
-      this.validateInverseSide(meta, prop, inverse, metadata);
-    } else {
+      this.validateInverseSide(meta, prop);
+    } else if (prop.kind === ReferenceKind.ONE_TO_MANY && !prop.mappedBy) {
       // 1:m property has `mappedBy`
-      if (prop.kind === ReferenceKind.ONE_TO_MANY && !prop.mappedBy) {
-        throw MetadataError.fromMissingOption(meta, prop, 'mappedBy');
-      }
+      throw MetadataError.fromMissingOption(meta, prop, 'mappedBy');
     }
   }
 
-  private validateOwningSide(meta: EntityMetadata, prop: EntityProperty, inverse: EntityProperty, metadata: MetadataStorage): void {
+  private validateOwningSide(meta: EntityMetadata, prop: EntityProperty): void {
+    const inverse = prop.targetMeta!.properties[prop.inversedBy];
+
     // has correct `inversedBy` on owning side
     if (!inverse) {
       throw MetadataError.fromWrongReference(meta, prop, 'inversedBy');
     }
 
-    const targetClassName = metadata.find(inverse.type)?.root.className;
+    const targetClass = inverse.targetMeta?.root.class;
 
     // has correct `inversedBy` reference type
-    if (inverse.type !== meta.className && targetClassName !== meta.root.className) {
+    if (inverse.type !== meta.className && targetClass !== meta.root.class) {
       throw MetadataError.fromWrongReference(meta, prop, 'inversedBy', inverse);
     }
 
@@ -165,14 +163,16 @@ export class MetadataValidator {
     }
   }
 
-  private validateInverseSide(meta: EntityMetadata, prop: EntityProperty, owner: EntityProperty, metadata: MetadataStorage): void {
+  private validateInverseSide(meta: EntityMetadata, prop: EntityProperty): void {
+    const owner = prop.targetMeta!.properties[prop.mappedBy];
+
     // has correct `mappedBy` on inverse side
     if (prop.mappedBy && !owner) {
       throw MetadataError.fromWrongReference(meta, prop, 'mappedBy');
     }
 
     // has correct `mappedBy` reference type
-    if (owner.type !== meta.className && metadata.find(owner.type)?.root.className !== meta.root.className) {
+    if (owner.type !== meta.className && owner.targetMeta?.root.class !== meta.root.class) {
       throw MetadataError.fromWrongReference(meta, prop, 'mappedBy', owner);
     }
 
@@ -224,7 +224,7 @@ export class MetadataValidator {
           });
       });
 
-      throw MetadataError.duplicateFieldName(meta.className, pairs);
+      throw MetadataError.duplicateFieldName(meta.class, pairs);
     }
   }
 

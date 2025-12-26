@@ -68,14 +68,14 @@ describe('InferKyselyDB', () => {
       bio: string | null;
       avatar: string | null;
       location: string | null;
-  }>();
+    }>();
     type PostTable = KyselyDB['post'];
     expectTypeOf<PostTable>().toEqualTypeOf<{
       id: Generated<number>;
       title: string;
       description: string;
       author_full_name: string;
-  }>();
+    }>();
   });
 
   test('infer pivot table', async () => {

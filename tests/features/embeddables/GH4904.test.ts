@@ -80,7 +80,7 @@ let orm: MikroORM;
 beforeAll(async () => {
   orm = await MikroORM.init({
     entities: [TestEntity1Schema, TestEntity2Schema, CustomPropSchema],
-    dbName: `:memory:`,
+    dbName: ':memory:',
   });
 
   await orm.schema.create();

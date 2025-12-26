@@ -166,7 +166,7 @@ describe('custom types [mysql]', () => {
   });
 
   test('extending custom types (gh issue 1442)', async () => {
-    const meta = orm.getMetadata().get('Location');
+    const meta = orm.getMetadata(Location);
     expect(meta.properties.point.customType).toBeInstanceOf(PointType);
     expect(meta.properties.extendedPoint.customType).toBeInstanceOf(ExtendedPointType);
   });

@@ -1,5 +1,6 @@
 import { EntitySchema, EnumType, SchemaGenerator, ReferenceKind, Type, Utils } from '@mikro-orm/mssql';
 import { initORMMsSql } from '../../bootstrap.js';
+import { Address2, Author2, Book2, FooBar2, FooBaz2 } from '../../entities-mssql/index.js';
 
 describe('SchemaGenerator', () => {
 
@@ -85,16 +86,16 @@ describe('SchemaGenerator', () => {
       collection: 'new_table',
       primaryKey: 'id',
     } as any).init().meta;
-    meta.set('NewTable', newTableMeta);
+    meta.set(newTableMeta.class, newTableMeta);
     let diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff).toMatchSnapshot('mssql-update-schema-create-table');
     await orm.schema.execute(diff);
 
     // add scalar property index
-    const bookMeta = meta.get('Book2');
+    const bookMeta = meta.get(Book2);
     bookMeta.properties.title.index = 'new_title_idx';
 
-    meta.get('Author2').indexes.push({
+    meta.get(Author2).indexes.push({
       properties: ['name', 'email'],
       type: 'fulltext',
     });
@@ -115,7 +116,7 @@ describe('SchemaGenerator', () => {
     expect(diff).toMatchSnapshot('mssql-update-schema-drop-unique');
     await orm.schema.execute(diff);
 
-    const authorMeta = meta.get('Author2');
+    const authorMeta = meta.get(Author2);
     const favouriteBookProp = Utils.copy(authorMeta.properties.favouriteBook);
     authorMeta.properties.born.type = 'number';
     authorMeta.properties.born.columnTypes = ['int'];
@@ -145,8 +146,8 @@ describe('SchemaGenerator', () => {
     expect(diff).toMatchSnapshot('mssql-update-schema-add-column');
     await orm.schema.execute(diff);
 
-    meta.reset('Author2');
-    meta.reset('NewTable');
+    meta.reset(Author2);
+    meta.reset(newTableMeta.class);
     diff = await orm.schema.getUpdateSchemaSQL({ wrap: false, safe: true });
     expect(diff).toMatchSnapshot('mssql-update-schema-drop-table-safe');
     diff = await orm.schema.getUpdateSchemaSQL({ wrap: false, safe: false, dropTables: false });
@@ -156,15 +157,16 @@ describe('SchemaGenerator', () => {
     await orm.schema.execute(diff);
 
     // clean up old references manually (they would not be valid if we did a full meta sync)
-    meta.get('author2_following').props.forEach(prop => prop.kind = ReferenceKind.SCALAR);
-    meta.get('author_to_friend').props.forEach(prop => prop.kind = ReferenceKind.SCALAR);
-    meta.get('Book2').properties.author.kind = ReferenceKind.SCALAR;
-    meta.get('Address2').properties.author.kind = ReferenceKind.SCALAR;
-    meta.get('Address2').properties.author.autoincrement = false;
+    meta.getByClassName('author2_following').props.forEach(prop => prop.kind = ReferenceKind.SCALAR);
+    meta.getByClassName('author_to_friend').props.forEach(prop => prop.kind = ReferenceKind.SCALAR);
+    expect(() => meta.getByClassName('foo')).toThrow('Metadata for entity foo not found');
+    meta.get(Book2).properties.author.kind = ReferenceKind.SCALAR;
+    meta.get(Address2).properties.author.kind = ReferenceKind.SCALAR;
+    meta.get(Address2).properties.author.autoincrement = false;
 
     // remove 1:1 relation
-    const fooBarMeta = meta.get('FooBar2');
-    const fooBazMeta = meta.get('FooBaz2');
+    const fooBarMeta = meta.get(FooBar2);
+    const fooBazMeta = meta.get(FooBaz2);
     fooBarMeta.removeProperty('baz');
     fooBazMeta.removeProperty('bar');
     diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
@@ -178,16 +180,16 @@ describe('SchemaGenerator', () => {
   test('rename column [mssql]', async () => {
     const orm = await initORMMsSql();
     const meta = orm.getMetadata();
-    const authorMeta = meta.get('Author2');
+    const authorMeta = meta.get(Author2);
     const ageProp = authorMeta.properties.age;
-    ageProp.name = 'ageInYears';
+    ageProp.name = 'ageInYears' as any;
     ageProp.fieldNames = ['age_in_years'];
     const index = authorMeta.indexes.find(i => Utils.asArray(i.properties).join() === 'name,age')!;
-    index.properties = ['name', 'ageInYears'];
+    index.properties = ['name', 'ageInYears'] as any;
     authorMeta.removeProperty('age');
     authorMeta.addProperty(ageProp);
     const favouriteAuthorProp = authorMeta.properties.favouriteAuthor;
-    favouriteAuthorProp.name = 'favouriteWriter';
+    favouriteAuthorProp.name = 'favouriteWriter' as any;
     favouriteAuthorProp.fieldNames = ['favourite_writer_id'];
     favouriteAuthorProp.joinColumns = ['favourite_writer_id'];
     authorMeta.removeProperty('favouriteAuthor');
@@ -221,7 +223,7 @@ describe('SchemaGenerator', () => {
       name: 'NewTable',
       tableName: 'new_table',
     }).init().meta;
-    meta.set('NewTable', newTableMeta);
+    meta.set(newTableMeta.class, newTableMeta);
     let diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff).toMatchSnapshot('mssql-update-schema-enums-1');
     await orm.schema.execute(diff);

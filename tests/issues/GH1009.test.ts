@@ -86,7 +86,7 @@ describe('GH issue 1009', () => {
     orm = new MikroORM({
       metadataProvider: ReflectMetadataProvider,
       entities: [BrandSiteRestriction, Site, Brand, Publisher, Placement],
-      dbName: `:memory:`,
+      dbName: ':memory:',
     });
 
     await orm.schema.create();

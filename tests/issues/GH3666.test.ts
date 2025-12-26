@@ -7,7 +7,7 @@ class Competition {
   @PrimaryKey()
   id!: number;
 
-  @OneToMany('Registration', 'competition', { orphanRemoval: true })
+  @OneToMany(() => Registration, 'competition', { orphanRemoval: true })
   registrations = new Collection<Registration>(this);
 
 }

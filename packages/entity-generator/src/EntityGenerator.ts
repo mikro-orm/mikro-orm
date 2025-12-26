@@ -1,6 +1,7 @@
 import {
-  EntityMetadata,
+  type EntityMetadata,
   type EntityProperty,
+  EntitySchema,
   type GenerateOptions,
   type MikroORM,
   type NamingStrategy,
@@ -283,12 +284,14 @@ export class EntityGenerator {
       } as EntityProperty;
 
       if (outputPurePivotTables || this.referencedEntities.has(meta)) {
-        ownerProp.pivotEntity = meta.className;
+        ownerProp.pivotEntity = meta.class;
       }
+
       if (fixedOrderColumn) {
         ownerProp.fixedOrder = true;
         ownerProp.fixedOrderColumn = fixedOrderColumn;
       }
+
       if (isReadOnly) {
         ownerProp.persist = false;
       }
@@ -354,20 +357,18 @@ export class EntityGenerator {
   }
 
   private generateAndAttachCustomBaseEntity(metadata: EntityMetadata[], customBaseEntityName: string) {
-    let baseClassExists = false;
-    for (const meta of metadata) {
-      if (meta.className === customBaseEntityName) {
-        baseClassExists = true;
-        continue;
-      }
-      meta.extends ??= customBaseEntityName;
+    let base = metadata.find(meta => meta.className === customBaseEntityName);
+
+    if (!base) {
+      const schema = new EntitySchema({ className: customBaseEntityName, abstract: true } as any);
+      base = schema.init().meta;
+      metadata.push(base);
     }
-    if (!baseClassExists) {
-      metadata.push(new EntityMetadata({
-        className: customBaseEntityName,
-        abstract: true,
-        relations: [],
-      }));
+
+    for (const meta of metadata) {
+      if (meta.className !== customBaseEntityName) {
+        meta.extends ??= base.class;
+      }
     }
   }
 

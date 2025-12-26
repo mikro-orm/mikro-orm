@@ -369,13 +369,13 @@ describe('EntityManagerMongo', () => {
     const author = new Author('name', 'email');
     const repo = orm.em.getRepository(Author);
     await orm.em.persist(author).flush();
-    expect(orm.em.getUnitOfWork().getById<Author>(Author.name, author.id)).toBeDefined();
+    expect(orm.em.getUnitOfWork().getById(Author, author.id)).toBeDefined();
     author.name = 'new name';
     orm.em.persist(author);
     orm.em.remove(author);
-    expect(orm.em.getUnitOfWork().getById<Author>(Author.name, author.id)).toBeDefined();
+    expect(orm.em.getUnitOfWork().getById(Author, author.id)).toBeDefined();
     await orm.em.flush();
-    expect(orm.em.getUnitOfWork().getById<Author>(Author.name, author.id)).toBeUndefined();
+    expect(orm.em.getUnitOfWork().getById(Author, author.id)).toBeUndefined();
     expect(orm.em.getUnitOfWork().getIdentityMap()).toEqual({
       registry: new Map([
         [Author, new Map<string, Author>()],
@@ -533,9 +533,9 @@ describe('EntityManagerMongo', () => {
     expect(driver).toBeInstanceOf(MongoDriver);
     expect(driver.getDependencies()).toEqual(['mongodb']);
     expect(orm.config.getNamingStrategy().joinTableName('a', 'b', 'c')).toEqual('a_c');
-    expect(await driver.find(BookTag.name, { foo: 'bar', books: 123 }, { orderBy: {} })).toEqual([]);
-    expect(await driver.findOne(BookTag.name, { foo: 'bar', books: 123 })).toBeNull();
-    expect(await driver.findOne(BookTag.name, { foo: 'bar', books: 123 }, { orderBy: {} })).toBeNull();
+    expect(await driver.find(BookTag, { name: 'bar', books: ['123'] }, { orderBy: {} })).toEqual([]);
+    expect(await driver.findOne(BookTag, { name: 'bar', books: ['123'] })).toBeNull();
+    expect(await driver.findOne(BookTag, { name: 'bar', books: ['123'] }, { orderBy: {} })).toBeNull();
     expect(driver.getPlatform().usesPivotTable()).toBe(false);
     expect(driver.getPlatform().usesImplicitTransactions()).toBe(false);
     await expect(driver.loadFromPivotTable({} as any, [])).rejects.toThrow('MongoDriver does not use pivot tables');
@@ -547,16 +547,16 @@ describe('EntityManagerMongo', () => {
 
     expect(() => driver.getPlatform().generateCustomOrder('foo', [1, 2, 3])).toThrow();
 
-    const first = await driver.nativeInsert<Publisher>(Publisher.name, { name: 'test 123', type: PublisherType.GLOBAL });
-    await driver.nativeUpdate<Publisher>(Publisher.name, first.insertId, { name: 'test 456' });
-    await driver.nativeUpdateMany<Publisher>(Publisher.name, [first.insertId], [{ name: 'test 789' }]);
-    await driver.nativeDelete(Publisher.name, first.insertId);
+    const first = await driver.nativeInsert<Publisher>(Publisher, { name: 'test 123', type: PublisherType.GLOBAL });
+    await driver.nativeUpdate<Publisher>(Publisher, first.insertId, { name: 'test 456' });
+    await driver.nativeUpdateMany<Publisher>(Publisher, [first.insertId], [{ name: 'test 789' }]);
+    await driver.nativeDelete(Publisher, first.insertId);
 
     // multi inserts
-    const res = await driver.nativeInsertMany(Publisher.name, [
-      { name: 'test 1', type: 'GLOBAL' },
-      { name: 'test 2', type: 'LOCAL' },
-      { name: 'test 3', type: 'GLOBAL' },
+    const res = await driver.nativeInsertMany(Publisher, [
+      { name: 'test 1', type: 'GLOBAL' as any },
+      { name: 'test 2', type: 'LOCAL' as any },
+      { name: 'test 3', type: 'GLOBAL' as any },
     ]);
 
     // mongo returns the persisted objects
@@ -565,14 +565,14 @@ describe('EntityManagerMongo', () => {
     expect(res.insertedIds![0]).toBeInstanceOf(ObjectId);
     expect(res.insertedIds![1]).toBeInstanceOf(ObjectId);
     expect(res.insertedIds![2]).toBeInstanceOf(ObjectId);
-    const res2 = await driver.find(Publisher.name, {});
+    const res2 = await driver.find(Publisher, {});
     expect(res2).toEqual([
       { _id: res.insertedIds![0], name: 'test 1', type: 'GLOBAL' },
       { _id: res.insertedIds![1], name: 'test 2', type: 'LOCAL' },
       { _id: res.insertedIds![2], name: 'test 3', type: 'GLOBAL' },
     ]);
-    await driver.nativeDelete(Publisher.name, res.rows?.[0]._id);
-    const count = await driver.count(Publisher.name, {});
+    await driver.nativeDelete(Publisher, res.rows?.[0]._id);
+    const count = await driver.count(Publisher, {});
     expect(count).toBe(2);
   });
 
@@ -580,8 +580,8 @@ describe('EntityManagerMongo', () => {
     // await orm.em.getDriver().ensureIndexes(); // executed in the init method
     const conn = orm.em.getDriver().getConnection('write');
 
-    const authorInfo = await conn.getCollection('author').indexInformation({ full: true, session: undefined as any });
-    const bookInfo = await conn.getCollection('books-table').indexInformation({ full: true, session: undefined as any });
+    const authorInfo = await conn.getCollection(Author).indexInformation({ full: true, session: undefined as any });
+    const bookInfo = await conn.getCollection(Book).indexInformation({ full: true, session: undefined as any });
     expect(authorInfo.reduce((o: any, i: any) => { o[i.name] = i; return o; }, {} as any)).toMatchObject({
       _id_: { key: { _id: 1 }, name: '_id_' },
       born_1: { key: { born: 1 }, name: 'born_1' },
@@ -1503,6 +1503,8 @@ describe('EntityManagerMongo', () => {
   });
 
   test('property onUpdate hook (updatedAt field)', async () => {
+    vi.useFakeTimers();
+
     const repo = orm.em.getRepository(Author);
     const author = new Author('name', 'email');
     expect(author.createdAt).toBeDefined();
@@ -1512,11 +1514,15 @@ describe('EntityManagerMongo', () => {
     await orm.em.persist(author).flush();
 
     author.name = 'name1';
+    vi.advanceTimersByTime(10);
     await orm.em.flush();
+
     expect(author.createdAt).toBeDefined();
     expect(author.updatedAt).toBeDefined();
     expect(author.updatedAt).not.toEqual(author.createdAt);
     expect(author.updatedAt! > author.createdAt!).toBe(true);
+
+    vi.advanceTimersByTime(10);
 
     orm.em.clear();
     const ent = (await repo.findOne(author.id))!;
@@ -1524,6 +1530,7 @@ describe('EntityManagerMongo', () => {
     expect(ent.updatedAt).toBeDefined();
     expect(ent.updatedAt).not.toEqual(ent.createdAt);
     expect(ent.updatedAt! > ent.createdAt!).toBe(true);
+    vi.useRealTimers();
   });
 
   test('EM supports native insert/update/delete/aggregate', async () => {
@@ -1549,13 +1556,13 @@ describe('EntityManagerMongo', () => {
     const res6 = await orm.em.nativeUpdate(Author, { name: 'native name 2' }, { name: 'new native name', updatedAt: new Date('2018-10-28') });
     expect(res6).toBe(1);
 
-    const res7 = await orm.em.insert<any>('test', { name: 'native name 1', test: 'abc' });
+    const res7 = await orm.em.insert(Test, { name: 'native name 1', hiddenField: 123 });
     expect(res7).toBeInstanceOf(ObjectId);
 
-    const res8 = await orm.em.nativeUpdate<any>('test', { name: 'native name 1' }, { $unset: { test: 1 } });
+    const res8 = await orm.em.nativeUpdate(Test, { name: 'native name 1' }, { $unset: { test: 1 } } as any);
     expect(res8).toBe(1);
 
-    const res9 = await orm.em.nativeDelete('test', { name: 'native name 1' });
+    const res9 = await orm.em.nativeDelete(Test, { name: 'native name 1' });
     expect(res9).toBe(1);
 
     expect(mock.mock.calls.length).toBe(9);
@@ -1565,8 +1572,8 @@ describe('EntityManagerMongo', () => {
     expect(mock.mock.calls[3][0]).toMatch(/db\.getCollection\('author'\)\.deleteMany\({ name: 'new native name' }, {}\)/);
     expect(mock.mock.calls[4][0]).toMatch(/db\.getCollection\('author'\)\.insertOne\({ createdAt: ISODate\('.*'\), updatedAt: ISODate\('.*'\), name: 'native name 2', email: 'e2' }, {}\);/);
     expect(mock.mock.calls[5][0]).toMatch(/db\.getCollection\('author'\)\.updateMany\({ name: 'native name 2' }, { '\$set': { name: 'new native name', updatedAt: ISODate\('.*'\) } }, {}\);/);
-    expect(mock.mock.calls[6][0]).toMatch(/db\.getCollection\('test'\)\.insertOne\({ name: 'native name 1', test: 'abc' }, {}\);/);
-    expect(mock.mock.calls[7][0]).toMatch(/db\.getCollection\('test'\)\.updateMany\({ name: 'native name 1' }, { '\$unset': { test: 1 } }, {}\);/);
+    expect(mock.mock.calls[6][0]).toMatch(/db\.getCollection\('test'\)\.insertOne\({ name: 'native name 1', hiddenField: 123, version: 1 }, {}\);/);
+    expect(mock.mock.calls[7][0]).toMatch(/db\.getCollection\('test'\)\.updateMany\({ name: 'native name 1' }, { '\$unset': { test: 1 }, '\$inc': { version: 1 } }, {}\);/);
     expect(mock.mock.calls[8][0]).toMatch(/db\.getCollection\('test'\)\.deleteMany\({ name: 'native name 1' }, {}\)/);
   });
 
@@ -2221,8 +2228,8 @@ describe('EntityManagerMongo', () => {
 
   test('exceptions', async () => {
     const driver = orm.em.getDriver();
-    await driver.nativeInsert(Author.name, { name: 'author', email: 'email' });
-    await expect(driver.nativeInsert(Author.name, { name: 'author', email: 'email' })).rejects.toThrow(UniqueConstraintViolationException);
+    await driver.nativeInsert(Author, { name: 'author', email: 'email' });
+    await expect(driver.nativeInsert(Author, { name: 'author', email: 'email' })).rejects.toThrow(UniqueConstraintViolationException);
   });
 
   test('loadCount with 1:n relationships', async () => {

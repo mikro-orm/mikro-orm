@@ -11,7 +11,7 @@ class App {
   @Property()
   name!: string;
 
-  @ManyToMany('User', 'apps')
+  @ManyToMany(() => User, 'apps')
   users = new Collection<User>(this);
 
 }

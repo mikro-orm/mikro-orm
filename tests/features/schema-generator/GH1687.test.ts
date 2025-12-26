@@ -23,7 +23,7 @@ class Country {
   @Property()
   currencySymbol!: string;
 
-  @OneToMany('State', 'country', { cascade: [Cascade.ALL], nullable: true })
+  @OneToMany(() => State, 'country', { cascade: [Cascade.ALL], nullable: true })
   states = new Collection<State>(this);
 
 }
@@ -40,7 +40,7 @@ class State {
   @Property()
   name!: string;
 
-  @OneToMany('City', 'state', { cascade: [Cascade.ALL], nullable: true })
+  @OneToMany(() => City, 'state', { cascade: [Cascade.ALL], nullable: true })
   cities = new Collection<City>(this);
 
 }

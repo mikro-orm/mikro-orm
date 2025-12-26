@@ -135,7 +135,7 @@ beforeAll(async () => {
   orm = await MikroORM.init({
     metadataProvider: ReflectMetadataProvider,
     entities: [addressEntitySchema, userEntitySchema, Address1, User1],
-    dbName: `:memory:`,
+    dbName: ':memory:',
   });
 });
 

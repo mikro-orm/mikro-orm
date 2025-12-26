@@ -44,8 +44,8 @@ describe('GH issue 923', () => {
       entities: [Person, Chef, Teacher, Gardener],
       dbName: ':memory:',
     });
-    const meta = orm.getMetadata().get('Person');
-    expect(meta.discriminatorMap).toEqual({ chef: 'Chef', teacher: 'Teacher', gardener: 'Gardener' });
+    const meta = orm.getMetadata(Person);
+    expect(meta.discriminatorMap).toEqual({ chef: Chef, teacher: Teacher, gardener: Gardener });
   });
 
   test(`discovery with STI is not dependent on order of entities 2`, async () => {
@@ -54,8 +54,8 @@ describe('GH issue 923', () => {
       entities: [Chef, Teacher, Gardener, Person],
       dbName: ':memory:',
     });
-    const meta = orm.getMetadata().get('Person');
-    expect(meta.discriminatorMap).toEqual({ chef: 'Chef', teacher: 'Teacher', gardener: 'Gardener' });
+    const meta = orm.getMetadata(Person);
+    expect(meta.discriminatorMap).toEqual({ chef: Chef, teacher: Teacher, gardener: Gardener });
   });
 
   test(`discovery with STI is not dependent on order of entities 3`, async () => {
@@ -64,8 +64,8 @@ describe('GH issue 923', () => {
       entities: [Chef, Teacher, Person, Gardener],
       dbName: ':memory:',
     });
-    const meta = orm.getMetadata().get('Person');
-    expect(meta.discriminatorMap).toEqual({ chef: 'Chef', teacher: 'Teacher', gardener: 'Gardener' });
+    const meta = orm.getMetadata(Person);
+    expect(meta.discriminatorMap).toEqual({ chef: Chef, teacher: Teacher, gardener: Gardener });
   });
 
   test(`discovery with STI is not dependent on order of entities 4`, async () => {
@@ -74,8 +74,8 @@ describe('GH issue 923', () => {
       entities: [Chef, Person, Teacher, Gardener],
       dbName: ':memory:',
     });
-    const meta = orm.getMetadata().get('Person');
-    expect(meta.discriminatorMap).toEqual({ chef: 'Chef', teacher: 'Teacher', gardener: 'Gardener' });
+    const meta = orm.getMetadata(Person);
+    expect(meta.discriminatorMap).toEqual({ chef: Chef, teacher: Teacher, gardener: Gardener });
   });
 
 });

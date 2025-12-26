@@ -14,7 +14,7 @@ class A {
   @PrimaryKey()
   id!: number;
 
-  @OneToMany('B', 'a')
+  @OneToMany(() => B, 'a')
   bs = new Collection<B>(this);
 
   @Property()

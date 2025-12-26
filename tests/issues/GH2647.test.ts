@@ -88,7 +88,7 @@ describe('GH #2647, #2742', () => {
     orm = await MikroORM.init({
       metadataProvider: ReflectMetadataProvider,
       entities: [Provider, User, Member, Session, Participant],
-      dbName: `:memory:`,
+      dbName: ':memory:',
     });
     await orm.schema.create();
   });

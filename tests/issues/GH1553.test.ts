@@ -17,7 +17,7 @@ export class Owner {
   @Property()
   name!: string;
 
-  @ManyToOne('Radio', { ref: true })
+  @ManyToOne(() => Radio, { ref: true })
   radio!: Ref<Radio>;
 
   constructor(name: string) {
@@ -35,7 +35,7 @@ export class RadioOption {
   @Property()
   enabled!: boolean;
 
-  @ManyToOne('Radio', { ref: true })
+  @ManyToOne(() => Radio, { ref: true })
   radio!: Ref<Radio>;
 
 

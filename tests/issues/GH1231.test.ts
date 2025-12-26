@@ -27,7 +27,7 @@ class Teacher {
   @Property()
   lastName!: string;
 
-  @OneToMany({ entity: 'Student', mappedBy: 'teacher', orphanRemoval: true, cascade: [Cascade.ALL] })
+  @OneToMany({ entity: () => Student, mappedBy: 'teacher', orphanRemoval: true, cascade: [Cascade.ALL] })
   students = new Collection<Student>(this);
 
 }

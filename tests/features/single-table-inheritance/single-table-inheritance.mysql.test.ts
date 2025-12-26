@@ -1,4 +1,4 @@
-import type { Dictionary } from '@mikro-orm/core';
+import { EntityMetadata } from '@mikro-orm/core';
 import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { MetadataDiscovery, MetadataStorage, MikroORM, ReferenceKind, wrap } from '@mikro-orm/core';
 import { MySqlDriver } from '@mikro-orm/mysql';
@@ -42,20 +42,20 @@ describe('single table inheritance in mysql', () => {
   }
 
   test('check metadata', async () => {
-    expect(orm.getMetadata().get('CompanyOwner2').collection).toBe('base_user2');
-    expect(orm.getMetadata().get('BaseUser2').hooks).toEqual({
+    expect(orm.getMetadata().get(CompanyOwner2).tableName).toBe('base_user2');
+    expect(orm.getMetadata().get(BaseUser2).hooks).toEqual({
       afterCreate: ['afterCreate1'],
       afterUpdate: ['afterUpdate1'],
     });
-    expect(orm.getMetadata().get('Employee2').hooks).toEqual({
+    expect(orm.getMetadata().get(Employee2).hooks).toEqual({
       afterCreate: ['afterCreate1'],
       afterUpdate: ['afterUpdate1'],
     });
-    expect(orm.getMetadata().get('Manager2').hooks).toEqual({
+    expect(orm.getMetadata().get(Manager2).hooks).toEqual({
       afterCreate: ['afterCreate1'],
       afterUpdate: ['afterUpdate1'],
     });
-    expect(orm.getMetadata().get('CompanyOwner2').hooks).toEqual({
+    expect(orm.getMetadata().get(CompanyOwner2).hooks).toEqual({
       afterCreate: ['afterCreate1', 'afterCreate2'],
       afterUpdate: ['afterUpdate1', 'afterUpdate2'],
     });
@@ -171,11 +171,6 @@ describe('single table inheritance in mysql', () => {
   });
 
   test('generated discriminator map', async () => {
-    const storage = new MetadataStorage({
-      A: { name: 'A', className: 'A', primaryKeys: ['id'], discriminatorColumn: 'type', properties: { id: { name: 'id', type: 'string', kind: ReferenceKind.SCALAR } } },
-      B: { name: 'B', className: 'B', primaryKeys: ['id'], extends: 'A', properties: { id: { name: 'id', type: 'string', kind: ReferenceKind.SCALAR } } },
-      C: { name: 'C', className: 'C', primaryKeys: ['id'], extends: 'A', properties: { id: { name: 'id', type: 'string', kind: ReferenceKind.SCALAR } } },
-    } as Dictionary);
     class A {
 
       toJSON(a: string, b: string) {
@@ -185,20 +180,25 @@ describe('single table inheritance in mysql', () => {
     }
     class B {}
     class C {}
+    const storage = new MetadataStorage();
+    storage.set(A, new EntityMetadata({ name: 'A', className: 'A', primaryKeys: ['id'], discriminatorColumn: 'type', properties: { id: { name: 'id', type: 'string', kind: ReferenceKind.SCALAR } as any } }));
+    storage.set(B, new EntityMetadata({ name: 'B', className: 'B', primaryKeys: ['id'], extends: A, properties: { id: { name: 'id', type: 'string', kind: ReferenceKind.SCALAR } as any } }));
+    storage.set(C, new EntityMetadata({ name: 'C', className: 'C', primaryKeys: ['id'], extends: A, properties: { id: { name: 'id', type: 'string', kind: ReferenceKind.SCALAR } as any } }));
+
     orm.config.set('entities', [A, B, C]);
     const discovery = new MetadataDiscovery(storage, orm.em.getDriver().getPlatform(), orm.config);
     const discovered = await discovery.discover();
-    expect(discovered.get('A').discriminatorMap).toEqual({ a: 'A', b: 'B', c: 'C' });
-    expect(discovered.get('A').properties.type).toMatchObject({
+    expect(discovered.get(A).discriminatorMap).toEqual({ a: A, b: B, c: C });
+    expect(discovered.get(A as any).properties.type).toMatchObject({
       name: 'type',
       enum: true,
       type: 'string',
       index: true,
       items: ['a', 'b', 'c'],
     });
-    expect(discovered.get('A').discriminatorValue).toBe('a');
-    expect(discovered.get('B').discriminatorValue).toBe('b');
-    expect(discovered.get('C').discriminatorValue).toBe('c');
+    expect(discovered.get(A).discriminatorValue).toBe('a');
+    expect(discovered.get(B).discriminatorValue).toBe('b');
+    expect(discovered.get(C).discriminatorValue).toBe('c');
   });
 
   test('non-abstract root entity', async () => {

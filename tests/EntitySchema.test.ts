@@ -1,6 +1,8 @@
 import { EntitySchema, DateType } from '@mikro-orm/core';
 import { Author } from './entities/Author.js';
 import { AuthorRepository } from './repositories/AuthorRepository.js';
+import { BaseEntity } from './entities/BaseEntity.js';
+import { BaseEntity5 } from './entities-schema/BaseEntity5.js';
 
 describe('EntitySchema', () => {
 
@@ -26,9 +28,9 @@ describe('EntitySchema', () => {
     expect(schema.name).toBe('Author');
     expect(schema.tableName).toBe('authors');
     const meta = schema.init().meta;
-    expect(meta.extends).toBe('BaseEntity');
-    schema.setExtends('BaseEntity5');
-    expect(meta.extends).toBe('BaseEntity5');
+    expect(meta.extends).toBe(BaseEntity);
+    schema.setExtends(BaseEntity5);
+    expect(meta.extends).toBe(BaseEntity5);
     expect(meta.constructorParams).toEqual(['name', 'email']);
     expect(meta.properties.foo.type).toBe('string');
     expect(meta.properties.born.type).toBe(DateType);

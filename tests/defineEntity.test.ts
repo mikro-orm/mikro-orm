@@ -1496,8 +1496,16 @@ describe('ManyToManyOptionsBuilder', () => {
         name: p.string(),
         users: () => p.manyToMany(User)
           .joinColumns('id')
-          .pivotEntity('UserTag')
+          .pivotEntity(() => UserTag)
           .referencedColumnNames('user_id', 'tag_id'),
+      }),
+    });
+
+    const UserTag = defineEntity({
+      name: 'UserTag',
+      properties: p => ({
+        user: p.manyToOne(User),
+        tag: p.manyToOne(Tag),
       }),
     });
 
@@ -1510,7 +1518,7 @@ describe('ManyToManyOptionsBuilder', () => {
           kind: 'm:n',
           entity: () => User,
           joinColumns: ['id'],
-          pivotEntity: 'UserTag',
+          pivotEntity: () => UserTag,
           referencedColumnNames: ['user_id', 'tag_id'],
         },
       },
@@ -1576,6 +1584,7 @@ function asSnapshot(value: EntityMetadata): EntityMetadata {
   const snap = new EntityMetadata({ ...value });
   Object.defineProperty(snap, '_id', { writable: false, value: expect.any(Number) });
   snap.root = expect.any(Object);
+  snap.class = expect.any(Function);
   for (const prop of Object.values(snap.properties)) {
     for (const [key, value] of Object.entries(prop)) {
       if (typeof value === 'function') {

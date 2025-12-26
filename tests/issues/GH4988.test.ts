@@ -28,7 +28,7 @@ class CompanyProduct {
 
   readonly id!: number;
   readonly product!: Ref<ProductEntity>;
-  readonly company!: Ref<CompanyProduct>;
+  readonly company!: Ref<Company>;
   readonly createdAt!: Date;
   readonly updatedAt!: Date;
 

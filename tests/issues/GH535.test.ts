@@ -8,7 +8,7 @@ class A {
   id!: number;
 
   @OneToOne({
-    entity: 'B',
+    entity: () => B,
     mappedBy: 'a',
     ref: true,
     nullable: true,

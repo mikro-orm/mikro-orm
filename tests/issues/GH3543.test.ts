@@ -93,7 +93,7 @@ test('GH issue 3543', async () => {
 });
 
 test('GH issue 3543 without orphan removal builds correct query', async () => {
-  orm.getMetadata().get('Order').properties.events.orphanRemoval = false;
+  orm.getMetadata(Order).properties.events.orphanRemoval = false;
   let order = orm.em.create(Order, {
     customerId: '456',
     companyId: '789',

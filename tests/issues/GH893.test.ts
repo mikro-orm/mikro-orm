@@ -24,7 +24,7 @@ abstract class Base {
 @Entity()
 class Publisher extends Base {
 
-  @OneToMany('Book', (b: Book) => b.publisher)
+  @OneToMany(() => Book, (b: Book) => b.publisher)
   books = new Collection<Book>(this);
 
 }

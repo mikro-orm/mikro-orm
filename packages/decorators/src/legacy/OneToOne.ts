@@ -9,7 +9,15 @@ import {
 import { processDecoratorParameters, validateSingleDecorator, getMetadataFromDecorator } from '../utils.js';
 
 export function OneToOne<Target, Owner>(
-  entity?: OneToOneOptions<Owner, Target> | string | ((e: Owner) => EntityName<Target>),
+  entity: ((e: Owner) => EntityName<Target>),
+  mappedByOrOptions?: (string & keyof Target) | ((e: Target) => any) | Partial<OneToOneOptions<Owner, Target>>,
+  options?: Partial<OneToOneOptions<Owner, Target>>,
+): (target: Owner, propertyName: string) => void;
+export function OneToOne<Target, Owner>(
+  entity?: OneToOneOptions<Owner, Target>,
+): (target: Owner, propertyName: string) => void;
+export function OneToOne<Target, Owner>(
+  entity?: OneToOneOptions<Owner, Target> | ((e: Owner) => EntityName<Target>),
   mappedByOrOptions?: (string & keyof Target) | ((e: Target) => any) | Partial<OneToOneOptions<Owner, Target>>,
   options: Partial<OneToOneOptions<Owner, Target>> = {},
 ) {

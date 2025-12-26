@@ -12,7 +12,7 @@ export class MsSqlQueryBuilder<
     this.checkIdentityInsert(data);
 
     if (!this.flags.has(QueryFlag.IDENTITY_INSERT) && this.metadata.has(this.mainAlias.entityName)) {
-      const meta = this.metadata.find(this.mainAlias.entityName)!;
+      const meta = this.mainAlias.meta;
 
       if (meta!.hasTriggers) {
         this.setFlag(QueryFlag.OUTPUT_TABLE);
@@ -23,13 +23,8 @@ export class MsSqlQueryBuilder<
   }
 
   private checkIdentityInsert(data: RequiredEntityData<Entity> | RequiredEntityData<Entity>[]) {
-    const meta = this.metadata.find(this.mainAlias.entityName);
-
-    if (!meta) {
-      return;
-    }
-
-    const dataKeys = Utils.unique(Utils.asArray(data).flatMap(Object.keys));
+    const meta = this.mainAlias.meta;
+    const dataKeys = Utils.unique(Utils.asArray(data).flatMap(Utils.keys));
     const hasAutoincrement = dataKeys.some(x => meta.properties[x]?.autoincrement);
 
     if (hasAutoincrement) {

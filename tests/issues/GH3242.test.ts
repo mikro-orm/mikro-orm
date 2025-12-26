@@ -12,7 +12,7 @@ export class Author {
   id!: string;
 
   @OneToMany({
-    entity: 'Book',
+    entity: () => Book,
     mappedBy: 'author',
   })
   books = new Collection<Book>(this);

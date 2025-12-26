@@ -16,7 +16,7 @@ class Soldier {
   @Property()
   lastName!: string;
 
-  @ManyToMany({ entity: 'Squad' })
+  @ManyToMany({ entity: () => Squad })
   squads = new Collection<Squad>(this);
 
 }
@@ -36,7 +36,7 @@ class Squad {
   @Property({ nullable: true })
   disbandedAt?: Date;
 
-  @ManyToMany({ entity: 'Soldier', mappedBy: 'squads' })
+  @ManyToMany({ entity: () => Soldier, mappedBy: 'squads' })
   soldiers = new Collection<Soldier>(this);
 
 }

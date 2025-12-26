@@ -177,7 +177,7 @@ describe('Migrator', () => {
     const migrator = new Migrator(orm.em);
 
     const metadataMock = vi.spyOn(MetadataStorage.prototype, 'getAll');
-    metadataMock.mockReturnValueOnce({});
+    metadataMock.mockReturnValueOnce(new Map());
     const err3 = `No entities found`;
     await expect(migrator.createInitial(undefined)).rejects.toThrow(err3);
   });

@@ -22,7 +22,7 @@ class Parent extends Base {
   @Property()
   type!: string;
 
-  @OneToMany('Relation1', 'parent')
+  @OneToMany(() => Relation1, 'parent')
   qaInfo = new Collection<Relation1>(this);
 
 }
@@ -30,7 +30,7 @@ class Parent extends Base {
 @Entity()
 class Relation1 extends Base {
 
-  @ManyToOne('Parent')
+  @ManyToOne(() => Parent)
   parent!: Parent;
 
 }
@@ -38,7 +38,7 @@ class Relation1 extends Base {
 @Entity()
 class Child1 extends Parent {
 
-  @OneToMany('Child1Specific', 'child1')
+  @OneToMany(() => Child1Specific, 'child1')
   rel = new Collection<Child1Specific>(this);
 
 }

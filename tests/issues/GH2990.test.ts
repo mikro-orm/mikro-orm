@@ -68,7 +68,7 @@ describe('GH issue 2990', () => {
     orm = await MikroORM.init({
       metadataProvider: ReflectMetadataProvider,
       entities: [Provider, User, Member, Session],
-      dbName: `:memory:`,
+      dbName: ':memory:',
     });
   });
 
@@ -78,7 +78,7 @@ describe('GH issue 2990', () => {
 
   it('should lookup all (non-circular) eager relationships for population', async () => {
     const loader = new EntityLoader(orm.em);
-    const populate = loader.normalizePopulate<Session>('Session', []);
+    const populate = loader.normalizePopulate(Session, []);
 
     const owner = populate.find(p => p.field === 'owner');
     expect(owner?.children?.some(p => p.field === 'provider')).toBe(true);

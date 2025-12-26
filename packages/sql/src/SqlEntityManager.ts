@@ -77,7 +77,7 @@ export class SqlEntityManager<Driver extends AbstractSqlDriver = AbstractSqlDriv
     return super.getRepository<T, U>(entityName);
   }
 
-  protected override applyDiscriminatorCondition<Entity extends object>(entityName: string, where: FilterQuery<Entity>): FilterQuery<Entity> {
+  protected override applyDiscriminatorCondition<Entity extends object>(entityName: EntityName<Entity>, where: FilterQuery<Entity>): FilterQuery<Entity> {
     // this is handled in QueryBuilder now for SQL drivers
     return where;
   }

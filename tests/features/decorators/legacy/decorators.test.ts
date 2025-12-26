@@ -177,7 +177,7 @@ describe('decorators', () => {
     const storage = MetadataStorage.getMetadata();
     const key = 'Test2-' + hash;
     const err = 'Mixing first decorator parameter as options object with other parameters is forbidden. If you want to use the options parameter at first position, provide all options inside it.';
-    expect(() => ManyToMany({ entity: () => Test }, 'name')(new Test2(), 'test0' as never)).toThrow(err);
+    expect(() => ManyToMany({ entity: () => Test } as any, 'name')(new Test2() as never, 'test0' as never)).toThrow(err);
     ManyToMany({ entity: () => Test })(new Test2(), 'test0' as never);
     ManyToMany({ entity: () => Test })(new Test2(), 'test0' as never); // calling multiple times won't throw
     expect(storage[key].properties.test0).toMatchObject({ kind: ReferenceKind.MANY_TO_MANY, name: 'test0' });

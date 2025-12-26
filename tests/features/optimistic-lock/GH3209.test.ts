@@ -81,7 +81,7 @@ beforeAll(async () => {
   orm = await MikroORM.init({
     metadataProvider: ReflectMetadataProvider,
     entities: [Author, Book],
-    dbName: `:memory:`,
+    dbName: ':memory:',
     driver: SqliteDriver,
   });
   await orm.schema.create();

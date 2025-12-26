@@ -55,11 +55,10 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
       return;
     }
 
-    entityName = Utils.className(entityName);
     const fields = this.buildFields(entityName, options.populate as unknown as PopulateOptions<T>[] || [], options.fields, options.exclude as any);
-    where = this.renameFields(entityName, where, true);
+    where = this.renameFields(entityName, where as T, true);
     const orderBy = Utils.asArray(options.orderBy).map(orderBy =>
-      this.renameFields(entityName, orderBy, true),
+      this.renameFields(entityName, orderBy as T, true),
     );
     const res = this.getConnection('read').stream(entityName, where, orderBy, options.limit, options.offset, fields, options.ctx);
 
@@ -72,14 +71,14 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     }
   }
 
-  async find<T extends object, P extends string = never, F extends string = '*', E extends string = never>(entityName: string, where: FilterQuery<T>, options: FindOptions<T, P, F, E> = {}): Promise<EntityData<T>[]> {
+  async find<T extends object, P extends string = never, F extends string = '*', E extends string = never>(entityName: EntityName<T>, where: FilterQuery<T>, options: FindOptions<T, P, F, E> = {}): Promise<EntityData<T>[]> {
     if (this.metadata.find(entityName)?.virtual) {
       return this.findVirtual(entityName, where, options);
     }
 
     const { first, last, before, after } = options as FindByCursorOptions<T>;
     const fields = this.buildFields(entityName, options.populate as unknown as PopulateOptions<T>[] || [], options.fields, options.exclude as any[]);
-    where = this.renameFields(entityName, where, true);
+    where = this.renameFields(entityName, where as T, true);
     const isCursorPagination = [first, last, before, after].some(v => v != null);
 
     if (isCursorPagination) {
@@ -96,8 +95,8 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
       };
       const meta = this.metadata.find<T>(entityName)!;
       const { orderBy: newOrderBy, where: newWhere } = this.processCursorOptions(meta, options, options.orderBy!);
-      const newWhereConverted = this.renameFields(entityName, newWhere as FilterQuery<T>, true);
-      const orderBy = Utils.asArray(newOrderBy).map(order => this.renameFields(entityName, order, true));
+      const newWhereConverted = this.renameFields(entityName, newWhere as T, true);
+      const orderBy = Utils.asArray(newOrderBy).map(order => this.renameFields(entityName, order as T, true));
       const res = await this.rethrow(this.getConnection('read').find(entityName, andWhere(where, newWhereConverted), orderBy, options.limit, options.offset, fields, options.ctx, options.logging));
 
       if (isCursorPagination && !first && !!last) {
@@ -108,14 +107,14 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     }
 
     const orderBy = Utils.asArray(options.orderBy).map(orderBy =>
-      this.renameFields(entityName, orderBy, true),
+      this.renameFields(entityName, orderBy as T, true),
     );
     const res = await this.rethrow(this.getConnection('read').find(entityName, where, orderBy, options.limit, options.offset, fields, options.ctx));
 
     return res.map(r => this.mapResult<T>(r, this.metadata.find<T>(entityName))!);
   }
 
-  async findOne<T extends object, P extends string = never, F extends string = PopulatePath.ALL, E extends string = never>(entityName: string, where: FilterQuery<T>, options: FindOneOptions<T, P, F, E> = { populate: [], orderBy: {} }): Promise<EntityData<T> | null> {
+  async findOne<T extends object, P extends string = never, F extends string = PopulatePath.ALL, E extends string = never>(entityName: EntityName<T>, where: FilterQuery<T>, options: FindOneOptions<T, P, F, E> = { populate: [], orderBy: {} }): Promise<EntityData<T> | null> {
     if (this.metadata.find(entityName)?.virtual) {
       const [item] = await this.findVirtual(entityName, where, options as FindOptions<T, any, any, any>);
       /* v8 ignore next */
@@ -127,21 +126,21 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     }
 
     const fields = this.buildFields(entityName, options.populate as unknown as PopulateOptions<T>[] || [], options.fields, options.exclude as any[]);
-    where = this.renameFields(entityName, where, true);
+    where = this.renameFields(entityName, where as T, true);
     const orderBy = Utils.asArray(options.orderBy).map(orderBy =>
-      this.renameFields(entityName, orderBy, true),
+      this.renameFields(entityName, orderBy as T, true),
     );
     const res = await this.rethrow(this.getConnection('read').find(entityName, where, orderBy, 1, undefined, fields, options.ctx, options.logging));
 
     return this.mapResult<T>(res[0], this.metadata.find(entityName)!);
   }
 
-  override async findVirtual<T extends object>(entityName: string, where: FilterQuery<T>, options: FindOptions<T, any, any, any>): Promise<EntityData<T>[]> {
+  override async findVirtual<T extends object>(entityName: EntityName<T>, where: FilterQuery<T>, options: FindOptions<T, any, any, any>): Promise<EntityData<T>[]> {
     const meta = this.metadata.find(entityName)!;
 
     if (meta.expression instanceof Function) {
       const em = this.createEntityManager();
-      return meta.expression(em, where, options) as EntityData<T>[];
+      return meta.expression(em, where as T, options) as EntityData<T>[];
     }
 
     /* v8 ignore next */
@@ -163,23 +162,23 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     return super.findVirtual(entityName, where, options);
   }
 
-  async count<T extends object>(entityName: string, where: FilterQuery<T>, options: CountOptions<T> = {}, ctx?: Transaction<ClientSession>): Promise<number> {
+  async count<T extends object>(entityName: EntityName<T>, where: FilterQuery<T>, options: CountOptions<T> = {}, ctx?: Transaction<ClientSession>): Promise<number> {
     /* v8 ignore next */
     if (this.metadata.find(entityName)?.virtual) {
       return this.countVirtual(entityName, where, options);
     }
 
-    where = this.renameFields(entityName, where, true);
+    where = this.renameFields(entityName, where as T, true);
     return this.rethrow(this.getConnection('read').countDocuments(entityName, where as object, ctx));
   }
 
-  async nativeInsert<T extends object>(entityName: string, data: EntityDictionary<T>, options: NativeInsertUpdateOptions<T> = {}): Promise<QueryResult<T>> {
+  async nativeInsert<T extends object>(entityName: EntityName<T>, data: EntityDictionary<T>, options: NativeInsertUpdateOptions<T> = {}): Promise<QueryResult<T>> {
     this.handleVersionProperty(entityName, data);
     data = this.renameFields(entityName, data);
     return this.rethrow(this.getConnection('write').insertOne(entityName, data, options.ctx)) as unknown as Promise<QueryResult<T>>;
   }
 
-  async nativeInsertMany<T extends object>(entityName: string, data: EntityDictionary<T>[], options: NativeInsertUpdateManyOptions<T> = {}): Promise<QueryResult<T>> {
+  async nativeInsertMany<T extends object>(entityName: EntityName<T>, data: EntityDictionary<T>[], options: NativeInsertUpdateManyOptions<T> = {}): Promise<QueryResult<T>> {
     data = data.map(item => {
       this.handleVersionProperty(entityName, item);
       return this.renameFields(entityName, item);
@@ -193,19 +192,19 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     return res as unknown as QueryResult<T>;
   }
 
-  async nativeUpdate<T extends object>(entityName: string, where: FilterQuery<T>, data: EntityDictionary<T>, options: NativeInsertUpdateOptions<T> & UpsertOptions<T> = {}): Promise<QueryResult<T>> {
+  async nativeUpdate<T extends object>(entityName: EntityName<T>, where: FilterQuery<T>, data: EntityDictionary<T>, options: NativeInsertUpdateOptions<T> & UpsertOptions<T> = {}): Promise<QueryResult<T>> {
     if (Utils.isPrimaryKey(where)) {
       where = this.buildFilterById(entityName, where as string);
     }
 
     this.handleVersionProperty(entityName, data, true);
     data = this.renameFields(entityName, data);
-    where = this.renameFields(entityName, where, true);
+    where = this.renameFields(entityName, where as T, true);
     options = { ...options };
 
     const meta = this.metadata.find(entityName);
     /* v8 ignore next */
-    const rename = (field: keyof T) => meta ? (meta.properties[field as string]?.fieldNames[0] as keyof T ?? field) : field;
+    const rename = (field: keyof T) => meta ? (meta.properties[field as EntityKey<T>]?.fieldNames[0] as keyof T ?? field) : field;
 
     if (options.onConflictFields && Array.isArray(options.onConflictFields)) {
       options.onConflictFields = options.onConflictFields.map(rename);
@@ -222,10 +221,10 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     return this.rethrow(this.getConnection('write').updateMany<T>(entityName, where as object, data as object, options.ctx, options.upsert, options));
   }
 
-  override async nativeUpdateMany<T extends object>(entityName: string, where: FilterQuery<T>[], data: EntityDictionary<T>[], options: NativeInsertUpdateOptions<T> & UpsertManyOptions<T> = {}): Promise<QueryResult<T>> {
+  override async nativeUpdateMany<T extends object>(entityName: EntityName<T>, where: FilterQuery<T>[], data: EntityDictionary<T>[], options: NativeInsertUpdateOptions<T> & UpsertManyOptions<T> = {}): Promise<QueryResult<T>> {
     where = where.map(row => {
       if (Utils.isPlainObject(row)) {
-        return this.renameFields(entityName, row, true);
+        return this.renameFields(entityName, row as T, true);
       }
 
       return row;
@@ -238,7 +237,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
 
     const meta = this.metadata.find(entityName);
     /* v8 ignore next */
-    const rename = (field: keyof T) => meta ? (meta.properties[field as string]?.fieldNames[0] as keyof T ?? field) : field;
+    const rename = (field: keyof T) => meta ? (meta.properties[field as EntityKey<T>]?.fieldNames[0] as keyof T ?? field) : field;
 
     if (options.onConflictFields && Array.isArray(options.onConflictFields)) {
       options.onConflictFields = options.onConflictFields.map(rename);
@@ -270,21 +269,21 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     return res;
   }
 
-  async nativeDelete<T extends object>(entityName: string, where: FilterQuery<T>, options: { ctx?: Transaction<ClientSession> } = {}): Promise<QueryResult<T>> {
+  async nativeDelete<T extends object>(entityName: EntityName<T>, where: FilterQuery<T>, options: { ctx?: Transaction<ClientSession> } = {}): Promise<QueryResult<T>> {
     if (Utils.isPrimaryKey(where)) {
       where = this.buildFilterById(entityName, where as string);
     }
 
-    where = this.renameFields(entityName, where, true);
+    where = this.renameFields(entityName, where as T, true);
 
     return this.rethrow(this.getConnection('write').deleteMany(entityName, where as object, options.ctx)) as unknown as Promise<QueryResult<T>>;
   }
 
-  override async aggregate(entityName: string, pipeline: any[], ctx?: Transaction<ClientSession>): Promise<any[]> {
+  override async aggregate(entityName: EntityName, pipeline: any[], ctx?: Transaction<ClientSession>): Promise<any[]> {
     return this.rethrow(this.getConnection('read').aggregate(entityName, pipeline, ctx));
   }
 
-  async *streamAggregate<T extends object>(entityName: string, pipeline: any[], ctx?: Transaction<ClientSession>): AsyncIterableIterator<T> {
+  async *streamAggregate<T extends object>(entityName: EntityName<T>, pipeline: any[], ctx?: Transaction<ClientSession>): AsyncIterableIterator<T> {
     yield* this.getConnection('read').streamAggregate<T>(entityName, pipeline, ctx);
   }
 
@@ -292,7 +291,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     return this.platform;
   }
 
-  private renameFields<T extends object>(entityName: string, data: T, dotPaths = false, object?: boolean): T {
+  private renameFields<T extends object>(entityName: EntityName<T>, data: T, dotPaths = false, object?: boolean): T {
     // copy to new variable to prevent changing the T type or doing as unknown casts
     const copiedData: Dictionary = Object.assign({}, data); // copy first
     const meta = this.metadata.find(entityName);
@@ -302,7 +301,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     }
 
     if (meta && !meta.embeddable) {
-      this.inlineEmbeddables(meta, copiedData, dotPaths);
+      this.inlineEmbeddables(meta, copiedData as T, dotPaths);
     }
 
     // If we had a query with $fulltext and some filter we end up with $and with $fulltext in it.
@@ -347,7 +346,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
       }
 
       if (meta?.properties[k as EntityKey<T>]) {
-        const prop = meta.properties[k];
+        const prop = meta.properties[k as EntityKey<T>];
         let isObjectId = false;
 
         if (prop.kind === ReferenceKind.SCALAR) {
@@ -358,12 +357,12 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
           }
 
           if (prop.array && Array.isArray(copiedData[prop.name])) {
-            copiedData[prop.name] = copiedData[prop.name].map((item: Dictionary) => this.renameFields(prop.type, item, dotPaths, true));
+            copiedData[prop.name] = copiedData[prop.name].map((item: Dictionary) => this.renameFields(prop.targetMeta!.class, item, dotPaths, true));
           } else {
-            copiedData[prop.name] = this.renameFields(prop.type, copiedData[prop.name], dotPaths, prop.object || object);
+            copiedData[prop.name] = this.renameFields(prop.targetMeta!.class, copiedData[prop.name], dotPaths, prop.object || object);
           }
         } else {
-          const meta2 = this.metadata.find(prop.type)!;
+          const meta2 = this.metadata.find(prop.targetMeta!.class)!;
           const pk = meta2.properties[meta2.primaryKeys[0]];
           isObjectId = pk.type === 'ObjectId';
         }
@@ -407,7 +406,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     return data;
   }
 
-  private buildFilterById<T extends { _id: any }>(entityName: string, id: string): FilterQuery<T> {
+  private buildFilterById<T extends { _id: any }>(entityName: EntityName, id: string): FilterQuery<T> {
     const meta = this.metadata.find(entityName)!;
 
     if (meta.properties[meta.primaryKeys[0]].type === 'ObjectId') {
@@ -417,13 +416,8 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     return { _id: id } as FilterQuery<T>;
   }
 
-  protected buildFields<T extends object, P extends string = never>(entityName: string, populate: PopulateOptions<T>[], fields?: readonly EntityField<T, P>[], exclude?: string[]): string[] | undefined {
-    const meta = this.metadata.find<T>(entityName);
-
-    if (!meta) {
-      return fields as string[];
-    }
-
+  protected buildFields<T extends object, P extends string = never>(entityName: EntityName<T>, populate: PopulateOptions<T>[], fields?: readonly EntityField<T, P>[], exclude?: string[]): string[] | undefined {
+    const meta = this.metadata.get(entityName);
     const lazyProps = meta.props.filter(prop => prop.lazy && !populate.some(p => this.isPopulated(meta, prop, p)));
     const ret: string[] = [];
 
@@ -465,7 +459,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     return ret.length > 0 ? ret : undefined;
   }
 
-  private handleVersionProperty<T extends object>(entityName: string, data: EntityDictionary<T>, update = false): void {
+  private handleVersionProperty<T extends object>(entityName: EntityName<T>, data: EntityDictionary<T>, update = false): void {
     const meta = this.metadata.find(entityName);
 
     if (!meta?.versionProperty) {

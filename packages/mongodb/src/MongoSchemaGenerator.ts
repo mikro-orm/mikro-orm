@@ -28,7 +28,7 @@ export class MongoSchemaGenerator extends AbstractSchemaGenerator<MongoDriver> {
     /* v8 ignore next */
     const promises = metadata
       .filter(meta => !existing.includes(meta.collection))
-      .map(meta => this.connection.createCollection(meta.collection).catch(err => {
+      .map(meta => this.connection.createCollection(meta.class).catch(err => {
         const existsErrorMessage = `Collection ${this.config.get('dbName')}.${meta.collection} already exists.`;
 
         // ignore errors about the collection already existing
@@ -55,7 +55,7 @@ export class MongoSchemaGenerator extends AbstractSchemaGenerator<MongoDriver> {
 
     const promises = metadata
       .filter(meta => existing.includes(meta.collection))
-      .map(meta => this.connection.dropCollection(meta.collection));
+      .map(meta => this.connection.dropCollection(meta.class));
 
     await Promise.all(promises);
   }
@@ -177,7 +177,7 @@ export class MongoSchemaGenerator extends AbstractSchemaGenerator<MongoDriver> {
     meta.indexes.forEach(index => {
       let fieldOrSpec: string | Dictionary;
       const properties = this.mapIndexProperties(index, meta);
-      const collection = this.connection.getCollection(meta.className);
+      const collection = this.connection.getCollection(meta.class);
 
       if (Array.isArray(index.options) && index.options.length === 2 && properties.length === 0) {
         res.push([collection.collectionName, collection.createIndex(index.options[0], index.options[1])]);
@@ -231,7 +231,7 @@ export class MongoSchemaGenerator extends AbstractSchemaGenerator<MongoDriver> {
     meta.uniques.forEach(index => {
       const properties = this.mapIndexProperties(index, meta);
       const fieldOrSpec = properties.reduce((o, i) => { o[i] = 1; return o; }, {} as Dictionary);
-      const collection = this.connection.getCollection(meta.className);
+      const collection = this.connection.getCollection(meta.class);
       res.push([collection.collectionName, this.executeQuery(collection, 'createIndex', fieldOrSpec, {
         name: index.name,
         unique: true,
@@ -247,7 +247,7 @@ export class MongoSchemaGenerator extends AbstractSchemaGenerator<MongoDriver> {
       return [];
     }
 
-    const collection = this.connection.getCollection(meta.className);
+    const collection = this.connection.getCollection(meta.class);
     const fieldOrSpec = prop.embeddedPath
       ? prop.embeddedPath.join('.')
       : prop.fieldNames.reduce((o, i) => { o[i] = 1; return o; }, {} as Dictionary);

@@ -8,10 +8,10 @@ class Division {
   @PrimaryKey()
   id!: number;
 
-  @ManyToOne({ entity: 'Outer', deleteRule: 'cascade' })
+  @ManyToOne({ entity: () => Outer, deleteRule: 'cascade' })
   outer!: Rel<Outer>;
 
-  @OneToMany({ entity: 'Inner', mappedBy: 'division', orphanRemoval: true })
+  @OneToMany({ entity: () => Inner, mappedBy: 'division', orphanRemoval: true })
   inners = new Collection<Inner>(this);
 
 }
@@ -30,10 +30,10 @@ class Inner {
   @PrimaryKey()
   id!: number;
 
-  @ManyToOne({ entity: 'Geometry' })
+  @ManyToOne({ entity: () => Geometry })
   geometry!: Geometry;
 
-  @ManyToOne({ entity: 'Division', deleteRule: 'cascade' })
+  @ManyToOne({ entity: () => Division, deleteRule: 'cascade' })
   division!: Division;
 
 }
@@ -44,10 +44,10 @@ class Outer {
   @PrimaryKey()
   id!: number;
 
-  @OneToMany('Division', (item: Division) => item.outer, { orphanRemoval: true })
+  @OneToMany(() => Division, (item: Division) => item.outer, { orphanRemoval: true })
   divisions = new Collection<Division>(this);
 
-  @OneToOne({ entity: 'Division', owner: true, nullable: true })
+  @OneToOne({ entity: () => Division, owner: true, nullable: true })
   activeDivision?: Division;
 
 }

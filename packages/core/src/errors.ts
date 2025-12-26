@@ -1,5 +1,14 @@
-import type { AnyEntity, Constructor, Dictionary, EntityMetadata, EntityProperty, IPrimaryKey } from './typings.js';
+import type {
+  AnyEntity,
+  Constructor,
+  Dictionary,
+  EntityMetadata,
+  EntityName,
+  EntityProperty,
+  IPrimaryKey,
+} from './typings.js';
 import { inspect } from './logging/inspect.js';
+import { Utils } from '@mikro-orm/core';
 
 export class ValidationError<T extends AnyEntity = AnyEntity> extends Error {
 
@@ -60,8 +69,8 @@ export class ValidationError<T extends AnyEntity = AnyEntity> extends Error {
     return new ValidationError(err);
   }
 
-  static invalidPropertyName(entityName: string, invalid: string): ValidationError {
-    return new ValidationError(`Entity '${entityName}' does not have property '${invalid}'`);
+  static invalidPropertyName(entityName: EntityName, invalid: string): ValidationError {
+    return new ValidationError(`Entity '${Utils.className(entityName)}' does not have property '${invalid}'`);
   }
 
   static invalidCollectionValues(entityName: string, propName: string, invalid: unknown): ValidationError {
@@ -121,16 +130,16 @@ export class ValidationError<T extends AnyEntity = AnyEntity> extends Error {
     return new ValidationError('Using global EntityManager instance methods for context specific actions is disallowed. If you need to work with the global instance\'s identity map, use `allowGlobalContext` configuration option or `fork()` instead.');
   }
 
-  static cannotUseOperatorsInsideEmbeddables(className: string, propName: string, payload: unknown): ValidationError {
-    return new ValidationError(`Using operators inside embeddables is not allowed, move the operator above. (property: ${className}.${propName}, payload: ${inspect(payload)})`);
+  static cannotUseOperatorsInsideEmbeddables(entityName: EntityName, propName: string, payload: unknown): ValidationError {
+    return new ValidationError(`Using operators inside embeddables is not allowed, move the operator above. (property: ${Utils.className(entityName)}.${propName}, payload: ${inspect(payload)})`);
   }
 
-  static cannotUseGroupOperatorsInsideScalars(className: string, propName: string, payload: unknown): ValidationError {
-    return new ValidationError(`Using group operators ($and/$or) inside scalar properties is not allowed, move the operator above. (property: ${className}.${propName}, payload: ${inspect(payload)})`);
+  static cannotUseGroupOperatorsInsideScalars(entityName: EntityName, propName: string, payload: unknown): ValidationError {
+    return new ValidationError(`Using group operators ($and/$or) inside scalar properties is not allowed, move the operator above. (property: ${Utils.className(entityName)}.${propName}, payload: ${inspect(payload)})`);
   }
 
-  static invalidEmbeddableQuery(className: string, propName: string, embeddableType: string): ValidationError {
-    return new ValidationError(`Invalid query for entity '${className}', property '${propName}' does not exist in embeddable '${embeddableType}'`);
+  static invalidEmbeddableQuery(entityName: EntityName, propName: string, embeddableType: string): ValidationError {
+    return new ValidationError(`Invalid query for entity '${Utils.className(entityName)}', property '${propName}' does not exist in embeddable '${embeddableType}'`);
   }
 
   /* v8 ignore next */
@@ -228,8 +237,8 @@ export class MetadataError<T extends AnyEntity = AnyEntity> extends ValidationEr
     return new MetadataError(`Version property ${meta.className}.${prop.name} has unsupported type '${prop.type}'. Only 'number' and 'Date' are allowed.`);
   }
 
-  static fromUnknownEntity(className: string, source: string): MetadataError {
-    return new MetadataError(`Entity '${className}' was not discovered, please make sure to provide it in 'entities' array when initializing the ORM (used in ${source})`);
+  static fromUnknownEntity(entityName: string, source: string): MetadataError {
+    return new MetadataError(`Entity '${entityName}' was not discovered, please make sure to provide it in 'entities' array when initializing the ORM (used in ${source})`);
   }
 
   static noEntityDiscovered(): MetadataError {
@@ -244,8 +253,8 @@ export class MetadataError<T extends AnyEntity = AnyEntity> extends ValidationEr
     return new MetadataError(`Duplicate ${subject} are not allowed: ${paths.join(', ')}`);
   }
 
-  static duplicateFieldName(className: string, names: [string, string][]): MetadataError {
-    return new MetadataError(`Duplicate fieldNames are not allowed: ${names.map(n => `${className}.${n[0]} (fieldName: '${n[1]}')`).join(', ')}`);
+  static duplicateFieldName(entityName: EntityName, names: [string, string][]): MetadataError {
+    return new MetadataError(`Duplicate fieldNames are not allowed: ${names.map(n => `${Utils.className(entityName)}.${n[0]} (fieldName: '${n[1]}')`).join(', ')}`);
   }
 
   static multipleDecorators(entityName: string, propertyName: string): MetadataError {

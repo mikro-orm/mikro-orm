@@ -1,47 +1,25 @@
-import { EntitySchema, MikroORM, EntityCaseNamingStrategy, Opt } from '@mikro-orm/sqlite';
+import { MikroORM, EntityCaseNamingStrategy, defineEntity, p } from '@mikro-orm/sqlite';
 import { v4 as uuidv4 } from 'uuid';
 
-const Firm = new EntitySchema<IFirm>({
+const Firm = defineEntity({
   name: 'Firm',
   properties: {
-    id: { type: 'uuid', primary: true, onCreate: () => uuidv4() },
-    head: {
-      deleteRule: 'cascade',
-      entity: 'Employee',
-      kind: 'm:1',
-      updateRule: 'no action',
-    },
+    id: p.uuid().primary().onCreate(() => uuidv4()),
+    head: () => p.manyToOne(Employee).deleteRule('cascade').updateRule('no action'),
   },
 });
 
-const Employee = new EntitySchema<IEmployee>({
+const Employee = defineEntity({
   name: 'Employee',
   properties: {
-    id: { type: 'uuid', primary: true, onCreate: () => uuidv4() },
-    surname: { type: 'string' },
-    name: { type: 'string' },
-    label: { formula: alias => `${alias}.surname ||' '|| ${alias}.name`, type: 'string' },
-    boss: {
-      deleteRule: 'set null',
-      entity: 'Employee',
-      kind: 'm:1',
-      updateRule: 'no action',
-    },
+    id: p.uuid().primary().onCreate(() => uuidv4()),
+    surname: p.string(),
+    name: p.string(),
+    // label: p.string().formula(alias => `${alias}.surname ||' '|| ${alias}.name`), // FIXME this should work too
+    label: p.string().persist(false).formula(alias => `${alias}.surname ||' '|| ${alias}.name`),
+    boss: () => p.manyToOne(Employee).deleteRule('set null').updateRule('no action'),
   },
 });
-
-interface IFirm {
-  id: string;
-  head: IEmployee;
-}
-
-interface IEmployee {
-  id: string;
-  boss: IEmployee;
-  surname: string;
-  name: string;
-  label: string & Opt;
-}
 
 let orm: MikroORM;
 

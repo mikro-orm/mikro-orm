@@ -8,7 +8,7 @@ class User {
   @PrimaryKey({ type: BigIntType })
   id!: number;
 
-  @ManyToOne('Member', { fieldName: 'ownerMemberId', nullable: true, ref: true })
+  @ManyToOne(() => Member, { fieldName: 'ownerMemberId', nullable: true, ref: true })
   ownerMember?: Ref<Member>;
 
 }
@@ -22,7 +22,7 @@ class Member {
   @OneToMany(() => User, user => user.ownerMember, { cascade: [Cascade.ALL] })
   ownedUsers = new Collection<User>(this);
 
-  @OneToMany('MemberUser', 'member', { orphanRemoval: true })
+  @OneToMany(() => MemberUser, 'member', { orphanRemoval: true })
   users = new Collection<MemberUser>(this);
 
 }

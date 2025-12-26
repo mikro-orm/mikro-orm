@@ -2,7 +2,7 @@ process.env.FORCE_COLOR = '0';
 import { Umzug } from 'umzug';
 import { Migration, MigrationStorage, Migrator, TSMigrationGenerator } from '@mikro-orm/migrations';
 import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
-import { DatabaseSchema, DatabaseTable, MetadataStorage, MikroORM, raw } from '@mikro-orm/mssql';
+import { DatabaseSchema, DatabaseTable, EntitySchema, MetadataStorage, MikroORM, raw } from '@mikro-orm/mssql';
 import { rm } from 'node:fs/promises';
 import {
   Address2,
@@ -205,7 +205,7 @@ describe('Migrator (mssql)', () => {
     const err2 = `Some tables already exist in your schema, remove them first to create the initial migration: custom.author2, custom.book2`;
     await expect(orm.migrator.createInitial(undefined)).rejects.toThrow(err2);
 
-    metadataMock.mockReturnValueOnce({});
+    metadataMock.mockReturnValueOnce(new Map());
     const err3 = `No entities found`;
     await expect(orm.migrator.createInitial(undefined)).rejects.toThrow(err3);
 
@@ -230,6 +230,7 @@ describe('Migrator (mssql)', () => {
     expect(migrator.getStorage().getTableName!()).toEqual({
       schemaName: 'custom',
       tableName: 'mikro_orm_migrations',
+      entity: expect.any(EntitySchema),
     });
 
     // @ts-expect-error private property
@@ -237,6 +238,7 @@ describe('Migrator (mssql)', () => {
     expect(migrator.getStorage().getTableName!()).toEqual({
       schemaName: 'custom',
       tableName: 'mikro_orm_migrations',
+      entity: expect.any(EntitySchema),
     });
     // @ts-expect-error private property
     migrator.options.tableName = 'mikro_orm_migrations';
