@@ -44,7 +44,7 @@ describe('GH issue 923', () => {
       entities: [Person, Chef, Teacher, Gardener],
       dbName: ':memory:',
     });
-    const meta = orm.getMetadata().get('Person');
+    const meta = orm.getMetadata(Person);
     expect(meta.discriminatorMap).toEqual({ chef: 'Chef', teacher: 'Teacher', gardener: 'Gardener' });
   });
 
@@ -54,7 +54,7 @@ describe('GH issue 923', () => {
       entities: [Chef, Teacher, Gardener, Person],
       dbName: ':memory:',
     });
-    const meta = orm.getMetadata().get('Person');
+    const meta = orm.getMetadata(Person);
     expect(meta.discriminatorMap).toEqual({ chef: 'Chef', teacher: 'Teacher', gardener: 'Gardener' });
   });
 
@@ -64,7 +64,7 @@ describe('GH issue 923', () => {
       entities: [Chef, Teacher, Person, Gardener],
       dbName: ':memory:',
     });
-    const meta = orm.getMetadata().get('Person');
+    const meta = orm.getMetadata(Person);
     expect(meta.discriminatorMap).toEqual({ chef: 'Chef', teacher: 'Teacher', gardener: 'Gardener' });
   });
 
@@ -74,7 +74,7 @@ describe('GH issue 923', () => {
       entities: [Chef, Person, Teacher, Gardener],
       dbName: ':memory:',
     });
-    const meta = orm.getMetadata().get('Person');
+    const meta = orm.getMetadata(Person);
     expect(meta.discriminatorMap).toEqual({ chef: 'Chef', teacher: 'Teacher', gardener: 'Gardener' });
   });
 

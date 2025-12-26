@@ -1,4 +1,4 @@
-import type { MigrationsOptions, Transaction } from '@mikro-orm/core';
+import { defineEntity, p, type MigrationsOptions, type Transaction, type EntitySchema } from '@mikro-orm/core';
 import {
   type AbstractSqlDriver,
   type Table,
@@ -33,24 +33,24 @@ export class MigrationStorage implements UmzugStorage {
   }
 
   async logMigration(params: MigrationParams<any>): Promise<void> {
-    const { tableName, schemaName } = this.getTableName();
+    const { entity } = this.getTableName();
     const name = this.getMigrationName(params.name);
-    await this.driver.nativeInsert(tableName, { name }, { schema: schemaName, ctx: this.masterTransaction });
+    await this.driver.nativeInsert(entity, { name }, { ctx: this.masterTransaction });
   }
 
   async unlogMigration(params: MigrationParams<any>): Promise<void> {
-    const { tableName, schemaName } = this.getTableName();
+    const { entity } = this.getTableName();
     const withoutExt = this.getMigrationName(params.name);
     const names = [withoutExt, withoutExt + '.js', withoutExt + '.ts'];
-    await this.driver.nativeDelete(tableName, { name: { $in: [params.name, ...names] } }, { schema: schemaName, ctx: this.masterTransaction });
+    await this.driver.nativeDelete(entity, { name: { $in: [params.name, ...names] } }, { ctx: this.masterTransaction });
   }
 
   async getExecutedMigrations(): Promise<MigrationRow[]> {
-    const { tableName, schemaName } = this.getTableName();
-    const res = await this.driver.createQueryBuilder<MigrationRow>(tableName, this.masterTransaction)
+    const { entity, schemaName } = this.getTableName();
+    const res = await this.driver.createQueryBuilder<MigrationRow>(entity, this.masterTransaction)
       .withSchema(schemaName)
       .orderBy({ id: 'asc' })
-      .execute();
+      .execute('all', false);
 
     return res.map(row => {
       if (typeof row.executed_at === 'string') {
@@ -126,12 +126,24 @@ export class MigrationStorage implements UmzugStorage {
   /**
    * @internal
    */
-  getTableName(): { tableName: string; schemaName: string } {
+  getTableName(): { tableName: string; schemaName: string; entity: EntitySchema } {
     const parts = this.options.tableName!.split('.');
     const tableName = parts.length > 1 ? parts[1] : parts[0];
     const schemaName = parts.length > 1 ? parts[0] : this.driver.config.get('schema', this.driver.getPlatform().getDefaultSchemaName());
 
-    return { tableName, schemaName };
+    const entity = defineEntity({
+      name: 'Migration',
+      tableName,
+      schema: schemaName,
+      properties: {
+        id: p.integer().primary().fieldNames('id'),
+        name: p.string().fieldNames('name'),
+        executedAt: p.datetime().defaultRaw('current_timestamp').fieldNames('executed_at'),
+      },
+    }).init();
+    entity.meta.sync();
+
+    return { tableName, schemaName, entity };
   }
 
 }

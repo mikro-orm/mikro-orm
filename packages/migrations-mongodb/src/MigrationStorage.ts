@@ -1,4 +1,4 @@
-import type { Dictionary, MigrationsOptions, Transaction } from '@mikro-orm/core';
+import { defineEntity, type Dictionary, type EntitySchema, type MigrationsOptions, p, type Transaction } from '@mikro-orm/core';
 import type { MongoDriver } from '@mikro-orm/mongodb';
 import type { MigrationParams, UmzugStorage } from 'umzug';
 import { parse } from 'node:path';
@@ -17,20 +17,20 @@ export class MigrationStorage implements UmzugStorage {
   }
 
   async logMigration(params: MigrationParams<any>): Promise<void> {
-    const tableName = this.options.tableName!;
     const name = this.getMigrationName(params.name);
-    await this.driver.nativeInsert(tableName, { name, executed_at: new Date() }, { ctx: this.masterTransaction });
+    const entity = this.getEntityDefinition();
+    await this.driver.nativeInsert(entity, { name, executed_at: new Date() }, { ctx: this.masterTransaction });
   }
 
   async unlogMigration(params: MigrationParams<any>): Promise<void> {
-    const tableName = this.options.tableName!;
     const withoutExt = this.getMigrationName(params.name);
-    await this.driver.nativeDelete(tableName, { name: { $in: [params.name, withoutExt] } }, { ctx: this.masterTransaction });
+    const entity = this.getEntityDefinition();
+    await this.driver.nativeDelete(entity, { name: { $in: [params.name, withoutExt] } }, { ctx: this.masterTransaction });
   }
 
   async getExecutedMigrations(): Promise<MigrationRow[]> {
-    const tableName = this.options.tableName!;
-    return this.driver.find(tableName, {}, { ctx: this.masterTransaction, orderBy: { _id: 'asc' } as Dictionary }) as Promise<MigrationRow[]>;
+    const entity = this.getEntityDefinition();
+    return this.driver.find(entity, {}, { ctx: this.masterTransaction, orderBy: { _id: 'asc' } as Dictionary }) as Promise<MigrationRow[]>;
   }
 
   setMasterMigration(trx: Transaction) {
@@ -53,6 +53,24 @@ export class MigrationStorage implements UmzugStorage {
     }
 
     return name;
+  }
+
+  /**
+   * @internal
+   */
+  getEntityDefinition(): EntitySchema {
+    const entity = defineEntity({
+      name: 'Migration',
+      tableName: this.options.tableName,
+      properties: {
+        id: p.integer().primary().fieldNames('id'),
+        name: p.string().fieldNames('name'),
+        executedAt: p.datetime().defaultRaw('current_timestamp').fieldNames('executed_at'),
+      },
+    }).init();
+    entity.meta.sync();
+
+    return entity;
   }
 
 }

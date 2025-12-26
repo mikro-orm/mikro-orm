@@ -70,7 +70,7 @@ describe('check constraint [mariadb]', () => {
         { name: 'foo', expression: 'priceColumn >= 0' },
       ],
     }).init().meta;
-    meta.set('NewTable', newTableMeta);
+    meta.set(newTableMeta.class, newTableMeta);
 
     let diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff).toMatchSnapshot('mariadb-check-constraint-diff-1');

@@ -237,25 +237,27 @@ export class EntitySchema<Entity = any, Base = never> {
   }
 
   setExtends(base: EntityName<any>): void {
-    this._meta.extends = base as string;
+    this._meta.extends = base;
   }
 
-  setClass(proto: EntityClass<Entity>) {
-    const sameClass = this._meta.className === proto.name;
-    this._meta.class = proto;
-    this._meta.prototype = proto.prototype;
-    this._meta.className = proto.name;
+  setClass(cls: EntityClass<Entity>) {
+    const sameClass = this._meta.className === cls.name;
+    this._meta.class = cls;
+    this._meta.prototype = cls.prototype;
+    this._meta.className = cls.name;
 
     if (!sameClass || !this._meta.constructorParams) {
-      this._meta.constructorParams = Utils.getConstructorParams(proto) as EntityKey<Entity>[];
+      this._meta.constructorParams = Utils.getConstructorParams(cls) as EntityKey<Entity>[];
     }
 
     if (!this.internal) {
-      EntitySchema.REGISTRY.set(proto, this);
+      EntitySchema.REGISTRY.set(cls, this);
     }
 
-    if (Object.getPrototypeOf(proto) !== BaseEntity) {
-      this._meta.extends = this._meta.extends || Object.getPrototypeOf(proto).name || undefined;
+    const base = Object.getPrototypeOf(cls);
+
+    if (base !== BaseEntity) {
+      this._meta.extends ??= base.name ? base : undefined;
     }
   }
 
@@ -263,7 +265,7 @@ export class EntitySchema<Entity = any, Base = never> {
     return this._meta;
   }
 
-  get name(): EntityName<Entity>  {
+  get name(): string | EntityName<Entity>  {
     return this._meta.className;
   }
 
@@ -327,7 +329,7 @@ export class EntitySchema<Entity = any, Base = never> {
           this.addManyToOne<any>(name, options.type, options);
           break;
         case ReferenceKind.MANY_TO_MANY:
-          this.addManyToMany<any>(name, options.type, options);
+          this.addManyToMany<any>(name, options.type, options as unknown as ManyToManyOptions<any, any>);
           break;
         case ReferenceKind.EMBEDDED:
           this.addEmbedded(name, options as EmbeddedOptions<any, any>);

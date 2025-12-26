@@ -38,7 +38,7 @@ class Driver extends DatabaseDriver<Connection> implements IDatabaseDriver {
     super(config, dependencies);
   }
 
-  async count<T extends object>(entityName: string, where: ObjectQuery<T>, options: CountOptions<T>): Promise<number> {
+  async count<T extends object>(entityName: EntityName<T>, where: ObjectQuery<T>, options: CountOptions<T>): Promise<number> {
     return 0;
   }
 
@@ -46,31 +46,33 @@ class Driver extends DatabaseDriver<Connection> implements IDatabaseDriver {
     throw new Error('Method not implemented.');
   }
 
-  async find<T extends object, P extends string = never, F extends string = '*', E extends string = never>(entityName: string, where: ObjectQuery<T>, options: FindOptions<T, P, F, E> | undefined): Promise<EntityData<T>[]> {
+  async find<T extends object, P extends string = never, F extends string = '*', E extends string = never>(entityName: EntityName<T>, where: ObjectQuery<T>, options: FindOptions<T, P, F, E> | undefined): Promise<EntityData<T>[]> {
     return [];
   }
 
-  async findOne<T extends object, P extends string = never, F extends string = '*', E extends string = never>(entityName: string, where: ObjectQuery<T>, options: FindOneOptions<T, P, F, E> | undefined): Promise<EntityData<T> | null> {
+  async findOne<T extends object, P extends string = never, F extends string = '*', E extends string = never>(entityName: EntityName<T>, where: ObjectQuery<T>, options: FindOneOptions<T, P, F, E> | undefined): Promise<EntityData<T> | null> {
     return null;
   }
 
-  async nativeDelete<T>(entityName: string, where: ObjectQuery<T>, ctx: Transaction | undefined): Promise<QueryResult<T>> {
+  async nativeDelete<T>(entityName: EntityName<T>, where: ObjectQuery<T>, ctx: Transaction | undefined): Promise<QueryResult<T>> {
     return { affectedRows: 0, insertId: 0 as Primary<T> };
   }
 
-  async nativeInsert<T extends AnyEntity<T>>(entityName: string, data: EntityDictionary<T>, options?: NativeInsertUpdateOptions<T>): Promise<QueryResult<T>> {
+  async nativeInsert<T extends AnyEntity<T>>(entityName: EntityName<T>, data: EntityDictionary<T>, options?: NativeInsertUpdateOptions<T>): Promise<QueryResult<T>> {
     return { affectedRows: 0, insertId: 0 as Primary<T> };
   }
 
-  async nativeInsertMany<T extends AnyEntity<T>>(entityName: string, data: EntityDictionary<T>[], options?: NativeInsertUpdateManyOptions<T>): Promise<QueryResult<T>> {
+  async nativeInsertMany<T extends AnyEntity<T>>(entityName: EntityName<T>, data: EntityDictionary<T>[], options?: NativeInsertUpdateManyOptions<T>): Promise<QueryResult<T>> {
     return { affectedRows: 0, insertId: 0 as Primary<T> };
   }
 
-  async nativeUpdate<T>(entityName: string, where: ObjectQuery<T>, data: EntityData<T>, ctx: Transaction | undefined): Promise<QueryResult<T>> {
+  async nativeUpdate<T>(entityName: EntityName<T>, where: ObjectQuery<T>, data: EntityData<T>, ctx: Transaction | undefined): Promise<QueryResult<T>> {
     return { affectedRows: 0, insertId: 0 as Primary<T> };
   }
 
 }
+
+class Test {}
 
 describe('DatabaseDriver', () => {
 
@@ -81,8 +83,8 @@ describe('DatabaseDriver', () => {
     expect(driver.createEntityManager()).toBeInstanceOf(EntityManager);
     expect(driver.getPlatform().getRepositoryClass()).toBe(EntityRepository);
     expect(driver.getPlatform().quoteValue('a')).toBe('a');
-    await expect(driver.aggregate('', [])).rejects.toThrow('Aggregations are not supported by Driver driver');
-    await expect(driver.nativeUpdateMany('', [], [])).rejects.toThrow('Batch updates are not supported by Driver driver');
+    await expect(driver.aggregate(Test, [])).rejects.toThrow('Aggregations are not supported by Driver driver');
+    await expect(driver.nativeUpdateMany(Test, [], [])).rejects.toThrow('Batch updates are not supported by Driver driver');
     await expect(driver.lockPessimistic({}, { lockMode: LockMode.NONE })).rejects.toThrow('Pessimistic locks are not supported by Driver driver');
     const e1 = driver.convertException(new Error('test'));
     const e2 = driver.convertException(e1);

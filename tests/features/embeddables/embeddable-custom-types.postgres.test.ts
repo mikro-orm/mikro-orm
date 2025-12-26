@@ -182,7 +182,7 @@ describe('embedded entities with custom types', () => {
   });
 
   test('snapshot generator', async () => {
-    const snapshotGenerator = orm.em.getComparator().getSnapshotGenerator('Parent');
+    const snapshotGenerator = orm.em.getComparator().getSnapshotGenerator(Parent);
     expect(snapshotGenerator.toString()).toMatchSnapshot();
   });
 

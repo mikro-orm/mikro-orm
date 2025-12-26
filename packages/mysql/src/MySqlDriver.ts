@@ -1,17 +1,17 @@
-import {
-  type Configuration,
-  type Constructor,
-  type Dictionary,
-  type EntityDictionary,
-  type EntityKey,
-  type FilterQuery,
-  type NativeInsertUpdateManyOptions,
-  type QueryResult,
-  type Transaction,
-  type UpsertManyOptions,
-  Utils,
+import type {
+  Configuration,
+  Constructor,
+  Dictionary,
+  EntityDictionary,
+  EntityKey,
+  EntityName,
+  FilterQuery,
+  NativeInsertUpdateManyOptions,
+  QueryResult,
+  Transaction,
+  UpsertManyOptions,
 } from '@mikro-orm/core';
-import { AbstractSqlDriver } from '@mikro-orm/sql';
+import { AbstractSqlDriver, Utils } from '@mikro-orm/sql';
 import { MySqlConnection } from './MySqlConnection.js';
 import { MySqlMikroORM } from './MySqlMikroORM.js';
 import { MySqlPlatform } from './MySqlPlatform.js';
@@ -41,7 +41,7 @@ export class MySqlDriver extends AbstractSqlDriver<MySqlConnection, MySqlPlatfor
     return this.autoIncrementIncrement;
   }
 
-  override async nativeInsertMany<T extends object>(entityName: string, data: EntityDictionary<T>[], options: NativeInsertUpdateManyOptions<T> = {}): Promise<QueryResult<T>> {
+  override async nativeInsertMany<T extends object>(entityName: EntityName<T>, data: EntityDictionary<T>[], options: NativeInsertUpdateManyOptions<T> = {}): Promise<QueryResult<T>> {
     options.processCollections ??= true;
     const res = await super.nativeInsertMany(entityName, data, options);
     const pks = this.getPrimaryKeyFields(entityName);
@@ -53,7 +53,7 @@ export class MySqlDriver extends AbstractSqlDriver<MySqlConnection, MySqlPlatfor
     return res;
   }
 
-  override async nativeUpdateMany<T extends object>(entityName: string, where: FilterQuery<T>[], data: EntityDictionary<T>[], options: NativeInsertUpdateManyOptions<T> & UpsertManyOptions<T> = {}): Promise<QueryResult<T>> {
+  override async nativeUpdateMany<T extends object>(entityName: EntityName<T>, where: FilterQuery<T>[], data: EntityDictionary<T>[], options: NativeInsertUpdateManyOptions<T> & UpsertManyOptions<T> = {}): Promise<QueryResult<T>> {
     const res = await super.nativeUpdateMany(entityName, where, data, options);
     const pks = this.getPrimaryKeyFields(entityName);
     const ctx = options.ctx;

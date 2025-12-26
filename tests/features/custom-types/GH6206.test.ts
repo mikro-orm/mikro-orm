@@ -64,10 +64,10 @@ test('basic CRUD example', async () => {
     id: uuid,
   });
 
-  await orm.em.nativeUpdate('User', { id: uuid }, { name: 'bar', id: uuid });
+  await orm.em.nativeUpdate(User, { id: uuid }, { name: 'bar', id: uuid });
   const count = await orm.em.count(User, { name: 'bar', id: uuid });
   expect(count).toBe(1);
-  await orm.em.nativeDelete('User', { id: uuid });
+  await orm.em.nativeDelete(User, { id: uuid });
   const count2 = await orm.em.count(User);
   expect(count2).toBe(0);
 

@@ -27,7 +27,7 @@ export class ChangeSetComputer {
   }
 
   computeChangeSet<T extends object>(entity: T): ChangeSet<T> | null {
-    const meta = this.metadata.get((entity as AnyEntity).constructor.name);
+    const meta = this.metadata.get((entity as AnyEntity).constructor);
 
     if (meta.readonly) {
       return null;
@@ -120,7 +120,7 @@ export class ChangeSetComputer {
   private computePayload<T extends object>(entity: T, ignoreUndefined = false): EntityData<T> {
     const data = this.comparator.prepareEntity(entity);
     const wrapped = helper(entity);
-    const entityName = wrapped.__meta.className;
+    const entityName = wrapped.__meta.class;
     const originalEntityData = wrapped.__originalEntityData;
 
     if (!wrapped.__initialized) {
@@ -133,7 +133,7 @@ export class ChangeSetComputer {
 
     if (originalEntityData) {
       const comparator = this.comparator.getEntityComparator(entityName);
-      const diff = comparator(originalEntityData, data);
+      const diff = comparator(originalEntityData as T, data as T);
 
       if (ignoreUndefined) {
         Utils.keys(diff)
@@ -175,7 +175,7 @@ export class ChangeSetComputer {
 
     targets.forEach(([target, idx]) => {
       if (!target.__helper!.hasPrimaryKey()) {
-        Utils.setPayloadProperty<T>(changeSet.payload, this.metadata.find(changeSet.name)!, prop, target.__helper!.__identifier, idx);
+        Utils.setPayloadProperty<T>(changeSet.payload, changeSet.meta, prop, target.__helper!.__identifier, idx);
       }
     });
   }

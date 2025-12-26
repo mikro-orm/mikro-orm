@@ -67,7 +67,7 @@ describe('multiple connected schemas in postgres', () => {
     expect(diff0).toMatchSnapshot();
     await orm.schema.execute(diff0);
 
-    orm.discoverEntity(Book1, 'Book0');
+    orm.discoverEntity(Book1, Book0);
     const diff1 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff1).toMatchSnapshot();
     await orm.schema.execute(diff1);

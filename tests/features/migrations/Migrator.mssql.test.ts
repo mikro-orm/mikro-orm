@@ -2,7 +2,7 @@ process.env.FORCE_COLOR = '0';
 import { Umzug } from 'umzug';
 import { Migration, MigrationStorage, Migrator, TSMigrationGenerator } from '@mikro-orm/migrations';
 import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
-import { DatabaseSchema, DatabaseTable, MetadataStorage, MikroORM, raw } from '@mikro-orm/mssql';
+import { DatabaseSchema, DatabaseTable, EntitySchema, MetadataStorage, MikroORM, raw } from '@mikro-orm/mssql';
 import { rm } from 'node:fs/promises';
 import {
   Address2,
@@ -230,6 +230,7 @@ describe('Migrator (mssql)', () => {
     expect(migrator.getStorage().getTableName!()).toEqual({
       schemaName: 'custom',
       tableName: 'mikro_orm_migrations',
+      entity: expect.any(EntitySchema),
     });
 
     // @ts-expect-error private property
@@ -237,6 +238,7 @@ describe('Migrator (mssql)', () => {
     expect(migrator.getStorage().getTableName!()).toEqual({
       schemaName: 'custom',
       tableName: 'mikro_orm_migrations',
+      entity: expect.any(EntitySchema),
     });
     // @ts-expect-error private property
     migrator.options.tableName = 'mikro_orm_migrations';

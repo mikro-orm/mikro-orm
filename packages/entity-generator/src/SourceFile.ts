@@ -264,8 +264,8 @@ export class SourceFile {
     }
     ret += `class ${this.meta.className}`;
     if (this.meta.extends) {
-      this.entityImports.add(this.meta.extends);
-      ret += ` extends ${this.meta.extends}`;
+      this.entityImports.add(Utils.className(this.meta.extends));
+      ret += ` extends ${Utils.className(this.meta.extends)}`;
     } else if (this.options.useCoreBaseEntity) {
       ret += ` extends ${this.referenceCoreImport('BaseEntity')}`;
     }
@@ -892,9 +892,9 @@ export class SourceFile {
       options.pivotTable = this.quote(prop.pivotTable);
     }
 
-    if (prop.pivotEntity && prop.pivotEntity !== prop.pivotTable) {
-      this.entityImports.add(prop.pivotEntity);
-      options.pivotEntity = `() => ${prop.pivotEntity}`;
+    if (prop.pivotEntity && Utils.className(prop.pivotEntity) !== prop.pivotTable) {
+      this.entityImports.add(Utils.className(prop.pivotEntity));
+      options.pivotEntity = `() => ${Utils.className(prop.pivotEntity)}`;
     }
 
     if (prop.joinColumns.length === 1) {

@@ -122,7 +122,7 @@ describe('check constraint [sqlite]', () => {
         { name: 'foo', expression: 'price >= 0' },
       ],
     }).init().meta;
-    meta.set('NewTable', newTableMeta);
+    meta.set(newTableMeta.class, newTableMeta);
 
     let diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff).toMatchSnapshot('sqlite-check-constraint-diff-1');

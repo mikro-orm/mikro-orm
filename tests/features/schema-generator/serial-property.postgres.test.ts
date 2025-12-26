@@ -93,35 +93,35 @@ test('schema generator works with non-pk autoincrement columns (serial)', async 
   await orm.schema.refresh();
   await expect(orm.schema.getUpdateSchemaSQL()).resolves.toBe('');
 
-  orm.discoverEntity(Something1, 'Something0');
+  orm.discoverEntity(Something1, Something0);
   const diff1 = await orm.schema.getUpdateSchemaSQL();
   expect(diff1).toMatchSnapshot();
   await orm.schema.execute(diff1);
 
   await expect(orm.schema.getUpdateSchemaSQL()).resolves.toBe('');
 
-  orm.discoverEntity(Something2, 'Something1');
+  orm.discoverEntity(Something2, Something1);
   const diff2 = await orm.schema.getUpdateSchemaSQL();
   expect(diff2).toMatchSnapshot();
   await orm.schema.execute(diff2);
 
   await expect(orm.schema.getUpdateSchemaSQL()).resolves.toBe('');
 
-  orm.discoverEntity(Something3, 'Something2');
+  orm.discoverEntity(Something3, Something2);
   const diff3 = await orm.schema.getUpdateSchemaSQL();
   expect(diff3).toMatchSnapshot();
   await orm.schema.execute(diff3);
 
   await expect(orm.schema.getUpdateSchemaSQL()).resolves.toBe('');
 
-  orm.discoverEntity(Something4, 'Something3');
+  orm.discoverEntity(Something4, Something3);
   const diff4 = await orm.schema.getUpdateSchemaSQL();
   expect(diff4).toMatchSnapshot();
   await orm.schema.execute(diff4);
 
   await expect(orm.schema.getUpdateSchemaSQL()).resolves.toBe('');
 
-  orm.discoverEntity(Something5, 'Something4');
+  orm.discoverEntity(Something5, Something4);
   const diff5 = await orm.schema.getUpdateSchemaSQL();
   expect(diff5).toMatchSnapshot();
   await orm.schema.execute(diff5);

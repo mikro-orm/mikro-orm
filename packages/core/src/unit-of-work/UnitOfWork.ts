@@ -4,6 +4,7 @@ import type {
   EntityData,
   EntityKey,
   EntityMetadata,
+  EntityName,
   EntityProperty,
   EntityValue,
   FilterQuery,
@@ -188,7 +189,7 @@ export class UnitOfWork {
   /**
    * Returns entity from the identity map. For composite keys, you need to pass an array of PKs in the same order as they are defined in `meta.primaryKeys`.
    */
-  getById<T extends object>(entityName: string, id: Primary<T> | Primary<T>[], schema?: string, convertCustomTypes?: boolean): T | undefined {
+  getById<T extends object>(entityName: EntityName<T>, id: Primary<T> | Primary<T>[], schema?: string, convertCustomTypes?: boolean): T | undefined {
     if (id == null || (Array.isArray(id) && id.length === 0)) {
       return undefined;
     }
@@ -222,7 +223,7 @@ export class UnitOfWork {
     return this.identityMap.getByHash(meta, hash);
   }
 
-  tryGetById<T extends object>(entityName: string, where: FilterQuery<T>, schema?: string, strict = true): T | null {
+  tryGetById<T extends object>(entityName: EntityName<T>, where: FilterQuery<T>, schema?: string, strict = true): T | null {
     const pk = Utils.extractPK(where, this.metadata.find<T>(entityName)!, strict);
 
     if (!pk) {
@@ -456,11 +457,11 @@ export class UnitOfWork {
   }
 
   async lock<T extends object>(entity: T, options: LockOptions): Promise<void> {
-    if (!this.getById((entity as Dictionary).constructor.name, helper(entity).__primaryKeys, helper(entity).__schema)) {
+    if (!this.getById((entity as Dictionary).constructor, helper(entity).__primaryKeys, helper(entity).__schema)) {
       throw ValidationError.entityNotManaged(entity);
     }
 
-    const meta = this.metadata.find<T>((entity as Dictionary).constructor.name)!;
+    const meta = this.metadata.find<T>((entity as Dictionary).constructor)!;
 
     if (options.lockMode === LockMode.OPTIMISTIC) {
       await this.lockOptimistic(entity, meta, options.lockVersion!);
@@ -487,7 +488,7 @@ export class UnitOfWork {
 
         if (Utils.isCollection(rel)) {
           rel.removeWithoutPropagation(entity);
-        } else if (rel && (prop.mapToPk ? helper(this.em.getReference(prop.type, rel)).getSerializedPrimaryKey() === serializedPK : rel === entity)) {
+        } else if (rel && (prop.mapToPk ? helper(this.em.getReference(prop.targetMeta!.class, rel)).getSerializedPrimaryKey() === serializedPK : rel === entity)) {
           if (prop.formula) {
             delete referrer[prop.name];
           } else {
@@ -585,7 +586,7 @@ export class UnitOfWork {
 
     for (const cs of this.changeSets.values()) {
       for (const prop of props) {
-        if (prop.name in cs.payload && cs.rootName === changeSet.rootName && cs.type === changeSet.type) {
+        if (prop.name in cs.payload && cs.rootMeta === changeSet.rootMeta && cs.type === changeSet.type) {
           conflicts = true;
 
           if (changeSet.payload[prop.name] == null) {
@@ -797,7 +798,7 @@ export class UnitOfWork {
     const copy = this.comparator.prepareEntity(changeSet.entity) as T;
     await this.eventManager.dispatchEvent(type, { entity: changeSet.entity, meta, em: this.em, changeSet });
     const current = this.comparator.prepareEntity(changeSet.entity) as T;
-    const diff = this.comparator.diffEntities<T>(changeSet.name, copy, current);
+    const diff = this.comparator.diffEntities<T>(changeSet.meta.class, copy, current);
     Object.assign(changeSet.payload, diff);
     const wrapped = helper(changeSet.entity);
 
@@ -928,10 +929,10 @@ export class UnitOfWork {
 
     if ([ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind) && kind && !prop.mapToPk) {
       if (!Utils.isEntity(kind)) {
-        entity[prop.name] = this.em.getReference(prop.type, kind, { wrapped: !!prop.ref }) as EntityValue<T>;
+        entity[prop.name] = this.em.getReference(prop.targetMeta!.class, kind, { wrapped: !!prop.ref }) as EntityValue<T>;
       } else if (!helper(kind).__initialized && !helper(kind).__em) {
         const pk = helper(kind).getPrimaryKey();
-        entity[prop.name] = this.em.getReference(prop.type, pk, { wrapped: !!prop.ref }) as EntityValue<T>;
+        entity[prop.name] = this.em.getReference(prop.targetMeta!.class, pk, { wrapped: !!prop.ref }) as EntityValue<T>;
       }
     }
 
@@ -950,7 +951,7 @@ export class UnitOfWork {
     }
   }
 
-  private async persistToDatabase(groups: { [K in ChangeSetType]: Map<string, ChangeSet<any>[]> }, ctx?: Transaction): Promise<void> {
+  private async persistToDatabase(groups: { [K in ChangeSetType]: Map<EntityMetadata, ChangeSet<any>[]> }, ctx?: Transaction): Promise<void> {
     if (ctx) {
       this.em.setTransactionContext(ctx);
     }
@@ -959,26 +960,26 @@ export class UnitOfWork {
     const commitOrderReversed = [...commitOrder].reverse();
 
     // early delete - when we recreate entity in the same UoW, we need to issue those delete queries before inserts
-    for (const name of commitOrderReversed) {
-      await this.commitDeleteChangeSets(groups[ChangeSetType.DELETE_EARLY].get(name) ?? [], ctx);
+    for (const meta of commitOrderReversed) {
+      await this.commitDeleteChangeSets(groups[ChangeSetType.DELETE_EARLY].get(meta) ?? [], ctx);
     }
 
     // early update - when we recreate entity in the same UoW, we need to issue those delete queries before inserts
-    for (const name of commitOrder) {
-      await this.commitUpdateChangeSets(groups[ChangeSetType.UPDATE_EARLY].get(name) ?? [], ctx);
+    for (const meta of commitOrder) {
+      await this.commitUpdateChangeSets(groups[ChangeSetType.UPDATE_EARLY].get(meta) ?? [], ctx);
     }
 
     // extra updates
     await this.commitExtraUpdates(ChangeSetType.UPDATE_EARLY, ctx);
 
     // create
-    for (const name of commitOrder) {
-      await this.commitCreateChangeSets(groups[ChangeSetType.CREATE].get(name) ?? [], ctx);
+    for (const meta of commitOrder) {
+      await this.commitCreateChangeSets(groups[ChangeSetType.CREATE].get(meta) ?? [], ctx);
     }
 
     // update
-    for (const name of commitOrder) {
-      await this.commitUpdateChangeSets(groups[ChangeSetType.UPDATE].get(name) ?? [], ctx);
+    for (const meta of commitOrder) {
+      await this.commitUpdateChangeSets(groups[ChangeSetType.UPDATE].get(meta) ?? [], ctx);
     }
 
     // extra updates
@@ -988,8 +989,8 @@ export class UnitOfWork {
     await this.commitCollectionUpdates(ctx);
 
     // delete - entity deletions need to be in reverse commit order
-    for (const name of commitOrderReversed) {
-      await this.commitDeleteChangeSets(groups[ChangeSetType.DELETE].get(name) ?? [], ctx);
+    for (const meta of commitOrderReversed) {
+      await this.commitDeleteChangeSets(groups[ChangeSetType.DELETE].get(meta) ?? [], ctx);
     }
 
     // take snapshots of all persisted collections
@@ -1191,41 +1192,41 @@ export class UnitOfWork {
   /**
    * Orders change sets so FK constrains are maintained, ensures stable order (needed for node < 11)
    */
-  private getChangeSetGroups(): { [K in ChangeSetType]: Map<string, ChangeSet<any>[]> } {
+  private getChangeSetGroups(): { [K in ChangeSetType]: Map<EntityMetadata, ChangeSet<any>[]> } {
     const groups = {
-      [ChangeSetType.CREATE]: new Map<string, ChangeSet<any>[]>(),
-      [ChangeSetType.UPDATE]: new Map<string, ChangeSet<any>[]>(),
-      [ChangeSetType.DELETE]: new Map<string, ChangeSet<any>[]>(),
-      [ChangeSetType.UPDATE_EARLY]: new Map<string, ChangeSet<any>[]>(),
-      [ChangeSetType.DELETE_EARLY]: new Map<string, ChangeSet<any>[]>(),
+      [ChangeSetType.CREATE]: new Map<EntityMetadata, ChangeSet<any>[]>(),
+      [ChangeSetType.UPDATE]: new Map<EntityMetadata, ChangeSet<any>[]>(),
+      [ChangeSetType.DELETE]: new Map<EntityMetadata, ChangeSet<any>[]>(),
+      [ChangeSetType.UPDATE_EARLY]: new Map<EntityMetadata, ChangeSet<any>[]>(),
+      [ChangeSetType.DELETE_EARLY]: new Map<EntityMetadata, ChangeSet<any>[]>(),
     };
 
     for (const cs of this.changeSets.values()) {
       const group = groups[cs.type];
-      const classGroup = group.get(cs.rootName) ?? [];
+      const classGroup = group.get(cs.rootMeta) ?? [];
       classGroup.push(cs);
 
-      if (!group.has(cs.rootName)) {
-        group.set(cs.rootName, classGroup);
+      if (!group.has(cs.rootMeta)) {
+        group.set(cs.rootMeta, classGroup);
       }
     }
 
     return groups;
   }
 
-  private getCommitOrder(): string[] {
+  private getCommitOrder(): EntityMetadata[] {
     const calc = new CommitOrderCalculator();
-    const set = new Set<string>();
-    this.changeSets.forEach(cs => set.add(cs.rootName));
-    set.forEach(entityName => calc.addNode(entityName));
+    const set = new Set<EntityMetadata>();
+    this.changeSets.forEach(cs => set.add(cs.rootMeta));
+    set.forEach(meta => calc.addNode(meta._id));
 
-    for (const entityName of set) {
-      for (const prop of this.metadata.find(entityName)!.props) {
-        calc.discoverProperty(prop, entityName);
+    for (const meta of set) {
+      for (const prop of meta.relations) {
+        calc.discoverProperty(prop, meta._id);
       }
     }
 
-    return calc.sort();
+    return calc.sort().map(id => this.metadata.getById(id));
   }
 
   private resetTransaction(oldTx?: Transaction): void {

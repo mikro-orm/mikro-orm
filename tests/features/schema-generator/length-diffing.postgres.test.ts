@@ -119,22 +119,22 @@ describe('length diffing in postgres', () => {
   afterAll(() => orm.close(true));
 
   test('schema orm.schema updates column types when length changes (varchar, decimal, ...)', async () => {
-    orm.discoverEntity(Book1, 'Book0');
+    orm.discoverEntity(Book1, Book0);
     const diff1 = await orm.schema.getUpdateSchemaMigrationSQL({ wrap: false });
     expect(diff1).toMatchSnapshot();
     await orm.schema.execute(diff1.up);
 
-    orm.discoverEntity(Book2, 'Book1');
+    orm.discoverEntity(Book2, Book1);
     const diff2 = await orm.schema.getUpdateSchemaMigrationSQL({ wrap: false });
     expect(diff2).toMatchSnapshot();
     await orm.schema.execute(diff2.up);
 
-    orm.discoverEntity(Book3, 'Book2');
+    orm.discoverEntity(Book3, Book2);
     const diff3 = await orm.schema.getUpdateSchemaMigrationSQL({ wrap: false });
     expect(diff3).toMatchSnapshot();
     await orm.schema.execute(diff3.up);
 
-    orm.discoverEntity(Book4, 'Book3');
+    orm.discoverEntity(Book4, Book3);
 
     await expect(orm.schema.getUpdateSchemaMigrationSQL({ wrap: false })).resolves.toEqual({
       down: '',

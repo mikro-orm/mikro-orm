@@ -493,7 +493,7 @@ export interface ManyToManyOptions<Owner, Target> extends ReferenceOptions<Owner
   pivotTable?: string;
 
   /** Set pivot entity for this relation (see {@doclink collections#custom-pivot-table-entity | Custom pivot table entity}). */
-  pivotEntity?: string | (() => EntityName<any>);
+  pivotEntity?: () => EntityName<any>;
 
   /** Override the default database column name on the owning side (see {@doclink naming-strategy | Naming Strategy}). This option is only for simple properties represented by a single column. */
   joinColumn?: string;

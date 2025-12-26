@@ -67,6 +67,22 @@ beforeAll(async () => {
 
 afterAll(() => orm.close(true));
 
+// addDependency C B 0
+// addDependency B A 1
+// addDependency A C 1
+//  [ [EntityMetadata<B>], [EntityMetadata<A>], [EntityMetadata<C>] ]
+
+
+// Set(3) {
+//   [EntityMetadata<B>],
+//     [EntityMetadata<A>],
+//     [EntityMetadata<C>]
+// } Map(3) {
+//   'B' => { hash: 'B', state: 0, dependencies: Map(1) { 'A' => [Object] } },
+//   'A' => { hash: 'A', state: 0, dependencies: Map(1) { 'C' => [Object] } },
+//   'C' => { hash: 'C', state: 0, dependencies: Map(1) { 'B' => [Object] } }
+// }
+
 test('em.populate() loads the root entities too', async () => {
   const a = new A();
   a.prop = 'data';

@@ -29,7 +29,7 @@ const BaseSchema = new EntitySchema<Base>({
 
 const ASchema = new EntitySchema<A, Base>({
   class: A,
-  extends: 'Base',
+  extends: Base,
   properties: {
     type: {
       length: 16,

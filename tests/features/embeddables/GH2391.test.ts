@@ -69,7 +69,8 @@ describe('onCreate and onUpdate in embeddables (GH 2283 and 2391)', () => {
   });
 
   test('result mapper', async () => {
-    expect(orm.em.getComparator().getResultMapper(MyEntity.name).toString()).toMatchSnapshot();
+    const meta = orm.getMetadata(MyEntity);
+    expect(orm.em.getComparator().getResultMapper(meta).toString()).toMatchSnapshot();
   });
 
   test(`GH issue 2283, 2391`, async () => {

@@ -55,7 +55,8 @@ export class DataloaderUtils {
         ([key, idsSet]) => {
           const className = key.substring(0, key.indexOf('|'));
           const opts = JSON.parse(key.substring(key.indexOf('|') + 1));
-          return em.find(className, Array.from(idsSet), opts);
+          const meta = em.getMetadata().getByClassName<any>(className);
+          return em.find(meta.class, Array.from(idsSet), opts);
         },
       );
       await Promise.all(promises);
@@ -118,8 +119,9 @@ export class DataloaderUtils {
     return Array.from(entitiesAndOptsMap, async ([key, filterMap]): Promise<[string, any[]]> => {
       const className = key.substring(0, key.indexOf('|'));
       const opts: Omit<InitCollectionOptions<any, any>, 'dataloader'> = JSON.parse(key.substring(key.indexOf('|') + 1));
+      const meta = em.getMetadata().getByClassName<any>(className);
       const res = await em.find<any>(
-        className,
+        meta.class,
         opts?.where != null && Object.keys(opts.where).length > 0 ?
           {
             $and: [
@@ -143,7 +145,7 @@ export class DataloaderUtils {
             ...(opts.populate === false ? [] : opts.populate ?? []),
             ...Array.from(filterMap.keys()).filter(
               // We need to do so only if the inverse side is a collection, because we can already retrieve the PK from a reference without having to load it
-              prop => em.getMetadata<any>(className).properties[prop]?.ref !== true,
+              prop => meta.properties[prop]?.ref !== true,
             ),
           ],
         } as any);
@@ -229,7 +231,7 @@ export class DataloaderUtils {
         const $or: Dictionary[] = [];
 
         // a bit of a hack, but we need to prefix the key, since we have only a column name, not a property name
-        const alias = em.config.getNamingStrategy().aliasName(prop.pivotEntity, 0);
+        const alias = em.config.getNamingStrategy().aliasName(Utils.className(prop.pivotEntity), 0);
         const fk = `${alias}.${Utils.getPrimaryKeyHash(prop.joinColumns)}`;
 
         for (const c of group) {

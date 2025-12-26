@@ -1,8 +1,9 @@
-import { EntityMetadata, type Dictionary, type EntityName } from '../typings.js';
+import { type Dictionary, EntityMetadata, type EntityName } from '../typings.js';
 import { Utils } from '../utils/Utils.js';
 import { MetadataError } from '../errors.js';
 import type { EntityManager } from '../EntityManager.js';
 import { EntityHelper } from '../entity/EntityHelper.js';
+import { EntitySchema } from './EntitySchema.js';
 
 function getGlobalStorage(namespace: string): Dictionary {
   const key = `mikro-orm-${namespace}` as keyof typeof globalThis;
@@ -17,9 +18,18 @@ export class MetadataStorage {
 
   private static readonly metadata: Dictionary<EntityMetadata> = getGlobalStorage('metadata');
   private readonly metadata: Dictionary<EntityMetadata>;
+  private readonly idMap: Record<number, EntityMetadata>;
+  private readonly classNameMap: Record<string, EntityMetadata>;
 
   constructor(metadata: Dictionary<EntityMetadata> = {}) {
     this.metadata = Utils.copy(metadata, false);
+    this.idMap = {};
+    this.classNameMap = {};
+
+    for (const meta of this) {
+      this.idMap[meta._id] = meta;
+      this.classNameMap[meta.className] = meta;
+    }
   }
 
   static getMetadata(): Dictionary<EntityMetadata>;
@@ -51,17 +61,25 @@ export class MetadataStorage {
   }
 
   get<T = any>(entityName: EntityName<T>, init = false, validate = true): EntityMetadata<T> {
-    entityName = Utils.className(entityName);
+    const className = Utils.className(entityName);
+
+    if (this.has(entityName)) {
+      return this.metadata[className];
+    }
+
+    if (entityName instanceof EntitySchema) {
+      return entityName.meta;
+    }
 
     if (validate && !init && !this.has(entityName)) {
-      throw MetadataError.missingMetadata(entityName);
+      throw MetadataError.missingMetadata(className);
     }
 
     if (init && !this.has(entityName)) {
-      this.metadata[entityName] = new EntityMetadata();
+      this.metadata[className] = new EntityMetadata();
     }
 
-    return this.metadata[entityName];
+    return this.metadata[className];
   }
 
   find<T = any>(entityName: EntityName<T>): EntityMetadata<T> | undefined {
@@ -69,20 +87,30 @@ export class MetadataStorage {
       return;
     }
 
-    entityName = Utils.className(entityName);
-    return this.metadata[entityName];
+    if (this.has(entityName)) {
+      return this.metadata[Utils.className(entityName)];
+    }
+
+    if (entityName instanceof EntitySchema) {
+      return entityName.meta;
+    }
+
+    return;
   }
 
-  has(entity: string): boolean {
-    return entity in this.metadata;
+  has<T>(entityName: EntityName<T>): boolean {
+    return Utils.className(entityName) in this.metadata;
   }
 
-  set(entity: string, meta: EntityMetadata): EntityMetadata {
-    return this.metadata[entity] = meta;
+  set<T>(entityName: EntityName<T>, meta: EntityMetadata): EntityMetadata {
+    this.idMap[meta._id] = meta;
+    return this.metadata[Utils.className(entityName)] = meta;
   }
 
-  reset(entity: string): void {
-    delete this.metadata[entity];
+  reset<T>(entityName: EntityName<T>): void {
+    const meta = this.get(entityName);
+    delete this.metadata[meta.className];
+    delete this.idMap[meta._id];
   }
 
   decorate(em: EntityManager): void {
@@ -95,6 +123,14 @@ export class MetadataStorage {
     for (const meta of Object.values(this.metadata)) {
       yield meta;
     }
+  }
+
+  getById<T>(id: number): EntityMetadata<T> {
+    return this.idMap[id];
+  }
+
+  getByClassName<T = any>(className: string): EntityMetadata<T> {
+    return this.metadata[className];
   }
 
 }

@@ -139,13 +139,7 @@ describe('embedded entities in postgres', () => {
   });
 
   beforeEach(async () => {
-    const tables = Object.values(orm.getMetadata().getAll())
-      .filter(meta => !meta.embeddable)
-      .map(meta => meta.tableName);
-
-    for (const table of tables) {
-      await orm.em.createQueryBuilder(table).truncate().execute();
-    }
+    await orm.schema.clear();
   });
 
   afterAll(async () => {
@@ -159,10 +153,10 @@ describe('embedded entities in postgres', () => {
   });
 
   test('diffing', async () => {
-    expect(orm.em.getComparator().getSnapshotGenerator('User').toString()).toMatchSnapshot();
+    expect(orm.em.getComparator().getSnapshotGenerator(User).toString()).toMatchSnapshot();
     const metadata = orm.getMetadata();
     const hydrator = orm.config.getHydrator(metadata) as ObjectHydrator;
-    expect(hydrator.getEntityHydrator(metadata.get('User'), 'full').toString()).toMatchSnapshot();
+    expect(hydrator.getEntityHydrator(metadata.get(User), 'full').toString()).toMatchSnapshot();
   });
 
   async function createUsers() {

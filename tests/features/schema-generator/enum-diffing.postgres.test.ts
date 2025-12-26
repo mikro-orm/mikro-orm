@@ -111,12 +111,12 @@ test('GH #4112 and #5751', async () => {
   });
   await orm.schema.refresh();
 
-  orm.discoverEntity([Author1], 'Author0');
+  orm.discoverEntity([Author1], Author0);
   const diff1 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
   expect(diff1.trim()).toBe(`comment on column "author"."some_enum" is 'this is a comment';`);
   await orm.schema.execute(diff1);
 
-  orm.discoverEntity([Author4], 'Author1');
+  orm.discoverEntity([Author4], Author1);
   const diff2 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
   expect(diff2.trim()).toBe(`alter table "author" drop constraint "author_some_enum_check";
 alter table "author" add constraint "author_some_enum_check" check ("some_enum" in ('Foo', 'Bar', 'Baz'));`);
@@ -133,7 +133,7 @@ test('Enum diffing: adding default value', async () => {
   });
   await orm.schema.refresh();
 
-  orm.discoverEntity([Author2], 'Author1');
+  orm.discoverEntity([Author2], Author1);
   const diff1 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
 
   expect(diff1.trim()).toContain(`alter table "author" alter column "some_enum" set default 'Foo';`);
@@ -149,7 +149,7 @@ test('Enum diffing: removing default value', async () => {
   });
   await orm.schema.refresh();
 
-  orm.discoverEntity([Author0], 'Author2');
+  orm.discoverEntity([Author0], Author2);
   const diff1 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
 
   expect(diff1.trim()).toContain(`alter table "author" alter column "some_enum" drop default;`);
@@ -165,7 +165,7 @@ test('Enum diffing: adding nullable', async () => {
   });
   await orm.schema.refresh();
 
-  orm.discoverEntity([Author3], 'Author0');
+  orm.discoverEntity([Author3], Author0);
   const diff1 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
 
   expect(diff1.trim()).toContain(`alter table "author" alter column "some_enum" drop not null;`);
@@ -181,7 +181,7 @@ test('Enum diffing: removing nullable', async () => {
   });
   await orm.schema.refresh();
 
-  orm.discoverEntity([Author0], 'Author3');
+  orm.discoverEntity([Author0], Author3);
   const diff1 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
 
   expect(diff1.trim()).toContain(`alter table "author" alter column "some_enum" set not null;`);

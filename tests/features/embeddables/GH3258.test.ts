@@ -48,7 +48,7 @@ afterAll(() => orm.close(true));
 beforeEach(() => orm.em.nativeDelete(Trade, {}));
 
 test('hydration of null value in embeddable property (GH #3258)', async () => {
-  await orm.em.getDriver().nativeInsertMany('Trade', [
+  await orm.em.getDriver().nativeInsertMany(Trade, [
     { vessel: { imo: '123' } },
     { vessel: null },
   ]);

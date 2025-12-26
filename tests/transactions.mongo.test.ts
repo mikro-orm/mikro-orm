@@ -53,12 +53,12 @@ test('should return mongo driver', async () => {
   const driver = orm.em.getDriver();
   const conn = driver.getConnection();
   const ctx = await conn.begin();
-  const first = await driver.nativeInsert<Publisher>(Publisher.name, { name: 'test 123', type: PublisherType.GLOBAL }, { ctx });
+  const first = await driver.nativeInsert(Publisher, { name: 'test 123', type: PublisherType.GLOBAL }, { ctx });
   await conn.commit(ctx);
-  await driver.nativeUpdate<Publisher>(Publisher.name, first.insertId, { name: 'test 456' });
-  await driver.nativeUpdateMany<Publisher>(Publisher.name, [first.insertId], [{ name: 'test 789' }]);
+  await driver.nativeUpdate(Publisher, first.insertId, { name: 'test 456' });
+  await driver.nativeUpdateMany(Publisher, [first.insertId], [{ name: 'test 789' }]);
 
   await conn.transactional(async ctx => {
-    await driver.nativeDelete(Publisher.name, first.insertId, { ctx });
+    await driver.nativeDelete(Publisher, first.insertId, { ctx });
   });
 });

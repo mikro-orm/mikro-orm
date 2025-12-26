@@ -50,7 +50,7 @@ describe('check constraint [mysql8]', () => {
       metadataProvider: TsMorphMetadataProvider,
       metadataCache: { options: { cacheDir: `${import.meta.dirname}/temp` } },
     });
-    const meta0 = orm0.getMetadata().get(FooEntity.name);
+    const meta0 = orm0.getMetadata(FooEntity);
     expect(meta0.checks).toEqual([
       {
         expression: 'price2 >= 0',
@@ -77,7 +77,7 @@ describe('check constraint [mysql8]', () => {
       metadataProvider: TsMorphMetadataProvider,
       metadataCache: { options: { cacheDir: `${import.meta.dirname}/temp` } },
     });
-    const meta = orm.getMetadata().get(FooEntity.name);
+    const meta = orm.getMetadata(FooEntity);
     expect(meta.checks).toEqual([
       {
         expression: 'price2 >= 0',
@@ -136,7 +136,7 @@ describe('check constraint [mysql8]', () => {
         { name: 'foo', expression: 'priceColumn >= 0' },
       ],
     }).init().meta;
-    meta.set('NewTable', newTableMeta);
+    meta.set(newTableMeta.class, newTableMeta);
 
     let diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff).toMatchSnapshot('mysql8-check-constraint-diff-1');

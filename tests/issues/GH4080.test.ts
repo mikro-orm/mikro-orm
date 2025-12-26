@@ -42,7 +42,7 @@ const BaseInterfaceSchema = new EntitySchema<BaseInterface>({
 
 const DerivedClassSchema = new EntitySchema<DerivedClass, BaseClass>({
   class: DerivedClass,
-  extends: 'BaseClass',
+  extends: BaseClassSchema,
   properties: {
     name: { type: String },
   },
@@ -50,7 +50,7 @@ const DerivedClassSchema = new EntitySchema<DerivedClass, BaseClass>({
 
 const ImplementingClassSchema = new EntitySchema<ImplementingClass, BaseInterface>({
   class: ImplementingClass,
-  extends: 'BaseInterface',
+  extends: BaseInterfaceSchema,
   properties: {
     name: { type: String },
   },

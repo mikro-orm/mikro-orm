@@ -162,7 +162,7 @@ test('schema', async () => {
   const updateSQL = await orm.schema.getUpdateSchemaSQL();
   expect(updateSQL).toBe('');
 
-  orm.discoverEntity([User1, Foo1], ['User', 'Foo']);
+  orm.discoverEntity([User1, Foo1], [User, Foo]);
   const diff1 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
   expect(diff1).toMatchSnapshot();
   await orm.schema.execute(diff1);
