@@ -17,7 +17,7 @@ import {
 import { existsSync } from 'node:fs';
 import { rm } from 'node:fs/promises';
 import { initORMMySql } from '../../bootstrap.js';
-import { Author2 } from '../../entities-sql/index.js';
+import { Author2, BaseUser2 } from '../../entities-sql/index.js';
 
 // #region Extensions
 
@@ -140,7 +140,7 @@ const initialMetadataProcessor: MetadataProcessor = (metadata, platform) => {
     className: 'AuthorPartialView2',
     collection: platform.getConfig().getNamingStrategy().classToTableName('AuthorPartialView'),
     virtual: true,
-    expression: (em: typeof orm.em) => em.createQueryBuilder<Author2>('Author2').select(['name', 'email']),
+    expression: (em: typeof orm.em) => em.createQueryBuilder(Author2).select(['name', 'email']),
     comment: 'test',
   });
   const nameProp2 = Object.assign({}, virtualEntityBase.props.find(prop => prop.name === 'name')!);
@@ -187,7 +187,7 @@ const initialMetadataProcessor: MetadataProcessor = (metadata, platform) => {
 
   const employee2def = new EntityMetadata({
     className: 'Employee2',
-    extends: 'BaseUser2',
+    extends: BaseUser2,
     collection: platform.getConfig().getNamingStrategy().classToTableName('Employee2'),
     virtual: true,
     relations: [],
@@ -196,7 +196,7 @@ const initialMetadataProcessor: MetadataProcessor = (metadata, platform) => {
 
   const manager2def = new EntityMetadata({
     className: 'Manager2',
-    extends: 'BaseUser2',
+    extends: BaseUser2,
     collection: platform.getConfig().getNamingStrategy().classToTableName('Manager2'),
     virtual: true,
     relations: [],
@@ -205,7 +205,7 @@ const initialMetadataProcessor: MetadataProcessor = (metadata, platform) => {
 
   const companyOwner2def = new EntityMetadata({
     className: 'CompanyOwner2',
-    extends: 'BaseUser2',
+    extends: BaseUser2,
     discriminatorValue: 'owner',
     collection: platform.getConfig().getNamingStrategy().classToTableName('CompanyOwner2'),
     virtual: true,

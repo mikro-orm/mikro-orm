@@ -188,7 +188,7 @@ export class ObjectHydrator extends Hydrator {
       ret.push(`  }`);
 
       if (prop.kind === ReferenceKind.ONE_TO_ONE) {
-        const meta2 = this.metadata.get(prop.type);
+        const meta2 = this.metadata.get(prop.targetMeta!.class);
         const prop2 = meta2.properties[prop.inversedBy || prop.mappedBy];
 
         if (prop2 && !prop2.mapToPk) {
@@ -426,7 +426,7 @@ export class ObjectHydrator extends Hydrator {
   }
 
   private createCollectionItemMapper(prop: EntityProperty): string[] {
-    const meta = this.metadata.get(prop.type);
+    const meta = this.metadata.get(prop.targetMeta!.class);
     const lines: string[] = [];
 
     lines.push(`  const createCollectionItem_${this.safeKey(prop.name)} = (value, entity) => {`);

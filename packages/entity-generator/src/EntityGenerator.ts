@@ -283,12 +283,14 @@ export class EntityGenerator {
       } as EntityProperty;
 
       if (outputPurePivotTables || this.referencedEntities.has(meta)) {
-        ownerProp.pivotEntity = meta.className;
+        ownerProp.pivotEntity = meta.class;
       }
+
       if (fixedOrderColumn) {
         ownerProp.fixedOrder = true;
         ownerProp.fixedOrderColumn = fixedOrderColumn;
       }
+
       if (isReadOnly) {
         ownerProp.persist = false;
       }

@@ -29,7 +29,7 @@ export class MsSqlQueryBuilder<
       return;
     }
 
-    const dataKeys = Utils.unique(Utils.asArray(data).flatMap(Object.keys));
+    const dataKeys = Utils.unique(Utils.asArray(data).flatMap(Utils.keys));
     const hasAutoincrement = dataKeys.some(x => meta.properties[x]?.autoincrement);
 
     if (hasAutoincrement) {

@@ -1,4 +1,4 @@
-import type { Dictionary, EntityProperty } from '../typings.js';
+import type { EntityProperty } from '../typings.js';
 import { ReferenceKind } from '../enums.js';
 
 export const enum NodeState {
@@ -7,15 +7,17 @@ export const enum NodeState {
   VISITED = 2,
 }
 
+type Hash = number;
+
 export interface Node {
-  hash: string;
+  hash: Hash;
   state: NodeState;
-  dependencies: Dictionary<Edge>;
+  dependencies: Map<Hash, Edge>;
 }
 
 export interface Edge {
-  from: string;
-  to: string;
+  from: Hash;
+  to: Hash;
   weight: number;
 }
 
@@ -32,33 +34,33 @@ export interface Edge {
 export class CommitOrderCalculator {
 
   /** Matrix of nodes, keys are provided hashes and values are the node definition objects. */
-  private nodes: Dictionary<Node> = {};
+  private nodes = new Map<Hash, Node>();
 
   /** Volatile variable holding calculated nodes during sorting process. */
-  private sortedNodeList: string[] = [];
+  private sortedNodeList: Hash[] = [];
 
   /**
    * Checks for node existence in graph.
    */
-  hasNode(hash: string): boolean {
-    return hash in this.nodes;
+  hasNode(hash: Hash): boolean {
+    return this.nodes.has(hash);
   }
 
   /**
    * Adds a new node to the graph, assigning its hash.
    */
-  addNode(hash: string): void {
-    this.nodes[hash] = { hash, state: NodeState.NOT_VISITED, dependencies: {} };
+  addNode(hash: Hash): void {
+    this.nodes.set(hash, { hash, state: NodeState.NOT_VISITED, dependencies: new Map() });
   }
 
   /**
    * Adds a new dependency (edge) to the graph using their hashes.
    */
-  addDependency(from: string, to: string, weight: number): void {
-    this.nodes[from].dependencies[to] = { from, to, weight };
+  addDependency(from: Hash, to: Hash, weight: number): void {
+    this.nodes.get(from)!.dependencies.set(to, { from, to, weight });
   }
 
-  discoverProperty(prop: EntityProperty, entityName: string): void {
+  discoverProperty(prop: EntityProperty, entityName: Hash): void {
     const toOneOwner = (prop.kind === ReferenceKind.ONE_TO_ONE && prop.owner) || prop.kind === ReferenceKind.MANY_TO_ONE;
     const toManyOwner = prop.kind === ReferenceKind.MANY_TO_MANY && prop.owner && !prop.pivotEntity;
 
@@ -66,9 +68,9 @@ export class CommitOrderCalculator {
       return;
     }
 
-    const propertyType = prop.targetMeta?.root.className;
+    const propertyType = prop.targetMeta?.root._id;
 
-    if (!propertyType || !this.hasNode(propertyType)) {
+    if (propertyType == null || !this.hasNode(propertyType)) {
       return;
     }
 
@@ -81,8 +83,8 @@ export class CommitOrderCalculator {
    *
    * @internal Highly performance-sensitive method.
    */
-  sort(): string[] {
-    for (const vertex of Object.values(this.nodes)) {
+  sort(): Hash[] {
+    for (const vertex of this.nodes.values()) {
       if (vertex.state !== NodeState.NOT_VISITED) {
         continue;
       }
@@ -91,7 +93,7 @@ export class CommitOrderCalculator {
     }
 
     const sortedList = this.sortedNodeList.reverse();
-    this.nodes = {};
+    this.nodes = new Map();
     this.sortedNodeList = [];
 
     return sortedList;
@@ -105,8 +107,8 @@ export class CommitOrderCalculator {
   private visit(node: Node): void {
     node.state = NodeState.IN_PROGRESS;
 
-    for (const edge of Object.values(node.dependencies)) {
-      const target = this.nodes[edge.to];
+    for (const edge of node.dependencies.values()) {
+      const target = this.nodes.get(edge.to)!;
 
       switch (target.state) {
         case NodeState.VISITED: break; // Do nothing, since node was already visited
@@ -125,12 +127,12 @@ export class CommitOrderCalculator {
    * Visits all target's dependencies if in cycle with given node
    */
   private visitOpenNode(node: Node, target: Node, edge: Edge): void {
-    if (!target.dependencies[node.hash] || target.dependencies[node.hash].weight >= edge.weight) {
+    if (!target.dependencies.has(node.hash) || target.dependencies.get(node.hash)!.weight >= edge.weight) {
       return;
     }
 
-    for (const edge of Object.values(target.dependencies)) {
-      const targetNode = this.nodes[edge.to];
+    for (const edge of target.dependencies.values()) {
+      const targetNode = this.nodes.get(edge.to)!;
 
       if (targetNode.state === NodeState.NOT_VISITED) {
         this.visit(targetNode);

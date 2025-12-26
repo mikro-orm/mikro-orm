@@ -64,7 +64,7 @@ test('6100 1/3', async () => {
   });
   await orm.schema.refresh();
 
-  orm.discoverEntity(A2Schema, 'A');
+  orm.discoverEntity(A2Schema, A1Schema);
   await orm.schema.update();
 
   orm.em.create(A2Schema, { enum1: 'D' });
@@ -81,7 +81,7 @@ test('6100 2/3', async () => {
   });
   await orm.schema.refresh();
 
-  orm.discoverEntity(B2Schema, 'B');
+  orm.discoverEntity(B2Schema, B1Schema);
   await orm.schema.update();
 
   orm.em.create(B2Schema, { enum1: 'D' });
@@ -98,7 +98,7 @@ test('6100 3/3', async () => {
   });
   await orm.schema.refresh();
 
-  orm.discoverEntity(C2Schema, 'C');
+  orm.discoverEntity(C2Schema, C1Schema);
   await orm.schema.update();
 
   orm.em.create(C2Schema, { enum1: 'D' });

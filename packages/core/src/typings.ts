@@ -291,7 +291,7 @@ export interface IWrappedEntityInternal<Entity extends object> extends IWrappedE
 export type AnyEntity<T = any> = Partial<T>;
 
 export type EntityClass<T> = Function & { prototype: T };
-export type EntityName<T> = string | EntityClass<T> | EntitySchema<T, any> | { name: string };
+export type EntityName<T> = EntityClass<T> | EntitySchema<T, any> | { name: string };
 
 // we need to restrict the type in the generic argument, otherwise inference don't work, so we use two types here
 export type GetRepository<Entity extends { [k: PropertyKey]: any }, Fallback> = Entity[typeof EntityRepositoryType] extends EntityRepository<any> | undefined ? NonNullable<Entity[typeof EntityRepositoryType]> : Fallback;
@@ -553,7 +553,7 @@ export interface EntityProperty<Owner = any, Target = any> {
   fixedOrder?: boolean;
   fixedOrderColumn?: string;
   pivotTable: string;
-  pivotEntity: string;
+  pivotEntity: EntityClass<Target>; // FIXME change to hold `pivotMeta` directly?
   joinColumns: string[];
   ownColumns: string[];
   inverseJoinColumns: string[];
@@ -595,7 +595,8 @@ export class EntityMetadata<T = any> {
 
   addProperty(prop: Partial<EntityProperty<T>>, sync = true) {
     if (prop.pivotTable && !prop.pivotEntity) {
-      prop.pivotEntity = prop.pivotTable;
+      // FIXME???
+      prop.pivotEntity = { name: prop.pivotTable } as EntityClass<any>;
     }
 
     this.properties[prop.name!] = prop as EntityProperty<T>;
@@ -794,6 +795,11 @@ export class EntityMetadata<T = any> {
     return this;
   }
 
+  /** @ignore */
+  [Symbol.for('nodejs.util.inspect.custom')]() {
+    return `[${this.constructor.name}<${this.className}>]`;
+  }
+
 }
 
 export interface SimpleColumnMeta {
@@ -817,7 +823,7 @@ export interface EntityMetadata<T = any> {
   embeddable: boolean;
   constructorParams?: (keyof T)[];
   forceConstructor: boolean;
-  extends: string;
+  extends: EntityName<T>; // FIXME??
   collection: string;
   path: string;
   primaryKeys: EntityKey<T>[];
@@ -1071,7 +1077,7 @@ type EntityFromInput<T> = T extends readonly EntityName<infer U>[]
 
 type FilterDefResolved<T extends object = any> = {
   name: string;
-  cond: FilterQuery<T> | ((args: Dictionary, type: 'read' | 'update' | 'delete', em: any, options?: FindOptions<T, any, any, any> | FindOneOptions<T, any, any, any>, entityName?: EntityName<T>) => MaybePromise<FilterQuery<T>>);
+  cond: FilterQuery<T> | ((args: Dictionary, type: 'read' | 'update' | 'delete', em: any, options?: FindOptions<T, any, any, any> | FindOneOptions<T, any, any, any>, entityName?: string) => MaybePromise<FilterQuery<T>>);
   default?: boolean;
   entity?: EntityName<T> | EntityName<T>[];
   args?: boolean;
@@ -1289,11 +1295,11 @@ export interface Highlighter {
 
 export interface IMetadataStorage {
   getAll(): Dictionary<EntityMetadata>;
-  get<T = any>(entity: string, init?: boolean, validate?: boolean): EntityMetadata<T>;
-  find<T = any>(entity: string): EntityMetadata<T> | undefined;
-  has(entity: string): boolean;
-  set(entity: string, meta: EntityMetadata): EntityMetadata;
-  reset(entity: string): void;
+  get<T = any>(entity: EntityName<T>, init?: boolean, validate?: boolean): EntityMetadata<T>;
+  find<T = any>(entity: EntityName<T>): EntityMetadata<T> | undefined;
+  has<T>(entity: EntityName<T>): boolean;
+  set<T>(entity: EntityName<T>, meta: EntityMetadata): EntityMetadata;
+  reset<T>(entity: EntityName<T>): void;
 }
 
 export interface IHydrator {

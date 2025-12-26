@@ -163,7 +163,7 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
     const schema = options?.schema ?? this.config.get('schema', this.platform.getDefaultSchemaName());
 
     for (const meta of this.getOrderedMetadata(schema).reverse()) {
-      await this.driver.createQueryBuilder(meta.className, this.em?.getTransactionContext(), 'write', false)
+      await this.driver.createQueryBuilder(meta.class, this.em?.getTransactionContext(), 'write', false)
         .withSchema(schema)
         .truncate()
         .execute();

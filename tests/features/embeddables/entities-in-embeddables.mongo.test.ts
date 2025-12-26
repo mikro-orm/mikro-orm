@@ -155,10 +155,10 @@ describe('embedded entities in mongo', () => {
   });
 
   test('diffing', async () => {
-    expect(orm.em.getComparator().getSnapshotGenerator('User').toString()).toMatchSnapshot();
+    expect(orm.em.getComparator().getSnapshotGenerator(User).toString()).toMatchSnapshot();
     const metadata = orm.getMetadata();
     const hydrator = orm.config.getHydrator(metadata) as ObjectHydrator;
-    expect(hydrator.getEntityHydrator(metadata.get('User'), 'full').toString()).toMatchSnapshot();
+    expect(hydrator.getEntityHydrator(metadata.get(User), 'full').toString()).toMatchSnapshot();
   });
 
   async function createUsers() {

@@ -48,7 +48,7 @@ test('GH #5672', async () => {
   });
   await orm.schema.refresh();
 
-  orm.discoverEntity(Author1, 'Author0');
+  orm.discoverEntity(Author1, Author0);
   const diff1 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
   expect(diff1.trim()).toMatchSnapshot();
   await orm.schema.execute(diff1);

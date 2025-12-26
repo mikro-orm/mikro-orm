@@ -137,7 +137,7 @@ describe('embedded entities in postgres', () => {
   });
 
   test('diffing', async () => {
-    expect(orm.em.getComparator().getSnapshotGenerator('User').toString()).toMatchSnapshot();
+    expect(orm.em.getComparator().getSnapshotGenerator(User).toString()).toMatchSnapshot();
   });
 
   test('persist and load', async () => {

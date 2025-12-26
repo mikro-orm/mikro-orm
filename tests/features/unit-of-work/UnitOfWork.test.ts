@@ -111,7 +111,7 @@ describe('UnitOfWork', () => {
     expect(mock.mock.calls[0][0]).toMatch(`db.getCollection('foo-baz').insertMany([ { name: 'dynamic' } ], {})`);
     expect(mock.mock.calls[1][0]).toMatch(/db\.getCollection\('foo-bar'\)\.insertMany\(\[ { name: 'bar', onCreateTest: true, onUpdateTest: true, baz: ObjectId\('\w+'\), version: ISODate\('.+'\) } ], {}\)/);
 
-    expect(changeSets.map(cs => [cs.type, cs.name])).toEqual([
+    expect(changeSets.map(cs => [cs.type, cs.meta.className])).toEqual([
       [ChangeSetType.CREATE, 'FooBar'],
       [ChangeSetType.CREATE, 'FooBaz'],
     ]);
@@ -120,7 +120,7 @@ describe('UnitOfWork', () => {
     bar.name = 'remove me';
     await em.flush();
     expect(mock.mock.calls[0][0]).toMatch(/db\.getCollection\('foo-bar'\)\.deleteMany\(\{ _id: \{ '\$in': \[ ObjectId\('\w{24}'\) ] } }, \{}\)/);
-    expect(changeSets.map(cs => [cs.type, cs.name])).toEqual([
+    expect(changeSets.map(cs => [cs.type, cs.meta.className])).toEqual([
       [ChangeSetType.DELETE, 'FooBar'],
     ]);
   });

@@ -601,7 +601,7 @@ export class AuthorPartialView2 {
 export const AuthorPartialView2Schema = defineEntity({
   class: AuthorPartialView2,
   tableName: 'author_partial_view',
-  expression: (em)=>em.createQueryBuilder('Author2').select([
+  expression: (em)=>em.createQueryBuilder((0,__vite_ssr_import_4__.Author2)).select([
                 'name',
                 'email'
             ]),
@@ -1566,7 +1566,7 @@ export class AuthorPartialView2 {
 export const AuthorPartialView2Schema = new EntitySchema({
   class: AuthorPartialView2,
   tableName: 'author_partial_view',
-  expression: (em)=>em.createQueryBuilder('Author2').select([
+  expression: (em)=>em.createQueryBuilder((0,__vite_ssr_import_4__.Author2)).select([
                 'name',
                 'email'
             ]),
@@ -2345,7 +2345,7 @@ export class AuthorPartialView {
 import { Entity, Property } from '@mikro-orm/decorators/legacy';
 import Email from './../runtimeTypes/Email';
 
-@Entity({ tableName: 'author_partial_view', expression: (em)=>em.createQueryBuilder('Author2').select([
+@Entity({ tableName: 'author_partial_view', expression: (em)=>em.createQueryBuilder((0,__vite_ssr_import_4__.Author2)).select([
                 'name',
                 'email'
             ]), comment: 'test', virtual: true })
@@ -3007,7 +3007,7 @@ export class AuthorPartialView2 {
 export const AuthorPartialView2Schema = defineEntity({
   class: AuthorPartialView2,
   tableName: 'author_partial_view',
-  expression: (em)=>em.createQueryBuilder('Author2').select([
+  expression: (em)=>em.createQueryBuilder((0,__vite_ssr_import_4__.Author2)).select([
                 'name',
                 'email'
             ]),
@@ -4003,7 +4003,7 @@ export class AuthorPartialView2 {
 export const AuthorPartialView2Schema = new EntitySchema({
   class: AuthorPartialView2,
   tableName: 'author_partial_view',
-  expression: (em)=>em.createQueryBuilder('Author2').select([
+  expression: (em)=>em.createQueryBuilder((0,__vite_ssr_import_4__.Author2)).select([
                 'name',
                 'email'
             ]),
@@ -4784,7 +4784,7 @@ export class AuthorPartialView {
 import { Entity, Property } from '@mikro-orm/decorators/legacy';
 import Email from './../runtimeTypes/Email';
 
-@Entity({ tableName: 'author_partial_view', expression: (em)=>em.createQueryBuilder('Author2').select([
+@Entity({ tableName: 'author_partial_view', expression: (em)=>em.createQueryBuilder((0,__vite_ssr_import_4__.Author2)).select([
                 'name',
                 'email'
             ]), comment: 'test', virtual: true })
@@ -5446,7 +5446,7 @@ export class AuthorPartialView2 {
 export const AuthorPartialView2Schema = defineEntity({
   class: AuthorPartialView2,
   tableName: 'author_partial_view',
-  expression: (em)=>em.createQueryBuilder('Author2').select([
+  expression: (em)=>em.createQueryBuilder((0,__vite_ssr_import_4__.Author2)).select([
                 'name',
                 'email'
             ]),
@@ -6411,7 +6411,7 @@ export class AuthorPartialView2 {
 export const AuthorPartialView2Schema = new EntitySchema({
   class: AuthorPartialView2,
   tableName: 'author_partial_view',
-  expression: (em)=>em.createQueryBuilder('Author2').select([
+  expression: (em)=>em.createQueryBuilder((0,__vite_ssr_import_4__.Author2)).select([
                 'name',
                 'email'
             ]),
@@ -7190,7 +7190,7 @@ export class AuthorPartialView {
 import { Entity, Property } from '@mikro-orm/decorators/legacy';
 import Email from './../runtimeTypes/Email';
 
-@Entity({ tableName: 'author_partial_view', expression: (em)=>em.createQueryBuilder('Author2').select([
+@Entity({ tableName: 'author_partial_view', expression: (em)=>em.createQueryBuilder((0,__vite_ssr_import_4__.Author2)).select([
                 'name',
                 'email'
             ]), comment: 'test', virtual: true })
@@ -7852,7 +7852,7 @@ export class AuthorPartialView2 {
 export const AuthorPartialView2Schema = defineEntity({
   class: AuthorPartialView2,
   tableName: 'author_partial_view',
-  expression: (em)=>em.createQueryBuilder('Author2').select([
+  expression: (em)=>em.createQueryBuilder((0,__vite_ssr_import_4__.Author2)).select([
                 'name',
                 'email'
             ]),
@@ -8848,7 +8848,7 @@ export class AuthorPartialView2 {
 export const AuthorPartialView2Schema = new EntitySchema({
   class: AuthorPartialView2,
   tableName: 'author_partial_view',
-  expression: (em)=>em.createQueryBuilder('Author2').select([
+  expression: (em)=>em.createQueryBuilder((0,__vite_ssr_import_4__.Author2)).select([
                 'name',
                 'email'
             ]),
@@ -9629,7 +9629,7 @@ export class AuthorPartialView {
 import { Entity, Property } from '@mikro-orm/decorators/legacy';
 import Email from './../runtimeTypes/Email';
 
-@Entity({ tableName: 'author_partial_view', expression: (em)=>em.createQueryBuilder('Author2').select([
+@Entity({ tableName: 'author_partial_view', expression: (em)=>em.createQueryBuilder((0,__vite_ssr_import_4__.Author2)).select([
                 'name',
                 'email'
             ]), comment: 'test', virtual: true })

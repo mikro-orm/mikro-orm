@@ -26,7 +26,7 @@ describe.each(['mariadb', 'mysql'])('GH 6072 [%s]', type => {
   });
 
   test('check schema', async () => {
-    const property = orm.getMetadata().get('entity').properties.id;
+    const property = orm.getMetadata().get(entity).properties.id;
 
     property.unsigned = false;
     const diff1 = await orm.schema.getUpdateSchemaSQL();

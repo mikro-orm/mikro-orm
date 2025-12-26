@@ -55,7 +55,9 @@ describe('different schema from config', () => {
   });
 
   beforeEach(async () => {
-    await orm.em.nativeDelete('book_tags', {});
+    // FIXME this is ugly, should we allow strings on native methods?
+    await orm.em.nativeDelete(orm.getMetadata().getByClassName('book_tags').class, {});
+    // await orm.em.nativeDelete('book_tags', {});
     await orm.em.nativeDelete(BookTag, {});
     await orm.em.nativeDelete(Book, {});
     orm.em.clear();

@@ -13,6 +13,7 @@ import {
   Utils,
   isRaw,
   type Constructor,
+  type EntityName,
 } from '@mikro-orm/core';
 import { AbstractSqlDriver, type SqlEntityManager } from '@mikro-orm/sql';
 import { MsSqlConnection } from './MsSqlConnection.js';
@@ -26,7 +27,7 @@ export class MsSqlDriver extends AbstractSqlDriver<MsSqlConnection> {
     super(config, new MsSqlPlatform(), MsSqlConnection, ['kysely', 'tedious']);
   }
 
-  override async nativeInsertMany<T extends AnyEntity<T>>(entityName: string, data: EntityDictionary<T>[], options: NativeInsertUpdateManyOptions<T> = {}): Promise<QueryResult<T>> {
+  override async nativeInsertMany<T extends AnyEntity<T>>(entityName: EntityName<T>, data: EntityDictionary<T>[], options: NativeInsertUpdateManyOptions<T> = {}): Promise<QueryResult<T>> {
     const meta = this.metadata.get<T>(entityName);
     const keys = new Set<string>();
     data.forEach(row => Object.keys(row).forEach(k => keys.add(k)));
@@ -65,7 +66,7 @@ export class MsSqlDriver extends AbstractSqlDriver<MsSqlConnection> {
     return super.nativeInsertMany(entityName, data, options, sql => meta.hasTriggers ? this.appendOutputTable(entityName, data, sql) : sql);
   }
 
-  override createQueryBuilder<T extends AnyEntity<T>>(entityName: string, ctx?: Transaction, preferredConnectionType?: ConnectionType, convertCustomTypes?: boolean, loggerContext?: LoggingOptions, alias?: string, em?: SqlEntityManager): MsSqlQueryBuilder<T, any, any, any> {
+  override createQueryBuilder<T extends AnyEntity<T>>(entityName: EntityName<T>, ctx?: Transaction, preferredConnectionType?: ConnectionType, convertCustomTypes?: boolean, loggerContext?: LoggingOptions, alias?: string, em?: SqlEntityManager): MsSqlQueryBuilder<T, any, any, any> {
     // do not compute the connectionType if EM is provided as it will be computed from it in the QB later on
     const connectionType = em ? preferredConnectionType : this.resolveConnectionType({ ctx, connectionType: preferredConnectionType });
     const qb = new MsSqlQueryBuilder<T, any, any, any>(entityName, this.metadata, this, ctx, alias, connectionType, em, loggerContext);
@@ -77,7 +78,7 @@ export class MsSqlDriver extends AbstractSqlDriver<MsSqlConnection> {
     return qb;
   }
 
-  private appendOutputTable<T extends AnyEntity<T>>(entityName: string, data: EntityDictionary<T>[], sql: string) {
+  private appendOutputTable<T extends AnyEntity<T>>(entityName: EntityName<T>, data: EntityDictionary<T>[], sql: string) {
     const meta = this.metadata.get<T>(entityName);
     const returningProps = meta.props
       .filter(prop => prop.persist !== false && prop.defaultRaw || prop.autoincrement || prop.generated)

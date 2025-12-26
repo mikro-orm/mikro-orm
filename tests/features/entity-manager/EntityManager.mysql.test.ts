@@ -116,11 +116,11 @@ describe('EntityManagerMySql', () => {
   test('should return mysql driver', async () => {
     const driver = orm.em.getDriver();
     expect(driver).toBeInstanceOf(MySqlDriver);
-    await expect(driver.findOne<Book2>(Book2.name, { title: 'bar' })).resolves.toBeNull();
-    await expect(driver.findOne<Book2>(Book2.name, { uuid: 'uuid' })).resolves.toBeNull();
-    const author = await driver.nativeInsert(Author2.name, { name: 'author', email: 'email' });
-    const tag = await driver.nativeInsert(BookTag2.name, { name: 'tag name' });
-    expect((await driver.nativeInsert(Book2.name, { uuid: v4(), author: author.insertId, tags: [tag.insertId] })).insertId).not.toBeNull();
+    await expect(driver.findOne(Book2, { title: 'bar' })).resolves.toBeNull();
+    await expect(driver.findOne(Book2, { uuid: 'uuid' })).resolves.toBeNull();
+    const author = await driver.nativeInsert(Author2, { name: 'author', email: 'email' });
+    const tag = await driver.nativeInsert(BookTag2, { name: 'tag name' });
+    expect((await driver.nativeInsert(Book2, { uuid: v4(), author: author.insertId, tags: [tag.insertId] })).insertId).not.toBeNull();
     await expect(driver.execute('select 1 as count')).resolves.toEqual([{ count: 1 }]);
     await expect(driver.execute('select 1 as count', [], 'get')).resolves.toEqual({ count: 1 });
     await expect(driver.execute('select 1 as count', [], 'run')).resolves.toEqual({ affectedRows: 1, row: { count: 1 }, rows: [{ count: 1 }] });
@@ -140,8 +140,8 @@ describe('EntityManagerMySql', () => {
     expect(driver.getPlatform().usesImplicitTransactions()).toBe(true);
     expect(driver.getPlatform().denormalizePrimaryKey(1)).toBe(1);
     expect(driver.getPlatform().denormalizePrimaryKey('1')).toBe('1');
-    await expect(driver.find<BookTag2>(BookTag2.name, { books: { $in: ['1'] } })).resolves.not.toBeNull();
-    await expect(driver.count(BookTag2.name, {})).resolves.toBe(1);
+    await expect(driver.find(BookTag2, { books: { $in: ['1'] } })).resolves.not.toBeNull();
+    await expect(driver.count(BookTag2, {})).resolves.toBe(1);
 
     const conn = driver.getConnection();
     const tx = await conn.begin();
@@ -150,7 +150,7 @@ describe('EntityManagerMySql', () => {
     await conn.commit(tx);
 
     // multi inserts
-    const res = await driver.nativeInsertMany(Publisher2.name, [
+    const res = await driver.nativeInsertMany(Publisher2, [
       { name: 'test 1', type: PublisherType.GLOBAL },
       { name: 'test 2', type: PublisherType.LOCAL },
       { name: 'test 3', type: PublisherType.GLOBAL },
@@ -158,7 +158,7 @@ describe('EntityManagerMySql', () => {
 
     // mysql returns the first inserted id
     expect(res).toMatchObject({ insertId: 1, affectedRows: 3, row: { id: 1 }, rows: [{ id: 1 }, { id: 2 }, { id: 3 }] });
-    const res2 = await driver.find(Publisher2.name, {});
+    const res2 = await driver.find(Publisher2, {});
     expect(res2).toMatchObject([
       { id: 1, name: 'test 1', type: PublisherType.GLOBAL },
       { id: 2, name: 'test 2', type: PublisherType.LOCAL },
@@ -166,13 +166,13 @@ describe('EntityManagerMySql', () => {
     ]);
 
     // multi updates
-    const res3 = await driver.nativeUpdateMany<Publisher2>(Publisher2.name, [1, 2, 3], [
+    const res3 = await driver.nativeUpdateMany(Publisher2, [1, 2, 3], [
       { name: 'test 11', type: PublisherType.LOCAL },
       { type: PublisherType.GLOBAL },
       { name: 'test 33', type: PublisherType.LOCAL },
     ]);
 
-    const res4 = await driver.find(Publisher2.name, {});
+    const res4 = await driver.find(Publisher2, {});
     expect(res4).toMatchObject([
       { id: 1, name: 'test 11', type: PublisherType.LOCAL },
       { id: 2, name: 'test 2', type: PublisherType.GLOBAL },
@@ -182,10 +182,11 @@ describe('EntityManagerMySql', () => {
 
   test('driver appends errored query', async () => {
     const driver = orm.em.getDriver();
-    const err1 = `Table '${orm.config.get('dbName')}.not_existing' doesn't exist`;
-    await expect(driver.nativeInsert('not_existing', { foo: 'bar' })).rejects.toThrow(err1);
-    const err2 = `Table '${orm.config.get('dbName')}.not_existing' doesn't exist`;
-    await expect(driver.nativeDelete('not_existing', {})).rejects.toThrow(err2);
+    class Test {}
+    const err1 = `Table '${orm.config.get('dbName')}.Test' doesn't exist`;
+    await expect(driver.nativeInsert(Test, { foo: 'bar' })).rejects.toThrow(err1);
+    const err2 = `Table '${orm.config.get('dbName')}.Test' doesn't exist`;
+    await expect(driver.nativeDelete(Test, {})).rejects.toThrow(err2);
   });
 
   test('should convert entity to PK when trying to search by entity', async () => {
@@ -203,7 +204,7 @@ describe('EntityManagerMySql', () => {
   });
 
   test('should allow to find by array of PKs', async () => {
-    await orm.em.getDriver().nativeInsertMany(Author2.name, [
+    await orm.em.getDriver().nativeInsertMany(Author2, [
       { id: 1, name: 'n1', email: 'e1' },
       { id: 2, name: 'n2', email: 'e2' },
       { id: 3, name: 'n3', email: 'e3' },
@@ -2073,10 +2074,10 @@ describe('EntityManagerMySql', () => {
     const res5 = await orm.em.nativeUpdate(Author2, { name: 'native name 2' }, { name: 'new native name', updatedAt: new Date('2018-10-28') });
     expect(res5).toBe(1);
 
-    const res6 = await orm.em.nativeUpdate<Author2>('author2', { name: 'new native name' }, { name: 'native name 3' });
+    const res6 = await orm.em.nativeUpdate(Author2, { name: 'new native name' }, { name: 'native name 3' });
     expect(res6).toBe(1);
 
-    const res7 = await orm.em.nativeDelete<Author2>('author2', res4);
+    const res7 = await orm.em.nativeDelete(Author2, res4);
     expect(res7).toBe(1);
 
     const id = await orm.em.insert(Author2, { name: 'native name 1', email: 'native1@email.com' });

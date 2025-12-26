@@ -11,7 +11,7 @@ class Person {
   @Property()
   name!: string;
 
-  @ManyToMany({ entity: () => 'Phone', owner: true, pivotTable: 'tic.person_phone', joinColumn: 'person_id', inverseJoinColumn: 'phone_id' })
+  @ManyToMany({ entity: () => Phone, owner: true, pivotTable: 'tic.person_phone', joinColumn: 'person_id', inverseJoinColumn: 'phone_id' })
   phones = new Collection<Phone>(this);
 
 }
@@ -25,7 +25,7 @@ class Phone {
   @Property()
   number!: string;
 
-  @ManyToMany({ entity: () => 'Person', mappedBy: (e: Person) => e.phones })
+  @ManyToMany({ entity: () => Person, mappedBy: (e: Person) => e.phones })
   people: Collection<Person> = new Collection<Person>(this);
 
 }

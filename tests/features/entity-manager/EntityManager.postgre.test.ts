@@ -137,12 +137,12 @@ describe('EntityManagerPostgre', () => {
   test('should return postgre driver', async () => {
     const driver = orm.em.getDriver();
     expect(driver).toBeInstanceOf(PostgreSqlDriver);
-    await expect(driver.findOne<Book2>(Book2.name, { double: 123 })).resolves.toBeNull();
-    const author = await driver.nativeInsert(Author2.name, { name: 'author', email: 'email' });
-    const tag = await driver.nativeInsert(BookTag2.name, { name: 'tag name' });
+    await expect(driver.findOne(Book2, { double: 123 })).resolves.toBeNull();
+    const author = await driver.nativeInsert(Author2, { name: 'author', email: 'email' });
+    const tag = await driver.nativeInsert(BookTag2, { name: 'tag name' });
     const uuid1 = v4();
-    await expect(driver.nativeInsert(Book2.name, { uuid: uuid1, author: author.insertId, tags: [tag.insertId] })).resolves.not.toBeNull();
-    await expect(driver.nativeUpdate(Book2.name, { uuid: uuid1 }, { title: 'booook' })).resolves.not.toBeNull();
+    await expect(driver.nativeInsert(Book2, { uuid: uuid1, author: author.insertId, tags: [tag.insertId] })).resolves.not.toBeNull();
+    await expect(driver.nativeUpdate(Book2, { uuid: uuid1 }, { title: 'booook' })).resolves.not.toBeNull();
     await expect(driver.getConnection().execute('select 1 as count')).resolves.toEqual([{ count: 1 }]);
     await expect(driver.getConnection().execute('select 1 as count', [], 'get')).resolves.toEqual({ count: 1 });
     await expect(driver.getConnection().execute('select 1 as count', [], 'run')).resolves.toEqual({
@@ -167,21 +167,21 @@ describe('EntityManagerPostgre', () => {
     });
     expect(driver.getPlatform().denormalizePrimaryKey(1)).toBe(1);
     expect(driver.getPlatform().denormalizePrimaryKey('1')).toBe('1');
-    await expect(driver.find<BookTag2>(BookTag2.name, { books: { $in: [uuid1] } })).resolves.not.toBeNull();
+    await expect(driver.find(BookTag2, { books: { $in: [uuid1] } })).resolves.not.toBeNull();
     expect(driver.getPlatform().formatQuery('CREATE USER ?? WITH PASSWORD ?', ['foo', 'bar'])).toBe(`CREATE USER "foo" WITH PASSWORD 'bar'`);
     expect(driver.getPlatform().formatQuery('select \\?, ?, ?', ['foo', 'bar'])).toBe(`select ?, 'foo', 'bar'`);
     expect(driver.getPlatform().formatQuery('? = ??', ['foo', 'bar'])).toBe(`'foo' = "bar"`);
 
     // multi inserts
-    await driver.nativeInsert(Test2.name, { id: 1, name: 't1' });
-    await driver.nativeInsert(Test2.name, { id: 2, name: 't2' });
-    await driver.nativeInsert(Test2.name, { id: 3, name: 't3' });
-    await driver.nativeInsert(Test2.name, { id: 4, name: 't4' });
-    await driver.nativeInsert(Test2.name, { id: 5, name: 't5' });
+    await driver.nativeInsert(Test2, { id: 1, name: 't1' });
+    await driver.nativeInsert(Test2, { id: 2, name: 't2' });
+    await driver.nativeInsert(Test2, { id: 3, name: 't3' });
+    await driver.nativeInsert(Test2, { id: 4, name: 't4' });
+    await driver.nativeInsert(Test2, { id: 5, name: 't5' });
 
     const mock = mockLogger(orm, ['query']);
 
-    const res = await driver.nativeInsertMany(Publisher2.name, [
+    const res = await driver.nativeInsertMany(Publisher2, [
       { name: 'test 1', tests: [1, 3, 4], type: PublisherType.GLOBAL, type2: PublisherType2.LOCAL },
       { name: 'test 2', tests: [4, 2], type: PublisherType.LOCAL, type2: PublisherType2.LOCAL },
       { name: 'test 3', tests: [1, 5, 2], type: PublisherType.GLOBAL, type2: PublisherType2.LOCAL },
@@ -194,7 +194,7 @@ describe('EntityManagerPostgre', () => {
 
     // postgres returns all the ids based on returning clause
     expect(res).toMatchObject({ insertId: 1, affectedRows: 3, row: { id: 1 }, rows: [ { id: 1 }, { id: 2 }, { id: 3 } ] });
-    const res2 = await driver.find(Publisher2.name, {});
+    const res2 = await driver.find(Publisher2, {});
     expect(res2).toMatchObject([
       { id: 1, name: 'test 1', type: PublisherType.GLOBAL, type2: PublisherType2.LOCAL },
       { id: 2, name: 'test 2', type: PublisherType.LOCAL, type2: PublisherType2.LOCAL },
@@ -211,10 +211,11 @@ describe('EntityManagerPostgre', () => {
 
   test('driver appends errored query', async () => {
     const driver = orm.em.getDriver();
-    const err1 = 'relation "not_existing" does not exist';
-    await expect(driver.nativeInsert('not_existing', { foo: 'bar' })).rejects.toThrow(err1);
-    const err2 = 'relation "not_existing" does not exist';
-    await expect(driver.nativeDelete('not_existing', {})).rejects.toThrow(err2);
+    class Test {}
+    const err1 = 'relation "Test" does not exist';
+    await expect(driver.nativeInsert(Test, { foo: 'bar' })).rejects.toThrow(err1);
+    const err2 = 'relation "Test" does not exist';
+    await expect(driver.nativeDelete(Test, {})).rejects.toThrow(err2);
   });
 
   test('should convert entity to PK when trying to search by entity', async () => {
@@ -2281,7 +2282,7 @@ describe('EntityManagerPostgre', () => {
   });
 
   test('should allow to find by array of PKs', async () => {
-    await orm.em.getDriver().nativeInsertMany(Author2.name, [
+    await orm.em.getDriver().nativeInsertMany(Author2, [
       { id: 1, name: 'n1', email: 'e1' },
       { id: 2, name: 'n2', email: 'e2' },
       { id: 3, name: 'n3', email: 'e3' },
@@ -2293,12 +2294,13 @@ describe('EntityManagerPostgre', () => {
 
   test('exceptions', async () => {
     const driver = orm.em.getDriver();
-    await driver.nativeInsert(Author2.name, { name: 'author', email: 'email' });
+    await driver.nativeInsert(Author2, { name: 'author', email: 'email' });
     await expect(orm.em.upsert(Author2, { name: 'author', email: 'email', favouriteAuthor: 123 })).rejects.toThrow(ForeignKeyConstraintViolationException);
     await expect(orm.em.upsertMany(Author2, [{ name: 'author', email: 'email', favouriteAuthor: 123 }])).rejects.toThrow(ForeignKeyConstraintViolationException);
-    await expect(driver.nativeInsert(Author2.name, { name: 'author', email: 'email' })).rejects.toThrow(UniqueConstraintViolationException);
-    await expect(driver.nativeInsert(Author2.name, {})).rejects.toThrow(NotNullConstraintViolationException);
-    await expect(driver.nativeInsert('not_existing', { foo: 'bar' })).rejects.toThrow(TableNotFoundException);
+    await expect(driver.nativeInsert(Author2, { name: 'author', email: 'email' })).rejects.toThrow(UniqueConstraintViolationException);
+    await expect(driver.nativeInsert(Author2, {})).rejects.toThrow(NotNullConstraintViolationException);
+    class Test {}
+    await expect(driver.nativeInsert(Test, { foo: 'bar' })).rejects.toThrow(TableNotFoundException);
     await expect(driver.execute('create table author2 (foo text not null)')).rejects.toThrow(TableExistsException);
     await expect(driver.execute('foo bar 123')).rejects.toThrow(SyntaxErrorException);
     await expect(driver.execute('select id from author2, foo_bar2')).rejects.toThrow(NonUniqueFieldNameException);

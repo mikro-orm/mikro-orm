@@ -32,7 +32,7 @@ class User {
   balance: number = 0;
 
   // Note the OneToOne relationship with inverse
-  @OneToOne(() => 'Blog', (e: Blog) => e.author)
+  @OneToOne(() => Blog, e => e.author)
   blog?: Blog;
 
 }

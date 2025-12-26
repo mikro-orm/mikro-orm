@@ -1496,8 +1496,16 @@ describe('ManyToManyOptionsBuilder', () => {
         name: p.string(),
         users: () => p.manyToMany(User)
           .joinColumns('id')
-          .pivotEntity('UserTag')
+          .pivotEntity(() => UserTag)
           .referencedColumnNames('user_id', 'tag_id'),
+      }),
+    });
+
+    const UserTag = defineEntity({
+      name: 'UserTag',
+      properties: p => ({
+        user: p.manyToOne(User),
+        tag: p.manyToOne(Tag),
       }),
     });
 
@@ -1510,7 +1518,7 @@ describe('ManyToManyOptionsBuilder', () => {
           kind: 'm:n',
           entity: () => User,
           joinColumns: ['id'],
-          pivotEntity: 'UserTag',
+          pivotEntity: () => UserTag,
           referencedColumnNames: ['user_id', 'tag_id'],
         },
       },
