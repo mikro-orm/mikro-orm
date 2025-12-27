@@ -92,8 +92,40 @@ class OracleConnection implements DatabaseConnection {
       ...this.#executeOptions,
     });
 
+    let rows = result?.rows || [];
+
+    // Oracle returns RETURNING values in outBinds (not rows)
+    // Transform: { out_foo: 1, out_bar: 2 } -> [{ foo: 1, bar: 2 }]
+    // Multi-row: { out_foo__0: 1, out_bar__0: 2, out_foo__1: 3 } -> [{ foo: 1, bar: 2 }, { foo: 3, ... }]
+    if (result.outBinds && rows.length === 0) {
+      const binds = result.outBinds as Record<string, any>;
+      const keys = Object.keys(binds).filter(k => k.startsWith('out_'));
+
+      if (keys.length > 0 && keys[0].includes('__')) {
+        // Multi-row result: use Map for grouping
+        const rowMap = new Map<number, Record<string, any>>();
+        keys.forEach(key => {
+          const match = key.match(/^out_(.+)__(\d+)$/);
+          if (match) {
+            const [, field, idx] = match;
+            const i = parseInt(idx, 10);
+            if (!rowMap.has(i)) { rowMap.set(i, {}); }
+            rowMap.get(i)![field] = binds[key];
+          }
+        });
+        rows = Array.from(rowMap.entries()).sort(([a], [b]) => a - b).map(([, row]) => row) as R[];
+      } else if (keys.length > 0) {
+        // Single-row result: direct object construction (faster)
+        const row: any = {};
+        for (const key of keys) {
+          row[key.replace(/^out_/, '')] = binds[key];
+        }
+        rows = [row] as R[];
+      }
+    }
+
     return {
-      rows: result?.rows || [],
+      rows,
       numAffectedRows: result.rowsAffected ? BigInt(result.rowsAffected) : undefined,
       // @ts-ignore TODO expose or keep it internal?
       outBinds: result.outBinds,

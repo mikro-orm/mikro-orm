@@ -819,6 +819,279 @@ exports[`em.upsert [mysql] > em.upsertMany(Type, [entity], options) with advance
 ]
 `;
 
+exports[`em.upsert [oracledb] > em.upsert(Type, data) with PK 1`] = `
+[
+  [
+    "[query] merge into "author" using (select 1 as "_id", 'a1' as "email", 41 as "current_age" from dual) tsource on ("author"."_id" = tsource."_id") when not matched then insert ("_id", "email", "current_age") values (tsource."_id", tsource."email", tsource."current_age") when matched then update set "email" = tsource."email", "current_age" = tsource."current_age"",
+  ],
+  [
+    "[query] select "a0"."_id", "a0"."foo", "a0"."bar" from "author" "a0" where "a0"."_id" = 1 fetch next 1 rows only",
+  ],
+  [
+    "[query] merge into "author" using (select 2 as "_id", 'a2' as "email", 42 as "current_age" from dual) tsource on ("author"."_id" = tsource."_id") when not matched then insert ("_id", "email", "current_age") values (tsource."_id", tsource."email", tsource."current_age") when matched then update set "email" = tsource."email", "current_age" = tsource."current_age"",
+  ],
+  [
+    "[query] select "a0"."_id", "a0"."foo", "a0"."bar" from "author" "a0" where "a0"."_id" = 2 fetch next 1 rows only",
+  ],
+  [
+    "[query] merge into "author" using (select 3 as "_id", 'a3' as "email", 43 as "current_age" from dual) tsource on ("author"."_id" = tsource."_id") when not matched then insert ("_id", "email", "current_age") values (tsource."_id", tsource."email", tsource."current_age") when matched then update set "email" = tsource."email", "current_age" = tsource."current_age"",
+  ],
+  [
+    "[query] select "a0"."_id", "a0"."foo", "a0"."bar" from "author" "a0" where "a0"."_id" = 3 fetch next 1 rows only",
+  ],
+]
+`;
+
+exports[`em.upsert [oracledb] > em.upsert(Type, data) with unique composite property (no additional props) 1`] = `
+[
+  [
+    "[query] merge into "foo_bar" using (select 'fb1' as "name", 1 as "author__id" from dual) tsource on ("foo_bar"."author__id" = tsource."author__id" and "foo_bar"."name" = tsource."name") when not matched then insert ("name", "author__id") values (tsource."name", tsource."author__id")",
+  ],
+  [
+    "[query] select "f0"."_id", "f0"."prop_name" from "foo_bar" "f0" where "f0"."author__id" = 1 and "f0"."name" = 'fb1' fetch next 1 rows only",
+  ],
+  [
+    "[query] merge into "foo_bar" using (select 'fb2' as "name", 2 as "author__id" from dual) tsource on ("foo_bar"."author__id" = tsource."author__id" and "foo_bar"."name" = tsource."name") when not matched then insert ("name", "author__id") values (tsource."name", tsource."author__id")",
+  ],
+  [
+    "[query] select "f0"."_id", "f0"."prop_name" from "foo_bar" "f0" where "f0"."author__id" = 2 and "f0"."name" = 'fb2' fetch next 1 rows only",
+  ],
+  [
+    "[query] merge into "foo_bar" using (select 'fb3' as "name", 3 as "author__id" from dual) tsource on ("foo_bar"."author__id" = tsource."author__id" and "foo_bar"."name" = tsource."name") when not matched then insert ("name", "author__id") values (tsource."name", tsource."author__id")",
+  ],
+  [
+    "[query] select "f0"."_id", "f0"."prop_name" from "foo_bar" "f0" where "f0"."author__id" = 3 and "f0"."name" = 'fb3' fetch next 1 rows only",
+  ],
+]
+`;
+
+exports[`em.upsert [oracledb] > em.upsert(Type, data) with unique composite property (update additional prop) 1`] = `
+[
+  [
+    "[query] merge into "foo_bar" using (select 'fb1' as "name", 1 as "author__id", 'val 1' as "prop_name" from dual) tsource on ("foo_bar"."author__id" = tsource."author__id" and "foo_bar"."name" = tsource."name") when not matched then insert ("name", "author__id", "prop_name") values (tsource."name", tsource."author__id", tsource."prop_name") when matched then update set "prop_name" = tsource."prop_name"",
+  ],
+  [
+    "[query] select "f0"."_id" from "foo_bar" "f0" where "f0"."author__id" = 1 and "f0"."name" = 'fb1' fetch next 1 rows only",
+  ],
+  [
+    "[query] merge into "foo_bar" using (select 'fb2' as "name", 2 as "author__id", 'val 2' as "prop_name" from dual) tsource on ("foo_bar"."author__id" = tsource."author__id" and "foo_bar"."name" = tsource."name") when not matched then insert ("name", "author__id", "prop_name") values (tsource."name", tsource."author__id", tsource."prop_name") when matched then update set "prop_name" = tsource."prop_name"",
+  ],
+  [
+    "[query] select "f0"."_id" from "foo_bar" "f0" where "f0"."author__id" = 2 and "f0"."name" = 'fb2' fetch next 1 rows only",
+  ],
+  [
+    "[query] merge into "foo_bar" using (select 'fb3' as "name", 3 as "author__id", 'val 3' as "prop_name" from dual) tsource on ("foo_bar"."author__id" = tsource."author__id" and "foo_bar"."name" = tsource."name") when not matched then insert ("name", "author__id", "prop_name") values (tsource."name", tsource."author__id", tsource."prop_name") when matched then update set "prop_name" = tsource."prop_name"",
+  ],
+  [
+    "[query] select "f0"."_id" from "foo_bar" "f0" where "f0"."author__id" = 3 and "f0"."name" = 'fb3' fetch next 1 rows only",
+  ],
+]
+`;
+
+exports[`em.upsert [oracledb] > em.upsert(Type, data) with unique property 1`] = `
+[
+  [
+    "[query] merge into "author" using (select 'a1' as "email", 41 as "current_age" from dual) tsource on ("author"."email" = tsource."email") when not matched then insert ("email", "current_age") values (tsource."email", tsource."current_age") when matched then update set "current_age" = tsource."current_age"",
+  ],
+  [
+    "[query] select "a0"."_id", "a0"."foo", "a0"."bar" from "author" "a0" where "a0"."email" = 'a1' fetch next 1 rows only",
+  ],
+  [
+    "[query] merge into "author" using (select 'a2' as "email", 42 as "current_age" from dual) tsource on ("author"."email" = tsource."email") when not matched then insert ("email", "current_age") values (tsource."email", tsource."current_age") when matched then update set "current_age" = tsource."current_age"",
+  ],
+  [
+    "[query] select "a0"."_id", "a0"."foo", "a0"."bar" from "author" "a0" where "a0"."email" = 'a2' fetch next 1 rows only",
+  ],
+  [
+    "[query] merge into "author" using (select 'a3' as "email", 43 as "current_age" from dual) tsource on ("author"."email" = tsource."email") when not matched then insert ("email", "current_age") values (tsource."email", tsource."current_age") when matched then update set "current_age" = tsource."current_age"",
+  ],
+  [
+    "[query] select "a0"."_id", "a0"."foo", "a0"."bar" from "author" "a0" where "a0"."email" = 'a3' fetch next 1 rows only",
+  ],
+]
+`;
+
+exports[`em.upsert [oracledb] > em.upsert(Type, data, options) with advanced options 1`] = `
+[
+  [
+    "[query] merge into "author" using (select 1 as "_id", 'a1' as "email", 41 as "current_age", true as "foo" from dual) tsource on ("author"."email" = tsource."email") when not matched then insert ("_id", "email", "current_age", "foo") values (tsource."_id", tsource."email", tsource."current_age", tsource."foo")",
+  ],
+  [
+    "[query] select "a0"."_id", "a0"."current_age", "a0"."foo", "a0"."bar" from "author" "a0" where "a0"."email" = 'a1' fetch next 1 rows only",
+  ],
+  [
+    "[query] merge into "author" using (select 2 as "_id", 'a2' as "email", 42 as "current_age", true as "foo" from dual) tsource on ("author"."email" = tsource."email") when not matched then insert ("_id", "email", "current_age", "foo") values (tsource."_id", tsource."email", tsource."current_age", tsource."foo") when matched then update set "current_age" = tsource."current_age"",
+  ],
+  [
+    "[query] select "a0"."_id", "a0"."foo", "a0"."bar" from "author" "a0" where "a0"."email" = 'a2' fetch next 1 rows only",
+  ],
+  [
+    "[query] merge into "author" using (select 5 as "_id", 'a3' as "email", 43 as "current_age", true as "foo" from dual) tsource on ("author"."email" = tsource."email") when not matched then insert ("_id", "email", "current_age", "foo") values (tsource."_id", tsource."email", tsource."current_age", tsource."foo") when matched then update set "current_age" = tsource."current_age", "foo" = tsource."foo"",
+  ],
+  [
+    "[query] select "a0"."_id", "a0"."current_age", "a0"."foo", "a0"."bar" from "author" "a0" where "a0"."email" = 'a3' fetch next 1 rows only",
+  ],
+]
+`;
+
+exports[`em.upsert [oracledb] > em.upsert(Type, entity, options) with advanced options 1`] = `
+[
+  [
+    "[query] merge into "author" using (select 1 as "_id", 'a1' as "email", 41 as "current_age", true as "foo", 123 as "bar" from dual) tsource on ("author"."email" = tsource."email") when not matched then insert ("_id", "email", "current_age", "foo", "bar") values (tsource."_id", tsource."email", tsource."current_age", tsource."foo", tsource."bar")",
+  ],
+  [
+    "[query] select "a0"."_id", "a0"."current_age", "a0"."foo", "a0"."bar" from "author" "a0" where "a0"."email" = 'a1' fetch next 1 rows only",
+  ],
+  [
+    "[query] merge into "author" using (select 2 as "_id", 'a2' as "email", 42 as "current_age", true as "foo", 123 as "bar" from dual) tsource on ("author"."email" = tsource."email") when not matched then insert ("_id", "email", "current_age", "foo", "bar") values (tsource."_id", tsource."email", tsource."current_age", tsource."foo", tsource."bar") when matched then update set "current_age" = tsource."current_age"",
+  ],
+  [
+    "[query] select "a0"."_id", "a0"."foo", "a0"."bar" from "author" "a0" where "a0"."email" = 'a2' fetch next 1 rows only",
+  ],
+  [
+    "[query] merge into "author" using (select 5 as "_id", 'a3' as "email", 43 as "current_age", true as "foo", 123 as "bar" from dual) tsource on ("author"."email" = tsource."email") when not matched then insert ("_id", "email", "current_age", "foo", "bar") values (tsource."_id", tsource."email", tsource."current_age", tsource."foo", tsource."bar") when matched then update set "current_age" = tsource."current_age", "foo" = tsource."foo", "bar" = tsource."bar"",
+  ],
+  [
+    "[query] select "a0"."_id", "a0"."current_age", "a0"."foo", "a0"."bar" from "author" "a0" where "a0"."email" = 'a3' fetch next 1 rows only",
+  ],
+]
+`;
+
+exports[`em.upsert [oracledb] > em.upsert(entity) 1`] = `
+[
+  [
+    "[query] merge into "author" using (select 1 as "_id", 'a1' as "email", 41 as "current_age", false as "foo", 123 as "bar" from dual) tsource on ("author"."_id" = tsource."_id") when not matched then insert ("_id", "email", "current_age", "foo", "bar") values (tsource."_id", tsource."email", tsource."current_age", tsource."foo", tsource."bar") when matched then update set "email" = tsource."email", "current_age" = tsource."current_age", "foo" = tsource."foo", "bar" = tsource."bar"",
+  ],
+  [
+    "[query] merge into "author" using (select 2 as "_id", 'a2' as "email", 42 as "current_age", false as "foo", 123 as "bar" from dual) tsource on ("author"."_id" = tsource."_id") when not matched then insert ("_id", "email", "current_age", "foo", "bar") values (tsource."_id", tsource."email", tsource."current_age", tsource."foo", tsource."bar") when matched then update set "email" = tsource."email", "current_age" = tsource."current_age", "foo" = tsource."foo", "bar" = tsource."bar"",
+  ],
+  [
+    "[query] merge into "author" using (select 3 as "_id", 'a3' as "email", 43 as "current_age", false as "foo", 123 as "bar" from dual) tsource on ("author"."_id" = tsource."_id") when not matched then insert ("_id", "email", "current_age", "foo", "bar") values (tsource."_id", tsource."email", tsource."current_age", tsource."foo", tsource."bar") when matched then update set "email" = tsource."email", "current_age" = tsource."current_age", "foo" = tsource."foo", "bar" = tsource."bar"",
+  ],
+]
+`;
+
+exports[`em.upsert [oracledb] > em.upsert(entity) with unique composite property 1`] = `
+[
+  [
+    "[query] merge into "foo_bar" using (select 1 as "_id", 1 as "author__id", 'fb1' as "name", 'val 1' as "prop_name" from dual) tsource on ("foo_bar"."_id" = tsource."_id") when not matched then insert ("_id", "author__id", "name", "prop_name") values (tsource."_id", tsource."author__id", tsource."name", tsource."prop_name") when matched then update set "author__id" = tsource."author__id", "name" = tsource."name", "prop_name" = tsource."prop_name"",
+  ],
+  [
+    "[query] merge into "foo_bar" using (select 2 as "_id", 2 as "author__id", 'fb2' as "name", 'val 2' as "prop_name" from dual) tsource on ("foo_bar"."_id" = tsource."_id") when not matched then insert ("_id", "author__id", "name", "prop_name") values (tsource."_id", tsource."author__id", tsource."name", tsource."prop_name") when matched then update set "author__id" = tsource."author__id", "name" = tsource."name", "prop_name" = tsource."prop_name"",
+  ],
+  [
+    "[query] merge into "foo_bar" using (select 3 as "_id", 3 as "author__id", 'fb3' as "name", 'val 3' as "prop_name" from dual) tsource on ("foo_bar"."_id" = tsource."_id") when not matched then insert ("_id", "author__id", "name", "prop_name") values (tsource."_id", tsource."author__id", tsource."name", tsource."prop_name") when matched then update set "author__id" = tsource."author__id", "name" = tsource."name", "prop_name" = tsource."prop_name"",
+  ],
+]
+`;
+
+exports[`em.upsert [oracledb] > em.upsertMany([entity1, entity2, entity3]) with PK 1`] = `
+[
+  [
+    "[query] merge into "author" using (select 1 as "_id", 'a1' as "email", 41 as "current_age", false as "foo", 123 as "bar" from dual union all select 2 as "_id", 'a2' as "email", 42 as "current_age", false as "foo", 123 as "bar" from dual union all select 3 as "_id", 'a3' as "email", 43 as "current_age", false as "foo", 123 as "bar" from dual) tsource on ("author"."_id" = tsource."_id") when not matched then insert ("_id", "email", "current_age", "foo", "bar") values (tsource."_id", tsource."email", tsource."current_age", tsource."foo", tsource."bar") when matched then update set "email" = tsource."email", "current_age" = tsource."current_age", "foo" = tsource."foo", "bar" = tsource."bar"",
+  ],
+]
+`;
+
+exports[`em.upsert [oracledb] > em.upsertMany([entity1, entity2, entity3]) with unique property 1`] = `
+[
+  [
+    "[query] merge into "author" using (select 'a1' as "email", 41 as "current_age", false as "foo", 123 as "bar" from dual union all select 'a2' as "email", 42 as "current_age", false as "foo", 123 as "bar" from dual union all select 'a3' as "email", 43 as "current_age", false as "foo", 123 as "bar" from dual) tsource on ("author"."email" = tsource."email") when not matched then insert ("email", "current_age", "foo", "bar") values (tsource."email", tsource."current_age", tsource."foo", tsource."bar") when matched then update set "current_age" = tsource."current_age", "foo" = tsource."foo", "bar" = tsource."bar"",
+  ],
+  [
+    "[query] select "a0"."_id", "a0"."email" from "author" "a0" where ("a0"."email" = 'a1' or "a0"."email" = 'a2' or "a0"."email" = 'a3')",
+  ],
+]
+`;
+
+exports[`em.upsert [oracledb] > em.upsertMany(Type, [data], options) with advanced options (ignore) 1`] = `
+[
+  [
+    "[query] merge into "author" using (select 1 as "_id", 'a1' as "email", 41 as "current_age", true as "foo" from dual union all select 2 as "_id", 'a2' as "email", 42 as "current_age", true as "foo" from dual union all select 5 as "_id", 'a3' as "email", 43 as "current_age", true as "foo" from dual) tsource on ("author"."email" = tsource."email") when not matched then insert ("_id", "email", "current_age", "foo") values (tsource."_id", tsource."email", tsource."current_age", tsource."foo")",
+  ],
+  [
+    "[query] select "a0"."_id", "a0"."current_age", "a0"."foo", "a0"."bar", "a0"."email" from "author" "a0" where ("a0"."email" = 'a1' or "a0"."email" = 'a2' or "a0"."email" = 'a3')",
+  ],
+]
+`;
+
+exports[`em.upsert [oracledb] > em.upsertMany(Type, [data], options) with advanced options (onConflictExcludeFields) 1`] = `
+[
+  [
+    "[query] merge into "author" using (select 1 as "_id", 'a1' as "email", 41 as "current_age", true as "foo" from dual union all select 2 as "_id", 'a2' as "email", 42 as "current_age", true as "foo" from dual union all select 5 as "_id", 'a3' as "email", 43 as "current_age", true as "foo" from dual) tsource on ("author"."email" = tsource."email") when not matched then insert ("_id", "email", "current_age", "foo") values (tsource."_id", tsource."email", tsource."current_age", tsource."foo") when matched then update set "current_age" = tsource."current_age", "foo" = tsource."foo"",
+  ],
+  [
+    "[query] select "a0"."_id", "a0"."current_age", "a0"."foo", "a0"."bar", "a0"."email" from "author" "a0" where ("a0"."email" = 'a1' or "a0"."email" = 'a2' or "a0"."email" = 'a3')",
+  ],
+]
+`;
+
+exports[`em.upsert [oracledb] > em.upsertMany(Type, [data], options) with advanced options (onConflictMergeFields) 1`] = `
+[
+  [
+    "[query] merge into "author" using (select 1 as "_id", 'a1' as "email", 41 as "current_age", true as "foo" from dual union all select 2 as "_id", 'a2' as "email", 42 as "current_age", true as "foo" from dual union all select 5 as "_id", 'a3' as "email", 43 as "current_age", true as "foo" from dual) tsource on ("author"."email" = tsource."email") when not matched then insert ("_id", "email", "current_age", "foo") values (tsource."_id", tsource."email", tsource."current_age", tsource."foo") when matched then update set "current_age" = tsource."current_age"",
+  ],
+  [
+    "[query] select "a0"."_id", "a0"."foo", "a0"."bar", "a0"."email" from "author" "a0" where ("a0"."email" = 'a1' or "a0"."email" = 'a2' or "a0"."email" = 'a3')",
+  ],
+]
+`;
+
+exports[`em.upsert [oracledb] > em.upsertMany(Type, [data1, data2, data3]) with PK 1`] = `
+[
+  [
+    "[query] merge into "author" using (select 1 as "_id", 'a1' as "email", 41 as "current_age" from dual union all select 2 as "_id", 'a2' as "email", 42 as "current_age" from dual union all select 3 as "_id", 'a3' as "email", 43 as "current_age" from dual) tsource on ("author"."_id" = tsource."_id") when not matched then insert ("_id", "email", "current_age") values (tsource."_id", tsource."email", tsource."current_age") when matched then update set "email" = tsource."email", "current_age" = tsource."current_age"",
+  ],
+  [
+    "[query] select "a0"."foo", "a0"."bar", "a0"."_id" from "author" "a0" where ("a0"."_id" = 1 or "a0"."_id" = 2 or "a0"."_id" = 3)",
+  ],
+]
+`;
+
+exports[`em.upsert [oracledb] > em.upsertMany(Type, [data1, data2, data3]) with unique property 1`] = `
+[
+  [
+    "[query] merge into "author" using (select 'a1' as "email", 41 as "current_age" from dual union all select 'a2' as "email", 42 as "current_age" from dual union all select 'a3' as "email", 43 as "current_age" from dual) tsource on ("author"."email" = tsource."email") when not matched then insert ("email", "current_age") values (tsource."email", tsource."current_age") when matched then update set "current_age" = tsource."current_age"",
+  ],
+  [
+    "[query] select "a0"."_id", "a0"."foo", "a0"."bar", "a0"."email" from "author" "a0" where ("a0"."email" = 'a1' or "a0"."email" = 'a2' or "a0"."email" = 'a3')",
+  ],
+]
+`;
+
+exports[`em.upsert [oracledb] > em.upsertMany(Type, [entity], options) with advanced options (ignore) 1`] = `
+[
+  [
+    "[query] merge into "author" using (select 1 as "_id", 'a1' as "email", 41 as "current_age", true as "foo", 123 as "bar" from dual union all select 2 as "_id", 'a2' as "email", 42 as "current_age", true as "foo", 123 as "bar" from dual union all select 5 as "_id", 'a3' as "email", 43 as "current_age", true as "foo", 123 as "bar" from dual) tsource on ("author"."email" = tsource."email") when not matched then insert ("_id", "email", "current_age", "foo", "bar") values (tsource."_id", tsource."email", tsource."current_age", tsource."foo", tsource."bar")",
+  ],
+  [
+    "[query] select "a0"."_id", "a0"."current_age", "a0"."foo", "a0"."bar", "a0"."email" from "author" "a0" where ("a0"."email" = 'a1' or "a0"."email" = 'a2' or "a0"."email" = 'a3')",
+  ],
+]
+`;
+
+exports[`em.upsert [oracledb] > em.upsertMany(Type, [entity], options) with advanced options (onConflictExcludeFields) 1`] = `
+[
+  [
+    "[query] merge into "author" using (select 1 as "_id", 'a1' as "email", 41 as "current_age", true as "foo", 123 as "bar" from dual union all select 2 as "_id", 'a2' as "email", 42 as "current_age", true as "foo", 123 as "bar" from dual union all select 5 as "_id", 'a3' as "email", 43 as "current_age", true as "foo", 123 as "bar" from dual) tsource on ("author"."email" = tsource."email") when not matched then insert ("_id", "email", "current_age", "foo", "bar") values (tsource."_id", tsource."email", tsource."current_age", tsource."foo", tsource."bar") when matched then update set "current_age" = tsource."current_age", "foo" = tsource."foo", "bar" = tsource."bar"",
+  ],
+  [
+    "[query] select "a0"."_id", "a0"."current_age", "a0"."foo", "a0"."bar", "a0"."email" from "author" "a0" where ("a0"."email" = 'a1' or "a0"."email" = 'a2' or "a0"."email" = 'a3')",
+  ],
+]
+`;
+
+exports[`em.upsert [oracledb] > em.upsertMany(Type, [entity], options) with advanced options (onConflictMergeFields) 1`] = `
+[
+  [
+    "[query] merge into "author" using (select 1 as "_id", 'a1' as "email", 41 as "current_age", true as "foo", 123 as "bar" from dual union all select 2 as "_id", 'a2' as "email", 42 as "current_age", true as "foo", 123 as "bar" from dual union all select 5 as "_id", 'a3' as "email", 43 as "current_age", true as "foo", 123 as "bar" from dual) tsource on ("author"."email" = tsource."email") when not matched then insert ("_id", "email", "current_age", "foo", "bar") values (tsource."_id", tsource."email", tsource."current_age", tsource."foo", tsource."bar") when matched then update set "current_age" = tsource."current_age"",
+  ],
+  [
+    "[query] select "a0"."_id", "a0"."foo", "a0"."bar", "a0"."email" from "author" "a0" where ("a0"."email" = 'a1' or "a0"."email" = 'a2' or "a0"."email" = 'a3')",
+  ],
+]
+`;
+
 exports[`em.upsert [postgresql] > em.upsert(Type, data) with PK 1`] = `
 [
   [
