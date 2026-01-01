@@ -102,8 +102,8 @@
     "yarn": ">=3.2.0"
   },
   "devDependencies": {
-    "@commitlint/cli": "20.2.0",
-    "@commitlint/config-conventional": "20.2.0",
+    "@commitlint/cli": "20.3.0",
+    "@commitlint/config-conventional": "20.3.0",
     "@eslint/js": "^9.19.0",
     "@mikro-orm/mongo-highlighter": "1.0.0",
     "@mikro-orm/sql-highlighter": "1.0.1",
@@ -137,7 +137,7 @@
     "ts-jest": "29.2.0",
     "ts-node": "10.9.2",
     "typescript": "5.9.3",
-    "typescript-eslint": "8.50.1",
+    "typescript-eslint": "8.51.0",
     "uuid": "11.1.0"
   },
   "packageManager": "yarn@4.12.0"
