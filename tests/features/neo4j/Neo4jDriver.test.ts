@@ -11,13 +11,7 @@ import {
   type EntityManager,
   Reference,
 } from '@mikro-orm/core';
-import {
-  MikroORM,
-  Node,
-  Rel,
-  Field,
-  RelationshipProperties,
-} from '@mikro-orm/neo4j';
+import { MikroORM, Node, Rel, RelationshipProperties } from '@mikro-orm/neo4j';
 const Neo4jMikroORM = MikroORM;
 // Traditional decorators
 @Entity()
@@ -79,13 +73,13 @@ class Tag {
 @Node()
 class Person {
 
-  @Field({ primary: true })
+  @Property({ primary: true })
   id: string = crypto.randomUUID();
 
-  @Field()
+  @Property()
   name!: string;
 
-  @Field()
+  @Property()
   age!: number;
 
   @ManyToOne(() => Person, {
@@ -106,16 +100,16 @@ class Person {
 @Node({ labels: ['Employee', 'Manager'] })
 class Executive {
 
-  @Field({ primary: true })
+  @Property({ primary: true })
   id: string = crypto.randomUUID();
 
-  @Field()
+  @Property()
   name!: string;
 
-  @Field()
+  @Property()
   title!: string;
 
-  @Field()
+  @Property()
   department!: string;
 
 }
@@ -173,13 +167,13 @@ class ProductWithCategory {
 @Node()
 class Actor {
 
-  @Field({ primary: true })
+  @Property({ primary: true })
   id: string = crypto.randomUUID();
 
-  @Field()
+  @Property()
   name!: string;
 
-  @Field()
+  @Property()
   born!: number;
 
   @ManyToMany(() => Movie, undefined, {
@@ -202,13 +196,13 @@ class Actor {
 @Node()
 class Movie {
 
-  @Field({ primary: true })
+  @Property({ primary: true })
   id: string = crypto.randomUUID();
 
-  @Field()
+  @Property()
   title!: string;
 
-  @Field()
+  @Property()
   released!: number;
 
   @Property({ nullable: true })
@@ -224,16 +218,16 @@ class Movie {
 @Node()
 class Series {
 
-  @Field({ primary: true })
+  @Property({ primary: true })
   id: string = crypto.randomUUID();
 
-  @Field()
+  @Property()
   title!: string;
 
-  @Field()
+  @Property()
   released!: number;
 
-  @Field()
+  @Property()
   episodes!: number;
 
   @ManyToMany(() => Actor, actor => actor.series)
@@ -283,13 +277,13 @@ class ActedInSeries {
 @Node()
 class User {
 
-  @Field({ primary: true })
+  @Property({ primary: true })
   id: string = crypto.randomUUID();
 
-  @Field()
+  @Property()
   username!: string;
 
-  @Field()
+  @Property()
   email!: string;
 
   @ManyToMany(() => User, undefined, {
@@ -806,7 +800,7 @@ describe('Neo4j driver (MVP)', () => {
 
   describe('Real World Scenarios', () => {
     // Scenario 1: Virtual Entity (UserProgressView)
-    test('virtual entity with aggregations and computed fields', async () => {
+    test('virtual entity with aggregations and computed Propertys', async () => {
       // Create test data
       const user1 = orm.em.create(Category, { categoryName: 'User1' });
       const user2 = orm.em.create(Category, { categoryName: 'User2' });
@@ -2870,7 +2864,10 @@ describe('Neo4j driver (MVP)', () => {
         const qb = orm.em.createQueryBuilder(User);
         const { cypher } = qb
           .match()
-          .related(FriendsWith, { direction: 'right', properties: { since: 2020 } })
+          .related(FriendsWith, {
+            direction: 'right',
+            properties: { since: 2020 },
+          })
           .return(['name'])
           .build();
 
@@ -2882,8 +2879,14 @@ describe('Neo4j driver (MVP)', () => {
 
       test('should execute queries with relationship entity class', async () => {
         // Create test data
-        const user1 = orm.em.create(User, { username: 'testuser1', email: 'test1@example.com' });
-        const user2 = orm.em.create(User, { username: 'testuser2', email: 'test2@example.com' });
+        const user1 = orm.em.create(User, {
+          username: 'testuser1',
+          email: 'test1@example.com',
+        });
+        const user2 = orm.em.create(User, {
+          username: 'testuser2',
+          email: 'test2@example.com',
+        });
         const friendship = orm.em.create(FriendsWith, {
           user1,
           user2,

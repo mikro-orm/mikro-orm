@@ -1,5 +1,5 @@
 import { type EntityMetadata, type EntityProperty, ReferenceKind } from '@mikro-orm/core';
-import { getRelationshipMetadata } from './decorators';
+import { getRelationshipMetadata } from './utils/getRelationshipMetadata';
 
 /**
  * Utility class for extracting Neo4j-specific metadata from MikroORM entity decorators.

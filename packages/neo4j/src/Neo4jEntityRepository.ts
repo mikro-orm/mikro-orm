@@ -2,13 +2,21 @@ import { EntityRepository, type EntityName } from '@mikro-orm/core';
 import type { Neo4jEntityManager } from './Neo4jEntityManager';
 import { Neo4jQueryBuilder } from './Neo4jQueryBuilder';
 
-export class Neo4jEntityRepository<T extends object> extends EntityRepository<T> {
+export class Neo4jEntityRepository<
+  T extends object
+> extends EntityRepository<T> {
 
-  constructor(protected override readonly em: Neo4jEntityManager, entityName: EntityName<T>) {
+  constructor(
+    protected override readonly em: Neo4jEntityManager,
+    entityName: EntityName<T>,
+  ) {
     super(em, entityName);
   }
 
-  async run<R = any>(cypher: string, params?: Record<string, unknown>): Promise<R[]> {
+  async run<R = any>(
+    cypher: string,
+    params?: Record<string, unknown>,
+  ): Promise<R[]> {
     return this.getEntityManager().run<R>(cypher, params);
   }
 
@@ -42,7 +50,7 @@ export class Neo4jEntityRepository<T extends object> extends EntityRepository<T>
    *   .execute();
    * ```
    */
-  createQueryBuilder(): Neo4jQueryBuilder<T> {
+  createQueryBuilder(alias: string): Neo4jQueryBuilder<T> {
     return new Neo4jQueryBuilder<T>(this.entityName, this.em);
   }
 
