@@ -1,4 +1,20 @@
 services:
+  neo4j:
+    image: neo4j:5.25
+    restart: unless-stopped
+    ports:
+      - "7687:7687"
+      - "7474:7474"
+    environment:
+      NEO4J_AUTH: neo4j/testtest
+      NEO4J_dbms_default__listen__address: 0.0.0.0
+      NEO4J_dbms_default__advertised__address: localhost
+    healthcheck:
+      test: ["CMD", "neo4j", "status"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
   mongo:
     image: mongo:8.2
     expose:
