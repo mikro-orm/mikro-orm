@@ -641,7 +641,6 @@ export class MetadataDiscovery {
         const meta2 = prop.targetMeta ?? this.metadata.get(prop.target);
         prop[type] = value(meta2.properties)?.name;
 
-        // FIXME should we do this for mappedBy/inversedBy too? there it would duplicate the `targetMeta` basically
         if (type === 'pivotEntity' && value) {
           prop[type] = value(meta2.properties);
         }

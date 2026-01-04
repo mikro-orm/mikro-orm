@@ -91,15 +91,15 @@ export class EntityTransformer {
         continue;
       }
 
-      const populated = root.isMarkedAsPopulated(meta.className, prop);
-      const partiallyLoaded = root.isPartiallyLoaded(meta.className, prop);
+      const populated = root.isMarkedAsPopulated(meta.class, prop);
+      const partiallyLoaded = root.isPartiallyLoaded(meta.class, prop);
       const isPrimary = includePrimaryKeys && meta.properties[prop].primary;
 
       if (!partiallyLoaded && !populated && !isPrimary) {
         continue;
       }
 
-      const cycle = root.visit(meta.className, prop);
+      const cycle = root.visit(meta.class, prop);
 
       if (cycle && visited) {
         continue;
@@ -108,7 +108,7 @@ export class EntityTransformer {
       const val = EntityTransformer.processProperty<Entity>(prop, entity, raw, populated);
 
       if (!cycle) {
-        root.leave(meta.className, prop);
+        root.leave(meta.class, prop);
       }
 
       if (isRaw(val)) {
@@ -130,7 +130,7 @@ export class EntityTransformer {
       // decorated get methods
       if (prop.getterName != null) {
         const visible = !prop.hidden && entity[prop.getterName] instanceof Function;
-        const populated = root.isMarkedAsPopulated(meta.className, prop.name);
+        const populated = root.isMarkedAsPopulated(meta.class, prop.name);
 
         if (visible) {
           ret[this.propertyName(meta, prop.name, raw)] = this.processProperty(prop.getterName as EntityKey, entity, raw, populated);
@@ -138,7 +138,7 @@ export class EntityTransformer {
       } else {
         // decorated getters
         const visible = !prop.hidden && typeof entity[prop.name] !== 'undefined';
-        const populated = root.isMarkedAsPopulated(meta.className, prop.name);
+        const populated = root.isMarkedAsPopulated(meta.class, prop.name);
 
         if (visible) {
           ret[this.propertyName(meta, prop.name, raw) as any] = this.processProperty(prop.name, entity, raw, populated);

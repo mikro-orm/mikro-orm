@@ -52,20 +52,14 @@ export class MetadataValidator {
       throw MetadataError.noEntityDiscovered();
     }
 
-    const duplicates = Utils.findDuplicates(discovered.map(meta => meta.className));
-
-    if (duplicates.length > 0 && options.checkDuplicateEntities) {
-      throw MetadataError.duplicateEntityDiscovered(duplicates);
-    }
-
     const tableNames = discovered.filter(meta => !meta.abstract && meta === meta.root && (meta.tableName || meta.collection) && meta.schema !== '*');
     const duplicateTableNames = Utils.findDuplicates(tableNames.map(meta => {
       const tableName = meta.tableName || meta.collection;
       return (meta.schema ? '.' + meta.schema : '') + tableName;
     }));
 
-    if (duplicateTableNames.length > 0 && options.checkDuplicateTableNames && options.checkDuplicateEntities) {
-      throw MetadataError.duplicateEntityDiscovered(duplicateTableNames, 'table names');
+    if (duplicateTableNames.length > 0 && options.checkDuplicateTableNames) {
+      throw MetadataError.duplicateEntityDiscovered(duplicateTableNames);
     }
 
     // validate we found at least one entity (not just abstract/base entities)

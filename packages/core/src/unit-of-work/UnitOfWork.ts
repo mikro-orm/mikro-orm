@@ -541,14 +541,14 @@ export class UnitOfWork {
 
     for (const cs of this.changeSets.values()) {
       if (cs.type === ChangeSetType.CREATE) {
-        inserts[cs.meta.className] ??= [];
-        inserts[cs.meta.className].push(cs);
+        inserts[cs.meta.uniqueName] ??= [];
+        inserts[cs.meta.uniqueName].push(cs);
       }
     }
 
     for (const cs of this.changeSets.values()) {
       if (cs.type === ChangeSetType.UPDATE) {
-        this.findEarlyUpdates(cs, inserts[cs.meta.className]);
+        this.findEarlyUpdates(cs, inserts[cs.meta.uniqueName]);
       }
     }
 
@@ -563,7 +563,7 @@ export class UnitOfWork {
       const deletePkHash = [wrapped.getSerializedPrimaryKey(), ...this.expandUniqueProps(entity)];
       let type = ChangeSetType.DELETE;
 
-      for (const cs of inserts[wrapped.__meta.className] ?? []) {
+      for (const cs of inserts[wrapped.__meta.uniqueName] ?? []) {
         if (deletePkHash.some(hash => hash === cs.getSerializedPrimaryKey() || this.expandUniqueProps(cs.entity).find(child => hash === child))) {
           type = ChangeSetType.DELETE_EARLY;
         }

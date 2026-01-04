@@ -249,8 +249,8 @@ export class MetadataError<T extends AnyEntity = AnyEntity> extends ValidationEr
     return new MetadataError('Only abstract entities were discovered, maybe you forgot to use @Entity() decorator? This can also happen when you have multiple `@mikro-orm/core` packages installed side by side.');
   }
 
-  static duplicateEntityDiscovered(paths: string[], subject = 'entity names'): MetadataError {
-    return new MetadataError(`Duplicate ${subject} are not allowed: ${paths.join(', ')}`);
+  static duplicateEntityDiscovered(paths: string[]): MetadataError {
+    return new MetadataError(`Duplicate table names are not allowed: ${paths.join(', ')}`);
   }
 
   static duplicateFieldName(entityName: EntityName, names: [string, string][]): MetadataError {

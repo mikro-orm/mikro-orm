@@ -20,13 +20,16 @@ export class MetadataStorage {
   private readonly metadata = new Map<EntityName, EntityMetadata>();
   private readonly idMap: Record<number, EntityMetadata>;
   private readonly classNameMap: Record<string, EntityMetadata>;
+  private readonly uniqueNameMap: Record<string, EntityMetadata>;
 
   constructor(metadata: Dictionary<EntityMetadata> = {}) {
     this.idMap = {};
+    this.uniqueNameMap = {};
     this.classNameMap = Utils.copy(metadata, false);
 
     for (const meta of Object.values(this.classNameMap)) {
       this.idMap[meta._id] = meta;
+      this.uniqueNameMap[meta.uniqueName] = meta;
       this.metadata.set(meta.class, meta);
     }
   }
@@ -103,6 +106,7 @@ export class MetadataStorage {
   set<T>(entityName: EntityName<T>, meta: EntityMetadata): EntityMetadata {
     this.metadata.set(entityName, meta);
     this.idMap[meta._id] = meta;
+    this.uniqueNameMap[meta.uniqueName] = meta;
     this.classNameMap[Utils.className(entityName)] = meta;
 
     return meta;
@@ -114,6 +118,7 @@ export class MetadataStorage {
     if (meta) {
       this.metadata.delete(meta.class);
       delete this.idMap[meta._id];
+      delete this.uniqueNameMap[meta.uniqueName];
       delete this.classNameMap[meta.className];
     }
   }
@@ -138,11 +143,26 @@ export class MetadataStorage {
     className: string,
     validate = true as V,
   ): V extends true ? EntityMetadata<T> : EntityMetadata<T> | undefined {
-    if (validate && !(className in this.classNameMap)) {
-      throw MetadataError.missingMetadata(className);
+    return this.validate(this.classNameMap[className], className, validate);
+  }
+
+  getByUniqueName<T = any, V extends boolean = true>(
+    uniqueName: string,
+    validate = true as V,
+  ): V extends true ? EntityMetadata<T> : EntityMetadata<T> | undefined {
+    return this.validate(this.uniqueNameMap[uniqueName], uniqueName, validate);
+  }
+
+  private validate<T = any, V extends boolean = true>(
+    meta: EntityMetadata | undefined,
+    id: string,
+    validate: boolean,
+  ): V extends true ? EntityMetadata<T> : EntityMetadata<T> | undefined {
+    if (!meta && validate) {
+      throw MetadataError.missingMetadata(id);
     }
 
-    return this.classNameMap[className];
+    return meta as any;
   }
 
 }

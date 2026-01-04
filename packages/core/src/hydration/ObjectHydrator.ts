@@ -1,4 +1,4 @@
-import type { EntityData, EntityMetadata, EntityProperty } from '../typings.js';
+import type { EntityData, EntityMetadata, EntityName, EntityProperty } from '../typings.js';
 import { Hydrator } from './Hydrator.js';
 import { Collection } from '../entity/Collection.js';
 import { Reference, ScalarReference } from '../entity/Reference.js';
@@ -12,10 +12,10 @@ type EntityHydrator<T extends object> = (entity: T, data: EntityData<T>, factory
 export class ObjectHydrator extends Hydrator {
 
   private readonly hydrators = {
-    'full~true': new Map<string, EntityHydrator<any>>(),
-    'full~false': new Map<string, EntityHydrator<any>>(),
-    'reference~true': new Map<string, EntityHydrator<any>>(),
-    'reference~false': new Map<string, EntityHydrator<any>>(),
+    'full~true': new Map<EntityName, EntityHydrator<any>>(),
+    'full~false': new Map<EntityName, EntityHydrator<any>>(),
+    'reference~true': new Map<EntityName, EntityHydrator<any>>(),
+    'reference~false': new Map<EntityName, EntityHydrator<any>>(),
   };
 
   private tmpIndex = 0;
@@ -49,7 +49,7 @@ export class ObjectHydrator extends Hydrator {
    */
   getEntityHydrator<T extends object>(meta: EntityMetadata<T>, type: 'full' | 'reference', normalizeAccessors = false): EntityHydrator<T> {
     const key = `${type}~${normalizeAccessors}` as const;
-    const exists = this.hydrators[key].get(meta.className);
+    const exists = this.hydrators[key].get(meta.class);
 
     if (exists) {
       return exists;
@@ -169,23 +169,21 @@ export class ObjectHydrator extends Hydrator {
       ret.push(`  if (data${dataKey} === null) {\n    entity${entityKey} = ${nullVal};`);
       ret.push(`  } else if (typeof data${dataKey} !== 'undefined') {`);
       ret.push(`    if (isPrimaryKey(data${dataKey}, true)) {`);
-      // FIXME we need to make sure this works if class names are not unique,
-      //  e.g. we always use meta.className and ensure it is unique during discovery,
-      //  or use some other unique class name
-      context.set(prop.type, prop.targetMeta!.class);
+      const targetKey = this.safeKey(`${prop.targetMeta!.tableName}_${this.tmpIndex++}`);
+      context.set(targetKey, prop.targetMeta!.class);
 
       if (prop.ref) {
-        ret.push(`      entity${entityKey} = Reference.create(factory.createReference(${prop.type}, data${dataKey}, { merge: true, convertCustomTypes, normalizeAccessors, schema }));`);
+        ret.push(`      entity${entityKey} = Reference.create(factory.createReference(${targetKey}, data${dataKey}, { merge: true, convertCustomTypes, normalizeAccessors, schema }));`);
       } else {
-        ret.push(`      entity${entityKey} = factory.createReference(${prop.type}, data${dataKey}, { merge: true, convertCustomTypes, normalizeAccessors, schema });`);
+        ret.push(`      entity${entityKey} = factory.createReference(${targetKey}, data${dataKey}, { merge: true, convertCustomTypes, normalizeAccessors, schema });`);
       }
 
       ret.push(`    } else if (data${dataKey} && typeof data${dataKey} === 'object') {`);
 
       if (prop.ref) {
-        ret.push(`      entity${entityKey} = Reference.create(factory.${method}(${prop.type}, data${dataKey}, { initialized: true, merge: true, newEntity, convertCustomTypes, normalizeAccessors, schema }));`);
+        ret.push(`      entity${entityKey} = Reference.create(factory.${method}(${targetKey}, data${dataKey}, { initialized: true, merge: true, newEntity, convertCustomTypes, normalizeAccessors, schema }));`);
       } else {
-        ret.push(`      entity${entityKey} = factory.${method}(${prop.type}, data${dataKey}, { initialized: true, merge: true, newEntity, convertCustomTypes, normalizeAccessors, schema });`);
+        ret.push(`      entity${entityKey} = factory.${method}(${targetKey}, data${dataKey}, { initialized: true, merge: true, newEntity, convertCustomTypes, normalizeAccessors, schema });`);
       }
 
       ret.push(`    }`);
@@ -342,9 +340,10 @@ export class ObjectHydrator extends Hydrator {
           ret.push(`    }`);
         });
       } else {
-        context.set(prop.targetMeta!.className, prop.targetMeta!.class);
+        const targetKey = this.safeKey(`${prop.targetMeta!.tableName}_${this.tmpIndex++}`);
+        context.set(targetKey, prop.targetMeta!.class);
         ret.push(`    if (entity${entityKey} == null) {`);
-        ret.push(`      entity${entityKey} = factory.createEmbeddable(${prop.targetMeta!.className}, embeddedData, { newEntity, convertCustomTypes, normalizeAccessors });`);
+        ret.push(`      entity${entityKey} = factory.createEmbeddable(${targetKey}, embeddedData, { newEntity, convertCustomTypes, normalizeAccessors });`);
         ret.push(`    }`);
 
         meta.props
@@ -426,7 +425,7 @@ export class ObjectHydrator extends Hydrator {
       + `return function(entity, data, factory, newEntity, convertCustomTypes, schema, parentSchema, normalizeAccessors) {\n`
       + `${lines.join('\n')}\n}`;
     const hydrator = Utils.createFunction(context, code);
-    this.hydrators[key].set(meta.className, hydrator);
+    this.hydrators[key].set(meta.class, hydrator);
 
     return hydrator;
   }
@@ -444,11 +443,12 @@ export class ObjectHydrator extends Hydrator {
       lines.push(`    }`);
     }
 
-    context.set(prop.type, prop.targetMeta!.class);
-    lines.push(`    if (isPrimaryKey(value, ${meta.compositePK})) return factory.createReference(${prop.type}, value, { convertCustomTypes, schema, normalizeAccessors, merge: true });`);
+    const targetKey = this.safeKey(`${prop.targetMeta!.tableName}_${this.tmpIndex++}`);
+    context.set(targetKey, prop.targetMeta!.class);
+    lines.push(`    if (isPrimaryKey(value, ${meta.compositePK})) return factory.createReference(${targetKey}, value, { convertCustomTypes, schema, normalizeAccessors, merge: true });`);
     lines.push(`    if (value && value.__entity) return value;`);
 
-    lines.push(`    return factory.create(${prop.type}, value, { newEntity, convertCustomTypes, schema, normalizeAccessors, merge: true });`);
+    lines.push(`    return factory.create(${targetKey}, value, { newEntity, convertCustomTypes, schema, normalizeAccessors, merge: true });`);
     lines.push(`  }`);
 
     return lines;

@@ -651,6 +651,10 @@ export class EntityMetadata<T = any> {
     this.collection = name;
   }
 
+  get uniqueName(): string {
+    return this.tableName + '_' + this._id;
+  }
+
   sync(initIndexes = false, config?: Configuration) {
     this.root ??= this;
     const props = Object.values<EntityProperty<T>>(this.properties).sort((a, b) => this.propertyOrder.get(a.name)! - this.propertyOrder.get(b.name)!);
@@ -678,7 +682,7 @@ export class EntityMetadata<T = any> {
       return !prop.getter && !prop.setter && [ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind);
     });
     this.selfReferencing = this.relations.some(prop => {
-      return [this.className, this.root.className].includes(prop.targetMeta?.root.className ?? prop.type);
+      return this.root.uniqueName === prop.targetMeta?.root.uniqueName;
     });
     this.hasUniqueProps = this.uniques.length + this.uniqueProps.length > 0;
     this.virtual = !!this.expression;

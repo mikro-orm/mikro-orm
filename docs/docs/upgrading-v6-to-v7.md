@@ -72,6 +72,8 @@ This applies to entity definition too.
 +@ManyToOne(() => User)
 ```
 
+Also, the `checkDuplicateEntities` discovery option is removed, since it is no longer relevant. As long as your entities have unique table names, they are valid.
+
 ## TypeScript support in CLI
 
 TypeScript support was previously provided by `ts-node`. In v7, the CLI supports various TS loaders:

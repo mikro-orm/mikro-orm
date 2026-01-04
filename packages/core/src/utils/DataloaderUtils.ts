@@ -20,7 +20,7 @@ export class DataloaderUtils {
   ): Map<string, Set<Primary<any>>> {
     const map = new Map<string, Set<Primary<any>>>();
     for (const [ref, opts] of refsWithOpts) {
-      /* The key is a combination of the className and a stringified version if the load options because we want
+      /* The key is a combination of the uniqueName (a unique table name based identifier) and a stringified version if the load options because we want
          to map each combination of entities/options into separate find queries in order to return accurate results.
          This could be further optimized finding the "lowest common denominator" among the different options
          for each Entity and firing a single query for each Entity instead of Entity+options combination.
@@ -33,7 +33,7 @@ export class DataloaderUtils {
          Thus such approach should probably be configurable, if not opt-in.
          NOTE: meta + opts multi maps (https://github.com/martian17/ds-js) might be a more elegant way
          to implement this but not necessarily faster.  */
-      const key = `${helper(ref).__meta.className}|${JSON.stringify(opts ?? {})}`;
+      const key = `${helper(ref).__meta.uniqueName}|${JSON.stringify(opts ?? {})}`;
       let primaryKeysSet = map.get(key);
       if (primaryKeysSet == null) {
         primaryKeysSet = new Set();
@@ -53,9 +53,9 @@ export class DataloaderUtils {
       const groupedIdsMap = DataloaderUtils.groupPrimaryKeysByEntityAndOpts(refsWithOpts);
       const promises = Array.from(groupedIdsMap).map(
         ([key, idsSet]) => {
-          const className = key.substring(0, key.indexOf('|'));
+          const uniqueName = key.substring(0, key.indexOf('|'));
           const opts = JSON.parse(key.substring(key.indexOf('|') + 1));
-          const meta = em.getMetadata().getByClassName<any>(className);
+          const meta = em.getMetadata().getByUniqueName(uniqueName);
           return em.find(meta.class, Array.from(idsSet), opts);
         },
       );
@@ -86,7 +86,7 @@ export class DataloaderUtils {
       The value is another Map which we can use to filter the find query to get results pertaining to the collections that have been dataloaded:
       its keys are the props we are going to filter to and its values are the corresponding PKs.
       */
-      const key = `${col.property.targetMeta!.className}|${JSON.stringify(opts ?? {})}`;
+      const key = `${col.property.targetMeta!.uniqueName}|${JSON.stringify(opts ?? {})}`;
       let filterMap = entitiesMap.get(key); // We are going to use this map to filter the entities pertaining to the collections that have been dataloaded.
       if (filterMap == null) {
         filterMap = new Map<string, Set<Primary<any>>>();
@@ -117,10 +117,10 @@ export class DataloaderUtils {
     em: EntityManager,
   ): Promise<[string, any[]]>[] {
     return Array.from(entitiesAndOptsMap, async ([key, filterMap]): Promise<[string, any[]]> => {
-      const className = key.substring(0, key.indexOf('|'));
+      const uniqueName = key.substring(0, key.indexOf('|'));
       const opts: Omit<InitCollectionOptions<any, any>, 'dataloader'> = JSON.parse(key.substring(key.indexOf('|') + 1));
-      const meta = em.getMetadata().getByClassName<any>(className);
-      const res = await em.find<any>(
+      const meta = em.getMetadata().getByUniqueName(uniqueName);
+      const res = await em.find(
         meta.class,
         opts?.where != null && Object.keys(opts.where).length > 0 ?
           {
@@ -192,7 +192,7 @@ export class DataloaderUtils {
       // We need to filter the results in order to map each input collection
       // to a subset of each query matching the collection items.
       return collsWithOpts.map(([col, opts]) => {
-        const key = `${col.property.targetMeta!.className}|${JSON.stringify(opts ?? {})}`;
+        const key = `${col.property.targetMeta!.uniqueName}|${JSON.stringify(opts ?? {})}`;
         const entities = resultsMap.get(key);
         if (entities == null) {
           // Should never happen
@@ -213,7 +213,7 @@ export class DataloaderUtils {
       const groups = new Map<string, [Collection<any>, Omit<InitCollectionOptions<any, any>, 'dataloader'>?][]>();
 
       for (const [col, opts] of collsWithOpts) {
-        const key = `${col.property.targetMeta!.className}.${col.property.name}|${JSON.stringify(opts ?? {})}`;
+        const key = `${col.property.targetMeta!.uniqueName}.${col.property.name}|${JSON.stringify(opts ?? {})}`;
         const value = groups.get(key) ?? [];
         value.push([col, opts ?? {}]);
         groups.set(key, value);

@@ -1,4 +1,4 @@
-import type { AnyEntity, EntityMetadata, PopulateOptions } from '../typings.js';
+import type { AnyEntity, EntityMetadata, EntityName, PopulateOptions } from '../typings.js';
 import { Utils } from '../utils/Utils.js';
 import { helper } from '../entity/wrap.js';
 import type { Configuration } from '../utils/Configuration.js';
@@ -10,7 +10,7 @@ import type { Configuration } from '../utils/Configuration.js';
  */
 export class SerializationContext<T extends object> {
 
-  readonly path: [string, string][] = [];
+  readonly path: [EntityName, string][] = [];
   readonly visited = new Set<AnyEntity>();
   private entities = new Set<AnyEntity>();
 
@@ -22,7 +22,7 @@ export class SerializationContext<T extends object> {
   /**
    * Returns true when there is a cycle detected.
    */
-  visit(entityName: string, prop: string): boolean {
+  visit(entityName: EntityName, prop: string): boolean {
     if (!this.path.find(([cls, item]) => entityName === cls && prop === item)) {
       this.path.push([entityName, prop]);
       return false;
@@ -37,7 +37,7 @@ export class SerializationContext<T extends object> {
     return false;
   }
 
-  leave<U>(entityName: string, prop: string) {
+  leave(entityName: EntityName, prop: string) {
     const last = this.path.pop();
 
     /* v8 ignore next */
@@ -84,7 +84,7 @@ export class SerializationContext<T extends object> {
     }
   }
 
-  isMarkedAsPopulated(entityName: string, prop: string): boolean {
+  isMarkedAsPopulated(entityName: EntityName, prop: string): boolean {
     let populate: PopulateOptions<T>[] = this.populate ?? [];
 
     for (const segment of this.path) {
@@ -111,7 +111,7 @@ export class SerializationContext<T extends object> {
     return !!populate?.some(p => p.field === prop);
   }
 
-  isPartiallyLoaded(entityName: string, prop: string): boolean {
+  isPartiallyLoaded(entityName: EntityName, prop: string): boolean {
     if (!this.fields) {
       return true;
     }

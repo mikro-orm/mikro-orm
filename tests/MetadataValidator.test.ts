@@ -9,7 +9,6 @@ describe('MetadataValidator', () => {
     checkDuplicateTableNames: true,
     checkDuplicateFieldNames: true,
     checkNonPersistentCompositeProps: true,
-    checkDuplicateEntities: true,
     inferDefaultValues: true,
   } satisfies MetadataDiscoveryOptions;
 
@@ -216,57 +215,7 @@ describe('MetadataValidator', () => {
   });
 
   describe('Duplicate Entity Strategy', () => {
-    test('allows duplicate classNames when "checkDuplicateEntities" is "false"', async () => {
-      // Arrange
-      const properties: Dictionary = {
-        id: { kind: 'scalar', primary: true, name: 'id', type: 'number' },
-        name: { kind: 'scalar', name: 'name', type: 'string' },
-        age: { kind: 'scalar', name: 'age', type: 'string' },
-      };
-      const schema1 = EntitySchema.fromMetadata({
-        name: 'Foo1',
-        tableName: 'foo',
-        properties,
-      } as any);
-      const schema2 = EntitySchema.fromMetadata({
-        name: 'Foo1',
-        tableName: 'foo2',
-        properties,
-      } as any);
-
-      // Act
-      const validateDiscoveryCommand = () => validator.validateDiscovered([schema1.meta, schema2.meta], { ...options, warnWhenNoEntities: true, checkDuplicateTableNames: true, checkDuplicateEntities: false });
-
-      // Assert
-      expect(validateDiscoveryCommand).not.toThrow();
-    });
-
-    test('allows duplicate tableNames when "checkDuplicateTableNames" is true but "checkDuplicateEntities" is false', async () => {
-      // Arrange
-      const properties: Dictionary = {
-        id: { kind: 'scalar', primary: true, name: 'id', type: 'number' },
-        name: { kind: 'scalar', name: 'name', type: 'string' },
-        age: { kind: 'scalar', name: 'age', type: 'string' },
-      };
-      const schema1 = EntitySchema.fromMetadata({
-        name: 'Foo1',
-        tableName: 'foo',
-        properties,
-      } as any);
-      const schema2 = EntitySchema.fromMetadata({
-        name: 'Foo1',
-        tableName: 'foo2',
-        properties,
-      } as any);
-
-      // Act
-      const validateDiscoveryCommand = () => validator.validateDiscovered([schema1.meta, schema2.meta], { ...options, warnWhenNoEntities: true, checkDuplicateTableNames: true, checkDuplicateEntities: false });
-
-      // Assert
-      expect(validateDiscoveryCommand).not.toThrow();
-    });
-
-    test('throws an error when duplicate entity is not provided', async () => {
+    test('allows duplicate classNames', async () => {
       // Arrange
       const properties: Dictionary = {
         id: { kind: 'scalar', primary: true, name: 'id', type: 'number' },
@@ -288,7 +237,32 @@ describe('MetadataValidator', () => {
       const validateDiscoveryCommand = () => validator.validateDiscovered([schema1.meta, schema2.meta], { ...options, warnWhenNoEntities: true, checkDuplicateTableNames: true });
 
       // Assert
-      expect(validateDiscoveryCommand).toThrow('Duplicate entity names are not allowed: Foo1');
+      expect(validateDiscoveryCommand).not.toThrow();
+    });
+
+    test('allows duplicate tableNames when "checkDuplicateTableNames" is true', async () => {
+      // Arrange
+      const properties: Dictionary = {
+        id: { kind: 'scalar', primary: true, name: 'id', type: 'number' },
+        name: { kind: 'scalar', name: 'name', type: 'string' },
+        age: { kind: 'scalar', name: 'age', type: 'string' },
+      };
+      const schema1 = EntitySchema.fromMetadata({
+        name: 'Foo1',
+        tableName: 'foo',
+        properties,
+      } as any);
+      const schema2 = EntitySchema.fromMetadata({
+        name: 'Foo1',
+        tableName: 'foo2',
+        properties,
+      } as any);
+
+      // Act
+      const validateDiscoveryCommand = () => validator.validateDiscovered([schema1.meta, schema2.meta], { ...options, warnWhenNoEntities: true, checkDuplicateTableNames: true });
+
+      // Assert
+      expect(validateDiscoveryCommand).not.toThrow();
     });
   });
 });

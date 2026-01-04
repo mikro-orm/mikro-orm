@@ -22,17 +22,6 @@ describe('QueryHelper', () => {
     expect(QueryHelper.processWhere({ where: undefined as any, entityName: Author2, metadata: orm.getMetadata(), platform: orm.em.getDriver().getPlatform() })).toEqual({});
   });
 
-  test.skip('processWhere returns pk when pk is empty string and condition is entity', async () => {
-    const test = new Book2('t', 1);
-    test.uuid = '';
-    expect(QueryHelper.processWhere({ where: test, entityName: Author2, metadata: orm.getMetadata(), platform: orm.em.getDriver().getPlatform() })).toEqual('');
-  });
-
-  test.skip('processWhere returns pk when pk is 0 and condition is entity', async () => {
-    const test = new Test2({ id: 0 });
-    expect(QueryHelper.processWhere({ where: test, entityName: Author2, metadata: orm.getMetadata(), platform: orm.em.getDriver().getPlatform() })).toEqual(0);
-  });
-
   test('test entity conversion to PK', async () => {
     const test = Test2.create('t123');
     test.id = 123;
