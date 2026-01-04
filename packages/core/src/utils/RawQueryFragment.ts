@@ -1,103 +1,79 @@
 import { Utils } from './Utils.js';
 import type { AnyString, Dictionary, EntityKey } from '../typings.js';
-import { createAsyncContext } from './AsyncContext.js';
+
+declare const rawFragmentSymbolBrand: unique symbol;
+
+export type RawQueryFragmentSymbol = symbol & {
+  readonly [rawFragmentSymbolBrand]: true;
+};
 
 export class RawQueryFragment {
 
-  static #rawQueryCache = new Map<string, RawQueryFragment>();
-  static #storage = createAsyncContext<Set<string>>();
-  static #index = 0n;
-  static cloneRegistry?: Set<string>;
+  // holds a weak reference to fragments used as object keys
+  static #rawQueryReferences = new WeakMap<RawQueryFragmentSymbol, RawQueryFragment>();
 
-  #used = 0;
-  readonly #key: string;
+  #key?: RawQueryFragmentSymbol;
 
-  constructor(
-    readonly sql: string,
-    readonly params: unknown[] = [],
-  ) {
-    this.#key = `[raw]: ${this.sql} (#${RawQueryFragment.#index++})`;
+  constructor(readonly sql: string, readonly params: unknown[] = []) {}
+
+  get key(): RawQueryFragmentSymbol {
+    if (!this.#key) {
+      this.#key = Symbol(this.toJSON()) as RawQueryFragmentSymbol;
+      RawQueryFragment.#rawQueryReferences.set(this.#key, this);
+    }
+
+    return this.#key;
   }
 
   as(alias: string): RawQueryFragment {
     return new RawQueryFragment(`${this.sql} as ??`, [...this.params, alias]);
   }
 
-  valueOf(): string {
+  [Symbol.toPrimitive](hint: 'string'): RawQueryFragmentSymbol;
+  [Symbol.toPrimitive](hint: string): RawQueryFragmentSymbol | never {
+    // if a fragment is converted to string (used as an object key), return a unique symbol
+    // and save a weak reference to map so we can retrieve it when compiling the query
+    if (hint === 'string') {
+      return this.key;
+    }
+
     throw new Error(`Trying to modify raw SQL fragment: '${this.sql}'`);
   }
 
-  toJSON() {
-    return this.#key;
+  get [Symbol.toStringTag](): string {
+    return this.toJSON();
   }
 
-  toString() {
-    RawQueryFragment.#rawQueryCache.set(this.#key, this);
-    this.#used++;
-    return this.#key;
+  toJSON(): string {
+    return `raw('${this.sql}')`;
   }
 
-  clone(): RawQueryFragment {
-    RawQueryFragment.cloneRegistry?.add(this.#key);
-    return new RawQueryFragment(this.sql, this.params);
+  static isKnownFragmentSymbol(key: unknown): key is RawQueryFragmentSymbol {
+    return typeof key === 'symbol' && this.#rawQueryReferences.has(key as RawQueryFragmentSymbol);
   }
 
-  static async run<T>(cb: (...args: any[]) => Promise<T>): Promise<T> {
-    const removeStack = new Set<string>();
-    const res = await this.#storage.run(removeStack, cb);
-    removeStack.forEach(key => RawQueryFragment.remove(key));
-    removeStack.clear();
-
-    return res;
+  static hasObjectFragments(object: unknown): boolean {
+    return Utils.isPlainObject(object) && Object.getOwnPropertySymbols(object).some(symbol => this.isKnownFragmentSymbol(symbol));
   }
 
-  /**
-   * @internal allows testing we don't leak memory, as the raw fragments cache needs to be cleared automatically
-   */
-  static checkCacheSize() {
-    return this.#rawQueryCache.size;
-  }
-
-  static isKnownFragment(key: string | RawQueryFragment) {
+  static isKnownFragment(key: unknown): key is RawQueryFragment | symbol {
     if (key instanceof RawQueryFragment) {
       return true;
     }
 
-    return this.#rawQueryCache.has(key);
+    return this.isKnownFragmentSymbol(key);
   }
 
-  static getKnownFragment(key: string | RawQueryFragment, cleanup = true) {
+  static getKnownFragment(key: unknown) {
     if (key instanceof RawQueryFragment) {
       return key;
     }
 
-    const raw = this.#rawQueryCache.get(key);
-
-    if (raw && cleanup) {
-      this.remove(key);
-    }
-
-    return raw;
-  }
-
-  static remove(key: string) {
-    const raw = this.#rawQueryCache.get(key);
-
-    if (!raw) {
+    if (typeof key !== 'symbol') {
       return;
     }
 
-    raw.#used--;
-
-    if (raw.#used <= 0) {
-      const removeStack = this.#storage.getStore();
-
-      if (removeStack) {
-        removeStack.add(key);
-      } else {
-        this.#rawQueryCache.delete(key);
-      }
-    }
+    return this.#rawQueryReferences.get(key as RawQueryFragmentSymbol);
   }
 
   /** @ignore */
@@ -232,12 +208,7 @@ export function raw<T extends object = any, R = any>(sql: EntityKey<T> | EntityK
  * ```
  */
 export function sql(sql: readonly string[], ...values: unknown[]) {
-  return raw(sql.reduce((query, queryPart, i) => {
-    const valueExists = i < values.length;
-    const text = query + queryPart;
-
-    return valueExists ? text + '?' : text;
-  }, ''), values);
+  return raw(sql.join('?'), values);
 }
 
 export function createSqlFunction<T extends object, R = string>(func: string, key: string | ((alias: string) => string)): R {

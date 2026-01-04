@@ -1,4 +1,4 @@
-import { Collection, Ref, LoadStrategy, MikroORM, OptionalProps, QueryOrder, RawQueryFragment, raw } from '@mikro-orm/sqlite';
+import { Collection, Ref, LoadStrategy, MikroORM, OptionalProps, QueryOrder, raw } from '@mikro-orm/sqlite';
 import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 @Entity()
@@ -73,11 +73,13 @@ export class B {
     option => option.b,
     {
       eager: true,
-      orderBy: {
-        order: QueryOrder.ASC,
-        id: QueryOrder.ASC,
-        [raw(a => `length(${a}.text)`)]: 'asc',
-      },
+      orderBy: [
+        {
+          order: QueryOrder.ASC,
+          id: QueryOrder.ASC,
+        },
+        { [raw(a => `length(${a}.text)`)]: 'asc' },
+      ],
     },
   )
   cs = new Collection<C>(this);
@@ -154,8 +156,6 @@ describe('GH issue 1331', () => {
   });
 
   test(`relations' orderBy should be respected when using LoadStrategy.JOINED`, async () => {
-    expect(RawQueryFragment.checkCacheSize()).toBe(1);
-
     const loadedA = await orm.em.findOneOrFail(A, 1);
     expect(loadedA.bs.getItems().map(b => b.order)).toStrictEqual([0, 1, 2]);
     expect(loadedA.bs[0].cs.getIdentifiers('order')).toEqual([1, 3, 4]);
@@ -164,13 +164,9 @@ describe('GH issue 1331', () => {
     expect(loadedA.bs[0].cs[1].ds.getIdentifiers('order')).toEqual([2, 5, 11]);
     await orm.em.fork().findOneOrFail(A, 1);
     await orm.em.fork().findOneOrFail(A, 1);
-
-    expect(RawQueryFragment.checkCacheSize()).toBe(1);
   });
 
   test(`relations' orderBy should be respected when using LoadStrategy.SELECT_IN`, async () => {
-    expect(RawQueryFragment.checkCacheSize()).toBe(1);
-
     const loadedA = await orm.em.findOneOrFail(A, 1, { strategy: 'select-in' });
     expect(loadedA.bs.getItems().map(b => b.order)).toStrictEqual([0, 1, 2]);
     expect(loadedA.bs[0].cs.getIdentifiers('order')).toEqual([1, 3, 4]);
@@ -179,8 +175,6 @@ describe('GH issue 1331', () => {
     expect(loadedA.bs[0].cs[1].ds.getIdentifiers('order')).toEqual([2, 5, 11]);
     await orm.em.fork().findOneOrFail(A, 1, { strategy: 'select-in' });
     await orm.em.fork().findOneOrFail(A, 1, { strategy: 'select-in' });
-
-    expect(RawQueryFragment.checkCacheSize()).toBe(1);
   });
 
 });

@@ -23,6 +23,7 @@ import type { CountOptions, FindOptions, LoadHint } from '../drivers/IDatabaseDr
 import { helper, wrap } from './wrap.js';
 import type { EntityLoaderOptions } from './EntityLoader.js';
 import { QueryHelper } from '../utils/QueryHelper.js';
+import { Raw } from '../utils/RawQueryFragment.js';
 import { inspect } from '../logging/inspect.js';
 
 export interface MatchingOptions<T extends object, P extends string = never> extends FindOptions<T, P> {
@@ -391,7 +392,7 @@ export class Collection<T extends object, O extends object = object> {
   }
 
   private createOrderBy<TT extends T>(orderBy: QueryOrderMap<TT> | QueryOrderMap<TT>[] = []): QueryOrderMap<TT>[] {
-    if (Utils.isEmpty(orderBy) && this.property.orderBy) {
+    if (Utils.isEmpty(orderBy) && !Raw.hasObjectFragments(orderBy) && this.property.orderBy) {
       orderBy = this.property.orderBy;
     }
 

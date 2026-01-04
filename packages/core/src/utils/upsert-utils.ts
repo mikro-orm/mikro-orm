@@ -1,6 +1,6 @@
 import type { Dictionary, EntityData, EntityKey, EntityMetadata, EntityProperty, FilterQuery } from '../typings.js';
 import type { UpsertOptions } from '../drivers/IDatabaseDriver.js';
-import { isRaw, type RawQueryFragment } from '../utils/RawQueryFragment.js';
+import { isRaw, type Raw } from '../utils/RawQueryFragment.js';
 import { Utils } from './Utils.js';
 
 function expandEmbeddedProperties<T>(prop: EntityProperty<T>, key?: string): (keyof T)[] {
@@ -52,7 +52,7 @@ function expandFields<T>(meta: EntityMetadata<T> | undefined, fields: (keyof T)[
 }
 
 /** @internal */
-export function getOnConflictFields<T>(meta: EntityMetadata<T> | undefined, data: EntityData<T>, uniqueFields: (keyof T)[] | RawQueryFragment, options: UpsertOptions<T>): (keyof T)[] {
+export function getOnConflictFields<T>(meta: EntityMetadata<T> | undefined, data: EntityData<T>, uniqueFields: (keyof T)[] | Raw, options: UpsertOptions<T>): (keyof T)[] {
   if (options.onConflictMergeFields) {
     const onConflictMergeFields = expandFields(meta, options.onConflictMergeFields);
     return onConflictMergeFields.flatMap(f => {
@@ -90,7 +90,7 @@ export function getOnConflictFields<T>(meta: EntityMetadata<T> | undefined, data
 }
 
 /** @internal */
-export function getOnConflictReturningFields<T, P extends string>(meta: EntityMetadata<T> | undefined, data: EntityData<T>, uniqueFields: (keyof T)[] | RawQueryFragment, options: UpsertOptions<T, P>): (keyof T)[] | '*' {
+export function getOnConflictReturningFields<T, P extends string>(meta: EntityMetadata<T> | undefined, data: EntityData<T>, uniqueFields: (keyof T)[] | Raw, options: UpsertOptions<T, P>): (keyof T)[] | '*' {
   /* v8 ignore next */
   if (!meta) {
     return '*';
@@ -147,7 +147,7 @@ function getPropertyValue(obj: Dictionary, key: string) {
 
 /** @internal */
 export function getWhereCondition<T extends object>(
-  meta: EntityMetadata<T>, onConflictFields: (keyof T)[] | RawQueryFragment | undefined,
+  meta: EntityMetadata<T>, onConflictFields: (keyof T)[] | Raw | undefined,
   data: EntityData<T>,
   where: FilterQuery<T>,
 ): { where: FilterQuery<T>; propIndex: number | false } {
