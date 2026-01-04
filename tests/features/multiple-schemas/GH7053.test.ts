@@ -1,4 +1,5 @@
-import { Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property } from '@mikro-orm/postgresql';
+import { Collection, MikroORM } from '@mikro-orm/postgresql';
+import { Entity, ManyToOne, ReflectMetadataProvider, OneToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 
 @Entity({ schema: '*' })
 class User {
@@ -42,9 +43,10 @@ beforeAll(async () => {
   orm = await MikroORM.init({
     dbName: '7053',
     entities: [User, Post],
+    metadataProvider: ReflectMetadataProvider,
   });
-  await orm.schema.updateSchema({ schema: 'other' });
-  await orm.schema.clearDatabase({ schema: 'other' });
+  await orm.schema.update({ schema: 'other' });
+  await orm.schema.clear({ schema: 'other' });
 });
 
 afterAll(async () => {

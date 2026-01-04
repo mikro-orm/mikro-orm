@@ -80,12 +80,12 @@ describe('em.refresh() with custom types', () => {
       entities: [Author, Book, Publisher],
     });
 
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
   });
 
   afterAll(() => orm.close(true));
   beforeEach(async () => {
-    await orm.schema.clearDatabase();
+    await orm.schema.clear();
   });
 
   test('em.refresh() correctly converts custom type from database', async () => {

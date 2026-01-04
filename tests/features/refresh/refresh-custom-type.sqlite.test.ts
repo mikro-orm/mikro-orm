@@ -81,12 +81,12 @@ describe('em.refresh() with custom types (SQLite)', () => {
       dbName: ':memory:',
     });
 
-    await orm.schema.createSchema();
+    await orm.schema.create();
   });
 
   afterAll(() => orm.close(true));
   beforeEach(async () => {
-    await orm.schema.clearDatabase();
+    await orm.schema.clear();
   });
 
   test('em.refresh() correctly converts custom type from database', async () => {

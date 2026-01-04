@@ -44,11 +44,11 @@ describe('assign() with getReference() and unpersisted ManyToOne relations', () 
       dbName: ':memory:',
     });
 
-    await orm.schema.createSchema();
+    await orm.schema.create();
   });
 
   afterAll(() => orm.close(true));
-  beforeEach(() => orm.schema.clearDatabase());
+  beforeEach(() => orm.schema.clear());
 
   test('getReference + assign correctly handles unpersisted relation FK', async () => {
     // Setup: Create existing author in DB

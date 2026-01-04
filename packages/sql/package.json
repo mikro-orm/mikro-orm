@@ -1,6 +1,6 @@
 {
   "name": "@mikro-orm/sql",
-  "version": "6.6.2",
+  "version": "6.6.3",
   "description": "TypeScript ORM for Node.js based on Data Mapper, Unit of Work and Identity Map patterns. Supports MongoDB, MySQL, PostgreSQL and SQLite databases as well as usage with vanilla JavaScript.",
   "type": "module",
   "exports": {
@@ -53,7 +53,7 @@
     "kysely": "0.28.9"
   },
   "devDependencies": {
-    "@mikro-orm/core": "^6.6.2"
+    "@mikro-orm/core": "^6.6.3"
   },
   "peerDependencies": {
     "@mikro-orm/core": "^6.0.0"
