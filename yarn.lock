@@ -1968,7 +1968,7 @@ __metadata:
     eslint-plugin-unused-imports: "npm:4.3.0"
     fs-extra: "npm:11.3.3"
     gen-esm-wrapper: "npm:1.1.3"
-    globals: "npm:^16.0.0"
+    globals: "npm:^17.0.0"
     guid-typescript: "npm:1.0.9"
     husky: "npm:9.1.7"
     jest: "npm:29.7.0"
@@ -6548,10 +6548,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"globals@npm:^16.0.0, globals@npm:^16.4.0":
+"globals@npm:^16.4.0":
   version: 16.4.0
   resolution: "globals@npm:16.4.0"
   checksum: 10/1627a9f42fb4c82d7af6a0c8b6cd616e00110908304d5f1ddcdf325998f3aed45a4b29d8a1e47870f328817805263e31e4f1673f00022b9c2b210552767921cf
+  languageName: node
+  linkType: hard
+
+"globals@npm:^17.0.0":
+  version: 17.0.0
+  resolution: "globals@npm:17.0.0"
+  checksum: 10/af6213db9bf5f599b8a609061984c4d5fedb23db336228b866eba70819fe13ea3d11ca507b4799e8afc888331d0f7e5760d01507e38cb988fff9ad3a9635b312
   languageName: node
   linkType: hard
 
