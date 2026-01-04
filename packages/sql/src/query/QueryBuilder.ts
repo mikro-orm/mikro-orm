@@ -645,6 +645,7 @@ export class QueryBuilder<
     }
 
     Utils.asArray<QBQueryOrderMap<Entity>>(orderBy).forEach(o => {
+      this.helper.validateQueryOrder(o);
       const processed = QueryHelper.processWhere({
         where: o as Dictionary,
         entityName: this.mainAlias.entityName,

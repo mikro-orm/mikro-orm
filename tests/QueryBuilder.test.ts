@@ -33,7 +33,7 @@ describe('QueryBuilder', () => {
       },
     }, true);
   });
-  // afterEach(() => expect(RawQueryFragment.checkCacheSize()).toBe(0));
+
   afterAll(async () => {
     await orm.schema.dropDatabase();
     await orm.close(true);

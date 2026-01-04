@@ -11,12 +11,18 @@ export class RawQueryFragment {
 
   // holds a weak reference to fragments used as object keys
   static #rawQueryReferences = new WeakMap<RawQueryFragmentSymbol, RawQueryFragment>();
-  static #index = 0n;
 
-  readonly #description: string;
+  #key?: RawQueryFragmentSymbol;
 
-  constructor(readonly sql: string, readonly params: unknown[] = []) {
-    this.#description = `[raw]: ${this.sql} (#${RawQueryFragment.#index++})`;
+  constructor(readonly sql: string, readonly params: unknown[] = []) {}
+
+  get key(): RawQueryFragmentSymbol {
+    if (!this.#key) {
+      this.#key = Symbol(this.toJSON()) as RawQueryFragmentSymbol;
+      RawQueryFragment.#rawQueryReferences.set(this.#key, this);
+    }
+
+    return this.#key;
   }
 
   as(alias: string): RawQueryFragment {
@@ -25,27 +31,21 @@ export class RawQueryFragment {
 
   [Symbol.toPrimitive](hint: 'string'): RawQueryFragmentSymbol;
   [Symbol.toPrimitive](hint: string): RawQueryFragmentSymbol | never {
-    // if framgment is converted to string (used as object key) return a unique symbol
-    // and save weak reference to map so we can retrieve it when compiling query
+    // if a fragment is converted to string (used as an object key), return a unique symbol
+    // and save a weak reference to map so we can retrieve it when compiling the query
     if (hint === 'string') {
-      const symbol = Symbol(this.#description) as RawQueryFragmentSymbol;
-      RawQueryFragment.#rawQueryReferences.set(symbol, this);
-      return symbol;
+      return this.key;
     }
 
     throw new Error(`Trying to modify raw SQL fragment: '${this.sql}'`);
   }
 
-  get [Symbol.toStringTag]() {
-    return 'RawQueryFragment';
+  get [Symbol.toStringTag](): string {
+    return this.toJSON();
   }
 
-  toJSON() {
-    return this.#description;
-  }
-
-  toString() {
-    return this.#description;
+  toJSON(): string {
+    return `raw('${this.sql}')`;
   }
 
   static isKnownFragmentSymbol(key: unknown): key is RawQueryFragmentSymbol {

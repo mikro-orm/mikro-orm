@@ -100,6 +100,15 @@ Use `qb.execute()` or `qb.getResult()` instead of awaiting it directly.
 
 This strategy should provide a good compromise between query and hydration performance. It uses joins for to-one relations, while issuing separate queries for to-many relations.
 
+## Mixed `orderBy` with string and raw keys no longer allowed
+
+The implementation of raw SQL fragments changed, they are now represented by a symbol instance rather than a string. This means the previous limitations around reusing of raw fragments are no longer valid. On the other hand, this means mixing of raw and regular string keys is no longer allowed, because there is no way for the ORM to preserve the order of object keys.
+
+```diff
+-em.findAll(User, { orderBy: { email: 'asc', [raw('...')]: 'asc' } });
++em.findAll(User, { orderBy: [{ email: 'asc' }, { [raw('...')]: 'asc' }] });
+```
+
 ## `@CreateRequestContext` requires async function
 
 The decorator converts the function to be async, now it will trigger a validation error if the function it is applied to is not async, since it could result in an ignored promise.

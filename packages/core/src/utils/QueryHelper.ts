@@ -226,7 +226,6 @@ export class QueryHelper {
         return this.processJsonCondition<T>(o as FilterQuery<T>, value as EntityValue<T>, [prop.fieldNames[0]] as EntityKey<T>[], platform, aliased);
       }
 
-      // TODO: add test case for customExpression condition
       if (Array.isArray(value) && !Utils.isOperator(key) && !QueryHelper.isSupportedOperator(key as string) && !(customExpression && Raw.getKnownFragment(key)!.params.length > 0) && options.type !== 'orderBy') {
         // comparing single composite key - use $eq instead of $in
         const op = composite && !value.every(v => Array.isArray(v)) ? '$eq' : '$in';

@@ -23,8 +23,8 @@ import type { ICriteriaNode } from '../typings.js';
 export class CriteriaNodeFactory {
 
   static createNode<T extends object>(metadata: MetadataStorage, entityName: string, payload: any, parent?: ICriteriaNode<T>, key?: EntityKey<T> | RawQueryFragmentSymbol): ICriteriaNode<T> {
-    const customExpression = RawQueryFragment.isKnownFragmentSymbol(key);
-    const scalar = Utils.isPrimaryKey(payload) || isRaw(payload) || payload as unknown instanceof RegExp || payload as unknown instanceof Date || customExpression;
+    const rawField = RawQueryFragment.isKnownFragmentSymbol(key);
+    const scalar = Utils.isPrimaryKey(payload) || isRaw(payload) || payload as unknown instanceof RegExp || payload as unknown instanceof Date || rawField;
 
     if (Array.isArray(payload) && !scalar) {
       return this.createArrayNode(metadata, entityName, payload, parent, key);
@@ -73,10 +73,10 @@ export class CriteriaNodeFactory {
   }
 
   static createObjectItemNode<T extends object>(metadata: MetadataStorage, entityName: string, node: ICriteriaNode<T>, payload: Dictionary, key: EntityKey<T> | RawQueryFragmentSymbol, meta?: EntityMetadata<T>) {
-    const customExpression = RawQueryFragment.isKnownFragmentSymbol(key);
-    const prop = customExpression ? null : meta?.properties[key];
+    const rawField = RawQueryFragment.isKnownFragmentSymbol(key);
+    const prop = rawField ? null : meta?.properties[key];
     const childEntity = prop && prop.kind !== ReferenceKind.SCALAR ? prop.type : entityName;
-    const isNotEmbedded = customExpression || prop?.kind !== ReferenceKind.EMBEDDED;
+    const isNotEmbedded = rawField || prop?.kind !== ReferenceKind.EMBEDDED;
     const val = payload[key as EntityKey<T>];
 
     if (isNotEmbedded && prop?.customType instanceof JsonType) {

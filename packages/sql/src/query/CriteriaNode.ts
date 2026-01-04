@@ -68,8 +68,8 @@ export class CriteriaNode<T extends object> implements ICriteriaNode<T> {
   shouldRename(payload: any): boolean {
     const type = this.prop ? this.prop.kind : null;
     const composite = this.prop?.joinColumns ? this.prop.joinColumns.length > 1 : false;
-    const customExpression = RawQueryFragment.isKnownFragmentSymbol(this.key);
-    const scalar = payload === null || Utils.isPrimaryKey(payload) || payload as unknown instanceof RegExp || payload as unknown instanceof Date || customExpression;
+    const rawField = RawQueryFragment.isKnownFragmentSymbol(this.key);
+    const scalar = payload === null || Utils.isPrimaryKey(payload) || payload as unknown instanceof RegExp || payload as unknown instanceof Date || rawField;
     const operator = Utils.isPlainObject(payload) && Utils.getObjectQueryKeys(payload).every(k => Utils.isOperator(k, false));
 
     if (composite) {
@@ -124,8 +124,8 @@ export class CriteriaNode<T extends object> implements ICriteriaNode<T> {
       return false;
     }
 
-    const customExpression = RawQueryFragment.isKnownFragmentSymbol(this.key);
-    const scalar = this.payload === null || Utils.isPrimaryKey(this.payload) || this.payload as unknown instanceof RegExp || this.payload as unknown instanceof Date || customExpression;
+    const rawField = RawQueryFragment.isKnownFragmentSymbol(this.key);
+    const scalar = this.payload === null || Utils.isPrimaryKey(this.payload) || this.payload as unknown instanceof RegExp || this.payload as unknown instanceof Date || rawField;
     const operator = Utils.isObject(this.payload) && Utils.getObjectQueryKeys(this.payload).every(k => Utils.isOperator(k, false));
 
     return this.prop.kind === ReferenceKind.MANY_TO_MANY && (scalar || operator);

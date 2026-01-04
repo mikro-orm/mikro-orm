@@ -166,8 +166,8 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
   }
 
   override shouldInline(payload: any): boolean {
-    const customExpression = RawQueryFragment.isKnownFragmentSymbol(this.key);
-    const scalar = Utils.isPrimaryKey(payload) || payload as unknown instanceof RegExp || payload as unknown instanceof Date || customExpression;
+    const rawField = RawQueryFragment.isKnownFragmentSymbol(this.key);
+    const scalar = Utils.isPrimaryKey(payload) || payload as unknown instanceof RegExp || payload as unknown instanceof Date || rawField;
     const operator = Utils.isObject(payload) && Utils.getObjectQueryKeys(payload).every(k => Utils.isOperator(k, false));
 
     return !!this.prop && this.prop.kind !== ReferenceKind.SCALAR && !scalar && !operator;
@@ -267,8 +267,8 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
 
   private autoJoin<T>(qb: IQueryBuilder<T>, alias: string, options?: ICriteriaNodeProcessOptions): string {
     const nestedAlias = qb.getNextAlias(this.prop?.pivotTable ?? this.entityName);
-    const customExpression = RawQueryFragment.isKnownFragmentSymbol(this.key);
-    const scalar = Utils.isPrimaryKey(this.payload) || this.payload as unknown instanceof RegExp || this.payload as unknown instanceof Date || customExpression;
+    const rawField = RawQueryFragment.isKnownFragmentSymbol(this.key);
+    const scalar = Utils.isPrimaryKey(this.payload) || this.payload as unknown instanceof RegExp || this.payload as unknown instanceof Date || rawField;
     const operator = Utils.isPlainObject(this.payload) && Utils.getObjectQueryKeys(this.payload).every(k => Utils.isOperator(k, false));
     const field = `${alias}.${this.prop!.name}`;
     const method = qb.hasFlag(QueryFlag.INFER_POPULATE) ? 'joinAndSelect' : 'join';
