@@ -32,10 +32,10 @@ class Movie {
   @Property()
   name!: string;
 
-  @ManyToOne('Genre')
+  @ManyToOne(() => Genre)
   genre!: Genre;
 
-  @ManyToOne('Author')
+  @ManyToOne(() => Author)
   author!: Author;
 
 }
@@ -49,10 +49,10 @@ class Person {
   @Property({ nullable: false })
   name!: string;
 
-  @ManyToMany('Person')
+  @ManyToMany(() => Person)
   friends = new Collection<Person>(this);
 
-  @ManyToOne('Movie')
+  @ManyToOne(() => Movie)
   favoriteMovie!: Movie;
 
 }

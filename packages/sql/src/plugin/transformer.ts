@@ -866,7 +866,7 @@ export class MikroTransformer extends OperationNodeTransformer {
    * Find entity metadata by table name or entity name
    */
   findEntityMetadata(name: string): EntityMetadata | undefined {
-    const byEntity = this.metadata.find(name);
+    const byEntity = this.metadata.getByClassName(name, false);
     if (byEntity) {
       return byEntity;
     }

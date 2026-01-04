@@ -3,7 +3,6 @@ import {
   Collection,
   defineEntity,
   EntityManager,
-  EntityName,
   InvalidFieldNameException,
   LockMode,
   NonUniqueFieldNameException,
@@ -21,7 +20,6 @@ import {
 import { MikroORM as SqliteMikroORM } from '@mikro-orm/sqlite';
 import { MikroORM as LibSqlMikroORM } from '@mikro-orm/libsql';
 import { initORMSqlite, mockLogger } from '../../bootstrap.js';
-import type { IPublisher4, ITest4 } from '../../entities-schema/index.js';
 import {
   Author4,
   BaseEntity4,
@@ -67,10 +65,10 @@ describe.each(['sqlite', 'libsql'] as const)('EntityManager (%s)', driver => {
 
   test('should return sqlite driver', async () => {
     const driver = orm.em.getDriver();
-    expect(await driver.findOne<any>(Book4.name as string, { title: '123' })).toBeNull();
-    expect(await driver.nativeInsert(Author4.name as string, { name: 'a', email: 'b' })).not.toBeNull();
-    expect(await driver.nativeInsert(Book4.name as string, { title: '123', author: 1 })).not.toBeNull();
-    expect(await driver.nativeInsert(BookTag4.name as string, { name: 'tag', books: [1] })).not.toBeNull();
+    expect(await driver.findOne(Book4, { title: '123' })).toBeNull();
+    expect(await driver.nativeInsert(Author4, { name: 'a', email: 'b' })).not.toBeNull();
+    expect(await driver.nativeInsert(Book4, { title: '123', author: 1 })).not.toBeNull();
+    expect(await driver.nativeInsert(BookTag4, { name: 'tag', books: [1] })).not.toBeNull();
     await expect(driver.getConnection().execute('select 1 as count')).resolves.toEqual([{ count: 1 }]);
     await expect(driver.getConnection().execute('select 1 as count', [], 'get')).resolves.toEqual({ count: 1 });
     await expect(driver.getConnection().execute('insert into test4 (name) values (?)', ['test'], 'run')).resolves.toEqual({
@@ -88,18 +86,18 @@ describe.each(['sqlite', 'libsql'] as const)('EntityManager (%s)', driver => {
       insertId: 1,
       rows: [],
     });
-    expect(await driver.find<any>(BookTag4.name as string, { books: [1] })).not.toBeNull();
+    expect(await driver.find(BookTag4, { books: [1] })).not.toBeNull();
 
     // multi inserts
-    const res = await driver.nativeInsertMany(Publisher4.name as string, [
-      { name: 'test 1', type: 'global' },
-      { name: 'test 2', type: 'local' },
-      { name: 'test 3', type: 'global' },
+    const res = await driver.nativeInsertMany(Publisher4, [
+      { name: 'test 1', type: 'global' as any },
+      { name: 'test 2', type: 'local' as any },
+      { name: 'test 3', type: 'global' as any },
     ]);
 
     // sqlite returns the last inserted id
     expect(res).toMatchObject({ insertId: 1, affectedRows: 3, row: { id: 1 }, rows: [{ id: 1 }, { id: 2 }, { id: 3 }] });
-    const res2 = await driver.find(Publisher4.name as string, {});
+    const res2 = await driver.find(Publisher4, {});
     expect(res2).toMatchObject([
       { id: 1, name: 'test 1', type: 'global' },
       { id: 2, name: 'test 2', type: 'local' },
@@ -107,8 +105,8 @@ describe.each(['sqlite', 'libsql'] as const)('EntityManager (%s)', driver => {
     ]);
 
     // multi inserts with no values
-    await driver.nativeInsertMany(Test4.name as string, [{}, {}]);
-    const res3 = await driver.find(Test4.name as string, {});
+    await driver.nativeInsertMany(Test4, [{}, {}]);
+    const res3 = await driver.find(Test4, {});
     expect(res3).toMatchObject([
       { id: 2, name: null, version: 1 },
       { id: 3, name: null, version: 1 },
@@ -117,14 +115,6 @@ describe.each(['sqlite', 'libsql'] as const)('EntityManager (%s)', driver => {
     const now = new Date();
     expect(driver.getPlatform().processDateProperty(now)).toBe(+now);
     expect(driver.getPlatform().processDateProperty(1)).toBe(1);
-  });
-
-  test('driver appends errored query', async () => {
-    const driver = orm.em.getDriver();
-    const err1 = 'no such table: not_existing';
-    await expect(driver.nativeInsert('not_existing', { foo: 'bar' })).rejects.toThrow(err1);
-    const err2 = 'no such table: not_existing';
-    await expect(driver.nativeDelete('not_existing', {})).rejects.toThrow(err2);
   });
 
   test('should convert entity to PK when trying to search by entity', async () => {
@@ -452,7 +442,7 @@ describe.each(['sqlite', 'libsql'] as const)('EntityManager (%s)', driver => {
     orm.em.clear();
 
     const test2 = await orm.em.findOne(Test4, test.id);
-    await orm.em.nativeUpdate<ITest4>('Test4', { id: test.id }, { name: 'Changed!' }); // simulate concurrent update
+    await orm.em.nativeUpdate(Test4, { id: test.id }, { name: 'Changed!' }); // simulate concurrent update
     test2!.name = 'WHATT???';
 
     try {
@@ -606,7 +596,7 @@ describe.each(['sqlite', 'libsql'] as const)('EntityManager (%s)', driver => {
     orm.em.clear();
 
     const newGod = orm.em.getReference(Author4, god.id);
-    const publisher = await orm.em.findOneOrFail('Publisher4' as EntityName<IPublisher4>, pub.id, { populate: ['books'] });
+    const publisher = await orm.em.findOneOrFail(Publisher4, pub.id, { populate: ['books'] });
     await wrap(newGod).init();
 
     const json = wrap(publisher).toJSON().books!;
@@ -995,7 +985,6 @@ describe.each(['sqlite', 'libsql'] as const)('EntityManager (%s)', driver => {
     expect(+author.updatedAt - +author.createdAt).toBe(0);
 
     author.name = 'name1';
-
     vi.advanceTimersByTime(10);
 
     await orm.em.persist(author).flush();
@@ -1539,10 +1528,12 @@ describe.each(['sqlite', 'libsql'] as const)('EntityManager (%s)', driver => {
 
   test('exceptions', async () => {
     const driver = orm.em.getDriver();
-    await driver.nativeInsert(Author4.name as string, { name: 'author', email: 'email' });
-    await expect(driver.nativeInsert(Author4.name as string, { name: 'author', email: 'email' })).rejects.toThrow(UniqueConstraintViolationException);
-    await expect(driver.nativeInsert(Author4.name as string, {})).rejects.toThrow(NotNullConstraintViolationException);
-    await expect(driver.nativeInsert('not_existing', { foo: 'bar' })).rejects.toThrow(TableNotFoundException);
+    await driver.nativeInsert(Author4, { name: 'author', email: 'email' });
+    await expect(driver.nativeInsert(Author4, { name: 'author', email: 'email' })).rejects.toThrow(UniqueConstraintViolationException);
+    await expect(driver.nativeInsert(Author4, {})).rejects.toThrow(NotNullConstraintViolationException);
+    orm.getMetadata(Author4).tableName = 'test';
+    await expect(driver.nativeInsert(Author4, { foo: 'bar' })).rejects.toThrow(TableNotFoundException);
+    orm.getMetadata(Author4).tableName = 'author4';
     await expect(driver.execute('create table author4 (foo text not null)')).rejects.toThrow(TableExistsException);
     await expect(driver.execute('foo bar 123')).rejects.toThrow(SyntaxErrorException);
     await expect(driver.execute('select id from author4, book_tag4')).rejects.toThrow(NonUniqueFieldNameException);

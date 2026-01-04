@@ -138,7 +138,7 @@ const LectureSchema = new EntitySchema<Lecture>({
     title: { type: 'varchar(255)' },
     period: {
       kind: 'embedded',
-      entity: 'Period',
+      entity: () => Period,
       nullable: true,
       prefix: 'period_',
     },

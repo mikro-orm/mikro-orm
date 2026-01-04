@@ -1,6 +1,4 @@
 import { EntitySchema, MikroORM } from '@mikro-orm/sqlite';
-import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
-// FIXME? imports for only the provider
 
 class PersonName {
 
@@ -71,7 +69,6 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
-    metadataProvider: ReflectMetadataProvider,
     dbName: ':memory:',
     entities: [PatientSchema, PersonNameSchema, EmergencyContactSchema],
   });

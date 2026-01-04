@@ -35,7 +35,7 @@ export class T {
 @Entity()
 export class I {
 
-  @OneToOne({ entity: 'V', joinColumn: 'id', primary: true, mapToPk: true })
+  @OneToOne({ entity: () => V, joinColumn: 'id', primary: true, mapToPk: true })
   id!: string;
 
   @Property({ unique: true })
@@ -49,7 +49,7 @@ export class V {
   @PrimaryKey()
   id: string = v4();
 
-  @OneToOne({ entity: 'I', mappedBy: 'id', nullable: true })
+  @OneToOne({ entity: () => I, mappedBy: 'id', nullable: true })
   i?: I;
 
 }
@@ -60,13 +60,13 @@ export class E {
   @PrimaryKey()
   id: string = v4();
 
-  @ManyToOne({ entity: 'A' })
+  @ManyToOne({ entity: () => A })
   a!: A;
 
-  @ManyToOne({ entity: 'T'  })
+  @ManyToOne({ entity: () => T  })
   t!: T;
 
-  @ManyToOne({ entity: 'V'   })
+  @ManyToOne({ entity: () => V   })
   v!: V;
 
 }
@@ -77,10 +77,10 @@ export class M {
   @PrimaryKey()
   id: string = v4();
 
-  @ManyToOne({ entity: 'N', hidden: true, mapToPk: true })
+  @ManyToOne({ entity: () => N, hidden: true, mapToPk: true })
   n!: string;
 
-  @ManyToOne({ entity: 'E' })
+  @ManyToOne({ entity: () => E })
   e!: E;
 
 }
@@ -88,13 +88,13 @@ export class M {
 @Entity()
 export class N {
 
-  @OneToOne({ entity: 'E', joinColumn: 'id', primary: true })
+  @OneToOne({ entity: () => E, joinColumn: 'id', primary: true })
   id!: E;
 
-  @ManyToOne({ entity: 'A' })
+  @ManyToOne({ entity: () => A })
   a!: A;
 
-  @OneToMany({ entity: 'M', mappedBy: 'n' })
+  @OneToMany({ entity: () => M, mappedBy: 'n' })
   m = new Collection<M>(this);
 
 }

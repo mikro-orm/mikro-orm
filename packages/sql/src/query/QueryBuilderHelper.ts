@@ -6,6 +6,7 @@ import {
   type EntityData,
   type EntityKey,
   type EntityMetadata,
+  type EntityName,
   type EntityProperty,
   type FlatQueryOrderMap,
   inspect,
@@ -37,11 +38,13 @@ export class QueryBuilderHelper {
   private readonly platform: AbstractSqlPlatform;
   private readonly metadata: MetadataStorage;
 
-  constructor(private readonly entityName: string,
-              private alias: string,
-              private readonly aliasMap: Dictionary<Alias<any>>,
-              private readonly subQueries: Dictionary<string>,
-              private readonly driver: AbstractSqlDriver) {
+  constructor(
+    private readonly entityName: EntityName,
+    private alias: string,
+    private readonly aliasMap: Dictionary<Alias<any>>,
+    private readonly subQueries: Dictionary<string>,
+    private readonly driver: AbstractSqlDriver,
+  ) {
     this.platform = this.driver.getPlatform();
     this.metadata = this.driver.getMetadata();
   }
@@ -182,7 +185,7 @@ export class QueryBuilderHelper {
 
   joinOneToReference(prop: EntityProperty, ownerAlias: string, alias: string, type: JoinType, cond: Dictionary = {}, schema?: string): JoinOptions {
     const prop2 = prop.targetMeta!.properties[prop.mappedBy || prop.inversedBy];
-    const table = this.getTableName(prop.type);
+    const table = this.getTableName(prop.targetMeta!.class);
     const joinColumns = prop.owner ? prop.referencedColumnNames : prop2.joinColumns;
     const inverseJoinColumns = prop.referencedColumnNames;
     const primaryKeys = prop.owner ? prop.joinColumns : prop2.referencedColumnNames;
@@ -198,7 +201,7 @@ export class QueryBuilderHelper {
   joinManyToOneReference(prop: EntityProperty, ownerAlias: string, alias: string, type: JoinType, cond: Dictionary = {}, schema?: string): JoinOptions {
     return {
       prop, type, cond, ownerAlias, alias,
-      table: this.getTableName(prop.type),
+      table: this.getTableName(prop.targetMeta!.class),
       schema: prop.targetMeta?.schema === '*' ? '*' : this.driver.getSchemaName(prop.targetMeta, { schema }),
       joinColumns: prop.referencedColumnNames,
       primaryKeys: prop.fieldNames,
@@ -226,7 +229,7 @@ export class QueryBuilderHelper {
       return ret;
     }
 
-    const prop2 = prop.owner ? pivotMeta.relations[1] : pivotMeta.relations[0];
+    const prop2 = pivotMeta.relations[prop.owner ? 1 : 0];
     ret[`${pivotAlias}.${prop2.name}#${alias}`] = this.joinManyToOneReference(prop2, pivotAlias, alias, type, cond, schema);
     ret[`${pivotAlias}.${prop2.name}#${alias}`].path = path;
     const tmp = prop2.referencedTableName.split('.');
@@ -342,9 +345,9 @@ export class QueryBuilderHelper {
     return prop && prop.kind === ReferenceKind.ONE_TO_ONE && !prop.owner;
   }
 
-  getTableName(entityName: string): string {
+  getTableName(entityName: EntityName): string {
     const meta = this.metadata.find(entityName);
-    return meta ? meta.collection : entityName;
+    return meta?.tableName ?? Utils.className(entityName);
   }
 
   /**
@@ -823,7 +826,7 @@ export class QueryBuilderHelper {
     const meta = this.metadata.find(this.entityName);
 
     if (lockMode === LockMode.OPTIMISTIC && meta && !meta.versionProperty) {
-      throw OptimisticLockError.lockFailed(this.entityName);
+      throw OptimisticLockError.lockFailed(Utils.className(this.entityName));
     }
 
     if (lockMode !== LockMode.OPTIMISTIC && lockTables.length === 0 && joinsMap) {
@@ -948,10 +951,10 @@ export class QueryBuilderHelper {
 
   getProperty(field: string, alias?: string): EntityProperty | undefined {
     const entityName = this.aliasMap[alias!]?.entityName || this.entityName;
-    const meta = this.metadata.find(entityName);
+    const meta = this.metadata.get(entityName);
 
     // check if `alias` is not matching an embedded property name instead of alias, e.g. `address.city`
-    if (alias && meta) {
+    if (alias) {
       const prop = meta.properties[alias];
 
       if (prop?.kind === ReferenceKind.EMBEDDED) {
@@ -966,15 +969,11 @@ export class QueryBuilderHelper {
       }
     }
 
-    if (meta) {
-      if (meta.properties[field]) {
-        return meta.properties[field];
-      }
-
-      return meta.relations.find(prop => prop.fieldNames?.some(name => field === name));
+    if (meta.properties[field]) {
+      return meta.properties[field];
     }
 
-    return undefined;
+    return meta.relations.find(prop => prop.fieldNames?.some(name => field === name));
   }
 
   isTableNameAliasRequired(type: QueryType): boolean {
@@ -997,8 +996,8 @@ export class QueryBuilderHelper {
 
 export interface Alias<T> {
   aliasName: string;
-  entityName: string;
-  metadata?: EntityMetadata<T>;
+  entityName: EntityName<T>;
+  meta: EntityMetadata<T>;
   subQuery?: NativeQueryBuilder;
 }
 

@@ -276,7 +276,7 @@ exports[`embedded entities in postgres > diffing 2`] = `
       source: data.profile1_source,
     };
     if (entity.profile1 == null) {
-      entity.profile1 = factory.createEmbeddable('Profile', embeddedData, { newEntity, convertCustomTypes, normalizeAccessors });
+      entity.profile1 = factory.createEmbeddable(profile_2, embeddedData, { newEntity, convertCustomTypes, normalizeAccessors });
     }
     if (data.profile1_username === null) {
       entity.profile1.username = null;
@@ -291,7 +291,7 @@ exports[`embedded entities in postgres > diffing 2`] = `
         source: data.profile1_identity_source,
       };
       if (entity.profile1.identity == null) {
-        entity.profile1.identity = factory.createEmbeddable('Identity', embeddedData, { newEntity, convertCustomTypes, normalizeAccessors });
+        entity.profile1.identity = factory.createEmbeddable(identity_4, embeddedData, { newEntity, convertCustomTypes, normalizeAccessors });
       }
       if (data.profile1_identity_email === null) {
         entity.profile1.identity.email = null;
@@ -305,7 +305,7 @@ exports[`embedded entities in postgres > diffing 2`] = `
           source: data.profile1_identity_meta_source,
         };
         if (entity.profile1.identity.meta == null) {
-          entity.profile1.identity.meta = factory.createEmbeddable('IdentityMeta', embeddedData, { newEntity, convertCustomTypes, normalizeAccessors });
+          entity.profile1.identity.meta = factory.createEmbeddable(identity_meta_6, embeddedData, { newEntity, convertCustomTypes, normalizeAccessors });
         }
         if (data.profile1_identity_meta_foo === null) {
           entity.profile1.identity.meta.foo = null;
@@ -321,9 +321,9 @@ exports[`embedded entities in postgres > diffing 2`] = `
     entity.profile1.identity.meta.source = null;
         } else if (typeof data.profile1_identity_meta_source !== 'undefined') {
           if (isPrimaryKey(data.profile1_identity_meta_source, true)) {
-            entity.profile1.identity.meta.source = factory.createReference('Source', data.profile1_identity_meta_source, { merge: true, convertCustomTypes, normalizeAccessors, schema });
+            entity.profile1.identity.meta.source = factory.createReference(source_9, data.profile1_identity_meta_source, { merge: true, convertCustomTypes, normalizeAccessors, schema });
           } else if (data.profile1_identity_meta_source && typeof data.profile1_identity_meta_source === 'object') {
-            entity.profile1.identity.meta.source = factory.create('Source', data.profile1_identity_meta_source, { initialized: true, merge: true, newEntity, convertCustomTypes, normalizeAccessors, schema });
+            entity.profile1.identity.meta.source = factory.create(source_9, data.profile1_identity_meta_source, { initialized: true, merge: true, newEntity, convertCustomTypes, normalizeAccessors, schema });
           }
         }
       } else if (data.profile1_identity_meta_foo === null && data.profile1_identity_meta_bar === null && data.profile1_identity_meta_source === null) {
@@ -332,7 +332,7 @@ exports[`embedded entities in postgres > diffing 2`] = `
       if (data.profile1_identity_meta != null) {
         const embeddedData = data.profile1_identity_meta;
         if (entity.profile1.identity.meta == null) {
-          entity.profile1.identity.meta = factory.createEmbeddable('IdentityMeta', embeddedData, { newEntity, convertCustomTypes, normalizeAccessors });
+          entity.profile1.identity.meta = factory.createEmbeddable(identity_meta_10, embeddedData, { newEntity, convertCustomTypes, normalizeAccessors });
         }
         if (data.profile1_identity_meta.foo === null) {
           entity.profile1.identity.meta.foo = null;
@@ -348,9 +348,9 @@ exports[`embedded entities in postgres > diffing 2`] = `
     entity.profile1.identity.meta.source = null;
         } else if (typeof data.profile1_identity_meta.source !== 'undefined') {
           if (isPrimaryKey(data.profile1_identity_meta.source, true)) {
-            entity.profile1.identity.meta.source = factory.createReference('Source', data.profile1_identity_meta.source, { merge: true, convertCustomTypes, normalizeAccessors, schema });
+            entity.profile1.identity.meta.source = factory.createReference(source_13, data.profile1_identity_meta.source, { merge: true, convertCustomTypes, normalizeAccessors, schema });
           } else if (data.profile1_identity_meta.source && typeof data.profile1_identity_meta.source === 'object') {
-            entity.profile1.identity.meta.source = factory.create('Source', data.profile1_identity_meta.source, { initialized: true, merge: true, newEntity, convertCustomTypes, normalizeAccessors, schema });
+            entity.profile1.identity.meta.source = factory.create(source_13, data.profile1_identity_meta.source, { initialized: true, merge: true, newEntity, convertCustomTypes, normalizeAccessors, schema });
           }
         }
       } else if (data.profile1_identity_meta === null) {
@@ -358,98 +358,98 @@ exports[`embedded entities in postgres > diffing 2`] = `
       }
       if (Array.isArray(data.profile1_identity_links)) {
         entity.profile1.identity.links = [];
-        data.profile1_identity_links.forEach((_, idx_8) => {
-          if (data.profile1_identity_links[idx_8] != null) {
-            const embeddedData = data.profile1_identity_links[idx_8];
-            if (entity.profile1.identity.links[idx_8] == null) {
-              entity.profile1.identity.links[idx_8] = factory.createEmbeddable('IdentityLink', embeddedData, { newEntity, convertCustomTypes, normalizeAccessors });
+        data.profile1_identity_links.forEach((_, idx_14) => {
+          if (data.profile1_identity_links[idx_14] != null) {
+            const embeddedData = data.profile1_identity_links[idx_14];
+            if (entity.profile1.identity.links[idx_14] == null) {
+              entity.profile1.identity.links[idx_14] = factory.createEmbeddable(identity_link_15, embeddedData, { newEntity, convertCustomTypes, normalizeAccessors });
             }
-            if (data.profile1_identity_links[idx_8].url === null) {
-              entity.profile1.identity.links[idx_8].url = null;
-            } else if (typeof data.profile1_identity_links[idx_8].url !== 'undefined') {
-              entity.profile1.identity.links[idx_8].url = data.profile1_identity_links[idx_8].url;
+            if (data.profile1_identity_links[idx_14].url === null) {
+              entity.profile1.identity.links[idx_14].url = null;
+            } else if (typeof data.profile1_identity_links[idx_14].url !== 'undefined') {
+              entity.profile1.identity.links[idx_14].url = data.profile1_identity_links[idx_14].url;
             }
-            if (data.profile1_identity_links[idx_8].createdAt === null) {
-              entity.profile1.identity.links[idx_8].createdAt = null;
-            } else if (typeof data.profile1_identity_links[idx_8].createdAt !== 'undefined') {
-              if (data.profile1_identity_links[idx_8].createdAt instanceof Date) {
-                entity.profile1.identity.links[idx_8].createdAt = data.profile1_identity_links[idx_8].createdAt;
-              } else if (typeof data.profile1_identity_links[idx_8].createdAt === 'number' || data.profile1_identity_links[idx_8].createdAt.includes('+') || data.profile1_identity_links[idx_8].createdAt.lastIndexOf('-') > 10 || data.profile1_identity_links[idx_8].createdAt.endsWith('Z')) {
-                entity.profile1.identity.links[idx_8].createdAt = new Date(data.profile1_identity_links[idx_8].createdAt);
+            if (data.profile1_identity_links[idx_14].createdAt === null) {
+              entity.profile1.identity.links[idx_14].createdAt = null;
+            } else if (typeof data.profile1_identity_links[idx_14].createdAt !== 'undefined') {
+              if (data.profile1_identity_links[idx_14].createdAt instanceof Date) {
+                entity.profile1.identity.links[idx_14].createdAt = data.profile1_identity_links[idx_14].createdAt;
+              } else if (typeof data.profile1_identity_links[idx_14].createdAt === 'number' || data.profile1_identity_links[idx_14].createdAt.includes('+') || data.profile1_identity_links[idx_14].createdAt.lastIndexOf('-') > 10 || data.profile1_identity_links[idx_14].createdAt.endsWith('Z')) {
+                entity.profile1.identity.links[idx_14].createdAt = new Date(data.profile1_identity_links[idx_14].createdAt);
               } else {
-                entity.profile1.identity.links[idx_8].createdAt = new Date(data.profile1_identity_links[idx_8].createdAt + 'Z');
+                entity.profile1.identity.links[idx_14].createdAt = new Date(data.profile1_identity_links[idx_14].createdAt + 'Z');
               }
             }
-            if (data.profile1_identity_links[idx_8].meta != null) {
-              const embeddedData = data.profile1_identity_links[idx_8].meta;
-              if (entity.profile1.identity.links[idx_8].meta == null) {
-                entity.profile1.identity.links[idx_8].meta = factory.createEmbeddable('IdentityMeta', embeddedData, { newEntity, convertCustomTypes, normalizeAccessors });
+            if (data.profile1_identity_links[idx_14].meta != null) {
+              const embeddedData = data.profile1_identity_links[idx_14].meta;
+              if (entity.profile1.identity.links[idx_14].meta == null) {
+                entity.profile1.identity.links[idx_14].meta = factory.createEmbeddable(identity_meta_18, embeddedData, { newEntity, convertCustomTypes, normalizeAccessors });
               }
-              if (data.profile1_identity_links[idx_8].meta.foo === null) {
-                entity.profile1.identity.links[idx_8].meta.foo = null;
-              } else if (typeof data.profile1_identity_links[idx_8].meta.foo !== 'undefined') {
-                entity.profile1.identity.links[idx_8].meta.foo = data.profile1_identity_links[idx_8].meta.foo;
+              if (data.profile1_identity_links[idx_14].meta.foo === null) {
+                entity.profile1.identity.links[idx_14].meta.foo = null;
+              } else if (typeof data.profile1_identity_links[idx_14].meta.foo !== 'undefined') {
+                entity.profile1.identity.links[idx_14].meta.foo = data.profile1_identity_links[idx_14].meta.foo;
               }
-              if (data.profile1_identity_links[idx_8].meta.bar === null) {
-                entity.profile1.identity.links[idx_8].meta.bar = null;
-              } else if (typeof data.profile1_identity_links[idx_8].meta.bar !== 'undefined') {
-                entity.profile1.identity.links[idx_8].meta.bar = data.profile1_identity_links[idx_8].meta.bar;
+              if (data.profile1_identity_links[idx_14].meta.bar === null) {
+                entity.profile1.identity.links[idx_14].meta.bar = null;
+              } else if (typeof data.profile1_identity_links[idx_14].meta.bar !== 'undefined') {
+                entity.profile1.identity.links[idx_14].meta.bar = data.profile1_identity_links[idx_14].meta.bar;
               }
-              if (data.profile1_identity_links[idx_8].meta.source === null) {
-    entity.profile1.identity.links[idx_8].meta.source = null;
-              } else if (typeof data.profile1_identity_links[idx_8].meta.source !== 'undefined') {
-                if (isPrimaryKey(data.profile1_identity_links[idx_8].meta.source, true)) {
-                  entity.profile1.identity.links[idx_8].meta.source = factory.createReference('Source', data.profile1_identity_links[idx_8].meta.source, { merge: true, convertCustomTypes, normalizeAccessors, schema });
-                } else if (data.profile1_identity_links[idx_8].meta.source && typeof data.profile1_identity_links[idx_8].meta.source === 'object') {
-                  entity.profile1.identity.links[idx_8].meta.source = factory.create('Source', data.profile1_identity_links[idx_8].meta.source, { initialized: true, merge: true, newEntity, convertCustomTypes, normalizeAccessors, schema });
+              if (data.profile1_identity_links[idx_14].meta.source === null) {
+    entity.profile1.identity.links[idx_14].meta.source = null;
+              } else if (typeof data.profile1_identity_links[idx_14].meta.source !== 'undefined') {
+                if (isPrimaryKey(data.profile1_identity_links[idx_14].meta.source, true)) {
+                  entity.profile1.identity.links[idx_14].meta.source = factory.createReference(source_21, data.profile1_identity_links[idx_14].meta.source, { merge: true, convertCustomTypes, normalizeAccessors, schema });
+                } else if (data.profile1_identity_links[idx_14].meta.source && typeof data.profile1_identity_links[idx_14].meta.source === 'object') {
+                  entity.profile1.identity.links[idx_14].meta.source = factory.create(source_21, data.profile1_identity_links[idx_14].meta.source, { initialized: true, merge: true, newEntity, convertCustomTypes, normalizeAccessors, schema });
                 }
               }
-            } else if (data.profile1_identity_links[idx_8].meta === null) {
-              entity.profile1.identity.links[idx_8].meta = null;
+            } else if (data.profile1_identity_links[idx_14].meta === null) {
+              entity.profile1.identity.links[idx_14].meta = null;
             }
-            if (Array.isArray(data.profile1_identity_links[idx_8].metas)) {
-              entity.profile1.identity.links[idx_8].metas = [];
-              data.profile1_identity_links[idx_8].metas.forEach((_, idx_13) => {
-                if (data.profile1_identity_links[idx_8].metas[idx_13] != null) {
-                  const embeddedData = data.profile1_identity_links[idx_8].metas[idx_13];
-                  if (entity.profile1.identity.links[idx_8].metas[idx_13] == null) {
-                    entity.profile1.identity.links[idx_8].metas[idx_13] = factory.createEmbeddable('IdentityMeta', embeddedData, { newEntity, convertCustomTypes, normalizeAccessors });
+            if (Array.isArray(data.profile1_identity_links[idx_14].metas)) {
+              entity.profile1.identity.links[idx_14].metas = [];
+              data.profile1_identity_links[idx_14].metas.forEach((_, idx_22) => {
+                if (data.profile1_identity_links[idx_14].metas[idx_22] != null) {
+                  const embeddedData = data.profile1_identity_links[idx_14].metas[idx_22];
+                  if (entity.profile1.identity.links[idx_14].metas[idx_22] == null) {
+                    entity.profile1.identity.links[idx_14].metas[idx_22] = factory.createEmbeddable(identity_meta_23, embeddedData, { newEntity, convertCustomTypes, normalizeAccessors });
                   }
-                  if (data.profile1_identity_links[idx_8].metas[idx_13].foo === null) {
-                    entity.profile1.identity.links[idx_8].metas[idx_13].foo = null;
-                  } else if (typeof data.profile1_identity_links[idx_8].metas[idx_13].foo !== 'undefined') {
-                    entity.profile1.identity.links[idx_8].metas[idx_13].foo = data.profile1_identity_links[idx_8].metas[idx_13].foo;
+                  if (data.profile1_identity_links[idx_14].metas[idx_22].foo === null) {
+                    entity.profile1.identity.links[idx_14].metas[idx_22].foo = null;
+                  } else if (typeof data.profile1_identity_links[idx_14].metas[idx_22].foo !== 'undefined') {
+                    entity.profile1.identity.links[idx_14].metas[idx_22].foo = data.profile1_identity_links[idx_14].metas[idx_22].foo;
                   }
-                  if (data.profile1_identity_links[idx_8].metas[idx_13].bar === null) {
-                    entity.profile1.identity.links[idx_8].metas[idx_13].bar = null;
-                  } else if (typeof data.profile1_identity_links[idx_8].metas[idx_13].bar !== 'undefined') {
-                    entity.profile1.identity.links[idx_8].metas[idx_13].bar = data.profile1_identity_links[idx_8].metas[idx_13].bar;
+                  if (data.profile1_identity_links[idx_14].metas[idx_22].bar === null) {
+                    entity.profile1.identity.links[idx_14].metas[idx_22].bar = null;
+                  } else if (typeof data.profile1_identity_links[idx_14].metas[idx_22].bar !== 'undefined') {
+                    entity.profile1.identity.links[idx_14].metas[idx_22].bar = data.profile1_identity_links[idx_14].metas[idx_22].bar;
                   }
-                  if (data.profile1_identity_links[idx_8].metas[idx_13].source === null) {
-    entity.profile1.identity.links[idx_8].metas[idx_13].source = null;
-                  } else if (typeof data.profile1_identity_links[idx_8].metas[idx_13].source !== 'undefined') {
-                    if (isPrimaryKey(data.profile1_identity_links[idx_8].metas[idx_13].source, true)) {
-                      entity.profile1.identity.links[idx_8].metas[idx_13].source = factory.createReference('Source', data.profile1_identity_links[idx_8].metas[idx_13].source, { merge: true, convertCustomTypes, normalizeAccessors, schema });
-                    } else if (data.profile1_identity_links[idx_8].metas[idx_13].source && typeof data.profile1_identity_links[idx_8].metas[idx_13].source === 'object') {
-                      entity.profile1.identity.links[idx_8].metas[idx_13].source = factory.create('Source', data.profile1_identity_links[idx_8].metas[idx_13].source, { initialized: true, merge: true, newEntity, convertCustomTypes, normalizeAccessors, schema });
+                  if (data.profile1_identity_links[idx_14].metas[idx_22].source === null) {
+    entity.profile1.identity.links[idx_14].metas[idx_22].source = null;
+                  } else if (typeof data.profile1_identity_links[idx_14].metas[idx_22].source !== 'undefined') {
+                    if (isPrimaryKey(data.profile1_identity_links[idx_14].metas[idx_22].source, true)) {
+                      entity.profile1.identity.links[idx_14].metas[idx_22].source = factory.createReference(source_26, data.profile1_identity_links[idx_14].metas[idx_22].source, { merge: true, convertCustomTypes, normalizeAccessors, schema });
+                    } else if (data.profile1_identity_links[idx_14].metas[idx_22].source && typeof data.profile1_identity_links[idx_14].metas[idx_22].source === 'object') {
+                      entity.profile1.identity.links[idx_14].metas[idx_22].source = factory.create(source_26, data.profile1_identity_links[idx_14].metas[idx_22].source, { initialized: true, merge: true, newEntity, convertCustomTypes, normalizeAccessors, schema });
                     }
                   }
-                } else if (data.profile1_identity_links[idx_8].metas[idx_13] === null) {
-                  entity.profile1.identity.links[idx_8].metas[idx_13] = null;
+                } else if (data.profile1_identity_links[idx_14].metas[idx_22] === null) {
+                  entity.profile1.identity.links[idx_14].metas[idx_22] = null;
                 }
               });
             }
-            if (data.profile1_identity_links[idx_8].source === null) {
-    entity.profile1.identity.links[idx_8].source = null;
-            } else if (typeof data.profile1_identity_links[idx_8].source !== 'undefined') {
-              if (isPrimaryKey(data.profile1_identity_links[idx_8].source, true)) {
-                entity.profile1.identity.links[idx_8].source = factory.createReference('Source', data.profile1_identity_links[idx_8].source, { merge: true, convertCustomTypes, normalizeAccessors, schema });
-              } else if (data.profile1_identity_links[idx_8].source && typeof data.profile1_identity_links[idx_8].source === 'object') {
-                entity.profile1.identity.links[idx_8].source = factory.create('Source', data.profile1_identity_links[idx_8].source, { initialized: true, merge: true, newEntity, convertCustomTypes, normalizeAccessors, schema });
+            if (data.profile1_identity_links[idx_14].source === null) {
+    entity.profile1.identity.links[idx_14].source = null;
+            } else if (typeof data.profile1_identity_links[idx_14].source !== 'undefined') {
+              if (isPrimaryKey(data.profile1_identity_links[idx_14].source, true)) {
+                entity.profile1.identity.links[idx_14].source = factory.createReference(source_27, data.profile1_identity_links[idx_14].source, { merge: true, convertCustomTypes, normalizeAccessors, schema });
+              } else if (data.profile1_identity_links[idx_14].source && typeof data.profile1_identity_links[idx_14].source === 'object') {
+                entity.profile1.identity.links[idx_14].source = factory.create(source_27, data.profile1_identity_links[idx_14].source, { initialized: true, merge: true, newEntity, convertCustomTypes, normalizeAccessors, schema });
               }
             }
-          } else if (data.profile1_identity_links[idx_8] === null) {
-            entity.profile1.identity.links[idx_8] = null;
+          } else if (data.profile1_identity_links[idx_14] === null) {
+            entity.profile1.identity.links[idx_14] = null;
           }
         });
       }
@@ -457,9 +457,9 @@ exports[`embedded entities in postgres > diffing 2`] = `
     entity.profile1.identity.source = null;
       } else if (typeof data.profile1_identity_source !== 'undefined') {
         if (isPrimaryKey(data.profile1_identity_source, true)) {
-          entity.profile1.identity.source = factory.createReference('Source', data.profile1_identity_source, { merge: true, convertCustomTypes, normalizeAccessors, schema });
+          entity.profile1.identity.source = factory.createReference(source_28, data.profile1_identity_source, { merge: true, convertCustomTypes, normalizeAccessors, schema });
         } else if (data.profile1_identity_source && typeof data.profile1_identity_source === 'object') {
-          entity.profile1.identity.source = factory.create('Source', data.profile1_identity_source, { initialized: true, merge: true, newEntity, convertCustomTypes, normalizeAccessors, schema });
+          entity.profile1.identity.source = factory.create(source_28, data.profile1_identity_source, { initialized: true, merge: true, newEntity, convertCustomTypes, normalizeAccessors, schema });
         }
       }
     } else if (data.profile1_identity_email === null && data.profile1_identity_meta_foo === null && data.profile1_identity_meta_bar === null && data.profile1_identity_meta_source === null && data.profile1_identity_links === null && data.profile1_identity_source === null) {
@@ -468,7 +468,7 @@ exports[`embedded entities in postgres > diffing 2`] = `
     if (data.profile1_identity != null) {
       const embeddedData = data.profile1_identity;
       if (entity.profile1.identity == null) {
-        entity.profile1.identity = factory.createEmbeddable('Identity', embeddedData, { newEntity, convertCustomTypes, normalizeAccessors });
+        entity.profile1.identity = factory.createEmbeddable(identity_29, embeddedData, { newEntity, convertCustomTypes, normalizeAccessors });
       }
       if (data.profile1_identity.email === null) {
         entity.profile1.identity.email = null;
@@ -482,7 +482,7 @@ exports[`embedded entities in postgres > diffing 2`] = `
           source: data.profile1_identity_meta_source,
         };
         if (entity.profile1.identity.meta == null) {
-          entity.profile1.identity.meta = factory.createEmbeddable('IdentityMeta', embeddedData, { newEntity, convertCustomTypes, normalizeAccessors });
+          entity.profile1.identity.meta = factory.createEmbeddable(identity_meta_31, embeddedData, { newEntity, convertCustomTypes, normalizeAccessors });
         }
         if (data.profile1_identity_meta_foo === null) {
           entity.profile1.identity.meta.foo = null;
@@ -498,9 +498,9 @@ exports[`embedded entities in postgres > diffing 2`] = `
     entity.profile1.identity.meta.source = null;
         } else if (typeof data.profile1_identity_meta_source !== 'undefined') {
           if (isPrimaryKey(data.profile1_identity_meta_source, true)) {
-            entity.profile1.identity.meta.source = factory.createReference('Source', data.profile1_identity_meta_source, { merge: true, convertCustomTypes, normalizeAccessors, schema });
+            entity.profile1.identity.meta.source = factory.createReference(source_34, data.profile1_identity_meta_source, { merge: true, convertCustomTypes, normalizeAccessors, schema });
           } else if (data.profile1_identity_meta_source && typeof data.profile1_identity_meta_source === 'object') {
-            entity.profile1.identity.meta.source = factory.create('Source', data.profile1_identity_meta_source, { initialized: true, merge: true, newEntity, convertCustomTypes, normalizeAccessors, schema });
+            entity.profile1.identity.meta.source = factory.create(source_34, data.profile1_identity_meta_source, { initialized: true, merge: true, newEntity, convertCustomTypes, normalizeAccessors, schema });
           }
         }
       } else if (data.profile1_identity_meta_foo === null && data.profile1_identity_meta_bar === null && data.profile1_identity_meta_source === null) {
@@ -509,7 +509,7 @@ exports[`embedded entities in postgres > diffing 2`] = `
       if (data.profile1_identity.meta != null) {
         const embeddedData = data.profile1_identity.meta;
         if (entity.profile1.identity.meta == null) {
-          entity.profile1.identity.meta = factory.createEmbeddable('IdentityMeta', embeddedData, { newEntity, convertCustomTypes, normalizeAccessors });
+          entity.profile1.identity.meta = factory.createEmbeddable(identity_meta_35, embeddedData, { newEntity, convertCustomTypes, normalizeAccessors });
         }
         if (data.profile1_identity.meta.foo === null) {
           entity.profile1.identity.meta.foo = null;
@@ -525,9 +525,9 @@ exports[`embedded entities in postgres > diffing 2`] = `
     entity.profile1.identity.meta.source = null;
         } else if (typeof data.profile1_identity.meta.source !== 'undefined') {
           if (isPrimaryKey(data.profile1_identity.meta.source, true)) {
-            entity.profile1.identity.meta.source = factory.createReference('Source', data.profile1_identity.meta.source, { merge: true, convertCustomTypes, normalizeAccessors, schema });
+            entity.profile1.identity.meta.source = factory.createReference(source_38, data.profile1_identity.meta.source, { merge: true, convertCustomTypes, normalizeAccessors, schema });
           } else if (data.profile1_identity.meta.source && typeof data.profile1_identity.meta.source === 'object') {
-            entity.profile1.identity.meta.source = factory.create('Source', data.profile1_identity.meta.source, { initialized: true, merge: true, newEntity, convertCustomTypes, normalizeAccessors, schema });
+            entity.profile1.identity.meta.source = factory.create(source_38, data.profile1_identity.meta.source, { initialized: true, merge: true, newEntity, convertCustomTypes, normalizeAccessors, schema });
           }
         }
       } else if (data.profile1_identity.meta === null) {
@@ -535,98 +535,98 @@ exports[`embedded entities in postgres > diffing 2`] = `
       }
       if (Array.isArray(data.profile1_identity.links)) {
         entity.profile1.identity.links = [];
-        data.profile1_identity.links.forEach((_, idx_21) => {
-          if (data.profile1_identity.links[idx_21] != null) {
-            const embeddedData = data.profile1_identity.links[idx_21];
-            if (entity.profile1.identity.links[idx_21] == null) {
-              entity.profile1.identity.links[idx_21] = factory.createEmbeddable('IdentityLink', embeddedData, { newEntity, convertCustomTypes, normalizeAccessors });
+        data.profile1_identity.links.forEach((_, idx_39) => {
+          if (data.profile1_identity.links[idx_39] != null) {
+            const embeddedData = data.profile1_identity.links[idx_39];
+            if (entity.profile1.identity.links[idx_39] == null) {
+              entity.profile1.identity.links[idx_39] = factory.createEmbeddable(identity_link_40, embeddedData, { newEntity, convertCustomTypes, normalizeAccessors });
             }
-            if (data.profile1_identity.links[idx_21].url === null) {
-              entity.profile1.identity.links[idx_21].url = null;
-            } else if (typeof data.profile1_identity.links[idx_21].url !== 'undefined') {
-              entity.profile1.identity.links[idx_21].url = data.profile1_identity.links[idx_21].url;
+            if (data.profile1_identity.links[idx_39].url === null) {
+              entity.profile1.identity.links[idx_39].url = null;
+            } else if (typeof data.profile1_identity.links[idx_39].url !== 'undefined') {
+              entity.profile1.identity.links[idx_39].url = data.profile1_identity.links[idx_39].url;
             }
-            if (data.profile1_identity.links[idx_21].createdAt === null) {
-              entity.profile1.identity.links[idx_21].createdAt = null;
-            } else if (typeof data.profile1_identity.links[idx_21].createdAt !== 'undefined') {
-              if (data.profile1_identity.links[idx_21].createdAt instanceof Date) {
-                entity.profile1.identity.links[idx_21].createdAt = data.profile1_identity.links[idx_21].createdAt;
-              } else if (typeof data.profile1_identity.links[idx_21].createdAt === 'number' || data.profile1_identity.links[idx_21].createdAt.includes('+') || data.profile1_identity.links[idx_21].createdAt.lastIndexOf('-') > 10 || data.profile1_identity.links[idx_21].createdAt.endsWith('Z')) {
-                entity.profile1.identity.links[idx_21].createdAt = new Date(data.profile1_identity.links[idx_21].createdAt);
+            if (data.profile1_identity.links[idx_39].createdAt === null) {
+              entity.profile1.identity.links[idx_39].createdAt = null;
+            } else if (typeof data.profile1_identity.links[idx_39].createdAt !== 'undefined') {
+              if (data.profile1_identity.links[idx_39].createdAt instanceof Date) {
+                entity.profile1.identity.links[idx_39].createdAt = data.profile1_identity.links[idx_39].createdAt;
+              } else if (typeof data.profile1_identity.links[idx_39].createdAt === 'number' || data.profile1_identity.links[idx_39].createdAt.includes('+') || data.profile1_identity.links[idx_39].createdAt.lastIndexOf('-') > 10 || data.profile1_identity.links[idx_39].createdAt.endsWith('Z')) {
+                entity.profile1.identity.links[idx_39].createdAt = new Date(data.profile1_identity.links[idx_39].createdAt);
               } else {
-                entity.profile1.identity.links[idx_21].createdAt = new Date(data.profile1_identity.links[idx_21].createdAt + 'Z');
+                entity.profile1.identity.links[idx_39].createdAt = new Date(data.profile1_identity.links[idx_39].createdAt + 'Z');
               }
             }
-            if (data.profile1_identity.links[idx_21].meta != null) {
-              const embeddedData = data.profile1_identity.links[idx_21].meta;
-              if (entity.profile1.identity.links[idx_21].meta == null) {
-                entity.profile1.identity.links[idx_21].meta = factory.createEmbeddable('IdentityMeta', embeddedData, { newEntity, convertCustomTypes, normalizeAccessors });
+            if (data.profile1_identity.links[idx_39].meta != null) {
+              const embeddedData = data.profile1_identity.links[idx_39].meta;
+              if (entity.profile1.identity.links[idx_39].meta == null) {
+                entity.profile1.identity.links[idx_39].meta = factory.createEmbeddable(identity_meta_43, embeddedData, { newEntity, convertCustomTypes, normalizeAccessors });
               }
-              if (data.profile1_identity.links[idx_21].meta.foo === null) {
-                entity.profile1.identity.links[idx_21].meta.foo = null;
-              } else if (typeof data.profile1_identity.links[idx_21].meta.foo !== 'undefined') {
-                entity.profile1.identity.links[idx_21].meta.foo = data.profile1_identity.links[idx_21].meta.foo;
+              if (data.profile1_identity.links[idx_39].meta.foo === null) {
+                entity.profile1.identity.links[idx_39].meta.foo = null;
+              } else if (typeof data.profile1_identity.links[idx_39].meta.foo !== 'undefined') {
+                entity.profile1.identity.links[idx_39].meta.foo = data.profile1_identity.links[idx_39].meta.foo;
               }
-              if (data.profile1_identity.links[idx_21].meta.bar === null) {
-                entity.profile1.identity.links[idx_21].meta.bar = null;
-              } else if (typeof data.profile1_identity.links[idx_21].meta.bar !== 'undefined') {
-                entity.profile1.identity.links[idx_21].meta.bar = data.profile1_identity.links[idx_21].meta.bar;
+              if (data.profile1_identity.links[idx_39].meta.bar === null) {
+                entity.profile1.identity.links[idx_39].meta.bar = null;
+              } else if (typeof data.profile1_identity.links[idx_39].meta.bar !== 'undefined') {
+                entity.profile1.identity.links[idx_39].meta.bar = data.profile1_identity.links[idx_39].meta.bar;
               }
-              if (data.profile1_identity.links[idx_21].meta.source === null) {
-    entity.profile1.identity.links[idx_21].meta.source = null;
-              } else if (typeof data.profile1_identity.links[idx_21].meta.source !== 'undefined') {
-                if (isPrimaryKey(data.profile1_identity.links[idx_21].meta.source, true)) {
-                  entity.profile1.identity.links[idx_21].meta.source = factory.createReference('Source', data.profile1_identity.links[idx_21].meta.source, { merge: true, convertCustomTypes, normalizeAccessors, schema });
-                } else if (data.profile1_identity.links[idx_21].meta.source && typeof data.profile1_identity.links[idx_21].meta.source === 'object') {
-                  entity.profile1.identity.links[idx_21].meta.source = factory.create('Source', data.profile1_identity.links[idx_21].meta.source, { initialized: true, merge: true, newEntity, convertCustomTypes, normalizeAccessors, schema });
+              if (data.profile1_identity.links[idx_39].meta.source === null) {
+    entity.profile1.identity.links[idx_39].meta.source = null;
+              } else if (typeof data.profile1_identity.links[idx_39].meta.source !== 'undefined') {
+                if (isPrimaryKey(data.profile1_identity.links[idx_39].meta.source, true)) {
+                  entity.profile1.identity.links[idx_39].meta.source = factory.createReference(source_46, data.profile1_identity.links[idx_39].meta.source, { merge: true, convertCustomTypes, normalizeAccessors, schema });
+                } else if (data.profile1_identity.links[idx_39].meta.source && typeof data.profile1_identity.links[idx_39].meta.source === 'object') {
+                  entity.profile1.identity.links[idx_39].meta.source = factory.create(source_46, data.profile1_identity.links[idx_39].meta.source, { initialized: true, merge: true, newEntity, convertCustomTypes, normalizeAccessors, schema });
                 }
               }
-            } else if (data.profile1_identity.links[idx_21].meta === null) {
-              entity.profile1.identity.links[idx_21].meta = null;
+            } else if (data.profile1_identity.links[idx_39].meta === null) {
+              entity.profile1.identity.links[idx_39].meta = null;
             }
-            if (Array.isArray(data.profile1_identity.links[idx_21].metas)) {
-              entity.profile1.identity.links[idx_21].metas = [];
-              data.profile1_identity.links[idx_21].metas.forEach((_, idx_26) => {
-                if (data.profile1_identity.links[idx_21].metas[idx_26] != null) {
-                  const embeddedData = data.profile1_identity.links[idx_21].metas[idx_26];
-                  if (entity.profile1.identity.links[idx_21].metas[idx_26] == null) {
-                    entity.profile1.identity.links[idx_21].metas[idx_26] = factory.createEmbeddable('IdentityMeta', embeddedData, { newEntity, convertCustomTypes, normalizeAccessors });
+            if (Array.isArray(data.profile1_identity.links[idx_39].metas)) {
+              entity.profile1.identity.links[idx_39].metas = [];
+              data.profile1_identity.links[idx_39].metas.forEach((_, idx_47) => {
+                if (data.profile1_identity.links[idx_39].metas[idx_47] != null) {
+                  const embeddedData = data.profile1_identity.links[idx_39].metas[idx_47];
+                  if (entity.profile1.identity.links[idx_39].metas[idx_47] == null) {
+                    entity.profile1.identity.links[idx_39].metas[idx_47] = factory.createEmbeddable(identity_meta_48, embeddedData, { newEntity, convertCustomTypes, normalizeAccessors });
                   }
-                  if (data.profile1_identity.links[idx_21].metas[idx_26].foo === null) {
-                    entity.profile1.identity.links[idx_21].metas[idx_26].foo = null;
-                  } else if (typeof data.profile1_identity.links[idx_21].metas[idx_26].foo !== 'undefined') {
-                    entity.profile1.identity.links[idx_21].metas[idx_26].foo = data.profile1_identity.links[idx_21].metas[idx_26].foo;
+                  if (data.profile1_identity.links[idx_39].metas[idx_47].foo === null) {
+                    entity.profile1.identity.links[idx_39].metas[idx_47].foo = null;
+                  } else if (typeof data.profile1_identity.links[idx_39].metas[idx_47].foo !== 'undefined') {
+                    entity.profile1.identity.links[idx_39].metas[idx_47].foo = data.profile1_identity.links[idx_39].metas[idx_47].foo;
                   }
-                  if (data.profile1_identity.links[idx_21].metas[idx_26].bar === null) {
-                    entity.profile1.identity.links[idx_21].metas[idx_26].bar = null;
-                  } else if (typeof data.profile1_identity.links[idx_21].metas[idx_26].bar !== 'undefined') {
-                    entity.profile1.identity.links[idx_21].metas[idx_26].bar = data.profile1_identity.links[idx_21].metas[idx_26].bar;
+                  if (data.profile1_identity.links[idx_39].metas[idx_47].bar === null) {
+                    entity.profile1.identity.links[idx_39].metas[idx_47].bar = null;
+                  } else if (typeof data.profile1_identity.links[idx_39].metas[idx_47].bar !== 'undefined') {
+                    entity.profile1.identity.links[idx_39].metas[idx_47].bar = data.profile1_identity.links[idx_39].metas[idx_47].bar;
                   }
-                  if (data.profile1_identity.links[idx_21].metas[idx_26].source === null) {
-    entity.profile1.identity.links[idx_21].metas[idx_26].source = null;
-                  } else if (typeof data.profile1_identity.links[idx_21].metas[idx_26].source !== 'undefined') {
-                    if (isPrimaryKey(data.profile1_identity.links[idx_21].metas[idx_26].source, true)) {
-                      entity.profile1.identity.links[idx_21].metas[idx_26].source = factory.createReference('Source', data.profile1_identity.links[idx_21].metas[idx_26].source, { merge: true, convertCustomTypes, normalizeAccessors, schema });
-                    } else if (data.profile1_identity.links[idx_21].metas[idx_26].source && typeof data.profile1_identity.links[idx_21].metas[idx_26].source === 'object') {
-                      entity.profile1.identity.links[idx_21].metas[idx_26].source = factory.create('Source', data.profile1_identity.links[idx_21].metas[idx_26].source, { initialized: true, merge: true, newEntity, convertCustomTypes, normalizeAccessors, schema });
+                  if (data.profile1_identity.links[idx_39].metas[idx_47].source === null) {
+    entity.profile1.identity.links[idx_39].metas[idx_47].source = null;
+                  } else if (typeof data.profile1_identity.links[idx_39].metas[idx_47].source !== 'undefined') {
+                    if (isPrimaryKey(data.profile1_identity.links[idx_39].metas[idx_47].source, true)) {
+                      entity.profile1.identity.links[idx_39].metas[idx_47].source = factory.createReference(source_51, data.profile1_identity.links[idx_39].metas[idx_47].source, { merge: true, convertCustomTypes, normalizeAccessors, schema });
+                    } else if (data.profile1_identity.links[idx_39].metas[idx_47].source && typeof data.profile1_identity.links[idx_39].metas[idx_47].source === 'object') {
+                      entity.profile1.identity.links[idx_39].metas[idx_47].source = factory.create(source_51, data.profile1_identity.links[idx_39].metas[idx_47].source, { initialized: true, merge: true, newEntity, convertCustomTypes, normalizeAccessors, schema });
                     }
                   }
-                } else if (data.profile1_identity.links[idx_21].metas[idx_26] === null) {
-                  entity.profile1.identity.links[idx_21].metas[idx_26] = null;
+                } else if (data.profile1_identity.links[idx_39].metas[idx_47] === null) {
+                  entity.profile1.identity.links[idx_39].metas[idx_47] = null;
                 }
               });
             }
-            if (data.profile1_identity.links[idx_21].source === null) {
-    entity.profile1.identity.links[idx_21].source = null;
-            } else if (typeof data.profile1_identity.links[idx_21].source !== 'undefined') {
-              if (isPrimaryKey(data.profile1_identity.links[idx_21].source, true)) {
-                entity.profile1.identity.links[idx_21].source = factory.createReference('Source', data.profile1_identity.links[idx_21].source, { merge: true, convertCustomTypes, normalizeAccessors, schema });
-              } else if (data.profile1_identity.links[idx_21].source && typeof data.profile1_identity.links[idx_21].source === 'object') {
-                entity.profile1.identity.links[idx_21].source = factory.create('Source', data.profile1_identity.links[idx_21].source, { initialized: true, merge: true, newEntity, convertCustomTypes, normalizeAccessors, schema });
+            if (data.profile1_identity.links[idx_39].source === null) {
+    entity.profile1.identity.links[idx_39].source = null;
+            } else if (typeof data.profile1_identity.links[idx_39].source !== 'undefined') {
+              if (isPrimaryKey(data.profile1_identity.links[idx_39].source, true)) {
+                entity.profile1.identity.links[idx_39].source = factory.createReference(source_52, data.profile1_identity.links[idx_39].source, { merge: true, convertCustomTypes, normalizeAccessors, schema });
+              } else if (data.profile1_identity.links[idx_39].source && typeof data.profile1_identity.links[idx_39].source === 'object') {
+                entity.profile1.identity.links[idx_39].source = factory.create(source_52, data.profile1_identity.links[idx_39].source, { initialized: true, merge: true, newEntity, convertCustomTypes, normalizeAccessors, schema });
               }
             }
-          } else if (data.profile1_identity.links[idx_21] === null) {
-            entity.profile1.identity.links[idx_21] = null;
+          } else if (data.profile1_identity.links[idx_39] === null) {
+            entity.profile1.identity.links[idx_39] = null;
           }
         });
       }
@@ -634,9 +634,9 @@ exports[`embedded entities in postgres > diffing 2`] = `
     entity.profile1.identity.source = null;
       } else if (typeof data.profile1_identity.source !== 'undefined') {
         if (isPrimaryKey(data.profile1_identity.source, true)) {
-          entity.profile1.identity.source = factory.createReference('Source', data.profile1_identity.source, { merge: true, convertCustomTypes, normalizeAccessors, schema });
+          entity.profile1.identity.source = factory.createReference(source_53, data.profile1_identity.source, { merge: true, convertCustomTypes, normalizeAccessors, schema });
         } else if (data.profile1_identity.source && typeof data.profile1_identity.source === 'object') {
-          entity.profile1.identity.source = factory.create('Source', data.profile1_identity.source, { initialized: true, merge: true, newEntity, convertCustomTypes, normalizeAccessors, schema });
+          entity.profile1.identity.source = factory.create(source_53, data.profile1_identity.source, { initialized: true, merge: true, newEntity, convertCustomTypes, normalizeAccessors, schema });
         }
       }
     } else if (data.profile1_identity === null) {
@@ -646,9 +646,9 @@ exports[`embedded entities in postgres > diffing 2`] = `
     entity.profile1.source = null;
     } else if (typeof data.profile1_source !== 'undefined') {
       if (isPrimaryKey(data.profile1_source, true)) {
-        entity.profile1.source = factory.createReference('Source', data.profile1_source, { merge: true, convertCustomTypes, normalizeAccessors, schema });
+        entity.profile1.source = factory.createReference(source_54, data.profile1_source, { merge: true, convertCustomTypes, normalizeAccessors, schema });
       } else if (data.profile1_source && typeof data.profile1_source === 'object') {
-        entity.profile1.source = factory.create('Source', data.profile1_source, { initialized: true, merge: true, newEntity, convertCustomTypes, normalizeAccessors, schema });
+        entity.profile1.source = factory.create(source_54, data.profile1_source, { initialized: true, merge: true, newEntity, convertCustomTypes, normalizeAccessors, schema });
       }
     }
   } else if (data.profile1_username === null && data.profile1_identity_email === null && data.profile1_identity_meta_foo === null && data.profile1_identity_meta_bar === null && data.profile1_identity_meta_source === null && data.profile1_identity_links === null && data.profile1_identity_source === null && data.profile1_source === null) {
@@ -657,7 +657,7 @@ exports[`embedded entities in postgres > diffing 2`] = `
   if (data.profile1 != null) {
     const embeddedData = data.profile1;
     if (entity.profile1 == null) {
-      entity.profile1 = factory.createEmbeddable('Profile', embeddedData, { newEntity, convertCustomTypes, normalizeAccessors });
+      entity.profile1 = factory.createEmbeddable(profile_55, embeddedData, { newEntity, convertCustomTypes, normalizeAccessors });
     }
     if (data.profile1.username === null) {
       entity.profile1.username = null;
@@ -672,7 +672,7 @@ exports[`embedded entities in postgres > diffing 2`] = `
         source: data.profile1_identity_source,
       };
       if (entity.profile1.identity == null) {
-        entity.profile1.identity = factory.createEmbeddable('Identity', embeddedData, { newEntity, convertCustomTypes, normalizeAccessors });
+        entity.profile1.identity = factory.createEmbeddable(identity_57, embeddedData, { newEntity, convertCustomTypes, normalizeAccessors });
       }
       if (data.profile1_identity_email === null) {
         entity.profile1.identity.email = null;
@@ -686,7 +686,7 @@ exports[`embedded entities in postgres > diffing 2`] = `
           source: data.profile1_identity_meta_source,
         };
         if (entity.profile1.identity.meta == null) {
-          entity.profile1.identity.meta = factory.createEmbeddable('IdentityMeta', embeddedData, { newEntity, convertCustomTypes, normalizeAccessors });
+          entity.profile1.identity.meta = factory.createEmbeddable(identity_meta_59, embeddedData, { newEntity, convertCustomTypes, normalizeAccessors });
         }
         if (data.profile1_identity_meta_foo === null) {
           entity.profile1.identity.meta.foo = null;
@@ -702,9 +702,9 @@ exports[`embedded entities in postgres > diffing 2`] = `
     entity.profile1.identity.meta.source = null;
         } else if (typeof data.profile1_identity_meta_source !== 'undefined') {
           if (isPrimaryKey(data.profile1_identity_meta_source, true)) {
-            entity.profile1.identity.meta.source = factory.createReference('Source', data.profile1_identity_meta_source, { merge: true, convertCustomTypes, normalizeAccessors, schema });
+            entity.profile1.identity.meta.source = factory.createReference(source_62, data.profile1_identity_meta_source, { merge: true, convertCustomTypes, normalizeAccessors, schema });
           } else if (data.profile1_identity_meta_source && typeof data.profile1_identity_meta_source === 'object') {
-            entity.profile1.identity.meta.source = factory.create('Source', data.profile1_identity_meta_source, { initialized: true, merge: true, newEntity, convertCustomTypes, normalizeAccessors, schema });
+            entity.profile1.identity.meta.source = factory.create(source_62, data.profile1_identity_meta_source, { initialized: true, merge: true, newEntity, convertCustomTypes, normalizeAccessors, schema });
           }
         }
       } else if (data.profile1_identity_meta_foo === null && data.profile1_identity_meta_bar === null && data.profile1_identity_meta_source === null) {
@@ -713,7 +713,7 @@ exports[`embedded entities in postgres > diffing 2`] = `
       if (data.profile1_identity_meta != null) {
         const embeddedData = data.profile1_identity_meta;
         if (entity.profile1.identity.meta == null) {
-          entity.profile1.identity.meta = factory.createEmbeddable('IdentityMeta', embeddedData, { newEntity, convertCustomTypes, normalizeAccessors });
+          entity.profile1.identity.meta = factory.createEmbeddable(identity_meta_63, embeddedData, { newEntity, convertCustomTypes, normalizeAccessors });
         }
         if (data.profile1_identity_meta.foo === null) {
           entity.profile1.identity.meta.foo = null;
@@ -729,9 +729,9 @@ exports[`embedded entities in postgres > diffing 2`] = `
     entity.profile1.identity.meta.source = null;
         } else if (typeof data.profile1_identity_meta.source !== 'undefined') {
           if (isPrimaryKey(data.profile1_identity_meta.source, true)) {
-            entity.profile1.identity.meta.source = factory.createReference('Source', data.profile1_identity_meta.source, { merge: true, convertCustomTypes, normalizeAccessors, schema });
+            entity.profile1.identity.meta.source = factory.createReference(source_66, data.profile1_identity_meta.source, { merge: true, convertCustomTypes, normalizeAccessors, schema });
           } else if (data.profile1_identity_meta.source && typeof data.profile1_identity_meta.source === 'object') {
-            entity.profile1.identity.meta.source = factory.create('Source', data.profile1_identity_meta.source, { initialized: true, merge: true, newEntity, convertCustomTypes, normalizeAccessors, schema });
+            entity.profile1.identity.meta.source = factory.create(source_66, data.profile1_identity_meta.source, { initialized: true, merge: true, newEntity, convertCustomTypes, normalizeAccessors, schema });
           }
         }
       } else if (data.profile1_identity_meta === null) {
@@ -739,98 +739,98 @@ exports[`embedded entities in postgres > diffing 2`] = `
       }
       if (Array.isArray(data.profile1_identity_links)) {
         entity.profile1.identity.links = [];
-        data.profile1_identity_links.forEach((_, idx_35) => {
-          if (data.profile1_identity_links[idx_35] != null) {
-            const embeddedData = data.profile1_identity_links[idx_35];
-            if (entity.profile1.identity.links[idx_35] == null) {
-              entity.profile1.identity.links[idx_35] = factory.createEmbeddable('IdentityLink', embeddedData, { newEntity, convertCustomTypes, normalizeAccessors });
+        data.profile1_identity_links.forEach((_, idx_67) => {
+          if (data.profile1_identity_links[idx_67] != null) {
+            const embeddedData = data.profile1_identity_links[idx_67];
+            if (entity.profile1.identity.links[idx_67] == null) {
+              entity.profile1.identity.links[idx_67] = factory.createEmbeddable(identity_link_68, embeddedData, { newEntity, convertCustomTypes, normalizeAccessors });
             }
-            if (data.profile1_identity_links[idx_35].url === null) {
-              entity.profile1.identity.links[idx_35].url = null;
-            } else if (typeof data.profile1_identity_links[idx_35].url !== 'undefined') {
-              entity.profile1.identity.links[idx_35].url = data.profile1_identity_links[idx_35].url;
+            if (data.profile1_identity_links[idx_67].url === null) {
+              entity.profile1.identity.links[idx_67].url = null;
+            } else if (typeof data.profile1_identity_links[idx_67].url !== 'undefined') {
+              entity.profile1.identity.links[idx_67].url = data.profile1_identity_links[idx_67].url;
             }
-            if (data.profile1_identity_links[idx_35].createdAt === null) {
-              entity.profile1.identity.links[idx_35].createdAt = null;
-            } else if (typeof data.profile1_identity_links[idx_35].createdAt !== 'undefined') {
-              if (data.profile1_identity_links[idx_35].createdAt instanceof Date) {
-                entity.profile1.identity.links[idx_35].createdAt = data.profile1_identity_links[idx_35].createdAt;
-              } else if (typeof data.profile1_identity_links[idx_35].createdAt === 'number' || data.profile1_identity_links[idx_35].createdAt.includes('+') || data.profile1_identity_links[idx_35].createdAt.lastIndexOf('-') > 10 || data.profile1_identity_links[idx_35].createdAt.endsWith('Z')) {
-                entity.profile1.identity.links[idx_35].createdAt = new Date(data.profile1_identity_links[idx_35].createdAt);
+            if (data.profile1_identity_links[idx_67].createdAt === null) {
+              entity.profile1.identity.links[idx_67].createdAt = null;
+            } else if (typeof data.profile1_identity_links[idx_67].createdAt !== 'undefined') {
+              if (data.profile1_identity_links[idx_67].createdAt instanceof Date) {
+                entity.profile1.identity.links[idx_67].createdAt = data.profile1_identity_links[idx_67].createdAt;
+              } else if (typeof data.profile1_identity_links[idx_67].createdAt === 'number' || data.profile1_identity_links[idx_67].createdAt.includes('+') || data.profile1_identity_links[idx_67].createdAt.lastIndexOf('-') > 10 || data.profile1_identity_links[idx_67].createdAt.endsWith('Z')) {
+                entity.profile1.identity.links[idx_67].createdAt = new Date(data.profile1_identity_links[idx_67].createdAt);
               } else {
-                entity.profile1.identity.links[idx_35].createdAt = new Date(data.profile1_identity_links[idx_35].createdAt + 'Z');
+                entity.profile1.identity.links[idx_67].createdAt = new Date(data.profile1_identity_links[idx_67].createdAt + 'Z');
               }
             }
-            if (data.profile1_identity_links[idx_35].meta != null) {
-              const embeddedData = data.profile1_identity_links[idx_35].meta;
-              if (entity.profile1.identity.links[idx_35].meta == null) {
-                entity.profile1.identity.links[idx_35].meta = factory.createEmbeddable('IdentityMeta', embeddedData, { newEntity, convertCustomTypes, normalizeAccessors });
+            if (data.profile1_identity_links[idx_67].meta != null) {
+              const embeddedData = data.profile1_identity_links[idx_67].meta;
+              if (entity.profile1.identity.links[idx_67].meta == null) {
+                entity.profile1.identity.links[idx_67].meta = factory.createEmbeddable(identity_meta_71, embeddedData, { newEntity, convertCustomTypes, normalizeAccessors });
               }
-              if (data.profile1_identity_links[idx_35].meta.foo === null) {
-                entity.profile1.identity.links[idx_35].meta.foo = null;
-              } else if (typeof data.profile1_identity_links[idx_35].meta.foo !== 'undefined') {
-                entity.profile1.identity.links[idx_35].meta.foo = data.profile1_identity_links[idx_35].meta.foo;
+              if (data.profile1_identity_links[idx_67].meta.foo === null) {
+                entity.profile1.identity.links[idx_67].meta.foo = null;
+              } else if (typeof data.profile1_identity_links[idx_67].meta.foo !== 'undefined') {
+                entity.profile1.identity.links[idx_67].meta.foo = data.profile1_identity_links[idx_67].meta.foo;
               }
-              if (data.profile1_identity_links[idx_35].meta.bar === null) {
-                entity.profile1.identity.links[idx_35].meta.bar = null;
-              } else if (typeof data.profile1_identity_links[idx_35].meta.bar !== 'undefined') {
-                entity.profile1.identity.links[idx_35].meta.bar = data.profile1_identity_links[idx_35].meta.bar;
+              if (data.profile1_identity_links[idx_67].meta.bar === null) {
+                entity.profile1.identity.links[idx_67].meta.bar = null;
+              } else if (typeof data.profile1_identity_links[idx_67].meta.bar !== 'undefined') {
+                entity.profile1.identity.links[idx_67].meta.bar = data.profile1_identity_links[idx_67].meta.bar;
               }
-              if (data.profile1_identity_links[idx_35].meta.source === null) {
-    entity.profile1.identity.links[idx_35].meta.source = null;
-              } else if (typeof data.profile1_identity_links[idx_35].meta.source !== 'undefined') {
-                if (isPrimaryKey(data.profile1_identity_links[idx_35].meta.source, true)) {
-                  entity.profile1.identity.links[idx_35].meta.source = factory.createReference('Source', data.profile1_identity_links[idx_35].meta.source, { merge: true, convertCustomTypes, normalizeAccessors, schema });
-                } else if (data.profile1_identity_links[idx_35].meta.source && typeof data.profile1_identity_links[idx_35].meta.source === 'object') {
-                  entity.profile1.identity.links[idx_35].meta.source = factory.create('Source', data.profile1_identity_links[idx_35].meta.source, { initialized: true, merge: true, newEntity, convertCustomTypes, normalizeAccessors, schema });
+              if (data.profile1_identity_links[idx_67].meta.source === null) {
+    entity.profile1.identity.links[idx_67].meta.source = null;
+              } else if (typeof data.profile1_identity_links[idx_67].meta.source !== 'undefined') {
+                if (isPrimaryKey(data.profile1_identity_links[idx_67].meta.source, true)) {
+                  entity.profile1.identity.links[idx_67].meta.source = factory.createReference(source_74, data.profile1_identity_links[idx_67].meta.source, { merge: true, convertCustomTypes, normalizeAccessors, schema });
+                } else if (data.profile1_identity_links[idx_67].meta.source && typeof data.profile1_identity_links[idx_67].meta.source === 'object') {
+                  entity.profile1.identity.links[idx_67].meta.source = factory.create(source_74, data.profile1_identity_links[idx_67].meta.source, { initialized: true, merge: true, newEntity, convertCustomTypes, normalizeAccessors, schema });
                 }
               }
-            } else if (data.profile1_identity_links[idx_35].meta === null) {
-              entity.profile1.identity.links[idx_35].meta = null;
+            } else if (data.profile1_identity_links[idx_67].meta === null) {
+              entity.profile1.identity.links[idx_67].meta = null;
             }
-            if (Array.isArray(data.profile1_identity_links[idx_35].metas)) {
-              entity.profile1.identity.links[idx_35].metas = [];
-              data.profile1_identity_links[idx_35].metas.forEach((_, idx_40) => {
-                if (data.profile1_identity_links[idx_35].metas[idx_40] != null) {
-                  const embeddedData = data.profile1_identity_links[idx_35].metas[idx_40];
-                  if (entity.profile1.identity.links[idx_35].metas[idx_40] == null) {
-                    entity.profile1.identity.links[idx_35].metas[idx_40] = factory.createEmbeddable('IdentityMeta', embeddedData, { newEntity, convertCustomTypes, normalizeAccessors });
+            if (Array.isArray(data.profile1_identity_links[idx_67].metas)) {
+              entity.profile1.identity.links[idx_67].metas = [];
+              data.profile1_identity_links[idx_67].metas.forEach((_, idx_75) => {
+                if (data.profile1_identity_links[idx_67].metas[idx_75] != null) {
+                  const embeddedData = data.profile1_identity_links[idx_67].metas[idx_75];
+                  if (entity.profile1.identity.links[idx_67].metas[idx_75] == null) {
+                    entity.profile1.identity.links[idx_67].metas[idx_75] = factory.createEmbeddable(identity_meta_76, embeddedData, { newEntity, convertCustomTypes, normalizeAccessors });
                   }
-                  if (data.profile1_identity_links[idx_35].metas[idx_40].foo === null) {
-                    entity.profile1.identity.links[idx_35].metas[idx_40].foo = null;
-                  } else if (typeof data.profile1_identity_links[idx_35].metas[idx_40].foo !== 'undefined') {
-                    entity.profile1.identity.links[idx_35].metas[idx_40].foo = data.profile1_identity_links[idx_35].metas[idx_40].foo;
+                  if (data.profile1_identity_links[idx_67].metas[idx_75].foo === null) {
+                    entity.profile1.identity.links[idx_67].metas[idx_75].foo = null;
+                  } else if (typeof data.profile1_identity_links[idx_67].metas[idx_75].foo !== 'undefined') {
+                    entity.profile1.identity.links[idx_67].metas[idx_75].foo = data.profile1_identity_links[idx_67].metas[idx_75].foo;
                   }
-                  if (data.profile1_identity_links[idx_35].metas[idx_40].bar === null) {
-                    entity.profile1.identity.links[idx_35].metas[idx_40].bar = null;
-                  } else if (typeof data.profile1_identity_links[idx_35].metas[idx_40].bar !== 'undefined') {
-                    entity.profile1.identity.links[idx_35].metas[idx_40].bar = data.profile1_identity_links[idx_35].metas[idx_40].bar;
+                  if (data.profile1_identity_links[idx_67].metas[idx_75].bar === null) {
+                    entity.profile1.identity.links[idx_67].metas[idx_75].bar = null;
+                  } else if (typeof data.profile1_identity_links[idx_67].metas[idx_75].bar !== 'undefined') {
+                    entity.profile1.identity.links[idx_67].metas[idx_75].bar = data.profile1_identity_links[idx_67].metas[idx_75].bar;
                   }
-                  if (data.profile1_identity_links[idx_35].metas[idx_40].source === null) {
-    entity.profile1.identity.links[idx_35].metas[idx_40].source = null;
-                  } else if (typeof data.profile1_identity_links[idx_35].metas[idx_40].source !== 'undefined') {
-                    if (isPrimaryKey(data.profile1_identity_links[idx_35].metas[idx_40].source, true)) {
-                      entity.profile1.identity.links[idx_35].metas[idx_40].source = factory.createReference('Source', data.profile1_identity_links[idx_35].metas[idx_40].source, { merge: true, convertCustomTypes, normalizeAccessors, schema });
-                    } else if (data.profile1_identity_links[idx_35].metas[idx_40].source && typeof data.profile1_identity_links[idx_35].metas[idx_40].source === 'object') {
-                      entity.profile1.identity.links[idx_35].metas[idx_40].source = factory.create('Source', data.profile1_identity_links[idx_35].metas[idx_40].source, { initialized: true, merge: true, newEntity, convertCustomTypes, normalizeAccessors, schema });
+                  if (data.profile1_identity_links[idx_67].metas[idx_75].source === null) {
+    entity.profile1.identity.links[idx_67].metas[idx_75].source = null;
+                  } else if (typeof data.profile1_identity_links[idx_67].metas[idx_75].source !== 'undefined') {
+                    if (isPrimaryKey(data.profile1_identity_links[idx_67].metas[idx_75].source, true)) {
+                      entity.profile1.identity.links[idx_67].metas[idx_75].source = factory.createReference(source_79, data.profile1_identity_links[idx_67].metas[idx_75].source, { merge: true, convertCustomTypes, normalizeAccessors, schema });
+                    } else if (data.profile1_identity_links[idx_67].metas[idx_75].source && typeof data.profile1_identity_links[idx_67].metas[idx_75].source === 'object') {
+                      entity.profile1.identity.links[idx_67].metas[idx_75].source = factory.create(source_79, data.profile1_identity_links[idx_67].metas[idx_75].source, { initialized: true, merge: true, newEntity, convertCustomTypes, normalizeAccessors, schema });
                     }
                   }
-                } else if (data.profile1_identity_links[idx_35].metas[idx_40] === null) {
-                  entity.profile1.identity.links[idx_35].metas[idx_40] = null;
+                } else if (data.profile1_identity_links[idx_67].metas[idx_75] === null) {
+                  entity.profile1.identity.links[idx_67].metas[idx_75] = null;
                 }
               });
             }
-            if (data.profile1_identity_links[idx_35].source === null) {
-    entity.profile1.identity.links[idx_35].source = null;
-            } else if (typeof data.profile1_identity_links[idx_35].source !== 'undefined') {
-              if (isPrimaryKey(data.profile1_identity_links[idx_35].source, true)) {
-                entity.profile1.identity.links[idx_35].source = factory.createReference('Source', data.profile1_identity_links[idx_35].source, { merge: true, convertCustomTypes, normalizeAccessors, schema });
-              } else if (data.profile1_identity_links[idx_35].source && typeof data.profile1_identity_links[idx_35].source === 'object') {
-                entity.profile1.identity.links[idx_35].source = factory.create('Source', data.profile1_identity_links[idx_35].source, { initialized: true, merge: true, newEntity, convertCustomTypes, normalizeAccessors, schema });
+            if (data.profile1_identity_links[idx_67].source === null) {
+    entity.profile1.identity.links[idx_67].source = null;
+            } else if (typeof data.profile1_identity_links[idx_67].source !== 'undefined') {
+              if (isPrimaryKey(data.profile1_identity_links[idx_67].source, true)) {
+                entity.profile1.identity.links[idx_67].source = factory.createReference(source_80, data.profile1_identity_links[idx_67].source, { merge: true, convertCustomTypes, normalizeAccessors, schema });
+              } else if (data.profile1_identity_links[idx_67].source && typeof data.profile1_identity_links[idx_67].source === 'object') {
+                entity.profile1.identity.links[idx_67].source = factory.create(source_80, data.profile1_identity_links[idx_67].source, { initialized: true, merge: true, newEntity, convertCustomTypes, normalizeAccessors, schema });
               }
             }
-          } else if (data.profile1_identity_links[idx_35] === null) {
-            entity.profile1.identity.links[idx_35] = null;
+          } else if (data.profile1_identity_links[idx_67] === null) {
+            entity.profile1.identity.links[idx_67] = null;
           }
         });
       }
@@ -838,9 +838,9 @@ exports[`embedded entities in postgres > diffing 2`] = `
     entity.profile1.identity.source = null;
       } else if (typeof data.profile1_identity_source !== 'undefined') {
         if (isPrimaryKey(data.profile1_identity_source, true)) {
-          entity.profile1.identity.source = factory.createReference('Source', data.profile1_identity_source, { merge: true, convertCustomTypes, normalizeAccessors, schema });
+          entity.profile1.identity.source = factory.createReference(source_81, data.profile1_identity_source, { merge: true, convertCustomTypes, normalizeAccessors, schema });
         } else if (data.profile1_identity_source && typeof data.profile1_identity_source === 'object') {
-          entity.profile1.identity.source = factory.create('Source', data.profile1_identity_source, { initialized: true, merge: true, newEntity, convertCustomTypes, normalizeAccessors, schema });
+          entity.profile1.identity.source = factory.create(source_81, data.profile1_identity_source, { initialized: true, merge: true, newEntity, convertCustomTypes, normalizeAccessors, schema });
         }
       }
     } else if (data.profile1_identity_email === null && data.profile1_identity_meta_foo === null && data.profile1_identity_meta_bar === null && data.profile1_identity_meta_source === null && data.profile1_identity_links === null && data.profile1_identity_source === null) {
@@ -849,7 +849,7 @@ exports[`embedded entities in postgres > diffing 2`] = `
     if (data.profile1.identity != null) {
       const embeddedData = data.profile1.identity;
       if (entity.profile1.identity == null) {
-        entity.profile1.identity = factory.createEmbeddable('Identity', embeddedData, { newEntity, convertCustomTypes, normalizeAccessors });
+        entity.profile1.identity = factory.createEmbeddable(identity_82, embeddedData, { newEntity, convertCustomTypes, normalizeAccessors });
       }
       if (data.profile1.identity.email === null) {
         entity.profile1.identity.email = null;
@@ -863,7 +863,7 @@ exports[`embedded entities in postgres > diffing 2`] = `
           source: data.profile1_identity_meta_source,
         };
         if (entity.profile1.identity.meta == null) {
-          entity.profile1.identity.meta = factory.createEmbeddable('IdentityMeta', embeddedData, { newEntity, convertCustomTypes, normalizeAccessors });
+          entity.profile1.identity.meta = factory.createEmbeddable(identity_meta_84, embeddedData, { newEntity, convertCustomTypes, normalizeAccessors });
         }
         if (data.profile1_identity_meta_foo === null) {
           entity.profile1.identity.meta.foo = null;
@@ -879,9 +879,9 @@ exports[`embedded entities in postgres > diffing 2`] = `
     entity.profile1.identity.meta.source = null;
         } else if (typeof data.profile1_identity_meta_source !== 'undefined') {
           if (isPrimaryKey(data.profile1_identity_meta_source, true)) {
-            entity.profile1.identity.meta.source = factory.createReference('Source', data.profile1_identity_meta_source, { merge: true, convertCustomTypes, normalizeAccessors, schema });
+            entity.profile1.identity.meta.source = factory.createReference(source_87, data.profile1_identity_meta_source, { merge: true, convertCustomTypes, normalizeAccessors, schema });
           } else if (data.profile1_identity_meta_source && typeof data.profile1_identity_meta_source === 'object') {
-            entity.profile1.identity.meta.source = factory.create('Source', data.profile1_identity_meta_source, { initialized: true, merge: true, newEntity, convertCustomTypes, normalizeAccessors, schema });
+            entity.profile1.identity.meta.source = factory.create(source_87, data.profile1_identity_meta_source, { initialized: true, merge: true, newEntity, convertCustomTypes, normalizeAccessors, schema });
           }
         }
       } else if (data.profile1_identity_meta_foo === null && data.profile1_identity_meta_bar === null && data.profile1_identity_meta_source === null) {
@@ -890,7 +890,7 @@ exports[`embedded entities in postgres > diffing 2`] = `
       if (data.profile1.identity.meta != null) {
         const embeddedData = data.profile1.identity.meta;
         if (entity.profile1.identity.meta == null) {
-          entity.profile1.identity.meta = factory.createEmbeddable('IdentityMeta', embeddedData, { newEntity, convertCustomTypes, normalizeAccessors });
+          entity.profile1.identity.meta = factory.createEmbeddable(identity_meta_88, embeddedData, { newEntity, convertCustomTypes, normalizeAccessors });
         }
         if (data.profile1.identity.meta.foo === null) {
           entity.profile1.identity.meta.foo = null;
@@ -906,9 +906,9 @@ exports[`embedded entities in postgres > diffing 2`] = `
     entity.profile1.identity.meta.source = null;
         } else if (typeof data.profile1.identity.meta.source !== 'undefined') {
           if (isPrimaryKey(data.profile1.identity.meta.source, true)) {
-            entity.profile1.identity.meta.source = factory.createReference('Source', data.profile1.identity.meta.source, { merge: true, convertCustomTypes, normalizeAccessors, schema });
+            entity.profile1.identity.meta.source = factory.createReference(source_91, data.profile1.identity.meta.source, { merge: true, convertCustomTypes, normalizeAccessors, schema });
           } else if (data.profile1.identity.meta.source && typeof data.profile1.identity.meta.source === 'object') {
-            entity.profile1.identity.meta.source = factory.create('Source', data.profile1.identity.meta.source, { initialized: true, merge: true, newEntity, convertCustomTypes, normalizeAccessors, schema });
+            entity.profile1.identity.meta.source = factory.create(source_91, data.profile1.identity.meta.source, { initialized: true, merge: true, newEntity, convertCustomTypes, normalizeAccessors, schema });
           }
         }
       } else if (data.profile1.identity.meta === null) {
@@ -916,98 +916,98 @@ exports[`embedded entities in postgres > diffing 2`] = `
       }
       if (Array.isArray(data.profile1.identity.links)) {
         entity.profile1.identity.links = [];
-        data.profile1.identity.links.forEach((_, idx_48) => {
-          if (data.profile1.identity.links[idx_48] != null) {
-            const embeddedData = data.profile1.identity.links[idx_48];
-            if (entity.profile1.identity.links[idx_48] == null) {
-              entity.profile1.identity.links[idx_48] = factory.createEmbeddable('IdentityLink', embeddedData, { newEntity, convertCustomTypes, normalizeAccessors });
+        data.profile1.identity.links.forEach((_, idx_92) => {
+          if (data.profile1.identity.links[idx_92] != null) {
+            const embeddedData = data.profile1.identity.links[idx_92];
+            if (entity.profile1.identity.links[idx_92] == null) {
+              entity.profile1.identity.links[idx_92] = factory.createEmbeddable(identity_link_93, embeddedData, { newEntity, convertCustomTypes, normalizeAccessors });
             }
-            if (data.profile1.identity.links[idx_48].url === null) {
-              entity.profile1.identity.links[idx_48].url = null;
-            } else if (typeof data.profile1.identity.links[idx_48].url !== 'undefined') {
-              entity.profile1.identity.links[idx_48].url = data.profile1.identity.links[idx_48].url;
+            if (data.profile1.identity.links[idx_92].url === null) {
+              entity.profile1.identity.links[idx_92].url = null;
+            } else if (typeof data.profile1.identity.links[idx_92].url !== 'undefined') {
+              entity.profile1.identity.links[idx_92].url = data.profile1.identity.links[idx_92].url;
             }
-            if (data.profile1.identity.links[idx_48].createdAt === null) {
-              entity.profile1.identity.links[idx_48].createdAt = null;
-            } else if (typeof data.profile1.identity.links[idx_48].createdAt !== 'undefined') {
-              if (data.profile1.identity.links[idx_48].createdAt instanceof Date) {
-                entity.profile1.identity.links[idx_48].createdAt = data.profile1.identity.links[idx_48].createdAt;
-              } else if (typeof data.profile1.identity.links[idx_48].createdAt === 'number' || data.profile1.identity.links[idx_48].createdAt.includes('+') || data.profile1.identity.links[idx_48].createdAt.lastIndexOf('-') > 10 || data.profile1.identity.links[idx_48].createdAt.endsWith('Z')) {
-                entity.profile1.identity.links[idx_48].createdAt = new Date(data.profile1.identity.links[idx_48].createdAt);
+            if (data.profile1.identity.links[idx_92].createdAt === null) {
+              entity.profile1.identity.links[idx_92].createdAt = null;
+            } else if (typeof data.profile1.identity.links[idx_92].createdAt !== 'undefined') {
+              if (data.profile1.identity.links[idx_92].createdAt instanceof Date) {
+                entity.profile1.identity.links[idx_92].createdAt = data.profile1.identity.links[idx_92].createdAt;
+              } else if (typeof data.profile1.identity.links[idx_92].createdAt === 'number' || data.profile1.identity.links[idx_92].createdAt.includes('+') || data.profile1.identity.links[idx_92].createdAt.lastIndexOf('-') > 10 || data.profile1.identity.links[idx_92].createdAt.endsWith('Z')) {
+                entity.profile1.identity.links[idx_92].createdAt = new Date(data.profile1.identity.links[idx_92].createdAt);
               } else {
-                entity.profile1.identity.links[idx_48].createdAt = new Date(data.profile1.identity.links[idx_48].createdAt + 'Z');
+                entity.profile1.identity.links[idx_92].createdAt = new Date(data.profile1.identity.links[idx_92].createdAt + 'Z');
               }
             }
-            if (data.profile1.identity.links[idx_48].meta != null) {
-              const embeddedData = data.profile1.identity.links[idx_48].meta;
-              if (entity.profile1.identity.links[idx_48].meta == null) {
-                entity.profile1.identity.links[idx_48].meta = factory.createEmbeddable('IdentityMeta', embeddedData, { newEntity, convertCustomTypes, normalizeAccessors });
+            if (data.profile1.identity.links[idx_92].meta != null) {
+              const embeddedData = data.profile1.identity.links[idx_92].meta;
+              if (entity.profile1.identity.links[idx_92].meta == null) {
+                entity.profile1.identity.links[idx_92].meta = factory.createEmbeddable(identity_meta_96, embeddedData, { newEntity, convertCustomTypes, normalizeAccessors });
               }
-              if (data.profile1.identity.links[idx_48].meta.foo === null) {
-                entity.profile1.identity.links[idx_48].meta.foo = null;
-              } else if (typeof data.profile1.identity.links[idx_48].meta.foo !== 'undefined') {
-                entity.profile1.identity.links[idx_48].meta.foo = data.profile1.identity.links[idx_48].meta.foo;
+              if (data.profile1.identity.links[idx_92].meta.foo === null) {
+                entity.profile1.identity.links[idx_92].meta.foo = null;
+              } else if (typeof data.profile1.identity.links[idx_92].meta.foo !== 'undefined') {
+                entity.profile1.identity.links[idx_92].meta.foo = data.profile1.identity.links[idx_92].meta.foo;
               }
-              if (data.profile1.identity.links[idx_48].meta.bar === null) {
-                entity.profile1.identity.links[idx_48].meta.bar = null;
-              } else if (typeof data.profile1.identity.links[idx_48].meta.bar !== 'undefined') {
-                entity.profile1.identity.links[idx_48].meta.bar = data.profile1.identity.links[idx_48].meta.bar;
+              if (data.profile1.identity.links[idx_92].meta.bar === null) {
+                entity.profile1.identity.links[idx_92].meta.bar = null;
+              } else if (typeof data.profile1.identity.links[idx_92].meta.bar !== 'undefined') {
+                entity.profile1.identity.links[idx_92].meta.bar = data.profile1.identity.links[idx_92].meta.bar;
               }
-              if (data.profile1.identity.links[idx_48].meta.source === null) {
-    entity.profile1.identity.links[idx_48].meta.source = null;
-              } else if (typeof data.profile1.identity.links[idx_48].meta.source !== 'undefined') {
-                if (isPrimaryKey(data.profile1.identity.links[idx_48].meta.source, true)) {
-                  entity.profile1.identity.links[idx_48].meta.source = factory.createReference('Source', data.profile1.identity.links[idx_48].meta.source, { merge: true, convertCustomTypes, normalizeAccessors, schema });
-                } else if (data.profile1.identity.links[idx_48].meta.source && typeof data.profile1.identity.links[idx_48].meta.source === 'object') {
-                  entity.profile1.identity.links[idx_48].meta.source = factory.create('Source', data.profile1.identity.links[idx_48].meta.source, { initialized: true, merge: true, newEntity, convertCustomTypes, normalizeAccessors, schema });
+              if (data.profile1.identity.links[idx_92].meta.source === null) {
+    entity.profile1.identity.links[idx_92].meta.source = null;
+              } else if (typeof data.profile1.identity.links[idx_92].meta.source !== 'undefined') {
+                if (isPrimaryKey(data.profile1.identity.links[idx_92].meta.source, true)) {
+                  entity.profile1.identity.links[idx_92].meta.source = factory.createReference(source_99, data.profile1.identity.links[idx_92].meta.source, { merge: true, convertCustomTypes, normalizeAccessors, schema });
+                } else if (data.profile1.identity.links[idx_92].meta.source && typeof data.profile1.identity.links[idx_92].meta.source === 'object') {
+                  entity.profile1.identity.links[idx_92].meta.source = factory.create(source_99, data.profile1.identity.links[idx_92].meta.source, { initialized: true, merge: true, newEntity, convertCustomTypes, normalizeAccessors, schema });
                 }
               }
-            } else if (data.profile1.identity.links[idx_48].meta === null) {
-              entity.profile1.identity.links[idx_48].meta = null;
+            } else if (data.profile1.identity.links[idx_92].meta === null) {
+              entity.profile1.identity.links[idx_92].meta = null;
             }
-            if (Array.isArray(data.profile1.identity.links[idx_48].metas)) {
-              entity.profile1.identity.links[idx_48].metas = [];
-              data.profile1.identity.links[idx_48].metas.forEach((_, idx_53) => {
-                if (data.profile1.identity.links[idx_48].metas[idx_53] != null) {
-                  const embeddedData = data.profile1.identity.links[idx_48].metas[idx_53];
-                  if (entity.profile1.identity.links[idx_48].metas[idx_53] == null) {
-                    entity.profile1.identity.links[idx_48].metas[idx_53] = factory.createEmbeddable('IdentityMeta', embeddedData, { newEntity, convertCustomTypes, normalizeAccessors });
+            if (Array.isArray(data.profile1.identity.links[idx_92].metas)) {
+              entity.profile1.identity.links[idx_92].metas = [];
+              data.profile1.identity.links[idx_92].metas.forEach((_, idx_100) => {
+                if (data.profile1.identity.links[idx_92].metas[idx_100] != null) {
+                  const embeddedData = data.profile1.identity.links[idx_92].metas[idx_100];
+                  if (entity.profile1.identity.links[idx_92].metas[idx_100] == null) {
+                    entity.profile1.identity.links[idx_92].metas[idx_100] = factory.createEmbeddable(identity_meta_101, embeddedData, { newEntity, convertCustomTypes, normalizeAccessors });
                   }
-                  if (data.profile1.identity.links[idx_48].metas[idx_53].foo === null) {
-                    entity.profile1.identity.links[idx_48].metas[idx_53].foo = null;
-                  } else if (typeof data.profile1.identity.links[idx_48].metas[idx_53].foo !== 'undefined') {
-                    entity.profile1.identity.links[idx_48].metas[idx_53].foo = data.profile1.identity.links[idx_48].metas[idx_53].foo;
+                  if (data.profile1.identity.links[idx_92].metas[idx_100].foo === null) {
+                    entity.profile1.identity.links[idx_92].metas[idx_100].foo = null;
+                  } else if (typeof data.profile1.identity.links[idx_92].metas[idx_100].foo !== 'undefined') {
+                    entity.profile1.identity.links[idx_92].metas[idx_100].foo = data.profile1.identity.links[idx_92].metas[idx_100].foo;
                   }
-                  if (data.profile1.identity.links[idx_48].metas[idx_53].bar === null) {
-                    entity.profile1.identity.links[idx_48].metas[idx_53].bar = null;
-                  } else if (typeof data.profile1.identity.links[idx_48].metas[idx_53].bar !== 'undefined') {
-                    entity.profile1.identity.links[idx_48].metas[idx_53].bar = data.profile1.identity.links[idx_48].metas[idx_53].bar;
+                  if (data.profile1.identity.links[idx_92].metas[idx_100].bar === null) {
+                    entity.profile1.identity.links[idx_92].metas[idx_100].bar = null;
+                  } else if (typeof data.profile1.identity.links[idx_92].metas[idx_100].bar !== 'undefined') {
+                    entity.profile1.identity.links[idx_92].metas[idx_100].bar = data.profile1.identity.links[idx_92].metas[idx_100].bar;
                   }
-                  if (data.profile1.identity.links[idx_48].metas[idx_53].source === null) {
-    entity.profile1.identity.links[idx_48].metas[idx_53].source = null;
-                  } else if (typeof data.profile1.identity.links[idx_48].metas[idx_53].source !== 'undefined') {
-                    if (isPrimaryKey(data.profile1.identity.links[idx_48].metas[idx_53].source, true)) {
-                      entity.profile1.identity.links[idx_48].metas[idx_53].source = factory.createReference('Source', data.profile1.identity.links[idx_48].metas[idx_53].source, { merge: true, convertCustomTypes, normalizeAccessors, schema });
-                    } else if (data.profile1.identity.links[idx_48].metas[idx_53].source && typeof data.profile1.identity.links[idx_48].metas[idx_53].source === 'object') {
-                      entity.profile1.identity.links[idx_48].metas[idx_53].source = factory.create('Source', data.profile1.identity.links[idx_48].metas[idx_53].source, { initialized: true, merge: true, newEntity, convertCustomTypes, normalizeAccessors, schema });
+                  if (data.profile1.identity.links[idx_92].metas[idx_100].source === null) {
+    entity.profile1.identity.links[idx_92].metas[idx_100].source = null;
+                  } else if (typeof data.profile1.identity.links[idx_92].metas[idx_100].source !== 'undefined') {
+                    if (isPrimaryKey(data.profile1.identity.links[idx_92].metas[idx_100].source, true)) {
+                      entity.profile1.identity.links[idx_92].metas[idx_100].source = factory.createReference(source_104, data.profile1.identity.links[idx_92].metas[idx_100].source, { merge: true, convertCustomTypes, normalizeAccessors, schema });
+                    } else if (data.profile1.identity.links[idx_92].metas[idx_100].source && typeof data.profile1.identity.links[idx_92].metas[idx_100].source === 'object') {
+                      entity.profile1.identity.links[idx_92].metas[idx_100].source = factory.create(source_104, data.profile1.identity.links[idx_92].metas[idx_100].source, { initialized: true, merge: true, newEntity, convertCustomTypes, normalizeAccessors, schema });
                     }
                   }
-                } else if (data.profile1.identity.links[idx_48].metas[idx_53] === null) {
-                  entity.profile1.identity.links[idx_48].metas[idx_53] = null;
+                } else if (data.profile1.identity.links[idx_92].metas[idx_100] === null) {
+                  entity.profile1.identity.links[idx_92].metas[idx_100] = null;
                 }
               });
             }
-            if (data.profile1.identity.links[idx_48].source === null) {
-    entity.profile1.identity.links[idx_48].source = null;
-            } else if (typeof data.profile1.identity.links[idx_48].source !== 'undefined') {
-              if (isPrimaryKey(data.profile1.identity.links[idx_48].source, true)) {
-                entity.profile1.identity.links[idx_48].source = factory.createReference('Source', data.profile1.identity.links[idx_48].source, { merge: true, convertCustomTypes, normalizeAccessors, schema });
-              } else if (data.profile1.identity.links[idx_48].source && typeof data.profile1.identity.links[idx_48].source === 'object') {
-                entity.profile1.identity.links[idx_48].source = factory.create('Source', data.profile1.identity.links[idx_48].source, { initialized: true, merge: true, newEntity, convertCustomTypes, normalizeAccessors, schema });
+            if (data.profile1.identity.links[idx_92].source === null) {
+    entity.profile1.identity.links[idx_92].source = null;
+            } else if (typeof data.profile1.identity.links[idx_92].source !== 'undefined') {
+              if (isPrimaryKey(data.profile1.identity.links[idx_92].source, true)) {
+                entity.profile1.identity.links[idx_92].source = factory.createReference(source_105, data.profile1.identity.links[idx_92].source, { merge: true, convertCustomTypes, normalizeAccessors, schema });
+              } else if (data.profile1.identity.links[idx_92].source && typeof data.profile1.identity.links[idx_92].source === 'object') {
+                entity.profile1.identity.links[idx_92].source = factory.create(source_105, data.profile1.identity.links[idx_92].source, { initialized: true, merge: true, newEntity, convertCustomTypes, normalizeAccessors, schema });
               }
             }
-          } else if (data.profile1.identity.links[idx_48] === null) {
-            entity.profile1.identity.links[idx_48] = null;
+          } else if (data.profile1.identity.links[idx_92] === null) {
+            entity.profile1.identity.links[idx_92] = null;
           }
         });
       }
@@ -1015,9 +1015,9 @@ exports[`embedded entities in postgres > diffing 2`] = `
     entity.profile1.identity.source = null;
       } else if (typeof data.profile1.identity.source !== 'undefined') {
         if (isPrimaryKey(data.profile1.identity.source, true)) {
-          entity.profile1.identity.source = factory.createReference('Source', data.profile1.identity.source, { merge: true, convertCustomTypes, normalizeAccessors, schema });
+          entity.profile1.identity.source = factory.createReference(source_106, data.profile1.identity.source, { merge: true, convertCustomTypes, normalizeAccessors, schema });
         } else if (data.profile1.identity.source && typeof data.profile1.identity.source === 'object') {
-          entity.profile1.identity.source = factory.create('Source', data.profile1.identity.source, { initialized: true, merge: true, newEntity, convertCustomTypes, normalizeAccessors, schema });
+          entity.profile1.identity.source = factory.create(source_106, data.profile1.identity.source, { initialized: true, merge: true, newEntity, convertCustomTypes, normalizeAccessors, schema });
         }
       }
     } else if (data.profile1.identity === null) {
@@ -1027,9 +1027,9 @@ exports[`embedded entities in postgres > diffing 2`] = `
     entity.profile1.source = null;
     } else if (typeof data.profile1.source !== 'undefined') {
       if (isPrimaryKey(data.profile1.source, true)) {
-        entity.profile1.source = factory.createReference('Source', data.profile1.source, { merge: true, convertCustomTypes, normalizeAccessors, schema });
+        entity.profile1.source = factory.createReference(source_107, data.profile1.source, { merge: true, convertCustomTypes, normalizeAccessors, schema });
       } else if (data.profile1.source && typeof data.profile1.source === 'object') {
-        entity.profile1.source = factory.create('Source', data.profile1.source, { initialized: true, merge: true, newEntity, convertCustomTypes, normalizeAccessors, schema });
+        entity.profile1.source = factory.create(source_107, data.profile1.source, { initialized: true, merge: true, newEntity, convertCustomTypes, normalizeAccessors, schema });
       }
     }
   } else if (data.profile1 === null) {
@@ -1038,7 +1038,7 @@ exports[`embedded entities in postgres > diffing 2`] = `
   if (data.profile2 != null) {
     const embeddedData = data.profile2;
     if (entity.profile2 == null) {
-      entity.profile2 = factory.createEmbeddable('Profile', embeddedData, { newEntity, convertCustomTypes, normalizeAccessors });
+      entity.profile2 = factory.createEmbeddable(profile_108, embeddedData, { newEntity, convertCustomTypes, normalizeAccessors });
     }
     if (data.profile2.username === null) {
       entity.profile2.username = null;
@@ -1048,7 +1048,7 @@ exports[`embedded entities in postgres > diffing 2`] = `
     if (data.profile2.identity != null) {
       const embeddedData = data.profile2.identity;
       if (entity.profile2.identity == null) {
-        entity.profile2.identity = factory.createEmbeddable('Identity', embeddedData, { newEntity, convertCustomTypes, normalizeAccessors });
+        entity.profile2.identity = factory.createEmbeddable(identity_110, embeddedData, { newEntity, convertCustomTypes, normalizeAccessors });
       }
       if (data.profile2.identity.email === null) {
         entity.profile2.identity.email = null;
@@ -1058,7 +1058,7 @@ exports[`embedded entities in postgres > diffing 2`] = `
       if (data.profile2.identity.meta != null) {
         const embeddedData = data.profile2.identity.meta;
         if (entity.profile2.identity.meta == null) {
-          entity.profile2.identity.meta = factory.createEmbeddable('IdentityMeta', embeddedData, { newEntity, convertCustomTypes, normalizeAccessors });
+          entity.profile2.identity.meta = factory.createEmbeddable(identity_meta_112, embeddedData, { newEntity, convertCustomTypes, normalizeAccessors });
         }
         if (data.profile2.identity.meta.foo === null) {
           entity.profile2.identity.meta.foo = null;
@@ -1074,9 +1074,9 @@ exports[`embedded entities in postgres > diffing 2`] = `
     entity.profile2.identity.meta.source = null;
         } else if (typeof data.profile2.identity.meta.source !== 'undefined') {
           if (isPrimaryKey(data.profile2.identity.meta.source, true)) {
-            entity.profile2.identity.meta.source = factory.createReference('Source', data.profile2.identity.meta.source, { merge: true, convertCustomTypes, normalizeAccessors, schema });
+            entity.profile2.identity.meta.source = factory.createReference(source_115, data.profile2.identity.meta.source, { merge: true, convertCustomTypes, normalizeAccessors, schema });
           } else if (data.profile2.identity.meta.source && typeof data.profile2.identity.meta.source === 'object') {
-            entity.profile2.identity.meta.source = factory.create('Source', data.profile2.identity.meta.source, { initialized: true, merge: true, newEntity, convertCustomTypes, normalizeAccessors, schema });
+            entity.profile2.identity.meta.source = factory.create(source_115, data.profile2.identity.meta.source, { initialized: true, merge: true, newEntity, convertCustomTypes, normalizeAccessors, schema });
           }
         }
       } else if (data.profile2.identity.meta === null) {
@@ -1084,98 +1084,98 @@ exports[`embedded entities in postgres > diffing 2`] = `
       }
       if (Array.isArray(data.profile2.identity.links)) {
         entity.profile2.identity.links = [];
-        data.profile2.identity.links.forEach((_, idx_60) => {
-          if (data.profile2.identity.links[idx_60] != null) {
-            const embeddedData = data.profile2.identity.links[idx_60];
-            if (entity.profile2.identity.links[idx_60] == null) {
-              entity.profile2.identity.links[idx_60] = factory.createEmbeddable('IdentityLink', embeddedData, { newEntity, convertCustomTypes, normalizeAccessors });
+        data.profile2.identity.links.forEach((_, idx_116) => {
+          if (data.profile2.identity.links[idx_116] != null) {
+            const embeddedData = data.profile2.identity.links[idx_116];
+            if (entity.profile2.identity.links[idx_116] == null) {
+              entity.profile2.identity.links[idx_116] = factory.createEmbeddable(identity_link_117, embeddedData, { newEntity, convertCustomTypes, normalizeAccessors });
             }
-            if (data.profile2.identity.links[idx_60].url === null) {
-              entity.profile2.identity.links[idx_60].url = null;
-            } else if (typeof data.profile2.identity.links[idx_60].url !== 'undefined') {
-              entity.profile2.identity.links[idx_60].url = data.profile2.identity.links[idx_60].url;
+            if (data.profile2.identity.links[idx_116].url === null) {
+              entity.profile2.identity.links[idx_116].url = null;
+            } else if (typeof data.profile2.identity.links[idx_116].url !== 'undefined') {
+              entity.profile2.identity.links[idx_116].url = data.profile2.identity.links[idx_116].url;
             }
-            if (data.profile2.identity.links[idx_60].createdAt === null) {
-              entity.profile2.identity.links[idx_60].createdAt = null;
-            } else if (typeof data.profile2.identity.links[idx_60].createdAt !== 'undefined') {
-              if (data.profile2.identity.links[idx_60].createdAt instanceof Date) {
-                entity.profile2.identity.links[idx_60].createdAt = data.profile2.identity.links[idx_60].createdAt;
-              } else if (typeof data.profile2.identity.links[idx_60].createdAt === 'number' || data.profile2.identity.links[idx_60].createdAt.includes('+') || data.profile2.identity.links[idx_60].createdAt.lastIndexOf('-') > 10 || data.profile2.identity.links[idx_60].createdAt.endsWith('Z')) {
-                entity.profile2.identity.links[idx_60].createdAt = new Date(data.profile2.identity.links[idx_60].createdAt);
+            if (data.profile2.identity.links[idx_116].createdAt === null) {
+              entity.profile2.identity.links[idx_116].createdAt = null;
+            } else if (typeof data.profile2.identity.links[idx_116].createdAt !== 'undefined') {
+              if (data.profile2.identity.links[idx_116].createdAt instanceof Date) {
+                entity.profile2.identity.links[idx_116].createdAt = data.profile2.identity.links[idx_116].createdAt;
+              } else if (typeof data.profile2.identity.links[idx_116].createdAt === 'number' || data.profile2.identity.links[idx_116].createdAt.includes('+') || data.profile2.identity.links[idx_116].createdAt.lastIndexOf('-') > 10 || data.profile2.identity.links[idx_116].createdAt.endsWith('Z')) {
+                entity.profile2.identity.links[idx_116].createdAt = new Date(data.profile2.identity.links[idx_116].createdAt);
               } else {
-                entity.profile2.identity.links[idx_60].createdAt = new Date(data.profile2.identity.links[idx_60].createdAt + 'Z');
+                entity.profile2.identity.links[idx_116].createdAt = new Date(data.profile2.identity.links[idx_116].createdAt + 'Z');
               }
             }
-            if (data.profile2.identity.links[idx_60].meta != null) {
-              const embeddedData = data.profile2.identity.links[idx_60].meta;
-              if (entity.profile2.identity.links[idx_60].meta == null) {
-                entity.profile2.identity.links[idx_60].meta = factory.createEmbeddable('IdentityMeta', embeddedData, { newEntity, convertCustomTypes, normalizeAccessors });
+            if (data.profile2.identity.links[idx_116].meta != null) {
+              const embeddedData = data.profile2.identity.links[idx_116].meta;
+              if (entity.profile2.identity.links[idx_116].meta == null) {
+                entity.profile2.identity.links[idx_116].meta = factory.createEmbeddable(identity_meta_120, embeddedData, { newEntity, convertCustomTypes, normalizeAccessors });
               }
-              if (data.profile2.identity.links[idx_60].meta.foo === null) {
-                entity.profile2.identity.links[idx_60].meta.foo = null;
-              } else if (typeof data.profile2.identity.links[idx_60].meta.foo !== 'undefined') {
-                entity.profile2.identity.links[idx_60].meta.foo = data.profile2.identity.links[idx_60].meta.foo;
+              if (data.profile2.identity.links[idx_116].meta.foo === null) {
+                entity.profile2.identity.links[idx_116].meta.foo = null;
+              } else if (typeof data.profile2.identity.links[idx_116].meta.foo !== 'undefined') {
+                entity.profile2.identity.links[idx_116].meta.foo = data.profile2.identity.links[idx_116].meta.foo;
               }
-              if (data.profile2.identity.links[idx_60].meta.bar === null) {
-                entity.profile2.identity.links[idx_60].meta.bar = null;
-              } else if (typeof data.profile2.identity.links[idx_60].meta.bar !== 'undefined') {
-                entity.profile2.identity.links[idx_60].meta.bar = data.profile2.identity.links[idx_60].meta.bar;
+              if (data.profile2.identity.links[idx_116].meta.bar === null) {
+                entity.profile2.identity.links[idx_116].meta.bar = null;
+              } else if (typeof data.profile2.identity.links[idx_116].meta.bar !== 'undefined') {
+                entity.profile2.identity.links[idx_116].meta.bar = data.profile2.identity.links[idx_116].meta.bar;
               }
-              if (data.profile2.identity.links[idx_60].meta.source === null) {
-    entity.profile2.identity.links[idx_60].meta.source = null;
-              } else if (typeof data.profile2.identity.links[idx_60].meta.source !== 'undefined') {
-                if (isPrimaryKey(data.profile2.identity.links[idx_60].meta.source, true)) {
-                  entity.profile2.identity.links[idx_60].meta.source = factory.createReference('Source', data.profile2.identity.links[idx_60].meta.source, { merge: true, convertCustomTypes, normalizeAccessors, schema });
-                } else if (data.profile2.identity.links[idx_60].meta.source && typeof data.profile2.identity.links[idx_60].meta.source === 'object') {
-                  entity.profile2.identity.links[idx_60].meta.source = factory.create('Source', data.profile2.identity.links[idx_60].meta.source, { initialized: true, merge: true, newEntity, convertCustomTypes, normalizeAccessors, schema });
+              if (data.profile2.identity.links[idx_116].meta.source === null) {
+    entity.profile2.identity.links[idx_116].meta.source = null;
+              } else if (typeof data.profile2.identity.links[idx_116].meta.source !== 'undefined') {
+                if (isPrimaryKey(data.profile2.identity.links[idx_116].meta.source, true)) {
+                  entity.profile2.identity.links[idx_116].meta.source = factory.createReference(source_123, data.profile2.identity.links[idx_116].meta.source, { merge: true, convertCustomTypes, normalizeAccessors, schema });
+                } else if (data.profile2.identity.links[idx_116].meta.source && typeof data.profile2.identity.links[idx_116].meta.source === 'object') {
+                  entity.profile2.identity.links[idx_116].meta.source = factory.create(source_123, data.profile2.identity.links[idx_116].meta.source, { initialized: true, merge: true, newEntity, convertCustomTypes, normalizeAccessors, schema });
                 }
               }
-            } else if (data.profile2.identity.links[idx_60].meta === null) {
-              entity.profile2.identity.links[idx_60].meta = null;
+            } else if (data.profile2.identity.links[idx_116].meta === null) {
+              entity.profile2.identity.links[idx_116].meta = null;
             }
-            if (Array.isArray(data.profile2.identity.links[idx_60].metas)) {
-              entity.profile2.identity.links[idx_60].metas = [];
-              data.profile2.identity.links[idx_60].metas.forEach((_, idx_65) => {
-                if (data.profile2.identity.links[idx_60].metas[idx_65] != null) {
-                  const embeddedData = data.profile2.identity.links[idx_60].metas[idx_65];
-                  if (entity.profile2.identity.links[idx_60].metas[idx_65] == null) {
-                    entity.profile2.identity.links[idx_60].metas[idx_65] = factory.createEmbeddable('IdentityMeta', embeddedData, { newEntity, convertCustomTypes, normalizeAccessors });
+            if (Array.isArray(data.profile2.identity.links[idx_116].metas)) {
+              entity.profile2.identity.links[idx_116].metas = [];
+              data.profile2.identity.links[idx_116].metas.forEach((_, idx_124) => {
+                if (data.profile2.identity.links[idx_116].metas[idx_124] != null) {
+                  const embeddedData = data.profile2.identity.links[idx_116].metas[idx_124];
+                  if (entity.profile2.identity.links[idx_116].metas[idx_124] == null) {
+                    entity.profile2.identity.links[idx_116].metas[idx_124] = factory.createEmbeddable(identity_meta_125, embeddedData, { newEntity, convertCustomTypes, normalizeAccessors });
                   }
-                  if (data.profile2.identity.links[idx_60].metas[idx_65].foo === null) {
-                    entity.profile2.identity.links[idx_60].metas[idx_65].foo = null;
-                  } else if (typeof data.profile2.identity.links[idx_60].metas[idx_65].foo !== 'undefined') {
-                    entity.profile2.identity.links[idx_60].metas[idx_65].foo = data.profile2.identity.links[idx_60].metas[idx_65].foo;
+                  if (data.profile2.identity.links[idx_116].metas[idx_124].foo === null) {
+                    entity.profile2.identity.links[idx_116].metas[idx_124].foo = null;
+                  } else if (typeof data.profile2.identity.links[idx_116].metas[idx_124].foo !== 'undefined') {
+                    entity.profile2.identity.links[idx_116].metas[idx_124].foo = data.profile2.identity.links[idx_116].metas[idx_124].foo;
                   }
-                  if (data.profile2.identity.links[idx_60].metas[idx_65].bar === null) {
-                    entity.profile2.identity.links[idx_60].metas[idx_65].bar = null;
-                  } else if (typeof data.profile2.identity.links[idx_60].metas[idx_65].bar !== 'undefined') {
-                    entity.profile2.identity.links[idx_60].metas[idx_65].bar = data.profile2.identity.links[idx_60].metas[idx_65].bar;
+                  if (data.profile2.identity.links[idx_116].metas[idx_124].bar === null) {
+                    entity.profile2.identity.links[idx_116].metas[idx_124].bar = null;
+                  } else if (typeof data.profile2.identity.links[idx_116].metas[idx_124].bar !== 'undefined') {
+                    entity.profile2.identity.links[idx_116].metas[idx_124].bar = data.profile2.identity.links[idx_116].metas[idx_124].bar;
                   }
-                  if (data.profile2.identity.links[idx_60].metas[idx_65].source === null) {
-    entity.profile2.identity.links[idx_60].metas[idx_65].source = null;
-                  } else if (typeof data.profile2.identity.links[idx_60].metas[idx_65].source !== 'undefined') {
-                    if (isPrimaryKey(data.profile2.identity.links[idx_60].metas[idx_65].source, true)) {
-                      entity.profile2.identity.links[idx_60].metas[idx_65].source = factory.createReference('Source', data.profile2.identity.links[idx_60].metas[idx_65].source, { merge: true, convertCustomTypes, normalizeAccessors, schema });
-                    } else if (data.profile2.identity.links[idx_60].metas[idx_65].source && typeof data.profile2.identity.links[idx_60].metas[idx_65].source === 'object') {
-                      entity.profile2.identity.links[idx_60].metas[idx_65].source = factory.create('Source', data.profile2.identity.links[idx_60].metas[idx_65].source, { initialized: true, merge: true, newEntity, convertCustomTypes, normalizeAccessors, schema });
+                  if (data.profile2.identity.links[idx_116].metas[idx_124].source === null) {
+    entity.profile2.identity.links[idx_116].metas[idx_124].source = null;
+                  } else if (typeof data.profile2.identity.links[idx_116].metas[idx_124].source !== 'undefined') {
+                    if (isPrimaryKey(data.profile2.identity.links[idx_116].metas[idx_124].source, true)) {
+                      entity.profile2.identity.links[idx_116].metas[idx_124].source = factory.createReference(source_128, data.profile2.identity.links[idx_116].metas[idx_124].source, { merge: true, convertCustomTypes, normalizeAccessors, schema });
+                    } else if (data.profile2.identity.links[idx_116].metas[idx_124].source && typeof data.profile2.identity.links[idx_116].metas[idx_124].source === 'object') {
+                      entity.profile2.identity.links[idx_116].metas[idx_124].source = factory.create(source_128, data.profile2.identity.links[idx_116].metas[idx_124].source, { initialized: true, merge: true, newEntity, convertCustomTypes, normalizeAccessors, schema });
                     }
                   }
-                } else if (data.profile2.identity.links[idx_60].metas[idx_65] === null) {
-                  entity.profile2.identity.links[idx_60].metas[idx_65] = null;
+                } else if (data.profile2.identity.links[idx_116].metas[idx_124] === null) {
+                  entity.profile2.identity.links[idx_116].metas[idx_124] = null;
                 }
               });
             }
-            if (data.profile2.identity.links[idx_60].source === null) {
-    entity.profile2.identity.links[idx_60].source = null;
-            } else if (typeof data.profile2.identity.links[idx_60].source !== 'undefined') {
-              if (isPrimaryKey(data.profile2.identity.links[idx_60].source, true)) {
-                entity.profile2.identity.links[idx_60].source = factory.createReference('Source', data.profile2.identity.links[idx_60].source, { merge: true, convertCustomTypes, normalizeAccessors, schema });
-              } else if (data.profile2.identity.links[idx_60].source && typeof data.profile2.identity.links[idx_60].source === 'object') {
-                entity.profile2.identity.links[idx_60].source = factory.create('Source', data.profile2.identity.links[idx_60].source, { initialized: true, merge: true, newEntity, convertCustomTypes, normalizeAccessors, schema });
+            if (data.profile2.identity.links[idx_116].source === null) {
+    entity.profile2.identity.links[idx_116].source = null;
+            } else if (typeof data.profile2.identity.links[idx_116].source !== 'undefined') {
+              if (isPrimaryKey(data.profile2.identity.links[idx_116].source, true)) {
+                entity.profile2.identity.links[idx_116].source = factory.createReference(source_129, data.profile2.identity.links[idx_116].source, { merge: true, convertCustomTypes, normalizeAccessors, schema });
+              } else if (data.profile2.identity.links[idx_116].source && typeof data.profile2.identity.links[idx_116].source === 'object') {
+                entity.profile2.identity.links[idx_116].source = factory.create(source_129, data.profile2.identity.links[idx_116].source, { initialized: true, merge: true, newEntity, convertCustomTypes, normalizeAccessors, schema });
               }
             }
-          } else if (data.profile2.identity.links[idx_60] === null) {
-            entity.profile2.identity.links[idx_60] = null;
+          } else if (data.profile2.identity.links[idx_116] === null) {
+            entity.profile2.identity.links[idx_116] = null;
           }
         });
       }
@@ -1183,9 +1183,9 @@ exports[`embedded entities in postgres > diffing 2`] = `
     entity.profile2.identity.source = null;
       } else if (typeof data.profile2.identity.source !== 'undefined') {
         if (isPrimaryKey(data.profile2.identity.source, true)) {
-          entity.profile2.identity.source = factory.createReference('Source', data.profile2.identity.source, { merge: true, convertCustomTypes, normalizeAccessors, schema });
+          entity.profile2.identity.source = factory.createReference(source_130, data.profile2.identity.source, { merge: true, convertCustomTypes, normalizeAccessors, schema });
         } else if (data.profile2.identity.source && typeof data.profile2.identity.source === 'object') {
-          entity.profile2.identity.source = factory.create('Source', data.profile2.identity.source, { initialized: true, merge: true, newEntity, convertCustomTypes, normalizeAccessors, schema });
+          entity.profile2.identity.source = factory.create(source_130, data.profile2.identity.source, { initialized: true, merge: true, newEntity, convertCustomTypes, normalizeAccessors, schema });
         }
       }
     } else if (data.profile2.identity === null) {
@@ -1195,9 +1195,9 @@ exports[`embedded entities in postgres > diffing 2`] = `
     entity.profile2.source = null;
     } else if (typeof data.profile2.source !== 'undefined') {
       if (isPrimaryKey(data.profile2.source, true)) {
-        entity.profile2.source = factory.createReference('Source', data.profile2.source, { merge: true, convertCustomTypes, normalizeAccessors, schema });
+        entity.profile2.source = factory.createReference(source_131, data.profile2.source, { merge: true, convertCustomTypes, normalizeAccessors, schema });
       } else if (data.profile2.source && typeof data.profile2.source === 'object') {
-        entity.profile2.source = factory.create('Source', data.profile2.source, { initialized: true, merge: true, newEntity, convertCustomTypes, normalizeAccessors, schema });
+        entity.profile2.source = factory.create(source_131, data.profile2.source, { initialized: true, merge: true, newEntity, convertCustomTypes, normalizeAccessors, schema });
       }
     }
   } else if (data.profile2 === null) {

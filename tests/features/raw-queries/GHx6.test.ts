@@ -39,7 +39,7 @@ beforeAll(async () => {
   orm = new MikroORM({
     metadataProvider: ReflectMetadataProvider,
     entities: [Job, Tag],
-    dbName: `:memory:`,
+    dbName: ':memory:',
   });
 
   await orm.schema.create();

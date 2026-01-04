@@ -66,7 +66,7 @@ describe('GH issue 2489', () => {
   afterAll(() => orm.close(true));
 
   test('custom types are property rehydrated when using metadata cache', async () => {
-    expect(orm.getMetadata().get(Test.name).properties.numArray.customType).toBeInstanceOf(IntegerArrayType);
+    expect(orm.getMetadata(Test).properties.numArray.customType).toBeInstanceOf(IntegerArrayType);
 
     const e = new Test();
     expect(e.numArray).toEqual([1, 2, 3]);

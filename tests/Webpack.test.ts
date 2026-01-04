@@ -17,8 +17,8 @@ describe('Webpack', () => {
       entities: [AuthorWp, BookWp],
     });
 
-    expect(orm.getMetadata().has('BookWp')).toBe(true);
-    expect(orm.getMetadata().has('AuthorWp')).toBe(true);
+    expect(orm.getMetadata().has(BookWp)).toBe(true);
+    expect(orm.getMetadata().has(AuthorWp)).toBe(true);
     const author = orm.em.create(AuthorWp, { name: 'Name', email: 'abc' });
     expect(author).toBeInstanceOf(AuthorWp);
     expect(author.name).toBe('Name');

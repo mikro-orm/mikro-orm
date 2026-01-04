@@ -1,12 +1,11 @@
-import { Collection, MikroORM } from '@mikro-orm/core';
+import { Collection, MikroORM } from '@mikro-orm/sqlite';
 import { Entity, Enum, ManyToMany, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
-import { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity({
   discriminatorColumn: 'type',
   discriminatorMap: { person: 'Person', employee: 'Employee' },
 })
-export abstract class BasePerson {
+abstract class BasePerson {
 
   @PrimaryKey()
   id!: number;
@@ -17,12 +16,12 @@ export abstract class BasePerson {
 }
 
 @Entity()
-export class Person extends BasePerson {
+class Person extends BasePerson {
   // ...
 }
 
 @Entity()
-export class Employee extends BasePerson {
+class Employee extends BasePerson {
 
   @ManyToMany({ entity: () => PhotoFile, inversedBy: 'employees' })
   photos = new Collection<PhotoFile>(this);
@@ -33,7 +32,7 @@ export class Employee extends BasePerson {
   discriminatorColumn: 'type',
   discriminatorMap: { custom: 'CustomFile', photo: 'PhotoFile' },
 })
-export abstract class File {
+abstract class File {
 
   @PrimaryKey()
   id!: number;
@@ -44,12 +43,12 @@ export abstract class File {
 }
 
 @Entity()
-export class CustomFile extends File {
+class CustomFile extends File {
   // ...
 }
 
 @Entity()
-export class PhotoFile extends File {
+class PhotoFile extends File {
 
   @ManyToMany({ entity: () => Employee, mappedBy: 'photos' })
   employees = new Collection<Employee>(this);
@@ -58,14 +57,13 @@ export class PhotoFile extends File {
 
 describe('bidirectional many to many with multiple STI entities', () => {
 
-  let orm: MikroORM<SqliteDriver>;
+  let orm: MikroORM;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
       metadataProvider: ReflectMetadataProvider,
       entities: [BasePerson, Employee, Person, File, CustomFile, PhotoFile],
       dbName: ':memory:',
-      driver: SqliteDriver,
     });
     await orm.schema.create();
   });

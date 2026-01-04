@@ -32,10 +32,10 @@ const BaseSchema = new EntitySchema<BaseEntity>({
     id: { type: 'number', primary: true },
     name: { type: 'string' },
     type: { type: 'string' },
-    parent: { kind: 'm:1', entity: () => 'ParentEntity', nullable: true },
+    parent: { kind: 'm:1', entity: () => ParentEntity, nullable: true },
     mids: {
       kind: 'm:n',
-      entity: () => 'MidEntity',
+      entity: () => MidEntity,
       mappedBy: 'items',
     },
   },
@@ -48,7 +48,7 @@ const MidSchema = new EntitySchema<MidEntity, BaseEntity>({
   properties: {
     items: {
       kind: 'm:n',
-      entity: () => 'BaseEntity',
+      entity: () => BaseEntity,
       owner: true,
       pivotTable: 'base_entity_mid',
       joinColumn: 'mid_id',
@@ -56,12 +56,12 @@ const MidSchema = new EntitySchema<MidEntity, BaseEntity>({
     },
     parentMid: {
       kind: 'm:1',
-      entity: () => 'MidEntity',
+      entity: () => MidEntity,
       nullable: true,
     },
     childMids: {
       kind: '1:m',
-      entity: () => 'MidEntity',
+      entity: () => MidEntity,
       mappedBy: 'parentMid',
     },
   },
@@ -74,7 +74,7 @@ const ParentSchema = new EntitySchema({
   properties: {
     elements: {
       kind: '1:m',
-      entity: () => 'BaseEntity',
+      entity: () => BaseEntity,
       mappedBy: 'parent',
     },
   },

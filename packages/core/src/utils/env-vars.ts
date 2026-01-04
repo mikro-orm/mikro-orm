@@ -69,7 +69,6 @@ export function loadEnvironmentVars(): Partial<Options> {
   read1('warnWhenNoEntities', bool);
   read1('checkDuplicateTableNames', bool);
   read1('checkDuplicateFieldNames', bool);
-  read1('checkDuplicateEntities', bool);
   read1('checkNonPersistentCompositeProps', bool);
   read1('inferDefaultValues', bool);
   read1('tsConfigPath');

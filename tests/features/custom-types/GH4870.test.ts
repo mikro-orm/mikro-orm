@@ -34,7 +34,7 @@ let orm: MikroORM;
 beforeAll(async () => {
   orm = await MikroORM.init({
     metadataProvider: ReflectMetadataProvider,
-    dbName: `:memory:`,
+    dbName: ':memory:',
     entities: [Driver],
   });
   await orm.schema.refresh();

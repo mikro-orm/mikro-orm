@@ -39,11 +39,11 @@ test('dynamic entities', async () => {
       },
     });
     orm.discoverEntity(schema);
-    const meta = orm.getMetadata(schema.name);
+    const meta = orm.getMetadata(schema);
     expect(meta).toBe(meta.root);
     await orm.schema.update();
 
-    const entity = orm.em.create(schema.name, {
+    const entity = orm.em.create(schema, {
       foo: `Foo ${Math.random()}`,
       bar: `Foo ${Math.random()}`,
     });

@@ -8,7 +8,7 @@ class Group {
   id!: number;
 
   @ManyToMany({
-    entity: 'Participant',
+    entity: () => Participant,
     mappedBy: 'groups',
   })
   participants = new Collection<Participant>(this);

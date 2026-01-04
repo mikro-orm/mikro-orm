@@ -29,7 +29,7 @@ class Job {
   @Property({ type: BigIntType, nullable: true })
   optional?: bigint | null; // GH issue 631
 
-  @OneToMany('Level', 'job', { orphanRemoval: true })
+  @OneToMany(() => Level, 'job', { orphanRemoval: true })
   levels = new Collection<Level>(this);
 
 }

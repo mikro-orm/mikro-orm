@@ -7,7 +7,7 @@ class Parent {
   @PrimaryKey()
   id!: number;
 
-  @OneToMany('Child', 'parent')
+  @OneToMany(() => Child, 'parent')
   children = new Collection<Child>(this);
 
 }

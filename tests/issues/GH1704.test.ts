@@ -8,13 +8,13 @@ class Profile {
   @PrimaryKey()
   id!: number;
 
-  @OneToOne('User', 'profile')
+  @OneToOne(() => User, 'profile')
   user: any;
 
 }
 
 @Entity()
-export class User {
+class User {
 
   @PrimaryKey()
   id!: number;

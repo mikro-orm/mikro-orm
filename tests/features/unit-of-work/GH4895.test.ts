@@ -24,7 +24,7 @@ beforeAll(async () => {
   orm = await MikroORM.init({
     metadataProvider: ReflectMetadataProvider,
     entities: [A, B],
-    dbName: `:memory:`,
+    dbName: ':memory:',
     subscribers: [{
       onFlush: args => {
         const changeSets = args.uow.getChangeSets();

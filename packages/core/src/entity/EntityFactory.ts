@@ -71,7 +71,6 @@ export class EntityFactory {
       return data as New<T, P>;
     }
 
-    entityName = Utils.className(entityName);
     const meta = this.metadata.get<T>(entityName);
 
     if (meta.virtual) {
@@ -168,14 +167,14 @@ export class EntityFactory {
     data = QueryHelper.processParams(data);
     const existsData = this.comparator.prepareEntity(entity);
     const originalEntityData = helper(entity).__originalEntityData ?? {} as EntityData<T>;
-    const diff = this.comparator.diffEntities(meta.className, originalEntityData, existsData);
+    const diff = this.comparator.diffEntities(meta.class, originalEntityData, existsData);
 
     // version properties are not part of entity snapshots
     if (meta.versionProperty && data[meta.versionProperty] && data[meta.versionProperty] !== originalEntityData[meta.versionProperty]) {
       diff[meta.versionProperty] = data[meta.versionProperty];
     }
 
-    const diff2 = this.comparator.diffEntities(meta.className, existsData, data, { includeInverseSides: true });
+    const diff2 = this.comparator.diffEntities(meta.class, existsData, data, { includeInverseSides: true });
 
     // do not override values changed by user
     Utils.keys(diff).forEach(key => delete diff2[key]);
@@ -222,13 +221,13 @@ export class EntityFactory {
         // we just create the entity from scratch, which will automatically pick the right one from the identity map and call `mergeData` on it
         (data[prop.name] as EntityData<T>[])
           .filter(child => Utils.isPlainObject(child)) // objects with prototype can be PKs (e.g. `ObjectId`)
-          .forEach(child => this.create(prop.type, child, options)); // we can ignore the value, we just care about the `mergeData` call
+          .forEach(child => this.create(prop.targetMeta!.class, child, options)); // we can ignore the value, we just care about the `mergeData` call
 
         return;
       }
 
       if ([ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind) && Utils.isPlainObject(data[prop.name]) && entity[prop.name] && helper(entity[prop.name]!).__initialized) {
-        this.create(prop.type, data[prop.name] as EntityData<T>, options); // we can ignore the value, we just care about the `mergeData` call
+        this.create(prop.targetMeta!.class, data[prop.name] as EntityData<T>, options); // we can ignore the value, we just care about the `mergeData` call
       }
     });
 
@@ -237,7 +236,6 @@ export class EntityFactory {
 
   createReference<T extends object>(entityName: EntityName<T>, id: Primary<T> | Primary<T>[] | Record<string, Primary<T>>, options: Pick<FactoryOptions, 'merge' | 'convertCustomTypes' | 'schema'> = {}): T {
     options.convertCustomTypes ??= true;
-    entityName = Utils.className(entityName);
     const meta = this.metadata.get<T>(entityName);
     const schema = this.driver.getSchemaName(meta, options);
 
@@ -271,7 +269,6 @@ export class EntityFactory {
   }
 
   createEmbeddable<T extends object>(entityName: EntityName<T>, data: EntityData<T>, options: Pick<FactoryOptions, 'newEntity' | 'convertCustomTypes'> = {}): T {
-    entityName = Utils.className(entityName);
     data = { ...data };
     const meta = this.metadata.get(entityName);
     const meta2 = this.processDiscriminatorColumn<T>(meta, data);
@@ -287,7 +284,7 @@ export class EntityFactory {
     const schema = this.driver.getSchemaName(meta, options);
 
     if (options.newEntity || meta.forceConstructor || meta.virtual) {
-      if (!meta.class) {
+      if (meta.polymorphs) {
         throw new Error(`Cannot create entity ${meta.className}, class prototype is unknown`);
       }
 
@@ -367,7 +364,7 @@ export class EntityFactory {
     const schema = this.driver.getSchemaName(meta, options);
 
     if (meta.simplePK) {
-      return this.unitOfWork.getById<T>(meta.className, data[meta.primaryKeys[0]] as Primary<T>, schema);
+      return this.unitOfWork.getById<T>(meta.class, data[meta.primaryKeys[0]] as Primary<T>, schema);
     }
 
     if (!Array.isArray(data) && meta.primaryKeys.some(pk => data[pk] == null)) {
@@ -376,7 +373,7 @@ export class EntityFactory {
 
     const pks = Utils.getOrderedPrimaryKeys<T>(data as Dictionary, meta, this.platform, options.convertCustomTypes);
 
-    return this.unitOfWork.getById<T>(meta.className, pks, schema);
+    return this.unitOfWork.getById<T>(meta.class, pks, schema);
   }
 
   private processDiscriminatorColumn<T extends object>(meta: EntityMetadata<T>, data: EntityData<T>): EntityMetadata<T> {
@@ -387,7 +384,7 @@ export class EntityFactory {
     const prop = meta.properties[meta.root.discriminatorColumn as EntityKey<T>];
     const value = data[prop.name] as string;
     const type = meta.root.discriminatorMap![value];
-    meta = type ? this.metadata.find(type)! : meta;
+    meta = type ? this.metadata.get(type) : meta;
 
     return meta;
   }
@@ -423,7 +420,7 @@ export class EntityFactory {
 
       if (prop && [ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind) && value) {
         const pk = Reference.unwrapReference<any>(value);
-        const entity = this.unitOfWork.getById(prop.type, pk, options.schema, true) as T[keyof T];
+        const entity = this.unitOfWork.getById(prop.targetMeta!.class, pk, options.schema, true) as T[keyof T];
 
         if (entity) {
           return entity;
@@ -436,11 +433,11 @@ export class EntityFactory {
         const nakedPk = Utils.extractPK(value, prop.targetMeta, true);
 
         if (Utils.isObject(value) && !nakedPk) {
-          return this.create(prop.type, value!, options);
+          return this.create(prop.targetMeta!.class, value!, options);
         }
 
         const { newEntity, initialized, ...rest } = options;
-        const target = this.createReference(prop.type, nakedPk, rest);
+        const target = this.createReference(prop.targetMeta!.class, nakedPk, rest);
 
         return Reference.wrapReference(target, prop);
       }
@@ -451,7 +448,7 @@ export class EntityFactory {
           return value;
         }
 
-        return this.createEmbeddable(prop.type, value!, options);
+        return this.createEmbeddable(prop.targetMeta!.class, value!, options);
       }
 
       if (!prop) {
@@ -462,8 +459,8 @@ export class EntityFactory {
             continue;
           }
 
-          if ([ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind) && Utils.isPlainObject(tmp[prop.name]) && !Utils.extractPK(tmp[prop.name], meta.properties[prop.name].targetMeta, true)) {
-            tmp[prop.name] = Reference.wrapReference(this.create(meta.properties[prop.name].type, tmp[prop.name]!, options), prop);
+          if ([ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind) && Utils.isPlainObject(tmp[prop.name]) && !Utils.extractPK(tmp[prop.name], prop.targetMeta, true)) {
+            tmp[prop.name] = Reference.wrapReference(this.create(prop.targetMeta!.class, tmp[prop.name]!, options), prop);
           } else if (prop.kind === ReferenceKind.SCALAR) {
             tmp[prop.name] = prop.customType.convertToJSValue(tmp[prop.name], this.platform) as any;
           }

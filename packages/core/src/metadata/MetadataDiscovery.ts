@@ -3,6 +3,7 @@ import {
   type Dictionary,
   type EntityClass,
   EntityMetadata,
+  type EntityName,
   type EntityProperty,
 } from '../typings.js';
 import { Utils } from '../utils/Utils.js';
@@ -19,6 +20,7 @@ import { t, Type } from '../types/index.js';
 import { colors } from '../logging/colors.js';
 import { raw, Raw } from '../utils/RawQueryFragment.js';
 import type { Logger } from '../logging/Logger.js';
+import { BaseEntity } from '../entity/BaseEntity.js';
 
 export class MetadataDiscovery {
 
@@ -87,10 +89,6 @@ export class MetadataDiscovery {
     return storage;
   }
 
-  validateDiscovered(metadata: EntityMetadata[]): void {
-    return this.validator.validateDiscovered(metadata, this.config.get('discovery'));
-  }
-
   private mapDiscoveredEntities(): MetadataStorage {
     const discovered = new MetadataStorage();
 
@@ -99,8 +97,12 @@ export class MetadataDiscovery {
       .sort((a, b) => b.root.name!.localeCompare(a.root.name!))
       .forEach(meta => {
         this.platform.validateMetadata(meta);
-        discovered.set(meta.className, meta);
+        discovered.set(meta.class, meta);
       });
+
+    for (const meta of discovered) {
+      meta.root = discovered.get(meta.root.class);
+    }
 
     return discovered;
   }
@@ -151,28 +153,36 @@ export class MetadataDiscovery {
     filtered.sort((a, b) => !a.embeddable === !b.embeddable ? 0 : (a.embeddable ? 1 : -1));
     filtered.forEach(meta => this.initSingleTableInheritance(meta, filtered));
     filtered.forEach(meta => this.defineBaseEntityProperties(meta));
-    filtered.forEach(meta => this.metadata.set(meta.className, EntitySchema.fromMetadata(meta).init().meta));
+    filtered.forEach(meta => {
+      const newMeta = EntitySchema.fromMetadata(meta).init().meta;
+      return this.metadata.set(newMeta.class, newMeta);
+    });
     filtered.forEach(meta => this.initAutoincrement(meta));
-    filtered.forEach(meta => Object.values(meta.properties).forEach(prop => this.initEmbeddables(meta, prop)));
-    filtered.forEach(meta => Object.values(meta.properties).forEach(prop => this.initFactoryField(meta, prop)));
-    filtered.forEach(meta => Object.values(meta.properties).forEach(prop => this.initFieldName(prop)));
-    filtered.forEach(meta => Object.values(meta.properties).forEach(prop => this.initVersionProperty(meta, prop)));
-    filtered.forEach(meta => Object.values(meta.properties).forEach(prop => this.initCustomType(meta, prop)));
-    filtered.forEach(meta => Object.values(meta.properties).forEach(prop => this.initGeneratedColumn(meta, prop)));
+
+    const forEachProp = (cb: (meta: EntityMetadata, prop: EntityProperty) => unknown) => {
+      filtered.forEach(meta => Object.values(meta.properties).forEach(prop => cb(meta, prop)));
+    };
+
+    forEachProp((m, p) => this.initFactoryField(m, p));
+    forEachProp((_m, p) => this.initRelation(p));
+    forEachProp((m, p) => this.initEmbeddables(m, p));
+    forEachProp((_m, p) => this.initFieldName(p));
+    forEachProp((m, p) => this.initVersionProperty(m, p));
+    forEachProp((m, p) => this.initCustomType(m, p));
+    forEachProp((m, p) => this.initGeneratedColumn(m, p));
+
     filtered.forEach(meta => this.initAutoincrement(meta)); // once again after we init custom types
     filtered.forEach(meta => this.initCheckConstraints(meta));
 
-    for (const meta of filtered) {
-      for (const prop of Object.values(meta.properties)) {
-        this.initDefaultValue(prop);
-        this.inferTypeFromDefault(prop);
-        this.initColumnType(prop);
-      }
-    }
+    forEachProp((_m, p) => {
+      this.initDefaultValue(p);
+      this.inferTypeFromDefault(p);
+      this.initRelation(p);
+      this.initColumnType(p);
+    });
 
-    filtered.forEach(meta => Object.values(meta.properties).forEach(prop => this.initIndexes(meta, prop)));
+    forEachProp((m, p) => this.initIndexes(m, p));
     filtered.forEach(meta => this.autoWireBidirectionalProperties(meta));
-    filtered.forEach(meta => this.findReferencingProperties(meta, filtered));
 
     for (const meta of filtered) {
       discovered.push(...this.processEntity(meta));
@@ -182,8 +192,9 @@ export class MetadataDiscovery {
     this.metadataProvider.combineCache();
 
     return discovered.map(meta => {
-      meta = this.metadata.get(meta.className);
+      meta = this.metadata.get(meta.class);
       meta.sync(true);
+      this.findReferencingProperties(meta, filtered);
 
       return meta;
     });
@@ -192,7 +203,7 @@ export class MetadataDiscovery {
   private async findEntities(preferTs: boolean): Promise<EntityMetadata<any>[]> {
     const { entities, entitiesTs, baseDir } = this.config.getAll();
     const targets = (preferTs && entitiesTs.length > 0) ? entitiesTs : entities;
-    const processed: (EntitySchema | EntityClass<any>)[] = [];
+    const processed: (EntitySchema | EntityClass)[] = [];
     const paths: string[] = [];
 
     for (const entity of targets!) {
@@ -217,21 +228,27 @@ export class MetadataDiscovery {
       .replace(/\[]$/, '')          // remove array suffix
       .replace(/\((.*)\)/, '$1');   // unwrap union types
 
-    const missing: EntityClass<any>[] = [];
-
+    const missing: EntityClass[] = [];
     this.discovered.forEach(meta => Object.values(meta.properties).forEach(prop => {
-      if (prop.kind === ReferenceKind.MANY_TO_MANY && prop.pivotEntity && !this.discovered.find(m => m.className === Utils.className(prop.pivotEntity))) {
-        const target = typeof prop.pivotEntity === 'function'
-          ? (prop.pivotEntity as () => EntityClass<any>)()
-          : prop.pivotEntity;
-        missing.push(target as EntityClass<any>);
+      if (prop.kind === ReferenceKind.MANY_TO_MANY && prop.pivotEntity) {
+        const pivotEntity = prop.pivotEntity as unknown as EntityClass | (() => EntityClass);
+        const target = typeof pivotEntity === 'function' && !pivotEntity.prototype
+          ? (pivotEntity as () => EntityClass)()
+          : pivotEntity;
+
+        if (!this.discovered.find(m => m.className === Utils.className(target))) {
+          missing.push(target as EntityClass);
+        }
       }
 
-      if (prop.kind !== ReferenceKind.SCALAR && !unwrap(prop.type).split(/ ?\| ?/).every(type => this.discovered.find(m => m.className === type))) {
-        const target = typeof prop.entity === 'function'
+      if (prop.kind !== ReferenceKind.SCALAR) {
+        const target = typeof prop.entity === 'function' && !prop.entity.prototype
           ? prop.entity()
           : prop.type;
-        missing.push(...Utils.asArray(target as EntityClass<any>));
+
+        if (!unwrap(prop.type).split(/ ?\| ?/).every(type => this.discovered.find(m => m.className === type))) {
+          missing.push(...Utils.asArray(target as EntityClass));
+        }
       }
     }));
 
@@ -240,11 +257,11 @@ export class MetadataDiscovery {
     }
   }
 
-  private tryDiscoverTargets(targets: EntityClass<any>[]): void {
+  private tryDiscoverTargets(targets: EntityClass[]): void {
     for (const target of targets) {
       const isDiscoverable = typeof target === 'function' || target as unknown instanceof EntitySchema;
 
-      if (isDiscoverable && target.name && !this.metadata.has(target.name)) {
+      if (isDiscoverable && target.name && !this.metadata.has(target)) {
         this.discoverReferences([target], false);
         this.discoverMissingTargets();
       }
@@ -261,7 +278,7 @@ export class MetadataDiscovery {
 
       const schema = this.getSchema(entity);
       const meta = schema.init().meta;
-      this.metadata.set(meta.className, meta);
+      this.metadata.set(meta.class, meta);
       found.push(schema);
     }
 
@@ -269,11 +286,11 @@ export class MetadataDiscovery {
     for (const meta of this.metadata) {
       let parent = meta.extends as any;
 
-      if (parent instanceof EntitySchema && !this.metadata.has(parent.meta.className)) {
+      if (parent instanceof EntitySchema && !this.metadata.has(parent.init().meta.class)) {
         this.discoverReferences([parent], false);
       }
 
-      if (typeof parent === 'function' && parent.name && !this.metadata.has(parent.name)) {
+      if (typeof parent === 'function' && parent.name && !this.metadata.has(parent)) {
         this.discoverReferences([parent], false);
       }
 
@@ -284,7 +301,7 @@ export class MetadataDiscovery {
 
       parent = Object.getPrototypeOf(meta.class);
 
-      if (parent.name !== '' && !this.metadata.has(parent.name)) {
+      if (parent.name !== '' && !this.metadata.has(parent) && parent !== BaseEntity) {
         this.discoverReferences([parent], false);
       }
     }
@@ -296,17 +313,17 @@ export class MetadataDiscovery {
     this.discoverMissingTargets();
 
     if (validate) {
-      this.validateDiscovered(this.discovered);
+      this.validator.validateDiscovered(this.discovered, this.config.get('discovery'));
     }
 
     return this.discovered.filter(meta => found.find(m => m.name === meta.className));
   }
 
-  reset(className: string): void {
-    const exists = this.discovered.findIndex(m => m.className === className);
+  reset<T>(entityName: EntityName<T>): void {
+    const exists = this.discovered.findIndex(m => m.class === entityName || m.className === Utils.className(entityName));
 
     if (exists !== -1) {
-      this.metadata.reset(this.discovered[exists].className);
+      this.metadata.reset(this.discovered[exists].class);
       this.discovered.splice(exists, 1);
     }
   }
@@ -326,11 +343,11 @@ export class MetadataDiscovery {
     if (path) {
       const meta = Utils.copy(MetadataStorage.getMetadata(entity.name, path), false);
       meta.path = path;
-      this.metadata.set(entity.name, meta);
+      this.metadata.set(entity, meta);
     }
 
-    const exists = this.metadata.has(entity.name);
-    const meta = this.metadata.get<T>(entity.name, true);
+    const exists = this.metadata.has(entity);
+    const meta = this.metadata.get<T>(entity, true);
     meta.abstract ??= !(exists && meta.name);
     const schema = EntitySchema.fromMetadata<T>(meta);
     schema.setClass(entity);
@@ -339,7 +356,7 @@ export class MetadataDiscovery {
   }
 
   private getRootEntity(meta: EntityMetadata): EntityMetadata {
-    const base = meta.extends && this.metadata.find(Utils.className(meta.extends));
+    const base = meta.extends && this.metadata.find(meta.extends);
 
     if (!base || base === meta) { // make sure we do not fall into infinite loop
       return meta;
@@ -465,7 +482,7 @@ export class MetadataDiscovery {
   }
 
   private initManyToOneFieldName(prop: EntityProperty, name: string): string[] {
-    const meta2 = this.metadata.get(prop.type);
+    const meta2 = prop.targetMeta!;
     const ret: string[] = [];
 
     for (const primaryKey of meta2.primaryKeys) {
@@ -480,12 +497,12 @@ export class MetadataDiscovery {
   }
 
   private initManyToManyFieldName(prop: EntityProperty, name: string): string[] {
-    const meta2 = this.metadata.get(prop.type);
+    const meta2 = prop.targetMeta!;
     return meta2.primaryKeys.map(() => this.namingStrategy.propertyToColumnName(name));
   }
 
   private initManyToManyFields(meta: EntityMetadata, prop: EntityProperty): void {
-    const meta2 = this.metadata.get(prop.type);
+    const meta2 = prop.targetMeta!;
     Utils.defaultValue(prop, 'fixedOrder', !!prop.fixedOrderColumn);
     const pivotMeta = this.metadata.find(prop.pivotEntity);
     const props = Object.values(pivotMeta?.properties ?? {});
@@ -517,7 +534,7 @@ export class MetadataDiscovery {
       const prop2 = meta2.properties[prop.mappedBy];
       this.initManyToManyFields(meta2, prop2);
       prop.pivotTable = prop2.pivotTable;
-      prop.pivotEntity = prop2.pivotEntity ?? prop2.pivotTable;
+      prop.pivotEntity = prop2.pivotEntity;
       prop.fixedOrder = prop2.fixedOrder;
       prop.fixedOrderColumn = prop2.fixedOrderColumn;
       prop.joinColumns = prop2.inverseJoinColumns;
@@ -530,7 +547,7 @@ export class MetadataDiscovery {
   }
 
   private initManyToOneFields(prop: EntityProperty): void {
-    const meta2 = this.metadata.get(prop.type);
+    const meta2 = prop.targetMeta!;
     const fieldNames = Utils.flatten(meta2.primaryKeys.map(primaryKey => meta2.properties[primaryKey].fieldNames));
     Utils.defaultValue(prop, 'referencedTableName', meta2.tableName);
 
@@ -544,7 +561,7 @@ export class MetadataDiscovery {
   }
 
   private initOneToManyFields(prop: EntityProperty): void {
-    const meta2 = this.metadata.get(prop.type);
+    const meta2 = prop.targetMeta!;
 
     if (!prop.joinColumns) {
       prop.joinColumns = [this.namingStrategy.joinColumnName(prop.name)];
@@ -567,7 +584,7 @@ export class MetadataDiscovery {
     }
 
     meta.forceConstructor ??= this.shouldForceConstructorUsage(meta);
-    this.validator.validateEntityDefinition(this.metadata, meta.className, this.config.get('discovery'));
+    this.validator.validateEntityDefinition(this.metadata, meta.class, this.config.get('discovery'));
 
     for (const prop of Object.values(meta.properties)) {
       this.initNullability(prop);
@@ -591,7 +608,16 @@ export class MetadataDiscovery {
     if (this.platform.usesPivotTable()) {
       return Object.values(meta.properties)
         .filter(prop => prop.kind === ReferenceKind.MANY_TO_MANY && prop.owner && prop.pivotTable)
-        .map(prop => this.definePivotTableEntity(meta, prop));
+        .map(prop => {
+          const pivotMeta = this.definePivotTableEntity(meta, prop);
+          prop.pivotEntity = pivotMeta.class;
+
+          if (prop.inversedBy) {
+            prop.targetMeta!.properties[prop.inversedBy].pivotEntity = pivotMeta.class;
+          }
+
+          return pivotMeta;
+        });
     }
 
     return [];
@@ -612,8 +638,12 @@ export class MetadataDiscovery {
       const value = prop[type] as unknown;
 
       if (value instanceof Function) {
-        const meta2 = this.metadata.get(prop.type);
+        const meta2 = prop.targetMeta ?? this.metadata.get(prop.target);
         prop[type] = value(meta2.properties)?.name;
+
+        if (type === 'pivotEntity' && value) {
+          prop[type] = value(meta2.properties);
+        }
 
         if (prop[type] == null) {
           throw MetadataError.fromWrongReference(meta, prop, type as 'mappedBy' | 'inversedBy');
@@ -631,8 +661,8 @@ export class MetadataDiscovery {
       [first, second] = pks;
     } else if (fks.length >= 2) {
       [first, second] = fks;
-    /* v8 ignore next */
     } else {
+      /* v8 ignore next */
       return [];
     }
 
@@ -649,7 +679,9 @@ export class MetadataDiscovery {
   }
 
   private definePivotTableEntity(meta: EntityMetadata, prop: EntityProperty): EntityMetadata {
-    const pivotMeta = this.metadata.find(prop.pivotEntity);
+    const pivotMeta = prop.pivotEntity
+      ? this.metadata.find(prop.pivotEntity)
+      : this.metadata.getByClassName(prop.pivotTable!, false);
 
     // ensure inverse side exists so we can join it when populating via pivot tables
     if (!prop.inversedBy && prop.targetMeta) {
@@ -659,6 +691,8 @@ export class MetadataDiscovery {
         name: inverseName,
         kind: ReferenceKind.MANY_TO_MANY,
         type: meta.className,
+        target: meta.class,
+        targetMeta: meta,
         mappedBy: prop.name,
         pivotEntity: prop.pivotEntity,
         pivotTable: prop.pivotTable,
@@ -667,20 +701,13 @@ export class MetadataDiscovery {
       } as EntityProperty;
       this.applyNamingStrategy(prop.targetMeta, inverseProp);
       this.initCustomType(prop.targetMeta, inverseProp);
-      this.initRelation(inverseProp);
       prop.targetMeta!.properties[inverseName] = inverseProp;
     }
 
     if (pivotMeta) {
+      prop.pivotEntity = pivotMeta.class;
       this.ensureCorrectFKOrderInPivotEntity(pivotMeta, prop);
       return pivotMeta;
-    }
-
-    const exists = this.metadata.find(prop.pivotTable);
-
-    if (exists) {
-      prop.pivotEntity = exists.className;
-      return exists;
     }
 
     let tableName = prop.pivotTable;
@@ -691,21 +718,22 @@ export class MetadataDiscovery {
     }
 
     schemaName ??= meta.schema;
-    const targetType = prop.targetMeta!.className;
-    const data = new EntityMetadata({
+    const targetMeta = prop.targetMeta!;
+    const targetType = targetMeta.className;
+    const pivotMeta2 = new EntityMetadata({
       name: prop.pivotTable,
       className: prop.pivotTable,
       collection: tableName,
       schema: schemaName,
       pivotTable: true,
     });
-    prop.pivotEntity = data.className;
+    prop.pivotEntity = pivotMeta2.class;
 
     if (prop.fixedOrder) {
-      const primaryProp = this.defineFixedOrderProperty(prop, targetType);
-      data.properties[primaryProp.name] = primaryProp;
+      const primaryProp = this.defineFixedOrderProperty(prop, targetMeta);
+      pivotMeta2.properties[primaryProp.name] = primaryProp;
     } else {
-      data.compositePK = true;
+      pivotMeta2.compositePK = true;
     }
 
     // handle self-referenced m:n with same default field names
@@ -714,19 +742,19 @@ export class MetadataDiscovery {
       prop.inverseJoinColumns = prop.referencedColumnNames.map(name => this.namingStrategy.joinKeyColumnName(meta.tableName + '_2', name, meta.compositePK));
 
       if (prop.inversedBy) {
-        const prop2 = this.metadata.get(targetType).properties[prop.inversedBy];
+        const prop2 = targetMeta.properties[prop.inversedBy];
         prop2.inverseJoinColumns = prop.joinColumns;
         prop2.joinColumns = prop.inverseJoinColumns;
       }
     }
 
-    data.properties[meta.name + '_owner'] = this.definePivotProperty(prop, meta.name + '_owner', meta.className, targetType + '_inverse', true, meta.className === targetType);
-    data.properties[targetType + '_inverse'] = this.definePivotProperty(prop, targetType + '_inverse', targetType, meta.name + '_owner', false, meta.className === targetType);
+    pivotMeta2.properties[meta.name + '_owner'] = this.definePivotProperty(prop, meta.name + '_owner', meta.class, targetType + '_inverse', true, meta.className === targetType);
+    pivotMeta2.properties[targetType + '_inverse'] = this.definePivotProperty(prop, targetType + '_inverse', targetMeta.class, meta.name + '_owner', false, meta.className === targetType);
 
-    return this.metadata.set(data.className, EntitySchema.fromMetadata(data).init().meta);
+    return this.metadata.set(pivotMeta2.class, EntitySchema.fromMetadata(pivotMeta2).init().meta);
   }
 
-  private defineFixedOrderProperty(prop: EntityProperty, targetType: string): EntityProperty {
+  private defineFixedOrderProperty(prop: EntityProperty, targetMeta: EntityMetadata): EntityProperty {
     const pk = prop.fixedOrderColumn || this.namingStrategy.referenceColumnName();
     const primaryProp = {
       name: pk,
@@ -741,7 +769,7 @@ export class MetadataDiscovery {
     prop.fixedOrderColumn = pk;
 
     if (prop.inversedBy) {
-      const prop2 = this.metadata.get(targetType).properties[prop.inversedBy];
+      const prop2 = targetMeta.properties[prop.inversedBy];
       prop2.fixedOrder = true;
       prop2.fixedOrderColumn = pk;
     }
@@ -749,10 +777,11 @@ export class MetadataDiscovery {
     return primaryProp;
   }
 
-  private definePivotProperty(prop: EntityProperty, name: string, type: string, inverse: string, owner: boolean, selfReferencing: boolean): EntityProperty {
+  private definePivotProperty(prop: EntityProperty, name: string, type: EntityClass, inverse: string, owner: boolean, selfReferencing: boolean): EntityProperty {
     const ret = {
       name,
-      type,
+      type: Utils.className(type),
+      target: type,
       kind: ReferenceKind.MANY_TO_ONE,
       cascade: [Cascade.ALL],
       fixedOrder: prop.fixedOrder,
@@ -815,7 +844,7 @@ export class MetadataDiscovery {
     Object.values(meta.properties)
       .filter(prop => prop.kind !== ReferenceKind.SCALAR && !prop.owner && prop.mappedBy)
       .forEach(prop => {
-        const meta2 = this.metadata.get(prop.type);
+        const meta2 = prop.targetMeta!;
         const prop2 = meta2.properties[prop.mappedBy];
 
         if (prop2 && !prop2.inversedBy) {
@@ -825,7 +854,7 @@ export class MetadataDiscovery {
   }
 
   private defineBaseEntityProperties(meta: EntityMetadata): number {
-    const base = meta.extends && this.metadata.get(Utils.className(meta.extends));
+    const base = meta.extends && this.metadata.get(meta.extends);
 
     if (!base || base === meta) { // make sure we do not fall into infinite loop
       return 0;
@@ -1054,7 +1083,7 @@ export class MetadataDiscovery {
 
   private initSingleTableInheritance(meta: EntityMetadata, metadata: EntityMetadata[]): void {
     if (meta.root !== meta && !(meta as Dictionary).__processed) {
-      meta.root = metadata.find(m => m.className === meta.root.className)!;
+      meta.root = metadata.find(m => m.class === meta.root.class)!;
       (meta.root as Dictionary).__processed = true;
     } else {
       delete (meta.root as Dictionary).__processed;
@@ -1064,19 +1093,24 @@ export class MetadataDiscovery {
       return;
     }
 
-    if (!meta.root.discriminatorMap) {
-      meta.root.discriminatorMap = {} as Dictionary<string>;
+    if (meta.root.discriminatorMap) {
+      const map = meta.root.discriminatorMap as unknown as Dictionary<string | EntityClass>;
+      Object.keys(map)
+        .filter(key => typeof map[key] === 'string')
+        .forEach(key => map[key] = this.metadata.getByClassName(map[key] as string).class);
+    } else {
+      meta.root.discriminatorMap = {} as Dictionary<EntityClass>;
       const children = metadata
-        .filter(m => m.root.className === meta.root.className && !m.abstract)
+        .filter(m => m.root.class === meta.root.class && !m.abstract)
         .sort((a, b) => a.className.localeCompare(b.className));
 
       for (const m of children) {
         const name = m.discriminatorValue ?? this.namingStrategy.classToTableName(m.className);
-        meta.root.discriminatorMap![name] = m.className;
+        meta.root.discriminatorMap![name] = m.class;
       }
     }
 
-    meta.discriminatorValue = Object.entries(meta.root.discriminatorMap!).find(([, className]) => className === meta.className)?.[0];
+    meta.discriminatorValue = Object.entries(meta.root.discriminatorMap!).find(([, cls]) => cls === meta.class)?.[0];
 
     if (!meta.root.properties[meta.root.discriminatorColumn]) {
       this.createDiscriminatorProperty(meta.root);
@@ -1214,10 +1248,6 @@ export class MetadataDiscovery {
   }
 
   private inferDefaultValue(meta: EntityMetadata, prop: EntityProperty): void {
-    if (!meta.class) {
-      return;
-    }
-
     try {
       // try to create two entity instances to detect the value is stable
       const now = Date.now();
@@ -1397,10 +1427,10 @@ export class MetadataDiscovery {
       prop.type = prop.customType.name;
     }
 
-    if (!prop.customType && [ReferenceKind.ONE_TO_ONE, ReferenceKind.MANY_TO_ONE].includes(prop.kind) && this.metadata.get(prop.type).compositePK) {
+    if (!prop.customType && [ReferenceKind.ONE_TO_ONE, ReferenceKind.MANY_TO_ONE].includes(prop.kind) && prop.targetMeta!.compositePK) {
       prop.customTypes = [];
 
-      for (const pk of this.metadata.get(prop.type).getPrimaryProps()) {
+      for (const pk of prop.targetMeta!.getPrimaryProps()) {
         if (pk.customType) {
           prop.customTypes.push(pk.customType);
           prop.hasConvertToJSValueSQL ||= !!pk.customType.convertToJSValueSQL && pk.customType.convertToJSValueSQL('', this.platform) !== '';
@@ -1432,7 +1462,8 @@ export class MetadataDiscovery {
       return;
     }
 
-    const meta2 = this.discovered.find(m => m.className === prop.type)!;
+    // when the target is a polymorphic embedded entity, `prop.target` is an array of classes, we need to get the metadata by the type name instead
+    const meta2 = this.metadata.find(prop.target) ?? this.metadata.getByClassName(prop.type);
     prop.referencedPKs = meta2.primaryKeys;
     prop.targetMeta = meta2;
 
@@ -1443,7 +1474,7 @@ export class MetadataDiscovery {
 
   private initColumnType(prop: EntityProperty): void {
     this.initUnsigned(prop);
-    this.metadata.find(prop.type)?.getPrimaryProps().map(pk => {
+    prop.targetMeta?.getPrimaryProps().map(pk => {
       prop.length ??= pk.length;
       prop.precision ??= pk.precision;
       prop.scale ??= pk.scale;
@@ -1465,7 +1496,6 @@ export class MetadataDiscovery {
 
       if (
         mappedType instanceof t.unknown
-        && !prop.columnTypes
         // it could be a runtime type from reflect-metadata
         && !SCALAR_TYPES.includes(prop.type)
         // or it might be inferred via ts-morph to some generic type alias
@@ -1480,12 +1510,13 @@ export class MetadataDiscovery {
       return;
     }
 
-    if (prop.kind === ReferenceKind.EMBEDDED && prop.object && !prop.columnTypes) {
+    /* v8 ignore next */
+    if (prop.kind === ReferenceKind.EMBEDDED && prop.object) {
       prop.columnTypes = [this.platform.getJsonDeclarationSQL()];
       return;
     }
 
-    const targetMeta = this.metadata.get(prop.type);
+    const targetMeta = prop.targetMeta!;
     prop.columnTypes = [];
 
     for (const pk of targetMeta.getPrimaryProps()) {
@@ -1550,7 +1581,7 @@ export class MetadataDiscovery {
     }
 
     if ([ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind)) {
-      const meta2 = this.metadata.get(prop.type);
+      const meta2 = prop.targetMeta!;
       prop.unsigned = meta2.getPrimaryProps().some(pk => {
         this.initUnsigned(pk);
         return pk.unsigned;

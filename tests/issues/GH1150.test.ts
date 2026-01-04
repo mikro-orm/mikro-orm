@@ -16,7 +16,7 @@ export class Person {
   @Property({ unique: true })
   email!: string;
 
-  @OneToOne({ entity: 'User', mappedBy: 'person' })
+  @OneToOne({ entity: () => User, mappedBy: 'person' })
   user!: any;
 
 }

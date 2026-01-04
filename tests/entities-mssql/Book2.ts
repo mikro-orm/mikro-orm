@@ -49,7 +49,7 @@ export class Book2 {
   @Property({ nullable: true, type: JsonType })
   meta?: Book2Meta;
 
-  @ManyToOne({ entity: 'Author2', cascade: [] })
+  @ManyToOne({ entity: () => Author2, cascade: [] })
   author: Author2;
 
   @ManyToOne(() => Publisher2, { cascade: [Cascade.PERSIST, Cascade.REMOVE], nullable: true, ref: true })

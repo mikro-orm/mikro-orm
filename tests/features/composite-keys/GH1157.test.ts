@@ -17,7 +17,7 @@ export class D {
   @PrimaryKey()
   id: string = v4();
 
-  @ManyToOne({ entity: 'A' })
+  @ManyToOne({ entity: () => A })
   a!: any;
 
 }
@@ -41,13 +41,13 @@ export class B {
 @Entity()
 export class A {
 
-  @OneToOne({ entity: 'B', joinColumn: 'id', primary: true })
+  @OneToOne({ entity: () => B, joinColumn: 'id', primary: true })
   id!: B;
 
-  @ManyToOne({ entity: 'C', primary: true })
+  @ManyToOne({ entity: () => C, primary: true })
   c!: C;
 
-  @OneToMany({ entity: 'D', mappedBy: 'a', eager: true })
+  @OneToMany({ entity: () => D, mappedBy: 'a', eager: true })
   d = new Collection<D>(this);
 
 }

@@ -15,6 +15,7 @@ import {
   type FlushMode,
   type GroupOperator,
   helper,
+  inspect,
   isRaw,
   type Loaded,
   LoadStrategy,
@@ -39,7 +40,6 @@ import {
   type Transaction,
   Utils,
   ValidationError,
-  inspect,
 } from '@mikro-orm/core';
 import { JoinType, QueryType } from './enums.js';
 import type { AbstractSqlDriver } from '../AbstractSqlDriver.js';
@@ -313,7 +313,7 @@ export class QueryBuilder<
     if (field) {
       this._fields = Utils.asArray(field);
     } else if (distinct || this.hasToManyJoins()) {
-      this._fields = this.mainAlias.metadata!.primaryKeys;
+      this._fields = this.mainAlias.meta!.primaryKeys;
     } else {
       this._fields = [raw('*')];
     }
@@ -533,7 +533,7 @@ export class QueryBuilder<
       }
 
       filterOptions = QueryHelper.mergePropertyFilters(join.prop.filters, filterOptions);
-      const cond = await em.applyFilters(join.prop.type, join.cond, filterOptions, 'read');
+      const cond = await em.applyFilters(join.prop.targetMeta!.class, join.cond, filterOptions, 'read');
 
       if (Utils.hasObjectKeys(cond) || RawQueryFragment.hasObjectFragments(cond)) {
         // remove nested filters, we only care about scalars here, nesting would require another join branch
@@ -597,7 +597,7 @@ export class QueryBuilder<
     if ([QueryType.UPDATE, QueryType.DELETE].includes(this.type) && criteriaNode.willAutoJoin(this, undefined, { ignoreBranching })) {
       // use sub-query to support joining
       this.setFlag(this.type === QueryType.UPDATE ? QueryFlag.UPDATE_SUB_QUERY : QueryFlag.DELETE_SUB_QUERY);
-      this.select(this.mainAlias.metadata!.primaryKeys, true);
+      this.select(this.mainAlias.meta!.primaryKeys, true);
     }
 
     if (topLevel) {
@@ -647,7 +647,7 @@ export class QueryBuilder<
     Utils.asArray<QBQueryOrderMap<Entity>>(orderBy).forEach(o => {
       this.helper.validateQueryOrder(o);
       const processed = QueryHelper.processWhere({
-        where: o as Dictionary,
+        where: o as FilterQuery<Entity>,
         entityName: this.mainAlias.entityName,
         metadata: this.metadata,
         platform: this.platform,
@@ -657,6 +657,7 @@ export class QueryBuilder<
         type: 'orderBy',
       })!;
       this._orderBy.push(CriteriaNodeFactory.createNode<Entity>(this.metadata, this.mainAlias.entityName, processed).process(this, { matchPopulateJoins: true, type: 'orderBy' }));
+      // this._orderBy.push(CriteriaNodeFactory.createNode<Entity>(this.metadata, Utils.className(this.mainAlias.entityName), processed).process(this, { matchPopulateJoins: true, type: 'orderBy' }));
     });
 
     return this as SelectQueryBuilder<Entity, RootAlias, Hint, Context>;
@@ -697,7 +698,7 @@ export class QueryBuilder<
   }
 
   onConflict(fields: Field<Entity> | Field<Entity>[] = []): InsertQueryBuilder<Entity> {
-    const meta = this.mainAlias.metadata as EntityMetadata<Entity>;
+    const meta = this.mainAlias.meta as EntityMetadata<Entity>;
     this.ensureNotFinalized();
     this._onConflict ??= [];
     this._onConflict.push({
@@ -853,21 +854,19 @@ export class QueryBuilder<
    * Specifies FROM which entity's table select/update/delete will be executed, removing all previously set FROM-s.
    * Allows setting a main string alias of the selection data.
    */
-  from<Entity extends AnyEntity<Entity> = AnyEntity>(target: QueryBuilder<Entity>, aliasName?: string): SelectQueryBuilder<Entity, RootAlias, Hint, Context>;
-  from<Entity extends AnyEntity<Entity> = AnyEntity>(target: EntityName<Entity>): SelectQueryBuilder<Entity, RootAlias, Hint, Context>;
-  from<Entity extends AnyEntity<Entity> = AnyEntity>(target: EntityName<Entity> | QueryBuilder<Entity>, aliasName?: string): SelectQueryBuilder<Entity, RootAlias, Hint, Context> {
+  from<Entity extends object>(target: QueryBuilder<Entity>, aliasName?: string): SelectQueryBuilder<Entity, RootAlias, Hint, Context>;
+  from<Entity extends object>(target: EntityName<Entity>): SelectQueryBuilder<Entity, RootAlias, Hint, Context>;
+  from<Entity extends object>(target: EntityName<Entity> | QueryBuilder<Entity>, aliasName?: string): SelectQueryBuilder<Entity, RootAlias, Hint, Context> {
     this.ensureNotFinalized();
 
     if (target instanceof QueryBuilder) {
-      this.fromSubQuery(target, aliasName);
+      this.fromSubQuery(target as any, aliasName);
     } else {
-      const entityName = Utils.className(target);
-
-      if (aliasName && this._mainAlias && entityName !== this._mainAlias.aliasName) {
+      if (aliasName && this._mainAlias && Utils.className(target) !== this._mainAlias.aliasName) {
         throw new Error(`Cannot override the alias to '${aliasName}' since a query already contains references to '${this._mainAlias.aliasName}'`);
       }
 
-      this.fromEntityName(entityName, aliasName);
+      this.fromEntityName(target as any, aliasName);
     }
 
     return this as unknown as SelectQueryBuilder<Entity, RootAlias, Hint, Context>;
@@ -905,7 +904,7 @@ export class QueryBuilder<
       this.helper.getLockSQL(qb, this.lockMode, this.lockTables, this._joins);
     }
 
-    this.helper.finalize(this.type, qb, this.mainAlias.metadata, this._data, this._returning);
+    this.helper.finalize(this.type, qb, this.mainAlias.meta, this._data, this._returning);
 
     return this._query!.qb = qb;
   }
@@ -956,7 +955,7 @@ export class QueryBuilder<
    * @internal
    */
   getAliasForJoinPath(path?: string | JoinOptions, options?: ICriteriaNodeProcessOptions): string | undefined {
-    if (!path || path === this.mainAlias.entityName) {
+    if (!path || path === Utils.className(this.mainAlias.entityName)) {
       return this.mainAlias.aliasName;
     }
 
@@ -1011,14 +1010,15 @@ export class QueryBuilder<
   /**
    * @internal
    */
-  getNextAlias(entityName = 'e'): string {
+  getNextAlias(entityName: string | EntityName = 'e'): string {
+    entityName = Utils.className(entityName);
     return this.driver.config.getNamingStrategy().aliasName(entityName, this.aliasCounter++);
   }
 
   /**
    * @internal
    */
-  getAliasMap(): Dictionary<string> {
+  getAliasMap(): Dictionary<EntityName> {
     return Object.fromEntries(Object.entries(this._aliases).map(([key, value]: [string, Alias<any>]) => [key, value.entityName]));
   }
 
@@ -1050,7 +1050,7 @@ export class QueryBuilder<
 
     const loggerContext = { id: this.em?.id, ...this.loggerContext };
     const res = await this.getConnection().execute(query.sql, query.params, method, this.context, loggerContext);
-    const meta = this.mainAlias.metadata;
+    const meta = this.mainAlias.meta;
 
     if (!options.mapResults || !meta) {
       await this.em?.storeCache(this._cache, cached!, res);
@@ -1069,7 +1069,7 @@ export class QueryBuilder<
       mapped = res.map(r => this.driver.mapResult<Entity>(r as Entity, meta, this._populate, this, map)!);
 
       if (options.mergeResults && joinedProps.length > 0) {
-        mapped = this.driver.mergeJoinedResult(mapped, this.mainAlias.metadata!, joinedProps);
+        mapped = this.driver.mergeJoinedResult(mapped, this.mainAlias.meta!, joinedProps);
       }
     } else {
       mapped = [this.driver.mapResult<Entity>(res, meta, joinedProps, this)!];
@@ -1115,7 +1115,7 @@ export class QueryBuilder<
     const query = this.toQuery();
     const loggerContext = { id: this.em?.id, ...this.loggerContext };
     const res = this.getConnection().stream(query.sql, query.params, this.context, loggerContext);
-    const meta = this.mainAlias.metadata;
+    const meta = this.mainAlias.meta;
 
     if (options.rawResults || !meta) {
       yield* res as AsyncIterableIterator<Loaded<Entity, Hint>>;
@@ -1137,7 +1137,7 @@ export class QueryBuilder<
       }
 
       if (stack.length > 0 && hash(stack[stack.length - 1]) !== hash(mapped)) {
-        const res = this.driver.mergeJoinedResult(stack, this.mainAlias.metadata!, joinedProps);
+        const res = this.driver.mergeJoinedResult(stack, this.mainAlias.meta!, joinedProps);
 
         for (const row of res) {
           yield this.mapResult(row, options.mapResults);
@@ -1150,7 +1150,7 @@ export class QueryBuilder<
     }
 
     if (stack.length > 0) {
-      const merged = this.driver.mergeJoinedResult(stack, this.mainAlias.metadata!, joinedProps);
+      const merged = this.driver.mergeJoinedResult(stack, this.mainAlias.meta!, joinedProps);
       yield this.mapResult(merged[0], options.mapResults);
     }
   }
@@ -1255,22 +1255,34 @@ export class QueryBuilder<
 
   /**
    * Returns native query builder instance with sub-query aliased with given alias.
-   * You can provide `EntityName.propName` as alias, then the field name will be used based on the metadata
    */
-  as(alias: string): NativeQueryBuilder {
-    const qb = this.getNativeQuery();
+  as(alias: string): NativeQueryBuilder;
 
-    if (alias.includes('.')) {
-      const [a, f] = alias.split('.');
-      const meta = this.metadata.find(a);
-      /* v8 ignore next */
-      alias = meta?.properties[f]?.fieldNames[0] ?? alias;
+  /**
+   * Returns native query builder instance with sub-query aliased with given alias.
+   * You can provide the target entity name as the first parameter and use the second parameter to point to an existing property to infer its field name.
+   */
+  as<T>(targetEntity: EntityName<T>, alias: EntityKey<T>): NativeQueryBuilder;
+
+  as<T>(aliasOrTargetEntity: string | EntityName<T>, alias?: EntityKey<T>): NativeQueryBuilder {
+    const qb = this.getNativeQuery();
+    let finalAlias = aliasOrTargetEntity as string;
+
+    /* v8 ignore next */
+    if (typeof aliasOrTargetEntity === 'string' && aliasOrTargetEntity.includes('.')) {
+      throw new Error('qb.as(alias) no longer supports target entity name prefix, use qb.as(TargetEntity, key) signature instead');
     }
 
-    qb.as(alias);
+    if (alias) {
+      const meta = this.metadata.get(aliasOrTargetEntity as EntityName<T>);
+      /* v8 ignore next */
+      finalAlias = meta.properties[alias]?.fieldNames[0] ?? alias;
+    }
+
+    qb.as(finalAlias);
 
     // tag the instance, so it is possible to detect it easily
-    Object.defineProperty(qb, '__as', { enumerable: false, value: alias });
+    Object.defineProperty(qb, '__as', { enumerable: false, value: finalAlias });
 
     return qb;
   }
@@ -1355,8 +1367,8 @@ export class QueryBuilder<
       } as EntityProperty;
 
       if (field instanceof QueryBuilder) {
-        prop.type = field.mainAlias.entityName;
-        prop.targetMeta = field.mainAlias.metadata!;
+        prop.type = Utils.className(field.mainAlias.entityName);
+        prop.targetMeta = field.mainAlias.meta!;
         field = field.getNativeQuery();
       }
 
@@ -1397,19 +1409,19 @@ export class QueryBuilder<
       throw new Error(`Trying to join ${q(field)}, but ${q(fromField)} is not a defined relation on ${meta.className}.`);
     }
 
-    this.createAlias(prop.type, alias);
+    this.createAlias(prop.targetMeta!.class, alias);
     cond = QueryHelper.processWhere({
-      where: cond,
+      where: cond as FilterQuery<Entity>,
       entityName: this.mainAlias.entityName,
       metadata: this.metadata,
       platform: this.platform,
       aliasMap: this.getAliasMap(),
       aliased: [QueryType.SELECT, QueryType.COUNT].includes(this.type),
     })!;
-    const criteriaNode = CriteriaNodeFactory.createNode<Entity>(this.metadata, prop.targetMeta!.className, cond);
+    const criteriaNode = CriteriaNodeFactory.createNode<Entity>(this.metadata, prop.targetMeta!.class, cond);
     cond = criteriaNode.process(this, { ignoreBranching: true, alias });
     let aliasedName = `${fromAlias}.${prop.name}#${alias}`;
-    path ??= `${(Object.values(this._joins).find(j => j.alias === fromAlias)?.path ?? entityName)}.${prop.name}`;
+    path ??= `${(Object.values(this._joins).find(j => j.alias === fromAlias)?.path ?? Utils.className(entityName))}.${prop.name}`;
 
     if (prop.kind === ReferenceKind.ONE_TO_MANY) {
       this._joins[aliasedName] = this.helper.joinOneToReference(prop, fromAlias, alias, type, cond, schema);
@@ -1501,9 +1513,7 @@ export class QueryBuilder<
       ret.push(getFieldName(field));
     });
 
-    const meta = this.mainAlias.metadata;
-    /* v8 ignore next */
-    const requiresSQLConversion = meta?.props.filter(p => p.hasConvertToJSValueSQL && p.persist !== false) ?? [];
+    const requiresSQLConversion = this.mainAlias.meta.props.filter(p => p.hasConvertToJSValueSQL && p.persist !== false);
 
     if (this.flags.has(QueryFlag.CONVERT_CUSTOM_TYPES) && (fields.includes('*') || fields.includes(`${this.mainAlias.aliasName}.*`)) && requiresSQLConversion.length > 0) {
       for (const p of requiresSQLConversion) {
@@ -1549,15 +1559,15 @@ export class QueryBuilder<
 
   private getQueryBase(processVirtualEntity: boolean): NativeQueryBuilder {
     const qb = this.platform.createNativeQueryBuilder().setFlags(this.flags);
-    const { subQuery, aliasName, entityName, metadata } = this.mainAlias;
+    const { subQuery, aliasName, entityName, meta } = this.mainAlias;
     const requiresAlias = this.finalized && (this._explicitAlias || this.helper.isTableNameAliasRequired(this.type));
     const alias = requiresAlias ? aliasName : undefined;
     const schema = this.getSchema(this.mainAlias);
     const tableName = subQuery ? subQuery.as(aliasName) : this.helper.getTableName(entityName);
     const joinSchema = this._schema ?? this.em?.schema ?? schema;
 
-    if (metadata?.virtual && processVirtualEntity) {
-      qb.from(raw(this.fromVirtual(metadata)), { indexHint: this._indexHint });
+    if (meta.virtual && processVirtualEntity) {
+      qb.from(raw(this.fromVirtual(meta)), { indexHint: this._indexHint });
     } else {
       qb.from(tableName, {
         schema,
@@ -1604,22 +1614,22 @@ export class QueryBuilder<
   }
 
   private applyDiscriminatorCondition(): void {
-    const meta = this.mainAlias.metadata;
+    const meta = this.mainAlias.meta;
 
-    if (!meta?.discriminatorValue) {
+    if (!meta.discriminatorValue) {
       return;
     }
 
-    const types = Object.values(meta.root.discriminatorMap!).map(cls => this.metadata.find(cls)!);
+    const types = Object.values(meta.root.discriminatorMap!).map(cls => this.metadata.get(cls));
     const children: EntityMetadata[] = [];
-    const lookUpChildren = (ret: EntityMetadata[], type: string) => {
+    const lookUpChildren = (ret: EntityMetadata[], type: EntityName) => {
       const children = types.filter(meta2 => meta2.extends === type);
-      children.forEach(m => lookUpChildren(ret, m.className));
+      children.forEach(m => lookUpChildren(ret, m.class));
       ret.push(...children.filter(c => c.discriminatorValue));
 
       return children;
     };
-    lookUpChildren(children, meta.className);
+    lookUpChildren(children, meta.class);
     this.andWhere({
       [meta.root.discriminatorColumn!]: children.length > 0 ? { $in: [meta.discriminatorValue, ...children.map(c => c.discriminatorValue)] } : meta.discriminatorValue,
     });
@@ -1634,7 +1644,7 @@ export class QueryBuilder<
       this.select('*');
     }
 
-    const meta = this.mainAlias.metadata as EntityMetadata<Entity>;
+    const meta = this.mainAlias.meta as EntityMetadata<Entity>;
     this.applyDiscriminatorCondition();
     this.processPopulateHint();
     this.processNestedJoins();
@@ -1683,7 +1693,7 @@ export class QueryBuilder<
       return;
     }
 
-    const meta = this.mainAlias.metadata as EntityMetadata<Entity>;
+    const meta = this.mainAlias.meta as EntityMetadata<Entity>;
 
     if (meta && this.flags.has(QueryFlag.AUTO_JOIN_ONE_TO_ONE_OWNER)) {
       const relationsToPopulate = this._populate.map(({ field }) => field);
@@ -1705,12 +1715,12 @@ export class QueryBuilder<
 
       if (meta && this.helper.isOneToOneInverse(fromField)) {
         const prop = meta.properties[fromField as EntityKey<Entity>];
-        const alias = this.getNextAlias(prop.pivotEntity ?? prop.type);
+        const alias = this.getNextAlias(prop.pivotEntity ?? prop.targetMeta!.class);
         const aliasedName = `${fromAlias}.${prop.name}#${alias}`;
         this._joins[aliasedName] = this.helper.joinOneToReference(prop, this.mainAlias.aliasName, alias, JoinType.leftJoin);
         this._joins[aliasedName].path = `${(Object.values(this._joins).find(j => j.alias === fromAlias)?.path ?? meta.className)}.${prop.name}`;
         this._populateMap[aliasedName] = this._joins[aliasedName].alias;
-        this.createAlias(prop.type, alias);
+        this.createAlias(prop.targetMeta!.class, alias);
       }
     });
 
@@ -1980,8 +1990,8 @@ export class QueryBuilder<
   }
 
   private getSchema(alias: Alias<any>): string | undefined {
-    const { metadata } = alias;
-    const metaSchema = metadata?.schema && metadata.schema !== '*' ? metadata.schema : undefined;
+    const { meta } = alias;
+    const metaSchema = meta.schema && meta.schema !== '*' ? meta.schema : undefined;
     const schema = this._schema ?? metaSchema ?? this.em?.schema ?? this.em?.config.getSchema(true);
 
     if (schema === this.platform.getDefaultSchemaName()) {
@@ -1991,20 +2001,20 @@ export class QueryBuilder<
     return schema;
   }
 
-  private createAlias<U = unknown>(entityName: string, aliasName: string, subQuery?: NativeQueryBuilder): Alias<U> {
-    const metadata = this.metadata.find(entityName)!;
-    const alias = { aliasName, entityName, metadata, subQuery };
+  private createAlias<U = unknown>(entityName: EntityName<U>, aliasName: string, subQuery?: NativeQueryBuilder): Alias<U> {
+    const meta = this.metadata.find(entityName)!;
+    const alias = { aliasName, entityName, meta, subQuery } satisfies Alias<U>;
     this._aliases[aliasName] = alias;
     return alias;
   }
 
-  private createMainAlias(entityName: string, aliasName: string, subQuery?: NativeQueryBuilder): Alias<Entity> {
+  private createMainAlias(entityName: EntityName<Entity>, aliasName: string, subQuery?: NativeQueryBuilder): Alias<Entity> {
     this._mainAlias = this.createAlias(entityName, aliasName, subQuery);
     this._helper = this.createQueryBuilderHelper();
     return this._mainAlias;
   }
 
-  private fromSubQuery<T extends AnyEntity<T> = AnyEntity>(target: QueryBuilder<T>, aliasName?: string): void {
+  private fromSubQuery(target: QueryBuilder<Entity>, aliasName?: string): void {
     const subQuery = target.getNativeQuery();
     const { entityName } = target.mainAlias;
     aliasName ??= this.getNextAlias(entityName);
@@ -2012,9 +2022,8 @@ export class QueryBuilder<
     this.createMainAlias(entityName, aliasName, subQuery);
   }
 
-  private fromEntityName(entityName: string, aliasName?: string): void {
+  private fromEntityName(entityName: EntityName<Entity>, aliasName?: string): void {
     aliasName ??= this._mainAlias?.aliasName ?? this.getNextAlias(entityName);
-
     this.createMainAlias(entityName, aliasName);
   }
 
@@ -2066,7 +2075,7 @@ export class QueryBuilder<
       object.orderBy = this._orderBy;
     }
 
-    const name = this._mainAlias ? `${prefix}QueryBuilder<${this._mainAlias?.entityName}>` : 'QueryBuilder';
+    const name = this._mainAlias ? `${prefix}QueryBuilder<${Utils.className(this._mainAlias?.entityName)}>` : 'QueryBuilder';
     const ret = inspect(object, { depth });
 
     return ret === '[Object]' ? `[${name}]` : name + ' ' + ret;

@@ -55,7 +55,7 @@ describe('GH #1914', () => {
     orm = await MikroORM.init<AbstractSqlDriver>({
       metadataProvider: ReflectMetadataProvider,
       entities: [Site, Category, SiteCategory],
-      dbName: `:memory:`,
+      dbName: ':memory:',
       driver: SqliteDriver,
     });
     await orm.schema.create();

@@ -262,10 +262,10 @@ describe('Dataloader', () => {
       [orm.em.getReference(Book, 3, { wrapped: true })],
     ] as [Ref<any>][]);
     expect(Array.from(map.keys()).length).toBe(2);
-    expect(map.has('Author|{}')).toBe(true);
-    expect(map.has('Book|{}')).toBe(true);
-    const authorIds = Array.from(map.get('Author|{}')!.values());
-    const bookIds = Array.from(map.get('Book|{}')!.values());
+    expect(map.has('author_0|{}')).toBe(true);
+    expect(map.has('book_1000|{}')).toBe(true);
+    const authorIds = Array.from(map.get('author_0|{}')!.values());
+    const bookIds = Array.from(map.get('book_1000|{}')!.values());
     expect(authorIds.length).toBe(2);
     expect(bookIds.length).toBe(1);
     expect(authorIds.includes(1)).toBe(true);
@@ -396,7 +396,7 @@ describe('Dataloader', () => {
     expect(collections).toBeDefined();
 
     const map = DataloaderUtils.groupInversedOrMappedKeysByEntityAndOpts(collections.map(col => [col]));
-    expect(Array.from(map.keys()).map(key => key.substring(0, key.indexOf('|')))).toEqual(['Book', 'Author', 'Chat', 'Message']);
+    expect(Array.from(map.keys()).map(key => key.substring(0, key.indexOf('|')))).toEqual(['book_1000', 'author_0', 'chat_3000', 'message_4000']);
     const mapObj = Array.from(map.entries()).reduce<Record<string, Record<string, number[]>>>((acc, [key, filterMap]) => {
       const className = key.substring(0, key.indexOf('|'));
       acc[className] = Array.from(filterMap.entries()).reduce<Record<string, number[]>>((acc, [prop, set]) => {
@@ -406,26 +406,26 @@ describe('Dataloader', () => {
       return acc;
     }, {});
     expect(mapObj).toEqual({
-      Book: { author: [1, 2, 3], publisher: [1, 2] },
-      Author: { buddiesInverse: [1, 2, 3] },
-      Chat: { owner: [1, 2, 3] },
-      Message: { chat: [{ owner: 1, recipient: 2 }, { owner: 1, recipient: 3 }] },
+      book_1000: { author: [1, 2, 3], publisher: [1, 2] },
+      author_0: { buddiesInverse: [1, 2, 3] },
+      chat_3000: { owner: [1, 2, 3] },
+      message_4000: { chat: [{ owner: 1, recipient: 2 }, { owner: 1, recipient: 3 }] },
     });
   });
 
   test('entitiesAndOptsMapToQueries', async () => {
     const map = new Map([
-      ['Book|{}', new Map([
+      ['book_1000|{}', new Map([
         ['author', new Set<Primary<any>>([1, 2, 3])],
         ['publisher', new Set<Primary<any>>([1, 2])],
       ])],
-      ['Author|{}', new Map([
+      ['author_0|{}', new Map([
         ['buddiesInverse', new Set<Primary<any>>([1, 2, 3])],
       ])],
-      ['Chat|{}', new Map([
+      ['chat_3000|{}', new Map([
         ['owner', new Set<Primary<any>>([1, 2, 3])],
       ])],
-      ['Message|{}', new Map([
+      ['message_4000|{}', new Map([
         ['chat', new Set<Primary<any>>([{ owner: 1, recipient: 2 }, { owner: 1, recipient: 3 }])],
       ])],
     ]);
@@ -438,17 +438,17 @@ describe('Dataloader', () => {
 
   test('getColFilter', async () => {
     const promises = DataloaderUtils.entitiesAndOptsMapToQueries(new Map([
-      ['Book|{}', new Map([
+      ['book_1000|{}', new Map([
         ['author', new Set<Primary<any>>([1, 2, 3])],
         ['publisher', new Set<Primary<any>>([1, 2])],
       ])],
-      ['Author|{}', new Map([
+      ['author_0|{}', new Map([
         ['buddiesInverse', new Set<Primary<any>>([1, 2, 3])],
       ])],
-      ['Chat|{}', new Map([
+      ['chat_3000|{}', new Map([
         ['owner', new Set<Primary<any>>([1, 2, 3])],
       ])],
-      ['Message|{}', new Map([
+      ['message_4000|{}', new Map([
         ['chat', new Set<Primary<any>>([{ owner: 1, recipient: 2 }, { owner: 1, recipient: 3 }])],
       ])],
     ]), orm.em);
@@ -456,7 +456,7 @@ describe('Dataloader', () => {
     const collections = await getCollections(orm.em);
 
     for (const collection of collections) {
-      const key = `${collection.property.targetMeta!.className}|{}`;
+      const key = `${collection.property.targetMeta!.uniqueName}|{}`;
       const entities = resultsMap.get(key)!;
       const filtered = entities.filter(DataloaderUtils.getColFilter(collection));
       expect(filtered.map((el: any) => el.id)).toEqual((await collection.loadItems()).map((el: any) => el.id));

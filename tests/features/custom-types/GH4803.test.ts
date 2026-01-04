@@ -1,4 +1,4 @@
-import { BigIntType, Collection, EntityProperty, EntitySchema, Platform, Type } from '@mikro-orm/core';
+import { Collection, defineEntity, p, EntityProperty, Platform, Type } from '@mikro-orm/core';
 import { MikroORM } from '@mikro-orm/sqlite';
 
 class User {
@@ -16,20 +16,11 @@ class Profile {
 
 }
 
-const profileSchema = new EntitySchema<Profile>({
+const profileSchema = defineEntity({
   class: Profile,
   properties: {
-    id: {
-      type: BigIntType,
-      primary: true,
-      autoincrement: true,
-    },
-    user: {
-      entity: () => User,
-      kind: 'm:1',
-      inversedBy: 'profiles' as any,
-      mapToPk: true,
-    },
+    id: p.bigint().primary().autoincrement(),
+    user: () => p.manyToOne(User).mapToPk(),
   },
 });
 
@@ -62,23 +53,12 @@ class Id extends Type<Id | undefined, string> {
 
 }
 
-const userSchema = new EntitySchema<User>({
+const userSchema = defineEntity({
   class: User,
   properties: {
-    id: {
-      type: Id,
-      primary: true,
-      autoincrement: true,
-    },
-    email: {
-      type: 'string',
-    },
-    profiles: {
-      entity: () => Profile,
-      kind: '1:m',
-      mappedBy: 'user',
-      nullable: true,
-    },
+    id: p.type(Id).primary().autoincrement(),
+    email: p.string(),
+    profiles: () => p.oneToMany(Profile).mappedBy('user'),
   },
 });
 

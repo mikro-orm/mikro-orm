@@ -30,7 +30,7 @@ describe('GH7002', () => {
 
   test('EntityComparator handles BigInt in date hydration', async () => {
     const comparator = new EntityComparator(orm.getMetadata(), orm.em.getDriver().getPlatform());
-    const mapper = comparator.getResultMapper('GH7002');
+    const mapper = comparator.getResultMapper(orm.getMetadata(GH7002));
 
     // Simulate driver returning BigInt for createdAt
     // We use a timestamp that fits in safe integer range for validation but pass it as BigInt

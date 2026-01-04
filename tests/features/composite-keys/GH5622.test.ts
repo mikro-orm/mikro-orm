@@ -76,7 +76,7 @@ beforeAll(async () => {
   orm = await MikroORM.init({
     metadataProvider: ReflectMetadataProvider,
     entities: [SomethingThatBelongsToSomethingThatBelongsToSomething],
-    dbName: `:memory:`,
+    dbName: ':memory:',
     loggerFactory: SimpleLogger.create,
   });
   await orm.schema.create();

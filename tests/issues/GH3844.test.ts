@@ -72,7 +72,7 @@ beforeAll(async () => {
   orm = await MikroORM.init({
     metadataProvider: ReflectMetadataProvider,
     entities: [GamePoolEntity],
-    dbName: `:memory:`,
+    dbName: ':memory:',
   });
   await orm.schema.refresh();
 });

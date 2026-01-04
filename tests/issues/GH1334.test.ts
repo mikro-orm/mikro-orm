@@ -21,7 +21,7 @@ export class RadioOption {
   @Property()
   order!: number;
 
-  @ManyToOne('Radio', { ref: true })
+  @ManyToOne(() => Radio, { ref: true })
   radio!: Ref<Radio>;
 
 }
@@ -38,7 +38,7 @@ export class Radio {
   @Property()
   question: string = Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, 10);
 
-  @ManyToOne('Project', { ref: true })
+  @ManyToOne(() => Project, { ref: true })
   project!: Ref<Project>;
 
   @OneToMany(

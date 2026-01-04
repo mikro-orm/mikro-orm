@@ -10,7 +10,7 @@ class Author {
   @Property()
   termsAccepted: boolean = false;
 
-  @OneToOne('AuthorDetail', 'author', { owner: true })
+  @OneToOne(() => AuthorDetail, 'author', { owner: true })
   authorDetail!: any;
 
 }

@@ -24,7 +24,7 @@ class B {
   @PrimaryKey()
   id!: number;
 
-  @OneToMany('A', 'b', { eager: true })
+  @OneToMany(() => A, 'b', { eager: true })
   as = new Collection<A>(this);
 
 }
@@ -34,13 +34,13 @@ class B {
 class A {
 
   [PrimaryKeyProp]?: 'node';
-  @OneToOne({ entity: 'Node', ref: true, primary: true, deleteRule: 'cascade', updateRule: 'cascade' })
+  @OneToOne({ entity: () => Node, ref: true, primary: true, deleteRule: 'cascade', updateRule: 'cascade' })
   node!: Ref<Node>;
 
   @Property()
   name!: string;
 
-  @ManyToOne({ entity: 'B' })
+  @ManyToOne({ entity: () => B })
   b!: B;
 
 }

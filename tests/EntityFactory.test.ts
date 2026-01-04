@@ -21,18 +21,18 @@ describe('EntityFactory', () => {
 
   test('should load entities', async () => {
     const metadata = orm.getMetadata().getAll();
-    expect(metadata[Author.name].path).toMatch('/tests/entities/Author.ts');
-    expect(metadata[Author.name].properties).toBeInstanceOf(Object);
-    expect(metadata[Author.name].properties.books.type).toBe(Book.name);
-    expect(metadata[Author.name].properties.books.kind).toBe(ReferenceKind.ONE_TO_MANY);
-    expect(metadata[Author.name].properties.foo.type).toBe('string');
-    expect(metadata[Author.name].properties.age.type).toBe('number');
-    expect(metadata[Author.name].properties.age.nullable).toBe(true); // nullable is sniffed via ts-morph too
-    expect(metadata[Author.name].repository()).toBe(AuthorRepository);
-    expect(metadata[Book.name].properties.author.type).toBe(Author.name);
-    expect(metadata[Book.name].properties.author.kind).toBe(ReferenceKind.MANY_TO_ONE);
-    expect(metadata[Book.name].repository()).toBe(BookRepository);
-    expect(metadata[Publisher.name].properties.tests.owner).toBe(true);
+    expect(metadata.get(Author)?.path).toMatch('/tests/entities/Author.ts');
+    expect(metadata.get(Author)?.properties).toBeInstanceOf(Object);
+    expect(metadata.get(Author)?.properties.books.type).toBe(Book.name);
+    expect(metadata.get(Author)?.properties.books.kind).toBe(ReferenceKind.ONE_TO_MANY);
+    expect(metadata.get(Author)?.properties.foo.type).toBe('string');
+    expect(metadata.get(Author)?.properties.age.type).toBe('number');
+    expect(metadata.get(Author)?.properties.age.nullable).toBe(true); // nullable is sniffed via ts-morph too
+    expect(metadata.get(Author)?.repository()).toBe(AuthorRepository);
+    expect(metadata.get(Book)?.properties.author.type).toBe(Author.name);
+    expect(metadata.get(Book)?.properties.author.kind).toBe(ReferenceKind.MANY_TO_ONE);
+    expect(metadata.get(Book)?.repository()).toBe(BookRepository);
+    expect(metadata.get(Publisher)?.properties.tests.owner).toBe(true);
   });
 
   test('should return reference', async () => {

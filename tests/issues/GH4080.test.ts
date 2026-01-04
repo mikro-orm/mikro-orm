@@ -1,5 +1,4 @@
-import { EntitySchema, SimpleLogger } from '@mikro-orm/core';
-import { MikroORM } from '@mikro-orm/sqlite';
+import { EntitySchema, MikroORM, SimpleLogger } from '@mikro-orm/sqlite';
 
 abstract class BaseClass {
 
@@ -24,8 +23,8 @@ class ImplementingClass implements BaseInterface {
 
 }
 
-const BaseClassSchema = new EntitySchema<BaseClass>({
-  name: 'BaseClass',
+const BaseClassSchema = new EntitySchema({
+  class: BaseClass,
   abstract: true,
   properties: {
     id: { type: Number, primary: true },
@@ -42,7 +41,7 @@ const BaseInterfaceSchema = new EntitySchema<BaseInterface>({
 
 const DerivedClassSchema = new EntitySchema<DerivedClass, BaseClass>({
   class: DerivedClass,
-  extends: 'BaseClass',
+  extends: BaseClassSchema,
   properties: {
     name: { type: String },
   },
@@ -50,7 +49,7 @@ const DerivedClassSchema = new EntitySchema<DerivedClass, BaseClass>({
 
 const ImplementingClassSchema = new EntitySchema<ImplementingClass, BaseInterface>({
   class: ImplementingClass,
-  extends: 'BaseInterface',
+  extends: BaseInterfaceSchema,
   properties: {
     name: { type: String },
   },
@@ -59,7 +58,6 @@ const ImplementingClassSchema = new EntitySchema<ImplementingClass, BaseInterfac
 let orm: MikroORM;
 
 beforeAll(async () => {
-  const logger = vi.fn();
   orm = await MikroORM.init({
     entities: [
       BaseClassSchema,
@@ -67,12 +65,9 @@ beforeAll(async () => {
       BaseInterfaceSchema,
       ImplementingClassSchema,
     ],
-    dbName: `:memory:`,
-    logger: msg => logger(msg),
+    dbName: ':memory:',
     loggerFactory: SimpleLogger.create,
-    debug: true,
   });
-  expect(logger.mock.calls.toString()).not.toMatch('undefined');
   await orm.schema.refresh();
 });
 

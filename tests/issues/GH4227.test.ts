@@ -8,7 +8,7 @@ class BidEntity {
   @PrimaryKey()
   id!: bigint;
 
-  @ManyToOne('ItemEntity', {
+  @ManyToOne(() => ItemEntity, {
     serializer: value => value.id,
     serializedName: 'itemId',
   })
@@ -22,7 +22,7 @@ class ItemEntity {
   @PrimaryKey()
   id!: bigint;
 
-  @OneToMany('BidEntity', 'item', {
+  @OneToMany(() => BidEntity, 'item', {
     orphanRemoval: true,
     strategy: LoadStrategy.JOINED,
     mappedBy: 'item',

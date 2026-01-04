@@ -108,7 +108,7 @@ export class EntitySerializer {
         continue;
       }
 
-      const cycle = root.visit(meta.className, prop);
+      const cycle = root.visit(meta.class, prop);
 
       if (cycle && visited) {
         continue;
@@ -117,7 +117,7 @@ export class EntitySerializer {
       const val = this.processProperty<T>(prop, entity, options);
 
       if (!cycle) {
-        root.leave(meta.className, prop);
+        root.leave(meta.class, prop);
       }
 
       if (options.skipNull && Utils.isPlainObject(val)) {

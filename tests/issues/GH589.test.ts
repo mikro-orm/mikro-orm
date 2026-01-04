@@ -7,7 +7,7 @@ export class User {
   @PrimaryKey()
   id!: number;
 
-  @OneToMany('Chat', 'owner')
+  @OneToMany(() => Chat, 'owner')
   ownedChats = new Collection<Chat>(this);
 
 }

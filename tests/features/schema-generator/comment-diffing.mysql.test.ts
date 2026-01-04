@@ -64,17 +64,17 @@ describe('comment diffing in mysql', () => {
   afterAll(() => orm.close(true));
 
   test('schema orm.schema updates comments', async () => {
-    orm.discoverEntity(Book1, 'Book0');
+    orm.discoverEntity(Book1, Book0);
     const diff1 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff1).toMatchSnapshot();
     await orm.schema.execute(diff1);
 
-    orm.discoverEntity(Book2, 'Book1');
+    orm.discoverEntity(Book2, Book1);
     const diff2 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff2).toMatchSnapshot();
     await orm.schema.execute(diff2);
 
-    orm.discoverEntity(Book3, 'Book2');
+    orm.discoverEntity(Book3, Book2);
     const diff3 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff3).toMatchSnapshot();
     await orm.schema.execute(diff3);

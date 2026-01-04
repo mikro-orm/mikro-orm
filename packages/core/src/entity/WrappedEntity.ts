@@ -165,7 +165,7 @@ export class WrappedEntity<Entity extends object> {
       throw ValidationError.entityNotManaged(this.entity);
     }
 
-    return this.__em.findOne(this.entity.constructor.name, this.entity, { ...options, refresh: true, schema: this.__schema });
+    return this.__em.findOne(this.entity.constructor, this.entity, { ...options, refresh: true, schema: this.__schema });
   }
 
   async populate<Hint extends string = never>(

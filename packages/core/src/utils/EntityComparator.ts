@@ -26,26 +26,28 @@ type CompositeKeyPart = string | CompositeKeyPart[];
 
 export class EntityComparator {
 
-  private readonly comparators = new Map<string, Comparator<any>>();
-  private readonly mappers = new Map<string, ResultMapper<any>>();
-  private readonly snapshotGenerators = new Map<string, SnapshotGenerator<any>>();
-  private readonly pkGetters = new Map<string, PkGetter<any>>();
-  private readonly pkGettersConverted = new Map<string, PkGetter<any>>();
-  private readonly pkSerializers = new Map<string, PkSerializer<any>>();
+  private readonly comparators = new Map<EntityMetadata, Comparator<any>>();
+  private readonly mappers = new Map<EntityMetadata, ResultMapper<any>>();
+  private readonly snapshotGenerators = new Map<EntityMetadata, SnapshotGenerator<any>>();
+  private readonly pkGetters = new Map<EntityMetadata, PkGetter<any>>();
+  private readonly pkGettersConverted = new Map<EntityMetadata, PkGetter<any>>();
+  private readonly pkSerializers = new Map<EntityMetadata, PkSerializer<any>>();
   private tmpIndex = 0;
 
-  constructor(private readonly metadata: IMetadataStorage,
-              private readonly platform: Platform) { }
+  constructor(
+    private readonly metadata: IMetadataStorage,
+    private readonly platform: Platform,
+  ) { }
 
   /**
    * Computes difference between two entities.
    */
-  diffEntities<T>(entityName: string, a: EntityData<T>, b: EntityData<T>, options?: { includeInverseSides?: boolean }): EntityData<T> {
+  diffEntities<T extends object>(entityName: EntityName<T>, a: EntityData<T>, b: EntityData<T>, options?: { includeInverseSides?: boolean }): EntityData<T> {
     const comparator = this.getEntityComparator(entityName);
-    return Utils.callCompiledFunction(comparator, a, b, options);
+    return Utils.callCompiledFunction(comparator, a as T, b as T, options);
   }
 
-  matching<T>(entityName: string, a: EntityData<T>, b: EntityData<T>): boolean {
+  matching<T extends object>(entityName: EntityName<T>, a: EntityData<T>, b: EntityData<T>): boolean {
     const diff = this.diffEntities(entityName, a, b);
     return Utils.getObjectKeysSize(diff) === 0;
   }
@@ -54,16 +56,16 @@ export class EntityComparator {
    * Removes ORM specific code from entities and prepares it for serializing. Used before change set computation.
    * References will be mapped to primary keys, collections to arrays of primary keys.
    */
-  prepareEntity<T>(entity: T): EntityData<T> {
-    const generator = this.getSnapshotGenerator<T>((entity as Dictionary).constructor.name);
+  prepareEntity<T extends object>(entity: T): EntityData<T> {
+    const generator = this.getSnapshotGenerator<T>(entity.constructor);
     return Utils.callCompiledFunction(generator, entity);
   }
 
   /**
    * Maps database columns to properties.
    */
-  mapResult<T>(entityName: string, result: EntityDictionary<T>): EntityData<T> {
-    const mapper = this.getResultMapper<T>(entityName);
+  mapResult<T>(meta: EntityMetadata<T>, result: EntityDictionary<T>): EntityData<T> {
+    const mapper = this.getResultMapper<T>(meta);
     return Utils.callCompiledFunction(mapper, result)!;
   }
 
@@ -71,7 +73,7 @@ export class EntityComparator {
    * @internal Highly performance-sensitive method.
    */
   getPkGetter<T>(meta: EntityMetadata<T>) {
-    const exists = this.pkGetters.get(meta.className);
+    const exists = this.pkGetters.get(meta);
 
     /* v8 ignore next */
     if (exists) {
@@ -122,7 +124,7 @@ export class EntityComparator {
     const code = `// compiled pk serializer for entity ${meta.className}\n`
       + `return function(entity) {\n${lines.join('\n')}\n}`;
     const pkSerializer = Utils.createFunction(context, code);
-    this.pkGetters.set(meta.className, pkSerializer);
+    this.pkGetters.set(meta, pkSerializer);
 
     return pkSerializer;
   }
@@ -131,7 +133,7 @@ export class EntityComparator {
    * @internal Highly performance-sensitive method.
    */
   getPkGetterConverted<T>(meta: EntityMetadata<T>) {
-    const exists = this.pkGettersConverted.get(meta.className);
+    const exists = this.pkGettersConverted.get(meta);
 
     /* v8 ignore next */
     if (exists) {
@@ -176,7 +178,7 @@ export class EntityComparator {
     const code = `// compiled pk getter (with converted custom types) for entity ${meta.className}\n`
       + `return function(entity) {\n${lines.join('\n')}\n}`;
     const pkSerializer = Utils.createFunction(context, code);
-    this.pkGettersConverted.set(meta.className, pkSerializer);
+    this.pkGettersConverted.set(meta, pkSerializer);
 
     return pkSerializer;
   }
@@ -185,7 +187,7 @@ export class EntityComparator {
    * @internal Highly performance-sensitive method.
    */
   getPkSerializer<T>(meta: EntityMetadata<T>) {
-    const exists = this.pkSerializers.get(meta.className);
+    const exists = this.pkSerializers.get(meta);
 
     /* v8 ignore next */
     if (exists) {
@@ -233,7 +235,7 @@ export class EntityComparator {
     const code = `// compiled pk serializer for entity ${meta.className}\n`
       + `return function(entity) {\n${lines.join('\n')}\n}`;
     const pkSerializer = Utils.createFunction(context, code);
-    this.pkSerializers.set(meta.className, pkSerializer);
+    this.pkSerializers.set(meta, pkSerializer);
 
     return pkSerializer;
   }
@@ -242,14 +244,13 @@ export class EntityComparator {
    * @internal Highly performance-sensitive method.
    */
   getSnapshotGenerator<T>(entityName: EntityName<T>): SnapshotGenerator<T> {
-    entityName = Utils.className(entityName);
-    const exists = this.snapshotGenerators.get(entityName);
+    const meta = this.metadata.find<T>(entityName)!;
+    const exists = this.snapshotGenerators.get(meta);
 
     if (exists) {
       return exists;
     }
 
-    const meta = this.metadata.find<T>(entityName)!;
     const lines: string[] = [];
     const context = new Map<string, any>();
     context.set('clone', clone);
@@ -271,7 +272,7 @@ export class EntityComparator {
 
     const code = `return function(entity) {\n  const ret = {};\n${lines.join('\n')}\n  return ret;\n}`;
     const snapshotGenerator = Utils.createFunction(context, code);
-    this.snapshotGenerators.set(entityName, snapshotGenerator);
+    this.snapshotGenerators.set(meta, snapshotGenerator);
 
     return snapshotGenerator;
   }
@@ -334,14 +335,13 @@ export class EntityComparator {
   /**
    * @internal Highly performance-sensitive method.
    */
-  getResultMapper<T>(entityName: string): ResultMapper<T> {
-    const exists = this.mappers.get(entityName);
+  getResultMapper<T>(meta: EntityMetadata<T>): ResultMapper<T> {
+    const exists = this.mappers.get(meta);
 
     if (exists) {
       return exists;
     }
 
-    const meta = this.metadata.get<T>(entityName)!;
     const lines: string[] = [];
     const context = new Map<string, any>();
 
@@ -406,10 +406,10 @@ export class EntityComparator {
             const item = parseJsonSafe(data);
 
             if (Array.isArray(item)) {
-              return item.map(row => row == null ? row : this.getResultMapper(prop.type)(row));
+              return item.map(row => row == null ? row : this.getResultMapper(prop.targetMeta!)(row));
             }
 
-            return item == null ? item : this.getResultMapper(prop.type)(item);
+            return item == null ? item : this.getResultMapper(prop.targetMeta!)(item);
           });
           lines.push(`${padding}  if (typeof ${this.propName(prop.fieldNames[0])} !== 'undefined') {`);
           lines.push(`${padding}    ret${this.wrap(prop.name)} = ${this.propName(prop.fieldNames[0])} == null ? ${this.propName(prop.fieldNames[0])} : mapEmbeddedResult_${idx}(${this.propName(prop.fieldNames[0])});`);
@@ -444,7 +444,7 @@ export class EntityComparator {
     const code = `// compiled mapper for entity ${meta.className}\n`
       + `return function(result) {\n  const ret = {};\n${lines.join('\n')}\n  return ret;\n}`;
     const resultMapper = Utils.createFunction(context, code);
-    this.mappers.set(entityName, resultMapper);
+    this.mappers.set(meta, resultMapper);
 
     return resultMapper;
   }
@@ -667,14 +667,14 @@ export class EntityComparator {
   /**
    * @internal Highly performance-sensitive method.
    */
-  getEntityComparator<T extends object>(entityName: string): Comparator<T> {
-    const exists = this.comparators.get(entityName);
+  getEntityComparator<T extends object>(entityName: EntityName<T>): Comparator<T> {
+    const meta = this.metadata.find<T>(entityName)!;
+    const exists = this.comparators.get(meta);
 
     if (exists) {
       return exists;
     }
 
-    const meta = this.metadata.find<T>(entityName)!;
     const lines: string[] = [];
     const context = new Map<string, any>();
     context.set('compareArrays', compareArrays);
@@ -701,7 +701,7 @@ export class EntityComparator {
     const code = `// compiled comparator for entity ${meta.className}\n`
       + `return function(last, current, options) {\n  const diff = {};\n${lines.join('\n')}\n  return diff;\n}`;
     const comparator = Utils.createFunction(context, code);
-    this.comparators.set(entityName, comparator);
+    this.comparators.set(meta, comparator);
 
     return comparator;
   }
@@ -721,12 +721,12 @@ export class EntityComparator {
     let type = prop.type.toLowerCase();
 
     if (prop.kind !== ReferenceKind.SCALAR && prop.kind !== ReferenceKind.EMBEDDED) {
-      const meta2 = this.metadata.find(prop.type)!;
+      const meta2 = prop.targetMeta!;
 
       if (meta2.primaryKeys.length > 1) {
         type = 'array';
       } else {
-        type = meta2.properties[meta2.primaryKeys[0]].type.toLowerCase();
+        type = meta2.getPrimaryProp().type.toLowerCase();
       }
     }
 

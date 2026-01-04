@@ -69,9 +69,9 @@ describe('populate with citext', () => {
     await orm.schema.execute('create extension if not exists citext;');
     await orm.schema.refresh();
 
-    await orm.em.insert('a', [{ id1: 'test1', id2: 'test2' }, { id1: 'asDf', id2: 'teST' }]);
-    await orm.em.insert('b', [{ id: 'test3' }, { id: 'TEst' }]);
-    await orm.em.insert('c', [{ a_id1: 'test1', a_id2: 'test2', b_id: 'test3' }, {
+    await orm.em.insert(A, [{ id1: 'test1', id2: 'test2' }, { id1: 'asDf', id2: 'teST' }]);
+    await orm.em.insert(B, [{ id: 'test3' }, { id: 'TEst' }]);
+    await orm.em.insert<any>(C, [{ a_id1: 'test1', a_id2: 'test2', b_id: 'test3' }, {
       a_id1: 'ASdF',
       a_id2: 'TEst',
       b_id: 'TEST',

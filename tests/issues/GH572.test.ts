@@ -8,7 +8,7 @@ class A {
   @PrimaryKey()
   id!: number;
 
-  @OneToOne('B', 'a', { ref: true })
+  @OneToOne(() => B, 'a', { ref: true })
   b!: Ref<B>;
 
 }
@@ -22,7 +22,7 @@ class B {
   @Property()
   camelCaseField?: string;
 
-  @OneToOne('A', 'b', { owner: true, ref: true })
+  @OneToOne(() => A, 'b', { owner: true, ref: true })
   a!: Ref<A>;
 
 }

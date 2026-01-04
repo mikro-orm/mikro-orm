@@ -1,8 +1,9 @@
 import { extname } from 'node:path';
 import { ComputedPropertyName, ModuleKind, NoSubstitutionTemplateLiteral, Project, StringLiteral, type PropertyDeclaration, type SourceFile } from 'ts-morph';
 import {
+  type EntityClass,
   type EntityMetadata,
-  type EntityProperty,
+  type EntityProperty, EntitySchema,
   MetadataError,
   MetadataProvider,
   MetadataStorage,
@@ -47,22 +48,27 @@ export class TsMorphMetadataProvider extends MetadataProvider {
   protected initProperties(meta: EntityMetadata): void {
     // load types and column names
     for (const prop of Object.values(meta.properties)) {
-      const type = this.extractType(prop);
+      const { type, target } = this.extractType(meta, prop);
       this.initPropertyType(meta, prop);
       prop.type = type ?? prop.type;
+      prop.target = target!;
     }
   }
 
-  private extractType(prop: EntityProperty): string {
+  private extractType(meta: EntityMetadata, prop: EntityProperty): { type: string; target?: EntityClass } {
+    /* v8 ignore next */
     if (typeof prop.entity === 'string') {
-      return prop.entity;
+      throw new Error(`Relation target needs to be an entity class or EntitySchema instance, '${prop.entity}' given instead for ${meta.className}.${prop.name}.`);
     }
 
-    if (prop.entity) {
-      return Utils.className(prop.entity());
+    if (!prop.entity) {
+      return { type: prop.type };
     }
 
-    return prop.type;
+    const tmp = prop.entity() as EntityClass;
+    const target = tmp instanceof EntitySchema ? tmp.meta.class : tmp;
+
+    return { type: Utils.className(target), target };
   }
 
   private cleanUpTypeTags(type: string): string {

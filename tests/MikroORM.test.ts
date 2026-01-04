@@ -112,11 +112,11 @@ describe('MikroORM', () => {
     })).resolves.not.toBeUndefined();
   });
 
-  test('should throw when multiple entities with same file name discovered', async () => {
+  test('should throw when multiple entities with same table name discovered', async () => {
     await expect(MikroORM.init({
       metadataProvider: ReflectMetadataProvider,
       driver: MongoDriver, dbName: 'test', baseDir: BASE_DIR, entities: ['entities-1', 'entities-2'],
-    })).rejects.toThrow('Duplicate entity names are not allowed: Dup1, Dup2');
+    })).rejects.toThrow('Duplicate table names are not allowed: dup1, dup2');
   });
 
   test('should NOT throw when multiple entities in same file were discovered', async () => {
@@ -130,17 +130,17 @@ describe('MikroORM', () => {
     });
 
     expect(orm).toBeInstanceOf(MikroORM);
-    expect(Object.keys(orm.getMetadata().getAll()).sort()).toEqual(['AbstractClass', 'ClassA', 'ClassB']);
+    expect([...orm.getMetadata().getAll().keys()].map(k => k.name).sort()).toEqual(['AbstractClass', 'ClassA', 'ClassB']);
   });
 
-  test('should NOT throw when multiple entities with same file name discovered ("checkDuplicateEntities" false)', async () => {
+  test('should NOT throw when multiple entities with same file name discovered', async () => {
     const ormInitCommandPromise = MikroORM.init({
       metadataProvider: ReflectMetadataProvider,
       driver: MongoDriver,
       dbName: 'test',
       baseDir: BASE_DIR,
       entities: ['entities-1', 'entities-2'],
-      discovery: { checkDuplicateEntities: false },
+      discovery: { checkDuplicateTableNames: false },
     });
 
     await expect(ormInitCommandPromise).resolves.toBeTruthy();
@@ -193,7 +193,7 @@ describe('MikroORM', () => {
       metadataProvider: ReflectMetadataProvider,
       driver: MongoDriver, dbName: 'test', baseDir: BASE_DIR, entities: ['entities'],
     });
-    expect(Object.keys(orm.getMetadata().getAll()).sort()).toEqual(['Author', 'Book', 'BookTag', 'Dummy', 'Foo1', 'Foo2', 'Foo3', 'FooBar', 'FooBaz', 'Publisher', 'Test']);
+    expect([...orm.getMetadata().getAll().keys()].map(k => k.name).sort()).toEqual(['Author', 'Book', 'BookTag', 'Dummy', 'Foo1', 'Foo2', 'Foo3', 'FooBar', 'FooBaz', 'Publisher', 'Test']);
     await orm.close();
   });
 
@@ -233,7 +233,7 @@ describe('MikroORM', () => {
       discovery: {},
       migrations: { path: './dist/migrations', glob: '*.js' },
     });
-    expect(Object.keys(orm.getMetadata().getAll()).sort()).toEqual(['Author4', 'Book4', 'BookTag4', 'FooBar4', 'FooBaz4', 'Identity', 'Publisher4', 'Test4', 'User4', 'publisher4_tests', 'tags_ordered', 'tags_unordered']);
+    expect([...orm.getMetadata().getAll().keys()].map(k => k.name).sort()).toEqual(['Author4', 'Book4', 'BookTag4', 'FooBar4', 'FooBaz4', 'Identity', 'Publisher4', 'Test4', 'User4', 'publisher4_tests', 'tags_ordered', 'tags_unordered']);
   });
 
   test('should work with dynamic passwords/tokens [mysql]', async () => {

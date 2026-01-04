@@ -16,7 +16,7 @@ export class MsSqlSchemaGenerator extends SchemaGenerator {
 
     // https://stackoverflow.com/questions/253849/cannot-truncate-table-because-it-is-being-referenced-by-a-foreign-key-constraint
     for (const meta of this.getOrderedMetadata(options?.schema).reverse()) {
-      const res = await this.driver.nativeDelete(meta.className, {}, options);
+      const res = await this.driver.nativeDelete(meta.class, {}, options);
 
       if (meta.getPrimaryProps().some(pk => pk.autoincrement)) {
         const tableName = this.driver.getTableName(meta, { schema: options?.schema }, false);

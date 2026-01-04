@@ -7,6 +7,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 import { DateType, Collection, Cascade } from '@mikro-orm/core';
 import { Entity, ManyToMany, ManyToOne, OneToMany, Property } from '@mikro-orm/decorators/legacy';
 import { BaseEntity } from './BaseEntity.js';
+import { Book } from './Book.js';
 // import { Collection } from '../TsMorphMetadataProvider.sqlite.test.js';
 let Author = class Author extends BaseEntity {
     name;
@@ -54,7 +55,7 @@ __decorate([
     Property({ type: new DateType() })
 ], Author.prototype, "born", void 0);
 __decorate([
-    OneToMany('Book', 'author', { referenceColumnName: '_id', cascade: [Cascade.PERSIST], orphanRemoval: true })
+    OneToMany(() => Book, 'author', { referenceColumnName: '_id', cascade: [Cascade.PERSIST], orphanRemoval: true })
 ], Author.prototype, "books", void 0);
 __decorate([
     ManyToMany()

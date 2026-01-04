@@ -75,7 +75,7 @@ let orm: MikroORM;
 beforeAll(async () => {
   orm = new MikroORM({
     entities: [Bowl, Fruit],
-    dbName: `:memory:`,
+    dbName: ':memory:',
   });
   await orm.schema.refresh();
 });

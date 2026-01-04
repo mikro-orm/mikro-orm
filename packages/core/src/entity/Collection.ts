@@ -124,7 +124,7 @@ export class Collection<T extends object, O extends object = object> {
     }
 
     const cond = this.createLoadCountCondition(where ?? {} as FilterQuery<T>);
-    const count = await em.count(this.property.type, cond, countOptions as any);
+    const count = await em.count(this.property.targetMeta!.class, cond, countOptions as any);
 
     if (!where) {
       this._count = count;
@@ -140,11 +140,11 @@ export class Collection<T extends object, O extends object = object> {
     let items: Loaded<TT, P>[];
 
     if (this.property.kind === ReferenceKind.MANY_TO_MANY && em.getPlatform().usesPivotTable()) {
-      const cond = await em.applyFilters(this.property.type, where, options.filters ?? {}, 'read') as FilterQuery<T>;
+      const cond = await em.applyFilters(this.property.targetMeta!.class, where, options.filters ?? {}, 'read') as FilterQuery<T>;
       const map = await em.getDriver().loadFromPivotTable(this.property, [helper(this.owner).__primaryKeys], cond, opts.orderBy, ctx, options);
-      items = map[helper(this.owner).getSerializedPrimaryKey()].map((item: EntityData<TT>) => em.merge(this.property.type, item, { convertCustomTypes: true })) as any;
+      items = map[helper(this.owner).getSerializedPrimaryKey()].map((item: EntityData<TT>) => em.merge(this.property.targetMeta!.class, item, { convertCustomTypes: true })) as any;
     } else {
-      items = await em.find(this.property.type, this.createCondition(where), opts as any) as any;
+      items = await em.find(this.property.targetMeta!.class, this.createCondition(where), opts as any) as any;
     }
 
     if (options.store) {
@@ -429,7 +429,7 @@ export class Collection<T extends object, O extends object = object> {
 
   private checkInitialized(): void {
     if (!this.isInitialized()) {
-      throw new Error(`Collection<${this.property.type}> of entity ${this.owner.constructor.name}[${helper(this.owner).getSerializedPrimaryKey()}] not initialized`);
+      throw new Error(`Collection<${this.property.type}> of entity ${helper(this.owner).__meta.name}[${helper(this.owner).getSerializedPrimaryKey()}] not initialized`);
     }
   }
 

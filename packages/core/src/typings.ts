@@ -289,9 +289,8 @@ export interface IWrappedEntityInternal<Entity extends object> extends IWrappedE
 }
 
 export type AnyEntity<T = any> = Partial<T>;
-
-export type EntityClass<T> = Function & { prototype: T };
-export type EntityName<T> = string | EntityClass<T> | EntitySchema<T, any> | { name: string };
+export type EntityClass<T = any> = Function & { prototype: T };
+export type EntityName<T = any> = EntityClass<T> | EntitySchema<T, any> | { name: string };
 
 // we need to restrict the type in the generic argument, otherwise inference don't work, so we use two types here
 export type GetRepository<Entity extends { [k: PropertyKey]: any }, Fallback> = Entity[typeof EntityRepositoryType] extends EntityRepository<any> | undefined ? NonNullable<Entity[typeof EntityRepositoryType]> : Fallback;
@@ -483,6 +482,7 @@ export type AnyString = string & {};
 export interface EntityProperty<Owner = any, Target = any> {
   name: EntityKey<Owner>;
   entity: () => EntityName<Owner>;
+  target: EntityClass<Target>;
   type: keyof typeof types | AnyString;
   runtimeType: 'number' | 'string' | 'boolean' | 'bigint' | 'Buffer' | 'Date' | 'object' | 'any' | AnyString;
   targetMeta?: EntityMetadata<Target>;
@@ -553,7 +553,7 @@ export interface EntityProperty<Owner = any, Target = any> {
   fixedOrder?: boolean;
   fixedOrderColumn?: string;
   pivotTable: string;
-  pivotEntity: string;
+  pivotEntity: EntityClass<Target>;
   joinColumns: string[];
   ownColumns: string[];
   inverseJoinColumns: string[];
@@ -591,27 +591,23 @@ export class EntityMetadata<T = any> {
     this.referencingProperties = [];
     this.concurrencyCheckKeys = new Set();
     Object.assign(this, meta);
+    const name = meta.className ?? meta.name;
+
+    if (!this.class && name) {
+      this.class = ({ [name]: class {} })[name] as Constructor<T>;
+    }
   }
 
-  addProperty(prop: Partial<EntityProperty<T>>, sync = true) {
-    if (prop.pivotTable && !prop.pivotEntity) {
-      prop.pivotEntity = prop.pivotTable;
-    }
-
+  addProperty(prop: Partial<EntityProperty<T>>) {
     this.properties[prop.name!] = prop as EntityProperty<T>;
     this.propertyOrder.set(prop.name!, this.props.length);
-
-    /* v8 ignore next */
-    if (sync) {
-      this.sync();
-    }
+    this.sync();
   }
 
   removeProperty(name: string, sync = true) {
     delete this.properties[name as EntityKey<T>];
     this.propertyOrder.delete(name);
 
-    /* v8 ignore next */
     if (sync) {
       this.sync();
     }
@@ -655,6 +651,10 @@ export class EntityMetadata<T = any> {
     this.collection = name;
   }
 
+  get uniqueName(): string {
+    return this.tableName + '_' + this._id;
+  }
+
   sync(initIndexes = false, config?: Configuration) {
     this.root ??= this;
     const props = Object.values<EntityProperty<T>>(this.properties).sort((a, b) => this.propertyOrder.get(a.name)! - this.propertyOrder.get(b.name)!);
@@ -682,7 +682,7 @@ export class EntityMetadata<T = any> {
       return !prop.getter && !prop.setter && [ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind);
     });
     this.selfReferencing = this.relations.some(prop => {
-      return [this.className, this.root.className].includes(prop.targetMeta?.root.className ?? prop.type);
+      return this.root.uniqueName === prop.targetMeta?.root.uniqueName;
     });
     this.hasUniqueProps = this.uniques.length + this.uniqueProps.length > 0;
     this.virtual = !!this.expression;
@@ -794,6 +794,11 @@ export class EntityMetadata<T = any> {
     return this;
   }
 
+  /** @ignore */
+  [Symbol.for('nodejs.util.inspect.custom')]() {
+    return `[${this.constructor.name}<${this.className}>]`;
+  }
+
 }
 
 export interface SimpleColumnMeta {
@@ -813,11 +818,11 @@ export interface EntityMetadata<T = any> {
   expression?: string | ((em: any, where: ObjectQuery<T>, options: FindOptions<T, any, any, any>, stream?: boolean) => MaybePromise<Raw | object | string>);
   discriminatorColumn?: EntityKey<T> | AnyString;
   discriminatorValue?: number | string;
-  discriminatorMap?: Dictionary<string>;
+  discriminatorMap?: Dictionary<EntityClass>;
   embeddable: boolean;
   constructorParams?: (keyof T)[];
   forceConstructor: boolean;
-  extends: string;
+  extends?: EntityName<T>;
   collection: string;
   path: string;
   primaryKeys: EntityKey<T>[];
@@ -1071,14 +1076,14 @@ type EntityFromInput<T> = T extends readonly EntityName<infer U>[]
 
 type FilterDefResolved<T extends object = any> = {
   name: string;
-  cond: FilterQuery<T> | ((args: Dictionary, type: 'read' | 'update' | 'delete', em: any, options?: FindOptions<T, any, any, any> | FindOneOptions<T, any, any, any>, entityName?: EntityName<T>) => MaybePromise<FilterQuery<T>>);
+  cond: FilterQuery<T> | ((args: Dictionary, type: 'read' | 'update' | 'delete', em: any, options?: FindOptions<T, any, any, any> | FindOneOptions<T, any, any, any>, entityName?: string) => MaybePromise<FilterQuery<T>>);
   default?: boolean;
   entity?: EntityName<T> | EntityName<T>[];
   args?: boolean;
   strict?: boolean;
 };
 
-export type FilterDef<T extends EntityName<any> | readonly EntityName<any>[] = any> = FilterDefResolved<EntityFromInput<T>> & {
+export type FilterDef<T extends EntityName | readonly EntityName[] = any> = FilterDefResolved<EntityFromInput<T>> & {
   entity?: T;
 };
 
@@ -1288,12 +1293,12 @@ export interface Highlighter {
 }
 
 export interface IMetadataStorage {
-  getAll(): Dictionary<EntityMetadata>;
-  get<T = any>(entity: string, init?: boolean, validate?: boolean): EntityMetadata<T>;
-  find<T = any>(entity: string): EntityMetadata<T> | undefined;
-  has(entity: string): boolean;
-  set(entity: string, meta: EntityMetadata): EntityMetadata;
-  reset(entity: string): void;
+  getAll(): Map<EntityName, EntityMetadata>;
+  get<T = any>(entity: EntityName<T>, init?: boolean, validate?: boolean): EntityMetadata<T>;
+  find<T = any>(entity: EntityName<T>): EntityMetadata<T> | undefined;
+  has<T>(entity: EntityName<T>): boolean;
+  set<T>(entity: EntityName<T>, meta: EntityMetadata): EntityMetadata;
+  reset<T>(entity: EntityName<T>): void;
 }
 
 export interface IHydrator {

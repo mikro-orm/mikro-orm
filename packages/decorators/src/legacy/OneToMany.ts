@@ -2,7 +2,7 @@ import { type EntityKey, type EntityName, type EntityProperty, type OneToManyOpt
 import { processDecoratorParameters, validateSingleDecorator, getMetadataFromDecorator } from '../utils.js';
 
 export function OneToMany<Target extends object, Owner extends object>(
-  entity: string | ((e?: any) => EntityName<Target>),
+  entity: (e?: any) => EntityName<Target>,
   mappedBy: (string & keyof Target) | ((e: Target) => any),
   options?: Partial<OneToManyOptions<Owner, Target>>,
 ): (target: Owner, propertyName: string) => void;

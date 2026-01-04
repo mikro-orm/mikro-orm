@@ -19,7 +19,7 @@ export class Author {
   name!: string;
 
   @OneToMany({
-    entity: 'Book',
+    entity: () => Book,
     mappedBy: 'author',
     eager: true,
     orphanRemoval: true,
@@ -41,7 +41,7 @@ export class Book {
   author!: Author;
 
   @OneToMany({
-    entity: 'Page',
+    entity: () => Page,
     mappedBy: 'book',
     eager: true,
     orphanRemoval: true,

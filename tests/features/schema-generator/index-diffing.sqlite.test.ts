@@ -212,7 +212,7 @@ describe('indexes on FKs in sqlite (GH 1518)', () => {
     orm = await MikroORM.init({
       metadataProvider: ReflectMetadataProvider,
       entities: [Author],
-      dbName: `:memory:`,
+      dbName: ':memory:',
     });
 
     await orm.schema.refresh({ dropDb: true });
@@ -221,27 +221,27 @@ describe('indexes on FKs in sqlite (GH 1518)', () => {
   afterAll(() => orm.close(true));
 
   test('schema generator respect indexes on FKs on column update', async () => {
-    orm.discoverEntity(Book1, 'Book0');
+    orm.discoverEntity(Book1);
     const diff1 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff1).toMatchSnapshot();
     await orm.schema.execute(diff1);
 
-    orm.discoverEntity(Book2, 'Book1');
+    orm.discoverEntity(Book2, Book1);
     const diff2 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff2).toMatchSnapshot();
     await orm.schema.execute(diff2);
 
-    orm.discoverEntity(Book3, 'Book2');
+    orm.discoverEntity(Book3, Book2);
     const diff3 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff3).toMatchSnapshot();
     await orm.schema.execute(diff3);
 
-    orm.discoverEntity(Book4, 'Book3');
+    orm.discoverEntity(Book4, Book3);
     const diff4 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff4).toMatchSnapshot();
     await orm.schema.execute(diff4);
 
-    orm.discoverEntity(Book5, 'Book4');
+    orm.discoverEntity(Book5, Book4);
     const diff5 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff5).toMatchSnapshot();
     await orm.schema.execute(diff5);

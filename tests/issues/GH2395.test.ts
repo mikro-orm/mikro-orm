@@ -7,13 +7,13 @@ class Parent {
   @PrimaryKey()
   id!: number;
 
-  @OneToMany('Child', 'parent')
+  @OneToMany(() => Child, 'parent')
   children = new Collection<Child>(this);
 
-  @OneToMany('Child2', 'parent')
+  @OneToMany(() => Child2, 'parent')
   children2 = new Collection<Child>(this);
 
-  @OneToMany('Child3', 'parent', { orphanRemoval: true })
+  @OneToMany(() => Child3, 'parent', { orphanRemoval: true })
   children3 = new Collection<Child>(this);
 
 }

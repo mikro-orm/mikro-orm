@@ -11,7 +11,7 @@ import {
 import { processDecoratorParameters, validateSingleDecorator } from '../utils.js';
 
 export function ManyToOne<Target extends object, Owner extends object>(
-  entity: ManyToOneOptions<Owner, Target> | string | ((e?: Owner) => EntityName<Target>) = {},
+  entity: ManyToOneOptions<Owner, Target> | ((e?: Owner) => EntityName<Target>) = {},
   options: Partial<ManyToOneOptions<Owner, Target>> = {},
 ) {
   return function (_: unknown, context: ClassFieldDecoratorContext<Owner, Target | undefined | null | Ref<Target>>) {

@@ -8,7 +8,19 @@ import {
 import { processDecoratorParameters, validateSingleDecorator, getMetadataFromDecorator } from '../utils.js';
 
 export function ManyToMany<Target extends object, Owner extends object>(
-  entity?: ManyToManyOptions<Owner, Target> | string | (() => EntityName<Target>),
+  entity: () => EntityName<Target>,
+  mappedBy?: (string & keyof Target) | ((e: Target) => any),
+  options?: Partial<ManyToManyOptions<Owner, Target>>,
+): (target: Owner, propertyName: keyof Owner) => void;
+export function ManyToMany<Target extends object, Owner extends object>(
+  entity: string,
+  options?: any,
+): never;
+export function ManyToMany<Target extends object, Owner extends object>(
+  options?: ManyToManyOptions<Owner, Target>,
+): (target: Owner, propertyName: keyof Owner) => void;
+export function ManyToMany<Target extends object, Owner extends object>(
+  entity?: ManyToManyOptions<Owner, Target> | (() => EntityName<Target>),
   mappedBy?: (string & keyof Target) | ((e: Target) => any),
   options: Partial<ManyToManyOptions<Owner, Target>> = {},
 ) {

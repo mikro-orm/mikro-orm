@@ -34,12 +34,12 @@ describe('SchemaGenerator [postgres]', () => {
       name: 'NewTable',
       tableName: 'other.new_table',
     }).init().meta;
-    meta.set('NewTable', newTableMeta);
+    meta.set(newTableMeta.class, newTableMeta);
     const diff1 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff1).toMatchSnapshot('postgres-update-schema-1215');
     await orm.schema.execute(diff1);
 
-    meta.reset('NewTable');
+    meta.reset(newTableMeta.class);
     const diff2 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff2).toMatchSnapshot('postgres-update-schema-1215');
     await orm.schema.execute(diff2);
@@ -72,7 +72,7 @@ describe('SchemaGenerator [postgres]', () => {
       name: 'NewTable',
       tableName: 'new_table',
     }).init().meta;
-    meta.set('NewTable', newTableMeta);
+    meta.set(newTableMeta.class, newTableMeta);
     let diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff).toMatchSnapshot('postgres-update-schema-enums-1');
     await orm.schema.execute(diff);
@@ -216,8 +216,8 @@ describe('SchemaGenerator [postgres]', () => {
       indexes: [],
       uniques: [],
     } as any).init().meta;
-    meta.set('NewTable', newTableMeta);
-    const authorMeta = meta.get('Author2');
+    meta.set(newTableMeta.class, newTableMeta);
+    const authorMeta = meta.get(Author2);
     authorMeta.properties.termsAccepted.defaultRaw = 'false';
 
     let diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
@@ -249,10 +249,10 @@ describe('SchemaGenerator [postgres]', () => {
     await orm.schema.execute(diff, { wrap: true });
 
     const ageProp = authorMeta.properties.age;
-    ageProp.name = 'ageInYears';
+    ageProp.name = 'ageInYears' as any;
     ageProp.fieldNames = ['age_in_years'];
     const favouriteAuthorProp = authorMeta.properties.favouriteAuthor;
-    favouriteAuthorProp.name = 'favouriteWriter';
+    favouriteAuthorProp.name = 'favouriteWriter' as any;
     favouriteAuthorProp.fieldNames = ['favourite_writer_id'];
     favouriteAuthorProp.joinColumns = ['favourite_writer_id'];
     authorMeta.removeProperty('favouriteAuthor');
@@ -271,16 +271,16 @@ describe('SchemaGenerator [postgres]', () => {
     expect(diff).toBe('');
 
     // remove 1:1 relation
-    const fooBarMeta = meta.get('FooBar2');
-    const fooBazMeta = meta.get('FooBaz2');
+    const fooBarMeta = meta.get(FooBar2);
+    const fooBazMeta = meta.get(FooBaz2);
     fooBarMeta.removeProperty('baz');
     fooBazMeta.removeProperty('bar');
     diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff).toMatchSnapshot('postgres-update-schema-drop-1:1');
     await orm.schema.execute(diff, { wrap: true });
 
-    meta.reset('Author2');
-    meta.reset('NewTable');
+    meta.reset(Author2);
+    meta.reset(newTableMeta.class);
     diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff).toMatchSnapshot('postgres-update-schema-drop-table');
     await orm.schema.execute(diff, { wrap: true });
@@ -293,16 +293,16 @@ describe('SchemaGenerator [postgres]', () => {
     const meta = orm.getMetadata();
     await orm.schema.update();
 
-    meta.get('Book2').indexes.push({
+    meta.get(Book2).indexes.push({
       properties: ['author', 'publisher'],
     });
 
-    meta.get('Author2').indexes.push({
+    meta.get(Author2).indexes.push({
       properties: ['name', 'email'],
       type: 'fulltext',
     });
 
-    meta.get('Book2').uniques.push({
+    meta.get(Book2).uniques.push({
       properties: ['author', 'publisher'],
     });
 
@@ -310,29 +310,29 @@ describe('SchemaGenerator [postgres]', () => {
     expect(diff).toMatchSnapshot('postgres-update-schema-add-index');
     await orm.schema.execute(diff, { wrap: true });
 
-    meta.get('Book2').indexes[1].name = 'custom_idx_123';
+    meta.get(Book2).indexes[1].name = 'custom_idx_123';
 
     diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff).toMatchSnapshot('postgres-update-schema-alter-index');
     await orm.schema.execute(diff, { wrap: true });
 
-    meta.get('Book2').indexes = [];
+    meta.get(Book2).indexes = [];
 
     diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff).toMatchSnapshot('postgres-update-schema-drop-index');
     await orm.schema.execute(diff, { wrap: true });
 
-    meta.get('Book2').uniques = [];
+    meta.get(Book2).uniques = [];
 
     diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff).toMatchSnapshot('postgres-update-schema-drop-unique');
     await orm.schema.execute(diff, { wrap: true });
 
     // test changing a column to tsvector and adding an index
-    meta.get('Book2').properties.title.defaultRaw = undefined;
-    meta.get('Book2').properties.title.customType = Type.getType(FullTextType);
-    meta.get('Book2').properties.title.columnTypes[0] = Type.getType(FullTextType).getColumnType();
-    meta.get('Book2').indexes.push({ type: 'fulltext', properties: ['title'] });
+    meta.get(Book2).properties.title.defaultRaw = undefined;
+    meta.get(Book2).properties.title.customType = Type.getType(FullTextType);
+    meta.get(Book2).properties.title.columnTypes[0] = Type.getType(FullTextType).getColumnType();
+    meta.get(Book2).indexes.push({ type: 'fulltext', properties: ['title'] });
 
     diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff).toMatchSnapshot('postgres-update-schema-add-fulltext-index-tsvector');

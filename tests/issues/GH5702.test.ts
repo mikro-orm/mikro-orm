@@ -71,7 +71,7 @@ beforeAll(async () => {
   orm = await MikroORM.init({
     metadataProvider: ReflectMetadataProvider,
     entities: [Bowl, Fruit],
-    dbName: `:memory:`,
+    dbName: ':memory:',
   });
   await orm.schema.refresh();
 });

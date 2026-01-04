@@ -33,32 +33,32 @@ export interface IDatabaseDriver<C extends Connection = Connection> {
   /**
    * Finds selection of entities
    */
-  find<T extends object, P extends string = never, F extends string = '*', E extends string = never>(entityName: string, where: FilterQuery<T>, options?: FindOptions<T, P, F, E>): Promise<EntityData<T>[]>;
+  find<T extends object, P extends string = never, F extends string = '*', E extends string = never>(entityName: EntityName<T>, where: FilterQuery<T>, options?: FindOptions<T, P, F, E>): Promise<EntityData<T>[]>;
 
   /**
    * Finds single entity (table row, document)
    */
-  findOne<T extends object, P extends string = never, F extends string = '*', E extends string = never>(entityName: string, where: FilterQuery<T>, options?: FindOneOptions<T, P, F, E>): Promise<EntityData<T> | null>;
+  findOne<T extends object, P extends string = never, F extends string = '*', E extends string = never>(entityName: EntityName<T>, where: FilterQuery<T>, options?: FindOneOptions<T, P, F, E>): Promise<EntityData<T> | null>;
 
-  findVirtual<T extends object>(entityName: string, where: FilterQuery<T>, options: FindOptions<T, any, any, any>): Promise<EntityData<T>[]>;
+  findVirtual<T extends object>(entityName: EntityName<T>, where: FilterQuery<T>, options: FindOptions<T, any, any, any>): Promise<EntityData<T>[]>;
 
   stream<T extends object>(entityName: EntityName<T>, where: FilterQuery<T>, options: StreamOptions<T>): AsyncIterableIterator<T>;
 
-  nativeInsert<T extends object>(entityName: string, data: EntityDictionary<T>, options?: NativeInsertUpdateOptions<T>): Promise<QueryResult<T>>;
+  nativeInsert<T extends object>(entityName: EntityName<T>, data: EntityDictionary<T>, options?: NativeInsertUpdateOptions<T>): Promise<QueryResult<T>>;
 
-  nativeInsertMany<T extends object>(entityName: string, data: EntityDictionary<T>[], options?: NativeInsertUpdateManyOptions<T>, transform?: (sql: string) => string): Promise<QueryResult<T>>;
+  nativeInsertMany<T extends object>(entityName: EntityName<T>, data: EntityDictionary<T>[], options?: NativeInsertUpdateManyOptions<T>, transform?: (sql: string) => string): Promise<QueryResult<T>>;
 
-  nativeUpdate<T extends object>(entityName: string, where: FilterQuery<T>, data: EntityDictionary<T>, options?: NativeInsertUpdateOptions<T>): Promise<QueryResult<T>>;
+  nativeUpdate<T extends object>(entityName: EntityName<T>, where: FilterQuery<T>, data: EntityDictionary<T>, options?: NativeInsertUpdateOptions<T>): Promise<QueryResult<T>>;
 
-  nativeUpdateMany<T extends object>(entityName: string, where: FilterQuery<T>[], data: EntityDictionary<T>[], options?: NativeInsertUpdateManyOptions<T>): Promise<QueryResult<T>>;
+  nativeUpdateMany<T extends object>(entityName: EntityName<T>, where: FilterQuery<T>[], data: EntityDictionary<T>[], options?: NativeInsertUpdateManyOptions<T>): Promise<QueryResult<T>>;
 
-  nativeDelete<T extends object>(entityName: string, where: FilterQuery<T>, options?: NativeDeleteOptions<T>): Promise<QueryResult<T>>;
+  nativeDelete<T extends object>(entityName: EntityName<T>, where: FilterQuery<T>, options?: NativeDeleteOptions<T>): Promise<QueryResult<T>>;
 
   syncCollections<T extends object, O extends object>(collections: Iterable<Collection<T, O>>, options?: DriverMethodOptions): Promise<void>;
 
-  count<T extends object, P extends string = never>(entityName: string, where: FilterQuery<T>, options?: CountOptions<T, P>): Promise<number>;
+  count<T extends object, P extends string = never>(entityName: EntityName<T>, where: FilterQuery<T>, options?: CountOptions<T, P>): Promise<number>;
 
-  aggregate(entityName: string, pipeline: any[]): Promise<any[]>;
+  aggregate(entityName: EntityName, pipeline: any[]): Promise<any[]>;
 
   mapResult<T extends object>(result: EntityDictionary<T>, meta: EntityMetadata<T>, populate?: PopulateOptions<T>[]): EntityData<T> | null;
 

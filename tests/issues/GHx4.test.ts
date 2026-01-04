@@ -8,10 +8,10 @@ class Parent {
   @PrimaryKey()
   id!: string;
 
-  @OneToMany({ entity: 'Child', mappedBy: 'parent', orphanRemoval: true })
+  @OneToMany({ entity: () => Child, mappedBy: 'parent', orphanRemoval: true })
   children = new Collection<Child>(this);
 
-  @OneToMany({ entity: 'Child2', mappedBy: 'parent' })
+  @OneToMany({ entity: () => Child2, mappedBy: 'parent' })
   children2 = new Collection<Child>(this);
 
 }

@@ -207,7 +207,6 @@ export class MikroORM<
    */
   getMetadata<Entity extends object>(entityName?: EntityName<Entity>): EntityMetadata<Entity> | MetadataStorage {
     if (entityName) {
-      entityName = Utils.className(entityName);
       return this.metadata.get(entityName);
     }
 
@@ -225,7 +224,7 @@ export class MikroORM<
   /**
    * Allows dynamically discovering new entity by reference, handy for testing schema diffing.
    */
-  discoverEntity<T extends Constructor | EntitySchema>(entities: T | T[], reset?: string | string[]): void {
+  discoverEntity<T extends Constructor | EntitySchema>(entities: T | T[], reset?: EntityName | EntityName[]): void {
     for (const className of Utils.asArray(reset)) {
       this.metadata.reset(className);
       this.discovery.reset(className);
@@ -235,8 +234,8 @@ export class MikroORM<
     const metadata = this.discovery.processDiscoveredEntities(tmp);
 
     for (const meta of metadata) {
-      this.metadata.set(meta.className, meta);
-      meta.root = this.metadata.get(meta.root.className);
+      this.metadata.set(meta.class, meta);
+      meta.root = this.metadata.get(meta.root.class);
     }
 
     this.metadata.decorate(this.em);

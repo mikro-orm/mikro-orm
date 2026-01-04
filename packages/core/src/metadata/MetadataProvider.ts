@@ -1,8 +1,9 @@
-import type { EntityMetadata } from '../typings.js';
+import type { EntityClass, EntityMetadata } from '../typings.js';
 import type { Logger } from '../logging/Logger.js';
 import { Utils } from '../utils/Utils.js';
 import type { SyncCacheAdapter } from '../cache/CacheAdapter.js';
 import type { Platform } from '../platforms/Platform.js';
+import { EntitySchema } from './EntitySchema.js';
 
 // to get around circular dependencies
 export interface IConfiguration {
@@ -22,8 +23,9 @@ export class MetadataProvider {
       if (typeof prop.entity === 'string') {
         prop.type = prop.entity;
       } else if (prop.entity) {
-        const tmp = prop.entity();
+        const tmp = prop.entity() as EntityClass;
         prop.type = Array.isArray(tmp) ? tmp.map(t => Utils.className(t)).sort().join(' | ') : Utils.className(tmp);
+        prop.target = tmp instanceof EntitySchema ? tmp.meta.class : tmp;
       } else if (!prop.type && !(prop.enum && (prop.items?.length ?? 0) > 0)) {
         throw new Error(`Please provide either 'type' or 'entity' attribute in ${meta.className}.${prop.name}.`);
       }

@@ -159,7 +159,7 @@ export class PivotCollectionPersister<Entity extends object> {
           cond.$or.push(item.getCondition());
         }
 
-        await this.driver.nativeDelete(this.meta.className, cond, {
+        await this.driver.nativeDelete(this.meta.class, cond, {
           ctx: this.ctx,
           schema: this.schema,
           loggerContext: this.loggerContext,
@@ -172,7 +172,7 @@ export class PivotCollectionPersister<Entity extends object> {
 
       for (let i = 0; i < filtered.length; i += this.batchSize) {
         const chunk = filtered.slice(i, i + this.batchSize);
-        await this.driver.nativeInsertMany<Entity>(this.meta.className, chunk, {
+        await this.driver.nativeInsertMany<Entity>(this.meta.class, chunk, {
           ctx: this.ctx,
           schema: this.schema,
           convertCustomTypes: false,
@@ -187,7 +187,7 @@ export class PivotCollectionPersister<Entity extends object> {
 
       for (let i = 0; i < filtered.length; i += this.batchSize) {
         const chunk = filtered.slice(i, i + this.batchSize);
-        await this.driver.nativeUpdateMany<Entity>(this.meta.className, [], chunk, {
+        await this.driver.nativeUpdateMany<Entity>(this.meta.class, [], chunk, {
           ctx: this.ctx,
           schema: this.schema,
           convertCustomTypes: false,

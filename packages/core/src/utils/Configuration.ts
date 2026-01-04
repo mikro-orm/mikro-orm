@@ -647,11 +647,6 @@ export interface MetadataDiscoveryOptions {
    */
   checkDuplicateFieldNames?: boolean;
   /**
-   * Check for duplicate entities and throw an error if found.
-   * @default true
-   */
-  checkDuplicateEntities?: boolean;
-  /**
    * Check for composite primary keys marked as `persist: false` and throw an error if found.
    * @default true
    */

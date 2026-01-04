@@ -140,7 +140,7 @@ describe('GH issue 725', () => {
   test('validation when trying to persist not discovered entity', async () => {
     const orm = await MikroORM.init({
       entities: [TestSchema2],
-      dbName: `:memory:`,
+      dbName: ':memory:',
       driver: SqliteDriver,
     });
 

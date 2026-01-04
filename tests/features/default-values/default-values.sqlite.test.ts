@@ -31,7 +31,7 @@ describe('default values in sqlite', () => {
     orm = await MikroORM.init({
       metadataProvider: ReflectMetadataProvider,
       entities: [A],
-      dbName: `:memory:`,
+      dbName: ':memory:',
       driver: SqliteDriver,
     });
     await orm.schema.create();

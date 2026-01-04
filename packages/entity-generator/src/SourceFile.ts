@@ -84,8 +84,8 @@ export class SourceFile {
     }
 
     const enumDefinitions: string[] = [];
-    const eagerProperties: EntityProperty<any>[] = [];
-    const primaryProps: EntityProperty<any>[] = [];
+    const eagerProperties: EntityProperty[] = [];
+    const primaryProps: EntityProperty[] = [];
     let classBody = '';
     Object.values(this.meta.properties).forEach(prop => {
       const decorator = this.getPropertyDecorator(prop, 2);
@@ -264,8 +264,8 @@ export class SourceFile {
     }
     ret += `class ${this.meta.className}`;
     if (this.meta.extends) {
-      this.entityImports.add(this.meta.extends);
-      ret += ` extends ${this.meta.extends}`;
+      this.entityImports.add(Utils.className(this.meta.extends));
+      ret += ` extends ${Utils.className(this.meta.extends)}`;
     } else if (this.options.useCoreBaseEntity) {
       ret += ` extends ${this.referenceCoreImport('BaseEntity')}`;
     }
@@ -533,7 +533,7 @@ export class SourceFile {
 
     if (this.meta.discriminatorMap) {
       options.discriminatorMap = Object.fromEntries(Object.entries(this.meta.discriminatorMap)
-        .map(([discriminatorValue, className]) => [discriminatorValue, this.quote(className)]));
+        .map(([discriminatorValue, cls]) => [discriminatorValue, this.quote(Utils.className(cls))]));
     }
 
     return options;
@@ -892,9 +892,9 @@ export class SourceFile {
       options.pivotTable = this.quote(prop.pivotTable);
     }
 
-    if (prop.pivotEntity && prop.pivotEntity !== prop.pivotTable) {
-      this.entityImports.add(prop.pivotEntity);
-      options.pivotEntity = `() => ${prop.pivotEntity}`;
+    if (prop.pivotEntity && Utils.className(prop.pivotEntity) !== prop.pivotTable) {
+      this.entityImports.add(Utils.className(prop.pivotEntity));
+      options.pivotEntity = `() => ${Utils.className(prop.pivotEntity)}`;
     }
 
     if (prop.joinColumns.length === 1) {
@@ -945,7 +945,7 @@ export class SourceFile {
 
   protected getForeignKeyDecoratorOptions(options: OneToOneOptions<any, any>, prop: EntityProperty) {
     this.entityImports.add(prop.type);
-    options.entity = `() => ${prop.type}`;
+    options.entity = `() => ${prop.type}` as any;
 
     if (prop.ref) {
       options.ref = true;

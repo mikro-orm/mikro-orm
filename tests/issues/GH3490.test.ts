@@ -7,7 +7,7 @@ class Contract {
   @PrimaryKey()
   id!: number;
 
-  @ManyToOne('Customer')
+  @ManyToOne(() => Customer)
   customer!: any;
 
 }
@@ -21,7 +21,7 @@ class Customer {
   @OneToMany(() => Contract, contract => contract.customer)
   contracts = new Collection<Contract>(this);
 
-  @ManyToOne({ entity: 'Customer', nullable: true })
+  @ManyToOne({ entity: () => Customer, nullable: true })
   parentCustomer?: Customer;
 
   @OneToMany(() => Customer, customer => customer.parentCustomer)

@@ -51,12 +51,12 @@ export class Author4 extends BaseEntity4 {
 
   async beforeCreate(args: EventArgs<this>) {
     this.version = 1;
-    await args.em.findOne('Book4', { title: { $ne: null } }); // test this won't cause failures (GH #1503)
+    await args.em.findOne(Book4, { title: { $ne: null } }); // test this won't cause failures (GH #1503)
   }
 
   async afterCreate(args: EventArgs<this>) {
     this.versionAsString = 'v' + this.version;
-    await args.em.findOne('Book4', { title: { $nin: [''] } }); // test this won't cause failures (GH #1503)
+    await args.em.findOne(Book4, { title: { $nin: [''] } }); // test this won't cause failures (GH #1503)
   }
 
   beforeUpdate() {
@@ -79,12 +79,12 @@ export class Author4 extends BaseEntity4 {
 
 async function beforeUpdate(this: Author4, args: EventArgs<Author4>) {
   this.version += 1;
-  await args.em.findOne('Book4', { title: { $ne: null } }); // test this won't cause failures (GH #1503)
+  await args.em.findOne(Book4, { title: { $ne: null } }); // test this won't cause failures (GH #1503)
 }
 
 async function afterUpdate(this: Author4, args: EventArgs<Author4>) {
   this.versionAsString = 'v' + this.version;
-  await args.em.findOne('Book4', { title: { $nin: [''] } }); // test this won't cause failures (GH #1503)
+  await args.em.findOne(Book4, { title: { $nin: [''] } }); // test this won't cause failures (GH #1503)
 }
 
 function beforeDelete() {

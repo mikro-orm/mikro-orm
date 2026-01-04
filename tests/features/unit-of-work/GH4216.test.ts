@@ -16,7 +16,7 @@ class Shipment {
   updatedAt!: Date;
 
   @OneToMany({
-    entity: 'LineItem',
+    entity: () => LineItem,
     mappedBy: 'shipment',
   })
   lineItems = new Collection<LineItem>(this);
@@ -69,12 +69,12 @@ class Order {
   updatedAt!: Date;
 
   @OneToMany({
-    entity: 'LineItem',
+    entity: () => LineItem,
     mappedBy: 'order',
   })
   lineItems = new Collection<LineItem>(this);
 
-  @OneToMany({ entity: 'Shipment', mappedBy: 'order' })
+  @OneToMany({ entity: () => Shipment, mappedBy: 'order' })
   shipments = new Collection<Shipment>(this);
 
 }

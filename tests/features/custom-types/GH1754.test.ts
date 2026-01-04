@@ -8,7 +8,7 @@ export class Order {
   @PrimaryKey()
   id!: number;
 
-  @OneToMany('OrderItem', 'order')
+  @OneToMany(() => OrderItem, 'order')
   orderItems = new Collection<OrderItem>(this);
 
 }
@@ -53,7 +53,7 @@ describe('GH issue 1754', () => {
     orm = await MikroORM.init({
       metadataProvider: ReflectMetadataProvider,
       entities: [Order, OrderItem],
-      dbName: `:memory:`,
+      dbName: ':memory:',
       driver: SqliteDriver,
     });
     await orm.schema.create();

@@ -26,7 +26,7 @@ beforeAll(async () => {
     metadataProvider: ReflectMetadataProvider,
     entities: [Attachment, A],
     namingStrategy: EntityCaseNamingStrategy,
-    dbName: `:memory:`,
+    dbName: ':memory:',
   });
 
   await orm.schema.create();
@@ -40,8 +40,8 @@ const A = new EntitySchema<IObject>({
   name: 'A',
   properties: {
     id: { type: 'uuid', primary: true },
-    attachments: { array: true, entity: 'Attachment', kind: 'embedded' },
-    attachments_key: { array: true, entity: 'Attachment', kind: 'embedded' },
+    attachments: { array: true, entity: () => Attachment, kind: 'embedded' },
+    attachments_key: { array: true, entity: () => Attachment, kind: 'embedded' },
   },
 });
 

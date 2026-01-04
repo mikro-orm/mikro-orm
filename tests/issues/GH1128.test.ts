@@ -7,7 +7,7 @@ export class B {
   @PrimaryKey()
   id!: number;
 
-  @ManyToOne({ entity: 'A', mapToPk: true })
+  @ManyToOne({ entity: () => A, mapToPk: true })
   entity!: number;
 
 }
@@ -18,7 +18,7 @@ export class A {
   @PrimaryKey()
   id!: number;
 
-  @OneToMany({ entity: 'B', mappedBy: 'entity' })
+  @OneToMany({ entity: () => B, mappedBy: 'entity' })
   entities = new Collection<B>(this);
 
 }

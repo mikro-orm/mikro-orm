@@ -60,7 +60,7 @@ export abstract class AbstractSchemaGenerator<D extends IDatabaseDriver> impleme
 
   async clear(options?: ClearDatabaseOptions): Promise<void> {
     for (const meta of this.getOrderedMetadata(options?.schema).reverse()) {
-      await this.driver.nativeDelete(meta.className, {}, options);
+      await this.driver.nativeDelete(meta.class, {}, options);
     }
 
     if (options?.clearIdentityMap ?? true) {
@@ -124,24 +124,24 @@ export abstract class AbstractSchemaGenerator<D extends IDatabaseDriver> impleme
   }
 
   protected getOrderedMetadata(schema?: string): EntityMetadata[] {
-    const metadata = Object.values(this.metadata.getAll()).filter(meta => {
-      const isRootEntity = meta.root.className === meta.className;
+    const metadata = [...this.metadata.getAll().values()].filter(meta => {
+      const isRootEntity = meta.root.class === meta.class;
       return isRootEntity && !meta.embeddable && !meta.virtual;
     });
     const calc = new CommitOrderCalculator();
-    metadata.forEach(meta => calc.addNode(meta.root.className));
+    metadata.forEach(meta => calc.addNode(meta.root._id));
     let meta = metadata.pop();
 
     while (meta) {
-      for (const prop of meta.props) {
-        calc.discoverProperty(prop, meta.root.className);
+      for (const prop of meta.relations) {
+        calc.discoverProperty(prop, meta.root._id);
       }
 
       meta = metadata.pop();
     }
 
     return calc.sort()
-      .map(cls => this.metadata.find(cls)!)
+      .map(cls => this.metadata.getById(cls))
       .filter(meta => {
         const targetSchema = meta.schema ?? this.config.get('schema', this.platform.getDefaultSchemaName());
         return schema ? [schema, '*'].includes(targetSchema) : meta.schema !== '*';

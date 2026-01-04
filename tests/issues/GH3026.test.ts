@@ -18,7 +18,7 @@ class Ingredient {
   @Property()
   name!: string;
 
-  @OneToMany('RecipeIngredient', 'ingredient')
+  @OneToMany(() => RecipeIngredient, 'ingredient')
   recipeIngredients = new Collection<RecipeIngredient>(this);
 
 }
@@ -32,7 +32,7 @@ class Recipe {
   @Property()
   name!: string;
 
-  @OneToMany('RecipeIngredient', 'recipe', { eager: true, orphanRemoval: true })
+  @OneToMany(() => RecipeIngredient, 'recipe', { eager: true, orphanRemoval: true })
   ingredients = new Collection<RecipeIngredient>(this);
 
 }

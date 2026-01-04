@@ -7,7 +7,7 @@ class A {
   @PrimaryKey()
   id!: string;
 
-  @ManyToOne({ entity: 'B', ref: true, nullable: true })
+  @ManyToOne({ entity: () => B, ref: true, nullable: true })
   b?: Ref<B>;
 
 }

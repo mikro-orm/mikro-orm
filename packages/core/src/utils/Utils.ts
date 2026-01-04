@@ -58,7 +58,6 @@ export function compareObjects(a: any, b: any) {
   /* v8 ignore next */
   if (
     (typeof a === 'function' && typeof b === 'function') ||
-    (typeof a === 'object' && a.client && ['Ref', 'Raw'].includes(a.constructor.name) && typeof b === 'object' && b.client && ['Ref', 'Raw'].includes(b.constructor.name)) || // knex qb
     (a instanceof RegExp && b instanceof RegExp) ||
     (a instanceof String && b instanceof String) ||
     (a instanceof Number && b instanceof Number)
@@ -669,7 +668,7 @@ export class Utils {
   /**
    * Gets string name of given class.
    */
-  static className<T>(classOrName: EntityName<T>): string {
+  static className<T>(classOrName: string | EntityName<T>): string {
     if (typeof classOrName === 'string') {
       return classOrName;
     }

@@ -16,7 +16,7 @@ class Country {
   @Property()
   currencySymbol!: string;
 
-  @OneToMany('State', 'country', { cascade: [Cascade.ALL], nullable: true })
+  @OneToMany(() => State, 'country', { cascade: [Cascade.ALL], nullable: true })
   states = new Collection<State>(this);
 
 }
@@ -33,7 +33,7 @@ class State {
   @Property()
   name!: string;
 
-  @OneToMany('City', 'state', { cascade: [Cascade.ALL], nullable: true })
+  @OneToMany(() => City, 'state', { cascade: [Cascade.ALL], nullable: true })
   cities = new Collection<City>(this);
 
 }
@@ -128,7 +128,7 @@ describe('adding m:1 with composite PK (FK as PK + scalar PK) (GH 1687)', () => 
     expect(diff0).toMatchSnapshot();
     await orm.schema.execute(diff0.up);
 
-    orm.discoverEntity(User1, 'User');
+    orm.discoverEntity(User1, User);
     const diff1 = await orm.schema.getUpdateSchemaMigrationSQL({ wrap: false });
     expect(diff1).toMatchSnapshot();
     await orm.schema.execute(diff1.up);

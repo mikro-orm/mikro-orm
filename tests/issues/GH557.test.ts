@@ -17,10 +17,10 @@ class Rate {
   @Property()
   name: string;
 
-  @OneToOne('Application', 'rate1')
+  @OneToOne(() => Application, 'rate1')
   application1?: any;
 
-  @OneToOne('Application', 'rate3')
+  @OneToOne(() => Application, 'rate3')
   application3?: any;
 
   constructor(name: string) {

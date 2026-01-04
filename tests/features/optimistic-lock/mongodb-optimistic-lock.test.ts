@@ -423,7 +423,7 @@ describe('MongoDB optimistic locking', () => {
     await orm.em.persist(user).flush();
     orm.em.clear();
 
-    const result = await orm.em.getDriver().nativeUpdate(User.name, user._id, { email: 'fallback-updated@example.com' });
+    const result = await orm.em.getDriver().nativeUpdate(User, user._id, { email: 'fallback-updated@example.com' });
     expect(result.affectedRows).toBe(1);
 
     const updatedUser = await orm.em.findOne(User, user._id);
@@ -440,7 +440,7 @@ describe('MongoDB optimistic locking', () => {
     await orm.em.persist(users).flush();
     orm.em.clear();
 
-    const result = await orm.em.getDriver().nativeUpdateMany(User.name, [
+    const result = await orm.em.getDriver().nativeUpdateMany(User, [
       { _id: users[0]._id },
       { _id: users[1]._id },
     ], [
@@ -476,7 +476,7 @@ describe('MongoDB optimistic locking', () => {
     ];
 
     // This directly tests the handleVersionForUpdateMany method with numeric versions
-    const result = await orm.em.getDriver().nativeUpdateMany(User.name, filter, updateData);
+    const result = await orm.em.getDriver().nativeUpdateMany(User, filter, updateData);
     expect(result.affectedRows).toBe(2);
 
     const updatedUsers = await orm.em.find(User, { _id: { $in: [users[0]._id, users[1]._id] } });
@@ -541,7 +541,7 @@ describe('MongoDB optimistic locking', () => {
 
     // Test that fallback logic doesn't apply when property names are used correctly
     const result = await orm.em.getDriver().nativeUpdate(
-      ItemWithCustomVersion.name,
+      ItemWithCustomVersion,
       { _id: item._id, version: 2 }, // Use property name, not field name
       { name: 'Direct Update' },
     );

@@ -8,10 +8,10 @@ class Order {
   @PrimaryKey()
   id: number;
 
-  @OneToMany('OrderItem', 'order1')
+  @OneToMany(() => OrderItem, 'order1')
   orderItems1 = new Collection<OrderItem>(this);
 
-  @OneToMany('OrderItem', 'order2')
+  @OneToMany(() => OrderItem, 'order2')
   orderItems2 = new Collection<OrderItem>(this);
 
   constructor(id: number) {

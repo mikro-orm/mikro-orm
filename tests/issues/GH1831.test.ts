@@ -10,7 +10,7 @@ export class FilterValue {
   @Property()
   name!: string;
 
-  @ManyToOne('Filter', { ref: true })
+  @ManyToOne(() => Filter, { ref: true })
   filter!: Ref<Filter>;
 
 }
@@ -24,10 +24,10 @@ export class Filter {
   @Property()
   name!: string;
 
-  @ManyToOne('Project', { ref: true })
+  @ManyToOne(() => Project, { ref: true })
   project!: Ref<Project>;
 
-  @OneToMany('FilterValue', 'filter')
+  @OneToMany(() => FilterValue, 'filter')
   values = new Collection<FilterValue>(this);
 
 }
@@ -41,7 +41,7 @@ export class Project {
   @Property()
   name!: string;
 
-  @OneToMany('Filter', 'project')
+  @OneToMany(() => Filter, 'project')
   filters = new Collection<Filter>(this);
 
 }

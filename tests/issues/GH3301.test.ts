@@ -8,7 +8,7 @@ export class Collector {
   id!: number;
 
   @OneToMany({
-    entity: 'Collect',
+    entity: () => Collect,
     mappedBy: 'collector',
   })
   collecting = new Collection<Collect>(this);
@@ -22,7 +22,7 @@ export class Collectable {
   id!: number;
 
   @OneToMany({
-    entity: 'Collect',
+    entity: () => Collect,
     mappedBy: 'collectable',
   })
   collectors = new Collection<Collect>(this);

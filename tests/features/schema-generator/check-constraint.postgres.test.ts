@@ -40,7 +40,7 @@ describe('check constraint [postgres]', () => {
     const diff = await orm.schema.getCreateSchemaSQL({ wrap: false });
     expect(diff).toMatchSnapshot('postgres-check-constraint-decorator');
 
-    const meta = orm.getMetadata().get(FooEntity.name);
+    const meta = orm.getMetadata(FooEntity);
     expect(meta.checks).toEqual([
       {
         expression: 'price >= 0',
@@ -124,7 +124,7 @@ describe('check constraint [postgres]', () => {
         { name: 'foo', expression: 'price >= 0' },
       ],
     }).init().meta;
-    meta.set('NewTable', newTableMeta);
+    meta.set(newTableMeta.class, newTableMeta);
 
     let diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff).toMatchSnapshot('postgres-check-constraint-diff-1');

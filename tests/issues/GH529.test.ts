@@ -25,7 +25,7 @@ export class Order {
   @ManyToOne()
   customer: Customer;
 
-  @OneToMany('OrderItem', 'order')
+  @OneToMany(() => OrderItem, 'order')
   items = new Collection<OrderItem>(this);
 
   @Property()

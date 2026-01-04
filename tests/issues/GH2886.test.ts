@@ -50,7 +50,7 @@ export class Session {
   @ManyToOne(() => Member, { eager: true })
   owner: Member;
 
-  @OneToMany('Participant', 'session')
+  @OneToMany(() => Participant, 'session')
   participants = new Collection<Participant>(this);
 
   constructor(id: number, owner: Member) {
@@ -84,7 +84,7 @@ describe('GH #2886', () => {
     orm = await MikroORM.init({
       metadataProvider: ReflectMetadataProvider,
       entities: [Provider, User, Member, Session, Participant],
-      dbName: `:memory:`,
+      dbName: ':memory:',
     });
     await orm.schema.create();
   });
