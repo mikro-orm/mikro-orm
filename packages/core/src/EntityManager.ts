@@ -5,7 +5,7 @@ import { Cursor } from './utils/Cursor.js';
 import { DataloaderUtils } from './utils/DataloaderUtils.js';
 import { QueryHelper } from './utils/QueryHelper.js';
 import { TransactionContext } from './utils/TransactionContext.js';
-import { isRaw, RawQueryFragment } from './utils/RawQueryFragment.js';
+import { isRaw, Raw } from './utils/RawQueryFragment.js';
 import { EntityFactory } from './entity/EntityFactory.js';
 import { type AssignOptions, EntityAssigner } from './entity/EntityAssigner.js';
 import { validateEmptyWhere, validateParams, validatePrimaryKey, validateProperty } from './entity/validators.js';
@@ -634,7 +634,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       ret.push(cond);
     }
 
-    const conds = [...ret, where as Dictionary].filter(c => Utils.hasObjectKeys(c) || RawQueryFragment.hasObjectFragments(c)) as FilterQuery<Entity>[];
+    const conds = [...ret, where as Dictionary].filter(c => Utils.hasObjectKeys(c) || Raw.hasObjectFragments(c)) as FilterQuery<Entity>[];
 
     return conds.length > 1 ? { $and: conds } as FilterQuery<Entity> : conds[0];
   }
@@ -727,7 +727,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     options.overfetch ??= true;
     options.where ??= {};
 
-    if (Utils.isEmpty(options.orderBy) && !RawQueryFragment.hasObjectFragments(options.orderBy)) {
+    if (Utils.isEmpty(options.orderBy) && !Raw.hasObjectFragments(options.orderBy)) {
       throw new Error('Explicit `orderBy` option required');
     }
 

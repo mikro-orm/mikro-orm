@@ -15,7 +15,7 @@ import type { Platform } from '../platforms/Platform.js';
 import type { MetadataStorage } from '../metadata/MetadataStorage.js';
 import { JsonType } from '../types/JsonType.js';
 import { helper } from '../entity/wrap.js';
-import { isRaw, RawQueryFragment } from './RawQueryFragment.js';
+import { isRaw, Raw } from './RawQueryFragment.js';
 import type { FilterOptions } from '../drivers/IDatabaseDriver.js';
 
 /** @internal */
@@ -193,7 +193,7 @@ export class QueryHelper {
 
     return Utils.getObjectQueryKeys(where).reduce((o, key) => {
       let value = where[key as keyof typeof where] as unknown as FilterQuery<T>;
-      const customExpression = RawQueryFragment.isKnownFragmentSymbol(key);
+      const customExpression = Raw.isKnownFragmentSymbol(key);
 
       if (Array.isArray(value) && value.length === 0 && customExpression) {
         o[key as unknown as string] = value;
@@ -227,7 +227,7 @@ export class QueryHelper {
       }
 
       // TODO: add test case for customExpression condition
-      if (Array.isArray(value) && !Utils.isOperator(key) && !QueryHelper.isSupportedOperator(key as string) && !(customExpression && RawQueryFragment.getKnownFragment(key)!.params.length > 0) && options.type !== 'orderBy') {
+      if (Array.isArray(value) && !Utils.isOperator(key) && !QueryHelper.isSupportedOperator(key as string) && !(customExpression && Raw.getKnownFragment(key)!.params.length > 0) && options.type !== 'orderBy') {
         // comparing single composite key - use $eq instead of $in
         const op = composite && !value.every(v => Array.isArray(v)) ? '$eq' : '$in';
         o[key as string] = { [op]: value };
@@ -308,7 +308,7 @@ export class QueryHelper {
   static processCustomType<T extends object>(prop: EntityProperty<T>, cond: FilterQuery<T>, platform: Platform, key?: string, fromQuery?: boolean): FilterQuery<T> {
     if (Utils.isPlainObject(cond)) {
       return Utils.getObjectQueryKeys(cond).reduce((o, k) => {
-        if (!RawQueryFragment.isKnownFragmentSymbol(k) && (Utils.isOperator(k, true) || prop.referencedPKs?.includes(k))) {
+        if (!Raw.isKnownFragmentSymbol(k) && (Utils.isOperator(k, true) || prop.referencedPKs?.includes(k))) {
           o[k] = QueryHelper.processCustomType<T>(prop, cond[k] as any, platform, k, fromQuery) as any;
         } else {
           o[k as unknown as keyof FilterQuery<T>] = cond[k as unknown as keyof FilterQuery<T>];

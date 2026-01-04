@@ -4,7 +4,7 @@ import {
   type Dictionary,
   type EntityMetadata,
   type EntityProperty,
-  RawQueryFragment,
+  isRaw,
 } from '@mikro-orm/core';
 import { DatabaseTable } from './DatabaseTable.js';
 import type { AbstractSqlConnection } from '../AbstractSqlConnection.js';
@@ -142,7 +142,7 @@ export class DatabaseSchema {
 
       for (const check of meta.checks) {
         const columnName = check.property ? meta.properties[check.property].fieldNames[0] : undefined;
-        const expression = check.expression instanceof RawQueryFragment ? platform.formatQuery(check.expression.sql, check.expression.params) : check.expression as string;
+        const expression = isRaw(check.expression) ? platform.formatQuery(check.expression.sql, check.expression.params) : check.expression as string;
 
         table.addCheck({
           name: check.name!,

@@ -14,7 +14,7 @@ import type { Collection } from '../entity/Collection.js';
 import type { Platform } from '../platforms/Platform.js';
 import { helper } from '../entity/wrap.js';
 import type { ScalarReference } from '../entity/Reference.js';
-import { RawQueryFragment, type RawQueryFragmentSymbol } from './RawQueryFragment.js';
+import { Raw, type RawQueryFragmentSymbol } from './RawQueryFragment.js';
 
 function compareConstructors(a: any, b: any) {
   if (a.constructor === b.constructor) {
@@ -1048,7 +1048,7 @@ export class Utils {
         return false;
       }
 
-      return typeof key === 'string' || RawQueryFragment.isKnownFragmentSymbol(key);
+      return typeof key === 'string' || Raw.isKnownFragmentSymbol(key);
     }) as (K | RawQueryFragmentSymbol)[];
   }
 

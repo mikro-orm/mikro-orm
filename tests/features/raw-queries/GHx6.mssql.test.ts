@@ -55,7 +55,6 @@ test('raw fragments with findAndCount', async () => {
     dateCompleted: { $ne: null },
     [raw(alias => `${alias}.DateCompleted`)]: '2023-07-24',
   });
-  // expect(RawQueryFragment.checkCacheSize()).toBe(0);
 });
 
 test('raw fragments with orderBy', async () => {
@@ -66,7 +65,6 @@ test('raw fragments with orderBy', async () => {
     },
   });
   expect(mock.mock.calls[0][0]).toMatch('select [j0].* from [job] as [j0] order by j0.DateCompleted desc');
-  // expect(RawQueryFragment.checkCacheSize()).toBe(0);
 });
 
 test('raw fragments with orderBy on relation', async () => {
@@ -83,7 +81,6 @@ test('raw fragments with orderBy on relation', async () => {
     'from [tag] as [t0] ' +
     'inner join [job] as [j1] on [t0].[custom_name] = [j1].[id] ' +
     'order by j1.DateCompleted desc');
-  // expect(RawQueryFragment.checkCacheSize()).toBe(0);
 });
 
 test('raw fragments with populateOrderBy on relation', async () => {
@@ -99,7 +96,6 @@ test('raw fragments with populateOrderBy on relation', async () => {
     'from [tag] as [t0] ' +
     'inner join [job] as [j1] on [t0].[custom_name] = [j1].[id] ' +
     'order by t0.created desc, j1.DateCompleted desc');
-  // expect(RawQueryFragment.checkCacheSize()).toBe(0);
 });
 
 test('raw fragments with multiple items in filter', async () => {
@@ -110,7 +106,6 @@ test('raw fragments with multiple items in filter', async () => {
     },
   });
   expect(mock.mock.calls[0][0]).toMatch('select [t0].* from [tag] as [t0] where id >= 10 and id <= 50');
-  // expect(RawQueryFragment.checkCacheSize()).toBe(0);
 });
 
 test('qb.joinAndSelect', async () => {
@@ -132,7 +127,6 @@ test('qb.joinAndSelect', async () => {
     'where coalesce([u].[name], \'abc\') >= ? ' +
     'group by [u].[id]) as [u])');
   await query.getResult();
-  // expect(RawQueryFragment.checkCacheSize()).toBe(0);
 });
 
 test('em.findByCursor', async () => {
@@ -150,5 +144,4 @@ test('em.findByCursor', async () => {
     'from [tag] as [t0] ' +
     'inner join [job] as [j1] on [t0].[custom_name] = [j1].[id] ' +
     'order by t0.created desc, j1.DateCompleted desc');
-  // expect(RawQueryFragment.checkCacheSize()).toBe(0);
 });

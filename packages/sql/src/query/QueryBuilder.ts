@@ -556,7 +556,7 @@ export class QueryBuilder<
   withSubQuery(subQuery: RawQueryFragment | NativeQueryBuilder, alias: string): this {
     this.ensureNotFinalized();
 
-    if (subQuery instanceof RawQueryFragment) {
+    if (isRaw(subQuery)) {
       this.subQueries[alias] = this.platform.formatQuery(subQuery.sql, subQuery.params);
     } else {
       this.subQueries[alias] = subQuery.toString();
@@ -570,7 +570,7 @@ export class QueryBuilder<
   where(cond: QBFilterQuery<Entity> | string | RawQueryFragment, params?: keyof typeof GroupOperator | any[], operator?: keyof typeof GroupOperator): this {
     this.ensureNotFinalized();
 
-    if (cond instanceof RawQueryFragment) {
+    if (isRaw(cond)) {
       const sql = this.platform.formatQuery(cond.sql, cond.params);
       cond = { [raw(`(${sql})`)]: Utils.asArray(params) };
       operator ??= '$and';
@@ -1298,7 +1298,7 @@ export class QueryBuilder<
       (qb as any)[prop] = properties.includes(prop) ? Utils.copy(this[prop as keyof this]) : this[prop as keyof this];
     }
 
-    /* v8 ignore next 3 */
+    /* v8 ignore next */
     if (this._fields && !reset.includes('_fields')) {
       qb._fields = [...this._fields];
     }
@@ -1340,7 +1340,7 @@ export class QueryBuilder<
       return `(${res.getFormattedQuery()}) as ${this.platform.quoteIdentifier(this.alias)}`;
     }
 
-    if (res instanceof RawQueryFragment) {
+    if (isRaw(res)) {
       const query = this.platform.formatQuery(res.sql, res.params);
       return `(${query}) as ${this.platform.quoteIdentifier(this.alias)}`;
     }
@@ -1364,7 +1364,7 @@ export class QueryBuilder<
         field = field.getNativeQuery();
       }
 
-      if (field instanceof RawQueryFragment) {
+      if (isRaw(field)) {
         field = this.platform.formatQuery(field.sql, field.params);
       }
 
@@ -1652,7 +1652,7 @@ export class QueryBuilder<
           return `${prop.formula!(alias)} as ${aliased}`;
         })
         .filter(field => !this._fields!.some(f => {
-          if (f instanceof RawQueryFragment) {
+          if (isRaw(f)) {
             return f.sql === field && f.params.length === 0;
           }
 
@@ -1886,7 +1886,7 @@ export class QueryBuilder<
             return field.__as === prop;
           }
 
-          if (field instanceof RawQueryFragment) {
+          if (isRaw(field)) {
             // not perfect, but should work most of the time, ideally we should check only the alias (`... as alias`)
             return field.sql.includes(prop);
           }
@@ -1895,7 +1895,7 @@ export class QueryBuilder<
         });
 
         /* v8 ignore next */
-        if (field instanceof RawQueryFragment) {
+        if (isRaw(field)) {
           innerQuery.select(field);
         } else if (field instanceof NativeQueryBuilder) {
           innerQuery.select(field.toRaw());
@@ -1912,7 +1912,7 @@ export class QueryBuilder<
     this._limit = undefined;
     this._offset = undefined;
 
-    if (!this._fields!.some(field => field instanceof RawQueryFragment)) {
+    if (!this._fields!.some(field => isRaw(field))) {
       this.pruneExtraJoins(meta);
     }
 

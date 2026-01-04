@@ -47,7 +47,6 @@ test('#5129', async () => {
     { orderBy: { [lengthOfTruncatedNameQuery]: 'ASC' } },
   );
 
-  // expect(RawQueryFragment.checkCacheSize()).toBe(0);
   expect(lengthOfTruncatedNameQuery.toJSON()).toBe('[raw]: length(substr([::alias::].name, 0, ?)) (#0)');
 
   const e = new User('n', 'e');

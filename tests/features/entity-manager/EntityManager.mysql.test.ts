@@ -48,7 +48,6 @@ describe('EntityManagerMySql', () => {
   beforeAll(async () => orm = await initORMMySql<any>('mysql', {}, true));
   beforeEach(async () => orm.schema.clear());
   afterEach(() => {
-    // expect(RawQueryFragment.checkCacheSize()).toBe(0);
     orm.config.set('debug', false);
     Author2Subscriber.log.length = 0;
     EverythingSubscriber.log.length = 0;

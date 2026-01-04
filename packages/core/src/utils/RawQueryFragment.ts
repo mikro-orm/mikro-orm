@@ -48,10 +48,6 @@ export class RawQueryFragment {
     return this.#description;
   }
 
-  clone(): RawQueryFragment {
-    return new RawQueryFragment(this.sql, [...this.params]);
-  }
-
   static isKnownFragmentSymbol(key: unknown): key is RawQueryFragmentSymbol {
     return typeof key === 'symbol' && this.#rawQueryReferences.has(key as RawQueryFragmentSymbol);
   }
@@ -65,11 +61,7 @@ export class RawQueryFragment {
       return true;
     }
 
-    if (typeof key === 'symbol') {
-      return this.#rawQueryReferences.has(key as RawQueryFragmentSymbol);
-    }
-
-    return false;
+    return this.isKnownFragmentSymbol(key);
   }
 
   static getKnownFragment(key: unknown) {

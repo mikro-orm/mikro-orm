@@ -17,7 +17,7 @@ import { MetadataError } from '../errors.js';
 import type { Platform } from '../platforms/Platform.js';
 import { t, Type } from '../types/index.js';
 import { colors } from '../logging/colors.js';
-import { raw, RawQueryFragment } from '../utils/RawQueryFragment.js';
+import { raw, Raw } from '../utils/RawQueryFragment.js';
 import type { Logger } from '../logging/Logger.js';
 
 export class MetadataDiscovery {
@@ -1249,7 +1249,7 @@ export class MetadataDiscovery {
     }
 
     let val = prop.default;
-    const raw = RawQueryFragment.getKnownFragment(val);
+    const raw = Raw.getKnownFragment(val);
 
     if (raw) {
       prop.defaultRaw = this.platform.formatQuery(raw.sql, raw.params);

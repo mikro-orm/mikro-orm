@@ -31,7 +31,7 @@ import type { Platform } from '../platforms/Platform.js';
 import { helper } from './wrap.js';
 import type { LoggingOptions } from '../logging/Logger.js';
 import { expandDotPaths } from './utils.js';
-import { RawQueryFragment } from '../utils/RawQueryFragment.js';
+import { Raw } from '../utils/RawQueryFragment.js';
 
 export type EntityLoaderOptions<Entity, Fields extends string = PopulatePath.ALL, Excludes extends string = never> = {
   where?: FilterQuery<Entity>;
@@ -347,7 +347,7 @@ export class EntityLoader {
       populateWhere = await this.extractChildCondition({ where: populateWhere } as any, prop);
     }
 
-    if (!Utils.isEmpty(prop.where) || RawQueryFragment.hasObjectFragments(prop.where)) {
+    if (!Utils.isEmpty(prop.where) || Raw.hasObjectFragments(prop.where)) {
       where = { $and: [where, prop.where] } as FilterQuery<Entity>;
     }
 

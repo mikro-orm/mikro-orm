@@ -54,7 +54,6 @@ test('raw fragments with findAndCount', async () => {
     dateCompleted: { $ne: null },
     [raw(alias => `${alias}.DateCompleted`)]: '2023-07-24',
   });
-  // expect(RawQueryFragment.checkCacheSize()).toBe(0);
 });
 
 test('raw fragments with orderBy', async () => {
@@ -65,7 +64,6 @@ test('raw fragments with orderBy', async () => {
     },
   });
   expect(mock.mock.calls[0][0]).toMatch('select `j0`.* from `job` as `j0` order by j0.DateCompleted desc');
-  // expect(RawQueryFragment.checkCacheSize()).toBe(0);
 });
 
 test('raw fragments with orderBy on relation', async () => {
@@ -82,7 +80,6 @@ test('raw fragments with orderBy on relation', async () => {
     'from `tag` as `t0` ' +
     'inner join `job` as `j1` on `t0`.`custom_name` = `j1`.`id` ' +
     'order by j1.DateCompleted desc');
-  // expect(RawQueryFragment.checkCacheSize()).toBe(0);
 });
 
 test('raw fragments with populateOrderBy on relation', async () => {
@@ -98,7 +95,6 @@ test('raw fragments with populateOrderBy on relation', async () => {
     'from `tag` as `t0` ' +
     'inner join `job` as `j1` on `t0`.`custom_name` = `j1`.`id` ' +
     'order by t0.created desc, j1.DateCompleted desc');
-  // expect(RawQueryFragment.checkCacheSize()).toBe(0);
 });
 
 test('raw fragments with multiple items in filter', async () => {
@@ -109,7 +105,6 @@ test('raw fragments with multiple items in filter', async () => {
     },
   });
   expect(mock.mock.calls[0][0]).toMatch('select `t0`.* from `tag` as `t0` where id >= 10 and id <= 50');
-  // expect(RawQueryFragment.checkCacheSize()).toBe(0);
 });
 
 test('qb.joinAndSelect', async () => {
@@ -131,7 +126,6 @@ test('qb.joinAndSelect', async () => {
     'left join `job` as `a` on `t1`.`job_id` = `a`.`id` ' +
     'where `u`.`id` in (select `u`.`id` from (select `u`.`id` from `tag` as `u` left join `tag_jobs` as `t1` on `u`.`id` = `t1`.`tag_id` left join `job` as `a` on `t1`.`job_id` = `a`.`id` where similarity("u"."name", \'abc\') >= 0.3 group by `u`.`id` order by similarity(u."name", \'def\') desc nulls last limit 100) as `u`) ' +
     'order by similarity(u."name", \'def\') desc nulls last');
-  // expect(RawQueryFragment.checkCacheSize()).toBe(0);
 });
 
 test('em.findByCursor', async () => {
@@ -149,5 +143,4 @@ test('em.findByCursor', async () => {
     'from `tag` as `t0` ' +
     'inner join `job` as `j1` on `t0`.`custom_name` = `j1`.`id` ' +
     'order by t0.created desc, j1.DateCompleted desc');
-  // expect(RawQueryFragment.checkCacheSize()).toBe(0);
 });

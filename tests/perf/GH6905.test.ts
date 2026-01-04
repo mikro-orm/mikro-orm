@@ -192,8 +192,8 @@ describe('MikroORM Performance Regression', () => {
       await orm.schema.clear();
     }
 
-    // when warmed up and averaged, should be roughly similar (CI can be slow and noisy, so we use 2x margin)
-    expect(explicitTrxTimeTotal).toBeLessThan(implicitTrxTimeTotal * 2);
-    expect(implicitTrxTimeTotal).toBeLessThan(explicitTrxTimeTotal * 2);
+    // when warmed up and averaged, should be roughly similar (CI can be slow and noisy, so we use 3x margin)
+    expect(explicitTrxTimeTotal).toBeLessThan(implicitTrxTimeTotal * 3);
+    expect(implicitTrxTimeTotal).toBeLessThan(explicitTrxTimeTotal * 3);
   });
 });
