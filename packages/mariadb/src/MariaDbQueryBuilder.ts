@@ -5,6 +5,7 @@ import {
   type PopulateOptions,
   raw,
   RawQueryFragment,
+  Utils,
 } from '@mikro-orm/core';
 import { QueryBuilder } from '@mikro-orm/mysql';
 
@@ -36,11 +37,11 @@ export class MariaDbQueryBuilder<
       const orderBy = [];
 
       for (const orderMap of this._orderBy) {
-        for (const [field, direction] of Object.entries(orderMap)) {
-          if (RawQueryFragment.isKnownFragment(field)) {
-            const rawField = RawQueryFragment.getKnownFragment(field, false)!;
-            this.rawFragments.add(field);
-            orderBy.push({ [rawField.clone() as any]: direction });
+        for (const field of Utils.getObjectQueryKeys(orderMap)) {
+          const direction = orderMap[field as EntityKey<Entity>];
+
+          if (RawQueryFragment.isKnownFragmentSymbol(field)) {
+            orderBy.push({ [field]: direction });
             continue;
           }
 

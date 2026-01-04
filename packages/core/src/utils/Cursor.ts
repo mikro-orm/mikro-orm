@@ -4,7 +4,7 @@ import { Utils } from './Utils.js';
 import { ReferenceKind, type QueryOrder, type QueryOrderKeys } from '../enums.js';
 import { Reference } from '../entity/Reference.js';
 import { helper } from '../entity/wrap.js';
-import { RawQueryFragment } from '../utils/RawQueryFragment.js';
+import { Raw } from '../utils/RawQueryFragment.js';
 import { CursorError } from '../errors.js';
 import { inspect } from '../logging/inspect.js';
 
@@ -180,9 +180,9 @@ export class Cursor<
     return Utils.asArray(orderBy).flatMap(order => {
       const ret: [EntityKey, QueryOrder][] = [];
 
-      for (const key of Utils.keys(order)) {
-        if (RawQueryFragment.isKnownFragment(key)) {
-          ret.push([key as EntityKey, order[key] as QueryOrder]);
+      for (const key of Utils.getObjectQueryKeys(order)) {
+        if (Raw.isKnownFragmentSymbol(key)) {
+          ret.push([key as EntityKey, order[key as unknown as EntityKey] as QueryOrder]);
           continue;
         }
 

@@ -5,7 +5,7 @@ import { Cursor } from './utils/Cursor.js';
 import { DataloaderUtils } from './utils/DataloaderUtils.js';
 import { QueryHelper } from './utils/QueryHelper.js';
 import { TransactionContext } from './utils/TransactionContext.js';
-import { isRaw, RawQueryFragment } from './utils/RawQueryFragment.js';
+import { isRaw, Raw } from './utils/RawQueryFragment.js';
 import { EntityFactory } from './entity/EntityFactory.js';
 import { type AssignOptions, EntityAssigner } from './entity/EntityAssigner.js';
 import { validateEmptyWhere, validateParams, validatePrimaryKey, validateProperty } from './entity/validators.js';
@@ -634,7 +634,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       ret.push(cond);
     }
 
-    const conds = [...ret, where as Dictionary].filter(c => Utils.hasObjectKeys(c)) as FilterQuery<Entity>[];
+    const conds = [...ret, where as Dictionary].filter(c => Utils.hasObjectKeys(c) || Raw.hasObjectFragments(c)) as FilterQuery<Entity>[];
 
     return conds.length > 1 ? { $and: conds } as FilterQuery<Entity> : conds[0];
   }
@@ -653,12 +653,10 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     await em.tryFlush(entityName, options);
     options.flushMode = 'commit'; // do not try to auto flush again
 
-    return RawQueryFragment.run(async () => {
-      return Promise.all([
-        em.find(entityName, where, options),
-        em.count(entityName, where, options as CountOptions<Entity, Hint>),
-      ]);
-    });
+    return Promise.all([
+      em.find(entityName, where, options),
+      em.count(entityName, where, options as CountOptions<Entity, Hint>),
+    ]);
   }
 
   /**
@@ -729,7 +727,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     options.overfetch ??= true;
     options.where ??= {};
 
-    if (Utils.isEmpty(options.orderBy)) {
+    if (Utils.isEmpty(options.orderBy) && !Raw.hasObjectFragments(options.orderBy)) {
       throw new Error('Explicit `orderBy` option required');
     }
 

@@ -11,7 +11,7 @@ import type { EntityManager } from '../EntityManager.js';
 import type { DriverException } from '../exceptions.js';
 import type { Configuration } from '../utils/Configuration.js';
 import type { LoggingOptions, LogContext } from '../logging/Logger.js';
-import type { RawQueryFragment } from '../utils/RawQueryFragment.js';
+import type { Raw } from '../utils/RawQueryFragment.js';
 
 export const EntityManagerType = Symbol('EntityManagerType');
 
@@ -249,7 +249,7 @@ export interface NativeInsertUpdateManyOptions<T> extends NativeInsertUpdateOpti
 }
 
 export interface UpsertOptions<Entity, Fields extends string = never> extends Omit<NativeInsertUpdateOptions<Entity>, 'upsert'> {
-  onConflictFields?: (keyof Entity)[] | RawQueryFragment;
+  onConflictFields?: (keyof Entity)[] | Raw;
   onConflictAction?: 'ignore' | 'merge';
   onConflictMergeFields?: AutoPath<Entity, Fields, `${PopulatePath.ALL}`>[];
   onConflictExcludeFields?: AutoPath<Entity, Fields, `${PopulatePath.ALL}`>[];

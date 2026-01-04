@@ -14,8 +14,8 @@ import { ReferenceKind } from '../enums.js';
 import type { Platform } from '../platforms/Platform.js';
 import { compareArrays, compareBooleans, compareBuffers, compareObjects, equals, parseJsonSafe, Utils } from './Utils.js';
 import { JsonType } from '../types/JsonType.js';
-import { RawQueryFragment } from './RawQueryFragment.js';
-import { EntityIdentifier } from '../entity/EntityIdentifier';
+import { Raw } from './RawQueryFragment.js';
+import { EntityIdentifier } from '../entity/EntityIdentifier.js';
 
 type Comparator<T> = (a: T, b: T, options?: { includeInverseSides?: boolean }) => EntityData<T>;
 type ResultMapper<T> = (result: EntityData<T>) => EntityData<T> | null;
@@ -589,7 +589,7 @@ export class EntityComparator {
     const convertorKey = this.safeKey(prop.name);
     context.set(`convertToDatabaseValue_${convertorKey}`, (val: any) => {
       /* v8 ignore next */
-      if (RawQueryFragment.isKnownFragment(val)) {
+      if (Raw.isKnownFragment(val)) {
         return val;
       }
 
@@ -733,7 +733,13 @@ export class EntityComparator {
     if (prop.customType) {
       if (prop.customType.compareValues) {
         const idx = this.tmpIndex++;
-        context.set(`compareValues_${idx}`, (a: unknown, b: unknown) => prop.customType!.compareValues!(a, b));
+        context.set(`compareValues_${idx}`, (a: unknown, b: unknown) => {
+          if (Raw.isKnownFragment(a) || Raw.isKnownFragment(b)) {
+            return Raw.getKnownFragment(a) === Raw.getKnownFragment(b);
+          }
+
+          return prop.customType!.compareValues!(a, b);
+        });
         return this.getGenericComparator(this.wrap(prop.name), `!compareValues_${idx}(last${this.wrap(prop.name)}, current${this.wrap(prop.name)})`);
       }
 

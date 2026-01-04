@@ -15,7 +15,7 @@ import type { Platform } from '../platforms/Platform.js';
 import type { MetadataStorage } from '../metadata/MetadataStorage.js';
 import { JsonType } from '../types/JsonType.js';
 import { helper } from '../entity/wrap.js';
-import { isRaw, RawQueryFragment } from './RawQueryFragment.js';
+import { isRaw, Raw } from './RawQueryFragment.js';
 import type { FilterOptions } from '../drivers/IDatabaseDriver.js';
 
 /** @internal */
@@ -51,9 +51,9 @@ export class QueryHelper {
     return params;
   }
 
-  static processObjectParams<T extends object>(params: T = {} as T): T {
-    Utils.keys(params).forEach(k => {
-      params[k] = QueryHelper.processParams(params[k]);
+  static processObjectParams<T extends Dictionary>(params: T = {} as T): T {
+    Utils.getObjectQueryKeys(params).forEach(k => {
+      params[k as keyof T] = QueryHelper.processParams(params[k as keyof T]);
     });
 
     return params;
@@ -191,28 +191,30 @@ export class QueryHelper {
       return where;
     }
 
-    return Object.keys(where).reduce((o, key) => {
-      let value = where![key as keyof typeof where] as unknown as FilterQuery<T>;
-      const prop = this.findProperty(key, options);
-      const keys = prop?.joinColumns?.length ?? 0;
-      const composite = keys > 1;
+    return Utils.getObjectQueryKeys(where).reduce((o, key) => {
+      let value = where[key as keyof typeof where] as unknown as FilterQuery<T>;
+      const customExpression = Raw.isKnownFragmentSymbol(key);
 
-      if (Array.isArray(value) && value.length === 0 && RawQueryFragment.isKnownFragment(key)) {
-        o[key] = value;
+      if (Array.isArray(value) && value.length === 0 && customExpression) {
+        o[key as unknown as string] = value;
         return o;
       }
 
       if (key in GroupOperator) {
-        o[key] = (value as unknown[]).map((sub: any) => QueryHelper.processWhere<T>({ ...options, where: sub, root }));
+        o[key as string] = (value as unknown[]).map((sub: any) => QueryHelper.processWhere<T>({ ...options, where: sub, root }));
         return o;
       }
 
       // wrap top level operators (except platform allowed operators) with PK
-      if (Utils.isOperator(key) && root && meta && !platform.isAllowedTopLevelOperator(key)) {
+      if (Utils.isOperator(key) && root && meta && !platform.isAllowedTopLevelOperator(key as string)) {
         const rootPrimaryKey = Utils.getPrimaryKeyHash(meta.primaryKeys);
         o[rootPrimaryKey] = { [key]: QueryHelper.processWhere<T>({ ...options, where: value, root: false }) };
         return o;
       }
+
+      const prop = customExpression ? null : this.findProperty(key, options);
+      const keys = prop?.joinColumns?.length ?? 0;
+      const composite = keys > 1;
 
       if (prop?.customType && convertCustomTypes && !isRaw(value)) {
         value = QueryHelper.processCustomType<T>(prop, value, platform, undefined, true);
@@ -224,23 +226,23 @@ export class QueryHelper {
         return this.processJsonCondition<T>(o as FilterQuery<T>, value as EntityValue<T>, [prop.fieldNames[0]] as EntityKey<T>[], platform, aliased);
       }
 
-      if (Array.isArray(value) && !Utils.isOperator(key) && !QueryHelper.isSupportedOperator(key) && !key.includes('?') && options.type !== 'orderBy') {
+      if (Array.isArray(value) && !Utils.isOperator(key) && !QueryHelper.isSupportedOperator(key as string) && !(customExpression && Raw.getKnownFragment(key)!.params.length > 0) && options.type !== 'orderBy') {
         // comparing single composite key - use $eq instead of $in
         const op = composite && !value.every(v => Array.isArray(v)) ? '$eq' : '$in';
-        o[key] = { [op]: value };
+        o[key as string] = { [op]: value };
 
         return o;
       }
 
       if (Utils.isPlainObject(value)) {
-        o[key] = QueryHelper.processWhere({
+        o[key as string] = QueryHelper.processWhere({
           ...options,
           where: value as FilterQuery<T>,
           entityName: prop?.type ?? entityName,
           root: false,
         });
       } else {
-        o[key] = value;
+        o[key as string] = value;
       }
 
       return o;
@@ -304,11 +306,11 @@ export class QueryHelper {
 
   static processCustomType<T extends object>(prop: EntityProperty<T>, cond: FilterQuery<T>, platform: Platform, key?: string, fromQuery?: boolean): FilterQuery<T> {
     if (Utils.isPlainObject(cond)) {
-      return Utils.keys(cond).reduce((o, k) => {
-        if (Utils.isOperator(k, true) || prop.referencedPKs?.includes(k)) {
+      return Utils.getObjectQueryKeys(cond).reduce((o, k) => {
+        if (!Raw.isKnownFragmentSymbol(k) && (Utils.isOperator(k, true) || prop.referencedPKs?.includes(k))) {
           o[k] = QueryHelper.processCustomType<T>(prop, cond[k] as any, platform, k, fromQuery) as any;
         } else {
-          o[k] = cond[k];
+          o[k as unknown as keyof FilterQuery<T>] = cond[k as unknown as keyof FilterQuery<T>];
         }
 
         return o;

@@ -7,6 +7,7 @@ import {
   JsonType,
   type MetadataStorage,
   RawQueryFragment,
+  type RawQueryFragmentSymbol,
   ReferenceKind,
   Utils,
   ValidationError,
@@ -21,9 +22,9 @@ import type { ICriteriaNode } from '../typings.js';
  */
 export class CriteriaNodeFactory {
 
-  static createNode<T extends object>(metadata: MetadataStorage, entityName: string, payload: any, parent?: ICriteriaNode<T>, key?: EntityKey<T>): ICriteriaNode<T> {
-    const customExpression = RawQueryFragment.isKnownFragment(key || '');
-    const scalar = Utils.isPrimaryKey(payload) || isRaw(payload) || payload as unknown instanceof RegExp || payload as unknown instanceof Date || customExpression;
+  static createNode<T extends object>(metadata: MetadataStorage, entityName: string, payload: any, parent?: ICriteriaNode<T>, key?: EntityKey<T> | RawQueryFragmentSymbol): ICriteriaNode<T> {
+    const rawField = RawQueryFragment.isKnownFragmentSymbol(key);
+    const scalar = Utils.isPrimaryKey(payload) || isRaw(payload) || payload as unknown instanceof RegExp || payload as unknown instanceof Date || rawField;
 
     if (Array.isArray(payload) && !scalar) {
       return this.createArrayNode(metadata, entityName, payload, parent, key);
@@ -36,7 +37,7 @@ export class CriteriaNodeFactory {
     return this.createScalarNode(metadata, entityName, payload, parent, key);
   }
 
-  static createScalarNode<T extends object>(metadata: MetadataStorage, entityName: string, payload: any, parent?: ICriteriaNode<T>, key?: EntityKey<T>): ICriteriaNode<T> {
+  static createScalarNode<T extends object>(metadata: MetadataStorage, entityName: string, payload: any, parent?: ICriteriaNode<T>, key?: EntityKey<T> | RawQueryFragmentSymbol): ICriteriaNode<T> {
     const node = new ScalarCriteriaNode<T>(metadata, entityName, parent, key);
     node.payload = payload;
 
@@ -64,31 +65,33 @@ export class CriteriaNodeFactory {
     const node = new ObjectCriteriaNode(metadata, entityName, parent, key, true, payload.__strict);
     node.payload = {} as Dictionary;
 
-    for (const key of Object.keys(payload)) {
-      node.payload[key] = this.createObjectItemNode(metadata, entityName, node, payload, key, meta);
+    for (const k of Utils.getObjectQueryKeys(payload)) {
+      node.payload[k] = this.createObjectItemNode(metadata, entityName, node, payload, k as EntityKey<T>, meta);
     }
 
     return node;
   }
 
-  static createObjectItemNode<T extends object>(metadata: MetadataStorage, entityName: string, node: ICriteriaNode<T>, payload: Dictionary, key: EntityKey<T>, meta?: EntityMetadata<T>) {
-    const prop = meta?.properties[key];
+  static createObjectItemNode<T extends object>(metadata: MetadataStorage, entityName: string, node: ICriteriaNode<T>, payload: Dictionary, key: EntityKey<T> | RawQueryFragmentSymbol, meta?: EntityMetadata<T>) {
+    const rawField = RawQueryFragment.isKnownFragmentSymbol(key);
+    const prop = rawField ? null : meta?.properties[key];
     const childEntity = prop && prop.kind !== ReferenceKind.SCALAR ? prop.type : entityName;
-    const isNotEmbedded = prop?.kind !== ReferenceKind.EMBEDDED;
+    const isNotEmbedded = rawField || prop?.kind !== ReferenceKind.EMBEDDED;
+    const val = payload[key as EntityKey<T>];
 
     if (isNotEmbedded && prop?.customType instanceof JsonType) {
-      return this.createScalarNode(metadata, childEntity, payload[key], node, key);
+      return this.createScalarNode(metadata, childEntity, val, node, key);
     }
 
-    if (prop?.kind === ReferenceKind.SCALAR && payload[key] != null && Object.keys(payload[key]).some(f => f in GroupOperator)) {
+    if (prop?.kind === ReferenceKind.SCALAR && val != null && Object.keys(val).some(f => f in GroupOperator)) {
       throw ValidationError.cannotUseGroupOperatorsInsideScalars(entityName, prop.name, payload);
     }
 
     if (isNotEmbedded) {
-      return this.createNode(metadata, childEntity, payload[key], node, key);
+      return this.createNode(metadata, childEntity, val, node, key);
     }
 
-    if (payload[key] == null) {
+    if (val == null) {
       const map = Object.keys(prop.embeddedProps).reduce((oo, k) => {
         oo[prop.embeddedProps[k].name] = null;
         return oo;
@@ -99,13 +102,13 @@ export class CriteriaNodeFactory {
 
     // array operators can be used on embedded properties
     const allowedOperators = ['$contains', '$contained', '$overlap'];
-    const operator = Object.keys(payload[key]).some(f => Utils.isOperator(f) && !allowedOperators.includes(f));
+    const operator = Object.keys(val).some(f => Utils.isOperator(f) && !allowedOperators.includes(f));
 
     if (operator) {
       throw ValidationError.cannotUseOperatorsInsideEmbeddables(entityName, prop.name, payload);
     }
 
-    const map = Object.keys(payload[key]).reduce((oo, k) => {
+    const map = Object.keys(val).reduce((oo, k) => {
       const embeddedProp = prop.embeddedProps[k] ?? Object.values(prop.embeddedProps).find(p => p.name === k);
 
       if (!embeddedProp && !allowedOperators.includes(k)) {
@@ -113,11 +116,11 @@ export class CriteriaNodeFactory {
       }
 
       if (embeddedProp) {
-        oo[embeddedProp.name] = payload[key][k];
-      } else if (typeof payload[key][k] === 'object') {
-        oo[k] = JSON.stringify(payload[key][k]);
+        oo[embeddedProp.name] = val[k];
+      } else if (typeof val[k] === 'object') {
+        oo[k] = JSON.stringify(val[k]);
       } else {
-        oo[k] = payload[key][k];
+        oo[k] = val[k];
       }
 
       return oo;

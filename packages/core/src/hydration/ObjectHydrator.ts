@@ -5,7 +5,7 @@ import { Reference, ScalarReference } from '../entity/Reference.js';
 import { parseJsonSafe, Utils } from '../utils/Utils.js';
 import { ReferenceKind } from '../enums.js';
 import type { EntityFactory } from '../entity/EntityFactory.js';
-import { RawQueryFragment } from '../utils/RawQueryFragment.js';
+import { Raw } from '../utils/RawQueryFragment.js';
 
 type EntityHydrator<T extends object> = (entity: T, data: EntityData<T>, factory: EntityFactory, newEntity: boolean, convertCustomTypes: boolean, schema?: string, parentSchema?: string, normalizeAccessors?: boolean) => void;
 
@@ -65,7 +65,7 @@ export class ObjectHydrator extends Hydrator {
     const registerCustomType = <T>(prop: EntityProperty<T>, convertorKey: string, method: 'convertToDatabaseValue' | 'convertToJSValue', context: Map<string, any>) => {
       context.set(`${method}_${convertorKey}`, (val: any) => {
         /* v8 ignore next */
-        if (RawQueryFragment.isKnownFragment(val)) {
+        if (Raw.isKnownFragment(val)) {
           return val;
         }
 

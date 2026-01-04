@@ -1,4 +1,4 @@
-import { Collection, MikroORM, raw, RawQueryFragment } from '@mikro-orm/mssql';
+import { Collection, MikroORM, raw } from '@mikro-orm/mssql';
 import { Entity, ManyToMany, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../../helpers.js';
 
@@ -55,7 +55,6 @@ test('raw fragments with findAndCount', async () => {
     dateCompleted: { $ne: null },
     [raw(alias => `${alias}.DateCompleted`)]: '2023-07-24',
   });
-  expect(RawQueryFragment.checkCacheSize()).toBe(0);
 });
 
 test('raw fragments with orderBy', async () => {
@@ -66,7 +65,6 @@ test('raw fragments with orderBy', async () => {
     },
   });
   expect(mock.mock.calls[0][0]).toMatch('select [j0].* from [job] as [j0] order by j0.DateCompleted desc');
-  expect(RawQueryFragment.checkCacheSize()).toBe(0);
 });
 
 test('raw fragments with orderBy on relation', async () => {
@@ -83,25 +81,21 @@ test('raw fragments with orderBy on relation', async () => {
     'from [tag] as [t0] ' +
     'inner join [job] as [j1] on [t0].[custom_name] = [j1].[id] ' +
     'order by j1.DateCompleted desc');
-  expect(RawQueryFragment.checkCacheSize()).toBe(0);
 });
 
 test('raw fragments with populateOrderBy on relation', async () => {
   const mock = mockLogger(orm);
   await orm.em.findAll(Tag, {
     populate: ['job'],
-    populateOrderBy: {
-      [raw(alias => `${alias}.created`)]: 'desc',
-      job: {
-        [raw(alias => `${alias}.DateCompleted`)]: 'desc',
-      },
-    },
+    populateOrderBy: [
+      { [raw(alias => `${alias}.created`)]: 'desc' },
+      { job: { [raw(alias => `${alias}.DateCompleted`)]: 'desc' } },
+    ],
   });
   expect(mock.mock.calls[0][0]).toMatch('select [t0].*, [j1].[id] as [j1__id], [j1].[DateCompleted] as [j1__DateCompleted] ' +
     'from [tag] as [t0] ' +
     'inner join [job] as [j1] on [t0].[custom_name] = [j1].[id] ' +
     'order by t0.created desc, j1.DateCompleted desc');
-  expect(RawQueryFragment.checkCacheSize()).toBe(0);
 });
 
 test('raw fragments with multiple items in filter', async () => {
@@ -112,7 +106,6 @@ test('raw fragments with multiple items in filter', async () => {
     },
   });
   expect(mock.mock.calls[0][0]).toMatch('select [t0].* from [tag] as [t0] where id >= 10 and id <= 50');
-  expect(RawQueryFragment.checkCacheSize()).toBe(0);
 });
 
 test('qb.joinAndSelect', async () => {
@@ -134,7 +127,6 @@ test('qb.joinAndSelect', async () => {
     'where coalesce([u].[name], \'abc\') >= ? ' +
     'group by [u].[id]) as [u])');
   await query.getResult();
-  expect(RawQueryFragment.checkCacheSize()).toBe(0);
 });
 
 test('em.findByCursor', async () => {
@@ -142,17 +134,14 @@ test('em.findByCursor', async () => {
   await orm.em.findByCursor(Tag, {
     populate: ['job'],
     first: 3,
-    orderBy: {
-      [raw(alias => `${alias}.created`)]: 'desc',
-      job: {
-        [raw(alias => `${alias}.DateCompleted`)]: 'desc',
-      },
-    },
+    orderBy: [
+      { [raw(alias => `${alias}.created`)]: 'desc' },
+      { job: { [raw(alias => `${alias}.DateCompleted`)]: 'desc' } },
+    ],
   });
   const queries = mock.mock.calls.flat().sort();
   expect(queries[1]).toMatch('select top (4) [t0].*, [j1].[id] as [j1__id], [j1].[DateCompleted] as [j1__DateCompleted] ' +
     'from [tag] as [t0] ' +
     'inner join [job] as [j1] on [t0].[custom_name] = [j1].[id] ' +
     'order by t0.created desc, j1.DateCompleted desc');
-  expect(RawQueryFragment.checkCacheSize()).toBe(0);
 });

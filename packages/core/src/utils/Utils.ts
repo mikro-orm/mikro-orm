@@ -14,6 +14,7 @@ import type { Collection } from '../entity/Collection.js';
 import type { Platform } from '../platforms/Platform.js';
 import { helper } from '../entity/wrap.js';
 import type { ScalarReference } from '../entity/Reference.js';
+import { Raw, type RawQueryFragmentSymbol } from './RawQueryFragment.js';
 
 function compareConstructors(a: any, b: any) {
   if (a.constructor === b.constructor) {
@@ -1039,6 +1040,16 @@ export class Utils {
       o[pk] = pks[idx] as any;
       return o;
     }, {} as T);
+  }
+
+  static getObjectQueryKeys<T extends Dictionary, K extends string = Extract<keyof T, string>>(obj: T) {
+    return Reflect.ownKeys(obj).filter(key => {
+      if (!Object.prototype.propertyIsEnumerable.call(obj, key)) {
+        return false;
+      }
+
+      return typeof key === 'string' || Raw.isKnownFragmentSymbol(key);
+    }) as (K | RawQueryFragmentSymbol)[];
   }
 
 }

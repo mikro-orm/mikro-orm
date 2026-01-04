@@ -237,8 +237,8 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
 
     const createOrderBy = (prop: string, direction: QueryOrderKeys<T>): OrderDefinition<T> => {
       if (Utils.isPlainObject(direction)) {
-        const value = Utils.keys(direction).reduce((o, key) => {
-          Object.assign(o, createOrderBy(key as string, direction[key] as QueryOrderKeys<T>));
+        const value = Utils.getObjectQueryKeys(direction).reduce((o, key) => {
+          Object.assign(o, createOrderBy(key as string, direction[key] as unknown as QueryOrderKeys<T>));
           return o;
         }, {});
         return ({ [prop]: value }) as OrderDefinition<T>;

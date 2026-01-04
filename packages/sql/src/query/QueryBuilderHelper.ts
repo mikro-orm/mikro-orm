@@ -8,15 +8,17 @@ import {
   type EntityMetadata,
   type EntityProperty,
   type FlatQueryOrderMap,
+  inspect,
   isRaw,
   LockMode,
   type MetadataStorage,
   OptimisticLockError,
-  type QBFilterQuery,
+  type QBFilterQuery, type QBQueryOrderMap,
   QueryOperator,
   QueryOrderNumeric,
   raw,
-  RawQueryFragment,
+  Raw,
+  type RawQueryFragmentSymbol,
   ReferenceKind,
   Utils,
   ValidationError,
@@ -44,11 +46,15 @@ export class QueryBuilderHelper {
     this.metadata = this.driver.getMetadata();
   }
 
-  mapper(field: string | RawQueryFragment, type?: QueryType): string;
-  mapper(field: string | RawQueryFragment, type?: QueryType, value?: any, alias?: string | null): string;
-  mapper(field: string | RawQueryFragment, type = QueryType.SELECT, value?: any, alias?: string | null): string | RawQueryFragment {
+  mapper(field: string | Raw | RawQueryFragmentSymbol, type?: QueryType): string;
+  mapper(field: string | Raw | RawQueryFragmentSymbol, type?: QueryType, value?: any, alias?: string | null): string;
+  mapper(field: string | Raw | RawQueryFragmentSymbol, type = QueryType.SELECT, value?: any, alias?: string | null): string | Raw {
     if (isRaw(field)) {
       return raw(field.sql, field.params);
+    }
+
+    if (Raw.isKnownFragmentSymbol(field)) {
+      return Raw.getKnownFragment(field)!;
     }
 
     /* v8 ignore next */
@@ -91,18 +97,11 @@ export class QueryBuilderHelper {
       return raw('(' + parts.map(part => this.platform.quoteIdentifier(part)).join(', ') + ')');
     }
 
-    const rawField = RawQueryFragment.getKnownFragment(field);
-
-    if (rawField) {
-      return rawField;
-    }
-
     const aliasPrefix = isTableNameAliasRequired ? this.alias + '.' : '';
     const [a, f] = this.splitField(field as EntityKey);
     const prop = this.getProperty(f, a);
     const fkIdx2 = prop?.fieldNames.findIndex(name => name === f) ?? -1;
     const fkIdx = fkIdx2 === -1 ? 0 : fkIdx2;
-    let ret = field;
 
     // embeddable nested path instead of a regular property with table alias, reset alias
     if (prop?.name === a && prop.embeddedProps[f]) {
@@ -151,10 +150,7 @@ export class QueryBuilderHelper {
       return raw(`${valueSQL} as ${this.platform.quoteIdentifier(alias ?? prop.fieldNames[fkIdx])}`);
     }
 
-    // do not wrap custom expressions
-    if (!rawField) {
-      ret = this.prefix(field, false, false, fkIdx);
-    }
+    let ret = this.prefix(field, false, false, fkIdx);
 
     if (alias) {
       ret += ' as ' + alias;
@@ -315,7 +311,7 @@ export class QueryBuilderHelper {
 
     if (subquery.sql) {
       conditions.push(subquery.sql);
-      params.push(...subquery.params);
+      subquery.params.forEach(p => params.push(p));
     }
 
     if (conditions.length > 0) {
@@ -325,7 +321,7 @@ export class QueryBuilderHelper {
     return { sql, params };
   }
 
-  mapJoinColumns(type: QueryType, join: JoinOptions): (string | RawQueryFragment)[] {
+  mapJoinColumns(type: QueryType, join: JoinOptions): (string | Raw)[] {
     if (join.prop && [ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(join.prop.kind)) {
       return join.prop.fieldNames.map((_fieldName, idx) => {
         const columns = join.prop.owner ? join.joinColumns : join.inverseJoinColumns;
@@ -428,7 +424,7 @@ export class QueryBuilderHelper {
     const parts: string[] = [];
     const params: unknown[] = [];
 
-    for (const k of Object.keys(cond)) {
+    for (const k of Utils.getObjectQueryKeys(cond)) {
       if (k === '$and' || k === '$or') {
         if (operator) {
           this.append(() => this.appendGroupCondition(type, k, cond[k]), parts, params, operator);
@@ -442,7 +438,7 @@ export class QueryBuilderHelper {
       if (k === '$not') {
         const res = this._appendQueryCondition(type, cond[k]);
         parts.push(`not (${res.sql})`);
-        params.push(...res.params);
+        res.params.forEach(p => params.push(p));
         continue;
       }
 
@@ -463,10 +459,9 @@ export class QueryBuilderHelper {
     res.params.forEach(p => params.push(p));
   }
 
-  private appendQuerySubCondition(type: QueryType, cond: any, key: string): { sql: string; params: unknown[] } {
+  private appendQuerySubCondition(type: QueryType, cond: any, key: string | RawQueryFragmentSymbol): { sql: string; params: unknown[] } {
     const parts: string[] = [];
     const params: unknown[] = [];
-    const fields = Utils.splitPrimaryKeys(key);
 
     if (this.isSimpleRegExp(cond[key])) {
       parts.push(`${this.platform.quoteIdentifier(this.mapper(key, type))} like ?`);
@@ -479,15 +474,16 @@ export class QueryBuilderHelper {
     }
 
     const op = cond[key] === null ? 'is' : '=';
-    const raw = RawQueryFragment.getKnownFragment(key);
 
-    if (raw) {
+    if (Raw.isKnownFragmentSymbol(key)) {
+      const raw = Raw.getKnownFragment(key)!;
       const sql = raw.sql.replaceAll(ALIAS_REPLACEMENT, this.alias);
       const value = Utils.asArray(cond[key]);
       params.push(...raw.params);
 
       if (value.length > 0) {
-        const val = this.getValueReplacement(fields, value[0], params, key);
+        const k = key as unknown as string;
+        const val = this.getValueReplacement([k], value[0], params, k);
         parts.push(`${sql} ${op} ${val}`);
         return { sql: parts.join(' and '), params };
       }
@@ -495,6 +491,8 @@ export class QueryBuilderHelper {
       parts.push(sql);
       return { sql: parts.join(' and '), params };
     }
+
+    const fields = Utils.splitPrimaryKeys(key);
 
     if (this.subQueries[key]) {
       const val = this.getValueReplacement(fields, cond[key], params, key);
@@ -508,7 +506,7 @@ export class QueryBuilderHelper {
     return { sql: parts.join(' and '), params };
   }
 
-  private processObjectSubCondition(cond: any, key: string, type: QueryType): { sql: string; params: unknown[] } {
+  private processObjectSubCondition(cond: any, key: string | RawQueryFragmentSymbol, type: QueryType): { sql: string; params: unknown[] } {
     const parts: string[] = [];
     const params: unknown[] = [];
     let value = cond[key];
@@ -518,12 +516,9 @@ export class QueryBuilderHelper {
       return { sql: '', params };
     }
 
-
     // grouped condition for one field, e.g. `{ age: { $gte: 10, $lt: 50 } }`
     if (size > 1) {
-      const rawField = RawQueryFragment.getKnownFragment(key);
       const subCondition = Object.entries(value).map(([subKey, subValue]) => {
-        key = rawField?.clone().toString() ?? key;
         return ({ [key]: { [subKey]: subValue } });
       });
 
@@ -547,7 +542,8 @@ export class QueryBuilderHelper {
     }
 
     const replacement = this.getOperatorReplacement(op, value);
-    const fields = Utils.splitPrimaryKeys(key);
+    const rawField = Raw.isKnownFragmentSymbol(key);
+    const fields = rawField ? [key as unknown as string] : Utils.splitPrimaryKeys(key);
 
     if (fields.length > 1 && Array.isArray(value[op])) {
       const singleTuple = !value[op].every((v: unknown) => Array.isArray(v));
@@ -576,19 +572,19 @@ export class QueryBuilderHelper {
       }
     }
 
-    if (this.subQueries[key]) {
+    if (this.subQueries[key as string]) {
       const val = this.getValueReplacement(fields, value[op], params, op);
-      parts.push(`(${this.subQueries[key]}) ${replacement} ${val}`);
+      parts.push(`(${this.subQueries[key as string]}) ${replacement} ${val}`);
       return { sql: parts.join(' and '), params };
     }
 
-    const [a, f] = this.splitField(key as EntityKey);
-    const prop = this.getProperty(f, a);
+    const [a, f] = rawField ? [] : this.splitField(key as EntityKey);
+    const prop = f && this.getProperty(f, a);
 
     if (op === '$fulltext') {
       /* v8 ignore next */
       if (!prop) {
-        throw new Error(`Cannot use $fulltext operator on ${key}, property not found`);
+        throw new Error(`Cannot use $fulltext operator on ${String(key)}, property not found`);
       }
 
       const { sql, params: params2 } = raw(this.platform.getFullTextWhereClause(prop), {
@@ -599,7 +595,7 @@ export class QueryBuilderHelper {
       params.push(...params2);
     } else if (['$in', '$nin'].includes(op) && Array.isArray(value[op]) && value[op].length === 0) {
       parts.push(`1 = ${op === '$in' ? 0 : 1}`);
-    } else if (value[op] instanceof RawQueryFragment || value[op] instanceof NativeQueryBuilder) {
+    } else if (value[op] instanceof Raw || value[op] instanceof NativeQueryBuilder) {
       const query = value[op] instanceof NativeQueryBuilder ? value[op].toRaw() : value[op];
       const mappedKey = this.mapper(key, type, query, null);
 
@@ -638,7 +634,7 @@ export class QueryBuilderHelper {
         const item = prop.customType.convertToDatabaseValue(value, this.platform, { fromQuery: true, key, mode: 'query' });
         params.push(item);
       } else {
-        value.forEach(v => params.push(v));
+        value.forEach(p => params.push(p));
       }
 
       return `(${value.map(() => '?').join(', ')})`;
@@ -676,6 +672,35 @@ export class QueryBuilderHelper {
     return replacement;
   }
 
+  validateQueryOrder<T>(orderBy: QBQueryOrderMap<T>): void {
+    const strKeys: string[] = [];
+    const rawKeys: Raw[] = [];
+
+    for (const key of Utils.getObjectQueryKeys(orderBy)) {
+      const raw = Raw.getKnownFragment(key);
+
+      if (raw) {
+        rawKeys.push(raw);
+      } else {
+        strKeys.push(key as string);
+      }
+    }
+
+    if (strKeys.length > 0 && rawKeys.length > 0) {
+      const example = [
+        ...strKeys.map(key => ({ [key]: orderBy[key as never] })),
+        ...rawKeys.map(rawKey => ({ [`raw('${rawKey.sql}')`]: orderBy[rawKey as never] })),
+      ];
+
+      throw new Error([
+        `Invalid "orderBy": You are mixing field-based keys and raw SQL fragments inside a single object.`,
+        `This is not allowed because object key order cannot reliably preserve evaluation order.`,
+        `To fix this, split them into separate objects inside an array:\n`,
+        `orderBy: ${inspect(example, { depth: 5 }).replace(/"raw\('(.*)'\)"/g, `[raw('$1')]`)}`,
+      ].join('\n'));
+    }
+  }
+
   getQueryOrder(type: QueryType, orderBy: FlatQueryOrderMap | FlatQueryOrderMap[], populate: Dictionary<string>): string[] {
     if (Array.isArray(orderBy)) {
       return orderBy.flatMap(o => this.getQueryOrder(type, o, populate));
@@ -687,12 +712,12 @@ export class QueryBuilderHelper {
   getQueryOrderFromObject(type: QueryType, orderBy: FlatQueryOrderMap, populate: Dictionary<string>): string[] {
     const ret: string[] = [];
 
-    for (const key of Object.keys(orderBy)) {
-      const direction = orderBy[key];
+    for (const key of Utils.getObjectQueryKeys(orderBy)) {
+      const direction = orderBy[key as string];
       const order = typeof direction === 'number' ? QueryOrderNumeric[direction] : direction;
-      const raw = RawQueryFragment.getKnownFragment(key);
 
-      if (raw) {
+      if (Raw.isKnownFragmentSymbol(key)) {
+        const raw = Raw.getKnownFragment(key)!;
         ret.push(...this.platform.getOrderByExpression(this.platform.formatQuery(raw.sql, raw.params), order));
         continue;
       }
@@ -703,7 +728,7 @@ export class QueryBuilderHelper {
         alias = populate[alias] || alias;
 
         const prop = this.getProperty(field, alias);
-        const noPrefix = (prop?.persist === false && !prop.formula && !prop.embedded) || RawQueryFragment.isKnownFragment(f);
+        const noPrefix = (prop?.persist === false && !prop.formula && !prop.embedded) || Raw.isKnownFragment(f);
         const column = this.mapper(noPrefix ? field : `${alias}.${field}`, type, undefined, null);
         /* v8 ignore next */
         const rawColumn = typeof column === 'string' ? column.split('.').map(e => this.platform.quoteIdentifier(e)).join('.') : column;
@@ -835,9 +860,9 @@ export class QueryBuilderHelper {
 
     if (!this.isPrefixed(field)) {
       const alias = always ? (quote ? this.alias : this.platform.quoteIdentifier(this.alias)) + '.' : '';
-      const fieldName = this.fieldName(field, this.alias, always, idx) as string | RawQueryFragment;
+      const fieldName = this.fieldName(field, this.alias, always, idx) as string | Raw;
 
-      if (fieldName instanceof RawQueryFragment) {
+      if (fieldName instanceof Raw) {
         return fieldName.sql;
       }
 
@@ -845,9 +870,9 @@ export class QueryBuilderHelper {
     } else {
       const [a, ...rest] = field.split('.');
       const f = rest.join('.');
-      const fieldName = this.fieldName(f, a, always, idx) as string | RawQueryFragment;
+      const fieldName = this.fieldName(f, a, always, idx) as string | Raw;
 
-      if (fieldName instanceof RawQueryFragment) {
+      if (fieldName instanceof Raw) {
         return fieldName.sql;
       }
 
@@ -876,7 +901,7 @@ export class QueryBuilderHelper {
 
     for (const sub of subCondition) {
       // skip nesting parens if the value is simple = scalar or object without operators or with only single key, being the operator
-      const keys = Object.keys(sub);
+      const keys = Utils.getObjectQueryKeys(sub);
       const val = sub[keys[0]];
       const simple = !Utils.isPlainObject(val) || Utils.getObjectKeysSize(val) === 1 || Object.keys(val).every(k => !Utils.isOperator(k));
 
@@ -978,7 +1003,7 @@ export interface Alias<T> {
 }
 
 export interface OnConflictClause<T> {
-  fields: string[] | RawQueryFragment;
+  fields: string[] | Raw;
   ignore?: boolean;
   merge?: EntityData<T> | Field<T>[];
   where?: QBFilterQuery<T>;

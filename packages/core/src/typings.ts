@@ -24,7 +24,7 @@ import type { EntitySchema } from './metadata/EntitySchema.js';
 import type { Type, types } from './types/index.js';
 import type { Platform } from './platforms/Platform.js';
 import type { Configuration } from './utils/Configuration.js';
-import type { RawQueryFragment } from './utils/RawQueryFragment.js';
+import type { Raw } from './utils/RawQueryFragment.js';
 import { Utils } from './utils/Utils.js';
 import { EntityComparator } from './utils/EntityComparator.js';
 import type { EntityManager } from './EntityManager.js';
@@ -467,7 +467,7 @@ type TargetKeys<T> = T extends EntityClass<infer P> ? keyof P : keyof T;
 type PropertyName<T> = IsUnknown<T> extends false ? TargetKeys<T> : string;
 type TableName = { name: string; schema?: string; toString: () => string };
 
-export type IndexCallback<T> = (table: TableName, columns: Record<PropertyName<T>, string>, indexName: string) => string | RawQueryFragment;
+export type IndexCallback<T> = (table: TableName, columns: Record<PropertyName<T>, string>, indexName: string) => string | Raw;
 
 export type CheckCallback<T> = (columns: Record<PropertyName<T>, string>) => string;
 export type GeneratedColumnCallback<T> = (columns: Record<keyof T, string>) => string;
@@ -810,7 +810,7 @@ export interface EntityMetadata<T = any> {
   virtual?: boolean;
   // we need to use `em: any` here otherwise an expression would not be assignable with more narrow type like `SqlEntityManager`
   // also return type is unknown as it can be either QB instance (which we cannot type here) or array of POJOs (e.g. for mongodb)
-  expression?: string | ((em: any, where: ObjectQuery<T>, options: FindOptions<T, any, any, any>, stream?: boolean) => MaybePromise<RawQueryFragment | object | string>);
+  expression?: string | ((em: any, where: ObjectQuery<T>, options: FindOptions<T, any, any, any>, stream?: boolean) => MaybePromise<Raw | object | string>);
   discriminatorColumn?: EntityKey<T> | AnyString;
   discriminatorValue?: number | string;
   discriminatorMap?: Dictionary<string>;
