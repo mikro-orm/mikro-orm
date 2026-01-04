@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.6.3](https://github.com/mikro-orm/mikro-orm/compare/v6.6.2...v6.6.3) (2026-01-04)
+
+
+### Bug Fixes
+
+* **query-builder:** do not reset schema when creating subquery for collection operators ([4f4ea6d](https://github.com/mikro-orm/mikro-orm/commit/4f4ea6d447ea8ab613fe3ea29e0aa74e45a64932)), closes [#7053](https://github.com/mikro-orm/mikro-orm/issues/7053)
+* **schema:** ensure `SchemaGenerator` respects `skipTables` option when diffing a schema ([#7040](https://github.com/mikro-orm/mikro-orm/issues/7040)) ([40fa85a](https://github.com/mikro-orm/mikro-orm/commit/40fa85ab9f8b9d7d8f2316b74a0c076e0a84a3f9))
+
+
+
+
+
 ## [6.6.2](https://github.com/mikro-orm/mikro-orm/compare/v6.6.1...v6.6.2) (2025-12-07)
 
 

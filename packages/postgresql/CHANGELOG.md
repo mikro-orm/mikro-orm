@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.6.3](https://github.com/mikro-orm/mikro-orm/compare/v6.6.2...v6.6.3) (2026-01-04)
+
+
+### Bug Fixes
+
+* **core:** handle custom types properly in `em.refresh` ([#7061](https://github.com/mikro-orm/mikro-orm/issues/7061)) ([7dc5d7d](https://github.com/mikro-orm/mikro-orm/commit/7dc5d7d9bf9d30959f58887fed110f2da2300598))
+
+
+
+
+
 ## [6.6.2](https://github.com/mikro-orm/mikro-orm/compare/v6.6.1...v6.6.2) (2025-12-07)
 
 **Note:** Version bump only for package @mikro-orm/postgresql

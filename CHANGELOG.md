@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.6.3](https://github.com/mikro-orm/mikro-orm/compare/v6.6.2...v6.6.3) (2026-01-04)
+
+
+### Bug Fixes
+
+* **core:** do not connect to database when calling `orm.close()` ([79cabd7](https://github.com/mikro-orm/mikro-orm/commit/79cabd788a69335ed05178a39218c592d400de38)), closes [#7041](https://github.com/mikro-orm/mikro-orm/issues/7041)
+* **core:** don't reset entity identifiers when using `assign` on entity references ([#7048](https://github.com/mikro-orm/mikro-orm/issues/7048)) ([ca5d9b8](https://github.com/mikro-orm/mikro-orm/commit/ca5d9b8df3f26bd5d1dfc62e17274b0cbfc827b7))
+* **core:** handle custom types properly in `em.refresh` ([#7061](https://github.com/mikro-orm/mikro-orm/issues/7061)) ([7dc5d7d](https://github.com/mikro-orm/mikro-orm/commit/7dc5d7d9bf9d30959f58887fed110f2da2300598))
+* **defineEntity:** avoid circular type inference in meta ([#7039](https://github.com/mikro-orm/mikro-orm/issues/7039)) ([a18e63d](https://github.com/mikro-orm/mikro-orm/commit/a18e63d633595bdaee91fbb59ad3ad93f2cb5992))
+* **query-builder:** do not reset schema when creating subquery for collection operators ([4f4ea6d](https://github.com/mikro-orm/mikro-orm/commit/4f4ea6d447ea8ab613fe3ea29e0aa74e45a64932)), closes [#7053](https://github.com/mikro-orm/mikro-orm/issues/7053)
+* **schema:** ensure `SchemaGenerator` respects `skipTables` option when diffing a schema ([#7040](https://github.com/mikro-orm/mikro-orm/issues/7040)) ([40fa85a](https://github.com/mikro-orm/mikro-orm/commit/40fa85ab9f8b9d7d8f2316b74a0c076e0a84a3f9))
+
+
+
+
+
 ## [6.6.2](https://github.com/mikro-orm/mikro-orm/compare/v6.6.1...v6.6.2) (2025-12-07)
 
 
