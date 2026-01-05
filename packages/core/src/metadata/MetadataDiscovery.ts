@@ -1007,7 +1007,7 @@ export class MetadataDiscovery {
     for (const prop of Object.values(embeddable.properties)) {
       const name = (embeddedProp.embeddedPath?.join(glue) ?? embeddedProp.fieldNames[0] + glue) + prop.name;
 
-      meta.properties[name] = Utils.copy(prop, false);
+      meta.properties[name] = Utils.copy(prop);
       meta.properties[name].name = name;
       meta.properties[name].embedded = [embeddedProp.name, prop.name];
       meta.propertyOrder.set(name, (order += 0.01));
