@@ -184,14 +184,6 @@ jobs:
         env:
           RETRY_TESTS: 1
 
-      - name: Trigger release workflow (canary)
-        if: (github.ref == 'refs/heads/master' ||  github.ref == 'refs/heads/v7') && github.repository_owner == 'mikro-orm'
-        uses: peter-evans/repository-dispatch@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          repository: mikro-orm/mikro-orm
-          event-type: trigger-release
-
       - name: Codecov
         uses: codecov/codecov-action@v5
         with:
@@ -270,7 +262,7 @@ jobs:
 
   release:
     name: Release
-    if: (github.ref == 'refs/heads/master' ||  github.ref == 'refs/heads/v7') && github.repository_owner == 'mikro-orm'
+    if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/v7') && github.repository_owner == 'mikro-orm'
     runs-on: ubuntu-latest
     needs: [ build, test, lint, docs ]
     steps:
