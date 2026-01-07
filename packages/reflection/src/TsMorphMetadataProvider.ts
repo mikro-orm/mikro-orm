@@ -3,7 +3,8 @@ import { ComputedPropertyName, ModuleKind, NoSubstitutionTemplateLiteral, Projec
 import {
   type EntityClass,
   type EntityMetadata,
-  type EntityProperty, EntitySchema,
+  type EntityProperty,
+  EntitySchema,
   MetadataError,
   MetadataProvider,
   MetadataStorage,
@@ -46,6 +47,8 @@ export class TsMorphMetadataProvider extends MetadataProvider {
   }
 
   protected initProperties(meta: EntityMetadata): void {
+    meta.path = fs.normalizePath(meta.path);
+
     // load types and column names
     for (const prop of Object.values(meta.properties)) {
       const { type, target } = this.extractType(meta, prop);
