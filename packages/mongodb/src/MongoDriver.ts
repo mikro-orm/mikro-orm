@@ -15,7 +15,6 @@ import {
   type FindByCursorOptions,
   type FindOneOptions,
   type FindOptions,
-  GroupOperator,
   type NativeInsertUpdateManyOptions,
   type NativeInsertUpdateOptions,
   type PopulateOptions,
@@ -291,7 +290,14 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     return this.platform;
   }
 
-  private renameFields<T extends object>(entityName: EntityName<T>, data: T, dotPaths = false, object?: boolean): T {
+  private renameFields<T extends object>(entityName: EntityName<T>, data: T, dotPaths = false, object?: boolean, root = true): T {
+    if (data == null && root) {
+      return {} as T;
+    }
+
+    if (typeof data !== 'object' || data === null) {
+      return data;
+    }
     // copy to new variable to prevent changing the T type or doing as unknown casts
     const copiedData: Dictionary = Object.assign({}, data); // copy first
     const meta = this.metadata.find(entityName);
@@ -334,12 +340,11 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     }
 
     Utils.keys(copiedData).forEach(k => {
-      if (k in GroupOperator) {
-        /* v8 ignore next */
+      if (Utils.isOperator(k)) {
         if (Array.isArray(copiedData[k])) {
-          copiedData[k] = (copiedData[k] as any[]).map(v => this.renameFields(entityName, v));
+          copiedData[k] = (copiedData[k] as any[]).map(v => this.renameFields(entityName, v, dotPaths, object, false));
         } else {
-          copiedData[k] = this.renameFields(entityName, copiedData[k]);
+          copiedData[k] = this.renameFields(entityName, copiedData[k], dotPaths, object, false);
         }
 
         return;
@@ -357,9 +362,9 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
           }
 
           if (prop.array && Array.isArray(copiedData[prop.name])) {
-            copiedData[prop.name] = copiedData[prop.name].map((item: Dictionary) => this.renameFields(prop.targetMeta!.class, item, dotPaths, true));
+            copiedData[prop.name] = copiedData[prop.name].map((item: Dictionary) => this.renameFields(prop.targetMeta!.class, item, dotPaths, true, false));
           } else {
-            copiedData[prop.name] = this.renameFields(prop.targetMeta!.class, copiedData[prop.name], dotPaths, prop.object || object);
+            copiedData[prop.name] = this.renameFields(prop.targetMeta!.class, copiedData[prop.name], dotPaths, prop.object || object, false);
           }
         } else {
           const meta2 = this.metadata.find(prop.targetMeta!.class)!;

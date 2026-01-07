@@ -407,11 +407,11 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
                     throw ValidationError.invalidEmbeddableQuery(meta.class, kkk, sub.type);
                   }
 
-                  inline(payload[sub.embedded![1]], sub.embeddedProps[kkk], [...path, sub.embedded![1]]);
+                  inline(payload[sub.embedded![1]], sub.embeddedProps[kkk], [...path, sub.fieldNames[0]]);
                 });
               }
 
-              data[`${path.join('.')}.${sub.embedded![1]}` as EntityKey<T>] = payload[sub.embedded![1]];
+              data[`${path.join('.')}.${sub.fieldNames[0]}` as EntityKey<T>] = payload[sub.embedded![1]];
             };
 
             const parentPropName = kk.substring(0, kk.indexOf('.'));
@@ -419,14 +419,14 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
             // we might be using some native JSON operator, e.g. with mongodb's `$geoWithin` or `$exists`
             if (props[kk]) {
               /* v8 ignore next */
-              inline(data[prop.name], props[kk] || props[parentPropName], [prop.name]);
+              inline(data[prop.name], props[kk] || props[parentPropName], [prop.fieldNames[0]]);
             } else if (props[parentPropName]) {
-              data[`${prop.name}.${kk}` as keyof T] = (data[prop.name] as Dictionary)[kk];
+              data[`${prop.fieldNames[0]}.${kk}` as keyof T] = (data[prop.name] as Dictionary)[kk];
             } else {
               unknownProp = true;
             }
           } else if (props[kk]) {
-            data[props[kk].name as EntityKey<T>] = data[prop.name][props[kk].embedded![1] as never] as T[EntityKey<T>];
+            data[props[kk].fieldNames[0] as EntityKey<T>] = data[prop.name][props[kk].embedded![1] as never] as T[EntityKey<T>];
           } else {
             throw ValidationError.invalidEmbeddableQuery(meta.class, kk, prop.type);
           }
