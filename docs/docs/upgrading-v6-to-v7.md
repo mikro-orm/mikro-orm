@@ -28,8 +28,10 @@ Moreover, there are now both legacy and ES spec decorator definitions available.
 
 To use legacy decorators, import them from `@mikro-orm/decorators/legacy`:
 
-```ts
-import { Entity, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
+```diff
+- import { Entity, PrimaryKey, Property, MikroORM } from '@mikro-orm/sqlite';
++ import { Entity, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
++ import { MikroORM } from '@mikro-orm/sqlite';
 ```
 
 To use ES spec decorators, import them from `@mikro-orm/decorators/es`:
@@ -41,6 +43,16 @@ import { Entity, PrimaryKey, Property } from '@mikro-orm/decorators/es';
 ## `ReflectMetadataProvider` no longer the default
 
 The `ReflectMetadataProvider` has been moved to the `@mikro-orm/decorators/legacy` package, just like all the legacy decorators. It is no longer the default, you need to use it explicitly if you want to keep using legacy decorators with metadata reflection. You also need to install the reflect-metadata package for that.
+
+```ts
+import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import { defineConfig } from '@mikro-orm/sqlite';
+
+export default defineConfig({
+  metadataProvider: ReflectMetadataProvider,
+  // ...
+});
+```
 
 ## `knex` replaced with `kysely` as query runner
 
