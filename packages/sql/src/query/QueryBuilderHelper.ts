@@ -582,7 +582,11 @@ export class QueryBuilderHelper {
     }
 
     const [a, f] = rawField ? [] : this.splitField(key as EntityKey);
-    const prop = f && this.getProperty(f, a);
+    const prop: EntityProperty = f! && this.getProperty(f, a);
+
+    if (prop && [ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(prop.kind)) {
+      return { sql: '', params };
+    }
 
     if (op === '$fulltext') {
       /* v8 ignore next */
