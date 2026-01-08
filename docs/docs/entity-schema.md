@@ -17,7 +17,7 @@ export interface Book extends CustomBaseEntity {
 
 // The second type argument is optional, and should be used only with custom
 // base entities, not with the `BaseEntity` class exported from `@mikro-orm/core`.
-export const schema = new EntitySchema<Book, CustomBaseEntity>({
+export const BookSchema = new EntitySchema<Book, CustomBaseEntity>({
   // name should be used only with interfaces
   name: 'Book',
   // if we use actual class, we need this instead:
@@ -35,12 +35,20 @@ export const schema = new EntitySchema<Book, CustomBaseEntity>({
 When creating new entity instances, you will need to use `em.create()` method that will create instance of internally created class.
 
 ```ts
-// instance of internal Author class
-const author = em.create<Author>('Author', { name: 'name', email: 'email' });
+// instance of internal Book class
+const book = em.create(BookSchema, {});
 await em.flush();
 ```
 
-> Using this approach, metadata caching is automatically disabled as it is not needed.
+Alternatively, you can use `EntitySchema.new` method, which will call the internal class constructor directly.
+
+```ts
+// instance of internal Book class
+const book = BookSchema.new();
+await em.persist(book).flush(); // `em.persist()` required as opposed to em.create()
+```
+
+> Using this approach, metadata caching is automatically disabled as it is unnecessary.
 
 ## Using custom entity classes
 
@@ -65,7 +73,7 @@ export class Author extends CustomBaseEntity {
   }
 }
 
-export const schema = new EntitySchema<Author, CustomBaseEntity>({
+export const AuthorSchema = new EntitySchema({
   class: Author,
   extends: CustomBaseEntitySchema,
   properties: {

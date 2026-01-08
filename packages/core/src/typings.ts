@@ -290,7 +290,7 @@ export interface IWrappedEntityInternal<Entity extends object> extends IWrappedE
 
 export type AnyEntity<T = any> = Partial<T>;
 export type EntityClass<T = any> = Function & { prototype: T };
-export type EntityName<T = any> = EntityClass<T> | EntitySchema<T, any> | { name: string };
+export type EntityName<T = any> = EntityClass<T> | EntityCtor<T> | EntitySchema<T, any> | { name: string };
 
 // we need to restrict the type in the generic argument, otherwise inference don't work, so we use two types here
 export type GetRepository<Entity extends { [k: PropertyKey]: any }, Fallback> = Entity[typeof EntityRepositoryType] extends EntityRepository<any> | undefined ? NonNullable<Entity[typeof EntityRepositoryType]> : Fallback;
@@ -573,7 +573,7 @@ export interface EntityProperty<Owner = any, Target = any> {
   foreignKeyName?: string;
 }
 
-export class EntityMetadata<T = any> {
+export class EntityMetadata<Entity = any, Class extends EntityCtor<Entity> = EntityCtor<Entity>> {
 
   private static counter = 0;
   readonly _id = 1000 * EntityMetadata.counter++; // keep the id >= 1000 to allow computing cache keys by simple addition
@@ -594,18 +594,18 @@ export class EntityMetadata<T = any> {
     const name = meta.className ?? meta.name;
 
     if (!this.class && name) {
-      this.class = ({ [name]: class {} })[name] as Constructor<T>;
+      this.class = ({ [name]: class {} })[name] as any;
     }
   }
 
-  addProperty(prop: Partial<EntityProperty<T>>) {
-    this.properties[prop.name!] = prop as EntityProperty<T>;
+  addProperty(prop: Partial<EntityProperty<Entity>>) {
+    this.properties[prop.name!] = prop as EntityProperty<Entity>;
     this.propertyOrder.set(prop.name!, this.props.length);
     this.sync();
   }
 
   removeProperty(name: string, sync = true) {
-    delete this.properties[name as EntityKey<T>];
+    delete this.properties[name as EntityKey<Entity>];
     this.propertyOrder.delete(name);
 
     if (sync) {
@@ -613,7 +613,7 @@ export class EntityMetadata<T = any> {
     }
   }
 
-  getPrimaryProps(flatten = false): EntityProperty<T>[] {
+  getPrimaryProps(flatten = false): EntityProperty<Entity>[] {
     const pks = this.primaryKeys.map(pk => this.properties[pk]);
 
     if (flatten) {
@@ -629,7 +629,7 @@ export class EntityMetadata<T = any> {
     return pks;
   }
 
-  getPrimaryProp(): EntityProperty<T> {
+  getPrimaryProp(): EntityProperty<Entity> {
     return this.properties[this.primaryKeys[0]];
   }
 
@@ -657,7 +657,7 @@ export class EntityMetadata<T = any> {
 
   sync(initIndexes = false, config?: Configuration) {
     this.root ??= this;
-    const props = Object.values<EntityProperty<T>>(this.properties).sort((a, b) => this.propertyOrder.get(a.name)! - this.propertyOrder.get(b.name)!);
+    const props = Object.values<EntityProperty<Entity>>(this.properties).sort((a, b) => this.propertyOrder.get(a.name)! - this.propertyOrder.get(b.name)!);
     this.props = [...props.filter(p => p.primary), ...props.filter(p => !p.primary)];
     this.relations = this.props.filter(prop => typeof prop.kind !== 'undefined' && prop.kind !== ReferenceKind.SCALAR && prop.kind !== ReferenceKind.EMBEDDED);
     this.bidirectionalRelations = this.relations.filter(prop => prop.mappedBy || prop.inversedBy);
@@ -760,7 +760,7 @@ export class EntityMetadata<T = any> {
     }, { __gettersDefined: { value: true, enumerable: false } } as Dictionary);
   }
 
-  private initIndexes(prop: EntityProperty<T>): void {
+  private initIndexes(prop: EntityProperty<Entity>): void {
     const simpleIndex = this.indexes.find(index => index.properties === prop.name && !index.options && !index.type && !index.expression);
     const simpleUnique = this.uniques.find(index => index.properties === prop.name && !index.options);
     const owner = prop.kind === ReferenceKind.MANY_TO_ONE;
@@ -806,7 +806,9 @@ export interface SimpleColumnMeta {
   type: string;
 }
 
-export interface EntityMetadata<T = any> {
+export type EntityCtor<T = any> = abstract new (...args: any[]) => T;
+
+export interface EntityMetadata<Entity = any, Class extends EntityCtor<Entity> = EntityCtor<Entity>> {
   name?: string; // abstract classes do not have a name, but once discovery ends, we have only non-abstract classes stored
   className: string;
   tableName: string;
@@ -815,41 +817,41 @@ export interface EntityMetadata<T = any> {
   virtual?: boolean;
   // we need to use `em: any` here otherwise an expression would not be assignable with more narrow type like `SqlEntityManager`
   // also return type is unknown as it can be either QB instance (which we cannot type here) or array of POJOs (e.g. for mongodb)
-  expression?: string | ((em: any, where: ObjectQuery<T>, options: FindOptions<T, any, any, any>, stream?: boolean) => MaybePromise<Raw | object | string>);
-  discriminatorColumn?: EntityKey<T> | AnyString;
+  expression?: string | ((em: any, where: ObjectQuery<Entity>, options: FindOptions<Entity, any, any, any>, stream?: boolean) => MaybePromise<Raw | object | string>);
+  discriminatorColumn?: EntityKey<Entity> | AnyString;
   discriminatorValue?: number | string;
   discriminatorMap?: Dictionary<EntityClass>;
   embeddable: boolean;
-  constructorParams?: (keyof T)[];
+  constructorParams?: (keyof Entity)[];
   forceConstructor: boolean;
-  extends?: EntityName<T>;
+  extends?: EntityName<Entity>;
   collection: string;
   path: string;
-  primaryKeys: EntityKey<T>[];
+  primaryKeys: EntityKey<Entity>[];
   simplePK: boolean; // whether the PK can be compared via `===`, e.g. simple scalar without a custom mapped type
   compositePK: boolean;
-  versionProperty: EntityKey<T>;
-  concurrencyCheckKeys: Set<EntityKey<T>>;
-  serializedPrimaryKey?: EntityKey<T>;
-  properties: { [K in EntityKey<T>]: EntityProperty<T> };
-  props: EntityProperty<T>[];
-  relations: EntityProperty<T>[];
-  bidirectionalRelations: EntityProperty<T>[];
-  referencingProperties: { meta: EntityMetadata<T>; prop: EntityProperty<T> }[];
-  comparableProps: EntityProperty<T>[]; // for EntityComparator
-  trackingProps: EntityProperty<T>[]; // for change-tracking and propagation
-  hydrateProps: EntityProperty<T>[]; // for Hydrator
-  validateProps: EntityProperty<T>[]; // for entity validation
-  uniqueProps: EntityProperty<T>[];
-  getterProps: EntityProperty<T>[];
-  indexes: { properties?: EntityKey<T> | EntityKey<T>[]; name?: string; type?: string; options?: Dictionary; expression?: string | IndexCallback<T> }[];
-  uniques: { properties?: EntityKey<T> | EntityKey<T>[]; name?: string; options?: Dictionary; expression?: string | IndexCallback<T>; deferMode?: DeferMode | `${DeferMode}` }[];
-  checks: CheckConstraint<T>[];
+  versionProperty: EntityKey<Entity>;
+  concurrencyCheckKeys: Set<EntityKey<Entity>>;
+  serializedPrimaryKey?: EntityKey<Entity>;
+  properties: { [K in EntityKey<Entity>]: EntityProperty<Entity> };
+  props: EntityProperty<Entity>[];
+  relations: EntityProperty<Entity>[];
+  bidirectionalRelations: EntityProperty<Entity>[];
+  referencingProperties: { meta: EntityMetadata<Entity>; prop: EntityProperty<Entity> }[];
+  comparableProps: EntityProperty<Entity>[]; // for EntityComparator
+  trackingProps: EntityProperty<Entity>[]; // for change-tracking and propagation
+  hydrateProps: EntityProperty<Entity>[]; // for Hydrator
+  validateProps: EntityProperty<Entity>[]; // for entity validation
+  uniqueProps: EntityProperty<Entity>[];
+  getterProps: EntityProperty<Entity>[];
+  indexes: { properties?: EntityKey<Entity> | EntityKey<Entity>[]; name?: string; type?: string; options?: Dictionary; expression?: string | IndexCallback<Entity> }[];
+  uniques: { properties?: EntityKey<Entity> | EntityKey<Entity>[]; name?: string; options?: Dictionary; expression?: string | IndexCallback<Entity>; deferMode?: DeferMode | `${DeferMode}` }[];
+  checks: CheckConstraint<Entity>[];
   repositoryClass?: string; // for EntityGenerator
   repository: () => EntityClass<EntityRepository<any>>;
-  hooks: { [K in EventType]?: (keyof T | EventSubscriber<T>[EventType])[] };
-  prototype: T;
-  class: EntityClass<T>;
+  hooks: { [K in EventType]?: (keyof Entity | EventSubscriber<Entity>[EventType])[] };
+  prototype: Entity;
+  class: Class;
   abstract: boolean;
   filters: Dictionary<FilterDef>;
   comment?: string;
@@ -857,7 +859,7 @@ export interface EntityMetadata<T = any> {
   hasUniqueProps?: boolean;
   readonly?: boolean;
   polymorphs?: EntityMetadata[];
-  root: EntityMetadata<T>;
+  root: EntityMetadata<Entity>;
   definedProperties: Dictionary;
   // used to make ORM aware of externally defined triggers, can change resulting SQL in some condition like when inserting in mssql
   hasTriggers?: boolean;
@@ -1350,7 +1352,7 @@ export type MetadataProcessor = (metadata: EntityMetadata[], platform: Platform)
 
 export type MaybeReturnType<T> = T extends (...args: any[]) => infer R ? R : T;
 
-export interface EntitySchemaWithMeta<TName extends string = string, TTableName extends string = string, TEntity = any, TBase = never, TProperties extends Record<string, any> = Record<string, any>> extends EntitySchema<TEntity, TBase> {
+export interface EntitySchemaWithMeta<TName extends string = string, TTableName extends string = string, TEntity = any, TBase = never, TProperties extends Record<string, any> = Record<string, any>, TClass extends EntityCtor = any> extends EntitySchema<TEntity, TBase, TClass> {
   readonly name: TName;
   readonly properties: TProperties;
   readonly tableName: TTableName;

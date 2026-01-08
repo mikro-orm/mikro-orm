@@ -11,7 +11,7 @@ export function Entity<Owner extends EntityClass<unknown> & Constructor>(options
   return function (target: Owner, context: ClassDecoratorContext<Owner>) {
     const meta = getMetadataFromDecorator(target);
     Utils.mergeConfig(meta, context.metadata as Dictionary, options);
-    meta.class = target;
+    meta.class = target as any;
 
     if (!options.abstract || meta.discriminatorColumn) {
       meta.name = context.name;

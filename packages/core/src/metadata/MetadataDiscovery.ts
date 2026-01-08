@@ -698,7 +698,7 @@ export class MetadataDiscovery {
         pivotTable: prop.pivotTable,
         persist: false,
         hydrate: false,
-      } as EntityProperty;
+      } as unknown as EntityProperty;
       this.applyNamingStrategy(prop.targetMeta, inverseProp);
       this.initCustomType(prop.targetMeta, inverseProp);
       prop.targetMeta!.properties[inverseName] = inverseProp;

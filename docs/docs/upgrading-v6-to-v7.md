@@ -367,3 +367,29 @@ Previosly, it was possible to prefix the alias with target entity name. This is 
 -qb.as('User.fullName');
 +qb.as(User, 'fullName');
 ```
+
+## Private constructors no longer allowed with `defineEntity`/`EntitySchema`
+
+To be able to infer constructor parameters, we need the constructor to be public. The ORM will use the constructor internally (e.g. in `em.create`), so this was partially a lie. If you need to use a private constructor, please cast the `class` parameter to `any` and use the first generict parameter:
+
+```ts
+class User {
+  private constructor(private readonly id: number) {}
+}
+
+// with defineEntity
+const UserSchema1 = defineEntity<User>({
+  class: User as any,
+  properties: {
+    // ...
+  },
+});
+
+// or with EntitySchema directly
+const UserSchema2 = new EntitySchema<User>({
+  class: User as any,
+  properties: {
+    // ...
+  },
+});
+```
