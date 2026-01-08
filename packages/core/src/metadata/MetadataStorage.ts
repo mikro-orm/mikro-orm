@@ -1,4 +1,4 @@
-import { type Dictionary, type EntityClass, EntityMetadata, type EntityName } from '../typings.js';
+import { type Dictionary, type EntityCtor, EntityMetadata, type EntityName } from '../typings.js';
 import { Utils } from '../utils/Utils.js';
 import { MetadataError } from '../errors.js';
 import type { EntityManager } from '../EntityManager.js';
@@ -75,7 +75,7 @@ export class MetadataStorage {
       throw MetadataError.missingMetadata(className);
     }
 
-    const meta = new EntityMetadata({ class: entityName as EntityClass, name: className });
+    const meta = new EntityMetadata({ class: entityName as EntityCtor, name: className });
     this.set(entityName, meta);
 
     return meta;

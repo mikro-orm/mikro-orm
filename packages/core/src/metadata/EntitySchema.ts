@@ -10,7 +10,7 @@ import {
   type CleanKeys,
   type ExpandProperty,
   type IsNever,
-  type EntityClass,
+  type EntityCtor,
 } from '../typings.js';
 import type { EntityRepository } from '../entity/EntityRepository.js';
 import { BaseEntity } from '../entity/BaseEntity.js';
@@ -44,13 +44,13 @@ export type EntitySchemaProperty<Target, Owner> =
   | ({ enum: true } & EnumOptions<Owner>)
   | (TypeDef<Target> & PropertyOptions<Owner>);
 type OmitBaseProps<Entity, Base> = IsNever<Base> extends true ? Entity : Omit<Entity, keyof Base>;
-export type EntitySchemaMetadata<Entity, Base = never> =
+export type EntitySchemaMetadata<Entity, Base = never, Class extends EntityCtor = any> =
   & Omit<Partial<EntityMetadata<Entity>>, 'name' | 'properties' | 'extends'>
-  & ({ name: string } | { class: EntityClass<Entity>; name?: string })
+  & ({ name: string } | { class: Class; name?: string })
   & { extends?: EntityName<Base> }
   & { properties?: { [Key in keyof OmitBaseProps<Entity, Base> as CleanKeys<OmitBaseProps<Entity, Base>, Key>]-?: EntitySchemaProperty<ExpandProperty<NonNullable<Entity[Key]>>, Entity> } };
 
-export class EntitySchema<Entity = any, Base = never> {
+export class EntitySchema<Entity = any, Base = never, Class extends EntityCtor = any> {
 
   /**
    * When schema links the entity class via `class` option, this registry allows the lookup from opposite side,
@@ -58,18 +58,18 @@ export class EntitySchema<Entity = any, Base = never> {
    */
   static REGISTRY = new Map<AnyEntity, EntitySchema>();
 
-  private readonly _meta: EntityMetadata<Entity>;
+  private readonly _meta: EntityMetadata<Entity, Class>;
   private internal = false;
   private initialized = false;
 
-  constructor(meta: EntitySchemaMetadata<Entity, Base>) {
+  constructor(meta: EntitySchemaMetadata<Entity, Base, Class>) {
     meta.name = meta.class ? meta.class.name : meta.name;
 
     if (meta.name) {
       meta.abstract ??= false;
     }
 
-    this._meta = new EntityMetadata<Entity>({
+    this._meta = new EntityMetadata<Entity, Class>({
       className: meta.name,
       ...(meta as Partial<EntityMetadata<Entity>>),
     });
@@ -243,7 +243,7 @@ export class EntitySchema<Entity = any, Base = never> {
     this._meta.extends = base;
   }
 
-  setClass(cls: EntityClass<Entity>) {
+  setClass(cls: Class) {
     const sameClass = this._meta.className === cls.name;
     this._meta.class = cls;
     this._meta.prototype = cls.prototype;
@@ -276,8 +276,16 @@ export class EntitySchema<Entity = any, Base = never> {
     return this._meta.tableName;
   }
 
+  get class(): Class {
+    return this._meta.class as Class;
+  }
+
   get properties(): Record<string, any> {
     return this._meta.properties;
+  }
+
+  new(...params: ConstructorParameters<Class>): Entity {
+    return new (this._meta.class as any)(...params);
   }
 
   /**

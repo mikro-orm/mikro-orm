@@ -1,10 +1,10 @@
-import type { AnyEntity, Constructor, EntityMetadata } from '../typings.js';
+import type { AnyEntity, EntityCtor, EntityMetadata } from '../typings.js';
 
 export class IdentityMap {
 
   constructor(private readonly defaultSchema?: string) {}
 
-  private readonly registry = new Map<Constructor<AnyEntity>, Map<string, AnyEntity>>();
+  private readonly registry = new Map<EntityCtor, Map<string, AnyEntity>>();
 
   store<T>(item: T) {
     this.getStore((item as AnyEntity).__meta!.root).set(this.getPkHash(item), item);
@@ -20,14 +20,14 @@ export class IdentityMap {
   }
 
   getStore<T>(meta: EntityMetadata<T>): Map<string, T> {
-    const store = this.registry.get(meta.class as Constructor<AnyEntity>) as Map<string, T>;
+    const store = this.registry.get(meta.class) as Map<string, T>;
 
     if (store) {
       return store;
     }
 
     const newStore = new Map();
-    this.registry.set(meta.class as Constructor<AnyEntity>, newStore);
+    this.registry.set(meta.class, newStore);
 
     return newStore;
   }

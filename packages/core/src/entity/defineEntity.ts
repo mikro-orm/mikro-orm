@@ -29,6 +29,7 @@ import type {
   MaybeReturnType,
   Ref,
   IndexCallback,
+  EntityCtor,
 } from '../typings.js';
 import type { ScalarReference } from './Reference.js';
 import type { SerializeOptions } from '../serialization/EntitySerializer.js';
@@ -743,22 +744,22 @@ export function defineEntity<
   meta: EntityMetadataWithProperties<TName, TTableName, TProperties, TPK, TBase>,
 ): EntitySchemaWithMeta<TName, TTableName, InferEntityFromProperties<TProperties, TPK>, TBase, TProperties>;
 
-export function defineEntity<const TEntity = any, const TProperties extends Record<string, any> = Record<string, any>, const TClassName extends string = string, const TTableName extends string = string, const TBase = never>(
+export function defineEntity<const TEntity = any, const TProperties extends Record<string, any> = Record<string, any>, const TClassName extends string = string, const TTableName extends string = string, const TBase = never, const TClass extends EntityCtor = any>(
   meta: Omit<Partial<EntityMetadata<TEntity>>, 'properties' | 'extends' | 'className' | 'tableName'> & {
-    class: EntityClass<TEntity>;
+    class: TClass;
     className?: TClassName;
     tableName?: TTableName;
     extends?: EntityName<TBase>;
     properties: TProperties | ((properties: typeof propertyBuilders) => TProperties);
   },
-): EntitySchemaWithMeta<TClassName, TTableName, TEntity, TBase, TProperties>;
+): EntitySchemaWithMeta<TClassName, TTableName, TEntity, TBase, TProperties, TClass>;
 
 export function defineEntity(
   meta: Omit<Partial<EntityMetadata>, 'properties' | 'extends'> & {
     extends?: EntityName;
     properties: Record<string, any> | ((properties: typeof propertyBuilders) => Record<string, any>);
   } | EntityMetadataWithProperties<any, any, any, any, any>,
-): EntitySchemaWithMeta<any, any, any, any, any> {
+): EntitySchemaWithMeta<any, any, any, any, any, any> {
   const { properties: propertiesOrGetter, ...options } = meta;
   const propertyOptions = typeof propertiesOrGetter === 'function' ? propertiesOrGetter(propertyBuilders) : propertiesOrGetter;
   const properties = {};

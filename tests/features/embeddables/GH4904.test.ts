@@ -35,8 +35,8 @@ class CustomProp {
 
 }
 
-const TestEntity1Schema = new EntitySchema({
-  class: TestEntity1,
+const TestEntity1Schema = new EntitySchema<TestEntity1>({
+  class: TestEntity1 as any,
   properties: {
     id: {
       type: 'text',
@@ -50,8 +50,8 @@ const TestEntity1Schema = new EntitySchema({
   },
 });
 
-const TestEntity2Schema = new EntitySchema({
-  class: TestEntity2,
+const TestEntity2Schema = new EntitySchema<TestEntity2>({
+  class: TestEntity2 as any,
   properties: {
     id: {
       type: 'text',
@@ -65,8 +65,8 @@ const TestEntity2Schema = new EntitySchema({
   },
 });
 
-const CustomPropSchema = new EntitySchema({
-  class: CustomProp,
+const CustomPropSchema = new EntitySchema<CustomProp>({
+  class: CustomProp as any,
   embeddable: true,
   properties: {
     someValue: {

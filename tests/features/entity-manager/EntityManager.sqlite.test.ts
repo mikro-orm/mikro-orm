@@ -30,6 +30,7 @@ import {
   PublisherType,
   Test4,
 } from '../../entities-schema/index.js';
+import { Author4Schema } from '../../entities-schema/Author4.js';
 
 describe.each(['sqlite', 'libsql'] as const)('EntityManager (%s)', driver => {
 
@@ -129,8 +130,10 @@ describe.each(['sqlite', 'libsql'] as const)('EntityManager (%s)', driver => {
 
   test('hydration with `forceUndefined` converts null values', async () => {
     const repo = orm.em.getRepository(Author4);
-    const author = orm.em.create(Author4, { name: 'name', email: 'email' });
-    await orm.em.flush();
+    expect(Author4Schema.class).toBe(Author4);
+    const author = Author4Schema.new('name', 'email');
+    expect(author).toBeInstanceOf(Author4);
+    await orm.em.persist(author).flush();
     orm.em.clear();
 
     const a = await repo.findOneOrFail(author);
