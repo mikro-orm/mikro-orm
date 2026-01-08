@@ -193,7 +193,7 @@ describe('embedded entities in mongo (underscore naming strategy)', () => {
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [User, CustomUser, childSchema, parentSchema],
-      clientUrl: 'mongodb://localhost:27017/mikro-orm-test-embeddables',
+      clientUrl: 'mongodb://localhost:27017/mikro-orm-test-embeddables2',
       namingStrategy: UnderscoreNamingStrategy,
     });
   });
