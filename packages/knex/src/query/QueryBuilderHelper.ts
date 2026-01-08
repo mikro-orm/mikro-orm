@@ -360,6 +360,10 @@ export class QueryBuilderHelper {
     const [fromAlias, fromField] = this.splitField(key as EntityKey);
     const prop = this.getProperty(fromField, fromAlias);
 
+    if (prop && [ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(prop.kind)) {
+      return '()';
+    }
+
     if (Utils.isPlainObject(value) && prop?.kind === ReferenceKind.EMBEDDED) {
       const parts = Object.entries(value).map(([k, v]) => this.processJoinClause(`${alias}.${prop.embeddedProps[k].name}`, v, alias, params));
 
