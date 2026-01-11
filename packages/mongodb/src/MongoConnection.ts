@@ -464,7 +464,7 @@ export class MongoConnection extends Connection {
   }
 
   private logObject(o: any): string {
-    if (o.session) {
+    if (o?.session) {
       o = { ...o, session: `[ClientSession]` };
     }
 

@@ -772,8 +772,8 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
 
     for (const e of fork.unitOfWork.getIdentityMap()) {
       const ref = em.getReference(e.constructor.name, helper(e).getPrimaryKey());
-      const data = helper(e).serialize({ ignoreSerializers: true, includeHidden: true, convertCustomTypes: true });
-      em.config.getHydrator(this.metadata).hydrate(ref, helper(ref).__meta, data, em.entityFactory, 'full', false, true);
+      const data = helper(e).serialize({ ignoreSerializers: true, includeHidden: true, convertCustomTypes: false });
+      em.config.getHydrator(this.metadata).hydrate(ref, helper(ref).__meta, data, em.entityFactory, 'full', false, false);
       Utils.merge(helper(ref).__originalEntityData, this.comparator.prepareEntity(e as Entity));
       found ||= ref === entity;
     }
