@@ -533,7 +533,9 @@ export class QueryBuilder<
       }
 
       filterOptions = QueryHelper.mergePropertyFilters(join.prop.filters, filterOptions);
-      const cond = await em.applyFilters(join.prop.targetMeta!.class, join.cond, filterOptions, 'read');
+      let cond = await em.applyFilters(join.prop.targetMeta!.class, join.cond, filterOptions, 'read');
+      const criteriaNode = CriteriaNodeFactory.createNode<Entity>(this.metadata, join.prop.targetMeta!.class, cond);
+      cond = criteriaNode.process(this, { matchPopulateJoins: true, filter: true, alias: join.alias, ignoreBranching: true, parentPath: join.path });
 
       if (Utils.hasObjectKeys(cond) || RawQueryFragment.hasObjectFragments(cond)) {
         // remove nested filters, we only care about scalars here, nesting would require another join branch

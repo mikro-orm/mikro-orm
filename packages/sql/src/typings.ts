@@ -196,6 +196,7 @@ export interface ICriteriaNodeProcessOptions {
   preferNoBranch?: boolean;
   type?: 'orderBy'; // no type means it's a regular where query
   filter?: boolean; // use an inner join for given node
+  parentPath?: string;
 }
 
 export interface ICriteriaNode<T extends object> {
@@ -211,7 +212,7 @@ export interface ICriteriaNode<T extends object> {
   willAutoJoin(qb: IQueryBuilder<T>, alias?: string, options?: ICriteriaNodeProcessOptions): boolean;
   shouldRename(payload: any): boolean;
   renameFieldToPK<T>(qb: IQueryBuilder<T>, ownerAlias?: string): string;
-  getPath(addIndex?: boolean): string;
+  getPath(opts?: { addIndex?: boolean }): string;
   getPivotPath(path: string): string;
 }
 

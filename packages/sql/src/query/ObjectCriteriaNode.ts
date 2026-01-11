@@ -21,7 +21,7 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
 
   override process(qb: IQueryBuilder<T>, options?: ICriteriaNodeProcessOptions): any {
     const matchPopulateJoins = options?.matchPopulateJoins || (this.prop && [ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(this.prop!.kind));
-    const nestedAlias = qb.getAliasForJoinPath(this.getPath(), { ...options, matchPopulateJoins });
+    const nestedAlias = qb.getAliasForJoinPath(this.getPath(options), { ...options, matchPopulateJoins });
     const ownerAlias = options?.alias || qb.alias;
     const keys = Utils.getObjectQueryKeys(this.payload);
     let alias = options?.alias;
@@ -147,7 +147,7 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
   }
 
   override willAutoJoin(qb: IQueryBuilder<T>, alias?: string, options?: ICriteriaNodeProcessOptions) {
-    const nestedAlias = qb.getAliasForJoinPath(this.getPath(), options);
+    const nestedAlias = qb.getAliasForJoinPath(this.getPath(options), options);
     const ownerAlias = alias || qb.alias;
     const keys = Utils.getObjectQueryKeys(this.payload);
 

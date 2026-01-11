@@ -105,11 +105,11 @@ export class CriteriaNode<T extends object> implements ICriteriaNode<T> {
     return Utils.getPrimaryKeyHash(this.prop!.referencedColumnNames.map(col => `${alias}.${col}`));
   }
 
-  getPath(addIndex = false): string {
+  getPath(opts?: { addIndex?: boolean; parentPath?: string }): string {
     // use index on parent only if we are processing to-many relation
     const addParentIndex = this.prop && [ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(this.prop.kind);
-    const parentPath = this.parent?.getPath(addParentIndex) ?? Utils.className(this.entityName);
-    const index = addIndex && this.index != null ? `[${this.index}]` : '';
+    const parentPath = opts?.parentPath ?? this.parent?.getPath({ addIndex: addParentIndex }) ?? Utils.className(this.entityName);
+    const index = opts?.addIndex && this.index != null ? `[${this.index}]` : '';
     // ignore group operators to allow easier mapping (e.g. for orderBy)
     const key = this.key && !RawQueryFragment.isKnownFragmentSymbol(this.key) && !['$and', '$or', '$not'].includes(this.key) ? '.' + this.key : '';
     const ret = parentPath + index + key;

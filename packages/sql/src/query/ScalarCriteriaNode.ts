@@ -11,7 +11,7 @@ export class ScalarCriteriaNode<T extends object> extends CriteriaNode<T> {
 
   override process(qb: IQueryBuilder<T>, options?: ICriteriaNodeProcessOptions): any {
     const matchPopulateJoins = options?.matchPopulateJoins || (this.prop && [ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(this.prop!.kind));
-    const nestedAlias = qb.getAliasForJoinPath(this.getPath(), { ...options, matchPopulateJoins });
+    const nestedAlias = qb.getAliasForJoinPath(this.getPath(options), { ...options, matchPopulateJoins });
 
     if (this.shouldJoin(qb, nestedAlias)) {
       const path = this.getPath();
