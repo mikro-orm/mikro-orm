@@ -325,8 +325,10 @@ export class QueryBuilderHelper {
   private processJoinClause(key: string, value: unknown, alias: string, params: Knex.Value[], operator = '$eq'): string {
     if (Utils.isGroupOperator(key) && Array.isArray(value)) {
       const parts = value.map(sub => {
-        return this.wrapQueryGroup(Object.keys(sub).map(k => this.processJoinClause(k, sub[k], alias, params)));
-      });
+        return this.wrapQueryGroup(Object.keys(sub).map(k => {
+          return this.processJoinClause(k, sub[k], alias, params);
+        }));
+      }).filter(clause => clause !== '()');
       return this.wrapQueryGroup(parts, key);
     }
 
@@ -411,6 +413,10 @@ export class QueryBuilderHelper {
     }
 
     if (value !== null) {
+      if (Utils.isPlainObject(value)) {
+        return '()';
+      }
+
       if (prop?.customType) {
         value = prop.customType.convertToDatabaseValue(value, this.platform, { fromQuery: true, key, mode: 'query' });
       }
