@@ -9,7 +9,7 @@ class A {
   @Property({ nullable: true })
   name: string | null = null;
 
-  @OneToOne('B', {
+  @OneToOne(() => B, {
     mappedBy: 'a',
     nullable: true,
     ref: true,
