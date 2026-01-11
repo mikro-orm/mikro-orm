@@ -270,9 +270,13 @@ export class EntityHelper {
       }
     }
 
+    if (value == null && prop.orphanRemoval && prop2.primary) {
+      return;
+    }
+
     // Skip setting the inverse side to null if it's a primary key - the entity will be removed via orphan removal
     // Setting a primary key to null would corrupt the entity and cause validation errors
-    if (value == null && !prop2.primary) {
+    if (value == null) {
       entity[prop2.name] = value as EntityValue<T>;
     } else if (prop2.mapToPk) {
       entity[prop2.name] = helper(owner).getPrimaryKey() as EntityValue<T>;
@@ -280,7 +284,7 @@ export class EntityHelper {
       entity[prop2.name] = Reference.wrapReference(owner, prop) as EntityValue<T>;
     }
 
-    if (old?.[prop2.name] != null && !prop2.primary) {
+    if (old?.[prop2.name] != null) {
       delete helper(old).__data[prop2.name];
       old[prop2.name] = null!;
     }
