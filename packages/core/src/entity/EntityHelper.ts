@@ -280,7 +280,7 @@ export class EntityHelper {
       entity[prop2.name] = value as EntityValue<T>;
     } else if (prop2.mapToPk) {
       entity[prop2.name] = helper(owner).getPrimaryKey() as EntityValue<T>;
-    } else if (value != null) {
+    } else {
       entity[prop2.name] = Reference.wrapReference(owner, prop) as EntityValue<T>;
     }
 
