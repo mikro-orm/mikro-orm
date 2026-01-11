@@ -270,6 +270,12 @@ export class EntityHelper {
       }
     }
 
+    // Skip setting the inverse side to null if it's a primary key - the entity will be removed via orphan removal
+    // Setting a primary key to null would corrupt the entity and cause validation errors
+    if (value == null && prop.orphanRemoval && prop2.primary) {
+      return;
+    }
+
     if (value == null) {
       entity[prop2.name] = value as EntityValue<T>;
     } else if (prop2.mapToPk) {
