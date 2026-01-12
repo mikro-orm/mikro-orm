@@ -524,7 +524,7 @@ export interface ManyToManyOptions<Owner, Target> extends ReferenceOptions<Owner
 }
 
 export interface EmbeddedOptions<Owner, Target> extends PropertyOptions<Owner> {
-  entity?: () => EntityName<Target> | EntityName<Target>[];
+  entity?: () => EntityName<Target> | EntityName[];
   prefix?: string | boolean;
   prefixMode?: EmbeddedPrefixMode;
   object?: boolean;

@@ -172,7 +172,7 @@ describe.each([User11, User13, User22] as const)('accessors with direct backing 
     const entityName = Entity.prototype.constructor.name;
     usageMap[entityName] = undefined!;
 
-    const e = orm.em.create(Entity, { foo: { name: 'test' } });
+    const e = orm.em.create<User11>(Entity as any, { foo: { name: 'test' } });
 
     if (['User12', 'User23'].includes(entityName)) {
       expect(inspect(e)).toEqual(`${entityName} { _foo: { name: 'test' }, version: 1 }`);
@@ -185,7 +185,7 @@ describe.each([User11, User13, User22] as const)('accessors with direct backing 
     orm.em.clear();
 
     await orm.em.transactional(async em => {
-      const users = await em.findAll(Entity);
+      const users = await em.findAll<User11>(Entity as any);
       expect(users.length).toBe(1);
       expect(users[0].version).toBe(1);
       expect(usageMap[entityName]).toBeUndefined();
@@ -194,7 +194,7 @@ describe.each([User11, User13, User22] as const)('accessors with direct backing 
     });
     orm.em.clear();
 
-    const users = await orm.em.findAll(Entity);
+    const users = await orm.em.findAll<User11>(Entity as any);
     expect(users.length).toBe(1);
     expect(users[0].version).toBe(1);
     expect(usageMap[entityName]).toEqual([1, 0]);
@@ -237,7 +237,7 @@ describe.each([User12, User23] as const)('accessors with opaque backing property
     const entityName = Entity.prototype.constructor.name;
     usageMap[entityName] = undefined!;
 
-    const e = orm.em.create(Entity, { foo: { name: 'test' } });
+    const e = orm.em.create<User12>(Entity as any, { foo: { name: 'test' } });
     expect(usageMap[entityName]).toEqual([0, 1]);
     expect(inspect(e)).toEqual(`${entityName} { version: 1, foo: { name: 'test' } }`);
     expect(usageMap[entityName]).toEqual([1, 1]);
@@ -246,7 +246,7 @@ describe.each([User12, User23] as const)('accessors with opaque backing property
     orm.em.clear();
 
     await orm.em.transactional(async em => {
-      const users = await em.findAll(Entity);
+      const users = await em.findAll<User12>(Entity as any);
       expect(users.length).toBe(1);
       expect(users[0].version).toBe(1);
       expect(usageMap[entityName]).toEqual([4, 2]);
@@ -255,7 +255,7 @@ describe.each([User12, User23] as const)('accessors with opaque backing property
     });
     orm.em.clear();
 
-    const users = await orm.em.findAll(Entity);
+    const users = await orm.em.findAll<User12>(Entity as any);
     expect(users.length).toBe(1);
     expect(users[0].version).toBe(1);
     expect(usageMap[entityName]).toEqual([7, 3]);

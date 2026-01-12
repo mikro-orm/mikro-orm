@@ -290,7 +290,7 @@ export interface IWrappedEntityInternal<Entity extends object> extends IWrappedE
 
 export type AnyEntity<T = any> = Partial<T>;
 export type EntityClass<T = any> = Function & { prototype: T };
-export type EntityName<T = any> = EntityClass<T> | EntityCtor<T> | EntitySchema<T, any> | { name: string };
+export type EntityName<T = any> = EntityClass<T> | EntityCtor<T> | EntitySchema<T, any>;
 
 // we need to restrict the type in the generic argument, otherwise inference don't work, so we use two types here
 export type GetRepository<Entity extends { [k: PropertyKey]: any }, Fallback> = Entity[typeof EntityRepositoryType] extends EntityRepository<any> | undefined ? NonNullable<Entity[typeof EntityRepositoryType]> : Fallback;

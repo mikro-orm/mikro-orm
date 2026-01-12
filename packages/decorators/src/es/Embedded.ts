@@ -9,7 +9,7 @@ import {
 } from '@mikro-orm/core';
 import { validateSingleDecorator } from '../utils.js';
 
-export function Embedded<Owner extends object, Target>(type: EmbeddedOptions<Owner, Target> | (() => EntityName<Target> | EntityName<Target>[]) = {}, options: EmbeddedOptions<Owner, Target> = {}) {
+export function Embedded<Owner extends object, Target>(type: EmbeddedOptions<Owner, Target> | (() => EntityName<Target> | EntityName[]) = {}, options: EmbeddedOptions<Owner, Target> = {}) {
   return function (value: unknown, context: ClassFieldDecoratorContext<Owner>) {
     const meta = context.metadata as Partial<EntityMetadata<Owner>>;
     meta.properties ??= {} as any;
