@@ -158,7 +158,7 @@ const options = {
   mariadb: { dbName: 'mikro_orm_upsert', port: 3309 },
   postgresql: { dbName: 'mikro_orm_upsert' },
   mongo: { dbName: 'mikro_orm_upsert' },
-  oracledb: { dbName: 'freepdb1', password: 'oracle123' },
+  oracledb: { dbName: 'mikro_orm_upsert', password: 'oracle123' },
 };
 
 describe.each(Utils.keys(options))('em.upsert [%s]',  type => {
