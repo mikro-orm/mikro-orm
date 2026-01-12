@@ -5,6 +5,7 @@ import type { EntityLoaderOptions } from './EntityLoader';
 import { EntitySerializer, type SerializeOptions } from '../serialization/EntitySerializer';
 import { helper } from './wrap';
 import type { FindOneOptions } from '../drivers/IDatabaseDriver';
+import type { PopulatePath } from '../enums';
 
 export abstract class BaseEntity {
 
@@ -21,7 +22,7 @@ export abstract class BaseEntity {
   }
 
   async populate<Entity extends this = this, Hint extends string = never>(
-    populate: AutoPath<Entity, Hint>[] | false,
+    populate: AutoPath<Entity, Hint, PopulatePath.ALL>[] | false,
     options: EntityLoaderOptions<Entity> = {},
   ): Promise<Loaded<Entity, Hint>> {
     return helper(this as Entity).populate(populate, options);
