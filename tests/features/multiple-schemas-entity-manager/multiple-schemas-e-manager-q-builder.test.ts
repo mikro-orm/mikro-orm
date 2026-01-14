@@ -147,10 +147,10 @@ describe('multiple connected schemas in postgres', () => {
     );
 
     /**
-     * Main table Domain(n2) will make sure that the schema used for * joins will be n2 and ignore fork settings
+     * Main table Domain(n2) will join SubDomain(* => n5), respecting the schema set in EntityManager (n5).
      */
     expect(mock.mock.calls[2][0]).toMatch(
-      'select "d0".*, "s1"."id" as "s1__id", "s1"."name" as "s1__name", "s1"."domain_id" as "s1__domain_id" from "n2"."domain" as "d0" left join "n2"."sub_domain" as "s1" on "d0"."id" = "s1"."domain_id" where "d0"."id" = 1',
+      'select "d0".*, "s1"."id" as "s1__id", "s1"."name" as "s1__name", "s1"."domain_id" as "s1__domain_id" from "n2"."domain" as "d0" left join "n5"."sub_domain" as "s1" on "d0"."id" = "s1"."domain_id" where "d0"."id" = 1',
     );
 
     /**

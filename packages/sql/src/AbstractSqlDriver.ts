@@ -1312,7 +1312,8 @@ export abstract class AbstractSqlDriver<
           : (hint.filter && !prop.nullable) || mandatoryToOneProperty
             ? JoinType.innerJoin
             : JoinType.leftJoin;
-      qb.join(field, tableAlias, {}, joinType, path);
+      const schema = prop.targetMeta!.schema === '*' ? options?.schema ?? this.config.get('schema') : prop.targetMeta!.schema;
+      qb.join(field, tableAlias, {}, joinType, path, schema);
 
       if (pivotRefJoin) {
         fields.push(
@@ -1780,4 +1781,5 @@ interface FieldsForJoinedLoadOptions<T extends object> {
   parentTableAlias: string;
   parentJoinPath?: string;
   count?: boolean;
+  schema?: string;
 }
