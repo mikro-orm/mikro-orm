@@ -50,7 +50,7 @@
     "access": "public"
   },
   "dependencies": {
-    "@mikro-orm/mysql": "^6.6.4",
+    "@mikro-orm/mysql": "6.6.4",
     "kysely": "0.28.9"
   },
   "devDependencies": {

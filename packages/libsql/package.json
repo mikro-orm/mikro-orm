@@ -50,7 +50,7 @@
     "access": "public"
   },
   "dependencies": {
-    "@mikro-orm/sql": "^6.6.4",
+    "@mikro-orm/sql": "6.6.4",
     "kysely": "0.28.9",
     "libsql": "0.5.22",
     "sqlstring-sqlite": "0.1.1"

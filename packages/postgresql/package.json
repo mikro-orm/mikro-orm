@@ -50,7 +50,7 @@
     "access": "public"
   },
   "dependencies": {
-    "@mikro-orm/sql": "^6.6.4",
+    "@mikro-orm/sql": "6.6.4",
     "kysely": "0.28.9",
     "pg": "8.16.3",
     "pg-cursor": "2.15.3",

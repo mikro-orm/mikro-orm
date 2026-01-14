@@ -50,7 +50,7 @@
     "access": "public"
   },
   "dependencies": {
-    "@mikro-orm/mongodb": "^6.6.4",
+    "@mikro-orm/mongodb": "6.6.4",
     "mongodb": "7.0.0",
     "umzug": "3.8.2"
   },
