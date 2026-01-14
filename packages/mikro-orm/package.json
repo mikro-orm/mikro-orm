@@ -1,7 +1,7 @@
 {
   "name": "mikro-orm",
   "type": "module",
-  "version": "6.6.3",
+  "version": "6.6.4",
   "description": "TypeScript ORM for Node.js based on Data Mapper, Unit of Work and Identity Map patterns. Supports MongoDB, MySQL, PostgreSQL and SQLite databases as well as usage with vanilla JavaScript.",
   "exports": {
     "./package.json": "./package.json",

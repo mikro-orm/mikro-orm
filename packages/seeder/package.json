@@ -1,7 +1,7 @@
 {
   "name": "@mikro-orm/seeder",
   "type": "module",
-  "version": "6.6.3",
+  "version": "6.6.4",
   "description": "Seeder package for MikroORM.",
   "exports": {
     "./package.json": "./package.json",
@@ -54,7 +54,7 @@
     "tinyglobby": "0.2.15"
   },
   "devDependencies": {
-    "@mikro-orm/core": "^6.6.3"
+    "@mikro-orm/core": "^6.6.4"
   },
   "peerDependencies": {
     "@mikro-orm/core": "^6.0.0"

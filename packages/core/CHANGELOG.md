@@ -3,6 +3,21 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.6.4](https://github.com/mikro-orm/mikro-orm/compare/v6.6.3...v6.6.4) (2026-01-14)
+
+
+### Bug Fixes
+
+* **core:** do not convert custom types in `em.refresh` ([143a4ed](https://github.com/mikro-orm/mikro-orm/commit/143a4ed46896b764c48914ae77e7ea33959db8e4)), closes [#7073](https://github.com/mikro-orm/mikro-orm/issues/7073)
+* **core:** respect `orphanRemoval` on 1:1 relations when inverse side is a PK ([#7081](https://github.com/mikro-orm/mikro-orm/issues/7081)) ([ce4bfee](https://github.com/mikro-orm/mikro-orm/commit/ce4bfeeea3fd7ba18fb2cd0c5dbebc2bfa56eb11))
+* **core:** support wildcard `wrap(e).populate()` hints on type level ([45224ee](https://github.com/mikro-orm/mikro-orm/commit/45224ee294a920c9cfe54ed719df6b4a8023e0ef))
+* **mongo:** fix field name conversion when querying object embedded entities ([3ea8193](https://github.com/mikro-orm/mikro-orm/commit/3ea819360d466b3dab98047666d505036b066c24))
+* **postres:** fix casting of object embedded relation properties ([6095889](https://github.com/mikro-orm/mikro-orm/commit/6095889cc74bfaf9153cc03786adc2fd3e5da6e1))
+
+
+
+
+
 ## [6.6.3](https://github.com/mikro-orm/mikro-orm/compare/v6.6.2...v6.6.3) (2026-01-04)
 
 

@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.6.4](https://github.com/mikro-orm/mikro-orm/compare/v6.6.3...v6.6.4) (2026-01-14)
+
+
+### Bug Fixes
+
+* **mongo:** fix field name conversion when querying object embedded entities ([3ea8193](https://github.com/mikro-orm/mikro-orm/commit/3ea819360d466b3dab98047666d505036b066c24))
+
+
+
+
+
 ## [6.6.3](https://github.com/mikro-orm/mikro-orm/compare/v6.6.2...v6.6.3) (2026-01-04)
 
 **Note:** Version bump only for package @mikro-orm/mongodb
