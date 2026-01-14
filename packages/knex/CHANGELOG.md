@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.6.4](https://github.com/mikro-orm/mikro-orm/compare/v6.6.3...v6.6.4) (2026-01-14)
+
+
+### Bug Fixes
+
+* **core:** fix applying filters on nested relation conditions ([2ec6474](https://github.com/mikro-orm/mikro-orm/commit/2ec64742ff3d62c8fa494f9de06f479a9c056dd4))
+* **core:** fix processing filters on to-many relations ([4a55799](https://github.com/mikro-orm/mikro-orm/commit/4a55799079ca2ad175ad8aa252e9112cd23d3c8b))
+
+
+
+
+
 ## [6.6.3](https://github.com/mikro-orm/mikro-orm/compare/v6.6.2...v6.6.3) (2026-01-04)
 
 
