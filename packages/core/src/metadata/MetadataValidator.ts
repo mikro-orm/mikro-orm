@@ -5,6 +5,17 @@ import { MetadataError } from '../errors.js';
 import { ReferenceKind } from '../enums.js';
 import type { MetadataStorage } from './MetadataStorage.js';
 
+/**
+ * List of property names that could lead to prototype pollution vulnerabilities.
+ * These names should never be used as entity property names because they could
+ * allow malicious code to modify object prototypes when property values are assigned.
+ *
+ * - `__proto__`: Could modify the prototype chain
+ * - `constructor`: Could modify the constructor property
+ * - `prototype`: Could modify the prototype object
+ *
+ * @internal
+ */
 const DANGEROUS_PROPERTY_NAMES = ['__proto__', 'constructor', 'prototype'];
 
 /**
@@ -244,6 +255,14 @@ export class MetadataValidator {
     }
   }
 
+  /**
+   * Validates that entity properties do not use dangerous names that could lead to
+   * prototype pollution vulnerabilities. This validation ensures that property names
+   * cannot be exploited to modify object prototypes when values are assigned during
+   * entity hydration or persistence operations.
+   *
+   * @internal
+   */
   private validatePropertyNames(meta: EntityMetadata): void {
     for (const prop of Utils.values(meta.properties)) {
       if (DANGEROUS_PROPERTY_NAMES.includes(prop.name)) {
