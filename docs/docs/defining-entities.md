@@ -53,7 +53,7 @@ export class Book extends CustomBaseEntity {
   @ManyToOne(() => Publisher, { ref: true, nullable: true })
   publisher?: Ref<Publisher>;
 
-  @ManyToMany({ entity: 'BookTag', fixedOrder: true })
+  @ManyToMany(() => BookTag, { fixedOrder: true })
   tags = new Collection<BookTag>(this);
 
 }
@@ -89,8 +89,8 @@ import { type InferEntity, defineEntity } from '@mikro-orm/core';
 
 export const Book = defineEntity({
   name: 'Book',
+  extends: CustomBaseEntity,
   properties: p => ({
-    ...CustomBaseProperties,
     title: p.string(),
     author: () => p.manyToOne(Author),
     publisher: () => p.manyToOne(Publisher)
@@ -108,21 +108,21 @@ export interface IBook extends InferEntity<typeof Book> {}
   <TabItem value="entity-schema">
 
 ```ts title="./entities/Book.ts"
-export interface IBook extends CustomBaseEntity {
+export interface IBook extends ICustomBaseEntity {
   title: string;
   author: Author;
   publisher?: Ref<Publisher>;
   tags: Collection<BookTag>;
 }
 
-export const Book = new EntitySchema<IBook, CustomBaseEntity>({
+export const Book = new EntitySchema<IBook>({
   name: 'Book',
-  extends: 'CustomBaseEntity',
+  extends: CustomBaseEntity,
   properties: {
     title: { type: 'string' },
-    author: { kind: 'm:1', entity: 'Author' },
-    publisher: { kind: 'm:1', entity: 'Publisher', ref: true, nullable: true },
-    tags: { kind: 'm:n', entity: 'BookTag', fixedOrder: true },
+    author: { kind: 'm:1', entity: () => Author },
+    publisher: { kind: 'm:1', entity: () => Publisher, ref: true, nullable: true },
+    tags: { kind: 'm:n', entity: () => BookTag, fixedOrder: true },
   },
 });
 ```
@@ -2304,8 +2304,8 @@ export const BookSchema = new EntitySchema<Book>({
   properties: {
     id: { type: Number, primary: true },
     title: { type: String },
-    author: { kind: 'm:1', entity: 'Author' },
-    publisher: { kind: 'm:1', entity: 'Publisher', ref: true, nullable: true },
+    author: { kind: 'm:1', entity: () => Author },
+    publisher: { kind: 'm:1', entity: () => Publisher, ref: true, nullable: true },
   },
 });
 ```

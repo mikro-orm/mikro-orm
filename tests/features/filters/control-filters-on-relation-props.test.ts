@@ -1,6 +1,5 @@
 import { defineEntity, MikroORM, p } from '@mikro-orm/sqlite';
 
-import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 const BenefitDetail = defineEntity({
   name: 'BenefitDetail',
   properties: {
@@ -42,8 +41,6 @@ const Benefit = defineEntity({
   name: 'Benefit',
   extends: BaseBenefit,
   properties: {
-    // FIXME this is required for `InferEntity` with `extends`
-    ...BaseBenefitProps,
     name: p.string(),
     details: () => p.oneToMany(BenefitDetail).mappedBy('benefit').filters({ isActive: { active: true } }),
   },
@@ -64,7 +61,6 @@ describe('control filters on relation props [sqlite]', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
-      metadataProvider: ReflectMetadataProvider,
       entities: [Employee, Benefit],
       dbName: ':memory:',
     });

@@ -2,6 +2,7 @@ import {
   type Constructor,
   type Dictionary,
   type EntityClass,
+  type EntityCtor,
   EntityMetadata,
   type EntityName,
   type EntityProperty,
@@ -349,8 +350,8 @@ export class MetadataDiscovery {
     const exists = this.metadata.has(entity);
     const meta = this.metadata.get<T>(entity, true);
     meta.abstract ??= !(exists && meta.name);
-    const schema = EntitySchema.fromMetadata<T>(meta);
-    schema.setClass(entity);
+    const schema = EntitySchema.fromMetadata(meta);
+    schema.setClass(entity as EntityCtor<T>);
 
     return schema;
   }
