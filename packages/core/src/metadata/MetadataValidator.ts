@@ -5,6 +5,8 @@ import { MetadataError } from '../errors.js';
 import { ReferenceKind } from '../enums.js';
 import type { MetadataStorage } from './MetadataStorage.js';
 
+const DANGEROUS_PROPERTY_NAMES = ['__proto__', 'constructor', 'prototype'];
+
 /**
  * @internal
  */
@@ -243,10 +245,8 @@ export class MetadataValidator {
   }
 
   private validatePropertyNames(meta: EntityMetadata): void {
-    const dangerousNames = ['__proto__', 'constructor', 'prototype'];
-
     for (const prop of Utils.values(meta.properties)) {
-      if (dangerousNames.includes(prop.name)) {
+      if (DANGEROUS_PROPERTY_NAMES.includes(prop.name)) {
         throw MetadataError.dangerousPropertyName(meta, prop);
       }
     }
