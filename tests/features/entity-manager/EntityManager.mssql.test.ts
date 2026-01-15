@@ -1213,7 +1213,7 @@ describe('EntityManagerMsSql', () => {
 
   test('datetime is stored in correct timezone', async () => {
     const author = new Author2('n', 'e');
-    author.createdAt = new Date('2000-01-01T00:00:00');
+    author.createdAt = new Date('2000-01-01T00:00:00Z');
     await orm.em.persist(author).flush();
     orm.em.clear();
 

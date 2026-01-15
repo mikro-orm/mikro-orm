@@ -331,6 +331,20 @@ The following methods were renamed:
 
 Previously, we used `md5` hash algorithm in various places, mainly to compute a stable hash for a string value, e.g. for long index names. This was made configurable and sha256 was also allowed via `hashAlgorithm` option. The algorithm is now replaced with FNV-1a 64-bit, so we don't have to depend on `node:crypto`. The option `hashAlgorithm` is removed.
 
+## `forceUtcTimezone` enabled by default
+
+The `forceUtcTimezone` option is now enabled by default for all SQL drivers. This means datetime columns without timezone (`datetime` in MySQL/MSSQL, `timestamp` in PostgreSQL) will store and retrieve values in UTC.
+
+If your application relies on storing dates in local timezone, you can disable this by setting `forceUtcTimezone: false`:
+
+```ts
+MikroORM.init({
+  forceUtcTimezone: false,
+});
+```
+
+> Note: If you have existing data stored in local timezone and enable UTC mode, or vice versa, the timestamps will be interpreted incorrectly. Make sure to migrate your data accordingly, or keep the setting consistent with how your data was originally stored.
+
 ## `processOnCreateHooksEarly` enabled by default
 
 The `processOnCreateHooksEarly` option is now enabled by default. `onCreate` hooks are now executed inside `em.create` method if used explicitly.

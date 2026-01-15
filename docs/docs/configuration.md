@@ -307,11 +307,13 @@ MikroORM.init({
 
 ## Forcing UTC Timezone
 
-Use `forceUtcTimezone` option to force the `Date`s to be saved in UTC in datetime columns without timezone. It works for MySQL (`datetime` type) and PostgreSQL (`timestamp` type). SQLite does this by default.
+The `forceUtcTimezone` option forces `Date` values to be stored in UTC for datetime columns without timezone. It works for MySQL (`datetime` type), PostgreSQL (`timestamp` type), and MSSQL (`datetime`/`datetime2` types). SQLite stores dates as numeric timestamps, which are inherently timezone-agnostic.
+
+This option is enabled by default since v7. To disable it and store dates in local timezone:
 
 ```ts
 MikroORM.init({
-  forceUtcTimezone: true,
+  forceUtcTimezone: false,
 });
 ```
 

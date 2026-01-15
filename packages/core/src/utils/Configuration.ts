@@ -94,6 +94,7 @@ const DEFAULTS = {
   upsertManaged: true,
   forceEntityConstructor: false,
   forceUndefined: false,
+  forceUtcTimezone: true,
   processOnCreateHooksEarly: true,
   ensureDatabase: true,
   ensureIndexes: false,
@@ -864,9 +865,9 @@ export interface Options<
   processOnCreateHooksEarly?: boolean;
   /**
    * Force `Date` values to be stored in UTC for datetime columns without timezone.
-   * Works for MySQL (`datetime` type) and PostgreSQL (`timestamp` type).
+   * Works for MySQL (`datetime` type), PostgreSQL (`timestamp` type), and MSSQL (`datetime`/`datetime2` types).
    * SQLite does this by default.
-   * @default false
+   * @default true
    */
   forceUtcTimezone?: boolean;
   /**

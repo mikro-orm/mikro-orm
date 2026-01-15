@@ -43,7 +43,7 @@ test('6534', async () => {
     username: 'john',
     email: 'johndoe@nowhere.com',
     image: 'https://test.com',
-    created_at: new Date('2025-03-19 22:58:56.659'),
+    created_at: new Date('2025-03-19 22:58:56.659Z'),
   };
 
   const mock = mockLogger(orm);

@@ -1,7 +1,6 @@
 import {
   ALIAS_REPLACEMENT,
   ARRAY_OPERATORS,
-  type Configuration,
   type Dictionary,
   type EntityProperty,
   type IsolationLevel,
@@ -22,14 +21,6 @@ export class BasePostgreSqlPlatform extends AbstractSqlPlatform {
 
   protected override readonly schemaHelper: PostgreSqlSchemaHelper = new PostgreSqlSchemaHelper(this);
   protected override readonly exceptionConverter = new PostgreSqlExceptionConverter();
-
-  override setConfig(config: Configuration) {
-    if (config.get('forceUtcTimezone') == null) {
-      config.set('forceUtcTimezone', true);
-    }
-
-    super.setConfig(config);
-  }
 
   override createNativeQueryBuilder(): PostgreSqlNativeQueryBuilder {
     return new PostgreSqlNativeQueryBuilder(this);
