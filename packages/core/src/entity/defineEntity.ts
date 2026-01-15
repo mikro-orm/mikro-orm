@@ -30,6 +30,7 @@ import type {
   Ref,
   IndexCallback,
   EntityCtor,
+  IsNever,
 } from '../typings.js';
 import type { ScalarReference } from './Reference.js';
 import type { SerializeOptions } from '../serialization/EntitySerializer.js';
@@ -705,13 +706,13 @@ export interface EntityMetadataWithProperties<
   TProperties extends Record<string, any>,
   TPK extends (keyof TProperties)[] | undefined = undefined,
   TBase = never,
-> extends Omit<Partial<EntityMetadata<InferEntityFromProperties<TProperties, TPK>>>, 'properties' | 'extends' | 'primaryKeys' | 'hooks' | 'discriminatorColumn' | 'versionProperty' | 'concurrencyCheckKeys' | 'serializedPrimaryKey' | 'indexes' | 'uniques' > {
+> extends Omit<Partial<EntityMetadata<InferEntityFromProperties<TProperties, TPK, TBase>>>, 'properties' | 'extends' | 'primaryKeys' | 'hooks' | 'discriminatorColumn' | 'versionProperty' | 'concurrencyCheckKeys' | 'serializedPrimaryKey' | 'indexes' | 'uniques' > {
   name: TName;
   tableName?: TTableName;
   extends?: EntityName<TBase>;
   properties: TProperties | ((properties: typeof propertyBuilders) => TProperties);
   primaryKeys?: TPK & InferPrimaryKey<TProperties>[];
-  hooks?: DefineEntityHooks<InferEntityFromProperties<TProperties, TPK>>;
+  hooks?: DefineEntityHooks<InferEntityFromProperties<TProperties, TPK, TBase>>;
 
   // use keyof TProperties instead of EntityKey<T> to avoid circular type inference
   discriminatorColumn?: keyof TProperties;
@@ -723,13 +724,13 @@ export interface EntityMetadataWithProperties<
     name?: string;
     type?: string;
     options?: Dictionary;
-    expression?: string | IndexCallback<InferEntityFromProperties<TProperties, TPK>>;
+    expression?: string | IndexCallback<InferEntityFromProperties<TProperties, TPK, TBase>>;
   }[];
   uniques?: {
     properties?: keyof TProperties | (keyof TProperties)[];
     name?: string;
     options?: Dictionary;
-    expression?: string | IndexCallback<InferEntityFromProperties<TProperties, TPK>>;
+    expression?: string | IndexCallback<InferEntityFromProperties<TProperties, TPK, TBase>>;
     deferMode?: DeferMode | `${DeferMode}`;
   }[];
 }
@@ -742,14 +743,14 @@ export function defineEntity<
   const TBase = never,
 >(
   meta: EntityMetadataWithProperties<TName, TTableName, TProperties, TPK, TBase>,
-): EntitySchemaWithMeta<TName, TTableName, InferEntityFromProperties<TProperties, TPK>, TBase, TProperties>;
+): EntitySchemaWithMeta<TName, TTableName, InferEntityFromProperties<TProperties, TPK, TBase>, TBase, TProperties>;
 
-export function defineEntity<const TEntity = any, const TProperties extends Record<string, any> = Record<string, any>, const TClassName extends string = string, const TTableName extends string = string, const TBase = never, const TClass extends EntityCtor = any>(
+export function defineEntity<const TEntity = any, const TProperties extends Record<string, any> = Record<string, any>, const TClassName extends string = string, const TTableName extends string = string, const TBase = never, const TClass extends EntityCtor = EntityCtor<TEntity>>(
   meta: Omit<Partial<EntityMetadata<TEntity>>, 'properties' | 'extends' | 'className' | 'tableName'> & {
     class: TClass;
     className?: TClassName;
     tableName?: TTableName;
-    extends?: EntityName<TBase>;
+    extends?: TBase;
     properties: TProperties | ((properties: typeof propertyBuilders) => TProperties);
   },
 ): EntitySchemaWithMeta<TClassName, TTableName, TEntity, TBase, TProperties, TClass>;
@@ -832,17 +833,28 @@ type InferColumnType<T extends string> =
   T extends 'json' | 'jsonb' ? any :
   any;
 
-export type InferEntityFromProperties<Properties extends Record<string, any>, PK extends (keyof Properties)[] | undefined = undefined> = {
+export type InferEntityFromProperties<Properties extends Record<string, any>, PK extends (keyof Properties)[] | undefined = undefined, Base = never> = {
   -readonly [K in keyof Properties]: InferBuilderValue<MaybeReturnType<Properties[K]>>;
 } & {
-  [PrimaryKeyProp]?: PK extends undefined
-    ? InferPrimaryKey<Properties> extends never
-      ? never
-      : IsUnion<InferPrimaryKey<Properties>> extends true
-        ? InferPrimaryKey<Properties>[]
-        : InferPrimaryKey<Properties>
+  [PrimaryKeyProp]?: InferCombinedPrimaryKey<Properties, PK, Base>;
+} & (IsNever<Base> extends true ? {} : Omit<Base, typeof PrimaryKeyProp>);
+
+// Combines primary keys from child properties and base entity
+type InferCombinedPrimaryKey<Properties extends Record<string, any>, PK, Base> =
+  PK extends undefined
+    ? CombinePrimaryKeys<InferPrimaryKey<Properties>, ExtractBasePrimaryKey<Base>>
     : PK;
-};
+
+// Extract primary key from base entity type
+type ExtractBasePrimaryKey<Base> = Base extends { [PrimaryKeyProp]?: infer BasePK } ? BasePK : never;
+
+// Combine child and base primary keys into a union
+type CombinePrimaryKeys<ChildPK, BasePK> =
+  [ChildPK] extends [never]
+    ? BasePK
+    : [BasePK] extends [never]
+      ? IsUnion<ChildPK> extends true ? ChildPK[] : ChildPK
+      : ChildPK | BasePK;
 
 export type InferPrimaryKey<Properties extends Record<string, any>> = {
   [K in keyof Properties]: MaybeReturnType<Properties[K]> extends { '~options': { primary: true } } ? K : never;

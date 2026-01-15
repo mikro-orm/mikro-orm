@@ -44,13 +44,13 @@ export type EntitySchemaProperty<Target, Owner> =
   | ({ enum: true } & EnumOptions<Owner>)
   | (TypeDef<Target> & PropertyOptions<Owner>);
 type OmitBaseProps<Entity, Base> = IsNever<Base> extends true ? Entity : Omit<Entity, keyof Base>;
-export type EntitySchemaMetadata<Entity, Base = never, Class extends EntityCtor = any> =
+export type EntitySchemaMetadata<Entity, Base = never, Class extends EntityCtor = EntityCtor<Entity>> =
   & Omit<Partial<EntityMetadata<Entity>>, 'name' | 'properties' | 'extends'>
   & ({ name: string } | { class: Class; name?: string })
   & { extends?: EntityName<Base> }
   & { properties?: { [Key in keyof OmitBaseProps<Entity, Base> as CleanKeys<OmitBaseProps<Entity, Base>, Key>]-?: EntitySchemaProperty<ExpandProperty<NonNullable<Entity[Key]>>, Entity> } };
 
-export class EntitySchema<Entity = any, Base = never, Class extends EntityCtor = any> {
+export class EntitySchema<Entity = any, Base = never, Class extends EntityCtor = EntityCtor<Entity>> {
 
   /**
    * When schema links the entity class via `class` option, this registry allows the lookup from opposite side,

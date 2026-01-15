@@ -1,5 +1,5 @@
 import { p, defineEntity, InferEntity } from '@mikro-orm/core';
-import { BaseProperties } from './BaseEntity5.js';
+import { BaseEntity5 } from './BaseEntity5.js';
 import { Author4 } from './Author4.js';
 import { Publisher4 } from './Publisher4.js';
 import { BookTag4 } from './BookTag4.js';
@@ -13,8 +13,8 @@ export interface Book4Meta {
 
 export const Book4 = defineEntity({
   name: 'Book4',
+  extends: BaseEntity5,
   properties: {
-    ...BaseProperties,
     title: p.string(),
     price: p.float().nullable(),
     priceTaxed: p.float().formula(a => `${a}.price * 1.19`).persist(false),

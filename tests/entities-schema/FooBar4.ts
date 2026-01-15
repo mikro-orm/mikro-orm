@@ -1,8 +1,9 @@
-import { defineEntity, InferEntity, p } from '@mikro-orm/core';
+import { defineEntity, InferEntity, BaseEntity, p } from '@mikro-orm/core';
 import { FooBaz4, BaseProperties } from './index.js';
 
 export const FooBar4 = defineEntity({
   name: 'FooBar4',
+  extends: BaseEntity,
   properties: {
     ...BaseProperties,
     name: p.string().default('asd'),

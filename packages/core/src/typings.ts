@@ -30,6 +30,7 @@ import { EntityComparator } from './utils/EntityComparator.js';
 import type { EntityManager } from './EntityManager.js';
 import type { EventSubscriber } from './events/EventSubscriber.js';
 import type { FilterOptions, FindOneOptions, FindOptions, LoadHint } from './drivers/IDatabaseDriver.js';
+import { BaseEntity } from './entity/BaseEntity.js';
 
 export type Constructor<T = unknown> = new (...args: any[]) => T;
 export type Dictionary<T = any> = { [k: string]: T };
@@ -594,7 +595,10 @@ export class EntityMetadata<Entity = any, Class extends EntityCtor<Entity> = Ent
     const name = meta.className ?? meta.name;
 
     if (!this.class && name) {
-      this.class = ({ [name]: class {} })[name] as any;
+      const Class = this.extends === BaseEntity
+        ? ({ [name]: class extends BaseEntity {} })[name]
+        : ({ [name]: class {} })[name];
+      this.class = Class as any;
     }
   }
 
@@ -1352,7 +1356,7 @@ export type MetadataProcessor = (metadata: EntityMetadata[], platform: Platform)
 
 export type MaybeReturnType<T> = T extends (...args: any[]) => infer R ? R : T;
 
-export interface EntitySchemaWithMeta<TName extends string = string, TTableName extends string = string, TEntity = any, TBase = never, TProperties extends Record<string, any> = Record<string, any>, TClass extends EntityCtor = any> extends EntitySchema<TEntity, TBase, TClass> {
+export interface EntitySchemaWithMeta<TName extends string = string, TTableName extends string = string, TEntity = any, TBase = never, TProperties extends Record<string, any> = Record<string, any>, TClass extends EntityCtor = EntityCtor<TEntity>> extends EntitySchema<TEntity, TBase, TClass> {
   readonly name: TName;
   readonly properties: TProperties;
   readonly tableName: TTableName;

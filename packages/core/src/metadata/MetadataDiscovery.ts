@@ -2,6 +2,7 @@ import {
   type Constructor,
   type Dictionary,
   type EntityClass,
+  type EntityCtor,
   EntityMetadata,
   type EntityName,
   type EntityProperty,
@@ -349,8 +350,8 @@ export class MetadataDiscovery {
     const exists = this.metadata.has(entity);
     const meta = this.metadata.get<T>(entity, true);
     meta.abstract ??= !(exists && meta.name);
-    const schema = EntitySchema.fromMetadata<T>(meta);
-    schema.setClass(entity);
+    const schema = EntitySchema.fromMetadata(meta);
+    schema.setClass(entity as EntityCtor<T>);
 
     return schema;
   }
@@ -1048,10 +1049,12 @@ export class MetadataDiscovery {
         }
 
         this.initFieldName(prop, true);
+        this.initRelation(prop);
         path.push(prop.fieldNames[0]);
         meta.properties[name].fieldNames = prop.fieldNames;
         meta.properties[name].embeddedPath = path;
-        const fieldName = raw(this.platform.getSearchJsonPropertySQL(path.join('->'), prop.runtimeType ?? prop.type, true));
+        const targetProp = prop.targetMeta?.getPrimaryProp() ?? prop;
+        const fieldName = raw(this.platform.getSearchJsonPropertySQL(path.join('->'), targetProp.runtimeType ?? targetProp.type, true));
         meta.properties[name].fieldNameRaw = fieldName.sql; // for querying in SQL drivers
         meta.properties[name].persist = false; // only virtual as we store the whole object
         meta.properties[name].userDefined = false; // mark this as a generated/internal property, so we can distinguish from user-defined non-persist properties

@@ -1049,6 +1049,15 @@ describe.each(['sqlite', 'libsql'] as const)('EntityManager (%s)', driver => {
     const b1 = await orm.em.findOneOrFail(FooBar4, { name: 'b1' });
     expect(b1.virtual).toBeUndefined();
 
+    // test `defineEntity` with `extends: BaseEntity`
+    expect(b1.toObject()).toEqual({
+      id: b1.id,
+      createdAt: b1.createdAt,
+      updatedAt: b1.updatedAt,
+      name: 'b1',
+      version: 1,
+    });
+
     await orm.em.createQueryBuilder(FooBar4).select(raw(`id, '123' as virtual`)).getResultList();
     expect(b1.virtual).toBe('123');
   });
