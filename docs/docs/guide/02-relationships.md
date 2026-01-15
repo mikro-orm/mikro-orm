@@ -2,126 +2,101 @@
 title: 'Chapter 2: Relationships'
 ---
 
-In this section, we will add more entities, create a common base entity to extend from, and define relationships between them.
+In this section, we will add more entities, define shared base properties, and create relationships between them.
 
 ## Created and updated timestamps
 
-Before we add more entities, let's refactor our existing `User` entity a bit. We would like to store timestamps of when the entity was created and when it was updated for the last time. To do that, introduce two new properties:
+Before we add more entities, let's refactor our existing `User` entity a bit. We would like to store timestamps of when the entity was created and when it was updated for the last time. With `defineEntity`, we add these using property builders:
 
 ```ts title='user.entity.ts'
-@Property()
-createdAt = new Date();
-
-@Property({ onUpdate: () => new Date() })
-updatedAt = new Date();
+createdAt: p.datetime().onCreate(() => new Date()),
+updatedAt: p.datetime().onCreate(() => new Date()).onUpdate(() => new Date()),
 ```
 
-The `onUpdate` option here will be executed during the `flush` operation if the ORM detects the entity was updated. For create query, we depend on the property initializers - we already said that the ORM will never call your entity constructor when creating managed entities, so it is safe to use it like this.
+The `.onUpdate()` callback is executed during the `flush` operation if the ORM detects the entity was updated. For create queries, `.onCreate()` is used to set the initial value.
 
-## Custom base entity
+## Base entity
 
-Now let's say we want to have these timestamps on every entity in our app. We can refactor such common properties out to a custom base entity. Put the following into `src/modules/common/base.entity.ts`:
+Now let's say we want to have these timestamps (and the primary key) on every entity in our app. With `defineEntity`, we can create a base entity that other entities extend. Put the following into `src/modules/common/base.entity.ts`:
 
 ```ts title='base.entity.ts'
-import { PrimaryKey, Property } from '@mikro-orm/core';
+import { defineEntity, InferEntity, p } from '@mikro-orm/core';
 
-export abstract class BaseEntity {
+export const BaseEntity = defineEntity({
+  name: 'BaseEntity',
+  abstract: true,
+  properties: {
+    id: p.integer().primary(),
+    createdAt: p.datetime().onCreate(() => new Date()),
+    updatedAt: p.datetime().onCreate(() => new Date()).onUpdate(() => new Date()),
+  },
+});
 
-  @PrimaryKey()
-  id!: number;
-
-  @Property()
-  createdAt = new Date();
-
-  @Property({ onUpdate: () => new Date() })
-  updatedAt = new Date();
-
-}
+export type BaseEntity = InferEntity<typeof BaseEntity>;
 ```
 
-You can see a base entity looks like any other entity, with one exception - it does not have the `@Entity()` decorator. There are some use cases where you will want to use the decorator even for the base entity, in that case, add `abstract: true` to the decorator options, e.g. `@Entity({ abstract: true })`.
-
-Now extend this base entity from the `User` entity and remove the properties it defines:
+This is an abstract entity (it won't have its own table). Other entities can extend it using the `extends` option:
 
 > You can see the import with `.js` extension - this is mandatory for ESM projects. If your project is targeting CommonJS, drop it.
 
 ```ts title='user.entity.ts'
-import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
+import { defineEntity, Opt, p } from '@mikro-orm/core';
 import { BaseEntity } from '../common/base.entity.js';
 
-@Entity()
 export class User extends BaseEntity {
-
-  @Property()
   fullName!: string;
-
-  @Property()
   email!: string;
-
-  @Property()
   password!: string;
-
-  @Property({ type: 'text' })
-  bio = '';
-
+  bio!: string & Opt;
 }
+
+export const UserSchema = defineEntity({
+  class: User,
+  extends: BaseEntity,
+  properties: {
+    fullName: p.string(),
+    email: p.string(),
+    password: p.string(),
+    bio: p.text().default(''),
+  },
+});
 ```
 
 ## More entities
 
-Time to add the `Article` entity, it will have 4 string properties and one relationship - a ManyToOne relation pointing to the `User` entity. As you expected, it will go to the `src/modules/article/article.entity.ts` file.
+Time to add the `Article` entity. It will have 4 string properties and one relationship - a ManyToOne relation pointing to the `User` entity. As you expected, it will go to the `src/modules/article/article.entity.ts` file.
 
 ```ts title='article.entity.ts'
-import { Entity, ManyToOne, Property, t } from '@mikro-orm/core';
+import { defineEntity, InferEntity, p } from '@mikro-orm/core';
 import { BaseEntity } from '../common/base.entity.js';
 import { User } from '../user/user.entity.js';
 
-@Entity()
-export class Article extends BaseEntity {
+export const Article = defineEntity({
+  name: 'Article',
+  extends: BaseEntity,
+  properties: {
+    slug: p.string().unique(),
+    title: p.string().index(),
+    description: p.string().length(1000),
+    text: p.text().lazy(),
+    author: () => p.manyToOne(User),
+  },
+});
 
-  @Property({ unique: true })
-  slug!: string;
-
-  @Property({ index: true })
-  title!: string;
-
-  @Property({ length: 1000 })
-  description!: string;
-
-  @Property({ type: t.text, lazy: true })
-  text!: string;
-
-  @ManyToOne()
-  author!: User;
-
-}
+export type Article = InferEntity<typeof Article>;
 ```
 
-Let's break this down, there are some new additions we haven't seen before.
+Let's break this down, there are some new additions we haven't seen before:
 
-- `slug` property is marked as `unique`, this will result in a unique constraint over the column
-- `title` property is marked as `index`ed
-- `description` property has a `length` option, the column will result in `varchar(1000)` with most SQL drivers
-- `text` property uses the `t.text` mapped type, and is marked as `lazy`, meaning it won't be selected automatically
-- `author` property is our first relationship
+- `slug` property is marked as `.unique()`, this will result in a unique constraint over the column
+- `title` property is marked as `.index()`ed
+- `description` property has `.length(1000)`, the column will result in `varchar(1000)` with most SQL drivers
+- `text` property uses `.text()` for the text type, and is marked as `.lazy()`, meaning it won't be selected automatically
+- `author` property is our first relationship, defined with `p.manyToOne(User)`
 
-:::caution Default `reflect-metadata` provider
+Notice we use arrow functions for relations like `author: () => p.manyToOne(User)`. The arrow function wrapper is needed to handle circular references between entities.
 
-The examples here are all based on the `@mikro-orm/reflection` package that helps with advanced type reflection via `ts-morph`, based on TypeScript Compiler API. If you are using the default `reflect-metadata` provider, there are things you will need to add to the decorator options to make things work. Let's say the `author` property is optional, `ts-morph` would infer everything just fine, but with `reflect-metadata` you would have to do this:
-
-```ts
-// with @mikro-orm/reflection package (ts-morph)
-@ManyToOne()
-author?: User;
-
-// with the default provider (reflect-metadata)
-@ManyToOne({ entity: () => User, nullable: true })
-author?: User;
-```
-
-Consult [the docs](../metadata-providers#limitations-and-requirements) for more examples.
-
-:::
+> You can update your `mikro-orm.config.ts` to include the new `Article` entity in the `entities` array, but it is not strictly necessary. As long as the entity is part of some other discovered entity relationship, it will be discovered automatically.
 
 ## Types of relations
 
@@ -144,22 +119,23 @@ Let's get back to the `server.ts` file and try a few things out with our new `Ar
 
 ### Creating entity graph
 
-So far we used the entity constructor manually to create an entity instance. Sometimes we might want to create the whole entity graph, including relations. You can use [`em.create()`](/api/core/class/EntityManager#create) for that, it is a synchronous method that creates the entity instance for you. It allows you to create a deep entity graph, mapping foreign keys of your relations to entity references of the correct type. This method will also call [`em.persist()`](/api/core/class/EntityManager#persist) on the created entity (unless disabled via `persistOnCreate` option).
+We've been using [`em.create()`](/api/core/class/EntityManager#create) to create entity instances. This method allows you to create a deep entity graph, mapping foreign keys of your relations to entity references of the correct type. It will also call [`em.persist()`](/api/core/class/EntityManager#persist) on the created entity (unless disabled via `persistOnCreate` option).
 
 > You can wipe most of the contents of `server.ts` file and keep only the initial part with ORM init, up to the point where the first `User` entity gets flushed, plus the `orm.close()` call at the end. We won't be using this code going forward, it is just a playground for you.
 
 ```ts title='server.ts'
-// create new user entity instance via constructor
-const user = new User();
-user.email = 'foo@bar.com';
-user.fullName = 'Foo Bar';
-user.password = '123456';
-
 // fork first to have a separate context
 const em = orm.em.fork();
 
-// first mark the entity with `persist()`, then `flush()`
-await em.persist(user).flush();
+// create new user entity instance
+const user = em.create(User, {
+  email: 'foo@bar.com',
+  fullName: 'Foo Bar',
+  password: '123456',
+});
+
+// em.create auto-persists, so just flush
+await em.flush();
 
 // clear the context to simulate fresh request
 em.clear();
@@ -184,37 +160,18 @@ If you carefully checked this snippet, you probably found that new mysterious [`
 
 :::
 
-But wait, the editor is complaining about something. You probably see this cryptic error:
+### Type inference with `defineEntity`
 
-```
-Argument of type '{ slug: string; title: string; description: string; text: string; author: number; }' is not assignable to parameter of type 'RequiredEntityData<Article>'.
-  Type '{ slug: string; title: string; description: string; text: string; author: number; }' is missing the following properties from type '{ slug: string; title: string; description: string; text: string; author: EntityData<User> | { id?: number | null | undefined; fullName?: string | null | undefined; email?: string | ... 1 more ... | undefined; password?: string | ... 1 more ... | undefined; bio?: string | ... 1 more ... | undefined; } | EntityDataPr...': createdAt, updatedAt ts(2345)
-```
+One of the benefits of `defineEntity` is that optional properties are inferred automatically! When you use `.default()`, `.onCreate()`, or `.onUpdate()`, the property is automatically marked as optional in TypeScript.
 
-It's indeed a bit ugly, but if you look carefully, you will see the important details at the very beginning and at the very end. This error tells us the object we are passing into [`em.create()`](/api/core/class/EntityManager#create) is not complete - it is missing two properties, the `createdAt` and `updatedAt` timestamps. But we define the default value for them via property initializer, what's the problem here?
+In our `BaseEntity`, all three properties are optional:
+- `id` is a single numeric primary key, so auto-increment is assumed
+- `createdAt` uses `.onCreate()`
+- `updatedAt` uses `.onCreate()` and `.onUpdate()`
 
-The thing is, there is no easy way to tell whether an object property has an initializer or not - for TypeScript our `createdAt` and `updatedAt` properties are both mandatory. To get around this while preserving the strict type checking, you can use the `OptionalProps` symbol. As both of the problematic properties live in the `BaseEntity`, put it there:
+So TypeScript already knows these are optional in `em.create()` calls - no additional configuration needed!
 
-```ts title='base.entity.ts'
-import { OptionalProps, PrimaryKey, Property } from '@mikro-orm/core';
-
-export abstract class BaseEntity {
-
-  [OptionalProps]?: 'createdAt' | 'updatedAt';
-
-  @PrimaryKey()
-  id!: number;
-
-  @Property()
-  createdAt = new Date();
-
-  @Property({ onUpdate: () => new Date() })
-  updatedAt = new Date();
-
-}
-```
-
-With this change, you can see the TypeScript error is now gone. Running the `npm start`, you will see the `Article` entity will get persisted and logged to the console:
+Running the `npm start`, you will see the `Article` entity will get persisted and logged to the console:
 
 ```
 [query] begin
@@ -239,7 +196,7 @@ console.log('it really is a User', article.author instanceof User); // true
 console.log('but not initialized', wrap(article.author).isInitialized()); // false
 ```
 
-### Using entity constructor
+### Using `onCreate` for computed properties
 
 Every `Article` can be identified by a unique slug - a URL fragment that can be used to look up the article. Currently, it is just a regular string property, but we can do better here. The value should be always bound to the article title. For simplicity, we will use the following function:
 
@@ -251,10 +208,10 @@ function convertToSlug(text: string) {
 }
 ```
 
-We want the URL to remain the same after the article gets created, so let's generate the slug inside `Article` constructor. Similarly, you can use the text property and store its first 1000 characters as the description:
+We want the URL to remain the same after the article gets created, so let's generate the slug using `.onCreate()`. Similarly, we can generate the description from the text:
 
 ```ts title='article.entity.ts'
-import { Entity, ManyToOne, Property, t } from '@mikro-orm/core';
+import { defineEntity, InferEntity, p } from '@mikro-orm/core';
 import { BaseEntity } from '../common/base.entity.js';
 import { User } from '../user/user.entity.js';
 
@@ -264,72 +221,22 @@ function convertToSlug(text: string) {
              .replace(/ +/g, '-');
 }
 
-@Entity()
-export class Article extends BaseEntity {
+export const Article = defineEntity({
+  name: 'Article',
+  extends: BaseEntity,
+  properties: {
+    slug: p.string().unique().onCreate((article: Article) => convertToSlug(article.title)),
+    title: p.string().index(),
+    description: p.string().length(1000).onCreate((article: Article) => article.text.substring(0, 999) + '…'),
+    text: p.text().lazy(),
+    author: () => p.manyToOne(User),
+  },
+});
 
-  @Property({ unique: true })
-  slug: string;
-
-  @Property({ index: true })
-  title: string;
-
-  @Property({ length: 1000 })
-  description: string;
-
-  @Property({ type: t.text, lazy: true })
-  text: string;
-
-  @ManyToOne()
-  author: User;
-
-  constructor(title: string, text: string, author: User) {
-    super();
-    this.title = title;
-    this.text = text;
-    this.author = author;
-    this.slug = convertToSlug(title);
-    this.description = this.text.substring(0, 999) + '…';
-  }
-
-}
+export type Article = InferEntity<typeof Article>;
 ```
 
-With this change, the `slug` and `description` properties are optional too - but [`em.create()`](/api/core/class/EntityManager#create) complains about them. You need to add them to the `OptionalProps` definition, as with the timestamps before. But these are the `Article` entity properties, so we should do it in the `Article` entity somehow. Maybe like this?
-
-```ts title='article.entity.ts'
-export class Article extends BaseEntity {
-  [OptionalProps]?: 'slug' | 'description';
-}
-```
-
-Unfortunately not, you will see TypeScript error like this one:
-
-```
-Property '[OptionalProps]' in type 'Article' is not assignable to the same property in base type 'BaseEntity'.
-  Type '"slug" | "description" | undefined' is not assignable to type '"createdAt" | "updatedAt" | undefined'.
-    Type '"slug"' is not assignable to type '"createdAt" | "updatedAt" | undefined'. ts(2416)
-```
-
-#### Generics to the rescue!
-
-The solution here might not be clear, but it is very simple. Instead of redefining the `OptionalProps` property, we define a generic type argument on the `BaseEntity` class and pass `Article` specific properties down to the base entity.
-
-```ts title='base.entity.ts'
-export abstract class BaseEntity<Optional = never> {
-  [OptionalProps]?: 'createdAt' | 'updatedAt' | Optional;
-  // all properties remain the same
-}
-```
-
-We picked the default value of `never` for our type - this is because a union with `never` will always yield the same type, e.g. `string | never` is the same as just `string`.
-
-```ts title='article.entity.ts'
-export class Article extends BaseEntity<'slug' | 'description'> {
-  // all properties remain the same
-}
-```
-
-Now the [`em.create()`](/api/core/class/EntityManager#create) call work even without the `slug` and `description:
+With `.onCreate()`, the `slug` and `description` properties are automatically optional in [`em.create()`](/api/core/class/EntityManager#create) - no additional type configuration needed!
 
 ```ts
 const article = em.create(Article, {
@@ -353,41 +260,6 @@ Article {
   text: 'Lorem impsum dolor sit amet',
   author: (User) { id: '1' }
 }
-```
-
-#### Alternative approach with `Opt` type
-
-Another way to make TypeScript aware of what properties are optional is the `Opt` type, you can intersect it with the actual property type. This way the above problem with extending classes is no longer present, as we operate on property level:
-
-```ts title='article.entity.ts'
-export class Article extends BaseEntity {
-
-  @Property({ unique: true })
-  slug: string & Opt;
-
-  @Property({ length: 1000 })
-  description: Opt<string>; // can be used via generics too
-
-  // ...
-
-}
-```
-
-To make a nullable field required in methods like `em.create()` (i.e. you cannot omit the property), use `RequiredNullable` type. Such property needs to be provided explicitly in the `em.create()` method, but will accept a `null` value.
-
-```ts title='article.entity.ts'
-export class Article extends BaseEntity {
-
-  @Property({ length: 1000 })
-  description: RequiredNullable<string>;
-
-  // ...
-
-}
-
-em.create(Article, { description: "Description!" }); // ok
-em.create(Article, { description: null }); // ok
-em.create(Article, {}); // compile error: missing description
 ```
 
 ## Populating relationships
@@ -484,54 +356,43 @@ Article {
 
 ### Serialization
 
-What about the password? Seeing the logger `Article` entity with populated `author`, there is something we need to fix. We can see the user's password, in plain text! We will need to hash it and ensure it never leaks to the API response by adding `hidden` serialization flag. Moreover, we can mark it as `lazy`, just like we did with the `Article.text`, as we rarely want to select it.
+What about the password? Seeing the logger `Article` entity with populated `author`, there is something we need to fix. We can see the user's password, in plain text! We will need to hash it and ensure it never leaks to the API response by adding `.hidden()` serialization flag. Moreover, we can mark it as `.lazy()`, just like we did with the `Article.text`, as we rarely want to select it.
 
-For now, let's use `sha256` algorithm which we can create synchronously, and hash the value inside the constructor:
+For now, let's use `sha256` algorithm which we can create synchronously, and hash the value using `.onCreate()`:
 
 ```ts title='user.entity.ts'
-import crypto from 'crypto';
+import crypto from 'node:crypto';
+import { defineEntity, Opt, p } from '@mikro-orm/core';
+import { BaseEntity } from '../common/base.entity.js';
 
-@Entity()
-export class User extends BaseEntity<'bio'> {
-
-  @Property()
-  fullName: string;
-
-  @Property()
-  email: string;
-
-  @Property({ hidden: true, lazy: true })
-  password: string;
-
-  @Property({ type: 'text' })
-  bio = '';
-
-  constructor(fullName: string, email: string, password: string) {
-    super();
-    this.fullName = fullName;
-    this.email = email;
-    this.password = User.hashPassword(password);
-  }
+export class User extends BaseEntity {
+  fullName!: string;
+  email!: string;
+  password!: string;
+  bio!: string & Opt;
 
   static hashPassword(password: string) {
     return crypto.createHmac('sha256', password).digest('hex');
   }
-
 }
-```
 
-Now change the part where we create our `User` entity, as the constructor is now required:
-
-```ts
-const user = new User('Foo Bar', 'foo@bar.com', '123456');
-console.log(user);
+export const UserSchema = defineEntity({
+  class: User,
+  extends: BaseEntity,
+  properties: {
+    fullName: p.string(),
+    email: p.string(),
+    password: p.string().hidden().lazy().onCreate((user: User) => User.hashPassword(user.password)),
+    bio: p.text().default(''),
+  },
+});
 ```
 
 After running `npm start`, you can see that the password is hashed, and later when you load the `Article.author`, the password is no longer selected:
 
 ```
 User {
-  id: undefined,
+  id: 1,
   createdAt: 2022-09-11T17:22:31.619Z,
   updatedAt: 2022-09-11T17:22:31.619Z,
   fullName: 'Foo Bar',
@@ -541,57 +402,76 @@ User {
 }
 ```
 
-That should be good enough for the time being. Don't worry, we will improve on this, later on, using `argon2` via lifecycle hooks, but first things first!
+That should be good enough for the time being. Don't worry, we will improve on this later, using `argon2` via lifecycle hooks!
 
 ## Collections: OneToMany and ManyToMany
 
-You got the `User` entity opened, let's add one more property to it. You have the `Article.author` property that defines the owning side of this relationship between `Article` and `User` entities. Now define the inverse side—for ManyToOne relation it is the OneToMany kind—represented by a `Collection` of `Article` entities:
+You have the `Article.author` property that defines the owning side of this relationship between `Article` and `User` entities. Now let's define the inverse side - for ManyToOne relation it is the OneToMany kind, represented by a `Collection` of `Article` entities. With `defineEntity`, we use `p.oneToMany()`:
 
-```ts
-@Entity()
-export class User extends BaseEntity<'bio'> {
-
-  // ...
-
-  @OneToMany({ mappedBy: 'author' })
+```ts title='user.entity.ts'
+export class User extends BaseEntity {
+  fullName!: string;
+  email!: string;
+  password!: string;
+  bio!: string & Opt;
   articles = new Collection<Article>(this);
-
 }
+
+export const UserSchema = defineEntity({
+  class: User,
+  extends: BaseEntity,
+  properties: {
+    fullName: p.string(),
+    email: p.string(),
+    password: p.string().hidden().lazy(),
+    bio: p.text().default(''),
+    articles: () => p.oneToMany(Article, { mappedBy: 'author' }),
+  },
+});
 ```
 
 MikroORM represents the relation via the `Collection` class. Before we dive into what it means, let's add one more entity to the `Article` module to test the ManyToMany relation too. It will be a `Tag` entity, so we can categorize the article based on some dynamically defined tags.
 
-> The `Tag` entity semantically belongs to the `Article` module, so let's put it there, to the `src/modules/article/tag.entity.ts` file.
+> The `Tag` entity semantically belongs to the `Article` module, so let's put it there, to the `src/modules/article/tag.entity.ts` file. Don't forget to add it to the `entities` array in your config!
 
 ```ts title='tag.entity.ts'
-import { Collection, Entity, ManyToMany, Property } from '@mikro-orm/core';
-import { Article } from './article.entity.js';
+import { defineEntity, InferEntity, p } from '@mikro-orm/core';
 import { BaseEntity } from '../common/base.entity.js';
+import { Article } from './article.entity.js';
 
-@Entity()
-export class Tag extends BaseEntity {
+export const Tag = defineEntity({
+  name: 'Tag',
+  extends: BaseEntity,
+  properties: {
+    name: p.string().length(20),
+    articles: () => p.manyToMany(Article, { mappedBy: 'tags' }),
+  },
+});
 
-  @Property({ length: 20 })
-  name!: string;
-
-  @ManyToMany({ mappedBy: 'tags' })
-  articles = new Collection<Article>(this);
-
-}
+export type Tag = InferEntity<typeof Tag>;
 ```
 
 And we need to define the owning side too, which is `Article.tags`:
 
 ```ts title='article.entity.ts'
-@ManyToMany()
-tags = new Collection<Tag>(this);
+export const Article = defineEntity({
+  name: 'Article',
+  extends: BaseEntity,
+  properties: {
+    slug: p.string().unique().onCreate((article: Article) => convertToSlug(article.title)),
+    title: p.string().index(),
+    description: p.string().length(1000).onCreate((article: Article) => article.text.substring(0, 999) + '…'),
+    text: p.text().lazy(),
+    author: () => p.manyToOne(User),
+    tags: () => p.manyToMany(Tag),
+  },
+});
 ```
 
 It is enough to point to the owning side via `mappedBy` option from the inverse side (or vice versa). If you want to define the relation from owning side, use `inversedBy` option. A ManyToMany relation that does not define any of those two is always considered the owning side.
 
-```ts title='article.entity.ts'
-@ManyToMany({ inversedBy: 'articles' })
-tags = new Collection<Tag>(this);
+```ts
+tags: () => p.manyToMany(Tag, { inversedBy: 'articles' }),
 ```
 
 ### Working with collections
@@ -696,54 +576,65 @@ Refer to the [Collections section](../collections) in the docs for more informat
 
 # Events and life cycle hooks
 
-Time to improve our password hashing. Let's use the `argon2` package, which provides `hash` and `verify` functions. They are both async, so we cannot use them inside the entity constructor like before. Instead, we need to use the lifecycle hooks, namely `@BeforeCreate()` and `@BeforeUpdate()`.
+Time to improve our password hashing. Let's use the `argon2` package, which provides `hash` and `verify` functions. They are both async, so we cannot use `.onCreate()` directly. Instead, we need to use the lifecycle hooks via the `hooks` option in `defineEntity`.
 
 > Don't forget to install the `argon2` package via `npm install argon2`.
 
 The plan is following:
 
-- the password will remain in plaintext when assigned via the constructor
-- `hashPassword` function will become an event handler, we decorate it with `@BeforeCreate()` and `@BeforeUpdate()`
-- as such, it will get the `EventArgs` parameter during the flush, we use that to detect if the password property changed
-- the `args.changeSet` holds the `ChangeSet` object defining the metadata about the entity and its state
-- `ChangeSet.payload` holds the actual computed difference
-- we add a new `verifyPassword()` method to the `User` entity to later
+- the password will remain in plaintext when assigned via `em.create()`
+- `hashPassword` function will become an event handler via the `hooks` option
+- we register it for both `beforeCreate` and `beforeUpdate` events
+- the handler receives `EventArgs` which includes `changeSet` with the computed difference
+- we check `changeSet.payload.password` to only hash when the password changed
 
-```ts
+```ts title='user.entity.ts'
+import { Collection, defineEntity, EventArgs, Opt, p } from '@mikro-orm/core';
+import { BaseEntity } from '../common/base.entity.js';
+import { Article } from '../article/article.entity.js';
 import { hash, verify } from 'argon2';
 
-export class User extends BaseEntity<'bio'> {
+async function hashPassword(args: EventArgs<User>) {
+  // hash only if the password was changed
+  const password = args.changeSet?.payload.password;
 
-  // ...
-
-  constructor(fullName: string, email: string, password: string) {
-    super();
-    this.fullName = fullName;
-    this.email = email;
-    this.password = password; // keep plain text, will be hashed via hooks
+  if (password) {
+    args.entity.password = await hash(password);
   }
+}
 
-  @BeforeCreate()
-  @BeforeUpdate()
-  async hashPassword(args: EventArgs<User>) {
-    // hash only if the password was changed
-    const password = args.changeSet?.payload.password;
-
-    if (password) {
-      this.password = await hash(password);
-    }
-  }
+export class User extends BaseEntity {
+  fullName!: string;
+  email!: string;
+  password!: string;
+  bio!: string & Opt;
+  articles = new Collection<Article>(this);
 
   async verifyPassword(password: string) {
     return verify(this.password, password);
   }
-
 }
+
+export const UserSchema = defineEntity({
+  class: User,
+  extends: BaseEntity,
+  properties: {
+    fullName: p.string(),
+    email: p.string(),
+    password: p.string().hidden().lazy(),
+    bio: p.text().default(''),
+    articles: () => p.oneToMany(Article, { mappedBy: 'author' }),
+  },
+  hooks: {
+    beforeCreate: [hashPassword],
+    beforeUpdate: [hashPassword],
+  },
+});
 ```
 
 ## ⛳ Checkpoint 2
 
-We added 2 new entities: `Article` and `Tag` and a common `BaseEntity`. You can find working StackBlitz for the current state here:
+We added 2 new entities: `Article` and `Tag` and a `BaseEntity` that they extend. You can find working StackBlitz for the current state here:
 
 > We use in-memory database, SQLite feature available via special database name `:memory:`.
 

@@ -98,20 +98,26 @@ export class UserRepository extends EntityRepository<User> {
 }
 ```
 
-And use this repository in the `@Entity()` decorator options. To have everything correctly typed, specify also the `EntityRepositoryType` symbol property - this way the `em.getRepository()` method will detect our custom repository on type level automatically:
+And use this repository in the `defineEntity` options. The `repository` option links the entity to your custom repository class:
 
 ```ts title='user.entity.ts'
+import { defineEntity, InferEntity, p } from '@mikro-orm/core';
+import { BaseEntity } from '../common/base.entity.js';
 import { UserRepository } from './user.repository.js';
 
-@Entity({ repository: () => UserRepository })
-export class User extends BaseEntity<'bio'> {
-
-  // for automatic inference via `em.getRepository(User)`
-  [EntityRepositoryType]?: UserRepository;
-
-  // rest of the entity definition
-
-}
+export const UserSchema = defineEntity({
+  class: User,
+  extends: BaseEntity,
+  repository: () => UserRepository,
+  properties: {
+    fullName: p.string(),
+    email: p.string(),
+    password: p.string().hidden().lazy(),
+    bio: p.text().default(''),
+    articles: () => p.oneToMany(Article, { mappedBy: 'author' }),
+  },
+  // hooks remain the same
+});
 ```
 
 And don't forget to adjust our `Services` type:
@@ -159,7 +165,7 @@ export async function registerUserRoutes(app: FastifyInstance) {
 }
 ```
 
-And now the `login` method, it will try to load the `User` entity based on the password, and compare it via our `User.verifyPassword()` instance method. If we don't find such combination of the `email` and `password`, we throw an error.
+And now the `login` method, it will try to load the `User` entity based on the password, and compare it via our `user.verifyPassword()` method. If we don't find such a combination of the `email` and `password`, we throw an error.
 
 ```ts title='modules/user/user.repository.ts'
 export class UserRepository extends EntityRepository<User> {
@@ -421,33 +427,40 @@ Try implementing the tests for those endpoints now!
 
 Before we move on back to the article endpoint, let's improve our user entity a bit. Say we want to have optional social handles for twitter, facebook or linkedin on the `User` entity. We can use [Embeddables](../embeddables.md) for this, a feature which allows mapping multiple columns to an object.
 
+With `defineEntity`, we can define an embeddable schema and embed it in our entity:
+
 ```ts title='user.entity.ts'
-@Embeddable()
-export class Social {
+import { defineEntity, InferEntity, p } from '@mikro-orm/core';
 
-  @Property()
-  twitter?: string;
+// Define the embeddable schema
+export const Social = defineEntity({
+  name: 'Social',
+  embeddable: true,
+  properties: {
+    twitter: p.string().nullable(),
+    facebook: p.string().nullable(),
+    linkedin: p.string().nullable(),
+  },
+});
 
-  @Property()
-  facebook?: string;
+export type Social = InferEntity<typeof Social>;
 
-  @Property()
-  linkedin?: string;
-
-}
-
-
-@Entity({ repository: () => UserRepository })
-export class User extends BaseEntity<'bio'> {
-
-  // ...
-
-  // highlight-start
-  @Embedded(() => Social)
-  social?: Social;
-  // highlight-end
-
-}
+export const UserSchema = defineEntity({
+  class: User,
+  extends: BaseEntity,
+  repository: () => UserRepository,
+  properties: {
+    fullName: p.string(),
+    email: p.string(),
+    password: p.string().hidden().lazy(),
+    bio: p.text().default(''),
+    articles: () => p.oneToMany(Article, { mappedBy: 'author' }),
+    // highlight-start
+    social: () => p.embedded(Social).nullable(),
+    // highlight-end
+  },
+  // hooks remain the same
+});
 ```
 
 Try using to CLI to check how this affects the database schema:
@@ -463,8 +476,7 @@ alter table `user` add column `social_linkedin` text null;
 But maybe it would be a better idea to store the social handles into a JSON column - we can easily achieve that with embeddables too:
 
 ```ts
-@Embedded(() => Social, { object: true })
-social?: Social;
+social: () => p.embedded(Social, { object: true }).nullable(),
 ```
 
 And test it again:
@@ -491,20 +503,24 @@ Successfully migrated up to the latest version
 
 ## Validation via Zod
 
-One more thing in the user module, we need to process this new `User.social` property in our `sign-up` endpoint.
+One more thing in the user module, we need to process this new `User.social` property in our `sign-up` endpoint. We're already using [`em.create()`](/api/core/class/EntityManager#create), so we can simply pass the social property:
 
 ```ts title='modules/user/routes.ts'
-const user = new User(body.fullName, body.email, body.password);
-user.bio = body.bio ?? '';
-// highlight-next-line
-user.social = body.social as Social;
-await db.em.persist(user).flush();
+const user = db.em.create(User, {
+  fullName: body.fullName,
+  email: body.email,
+  password: body.password,
+  bio: body.bio ?? '',
+  // highlight-next-line
+  social: body.social as Social,
+});
+await db.em.flush();
 ```
 
-The code is getting a bit messy, let's use [`em.create()`](/api/core/class/EntityManager#create) instead to make it clean again:
+Let's add some validation via Zod (we could pass `body` directly to `em.create()`:
 
 ```diff file='modules/user/routes.ts'
--const user = new User(body.fullName, body.email, body.password);
+-const user = db.em.create(User, {
 -user.bio = body.bio ?? '';
 -user.social = body.social as Social;
 +const user = db.user.create(request.body as RequiredEntityData<User>);
@@ -781,41 +797,29 @@ Virtual entities are meant for read purposes, they don't have a primary key and 
 
 :::
 
-To define a virtual entity, provide an `expression` in the `@Entity()` decorator options. In can be a string (SQL query) or a callback returning an SQL query or a `QueryBuilder` instance. Only scalar properties (`@Property()`) are supported.
+To define a virtual entity with `defineEntity`, provide an `expression` option. It can be a string (SQL query) or a callback returning an SQL query or a `QueryBuilder` instance. Only scalar properties are supported.
 
 ```ts title='modules/article/article-listing.entity.ts'
-import { Entity, EntityManager, Property } from '@mikro-orm/sqlite';
+import { defineEntity, InferEntity, EntityManager, p } from '@mikro-orm/core';
 import { Article } from './article.entity.js';
 
-@Entity({
+export const ArticleListing = defineEntity({
+  name: 'ArticleListing',
   expression: (em: EntityManager) => {
     return em.getRepository(Article).listArticlesQuery();
   },
-})
-export class ArticleListing {
+  properties: {
+    slug: p.string(),
+    title: p.string(),
+    description: p.string(),
+    tags: p.array(),
+    author: p.integer(),
+    authorName: p.string(),
+    totalComments: p.integer(),
+  },
+});
 
-  @Property()
-  slug!: string;
-
-  @Property()
-  title!: string;
-
-  @Property()
-  description!: string;
-
-  @Property()
-  tags!: string[];
-
-  @Property()
-  author!: number;
-
-  @Property()
-  authorName!: string;
-
-  @Property()
-  totalComments!: number;
-
-}
+export type ArticleListing = InferEntity<typeof ArticleListing>;
 ```
 
 Now create a custom repository for the `Article` entity too, and put two methods inside:

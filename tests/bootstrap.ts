@@ -200,7 +200,6 @@ export async function initORMSqlite<D extends AbstractSqlDriver>(type: 'sqlite' 
     debug: ['query'],
     forceUndefined: true,
     ignoreUndefinedInQuery: true,
-    metadataProvider: ReflectMetadataProvider,
     logger: i => i,
     loggerFactory: SimpleLogger.create,
     migrations: { path: BASE_DIR + '/../temp/migrations-3', snapshot: false },

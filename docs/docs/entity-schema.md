@@ -25,9 +25,9 @@ export const BookSchema = new EntitySchema<Book, CustomBaseEntity>({
   extends: CustomBaseEntitySchema, // only if we extend custom base entity
   properties: {
     title: { type: 'string' },
-    author: { kind: 'm:1', entity: 'Author', inversedBy: 'books' },
-    publisher: { kind: 'm:1', entity: 'Publisher', inversedBy: 'books' },
-    tags: { kind: 'm:n', entity: 'BookTag', inversedBy: 'books', fixedOrder: true },
+    author: { kind: 'm:1', entity: () => Author, inversedBy: 'books' },
+    publisher: { kind: 'm:1', entity: () => Publisher, inversedBy: 'books' },
+    tags: { kind: 'm:n', entity: () => BookTag, inversedBy: 'books', fixedOrder: true },
   },
 });
 ```
@@ -153,11 +153,11 @@ export const schema = new EntitySchema<FooBar>({
   properties: {
     id: { type: 'number', primary: true },
     name: { type: 'string' },
-    baz: { kind: '1:1', entity: 'FooBaz', orphanRemoval: true, nullable: true },
-    fooBar: { kind: '1:1', entity: 'FooBar', nullable: true },
-    publisher: { kind: 'm:1', entity: 'Publisher', inversedBy: 'books' },
+    baz: { kind: '1:1', entity: () => FooBaz, orphanRemoval: true, nullable: true },
+    fooBar: { kind: '1:1', entity: () => FooBar, nullable: true },
+    publisher: { kind: 'm:1', entity: () => Publisher, inversedBy: 'books' },
     books: { kind: '1:m', entity: () => 'Book', mappedBy: book => book.author },
-    tags: { kind: 'm:n', entity: 'BookTag', inversedBy: 'books', fixedOrder: true },
+    tags: { kind: 'm:n', entity: () => BookTag, inversedBy: 'books', fixedOrder: true },
     version: { type: 'Date', version: true, length: 0 },
     type: { enum: true, items: () => MyEnum, default: MyEnum.LOCAL },
   },
@@ -171,7 +171,7 @@ export const schema = new EntitySchema<FooBar>({
 `defineEntity` is built on top of `EntitySchema`, leveraging TypeScript's type inference capabilities to generate entity types. This reduces the amount of code while providing robust type safety and null safety.
 
 ```ts
-import { type InferEntity, defineEntity } from '@mikro-orm/core';
+import { type InferEntity, defineEntity, p } from '@mikro-orm/core';
 
 // We use `p` as a shortcut for `defineEntity.properties`
 const p = defineEntity.properties;
@@ -188,13 +188,13 @@ export const baseProperties = {
 // Book is an instance of `EntitySchema`
 export const Book = defineEntity({
   name: 'Book',
-  properties: p => ({
+  properties: {
     ...baseProperties,
     title: p.string(),
     author: () => p.manyToOne(Author).inversedBy('books'),
     publisher: () => p.oneToOne(Publisher).inversedBy('book'),
     tags: () => p.manyToMany(BookTag).inversedBy('books').fixedOrder(),
-  }),
+  },
 });
 
 // We can use `InferEntity` to infer the type of an entity
@@ -231,12 +231,12 @@ const properties = {
 ```ts
 export const BookTag = defineEntity({
   name: 'BookTag',
-  properties: p => ({
+  properties: {
     _id: p.type(ObjectId).primary(),
     id: p.string().serializedPrimaryKey(),
     name: p.string(),
     books: () => p.manyToMany(Book).mappedBy('tags'),
-  }),
+  },
 });
 
 export interface IBookTag extends InferEntity<typeof BookTag> {}
@@ -290,12 +290,12 @@ const beforeUpdate = (args: EventArgs) => args.entity.version++;
 
 export const BookTag = defineEntity({
   name: 'BookTag',
-  properties: p => ({
+  properties: {
     _id: p.type(ObjectId).primary(),
     id: p.string().serializedPrimaryKey(),
     name: p.string(),
     books: () => p.manyToMany(Book).mappedBy('tags'),
-  }),
+  },
   hooks: {
     beforeUpdate: [beforeUpdate],
   },

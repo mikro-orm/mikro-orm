@@ -3,90 +3,162 @@ title: Usage with JavaScript
 sidebar_label: Usage with Vanilla JS
 ---
 
-Since MikroORM 3.2, we can use `EntitySchema` helper to define own entities without decorators, which works also for Vanilla JavaScript.
+MikroORM can be used with vanilla JavaScript using the `defineEntity` helper or `EntitySchema`. Both approaches provide full functionality without requiring TypeScript or decorators.
 
-> Read more about `EntitySchema` in [this section](./entity-schema.md).
+## Using `defineEntity`
 
-Here is an example of such entity:
+The `defineEntity` helper with property builders (`p`) is the recommended approach for defining entities in JavaScript:
 
 ```js title="./entities/Author.js"
-import { Collection, EntitySchema } from '@mikro-orm/core';
+import { defineEntity, p } from '@mikro-orm/core';
 import { Book } from './Book.js';
-import { BaseEntity } from './BaseEntity.js';
 
-/**
- * @property {number} id
- * @property {Date} createdAt
- * @property {Date} updatedAt
- * @property {string} name
- * @property {string} email
- * @property {number} age
- * @property {boolean} termsAccepted
- * @property {string[]} identities
- * @property {Date} born
- * @property {Collection<Book>} books
- * @property {Book} favouriteBook
- * @property {number} version
- * @property {string} versionAsString
- */
-export class Author extends BaseEntity {
-
-  /**
-   * @param {string} name
-   * @param {string} email
-   */
-  constructor(name, email) {
-    super();
-    this.name = name;
-    this.email = email;
-    this.books = new Collection(this);
-    this.createdAt = new Date();
-    this.updatedAt = new Date();
-    this.termsAccepted = false;
-  }
-
-}
-
-export const schema = new EntitySchema({
-  class: Author,
+export const Author = defineEntity({
+  name: 'Author',
   properties: {
-    name: { type: 'string' },
-    email: { type: 'string', unique: true },
-    age: { type: 'number', nullable: true },
-    termsAccepted: { type: 'boolean', default: 0, onCreate: () => false },
-    identities: { type: 'string[]', nullable: true },
-    born: { type: DateType, nullable: true, length: 3 },
-    books: { kind: '1:m', entity: () => 'Book', mappedBy: book => book.author },
-    favouriteBook: { kind: 'm:1', type: 'Book' },
-    version: { type: 'number', persist: false },
+    id: p.integer().primary(),
+    name: p.string(),
+    email: p.string().unique(),
+    age: p.integer().nullable(),
+    termsAccepted: p.boolean().default(false),
+    born: p.date().nullable(),
+    createdAt: p.datetime().onCreate(() => new Date()),
+    updatedAt: p.datetime().onCreate(() => new Date()).onUpdate(() => new Date()),
+    books: () => p.oneToMany(Book, { mappedBy: 'author' }),
+    favouriteBook: () => p.manyToOne(Book).nullable(),
   },
 });
 ```
 
-> Do not forget to provide `name` and `path` schema parameters as well as `entity` and `schema` exports.
+```js title="./entities/Book.js"
+import { defineEntity, p } from '@mikro-orm/core';
+import { Author } from './Author.js';
+import { BookTag } from './BookTag.js';
 
-Reference `kind` parameter can be one of (where `SCALAR` is the default one):
-
-```ts
-enum ReferenceKind {
-  SCALAR = 'scalar',
-  ONE_TO_ONE = '1:1',
-  MANY_TO_ONE = 'm:1',
-  ONE_TO_MANY = '1:m',
-  MANY_TO_MANY = 'm:n',
-  EMBEDDED = 'embedded',
-}
+export const Book = defineEntity({
+  name: 'Book',
+  properties: {
+    id: p.integer().primary(),
+    title: p.string(),
+    author: () => p.manyToOne(Author),
+    tags: () => p.manyToMany(BookTag),
+  },
+});
 ```
 
-We can register our entities as usual:
+```js title="./entities/BookTag.js"
+import { defineEntity, p } from '@mikro-orm/core';
+
+export const BookTag = defineEntity({
+  name: 'BookTag',
+  properties: {
+    id: p.integer().primary(),
+    name: p.string(),
+  },
+});
+```
+
+### Using `defineEntity` with a class
+
+You can also use `defineEntity` with a class instead of just a name. This allows you to use `new Author()` to create instances and define custom methods on your entities:
+
+```js title="./entities/Author.js"
+import { defineEntity, p } from '@mikro-orm/core';
+
+export class Author {
+  id;
+  name;
+  email;
+
+  getDisplayName() {
+    return `${this.name} <${this.email}>`;
+  }
+}
+
+export const AuthorSchema = defineEntity({
+  class: Author,
+  properties: {
+    id: p.integer().primary(),
+    name: p.string(),
+    email: p.string().unique(),
+  },
+});
+```
+
+When using a class, the entity name is inferred from the class name. You can then use either the class or the schema when working with the ORM.
+
+## Registering entities
+
+Register entities in your configuration:
 
 ```js
+import { MikroORM } from '@mikro-orm/sqlite';
+import { Author } from './entities/Author.js';
+import { Book } from './entities/Book.js';
+import { BookTag } from './entities/BookTag.js';
+
 const orm = await MikroORM.init({
-  entities: [Author, Book, BookTag, BaseEntity],
+  entities: [Author, Book, BookTag],
   dbName: 'my-db-name',
 });
 ```
 
-> We can also pass the `EntitySchema` instance to the `entities` array.
+## Working with entities
 
-For more examples of plain JavaScript entity definitions take a look [Express JavaScript example](https://github.com/mikro-orm/express-js-example-app).
+Use `em.create()` to create entity instances:
+
+```js
+const author = em.create(Author, {
+  name: 'Jon Snow',
+  email: 'jon@wall.st',
+});
+
+const book = em.create(Book, {
+  title: 'My Life on the Wall',
+  author,
+});
+
+await em.flush();
+```
+
+## Using `EntitySchema`
+
+As an alternative, you can use `EntitySchema` directly for more control:
+
+```js title="./entities/Author.js"
+import { EntitySchema } from '@mikro-orm/core';
+
+export const Author = new EntitySchema({
+  name: 'Author',
+  properties: {
+    id: { type: 'number', primary: true },
+    name: { type: 'string' },
+    email: { type: 'string', unique: true },
+    age: { type: 'number', nullable: true },
+    termsAccepted: { type: 'boolean', default: false },
+    born: { type: 'Date', nullable: true },
+    createdAt: { type: 'Date', onCreate: () => new Date() },
+    updatedAt: { type: 'Date', onCreate: () => new Date(), onUpdate: () => new Date() },
+    books: { kind: '1:m', entity: () => Book, mappedBy: 'author' },
+    favouriteBook: { kind: 'm:1', entity: () => Book, nullable: true },
+  },
+});
+```
+
+The `kind` parameter for relationships can be:
+
+| Value | Relationship |
+|-------|-------------|
+| `'1:1'` | One-to-one |
+| `'m:1'` | Many-to-one |
+| `'1:m'` | One-to-many |
+| `'m:n'` | Many-to-many |
+| `'embedded'` | Embedded |
+
+Or you can use `ReferenceKind` enum, e.g. `ReferenceKind.MANY_TO_ONE`.
+
+> Read more about `EntitySchema` in the [EntitySchema section](./entity-schema.md).
+
+## Example repository
+
+For a complete working example, see the [Express JavaScript example app](https://github.com/mikro-orm/express-js-example-app).

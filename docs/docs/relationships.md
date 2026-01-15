@@ -25,11 +25,11 @@ There are multiple ways how to define the relationship, all of the following is 
 
 <Tabs
   groupId="entity-def"
-  defaultValue="reflect-metadata"
+  defaultValue="define-entity"
   values={[
+    {label: 'defineEntity', value: 'define-entity'},
     {label: 'reflect-metadata', value: 'reflect-metadata'},
     {label: 'ts-morph', value: 'ts-morph'},
-    {label: 'defineEntity', value: 'define-entity'},
     {label: 'EntitySchema', value: 'entity-schema'},
   ]
   }>
@@ -68,14 +68,14 @@ export class Book {
   <TabItem value="define-entity">
 
 ```ts
-import { defineEntity, InferEntity } from '@mikro-orm/core';
+import { defineEntity, InferEntity, p } from '@mikro-orm/core';
 
 export const Book = defineEntity({
   name: 'Book',
-  properties: p => ({
+  properties: {
     id: p.integer().primary(),
     author: () => p.manyToOne(Author),
-  }),
+  },
 });
 
 export interface IBook extends InferEntity<typeof Book> {}
@@ -94,7 +94,7 @@ export const Book = new EntitySchema<IBook>({
   name: 'Book',
   properties: {
     id: { type: 'number', primary: true },
-    author: { kind: 'm:1', entity: 'Author' },
+    author: { kind: 'm:1', entity: () => Author },
   },
 });
 ```
@@ -112,11 +112,11 @@ Again, all of the following is equivalent:
 
 <Tabs
   groupId="entity-def"
-  defaultValue="reflect-metadata"
+  defaultValue="define-entity"
   values={[
+    {label: 'defineEntity', value: 'define-entity'},
     {label: 'reflect-metadata', value: 'reflect-metadata'},
     {label: 'ts-morph', value: 'ts-morph'},
-    {label: 'defineEntity', value: 'define-entity'},
     {label: 'EntitySchema', value: 'entity-schema'},
   ]
   }>
@@ -158,14 +158,14 @@ export class Author {
   <TabItem value="define-entity">
 
 ```ts
-import { defineEntity, InferEntity } from '@mikro-orm/core';
+import { defineEntity, InferEntity, p } from '@mikro-orm/core';
 
 export const Author = defineEntity({
   name: 'Author',
-  properties: p => ({
+  properties: {
     id: p.integer().primary(),
     books: () => p.oneToMany(Book).mappedBy('author'),
-  }),
+  },
 });
 
 export interface IAuthor extends InferEntity<typeof Author> {}
@@ -206,11 +206,11 @@ This is a variant of ManyToOne, where there is always just one entity on both si
 
 <Tabs
   groupId="entity-def"
-  defaultValue="reflect-metadata"
+  defaultValue="define-entity"
   values={[
+    {label: 'defineEntity', value: 'define-entity'},
     {label: 'reflect-metadata', value: 'reflect-metadata'},
     {label: 'ts-morph', value: 'ts-morph'},
-    {label: 'defineEntity', value: 'define-entity'},
     {label: 'EntitySchema', value: 'entity-schema'},
   ]
   }>
@@ -261,11 +261,11 @@ export class User {
   <TabItem value="define-entity">
 
 ```ts
-import { defineEntity, InferEntity } from '@mikro-orm/core';
+import { defineEntity, InferEntity, p } from '@mikro-orm/core';
 
 export const User = defineEntity({
   name: 'User',
-  properties: p => ({
+  properties: {
     id: p.integer().primary(),
     // when none of `owner/inversedBy/mappedBy` is provided, it will be considered owning side
     bestFriend1: () => p.oneToOne(User),
@@ -273,7 +273,7 @@ export const User = defineEntity({
     bestFriend2: () => p.oneToOne(User).inversedBy('bestFriend1'),
     // you need to specifically mark the owning side with `owner: true`
     bestFriend3: () => p.oneToOne(User).owner(),
-  }),
+  },
 });
 
 export interface IUser extends InferEntity<typeof User> {}
@@ -295,11 +295,11 @@ export const User = new EntitySchema<IUser>({
   properties: {
     id: { type: 'number', primary: true },
     // when none of `owner/inversedBy/mappedBy` is provided, it will be considered owning side
-    bestFriend1: { kind: '1:1', entity: 'User' },
+    bestFriend1: { kind: '1:1', entity: () => User },
     // side with `inversedBy` is the owning one, to define inverse side use `mappedBy`
-    bestFriend2: { kind: '1:1', entity: 'User', inversedBy: 'bestFriend1' },
+    bestFriend2: { kind: '1:1', entity: () => User, inversedBy: 'bestFriend1' },
     // you need to specifically mark the owning side with `owner: true`
-    bestFriend3: { kind: '1:1', entity: 'User', owner: true },
+    bestFriend3: { kind: '1:1', entity: () => User, owner: true },
   },
 });
 ```
@@ -311,11 +311,11 @@ export const User = new EntitySchema<IUser>({
 
 <Tabs
   groupId="entity-def"
-  defaultValue="reflect-metadata"
+  defaultValue="define-entity"
   values={[
+    {label: 'defineEntity', value: 'define-entity'},
     {label: 'reflect-metadata', value: 'reflect-metadata'},
     {label: 'ts-morph', value: 'ts-morph'},
-    {label: 'defineEntity', value: 'define-entity'},
     {label: 'EntitySchema', value: 'entity-schema'},
   ]
   }>
@@ -354,15 +354,15 @@ export class User {
   <TabItem value="define-entity">
 
 ```ts
-import { defineEntity, InferEntity } from '@mikro-orm/core';
+import { defineEntity, InferEntity, p } from '@mikro-orm/core';
 
 export const User = defineEntity({
   name: 'User',
-  properties: p => ({
+  properties: {
     id: p.integer().primary(),
     bestFriend1: () => p.oneToOne(User).mappedBy('bestFriend1').orphanRemoval(),
     bestFriend2: () => p.oneToOne(User).mappedBy('bestFriend2').orphanRemoval(),
-  }),
+  },
 });
 
 export interface IUser extends InferEntity<typeof User> {}
@@ -382,8 +382,8 @@ export const User = new EntitySchema<IUser>({
   name: 'User',
   properties: {
     id: { type: 'number', primary: true },
-    bestFriend1: { kind: '1:1', entity: 'User', mappedBy: 'bestFriend1', orphanRemoval: true },
-    bestFriend2: { kind: '1:1', entity: 'User', mappedBy: 'bestFriend2', orphanRemoval: true },
+    bestFriend1: { kind: '1:1', entity: () => User, mappedBy: 'bestFriend1', orphanRemoval: true },
+    bestFriend2: { kind: '1:1', entity: () => User, mappedBy: 'bestFriend2', orphanRemoval: true },
   },
 });
 ```
@@ -403,11 +403,11 @@ Here are examples of how you can define ManyToMany relationship:
 
 <Tabs
   groupId="entity-def"
-  defaultValue="reflect-metadata"
+  defaultValue="define-entity"
   values={[
+    {label: 'defineEntity', value: 'define-entity'},
     {label: 'reflect-metadata', value: 'reflect-metadata'},
     {label: 'ts-morph', value: 'ts-morph'},
-    {label: 'defineEntity', value: 'define-entity'},
     {label: 'EntitySchema', value: 'entity-schema'},
   ]
   }>
@@ -454,17 +454,17 @@ export class Book {
   <TabItem value="define-entity">
 
 ```ts
-import { defineEntity, InferEntity } from '@mikro-orm/core';
+import { defineEntity, InferEntity, p } from '@mikro-orm/core';
 
 export const Book = defineEntity({
   name: 'Book',
-  properties: p => ({
+  properties: {
     id: p.integer().primary(),
     // when none of `owner/inversedBy/mappedBy` is provided, it will be considered owning side
     tags: () => p.manyToMany(BookTag),
     // to define uni-directional many to many, simply omit `mappedBy`
     friends: () => p.manyToMany(Author),
-  }),
+  },
 });
 
 export interface IBook extends InferEntity<typeof Book> {}
@@ -484,9 +484,9 @@ export const Book = new EntitySchema<IBook>({
   name: 'Book',
   properties: {
     id: { type: 'number', primary: true },
-    tags: { kind: 'm:n', entity: 'BookTag' },
+    tags: { kind: 'm:n', entity: () => BookTag },
     // to define uni-directional many to many, simply omit `mappedBy`
-    friends: { kind: 'm:n', entity: 'Author' },
+    friends: { kind: 'm:n', entity: () => Author },
   },
 });
 ```
@@ -498,11 +498,11 @@ export const Book = new EntitySchema<IBook>({
 
 <Tabs
   groupId="entity-def"
-  defaultValue="reflect-metadata"
+  defaultValue="define-entity"
   values={[
+    {label: 'defineEntity', value: 'define-entity'},
     {label: 'reflect-metadata', value: 'reflect-metadata'},
     {label: 'ts-morph', value: 'ts-morph'},
-    {label: 'defineEntity', value: 'define-entity'},
     {label: 'EntitySchema', value: 'entity-schema'},
   ]
   }>
@@ -537,15 +537,15 @@ export class BookTag {
   <TabItem value="define-entity">
 
 ```ts
-import { defineEntity, InferEntity } from '@mikro-orm/core';
+import { defineEntity, InferEntity, p } from '@mikro-orm/core';
 
 export const BookTag = defineEntity({
   name: 'BookTag',
-  properties: p => ({
+  properties: {
     id: p.integer().primary(),
     // inverse side has to point to the owning side via `mappedBy`
     books: () => p.manyToMany(Book).mappedBy('tags'),
-  }),
+  },
 });
 
 export interface IBookTag extends InferEntity<typeof BookTag> {}
@@ -585,11 +585,11 @@ To get around them, use the `Rel` mapped type. It is an identity type, which dis
 
 <Tabs
   groupId="entity-def"
-  defaultValue="reflect-metadata"
+  defaultValue="define-entity"
   values={[
+    {label: 'defineEntity', value: 'define-entity'},
     {label: 'reflect-metadata', value: 'reflect-metadata'},
     {label: 'ts-morph', value: 'ts-morph'},
-    {label: 'defineEntity', value: 'define-entity'},
     {label: 'EntitySchema', value: 'entity-schema'},
   ]
   }>
@@ -626,14 +626,14 @@ export class Book {
   <TabItem value="define-entity">
 
 ```ts
-import { defineEntity, InferEntity } from '@mikro-orm/core';
+import { defineEntity, InferEntity, p } from '@mikro-orm/core';
 
 export const Book = defineEntity({
   name: 'Book',
-  properties: p => ({
+  properties: {
     id: p.integer().primary(),
     author: () => p.manyToOne(Author),
-  }),
+  },
 });
 
 export interface IBook extends InferEntity<typeof Book> {}
@@ -672,11 +672,11 @@ This name overrides the one automatically generated by the current [NamingStrate
 
 <Tabs
   groupId="entity-def"
-  defaultValue="reflect-metadata"
+  defaultValue="define-entity"
   values={[
+    {label: 'defineEntity', value: 'define-entity'},
     {label: 'reflect-metadata', value: 'reflect-metadata'},
     {label: 'ts-morph', value: 'ts-morph'},
-    {label: 'defineEntity', value: 'define-entity'},
     {label: 'EntitySchema', value: 'entity-schema'},
   ]
   }>
@@ -709,14 +709,14 @@ export class Book {
   <TabItem value="define-entity">
 
 ```ts
-import { defineEntity, InferEntity } from '@mikro-orm/core';
+import { defineEntity, InferEntity, p } from '@mikro-orm/core';
 
 export const Book = defineEntity({
   name: 'Book',
-  properties: p => ({
+  properties: {
     id: p.integer().primary(),
     author: () => p.manyToOne(Author).foreignKeyName('my_custom_name'),
-  }),
+  },
 });
 
 export interface IBook extends InferEntity<typeof Book> {}
@@ -735,7 +735,7 @@ export const Book = new EntitySchema<IBook>({
   name: 'Book',
   properties: {
     id: { type: 'number', primary: true },
-    author: { kind: 'm:1', entity: 'Author', foreignKeyName: 'my_custom_name' },
+    author: { kind: 'm:1', entity: () => Author, foreignKeyName: 'my_custom_name' },
   },
 });
 ```
@@ -749,11 +749,11 @@ If you need to disable the creation of the underlying SQL foreign key constraint
 
 <Tabs
   groupId="entity-def"
-  defaultValue="reflect-metadata"
+  defaultValue="define-entity"
   values={[
+    {label: 'defineEntity', value: 'define-entity'},
     {label: 'reflect-metadata', value: 'reflect-metadata'},
     {label: 'ts-morph', value: 'ts-morph'},
-    {label: 'defineEntity', value: 'define-entity'},
     {label: 'EntitySchema', value: 'entity-schema'},
   ]
   }>
@@ -786,14 +786,14 @@ export class Book {
   <TabItem value="define-entity">
 
 ```ts
-import { defineEntity, InferEntity } from '@mikro-orm/core';
+import { defineEntity, InferEntity, p } from '@mikro-orm/core';
 
 export const Book = defineEntity({
   name: 'Book',
-  properties: p => ({
+  properties: {
     id: p.integer().primary(),
     author: () => p.manyToOne(Author).createForeignKeyConstraint(false),
-  }),
+  },
 });
 
 export interface IBook extends InferEntity<typeof Book> {}
@@ -812,7 +812,7 @@ export const Book = new EntitySchema<IBook>({
   name: 'Book',
   properties: {
     id: { type: 'number', primary: true },
-    author: { kind: 'm:1', entity: 'Author', createForeignKeyConstraint: false },
+    author: { kind: 'm:1', entity: () => Author, createForeignKeyConstraint: false },
   },
 });
 ```

@@ -34,7 +34,6 @@ Now add the dependencies:
 ```bash npm2yarn
 npm install @mikro-orm/core \
             @mikro-orm/sqlite \
-            @mikro-orm/reflection \
             fastify
 ```
 
@@ -50,7 +49,7 @@ npm install --save-dev @mikro-orm/cli \
 
 ## ECMAScript Modules
 
-You probably heard about ECMAScript Modules (ESM), but this might easily be the first time you try them. Now keep in mind - the whole ecosystem is far away from ready, and this guide is using the ESM mainly to show how it is possible. Many dependencies are not ESM ready, and often there are weird workarounds needed. MikroORM is no exception to this - there are quirks as well, namely in dynamic imports of TypeScript files under test setup.
+You probably heard about ECMAScript Modules (ESM), but this might easily be the first time you try them.
 
 > You do not have to use ESM to use MikroORM. MikroORM can work in ESM projects, as well as CommonJS (CJS) projects.
 
@@ -62,17 +61,11 @@ In a nutshell, for ESM project we need to:
 
 > You can read more about the ESM support in Node.js [here](https://nodejs.org/api/esm.html).
 
-In addition to this, there is one gotcha with defining entities using decorators. The default way MikroORM uses to obtain a property type is via `reflect-metadata`. While this itself introduces [some challenges and limitations](../metadata-providers#limitations-and-requirements), we can't use it in an ESM project. This is because, with ES modules, the dependencies are resolved asynchronously, in parallel, which is incompatible with how the `reflect-metadata` module currently works. For this reason, we need to use other ways to define the entity metadata - in this guide, we will use the `@mikro-orm/reflection` package, which uses `ts-morph` under the hood to gain information from TypeScript Compiler API. This works fine with ESM projects, and also opens up new ways of compiling the TypeScript files, like `esbuild` (which does not support decorator metadata).
-
-> Another way to define your entities is via [`EntitySchema`](../entity-schema), this approach works also for vanilla JavaScript projects, as well as allows to define entities via interfaces instead of classes. Check the [Defining Entities section](../defining-entities), all examples there have code tabs with definitions via `EntitySchema` too.
-
-The reflection with `ts-morph` is performance heavy, so the [metadata are cached](../metadata-cache.md) into `temp` folder and invalidated automatically when you change your entity definition (or update the ORM version). You should add this folder to `.gitignore` file. Note that when you build your production bundle, you can leverage the CLI to generate production cache on build time to get faster start-up times. See the [deployment section](../deployment.md) for more about this.
-
 ## Configuring TypeScript
 
 We will use the following TypeScript config, so create the `tsconfig.json` file and copy it there. If you know what you are doing, you can adjust the configuration to fit your needs.
 
-For ESM support to work, we need to set `module` and `moduleResolution` to `NodeNext` and target `ES2024`. We also enable `strict` mode and `experimentalDecorators`, as well as the `declaration` option to generate the `.d.ts` files, needed by the `@mikro-orm/reflection` package. Lastly, we tell TypeScript to compile into `dist` folder via `outDir` and make it `include` all `*.ts` files inside `src` folder.
+For ESM support to work, we need to set `module` and `moduleResolution` to `NodeNext` and target `ES2024`. We also enable `strict` mode. Lastly, we tell TypeScript to compile into `dist` folder via `outDir` and make it `include` all `*.ts` files inside `src` folder.
 
 ```json title='tsconfig.json'
 {
@@ -81,9 +74,7 @@ For ESM support to work, we need to set `module` and `moduleResolution` to `Node
     "moduleResolution": "NodeNext",
     "target": "ES2024",
     "strict": true,
-    "outDir": "dist",
-    "declaration": true,
-    "experimentalDecorators": true
+    "outDir": "dist"
   },
   "include": [
     "./src/**/*.ts"
@@ -93,52 +84,27 @@ For ESM support to work, we need to set `module` and `moduleResolution` to `Node
 
 ## Setting up CLI
 
-Next, we will set up the CLI config MikroORM. This config will be then automatically imported into your app too. Define the config variable with explicit `Options` type, that way you get the best level of type safety - autocomplete as well as warning about not existing options (as opposed to using `{ ... } as Options`, that won't warn you for such).
+Next, we will set up the CLI config for MikroORM. This config will be then automatically imported into your app too. We will use the `defineConfig` helper that provides intellisense even in JavaScript files.
 
 > For tests, you can import the config and override some options before evaluating it.
 
 ```ts title='src/mikro-orm.config.ts'
-import { Options, SqliteDriver } from '@mikro-orm/sqlite';
-import { TsMorphMetadataProvider } from '@mikro-orm/reflection';
+import { defineConfig } from '@mikro-orm/sqlite';
+import { User } from './modules/user/user.entity.js';
 
-const config: Options = {
+export default defineConfig({
   // for simplicity, we use the SQLite database, as it's available pretty much everywhere
-  driver: SqliteDriver,
   dbName: 'sqlite.db',
-  // folder-based discovery setup, using common filename suffix
-  entities: ['dist/**/*.entity.js'],
-  entitiesTs: ['src/**/*.entity.ts'],
-  // we will use the ts-morph reflection, an alternative to the default reflect-metadata provider
-  // check the documentation for their differences: https://mikro-orm.io/docs/metadata-providers
-  metadataProvider: TsMorphMetadataProvider,
+  // explicitly list your entities - we'll create the User entity next
+  entities: [User],
   // enable debug mode to log SQL queries and discovery information
   debug: true,
-};
-
-export default config;
-```
-
-> Note that we are importing `Options` from the `@mikro-orm/sqlite` package - this is an alias to `Options<SqliteDriver>`.
-
-Alternatively, we can use the `defineConfig` helper that should provide intellisense even in JavaScript files, without the need for type hints:
-
-```ts
-import { defineConfig } from '@mikro-orm/sqlite';
-import { TsMorphMetadataProvider } from '@mikro-orm/reflection';
-
-// no need to specify the `driver` now, it will be inferred automatically
-export default defineConfig({
-   dbName: 'sqlite.db',
-   // folder-based discovery setup, using common filename suffix
-   entities: ['dist/**/*.entity.js'],
-   entitiesTs: ['src/**/*.entity.ts'],
-   // we will use the ts-morph reflection, an alternative to the default reflect-metadata provider
-   // check the documentation for their differences: https://mikro-orm.io/docs/metadata-providers
-   metadataProvider: TsMorphMetadataProvider,
-   // enable debug mode to log SQL queries and discovery information
-   debug: true,
 });
 ```
+
+We import entities directly and pass them to the `entities` array. You can use either the entity class (`User`) or the schema (`UserSchema`) - both work the same way. This is more explicit than folder-based discovery and gives you better control over what entities are registered.
+
+> The `defineConfig` helper infers the driver type automatically, so no need to specify it explicitly.
 
 Save this file into `src/mikro-orm.config.ts`, so it will get compiled together with the rest of your app.
 
@@ -169,7 +135,120 @@ Lastly, add some NPM scripts to ease the development. We will build the app via 
 
 > We refer to a file `src/server.ts` in the `start` script, we will create that later, no need to worry about it right now.
 
-Now test the CLI via `npx mikro-orm debug`, you should see something like the following:
+Note that the config references the `User` entity which we haven't created yet. The CLI will fail until we create it, so let's do that next.
+
+## First Entity
+
+:::info
+
+Check out the [Defining Entities](../defining-entities.md) section which provides many examples of various property types as well as different ways to define your entities.
+
+:::
+
+Time to create your first entity - the `User`! Create a `user.entity.ts` file in `src/modules/user` with the following contents:
+
+```ts title='user.entity.ts'
+import { defineEntity, Opt, p } from '@mikro-orm/core';
+
+export class User {
+  id!: number;
+  fullName!: string;
+  email!: string;
+  password!: string;
+  bio!: string & Opt;
+}
+
+export const UserSchema = defineEntity({
+  class: User,
+  properties: {
+    id: p.integer().primary(),
+    fullName: p.string(),
+    email: p.string(),
+    password: p.string(),
+    bio: p.text().default(''),
+  },
+});
+```
+
+So what do we have here? We define a `User` class with typed properties, then use the `defineEntity` helper to create an entity schema for it. When using `defineEntity` with a class, we pass `class: User` instead of `name: 'User'`. The entity name will be inferred from the class name.
+
+The `p` export provides type-safe property builders like `p.string()`, `p.integer()`, `p.text()`, etc. These builders use a fluent API where you can chain options like `.primary()`, `.default()`, and more.
+
+The `Opt` type is used to mark properties that have default values as optional in TypeScript - this tells the ORM that `bio` doesn't need to be provided in `em.create()` calls since it has a default value.
+
+### Inferring the entity type
+
+Alternatively, you can also use `defineEntity` without a class, and pass the entity name as the first argument:
+
+```ts title='user.entity.ts'
+import { defineEntity, InferEntity, p } from '@mikro-orm/core';
+
+export const User = defineEntity({
+  name: 'User',
+  properties: {
+    // ...
+  },
+});
+
+// Export the inferred type for use elsewhere
+export type IUser = InferEntity<typeof User>;
+```
+
+### Defining the primary key
+
+Every entity needs to have a primary key. We define it using the `.primary()` builder method. For a single numeric primary key, auto-increment is assumed automatically:
+
+```ts
+id: p.integer().primary(),
+```
+
+In case you want to use `bigint` column type, use the `p.bigint()` builder. BigInts are mapped to `string` by default, as JavaScript `number` cannot safely represent large integers:
+
+```ts
+id: p.bigint().primary(),
+```
+
+Another common use case is UUID. You can use `onCreate` to generate a value when the entity is first persisted:
+
+```ts
+import { v4 } from 'uuid';
+
+// ...
+uuid: p.uuid().primary().onCreate(() => v4()),
+```
+
+### Scalar properties
+
+To map regular database columns, we use the property builders from `defineEntity.properties`. Each builder corresponds to a data type:
+
+- `p.string()` - maps to `varchar`
+- `p.text()` - maps to `text` (for longer strings)
+- `p.integer()` - maps to `integer`
+- `p.boolean()` - maps to `boolean`
+- `p.datetime()` - maps to `datetime`/`timestamp`
+- `p.json<T>()` - maps to `json`/`jsonb` with typed content
+
+For our `User.bio` we want to use `text` instead of `varchar`, and provide a default value:
+
+```ts
+bio: p.text().default(''),
+```
+
+The `.default()` method sets both the runtime default and the database column default. Properties with defaults are automatically marked as optional in TypeScript (the `Opt` type is inferred).
+
+You can chain additional options:
+
+```ts
+// with explicit column type
+bio: p.text().columnType('character varying(1000)'),
+
+// with length constraint
+description: p.string().length(1000),
+```
+
+When using `.columnType()`, be careful about options like `length` or `precision/scale` - `columnType` is always used as-is. This means you need to pass the final value there, including the length, e.g. `.columnType('decimal(10,2)')`.
+
+Now that we have both the config and the entity, test the CLI via `npx mikro-orm debug`:
 
 ```
 Current MikroORM CLI configuration
@@ -179,147 +258,10 @@ Current MikroORM CLI configuration
    - typescript 5.9.3
  - package.json found
  - TypeScript support enabled (tsx)
- - searched config paths:
-   - /blog-api/src/mikro-orm.config.ts (found)
-   - /blog-api/mikro-orm.config.ts (not found)
-   - /blog-api/dist/mikro-orm.config.js (found)
-   - /blog-api/mikro-orm.config.js (not found)
- - searched for config name: default
  - configuration found
- - driver dependencies:
-   - kysely 0.28.7
-   - better-sqlite3 11.8.1
  - database connection successful
- - will use `entities` array (contains 0 references and 1 paths)
-   - /blog-api/dist/**/*.entity.js (not found)
- - could use `entitiesTs` array (contains 0 references and 1 paths)
-   - /blog-api/src/**/*.entity.ts (not found)
+ - will use `entities` array (contains 1 references)
 ```
-
-This looks good, we get a nice summary of what is being installed, we can see the config being loaded correctly, and as expected, no entities were discovered - because you need to create them first!
-
-Then test the TypeScript build, as we now have the first file we can compile. Use `npm run build` and check if the `dist` folder gets generated with the JavaScript version of our config file.
-
-Before we get to creating the very first entity, let's do a quick sanity check - this is our initial directory structure so far:
-
-```
-.
-├── dist
-│   └── mikro-orm.config.js
-├── node_modules
-├── package-lock.json
-├── package.json
-├── src
-│   ├── mikro-orm.config.ts
-│   └── modules
-│       ├── article
-│       ├── common
-│       └── user
-└── tsconfig.json
-```
-
-## First Entity
-
-This was quite a lot of setup, but don't worry, most of the heavy lifting is behind you. Time to create your first entity - the `User`! Create a `user.entity.ts` file in `src/modules/user` with the following contents:
-
-:::info
-
-Check out the [Defining Entities](../defining-entities.md) section which provides many examples of various property types as well as different ways to define your entities.
-
-:::
-
-```ts title='user.entity.ts'
-import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
-
-@Entity()
-export class User {
-
-   @PrimaryKey()
-   id!: number;
-
-   @Property()
-   fullName!: string;
-
-   @Property()
-   email!: string;
-
-   @Property()
-   password!: string;
-
-   @Property({ type: 'text' })
-   bio = '';
-
-}
-```
-
-So what do we have here? An entity is a JavaScript class, decorated with an `@Entity()` decorator, that defines properties with other decorators (like `@Property()`). An entity represents a database table, and the properties represent its columns.
-
-> We use the `*.entity.ts` suffix for easy folder-based discovery across module boundaries. Alternatively, you could explicitly provide the entity class references in the ORM config, e.g. `entities: [User]`. With the explicit setup, things are more streamlined and less error-prone, there is no dynamic importing, and no file system is involved. But folder-based discovery can be handy, especially when our app grows to many entities.
-
-### Defining the primary key
-
-Every entity needs to have a primary key, we will use a simple auto-increment numeric one. MikroORM defaults to that when it sees a single primary key property with a `number` type, so doing the following is enough:
-
-```ts
-@PrimaryKey()
-id!: number;
-```
-
-In case you want to use `bigint` column type, just pass `type: 'bigint'` in the decorator options. `BigInt`s are mapped to `string`, as they would not fit into JavaScript `number` safely.
-
-```ts
-@PrimaryKey({ type: 'bigint' })
-id!: string;
-```
-
-Another common use case is UUID. We can leverage the fact, that MikroORM never calls your entity constructor when creating managed entity instances (those loaded from your database). This means property initializers (or in general constructors) are executed only for entities that will produce an `INSERT` query.
-
-```ts
-@PrimaryKey({ type: 'uuid' })
-uuid = uuid.v4();
-```
-
-### Scalar properties
-
-To map regular database columns we can use the `@Property()` decorator. It works the same as the `@PrimaryKey()` decorator describer above. You could say it extends it - all the properties you can pass to the `@Property()` decorator are also available in `@PrimaryKey()` too.
-
-> We are using the ts-morph metadata provider, which helps with advanced type inference. Check out [the documentation](../metadata-providers#limitations-and-requirements) for the differences if you'd like to use the default metadata provider which is based on `reflect-metadata`.
-
-The ORM will automatically map `string` properties to `varchar`, for the `User.bio` we want to use `text` instead, so we change it via the `type` decorator option:
-
-```ts
-@Property({ type: 'text' })
-bio = '';
-```
-
-The `type` option here allows several input forms. We are using the `text` type name here, which is mapped to the `TextType` - a mapped type representation used internally by the ORM. If you provide a string value there, and it won't match any known type alias, it will be considered as the column type. We can also provide a type class implementation instead of a `string` type name:
-
-```ts
-import { TextType } from '@mikro-orm/core';
-
-@Property({ type: TextType })
-bio = '';
-```
-
-There is also a `types` map (exported also as just `t` for brevity):
-
-```ts
-import { t } from '@mikro-orm/core'; // `t` or `types`
-
-@Property({ type: t.text })
-bio = '';
-```
-
-We can always provide the explicit column type (and this can be even combined with the `type` option, to override how the mapped type is implemented):
-
-```ts
-import { t } from '@mikro-orm/core'; // `t` or `types`
-
-@Property({ columnType: 'character varying(1000)' })
-bio = '';
-```
-
-When using the `columnType`, be careful about options like `length` or `precision/scale` - `columnType` is always used as-is, without any modification. This means you need to pass the final value there, including the length, e.g. `columnType: 'decimal(10,2)'`.
 
 ## Initializing the ORM
 
@@ -342,11 +284,9 @@ const orm = new MikroORM(config);
 
 This method has some limitations:
 
-- database connection will be established when you first interact with the database (or you can use [`orm.connect()`](/api/core/class/MikroORM#connect)
-  explicitly)
-- no loading of the `config` file, `options` parameter is mandatory
-- no support for folder-based discovery
-- no check for mismatched package versions
+- folder-based discovery not supported
+- ORM extensions are not auto-loaded
+- when metadata cache is enabled, `FileCacheAdapter` needs to be explicitly set in the config
 
 :::
 
@@ -360,16 +300,23 @@ There are 2 methods we should first describe to understand how persisting works 
 
 [`em.persist(entity)`](/api/core/class/EntityManager#persist) is used to mark new entities for future persisting. It will make the entity managed by the [`EntityManager`](/api/core/class/EntityManager) and once `flush` will be called, it will be written to the database.
 
-```ts
-const user = new User();
-user.email = 'foo@bar.com';
+We use [`em.create()`](/api/core/class/EntityManager#create) to create entity instances. Since the `User` entity is defined with a class, you could also use `new User()` followed by `em.persist()`. Note that `em.create()` will call the entity constructor internally, so those are effectively the same things.
 
-// first mark the entity with `persist()`, then `flush()`
-em.persist(user);
+```ts
+// create a new user entity instance
+const user = em.create(User, {
+  email: 'foo@bar.com',
+  fullName: 'Foo Bar',
+  password: '123456',
+});
+
+// em.create() automatically calls persist(), so we just need to flush
 await em.flush();
 
-// we could as well use fluent API here and do this:
-await em.persist(user).flush();
+// alternatively, you can persist manually:
+const user2 = em.create(User, { ... }, { persist: false });
+em.persist(user2);
+await em.flush();
 ```
 
 To understand `flush`, let's first define what managed entity is: An entity is managed if it's fetched from the database (via [`em.find()`](/api/core/class/EntityManager#find)) or registered as new through [`em.persist()`](/api/core/class/EntityManager#persist) and flushed later (only after the `flush` it becomes managed).
@@ -385,17 +332,24 @@ user.bio = '...';
 await em.flush();
 ```
 
-Let's try to create our first record in the database, add this to the `server.ts` file instead of the `console.log`:
+Let's try to create our first record in the database, add this to the `server.ts` file:
 
 ```ts title='server.ts'
-// create new user entity instance
-const user = new User();
-user.email = 'foo@bar.com';
-user.fullName = 'Foo Bar';
-user.password = '123456';
+import { MikroORM } from '@mikro-orm/sqlite';
+import config from './mikro-orm.config.js';
+import { User } from './modules/user/user.entity.js';
 
-// first mark the entity with `persist()`, then `flush()`
-await orm.em.persist(user).flush();
+const orm = await MikroORM.init(config);
+
+// create new user entity instance via em.create()
+const user = orm.em.create(User, {
+  email: 'foo@bar.com',
+  fullName: 'Foo Bar',
+  password: '123456',
+});
+
+// em.create() auto-persists, so just flush
+await orm.em.flush();
 
 // after the entity is flushed, it becomes managed, and has the PK available
 console.log('user id is:', user.id);
@@ -456,8 +410,6 @@ When you call [`em.flush()`](/api/core/class/EntityManager#flush), all computed 
 const user = await em.findOne(User, 1);
 
 user.email = 'foo@bar.com';
-const car = new Car();
-user.cars.add(car);
 
 await em.flush();
 ```
@@ -497,8 +449,13 @@ So we understand the problem better now, what's the solution? The error suggests
 // fork first to have a separate context
 const em = orm.em.fork();
 
-// first mark the entity with `persist()`, then `flush()`
-await em.persist(user).flush();
+// create and persist the user in the forked context
+const user = em.create(User, {
+  email: 'foo@bar.com',
+  fullName: 'Foo Bar',
+  password: '123456',
+});
+await em.flush();
 ```
 
 Running `npm start` again, we get past the global context validation error, but only to find another one:
@@ -673,9 +630,74 @@ await wrap(userRef).init();
 console.log('userRef is initialized:', wrap(userRef).isInitialized());
 ```
 
-> You can also extend the `BaseEntity` provided by MikroORM. It defines all the public methods available via `wrap()` helper, so you could do `userRef.isInitialized()` or `userRef.init()`.
-
 The `WrappedEntity` instance also holds the state of the entity at the time it was loaded or flushed - this state is then used by the Unit of Work during flush to compute the differences. Another use case is serialization, we can use the `toObject()`, `toPOJO()` and `toJSON()` methods to convert the entity instance to a plain JavaScript object.
+
+## Alternative Approaches
+
+In this guide, we use `defineEntity` with a class, which provides a simple, decorator-free way to define entities. The `defineEntity` helper can also be used without a class - it will infer the entity type automatically using `InferEntity<typeof Schema>`. However, MikroORM supports multiple ways to define entities:
+
+### Using Decorators
+
+You can define entities using class decorators like `@Entity()`, `@Property()`, `@ManyToOne()`, etc. MikroORM v7 supports both legacy (experimental) decorators and the new ES spec decorators:
+
+```ts
+// Legacy decorators (requires experimentalDecorators)
+import { Entity, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
+
+// ES spec decorators (no config needed)
+import { Entity, PrimaryKey, Property } from '@mikro-orm/decorators/es';
+
+@Entity()
+export class User {
+  @PrimaryKey()
+  id!: number;
+
+  @Property()
+  fullName!: string;
+
+  @Property()
+  email!: string;
+}
+```
+
+When using decorators, you'll need to choose a metadata provider to handle type inference. See the [Using Decorators](../using-decorators.md) guide for a comprehensive overview of:
+
+- Legacy vs ES spec decorators and their differences
+- `TsMorphMetadataProvider` for DRY entity definitions
+- `ReflectMetadataProvider` for lightweight setup
+
+### Folder-based Discovery
+
+Instead of explicitly listing entities, you can use glob patterns to discover entities automatically:
+
+```ts
+export default defineConfig({
+  entities: ['dist/**/*.entity.js'],
+  entitiesTs: ['src/**/*.entity.ts'],
+});
+```
+
+This is particularly useful for large projects with many entities. See [Folder-based Discovery](../folder-based-discovery.md) for details.
+
+:::tip ESM and TypeScript file resolution
+
+When using folder-based discovery in an ESM project with test runners like Vitest, you may encounter an error like `TypeError: Unknown file extension ".ts"` (ERR_UNKNOWN_FILE_EXTENSION). This happens because the dynamic import of your entities fails to resolve TypeScript files - MikroORM performs these imports internally, and tools like Vitest cannot automatically transform them.
+
+To work around this, you can override the `dynamicImportProvider` option in your ORM config. This allows you to use an `import` call defined inside the context of your ESM application:
+
+```ts title='mikro-orm.config.ts'
+export default defineConfig({
+  // ...
+  // for vitest to get around `TypeError: Unknown file extension ".ts"` (ERR_UNKNOWN_FILE_EXTENSION)
+  dynamicImportProvider: id => import(id),
+});
+```
+
+This tells MikroORM to use your application's import context instead of its own, allowing proper TypeScript file resolution.
+
+:::
+
+Check the [Defining Entities](../defining-entities.md) documentation for more examples of all entity definition approaches.
 
 ## ⛳ Checkpoint 1
 

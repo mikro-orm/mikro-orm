@@ -56,6 +56,8 @@ module.exports = {
         keywords: ['advanced'],
       },
       items: [
+        'using-decorators',
+        'folder-based-discovery',
         'filters',
         'deployment',
         'caching',

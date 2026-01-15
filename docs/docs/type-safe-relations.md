@@ -114,14 +114,14 @@ export class Book {
   <TabItem value="define-entity">
 
 ```ts title="./entities/Book.ts"
-import { type InferEntity, defineEntity } from '@mikro-orm/core';
+import { type InferEntity, defineEntity, p } from '@mikro-orm/core';
 
 export const Book = defineEntity({
   name: 'Book',
-  properties: p => ({
+  properties: {
     id: p.integer().primary(),
     author: p.manyToOne(Author).ref(),
-  }),
+  },
 });
 
 export interface IBook extends InferEntity<typeof Book> {}
@@ -463,15 +463,15 @@ export class Book {
   <TabItem value="define-entity">
 
 ```ts title="./entities/Book.ts"
-import { type InferEntity, defineEntity } from '@mikro-orm/core';
+import { type InferEntity, defineEntity, p } from '@mikro-orm/core';
 
 export const Book = defineEntity({
   name: 'Book',
-  properties: p => ({
+  properties: {
     _id: p.type(ObjectId).primary(),
     id: p.string().serializedPrimaryKey(),
     author: () => p.manyToOne(Author).ref(),
-  }),
+  },
 });
 
 export interface IBook extends InferEntity<typeof Book> {}
@@ -492,7 +492,7 @@ export const Book = new EntitySchema<IBook>({
   properties: {
     _id: { type: 'ObjectId', primary: true },
     id: { type: String, serializedPrimaryKey: true },
-    author: { entity: 'Author', ref: true },
+    author: { entity: () => Author, ref: true },
   },
 });
 ```

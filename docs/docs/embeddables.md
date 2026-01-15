@@ -18,11 +18,11 @@ For the purposes of this tutorial, we will assume that you have a `User` class i
 
 <Tabs
   groupId="entity-def"
-  defaultValue="reflect-metadata"
+  defaultValue="define-entity"
   values={[
+    {label: 'defineEntity', value: 'define-entity'},
     {label: 'reflect-metadata', value: 'reflect-metadata'},
     {label: 'ts-morph', value: 'ts-morph'},
-    {label: 'defineEntity', value: 'define-entity'},
     {label: 'EntitySchema', value: 'entity-schema'},
   ]
   }>
@@ -99,14 +99,14 @@ export class User {
   <TabItem value="define-entity">
 
 ```ts
-import { type InferEntity, defineEntity } from '@mikro-orm/core';
+import { type InferEntity, defineEntity, p } from '@mikro-orm/core';
 
 export const User = defineEntity({
   name: 'User',
-  properties: p => ({
+  properties: {
     id: p.integer().primary(),
     address: () => p.embedded(Address),
-  }),
+  },
 });
 
 export interface IUser extends InferEntity<typeof User> {}
@@ -114,12 +114,12 @@ export interface IUser extends InferEntity<typeof User> {}
 export const Address = defineEntity({
   name: 'Address',
   embeddable: true,
-  properties: p => ({
+  properties: {
     street: p.string(),
     postalCode: p.string(),
     city: p.string(),
     country: p.string(),
-  }),
+  },
 });
 
 export interface IAddress extends InferEntity<typeof Address> {}
@@ -147,7 +147,7 @@ export const UserSchema = new EntitySchema({
   class: User,
   properties: {
     id: { primary: true, type: 'number' },
-    address: { kind: 'embedded', entity: 'Address' },
+    address: { kind: 'embedded', entity: () => Address },
   },
 });
 
@@ -176,11 +176,11 @@ In case all fields in the embeddable are nullable, you might want to initialize 
 
 <Tabs
   groupId="entity-def"
-  defaultValue="reflect-metadata"
+  defaultValue="define-entity"
   values={[
+    {label: 'defineEntity', value: 'define-entity'},
     {label: 'reflect-metadata', value: 'reflect-metadata'},
     {label: 'ts-morph', value: 'ts-morph'},
-    {label: 'defineEntity', value: 'define-entity'},
     {label: 'EntitySchema', value: 'entity-schema'},
   ]
   }>
@@ -205,11 +205,11 @@ address = new Address();
 ```ts title="./entities/User.ts"
 const User = defineEntity({
   name: 'User',
-  properties: p => ({
+  properties: {
     id: p.integer().primary(),
     address: () => p.embedded(Address)
       .onCreate(() => new Address()),
-  }),
+  },
 });
 ```
 
@@ -217,7 +217,7 @@ const User = defineEntity({
   <TabItem value="entity-schema">
 
 ```ts title="./entities/User.ts"
-address: { kind: 'embedded', entity: 'Address', onCreate: () => new Address() },
+address: { kind: 'embedded', entity: () => Address, onCreate: () => new Address() },
 ```
 
   </TabItem>
@@ -235,11 +235,11 @@ The following example shows you how to set your prefix to `myPrefix_`:
 
 <Tabs
   groupId="entity-def"
-  defaultValue="reflect-metadata"
+  defaultValue="define-entity"
   values={[
+    {label: 'defineEntity', value: 'define-entity'},
     {label: 'reflect-metadata', value: 'reflect-metadata'},
     {label: 'ts-morph', value: 'ts-morph'},
-    {label: 'defineEntity', value: 'define-entity'},
     {label: 'EntitySchema', value: 'entity-schema'},
   ]
   }>
@@ -274,10 +274,10 @@ export class User {
 ```ts title="./entities/User.ts"
 const User = defineEntity({
   name: 'User',
-  properties: p => ({
+  properties: {
     id: p.integer().primary(),
     address: () => p.embedded(Address).prefix('myPrefix_')
-  }),
+  },
 });
 ```
 
@@ -285,7 +285,7 @@ const User = defineEntity({
   <TabItem value="entity-schema">
 
 ```ts title="./entities/User.ts"
-address: { kind: 'embedded', entity: 'Address', prefix: 'myPrefix_' },
+address: { kind: 'embedded', entity: () => Address, prefix: 'myPrefix_' },
 ```
 
   </TabItem>
@@ -298,11 +298,11 @@ You can also decide more precisely how the column name is determined with an exp
 
 <Tabs
   groupId="entity-def"
-  defaultValue="reflect-metadata"
+  defaultValue="define-entity"
   values={[
+    {label: 'defineEntity', value: 'define-entity'},
     {label: 'reflect-metadata', value: 'reflect-metadata'},
     {label: 'ts-morph', value: 'ts-morph'},
-    {label: 'defineEntity', value: 'define-entity'},
     {label: 'EntitySchema', value: 'entity-schema'},
   ]
   }>
@@ -360,20 +360,20 @@ export class User {
 export const Contact = defineEntity({
   name: 'Contact',
   embeddable: true,
-  properties: p => ({
+  properties: {
     address: () => p.embedded(Address).prefix('addr_').prefixMode('absolute'),
     address2: () => p.embedded(Address).prefix('addr2_').prefixMode('relative'),
-  }),
+  },
 });
 
 export interface IContact extends InferEntity<typeof Contact> {}
 
 export const User = defineEntity({
   name: 'User',
-  properties: p => ({
+  properties: {
     id: p.integer().primary(),
     contact: () => p.embedded(Contact),
-  }),
+  },
 });
 
 export interface IUser extends InferEntity<typeof User> {}
@@ -397,8 +397,8 @@ export const ContactSchema = new EntitySchema({
   class: Contact,
   embeddable: true,
   properties: {
-    address: { kind: 'embedded', entity: 'Address', prefix: 'addr_', prefixMode: 'absolute' },
-    address2: { kind: 'embedded', entity: 'Address', prefix: 'addr2_', prefixMode: 'relative' },
+    address: { kind: 'embedded', entity: () => Address, prefix: 'addr_', prefixMode: 'absolute' },
+    address2: { kind: 'embedded', entity: () => Address, prefix: 'addr2_', prefixMode: 'relative' },
   },
 });
 
@@ -406,7 +406,7 @@ export const UserSchema = new EntitySchema({
   class: User,
   properties: {
     id: { primary: true, type: 'number' },
-    contact: { kind: 'embedded', entity: 'Contact' },
+    contact: { kind: 'embedded', entity: () => Contact },
   },
 });
 ```
@@ -428,11 +428,11 @@ To have MikroORM drop the prefix and use the value object's property name direct
 
 <Tabs
   groupId="entity-def"
-  defaultValue="reflect-metadata"
+  defaultValue="define-entity"
   values={[
+    {label: 'defineEntity', value: 'define-entity'},
     {label: 'reflect-metadata', value: 'reflect-metadata'},
     {label: 'ts-morph', value: 'ts-morph'},
-    {label: 'defineEntity', value: 'define-entity'},
     {label: 'EntitySchema', value: 'entity-schema'},
   ]
   }>
@@ -449,10 +449,10 @@ address!: Address;
 ```ts title="./entities/User.ts"
 const User = defineEntity({
   name: 'User',
-  properties: p => ({
+  properties: {
     id: p.integer().primary(),
     address: () => p.embedded(Address).prefix(false),
-  }),
+  },
 });
 ```
 
@@ -468,7 +468,7 @@ address!: Address;
   <TabItem value="entity-schema">
 
 ```ts title="./entities/User.ts"@Entity()
-address: { kind: 'embedded', entity: 'Address', prefix: false },
+address: { kind: 'embedded', entity: () => Address, prefix: false },
 ```
 
   </TabItem>
@@ -480,11 +480,11 @@ From MikroORM v4.2 we can also store the embeddable as an object instead of inli
 
 <Tabs
   groupId="entity-def"
-  defaultValue="reflect-metadata"
+  defaultValue="define-entity"
   values={[
+    {label: 'defineEntity', value: 'define-entity'},
     {label: 'reflect-metadata', value: 'reflect-metadata'},
     {label: 'ts-morph', value: 'ts-morph'},
-    {label: 'defineEntity', value: 'define-entity'},
     {label: 'EntitySchema', value: 'entity-schema'},
   ]
   }>
@@ -509,10 +509,10 @@ address!: Address;
 ```ts title="./entities/User.ts"
 const User = defineEntity({
   name: 'User',
-  properties: p => ({
+  properties: {
     id: p.integer().primary(),
     address: () => p.embedded(Address).object(),
-  }),
+  },
 });
 ```
 
@@ -520,7 +520,7 @@ const User = defineEntity({
   <TabItem value="entity-schema">
 
 ```ts title="./entities/User.ts"
-address: { kind: 'embedded', entity: 'Address', object: true },
+address: { kind: 'embedded', entity: () => Address, object: true },
 ```
 
   </TabItem>
@@ -538,11 +538,11 @@ Embedded arrays are always stored as JSON. It is possible to use them inside nes
 
 <Tabs
   groupId="entity-def"
-  defaultValue="reflect-metadata"
+  defaultValue="define-entity"
   values={[
+    {label: 'defineEntity', value: 'define-entity'},
     {label: 'reflect-metadata', value: 'reflect-metadata'},
     {label: 'ts-morph', value: 'ts-morph'},
-    {label: 'defineEntity', value: 'define-entity'},
     {label: 'EntitySchema', value: 'entity-schema'},
   ]
   }>
@@ -567,10 +567,10 @@ addresses: Address[] = [];
 ```ts title="./entities/User.ts"
 const User = defineEntity({
   name: 'User',
-  properties: p => ({
+  properties: {
     id: p.integer().primary(),
     addresses: () => p.embedded(Address).array().onCreate(() => []),
-  }),
+  },
 });
 ```
 
@@ -578,7 +578,7 @@ const User = defineEntity({
   <TabItem value="entity-schema">
 
 ```ts title="./entities/User.ts"
-address: { kind: 'embedded', entity: 'Address', onCreate: () => [], array: true },
+address: { kind: 'embedded', entity: () => Address, onCreate: () => [], array: true },
 ```
 
   </TabItem>
@@ -590,11 +590,11 @@ Starting with v4.4, we can also nest embeddables, both in inline mode and object
 
 <Tabs
   groupId="entity-def"
-  defaultValue="reflect-metadata"
+  defaultValue="define-entity"
   values={[
+    {label: 'defineEntity', value: 'define-entity'},
     {label: 'reflect-metadata', value: 'reflect-metadata'},
     {label: 'ts-morph', value: 'ts-morph'},
-    {label: 'defineEntity', value: 'define-entity'},
     {label: 'EntitySchema', value: 'entity-schema'},
   ]
   }>
@@ -701,11 +701,11 @@ export class Identity {
 ```ts title="./entities/User.ts"
 export const User = defineEntity({
   name: 'User',
-  properties: p => ({
+  properties: {
     id: p.integer().primary(),
     name: p.string(),
     address: () => p.embedded(Address),
-  }),
+  },
 });
 
 export interface IUser extends InferEntity<typeof User> {}
@@ -713,10 +713,10 @@ export interface IUser extends InferEntity<typeof User> {}
 export const Profile = defineEntity({
   name: 'Profile',
   embeddable: true,
-  properties: p => ({
+  properties: {
     username: p.string(),
     identity: () => p.embedded(Identity),
-  }),
+  },
 });
 
 export interface IProfile extends InferEntity<typeof Profile> {}
@@ -724,9 +724,9 @@ export interface IProfile extends InferEntity<typeof Profile> {}
 export const Identity = defineEntity({
   name: 'Identity',
   embeddable: true,
-  properties: p => ({
+  properties: {
     email: p.string(),
-  }),
+  },
 });
 
 export interface IIdentity extends InferEntity<typeof Identity> {}
@@ -760,7 +760,7 @@ export const UserSchema = new EntitySchema({
   properties: {
     id: { primary: true, type: 'number' },
     name: { type: 'string' },
-    address: { kind: 'embedded', entity: 'Address' },
+    address: { kind: 'embedded', entity: () => Address },
   },
 });
 
@@ -769,7 +769,7 @@ export const ProfileSchema = new EntitySchema({
   embeddable: true,
   properties: {
     username: { type: 'string' },
-    identity: { kind: 'embedded', entity: 'Identity' },
+    identity: { kind: 'embedded', entity: () => Identity },
   },
 });
 
@@ -791,11 +791,11 @@ Since v5, it is also possible to use polymorphic embeddables. This means we can 
 
 <Tabs
   groupId="entity-def"
-  defaultValue="reflect-metadata"
+  defaultValue="define-entity"
   values={[
+    {label: 'defineEntity', value: 'define-entity'},
     {label: 'reflect-metadata', value: 'reflect-metadata'},
     {label: 'ts-morph', value: 'ts-morph'},
-    {label: 'defineEntity', value: 'define-entity'},
     {label: 'EntitySchema', value: 'entity-schema'},
   ]
   }>
@@ -931,54 +931,57 @@ export class Owner {
   </TabItem>
   <TabItem value="define-entity">
 
-```ts title="./entities/User.ts"
-import { type InferEntity, defineEntity } from '@mikro-orm/core';
+```ts
+import { defineEntity, p, type InferEntity } from '@mikro-orm/core';
 
 export enum AnimalType {
   CAT,
   DOG,
 }
 
-const p = defineEntity.properties;
-export const AnimalProperties = {
-  type: p.enum(() => AnimalType),
-  name: p.string(),
-};
+export const Animal = defineEntity({
+  name: 'Animal',
+  embeddable: true,
+  abstract: true,
+  discriminatorColumn: 'type',
+  properties: {
+    type: p.enum(() => AnimalType),
+    name: p.string(),
+  },
+});
 
 export const Cat = defineEntity({
   name: 'Cat',
   embeddable: true,
+  extends: Animal,
   discriminatorValue: AnimalType.CAT,
-  properties: p => ({
-    ...AnimalProperties,
-    canMeow: p.type(Boolean),
-  }),
+  properties: {
+    canMeow: p.boolean().nullable(),
+  },
 });
-
-export interface ICat extends InferEntity<typeof Cat> {}
 
 export const Dog = defineEntity({
   name: 'Dog',
   embeddable: true,
+  extends: Animal,
   discriminatorValue: AnimalType.DOG,
-  properties: p => ({
-    ...AnimalProperties,
-    canBark: p.type(Boolean),
-  }),
+  properties: {
+    canBark: p.boolean().nullable(),
+  },
 });
-
-export interface IDog extends InferEntity<typeof Dog> {}
 
 export const Owner = defineEntity({
   name: 'Owner',
-  properties: p => ({
+  properties: {
     id: p.integer().primary(),
     name: p.string(),
-    pet: p.embedded([Cat, Dog]),
-  }),
+    pet: () => p.embedded([Cat, Dog]),
+  },
 });
 
-export interface IOwner extends InferEntity<typeof Owner> {}
+export type Cat = InferEntity<typeof Cat>;
+export type Dog = InferEntity<typeof Dog>;
+export type Owner = InferEntity<typeof Owner>;
 ```
 
   </TabItem>
@@ -1029,15 +1032,15 @@ export const AnimalSchema = new EntitySchema({
   abstract: true,
   discriminatorColumn: 'type',
   properties: {
-    username: { type: 'string' },
-    identity: { kind: 'embedded', entity: 'Identity' },
+    type: { enum: true, items: () => AnimalType },
+    name: { type: 'string' },
   },
 });
 
 export const CatSchema = new EntitySchema({
   class: Cat,
   embeddable: true,
-  extends: 'Animal',
+  extends: Animal,
   discriminatorValue: AnimalType.CAT,
   properties: {
     canMeow: { type: 'boolean', nullable: true },
@@ -1047,7 +1050,7 @@ export const CatSchema = new EntitySchema({
 export const DogSchema = new EntitySchema({
   class: Dog,
   embeddable: true,
-  extends: 'Animal',
+  extends: Animal,
   discriminatorValue: AnimalType.DOG,
   properties: {
     canBark: { type: 'boolean', nullable: true },
@@ -1059,7 +1062,7 @@ export const OwnerSchema = new EntitySchema({
   properties: {
     id: { primary: true, type: 'number' },
     name: { type: 'string' },
-    pet: { kind: 'embedded', entity: 'Cat | Dog' },
+    pet: { kind: 'embedded', entity: () => [Cat, Dog] },
   },
 });
 ```

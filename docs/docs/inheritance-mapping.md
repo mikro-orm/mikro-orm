@@ -2,6 +2,9 @@
 title: Inheritance Mapping
 ---
 
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
 ## Mapped Superclasses
 
 A mapped superclass is an abstract or concrete class that provides persistent entity state and mapping information for its subclasses, but which is not itself an entity. Typically, the purpose of such a mapped superclass is to define state and mapping information that is common to multiple entity classes.
@@ -11,6 +14,17 @@ Mapped superclasses, just as regular, non-mapped classes, can appear in the midd
 > A mapped superclass cannot be an entity, it is not query-able and persistent relationships defined by a mapped superclass must be unidirectional (with an owning side only). This means that One-To-Many associations are not possible on a mapped superclass at all. Furthermore, Many-To-Many associations are only possible if the mapped superclass is only used in exactly one entity at the moment. For further support of inheritance, the single table inheritance features have to be used.
 
 > Also note that we can't use generics to define any relations. This means that we cannot have a generic type argument in the base entity that would be used as a target of some relation.
+
+<Tabs
+  groupId="entity-def"
+  defaultValue="define-entity"
+  values={[
+    {label: 'defineEntity', value: 'define-entity'},
+    {label: 'decorators', value: 'decorators'},
+    {label: 'EntitySchema', value: 'entity-schema'},
+  ]
+}>
+  <TabItem value="decorators">
 
 ```ts
 // do not use @Entity decorator on base classes (mapped superclasses)
@@ -53,6 +67,81 @@ export class Toothbrush {
 }
 ```
 
+  </TabItem>
+  <TabItem value="define-entity">
+
+```ts
+const p = defineEntity.properties;
+
+// mapped superclass (abstract entity that won't have its own table)
+export const Person = defineEntity({
+  name: 'Person',
+  abstract: true,
+  properties: {
+    mapped1: p.number(),
+    mapped2: p.string(),
+    toothbrush: () => p.oneToOne(Toothbrush),
+  },
+});
+
+export const Employee = defineEntity({
+  name: 'Employee',
+  extends: Person,
+  properties: {
+    id: p.number().primary(),
+    name: p.string(),
+  },
+});
+
+export const Toothbrush = defineEntity({
+  name: 'Toothbrush',
+  properties: {
+    id: p.number().primary(),
+    // ... more fields
+  },
+});
+
+export type Person = InferEntity<typeof Person>;
+export type Employee = InferEntity<typeof Employee>;
+export type Toothbrush = InferEntity<typeof Toothbrush>;
+```
+
+  </TabItem>
+  <TabItem value="entity-schema">
+
+```ts
+// mapped superclass (abstract entity that won't have its own table)
+export const Person = new EntitySchema({
+  name: 'Person',
+  abstract: true,
+  properties: {
+    mapped1: { type: 'number' },
+    mapped2: { type: 'string' },
+    toothbrush: { kind: '1:1', entity: () => Toothbrush },
+  },
+});
+
+export const Employee = new EntitySchema({
+  name: 'Employee',
+  extends: Person,
+  properties: {
+    id: { type: 'number', primary: true },
+    name: { type: 'string' },
+  },
+});
+
+export const Toothbrush = new EntitySchema({
+  name: 'Toothbrush',
+  properties: {
+    id: { type: 'number', primary: true },
+    // ... more fields
+  },
+});
+```
+
+  </TabItem>
+</Tabs>
+
 The DDL for the corresponding database schema would look something like this (this is for SQLite):
 
 ```sql
@@ -72,6 +161,17 @@ As we can see from this DDL snippet, there is only a single table for the entity
 
 [Single Table Inheritance](https://martinfowler.com/eaaCatalog/singleTableInheritance.html) is an inheritance mapping strategy where all classes of a hierarchy are mapped to a single database table. In order to distinguish which row represents which type in the hierarchy a so-called discriminator column is used.
 
+<Tabs
+  groupId="entity-def"
+  defaultValue="define-entity"
+  values={[
+    {label: 'defineEntity', value: 'define-entity'},
+    {label: 'decorators', value: 'decorators'},
+    {label: 'EntitySchema', value: 'entity-schema'},
+  ]
+}>
+  <TabItem value="decorators">
+
 ```ts
 @Entity({
   discriminatorColumn: 'discr',
@@ -87,6 +187,53 @@ export class Employee extends Person {
 }
 ```
 
+  </TabItem>
+  <TabItem value="define-entity">
+
+```ts
+export const Person = defineEntity({
+  name: 'Person',
+  discriminatorColumn: 'discr',
+  discriminatorMap: { person: 'Person', employee: 'Employee' },
+  properties: {
+    // ...
+  },
+});
+
+export const Employee = defineEntity({
+  name: 'Employee',
+  extends: Person,
+  properties: {
+    // ...
+  },
+});
+```
+
+  </TabItem>
+  <TabItem value="entity-schema">
+
+```ts
+export const Person = new EntitySchema({
+  name: 'Person',
+  discriminatorColumn: 'discr',
+  discriminatorMap: { person: 'Person', employee: 'Employee' },
+  properties: {
+    // ...
+  },
+});
+
+export const Employee = new EntitySchema({
+  name: 'Employee',
+  extends: Person,
+  properties: {
+    // ...
+  },
+});
+```
+
+  </TabItem>
+</Tabs>
+
 Things to note:
 
 - The `discriminatorColumn` option must be specified on the topmost class that is part of the mapped entity hierarchy.
@@ -98,6 +245,17 @@ Things to note:
 ### Using `discriminatorValue` instead of `discriminatorMap`
 
 As noted above, the discriminator map can be auto-generated. In that case, we might want to control the tokens that will be used in the map. To do so, we can use `discriminatorValue` on the child entities:
+
+<Tabs
+  groupId="entity-def"
+  defaultValue="define-entity"
+  values={[
+    {label: 'defineEntity', value: 'define-entity'},
+    {label: 'decorators', value: 'decorators'},
+    {label: 'EntitySchema', value: 'entity-schema'},
+  ]
+}>
+  <TabItem value="decorators">
 
 ```ts
 @Entity({
@@ -116,6 +274,55 @@ export class Employee extends Person {
 }
 ```
 
+  </TabItem>
+  <TabItem value="define-entity">
+
+```ts
+export const Person = defineEntity({
+  name: 'Person',
+  discriminatorColumn: 'discr',
+  discriminatorValue: 'person',
+  properties: {
+    // ...
+  },
+});
+
+export const Employee = defineEntity({
+  name: 'Employee',
+  extends: Person,
+  discriminatorValue: 'employee',
+  properties: {
+    // ...
+  },
+});
+```
+
+  </TabItem>
+  <TabItem value="entity-schema">
+
+```ts
+export const Person = new EntitySchema({
+  name: 'Person',
+  discriminatorColumn: 'discr',
+  discriminatorValue: 'person',
+  properties: {
+    // ...
+  },
+});
+
+export const Employee = new EntitySchema({
+  name: 'Employee',
+  extends: Person,
+  discriminatorValue: 'employee',
+  properties: {
+    // ...
+  },
+});
+```
+
+  </TabItem>
+</Tabs>
+
 ### Explicit discriminator column
 
 The `discriminatorColumn` specifies the name of a special column that will be used to define what type of class a given row should be represented with. It will be defined automatically for us, and it will stay hidden (it won't be hydrated as a regular property).
@@ -126,6 +333,17 @@ On the other hand, it is perfectly fine to define the column explicitly. Doing s
 - the column will be part of the serialized response
 
 Following example shows how we can define the discriminator explicitly, as well as a version where root entity is abstract class.
+
+<Tabs
+  groupId="entity-def"
+  defaultValue="define-entity"
+  values={[
+    {label: 'defineEntity', value: 'define-entity'},
+    {label: 'decorators', value: 'decorators'},
+    {label: 'EntitySchema', value: 'entity-schema'},
+  ]
+}>
+  <TabItem value="decorators">
 
 ```ts
 @Entity({
@@ -150,7 +368,83 @@ export class Employee extends Person {
 }
 ```
 
+  </TabItem>
+  <TabItem value="define-entity">
+
+```ts
+export const BasePerson = defineEntity({
+  name: 'BasePerson',
+  abstract: true,
+  discriminatorColumn: 'type',
+  discriminatorMap: { person: 'Person', employee: 'Employee' },
+  properties: {
+    type: p.enum(['person', 'employee'] as const),
+  },
+});
+
+export const Person = defineEntity({
+  name: 'Person',
+  extends: BasePerson,
+  properties: {
+    // ...
+  },
+});
+
+export const Employee = defineEntity({
+  name: 'Employee',
+  extends: Person,
+  properties: {
+    // ...
+  },
+});
+```
+
+  </TabItem>
+  <TabItem value="entity-schema">
+
+```ts
+export const BasePerson = new EntitySchema({
+  name: 'BasePerson',
+  abstract: true,
+  discriminatorColumn: 'type',
+  discriminatorMap: { person: 'Person', employee: 'Employee' },
+  properties: {
+    type: { enum: true, items: ['person', 'employee'] },
+  },
+});
+
+export const Person = new EntitySchema({
+  name: 'Person',
+  extends: BasePerson,
+  properties: {
+    // ...
+  },
+});
+
+export const Employee = new EntitySchema({
+  name: 'Employee',
+  extends: Person,
+  properties: {
+    // ...
+  },
+});
+```
+
+  </TabItem>
+</Tabs>
+
 If we wanted to use `discriminatorValue` with abstract entities, we need to mark the entity as `abstract: true` so it can be skipped from the discriminator map:
+
+<Tabs
+  groupId="entity-def"
+  defaultValue="define-entity"
+  values={[
+    {label: 'defineEntity', value: 'define-entity'},
+    {label: 'decorators', value: 'decorators'},
+    {label: 'EntitySchema', value: 'entity-schema'},
+  ]
+}>
+  <TabItem value="decorators">
 
 ```ts
 @Entity({
@@ -174,6 +468,73 @@ export class Employee extends Person {
   // ...
 }
 ```
+
+  </TabItem>
+  <TabItem value="define-entity">
+
+```ts
+export const BasePerson = defineEntity({
+  name: 'BasePerson',
+  abstract: true,
+  discriminatorColumn: 'type',
+  properties: {
+    type: p.enum(['person', 'employee'] as const),
+  },
+});
+
+export const Person = defineEntity({
+  name: 'Person',
+  extends: BasePerson,
+  discriminatorValue: 'person',
+  properties: {
+    // ...
+  },
+});
+
+export const Employee = defineEntity({
+  name: 'Employee',
+  extends: Person,
+  discriminatorValue: 'employee',
+  properties: {
+    // ...
+  },
+});
+```
+
+  </TabItem>
+  <TabItem value="entity-schema">
+
+```ts
+export const BasePerson = new EntitySchema({
+  name: 'BasePerson',
+  abstract: true,
+  discriminatorColumn: 'type',
+  properties: {
+    type: { enum: true, items: ['person', 'employee'] },
+  },
+});
+
+export const Person = new EntitySchema({
+  name: 'Person',
+  extends: BasePerson,
+  discriminatorValue: 'person',
+  properties: {
+    // ...
+  },
+});
+
+export const Employee = new EntitySchema({
+  name: 'Employee',
+  extends: Person,
+  discriminatorValue: 'employee',
+  properties: {
+    // ...
+  },
+});
+```
+
+  </TabItem>
+</Tabs>
 
 ### Design-time considerations
 

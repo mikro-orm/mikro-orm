@@ -82,10 +82,10 @@ export class Car {
 ```ts
 export const Car = defineEntity({
   name: 'Car',
-  properties: p => ({
+  properties: {
     name: p.string(),
     year: p.integer(),
-  }),
+  },
   primaryKeys: ['name', 'year'],
 });
 ```
@@ -247,20 +247,20 @@ export class ArticleAttribute {
 ```ts
 export const Article = defineEntity({
   name: 'Article',
-  properties: p => ({
+  properties: {
     id: p.integer().primary().autoincrement(),
     title: p.string(),
     attributes: () => p.oneToMany(ArticleAttribute).mappedBy('article').cascade(Cascade.ALL),
-  }),
+  },
 });
 
 export const ArticleAttribute = defineEntity({
   name: 'ArticleAttribute',
-  properties: p => ({
+  properties: {
     article: () => p.manyToOne(Article).primary(),
     attribute: p.string().primary(),
     value: p.string(),
-  }),
+  },
   primaryKeys: ['article', 'attribute'],
 });
 ```
@@ -374,17 +374,17 @@ export class Address {
 ```ts
 export const User = defineEntity({
   name: 'User',
-  properties: p => ({
+  properties: {
     id: p.integer().primary().autoincrement(),
     address: () => p.oneToOne(Address).inversedBy('user').cascade(Cascade.ALL),
-  }),
+  },
 });
 
 export const Address = defineEntity({
   name: 'Address',
-  properties: p => ({
+  properties: {
     user: () => p.oneToOne(User).primary(),
-  }),
+  },
   primaryKeys: ['user'],
 });
 ```
@@ -582,33 +582,33 @@ export class OrderItem {
 ```ts
 export const Order = defineEntity({
   name: 'Order',
-  properties: p => ({
+  properties: {
     id: p.integer().primary().autoincrement(),
     customer: () => p.manyToOne(Customer),
     items: () => p.oneToMany(OrderItem).mappedBy('order'),
     paid: p.boolean().default(false),
     shipped: p.boolean().default(false),
     created: p.datetime().onCreate(() => new Date()),
-  }),
+  },
 });
 
 export const Product = defineEntity({
   name: 'Product',
-  properties: p => ({
+  properties: {
     id: p.integer().primary().autoincrement(),
     name: p.string(),
     currentPrice: p.float(),
-  }),
+  },
 });
 
 export const OrderItem = defineEntity({
   name: 'OrderItem',
-  properties: p => ({
+  properties: {
     order: () => p.manyToOne(Order).primary(),
     product: () => p.manyToOne(Product).primary(),
     amount: p.integer().default(1),
     offeredPrice: p.float(),
-  }),
+  },
   primaryKeys: ['order', 'product'],
 });
 ```

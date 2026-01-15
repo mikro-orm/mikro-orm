@@ -165,14 +165,14 @@ class MyEntity {
   <TabItem value="define-entity">
 
 ```ts
-import { defineEntity } from '@mikro-orm/core';
+import { defineEntity, p } from '@mikro-orm/core';
 
 const MyEntity = defineEntity({
   name: 'MyEntity',
-  properties: p => ({
+  properties: {
     // highlight-next-line
     foo: p.type(MyType).$type<MyClass, string>(),
-  }),
+  },
 });
 ```
 

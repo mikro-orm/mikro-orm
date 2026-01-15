@@ -2,6 +2,9 @@
 title: Quick Start
 ---
 
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
 In this guide, you will learn how to quickly bootstrap a simple project using MikroORM. For a deeper dive, check out the [Getting Started guide](./guide) which follows.
 
 > If you prefer to take a peek at an existing project, there are [several example repositories](./examples) available.
@@ -33,16 +36,6 @@ npm install @mikro-orm/core @mikro-orm/libsql
 npm install @mikro-orm/core @mikro-orm/mssql
 ```
 
-Next you will need to enable support for [decorators](https://www.typescriptlang.org/docs/handbook/decorators.html) as well as `esModuleInterop` in `tsconfig.json` via:
-
-```json
-"experimentalDecorators": true,
-"emitDecoratorMetadata": true,
-"esModuleInterop": true
-```
-
-> The decorators are opt-in, if you use a different way to define your entity metadata like `EntitySchema`, you don't need to enable them.
-
 Then call `MikroORM.init` as part of bootstrapping your app:
 
 ```ts
@@ -65,61 +58,24 @@ console.log(orm.em); // access EntityManager via `em` property
 
 You can read more about all the possible configuration options in [Advanced Configuration](./configuration.md) section.
 
-## Folder-based discovery
+## Entity Discovery
 
-You can also provide paths where you store your entities via `entities` array. The paths are resolved via [`globby`](https://github.com/sindresorhus/globby) internally, so you can use [globbing patterns](https://github.com/sindresorhus/globby#globbing-patterns), including **negative globs**.
+You can provide entities directly or use folder-based discovery with glob patterns:
 
 ```ts
 const orm = await MikroORM.init({
+  // explicit entity references (recommended)
+  entities: [User, Article, Tag],
+  // or folder-based discovery
   entities: ['./dist/app/**/*.entity.js'],
   entitiesTs: ['./src/app/**/*.entity.ts'],
   // ...
 });
 ```
 
-If you are experiencing problems with folder based discovery, try using `mikro-orm debug` CLI command to check what paths are actually being used.
+If you are experiencing problems with folder-based discovery, try using `mikro-orm debug` CLI command to check what paths are actually being used.
 
-## Entity Discovery in TypeScript
-
-The default metadata provider is `ReflectMetadataProvider`. If you want to use `ts-morph` based discovery (that reads actual TS types via the compiler API), you need to install `@mikro-orm/reflection` package.
-
-```ts
-import { MikroORM } from '@mikro-orm/postgresql';
-import { TsMorphMetadataProvider } from '@mikro-orm/reflection';
-
-const orm = await MikroORM.init({
-  metadataProvider: TsMorphMetadataProvider,
-  // ...
-});
-```
-
-Read more about the differences in [Metadata Providers section](./metadata-providers.md).
-
-```ts
-import { MikroORM } from '@mikro-orm/postgresql';
-
-const orm = await MikroORM.init({
-  entities: ['./dist/entities/**/*.js'], // path to your JS entities (dist), relative to `baseDir`
-  entitiesTs: ['./src/entities/**/*.ts'], // path to your TS entities (source), relative to `baseDir`
-  // ...
-});
-```
-
-> It is important that `entities` will point to the compiled JS files, and `entitiesTs` will point to the TS source files. You should not mix those.
-
-> For `ts-morph` discovery to work in production, you need to deploy `.d.ts` declaration files. Be sure to enable `compilerOptions.declaration` in your `tsconfig.json`.
-
-You can also use different the default [`ReflectMetadataProvider`](./metadata-providers.md#reflectmetadataprovider) or even write custom one. Using [`EntitySchema`](./entity-schema.md) is another way to define your entities and does not depend on the metadata providers at all.
-
-```ts
-import { MikroORM } from '@mikro-orm/postgresql';
-
-const orm = await MikroORM.init({
-  // default since v4, so not needed to specify explicitly
-  metadataProvider: ReflectMetadataProvider,
-  // ...
-});
-```
+For detailed information about using decorators (legacy and ES spec) and metadata providers, see the [Using Decorators guide](./using-decorators.md). For glob-based entity discovery, see [Folder-based Discovery](./folder-based-discovery.md).
 
 ## Synchronous initialization
 
@@ -131,11 +87,9 @@ const orm = new MikroORM({ ... });
 
 This method has some limitations:
 
-- database connection will be established when you first interact with the database (or you can use `orm.connect()`
-  explicitly)
-- no loading of the `config` file, `options` parameter is mandatory
-- no support for folder based discovery
-- no check for mismatched package versions
+- folder-based discovery not supported
+- ORM extensions are not auto-loaded
+- when metadata cache is enabled, `FileCacheAdapter` needs to be explicitly set in the config
 
 ## RequestContext helper
 
@@ -158,80 +112,140 @@ More info about `RequestContext` is described [here](./identity-map.md#request-c
 
 ## Entity definition
 
-Now you can start defining your entities (in one of the `entities` folders). This is how a simple entity can look like:
+Now you can start defining your entities. MikroORM supports multiple approaches:
+
+<Tabs
+  groupId="entity-def"
+  defaultValue="define-entity"
+  values={[
+    {label: 'defineEntity', value: 'define-entity'},
+    {label: 'decorators', value: 'decorators'},
+    {label: 'EntitySchema', value: 'entity-schema'},
+  ]
+}>
+  <TabItem value="define-entity">
+
+The `defineEntity` helper provides full type inference without decorators:
 
 ```ts title="./entities/Book.ts"
+import { defineEntity, InferEntity, p } from '@mikro-orm/core';
+
+export const Book = defineEntity({
+  name: 'Book',
+  properties: {
+    id: p.bigint().primary(),
+    title: p.string(),
+    author: () => p.manyToOne(Author),
+    tags: () => p.manyToMany(BookTag),
+  },
+});
+
+export type Book = InferEntity<typeof Book>;
+```
+
+  </TabItem>
+  <TabItem value="decorators">
+
+Decorators require additional setup - see the [Using Decorators guide](./using-decorators.md) for configuration details:
+
+```ts title="./entities/Book.ts"
+import { Entity, PrimaryKey, Property, ManyToOne, ManyToMany, Collection } from '@mikro-orm/decorators/legacy';
+
 @Entity()
 export class Book {
 
   @PrimaryKey()
-  id: bigint;
+  id!: bigint;
 
   @Property()
-  title: string;
+  title!: string;
 
   @ManyToOne(() => Author)
-  author: Author;
+  author!: Author;
 
   @ManyToMany(() => BookTag)
   tags = new Collection<BookTag>(this);
 
-  constructor(title: string, author: Author) {
-    this.title = title;
-    this.author = author;
-  }
-
 }
 ```
 
-Or if you want to use UUID primary key:
+  </TabItem>
+  <TabItem value="entity-schema">
+
+`EntitySchema` allows programmatic definition without decorators:
 
 ```ts title="./entities/Book.ts"
-import { v4 } from 'uuid';
+import { EntitySchema, Collection } from '@mikro-orm/core';
 
-@Entity()
-export class Book {
-
-  @PrimaryKey({ type: 'uuid' })
-  uuid = v4();
-
-  // ...
-
+export interface IBook {
+  id: bigint;
+  title: string;
+  author: Author;
+  tags: Collection<BookTag>;
 }
+
+export const Book = new EntitySchema<IBook>({
+  name: 'Book',
+  properties: {
+    id: { type: 'bigint', primary: true },
+    title: { type: 'string' },
+    author: { kind: 'm:1', entity: () => Author },
+    tags: { kind: 'm:n', entity: () => BookTag },
+  },
+});
 ```
 
-More information can be found in [defining entities section](./defining-entities.md) in docs.
+  </TabItem>
+</Tabs>
+
+For UUID primary keys, use `p.uuid()` with `defineEntity`, `@PrimaryKey({ type: 'uuid' })` with decorators, or `{ type: 'uuid', primary: true }` with `EntitySchema`.
+
+More information can be found in the [Defining Entities section](./defining-entities.md) in docs.
 
 ## EntityManager
 
-When you have your entities defined, you can start using ORM either via `EntityManager`.
+When you have your entities defined, you can start using ORM via `EntityManager`.
 
 To save entity state to database, you need to persist it. Persist determines whether to use `insert` or `update` and
 computes appropriate change-set. Entity references that are not persisted yet (does not have identifier) will be cascade
 persisted automatically.
 
 ```ts
-// use constructors in your entities for required parameters
-const author = new Author('Jon Snow', 'snow@wall.st');
-author.born = new Date();
+// use em.create() to create entity instances
+const author = em.create(Author, {
+  name: 'Jon Snow',
+  email: 'snow@wall.st',
+  born: new Date(),
+});
 
-const publisher = new Publisher('7K publisher');
+const publisher = em.create(Publisher, { name: '7K publisher' });
 
-const book1 = new Book('My Life on The Wall, part 1', author);
-book1.publisher = publisher;
-const book2 = new Book('My Life on The Wall, part 2', author);
-book2.publisher = publisher;
-const book3 = new Book('My Life on The Wall, part 3', author);
-book3.publisher = publisher;
+const book1 = em.create(Book, {
+  title: 'My Life on The Wall, part 1',
+  author,
+  publisher,
+});
+const book2 = em.create(Book, {
+  title: 'My Life on The Wall, part 2',
+  author,
+  publisher,
+});
+const book3 = em.create(Book, {
+  title: 'My Life on The Wall, part 3',
+  author,
+  publisher,
+});
 
-// just persist books, author and publisher will be automatically cascade persisted
-await em.persist([book1, book2, book3]).flush();
+// em.create() auto-persists by default, so just flush
+await em.flush();
 ```
 
 To fetch entities from database you can use `find()` and `findOne()` of `EntityManager`:
 
 ```ts
-const authors = em.find(Author, {});
+const authors = em.findAll(Author, {
+  populate: ['books'],
+});
 
 for (const author of authors) {
   console.log(author); // instance of Author entity

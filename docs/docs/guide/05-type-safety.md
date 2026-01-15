@@ -4,9 +4,10 @@ title: 'Chapter 5: Type-safety'
 
 Entity relations are mapped to entity references - instances of the entity that have at least the primary key available. This reference is stored in the Identity Map, so you will get the same object reference when fetching the same document from the database.
 
+With `defineEntity`, relations are defined using property builders like `p.manyToOne()`:
+
 ```ts
-@ManyToOne(() => User)
-author!: User; // the value is always instance of the `User` entity
+author: () => p.manyToOne(User), // the value is always instance of the `User` entity
 ```
 
 You can check whether an entity is initialized via `wrap(entity).isInitialized()`, and use `await wrap(entity).init()` to initialize it lazily. This will trigger a database call and populate the entity, keeping the same reference in the Identity Map.
@@ -26,26 +27,23 @@ The `isInitialized()` method can be used for runtime checks, but that could end 
 
 ## `Reference` wrapper
 
-When you define `@ManyToOne` and `@OneToOne` properties on your entity, the TypeScript compiler will think that the desired entities are always loaded:
+When you define `manyToOne` or `oneToOne` relations, the TypeScript compiler will think that the desired entities are always loaded:
 
 ```ts
-@Entity()
-export class Article {
-
-  @PrimaryKey()
+class Article {
   id!: number;
-
-  @ManyToOne()
   author!: User;
-
-  constructor(author: User) {
-    this.author = author;
-  }
-
 }
 
+const ArticleSchema = defineEntity({
+  class: Article,
+  properties: {
+    id: p.integer().primary(),
+    author: () => p.manyToOne(User),
+  },
+});
+
 const article = await em.findOne(Article, 1);
-console.log(article.author instanceof User); // true
 console.log(wrap(article.author).isInitialized()); // false
 console.log(article.author.name); // undefined as `User` is not loaded yet
 ```
@@ -54,24 +52,24 @@ You can overcome this issue by using the [`Reference`](/api/core/class/Reference
 
 You can also use `load<K extends keyof T>(prop: K): Promise<T[K]>`, which works like `load()` but returns the specified property.
 
+With `defineEntity`, you can wrap relations in the `Reference` wrapper using `.ref()`:
+
 ```ts title="./entities/Article.ts"
-import { Entity, Ref, ManyToOne, PrimaryKey, Reference } from '@mikro-orm/core';
+import { defineEntity, p, Ref } from '@mikro-orm/core';
 
-@Entity()
 export class Article {
-
-  @PrimaryKey()
   id!: number;
-
-  // This guide is using `ts-morph` metadata provider, so this is enough.
-  @ManyToOne()
-  author: Ref<User>;
-
-  constructor(author: User) {
-    this.author = ref(author);
-  }
-
+  author!: Ref<User>;
 }
+
+export const ArticleSchema = defineEntity({
+  class: Article,
+  properties: {
+    id: p.integer().primary(),
+    // Use .ref() to wrap the relation in a Reference
+    author: () => p.manyToOne(User).ref(),
+  },
+});
 ```
 
 ```ts
@@ -99,12 +97,18 @@ console.log(await article.author.load('name')); // ok, loading the author first
 console.log(article.author.getProperty('name')); // ok, author already loaded
 ```
 
-If you use a different metadata provider than `TsMorphMetadataProvider` (e.g. `ReflectMetadataProvider`), you will also need to explicitly set the `ref` parameter:
+:::info Using decorators
+
+If you use decorators with `reflect-metadata`, you'll need to explicitly set the `ref` option:
 
 ```ts
 @ManyToOne(() => User, { ref: true })
 author!: Ref<User>;
 ```
+
+With `defineEntity`, the `.ref()` method handles this automatically.
+
+:::
 
 ### Using `Reference.load()`
 
@@ -174,28 +178,21 @@ const res1 = await em.find(User, {});
 const res2 = await em.find(User, {}, { populate: ['identity', 'friends'] });
 ```
 
-The `User` entity is defined as follows:
+Using `defineEntity`, the `User` entity might be defined as follows:
 
 ```ts
-import { Entity, PrimaryKey, ManyToOne, OneToOne, Collection, Ref, ref } from '@mikro-orm/core';
+import { defineEntity, InferEntity, p } from '@mikro-orm/core';
 
-@Entity()
-export class User {
+export const User = defineEntity({
+  name: 'User',
+  properties: {
+    id: p.integer().primary(),
+    identity: () => p.manyToOne(Identity).ref(),
+    friends: () => p.manyToMany(User),
+  },
+});
 
-  @PrimaryKey()
-  id!: number;
-
-  @ManyToOne(() => Identity)
-  identity: Ref<Identity>;
-
-  @ManyToMany(() => User)
-  friends = new Collection<User>(this);
-
-  constructor(identity: Identity) {
-    this.identity = ref(identity);
-  }
-
-}
+export type IUser = InferEntity<typeof User>;
 ```
 
 The `Loaded` type will represent what relations of the entity are populated, and will add a special `$` symbol to them, allowing for type-safe synchronous access to the loaded properties. This works great in combination with the [`Reference`](/api/core/class/Reference) wrapper:
@@ -275,21 +272,17 @@ article.author = ref(repo.getReference(2));
 await em.flush();
 ```
 
-Since v5 we can also create entity references without access to [`EntityManager`](/api/core/class/EntityManager). This can be handy if you want to create a reference from inside the entity constructor:
+You can also create entity references without access to [`EntityManager`](/api/core/class/EntityManager) using the `rel()` helper:
 
 ```ts
-import { Entity, ManyToOne, Rel, rel } from '@mikro-orm/core';
+import { Rel, rel } from '@mikro-orm/core';
 
-@Entity()
 export class Article {
-
-  @ManyToOne(() => User, { ref: true })
   author!: Ref<User>;
 
   constructor(authorId: number) {
     this.author = rel(User, authorId);
   }
-
 }
 ```
 

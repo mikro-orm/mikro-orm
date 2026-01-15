@@ -92,7 +92,7 @@ export class BookWithAuthor {
   <TabItem value="define-entity">
 
 ```ts title="./entities/BookWithAuthor.ts"
-import { type InferEntity, defineEntity } from '@mikro-orm/core';
+import { type InferEntity, defineEntity, p } from '@mikro-orm/core';
 
 export const BookWithAuthor = defineEntity({
   name: 'BookWithAuthor',
@@ -109,11 +109,11 @@ export const BookWithAuthor = defineEntity({
     from author a
     group by a.id
   `,
-  properties: p => ({
+  properties: {
     title: p.string(),
     authorName: p.string(),
     tags: p.type('string[]').$type<string[]>(),
-  }),
+  },
 });
 
 export interface IBookWithAuthor extends InferEntity<typeof BookWithAuthor> {}
@@ -233,11 +233,11 @@ export const BookWithAuthor = defineEntity({
       .join('b.tags', 't')
       .groupBy('b.id');
   },
-  properties: p => ({
+  properties: {
     title: p.string(),
     authorName: p.string(),
     tags: p.type('string[]').$type<string[]>(),
-  }),
+  },
 });
 ```
 
