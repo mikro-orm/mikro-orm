@@ -152,6 +152,43 @@ describe('MetadataValidator', () => {
     expect(() => validator.validateEntityDefinition(new MetadataStorage(meta), Author, options)).not.toThrow();
   });
 
+  test('validates dangerous property names', async () => {
+    class Malicious {}
+    const meta = {
+      Malicious: {
+        name: 'Malicious',
+        className: 'Malicious',
+        class: Malicious,
+        primaryKeys: ['id'],
+        properties: {
+          id: { name: 'id', kind: ReferenceKind.SCALAR, type: 'number', primary: true },
+          __proto__: { name: '__proto__', kind: ReferenceKind.SCALAR, type: 'string' },
+        },
+      },
+    } as any;
+    meta.Malicious.root = meta.Malicious;
+    expect(() => validator.validateEntityDefinition(new MetadataStorage(meta), Malicious, options)).toThrow(`Malicious.__proto__ uses a dangerous property name '__proto__' which could lead to prototype pollution. Please use a different property name.`);
+
+    meta.Malicious.properties = {
+      id: { name: 'id', kind: ReferenceKind.SCALAR, type: 'number', primary: true },
+      constructor: { name: 'constructor', kind: ReferenceKind.SCALAR, type: 'string' },
+    };
+    expect(() => validator.validateEntityDefinition(new MetadataStorage(meta), Malicious, options)).toThrow(`Malicious.constructor uses a dangerous property name 'constructor' which could lead to prototype pollution. Please use a different property name.`);
+
+    meta.Malicious.properties = {
+      id: { name: 'id', kind: ReferenceKind.SCALAR, type: 'number', primary: true },
+      prototype: { name: 'prototype', kind: ReferenceKind.SCALAR, type: 'string' },
+    };
+    expect(() => validator.validateEntityDefinition(new MetadataStorage(meta), Malicious, options)).toThrow(`Malicious.prototype uses a dangerous property name 'prototype' which could lead to prototype pollution. Please use a different property name.`);
+
+    meta.Malicious.properties = {
+      id: { name: 'id', kind: ReferenceKind.SCALAR, type: 'number', primary: true },
+      name: { name: 'name', kind: ReferenceKind.SCALAR, type: 'string' },
+    };
+    expect(() => validator.validateEntityDefinition(new MetadataStorage(meta), Malicious, options)).not.toThrow();
+  });
+
+
   test('validates virtual entity definition', async () => {
     const properties: Dictionary = {
       id: { kind: 'scalar', primary: true, name: 'id', type: 'Foo' },

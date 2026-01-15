@@ -36,6 +36,7 @@ export class MetadataValidator {
     this.validateDuplicateFieldNames(meta, options);
     this.validateIndexes(meta, meta.indexes ?? [], 'index');
     this.validateIndexes(meta, meta.uniques ?? [], 'unique');
+    this.validatePropertyNames(meta);
 
     for (const prop of Utils.values(meta.properties)) {
       if (prop.kind !== ReferenceKind.SCALAR) {
@@ -238,6 +239,16 @@ export class MetadataValidator {
 
     if (type !== 'number' && type !== 'Date' && !type.startsWith('timestamp') && !type.startsWith('datetime')) {
       throw MetadataError.invalidVersionFieldType(meta);
+    }
+  }
+
+  private validatePropertyNames(meta: EntityMetadata): void {
+    const dangerousNames = ['__proto__', 'constructor', 'prototype'];
+
+    for (const prop of Utils.values(meta.properties)) {
+      if (dangerousNames.includes(prop.name)) {
+        throw MetadataError.dangerousPropertyName(meta, prop);
+      }
     }
   }
 
