@@ -2244,7 +2244,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       });
     }
 
-    if (autoRefresh) {
+    if (autoRefresh || options.filters) {
       return true;
     }
 
