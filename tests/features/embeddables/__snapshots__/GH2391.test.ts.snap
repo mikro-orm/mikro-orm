@@ -13,8 +13,10 @@ exports[`onCreate and onUpdate in embeddables (GH 2283 and 2391) > result mapper
       ret.audit1_archived = result.audit1_archived;
     } else if (typeof result.audit1_archived === 'bigint') {
       ret.audit1_archived = parseDate(Number(result.audit1_archived));
-    } else {
+    } else if (typeof result.audit1_archived === 'number' || result.audit1_archived.includes('+') || result.audit1_archived.lastIndexOf('-') > 10 || result.audit1_archived.endsWith('Z')) {
       ret.audit1_archived = parseDate(result.audit1_archived);
+    } else {
+      ret.audit1_archived = parseDate(result.audit1_archived + 'Z');
     }
     mapped.audit1_archived = true;
   }
@@ -23,8 +25,10 @@ exports[`onCreate and onUpdate in embeddables (GH 2283 and 2391) > result mapper
       ret.audit1_updated = result.audit1_updated;
     } else if (typeof result.audit1_updated === 'bigint') {
       ret.audit1_updated = parseDate(Number(result.audit1_updated));
-    } else {
+    } else if (typeof result.audit1_updated === 'number' || result.audit1_updated.includes('+') || result.audit1_updated.lastIndexOf('-') > 10 || result.audit1_updated.endsWith('Z')) {
       ret.audit1_updated = parseDate(result.audit1_updated);
+    } else {
+      ret.audit1_updated = parseDate(result.audit1_updated + 'Z');
     }
     mapped.audit1_updated = true;
   }
@@ -33,8 +37,10 @@ exports[`onCreate and onUpdate in embeddables (GH 2283 and 2391) > result mapper
       ret.audit1_created = result.audit1_created;
     } else if (typeof result.audit1_created === 'bigint') {
       ret.audit1_created = parseDate(Number(result.audit1_created));
-    } else {
+    } else if (typeof result.audit1_created === 'number' || result.audit1_created.includes('+') || result.audit1_created.lastIndexOf('-') > 10 || result.audit1_created.endsWith('Z')) {
       ret.audit1_created = parseDate(result.audit1_created);
+    } else {
+      ret.audit1_created = parseDate(result.audit1_created + 'Z');
     }
     mapped.audit1_created = true;
   }
@@ -43,8 +49,10 @@ exports[`onCreate and onUpdate in embeddables (GH 2283 and 2391) > result mapper
       ret.audit1_nested_audit1_archived = result.audit1_nested_audit1_archived;
     } else if (typeof result.audit1_nested_audit1_archived === 'bigint') {
       ret.audit1_nested_audit1_archived = parseDate(Number(result.audit1_nested_audit1_archived));
-    } else {
+    } else if (typeof result.audit1_nested_audit1_archived === 'number' || result.audit1_nested_audit1_archived.includes('+') || result.audit1_nested_audit1_archived.lastIndexOf('-') > 10 || result.audit1_nested_audit1_archived.endsWith('Z')) {
       ret.audit1_nested_audit1_archived = parseDate(result.audit1_nested_audit1_archived);
+    } else {
+      ret.audit1_nested_audit1_archived = parseDate(result.audit1_nested_audit1_archived + 'Z');
     }
     mapped.audit1_nested_audit1_archived = true;
   }
@@ -53,8 +61,10 @@ exports[`onCreate and onUpdate in embeddables (GH 2283 and 2391) > result mapper
       ret.audit1_nested_audit1_updated = result.audit1_nested_audit1_updated;
     } else if (typeof result.audit1_nested_audit1_updated === 'bigint') {
       ret.audit1_nested_audit1_updated = parseDate(Number(result.audit1_nested_audit1_updated));
-    } else {
+    } else if (typeof result.audit1_nested_audit1_updated === 'number' || result.audit1_nested_audit1_updated.includes('+') || result.audit1_nested_audit1_updated.lastIndexOf('-') > 10 || result.audit1_nested_audit1_updated.endsWith('Z')) {
       ret.audit1_nested_audit1_updated = parseDate(result.audit1_nested_audit1_updated);
+    } else {
+      ret.audit1_nested_audit1_updated = parseDate(result.audit1_nested_audit1_updated + 'Z');
     }
     mapped.audit1_nested_audit1_updated = true;
   }
@@ -63,8 +73,10 @@ exports[`onCreate and onUpdate in embeddables (GH 2283 and 2391) > result mapper
       ret.audit1_nested_audit1_created = result.audit1_nested_audit1_created;
     } else if (typeof result.audit1_nested_audit1_created === 'bigint') {
       ret.audit1_nested_audit1_created = parseDate(Number(result.audit1_nested_audit1_created));
-    } else {
+    } else if (typeof result.audit1_nested_audit1_created === 'number' || result.audit1_nested_audit1_created.includes('+') || result.audit1_nested_audit1_created.lastIndexOf('-') > 10 || result.audit1_nested_audit1_created.endsWith('Z')) {
       ret.audit1_nested_audit1_created = parseDate(result.audit1_nested_audit1_created);
+    } else {
+      ret.audit1_nested_audit1_created = parseDate(result.audit1_nested_audit1_created + 'Z');
     }
     mapped.audit1_nested_audit1_created = true;
   }

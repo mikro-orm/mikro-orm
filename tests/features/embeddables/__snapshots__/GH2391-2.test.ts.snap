@@ -13,8 +13,10 @@ exports[`onCreate and onUpdate in embeddables (GH 2283 and 2391) > result mapper
       ret.foo_audit1_archived = result.foo_audit1_archivedAt;
     } else if (typeof result.foo_audit1_archivedAt === 'bigint') {
       ret.foo_audit1_archived = parseDate(Number(result.foo_audit1_archivedAt));
-    } else {
+    } else if (typeof result.foo_audit1_archivedAt === 'number' || result.foo_audit1_archivedAt.includes('+') || result.foo_audit1_archivedAt.lastIndexOf('-') > 10 || result.foo_audit1_archivedAt.endsWith('Z')) {
       ret.foo_audit1_archived = parseDate(result.foo_audit1_archivedAt);
+    } else {
+      ret.foo_audit1_archived = parseDate(result.foo_audit1_archivedAt + 'Z');
     }
     mapped.foo_audit1_archivedAt = true;
   }
@@ -23,8 +25,10 @@ exports[`onCreate and onUpdate in embeddables (GH 2283 and 2391) > result mapper
       ret.foo_audit1_updatedAt = result.foo_audit1_updated_at;
     } else if (typeof result.foo_audit1_updated_at === 'bigint') {
       ret.foo_audit1_updatedAt = parseDate(Number(result.foo_audit1_updated_at));
-    } else {
+    } else if (typeof result.foo_audit1_updated_at === 'number' || result.foo_audit1_updated_at.includes('+') || result.foo_audit1_updated_at.lastIndexOf('-') > 10 || result.foo_audit1_updated_at.endsWith('Z')) {
       ret.foo_audit1_updatedAt = parseDate(result.foo_audit1_updated_at);
+    } else {
+      ret.foo_audit1_updatedAt = parseDate(result.foo_audit1_updated_at + 'Z');
     }
     mapped.foo_audit1_updated_at = true;
   }
@@ -33,8 +37,10 @@ exports[`onCreate and onUpdate in embeddables (GH 2283 and 2391) > result mapper
       ret.foo_audit1_created = result.foo_audit1_created;
     } else if (typeof result.foo_audit1_created === 'bigint') {
       ret.foo_audit1_created = parseDate(Number(result.foo_audit1_created));
-    } else {
+    } else if (typeof result.foo_audit1_created === 'number' || result.foo_audit1_created.includes('+') || result.foo_audit1_created.lastIndexOf('-') > 10 || result.foo_audit1_created.endsWith('Z')) {
       ret.foo_audit1_created = parseDate(result.foo_audit1_created);
+    } else {
+      ret.foo_audit1_created = parseDate(result.foo_audit1_created + 'Z');
     }
     mapped.foo_audit1_created = true;
   }
@@ -43,8 +49,10 @@ exports[`onCreate and onUpdate in embeddables (GH 2283 and 2391) > result mapper
       ret.foo_audit1_nested_audit1_archived = result.foo_audit1_nested_audit1_archivedAt;
     } else if (typeof result.foo_audit1_nested_audit1_archivedAt === 'bigint') {
       ret.foo_audit1_nested_audit1_archived = parseDate(Number(result.foo_audit1_nested_audit1_archivedAt));
-    } else {
+    } else if (typeof result.foo_audit1_nested_audit1_archivedAt === 'number' || result.foo_audit1_nested_audit1_archivedAt.includes('+') || result.foo_audit1_nested_audit1_archivedAt.lastIndexOf('-') > 10 || result.foo_audit1_nested_audit1_archivedAt.endsWith('Z')) {
       ret.foo_audit1_nested_audit1_archived = parseDate(result.foo_audit1_nested_audit1_archivedAt);
+    } else {
+      ret.foo_audit1_nested_audit1_archived = parseDate(result.foo_audit1_nested_audit1_archivedAt + 'Z');
     }
     mapped.foo_audit1_nested_audit1_archivedAt = true;
   }
@@ -53,8 +61,10 @@ exports[`onCreate and onUpdate in embeddables (GH 2283 and 2391) > result mapper
       ret.foo_audit1_nested_audit1_updatedAt = result.foo_audit1_nested_audit1_updated_at;
     } else if (typeof result.foo_audit1_nested_audit1_updated_at === 'bigint') {
       ret.foo_audit1_nested_audit1_updatedAt = parseDate(Number(result.foo_audit1_nested_audit1_updated_at));
-    } else {
+    } else if (typeof result.foo_audit1_nested_audit1_updated_at === 'number' || result.foo_audit1_nested_audit1_updated_at.includes('+') || result.foo_audit1_nested_audit1_updated_at.lastIndexOf('-') > 10 || result.foo_audit1_nested_audit1_updated_at.endsWith('Z')) {
       ret.foo_audit1_nested_audit1_updatedAt = parseDate(result.foo_audit1_nested_audit1_updated_at);
+    } else {
+      ret.foo_audit1_nested_audit1_updatedAt = parseDate(result.foo_audit1_nested_audit1_updated_at + 'Z');
     }
     mapped.foo_audit1_nested_audit1_updated_at = true;
   }
@@ -63,8 +73,10 @@ exports[`onCreate and onUpdate in embeddables (GH 2283 and 2391) > result mapper
       ret.foo_audit1_nested_audit1_created = result.foo_audit1_nested_audit1_created;
     } else if (typeof result.foo_audit1_nested_audit1_created === 'bigint') {
       ret.foo_audit1_nested_audit1_created = parseDate(Number(result.foo_audit1_nested_audit1_created));
-    } else {
+    } else if (typeof result.foo_audit1_nested_audit1_created === 'number' || result.foo_audit1_nested_audit1_created.includes('+') || result.foo_audit1_nested_audit1_created.lastIndexOf('-') > 10 || result.foo_audit1_nested_audit1_created.endsWith('Z')) {
       ret.foo_audit1_nested_audit1_created = parseDate(result.foo_audit1_nested_audit1_created);
+    } else {
+      ret.foo_audit1_nested_audit1_created = parseDate(result.foo_audit1_nested_audit1_created + 'Z');
     }
     mapped.foo_audit1_nested_audit1_created = true;
   }
