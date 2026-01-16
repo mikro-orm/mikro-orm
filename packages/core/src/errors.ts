@@ -293,6 +293,10 @@ export class MetadataError<T extends AnyEntity = AnyEntity> extends ValidationEr
     return this.fromMessage(meta, prop, `is missing '${option}' option`);
   }
 
+  static dangerousPropertyName(meta: EntityMetadata, prop: EntityProperty) {
+    return this.fromMessage(meta, prop, `uses a dangerous property name '${prop.name}' which could lead to prototype pollution. Please use a different property name.`);
+  }
+
   private static fromMessage(meta: EntityMetadata, prop: EntityProperty, message: string): MetadataError {
     return new MetadataError(`${meta.className}.${prop.name} ${message}`);
   }

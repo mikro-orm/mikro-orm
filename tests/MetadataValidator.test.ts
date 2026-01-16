@@ -152,6 +152,81 @@ describe('MetadataValidator', () => {
     expect(() => validator.validateEntityDefinition(new MetadataStorage(meta), Author, options)).not.toThrow();
   });
 
+  test('validates dangerous property names', async () => {
+    // Test __proto__ - requires special handling since it's a prototype accessor
+    class Malicious {}
+    const meta = {
+      Malicious: {
+        name: 'Malicious',
+        className: 'Malicious',
+        class: Malicious,
+        primaryKeys: ['id'],
+        properties: {},
+      },
+    } as any;
+    meta.Malicious.root = meta.Malicious;
+    meta.Malicious.properties.id = { name: 'id', kind: ReferenceKind.SCALAR, type: 'number', primary: true };
+
+    const storage = new MetadataStorage(meta);
+    const metaData = storage.get(Malicious);
+    // Add __proto__ property directly to metadata after storage creation to avoid prototype pollution during test setup
+    Object.defineProperty(metaData.properties, '__proto__', {
+      value: { name: '__proto__', kind: ReferenceKind.SCALAR, type: 'string' },
+      enumerable: true,
+      configurable: true,
+      writable: true,
+    });
+    expect(() => validator.validateEntityDefinition(storage, Malicious, options)).toThrow(`Malicious.__proto__ uses a dangerous property name '__proto__' which could lead to prototype pollution. Please use a different property name.`);
+
+    // Test constructor
+    class Malicious2 {}
+    const meta2 = {
+      Malicious2: {
+        name: 'Malicious2',
+        className: 'Malicious2',
+        class: Malicious2,
+        primaryKeys: ['id'],
+        properties: {},
+      },
+    } as any;
+    meta2.Malicious2.root = meta2.Malicious2;
+    meta2.Malicious2.properties.id = { name: 'id', kind: ReferenceKind.SCALAR, type: 'number', primary: true };
+    meta2.Malicious2.properties.constructor = { name: 'constructor', kind: ReferenceKind.SCALAR, type: 'string' };
+    expect(() => validator.validateEntityDefinition(new MetadataStorage(meta2), Malicious2, options)).toThrow(`Malicious2.constructor uses a dangerous property name 'constructor' which could lead to prototype pollution. Please use a different property name.`);
+
+    // Test prototype
+    class Malicious3 {}
+    const meta3 = {
+      Malicious3: {
+        name: 'Malicious3',
+        className: 'Malicious3',
+        class: Malicious3,
+        primaryKeys: ['id'],
+        properties: {},
+      },
+    } as any;
+    meta3.Malicious3.root = meta3.Malicious3;
+    meta3.Malicious3.properties.id = { name: 'id', kind: ReferenceKind.SCALAR, type: 'number', primary: true };
+    meta3.Malicious3.properties.prototype = { name: 'prototype', kind: ReferenceKind.SCALAR, type: 'string' };
+    expect(() => validator.validateEntityDefinition(new MetadataStorage(meta3), Malicious3, options)).toThrow(`Malicious3.prototype uses a dangerous property name 'prototype' which could lead to prototype pollution. Please use a different property name.`);
+
+    // Test safe property name
+    class Safe {}
+    const meta4 = {
+      Safe: {
+        name: 'Safe',
+        className: 'Safe',
+        class: Safe,
+        primaryKeys: ['id'],
+        properties: {},
+      },
+    } as any;
+    meta4.Safe.root = meta4.Safe;
+    meta4.Safe.properties.id = { name: 'id', kind: ReferenceKind.SCALAR, type: 'number', primary: true };
+    meta4.Safe.properties.name = { name: 'name', kind: ReferenceKind.SCALAR, type: 'string' };
+    expect(() => validator.validateEntityDefinition(new MetadataStorage(meta4), Safe, options)).not.toThrow();
+  });
+
   test('validates virtual entity definition', async () => {
     const properties: Dictionary = {
       id: { kind: 'scalar', primary: true, name: 'id', type: 'Foo' },
