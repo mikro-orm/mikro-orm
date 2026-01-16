@@ -47,6 +47,7 @@ export enum QueryOperator {
   $none = 'none', // collection operators, sql only
   $some = 'some', // collection operators, sql only
   $every = 'every', // collection operators, sql only
+  $size = 'size', // collection operators, sql only
   $hasKey = '?', // postgres only, json
   $hasKeys = '?&', // postgres only, json
   $hasSomeKeys = '?|', // postgres only, json
