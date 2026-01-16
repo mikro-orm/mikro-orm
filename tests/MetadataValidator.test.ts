@@ -166,7 +166,7 @@ describe('MetadataValidator', () => {
     } as any;
     meta.Malicious.root = meta.Malicious;
     meta.Malicious.properties.id = { name: 'id', kind: ReferenceKind.SCALAR, type: 'number', primary: true };
-    
+
     const storage = new MetadataStorage(meta);
     const metaData = storage.get(Malicious);
     // Add __proto__ property directly to metadata after storage creation to avoid prototype pollution during test setup
@@ -226,7 +226,6 @@ describe('MetadataValidator', () => {
     meta4.Safe.properties.name = { name: 'name', kind: ReferenceKind.SCALAR, type: 'string' };
     expect(() => validator.validateEntityDefinition(new MetadataStorage(meta4), Safe, options)).not.toThrow();
   });
-
 
   test('validates virtual entity definition', async () => {
     const properties: Dictionary = {

@@ -16,7 +16,7 @@ import type { MetadataStorage } from './MetadataStorage.js';
  *
  * @internal
  */
-const DANGEROUS_PROPERTY_NAMES: readonly string[] = ['__proto__', 'constructor', 'prototype'];
+const DANGEROUS_PROPERTY_NAMES = ['__proto__', 'constructor', 'prototype'] as const;
 
 /**
  * @internal
