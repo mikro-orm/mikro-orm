@@ -124,9 +124,9 @@ export class MikroORM<
 
   /**
    * Synchronous variant of the `init` method with some limitations:
-   * - database connection will be established when you first interact with the database (or you can use `orm.connect()` explicitly)
-   * - no loading of the `config` file, `options` parameter is mandatory
-   * - no support for folder based discovery
+   * - folder-based discovery not supported
+   * - ORM extensions are not autoloaded
+   * - when metadata cache is enabled, `FileCacheAdapter` needs to be explicitly set in the config
    */
   constructor(options: Options<Driver, EM, Entities>) {
     const env = loadEnvironmentVars();

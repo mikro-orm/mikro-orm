@@ -13,28 +13,27 @@ Entities can be defined in three ways:
 - `EntitySchema` helper - With `EntitySchema` helper we define the schema programmatically. We can use regular classes as well as interfaces. This approach also allows to re-use partial entity definitions (e.g. traits/mixins). Read more about this in [Defining Entities via EntitySchema section](./entity-schema.md).
 - `defineEntity` helper - Based on the `EntitySchema`, automatically infers entity interfaces using TypeScript's inference capabilities. Read more about this in [`defineEntity` section](./entity-schema#defineentity).
 
-Moreover, how the metadata extraction from decorators happens is controlled via `MetadataProvider`. Two main metadata providers are:
+Moreover, how the metadata extraction from decorators happens is controlled via `MetadataProvider`. Three main metadata providers are:
 
+- `MetadataProvider` - default provider that only enforces the types are provided explicitly.
 - `ReflectMetadataProvider` - uses `reflect-metadata` to read the property types. Faster but simpler and more verbose.
 - `TsMorphMetadataProvider` - uses `ts-morph` to read the type information from the TypeScript compiled API. Heavier (requires full TS as a dependency), but allows DRY entity definition. With `ts-morph` we are able to extract the type as it is defined in the code, including interface names, as well as optionality of properties.
 
-Read more about them in the [Metadata Providers section](./metadata-providers.md).
+Read more about them in the [Metadata Providers section](./metadata-providers.md). For a comprehensive guide on using decorators (including the new ES spec decorators in v7), see the [Using Decorators guide](./using-decorators.md). For glob-based entity discovery, see [Folder-based Discovery](./folder-based-discovery.md).
 
 > Current set of decorators in MikroORM is designed to work with the `tsc`. Using `babel` and `swc` is also possible, but requires some additional setup. Read more about it [here](./usage-with-transpilers.md). For notes about `webpack`, read the [deployment section](./deployment.md).
 >
 > `ts-morph` is compatible only with the `tsc` approach.
 
-> From v3 we can also use default exports when defining your entity.
-
 Example definition of a `Book` entity follows. We can switch the tabs to see the difference for various ways:
 
 <Tabs
   groupId="entity-def"
-  defaultValue="reflect-metadata"
+  defaultValue="define-entity"
   values={[
+    {label: 'defineEntity', value: 'define-entity'},
     {label: 'reflect-metadata', value: 'reflect-metadata'},
     {label: 'ts-morph', value: 'ts-morph'},
-    {label: 'defineEntity', value: 'define-entity'},
     {label: 'EntitySchema', value: 'entity-schema'},
   ]
   }>
@@ -85,12 +84,12 @@ export class Book extends CustomBaseEntity {
   <TabItem value="define-entity">
 
 ```ts title="./entities/Book.ts"
-import { type InferEntity, defineEntity } from '@mikro-orm/core';
+import { type InferEntity, defineEntity, p } from '@mikro-orm/core';
 
 export const Book = defineEntity({
   name: 'Book',
   extends: CustomBaseEntity,
-  properties: p => ({
+  properties: {
     title: p.string(),
     author: () => p.manyToOne(Author),
     publisher: () => p.manyToOne(Publisher)
@@ -98,7 +97,7 @@ export const Book = defineEntity({
       .nullable(),
     tags: () => p.manyToMany(BookTag)
       .fixedOrder(),
-  }),
+  },
 });
 
 export interface IBook extends InferEntity<typeof Book> {}
@@ -136,11 +135,11 @@ Here is another example of `Author` entity, that was referenced from the `Book` 
 
 <Tabs
   groupId="entity-def"
-  defaultValue="reflect-metadata"
+  defaultValue="define-entity"
   values={[
+    {label: 'defineEntity', value: 'define-entity'},
     {label: 'reflect-metadata', value: 'reflect-metadata'},
     {label: 'ts-morph', value: 'ts-morph'},
-    {label: 'defineEntity', value: 'define-entity'},
     {label: 'EntitySchema', value: 'entity-schema'},
   ]
   }>
@@ -261,11 +260,11 @@ export class Author {
   <TabItem value="define-entity">
 
 ```ts title="./entities/Author.ts"
-import { type InferEntity, defineEntity } from '@mikro-orm/core';
+import { type InferEntity, defineEntity, p } from '@mikro-orm/core';
 
 export const Author = defineEntity({
   name: 'Author',
-  properties: p => ({
+  properties: {
     _id: p.type(ObjectId).primary(),
     id: p.string().serializedPrimaryKey(),
     createdAt: p.datetime().onCreate(() => new Date()),
@@ -282,7 +281,7 @@ export const Author = defineEntity({
     friends: () => p.manyToMany(Author),
     favouriteBook: () => p.manyToOne(Book).nullable(),
     version: p.integer().version(),
-  }),
+  },
 });
 
 export interface IAuthor extends InferEntity<typeof Author> {}
@@ -350,11 +349,11 @@ With the default `reflect-metadata` provider, we need to mark each optional prop
 
 <Tabs
   groupId="entity-def"
-  defaultValue="reflect-metadata"
+  defaultValue="define-entity"
   values={[
+    {label: 'defineEntity', value: 'define-entity'},
     {label: 'reflect-metadata', value: 'reflect-metadata'},
     {label: 'ts-morph', value: 'ts-morph'},
-    {label: 'defineEntity', value: 'define-entity'},
     {label: 'EntitySchema', value: 'entity-schema'},
   ]
   }>
@@ -379,9 +378,9 @@ favouriteBook?: Book;
 ```ts title="./entities/Author.ts"
 const SomeEntity = defineEntity({
   name: 'SomeEntity',
-  properties: p => ({
+  properties: {
     favouriteBook: p.manyToOne(Book).nullable(),
-  }),
+  },
 });
 
 export interface ISomeEntity extends InferEntity<typeof SomeEntity> {}
@@ -404,11 +403,11 @@ To make a nullable field required in methods like `em.create()` (i.e. you cannot
 
 <Tabs
   groupId="entity-def"
-  defaultValue="reflect-metadata"
+  defaultValue="define-entity"
   values={[
+    {label: 'defineEntity', value: 'define-entity'},
     {label: 'reflect-metadata', value: 'reflect-metadata'},
     {label: 'ts-morph', value: 'ts-morph'},
-    {label: 'defineEntity', value: 'define-entity'},
     {label: 'EntitySchema', value: 'entity-schema'},
   ]
   }>
@@ -445,9 +444,9 @@ em.create(Book, {}); // compile error: missing title
 ```ts title='./entities/Book.ts'
 const Book = defineEntity({
   name: 'Book',
-  properties: p => ({
+  properties: {
     title: p.string().$type<RequiredNullable<string>>(),
-  }),
+  },
 });
 
 em.create(Book, { title: "Alice in Wonderland" }); // ok
@@ -488,11 +487,11 @@ We can set default value of a property in 2 ways:
 
 <Tabs
 groupId="entity-def"
-defaultValue="reflect-metadata"
+defaultValue="define-entity"
 values={[
+{label: 'defineEntity', value: 'define-entity'},
 {label: 'reflect-metadata', value: 'reflect-metadata'},
 {label: 'ts-morph', value: 'ts-morph'},
-{label: 'defineEntity', value: 'define-entity'},
 {label: 'EntitySchema', value: 'entity-schema'},
 ]
 }>
@@ -529,11 +528,11 @@ baz: Date & Opt = new Date();
 ```ts title="./entities/Author.ts"
 const SomeEntity = defineEntity({
   name: 'SomeEntity',
-  properties: p => ({
+  properties: {
     foo: p.number().onCreate(() => 1),
     bar: p.string().onCreate(() => 'abc'),
     baz: p.datetime().onCreate(() => new Date()),
-  }),
+  },
 });
 ```
 
@@ -568,11 +567,11 @@ const schema = new EntitySchema({
 
 <Tabs
 groupId="entity-def"
-defaultValue="reflect-metadata"
+defaultValue="define-entity"
 values={[
+{label: 'defineEntity', value: 'define-entity'},
 {label: 'reflect-metadata', value: 'reflect-metadata'},
 {label: 'ts-morph', value: 'ts-morph'},
-{label: 'defineEntity', value: 'define-entity'},
 {label: 'EntitySchema', value: 'entity-schema'},
 ]
 }>
@@ -609,11 +608,11 @@ baz!: Date & Opt;
 ```ts title="./entities/Author.ts"
 const SomeEntity = defineEntity({
   name: 'SomeEntity',
-  properties: p => ({
+  properties: {
     foo: p.number().default(1),
     bar: p.string().default('abc'),
     baz: p.datetime().defaultRaw('now'),
-  }),
+  },
 });
 ```
 
@@ -645,11 +644,11 @@ Another possibility is to provide the reference to the enum implementation in th
 
 <Tabs
 groupId="entity-def"
-defaultValue="reflect-metadata"
+defaultValue="define-entity"
 values={[
+{label: 'defineEntity', value: 'define-entity'},
 {label: 'reflect-metadata', value: 'reflect-metadata'},
 {label: 'ts-morph', value: 'ts-morph'},
-{label: 'defineEntity', value: 'define-entity'},
 {label: 'EntitySchema', value: 'entity-schema'},
 ]
 }>
@@ -734,7 +733,7 @@ export const enum UserStatus {
 ```ts title="./entities/User.ts"
 const SomeEntity = defineEntity({
   name: 'SomeEntity',
-  properties: p => ({
+  properties: {
     // string enum
     role: p.enum(['admin', 'user']),
     // numeric enum
@@ -743,7 +742,7 @@ const SomeEntity = defineEntity({
     outside: p.enum(() => OutsideEnum),
     // string enum defined outside of this file, may be null
     outsideNullable: p.enum(() => OutsideNullableEnum).nullable(),
-  }),
+  },
 });
 ```
 
@@ -772,11 +771,11 @@ By default, the PostgreSQL driver, represents enums as a text columns with check
 
 <Tabs
 groupId="entity-def"
-defaultValue="reflect-metadata"
+defaultValue="define-entity"
 values={[
+{label: 'defineEntity', value: 'define-entity'},
 {label: 'reflect-metadata', value: 'reflect-metadata'},
 {label: 'ts-morph', value: 'ts-morph'},
-{label: 'defineEntity', value: 'define-entity'},
 {label: 'EntitySchema', value: 'entity-schema'},
 ]
 }>
@@ -829,9 +828,9 @@ export enum UserRole {
 
 export const SomeEntity = defineEntity({
   name: 'SomeEntity',
-  properties: p => ({
+  properties: {
     role: p.enum(() => UserRole).nativeEnumName('user_role'),
-  }),
+  },
 });
 ```
 
@@ -859,11 +858,11 @@ We can also use array of values for enum, in that case, `EnumArrayType` type wil
 
 <Tabs
 groupId="entity-def"
-defaultValue="reflect-metadata"
+defaultValue="define-entity"
 values={[
+{label: 'defineEntity', value: 'define-entity'},
 {label: 'reflect-metadata', value: 'reflect-metadata'},
 {label: 'ts-morph', value: 'ts-morph'},
-{label: 'defineEntity', value: 'define-entity'},
 {label: 'EntitySchema', value: 'entity-schema'},
 ]
 }>
@@ -903,9 +902,9 @@ enum Role {
 
 export const SomeEntity = defineEntity({
   name: 'SomeEntity',
-  properties: p => ({
+  properties: {
     roles: p.enum(() => Role).array().default([Role.User]),
-  }),
+  },
 });
 ```
 
@@ -932,11 +931,11 @@ Sometimes we might want to work only with the primary key of a relation. To do t
 
 <Tabs
 groupId="entity-def"
-defaultValue="reflect-metadata"
+defaultValue="define-entity"
 values={[
+{label: 'defineEntity', value: 'define-entity'},
 {label: 'reflect-metadata', value: 'reflect-metadata'},
 {label: 'ts-morph', value: 'ts-morph'},
-{label: 'defineEntity', value: 'define-entity'},
 {label: 'EntitySchema', value: 'entity-schema'},
 ]
 }>
@@ -961,9 +960,9 @@ user: number;
 ```ts title="./entities/User.ts"
 export const SomeEntity = defineEntity({
   name: 'SomeEntity',
-  properties: p => ({
+  properties: {
     user: () => p.manyToOne(User).mapToPk(),
-  }),
+  },
 });
 ```
 
@@ -983,11 +982,11 @@ For composite keys, this will give us ordered tuple representing the raw PKs, wh
 
 <Tabs
 groupId="entity-def"
-defaultValue="reflect-metadata"
+defaultValue="define-entity"
 values={[
+{label: 'defineEntity', value: 'define-entity'},
 {label: 'reflect-metadata', value: 'reflect-metadata'},
 {label: 'ts-morph', value: 'ts-morph'},
-{label: 'defineEntity', value: 'define-entity'},
 {label: 'EntitySchema', value: 'entity-schema'},
 ]
 }>
@@ -1012,9 +1011,9 @@ user: [string, string]; // [first_name, last_name]
 ```ts title="./entities/User.ts"
 export const SomeEntity = defineEntity({
   name: 'SomeEntity',
-  properties: p => ({
+  properties: {
     user: () => p.manyToOne(User).mapToPk(),
-  }),
+  },
 });
 ```
 
@@ -1036,11 +1035,11 @@ properties: {
 
 <Tabs
 groupId="entity-def"
-defaultValue="reflect-metadata"
+defaultValue="define-entity"
 values={[
+{label: 'defineEntity', value: 'define-entity'},
 {label: 'reflect-metadata', value: 'reflect-metadata'},
 {label: 'ts-morph', value: 'ts-morph'},
-{label: 'defineEntity', value: 'define-entity'},
 {label: 'EntitySchema', value: 'entity-schema'},
 ]
 }>
@@ -1065,9 +1064,9 @@ objectVolume?: number;
 ```ts title="./entities/Box.ts"
 export const Box = defineEntity({
   name: 'Box',
-  properties: p => ({
+  properties: {
     objectVolume: p.formula<number>('obj_length * obj_height * obj_width'),
-  }),
+  },
 });
 ```
 
@@ -1087,11 +1086,11 @@ Formulas will be added to the select clause automatically. In case you are facin
 
 <Tabs
 groupId="entity-def"
-defaultValue="reflect-metadata"
+defaultValue="define-entity"
 values={[
+{label: 'defineEntity', value: 'define-entity'},
 {label: 'reflect-metadata', value: 'reflect-metadata'},
 {label: 'ts-morph', value: 'ts-morph'},
-{label: 'defineEntity', value: 'define-entity'},
 {label: 'EntitySchema', value: 'entity-schema'},
 ]
 }>
@@ -1116,9 +1115,9 @@ objectVolume?: number;
 ```ts title="./entities/Box.ts"
 export const Box = defineEntity({
   name: 'Box',
-  properties: p => ({
+  properties: {
     objectVolume: p.formula<number>((alias) => `${alias}.obj_length * ${alias}.obj_height * ${alias}.obj_width`),
-  }),
+  },
 });
 ```
 
@@ -1144,11 +1143,11 @@ To define an index expression, you can either provide a raw SQL string, or use t
 
 <Tabs
 groupId="entity-def"
-defaultValue="reflect-metadata"
+defaultValue="define-entity"
 values={[
+{label: 'defineEntity', value: 'define-entity'},
 {label: 'reflect-metadata', value: 'reflect-metadata'},
 {label: 'ts-morph', value: 'ts-morph'},
-{label: 'defineEntity', value: 'define-entity'},
 {label: 'EntitySchema', value: 'entity-schema'},
 ]
 }>
@@ -1238,13 +1237,13 @@ export class Author {
 ```ts title="./entities/Author.ts"
 export const Author = defineEntity({
   name: 'Author',
-  properties: p => ({
+  properties: {
     email: p.string().unique(),
     age: p.number().nullable().index(),
     born: p.date().nullable().index('born_index'),
     title: p.string(),
     country: p.string(),
-  }),
+  },
   indexes: [
     { properties: ['name', 'age'] }, // compound index, with generated name
     { name: 'custom_idx_name', properties: ['name'] }, // simple index, with custom name
@@ -1304,11 +1303,11 @@ We can define check constraints via `@Check()` decorator. We can use it either o
 
 <Tabs
 groupId="entity-def"
-defaultValue="reflect-metadata"
+defaultValue="define-entity"
 values={[
+{label: 'defineEntity', value: 'define-entity'},
 {label: 'reflect-metadata', value: 'reflect-metadata'},
 {label: 'ts-morph', value: 'ts-morph'},
-{label: 'defineEntity', value: 'define-entity'},
 {label: 'EntitySchema', value: 'entity-schema'},
 ]
 }>
@@ -1371,12 +1370,12 @@ export class Book {
 ```ts title="./entities/Book.ts"
 export const Book = defineEntity({
   name: 'Book',
-  properties: p => ({
+  properties: {
     id: p.number().primary(),
     price1: p.number(),
     price2: p.number(),
     price3: p.number(),
-  }),
+  },
   checks: [
     { expression: 'price1 >= 0' },
     { name: 'foo', expression: columns => `${columns.price1} >= 0` },
@@ -1440,11 +1439,11 @@ We can mark any property as `lazy: true` to omit it from the select clause. This
 
 <Tabs
 groupId="entity-def"
-defaultValue="reflect-metadata"
+defaultValue="define-entity"
 values={[
+{label: 'defineEntity', value: 'define-entity'},
 {label: 'reflect-metadata', value: 'reflect-metadata'},
 {label: 'ts-morph', value: 'ts-morph'},
-{label: 'defineEntity', value: 'define-entity'},
 {label: 'EntitySchema', value: 'entity-schema'},
 ]
 }>
@@ -1469,9 +1468,9 @@ text: string;
 ```ts title="./entities/Book.ts"
 export const Book = defineEntity({
   name: 'Book',
-  properties: p => ({
+  properties: {
     text: p.text().lazy(),
-  }),
+  },
 });
 ```
 
@@ -1544,11 +1543,11 @@ If the `accessor` option points to something, the ORM will use the backing prope
 
 <Tabs
 groupId="entity-def"
-defaultValue="reflect-metadata"
+defaultValue="define-entity"
 values={[
+{label: 'defineEntity', value: 'define-entity'},
 {label: 'reflect-metadata', value: 'reflect-metadata'},
 {label: 'ts-morph', value: 'ts-morph'},
-{label: 'defineEntity', value: 'define-entity'},
 {label: 'EntitySchema', value: 'entity-schema'},
 ]
 }>
@@ -1658,11 +1657,11 @@ If you want the ORM to use the accessor internally (e.g. for hydration or change
 
 <Tabs
 groupId="entity-def"
-defaultValue="reflect-metadata"
+defaultValue="define-entity"
 values={[
+{label: 'defineEntity', value: 'define-entity'},
 {label: 'reflect-metadata', value: 'reflect-metadata'},
 {label: 'ts-morph', value: 'ts-morph'},
-{label: 'defineEntity', value: 'define-entity'},
 {label: 'EntitySchema', value: 'entity-schema'},
 ]
 }>
@@ -1782,11 +1781,11 @@ Following example defines User entity with `firstName` and `lastName` database f
 
 <Tabs
 groupId="entity-def"
-defaultValue="reflect-metadata"
+defaultValue="define-entity"
 values={[
+{label: 'defineEntity', value: 'define-entity'},
 {label: 'reflect-metadata', value: 'reflect-metadata'},
 {label: 'ts-morph', value: 'ts-morph'},
-{label: 'defineEntity', value: 'define-entity'},
 {label: 'EntitySchema', value: 'entity-schema'},
 ]
 }>
@@ -1868,12 +1867,12 @@ export class User {
 export const UserSchema = defineEntity({
   class: User,
   name: 'User',
-  properties: p => ({
+  properties: {
     firstName: p.string().hidden(),
     lastName: p.string().hidden(),
     fullName: p.type('method').persist(false).getter().getterName('getFullName'),
     fullName2: p.type('method').persist(false).getter(),
-  }),
+  },
 });
 ```
 
@@ -1931,11 +1930,11 @@ Read more about this topic in [Inheritance Mapping](./inheritance-mapping.md) se
 
 <Tabs
 groupId="entity-def"
-defaultValue="reflect-metadata"
+defaultValue="define-entity"
 values={[
+{label: 'defineEntity', value: 'define-entity'},
 {label: 'reflect-metadata', value: 'reflect-metadata'},
 {label: 'ts-morph', value: 'ts-morph'},
-{label: 'defineEntity', value: 'define-entity'},
 {label: 'EntitySchema', value: 'entity-schema'},
 ]
 }>
@@ -2036,11 +2035,11 @@ To use generated columns, you can either use the `generated` option, or specify 
 
 <Tabs
 groupId="entity-def"
-defaultValue="reflect-metadata"
+defaultValue="define-entity"
 values={[
+{label: 'defineEntity', value: 'define-entity'},
 {label: 'reflect-metadata', value: 'reflect-metadata'},
 {label: 'ts-morph', value: 'ts-morph'},
-{label: 'defineEntity', value: 'define-entity'},
 {label: 'EntitySchema', value: 'entity-schema'},
 ]
 }>
@@ -2099,7 +2098,7 @@ export class User {
 ```ts title="./entities/User.ts"
 export const User = defineEntity({
   name: 'User',
-  properties: p => ({
+  properties: {
     id: p.integer().primary(),
     firstName: p.string().length(50),
     lastName: p.string().length(50),
@@ -2109,7 +2108,7 @@ export const User = defineEntity({
     fullName2: p.string()
       .length(100)
       .columnType(`varchar(100) generated always as (concat(first_name, ' ', last_name)) virtual`),
-  }),
+  },
 });
 ```
 
@@ -2153,11 +2152,11 @@ To use a generated identity column in PostgreSQL, set the `generated` option to 
 
 <Tabs
 groupId="entity-def"
-defaultValue="reflect-metadata"
+defaultValue="define-entity"
 values={[
+{label: 'defineEntity', value: 'define-entity'},
 {label: 'reflect-metadata', value: 'reflect-metadata'},
 {label: 'ts-morph', value: 'ts-morph'},
-{label: 'defineEntity', value: 'define-entity'},
 {label: 'EntitySchema', value: 'entity-schema'},
 ]
 }>
@@ -2192,9 +2191,9 @@ export class User {
 ```ts title="./entities/User.ts"
 export const User = defineEntity({
   name: 'User',
-  properties: p => ({
+  properties: {
     id: p.integer().primary().generated('identity'),
-  }),
+  },
 });
 ```
 
@@ -2223,11 +2222,11 @@ export const User = new EntitySchema<IUser>({
 
 <Tabs
 groupId="entity-def"
-defaultValue="reflect-metadata"
+defaultValue="define-entity"
 values={[
+{label: 'defineEntity', value: 'define-entity'},
 {label: 'reflect-metadata', value: 'reflect-metadata'},
 {label: 'ts-morph', value: 'ts-morph'},
-{label: 'defineEntity', value: 'define-entity'},
 {label: 'EntitySchema', value: 'entity-schema'},
 ]
 }>
@@ -2280,12 +2279,12 @@ export class Book {
 ```ts title="./entities/Book.ts"
 export const Book = defineEntity({
   name: 'Book',
-  properties: p => ({
+  properties: {
     id: p.integer().primary(),
     title: p.string(),
     author: () => p.manyToOne(Author),
     publisher: () => p.manyToOne(Publisher).nullable(),
-  }),
+  },
 });
 ```
 
@@ -2317,11 +2316,11 @@ export const BookSchema = new EntitySchema<Book>({
 
 <Tabs
 groupId="entity-def"
-defaultValue="reflect-metadata"
+defaultValue="define-entity"
 values={[
+{label: 'defineEntity', value: 'define-entity'},
 {label: 'reflect-metadata', value: 'reflect-metadata'},
 {label: 'ts-morph', value: 'ts-morph'},
-{label: 'defineEntity', value: 'define-entity'},
 {label: 'EntitySchema', value: 'entity-schema'},
 ]
 }>
@@ -2372,11 +2371,11 @@ export class Book {
 ```ts title="./entities/Book.ts"
 export const Book = defineEntity({
   name: 'Book',
-  properties: p => ({
+  properties: {
     uuid: p.uuid().primary().onCreate(() => v4()),
     title: p.string(),
     author: () => p.manyToOne(Author),
-  }),
+  },
 });
 ```
 
@@ -2407,11 +2406,11 @@ export const Book = new EntitySchema<IBook>({
 
 <Tabs
 groupId="entity-def"
-defaultValue="reflect-metadata"
+defaultValue="define-entity"
 values={[
+{label: 'defineEntity', value: 'define-entity'},
 {label: 'reflect-metadata', value: 'reflect-metadata'},
 {label: 'ts-morph', value: 'ts-morph'},
-{label: 'defineEntity', value: 'define-entity'},
 {label: 'EntitySchema', value: 'entity-schema'},
 ]
 }>
@@ -2458,11 +2457,11 @@ export class Book {
 ```ts title="./entities/Book.ts"
 export const Book = defineEntity({
   name: 'Book',
-  properties: p => ({
+  properties: {
     uuid: p.uuid().primary().defaultRaw('gen_random_uuid()'),
     title: p.string(),
     author: () => p.manyToOne(Author),
-  }),
+  },
 });
 ```
 
@@ -2515,11 +2514,11 @@ id3: number;
 
 <Tabs
 groupId="entity-def"
-defaultValue="reflect-metadata"
+defaultValue="define-entity"
 values={[
+{label: 'defineEntity', value: 'define-entity'},
 {label: 'reflect-metadata', value: 'reflect-metadata'},
 {label: 'ts-morph', value: 'ts-morph'},
-{label: 'defineEntity', value: 'define-entity'},
 {label: 'EntitySchema', value: 'entity-schema'},
 ]
 }>
@@ -2554,9 +2553,9 @@ export class Book {
 ```ts title="./entities/CustomBaseEntity.ts"
 const SomeEntity = defineEntity({
   name: 'SomeEntity',
-  properties: p => ({
+  properties: {
     id: p.bigint().primary(),
-  }),
+  },
 });
 ```
 
@@ -2578,11 +2577,11 @@ If you want to use native `bigint`s, read the following guide: [Using native Big
 
 <Tabs
 groupId="entity-def"
-defaultValue="reflect-metadata"
+defaultValue="define-entity"
 values={[
+{label: 'defineEntity', value: 'define-entity'},
 {label: 'reflect-metadata', value: 'reflect-metadata'},
 {label: 'ts-morph', value: 'ts-morph'},
-{label: 'defineEntity', value: 'define-entity'},
 {label: 'EntitySchema', value: 'entity-schema'},
 ]
 }>
@@ -2635,11 +2634,11 @@ export class Book {
 ```ts title="./entities/Book.ts"
 export const Book = defineEntity({
   name: 'Book',
-  properties: p => ({
+  properties: {
     _id: p.type(ObjectId).primary(),
     id: p.string().serializedPrimaryKey(),
     title: p.string(),
-  }),
+  },
 });
 ```
 

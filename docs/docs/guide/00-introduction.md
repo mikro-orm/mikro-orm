@@ -30,7 +30,6 @@ The goal of this guide is to show off the most important features of MikroORM as
 - [Vitest](https://vitest.dev) for testing
 - ECMAScript modules
 - JWT authentication
-- reflection via [ts-morph](https://ts-morph.com)
 
 ## MikroORM monorepo
 
@@ -39,7 +38,6 @@ The ORM consists of several packages, the important ones we will be using:
 - `@mikro-orm/core`: the main package with the ORM code
 - `@mikro-orm/cli`: the CLI package, needs to be installed locally
 - `@mikro-orm/sqlite`: the sqlite driver package (you can use a different driver too)
-- `@mikro-orm/reflection`: to enable DRY entities with ts-morph reflection
 - `@mikro-orm/migrations`: package for managing schema migrations
 - `@mikro-orm/seeder`: package for seeding the database with testing data
 
@@ -89,10 +87,10 @@ The app will be using Node.js 24, TypeScript 5.9, and we will build it using a m
 Here is (an incomplete) list of features you will try going through this guide.
 
 - creating an app from scratch with TypeScript setup
-- folder-based discovery, ts-morph reflection, ES modules
+- defining entities with the `defineEntity` helper and full type inference
 - request context management via middleware/fastify hook
 - entity relations, advanced entity definition (e.g. lazy scalar properties)
-- advanced type safety (e.g. `OptionalProps`, `Reference` wrapper and `Loaded` type)
+- advanced type safety (e.g. `Reference` wrapper and `Loaded` type)
 - events, including advanced use cases like soft-delete via `onFlush` event
 - basic testing via vitest
 - custom repositories

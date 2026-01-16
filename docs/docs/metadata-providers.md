@@ -6,6 +6,12 @@ As part of entity discovery process, MikroORM uses so called `MetadataProvider` 
 
 > We can also implement custom metadata provider by extending abstract `MetadataProvider` class.
 
+:::tip
+
+For a comprehensive guide on using decorators with metadata providers, including the differences between legacy and ES spec decorators, see the [Using Decorators guide](./using-decorators.md).
+
+:::
+
 There are 3 built-in metadata providers we can use:
 
 ## TsMorphMetadataProvider
@@ -37,17 +43,25 @@ After the discovery process ends, all [metadata will be cached](./metadata-cache
 
 `ReflectMetadataProvider` uses `reflect-metadata` module to read the type from decorator metadata exported by TypeScript compiler.
 
+:::note
+
+In MikroORM v7, `ReflectMetadataProvider` is available in the `@mikro-orm/decorators/legacy` package along with the legacy decorator definitions. It only works with legacy decorators and the `emitDecoratorMetadata` TypeScript option - ES spec decorators do not support metadata reflection.
+
+:::
+
 We will need to install `reflect-metadata` module and import at the top of our app's bootstrap script (e.g. `main.ts` or `app.ts`).
 
 ```ts
 import 'reflect-metadata';
 ```
 
-Next step is to enable `emitDecoratorMetadata` flag in our `tsconfig.json`.
+Next step is to enable `emitDecoratorMetadata` and `experimentalDecorators` flags in our `tsconfig.json`.
 
 > As this approach does not have performance impact, metadata caching is not really necessary.
 
 ```ts
+import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+
 await MikroORM.init({
   metadataProvider: ReflectMetadataProvider,
   // ...

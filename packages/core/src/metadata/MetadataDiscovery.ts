@@ -10,7 +10,7 @@ import {
 import { Utils } from '../utils/Utils.js';
 import type { Configuration } from '../utils/Configuration.js';
 import { MetadataValidator } from './MetadataValidator.js';
-import type { MetadataProvider } from './MetadataProvider.js';
+import { MetadataProvider } from './MetadataProvider.js';
 import type { NamingStrategy } from '../naming-strategy/NamingStrategy.js';
 import { MetadataStorage } from './MetadataStorage.js';
 import { EntitySchema } from './EntitySchema.js';
@@ -46,7 +46,8 @@ export class MetadataDiscovery {
   async discover(preferTs = true): Promise<MetadataStorage> {
     this.discovered.length = 0;
     const startTime = Date.now();
-    this.logger.log('discovery', `ORM entity discovery started, using ${colors.cyan(this.metadataProvider.constructor.name)}`);
+    const suffix = this.metadataProvider.constructor === MetadataProvider ? '' : `, using ${colors.cyan(this.metadataProvider.constructor.name)}`;
+    this.logger.log('discovery', `ORM entity discovery started${suffix}`);
     await this.findEntities(preferTs);
 
     for (const meta of this.discovered) {
@@ -69,7 +70,8 @@ export class MetadataDiscovery {
   discoverSync(): MetadataStorage {
     this.discovered.length = 0;
     const startTime = Date.now();
-    this.logger.log('discovery', `ORM entity discovery started, using ${colors.cyan(this.metadataProvider.constructor.name)} in sync mode`);
+    const suffix = this.metadataProvider.constructor === MetadataProvider ? '' : `, using ${colors.cyan(this.metadataProvider.constructor.name)}`;
+    this.logger.log('discovery', `ORM entity discovery started${suffix} in sync mode`);
     const refs = this.config.get('entities');
     this.discoverReferences(refs as EntitySchema[]);
 
