@@ -47,7 +47,10 @@ const docsPluginOptions = {
     [require('@docusaurus/remark-plugin-npm2yarn'), { sync: true }],
   ],
   versions: {
-    current: { noIndex: true },
+    current: {
+      label: '7.0 (next)',
+      noIndex: true,
+    },
     ...versions.slice(1).reduce((o, v) => {
       o[v] = { noIndex: true };
       return o;

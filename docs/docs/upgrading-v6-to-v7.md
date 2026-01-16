@@ -201,7 +201,7 @@ The command line argument `--config` is no longer supported outside the CLI. Use
 
 Database connection is now always established lazily.
 
-## Auto `flushMode` change detection detection
+## Auto `flushMode` change detection
 
 Change detection is no longer automatic on scalar properties, an explicit `em.persist` call is required now to detect such change. The `trackChanges` property option is now removed.
 
@@ -370,7 +370,7 @@ The `where` parameter is now moved to the options object.
 
 ```diff
 -const cursor = await em.findByCursor(User, { email: '...' }, { first: 3 });
-+const cursor = await em.findByCursor(User, { first: 3, where: { email: '...' } });
++const cursor = await em.findByCursor(User, { where: { email: '...' }, first: 3 });
 ```
 
 ## `qb.as()` signature changed

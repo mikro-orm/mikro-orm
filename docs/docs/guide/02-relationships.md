@@ -278,8 +278,6 @@ console.log(articleWithAuthor);
 Run the `npm start` as usual:
 
 ```
-[query] select `a0`.`id`, `a0`.`created_at`, `a0`.`updated_at`, `a0`.`slug`, `a0`.`title`, `a0`.`description`, `a0`.`author_id` from `article` as `a0` where `a0`.`id` = 1 limit 1 [took 1 ms]
-[query] select `u0`.* from `user` as `u0` where `u0`.`id` in (1) order by `u0`.`id` asc [took 0 ms]
 Article {
   id: 1,
   createdAt: 2022-09-11T16:57:57.941Z,
