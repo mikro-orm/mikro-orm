@@ -14,6 +14,8 @@ import { CriteriaNode } from './CriteriaNode.js';
 import type { ICriteriaNodeProcessOptions, IQueryBuilder } from '../typings.js';
 import { JoinType, QueryType } from './enums.js';
 
+const COLLECTION_OPERATORS = ['$some', '$none', '$every', '$size'];
+
 /**
  * @internal
  */
@@ -31,7 +33,7 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
     }
 
     if (this.shouldAutoJoin(qb, nestedAlias)) {
-      if (keys.some(k => ['$some', '$none', '$every'].includes(k as string))) {
+      if (keys.some(k => COLLECTION_OPERATORS.includes(k as string))) {
         if (![ReferenceKind.MANY_TO_MANY, ReferenceKind.ONE_TO_MANY].includes(this.prop!.kind)) {
           // ignore collection operators when used on a non-relational property - this can happen when they get into
           // populateWhere via `infer` on m:n properties with select-in strategy
@@ -50,25 +52,32 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
         });
 
         for (const key of keys) {
-          if (typeof key !== 'string' || !['$some', '$none', '$every'].includes(key)) {
+          if (typeof key !== 'string' || !COLLECTION_OPERATORS.includes(key)) {
             throw new Error('Mixing collection operators with other filters is not allowed.');
           }
 
           const payload = (this.payload[key] as CriteriaNode<T>).unwrap();
           const qb2 = qb.clone(true, ['_schema']);
+          const joinAlias = qb2.getNextAlias(this.prop!.targetMeta!.class);
           const sub = qb2
             .from(parentMeta.class)
-            .innerJoin(this.key! as string, qb2.getNextAlias(this.prop!.targetMeta!.class))
+            // eslint-disable-next-line no-unexpected-multiline
+            [key === '$size' ? 'leftJoin' : 'innerJoin'](this.key! as string, joinAlias)
             .select(parentMeta.primaryKeys);
 
-          if (key === '$every') {
+          if (key === '$size') {
+            const sizeCondition = typeof payload === 'number' ? { $eq: payload } : payload;
+            const pks = this.prop!.referencedColumnNames;
+            const countExpr = raw(`count(${pks.map(() => '??').join(', ')})`, pks.map(pk => `${joinAlias}.${pk}`));
+            sub.groupBy(parentMeta.primaryKeys);
+            sub.having({ $and: Object.keys(sizeCondition).map(op => ({ [countExpr]: { [op]: sizeCondition[op] } })) });
+          } else if (key === '$every') {
             sub.where({ $not: { [this.key!]: payload } });
           } else {
             sub.where({ [this.key!]: payload });
           }
 
-          const op = key === '$some' ? '$in' : '$nin';
-
+          const op = ['$size', '$some'].includes(key) ? '$in' : '$nin';
           $and.push({
             [Utils.getPrimaryKeyHash(primaryKeys)]: { [op]: (sub as Dictionary).getNativeQuery().toRaw() },
           });
@@ -156,7 +165,7 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
     }
 
     if (this.shouldAutoJoin(qb, nestedAlias)) {
-      return !keys.some(k => ['$some', '$none', '$every'].includes(k as string));
+      return !keys.some(k => COLLECTION_OPERATORS.includes(k as string));
     }
 
     return keys.some(field => {
@@ -242,7 +251,7 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
       return false;
     }
 
-    if (keys.some(k => ['$some', '$none', '$every'].includes(k as string))) {
+    if (keys.some(k => COLLECTION_OPERATORS.includes(k as string))) {
       return true;
     }
 

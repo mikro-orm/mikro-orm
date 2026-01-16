@@ -185,6 +185,7 @@ export type OperatorMap<T> = {
   $none?: ExpandQuery<T>;
   $some?: ExpandQuery<T>;
   $every?: ExpandQuery<T>;
+  $size?: number | { $eq?: number; $ne?: number; $gt?: number; $gte?: number; $lt?: number; $lte?: number };
   $gt?: ExpandScalar<T>;
   $gte?: ExpandScalar<T>;
   $lt?: ExpandScalar<T>;

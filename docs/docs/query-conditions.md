@@ -84,11 +84,12 @@ const res = await orm.em.find(Author, [1, 2, 7]);
 
 In addition to the regular operators that translate to a real SQL operator expression (e.g. `>=`), you can also use the following collection operators:
 
-| operator | description                                                     |
-|----------|-----------------------------------------------------------------|
-| `$some`  | Finds collections that have some record matching the condition. |
-| `$none`  | Finds collections that have no records matching the condition.  |
-| `$every`  | Finds collections where every record is matching the condition. |
+| operator | description                                                        |
+|----------|--------------------------------------------------------------------|
+| `$some`  | Finds collections that have some record matching the condition.    |
+| `$none`  | Finds collections that have no records matching the condition.     |
+| `$every` | Finds collections where every record is matching the condition.    |
+| `$size`  | Finds collections based on the number of related records.          |
 
 This will be resolved as a subquery condition:
 
@@ -120,6 +121,30 @@ const res1 = await em.find(Author, {
 // finds all authors that have no books
 const res2 = await em.find(Author, {
   books: { $none: {} },
+});
+```
+
+The `$size` operator allows filtering entities based on the count of related items. It accepts either a number for exact match or an object with comparison operators:
+
+```ts
+// finds all authors with no books
+const res1 = await em.find(Author, {
+  books: { $size: 0 },
+});
+
+// finds all authors with exactly 5 books
+const res2 = await em.find(Author, {
+  books: { $size: 5 },
+});
+
+// finds all authors with at least 3 books
+const res3 = await em.find(Author, {
+  books: { $size: { $gte: 3 } },
+});
+
+// finds all authors with between 1 and 5 books
+const res4 = await em.find(Author, {
+  books: { $size: { $gt: 0, $lte: 5 } },
 });
 ```
 
