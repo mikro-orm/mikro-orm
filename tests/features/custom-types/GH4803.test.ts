@@ -51,6 +51,10 @@ class Id extends Type<Id | undefined, string> {
     return 'string';
   }
 
+  toString() {
+    return this.value?.toString();
+  }
+
 }
 
 const userSchema = defineEntity({

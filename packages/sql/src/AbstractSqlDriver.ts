@@ -548,7 +548,7 @@ export abstract class AbstractSqlDriver<
   async nativeInsert<T extends object>(entityName: EntityName<T>, data: EntityDictionary<T>, options: NativeInsertUpdateOptions<T> = {}): Promise<QueryResult<T>> {
     options.convertCustomTypes ??= true;
     const meta = this.metadata.get(entityName);
-    const collections = this.extractManyToMany(meta, data);
+    const collections = this.extractManyToMany(meta.class, data);
     const qb = this.createQueryBuilder(entityName, options.ctx, 'write', options.convertCustomTypes, options.loggerContext).withSchema(this.getSchemaName(meta, options));
     const res = await this.rethrow(qb.insert(data as unknown as RequiredEntityData<T>).execute('run', false));
     res.row = res.row || {};
@@ -559,10 +559,15 @@ export abstract class AbstractSqlDriver<
     } else {
       /* v8 ignore next */
       res.insertId = data[meta.primaryKeys[0]] ?? res.insertId ?? res.row[meta.primaryKeys[0]];
-      pk = [res.insertId];
+
+      if (options.convertCustomTypes && meta?.getPrimaryProp().customType) {
+        pk = [meta!.getPrimaryProp().customType!.convertToDatabaseValue(res.insertId, this.platform)];
+      } else {
+        pk = [res.insertId];
+      }
     }
 
-    await this.processManyToMany(meta, pk, collections, false, options);
+    await this.processManyToMany(meta, [pk], [collections], false, options);
 
     return res;
   }
@@ -571,7 +576,7 @@ export abstract class AbstractSqlDriver<
     options.processCollections ??= true;
     options.convertCustomTypes ??= true;
     const meta = this.metadata.get(entityName).root;
-    const collections = options.processCollections ? data.map(d => this.extractManyToMany(meta, d)) : [];
+    const collections = options.processCollections ? data.map(d => this.extractManyToMany(meta.class, d)) : [];
     const pks = this.getPrimaryKeyFields(meta);
     const set = new Set<EntityKey<T>>();
     data.forEach(row => Utils.keys(row).forEach(k => set.add(k)));
@@ -714,9 +719,7 @@ export abstract class AbstractSqlDriver<
       res.insertId = res.insertId || res.row![pks[0]];
     }
 
-    for (let i = 0; i < collections.length; i++) {
-      await this.processManyToMany<T>(meta, pk[i], collections[i], false, options);
-    }
+    await this.processManyToMany<T>(meta, pk, collections, false, options);
 
     return res;
   }
@@ -725,7 +728,7 @@ export abstract class AbstractSqlDriver<
     options.convertCustomTypes ??= true;
     const meta = this.metadata.get(entityName);
     const pks = this.getPrimaryKeyFields(meta);
-    const collections = this.extractManyToMany(meta, data);
+    const collections = this.extractManyToMany(meta.class, data);
     let res = { affectedRows: 0, insertId: 0, row: {} } as QueryResult<T>;
 
     if (Utils.isPrimaryKey(where) && pks.length === 1) {
@@ -770,12 +773,12 @@ export abstract class AbstractSqlDriver<
 
     /* v8 ignore next */
     const pk = pks.map(pk => Utils.extractPK<T>(data[pk] || where, meta)!) as Primary<T>[];
-    await this.processManyToMany<T>(meta, pk, collections, true, options);
+    await this.processManyToMany<T>(meta, [pk], [collections], true, options);
 
     return res;
   }
 
-  override async nativeUpdateMany<T extends object>(entityName: EntityName<T>, where: FilterQuery<T>[], data: EntityDictionary<T>[], options: NativeInsertUpdateManyOptions<T> & UpsertManyOptions<T> = {}): Promise<QueryResult<T>> {
+  override async nativeUpdateMany<T extends object>(entityName: EntityName<T>, where: FilterQuery<T>[], data: EntityDictionary<T>[], options: NativeInsertUpdateManyOptions<T> & UpsertManyOptions<T> = {}, transform?: (sql: string, params: any[]) => string): Promise<QueryResult<T>> {
     options.processCollections ??= true;
     options.convertCustomTypes ??= true;
     const meta = this.metadata.get<T>(entityName);
@@ -800,7 +803,7 @@ export abstract class AbstractSqlDriver<
       return this.rethrow(qb.execute('run', false));
     }
 
-    const collections = options.processCollections ? data.map(d => this.extractManyToMany(meta, d)) : [];
+    const collections = options.processCollections ? data.map(d => this.extractManyToMany(meta.class, d)) : [];
     const keys = new Set<EntityKey<T>>();
     const fields = new Set<string>();
     const returning = new Set<EntityKey<T>>();
@@ -917,11 +920,12 @@ export abstract class AbstractSqlDriver<
       sql += returningFields.length > 0 ? ` returning ${returningFields.map(field => this.platform.quoteIdentifier(field)).join(', ')}` : '';
     }
 
-    const res = await this.rethrow(this.execute<QueryResult<T>>(sql, params, 'run', options.ctx, options.loggerContext));
-
-    for (let i = 0; i < collections.length; i++) {
-      await this.processManyToMany<T>(meta, where[i] as Primary<T>[], collections[i], false, options);
+    if (transform) {
+      sql = transform(sql, params);
     }
+
+    const res = await this.rethrow(this.execute<QueryResult<T>>(sql, params, 'run', options.ctx, options.loggerContext));
+    await this.processManyToMany<T>(meta, where as Primary<T>[][], collections, false, options);
 
     return res;
   }
@@ -1398,7 +1402,13 @@ export abstract class AbstractSqlDriver<
 
     if (prop.formula) {
       const alias = this.platform.quoteIdentifier(tableAlias);
-      return [raw(`${prop.formula!(alias)} as ${aliased}`)];
+      let key = prop.formula!(alias);
+
+      if (isRaw(key)) {
+        key = this.platform.formatQuery(key.sql, key.params);
+      }
+
+      return [raw(`${key} as ${aliased}`)];
     }
 
     return prop.fieldNames.map(fieldName => {
@@ -1444,10 +1454,14 @@ export abstract class AbstractSqlDriver<
     return 'write';
   }
 
-  protected extractManyToMany<T>(meta: EntityMetadata<T>, data: EntityDictionary<T>): EntityData<T> {
-    const ret: EntityData<T> = {};
+  protected extractManyToMany<T>(entityName: EntityName<T>, data: EntityDictionary<T>): Record<keyof T, Primary<T>[][]> {
+    if (!this.metadata.has(entityName)) {
+      return {} as Record<keyof T, Primary<T>[][]>;
+    }
 
-    for (const prop of meta.relations) {
+    const ret = {} as Record<keyof T, Primary<T>[][]>;
+
+    for (const prop of this.metadata.find<T>(entityName)!.relations) {
       if (prop.kind === ReferenceKind.MANY_TO_MANY && data[prop.name]) {
         ret[prop.name] = data[prop.name].map((item: Primary<T>) => Utils.asArray(item));
         delete data[prop.name];
@@ -1457,14 +1471,29 @@ export abstract class AbstractSqlDriver<
     return ret;
   }
 
-  protected async processManyToMany<T extends object>(meta: EntityMetadata<T>, pks: Primary<T>[], collections: EntityData<T>, clear: boolean, options?: DriverMethodOptions) {
-    for (const prop of meta.relations) {
-      if (collections[prop.name]) {
-        const pivotMeta = this.metadata.get(prop.pivotEntity);
-        const persister = new PivotCollectionPersister(pivotMeta, this, options?.ctx, options?.schema, options?.loggerContext);
-        persister.enqueueUpdate(prop, collections[prop.name] as Primary<T>[][], clear, pks);
-        await this.rethrow(persister.execute());
+  protected async processManyToMany<T extends object>(meta: EntityMetadata<T>, pks: Primary<T>[][], collections: Record<keyof T, Primary<T>[][]>[], clear: boolean, options?: DriverMethodOptions): Promise<void> {
+    const persisters = new Map<string, PivotCollectionPersister<T>>();
+
+    for (let i = 0; i < collections.length; i++) {
+      for (const prop of meta.relations) {
+        if (!collections[i][prop.name]) {
+          continue;
+        }
+
+        const pivotMeta = this.metadata.find(prop.pivotEntity)!;
+        let persister = persisters.get(pivotMeta.className);
+
+        if (!persister) {
+          persister = new PivotCollectionPersister(pivotMeta, this, options?.ctx, options?.schema);
+          persisters.set(pivotMeta.className, persister);
+        }
+
+        persister.enqueueUpdate(prop, collections[i][prop.name] as Primary<T>[][], clear, pks[i]);
       }
+    }
+
+    for (const persister of persisters.values()) {
+      await this.rethrow(persister.execute());
     }
   }
 
@@ -1746,7 +1775,13 @@ export abstract class AbstractSqlDriver<
         if (prop.formula) {
           const a = this.platform.quoteIdentifier(alias);
           const aliased = this.platform.quoteIdentifier(prop.fieldNames[0]);
-          ret.push(raw(`${prop.formula!(a)} as ${aliased}`));
+          let key = prop.formula!(a);
+
+          if (isRaw(key)) {
+            key = this.platform.formatQuery(key.sql, key.params);
+          }
+
+          ret.push(raw(`${key} as ${aliased}`));
         }
 
         if (!prop.object && (prop.hasConvertToDatabaseValueSQL || prop.hasConvertToJSValueSQL)) {

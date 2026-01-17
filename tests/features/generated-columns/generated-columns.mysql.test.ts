@@ -155,7 +155,6 @@ test('validation', async () => {
   });
 });
 
-
 test('schema', async () => {
   const createSQL = await orm.schema.getCreateSchemaSQL();
   expect(createSQL).toMatchSnapshot();

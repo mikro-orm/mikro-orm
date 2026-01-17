@@ -1,0 +1,374 @@
+import { EntitySchema, ReferenceKind, Utils, MikroORM, Type, EnumType } from '@mikro-orm/core';
+import { OracleDriver } from '@mikro-orm/oracledb';
+import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import { BASE_DIR, initORMPostgreSql } from '../../bootstrap.js';
+import { Address2, Author2, Book2, BookTag2, Configuration2, FooBar2, FooBaz2, Publisher2, Test2 } from '../../entities-sql/index.js';
+import { BaseEntity22 } from '../../entities-sql/BaseEntity22.js';
+import { BaseEntity2 } from '../../entities-sql/BaseEntity2.js';
+import { Test2Subscriber } from '../../subscribers/Test2Subscriber.js';
+
+describe('SchemaGenerator [oracle]', () => {
+
+  test.skip('update schema - entity in different namespace [oracle] (GH #1215)', async () => {
+    const orm = await MikroORM.init({
+      driver: OracleDriver,
+      dbName: 'mikro_orm_test',
+      entities: ['./entities-sql', '!./entities-sql/Label2.ts'],
+      schemaGenerator: { managementDbName: 'system', tableSpace: 'mikro_orm' },
+      password: 'oracle123',
+      baseDir: BASE_DIR,
+      subscribers: [Test2Subscriber],
+      autoJoinOneToOneOwner: false,
+      metadataProvider: ReflectMetadataProvider,
+    });
+    const meta = orm.getMetadata();
+    await orm.schema.update();
+    await orm.schema.execute('drop schema if exists "other"');
+
+    const newTableMeta = new EntitySchema({
+      properties: {
+        id: {
+          primary: true,
+          name: 'id',
+          type: 'number',
+          fieldName: 'id',
+          columnType: 'int',
+        },
+        columnName: {
+          type: 'string',
+          name: 'columnName',
+          fieldName: 'column_name',
+          columnType: 'varchar(255)',
+          unique: true,
+        },
+      },
+      name: 'NewTable',
+      tableName: 'other.new_table',
+    }).init().meta;
+    meta.set(newTableMeta.class, newTableMeta);
+    const diff1 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
+    expect(diff1).toMatchSnapshot('oracle-update-schema-1215');
+    await orm.schema.execute(diff1);
+
+    meta.reset(newTableMeta.class);
+    const diff2 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
+    expect(diff2).toMatchSnapshot('oracle-update-schema-1215');
+    await orm.schema.execute(diff2);
+
+    await orm.schema.dropDatabase();
+    await orm.close();
+  });
+
+  test('update schema enums [oracle]', async () => {
+    const orm = await initORMPostgreSql();
+    const meta = orm.getMetadata();
+    await orm.schema.update();
+
+    const newTableMeta = new EntitySchema({
+      properties: {
+        id: {
+          primary: true,
+          name: 'id',
+          type: 'number',
+          fieldName: 'id',
+          columnType: 'int',
+        },
+        enumTest: {
+          type: 'string',
+          name: 'enumTest',
+          fieldName: 'enum_test',
+          columnType: 'varchar(255)',
+        },
+      },
+      name: 'NewTable',
+      tableName: 'new_table',
+    }).init().meta;
+    meta.set(newTableMeta.class, newTableMeta);
+    let diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
+    expect(diff).toMatchSnapshot('oracle-update-schema-enums-1');
+    await orm.schema.execute(diff);
+
+    // change type to enum
+    newTableMeta.properties.enumTest.items = ['a', 'b'];
+    newTableMeta.properties.enumTest.enum = true;
+    newTableMeta.properties.enumTest.type = 'object';
+    newTableMeta.properties.enumTest.columnTypes[0] = Type.getType(EnumType).getColumnType(newTableMeta.properties.enumTest, orm.em.getPlatform());
+    newTableMeta.sync(false, orm.config);
+    diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
+    expect(diff).toMatchSnapshot('oracle-update-schema-enums-2');
+    await orm.schema.execute(diff);
+
+    // change enum items
+    newTableMeta.properties.enumTest.items = ['a', 'b', 'c'];
+    delete newTableMeta.properties.enumTest.columnTypes[0];
+    newTableMeta.properties.enumTest.columnTypes[0] = Type.getType(EnumType).getColumnType(newTableMeta.properties.enumTest, orm.em.getPlatform());
+    newTableMeta.sync(false, orm.config);
+    diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
+    expect(diff).toMatchSnapshot('oracle-update-schema-enums-3');
+    await orm.schema.execute(diff);
+
+    // check that we do not produce anything as the schema should be up to date
+    diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
+    expect(diff).toBe('');
+
+    // change the type from enum to int
+    delete newTableMeta.properties.enumTest.items;
+    newTableMeta.properties.enumTest.columnTypes[0] = 'int';
+    newTableMeta.properties.enumTest.enum = false;
+    newTableMeta.properties.enumTest.type = 'number';
+    newTableMeta.checks = [];
+    diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
+    expect(diff).toMatchSnapshot('oracle-update-schema-enums-4');
+    await orm.schema.execute(diff);
+
+    await orm.close(true);
+  });
+
+  test('create/drop database', async () => {
+    const dbName = `mikro_orm_test_${Date.now()}`;
+    const orm = await MikroORM.init({
+      entities: [FooBar2, FooBaz2, Test2, Book2, Author2, Configuration2, Publisher2, BookTag2, Address2, BaseEntity2, BaseEntity22],
+      // entities: ['./entities-sql', '!./entities-sql/Label2.ts'],
+      dbName,
+      baseDir: BASE_DIR,
+      password: 'oracle123',
+      schemaGenerator: { managementDbName: 'system', tableSpace: 'mikro_orm' },
+      driver: OracleDriver,
+      metadataProvider: ReflectMetadataProvider,
+    });
+
+    await orm.schema.ensureDatabase();
+    await orm.schema.dropDatabase(dbName);
+    await orm.close(true);
+  });
+
+  test('create schema also creates the database if not exists', async () => {
+    const dbName = `mikro_orm_test_${Date.now()}`;
+    const orm = await MikroORM.init({
+      entities: [FooBar2, FooBaz2, Test2, Book2, Author2, Configuration2, Publisher2, BookTag2, Address2, BaseEntity2, BaseEntity22],
+      dbName,
+      baseDir: BASE_DIR,
+      password: 'oracle123',
+      schemaGenerator: { managementDbName: 'system', tableSpace: 'mikro_orm' },
+      driver: OracleDriver,
+      migrations: { path: BASE_DIR + '/../temp/migrations', tableName: 'public.mikro_orm_migrations' },
+      metadataProvider: ReflectMetadataProvider,
+    });
+
+    await orm.schema.create();
+    const diff = await orm.schema.getUpdateSchemaSQL();
+    expect(diff).toBe('');
+    await orm.schema.update();
+    await orm.schema.drop({ wrap: false, dropMigrationsTable: false, dropDb: true });
+    await orm.close(true);
+
+    await orm.isConnected();
+  });
+
+  test('generate schema from metadata [oracle]', async () => {
+    const orm = await initORMPostgreSql();
+    await orm.em.execute('drop table if exists new_table cascade');
+
+    const dropDump = await orm.schema.getDropSchemaSQL();
+    expect(dropDump).toMatchSnapshot('oracle-drop-schema-dump');
+    await orm.schema.execute(dropDump, { wrap: true });
+
+    const createDump = await orm.schema.getCreateSchemaSQL();
+    expect(createDump).toMatchSnapshot('oracle-create-schema-dump');
+    await orm.schema.execute(createDump, { wrap: true });
+
+    const updateDump = await orm.schema.getUpdateSchemaSQL();
+    expect(updateDump).toMatchSnapshot('oracle-update-schema-dump');
+    await orm.schema.execute(updateDump, { wrap: true });
+
+    await orm.close(true);
+  });
+
+  test('update schema [oracle]', async () => {
+    const orm = await initORMPostgreSql();
+    await orm.em.execute('drop table if exists new_table cascade');
+    const meta = orm.getMetadata();
+    await orm.schema.update();
+
+    const newTableMeta = EntitySchema.fromMetadata({
+      properties: {
+        id: {
+          kind: ReferenceKind.SCALAR,
+          primary: true,
+          name: 'id',
+          type: 'number',
+          fieldNames: ['id'],
+          columnTypes: ['int'],
+          autoincrement: true,
+        },
+        createdAt: {
+          kind: ReferenceKind.SCALAR,
+          length: 3,
+          defaultRaw: 'current_timestamp(3)',
+          name: 'createdAt',
+          type: 'Date',
+          fieldNames: ['created_at'],
+          columnTypes: ['timestamp(3)'],
+        },
+        updatedAt: {
+          kind: ReferenceKind.SCALAR,
+          length: 3,
+          defaultRaw: 'current_timestamp(3)',
+          name: 'updatedAt',
+          type: 'Date',
+          fieldNames: ['updated_at'],
+          columnTypes: ['timestamp(3)'],
+        },
+        name: {
+          kind: ReferenceKind.SCALAR,
+          name: 'name',
+          type: 'string',
+          fieldNames: ['name'],
+          columnTypes: ['varchar(255)'],
+        },
+      },
+      name: 'NewTable',
+      collection: 'new_table',
+      primaryKey: 'id',
+      hooks: {},
+      indexes: [],
+      uniques: [],
+    } as any).init().meta;
+    meta.set(newTableMeta.class, newTableMeta);
+    const authorMeta = meta.get(Author2);
+    authorMeta.properties.termsAccepted.defaultRaw = 'false';
+
+    let diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
+    expect(diff).toMatchSnapshot('oracle-update-schema-create-table');
+    await orm.schema.execute(diff, { wrap: true });
+
+    const favouriteBookProp = Utils.copy(authorMeta.properties.favouriteBook);
+    authorMeta.properties.name.type = 'number';
+    authorMeta.properties.name.columnTypes = ['int'];
+    authorMeta.properties.name.nullable = true;
+    authorMeta.properties.name.defaultRaw = '42';
+    authorMeta.properties.age.defaultRaw = '42';
+    authorMeta.properties.favouriteAuthor.type = 'FooBar2';
+    authorMeta.properties.favouriteAuthor.referencedTableName = 'foo_bar2';
+    diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
+    expect(diff).toMatchSnapshot('oracle-update-schema-alter-column');
+    await orm.schema.execute(diff, { wrap: true });
+
+    delete authorMeta.properties.name.default;
+    delete authorMeta.properties.name.defaultRaw;
+    authorMeta.properties.name.nullable = false;
+    const idProp = newTableMeta.properties.id;
+    const updatedAtProp = newTableMeta.properties.updatedAt;
+    newTableMeta.removeProperty('id');
+    newTableMeta.removeProperty('updatedAt');
+    authorMeta.removeProperty('favouriteBook');
+    diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
+    expect(diff).toMatchSnapshot('oracle-update-schema-drop-column');
+    await orm.schema.execute(diff, { wrap: true });
+
+    const ageProp = authorMeta.properties.age;
+    ageProp.name = 'ageInYears' as any;
+    ageProp.fieldNames = ['age_in_years'];
+    const favouriteAuthorProp = authorMeta.properties.favouriteAuthor;
+    favouriteAuthorProp.name = 'favouriteWriter' as any;
+    favouriteAuthorProp.fieldNames = ['favourite_writer_id'];
+    favouriteAuthorProp.joinColumns = ['favourite_writer_id'];
+    authorMeta.removeProperty('favouriteAuthor');
+    authorMeta.addProperty(favouriteAuthorProp);
+    diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
+    expect(diff).toMatchSnapshot('oracle-update-schema-rename-column');
+    await orm.schema.execute(diff, { wrap: true });
+
+    newTableMeta.addProperty(idProp);
+    newTableMeta.addProperty(updatedAtProp);
+    authorMeta.addProperty(favouriteBookProp);
+    diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
+    expect(diff).toMatchSnapshot('oracle-update-schema-add-column');
+    await orm.schema.execute(diff, { wrap: true });
+    diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
+    expect(diff).toBe('');
+
+    // remove 1:1 relation
+    const fooBarMeta = meta.get(FooBar2);
+    const fooBazMeta = meta.get(FooBaz2);
+    fooBarMeta.removeProperty('baz');
+    fooBazMeta.removeProperty('bar');
+    diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
+    expect(diff).toMatchSnapshot('oracle-update-schema-drop-1:1');
+    await orm.schema.execute(diff, { wrap: true });
+
+    meta.reset(Author2);
+    meta.reset(newTableMeta.class);
+    diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
+    expect(diff).toMatchSnapshot('oracle-update-schema-drop-table');
+    await orm.schema.execute(diff, { wrap: true });
+
+    await orm.close(true);
+  });
+
+  test('update indexes [oracle]', async () => {
+    const orm = await initORMPostgreSql();
+    const meta = orm.getMetadata();
+    await orm.schema.update();
+
+    meta.get(Book2).indexes.push({
+      properties: ['author', 'publisher'],
+    });
+
+    meta.get(Author2).indexes.push({
+      properties: ['name', 'email'],
+      type: 'fulltext',
+    });
+
+    meta.get(Book2).uniques.push({
+      properties: ['author', 'publisher'],
+    });
+
+    let diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
+    expect(diff).toMatchSnapshot('oracle-update-schema-add-index');
+    await orm.schema.execute(diff, { wrap: true });
+
+    meta.get(Book2).indexes[1].name = 'custom_idx_123';
+
+    diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
+    expect(diff).toMatchSnapshot('oracle-update-schema-alter-index');
+    await orm.schema.execute(diff, { wrap: true });
+
+    meta.get(Book2).indexes = [];
+
+    diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
+    expect(diff).toMatchSnapshot('oracle-update-schema-drop-index');
+    await orm.schema.execute(diff, { wrap: true });
+
+    meta.get(Book2).uniques = [];
+
+    diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
+    expect(diff).toMatchSnapshot('oracle-update-schema-drop-unique');
+    await orm.schema.execute(diff, { wrap: true });
+
+    // FIXME
+    // test changing a column to tsvector and adding an index
+    // meta.get(Book2).properties.title.defaultRaw = undefined;
+    // meta.get(Book2).properties.title.customType = Type.getType(FullTextType);
+    // meta.get(Book2).properties.title.columnTypes[0] = Type.getType(FullTextType).getColumnType();
+    // meta.get(Book2).indexes.push({ type: 'fulltext', properties: ['title'] });
+
+    diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
+    expect(diff).toMatchSnapshot('oracle-update-schema-add-fulltext-index-tsvector');
+    await orm.schema.execute(diff, { wrap: true });
+
+    await orm.close(true);
+  });
+
+  test('update empty schema from metadata [oracle]', async () => {
+    const orm = await initORMPostgreSql();
+    await orm.schema.drop();
+
+    const updateDump = await orm.schema.getUpdateSchemaSQL();
+    expect(updateDump).toMatchSnapshot('oracle-update-empty-schema-dump');
+    await orm.schema.execute(updateDump, { wrap: true });
+
+    await orm.close(true);
+  });
+
+});

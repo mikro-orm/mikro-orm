@@ -906,9 +906,53 @@ export class QueryBuilder<
       this.helper.getLockSQL(qb, this.lockMode, this.lockTables, this._joins);
     }
 
-    this.helper.finalize(this.type, qb, this.mainAlias.meta, this._data, this._returning);
+    this.processReturningStatement(qb, this.mainAlias.meta, this._data, this._returning);
 
     return this._query!.qb = qb;
+  }
+
+  protected processReturningStatement(qb: NativeQueryBuilder, meta?: EntityMetadata, data?: Dictionary, returning?: Field<any>[]): void {
+    const usesReturningStatement = this.platform.usesReturningStatement() || this.platform.usesOutputStatement();
+
+    if (!meta || !data || !usesReturningStatement) {
+      return;
+    }
+
+    const arr = Utils.asArray(data);
+
+    // always respect explicit returning hint
+    if (returning && returning.length > 0) {
+      qb.returning(returning.map(field => this.helper.mapper(field as string, this.type)));
+
+      return;
+    }
+
+    if (this.type === QueryType.INSERT) {
+      const returningProps = meta.hydrateProps
+        .filter(prop => prop.returning || (prop.persist !== false && ((prop.primary && prop.autoincrement) || prop.defaultRaw)))
+        .filter(prop => prop.primary || !(prop.fieldNames[0] in arr[0]));
+
+      if (returningProps.length > 0) {
+        qb.returning(Utils.flatten(returningProps.map(prop => prop.fieldNames)));
+      }
+
+      return;
+    }
+
+    if (this.type === QueryType.UPDATE) {
+      const returningProps = meta.hydrateProps.filter(prop => prop.fieldNames && isRaw(arr[0][prop.fieldNames[0]]));
+
+      if (returningProps.length > 0) {
+        qb.returning(returningProps.flatMap(prop => {
+          if (prop.hasConvertToJSValueSQL) {
+            const aliased = this.platform.quoteIdentifier(prop.fieldNames[0]);
+            const sql = prop.customType!.convertToJSValueSQL!(aliased, this.platform) + ' as ' + this.platform.quoteIdentifier(prop.fieldNames[0]);
+            return [raw(sql)];
+          }
+          return prop.fieldNames;
+        }) as any);
+      }
+    }
   }
 
   /**
@@ -1532,7 +1576,7 @@ export class QueryBuilder<
     return Utils.unique(ret) as string[];
   }
 
-  private init(type: QueryType, data?: any, cond?: any): this {
+  protected init(type: QueryType, data?: any, cond?: any): this {
     this.ensureNotFinalized();
     this._type = type;
 
@@ -1657,7 +1701,13 @@ export class QueryBuilder<
         .map(prop => {
           const alias = this.platform.quoteIdentifier(this.mainAlias.aliasName);
           const aliased = this.platform.quoteIdentifier(prop.fieldNames[0]);
-          return `${prop.formula!(alias)} as ${aliased}`;
+          let key = prop.formula!(alias);
+
+          if (isRaw(key)) {
+            key = this.platform.formatQuery(key.sql, key.params);
+          }
+
+          return `${key} as ${aliased}`;
         })
         .filter(field => !this._fields!.some(f => {
           if (isRaw(f)) {

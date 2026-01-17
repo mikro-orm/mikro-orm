@@ -75,6 +75,19 @@ services:
     healthcheck:
       test: /opt/mssql-tools18/bin/sqlcmd -b -C -S tcp:localhost -U sa -P 'Root.Root' -Q 'select 1'
 
+  oracledb:
+    image: container-registry.oracle.com/database/free:latest-lite
+    ports:
+      - '1521:1521'
+    environment:
+      - ORACLE_ALLOW_REMOTE=true
+      - ORACLE_PWD=oracle123
+      - ORACLE_MEM_TARGET=2G
+    healthcheck:
+      test: ["CMD-SHELL", "echo 'select 1 from dual;' | sqlplus -S system/oracle123@//localhost:1521/freepdb1 || exit 1"]
+    volumes:
+      - oracledb:/opt/oracle/data
+
 volumes:
   mysql9:
     driver_opts:
@@ -89,6 +102,10 @@ volumes:
       type: tmpfs
       device: tmpfs
   postgis:
+    driver_opts:
+      type: tmpfs
+      device: tmpfs
+  oracledb:
     driver_opts:
       type: tmpfs
       device: tmpfs

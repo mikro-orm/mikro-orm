@@ -8,7 +8,6 @@ import type {
   EntityProperty,
   EntityValue,
   FilterDef,
-  FilterKey,
   FilterQuery,
 } from '../typings.js';
 import { ARRAY_OPERATORS, GroupOperator, JSON_KEY_OPERATORS, ReferenceKind } from '../enums.js';
@@ -221,10 +220,10 @@ export class QueryHelper {
         value = QueryHelper.processCustomType<T>(prop, value, platform, undefined, true);
       }
 
-      const isJsonProperty = prop?.customType instanceof JsonType && Utils.isPlainObject(value) && !isRaw(value) && Object.keys(value)[0] !== '$eq';
+      const isJsonProperty = prop?.customType instanceof JsonType && !isRaw(value);
 
       if (isJsonProperty && prop?.kind !== ReferenceKind.EMBEDDED) {
-        return this.processJsonCondition<T>(o as FilterQuery<T>, value as EntityValue<T>, [prop.fieldNames[0]] as EntityKey<T>[], platform, aliased);
+        return platform.processJsonCondition(o as FilterQuery<T>, value as EntityValue<T>, [prop.fieldNames[0]] as EntityKey<T>[], aliased);
       }
 
       if (Array.isArray(value) && !Utils.isOperator(key) && !QueryHelper.isSupportedOperator(key as string) && !(customExpression && Raw.getKnownFragment(key)!.params.length > 0) && options.type !== 'orderBy') {
@@ -337,39 +336,6 @@ export class QueryHelper {
 
   private static isSupportedOperator(key: string): boolean {
     return !!QueryHelper.SUPPORTED_OPERATORS.find(op => key === op);
-  }
-
-  private static processJsonCondition<T extends object>(o: FilterQuery<T>, value: EntityValue<T>, path: EntityKey<T>[], platform: Platform, alias: boolean) {
-    if (Utils.isPlainObject<T>(value) && !Object.keys(value).some(k => Utils.isOperator(k))) {
-      Utils.keys(value).forEach(k => {
-        this.processJsonCondition<T>(o, value[k] as EntityValue<T>, [...path, k as EntityKey<T>], platform, alias);
-      });
-
-      return o;
-    }
-
-    if (path.length === 1) {
-      o[path[0] as FilterKey<T>] = value as any;
-      return o;
-    }
-
-    const type = this.getValueType(value);
-    const k = platform.getSearchJsonPropertyKey(path, type, alias, value) as FilterKey<T>;
-    o[k] = value as any;
-
-    return o;
-  }
-
-  private static getValueType(value: unknown): string {
-    if (Array.isArray(value)) {
-      return typeof value[0];
-    }
-
-    if (Utils.isPlainObject(value) && Object.keys(value).every(k => Utils.isOperator(k))) {
-      return this.getValueType(Object.values(value)[0]);
-    }
-
-    return typeof value;
   }
 
   static findProperty<T>(fieldName: string, options: ProcessWhereOptions<T>): EntityProperty<T> | undefined {

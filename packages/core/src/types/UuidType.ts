@@ -9,11 +9,27 @@ export class UuidType extends Type<string | null | undefined> {
   }
 
   override compareAsType(): string {
-    return 'string';
+    return 'any';
+  }
+
+  override convertToDatabaseValue(value: string | null | undefined, platform: Platform): string | null {
+    if (!value) {
+      return value!;
+    }
+
+    return platform.convertUuidToDatabaseValue(value) as string;
+  }
+
+  override convertToJSValue(value: string | null | undefined, platform: Platform): string | null | undefined {
+    if (!value) {
+      return value;
+    }
+
+    return platform.convertUuidToJSValue(value) as string;
   }
 
   override ensureComparable(): boolean {
-    return false;
+    return true;
   }
 
 }
