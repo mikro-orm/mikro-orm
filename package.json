@@ -102,28 +102,28 @@
     "yarn": ">=4.6.0"
   },
   "resolutions": {
-    "@ark/util": "0.54.0"
+    "@ark/util": "0.56.0"
   },
   "devDependencies": {
-    "@ark/attest": "0.54.0",
-    "@commitlint/cli": "20.2.0",
-    "@commitlint/config-conventional": "20.2.0",
+    "@ark/attest": "0.56.0",
+    "@commitlint/cli": "20.3.1",
+    "@commitlint/config-conventional": "20.3.1",
     "@eslint/js": "9.39.2",
     "@mikro-orm/mongo-highlighter": "1.0.0",
     "@mikro-orm/sql-highlighter": "1.0.1",
     "@stylistic/eslint-plugin": "5.7.0",
     "@swc-node/register": "1.11.1",
-    "@swc/core": "1.15.7",
+    "@swc/core": "1.15.8",
     "@types/better-sqlite3": "7.6.13",
-    "@types/node": "24.10.4",
+    "@types/node": "24.10.9",
     "@types/pg": "8.16.0",
     "@types/pg-cursor": "2.7.2",
     "@types/picomatch": "4.0.2",
     "@types/semver": "7.7.1",
     "@types/sqlstring": "2.3.2",
     "@types/uuid": "11.0.0",
-    "@types/yargs": "17.0.33",
-    "@vitest/coverage-v8": "4.0.16",
+    "@types/yargs": "17.0.35",
+    "@vitest/coverage-v8": "4.0.17",
     "bson": "7.1.1",
     "conditional-type-checks": "1.0.6",
     "dataloader": "2.2.3",
@@ -141,12 +141,12 @@
     "reflect-metadata": "0.2.2",
     "rimraf": "6.1.2",
     "tsimp": "2.0.12",
-    "tsx": "4.20.6",
+    "tsx": "4.21.0",
     "typescript": "5.9.3",
     "typescript-eslint": "8.53.0",
     "unplugin-swc": "1.5.9",
     "uuid": "11.1.0",
-    "vitest": "4.0.16"
+    "vitest": "4.0.17"
   },
   "packageManager": "yarn@4.12.0"
 }
