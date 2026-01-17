@@ -9,6 +9,7 @@ import {
   rel,
   t,
   sql,
+  raw,
 } from '@mikro-orm/core';
 import {
   Entity,
@@ -56,7 +57,7 @@ export class Book2 {
   @Property({ type: t.decimal, precision: 8, scale: 2, nullable: true })
   price?: number;
 
-  @Formula(alias => `${alias}.price * 1.19`)
+  @Formula(alias => raw(`${alias}.?? * 1.19`, ['price']))
   priceTaxed?: string;
 
   @Property({ type: t.double, nullable: true })

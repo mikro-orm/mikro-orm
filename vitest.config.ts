@@ -78,6 +78,6 @@ export default defineConfig({
       { find: '@mikro-orm/decorators/legacy', replacement: `${root}/decorators/src/legacy/index.ts` },
       { find: /^@mikro-orm\/(.*)$/, replacement: `${root}/$1/src` },
     ],
-    retry: process.env.RETRY_TESTS ? 3 : 0,
+    retry: process.env.RETRY_TESTS ? 1 : 0,
   },
 });

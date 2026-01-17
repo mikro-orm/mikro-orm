@@ -100,7 +100,7 @@ export class MsSqlSchemaHelper extends SchemaHelper {
       left join sys.computed_columns cmp on cmp.name = ic.column_name and cmp.object_id = object_id(ic.table_schema + '.' + ic.table_name)
       left join sys.extended_properties t4 on t4.major_id = object_id(ic.table_schema + '.' + ic.table_name) and t4.name = 'MS_Description' and t4.minor_id = sc.column_id
       left join sys.default_constraints t5 on sc.default_object_id = t5.object_id
-      where (${[...tablesBySchemas.entries()].map(([schema, tables]) => `(ic.table_name in (${tables.map(t => this.platform.quoteValue(t.table_name)).join(',')}) and ic.table_schema = '${schema}')`).join(' OR ')})
+      where (${[...tablesBySchemas.entries()].map(([schema, tables]) => `(ic.table_name in (${tables.map(t => this.platform.quoteValue(t.table_name)).join(',')}) and ic.table_schema = '${schema}')`).join(' or ')})
       order by ordinal_position`;
     const allColumns = await connection.execute<any[]>(sql);
     const str = (val?: string | number) => val != null ? '' + val : val;
@@ -169,7 +169,7 @@ export class MsSqlSchemaHelper extends SchemaHelper {
       inner join sys.columns col on ic.object_id = col.object_id and ic.column_id = col.column_id
       inner join sys.tables t on ind.object_id = t.object_id
       where
-      (${[...tablesBySchemas.entries()].map(([schema, tables]) => `(t.name in (${tables.map(t => this.platform.quoteValue(t.table_name)).join(',')}) and schema_name(t.schema_id) = '${schema}')`).join(' OR ')})
+      (${[...tablesBySchemas.entries()].map(([schema, tables]) => `(t.name in (${tables.map(t => this.platform.quoteValue(t.table_name)).join(',')}) and schema_name(t.schema_id) = '${schema}')`).join(' or ')})
       order by t.name, ind.name, ind.index_id`;
     const allIndexes = await connection.execute<any[]>(sql);
     const ret = {} as Dictionary;

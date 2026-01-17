@@ -481,7 +481,10 @@ export class SchemaComparator {
     };
     const compare = (method: 'updateRule' | 'deleteRule') => rule(key1, method) === rule(key2, method);
 
-    return !compare('updateRule') || !compare('deleteRule');
+    // Skip updateRule comparison for platforms that don't support ON UPDATE (e.g., Oracle)
+    const updateRuleDiffers = this.platform.supportsOnUpdate() && !compare('updateRule');
+
+    return updateRuleDiffers || !compare('deleteRule');
   }
 
   /**

@@ -387,7 +387,7 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
    */
   override async createDatabase(name?: string, options?: { skipOnConnect?: boolean }): Promise<void> {
     name ??= this.config.get('dbName')!;
-    const sql = this.helper.getCreateDatabaseSQL('' + this.platform.quoteIdentifier(name));
+    const sql = this.helper.getCreateDatabaseSQL(name);
 
     if (sql) {
       await this.execute(sql);

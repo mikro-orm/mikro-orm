@@ -4,6 +4,7 @@ import {
   type ConnectionType,
   type EntityDictionary,
   type EntityKey,
+  type EntityName,
   type EntityProperty,
   type LoggingOptions,
   type NativeInsertUpdateManyOptions,
@@ -13,7 +14,6 @@ import {
   Utils,
   isRaw,
   type Constructor,
-  type EntityName,
 } from '@mikro-orm/core';
 import { AbstractSqlDriver, type SqlEntityManager } from '@mikro-orm/sql';
 import { MsSqlConnection } from './MsSqlConnection.js';

@@ -267,13 +267,13 @@ describe.each(['sqlite', 'libsql'] as const)('EntityManager (%s)', driver => {
     expect(mock.mock.calls).toHaveLength(10);
     expect(mock.mock.calls[0][0]).toMatch('begin');
     expect(mock.mock.calls[1][0]).toMatch('savepoint `trx');
-    expect(mock.mock.calls[2][0]).toMatch('select `b0`.*, `b0`.price * 1.19 as `price_taxed` from `book4` as `b0` where `b0`.`title` is not null limit ?');
+    expect(mock.mock.calls[2][0]).toMatch('select `b0`.*, `b0`.`price` * 1.19 as `price_taxed` from `book4` as `b0` where `b0`.`title` is not null limit ?');
     expect(mock.mock.calls[3][0]).toMatch('insert into `author4` (`created_at`, `updated_at`, `name`, `email`, `terms_accepted`) values (?, ?, ?, ?, ?)');
-    expect(mock.mock.calls[4][0]).toMatch('select `b0`.*, `b0`.price * 1.19 as `price_taxed` from `book4` as `b0` where `b0`.`title` not in (?) limit ?');
+    expect(mock.mock.calls[4][0]).toMatch('select `b0`.*, `b0`.`price` * 1.19 as `price_taxed` from `book4` as `b0` where `b0`.`title` not in (?) limit ?');
     expect(mock.mock.calls[5][0]).toMatch('rollback to savepoint `trx');
-    expect(mock.mock.calls[6][0]).toMatch('select `b0`.*, `b0`.price * 1.19 as `price_taxed` from `book4` as `b0` where `b0`.`title` is not null limit ?');
+    expect(mock.mock.calls[6][0]).toMatch('select `b0`.*, `b0`.`price` * 1.19 as `price_taxed` from `book4` as `b0` where `b0`.`title` is not null limit ?');
     expect(mock.mock.calls[7][0]).toMatch('insert into `author4` (`created_at`, `updated_at`, `name`, `email`, `terms_accepted`) values (?, ?, ?, ?, ?)');
-    expect(mock.mock.calls[8][0]).toMatch('select `b0`.*, `b0`.price * 1.19 as `price_taxed` from `book4` as `b0` where `b0`.`title` not in (?) limit ?');
+    expect(mock.mock.calls[8][0]).toMatch('select `b0`.*, `b0`.`price` * 1.19 as `price_taxed` from `book4` as `b0` where `b0`.`title` not in (?) limit ?');
     expect(mock.mock.calls[9][0]).toMatch('commit');
     await expect(orm.em.findOne(Author4, { name: 'God Persisted!' })).resolves.not.toBeNull();
   });
@@ -1219,7 +1219,7 @@ describe.each(['sqlite', 'libsql'] as const)('EntityManager (%s)', driver => {
       .leftJoinAndSelect('b.tags', 't')
       .where({ 't.name': ['sick', 'sexy'] });
     const sql = 'select `a`.*, ' +
-      '`b`.`id` as `b__id`, `b`.`created_at` as `b__created_at`, `b`.`updated_at` as `b__updated_at`, `b`.`title` as `b__title`, `b`.`price` as `b__price`, `b`.price * 1.19 as `b__price_taxed`, `b`.`author_id` as `b__author_id`, `b`.`publisher_id` as `b__publisher_id`, `b`.`meta` as `b__meta`, ' +
+      '`b`.`id` as `b__id`, `b`.`created_at` as `b__created_at`, `b`.`updated_at` as `b__updated_at`, `b`.`title` as `b__title`, `b`.`price` as `b__price`, `b`.`price` * 1.19 as `b__price_taxed`, `b`.`author_id` as `b__author_id`, `b`.`publisher_id` as `b__publisher_id`, `b`.`meta` as `b__meta`, ' +
       '`t`.`id` as `t__id`, `t`.`created_at` as `t__created_at`, `t`.`updated_at` as `t__updated_at`, `t`.`name` as `t__name`, `t`.`version` as `t__version` ' +
       'from `author4` as `a` ' +
       'left join `book4` as `b` on `a`.`id` = `b`.`author_id` ' +
@@ -1325,9 +1325,9 @@ describe.each(['sqlite', 'libsql'] as const)('EntityManager (%s)', driver => {
     expect(wrap(ref).isInitialized()).toBe(true);
 
     expect(mock.mock.calls[0][0]).toMatch('begin');
-    expect(mock.mock.calls[1][0]).toMatch('select `b0`.*, `b0`.price * 1.19 as `price_taxed` from `book4` as `b0` where `b0`.`title` is not null limit ?');
+    expect(mock.mock.calls[1][0]).toMatch('select `b0`.*, `b0`.`price` * 1.19 as `price_taxed` from `book4` as `b0` where `b0`.`title` is not null limit ?');
     expect(mock.mock.calls[2][0]).toMatch('update `author4` set `name` = ?, `email` = ?, `updated_at` = ? where `id` = ?');
-    expect(mock.mock.calls[3][0]).toMatch('select `b0`.*, `b0`.price * 1.19 as `price_taxed` from `book4` as `b0` where `b0`.`title` not in (?) limit ?');
+    expect(mock.mock.calls[3][0]).toMatch('select `b0`.*, `b0`.`price` * 1.19 as `price_taxed` from `book4` as `b0` where `b0`.`title` not in (?) limit ?');
     expect(mock.mock.calls[4][0]).toMatch('commit');
   });
 
@@ -1496,9 +1496,9 @@ describe.each(['sqlite', 'libsql'] as const)('EntityManager (%s)', driver => {
     const mock = mockLogger(orm, ['query']);
     await orm.em.flush();
     expect(mock.mock.calls[0][0]).toMatch('begin');
-    expect(mock.mock.calls[1][0]).toMatch('select `b0`.*, `b0`.price * 1.19 as `price_taxed` from `book4` as `b0` where `b0`.`title` is not null limit ?');
+    expect(mock.mock.calls[1][0]).toMatch('select `b0`.*, `b0`.`price` * 1.19 as `price_taxed` from `book4` as `b0` where `b0`.`title` is not null limit ?');
     expect(mock.mock.calls[2][0]).toMatch('insert into `author4` (`created_at`, `updated_at`, `name`, `email`, `terms_accepted`) values');
-    expect(mock.mock.calls[3][0]).toMatch('select `b0`.*, `b0`.price * 1.19 as `price_taxed` from `book4` as `b0` where `b0`.`title` not in (?) limit ?');
+    expect(mock.mock.calls[3][0]).toMatch('select `b0`.*, `b0`.`price` * 1.19 as `price_taxed` from `book4` as `b0` where `b0`.`title` not in (?) limit ?');
     expect(mock.mock.calls[4][0]).toMatch('insert into `book4` (`created_at`, `updated_at`, `title`, `author_id`) values');
     expect(mock.mock.calls[5][0]).toMatch('commit');
   });

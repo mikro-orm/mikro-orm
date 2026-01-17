@@ -33,7 +33,6 @@ alter table \`foo_param2\` add index \`foo_param2_baz_id_index\` (\`baz_id\`);
 create table \`publisher2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null default 'asd', \`type\` enum('local','global') not null default 'local', \`type2\` enum('LOCAL','GLOBAL') not null default 'LOCAL', \`enum1\` tinyint null, \`enum2\` tinyint null, \`enum3\` tinyint null, \`enum4\` enum('a','b','c') null, \`enum5\` enum('a') null) default character set utf8mb4 engine = InnoDB;
 
 create table \`author2\` (\`id\` int unsigned not null auto_increment primary key, \`created_at\` datetime(3) not null default current_timestamp(3), \`updated_at\` datetime(3) not null default current_timestamp(3), \`name\` varchar(255) not null, \`email\` varchar(255) not null, \`age\` int null, \`terms_accepted\` tinyint(1) not null default false, \`optional\` tinyint(1) null, \`identities\` text null, \`born\` date null, \`born_time\` time null, \`favourite_book_uuid_pk\` varchar(36) null, \`favourite_author_id\` int unsigned null, \`identity\` json null) default character set utf8mb4 engine = InnoDB;
-alter table \`author2\` add index \`custom_email_index_name\` (\`email\`);
 alter table \`author2\` add unique \`custom_email_unique_name\` (\`email\`);
 alter table \`author2\` add index \`author2_terms_accepted_index\` (\`terms_accepted\`);
 alter table \`author2\` add index \`author2_born_index\` (\`born\`);
@@ -189,7 +188,6 @@ alter table \`foo_param2\` add index \`foo_param2_baz_id_index\` (\`baz_id\`);
 create table \`publisher2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null default 'asd', \`type\` enum('local','global') not null default 'local', \`type2\` enum('LOCAL','GLOBAL') not null default 'LOCAL', \`enum1\` tinyint null, \`enum2\` tinyint null, \`enum3\` tinyint null, \`enum4\` enum('a','b','c') null, \`enum5\` enum('a') null) default character set utf8mb4 engine = InnoDB;
 
 create table \`author2\` (\`id\` int unsigned not null auto_increment primary key, \`created_at\` datetime(3) not null default current_timestamp(3), \`updated_at\` datetime(3) not null default current_timestamp(3), \`name\` varchar(255) not null, \`email\` varchar(255) not null, \`age\` int null, \`terms_accepted\` tinyint(1) not null default false, \`optional\` tinyint(1) null, \`identities\` text null, \`born\` date null, \`born_time\` time null, \`favourite_book_uuid_pk\` varchar(36) null, \`favourite_author_id\` int unsigned null, \`identity\` json null) default character set utf8mb4 engine = InnoDB;
-alter table \`author2\` add index \`custom_email_index_name\` (\`email\`);
 alter table \`author2\` add unique \`custom_email_unique_name\` (\`email\`);
 alter table \`author2\` add index \`author2_terms_accepted_index\` (\`terms_accepted\`);
 alter table \`author2\` add index \`author2_born_index\` (\`born\`);

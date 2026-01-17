@@ -61,7 +61,6 @@ export const Author2Schema = defineEntity({
   readonly: true,
   indexes: [
     { name: 'author2_name_age_index', properties: ['name', 'age'] },
-    { name: 'custom_email_index_name', properties: ['email'] },
     {
       name: 'author2_custom_idx_on_email',
       expression: (table, columns) => \`create index "author2_custom_idx_on_email" on "\${table.schema}"."\${table.name}" ("\${columns.email}")\`,
@@ -80,7 +79,7 @@ export const Author2Schema = defineEntity({
     createdAt: p.datetime().length(3).hidden().defaultRaw(\`current_timestamp(3)\`),
     updatedAt: p.datetime().columnType('datetime(3)').serializer((v)=>v.toString()).groups('test').defaultRaw(\`current_timestamp(3)\`),
     name: p.string().comment('author name').index('custom_idx_name_123'),
-    email: p.type(EmailType).columnType('varchar(255)').serializer((v) => EmailSerializer.anonymous(v)).hidden().index('custom_email_index_name').unique('custom_email_unique_name'),
+    email: p.type(EmailType).columnType('varchar(255)').serializer((v) => EmailSerializer.anonymous(v)).hidden().unique('custom_email_unique_name'),
     age: p.integer().nullable().concurrencyCheck(),
     termsAccepted: p.boolean().lazy().index('author2_terms_accepted_index'),
     optional: p.type(CustomBooleanType).columnType('tinyint(1)').nullable(),
@@ -586,7 +585,7 @@ export const AuthorPartialViewSchema = defineEntity({
   virtual: true,
   properties: {
     name: p.string().comment('author name').index('custom_idx_name_123'),
-    email: p.type(EmailType).columnType('varchar(255)').nullable().hidden().index('custom_email_index_name').unique('custom_email_unique_name'),
+    email: p.type(EmailType).columnType('varchar(255)').nullable().hidden().unique('custom_email_unique_name'),
   },
 });
 ",
@@ -614,7 +613,7 @@ export const AuthorPartialView2Schema = defineEntity({
     email: p.type(EmailType).columnType('varchar(255)').nullable().serializer((email)=>{
         const [localPart, hostnamePart] = email.split('@', 2);
         return \`\${localPart[0]}\${'*'.repeat(localPart.length - 2)}\${localPart[localPart.length - 1]}@\${hostnamePart}\`;
-    }).serializedName('anonymizedEmail').index('custom_email_index_name').unique('custom_email_unique_name'),
+    }).serializedName('anonymizedEmail').unique('custom_email_unique_name'),
   },
 });
 ",
@@ -754,7 +753,6 @@ export const Author2Schema = new EntitySchema({
   readonly: true,
   indexes: [
     { name: 'author2_name_age_index', properties: ['name', 'age'] },
-    { name: 'custom_email_index_name', properties: ['email'] },
     {
       name: 'author2_custom_idx_on_email',
       expression: (table, columns) => \`create index "author2_custom_idx_on_email" on "\${table.schema}"."\${table.name}" ("\${columns.email}")\`,
@@ -789,7 +787,6 @@ export const Author2Schema = new EntitySchema({
       columnType: 'varchar(255)',
       serializer: (v) => EmailSerializer.anonymous(v),
       hidden: true,
-      index: 'custom_email_index_name',
       unique: 'custom_email_unique_name',
     },
     age: { type: 'integer', nullable: true, concurrencyCheck: true },
@@ -1549,7 +1546,6 @@ export const AuthorPartialViewSchema = new EntitySchema({
       columnType: 'varchar(255)',
       nullable: true,
       hidden: true,
-      index: 'custom_email_index_name',
       unique: 'custom_email_unique_name',
     },
   },
@@ -1590,7 +1586,6 @@ export const AuthorPartialView2Schema = new EntitySchema({
         return \`\${localPart[0]}\${'*'.repeat(localPart.length - 2)}\${localPart[localPart.length - 1]}@\${hostnamePart}\`;
     },
       serializedName: 'anonymizedEmail',
-      index: 'custom_email_index_name',
       unique: 'custom_email_unique_name',
     },
   },
@@ -1716,7 +1711,6 @@ export class Author2 {
   @Property({ comment: 'author name', index: 'custom_idx_name_123' })
   name!: string;
 
-  @Index({ name: 'custom_email_index_name' })
   @Unique({ name: 'custom_email_unique_name' })
   @Property({ type: 'EmailType', columnType: 'varchar(255)', serializer: (v) => EmailSerializer.anonymous(v), hidden: true })
   email!: IType<Email, string> & Hidden;
@@ -2336,7 +2330,7 @@ export class AuthorPartialView {
   @Property({ comment: 'author name', index: 'custom_idx_name_123' })
   name!: string;
 
-  @Property({ type: 'EmailType', columnType: 'varchar(255)', nullable: true, hidden: true, index: 'custom_email_index_name', unique: 'custom_email_unique_name' })
+  @Property({ type: 'EmailType', columnType: 'varchar(255)', nullable: true, hidden: true, unique: 'custom_email_unique_name' })
   email!: IType<Email, string | null, (string | null) & Hidden>;
 
 }
@@ -2359,7 +2353,7 @@ export class AuthorPartialView2 {
   @Property({ type: 'EmailType', columnType: 'varchar(255)', nullable: true, serializer: (email)=>{
         const [localPart, hostnamePart] = email.split('@', 2);
         return \`\${localPart[0]}\${'*'.repeat(localPart.length - 2)}\${localPart[localPart.length - 1]}@\${hostnamePart}\`;
-    }, serializedName: 'anonymizedEmail', index: 'custom_email_index_name', unique: 'custom_email_unique_name' })
+    }, serializedName: 'anonymizedEmail', unique: 'custom_email_unique_name' })
   email!: IType<Email, string | null>;
 
 }
@@ -2467,7 +2461,6 @@ export const Author2Schema = defineEntity({
   readonly: true,
   indexes: [
     { name: 'author2_name_age_index', properties: ['name', 'age'] },
-    { name: 'custom_email_index_name', properties: ['email'] },
     {
       name: 'author2_custom_idx_on_email',
       expression: (table, columns) => \`create index "author2_custom_idx_on_email" on "\${table.schema}"."\${table.name}" ("\${columns.email}")\`,
@@ -2486,7 +2479,7 @@ export const Author2Schema = defineEntity({
     createdAt: p.datetime().length(3).hidden().defaultRaw(\`current_timestamp(3)\`),
     updatedAt: p.datetime().columnType('datetime(3)').serializer((v)=>v.toString()).groups('test').defaultRaw(\`current_timestamp(3)\`),
     name: p.string().comment('author name').index('custom_idx_name_123'),
-    email: p.type(EmailType).columnType('varchar(255)').serializer((v) => EmailSerializer.anonymous(v)).hidden().index('custom_email_index_name').unique('custom_email_unique_name'),
+    email: p.type(EmailType).columnType('varchar(255)').serializer((v) => EmailSerializer.anonymous(v)).hidden().unique('custom_email_unique_name'),
     age: p.integer().nullable().concurrencyCheck(),
     termsAccepted: p.boolean().lazy().default(false).index('author2_terms_accepted_index'),
     optional: p.type(CustomBooleanType).columnType('tinyint(1)').nullable(),
@@ -2992,7 +2985,7 @@ export const AuthorPartialViewSchema = defineEntity({
   virtual: true,
   properties: {
     name: p.string().comment('author name').index('custom_idx_name_123'),
-    email: p.type(EmailType).columnType('varchar(255)').nullable().hidden().index('custom_email_index_name').unique('custom_email_unique_name'),
+    email: p.type(EmailType).columnType('varchar(255)').nullable().hidden().unique('custom_email_unique_name'),
   },
 });
 ",
@@ -3020,7 +3013,7 @@ export const AuthorPartialView2Schema = defineEntity({
     email: p.type(EmailType).columnType('varchar(255)').nullable().serializer((email)=>{
         const [localPart, hostnamePart] = email.split('@', 2);
         return \`\${localPart[0]}\${'*'.repeat(localPart.length - 2)}\${localPart[localPart.length - 1]}@\${hostnamePart}\`;
-    }).serializedName('anonymizedEmail').index('custom_email_index_name').unique('custom_email_unique_name'),
+    }).serializedName('anonymizedEmail').unique('custom_email_unique_name'),
   },
 });
 ",
@@ -3161,7 +3154,6 @@ export const Author2Schema = new EntitySchema({
   readonly: true,
   indexes: [
     { name: 'author2_name_age_index', properties: ['name', 'age'] },
-    { name: 'custom_email_index_name', properties: ['email'] },
     {
       name: 'author2_custom_idx_on_email',
       expression: (table, columns) => \`create index "author2_custom_idx_on_email" on "\${table.schema}"."\${table.name}" ("\${columns.email}")\`,
@@ -3196,7 +3188,6 @@ export const Author2Schema = new EntitySchema({
       columnType: 'varchar(255)',
       serializer: (v) => EmailSerializer.anonymous(v),
       hidden: true,
-      index: 'custom_email_index_name',
       unique: 'custom_email_unique_name',
     },
     age: { type: 'integer', nullable: true, concurrencyCheck: true },
@@ -3986,7 +3977,6 @@ export const AuthorPartialViewSchema = new EntitySchema({
       columnType: 'varchar(255)',
       nullable: true,
       hidden: true,
-      index: 'custom_email_index_name',
       unique: 'custom_email_unique_name',
     },
   },
@@ -4027,7 +4017,6 @@ export const AuthorPartialView2Schema = new EntitySchema({
         return \`\${localPart[0]}\${'*'.repeat(localPart.length - 2)}\${localPart[localPart.length - 1]}@\${hostnamePart}\`;
     },
       serializedName: 'anonymizedEmail',
-      index: 'custom_email_index_name',
       unique: 'custom_email_unique_name',
     },
   },
@@ -4153,7 +4142,6 @@ export class Author2 {
   @Property({ comment: 'author name', index: 'custom_idx_name_123' })
   name!: string;
 
-  @Index({ name: 'custom_email_index_name' })
   @Unique({ name: 'custom_email_unique_name' })
   @Property({ type: 'EmailType', columnType: 'varchar(255)', serializer: (v) => EmailSerializer.anonymous(v), hidden: true })
   email!: IType<Email, string> & Hidden;
@@ -4775,7 +4763,7 @@ export class AuthorPartialView {
   @Property({ comment: 'author name', index: 'custom_idx_name_123' })
   name!: string;
 
-  @Property({ type: 'EmailType', columnType: 'varchar(255)', nullable: true, hidden: true, index: 'custom_email_index_name', unique: 'custom_email_unique_name' })
+  @Property({ type: 'EmailType', columnType: 'varchar(255)', nullable: true, hidden: true, unique: 'custom_email_unique_name' })
   email!: IType<Email, string | null, (string | null) & Hidden>;
 
 }
@@ -4798,7 +4786,7 @@ export class AuthorPartialView2 {
   @Property({ type: 'EmailType', columnType: 'varchar(255)', nullable: true, serializer: (email)=>{
         const [localPart, hostnamePart] = email.split('@', 2);
         return \`\${localPart[0]}\${'*'.repeat(localPart.length - 2)}\${localPart[localPart.length - 1]}@\${hostnamePart}\`;
-    }, serializedName: 'anonymizedEmail', index: 'custom_email_index_name', unique: 'custom_email_unique_name' })
+    }, serializedName: 'anonymizedEmail', unique: 'custom_email_unique_name' })
   email!: IType<Email, string | null>;
 
 }
@@ -4906,7 +4894,6 @@ export const Author2Schema = defineEntity({
   readonly: true,
   indexes: [
     { name: 'author2_name_age_index', properties: ['name', 'age'] },
-    { name: 'custom_email_index_name', properties: ['email'] },
     {
       name: 'author2_custom_idx_on_email',
       expression: (table, columns) => \`create index "author2_custom_idx_on_email" on "\${table.schema}"."\${table.name}" ("\${columns.email}")\`,
@@ -4925,7 +4912,7 @@ export const Author2Schema = defineEntity({
     createdAt: p.datetime().length(3).hidden().defaultRaw(\`current_timestamp(3)\`),
     updatedAt: p.datetime().columnType('datetime(3)').serializer((v)=>v.toString()).groups('test').defaultRaw(\`current_timestamp(3)\`),
     name: p.string().comment('author name').index('custom_idx_name_123'),
-    email: p.type(EmailType).columnType('varchar(255)').serializer((v) => EmailSerializer.anonymous(v)).hidden().index('custom_email_index_name').unique('custom_email_unique_name'),
+    email: p.type(EmailType).columnType('varchar(255)').serializer((v) => EmailSerializer.anonymous(v)).hidden().unique('custom_email_unique_name'),
     age: p.integer().nullable().concurrencyCheck(),
     termsAccepted: p.boolean().lazy().index('author2_terms_accepted_index'),
     optional: p.type(CustomBooleanType).columnType('tinyint(1)').nullable(),
@@ -5431,7 +5418,7 @@ export const AuthorPartialViewSchema = defineEntity({
   virtual: true,
   properties: {
     name: p.string().comment('author name').index('custom_idx_name_123'),
-    email: p.type(EmailType).columnType('varchar(255)').nullable().hidden().index('custom_email_index_name').unique('custom_email_unique_name'),
+    email: p.type(EmailType).columnType('varchar(255)').nullable().hidden().unique('custom_email_unique_name'),
   },
 });
 ",
@@ -5459,7 +5446,7 @@ export const AuthorPartialView2Schema = defineEntity({
     email: p.type(EmailType).columnType('varchar(255)').nullable().serializer((email)=>{
         const [localPart, hostnamePart] = email.split('@', 2);
         return \`\${localPart[0]}\${'*'.repeat(localPart.length - 2)}\${localPart[localPart.length - 1]}@\${hostnamePart}\`;
-    }).serializedName('anonymizedEmail').index('custom_email_index_name').unique('custom_email_unique_name'),
+    }).serializedName('anonymizedEmail').unique('custom_email_unique_name'),
   },
 });
 ",
@@ -5599,7 +5586,6 @@ export const Author2Schema = new EntitySchema({
   readonly: true,
   indexes: [
     { name: 'author2_name_age_index', properties: ['name', 'age'] },
-    { name: 'custom_email_index_name', properties: ['email'] },
     {
       name: 'author2_custom_idx_on_email',
       expression: (table, columns) => \`create index "author2_custom_idx_on_email" on "\${table.schema}"."\${table.name}" ("\${columns.email}")\`,
@@ -5634,7 +5620,6 @@ export const Author2Schema = new EntitySchema({
       columnType: 'varchar(255)',
       serializer: (v) => EmailSerializer.anonymous(v),
       hidden: true,
-      index: 'custom_email_index_name',
       unique: 'custom_email_unique_name',
     },
     age: { type: 'integer', nullable: true, concurrencyCheck: true },
@@ -6394,7 +6379,6 @@ export const AuthorPartialViewSchema = new EntitySchema({
       columnType: 'varchar(255)',
       nullable: true,
       hidden: true,
-      index: 'custom_email_index_name',
       unique: 'custom_email_unique_name',
     },
   },
@@ -6435,7 +6419,6 @@ export const AuthorPartialView2Schema = new EntitySchema({
         return \`\${localPart[0]}\${'*'.repeat(localPart.length - 2)}\${localPart[localPart.length - 1]}@\${hostnamePart}\`;
     },
       serializedName: 'anonymizedEmail',
-      index: 'custom_email_index_name',
       unique: 'custom_email_unique_name',
     },
   },
@@ -6561,7 +6544,6 @@ export class Author2 {
   @Property({ comment: 'author name', index: 'custom_idx_name_123' })
   name!: string;
 
-  @Index({ name: 'custom_email_index_name' })
   @Unique({ name: 'custom_email_unique_name' })
   @Property({ type: 'EmailType', columnType: 'varchar(255)', serializer: (v) => EmailSerializer.anonymous(v), hidden: true })
   email!: IType<Email, string> & Hidden;
@@ -7181,7 +7163,7 @@ export class AuthorPartialView {
   @Property({ comment: 'author name', index: 'custom_idx_name_123' })
   name!: string;
 
-  @Property({ type: 'EmailType', columnType: 'varchar(255)', nullable: true, hidden: true, index: 'custom_email_index_name', unique: 'custom_email_unique_name' })
+  @Property({ type: 'EmailType', columnType: 'varchar(255)', nullable: true, hidden: true, unique: 'custom_email_unique_name' })
   email!: IType<Email, string | undefined, (string | undefined) & Hidden>;
 
 }
@@ -7204,7 +7186,7 @@ export class AuthorPartialView2 {
   @Property({ type: 'EmailType', columnType: 'varchar(255)', nullable: true, serializer: (email)=>{
         const [localPart, hostnamePart] = email.split('@', 2);
         return \`\${localPart[0]}\${'*'.repeat(localPart.length - 2)}\${localPart[localPart.length - 1]}@\${hostnamePart}\`;
-    }, serializedName: 'anonymizedEmail', index: 'custom_email_index_name', unique: 'custom_email_unique_name' })
+    }, serializedName: 'anonymizedEmail', unique: 'custom_email_unique_name' })
   email!: IType<Email, string | undefined>;
 
 }
@@ -7312,7 +7294,6 @@ export const Author2Schema = defineEntity({
   readonly: true,
   indexes: [
     { name: 'author2_name_age_index', properties: ['name', 'age'] },
-    { name: 'custom_email_index_name', properties: ['email'] },
     {
       name: 'author2_custom_idx_on_email',
       expression: (table, columns) => \`create index "author2_custom_idx_on_email" on "\${table.schema}"."\${table.name}" ("\${columns.email}")\`,
@@ -7331,7 +7312,7 @@ export const Author2Schema = defineEntity({
     createdAt: p.datetime().length(3).hidden().defaultRaw(\`current_timestamp(3)\`),
     updatedAt: p.datetime().columnType('datetime(3)').serializer((v)=>v.toString()).groups('test').defaultRaw(\`current_timestamp(3)\`),
     name: p.string().comment('author name').index('custom_idx_name_123'),
-    email: p.type(EmailType).columnType('varchar(255)').serializer((v) => EmailSerializer.anonymous(v)).hidden().index('custom_email_index_name').unique('custom_email_unique_name'),
+    email: p.type(EmailType).columnType('varchar(255)').serializer((v) => EmailSerializer.anonymous(v)).hidden().unique('custom_email_unique_name'),
     age: p.integer().nullable().concurrencyCheck(),
     termsAccepted: p.boolean().lazy().default(false).index('author2_terms_accepted_index'),
     optional: p.type(CustomBooleanType).columnType('tinyint(1)').nullable(),
@@ -7837,7 +7818,7 @@ export const AuthorPartialViewSchema = defineEntity({
   virtual: true,
   properties: {
     name: p.string().comment('author name').index('custom_idx_name_123'),
-    email: p.type(EmailType).columnType('varchar(255)').nullable().hidden().index('custom_email_index_name').unique('custom_email_unique_name'),
+    email: p.type(EmailType).columnType('varchar(255)').nullable().hidden().unique('custom_email_unique_name'),
   },
 });
 ",
@@ -7865,7 +7846,7 @@ export const AuthorPartialView2Schema = defineEntity({
     email: p.type(EmailType).columnType('varchar(255)').nullable().serializer((email)=>{
         const [localPart, hostnamePart] = email.split('@', 2);
         return \`\${localPart[0]}\${'*'.repeat(localPart.length - 2)}\${localPart[localPart.length - 1]}@\${hostnamePart}\`;
-    }).serializedName('anonymizedEmail').index('custom_email_index_name').unique('custom_email_unique_name'),
+    }).serializedName('anonymizedEmail').unique('custom_email_unique_name'),
   },
 });
 ",
@@ -8006,7 +7987,6 @@ export const Author2Schema = new EntitySchema({
   readonly: true,
   indexes: [
     { name: 'author2_name_age_index', properties: ['name', 'age'] },
-    { name: 'custom_email_index_name', properties: ['email'] },
     {
       name: 'author2_custom_idx_on_email',
       expression: (table, columns) => \`create index "author2_custom_idx_on_email" on "\${table.schema}"."\${table.name}" ("\${columns.email}")\`,
@@ -8041,7 +8021,6 @@ export const Author2Schema = new EntitySchema({
       columnType: 'varchar(255)',
       serializer: (v) => EmailSerializer.anonymous(v),
       hidden: true,
-      index: 'custom_email_index_name',
       unique: 'custom_email_unique_name',
     },
     age: { type: 'integer', nullable: true, concurrencyCheck: true },
@@ -8831,7 +8810,6 @@ export const AuthorPartialViewSchema = new EntitySchema({
       columnType: 'varchar(255)',
       nullable: true,
       hidden: true,
-      index: 'custom_email_index_name',
       unique: 'custom_email_unique_name',
     },
   },
@@ -8872,7 +8850,6 @@ export const AuthorPartialView2Schema = new EntitySchema({
         return \`\${localPart[0]}\${'*'.repeat(localPart.length - 2)}\${localPart[localPart.length - 1]}@\${hostnamePart}\`;
     },
       serializedName: 'anonymizedEmail',
-      index: 'custom_email_index_name',
       unique: 'custom_email_unique_name',
     },
   },
@@ -8998,7 +8975,6 @@ export class Author2 {
   @Property({ comment: 'author name', index: 'custom_idx_name_123' })
   name!: string;
 
-  @Index({ name: 'custom_email_index_name' })
   @Unique({ name: 'custom_email_unique_name' })
   @Property({ type: 'EmailType', columnType: 'varchar(255)', serializer: (v) => EmailSerializer.anonymous(v), hidden: true })
   email!: IType<Email, string> & Hidden;
@@ -9620,7 +9596,7 @@ export class AuthorPartialView {
   @Property({ comment: 'author name', index: 'custom_idx_name_123' })
   name!: string;
 
-  @Property({ type: 'EmailType', columnType: 'varchar(255)', nullable: true, hidden: true, index: 'custom_email_index_name', unique: 'custom_email_unique_name' })
+  @Property({ type: 'EmailType', columnType: 'varchar(255)', nullable: true, hidden: true, unique: 'custom_email_unique_name' })
   email!: IType<Email, string | undefined, (string | undefined) & Hidden>;
 
 }
@@ -9643,7 +9619,7 @@ export class AuthorPartialView2 {
   @Property({ type: 'EmailType', columnType: 'varchar(255)', nullable: true, serializer: (email)=>{
         const [localPart, hostnamePart] = email.split('@', 2);
         return \`\${localPart[0]}\${'*'.repeat(localPart.length - 2)}\${localPart[localPart.length - 1]}@\${hostnamePart}\`;
-    }, serializedName: 'anonymizedEmail', index: 'custom_email_index_name', unique: 'custom_email_unique_name' })
+    }, serializedName: 'anonymizedEmail', unique: 'custom_email_unique_name' })
   email!: IType<Email, string | undefined>;
 
 }

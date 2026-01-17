@@ -1,4 +1,4 @@
-import { p, defineEntity, InferEntity } from '@mikro-orm/core';
+import { p, defineEntity, InferEntity, raw } from '@mikro-orm/core';
 import { BaseEntity5 } from './BaseEntity5.js';
 import { Author4 } from './Author4.js';
 import { Publisher4 } from './Publisher4.js';
@@ -17,7 +17,7 @@ export const Book4 = defineEntity({
   properties: {
     title: p.string(),
     price: p.float().nullable(),
-    priceTaxed: p.float().formula(a => `${a}.price * 1.19`).persist(false),
+    priceTaxed: p.float().formula(alias => raw(`${alias}.?? * 1.19`, ['price'])).persist(false),
     author: () => p.manyToOne(Author4).nullable(),
     publisher: () => p.manyToOne(Publisher4).ref().nullable(),
     tags: () => p.manyToMany(BookTag4).pivotTable('tags_ordered').fixedOrder(true),

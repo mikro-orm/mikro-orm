@@ -41,7 +41,7 @@ export class Author2 {
   @Property({ index: 'custom_idx_name_123' })
   name!: string;
 
-  @Property({ index: 'custom_email_index_name', unique: 'custom_email_unique_name' })
+  @Property({ unique: 'custom_email_unique_name' })
   email!: string;
 
   @Property({ nullable: true })
@@ -685,7 +685,7 @@ export class Author2 {
   @Property({ index: 'custom_idx_name_123' })
   name!: string;
 
-  @Property({ index: 'custom_email_index_name', unique: 'custom_email_unique_name' })
+  @Property({ unique: 'custom_email_unique_name' })
   email!: string;
 
   @Property({ type: 'integer', nullable: true })
@@ -1329,7 +1329,7 @@ export class Author2 {
   @Property({ index: 'custom_idx_name_123' })
   name!: string;
 
-  @Property({ index: 'custom_email_index_name', unique: 'custom_email_unique_name' })
+  @Property({ unique: 'custom_email_unique_name' })
   email!: string;
 
   @Property({ type: 'integer', nullable: true })
@@ -1991,7 +1991,7 @@ export const Author2Schema = defineEntity({
     createdAt: p.datetime().length(3).defaultRaw(\`current_timestamp(3)\`),
     updatedAt: p.datetime().length(3).defaultRaw(\`current_timestamp(3)\`),
     name: p.string().index('custom_idx_name_123'),
-    email: p.string().index('custom_email_index_name').unique('custom_email_unique_name'),
+    email: p.string().unique('custom_email_unique_name'),
     age: p.integer().nullable(),
     termsAccepted: p.boolean().index('author2_terms_accepted_index'),
     optional: p.boolean().nullable(),
@@ -2550,7 +2550,7 @@ export const Author2Schema = defineEntity({
     createdAt: p.datetime().length(3).defaultRaw(\`current_timestamp(3)\`),
     updatedAt: p.datetime().length(3).defaultRaw(\`current_timestamp(3)\`),
     name: p.string().index('custom_idx_name_123'),
-    email: p.string().index('custom_email_index_name').unique('custom_email_unique_name'),
+    email: p.string().unique('custom_email_unique_name'),
     age: p.integer().nullable(),
     termsAccepted: p.boolean().index('author2_terms_accepted_index'),
     optional: p.boolean().nullable(),
@@ -3109,7 +3109,7 @@ export const Author2Schema = defineEntity({
     createdAt: p.datetime().length(3).defaultRaw(\`current_timestamp(3)\`),
     updatedAt: p.datetime().length(3).defaultRaw(\`current_timestamp(3)\`),
     name: p.string().index('custom_idx_name_123'),
-    email: p.string().index('custom_email_index_name').unique('custom_email_unique_name'),
+    email: p.string().unique('custom_email_unique_name'),
     age: p.integer().nullable(),
     termsAccepted: p.boolean().index('author2_terms_accepted_index'),
     optional: p.boolean().nullable(),
@@ -3638,7 +3638,7 @@ export const Author2 = defineEntity({
     createdAt: p.datetime().length(3).defaultRaw(\`current_timestamp(3)\`),
     updatedAt: p.datetime().length(3).defaultRaw(\`current_timestamp(3)\`),
     name: p.string().index('custom_idx_name_123'),
-    email: p.string().index('custom_email_index_name').unique('custom_email_unique_name'),
+    email: p.string().unique('custom_email_unique_name'),
     age: p.integer().nullable(),
     termsAccepted: p.boolean().index('author2_terms_accepted_index'),
     optional: p.boolean().nullable(),
@@ -4030,7 +4030,7 @@ export const Author2 = defineEntity({
     createdAt: p.datetime().length(3).defaultRaw(\`current_timestamp(3)\`),
     updatedAt: p.datetime().length(3).defaultRaw(\`current_timestamp(3)\`),
     name: p.string().index('custom_idx_name_123'),
-    email: p.string().index('custom_email_index_name').unique('custom_email_unique_name'),
+    email: p.string().unique('custom_email_unique_name'),
     age: p.integer().nullable(),
     termsAccepted: p.boolean().index('author2_terms_accepted_index'),
     optional: p.boolean().nullable(),
@@ -4422,7 +4422,7 @@ export const Author2 = defineEntity({
     createdAt: p.datetime().length(3).defaultRaw(\`current_timestamp(3)\`),
     updatedAt: p.datetime().length(3).defaultRaw(\`current_timestamp(3)\`),
     name: p.string().index('custom_idx_name_123'),
-    email: p.string().index('custom_email_index_name').unique('custom_email_unique_name'),
+    email: p.string().unique('custom_email_unique_name'),
     age: p.integer().nullable(),
     termsAccepted: p.boolean().index('author2_terms_accepted_index'),
     optional: p.boolean().nullable(),
@@ -4851,11 +4851,7 @@ export const Author2Schema = new EntitySchema({
     createdAt: { type: 'datetime', length: 3, defaultRaw: \`current_timestamp(3)\` },
     updatedAt: { type: 'datetime', length: 3, defaultRaw: \`current_timestamp(3)\` },
     name: { type: 'string', index: 'custom_idx_name_123' },
-    email: {
-      type: 'string',
-      index: 'custom_email_index_name',
-      unique: 'custom_email_unique_name',
-    },
+    email: { type: 'string', unique: 'custom_email_unique_name' },
     age: { type: 'integer', nullable: true },
     termsAccepted: { type: 'boolean', index: 'author2_terms_accepted_index' },
     optional: { type: 'boolean', nullable: true },
@@ -5656,11 +5652,7 @@ export const Author2Schema = new EntitySchema({
     createdAt: { type: 'datetime', length: 3, defaultRaw: \`current_timestamp(3)\` },
     updatedAt: { type: 'datetime', length: 3, defaultRaw: \`current_timestamp(3)\` },
     name: { type: 'string', index: 'custom_idx_name_123' },
-    email: {
-      type: 'string',
-      index: 'custom_email_index_name',
-      unique: 'custom_email_unique_name',
-    },
+    email: { type: 'string', unique: 'custom_email_unique_name' },
     age: { type: 'integer', nullable: true },
     termsAccepted: { type: 'boolean', index: 'author2_terms_accepted_index' },
     optional: { type: 'boolean', nullable: true },
@@ -6461,11 +6453,7 @@ export const Author2Schema = new EntitySchema({
     createdAt: { type: 'datetime', length: 3, defaultRaw: \`current_timestamp(3)\` },
     updatedAt: { type: 'datetime', length: 3, defaultRaw: \`current_timestamp(3)\` },
     name: { type: 'string', index: 'custom_idx_name_123' },
-    email: {
-      type: 'string',
-      index: 'custom_email_index_name',
-      unique: 'custom_email_unique_name',
-    },
+    email: { type: 'string', unique: 'custom_email_unique_name' },
     age: { type: 'integer', nullable: true },
     termsAccepted: { type: 'boolean', index: 'author2_terms_accepted_index' },
     optional: { type: 'boolean', nullable: true },
@@ -7241,7 +7229,7 @@ export class Author2 {
   @Property({ index: 'custom_idx_name_123' })
   name!: string;
 
-  @Property({ index: 'custom_email_index_name', unique: 'custom_email_unique_name' })
+  @Property({ unique: 'custom_email_unique_name' })
   email!: string;
 
   @Property({ nullable: true })
@@ -7875,7 +7863,7 @@ export class Author2 {
   @Property({ index: 'custom_idx_name_123' })
   name!: string;
 
-  @Property({ index: 'custom_email_index_name', unique: 'custom_email_unique_name' })
+  @Property({ unique: 'custom_email_unique_name' })
   email!: string;
 
   @Property({ type: 'integer', nullable: true })
@@ -8509,7 +8497,7 @@ export class Author2 {
   @Property({ index: 'custom_idx_name_123' })
   name!: string;
 
-  @Property({ index: 'custom_email_index_name', unique: 'custom_email_unique_name' })
+  @Property({ unique: 'custom_email_unique_name' })
   email!: string;
 
   @Property({ type: 'integer', nullable: true })
@@ -9161,7 +9149,7 @@ export const Author2Schema = defineEntity({
     createdAt: p.datetime().length(3).defaultRaw(\`current_timestamp(3)\`),
     updatedAt: p.datetime().length(3).defaultRaw(\`current_timestamp(3)\`),
     name: p.string().index('custom_idx_name_123'),
-    email: p.string().index('custom_email_index_name').unique('custom_email_unique_name'),
+    email: p.string().unique('custom_email_unique_name'),
     age: p.integer().nullable(),
     termsAccepted: p.boolean().index('author2_terms_accepted_index'),
     optional: p.boolean().nullable(),
@@ -9710,7 +9698,7 @@ export const Author2Schema = defineEntity({
     createdAt: p.datetime().length(3).defaultRaw(\`current_timestamp(3)\`),
     updatedAt: p.datetime().length(3).defaultRaw(\`current_timestamp(3)\`),
     name: p.string().index('custom_idx_name_123'),
-    email: p.string().index('custom_email_index_name').unique('custom_email_unique_name'),
+    email: p.string().unique('custom_email_unique_name'),
     age: p.integer().nullable(),
     termsAccepted: p.boolean().index('author2_terms_accepted_index'),
     optional: p.boolean().nullable(),
@@ -10259,7 +10247,7 @@ export const Author2Schema = defineEntity({
     createdAt: p.datetime().length(3).defaultRaw(\`current_timestamp(3)\`),
     updatedAt: p.datetime().length(3).defaultRaw(\`current_timestamp(3)\`),
     name: p.string().index('custom_idx_name_123'),
-    email: p.string().index('custom_email_index_name').unique('custom_email_unique_name'),
+    email: p.string().unique('custom_email_unique_name'),
     age: p.integer().nullable(),
     termsAccepted: p.boolean().index('author2_terms_accepted_index'),
     optional: p.boolean().nullable(),
@@ -10778,7 +10766,7 @@ export const Author2 = defineEntity({
     createdAt: p.datetime().length(3).defaultRaw(\`current_timestamp(3)\`),
     updatedAt: p.datetime().length(3).defaultRaw(\`current_timestamp(3)\`),
     name: p.string().index('custom_idx_name_123'),
-    email: p.string().index('custom_email_index_name').unique('custom_email_unique_name'),
+    email: p.string().unique('custom_email_unique_name'),
     age: p.integer().nullable(),
     termsAccepted: p.boolean().index('author2_terms_accepted_index'),
     optional: p.boolean().nullable(),
@@ -11160,7 +11148,7 @@ export const Author2 = defineEntity({
     createdAt: p.datetime().length(3).defaultRaw(\`current_timestamp(3)\`),
     updatedAt: p.datetime().length(3).defaultRaw(\`current_timestamp(3)\`),
     name: p.string().index('custom_idx_name_123'),
-    email: p.string().index('custom_email_index_name').unique('custom_email_unique_name'),
+    email: p.string().unique('custom_email_unique_name'),
     age: p.integer().nullable(),
     termsAccepted: p.boolean().index('author2_terms_accepted_index'),
     optional: p.boolean().nullable(),
@@ -11542,7 +11530,7 @@ export const Author2 = defineEntity({
     createdAt: p.datetime().length(3).defaultRaw(\`current_timestamp(3)\`),
     updatedAt: p.datetime().length(3).defaultRaw(\`current_timestamp(3)\`),
     name: p.string().index('custom_idx_name_123'),
-    email: p.string().index('custom_email_index_name').unique('custom_email_unique_name'),
+    email: p.string().unique('custom_email_unique_name'),
     age: p.integer().nullable(),
     termsAccepted: p.boolean().index('author2_terms_accepted_index'),
     optional: p.boolean().nullable(),
@@ -11961,11 +11949,7 @@ export const Author2Schema = new EntitySchema({
     createdAt: { type: 'datetime', length: 3, defaultRaw: \`current_timestamp(3)\` },
     updatedAt: { type: 'datetime', length: 3, defaultRaw: \`current_timestamp(3)\` },
     name: { type: 'string', index: 'custom_idx_name_123' },
-    email: {
-      type: 'string',
-      index: 'custom_email_index_name',
-      unique: 'custom_email_unique_name',
-    },
+    email: { type: 'string', unique: 'custom_email_unique_name' },
     age: { type: 'integer', nullable: true },
     termsAccepted: { type: 'boolean', index: 'author2_terms_accepted_index' },
     optional: { type: 'boolean', nullable: true },
@@ -12756,11 +12740,7 @@ export const Author2Schema = new EntitySchema({
     createdAt: { type: 'datetime', length: 3, defaultRaw: \`current_timestamp(3)\` },
     updatedAt: { type: 'datetime', length: 3, defaultRaw: \`current_timestamp(3)\` },
     name: { type: 'string', index: 'custom_idx_name_123' },
-    email: {
-      type: 'string',
-      index: 'custom_email_index_name',
-      unique: 'custom_email_unique_name',
-    },
+    email: { type: 'string', unique: 'custom_email_unique_name' },
     age: { type: 'integer', nullable: true },
     termsAccepted: { type: 'boolean', index: 'author2_terms_accepted_index' },
     optional: { type: 'boolean', nullable: true },
@@ -13551,11 +13531,7 @@ export const Author2Schema = new EntitySchema({
     createdAt: { type: 'datetime', length: 3, defaultRaw: \`current_timestamp(3)\` },
     updatedAt: { type: 'datetime', length: 3, defaultRaw: \`current_timestamp(3)\` },
     name: { type: 'string', index: 'custom_idx_name_123' },
-    email: {
-      type: 'string',
-      index: 'custom_email_index_name',
-      unique: 'custom_email_unique_name',
-    },
+    email: { type: 'string', unique: 'custom_email_unique_name' },
     age: { type: 'integer', nullable: true },
     termsAccepted: { type: 'boolean', index: 'author2_terms_accepted_index' },
     optional: { type: 'boolean', nullable: true },
@@ -14321,7 +14297,7 @@ export class Author2 {
   @Property({ index: 'custom_idx_name_123' })
   name!: string;
 
-  @Property({ index: 'custom_email_index_name', unique: 'custom_email_unique_name' })
+  @Property({ unique: 'custom_email_unique_name' })
   email!: string;
 
   @Property({ nullable: true })
@@ -14939,7 +14915,7 @@ export class Author2 {
   @Property({ index: 'custom_idx_name_123' })
   name!: string;
 
-  @Property({ index: 'custom_email_index_name', unique: 'custom_email_unique_name' })
+  @Property({ unique: 'custom_email_unique_name' })
   email!: string;
 
   @Property({ type: 'integer', nullable: true })
@@ -15557,7 +15533,7 @@ export class Author2 {
   @Property({ index: 'custom_idx_name_123' })
   name!: string;
 
-  @Property({ index: 'custom_email_index_name', unique: 'custom_email_unique_name' })
+  @Property({ unique: 'custom_email_unique_name' })
   email!: string;
 
   @Property({ type: 'integer', nullable: true })
@@ -16193,7 +16169,7 @@ export const Author2Schema = defineEntity({
     createdAt: p.datetime().length(3).defaultRaw(\`current_timestamp(3)\`),
     updatedAt: p.datetime().length(3).defaultRaw(\`current_timestamp(3)\`),
     name: p.string().index('custom_idx_name_123'),
-    email: p.string().index('custom_email_index_name').unique('custom_email_unique_name'),
+    email: p.string().unique('custom_email_unique_name'),
     age: p.integer().nullable(),
     termsAccepted: p.boolean().index('author2_terms_accepted_index'),
     optional: p.boolean().nullable(),
@@ -16726,7 +16702,7 @@ export const Author2Schema = defineEntity({
     createdAt: p.datetime().length(3).defaultRaw(\`current_timestamp(3)\`),
     updatedAt: p.datetime().length(3).defaultRaw(\`current_timestamp(3)\`),
     name: p.string().index('custom_idx_name_123'),
-    email: p.string().index('custom_email_index_name').unique('custom_email_unique_name'),
+    email: p.string().unique('custom_email_unique_name'),
     age: p.integer().nullable(),
     termsAccepted: p.boolean().index('author2_terms_accepted_index'),
     optional: p.boolean().nullable(),
@@ -17259,7 +17235,7 @@ export const Author2Schema = defineEntity({
     createdAt: p.datetime().length(3).defaultRaw(\`current_timestamp(3)\`),
     updatedAt: p.datetime().length(3).defaultRaw(\`current_timestamp(3)\`),
     name: p.string().index('custom_idx_name_123'),
-    email: p.string().index('custom_email_index_name').unique('custom_email_unique_name'),
+    email: p.string().unique('custom_email_unique_name'),
     age: p.integer().nullable(),
     termsAccepted: p.boolean().index('author2_terms_accepted_index'),
     optional: p.boolean().nullable(),
@@ -17762,7 +17738,7 @@ export const Author2 = defineEntity({
     createdAt: p.datetime().length(3).defaultRaw(\`current_timestamp(3)\`),
     updatedAt: p.datetime().length(3).defaultRaw(\`current_timestamp(3)\`),
     name: p.string().index('custom_idx_name_123'),
-    email: p.string().index('custom_email_index_name').unique('custom_email_unique_name'),
+    email: p.string().unique('custom_email_unique_name'),
     age: p.integer().nullable(),
     termsAccepted: p.boolean().index('author2_terms_accepted_index'),
     optional: p.boolean().nullable(),
@@ -18128,7 +18104,7 @@ export const Author2 = defineEntity({
     createdAt: p.datetime().length(3).defaultRaw(\`current_timestamp(3)\`),
     updatedAt: p.datetime().length(3).defaultRaw(\`current_timestamp(3)\`),
     name: p.string().index('custom_idx_name_123'),
-    email: p.string().index('custom_email_index_name').unique('custom_email_unique_name'),
+    email: p.string().unique('custom_email_unique_name'),
     age: p.integer().nullable(),
     termsAccepted: p.boolean().index('author2_terms_accepted_index'),
     optional: p.boolean().nullable(),
@@ -18494,7 +18470,7 @@ export const Author2 = defineEntity({
     createdAt: p.datetime().length(3).defaultRaw(\`current_timestamp(3)\`),
     updatedAt: p.datetime().length(3).defaultRaw(\`current_timestamp(3)\`),
     name: p.string().index('custom_idx_name_123'),
-    email: p.string().index('custom_email_index_name').unique('custom_email_unique_name'),
+    email: p.string().unique('custom_email_unique_name'),
     age: p.integer().nullable(),
     termsAccepted: p.boolean().index('author2_terms_accepted_index'),
     optional: p.boolean().nullable(),
@@ -18897,11 +18873,7 @@ export const Author2Schema = new EntitySchema({
     createdAt: { type: 'datetime', length: 3, defaultRaw: \`current_timestamp(3)\` },
     updatedAt: { type: 'datetime', length: 3, defaultRaw: \`current_timestamp(3)\` },
     name: { type: 'string', index: 'custom_idx_name_123' },
-    email: {
-      type: 'string',
-      index: 'custom_email_index_name',
-      unique: 'custom_email_unique_name',
-    },
+    email: { type: 'string', unique: 'custom_email_unique_name' },
     age: { type: 'integer', nullable: true },
     termsAccepted: { type: 'boolean', index: 'author2_terms_accepted_index' },
     optional: { type: 'boolean', nullable: true },
@@ -19676,11 +19648,7 @@ export const Author2Schema = new EntitySchema({
     createdAt: { type: 'datetime', length: 3, defaultRaw: \`current_timestamp(3)\` },
     updatedAt: { type: 'datetime', length: 3, defaultRaw: \`current_timestamp(3)\` },
     name: { type: 'string', index: 'custom_idx_name_123' },
-    email: {
-      type: 'string',
-      index: 'custom_email_index_name',
-      unique: 'custom_email_unique_name',
-    },
+    email: { type: 'string', unique: 'custom_email_unique_name' },
     age: { type: 'integer', nullable: true },
     termsAccepted: { type: 'boolean', index: 'author2_terms_accepted_index' },
     optional: { type: 'boolean', nullable: true },
@@ -20455,11 +20423,7 @@ export const Author2Schema = new EntitySchema({
     createdAt: { type: 'datetime', length: 3, defaultRaw: \`current_timestamp(3)\` },
     updatedAt: { type: 'datetime', length: 3, defaultRaw: \`current_timestamp(3)\` },
     name: { type: 'string', index: 'custom_idx_name_123' },
-    email: {
-      type: 'string',
-      index: 'custom_email_index_name',
-      unique: 'custom_email_unique_name',
-    },
+    email: { type: 'string', unique: 'custom_email_unique_name' },
     age: { type: 'integer', nullable: true },
     termsAccepted: { type: 'boolean', index: 'author2_terms_accepted_index' },
     optional: { type: 'boolean', nullable: true },

@@ -1085,6 +1085,9 @@ export interface Options<
      * Database name to use for management operations (e.g., creating/dropping databases).
      */
     managementDbName?: string;
+    // TODO also add `managementDbPassword` option? and make those available only for oracle driver?
+    tableSpace?: string;
+    // TODO configurable identity default/always
   };
   /**
    * Embeddable entity configuration options.

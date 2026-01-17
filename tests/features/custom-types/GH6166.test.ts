@@ -113,7 +113,7 @@ afterAll(async () => {
   await orm.close(true);
 });
 
-test('basic CRUD example', async () => {
+test('GH #6166', async () => {
   const u1 = orm.em.create(User, { name: 'Foo', email: 'foo' });
   const u2 = orm.em.create(User, { name: 'Foo1', email: 'foo1' });
   const u3 = orm.em.create(User, { name: 'Foo2', email: 'foo2' });
