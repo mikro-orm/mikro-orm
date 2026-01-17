@@ -2123,7 +2123,8 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     }, [] as string[]);
   }
 
-  private async preparePopulate<Entity extends object>(entityName: EntityName<Entity>, options: Pick<FindOptions<Entity, any, any>, 'populate' | 'strategy' | 'fields' | 'flags' | 'filters'>, validate = true): Promise<PopulateOptions<Entity>[]> {
+  /** @internal */
+  async preparePopulate<Entity extends object>(entityName: EntityName<Entity>, options: Pick<FindOptions<Entity, any, any>, 'populate' | 'strategy' | 'fields' | 'flags' | 'filters'>, validate = true): Promise<PopulateOptions<Entity>[]> {
     if (options.populate === false) {
       return [];
     }

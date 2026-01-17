@@ -140,9 +140,11 @@ export class Collection<T extends object, O extends object = object> {
     let items: Loaded<TT, P>[];
 
     if (this.property.kind === ReferenceKind.MANY_TO_MANY && em.getPlatform().usesPivotTable()) {
+      options.populate = await em.preparePopulate(this.property.targetMeta!.class, options) as any;
       const cond = await em.applyFilters(this.property.targetMeta!.class, where, options.filters ?? {}, 'read') as FilterQuery<T>;
       const map = await em.getDriver().loadFromPivotTable(this.property, [helper(this.owner).__primaryKeys], cond, opts.orderBy, ctx, options);
       items = map[helper(this.owner).getSerializedPrimaryKey()].map((item: EntityData<TT>) => em.merge(this.property.targetMeta!.class, item, { convertCustomTypes: true })) as any;
+      await em.populate(items, options.populate as any, options as any);
     } else {
       items = await em.find(this.property.targetMeta!.class, this.createCondition(where), opts as any) as any;
     }
