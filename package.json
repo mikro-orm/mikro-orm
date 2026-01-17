@@ -131,7 +131,7 @@
     "eslint-plugin-import": "2.32.0",
     "eslint-plugin-unicorn": "62.0.0",
     "eslint-plugin-unused-imports": "4.3.0",
-    "globals": "16.5.0",
+    "globals": "17.0.0",
     "husky": "9.1.7",
     "jiti": "2.6.1",
     "knex": "3.1.0",
