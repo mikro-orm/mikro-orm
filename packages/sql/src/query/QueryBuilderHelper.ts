@@ -342,7 +342,7 @@ export class QueryBuilderHelper {
     meta ??= this.metadata.find(this.entityName)!;
     const prop = meta.properties[field.replace(/:ref$/, '')];
 
-    return prop && prop.kind === ReferenceKind.ONE_TO_ONE && !prop.owner;
+    return prop?.kind === ReferenceKind.ONE_TO_ONE && !prop.owner;
   }
 
   getTableName(entityName: EntityName): string {

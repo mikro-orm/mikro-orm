@@ -1038,7 +1038,7 @@ export class UnitOfWork {
       if (Utils.isCollection(ref)) {
         ref.getItems(false).some(item => {
           const cs = this.changeSets.get(Reference.unwrapReference(item));
-          const isScheduledForInsert = cs && cs.type === ChangeSetType.CREATE && !cs.persisted;
+          const isScheduledForInsert = cs?.type === ChangeSetType.CREATE && !cs.persisted;
 
           if (isScheduledForInsert) {
             this.scheduleExtraUpdate(changeSet, [prop]);
@@ -1050,7 +1050,7 @@ export class UnitOfWork {
       }
 
       const cs = this.changeSets.get(Reference.unwrapReference(ref));
-      const isScheduledForInsert = cs && cs.type === ChangeSetType.CREATE && !cs.persisted;
+      const isScheduledForInsert = cs?.type === ChangeSetType.CREATE && !cs.persisted;
 
       if (isScheduledForInsert) {
         this.scheduleExtraUpdate(changeSet, [prop]);
