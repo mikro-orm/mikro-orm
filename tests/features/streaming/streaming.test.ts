@@ -18,6 +18,11 @@ const options = {
   mariadb: { port: 3309 },
   postgresql: {},
   mssql: { password: 'Root.Root' },
+  oracledb: {
+    dbName: 'mikro_orm_test_streaming',
+    password: 'oracle123',
+    schemaGenerator: { managementDbName: 'system', tableSpace: 'mikro_orm' },
+  },
 };
 
 const Author = defineEntity({
@@ -60,7 +65,7 @@ const BookWithAuthor = defineEntity({
   expression: (em: EntityManager) => {
     return em
       .createQueryBuilder(Book, 'b')
-      .select([sql`min(b.title)`.as('title'), sql`min(a.name)`.as('author_name')])
+      .select([sql`min(${sql.ref('b.title')})`.as('title'), sql`min(${sql.ref('a.name')})`.as('author_name')])
       .join('b.author', 'a')
       .groupBy('b.id');
   },

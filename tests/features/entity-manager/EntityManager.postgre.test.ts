@@ -2892,6 +2892,7 @@ describe('EntityManagerPostgre', () => {
       'insert into "book2" ("uuid_pk", "created_at", "title", "price", "author_id") values (?, ?, ?, ?, ?), (?, ?, ?, ?, ?), (?, ?, ?, ?, ?)',
     );
     expect(mock.mock.calls[3][0]).toMatch('commit');
+    expect(mock).toHaveBeenCalledTimes(4);
 
     expect(ret.map(b => b.author.id)).toEqual([1, 2, 3]);
     expect(ret.map(b => b.author.name)).toEqual(['a1', 'a2', 'a3']);

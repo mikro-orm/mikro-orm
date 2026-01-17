@@ -131,7 +131,7 @@ export class MsSqlSchemaHelper extends SchemaHelper {
       left join sys.computed_columns cmp on cmp.name = ic.column_name and cmp.object_id = object_id(ic.table_schema + '.' + ic.table_name)
       left join sys.extended_properties t4 on t4.major_id = object_id(ic.table_schema + '.' + ic.table_name) and t4.name = 'MS_Description' and t4.minor_id = sc.column_id
       left join sys.default_constraints t5 on sc.default_object_id = t5.object_id
-      where (${[...tablesBySchemas.entries()].map(([schema, tables]) => `(ic.table_name in (${tables.map(t => this.platform.quoteValue(t.table_name)).join(',')}) and ic.table_schema = '${schema}')`).join(' OR ')})
+      where (${[...tablesBySchemas.entries()].map(([schema, tables]) => `(ic.table_name in (${tables.map(t => this.platform.quoteValue(t.table_name)).join(',')}) and ic.table_schema = '${schema}')`).join(' or ')})
       order by ordinal_position`;
     const allColumns = await connection.execute<any[]>(sql);
     const str = (val?: string | number) => (val != null ? '' + val : val);

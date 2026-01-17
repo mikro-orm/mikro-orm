@@ -36,7 +36,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
   }
 
   override getCreateDatabaseSQL(name: string): string {
-    return `create database ${name}`;
+    return `create database ${this.quote(name)}`;
   }
 
   override getListTablesSQL(): string {
@@ -848,10 +848,8 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     const sql: string[] = [];
 
     if (table.comment) {
-      const comment = this.platform.quoteValue(table.comment).replace(/^'|'$/g, '');
-      sql.push(
-        `comment on table ${table.getQuotedName()} is ${this.platform.quoteValue(this.processComment(comment))}`,
-      );
+      const comment = this.platform.quoteValue(this.processComment(table.comment));
+      sql.push(`comment on table ${table.getQuotedName()} is ${comment}`);
     }
 
     for (const column of table.getColumns()) {

@@ -26,6 +26,7 @@ const options = {
   mariadb: { port: 3309 },
   mssql: { port: 1433, password: 'Root.Root' },
   postgresql: {},
+  oracledb: { password: 'oracle123', schemaGenerator: { managementDbName: 'system', tableSpace: 'mikro_orm' } },
 };
 
 describe.each(Utils.keys(options))('6286 [%s]', type => {

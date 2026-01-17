@@ -23,6 +23,9 @@ npm install @mikro-orm/core @mikro-orm/libsql
 
 # for mssql
 npm install @mikro-orm/core @mikro-orm/mssql
+
+# for oracle
+npm install @mikro-orm/core @mikro-orm/oracledb
 ```
 
 For SQLite-specific setup (extensions, Turso, D1, custom drivers), see the dedicated [SQLite guide](./usage-with-sqlite.md).
@@ -203,3 +206,11 @@ console.log(res); // unprocessed result of underlying database driver
 - schema diffing capabilities are limited
 - no native support for fulltext search
 - upsert support is limited
+
+## Oracle limitations
+
+- cycles in cascade paths are not supported
+- no `ON UPDATE` clause for foreign keys (Oracle does not support it natively)
+- no support for multiple statements in a single query
+- no support for tuple comparison in `WHERE` clauses
+- foreign keys are not automatically indexed

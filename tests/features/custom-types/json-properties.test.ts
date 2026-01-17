@@ -20,6 +20,7 @@ const options = {
   mssql: { dbName: 'mikro_orm_json_props', password: 'Root.Root' },
   mariadb: { dbName: 'mikro_orm_json_props', port: 3309 },
   postgresql: { dbName: 'mikro_orm_json_props' },
+  oracledb: { dbName: 'mikro_orm_json_props', password: 'oracle123' },
   mongo: { dbName: 'mikro_orm_json_props' },
 };
 
@@ -54,9 +55,13 @@ describe.each(Utils.keys(options))('JSON properties [%s]', type => {
     expect(res2.value).toBe(true);
 
     await orm.em.insert(User, { value: [1, 2, 3] });
-    const val = type === 'mysql' ? sql`json_array(1, 2, 3)` : [1, 2, 3];
-    const res3 = await orm.em.findOneOrFail(User, { value: { $eq: val } });
-    expect(res3.value).toEqual([1, 2, 3]);
+
+    // oracle doesn't support `=` comparison on JSON columns, needs `json_equal()` which is not used for `$eq` operator
+    if (type !== 'oracledb') {
+      const val = type === 'mysql' ? sql`json_array(1, 2, 3)` : [1, 2, 3];
+      const res3 = await orm.em.findOneOrFail(User, { value: { $eq: val } });
+      expect(res3.value).toEqual([1, 2, 3]);
+    }
   });
 
   test('em.insert() with object value', async () => {

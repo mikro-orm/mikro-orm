@@ -799,17 +799,6 @@ export class EntityLoader {
     );
     options2.populate = populate?.children ?? [];
 
-    if (prop.customType) {
-      ids.forEach(
-        (id, idx) =>
-          (ids[idx] = QueryHelper.processCustomType<Entity>(
-            prop,
-            id as FilterQuery<Entity>,
-            this.driver.getPlatform(),
-          ) as Primary<Entity>[]),
-      );
-    }
-
     if (!Utils.isEmpty(prop.where)) {
       where = { $and: [where, prop.where] } as FilterQuery<Entity>;
     }
@@ -825,8 +814,9 @@ export class EntityLoader {
     );
     const children: AnyEntity[][] = [];
 
-    for (const entity of filtered as AnyEntity[]) {
-      const items = map[entity.__helper!.getSerializedPrimaryKey()].map(item => {
+    for (let i = 0; i < filtered.length; i++) {
+      const entity = filtered[i] as AnyEntity;
+      const items = map[Utils.getPrimaryKeyHash(ids[i] as string[])].map(item => {
         if (pivotJoin) {
           return this.em.getReference(prop.targetMeta!.class, item, {
             convertCustomTypes: true,

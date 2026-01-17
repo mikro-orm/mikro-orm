@@ -154,14 +154,14 @@ jobs:
         run: yarn lint
 
   test:
-    name: Tests (node ${{ matrix.node-version }}, ${{ matrix.shard }}/3)
+    name: Tests (node ${{ matrix.node-version }}, ${{ matrix.shard }}/4)
     if: ${{ !contains(github.event.head_commit.message, '[skip ci]') }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         node-version: [ 22, 24 ]
-        shard: [ 1, 2, 3 ]
+        shard: [ 1, 2, 3, 4 ]
     steps:
       - name: Checkout Source code
         uses: actions/checkout@v6
@@ -203,7 +203,7 @@ jobs:
       - name: Test
         if: matrix.node-version != 24
         run: |
-          yarn test --max-workers ${{ steps.cpu-cores.outputs.count }} --shard ${{ matrix.shard }}/3
+          yarn test --max-workers ${{ steps.cpu-cores.outputs.count }} --shard ${{ matrix.shard }}/4
           git status && git diff
         env:
           RETRY_TESTS: 1
@@ -212,7 +212,7 @@ jobs:
         if: matrix.node-version == 24
         run: |
           yarn clean-tests
-          yarn test --coverage --max-workers ${{ steps.cpu-cores.outputs.count }} --shard ${{ matrix.shard }}/3
+          yarn test --coverage --max-workers ${{ steps.cpu-cores.outputs.count }} --shard ${{ matrix.shard }}/4
           git status && git diff
         env:
           RETRY_TESTS: 1

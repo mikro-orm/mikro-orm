@@ -20,6 +20,7 @@ const options = {
   mariadb: { port: 3309 },
   mssql: { password: 'Root.Root' },
   postgresql: {},
+  oracledb: { password: 'oracle123', schemaGenerator: { managementDbName: 'system', tableSpace: 'mikro_orm' } },
 };
 
 describe.each(Utils.keys(options))('Order by [%s]', type => {
@@ -146,6 +147,22 @@ describe.each(Utils.keys(options))('Order by [%s]', type => {
         );
         expect(mock.mock.calls[5][0]).toMatch(
           '[query] select "t0".* from "test" as "t0" order by "t0"."value" desc nulls last',
+        );
+        break;
+      case 'oracledb':
+        expect(mock.mock.calls[0][0]).toMatch('[query] select "t0".* from "test" "t0" order by "t0"."value" asc');
+        expect(mock.mock.calls[1][0]).toMatch('[query] select "t0".* from "test" "t0" order by "t0"."value" desc');
+        expect(mock.mock.calls[2][0]).toMatch(
+          '[query] select "t0".* from "test" "t0" order by "t0"."value" asc nulls first',
+        );
+        expect(mock.mock.calls[3][0]).toMatch(
+          '[query] select "t0".* from "test" "t0" order by "t0"."value" asc nulls last',
+        );
+        expect(mock.mock.calls[4][0]).toMatch(
+          '[query] select "t0".* from "test" "t0" order by "t0"."value" desc nulls first',
+        );
+        expect(mock.mock.calls[5][0]).toMatch(
+          '[query] select "t0".* from "test" "t0" order by "t0"."value" desc nulls last',
         );
         break;
     }

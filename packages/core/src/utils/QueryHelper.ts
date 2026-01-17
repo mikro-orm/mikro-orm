@@ -280,7 +280,7 @@ export class QueryHelper {
       }
 
       // oxfmt-ignore
-      const isJsonProperty = prop?.customType instanceof JsonType && Utils.isPlainObject(value) && !isRaw(value) && Object.keys(value)[0] !== '$eq';
+      const isJsonProperty = prop?.customType instanceof JsonType && !isRaw(value) && (Utils.isPlainObject(value) ? Object.keys(value)[0] !== '$eq' : !Array.isArray(value));
 
       if (isJsonProperty && prop?.kind !== ReferenceKind.EMBEDDED) {
         return this.processJsonCondition<T>(
@@ -430,36 +430,7 @@ export class QueryHelper {
     platform: Platform,
     alias: boolean,
   ) {
-    if (Utils.isPlainObject<T>(value) && !Object.keys(value).some(k => Utils.isOperator(k))) {
-      Utils.keys(value).forEach(k => {
-        this.processJsonCondition<T>(o, value[k] as EntityValue<T>, [...path, k as EntityKey<T>], platform, alias);
-      });
-
-      return o;
-    }
-
-    if (path.length === 1) {
-      o[path[0] as FilterKey<T>] = value as any;
-      return o;
-    }
-
-    const type = this.getValueType(value);
-    const k = platform.getSearchJsonPropertyKey(path, type, alias, value) as FilterKey<T>;
-    o[k] = value as any;
-
-    return o;
-  }
-
-  private static getValueType(value: unknown): string {
-    if (Array.isArray(value)) {
-      return typeof value[0];
-    }
-
-    if (Utils.isPlainObject(value) && Object.keys(value).every(k => Utils.isOperator(k))) {
-      return this.getValueType(Object.values(value)[0]);
-    }
-
-    return typeof value;
+    return platform.processJsonCondition(o, value, path, alias);
   }
 
   static findProperty<T>(fieldName: string, options: ProcessWhereOptions<T>): EntityProperty<T> | undefined {

@@ -418,7 +418,8 @@ export abstract class AbstractSqlDriver<
       native.clear('select').clear('limit').clear('offset').count();
     }
 
-    native.from(raw(`(${expression}) as ${this.platform.quoteIdentifier(qb.alias)}`));
+    const asKeyword = this.platform.usesAsKeyword() ? ' as ' : ' ';
+    native.from(raw(`(${expression})${asKeyword}${this.platform.quoteIdentifier(qb.alias)}`));
     const query = native.compile();
     const res = await this.execute<T[]>(query.sql, query.params, 'all', options.ctx);
 
@@ -443,7 +444,8 @@ export abstract class AbstractSqlDriver<
     const qb = await this.createQueryBuilderFromOptions(meta, where, this.forceBalancedStrategy(options));
     qb.unsetFlag(QueryFlag.DISABLE_PAGINATE);
     const native = qb.getNativeQuery(false);
-    native.from(raw(`(${expression}) as ${this.platform.quoteIdentifier(qb.alias)}`));
+    const asKeyword = this.platform.usesAsKeyword() ? ' as ' : ' ';
+    native.from(raw(`(${expression})${asKeyword}${this.platform.quoteIdentifier(qb.alias)}`));
     const query = native.compile();
 
     const connectionType = this.resolveConnectionType({ ctx: options.ctx, connectionType: options.connectionType });
@@ -907,7 +909,12 @@ export abstract class AbstractSqlDriver<
     } else {
       /* v8 ignore next */
       res.insertId = data[meta.primaryKeys[0]] ?? res.insertId ?? res.row[meta.primaryKeys[0]];
-      pk = [res.insertId];
+
+      if (options.convertCustomTypes && meta?.getPrimaryProp().customType) {
+        pk = [meta!.getPrimaryProp().customType!.convertToDatabaseValue(res.insertId, this.platform)];
+      } else {
+        pk = [res.insertId];
+      }
     }
 
     await this.processManyToMany(meta, pk, collections, false, options);
@@ -1194,6 +1201,7 @@ export abstract class AbstractSqlDriver<
     where: FilterQuery<T>[],
     data: EntityDictionary<T>[],
     options: NativeInsertUpdateManyOptions<T> & UpsertManyOptions<T> = {},
+    transform?: (sql: string, params: any[]) => string,
   ): Promise<QueryResult<T>> {
     options.processCollections ??= true;
     options.convertCustomTypes ??= true;
@@ -1370,6 +1378,10 @@ export abstract class AbstractSqlDriver<
         returningFields.length > 0
           ? ` returning ${returningFields.map(field => this.platform.quoteIdentifier(field)).join(', ')}`
           : '';
+    }
+
+    if (transform) {
+      sql = transform(sql, params);
     }
 
     const res = await this.rethrow(
@@ -1551,8 +1563,19 @@ export abstract class AbstractSqlDriver<
     const pivotProp2 = pivotMeta.relations[prop.owner ? 0 : 1];
     const ownerMeta = pivotProp2.targetMeta as EntityMetadata<O>;
 
+    // The pivot query builder doesn't convert custom types, so we need to manually
+    // convert owner PKs to DB format for the query and convert result FKs back to
+    // JS format for consistent key hashing in buildPivotResultMap.
+    const pkProp = ownerMeta.properties[ownerMeta.primaryKeys[0]];
+    const needsConversion = pkProp?.customType?.ensureComparable(ownerMeta, pkProp) && !ownerMeta.compositePK;
+    let ownerPks = ownerMeta.compositePK ? owners : owners.map(o => o[0]);
+
+    if (needsConversion) {
+      ownerPks = ownerPks.map(v => pkProp.customType!.convertToDatabaseValue(v, this.platform, { mode: 'query' }));
+    }
+
     const cond = {
-      [pivotProp2.name]: { $in: ownerMeta.compositePK ? owners : owners.map(o => o[0]) },
+      [pivotProp2.name]: { $in: ownerPks },
     };
 
     if (!Utils.isEmpty(where)) {
@@ -1591,6 +1614,18 @@ export abstract class AbstractSqlDriver<
       _populateWhere: 'infer',
       populateFilter: this.wrapPopulateFilter(options, pivotProp2.name),
     });
+
+    // Convert result FK values back to JS format so key hashing
+    // in buildPivotResultMap is consistent with the owner keys.
+    if (needsConversion) {
+      for (const item of res) {
+        const fk = (item as any)[pivotProp2.name];
+
+        if (fk != null) {
+          (item as any)[pivotProp2.name] = pkProp.customType!.convertToJSValue(fk, this.platform);
+        }
+      }
+    }
 
     return this.buildPivotResultMap(owners, res, pivotProp2.name, pivotProp1.name);
   }

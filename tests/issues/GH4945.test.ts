@@ -41,6 +41,11 @@ class EntityB {
 const options = {
   sqlite: { dbName: ':memory:' },
   postgresql: { dbName: 'mikro_orm_upsert_4945' },
+  oracledb: {
+    dbName: 'mikro_orm_upsert_4945',
+    password: 'oracle123',
+    schemaGenerator: { managementDbName: 'system', tableSpace: 'mikro_orm' },
+  },
 };
 
 describe.each(Utils.keys(options))('GH #4945 [%s]', type => {
