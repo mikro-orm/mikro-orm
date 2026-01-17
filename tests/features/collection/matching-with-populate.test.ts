@@ -1,11 +1,4 @@
-import {
-  Collection,
-  Entity,
-  ManyToMany,
-  MikroORM,
-  PrimaryKey,
-  Property,
-} from '@mikro-orm/sqlite';
+import { Collection, Entity, ManyToMany, MikroORM, PrimaryKey, Property } from '@mikro-orm/sqlite';
 
 @Entity()
 class Author {
@@ -45,8 +38,6 @@ beforeAll(async () => {
   orm = await MikroORM.init({
     dbName: ':memory:',
     entities: [Author, Book],
-    debug: ['query', 'query-params'],
-    allowGlobalContext: true, // only for testing
   });
   await orm.schema.refreshDatabase();
 
@@ -92,5 +83,4 @@ test('populate many-to-many relations with matching', async () => {
   expect(books).toHaveLength(1);
   expect(books[0].title).toBe('Book 1');
   expect(books[0].authors).toHaveLength(2);
-
 });
