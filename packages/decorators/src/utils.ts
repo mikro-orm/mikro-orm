@@ -1,9 +1,7 @@
 import {
   type Dictionary,
-  type EntityKey,
   EntityManager,
   type EntityMetadata,
-  type EntityProperty,
   EntityRepository,
   type MaybePromise,
   MetadataError,
