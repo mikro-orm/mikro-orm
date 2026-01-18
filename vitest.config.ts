@@ -62,7 +62,7 @@ export default defineConfig({
     setupFiles: [
       './tests/setup.ts',
     ],
-    globalSetup: './tests/globalSetup.ts',
+    // globalSetup: './tests/globalSetup.ts',
     disableConsoleIntercept: true,
     clearMocks: true,
     isolate: false,

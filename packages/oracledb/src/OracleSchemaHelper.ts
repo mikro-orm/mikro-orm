@@ -423,12 +423,27 @@ export class OracleSchemaHelper extends SchemaHelper {
   }
 
   override getCreateNamespaceSQL(name: string): string {
-    return ''; // TODO
-    // return `if (schema_id(${this.platform.quoteValue(name)}) is null) begin exec ('create schema ${this.quote(name)} authorization [dbo]') end`;
+    // This method is for compatibility but namespace creation is handled in OracleSchemaGenerator.createNamespace()
+    // which uses separate SQL statements with proper error handling
+    const password = this.platform.getConfig().get('clientUrl')?.match(/:([^@]+)@/)?.[1]
+      ?? this.platform.getConfig().get('password')
+      ?? name;
+    const tableSpace = this.platform.getConfig().get('schemaGenerator').tableSpace ?? 'users';
+    // Return simple CREATE USER statement - error handling is done in the generator
+    return `create user ${this.quote(name)} identified by ${password} default tablespace ${this.quote(tableSpace)} quota unlimited on ${this.quote(tableSpace)}`;
+  }
+
+  getCreateNamespaceSQLWithMainUser(name: string, mainUser: string): string {
+    // This is kept for backwards compatibility but the actual implementation
+    // is now in OracleSchemaGenerator.createNamespace()
+    return this.getCreateNamespaceSQL(name);
   }
 
   override getDropNamespaceSQL(name: string): string {
-    return `drop schema if exists ${this.quote(name)}`;
+    // In Oracle, dropping a schema means dropping the user and all their objects
+    // ORA-01918: user does not exist
+    // Note: Must be single line because SqlSchemaGenerator.execute() splits by newlines
+    return `begin execute immediate 'drop user ${this.quote(name)} cascade'; exception when others then if sqlcode != -1918 then raise; end if; end;`;
   }
 
   override getDropIndexSQL(tableName: string, index: IndexDef): string {
