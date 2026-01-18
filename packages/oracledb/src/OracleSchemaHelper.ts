@@ -436,12 +436,13 @@ export class OracleSchemaHelper extends SchemaHelper {
       ?? this.platform.getConfig().get('password')
       ?? name;
     const tableSpace = this.platform.getConfig().get('schemaGenerator').tableSpace ?? 'users';
-    // Use PL/SQL block to check if user exists before creating
+    // Use nested PL/SQL blocks to handle CREATE USER separately from GRANTs
     // ORA-01920: user name conflicts with another user or role name
+    // The inner block catches -1920 (user exists) and continues to grants
     // Note: Must be single line because SqlSchemaGenerator.execute() splits by newlines
     // Note: Password is not quoted because IDENTIFIED BY expects unquoted password in Oracle
     // Grant the main user system privileges to manage objects in any schema for multi-schema support
-    return `begin execute immediate 'create user ${this.quote(name)} identified by ${password} default tablespace ${this.quote(tableSpace)} quota unlimited on ${this.quote(tableSpace)}'; execute immediate 'grant connect, resource to ${this.quote(name)}'; execute immediate 'grant create any table, alter any table, drop any table, select any table, insert any table, update any table, delete any table, create any index, drop any index, create any sequence, select any sequence to ${this.quote(mainUser)}'; exception when others then if sqlcode != -1920 then raise; end if; end;`;
+    return `begin begin execute immediate 'create user ${this.quote(name)} identified by ${password} default tablespace ${this.quote(tableSpace)} quota unlimited on ${this.quote(tableSpace)}'; exception when others then if sqlcode != -1920 then raise; end if; end; execute immediate 'grant connect, resource to ${this.quote(name)}'; execute immediate 'grant create any table, alter any table, drop any table, select any table, insert any table, update any table, delete any table, create any index, drop any index, create any sequence, select any sequence to ${this.quote(mainUser)}'; end;`;
   }
 
   override getDropNamespaceSQL(name: string): string {
