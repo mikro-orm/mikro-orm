@@ -66,9 +66,38 @@ export class OracleSchemaGenerator extends SchemaGenerator {
     await this.driver.reconnect();
 
     try {
-      // Generate the SQL with the correct main user reference
-      const sql = this.helper.getCreateNamespaceSQLWithMainUser(name, mainUser!);
-      await this.execute(sql);
+      const password = this.connection.mapOptions({}).password;
+      const tableSpace = this.config.get('schemaGenerator').tableSpace ?? 'users';
+
+      // Create user (schema) - similar to createDatabase
+      try {
+        const createUserSql = [
+          `create user ${this.platform.quoteIdentifier(name)}`,
+          `identified by ${password}`,
+          `default tablespace ${this.platform.quoteIdentifier(tableSpace)}`,
+          `quota unlimited on ${this.platform.quoteIdentifier(tableSpace)}`,
+        ].join(' ');
+        await this.execute(createUserSql);
+      } catch (e: any) {
+        // ORA-01920: user name conflicts with another user or role name
+        if (e.code !== 'ORA-01920') {
+          throw e;
+        }
+      }
+
+      // Grant privileges to the new schema user so it can create its own objects
+      await this.execute(`grant connect, resource to ${this.platform.quoteIdentifier(name)}`);
+
+      // Grant DBA role to the main user for multi-schema support
+      // This allows the main user to create tables in any schema and reference tables across schemas
+      // DBA role includes CREATE ANY TABLE, SELECT ANY TABLE, REFERENCES on any table, etc.
+      try {
+        await this.execute(`grant dba to ${this.platform.quoteIdentifier(mainUser!)}`);
+      } catch {
+        // If DBA grant fails (e.g., insufficient privileges), fall back to individual grants
+        // Note: This may not include REFERENCES privilege needed for cross-schema FKs
+        await this.execute(`grant create any table, alter any table, drop any table, select any table, insert any table, update any table, delete any table, create any index, drop any index, create any sequence, select any sequence to ${this.platform.quoteIdentifier(mainUser!)}`);
+      }
     } finally {
       this.config.set('user', currentUser);
       await this.driver.reconnect();
@@ -91,7 +120,7 @@ export class OracleSchemaGenerator extends SchemaGenerator {
   override async update(options: UpdateSchemaOptions<DatabaseSchema> = {}): Promise<void> {
     await this.ensureDatabase();
 
-    // Get schema comparison to find new namespaces
+    // First, determine what namespaces need to be created
     options.safe ??= false;
     options.dropTables ??= true;
     const toSchema = this.getTargetSchema(options.schema);
@@ -105,18 +134,20 @@ export class OracleSchemaGenerator extends SchemaGenerator {
     const diff = comparator.compare(fromSchema, toSchema);
 
     // Create namespaces with privileged user first
-    // This also grants the main user CREATE ANY TABLE, etc. privileges
+    // This also grants CREATE ANY TABLE, etc. to the main user
     for (const newNamespace of diff.newNamespaces) {
       await this.createNamespace(newNamespace);
     }
 
-    // Clear the newNamespaces so diffToSQL won't try to create them again
+    // Clear newNamespaces so diffToSQL won't try to create them again
+    // (they were just created above with proper privilege handling)
     diff.newNamespaces.clear();
 
-    // Generate and execute the remaining SQL
-    // The main user now has privileges to create objects in any schema
     const sql = this.diffToSQL(diff, options);
+
     if (sql.trim()) {
+      // The main user now has CREATE ANY TABLE, etc. privileges
+      // so it can create tables in any schema
       await this.execute(sql);
     }
   }

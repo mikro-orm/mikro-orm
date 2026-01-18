@@ -423,26 +423,20 @@ export class OracleSchemaHelper extends SchemaHelper {
   }
 
   override getCreateNamespaceSQL(name: string): string {
-    // This method is for compatibility but shouldn't be used directly in Oracle
-    // Use getCreateNamespaceSQLWithMainUser instead
-    const mainUser = this.platform.getConfig().get('user') ?? this.platform.getConfig().get('dbName');
-    return this.getCreateNamespaceSQLWithMainUser(name, mainUser!);
-  }
-
-  getCreateNamespaceSQLWithMainUser(name: string, mainUser: string): string {
-    // In Oracle, a schema is essentially a user. To create a schema, we need to create a user.
-    // We use the same password as the main connection and grant necessary privileges.
+    // This method is for compatibility but namespace creation is handled in OracleSchemaGenerator.createNamespace()
+    // which uses separate SQL statements with proper error handling
     const password = this.platform.getConfig().get('clientUrl')?.match(/:([^@]+)@/)?.[1]
       ?? this.platform.getConfig().get('password')
       ?? name;
     const tableSpace = this.platform.getConfig().get('schemaGenerator').tableSpace ?? 'users';
-    // Use nested PL/SQL blocks to handle CREATE USER separately from GRANTs
-    // ORA-01920: user name conflicts with another user or role name
-    // The inner block catches -1920 (user exists) and continues to grants
-    // Note: Must be single line because SqlSchemaGenerator.execute() splits by newlines
-    // Note: Password is not quoted because IDENTIFIED BY expects unquoted password in Oracle
-    // Grant the main user system privileges to manage objects in any schema for multi-schema support
-    return `begin begin execute immediate 'create user ${this.quote(name)} identified by ${password} default tablespace ${this.quote(tableSpace)} quota unlimited on ${this.quote(tableSpace)}'; exception when others then if sqlcode != -1920 then raise; end if; end; execute immediate 'grant connect, resource to ${this.quote(name)}'; execute immediate 'grant create any table, alter any table, drop any table, select any table, insert any table, update any table, delete any table, create any index, drop any index, create any sequence, select any sequence to ${this.quote(mainUser)}'; end;`;
+    // Return simple CREATE USER statement - error handling is done in the generator
+    return `create user ${this.quote(name)} identified by ${password} default tablespace ${this.quote(tableSpace)} quota unlimited on ${this.quote(tableSpace)}`;
+  }
+
+  getCreateNamespaceSQLWithMainUser(name: string, mainUser: string): string {
+    // This is kept for backwards compatibility but the actual implementation
+    // is now in OracleSchemaGenerator.createNamespace()
+    return this.getCreateNamespaceSQL(name);
   }
 
   override getDropNamespaceSQL(name: string): string {
