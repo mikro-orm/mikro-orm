@@ -423,12 +423,29 @@ export class OracleSchemaHelper extends SchemaHelper {
   }
 
   override getCreateNamespaceSQL(name: string): string {
-    return ''; // TODO
-    // return `if (schema_id(${this.platform.quoteValue(name)}) is null) begin exec ('create schema ${this.quote(name)} authorization [dbo]') end`;
+    // In Oracle, a schema is essentially a user. To create a schema, we need to create a user.
+    // We use the same password as the main connection and grant necessary privileges.
+    const password = this.platform.getConfig().get('clientUrl')?.match(/:([^@]+)@/)?.[1]
+      ?? this.platform.getConfig().get('password')
+      ?? name;
+    // Use PL/SQL block to check if user exists before creating
+    return `begin
+  execute immediate 'create user ${this.quote(name)} identified by ${this.platform.quoteValue(password)} quota unlimited on users';
+  execute immediate 'grant connect, resource to ${this.quote(name)}';
+exception
+  when others then
+    if sqlcode != -1920 then raise; end if;
+end;`;
   }
 
   override getDropNamespaceSQL(name: string): string {
-    return `drop schema if exists ${this.quote(name)}`;
+    // In Oracle, dropping a schema means dropping the user and all their objects
+    return `begin
+  execute immediate 'drop user ${this.quote(name)} cascade';
+exception
+  when others then
+    if sqlcode != -1918 then raise; end if;
+end;`;
   }
 
   override getDropIndexSQL(tableName: string, index: IndexDef): string {
