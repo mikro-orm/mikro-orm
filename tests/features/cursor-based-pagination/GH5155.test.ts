@@ -83,7 +83,7 @@ afterAll(async () => {
 
 test('validate missing populate hint', async () => {
   const res = await orm.em.findByCursor(OrgMembership, { orderBy: { user: { name: QueryOrder.ASC } }, first: 1 });
-  expect(() => res.startCursor).toThrow(`Cannot create cursor, value for 'User.name' is missing.`);
+  expect(() => res.startCursor).toThrow(`Cannot create cursor, value for 'OrgMembership.user' is missing.`);
   const goodCursor = await orm.em.findByCursor(OrgMembership, {
     orderBy: { user: { name: QueryOrder.ASC } },
     populate: ['user'],
