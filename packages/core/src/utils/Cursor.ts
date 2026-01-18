@@ -114,17 +114,26 @@ export class Cursor<
   from(entity: Entity | Loaded<Entity, Hint, Fields, Excludes>) {
     const processEntity = <T extends object> (entity: T, prop: EntityKey<T>, direction: QueryOrderKeys<T>, object = false) => {
       if (Utils.isPlainObject(direction)) {
+        const unwrapped = Reference.unwrapReference(entity[prop] as T);
+
+        // Check if the relation is loaded - for nested properties, undefined means not populated
+        if (Utils.isEntity(unwrapped) && !helper(unwrapped).isInitialized()) {
+          throw CursorError.entityNotPopulated(entity, prop);
+        }
+
         return Utils.keys(direction).reduce((o, key) => {
-          Object.assign(o, processEntity(Reference.unwrapReference(entity[prop] as T), key as EntityKey<T>, direction[key] as QueryOrderKeys<T>, true));
+          Object.assign(o, processEntity(unwrapped, key as EntityKey<T>, direction[key] as QueryOrderKeys<T>, true));
           return o;
         }, {} as Dictionary);
       }
 
-      if (entity[prop] == null) {
-        throw CursorError.entityNotPopulated(entity, prop);
-      }
-
       let value: unknown = entity[prop];
+
+      // Allow null/undefined values in cursor - they will be handled in createCursorCondition
+      // undefined can occur with forceUndefined config option which converts null to undefined
+      if (value == null) {
+        return object ? { [prop]: null } : null;
+      }
 
       if (Utils.isEntity(value, true)) {
         value = helper(value).getPrimaryKey();
@@ -159,7 +168,13 @@ export class Cursor<
    */
   static for<Entity extends object>(meta: EntityMetadata<Entity>, entity: FilterObject<Entity>, orderBy: OrderDefinition<Entity>) {
     const definition = this.getDefinition(meta, orderBy);
-    return Cursor.encode(definition.map(([key]) => entity[key]));
+    return Cursor.encode(definition.map(([key]) => {
+      const value = entity[key];
+      if (value === undefined) {
+        throw CursorError.missingValue(meta.className, key as string);
+      }
+      return value;
+    }));
   }
 
   static encode(value: unknown[]): string {

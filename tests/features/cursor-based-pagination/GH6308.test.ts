@@ -1,5 +1,5 @@
 import { MikroORM } from '@mikro-orm/sqlite';
-import { Entity, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import { Entity, ManyToOne, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class Metadata {
@@ -23,12 +23,52 @@ class Book {
 
 }
 
+// Entities for 3-level nesting test
+@Entity()
+class Profile {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property()
+  rating!: number;
+
+}
+
+@Entity()
+class Author {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property()
+  name!: string;
+
+  @OneToOne(() => Profile)
+  profile!: Profile;
+
+}
+
+@Entity()
+class Article {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property()
+  title!: string;
+
+  @ManyToOne(() => Author)
+  author!: Author;
+
+}
+
 let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
     metadataProvider: ReflectMetadataProvider,
-    entities: [Metadata, Book],
+    entities: [Metadata, Book, Profile, Author, Article],
     dbName: ':memory:',
   });
   await orm.schema.refresh();
@@ -106,4 +146,27 @@ test('cursor pagination with relations', async () => {
     ],
   });
   expect(cursor).toHaveLength(5);
+});
+
+test('cursor pagination with deeply nested missing property (3 levels)', async () => {
+  // This test hits line 262 in DatabaseDriver.ts - the nested object undefined check
+  // The cursor has 'author' but author.profile is missing
+  await expect(orm.em.findByCursor(Article, {
+    first: 5,
+    after: {
+      author: {
+        name: 'John', // profile is missing
+      },
+      id: 1,
+    },
+    orderBy: {
+      author: {
+        profile: {
+          rating: 'desc',
+        },
+      },
+      id: 'asc',
+    },
+    populate: ['author.profile'],
+  })).rejects.toThrow(`Invalid cursor condition, value for 'Article.author.profile' is missing.`);
 });

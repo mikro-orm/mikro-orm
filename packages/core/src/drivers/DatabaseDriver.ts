@@ -256,28 +256,59 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
   }
 
   protected createCursorCondition<T extends object>(definition: (readonly [keyof T & string, QueryOrder])[], offsets: Dictionary[], inverse: boolean, meta: EntityMetadata<T>): FilterQuery<T> {
-    const createCondition = (prop: string, direction: QueryOrderKeys<T>, offset: Dictionary, eq = false) => {
-      if (offset === null) {
-        throw CursorError.missingValue(meta.className, prop);
-      }
-
+    const createCondition = (prop: string, direction: QueryOrderKeys<T>, offset: Dictionary, eq = false, path = prop): Dictionary => {
       if (Utils.isPlainObject(direction)) {
+        if (offset === undefined) {
+          throw CursorError.missingValue(meta.className, path);
+        }
+
         const value = Utils.keys(direction).reduce((o, key) => {
-          if (Utils.isEmpty(offset[key])) {
-            throw CursorError.missingValue(meta.className, `${prop}.${key}`);
-          }
-
-          Object.assign(o, createCondition(key as string, direction[key] as QueryOrderKeys<T>, offset[key], eq));
-
+          Object.assign(o, createCondition(key as string, direction[key] as QueryOrderKeys<T>, offset?.[key], eq, `${path}.${key}`));
           return o;
         }, {});
-        return ({ [prop]: value });
+        return { [prop]: value };
       }
 
-      const desc = direction as unknown === QueryOrderNumeric.DESC || direction.toString().toLowerCase() === 'desc';
-      const operator = Utils.xor(desc, inverse) ? '$lt' : '$gt';
+      const isDesc = direction as unknown === QueryOrderNumeric.DESC || direction.toString().toLowerCase() === 'desc';
+      const dirStr = direction.toString().toLowerCase();
+      let nullsFirst: boolean;
 
-      return { [prop]: { [operator + (eq ? 'e' : '')]: offset } } as FilterQuery<T>;
+      if (dirStr.includes('nulls first')) {
+        nullsFirst = true;
+      } else if (dirStr.includes('nulls last')) {
+        nullsFirst = false;
+      } else {
+        // Default: NULLS LAST for ASC, NULLS FIRST for DESC (matches most databases)
+        nullsFirst = isDesc;
+      }
+
+      const operator = Utils.xor(isDesc, inverse) ? '$lt' : '$gt';
+
+      // For leaf-level properties, undefined means missing value
+      if (offset === undefined) {
+        throw CursorError.missingValue(meta.className, path);
+      }
+
+      // Handle null offset (intentional null cursor value)
+      if (offset === null) {
+        if (eq) {
+          // Equal to null
+          return { [prop]: null };
+        }
+
+        // Strict comparison with null cursor value
+        // hasItemsAfterNull: forward + nullsFirst, or backward + nullsLast
+        const hasItemsAfterNull = Utils.xor(nullsFirst, inverse);
+        if (hasItemsAfterNull) {
+          return { [prop]: { $ne: null } };
+        }
+
+        // No items after null in this direction, return impossible condition
+        return { [prop]: [] } as Dictionary;
+      }
+
+      // Non-null offset
+      return { [prop]: { [operator + (eq ? 'e' : '')]: offset } };
     };
 
     const [order, ...otherOrders] = definition;
