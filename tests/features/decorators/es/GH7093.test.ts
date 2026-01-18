@@ -1,59 +1,48 @@
-import { type Opt, type Rel } from '@mikro-orm/core';
-import { Entity, ManyToOne, OneToOne, Property } from '@mikro-orm/decorators/es';
+import { MikroORM, type Opt } from '@mikro-orm/sqlite';
+import { Entity, PrimaryKey, Property } from '@mikro-orm/decorators/es';
 
-// Abstract base class with decorators
 abstract class BaseEntity {
 
-  @Property({ type: 'timestamptz', defaultRaw: 'now()' })
-  updated_at!: Date & Opt;
-
-  @Property({ type: 'timestamptz', defaultRaw: 'now()' })
+  @Property({ type: 'timestamptz', defaultRaw: 'now' })
   created_at!: Date & Opt;
 
-}
-
-// Target entity for relationships
-@Entity({ tableName: 'users' })
-class User extends BaseEntity {
-
-  @Property({ type: 'bigint', primary: true })
-  id!: number & Opt;
-
-  @Property({ type: 'text', nullable: true })
-  name?: string & Opt;
+  @Property({ type: 'timestamptz', defaultRaw: 'now' })
+  updated_at!: Date & Opt;
 
 }
 
-// Entity A: Uses @ManyToOne for user
-@Entity({ tableName: 'posts' })
-class Post extends BaseEntity {
+@Entity({ tableName: 'parents' })
+class Parent extends BaseEntity {
 
-  @Property({ type: 'uuid', primary: true })
-  id!: string;
+  @PrimaryKey({ type: 'bigint' })
+  id!: number;
 
-  @ManyToOne({
-    entity: () => User,
-    nullable: true,
-  })
-  user?: Rel<User> & Opt; // ManyToOne relationship
+  @Property({ type: 'text' })
+  name!: string;
 
 }
 
-// Entity B: Uses @OneToOne for user (same property name, different kind)
-@Entity({ tableName: 'user_profiles' })
-class UserProfile extends BaseEntity {
+let orm: MikroORM;
 
-  @OneToOne({
-    entity: () => User,
-    primary: true,
-  })
-  user!: Rel<User>; // OneToOne relationship - FAILS HERE
+beforeAll(async () => {
+  orm = new MikroORM({
+    dbName: ':memory:',
+    entities: [Parent],
+  });
+  await orm.schema.refresh();
+});
 
-  @Property({ type: 'json', nullable: true })
-  settings?: object & Opt;
-
-}
+afterAll(async () => {
+  await orm.close(true);
+});
 
 test('GH #7093', async () => {
-  expect([User, Post, UserProfile].map(e => e.name)).toEqual(['User', 'Post', 'UserProfile']);
+  const p = new Parent();
+  p.name = 'foo 1';
+  await orm.em.persist(p).flush();
+  orm.em.clear();
+
+  const res = await orm.em.findAll(Parent);
+  expect(res).toHaveLength(1);
+  expect(res[0]).toEqual({ id: 1n, created_at: 'now', updated_at: 'now', name: 'foo 1' });
 });

@@ -101,7 +101,7 @@ export function prepareMetadataContext<T>(context: ClassFieldDecoratorContext<T>
   const meta = context.metadata as unknown as EntityMetadata<T>;
 
   if (!Object.hasOwn(meta, 'properties')) {
-    meta.properties = {} as Record<EntityKey<T>, EntityProperty<T>>;
+    meta.properties = { ...meta.properties };
   }
 
   if (kind) {
