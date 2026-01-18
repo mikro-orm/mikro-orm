@@ -3,6 +3,9 @@ import {
   type SqlEntityManager,
   SchemaGenerator,
   type EnsureDatabaseOptions, type ClearDatabaseOptions,
+  type UpdateSchemaOptions,
+  DatabaseSchema,
+  SchemaComparator,
 } from '@mikro-orm/sql';
 import type { OracleSchemaHelper } from './OracleSchemaHelper.js';
 import type { OracleConnection } from './OracleConnection.js';
@@ -51,6 +54,71 @@ export class OracleSchemaGenerator extends SchemaGenerator {
     await this.driver.reconnect();
     await this.execute(this.helper.getDropDatabaseSQL(name));
     this.config.set('user', name);
+  }
+
+  override async createNamespace(name: string): Promise<void> {
+    const currentUser = this.config.get('user');
+    const dbName = this.config.get('dbName');
+    // mainUser is the user that will access the schema at runtime
+    const mainUser = currentUser ?? dbName;
+
+    this.config.set('user', this.helper.getManagementDbName());
+    await this.driver.reconnect();
+
+    try {
+      // Generate the SQL with the correct main user reference
+      const sql = this.helper.getCreateNamespaceSQLWithMainUser(name, mainUser!);
+      await this.execute(sql);
+    } finally {
+      this.config.set('user', currentUser);
+      await this.driver.reconnect();
+    }
+  }
+
+  override async dropNamespace(name: string): Promise<void> {
+    const currentUser = this.config.get('user');
+    this.config.set('user', this.helper.getManagementDbName());
+    await this.driver.reconnect();
+
+    try {
+      await super.dropNamespace(name);
+    } finally {
+      this.config.set('user', currentUser);
+      await this.driver.reconnect();
+    }
+  }
+
+  override async update(options: UpdateSchemaOptions<DatabaseSchema> = {}): Promise<void> {
+    await this.ensureDatabase();
+
+    // Get schema comparison to find new namespaces
+    options.safe ??= false;
+    options.dropTables ??= true;
+    const toSchema = this.getTargetSchema(options.schema);
+    const schemas = toSchema.getNamespaces();
+    const fromSchema = options.fromSchema ?? (await DatabaseSchema.create(this.connection, this.platform, this.config, options.schema, schemas, undefined, this.options.skipTables));
+    const wildcardSchemaTables = [...this.metadata.getAll().values()].filter(meta => meta.schema === '*').map(meta => meta.tableName);
+    fromSchema.prune(options.schema, wildcardSchemaTables);
+    toSchema.prune(options.schema, wildcardSchemaTables);
+
+    const comparator = new SchemaComparator(this.platform);
+    const diff = comparator.compare(fromSchema, toSchema);
+
+    // Create namespaces with privileged user first
+    // This also grants the main user CREATE ANY TABLE, etc. privileges
+    for (const newNamespace of diff.newNamespaces) {
+      await this.createNamespace(newNamespace);
+    }
+
+    // Clear the newNamespaces so diffToSQL won't try to create them again
+    diff.newNamespaces.clear();
+
+    // Generate and execute the remaining SQL
+    // The main user now has privileges to create objects in any schema
+    const sql = this.diffToSQL(diff, options);
+    if (sql.trim()) {
+      await this.execute(sql);
+    }
   }
 
   override async ensureDatabase(options?: EnsureDatabaseOptions): Promise<boolean> {

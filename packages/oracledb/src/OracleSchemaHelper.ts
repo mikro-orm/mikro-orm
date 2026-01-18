@@ -423,6 +423,13 @@ export class OracleSchemaHelper extends SchemaHelper {
   }
 
   override getCreateNamespaceSQL(name: string): string {
+    // This method is for compatibility but shouldn't be used directly in Oracle
+    // Use getCreateNamespaceSQLWithMainUser instead
+    const mainUser = this.platform.getConfig().get('user') ?? this.platform.getConfig().get('dbName');
+    return this.getCreateNamespaceSQLWithMainUser(name, mainUser!);
+  }
+
+  getCreateNamespaceSQLWithMainUser(name: string, mainUser: string): string {
     // In Oracle, a schema is essentially a user. To create a schema, we need to create a user.
     // We use the same password as the main connection and grant necessary privileges.
     const password = this.platform.getConfig().get('clientUrl')?.match(/:([^@]+)@/)?.[1]
@@ -431,24 +438,17 @@ export class OracleSchemaHelper extends SchemaHelper {
     const tableSpace = this.platform.getConfig().get('schemaGenerator').tableSpace ?? 'users';
     // Use PL/SQL block to check if user exists before creating
     // ORA-01920: user name conflicts with another user or role name
-    return `begin
-  execute immediate 'create user ${this.quote(name)} identified by ${this.platform.quoteValue(password)} default tablespace ${this.quote(tableSpace)} quota unlimited on ${this.quote(tableSpace)}';
-  execute immediate 'grant connect, resource to ${this.quote(name)}';
-exception
-  when others then
-    if sqlcode != -1920 then raise; end if;
-end;`;
+    // Note: Must be single line because SqlSchemaGenerator.execute() splits by newlines
+    // Note: Password is not quoted because IDENTIFIED BY expects unquoted password in Oracle
+    // Grant the main user system privileges to manage objects in any schema for multi-schema support
+    return `begin execute immediate 'create user ${this.quote(name)} identified by ${password} default tablespace ${this.quote(tableSpace)} quota unlimited on ${this.quote(tableSpace)}'; execute immediate 'grant connect, resource to ${this.quote(name)}'; execute immediate 'grant create any table, alter any table, drop any table, select any table, insert any table, update any table, delete any table, create any index, drop any index, create any sequence, select any sequence to ${this.quote(mainUser)}'; exception when others then if sqlcode != -1920 then raise; end if; end;`;
   }
 
   override getDropNamespaceSQL(name: string): string {
     // In Oracle, dropping a schema means dropping the user and all their objects
     // ORA-01918: user does not exist
-    return `begin
-  execute immediate 'drop user ${this.quote(name)} cascade';
-exception
-  when others then
-    if sqlcode != -1918 then raise; end if;
-end;`;
+    // Note: Must be single line because SqlSchemaGenerator.execute() splits by newlines
+    return `begin execute immediate 'drop user ${this.quote(name)} cascade'; exception when others then if sqlcode != -1918 then raise; end if; end;`;
   }
 
   override getDropIndexSQL(tableName: string, index: IndexDef): string {
