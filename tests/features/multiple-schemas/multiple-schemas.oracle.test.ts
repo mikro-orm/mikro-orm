@@ -66,7 +66,7 @@ test('generate entities for all schemas', async () => {
     entities: [Author, Book, BookTag],
     dbName: `mikro_orm_test_multi_schemas`,
     password: 'oracle123',
-    schemaGenerator: { managementDbName: 'system' },
+    schemaGenerator: { managementDbName: 'system', tableSpace: 'mikro_orm' },
     extensions: [EntityGenerator],
   });
 
@@ -102,7 +102,7 @@ describe('multiple connected schemas in oracle', () => {
       entities: [Author, Book, BookTag],
       dbName: `mikro_orm_test_multi_schemas`,
       password: 'oracle123',
-      schemaGenerator: { managementDbName: 'system' },
+      schemaGenerator: { managementDbName: 'system', tableSpace: 'mikro_orm' },
       extensions: [EntityGenerator],
     });
 

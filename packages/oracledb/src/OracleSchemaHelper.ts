@@ -428,9 +428,11 @@ export class OracleSchemaHelper extends SchemaHelper {
     const password = this.platform.getConfig().get('clientUrl')?.match(/:([^@]+)@/)?.[1]
       ?? this.platform.getConfig().get('password')
       ?? name;
+    const tableSpace = this.platform.getConfig().get('schemaGenerator').tableSpace ?? 'users';
     // Use PL/SQL block to check if user exists before creating
+    // ORA-01920: user name conflicts with another user or role name
     return `begin
-  execute immediate 'create user ${this.quote(name)} identified by ${this.platform.quoteValue(password)} quota unlimited on users';
+  execute immediate 'create user ${this.quote(name)} identified by ${this.platform.quoteValue(password)} default tablespace ${this.quote(tableSpace)} quota unlimited on ${this.quote(tableSpace)}';
   execute immediate 'grant connect, resource to ${this.quote(name)}';
 exception
   when others then
@@ -440,6 +442,7 @@ end;`;
 
   override getDropNamespaceSQL(name: string): string {
     // In Oracle, dropping a schema means dropping the user and all their objects
+    // ORA-01918: user does not exist
     return `begin
   execute immediate 'drop user ${this.quote(name)} cascade';
 exception
