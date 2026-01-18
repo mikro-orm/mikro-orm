@@ -111,7 +111,7 @@ export class OracleSchemaGenerator extends SchemaGenerator {
           try {
             // Get all tables in the other schema
             const tables = await this.connection.execute<{ table_name: string }[]>(
-              `select table_name from user_tables`
+              `select table_name from user_tables`,
             );
             for (const table of tables) {
               try {
@@ -293,7 +293,7 @@ export class OracleSchemaGenerator extends SchemaGenerator {
       // Use entity's explicit schema if defined, otherwise use target schema
       // This respects Oracle's schema = user model where tables only exist in their owner's schema
       const entitySchema = meta.schema && meta.schema !== '*' ? meta.schema : targetSchema;
-      
+
       try {
         await this.driver.createQueryBuilder(meta.class, this.em?.getTransactionContext(), 'write', false)
           .withSchema(entitySchema)
@@ -305,7 +305,7 @@ export class OracleSchemaGenerator extends SchemaGenerator {
           throw e;
         }
       }
-      
+
       // const res = await this.driver.nativeDelete(meta.className, {}, options);
       const increments = meta.getPrimaryProps().filter(pk => pk.autoincrement);
       const tableName = this.driver.getTableName(meta, { schema: entitySchema }, false);
