@@ -99,6 +99,7 @@ module.exports = {
         'usage-with-sql',
         'usage-with-mongo',
         'usage-with-nestjs',
+        'usage-with-nextjs',
         'usage-with-js',
         'usage-with-transpilers',
         'usage-with-adminjs',
