@@ -1,0 +1,68 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`generate entities for all schemas 1`] = `
+[
+  "import { Collection, type Ref, defineEntity, p } from '@mikro-orm/core';
+import { BookTags } from './BookTags';
+
+export class Book {
+  id!: number;
+  name?: unknown;
+  authorId?: number;
+  basedOn?: Ref<Book>;
+  bookCollection = new Collection<Book>(this);
+  bookTagsCollection = new Collection<BookTags>(this);
+}
+
+export const BookSchema = defineEntity({
+  class: Book,
+  schema: 'n2',
+  properties: {
+    id: p.integer().autoincrement(),
+    name: p.unknown().columnType('varchar2(255)').nullable().ignoreSchemaChanges('type'),
+    authorId: p.integer().nullable(),
+    basedOn: () => p.manyToOne(Book).ref().nullable(),
+    bookCollection: () => p.oneToMany(Book).mappedBy('basedOn'),
+    bookTagsCollection: () => p.oneToMany(BookTags).mappedBy('book'),
+  },
+});
+",
+  "import { Collection, defineEntity, p } from '@mikro-orm/core';
+import { BookTags } from './BookTags';
+
+export class BookTag {
+  id!: number;
+  name?: unknown;
+  bookTagsCollection = new Collection<BookTags>(this);
+}
+
+export const BookTagSchema = defineEntity({
+  class: BookTag,
+  schema: 'n2',
+  properties: {
+    id: p.integer().autoincrement(),
+    name: p.unknown().columnType('varchar2(255)').nullable().ignoreSchemaChanges('type'),
+    bookTagsCollection: () => p.oneToMany(BookTags).mappedBy('bookTag'),
+  },
+});
+",
+  "import { type Ref, defineEntity, p } from '@mikro-orm/core';
+import { Book } from './Book';
+import { BookTag } from './BookTag';
+
+export class BookTags {
+  book!: Ref<Book>;
+  bookTag!: Ref<BookTag>;
+}
+
+export const BookTagsSchema = defineEntity({
+  class: BookTags,
+  schema: 'n2',
+  properties: {
+    book: () => p.manyToOne(Book).ref().deleteRule('cascade'),
+    bookTag: () => p.manyToOne(BookTag).ref().deleteRule('cascade'),
+  },
+});
+",
+]
+`;

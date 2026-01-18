@@ -98,6 +98,33 @@ export class OracleSchemaGenerator extends SchemaGenerator {
         // Note: This may not include REFERENCES privilege needed for cross-schema FKs
         await this.execute(`grant create any table, alter any table, drop any table, select any table, insert any table, update any table, delete any table, create any index, drop any index, create any sequence, select any sequence to ${this.platform.quoteIdentifier(mainUser!)}`);
       }
+
+      // Grant REFERENCES on all existing tables in all other schemas to the new schema
+      // This is needed for cross-schema FKs in Oracle
+      const allSchemas = await this.helper.getNamespaces(this.connection);
+      for (const otherSchema of allSchemas) {
+        if (otherSchema.toLowerCase() !== name.toLowerCase() && otherSchema.toLowerCase() !== 'system') {
+          // Connect as the other schema owner to grant REFERENCES on their tables
+          this.config.set('user', otherSchema);
+          await this.driver.reconnect();
+
+          try {
+            // Get all tables in the other schema
+            const tables = await this.connection.execute<{ table_name: string }[]>(
+              `select table_name from user_tables`
+            );
+            for (const table of tables) {
+              try {
+                await this.execute(`grant references on ${this.platform.quoteIdentifier(table.table_name)} to ${this.platform.quoteIdentifier(name)}`);
+              } catch {
+                // Ignore errors
+              }
+            }
+          } catch {
+            // Ignore errors (e.g., if we can't connect as this user)
+          }
+        }
+      }
     } finally {
       this.config.set('user', currentUser);
       await this.driver.reconnect();
@@ -134,7 +161,7 @@ export class OracleSchemaGenerator extends SchemaGenerator {
     const diff = comparator.compare(fromSchema, toSchema);
 
     // Create namespaces with privileged user first
-    // This also grants CREATE ANY TABLE, etc. to the main user
+    // This also grants DBA to the main user and REFERENCES on existing tables to new schemas
     for (const newNamespace of diff.newNamespaces) {
       await this.createNamespace(newNamespace);
     }
@@ -143,12 +170,70 @@ export class OracleSchemaGenerator extends SchemaGenerator {
     // (they were just created above with proper privilege handling)
     diff.newNamespaces.clear();
 
-    const sql = this.diffToSQL(diff, options);
+    // Separate table creation from FK creation
+    // Create a diff with only table creation (no orphaned FKs or changed tables)
+    const tableOnlyDiff = {
+      ...diff,
+      orphanedForeignKeys: [],
+      changedTables: {},
+    };
+    const tableSql = this.diffToSQL(tableOnlyDiff, options);
 
-    if (sql.trim()) {
-      // The main user now has CREATE ANY TABLE, etc. privileges
-      // so it can create tables in any schema
-      await this.execute(sql);
+    if (tableSql.trim()) {
+      await this.execute(tableSql);
+    }
+
+    // After tables are created, grant REFERENCES on them to all existing schemas
+    // This is needed for cross-schema FKs in Oracle
+    const currentUser = this.config.get('user');
+    const allSchemas = await this.helper.getNamespaces(this.connection);
+
+    for (const table of Object.values(diff.newTables)) {
+      if (table.schema && table.schema !== this.platform.getDefaultSchemaName()) {
+        // Connect as the table owner to grant REFERENCES
+        this.config.set('user', table.schema);
+        await this.driver.reconnect();
+
+        try {
+          // Grant REFERENCES on this table to all other schemas
+          for (const otherSchema of allSchemas) {
+            if (otherSchema.toLowerCase() !== table.schema.toLowerCase() && otherSchema.toLowerCase() !== 'system') {
+              try {
+                await this.execute(`grant references on ${this.platform.quoteIdentifier(table.name)} to ${this.platform.quoteIdentifier(otherSchema)}`);
+              } catch {
+                // Ignore errors (e.g., if other schema doesn't exist)
+              }
+            }
+          }
+          // Also grant to the main user
+          const mainUser = currentUser ?? this.config.get('dbName');
+          if (mainUser && mainUser.toLowerCase() !== table.schema.toLowerCase()) {
+            try {
+              await this.execute(`grant references on ${this.platform.quoteIdentifier(table.name)} to ${this.platform.quoteIdentifier(mainUser)}`);
+            } catch {
+              // Ignore errors
+            }
+          }
+        } finally {
+          this.config.set('user', currentUser);
+          await this.driver.reconnect();
+        }
+      }
+    }
+
+    // Now execute any remaining SQL (FKs from changed tables, orphaned FKs)
+    // Create a diff with only FK/index changes (no new tables)
+    const fkOnlyDiff = {
+      ...diff,
+      newTables: {},
+      newNativeEnums: [],
+      removedNativeEnums: [],
+      newNamespaces: new Set<string>(),
+    };
+    const fkSql = this.diffToSQL(fkOnlyDiff, options);
+
+    if (fkSql.trim()) {
+      await this.execute(fkSql);
     }
   }
 
