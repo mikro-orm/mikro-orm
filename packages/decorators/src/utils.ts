@@ -1,7 +1,9 @@
 import {
   type Dictionary,
+  type EntityKey,
   EntityManager,
   type EntityMetadata,
+  type EntityProperty,
   EntityRepository,
   type MaybePromise,
   MetadataError,
@@ -82,12 +84,31 @@ export function processDecoratorParameters<T>(params: Dictionary): T {
 /**
  * Validate there is only one property decorator. This disallows using `@Property()` together with e.g. `@ManyToOne()`
  * on the same property. One should use only `@ManyToOne()` in such case.
- * We allow the existence of the property in metadata if the reference type is the same, this should allow things like HMR to work.
+ * We allow the existence of the property in metadata if the reference kind is the same, this should allow things like HMR to work.
  */
-export function validateSingleDecorator(meta: EntityMetadata, propertyName: string, reference: ReferenceKind): void {
-  if (meta.properties[propertyName] && meta.properties[propertyName].kind !== reference) {
+export function validateSingleDecorator(meta: EntityMetadata, propertyName: string, kind: ReferenceKind): void {
+  if (meta.properties[propertyName] && meta.properties[propertyName].kind !== kind) {
     throw MetadataError.multipleDecorators(meta.className, propertyName);
   }
+}
+
+/**
+ * Prepares and returns a metadata context for an entity, ensuring default structure and validating proper usage of a single decorator.
+ * We need to use the `Object.hasOwn` here, since the metadata object respects inheritance, and the `properties` object might already
+ * exist for some base entity.
+ */
+export function prepareMetadataContext<T>(context: ClassFieldDecoratorContext<T> | ClassGetterDecoratorContext<T> | ClassMethodDecoratorContext<T>, kind?: ReferenceKind): EntityMetadata<T> {
+  const meta = context.metadata as unknown as EntityMetadata<T>;
+
+  if (!Object.hasOwn(meta, 'properties')) {
+    meta.properties = {} as Record<EntityKey<T>, EntityProperty<T>>;
+  }
+
+  if (kind) {
+    validateSingleDecorator(meta, context.name as string, kind);
+  }
+
+  return meta;
 }
 
 /**

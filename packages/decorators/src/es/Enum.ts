@@ -4,14 +4,13 @@ import {
   type AnyEntity,
   type Dictionary,
   type EntityProperty,
-  type EntityMetadata,
   type EntityKey,
 } from '@mikro-orm/core';
+import { prepareMetadataContext } from '../utils.js';
 
 export function Enum<Owner extends object>(options: EnumOptions<AnyEntity> | (() => Dictionary) = {}) {
   return function (target: unknown, context: ClassFieldDecoratorContext<Owner>) {
-    const meta = context.metadata as Partial<EntityMetadata<Owner>>;
-    meta.properties ??= {} as any;
+    const meta = prepareMetadataContext(context);
     options = options instanceof Function ? { items: options } : options;
     meta.properties![context.name as EntityKey<Owner>] = {
       name: context.name,
