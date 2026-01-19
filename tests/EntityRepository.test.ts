@@ -24,6 +24,7 @@ const methods = {
   nativeUpdate: vi.fn(),
   nativeDelete: vi.fn(),
   aggregate: vi.fn(),
+  stream: vi.fn(),
   config: new Configuration({ driver: MongoDriver }, false),
   getContext: () => undefined as any,
 };
@@ -114,6 +115,23 @@ describe('EntityRepository', () => {
     const e = Object.create(Author.prototype, {});
     await expect(repo.populate(e, [])).rejects.toThrow(`Trying to use EntityRepository.populate() with 'Author' entity while the repository is of type 'Publisher'`);
     expect(() => repo.assign(e, {})).toThrow(`Trying to use EntityRepository.assign() with 'Author' entity while the repository is of type 'Publisher'`);
+  });
+
+  test('stream() supports calling with config object', async () => {
+    const options = {
+      where: { name: 'bar' },
+      orderBy: { name: QueryOrder.DESC },
+    };
+    async function* mockStream() {
+      yield { name: 'bar' };
+    }
+    methods.stream.mockReturnValue(mockStream());
+    const results = [];
+    for await (const item of repo.stream(options)) {
+      results.push(item);
+    }
+    expect(methods.stream.mock.calls[0]).toEqual([Publisher, options]);
+    expect(results).toEqual([{ name: 'bar' }]);
   });
 
   test('getEntityName() returns the correct value', async () => {
