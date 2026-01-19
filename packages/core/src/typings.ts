@@ -527,6 +527,9 @@ export interface EntityProperty<Owner = any, Target = any> {
   unique?: boolean | string;
   nullable?: boolean;
   inherited?: boolean;
+  renamedFrom?: string; // Original property name for STI conflict resolution
+  stiFieldNames?: string[]; // All field names for STI with conflicting columns (flattened)
+  stiFieldNameMap?: Dictionary<string>; // Maps discriminator value to field name
   unsigned?: boolean;
   mapToPk?: boolean;
   persist?: boolean;
