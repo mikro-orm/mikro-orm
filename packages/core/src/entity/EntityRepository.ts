@@ -29,6 +29,7 @@ import type {
   FindOptions,
   GetReferenceOptions,
   NativeInsertUpdateOptions,
+  StreamOptions,
   UpdateOptions,
   UpsertManyOptions,
   UpsertOptions,
@@ -167,6 +168,17 @@ export class EntityRepository<Entity extends object> {
     Excludes extends string = never,
   >(options?: FindAllOptions<Entity, Hint, Fields, Excludes>): Promise<Loaded<Entity, Hint, Fields, Excludes>[]> {
     return this.getEntityManager().findAll(this.entityName, options);
+  }
+
+  /**
+   * @inheritDoc EntityManager.stream
+   */
+  async *stream<
+    Hint extends string = never,
+    Fields extends string = '*',
+    Excludes extends string = never,
+  >(options?: StreamOptions<Entity, Hint, Fields, Excludes>): AsyncIterableIterator<Loaded<Entity, Hint, Fields, Excludes>> {
+    yield* this.getEntityManager().stream(this.entityName, options);
   }
 
   /**
