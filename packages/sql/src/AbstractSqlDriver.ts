@@ -645,21 +645,22 @@ export abstract class AbstractSqlDriver<
         props.forEach(prop => {
           if (prop.fieldNames.length > 1) {
             const newFields: string[] = [];
-            const allParam = [...(Utils.asArray(row[prop.name]) ?? prop.fieldNames.map(() => null))];
+            const rawParam = Utils.asArray(row[prop.name]) ?? prop.fieldNames.map(() => null);
+            // Deep flatten nested arrays when needed (for deeply nested composite keys like Tag -> Comment -> Post -> User)
+            const needsFlatten = rawParam.length !== prop.fieldNames.length && rawParam.some(v => Array.isArray(v));
+            const allParam = needsFlatten ? Utils.flatten(rawParam as unknown[][], true) : rawParam;
             // TODO(v7): instead of making this conditional here, the entity snapshot should respect `ownColumns`,
             //  but that means changing the compiled PK getters, which might be seen as breaking
             const columns = allParam.length > 1 ? prop.fieldNames : prop.ownColumns;
-            const newParam: typeof allParam = [];
+            const param: unknown[] = [];
 
             columns.forEach((field, idx) => {
               if (usedDups.includes(field)) {
                 return;
               }
               newFields.push(field);
-              newParam.push(allParam[idx]);
+              param.push(allParam[idx]);
             });
-
-            const param = Utils.flatten(newParam);
 
             newFields.forEach((field, idx) => {
               if (!duplicates.includes(field) || !usedDups.includes(field)) {

@@ -824,8 +824,8 @@ export class Utils {
     return values;
   }
 
-  static flatten<T>(arrays: T[][]): T[] {
-    return ([] as T[]).concat.apply([], arrays);
+  static flatten<T>(arrays: T[][], deep?: boolean): T[] {
+    return arrays.flatMap(v => deep && Array.isArray(v) ? this.flatten(v as unknown as T[][], true) : v) as T[];
   }
 
   static isOperator(key: PropertyKey, includeGroupOperators = true): boolean {
