@@ -10,7 +10,7 @@ import {
   EntityMetadata,
   type EntityProperty,
 } from '../typings';
-import { Utils } from '../utils/Utils';
+import { compareArrays, Utils } from '../utils/Utils';
 import type { Configuration } from '../utils/Configuration';
 import { MetadataValidator } from './MetadataValidator';
 import type { MetadataProvider } from './MetadataProvider';
@@ -1198,8 +1198,9 @@ export class MetadataDiscovery {
     let i = 1;
     Object.values(meta.properties).forEach(prop => {
       const newProp = { ...prop };
+      const rootProp = meta.root.properties[prop.name];
 
-      if (meta.root.properties[prop.name] && meta.root.properties[prop.name].type !== prop.type) {
+      if (rootProp && (rootProp.type !== prop.type || (rootProp.fieldNames && prop.fieldNames && !compareArrays(rootProp.fieldNames, prop.fieldNames)))) {
         const name = newProp.name;
         this.initFieldName(newProp, newProp.object);
         newProp.name = name + '_' + (i++);
@@ -1211,12 +1212,12 @@ export class MetadataDiscovery {
         return;
       }
 
-      if (prop.enum && prop.items && meta.root.properties[prop.name]?.items) {
-        newProp.items = Utils.unique([...meta.root.properties[prop.name].items!, ...prop.items]);
+      if (prop.enum && prop.items && rootProp?.items) {
+        newProp.items = Utils.unique([...rootProp.items!, ...prop.items]);
       }
 
       newProp.nullable = true;
-      newProp.inherited = !meta.root.properties[prop.name];
+      newProp.inherited = !rootProp;
       meta.root.addProperty(newProp);
     });
 
