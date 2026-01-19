@@ -517,7 +517,8 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     const set = new Set<EntityKey<T>>();
     data.forEach(row => Utils.keys(row).forEach(k => set.add(k)));
     const props = [...set].map(name => meta?.properties[name] ?? { name, fieldNames: [name] }) as EntityProperty<T>[];
-    let fields = Utils.flatten(props.map(prop => prop.fieldNames));
+    // For STI with conflicting fieldNames, include all alternative columns
+    let fields = Utils.flatten(props.map(prop => prop.stiFieldNames ?? prop.fieldNames));
     const duplicates = Utils.findDuplicates(fields);
     const params: unknown[] = [];
 
@@ -585,6 +586,16 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
         const keys: string[] = [];
         const usedDups: string[] = [];
         props.forEach(prop => {
+          // For STI with conflicting fieldNames, use discriminator to determine which field gets value
+          if (prop.stiFieldNames && prop.stiFieldNameMap && meta?.discriminatorColumn) {
+            const activeField = prop.stiFieldNameMap[row[meta.discriminatorColumn]];
+            for (const field of prop.stiFieldNames) {
+              params.push(field === activeField ? row[prop.name] : null);
+              keys.push('?');
+            }
+            return;
+          }
+
           if (prop.fieldNames.length > 1) {
             const newFields: string[] = [];
             const allParam = [...Utils.asArray(row[prop.name]) ?? prop.fieldNames.map(() => null)];

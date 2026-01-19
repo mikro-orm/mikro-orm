@@ -53,7 +53,11 @@ export class ChangeSetPersister {
     const meta = this.metadata.find(changeSets[0].name)!;
     changeSets.forEach(changeSet => this.processProperties(changeSet));
 
-    if (batched && changeSets.length > 1 && this.config.get('useBatchUpdates', this.platform.usesBatchUpdates())) {
+    // For STI with conflicting fieldNames (renamedFrom properties), we can't batch mixed child types
+    const hasSTIConflicts = meta.root.props.some(p => p.renamedFrom);
+    const hasMixedTypes = hasSTIConflicts && changeSets.some(cs => cs.meta.class !== meta.class);
+
+    if (batched && changeSets.length > 1 && !hasMixedTypes && this.config.get('useBatchUpdates', this.platform.usesBatchUpdates())) {
       return this.persistManagedEntities(meta, changeSets, options);
     }
 
@@ -116,7 +120,8 @@ export class ChangeSetPersister {
     options = this.prepareOptions(meta, options, {
       convertCustomTypes: false,
     });
-    const res = await this.driver.nativeInsertMany(meta.className, [changeSet.payload], options);
+    // Use changeSet's own meta for STI entities to get correct field mappings
+    const res = await this.driver.nativeInsertMany(changeSet.meta.className, [changeSet.payload], options);
 
     if (!wrapped.hasPrimaryKey()) {
       this.mapPrimaryKey(meta, res.insertId as number, changeSet);
