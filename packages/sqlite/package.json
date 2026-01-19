@@ -52,7 +52,7 @@
   "dependencies": {
     "@mikro-orm/sql": "6.6.4",
     "better-sqlite3": "12.6.2",
-    "kysely": "0.28.9",
+    "kysely": "0.28.10",
     "sqlstring-sqlite": "0.1.1"
   },
   "devDependencies": {

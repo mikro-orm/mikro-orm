@@ -1603,7 +1603,7 @@ __metadata:
   dependencies:
     "@mikro-orm/core": "npm:^6.6.4"
     "@mikro-orm/sql": "npm:6.6.4"
-    kysely: "npm:0.28.9"
+    kysely: "npm:0.28.10"
     libsql: "npm:0.5.22"
     sqlstring-sqlite: "npm:0.1.1"
   peerDependencies:
@@ -1617,7 +1617,7 @@ __metadata:
   dependencies:
     "@mikro-orm/core": "npm:^6.6.4"
     "@mikro-orm/mysql": "npm:6.6.4"
-    kysely: "npm:0.28.9"
+    kysely: "npm:0.28.10"
   peerDependencies:
     "@mikro-orm/core": ^6.0.0
   languageName: unknown
@@ -1674,7 +1674,7 @@ __metadata:
   dependencies:
     "@mikro-orm/core": "npm:^6.6.4"
     "@mikro-orm/sql": "npm:6.6.4"
-    kysely: "npm:0.28.9"
+    kysely: "npm:0.28.10"
     tarn: "npm:3.0.2"
     tedious: "npm:19.2.0"
     tsqlstring: "npm:1.0.1"
@@ -1689,7 +1689,7 @@ __metadata:
   dependencies:
     "@mikro-orm/core": "npm:^6.6.4"
     "@mikro-orm/sql": "npm:6.6.4"
-    kysely: "npm:0.28.9"
+    kysely: "npm:0.28.10"
     mysql2: "npm:3.16.1"
     sqlstring: "npm:2.3.3"
   peerDependencies:
@@ -1703,7 +1703,7 @@ __metadata:
   dependencies:
     "@mikro-orm/core": "npm:^6.6.4"
     "@mikro-orm/sql": "npm:6.6.4"
-    kysely: "npm:0.28.9"
+    kysely: "npm:0.28.10"
     pg: "npm:8.17.1"
     pg-cursor: "npm:2.16.1"
     postgres-array: "npm:3.0.4"
@@ -1799,7 +1799,7 @@ __metadata:
   resolution: "@mikro-orm/sql@workspace:packages/sql"
   dependencies:
     "@mikro-orm/core": "npm:^6.6.4"
-    kysely: "npm:0.28.9"
+    kysely: "npm:0.28.10"
   peerDependencies:
     "@mikro-orm/core": ^6.0.0
   languageName: unknown
@@ -1812,7 +1812,7 @@ __metadata:
     "@mikro-orm/core": "npm:^6.6.4"
     "@mikro-orm/sql": "npm:6.6.4"
     better-sqlite3: "npm:12.6.2"
-    kysely: "npm:0.28.9"
+    kysely: "npm:0.28.10"
     sqlstring-sqlite: "npm:0.1.1"
   peerDependencies:
     "@mikro-orm/core": ^6.0.0
@@ -7759,10 +7759,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"kysely@npm:0.28.9":
-  version: 0.28.9
-  resolution: "kysely@npm:0.28.9"
-  checksum: 10/df37b4f3d9b038a37d2aa05af8cb7d338b5310cf264f26b652b440c6038bf065975c6b845972118eaa81e47d9a760ba1ebe60368dadf3fcf7db7c9c70bf5206a
+"kysely@npm:0.28.10":
+  version: 0.28.10
+  resolution: "kysely@npm:0.28.10"
+  checksum: 10/757ef37005f06293ee581f2a468aeb1f081c4384a6978f0d99fac314f820a23ec8eea94b52c6ec840746dea5a7cc3e24dc2e1f2b926c9b87562ce9676f279454
   languageName: node
   linkType: hard
 
