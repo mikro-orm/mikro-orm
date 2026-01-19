@@ -566,6 +566,11 @@ export class UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys extends
     return this.assignOptions({ referencedColumnNames });
   }
 
+  /** Specify the property name on the target entity that this FK references instead of the primary key. */
+  targetKey(targetKey: string): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
+    return this.assignOptions({ targetKey });
+  }
+
   /** What to do when the target entity gets deleted. */
   deleteRule(deleteRule: 'cascade' | 'no action' | 'set null' | 'set default' | AnyString): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
     return this.assignOptions({ deleteRule });

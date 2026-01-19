@@ -137,6 +137,31 @@ export class MetadataValidator {
     if ([ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind) && prop.persist === false && targetMeta.compositePK && options.checkNonPersistentCompositeProps) {
       throw MetadataError.nonPersistentCompositeProp(meta, prop);
     }
+
+    this.validateTargetKey(meta, prop, targetMeta);
+  }
+
+  private validateTargetKey(meta: EntityMetadata, prop: EntityProperty, targetMeta: EntityMetadata): void {
+    if (!prop.targetKey) {
+      return;
+    }
+
+    // targetKey is not supported for ManyToMany relations
+    if (prop.kind === ReferenceKind.MANY_TO_MANY) {
+      throw MetadataError.targetKeyOnManyToMany(meta, prop);
+    }
+
+    // targetKey must point to an existing property
+    const targetProp = targetMeta.properties[prop.targetKey];
+
+    if (!targetProp) {
+      throw MetadataError.targetKeyNotFound(meta, prop);
+    }
+
+    // targetKey must point to a unique property
+    if (!targetProp.unique && !targetMeta.uniques?.some(u => u.properties?.includes(prop.targetKey!))) {
+      throw MetadataError.targetKeyNotUnique(meta, prop);
+    }
   }
 
   private validateBidirectional(meta: EntityMetadata, prop: EntityProperty): void {

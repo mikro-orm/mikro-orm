@@ -315,4 +315,9 @@ export interface GetReferenceOptions {
   wrapped?: boolean;
   convertCustomTypes?: boolean;
   schema?: string;
+  /**
+   * Property name to use for identity map lookup instead of the primary key.
+   * This is useful for creating references by unique non-PK properties.
+   */
+  key?: string;
 }

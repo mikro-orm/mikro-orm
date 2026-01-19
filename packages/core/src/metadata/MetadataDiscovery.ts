@@ -3,6 +3,7 @@ import {
   type Dictionary,
   type EntityClass,
   type EntityCtor,
+  type EntityKey,
   EntityMetadata,
   type EntityName,
   type EntityProperty,
@@ -552,7 +553,16 @@ export class MetadataDiscovery {
 
   private initManyToOneFields(prop: EntityProperty): void {
     const meta2 = prop.targetMeta!;
-    const fieldNames = Utils.flatten(meta2.primaryKeys.map(primaryKey => meta2.properties[primaryKey].fieldNames));
+    let fieldNames: string[];
+
+    // If targetKey is specified, use that property's field names instead of PKs
+    if (prop.targetKey) {
+      const targetProp = meta2.properties[prop.targetKey];
+      fieldNames = targetProp.fieldNames;
+    } else {
+      fieldNames = Utils.flatten(meta2.primaryKeys.map(primaryKey => meta2.properties[primaryKey].fieldNames));
+    }
+
     Utils.defaultValue(prop, 'referencedTableName', meta2.tableName);
 
     if (!prop.joinColumns) {
@@ -1491,7 +1501,8 @@ export class MetadataDiscovery {
 
     // when the target is a polymorphic embedded entity, `prop.target` is an array of classes, we need to get the metadata by the type name instead
     const meta2 = this.metadata.find(prop.target) ?? this.metadata.getByClassName(prop.type);
-    prop.referencedPKs = meta2.primaryKeys;
+    // If targetKey is specified, use that property instead of PKs for referencedPKs
+    prop.referencedPKs = prop.targetKey ? [prop.targetKey as EntityKey] : meta2.primaryKeys;
     prop.targetMeta = meta2;
 
     if (!prop.formula && prop.persist === false && [ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind) && !prop.embedded) {
@@ -1501,10 +1512,16 @@ export class MetadataDiscovery {
 
   private initColumnType(prop: EntityProperty): void {
     this.initUnsigned(prop);
-    prop.targetMeta?.getPrimaryProps().map(pk => {
-      prop.length ??= pk.length;
-      prop.precision ??= pk.precision;
-      prop.scale ??= pk.scale;
+
+    // Get the target properties for FK relations - use targetKey property if specified, otherwise PKs
+    const targetProps = prop.targetMeta
+      ? (prop.targetKey ? [prop.targetMeta.properties[prop.targetKey]] : prop.targetMeta.getPrimaryProps())
+      : [];
+
+    targetProps.map(targetProp => {
+      prop.length ??= targetProp.length;
+      prop.precision ??= targetProp.precision;
+      prop.scale ??= targetProp.scale;
     });
 
     if (prop.kind === ReferenceKind.SCALAR && (prop.type == null || prop.type === 'object') && prop.columnTypes?.[0]) {
@@ -1546,21 +1563,26 @@ export class MetadataDiscovery {
     const targetMeta = prop.targetMeta!;
     prop.columnTypes = [];
 
-    for (const pk of targetMeta.getPrimaryProps()) {
-      this.initCustomType(targetMeta, pk);
-      this.initColumnType(pk);
+    // Use targetKey property if specified, otherwise use primary key properties
+    const referencedProps = prop.targetKey
+      ? [targetMeta.properties[prop.targetKey]]
+      : targetMeta.getPrimaryProps();
 
-      const mappedType = this.getMappedType(pk);
-      let columnTypes = pk.columnTypes;
+    for (const referencedProp of referencedProps) {
+      this.initCustomType(targetMeta, referencedProp);
+      this.initColumnType(referencedProp);
 
-      if (pk.autoincrement) {
-        columnTypes = [mappedType.getColumnType({ ...pk, autoincrement: false }, this.platform)];
+      const mappedType = this.getMappedType(referencedProp);
+      let columnTypes = referencedProp.columnTypes;
+
+      if (referencedProp.autoincrement) {
+        columnTypes = [mappedType.getColumnType({ ...referencedProp, autoincrement: false }, this.platform)];
       }
 
       prop.columnTypes.push(...columnTypes);
 
-      if (!targetMeta.compositePK) {
-        prop.customType = pk.customType;
+      if (!targetMeta.compositePK || prop.targetKey) {
+        prop.customType = referencedProp.customType;
       }
     }
   }

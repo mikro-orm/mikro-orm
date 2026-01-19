@@ -217,9 +217,27 @@ export class EntityRepository<Entity extends object> {
   }
 
   /**
+   * Gets a reference to the entity identified by the given type and alternate key property without actually loading it.
+   * The key option specifies which property to use for identity map lookup instead of the primary key.
+   */
+  getReference<K extends string & keyof Entity>(
+    id: Entity[K],
+    options: Omit<GetReferenceOptions, 'key' | 'wrapped'> & { key: K; wrapped: true },
+  ): Ref<Entity>;
+
+  /**
+   * Gets a reference to the entity identified by the given type and alternate key property without actually loading it.
+   * The key option specifies which property to use for identity map lookup instead of the primary key.
+   */
+  getReference<K extends string & keyof Entity>(
+    id: Entity[K],
+    options: Omit<GetReferenceOptions, 'key'> & { key: K; wrapped?: false },
+  ): Entity;
+
+  /**
    * Gets a reference to the entity identified by the given type and identifier without actually loading it, if the entity is not yet loaded
    */
-  getReference(id: Primary<Entity>, options: Omit<GetReferenceOptions, 'wrapped'> & { wrapped: true }): Ref<Entity>;
+  getReference(id: Primary<Entity>, options: Omit<GetReferenceOptions, 'wrapped' | 'key'> & { wrapped: true }): Ref<Entity>;
 
   /**
    * Gets a reference to the entity identified by the given type and identifier without actually loading it, if the entity is not yet loaded
@@ -229,7 +247,7 @@ export class EntityRepository<Entity extends object> {
   /**
    * Gets a reference to the entity identified by the given type and identifier without actually loading it, if the entity is not yet loaded
    */
-  getReference(id: Primary<Entity>, options: Omit<GetReferenceOptions, 'wrapped'> & { wrapped: false }): Entity;
+  getReference(id: Primary<Entity>, options: Omit<GetReferenceOptions, 'wrapped' | 'key'> & { wrapped: false }): Entity;
 
   /**
    * Gets a reference to the entity identified by the given type and identifier without actually loading it, if the entity is not yet loaded

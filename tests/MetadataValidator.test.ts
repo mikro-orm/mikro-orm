@@ -289,6 +289,197 @@ describe('MetadataValidator', () => {
     expect(() => storage.get(Test)).toThrow('Metadata for entity Test not found');
   });
 
+  describe('targetKey validation', () => {
+    test('throws when targetKey is used on ManyToMany relation', async () => {
+      class Author {}
+      class Book {}
+      const meta = {
+        Author: {
+          name: 'Author',
+          className: 'Author',
+          class: Author,
+          primaryKeys: ['id'],
+          properties: {
+            id: { name: 'id', kind: ReferenceKind.SCALAR, type: 'number', primary: true },
+            books: {
+              name: 'books',
+              kind: ReferenceKind.MANY_TO_MANY,
+              type: 'Book',
+              targetKey: 'isbn',
+            },
+          },
+        },
+        Book: {
+          name: 'Book',
+          className: 'Book',
+          class: Book,
+          primaryKeys: ['id'],
+          properties: {
+            id: { name: 'id', kind: ReferenceKind.SCALAR, type: 'number', primary: true },
+            isbn: { name: 'isbn', kind: ReferenceKind.SCALAR, type: 'string', unique: true },
+          },
+        },
+      } as any;
+      meta.Author.root = meta.Author;
+      meta.Book.root = meta.Book;
+      meta.Author.properties.books.targetMeta = meta.Book;
+
+      expect(() => validator.validateEntityDefinition(new MetadataStorage(meta), Author, options))
+        .toThrow(`Author.books uses 'targetKey' option which is not supported for ManyToMany relations`);
+    });
+
+    test('throws when targetKey references non-existent property', async () => {
+      class Author {}
+      class Book {}
+      const meta = {
+        Author: {
+          name: 'Author',
+          className: 'Author',
+          class: Author,
+          primaryKeys: ['id'],
+          properties: {
+            id: { name: 'id', kind: ReferenceKind.SCALAR, type: 'number', primary: true },
+          },
+        },
+        Book: {
+          name: 'Book',
+          className: 'Book',
+          class: Book,
+          primaryKeys: ['id'],
+          properties: {
+            id: { name: 'id', kind: ReferenceKind.SCALAR, type: 'number', primary: true },
+            author: {
+              name: 'author',
+              kind: ReferenceKind.MANY_TO_ONE,
+              type: 'Author',
+              targetKey: 'nonExistent',
+            },
+          },
+        },
+      } as any;
+      meta.Author.root = meta.Author;
+      meta.Book.root = meta.Book;
+      meta.Book.properties.author.targetMeta = meta.Author;
+
+      expect(() => validator.validateEntityDefinition(new MetadataStorage(meta), Book, options))
+        .toThrow(`Book.author has 'targetKey' set to 'nonExistent', but Author.nonExistent does not exist`);
+    });
+
+    test('throws when targetKey references non-unique property', async () => {
+      class Author {}
+      class Book {}
+      const meta = {
+        Author: {
+          name: 'Author',
+          className: 'Author',
+          class: Author,
+          primaryKeys: ['id'],
+          properties: {
+            id: { name: 'id', kind: ReferenceKind.SCALAR, type: 'number', primary: true },
+            name: { name: 'name', kind: ReferenceKind.SCALAR, type: 'string' },
+          },
+        },
+        Book: {
+          name: 'Book',
+          className: 'Book',
+          class: Book,
+          primaryKeys: ['id'],
+          properties: {
+            id: { name: 'id', kind: ReferenceKind.SCALAR, type: 'number', primary: true },
+            author: {
+              name: 'author',
+              kind: ReferenceKind.MANY_TO_ONE,
+              type: 'Author',
+              targetKey: 'name',
+            },
+          },
+        },
+      } as any;
+      meta.Author.root = meta.Author;
+      meta.Book.root = meta.Book;
+      meta.Book.properties.author.targetMeta = meta.Author;
+
+      expect(() => validator.validateEntityDefinition(new MetadataStorage(meta), Book, options))
+        .toThrow(`Book.author has 'targetKey' set to 'name', but Author.name is not marked as unique. The target property must have a unique constraint.`);
+    });
+
+    test('does not throw when targetKey references unique property', async () => {
+      class Author {}
+      class Book {}
+      const meta = {
+        Author: {
+          name: 'Author',
+          className: 'Author',
+          class: Author,
+          primaryKeys: ['id'],
+          properties: {
+            id: { name: 'id', kind: ReferenceKind.SCALAR, type: 'number', primary: true },
+            uuid: { name: 'uuid', kind: ReferenceKind.SCALAR, type: 'string', unique: true },
+          },
+        },
+        Book: {
+          name: 'Book',
+          className: 'Book',
+          class: Book,
+          primaryKeys: ['id'],
+          properties: {
+            id: { name: 'id', kind: ReferenceKind.SCALAR, type: 'number', primary: true },
+            author: {
+              name: 'author',
+              kind: ReferenceKind.MANY_TO_ONE,
+              type: 'Author',
+              targetKey: 'uuid',
+            },
+          },
+        },
+      } as any;
+      meta.Author.root = meta.Author;
+      meta.Book.root = meta.Book;
+      meta.Book.properties.author.targetMeta = meta.Author;
+
+      expect(() => validator.validateEntityDefinition(new MetadataStorage(meta), Book, options)).not.toThrow();
+    });
+
+    test('does not throw when targetKey references property in composite unique index', async () => {
+      class Author {}
+      class Book {}
+      const meta = {
+        Author: {
+          name: 'Author',
+          className: 'Author',
+          class: Author,
+          primaryKeys: ['id'],
+          uniques: [{ properties: ['email', 'tenant'] }],
+          properties: {
+            id: { name: 'id', kind: ReferenceKind.SCALAR, type: 'number', primary: true },
+            email: { name: 'email', kind: ReferenceKind.SCALAR, type: 'string' },
+            tenant: { name: 'tenant', kind: ReferenceKind.SCALAR, type: 'string' },
+          },
+        },
+        Book: {
+          name: 'Book',
+          className: 'Book',
+          class: Book,
+          primaryKeys: ['id'],
+          properties: {
+            id: { name: 'id', kind: ReferenceKind.SCALAR, type: 'number', primary: true },
+            author: {
+              name: 'author',
+              kind: ReferenceKind.MANY_TO_ONE,
+              type: 'Author',
+              targetKey: 'email',
+            },
+          },
+        },
+      } as any;
+      meta.Author.root = meta.Author;
+      meta.Book.root = meta.Book;
+      meta.Book.properties.author.targetMeta = meta.Author;
+
+      expect(() => validator.validateEntityDefinition(new MetadataStorage(meta), Book, options)).not.toThrow();
+    });
+  });
+
   describe('Duplicate Entity Strategy', () => {
     test('allows duplicate classNames', async () => {
       // Arrange

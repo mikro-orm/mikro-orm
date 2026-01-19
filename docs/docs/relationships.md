@@ -575,6 +575,151 @@ export const BookTag = new EntitySchema<IBookTag>({
 
 Again, more information about how collections work can be found on [collections page](./collections.md).
 
+## Referencing Non-Primary Key Columns
+
+By default, ManyToOne and OneToOne relations reference the primary key of the target entity. You can use the `targetKey` option to reference a different unique column instead.
+
+<Tabs
+  groupId="entity-def"
+  defaultValue="define-entity"
+  values={[
+    {label: 'defineEntity', value: 'define-entity'},
+    {label: 'reflect-metadata', value: 'reflect-metadata'},
+    {label: 'ts-morph', value: 'ts-morph'},
+    {label: 'EntitySchema', value: 'entity-schema'},
+  ]
+  }>
+  <TabItem value="reflect-metadata">
+
+```ts
+@Entity()
+export class Author {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property()
+  @Unique()
+  uuid!: string;
+
+  @OneToMany(() => Book, book => book.author)
+  books = new Collection<Book>(this);
+
+}
+
+@Entity()
+export class Book {
+
+  @PrimaryKey()
+  id!: number;
+
+  // This relation references Author by uuid instead of id (PK)
+  @ManyToOne(() => Author, { targetKey: 'uuid' })
+  author!: Author;
+
+}
+```
+
+  </TabItem>
+  <TabItem value="ts-morph">
+
+```ts
+@Entity()
+export class Author {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property()
+  @Unique()
+  uuid!: string;
+
+  @OneToMany(() => Book, book => book.author)
+  books = new Collection<Book>(this);
+
+}
+
+@Entity()
+export class Book {
+
+  @PrimaryKey()
+  id!: number;
+
+  // This relation references Author by uuid instead of id (PK)
+  @ManyToOne({ targetKey: 'uuid' })
+  author!: Author;
+
+}
+```
+
+  </TabItem>
+  <TabItem value="define-entity">
+
+```ts
+import { defineEntity, InferEntity, p, Collection } from '@mikro-orm/core';
+
+export const Author = defineEntity({
+  name: 'Author',
+  properties: {
+    id: p.integer().primary(),
+    uuid: p.string().unique(),
+    books: () => p.oneToMany(Book).mappedBy('author'),
+  },
+});
+
+export interface IAuthor extends InferEntity<typeof Author> {}
+
+export const Book = defineEntity({
+  name: 'Book',
+  properties: {
+    id: p.integer().primary(),
+    // This relation references Author by uuid instead of id (PK)
+    author: () => p.manyToOne(Author).targetKey('uuid'),
+  },
+});
+
+export interface IBook extends InferEntity<typeof Book> {}
+```
+
+  </TabItem>
+  <TabItem value="entity-schema">
+
+```ts
+export interface IAuthor {
+  id: number;
+  uuid: string;
+  books: Collection<Book>;
+}
+
+export const Author = new EntitySchema<IAuthor>({
+  name: 'Author',
+  properties: {
+    id: { type: 'number', primary: true },
+    uuid: { type: 'string', unique: true },
+    books: { kind: '1:m', entity: () => Book, mappedBy: 'author' },
+  },
+});
+
+export interface IBook {
+  id: number;
+  author: Author;
+}
+
+export const Book = new EntitySchema<IBook>({
+  name: 'Book',
+  properties: {
+    id: { type: 'number', primary: true },
+    // This relation references Author by uuid instead of id (PK)
+    author: { kind: 'm:1', entity: () => Author, targetKey: 'uuid' },
+  },
+});
+```
+
+  </TabItem>
+</Tabs>
+
+The target column must have a unique constraint. The FK column type will automatically match the type of the referenced column.
+
 ## Relations in ESM projects
 
 If you use ESM in your TypeScript project with `reflect-metadata`, you might fall into issues with circular dependencies, seeing errors like this:

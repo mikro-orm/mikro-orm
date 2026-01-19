@@ -385,6 +385,9 @@ export interface ManyToOneOptions<Owner, Target> extends ReferenceOptions<Owner,
   /** Override the default database column name on the target entity (see {@doclink naming-strategy | Naming Strategy}). This option is suitable for composite keys, where one property is represented by multiple columns. */
   referencedColumnNames?: string[];
 
+  /** Specify the property name on the target entity that this FK references instead of the primary key. */
+  targetKey?: string & keyof Target;
+
   /** What to do when the target entity gets deleted. */
   deleteRule?: 'cascade' | 'no action' | 'set null' | 'set default' | AnyString;
 
@@ -451,6 +454,9 @@ export interface OneToOneOptions<Owner, Target> extends Partial<Omit<OneToManyOp
 
   /** When a part of a composite column is shared in other properties, use this option to specify what columns are considered as owned by this property. This is useful when your composite property is nullable, but parts of it are not. */
   ownColumns?: string[];
+
+  /** Specify the property name on the target entity that this FK references instead of the primary key. */
+  targetKey?: string & keyof Target;
 
   /** What to do when the target entity gets deleted. */
   deleteRule?: 'cascade' | 'no action' | 'set null' | 'set default' | AnyString;
