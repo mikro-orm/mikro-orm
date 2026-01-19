@@ -1132,6 +1132,8 @@ export class MetadataDiscovery {
     Object.values(meta.properties).forEach(prop => {
       const newProp = { ...prop };
       const rootProp = meta.root.properties[prop.name];
+      this.initFieldName(prop, prop.object);
+      this.initFieldName(rootProp, rootProp.object);
 
       if (rootProp && (rootProp.type !== prop.type || (rootProp.fieldNames && prop.fieldNames && !compareArrays(rootProp.fieldNames, prop.fieldNames)))) {
         const name = newProp.name;
@@ -1142,15 +1144,13 @@ export class MetadataDiscovery {
 
         // Track all field variants and map discriminator values to field names
         if (!rootProp.stiFieldNames) {
-          this.initFieldName(prop, prop.object);
-          this.initFieldName(rootProp, rootProp.object);
           rootProp.stiFieldNames = [...rootProp.fieldNames];
           rootProp.stiFieldNameMap = {};
           // Find which discriminator owns the original fieldNames
           for (const [discValue, childClass] of Object.entries(meta.root.discriminatorMap!)) {
             const childMeta = this.metadata.find(childClass);
-            if (childMeta?.properties[prop.name]?.fieldNames &&
-                compareArrays(childMeta.properties[prop.name].fieldNames, rootProp.fieldNames)) {
+
+            if (childMeta?.properties[prop.name]?.fieldNames && compareArrays(childMeta.properties[prop.name].fieldNames, rootProp.fieldNames)) {
               rootProp.stiFieldNameMap[discValue] = rootProp.fieldNames[0];
               break;
             }
