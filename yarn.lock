@@ -1726,7 +1726,7 @@ __metadata:
   dependencies:
     "@mikro-orm/core": "npm:^6.6.4"
     "@mikro-orm/knex": "npm:6.6.4"
-    kysely: "npm:0.28.9"
+    kysely: "npm:0.28.10"
     oracledb: "npm:6.10.0"
   peerDependencies:
     "@mikro-orm/core": ^6.0.0
@@ -7821,13 +7821,6 @@ __metadata:
   version: 0.28.10
   resolution: "kysely@npm:0.28.10"
   checksum: 10/757ef37005f06293ee581f2a468aeb1f081c4384a6978f0d99fac314f820a23ec8eea94b52c6ec840746dea5a7cc3e24dc2e1f2b926c9b87562ce9676f279454
-  languageName: node
-  linkType: hard
-
-"kysely@npm:0.28.9":
-  version: 0.28.9
-  resolution: "kysely@npm:0.28.9"
-  checksum: 10/df37b4f3d9b038a37d2aa05af8cb7d338b5310cf264f26b652b440c6038bf065975c6b845972118eaa81e47d9a760ba1ebe60368dadf3fcf7db7c9c70bf5206a
   languageName: node
   linkType: hard
 
