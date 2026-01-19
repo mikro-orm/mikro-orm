@@ -14,6 +14,7 @@ import type { Has, IsExact } from 'conditional-type-checks';
 import { assert } from 'conditional-type-checks';
 import type { ObjectId } from 'bson';
 import type {
+  AutoPath,
   EntityData,
   EntityDTO,
   FilterQuery,
@@ -416,6 +417,36 @@ describe('check typings', () => {
     await em.findOne('MessageRecipient' as EntityName<MessageRecipient>, '1', {
       populate: ['message', 'message.phoneService', 'message.phoneService.phoneServiceVendor'],
     });
+  });
+
+  test('AutoPath should not include undefined as a valid path for optional properties', async () => {
+    interface Child {
+      id: string;
+      name: string;
+      parent?: Ref<Parent>;
+    }
+
+    interface Parent {
+      id: string;
+      child?: Ref<Child>;
+      children: Collection<Child>;
+    }
+
+    type ChildPaths = AutoPath<Child, '', '$infer' | '*'>;
+    type ParentNestedPaths = AutoPath<Parent, 'child.', '$infer' | '*'>;
+
+    // 'undefined' should not be a valid path
+    // @ts-expect-error
+    let childPath: ChildPaths = 'undefined';
+    // @ts-expect-error
+    let nestedPath: ParentNestedPaths = 'child.undefined';
+
+    // Valid paths should still work
+    childPath = 'id';
+    childPath = 'name';
+    childPath = 'parent';
+    nestedPath = 'child.id';
+    nestedPath = 'child.name';
   });
 
   test('RequiredEntityData requires required properties, and allows null only if explicitly used in the property type', async () => {

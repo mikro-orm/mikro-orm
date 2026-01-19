@@ -1096,7 +1096,7 @@ export type PopulateOptions<T> = {
 type Loadable<T extends object> = Collection<T, any> | Reference<T> | Ref<T> | readonly T[]; // we need to support raw arrays in embeddables too to allow population
 type ExtractType<T> = T extends Loadable<infer U> ? U : T;
 
-type ExtractStringKeys<T> = { [K in keyof T]: CleanKeys<T, K> }[keyof T] & {};
+type ExtractStringKeys<T> = { [K in keyof T]-?: CleanKeys<T, K> }[keyof T] & {};
 type StringKeys<T, E extends string = never> = T extends Collection<any, any>
   ? ExtractStringKeys<ExtractType<T>> | E
   : T extends Reference<any>
@@ -1112,7 +1112,7 @@ type Prev = [never, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
 // for pivot joining via populate hint, e.g. `tags:ref`
 type CollectionKeys<T> = T extends object
   ? {
-    [K in keyof T]: T[K] extends Collection<any>
+    [K in keyof T]-?: T[K] extends Collection<any>
       ? IsAny<T[K]> extends true
         ? never
         : K & string
