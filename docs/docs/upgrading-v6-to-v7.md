@@ -382,6 +382,33 @@ Previosly, it was possible to prefix the alias with target entity name. This is 
 +qb.as(User, 'fullName');
 ```
 
+## `Hidden` type brand only works for primitive types
+
+The `Hidden` type brand now only works for primitive property types (`string`, `number`, `boolean`, `bigint`, `symbol`). For object-type properties like `Date`, `Record<string, unknown>`, or JSON properties, you need to use the `HiddenProps` symbol instead.
+
+This change fixes an issue where object-type properties (including JSON and Date) were incorrectly detected as hidden in the `EntityDTO` type.
+
+```diff
+@Entity()
+class User {
+
++  // For object-type hidden properties, use HiddenProps symbol
++  [HiddenProps]?: 'secretData' | 'hiddenDate';
+
+   @Property({ hidden: true })
+   password!: Hidden<string>; // still works for primitives
+
+   @Property({ type: JsonType, hidden: true })
+-  secretData!: Hidden<Record<string, unknown>>; // no longer works
++  secretData!: Record<string, unknown>; // use HiddenProps instead
+
+   @Property({ hidden: true })
+-  hiddenDate!: Hidden<Date>; // no longer works
++  hiddenDate!: Date; // use HiddenProps instead
+
+}
+```
+
 ## Private constructors no longer allowed with `defineEntity`/`EntitySchema`
 
 To be able to infer constructor parameters, we need the constructor to be public. The ORM will use the constructor internally (e.g. in `em.create`), so this was partially a lie. If you need to use a private constructor, please cast the `class` parameter to `any` and use the first generict parameter:

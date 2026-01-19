@@ -30,7 +30,7 @@ console.log(wrap(book).toObject().hiddenField); // undefined
 console.log(wrap(book).toJSON().hiddenField); // undefined
 ```
 
-Alternatively, you can use the `Hidden` type. It works the same as the `Opt` type (an alternative for `OptionalProps` symbol), and can be used in two ways:
+Alternatively, you can use the `Hidden` type for **primitive property types** (`string`, `number`, `boolean`, `bigint`, `symbol`). It works the same as the `Opt` type (an alternative for `OptionalProps` symbol), and can be used in two ways:
 
 - with generics: `hiddenField?: Hidden<string>;`
 - with intersections: `hiddenField?: string & Hidden;`
@@ -42,13 +42,30 @@ Both will work the same, and can be combined with the `HiddenProps` symbol appro
 class Book {
 
   @Property({ hidden: true })
-  hiddenField: Hidden<Date> = Date.now();
+  hiddenField: Hidden<number> = Date.now();
 
   @Property({ hidden: true, nullable: true })
   otherHiddenField?: string & Hidden;
 
 }
 ```
+
+> **Note:** The `Hidden` type brand only works for primitive types. For object-type properties like `Date`, `Record<string, unknown>`, or JSON properties, you must use the `HiddenProps` symbol approach instead:
+>
+> ```ts
+> @Entity()
+> class User {
+>
+>   [HiddenProps]?: 'secretData' | 'hiddenDate';
+>
+>   @Property({ type: JsonType, hidden: true })
+>   secretData!: Record<string, unknown>;
+>
+>   @Property({ hidden: true })
+>   hiddenDate!: Date;
+>
+> }
+> ```
 
 ## Shadow Properties
 

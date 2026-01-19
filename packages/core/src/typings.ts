@@ -166,6 +166,9 @@ export type IPrimaryKey<T extends IPrimaryKeyValue = IPrimaryKeyValue> = T;
 
 export type Scalar = boolean | number | string | bigint | symbol | Date | RegExp | Uint8Array | { toHexString(): string };
 
+// Primitive types that don't extend object - used for Hidden brand detection
+type Primitive = boolean | number | string | bigint | symbol;
+
 export type ExpandScalar<T> = null | (T extends string
   ? T | RegExp
   : T extends Date
@@ -417,7 +420,7 @@ export type Ref<T> = T extends any // we need this to get around `Ref<boolean>` 
       : EntityRef<T & object>
   : never;
 
-type ExtractHiddenProps<T> = (T extends { [HiddenProps]?: infer K } ? K : never) | ({ [K in keyof T]: T[K] extends Hidden ? K : never }[keyof T] & {});
+type ExtractHiddenProps<T> = (T extends { [HiddenProps]?: infer K } ? K : never) | ({ [K in keyof T]: T[K] extends Primitive ? (T[K] extends Hidden ? K : never) : never }[keyof T] & {});
 type ExcludeHidden<T, K extends keyof T> = K extends ExtractHiddenProps<T> ? never : K;
 type ExtractConfig<T> = T extends { [Config]?: infer K } ? (K & TypeConfig) : TypeConfig;
 type PreferExplicitConfig<E, I> = IsNever<E, I, E>;
