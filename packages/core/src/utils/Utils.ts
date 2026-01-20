@@ -690,7 +690,7 @@ export class Utils {
     const process = globalThis.process ?? {};
 
     /* v8 ignore next */
-    return process.argv[0].endsWith('ts-node') // running via ts-node directly
+    return process.argv?.[0]?.endsWith('ts-node') // running via ts-node directly
       || !!process.env?.MIKRO_ORM_CLI_ALWAYS_ALLOW_TS // forced explicitly or enabled via `registerTypeScriptSupport()`
       || !!process.env?.TS_JEST // check if ts-jest is used
       || !!process.env?.VITEST // check if vitest is used
