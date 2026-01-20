@@ -1704,8 +1704,8 @@ __metadata:
     "@mikro-orm/core": "npm:^6.6.4"
     "@mikro-orm/sql": "npm:6.6.4"
     kysely: "npm:0.28.10"
-    pg: "npm:8.17.1"
-    pg-cursor: "npm:2.16.1"
+    pg: "npm:8.17.2"
+    pg-cursor: "npm:2.16.2"
     postgres-array: "npm:3.0.4"
     postgres-date: "npm:2.1.0"
     postgres-interval: "npm:4.0.2"
@@ -9756,19 +9756,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pg-connection-string@npm:^2.10.0":
-  version: 2.10.0
-  resolution: "pg-connection-string@npm:2.10.0"
-  checksum: 10/6441c4c58d57efe720b9d557719ce3df4d08551f4d572d11ed05d3fb10d9b180131c1780df36c79617e48078b2e2a68f84c60c7123fdb1fbbc5cb67c8eae89c2
+"pg-connection-string@npm:^2.10.1":
+  version: 2.10.1
+  resolution: "pg-connection-string@npm:2.10.1"
+  checksum: 10/8785cfac30f64a48f47031c24d7c5c53241fabb336d5be8f30ca06af0e16aea8d9647b645b4b44ed931717a47a0afb95ddb57e60b6af103767a4d8606dec22dc
   languageName: node
   linkType: hard
 
-"pg-cursor@npm:2.16.1":
-  version: 2.16.1
-  resolution: "pg-cursor@npm:2.16.1"
+"pg-cursor@npm:2.16.2":
+  version: 2.16.2
+  resolution: "pg-cursor@npm:2.16.2"
   peerDependencies:
     pg: ^8
-  checksum: 10/cfd7d3b585a9759926f123712da1af3bb927bec3f049df8686ecf6b0b59546596c175162b4504e1da1b10417ad74ae9af6dbec5e50f4bd2ca68386af6478df15
+  checksum: 10/b42fe0ebaae2aa6294535061f0ebf0ce1068d8866e85a5ecebc9cc222cf08ed5169a692e5c37590ea1d07e9ce4212afc3fefd6415d6190ffcd9b8917a4ac598a
   languageName: node
   linkType: hard
 
@@ -9815,12 +9815,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pg@npm:8.17.1":
-  version: 8.17.1
-  resolution: "pg@npm:8.17.1"
+"pg@npm:8.17.2":
+  version: 8.17.2
+  resolution: "pg@npm:8.17.2"
   dependencies:
     pg-cloudflare: "npm:^1.3.0"
-    pg-connection-string: "npm:^2.10.0"
+    pg-connection-string: "npm:^2.10.1"
     pg-pool: "npm:^3.11.0"
     pg-protocol: "npm:^1.11.0"
     pg-types: "npm:2.2.0"
@@ -9833,7 +9833,7 @@ __metadata:
   peerDependenciesMeta:
     pg-native:
       optional: true
-  checksum: 10/13228deb3625cc320022da7ea99922f46f31e3a95d18fb05a92bb6ea81d6e3c6c42ad8edded528d9480911be5a10f64516fe27b96968c85a4d79041eb22b59d0
+  checksum: 10/0f0b70f1310791b263f970f8235ab054de26a94861e73727def8df1b976ab9dda7e9c34ecffb78260fe8569521798f8e811da6369b79601023a07ea0f5e7167a
   languageName: node
   linkType: hard
 
