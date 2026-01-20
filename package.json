@@ -113,7 +113,7 @@
     "@mikro-orm/sql-highlighter": "1.0.1",
     "@stylistic/eslint-plugin": "5.7.0",
     "@swc-node/register": "1.11.1",
-    "@swc/core": "1.15.8",
+    "@swc/core": "1.15.10",
     "@types/better-sqlite3": "7.6.13",
     "@types/node": "24.10.9",
     "@types/pg": "8.16.0",
@@ -143,7 +143,7 @@
     "tsimp": "2.0.12",
     "tsx": "4.21.0",
     "typescript": "5.9.3",
-    "typescript-eslint": "8.53.0",
+    "typescript-eslint": "8.53.1",
     "unplugin-swc": "1.5.9",
     "uuid": "11.1.0",
     "vitest": "4.0.17"
