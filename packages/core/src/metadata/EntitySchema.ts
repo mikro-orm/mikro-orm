@@ -244,6 +244,7 @@ export class EntitySchema<Entity = any, Base = never, Class extends EntityCtor =
   }
 
   setClass(cls: Class) {
+    const oldClass = this._meta.class;
     const sameClass = this._meta.className === cls.name;
     this._meta.class = cls;
     this._meta.prototype = cls.prototype;
@@ -254,6 +255,11 @@ export class EntitySchema<Entity = any, Base = never, Class extends EntityCtor =
     }
 
     if (!this.internal) {
+      // Remove old class from registry if it's being replaced with a different class
+      if (oldClass && oldClass !== cls && EntitySchema.REGISTRY.get(oldClass) === this) {
+        EntitySchema.REGISTRY.delete(oldClass);
+      }
+
       EntitySchema.REGISTRY.set(cls, this);
     }
 
