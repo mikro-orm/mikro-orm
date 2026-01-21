@@ -401,7 +401,7 @@ export abstract class AbstractSqlDriver<
         return;
       }
 
-      const mapToPk = !!(ref || prop.mapToPk);
+      const mapToPk = !hint.dataOnly && !!(ref || prop.mapToPk);
       const targetProps = mapToPk
         ? meta2.getPrimaryProps()
         : meta2.props.filter(prop => this.platform.shouldHaveColumn(prop, hint.children as any || []));
@@ -1091,7 +1091,7 @@ export abstract class AbstractSqlDriver<
       fields,
       exclude: childExclude as any[],
       orderBy: this.getPivotOrderBy(prop, pivotProp1, orderBy, options?.orderBy),
-      populate: [{ field: populateField, strategy: LoadStrategy.JOINED, joinType: JoinType.innerJoin, children: populate } as any],
+      populate: [{ field: populateField, strategy: LoadStrategy.JOINED, joinType: JoinType.innerJoin, children: populate, dataOnly: pivotProp1.mapToPk && !pivotJoin } as any],
       populateWhere: undefined,
       // @ts-ignore
       _populateWhere: 'infer',
@@ -1358,7 +1358,7 @@ export abstract class AbstractSqlDriver<
 
       const childExclude = options.exclude ? Utils.extractChildElements(options.exclude as string[], prop.name) : options.exclude;
 
-      if (!ref && !prop.mapToPk) {
+      if (!ref && (!prop.mapToPk || hint.dataOnly)) {
         fields.push(...this.getFieldsForJoinedLoad(qb, meta2, {
           ...options,
           explicitFields: childExplicitFields.length === 0 ? undefined : childExplicitFields,
@@ -1367,7 +1367,7 @@ export abstract class AbstractSqlDriver<
           parentTableAlias: tableAlias,
           parentJoinPath: path,
         }));
-      } else if (hint.filter || prop.mapToPk || (ref && [ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind))) {
+      } else if (hint.filter || (prop.mapToPk && !hint.dataOnly) || (ref && [ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind))) {
         fields.push(...prop.referencedColumnNames!.map(col => qb.helper.mapper(`${tableAlias}.${col}`, qb.type, undefined, `${tableAlias}__${col}`)));
       }
     }
