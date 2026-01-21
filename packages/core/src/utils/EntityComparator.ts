@@ -623,6 +623,23 @@ export class EntityComparator {
         } else {
           ret += `    ret${dataKey} = entity${entityKey};\n`;
         }
+      } else if (prop.targetKey) {
+        // When targetKey is set, extract that property value instead of the PK
+        const targetProp = prop.targetMeta?.properties[prop.targetKey];
+        ret += `    if (entity${entityKey} === null) {\n`;
+        ret += `      ret${dataKey} = null;\n`;
+        ret += `    } else if (typeof entity${entityKey} !== 'undefined') {\n`;
+        ret += `      const val${level} = entity${entityKey}${unwrap};\n`;
+
+        if (targetProp?.customType) {
+          // If targetKey property has a custom type, convert to database value
+          const convertorKey = this.registerCustomType(targetProp, context);
+          ret += `      ret${dataKey} = convertToDatabaseValue_${convertorKey}(val${level}?.${prop.targetKey});\n`;
+        } else {
+          ret += `      ret${dataKey} = val${level}?.${prop.targetKey};\n`;
+        }
+
+        ret += `    }\n`;
       } else {
         const toArray = (val: unknown): unknown => {
           if (Utils.isPlainObject(val)) {

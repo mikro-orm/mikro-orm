@@ -1684,9 +1684,29 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
   }
 
   /**
+   * Gets a reference to the entity identified by the given type and alternate key property without actually loading it.
+   * The key option specifies which property to use for identity map lookup instead of the primary key.
+   */
+  getReference<Entity extends object, K extends string & keyof Entity>(
+    entityName: EntityName<Entity>,
+    id: Entity[K],
+    options: Omit<GetReferenceOptions, 'key' | 'wrapped'> & { key: K; wrapped: true },
+  ): Ref<Entity>;
+
+  /**
+   * Gets a reference to the entity identified by the given type and alternate key property without actually loading it.
+   * The key option specifies which property to use for identity map lookup instead of the primary key.
+   */
+  getReference<Entity extends object, K extends string & keyof Entity>(
+    entityName: EntityName<Entity>,
+    id: Entity[K],
+    options: Omit<GetReferenceOptions, 'key'> & { key: K; wrapped?: false },
+  ): Entity;
+
+  /**
    * Gets a reference to the entity identified by the given type and identifier without actually loading it, if the entity is not yet loaded
    */
-  getReference<Entity extends object>(entityName: EntityName<Entity>, id: Primary<Entity>, options: Omit<GetReferenceOptions, 'wrapped'> & { wrapped: true }): Ref<Entity>;
+  getReference<Entity extends object>(entityName: EntityName<Entity>, id: Primary<Entity>, options: Omit<GetReferenceOptions, 'wrapped' | 'key'> & { wrapped: true }): Ref<Entity>;
 
   /**
    * Gets a reference to the entity identified by the given type and identifier without actually loading it, if the entity is not yet loaded
@@ -1696,7 +1716,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
   /**
    * Gets a reference to the entity identified by the given type and identifier without actually loading it, if the entity is not yet loaded
    */
-  getReference<Entity extends object>(entityName: EntityName<Entity>, id: Primary<Entity>, options: Omit<GetReferenceOptions, 'wrapped'> & { wrapped: false }): Entity;
+  getReference<Entity extends object>(entityName: EntityName<Entity>, id: Primary<Entity>, options: Omit<GetReferenceOptions, 'wrapped' | 'key'> & { wrapped: false }): Entity;
 
   /**
    * Gets a reference to the entity identified by the given type and identifier without actually loading it, if the entity is not yet loaded

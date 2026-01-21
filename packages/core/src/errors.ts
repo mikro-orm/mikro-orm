@@ -293,6 +293,18 @@ export class MetadataError<T extends AnyEntity = AnyEntity> extends ValidationEr
     return this.fromMessage(meta, prop, `is missing '${option}' option`);
   }
 
+  static targetKeyOnManyToMany(meta: EntityMetadata, prop: EntityProperty) {
+    return this.fromMessage(meta, prop, `uses 'targetKey' option which is not supported for ManyToMany relations`);
+  }
+
+  static targetKeyNotUnique(meta: EntityMetadata, prop: EntityProperty) {
+    return this.fromMessage(meta, prop, `has 'targetKey' set to '${prop.targetKey}', but ${prop.type}.${prop.targetKey} is not marked as unique. The target property must have a unique constraint.`);
+  }
+
+  static targetKeyNotFound(meta: EntityMetadata, prop: EntityProperty) {
+    return this.fromMessage(meta, prop, `has 'targetKey' set to '${prop.targetKey}', but ${prop.type}.${prop.targetKey} does not exist`);
+  }
+
   static dangerousPropertyName(meta: EntityMetadata, prop: EntityProperty) {
     return this.fromMessage(meta, prop, `uses a dangerous property name '${prop.name}' which could lead to prototype pollution. Please use a different property name.`);
   }

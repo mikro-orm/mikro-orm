@@ -5,13 +5,46 @@ export class IdentityMap {
   constructor(private readonly defaultSchema?: string) {}
 
   private readonly registry = new Map<EntityCtor, Map<string, AnyEntity>>();
+  /** Tracks alternate key hashes for each entity so we can clean them up on delete */
+  private readonly alternateKeys = new WeakMap<AnyEntity, Set<string>>();
 
   store<T>(item: T) {
     this.getStore((item as AnyEntity).__meta!.root).set(this.getPkHash(item), item);
   }
 
+  /**
+   * Stores an entity under an alternate key (non-PK property).
+   * This allows looking up entities by unique properties that are not the primary key.
+   */
+  storeByKey<T>(item: T, key: string, value: string, schema?: string) {
+    const hash = this.getKeyHash(key, value, schema);
+    this.getStore((item as AnyEntity).__meta!.root).set(hash, item);
+    // Track this alternate key so we can clean it up when the entity is deleted
+    let keys = this.alternateKeys.get(item as AnyEntity);
+
+    if (!keys) {
+      keys = new Set();
+      this.alternateKeys.set(item as AnyEntity, keys);
+    }
+
+    keys.add(hash);
+  }
+
   delete<T>(item: T) {
-    this.getStore((item as AnyEntity).__meta!.root).delete(this.getPkHash(item));
+    const meta = (item as AnyEntity).__meta!.root;
+    const store = this.getStore(meta);
+    store.delete(this.getPkHash(item));
+
+    // Also delete any alternate key entries for this entity
+    const altKeys = this.alternateKeys.get(item as AnyEntity);
+
+    if (altKeys) {
+      for (const hash of altKeys) {
+        store.delete(hash);
+      }
+
+      this.alternateKeys.delete(item as AnyEntity);
+    }
   }
 
   getByHash<T>(meta: EntityMetadata<T>, hash: string): T | undefined {
@@ -84,6 +117,20 @@ export class IdentityMap {
     const meta = wrapped.__meta as EntityMetadata<T>;
     const hash = wrapped.getSerializedPrimaryKey();
     const schema = wrapped.__schema ?? meta.root.schema ?? this.defaultSchema;
+
+    if (schema) {
+      return schema + ':' + hash;
+    }
+
+    return hash;
+  }
+
+  /**
+   * Creates a hash for an alternate key lookup.
+   * Format: `[key]value` or `schema:[key]value`
+   */
+  getKeyHash(key: string, value: string, schema?: string): string {
+    const hash = `[${key}]${value}`;
 
     if (schema) {
       return schema + ':' + hash;

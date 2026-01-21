@@ -377,6 +377,7 @@ describe('EntityManagerMongo', () => {
     await orm.em.flush();
     expect(orm.em.getUnitOfWork().getById(Author, author.id)).toBeUndefined();
     expect(orm.em.getUnitOfWork().getIdentityMap()).toEqual({
+      alternateKeys: expect.any(WeakMap),
       registry: new Map([
         [Author, new Map<string, Author>()],
         [Book, new Map<string, Book>()],

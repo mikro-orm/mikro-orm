@@ -224,6 +224,47 @@ export class UnitOfWork {
     return this.identityMap.getByHash(meta, hash);
   }
 
+  /**
+   * Returns entity from the identity map by an alternate key (non-PK property).
+   * @param convertCustomTypes - If true, the value is in database format and will be converted to JS format for lookup.
+   *                             If false (default), the value is assumed to be in JS format already.
+   */
+  getByKey<T extends object>(entityName: EntityName<T>, key: string, value: unknown, schema?: string, convertCustomTypes?: boolean): T | undefined {
+    const meta = this.metadata.find(entityName)!.root;
+    schema ??= meta.schema ?? this.em.config.getSchema();
+    const prop = meta.properties[key as EntityKey<T>];
+
+    // Convert from DB format to JS format if needed
+    if (convertCustomTypes && prop?.customType) {
+      value = prop.customType.convertToJSValue(value, this.platform, { mode: 'hydration' });
+    }
+
+    const hash = this.identityMap.getKeyHash(key, '' + value, schema);
+    return this.identityMap.getByHash(meta, hash);
+  }
+
+  /**
+   * Stores an entity in the identity map under an alternate key (non-PK property).
+   * Also sets the property value on the entity.
+   * @param convertCustomTypes - If true, the value is in database format and will be converted to JS format.
+   *                             If false (default), the value is assumed to be in JS format already.
+   */
+  storeByKey<T extends object>(entity: T, key: string, value: unknown, schema?: string, convertCustomTypes?: boolean): void {
+    const meta = (entity as AnyEntity).__meta!.root;
+    schema ??= meta.schema ?? this.em.config.getSchema();
+    const prop = meta.properties[key as EntityKey<T>];
+
+    // Convert from DB format to JS format if needed
+    if (convertCustomTypes && prop?.customType) {
+      value = prop.customType.convertToJSValue(value, this.platform, { mode: 'hydration' });
+    }
+
+    // Set the property on the entity
+    (entity as Record<string, unknown>)[key] = value;
+
+    this.identityMap.storeByKey(entity, key, '' + value, schema);
+  }
+
   tryGetById<T extends object>(entityName: EntityName<T>, where: FilterQuery<T>, schema?: string, strict = true): T | null {
     const pk = Utils.extractPK(where, this.metadata.find<T>(entityName)!, strict);
 

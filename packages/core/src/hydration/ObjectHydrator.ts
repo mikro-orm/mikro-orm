@@ -172,10 +172,13 @@ export class ObjectHydrator extends Hydrator {
       const targetKey = this.safeKey(`${prop.targetMeta!.tableName}_${this.tmpIndex++}`);
       context.set(targetKey, prop.targetMeta!.class);
 
+      // When targetKey is set, pass the key option to createReference so it uses the alternate key
+      const keyOption = prop.targetKey ? `, key: '${prop.targetKey}'` : '';
+
       if (prop.ref) {
-        ret.push(`      entity${entityKey} = Reference.create(factory.createReference(${targetKey}, data${dataKey}, { merge: true, convertCustomTypes, normalizeAccessors, schema }));`);
+        ret.push(`      entity${entityKey} = Reference.create(factory.createReference(${targetKey}, data${dataKey}, { merge: true, convertCustomTypes, normalizeAccessors, schema${keyOption} }));`);
       } else {
-        ret.push(`      entity${entityKey} = factory.createReference(${targetKey}, data${dataKey}, { merge: true, convertCustomTypes, normalizeAccessors, schema });`);
+        ret.push(`      entity${entityKey} = factory.createReference(${targetKey}, data${dataKey}, { merge: true, convertCustomTypes, normalizeAccessors, schema${keyOption} });`);
       }
 
       ret.push(`    } else if (data${dataKey} && typeof data${dataKey} === 'object') {`);

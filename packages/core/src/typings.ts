@@ -570,6 +570,7 @@ export interface EntityProperty<Owner = any, Target = any> {
   referencedColumnNames: string[];
   referencedTableName: string;
   referencedPKs: EntityKey<Owner>[];
+  targetKey?: string;
   serializer?: (value: any, options?: SerializeOptions<any>) => any;
   serializedName?: string;
   comment?: string;

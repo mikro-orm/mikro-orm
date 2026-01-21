@@ -175,7 +175,19 @@ export class ChangeSetComputer {
 
     targets.forEach(([target, idx]) => {
       if (!target.__helper!.hasPrimaryKey()) {
-        Utils.setPayloadProperty<T>(changeSet.payload, changeSet.meta, prop, target.__helper!.__identifier, idx);
+        // When targetKey is set, use that property value instead of the PK identifier
+        let value = prop.targetKey ? target[prop.targetKey] : target.__helper!.__identifier;
+
+        /* v8 ignore next */
+        if (prop.targetKey && prop.targetMeta) {
+          const targetProp = prop.targetMeta.properties[prop.targetKey];
+
+          if (targetProp?.customType) {
+            value = targetProp.customType.convertToDatabaseValue(value, this.platform, { mode: 'serialization' });
+          }
+        }
+
+        Utils.setPayloadProperty<T>(changeSet.payload, changeSet.meta, prop, value, idx);
       }
     });
   }
@@ -192,7 +204,9 @@ export class ChangeSetComputer {
     }
 
     if (prop.owner && !this.platform.usesPivotTable()) {
-      changeSet.payload[prop.name] = target.getItems(false).map((item: AnyEntity) => item.__helper!.__identifier ?? item.__helper!.getPrimaryKey());
+      changeSet.payload[prop.name] = target.getItems(false).map((item: AnyEntity) => {
+        return item.__helper!.__identifier ?? item.__helper!.getPrimaryKey();
+      });
     }
   }
 

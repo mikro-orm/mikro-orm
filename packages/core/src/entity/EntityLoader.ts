@@ -46,7 +46,7 @@ export type EntityLoaderOptions<Entity, Fields extends string = PopulatePath.ALL
   convertCustomTypes?: boolean;
   ignoreLazyScalarProperties?: boolean;
   filters?: FilterOptions;
-  strategy?: LoadStrategy;
+  strategy?: LoadStrategy | `${LoadStrategy}`;
   lockMode?: Exclude<LockMode, LockMode.OPTIMISTIC>;
   schema?: string;
   connectionType?: ConnectionType;
@@ -92,7 +92,7 @@ export class EntityLoader {
       await this.populateScalar(meta, references, { ...options, populateWhere: undefined } as any);
     }
 
-    populate = this.normalizePopulate<Entity>(entityName, populate as true, options.strategy, options.lookup);
+    populate = this.normalizePopulate<Entity>(entityName, populate as true, options.strategy as LoadStrategy | undefined, options.lookup);
     const invalid = populate.find(({ field }) => !this.em.canPopulate(entityName, field));
 
     /* v8 ignore next */
@@ -305,7 +305,8 @@ export class EntityLoader {
   private async findChildren<Entity extends object>(entities: Entity[], prop: EntityProperty<Entity>, populate: PopulateOptions<Entity>, options: Required<EntityLoaderOptions<Entity>>, ref: boolean): Promise<{ items: AnyEntity[]; partial: boolean }> {
     const children = Utils.unique(this.getChildReferences<Entity>(entities, prop, options, ref));
     const meta = prop.targetMeta!;
-    let fk = Utils.getPrimaryKeyHash(meta.primaryKeys);
+    // When targetKey is set, use it for FK lookup instead of the PK
+    let fk = prop.targetKey ?? Utils.getPrimaryKeyHash(meta.primaryKeys);
     let schema: string | undefined = options.schema;
     const partial = !Utils.isEmpty(prop.where) || !Utils.isEmpty(options.where);
 
@@ -327,7 +328,8 @@ export class EntityLoader {
       schema = children.find(e => e.__helper!.__schema)?.__helper!.__schema;
     }
 
-    const ids = Utils.unique(children.map(e => e.__helper.getPrimaryKey()));
+    // When targetKey is set, get the targetKey value instead of PK
+    const ids = Utils.unique(children.map(e => prop.targetKey ? e[prop.targetKey] : e.__helper.getPrimaryKey()));
     let where = this.mergePrimaryCondition<Entity>(ids, fk as FilterKey<Entity>, options, meta, this.metadata, this.driver.getPlatform());
     const fields = this.buildFields(options.fields, prop, ref) as any;
 
@@ -369,23 +371,52 @@ export class EntityLoader {
       visited: options.visited,
     });
 
+    // For targetKey relations, wire up loaded entities to parent references
+    // This is needed because the references were created under alternate key,
+    // but loaded entities are stored under PK, so they don't automatically merge
+    if (prop.targetKey && [ReferenceKind.ONE_TO_ONE, ReferenceKind.MANY_TO_ONE].includes(prop.kind)) {
+      const itemsByKey = new Map<string, AnyEntity>();
+      for (const item of items) {
+        itemsByKey.set('' + item[prop.targetKey], item);
+      }
+
+      for (const entity of entities) {
+        const ref = entity[prop.name] as AnyEntity;
+        /* v8 ignore next */
+        if (!ref) {
+          continue;
+        }
+
+        const keyValue = '' + (Reference.isReference(ref) ? (ref.unwrap() as Dictionary)[prop.targetKey] : (ref as Dictionary)[prop.targetKey]);
+        const loadedItem = itemsByKey.get(keyValue);
+
+        if (loadedItem) {
+          entity[prop.name] = (Reference.isReference(ref) ? Reference.create(loadedItem) : loadedItem) as EntityValue<Entity>;
+        }
+      }
+    }
+
     if ([ReferenceKind.ONE_TO_ONE, ReferenceKind.MANY_TO_ONE].includes(prop.kind) && items.length !== children.length) {
       const nullVal = this.em.config.get('forceUndefined') ? undefined : null;
       const itemsMap = new Set<string>();
       const childrenMap = new Set<string>();
+      // Use targetKey value if set, otherwise use serialized PK
+      const getKey = (e: AnyEntity) => prop.targetKey ? '' + e[prop.targetKey] : helper(e).getSerializedPrimaryKey();
 
       for (const item of items) {
-        itemsMap.add(helper(item).getSerializedPrimaryKey());
+        /* v8 ignore next */
+        itemsMap.add(getKey(item));
       }
 
       for (const child of children) {
-        childrenMap.add(helper(child).getSerializedPrimaryKey());
+        childrenMap.add(getKey(child));
       }
 
       for (const entity of entities) {
-        const key = helper(entity[prop.name] as AnyEntity ?? {})?.getSerializedPrimaryKey();
+        const ref = entity[prop.name] as AnyEntity ?? {};
+        const key = helper(ref) ? getKey(ref) : undefined;
 
-        if (childrenMap.has(key) && !itemsMap.has(key)) {
+        if (key && childrenMap.has(key) && !itemsMap.has(key)) {
           entity[prop.name] = nullVal as EntityValue<Entity>;
           helper(entity).__originalEntityData![prop.name] = null;
         }

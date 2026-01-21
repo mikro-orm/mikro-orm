@@ -41,6 +41,11 @@ export interface FactoryOptions {
   schema?: string; // schema from FindOptions, overrides default schema
   parentSchema?: string; // parent entity schema
   normalizeAccessors?: boolean; // for `em.create`, we need to normalize accessors to the correct property names (this is normally handled via result mapper)
+  /**
+   * Property name to use for identity map lookup instead of the primary key.
+   * This is useful for creating references by unique non-PK properties.
+   */
+  key?: string;
 }
 
 export class EntityFactory {
@@ -234,10 +239,26 @@ export class EntityFactory {
     this.unitOfWork.normalizeEntityData(meta, originalEntityData);
   }
 
-  createReference<T extends object>(entityName: EntityName<T>, id: Primary<T> | Primary<T>[] | Record<string, Primary<T>>, options: Pick<FactoryOptions, 'merge' | 'convertCustomTypes' | 'schema'> = {}): T {
+  createReference<T extends object>(entityName: EntityName<T>, id: Primary<T> | Primary<T>[] | Record<string, Primary<T>>, options: Pick<FactoryOptions, 'merge' | 'convertCustomTypes' | 'schema' | 'key'> = {}): T {
     options.convertCustomTypes ??= true;
     const meta = this.metadata.get<T>(entityName);
     const schema = this.driver.getSchemaName(meta, options);
+
+    // Handle alternate key lookup
+    if (options.key) {
+      const value = '' + (Array.isArray(id) ? id[0] : Utils.isPlainObject(id) ? (id as Record<string, any>)[options.key] : id);
+      const exists = this.unitOfWork.getByKey(entityName, options.key, value, schema, options.convertCustomTypes);
+
+      if (exists) {
+        return exists;
+      }
+
+      // Create entity stub - storeByKey will set the alternate key property and store in identity map
+      const entity = this.create(entityName, {} as EntityData<T>, { ...options, initialized: false }) as T;
+      this.unitOfWork.storeByKey(entity, options.key, value, schema, options.convertCustomTypes);
+
+      return entity;
+    }
 
     if (meta.simplePK) {
       const exists = this.unitOfWork.getById(entityName, id as Primary<T>, schema);
