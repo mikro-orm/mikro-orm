@@ -143,6 +143,8 @@ export const Book = defineEntity({
 export type Book = InferEntity<typeof Book>;
 ```
 
+To add custom methods, extend `Book.class` and register it with `Book.setClass(CustomBook)`. See the [EntitySchema docs](./entity-schema.md#adding-custom-methods) for details.
+
   </TabItem>
   <TabItem value="decorators">
 

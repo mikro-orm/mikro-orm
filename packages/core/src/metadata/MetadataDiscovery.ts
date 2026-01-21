@@ -304,7 +304,8 @@ export class MetadataDiscovery {
 
       parent = Object.getPrototypeOf(meta.class);
 
-      if (parent.name !== '' && !this.metadata.has(parent) && parent !== BaseEntity) {
+      // Skip if parent is the auto-generated base class for the same entity (from setClass usage)
+      if (parent.name !== '' && parent.name !== meta.className && !this.metadata.has(parent) && parent !== BaseEntity) {
         this.discoverReferences([parent], false);
       }
     }

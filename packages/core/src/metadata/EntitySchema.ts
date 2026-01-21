@@ -244,7 +244,8 @@ export class EntitySchema<Entity = any, Base = never, Class extends EntityCtor =
   }
 
   setClass(cls: Class) {
-    const sameClass = this._meta.className === cls.name;
+    const oldClass = this._meta.class;
+    const sameClass = this._meta.class === cls;
     this._meta.class = cls;
     this._meta.prototype = cls.prototype;
     this._meta.className = this._meta.name ?? cls.name;
@@ -254,12 +255,21 @@ export class EntitySchema<Entity = any, Base = never, Class extends EntityCtor =
     }
 
     if (!this.internal) {
+      // Remove old class from registry if it's being replaced with a different class
+      if (oldClass && oldClass !== cls && EntitySchema.REGISTRY.get(oldClass) === this) {
+        EntitySchema.REGISTRY.delete(oldClass);
+      }
+
       EntitySchema.REGISTRY.set(cls, this);
     }
 
     const base = Object.getPrototypeOf(cls);
 
-    if (base !== BaseEntity) {
+    // Only set extends if the parent is NOT the auto-generated class for this same entity.
+    // When the user extends the auto-generated class (from defineEntity without a class option)
+    // and registers their custom class via setClass, we don't want to discover the
+    // auto-generated class as a separate parent entity.
+    if (base !== BaseEntity && base.name !== this._meta.className) {
       this._meta.extends ??= base.name ? base : undefined;
     }
   }

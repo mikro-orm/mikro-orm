@@ -217,6 +217,50 @@ const properties = {
 };
 ```
 
+### Adding custom methods
+
+When using `defineEntity` without a class, an internal entity class is auto-generated. You can extend this class to add custom methods without having to redeclare all properties:
+
+```ts
+import { defineEntity, p } from '@mikro-orm/core';
+
+// Define the schema - this auto-generates an internal class
+const UserSchema = defineEntity({
+  name: 'User',
+  tableName: 'users',
+  properties: {
+    id: p.integer().primary(),
+    firstName: p.string(),
+    lastName: p.string(),
+  },
+});
+
+// Extend the auto-generated class to add methods
+class User extends UserSchema.class {
+  fullName() {
+    return `${this.firstName} ${this.lastName}`;
+  }
+}
+
+// Register the custom class with the schema
+UserSchema.setClass(User);
+```
+
+> **Important:** `setClass()` must be called before the ORM discovery process runs (i.e., before `MikroORM.init()`). Make sure to call it at module load time, right after defining the extended class.
+
+After calling `setClass()`, the custom class is registered and will be used for all entity instances. This approach provides the best of both worlds:
+
+- **No property duplication**: Properties are defined once in the schema
+- **Full type inference**: The extended class inherits all property types
+- **Custom methods**: Add domain logic directly on entity instances
+
+You can then use the entity normally:
+
+```ts
+const user = em.create(User, { firstName: 'John', lastName: 'Doe' });
+console.log(user.fullName()); // "John Doe"
+```
+
 ## MongoDB example
 
 <Tabs
