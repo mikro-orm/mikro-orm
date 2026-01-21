@@ -1089,6 +1089,8 @@ export type PopulateOptions<T> = {
   filter?: boolean;
   joinType?: 'inner join' | 'left join';
   children?: PopulateOptions<T[keyof T]>[];
+  /** When true, ignores `mapToPk` on the property and returns full entity data instead of just PKs. */
+  dataOnly?: boolean;
 };
 
 type Loadable<T extends object> = Collection<T, any> | Reference<T> | Ref<T> | readonly T[]; // we need to support raw arrays in embeddables too to allow population
