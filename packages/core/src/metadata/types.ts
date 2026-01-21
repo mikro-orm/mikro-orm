@@ -5,6 +5,7 @@ import type {
   AnyString,
   CheckCallback,
   GeneratedColumnCallback,
+  FormulaCallback,
   FilterQuery,
   Dictionary,
   AutoPath,
@@ -136,7 +137,7 @@ export interface PropertyOptions<Owner> {
    *
    * @see https://mikro-orm.io/docs/defining-entities#formulas Formulas
    */
-  formula?: string | ((alias: string) => string);
+  formula?: string | FormulaCallback<Owner>;
   /**
    * For generated columns. This will be appended to the column type after the `generated always` clause.
    */
