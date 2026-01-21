@@ -257,7 +257,7 @@ After calling `setClass()`, the custom class is registered and will be used for 
 You can then use the entity normally:
 
 ```ts
-const user = em.create(UserSchema, { firstName: 'John', lastName: 'Doe' });
+const user = em.create(User, { firstName: 'John', lastName: 'Doe' });
 console.log(user.fullName()); // "John Doe"
 ```
 

@@ -1551,7 +1551,7 @@ describe('EntitySchema.setClass', () => {
         return `${this.firstName} ${this.lastName}`;
       }
 
-}
+    }
 
     // Replace the class - this registers the custom class
     UserSchema.setClass(CustomUser);
@@ -1579,7 +1579,7 @@ describe('EntitySchema.setClass', () => {
         return this.title;
       }
 
-}
+    }
 
     class CustomBook2 extends CustomBook1 {
 
@@ -1587,7 +1587,7 @@ describe('EntitySchema.setClass', () => {
         return this.title.toUpperCase();
       }
 
-}
+    }
 
     // First replacement - registers CustomBook1
     BookSchema.setClass(CustomBook1);
@@ -1605,7 +1605,7 @@ describe('EntitySchema.setClass', () => {
       id!: number;
       name!: string;
 
-}
+    }
 
     const AuthorSchema = new EntitySchema({
       class: Author,
@@ -1626,7 +1626,7 @@ describe('EntitySchema.setClass', () => {
         return this.name;
       }
 
-}
+    }
 
     // Replace the class
     AuthorSchema.setClass(ExtendedAuthor);
