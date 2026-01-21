@@ -22,6 +22,7 @@ import type {
   EntityClass,
   Ref,
   IndexCallback,
+  FormulaCallback,
 } from '../typings';
 import type { ScalarReference } from './Reference';
 import type { SerializeOptions } from '../serialization/EntitySerializer';
@@ -229,7 +230,7 @@ export class UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys extends
    *
    * @see https://mikro-orm.io/docs/defining-entities#formulas Formulas
    */
-  formula<T extends string | ((alias: string) => string)>(formula: T): Pick<UniversalPropertyOptionsBuilder<Value, Omit<Options, 'formula'> & { formula: T }, IncludeKeys>, IncludeKeys> {
+  formula<T extends string | FormulaCallback<any>>(formula: T): Pick<UniversalPropertyOptionsBuilder<Value, Omit<Options, 'formula'> & { formula: T }, IncludeKeys>, IncludeKeys> {
     return this.assignOptions({ formula }) as any;
   }
 
@@ -649,7 +650,7 @@ const propertyBuilders = {
 
   json: <T>() => new UniversalPropertyOptionsBuilder<T, EmptyOptions, IncludeKeysForProperty>({ type: types.json }),
 
-  formula: <T>(formula: string | ((alias: string) => string)) =>
+  formula: <T>(formula: string | FormulaCallback<any>) =>
     new UniversalPropertyOptionsBuilder<T, EmptyOptions, IncludeKeysForProperty>({ formula }),
 
   datetime: (length?: number) => new UniversalPropertyOptionsBuilder<InferPropertyValueType<typeof types.datetime>, EmptyOptions, IncludeKeysForProperty>({ type: types.datetime, length }),
@@ -874,7 +875,7 @@ type MaybeOpt<Value, Options> =
   Options extends { defaultRaw: string } ? Opt<Value> :
   Options extends { persist: false } ? Opt<Value> :
   Options extends { version: true } ? Opt<Value> :
-  Options extends { formula: string | (() => string) } ? Opt<Value> :
+  Options extends { formula: string | ((...args: any[]) => string) } ? Opt<Value> :
     Value;
 
 type MaybeHidden<Value, Options> = Options extends { hidden: true } ? Hidden<Value> : Value;

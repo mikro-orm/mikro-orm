@@ -1134,6 +1134,24 @@ properties: {
   </TabItem>
 </Tabs>
 
+For more complex scenarios, you can use an enhanced callback signature that provides access to table metadata and column name mappings. This is useful when you need to construct sub-selects with proper schema qualification:
+
+```ts
+@Formula((table, columns) => {
+  return `(select count(*) from other_table where other_table.ref_id = ${table.qualifiedName}.${columns.id})`;
+})
+relatedCount?: number;
+```
+
+The `table` parameter provides:
+- `alias`: The quoted table alias (same as the simple callback parameter)
+- `name`: The table name
+- `schema`: The schema name (if applicable)
+- `qualifiedName`: The schema-qualified table name (`schema.table` or just `table`)
+- `toString()`: Returns the alias for convenience in template literals
+
+The `columns` parameter is a dictionary mapping property names to their database column names.
+
 ## Indexes
 
 We can define indexes via `@Index()` decorator, for unique indexes, we can use `@Unique()` decorator. We can use it either on entity class, or on entity property.

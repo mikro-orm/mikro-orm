@@ -7,7 +7,7 @@ export {
   Constructor, ConnectionType, Dictionary, PrimaryKeyProp, Primary, IPrimaryKey, ObjectQuery, FilterQuery, IWrappedEntity, EntityName, EntityData, Highlighter, MaybePromise,
   AnyEntity, EntityClass, EntityProperty, EntityMetadata, QBFilterQuery, PopulateOptions, Populate, Loaded, New, LoadedReference, LoadedCollection, IMigrator, IMigrationGenerator, MigratorEvent,
   GetRepository, EntityRepositoryType, MigrationObject, DeepPartial, PrimaryProperty, Cast, IsUnknown, EntityDictionary, EntityDTO, MigrationDiff, GenerateOptions, FilterObject,
-  IEntityGenerator, ISeedManager, EntityClassGroup, OptionalProps, EagerProps, HiddenProps, RequiredEntityData, CheckCallback, IndexCallback, SimpleColumnMeta, Rel, Ref, ScalarRef, EntityRef, ISchemaGenerator,
+  IEntityGenerator, ISeedManager, EntityClassGroup, OptionalProps, EagerProps, HiddenProps, RequiredEntityData, CheckCallback, IndexCallback, FormulaCallback, FormulaTable, SimpleColumnMeta, Rel, Ref, ScalarRef, EntityRef, ISchemaGenerator,
   UmzugMigration, MigrateOptions, MigrationResult, MigrationRow, EntityKey, EntityValue, EntityDataValue, FilterKey, Opt, EntityType, FromEntityType, Selected, IsSubset, NoInfer,
   EntityProps, ExpandProperty, ExpandScalar, FilterItemValue, ExpandQuery, Scalar, ExpandHint, Hidden, FilterValue, MergeLoaded, MergeSelected, Config, DefineConfig, TypeConfig, AnyString,
   ClearDatabaseOptions, CreateSchemaOptions, EnsureDatabaseOptions, UpdateSchemaOptions, DropSchemaOptions, RefreshDatabaseOptions, AutoPath, UnboxArray, MetadataProcessor, ImportsResolver, RequiredNullable,

@@ -9,6 +9,7 @@ import {
   type EntityMetadata,
   type EntityProperty,
   type FlatQueryOrderMap,
+  type FormulaTable,
   GroupOperator,
   LockMode,
   type MetadataStorage,
@@ -45,8 +46,8 @@ export class QueryBuilderHelper {
   }
 
   mapper(field: string | Knex.Raw, type?: QueryType): string;
-  mapper(field: string | Knex.Raw, type?: QueryType, value?: any, alias?: string | null): string;
-  mapper(field: string | Knex.Raw, type = QueryType.SELECT, value?: any, alias?: string | null): string | Knex.Raw {
+  mapper(field: string | Knex.Raw, type?: QueryType, value?: any, alias?: string | null, schema?: string): string;
+  mapper(field: string | Knex.Raw, type = QueryType.SELECT, value?: any, alias?: string | null, schema?: string): string | Knex.Raw {
     if (Utils.isRawSql(field)) {
       return this.knex.raw(field.sql, field.params);
     }
@@ -119,7 +120,10 @@ export class QueryBuilderHelper {
       const alias2 = this.knex.ref(a).toString();
       const aliased = this.knex.ref(prop.fieldNames[0]).toString();
       const as = alias === null ? '' : ` as ${aliased}`;
-      let value = prop.formula(alias2);
+      const meta = this.aliasMap[a]?.metadata ?? this.metadata.get(this.entityName);
+      const table = this.createFormulaTable(alias2, meta, schema);
+      const columns = meta.createColumnMappingObject();
+      let value = prop.formula(table, columns);
 
       if (!this.isTableNameAliasRequired(type)) {
         value = value.replaceAll(alias2 + '.', '');
@@ -267,7 +271,10 @@ export class QueryBuilderHelper {
 
         if (join.prop.formula) {
           const alias = this.platform.quoteIdentifier(join.ownerAlias);
-          const left = join.prop.formula(alias);
+          const ownerMeta = this.aliasMap[join.ownerAlias]?.metadata ?? this.metadata.get(this.entityName);
+          const table = this.createFormulaTable(alias.toString(), ownerMeta, schema);
+          const columns = ownerMeta.createColumnMappingObject();
+          const left = join.prop.formula(table, columns);
           conditions.push(`${left} = ${this.knex.ref(right)}`);
           return;
         }
@@ -985,6 +992,18 @@ export class QueryBuilderHelper {
     }
 
     return cond;
+  }
+
+  createFormulaTable(alias: string, meta: EntityMetadata, schema?: string): FormulaTable {
+    const effectiveSchema = schema ?? (meta.schema !== '*' ? meta.schema : undefined);
+    const qualifiedName = effectiveSchema ? `${effectiveSchema}.${meta.tableName}` : meta.tableName;
+    return {
+      alias,
+      name: meta.tableName,
+      schema: effectiveSchema,
+      qualifiedName,
+      toString: () => alias,
+    };
   }
 
 }

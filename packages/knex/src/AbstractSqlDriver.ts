@@ -27,6 +27,7 @@ import {
   type FindByCursorOptions,
   type FindOneOptions,
   type FindOptions,
+  type FormulaTable,
   getOnConflictFields,
   getOnConflictReturningFields,
   helper,
@@ -99,9 +100,10 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
 
     const populate = this.autoJoinOneToOneOwner(meta, options.populate as unknown as PopulateOptions<T>[], options.fields);
     const joinedProps = this.joinedProps(meta, populate, options);
+    const schema = this.getSchemaName(meta, options);
     const qb = this.createQueryBuilder<T>(entityName, options.ctx, options.connectionType, false, options.logging)
-      .withSchema(this.getSchemaName(meta, options));
-    const fields = this.buildFields(meta, populate, joinedProps, qb, qb.alias, options);
+      .withSchema(schema);
+    const fields = this.buildFields(meta, populate, joinedProps, qb, qb.alias, options, schema);
     const orderBy = this.buildOrderBy(qb, meta, populate, options);
     const populateWhere = this.buildPopulateWhere(meta, joinedProps, options);
     Utils.asArray(options.flags).forEach(flag => qb.setFlag(flag));
@@ -457,11 +459,12 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     options = { populate: [], ...options };
     const populate = options.populate as unknown as PopulateOptions<T>[];
     const joinedProps = this.joinedProps(meta, populate, options as FindOptions<T>);
+    const schema = this.getSchemaName(meta, options);
     const qb = this.createQueryBuilder<T>(entityName, options.ctx, options.connectionType, false, options.logging);
     const populateWhere = this.buildPopulateWhere(meta, joinedProps, options);
 
     if (meta && !Utils.isEmpty(populate)) {
-      this.buildFields(meta, populate, joinedProps, qb, qb.alias, options as FindOptions<T>);
+      this.buildFields(meta, populate, joinedProps, qb, qb.alias, options as FindOptions<T>, schema);
     }
 
     qb.__populateWhere = (options as Dictionary)._populateWhere;
@@ -475,7 +478,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
         joinedProps.length > 0 ? populateWhere : undefined,
         joinedProps.length > 0 ? options.populateFilter : undefined,
       )
-      .withSchema(this.getSchemaName(meta, options))
+      .withSchema(schema)
       .where(where);
 
     if (options.em) {
@@ -1216,7 +1219,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       // alias all fields in the primary table
       meta.props
         .filter(prop => this.shouldHaveColumn(meta, prop, populate, explicitFields, exclude))
-        .forEach(prop => fields.push(...this.mapPropToFieldNames(qb, prop, parentTableAlias, explicitFields)));
+        .forEach(prop => fields.push(...this.mapPropToFieldNames(qb, prop, parentTableAlias, meta, undefined, explicitFields)));
     }
 
     for (const hint of joinedProps) {
@@ -1282,7 +1285,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
   /**
    * @internal
    */
-  mapPropToFieldNames<T extends object>(qb: QueryBuilder<T, any, any, any>, prop: EntityProperty<T>, tableAlias?: string, explicitFields?: Field<T>[]): Field<T>[] {
+  mapPropToFieldNames<T extends object>(qb: QueryBuilder<T, any, any, any>, prop: EntityProperty<T>, tableAlias: string | undefined, meta: EntityMetadata<T>, schema?: string, explicitFields?: readonly Field<T>[]): Field<T>[] {
     if (prop.kind === ReferenceKind.EMBEDDED && !prop.object) {
       return Object.entries(prop.embeddedProps).flatMap(([name, childProp]) => {
         const childFields = explicitFields ? Utils.extractChildElements(explicitFields as string[], prop.name) : [];
@@ -1291,7 +1294,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
           return [];
         }
 
-        return this.mapPropToFieldNames<T>(qb, childProp, tableAlias, childFields);
+        return this.mapPropToFieldNames<T>(qb, childProp, tableAlias, meta, schema, childFields);
       });
     }
 
@@ -1317,7 +1320,17 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
 
     if (prop.formula) {
       const alias = this.platform.quoteIdentifier(tableAlias ?? qb.alias);
-      return [raw(`${prop.formula!(alias)} as ${aliased}`)];
+      const effectiveSchema = schema ?? (meta.schema !== '*' ? meta.schema : undefined);
+      const qualifiedName = effectiveSchema ? `${effectiveSchema}.${meta.tableName}` : meta.tableName;
+      const table: FormulaTable = {
+        alias: alias.toString(),
+        name: meta.tableName,
+        schema: effectiveSchema,
+        qualifiedName,
+        toString: () => alias.toString(),
+      };
+      const columns = meta.createColumnMappingObject();
+      return [raw(`${(prop.formula!(table, columns))} as ${aliased}`)];
     }
 
     if (tableAlias) {
@@ -1621,7 +1634,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     ret.push(prop.name);
   }
 
-  protected buildFields<T extends object>(meta: EntityMetadata<T>, populate: PopulateOptions<T>[], joinedProps: PopulateOptions<T>[], qb: QueryBuilder<T, any, any, any>, alias: string, options: Pick<FindOptions<T, any, any, any>, 'strategy' | 'fields' | 'exclude'>): Field<T>[] {
+  protected buildFields<T extends object>(meta: EntityMetadata<T>, populate: PopulateOptions<T>[], joinedProps: PopulateOptions<T>[], qb: QueryBuilder<T, any, any, any>, alias: string, options: Pick<FindOptions<T, any, any, any>, 'strategy' | 'fields' | 'exclude'>, schema?: string): Field<T>[] {
     const lazyProps = meta.props.filter(prop => prop.lazy && !populate.some(p => this.isPopulated(meta, prop, p)));
     const hasLazyFormulas = meta.props.some(p => p.lazy && p.formula);
     const requiresSQLConversion = meta.props.some(p => p.customType?.convertToJSValueSQL && p.persist !== false);
@@ -1669,6 +1682,9 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     }
 
     if (ret.length > 0 && !hasExplicitFields && addFormulas) {
+      const columns = meta.createColumnMappingObject();
+      const effectiveSchema = schema ?? (meta.schema !== '*' ? meta.schema : undefined);
+
       for (const prop of meta.props) {
         if (lazyProps.includes(prop)) {
           continue;
@@ -1677,7 +1693,15 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
         if (prop.formula) {
           const a = this.platform.quoteIdentifier(alias);
           const aliased = this.platform.quoteIdentifier(prop.fieldNames[0]);
-          ret.push(raw(`${prop.formula!(a)} as ${aliased}`));
+          const qualifiedName = effectiveSchema ? `${effectiveSchema}.${meta.tableName}` : meta.tableName;
+          const table: FormulaTable = {
+            alias: a.toString(),
+            name: meta.tableName,
+            schema: effectiveSchema,
+            qualifiedName,
+            toString: () => a.toString(),
+          };
+          ret.push(raw(`${(prop.formula(table, columns))} as ${aliased}`));
         }
 
         if (!prop.object && (prop.hasConvertToDatabaseValueSQL || prop.hasConvertToJSValueSQL)) {

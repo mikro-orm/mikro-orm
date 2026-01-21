@@ -475,8 +475,10 @@ export type EntityDTO<T, C extends TypeConfig = never> = {
 type PropertyName<T> = IsUnknown<T> extends false ? keyof T : string;
 type TableName = { name: string; schema?: string; toString: () => string };
 type ColumnNameMapping<T> = Record<PropertyName<T>, string>;
+export type FormulaTable = { alias: string; name: string; schema?: string; qualifiedName: string; toString: () => string };
 
 export type IndexCallback<T> = (table: TableName, columns: Record<PropertyName<T>, string>, indexName: string) => string | RawQueryFragment;
+export type FormulaCallback<T> = (table: FormulaTable, columns: Record<PropertyName<T>, string>) => string;
 
 export type CheckCallback<T> = (columns: Record<PropertyName<T>, string>) => string;
 export type GeneratedColumnCallback<T> = (columns: Record<keyof T, string>) => string;
@@ -517,7 +519,7 @@ export interface EntityProperty<Owner = any, Target = any> {
   fieldNameRaw?: string;
   default?: string | number | boolean | null;
   defaultRaw?: string;
-  formula?: (alias: string) => string;
+  formula?: FormulaCallback<Owner>;
   filters?: FilterOptions;
   prefix?: string | boolean;
   prefixMode?: EmbeddedPrefixMode;
@@ -650,14 +652,14 @@ export class EntityMetadata<T = any> {
     return this.properties[this.primaryKeys[0]];
   }
 
-  createColumnMappingObject() {
+  createColumnMappingObject(): Record<PropertyName<T>, string> {
     return Object.values<EntityProperty>(this.properties).reduce((o, prop) => {
       if (prop.fieldNames) {
-        o[prop.name] = prop.fieldNames[0];
+        o[prop.name as PropertyName<T>] = prop.fieldNames[0];
       }
 
       return o;
-    }, {} as Dictionary);
+    }, {} as Record<PropertyName<T>, string>);
   }
 
   get tableName(): string {
