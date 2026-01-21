@@ -7,7 +7,7 @@ export type {
   Constructor, ConnectionType, Dictionary, Primary, IPrimaryKey, ObjectQuery, FilterQuery, IWrappedEntity, EntityName, EntityData, Highlighter, MaybePromise,
   AnyEntity, EntityClass, EntityProperty, QBFilterQuery, PopulateOptions, Populate, Loaded, New, LoadedReference, LoadedCollection, IMigrator, IMigrationGenerator, MigratorEvent,
   GetRepository, MigrationObject, DeepPartial, PrimaryProperty, Cast, IsUnknown, EntityDictionary, EntityDTO, MigrationDiff, GenerateOptions, FilterObject,
-  IEntityGenerator, ISeedManager, RequiredEntityData, CheckCallback, IndexCallback, SimpleColumnMeta, Rel, Ref, ScalarRef, EntityRef, ISchemaGenerator,
+  IEntityGenerator, ISeedManager, RequiredEntityData, CheckCallback, IndexCallback, FormulaCallback, FormulaTable, SimpleColumnMeta, Rel, Ref, ScalarRef, EntityRef, ISchemaGenerator,
   UmzugMigration, MigrateOptions, MigrationResult, MigrationRow, EntityKey, EntityValue, EntityDataValue, FilterKey, EntityType, FromEntityType, Selected, IsSubset, NoInfer,
   EntityProps, ExpandProperty, ExpandScalar, FilterItemValue, ExpandQuery, Scalar, ExpandHint, FilterValue, MergeLoaded, MergeSelected, TypeConfig, AnyString,
   ClearDatabaseOptions, CreateSchemaOptions, EnsureDatabaseOptions, UpdateSchemaOptions, DropSchemaOptions, RefreshDatabaseOptions, AutoPath, UnboxArray, MetadataProcessor, ImportsResolver,

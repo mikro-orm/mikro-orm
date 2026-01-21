@@ -9,12 +9,14 @@ import {
   type EntityName,
   type EntityProperty,
   type FlatQueryOrderMap,
+  type FormulaTable,
   inspect,
   isRaw,
   LockMode,
   type MetadataStorage,
   OptimisticLockError,
-  type QBFilterQuery, type QBQueryOrderMap,
+  type QBFilterQuery,
+  type QBQueryOrderMap,
   QueryOperator,
   QueryOrderNumeric,
   raw,
@@ -50,8 +52,8 @@ export class QueryBuilderHelper {
   }
 
   mapper(field: string | Raw | RawQueryFragmentSymbol, type?: QueryType): string;
-  mapper(field: string | Raw | RawQueryFragmentSymbol, type?: QueryType, value?: any, alias?: string | null): string;
-  mapper(field: string | Raw | RawQueryFragmentSymbol, type = QueryType.SELECT, value?: any, alias?: string | null): string | Raw {
+  mapper(field: string | Raw | RawQueryFragmentSymbol, type?: QueryType, value?: any, alias?: string | null, schema?: string): string;
+  mapper(field: string | Raw | RawQueryFragmentSymbol, type = QueryType.SELECT, value?: any, alias?: string | null, schema?: string): string | Raw {
     if (isRaw(field)) {
       return raw(field.sql, field.params);
     }
@@ -125,7 +127,10 @@ export class QueryBuilderHelper {
       const alias2 = this.platform.quoteIdentifier(a).toString();
       const aliased = this.platform.quoteIdentifier(prop.fieldNames[0]).toString();
       const as = alias === null ? '' : ` as ${aliased}`;
-      let value = prop.formula(alias2);
+      const meta = this.aliasMap[a]?.meta ?? this.metadata.get(this.entityName);
+      const table = this.createFormulaTable(alias2, meta, schema);
+      const columns = meta.createColumnMappingObject();
+      let value = prop.formula(table, columns);
 
       if (!this.isTableNameAliasRequired(type)) {
         value = value.replaceAll(alias2 + '.', '');
@@ -270,7 +275,10 @@ export class QueryBuilderHelper {
 
         if (join.prop.formula) {
           const alias = this.platform.quoteIdentifier(join.ownerAlias);
-          const left = join.prop.formula(alias);
+          const ownerMeta = this.aliasMap[join.ownerAlias]?.meta ?? this.metadata.get(this.entityName);
+          const table = this.createFormulaTable(alias.toString(), ownerMeta, schema);
+          const columns = ownerMeta.createColumnMappingObject();
+          const left = join.prop.formula(table, columns);
           conditions.push(`${left} = ${this.platform.quoteIdentifier(right)}`);
           return;
         }
@@ -994,6 +1002,18 @@ export class QueryBuilderHelper {
     }
 
     return cond;
+  }
+
+  createFormulaTable(alias: string, meta: EntityMetadata, schema?: string): FormulaTable {
+    const effectiveSchema = schema ?? (meta.schema !== '*' ? meta.schema : undefined);
+    const qualifiedName = effectiveSchema ? `${effectiveSchema}.${meta.tableName}` : meta.tableName;
+    return {
+      alias,
+      name: meta.tableName,
+      schema: effectiveSchema,
+      qualifiedName,
+      toString: () => alias,
+    };
   }
 
 }

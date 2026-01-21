@@ -452,6 +452,8 @@ export class QueryBuilder<
     const fields: Field<Entity>[] = [];
     const populate: PopulateOptions<Entity>[] = [];
     const joinKey = Object.keys(this._joins).find(join => join.endsWith(`#${alias}`));
+    const targetMeta = prop.targetMeta!;
+    const schema = this._schema ?? (targetMeta.schema !== '*' ? targetMeta.schema : undefined);
 
     if (joinKey) {
       const path = this._joins[joinKey].path!.split('.').slice(1);
@@ -469,24 +471,24 @@ export class QueryBuilder<
       populate.push(...children);
     }
 
-    for (const p of prop.targetMeta!.getPrimaryProps()) {
-      fields.push(...this.driver.mapPropToFieldNames<Entity>(this, p, alias));
+    for (const p of targetMeta.getPrimaryProps()) {
+      fields.push(...this.driver.mapPropToFieldNames<Entity>(this, p, alias, targetMeta, schema));
     }
 
     if (explicitFields) {
       for (const field of explicitFields) {
         const [a, f] = this.helper.splitField(field as EntityKey<Entity>);
-        const p = prop.targetMeta!.properties[f];
+        const p = targetMeta.properties[f];
 
         if (p) {
-          fields.push(...this.driver.mapPropToFieldNames<Entity>(this, p, alias));
+          fields.push(...this.driver.mapPropToFieldNames<Entity>(this, p, alias, targetMeta, schema));
         } else {
           fields.push(`${a}.${f} as ${a}__${f}`);
         }
       }
     }
 
-    prop.targetMeta!.props
+    targetMeta.props
       .filter(prop => {
         if (!explicitFields) {
           return this.platform.shouldHaveColumn(prop, populate);
@@ -494,7 +496,7 @@ export class QueryBuilder<
 
         return prop.primary && !explicitFields.includes(prop.name) && !explicitFields.includes(`${alias}.${prop.name}`);
       })
-      .forEach(prop => fields.push(...this.driver.mapPropToFieldNames<Entity>(this, prop, alias)));
+      .forEach(prop => fields.push(...this.driver.mapPropToFieldNames<Entity>(this, prop, alias, targetMeta, schema)));
 
     return fields;
   }
@@ -1652,12 +1654,16 @@ export class QueryBuilder<
     this.processNestedJoins();
 
     if (meta && (this._fields?.includes('*') || this._fields?.includes(`${this.mainAlias.aliasName}.*`))) {
+      const schema = this.getSchema(this.mainAlias);
+      const columns = meta.createColumnMappingObject();
+
       meta.props
         .filter(prop => prop.formula && (!prop.lazy || this.flags.has(QueryFlag.INCLUDE_LAZY_FORMULAS)))
         .map(prop => {
           const alias = this.platform.quoteIdentifier(this.mainAlias.aliasName);
           const aliased = this.platform.quoteIdentifier(prop.fieldNames[0]);
-          return `${prop.formula!(alias)} as ${aliased}`;
+          const table = this.helper.createFormulaTable(alias.toString(), meta, schema);
+          return `${(prop.formula!(table, columns))} as ${aliased}`;
         })
         .filter(field => !this._fields!.some(f => {
           if (isRaw(f)) {
