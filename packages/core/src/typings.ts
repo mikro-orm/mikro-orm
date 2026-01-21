@@ -1369,10 +1369,13 @@ export interface EntitySchemaWithMeta<TName extends string = string, TTableName 
   readonly name: TName;
   readonly properties: TProperties;
   readonly tableName: TTableName;
+  /** @internal Direct entity type access - avoids expensive pattern matching */
+  readonly '~entity': TEntity;
 }
 
+// Fast path: direct property access avoids pattern matching against 6-parameter generic
 export type InferEntity<Schema> =
-  Schema extends EntitySchemaWithMeta<any, any, infer Entity, any, any> ? Entity :
+  Schema extends { '~entity': infer E } ? E :
   Schema extends EntitySchema<infer Entity> ? Entity :
   Schema extends EntityClass<infer Entity> ? Entity :
   Schema;

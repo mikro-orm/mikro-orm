@@ -636,6 +636,9 @@ function createPropertyBuilders<Types extends Record<string, any>>(
   ) as any;
 }
 
+// Simplified constraint for relation targets - avoids expensive structural check against 6-parameter generic
+type EntityTarget = { '~entity': any } | EntityClass;
+
 const propertyBuilders = {
   ...createPropertyBuilders(types),
 
@@ -666,31 +669,31 @@ const propertyBuilders = {
       items,
     }),
 
-  embedded: <Target extends EntitySchemaWithMeta<any, any, any, any, any> | EntityClass | EntitySchemaWithMeta<any, any, any, any, any>[] | EntityClass[]>(target: Target) =>
+  embedded: <Target extends EntityTarget | EntityTarget[]>(target: Target) =>
     new UniversalPropertyOptionsBuilder<InferEntity<Target extends (infer T)[] ? T : Target>, EmptyOptions, IncludeKeysForEmbeddedOptions>({
       entity: () => target as any,
       kind: 'embedded',
     }),
 
-  manyToMany: <Target extends EntitySchemaWithMeta<any, any, any, any, any> | EntityClass>(target: Target) =>
+  manyToMany: <Target extends EntityTarget>(target: Target) =>
     new UniversalPropertyOptionsBuilder<InferEntity<Target>, EmptyOptions & { kind: 'm:n' }, IncludeKeysForManyToManyOptions>({
       entity: () => target as any,
       kind: 'm:n',
     }),
 
-  manyToOne: <Target extends EntitySchemaWithMeta<any, any, any, any, any> | EntityClass>(target: Target) =>
+  manyToOne: <Target extends EntityTarget>(target: Target) =>
     new UniversalPropertyOptionsBuilder<InferEntity<Target>, EmptyOptions & { kind: 'm:1' }, IncludeKeysForManyToOneOptions>({
       entity: () => target as any,
       kind: 'm:1',
     }),
 
-  oneToMany: <Target extends EntitySchemaWithMeta<any, any, any, any, any> | EntityClass>(target: Target) =>
+  oneToMany: <Target extends EntityTarget>(target: Target) =>
     new OneToManyOptionsBuilderOnlyMappedBy<InferEntity<Target>>({
       entity: () => target as any,
       kind: '1:m',
     }),
 
-  oneToOne: <Target extends EntitySchemaWithMeta<any, any, any, any, any> | EntityClass>(target: Target) =>
+  oneToOne: <Target extends EntityTarget>(target: Target) =>
     new UniversalPropertyOptionsBuilder<InferEntity<Target>, EmptyOptions & { kind: '1:1' }, IncludeKeysForOneToOneOptions>({
       entity: () => target as any,
       kind: '1:1',
