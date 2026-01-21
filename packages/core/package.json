@@ -64,7 +64,7 @@
     "esprima": "4.0.1",
     "fs-extra": "11.3.3",
     "globby": "11.1.0",
-    "mikro-orm": "^6.6.5",
+    "mikro-orm": "6.6.5",
     "reflect-metadata": "0.2.2"
   }
 }
