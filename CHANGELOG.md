@@ -3,6 +3,27 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.6.5](https://github.com/mikro-orm/mikro-orm/compare/v6.6.4...v6.6.5) (2026-01-21)
+
+
+### Bug Fixes
+
+* **core:** always check the database when querying by PK with filters ([bd44c82](https://github.com/mikro-orm/mikro-orm/commit/bd44c823cd2c03ee04a2d7483cf35c76042c594f)), closes [#7084](https://github.com/mikro-orm/mikro-orm/issues/7084)
+* **core:** ensure `populate` hint won't include `undefined` for optional relations ([fede490](https://github.com/mikro-orm/mikro-orm/commit/fede490b499a86936ebf05a6c2c1faf7abb047d7))
+* **core:** improve handling of deeply nested composite keys in `em.create` ([8caae8f](https://github.com/mikro-orm/mikro-orm/commit/8caae8f13a60529d53777fca9397d266c59922c0)), closes [#6894](https://github.com/mikro-orm/mikro-orm/issues/6894)
+* **core:** normalize `populate` option in `Collection.matching()` for M:N relations ([#7091](https://github.com/mikro-orm/mikro-orm/issues/7091)) ([886772a](https://github.com/mikro-orm/mikro-orm/commit/886772a1901ebfd747f9edf86c1d7769733c0e2e))
+* **core:** support overlapping properties with different field names in STI ([badbc00](https://github.com/mikro-orm/mikro-orm/commit/badbc00d1ebe5610b6c4729cacfe25ca8991cbc5)), closes [#5813](https://github.com/mikro-orm/mikro-orm/issues/5813)
+* **sql:** fix populating M:N relations with `pivotEntity` that uses `mapToPk: true` ([0ab55fe](https://github.com/mikro-orm/mikro-orm/commit/0ab55fecba1e859ba8e9a59d62dd94258e99612e)), closes [#7107](https://github.com/mikro-orm/mikro-orm/issues/7107)
+
+
+### Features
+
+* **core:** improve formula callback to provide more information about the table and column mapping ([#7105](https://github.com/mikro-orm/mikro-orm/issues/7105)) ([059bf97](https://github.com/mikro-orm/mikro-orm/commit/059bf97f5c890a648a6d28858bfb45dfa803b38c)), closes [#7102](https://github.com/mikro-orm/mikro-orm/issues/7102)
+
+
+
+
+
 ## [6.6.4](https://github.com/mikro-orm/mikro-orm/compare/v6.6.3...v6.6.4) (2026-01-14)
 
 
