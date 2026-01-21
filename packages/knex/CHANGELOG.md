@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.6.5](https://github.com/mikro-orm/mikro-orm/compare/v6.6.4...v6.6.5) (2026-01-21)
+
+
+### Bug Fixes
+
+* **core:** improve handling of deeply nested composite keys in `em.create` ([8caae8f](https://github.com/mikro-orm/mikro-orm/commit/8caae8f13a60529d53777fca9397d266c59922c0)), closes [#6894](https://github.com/mikro-orm/mikro-orm/issues/6894)
+* **sql:** fix populating M:N relations with `pivotEntity` that uses `mapToPk: true` ([0ab55fe](https://github.com/mikro-orm/mikro-orm/commit/0ab55fecba1e859ba8e9a59d62dd94258e99612e)), closes [#7107](https://github.com/mikro-orm/mikro-orm/issues/7107)
+
+
+### Features
+
+* **core:** improve formula callback to provide more information about the table and column mapping ([#7105](https://github.com/mikro-orm/mikro-orm/issues/7105)) ([059bf97](https://github.com/mikro-orm/mikro-orm/commit/059bf97f5c890a648a6d28858bfb45dfa803b38c)), closes [#7102](https://github.com/mikro-orm/mikro-orm/issues/7102)
+
+
+
+
+
 ## [6.6.4](https://github.com/mikro-orm/mikro-orm/compare/v6.6.3...v6.6.4) (2026-01-14)
 
 
