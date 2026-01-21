@@ -227,7 +227,7 @@ export class UnitOfWork {
   tryGetById<T extends object>(entityName: EntityName<T>, where: FilterQuery<T>, schema?: string, strict = true): T | null {
     const pk = Utils.extractPK(where, this.metadata.find<T>(entityName)!, strict);
 
-    if (!pk) {
+    if (!pk || Utils.isPlainObject(where)) {
       return null;
     }
 

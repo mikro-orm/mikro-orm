@@ -103,6 +103,7 @@ export class MetadataStorage {
     return this.metadata.has(entityName);
   }
 
+  // TODO remove first param, since its always `meta.class`?
   set<T>(entityName: EntityName<T>, meta: EntityMetadata): EntityMetadata {
     this.metadata.set(entityName, meta);
     this.idMap[meta._id] = meta;

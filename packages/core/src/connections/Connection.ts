@@ -122,7 +122,13 @@ export abstract class Connection {
         this.config.set('schema', ret.schema);
       }
     } else {
-      const url = new URL(this.config.get('clientUrl')!);
+      let url: URL;
+
+      try {
+        url = new URL(this.config.get('clientUrl')!);
+      } catch {
+        url = {} as URL;
+      }
       this.options.host = ret.host = this.options.host ?? this.config.get('host', decodeURIComponent(url.hostname));
       this.options.port = ret.port = this.options.port ?? this.config.get('port', +url.port);
       this.options.user = ret.user = this.options.user ?? this.config.get('user', decodeURIComponent(url.username));

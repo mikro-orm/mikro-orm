@@ -162,6 +162,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
   }
 
   async count<T extends object>(entityName: EntityName<T>, where: FilterQuery<T>, options: CountOptions<T> = {}, ctx?: Transaction<ClientSession>): Promise<number> {
+
     /* v8 ignore next */
     if (this.metadata.find(entityName)?.virtual) {
       return this.countVirtual(entityName, where, options);

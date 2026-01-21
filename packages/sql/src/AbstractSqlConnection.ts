@@ -8,6 +8,7 @@ import {
   type IsolationLevel,
   type LogContext,
   type LoggingOptions,
+  type MaybePromise,
   type QueryResult,
   RawQueryFragment,
   type Transaction,
@@ -22,10 +23,10 @@ export abstract class AbstractSqlConnection extends Connection {
   declare protected platform: AbstractSqlPlatform;
   #client?: Kysely<any>;
 
-  abstract createKyselyDialect(overrides: Dictionary): Dialect;
+  abstract createKyselyDialect(overrides: Dictionary): MaybePromise<Dialect>;
 
   async connect(options?: { skipOnConnect?: boolean }): Promise<void> {
-    this.getClient();
+    await this.initClient();
     this.connected = true;
 
     if (options?.skipOnConnect !== true) {
@@ -33,7 +34,7 @@ export abstract class AbstractSqlConnection extends Connection {
     }
   }
 
-  createKysely(): void {
+  createKysely(): MaybePromise<void> {
     let driverOptions = this.options.driverOptions ?? this.config.get('driverOptions')!;
 
     if (typeof driverOptions === 'function') {
@@ -47,9 +48,15 @@ export abstract class AbstractSqlConnection extends Connection {
       this.logger.log('info', 'Reusing Kysely dialect provided via `driverOptions`');
       this.#client = new Kysely<any>({ dialect: driverOptions as Dialect });
     } else {
-      this.#client = new Kysely<any>({
-        dialect: this.createKyselyDialect(driverOptions),
-      });
+      const dialect = this.createKyselyDialect(driverOptions);
+
+      if (dialect instanceof Promise) {
+        return dialect.then(d => {
+          this.#client = new Kysely<any>({ dialect: d });
+        });
+      }
+
+      this.#client = new Kysely<any>({ dialect });
     }
   }
 
@@ -89,10 +96,21 @@ export abstract class AbstractSqlConnection extends Connection {
 
   getClient<T = any>(): Kysely<T> {
     if (!this.#client) {
-      this.createKysely();
+      const maybePromise = this.createKysely();
+
+      /* v8 ignore next */
+      if (maybePromise instanceof Promise) {
+        throw new Error('Current driver requires async initialization, use `MikroORM.init()` instead of the constructor');
+      }
     }
 
     return this.#client!;
+  }
+
+  async initClient(): Promise<void> {
+    if (!this.#client) {
+      await this.createKysely();
+    }
   }
 
   override async transactional<T>(cb: (trx: Transaction<ControlledTransaction<any, any>>) => Promise<T>, options: { isolationLevel?: IsolationLevel; readOnly?: boolean; ctx?: ControlledTransaction<any>; eventBroadcaster?: TransactionEventBroadcaster; loggerContext?: LogContext } = {}): Promise<T> {
@@ -262,7 +280,7 @@ export abstract class AbstractSqlConnection extends Connection {
     }
   }
 
-  private getSql(query: string, formatted: string, context?: LogContext): string {
+  protected getSql(query: string, formatted: string, context?: LogContext): string {
     const logger = this.config.getLogger();
 
     if (!logger.isEnabled('query', context)) {

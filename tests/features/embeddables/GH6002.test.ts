@@ -1,4 +1,4 @@
-import { MikroORM, QueryOrder } from '@mikro-orm/mongodb';
+import { ObjectId, MikroORM, QueryOrder } from '@mikro-orm/mongodb';
 import { Embeddable, Embedded, Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 @Embeddable()
@@ -29,7 +29,7 @@ class RideDetailsModel {
 class RideModel {
 
   @PrimaryKey()
-  _id!: number;
+  _id!: ObjectId;
 
   @Embedded({ object: true })
   details!: RideDetailsModel;

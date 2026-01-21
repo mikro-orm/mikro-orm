@@ -25,7 +25,6 @@ export class Migration20191013214813 extends Migration {
     this.addSql(\`alter table "custom"."publisher2" add constraint "publisher2_enum5_check" check ("enum5" in ('a'));\`);
 
     this.addSql(\`create table "custom"."author2" ("id" serial primary key, "created_at" timestamptz(3) not null default current_timestamp(3), "updated_at" timestamptz(3) not null default current_timestamp(3), "name" varchar(255) not null, "email" varchar(255) not null, "age" int null, "terms_accepted" boolean not null default false, "optional" boolean null, "identities" text[] null, "born" date null, "born_time" time(0) null, "favourite_book_uuid_pk" uuid null, "favourite_author_id" int null, "identity" jsonb null);\`);
-    this.addSql(\`create index "custom_email_index_name" on "custom"."author2" ("email");\`);
     this.addSql(\`alter table "custom"."author2" add constraint "custom_email_unique_name" unique ("email");\`);
     this.addSql(\`create index "author2_terms_accepted_index" on "custom"."author2" ("terms_accepted");\`);
     this.addSql(\`create index "author2_born_index" on "custom"."author2" ("born");\`);
@@ -120,7 +119,6 @@ export class Migration20191013214813 extends Migration {
       "alter table "custom"."publisher2" add constraint "publisher2_enum5_check" check ("enum5" in ('a'));",
       "",
       "create table "custom"."author2" ("id" serial primary key, "created_at" timestamptz(3) not null default current_timestamp(3), "updated_at" timestamptz(3) not null default current_timestamp(3), "name" varchar(255) not null, "email" varchar(255) not null, "age" int null, "terms_accepted" boolean not null default false, "optional" boolean null, "identities" text[] null, "born" date null, "born_time" time(0) null, "favourite_book_uuid_pk" uuid null, "favourite_author_id" int null, "identity" jsonb null);",
-      "create index "custom_email_index_name" on "custom"."author2" ("email");",
       "alter table "custom"."author2" add constraint "custom_email_unique_name" unique ("email");",
       "create index "author2_terms_accepted_index" on "custom"."author2" ("terms_accepted");",
       "create index "author2_born_index" on "custom"."author2" ("born");",
@@ -221,7 +219,6 @@ export class Migration20191013214813 extends Migration {
     this.addSql(\`alter table "custom"."publisher2" add constraint "publisher2_enum5_check" check ("enum5" in ('a'));\`);
 
     this.addSql(\`create table "custom"."author2" ("id" serial primary key, "created_at" timestamptz(3) not null default current_timestamp(3), "updated_at" timestamptz(3) not null default current_timestamp(3), "name" varchar(255) not null, "email" varchar(255) not null, "age" int null, "terms_accepted" boolean not null default false, "optional" boolean null, "identities" text[] null, "born" date null, "born_time" time(0) null, "favourite_book_uuid_pk" uuid null, "favourite_author_id" int null, "identity" jsonb null);\`);
-    this.addSql(\`create index "custom_email_index_name" on "custom"."author2" ("email");\`);
     this.addSql(\`alter table "custom"."author2" add constraint "custom_email_unique_name" unique ("email");\`);
     this.addSql(\`create index "author2_terms_accepted_index" on "custom"."author2" ("terms_accepted");\`);
     this.addSql(\`create index "author2_born_index" on "custom"."author2" ("born");\`);
@@ -316,7 +313,6 @@ export class Migration20191013214813 extends Migration {
       "alter table "custom"."publisher2" add constraint "publisher2_enum5_check" check ("enum5" in ('a'));",
       "",
       "create table "custom"."author2" ("id" serial primary key, "created_at" timestamptz(3) not null default current_timestamp(3), "updated_at" timestamptz(3) not null default current_timestamp(3), "name" varchar(255) not null, "email" varchar(255) not null, "age" int null, "terms_accepted" boolean not null default false, "optional" boolean null, "identities" text[] null, "born" date null, "born_time" time(0) null, "favourite_book_uuid_pk" uuid null, "favourite_author_id" int null, "identity" jsonb null);",
-      "create index "custom_email_index_name" on "custom"."author2" ("email");",
       "alter table "custom"."author2" add constraint "custom_email_unique_name" unique ("email");",
       "create index "author2_terms_accepted_index" on "custom"."author2" ("terms_accepted");",
       "create index "author2_born_index" on "custom"."author2" ("born");",

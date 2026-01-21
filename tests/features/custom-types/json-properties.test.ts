@@ -22,6 +22,7 @@ const options = {
   mssql: { dbName: 'mikro_orm_json_props', password: 'Root.Root' },
   mariadb: { dbName: 'mikro_orm_json_props', port: 3309 },
   postgresql: { dbName: 'mikro_orm_json_props' },
+  oracledb: { dbName: 'mikro_orm_json_props', password: 'oracle123' },
   mongo: { dbName: 'mikro_orm_json_props' },
 };
 
@@ -34,6 +35,7 @@ describe.each(Utils.keys(options))('JSON properties [%s]',  type => {
       entities: [User],
       driver: PLATFORMS[type],
       loggerFactory: SimpleLogger.create,
+      debug: true,
       ...options[type],
     });
     await orm.schema.refresh();
