@@ -2,13 +2,13 @@ import {
   ArrayType,
   BooleanType,
   DateTimeType,
-  JsonType,
-  parseJsonSafe,
-  Utils,
   type Dictionary,
   type EntityProperty,
-  type Logger,
   inspect,
+  JsonType,
+  type Logger,
+  parseJsonSafe,
+  Utils,
 } from '@mikro-orm/core';
 import type { Column, ForeignKey, IndexDef, SchemaDifference, TableDifference } from '../typings.js';
 import type { DatabaseSchema } from './DatabaseSchema.js';
@@ -41,6 +41,9 @@ export class SchemaComparator {
       newTables: {},
       removedTables: {},
       changedTables: {},
+      newViews: {},
+      changedViews: {},
+      removedViews: {},
       orphanedForeignKeys: [],
       newNativeEnums: [],
       removedNativeEnums: [],
@@ -148,6 +151,33 @@ export class SchemaComparator {
 
           delete diff.changedTables[localTableName].removedForeignKeys[key];
         }
+      }
+    }
+
+    // Compare views
+    for (const toView of toSchema.getViews()) {
+      const viewName = toView.schema ? `${toView.schema}.${toView.name}` : toView.name;
+
+      if (!fromSchema.hasView(toView.name) && !fromSchema.hasView(viewName)) {
+        diff.newViews[viewName] = toView;
+        this.log(`view ${viewName} added`);
+      } else {
+        const fromView = fromSchema.getView(toView.name) ?? fromSchema.getView(viewName);
+
+        if (fromView && this.diffExpression(fromView.definition, toView.definition)) {
+          diff.changedViews[viewName] = { from: fromView, to: toView };
+          this.log(`view ${viewName} changed`);
+        }
+      }
+    }
+
+    // Check for removed views
+    for (const fromView of fromSchema.getViews()) {
+      const viewName = fromView.schema ? `${fromView.schema}.${fromView.name}` : fromView.name;
+
+      if (!toSchema.hasView(fromView.name) && !toSchema.hasView(viewName)) {
+        diff.removedViews[viewName] = fromView;
+        this.log(`view ${viewName} removed`);
       }
     }
 
@@ -647,9 +677,30 @@ export class SchemaComparator {
       return str
         ?.replace(/_\w+'(.*?)'/g, '$1')
         .replace(/in\s*\((.*?)\)/ig, '= any (array[$1])')
-        .replace(/['"`()\n[\]]|::\w+| +/g, '')
+        // MySQL normalizes count(*) to count(0)
+        .replace(/\bcount\s*\(\s*0\s*\)/gi, 'count(*)')
+        // Remove quotes first so we can process identifiers
+        .replace(/['"`]/g, '')
+        // MySQL adds table/alias prefixes to columns (e.g., a.name or table_name.column vs just column)
+        // Strip these prefixes - match word.word patterns and keep only the last part
+        .replace(/\b\w+\.(\w+)/g, '$1')
+        // Normalize JOIN syntax: inner join -> join (equivalent in SQL)
+        .replace(/\binner\s+join\b/gi, 'join')
+        // Remove redundant column aliases like `title AS title` -> `title`
+        .replace(/\b(\w+)\s+as\s+\1\b/gi, '$1')
+        // Remove AS keyword (optional in SQL, MySQL may add/remove it)
+        .replace(/\bas\b/gi, '')
+        // Remove remaining special chars, parentheses, type casts, asterisks, and normalize whitespace
+        .replace(/[()\n[\]*]|::\w+| +/g, '')
         .replace(/anyarray\[(.*)]/ig, '$1')
-        .toLowerCase();
+        .toLowerCase()
+        // PostgreSQL adds default aliases to aggregate functions (e.g., count(*) AS count)
+        // After removing AS and whitespace, this results in duplicate adjacent words
+        // Remove these duplicates: "countcount" -> "count", "minmin" -> "min"
+        // Use lookahead to match repeated patterns of 3+ chars (avoid false positives on short sequences)
+        .replace(/(\w{3,})\1/g, '$1')
+        // Remove trailing semicolon (PostgreSQL adds it to view definitions)
+        .replace(/;$/, '');
     };
     return simplify(expr1) !== simplify(expr2);
   }

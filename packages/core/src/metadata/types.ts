@@ -42,13 +42,19 @@ export type EntityOptions<T, E = T extends EntityClass<infer P> ? P : T> = {
   abstract?: boolean;
   /** Disables change tracking - such entities are ignored during flush. */
   readonly?: boolean;
-  /** Marks entity as {@doclink virtual-entities | virtual}. This is set automatically when you use `expression` option. */
+  /** Marks entity as {@doclink virtual-entities | virtual}. This is set automatically when you use `expression` option (unless `view` is set). */
   virtual?: boolean;
+  /**
+   * Marks entity as a database view. Unlike virtual entities which evaluate expressions at query time,
+   * view entities create actual database views. The `expression` option must be provided when `view` is true.
+   * View entities are read-only by default.
+   */
+  view?: boolean;
   /** Used to make ORM aware of externally defined triggers. This is needed for MS SQL Server multi inserts, ignored in other dialects. */
   hasTriggers?: boolean;
   // we need to use `em: any` here otherwise an expression would not be assignable with more narrow type like `SqlEntityManager`
   // also return type is unknown as it can be either QB instance (which we cannot type here) or array of POJOs (e.g. for mongodb)
-  /** SQL query that maps to a {@doclink virtual-entities | virtual entity}. */
+  /** SQL query that maps to a {@doclink virtual-entities | virtual entity}, or for view entities, the view definition. */
   expression?: string | ((em: any, where: ObjectQuery<E>, options: FindOptions<E, any, any, any>, stream?: boolean) => object);
   /** Set {@doclink repositories#custom-repository | custom repository class}. */
   repository?: () => Constructor;

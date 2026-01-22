@@ -88,7 +88,15 @@ export abstract class SchemaHelper {
 
   abstract loadInformationSchema(schema: DatabaseSchema, connection: AbstractSqlConnection, tables: Table[], schemas?: string[]): Promise<void>;
 
-  getListTablesSQL(schemaName?: string): string {
+  getListTablesSQL(): string {
+    throw new Error('Not supported by given driver');
+  }
+
+  getListViewsSQL(): string {
+    throw new Error('Not supported by given driver');
+  }
+
+  async loadViews(schema: DatabaseSchema, connection: AbstractSqlConnection): Promise<void> {
     throw new Error('Not supported by given driver');
   }
 
@@ -700,6 +708,21 @@ export abstract class SchemaHelper {
 
   dropTableIfExists(name: string, schema?: string): string {
     let sql = `drop table if exists ${this.quote(this.getTableName(name, schema))}`;
+
+    if (this.platform.usesCascadeStatement()) {
+      sql += ' cascade';
+    }
+
+    return sql;
+  }
+
+  createView(name: string, schema: string | undefined, definition: string): string {
+    const viewName = this.quote(this.getTableName(name, schema));
+    return `create view ${viewName} as ${definition}`;
+  }
+
+  dropViewIfExists(name: string, schema?: string): string {
+    let sql = `drop view if exists ${this.quote(this.getTableName(name, schema))}`;
 
     if (this.platform.usesCascadeStatement()) {
       sql += ' cascade';

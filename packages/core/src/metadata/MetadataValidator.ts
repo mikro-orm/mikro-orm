@@ -26,7 +26,16 @@ export class MetadataValidator {
   validateEntityDefinition<T>(metadata: MetadataStorage, name: EntityName<T>, options: MetadataDiscoveryOptions): void {
     const meta = metadata.get(name);
 
-    if (meta.virtual || meta.expression) {
+    // View entities (expression with view flag) behave like regular tables but are read-only
+    // They can have primary keys and are created as actual database views
+    if (meta.view) {
+      this.validateViewEntity(meta);
+      return;
+    }
+
+    // Virtual entities (expression without view flag) have restrictions - no PKs, limited relation types
+    // Note: meta.virtual is set later in sync(), so we check for expression && !view here
+    if (meta.virtual || (meta.expression && !meta.view)) {
       for (const prop of Utils.values(meta.properties)) {
         if (![ReferenceKind.SCALAR, ReferenceKind.EMBEDDED, ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind)) {
           throw new MetadataError(`Only scalars, embedded properties and to-many relations are allowed inside virtual entity. Found '${prop.kind}' in ${meta.className}.${prop.name}`);
@@ -294,6 +303,24 @@ export class MetadataValidator {
         throw MetadataError.dangerousPropertyName(meta, prop);
       }
     }
+  }
+
+  /**
+   * Validates view entity configuration.
+   * View entities must have an expression.
+   */
+  private validateViewEntity(meta: EntityMetadata): void {
+    // View entities must have an expression
+    if (!meta.expression) {
+      throw MetadataError.viewEntityWithoutExpression(meta);
+    }
+
+    // Validate indexes if present
+    this.validateIndexes(meta, meta.indexes ?? [], 'index');
+    this.validateIndexes(meta, meta.uniques ?? [], 'unique');
+
+    // Validate property names
+    this.validatePropertyNames(meta);
   }
 
 }

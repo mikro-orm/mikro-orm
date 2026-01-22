@@ -51,6 +51,28 @@ export class MsSqlSchemaHelper extends SchemaHelper {
       order by schema_name(t2.schema_id), t.name`;
   }
 
+  override getListViewsSQL(): string {
+    return `select v.name as view_name, schema_name(v.schema_id) as schema_name, m.definition as view_definition
+      from sys.views v
+      inner join sys.sql_modules m on v.object_id = m.object_id
+      order by schema_name(v.schema_id), v.name`;
+  }
+
+  override async loadViews(schema: DatabaseSchema, connection: AbstractSqlConnection): Promise<void> {
+    const views = await connection.execute<{ view_name: string; schema_name: string; view_definition: string }[]>(this.getListViewsSQL());
+
+    for (const view of views) {
+      // Extract SELECT statement from CREATE VIEW ... AS SELECT ...
+      const match = view.view_definition?.match(/\bAS\s+(.+)$/is);
+      const definition = match?.[1]?.trim();
+
+      if (definition) {
+        const schemaName = view.schema_name === this.platform.getDefaultSchemaName() ? undefined : view.schema_name;
+        schema.addView(view.view_name, schemaName, definition);
+      }
+    }
+  }
+
   override async getNamespaces(connection: AbstractSqlConnection): Promise<string[]> {
     const sql = `select name as schema_name from sys.schemas order by name`;
     const res = await connection.execute<{ schema_name: string }[]>(sql);
@@ -532,6 +554,11 @@ export class MsSqlSchemaHelper extends SchemaHelper {
     }
 
     return `if object_id('${this.quote(schema, name)}', 'U') is not null drop table ${this.quote(schema, name)}`;
+  }
+
+  override dropViewIfExists(name: string, schema?: string): string {
+    const viewName = this.quote(this.getTableName(name, schema));
+    return `if object_id('${viewName}', 'V') is not null drop view ${viewName}`;
   }
 
   override getAddColumnsSQL(table: DatabaseTable, columns: Column[]): string[] {

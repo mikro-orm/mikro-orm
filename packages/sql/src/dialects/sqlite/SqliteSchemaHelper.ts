@@ -24,6 +24,21 @@ export class SqliteSchemaHelper extends SchemaHelper {
       + `union all select name as table_name from sqlite_temp_master where type = 'table' order by name`;
   }
 
+  override getListViewsSQL(): string {
+    return `select name as view_name, sql as view_definition from sqlite_master where type = 'view' order by name`;
+  }
+
+  override async loadViews(schema: DatabaseSchema, connection: AbstractSqlConnection, schemaName?: string): Promise<void> {
+    const views = await connection.execute<{ view_name: string; view_definition: string }[]>(this.getListViewsSQL());
+
+    for (const view of views) {
+      // Extract the definition from CREATE VIEW statement
+      const match = view.view_definition.match(/create\s+view\s+[`"']?\w+[`"']?\s+as\s+(.*)/i);
+      const definition = match ? match[1] : view.view_definition;
+      schema.addView(view.view_name, schemaName, definition);
+    }
+  }
+
   override getDropDatabaseSQL(name: string): string {
     if (name === ':memory:') {
       return '';

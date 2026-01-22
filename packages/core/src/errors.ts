@@ -309,6 +309,10 @@ export class MetadataError<T extends AnyEntity = AnyEntity> extends ValidationEr
     return this.fromMessage(meta, prop, `uses a dangerous property name '${prop.name}' which could lead to prototype pollution. Please use a different property name.`);
   }
 
+  static viewEntityWithoutExpression(meta: EntityMetadata): MetadataError {
+    return new MetadataError(`View entity ${meta.className} is missing 'expression'. View entities must have an expression defining the SQL query.`);
+  }
+
   private static fromMessage(meta: EntityMetadata, prop: EntityProperty, message: string): MetadataError {
     return new MetadataError(`${meta.className}.${prop.name} ${message}`);
   }

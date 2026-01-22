@@ -728,7 +728,9 @@ export class EntityMetadata<Entity = any, Class extends EntityCtor<Entity> = Ent
       return this.root.uniqueName === prop.targetMeta?.root.uniqueName;
     });
     this.hasUniqueProps = this.uniques.length + this.uniqueProps.length > 0;
-    this.virtual = !!this.expression;
+    // If `view` is set, this is a database view entity (not a virtual entity).
+    // Virtual entities evaluate expressions at query time, view entities create actual database views.
+    this.virtual = !!this.expression && !this.view;
 
     if (config) {
       for (const prop of this.props) {
@@ -757,7 +759,7 @@ export class EntityMetadata<Entity = any, Class extends EntityCtor<Entity> = Ent
       this.hooks[hook] = Utils.removeDuplicates(this.hooks[hook] as any);
     }
 
-    if (this.virtual) {
+    if (this.virtual || this.view) {
       this.readonly = true;
     }
 
@@ -858,6 +860,8 @@ export interface EntityMetadata<Entity = any, Class extends EntityCtor<Entity> =
   schema?: string;
   pivotTable?: boolean;
   virtual?: boolean;
+  /** True if this entity represents a database view (not a virtual entity). */
+  view?: boolean;
   // we need to use `em: any` here otherwise an expression would not be assignable with more narrow type like `SqlEntityManager`
   // also return type is unknown as it can be either QB instance (which we cannot type here) or array of POJOs (e.g. for mongodb)
   expression?: string | ((em: any, where: ObjectQuery<Entity>, options: FindOptions<Entity, any, any, any>, stream?: boolean) => MaybePromise<Raw | object | string>);
