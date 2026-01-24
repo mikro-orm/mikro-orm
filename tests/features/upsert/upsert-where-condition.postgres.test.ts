@@ -116,7 +116,6 @@ describe('upsert with where condition', () => {
       { name: 'doc3', version: 1, content: 'initial 3' },
       { name: 'doc4', version: 1, content: 'initial 4' },
     ]);
-    await orm.em.flush();
 
     // Upsert multiple documents with version check
     await orm.em.fork().upsertMany(Document, [
