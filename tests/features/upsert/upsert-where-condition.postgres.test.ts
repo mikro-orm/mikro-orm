@@ -44,7 +44,6 @@ describe('upsert with where condition', () => {
 
     // Insert initial document with version 1
     await orm.em.insert(Document, { name: 'doc1', version: 1, content: 'initial' });
-    await orm.em.flush();
 
     // Try to upsert with version 2 - should update
     await orm.em.upsert(Document, {
