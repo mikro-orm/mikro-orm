@@ -1104,4 +1104,29 @@ describe('check typings', () => {
     const s2: string | null = user.requiredNullableString;
     void s2; // so no unused variable error for `s`
   });
+
+  test('IsSubset catches invalid keys in em.assign()', () => {
+    class User {
+
+      id!: number;
+      firstName!: string;
+      lastName!: string;
+
+    }
+
+    const em = { assign: vi.fn() as any } as EntityManager;
+    const user = {} as User;
+
+    // Valid assignment
+    em.assign(user, { firstName: 'John' });
+
+    // @ts-expect-error - firstNme is a typo (inline object literal)
+    em.assign(user, { firstNme: 'John' });
+
+    // Typed DTO with typo
+    type BadDto = { firstNme?: string };
+    const dto: BadDto = { firstNme: 'test' };
+    // @ts-expect-error - firstNme does not exist on User entity
+    em.assign(user, dto);
+  });
 });

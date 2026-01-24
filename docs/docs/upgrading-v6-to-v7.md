@@ -409,6 +409,21 @@ class User {
 }
 ```
 
+## Stricter type checking for `em.assign()` data
+
+The `em.assign()` method now performs stricter type checking on the data parameter. Previously, typed objects (e.g., Zod-inferred types, custom DTO interfaces) would bypass validation because TypeScript's `Dictionary` type was considered compatible with any object type. This allowed typos in property names to go undetected.
+
+```ts
+// Before v7: This compiled without errors, even with a typo
+type UpdateUserDto = { firstNme?: string }; // typo: should be firstName
+em.assign(user, dto); // silently ignored at runtime
+
+// In v7: TypeScript will catch the typo
+// Error: Argument of type 'UpdateUserDto' is not assignable to parameter type...
+```
+
+Objects typed as `Dictionary` or `Record<string, any>` still bypass the check to allow dynamic data assignment.
+
 ## Private constructors no longer allowed with `defineEntity`/`EntitySchema`
 
 To be able to infer constructor parameters, we need the constructor to be public. The ORM will use the constructor internally (e.g. in `em.create`), so this was partially a lie. If you need to use a private constructor, please cast the `class` parameter to `any` and use the first generict parameter:

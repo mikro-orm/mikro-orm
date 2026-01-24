@@ -1221,7 +1221,7 @@ type Suffix<Key, Hint extends string, All = true | '*'> = Hint extends `${infer 
 
 export type IsSubset<T, U> = keyof U extends keyof T
   ? {}
-  : Dictionary extends U
+  : string extends keyof U // If U has an index signature (like Dictionary), allow it
     ? {}
     : { [K in keyof U as K extends keyof T ? never : CleanKeys<U, K>]: never; };
 
