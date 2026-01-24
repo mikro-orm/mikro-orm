@@ -173,18 +173,30 @@ export class OracleNativeQueryBuilder extends NativeQueryBuilder {
     const clause = this.options.onConflict!;
     const dataAsArray = Utils.asArray(this.options.data);
     const keys = Object.keys(dataAsArray[0]);
+
+    // Determine which fields will be used in the UPDATE clause
+    let updateFields: string[] = [];
+    if (!clause.ignore) {
+      if (!clause.merge || Array.isArray(clause.merge)) {
+        updateFields = (clause.merge || keys)
+          .filter(field => !Array.isArray(clause.fields) || !clause.fields.includes(field));
+      }
+    }
+
+    // Combine all unique fields that need to be in the SELECT clause
+    const allFields = [...new Set([...keys, ...updateFields])];
     const parts = [];
 
     for (const data of dataAsArray) {
-      for (const key of keys) {
-        this.params.push(data![key]);
+      for (const key of allFields) {
+        this.params.push(data![key] !== undefined ? data![key] : null);
       }
 
-      parts.push(keys.map(k => `? as ${this.quote(k)}`).join(', '));
+      parts.push(`select ${allFields.map(k => `? as ${this.quote(k)}`).join(', ')} from dual`);
     }
 
     this.parts.push(`merge into ${this.getTableName()}`);
-    this.parts.push(`using (select ${parts.join(', ')} from dual) tsource`);
+    this.parts.push(`using (${parts.join(' union all ')}) tsource`);
 
     if (clause.fields instanceof RawQueryFragment) {
       this.parts.push(clause.fields.sql);
@@ -213,9 +225,7 @@ export class OracleNativeQueryBuilder extends NativeQueryBuilder {
       this.parts.push('then update set');
 
       if (!clause.merge || Array.isArray(clause.merge)) {
-        const parts = (clause.merge || keys)
-          .filter(field => !Array.isArray(clause.fields) || !clause.fields.includes(field))
-          .map((column: any) => `${this.quote(column)} = tsource.${this.quote(column)}`);
+        const parts = updateFields.map((column: string) => `${this.quote(column)} = tsource.${this.quote(column)}`);
         this.parts.push(parts.join(', '));
       } else if (typeof clause.merge === 'object') {
         const parts = Object.entries(clause.merge).map(([key, value]) => {
