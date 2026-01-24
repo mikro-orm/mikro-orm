@@ -162,7 +162,30 @@ export class EntityGenerator {
     }
 
     this.detectManyToManyRelations(metadata, options.onlyPurePivotTables!, options.readOnlyPivotTables!, options.outputPurePivotTables!);
+    this.cleanUpReferentialIntegrityRules(metadata);
 
+    if (options.bidirectionalRelations) {
+      this.generateBidirectionalRelations(metadata, options.outputPurePivotTables!);
+    }
+
+    if (options.identifiedReferences) {
+      this.generateIdentifiedReferences(metadata);
+    }
+
+    if (options.customBaseEntityName) {
+      this.generateAndAttachCustomBaseEntity(metadata, options.customBaseEntityName);
+    }
+
+    if (options.undefinedDefaults) {
+      this.castNullDefaultsToUndefined(metadata);
+    }
+
+    await options.onProcessedMetadata?.(metadata, this.platform);
+
+    return metadata;
+  }
+
+  private cleanUpReferentialIntegrityRules<Entity>(metadata: EntityMetadata<Entity>[]) {
     // Clear FK rules that match defaults for:
     // 1. FK-as-PK entities (all PKs are FKs) - cascade for both update and delete
     // 2. Fixed-order pivot tables (autoincrement id + 2 FK relations only) - cascade for both
@@ -220,26 +243,6 @@ export class EntityGenerator {
         }
       }
     }
-
-    if (options.bidirectionalRelations) {
-      this.generateBidirectionalRelations(metadata, options.outputPurePivotTables!);
-    }
-
-    if (options.identifiedReferences) {
-      this.generateIdentifiedReferences(metadata);
-    }
-
-    if (options.customBaseEntityName) {
-      this.generateAndAttachCustomBaseEntity(metadata, options.customBaseEntityName);
-    }
-
-    if (options.undefinedDefaults) {
-      this.castNullDefaultsToUndefined(metadata);
-    }
-
-    await options.onProcessedMetadata?.(metadata, this.platform);
-
-    return metadata;
   }
 
   private matchName(name: string, nameToMatch: string | RegExp) {
