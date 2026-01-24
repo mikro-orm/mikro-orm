@@ -19,6 +19,22 @@ describe('View entity validation', () => {
     })).rejects.toThrow(/view.*expression/i);
   });
 
+  test('materialized view entity without `view: true` should throw', async () => {
+    @Entity({ tableName: 'invalid_view', materialized: true })
+    class InvalidView2 {
+
+      @PrimaryKey()
+      id!: number;
+
+    }
+
+    await expect(MikroORM.init({
+      entities: [InvalidView2],
+      dbName: ':memory:',
+      metadataProvider: ReflectMetadataProvider,
+    })).rejects.toThrow(`Entity InvalidView2 has 'materialized: true' but is missing 'view: true'. Materialized views must also be marked as views.`);
+  });
+
   test('view entity with expression should be valid', async () => {
     const ValidView = defineEntity({
       name: 'ValidView',

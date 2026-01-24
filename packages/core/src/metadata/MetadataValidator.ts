@@ -26,6 +26,10 @@ export class MetadataValidator {
   validateEntityDefinition<T>(metadata: MetadataStorage, name: EntityName<T>, options: MetadataDiscoveryOptions): void {
     const meta = metadata.get(name);
 
+    if (meta.materialized && !meta.view) {
+      throw MetadataError.materializedWithoutView(meta);
+    }
+
     // View entities (expression with view flag) behave like regular tables but are read-only
     // They can have primary keys and are created as actual database views
     if (meta.view) {

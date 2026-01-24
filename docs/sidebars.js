@@ -72,6 +72,7 @@ module.exports = {
         'custom-types',
         'virtual-entities',
         'view-entities',
+        'materialized-views',
         'embeddables',
         'entity-schema',
         'json-properties',

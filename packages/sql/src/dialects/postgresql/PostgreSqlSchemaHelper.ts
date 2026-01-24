@@ -59,6 +59,39 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     }
   }
 
+  override getListMaterializedViewsSQL(): string {
+    return `select matviewname as view_name, schemaname as schema_name, definition as view_definition `
+      + `from pg_matviews `
+      + `where ${this.getIgnoredNamespacesConditionSQL('schemaname')} `
+      + `order by matviewname`;
+  }
+
+  override async loadMaterializedViews(schema: DatabaseSchema, connection: AbstractSqlConnection, schemaName?: string): Promise<void> {
+    const views = await connection.execute<{ view_name: string; schema_name: string; view_definition: string }[]>(this.getListMaterializedViewsSQL());
+
+    for (const view of views) {
+      const definition = view.view_definition?.trim().replace(/;$/, '') ?? '';
+      if (definition) {
+        schema.addView(view.view_name, view.schema_name, definition, true);
+      }
+    }
+  }
+
+  override createMaterializedView(name: string, schema: string | undefined, definition: string, withData = true): string {
+    const viewName = this.quote(this.getTableName(name, schema));
+    const dataClause = withData ? ' with data' : ' with no data';
+    return `create materialized view ${viewName} as ${definition}${dataClause}`;
+  }
+
+  override dropMaterializedViewIfExists(name: string, schema?: string): string {
+    return `drop materialized view if exists ${this.quote(this.getTableName(name, schema))} cascade`;
+  }
+
+  override refreshMaterializedView(name: string, schema?: string, concurrently = false): string {
+    const concurrent = concurrently ? ' concurrently' : '';
+    return `refresh materialized view${concurrent} ${this.quote(this.getTableName(name, schema))}`;
+  }
+
   override async getNamespaces(connection: AbstractSqlConnection): Promise<string[]> {
     const sql = `select schema_name from information_schema.schemata `
       + `where ${this.getIgnoredNamespacesConditionSQL()} `

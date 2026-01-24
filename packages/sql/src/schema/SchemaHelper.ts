@@ -731,4 +731,24 @@ export abstract class SchemaHelper {
     return sql;
   }
 
+  createMaterializedView(name: string, schema: string | undefined, definition: string, withData = true): string {
+    throw new Error('Not supported by given driver');
+  }
+
+  dropMaterializedViewIfExists(name: string, schema?: string): string {
+    throw new Error('Not supported by given driver');
+  }
+
+  refreshMaterializedView(name: string, schema?: string, concurrently = false): string {
+    throw new Error('Not supported by given driver');
+  }
+
+  getListMaterializedViewsSQL(): string {
+    throw new Error('Not supported by given driver');
+  }
+
+  async loadMaterializedViews(schema: DatabaseSchema, connection: AbstractSqlConnection, schemaName?: string): Promise<void> {
+    throw new Error('Not supported by given driver');
+  }
+
 }

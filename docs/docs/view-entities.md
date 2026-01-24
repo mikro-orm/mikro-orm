@@ -317,7 +317,36 @@ View entities are supported in all SQL databases:
 
 > Note: MongoDB does not support view entities as it doesn't have the concept of database views. Use [virtual entities](./virtual-entities.md) instead for MongoDB.
 
+## Materialized Views
+
+Materialized views are a database feature that allows you to pre-compute and store query results in a table.
+
+MikroORM supports materialized views in PostgreSQL through view entities by setting the `materialized: true` option:
+
+```ts
+@Entity({
+  tableName: 'author_stats_mat_view',
+  view: true,
+  materialized: true,
+  expression: `
+    select a.name, count(b.id) as book_count
+    from author a
+    left join book b on b.author_id = a.id
+    group by a.id, a.name
+  `,
+})
+export class AuthorStatsMatView {
+  @PrimaryKey()
+  name!: string;
+  
+  @Property()
+  bookCount!: number;
+}
+```
+
+Read more about materialized views [in their own section](./materialized-views.md). 
+
 ## Limitations
 
-- View entities are read-only and cannot be persisted
-- Some databases may have limitations on updatable views
+- View entities are read-only and cannot be persisted.
+- Some databases may have limitations on updatable views.

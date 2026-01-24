@@ -50,9 +50,9 @@ export class DatabaseSchema {
     return !!this.getTable(name);
   }
 
-  addView(name: string, schema: string | undefined | null, definition: string): DatabaseView {
+  addView(name: string, schema: string | undefined | null, definition: string, materialized?: boolean, withData?: boolean): DatabaseView {
     const namespaceName = schema ?? this.name;
-    const view: DatabaseView = { name, schema: namespaceName, definition };
+    const view: DatabaseView = { name, schema: namespaceName, definition, materialized, withData };
     this.views.push(view);
 
     if (namespaceName != null) {
@@ -116,6 +116,11 @@ export class DatabaseSchema {
     // Load views from database
     await platform.getSchemaHelper()!.loadViews(schema, connection);
 
+    // Load materialized views (PostgreSQL only)
+    if (platform.supportsMaterializedViews()) {
+      await platform.getSchemaHelper()!.loadMaterializedViews(schema, connection, schemaName);
+    }
+
     return schema;
   }
 
@@ -163,7 +168,7 @@ export class DatabaseSchema {
       if (meta.view) {
         const viewDefinition = this.getViewDefinition(meta, em, platform);
         if (viewDefinition) {
-          schema.addView(meta.collection, this.getSchemaName(meta, config, schemaName), viewDefinition);
+          schema.addView(meta.collection, this.getSchemaName(meta, config, schemaName), viewDefinition, meta.materialized, meta.withData);
         }
         continue;
       }

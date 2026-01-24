@@ -50,6 +50,18 @@ export type EntityOptions<T, E = T extends EntityClass<infer P> ? P : T> = {
    * View entities are read-only by default.
    */
   view?: boolean;
+  /**
+   * Marks the view entity as a materialized view. Requires `view: true`.
+   * Materialized views store the query results and must be refreshed to update data.
+   * Only supported on PostgreSQL.
+   */
+  materialized?: boolean;
+  /**
+   * For materialized views, whether to populate data immediately on creation.
+   * Defaults to `true`. Set to `false` to create an unpopulated materialized view.
+   * Only applicable when `materialized: true`.
+   */
+  withData?: boolean;
   /** Used to make ORM aware of externally defined triggers. This is needed for MS SQL Server multi inserts, ignored in other dialects. */
   hasTriggers?: boolean;
   // we need to use `em: any` here otherwise an expression would not be assignable with more narrow type like `SqlEntityManager`

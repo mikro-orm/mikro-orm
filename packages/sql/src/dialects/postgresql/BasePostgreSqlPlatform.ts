@@ -42,6 +42,10 @@ export class BasePostgreSqlPlatform extends AbstractSqlPlatform {
     return true;
   }
 
+  override supportsMaterializedViews(): boolean {
+    return true;
+  }
+
   override supportsCustomPrimaryKeyNames(): boolean {
     return true;
   }
