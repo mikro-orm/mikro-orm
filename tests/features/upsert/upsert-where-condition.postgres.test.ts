@@ -36,7 +36,7 @@ afterAll(async () => {
 
 describe('upsert with where condition', () => {
   beforeEach(async () => {
-    orm.schema.clear();
+    await orm.schema.clear();
   });
 
   test('upsert should only update when version is greater', async () => {
