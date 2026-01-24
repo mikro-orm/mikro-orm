@@ -25,15 +25,15 @@ You can define custom types by extending `Type` abstract class. It has several o
 
 - `convertToDatabaseValueSQL(key: string, platform: Platform): string`
 
-  Converts a value from its JS representation to its database representation of this type. _(added in v4.4.2)_
+  Wraps the parameter placeholder in an SQL expression. Use this when the database needs to transform the value via a SQL function before storing.
 
 - `convertToJSValueSQL(key: string, platform: Platform): string`
 
-  Modifies the SQL expression (identifier, parameter) to convert to a JS value. _(added in v4.4.2)_
+  Wraps the column identifier in an SQL expression during SELECT. Use this when the database needs to transform the stored value via a SQL function before returning it.
 
 - `compareAsType(): string`
 
-  How should the raw database values be compared? Used in `EntityComparator`.Possible values: `string` | `number` | `boolean` | `date` | `any` | `buffer` | `array`.
+  How should the raw database values be compared? Used in `EntityComparator`. Possible values: `string` | `number` | `boolean` | `date` | `any` | `buffer` | `array`.
 
 - `ensureComparable(): boolean`
 
@@ -47,32 +47,73 @@ You can define custom types by extending `Type` abstract class. It has several o
 
   Allows defining a default value for the `length` property option when using this type and not specifying the `columnType` property option. If the method itself is undefined, or the `columnType` option is specified, the `length` property option is ignored.
 
+## Understanding the conversion methods
+
+Custom types involve two levels of conversion:
+
+1. **Runtime conversion** (`convertToDatabaseValue` / `convertToJSValue`) - These methods transform values in JavaScript before they're sent to or after they're received from the database driver.
+
+2. **SQL-level conversion** (`convertToDatabaseValueSQL` / `convertToJSValueSQL`) - These methods wrap SQL expressions with database functions. Use these when the database itself needs to perform the transformation.
+
+### When to use which
+
+| Scenario | Method to use |
+|----------|---------------|
+| Simple value transformation (e.g., Date ↔ string) | `convertToDatabaseValue` / `convertToJSValue` only |
+| Database stores in a special format requiring SQL functions | Both runtime AND SQL methods |
+| Value needs database-specific encoding/decoding | SQL methods (`convertToDatabaseValueSQL` / `convertToJSValueSQL`) |
+
+For most custom types, you only need the runtime conversion methods. The SQL-level methods are needed when:
+
+- The database stores values in a binary or internal format that requires SQL functions to convert (e.g., PostGIS geometry, MySQL spatial types)
+- You want to leverage database-specific functions for encoding/decoding
+
+### Handling null and undefined
+
+**Important:** The ORM handles `null` values from the database automatically - they will **not** be passed to your custom type's `convertToJSValue` method. However, `null` or `undefined` values **can** be passed to `convertToDatabaseValue` when using `em.create()` or when setting property values directly.
+
+Therefore, your `convertToDatabaseValue` implementation should handle `null`/`undefined`:
+
+```ts
+convertToDatabaseValue(value: MyType | null | undefined): string | null {
+  if (value == null) {
+    return null;
+  }
+  // ... convert the value
+}
+```
+
 ```ts
 import { Type, Platform, EntityProperty, ValidationError } from '@mikro-orm/core';
 
 /**
  * A custom type that maps SQL date column to JS Date objects.
- * Note that the ORM DateType maps to string instead of Date.
+ * Note that the built-in ORM DateType maps to string instead of Date.
+ *
+ * This example only uses runtime conversion (convertToDatabaseValue/convertToJSValue)
+ * because the database can directly store and return date strings - no SQL functions needed.
  */
 export class MyDateType extends Type<Date, string> {
 
-  convertToDatabaseValue(value: Date | string | undefined, platform: Platform): string {
+  convertToDatabaseValue(value: Date | string | null | undefined, platform: Platform): string | null {
+    // Handle null/undefined - these can come from em.create() or direct assignment
+    if (value == null) {
+      return null;
+    }
+
     if (value instanceof Date) {
       return value.toISOString().substr(0, 10);
     }
 
-    if (!value || value.toString().match(/^\d{4}-\d{2}-\d{2}$/)) {
-      return value as string;
+    if (value.toString().match(/^\d{4}-\d{2}-\d{2}$/)) {
+      return value;
     }
 
     throw ValidationError.invalidType(MyDateType, value, 'JS');
   }
 
-  convertToJSValue(value: Date | string | undefined, platform: Platform): Date {
-    if (!value || value instanceof Date) {
-      return value as Date;
-    }
-
+  // Note: null values from the database are handled by the ORM and won't reach this method
+  convertToJSValue(value: string, platform: Platform): Date {
     const date = new Date(value);
 
     if (date.toString() === 'Invalid Date') {
@@ -189,11 +230,90 @@ const entity = em.create(MyEntity, { foo: 'bar' });
 const object = wrap(e).toObject(); // `{ foo: string }`
 ```
 
+## Composing custom types
+
+Custom types are simple classes with an empty constructor, so you can instantiate and reuse them within other custom types. This is useful when building complex types that share conversion logic.
+
+For example, if you're implementing PostgreSQL range types, a `multirange` type can reuse the `range` type:
+
+```ts
+export class Int4RangeType extends Type<Range<number> | null, string | null> {
+
+  convertToDatabaseValue(value: Range<number> | null): string | null {
+    if (value == null) {
+      return null;
+    }
+    const lower = value.lower ?? '';
+    const upper = value.upper ?? '';
+    return `${value.isLowerInclusive ? '[' : '('}${lower},${upper}${value.isUpperInclusive ? ']' : ')'}`;
+  }
+
+  convertToJSValue(value: string | null): Range<number> | null {
+    if (value == null) {
+      return null;
+    }
+    // Parse range string like "[1,10)" into Range object
+    const match = value.match(/^([[(])(-?\d*),(-?\d*)([\])])$/);
+    if (!match) return null;
+
+    return {
+      lower: match[2] ? parseInt(match[2], 10) : null,
+      upper: match[3] ? parseInt(match[3], 10) : null,
+      isLowerInclusive: match[1] === '[',
+      isUpperInclusive: match[4] === ']',
+    };
+  }
+
+  getColumnType(): string {
+    return 'int4range';
+  }
+
+}
+
+// Multirange type that reuses the range type for parsing individual ranges
+export class Int4MultiRangeType extends Type<Range<number>[] | null, string | null> {
+
+  // Reuse the range type for individual range conversion
+  private rangeType = new Int4RangeType();
+
+  convertToDatabaseValue(value: Range<number>[] | null): string | null {
+    if (value == null) {
+      return null;
+    }
+    const ranges = value.map(r => this.rangeType.convertToDatabaseValue(r));
+    return `{${ranges.join(',')}}`;
+  }
+
+  convertToJSValue(value: string | null): Range<number>[] | null {
+    if (value == null) {
+      return null;
+    }
+    // Parse multirange string like "{[1,5),[10,20)}"
+    const rangeStrings = value.slice(1, -1).match(/[[(][^\])]*[\])]/g) ?? [];
+    return rangeStrings.map(r => this.rangeType.convertToJSValue(r)!);
+  }
+
+  getColumnType(): string {
+    return 'int4multirange';
+  }
+
+}
+```
+
+You can also use `Type.getType()` to get a singleton instance of a registered type if you prefer not to instantiate it directly.
+
 ## Advanced example - PointType and WKT
 
-In this example we will combine mapping values via database as well as during runtime.
+This example demonstrates when you need **both** runtime conversion and SQL-level conversion. This is necessary when the database stores values in a special internal format that requires SQL functions to convert.
 
 > The Point type is part of the Spatial extension of MySQL and enables you to store a single location in a coordinate space by using x and y coordinates. You can use the Point type to store a longitude/latitude pair to represent a geographic location.
+
+**Why do we need SQL-level conversion here?**
+
+MySQL stores geometry values in a binary format, not as plain text. We use [Well-known text (WKT)](https://en.wikipedia.org/wiki/Well-known_text_representation_of_geometry) format like `point(1.23 4.56)` as an intermediate representation because it's both human-readable and understood by MySQL's spatial functions. The flow is:
+
+1. **JS → Database:** `Point` object → WKT string (`convertToDatabaseValue`) → binary via `ST_PointFromText()` (`convertToDatabaseValueSQL`)
+2. **Database → JS:** binary → WKT string via `ST_AsText()` (`convertToJSValueSQL`) → `Point` object (`convertToJSValue`)
 
 First let's define the `Point` class that will be used to represent the value during runtime:
 
@@ -214,14 +334,17 @@ Then the mapping type:
 ```ts
 export class PointType extends Type<Point | undefined, string | undefined> {
 
-  convertToDatabaseValue(value: Point | undefined): string | undefined {
-    if (!value) {
-      return value;
+  // Runtime: Convert Point object to WKT string
+  // This string will be bound to the SQL parameter
+  convertToDatabaseValue(value: Point | null | undefined): string | null {
+    if (value == null) {
+      return null;
     }
 
     return `point(${value.latitude} ${value.longitude})`;
   }
 
+  // Runtime: Convert WKT string (returned by ST_AsText) to Point object
   convertToJSValue(value: string | undefined): Point | undefined {
     const m = value?.match(/point\((-?\d+(\.\d+)?) (-?\d+(\.\d+)?)\)/i);
 
@@ -232,10 +355,14 @@ export class PointType extends Type<Point | undefined, string | undefined> {
     return new Point(+m[1], +m[3]);
   }
 
+  // SQL: Wrap the column with ST_AsText() in SELECT queries
+  // This converts MySQL's internal binary format to WKT string
   convertToJSValueSQL(key: string) {
     return `ST_AsText(${key})`;
   }
 
+  // SQL: Wrap the parameter placeholder with ST_PointFromText() in INSERT/UPDATE
+  // This converts the WKT string to MySQL's internal binary format
   convertToDatabaseValueSQL(key: string) {
     return `ST_PointFromText(${key})`;
   }
@@ -291,15 +418,9 @@ update `location` set `point` = ST_PointFromText('point(2.34 9.87)') where `id` 
 commit
 ```
 
-We do a 2-step conversion here. In the first step, we convert the Point object into a string representation before saving to the database (in the convertToDatabaseValue method) and back into an object after fetching the value from the database (in the convertToJSValue method).
-
-The format of the string representation format is called Well-known text (WKT). The advantage of this format is, that it is both human-readable and parsable by MySQL.
-
-Internally, MySQL stores geometry values in a binary format that is not identical to the WKT format. So, we need to let MySQL transform the WKT representation into its internal format.
-
-This is where the `convertToJSValueSQL` and `convertToDatabaseValueSQL` methods come into play.
-
-This methods wrap a sql expression (the WKT representation of the Point) into MySQL functions ST_PointFromText and ST_AsText which convert WKT strings to and from the internal format of MySQL.
+Notice how:
+- The WKT string `'point(1.23 4.56)'` (from `convertToDatabaseValue`) is wrapped with `ST_PointFromText()` (from `convertToDatabaseValueSQL`)
+- The column `point` is wrapped with `ST_AsText()` (from `convertToJSValueSQL`) in the SELECT query
 
 > When using DQL queries, the `convertToJSValueSQL` and `convertToDatabaseValueSQL` methods only apply to identification variables and path expressions in SELECT clauses. Expressions in WHERE clauses are not wrapped!
 
