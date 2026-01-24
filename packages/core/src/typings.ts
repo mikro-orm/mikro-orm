@@ -59,6 +59,21 @@ export type IsNever<T, True = true, False = false> = [T] extends [never] ? True 
 export type MaybePromise<T> = T | Promise<T>;
 export type NoInfer<T> = [T][T extends any ? 0 : never];
 
+// Get all keys from all union members (distributes over union)
+export type UnionKeys<T> = T extends any ? keyof T : never;
+
+// Get the type of property from all union members that have it
+export type UnionPropertyType<T, K extends PropertyKey> = T extends any
+  ? K extends keyof T ? T[K] : never
+  : never;
+
+// Merge all union member properties into a single object for filtering
+export type MergeUnion<T> = [T] extends [object]
+  ? T extends Scalar
+    ? T
+    : { [K in UnionKeys<T>]: UnionPropertyType<T, K> }
+  : T;
+
 export type DeepPartial<T> = T & {
   [P in keyof T]?: T[P] extends (infer U)[]
     ? DeepPartial<U>[]
@@ -208,7 +223,21 @@ export type OperatorMap<T> = {
 
 export type FilterItemValue<T> = T | ExpandScalar<T> | Primary<T>;
 export type FilterValue<T> = OperatorMap<FilterItemValue<T>> | FilterItemValue<T> | FilterItemValue<T>[] | null;
-export type FilterObject<T> = { -readonly [K in EntityKey<T>]?: ExpandQuery<ExpandProperty<T[K]>> | FilterValue<ExpandProperty<T[K]>> | null };
+
+type FilterObjectProp<T, K extends PropertyKey> = K extends keyof MergeUnion<T>
+  ? MergeUnion<T>[K]
+  : K extends keyof T
+    ? T[K]
+    : never;
+
+// Non-distributing ExpandQuery that merges union types - used alongside regular ExpandQuery to accept both forms
+type ExpandQueryMerged<T> = [T] extends [object]
+  ? [T] extends [Scalar]
+    ? never
+    : FilterQuery<MergeUnion<T>>
+  : FilterValue<T>;
+
+export type FilterObject<T> = { -readonly [K in EntityKey<T> | EntityKey<MergeUnion<T>>]?: ExpandQuery<ExpandProperty<FilterObjectProp<T, K>>> | ExpandQueryMerged<ExpandProperty<FilterObjectProp<T, K>>> | FilterValue<ExpandProperty<FilterObjectProp<T, K>>> | null };
 
 export type ExpandQuery<T> = T extends object
   ? T extends Scalar
