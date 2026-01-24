@@ -5,17 +5,22 @@ export async function setup() {
     return;
   }
 
-  const instance = await MongoMemoryReplSet.create({
-    replSet: {
-      name: 'rs',
-      count: 3,
-    },
-  });
+  try {
+    const instance = await MongoMemoryReplSet.create({
+      replSet: {
+        name: 'rs',
+        count: 3,
+      },
+    });
 
-  await instance.waitUntilRunning();
-  const uri = instance.getUri();
-  (global as any).__MONGOINSTANCE = instance;
-  process.env.MONGO_URI = uri.slice(0, uri.lastIndexOf('/'));
+    await instance.waitUntilRunning();
+    const uri = instance.getUri();
+    (global as any).__MONGOINSTANCE = instance;
+    process.env.MONGO_URI = uri.slice(0, uri.lastIndexOf('/'));
+  } catch (e) {
+    // eslint-disable-next-line no-console
+    console.warn('Failed to start MongoDB memory server');
+  }
 }
 
 export async function teardown() {
