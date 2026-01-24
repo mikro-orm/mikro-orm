@@ -40,6 +40,25 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       + `order by table_name`;
   }
 
+  override getListViewsSQL(): string {
+    return `select table_name as view_name, table_schema as schema_name, view_definition `
+      + `from information_schema.views `
+      + `where ${this.getIgnoredNamespacesConditionSQL('table_schema')} `
+      + `order by table_name`;
+  }
+
+  override async loadViews(schema: DatabaseSchema, connection: AbstractSqlConnection): Promise<void> {
+    const views = await connection.execute<{ view_name: string; schema_name: string; view_definition: string }[]>(this.getListViewsSQL());
+
+    for (const view of views) {
+      const definition = view.view_definition?.trim().replace(/;$/, '') ?? '';
+
+      if (definition) {
+        schema.addView(view.view_name, view.schema_name, definition);
+      }
+    }
+  }
+
   override async getNamespaces(connection: AbstractSqlConnection): Promise<string[]> {
     const sql = `select schema_name from information_schema.schemata `
       + `where ${this.getIgnoredNamespacesConditionSQL()} `

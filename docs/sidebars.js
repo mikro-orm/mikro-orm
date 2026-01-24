@@ -71,6 +71,7 @@ module.exports = {
         'composite-keys',
         'custom-types',
         'virtual-entities',
+        'view-entities',
         'embeddables',
         'entity-schema',
         'json-properties',

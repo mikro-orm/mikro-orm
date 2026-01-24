@@ -1,0 +1,91 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`View entities (mssql) > schema generator should create views 1`] = `
+"create table [book_tag2] ([id] bigint identity(1,1) not null primary key, [name] nvarchar(50) not null);
+
+create table [foo_baz2] ([id] int identity(1,1) not null primary key, [name] nvarchar(255) not null, [code] varchar(255) not null, [version] datetime2(3) not null constraint [foo_baz2_version_default] default current_timestamp);
+
+create table [foo_bar2] ([id] int identity(1,1) not null primary key, [name] nvarchar(255) not null, [baz_id] int null, [foo_bar_id] int null, [version] datetime2(0) not null constraint [foo_bar2_version_default] default current_timestamp, [blob] varbinary(max) null, [array] text null, [object] nvarchar(max) null);
+create unique index [foo_bar2_baz_id_unique] on [foo_bar2] ([baz_id]) where [baz_id] is not null;
+create unique index [foo_bar2_foo_bar_id_unique] on [foo_bar2] ([foo_bar_id]) where [foo_bar_id] is not null;
+
+create table [publisher2] ([id] int identity(1,1) not null primary key, [name] nvarchar(255) not null constraint [publisher2_name_default] default 'asd', [type] nvarchar(100) not null constraint [publisher2_type_default] default 'local', [type2] nvarchar(100) not null constraint [publisher2_type2_default] default 'LOCAL', [enum1] tinyint null, [enum2] tinyint null, [enum3] tinyint null, [enum4] nvarchar(100) null);
+alter table [publisher2] add constraint [publisher2_type_check] check ([type] in ('local', 'global'));
+alter table [publisher2] add constraint [publisher2_type2_check] check ([type2] in ('LOCAL', 'GLOBAL'));
+alter table [publisher2] add constraint [publisher2_enum4_check] check ([enum4] in ('a', 'b', 'c'));
+
+create table [author2] ([id] int identity(1,1) not null primary key, [created_at] datetime2(3) not null constraint [author2_created_at_default] default current_timestamp, [updated_at] datetime2(3) not null constraint [author2_updated_at_default] default current_timestamp, [name] nvarchar(255) not null, [email] nvarchar(255) not null, [age] int null, [terms_accepted] bit not null constraint [author2_terms_accepted_default] default 0, [optional] bit null, [identities] text null, [born] date null, [born_time] time null, [favourite_book_uuid_pk] uniqueidentifier null, [favourite_author_id] int null);
+create index [custom_email_index_name] on [author2] ([email]);
+create unique index [custom_email_unique_name] on [author2] ([email]);
+create index [author2_terms_accepted_index] on [author2] ([terms_accepted]);
+create index [author2_born_index] on [author2] ([born]);
+create index [born_time_idx] on [author2] ([born_time]);
+create index [custom_idx_name_123] on [author2] ([name]);
+create index [author2_name_age_index] on [author2] ([name], [age]);
+create unique index [author2_name_email_unique] on [author2] ([name], [email]);
+
+create table [book2] ([uuid_pk] uniqueidentifier not null, [created_at] datetime2(3) not null constraint [book2_created_at_default] default current_timestamp, [isbn] nchar(13) null, [title] nvarchar(255) null constraint [book2_title_default] default '', [perex] text null, [price] numeric(8,2) null, [float] float(24) null, [float36] float(36) null, [double] float(53) null, [meta] nvarchar(max) null, [author_id] int not null, [publisher_id] int null, primary key ([uuid_pk]));
+create unique index [book2_isbn_unique] on [book2] ([isbn]) where [isbn] is not null;
+
+create table [book2_tags] ([order] int identity(1,1) not null primary key, [book2_uuid_pk] uniqueidentifier not null, [book_tag2_id] bigint not null);
+
+create table [book_to_tag_unordered] ([book2_uuid_pk] uniqueidentifier not null, [book_tag2_id] bigint not null, primary key ([book2_uuid_pk], [book_tag2_id]));
+
+create table [author2_following] ([author2_1_id] int not null, [author2_2_id] int not null, primary key ([author2_1_id], [author2_2_id]));
+
+create table [author_to_friend] ([author2_1_id] int not null, [author2_2_id] int not null, primary key ([author2_1_id], [author2_2_id]));
+
+create table [address2] ([author_id] int not null, [value] nvarchar(255) not null, primary key ([author_id]));
+if exists(select * from sys.fn_listextendedproperty(N'MS_Description', N'Schema', N'dbo', N'Table', N'address2', null, null))
+  exec sys.sp_updateextendedproperty N'MS_Description', N'This is address table', N'Schema', N'dbo', N'Table', N'address2'
+else
+  exec sys.sp_addextendedproperty N'MS_Description', N'This is address table', N'Schema', N'dbo', N'Table', N'address2';
+if exists(select * from sys.fn_listextendedproperty(N'MS_Description', N'Schema', N'dbo', N'Table', N'address2', N'Column', N'value'))
+  exec sys.sp_updateextendedproperty N'MS_Description', N'This is address property', N'Schema', N'dbo', N'Table', N'address2', N'Column', N'value'
+else
+  exec sys.sp_addextendedproperty N'MS_Description', N'This is address property', N'Schema', N'dbo', N'Table', N'address2', N'Column', N'value';
+
+create table [test2] ([id] int identity(1,1) not null primary key, [name] nvarchar(255) null, [book_uuid_pk] uniqueidentifier null, [version] int not null constraint [test2_version_default] default 1);
+create unique index [test2_book_uuid_pk_unique] on [test2] ([book_uuid_pk]) where [book_uuid_pk] is not null;
+
+create table [publisher2_tests] ([id] int identity(1,1) not null primary key, [publisher2_id] int not null, [test2_id] int not null);
+
+create table [configuration2] ([property] nvarchar(255) not null, [test_id] int not null, [value] nvarchar(255) not null, primary key ([property], [test_id]));
+
+alter table [foo_bar2] add constraint [foo_bar2_baz_id_foreign] foreign key ([baz_id]) references [foo_baz2] ([id]) on delete set null;
+alter table [foo_bar2] add constraint [foo_bar2_foo_bar_id_foreign] foreign key ([foo_bar_id]) references [foo_bar2] ([id]);
+
+alter table [author2] add constraint [author2_favourite_book_uuid_pk_foreign] foreign key ([favourite_book_uuid_pk]) references [book2] ([uuid_pk]) on update no action on delete cascade;
+alter table [author2] add constraint [author2_favourite_author_id_foreign] foreign key ([favourite_author_id]) references [author2] ([id]);
+
+alter table [book2] add constraint [book2_author_id_foreign] foreign key ([author_id]) references [author2] ([id]);
+alter table [book2] add constraint [book2_publisher_id_foreign] foreign key ([publisher_id]) references [publisher2] ([id]) on delete set null;
+
+alter table [book2_tags] add constraint [book2_tags_book2_uuid_pk_foreign] foreign key ([book2_uuid_pk]) references [book2] ([uuid_pk]) on update cascade on delete cascade;
+alter table [book2_tags] add constraint [book2_tags_book_tag2_id_foreign] foreign key ([book_tag2_id]) references [book_tag2] ([id]) on update cascade on delete cascade;
+
+alter table [book_to_tag_unordered] add constraint [book_to_tag_unordered_book2_uuid_pk_foreign] foreign key ([book2_uuid_pk]) references [book2] ([uuid_pk]) on update cascade on delete cascade;
+alter table [book_to_tag_unordered] add constraint [book_to_tag_unordered_book_tag2_id_foreign] foreign key ([book_tag2_id]) references [book_tag2] ([id]) on update cascade on delete cascade;
+
+alter table [author2_following] add constraint [author2_following_author2_1_id_foreign] foreign key ([author2_1_id]) references [author2] ([id]) on update no action on delete no action;
+alter table [author2_following] add constraint [author2_following_author2_2_id_foreign] foreign key ([author2_2_id]) references [author2] ([id]) on update no action on delete no action;
+
+alter table [author_to_friend] add constraint [author_to_friend_author2_1_id_foreign] foreign key ([author2_1_id]) references [author2] ([id]) on update no action on delete no action;
+alter table [author_to_friend] add constraint [author_to_friend_author2_2_id_foreign] foreign key ([author2_2_id]) references [author2] ([id]) on update no action on delete no action;
+
+alter table [address2] add constraint [address2_author_id_foreign] foreign key ([author_id]) references [author2] ([id]) on update cascade on delete cascade;
+
+alter table [test2] add constraint [test2_book_uuid_pk_foreign] foreign key ([book_uuid_pk]) references [book2] ([uuid_pk]) on delete no action;
+
+alter table [publisher2_tests] add constraint [publisher2_tests_publisher2_id_foreign] foreign key ([publisher2_id]) references [publisher2] ([id]) on update cascade on delete cascade;
+alter table [publisher2_tests] add constraint [publisher2_tests_test2_id_foreign] foreign key ([test2_id]) references [test2] ([id]) on update cascade on delete cascade;
+
+alter table [configuration2] add constraint [configuration2_test_id_foreign] foreign key ([test_id]) references [test2] ([id]);
+
+create view [book_summary_view] as select [b].[title], [a].[name] as [author_name] from [book2] as [b] inner join [author2] as [a] on [b].[author_id] = [a].[id];
+
+create view [author_stats_view] as select min(name) as name, (select count(*) from book2 b where b.author_id = a.id) as book_count from author2 a group by a.id;
+
+create view [prolific_authors_view] as select name, book_count from author_stats_view where book_count > 1;
+"
+`;

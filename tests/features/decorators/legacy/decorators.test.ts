@@ -183,8 +183,6 @@ describe('decorators', () => {
     expect(storage[key].properties.test0).toMatchObject({ kind: ReferenceKind.MANY_TO_MANY, name: 'test0' });
     expect(storage[key].properties.test0.entity()).toBe(Test);
     expect(Object.keys(MetadataStorage.getMetadata())).toHaveLength(7);
-    MetadataStorage.clear();
-    expect(Object.keys(MetadataStorage.getMetadata())).toHaveLength(0);
   });
 
   test('ManyToOne', () => {

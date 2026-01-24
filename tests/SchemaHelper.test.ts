@@ -22,6 +22,8 @@ describe('SchemaHelper', () => {
     expect(helper.getSchemaEnd()).toBe('');
     expect(helper.getChangeColumnCommentSQL('a', {} as any)).toBe('');
     expect(() => helper.getListTablesSQL()).toThrow('Not supported by given driver');
+    expect(() => helper.getListViewsSQL()).toThrow('Not supported by given driver');
+    await expect(helper.loadViews(null!, null!)).rejects.toThrow('Not supported by given driver');
     expect(() => helper.getAlterNativeEnumSQL('table')).toThrow('Not supported by given driver');
     expect(() => helper.getCreateNativeEnumSQL('table', [])).toThrow('Not supported by given driver');
     expect(() => helper.getDropNativeEnumSQL('table')).toThrow('Not supported by given driver');

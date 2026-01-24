@@ -136,12 +136,21 @@ export interface TableDifference {
   removedForeignKeys: Dictionary<ForeignKey>;
 }
 
+export interface DatabaseView {
+  name: string;
+  schema?: string;
+  definition: string;
+}
+
 export interface SchemaDifference {
   newNamespaces: Set<string>;
   newNativeEnums: { name: string; schema?: string; items: string[] }[];
   newTables: Dictionary<DatabaseTable>;
   changedTables: Dictionary<TableDifference>;
   removedTables: Dictionary<DatabaseTable>;
+  newViews: Dictionary<DatabaseView>;
+  changedViews: Dictionary<{ from: DatabaseView; to: DatabaseView }>;
+  removedViews: Dictionary<DatabaseView>;
   removedNamespaces: Set<string>;
   removedNativeEnums: { name: string; schema?: string }[];
   orphanedForeignKeys: ForeignKey[];

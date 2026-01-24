@@ -8,7 +8,7 @@ import {
 } from '@mikro-orm/core';
 import { DatabaseTable } from './DatabaseTable.js';
 import type { AbstractSqlConnection } from '../AbstractSqlConnection.js';
-import type { Table } from '../typings.js';
+import type { DatabaseView, Table } from '../typings.js';
 import type { AbstractSqlPlatform } from '../AbstractSqlPlatform.js';
 
 /**
@@ -17,6 +17,7 @@ import type { AbstractSqlPlatform } from '../AbstractSqlPlatform.js';
 export class DatabaseSchema {
 
   private tables: DatabaseTable[] = [];
+  private views: DatabaseView[] = [];
   private namespaces = new Set<string>();
   private nativeEnums: Dictionary<{ name: string; schema?: string; items: string[] }> = {}; // for postgres
 
@@ -47,6 +48,30 @@ export class DatabaseSchema {
 
   hasTable(name: string) {
     return !!this.getTable(name);
+  }
+
+  addView(name: string, schema: string | undefined | null, definition: string): DatabaseView {
+    const namespaceName = schema ?? this.name;
+    const view: DatabaseView = { name, schema: namespaceName, definition };
+    this.views.push(view);
+
+    if (namespaceName != null) {
+      this.namespaces.add(namespaceName);
+    }
+
+    return view;
+  }
+
+  getViews(): DatabaseView[] {
+    return this.views;
+  }
+
+  getView(name: string): DatabaseView | undefined {
+    return this.views.find(v => v.name === name || `${v.schema}.${v.name}` === name);
+  }
+
+  hasView(name: string) {
+    return !!this.getView(name);
   }
 
   setNativeEnums(nativeEnums: Dictionary<{ name: string; schema?: string; items: string[] }>): void {
@@ -88,15 +113,23 @@ export class DatabaseSchema {
     const tables = allTables.filter(t => this.isTableNameAllowed(t.table_name, takeTables, skipTables) && (t.table_name !== migrationsTableName || (t.schema_name && t.schema_name !== migrationsSchemaName)));
     await platform.getSchemaHelper()!.loadInformationSchema(schema, connection, tables, schemas && schemas.length > 0 ? schemas : undefined);
 
+    // Load views from database
+    await platform.getSchemaHelper()!.loadViews(schema, connection);
+
     return schema;
   }
 
-  static fromMetadata(metadata: EntityMetadata[], platform: AbstractSqlPlatform, config: Configuration, schemaName?: string): DatabaseSchema {
+  static fromMetadata(metadata: EntityMetadata[], platform: AbstractSqlPlatform, config: Configuration, schemaName?: string, em?: any): DatabaseSchema {
     const schema = new DatabaseSchema(platform, schemaName ?? config.get('schema'));
     const nativeEnums: Dictionary<{ name: string; schema?: string; items: string[] }> = {};
     const skipColumns = config.get('schemaGenerator').skipColumns || {};
 
     for (const meta of metadata) {
+      // Skip view entities when collecting native enums
+      if (meta.view) {
+        continue;
+      }
+
       for (const prop of meta.props) {
         if (prop.nativeEnumName) {
           let key = prop.nativeEnumName;
@@ -126,6 +159,15 @@ export class DatabaseSchema {
     schema.setNativeEnums(nativeEnums);
 
     for (const meta of metadata) {
+      // Handle view entities separately
+      if (meta.view) {
+        const viewDefinition = this.getViewDefinition(meta, em, platform);
+        if (viewDefinition) {
+          schema.addView(meta.collection, this.getSchemaName(meta, config, schemaName), viewDefinition);
+        }
+        continue;
+      }
+
       const table = schema.addTable(meta.collection, this.getSchemaName(meta, config, schemaName));
       table.comment = meta.comment;
 
@@ -154,6 +196,43 @@ export class DatabaseSchema {
     }
 
     return schema;
+  }
+
+  private static getViewDefinition(meta: EntityMetadata, em: any, platform: AbstractSqlPlatform): string | undefined {
+    if (typeof meta.expression === 'string') {
+      return meta.expression;
+    }
+
+    // Expression is a function, need to evaluate it
+    /* v8 ignore next */
+    if (!em) {
+      return undefined;
+    }
+
+    const result = meta.expression!(em, {}, {}) as any;
+
+    // Async expressions are not supported for view entities
+    if (result && typeof result.then === 'function') {
+      throw new Error(`View entity ${meta.className} expression returned a Promise. Async expressions are not supported for view entities.`);
+    }
+
+    /* v8 ignore next */
+    if (typeof result === 'string') {
+      return result;
+    }
+
+    /* v8 ignore next */
+    if (isRaw(result)) {
+      return platform.formatQuery(result.sql, result.params);
+    }
+
+    // Check if it's a QueryBuilder (has getFormattedQuery method)
+    if (result && typeof result.getFormattedQuery === 'function') {
+      return result.getFormattedQuery();
+    }
+
+    /* v8 ignore next - fallback for unknown result types */
+    return undefined;
   }
 
   private static getSchemaName(meta: EntityMetadata, config: Configuration, schema?: string): string | undefined {
@@ -222,9 +301,16 @@ export class DatabaseSchema {
         || (!schema && !wildcardSchemaTables.includes(table.name)); // no schema specified and the table has fixed one provided
     });
 
-    // remove namespaces of ignored tables
+    this.views = this.views.filter(view => {
+      /* v8 ignore next */
+      return (!schema && !hasWildcardSchema)
+        || view.schema === schema
+        || (!schema && !wildcardSchemaTables.includes(view.name));
+    });
+
+    // remove namespaces of ignored tables and views
     for (const ns of this.namespaces) {
-      if (!this.tables.some(t => t.schema === ns) && !Object.values(this.nativeEnums).some(e => e.schema === ns)) {
+      if (!this.tables.some(t => t.schema === ns) && !this.views.some(v => v.schema === ns) && !Object.values(this.nativeEnums).some(e => e.schema === ns)) {
         this.namespaces.delete(ns);
       }
     }

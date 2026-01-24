@@ -5,7 +5,9 @@ title: Virtual Entities
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-Virtual entities don't represent any database table. Instead, they dynamically resolve to an SQL query (or an aggregation in MongoDB), allowing to map any kind of results onto an entity. Such entities are meant for read purposes, they don't have a primary key and therefore cannot be tracked for changes. In a way they are similar to (currently unsupported) database views, and you can use them to proxy your native views already.
+Virtual entities don't represent any database table. Instead, they dynamically resolve to an SQL query (or an aggregation in MongoDB), allowing to map any kind of results onto an entity. Such entities are meant for read purposes, they don't have a primary key and therefore cannot be tracked for changes.
+
+> If you need actual database views that are created and managed by the schema generator, see [View Entities](./view-entities.md) instead. View entities create `CREATE VIEW` statements and are tracked in migrations, while virtual entities evaluate their expression at query time.
 
 > Virtual entities can contain scalar properties as well as to-one relations (M:1 and 1:1 owners). Such relations are always populated via `select-in` strategy.
 

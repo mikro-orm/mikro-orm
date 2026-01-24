@@ -1,5 +1,6 @@
 import {
   AbstractSchemaGenerator,
+  CommitOrderCalculator,
   type ClearDatabaseOptions,
   type CreateSchemaOptions,
   type Dictionary,
@@ -12,7 +13,7 @@ import {
   type UpdateSchemaOptions,
   Utils,
 } from '@mikro-orm/core';
-import type { SchemaDifference, TableDifference } from '../typings.js';
+import type { DatabaseView, SchemaDifference, TableDifference } from '../typings.js';
 import { DatabaseSchema } from './DatabaseSchema.js';
 import type { AbstractSqlDriver } from '../AbstractSqlDriver.js';
 import { SchemaComparator } from './SchemaComparator.js';
@@ -75,7 +76,7 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
   getTargetSchema(schema?: string): DatabaseSchema {
     const metadata = this.getOrderedMetadata(schema);
     const schemaName = schema ?? this.config.get('schema') ?? this.platform.getDefaultSchemaName();
-    return DatabaseSchema.fromMetadata(metadata, this.platform, this.config, schemaName);
+    return DatabaseSchema.fromMetadata(metadata, this.platform, this.config, schemaName, this.em);
   }
 
   protected override getOrderedMetadata(schema?: string): EntityMetadata[] {
@@ -127,6 +128,13 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
         const fks = Object.values(table.getForeignKeys()).map(fk => this.helper.createForeignKey(table, fk));
         this.append(ret, fks, true);
       }
+    }
+
+    // Create views after tables (views may depend on tables)
+    // Sort views by dependencies (views depending on other views come later)
+    const sortedViews = this.sortViewsByDependencies(toSchema.getViews());
+    for (const view of sortedViews) {
+      this.append(ret, this.helper.createView(view.name, view.schema, view.definition), true);
     }
 
     return this.wrapSchema(ret, options);
@@ -182,6 +190,14 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
     const schemas = this.getTargetSchema(options.schema).getNamespaces();
     const schema = await DatabaseSchema.create(this.connection, this.platform, this.config, options.schema, schemas);
     const ret: string[] = [];
+
+    // Drop views first (views may depend on tables)
+    // Drop in reverse dependency order (dependent views first)
+    const targetSchema = this.getTargetSchema(options.schema);
+    const sortedViews = this.sortViewsByDependencies(targetSchema.getViews()).reverse();
+    for (const view of sortedViews) {
+      this.append(ret, this.helper.dropViewIfExists(view.name, view.schema));
+    }
 
     // remove FKs explicitly if we can't use a cascading statement and we don't disable FK checks (we need this for circular relations)
     for (const meta of metadata) {
@@ -292,6 +308,23 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
       }
     }
 
+    // Drop removed and changed views first (before modifying tables they may depend on)
+    // Drop in reverse dependency order (dependent views first)
+    if (options.dropTables && !options.safe) {
+      const sortedRemovedViews = this.sortViewsByDependencies(Object.values(schemaDiff.removedViews)).reverse();
+      for (const view of sortedRemovedViews) {
+        this.append(ret, this.helper.dropViewIfExists(view.name, view.schema));
+      }
+    }
+
+    // Drop changed views (they will be recreated after table changes)
+    // Also in reverse dependency order
+    const changedViewsFrom = Object.values(schemaDiff.changedViews).map(v => v.from);
+    const sortedChangedViewsFrom = this.sortViewsByDependencies(changedViewsFrom).reverse();
+    for (const view of sortedChangedViewsFrom) {
+      this.append(ret, this.helper.dropViewIfExists(view.name, view.schema));
+    }
+
     if (!options.safe && this.options.createForeignKeyConstraints) {
       for (const orphanedForeignKey of schemaDiff.orphanedForeignKeys) {
         const [schemaName, tableName] = this.helper.splitTableName(orphanedForeignKey.localTableName, true);
@@ -359,6 +392,20 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
         const sql = this.helper.getDropNamespaceSQL(removedNamespace);
         this.append(ret, sql);
       }
+    }
+
+    // Create new views after all table changes are done
+    // Sort views by dependencies (views depending on other views come later)
+    const sortedNewViews = this.sortViewsByDependencies(Object.values(schemaDiff.newViews));
+    for (const view of sortedNewViews) {
+      this.append(ret, this.helper.createView(view.name, view.schema, view.definition), true);
+    }
+
+    // Recreate changed views (also sorted by dependencies)
+    const changedViews = Object.values(schemaDiff.changedViews).map(v => v.to);
+    const sortedChangedViews = this.sortViewsByDependencies(changedViews);
+    for (const view of sortedChangedViews) {
+      this.append(ret, this.helper.createView(view.name, view.schema, view.definition), true);
     }
 
     return this.wrapSchema(ret, options);
@@ -488,6 +535,68 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
     return skipTables.some(pattern =>
       this.matchName(tableName, pattern) || this.matchName(fullTableName, pattern),
     );
+  }
+
+  /**
+   * Sorts views by their dependencies so that views depending on other views are created after their dependencies.
+   * Uses topological sort based on view definition string matching.
+   */
+  private sortViewsByDependencies(views: DatabaseView[]): DatabaseView[] {
+    if (views.length <= 1) {
+      return views;
+    }
+
+    // Use CommitOrderCalculator for topological sort
+    const calc = new CommitOrderCalculator();
+
+    // Map views to numeric indices for the calculator
+    const viewToIndex = new Map<DatabaseView, number>();
+    const indexToView = new Map<number, DatabaseView>();
+
+    for (let i = 0; i < views.length; i++) {
+      viewToIndex.set(views[i], i);
+      indexToView.set(i, views[i]);
+      calc.addNode(i);
+    }
+
+    // Check each view's definition for references to other view names
+    for (const view of views) {
+      const definition = view.definition.toLowerCase();
+      const viewIndex = viewToIndex.get(view)!;
+
+      for (const otherView of views) {
+        if (otherView === view) {
+          continue;
+        }
+
+        // Check if the definition references the other view's name
+        // Use word boundary matching to avoid false positives
+        const patterns = [
+          new RegExp(`\\b${this.escapeRegExp(otherView.name.toLowerCase())}\\b`),
+        ];
+
+        if (otherView.schema) {
+          patterns.push(new RegExp(`\\b${this.escapeRegExp(`${otherView.schema}.${otherView.name}`.toLowerCase())}\\b`));
+        }
+
+        for (const pattern of patterns) {
+          if (pattern.test(definition)) {
+            // view depends on otherView, so otherView must come first
+            // addDependency(from, to) puts `from` before `to` in result
+            const otherIndex = viewToIndex.get(otherView)!;
+            calc.addDependency(otherIndex, viewIndex, 1);
+            break;
+          }
+        }
+      }
+    }
+
+    // Sort and map back to views
+    return calc.sort().map(index => indexToView.get(index)!);
+  }
+
+  private escapeRegExp(string: string): string {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   }
 
 }
