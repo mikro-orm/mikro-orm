@@ -11,9 +11,9 @@ create table "product" ("id" serial primary key, "name" varchar(255) not null, "
 
 create table "order_item" ("order_id" int not null, "product_id" int not null, "amount" int not null, "offered_price" int not null, primary key ("order_id", "product_id"));
 
-alter table "order" add constraint "order_customer_id_foreign" foreign key ("customer_id") references "customer" ("id") on update cascade;
+alter table "order" add constraint "order_customer_id_foreign" foreign key ("customer_id") references "customer" ("id");
 
-alter table "order_item" add constraint "order_item_order_id_foreign" foreign key ("order_id") references "order" ("id") on update cascade;
-alter table "order_item" add constraint "order_item_product_id_foreign" foreign key ("product_id") references "product" ("id") on update cascade;
+alter table "order_item" add constraint "order_item_order_id_foreign" foreign key ("order_id") references "order" ("id") on update cascade on delete cascade;
+alter table "order_item" add constraint "order_item_product_id_foreign" foreign key ("product_id") references "product" ("id") on update cascade on delete cascade;
 "
 `;

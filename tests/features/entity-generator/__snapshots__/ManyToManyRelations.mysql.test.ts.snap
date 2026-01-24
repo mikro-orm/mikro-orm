@@ -14,10 +14,10 @@ export class CompletedOrders {
   @PrimaryKey()
   id!: number;
 
-  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', index: 'fk_completed_orders_users1_idx' })
+  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', updateRule: 'no action', deleteRule: 'no action', index: 'fk_completed_orders_users1_idx' })
   user!: Ref<Users>;
 
-  @ManyToOne({ entity: () => Orders, ref: true, fieldName: 'order_id', index: 'fk_completed_orders_orders1_idx' })
+  @ManyToOne({ entity: () => Orders, ref: true, fieldName: 'order_id', updateRule: 'no action', deleteRule: 'no action', index: 'fk_completed_orders_orders1_idx' })
   order!: Ref<Orders>;
 
 }
@@ -80,10 +80,10 @@ export class UserEmailAvatars {
 
   [PrimaryKeyProp]?: ['user', 'email'];
 
-  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true })
+  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', primary: true })
   user!: Ref<Users>;
 
-  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', primary: true, index: 'fk_user_email_avatars_emails1_idx' })
+  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_user_email_avatars_emails1_idx' })
   email!: Ref<Emails>;
 
   @Property()
@@ -102,13 +102,13 @@ export class UserEmailFlags {
 
   [PrimaryKeyProp]?: ['user', 'email'];
 
-  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', primary: true })
+  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   user!: Ref<Users>;
 
-  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', primary: true, index: 'fk_user_email_flags_emails1_idx' })
+  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_user_email_flags_emails1_idx' })
   email!: Ref<Emails>;
 
-  @OneToOne({ entity: () => Flags, ref: true, fieldName: 'flag_id', defaultRaw: \`1\`, index: 'fk_user_email_flags_flags1_idx', unique: 'flag_id_UNIQUE' })
+  @OneToOne({ entity: () => Flags, ref: true, fieldName: 'flag_id', updateRule: 'no action', deleteRule: 'no action', defaultRaw: \`1\`, index: 'fk_user_email_flags_flags1_idx', unique: 'flag_id_UNIQUE' })
   flag!: Ref<Flags> & Opt;
 
 }
@@ -124,13 +124,13 @@ export class UserEmailOrders {
 
   [PrimaryKeyProp]?: ['user', 'email'];
 
-  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', primary: true })
+  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   user!: Ref<Users>;
 
-  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', primary: true, index: 'fk_user_email_orders_emails1_idx' })
+  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_user_email_orders_emails1_idx' })
   email!: Ref<Emails>;
 
-  @ManyToOne({ entity: () => Orders, ref: true, fieldName: 'order_id', index: 'fk_user_email_orders_orders1_idx' })
+  @ManyToOne({ entity: () => Orders, ref: true, fieldName: 'order_id', updateRule: 'no action', deleteRule: 'no action', index: 'fk_user_email_orders_orders1_idx' })
   order!: Ref<Orders>;
 
 }
@@ -145,10 +145,10 @@ export class UserEmails {
 
   [PrimaryKeyProp]?: ['user', 'email'];
 
-  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true })
+  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', primary: true })
   user!: Ref<Users>;
 
-  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true, index: 'fk_user_emails_emails1_idx' })
+  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', primary: true, index: 'fk_user_emails_emails1_idx' })
   email!: Ref<Emails>;
 
   @Property({ type: 'boolean' })
@@ -210,6 +210,8 @@ export const CompletedOrdersSchema = new EntitySchema({
       entity: () => Users,
       ref: true,
       fieldName: 'user_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_completed_orders_users1_idx',
     },
     order: {
@@ -217,6 +219,8 @@ export const CompletedOrdersSchema = new EntitySchema({
       entity: () => Orders,
       ref: true,
       fieldName: 'order_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_completed_orders_orders1_idx',
     },
   },
@@ -290,8 +294,6 @@ export const UserEmailAvatarsSchema = new EntitySchema({
       entity: () => Users,
       ref: true,
       fieldName: 'user_id',
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
     },
     email: {
       primary: true,
@@ -299,6 +301,8 @@ export const UserEmailAvatarsSchema = new EntitySchema({
       entity: () => Emails,
       ref: true,
       fieldName: 'email_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_user_email_avatars_emails1_idx',
     },
     avatarUrl: { type: 'string' },
@@ -326,6 +330,8 @@ export const UserEmailFlagsSchema = new EntitySchema({
       entity: () => Users,
       ref: true,
       fieldName: 'user_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     email: {
       primary: true,
@@ -333,6 +339,8 @@ export const UserEmailFlagsSchema = new EntitySchema({
       entity: () => Emails,
       ref: true,
       fieldName: 'email_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_user_email_flags_emails1_idx',
     },
     flag: {
@@ -340,6 +348,8 @@ export const UserEmailFlagsSchema = new EntitySchema({
       entity: () => Flags,
       ref: true,
       fieldName: 'flag_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       defaultRaw: \`1\`,
       index: 'fk_user_email_flags_flags1_idx',
       unique: 'flag_id_UNIQUE',
@@ -368,6 +378,8 @@ export const UserEmailOrdersSchema = new EntitySchema({
       entity: () => Users,
       ref: true,
       fieldName: 'user_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     email: {
       primary: true,
@@ -375,6 +387,8 @@ export const UserEmailOrdersSchema = new EntitySchema({
       entity: () => Emails,
       ref: true,
       fieldName: 'email_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_user_email_orders_emails1_idx',
     },
     order: {
@@ -382,6 +396,8 @@ export const UserEmailOrdersSchema = new EntitySchema({
       entity: () => Orders,
       ref: true,
       fieldName: 'order_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_user_email_orders_orders1_idx',
     },
   },
@@ -407,8 +423,6 @@ export const UserEmailsSchema = new EntitySchema({
       entity: () => Users,
       ref: true,
       fieldName: 'user_id',
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
     },
     email: {
       primary: true,
@@ -416,8 +430,6 @@ export const UserEmailsSchema = new EntitySchema({
       entity: () => Emails,
       ref: true,
       fieldName: 'email_id',
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
       index: 'fk_user_emails_emails1_idx',
     },
     isVerified: { type: 'boolean' },
@@ -488,10 +500,10 @@ export class CompletedOrders {
   @PrimaryKey()
   id!: number;
 
-  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', index: 'fk_completed_orders_users1_idx' })
+  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', updateRule: 'no action', deleteRule: 'no action', index: 'fk_completed_orders_users1_idx' })
   user!: Ref<Users>;
 
-  @ManyToOne({ entity: () => Orders, ref: true, fieldName: 'order_id', index: 'fk_completed_orders_orders1_idx' })
+  @ManyToOne({ entity: () => Orders, ref: true, fieldName: 'order_id', updateRule: 'no action', deleteRule: 'no action', index: 'fk_completed_orders_orders1_idx' })
   order!: Ref<Orders>;
 
 }
@@ -554,10 +566,10 @@ export class UserEmailAvatars {
 
   [PrimaryKeyProp]?: ['user', 'email'];
 
-  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true })
+  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', primary: true })
   user!: Ref<Users>;
 
-  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', primary: true, index: 'fk_user_email_avatars_emails1_idx' })
+  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_user_email_avatars_emails1_idx' })
   email!: Ref<Emails>;
 
   @Property()
@@ -576,13 +588,13 @@ export class UserEmailFlags {
 
   [PrimaryKeyProp]?: ['user', 'email'];
 
-  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', primary: true })
+  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   user!: Ref<Users>;
 
-  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', primary: true, index: 'fk_user_email_flags_emails1_idx' })
+  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_user_email_flags_emails1_idx' })
   email!: Ref<Emails>;
 
-  @OneToOne({ entity: () => Flags, ref: true, fieldName: 'flag_id', defaultRaw: \`1\`, index: 'fk_user_email_flags_flags1_idx', unique: 'flag_id_UNIQUE' })
+  @OneToOne({ entity: () => Flags, ref: true, fieldName: 'flag_id', updateRule: 'no action', deleteRule: 'no action', defaultRaw: \`1\`, index: 'fk_user_email_flags_flags1_idx', unique: 'flag_id_UNIQUE' })
   flag!: Ref<Flags> & Opt;
 
 }
@@ -598,13 +610,13 @@ export class UserEmailOrders {
 
   [PrimaryKeyProp]?: ['user', 'email'];
 
-  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', primary: true })
+  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   user!: Ref<Users>;
 
-  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', primary: true, index: 'fk_user_email_orders_emails1_idx' })
+  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_user_email_orders_emails1_idx' })
   email!: Ref<Emails>;
 
-  @ManyToOne({ entity: () => Orders, ref: true, fieldName: 'order_id', index: 'fk_user_email_orders_orders1_idx' })
+  @ManyToOne({ entity: () => Orders, ref: true, fieldName: 'order_id', updateRule: 'no action', deleteRule: 'no action', index: 'fk_user_email_orders_orders1_idx' })
   order!: Ref<Orders>;
 
 }
@@ -619,10 +631,10 @@ export class UserEmails {
 
   [PrimaryKeyProp]?: ['user', 'email'];
 
-  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true })
+  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', primary: true })
   user!: Ref<Users>;
 
-  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true, index: 'fk_user_emails_emails1_idx' })
+  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', primary: true, index: 'fk_user_emails_emails1_idx' })
   email!: Ref<Emails>;
 
   @Property({ type: 'boolean' })
@@ -696,6 +708,8 @@ export const CompletedOrdersSchema = new EntitySchema({
       entity: () => Users,
       ref: true,
       fieldName: 'user_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_completed_orders_users1_idx',
     },
     order: {
@@ -703,6 +717,8 @@ export const CompletedOrdersSchema = new EntitySchema({
       entity: () => Orders,
       ref: true,
       fieldName: 'order_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_completed_orders_orders1_idx',
     },
   },
@@ -776,8 +792,6 @@ export const UserEmailAvatarsSchema = new EntitySchema({
       entity: () => Users,
       ref: true,
       fieldName: 'user_id',
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
     },
     email: {
       primary: true,
@@ -785,6 +799,8 @@ export const UserEmailAvatarsSchema = new EntitySchema({
       entity: () => Emails,
       ref: true,
       fieldName: 'email_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_user_email_avatars_emails1_idx',
     },
     avatarUrl: { type: 'string' },
@@ -812,6 +828,8 @@ export const UserEmailFlagsSchema = new EntitySchema({
       entity: () => Users,
       ref: true,
       fieldName: 'user_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     email: {
       primary: true,
@@ -819,6 +837,8 @@ export const UserEmailFlagsSchema = new EntitySchema({
       entity: () => Emails,
       ref: true,
       fieldName: 'email_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_user_email_flags_emails1_idx',
     },
     flag: {
@@ -826,6 +846,8 @@ export const UserEmailFlagsSchema = new EntitySchema({
       entity: () => Flags,
       ref: true,
       fieldName: 'flag_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       defaultRaw: \`1\`,
       index: 'fk_user_email_flags_flags1_idx',
       unique: 'flag_id_UNIQUE',
@@ -854,6 +876,8 @@ export const UserEmailOrdersSchema = new EntitySchema({
       entity: () => Users,
       ref: true,
       fieldName: 'user_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     email: {
       primary: true,
@@ -861,6 +885,8 @@ export const UserEmailOrdersSchema = new EntitySchema({
       entity: () => Emails,
       ref: true,
       fieldName: 'email_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_user_email_orders_emails1_idx',
     },
     order: {
@@ -868,6 +894,8 @@ export const UserEmailOrdersSchema = new EntitySchema({
       entity: () => Orders,
       ref: true,
       fieldName: 'order_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_user_email_orders_orders1_idx',
     },
   },
@@ -893,8 +921,6 @@ export const UserEmailsSchema = new EntitySchema({
       entity: () => Users,
       ref: true,
       fieldName: 'user_id',
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
     },
     email: {
       primary: true,
@@ -902,8 +928,6 @@ export const UserEmailsSchema = new EntitySchema({
       entity: () => Emails,
       ref: true,
       fieldName: 'email_id',
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
       index: 'fk_user_emails_emails1_idx',
     },
     isVerified: { type: 'boolean' },
@@ -1007,10 +1031,10 @@ export class CompletedOrders {
   @PrimaryKey()
   id!: number;
 
-  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', index: 'fk_completed_orders_users1_idx' })
+  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', updateRule: 'no action', deleteRule: 'no action', index: 'fk_completed_orders_users1_idx' })
   user!: Ref<Users>;
 
-  @ManyToOne({ entity: () => Orders, ref: true, fieldName: 'order_id', index: 'fk_completed_orders_orders1_idx' })
+  @ManyToOne({ entity: () => Orders, ref: true, fieldName: 'order_id', updateRule: 'no action', deleteRule: 'no action', index: 'fk_completed_orders_orders1_idx' })
   order!: Ref<Orders>;
 
 }
@@ -1073,10 +1097,10 @@ export class UserEmailAvatars {
 
   [PrimaryKeyProp]?: ['user', 'email'];
 
-  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true })
+  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', primary: true })
   user!: Ref<Users>;
 
-  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', primary: true, index: 'fk_user_email_avatars_emails1_idx' })
+  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_user_email_avatars_emails1_idx' })
   email!: Ref<Emails>;
 
   @Property()
@@ -1095,13 +1119,13 @@ export class UserEmailFlags {
 
   [PrimaryKeyProp]?: ['user', 'email'];
 
-  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', primary: true })
+  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   user!: Ref<Users>;
 
-  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', primary: true, index: 'fk_user_email_flags_emails1_idx' })
+  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_user_email_flags_emails1_idx' })
   email!: Ref<Emails>;
 
-  @OneToOne({ entity: () => Flags, ref: true, fieldName: 'flag_id', defaultRaw: \`1\`, index: 'fk_user_email_flags_flags1_idx', unique: 'flag_id_UNIQUE' })
+  @OneToOne({ entity: () => Flags, ref: true, fieldName: 'flag_id', updateRule: 'no action', deleteRule: 'no action', defaultRaw: \`1\`, index: 'fk_user_email_flags_flags1_idx', unique: 'flag_id_UNIQUE' })
   flag!: Ref<Flags> & Opt;
 
 }
@@ -1117,13 +1141,13 @@ export class UserEmailOrders {
 
   [PrimaryKeyProp]?: ['user', 'email'];
 
-  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', primary: true })
+  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   user!: Ref<Users>;
 
-  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', primary: true, index: 'fk_user_email_orders_emails1_idx' })
+  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_user_email_orders_emails1_idx' })
   email!: Ref<Emails>;
 
-  @ManyToOne({ entity: () => Orders, ref: true, fieldName: 'order_id', index: 'fk_user_email_orders_orders1_idx' })
+  @ManyToOne({ entity: () => Orders, ref: true, fieldName: 'order_id', updateRule: 'no action', deleteRule: 'no action', index: 'fk_user_email_orders_orders1_idx' })
   order!: Ref<Orders>;
 
 }
@@ -1138,10 +1162,10 @@ export class UserEmails {
 
   [PrimaryKeyProp]?: ['user', 'email'];
 
-  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true })
+  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', primary: true })
   user!: Ref<Users>;
 
-  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true, index: 'fk_user_emails_emails1_idx' })
+  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', primary: true, index: 'fk_user_emails_emails1_idx' })
   email!: Ref<Emails>;
 
   @Property({ type: 'boolean' })
@@ -1159,10 +1183,10 @@ export class UserFlags {
 
   [PrimaryKeyProp]?: ['user', 'flag'];
 
-  @ManyToOne({ entity: () => Users, fieldName: 'user_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true })
+  @ManyToOne({ entity: () => Users, fieldName: 'user_id', primary: true })
   user!: Users;
 
-  @ManyToOne({ entity: () => Flags, fieldName: 'flag_id', updateRule: 'cascade', primary: true, index: 'fk_user_flags_flags1_idx' })
+  @ManyToOne({ entity: () => Flags, fieldName: 'flag_id', deleteRule: 'restrict', primary: true, index: 'fk_user_flags_flags1_idx' })
   flag!: Flags;
 
 }
@@ -1177,10 +1201,10 @@ export class UserOrders {
 
   [PrimaryKeyProp]?: ['user', 'order'];
 
-  @ManyToOne({ entity: () => Users, fieldName: 'user_id', primary: true })
+  @ManyToOne({ entity: () => Users, fieldName: 'user_id', updateRule: 'restrict', deleteRule: 'no action', primary: true })
   user!: Users;
 
-  @ManyToOne({ entity: () => Orders, fieldName: 'order_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true, index: 'fk_user_orders_orders1_idx' })
+  @ManyToOne({ entity: () => Orders, fieldName: 'order_id', primary: true, index: 'fk_user_orders_orders1_idx' })
   order!: Orders;
 
   @Property({ unsigned: true, autoincrement: true, unique: 'priority_UNIQUE' })
@@ -1244,6 +1268,8 @@ export const CompletedOrdersSchema = new EntitySchema({
       entity: () => Users,
       ref: true,
       fieldName: 'user_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_completed_orders_users1_idx',
     },
     order: {
@@ -1251,6 +1277,8 @@ export const CompletedOrdersSchema = new EntitySchema({
       entity: () => Orders,
       ref: true,
       fieldName: 'order_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_completed_orders_orders1_idx',
     },
   },
@@ -1324,8 +1352,6 @@ export const UserEmailAvatarsSchema = new EntitySchema({
       entity: () => Users,
       ref: true,
       fieldName: 'user_id',
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
     },
     email: {
       primary: true,
@@ -1333,6 +1359,8 @@ export const UserEmailAvatarsSchema = new EntitySchema({
       entity: () => Emails,
       ref: true,
       fieldName: 'email_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_user_email_avatars_emails1_idx',
     },
     avatarUrl: { type: 'string' },
@@ -1360,6 +1388,8 @@ export const UserEmailFlagsSchema = new EntitySchema({
       entity: () => Users,
       ref: true,
       fieldName: 'user_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     email: {
       primary: true,
@@ -1367,6 +1397,8 @@ export const UserEmailFlagsSchema = new EntitySchema({
       entity: () => Emails,
       ref: true,
       fieldName: 'email_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_user_email_flags_emails1_idx',
     },
     flag: {
@@ -1374,6 +1406,8 @@ export const UserEmailFlagsSchema = new EntitySchema({
       entity: () => Flags,
       ref: true,
       fieldName: 'flag_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       defaultRaw: \`1\`,
       index: 'fk_user_email_flags_flags1_idx',
       unique: 'flag_id_UNIQUE',
@@ -1402,6 +1436,8 @@ export const UserEmailOrdersSchema = new EntitySchema({
       entity: () => Users,
       ref: true,
       fieldName: 'user_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     email: {
       primary: true,
@@ -1409,6 +1445,8 @@ export const UserEmailOrdersSchema = new EntitySchema({
       entity: () => Emails,
       ref: true,
       fieldName: 'email_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_user_email_orders_emails1_idx',
     },
     order: {
@@ -1416,6 +1454,8 @@ export const UserEmailOrdersSchema = new EntitySchema({
       entity: () => Orders,
       ref: true,
       fieldName: 'order_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_user_email_orders_orders1_idx',
     },
   },
@@ -1441,8 +1481,6 @@ export const UserEmailsSchema = new EntitySchema({
       entity: () => Users,
       ref: true,
       fieldName: 'user_id',
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
     },
     email: {
       primary: true,
@@ -1450,8 +1488,6 @@ export const UserEmailsSchema = new EntitySchema({
       entity: () => Emails,
       ref: true,
       fieldName: 'email_id',
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
       index: 'fk_user_emails_emails1_idx',
     },
     isVerified: { type: 'boolean' },
@@ -1476,15 +1512,13 @@ export const UserFlagsSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => Users,
       fieldName: 'user_id',
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
     },
     flag: {
       primary: true,
       kind: 'm:1',
       entity: () => Flags,
       fieldName: 'flag_id',
-      updateRule: 'cascade',
+      deleteRule: 'restrict',
       index: 'fk_user_flags_flags1_idx',
     },
   },
@@ -1509,14 +1543,14 @@ export const UserOrdersSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => Users,
       fieldName: 'user_id',
+      updateRule: 'restrict',
+      deleteRule: 'no action',
     },
     order: {
       primary: true,
       kind: 'm:1',
       entity: () => Orders,
       fieldName: 'order_id',
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
       index: 'fk_user_orders_orders1_idx',
     },
     priority: {
@@ -1596,10 +1630,10 @@ export class CompletedOrders {
   @PrimaryKey()
   id!: number;
 
-  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', index: 'fk_completed_orders_users1_idx' })
+  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', updateRule: 'no action', deleteRule: 'no action', index: 'fk_completed_orders_users1_idx' })
   user!: Ref<Users>;
 
-  @ManyToOne({ entity: () => Orders, ref: true, fieldName: 'order_id', index: 'fk_completed_orders_orders1_idx' })
+  @ManyToOne({ entity: () => Orders, ref: true, fieldName: 'order_id', updateRule: 'no action', deleteRule: 'no action', index: 'fk_completed_orders_orders1_idx' })
   order!: Ref<Orders>;
 
 }
@@ -1662,10 +1696,10 @@ export class UserEmailAvatars {
 
   [PrimaryKeyProp]?: ['user', 'email'];
 
-  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true })
+  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', primary: true })
   user!: Ref<Users>;
 
-  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', primary: true, index: 'fk_user_email_avatars_emails1_idx' })
+  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_user_email_avatars_emails1_idx' })
   email!: Ref<Emails>;
 
   @Property()
@@ -1684,13 +1718,13 @@ export class UserEmailFlags {
 
   [PrimaryKeyProp]?: ['user', 'email'];
 
-  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', primary: true })
+  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   user!: Ref<Users>;
 
-  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', primary: true, index: 'fk_user_email_flags_emails1_idx' })
+  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_user_email_flags_emails1_idx' })
   email!: Ref<Emails>;
 
-  @OneToOne({ entity: () => Flags, ref: true, fieldName: 'flag_id', defaultRaw: \`1\`, index: 'fk_user_email_flags_flags1_idx', unique: 'flag_id_UNIQUE' })
+  @OneToOne({ entity: () => Flags, ref: true, fieldName: 'flag_id', updateRule: 'no action', deleteRule: 'no action', defaultRaw: \`1\`, index: 'fk_user_email_flags_flags1_idx', unique: 'flag_id_UNIQUE' })
   flag!: Ref<Flags> & Opt;
 
 }
@@ -1706,13 +1740,13 @@ export class UserEmailOrders {
 
   [PrimaryKeyProp]?: ['user', 'email'];
 
-  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', primary: true })
+  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   user!: Ref<Users>;
 
-  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', primary: true, index: 'fk_user_email_orders_emails1_idx' })
+  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_user_email_orders_emails1_idx' })
   email!: Ref<Emails>;
 
-  @ManyToOne({ entity: () => Orders, ref: true, fieldName: 'order_id', index: 'fk_user_email_orders_orders1_idx' })
+  @ManyToOne({ entity: () => Orders, ref: true, fieldName: 'order_id', updateRule: 'no action', deleteRule: 'no action', index: 'fk_user_email_orders_orders1_idx' })
   order!: Ref<Orders>;
 
 }
@@ -1727,10 +1761,10 @@ export class UserEmails {
 
   [PrimaryKeyProp]?: ['user', 'email'];
 
-  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true })
+  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', primary: true })
   user!: Ref<Users>;
 
-  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true, index: 'fk_user_emails_emails1_idx' })
+  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', primary: true, index: 'fk_user_emails_emails1_idx' })
   email!: Ref<Emails>;
 
   @Property({ type: 'boolean' })
@@ -1748,10 +1782,10 @@ export class UserFlags {
 
   [PrimaryKeyProp]?: ['user', 'flag'];
 
-  @ManyToOne({ entity: () => Users, fieldName: 'user_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true })
+  @ManyToOne({ entity: () => Users, fieldName: 'user_id', primary: true })
   user!: Users;
 
-  @ManyToOne({ entity: () => Flags, fieldName: 'flag_id', updateRule: 'cascade', primary: true, index: 'fk_user_flags_flags1_idx' })
+  @ManyToOne({ entity: () => Flags, fieldName: 'flag_id', deleteRule: 'restrict', primary: true, index: 'fk_user_flags_flags1_idx' })
   flag!: Flags;
 
 }
@@ -1766,10 +1800,10 @@ export class UserOrders {
 
   [PrimaryKeyProp]?: ['user', 'order'];
 
-  @ManyToOne({ entity: () => Users, fieldName: 'user_id', primary: true })
+  @ManyToOne({ entity: () => Users, fieldName: 'user_id', updateRule: 'restrict', deleteRule: 'no action', primary: true })
   user!: Users;
 
-  @ManyToOne({ entity: () => Orders, fieldName: 'order_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true, index: 'fk_user_orders_orders1_idx' })
+  @ManyToOne({ entity: () => Orders, fieldName: 'order_id', primary: true, index: 'fk_user_orders_orders1_idx' })
   order!: Orders;
 
   @Property({ unsigned: true, autoincrement: true, unique: 'priority_UNIQUE' })
@@ -1845,6 +1879,8 @@ export const CompletedOrdersSchema = new EntitySchema({
       entity: () => Users,
       ref: true,
       fieldName: 'user_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_completed_orders_users1_idx',
     },
     order: {
@@ -1852,6 +1888,8 @@ export const CompletedOrdersSchema = new EntitySchema({
       entity: () => Orders,
       ref: true,
       fieldName: 'order_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_completed_orders_orders1_idx',
     },
   },
@@ -1925,8 +1963,6 @@ export const UserEmailAvatarsSchema = new EntitySchema({
       entity: () => Users,
       ref: true,
       fieldName: 'user_id',
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
     },
     email: {
       primary: true,
@@ -1934,6 +1970,8 @@ export const UserEmailAvatarsSchema = new EntitySchema({
       entity: () => Emails,
       ref: true,
       fieldName: 'email_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_user_email_avatars_emails1_idx',
     },
     avatarUrl: { type: 'string' },
@@ -1961,6 +1999,8 @@ export const UserEmailFlagsSchema = new EntitySchema({
       entity: () => Users,
       ref: true,
       fieldName: 'user_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     email: {
       primary: true,
@@ -1968,6 +2008,8 @@ export const UserEmailFlagsSchema = new EntitySchema({
       entity: () => Emails,
       ref: true,
       fieldName: 'email_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_user_email_flags_emails1_idx',
     },
     flag: {
@@ -1975,6 +2017,8 @@ export const UserEmailFlagsSchema = new EntitySchema({
       entity: () => Flags,
       ref: true,
       fieldName: 'flag_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       defaultRaw: \`1\`,
       index: 'fk_user_email_flags_flags1_idx',
       unique: 'flag_id_UNIQUE',
@@ -2003,6 +2047,8 @@ export const UserEmailOrdersSchema = new EntitySchema({
       entity: () => Users,
       ref: true,
       fieldName: 'user_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     email: {
       primary: true,
@@ -2010,6 +2056,8 @@ export const UserEmailOrdersSchema = new EntitySchema({
       entity: () => Emails,
       ref: true,
       fieldName: 'email_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_user_email_orders_emails1_idx',
     },
     order: {
@@ -2017,6 +2065,8 @@ export const UserEmailOrdersSchema = new EntitySchema({
       entity: () => Orders,
       ref: true,
       fieldName: 'order_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_user_email_orders_orders1_idx',
     },
   },
@@ -2042,8 +2092,6 @@ export const UserEmailsSchema = new EntitySchema({
       entity: () => Users,
       ref: true,
       fieldName: 'user_id',
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
     },
     email: {
       primary: true,
@@ -2051,8 +2099,6 @@ export const UserEmailsSchema = new EntitySchema({
       entity: () => Emails,
       ref: true,
       fieldName: 'email_id',
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
       index: 'fk_user_emails_emails1_idx',
     },
     isVerified: { type: 'boolean' },
@@ -2077,15 +2123,13 @@ export const UserFlagsSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => Users,
       fieldName: 'user_id',
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
     },
     flag: {
       primary: true,
       kind: 'm:1',
       entity: () => Flags,
       fieldName: 'flag_id',
-      updateRule: 'cascade',
+      deleteRule: 'restrict',
       index: 'fk_user_flags_flags1_idx',
     },
   },
@@ -2110,14 +2154,14 @@ export const UserOrdersSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => Users,
       fieldName: 'user_id',
+      updateRule: 'restrict',
+      deleteRule: 'no action',
     },
     order: {
       primary: true,
       kind: 'm:1',
       entity: () => Orders,
       fieldName: 'order_id',
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
       index: 'fk_user_orders_orders1_idx',
     },
     priority: {
@@ -2230,10 +2274,10 @@ export class CompletedOrders {
   @PrimaryKey()
   id!: number;
 
-  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', index: 'fk_completed_orders_users1_idx' })
+  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', updateRule: 'no action', deleteRule: 'no action', index: 'fk_completed_orders_users1_idx' })
   user!: Ref<Users>;
 
-  @ManyToOne({ entity: () => Orders, ref: true, fieldName: 'order_id', index: 'fk_completed_orders_orders1_idx' })
+  @ManyToOne({ entity: () => Orders, ref: true, fieldName: 'order_id', updateRule: 'no action', deleteRule: 'no action', index: 'fk_completed_orders_orders1_idx' })
   order!: Ref<Orders>;
 
 }
@@ -2296,10 +2340,10 @@ export class UserEmailAvatars {
 
   [PrimaryKeyProp]?: ['user', 'email'];
 
-  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true })
+  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', primary: true })
   user!: Ref<Users>;
 
-  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', primary: true, index: 'fk_user_email_avatars_emails1_idx' })
+  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_user_email_avatars_emails1_idx' })
   email!: Ref<Emails>;
 
   @Property()
@@ -2318,13 +2362,13 @@ export class UserEmailFlags {
 
   [PrimaryKeyProp]?: ['user', 'email'];
 
-  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', primary: true })
+  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   user!: Ref<Users>;
 
-  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', primary: true, index: 'fk_user_email_flags_emails1_idx' })
+  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_user_email_flags_emails1_idx' })
   email!: Ref<Emails>;
 
-  @OneToOne({ entity: () => Flags, ref: true, fieldName: 'flag_id', defaultRaw: \`1\`, index: 'fk_user_email_flags_flags1_idx', unique: 'flag_id_UNIQUE' })
+  @OneToOne({ entity: () => Flags, ref: true, fieldName: 'flag_id', updateRule: 'no action', deleteRule: 'no action', defaultRaw: \`1\`, index: 'fk_user_email_flags_flags1_idx', unique: 'flag_id_UNIQUE' })
   flag!: Ref<Flags> & Opt;
 
 }
@@ -2340,13 +2384,13 @@ export class UserEmailOrders {
 
   [PrimaryKeyProp]?: ['user', 'email'];
 
-  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', primary: true })
+  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   user!: Ref<Users>;
 
-  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', primary: true, index: 'fk_user_email_orders_emails1_idx' })
+  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_user_email_orders_emails1_idx' })
   email!: Ref<Emails>;
 
-  @ManyToOne({ entity: () => Orders, ref: true, fieldName: 'order_id', index: 'fk_user_email_orders_orders1_idx' })
+  @ManyToOne({ entity: () => Orders, ref: true, fieldName: 'order_id', updateRule: 'no action', deleteRule: 'no action', index: 'fk_user_email_orders_orders1_idx' })
   order!: Ref<Orders>;
 
 }
@@ -2361,10 +2405,10 @@ export class UserEmails {
 
   [PrimaryKeyProp]?: ['user', 'email'];
 
-  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true })
+  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', primary: true })
   user!: Ref<Users>;
 
-  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true, index: 'fk_user_emails_emails1_idx' })
+  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', primary: true, index: 'fk_user_emails_emails1_idx' })
   email!: Ref<Emails>;
 
   @Property({ type: 'boolean' })
@@ -2382,10 +2426,10 @@ export class UserOrders {
 
   [PrimaryKeyProp]?: ['user', 'order'];
 
-  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', primary: true })
+  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', updateRule: 'restrict', deleteRule: 'no action', primary: true })
   user!: Ref<Users>;
 
-  @ManyToOne({ entity: () => Orders, ref: true, fieldName: 'order_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true, index: 'fk_user_orders_orders1_idx' })
+  @ManyToOne({ entity: () => Orders, ref: true, fieldName: 'order_id', primary: true, index: 'fk_user_orders_orders1_idx' })
   order!: Ref<Orders>;
 
   @Property({ unsigned: true, autoincrement: true, unique: 'priority_UNIQUE' })
@@ -2438,6 +2482,8 @@ export const CompletedOrdersSchema = new EntitySchema({
       entity: () => Users,
       ref: true,
       fieldName: 'user_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_completed_orders_users1_idx',
     },
     order: {
@@ -2445,6 +2491,8 @@ export const CompletedOrdersSchema = new EntitySchema({
       entity: () => Orders,
       ref: true,
       fieldName: 'order_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_completed_orders_orders1_idx',
     },
   },
@@ -2518,8 +2566,6 @@ export const UserEmailAvatarsSchema = new EntitySchema({
       entity: () => Users,
       ref: true,
       fieldName: 'user_id',
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
     },
     email: {
       primary: true,
@@ -2527,6 +2573,8 @@ export const UserEmailAvatarsSchema = new EntitySchema({
       entity: () => Emails,
       ref: true,
       fieldName: 'email_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_user_email_avatars_emails1_idx',
     },
     avatarUrl: { type: 'string' },
@@ -2554,6 +2602,8 @@ export const UserEmailFlagsSchema = new EntitySchema({
       entity: () => Users,
       ref: true,
       fieldName: 'user_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     email: {
       primary: true,
@@ -2561,6 +2611,8 @@ export const UserEmailFlagsSchema = new EntitySchema({
       entity: () => Emails,
       ref: true,
       fieldName: 'email_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_user_email_flags_emails1_idx',
     },
     flag: {
@@ -2568,6 +2620,8 @@ export const UserEmailFlagsSchema = new EntitySchema({
       entity: () => Flags,
       ref: true,
       fieldName: 'flag_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       defaultRaw: \`1\`,
       index: 'fk_user_email_flags_flags1_idx',
       unique: 'flag_id_UNIQUE',
@@ -2596,6 +2650,8 @@ export const UserEmailOrdersSchema = new EntitySchema({
       entity: () => Users,
       ref: true,
       fieldName: 'user_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     email: {
       primary: true,
@@ -2603,6 +2659,8 @@ export const UserEmailOrdersSchema = new EntitySchema({
       entity: () => Emails,
       ref: true,
       fieldName: 'email_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_user_email_orders_emails1_idx',
     },
     order: {
@@ -2610,6 +2668,8 @@ export const UserEmailOrdersSchema = new EntitySchema({
       entity: () => Orders,
       ref: true,
       fieldName: 'order_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_user_email_orders_orders1_idx',
     },
   },
@@ -2635,8 +2695,6 @@ export const UserEmailsSchema = new EntitySchema({
       entity: () => Users,
       ref: true,
       fieldName: 'user_id',
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
     },
     email: {
       primary: true,
@@ -2644,8 +2702,6 @@ export const UserEmailsSchema = new EntitySchema({
       entity: () => Emails,
       ref: true,
       fieldName: 'email_id',
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
       index: 'fk_user_emails_emails1_idx',
     },
     isVerified: { type: 'boolean' },
@@ -2672,6 +2728,8 @@ export const UserOrdersSchema = new EntitySchema({
       entity: () => Users,
       ref: true,
       fieldName: 'user_id',
+      updateRule: 'restrict',
+      deleteRule: 'no action',
     },
     order: {
       primary: true,
@@ -2679,8 +2737,6 @@ export const UserOrdersSchema = new EntitySchema({
       entity: () => Orders,
       ref: true,
       fieldName: 'order_id',
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
       index: 'fk_user_orders_orders1_idx',
     },
     priority: {
@@ -2734,10 +2790,10 @@ export class CompletedOrders {
   @PrimaryKey()
   id!: number;
 
-  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', index: 'fk_completed_orders_users1_idx' })
+  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', updateRule: 'no action', deleteRule: 'no action', index: 'fk_completed_orders_users1_idx' })
   user!: Ref<Users>;
 
-  @ManyToOne({ entity: () => Orders, ref: true, fieldName: 'order_id', index: 'fk_completed_orders_orders1_idx' })
+  @ManyToOne({ entity: () => Orders, ref: true, fieldName: 'order_id', updateRule: 'no action', deleteRule: 'no action', index: 'fk_completed_orders_orders1_idx' })
   order!: Ref<Orders>;
 
 }
@@ -2800,10 +2856,10 @@ export class UserEmailAvatars {
 
   [PrimaryKeyProp]?: ['user', 'email'];
 
-  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true })
+  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', primary: true })
   user!: Ref<Users>;
 
-  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', primary: true, index: 'fk_user_email_avatars_emails1_idx' })
+  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_user_email_avatars_emails1_idx' })
   email!: Ref<Emails>;
 
   @Property()
@@ -2822,13 +2878,13 @@ export class UserEmailFlags {
 
   [PrimaryKeyProp]?: ['user', 'email'];
 
-  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', primary: true })
+  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   user!: Ref<Users>;
 
-  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', primary: true, index: 'fk_user_email_flags_emails1_idx' })
+  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_user_email_flags_emails1_idx' })
   email!: Ref<Emails>;
 
-  @OneToOne({ entity: () => Flags, ref: true, fieldName: 'flag_id', defaultRaw: \`1\`, index: 'fk_user_email_flags_flags1_idx', unique: 'flag_id_UNIQUE' })
+  @OneToOne({ entity: () => Flags, ref: true, fieldName: 'flag_id', updateRule: 'no action', deleteRule: 'no action', defaultRaw: \`1\`, index: 'fk_user_email_flags_flags1_idx', unique: 'flag_id_UNIQUE' })
   flag!: Ref<Flags> & Opt;
 
 }
@@ -2844,13 +2900,13 @@ export class UserEmailOrders {
 
   [PrimaryKeyProp]?: ['user', 'email'];
 
-  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', primary: true })
+  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   user!: Ref<Users>;
 
-  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', primary: true, index: 'fk_user_email_orders_emails1_idx' })
+  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_user_email_orders_emails1_idx' })
   email!: Ref<Emails>;
 
-  @ManyToOne({ entity: () => Orders, ref: true, fieldName: 'order_id', index: 'fk_user_email_orders_orders1_idx' })
+  @ManyToOne({ entity: () => Orders, ref: true, fieldName: 'order_id', updateRule: 'no action', deleteRule: 'no action', index: 'fk_user_email_orders_orders1_idx' })
   order!: Ref<Orders>;
 
 }
@@ -2865,10 +2921,10 @@ export class UserEmails {
 
   [PrimaryKeyProp]?: ['user', 'email'];
 
-  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true })
+  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', primary: true })
   user!: Ref<Users>;
 
-  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true, index: 'fk_user_emails_emails1_idx' })
+  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', primary: true, index: 'fk_user_emails_emails1_idx' })
   email!: Ref<Emails>;
 
   @Property({ type: 'boolean' })
@@ -2886,10 +2942,10 @@ export class UserOrders {
 
   [PrimaryKeyProp]?: ['user', 'order'];
 
-  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', primary: true })
+  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', updateRule: 'restrict', deleteRule: 'no action', primary: true })
   user!: Ref<Users>;
 
-  @ManyToOne({ entity: () => Orders, ref: true, fieldName: 'order_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true, index: 'fk_user_orders_orders1_idx' })
+  @ManyToOne({ entity: () => Orders, ref: true, fieldName: 'order_id', primary: true, index: 'fk_user_orders_orders1_idx' })
   order!: Ref<Orders>;
 
   @Property({ unsigned: true, autoincrement: true, unique: 'priority_UNIQUE' })
@@ -2942,6 +2998,8 @@ export const CompletedOrdersSchema = new EntitySchema({
       entity: () => Users,
       ref: true,
       fieldName: 'user_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_completed_orders_users1_idx',
     },
     order: {
@@ -2949,6 +3007,8 @@ export const CompletedOrdersSchema = new EntitySchema({
       entity: () => Orders,
       ref: true,
       fieldName: 'order_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_completed_orders_orders1_idx',
     },
   },
@@ -3022,8 +3082,6 @@ export const UserEmailAvatarsSchema = new EntitySchema({
       entity: () => Users,
       ref: true,
       fieldName: 'user_id',
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
     },
     email: {
       primary: true,
@@ -3031,6 +3089,8 @@ export const UserEmailAvatarsSchema = new EntitySchema({
       entity: () => Emails,
       ref: true,
       fieldName: 'email_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_user_email_avatars_emails1_idx',
     },
     avatarUrl: { type: 'string' },
@@ -3058,6 +3118,8 @@ export const UserEmailFlagsSchema = new EntitySchema({
       entity: () => Users,
       ref: true,
       fieldName: 'user_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     email: {
       primary: true,
@@ -3065,6 +3127,8 @@ export const UserEmailFlagsSchema = new EntitySchema({
       entity: () => Emails,
       ref: true,
       fieldName: 'email_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_user_email_flags_emails1_idx',
     },
     flag: {
@@ -3072,6 +3136,8 @@ export const UserEmailFlagsSchema = new EntitySchema({
       entity: () => Flags,
       ref: true,
       fieldName: 'flag_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       defaultRaw: \`1\`,
       index: 'fk_user_email_flags_flags1_idx',
       unique: 'flag_id_UNIQUE',
@@ -3100,6 +3166,8 @@ export const UserEmailOrdersSchema = new EntitySchema({
       entity: () => Users,
       ref: true,
       fieldName: 'user_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     email: {
       primary: true,
@@ -3107,6 +3175,8 @@ export const UserEmailOrdersSchema = new EntitySchema({
       entity: () => Emails,
       ref: true,
       fieldName: 'email_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_user_email_orders_emails1_idx',
     },
     order: {
@@ -3114,6 +3184,8 @@ export const UserEmailOrdersSchema = new EntitySchema({
       entity: () => Orders,
       ref: true,
       fieldName: 'order_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_user_email_orders_orders1_idx',
     },
   },
@@ -3139,8 +3211,6 @@ export const UserEmailsSchema = new EntitySchema({
       entity: () => Users,
       ref: true,
       fieldName: 'user_id',
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
     },
     email: {
       primary: true,
@@ -3148,8 +3218,6 @@ export const UserEmailsSchema = new EntitySchema({
       entity: () => Emails,
       ref: true,
       fieldName: 'email_id',
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
       index: 'fk_user_emails_emails1_idx',
     },
     isVerified: { type: 'boolean' },
@@ -3176,6 +3244,8 @@ export const UserOrdersSchema = new EntitySchema({
       entity: () => Users,
       ref: true,
       fieldName: 'user_id',
+      updateRule: 'restrict',
+      deleteRule: 'no action',
     },
     order: {
       primary: true,
@@ -3183,8 +3253,6 @@ export const UserOrdersSchema = new EntitySchema({
       entity: () => Orders,
       ref: true,
       fieldName: 'order_id',
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
       index: 'fk_user_orders_orders1_idx',
     },
     priority: {
@@ -3238,10 +3306,10 @@ export class CompletedOrders {
   @PrimaryKey()
   id!: number;
 
-  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', index: 'fk_completed_orders_users1_idx' })
+  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', updateRule: 'no action', deleteRule: 'no action', index: 'fk_completed_orders_users1_idx' })
   user!: Ref<Users>;
 
-  @ManyToOne({ entity: () => Orders, ref: true, fieldName: 'order_id', index: 'fk_completed_orders_orders1_idx' })
+  @ManyToOne({ entity: () => Orders, ref: true, fieldName: 'order_id', updateRule: 'no action', deleteRule: 'no action', index: 'fk_completed_orders_orders1_idx' })
   order!: Ref<Orders>;
 
 }
@@ -3304,10 +3372,10 @@ export class UserEmailAvatars {
 
   [PrimaryKeyProp]?: ['user', 'email'];
 
-  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true })
+  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', primary: true })
   user!: Ref<Users>;
 
-  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', primary: true, index: 'fk_user_email_avatars_emails1_idx' })
+  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_user_email_avatars_emails1_idx' })
   email!: Ref<Emails>;
 
   @Property()
@@ -3326,13 +3394,13 @@ export class UserEmailFlags {
 
   [PrimaryKeyProp]?: ['user', 'email'];
 
-  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', primary: true })
+  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   user!: Ref<Users>;
 
-  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', primary: true, index: 'fk_user_email_flags_emails1_idx' })
+  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_user_email_flags_emails1_idx' })
   email!: Ref<Emails>;
 
-  @OneToOne({ entity: () => Flags, ref: true, fieldName: 'flag_id', defaultRaw: \`1\`, index: 'fk_user_email_flags_flags1_idx', unique: 'flag_id_UNIQUE' })
+  @OneToOne({ entity: () => Flags, ref: true, fieldName: 'flag_id', updateRule: 'no action', deleteRule: 'no action', defaultRaw: \`1\`, index: 'fk_user_email_flags_flags1_idx', unique: 'flag_id_UNIQUE' })
   flag!: Ref<Flags> & Opt;
 
 }
@@ -3348,13 +3416,13 @@ export class UserEmailOrders {
 
   [PrimaryKeyProp]?: ['user', 'email'];
 
-  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', primary: true })
+  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   user!: Ref<Users>;
 
-  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', primary: true, index: 'fk_user_email_orders_emails1_idx' })
+  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_user_email_orders_emails1_idx' })
   email!: Ref<Emails>;
 
-  @ManyToOne({ entity: () => Orders, ref: true, fieldName: 'order_id', index: 'fk_user_email_orders_orders1_idx' })
+  @ManyToOne({ entity: () => Orders, ref: true, fieldName: 'order_id', updateRule: 'no action', deleteRule: 'no action', index: 'fk_user_email_orders_orders1_idx' })
   order!: Ref<Orders>;
 
 }
@@ -3369,10 +3437,10 @@ export class UserEmails {
 
   [PrimaryKeyProp]?: ['user', 'email'];
 
-  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true })
+  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', primary: true })
   user!: Ref<Users>;
 
-  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true, index: 'fk_user_emails_emails1_idx' })
+  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', primary: true, index: 'fk_user_emails_emails1_idx' })
   email!: Ref<Emails>;
 
   @Property({ type: 'boolean' })
@@ -3390,10 +3458,10 @@ export class UserFlags {
 
   [PrimaryKeyProp]?: ['user', 'flag'];
 
-  @ManyToOne({ entity: () => Users, fieldName: 'user_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true })
+  @ManyToOne({ entity: () => Users, fieldName: 'user_id', primary: true })
   user!: Users;
 
-  @ManyToOne({ entity: () => Flags, fieldName: 'flag_id', updateRule: 'cascade', primary: true, index: 'fk_user_flags_flags1_idx' })
+  @ManyToOne({ entity: () => Flags, fieldName: 'flag_id', deleteRule: 'restrict', primary: true, index: 'fk_user_flags_flags1_idx' })
   flag!: Flags;
 
 }
@@ -3408,10 +3476,10 @@ export class UserOrders {
 
   [PrimaryKeyProp]?: ['user', 'order'];
 
-  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', primary: true })
+  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', updateRule: 'restrict', deleteRule: 'no action', primary: true })
   user!: Ref<Users>;
 
-  @ManyToOne({ entity: () => Orders, ref: true, fieldName: 'order_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true, index: 'fk_user_orders_orders1_idx' })
+  @ManyToOne({ entity: () => Orders, ref: true, fieldName: 'order_id', primary: true, index: 'fk_user_orders_orders1_idx' })
   order!: Ref<Orders>;
 
   @Property({ unsigned: true, autoincrement: true, unique: 'priority_UNIQUE' })
@@ -3465,6 +3533,8 @@ export const CompletedOrdersSchema = new EntitySchema({
       entity: () => Users,
       ref: true,
       fieldName: 'user_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_completed_orders_users1_idx',
     },
     order: {
@@ -3472,6 +3542,8 @@ export const CompletedOrdersSchema = new EntitySchema({
       entity: () => Orders,
       ref: true,
       fieldName: 'order_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_completed_orders_orders1_idx',
     },
   },
@@ -3545,8 +3617,6 @@ export const UserEmailAvatarsSchema = new EntitySchema({
       entity: () => Users,
       ref: true,
       fieldName: 'user_id',
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
     },
     email: {
       primary: true,
@@ -3554,6 +3624,8 @@ export const UserEmailAvatarsSchema = new EntitySchema({
       entity: () => Emails,
       ref: true,
       fieldName: 'email_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_user_email_avatars_emails1_idx',
     },
     avatarUrl: { type: 'string' },
@@ -3581,6 +3653,8 @@ export const UserEmailFlagsSchema = new EntitySchema({
       entity: () => Users,
       ref: true,
       fieldName: 'user_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     email: {
       primary: true,
@@ -3588,6 +3662,8 @@ export const UserEmailFlagsSchema = new EntitySchema({
       entity: () => Emails,
       ref: true,
       fieldName: 'email_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_user_email_flags_emails1_idx',
     },
     flag: {
@@ -3595,6 +3671,8 @@ export const UserEmailFlagsSchema = new EntitySchema({
       entity: () => Flags,
       ref: true,
       fieldName: 'flag_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       defaultRaw: \`1\`,
       index: 'fk_user_email_flags_flags1_idx',
       unique: 'flag_id_UNIQUE',
@@ -3623,6 +3701,8 @@ export const UserEmailOrdersSchema = new EntitySchema({
       entity: () => Users,
       ref: true,
       fieldName: 'user_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     email: {
       primary: true,
@@ -3630,6 +3710,8 @@ export const UserEmailOrdersSchema = new EntitySchema({
       entity: () => Emails,
       ref: true,
       fieldName: 'email_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_user_email_orders_emails1_idx',
     },
     order: {
@@ -3637,6 +3719,8 @@ export const UserEmailOrdersSchema = new EntitySchema({
       entity: () => Orders,
       ref: true,
       fieldName: 'order_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_user_email_orders_orders1_idx',
     },
   },
@@ -3662,8 +3746,6 @@ export const UserEmailsSchema = new EntitySchema({
       entity: () => Users,
       ref: true,
       fieldName: 'user_id',
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
     },
     email: {
       primary: true,
@@ -3671,8 +3753,6 @@ export const UserEmailsSchema = new EntitySchema({
       entity: () => Emails,
       ref: true,
       fieldName: 'email_id',
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
       index: 'fk_user_emails_emails1_idx',
     },
     isVerified: { type: 'boolean' },
@@ -3697,15 +3777,13 @@ export const UserFlagsSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => Users,
       fieldName: 'user_id',
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
     },
     flag: {
       primary: true,
       kind: 'm:1',
       entity: () => Flags,
       fieldName: 'flag_id',
-      updateRule: 'cascade',
+      deleteRule: 'restrict',
       index: 'fk_user_flags_flags1_idx',
     },
   },
@@ -3731,6 +3809,8 @@ export const UserOrdersSchema = new EntitySchema({
       entity: () => Users,
       ref: true,
       fieldName: 'user_id',
+      updateRule: 'restrict',
+      deleteRule: 'no action',
     },
     order: {
       primary: true,
@@ -3738,8 +3818,6 @@ export const UserOrdersSchema = new EntitySchema({
       entity: () => Orders,
       ref: true,
       fieldName: 'order_id',
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
       index: 'fk_user_orders_orders1_idx',
     },
     priority: {
@@ -3795,10 +3873,10 @@ export class CompletedOrders {
   @PrimaryKey()
   id!: number;
 
-  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', index: 'fk_completed_orders_users1_idx' })
+  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', updateRule: 'no action', deleteRule: 'no action', index: 'fk_completed_orders_users1_idx' })
   user!: Ref<Users>;
 
-  @ManyToOne({ entity: () => Orders, ref: true, fieldName: 'order_id', index: 'fk_completed_orders_orders1_idx' })
+  @ManyToOne({ entity: () => Orders, ref: true, fieldName: 'order_id', updateRule: 'no action', deleteRule: 'no action', index: 'fk_completed_orders_orders1_idx' })
   order!: Ref<Orders>;
 
 }
@@ -3861,10 +3939,10 @@ export class UserEmailAvatars {
 
   [PrimaryKeyProp]?: ['user', 'email'];
 
-  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true })
+  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', primary: true })
   user!: Ref<Users>;
 
-  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', primary: true, index: 'fk_user_email_avatars_emails1_idx' })
+  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_user_email_avatars_emails1_idx' })
   email!: Ref<Emails>;
 
   @Property()
@@ -3883,13 +3961,13 @@ export class UserEmailFlags {
 
   [PrimaryKeyProp]?: ['user', 'email'];
 
-  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', primary: true })
+  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   user!: Ref<Users>;
 
-  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', primary: true, index: 'fk_user_email_flags_emails1_idx' })
+  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_user_email_flags_emails1_idx' })
   email!: Ref<Emails>;
 
-  @OneToOne({ entity: () => Flags, ref: true, fieldName: 'flag_id', defaultRaw: \`1\`, index: 'fk_user_email_flags_flags1_idx', unique: 'flag_id_UNIQUE' })
+  @OneToOne({ entity: () => Flags, ref: true, fieldName: 'flag_id', updateRule: 'no action', deleteRule: 'no action', defaultRaw: \`1\`, index: 'fk_user_email_flags_flags1_idx', unique: 'flag_id_UNIQUE' })
   flag!: Ref<Flags> & Opt;
 
 }
@@ -3905,13 +3983,13 @@ export class UserEmailOrders {
 
   [PrimaryKeyProp]?: ['user', 'email'];
 
-  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', primary: true })
+  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   user!: Ref<Users>;
 
-  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', primary: true, index: 'fk_user_email_orders_emails1_idx' })
+  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_user_email_orders_emails1_idx' })
   email!: Ref<Emails>;
 
-  @ManyToOne({ entity: () => Orders, ref: true, fieldName: 'order_id', index: 'fk_user_email_orders_orders1_idx' })
+  @ManyToOne({ entity: () => Orders, ref: true, fieldName: 'order_id', updateRule: 'no action', deleteRule: 'no action', index: 'fk_user_email_orders_orders1_idx' })
   order!: Ref<Orders>;
 
 }
@@ -3926,10 +4004,10 @@ export class UserEmails {
 
   [PrimaryKeyProp]?: ['user', 'email'];
 
-  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true })
+  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', primary: true })
   user!: Ref<Users>;
 
-  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true, index: 'fk_user_emails_emails1_idx' })
+  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', primary: true, index: 'fk_user_emails_emails1_idx' })
   email!: Ref<Emails>;
 
   @Property({ type: 'boolean' })
@@ -3947,10 +4025,10 @@ export class UserFlags {
 
   [PrimaryKeyProp]?: ['user', 'flag'];
 
-  @ManyToOne({ entity: () => Users, fieldName: 'user_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true })
+  @ManyToOne({ entity: () => Users, fieldName: 'user_id', primary: true })
   user!: Users;
 
-  @ManyToOne({ entity: () => Flags, fieldName: 'flag_id', updateRule: 'cascade', primary: true, index: 'fk_user_flags_flags1_idx' })
+  @ManyToOne({ entity: () => Flags, fieldName: 'flag_id', deleteRule: 'restrict', primary: true, index: 'fk_user_flags_flags1_idx' })
   flag!: Flags;
 
 }
@@ -3965,10 +4043,10 @@ export class UserOrders {
 
   [PrimaryKeyProp]?: ['user', 'order'];
 
-  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', primary: true })
+  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', updateRule: 'restrict', deleteRule: 'no action', primary: true })
   user!: Ref<Users>;
 
-  @ManyToOne({ entity: () => Orders, ref: true, fieldName: 'order_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true, index: 'fk_user_orders_orders1_idx' })
+  @ManyToOne({ entity: () => Orders, ref: true, fieldName: 'order_id', primary: true, index: 'fk_user_orders_orders1_idx' })
   order!: Ref<Orders>;
 
   @Property({ unsigned: true, autoincrement: true, unique: 'priority_UNIQUE' })
@@ -4022,6 +4100,8 @@ export const CompletedOrdersSchema = new EntitySchema({
       entity: () => Users,
       ref: true,
       fieldName: 'user_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_completed_orders_users1_idx',
     },
     order: {
@@ -4029,6 +4109,8 @@ export const CompletedOrdersSchema = new EntitySchema({
       entity: () => Orders,
       ref: true,
       fieldName: 'order_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_completed_orders_orders1_idx',
     },
   },
@@ -4102,8 +4184,6 @@ export const UserEmailAvatarsSchema = new EntitySchema({
       entity: () => Users,
       ref: true,
       fieldName: 'user_id',
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
     },
     email: {
       primary: true,
@@ -4111,6 +4191,8 @@ export const UserEmailAvatarsSchema = new EntitySchema({
       entity: () => Emails,
       ref: true,
       fieldName: 'email_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_user_email_avatars_emails1_idx',
     },
     avatarUrl: { type: 'string' },
@@ -4138,6 +4220,8 @@ export const UserEmailFlagsSchema = new EntitySchema({
       entity: () => Users,
       ref: true,
       fieldName: 'user_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     email: {
       primary: true,
@@ -4145,6 +4229,8 @@ export const UserEmailFlagsSchema = new EntitySchema({
       entity: () => Emails,
       ref: true,
       fieldName: 'email_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_user_email_flags_emails1_idx',
     },
     flag: {
@@ -4152,6 +4238,8 @@ export const UserEmailFlagsSchema = new EntitySchema({
       entity: () => Flags,
       ref: true,
       fieldName: 'flag_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       defaultRaw: \`1\`,
       index: 'fk_user_email_flags_flags1_idx',
       unique: 'flag_id_UNIQUE',
@@ -4180,6 +4268,8 @@ export const UserEmailOrdersSchema = new EntitySchema({
       entity: () => Users,
       ref: true,
       fieldName: 'user_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     email: {
       primary: true,
@@ -4187,6 +4277,8 @@ export const UserEmailOrdersSchema = new EntitySchema({
       entity: () => Emails,
       ref: true,
       fieldName: 'email_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_user_email_orders_emails1_idx',
     },
     order: {
@@ -4194,6 +4286,8 @@ export const UserEmailOrdersSchema = new EntitySchema({
       entity: () => Orders,
       ref: true,
       fieldName: 'order_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_user_email_orders_orders1_idx',
     },
   },
@@ -4219,8 +4313,6 @@ export const UserEmailsSchema = new EntitySchema({
       entity: () => Users,
       ref: true,
       fieldName: 'user_id',
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
     },
     email: {
       primary: true,
@@ -4228,8 +4320,6 @@ export const UserEmailsSchema = new EntitySchema({
       entity: () => Emails,
       ref: true,
       fieldName: 'email_id',
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
       index: 'fk_user_emails_emails1_idx',
     },
     isVerified: { type: 'boolean' },
@@ -4254,15 +4344,13 @@ export const UserFlagsSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => Users,
       fieldName: 'user_id',
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
     },
     flag: {
       primary: true,
       kind: 'm:1',
       entity: () => Flags,
       fieldName: 'flag_id',
-      updateRule: 'cascade',
+      deleteRule: 'restrict',
       index: 'fk_user_flags_flags1_idx',
     },
   },
@@ -4288,6 +4376,8 @@ export const UserOrdersSchema = new EntitySchema({
       entity: () => Users,
       ref: true,
       fieldName: 'user_id',
+      updateRule: 'restrict',
+      deleteRule: 'no action',
     },
     order: {
       primary: true,
@@ -4295,8 +4385,6 @@ export const UserOrdersSchema = new EntitySchema({
       entity: () => Orders,
       ref: true,
       fieldName: 'order_id',
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
       index: 'fk_user_orders_orders1_idx',
     },
     priority: {
@@ -4352,10 +4440,10 @@ export class CompletedOrders {
   @PrimaryKey()
   id!: number;
 
-  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', index: 'fk_completed_orders_users1_idx' })
+  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', updateRule: 'no action', deleteRule: 'no action', index: 'fk_completed_orders_users1_idx' })
   user!: Ref<Users>;
 
-  @ManyToOne({ entity: () => Orders, ref: true, fieldName: 'order_id', index: 'fk_completed_orders_orders1_idx' })
+  @ManyToOne({ entity: () => Orders, ref: true, fieldName: 'order_id', updateRule: 'no action', deleteRule: 'no action', index: 'fk_completed_orders_orders1_idx' })
   order!: Ref<Orders>;
 
 }
@@ -4458,10 +4546,10 @@ export class UserEmailAvatars {
 
   [PrimaryKeyProp]?: ['user', 'email'];
 
-  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true })
+  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', primary: true })
   user!: Ref<Users>;
 
-  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', primary: true, index: 'fk_user_email_avatars_emails1_idx' })
+  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_user_email_avatars_emails1_idx' })
   email!: Ref<Emails>;
 
   @Property()
@@ -4480,13 +4568,13 @@ export class UserEmailFlags {
 
   [PrimaryKeyProp]?: ['user', 'email'];
 
-  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', primary: true })
+  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   user!: Ref<Users>;
 
-  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', primary: true, index: 'fk_user_email_flags_emails1_idx' })
+  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_user_email_flags_emails1_idx' })
   email!: Ref<Emails>;
 
-  @OneToOne({ entity: () => Flags, ref: true, fieldName: 'flag_id', defaultRaw: \`1\`, index: 'fk_user_email_flags_flags1_idx', unique: 'flag_id_UNIQUE' })
+  @OneToOne({ entity: () => Flags, ref: true, fieldName: 'flag_id', updateRule: 'no action', deleteRule: 'no action', defaultRaw: \`1\`, index: 'fk_user_email_flags_flags1_idx', unique: 'flag_id_UNIQUE' })
   flag!: Ref<Flags> & Opt;
 
 }
@@ -4502,13 +4590,13 @@ export class UserEmailOrders {
 
   [PrimaryKeyProp]?: ['user', 'email'];
 
-  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', primary: true })
+  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   user!: Ref<Users>;
 
-  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', primary: true, index: 'fk_user_email_orders_emails1_idx' })
+  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_user_email_orders_emails1_idx' })
   email!: Ref<Emails>;
 
-  @ManyToOne({ entity: () => Orders, ref: true, fieldName: 'order_id', index: 'fk_user_email_orders_orders1_idx' })
+  @ManyToOne({ entity: () => Orders, ref: true, fieldName: 'order_id', updateRule: 'no action', deleteRule: 'no action', index: 'fk_user_email_orders_orders1_idx' })
   order!: Ref<Orders>;
 
 }
@@ -4523,10 +4611,10 @@ export class UserEmails {
 
   [PrimaryKeyProp]?: ['user', 'email'];
 
-  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true })
+  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', primary: true })
   user!: Ref<Users>;
 
-  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true, index: 'fk_user_emails_emails1_idx' })
+  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', primary: true, index: 'fk_user_emails_emails1_idx' })
   email!: Ref<Emails>;
 
   @Property({ type: 'boolean' })
@@ -4607,6 +4695,8 @@ export const CompletedOrdersSchema = new EntitySchema({
       entity: () => Users,
       ref: true,
       fieldName: 'user_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_completed_orders_users1_idx',
     },
     order: {
@@ -4614,6 +4704,8 @@ export const CompletedOrdersSchema = new EntitySchema({
       entity: () => Orders,
       ref: true,
       fieldName: 'order_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_completed_orders_orders1_idx',
     },
   },
@@ -4754,8 +4846,6 @@ export const UserEmailAvatarsSchema = new EntitySchema({
       entity: () => Users,
       ref: true,
       fieldName: 'user_id',
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
     },
     email: {
       primary: true,
@@ -4763,6 +4853,8 @@ export const UserEmailAvatarsSchema = new EntitySchema({
       entity: () => Emails,
       ref: true,
       fieldName: 'email_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_user_email_avatars_emails1_idx',
     },
     avatarUrl: { type: 'string' },
@@ -4790,6 +4882,8 @@ export const UserEmailFlagsSchema = new EntitySchema({
       entity: () => Users,
       ref: true,
       fieldName: 'user_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     email: {
       primary: true,
@@ -4797,6 +4891,8 @@ export const UserEmailFlagsSchema = new EntitySchema({
       entity: () => Emails,
       ref: true,
       fieldName: 'email_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_user_email_flags_emails1_idx',
     },
     flag: {
@@ -4804,6 +4900,8 @@ export const UserEmailFlagsSchema = new EntitySchema({
       entity: () => Flags,
       ref: true,
       fieldName: 'flag_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       defaultRaw: \`1\`,
       index: 'fk_user_email_flags_flags1_idx',
       unique: 'flag_id_UNIQUE',
@@ -4832,6 +4930,8 @@ export const UserEmailOrdersSchema = new EntitySchema({
       entity: () => Users,
       ref: true,
       fieldName: 'user_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     email: {
       primary: true,
@@ -4839,6 +4939,8 @@ export const UserEmailOrdersSchema = new EntitySchema({
       entity: () => Emails,
       ref: true,
       fieldName: 'email_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_user_email_orders_emails1_idx',
     },
     order: {
@@ -4846,6 +4948,8 @@ export const UserEmailOrdersSchema = new EntitySchema({
       entity: () => Orders,
       ref: true,
       fieldName: 'order_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_user_email_orders_orders1_idx',
     },
   },
@@ -4871,8 +4975,6 @@ export const UserEmailsSchema = new EntitySchema({
       entity: () => Users,
       ref: true,
       fieldName: 'user_id',
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
     },
     email: {
       primary: true,
@@ -4880,8 +4982,6 @@ export const UserEmailsSchema = new EntitySchema({
       entity: () => Emails,
       ref: true,
       fieldName: 'email_id',
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
       index: 'fk_user_emails_emails1_idx',
     },
     isVerified: { type: 'boolean' },
@@ -4986,10 +5086,10 @@ export class CompletedOrders {
   @PrimaryKey()
   id!: number;
 
-  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', index: 'fk_completed_orders_users1_idx' })
+  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', updateRule: 'no action', deleteRule: 'no action', index: 'fk_completed_orders_users1_idx' })
   user!: Ref<Users>;
 
-  @ManyToOne({ entity: () => Orders, ref: true, fieldName: 'order_id', index: 'fk_completed_orders_orders1_idx' })
+  @ManyToOne({ entity: () => Orders, ref: true, fieldName: 'order_id', updateRule: 'no action', deleteRule: 'no action', index: 'fk_completed_orders_orders1_idx' })
   order!: Ref<Orders>;
 
 }
@@ -5101,10 +5201,10 @@ export class UserEmailAvatars {
 
   [PrimaryKeyProp]?: ['user', 'email'];
 
-  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true })
+  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', primary: true })
   user!: Ref<Users>;
 
-  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', primary: true, index: 'fk_user_email_avatars_emails1_idx' })
+  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_user_email_avatars_emails1_idx' })
   email!: Ref<Emails>;
 
   @Property()
@@ -5123,13 +5223,13 @@ export class UserEmailFlags {
 
   [PrimaryKeyProp]?: ['user', 'email'];
 
-  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', primary: true })
+  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   user!: Ref<Users>;
 
-  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', primary: true, index: 'fk_user_email_flags_emails1_idx' })
+  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_user_email_flags_emails1_idx' })
   email!: Ref<Emails>;
 
-  @OneToOne({ entity: () => Flags, ref: true, fieldName: 'flag_id', defaultRaw: \`1\`, index: 'fk_user_email_flags_flags1_idx', unique: 'flag_id_UNIQUE' })
+  @OneToOne({ entity: () => Flags, ref: true, fieldName: 'flag_id', updateRule: 'no action', deleteRule: 'no action', defaultRaw: \`1\`, index: 'fk_user_email_flags_flags1_idx', unique: 'flag_id_UNIQUE' })
   flag!: Ref<Flags> & Opt;
 
 }
@@ -5145,13 +5245,13 @@ export class UserEmailOrders {
 
   [PrimaryKeyProp]?: ['user', 'email'];
 
-  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', primary: true })
+  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   user!: Ref<Users>;
 
-  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', primary: true, index: 'fk_user_email_orders_emails1_idx' })
+  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_user_email_orders_emails1_idx' })
   email!: Ref<Emails>;
 
-  @ManyToOne({ entity: () => Orders, ref: true, fieldName: 'order_id', index: 'fk_user_email_orders_orders1_idx' })
+  @ManyToOne({ entity: () => Orders, ref: true, fieldName: 'order_id', updateRule: 'no action', deleteRule: 'no action', index: 'fk_user_email_orders_orders1_idx' })
   order!: Ref<Orders>;
 
 }
@@ -5166,10 +5266,10 @@ export class UserEmails {
 
   [PrimaryKeyProp]?: ['user', 'email'];
 
-  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true })
+  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', primary: true })
   user!: Ref<Users>;
 
-  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true, index: 'fk_user_emails_emails1_idx' })
+  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', primary: true, index: 'fk_user_emails_emails1_idx' })
   email!: Ref<Emails>;
 
   @Property({ type: 'boolean' })
@@ -5259,6 +5359,8 @@ export const CompletedOrdersSchema = new EntitySchema({
       entity: () => Users,
       ref: true,
       fieldName: 'user_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_completed_orders_users1_idx',
     },
     order: {
@@ -5266,6 +5368,8 @@ export const CompletedOrdersSchema = new EntitySchema({
       entity: () => Orders,
       ref: true,
       fieldName: 'order_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_completed_orders_orders1_idx',
     },
   },
@@ -5427,8 +5531,6 @@ export const UserEmailAvatarsSchema = new EntitySchema({
       entity: () => Users,
       ref: true,
       fieldName: 'user_id',
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
     },
     email: {
       primary: true,
@@ -5436,6 +5538,8 @@ export const UserEmailAvatarsSchema = new EntitySchema({
       entity: () => Emails,
       ref: true,
       fieldName: 'email_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_user_email_avatars_emails1_idx',
     },
     avatarUrl: { type: 'string' },
@@ -5463,6 +5567,8 @@ export const UserEmailFlagsSchema = new EntitySchema({
       entity: () => Users,
       ref: true,
       fieldName: 'user_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     email: {
       primary: true,
@@ -5470,6 +5576,8 @@ export const UserEmailFlagsSchema = new EntitySchema({
       entity: () => Emails,
       ref: true,
       fieldName: 'email_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_user_email_flags_emails1_idx',
     },
     flag: {
@@ -5477,6 +5585,8 @@ export const UserEmailFlagsSchema = new EntitySchema({
       entity: () => Flags,
       ref: true,
       fieldName: 'flag_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       defaultRaw: \`1\`,
       index: 'fk_user_email_flags_flags1_idx',
       unique: 'flag_id_UNIQUE',
@@ -5505,6 +5615,8 @@ export const UserEmailOrdersSchema = new EntitySchema({
       entity: () => Users,
       ref: true,
       fieldName: 'user_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     email: {
       primary: true,
@@ -5512,6 +5624,8 @@ export const UserEmailOrdersSchema = new EntitySchema({
       entity: () => Emails,
       ref: true,
       fieldName: 'email_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_user_email_orders_emails1_idx',
     },
     order: {
@@ -5519,6 +5633,8 @@ export const UserEmailOrdersSchema = new EntitySchema({
       entity: () => Orders,
       ref: true,
       fieldName: 'order_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_user_email_orders_orders1_idx',
     },
   },
@@ -5544,8 +5660,6 @@ export const UserEmailsSchema = new EntitySchema({
       entity: () => Users,
       ref: true,
       fieldName: 'user_id',
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
     },
     email: {
       primary: true,
@@ -5553,8 +5667,6 @@ export const UserEmailsSchema = new EntitySchema({
       entity: () => Emails,
       ref: true,
       fieldName: 'email_id',
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
       index: 'fk_user_emails_emails1_idx',
     },
     isVerified: { type: 'boolean' },
@@ -5689,10 +5801,10 @@ export class CompletedOrders {
   @PrimaryKey()
   id!: number;
 
-  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', index: 'fk_completed_orders_users1_idx' })
+  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', updateRule: 'no action', deleteRule: 'no action', index: 'fk_completed_orders_users1_idx' })
   user!: Ref<Users>;
 
-  @ManyToOne({ entity: () => Orders, ref: true, fieldName: 'order_id', index: 'fk_completed_orders_orders1_idx' })
+  @ManyToOne({ entity: () => Orders, ref: true, fieldName: 'order_id', updateRule: 'no action', deleteRule: 'no action', index: 'fk_completed_orders_orders1_idx' })
   order!: Ref<Orders>;
 
 }
@@ -5803,10 +5915,10 @@ export class UserEmailAvatars {
 
   [PrimaryKeyProp]?: ['user', 'email'];
 
-  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true })
+  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', primary: true })
   user!: Ref<Users>;
 
-  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', primary: true, index: 'fk_user_email_avatars_emails1_idx' })
+  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_user_email_avatars_emails1_idx' })
   email!: Ref<Emails>;
 
   @Property()
@@ -5825,13 +5937,13 @@ export class UserEmailFlags {
 
   [PrimaryKeyProp]?: ['user', 'email'];
 
-  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', primary: true })
+  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   user!: Ref<Users>;
 
-  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', primary: true, index: 'fk_user_email_flags_emails1_idx' })
+  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_user_email_flags_emails1_idx' })
   email!: Ref<Emails>;
 
-  @OneToOne({ entity: () => Flags, ref: true, fieldName: 'flag_id', defaultRaw: \`1\`, index: 'fk_user_email_flags_flags1_idx', unique: 'flag_id_UNIQUE' })
+  @OneToOne({ entity: () => Flags, ref: true, fieldName: 'flag_id', updateRule: 'no action', deleteRule: 'no action', defaultRaw: \`1\`, index: 'fk_user_email_flags_flags1_idx', unique: 'flag_id_UNIQUE' })
   flag!: Ref<Flags> & Opt;
 
 }
@@ -5847,13 +5959,13 @@ export class UserEmailOrders {
 
   [PrimaryKeyProp]?: ['user', 'email'];
 
-  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', primary: true })
+  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   user!: Ref<Users>;
 
-  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', primary: true, index: 'fk_user_email_orders_emails1_idx' })
+  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_user_email_orders_emails1_idx' })
   email!: Ref<Emails>;
 
-  @ManyToOne({ entity: () => Orders, ref: true, fieldName: 'order_id', index: 'fk_user_email_orders_orders1_idx' })
+  @ManyToOne({ entity: () => Orders, ref: true, fieldName: 'order_id', updateRule: 'no action', deleteRule: 'no action', index: 'fk_user_email_orders_orders1_idx' })
   order!: Ref<Orders>;
 
 }
@@ -5868,10 +5980,10 @@ export class UserEmails {
 
   [PrimaryKeyProp]?: ['user', 'email'];
 
-  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true })
+  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', primary: true })
   user!: Ref<Users>;
 
-  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true, index: 'fk_user_emails_emails1_idx' })
+  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', primary: true, index: 'fk_user_emails_emails1_idx' })
   email!: Ref<Emails>;
 
   @Property({ type: 'boolean' })
@@ -5889,10 +6001,10 @@ export class UserFlags {
 
   [PrimaryKeyProp]?: ['user', 'flag'];
 
-  @ManyToOne({ entity: () => Users, fieldName: 'user_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true })
+  @ManyToOne({ entity: () => Users, fieldName: 'user_id', primary: true })
   user!: Users;
 
-  @ManyToOne({ entity: () => Flags, fieldName: 'flag_id', updateRule: 'cascade', primary: true, index: 'fk_user_flags_flags1_idx' })
+  @ManyToOne({ entity: () => Flags, fieldName: 'flag_id', deleteRule: 'restrict', primary: true, index: 'fk_user_flags_flags1_idx' })
   flag!: Flags;
 
 }
@@ -5907,10 +6019,10 @@ export class UserOrders {
 
   [PrimaryKeyProp]?: ['user', 'order'];
 
-  @ManyToOne({ entity: () => Users, fieldName: 'user_id', primary: true })
+  @ManyToOne({ entity: () => Users, fieldName: 'user_id', updateRule: 'restrict', deleteRule: 'no action', primary: true })
   user!: Users;
 
-  @ManyToOne({ entity: () => Orders, fieldName: 'order_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true, index: 'fk_user_orders_orders1_idx' })
+  @ManyToOne({ entity: () => Orders, fieldName: 'order_id', primary: true, index: 'fk_user_orders_orders1_idx' })
   order!: Orders;
 
   @Property({ unsigned: true, autoincrement: true, unique: 'priority_UNIQUE' })
@@ -5999,6 +6111,8 @@ export const CompletedOrdersSchema = new EntitySchema({
       entity: () => Users,
       ref: true,
       fieldName: 'user_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_completed_orders_users1_idx',
     },
     order: {
@@ -6006,6 +6120,8 @@ export const CompletedOrdersSchema = new EntitySchema({
       entity: () => Orders,
       ref: true,
       fieldName: 'order_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_completed_orders_orders1_idx',
     },
   },
@@ -6160,8 +6276,6 @@ export const UserEmailAvatarsSchema = new EntitySchema({
       entity: () => Users,
       ref: true,
       fieldName: 'user_id',
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
     },
     email: {
       primary: true,
@@ -6169,6 +6283,8 @@ export const UserEmailAvatarsSchema = new EntitySchema({
       entity: () => Emails,
       ref: true,
       fieldName: 'email_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_user_email_avatars_emails1_idx',
     },
     avatarUrl: { type: 'string' },
@@ -6196,6 +6312,8 @@ export const UserEmailFlagsSchema = new EntitySchema({
       entity: () => Users,
       ref: true,
       fieldName: 'user_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     email: {
       primary: true,
@@ -6203,6 +6321,8 @@ export const UserEmailFlagsSchema = new EntitySchema({
       entity: () => Emails,
       ref: true,
       fieldName: 'email_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_user_email_flags_emails1_idx',
     },
     flag: {
@@ -6210,6 +6330,8 @@ export const UserEmailFlagsSchema = new EntitySchema({
       entity: () => Flags,
       ref: true,
       fieldName: 'flag_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       defaultRaw: \`1\`,
       index: 'fk_user_email_flags_flags1_idx',
       unique: 'flag_id_UNIQUE',
@@ -6238,6 +6360,8 @@ export const UserEmailOrdersSchema = new EntitySchema({
       entity: () => Users,
       ref: true,
       fieldName: 'user_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     email: {
       primary: true,
@@ -6245,6 +6369,8 @@ export const UserEmailOrdersSchema = new EntitySchema({
       entity: () => Emails,
       ref: true,
       fieldName: 'email_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_user_email_orders_emails1_idx',
     },
     order: {
@@ -6252,6 +6378,8 @@ export const UserEmailOrdersSchema = new EntitySchema({
       entity: () => Orders,
       ref: true,
       fieldName: 'order_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_user_email_orders_orders1_idx',
     },
   },
@@ -6277,8 +6405,6 @@ export const UserEmailsSchema = new EntitySchema({
       entity: () => Users,
       ref: true,
       fieldName: 'user_id',
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
     },
     email: {
       primary: true,
@@ -6286,8 +6412,6 @@ export const UserEmailsSchema = new EntitySchema({
       entity: () => Emails,
       ref: true,
       fieldName: 'email_id',
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
       index: 'fk_user_emails_emails1_idx',
     },
     isVerified: { type: 'boolean' },
@@ -6312,15 +6436,13 @@ export const UserFlagsSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => Users,
       fieldName: 'user_id',
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
     },
     flag: {
       primary: true,
       kind: 'm:1',
       entity: () => Flags,
       fieldName: 'flag_id',
-      updateRule: 'cascade',
+      deleteRule: 'restrict',
       index: 'fk_user_flags_flags1_idx',
     },
   },
@@ -6345,14 +6467,14 @@ export const UserOrdersSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => Users,
       fieldName: 'user_id',
+      updateRule: 'restrict',
+      deleteRule: 'no action',
     },
     order: {
       primary: true,
       kind: 'm:1',
       entity: () => Orders,
       fieldName: 'order_id',
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
       index: 'fk_user_orders_orders1_idx',
     },
     priority: {
@@ -6478,10 +6600,10 @@ export class CompletedOrders {
   @PrimaryKey()
   id!: number;
 
-  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', index: 'fk_completed_orders_users1_idx' })
+  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', updateRule: 'no action', deleteRule: 'no action', index: 'fk_completed_orders_users1_idx' })
   user!: Ref<Users>;
 
-  @ManyToOne({ entity: () => Orders, ref: true, fieldName: 'order_id', index: 'fk_completed_orders_orders1_idx' })
+  @ManyToOne({ entity: () => Orders, ref: true, fieldName: 'order_id', updateRule: 'no action', deleteRule: 'no action', index: 'fk_completed_orders_orders1_idx' })
   order!: Ref<Orders>;
 
 }
@@ -6601,10 +6723,10 @@ export class UserEmailAvatars {
 
   [PrimaryKeyProp]?: ['user', 'email'];
 
-  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true })
+  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', primary: true })
   user!: Ref<Users>;
 
-  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', primary: true, index: 'fk_user_email_avatars_emails1_idx' })
+  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_user_email_avatars_emails1_idx' })
   email!: Ref<Emails>;
 
   @Property()
@@ -6623,13 +6745,13 @@ export class UserEmailFlags {
 
   [PrimaryKeyProp]?: ['user', 'email'];
 
-  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', primary: true })
+  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   user!: Ref<Users>;
 
-  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', primary: true, index: 'fk_user_email_flags_emails1_idx' })
+  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_user_email_flags_emails1_idx' })
   email!: Ref<Emails>;
 
-  @OneToOne({ entity: () => Flags, ref: true, fieldName: 'flag_id', defaultRaw: \`1\`, index: 'fk_user_email_flags_flags1_idx', unique: 'flag_id_UNIQUE' })
+  @OneToOne({ entity: () => Flags, ref: true, fieldName: 'flag_id', updateRule: 'no action', deleteRule: 'no action', defaultRaw: \`1\`, index: 'fk_user_email_flags_flags1_idx', unique: 'flag_id_UNIQUE' })
   flag!: Ref<Flags> & Opt;
 
 }
@@ -6645,13 +6767,13 @@ export class UserEmailOrders {
 
   [PrimaryKeyProp]?: ['user', 'email'];
 
-  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', primary: true })
+  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   user!: Ref<Users>;
 
-  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', primary: true, index: 'fk_user_email_orders_emails1_idx' })
+  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_user_email_orders_emails1_idx' })
   email!: Ref<Emails>;
 
-  @ManyToOne({ entity: () => Orders, ref: true, fieldName: 'order_id', index: 'fk_user_email_orders_orders1_idx' })
+  @ManyToOne({ entity: () => Orders, ref: true, fieldName: 'order_id', updateRule: 'no action', deleteRule: 'no action', index: 'fk_user_email_orders_orders1_idx' })
   order!: Ref<Orders>;
 
 }
@@ -6666,10 +6788,10 @@ export class UserEmails {
 
   [PrimaryKeyProp]?: ['user', 'email'];
 
-  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true })
+  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', primary: true })
   user!: Ref<Users>;
 
-  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true, index: 'fk_user_emails_emails1_idx' })
+  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', primary: true, index: 'fk_user_emails_emails1_idx' })
   email!: Ref<Emails>;
 
   @Property({ type: 'boolean' })
@@ -6687,10 +6809,10 @@ export class UserFlags {
 
   [PrimaryKeyProp]?: ['user', 'flag'];
 
-  @ManyToOne({ entity: () => Users, fieldName: 'user_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true })
+  @ManyToOne({ entity: () => Users, fieldName: 'user_id', primary: true })
   user!: Users;
 
-  @ManyToOne({ entity: () => Flags, fieldName: 'flag_id', updateRule: 'cascade', primary: true, index: 'fk_user_flags_flags1_idx' })
+  @ManyToOne({ entity: () => Flags, fieldName: 'flag_id', deleteRule: 'restrict', primary: true, index: 'fk_user_flags_flags1_idx' })
   flag!: Flags;
 
 }
@@ -6705,10 +6827,10 @@ export class UserOrders {
 
   [PrimaryKeyProp]?: ['user', 'order'];
 
-  @ManyToOne({ entity: () => Users, fieldName: 'user_id', primary: true })
+  @ManyToOne({ entity: () => Users, fieldName: 'user_id', updateRule: 'restrict', deleteRule: 'no action', primary: true })
   user!: Users;
 
-  @ManyToOne({ entity: () => Orders, fieldName: 'order_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true, index: 'fk_user_orders_orders1_idx' })
+  @ManyToOne({ entity: () => Orders, fieldName: 'order_id', primary: true, index: 'fk_user_orders_orders1_idx' })
   order!: Orders;
 
   @Property({ unsigned: true, autoincrement: true, unique: 'priority_UNIQUE' })
@@ -6806,6 +6928,8 @@ export const CompletedOrdersSchema = new EntitySchema({
       entity: () => Users,
       ref: true,
       fieldName: 'user_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_completed_orders_users1_idx',
     },
     order: {
@@ -6813,6 +6937,8 @@ export const CompletedOrdersSchema = new EntitySchema({
       entity: () => Orders,
       ref: true,
       fieldName: 'order_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_completed_orders_orders1_idx',
     },
   },
@@ -6988,8 +7114,6 @@ export const UserEmailAvatarsSchema = new EntitySchema({
       entity: () => Users,
       ref: true,
       fieldName: 'user_id',
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
     },
     email: {
       primary: true,
@@ -6997,6 +7121,8 @@ export const UserEmailAvatarsSchema = new EntitySchema({
       entity: () => Emails,
       ref: true,
       fieldName: 'email_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_user_email_avatars_emails1_idx',
     },
     avatarUrl: { type: 'string' },
@@ -7024,6 +7150,8 @@ export const UserEmailFlagsSchema = new EntitySchema({
       entity: () => Users,
       ref: true,
       fieldName: 'user_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     email: {
       primary: true,
@@ -7031,6 +7159,8 @@ export const UserEmailFlagsSchema = new EntitySchema({
       entity: () => Emails,
       ref: true,
       fieldName: 'email_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_user_email_flags_emails1_idx',
     },
     flag: {
@@ -7038,6 +7168,8 @@ export const UserEmailFlagsSchema = new EntitySchema({
       entity: () => Flags,
       ref: true,
       fieldName: 'flag_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       defaultRaw: \`1\`,
       index: 'fk_user_email_flags_flags1_idx',
       unique: 'flag_id_UNIQUE',
@@ -7066,6 +7198,8 @@ export const UserEmailOrdersSchema = new EntitySchema({
       entity: () => Users,
       ref: true,
       fieldName: 'user_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     email: {
       primary: true,
@@ -7073,6 +7207,8 @@ export const UserEmailOrdersSchema = new EntitySchema({
       entity: () => Emails,
       ref: true,
       fieldName: 'email_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_user_email_orders_emails1_idx',
     },
     order: {
@@ -7080,6 +7216,8 @@ export const UserEmailOrdersSchema = new EntitySchema({
       entity: () => Orders,
       ref: true,
       fieldName: 'order_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_user_email_orders_orders1_idx',
     },
   },
@@ -7105,8 +7243,6 @@ export const UserEmailsSchema = new EntitySchema({
       entity: () => Users,
       ref: true,
       fieldName: 'user_id',
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
     },
     email: {
       primary: true,
@@ -7114,8 +7250,6 @@ export const UserEmailsSchema = new EntitySchema({
       entity: () => Emails,
       ref: true,
       fieldName: 'email_id',
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
       index: 'fk_user_emails_emails1_idx',
     },
     isVerified: { type: 'boolean' },
@@ -7140,15 +7274,13 @@ export const UserFlagsSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => Users,
       fieldName: 'user_id',
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
     },
     flag: {
       primary: true,
       kind: 'm:1',
       entity: () => Flags,
       fieldName: 'flag_id',
-      updateRule: 'cascade',
+      deleteRule: 'restrict',
       index: 'fk_user_flags_flags1_idx',
     },
   },
@@ -7173,14 +7305,14 @@ export const UserOrdersSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => Users,
       fieldName: 'user_id',
+      updateRule: 'restrict',
+      deleteRule: 'no action',
     },
     order: {
       primary: true,
       kind: 'm:1',
       entity: () => Orders,
       fieldName: 'order_id',
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
       index: 'fk_user_orders_orders1_idx',
     },
     priority: {
@@ -7336,10 +7468,10 @@ export class CompletedOrders {
   @PrimaryKey()
   id!: number;
 
-  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', index: 'fk_completed_orders_users1_idx' })
+  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', updateRule: 'no action', deleteRule: 'no action', index: 'fk_completed_orders_users1_idx' })
   user!: Ref<Users>;
 
-  @ManyToOne({ entity: () => Orders, ref: true, fieldName: 'order_id', index: 'fk_completed_orders_orders1_idx' })
+  @ManyToOne({ entity: () => Orders, ref: true, fieldName: 'order_id', updateRule: 'no action', deleteRule: 'no action', index: 'fk_completed_orders_orders1_idx' })
   order!: Ref<Orders>;
 
 }
@@ -7438,10 +7570,10 @@ export class UserEmailAvatars {
 
   [PrimaryKeyProp]?: ['user', 'email'];
 
-  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true })
+  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', primary: true })
   user!: Ref<Users>;
 
-  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', primary: true, index: 'fk_user_email_avatars_emails1_idx' })
+  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_user_email_avatars_emails1_idx' })
   email!: Ref<Emails>;
 
   @Property()
@@ -7460,13 +7592,13 @@ export class UserEmailFlags {
 
   [PrimaryKeyProp]?: ['user', 'email'];
 
-  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', primary: true })
+  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   user!: Ref<Users>;
 
-  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', primary: true, index: 'fk_user_email_flags_emails1_idx' })
+  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_user_email_flags_emails1_idx' })
   email!: Ref<Emails>;
 
-  @OneToOne({ entity: () => Flags, ref: true, fieldName: 'flag_id', defaultRaw: \`1\`, index: 'fk_user_email_flags_flags1_idx', unique: 'flag_id_UNIQUE' })
+  @OneToOne({ entity: () => Flags, ref: true, fieldName: 'flag_id', updateRule: 'no action', deleteRule: 'no action', defaultRaw: \`1\`, index: 'fk_user_email_flags_flags1_idx', unique: 'flag_id_UNIQUE' })
   flag!: Ref<Flags> & Opt;
 
 }
@@ -7482,13 +7614,13 @@ export class UserEmailOrders {
 
   [PrimaryKeyProp]?: ['user', 'email'];
 
-  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', primary: true })
+  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   user!: Ref<Users>;
 
-  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', primary: true, index: 'fk_user_email_orders_emails1_idx' })
+  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_user_email_orders_emails1_idx' })
   email!: Ref<Emails>;
 
-  @ManyToOne({ entity: () => Orders, ref: true, fieldName: 'order_id', index: 'fk_user_email_orders_orders1_idx' })
+  @ManyToOne({ entity: () => Orders, ref: true, fieldName: 'order_id', updateRule: 'no action', deleteRule: 'no action', index: 'fk_user_email_orders_orders1_idx' })
   order!: Ref<Orders>;
 
 }
@@ -7503,10 +7635,10 @@ export class UserEmails {
 
   [PrimaryKeyProp]?: ['user', 'email'];
 
-  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true })
+  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', primary: true })
   user!: Ref<Users>;
 
-  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true, index: 'fk_user_emails_emails1_idx' })
+  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', primary: true, index: 'fk_user_emails_emails1_idx' })
   email!: Ref<Emails>;
 
   @Property({ type: 'boolean' })
@@ -7524,10 +7656,10 @@ export class UserOrders {
 
   [PrimaryKeyProp]?: ['user', 'order'];
 
-  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', primary: true })
+  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', updateRule: 'restrict', deleteRule: 'no action', primary: true })
   user!: Ref<Users>;
 
-  @ManyToOne({ entity: () => Orders, ref: true, fieldName: 'order_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true, index: 'fk_user_orders_orders1_idx' })
+  @ManyToOne({ entity: () => Orders, ref: true, fieldName: 'order_id', primary: true, index: 'fk_user_orders_orders1_idx' })
   order!: Ref<Orders>;
 
   @Property({ unsigned: true, autoincrement: true, unique: 'priority_UNIQUE' })
@@ -7604,6 +7736,8 @@ export const CompletedOrdersSchema = new EntitySchema({
       entity: () => Users,
       ref: true,
       fieldName: 'user_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_completed_orders_users1_idx',
     },
     order: {
@@ -7611,6 +7745,8 @@ export const CompletedOrdersSchema = new EntitySchema({
       entity: () => Orders,
       ref: true,
       fieldName: 'order_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_completed_orders_orders1_idx',
     },
   },
@@ -7744,8 +7880,6 @@ export const UserEmailAvatarsSchema = new EntitySchema({
       entity: () => Users,
       ref: true,
       fieldName: 'user_id',
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
     },
     email: {
       primary: true,
@@ -7753,6 +7887,8 @@ export const UserEmailAvatarsSchema = new EntitySchema({
       entity: () => Emails,
       ref: true,
       fieldName: 'email_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_user_email_avatars_emails1_idx',
     },
     avatarUrl: { type: 'string' },
@@ -7780,6 +7916,8 @@ export const UserEmailFlagsSchema = new EntitySchema({
       entity: () => Users,
       ref: true,
       fieldName: 'user_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     email: {
       primary: true,
@@ -7787,6 +7925,8 @@ export const UserEmailFlagsSchema = new EntitySchema({
       entity: () => Emails,
       ref: true,
       fieldName: 'email_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_user_email_flags_emails1_idx',
     },
     flag: {
@@ -7794,6 +7934,8 @@ export const UserEmailFlagsSchema = new EntitySchema({
       entity: () => Flags,
       ref: true,
       fieldName: 'flag_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       defaultRaw: \`1\`,
       index: 'fk_user_email_flags_flags1_idx',
       unique: 'flag_id_UNIQUE',
@@ -7822,6 +7964,8 @@ export const UserEmailOrdersSchema = new EntitySchema({
       entity: () => Users,
       ref: true,
       fieldName: 'user_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     email: {
       primary: true,
@@ -7829,6 +7973,8 @@ export const UserEmailOrdersSchema = new EntitySchema({
       entity: () => Emails,
       ref: true,
       fieldName: 'email_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_user_email_orders_emails1_idx',
     },
     order: {
@@ -7836,6 +7982,8 @@ export const UserEmailOrdersSchema = new EntitySchema({
       entity: () => Orders,
       ref: true,
       fieldName: 'order_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_user_email_orders_orders1_idx',
     },
   },
@@ -7861,8 +8009,6 @@ export const UserEmailsSchema = new EntitySchema({
       entity: () => Users,
       ref: true,
       fieldName: 'user_id',
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
     },
     email: {
       primary: true,
@@ -7870,8 +8016,6 @@ export const UserEmailsSchema = new EntitySchema({
       entity: () => Emails,
       ref: true,
       fieldName: 'email_id',
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
       index: 'fk_user_emails_emails1_idx',
     },
     isVerified: { type: 'boolean' },
@@ -7898,6 +8042,8 @@ export const UserOrdersSchema = new EntitySchema({
       entity: () => Users,
       ref: true,
       fieldName: 'user_id',
+      updateRule: 'restrict',
+      deleteRule: 'no action',
     },
     order: {
       primary: true,
@@ -7905,8 +8051,6 @@ export const UserOrdersSchema = new EntitySchema({
       entity: () => Orders,
       ref: true,
       fieldName: 'order_id',
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
       index: 'fk_user_orders_orders1_idx',
     },
     priority: {
@@ -8002,10 +8146,10 @@ export class CompletedOrders {
   @PrimaryKey()
   id!: number;
 
-  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', index: 'fk_completed_orders_users1_idx' })
+  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', updateRule: 'no action', deleteRule: 'no action', index: 'fk_completed_orders_users1_idx' })
   user!: Ref<Users>;
 
-  @ManyToOne({ entity: () => Orders, ref: true, fieldName: 'order_id', index: 'fk_completed_orders_orders1_idx' })
+  @ManyToOne({ entity: () => Orders, ref: true, fieldName: 'order_id', updateRule: 'no action', deleteRule: 'no action', index: 'fk_completed_orders_orders1_idx' })
   order!: Ref<Orders>;
 
 }
@@ -8104,10 +8248,10 @@ export class UserEmailAvatars {
 
   [PrimaryKeyProp]?: ['user', 'email'];
 
-  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true })
+  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', primary: true })
   user!: Ref<Users>;
 
-  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', primary: true, index: 'fk_user_email_avatars_emails1_idx' })
+  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_user_email_avatars_emails1_idx' })
   email!: Ref<Emails>;
 
   @Property()
@@ -8126,13 +8270,13 @@ export class UserEmailFlags {
 
   [PrimaryKeyProp]?: ['user', 'email'];
 
-  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', primary: true })
+  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   user!: Ref<Users>;
 
-  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', primary: true, index: 'fk_user_email_flags_emails1_idx' })
+  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_user_email_flags_emails1_idx' })
   email!: Ref<Emails>;
 
-  @OneToOne({ entity: () => Flags, ref: true, fieldName: 'flag_id', defaultRaw: \`1\`, index: 'fk_user_email_flags_flags1_idx', unique: 'flag_id_UNIQUE' })
+  @OneToOne({ entity: () => Flags, ref: true, fieldName: 'flag_id', updateRule: 'no action', deleteRule: 'no action', defaultRaw: \`1\`, index: 'fk_user_email_flags_flags1_idx', unique: 'flag_id_UNIQUE' })
   flag!: Ref<Flags> & Opt;
 
 }
@@ -8148,13 +8292,13 @@ export class UserEmailOrders {
 
   [PrimaryKeyProp]?: ['user', 'email'];
 
-  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', primary: true })
+  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   user!: Ref<Users>;
 
-  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', primary: true, index: 'fk_user_email_orders_emails1_idx' })
+  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_user_email_orders_emails1_idx' })
   email!: Ref<Emails>;
 
-  @ManyToOne({ entity: () => Orders, ref: true, fieldName: 'order_id', index: 'fk_user_email_orders_orders1_idx' })
+  @ManyToOne({ entity: () => Orders, ref: true, fieldName: 'order_id', updateRule: 'no action', deleteRule: 'no action', index: 'fk_user_email_orders_orders1_idx' })
   order!: Ref<Orders>;
 
 }
@@ -8169,10 +8313,10 @@ export class UserEmails {
 
   [PrimaryKeyProp]?: ['user', 'email'];
 
-  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true })
+  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', primary: true })
   user!: Ref<Users>;
 
-  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true, index: 'fk_user_emails_emails1_idx' })
+  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', primary: true, index: 'fk_user_emails_emails1_idx' })
   email!: Ref<Emails>;
 
   @Property({ type: 'boolean' })
@@ -8190,10 +8334,10 @@ export class UserOrders {
 
   [PrimaryKeyProp]?: ['user', 'order'];
 
-  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', primary: true })
+  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', updateRule: 'restrict', deleteRule: 'no action', primary: true })
   user!: Ref<Users>;
 
-  @ManyToOne({ entity: () => Orders, ref: true, fieldName: 'order_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true, index: 'fk_user_orders_orders1_idx' })
+  @ManyToOne({ entity: () => Orders, ref: true, fieldName: 'order_id', primary: true, index: 'fk_user_orders_orders1_idx' })
   order!: Ref<Orders>;
 
   @Property({ unsigned: true, autoincrement: true, unique: 'priority_UNIQUE' })
@@ -8270,6 +8414,8 @@ export const CompletedOrdersSchema = new EntitySchema({
       entity: () => Users,
       ref: true,
       fieldName: 'user_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_completed_orders_users1_idx',
     },
     order: {
@@ -8277,6 +8423,8 @@ export const CompletedOrdersSchema = new EntitySchema({
       entity: () => Orders,
       ref: true,
       fieldName: 'order_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_completed_orders_orders1_idx',
     },
   },
@@ -8410,8 +8558,6 @@ export const UserEmailAvatarsSchema = new EntitySchema({
       entity: () => Users,
       ref: true,
       fieldName: 'user_id',
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
     },
     email: {
       primary: true,
@@ -8419,6 +8565,8 @@ export const UserEmailAvatarsSchema = new EntitySchema({
       entity: () => Emails,
       ref: true,
       fieldName: 'email_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_user_email_avatars_emails1_idx',
     },
     avatarUrl: { type: 'string' },
@@ -8446,6 +8594,8 @@ export const UserEmailFlagsSchema = new EntitySchema({
       entity: () => Users,
       ref: true,
       fieldName: 'user_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     email: {
       primary: true,
@@ -8453,6 +8603,8 @@ export const UserEmailFlagsSchema = new EntitySchema({
       entity: () => Emails,
       ref: true,
       fieldName: 'email_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_user_email_flags_emails1_idx',
     },
     flag: {
@@ -8460,6 +8612,8 @@ export const UserEmailFlagsSchema = new EntitySchema({
       entity: () => Flags,
       ref: true,
       fieldName: 'flag_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       defaultRaw: \`1\`,
       index: 'fk_user_email_flags_flags1_idx',
       unique: 'flag_id_UNIQUE',
@@ -8488,6 +8642,8 @@ export const UserEmailOrdersSchema = new EntitySchema({
       entity: () => Users,
       ref: true,
       fieldName: 'user_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     email: {
       primary: true,
@@ -8495,6 +8651,8 @@ export const UserEmailOrdersSchema = new EntitySchema({
       entity: () => Emails,
       ref: true,
       fieldName: 'email_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_user_email_orders_emails1_idx',
     },
     order: {
@@ -8502,6 +8660,8 @@ export const UserEmailOrdersSchema = new EntitySchema({
       entity: () => Orders,
       ref: true,
       fieldName: 'order_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_user_email_orders_orders1_idx',
     },
   },
@@ -8527,8 +8687,6 @@ export const UserEmailsSchema = new EntitySchema({
       entity: () => Users,
       ref: true,
       fieldName: 'user_id',
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
     },
     email: {
       primary: true,
@@ -8536,8 +8694,6 @@ export const UserEmailsSchema = new EntitySchema({
       entity: () => Emails,
       ref: true,
       fieldName: 'email_id',
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
       index: 'fk_user_emails_emails1_idx',
     },
     isVerified: { type: 'boolean' },
@@ -8564,6 +8720,8 @@ export const UserOrdersSchema = new EntitySchema({
       entity: () => Users,
       ref: true,
       fieldName: 'user_id',
+      updateRule: 'restrict',
+      deleteRule: 'no action',
     },
     order: {
       primary: true,
@@ -8571,8 +8729,6 @@ export const UserOrdersSchema = new EntitySchema({
       entity: () => Orders,
       ref: true,
       fieldName: 'order_id',
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
       index: 'fk_user_orders_orders1_idx',
     },
     priority: {
@@ -8668,10 +8824,10 @@ export class CompletedOrders {
   @PrimaryKey()
   id!: number;
 
-  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', index: 'fk_completed_orders_users1_idx' })
+  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', updateRule: 'no action', deleteRule: 'no action', index: 'fk_completed_orders_users1_idx' })
   user!: Ref<Users>;
 
-  @ManyToOne({ entity: () => Orders, ref: true, fieldName: 'order_id', index: 'fk_completed_orders_orders1_idx' })
+  @ManyToOne({ entity: () => Orders, ref: true, fieldName: 'order_id', updateRule: 'no action', deleteRule: 'no action', index: 'fk_completed_orders_orders1_idx' })
   order!: Ref<Orders>;
 
 }
@@ -8774,10 +8930,10 @@ export class UserEmailAvatars {
 
   [PrimaryKeyProp]?: ['user', 'email'];
 
-  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true })
+  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', primary: true })
   user!: Ref<Users>;
 
-  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', primary: true, index: 'fk_user_email_avatars_emails1_idx' })
+  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_user_email_avatars_emails1_idx' })
   email!: Ref<Emails>;
 
   @Property()
@@ -8796,13 +8952,13 @@ export class UserEmailFlags {
 
   [PrimaryKeyProp]?: ['user', 'email'];
 
-  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', primary: true })
+  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   user!: Ref<Users>;
 
-  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', primary: true, index: 'fk_user_email_flags_emails1_idx' })
+  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_user_email_flags_emails1_idx' })
   email!: Ref<Emails>;
 
-  @OneToOne({ entity: () => Flags, ref: true, fieldName: 'flag_id', defaultRaw: \`1\`, index: 'fk_user_email_flags_flags1_idx', unique: 'flag_id_UNIQUE' })
+  @OneToOne({ entity: () => Flags, ref: true, fieldName: 'flag_id', updateRule: 'no action', deleteRule: 'no action', defaultRaw: \`1\`, index: 'fk_user_email_flags_flags1_idx', unique: 'flag_id_UNIQUE' })
   flag!: Ref<Flags> & Opt;
 
 }
@@ -8818,13 +8974,13 @@ export class UserEmailOrders {
 
   [PrimaryKeyProp]?: ['user', 'email'];
 
-  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', primary: true })
+  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   user!: Ref<Users>;
 
-  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', primary: true, index: 'fk_user_email_orders_emails1_idx' })
+  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_user_email_orders_emails1_idx' })
   email!: Ref<Emails>;
 
-  @ManyToOne({ entity: () => Orders, ref: true, fieldName: 'order_id', index: 'fk_user_email_orders_orders1_idx' })
+  @ManyToOne({ entity: () => Orders, ref: true, fieldName: 'order_id', updateRule: 'no action', deleteRule: 'no action', index: 'fk_user_email_orders_orders1_idx' })
   order!: Ref<Orders>;
 
 }
@@ -8839,10 +8995,10 @@ export class UserEmails {
 
   [PrimaryKeyProp]?: ['user', 'email'];
 
-  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true })
+  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', primary: true })
   user!: Ref<Users>;
 
-  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true, index: 'fk_user_emails_emails1_idx' })
+  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', primary: true, index: 'fk_user_emails_emails1_idx' })
   email!: Ref<Emails>;
 
   @Property({ type: 'boolean' })
@@ -8860,10 +9016,10 @@ export class UserFlags {
 
   [PrimaryKeyProp]?: ['user', 'flag'];
 
-  @ManyToOne({ entity: () => Users, fieldName: 'user_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true })
+  @ManyToOne({ entity: () => Users, fieldName: 'user_id', primary: true })
   user!: Users;
 
-  @ManyToOne({ entity: () => Flags, fieldName: 'flag_id', updateRule: 'cascade', primary: true, index: 'fk_user_flags_flags1_idx' })
+  @ManyToOne({ entity: () => Flags, fieldName: 'flag_id', deleteRule: 'restrict', primary: true, index: 'fk_user_flags_flags1_idx' })
   flag!: Flags;
 
 }
@@ -8878,10 +9034,10 @@ export class UserOrders {
 
   [PrimaryKeyProp]?: ['user', 'order'];
 
-  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', primary: true })
+  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', updateRule: 'restrict', deleteRule: 'no action', primary: true })
   user!: Ref<Users>;
 
-  @ManyToOne({ entity: () => Orders, ref: true, fieldName: 'order_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true, index: 'fk_user_orders_orders1_idx' })
+  @ManyToOne({ entity: () => Orders, ref: true, fieldName: 'order_id', primary: true, index: 'fk_user_orders_orders1_idx' })
   order!: Ref<Orders>;
 
   @Property({ unsigned: true, autoincrement: true, unique: 'priority_UNIQUE' })
@@ -8962,6 +9118,8 @@ export const CompletedOrdersSchema = new EntitySchema({
       entity: () => Users,
       ref: true,
       fieldName: 'user_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_completed_orders_users1_idx',
     },
     order: {
@@ -8969,6 +9127,8 @@ export const CompletedOrdersSchema = new EntitySchema({
       entity: () => Orders,
       ref: true,
       fieldName: 'order_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_completed_orders_orders1_idx',
     },
   },
@@ -9109,8 +9269,6 @@ export const UserEmailAvatarsSchema = new EntitySchema({
       entity: () => Users,
       ref: true,
       fieldName: 'user_id',
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
     },
     email: {
       primary: true,
@@ -9118,6 +9276,8 @@ export const UserEmailAvatarsSchema = new EntitySchema({
       entity: () => Emails,
       ref: true,
       fieldName: 'email_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_user_email_avatars_emails1_idx',
     },
     avatarUrl: { type: 'string' },
@@ -9145,6 +9305,8 @@ export const UserEmailFlagsSchema = new EntitySchema({
       entity: () => Users,
       ref: true,
       fieldName: 'user_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     email: {
       primary: true,
@@ -9152,6 +9314,8 @@ export const UserEmailFlagsSchema = new EntitySchema({
       entity: () => Emails,
       ref: true,
       fieldName: 'email_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_user_email_flags_emails1_idx',
     },
     flag: {
@@ -9159,6 +9323,8 @@ export const UserEmailFlagsSchema = new EntitySchema({
       entity: () => Flags,
       ref: true,
       fieldName: 'flag_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       defaultRaw: \`1\`,
       index: 'fk_user_email_flags_flags1_idx',
       unique: 'flag_id_UNIQUE',
@@ -9187,6 +9353,8 @@ export const UserEmailOrdersSchema = new EntitySchema({
       entity: () => Users,
       ref: true,
       fieldName: 'user_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     email: {
       primary: true,
@@ -9194,6 +9362,8 @@ export const UserEmailOrdersSchema = new EntitySchema({
       entity: () => Emails,
       ref: true,
       fieldName: 'email_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_user_email_orders_emails1_idx',
     },
     order: {
@@ -9201,6 +9371,8 @@ export const UserEmailOrdersSchema = new EntitySchema({
       entity: () => Orders,
       ref: true,
       fieldName: 'order_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_user_email_orders_orders1_idx',
     },
   },
@@ -9226,8 +9398,6 @@ export const UserEmailsSchema = new EntitySchema({
       entity: () => Users,
       ref: true,
       fieldName: 'user_id',
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
     },
     email: {
       primary: true,
@@ -9235,8 +9405,6 @@ export const UserEmailsSchema = new EntitySchema({
       entity: () => Emails,
       ref: true,
       fieldName: 'email_id',
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
       index: 'fk_user_emails_emails1_idx',
     },
     isVerified: { type: 'boolean' },
@@ -9261,15 +9429,13 @@ export const UserFlagsSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => Users,
       fieldName: 'user_id',
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
     },
     flag: {
       primary: true,
       kind: 'm:1',
       entity: () => Flags,
       fieldName: 'flag_id',
-      updateRule: 'cascade',
+      deleteRule: 'restrict',
       index: 'fk_user_flags_flags1_idx',
     },
   },
@@ -9295,6 +9461,8 @@ export const UserOrdersSchema = new EntitySchema({
       entity: () => Users,
       ref: true,
       fieldName: 'user_id',
+      updateRule: 'restrict',
+      deleteRule: 'no action',
     },
     order: {
       primary: true,
@@ -9302,8 +9470,6 @@ export const UserOrdersSchema = new EntitySchema({
       entity: () => Orders,
       ref: true,
       fieldName: 'order_id',
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
       index: 'fk_user_orders_orders1_idx',
     },
     priority: {
@@ -9407,10 +9573,10 @@ export class CompletedOrders {
   @PrimaryKey()
   id!: number;
 
-  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', index: 'fk_completed_orders_users1_idx' })
+  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', updateRule: 'no action', deleteRule: 'no action', index: 'fk_completed_orders_users1_idx' })
   user!: Ref<Users>;
 
-  @ManyToOne({ entity: () => Orders, ref: true, fieldName: 'order_id', index: 'fk_completed_orders_orders1_idx' })
+  @ManyToOne({ entity: () => Orders, ref: true, fieldName: 'order_id', updateRule: 'no action', deleteRule: 'no action', index: 'fk_completed_orders_orders1_idx' })
   order!: Ref<Orders>;
 
 }
@@ -9513,10 +9679,10 @@ export class UserEmailAvatars {
 
   [PrimaryKeyProp]?: ['user', 'email'];
 
-  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true })
+  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', primary: true })
   user!: Ref<Users>;
 
-  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', primary: true, index: 'fk_user_email_avatars_emails1_idx' })
+  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_user_email_avatars_emails1_idx' })
   email!: Ref<Emails>;
 
   @Property()
@@ -9535,13 +9701,13 @@ export class UserEmailFlags {
 
   [PrimaryKeyProp]?: ['user', 'email'];
 
-  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', primary: true })
+  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   user!: Ref<Users>;
 
-  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', primary: true, index: 'fk_user_email_flags_emails1_idx' })
+  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_user_email_flags_emails1_idx' })
   email!: Ref<Emails>;
 
-  @OneToOne({ entity: () => Flags, ref: true, fieldName: 'flag_id', defaultRaw: \`1\`, index: 'fk_user_email_flags_flags1_idx', unique: 'flag_id_UNIQUE' })
+  @OneToOne({ entity: () => Flags, ref: true, fieldName: 'flag_id', updateRule: 'no action', deleteRule: 'no action', defaultRaw: \`1\`, index: 'fk_user_email_flags_flags1_idx', unique: 'flag_id_UNIQUE' })
   flag!: Ref<Flags> & Opt;
 
 }
@@ -9557,13 +9723,13 @@ export class UserEmailOrders {
 
   [PrimaryKeyProp]?: ['user', 'email'];
 
-  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', primary: true })
+  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   user!: Ref<Users>;
 
-  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', primary: true, index: 'fk_user_email_orders_emails1_idx' })
+  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_user_email_orders_emails1_idx' })
   email!: Ref<Emails>;
 
-  @ManyToOne({ entity: () => Orders, ref: true, fieldName: 'order_id', index: 'fk_user_email_orders_orders1_idx' })
+  @ManyToOne({ entity: () => Orders, ref: true, fieldName: 'order_id', updateRule: 'no action', deleteRule: 'no action', index: 'fk_user_email_orders_orders1_idx' })
   order!: Ref<Orders>;
 
 }
@@ -9578,10 +9744,10 @@ export class UserEmails {
 
   [PrimaryKeyProp]?: ['user', 'email'];
 
-  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true })
+  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', primary: true })
   user!: Ref<Users>;
 
-  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true, index: 'fk_user_emails_emails1_idx' })
+  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', primary: true, index: 'fk_user_emails_emails1_idx' })
   email!: Ref<Emails>;
 
   @Property({ type: 'boolean' })
@@ -9599,10 +9765,10 @@ export class UserFlags {
 
   [PrimaryKeyProp]?: ['user', 'flag'];
 
-  @ManyToOne({ entity: () => Users, fieldName: 'user_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true })
+  @ManyToOne({ entity: () => Users, fieldName: 'user_id', primary: true })
   user!: Users;
 
-  @ManyToOne({ entity: () => Flags, fieldName: 'flag_id', updateRule: 'cascade', primary: true, index: 'fk_user_flags_flags1_idx' })
+  @ManyToOne({ entity: () => Flags, fieldName: 'flag_id', deleteRule: 'restrict', primary: true, index: 'fk_user_flags_flags1_idx' })
   flag!: Flags;
 
 }
@@ -9617,10 +9783,10 @@ export class UserOrders {
 
   [PrimaryKeyProp]?: ['user', 'order'];
 
-  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', primary: true })
+  @ManyToOne({ entity: () => Users, ref: true, fieldName: 'user_id', updateRule: 'restrict', deleteRule: 'no action', primary: true })
   user!: Ref<Users>;
 
-  @ManyToOne({ entity: () => Orders, ref: true, fieldName: 'order_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true, index: 'fk_user_orders_orders1_idx' })
+  @ManyToOne({ entity: () => Orders, ref: true, fieldName: 'order_id', primary: true, index: 'fk_user_orders_orders1_idx' })
   order!: Ref<Orders>;
 
   @Property({ unsigned: true, autoincrement: true, unique: 'priority_UNIQUE' })
@@ -9701,6 +9867,8 @@ export const CompletedOrdersSchema = new EntitySchema({
       entity: () => Users,
       ref: true,
       fieldName: 'user_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_completed_orders_users1_idx',
     },
     order: {
@@ -9708,6 +9876,8 @@ export const CompletedOrdersSchema = new EntitySchema({
       entity: () => Orders,
       ref: true,
       fieldName: 'order_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_completed_orders_orders1_idx',
     },
   },
@@ -9848,8 +10018,6 @@ export const UserEmailAvatarsSchema = new EntitySchema({
       entity: () => Users,
       ref: true,
       fieldName: 'user_id',
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
     },
     email: {
       primary: true,
@@ -9857,6 +10025,8 @@ export const UserEmailAvatarsSchema = new EntitySchema({
       entity: () => Emails,
       ref: true,
       fieldName: 'email_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_user_email_avatars_emails1_idx',
     },
     avatarUrl: { type: 'string' },
@@ -9884,6 +10054,8 @@ export const UserEmailFlagsSchema = new EntitySchema({
       entity: () => Users,
       ref: true,
       fieldName: 'user_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     email: {
       primary: true,
@@ -9891,6 +10063,8 @@ export const UserEmailFlagsSchema = new EntitySchema({
       entity: () => Emails,
       ref: true,
       fieldName: 'email_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_user_email_flags_emails1_idx',
     },
     flag: {
@@ -9898,6 +10072,8 @@ export const UserEmailFlagsSchema = new EntitySchema({
       entity: () => Flags,
       ref: true,
       fieldName: 'flag_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       defaultRaw: \`1\`,
       index: 'fk_user_email_flags_flags1_idx',
       unique: 'flag_id_UNIQUE',
@@ -9926,6 +10102,8 @@ export const UserEmailOrdersSchema = new EntitySchema({
       entity: () => Users,
       ref: true,
       fieldName: 'user_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     email: {
       primary: true,
@@ -9933,6 +10111,8 @@ export const UserEmailOrdersSchema = new EntitySchema({
       entity: () => Emails,
       ref: true,
       fieldName: 'email_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_user_email_orders_emails1_idx',
     },
     order: {
@@ -9940,6 +10120,8 @@ export const UserEmailOrdersSchema = new EntitySchema({
       entity: () => Orders,
       ref: true,
       fieldName: 'order_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_user_email_orders_orders1_idx',
     },
   },
@@ -9965,8 +10147,6 @@ export const UserEmailsSchema = new EntitySchema({
       entity: () => Users,
       ref: true,
       fieldName: 'user_id',
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
     },
     email: {
       primary: true,
@@ -9974,8 +10154,6 @@ export const UserEmailsSchema = new EntitySchema({
       entity: () => Emails,
       ref: true,
       fieldName: 'email_id',
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
       index: 'fk_user_emails_emails1_idx',
     },
     isVerified: { type: 'boolean' },
@@ -10000,15 +10178,13 @@ export const UserFlagsSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => Users,
       fieldName: 'user_id',
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
     },
     flag: {
       primary: true,
       kind: 'm:1',
       entity: () => Flags,
       fieldName: 'flag_id',
-      updateRule: 'cascade',
+      deleteRule: 'restrict',
       index: 'fk_user_flags_flags1_idx',
     },
   },
@@ -10034,6 +10210,8 @@ export const UserOrdersSchema = new EntitySchema({
       entity: () => Users,
       ref: true,
       fieldName: 'user_id',
+      updateRule: 'restrict',
+      deleteRule: 'no action',
     },
     order: {
       primary: true,
@@ -10041,8 +10219,6 @@ export const UserOrdersSchema = new EntitySchema({
       entity: () => Orders,
       ref: true,
       fieldName: 'order_id',
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
       index: 'fk_user_orders_orders1_idx',
     },
     priority: {

@@ -46,13 +46,13 @@ export class ProductColors {
 
   [PrimaryKeyProp]?: ['color', 'product'];
 
-  @ManyToOne({ entity: () => Colors, fieldName: 'color_id', primary: true })
+  @ManyToOne({ entity: () => Colors, fieldName: 'color_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   color!: Colors;
 
   @Property({ unsigned: true, persist: false })
   colorId!: number;
 
-  @ManyToOne({ entity: () => Products, fieldName: 'product_id', primary: true, index: 'fk_product_colors_products1_idx' })
+  @ManyToOne({ entity: () => Products, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_product_colors_products1_idx' })
   product!: Products;
 
   @Property({ unsigned: true, autoincrement: true, persist: false, index: 'fk_product_colors_products1_idx' })
@@ -73,13 +73,13 @@ export class ProductCountries {
   @Property({ type: 'character', length: 2, persist: false })
   country!: string;
 
-  @ManyToOne({ entity: () => ProductSizes, fieldName: 'product_id', primary: true, index: 'fk_product_countries_product_sizes1_idx' })
+  @ManyToOne({ entity: () => ProductSizes, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_product_countries_product_sizes1_idx' })
   product!: ProductSizes;
 
   @Property({ unsigned: true, persist: false, index: 'fk_product_countries_product_sizes1_idx' })
   productId!: number;
 
-  @ManyToOne({ entity: () => Countries, fieldName: 'country', primary: true })
+  @ManyToOne({ entity: () => Countries, fieldName: 'country', updateRule: 'no action', deleteRule: 'no action', primary: true })
   countries!: Countries;
 
 }
@@ -96,7 +96,7 @@ export class ProductSizes {
 
   [PrimaryKeyProp]?: 'product';
 
-  @OneToOne({ entity: () => Products, fieldName: 'product_id', primary: true })
+  @OneToOne({ entity: () => Products, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   product!: Products;
 
   @Property({ unsigned: true, persist: false })
@@ -152,7 +152,7 @@ export class Sales {
   @Property({ unsigned: true, persist: false, index: 'product_id_idx' })
   productId!: number;
 
-  @ManyToOne({ entity: () => ProductColors, fieldNames: ['color_id', 'product_id'], nullable: true, index: 'fk_sales_product_colors1_idx' })
+  @ManyToOne({ entity: () => ProductColors, fieldNames: ['color_id', 'product_id'], updateRule: 'no action', deleteRule: 'no action', nullable: true, index: 'fk_sales_product_colors1_idx' })
   color?: ProductColors;
 
   @Property({ unsigned: true, nullable: true, persist: false })
@@ -161,22 +161,22 @@ export class Sales {
   @Property({ type: 'smallint', unsigned: true, nullable: true, persist: false })
   size?: number;
 
-  @ManyToOne({ entity: () => SellerProducts, fieldNames: ['seller_id', 'exchanged_product_id'], nullable: true, index: 'fk_sales_seller_products2_idx' })
+  @ManyToOne({ entity: () => SellerProducts, fieldNames: ['seller_id', 'exchanged_product_id'], updateRule: 'no action', deleteRule: 'no action', nullable: true, index: 'fk_sales_seller_products2_idx' })
   exchanged?: SellerProducts;
 
   @Property({ unsigned: true, nullable: true, persist: false })
   exchangedProductId?: number;
 
-  @ManyToOne({ entity: () => ProductCountries, fieldNames: ['country', 'product_id'], index: 'fk_sales_product_countries1_idx' })
+  @ManyToOne({ entity: () => ProductCountries, fieldNames: ['country', 'product_id'], updateRule: 'no action', deleteRule: 'no action', index: 'fk_sales_product_countries1_idx' })
   productCountries!: ProductCountries;
 
-  @ManyToOne({ entity: () => ProductSizes, fieldNames: ['size', 'product_id'], referencedColumnNames: ['size', 'product_id'], nullable: true, index: 'fk_sales_product_sizes1_idx' })
+  @ManyToOne({ entity: () => ProductSizes, fieldNames: ['size', 'product_id'], referencedColumnNames: ['size', 'product_id'], updateRule: 'no action', deleteRule: 'no action', nullable: true, index: 'fk_sales_product_sizes1_idx' })
   productSizes?: ProductSizes;
 
-  @ManyToOne({ entity: () => SellerCountries, fieldNames: ['country', 'seller_id'], index: 'fk_sales_seller_countries1_idx' })
+  @ManyToOne({ entity: () => SellerCountries, fieldNames: ['country', 'seller_id'], updateRule: 'no action', deleteRule: 'no action', index: 'fk_sales_seller_countries1_idx' })
   sellerCountries!: SellerCountries;
 
-  @ManyToOne({ entity: () => SellerProducts, fieldNames: ['seller_id', 'product_id'], index: 'fk_sales_seller_products1_idx' })
+  @ManyToOne({ entity: () => SellerProducts, fieldNames: ['seller_id', 'product_id'], updateRule: 'no action', deleteRule: 'no action', index: 'fk_sales_seller_products1_idx' })
   fkSalesSellerProducts1!: SellerProducts;
 
 }
@@ -194,13 +194,13 @@ export class SellerCountries {
   @Property({ type: 'character', length: 2, persist: false })
   country!: string;
 
-  @ManyToOne({ entity: () => Sellers, fieldName: 'seller_id', primary: true, index: 'fk_seller_countries_sellers1_idx' })
+  @ManyToOne({ entity: () => Sellers, fieldName: 'seller_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_seller_countries_sellers1_idx' })
   seller!: Sellers;
 
   @Property({ unsigned: true, persist: false, index: 'fk_seller_countries_sellers1_idx' })
   sellerId!: number;
 
-  @ManyToOne({ entity: () => Countries, fieldName: 'country', primary: true })
+  @ManyToOne({ entity: () => Countries, fieldName: 'country', updateRule: 'no action', deleteRule: 'no action', primary: true })
   countries!: Countries;
 
 }
@@ -215,13 +215,13 @@ export class SellerProducts {
 
   [PrimaryKeyProp]?: ['seller', 'product'];
 
-  @ManyToOne({ entity: () => Sellers, fieldName: 'seller_id', primary: true })
+  @ManyToOne({ entity: () => Sellers, fieldName: 'seller_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   seller!: Sellers;
 
   @Property({ unsigned: true, persist: false })
   sellerId!: number;
 
-  @ManyToOne({ entity: () => Products, fieldName: 'product_id', primary: true, index: 'fk_seller_products_products1_idx' })
+  @ManyToOne({ entity: () => Products, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_seller_products_products1_idx' })
   product!: Products;
 
   @Property({ unsigned: true, persist: false, index: 'fk_seller_products_products1_idx' })
@@ -321,6 +321,8 @@ export const ProductColorsSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => Colors,
       fieldName: 'color_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     colorId: { type: 'integer', unsigned: true, persist: false },
     product: {
@@ -328,6 +330,8 @@ export const ProductColorsSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => Products,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_product_colors_products1_idx',
     },
     productId: {
@@ -361,6 +365,8 @@ export const ProductCountriesSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => ProductSizes,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_product_countries_product_sizes1_idx',
     },
     productId: {
@@ -374,6 +380,8 @@ export const ProductCountriesSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => Countries,
       fieldName: 'country',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
   },
 });
@@ -402,6 +410,8 @@ export const ProductSizesSchema = new EntitySchema({
       kind: '1:1',
       entity: () => Products,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     productId: { type: 'integer', unsigned: true, persist: false },
     size: { type: 'smallint', unsigned: true },
@@ -478,6 +488,8 @@ export const SalesSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => ProductColors,
       fieldNames: ['color_id', 'product_id'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       nullable: true,
       index: 'fk_sales_product_colors1_idx',
     },
@@ -487,6 +499,8 @@ export const SalesSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => SellerProducts,
       fieldNames: ['seller_id', 'exchanged_product_id'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       nullable: true,
       index: 'fk_sales_seller_products2_idx',
     },
@@ -500,6 +514,8 @@ export const SalesSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => ProductCountries,
       fieldNames: ['country', 'product_id'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_sales_product_countries1_idx',
     },
     productSizes: {
@@ -507,6 +523,8 @@ export const SalesSchema = new EntitySchema({
       entity: () => ProductSizes,
       fieldNames: ['size', 'product_id'],
       referencedColumnNames: ['size', 'product_id'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       nullable: true,
       index: 'fk_sales_product_sizes1_idx',
     },
@@ -514,12 +532,16 @@ export const SalesSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => SellerCountries,
       fieldNames: ['country', 'seller_id'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_sales_seller_countries1_idx',
     },
     fkSalesSellerProducts1: {
       kind: 'm:1',
       entity: () => SellerProducts,
       fieldNames: ['seller_id', 'product_id'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_sales_seller_products1_idx',
     },
   },
@@ -546,6 +568,8 @@ export const SellerCountriesSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => Sellers,
       fieldName: 'seller_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_seller_countries_sellers1_idx',
     },
     sellerId: {
@@ -559,6 +583,8 @@ export const SellerCountriesSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => Countries,
       fieldName: 'country',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
   },
 });
@@ -583,6 +609,8 @@ export const SellerProductsSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => Sellers,
       fieldName: 'seller_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     sellerId: { type: 'integer', unsigned: true, persist: false },
     product: {
@@ -590,6 +618,8 @@ export const SellerProductsSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => Products,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_seller_products_products1_idx',
     },
     productId: {
@@ -688,13 +718,13 @@ export class ProductColors {
 
   [PrimaryKeyProp]?: ['color', 'product'];
 
-  @ManyToOne({ entity: () => Colors, ref: true, fieldName: 'color_id', primary: true })
+  @ManyToOne({ entity: () => Colors, ref: true, fieldName: 'color_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   color!: Ref<Colors>;
 
   @Property({ unsigned: true, persist: false })
   colorId!: number;
 
-  @ManyToOne({ entity: () => Products, ref: true, fieldName: 'product_id', primary: true, index: 'fk_product_colors_products1_idx' })
+  @ManyToOne({ entity: () => Products, ref: true, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_product_colors_products1_idx' })
   product!: Ref<Products>;
 
   @Property({ unsigned: true, autoincrement: true, persist: false, index: 'fk_product_colors_products1_idx' })
@@ -715,13 +745,13 @@ export class ProductCountries {
   @Property({ type: 'character', length: 2, persist: false })
   country!: string;
 
-  @ManyToOne({ entity: () => ProductSizes, ref: true, fieldName: 'product_id', primary: true, index: 'fk_product_countries_product_sizes1_idx' })
+  @ManyToOne({ entity: () => ProductSizes, ref: true, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_product_countries_product_sizes1_idx' })
   product!: Ref<ProductSizes>;
 
   @Property({ unsigned: true, persist: false, index: 'fk_product_countries_product_sizes1_idx' })
   productId!: number;
 
-  @ManyToOne({ entity: () => Countries, ref: true, fieldName: 'country', primary: true })
+  @ManyToOne({ entity: () => Countries, ref: true, fieldName: 'country', updateRule: 'no action', deleteRule: 'no action', primary: true })
   countries!: Ref<Countries>;
 
 }
@@ -738,7 +768,7 @@ export class ProductSizes {
 
   [PrimaryKeyProp]?: 'product';
 
-  @OneToOne({ entity: () => Products, ref: true, fieldName: 'product_id', primary: true })
+  @OneToOne({ entity: () => Products, ref: true, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   product!: Ref<Products>;
 
   @Property({ unsigned: true, persist: false })
@@ -794,7 +824,7 @@ export class Sales {
   @Property({ unsigned: true, persist: false, index: 'product_id_idx' })
   productId!: number;
 
-  @ManyToOne({ entity: () => ProductColors, ref: true, fieldNames: ['color_id', 'product_id'], nullable: true, index: 'fk_sales_product_colors1_idx' })
+  @ManyToOne({ entity: () => ProductColors, ref: true, fieldNames: ['color_id', 'product_id'], updateRule: 'no action', deleteRule: 'no action', nullable: true, index: 'fk_sales_product_colors1_idx' })
   color?: Ref<ProductColors>;
 
   @Property({ unsigned: true, nullable: true, persist: false })
@@ -803,22 +833,22 @@ export class Sales {
   @Property({ type: 'smallint', unsigned: true, nullable: true, persist: false })
   size?: number;
 
-  @ManyToOne({ entity: () => SellerProducts, ref: true, fieldNames: ['seller_id', 'exchanged_product_id'], nullable: true, index: 'fk_sales_seller_products2_idx' })
+  @ManyToOne({ entity: () => SellerProducts, ref: true, fieldNames: ['seller_id', 'exchanged_product_id'], updateRule: 'no action', deleteRule: 'no action', nullable: true, index: 'fk_sales_seller_products2_idx' })
   exchanged?: Ref<SellerProducts>;
 
   @Property({ unsigned: true, nullable: true, persist: false })
   exchangedProductId?: number;
 
-  @ManyToOne({ entity: () => ProductCountries, ref: true, fieldNames: ['country', 'product_id'], index: 'fk_sales_product_countries1_idx' })
+  @ManyToOne({ entity: () => ProductCountries, ref: true, fieldNames: ['country', 'product_id'], updateRule: 'no action', deleteRule: 'no action', index: 'fk_sales_product_countries1_idx' })
   productCountries!: Ref<ProductCountries>;
 
-  @ManyToOne({ entity: () => ProductSizes, ref: true, fieldNames: ['size', 'product_id'], referencedColumnNames: ['size', 'product_id'], nullable: true, index: 'fk_sales_product_sizes1_idx' })
+  @ManyToOne({ entity: () => ProductSizes, ref: true, fieldNames: ['size', 'product_id'], referencedColumnNames: ['size', 'product_id'], updateRule: 'no action', deleteRule: 'no action', nullable: true, index: 'fk_sales_product_sizes1_idx' })
   productSizes?: Ref<ProductSizes>;
 
-  @ManyToOne({ entity: () => SellerCountries, ref: true, fieldNames: ['country', 'seller_id'], index: 'fk_sales_seller_countries1_idx' })
+  @ManyToOne({ entity: () => SellerCountries, ref: true, fieldNames: ['country', 'seller_id'], updateRule: 'no action', deleteRule: 'no action', index: 'fk_sales_seller_countries1_idx' })
   sellerCountries!: Ref<SellerCountries>;
 
-  @ManyToOne({ entity: () => SellerProducts, ref: true, fieldNames: ['seller_id', 'product_id'], index: 'fk_sales_seller_products1_idx' })
+  @ManyToOne({ entity: () => SellerProducts, ref: true, fieldNames: ['seller_id', 'product_id'], updateRule: 'no action', deleteRule: 'no action', index: 'fk_sales_seller_products1_idx' })
   fkSalesSellerProducts1!: Ref<SellerProducts>;
 
 }
@@ -836,13 +866,13 @@ export class SellerCountries {
   @Property({ type: 'character', length: 2, persist: false })
   country!: string;
 
-  @ManyToOne({ entity: () => Sellers, ref: true, fieldName: 'seller_id', primary: true, index: 'fk_seller_countries_sellers1_idx' })
+  @ManyToOne({ entity: () => Sellers, ref: true, fieldName: 'seller_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_seller_countries_sellers1_idx' })
   seller!: Ref<Sellers>;
 
   @Property({ unsigned: true, persist: false, index: 'fk_seller_countries_sellers1_idx' })
   sellerId!: number;
 
-  @ManyToOne({ entity: () => Countries, ref: true, fieldName: 'country', primary: true })
+  @ManyToOne({ entity: () => Countries, ref: true, fieldName: 'country', updateRule: 'no action', deleteRule: 'no action', primary: true })
   countries!: Ref<Countries>;
 
 }
@@ -857,13 +887,13 @@ export class SellerProducts {
 
   [PrimaryKeyProp]?: ['seller', 'product'];
 
-  @ManyToOne({ entity: () => Sellers, ref: true, fieldName: 'seller_id', primary: true })
+  @ManyToOne({ entity: () => Sellers, ref: true, fieldName: 'seller_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   seller!: Ref<Sellers>;
 
   @Property({ unsigned: true, persist: false })
   sellerId!: number;
 
-  @ManyToOne({ entity: () => Products, ref: true, fieldName: 'product_id', primary: true, index: 'fk_seller_products_products1_idx' })
+  @ManyToOne({ entity: () => Products, ref: true, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_seller_products_products1_idx' })
   product!: Ref<Products>;
 
   @Property({ unsigned: true, persist: false, index: 'fk_seller_products_products1_idx' })
@@ -964,6 +994,8 @@ export const ProductColorsSchema = new EntitySchema({
       entity: () => Colors,
       ref: true,
       fieldName: 'color_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     colorId: { type: 'integer', unsigned: true, persist: false },
     product: {
@@ -972,6 +1004,8 @@ export const ProductColorsSchema = new EntitySchema({
       entity: () => Products,
       ref: true,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_product_colors_products1_idx',
     },
     productId: {
@@ -1006,6 +1040,8 @@ export const ProductCountriesSchema = new EntitySchema({
       entity: () => ProductSizes,
       ref: true,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_product_countries_product_sizes1_idx',
     },
     productId: {
@@ -1020,6 +1056,8 @@ export const ProductCountriesSchema = new EntitySchema({
       entity: () => Countries,
       ref: true,
       fieldName: 'country',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
   },
 });
@@ -1049,6 +1087,8 @@ export const ProductSizesSchema = new EntitySchema({
       entity: () => Products,
       ref: true,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     productId: { type: 'integer', unsigned: true, persist: false },
     size: { type: 'smallint', unsigned: true },
@@ -1126,6 +1166,8 @@ export const SalesSchema = new EntitySchema({
       entity: () => ProductColors,
       ref: true,
       fieldNames: ['color_id', 'product_id'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       nullable: true,
       index: 'fk_sales_product_colors1_idx',
     },
@@ -1136,6 +1178,8 @@ export const SalesSchema = new EntitySchema({
       entity: () => SellerProducts,
       ref: true,
       fieldNames: ['seller_id', 'exchanged_product_id'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       nullable: true,
       index: 'fk_sales_seller_products2_idx',
     },
@@ -1150,6 +1194,8 @@ export const SalesSchema = new EntitySchema({
       entity: () => ProductCountries,
       ref: true,
       fieldNames: ['country', 'product_id'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_sales_product_countries1_idx',
     },
     productSizes: {
@@ -1158,6 +1204,8 @@ export const SalesSchema = new EntitySchema({
       ref: true,
       fieldNames: ['size', 'product_id'],
       referencedColumnNames: ['size', 'product_id'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       nullable: true,
       index: 'fk_sales_product_sizes1_idx',
     },
@@ -1166,6 +1214,8 @@ export const SalesSchema = new EntitySchema({
       entity: () => SellerCountries,
       ref: true,
       fieldNames: ['country', 'seller_id'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_sales_seller_countries1_idx',
     },
     fkSalesSellerProducts1: {
@@ -1173,6 +1223,8 @@ export const SalesSchema = new EntitySchema({
       entity: () => SellerProducts,
       ref: true,
       fieldNames: ['seller_id', 'product_id'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_sales_seller_products1_idx',
     },
   },
@@ -1200,6 +1252,8 @@ export const SellerCountriesSchema = new EntitySchema({
       entity: () => Sellers,
       ref: true,
       fieldName: 'seller_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_seller_countries_sellers1_idx',
     },
     sellerId: {
@@ -1214,6 +1268,8 @@ export const SellerCountriesSchema = new EntitySchema({
       entity: () => Countries,
       ref: true,
       fieldName: 'country',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
   },
 });
@@ -1239,6 +1295,8 @@ export const SellerProductsSchema = new EntitySchema({
       entity: () => Sellers,
       ref: true,
       fieldName: 'seller_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     sellerId: { type: 'integer', unsigned: true, persist: false },
     product: {
@@ -1247,6 +1305,8 @@ export const SellerProductsSchema = new EntitySchema({
       entity: () => Products,
       ref: true,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_seller_products_products1_idx',
     },
     productId: {
@@ -1365,13 +1425,13 @@ export class ProductColors {
 
   [PrimaryKeyProp]?: ['color', 'product'];
 
-  @ManyToOne({ entity: () => Colors, fieldName: 'color_id', primary: true })
+  @ManyToOne({ entity: () => Colors, fieldName: 'color_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   color!: Colors;
 
   @Property({ unsigned: true, persist: false })
   colorId!: number;
 
-  @ManyToOne({ entity: () => Products, fieldName: 'product_id', primary: true, index: 'fk_product_colors_products1_idx' })
+  @ManyToOne({ entity: () => Products, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_product_colors_products1_idx' })
   product!: Products;
 
   @Property({ unsigned: true, autoincrement: true, persist: false, index: 'fk_product_colors_products1_idx' })
@@ -1396,13 +1456,13 @@ export class ProductCountries {
   @Property({ type: 'character', length: 2, persist: false })
   country!: string;
 
-  @ManyToOne({ entity: () => ProductSizes, fieldName: 'product_id', primary: true, index: 'fk_product_countries_product_sizes1_idx' })
+  @ManyToOne({ entity: () => ProductSizes, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_product_countries_product_sizes1_idx' })
   product!: ProductSizes;
 
   @Property({ unsigned: true, persist: false, index: 'fk_product_countries_product_sizes1_idx' })
   productId!: number;
 
-  @ManyToOne({ entity: () => Countries, fieldName: 'country', primary: true })
+  @ManyToOne({ entity: () => Countries, fieldName: 'country', updateRule: 'no action', deleteRule: 'no action', primary: true })
   countries!: Countries;
 
   @OneToMany({ entity: () => Sales, mappedBy: 'productCountries' })
@@ -1423,7 +1483,7 @@ export class ProductSizes {
 
   [PrimaryKeyProp]?: 'product';
 
-  @OneToOne({ entity: () => Products, fieldName: 'product_id', primary: true })
+  @OneToOne({ entity: () => Products, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   product!: Products;
 
   @Property({ unsigned: true, persist: false })
@@ -1505,7 +1565,7 @@ export class Sales {
   @Property({ unsigned: true, persist: false, index: 'product_id_idx' })
   productId!: number;
 
-  @ManyToOne({ entity: () => ProductColors, fieldNames: ['color_id', 'product_id'], nullable: true, index: 'fk_sales_product_colors1_idx' })
+  @ManyToOne({ entity: () => ProductColors, fieldNames: ['color_id', 'product_id'], updateRule: 'no action', deleteRule: 'no action', nullable: true, index: 'fk_sales_product_colors1_idx' })
   color?: ProductColors;
 
   @Property({ unsigned: true, nullable: true, persist: false })
@@ -1514,22 +1574,22 @@ export class Sales {
   @Property({ type: 'smallint', unsigned: true, nullable: true, persist: false })
   size?: number;
 
-  @ManyToOne({ entity: () => SellerProducts, fieldNames: ['seller_id', 'exchanged_product_id'], nullable: true, index: 'fk_sales_seller_products2_idx' })
+  @ManyToOne({ entity: () => SellerProducts, fieldNames: ['seller_id', 'exchanged_product_id'], updateRule: 'no action', deleteRule: 'no action', nullable: true, index: 'fk_sales_seller_products2_idx' })
   exchanged?: SellerProducts;
 
   @Property({ unsigned: true, nullable: true, persist: false })
   exchangedProductId?: number;
 
-  @ManyToOne({ entity: () => ProductCountries, fieldNames: ['country', 'product_id'], index: 'fk_sales_product_countries1_idx' })
+  @ManyToOne({ entity: () => ProductCountries, fieldNames: ['country', 'product_id'], updateRule: 'no action', deleteRule: 'no action', index: 'fk_sales_product_countries1_idx' })
   productCountries!: ProductCountries;
 
-  @ManyToOne({ entity: () => ProductSizes, fieldNames: ['size', 'product_id'], referencedColumnNames: ['size', 'product_id'], nullable: true, index: 'fk_sales_product_sizes1_idx' })
+  @ManyToOne({ entity: () => ProductSizes, fieldNames: ['size', 'product_id'], referencedColumnNames: ['size', 'product_id'], updateRule: 'no action', deleteRule: 'no action', nullable: true, index: 'fk_sales_product_sizes1_idx' })
   productSizes?: ProductSizes;
 
-  @ManyToOne({ entity: () => SellerCountries, fieldNames: ['country', 'seller_id'], index: 'fk_sales_seller_countries1_idx' })
+  @ManyToOne({ entity: () => SellerCountries, fieldNames: ['country', 'seller_id'], updateRule: 'no action', deleteRule: 'no action', index: 'fk_sales_seller_countries1_idx' })
   sellerCountries!: SellerCountries;
 
-  @ManyToOne({ entity: () => SellerProducts, fieldNames: ['seller_id', 'product_id'], index: 'fk_sales_seller_products1_idx' })
+  @ManyToOne({ entity: () => SellerProducts, fieldNames: ['seller_id', 'product_id'], updateRule: 'no action', deleteRule: 'no action', index: 'fk_sales_seller_products1_idx' })
   fkSalesSellerProducts1!: SellerProducts;
 
 }
@@ -1548,13 +1608,13 @@ export class SellerCountries {
   @Property({ type: 'character', length: 2, persist: false })
   country!: string;
 
-  @ManyToOne({ entity: () => Sellers, fieldName: 'seller_id', primary: true, index: 'fk_seller_countries_sellers1_idx' })
+  @ManyToOne({ entity: () => Sellers, fieldName: 'seller_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_seller_countries_sellers1_idx' })
   seller!: Sellers;
 
   @Property({ unsigned: true, persist: false, index: 'fk_seller_countries_sellers1_idx' })
   sellerId!: number;
 
-  @ManyToOne({ entity: () => Countries, fieldName: 'country', primary: true })
+  @ManyToOne({ entity: () => Countries, fieldName: 'country', updateRule: 'no action', deleteRule: 'no action', primary: true })
   countries!: Countries;
 
   @OneToMany({ entity: () => Sales, mappedBy: 'sellerCountries' })
@@ -1573,13 +1633,13 @@ export class SellerProducts {
 
   [PrimaryKeyProp]?: ['seller', 'product'];
 
-  @ManyToOne({ entity: () => Sellers, fieldName: 'seller_id', primary: true })
+  @ManyToOne({ entity: () => Sellers, fieldName: 'seller_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   seller!: Sellers;
 
   @Property({ unsigned: true, persist: false })
   sellerId!: number;
 
-  @ManyToOne({ entity: () => Products, fieldName: 'product_id', primary: true, index: 'fk_seller_products_products1_idx' })
+  @ManyToOne({ entity: () => Products, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_seller_products_products1_idx' })
   product!: Products;
 
   @Property({ unsigned: true, persist: false, index: 'fk_seller_products_products1_idx' })
@@ -1727,6 +1787,8 @@ export const ProductColorsSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => Colors,
       fieldName: 'color_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     colorId: { type: 'integer', unsigned: true, persist: false },
     product: {
@@ -1734,6 +1796,8 @@ export const ProductColorsSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => Products,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_product_colors_products1_idx',
     },
     productId: {
@@ -1770,6 +1834,8 @@ export const ProductCountriesSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => ProductSizes,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_product_countries_product_sizes1_idx',
     },
     productId: {
@@ -1783,6 +1849,8 @@ export const ProductCountriesSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => Countries,
       fieldName: 'country',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     salesCollection: {
       kind: '1:m',
@@ -1819,6 +1887,8 @@ export const ProductSizesSchema = new EntitySchema({
       kind: '1:1',
       entity: () => Products,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     productId: { type: 'integer', unsigned: true, persist: false },
     size: { type: 'smallint', unsigned: true },
@@ -1936,6 +2006,8 @@ export const SalesSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => ProductColors,
       fieldNames: ['color_id', 'product_id'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       nullable: true,
       index: 'fk_sales_product_colors1_idx',
     },
@@ -1945,6 +2017,8 @@ export const SalesSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => SellerProducts,
       fieldNames: ['seller_id', 'exchanged_product_id'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       nullable: true,
       index: 'fk_sales_seller_products2_idx',
     },
@@ -1958,6 +2032,8 @@ export const SalesSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => ProductCountries,
       fieldNames: ['country', 'product_id'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_sales_product_countries1_idx',
     },
     productSizes: {
@@ -1965,6 +2041,8 @@ export const SalesSchema = new EntitySchema({
       entity: () => ProductSizes,
       fieldNames: ['size', 'product_id'],
       referencedColumnNames: ['size', 'product_id'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       nullable: true,
       index: 'fk_sales_product_sizes1_idx',
     },
@@ -1972,12 +2050,16 @@ export const SalesSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => SellerCountries,
       fieldNames: ['country', 'seller_id'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_sales_seller_countries1_idx',
     },
     fkSalesSellerProducts1: {
       kind: 'm:1',
       entity: () => SellerProducts,
       fieldNames: ['seller_id', 'product_id'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_sales_seller_products1_idx',
     },
   },
@@ -2006,6 +2088,8 @@ export const SellerCountriesSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => Sellers,
       fieldName: 'seller_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_seller_countries_sellers1_idx',
     },
     sellerId: {
@@ -2019,6 +2103,8 @@ export const SellerCountriesSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => Countries,
       fieldName: 'country',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     salesCollection: {
       kind: '1:m',
@@ -2051,6 +2137,8 @@ export const SellerProductsSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => Sellers,
       fieldName: 'seller_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     sellerId: { type: 'integer', unsigned: true, persist: false },
     product: {
@@ -2058,6 +2146,8 @@ export const SellerProductsSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => Products,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_seller_products_products1_idx',
     },
     productId: {
@@ -2194,13 +2284,13 @@ export class ProductColors {
 
   [PrimaryKeyProp]?: ['color', 'product'];
 
-  @ManyToOne({ entity: () => Colors, ref: true, fieldName: 'color_id', primary: true })
+  @ManyToOne({ entity: () => Colors, ref: true, fieldName: 'color_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   color!: Ref<Colors>;
 
   @Property({ unsigned: true, persist: false })
   colorId!: number;
 
-  @ManyToOne({ entity: () => Products, ref: true, fieldName: 'product_id', primary: true, index: 'fk_product_colors_products1_idx' })
+  @ManyToOne({ entity: () => Products, ref: true, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_product_colors_products1_idx' })
   product!: Ref<Products>;
 
   @Property({ unsigned: true, autoincrement: true, persist: false, index: 'fk_product_colors_products1_idx' })
@@ -2225,13 +2315,13 @@ export class ProductCountries {
   @Property({ type: 'character', length: 2, persist: false })
   country!: string;
 
-  @ManyToOne({ entity: () => ProductSizes, ref: true, fieldName: 'product_id', primary: true, index: 'fk_product_countries_product_sizes1_idx' })
+  @ManyToOne({ entity: () => ProductSizes, ref: true, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_product_countries_product_sizes1_idx' })
   product!: Ref<ProductSizes>;
 
   @Property({ unsigned: true, persist: false, index: 'fk_product_countries_product_sizes1_idx' })
   productId!: number;
 
-  @ManyToOne({ entity: () => Countries, ref: true, fieldName: 'country', primary: true })
+  @ManyToOne({ entity: () => Countries, ref: true, fieldName: 'country', updateRule: 'no action', deleteRule: 'no action', primary: true })
   countries!: Ref<Countries>;
 
   @OneToMany({ entity: () => Sales, mappedBy: 'productCountries' })
@@ -2252,7 +2342,7 @@ export class ProductSizes {
 
   [PrimaryKeyProp]?: 'product';
 
-  @OneToOne({ entity: () => Products, ref: true, fieldName: 'product_id', primary: true })
+  @OneToOne({ entity: () => Products, ref: true, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   product!: Ref<Products>;
 
   @Property({ unsigned: true, persist: false })
@@ -2334,7 +2424,7 @@ export class Sales {
   @Property({ unsigned: true, persist: false, index: 'product_id_idx' })
   productId!: number;
 
-  @ManyToOne({ entity: () => ProductColors, ref: true, fieldNames: ['color_id', 'product_id'], nullable: true, index: 'fk_sales_product_colors1_idx' })
+  @ManyToOne({ entity: () => ProductColors, ref: true, fieldNames: ['color_id', 'product_id'], updateRule: 'no action', deleteRule: 'no action', nullable: true, index: 'fk_sales_product_colors1_idx' })
   color?: Ref<ProductColors>;
 
   @Property({ unsigned: true, nullable: true, persist: false })
@@ -2343,22 +2433,22 @@ export class Sales {
   @Property({ type: 'smallint', unsigned: true, nullable: true, persist: false })
   size?: number;
 
-  @ManyToOne({ entity: () => SellerProducts, ref: true, fieldNames: ['seller_id', 'exchanged_product_id'], nullable: true, index: 'fk_sales_seller_products2_idx' })
+  @ManyToOne({ entity: () => SellerProducts, ref: true, fieldNames: ['seller_id', 'exchanged_product_id'], updateRule: 'no action', deleteRule: 'no action', nullable: true, index: 'fk_sales_seller_products2_idx' })
   exchanged?: Ref<SellerProducts>;
 
   @Property({ unsigned: true, nullable: true, persist: false })
   exchangedProductId?: number;
 
-  @ManyToOne({ entity: () => ProductCountries, ref: true, fieldNames: ['country', 'product_id'], index: 'fk_sales_product_countries1_idx' })
+  @ManyToOne({ entity: () => ProductCountries, ref: true, fieldNames: ['country', 'product_id'], updateRule: 'no action', deleteRule: 'no action', index: 'fk_sales_product_countries1_idx' })
   productCountries!: Ref<ProductCountries>;
 
-  @ManyToOne({ entity: () => ProductSizes, ref: true, fieldNames: ['size', 'product_id'], referencedColumnNames: ['size', 'product_id'], nullable: true, index: 'fk_sales_product_sizes1_idx' })
+  @ManyToOne({ entity: () => ProductSizes, ref: true, fieldNames: ['size', 'product_id'], referencedColumnNames: ['size', 'product_id'], updateRule: 'no action', deleteRule: 'no action', nullable: true, index: 'fk_sales_product_sizes1_idx' })
   productSizes?: Ref<ProductSizes>;
 
-  @ManyToOne({ entity: () => SellerCountries, ref: true, fieldNames: ['country', 'seller_id'], index: 'fk_sales_seller_countries1_idx' })
+  @ManyToOne({ entity: () => SellerCountries, ref: true, fieldNames: ['country', 'seller_id'], updateRule: 'no action', deleteRule: 'no action', index: 'fk_sales_seller_countries1_idx' })
   sellerCountries!: Ref<SellerCountries>;
 
-  @ManyToOne({ entity: () => SellerProducts, ref: true, fieldNames: ['seller_id', 'product_id'], index: 'fk_sales_seller_products1_idx' })
+  @ManyToOne({ entity: () => SellerProducts, ref: true, fieldNames: ['seller_id', 'product_id'], updateRule: 'no action', deleteRule: 'no action', index: 'fk_sales_seller_products1_idx' })
   fkSalesSellerProducts1!: Ref<SellerProducts>;
 
 }
@@ -2377,13 +2467,13 @@ export class SellerCountries {
   @Property({ type: 'character', length: 2, persist: false })
   country!: string;
 
-  @ManyToOne({ entity: () => Sellers, ref: true, fieldName: 'seller_id', primary: true, index: 'fk_seller_countries_sellers1_idx' })
+  @ManyToOne({ entity: () => Sellers, ref: true, fieldName: 'seller_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_seller_countries_sellers1_idx' })
   seller!: Ref<Sellers>;
 
   @Property({ unsigned: true, persist: false, index: 'fk_seller_countries_sellers1_idx' })
   sellerId!: number;
 
-  @ManyToOne({ entity: () => Countries, ref: true, fieldName: 'country', primary: true })
+  @ManyToOne({ entity: () => Countries, ref: true, fieldName: 'country', updateRule: 'no action', deleteRule: 'no action', primary: true })
   countries!: Ref<Countries>;
 
   @OneToMany({ entity: () => Sales, mappedBy: 'sellerCountries' })
@@ -2402,13 +2492,13 @@ export class SellerProducts {
 
   [PrimaryKeyProp]?: ['seller', 'product'];
 
-  @ManyToOne({ entity: () => Sellers, ref: true, fieldName: 'seller_id', primary: true })
+  @ManyToOne({ entity: () => Sellers, ref: true, fieldName: 'seller_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   seller!: Ref<Sellers>;
 
   @Property({ unsigned: true, persist: false })
   sellerId!: number;
 
-  @ManyToOne({ entity: () => Products, ref: true, fieldName: 'product_id', primary: true, index: 'fk_seller_products_products1_idx' })
+  @ManyToOne({ entity: () => Products, ref: true, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_seller_products_products1_idx' })
   product!: Ref<Products>;
 
   @Property({ unsigned: true, persist: false, index: 'fk_seller_products_products1_idx' })
@@ -2557,6 +2647,8 @@ export const ProductColorsSchema = new EntitySchema({
       entity: () => Colors,
       ref: true,
       fieldName: 'color_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     colorId: { type: 'integer', unsigned: true, persist: false },
     product: {
@@ -2565,6 +2657,8 @@ export const ProductColorsSchema = new EntitySchema({
       entity: () => Products,
       ref: true,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_product_colors_products1_idx',
     },
     productId: {
@@ -2602,6 +2696,8 @@ export const ProductCountriesSchema = new EntitySchema({
       entity: () => ProductSizes,
       ref: true,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_product_countries_product_sizes1_idx',
     },
     productId: {
@@ -2616,6 +2712,8 @@ export const ProductCountriesSchema = new EntitySchema({
       entity: () => Countries,
       ref: true,
       fieldName: 'country',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     salesCollection: {
       kind: '1:m',
@@ -2653,6 +2751,8 @@ export const ProductSizesSchema = new EntitySchema({
       entity: () => Products,
       ref: true,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     productId: { type: 'integer', unsigned: true, persist: false },
     size: { type: 'smallint', unsigned: true },
@@ -2776,6 +2876,8 @@ export const SalesSchema = new EntitySchema({
       entity: () => ProductColors,
       ref: true,
       fieldNames: ['color_id', 'product_id'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       nullable: true,
       index: 'fk_sales_product_colors1_idx',
     },
@@ -2786,6 +2888,8 @@ export const SalesSchema = new EntitySchema({
       entity: () => SellerProducts,
       ref: true,
       fieldNames: ['seller_id', 'exchanged_product_id'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       nullable: true,
       index: 'fk_sales_seller_products2_idx',
     },
@@ -2800,6 +2904,8 @@ export const SalesSchema = new EntitySchema({
       entity: () => ProductCountries,
       ref: true,
       fieldNames: ['country', 'product_id'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_sales_product_countries1_idx',
     },
     productSizes: {
@@ -2808,6 +2914,8 @@ export const SalesSchema = new EntitySchema({
       ref: true,
       fieldNames: ['size', 'product_id'],
       referencedColumnNames: ['size', 'product_id'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       nullable: true,
       index: 'fk_sales_product_sizes1_idx',
     },
@@ -2816,6 +2924,8 @@ export const SalesSchema = new EntitySchema({
       entity: () => SellerCountries,
       ref: true,
       fieldNames: ['country', 'seller_id'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_sales_seller_countries1_idx',
     },
     fkSalesSellerProducts1: {
@@ -2823,6 +2933,8 @@ export const SalesSchema = new EntitySchema({
       entity: () => SellerProducts,
       ref: true,
       fieldNames: ['seller_id', 'product_id'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_sales_seller_products1_idx',
     },
   },
@@ -2852,6 +2964,8 @@ export const SellerCountriesSchema = new EntitySchema({
       entity: () => Sellers,
       ref: true,
       fieldName: 'seller_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_seller_countries_sellers1_idx',
     },
     sellerId: {
@@ -2866,6 +2980,8 @@ export const SellerCountriesSchema = new EntitySchema({
       entity: () => Countries,
       ref: true,
       fieldName: 'country',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     salesCollection: {
       kind: '1:m',
@@ -2899,6 +3015,8 @@ export const SellerProductsSchema = new EntitySchema({
       entity: () => Sellers,
       ref: true,
       fieldName: 'seller_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     sellerId: { type: 'integer', unsigned: true, persist: false },
     product: {
@@ -2907,6 +3025,8 @@ export const SellerProductsSchema = new EntitySchema({
       entity: () => Products,
       ref: true,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_seller_products_products1_idx',
     },
     productId: {
@@ -3033,10 +3153,10 @@ export class ProductColors {
 
   [PrimaryKeyProp]?: ['color', 'product'];
 
-  @ManyToOne({ entity: () => Colors, fieldName: 'color_id', primary: true })
+  @ManyToOne({ entity: () => Colors, fieldName: 'color_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   color!: Colors;
 
-  @ManyToOne({ entity: () => Products, fieldName: 'product_id', primary: true, index: 'fk_product_colors_products1_idx' })
+  @ManyToOne({ entity: () => Products, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_product_colors_products1_idx' })
   product!: Products;
 
 }
@@ -3051,10 +3171,10 @@ export class ProductCountries {
 
   [PrimaryKeyProp]?: ['country', 'product'];
 
-  @ManyToOne({ entity: () => Countries, fieldName: 'country', primary: true })
+  @ManyToOne({ entity: () => Countries, fieldName: 'country', updateRule: 'no action', deleteRule: 'no action', primary: true })
   country!: Countries;
 
-  @ManyToOne({ entity: () => ProductSizes, fieldName: 'product_id', primary: true, index: 'fk_product_countries_product_sizes1_idx' })
+  @ManyToOne({ entity: () => ProductSizes, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_product_countries_product_sizes1_idx' })
   product!: ProductSizes;
 
 }
@@ -3069,7 +3189,7 @@ export class ProductSizes {
 
   [PrimaryKeyProp]?: 'product';
 
-  @OneToOne({ entity: () => Products, fieldName: 'product_id', primary: true })
+  @OneToOne({ entity: () => Products, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   product!: Products;
 
   @Property({ type: 'smallint', unsigned: true })
@@ -3111,22 +3231,22 @@ export class Sales {
   @PrimaryKey()
   saleId!: number;
 
-  @ManyToOne({ entity: () => ProductColors, fieldNames: ['color_id', 'product_id'], nullable: true, index: 'fk_sales_product_colors1_idx' })
+  @ManyToOne({ entity: () => ProductColors, fieldNames: ['color_id', 'product_id'], updateRule: 'no action', deleteRule: 'no action', nullable: true, index: 'fk_sales_product_colors1_idx' })
   color?: ProductColors;
 
-  @ManyToOne({ entity: () => ProductSizes, fieldNames: ['size', 'product_id'], referencedColumnNames: ['size', 'product_id'], nullable: true, index: 'fk_sales_product_sizes1_idx' })
+  @ManyToOne({ entity: () => ProductSizes, fieldNames: ['size', 'product_id'], referencedColumnNames: ['size', 'product_id'], updateRule: 'no action', deleteRule: 'no action', nullable: true, index: 'fk_sales_product_sizes1_idx' })
   size?: ProductSizes;
 
-  @ManyToOne({ entity: () => SellerProducts, fieldNames: ['seller_id', 'exchanged_product_id'], nullable: true, index: 'fk_sales_seller_products2_idx' })
+  @ManyToOne({ entity: () => SellerProducts, fieldNames: ['seller_id', 'exchanged_product_id'], updateRule: 'no action', deleteRule: 'no action', nullable: true, index: 'fk_sales_seller_products2_idx' })
   exchanged?: SellerProducts;
 
-  @ManyToOne({ entity: () => ProductCountries, fieldNames: ['country', 'product_id'], index: 'fk_sales_product_countries1_idx' })
+  @ManyToOne({ entity: () => ProductCountries, fieldNames: ['country', 'product_id'], updateRule: 'no action', deleteRule: 'no action', index: 'fk_sales_product_countries1_idx' })
   productCountries!: ProductCountries;
 
-  @ManyToOne({ entity: () => SellerCountries, fieldNames: ['country', 'seller_id'], index: 'fk_sales_seller_countries1_idx' })
+  @ManyToOne({ entity: () => SellerCountries, fieldNames: ['country', 'seller_id'], updateRule: 'no action', deleteRule: 'no action', index: 'fk_sales_seller_countries1_idx' })
   sellerCountries!: SellerCountries;
 
-  @ManyToOne({ entity: () => SellerProducts, fieldNames: ['seller_id', 'product_id'], index: 'fk_sales_seller_products1_idx' })
+  @ManyToOne({ entity: () => SellerProducts, fieldNames: ['seller_id', 'product_id'], updateRule: 'no action', deleteRule: 'no action', index: 'fk_sales_seller_products1_idx' })
   fkSalesSellerProducts1!: SellerProducts;
 
 }
@@ -3141,10 +3261,10 @@ export class SellerCountries {
 
   [PrimaryKeyProp]?: ['country', 'seller'];
 
-  @ManyToOne({ entity: () => Countries, fieldName: 'country', primary: true })
+  @ManyToOne({ entity: () => Countries, fieldName: 'country', updateRule: 'no action', deleteRule: 'no action', primary: true })
   country!: Countries;
 
-  @ManyToOne({ entity: () => Sellers, fieldName: 'seller_id', primary: true, index: 'fk_seller_countries_sellers1_idx' })
+  @ManyToOne({ entity: () => Sellers, fieldName: 'seller_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_seller_countries_sellers1_idx' })
   seller!: Sellers;
 
 }
@@ -3159,10 +3279,10 @@ export class SellerProducts {
 
   [PrimaryKeyProp]?: ['seller', 'product'];
 
-  @ManyToOne({ entity: () => Sellers, fieldName: 'seller_id', primary: true })
+  @ManyToOne({ entity: () => Sellers, fieldName: 'seller_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   seller!: Sellers;
 
-  @ManyToOne({ entity: () => Products, fieldName: 'product_id', primary: true, index: 'fk_seller_products_products1_idx' })
+  @ManyToOne({ entity: () => Products, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_seller_products_products1_idx' })
   product!: Products;
 
 }
@@ -3274,12 +3394,16 @@ export const ProductColorsSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => Colors,
       fieldName: 'color_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     product: {
       primary: true,
       kind: 'm:1',
       entity: () => Products,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_product_colors_products1_idx',
     },
   },
@@ -3303,12 +3427,16 @@ export const ProductCountriesSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => Countries,
       fieldName: 'country',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     product: {
       primary: true,
       kind: 'm:1',
       entity: () => ProductSizes,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_product_countries_product_sizes1_idx',
     },
   },
@@ -3332,6 +3460,8 @@ export const ProductSizesSchema = new EntitySchema({
       kind: '1:1',
       entity: () => Products,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     size: { type: 'smallint', unsigned: true },
   },
@@ -3391,6 +3521,8 @@ export const SalesSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => ProductColors,
       fieldNames: ['color_id', 'product_id'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       nullable: true,
       index: 'fk_sales_product_colors1_idx',
     },
@@ -3399,6 +3531,8 @@ export const SalesSchema = new EntitySchema({
       entity: () => ProductSizes,
       fieldNames: ['size', 'product_id'],
       referencedColumnNames: ['size', 'product_id'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       nullable: true,
       index: 'fk_sales_product_sizes1_idx',
     },
@@ -3406,6 +3540,8 @@ export const SalesSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => SellerProducts,
       fieldNames: ['seller_id', 'exchanged_product_id'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       nullable: true,
       index: 'fk_sales_seller_products2_idx',
     },
@@ -3413,18 +3549,24 @@ export const SalesSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => ProductCountries,
       fieldNames: ['country', 'product_id'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_sales_product_countries1_idx',
     },
     sellerCountries: {
       kind: 'm:1',
       entity: () => SellerCountries,
       fieldNames: ['country', 'seller_id'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_sales_seller_countries1_idx',
     },
     fkSalesSellerProducts1: {
       kind: 'm:1',
       entity: () => SellerProducts,
       fieldNames: ['seller_id', 'product_id'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_sales_seller_products1_idx',
     },
   },
@@ -3448,12 +3590,16 @@ export const SellerCountriesSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => Countries,
       fieldName: 'country',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     seller: {
       primary: true,
       kind: 'm:1',
       entity: () => Sellers,
       fieldName: 'seller_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_seller_countries_sellers1_idx',
     },
   },
@@ -3477,12 +3623,16 @@ export const SellerProductsSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => Sellers,
       fieldName: 'seller_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     product: {
       primary: true,
       kind: 'm:1',
       entity: () => Products,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_seller_products_products1_idx',
     },
   },
@@ -3574,10 +3724,10 @@ export class ProductColors {
 
   [PrimaryKeyProp]?: ['color', 'product'];
 
-  @ManyToOne({ entity: () => Colors, ref: true, fieldName: 'color_id', primary: true })
+  @ManyToOne({ entity: () => Colors, ref: true, fieldName: 'color_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   color!: Ref<Colors>;
 
-  @ManyToOne({ entity: () => Products, ref: true, fieldName: 'product_id', primary: true, index: 'fk_product_colors_products1_idx' })
+  @ManyToOne({ entity: () => Products, ref: true, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_product_colors_products1_idx' })
   product!: Ref<Products>;
 
 }
@@ -3592,10 +3742,10 @@ export class ProductCountries {
 
   [PrimaryKeyProp]?: ['country', 'product'];
 
-  @ManyToOne({ entity: () => Countries, ref: true, fieldName: 'country', primary: true })
+  @ManyToOne({ entity: () => Countries, ref: true, fieldName: 'country', updateRule: 'no action', deleteRule: 'no action', primary: true })
   country!: Ref<Countries>;
 
-  @ManyToOne({ entity: () => ProductSizes, ref: true, fieldName: 'product_id', primary: true, index: 'fk_product_countries_product_sizes1_idx' })
+  @ManyToOne({ entity: () => ProductSizes, ref: true, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_product_countries_product_sizes1_idx' })
   product!: Ref<ProductSizes>;
 
 }
@@ -3610,7 +3760,7 @@ export class ProductSizes {
 
   [PrimaryKeyProp]?: 'product';
 
-  @OneToOne({ entity: () => Products, ref: true, fieldName: 'product_id', primary: true })
+  @OneToOne({ entity: () => Products, ref: true, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   product!: Ref<Products>;
 
   @Property({ type: 'smallint', unsigned: true })
@@ -3652,22 +3802,22 @@ export class Sales {
   @PrimaryKey()
   saleId!: number;
 
-  @ManyToOne({ entity: () => ProductColors, ref: true, fieldNames: ['color_id', 'product_id'], nullable: true, index: 'fk_sales_product_colors1_idx' })
+  @ManyToOne({ entity: () => ProductColors, ref: true, fieldNames: ['color_id', 'product_id'], updateRule: 'no action', deleteRule: 'no action', nullable: true, index: 'fk_sales_product_colors1_idx' })
   color?: Ref<ProductColors>;
 
-  @ManyToOne({ entity: () => ProductSizes, ref: true, fieldNames: ['size', 'product_id'], referencedColumnNames: ['size', 'product_id'], nullable: true, index: 'fk_sales_product_sizes1_idx' })
+  @ManyToOne({ entity: () => ProductSizes, ref: true, fieldNames: ['size', 'product_id'], referencedColumnNames: ['size', 'product_id'], updateRule: 'no action', deleteRule: 'no action', nullable: true, index: 'fk_sales_product_sizes1_idx' })
   size?: Ref<ProductSizes>;
 
-  @ManyToOne({ entity: () => SellerProducts, ref: true, fieldNames: ['seller_id', 'exchanged_product_id'], nullable: true, index: 'fk_sales_seller_products2_idx' })
+  @ManyToOne({ entity: () => SellerProducts, ref: true, fieldNames: ['seller_id', 'exchanged_product_id'], updateRule: 'no action', deleteRule: 'no action', nullable: true, index: 'fk_sales_seller_products2_idx' })
   exchanged?: Ref<SellerProducts>;
 
-  @ManyToOne({ entity: () => ProductCountries, ref: true, fieldNames: ['country', 'product_id'], index: 'fk_sales_product_countries1_idx' })
+  @ManyToOne({ entity: () => ProductCountries, ref: true, fieldNames: ['country', 'product_id'], updateRule: 'no action', deleteRule: 'no action', index: 'fk_sales_product_countries1_idx' })
   productCountries!: Ref<ProductCountries>;
 
-  @ManyToOne({ entity: () => SellerCountries, ref: true, fieldNames: ['country', 'seller_id'], index: 'fk_sales_seller_countries1_idx' })
+  @ManyToOne({ entity: () => SellerCountries, ref: true, fieldNames: ['country', 'seller_id'], updateRule: 'no action', deleteRule: 'no action', index: 'fk_sales_seller_countries1_idx' })
   sellerCountries!: Ref<SellerCountries>;
 
-  @ManyToOne({ entity: () => SellerProducts, ref: true, fieldNames: ['seller_id', 'product_id'], index: 'fk_sales_seller_products1_idx' })
+  @ManyToOne({ entity: () => SellerProducts, ref: true, fieldNames: ['seller_id', 'product_id'], updateRule: 'no action', deleteRule: 'no action', index: 'fk_sales_seller_products1_idx' })
   fkSalesSellerProducts1!: Ref<SellerProducts>;
 
 }
@@ -3682,10 +3832,10 @@ export class SellerCountries {
 
   [PrimaryKeyProp]?: ['country', 'seller'];
 
-  @ManyToOne({ entity: () => Countries, ref: true, fieldName: 'country', primary: true })
+  @ManyToOne({ entity: () => Countries, ref: true, fieldName: 'country', updateRule: 'no action', deleteRule: 'no action', primary: true })
   country!: Ref<Countries>;
 
-  @ManyToOne({ entity: () => Sellers, ref: true, fieldName: 'seller_id', primary: true, index: 'fk_seller_countries_sellers1_idx' })
+  @ManyToOne({ entity: () => Sellers, ref: true, fieldName: 'seller_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_seller_countries_sellers1_idx' })
   seller!: Ref<Sellers>;
 
 }
@@ -3700,10 +3850,10 @@ export class SellerProducts {
 
   [PrimaryKeyProp]?: ['seller', 'product'];
 
-  @ManyToOne({ entity: () => Sellers, ref: true, fieldName: 'seller_id', primary: true })
+  @ManyToOne({ entity: () => Sellers, ref: true, fieldName: 'seller_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   seller!: Ref<Sellers>;
 
-  @ManyToOne({ entity: () => Products, ref: true, fieldName: 'product_id', primary: true, index: 'fk_seller_products_products1_idx' })
+  @ManyToOne({ entity: () => Products, ref: true, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_seller_products_products1_idx' })
   product!: Ref<Products>;
 
 }
@@ -3816,6 +3966,8 @@ export const ProductColorsSchema = new EntitySchema({
       entity: () => Colors,
       ref: true,
       fieldName: 'color_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     product: {
       primary: true,
@@ -3823,6 +3975,8 @@ export const ProductColorsSchema = new EntitySchema({
       entity: () => Products,
       ref: true,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_product_colors_products1_idx',
     },
   },
@@ -3847,6 +4001,8 @@ export const ProductCountriesSchema = new EntitySchema({
       entity: () => Countries,
       ref: true,
       fieldName: 'country',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     product: {
       primary: true,
@@ -3854,6 +4010,8 @@ export const ProductCountriesSchema = new EntitySchema({
       entity: () => ProductSizes,
       ref: true,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_product_countries_product_sizes1_idx',
     },
   },
@@ -3878,6 +4036,8 @@ export const ProductSizesSchema = new EntitySchema({
       entity: () => Products,
       ref: true,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     size: { type: 'smallint', unsigned: true },
   },
@@ -3938,6 +4098,8 @@ export const SalesSchema = new EntitySchema({
       entity: () => ProductColors,
       ref: true,
       fieldNames: ['color_id', 'product_id'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       nullable: true,
       index: 'fk_sales_product_colors1_idx',
     },
@@ -3947,6 +4109,8 @@ export const SalesSchema = new EntitySchema({
       ref: true,
       fieldNames: ['size', 'product_id'],
       referencedColumnNames: ['size', 'product_id'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       nullable: true,
       index: 'fk_sales_product_sizes1_idx',
     },
@@ -3955,6 +4119,8 @@ export const SalesSchema = new EntitySchema({
       entity: () => SellerProducts,
       ref: true,
       fieldNames: ['seller_id', 'exchanged_product_id'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       nullable: true,
       index: 'fk_sales_seller_products2_idx',
     },
@@ -3963,6 +4129,8 @@ export const SalesSchema = new EntitySchema({
       entity: () => ProductCountries,
       ref: true,
       fieldNames: ['country', 'product_id'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_sales_product_countries1_idx',
     },
     sellerCountries: {
@@ -3970,6 +4138,8 @@ export const SalesSchema = new EntitySchema({
       entity: () => SellerCountries,
       ref: true,
       fieldNames: ['country', 'seller_id'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_sales_seller_countries1_idx',
     },
     fkSalesSellerProducts1: {
@@ -3977,6 +4147,8 @@ export const SalesSchema = new EntitySchema({
       entity: () => SellerProducts,
       ref: true,
       fieldNames: ['seller_id', 'product_id'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_sales_seller_products1_idx',
     },
   },
@@ -4001,6 +4173,8 @@ export const SellerCountriesSchema = new EntitySchema({
       entity: () => Countries,
       ref: true,
       fieldName: 'country',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     seller: {
       primary: true,
@@ -4008,6 +4182,8 @@ export const SellerCountriesSchema = new EntitySchema({
       entity: () => Sellers,
       ref: true,
       fieldName: 'seller_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_seller_countries_sellers1_idx',
     },
   },
@@ -4032,6 +4208,8 @@ export const SellerProductsSchema = new EntitySchema({
       entity: () => Sellers,
       ref: true,
       fieldName: 'seller_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     product: {
       primary: true,
@@ -4039,6 +4217,8 @@ export const SellerProductsSchema = new EntitySchema({
       entity: () => Products,
       ref: true,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_seller_products_products1_idx',
     },
   },
@@ -4140,10 +4320,10 @@ export class ProductColors {
 
   [PrimaryKeyProp]?: ['color', 'product'];
 
-  @ManyToOne({ entity: () => Colors, fieldName: 'color_id', primary: true })
+  @ManyToOne({ entity: () => Colors, fieldName: 'color_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   color!: Colors;
 
-  @ManyToOne({ entity: () => Products, fieldName: 'product_id', primary: true, index: 'fk_product_colors_products1_idx' })
+  @ManyToOne({ entity: () => Products, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_product_colors_products1_idx' })
   product!: Products;
 
   @OneToMany({ entity: () => Sales, mappedBy: 'color' })
@@ -4162,10 +4342,10 @@ export class ProductCountries {
 
   [PrimaryKeyProp]?: ['country', 'product'];
 
-  @ManyToOne({ entity: () => Countries, fieldName: 'country', primary: true })
+  @ManyToOne({ entity: () => Countries, fieldName: 'country', updateRule: 'no action', deleteRule: 'no action', primary: true })
   country!: Countries;
 
-  @ManyToOne({ entity: () => ProductSizes, fieldName: 'product_id', primary: true, index: 'fk_product_countries_product_sizes1_idx' })
+  @ManyToOne({ entity: () => ProductSizes, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_product_countries_product_sizes1_idx' })
   product!: ProductSizes;
 
   @OneToMany({ entity: () => Sales, mappedBy: 'productCountries' })
@@ -4186,7 +4366,7 @@ export class ProductSizes {
 
   [PrimaryKeyProp]?: 'product';
 
-  @OneToOne({ entity: () => Products, fieldName: 'product_id', primary: true })
+  @OneToOne({ entity: () => Products, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   product!: Products;
 
   @Property({ type: 'smallint', unsigned: true })
@@ -4257,22 +4437,22 @@ export class Sales {
   @PrimaryKey()
   saleId!: number;
 
-  @ManyToOne({ entity: () => ProductColors, fieldNames: ['color_id', 'product_id'], nullable: true, index: 'fk_sales_product_colors1_idx' })
+  @ManyToOne({ entity: () => ProductColors, fieldNames: ['color_id', 'product_id'], updateRule: 'no action', deleteRule: 'no action', nullable: true, index: 'fk_sales_product_colors1_idx' })
   color?: ProductColors;
 
-  @ManyToOne({ entity: () => ProductSizes, fieldNames: ['size', 'product_id'], referencedColumnNames: ['size', 'product_id'], nullable: true, index: 'fk_sales_product_sizes1_idx' })
+  @ManyToOne({ entity: () => ProductSizes, fieldNames: ['size', 'product_id'], referencedColumnNames: ['size', 'product_id'], updateRule: 'no action', deleteRule: 'no action', nullable: true, index: 'fk_sales_product_sizes1_idx' })
   size?: ProductSizes;
 
-  @ManyToOne({ entity: () => SellerProducts, fieldNames: ['seller_id', 'exchanged_product_id'], nullable: true, index: 'fk_sales_seller_products2_idx' })
+  @ManyToOne({ entity: () => SellerProducts, fieldNames: ['seller_id', 'exchanged_product_id'], updateRule: 'no action', deleteRule: 'no action', nullable: true, index: 'fk_sales_seller_products2_idx' })
   exchanged?: SellerProducts;
 
-  @ManyToOne({ entity: () => ProductCountries, fieldNames: ['country', 'product_id'], index: 'fk_sales_product_countries1_idx' })
+  @ManyToOne({ entity: () => ProductCountries, fieldNames: ['country', 'product_id'], updateRule: 'no action', deleteRule: 'no action', index: 'fk_sales_product_countries1_idx' })
   productCountries!: ProductCountries;
 
-  @ManyToOne({ entity: () => SellerCountries, fieldNames: ['country', 'seller_id'], index: 'fk_sales_seller_countries1_idx' })
+  @ManyToOne({ entity: () => SellerCountries, fieldNames: ['country', 'seller_id'], updateRule: 'no action', deleteRule: 'no action', index: 'fk_sales_seller_countries1_idx' })
   sellerCountries!: SellerCountries;
 
-  @ManyToOne({ entity: () => SellerProducts, fieldNames: ['seller_id', 'product_id'], index: 'fk_sales_seller_products1_idx' })
+  @ManyToOne({ entity: () => SellerProducts, fieldNames: ['seller_id', 'product_id'], updateRule: 'no action', deleteRule: 'no action', index: 'fk_sales_seller_products1_idx' })
   fkSalesSellerProducts1!: SellerProducts;
 
 }
@@ -4288,10 +4468,10 @@ export class SellerCountries {
 
   [PrimaryKeyProp]?: ['country', 'seller'];
 
-  @ManyToOne({ entity: () => Countries, fieldName: 'country', primary: true })
+  @ManyToOne({ entity: () => Countries, fieldName: 'country', updateRule: 'no action', deleteRule: 'no action', primary: true })
   country!: Countries;
 
-  @ManyToOne({ entity: () => Sellers, fieldName: 'seller_id', primary: true, index: 'fk_seller_countries_sellers1_idx' })
+  @ManyToOne({ entity: () => Sellers, fieldName: 'seller_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_seller_countries_sellers1_idx' })
   seller!: Sellers;
 
   @OneToMany({ entity: () => Sales, mappedBy: 'sellerCountries' })
@@ -4310,10 +4490,10 @@ export class SellerProducts {
 
   [PrimaryKeyProp]?: ['seller', 'product'];
 
-  @ManyToOne({ entity: () => Sellers, fieldName: 'seller_id', primary: true })
+  @ManyToOne({ entity: () => Sellers, fieldName: 'seller_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   seller!: Sellers;
 
-  @ManyToOne({ entity: () => Products, fieldName: 'product_id', primary: true, index: 'fk_seller_products_products1_idx' })
+  @ManyToOne({ entity: () => Products, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_seller_products_products1_idx' })
   product!: Products;
 
   @OneToMany({ entity: () => Sales, mappedBy: 'exchanged' })
@@ -4462,12 +4642,16 @@ export const ProductColorsSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => Colors,
       fieldName: 'color_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     product: {
       primary: true,
       kind: 'm:1',
       entity: () => Products,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_product_colors_products1_idx',
     },
     salesCollection: { kind: '1:m', entity: () => Sales, mappedBy: 'color' },
@@ -4494,12 +4678,16 @@ export const ProductCountriesSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => Countries,
       fieldName: 'country',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     product: {
       primary: true,
       kind: 'm:1',
       entity: () => ProductSizes,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_product_countries_product_sizes1_idx',
     },
     salesCollection: {
@@ -4534,6 +4722,8 @@ export const ProductSizesSchema = new EntitySchema({
       kind: '1:1',
       entity: () => Products,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     size: { type: 'smallint', unsigned: true },
     productCountriesInverse: {
@@ -4635,6 +4825,8 @@ export const SalesSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => ProductColors,
       fieldNames: ['color_id', 'product_id'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       nullable: true,
       index: 'fk_sales_product_colors1_idx',
     },
@@ -4643,6 +4835,8 @@ export const SalesSchema = new EntitySchema({
       entity: () => ProductSizes,
       fieldNames: ['size', 'product_id'],
       referencedColumnNames: ['size', 'product_id'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       nullable: true,
       index: 'fk_sales_product_sizes1_idx',
     },
@@ -4650,6 +4844,8 @@ export const SalesSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => SellerProducts,
       fieldNames: ['seller_id', 'exchanged_product_id'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       nullable: true,
       index: 'fk_sales_seller_products2_idx',
     },
@@ -4657,18 +4853,24 @@ export const SalesSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => ProductCountries,
       fieldNames: ['country', 'product_id'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_sales_product_countries1_idx',
     },
     sellerCountries: {
       kind: 'm:1',
       entity: () => SellerCountries,
       fieldNames: ['country', 'seller_id'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_sales_seller_countries1_idx',
     },
     fkSalesSellerProducts1: {
       kind: 'm:1',
       entity: () => SellerProducts,
       fieldNames: ['seller_id', 'product_id'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_sales_seller_products1_idx',
     },
   },
@@ -4694,12 +4896,16 @@ export const SellerCountriesSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => Countries,
       fieldName: 'country',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     seller: {
       primary: true,
       kind: 'm:1',
       entity: () => Sellers,
       fieldName: 'seller_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_seller_countries_sellers1_idx',
     },
     salesCollection: {
@@ -4731,12 +4937,16 @@ export const SellerProductsSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => Sellers,
       fieldName: 'seller_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     product: {
       primary: true,
       kind: 'm:1',
       entity: () => Products,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_seller_products_products1_idx',
     },
     salesCollection: { kind: '1:m', entity: () => Sales, mappedBy: 'exchanged' },
@@ -4864,10 +5074,10 @@ export class ProductColors {
 
   [PrimaryKeyProp]?: ['color', 'product'];
 
-  @ManyToOne({ entity: () => Colors, ref: true, fieldName: 'color_id', primary: true })
+  @ManyToOne({ entity: () => Colors, ref: true, fieldName: 'color_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   color!: Ref<Colors>;
 
-  @ManyToOne({ entity: () => Products, ref: true, fieldName: 'product_id', primary: true, index: 'fk_product_colors_products1_idx' })
+  @ManyToOne({ entity: () => Products, ref: true, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_product_colors_products1_idx' })
   product!: Ref<Products>;
 
   @OneToMany({ entity: () => Sales, mappedBy: 'color' })
@@ -4886,10 +5096,10 @@ export class ProductCountries {
 
   [PrimaryKeyProp]?: ['country', 'product'];
 
-  @ManyToOne({ entity: () => Countries, ref: true, fieldName: 'country', primary: true })
+  @ManyToOne({ entity: () => Countries, ref: true, fieldName: 'country', updateRule: 'no action', deleteRule: 'no action', primary: true })
   country!: Ref<Countries>;
 
-  @ManyToOne({ entity: () => ProductSizes, ref: true, fieldName: 'product_id', primary: true, index: 'fk_product_countries_product_sizes1_idx' })
+  @ManyToOne({ entity: () => ProductSizes, ref: true, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_product_countries_product_sizes1_idx' })
   product!: Ref<ProductSizes>;
 
   @OneToMany({ entity: () => Sales, mappedBy: 'productCountries' })
@@ -4910,7 +5120,7 @@ export class ProductSizes {
 
   [PrimaryKeyProp]?: 'product';
 
-  @OneToOne({ entity: () => Products, ref: true, fieldName: 'product_id', primary: true })
+  @OneToOne({ entity: () => Products, ref: true, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   product!: Ref<Products>;
 
   @Property({ type: 'smallint', unsigned: true })
@@ -4981,22 +5191,22 @@ export class Sales {
   @PrimaryKey()
   saleId!: number;
 
-  @ManyToOne({ entity: () => ProductColors, ref: true, fieldNames: ['color_id', 'product_id'], nullable: true, index: 'fk_sales_product_colors1_idx' })
+  @ManyToOne({ entity: () => ProductColors, ref: true, fieldNames: ['color_id', 'product_id'], updateRule: 'no action', deleteRule: 'no action', nullable: true, index: 'fk_sales_product_colors1_idx' })
   color?: Ref<ProductColors>;
 
-  @ManyToOne({ entity: () => ProductSizes, ref: true, fieldNames: ['size', 'product_id'], referencedColumnNames: ['size', 'product_id'], nullable: true, index: 'fk_sales_product_sizes1_idx' })
+  @ManyToOne({ entity: () => ProductSizes, ref: true, fieldNames: ['size', 'product_id'], referencedColumnNames: ['size', 'product_id'], updateRule: 'no action', deleteRule: 'no action', nullable: true, index: 'fk_sales_product_sizes1_idx' })
   size?: Ref<ProductSizes>;
 
-  @ManyToOne({ entity: () => SellerProducts, ref: true, fieldNames: ['seller_id', 'exchanged_product_id'], nullable: true, index: 'fk_sales_seller_products2_idx' })
+  @ManyToOne({ entity: () => SellerProducts, ref: true, fieldNames: ['seller_id', 'exchanged_product_id'], updateRule: 'no action', deleteRule: 'no action', nullable: true, index: 'fk_sales_seller_products2_idx' })
   exchanged?: Ref<SellerProducts>;
 
-  @ManyToOne({ entity: () => ProductCountries, ref: true, fieldNames: ['country', 'product_id'], index: 'fk_sales_product_countries1_idx' })
+  @ManyToOne({ entity: () => ProductCountries, ref: true, fieldNames: ['country', 'product_id'], updateRule: 'no action', deleteRule: 'no action', index: 'fk_sales_product_countries1_idx' })
   productCountries!: Ref<ProductCountries>;
 
-  @ManyToOne({ entity: () => SellerCountries, ref: true, fieldNames: ['country', 'seller_id'], index: 'fk_sales_seller_countries1_idx' })
+  @ManyToOne({ entity: () => SellerCountries, ref: true, fieldNames: ['country', 'seller_id'], updateRule: 'no action', deleteRule: 'no action', index: 'fk_sales_seller_countries1_idx' })
   sellerCountries!: Ref<SellerCountries>;
 
-  @ManyToOne({ entity: () => SellerProducts, ref: true, fieldNames: ['seller_id', 'product_id'], index: 'fk_sales_seller_products1_idx' })
+  @ManyToOne({ entity: () => SellerProducts, ref: true, fieldNames: ['seller_id', 'product_id'], updateRule: 'no action', deleteRule: 'no action', index: 'fk_sales_seller_products1_idx' })
   fkSalesSellerProducts1!: Ref<SellerProducts>;
 
 }
@@ -5012,10 +5222,10 @@ export class SellerCountries {
 
   [PrimaryKeyProp]?: ['country', 'seller'];
 
-  @ManyToOne({ entity: () => Countries, ref: true, fieldName: 'country', primary: true })
+  @ManyToOne({ entity: () => Countries, ref: true, fieldName: 'country', updateRule: 'no action', deleteRule: 'no action', primary: true })
   country!: Ref<Countries>;
 
-  @ManyToOne({ entity: () => Sellers, ref: true, fieldName: 'seller_id', primary: true, index: 'fk_seller_countries_sellers1_idx' })
+  @ManyToOne({ entity: () => Sellers, ref: true, fieldName: 'seller_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_seller_countries_sellers1_idx' })
   seller!: Ref<Sellers>;
 
   @OneToMany({ entity: () => Sales, mappedBy: 'sellerCountries' })
@@ -5034,10 +5244,10 @@ export class SellerProducts {
 
   [PrimaryKeyProp]?: ['seller', 'product'];
 
-  @ManyToOne({ entity: () => Sellers, ref: true, fieldName: 'seller_id', primary: true })
+  @ManyToOne({ entity: () => Sellers, ref: true, fieldName: 'seller_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   seller!: Ref<Sellers>;
 
-  @ManyToOne({ entity: () => Products, ref: true, fieldName: 'product_id', primary: true, index: 'fk_seller_products_products1_idx' })
+  @ManyToOne({ entity: () => Products, ref: true, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_seller_products_products1_idx' })
   product!: Ref<Products>;
 
   @OneToMany({ entity: () => Sales, mappedBy: 'exchanged' })
@@ -5187,6 +5397,8 @@ export const ProductColorsSchema = new EntitySchema({
       entity: () => Colors,
       ref: true,
       fieldName: 'color_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     product: {
       primary: true,
@@ -5194,6 +5406,8 @@ export const ProductColorsSchema = new EntitySchema({
       entity: () => Products,
       ref: true,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_product_colors_products1_idx',
     },
     salesCollection: { kind: '1:m', entity: () => Sales, mappedBy: 'color' },
@@ -5221,6 +5435,8 @@ export const ProductCountriesSchema = new EntitySchema({
       entity: () => Countries,
       ref: true,
       fieldName: 'country',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     product: {
       primary: true,
@@ -5228,6 +5444,8 @@ export const ProductCountriesSchema = new EntitySchema({
       entity: () => ProductSizes,
       ref: true,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_product_countries_product_sizes1_idx',
     },
     salesCollection: {
@@ -5263,6 +5481,8 @@ export const ProductSizesSchema = new EntitySchema({
       entity: () => Products,
       ref: true,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     size: { type: 'smallint', unsigned: true },
     productCountriesInverse: {
@@ -5370,6 +5590,8 @@ export const SalesSchema = new EntitySchema({
       entity: () => ProductColors,
       ref: true,
       fieldNames: ['color_id', 'product_id'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       nullable: true,
       index: 'fk_sales_product_colors1_idx',
     },
@@ -5379,6 +5601,8 @@ export const SalesSchema = new EntitySchema({
       ref: true,
       fieldNames: ['size', 'product_id'],
       referencedColumnNames: ['size', 'product_id'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       nullable: true,
       index: 'fk_sales_product_sizes1_idx',
     },
@@ -5387,6 +5611,8 @@ export const SalesSchema = new EntitySchema({
       entity: () => SellerProducts,
       ref: true,
       fieldNames: ['seller_id', 'exchanged_product_id'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       nullable: true,
       index: 'fk_sales_seller_products2_idx',
     },
@@ -5395,6 +5621,8 @@ export const SalesSchema = new EntitySchema({
       entity: () => ProductCountries,
       ref: true,
       fieldNames: ['country', 'product_id'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_sales_product_countries1_idx',
     },
     sellerCountries: {
@@ -5402,6 +5630,8 @@ export const SalesSchema = new EntitySchema({
       entity: () => SellerCountries,
       ref: true,
       fieldNames: ['country', 'seller_id'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_sales_seller_countries1_idx',
     },
     fkSalesSellerProducts1: {
@@ -5409,6 +5639,8 @@ export const SalesSchema = new EntitySchema({
       entity: () => SellerProducts,
       ref: true,
       fieldNames: ['seller_id', 'product_id'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_sales_seller_products1_idx',
     },
   },
@@ -5435,6 +5667,8 @@ export const SellerCountriesSchema = new EntitySchema({
       entity: () => Countries,
       ref: true,
       fieldName: 'country',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     seller: {
       primary: true,
@@ -5442,6 +5676,8 @@ export const SellerCountriesSchema = new EntitySchema({
       entity: () => Sellers,
       ref: true,
       fieldName: 'seller_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_seller_countries_sellers1_idx',
     },
     salesCollection: {
@@ -5474,6 +5710,8 @@ export const SellerProductsSchema = new EntitySchema({
       entity: () => Sellers,
       ref: true,
       fieldName: 'seller_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     product: {
       primary: true,
@@ -5481,6 +5719,8 @@ export const SellerProductsSchema = new EntitySchema({
       entity: () => Products,
       ref: true,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_seller_products_products1_idx',
     },
     salesCollection: { kind: '1:m', entity: () => Sales, mappedBy: 'exchanged' },
@@ -5598,10 +5838,10 @@ export class ProductColors {
 
   [PrimaryKeyProp]?: ['color', 'product'];
 
-  @ManyToOne({ entity: () => Colors, fieldName: 'color_id', primary: true })
+  @ManyToOne({ entity: () => Colors, fieldName: 'color_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   color!: Colors;
 
-  @ManyToOne({ entity: () => Products, fieldName: 'product_id', primary: true, index: 'fk_product_colors_products1_idx' })
+  @ManyToOne({ entity: () => Products, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_product_colors_products1_idx' })
   product!: Products;
 
 }
@@ -5616,10 +5856,10 @@ export class ProductCountries {
 
   [PrimaryKeyProp]?: ['country', 'product'];
 
-  @ManyToOne({ entity: () => Countries, fieldName: 'country', primary: true })
+  @ManyToOne({ entity: () => Countries, fieldName: 'country', updateRule: 'no action', deleteRule: 'no action', primary: true })
   country!: Countries;
 
-  @ManyToOne({ entity: () => ProductSizes, fieldName: 'product_id', primary: true, index: 'fk_product_countries_product_sizes1_idx' })
+  @ManyToOne({ entity: () => ProductSizes, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_product_countries_product_sizes1_idx' })
   product!: ProductSizes;
 
 }
@@ -5634,7 +5874,7 @@ export class ProductSizes {
 
   [PrimaryKeyProp]?: 'product';
 
-  @OneToOne({ entity: () => Products, fieldName: 'product_id', primary: true })
+  @OneToOne({ entity: () => Products, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   product!: Products;
 
   @Property({ type: 'smallint', unsigned: true })
@@ -5676,22 +5916,22 @@ export class Sales {
   @PrimaryKey()
   saleId!: number;
 
-  @ManyToOne({ entity: () => ProductColors, fieldNames: ['color_id', 'product_id'], nullable: true, index: 'fk_sales_product_colors1_idx' })
+  @ManyToOne({ entity: () => ProductColors, fieldNames: ['color_id', 'product_id'], updateRule: 'no action', deleteRule: 'no action', nullable: true, index: 'fk_sales_product_colors1_idx' })
   color?: ProductColors;
 
-  @ManyToOne({ entity: () => ProductSizes, fieldNames: ['size', 'product_id'], referencedColumnNames: ['size', 'product_id'], nullable: true, index: 'fk_sales_product_sizes1_idx' })
+  @ManyToOne({ entity: () => ProductSizes, fieldNames: ['size', 'product_id'], referencedColumnNames: ['size', 'product_id'], updateRule: 'no action', deleteRule: 'no action', nullable: true, index: 'fk_sales_product_sizes1_idx' })
   size?: ProductSizes;
 
-  @ManyToOne({ entity: () => SellerProducts, fieldNames: ['seller_id', 'exchanged_product_id'], nullable: true, index: 'fk_sales_seller_products2_idx' })
+  @ManyToOne({ entity: () => SellerProducts, fieldNames: ['seller_id', 'exchanged_product_id'], updateRule: 'no action', deleteRule: 'no action', nullable: true, index: 'fk_sales_seller_products2_idx' })
   exchanged?: SellerProducts;
 
-  @ManyToOne({ entity: () => ProductCountries, fieldNames: ['country', 'product_id'], index: 'fk_sales_product_countries1_idx' })
+  @ManyToOne({ entity: () => ProductCountries, fieldNames: ['country', 'product_id'], updateRule: 'no action', deleteRule: 'no action', index: 'fk_sales_product_countries1_idx' })
   productCountries!: ProductCountries;
 
-  @ManyToOne({ entity: () => SellerCountries, fieldNames: ['country', 'seller_id'], index: 'fk_sales_seller_countries1_idx' })
+  @ManyToOne({ entity: () => SellerCountries, fieldNames: ['country', 'seller_id'], updateRule: 'no action', deleteRule: 'no action', index: 'fk_sales_seller_countries1_idx' })
   sellerCountries!: SellerCountries;
 
-  @ManyToOne({ entity: () => SellerProducts, fieldNames: ['seller_id', 'product_id'], index: 'fk_sales_seller_products1_idx' })
+  @ManyToOne({ entity: () => SellerProducts, fieldNames: ['seller_id', 'product_id'], updateRule: 'no action', deleteRule: 'no action', index: 'fk_sales_seller_products1_idx' })
   fkSalesSellerProducts1!: SellerProducts;
 
 }
@@ -5706,10 +5946,10 @@ export class SellerCountries {
 
   [PrimaryKeyProp]?: ['country', 'seller'];
 
-  @ManyToOne({ entity: () => Countries, fieldName: 'country', primary: true })
+  @ManyToOne({ entity: () => Countries, fieldName: 'country', updateRule: 'no action', deleteRule: 'no action', primary: true })
   country!: Countries;
 
-  @ManyToOne({ entity: () => Sellers, fieldName: 'seller_id', primary: true, index: 'fk_seller_countries_sellers1_idx' })
+  @ManyToOne({ entity: () => Sellers, fieldName: 'seller_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_seller_countries_sellers1_idx' })
   seller!: Sellers;
 
 }
@@ -5724,10 +5964,10 @@ export class SellerProducts {
 
   [PrimaryKeyProp]?: ['seller', 'product'];
 
-  @ManyToOne({ entity: () => Sellers, fieldName: 'seller_id', primary: true })
+  @ManyToOne({ entity: () => Sellers, fieldName: 'seller_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   seller!: Sellers;
 
-  @ManyToOne({ entity: () => Products, fieldName: 'product_id', primary: true, index: 'fk_seller_products_products1_idx' })
+  @ManyToOne({ entity: () => Products, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_seller_products_products1_idx' })
   product!: Products;
 
 }
@@ -5839,12 +6079,16 @@ export const ProductColorsSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => Colors,
       fieldName: 'color_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     product: {
       primary: true,
       kind: 'm:1',
       entity: () => Products,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_product_colors_products1_idx',
     },
   },
@@ -5868,12 +6112,16 @@ export const ProductCountriesSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => Countries,
       fieldName: 'country',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     product: {
       primary: true,
       kind: 'm:1',
       entity: () => ProductSizes,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_product_countries_product_sizes1_idx',
     },
   },
@@ -5897,6 +6145,8 @@ export const ProductSizesSchema = new EntitySchema({
       kind: '1:1',
       entity: () => Products,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     size: { type: 'smallint', unsigned: true },
   },
@@ -5956,6 +6206,8 @@ export const SalesSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => ProductColors,
       fieldNames: ['color_id', 'product_id'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       nullable: true,
       index: 'fk_sales_product_colors1_idx',
     },
@@ -5964,6 +6216,8 @@ export const SalesSchema = new EntitySchema({
       entity: () => ProductSizes,
       fieldNames: ['size', 'product_id'],
       referencedColumnNames: ['size', 'product_id'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       nullable: true,
       index: 'fk_sales_product_sizes1_idx',
     },
@@ -5971,6 +6225,8 @@ export const SalesSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => SellerProducts,
       fieldNames: ['seller_id', 'exchanged_product_id'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       nullable: true,
       index: 'fk_sales_seller_products2_idx',
     },
@@ -5978,18 +6234,24 @@ export const SalesSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => ProductCountries,
       fieldNames: ['country', 'product_id'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_sales_product_countries1_idx',
     },
     sellerCountries: {
       kind: 'm:1',
       entity: () => SellerCountries,
       fieldNames: ['country', 'seller_id'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_sales_seller_countries1_idx',
     },
     fkSalesSellerProducts1: {
       kind: 'm:1',
       entity: () => SellerProducts,
       fieldNames: ['seller_id', 'product_id'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_sales_seller_products1_idx',
     },
   },
@@ -6013,12 +6275,16 @@ export const SellerCountriesSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => Countries,
       fieldName: 'country',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     seller: {
       primary: true,
       kind: 'm:1',
       entity: () => Sellers,
       fieldName: 'seller_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_seller_countries_sellers1_idx',
     },
   },
@@ -6042,12 +6308,16 @@ export const SellerProductsSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => Sellers,
       fieldName: 'seller_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     product: {
       primary: true,
       kind: 'm:1',
       entity: () => Products,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_seller_products_products1_idx',
     },
   },
@@ -6139,10 +6409,10 @@ export class ProductColors {
 
   [PrimaryKeyProp]?: ['color', 'product'];
 
-  @ManyToOne({ entity: () => Colors, ref: true, fieldName: 'color_id', primary: true })
+  @ManyToOne({ entity: () => Colors, ref: true, fieldName: 'color_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   color!: Ref<Colors>;
 
-  @ManyToOne({ entity: () => Products, ref: true, fieldName: 'product_id', primary: true, index: 'fk_product_colors_products1_idx' })
+  @ManyToOne({ entity: () => Products, ref: true, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_product_colors_products1_idx' })
   product!: Ref<Products>;
 
 }
@@ -6157,10 +6427,10 @@ export class ProductCountries {
 
   [PrimaryKeyProp]?: ['country', 'product'];
 
-  @ManyToOne({ entity: () => Countries, ref: true, fieldName: 'country', primary: true })
+  @ManyToOne({ entity: () => Countries, ref: true, fieldName: 'country', updateRule: 'no action', deleteRule: 'no action', primary: true })
   country!: Ref<Countries>;
 
-  @ManyToOne({ entity: () => ProductSizes, ref: true, fieldName: 'product_id', primary: true, index: 'fk_product_countries_product_sizes1_idx' })
+  @ManyToOne({ entity: () => ProductSizes, ref: true, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_product_countries_product_sizes1_idx' })
   product!: Ref<ProductSizes>;
 
 }
@@ -6175,7 +6445,7 @@ export class ProductSizes {
 
   [PrimaryKeyProp]?: 'product';
 
-  @OneToOne({ entity: () => Products, ref: true, fieldName: 'product_id', primary: true })
+  @OneToOne({ entity: () => Products, ref: true, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   product!: Ref<Products>;
 
   @Property({ type: 'smallint', unsigned: true })
@@ -6217,22 +6487,22 @@ export class Sales {
   @PrimaryKey()
   saleId!: number;
 
-  @ManyToOne({ entity: () => ProductColors, ref: true, fieldNames: ['color_id', 'product_id'], nullable: true, index: 'fk_sales_product_colors1_idx' })
+  @ManyToOne({ entity: () => ProductColors, ref: true, fieldNames: ['color_id', 'product_id'], updateRule: 'no action', deleteRule: 'no action', nullable: true, index: 'fk_sales_product_colors1_idx' })
   color?: Ref<ProductColors>;
 
-  @ManyToOne({ entity: () => ProductSizes, ref: true, fieldNames: ['size', 'product_id'], referencedColumnNames: ['size', 'product_id'], nullable: true, index: 'fk_sales_product_sizes1_idx' })
+  @ManyToOne({ entity: () => ProductSizes, ref: true, fieldNames: ['size', 'product_id'], referencedColumnNames: ['size', 'product_id'], updateRule: 'no action', deleteRule: 'no action', nullable: true, index: 'fk_sales_product_sizes1_idx' })
   size?: Ref<ProductSizes>;
 
-  @ManyToOne({ entity: () => SellerProducts, ref: true, fieldNames: ['seller_id', 'exchanged_product_id'], nullable: true, index: 'fk_sales_seller_products2_idx' })
+  @ManyToOne({ entity: () => SellerProducts, ref: true, fieldNames: ['seller_id', 'exchanged_product_id'], updateRule: 'no action', deleteRule: 'no action', nullable: true, index: 'fk_sales_seller_products2_idx' })
   exchanged?: Ref<SellerProducts>;
 
-  @ManyToOne({ entity: () => ProductCountries, ref: true, fieldNames: ['country', 'product_id'], index: 'fk_sales_product_countries1_idx' })
+  @ManyToOne({ entity: () => ProductCountries, ref: true, fieldNames: ['country', 'product_id'], updateRule: 'no action', deleteRule: 'no action', index: 'fk_sales_product_countries1_idx' })
   productCountries!: Ref<ProductCountries>;
 
-  @ManyToOne({ entity: () => SellerCountries, ref: true, fieldNames: ['country', 'seller_id'], index: 'fk_sales_seller_countries1_idx' })
+  @ManyToOne({ entity: () => SellerCountries, ref: true, fieldNames: ['country', 'seller_id'], updateRule: 'no action', deleteRule: 'no action', index: 'fk_sales_seller_countries1_idx' })
   sellerCountries!: Ref<SellerCountries>;
 
-  @ManyToOne({ entity: () => SellerProducts, ref: true, fieldNames: ['seller_id', 'product_id'], index: 'fk_sales_seller_products1_idx' })
+  @ManyToOne({ entity: () => SellerProducts, ref: true, fieldNames: ['seller_id', 'product_id'], updateRule: 'no action', deleteRule: 'no action', index: 'fk_sales_seller_products1_idx' })
   fkSalesSellerProducts1!: Ref<SellerProducts>;
 
 }
@@ -6247,10 +6517,10 @@ export class SellerCountries {
 
   [PrimaryKeyProp]?: ['country', 'seller'];
 
-  @ManyToOne({ entity: () => Countries, ref: true, fieldName: 'country', primary: true })
+  @ManyToOne({ entity: () => Countries, ref: true, fieldName: 'country', updateRule: 'no action', deleteRule: 'no action', primary: true })
   country!: Ref<Countries>;
 
-  @ManyToOne({ entity: () => Sellers, ref: true, fieldName: 'seller_id', primary: true, index: 'fk_seller_countries_sellers1_idx' })
+  @ManyToOne({ entity: () => Sellers, ref: true, fieldName: 'seller_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_seller_countries_sellers1_idx' })
   seller!: Ref<Sellers>;
 
 }
@@ -6265,10 +6535,10 @@ export class SellerProducts {
 
   [PrimaryKeyProp]?: ['seller', 'product'];
 
-  @ManyToOne({ entity: () => Sellers, ref: true, fieldName: 'seller_id', primary: true })
+  @ManyToOne({ entity: () => Sellers, ref: true, fieldName: 'seller_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   seller!: Ref<Sellers>;
 
-  @ManyToOne({ entity: () => Products, ref: true, fieldName: 'product_id', primary: true, index: 'fk_seller_products_products1_idx' })
+  @ManyToOne({ entity: () => Products, ref: true, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_seller_products_products1_idx' })
   product!: Ref<Products>;
 
 }
@@ -6381,6 +6651,8 @@ export const ProductColorsSchema = new EntitySchema({
       entity: () => Colors,
       ref: true,
       fieldName: 'color_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     product: {
       primary: true,
@@ -6388,6 +6660,8 @@ export const ProductColorsSchema = new EntitySchema({
       entity: () => Products,
       ref: true,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_product_colors_products1_idx',
     },
   },
@@ -6412,6 +6686,8 @@ export const ProductCountriesSchema = new EntitySchema({
       entity: () => Countries,
       ref: true,
       fieldName: 'country',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     product: {
       primary: true,
@@ -6419,6 +6695,8 @@ export const ProductCountriesSchema = new EntitySchema({
       entity: () => ProductSizes,
       ref: true,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_product_countries_product_sizes1_idx',
     },
   },
@@ -6443,6 +6721,8 @@ export const ProductSizesSchema = new EntitySchema({
       entity: () => Products,
       ref: true,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     size: { type: 'smallint', unsigned: true },
   },
@@ -6503,6 +6783,8 @@ export const SalesSchema = new EntitySchema({
       entity: () => ProductColors,
       ref: true,
       fieldNames: ['color_id', 'product_id'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       nullable: true,
       index: 'fk_sales_product_colors1_idx',
     },
@@ -6512,6 +6794,8 @@ export const SalesSchema = new EntitySchema({
       ref: true,
       fieldNames: ['size', 'product_id'],
       referencedColumnNames: ['size', 'product_id'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       nullable: true,
       index: 'fk_sales_product_sizes1_idx',
     },
@@ -6520,6 +6804,8 @@ export const SalesSchema = new EntitySchema({
       entity: () => SellerProducts,
       ref: true,
       fieldNames: ['seller_id', 'exchanged_product_id'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       nullable: true,
       index: 'fk_sales_seller_products2_idx',
     },
@@ -6528,6 +6814,8 @@ export const SalesSchema = new EntitySchema({
       entity: () => ProductCountries,
       ref: true,
       fieldNames: ['country', 'product_id'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_sales_product_countries1_idx',
     },
     sellerCountries: {
@@ -6535,6 +6823,8 @@ export const SalesSchema = new EntitySchema({
       entity: () => SellerCountries,
       ref: true,
       fieldNames: ['country', 'seller_id'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_sales_seller_countries1_idx',
     },
     fkSalesSellerProducts1: {
@@ -6542,6 +6832,8 @@ export const SalesSchema = new EntitySchema({
       entity: () => SellerProducts,
       ref: true,
       fieldNames: ['seller_id', 'product_id'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_sales_seller_products1_idx',
     },
   },
@@ -6566,6 +6858,8 @@ export const SellerCountriesSchema = new EntitySchema({
       entity: () => Countries,
       ref: true,
       fieldName: 'country',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     seller: {
       primary: true,
@@ -6573,6 +6867,8 @@ export const SellerCountriesSchema = new EntitySchema({
       entity: () => Sellers,
       ref: true,
       fieldName: 'seller_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_seller_countries_sellers1_idx',
     },
   },
@@ -6597,6 +6893,8 @@ export const SellerProductsSchema = new EntitySchema({
       entity: () => Sellers,
       ref: true,
       fieldName: 'seller_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     product: {
       primary: true,
@@ -6604,6 +6902,8 @@ export const SellerProductsSchema = new EntitySchema({
       entity: () => Products,
       ref: true,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_seller_products_products1_idx',
     },
   },
@@ -6705,10 +7005,10 @@ export class ProductColors {
 
   [PrimaryKeyProp]?: ['color', 'product'];
 
-  @ManyToOne({ entity: () => Colors, fieldName: 'color_id', primary: true })
+  @ManyToOne({ entity: () => Colors, fieldName: 'color_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   color!: Colors;
 
-  @ManyToOne({ entity: () => Products, fieldName: 'product_id', primary: true, index: 'fk_product_colors_products1_idx' })
+  @ManyToOne({ entity: () => Products, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_product_colors_products1_idx' })
   product!: Products;
 
   @OneToMany({ entity: () => Sales, mappedBy: 'color' })
@@ -6727,10 +7027,10 @@ export class ProductCountries {
 
   [PrimaryKeyProp]?: ['country', 'product'];
 
-  @ManyToOne({ entity: () => Countries, fieldName: 'country', primary: true })
+  @ManyToOne({ entity: () => Countries, fieldName: 'country', updateRule: 'no action', deleteRule: 'no action', primary: true })
   country!: Countries;
 
-  @ManyToOne({ entity: () => ProductSizes, fieldName: 'product_id', primary: true, index: 'fk_product_countries_product_sizes1_idx' })
+  @ManyToOne({ entity: () => ProductSizes, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_product_countries_product_sizes1_idx' })
   product!: ProductSizes;
 
   @OneToMany({ entity: () => Sales, mappedBy: 'productCountries' })
@@ -6751,7 +7051,7 @@ export class ProductSizes {
 
   [PrimaryKeyProp]?: 'product';
 
-  @OneToOne({ entity: () => Products, fieldName: 'product_id', primary: true })
+  @OneToOne({ entity: () => Products, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   product!: Products;
 
   @Property({ type: 'smallint', unsigned: true })
@@ -6822,22 +7122,22 @@ export class Sales {
   @PrimaryKey()
   saleId!: number;
 
-  @ManyToOne({ entity: () => ProductColors, fieldNames: ['color_id', 'product_id'], nullable: true, index: 'fk_sales_product_colors1_idx' })
+  @ManyToOne({ entity: () => ProductColors, fieldNames: ['color_id', 'product_id'], updateRule: 'no action', deleteRule: 'no action', nullable: true, index: 'fk_sales_product_colors1_idx' })
   color?: ProductColors;
 
-  @ManyToOne({ entity: () => ProductSizes, fieldNames: ['size', 'product_id'], referencedColumnNames: ['size', 'product_id'], nullable: true, index: 'fk_sales_product_sizes1_idx' })
+  @ManyToOne({ entity: () => ProductSizes, fieldNames: ['size', 'product_id'], referencedColumnNames: ['size', 'product_id'], updateRule: 'no action', deleteRule: 'no action', nullable: true, index: 'fk_sales_product_sizes1_idx' })
   size?: ProductSizes;
 
-  @ManyToOne({ entity: () => SellerProducts, fieldNames: ['seller_id', 'exchanged_product_id'], nullable: true, index: 'fk_sales_seller_products2_idx' })
+  @ManyToOne({ entity: () => SellerProducts, fieldNames: ['seller_id', 'exchanged_product_id'], updateRule: 'no action', deleteRule: 'no action', nullable: true, index: 'fk_sales_seller_products2_idx' })
   exchanged?: SellerProducts;
 
-  @ManyToOne({ entity: () => ProductCountries, fieldNames: ['country', 'product_id'], index: 'fk_sales_product_countries1_idx' })
+  @ManyToOne({ entity: () => ProductCountries, fieldNames: ['country', 'product_id'], updateRule: 'no action', deleteRule: 'no action', index: 'fk_sales_product_countries1_idx' })
   productCountries!: ProductCountries;
 
-  @ManyToOne({ entity: () => SellerCountries, fieldNames: ['country', 'seller_id'], index: 'fk_sales_seller_countries1_idx' })
+  @ManyToOne({ entity: () => SellerCountries, fieldNames: ['country', 'seller_id'], updateRule: 'no action', deleteRule: 'no action', index: 'fk_sales_seller_countries1_idx' })
   sellerCountries!: SellerCountries;
 
-  @ManyToOne({ entity: () => SellerProducts, fieldNames: ['seller_id', 'product_id'], index: 'fk_sales_seller_products1_idx' })
+  @ManyToOne({ entity: () => SellerProducts, fieldNames: ['seller_id', 'product_id'], updateRule: 'no action', deleteRule: 'no action', index: 'fk_sales_seller_products1_idx' })
   fkSalesSellerProducts1!: SellerProducts;
 
 }
@@ -6853,10 +7153,10 @@ export class SellerCountries {
 
   [PrimaryKeyProp]?: ['country', 'seller'];
 
-  @ManyToOne({ entity: () => Countries, fieldName: 'country', primary: true })
+  @ManyToOne({ entity: () => Countries, fieldName: 'country', updateRule: 'no action', deleteRule: 'no action', primary: true })
   country!: Countries;
 
-  @ManyToOne({ entity: () => Sellers, fieldName: 'seller_id', primary: true, index: 'fk_seller_countries_sellers1_idx' })
+  @ManyToOne({ entity: () => Sellers, fieldName: 'seller_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_seller_countries_sellers1_idx' })
   seller!: Sellers;
 
   @OneToMany({ entity: () => Sales, mappedBy: 'sellerCountries' })
@@ -6875,10 +7175,10 @@ export class SellerProducts {
 
   [PrimaryKeyProp]?: ['seller', 'product'];
 
-  @ManyToOne({ entity: () => Sellers, fieldName: 'seller_id', primary: true })
+  @ManyToOne({ entity: () => Sellers, fieldName: 'seller_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   seller!: Sellers;
 
-  @ManyToOne({ entity: () => Products, fieldName: 'product_id', primary: true, index: 'fk_seller_products_products1_idx' })
+  @ManyToOne({ entity: () => Products, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_seller_products_products1_idx' })
   product!: Products;
 
   @OneToMany({ entity: () => Sales, mappedBy: 'exchanged' })
@@ -7027,12 +7327,16 @@ export const ProductColorsSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => Colors,
       fieldName: 'color_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     product: {
       primary: true,
       kind: 'm:1',
       entity: () => Products,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_product_colors_products1_idx',
     },
     salesCollection: { kind: '1:m', entity: () => Sales, mappedBy: 'color' },
@@ -7059,12 +7363,16 @@ export const ProductCountriesSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => Countries,
       fieldName: 'country',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     product: {
       primary: true,
       kind: 'm:1',
       entity: () => ProductSizes,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_product_countries_product_sizes1_idx',
     },
     salesCollection: {
@@ -7099,6 +7407,8 @@ export const ProductSizesSchema = new EntitySchema({
       kind: '1:1',
       entity: () => Products,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     size: { type: 'smallint', unsigned: true },
     productCountriesInverse: {
@@ -7200,6 +7510,8 @@ export const SalesSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => ProductColors,
       fieldNames: ['color_id', 'product_id'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       nullable: true,
       index: 'fk_sales_product_colors1_idx',
     },
@@ -7208,6 +7520,8 @@ export const SalesSchema = new EntitySchema({
       entity: () => ProductSizes,
       fieldNames: ['size', 'product_id'],
       referencedColumnNames: ['size', 'product_id'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       nullable: true,
       index: 'fk_sales_product_sizes1_idx',
     },
@@ -7215,6 +7529,8 @@ export const SalesSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => SellerProducts,
       fieldNames: ['seller_id', 'exchanged_product_id'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       nullable: true,
       index: 'fk_sales_seller_products2_idx',
     },
@@ -7222,18 +7538,24 @@ export const SalesSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => ProductCountries,
       fieldNames: ['country', 'product_id'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_sales_product_countries1_idx',
     },
     sellerCountries: {
       kind: 'm:1',
       entity: () => SellerCountries,
       fieldNames: ['country', 'seller_id'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_sales_seller_countries1_idx',
     },
     fkSalesSellerProducts1: {
       kind: 'm:1',
       entity: () => SellerProducts,
       fieldNames: ['seller_id', 'product_id'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_sales_seller_products1_idx',
     },
   },
@@ -7259,12 +7581,16 @@ export const SellerCountriesSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => Countries,
       fieldName: 'country',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     seller: {
       primary: true,
       kind: 'm:1',
       entity: () => Sellers,
       fieldName: 'seller_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_seller_countries_sellers1_idx',
     },
     salesCollection: {
@@ -7296,12 +7622,16 @@ export const SellerProductsSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => Sellers,
       fieldName: 'seller_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     product: {
       primary: true,
       kind: 'm:1',
       entity: () => Products,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_seller_products_products1_idx',
     },
     salesCollection: { kind: '1:m', entity: () => Sales, mappedBy: 'exchanged' },
@@ -7429,10 +7759,10 @@ export class ProductColors {
 
   [PrimaryKeyProp]?: ['color', 'product'];
 
-  @ManyToOne({ entity: () => Colors, ref: true, fieldName: 'color_id', primary: true })
+  @ManyToOne({ entity: () => Colors, ref: true, fieldName: 'color_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   color!: Ref<Colors>;
 
-  @ManyToOne({ entity: () => Products, ref: true, fieldName: 'product_id', primary: true, index: 'fk_product_colors_products1_idx' })
+  @ManyToOne({ entity: () => Products, ref: true, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_product_colors_products1_idx' })
   product!: Ref<Products>;
 
   @OneToMany({ entity: () => Sales, mappedBy: 'color' })
@@ -7451,10 +7781,10 @@ export class ProductCountries {
 
   [PrimaryKeyProp]?: ['country', 'product'];
 
-  @ManyToOne({ entity: () => Countries, ref: true, fieldName: 'country', primary: true })
+  @ManyToOne({ entity: () => Countries, ref: true, fieldName: 'country', updateRule: 'no action', deleteRule: 'no action', primary: true })
   country!: Ref<Countries>;
 
-  @ManyToOne({ entity: () => ProductSizes, ref: true, fieldName: 'product_id', primary: true, index: 'fk_product_countries_product_sizes1_idx' })
+  @ManyToOne({ entity: () => ProductSizes, ref: true, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_product_countries_product_sizes1_idx' })
   product!: Ref<ProductSizes>;
 
   @OneToMany({ entity: () => Sales, mappedBy: 'productCountries' })
@@ -7475,7 +7805,7 @@ export class ProductSizes {
 
   [PrimaryKeyProp]?: 'product';
 
-  @OneToOne({ entity: () => Products, ref: true, fieldName: 'product_id', primary: true })
+  @OneToOne({ entity: () => Products, ref: true, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   product!: Ref<Products>;
 
   @Property({ type: 'smallint', unsigned: true })
@@ -7546,22 +7876,22 @@ export class Sales {
   @PrimaryKey()
   saleId!: number;
 
-  @ManyToOne({ entity: () => ProductColors, ref: true, fieldNames: ['color_id', 'product_id'], nullable: true, index: 'fk_sales_product_colors1_idx' })
+  @ManyToOne({ entity: () => ProductColors, ref: true, fieldNames: ['color_id', 'product_id'], updateRule: 'no action', deleteRule: 'no action', nullable: true, index: 'fk_sales_product_colors1_idx' })
   color?: Ref<ProductColors>;
 
-  @ManyToOne({ entity: () => ProductSizes, ref: true, fieldNames: ['size', 'product_id'], referencedColumnNames: ['size', 'product_id'], nullable: true, index: 'fk_sales_product_sizes1_idx' })
+  @ManyToOne({ entity: () => ProductSizes, ref: true, fieldNames: ['size', 'product_id'], referencedColumnNames: ['size', 'product_id'], updateRule: 'no action', deleteRule: 'no action', nullable: true, index: 'fk_sales_product_sizes1_idx' })
   size?: Ref<ProductSizes>;
 
-  @ManyToOne({ entity: () => SellerProducts, ref: true, fieldNames: ['seller_id', 'exchanged_product_id'], nullable: true, index: 'fk_sales_seller_products2_idx' })
+  @ManyToOne({ entity: () => SellerProducts, ref: true, fieldNames: ['seller_id', 'exchanged_product_id'], updateRule: 'no action', deleteRule: 'no action', nullable: true, index: 'fk_sales_seller_products2_idx' })
   exchanged?: Ref<SellerProducts>;
 
-  @ManyToOne({ entity: () => ProductCountries, ref: true, fieldNames: ['country', 'product_id'], index: 'fk_sales_product_countries1_idx' })
+  @ManyToOne({ entity: () => ProductCountries, ref: true, fieldNames: ['country', 'product_id'], updateRule: 'no action', deleteRule: 'no action', index: 'fk_sales_product_countries1_idx' })
   productCountries!: Ref<ProductCountries>;
 
-  @ManyToOne({ entity: () => SellerCountries, ref: true, fieldNames: ['country', 'seller_id'], index: 'fk_sales_seller_countries1_idx' })
+  @ManyToOne({ entity: () => SellerCountries, ref: true, fieldNames: ['country', 'seller_id'], updateRule: 'no action', deleteRule: 'no action', index: 'fk_sales_seller_countries1_idx' })
   sellerCountries!: Ref<SellerCountries>;
 
-  @ManyToOne({ entity: () => SellerProducts, ref: true, fieldNames: ['seller_id', 'product_id'], index: 'fk_sales_seller_products1_idx' })
+  @ManyToOne({ entity: () => SellerProducts, ref: true, fieldNames: ['seller_id', 'product_id'], updateRule: 'no action', deleteRule: 'no action', index: 'fk_sales_seller_products1_idx' })
   fkSalesSellerProducts1!: Ref<SellerProducts>;
 
 }
@@ -7577,10 +7907,10 @@ export class SellerCountries {
 
   [PrimaryKeyProp]?: ['country', 'seller'];
 
-  @ManyToOne({ entity: () => Countries, ref: true, fieldName: 'country', primary: true })
+  @ManyToOne({ entity: () => Countries, ref: true, fieldName: 'country', updateRule: 'no action', deleteRule: 'no action', primary: true })
   country!: Ref<Countries>;
 
-  @ManyToOne({ entity: () => Sellers, ref: true, fieldName: 'seller_id', primary: true, index: 'fk_seller_countries_sellers1_idx' })
+  @ManyToOne({ entity: () => Sellers, ref: true, fieldName: 'seller_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_seller_countries_sellers1_idx' })
   seller!: Ref<Sellers>;
 
   @OneToMany({ entity: () => Sales, mappedBy: 'sellerCountries' })
@@ -7599,10 +7929,10 @@ export class SellerProducts {
 
   [PrimaryKeyProp]?: ['seller', 'product'];
 
-  @ManyToOne({ entity: () => Sellers, ref: true, fieldName: 'seller_id', primary: true })
+  @ManyToOne({ entity: () => Sellers, ref: true, fieldName: 'seller_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   seller!: Ref<Sellers>;
 
-  @ManyToOne({ entity: () => Products, ref: true, fieldName: 'product_id', primary: true, index: 'fk_seller_products_products1_idx' })
+  @ManyToOne({ entity: () => Products, ref: true, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_seller_products_products1_idx' })
   product!: Ref<Products>;
 
   @OneToMany({ entity: () => Sales, mappedBy: 'exchanged' })
@@ -7752,6 +8082,8 @@ export const ProductColorsSchema = new EntitySchema({
       entity: () => Colors,
       ref: true,
       fieldName: 'color_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     product: {
       primary: true,
@@ -7759,6 +8091,8 @@ export const ProductColorsSchema = new EntitySchema({
       entity: () => Products,
       ref: true,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_product_colors_products1_idx',
     },
     salesCollection: { kind: '1:m', entity: () => Sales, mappedBy: 'color' },
@@ -7786,6 +8120,8 @@ export const ProductCountriesSchema = new EntitySchema({
       entity: () => Countries,
       ref: true,
       fieldName: 'country',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     product: {
       primary: true,
@@ -7793,6 +8129,8 @@ export const ProductCountriesSchema = new EntitySchema({
       entity: () => ProductSizes,
       ref: true,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_product_countries_product_sizes1_idx',
     },
     salesCollection: {
@@ -7828,6 +8166,8 @@ export const ProductSizesSchema = new EntitySchema({
       entity: () => Products,
       ref: true,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     size: { type: 'smallint', unsigned: true },
     productCountriesInverse: {
@@ -7935,6 +8275,8 @@ export const SalesSchema = new EntitySchema({
       entity: () => ProductColors,
       ref: true,
       fieldNames: ['color_id', 'product_id'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       nullable: true,
       index: 'fk_sales_product_colors1_idx',
     },
@@ -7944,6 +8286,8 @@ export const SalesSchema = new EntitySchema({
       ref: true,
       fieldNames: ['size', 'product_id'],
       referencedColumnNames: ['size', 'product_id'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       nullable: true,
       index: 'fk_sales_product_sizes1_idx',
     },
@@ -7952,6 +8296,8 @@ export const SalesSchema = new EntitySchema({
       entity: () => SellerProducts,
       ref: true,
       fieldNames: ['seller_id', 'exchanged_product_id'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       nullable: true,
       index: 'fk_sales_seller_products2_idx',
     },
@@ -7960,6 +8306,8 @@ export const SalesSchema = new EntitySchema({
       entity: () => ProductCountries,
       ref: true,
       fieldNames: ['country', 'product_id'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_sales_product_countries1_idx',
     },
     sellerCountries: {
@@ -7967,6 +8315,8 @@ export const SalesSchema = new EntitySchema({
       entity: () => SellerCountries,
       ref: true,
       fieldNames: ['country', 'seller_id'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_sales_seller_countries1_idx',
     },
     fkSalesSellerProducts1: {
@@ -7974,6 +8324,8 @@ export const SalesSchema = new EntitySchema({
       entity: () => SellerProducts,
       ref: true,
       fieldNames: ['seller_id', 'product_id'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_sales_seller_products1_idx',
     },
   },
@@ -8000,6 +8352,8 @@ export const SellerCountriesSchema = new EntitySchema({
       entity: () => Countries,
       ref: true,
       fieldName: 'country',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     seller: {
       primary: true,
@@ -8007,6 +8361,8 @@ export const SellerCountriesSchema = new EntitySchema({
       entity: () => Sellers,
       ref: true,
       fieldName: 'seller_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_seller_countries_sellers1_idx',
     },
     salesCollection: {
@@ -8039,6 +8395,8 @@ export const SellerProductsSchema = new EntitySchema({
       entity: () => Sellers,
       ref: true,
       fieldName: 'seller_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     product: {
       primary: true,
@@ -8046,6 +8404,8 @@ export const SellerProductsSchema = new EntitySchema({
       entity: () => Products,
       ref: true,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_seller_products_products1_idx',
     },
     salesCollection: { kind: '1:m', entity: () => Sales, mappedBy: 'exchanged' },

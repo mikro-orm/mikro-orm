@@ -27,7 +27,7 @@ export class LegalUserCountries {
   @Property({ type: 'character', length: 2, persist: false })
   country!: string;
 
-  @OneToOne({ entity: () => Countries, fieldName: 'country', primary: true })
+  @OneToOne({ entity: () => Countries, fieldName: 'country', updateRule: 'no action', deleteRule: 'no action', primary: true })
   countries!: Countries;
 
 }
@@ -51,13 +51,13 @@ export class Users {
   @Property({ type: 'character', length: 2, persist: false, index: 'fk_users_countries1_idx' })
   userCountryBorn!: string;
 
-  @ManyToOne({ entity: () => Countries, fieldName: 'user_country', index: 'fk_users_countries_idx' })
+  @ManyToOne({ entity: () => Countries, fieldName: 'user_country', updateRule: 'restrict', deleteRule: 'restrict', index: 'fk_users_countries_idx' })
   fkUserCountry!: Countries;
 
   @ManyToOne({ entity: () => LegalUserCountries, fieldName: 'user_country', updateRule: 'cascade', deleteRule: 'cascade', index: 'fk_users_countries_idx' })
   legalUserCountries!: LegalUserCountries;
 
-  @ManyToOne({ entity: () => Countries, fieldName: 'user_country_born', index: 'fk_users_countries1_idx' })
+  @ManyToOne({ entity: () => Countries, fieldName: 'user_country_born', updateRule: 'no action', deleteRule: 'no action', index: 'fk_users_countries1_idx' })
   fkUserCountryBorn!: Countries;
 
 }
@@ -99,6 +99,8 @@ export const LegalUserCountriesSchema = new EntitySchema({
       kind: '1:1',
       entity: () => Countries,
       fieldName: 'country',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
   },
 });
@@ -137,6 +139,8 @@ export const UsersSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => Countries,
       fieldName: 'user_country',
+      updateRule: 'restrict',
+      deleteRule: 'restrict',
       index: 'fk_users_countries_idx',
     },
     legalUserCountries: {
@@ -151,6 +155,8 @@ export const UsersSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => Countries,
       fieldName: 'user_country_born',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_users_countries1_idx',
     },
   },
@@ -186,7 +192,7 @@ export class LegalUserCountries {
   @Property({ type: 'character', length: 2, persist: false })
   country!: string;
 
-  @OneToOne({ entity: () => Countries, ref: true, fieldName: 'country', primary: true })
+  @OneToOne({ entity: () => Countries, ref: true, fieldName: 'country', updateRule: 'no action', deleteRule: 'no action', primary: true })
   countries!: Ref<Countries>;
 
 }
@@ -210,13 +216,13 @@ export class Users {
   @Property({ type: 'character', length: 2, persist: false, index: 'fk_users_countries1_idx' })
   userCountryBorn!: string;
 
-  @ManyToOne({ entity: () => Countries, ref: true, fieldName: 'user_country', index: 'fk_users_countries_idx' })
+  @ManyToOne({ entity: () => Countries, ref: true, fieldName: 'user_country', updateRule: 'restrict', deleteRule: 'restrict', index: 'fk_users_countries_idx' })
   fkUserCountry!: Ref<Countries>;
 
   @ManyToOne({ entity: () => LegalUserCountries, ref: true, fieldName: 'user_country', updateRule: 'cascade', deleteRule: 'cascade', index: 'fk_users_countries_idx' })
   legalUserCountries!: Ref<LegalUserCountries>;
 
-  @ManyToOne({ entity: () => Countries, ref: true, fieldName: 'user_country_born', index: 'fk_users_countries1_idx' })
+  @ManyToOne({ entity: () => Countries, ref: true, fieldName: 'user_country_born', updateRule: 'no action', deleteRule: 'no action', index: 'fk_users_countries1_idx' })
   fkUserCountryBorn!: Ref<Countries>;
 
 }
@@ -259,6 +265,8 @@ export const LegalUserCountriesSchema = new EntitySchema({
       entity: () => Countries,
       ref: true,
       fieldName: 'country',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
   },
 });
@@ -298,6 +306,8 @@ export const UsersSchema = new EntitySchema({
       entity: () => Countries,
       ref: true,
       fieldName: 'user_country',
+      updateRule: 'restrict',
+      deleteRule: 'restrict',
       index: 'fk_users_countries_idx',
     },
     legalUserCountries: {
@@ -314,6 +324,8 @@ export const UsersSchema = new EntitySchema({
       entity: () => Countries,
       ref: true,
       fieldName: 'user_country_born',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_users_countries1_idx',
     },
   },
@@ -361,7 +373,7 @@ export class LegalUserCountries {
   @Property({ type: 'character', length: 2, persist: false })
   country!: string;
 
-  @OneToOne({ entity: () => Countries, fieldName: 'country', primary: true })
+  @OneToOne({ entity: () => Countries, fieldName: 'country', updateRule: 'no action', deleteRule: 'no action', primary: true })
   countries!: Countries;
 
   @OneToMany({ entity: () => Users, mappedBy: 'legalUserCountries' })
@@ -388,13 +400,13 @@ export class Users {
   @Property({ type: 'character', length: 2, persist: false, index: 'fk_users_countries1_idx' })
   userCountryBorn!: string;
 
-  @ManyToOne({ entity: () => Countries, fieldName: 'user_country', index: 'fk_users_countries_idx' })
+  @ManyToOne({ entity: () => Countries, fieldName: 'user_country', updateRule: 'restrict', deleteRule: 'restrict', index: 'fk_users_countries_idx' })
   fkUserCountry!: Countries;
 
   @ManyToOne({ entity: () => LegalUserCountries, fieldName: 'user_country', updateRule: 'cascade', deleteRule: 'cascade', index: 'fk_users_countries_idx' })
   legalUserCountries!: LegalUserCountries;
 
-  @ManyToOne({ entity: () => Countries, fieldName: 'user_country_born', index: 'fk_users_countries1_idx' })
+  @ManyToOne({ entity: () => Countries, fieldName: 'user_country_born', updateRule: 'no action', deleteRule: 'no action', index: 'fk_users_countries1_idx' })
   fkUserCountryBorn!: Countries;
 
 }
@@ -458,6 +470,8 @@ export const LegalUserCountriesSchema = new EntitySchema({
       kind: '1:1',
       entity: () => Countries,
       fieldName: 'country',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     usersCollection: {
       kind: '1:m',
@@ -501,6 +515,8 @@ export const UsersSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => Countries,
       fieldName: 'user_country',
+      updateRule: 'restrict',
+      deleteRule: 'restrict',
       index: 'fk_users_countries_idx',
     },
     legalUserCountries: {
@@ -515,6 +531,8 @@ export const UsersSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => Countries,
       fieldName: 'user_country_born',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_users_countries1_idx',
     },
   },
@@ -562,7 +580,7 @@ export class LegalUserCountries {
   @Property({ type: 'character', length: 2, persist: false })
   country!: string;
 
-  @OneToOne({ entity: () => Countries, ref: true, fieldName: 'country', primary: true })
+  @OneToOne({ entity: () => Countries, ref: true, fieldName: 'country', updateRule: 'no action', deleteRule: 'no action', primary: true })
   countries!: Ref<Countries>;
 
   @OneToMany({ entity: () => Users, mappedBy: 'legalUserCountries' })
@@ -589,13 +607,13 @@ export class Users {
   @Property({ type: 'character', length: 2, persist: false, index: 'fk_users_countries1_idx' })
   userCountryBorn!: string;
 
-  @ManyToOne({ entity: () => Countries, ref: true, fieldName: 'user_country', index: 'fk_users_countries_idx' })
+  @ManyToOne({ entity: () => Countries, ref: true, fieldName: 'user_country', updateRule: 'restrict', deleteRule: 'restrict', index: 'fk_users_countries_idx' })
   fkUserCountry!: Ref<Countries>;
 
   @ManyToOne({ entity: () => LegalUserCountries, ref: true, fieldName: 'user_country', updateRule: 'cascade', deleteRule: 'cascade', index: 'fk_users_countries_idx' })
   legalUserCountries!: Ref<LegalUserCountries>;
 
-  @ManyToOne({ entity: () => Countries, ref: true, fieldName: 'user_country_born', index: 'fk_users_countries1_idx' })
+  @ManyToOne({ entity: () => Countries, ref: true, fieldName: 'user_country_born', updateRule: 'no action', deleteRule: 'no action', index: 'fk_users_countries1_idx' })
   fkUserCountryBorn!: Ref<Countries>;
 
 }
@@ -661,6 +679,8 @@ export const LegalUserCountriesSchema = new EntitySchema({
       entity: () => Countries,
       ref: true,
       fieldName: 'country',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     usersCollection: {
       kind: '1:m',
@@ -705,6 +725,8 @@ export const UsersSchema = new EntitySchema({
       entity: () => Countries,
       ref: true,
       fieldName: 'user_country',
+      updateRule: 'restrict',
+      deleteRule: 'restrict',
       index: 'fk_users_countries_idx',
     },
     legalUserCountries: {
@@ -721,6 +743,8 @@ export const UsersSchema = new EntitySchema({
       entity: () => Countries,
       ref: true,
       fieldName: 'user_country_born',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_users_countries1_idx',
     },
   },
@@ -753,7 +777,7 @@ export class LegalUserCountries {
 
   [PrimaryKeyProp]?: 'country';
 
-  @OneToOne({ entity: () => Countries, fieldName: 'country', primary: true })
+  @OneToOne({ entity: () => Countries, fieldName: 'country', updateRule: 'no action', deleteRule: 'no action', primary: true })
   country!: Countries;
 
 }
@@ -771,10 +795,10 @@ export class Users {
   @PrimaryKey()
   userId!: number;
 
-  @ManyToOne({ entity: () => Countries, fieldName: 'user_country_born', index: 'fk_users_countries1_idx' })
+  @ManyToOne({ entity: () => Countries, fieldName: 'user_country_born', updateRule: 'no action', deleteRule: 'no action', index: 'fk_users_countries1_idx' })
   userCountryBorn!: Countries;
 
-  @ManyToOne({ entity: () => Countries, fieldName: 'user_country', index: 'fk_users_countries_idx' })
+  @ManyToOne({ entity: () => Countries, fieldName: 'user_country', updateRule: 'restrict', deleteRule: 'restrict', index: 'fk_users_countries_idx' })
   fkUserCountry!: Countries;
 
   @ManyToOne({ entity: () => LegalUserCountries, fieldName: 'user_country', updateRule: 'cascade', deleteRule: 'cascade', index: 'fk_users_countries_idx' })
@@ -817,6 +841,8 @@ export const LegalUserCountriesSchema = new EntitySchema({
       kind: '1:1',
       entity: () => Countries,
       fieldName: 'country',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
   },
 });
@@ -841,12 +867,16 @@ export const UsersSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => Countries,
       fieldName: 'user_country_born',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_users_countries1_idx',
     },
     fkUserCountry: {
       kind: 'm:1',
       entity: () => Countries,
       fieldName: 'user_country',
+      updateRule: 'restrict',
+      deleteRule: 'restrict',
       index: 'fk_users_countries_idx',
     },
     legalUserCountries: {
@@ -887,7 +917,7 @@ export class LegalUserCountries {
 
   [PrimaryKeyProp]?: 'country';
 
-  @OneToOne({ entity: () => Countries, ref: true, fieldName: 'country', primary: true })
+  @OneToOne({ entity: () => Countries, ref: true, fieldName: 'country', updateRule: 'no action', deleteRule: 'no action', primary: true })
   country!: Ref<Countries>;
 
 }
@@ -905,10 +935,10 @@ export class Users {
   @PrimaryKey()
   userId!: number;
 
-  @ManyToOne({ entity: () => Countries, ref: true, fieldName: 'user_country_born', index: 'fk_users_countries1_idx' })
+  @ManyToOne({ entity: () => Countries, ref: true, fieldName: 'user_country_born', updateRule: 'no action', deleteRule: 'no action', index: 'fk_users_countries1_idx' })
   userCountryBorn!: Ref<Countries>;
 
-  @ManyToOne({ entity: () => Countries, ref: true, fieldName: 'user_country', index: 'fk_users_countries_idx' })
+  @ManyToOne({ entity: () => Countries, ref: true, fieldName: 'user_country', updateRule: 'restrict', deleteRule: 'restrict', index: 'fk_users_countries_idx' })
   fkUserCountry!: Ref<Countries>;
 
   @ManyToOne({ entity: () => LegalUserCountries, ref: true, fieldName: 'user_country', updateRule: 'cascade', deleteRule: 'cascade', index: 'fk_users_countries_idx' })
@@ -952,6 +982,8 @@ export const LegalUserCountriesSchema = new EntitySchema({
       entity: () => Countries,
       ref: true,
       fieldName: 'country',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
   },
 });
@@ -977,6 +1009,8 @@ export const UsersSchema = new EntitySchema({
       entity: () => Countries,
       ref: true,
       fieldName: 'user_country_born',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_users_countries1_idx',
     },
     fkUserCountry: {
@@ -984,6 +1018,8 @@ export const UsersSchema = new EntitySchema({
       entity: () => Countries,
       ref: true,
       fieldName: 'user_country',
+      updateRule: 'restrict',
+      deleteRule: 'restrict',
       index: 'fk_users_countries_idx',
     },
     legalUserCountries: {
@@ -1037,7 +1073,7 @@ export class LegalUserCountries {
 
   [PrimaryKeyProp]?: 'country';
 
-  @OneToOne({ entity: () => Countries, fieldName: 'country', primary: true })
+  @OneToOne({ entity: () => Countries, fieldName: 'country', updateRule: 'no action', deleteRule: 'no action', primary: true })
   country!: Countries;
 
   @OneToMany({ entity: () => Users, mappedBy: 'legalUserCountries' })
@@ -1058,10 +1094,10 @@ export class Users {
   @PrimaryKey()
   userId!: number;
 
-  @ManyToOne({ entity: () => Countries, fieldName: 'user_country_born', index: 'fk_users_countries1_idx' })
+  @ManyToOne({ entity: () => Countries, fieldName: 'user_country_born', updateRule: 'no action', deleteRule: 'no action', index: 'fk_users_countries1_idx' })
   userCountryBorn!: Countries;
 
-  @ManyToOne({ entity: () => Countries, fieldName: 'user_country', index: 'fk_users_countries_idx' })
+  @ManyToOne({ entity: () => Countries, fieldName: 'user_country', updateRule: 'restrict', deleteRule: 'restrict', index: 'fk_users_countries_idx' })
   fkUserCountry!: Countries;
 
   @ManyToOne({ entity: () => LegalUserCountries, fieldName: 'user_country', updateRule: 'cascade', deleteRule: 'cascade', index: 'fk_users_countries_idx' })
@@ -1126,6 +1162,8 @@ export const LegalUserCountriesSchema = new EntitySchema({
       kind: '1:1',
       entity: () => Countries,
       fieldName: 'country',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     usersCollection: {
       kind: '1:m',
@@ -1155,12 +1193,16 @@ export const UsersSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => Countries,
       fieldName: 'user_country_born',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_users_countries1_idx',
     },
     fkUserCountry: {
       kind: 'm:1',
       entity: () => Countries,
       fieldName: 'user_country',
+      updateRule: 'restrict',
+      deleteRule: 'restrict',
       index: 'fk_users_countries_idx',
     },
     legalUserCountries: {
@@ -1213,7 +1255,7 @@ export class LegalUserCountries {
 
   [PrimaryKeyProp]?: 'country';
 
-  @OneToOne({ entity: () => Countries, ref: true, fieldName: 'country', primary: true })
+  @OneToOne({ entity: () => Countries, ref: true, fieldName: 'country', updateRule: 'no action', deleteRule: 'no action', primary: true })
   country!: Ref<Countries>;
 
   @OneToMany({ entity: () => Users, mappedBy: 'legalUserCountries' })
@@ -1234,10 +1276,10 @@ export class Users {
   @PrimaryKey()
   userId!: number;
 
-  @ManyToOne({ entity: () => Countries, ref: true, fieldName: 'user_country_born', index: 'fk_users_countries1_idx' })
+  @ManyToOne({ entity: () => Countries, ref: true, fieldName: 'user_country_born', updateRule: 'no action', deleteRule: 'no action', index: 'fk_users_countries1_idx' })
   userCountryBorn!: Ref<Countries>;
 
-  @ManyToOne({ entity: () => Countries, ref: true, fieldName: 'user_country', index: 'fk_users_countries_idx' })
+  @ManyToOne({ entity: () => Countries, ref: true, fieldName: 'user_country', updateRule: 'restrict', deleteRule: 'restrict', index: 'fk_users_countries_idx' })
   fkUserCountry!: Ref<Countries>;
 
   @ManyToOne({ entity: () => LegalUserCountries, ref: true, fieldName: 'user_country', updateRule: 'cascade', deleteRule: 'cascade', index: 'fk_users_countries_idx' })
@@ -1304,6 +1346,8 @@ export const LegalUserCountriesSchema = new EntitySchema({
       entity: () => Countries,
       ref: true,
       fieldName: 'country',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     usersCollection: {
       kind: '1:m',
@@ -1334,6 +1378,8 @@ export const UsersSchema = new EntitySchema({
       entity: () => Countries,
       ref: true,
       fieldName: 'user_country_born',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_users_countries1_idx',
     },
     fkUserCountry: {
@@ -1341,6 +1387,8 @@ export const UsersSchema = new EntitySchema({
       entity: () => Countries,
       ref: true,
       fieldName: 'user_country',
+      updateRule: 'restrict',
+      deleteRule: 'restrict',
       index: 'fk_users_countries_idx',
     },
     legalUserCountries: {
@@ -1382,7 +1430,7 @@ export class LegalUserCountries {
 
   [PrimaryKeyProp]?: 'country';
 
-  @OneToOne({ entity: () => Countries, fieldName: 'country', primary: true })
+  @OneToOne({ entity: () => Countries, fieldName: 'country', updateRule: 'no action', deleteRule: 'no action', primary: true })
   country!: Countries;
 
 }
@@ -1400,10 +1448,10 @@ export class Users {
   @PrimaryKey()
   userId!: number;
 
-  @ManyToOne({ entity: () => Countries, fieldName: 'user_country_born', index: 'fk_users_countries1_idx' })
+  @ManyToOne({ entity: () => Countries, fieldName: 'user_country_born', updateRule: 'no action', deleteRule: 'no action', index: 'fk_users_countries1_idx' })
   userCountryBorn!: Countries;
 
-  @ManyToOne({ entity: () => Countries, fieldName: 'user_country', index: 'fk_users_countries_idx' })
+  @ManyToOne({ entity: () => Countries, fieldName: 'user_country', updateRule: 'restrict', deleteRule: 'restrict', index: 'fk_users_countries_idx' })
   fkUserCountry!: Countries;
 
   @ManyToOne({ entity: () => LegalUserCountries, fieldName: 'user_country', updateRule: 'cascade', deleteRule: 'cascade', index: 'fk_users_countries_idx' })
@@ -1446,6 +1494,8 @@ export const LegalUserCountriesSchema = new EntitySchema({
       kind: '1:1',
       entity: () => Countries,
       fieldName: 'country',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
   },
 });
@@ -1470,12 +1520,16 @@ export const UsersSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => Countries,
       fieldName: 'user_country_born',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_users_countries1_idx',
     },
     fkUserCountry: {
       kind: 'm:1',
       entity: () => Countries,
       fieldName: 'user_country',
+      updateRule: 'restrict',
+      deleteRule: 'restrict',
       index: 'fk_users_countries_idx',
     },
     legalUserCountries: {
@@ -1516,7 +1570,7 @@ export class LegalUserCountries {
 
   [PrimaryKeyProp]?: 'country';
 
-  @OneToOne({ entity: () => Countries, ref: true, fieldName: 'country', primary: true })
+  @OneToOne({ entity: () => Countries, ref: true, fieldName: 'country', updateRule: 'no action', deleteRule: 'no action', primary: true })
   country!: Ref<Countries>;
 
 }
@@ -1534,10 +1588,10 @@ export class Users {
   @PrimaryKey()
   userId!: number;
 
-  @ManyToOne({ entity: () => Countries, ref: true, fieldName: 'user_country_born', index: 'fk_users_countries1_idx' })
+  @ManyToOne({ entity: () => Countries, ref: true, fieldName: 'user_country_born', updateRule: 'no action', deleteRule: 'no action', index: 'fk_users_countries1_idx' })
   userCountryBorn!: Ref<Countries>;
 
-  @ManyToOne({ entity: () => Countries, ref: true, fieldName: 'user_country', index: 'fk_users_countries_idx' })
+  @ManyToOne({ entity: () => Countries, ref: true, fieldName: 'user_country', updateRule: 'restrict', deleteRule: 'restrict', index: 'fk_users_countries_idx' })
   fkUserCountry!: Ref<Countries>;
 
   @ManyToOne({ entity: () => LegalUserCountries, ref: true, fieldName: 'user_country', updateRule: 'cascade', deleteRule: 'cascade', index: 'fk_users_countries_idx' })
@@ -1581,6 +1635,8 @@ export const LegalUserCountriesSchema = new EntitySchema({
       entity: () => Countries,
       ref: true,
       fieldName: 'country',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
   },
 });
@@ -1606,6 +1662,8 @@ export const UsersSchema = new EntitySchema({
       entity: () => Countries,
       ref: true,
       fieldName: 'user_country_born',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_users_countries1_idx',
     },
     fkUserCountry: {
@@ -1613,6 +1671,8 @@ export const UsersSchema = new EntitySchema({
       entity: () => Countries,
       ref: true,
       fieldName: 'user_country',
+      updateRule: 'restrict',
+      deleteRule: 'restrict',
       index: 'fk_users_countries_idx',
     },
     legalUserCountries: {
@@ -1666,7 +1726,7 @@ export class LegalUserCountries {
 
   [PrimaryKeyProp]?: 'country';
 
-  @OneToOne({ entity: () => Countries, fieldName: 'country', primary: true })
+  @OneToOne({ entity: () => Countries, fieldName: 'country', updateRule: 'no action', deleteRule: 'no action', primary: true })
   country!: Countries;
 
   @OneToMany({ entity: () => Users, mappedBy: 'legalUserCountries' })
@@ -1687,10 +1747,10 @@ export class Users {
   @PrimaryKey()
   userId!: number;
 
-  @ManyToOne({ entity: () => Countries, fieldName: 'user_country_born', index: 'fk_users_countries1_idx' })
+  @ManyToOne({ entity: () => Countries, fieldName: 'user_country_born', updateRule: 'no action', deleteRule: 'no action', index: 'fk_users_countries1_idx' })
   userCountryBorn!: Countries;
 
-  @ManyToOne({ entity: () => Countries, fieldName: 'user_country', index: 'fk_users_countries_idx' })
+  @ManyToOne({ entity: () => Countries, fieldName: 'user_country', updateRule: 'restrict', deleteRule: 'restrict', index: 'fk_users_countries_idx' })
   fkUserCountry!: Countries;
 
   @ManyToOne({ entity: () => LegalUserCountries, fieldName: 'user_country', updateRule: 'cascade', deleteRule: 'cascade', index: 'fk_users_countries_idx' })
@@ -1755,6 +1815,8 @@ export const LegalUserCountriesSchema = new EntitySchema({
       kind: '1:1',
       entity: () => Countries,
       fieldName: 'country',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     usersCollection: {
       kind: '1:m',
@@ -1784,12 +1846,16 @@ export const UsersSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => Countries,
       fieldName: 'user_country_born',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_users_countries1_idx',
     },
     fkUserCountry: {
       kind: 'm:1',
       entity: () => Countries,
       fieldName: 'user_country',
+      updateRule: 'restrict',
+      deleteRule: 'restrict',
       index: 'fk_users_countries_idx',
     },
     legalUserCountries: {
@@ -1842,7 +1908,7 @@ export class LegalUserCountries {
 
   [PrimaryKeyProp]?: 'country';
 
-  @OneToOne({ entity: () => Countries, ref: true, fieldName: 'country', primary: true })
+  @OneToOne({ entity: () => Countries, ref: true, fieldName: 'country', updateRule: 'no action', deleteRule: 'no action', primary: true })
   country!: Ref<Countries>;
 
   @OneToMany({ entity: () => Users, mappedBy: 'legalUserCountries' })
@@ -1863,10 +1929,10 @@ export class Users {
   @PrimaryKey()
   userId!: number;
 
-  @ManyToOne({ entity: () => Countries, ref: true, fieldName: 'user_country_born', index: 'fk_users_countries1_idx' })
+  @ManyToOne({ entity: () => Countries, ref: true, fieldName: 'user_country_born', updateRule: 'no action', deleteRule: 'no action', index: 'fk_users_countries1_idx' })
   userCountryBorn!: Ref<Countries>;
 
-  @ManyToOne({ entity: () => Countries, ref: true, fieldName: 'user_country', index: 'fk_users_countries_idx' })
+  @ManyToOne({ entity: () => Countries, ref: true, fieldName: 'user_country', updateRule: 'restrict', deleteRule: 'restrict', index: 'fk_users_countries_idx' })
   fkUserCountry!: Ref<Countries>;
 
   @ManyToOne({ entity: () => LegalUserCountries, ref: true, fieldName: 'user_country', updateRule: 'cascade', deleteRule: 'cascade', index: 'fk_users_countries_idx' })
@@ -1933,6 +1999,8 @@ export const LegalUserCountriesSchema = new EntitySchema({
       entity: () => Countries,
       ref: true,
       fieldName: 'country',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     usersCollection: {
       kind: '1:m',
@@ -1963,6 +2031,8 @@ export const UsersSchema = new EntitySchema({
       entity: () => Countries,
       ref: true,
       fieldName: 'user_country_born',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_users_countries1_idx',
     },
     fkUserCountry: {
@@ -1970,6 +2040,8 @@ export const UsersSchema = new EntitySchema({
       entity: () => Countries,
       ref: true,
       fieldName: 'user_country',
+      updateRule: 'restrict',
+      deleteRule: 'restrict',
       index: 'fk_users_countries_idx',
     },
     legalUserCountries: {

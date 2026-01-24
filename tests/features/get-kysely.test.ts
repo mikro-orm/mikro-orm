@@ -46,10 +46,10 @@ describe('InferKyselyDB', () => {
     expect(createDump).toMatchInlineSnapshot(`
       "create table \`user_profile\` (\`user_full_name\` text not null primary key, \`bio\` text null, \`avatar\` text null, \`location\` text null, constraint \`user_profile_user_full_name_foreign\` foreign key (\`user_full_name\`) references \`users\` (\`full_name\`) on update cascade on delete cascade);
 
-      create table \`users\` (\`full_name\` text not null primary key, \`email\` text null, \`first_name\` text not null, \`the_last_name\` text not null, \`profile_user_full_name\` text not null, constraint \`users_profile_user_full_name_foreign\` foreign key (\`profile_user_full_name\`) references \`user_profile\` (\`user_full_name\`) on update cascade);
+      create table \`users\` (\`full_name\` text not null primary key, \`email\` text null, \`first_name\` text not null, \`the_last_name\` text not null, \`profile_user_full_name\` text not null, constraint \`users_profile_user_full_name_foreign\` foreign key (\`profile_user_full_name\`) references \`user_profile\` (\`user_full_name\`));
       create unique index \`users_profile_user_full_name_unique\` on \`users\` (\`profile_user_full_name\`);
 
-      create table \`post\` (\`id\` integer not null primary key autoincrement, \`title\` text not null, \`description\` text not null, \`author_full_name\` text not null, constraint \`post_author_full_name_foreign\` foreign key (\`author_full_name\`) references \`users\` (\`full_name\`) on update cascade);
+      create table \`post\` (\`id\` integer not null primary key autoincrement, \`title\` text not null, \`description\` text not null, \`author_full_name\` text not null, constraint \`post_author_full_name_foreign\` foreign key (\`author_full_name\`) references \`users\` (\`full_name\`));
       create index \`post_author_full_name_index\` on \`post\` (\`author_full_name\`);
       "
     `);
@@ -117,14 +117,14 @@ describe('InferKyselyDB', () => {
     expect(createDump).toMatchInlineSnapshot(`
       "create table \`user\` (\`name\` text not null primary key, \`email\` text null);
 
-      create table \`post\` (\`id\` integer not null primary key autoincrement, \`title\` text not null, \`description\` text not null, \`author_name\` text not null, constraint \`post_author_name_foreign\` foreign key (\`author_name\`) references \`user\` (\`name\`) on update cascade);
+      create table \`post\` (\`id\` integer not null primary key autoincrement, \`title\` text not null, \`description\` text not null, \`author_name\` text not null, constraint \`post_author_name_foreign\` foreign key (\`author_name\`) references \`user\` (\`name\`));
       create index \`post_author_name_index\` on \`post\` (\`author_name\`);
 
       create table \`post_viewers\` (\`post_id\` integer not null, \`user_name\` text not null, primary key (\`post_id\`, \`user_name\`), constraint \`post_viewers_post_id_foreign\` foreign key (\`post_id\`) references \`post\` (\`id\`) on update cascade on delete cascade, constraint \`post_viewers_user_name_foreign\` foreign key (\`user_name\`) references \`user\` (\`name\`) on update cascade on delete cascade);
       create index \`post_viewers_post_id_index\` on \`post_viewers\` (\`post_id\`);
       create index \`post_viewers_user_name_index\` on \`post_viewers\` (\`user_name\`);
 
-      create table \`user_viewed_posts\` (\`user_name\` text not null, \`post_id\` integer not null, \`viewed_at\` datetime not null, primary key (\`user_name\`, \`post_id\`), constraint \`user_viewed_posts_user_name_foreign\` foreign key (\`user_name\`) references \`user\` (\`name\`) on update cascade, constraint \`user_viewed_posts_post_id_foreign\` foreign key (\`post_id\`) references \`post\` (\`id\`) on update cascade);
+      create table \`user_viewed_posts\` (\`user_name\` text not null, \`post_id\` integer not null, \`viewed_at\` datetime not null, primary key (\`user_name\`, \`post_id\`), constraint \`user_viewed_posts_user_name_foreign\` foreign key (\`user_name\`) references \`user\` (\`name\`) on update cascade on delete cascade, constraint \`user_viewed_posts_post_id_foreign\` foreign key (\`post_id\`) references \`post\` (\`id\`) on update cascade on delete cascade);
       create index \`user_viewed_posts_user_name_index\` on \`user_viewed_posts\` (\`user_name\`);
       create index \`user_viewed_posts_post_id_index\` on \`user_viewed_posts\` (\`post_id\`);
       "
@@ -235,10 +235,10 @@ describe('InferKyselyDB', () => {
     expect(createDump).toMatchInlineSnapshot(`
       "create table \`user_profiles\` (\`user_full_name\` text not null primary key, \`bio\` text null, \`avatar\` text null, \`location\` text null, constraint \`user_profiles_user_full_name_foreign\` foreign key (\`user_full_name\`) references \`users\` (\`full_name\`) on update cascade on delete cascade);
 
-      create table \`users\` (\`full_name\` text not null primary key, \`email\` text null, \`first_name\` text not null, \`the_last_name\` text not null, \`profile_user_full_name\` text not null, constraint \`users_profile_user_full_name_foreign\` foreign key (\`profile_user_full_name\`) references \`user_profiles\` (\`user_full_name\`) on update cascade);
+      create table \`users\` (\`full_name\` text not null primary key, \`email\` text null, \`first_name\` text not null, \`the_last_name\` text not null, \`profile_user_full_name\` text not null, constraint \`users_profile_user_full_name_foreign\` foreign key (\`profile_user_full_name\`) references \`user_profiles\` (\`user_full_name\`));
       create unique index \`users_profile_user_full_name_unique\` on \`users\` (\`profile_user_full_name\`);
 
-      create table \`posts\` (\`id\` integer not null primary key autoincrement, \`title\` text not null, \`description\` text not null, \`author_full_name\` text not null, constraint \`posts_author_full_name_foreign\` foreign key (\`author_full_name\`) references \`users\` (\`full_name\`) on update cascade);
+      create table \`posts\` (\`id\` integer not null primary key autoincrement, \`title\` text not null, \`description\` text not null, \`author_full_name\` text not null, constraint \`posts_author_full_name_foreign\` foreign key (\`author_full_name\`) references \`users\` (\`full_name\`));
       create index \`posts_author_full_name_index\` on \`posts\` (\`author_full_name\`);
       "
     `);

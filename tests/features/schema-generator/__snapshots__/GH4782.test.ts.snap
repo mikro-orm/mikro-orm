@@ -17,7 +17,7 @@ exports[`4782 > 1. add timestamp(3) column 1`] = `
 alter table \`user\` drop column \`bar\`;
 ",
   "up": "alter table \`user\` add \`bar\` timestamp(3) not null default current_timestamp(3);
-alter table \`user\` add constraint \`user_parent_id_foreign\` foreign key (\`parent_id\`) references \`user\` (\`id\`) on update cascade on delete set null;
+alter table \`user\` add constraint \`user_parent_id_foreign\` foreign key (\`parent_id\`) references \`user\` (\`id\`) on delete set null;
 ",
 }
 `;
@@ -32,7 +32,7 @@ exports[`4782 > 2. no changes 1`] = `
 exports[`4782 > 3. change to timestamp(6) 1`] = `
 {
   "down": "alter table \`user\` modify \`bar\` timestamp(3) not null default current_timestamp(3);
-alter table \`user\` add constraint \`user_parent_id_foreign\` foreign key (\`parent_id\`) references \`user\` (\`id\`) on update cascade on delete set null;
+alter table \`user\` add constraint \`user_parent_id_foreign\` foreign key (\`parent_id\`) references \`user\` (\`id\`) on update no action on delete set null;
 ",
   "up": "alter table \`user\` drop foreign key \`user_parent_id_foreign\`;
 

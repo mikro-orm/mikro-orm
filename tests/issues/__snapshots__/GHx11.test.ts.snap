@@ -5,7 +5,7 @@ exports[`1:m property inside pivot entity 1`] = `
 
 create table \`foo\` (\`id\` text not null primary key);
 
-create table \`foo_bar\` (\`foo_id\` text not null, \`user_id\` text not null, primary key (\`foo_id\`, \`user_id\`), constraint \`foo_bar_foo_id_foreign\` foreign key (\`foo_id\`) references \`foo\` (\`id\`) on update cascade, constraint \`foo_bar_user_id_foreign\` foreign key (\`user_id\`) references \`bar\` (\`id\`) on update cascade);
+create table \`foo_bar\` (\`foo_id\` text not null, \`user_id\` text not null, primary key (\`foo_id\`, \`user_id\`), constraint \`foo_bar_foo_id_foreign\` foreign key (\`foo_id\`) references \`foo\` (\`id\`) on update cascade on delete cascade, constraint \`foo_bar_user_id_foreign\` foreign key (\`user_id\`) references \`bar\` (\`id\`) on update cascade on delete cascade);
 create index \`foo_bar_foo_id_index\` on \`foo_bar\` (\`foo_id\`);
 create index \`foo_bar_user_id_index\` on \`foo_bar\` (\`user_id\`);
 

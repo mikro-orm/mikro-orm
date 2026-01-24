@@ -107,7 +107,9 @@ In this example, no `Book` would be removed with simple `Cascade.REMOVE` as no r
 
 As opposed to the application level cascading controlled by the `cascade` option, we can also define database level referential integrity actions: `on update` and `on delete`.
 
-Their values are automatically inferred from the `cascade` option value. You can also control the value manually via `updateRule` and `deleteRule` options.
+These rules are independent of the `cascade` option (which only controls ORM-level behavior). You can set FK rules via:
+
+1. **Property-level options:** Use `updateRule` and `deleteRule` on individual relations.
 
 ```ts
 @Entity()
@@ -118,3 +120,37 @@ export class Book {
 
 }
 ```
+
+2. **Global defaults:** Set `defaultUpdateRule` and `defaultDeleteRule` in your config.
+
+```ts
+MikroORM.init({
+  schemaGenerator: {
+    defaultDeleteRule: 'cascade',
+    defaultUpdateRule: 'cascade',
+  },
+});
+```
+
+### ORM Semantic Defaults
+
+The ORM applies sensible defaults for certain relation patterns before falling back to database defaults:
+
+| Scenario | `deleteRule` | `updateRule` | Reason |
+|----------|--------------|--------------|--------|
+| FK-as-PK (entity's PK is also a FK) | `cascade` | `cascade` | Child row cannot exist without parent |
+| Pivot tables (M:N join tables) | `cascade` | `cascade` | Join row is meaningless without both sides |
+| Relation to composite PK target | — | `cascade` | Composite PKs may change |
+| Nullable relation | `set null` | — | Preserve the row, just unlink the reference |
+| Self-referencing FK on MSSQL | `no action` | `no action` | Avoid multiple cascade path errors |
+
+### Priority Order
+
+FK rules are resolved in this order:
+
+1. Explicit property-level `deleteRule`/`updateRule`
+2. ORM semantic defaults (table above)
+3. Global config `schemaGenerator.defaultDeleteRule`/`defaultUpdateRule`
+4. Database native default (NO ACTION for PostgreSQL, SQLite, MSSQL, Oracle; RESTRICT for MySQL/MariaDB)
+
+> Note: Oracle does not support `ON UPDATE CASCADE`. If you need cascading updates on Oracle, you must handle them at the application level or use triggers.

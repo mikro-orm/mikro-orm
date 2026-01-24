@@ -25,11 +25,11 @@ create index `publisher3_tests_test3_id_index` on `publisher3_tests` (`test3_id`
 
 create table `book_tag3` (`id` integer not null primary key autoincrement, `name` text not null, `version` datetime not null default current_timestamp);
 
-create table `author3` (`id` integer not null primary key autoincrement, `created_at` datetime null, `updated_at` datetime null, `name` text not null, `email` text not null, `age` integer null, `terms_accepted` integer not null default 0, `identities` text null, `born` date null, `born_time` time(3) null, `favourite_book_id` integer null, constraint `author3_favourite_book_id_foreign` foreign key (`favourite_book_id`) references `book3`(`id`) on update cascade);
+create table `author3` (`id` integer not null primary key autoincrement, `created_at` datetime null, `updated_at` datetime null, `name` text not null, `email` text not null, `age` integer null, `terms_accepted` integer not null default 0, `identities` text null, `born` date null, `born_time` time(3) null, `favourite_book_id` integer null, constraint `author3_favourite_book_id_foreign` foreign key (`favourite_book_id`) references `book3`(`id`) on delete set null);
 create unique index `author3_email_unique` on `author3` (`email`);
 create index `author3_favourite_book_idx` on `author3` (`favourite_book_id`);
 
-create table `book3` (`id` integer not null primary key autoincrement, `created_at` datetime null, `updated_at` datetime null, `title` text not null default '', `author_id` integer not null, `publisher_id` integer null, constraint `book3_author_id_foreign` foreign key (`author_id`) references `author3`(`id`) on update cascade, constraint `book3_publisher_id_foreign` foreign key (`publisher_id`) references `publisher3`(`id`) on update cascade);
+create table `book3` (`id` integer not null primary key autoincrement, `created_at` datetime null, `updated_at` datetime null, `title` text not null default '', `author_id` integer not null, `publisher_id` integer null, constraint `book3_author_id_foreign` foreign key (`author_id`) references `author3`(`id`), constraint `book3_publisher_id_foreign` foreign key (`publisher_id`) references `publisher3`(`id`) on delete set null);
 create index `book3_author_id_index` on `book3` (`author_id`);
 create index `book3_publisher_id_index` on `book3` (`publisher_id`);
 

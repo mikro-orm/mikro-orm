@@ -96,22 +96,22 @@ create table \`user2_sandwiches\` (\`user2_first_name\` varchar(100) not null, \
 alter table \`user2_sandwiches\` add index \`user2_sandwiches_sandwich_id_index\` (\`sandwich_id\`);
 alter table \`user2_sandwiches\` add index \`user2_sandwiches_user2_first_name_user2_last_name_index\` (\`user2_first_name\`, \`user2_last_name\`);
 
-alter table \`base_user2\` add constraint \`base_user2_favourite_employee_id_foreign\` foreign key (\`favourite_employee_id\`) references \`base_user2\` (\`id\`) on update cascade on delete set null;
-alter table \`base_user2\` add constraint \`base_user2_favourite_manager_id_foreign\` foreign key (\`favourite_manager_id\`) references \`base_user2\` (\`id\`) on update cascade on delete set null;
+alter table \`base_user2\` add constraint \`base_user2_favourite_employee_id_foreign\` foreign key (\`favourite_employee_id\`) references \`base_user2\` (\`id\`) on delete set null;
+alter table \`base_user2\` add constraint \`base_user2_favourite_manager_id_foreign\` foreign key (\`favourite_manager_id\`) references \`base_user2\` (\`id\`) on delete set null;
 
 alter table \`car_owner2\` add constraint \`car_owner2_car_name_car_year_foreign\` foreign key (\`car_name\`, \`car_year\`) references \`car2\` (\`name\`, \`year\`) on update cascade;
 
-alter table \`foo_bar2\` add constraint \`foo_bar2_baz_id_foreign\` foreign key (\`baz_id\`) references \`foo_baz2\` (\`id\`) on update cascade on delete set null;
-alter table \`foo_bar2\` add constraint \`foo_bar2_foo_bar_id_foreign\` foreign key (\`foo_bar_id\`) references \`foo_bar2\` (\`id\`) on update cascade on delete set null;
+alter table \`foo_bar2\` add constraint \`foo_bar2_baz_id_foreign\` foreign key (\`baz_id\`) references \`foo_baz2\` (\`id\`) on delete set null;
+alter table \`foo_bar2\` add constraint \`foo_bar2_foo_bar_id_foreign\` foreign key (\`foo_bar_id\`) references \`foo_bar2\` (\`id\`) on delete set null;
 
-alter table \`foo_param2\` add constraint \`foo_param2_bar_id_foreign\` foreign key (\`bar_id\`) references \`foo_bar2\` (\`id\`) on update cascade;
-alter table \`foo_param2\` add constraint \`foo_param2_baz_id_foreign\` foreign key (\`baz_id\`) references \`foo_baz2\` (\`id\`) on update cascade;
+alter table \`foo_param2\` add constraint \`foo_param2_bar_id_foreign\` foreign key (\`bar_id\`) references \`foo_bar2\` (\`id\`) on update cascade on delete cascade;
+alter table \`foo_param2\` add constraint \`foo_param2_baz_id_foreign\` foreign key (\`baz_id\`) references \`foo_baz2\` (\`id\`) on update cascade on delete cascade;
 
 alter table \`author2\` add constraint \`author2_favourite_book_uuid_pk_foreign\` foreign key (\`favourite_book_uuid_pk\`) references \`book2\` (\`uuid_pk\`) on update no action on delete cascade;
-alter table \`author2\` add constraint \`author2_favourite_author_id_foreign\` foreign key (\`favourite_author_id\`) references \`author2\` (\`id\`) on update cascade on delete set null;
+alter table \`author2\` add constraint \`author2_favourite_author_id_foreign\` foreign key (\`favourite_author_id\`) references \`author2\` (\`id\`) on delete set null;
 
 alter table \`book2\` add constraint \`book2_author_id_foreign\` foreign key (\`author_id\`) references \`author2\` (\`id\`);
-alter table \`book2\` add constraint \`book2_publisher_id_foreign\` foreign key (\`publisher_id\`) references \`publisher2\` (\`id\`) on update cascade on delete cascade;
+alter table \`book2\` add constraint \`book2_publisher_id_foreign\` foreign key (\`publisher_id\`) references \`publisher2\` (\`id\`) on delete set null;
 
 alter table \`book2_tags\` add constraint \`book2_tags_book2_uuid_pk_foreign\` foreign key (\`book2_uuid_pk\`) references \`book2\` (\`uuid_pk\`) on update cascade on delete cascade;
 alter table \`book2_tags\` add constraint \`book2_tags_book_tag2_id_foreign\` foreign key (\`book_tag2_id\`) references \`book_tag2\` (\`id\`) on update cascade on delete cascade;
@@ -128,12 +128,12 @@ alter table \`author_to_friend\` add constraint \`author_to_friend_author2_2_id_
 alter table \`address2\` add constraint \`address2_author_id_foreign\` foreign key (\`author_id\`) references \`author2\` (\`id\`) on update cascade on delete cascade;
 
 alter table \`test2\` add constraint \`test2_book_uuid_pk_foreign\` foreign key (\`book_uuid_pk\`) references \`book2\` (\`uuid_pk\`) on delete set null;
-alter table \`test2\` add constraint \`test2_parent_id_foreign\` foreign key (\`parent_id\`) references \`test2\` (\`id\`) on update cascade on delete set null;
+alter table \`test2\` add constraint \`test2_parent_id_foreign\` foreign key (\`parent_id\`) references \`test2\` (\`id\`) on delete set null;
 
 alter table \`publisher2_tests\` add constraint \`publisher2_tests_publisher2_id_foreign\` foreign key (\`publisher2_id\`) references \`publisher2\` (\`id\`) on update cascade on delete cascade;
 alter table \`publisher2_tests\` add constraint \`publisher2_tests_test2_id_foreign\` foreign key (\`test2_id\`) references \`test2\` (\`id\`) on update cascade on delete cascade;
 
-alter table \`configuration2\` add constraint \`configuration2_test_id_foreign\` foreign key (\`test_id\`) references \`test2\` (\`id\`) on update cascade;
+alter table \`configuration2\` add constraint \`configuration2_test_id_foreign\` foreign key (\`test_id\`) references \`test2\` (\`id\`);
 
 alter table \`test2_bars\` add constraint \`test2_bars_test2_id_foreign\` foreign key (\`test2_id\`) references \`test2\` (\`id\`) on update cascade on delete cascade;
 alter table \`test2_bars\` add constraint \`test2_bars_foo_bar2_id_foreign\` foreign key (\`foo_bar2_id\`) references \`foo_bar2\` (\`id\`) on update cascade on delete cascade;
@@ -214,11 +214,24 @@ drop table if exists \`base_user2\`;
 exports[`SchemaGenerator > generate schema from metadata [mariadb] > mariadb-update-schema-dump 1`] = `
 "set names utf8mb4;
 
+alter table \`foo_param2\` drop foreign key \`foo_param2_bar_id_foreign\`;
+alter table \`foo_param2\` drop foreign key \`foo_param2_baz_id_foreign\`;
+
+alter table \`book2\` drop foreign key \`book2_publisher_id_foreign\`;
+
 alter table \`test2\` drop foreign key \`test2_foo___bar_foreign\`;
 
+alter table \`configuration2\` drop foreign key \`configuration2_test_id_foreign\`;
+
+alter table \`foo_param2\` add constraint \`foo_param2_bar_id_foreign\` foreign key (\`bar_id\`) references \`foo_bar2\` (\`id\`) on update cascade on delete cascade;
+alter table \`foo_param2\` add constraint \`foo_param2_baz_id_foreign\` foreign key (\`baz_id\`) references \`foo_baz2\` (\`id\`) on update cascade on delete cascade;
+
 alter table \`book2\` drop column \`foo\`;
+alter table \`book2\` add constraint \`book2_publisher_id_foreign\` foreign key (\`publisher_id\`) references \`publisher2\` (\`id\`) on delete set null;
 
 alter table \`test2\` drop index \`test2_foo___bar_unique\`;
 alter table \`test2\` drop column \`foo___bar\`, drop column \`foo___baz\`;
+
+alter table \`configuration2\` add constraint \`configuration2_test_id_foreign\` foreign key (\`test_id\`) references \`test2\` (\`id\`);
 "
 `;

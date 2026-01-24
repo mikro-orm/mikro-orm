@@ -44,7 +44,7 @@ export class Users {
   @Property({ type: 'date' })
   dateOfBirth!: string;
 
-  @ManyToOne({ entity: () => AllowedAgesAtCreation, ref: true, fieldName: 'age_at_creation', deleteRule: 'cascade', generated: () => "(timestampdiff(YEAR,\`date_of_birth\`,\`created_at\`)) stored", nullable: true, index: 'fk_users_allowed_ages_at_creation_idx' })
+  @ManyToOne({ entity: () => AllowedAgesAtCreation, ref: true, fieldName: 'age_at_creation', updateRule: 'restrict', deleteRule: 'cascade', generated: () => "(timestampdiff(YEAR,\`date_of_birth\`,\`created_at\`)) stored", nullable: true, index: 'fk_users_allowed_ages_at_creation_idx' })
   ageAtCreation?: Ref<AllowedAgesAtCreation>;
 
 }
@@ -96,7 +96,7 @@ export class Users {
   @Property({ type: 'date' })
   dateOfBirth!: string;
 
-  @ManyToOne({ entity: () => AllowedAgesAtCreation, ref: true, fieldName: 'age_at_creation', deleteRule: 'cascade', generated: '(timestampdiff(YEAR,\`date_of_birth\`,\`created_at\`)) stored', nullable: true, index: 'fk_users_allowed_ages_at_creation_idx' })
+  @ManyToOne({ entity: () => AllowedAgesAtCreation, ref: true, fieldName: 'age_at_creation', updateRule: 'restrict', deleteRule: 'cascade', generated: '(timestampdiff(YEAR,\`date_of_birth\`,\`created_at\`)) stored', nullable: true, index: 'fk_users_allowed_ages_at_creation_idx' })
   ageAtCreation?: Ref<AllowedAgesAtCreation>;
 
 }
@@ -158,6 +158,7 @@ export const UsersSchema = new EntitySchema({
       entity: () => AllowedAgesAtCreation,
       ref: true,
       fieldName: 'age_at_creation',
+      updateRule: 'restrict',
       deleteRule: 'cascade',
       generated: () => "(timestampdiff(YEAR,\`date_of_birth\`,\`created_at\`)) stored",
       nullable: true,
@@ -223,6 +224,7 @@ export const UsersSchema = new EntitySchema({
       entity: () => AllowedAgesAtCreation,
       ref: true,
       fieldName: 'age_at_creation',
+      updateRule: 'restrict',
       deleteRule: 'cascade',
       generated: '(timestampdiff(YEAR,\`date_of_birth\`,\`created_at\`)) stored',
       nullable: true,

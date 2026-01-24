@@ -82,17 +82,17 @@ alter table [base_user2] add constraint [base_user2_favourite_manager_id_foreign
 
 alter table [car_owner2] add constraint [car_owner2_car_name_car_year_foreign] foreign key ([car_name], [car_year]) references [car2] ([name], [year]) on update cascade;
 
-alter table [foo_bar2] add constraint [foo_bar2_baz_id_foreign] foreign key ([baz_id]) references [foo_baz2] ([id]) on update cascade on delete set null;
+alter table [foo_bar2] add constraint [foo_bar2_baz_id_foreign] foreign key ([baz_id]) references [foo_baz2] ([id]) on delete set null;
 alter table [foo_bar2] add constraint [foo_bar2_foo_bar_id_foreign] foreign key ([foo_bar_id]) references [foo_bar2] ([id]);
 
-alter table [foo_param2] add constraint [foo_param2_bar_id_foreign] foreign key ([bar_id]) references [foo_bar2] ([id]) on update cascade;
+alter table [foo_param2] add constraint [foo_param2_bar_id_foreign] foreign key ([bar_id]) references [foo_bar2] ([id]) on update cascade on delete cascade;
 alter table [foo_param2] add constraint [foo_param2_baz_id_foreign] foreign key ([baz_id]) references [foo_baz2] ([id]) on update no action on delete no action;
 
 alter table [author2] add constraint [author2_favourite_book_uuid_pk_foreign] foreign key ([favourite_book_uuid_pk]) references [book2] ([uuid_pk]) on update no action on delete cascade;
 alter table [author2] add constraint [author2_favourite_author_id_foreign] foreign key ([favourite_author_id]) references [author2] ([id]);
 
 alter table [book2] add constraint [book2_author_id_foreign] foreign key ([author_id]) references [author2] ([id]);
-alter table [book2] add constraint [book2_publisher_id_foreign] foreign key ([publisher_id]) references [publisher2] ([id]) on update cascade on delete cascade;
+alter table [book2] add constraint [book2_publisher_id_foreign] foreign key ([publisher_id]) references [publisher2] ([id]) on delete set null;
 
 alter table [book2_tags] add constraint [book2_tags_book2_uuid_pk_foreign] foreign key ([book2_uuid_pk]) references [book2] ([uuid_pk]) on update cascade on delete cascade;
 alter table [book2_tags] add constraint [book2_tags_book_tag2_id_foreign] foreign key ([book_tag2_id]) references [book_tag2] ([id]) on update cascade on delete cascade;
@@ -113,7 +113,7 @@ alter table [test2] add constraint [test2_book_uuid_pk_foreign] foreign key ([bo
 alter table [publisher2_tests] add constraint [publisher2_tests_publisher2_id_foreign] foreign key ([publisher2_id]) references [publisher2] ([id]) on update cascade on delete cascade;
 alter table [publisher2_tests] add constraint [publisher2_tests_test2_id_foreign] foreign key ([test2_id]) references [test2] ([id]) on update cascade on delete cascade;
 
-alter table [configuration2] add constraint [configuration2_test_id_foreign] foreign key ([test_id]) references [test2] ([id]) on update cascade;
+alter table [configuration2] add constraint [configuration2_test_id_foreign] foreign key ([test_id]) references [test2] ([id]);
 
 alter table [user2] add constraint [user2_favourite_car_name_favourite_car_year_foreign] foreign key ([favourite_car_name], [favourite_car_year]) references [car2] ([name], [year]) on update cascade on delete set null;
 
@@ -224,7 +224,7 @@ alter table [author2] add constraint [author2_age_default] default 42 for [age];
 declare @constraint1 varchar(100) = (select default_constraints.name from sys.all_columns join sys.tables on all_columns.object_id = tables.object_id join sys.schemas on tables.schema_id = schemas.schema_id join sys.default_constraints on all_columns.default_object_id = default_constraints.object_id where schemas.name = 'dbo' and tables.name = 'author2' and all_columns.name = 'born') if @constraint1 is not null exec('alter table [author2] drop constraint ' + @constraint1);
 alter table [author2] alter column [born] int not null;
 alter table [author2] add constraint [author2_born_default] default 42 for [born];
-alter table [author2] add constraint [author2_favourite_author_id_foreign] foreign key ([favourite_author_id]) references [foo_bar2] ([id]) on update cascade on delete set null;
+alter table [author2] add constraint [author2_favourite_author_id_foreign] foreign key ([favourite_author_id]) references [foo_bar2] ([id]) on delete set null;
 
 create index [author2_born_index] on [author2] ([born]);
 "

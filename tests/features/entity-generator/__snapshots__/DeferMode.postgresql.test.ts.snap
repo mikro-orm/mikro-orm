@@ -46,7 +46,7 @@ export const TestSchema = defineEntity({
     middleInitial: p.character().nullable(),
     lastName: p.string().nullable(),
     governmentId: p.character().length(10).nullable().unique('must_be_different'),
-    locale: () => p.manyToOne(Locale).ref().name('locale').nullable().deferMode(DeferMode.INITIALLY_DEFERRED),
+    locale: () => p.manyToOne(Locale).ref().name('locale').updateRule('no action').deleteRule('no action').nullable().deferMode(DeferMode.INITIALLY_DEFERRED),
   },
 });
 ",

@@ -6,7 +6,7 @@ alter table "user" add constraint "user_email_unique" unique ("email");
 
 create table "foo" ("id" serial primary key, "user_id" int not null);
 
-alter table "foo" add constraint "foo_user_id_foreign" foreign key ("user_id") references "user" ("id") on update cascade;
+alter table "foo" add constraint "foo_user_id_foreign" foreign key ("user_id") references "user" ("id");
 "
 `;
 

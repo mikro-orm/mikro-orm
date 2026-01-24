@@ -59,9 +59,9 @@ export const UserDepartmentSchema = defineEntity({
   ],
   properties: {
     userDepartmentId: p.integer().primary(),
-    department: () => p.manyToOne(Department).ref().name('department_id'),
+    department: () => p.manyToOne(Department).ref().name('department_id').updateRule('no action').deleteRule('no action'),
     departmentId: p.integer().persist(false),
-    user: () => p.manyToOne(User).ref().name('user_id'),
+    user: () => p.manyToOne(User).ref().name('user_id').updateRule('no action').deleteRule('no action'),
     userId: p.integer().persist(false),
   },
 });

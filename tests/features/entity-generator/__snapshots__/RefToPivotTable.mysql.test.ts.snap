@@ -17,8 +17,8 @@ export const EmailMessagesLogSchema = defineEntity({
   class: EmailMessagesLog,
   properties: {
     logId: p.integer().primary(),
-    sender: () => p.manyToOne(SenderEmails).ref().fieldNames('sender_id','sender_email_id').updateRule('cascade').index('fk_email_messages_log_sender_emails1_idx'),
-    recepient: () => p.manyToOne(Emails).ref().updateRule('cascade').deleteRule('cascade').index('fk_email_messages_log_emails1_idx'),
+    sender: () => p.manyToOne(SenderEmails).ref().fieldNames('sender_id','sender_email_id').deleteRule('restrict').index('fk_email_messages_log_sender_emails1_idx'),
+    recepient: () => p.manyToOne(Emails).ref().index('fk_email_messages_log_emails1_idx'),
   },
 });
 ",
@@ -84,8 +84,8 @@ export class SenderEmails {
 export const SenderEmailsSchema = defineEntity({
   class: SenderEmails,
   properties: {
-    sender: () => p.manyToOne(Sender).primary().ref().name('sender_id').updateRule('cascade').deleteRule('cascade'),
-    email: () => p.manyToOne(Emails).primary().ref().name('email_id').updateRule('cascade').index('fk_sender_emails_emails1_idx'),
+    sender: () => p.manyToOne(Sender).primary().ref().name('sender_id'),
+    email: () => p.manyToOne(Emails).primary().ref().name('email_id').deleteRule('restrict').index('fk_sender_emails_emails1_idx'),
     emailMessagesLogCollection: () => p.oneToMany(EmailMessagesLog).mappedBy('sender'),
   },
 });

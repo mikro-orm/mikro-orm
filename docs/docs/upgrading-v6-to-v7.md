@@ -244,6 +244,47 @@ The `entitySchema` option is now removed in favor of `entityDefinition: 'entityS
 
 The nullability used to be inferred based on the value of `cascade` option for to-one relations. This inference is now removed, use `nullable` option explicitly to control the nullability of such properties.
 
+## Foreign key rules no longer inferred from `cascade` option
+
+Previously, MikroORM inferred `updateRule` and `deleteRule` from the `cascade` option:
+- `Cascade.REMOVE` or `Cascade.ALL` → `deleteRule: 'cascade'`
+- `Cascade.PERSIST` or `Cascade.ALL` → `updateRule: 'cascade'`
+- Nullable relation → `deleteRule: 'set null'`
+
+This inference has been removed. FK rules are now independent of the `cascade` option, which only controls ORM-level cascading behavior.
+
+The ORM still applies sensible semantic defaults for specific relation patterns:
+
+| Scenario | `deleteRule` | `updateRule` |
+|----------|--------------|--------------|
+| FK-as-PK (entity's PK is also a FK) | `cascade` | `cascade` |
+| Pivot tables (M:N join tables) | `cascade` | `cascade` |
+| Relation to composite PK target | — | `cascade` |
+| Nullable relation | `set null` | — |
+| Self-referencing FK on MSSQL | `no action` | `no action` |
+
+If you relied on the old `cascade` option inference, you have two options:
+
+1. Set rules explicitly on individual relations:
+
+```ts
+@ManyToOne({ deleteRule: 'cascade', updateRule: 'cascade' })
+author?: Author;
+```
+
+2. Set global defaults in your config:
+
+```ts
+MikroORM.init({
+  schemaGenerator: {
+    defaultDeleteRule: 'cascade',
+    defaultUpdateRule: 'cascade',
+  },
+});
+```
+
+When neither is set, the database uses its native default (NO ACTION for PostgreSQL, SQLite, MSSQL, Oracle; RESTRICT for MySQL/MariaDB).
+
 ## `MikroORMOptions` type removed
 
 Previously, `MikroORMOptions` defined keys with defaults as mandatory, and we inferred the `Options` type out of it. This is now swapped, the `Options` type is defined as interface with optional keys, and a new `RequiredOptions` type is introduced that defines all keys with default value as mandatory.

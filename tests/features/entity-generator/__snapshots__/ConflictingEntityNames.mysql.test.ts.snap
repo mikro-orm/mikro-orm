@@ -87,10 +87,10 @@ export class ManyToMany {
 
   [MikroORM_PrimaryKeyProp]?: ['entity', 'property'];
 
-  @MikroORM_ManyToOne({ entity: () => Entity, ref: true, primary: true })
+  @MikroORM_ManyToOne({ entity: () => Entity, ref: true, updateRule: 'no action', deleteRule: 'no action', primary: true })
   entity!: MikroORM_Ref<Entity>;
 
-  @MikroORM_ManyToOne({ entity: () => Property, ref: true, primary: true, index: 'fk_many_to_many_property1_idx' })
+  @MikroORM_ManyToOne({ entity: () => Property, ref: true, updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_many_to_many_property1_idx' })
   property!: MikroORM_Ref<Property>;
 
   @MikroORM_Property({ unsigned: true, autoincrement: true, unique: 'creation_order_UNIQUE' })
@@ -113,7 +113,7 @@ export class Property {
   @MikroORM_PrimaryKey()
   id!: number;
 
-  @MikroORM_ManyToOne({ entity: () => Enum, ref: true, fieldName: 'one_to_many', index: 'fk_property_enum_idx' })
+  @MikroORM_ManyToOne({ entity: () => Enum, ref: true, fieldName: 'one_to_many', updateRule: 'no action', deleteRule: 'no action', index: 'fk_property_enum_idx' })
   oneToMany!: MikroORM_Ref<Enum>;
 
   @MikroORM_ManyToMany({ entity: () => Entity, mappedBy: 'manyToMany' })
@@ -248,12 +248,21 @@ export class ManyToMany {
 export const ManyToManySchema = new MikroORM_EntitySchema({
   class: ManyToMany,
   properties: {
-    entity: { primary: true, kind: 'm:1', entity: () => Entity, ref: true },
+    entity: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Entity,
+      ref: true,
+      updateRule: 'no action',
+      deleteRule: 'no action',
+    },
     property: {
       primary: true,
       kind: 'm:1',
       entity: () => Property,
       ref: true,
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_many_to_many_property1_idx',
     },
     creationOrder: {
@@ -287,6 +296,8 @@ export const PropertySchema = new MikroORM_EntitySchema({
       entity: () => Enum,
       ref: true,
       fieldName: 'one_to_many',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_property_enum_idx',
     },
     manyToManyInverse: {

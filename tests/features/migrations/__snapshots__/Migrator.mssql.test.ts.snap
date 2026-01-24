@@ -61,17 +61,17 @@ export class Migration20191013214813 extends Migration {
 
     this.addSql(\`create table [custom].[configuration2] ([property] nvarchar(255) not null, [test_id] int not null, [value] nvarchar(255) not null, primary key ([property], [test_id]));\`);
 
-    this.addSql(\`alter table [custom].[foo_bar2] add constraint [foo_bar2_baz_id_foreign] foreign key ([baz_id]) references [custom].[foo_baz2] ([id]) on update cascade on delete set null;\`);
+    this.addSql(\`alter table [custom].[foo_bar2] add constraint [foo_bar2_baz_id_foreign] foreign key ([baz_id]) references [custom].[foo_baz2] ([id]) on delete set null;\`);
     this.addSql(\`alter table [custom].[foo_bar2] add constraint [foo_bar2_foo_bar_id_foreign] foreign key ([foo_bar_id]) references [custom].[foo_bar2] ([id]);\`);
 
-    this.addSql(\`alter table [custom].[foo_param2] add constraint [foo_param2_bar_id_foreign] foreign key ([bar_id]) references [custom].[foo_bar2] ([id]) on update cascade;\`);
+    this.addSql(\`alter table [custom].[foo_param2] add constraint [foo_param2_bar_id_foreign] foreign key ([bar_id]) references [custom].[foo_bar2] ([id]) on update cascade on delete cascade;\`);
     this.addSql(\`alter table [custom].[foo_param2] add constraint [foo_param2_baz_id_foreign] foreign key ([baz_id]) references [custom].[foo_baz2] ([id]) on update no action on delete no action;\`);
 
     this.addSql(\`alter table [custom].[author2] add constraint [author2_favourite_book_uuid_pk_foreign] foreign key ([favourite_book_uuid_pk]) references [custom].[book2] ([uuid_pk]) on update no action on delete cascade;\`);
     this.addSql(\`alter table [custom].[author2] add constraint [author2_favourite_author_id_foreign] foreign key ([favourite_author_id]) references [custom].[author2] ([id]);\`);
 
     this.addSql(\`alter table [custom].[book2] add constraint [book2_author_id_foreign] foreign key ([author_id]) references [custom].[author2] ([id]);\`);
-    this.addSql(\`alter table [custom].[book2] add constraint [book2_publisher_id_foreign] foreign key ([publisher_id]) references [custom].[publisher2] ([id]) on update cascade on delete cascade;\`);
+    this.addSql(\`alter table [custom].[book2] add constraint [book2_publisher_id_foreign] foreign key ([publisher_id]) references [custom].[publisher2] ([id]) on delete set null;\`);
 
     this.addSql(\`alter table [custom].[book2_tags] add constraint [book2_tags_book2_uuid_pk_foreign] foreign key ([book2_uuid_pk]) references [custom].[book2] ([uuid_pk]) on update cascade on delete cascade;\`);
     this.addSql(\`alter table [custom].[book2_tags] add constraint [book2_tags_book_tag2_id_foreign] foreign key ([book_tag2_id]) references [custom].[book_tag2] ([id]) on update cascade on delete cascade;\`);
@@ -92,7 +92,7 @@ export class Migration20191013214813 extends Migration {
     this.addSql(\`alter table [custom].[publisher2_tests] add constraint [publisher2_tests_publisher2_id_foreign] foreign key ([publisher2_id]) references [custom].[publisher2] ([id]) on update cascade on delete cascade;\`);
     this.addSql(\`alter table [custom].[publisher2_tests] add constraint [publisher2_tests_test2_id_foreign] foreign key ([test2_id]) references [custom].[test2] ([id]) on update cascade on delete cascade;\`);
 
-    this.addSql(\`alter table [custom].[configuration2] add constraint [configuration2_test_id_foreign] foreign key ([test_id]) references [custom].[test2] ([id]) on update cascade;\`);
+    this.addSql(\`alter table [custom].[configuration2] add constraint [configuration2_test_id_foreign] foreign key ([test_id]) references [custom].[test2] ([id]);\`);
   }
 
 }
@@ -154,17 +154,17 @@ export class Migration20191013214813 extends Migration {
       "",
       "create table [custom].[configuration2] ([property] nvarchar(255) not null, [test_id] int not null, [value] nvarchar(255) not null, primary key ([property], [test_id]));",
       "",
-      "alter table [custom].[foo_bar2] add constraint [foo_bar2_baz_id_foreign] foreign key ([baz_id]) references [custom].[foo_baz2] ([id]) on update cascade on delete set null;",
+      "alter table [custom].[foo_bar2] add constraint [foo_bar2_baz_id_foreign] foreign key ([baz_id]) references [custom].[foo_baz2] ([id]) on delete set null;",
       "alter table [custom].[foo_bar2] add constraint [foo_bar2_foo_bar_id_foreign] foreign key ([foo_bar_id]) references [custom].[foo_bar2] ([id]);",
       "",
-      "alter table [custom].[foo_param2] add constraint [foo_param2_bar_id_foreign] foreign key ([bar_id]) references [custom].[foo_bar2] ([id]) on update cascade;",
+      "alter table [custom].[foo_param2] add constraint [foo_param2_bar_id_foreign] foreign key ([bar_id]) references [custom].[foo_bar2] ([id]) on update cascade on delete cascade;",
       "alter table [custom].[foo_param2] add constraint [foo_param2_baz_id_foreign] foreign key ([baz_id]) references [custom].[foo_baz2] ([id]) on update no action on delete no action;",
       "",
       "alter table [custom].[author2] add constraint [author2_favourite_book_uuid_pk_foreign] foreign key ([favourite_book_uuid_pk]) references [custom].[book2] ([uuid_pk]) on update no action on delete cascade;",
       "alter table [custom].[author2] add constraint [author2_favourite_author_id_foreign] foreign key ([favourite_author_id]) references [custom].[author2] ([id]);",
       "",
       "alter table [custom].[book2] add constraint [book2_author_id_foreign] foreign key ([author_id]) references [custom].[author2] ([id]);",
-      "alter table [custom].[book2] add constraint [book2_publisher_id_foreign] foreign key ([publisher_id]) references [custom].[publisher2] ([id]) on update cascade on delete cascade;",
+      "alter table [custom].[book2] add constraint [book2_publisher_id_foreign] foreign key ([publisher_id]) references [custom].[publisher2] ([id]) on delete set null;",
       "",
       "alter table [custom].[book2_tags] add constraint [book2_tags_book2_uuid_pk_foreign] foreign key ([book2_uuid_pk]) references [custom].[book2] ([uuid_pk]) on update cascade on delete cascade;",
       "alter table [custom].[book2_tags] add constraint [book2_tags_book_tag2_id_foreign] foreign key ([book_tag2_id]) references [custom].[book_tag2] ([id]) on update cascade on delete cascade;",
@@ -185,7 +185,7 @@ export class Migration20191013214813 extends Migration {
       "alter table [custom].[publisher2_tests] add constraint [publisher2_tests_publisher2_id_foreign] foreign key ([publisher2_id]) references [custom].[publisher2] ([id]) on update cascade on delete cascade;",
       "alter table [custom].[publisher2_tests] add constraint [publisher2_tests_test2_id_foreign] foreign key ([test2_id]) references [custom].[test2] ([id]) on update cascade on delete cascade;",
       "",
-      "alter table [custom].[configuration2] add constraint [configuration2_test_id_foreign] foreign key ([test_id]) references [custom].[test2] ([id]) on update cascade;",
+      "alter table [custom].[configuration2] add constraint [configuration2_test_id_foreign] foreign key ([test_id]) references [custom].[test2] ([id]);",
     ],
   },
   "fileName": "Migration20191013214813.ts",
@@ -253,17 +253,17 @@ export class Migration20191013214813 extends Migration {
 
     this.addSql(\`create table [custom].[configuration2] ([property] nvarchar(255) not null, [test_id] int not null, [value] nvarchar(255) not null, primary key ([property], [test_id]));\`);
 
-    this.addSql(\`alter table [custom].[foo_bar2] add constraint [foo_bar2_baz_id_foreign] foreign key ([baz_id]) references [custom].[foo_baz2] ([id]) on update cascade on delete set null;\`);
+    this.addSql(\`alter table [custom].[foo_bar2] add constraint [foo_bar2_baz_id_foreign] foreign key ([baz_id]) references [custom].[foo_baz2] ([id]) on delete set null;\`);
     this.addSql(\`alter table [custom].[foo_bar2] add constraint [foo_bar2_foo_bar_id_foreign] foreign key ([foo_bar_id]) references [custom].[foo_bar2] ([id]);\`);
 
-    this.addSql(\`alter table [custom].[foo_param2] add constraint [foo_param2_bar_id_foreign] foreign key ([bar_id]) references [custom].[foo_bar2] ([id]) on update cascade;\`);
+    this.addSql(\`alter table [custom].[foo_param2] add constraint [foo_param2_bar_id_foreign] foreign key ([bar_id]) references [custom].[foo_bar2] ([id]) on update cascade on delete cascade;\`);
     this.addSql(\`alter table [custom].[foo_param2] add constraint [foo_param2_baz_id_foreign] foreign key ([baz_id]) references [custom].[foo_baz2] ([id]) on update no action on delete no action;\`);
 
     this.addSql(\`alter table [custom].[author2] add constraint [author2_favourite_book_uuid_pk_foreign] foreign key ([favourite_book_uuid_pk]) references [custom].[book2] ([uuid_pk]) on update no action on delete cascade;\`);
     this.addSql(\`alter table [custom].[author2] add constraint [author2_favourite_author_id_foreign] foreign key ([favourite_author_id]) references [custom].[author2] ([id]);\`);
 
     this.addSql(\`alter table [custom].[book2] add constraint [book2_author_id_foreign] foreign key ([author_id]) references [custom].[author2] ([id]);\`);
-    this.addSql(\`alter table [custom].[book2] add constraint [book2_publisher_id_foreign] foreign key ([publisher_id]) references [custom].[publisher2] ([id]) on update cascade on delete cascade;\`);
+    this.addSql(\`alter table [custom].[book2] add constraint [book2_publisher_id_foreign] foreign key ([publisher_id]) references [custom].[publisher2] ([id]) on delete set null;\`);
 
     this.addSql(\`alter table [custom].[book2_tags] add constraint [book2_tags_book2_uuid_pk_foreign] foreign key ([book2_uuid_pk]) references [custom].[book2] ([uuid_pk]) on update cascade on delete cascade;\`);
     this.addSql(\`alter table [custom].[book2_tags] add constraint [book2_tags_book_tag2_id_foreign] foreign key ([book_tag2_id]) references [custom].[book_tag2] ([id]) on update cascade on delete cascade;\`);
@@ -284,7 +284,7 @@ export class Migration20191013214813 extends Migration {
     this.addSql(\`alter table [custom].[publisher2_tests] add constraint [publisher2_tests_publisher2_id_foreign] foreign key ([publisher2_id]) references [custom].[publisher2] ([id]) on update cascade on delete cascade;\`);
     this.addSql(\`alter table [custom].[publisher2_tests] add constraint [publisher2_tests_test2_id_foreign] foreign key ([test2_id]) references [custom].[test2] ([id]) on update cascade on delete cascade;\`);
 
-    this.addSql(\`alter table [custom].[configuration2] add constraint [configuration2_test_id_foreign] foreign key ([test_id]) references [custom].[test2] ([id]) on update cascade;\`);
+    this.addSql(\`alter table [custom].[configuration2] add constraint [configuration2_test_id_foreign] foreign key ([test_id]) references [custom].[test2] ([id]);\`);
   }
 
 }
@@ -346,17 +346,17 @@ export class Migration20191013214813 extends Migration {
       "",
       "create table [custom].[configuration2] ([property] nvarchar(255) not null, [test_id] int not null, [value] nvarchar(255) not null, primary key ([property], [test_id]));",
       "",
-      "alter table [custom].[foo_bar2] add constraint [foo_bar2_baz_id_foreign] foreign key ([baz_id]) references [custom].[foo_baz2] ([id]) on update cascade on delete set null;",
+      "alter table [custom].[foo_bar2] add constraint [foo_bar2_baz_id_foreign] foreign key ([baz_id]) references [custom].[foo_baz2] ([id]) on delete set null;",
       "alter table [custom].[foo_bar2] add constraint [foo_bar2_foo_bar_id_foreign] foreign key ([foo_bar_id]) references [custom].[foo_bar2] ([id]);",
       "",
-      "alter table [custom].[foo_param2] add constraint [foo_param2_bar_id_foreign] foreign key ([bar_id]) references [custom].[foo_bar2] ([id]) on update cascade;",
+      "alter table [custom].[foo_param2] add constraint [foo_param2_bar_id_foreign] foreign key ([bar_id]) references [custom].[foo_bar2] ([id]) on update cascade on delete cascade;",
       "alter table [custom].[foo_param2] add constraint [foo_param2_baz_id_foreign] foreign key ([baz_id]) references [custom].[foo_baz2] ([id]) on update no action on delete no action;",
       "",
       "alter table [custom].[author2] add constraint [author2_favourite_book_uuid_pk_foreign] foreign key ([favourite_book_uuid_pk]) references [custom].[book2] ([uuid_pk]) on update no action on delete cascade;",
       "alter table [custom].[author2] add constraint [author2_favourite_author_id_foreign] foreign key ([favourite_author_id]) references [custom].[author2] ([id]);",
       "",
       "alter table [custom].[book2] add constraint [book2_author_id_foreign] foreign key ([author_id]) references [custom].[author2] ([id]);",
-      "alter table [custom].[book2] add constraint [book2_publisher_id_foreign] foreign key ([publisher_id]) references [custom].[publisher2] ([id]) on update cascade on delete cascade;",
+      "alter table [custom].[book2] add constraint [book2_publisher_id_foreign] foreign key ([publisher_id]) references [custom].[publisher2] ([id]) on delete set null;",
       "",
       "alter table [custom].[book2_tags] add constraint [book2_tags_book2_uuid_pk_foreign] foreign key ([book2_uuid_pk]) references [custom].[book2] ([uuid_pk]) on update cascade on delete cascade;",
       "alter table [custom].[book2_tags] add constraint [book2_tags_book_tag2_id_foreign] foreign key ([book_tag2_id]) references [custom].[book_tag2] ([id]) on update cascade on delete cascade;",
@@ -377,7 +377,7 @@ export class Migration20191013214813 extends Migration {
       "alter table [custom].[publisher2_tests] add constraint [publisher2_tests_publisher2_id_foreign] foreign key ([publisher2_id]) references [custom].[publisher2] ([id]) on update cascade on delete cascade;",
       "alter table [custom].[publisher2_tests] add constraint [publisher2_tests_test2_id_foreign] foreign key ([test2_id]) references [custom].[test2] ([id]) on update cascade on delete cascade;",
       "",
-      "alter table [custom].[configuration2] add constraint [configuration2_test_id_foreign] foreign key ([test_id]) references [custom].[test2] ([id]) on update cascade;",
+      "alter table [custom].[configuration2] add constraint [configuration2_test_id_foreign] foreign key ([test_id]) references [custom].[test2] ([id]);",
     ],
   },
   "fileName": "Migration20191013214813.ts",

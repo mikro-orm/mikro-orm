@@ -11,7 +11,7 @@ export class DeliverableProducts {
 
   [PrimaryKeyProp]?: 'product';
 
-  @OneToOne({ entity: () => Products, fieldName: 'product_id', primary: true })
+  @OneToOne({ entity: () => Products, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   product!: Products;
 
   @Property({ unsigned: true, persist: false })
@@ -47,7 +47,7 @@ export class ManufacturedProducts {
 
   [PrimaryKeyProp]?: 'product';
 
-  @OneToOne({ entity: () => Products, fieldName: 'product_id', primary: true })
+  @OneToOne({ entity: () => Products, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   product!: Products;
 
   @Property({ unsigned: true, persist: false })
@@ -91,16 +91,16 @@ export class ShippableProducts {
   @Property({ persist: false, index: 'fk_shippable_products_destinations1_idx' })
   destination!: string;
 
-  @ManyToOne({ entity: () => DeliverableProducts, fieldName: 'product_id', primary: true })
+  @ManyToOne({ entity: () => DeliverableProducts, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   deliverableProducts!: DeliverableProducts;
 
-  @ManyToOne({ entity: () => Destinations, fieldName: 'destination', index: 'fk_shippable_products_destinations1_idx' })
+  @ManyToOne({ entity: () => Destinations, fieldName: 'destination', updateRule: 'no action', deleteRule: 'no action', index: 'fk_shippable_products_destinations1_idx' })
   destinations!: Destinations;
 
-  @ManyToOne({ entity: () => ManufacturedProducts, fieldName: 'product_id', primary: true })
+  @ManyToOne({ entity: () => ManufacturedProducts, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   fkShippableProductsManufacturedProducts!: ManufacturedProducts;
 
-  @ManyToOne({ entity: () => ManufacturedProducts, fieldName: 'product_id', primary: true })
+  @ManyToOne({ entity: () => ManufacturedProducts, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   fkShippableProductsManufacturedProducts1!: ManufacturedProducts;
 
 }
@@ -128,6 +128,8 @@ export const DeliverableProductsSchema = new EntitySchema({
       kind: '1:1',
       entity: () => Products,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     productId: { type: 'integer', unsigned: true, persist: false },
     startingAt: { type: 'datetime' },
@@ -168,6 +170,8 @@ export const ManufacturedProductsSchema = new EntitySchema({
       kind: '1:1',
       entity: () => Products,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     productId: { type: 'integer', unsigned: true, persist: false },
     place: { type: 'string' },
@@ -219,11 +223,15 @@ export const ShippableProductsSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => DeliverableProducts,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     destinations: {
       kind: 'm:1',
       entity: () => Destinations,
       fieldName: 'destination',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_shippable_products_destinations1_idx',
     },
     fkShippableProductsManufacturedProducts: {
@@ -231,12 +239,16 @@ export const ShippableProductsSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => ManufacturedProducts,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     fkShippableProductsManufacturedProducts1: {
       primary: true,
       kind: 'm:1',
       entity: () => ManufacturedProducts,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
   },
 });
@@ -255,7 +267,7 @@ export class DeliverableProducts {
 
   [PrimaryKeyProp]?: 'product';
 
-  @OneToOne({ entity: () => Products, ref: true, fieldName: 'product_id', primary: true })
+  @OneToOne({ entity: () => Products, ref: true, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   product!: Ref<Products>;
 
   @Property({ unsigned: true, persist: false })
@@ -291,7 +303,7 @@ export class ManufacturedProducts {
 
   [PrimaryKeyProp]?: 'product';
 
-  @OneToOne({ entity: () => Products, ref: true, fieldName: 'product_id', primary: true })
+  @OneToOne({ entity: () => Products, ref: true, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   product!: Ref<Products>;
 
   @Property({ unsigned: true, persist: false })
@@ -335,16 +347,16 @@ export class ShippableProducts {
   @Property({ persist: false, index: 'fk_shippable_products_destinations1_idx' })
   destination!: string;
 
-  @ManyToOne({ entity: () => DeliverableProducts, ref: true, fieldName: 'product_id', primary: true })
+  @ManyToOne({ entity: () => DeliverableProducts, ref: true, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   deliverableProducts!: Ref<DeliverableProducts>;
 
-  @ManyToOne({ entity: () => Destinations, ref: true, fieldName: 'destination', index: 'fk_shippable_products_destinations1_idx' })
+  @ManyToOne({ entity: () => Destinations, ref: true, fieldName: 'destination', updateRule: 'no action', deleteRule: 'no action', index: 'fk_shippable_products_destinations1_idx' })
   destinations!: Ref<Destinations>;
 
-  @ManyToOne({ entity: () => ManufacturedProducts, ref: true, fieldName: 'product_id', primary: true })
+  @ManyToOne({ entity: () => ManufacturedProducts, ref: true, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   fkShippableProductsManufacturedProducts!: Ref<ManufacturedProducts>;
 
-  @ManyToOne({ entity: () => ManufacturedProducts, ref: true, fieldName: 'product_id', primary: true })
+  @ManyToOne({ entity: () => ManufacturedProducts, ref: true, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   fkShippableProductsManufacturedProducts1!: Ref<ManufacturedProducts>;
 
 }
@@ -373,6 +385,8 @@ export const DeliverableProductsSchema = new EntitySchema({
       entity: () => Products,
       ref: true,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     productId: { type: 'integer', unsigned: true, persist: false },
     startingAt: { type: 'datetime' },
@@ -414,6 +428,8 @@ export const ManufacturedProductsSchema = new EntitySchema({
       entity: () => Products,
       ref: true,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     productId: { type: 'integer', unsigned: true, persist: false },
     place: { type: 'string' },
@@ -466,12 +482,16 @@ export const ShippableProductsSchema = new EntitySchema({
       entity: () => DeliverableProducts,
       ref: true,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     destinations: {
       kind: 'm:1',
       entity: () => Destinations,
       ref: true,
       fieldName: 'destination',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_shippable_products_destinations1_idx',
     },
     fkShippableProductsManufacturedProducts: {
@@ -480,6 +500,8 @@ export const ShippableProductsSchema = new EntitySchema({
       entity: () => ManufacturedProducts,
       ref: true,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     fkShippableProductsManufacturedProducts1: {
       primary: true,
@@ -487,6 +509,8 @@ export const ShippableProductsSchema = new EntitySchema({
       entity: () => ManufacturedProducts,
       ref: true,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
   },
 });
@@ -506,7 +530,7 @@ export class DeliverableProducts {
 
   [PrimaryKeyProp]?: 'product';
 
-  @OneToOne({ entity: () => Products, fieldName: 'product_id', primary: true })
+  @OneToOne({ entity: () => Products, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   product!: Products;
 
   @Property({ unsigned: true, persist: false })
@@ -550,7 +574,7 @@ export class ManufacturedProducts {
 
   [PrimaryKeyProp]?: 'product';
 
-  @OneToOne({ entity: () => Products, fieldName: 'product_id', primary: true })
+  @OneToOne({ entity: () => Products, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   product!: Products;
 
   @Property({ unsigned: true, persist: false })
@@ -608,16 +632,16 @@ export class ShippableProducts {
   @Property({ persist: false, index: 'fk_shippable_products_destinations1_idx' })
   destination!: string;
 
-  @ManyToOne({ entity: () => DeliverableProducts, fieldName: 'product_id', primary: true })
+  @ManyToOne({ entity: () => DeliverableProducts, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   deliverableProducts!: DeliverableProducts;
 
-  @ManyToOne({ entity: () => Destinations, fieldName: 'destination', index: 'fk_shippable_products_destinations1_idx' })
+  @ManyToOne({ entity: () => Destinations, fieldName: 'destination', updateRule: 'no action', deleteRule: 'no action', index: 'fk_shippable_products_destinations1_idx' })
   destinations!: Destinations;
 
-  @ManyToOne({ entity: () => ManufacturedProducts, fieldName: 'product_id', primary: true })
+  @ManyToOne({ entity: () => ManufacturedProducts, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   fkShippableProductsManufacturedProducts!: ManufacturedProducts;
 
-  @ManyToOne({ entity: () => ManufacturedProducts, fieldName: 'product_id', primary: true })
+  @ManyToOne({ entity: () => ManufacturedProducts, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   fkShippableProductsManufacturedProducts1!: ManufacturedProducts;
 
 }
@@ -647,6 +671,8 @@ export const DeliverableProductsSchema = new EntitySchema({
       kind: '1:1',
       entity: () => Products,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     productId: { type: 'integer', unsigned: true, persist: false },
     startingAt: { type: 'datetime' },
@@ -702,6 +728,8 @@ export const ManufacturedProductsSchema = new EntitySchema({
       kind: '1:1',
       entity: () => Products,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     productId: { type: 'integer', unsigned: true, persist: false },
     place: { type: 'string' },
@@ -777,11 +805,15 @@ export const ShippableProductsSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => DeliverableProducts,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     destinations: {
       kind: 'm:1',
       entity: () => Destinations,
       fieldName: 'destination',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_shippable_products_destinations1_idx',
     },
     fkShippableProductsManufacturedProducts: {
@@ -789,12 +821,16 @@ export const ShippableProductsSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => ManufacturedProducts,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     fkShippableProductsManufacturedProducts1: {
       primary: true,
       kind: 'm:1',
       entity: () => ManufacturedProducts,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
   },
 });
@@ -814,7 +850,7 @@ export class DeliverableProducts {
 
   [PrimaryKeyProp]?: 'product';
 
-  @OneToOne({ entity: () => Products, ref: true, fieldName: 'product_id', primary: true })
+  @OneToOne({ entity: () => Products, ref: true, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   product!: Ref<Products>;
 
   @Property({ unsigned: true, persist: false })
@@ -858,7 +894,7 @@ export class ManufacturedProducts {
 
   [PrimaryKeyProp]?: 'product';
 
-  @OneToOne({ entity: () => Products, ref: true, fieldName: 'product_id', primary: true })
+  @OneToOne({ entity: () => Products, ref: true, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   product!: Ref<Products>;
 
   @Property({ unsigned: true, persist: false })
@@ -916,16 +952,16 @@ export class ShippableProducts {
   @Property({ persist: false, index: 'fk_shippable_products_destinations1_idx' })
   destination!: string;
 
-  @ManyToOne({ entity: () => DeliverableProducts, ref: true, fieldName: 'product_id', primary: true })
+  @ManyToOne({ entity: () => DeliverableProducts, ref: true, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   deliverableProducts!: Ref<DeliverableProducts>;
 
-  @ManyToOne({ entity: () => Destinations, ref: true, fieldName: 'destination', index: 'fk_shippable_products_destinations1_idx' })
+  @ManyToOne({ entity: () => Destinations, ref: true, fieldName: 'destination', updateRule: 'no action', deleteRule: 'no action', index: 'fk_shippable_products_destinations1_idx' })
   destinations!: Ref<Destinations>;
 
-  @ManyToOne({ entity: () => ManufacturedProducts, ref: true, fieldName: 'product_id', primary: true })
+  @ManyToOne({ entity: () => ManufacturedProducts, ref: true, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   fkShippableProductsManufacturedProducts!: Ref<ManufacturedProducts>;
 
-  @ManyToOne({ entity: () => ManufacturedProducts, ref: true, fieldName: 'product_id', primary: true })
+  @ManyToOne({ entity: () => ManufacturedProducts, ref: true, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   fkShippableProductsManufacturedProducts1!: Ref<ManufacturedProducts>;
 
 }
@@ -956,6 +992,8 @@ export const DeliverableProductsSchema = new EntitySchema({
       entity: () => Products,
       ref: true,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     productId: { type: 'integer', unsigned: true, persist: false },
     startingAt: { type: 'datetime' },
@@ -1012,6 +1050,8 @@ export const ManufacturedProductsSchema = new EntitySchema({
       entity: () => Products,
       ref: true,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     productId: { type: 'integer', unsigned: true, persist: false },
     place: { type: 'string' },
@@ -1090,12 +1130,16 @@ export const ShippableProductsSchema = new EntitySchema({
       entity: () => DeliverableProducts,
       ref: true,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     destinations: {
       kind: 'm:1',
       entity: () => Destinations,
       ref: true,
       fieldName: 'destination',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_shippable_products_destinations1_idx',
     },
     fkShippableProductsManufacturedProducts: {
@@ -1104,6 +1148,8 @@ export const ShippableProductsSchema = new EntitySchema({
       entity: () => ManufacturedProducts,
       ref: true,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     fkShippableProductsManufacturedProducts1: {
       primary: true,
@@ -1111,6 +1157,8 @@ export const ShippableProductsSchema = new EntitySchema({
       entity: () => ManufacturedProducts,
       ref: true,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
   },
 });
@@ -1129,7 +1177,7 @@ export class DeliverableProducts {
 
   [PrimaryKeyProp]?: 'product';
 
-  @OneToOne({ entity: () => Products, fieldName: 'product_id', primary: true })
+  @OneToOne({ entity: () => Products, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   product!: Products;
 
   @Property()
@@ -1162,7 +1210,7 @@ export class ManufacturedProducts {
 
   [PrimaryKeyProp]?: 'product';
 
-  @OneToOne({ entity: () => Products, fieldName: 'product_id', primary: true })
+  @OneToOne({ entity: () => Products, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   product!: Products;
 
   @Property()
@@ -1197,16 +1245,16 @@ export class ShippableProducts {
 
   [PrimaryKeyProp]?: ['deliverableProducts', 'fkShippableProductsManufacturedProducts', 'fkShippableProductsManufacturedProducts1'];
 
-  @ManyToOne({ entity: () => Destinations, fieldName: 'destination', index: 'fk_shippable_products_destinations1_idx' })
+  @ManyToOne({ entity: () => Destinations, fieldName: 'destination', updateRule: 'no action', deleteRule: 'no action', index: 'fk_shippable_products_destinations1_idx' })
   destination!: Destinations;
 
-  @ManyToOne({ entity: () => DeliverableProducts, fieldName: 'product_id', primary: true })
+  @ManyToOne({ entity: () => DeliverableProducts, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   deliverableProducts!: DeliverableProducts;
 
-  @ManyToOne({ entity: () => ManufacturedProducts, fieldName: 'product_id', primary: true })
+  @ManyToOne({ entity: () => ManufacturedProducts, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   fkShippableProductsManufacturedProducts!: ManufacturedProducts;
 
-  @ManyToOne({ entity: () => ManufacturedProducts, fieldName: 'product_id', primary: true })
+  @ManyToOne({ entity: () => ManufacturedProducts, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   fkShippableProductsManufacturedProducts1!: ManufacturedProducts;
 
 }
@@ -1233,6 +1281,8 @@ export const DeliverableProductsSchema = new EntitySchema({
       kind: '1:1',
       entity: () => Products,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     startingAt: { type: 'datetime' },
   },
@@ -1271,6 +1321,8 @@ export const ManufacturedProductsSchema = new EntitySchema({
       kind: '1:1',
       entity: () => Products,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     place: { type: 'string' },
   },
@@ -1312,6 +1364,8 @@ export const ShippableProductsSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => Destinations,
       fieldName: 'destination',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_shippable_products_destinations1_idx',
     },
     deliverableProducts: {
@@ -1319,18 +1373,24 @@ export const ShippableProductsSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => DeliverableProducts,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     fkShippableProductsManufacturedProducts: {
       primary: true,
       kind: 'm:1',
       entity: () => ManufacturedProducts,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     fkShippableProductsManufacturedProducts1: {
       primary: true,
       kind: 'm:1',
       entity: () => ManufacturedProducts,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
   },
 });
@@ -1349,7 +1409,7 @@ export class DeliverableProducts {
 
   [PrimaryKeyProp]?: 'product';
 
-  @OneToOne({ entity: () => Products, ref: true, fieldName: 'product_id', primary: true })
+  @OneToOne({ entity: () => Products, ref: true, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   product!: Ref<Products>;
 
   @Property()
@@ -1382,7 +1442,7 @@ export class ManufacturedProducts {
 
   [PrimaryKeyProp]?: 'product';
 
-  @OneToOne({ entity: () => Products, ref: true, fieldName: 'product_id', primary: true })
+  @OneToOne({ entity: () => Products, ref: true, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   product!: Ref<Products>;
 
   @Property()
@@ -1417,16 +1477,16 @@ export class ShippableProducts {
 
   [PrimaryKeyProp]?: ['deliverableProducts', 'fkShippableProductsManufacturedProducts', 'fkShippableProductsManufacturedProducts1'];
 
-  @ManyToOne({ entity: () => Destinations, ref: true, fieldName: 'destination', index: 'fk_shippable_products_destinations1_idx' })
+  @ManyToOne({ entity: () => Destinations, ref: true, fieldName: 'destination', updateRule: 'no action', deleteRule: 'no action', index: 'fk_shippable_products_destinations1_idx' })
   destination!: Ref<Destinations>;
 
-  @ManyToOne({ entity: () => DeliverableProducts, ref: true, fieldName: 'product_id', primary: true })
+  @ManyToOne({ entity: () => DeliverableProducts, ref: true, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   deliverableProducts!: Ref<DeliverableProducts>;
 
-  @ManyToOne({ entity: () => ManufacturedProducts, ref: true, fieldName: 'product_id', primary: true })
+  @ManyToOne({ entity: () => ManufacturedProducts, ref: true, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   fkShippableProductsManufacturedProducts!: Ref<ManufacturedProducts>;
 
-  @ManyToOne({ entity: () => ManufacturedProducts, ref: true, fieldName: 'product_id', primary: true })
+  @ManyToOne({ entity: () => ManufacturedProducts, ref: true, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   fkShippableProductsManufacturedProducts1!: Ref<ManufacturedProducts>;
 
 }
@@ -1454,6 +1514,8 @@ export const DeliverableProductsSchema = new EntitySchema({
       entity: () => Products,
       ref: true,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     startingAt: { type: 'datetime' },
   },
@@ -1493,6 +1555,8 @@ export const ManufacturedProductsSchema = new EntitySchema({
       entity: () => Products,
       ref: true,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     place: { type: 'string' },
   },
@@ -1535,6 +1599,8 @@ export const ShippableProductsSchema = new EntitySchema({
       entity: () => Destinations,
       ref: true,
       fieldName: 'destination',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_shippable_products_destinations1_idx',
     },
     deliverableProducts: {
@@ -1543,6 +1609,8 @@ export const ShippableProductsSchema = new EntitySchema({
       entity: () => DeliverableProducts,
       ref: true,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     fkShippableProductsManufacturedProducts: {
       primary: true,
@@ -1550,6 +1618,8 @@ export const ShippableProductsSchema = new EntitySchema({
       entity: () => ManufacturedProducts,
       ref: true,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     fkShippableProductsManufacturedProducts1: {
       primary: true,
@@ -1557,6 +1627,8 @@ export const ShippableProductsSchema = new EntitySchema({
       entity: () => ManufacturedProducts,
       ref: true,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
   },
 });
@@ -1576,7 +1648,7 @@ export class DeliverableProducts {
 
   [PrimaryKeyProp]?: 'product';
 
-  @OneToOne({ entity: () => Products, fieldName: 'product_id', primary: true })
+  @OneToOne({ entity: () => Products, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   product!: Products;
 
   @Property()
@@ -1617,7 +1689,7 @@ export class ManufacturedProducts {
 
   [PrimaryKeyProp]?: 'product';
 
-  @OneToOne({ entity: () => Products, fieldName: 'product_id', primary: true })
+  @OneToOne({ entity: () => Products, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   product!: Products;
 
   @Property()
@@ -1666,16 +1738,16 @@ export class ShippableProducts {
 
   [PrimaryKeyProp]?: ['deliverableProducts', 'fkShippableProductsManufacturedProducts', 'fkShippableProductsManufacturedProducts1'];
 
-  @ManyToOne({ entity: () => Destinations, fieldName: 'destination', index: 'fk_shippable_products_destinations1_idx' })
+  @ManyToOne({ entity: () => Destinations, fieldName: 'destination', updateRule: 'no action', deleteRule: 'no action', index: 'fk_shippable_products_destinations1_idx' })
   destination!: Destinations;
 
-  @ManyToOne({ entity: () => DeliverableProducts, fieldName: 'product_id', primary: true })
+  @ManyToOne({ entity: () => DeliverableProducts, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   deliverableProducts!: DeliverableProducts;
 
-  @ManyToOne({ entity: () => ManufacturedProducts, fieldName: 'product_id', primary: true })
+  @ManyToOne({ entity: () => ManufacturedProducts, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   fkShippableProductsManufacturedProducts!: ManufacturedProducts;
 
-  @ManyToOne({ entity: () => ManufacturedProducts, fieldName: 'product_id', primary: true })
+  @ManyToOne({ entity: () => ManufacturedProducts, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   fkShippableProductsManufacturedProducts1!: ManufacturedProducts;
 
 }
@@ -1704,6 +1776,8 @@ export const DeliverableProductsSchema = new EntitySchema({
       kind: '1:1',
       entity: () => Products,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     startingAt: { type: 'datetime' },
     shippableProductsCollection: {
@@ -1757,6 +1831,8 @@ export const ManufacturedProductsSchema = new EntitySchema({
       kind: '1:1',
       entity: () => Products,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     place: { type: 'string' },
     shippableProductsCollection: {
@@ -1822,6 +1898,8 @@ export const ShippableProductsSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => Destinations,
       fieldName: 'destination',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_shippable_products_destinations1_idx',
     },
     deliverableProducts: {
@@ -1829,18 +1907,24 @@ export const ShippableProductsSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => DeliverableProducts,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     fkShippableProductsManufacturedProducts: {
       primary: true,
       kind: 'm:1',
       entity: () => ManufacturedProducts,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     fkShippableProductsManufacturedProducts1: {
       primary: true,
       kind: 'm:1',
       entity: () => ManufacturedProducts,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
   },
 });
@@ -1860,7 +1944,7 @@ export class DeliverableProducts {
 
   [PrimaryKeyProp]?: 'product';
 
-  @OneToOne({ entity: () => Products, ref: true, fieldName: 'product_id', primary: true })
+  @OneToOne({ entity: () => Products, ref: true, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   product!: Ref<Products>;
 
   @Property()
@@ -1901,7 +1985,7 @@ export class ManufacturedProducts {
 
   [PrimaryKeyProp]?: 'product';
 
-  @OneToOne({ entity: () => Products, ref: true, fieldName: 'product_id', primary: true })
+  @OneToOne({ entity: () => Products, ref: true, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   product!: Ref<Products>;
 
   @Property()
@@ -1950,16 +2034,16 @@ export class ShippableProducts {
 
   [PrimaryKeyProp]?: ['deliverableProducts', 'fkShippableProductsManufacturedProducts', 'fkShippableProductsManufacturedProducts1'];
 
-  @ManyToOne({ entity: () => Destinations, ref: true, fieldName: 'destination', index: 'fk_shippable_products_destinations1_idx' })
+  @ManyToOne({ entity: () => Destinations, ref: true, fieldName: 'destination', updateRule: 'no action', deleteRule: 'no action', index: 'fk_shippable_products_destinations1_idx' })
   destination!: Ref<Destinations>;
 
-  @ManyToOne({ entity: () => DeliverableProducts, ref: true, fieldName: 'product_id', primary: true })
+  @ManyToOne({ entity: () => DeliverableProducts, ref: true, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   deliverableProducts!: Ref<DeliverableProducts>;
 
-  @ManyToOne({ entity: () => ManufacturedProducts, ref: true, fieldName: 'product_id', primary: true })
+  @ManyToOne({ entity: () => ManufacturedProducts, ref: true, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   fkShippableProductsManufacturedProducts!: Ref<ManufacturedProducts>;
 
-  @ManyToOne({ entity: () => ManufacturedProducts, ref: true, fieldName: 'product_id', primary: true })
+  @ManyToOne({ entity: () => ManufacturedProducts, ref: true, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   fkShippableProductsManufacturedProducts1!: Ref<ManufacturedProducts>;
 
 }
@@ -1989,6 +2073,8 @@ export const DeliverableProductsSchema = new EntitySchema({
       entity: () => Products,
       ref: true,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     startingAt: { type: 'datetime' },
     shippableProductsCollection: {
@@ -2043,6 +2129,8 @@ export const ManufacturedProductsSchema = new EntitySchema({
       entity: () => Products,
       ref: true,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     place: { type: 'string' },
     shippableProductsCollection: {
@@ -2111,6 +2199,8 @@ export const ShippableProductsSchema = new EntitySchema({
       entity: () => Destinations,
       ref: true,
       fieldName: 'destination',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_shippable_products_destinations1_idx',
     },
     deliverableProducts: {
@@ -2119,6 +2209,8 @@ export const ShippableProductsSchema = new EntitySchema({
       entity: () => DeliverableProducts,
       ref: true,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     fkShippableProductsManufacturedProducts: {
       primary: true,
@@ -2126,6 +2218,8 @@ export const ShippableProductsSchema = new EntitySchema({
       entity: () => ManufacturedProducts,
       ref: true,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     fkShippableProductsManufacturedProducts1: {
       primary: true,
@@ -2133,6 +2227,8 @@ export const ShippableProductsSchema = new EntitySchema({
       entity: () => ManufacturedProducts,
       ref: true,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
   },
 });
@@ -2151,7 +2247,7 @@ export class DeliverableProducts {
 
   [PrimaryKeyProp]?: 'product';
 
-  @OneToOne({ entity: () => Products, fieldName: 'product_id', primary: true })
+  @OneToOne({ entity: () => Products, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   product!: Products;
 
   @Property()
@@ -2184,7 +2280,7 @@ export class ManufacturedProducts {
 
   [PrimaryKeyProp]?: 'product';
 
-  @OneToOne({ entity: () => Products, fieldName: 'product_id', primary: true })
+  @OneToOne({ entity: () => Products, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   product!: Products;
 
   @Property()
@@ -2219,16 +2315,16 @@ export class ShippableProducts {
 
   [PrimaryKeyProp]?: ['deliverableProducts', 'fkShippableProductsManufacturedProducts', 'fkShippableProductsManufacturedProducts1'];
 
-  @ManyToOne({ entity: () => Destinations, fieldName: 'destination', index: 'fk_shippable_products_destinations1_idx' })
+  @ManyToOne({ entity: () => Destinations, fieldName: 'destination', updateRule: 'no action', deleteRule: 'no action', index: 'fk_shippable_products_destinations1_idx' })
   destination!: Destinations;
 
-  @ManyToOne({ entity: () => DeliverableProducts, fieldName: 'product_id', primary: true })
+  @ManyToOne({ entity: () => DeliverableProducts, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   deliverableProducts!: DeliverableProducts;
 
-  @ManyToOne({ entity: () => ManufacturedProducts, fieldName: 'product_id', primary: true })
+  @ManyToOne({ entity: () => ManufacturedProducts, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   fkShippableProductsManufacturedProducts!: ManufacturedProducts;
 
-  @ManyToOne({ entity: () => ManufacturedProducts, fieldName: 'product_id', primary: true })
+  @ManyToOne({ entity: () => ManufacturedProducts, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   fkShippableProductsManufacturedProducts1!: ManufacturedProducts;
 
 }
@@ -2255,6 +2351,8 @@ export const DeliverableProductsSchema = new EntitySchema({
       kind: '1:1',
       entity: () => Products,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     startingAt: { type: 'datetime' },
   },
@@ -2293,6 +2391,8 @@ export const ManufacturedProductsSchema = new EntitySchema({
       kind: '1:1',
       entity: () => Products,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     place: { type: 'string' },
   },
@@ -2334,6 +2434,8 @@ export const ShippableProductsSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => Destinations,
       fieldName: 'destination',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_shippable_products_destinations1_idx',
     },
     deliverableProducts: {
@@ -2341,18 +2443,24 @@ export const ShippableProductsSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => DeliverableProducts,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     fkShippableProductsManufacturedProducts: {
       primary: true,
       kind: 'm:1',
       entity: () => ManufacturedProducts,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     fkShippableProductsManufacturedProducts1: {
       primary: true,
       kind: 'm:1',
       entity: () => ManufacturedProducts,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
   },
 });
@@ -2371,7 +2479,7 @@ export class DeliverableProducts {
 
   [PrimaryKeyProp]?: 'product';
 
-  @OneToOne({ entity: () => Products, ref: true, fieldName: 'product_id', primary: true })
+  @OneToOne({ entity: () => Products, ref: true, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   product!: Ref<Products>;
 
   @Property()
@@ -2404,7 +2512,7 @@ export class ManufacturedProducts {
 
   [PrimaryKeyProp]?: 'product';
 
-  @OneToOne({ entity: () => Products, ref: true, fieldName: 'product_id', primary: true })
+  @OneToOne({ entity: () => Products, ref: true, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   product!: Ref<Products>;
 
   @Property()
@@ -2439,16 +2547,16 @@ export class ShippableProducts {
 
   [PrimaryKeyProp]?: ['deliverableProducts', 'fkShippableProductsManufacturedProducts', 'fkShippableProductsManufacturedProducts1'];
 
-  @ManyToOne({ entity: () => Destinations, ref: true, fieldName: 'destination', index: 'fk_shippable_products_destinations1_idx' })
+  @ManyToOne({ entity: () => Destinations, ref: true, fieldName: 'destination', updateRule: 'no action', deleteRule: 'no action', index: 'fk_shippable_products_destinations1_idx' })
   destination!: Ref<Destinations>;
 
-  @ManyToOne({ entity: () => DeliverableProducts, ref: true, fieldName: 'product_id', primary: true })
+  @ManyToOne({ entity: () => DeliverableProducts, ref: true, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   deliverableProducts!: Ref<DeliverableProducts>;
 
-  @ManyToOne({ entity: () => ManufacturedProducts, ref: true, fieldName: 'product_id', primary: true })
+  @ManyToOne({ entity: () => ManufacturedProducts, ref: true, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   fkShippableProductsManufacturedProducts!: Ref<ManufacturedProducts>;
 
-  @ManyToOne({ entity: () => ManufacturedProducts, ref: true, fieldName: 'product_id', primary: true })
+  @ManyToOne({ entity: () => ManufacturedProducts, ref: true, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   fkShippableProductsManufacturedProducts1!: Ref<ManufacturedProducts>;
 
 }
@@ -2476,6 +2584,8 @@ export const DeliverableProductsSchema = new EntitySchema({
       entity: () => Products,
       ref: true,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     startingAt: { type: 'datetime' },
   },
@@ -2515,6 +2625,8 @@ export const ManufacturedProductsSchema = new EntitySchema({
       entity: () => Products,
       ref: true,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     place: { type: 'string' },
   },
@@ -2557,6 +2669,8 @@ export const ShippableProductsSchema = new EntitySchema({
       entity: () => Destinations,
       ref: true,
       fieldName: 'destination',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_shippable_products_destinations1_idx',
     },
     deliverableProducts: {
@@ -2565,6 +2679,8 @@ export const ShippableProductsSchema = new EntitySchema({
       entity: () => DeliverableProducts,
       ref: true,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     fkShippableProductsManufacturedProducts: {
       primary: true,
@@ -2572,6 +2688,8 @@ export const ShippableProductsSchema = new EntitySchema({
       entity: () => ManufacturedProducts,
       ref: true,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     fkShippableProductsManufacturedProducts1: {
       primary: true,
@@ -2579,6 +2697,8 @@ export const ShippableProductsSchema = new EntitySchema({
       entity: () => ManufacturedProducts,
       ref: true,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
   },
 });
@@ -2598,7 +2718,7 @@ export class DeliverableProducts {
 
   [PrimaryKeyProp]?: 'product';
 
-  @OneToOne({ entity: () => Products, fieldName: 'product_id', primary: true })
+  @OneToOne({ entity: () => Products, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   product!: Products;
 
   @Property()
@@ -2639,7 +2759,7 @@ export class ManufacturedProducts {
 
   [PrimaryKeyProp]?: 'product';
 
-  @OneToOne({ entity: () => Products, fieldName: 'product_id', primary: true })
+  @OneToOne({ entity: () => Products, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   product!: Products;
 
   @Property()
@@ -2688,16 +2808,16 @@ export class ShippableProducts {
 
   [PrimaryKeyProp]?: ['deliverableProducts', 'fkShippableProductsManufacturedProducts', 'fkShippableProductsManufacturedProducts1'];
 
-  @ManyToOne({ entity: () => Destinations, fieldName: 'destination', index: 'fk_shippable_products_destinations1_idx' })
+  @ManyToOne({ entity: () => Destinations, fieldName: 'destination', updateRule: 'no action', deleteRule: 'no action', index: 'fk_shippable_products_destinations1_idx' })
   destination!: Destinations;
 
-  @ManyToOne({ entity: () => DeliverableProducts, fieldName: 'product_id', primary: true })
+  @ManyToOne({ entity: () => DeliverableProducts, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   deliverableProducts!: DeliverableProducts;
 
-  @ManyToOne({ entity: () => ManufacturedProducts, fieldName: 'product_id', primary: true })
+  @ManyToOne({ entity: () => ManufacturedProducts, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   fkShippableProductsManufacturedProducts!: ManufacturedProducts;
 
-  @ManyToOne({ entity: () => ManufacturedProducts, fieldName: 'product_id', primary: true })
+  @ManyToOne({ entity: () => ManufacturedProducts, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   fkShippableProductsManufacturedProducts1!: ManufacturedProducts;
 
 }
@@ -2726,6 +2846,8 @@ export const DeliverableProductsSchema = new EntitySchema({
       kind: '1:1',
       entity: () => Products,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     startingAt: { type: 'datetime' },
     shippableProductsCollection: {
@@ -2779,6 +2901,8 @@ export const ManufacturedProductsSchema = new EntitySchema({
       kind: '1:1',
       entity: () => Products,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     place: { type: 'string' },
     shippableProductsCollection: {
@@ -2844,6 +2968,8 @@ export const ShippableProductsSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => Destinations,
       fieldName: 'destination',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_shippable_products_destinations1_idx',
     },
     deliverableProducts: {
@@ -2851,18 +2977,24 @@ export const ShippableProductsSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => DeliverableProducts,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     fkShippableProductsManufacturedProducts: {
       primary: true,
       kind: 'm:1',
       entity: () => ManufacturedProducts,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     fkShippableProductsManufacturedProducts1: {
       primary: true,
       kind: 'm:1',
       entity: () => ManufacturedProducts,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
   },
 });
@@ -2882,7 +3014,7 @@ export class DeliverableProducts {
 
   [PrimaryKeyProp]?: 'product';
 
-  @OneToOne({ entity: () => Products, ref: true, fieldName: 'product_id', primary: true })
+  @OneToOne({ entity: () => Products, ref: true, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   product!: Ref<Products>;
 
   @Property()
@@ -2923,7 +3055,7 @@ export class ManufacturedProducts {
 
   [PrimaryKeyProp]?: 'product';
 
-  @OneToOne({ entity: () => Products, ref: true, fieldName: 'product_id', primary: true })
+  @OneToOne({ entity: () => Products, ref: true, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   product!: Ref<Products>;
 
   @Property()
@@ -2972,16 +3104,16 @@ export class ShippableProducts {
 
   [PrimaryKeyProp]?: ['deliverableProducts', 'fkShippableProductsManufacturedProducts', 'fkShippableProductsManufacturedProducts1'];
 
-  @ManyToOne({ entity: () => Destinations, ref: true, fieldName: 'destination', index: 'fk_shippable_products_destinations1_idx' })
+  @ManyToOne({ entity: () => Destinations, ref: true, fieldName: 'destination', updateRule: 'no action', deleteRule: 'no action', index: 'fk_shippable_products_destinations1_idx' })
   destination!: Ref<Destinations>;
 
-  @ManyToOne({ entity: () => DeliverableProducts, ref: true, fieldName: 'product_id', primary: true })
+  @ManyToOne({ entity: () => DeliverableProducts, ref: true, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   deliverableProducts!: Ref<DeliverableProducts>;
 
-  @ManyToOne({ entity: () => ManufacturedProducts, ref: true, fieldName: 'product_id', primary: true })
+  @ManyToOne({ entity: () => ManufacturedProducts, ref: true, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   fkShippableProductsManufacturedProducts!: Ref<ManufacturedProducts>;
 
-  @ManyToOne({ entity: () => ManufacturedProducts, ref: true, fieldName: 'product_id', primary: true })
+  @ManyToOne({ entity: () => ManufacturedProducts, ref: true, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   fkShippableProductsManufacturedProducts1!: Ref<ManufacturedProducts>;
 
 }
@@ -3011,6 +3143,8 @@ export const DeliverableProductsSchema = new EntitySchema({
       entity: () => Products,
       ref: true,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     startingAt: { type: 'datetime' },
     shippableProductsCollection: {
@@ -3065,6 +3199,8 @@ export const ManufacturedProductsSchema = new EntitySchema({
       entity: () => Products,
       ref: true,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     place: { type: 'string' },
     shippableProductsCollection: {
@@ -3133,6 +3269,8 @@ export const ShippableProductsSchema = new EntitySchema({
       entity: () => Destinations,
       ref: true,
       fieldName: 'destination',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_shippable_products_destinations1_idx',
     },
     deliverableProducts: {
@@ -3141,6 +3279,8 @@ export const ShippableProductsSchema = new EntitySchema({
       entity: () => DeliverableProducts,
       ref: true,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     fkShippableProductsManufacturedProducts: {
       primary: true,
@@ -3148,6 +3288,8 @@ export const ShippableProductsSchema = new EntitySchema({
       entity: () => ManufacturedProducts,
       ref: true,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     fkShippableProductsManufacturedProducts1: {
       primary: true,
@@ -3155,6 +3297,8 @@ export const ShippableProductsSchema = new EntitySchema({
       entity: () => ManufacturedProducts,
       ref: true,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
   },
 });

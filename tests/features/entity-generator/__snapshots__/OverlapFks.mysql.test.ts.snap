@@ -30,7 +30,7 @@ export class ProductCountryMap {
   @Property({ type: 'character', length: 2, persist: false })
   country!: string;
 
-  @ManyToOne({ entity: () => Products, fieldName: 'product_id', primary: true, index: 'fk_product_country_map_products1' })
+  @ManyToOne({ entity: () => Products, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_product_country_map_products1' })
   product!: Products;
 
   @Property({ unsigned: true, persist: false, index: 'fk_product_country_map_products1' })
@@ -39,7 +39,7 @@ export class ProductCountryMap {
   @Property({ type: 'boolean' })
   isCurrentlyAllowed: boolean & Opt = false;
 
-  @ManyToOne({ entity: () => Countries, fieldName: 'country', primary: true })
+  @ManyToOne({ entity: () => Countries, fieldName: 'country', updateRule: 'no action', deleteRule: 'no action', primary: true })
   countries!: Countries;
 
 }
@@ -54,13 +54,13 @@ export class ProductSellers {
 
   [PrimaryKeyProp]?: ['seller', 'product'];
 
-  @ManyToOne({ entity: () => Sellers, fieldName: 'seller_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true })
+  @ManyToOne({ entity: () => Sellers, fieldName: 'seller_id', primary: true })
   seller!: Sellers;
 
   @Property({ unsigned: true, persist: false })
   sellerId!: number;
 
-  @ManyToOne({ entity: () => Products, fieldName: 'product_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true, index: 'fk_product_sellers_products1' })
+  @ManyToOne({ entity: () => Products, fieldName: 'product_id', primary: true, index: 'fk_product_sellers_products1' })
   product!: Products;
 
   @Property({ unsigned: true, persist: false, index: 'fk_product_sellers_products1' })
@@ -114,7 +114,7 @@ export class Sales {
   @Property({ type: 'character', length: 2, persist: false })
   country!: string;
 
-  @ManyToOne({ entity: () => ProductSellers, fieldNames: ['seller_id', 'product_id'], updateRule: 'cascade', index: 'fk_sales_product_sellers1_idx' })
+  @ManyToOne({ entity: () => ProductSellers, fieldNames: ['seller_id', 'product_id'], deleteRule: 'restrict', index: 'fk_sales_product_sellers1_idx' })
   seller!: ProductSellers;
 
   @Property({ unsigned: true, persist: false })
@@ -129,7 +129,7 @@ export class Sales {
   @Property({ type: 'integer', unsigned: true })
   quantitySold: number & Opt = 1;
 
-  @ManyToOne({ entity: () => ProductCountryMap, fieldNames: ['country', 'product_id'], updateRule: 'cascade', index: 'fk_sales_product_country_map1_idx' })
+  @ManyToOne({ entity: () => ProductCountryMap, fieldNames: ['country', 'product_id'], deleteRule: 'restrict', index: 'fk_sales_product_country_map1_idx' })
   productCountryMap!: ProductCountryMap;
 
 }
@@ -203,6 +203,8 @@ export const ProductCountryMapSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => Products,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_product_country_map_products1',
     },
     productId: {
@@ -217,6 +219,8 @@ export const ProductCountryMapSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => Countries,
       fieldName: 'country',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
   },
 });
@@ -242,8 +246,6 @@ export const ProductSellersSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => Sellers,
       fieldName: 'seller_id',
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
     },
     sellerId: { type: 'integer', unsigned: true, persist: false },
     product: {
@@ -251,8 +253,6 @@ export const ProductSellersSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => Products,
       fieldName: 'product_id',
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
       index: 'fk_product_sellers_products1',
     },
     productId: {
@@ -321,7 +321,7 @@ export const SalesSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => ProductSellers,
       fieldNames: ['seller_id', 'product_id'],
-      updateRule: 'cascade',
+      deleteRule: 'restrict',
       index: 'fk_sales_product_sellers1_idx',
     },
     sellerId: { type: 'integer', unsigned: true, persist: false },
@@ -337,7 +337,7 @@ export const SalesSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => ProductCountryMap,
       fieldNames: ['country', 'product_id'],
-      updateRule: 'cascade',
+      deleteRule: 'restrict',
       index: 'fk_sales_product_country_map1_idx',
     },
   },
@@ -403,7 +403,7 @@ export class ProductCountryMap {
   @Property({ type: 'character', length: 2, persist: false })
   country!: string;
 
-  @ManyToOne({ entity: () => Products, ref: true, fieldName: 'product_id', primary: true, index: 'fk_product_country_map_products1' })
+  @ManyToOne({ entity: () => Products, ref: true, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_product_country_map_products1' })
   product!: Ref<Products>;
 
   @Property({ unsigned: true, persist: false, index: 'fk_product_country_map_products1' })
@@ -412,7 +412,7 @@ export class ProductCountryMap {
   @Property({ type: 'boolean' })
   isCurrentlyAllowed: boolean & Opt = false;
 
-  @ManyToOne({ entity: () => Countries, ref: true, fieldName: 'country', primary: true })
+  @ManyToOne({ entity: () => Countries, ref: true, fieldName: 'country', updateRule: 'no action', deleteRule: 'no action', primary: true })
   countries!: Ref<Countries>;
 
 }
@@ -427,13 +427,13 @@ export class ProductSellers {
 
   [PrimaryKeyProp]?: ['seller', 'product'];
 
-  @ManyToOne({ entity: () => Sellers, ref: true, fieldName: 'seller_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true })
+  @ManyToOne({ entity: () => Sellers, ref: true, fieldName: 'seller_id', primary: true })
   seller!: Ref<Sellers>;
 
   @Property({ unsigned: true, persist: false })
   sellerId!: number;
 
-  @ManyToOne({ entity: () => Products, ref: true, fieldName: 'product_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true, index: 'fk_product_sellers_products1' })
+  @ManyToOne({ entity: () => Products, ref: true, fieldName: 'product_id', primary: true, index: 'fk_product_sellers_products1' })
   product!: Ref<Products>;
 
   @Property({ unsigned: true, persist: false, index: 'fk_product_sellers_products1' })
@@ -487,7 +487,7 @@ export class Sales {
   @Property({ type: 'character', length: 2, persist: false })
   country!: string;
 
-  @ManyToOne({ entity: () => ProductSellers, ref: true, fieldNames: ['seller_id', 'product_id'], updateRule: 'cascade', index: 'fk_sales_product_sellers1_idx' })
+  @ManyToOne({ entity: () => ProductSellers, ref: true, fieldNames: ['seller_id', 'product_id'], deleteRule: 'restrict', index: 'fk_sales_product_sellers1_idx' })
   seller!: Ref<ProductSellers>;
 
   @Property({ unsigned: true, persist: false })
@@ -502,7 +502,7 @@ export class Sales {
   @Property({ type: 'integer', unsigned: true })
   quantitySold: number & Opt = 1;
 
-  @ManyToOne({ entity: () => ProductCountryMap, ref: true, fieldNames: ['country', 'product_id'], updateRule: 'cascade', index: 'fk_sales_product_country_map1_idx' })
+  @ManyToOne({ entity: () => ProductCountryMap, ref: true, fieldNames: ['country', 'product_id'], deleteRule: 'restrict', index: 'fk_sales_product_country_map1_idx' })
   productCountryMap!: Ref<ProductCountryMap>;
 
 }
@@ -577,6 +577,8 @@ export const ProductCountryMapSchema = new EntitySchema({
       entity: () => Products,
       ref: true,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_product_country_map_products1',
     },
     productId: {
@@ -592,6 +594,8 @@ export const ProductCountryMapSchema = new EntitySchema({
       entity: () => Countries,
       ref: true,
       fieldName: 'country',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
   },
 });
@@ -618,8 +622,6 @@ export const ProductSellersSchema = new EntitySchema({
       entity: () => Sellers,
       ref: true,
       fieldName: 'seller_id',
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
     },
     sellerId: { type: 'integer', unsigned: true, persist: false },
     product: {
@@ -628,8 +630,6 @@ export const ProductSellersSchema = new EntitySchema({
       entity: () => Products,
       ref: true,
       fieldName: 'product_id',
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
       index: 'fk_product_sellers_products1',
     },
     productId: {
@@ -699,7 +699,7 @@ export const SalesSchema = new EntitySchema({
       entity: () => ProductSellers,
       ref: true,
       fieldNames: ['seller_id', 'product_id'],
-      updateRule: 'cascade',
+      deleteRule: 'restrict',
       index: 'fk_sales_product_sellers1_idx',
     },
     sellerId: { type: 'integer', unsigned: true, persist: false },
@@ -716,7 +716,7 @@ export const SalesSchema = new EntitySchema({
       entity: () => ProductCountryMap,
       ref: true,
       fieldNames: ['country', 'product_id'],
-      updateRule: 'cascade',
+      deleteRule: 'restrict',
       index: 'fk_sales_product_country_map1_idx',
     },
   },
@@ -791,7 +791,7 @@ export class ProductCountryMap {
   @Property({ type: 'character', length: 2, persist: false })
   country!: string;
 
-  @ManyToOne({ entity: () => Products, fieldName: 'product_id', primary: true, index: 'fk_product_country_map_products1' })
+  @ManyToOne({ entity: () => Products, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_product_country_map_products1' })
   product!: Products;
 
   @Property({ unsigned: true, persist: false, index: 'fk_product_country_map_products1' })
@@ -800,7 +800,7 @@ export class ProductCountryMap {
   @Property({ type: 'boolean' })
   isCurrentlyAllowed: boolean & Opt = false;
 
-  @ManyToOne({ entity: () => Countries, fieldName: 'country', primary: true })
+  @ManyToOne({ entity: () => Countries, fieldName: 'country', updateRule: 'no action', deleteRule: 'no action', primary: true })
   countries!: Countries;
 
   @OneToMany({ entity: () => Sales, mappedBy: 'productCountryMap' })
@@ -819,13 +819,13 @@ export class ProductSellers {
 
   [PrimaryKeyProp]?: ['seller', 'product'];
 
-  @ManyToOne({ entity: () => Sellers, fieldName: 'seller_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true })
+  @ManyToOne({ entity: () => Sellers, fieldName: 'seller_id', primary: true })
   seller!: Sellers;
 
   @Property({ unsigned: true, persist: false })
   sellerId!: number;
 
-  @ManyToOne({ entity: () => Products, fieldName: 'product_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true, index: 'fk_product_sellers_products1' })
+  @ManyToOne({ entity: () => Products, fieldName: 'product_id', primary: true, index: 'fk_product_sellers_products1' })
   product!: Products;
 
   @Property({ unsigned: true, persist: false, index: 'fk_product_sellers_products1' })
@@ -893,7 +893,7 @@ export class Sales {
   @Property({ type: 'character', length: 2, persist: false })
   country!: string;
 
-  @ManyToOne({ entity: () => ProductSellers, fieldNames: ['seller_id', 'product_id'], updateRule: 'cascade', index: 'fk_sales_product_sellers1_idx' })
+  @ManyToOne({ entity: () => ProductSellers, fieldNames: ['seller_id', 'product_id'], deleteRule: 'restrict', index: 'fk_sales_product_sellers1_idx' })
   seller!: ProductSellers;
 
   @Property({ unsigned: true, persist: false })
@@ -908,7 +908,7 @@ export class Sales {
   @Property({ type: 'integer', unsigned: true })
   quantitySold: number & Opt = 1;
 
-  @ManyToOne({ entity: () => ProductCountryMap, fieldNames: ['country', 'product_id'], updateRule: 'cascade', index: 'fk_sales_product_country_map1_idx' })
+  @ManyToOne({ entity: () => ProductCountryMap, fieldNames: ['country', 'product_id'], deleteRule: 'restrict', index: 'fk_sales_product_country_map1_idx' })
   productCountryMap!: ProductCountryMap;
 
 }
@@ -1001,6 +1001,8 @@ export const ProductCountryMapSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => Products,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_product_country_map_products1',
     },
     productId: {
@@ -1015,6 +1017,8 @@ export const ProductCountryMapSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => Countries,
       fieldName: 'country',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     salesCollection: {
       kind: '1:m',
@@ -1047,8 +1051,6 @@ export const ProductSellersSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => Sellers,
       fieldName: 'seller_id',
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
     },
     sellerId: { type: 'integer', unsigned: true, persist: false },
     product: {
@@ -1056,8 +1058,6 @@ export const ProductSellersSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => Products,
       fieldName: 'product_id',
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
       index: 'fk_product_sellers_products1',
     },
     productId: {
@@ -1147,7 +1147,7 @@ export const SalesSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => ProductSellers,
       fieldNames: ['seller_id', 'product_id'],
-      updateRule: 'cascade',
+      deleteRule: 'restrict',
       index: 'fk_sales_product_sellers1_idx',
     },
     sellerId: { type: 'integer', unsigned: true, persist: false },
@@ -1163,7 +1163,7 @@ export const SalesSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => ProductCountryMap,
       fieldNames: ['country', 'product_id'],
-      updateRule: 'cascade',
+      deleteRule: 'restrict',
       index: 'fk_sales_product_country_map1_idx',
     },
   },
@@ -1244,7 +1244,7 @@ export class ProductCountryMap {
   @Property({ type: 'character', length: 2, persist: false })
   country!: string;
 
-  @ManyToOne({ entity: () => Products, ref: true, fieldName: 'product_id', primary: true, index: 'fk_product_country_map_products1' })
+  @ManyToOne({ entity: () => Products, ref: true, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_product_country_map_products1' })
   product!: Ref<Products>;
 
   @Property({ unsigned: true, persist: false, index: 'fk_product_country_map_products1' })
@@ -1253,7 +1253,7 @@ export class ProductCountryMap {
   @Property({ type: 'boolean' })
   isCurrentlyAllowed: boolean & Opt = false;
 
-  @ManyToOne({ entity: () => Countries, ref: true, fieldName: 'country', primary: true })
+  @ManyToOne({ entity: () => Countries, ref: true, fieldName: 'country', updateRule: 'no action', deleteRule: 'no action', primary: true })
   countries!: Ref<Countries>;
 
   @OneToMany({ entity: () => Sales, mappedBy: 'productCountryMap' })
@@ -1272,13 +1272,13 @@ export class ProductSellers {
 
   [PrimaryKeyProp]?: ['seller', 'product'];
 
-  @ManyToOne({ entity: () => Sellers, ref: true, fieldName: 'seller_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true })
+  @ManyToOne({ entity: () => Sellers, ref: true, fieldName: 'seller_id', primary: true })
   seller!: Ref<Sellers>;
 
   @Property({ unsigned: true, persist: false })
   sellerId!: number;
 
-  @ManyToOne({ entity: () => Products, ref: true, fieldName: 'product_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true, index: 'fk_product_sellers_products1' })
+  @ManyToOne({ entity: () => Products, ref: true, fieldName: 'product_id', primary: true, index: 'fk_product_sellers_products1' })
   product!: Ref<Products>;
 
   @Property({ unsigned: true, persist: false, index: 'fk_product_sellers_products1' })
@@ -1346,7 +1346,7 @@ export class Sales {
   @Property({ type: 'character', length: 2, persist: false })
   country!: string;
 
-  @ManyToOne({ entity: () => ProductSellers, ref: true, fieldNames: ['seller_id', 'product_id'], updateRule: 'cascade', index: 'fk_sales_product_sellers1_idx' })
+  @ManyToOne({ entity: () => ProductSellers, ref: true, fieldNames: ['seller_id', 'product_id'], deleteRule: 'restrict', index: 'fk_sales_product_sellers1_idx' })
   seller!: Ref<ProductSellers>;
 
   @Property({ unsigned: true, persist: false })
@@ -1361,7 +1361,7 @@ export class Sales {
   @Property({ type: 'integer', unsigned: true })
   quantitySold: number & Opt = 1;
 
-  @ManyToOne({ entity: () => ProductCountryMap, ref: true, fieldNames: ['country', 'product_id'], updateRule: 'cascade', index: 'fk_sales_product_country_map1_idx' })
+  @ManyToOne({ entity: () => ProductCountryMap, ref: true, fieldNames: ['country', 'product_id'], deleteRule: 'restrict', index: 'fk_sales_product_country_map1_idx' })
   productCountryMap!: Ref<ProductCountryMap>;
 
 }
@@ -1455,6 +1455,8 @@ export const ProductCountryMapSchema = new EntitySchema({
       entity: () => Products,
       ref: true,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_product_country_map_products1',
     },
     productId: {
@@ -1470,6 +1472,8 @@ export const ProductCountryMapSchema = new EntitySchema({
       entity: () => Countries,
       ref: true,
       fieldName: 'country',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     salesCollection: {
       kind: '1:m',
@@ -1503,8 +1507,6 @@ export const ProductSellersSchema = new EntitySchema({
       entity: () => Sellers,
       ref: true,
       fieldName: 'seller_id',
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
     },
     sellerId: { type: 'integer', unsigned: true, persist: false },
     product: {
@@ -1513,8 +1515,6 @@ export const ProductSellersSchema = new EntitySchema({
       entity: () => Products,
       ref: true,
       fieldName: 'product_id',
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
       index: 'fk_product_sellers_products1',
     },
     productId: {
@@ -1605,7 +1605,7 @@ export const SalesSchema = new EntitySchema({
       entity: () => ProductSellers,
       ref: true,
       fieldNames: ['seller_id', 'product_id'],
-      updateRule: 'cascade',
+      deleteRule: 'restrict',
       index: 'fk_sales_product_sellers1_idx',
     },
     sellerId: { type: 'integer', unsigned: true, persist: false },
@@ -1622,7 +1622,7 @@ export const SalesSchema = new EntitySchema({
       entity: () => ProductCountryMap,
       ref: true,
       fieldNames: ['country', 'product_id'],
-      updateRule: 'cascade',
+      deleteRule: 'restrict',
       index: 'fk_sales_product_country_map1_idx',
     },
   },
@@ -1696,10 +1696,10 @@ export class ProductCountryMap {
 
   [PrimaryKeyProp]?: ['country', 'product'];
 
-  @ManyToOne({ entity: () => Countries, fieldName: 'country', primary: true })
+  @ManyToOne({ entity: () => Countries, fieldName: 'country', updateRule: 'no action', deleteRule: 'no action', primary: true })
   country!: Countries;
 
-  @ManyToOne({ entity: () => Products, fieldName: 'product_id', primary: true, index: 'fk_product_country_map_products1' })
+  @ManyToOne({ entity: () => Products, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_product_country_map_products1' })
   product!: Products;
 
   @Property({ type: 'boolean' })
@@ -1717,10 +1717,10 @@ export class ProductSellers {
 
   [PrimaryKeyProp]?: ['seller', 'product'];
 
-  @ManyToOne({ entity: () => Sellers, fieldName: 'seller_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true })
+  @ManyToOne({ entity: () => Sellers, fieldName: 'seller_id', primary: true })
   seller!: Sellers;
 
-  @ManyToOne({ entity: () => Products, fieldName: 'product_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true, index: 'fk_product_sellers_products1' })
+  @ManyToOne({ entity: () => Products, fieldName: 'product_id', primary: true, index: 'fk_product_sellers_products1' })
   product!: Products;
 
   @Property({ type: 'boolean' })
@@ -1764,10 +1764,10 @@ export class Sales {
   @PrimaryKey()
   saleId!: number;
 
-  @ManyToOne({ entity: () => ProductCountryMap, fieldNames: ['country', 'product_id'], updateRule: 'cascade', index: 'fk_sales_product_country_map1_idx' })
+  @ManyToOne({ entity: () => ProductCountryMap, fieldNames: ['country', 'product_id'], deleteRule: 'restrict', index: 'fk_sales_product_country_map1_idx' })
   country!: ProductCountryMap;
 
-  @ManyToOne({ entity: () => ProductSellers, fieldNames: ['seller_id', 'product_id'], updateRule: 'cascade', index: 'fk_sales_product_sellers1_idx' })
+  @ManyToOne({ entity: () => ProductSellers, fieldNames: ['seller_id', 'product_id'], deleteRule: 'restrict', index: 'fk_sales_product_sellers1_idx' })
   seller!: ProductSellers;
 
   @Property({ type: 'decimal', precision: 10, scale: 2 })
@@ -1852,12 +1852,16 @@ export const ProductCountryMapSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => Countries,
       fieldName: 'country',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     product: {
       primary: true,
       kind: 'm:1',
       entity: () => Products,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_product_country_map_products1',
     },
     isCurrentlyAllowed: { type: 'boolean' },
@@ -1883,16 +1887,12 @@ export const ProductSellersSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => Sellers,
       fieldName: 'seller_id',
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
     },
     product: {
       primary: true,
       kind: 'm:1',
       entity: () => Products,
       fieldName: 'product_id',
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
       index: 'fk_product_sellers_products1',
     },
     isCurrentlyAllowed: { type: 'boolean' },
@@ -1946,14 +1946,14 @@ export const SalesSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => ProductCountryMap,
       fieldNames: ['country', 'product_id'],
-      updateRule: 'cascade',
+      deleteRule: 'restrict',
       index: 'fk_sales_product_country_map1_idx',
     },
     seller: {
       kind: 'm:1',
       entity: () => ProductSellers,
       fieldNames: ['seller_id', 'product_id'],
-      updateRule: 'cascade',
+      deleteRule: 'restrict',
       index: 'fk_sales_product_sellers1_idx',
     },
     singularPrice: { type: 'decimal', precision: 10, scale: 2 },
@@ -2023,10 +2023,10 @@ export class ProductCountryMap {
 
   [PrimaryKeyProp]?: ['country', 'product'];
 
-  @ManyToOne({ entity: () => Countries, ref: true, fieldName: 'country', primary: true })
+  @ManyToOne({ entity: () => Countries, ref: true, fieldName: 'country', updateRule: 'no action', deleteRule: 'no action', primary: true })
   country!: Ref<Countries>;
 
-  @ManyToOne({ entity: () => Products, ref: true, fieldName: 'product_id', primary: true, index: 'fk_product_country_map_products1' })
+  @ManyToOne({ entity: () => Products, ref: true, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_product_country_map_products1' })
   product!: Ref<Products>;
 
   @Property({ type: 'boolean' })
@@ -2044,10 +2044,10 @@ export class ProductSellers {
 
   [PrimaryKeyProp]?: ['seller', 'product'];
 
-  @ManyToOne({ entity: () => Sellers, ref: true, fieldName: 'seller_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true })
+  @ManyToOne({ entity: () => Sellers, ref: true, fieldName: 'seller_id', primary: true })
   seller!: Ref<Sellers>;
 
-  @ManyToOne({ entity: () => Products, ref: true, fieldName: 'product_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true, index: 'fk_product_sellers_products1' })
+  @ManyToOne({ entity: () => Products, ref: true, fieldName: 'product_id', primary: true, index: 'fk_product_sellers_products1' })
   product!: Ref<Products>;
 
   @Property({ type: 'boolean' })
@@ -2091,10 +2091,10 @@ export class Sales {
   @PrimaryKey()
   saleId!: number;
 
-  @ManyToOne({ entity: () => ProductCountryMap, ref: true, fieldNames: ['country', 'product_id'], updateRule: 'cascade', index: 'fk_sales_product_country_map1_idx' })
+  @ManyToOne({ entity: () => ProductCountryMap, ref: true, fieldNames: ['country', 'product_id'], deleteRule: 'restrict', index: 'fk_sales_product_country_map1_idx' })
   country!: Ref<ProductCountryMap>;
 
-  @ManyToOne({ entity: () => ProductSellers, ref: true, fieldNames: ['seller_id', 'product_id'], updateRule: 'cascade', index: 'fk_sales_product_sellers1_idx' })
+  @ManyToOne({ entity: () => ProductSellers, ref: true, fieldNames: ['seller_id', 'product_id'], deleteRule: 'restrict', index: 'fk_sales_product_sellers1_idx' })
   seller!: Ref<ProductSellers>;
 
   @Property({ type: 'decimal', precision: 10, scale: 2 })
@@ -2180,6 +2180,8 @@ export const ProductCountryMapSchema = new EntitySchema({
       entity: () => Countries,
       ref: true,
       fieldName: 'country',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     product: {
       primary: true,
@@ -2187,6 +2189,8 @@ export const ProductCountryMapSchema = new EntitySchema({
       entity: () => Products,
       ref: true,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_product_country_map_products1',
     },
     isCurrentlyAllowed: { type: 'boolean' },
@@ -2213,8 +2217,6 @@ export const ProductSellersSchema = new EntitySchema({
       entity: () => Sellers,
       ref: true,
       fieldName: 'seller_id',
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
     },
     product: {
       primary: true,
@@ -2222,8 +2224,6 @@ export const ProductSellersSchema = new EntitySchema({
       entity: () => Products,
       ref: true,
       fieldName: 'product_id',
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
       index: 'fk_product_sellers_products1',
     },
     isCurrentlyAllowed: { type: 'boolean' },
@@ -2278,7 +2278,7 @@ export const SalesSchema = new EntitySchema({
       entity: () => ProductCountryMap,
       ref: true,
       fieldNames: ['country', 'product_id'],
-      updateRule: 'cascade',
+      deleteRule: 'restrict',
       index: 'fk_sales_product_country_map1_idx',
     },
     seller: {
@@ -2286,7 +2286,7 @@ export const SalesSchema = new EntitySchema({
       entity: () => ProductSellers,
       ref: true,
       fieldNames: ['seller_id', 'product_id'],
-      updateRule: 'cascade',
+      deleteRule: 'restrict',
       index: 'fk_sales_product_sellers1_idx',
     },
     singularPrice: { type: 'decimal', precision: 10, scale: 2 },
@@ -2360,10 +2360,10 @@ export class ProductCountryMap {
 
   [PrimaryKeyProp]?: ['country', 'product'];
 
-  @ManyToOne({ entity: () => Countries, fieldName: 'country', primary: true })
+  @ManyToOne({ entity: () => Countries, fieldName: 'country', updateRule: 'no action', deleteRule: 'no action', primary: true })
   country!: Countries;
 
-  @ManyToOne({ entity: () => Products, fieldName: 'product_id', primary: true, index: 'fk_product_country_map_products1' })
+  @ManyToOne({ entity: () => Products, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_product_country_map_products1' })
   product!: Products;
 
   @Property({ type: 'boolean' })
@@ -2385,10 +2385,10 @@ export class ProductSellers {
 
   [PrimaryKeyProp]?: ['seller', 'product'];
 
-  @ManyToOne({ entity: () => Sellers, fieldName: 'seller_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true })
+  @ManyToOne({ entity: () => Sellers, fieldName: 'seller_id', primary: true })
   seller!: Sellers;
 
-  @ManyToOne({ entity: () => Products, fieldName: 'product_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true, index: 'fk_product_sellers_products1' })
+  @ManyToOne({ entity: () => Products, fieldName: 'product_id', primary: true, index: 'fk_product_sellers_products1' })
   product!: Products;
 
   @Property({ type: 'boolean' })
@@ -2451,10 +2451,10 @@ export class Sales {
   @PrimaryKey()
   saleId!: number;
 
-  @ManyToOne({ entity: () => ProductCountryMap, fieldNames: ['country', 'product_id'], updateRule: 'cascade', index: 'fk_sales_product_country_map1_idx' })
+  @ManyToOne({ entity: () => ProductCountryMap, fieldNames: ['country', 'product_id'], deleteRule: 'restrict', index: 'fk_sales_product_country_map1_idx' })
   country!: ProductCountryMap;
 
-  @ManyToOne({ entity: () => ProductSellers, fieldNames: ['seller_id', 'product_id'], updateRule: 'cascade', index: 'fk_sales_product_sellers1_idx' })
+  @ManyToOne({ entity: () => ProductSellers, fieldNames: ['seller_id', 'product_id'], deleteRule: 'restrict', index: 'fk_sales_product_sellers1_idx' })
   seller!: ProductSellers;
 
   @Property({ type: 'decimal', precision: 10, scale: 2 })
@@ -2550,12 +2550,16 @@ export const ProductCountryMapSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => Countries,
       fieldName: 'country',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     product: {
       primary: true,
       kind: 'm:1',
       entity: () => Products,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_product_country_map_products1',
     },
     isCurrentlyAllowed: { type: 'boolean' },
@@ -2584,16 +2588,12 @@ export const ProductSellersSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => Sellers,
       fieldName: 'seller_id',
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
     },
     product: {
       primary: true,
       kind: 'm:1',
       entity: () => Products,
       fieldName: 'product_id',
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
       index: 'fk_product_sellers_products1',
     },
     isCurrentlyAllowed: { type: 'boolean' },
@@ -2676,14 +2676,14 @@ export const SalesSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => ProductCountryMap,
       fieldNames: ['country', 'product_id'],
-      updateRule: 'cascade',
+      deleteRule: 'restrict',
       index: 'fk_sales_product_country_map1_idx',
     },
     seller: {
       kind: 'm:1',
       entity: () => ProductSellers,
       fieldNames: ['seller_id', 'product_id'],
-      updateRule: 'cascade',
+      deleteRule: 'restrict',
       index: 'fk_sales_product_sellers1_idx',
     },
     singularPrice: { type: 'decimal', precision: 10, scale: 2 },
@@ -2763,10 +2763,10 @@ export class ProductCountryMap {
 
   [PrimaryKeyProp]?: ['country', 'product'];
 
-  @ManyToOne({ entity: () => Countries, ref: true, fieldName: 'country', primary: true })
+  @ManyToOne({ entity: () => Countries, ref: true, fieldName: 'country', updateRule: 'no action', deleteRule: 'no action', primary: true })
   country!: Ref<Countries>;
 
-  @ManyToOne({ entity: () => Products, ref: true, fieldName: 'product_id', primary: true, index: 'fk_product_country_map_products1' })
+  @ManyToOne({ entity: () => Products, ref: true, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_product_country_map_products1' })
   product!: Ref<Products>;
 
   @Property({ type: 'boolean' })
@@ -2788,10 +2788,10 @@ export class ProductSellers {
 
   [PrimaryKeyProp]?: ['seller', 'product'];
 
-  @ManyToOne({ entity: () => Sellers, ref: true, fieldName: 'seller_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true })
+  @ManyToOne({ entity: () => Sellers, ref: true, fieldName: 'seller_id', primary: true })
   seller!: Ref<Sellers>;
 
-  @ManyToOne({ entity: () => Products, ref: true, fieldName: 'product_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true, index: 'fk_product_sellers_products1' })
+  @ManyToOne({ entity: () => Products, ref: true, fieldName: 'product_id', primary: true, index: 'fk_product_sellers_products1' })
   product!: Ref<Products>;
 
   @Property({ type: 'boolean' })
@@ -2854,10 +2854,10 @@ export class Sales {
   @PrimaryKey()
   saleId!: number;
 
-  @ManyToOne({ entity: () => ProductCountryMap, ref: true, fieldNames: ['country', 'product_id'], updateRule: 'cascade', index: 'fk_sales_product_country_map1_idx' })
+  @ManyToOne({ entity: () => ProductCountryMap, ref: true, fieldNames: ['country', 'product_id'], deleteRule: 'restrict', index: 'fk_sales_product_country_map1_idx' })
   country!: Ref<ProductCountryMap>;
 
-  @ManyToOne({ entity: () => ProductSellers, ref: true, fieldNames: ['seller_id', 'product_id'], updateRule: 'cascade', index: 'fk_sales_product_sellers1_idx' })
+  @ManyToOne({ entity: () => ProductSellers, ref: true, fieldNames: ['seller_id', 'product_id'], deleteRule: 'restrict', index: 'fk_sales_product_sellers1_idx' })
   seller!: Ref<ProductSellers>;
 
   @Property({ type: 'decimal', precision: 10, scale: 2 })
@@ -2954,6 +2954,8 @@ export const ProductCountryMapSchema = new EntitySchema({
       entity: () => Countries,
       ref: true,
       fieldName: 'country',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     product: {
       primary: true,
@@ -2961,6 +2963,8 @@ export const ProductCountryMapSchema = new EntitySchema({
       entity: () => Products,
       ref: true,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_product_country_map_products1',
     },
     isCurrentlyAllowed: { type: 'boolean' },
@@ -2990,8 +2994,6 @@ export const ProductSellersSchema = new EntitySchema({
       entity: () => Sellers,
       ref: true,
       fieldName: 'seller_id',
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
     },
     product: {
       primary: true,
@@ -2999,8 +3001,6 @@ export const ProductSellersSchema = new EntitySchema({
       entity: () => Products,
       ref: true,
       fieldName: 'product_id',
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
       index: 'fk_product_sellers_products1',
     },
     isCurrentlyAllowed: { type: 'boolean' },
@@ -3084,7 +3084,7 @@ export const SalesSchema = new EntitySchema({
       entity: () => ProductCountryMap,
       ref: true,
       fieldNames: ['country', 'product_id'],
-      updateRule: 'cascade',
+      deleteRule: 'restrict',
       index: 'fk_sales_product_country_map1_idx',
     },
     seller: {
@@ -3092,7 +3092,7 @@ export const SalesSchema = new EntitySchema({
       entity: () => ProductSellers,
       ref: true,
       fieldNames: ['seller_id', 'product_id'],
-      updateRule: 'cascade',
+      deleteRule: 'restrict',
       index: 'fk_sales_product_sellers1_idx',
     },
     singularPrice: { type: 'decimal', precision: 10, scale: 2 },
@@ -3168,10 +3168,10 @@ export class ProductCountryMap {
 
   [PrimaryKeyProp]?: ['country', 'product'];
 
-  @ManyToOne({ entity: () => Countries, fieldName: 'country', primary: true })
+  @ManyToOne({ entity: () => Countries, fieldName: 'country', updateRule: 'no action', deleteRule: 'no action', primary: true })
   country!: Countries;
 
-  @ManyToOne({ entity: () => Products, fieldName: 'product_id', primary: true, index: 'fk_product_country_map_products1' })
+  @ManyToOne({ entity: () => Products, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_product_country_map_products1' })
   product!: Products;
 
   @Property({ type: 'boolean' })
@@ -3189,10 +3189,10 @@ export class ProductSellers {
 
   [PrimaryKeyProp]?: ['seller', 'product'];
 
-  @ManyToOne({ entity: () => Sellers, fieldName: 'seller_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true })
+  @ManyToOne({ entity: () => Sellers, fieldName: 'seller_id', primary: true })
   seller!: Sellers;
 
-  @ManyToOne({ entity: () => Products, fieldName: 'product_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true, index: 'fk_product_sellers_products1' })
+  @ManyToOne({ entity: () => Products, fieldName: 'product_id', primary: true, index: 'fk_product_sellers_products1' })
   product!: Products;
 
   @Property({ type: 'boolean' })
@@ -3236,10 +3236,10 @@ export class Sales {
   @PrimaryKey()
   saleId!: number;
 
-  @ManyToOne({ entity: () => ProductCountryMap, fieldNames: ['country', 'product_id'], updateRule: 'cascade', index: 'fk_sales_product_country_map1_idx' })
+  @ManyToOne({ entity: () => ProductCountryMap, fieldNames: ['country', 'product_id'], deleteRule: 'restrict', index: 'fk_sales_product_country_map1_idx' })
   country!: ProductCountryMap;
 
-  @ManyToOne({ entity: () => ProductSellers, fieldNames: ['seller_id', 'product_id'], updateRule: 'cascade', index: 'fk_sales_product_sellers1_idx' })
+  @ManyToOne({ entity: () => ProductSellers, fieldNames: ['seller_id', 'product_id'], deleteRule: 'restrict', index: 'fk_sales_product_sellers1_idx' })
   seller!: ProductSellers;
 
   @Property({ type: 'decimal', precision: 10, scale: 2 })
@@ -3324,12 +3324,16 @@ export const ProductCountryMapSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => Countries,
       fieldName: 'country',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     product: {
       primary: true,
       kind: 'm:1',
       entity: () => Products,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_product_country_map_products1',
     },
     isCurrentlyAllowed: { type: 'boolean' },
@@ -3355,16 +3359,12 @@ export const ProductSellersSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => Sellers,
       fieldName: 'seller_id',
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
     },
     product: {
       primary: true,
       kind: 'm:1',
       entity: () => Products,
       fieldName: 'product_id',
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
       index: 'fk_product_sellers_products1',
     },
     isCurrentlyAllowed: { type: 'boolean' },
@@ -3418,14 +3418,14 @@ export const SalesSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => ProductCountryMap,
       fieldNames: ['country', 'product_id'],
-      updateRule: 'cascade',
+      deleteRule: 'restrict',
       index: 'fk_sales_product_country_map1_idx',
     },
     seller: {
       kind: 'm:1',
       entity: () => ProductSellers,
       fieldNames: ['seller_id', 'product_id'],
-      updateRule: 'cascade',
+      deleteRule: 'restrict',
       index: 'fk_sales_product_sellers1_idx',
     },
     singularPrice: { type: 'decimal', precision: 10, scale: 2 },
@@ -3495,10 +3495,10 @@ export class ProductCountryMap {
 
   [PrimaryKeyProp]?: ['country', 'product'];
 
-  @ManyToOne({ entity: () => Countries, ref: true, fieldName: 'country', primary: true })
+  @ManyToOne({ entity: () => Countries, ref: true, fieldName: 'country', updateRule: 'no action', deleteRule: 'no action', primary: true })
   country!: Ref<Countries>;
 
-  @ManyToOne({ entity: () => Products, ref: true, fieldName: 'product_id', primary: true, index: 'fk_product_country_map_products1' })
+  @ManyToOne({ entity: () => Products, ref: true, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_product_country_map_products1' })
   product!: Ref<Products>;
 
   @Property({ type: 'boolean' })
@@ -3516,10 +3516,10 @@ export class ProductSellers {
 
   [PrimaryKeyProp]?: ['seller', 'product'];
 
-  @ManyToOne({ entity: () => Sellers, ref: true, fieldName: 'seller_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true })
+  @ManyToOne({ entity: () => Sellers, ref: true, fieldName: 'seller_id', primary: true })
   seller!: Ref<Sellers>;
 
-  @ManyToOne({ entity: () => Products, ref: true, fieldName: 'product_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true, index: 'fk_product_sellers_products1' })
+  @ManyToOne({ entity: () => Products, ref: true, fieldName: 'product_id', primary: true, index: 'fk_product_sellers_products1' })
   product!: Ref<Products>;
 
   @Property({ type: 'boolean' })
@@ -3563,10 +3563,10 @@ export class Sales {
   @PrimaryKey()
   saleId!: number;
 
-  @ManyToOne({ entity: () => ProductCountryMap, ref: true, fieldNames: ['country', 'product_id'], updateRule: 'cascade', index: 'fk_sales_product_country_map1_idx' })
+  @ManyToOne({ entity: () => ProductCountryMap, ref: true, fieldNames: ['country', 'product_id'], deleteRule: 'restrict', index: 'fk_sales_product_country_map1_idx' })
   country!: Ref<ProductCountryMap>;
 
-  @ManyToOne({ entity: () => ProductSellers, ref: true, fieldNames: ['seller_id', 'product_id'], updateRule: 'cascade', index: 'fk_sales_product_sellers1_idx' })
+  @ManyToOne({ entity: () => ProductSellers, ref: true, fieldNames: ['seller_id', 'product_id'], deleteRule: 'restrict', index: 'fk_sales_product_sellers1_idx' })
   seller!: Ref<ProductSellers>;
 
   @Property({ type: 'decimal', precision: 10, scale: 2 })
@@ -3652,6 +3652,8 @@ export const ProductCountryMapSchema = new EntitySchema({
       entity: () => Countries,
       ref: true,
       fieldName: 'country',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     product: {
       primary: true,
@@ -3659,6 +3661,8 @@ export const ProductCountryMapSchema = new EntitySchema({
       entity: () => Products,
       ref: true,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_product_country_map_products1',
     },
     isCurrentlyAllowed: { type: 'boolean' },
@@ -3685,8 +3689,6 @@ export const ProductSellersSchema = new EntitySchema({
       entity: () => Sellers,
       ref: true,
       fieldName: 'seller_id',
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
     },
     product: {
       primary: true,
@@ -3694,8 +3696,6 @@ export const ProductSellersSchema = new EntitySchema({
       entity: () => Products,
       ref: true,
       fieldName: 'product_id',
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
       index: 'fk_product_sellers_products1',
     },
     isCurrentlyAllowed: { type: 'boolean' },
@@ -3750,7 +3750,7 @@ export const SalesSchema = new EntitySchema({
       entity: () => ProductCountryMap,
       ref: true,
       fieldNames: ['country', 'product_id'],
-      updateRule: 'cascade',
+      deleteRule: 'restrict',
       index: 'fk_sales_product_country_map1_idx',
     },
     seller: {
@@ -3758,7 +3758,7 @@ export const SalesSchema = new EntitySchema({
       entity: () => ProductSellers,
       ref: true,
       fieldNames: ['seller_id', 'product_id'],
-      updateRule: 'cascade',
+      deleteRule: 'restrict',
       index: 'fk_sales_product_sellers1_idx',
     },
     singularPrice: { type: 'decimal', precision: 10, scale: 2 },
@@ -3832,10 +3832,10 @@ export class ProductCountryMap {
 
   [PrimaryKeyProp]?: ['country', 'product'];
 
-  @ManyToOne({ entity: () => Countries, fieldName: 'country', primary: true })
+  @ManyToOne({ entity: () => Countries, fieldName: 'country', updateRule: 'no action', deleteRule: 'no action', primary: true })
   country!: Countries;
 
-  @ManyToOne({ entity: () => Products, fieldName: 'product_id', primary: true, index: 'fk_product_country_map_products1' })
+  @ManyToOne({ entity: () => Products, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_product_country_map_products1' })
   product!: Products;
 
   @Property({ type: 'boolean' })
@@ -3857,10 +3857,10 @@ export class ProductSellers {
 
   [PrimaryKeyProp]?: ['seller', 'product'];
 
-  @ManyToOne({ entity: () => Sellers, fieldName: 'seller_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true })
+  @ManyToOne({ entity: () => Sellers, fieldName: 'seller_id', primary: true })
   seller!: Sellers;
 
-  @ManyToOne({ entity: () => Products, fieldName: 'product_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true, index: 'fk_product_sellers_products1' })
+  @ManyToOne({ entity: () => Products, fieldName: 'product_id', primary: true, index: 'fk_product_sellers_products1' })
   product!: Products;
 
   @Property({ type: 'boolean' })
@@ -3923,10 +3923,10 @@ export class Sales {
   @PrimaryKey()
   saleId!: number;
 
-  @ManyToOne({ entity: () => ProductCountryMap, fieldNames: ['country', 'product_id'], updateRule: 'cascade', index: 'fk_sales_product_country_map1_idx' })
+  @ManyToOne({ entity: () => ProductCountryMap, fieldNames: ['country', 'product_id'], deleteRule: 'restrict', index: 'fk_sales_product_country_map1_idx' })
   country!: ProductCountryMap;
 
-  @ManyToOne({ entity: () => ProductSellers, fieldNames: ['seller_id', 'product_id'], updateRule: 'cascade', index: 'fk_sales_product_sellers1_idx' })
+  @ManyToOne({ entity: () => ProductSellers, fieldNames: ['seller_id', 'product_id'], deleteRule: 'restrict', index: 'fk_sales_product_sellers1_idx' })
   seller!: ProductSellers;
 
   @Property({ type: 'decimal', precision: 10, scale: 2 })
@@ -4022,12 +4022,16 @@ export const ProductCountryMapSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => Countries,
       fieldName: 'country',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     product: {
       primary: true,
       kind: 'm:1',
       entity: () => Products,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_product_country_map_products1',
     },
     isCurrentlyAllowed: { type: 'boolean' },
@@ -4056,16 +4060,12 @@ export const ProductSellersSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => Sellers,
       fieldName: 'seller_id',
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
     },
     product: {
       primary: true,
       kind: 'm:1',
       entity: () => Products,
       fieldName: 'product_id',
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
       index: 'fk_product_sellers_products1',
     },
     isCurrentlyAllowed: { type: 'boolean' },
@@ -4148,14 +4148,14 @@ export const SalesSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => ProductCountryMap,
       fieldNames: ['country', 'product_id'],
-      updateRule: 'cascade',
+      deleteRule: 'restrict',
       index: 'fk_sales_product_country_map1_idx',
     },
     seller: {
       kind: 'm:1',
       entity: () => ProductSellers,
       fieldNames: ['seller_id', 'product_id'],
-      updateRule: 'cascade',
+      deleteRule: 'restrict',
       index: 'fk_sales_product_sellers1_idx',
     },
     singularPrice: { type: 'decimal', precision: 10, scale: 2 },
@@ -4235,10 +4235,10 @@ export class ProductCountryMap {
 
   [PrimaryKeyProp]?: ['country', 'product'];
 
-  @ManyToOne({ entity: () => Countries, ref: true, fieldName: 'country', primary: true })
+  @ManyToOne({ entity: () => Countries, ref: true, fieldName: 'country', updateRule: 'no action', deleteRule: 'no action', primary: true })
   country!: Ref<Countries>;
 
-  @ManyToOne({ entity: () => Products, ref: true, fieldName: 'product_id', primary: true, index: 'fk_product_country_map_products1' })
+  @ManyToOne({ entity: () => Products, ref: true, fieldName: 'product_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_product_country_map_products1' })
   product!: Ref<Products>;
 
   @Property({ type: 'boolean' })
@@ -4260,10 +4260,10 @@ export class ProductSellers {
 
   [PrimaryKeyProp]?: ['seller', 'product'];
 
-  @ManyToOne({ entity: () => Sellers, ref: true, fieldName: 'seller_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true })
+  @ManyToOne({ entity: () => Sellers, ref: true, fieldName: 'seller_id', primary: true })
   seller!: Ref<Sellers>;
 
-  @ManyToOne({ entity: () => Products, ref: true, fieldName: 'product_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true, index: 'fk_product_sellers_products1' })
+  @ManyToOne({ entity: () => Products, ref: true, fieldName: 'product_id', primary: true, index: 'fk_product_sellers_products1' })
   product!: Ref<Products>;
 
   @Property({ type: 'boolean' })
@@ -4326,10 +4326,10 @@ export class Sales {
   @PrimaryKey()
   saleId!: number;
 
-  @ManyToOne({ entity: () => ProductCountryMap, ref: true, fieldNames: ['country', 'product_id'], updateRule: 'cascade', index: 'fk_sales_product_country_map1_idx' })
+  @ManyToOne({ entity: () => ProductCountryMap, ref: true, fieldNames: ['country', 'product_id'], deleteRule: 'restrict', index: 'fk_sales_product_country_map1_idx' })
   country!: Ref<ProductCountryMap>;
 
-  @ManyToOne({ entity: () => ProductSellers, ref: true, fieldNames: ['seller_id', 'product_id'], updateRule: 'cascade', index: 'fk_sales_product_sellers1_idx' })
+  @ManyToOne({ entity: () => ProductSellers, ref: true, fieldNames: ['seller_id', 'product_id'], deleteRule: 'restrict', index: 'fk_sales_product_sellers1_idx' })
   seller!: Ref<ProductSellers>;
 
   @Property({ type: 'decimal', precision: 10, scale: 2 })
@@ -4426,6 +4426,8 @@ export const ProductCountryMapSchema = new EntitySchema({
       entity: () => Countries,
       ref: true,
       fieldName: 'country',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     product: {
       primary: true,
@@ -4433,6 +4435,8 @@ export const ProductCountryMapSchema = new EntitySchema({
       entity: () => Products,
       ref: true,
       fieldName: 'product_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_product_country_map_products1',
     },
     isCurrentlyAllowed: { type: 'boolean' },
@@ -4462,8 +4466,6 @@ export const ProductSellersSchema = new EntitySchema({
       entity: () => Sellers,
       ref: true,
       fieldName: 'seller_id',
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
     },
     product: {
       primary: true,
@@ -4471,8 +4473,6 @@ export const ProductSellersSchema = new EntitySchema({
       entity: () => Products,
       ref: true,
       fieldName: 'product_id',
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
       index: 'fk_product_sellers_products1',
     },
     isCurrentlyAllowed: { type: 'boolean' },
@@ -4556,7 +4556,7 @@ export const SalesSchema = new EntitySchema({
       entity: () => ProductCountryMap,
       ref: true,
       fieldNames: ['country', 'product_id'],
-      updateRule: 'cascade',
+      deleteRule: 'restrict',
       index: 'fk_sales_product_country_map1_idx',
     },
     seller: {
@@ -4564,7 +4564,7 @@ export const SalesSchema = new EntitySchema({
       entity: () => ProductSellers,
       ref: true,
       fieldNames: ['seller_id', 'product_id'],
-      updateRule: 'cascade',
+      deleteRule: 'restrict',
       index: 'fk_sales_product_sellers1_idx',
     },
     singularPrice: { type: 'decimal', precision: 10, scale: 2 },

@@ -1211,9 +1211,9 @@ exports[`embedded entities in postgres > schema > nested embeddables 1 1`] = `
 
 create table "user" ("id" serial primary key, "name" varchar(255) not null, "profile1_username" varchar(255) not null, "profile1_identity_email" varchar(255) not null, "profile1_source_id" int null, "profile1_identity_meta_foo" varchar(255) null, "profile1_identity_links" jsonb not null, "profile1_identity_meta_bar" varchar(255) null, "profile1_identity_source_id" int null, "profile1_identity_meta_source_id" int null, "profile2" jsonb not null);
 
-alter table "user" add constraint "user_profile1_source_id_foreign" foreign key ("profile1_source_id") references "source" ("id") on update cascade on delete set null;
-alter table "user" add constraint "user_profile1_identity_source_id_foreign" foreign key ("profile1_identity_source_id") references "source" ("id") on update cascade on delete set null;
-alter table "user" add constraint "user_profile1_identity_meta_source_id_foreign" foreign key ("profile1_identity_meta_source_id") references "source" ("id") on update cascade on delete set null;
+alter table "user" add constraint "user_profile1_source_id_foreign" foreign key ("profile1_source_id") references "source" ("id") on delete set null;
+alter table "user" add constraint "user_profile1_identity_source_id_foreign" foreign key ("profile1_identity_source_id") references "source" ("id") on delete set null;
+alter table "user" add constraint "user_profile1_identity_meta_source_id_foreign" foreign key ("profile1_identity_meta_source_id") references "source" ("id") on delete set null;
 "
 `;
 

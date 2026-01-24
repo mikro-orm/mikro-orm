@@ -11,7 +11,7 @@ export class EventDetails {
 
   [PrimaryKeyProp]?: 'weekday';
 
-  @OneToOne({ entity: () => Events, ref: true, fieldNames: ['weekday', 'at'], primary: true })
+  @OneToOne({ entity: () => Events, ref: true, fieldNames: ['weekday', 'at'], updateRule: 'no action', deleteRule: 'no action', primary: true })
   weekday!: Ref<Events>;
 
   @Property({ type: 'text', length: 65535, nullable: true })
@@ -41,7 +41,7 @@ export class Events {
 
   [PrimaryKeyProp]?: ['weekday', 'at'];
 
-  @ManyToOne({ entity: () => Worktime, ref: true, fieldName: 'weekday', primary: true })
+  @ManyToOne({ entity: () => Worktime, ref: true, fieldName: 'weekday', updateRule: 'no action', deleteRule: 'no action', primary: true })
   weekday!: Ref<Worktime>;
 
   @PrimaryKey({ type: 'time' })
@@ -125,6 +125,8 @@ export const EventDetailsSchema = new EntitySchema({
       entity: () => Events,
       ref: true,
       fieldNames: ['weekday', 'at'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     moreInfo: { type: 'text', length: 65535, nullable: true },
   },
@@ -151,6 +153,8 @@ export const EventsSchema = new EntitySchema({
       entity: () => Worktime,
       ref: true,
       fieldName: 'weekday',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     at: { primary: true, type: 'time' },
     what: { type: 'string' },

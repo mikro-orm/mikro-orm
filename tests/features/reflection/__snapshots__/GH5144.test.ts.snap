@@ -5,7 +5,7 @@ exports[`#5144 1`] = `
 
 create table \`user\` (\`account_id\` integer not null primary key, \`username\` text not null, \`password\` text not null, constraint \`user_account_id_foreign\` foreign key (\`account_id\`) references \`account\` (\`id\`) on update cascade on delete cascade);
 
-create table \`organization\` (\`account_id\` integer not null primary key, \`owner_account_id\` integer not null, constraint \`organization_account_id_foreign\` foreign key (\`account_id\`) references \`account\` (\`id\`) on update cascade on delete cascade, constraint \`organization_owner_account_id_foreign\` foreign key (\`owner_account_id\`) references \`user\` (\`account_id\`) on update cascade);
+create table \`organization\` (\`account_id\` integer not null primary key, \`owner_account_id\` integer not null, constraint \`organization_account_id_foreign\` foreign key (\`account_id\`) references \`account\` (\`id\`) on update cascade on delete cascade, constraint \`organization_owner_account_id_foreign\` foreign key (\`owner_account_id\`) references \`user\` (\`account_id\`));
 create index \`organization_owner_account_id_index\` on \`organization\` (\`owner_account_id\`);
 "
 `;

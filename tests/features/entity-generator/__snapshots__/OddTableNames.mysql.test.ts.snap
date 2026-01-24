@@ -12,7 +12,7 @@ export class E_$42misc {
 
   [PrimaryKeyProp]?: '@ref';
 
-  @OneToOne({ entity: () => E50$37$32of$32stuff, ref: true, fieldName: '@ref', primary: true })
+  @OneToOne({ entity: () => E50$37$32of$32stuff, ref: true, fieldName: '@ref', updateRule: 'no action', deleteRule: 'no action', primary: true })
   '@ref'!: Ref<E50$37$32of$32stuff>;
 
   @Enum({ items: () => E_$42miscType, nullable: true })
@@ -128,7 +128,7 @@ export class This$43that {
 
   [PrimaryKeyProp]?: '80%OfStuff';
 
-  @OneToOne({ entity: () => E_$42misc, ref: true, fieldName: '80% of stuff', primary: true })
+  @OneToOne({ entity: () => E_$42misc, ref: true, fieldName: '80% of stuff', updateRule: 'no action', deleteRule: 'no action', primary: true })
   '80%OfStuff'!: Ref<E_$42misc>;
 
 }
@@ -175,6 +175,8 @@ export const E_$42miscSchema = new EntitySchema({
       entity: () => E50$37$32of$32stuff,
       ref: true,
       fieldName: '@ref',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     type: { enum: true, items: () => E_$42miscType, nullable: true },
     enum: { enum: true, items: () => E_$42miscEnum, nullable: true },
@@ -303,6 +305,8 @@ export const This$43thatSchema = new EntitySchema({
       entity: () => E_$42misc,
       ref: true,
       fieldName: '80% of stuff',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
   },
 });

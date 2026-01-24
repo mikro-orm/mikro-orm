@@ -9,6 +9,6 @@ create table \`very_long_table_name_64_chars_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\
 alter table \`very_long_table_name_64_chars_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\` add index \`very_long_table_name_64_chars_xxxxxxxxxxxxxxxxxxxxx_f8832_index\` (\`parent_id\`);
 alter table \`very_long_table_name_64_chars_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\` add unique \`very_long_table_name_64_chars_xxxxxxxxxxxxxxxxxxxx_3319a_unique\` (\`key\`);
 
-alter table \`very_long_table_name_64_chars_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\` add constraint \`very_long_table_name_64_chars_xxxxxxxxxxxxxxxxxxx_0dfa2_foreign\` foreign key (\`parent_id\`) references \`parent_entity\` (\`id\`) on update cascade;
+alter table \`very_long_table_name_64_chars_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\` add constraint \`very_long_table_name_64_chars_xxxxxxxxxxxxxxxxxxx_0dfa2_foreign\` foreign key (\`parent_id\`) references \`parent_entity\` (\`id\`);
 "
 `;

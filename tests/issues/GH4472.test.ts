@@ -130,7 +130,7 @@ create table "n2"."topic" ("id" serial primary key, "name" varchar(255) not null
 
 create table "n2"."category" ("id" serial primary key, "topic_id" int null);
 
-alter table "n2"."category" add constraint "category_topic_id_foreign" foreign key ("topic_id") references "n2"."topic" ("id") on update cascade on delete set null;`);
+alter table "n2"."category" add constraint "category_topic_id_foreign" foreign key ("topic_id") references "n2"."topic" ("id") on delete set null;`);
 
     const diff = await orm.schema.getUpdateSchemaSQL({ schema: 'n2', wrap: false });
     expect(diff).toMatch(`create schema if not exists "n1";
@@ -141,7 +141,7 @@ create table "n2"."topic" ("id" serial primary key, "name" varchar(255) not null
 
 create table "n2"."category" ("id" serial primary key, "topic_id" int null);
 
-alter table "n2"."category" add constraint "category_topic_id_foreign" foreign key ("topic_id") references "n2"."topic" ("id") on update cascade on delete set null;`);
+alter table "n2"."category" add constraint "category_topic_id_foreign" foreign key ("topic_id") references "n2"."topic" ("id") on delete set null;`);
 
     await orm.schema.update({ schema: 'n2' });
     const diff2 = await orm.schema.getUpdateSchemaSQL({ schema: 'n2', wrap: false });

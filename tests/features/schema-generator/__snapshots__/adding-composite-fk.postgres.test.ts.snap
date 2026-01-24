@@ -18,7 +18,7 @@ create table "city" ("state_country_id" int not null, "state_id" int not null, "
 
 create table "user" ("id" varchar(255) not null, "email" varchar(255) not null, "first_name" varchar(255) null, "last_name" varchar(255) null, "date_of_birth" date null, "created" timestamptz not null, "modified" timestamptz not null, primary key ("id"));
 
-alter table "state" add constraint "state_country_id_foreign" foreign key ("country_id") references "country" ("id") on update cascade;
+alter table "state" add constraint "state_country_id_foreign" foreign key ("country_id") references "country" ("id");
 
 alter table "city" add constraint "city_state_country_id_state_id_foreign" foreign key ("state_country_id", "state_id") references "state" ("country_id", "id") on update cascade;
 ",

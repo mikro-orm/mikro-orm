@@ -57,6 +57,6 @@ alter table \`author_following\` add constraint \`author_following_author_2_id_f
 
 alter table \`author_address\` add constraint \`author_address_author_id_foreign\` foreign key (\`author_id\`) references \`author\` (\`id\`) on update cascade on delete cascade;
 
-alter table \`book\` add constraint \`book_author_id_foreign\` foreign key (\`author_id\`) references \`author\` (\`id\`) on update cascade;
+alter table \`book\` add constraint \`book_author_id_foreign\` foreign key (\`author_id\`) references \`author\` (\`id\`);
 "
 `;

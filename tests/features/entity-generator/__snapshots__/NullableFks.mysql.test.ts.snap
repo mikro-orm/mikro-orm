@@ -18,13 +18,13 @@ export class EmailSendingLogs {
   @Property({ unsigned: true, persist: false })
   senderId!: number;
 
-  @ManyToOne({ entity: () => RecepientEmails, fieldNames: ['recepient_id', 'recepient_email_id'], index: 'fk_email_sending_logs_recepient_emails1_idx' })
+  @ManyToOne({ entity: () => RecepientEmails, fieldNames: ['recepient_id', 'recepient_email_id'], updateRule: 'no action', deleteRule: 'no action', index: 'fk_email_sending_logs_recepient_emails1_idx' })
   recepient!: RecepientEmails;
 
   @Property({ unsigned: true, persist: false })
   recepientId!: number;
 
-  @ManyToOne({ entity: () => SenderEmails, fieldNames: ['sender_id', 'sender_email_id'], index: 'fk_email_sending_logs_sender_emails1_idx' })
+  @ManyToOne({ entity: () => SenderEmails, fieldNames: ['sender_id', 'sender_email_id'], updateRule: 'no action', deleteRule: 'no action', index: 'fk_email_sending_logs_sender_emails1_idx' })
   sender!: SenderEmails;
 
   @Property({ unsigned: true, persist: false })
@@ -33,7 +33,7 @@ export class EmailSendingLogs {
   @Property({ unsigned: true, persist: false })
   recepientEmailId!: number;
 
-  @ManyToOne({ entity: () => SenderEmails, fieldNames: ['sender_id', 'reply_email_id'], nullable: true, index: 'fk_email_sending_logs_sender_emails2_idx' })
+  @ManyToOne({ entity: () => SenderEmails, fieldNames: ['sender_id', 'reply_email_id'], updateRule: 'no action', deleteRule: 'no action', nullable: true, index: 'fk_email_sending_logs_sender_emails2_idx' })
   reply?: SenderEmails;
 
   @Property({ unsigned: true, nullable: true, persist: false })
@@ -70,13 +70,13 @@ export class RecepientEmails {
 
   [PrimaryKeyProp]?: ['recepient', 'email'];
 
-  @ManyToOne({ entity: () => Recepients, fieldName: 'recepient_id', primary: true })
+  @ManyToOne({ entity: () => Recepients, fieldName: 'recepient_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   recepient!: Recepients;
 
   @Property({ unsigned: true, persist: false })
   recepientId!: number;
 
-  @ManyToOne({ entity: () => Emails, fieldName: 'email_id', primary: true, index: 'fk_recepient_emails_emails1_idx' })
+  @ManyToOne({ entity: () => Emails, fieldName: 'email_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_recepient_emails_emails1_idx' })
   email!: Emails;
 
   @Property({ unsigned: true, persist: false, index: 'fk_recepient_emails_emails1_idx' })
@@ -115,13 +115,13 @@ export class SenderEmails {
 
   [PrimaryKeyProp]?: ['sender', 'email'];
 
-  @ManyToOne({ entity: () => Senders, fieldName: 'sender_id', primary: true })
+  @ManyToOne({ entity: () => Senders, fieldName: 'sender_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   sender!: Senders;
 
   @Property({ unsigned: true, persist: false })
   senderId!: number;
 
-  @ManyToOne({ entity: () => Emails, fieldName: 'email_id', primary: true, index: 'fk_sender_emails_emails1_idx' })
+  @ManyToOne({ entity: () => Emails, fieldName: 'email_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_sender_emails_emails1_idx' })
   email!: Emails;
 
   @Property({ unsigned: true, persist: false, index: 'fk_sender_emails_emails1_idx' })
@@ -182,6 +182,8 @@ export const EmailSendingLogsSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => RecepientEmails,
       fieldNames: ['recepient_id', 'recepient_email_id'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_email_sending_logs_recepient_emails1_idx',
     },
     recepientId: { type: 'integer', unsigned: true, persist: false },
@@ -189,6 +191,8 @@ export const EmailSendingLogsSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => SenderEmails,
       fieldNames: ['sender_id', 'sender_email_id'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_email_sending_logs_sender_emails1_idx',
     },
     senderEmailId: { type: 'integer', unsigned: true, persist: false },
@@ -197,6 +201,8 @@ export const EmailSendingLogsSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => SenderEmails,
       fieldNames: ['sender_id', 'reply_email_id'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       nullable: true,
       index: 'fk_email_sending_logs_sender_emails2_idx',
     },
@@ -246,6 +252,8 @@ export const RecepientEmailsSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => Recepients,
       fieldName: 'recepient_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     recepientId: { type: 'integer', unsigned: true, persist: false },
     email: {
@@ -253,6 +261,8 @@ export const RecepientEmailsSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => Emails,
       fieldName: 'email_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_recepient_emails_emails1_idx',
     },
     emailId: {
@@ -311,6 +321,8 @@ export const SenderEmailsSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => Senders,
       fieldName: 'sender_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     senderId: { type: 'integer', unsigned: true, persist: false },
     email: {
@@ -318,6 +330,8 @@ export const SenderEmailsSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => Emails,
       fieldName: 'email_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_sender_emails_emails1_idx',
     },
     emailId: {
@@ -377,13 +391,13 @@ export class EmailSendingLogs {
   @Property({ unsigned: true, persist: false })
   senderId!: number;
 
-  @ManyToOne({ entity: () => RecepientEmails, ref: true, fieldNames: ['recepient_id', 'recepient_email_id'], index: 'fk_email_sending_logs_recepient_emails1_idx' })
+  @ManyToOne({ entity: () => RecepientEmails, ref: true, fieldNames: ['recepient_id', 'recepient_email_id'], updateRule: 'no action', deleteRule: 'no action', index: 'fk_email_sending_logs_recepient_emails1_idx' })
   recepient!: Ref<RecepientEmails>;
 
   @Property({ unsigned: true, persist: false })
   recepientId!: number;
 
-  @ManyToOne({ entity: () => SenderEmails, ref: true, fieldNames: ['sender_id', 'sender_email_id'], index: 'fk_email_sending_logs_sender_emails1_idx' })
+  @ManyToOne({ entity: () => SenderEmails, ref: true, fieldNames: ['sender_id', 'sender_email_id'], updateRule: 'no action', deleteRule: 'no action', index: 'fk_email_sending_logs_sender_emails1_idx' })
   sender!: Ref<SenderEmails>;
 
   @Property({ unsigned: true, persist: false })
@@ -392,7 +406,7 @@ export class EmailSendingLogs {
   @Property({ unsigned: true, persist: false })
   recepientEmailId!: number;
 
-  @ManyToOne({ entity: () => SenderEmails, ref: true, fieldNames: ['sender_id', 'reply_email_id'], nullable: true, index: 'fk_email_sending_logs_sender_emails2_idx' })
+  @ManyToOne({ entity: () => SenderEmails, ref: true, fieldNames: ['sender_id', 'reply_email_id'], updateRule: 'no action', deleteRule: 'no action', nullable: true, index: 'fk_email_sending_logs_sender_emails2_idx' })
   reply?: Ref<SenderEmails>;
 
   @Property({ unsigned: true, nullable: true, persist: false })
@@ -429,13 +443,13 @@ export class RecepientEmails {
 
   [PrimaryKeyProp]?: ['recepient', 'email'];
 
-  @ManyToOne({ entity: () => Recepients, ref: true, fieldName: 'recepient_id', primary: true })
+  @ManyToOne({ entity: () => Recepients, ref: true, fieldName: 'recepient_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   recepient!: Ref<Recepients>;
 
   @Property({ unsigned: true, persist: false })
   recepientId!: number;
 
-  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', primary: true, index: 'fk_recepient_emails_emails1_idx' })
+  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_recepient_emails_emails1_idx' })
   email!: Ref<Emails>;
 
   @Property({ unsigned: true, persist: false, index: 'fk_recepient_emails_emails1_idx' })
@@ -474,13 +488,13 @@ export class SenderEmails {
 
   [PrimaryKeyProp]?: ['sender', 'email'];
 
-  @ManyToOne({ entity: () => Senders, ref: true, fieldName: 'sender_id', primary: true })
+  @ManyToOne({ entity: () => Senders, ref: true, fieldName: 'sender_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   sender!: Ref<Senders>;
 
   @Property({ unsigned: true, persist: false })
   senderId!: number;
 
-  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', primary: true, index: 'fk_sender_emails_emails1_idx' })
+  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_sender_emails_emails1_idx' })
   email!: Ref<Emails>;
 
   @Property({ unsigned: true, persist: false, index: 'fk_sender_emails_emails1_idx' })
@@ -542,6 +556,8 @@ export const EmailSendingLogsSchema = new EntitySchema({
       entity: () => RecepientEmails,
       ref: true,
       fieldNames: ['recepient_id', 'recepient_email_id'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_email_sending_logs_recepient_emails1_idx',
     },
     recepientId: { type: 'integer', unsigned: true, persist: false },
@@ -550,6 +566,8 @@ export const EmailSendingLogsSchema = new EntitySchema({
       entity: () => SenderEmails,
       ref: true,
       fieldNames: ['sender_id', 'sender_email_id'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_email_sending_logs_sender_emails1_idx',
     },
     senderEmailId: { type: 'integer', unsigned: true, persist: false },
@@ -559,6 +577,8 @@ export const EmailSendingLogsSchema = new EntitySchema({
       entity: () => SenderEmails,
       ref: true,
       fieldNames: ['sender_id', 'reply_email_id'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       nullable: true,
       index: 'fk_email_sending_logs_sender_emails2_idx',
     },
@@ -609,6 +629,8 @@ export const RecepientEmailsSchema = new EntitySchema({
       entity: () => Recepients,
       ref: true,
       fieldName: 'recepient_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     recepientId: { type: 'integer', unsigned: true, persist: false },
     email: {
@@ -617,6 +639,8 @@ export const RecepientEmailsSchema = new EntitySchema({
       entity: () => Emails,
       ref: true,
       fieldName: 'email_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_recepient_emails_emails1_idx',
     },
     emailId: {
@@ -676,6 +700,8 @@ export const SenderEmailsSchema = new EntitySchema({
       entity: () => Senders,
       ref: true,
       fieldName: 'sender_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     senderId: { type: 'integer', unsigned: true, persist: false },
     email: {
@@ -684,6 +710,8 @@ export const SenderEmailsSchema = new EntitySchema({
       entity: () => Emails,
       ref: true,
       fieldName: 'email_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_sender_emails_emails1_idx',
     },
     emailId: {
@@ -743,13 +771,13 @@ export class EmailSendingLogs {
   @Property({ unsigned: true, persist: false })
   senderId!: number;
 
-  @ManyToOne({ entity: () => RecepientEmails, fieldNames: ['recepient_id', 'recepient_email_id'], index: 'fk_email_sending_logs_recepient_emails1_idx' })
+  @ManyToOne({ entity: () => RecepientEmails, fieldNames: ['recepient_id', 'recepient_email_id'], updateRule: 'no action', deleteRule: 'no action', index: 'fk_email_sending_logs_recepient_emails1_idx' })
   recepient!: RecepientEmails;
 
   @Property({ unsigned: true, persist: false })
   recepientId!: number;
 
-  @ManyToOne({ entity: () => SenderEmails, fieldNames: ['sender_id', 'sender_email_id'], index: 'fk_email_sending_logs_sender_emails1_idx' })
+  @ManyToOne({ entity: () => SenderEmails, fieldNames: ['sender_id', 'sender_email_id'], updateRule: 'no action', deleteRule: 'no action', index: 'fk_email_sending_logs_sender_emails1_idx' })
   sender!: SenderEmails;
 
   @Property({ unsigned: true, persist: false })
@@ -758,7 +786,7 @@ export class EmailSendingLogs {
   @Property({ unsigned: true, persist: false })
   recepientEmailId!: number;
 
-  @ManyToOne({ entity: () => SenderEmails, fieldNames: ['sender_id', 'reply_email_id'], nullable: true, index: 'fk_email_sending_logs_sender_emails2_idx' })
+  @ManyToOne({ entity: () => SenderEmails, fieldNames: ['sender_id', 'reply_email_id'], updateRule: 'no action', deleteRule: 'no action', nullable: true, index: 'fk_email_sending_logs_sender_emails2_idx' })
   reply?: SenderEmails;
 
   @Property({ unsigned: true, nullable: true, persist: false })
@@ -812,13 +840,13 @@ export class RecepientEmails {
 
   [PrimaryKeyProp]?: ['recepient', 'email'];
 
-  @ManyToOne({ entity: () => Recepients, fieldName: 'recepient_id', primary: true })
+  @ManyToOne({ entity: () => Recepients, fieldName: 'recepient_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   recepient!: Recepients;
 
   @Property({ unsigned: true, persist: false })
   recepientId!: number;
 
-  @ManyToOne({ entity: () => Emails, fieldName: 'email_id', primary: true, index: 'fk_recepient_emails_emails1_idx' })
+  @ManyToOne({ entity: () => Emails, fieldName: 'email_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_recepient_emails_emails1_idx' })
   email!: Emails;
 
   @Property({ unsigned: true, persist: false, index: 'fk_recepient_emails_emails1_idx' })
@@ -864,13 +892,13 @@ export class SenderEmails {
 
   [PrimaryKeyProp]?: ['sender', 'email'];
 
-  @ManyToOne({ entity: () => Senders, fieldName: 'sender_id', primary: true })
+  @ManyToOne({ entity: () => Senders, fieldName: 'sender_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   sender!: Senders;
 
   @Property({ unsigned: true, persist: false })
   senderId!: number;
 
-  @ManyToOne({ entity: () => Emails, fieldName: 'email_id', primary: true, index: 'fk_sender_emails_emails1_idx' })
+  @ManyToOne({ entity: () => Emails, fieldName: 'email_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_sender_emails_emails1_idx' })
   email!: Emails;
 
   @Property({ unsigned: true, persist: false, index: 'fk_sender_emails_emails1_idx' })
@@ -940,6 +968,8 @@ export const EmailSendingLogsSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => RecepientEmails,
       fieldNames: ['recepient_id', 'recepient_email_id'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_email_sending_logs_recepient_emails1_idx',
     },
     recepientId: { type: 'integer', unsigned: true, persist: false },
@@ -947,6 +977,8 @@ export const EmailSendingLogsSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => SenderEmails,
       fieldNames: ['sender_id', 'sender_email_id'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_email_sending_logs_sender_emails1_idx',
     },
     senderEmailId: { type: 'integer', unsigned: true, persist: false },
@@ -955,6 +987,8 @@ export const EmailSendingLogsSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => SenderEmails,
       fieldNames: ['sender_id', 'reply_email_id'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       nullable: true,
       index: 'fk_email_sending_logs_sender_emails2_idx',
     },
@@ -1034,6 +1068,8 @@ export const RecepientEmailsSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => Recepients,
       fieldName: 'recepient_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     recepientId: { type: 'integer', unsigned: true, persist: false },
     email: {
@@ -1041,6 +1077,8 @@ export const RecepientEmailsSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => Emails,
       fieldName: 'email_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_recepient_emails_emails1_idx',
     },
     emailId: {
@@ -1113,6 +1151,8 @@ export const SenderEmailsSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => Senders,
       fieldName: 'sender_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     senderId: { type: 'integer', unsigned: true, persist: false },
     email: {
@@ -1120,6 +1160,8 @@ export const SenderEmailsSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => Emails,
       fieldName: 'email_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_sender_emails_emails1_idx',
     },
     emailId: {
@@ -1195,13 +1237,13 @@ export class EmailSendingLogs {
   @Property({ unsigned: true, persist: false })
   senderId!: number;
 
-  @ManyToOne({ entity: () => RecepientEmails, ref: true, fieldNames: ['recepient_id', 'recepient_email_id'], index: 'fk_email_sending_logs_recepient_emails1_idx' })
+  @ManyToOne({ entity: () => RecepientEmails, ref: true, fieldNames: ['recepient_id', 'recepient_email_id'], updateRule: 'no action', deleteRule: 'no action', index: 'fk_email_sending_logs_recepient_emails1_idx' })
   recepient!: Ref<RecepientEmails>;
 
   @Property({ unsigned: true, persist: false })
   recepientId!: number;
 
-  @ManyToOne({ entity: () => SenderEmails, ref: true, fieldNames: ['sender_id', 'sender_email_id'], index: 'fk_email_sending_logs_sender_emails1_idx' })
+  @ManyToOne({ entity: () => SenderEmails, ref: true, fieldNames: ['sender_id', 'sender_email_id'], updateRule: 'no action', deleteRule: 'no action', index: 'fk_email_sending_logs_sender_emails1_idx' })
   sender!: Ref<SenderEmails>;
 
   @Property({ unsigned: true, persist: false })
@@ -1210,7 +1252,7 @@ export class EmailSendingLogs {
   @Property({ unsigned: true, persist: false })
   recepientEmailId!: number;
 
-  @ManyToOne({ entity: () => SenderEmails, ref: true, fieldNames: ['sender_id', 'reply_email_id'], nullable: true, index: 'fk_email_sending_logs_sender_emails2_idx' })
+  @ManyToOne({ entity: () => SenderEmails, ref: true, fieldNames: ['sender_id', 'reply_email_id'], updateRule: 'no action', deleteRule: 'no action', nullable: true, index: 'fk_email_sending_logs_sender_emails2_idx' })
   reply?: Ref<SenderEmails>;
 
   @Property({ unsigned: true, nullable: true, persist: false })
@@ -1264,13 +1306,13 @@ export class RecepientEmails {
 
   [PrimaryKeyProp]?: ['recepient', 'email'];
 
-  @ManyToOne({ entity: () => Recepients, ref: true, fieldName: 'recepient_id', primary: true })
+  @ManyToOne({ entity: () => Recepients, ref: true, fieldName: 'recepient_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   recepient!: Ref<Recepients>;
 
   @Property({ unsigned: true, persist: false })
   recepientId!: number;
 
-  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', primary: true, index: 'fk_recepient_emails_emails1_idx' })
+  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_recepient_emails_emails1_idx' })
   email!: Ref<Emails>;
 
   @Property({ unsigned: true, persist: false, index: 'fk_recepient_emails_emails1_idx' })
@@ -1316,13 +1358,13 @@ export class SenderEmails {
 
   [PrimaryKeyProp]?: ['sender', 'email'];
 
-  @ManyToOne({ entity: () => Senders, ref: true, fieldName: 'sender_id', primary: true })
+  @ManyToOne({ entity: () => Senders, ref: true, fieldName: 'sender_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   sender!: Ref<Senders>;
 
   @Property({ unsigned: true, persist: false })
   senderId!: number;
 
-  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', primary: true, index: 'fk_sender_emails_emails1_idx' })
+  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_sender_emails_emails1_idx' })
   email!: Ref<Emails>;
 
   @Property({ unsigned: true, persist: false, index: 'fk_sender_emails_emails1_idx' })
@@ -1393,6 +1435,8 @@ export const EmailSendingLogsSchema = new EntitySchema({
       entity: () => RecepientEmails,
       ref: true,
       fieldNames: ['recepient_id', 'recepient_email_id'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_email_sending_logs_recepient_emails1_idx',
     },
     recepientId: { type: 'integer', unsigned: true, persist: false },
@@ -1401,6 +1445,8 @@ export const EmailSendingLogsSchema = new EntitySchema({
       entity: () => SenderEmails,
       ref: true,
       fieldNames: ['sender_id', 'sender_email_id'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_email_sending_logs_sender_emails1_idx',
     },
     senderEmailId: { type: 'integer', unsigned: true, persist: false },
@@ -1410,6 +1456,8 @@ export const EmailSendingLogsSchema = new EntitySchema({
       entity: () => SenderEmails,
       ref: true,
       fieldNames: ['sender_id', 'reply_email_id'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       nullable: true,
       index: 'fk_email_sending_logs_sender_emails2_idx',
     },
@@ -1490,6 +1538,8 @@ export const RecepientEmailsSchema = new EntitySchema({
       entity: () => Recepients,
       ref: true,
       fieldName: 'recepient_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     recepientId: { type: 'integer', unsigned: true, persist: false },
     email: {
@@ -1498,6 +1548,8 @@ export const RecepientEmailsSchema = new EntitySchema({
       entity: () => Emails,
       ref: true,
       fieldName: 'email_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_recepient_emails_emails1_idx',
     },
     emailId: {
@@ -1571,6 +1623,8 @@ export const SenderEmailsSchema = new EntitySchema({
       entity: () => Senders,
       ref: true,
       fieldName: 'sender_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     senderId: { type: 'integer', unsigned: true, persist: false },
     email: {
@@ -1579,6 +1633,8 @@ export const SenderEmailsSchema = new EntitySchema({
       entity: () => Emails,
       ref: true,
       fieldName: 'email_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_sender_emails_emails1_idx',
     },
     emailId: {
@@ -1651,13 +1707,13 @@ export class EmailSendingLogs {
   @PrimaryKey()
   logId!: number;
 
-  @ManyToOne({ entity: () => RecepientEmails, fieldNames: ['recepient_id', 'recepient_email_id'], index: 'fk_email_sending_logs_recepient_emails1_idx' })
+  @ManyToOne({ entity: () => RecepientEmails, fieldNames: ['recepient_id', 'recepient_email_id'], updateRule: 'no action', deleteRule: 'no action', index: 'fk_email_sending_logs_recepient_emails1_idx' })
   recepient!: RecepientEmails;
 
-  @ManyToOne({ entity: () => SenderEmails, fieldNames: ['sender_id', 'sender_email_id'], index: 'fk_email_sending_logs_sender_emails1_idx' })
+  @ManyToOne({ entity: () => SenderEmails, fieldNames: ['sender_id', 'sender_email_id'], updateRule: 'no action', deleteRule: 'no action', index: 'fk_email_sending_logs_sender_emails1_idx' })
   sender!: SenderEmails;
 
-  @ManyToOne({ entity: () => SenderEmails, fieldNames: ['sender_id', 'reply_email_id'], nullable: true, index: 'fk_email_sending_logs_sender_emails2_idx' })
+  @ManyToOne({ entity: () => SenderEmails, fieldNames: ['sender_id', 'reply_email_id'], updateRule: 'no action', deleteRule: 'no action', nullable: true, index: 'fk_email_sending_logs_sender_emails2_idx' })
   reply?: SenderEmails;
 
   @Property({ type: 'datetime', defaultRaw: \`CURRENT_TIMESTAMP\` })
@@ -1691,10 +1747,10 @@ export class RecepientEmails {
 
   [PrimaryKeyProp]?: ['recepient', 'email'];
 
-  @ManyToOne({ entity: () => Recepients, fieldName: 'recepient_id', primary: true })
+  @ManyToOne({ entity: () => Recepients, fieldName: 'recepient_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   recepient!: Recepients;
 
-  @ManyToOne({ entity: () => Emails, fieldName: 'email_id', primary: true, index: 'fk_recepient_emails_emails1_idx' })
+  @ManyToOne({ entity: () => Emails, fieldName: 'email_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_recepient_emails_emails1_idx' })
   email!: Emails;
 
 }
@@ -1730,10 +1786,10 @@ export class SenderEmails {
 
   [PrimaryKeyProp]?: ['sender', 'email'];
 
-  @ManyToOne({ entity: () => Senders, fieldName: 'sender_id', primary: true })
+  @ManyToOne({ entity: () => Senders, fieldName: 'sender_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   sender!: Senders;
 
-  @ManyToOne({ entity: () => Emails, fieldName: 'email_id', primary: true, index: 'fk_sender_emails_emails1_idx' })
+  @ManyToOne({ entity: () => Emails, fieldName: 'email_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_sender_emails_emails1_idx' })
   email!: Emails;
 
 }
@@ -1785,18 +1841,24 @@ export const EmailSendingLogsSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => RecepientEmails,
       fieldNames: ['recepient_id', 'recepient_email_id'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_email_sending_logs_recepient_emails1_idx',
     },
     sender: {
       kind: 'm:1',
       entity: () => SenderEmails,
       fieldNames: ['sender_id', 'sender_email_id'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_email_sending_logs_sender_emails1_idx',
     },
     reply: {
       kind: 'm:1',
       entity: () => SenderEmails,
       fieldNames: ['sender_id', 'reply_email_id'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       nullable: true,
       index: 'fk_email_sending_logs_sender_emails2_idx',
     },
@@ -1838,12 +1900,16 @@ export const RecepientEmailsSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => Recepients,
       fieldName: 'recepient_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     email: {
       primary: true,
       kind: 'm:1',
       entity: () => Emails,
       fieldName: 'email_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_recepient_emails_emails1_idx',
     },
   },
@@ -1894,12 +1960,16 @@ export const SenderEmailsSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => Senders,
       fieldName: 'sender_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     email: {
       primary: true,
       kind: 'm:1',
       entity: () => Emails,
       fieldName: 'email_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_sender_emails_emails1_idx',
     },
   },
@@ -1950,13 +2020,13 @@ export class EmailSendingLogs {
   @PrimaryKey()
   logId!: number;
 
-  @ManyToOne({ entity: () => RecepientEmails, ref: true, fieldNames: ['recepient_id', 'recepient_email_id'], index: 'fk_email_sending_logs_recepient_emails1_idx' })
+  @ManyToOne({ entity: () => RecepientEmails, ref: true, fieldNames: ['recepient_id', 'recepient_email_id'], updateRule: 'no action', deleteRule: 'no action', index: 'fk_email_sending_logs_recepient_emails1_idx' })
   recepient!: Ref<RecepientEmails>;
 
-  @ManyToOne({ entity: () => SenderEmails, ref: true, fieldNames: ['sender_id', 'sender_email_id'], index: 'fk_email_sending_logs_sender_emails1_idx' })
+  @ManyToOne({ entity: () => SenderEmails, ref: true, fieldNames: ['sender_id', 'sender_email_id'], updateRule: 'no action', deleteRule: 'no action', index: 'fk_email_sending_logs_sender_emails1_idx' })
   sender!: Ref<SenderEmails>;
 
-  @ManyToOne({ entity: () => SenderEmails, ref: true, fieldNames: ['sender_id', 'reply_email_id'], nullable: true, index: 'fk_email_sending_logs_sender_emails2_idx' })
+  @ManyToOne({ entity: () => SenderEmails, ref: true, fieldNames: ['sender_id', 'reply_email_id'], updateRule: 'no action', deleteRule: 'no action', nullable: true, index: 'fk_email_sending_logs_sender_emails2_idx' })
   reply?: Ref<SenderEmails>;
 
   @Property({ type: 'datetime', defaultRaw: \`CURRENT_TIMESTAMP\` })
@@ -1990,10 +2060,10 @@ export class RecepientEmails {
 
   [PrimaryKeyProp]?: ['recepient', 'email'];
 
-  @ManyToOne({ entity: () => Recepients, ref: true, fieldName: 'recepient_id', primary: true })
+  @ManyToOne({ entity: () => Recepients, ref: true, fieldName: 'recepient_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   recepient!: Ref<Recepients>;
 
-  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', primary: true, index: 'fk_recepient_emails_emails1_idx' })
+  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_recepient_emails_emails1_idx' })
   email!: Ref<Emails>;
 
 }
@@ -2029,10 +2099,10 @@ export class SenderEmails {
 
   [PrimaryKeyProp]?: ['sender', 'email'];
 
-  @ManyToOne({ entity: () => Senders, ref: true, fieldName: 'sender_id', primary: true })
+  @ManyToOne({ entity: () => Senders, ref: true, fieldName: 'sender_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   sender!: Ref<Senders>;
 
-  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', primary: true, index: 'fk_sender_emails_emails1_idx' })
+  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_sender_emails_emails1_idx' })
   email!: Ref<Emails>;
 
 }
@@ -2085,6 +2155,8 @@ export const EmailSendingLogsSchema = new EntitySchema({
       entity: () => RecepientEmails,
       ref: true,
       fieldNames: ['recepient_id', 'recepient_email_id'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_email_sending_logs_recepient_emails1_idx',
     },
     sender: {
@@ -2092,6 +2164,8 @@ export const EmailSendingLogsSchema = new EntitySchema({
       entity: () => SenderEmails,
       ref: true,
       fieldNames: ['sender_id', 'sender_email_id'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_email_sending_logs_sender_emails1_idx',
     },
     reply: {
@@ -2099,6 +2173,8 @@ export const EmailSendingLogsSchema = new EntitySchema({
       entity: () => SenderEmails,
       ref: true,
       fieldNames: ['sender_id', 'reply_email_id'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       nullable: true,
       index: 'fk_email_sending_logs_sender_emails2_idx',
     },
@@ -2141,6 +2217,8 @@ export const RecepientEmailsSchema = new EntitySchema({
       entity: () => Recepients,
       ref: true,
       fieldName: 'recepient_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     email: {
       primary: true,
@@ -2148,6 +2226,8 @@ export const RecepientEmailsSchema = new EntitySchema({
       entity: () => Emails,
       ref: true,
       fieldName: 'email_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_recepient_emails_emails1_idx',
     },
   },
@@ -2199,6 +2279,8 @@ export const SenderEmailsSchema = new EntitySchema({
       entity: () => Senders,
       ref: true,
       fieldName: 'sender_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     email: {
       primary: true,
@@ -2206,6 +2288,8 @@ export const SenderEmailsSchema = new EntitySchema({
       entity: () => Emails,
       ref: true,
       fieldName: 'email_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_sender_emails_emails1_idx',
     },
   },
@@ -2256,13 +2340,13 @@ export class EmailSendingLogs {
   @PrimaryKey()
   logId!: number;
 
-  @ManyToOne({ entity: () => RecepientEmails, fieldNames: ['recepient_id', 'recepient_email_id'], index: 'fk_email_sending_logs_recepient_emails1_idx' })
+  @ManyToOne({ entity: () => RecepientEmails, fieldNames: ['recepient_id', 'recepient_email_id'], updateRule: 'no action', deleteRule: 'no action', index: 'fk_email_sending_logs_recepient_emails1_idx' })
   recepient!: RecepientEmails;
 
-  @ManyToOne({ entity: () => SenderEmails, fieldNames: ['sender_id', 'sender_email_id'], index: 'fk_email_sending_logs_sender_emails1_idx' })
+  @ManyToOne({ entity: () => SenderEmails, fieldNames: ['sender_id', 'sender_email_id'], updateRule: 'no action', deleteRule: 'no action', index: 'fk_email_sending_logs_sender_emails1_idx' })
   sender!: SenderEmails;
 
-  @ManyToOne({ entity: () => SenderEmails, fieldNames: ['sender_id', 'reply_email_id'], nullable: true, index: 'fk_email_sending_logs_sender_emails2_idx' })
+  @ManyToOne({ entity: () => SenderEmails, fieldNames: ['sender_id', 'reply_email_id'], updateRule: 'no action', deleteRule: 'no action', nullable: true, index: 'fk_email_sending_logs_sender_emails2_idx' })
   reply?: SenderEmails;
 
   @Property({ type: 'datetime', defaultRaw: \`CURRENT_TIMESTAMP\` })
@@ -2313,10 +2397,10 @@ export class RecepientEmails {
 
   [PrimaryKeyProp]?: ['recepient', 'email'];
 
-  @ManyToOne({ entity: () => Recepients, fieldName: 'recepient_id', primary: true })
+  @ManyToOne({ entity: () => Recepients, fieldName: 'recepient_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   recepient!: Recepients;
 
-  @ManyToOne({ entity: () => Emails, fieldName: 'email_id', primary: true, index: 'fk_recepient_emails_emails1_idx' })
+  @ManyToOne({ entity: () => Emails, fieldName: 'email_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_recepient_emails_emails1_idx' })
   email!: Emails;
 
   @OneToMany({ entity: () => EmailSendingLogs, mappedBy: 'recepient' })
@@ -2359,10 +2443,10 @@ export class SenderEmails {
 
   [PrimaryKeyProp]?: ['sender', 'email'];
 
-  @ManyToOne({ entity: () => Senders, fieldName: 'sender_id', primary: true })
+  @ManyToOne({ entity: () => Senders, fieldName: 'sender_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   sender!: Senders;
 
-  @ManyToOne({ entity: () => Emails, fieldName: 'email_id', primary: true, index: 'fk_sender_emails_emails1_idx' })
+  @ManyToOne({ entity: () => Emails, fieldName: 'email_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_sender_emails_emails1_idx' })
   email!: Emails;
 
   @OneToMany({ entity: () => EmailSendingLogs, mappedBy: 'sender' })
@@ -2423,18 +2507,24 @@ export const EmailSendingLogsSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => RecepientEmails,
       fieldNames: ['recepient_id', 'recepient_email_id'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_email_sending_logs_recepient_emails1_idx',
     },
     sender: {
       kind: 'm:1',
       entity: () => SenderEmails,
       fieldNames: ['sender_id', 'sender_email_id'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_email_sending_logs_sender_emails1_idx',
     },
     reply: {
       kind: 'm:1',
       entity: () => SenderEmails,
       fieldNames: ['sender_id', 'reply_email_id'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       nullable: true,
       index: 'fk_email_sending_logs_sender_emails2_idx',
     },
@@ -2506,12 +2596,16 @@ export const RecepientEmailsSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => Recepients,
       fieldName: 'recepient_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     email: {
       primary: true,
       kind: 'm:1',
       entity: () => Emails,
       fieldName: 'email_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_recepient_emails_emails1_idx',
     },
     emailSendingLogsCollection: {
@@ -2576,12 +2670,16 @@ export const SenderEmailsSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => Senders,
       fieldName: 'sender_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     email: {
       primary: true,
       kind: 'm:1',
       entity: () => Emails,
       fieldName: 'email_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_sender_emails_emails1_idx',
     },
     emailSendingLogsCollection: {
@@ -2648,13 +2746,13 @@ export class EmailSendingLogs {
   @PrimaryKey()
   logId!: number;
 
-  @ManyToOne({ entity: () => RecepientEmails, ref: true, fieldNames: ['recepient_id', 'recepient_email_id'], index: 'fk_email_sending_logs_recepient_emails1_idx' })
+  @ManyToOne({ entity: () => RecepientEmails, ref: true, fieldNames: ['recepient_id', 'recepient_email_id'], updateRule: 'no action', deleteRule: 'no action', index: 'fk_email_sending_logs_recepient_emails1_idx' })
   recepient!: Ref<RecepientEmails>;
 
-  @ManyToOne({ entity: () => SenderEmails, ref: true, fieldNames: ['sender_id', 'sender_email_id'], index: 'fk_email_sending_logs_sender_emails1_idx' })
+  @ManyToOne({ entity: () => SenderEmails, ref: true, fieldNames: ['sender_id', 'sender_email_id'], updateRule: 'no action', deleteRule: 'no action', index: 'fk_email_sending_logs_sender_emails1_idx' })
   sender!: Ref<SenderEmails>;
 
-  @ManyToOne({ entity: () => SenderEmails, ref: true, fieldNames: ['sender_id', 'reply_email_id'], nullable: true, index: 'fk_email_sending_logs_sender_emails2_idx' })
+  @ManyToOne({ entity: () => SenderEmails, ref: true, fieldNames: ['sender_id', 'reply_email_id'], updateRule: 'no action', deleteRule: 'no action', nullable: true, index: 'fk_email_sending_logs_sender_emails2_idx' })
   reply?: Ref<SenderEmails>;
 
   @Property({ type: 'datetime', defaultRaw: \`CURRENT_TIMESTAMP\` })
@@ -2705,10 +2803,10 @@ export class RecepientEmails {
 
   [PrimaryKeyProp]?: ['recepient', 'email'];
 
-  @ManyToOne({ entity: () => Recepients, ref: true, fieldName: 'recepient_id', primary: true })
+  @ManyToOne({ entity: () => Recepients, ref: true, fieldName: 'recepient_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   recepient!: Ref<Recepients>;
 
-  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', primary: true, index: 'fk_recepient_emails_emails1_idx' })
+  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_recepient_emails_emails1_idx' })
   email!: Ref<Emails>;
 
   @OneToMany({ entity: () => EmailSendingLogs, mappedBy: 'recepient' })
@@ -2751,10 +2849,10 @@ export class SenderEmails {
 
   [PrimaryKeyProp]?: ['sender', 'email'];
 
-  @ManyToOne({ entity: () => Senders, ref: true, fieldName: 'sender_id', primary: true })
+  @ManyToOne({ entity: () => Senders, ref: true, fieldName: 'sender_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   sender!: Ref<Senders>;
 
-  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', primary: true, index: 'fk_sender_emails_emails1_idx' })
+  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_sender_emails_emails1_idx' })
   email!: Ref<Emails>;
 
   @OneToMany({ entity: () => EmailSendingLogs, mappedBy: 'sender' })
@@ -2816,6 +2914,8 @@ export const EmailSendingLogsSchema = new EntitySchema({
       entity: () => RecepientEmails,
       ref: true,
       fieldNames: ['recepient_id', 'recepient_email_id'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_email_sending_logs_recepient_emails1_idx',
     },
     sender: {
@@ -2823,6 +2923,8 @@ export const EmailSendingLogsSchema = new EntitySchema({
       entity: () => SenderEmails,
       ref: true,
       fieldNames: ['sender_id', 'sender_email_id'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_email_sending_logs_sender_emails1_idx',
     },
     reply: {
@@ -2830,6 +2932,8 @@ export const EmailSendingLogsSchema = new EntitySchema({
       entity: () => SenderEmails,
       ref: true,
       fieldNames: ['sender_id', 'reply_email_id'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       nullable: true,
       index: 'fk_email_sending_logs_sender_emails2_idx',
     },
@@ -2902,6 +3006,8 @@ export const RecepientEmailsSchema = new EntitySchema({
       entity: () => Recepients,
       ref: true,
       fieldName: 'recepient_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     email: {
       primary: true,
@@ -2909,6 +3015,8 @@ export const RecepientEmailsSchema = new EntitySchema({
       entity: () => Emails,
       ref: true,
       fieldName: 'email_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_recepient_emails_emails1_idx',
     },
     emailSendingLogsCollection: {
@@ -2974,6 +3082,8 @@ export const SenderEmailsSchema = new EntitySchema({
       entity: () => Senders,
       ref: true,
       fieldName: 'sender_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     email: {
       primary: true,
@@ -2981,6 +3091,8 @@ export const SenderEmailsSchema = new EntitySchema({
       entity: () => Emails,
       ref: true,
       fieldName: 'email_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_sender_emails_emails1_idx',
     },
     emailSendingLogsCollection: {
@@ -3047,13 +3159,13 @@ export class EmailSendingLogs {
   @PrimaryKey()
   logId!: number;
 
-  @ManyToOne({ entity: () => RecepientEmails, fieldNames: ['recepient_id', 'recepient_email_id'], index: 'fk_email_sending_logs_recepient_emails1_idx' })
+  @ManyToOne({ entity: () => RecepientEmails, fieldNames: ['recepient_id', 'recepient_email_id'], updateRule: 'no action', deleteRule: 'no action', index: 'fk_email_sending_logs_recepient_emails1_idx' })
   recepient!: RecepientEmails;
 
-  @ManyToOne({ entity: () => SenderEmails, fieldNames: ['sender_id', 'sender_email_id'], index: 'fk_email_sending_logs_sender_emails1_idx' })
+  @ManyToOne({ entity: () => SenderEmails, fieldNames: ['sender_id', 'sender_email_id'], updateRule: 'no action', deleteRule: 'no action', index: 'fk_email_sending_logs_sender_emails1_idx' })
   sender!: SenderEmails;
 
-  @ManyToOne({ entity: () => SenderEmails, fieldNames: ['sender_id', 'reply_email_id'], nullable: true, index: 'fk_email_sending_logs_sender_emails2_idx' })
+  @ManyToOne({ entity: () => SenderEmails, fieldNames: ['sender_id', 'reply_email_id'], updateRule: 'no action', deleteRule: 'no action', nullable: true, index: 'fk_email_sending_logs_sender_emails2_idx' })
   reply?: SenderEmails;
 
   @Property({ type: 'datetime', defaultRaw: \`CURRENT_TIMESTAMP\` })
@@ -3087,10 +3199,10 @@ export class RecepientEmails {
 
   [PrimaryKeyProp]?: ['recepient', 'email'];
 
-  @ManyToOne({ entity: () => Recepients, fieldName: 'recepient_id', primary: true })
+  @ManyToOne({ entity: () => Recepients, fieldName: 'recepient_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   recepient!: Recepients;
 
-  @ManyToOne({ entity: () => Emails, fieldName: 'email_id', primary: true, index: 'fk_recepient_emails_emails1_idx' })
+  @ManyToOne({ entity: () => Emails, fieldName: 'email_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_recepient_emails_emails1_idx' })
   email!: Emails;
 
 }
@@ -3126,10 +3238,10 @@ export class SenderEmails {
 
   [PrimaryKeyProp]?: ['sender', 'email'];
 
-  @ManyToOne({ entity: () => Senders, fieldName: 'sender_id', primary: true })
+  @ManyToOne({ entity: () => Senders, fieldName: 'sender_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   sender!: Senders;
 
-  @ManyToOne({ entity: () => Emails, fieldName: 'email_id', primary: true, index: 'fk_sender_emails_emails1_idx' })
+  @ManyToOne({ entity: () => Emails, fieldName: 'email_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_sender_emails_emails1_idx' })
   email!: Emails;
 
 }
@@ -3181,18 +3293,24 @@ export const EmailSendingLogsSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => RecepientEmails,
       fieldNames: ['recepient_id', 'recepient_email_id'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_email_sending_logs_recepient_emails1_idx',
     },
     sender: {
       kind: 'm:1',
       entity: () => SenderEmails,
       fieldNames: ['sender_id', 'sender_email_id'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_email_sending_logs_sender_emails1_idx',
     },
     reply: {
       kind: 'm:1',
       entity: () => SenderEmails,
       fieldNames: ['sender_id', 'reply_email_id'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       nullable: true,
       index: 'fk_email_sending_logs_sender_emails2_idx',
     },
@@ -3234,12 +3352,16 @@ export const RecepientEmailsSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => Recepients,
       fieldName: 'recepient_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     email: {
       primary: true,
       kind: 'm:1',
       entity: () => Emails,
       fieldName: 'email_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_recepient_emails_emails1_idx',
     },
   },
@@ -3290,12 +3412,16 @@ export const SenderEmailsSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => Senders,
       fieldName: 'sender_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     email: {
       primary: true,
       kind: 'm:1',
       entity: () => Emails,
       fieldName: 'email_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_sender_emails_emails1_idx',
     },
   },
@@ -3346,13 +3472,13 @@ export class EmailSendingLogs {
   @PrimaryKey()
   logId!: number;
 
-  @ManyToOne({ entity: () => RecepientEmails, ref: true, fieldNames: ['recepient_id', 'recepient_email_id'], index: 'fk_email_sending_logs_recepient_emails1_idx' })
+  @ManyToOne({ entity: () => RecepientEmails, ref: true, fieldNames: ['recepient_id', 'recepient_email_id'], updateRule: 'no action', deleteRule: 'no action', index: 'fk_email_sending_logs_recepient_emails1_idx' })
   recepient!: Ref<RecepientEmails>;
 
-  @ManyToOne({ entity: () => SenderEmails, ref: true, fieldNames: ['sender_id', 'sender_email_id'], index: 'fk_email_sending_logs_sender_emails1_idx' })
+  @ManyToOne({ entity: () => SenderEmails, ref: true, fieldNames: ['sender_id', 'sender_email_id'], updateRule: 'no action', deleteRule: 'no action', index: 'fk_email_sending_logs_sender_emails1_idx' })
   sender!: Ref<SenderEmails>;
 
-  @ManyToOne({ entity: () => SenderEmails, ref: true, fieldNames: ['sender_id', 'reply_email_id'], nullable: true, index: 'fk_email_sending_logs_sender_emails2_idx' })
+  @ManyToOne({ entity: () => SenderEmails, ref: true, fieldNames: ['sender_id', 'reply_email_id'], updateRule: 'no action', deleteRule: 'no action', nullable: true, index: 'fk_email_sending_logs_sender_emails2_idx' })
   reply?: Ref<SenderEmails>;
 
   @Property({ type: 'datetime', defaultRaw: \`CURRENT_TIMESTAMP\` })
@@ -3386,10 +3512,10 @@ export class RecepientEmails {
 
   [PrimaryKeyProp]?: ['recepient', 'email'];
 
-  @ManyToOne({ entity: () => Recepients, ref: true, fieldName: 'recepient_id', primary: true })
+  @ManyToOne({ entity: () => Recepients, ref: true, fieldName: 'recepient_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   recepient!: Ref<Recepients>;
 
-  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', primary: true, index: 'fk_recepient_emails_emails1_idx' })
+  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_recepient_emails_emails1_idx' })
   email!: Ref<Emails>;
 
 }
@@ -3425,10 +3551,10 @@ export class SenderEmails {
 
   [PrimaryKeyProp]?: ['sender', 'email'];
 
-  @ManyToOne({ entity: () => Senders, ref: true, fieldName: 'sender_id', primary: true })
+  @ManyToOne({ entity: () => Senders, ref: true, fieldName: 'sender_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   sender!: Ref<Senders>;
 
-  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', primary: true, index: 'fk_sender_emails_emails1_idx' })
+  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_sender_emails_emails1_idx' })
   email!: Ref<Emails>;
 
 }
@@ -3481,6 +3607,8 @@ export const EmailSendingLogsSchema = new EntitySchema({
       entity: () => RecepientEmails,
       ref: true,
       fieldNames: ['recepient_id', 'recepient_email_id'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_email_sending_logs_recepient_emails1_idx',
     },
     sender: {
@@ -3488,6 +3616,8 @@ export const EmailSendingLogsSchema = new EntitySchema({
       entity: () => SenderEmails,
       ref: true,
       fieldNames: ['sender_id', 'sender_email_id'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_email_sending_logs_sender_emails1_idx',
     },
     reply: {
@@ -3495,6 +3625,8 @@ export const EmailSendingLogsSchema = new EntitySchema({
       entity: () => SenderEmails,
       ref: true,
       fieldNames: ['sender_id', 'reply_email_id'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       nullable: true,
       index: 'fk_email_sending_logs_sender_emails2_idx',
     },
@@ -3537,6 +3669,8 @@ export const RecepientEmailsSchema = new EntitySchema({
       entity: () => Recepients,
       ref: true,
       fieldName: 'recepient_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     email: {
       primary: true,
@@ -3544,6 +3678,8 @@ export const RecepientEmailsSchema = new EntitySchema({
       entity: () => Emails,
       ref: true,
       fieldName: 'email_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_recepient_emails_emails1_idx',
     },
   },
@@ -3595,6 +3731,8 @@ export const SenderEmailsSchema = new EntitySchema({
       entity: () => Senders,
       ref: true,
       fieldName: 'sender_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     email: {
       primary: true,
@@ -3602,6 +3740,8 @@ export const SenderEmailsSchema = new EntitySchema({
       entity: () => Emails,
       ref: true,
       fieldName: 'email_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_sender_emails_emails1_idx',
     },
   },
@@ -3652,13 +3792,13 @@ export class EmailSendingLogs {
   @PrimaryKey()
   logId!: number;
 
-  @ManyToOne({ entity: () => RecepientEmails, fieldNames: ['recepient_id', 'recepient_email_id'], index: 'fk_email_sending_logs_recepient_emails1_idx' })
+  @ManyToOne({ entity: () => RecepientEmails, fieldNames: ['recepient_id', 'recepient_email_id'], updateRule: 'no action', deleteRule: 'no action', index: 'fk_email_sending_logs_recepient_emails1_idx' })
   recepient!: RecepientEmails;
 
-  @ManyToOne({ entity: () => SenderEmails, fieldNames: ['sender_id', 'sender_email_id'], index: 'fk_email_sending_logs_sender_emails1_idx' })
+  @ManyToOne({ entity: () => SenderEmails, fieldNames: ['sender_id', 'sender_email_id'], updateRule: 'no action', deleteRule: 'no action', index: 'fk_email_sending_logs_sender_emails1_idx' })
   sender!: SenderEmails;
 
-  @ManyToOne({ entity: () => SenderEmails, fieldNames: ['sender_id', 'reply_email_id'], nullable: true, index: 'fk_email_sending_logs_sender_emails2_idx' })
+  @ManyToOne({ entity: () => SenderEmails, fieldNames: ['sender_id', 'reply_email_id'], updateRule: 'no action', deleteRule: 'no action', nullable: true, index: 'fk_email_sending_logs_sender_emails2_idx' })
   reply?: SenderEmails;
 
   @Property({ type: 'datetime', defaultRaw: \`CURRENT_TIMESTAMP\` })
@@ -3709,10 +3849,10 @@ export class RecepientEmails {
 
   [PrimaryKeyProp]?: ['recepient', 'email'];
 
-  @ManyToOne({ entity: () => Recepients, fieldName: 'recepient_id', primary: true })
+  @ManyToOne({ entity: () => Recepients, fieldName: 'recepient_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   recepient!: Recepients;
 
-  @ManyToOne({ entity: () => Emails, fieldName: 'email_id', primary: true, index: 'fk_recepient_emails_emails1_idx' })
+  @ManyToOne({ entity: () => Emails, fieldName: 'email_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_recepient_emails_emails1_idx' })
   email!: Emails;
 
   @OneToMany({ entity: () => EmailSendingLogs, mappedBy: 'recepient' })
@@ -3755,10 +3895,10 @@ export class SenderEmails {
 
   [PrimaryKeyProp]?: ['sender', 'email'];
 
-  @ManyToOne({ entity: () => Senders, fieldName: 'sender_id', primary: true })
+  @ManyToOne({ entity: () => Senders, fieldName: 'sender_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   sender!: Senders;
 
-  @ManyToOne({ entity: () => Emails, fieldName: 'email_id', primary: true, index: 'fk_sender_emails_emails1_idx' })
+  @ManyToOne({ entity: () => Emails, fieldName: 'email_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_sender_emails_emails1_idx' })
   email!: Emails;
 
   @OneToMany({ entity: () => EmailSendingLogs, mappedBy: 'sender' })
@@ -3819,18 +3959,24 @@ export const EmailSendingLogsSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => RecepientEmails,
       fieldNames: ['recepient_id', 'recepient_email_id'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_email_sending_logs_recepient_emails1_idx',
     },
     sender: {
       kind: 'm:1',
       entity: () => SenderEmails,
       fieldNames: ['sender_id', 'sender_email_id'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_email_sending_logs_sender_emails1_idx',
     },
     reply: {
       kind: 'm:1',
       entity: () => SenderEmails,
       fieldNames: ['sender_id', 'reply_email_id'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       nullable: true,
       index: 'fk_email_sending_logs_sender_emails2_idx',
     },
@@ -3902,12 +4048,16 @@ export const RecepientEmailsSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => Recepients,
       fieldName: 'recepient_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     email: {
       primary: true,
       kind: 'm:1',
       entity: () => Emails,
       fieldName: 'email_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_recepient_emails_emails1_idx',
     },
     emailSendingLogsCollection: {
@@ -3972,12 +4122,16 @@ export const SenderEmailsSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => Senders,
       fieldName: 'sender_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     email: {
       primary: true,
       kind: 'm:1',
       entity: () => Emails,
       fieldName: 'email_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_sender_emails_emails1_idx',
     },
     emailSendingLogsCollection: {
@@ -4044,13 +4198,13 @@ export class EmailSendingLogs {
   @PrimaryKey()
   logId!: number;
 
-  @ManyToOne({ entity: () => RecepientEmails, ref: true, fieldNames: ['recepient_id', 'recepient_email_id'], index: 'fk_email_sending_logs_recepient_emails1_idx' })
+  @ManyToOne({ entity: () => RecepientEmails, ref: true, fieldNames: ['recepient_id', 'recepient_email_id'], updateRule: 'no action', deleteRule: 'no action', index: 'fk_email_sending_logs_recepient_emails1_idx' })
   recepient!: Ref<RecepientEmails>;
 
-  @ManyToOne({ entity: () => SenderEmails, ref: true, fieldNames: ['sender_id', 'sender_email_id'], index: 'fk_email_sending_logs_sender_emails1_idx' })
+  @ManyToOne({ entity: () => SenderEmails, ref: true, fieldNames: ['sender_id', 'sender_email_id'], updateRule: 'no action', deleteRule: 'no action', index: 'fk_email_sending_logs_sender_emails1_idx' })
   sender!: Ref<SenderEmails>;
 
-  @ManyToOne({ entity: () => SenderEmails, ref: true, fieldNames: ['sender_id', 'reply_email_id'], nullable: true, index: 'fk_email_sending_logs_sender_emails2_idx' })
+  @ManyToOne({ entity: () => SenderEmails, ref: true, fieldNames: ['sender_id', 'reply_email_id'], updateRule: 'no action', deleteRule: 'no action', nullable: true, index: 'fk_email_sending_logs_sender_emails2_idx' })
   reply?: Ref<SenderEmails>;
 
   @Property({ type: 'datetime', defaultRaw: \`CURRENT_TIMESTAMP\` })
@@ -4101,10 +4255,10 @@ export class RecepientEmails {
 
   [PrimaryKeyProp]?: ['recepient', 'email'];
 
-  @ManyToOne({ entity: () => Recepients, ref: true, fieldName: 'recepient_id', primary: true })
+  @ManyToOne({ entity: () => Recepients, ref: true, fieldName: 'recepient_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   recepient!: Ref<Recepients>;
 
-  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', primary: true, index: 'fk_recepient_emails_emails1_idx' })
+  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_recepient_emails_emails1_idx' })
   email!: Ref<Emails>;
 
   @OneToMany({ entity: () => EmailSendingLogs, mappedBy: 'recepient' })
@@ -4147,10 +4301,10 @@ export class SenderEmails {
 
   [PrimaryKeyProp]?: ['sender', 'email'];
 
-  @ManyToOne({ entity: () => Senders, ref: true, fieldName: 'sender_id', primary: true })
+  @ManyToOne({ entity: () => Senders, ref: true, fieldName: 'sender_id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   sender!: Ref<Senders>;
 
-  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', primary: true, index: 'fk_sender_emails_emails1_idx' })
+  @ManyToOne({ entity: () => Emails, ref: true, fieldName: 'email_id', updateRule: 'no action', deleteRule: 'no action', primary: true, index: 'fk_sender_emails_emails1_idx' })
   email!: Ref<Emails>;
 
   @OneToMany({ entity: () => EmailSendingLogs, mappedBy: 'sender' })
@@ -4212,6 +4366,8 @@ export const EmailSendingLogsSchema = new EntitySchema({
       entity: () => RecepientEmails,
       ref: true,
       fieldNames: ['recepient_id', 'recepient_email_id'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_email_sending_logs_recepient_emails1_idx',
     },
     sender: {
@@ -4219,6 +4375,8 @@ export const EmailSendingLogsSchema = new EntitySchema({
       entity: () => SenderEmails,
       ref: true,
       fieldNames: ['sender_id', 'sender_email_id'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_email_sending_logs_sender_emails1_idx',
     },
     reply: {
@@ -4226,6 +4384,8 @@ export const EmailSendingLogsSchema = new EntitySchema({
       entity: () => SenderEmails,
       ref: true,
       fieldNames: ['sender_id', 'reply_email_id'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       nullable: true,
       index: 'fk_email_sending_logs_sender_emails2_idx',
     },
@@ -4298,6 +4458,8 @@ export const RecepientEmailsSchema = new EntitySchema({
       entity: () => Recepients,
       ref: true,
       fieldName: 'recepient_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     email: {
       primary: true,
@@ -4305,6 +4467,8 @@ export const RecepientEmailsSchema = new EntitySchema({
       entity: () => Emails,
       ref: true,
       fieldName: 'email_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_recepient_emails_emails1_idx',
     },
     emailSendingLogsCollection: {
@@ -4370,6 +4534,8 @@ export const SenderEmailsSchema = new EntitySchema({
       entity: () => Senders,
       ref: true,
       fieldName: 'sender_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     email: {
       primary: true,
@@ -4377,6 +4543,8 @@ export const SenderEmailsSchema = new EntitySchema({
       entity: () => Emails,
       ref: true,
       fieldName: 'email_id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_sender_emails_emails1_idx',
     },
     emailSendingLogsCollection: {

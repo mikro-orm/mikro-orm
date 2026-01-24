@@ -56,8 +56,8 @@ export const Label2TestsSchema = defineEntity({
   schema: 'label_schema',
   properties: {
     id: p.integer().primary(),
-    label2: () => p.manyToOne(Label2).ref().updateRule('cascade').deleteRule('cascade'),
-    test2: () => p.manyToOne(Test2).ref().updateRule('cascade').deleteRule('cascade'),
+    label2: () => p.manyToOne(Label2).ref(),
+    test2: () => p.manyToOne(Test2).ref(),
   },
 });
 ",
@@ -74,7 +74,7 @@ export const Address2Schema = defineEntity({
   class: Address2,
   comment: 'This is address table',
   properties: {
-    author: () => p.oneToOne(Author2).primary().ref().updateRule('cascade').deleteRule('cascade'),
+    author: () => p.oneToOne(Author2).primary().ref(),
     value: p.string().comment('This is address property'),
   },
 });
@@ -123,8 +123,8 @@ export const Author2Schema = defineEntity({
     identities: p.type(string[]).nullable(),
     born: p.date().nullable().index('author2_born_index'),
     bornTime: p.time().length(0).nullable().index('born_time_idx'),
-    favouriteBook: () => p.manyToOne(Book2).ref().deleteRule('cascade').nullable(),
-    favouriteAuthor: () => p.manyToOne(Author2).ref().updateRule('cascade').deleteRule('set null').nullable(),
+    favouriteBook: () => p.manyToOne(Book2).ref().updateRule('no action').deleteRule('cascade').nullable(),
+    favouriteAuthor: () => p.manyToOne(Author2).ref().updateRule('no action').nullable(),
     identity: p.json().nullable(),
     authorToFriend: () => p.manyToMany(Author2).pivotTable('author_to_friend').joinColumn('author2_1_id').inverseJoinColumn('author2_2_id'),
     following: () => p.manyToMany(Author2).joinColumn('author2_1_id').inverseJoinColumn('author2_2_id'),
@@ -194,7 +194,7 @@ export const Book2Schema = defineEntity({
     price: p.decimal().precision(8).scale(2).nullable(),
     double: p.decimal().nullable(),
     meta: p.json().nullable(),
-    author: () => p.manyToOne(Author2).ref(),
+    author: () => p.manyToOne(Author2).ref().updateRule('no action').deleteRule('no action'),
     publisher: () => p.manyToOne(Publisher2).ref().updateRule('cascade').deleteRule('cascade').nullable(),
     foo: p.string().nullable(),
     bookToTagUnordered: () => p.manyToMany(BookTag2).pivotTable('book_to_tag_unordered').joinColumn('book2_uuid_pk').inverseJoinColumn('book_tag2_id'),
@@ -220,8 +220,8 @@ export const Book2TagsSchema = defineEntity({
   tableName: 'book2_tags',
   properties: {
     order: p.integer().primary(),
-    book2: () => p.manyToOne(Book2).ref().updateRule('cascade').deleteRule('cascade'),
-    bookTag2: () => p.manyToOne(BookTag2).ref().updateRule('cascade').deleteRule('cascade'),
+    book2: () => p.manyToOne(Book2).ref(),
+    bookTag2: () => p.manyToOne(BookTag2).ref(),
   },
 });
 ",
@@ -239,7 +239,7 @@ export const Configuration2Schema = defineEntity({
   class: Configuration2,
   properties: {
     property: p.string().primary(),
-    test: () => p.manyToOne(Test2).primary().ref().updateRule('cascade'),
+    test: () => p.manyToOne(Test2).primary().ref().updateRule('cascade').deleteRule('no action'),
     value: p.string(),
   },
 });
@@ -271,8 +271,8 @@ export const FooBar2Schema = defineEntity({
     id: p.integer().primary(),
     name: p.string(),
     nameWithSpace: p.string().name('name with space').nullable(),
-    baz: () => p.oneToOne(FooBaz2).ref().updateRule('cascade').deleteRule('set null').nullable(),
-    fooBar: () => p.oneToOne(FooBar2).ref().updateRule('cascade').deleteRule('set null').nullable(),
+    baz: () => p.oneToOne(FooBaz2).ref().updateRule('no action').nullable(),
+    fooBar: () => p.oneToOne(FooBar2).ref().updateRule('no action').nullable(),
     version: p.datetime().length(0).defaultRaw(\`current_timestamp(0)\`),
     blob: p.blob().nullable(),
     blob2: p.blob().nullable(),
@@ -324,8 +324,8 @@ export class FooParam2 {
 export const FooParam2Schema = defineEntity({
   class: FooParam2,
   properties: {
-    bar: () => p.manyToOne(FooBar2).primary().ref().updateRule('cascade'),
-    baz: () => p.manyToOne(FooBaz2).primary().ref().updateRule('cascade'),
+    bar: () => p.manyToOne(FooBar2).primary().ref().deleteRule('no action'),
+    baz: () => p.manyToOne(FooBaz2).primary().ref().deleteRule('no action'),
     value: p.string(),
     version: p.datetime().length(3).defaultRaw(\`current_timestamp(3)\`),
   },
@@ -427,8 +427,8 @@ export const Publisher2TestsSchema = defineEntity({
   tableName: 'publisher2_tests',
   properties: {
     id: p.integer().primary(),
-    publisher2: () => p.manyToOne(Publisher2).ref().updateRule('cascade').deleteRule('cascade'),
-    test2: () => p.manyToOne(Test2).ref().updateRule('cascade').deleteRule('cascade'),
+    publisher2: () => p.manyToOne(Publisher2).ref(),
+    test2: () => p.manyToOne(Test2).ref(),
   },
 });
 ",
@@ -458,8 +458,8 @@ export const Test2Schema = defineEntity({
   properties: {
     id: p.integer().primary(),
     name: p.string().nullable(),
-    book: () => p.oneToOne(Book2).ref().deleteRule('set null').nullable(),
-    parent: () => p.manyToOne(Test2).ref().updateRule('cascade').deleteRule('set null').nullable(),
+    book: () => p.oneToOne(Book2).ref().updateRule('no action').nullable(),
+    parent: () => p.manyToOne(Test2).ref().updateRule('no action').nullable(),
     version: p.integer(),
     path: p.unknown().columnType('polygon').nullable(),
     bars: () => p.manyToMany(FooBar2).joinColumn('test2_id').inverseJoinColumn('foo_bar2_id'),
@@ -491,8 +491,8 @@ export const Label2TestsSchema = defineEntity({
   schema: 'label_schema',
   properties: {
     id: p.integer().primary(),
-    label2: () => p.manyToOne(Label2).ref().updateRule('cascade').deleteRule('cascade'),
-    test2: () => p.manyToOne(Test2).ref().updateRule('cascade').deleteRule('cascade'),
+    label2: () => p.manyToOne(Label2).ref(),
+    test2: () => p.manyToOne(Test2).ref(),
   },
 });
 ",
@@ -509,7 +509,7 @@ export const Address2Schema = defineEntity({
   class: Address2,
   comment: 'This is address table',
   properties: {
-    author: () => p.oneToOne(Author2).primary().ref().updateRule('cascade').deleteRule('cascade'),
+    author: () => p.oneToOne(Author2).primary().ref(),
     value: p.string().comment('This is address property'),
   },
 });
@@ -558,8 +558,8 @@ export const Author2Schema = defineEntity({
     identities: p.type(string[]).nullable(),
     born: p.date().nullable().index('author2_born_index'),
     bornTime: p.time().length(0).nullable().index('born_time_idx'),
-    favouriteBook: () => p.manyToOne(Book2).ref().deleteRule('cascade').nullable(),
-    favouriteAuthor: () => p.manyToOne(Author2).ref().updateRule('cascade').deleteRule('set null').nullable(),
+    favouriteBook: () => p.manyToOne(Book2).ref().updateRule('no action').deleteRule('cascade').nullable(),
+    favouriteAuthor: () => p.manyToOne(Author2).ref().updateRule('no action').nullable(),
     identity: p.json().nullable(),
     authorToFriend: () => p.manyToMany(Author2).pivotTable('author_to_friend').joinColumn('author2_1_id').inverseJoinColumn('author2_2_id'),
     following: () => p.manyToMany(Author2).joinColumn('author2_1_id').inverseJoinColumn('author2_2_id'),
@@ -629,7 +629,7 @@ export const Book2Schema = defineEntity({
     price: p.decimal().precision(8).scale(2).nullable(),
     double: p.decimal().nullable(),
     meta: p.json().nullable(),
-    author: () => p.manyToOne(Author2).ref(),
+    author: () => p.manyToOne(Author2).ref().updateRule('no action').deleteRule('no action'),
     publisher: () => p.manyToOne(Publisher2).ref().updateRule('cascade').deleteRule('cascade').nullable(),
     foo: p.string().nullable(),
     bookToTagUnordered: () => p.manyToMany(BookTag2).pivotTable('book_to_tag_unordered').joinColumn('book2_uuid_pk').inverseJoinColumn('book_tag2_id'),
@@ -655,8 +655,8 @@ export const Book2TagsSchema = defineEntity({
   tableName: 'book2_tags',
   properties: {
     order: p.integer().primary(),
-    book2: () => p.manyToOne(Book2).ref().updateRule('cascade').deleteRule('cascade'),
-    bookTag2: () => p.manyToOne(BookTag2).ref().updateRule('cascade').deleteRule('cascade'),
+    book2: () => p.manyToOne(Book2).ref(),
+    bookTag2: () => p.manyToOne(BookTag2).ref(),
   },
 });
 ",
@@ -674,7 +674,7 @@ export const Configuration2Schema = defineEntity({
   class: Configuration2,
   properties: {
     property: p.string().primary(),
-    test: () => p.manyToOne(Test2).primary().ref().updateRule('cascade'),
+    test: () => p.manyToOne(Test2).primary().ref().updateRule('cascade').deleteRule('no action'),
     value: p.string(),
   },
 });
@@ -706,8 +706,8 @@ export const FooBar2Schema = defineEntity({
     id: p.integer().primary(),
     name: p.string(),
     nameWithSpace: p.string().name('name with space').nullable(),
-    baz: () => p.oneToOne(FooBaz2).ref().updateRule('cascade').deleteRule('set null').nullable(),
-    fooBar: () => p.oneToOne(FooBar2).ref().updateRule('cascade').deleteRule('set null').nullable(),
+    baz: () => p.oneToOne(FooBaz2).ref().updateRule('no action').nullable(),
+    fooBar: () => p.oneToOne(FooBar2).ref().updateRule('no action').nullable(),
     version: p.datetime().length(0).defaultRaw(\`current_timestamp(0)\`),
     blob: p.blob().nullable(),
     blob2: p.blob().nullable(),
@@ -759,8 +759,8 @@ export class FooParam2 {
 export const FooParam2Schema = defineEntity({
   class: FooParam2,
   properties: {
-    bar: () => p.manyToOne(FooBar2).primary().ref().updateRule('cascade'),
-    baz: () => p.manyToOne(FooBaz2).primary().ref().updateRule('cascade'),
+    bar: () => p.manyToOne(FooBar2).primary().ref().deleteRule('no action'),
+    baz: () => p.manyToOne(FooBaz2).primary().ref().deleteRule('no action'),
     value: p.string(),
     version: p.datetime().length(3).defaultRaw(\`current_timestamp(3)\`),
   },
@@ -862,8 +862,8 @@ export const Publisher2TestsSchema = defineEntity({
   tableName: 'publisher2_tests',
   properties: {
     id: p.integer().primary(),
-    publisher2: () => p.manyToOne(Publisher2).ref().updateRule('cascade').deleteRule('cascade'),
-    test2: () => p.manyToOne(Test2).ref().updateRule('cascade').deleteRule('cascade'),
+    publisher2: () => p.manyToOne(Publisher2).ref(),
+    test2: () => p.manyToOne(Test2).ref(),
   },
 });
 ",
@@ -893,8 +893,8 @@ export const Test2Schema = defineEntity({
   properties: {
     id: p.integer().primary(),
     name: p.string().nullable(),
-    book: () => p.oneToOne(Book2).ref().deleteRule('set null').nullable(),
-    parent: () => p.manyToOne(Test2).ref().updateRule('cascade').deleteRule('set null').nullable(),
+    book: () => p.oneToOne(Book2).ref().updateRule('no action').nullable(),
+    parent: () => p.manyToOne(Test2).ref().updateRule('no action').nullable(),
     version: p.integer(),
     path: p.unknown().columnType('polygon').nullable(),
     bars: () => p.manyToMany(FooBar2).joinColumn('test2_id').inverseJoinColumn('foo_bar2_id'),
@@ -926,8 +926,8 @@ export const Label2TestsSchema = defineEntity({
   schema: 'label_schema',
   properties: {
     id: p.integer().primary(),
-    label2: () => p.manyToOne(Label2).ref().updateRule('cascade').deleteRule('cascade'),
-    test2: () => p.manyToOne(Test2).ref().updateRule('cascade').deleteRule('cascade'),
+    label2: () => p.manyToOne(Label2).ref(),
+    test2: () => p.manyToOne(Test2).ref(),
   },
 });
 ",
@@ -944,7 +944,7 @@ export const Address2Schema = defineEntity({
   class: Address2,
   comment: 'This is address table',
   properties: {
-    author: () => p.oneToOne(Author2).primary().ref().updateRule('cascade').deleteRule('cascade'),
+    author: () => p.oneToOne(Author2).primary().ref(),
     value: p.string().comment('This is address property'),
   },
 });
@@ -993,8 +993,8 @@ export const Author2Schema = defineEntity({
     identities: p.type(string[]).nullable(),
     born: p.date().nullable().index('author2_born_index'),
     bornTime: p.time().length(0).nullable().index('born_time_idx'),
-    favouriteBook: () => p.manyToOne(Book2).ref().deleteRule('cascade').nullable(),
-    favouriteAuthor: () => p.manyToOne(Author2).ref().updateRule('cascade').deleteRule('set null').nullable(),
+    favouriteBook: () => p.manyToOne(Book2).ref().updateRule('no action').deleteRule('cascade').nullable(),
+    favouriteAuthor: () => p.manyToOne(Author2).ref().updateRule('no action').nullable(),
     identity: p.json().nullable(),
     authorToFriend: () => p.manyToMany(Author2).pivotTable('author_to_friend').joinColumn('author2_1_id').inverseJoinColumn('author2_2_id'),
     following: () => p.manyToMany(Author2).joinColumn('author2_1_id').inverseJoinColumn('author2_2_id'),
@@ -1064,7 +1064,7 @@ export const Book2Schema = defineEntity({
     price: p.decimal().precision(8).scale(2).nullable(),
     double: p.decimal().nullable(),
     meta: p.json().nullable(),
-    author: () => p.manyToOne(Author2).ref(),
+    author: () => p.manyToOne(Author2).ref().updateRule('no action').deleteRule('no action'),
     publisher: () => p.manyToOne(Publisher2).ref().updateRule('cascade').deleteRule('cascade').nullable(),
     foo: p.string().nullable(),
     bookToTagUnordered: () => p.manyToMany(BookTag2).pivotTable('book_to_tag_unordered').joinColumn('book2_uuid_pk').inverseJoinColumn('book_tag2_id'),
@@ -1090,8 +1090,8 @@ export const Book2TagsSchema = defineEntity({
   tableName: 'book2_tags',
   properties: {
     order: p.integer().primary(),
-    book2: () => p.manyToOne(Book2).ref().updateRule('cascade').deleteRule('cascade'),
-    bookTag2: () => p.manyToOne(BookTag2).ref().updateRule('cascade').deleteRule('cascade'),
+    book2: () => p.manyToOne(Book2).ref(),
+    bookTag2: () => p.manyToOne(BookTag2).ref(),
   },
 });
 ",
@@ -1109,7 +1109,7 @@ export const Configuration2Schema = defineEntity({
   class: Configuration2,
   properties: {
     property: p.string().primary(),
-    test: () => p.manyToOne(Test2).primary().ref().updateRule('cascade'),
+    test: () => p.manyToOne(Test2).primary().ref().updateRule('cascade').deleteRule('no action'),
     value: p.string(),
   },
 });
@@ -1141,8 +1141,8 @@ export const FooBar2Schema = defineEntity({
     id: p.integer().primary(),
     name: p.string(),
     nameWithSpace: p.string().name('name with space').nullable(),
-    baz: () => p.oneToOne(FooBaz2).ref().updateRule('cascade').deleteRule('set null').nullable(),
-    fooBar: () => p.oneToOne(FooBar2).ref().updateRule('cascade').deleteRule('set null').nullable(),
+    baz: () => p.oneToOne(FooBaz2).ref().updateRule('no action').nullable(),
+    fooBar: () => p.oneToOne(FooBar2).ref().updateRule('no action').nullable(),
     version: p.datetime().length(0).defaultRaw(\`current_timestamp(0)\`),
     blob: p.blob().nullable(),
     blob2: p.blob().nullable(),
@@ -1194,8 +1194,8 @@ export class FooParam2 {
 export const FooParam2Schema = defineEntity({
   class: FooParam2,
   properties: {
-    bar: () => p.manyToOne(FooBar2).primary().ref().updateRule('cascade'),
-    baz: () => p.manyToOne(FooBaz2).primary().ref().updateRule('cascade'),
+    bar: () => p.manyToOne(FooBar2).primary().ref().deleteRule('no action'),
+    baz: () => p.manyToOne(FooBaz2).primary().ref().deleteRule('no action'),
     value: p.string(),
     version: p.datetime().length(3).defaultRaw(\`current_timestamp(3)\`),
   },
@@ -1297,8 +1297,8 @@ export const Publisher2TestsSchema = defineEntity({
   tableName: 'publisher2_tests',
   properties: {
     id: p.integer().primary(),
-    publisher2: () => p.manyToOne(Publisher2).ref().updateRule('cascade').deleteRule('cascade'),
-    test2: () => p.manyToOne(Test2).ref().updateRule('cascade').deleteRule('cascade'),
+    publisher2: () => p.manyToOne(Publisher2).ref(),
+    test2: () => p.manyToOne(Test2).ref(),
   },
 });
 ",
@@ -1328,8 +1328,8 @@ export const Test2Schema = defineEntity({
   properties: {
     id: p.integer().primary(),
     name: p.string().nullable(),
-    book: () => p.oneToOne(Book2).ref().deleteRule('set null').nullable(),
-    parent: () => p.manyToOne(Test2).ref().updateRule('cascade').deleteRule('set null').nullable(),
+    book: () => p.oneToOne(Book2).ref().updateRule('no action').nullable(),
+    parent: () => p.manyToOne(Test2).ref().updateRule('no action').nullable(),
     version: p.integer(),
     path: p.unknown().columnType('polygon').nullable(),
     bars: () => p.manyToMany(FooBar2).joinColumn('test2_id').inverseJoinColumn('foo_bar2_id'),
@@ -1378,7 +1378,7 @@ export const Address2Schema = defineEntity({
   class: Address2,
   comment: 'This is address table',
   properties: {
-    author: () => p.oneToOne(Author2).primary().ref().updateRule('cascade').deleteRule('cascade'),
+    author: () => p.oneToOne(Author2).primary().ref(),
     value: p.string().comment('This is address property'),
   },
 });
@@ -1427,8 +1427,8 @@ export const Author2Schema = defineEntity({
     identities: p.type(string[]).nullable(),
     born: p.date().nullable().index('author2_born_index'),
     bornTime: p.time().length(0).nullable().index('born_time_idx'),
-    favouriteBook: () => p.manyToOne(Book2).ref().deleteRule('cascade').nullable(),
-    favouriteAuthor: () => p.manyToOne(Author2).ref().updateRule('cascade').deleteRule('set null').nullable(),
+    favouriteBook: () => p.manyToOne(Book2).ref().updateRule('no action').deleteRule('cascade').nullable(),
+    favouriteAuthor: () => p.manyToOne(Author2).ref().updateRule('no action').nullable(),
     identity: p.json().nullable(),
     authorToFriend: () => p.manyToMany(Author2).pivotTable('author_to_friend').joinColumn('author2_1_id').inverseJoinColumn('author2_2_id'),
     following: () => p.manyToMany(Author2).joinColumn('author2_1_id').inverseJoinColumn('author2_2_id'),
@@ -1494,7 +1494,7 @@ export const Book2Schema = defineEntity({
     perex: p.text().nullable(),
     double: p.decimal().nullable(),
     meta: p.json().nullable(),
-    author: () => p.manyToOne(Author2).ref(),
+    author: () => p.manyToOne(Author2).ref().updateRule('no action').deleteRule('no action'),
     publisher: () => p.manyToOne(Publisher2).ref().updateRule('cascade').deleteRule('cascade').nullable(),
     foo: p.string().nullable(),
     bookToTagUnordered: () => p.manyToMany(BookTag2).pivotTable('book_to_tag_unordered').joinColumn('book2_uuid_pk').inverseJoinColumn('book_tag2_id'),
@@ -1519,8 +1519,8 @@ export const Book2TagsSchema = defineEntity({
   tableName: 'book2_tags',
   properties: {
     order: p.integer().primary(),
-    book2: () => p.manyToOne(Book2).ref().updateRule('cascade').deleteRule('cascade'),
-    bookTag2: () => p.manyToOne(BookTag2).ref().updateRule('cascade').deleteRule('cascade'),
+    book2: () => p.manyToOne(Book2).ref(),
+    bookTag2: () => p.manyToOne(BookTag2).ref(),
   },
 });
 ",
@@ -1567,8 +1567,8 @@ export const FooBar2Schema = defineEntity({
     id: p.integer().primary(),
     name: p.string(),
     nameWithSpace: p.string().name('name with space').nullable(),
-    baz: () => p.oneToOne(FooBaz2).ref().updateRule('cascade').deleteRule('set null').nullable(),
-    fooBar: () => p.oneToOne(FooBar2).ref().updateRule('cascade').deleteRule('set null').nullable(),
+    baz: () => p.oneToOne(FooBaz2).ref().updateRule('no action').nullable(),
+    fooBar: () => p.oneToOne(FooBar2).ref().updateRule('no action').nullable(),
     version: p.datetime().length(0).defaultRaw(\`current_timestamp(0)\`),
     blob: p.blob().nullable(),
     blob2: p.blob().nullable(),
@@ -1617,8 +1617,8 @@ export class FooParam2 {
 export const FooParam2Schema = defineEntity({
   class: FooParam2,
   properties: {
-    bar: () => p.manyToOne(FooBar2).primary().ref().updateRule('cascade'),
-    baz: () => p.manyToOne(FooBaz2).primary().ref().updateRule('cascade'),
+    bar: () => p.manyToOne(FooBar2).primary().ref().deleteRule('no action'),
+    baz: () => p.manyToOne(FooBaz2).primary().ref().deleteRule('no action'),
     value: p.string(),
     version: p.datetime().length(3).defaultRaw(\`current_timestamp(3)\`),
   },
@@ -1752,7 +1752,7 @@ export const FooBar2Schema = defineEntity({
     name: p.string(),
     nameWithSpace: p.string().name('name with space').nullable(),
     baz: p.integer().name('baz_id').nullable().unique('foo_bar2_baz_id_unique'),
-    fooBar: () => p.oneToOne(FooBar2).ref().updateRule('cascade').deleteRule('set null').nullable(),
+    fooBar: () => p.oneToOne(FooBar2).ref().updateRule('no action').nullable(),
     version: p.datetime().length(0).defaultRaw(\`current_timestamp(0)\`),
     blob: p.blob().nullable(),
     blob2: p.blob().nullable(),
@@ -1780,7 +1780,7 @@ export const Test2Schema = defineEntity({
     id: p.integer().primary(),
     name: p.string().nullable(),
     book: p.uuid().name('book_uuid_pk').nullable().unique('test2_book_uuid_pk_unique'),
-    parent: () => p.manyToOne(Test2).ref().updateRule('cascade').deleteRule('set null').nullable(),
+    parent: () => p.manyToOne(Test2).ref().updateRule('no action').nullable(),
     version: p.integer(),
     path: p.unknown().columnType('polygon').nullable(),
     test2Collection: () => p.oneToMany(Test2).mappedBy('parent'),
@@ -1810,7 +1810,7 @@ export const Test2Schema = defineEntity({
     id: p.integer().primary(),
     name: p.string().nullable(),
     book: p.uuid().name('book_uuid_pk').nullable().unique('test2_book_uuid_pk_unique'),
-    parent: () => p.manyToOne(Test2).ref().updateRule('cascade').deleteRule('set null').nullable(),
+    parent: () => p.manyToOne(Test2).ref().updateRule('no action').nullable(),
     version: p.integer(),
     path: p.unknown().columnType('polygon').nullable(),
     test2Collection: () => p.oneToMany(Test2).mappedBy('parent'),

@@ -33,7 +33,7 @@ export class WalletContents {
   @Property({ type: 'decimal', precision: 10, scale: 2 })
   balance!: string;
 
-  @OneToOne({ entity: () => WalletMeta, fieldName: 'id', primary: true })
+  @OneToOne({ entity: () => WalletMeta, fieldName: 'id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   walletMeta!: WalletMeta;
 
 }
@@ -54,7 +54,7 @@ export class WalletMeta {
   @Property({ type: 'character', persist: false })
   type: string & Opt = 'A';
 
-  @ManyToOne({ entity: () => WalletType, fieldNames: ['currency', 'type'], index: 'fk_wallet_wallet_type_idx' })
+  @ManyToOne({ entity: () => WalletType, fieldNames: ['currency', 'type'], updateRule: 'no action', deleteRule: 'no action', index: 'fk_wallet_wallet_type_idx' })
   walletType!: WalletType;
 
 }
@@ -74,7 +74,7 @@ export class WalletType {
   @PrimaryKey({ type: 'character' })
   type!: string;
 
-  @ManyToOne({ entity: () => Currency, fieldName: 'currency', primary: true })
+  @ManyToOne({ entity: () => Currency, fieldName: 'currency', updateRule: 'no action', deleteRule: 'no action', primary: true })
   fkWalletTypeCurrency1: Currency & Opt = rel(Currency, 'EUR');
 
 }
@@ -120,6 +120,8 @@ export const WalletContentsSchema = new EntitySchema({
       kind: '1:1',
       entity: () => WalletMeta,
       fieldName: 'id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
   },
 });
@@ -144,6 +146,8 @@ export const WalletMetaSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => WalletType,
       fieldNames: ['currency', 'type'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_wallet_wallet_type_idx',
     },
   },
@@ -169,6 +173,8 @@ export const WalletTypeSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => Currency,
       fieldName: 'currency',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
   },
 });
@@ -209,7 +215,7 @@ export class WalletContents {
   @Property({ type: 'decimal', precision: 10, scale: 2 })
   balance!: string;
 
-  @OneToOne({ entity: () => WalletMeta, fieldName: 'id', primary: true })
+  @OneToOne({ entity: () => WalletMeta, fieldName: 'id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   walletMeta!: Rel<WalletMeta>;
 
 }
@@ -230,7 +236,7 @@ export class WalletMeta {
   @Property({ type: 'character', persist: false })
   type: string & Opt = 'A';
 
-  @ManyToOne({ entity: () => WalletType, fieldNames: ['currency', 'type'], index: 'fk_wallet_wallet_type_idx' })
+  @ManyToOne({ entity: () => WalletType, fieldNames: ['currency', 'type'], updateRule: 'no action', deleteRule: 'no action', index: 'fk_wallet_wallet_type_idx' })
   walletType!: Rel<WalletType>;
 
 }
@@ -250,7 +256,7 @@ export class WalletType {
   @PrimaryKey({ type: 'character' })
   type!: string;
 
-  @ManyToOne({ entity: () => Currency, fieldName: 'currency', primary: true })
+  @ManyToOne({ entity: () => Currency, fieldName: 'currency', updateRule: 'no action', deleteRule: 'no action', primary: true })
   fkWalletTypeCurrency1: Rel<Currency> & Opt = rel(Currency, 'EUR');
 
 }
@@ -296,6 +302,8 @@ export const WalletContentsSchema = new EntitySchema({
       kind: '1:1',
       entity: () => WalletMeta,
       fieldName: 'id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
   },
 });
@@ -320,6 +328,8 @@ export const WalletMetaSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => WalletType,
       fieldNames: ['currency', 'type'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_wallet_wallet_type_idx',
     },
   },
@@ -345,6 +355,8 @@ export const WalletTypeSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => Currency,
       fieldName: 'currency',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
   },
 });
@@ -385,7 +397,7 @@ export class WalletContents {
   @Property({ type: 'decimal', precision: 10, scale: 2 })
   balance!: string;
 
-  @OneToOne({ entity: () => WalletMeta, ref: true, fieldName: 'id', primary: true })
+  @OneToOne({ entity: () => WalletMeta, ref: true, fieldName: 'id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   walletMeta!: Ref<WalletMeta>;
 
 }
@@ -406,7 +418,7 @@ export class WalletMeta {
   @Property({ type: 'character', persist: false })
   type: string & Opt = 'A';
 
-  @ManyToOne({ entity: () => WalletType, ref: true, fieldNames: ['currency', 'type'], index: 'fk_wallet_wallet_type_idx' })
+  @ManyToOne({ entity: () => WalletType, ref: true, fieldNames: ['currency', 'type'], updateRule: 'no action', deleteRule: 'no action', index: 'fk_wallet_wallet_type_idx' })
   walletType!: Ref<WalletType>;
 
 }
@@ -426,7 +438,7 @@ export class WalletType {
   @PrimaryKey({ type: 'character' })
   type!: string;
 
-  @ManyToOne({ entity: () => Currency, ref: true, fieldName: 'currency', primary: true, default: 'EUR' })
+  @ManyToOne({ entity: () => Currency, ref: true, fieldName: 'currency', updateRule: 'no action', deleteRule: 'no action', primary: true, default: 'EUR' })
   fkWalletTypeCurrency1: Ref<Currency> & Opt = ref(Currency, 'EUR');
 
 }
@@ -473,6 +485,8 @@ export const WalletContentsSchema = new EntitySchema({
       entity: () => WalletMeta,
       ref: true,
       fieldName: 'id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
   },
 });
@@ -498,6 +512,8 @@ export const WalletMetaSchema = new EntitySchema({
       entity: () => WalletType,
       ref: true,
       fieldNames: ['currency', 'type'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_wallet_wallet_type_idx',
     },
   },
@@ -524,6 +540,8 @@ export const WalletTypeSchema = new EntitySchema({
       entity: () => Currency,
       ref: true,
       fieldName: 'currency',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       default: 'EUR',
     },
   },
@@ -565,7 +583,7 @@ export class WalletContents {
   @Property({ type: 'decimal', precision: 10, scale: 2 })
   balance!: string;
 
-  @OneToOne({ entity: () => WalletMeta, ref: true, fieldName: 'id', primary: true })
+  @OneToOne({ entity: () => WalletMeta, ref: true, fieldName: 'id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   walletMeta!: Ref<WalletMeta>;
 
 }
@@ -586,7 +604,7 @@ export class WalletMeta {
   @Property({ type: 'character', persist: false })
   type: string & Opt = 'A';
 
-  @ManyToOne({ entity: () => WalletType, ref: true, fieldNames: ['currency', 'type'], index: 'fk_wallet_wallet_type_idx' })
+  @ManyToOne({ entity: () => WalletType, ref: true, fieldNames: ['currency', 'type'], updateRule: 'no action', deleteRule: 'no action', index: 'fk_wallet_wallet_type_idx' })
   walletType!: Ref<WalletType>;
 
 }
@@ -606,7 +624,7 @@ export class WalletType {
   @PrimaryKey({ type: 'character' })
   type!: string;
 
-  @ManyToOne({ entity: () => Currency, ref: true, fieldName: 'currency', primary: true, default: 'EUR' })
+  @ManyToOne({ entity: () => Currency, ref: true, fieldName: 'currency', updateRule: 'no action', deleteRule: 'no action', primary: true, default: 'EUR' })
   fkWalletTypeCurrency1: Ref<Currency> & Opt = ref(Currency, 'EUR');
 
 }
@@ -653,6 +671,8 @@ export const WalletContentsSchema = new EntitySchema({
       entity: () => WalletMeta,
       ref: true,
       fieldName: 'id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
   },
 });
@@ -678,6 +698,8 @@ export const WalletMetaSchema = new EntitySchema({
       entity: () => WalletType,
       ref: true,
       fieldNames: ['currency', 'type'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_wallet_wallet_type_idx',
     },
   },
@@ -704,6 +726,8 @@ export const WalletTypeSchema = new EntitySchema({
       entity: () => Currency,
       ref: true,
       fieldName: 'currency',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       default: 'EUR',
     },
   },
@@ -749,7 +773,7 @@ export class WalletContents {
   @Property({ type: 'decimal', precision: 10, scale: 2 })
   balance!: string;
 
-  @OneToOne({ entity: () => WalletMeta, fieldName: 'id', primary: true })
+  @OneToOne({ entity: () => WalletMeta, fieldName: 'id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   walletMeta!: WalletMeta;
 
 }
@@ -771,7 +795,7 @@ export class WalletMeta {
   @Property({ type: 'character', persist: false })
   type: string & Opt = 'A';
 
-  @ManyToOne({ entity: () => WalletType, fieldNames: ['currency', 'type'], index: 'fk_wallet_wallet_type_idx' })
+  @ManyToOne({ entity: () => WalletType, fieldNames: ['currency', 'type'], updateRule: 'no action', deleteRule: 'no action', index: 'fk_wallet_wallet_type_idx' })
   walletType!: WalletType;
 
   @OneToOne({ entity: () => WalletContents, mappedBy: 'walletMeta' })
@@ -795,7 +819,7 @@ export class WalletType {
   @PrimaryKey({ type: 'character' })
   type!: string;
 
-  @ManyToOne({ entity: () => Currency, fieldName: 'currency', primary: true })
+  @ManyToOne({ entity: () => Currency, fieldName: 'currency', updateRule: 'no action', deleteRule: 'no action', primary: true })
   fkWalletTypeCurrency1: Currency & Opt = rel(Currency, 'EUR');
 
   @OneToMany({ entity: () => WalletMeta, mappedBy: 'walletType' })
@@ -851,6 +875,8 @@ export const WalletContentsSchema = new EntitySchema({
       kind: '1:1',
       entity: () => WalletMeta,
       fieldName: 'id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
   },
 });
@@ -877,6 +903,8 @@ export const WalletMetaSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => WalletType,
       fieldNames: ['currency', 'type'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_wallet_wallet_type_idx',
     },
     walletContents: {
@@ -909,6 +937,8 @@ export const WalletTypeSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => Currency,
       fieldName: 'currency',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     walletMetaCollection: {
       kind: '1:m',
@@ -958,7 +988,7 @@ export class WalletContents {
   @Property({ type: 'decimal', precision: 10, scale: 2 })
   balance!: string;
 
-  @OneToOne({ entity: () => WalletMeta, fieldName: 'id', primary: true })
+  @OneToOne({ entity: () => WalletMeta, fieldName: 'id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   walletMeta!: Rel<WalletMeta>;
 
 }
@@ -980,7 +1010,7 @@ export class WalletMeta {
   @Property({ type: 'character', persist: false })
   type: string & Opt = 'A';
 
-  @ManyToOne({ entity: () => WalletType, fieldNames: ['currency', 'type'], index: 'fk_wallet_wallet_type_idx' })
+  @ManyToOne({ entity: () => WalletType, fieldNames: ['currency', 'type'], updateRule: 'no action', deleteRule: 'no action', index: 'fk_wallet_wallet_type_idx' })
   walletType!: Rel<WalletType>;
 
   @OneToOne({ entity: () => WalletContents, mappedBy: 'walletMeta' })
@@ -1004,7 +1034,7 @@ export class WalletType {
   @PrimaryKey({ type: 'character' })
   type!: string;
 
-  @ManyToOne({ entity: () => Currency, fieldName: 'currency', primary: true })
+  @ManyToOne({ entity: () => Currency, fieldName: 'currency', updateRule: 'no action', deleteRule: 'no action', primary: true })
   fkWalletTypeCurrency1: Rel<Currency> & Opt = rel(Currency, 'EUR');
 
   @OneToMany({ entity: () => WalletMeta, mappedBy: 'walletType' })
@@ -1060,6 +1090,8 @@ export const WalletContentsSchema = new EntitySchema({
       kind: '1:1',
       entity: () => WalletMeta,
       fieldName: 'id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
   },
 });
@@ -1086,6 +1118,8 @@ export const WalletMetaSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => WalletType,
       fieldNames: ['currency', 'type'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_wallet_wallet_type_idx',
     },
     walletContents: {
@@ -1118,6 +1152,8 @@ export const WalletTypeSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => Currency,
       fieldName: 'currency',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     walletMetaCollection: {
       kind: '1:m',
@@ -1167,7 +1203,7 @@ export class WalletContents {
   @Property({ type: 'decimal', precision: 10, scale: 2 })
   balance!: string;
 
-  @OneToOne({ entity: () => WalletMeta, ref: true, fieldName: 'id', primary: true })
+  @OneToOne({ entity: () => WalletMeta, ref: true, fieldName: 'id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   walletMeta!: Ref<WalletMeta>;
 
 }
@@ -1189,7 +1225,7 @@ export class WalletMeta {
   @Property({ type: 'character', persist: false })
   type: string & Opt = 'A';
 
-  @ManyToOne({ entity: () => WalletType, ref: true, fieldNames: ['currency', 'type'], index: 'fk_wallet_wallet_type_idx' })
+  @ManyToOne({ entity: () => WalletType, ref: true, fieldNames: ['currency', 'type'], updateRule: 'no action', deleteRule: 'no action', index: 'fk_wallet_wallet_type_idx' })
   walletType!: Ref<WalletType>;
 
   @OneToOne({ entity: () => WalletContents, ref: true, mappedBy: 'walletMeta' })
@@ -1213,7 +1249,7 @@ export class WalletType {
   @PrimaryKey({ type: 'character' })
   type!: string;
 
-  @ManyToOne({ entity: () => Currency, ref: true, fieldName: 'currency', primary: true, default: 'EUR' })
+  @ManyToOne({ entity: () => Currency, ref: true, fieldName: 'currency', updateRule: 'no action', deleteRule: 'no action', primary: true, default: 'EUR' })
   fkWalletTypeCurrency1: Ref<Currency> & Opt = ref(Currency, 'EUR');
 
   @OneToMany({ entity: () => WalletMeta, mappedBy: 'walletType' })
@@ -1270,6 +1306,8 @@ export const WalletContentsSchema = new EntitySchema({
       entity: () => WalletMeta,
       ref: true,
       fieldName: 'id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
   },
 });
@@ -1297,6 +1335,8 @@ export const WalletMetaSchema = new EntitySchema({
       entity: () => WalletType,
       ref: true,
       fieldNames: ['currency', 'type'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_wallet_wallet_type_idx',
     },
     walletContents: {
@@ -1331,6 +1371,8 @@ export const WalletTypeSchema = new EntitySchema({
       entity: () => Currency,
       ref: true,
       fieldName: 'currency',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       default: 'EUR',
     },
     walletMetaCollection: {
@@ -1381,7 +1423,7 @@ export class WalletContents {
   @Property({ type: 'decimal', precision: 10, scale: 2 })
   balance!: string;
 
-  @OneToOne({ entity: () => WalletMeta, ref: true, fieldName: 'id', primary: true })
+  @OneToOne({ entity: () => WalletMeta, ref: true, fieldName: 'id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   walletMeta!: Ref<WalletMeta>;
 
 }
@@ -1403,7 +1445,7 @@ export class WalletMeta {
   @Property({ type: 'character', persist: false })
   type: string & Opt = 'A';
 
-  @ManyToOne({ entity: () => WalletType, ref: true, fieldNames: ['currency', 'type'], index: 'fk_wallet_wallet_type_idx' })
+  @ManyToOne({ entity: () => WalletType, ref: true, fieldNames: ['currency', 'type'], updateRule: 'no action', deleteRule: 'no action', index: 'fk_wallet_wallet_type_idx' })
   walletType!: Ref<WalletType>;
 
   @OneToOne({ entity: () => WalletContents, ref: true, mappedBy: 'walletMeta' })
@@ -1427,7 +1469,7 @@ export class WalletType {
   @PrimaryKey({ type: 'character' })
   type!: string;
 
-  @ManyToOne({ entity: () => Currency, ref: true, fieldName: 'currency', primary: true, default: 'EUR' })
+  @ManyToOne({ entity: () => Currency, ref: true, fieldName: 'currency', updateRule: 'no action', deleteRule: 'no action', primary: true, default: 'EUR' })
   fkWalletTypeCurrency1: Ref<Currency> & Opt = ref(Currency, 'EUR');
 
   @OneToMany({ entity: () => WalletMeta, mappedBy: 'walletType' })
@@ -1484,6 +1526,8 @@ export const WalletContentsSchema = new EntitySchema({
       entity: () => WalletMeta,
       ref: true,
       fieldName: 'id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
   },
 });
@@ -1511,6 +1555,8 @@ export const WalletMetaSchema = new EntitySchema({
       entity: () => WalletType,
       ref: true,
       fieldNames: ['currency', 'type'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       index: 'fk_wallet_wallet_type_idx',
     },
     walletContents: {
@@ -1545,6 +1591,8 @@ export const WalletTypeSchema = new EntitySchema({
       entity: () => Currency,
       ref: true,
       fieldName: 'currency',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       default: 'EUR',
     },
     walletMetaCollection: {
@@ -1582,7 +1630,7 @@ import { WalletMeta } from './WalletMeta';
 @Entity()
 export class WalletContents {
 
-  @OneToOne({ entity: () => WalletMeta, fieldName: 'id', primary: true })
+  @OneToOne({ entity: () => WalletMeta, fieldName: 'id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   id!: WalletMeta;
 
   @Property({ type: 'decimal', precision: 10, scale: 2 })
@@ -1600,7 +1648,7 @@ export class WalletMeta {
   @PrimaryKey()
   id!: number;
 
-  @ManyToOne({ entity: () => WalletType, fieldNames: ['currency', 'type'], ignoreSchemaChanges: ['default'], index: 'fk_wallet_wallet_type_idx' })
+  @ManyToOne({ entity: () => WalletType, fieldNames: ['currency', 'type'], updateRule: 'no action', deleteRule: 'no action', ignoreSchemaChanges: ['default'], index: 'fk_wallet_wallet_type_idx' })
   currency: WalletType & Opt;
 
 }
@@ -1614,7 +1662,7 @@ export class WalletType {
 
   [PrimaryKeyProp]?: ['currency', 'type'];
 
-  @ManyToOne({ entity: () => Currency, fieldName: 'currency', primary: true })
+  @ManyToOne({ entity: () => Currency, fieldName: 'currency', updateRule: 'no action', deleteRule: 'no action', primary: true })
   currency: Currency & Opt = rel(Currency, 'EUR');
 
   @PrimaryKey({ type: 'character' })
@@ -1654,7 +1702,14 @@ export class WalletContents {
 export const WalletContentsSchema = new EntitySchema({
   class: WalletContents,
   properties: {
-    id: { primary: true, kind: '1:1', entity: () => WalletMeta, fieldName: 'id' },
+    id: {
+      primary: true,
+      kind: '1:1',
+      entity: () => WalletMeta,
+      fieldName: 'id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
+    },
     balance: { type: 'decimal', precision: 10, scale: 2 },
   },
 });
@@ -1675,6 +1730,8 @@ export const WalletMetaSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => WalletType,
       fieldNames: ['currency', 'type'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       ignoreSchemaChanges: ['default'],
       index: 'fk_wallet_wallet_type_idx',
     },
@@ -1698,6 +1755,8 @@ export const WalletTypeSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => Currency,
       fieldName: 'currency',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     type: { primary: true, type: 'character' },
   },
@@ -1731,7 +1790,7 @@ import { WalletMeta } from './WalletMeta.js';
 @Entity()
 export class WalletContents {
 
-  @OneToOne({ entity: () => WalletMeta, fieldName: 'id', primary: true })
+  @OneToOne({ entity: () => WalletMeta, fieldName: 'id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   id!: Rel<WalletMeta>;
 
   @Property({ type: 'decimal', precision: 10, scale: 2 })
@@ -1749,7 +1808,7 @@ export class WalletMeta {
   @PrimaryKey()
   id!: number;
 
-  @ManyToOne({ entity: () => WalletType, fieldNames: ['currency', 'type'], ignoreSchemaChanges: ['default'], index: 'fk_wallet_wallet_type_idx' })
+  @ManyToOne({ entity: () => WalletType, fieldNames: ['currency', 'type'], updateRule: 'no action', deleteRule: 'no action', ignoreSchemaChanges: ['default'], index: 'fk_wallet_wallet_type_idx' })
   currency: Rel<WalletType> & Opt;
 
 }
@@ -1763,7 +1822,7 @@ export class WalletType {
 
   [PrimaryKeyProp]?: ['currency', 'type'];
 
-  @ManyToOne({ entity: () => Currency, fieldName: 'currency', primary: true })
+  @ManyToOne({ entity: () => Currency, fieldName: 'currency', updateRule: 'no action', deleteRule: 'no action', primary: true })
   currency: Rel<Currency> & Opt = rel(Currency, 'EUR');
 
   @PrimaryKey({ type: 'character' })
@@ -1803,7 +1862,14 @@ export class WalletContents {
 export const WalletContentsSchema = new EntitySchema({
   class: WalletContents,
   properties: {
-    id: { primary: true, kind: '1:1', entity: () => WalletMeta, fieldName: 'id' },
+    id: {
+      primary: true,
+      kind: '1:1',
+      entity: () => WalletMeta,
+      fieldName: 'id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
+    },
     balance: { type: 'decimal', precision: 10, scale: 2 },
   },
 });
@@ -1824,6 +1890,8 @@ export const WalletMetaSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => WalletType,
       fieldNames: ['currency', 'type'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       ignoreSchemaChanges: ['default'],
       index: 'fk_wallet_wallet_type_idx',
     },
@@ -1847,6 +1915,8 @@ export const WalletTypeSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => Currency,
       fieldName: 'currency',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     type: { primary: true, type: 'character' },
   },
@@ -1880,7 +1950,7 @@ import { WalletMeta } from './WalletMeta';
 @Entity()
 export class WalletContents {
 
-  @OneToOne({ entity: () => WalletMeta, ref: true, fieldName: 'id', primary: true })
+  @OneToOne({ entity: () => WalletMeta, ref: true, fieldName: 'id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   id!: Ref<WalletMeta>;
 
   @Property({ type: 'decimal', precision: 10, scale: 2 })
@@ -1898,7 +1968,7 @@ export class WalletMeta {
   @PrimaryKey()
   id!: number;
 
-  @ManyToOne({ entity: () => WalletType, ref: true, fieldNames: ['currency', 'type'], ignoreSchemaChanges: ['default'], index: 'fk_wallet_wallet_type_idx' })
+  @ManyToOne({ entity: () => WalletType, ref: true, fieldNames: ['currency', 'type'], updateRule: 'no action', deleteRule: 'no action', ignoreSchemaChanges: ['default'], index: 'fk_wallet_wallet_type_idx' })
   currency: Ref<WalletType> & Opt;
 
 }
@@ -1912,7 +1982,7 @@ export class WalletType {
 
   [PrimaryKeyProp]?: ['currency', 'type'];
 
-  @ManyToOne({ entity: () => Currency, ref: true, fieldName: 'currency', primary: true, default: 'EUR' })
+  @ManyToOne({ entity: () => Currency, ref: true, fieldName: 'currency', updateRule: 'no action', deleteRule: 'no action', primary: true, default: 'EUR' })
   currency: Ref<Currency> & Opt = ref(Currency, 'EUR');
 
   @PrimaryKey({ type: 'character' })
@@ -1958,6 +2028,8 @@ export const WalletContentsSchema = new EntitySchema({
       entity: () => WalletMeta,
       ref: true,
       fieldName: 'id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     balance: { type: 'decimal', precision: 10, scale: 2 },
   },
@@ -1980,6 +2052,8 @@ export const WalletMetaSchema = new EntitySchema({
       entity: () => WalletType,
       ref: true,
       fieldNames: ['currency', 'type'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       ignoreSchemaChanges: ['default'],
       index: 'fk_wallet_wallet_type_idx',
     },
@@ -2004,6 +2078,8 @@ export const WalletTypeSchema = new EntitySchema({
       entity: () => Currency,
       ref: true,
       fieldName: 'currency',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       default: 'EUR',
     },
     type: { primary: true, type: 'character' },
@@ -2038,7 +2114,7 @@ import { WalletMeta } from './WalletMeta.js';
 @Entity()
 export class WalletContents {
 
-  @OneToOne({ entity: () => WalletMeta, ref: true, fieldName: 'id', primary: true })
+  @OneToOne({ entity: () => WalletMeta, ref: true, fieldName: 'id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   id!: Ref<WalletMeta>;
 
   @Property({ type: 'decimal', precision: 10, scale: 2 })
@@ -2056,7 +2132,7 @@ export class WalletMeta {
   @PrimaryKey()
   id!: number;
 
-  @ManyToOne({ entity: () => WalletType, ref: true, fieldNames: ['currency', 'type'], ignoreSchemaChanges: ['default'], index: 'fk_wallet_wallet_type_idx' })
+  @ManyToOne({ entity: () => WalletType, ref: true, fieldNames: ['currency', 'type'], updateRule: 'no action', deleteRule: 'no action', ignoreSchemaChanges: ['default'], index: 'fk_wallet_wallet_type_idx' })
   currency: Ref<WalletType> & Opt;
 
 }
@@ -2070,7 +2146,7 @@ export class WalletType {
 
   [PrimaryKeyProp]?: ['currency', 'type'];
 
-  @ManyToOne({ entity: () => Currency, ref: true, fieldName: 'currency', primary: true, default: 'EUR' })
+  @ManyToOne({ entity: () => Currency, ref: true, fieldName: 'currency', updateRule: 'no action', deleteRule: 'no action', primary: true, default: 'EUR' })
   currency: Ref<Currency> & Opt = ref(Currency, 'EUR');
 
   @PrimaryKey({ type: 'character' })
@@ -2116,6 +2192,8 @@ export const WalletContentsSchema = new EntitySchema({
       entity: () => WalletMeta,
       ref: true,
       fieldName: 'id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     balance: { type: 'decimal', precision: 10, scale: 2 },
   },
@@ -2138,6 +2216,8 @@ export const WalletMetaSchema = new EntitySchema({
       entity: () => WalletType,
       ref: true,
       fieldNames: ['currency', 'type'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       ignoreSchemaChanges: ['default'],
       index: 'fk_wallet_wallet_type_idx',
     },
@@ -2162,6 +2242,8 @@ export const WalletTypeSchema = new EntitySchema({
       entity: () => Currency,
       ref: true,
       fieldName: 'currency',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       default: 'EUR',
     },
     type: { primary: true, type: 'character' },
@@ -2199,7 +2281,7 @@ import { WalletMeta } from './WalletMeta';
 @Entity()
 export class WalletContents {
 
-  @OneToOne({ entity: () => WalletMeta, fieldName: 'id', primary: true })
+  @OneToOne({ entity: () => WalletMeta, fieldName: 'id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   id!: WalletMeta;
 
   @Property({ type: 'decimal', precision: 10, scale: 2 })
@@ -2218,7 +2300,7 @@ export class WalletMeta {
   @PrimaryKey()
   id!: number;
 
-  @ManyToOne({ entity: () => WalletType, fieldNames: ['currency', 'type'], ignoreSchemaChanges: ['default'], index: 'fk_wallet_wallet_type_idx' })
+  @ManyToOne({ entity: () => WalletType, fieldNames: ['currency', 'type'], updateRule: 'no action', deleteRule: 'no action', ignoreSchemaChanges: ['default'], index: 'fk_wallet_wallet_type_idx' })
   currency: WalletType & Opt;
 
   @OneToOne({ entity: () => WalletContents, mappedBy: 'id' })
@@ -2236,7 +2318,7 @@ export class WalletType {
 
   [PrimaryKeyProp]?: ['currency', 'type'];
 
-  @ManyToOne({ entity: () => Currency, fieldName: 'currency', primary: true })
+  @ManyToOne({ entity: () => Currency, fieldName: 'currency', updateRule: 'no action', deleteRule: 'no action', primary: true })
   currency: Currency & Opt = rel(Currency, 'EUR');
 
   @PrimaryKey({ type: 'character' })
@@ -2286,7 +2368,14 @@ export class WalletContents {
 export const WalletContentsSchema = new EntitySchema({
   class: WalletContents,
   properties: {
-    id: { primary: true, kind: '1:1', entity: () => WalletMeta, fieldName: 'id' },
+    id: {
+      primary: true,
+      kind: '1:1',
+      entity: () => WalletMeta,
+      fieldName: 'id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
+    },
     balance: { type: 'decimal', precision: 10, scale: 2 },
   },
 });
@@ -2309,6 +2398,8 @@ export const WalletMetaSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => WalletType,
       fieldNames: ['currency', 'type'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       ignoreSchemaChanges: ['default'],
       index: 'fk_wallet_wallet_type_idx',
     },
@@ -2335,6 +2426,8 @@ export const WalletTypeSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => Currency,
       fieldName: 'currency',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     type: { primary: true, type: 'character' },
     walletMetaCollection: {
@@ -2377,7 +2470,7 @@ import { WalletMeta } from './WalletMeta.js';
 @Entity()
 export class WalletContents {
 
-  @OneToOne({ entity: () => WalletMeta, fieldName: 'id', primary: true })
+  @OneToOne({ entity: () => WalletMeta, fieldName: 'id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   id!: Rel<WalletMeta>;
 
   @Property({ type: 'decimal', precision: 10, scale: 2 })
@@ -2396,7 +2489,7 @@ export class WalletMeta {
   @PrimaryKey()
   id!: number;
 
-  @ManyToOne({ entity: () => WalletType, fieldNames: ['currency', 'type'], ignoreSchemaChanges: ['default'], index: 'fk_wallet_wallet_type_idx' })
+  @ManyToOne({ entity: () => WalletType, fieldNames: ['currency', 'type'], updateRule: 'no action', deleteRule: 'no action', ignoreSchemaChanges: ['default'], index: 'fk_wallet_wallet_type_idx' })
   currency: Rel<WalletType> & Opt;
 
   @OneToOne({ entity: () => WalletContents, mappedBy: 'id' })
@@ -2414,7 +2507,7 @@ export class WalletType {
 
   [PrimaryKeyProp]?: ['currency', 'type'];
 
-  @ManyToOne({ entity: () => Currency, fieldName: 'currency', primary: true })
+  @ManyToOne({ entity: () => Currency, fieldName: 'currency', updateRule: 'no action', deleteRule: 'no action', primary: true })
   currency: Rel<Currency> & Opt = rel(Currency, 'EUR');
 
   @PrimaryKey({ type: 'character' })
@@ -2464,7 +2557,14 @@ export class WalletContents {
 export const WalletContentsSchema = new EntitySchema({
   class: WalletContents,
   properties: {
-    id: { primary: true, kind: '1:1', entity: () => WalletMeta, fieldName: 'id' },
+    id: {
+      primary: true,
+      kind: '1:1',
+      entity: () => WalletMeta,
+      fieldName: 'id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
+    },
     balance: { type: 'decimal', precision: 10, scale: 2 },
   },
 });
@@ -2487,6 +2587,8 @@ export const WalletMetaSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => WalletType,
       fieldNames: ['currency', 'type'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       ignoreSchemaChanges: ['default'],
       index: 'fk_wallet_wallet_type_idx',
     },
@@ -2513,6 +2615,8 @@ export const WalletTypeSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => Currency,
       fieldName: 'currency',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     type: { primary: true, type: 'character' },
     walletMetaCollection: {
@@ -2555,7 +2659,7 @@ import { WalletMeta } from './WalletMeta';
 @Entity()
 export class WalletContents {
 
-  @OneToOne({ entity: () => WalletMeta, ref: true, fieldName: 'id', primary: true })
+  @OneToOne({ entity: () => WalletMeta, ref: true, fieldName: 'id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   id!: Ref<WalletMeta>;
 
   @Property({ type: 'decimal', precision: 10, scale: 2 })
@@ -2574,7 +2678,7 @@ export class WalletMeta {
   @PrimaryKey()
   id!: number;
 
-  @ManyToOne({ entity: () => WalletType, ref: true, fieldNames: ['currency', 'type'], ignoreSchemaChanges: ['default'], index: 'fk_wallet_wallet_type_idx' })
+  @ManyToOne({ entity: () => WalletType, ref: true, fieldNames: ['currency', 'type'], updateRule: 'no action', deleteRule: 'no action', ignoreSchemaChanges: ['default'], index: 'fk_wallet_wallet_type_idx' })
   currency: Ref<WalletType> & Opt;
 
   @OneToOne({ entity: () => WalletContents, ref: true, mappedBy: 'id' })
@@ -2592,7 +2696,7 @@ export class WalletType {
 
   [PrimaryKeyProp]?: ['currency', 'type'];
 
-  @ManyToOne({ entity: () => Currency, ref: true, fieldName: 'currency', primary: true, default: 'EUR' })
+  @ManyToOne({ entity: () => Currency, ref: true, fieldName: 'currency', updateRule: 'no action', deleteRule: 'no action', primary: true, default: 'EUR' })
   currency: Ref<Currency> & Opt = ref(Currency, 'EUR');
 
   @PrimaryKey({ type: 'character' })
@@ -2648,6 +2752,8 @@ export const WalletContentsSchema = new EntitySchema({
       entity: () => WalletMeta,
       ref: true,
       fieldName: 'id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     balance: { type: 'decimal', precision: 10, scale: 2 },
   },
@@ -2672,6 +2778,8 @@ export const WalletMetaSchema = new EntitySchema({
       entity: () => WalletType,
       ref: true,
       fieldNames: ['currency', 'type'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       ignoreSchemaChanges: ['default'],
       index: 'fk_wallet_wallet_type_idx',
     },
@@ -2704,6 +2812,8 @@ export const WalletTypeSchema = new EntitySchema({
       entity: () => Currency,
       ref: true,
       fieldName: 'currency',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       default: 'EUR',
     },
     type: { primary: true, type: 'character' },
@@ -2747,7 +2857,7 @@ import { WalletMeta } from './WalletMeta.js';
 @Entity()
 export class WalletContents {
 
-  @OneToOne({ entity: () => WalletMeta, ref: true, fieldName: 'id', primary: true })
+  @OneToOne({ entity: () => WalletMeta, ref: true, fieldName: 'id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   id!: Ref<WalletMeta>;
 
   @Property({ type: 'decimal', precision: 10, scale: 2 })
@@ -2766,7 +2876,7 @@ export class WalletMeta {
   @PrimaryKey()
   id!: number;
 
-  @ManyToOne({ entity: () => WalletType, ref: true, fieldNames: ['currency', 'type'], ignoreSchemaChanges: ['default'], index: 'fk_wallet_wallet_type_idx' })
+  @ManyToOne({ entity: () => WalletType, ref: true, fieldNames: ['currency', 'type'], updateRule: 'no action', deleteRule: 'no action', ignoreSchemaChanges: ['default'], index: 'fk_wallet_wallet_type_idx' })
   currency: Ref<WalletType> & Opt;
 
   @OneToOne({ entity: () => WalletContents, ref: true, mappedBy: 'id' })
@@ -2784,7 +2894,7 @@ export class WalletType {
 
   [PrimaryKeyProp]?: ['currency', 'type'];
 
-  @ManyToOne({ entity: () => Currency, ref: true, fieldName: 'currency', primary: true, default: 'EUR' })
+  @ManyToOne({ entity: () => Currency, ref: true, fieldName: 'currency', updateRule: 'no action', deleteRule: 'no action', primary: true, default: 'EUR' })
   currency: Ref<Currency> & Opt = ref(Currency, 'EUR');
 
   @PrimaryKey({ type: 'character' })
@@ -2840,6 +2950,8 @@ export const WalletContentsSchema = new EntitySchema({
       entity: () => WalletMeta,
       ref: true,
       fieldName: 'id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     balance: { type: 'decimal', precision: 10, scale: 2 },
   },
@@ -2864,6 +2976,8 @@ export const WalletMetaSchema = new EntitySchema({
       entity: () => WalletType,
       ref: true,
       fieldNames: ['currency', 'type'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       ignoreSchemaChanges: ['default'],
       index: 'fk_wallet_wallet_type_idx',
     },
@@ -2896,6 +3010,8 @@ export const WalletTypeSchema = new EntitySchema({
       entity: () => Currency,
       ref: true,
       fieldName: 'currency',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       default: 'EUR',
     },
     type: { primary: true, type: 'character' },
@@ -2934,7 +3050,7 @@ import { WalletMeta } from './WalletMeta';
 @Entity()
 export class WalletContents {
 
-  @OneToOne({ entity: () => WalletMeta, fieldName: 'id', primary: true })
+  @OneToOne({ entity: () => WalletMeta, fieldName: 'id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   id!: WalletMeta;
 
   @Property({ type: 'decimal', precision: 10, scale: 2 })
@@ -2952,7 +3068,7 @@ export class WalletMeta {
   @PrimaryKey()
   id!: number;
 
-  @ManyToOne({ entity: () => WalletType, fieldNames: ['currency', 'type'], ignoreSchemaChanges: ['default'], index: 'fk_wallet_wallet_type_idx' })
+  @ManyToOne({ entity: () => WalletType, fieldNames: ['currency', 'type'], updateRule: 'no action', deleteRule: 'no action', ignoreSchemaChanges: ['default'], index: 'fk_wallet_wallet_type_idx' })
   currency: WalletType & Opt;
 
 }
@@ -2966,7 +3082,7 @@ export class WalletType {
 
   [PrimaryKeyProp]?: ['currency', 'type'];
 
-  @ManyToOne({ entity: () => Currency, fieldName: 'currency', primary: true })
+  @ManyToOne({ entity: () => Currency, fieldName: 'currency', updateRule: 'no action', deleteRule: 'no action', primary: true })
   currency: Currency & Opt = rel(Currency, 'EUR');
 
   @PrimaryKey({ type: 'character' })
@@ -3006,7 +3122,14 @@ export class WalletContents {
 export const WalletContentsSchema = new EntitySchema({
   class: WalletContents,
   properties: {
-    id: { primary: true, kind: '1:1', entity: () => WalletMeta, fieldName: 'id' },
+    id: {
+      primary: true,
+      kind: '1:1',
+      entity: () => WalletMeta,
+      fieldName: 'id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
+    },
     balance: { type: 'decimal', precision: 10, scale: 2 },
   },
 });
@@ -3027,6 +3150,8 @@ export const WalletMetaSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => WalletType,
       fieldNames: ['currency', 'type'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       ignoreSchemaChanges: ['default'],
       index: 'fk_wallet_wallet_type_idx',
     },
@@ -3050,6 +3175,8 @@ export const WalletTypeSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => Currency,
       fieldName: 'currency',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     type: { primary: true, type: 'character' },
   },
@@ -3083,7 +3210,7 @@ import { WalletMeta } from './WalletMeta.js';
 @Entity()
 export class WalletContents {
 
-  @OneToOne({ entity: () => WalletMeta, fieldName: 'id', primary: true })
+  @OneToOne({ entity: () => WalletMeta, fieldName: 'id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   id!: Rel<WalletMeta>;
 
   @Property({ type: 'decimal', precision: 10, scale: 2 })
@@ -3101,7 +3228,7 @@ export class WalletMeta {
   @PrimaryKey()
   id!: number;
 
-  @ManyToOne({ entity: () => WalletType, fieldNames: ['currency', 'type'], ignoreSchemaChanges: ['default'], index: 'fk_wallet_wallet_type_idx' })
+  @ManyToOne({ entity: () => WalletType, fieldNames: ['currency', 'type'], updateRule: 'no action', deleteRule: 'no action', ignoreSchemaChanges: ['default'], index: 'fk_wallet_wallet_type_idx' })
   currency: Rel<WalletType> & Opt;
 
 }
@@ -3115,7 +3242,7 @@ export class WalletType {
 
   [PrimaryKeyProp]?: ['currency', 'type'];
 
-  @ManyToOne({ entity: () => Currency, fieldName: 'currency', primary: true })
+  @ManyToOne({ entity: () => Currency, fieldName: 'currency', updateRule: 'no action', deleteRule: 'no action', primary: true })
   currency: Rel<Currency> & Opt = rel(Currency, 'EUR');
 
   @PrimaryKey({ type: 'character' })
@@ -3155,7 +3282,14 @@ export class WalletContents {
 export const WalletContentsSchema = new EntitySchema({
   class: WalletContents,
   properties: {
-    id: { primary: true, kind: '1:1', entity: () => WalletMeta, fieldName: 'id' },
+    id: {
+      primary: true,
+      kind: '1:1',
+      entity: () => WalletMeta,
+      fieldName: 'id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
+    },
     balance: { type: 'decimal', precision: 10, scale: 2 },
   },
 });
@@ -3176,6 +3310,8 @@ export const WalletMetaSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => WalletType,
       fieldNames: ['currency', 'type'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       ignoreSchemaChanges: ['default'],
       index: 'fk_wallet_wallet_type_idx',
     },
@@ -3199,6 +3335,8 @@ export const WalletTypeSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => Currency,
       fieldName: 'currency',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     type: { primary: true, type: 'character' },
   },
@@ -3232,7 +3370,7 @@ import { WalletMeta } from './WalletMeta';
 @Entity()
 export class WalletContents {
 
-  @OneToOne({ entity: () => WalletMeta, ref: true, fieldName: 'id', primary: true })
+  @OneToOne({ entity: () => WalletMeta, ref: true, fieldName: 'id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   id!: Ref<WalletMeta>;
 
   @Property({ type: 'decimal', precision: 10, scale: 2 })
@@ -3250,7 +3388,7 @@ export class WalletMeta {
   @PrimaryKey()
   id!: number;
 
-  @ManyToOne({ entity: () => WalletType, ref: true, fieldNames: ['currency', 'type'], ignoreSchemaChanges: ['default'], index: 'fk_wallet_wallet_type_idx' })
+  @ManyToOne({ entity: () => WalletType, ref: true, fieldNames: ['currency', 'type'], updateRule: 'no action', deleteRule: 'no action', ignoreSchemaChanges: ['default'], index: 'fk_wallet_wallet_type_idx' })
   currency: Ref<WalletType> & Opt;
 
 }
@@ -3264,7 +3402,7 @@ export class WalletType {
 
   [PrimaryKeyProp]?: ['currency', 'type'];
 
-  @ManyToOne({ entity: () => Currency, ref: true, fieldName: 'currency', primary: true, default: 'EUR' })
+  @ManyToOne({ entity: () => Currency, ref: true, fieldName: 'currency', updateRule: 'no action', deleteRule: 'no action', primary: true, default: 'EUR' })
   currency: Ref<Currency> & Opt = ref(Currency, 'EUR');
 
   @PrimaryKey({ type: 'character' })
@@ -3310,6 +3448,8 @@ export const WalletContentsSchema = new EntitySchema({
       entity: () => WalletMeta,
       ref: true,
       fieldName: 'id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     balance: { type: 'decimal', precision: 10, scale: 2 },
   },
@@ -3332,6 +3472,8 @@ export const WalletMetaSchema = new EntitySchema({
       entity: () => WalletType,
       ref: true,
       fieldNames: ['currency', 'type'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       ignoreSchemaChanges: ['default'],
       index: 'fk_wallet_wallet_type_idx',
     },
@@ -3356,6 +3498,8 @@ export const WalletTypeSchema = new EntitySchema({
       entity: () => Currency,
       ref: true,
       fieldName: 'currency',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       default: 'EUR',
     },
     type: { primary: true, type: 'character' },
@@ -3390,7 +3534,7 @@ import { WalletMeta } from './WalletMeta.js';
 @Entity()
 export class WalletContents {
 
-  @OneToOne({ entity: () => WalletMeta, ref: true, fieldName: 'id', primary: true })
+  @OneToOne({ entity: () => WalletMeta, ref: true, fieldName: 'id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   id!: Ref<WalletMeta>;
 
   @Property({ type: 'decimal', precision: 10, scale: 2 })
@@ -3408,7 +3552,7 @@ export class WalletMeta {
   @PrimaryKey()
   id!: number;
 
-  @ManyToOne({ entity: () => WalletType, ref: true, fieldNames: ['currency', 'type'], ignoreSchemaChanges: ['default'], index: 'fk_wallet_wallet_type_idx' })
+  @ManyToOne({ entity: () => WalletType, ref: true, fieldNames: ['currency', 'type'], updateRule: 'no action', deleteRule: 'no action', ignoreSchemaChanges: ['default'], index: 'fk_wallet_wallet_type_idx' })
   currency: Ref<WalletType> & Opt;
 
 }
@@ -3422,7 +3566,7 @@ export class WalletType {
 
   [PrimaryKeyProp]?: ['currency', 'type'];
 
-  @ManyToOne({ entity: () => Currency, ref: true, fieldName: 'currency', primary: true, default: 'EUR' })
+  @ManyToOne({ entity: () => Currency, ref: true, fieldName: 'currency', updateRule: 'no action', deleteRule: 'no action', primary: true, default: 'EUR' })
   currency: Ref<Currency> & Opt = ref(Currency, 'EUR');
 
   @PrimaryKey({ type: 'character' })
@@ -3468,6 +3612,8 @@ export const WalletContentsSchema = new EntitySchema({
       entity: () => WalletMeta,
       ref: true,
       fieldName: 'id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     balance: { type: 'decimal', precision: 10, scale: 2 },
   },
@@ -3490,6 +3636,8 @@ export const WalletMetaSchema = new EntitySchema({
       entity: () => WalletType,
       ref: true,
       fieldNames: ['currency', 'type'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       ignoreSchemaChanges: ['default'],
       index: 'fk_wallet_wallet_type_idx',
     },
@@ -3514,6 +3662,8 @@ export const WalletTypeSchema = new EntitySchema({
       entity: () => Currency,
       ref: true,
       fieldName: 'currency',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       default: 'EUR',
     },
     type: { primary: true, type: 'character' },
@@ -3551,7 +3701,7 @@ import { WalletMeta } from './WalletMeta';
 @Entity()
 export class WalletContents {
 
-  @OneToOne({ entity: () => WalletMeta, fieldName: 'id', primary: true })
+  @OneToOne({ entity: () => WalletMeta, fieldName: 'id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   id!: WalletMeta;
 
   @Property({ type: 'decimal', precision: 10, scale: 2 })
@@ -3570,7 +3720,7 @@ export class WalletMeta {
   @PrimaryKey()
   id!: number;
 
-  @ManyToOne({ entity: () => WalletType, fieldNames: ['currency', 'type'], ignoreSchemaChanges: ['default'], index: 'fk_wallet_wallet_type_idx' })
+  @ManyToOne({ entity: () => WalletType, fieldNames: ['currency', 'type'], updateRule: 'no action', deleteRule: 'no action', ignoreSchemaChanges: ['default'], index: 'fk_wallet_wallet_type_idx' })
   currency: WalletType & Opt;
 
   @OneToOne({ entity: () => WalletContents, mappedBy: 'id' })
@@ -3588,7 +3738,7 @@ export class WalletType {
 
   [PrimaryKeyProp]?: ['currency', 'type'];
 
-  @ManyToOne({ entity: () => Currency, fieldName: 'currency', primary: true })
+  @ManyToOne({ entity: () => Currency, fieldName: 'currency', updateRule: 'no action', deleteRule: 'no action', primary: true })
   currency: Currency & Opt = rel(Currency, 'EUR');
 
   @PrimaryKey({ type: 'character' })
@@ -3638,7 +3788,14 @@ export class WalletContents {
 export const WalletContentsSchema = new EntitySchema({
   class: WalletContents,
   properties: {
-    id: { primary: true, kind: '1:1', entity: () => WalletMeta, fieldName: 'id' },
+    id: {
+      primary: true,
+      kind: '1:1',
+      entity: () => WalletMeta,
+      fieldName: 'id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
+    },
     balance: { type: 'decimal', precision: 10, scale: 2 },
   },
 });
@@ -3661,6 +3818,8 @@ export const WalletMetaSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => WalletType,
       fieldNames: ['currency', 'type'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       ignoreSchemaChanges: ['default'],
       index: 'fk_wallet_wallet_type_idx',
     },
@@ -3687,6 +3846,8 @@ export const WalletTypeSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => Currency,
       fieldName: 'currency',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     type: { primary: true, type: 'character' },
     walletMetaCollection: {
@@ -3729,7 +3890,7 @@ import { WalletMeta } from './WalletMeta.js';
 @Entity()
 export class WalletContents {
 
-  @OneToOne({ entity: () => WalletMeta, fieldName: 'id', primary: true })
+  @OneToOne({ entity: () => WalletMeta, fieldName: 'id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   id!: Rel<WalletMeta>;
 
   @Property({ type: 'decimal', precision: 10, scale: 2 })
@@ -3748,7 +3909,7 @@ export class WalletMeta {
   @PrimaryKey()
   id!: number;
 
-  @ManyToOne({ entity: () => WalletType, fieldNames: ['currency', 'type'], ignoreSchemaChanges: ['default'], index: 'fk_wallet_wallet_type_idx' })
+  @ManyToOne({ entity: () => WalletType, fieldNames: ['currency', 'type'], updateRule: 'no action', deleteRule: 'no action', ignoreSchemaChanges: ['default'], index: 'fk_wallet_wallet_type_idx' })
   currency: Rel<WalletType> & Opt;
 
   @OneToOne({ entity: () => WalletContents, mappedBy: 'id' })
@@ -3766,7 +3927,7 @@ export class WalletType {
 
   [PrimaryKeyProp]?: ['currency', 'type'];
 
-  @ManyToOne({ entity: () => Currency, fieldName: 'currency', primary: true })
+  @ManyToOne({ entity: () => Currency, fieldName: 'currency', updateRule: 'no action', deleteRule: 'no action', primary: true })
   currency: Rel<Currency> & Opt = rel(Currency, 'EUR');
 
   @PrimaryKey({ type: 'character' })
@@ -3816,7 +3977,14 @@ export class WalletContents {
 export const WalletContentsSchema = new EntitySchema({
   class: WalletContents,
   properties: {
-    id: { primary: true, kind: '1:1', entity: () => WalletMeta, fieldName: 'id' },
+    id: {
+      primary: true,
+      kind: '1:1',
+      entity: () => WalletMeta,
+      fieldName: 'id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
+    },
     balance: { type: 'decimal', precision: 10, scale: 2 },
   },
 });
@@ -3839,6 +4007,8 @@ export const WalletMetaSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => WalletType,
       fieldNames: ['currency', 'type'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       ignoreSchemaChanges: ['default'],
       index: 'fk_wallet_wallet_type_idx',
     },
@@ -3865,6 +4035,8 @@ export const WalletTypeSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => Currency,
       fieldName: 'currency',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     type: { primary: true, type: 'character' },
     walletMetaCollection: {
@@ -3907,7 +4079,7 @@ import { WalletMeta } from './WalletMeta';
 @Entity()
 export class WalletContents {
 
-  @OneToOne({ entity: () => WalletMeta, ref: true, fieldName: 'id', primary: true })
+  @OneToOne({ entity: () => WalletMeta, ref: true, fieldName: 'id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   id!: Ref<WalletMeta>;
 
   @Property({ type: 'decimal', precision: 10, scale: 2 })
@@ -3926,7 +4098,7 @@ export class WalletMeta {
   @PrimaryKey()
   id!: number;
 
-  @ManyToOne({ entity: () => WalletType, ref: true, fieldNames: ['currency', 'type'], ignoreSchemaChanges: ['default'], index: 'fk_wallet_wallet_type_idx' })
+  @ManyToOne({ entity: () => WalletType, ref: true, fieldNames: ['currency', 'type'], updateRule: 'no action', deleteRule: 'no action', ignoreSchemaChanges: ['default'], index: 'fk_wallet_wallet_type_idx' })
   currency: Ref<WalletType> & Opt;
 
   @OneToOne({ entity: () => WalletContents, ref: true, mappedBy: 'id' })
@@ -3944,7 +4116,7 @@ export class WalletType {
 
   [PrimaryKeyProp]?: ['currency', 'type'];
 
-  @ManyToOne({ entity: () => Currency, ref: true, fieldName: 'currency', primary: true, default: 'EUR' })
+  @ManyToOne({ entity: () => Currency, ref: true, fieldName: 'currency', updateRule: 'no action', deleteRule: 'no action', primary: true, default: 'EUR' })
   currency: Ref<Currency> & Opt = ref(Currency, 'EUR');
 
   @PrimaryKey({ type: 'character' })
@@ -4000,6 +4172,8 @@ export const WalletContentsSchema = new EntitySchema({
       entity: () => WalletMeta,
       ref: true,
       fieldName: 'id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     balance: { type: 'decimal', precision: 10, scale: 2 },
   },
@@ -4024,6 +4198,8 @@ export const WalletMetaSchema = new EntitySchema({
       entity: () => WalletType,
       ref: true,
       fieldNames: ['currency', 'type'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       ignoreSchemaChanges: ['default'],
       index: 'fk_wallet_wallet_type_idx',
     },
@@ -4056,6 +4232,8 @@ export const WalletTypeSchema = new EntitySchema({
       entity: () => Currency,
       ref: true,
       fieldName: 'currency',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       default: 'EUR',
     },
     type: { primary: true, type: 'character' },
@@ -4099,7 +4277,7 @@ import { WalletMeta } from './WalletMeta.js';
 @Entity()
 export class WalletContents {
 
-  @OneToOne({ entity: () => WalletMeta, ref: true, fieldName: 'id', primary: true })
+  @OneToOne({ entity: () => WalletMeta, ref: true, fieldName: 'id', updateRule: 'no action', deleteRule: 'no action', primary: true })
   id!: Ref<WalletMeta>;
 
   @Property({ type: 'decimal', precision: 10, scale: 2 })
@@ -4118,7 +4296,7 @@ export class WalletMeta {
   @PrimaryKey()
   id!: number;
 
-  @ManyToOne({ entity: () => WalletType, ref: true, fieldNames: ['currency', 'type'], ignoreSchemaChanges: ['default'], index: 'fk_wallet_wallet_type_idx' })
+  @ManyToOne({ entity: () => WalletType, ref: true, fieldNames: ['currency', 'type'], updateRule: 'no action', deleteRule: 'no action', ignoreSchemaChanges: ['default'], index: 'fk_wallet_wallet_type_idx' })
   currency: Ref<WalletType> & Opt;
 
   @OneToOne({ entity: () => WalletContents, ref: true, mappedBy: 'id' })
@@ -4136,7 +4314,7 @@ export class WalletType {
 
   [PrimaryKeyProp]?: ['currency', 'type'];
 
-  @ManyToOne({ entity: () => Currency, ref: true, fieldName: 'currency', primary: true, default: 'EUR' })
+  @ManyToOne({ entity: () => Currency, ref: true, fieldName: 'currency', updateRule: 'no action', deleteRule: 'no action', primary: true, default: 'EUR' })
   currency: Ref<Currency> & Opt = ref(Currency, 'EUR');
 
   @PrimaryKey({ type: 'character' })
@@ -4192,6 +4370,8 @@ export const WalletContentsSchema = new EntitySchema({
       entity: () => WalletMeta,
       ref: true,
       fieldName: 'id',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     balance: { type: 'decimal', precision: 10, scale: 2 },
   },
@@ -4216,6 +4396,8 @@ export const WalletMetaSchema = new EntitySchema({
       entity: () => WalletType,
       ref: true,
       fieldNames: ['currency', 'type'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       ignoreSchemaChanges: ['default'],
       index: 'fk_wallet_wallet_type_idx',
     },
@@ -4248,6 +4430,8 @@ export const WalletTypeSchema = new EntitySchema({
       entity: () => Currency,
       ref: true,
       fieldName: 'currency',
+      updateRule: 'no action',
+      deleteRule: 'no action',
       default: 'EUR',
     },
     type: { primary: true, type: 'character' },

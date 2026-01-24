@@ -13,7 +13,7 @@ export class E_$42misc {
 
   [PrimaryKeyProp]?: '@ref';
 
-  @OneToOne({ entity: () => E50$37$32of$32stuff, ref: true, fieldName: '@ref', primary: true })
+  @OneToOne({ entity: () => E50$37$32of$32stuff, ref: true, fieldName: '@ref', updateRule: 'no action', deleteRule: 'no action', primary: true })
   '@ref'!: Ref<E50$37$32of$32stuff>;
 
   @OneToOne({ entity: () => This$43that, ref: true, mappedBy: '80OfStuff' })
@@ -36,7 +36,7 @@ export class E123TableName {
   @PrimaryKey({ autoincrement: false })
   $!: number;
 
-  @ManyToOne({ entity: () => Table$39s$32name$32has$32apostrophe$44$32Also$32$96$96$32this, ref: true, fieldName: 'prototype' })
+  @ManyToOne({ entity: () => Table$39s$32name$32has$32apostrophe$44$32Also$32$96$96$32this, ref: true, fieldName: 'prototype', updateRule: 'no action', deleteRule: 'no action' })
   prototype!: Ref<Table$39s$32name$32has$32apostrophe$44$32Also$32$96$96$32this>;
 
   @Property({ fieldName: 'oh_captain__my___captain', type: 'string' })
@@ -89,7 +89,7 @@ export class This$43that {
 
   [PrimaryKeyProp]?: '80OfStuff';
 
-  @OneToOne({ entity: () => E_$42misc, ref: true, fieldName: '80 of stuff', primary: true })
+  @OneToOne({ entity: () => E_$42misc, ref: true, fieldName: '80 of stuff', updateRule: 'no action', deleteRule: 'no action', primary: true })
   '80OfStuff'!: Ref<E_$42misc>;
 
 }
@@ -123,7 +123,7 @@ export class Table$39s$32name$32has$32apostrophe$44$32Also$32$96$96$32this {
 
   [PrimaryKeyProp]?: '!cool';
 
-  @OneToOne({ entity: () => E_$42misc, ref: true, fieldName: '!cool', primary: true })
+  @OneToOne({ entity: () => E_$42misc, ref: true, fieldName: '!cool', updateRule: 'no action', deleteRule: 'no action', primary: true })
   '!cool'!: Ref<E_$42misc>;
 
   @Property({ length: 45, nullable: true })
@@ -162,6 +162,8 @@ export const E_$42miscSchema = new EntitySchema({
       entity: () => E50$37$32of$32stuff,
       ref: true,
       fieldName: '@ref',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     this$43that: {
       kind: '1:1',
@@ -202,6 +204,8 @@ export const E123TableNameSchema = new EntitySchema({
       entity: () => Table$39s$32name$32has$32apostrophe$44$32Also$32$96$96$32this,
       ref: true,
       fieldName: 'prototype',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     ohCaptainMyCaptain: { type: 'string', fieldName: 'oh_captain__my___captain' },
     infer: { type: 'string' },
@@ -273,6 +277,8 @@ export const This$43thatSchema = new EntitySchema({
       entity: () => E_$42misc,
       ref: true,
       fieldName: '80 of stuff',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
   },
 });
@@ -320,6 +326,8 @@ export const Table$39s$32name$32has$32apostrophe$44$32Also$32$96$96$32thisSchema
       entity: () => E_$42misc,
       ref: true,
       fieldName: '!cool',
+      updateRule: 'no action',
+      deleteRule: 'no action',
     },
     \`'derive\`: {
       type: 'string',

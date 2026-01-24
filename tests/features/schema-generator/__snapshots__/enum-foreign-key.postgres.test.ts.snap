@@ -7,6 +7,6 @@ create table "product" ("id" serial primary key, "brand_id" text not null);
 
 alter table "brand" add constraint "brand_id_check" check ("id" in ('foo', 'bar', 'baz'));
 
-alter table "product" add constraint "product_brand_id_foreign" foreign key ("brand_id") references "brand" ("id") on update cascade;
+alter table "product" add constraint "product_brand_id_foreign" foreign key ("brand_id") references "brand" ("id");
 "
 `;

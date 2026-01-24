@@ -146,8 +146,8 @@ alter table `author2_following` add primary key `author2_following_pkey`(`author
 create table `address2` (`author_id` int(10) unsigned not null, `value` varchar(255) not null comment 'This is address property') default character set utf8mb4 engine = InnoDB comment = 'This is address table';
 alter table `address2` add primary key `address2_pkey`(`author_id`);
 
-alter table `foo_bar2` add constraint `foo_bar2_baz_id_foreign` foreign key (`baz_id`) references `foo_baz2` (`id`) on update cascade on delete set null;
-alter table `foo_bar2` add constraint `foo_bar2_foo_bar_id_foreign` foreign key (`foo_bar_id`) references `foo_bar2` (`id`) on update cascade on delete set null;
+alter table `foo_bar2` add constraint `foo_bar2_baz_id_foreign` foreign key (`baz_id`) references `foo_baz2` (`id`) on delete set null;
+alter table `foo_bar2` add constraint `foo_bar2_foo_bar_id_foreign` foreign key (`foo_bar_id`) references `foo_bar2` (`id`) on delete set null;
 
 alter table `foo_param2` add constraint `foo_param2_bar_id_foreign` foreign key (`bar_id`) references `foo_bar2` (`id`) on update cascade;
 alter table `foo_param2` add constraint `foo_param2_baz_id_foreign` foreign key (`baz_id`) references `foo_baz2` (`id`) on update cascade;
@@ -162,18 +162,18 @@ alter table `user2_sandwiches` add constraint `user2_sandwiches_sandwich_id_fore
 alter table `user2_cars` add constraint `user2_cars_user2_first_name_user2_last_name_foreign` foreign key (`user2_first_name`, `user2_last_name`) references `user2` (`first_name`, `last_name`) on update cascade on delete cascade;
 alter table `user2_cars` add constraint `user2_cars_car2_name_car2_year_foreign` foreign key (`car2_name`, `car2_year`) references `car2` (`name`, `year`) on update cascade on delete cascade;
 
-alter table `base_user2` add constraint `base_user2_favourite_employee_id_foreign` foreign key (`favourite_employee_id`) references `base_user2` (`id`) on update cascade on delete set null;
-alter table `base_user2` add constraint `base_user2_favourite_manager_id_foreign` foreign key (`favourite_manager_id`) references `base_user2` (`id`) on update cascade on delete set null;
+alter table `base_user2` add constraint `base_user2_favourite_employee_id_foreign` foreign key (`favourite_employee_id`) references `base_user2` (`id`) on delete set null;
+alter table `base_user2` add constraint `base_user2_favourite_manager_id_foreign` foreign key (`favourite_manager_id`) references `base_user2` (`id`) on delete set null;
 
 alter table `author2` add constraint `author2_favourite_book_uuid_pk_foreign` foreign key (`favourite_book_uuid_pk`) references `book2` (`uuid_pk`) on update no action on delete cascade;
-alter table `author2` add constraint `author2_favourite_author_id_foreign` foreign key (`favourite_author_id`) references `author2` (`id`) on update cascade on delete set null;
+alter table `author2` add constraint `author2_favourite_author_id_foreign` foreign key (`favourite_author_id`) references `author2` (`id`) on delete set null;
 
 alter table `book2` add constraint `book2_author_id_foreign` foreign key (`author_id`) references `author2` (`id`);
 alter table `book2` add constraint `book2_publisher_id_foreign` foreign key (`publisher_id`) references `publisher2` (`id`) on update cascade on delete cascade;
 
 alter table `test2` add constraint `test2_book_uuid_pk_foreign` foreign key (`book_uuid_pk`) references `book2` (`uuid_pk`) on delete set null;
-alter table `test2` add constraint `test2_foo___bar_foreign` foreign key (`foo___bar`) references `foo_bar2` (`id`) on update cascade on delete set null;
-alter table `test2` add constraint `test2_parent_id_foreign` foreign key (`parent_id`) references `test2` (`id`) on update cascade on delete set null;
+alter table `test2` add constraint `test2_foo___bar_foreign` foreign key (`foo___bar`) references `foo_bar2` (`id`) on delete set null;
+alter table `test2` add constraint `test2_parent_id_foreign` foreign key (`parent_id`) references `test2` (`id`) on delete set null;
 
 alter table `configuration2` add constraint `configuration2_test_id_foreign` foreign key (`test_id`) references `test2` (`id`) on update cascade;
 
