@@ -86,16 +86,19 @@ export class OracleConnection extends AbstractSqlConnection {
     }
 
     let last = params[params.length - 1];
+    let rawQuery: string | undefined;
 
     if (Utils.isObject(last) && '__outBindings' in last && last.__outBindings) {
+      rawQuery = last.__rawQuery;
       delete last.__outBindings;
+      delete last.__rawQuery;
     } else {
       last = undefined;
     }
 
     query = this.config.get('onQuery')(query, params);
     const formatted = this.platform.formatQuery(query, params);
-    const sql = this.getSql(query, formatted, loggerContext);
+    const sql = this.getSql(rawQuery ?? query, formatted, loggerContext);
 
     return this.executeQuery<T>(sql, async () => {
       const compiled = CompiledQuery.raw(formatted, last as unknown[]);
