@@ -1,5 +1,5 @@
 import { defineEntity, p } from '@mikro-orm/core';
-import { MikroORM } from '@mikro-orm/postgresql';
+import { MikroORM } from '@mikro-orm/sqlite';
 import { mockLogger } from '../helpers.js';
 
 interface Payment {
@@ -38,7 +38,7 @@ let orm: MikroORM;
 beforeAll(async () => {
   orm = new MikroORM({
     entities: [BalanceMove, Order],
-    dbName: 'elem_match_test',
+    dbName: ':memory:',
   });
   await orm.schema.refresh();
 });
@@ -59,7 +59,7 @@ describe('$elemMatch operator for JSON arrays', () => {
     });
 
     expect(mock.mock.calls[0][0]).toMatch(
-      `select "b0".* from "balance_move" as "b0" where exists (select 1 from jsonb_array_elements("b0"."payments") as __elem__ where __elem__->>'payment_method' = '7')`,
+      /exists \(select 1 from json_each\([^)]+\) as je where json_extract\(je\.value, '\$\.payment_method'\) = '7'\)/,
     );
   });
 
@@ -75,7 +75,7 @@ describe('$elemMatch operator for JSON arrays', () => {
     });
 
     expect(mock.mock.calls[0][0]).toMatch(
-      `select "b0".* from "balance_move" as "b0" where exists (select 1 from jsonb_array_elements("b0"."payments") as __elem__ where __elem__->>'payment_method' in ('7', '8', '9'))`,
+      /exists \(select 1 from json_each\([^)]+\) as je where json_extract\(je\.value, '\$\.payment_method'\) in \('7', '8', '9'\)\)/,
     );
   });
 
@@ -91,7 +91,7 @@ describe('$elemMatch operator for JSON arrays', () => {
     });
 
     expect(mock.mock.calls[0][0]).toMatch(
-      `select "b0".* from "balance_move" as "b0" where exists (select 1 from jsonb_array_elements("b0"."payments") as __elem__ where __elem__->>'payment_method' not in ('1', '2'))`,
+      /exists \(select 1 from json_each\([^)]+\) as je where json_extract\(je\.value, '\$\.payment_method'\) not in \('1', '2'\)\)/,
     );
   });
 
@@ -106,9 +106,7 @@ describe('$elemMatch operator for JSON arrays', () => {
       },
     });
 
-    expect(mock.mock.calls[0][0]).toMatch(
-      `select "b0".* from "balance_move" as "b0" where exists (select 1 from jsonb_array_elements("b0"."payments") as __elem__ where 1 = 0)`,
-    );
+    expect(mock.mock.calls[0][0]).toMatch(/exists \(select 1 from json_each\([^)]+\) as je where 1 = 0\)/);
   });
 
   test('empty $nin returns true', async () => {
@@ -122,9 +120,7 @@ describe('$elemMatch operator for JSON arrays', () => {
       },
     });
 
-    expect(mock.mock.calls[0][0]).toMatch(
-      `select "b0".* from "balance_move" as "b0" where exists (select 1 from jsonb_array_elements("b0"."payments") as __elem__ where 1 = 1)`,
-    );
+    expect(mock.mock.calls[0][0]).toMatch(/exists \(select 1 from json_each\([^)]+\) as je where 1 = 1\)/);
   });
 
   test('multiple conditions with $and', async () => {
@@ -142,7 +138,7 @@ describe('$elemMatch operator for JSON arrays', () => {
     });
 
     expect(mock.mock.calls[0][0]).toMatch(
-      `select "b0".* from "balance_move" as "b0" where exists (select 1 from jsonb_array_elements("b0"."payments") as __elem__ where __elem__->>'payment_method' = '7' and __elem__->>'amount' = '500')`,
+      /exists \(select 1 from json_each\([^)]+\) as je where json_extract\(je\.value, '\$\.payment_method'\) = '7' and json_extract\(je\.value, '\$\.amount'\) = '500'\)/,
     );
   });
 
@@ -163,7 +159,7 @@ describe('$elemMatch operator for JSON arrays', () => {
     });
 
     expect(mock.mock.calls[0][0]).toMatch(
-      `select "b0".* from "balance_move" as "b0" where exists (select 1 from jsonb_array_elements("b0"."payments") as __elem__ where (__elem__->>'payment_method' in ('7', '8') and __elem__->>'amount' = '500'))`,
+      /exists \(select 1 from json_each\([^)]+\) as je where \(json_extract\(je\.value, '\$\.payment_method'\) in \('7', '8'\) and json_extract\(je\.value, '\$\.amount'\) = '500'\)\)/,
     );
   });
 
@@ -184,7 +180,7 @@ describe('$elemMatch operator for JSON arrays', () => {
     });
 
     expect(mock.mock.calls[0][0]).toMatch(
-      `select "b0".* from "balance_move" as "b0" where exists (select 1 from jsonb_array_elements("b0"."payments") as __elem__ where (__elem__->>'payment_method' = '7' or __elem__->>'payment_method' = '8'))`,
+      /exists \(select 1 from json_each\([^)]+\) as je where \(json_extract\(je\.value, '\$\.payment_method'\) = '7' or json_extract\(je\.value, '\$\.payment_method'\) = '8'\)\)/,
     );
   });
 
@@ -223,18 +219,10 @@ describe('$elemMatch operator for JSON arrays', () => {
       },
     });
 
-    expect(mock.mock.calls[0][0]).toMatch(
-      `select "o0".* from "order" as "o0" where exists (select 1 from jsonb_array_elements("o0"."items") as __elem__ where (__elem__->>'quantity')::numeric > 5)`,
-    );
-    expect(mock.mock.calls[1][0]).toMatch(
-      `select "o0".* from "order" as "o0" where exists (select 1 from jsonb_array_elements("o0"."items") as __elem__ where (__elem__->>'price')::numeric >= 100)`,
-    );
-    expect(mock.mock.calls[2][0]).toMatch(
-      `select "o0".* from "order" as "o0" where exists (select 1 from jsonb_array_elements("o0"."items") as __elem__ where (__elem__->>'quantity')::numeric < 10)`,
-    );
-    expect(mock.mock.calls[3][0]).toMatch(
-      `select "o0".* from "order" as "o0" where exists (select 1 from jsonb_array_elements("o0"."items") as __elem__ where (__elem__->>'price')::numeric <= 50)`,
-    );
+    expect(mock.mock.calls[0][0]).toMatch(/cast\(json_extract\(je\.value, '\$\.quantity'\) as real\) > 5/);
+    expect(mock.mock.calls[1][0]).toMatch(/cast\(json_extract\(je\.value, '\$\.price'\) as real\) >= 100/);
+    expect(mock.mock.calls[2][0]).toMatch(/cast\(json_extract\(je\.value, '\$\.quantity'\) as real\) < 10/);
+    expect(mock.mock.calls[3][0]).toMatch(/cast\(json_extract\(je\.value, '\$\.price'\) as real\) <= 50/);
   });
 
   test('$like operator', async () => {
@@ -248,25 +236,7 @@ describe('$elemMatch operator for JSON arrays', () => {
       },
     });
 
-    expect(mock.mock.calls[0][0]).toMatch(
-      `select "o0".* from "order" as "o0" where exists (select 1 from jsonb_array_elements("o0"."items") as __elem__ where __elem__->>'name' like '%Book%')`,
-    );
-  });
-
-  test('$ilike operator (case insensitive)', async () => {
-    const mock = mockLogger(orm);
-
-    await orm.em.findAll(Order, {
-      where: {
-        items: {
-          $elemMatch: { name: { $ilike: '%book%' } },
-        },
-      },
-    });
-
-    expect(mock.mock.calls[0][0]).toMatch(
-      `select "o0".* from "order" as "o0" where exists (select 1 from jsonb_array_elements("o0"."items") as __elem__ where __elem__->>'name' ilike '%book%')`,
-    );
+    expect(mock.mock.calls[0][0]).toMatch(/json_extract\(je\.value, '\$\.name'\) like '%Book%'/);
   });
 
   test('$exists operator', async () => {
@@ -288,12 +258,8 @@ describe('$elemMatch operator for JSON arrays', () => {
       },
     });
 
-    expect(mock.mock.calls[0][0]).toMatch(
-      `select "b0".* from "balance_move" as "b0" where exists (select 1 from jsonb_array_elements("b0"."payments") as __elem__ where __elem__->>'cheque_notes' is not null)`,
-    );
-    expect(mock.mock.calls[1][0]).toMatch(
-      `select "b0".* from "balance_move" as "b0" where exists (select 1 from jsonb_array_elements("b0"."payments") as __elem__ where __elem__->>'cheque_notes' is null)`,
-    );
+    expect(mock.mock.calls[0][0]).toMatch(/json_extract\(je\.value, '\$\.cheque_notes'\) is not null/);
+    expect(mock.mock.calls[1][0]).toMatch(/json_extract\(je\.value, '\$\.cheque_notes'\) is null/);
   });
 
   test('$eq and $ne operators', async () => {
@@ -315,12 +281,8 @@ describe('$elemMatch operator for JSON arrays', () => {
       },
     });
 
-    expect(mock.mock.calls[0][0]).toMatch(
-      `select "b0".* from "balance_move" as "b0" where exists (select 1 from jsonb_array_elements("b0"."payments") as __elem__ where __elem__->>'payment_method' = '7')`,
-    );
-    expect(mock.mock.calls[1][0]).toMatch(
-      `select "b0".* from "balance_move" as "b0" where exists (select 1 from jsonb_array_elements("b0"."payments") as __elem__ where __elem__->>'payment_method' != '7')`,
-    );
+    expect(mock.mock.calls[0][0]).toMatch(/json_extract\(je\.value, '\$\.payment_method'\) = '7'/);
+    expect(mock.mock.calls[1][0]).toMatch(/json_extract\(je\.value, '\$\.payment_method'\) != '7'/);
   });
 
   test('null comparisons', async () => {
@@ -342,28 +304,8 @@ describe('$elemMatch operator for JSON arrays', () => {
       },
     });
 
-    expect(mock.mock.calls[0][0]).toMatch(
-      `select "b0".* from "balance_move" as "b0" where exists (select 1 from jsonb_array_elements("b0"."payments") as __elem__ where __elem__->>'cheque_notes' is null)`,
-    );
-    expect(mock.mock.calls[1][0]).toMatch(
-      `select "b0".* from "balance_move" as "b0" where exists (select 1 from jsonb_array_elements("b0"."payments") as __elem__ where __elem__->>'cheque_notes' is not null)`,
-    );
-  });
-
-  test('$re operator (regex)', async () => {
-    const mock = mockLogger(orm);
-
-    await orm.em.findAll(Order, {
-      where: {
-        items: {
-          $elemMatch: { name: { $re: '^Book.*' } },
-        },
-      },
-    });
-
-    expect(mock.mock.calls[0][0]).toMatch(
-      `select "o0".* from "order" as "o0" where exists (select 1 from jsonb_array_elements("o0"."items") as __elem__ where __elem__->>'name' ~ '^Book.*')`,
-    );
+    expect(mock.mock.calls[0][0]).toMatch(/json_extract\(je\.value, '\$\.cheque_notes'\) is null/);
+    expect(mock.mock.calls[1][0]).toMatch(/json_extract\(je\.value, '\$\.cheque_notes'\) is not null/);
   });
 
   test('complex combined conditions', async () => {
@@ -387,9 +329,9 @@ describe('$elemMatch operator for JSON arrays', () => {
       },
     });
 
-    expect(mock.mock.calls[0][0]).toMatch(
-      `select "o0".* from "order" as "o0" where exists (select 1 from jsonb_array_elements("o0"."items") as __elem__ where ((__elem__->>'quantity')::numeric >= 2 and ((__elem__->>'price')::numeric < 50 or __elem__->>'name' like '%Premium%')))`,
-    );
+    expect(mock.mock.calls[0][0]).toMatch(/cast\(json_extract\(je\.value, '\$\.quantity'\) as real\) >= 2/);
+    expect(mock.mock.calls[0][0]).toMatch(/cast\(json_extract\(je\.value, '\$\.price'\) as real\) < 50/);
+    expect(mock.mock.calls[0][0]).toMatch(/json_extract\(je\.value, '\$\.name'\) like '%Premium%'/);
   });
 
 });

@@ -144,7 +144,8 @@ export abstract class BaseSqlitePlatform extends AbstractSqlPlatform {
     // Replace __elem__->>'field' with json_extract(je.value, '$.field')
     let sqliteConditions = conditions.sql.replace(/__elem__->>'(\w+)'/g, 'json_extract(je.value, \'$.$1\')');
     // Replace PostgreSQL-style ::numeric casts with SQLite cast syntax
-    sqliteConditions = sqliteConditions.replace(/\(([^)]+)\)::numeric/g, 'cast($1 as real)');
+    // The pattern matches (json_extract(...))::numeric with nested parens
+    sqliteConditions = sqliteConditions.replace(/\(json_extract\(([^)]+)\)\)::numeric/g, 'cast(json_extract($1) as real)');
     const sql = `exists (select 1 from json_each(${column}) as je where ${sqliteConditions})`;
     return { sql, params: conditions.params };
   }
