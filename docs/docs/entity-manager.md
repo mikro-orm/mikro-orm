@@ -527,6 +527,7 @@ By default, the EntityManager will prefer using the primary key, and fallback to
 - `onConflictAction?: 'ignore' | 'merge'` used ignore and merge as that is how the QB methods are called
 - `onConflictMergeFields?: (keyof T)[]` to control the merge clause
 - `onConflictExcludeFields?: (keyof T)[]` to omit fields from the merge clause
+- `onConflictWhere?: FilterQuery<T>` to allow conditional updates
 
 ```ts
 const [author1, author2, author3] = await em.upsertMany(Author, [{ ... }, { ... }, { ... }], {
@@ -550,6 +551,19 @@ insert into "author"
     "current_age" = excluded."current_age",
     "foo" = excluded."foo"
   returning "_id", "current_age", "foo", "bar"
+```
+
+The `onConflictWhere` option allows you to add a WHERE clause to the conflict target, enabling conditional updates based on existing data. This is useful for scenarios like optimistic locking or version-based updates where you only want to update if certain conditions are met.
+
+```ts
+await em.upsert(Document, {
+  name: 'doc1',
+  version: 2,
+  content: 'updated content',
+}, {
+  onConflictFields: ['name'],
+  onConflictWhere: { version: { $lt: 2 } },
+});
 ```
 
 ## Refreshing entity state

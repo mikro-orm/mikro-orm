@@ -768,6 +768,10 @@ export abstract class AbstractSqlDriver<
         if (options.onConflictAction === 'ignore') {
           qb.ignore();
         }
+
+        if (options.onConflictWhere) {
+          qb.where(options.onConflictWhere);
+        }
       } else {
         qb.update(data).where(where);
 
@@ -810,6 +814,10 @@ export abstract class AbstractSqlDriver<
 
       if (options.onConflictAction === 'ignore') {
         qb.ignore();
+      }
+
+      if (options.onConflictWhere) {
+        qb.where(options.onConflictWhere);
       }
 
       return this.rethrow(qb.execute('run', false));
