@@ -2328,21 +2328,17 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     let data: R;
+    const createOptions = {
+      merge: true,
+      convertCustomTypes: false,
+      refresh,
+      recomputeSnapshot: true,
+    };
 
     if (Array.isArray(cached) && merge) {
-      data = cached.map(item => em.entityFactory.create<T>(entityName, item, {
-        merge: true,
-        convertCustomTypes: true,
-        refresh,
-        recomputeSnapshot: true,
-      })) as unknown as R;
+      data = cached.map(item => em.entityFactory.create<T>(entityName, item, createOptions)) as unknown as R;
     } else if (Utils.isObject<EntityData<T>>(cached) && merge) {
-      data = em.entityFactory.create<T>(entityName, cached, {
-        merge: true,
-        convertCustomTypes: true,
-        refresh,
-        recomputeSnapshot: true,
-      }) as unknown as R;
+      data = em.entityFactory.create<T>(entityName, cached, createOptions) as unknown as R;
     } else {
       data = cached;
     }
