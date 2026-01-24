@@ -9,11 +9,11 @@ alter table \`book\` add index \`book_author4_id_index\` (\`author4_id\`);
 alter table \`book\` add index \`book_author5_id_index\` (\`author5_id\`);
 alter table \`book\` add unique \`book_isbn_unique\` (\`isbn\`);
 
-alter table \`book\` add constraint \`book_author1_id_foreign\` foreign key (\`author1_id\`) references \`author\` (\`id\`) on update cascade;
-alter table \`book\` add constraint \`book_author2_id_foreign\` foreign key (\`author2_id\`) references \`author\` (\`id\`) on update cascade;
-alter table \`book\` add constraint \`book_author3_id_foreign\` foreign key (\`author3_id\`) references \`author\` (\`id\`) on update cascade;
-alter table \`book\` add constraint \`book_author4_id_foreign\` foreign key (\`author4_id\`) references \`author\` (\`id\`) on update cascade;
-alter table \`book\` add constraint \`book_author5_id_foreign\` foreign key (\`author5_id\`) references \`author\` (\`id\`) on update cascade;
+alter table \`book\` add constraint \`book_author1_id_foreign\` foreign key (\`author1_id\`) references \`author\` (\`id\`);
+alter table \`book\` add constraint \`book_author2_id_foreign\` foreign key (\`author2_id\`) references \`author\` (\`id\`);
+alter table \`book\` add constraint \`book_author3_id_foreign\` foreign key (\`author3_id\`) references \`author\` (\`id\`);
+alter table \`book\` add constraint \`book_author4_id_foreign\` foreign key (\`author4_id\`) references \`author\` (\`id\`);
+alter table \`book\` add constraint \`book_author5_id_foreign\` foreign key (\`author5_id\`) references \`author\` (\`id\`);
 "
 `;
 

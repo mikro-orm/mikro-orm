@@ -74,19 +74,19 @@ export class UserRoles {
 
   [PrimaryKeyProp]?: ['domain', 'user'];
 
-  @ManyToOne({ entity: () => Domains, ref: true, deleteRule: 'cascade', primary: true })
+  @ManyToOne({ entity: () => Domains, ref: true, updateRule: 'no action', primary: true })
   domain!: Ref<Domains>;
 
   @Property({ length: 64, persist: false })
   domainKey!: string;
 
-  @ManyToOne({ entity: () => Users, ref: true, deleteRule: 'cascade', primary: true })
+  @ManyToOne({ entity: () => Users, ref: true, updateRule: 'no action', primary: true })
   user!: Ref<Users>;
 
   @Property({ type: 'uuid', persist: false })
   userId!: string;
 
-  @ManyToOne({ entity: () => Roles, ref: true, deleteRule: 'cascade' })
+  @ManyToOne({ entity: () => Roles, ref: true, updateRule: 'no action', deleteRule: 'cascade' })
   role!: Ref<Roles>;
 
   @Property({ length: 64, persist: false })
@@ -191,11 +191,11 @@ export const UserRoles = defineEntity({
   name: 'UserRoles',
   primaryKeys: ['domain', 'user'],
   properties: {
-    domain: () => p.manyToOne(Domains).primary().ref().deleteRule('cascade'),
+    domain: () => p.manyToOne(Domains).primary().ref().updateRule('no action'),
     domainKey: p.string().length(64).persist(false),
-    user: () => p.manyToOne(Users).primary().ref().deleteRule('cascade'),
+    user: () => p.manyToOne(Users).primary().ref().updateRule('no action'),
     userId: p.uuid().persist(false),
-    role: () => p.manyToOne(Roles).ref().deleteRule('cascade'),
+    role: () => p.manyToOne(Roles).ref().updateRule('no action').deleteRule('cascade'),
     roleKey: p.string().length(64).persist(false),
     createdAt: p.datetime().defaultRaw(\`CURRENT_TIMESTAMP\`),
     updatedAt: p.datetime().defaultRaw(\`CURRENT_TIMESTAMP\`),
@@ -311,11 +311,11 @@ export class UserRoles {
 export const UserRolesSchema = defineEntity({
   class: UserRoles,
   properties: {
-    domain: () => p.manyToOne(Domains).primary().ref().deleteRule('cascade'),
+    domain: () => p.manyToOne(Domains).primary().ref().updateRule('no action'),
     domainKey: p.string().length(64).persist(false),
-    user: () => p.manyToOne(Users).primary().ref().deleteRule('cascade'),
+    user: () => p.manyToOne(Users).primary().ref().updateRule('no action'),
     userId: p.uuid().persist(false),
-    role: () => p.manyToOne(Roles).ref().deleteRule('cascade'),
+    role: () => p.manyToOne(Roles).ref().updateRule('no action').deleteRule('cascade'),
     roleKey: p.string().length(64).persist(false),
     createdAt: p.datetime().defaultRaw(\`CURRENT_TIMESTAMP\`),
     updatedAt: p.datetime().defaultRaw(\`CURRENT_TIMESTAMP\`),
@@ -457,7 +457,7 @@ export const UserRolesSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => Domains,
       ref: true,
-      deleteRule: 'cascade',
+      updateRule: 'no action',
     },
     domainKey: { type: 'string', length: 64, persist: false },
     user: {
@@ -465,10 +465,16 @@ export const UserRolesSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => Users,
       ref: true,
-      deleteRule: 'cascade',
+      updateRule: 'no action',
     },
     userId: { type: 'uuid', persist: false },
-    role: { kind: 'm:1', entity: () => Roles, ref: true, deleteRule: 'cascade' },
+    role: {
+      kind: 'm:1',
+      entity: () => Roles,
+      ref: true,
+      updateRule: 'no action',
+      deleteRule: 'cascade',
+    },
     roleKey: { type: 'string', length: 64, persist: false },
     createdAt: { type: 'datetime', defaultRaw: \`CURRENT_TIMESTAMP\` },
     updatedAt: { type: 'datetime', defaultRaw: \`CURRENT_TIMESTAMP\` },
@@ -599,19 +605,19 @@ export class UserRoles {
 
   [PrimaryKeyProp]?: ['domain', 'user'];
 
-  @ManyToOne({ entity: () => Domains, ref: true, deleteRule: 'cascade', primary: true })
+  @ManyToOne({ entity: () => Domains, ref: true, updateRule: 'no action', primary: true })
   domain!: Ref<Domains>;
 
   @Property({ length: 64, persist: false })
   domainKey!: string;
 
-  @ManyToOne({ entity: () => Users, ref: true, deleteRule: 'cascade', primary: true })
+  @ManyToOne({ entity: () => Users, ref: true, updateRule: 'no action', primary: true })
   user!: Ref<Users>;
 
   @Property({ type: 'uuid', persist: false })
   userId!: string;
 
-  @ManyToOne({ entity: () => Roles, ref: true, deleteRule: 'cascade' })
+  @ManyToOne({ entity: () => Roles, ref: true, updateRule: 'no action', deleteRule: 'cascade' })
   role!: Ref<Roles>;
 
   @Property({ length: 64, persist: false })
@@ -714,11 +720,11 @@ export const UserRoles = defineEntity({
   name: 'UserRoles',
   primaryKeys: ['domain', 'user'],
   properties: {
-    domain: () => p.manyToOne(Domains).primary().ref().deleteRule('cascade'),
+    domain: () => p.manyToOne(Domains).primary().ref().updateRule('no action'),
     domainKey: p.string().length(64).persist(false),
-    user: () => p.manyToOne(Users).primary().ref().deleteRule('cascade'),
+    user: () => p.manyToOne(Users).primary().ref().updateRule('no action'),
     userId: p.uuid().persist(false),
-    role: () => p.manyToOne(Roles).ref().deleteRule('cascade'),
+    role: () => p.manyToOne(Roles).ref().updateRule('no action').deleteRule('cascade'),
     roleKey: p.string().length(64).persist(false),
     createdAt: p.datetime().defaultRaw(\`CURRENT_TIMESTAMP\`),
     updatedAt: p.datetime().defaultRaw(\`CURRENT_TIMESTAMP\`),
@@ -832,11 +838,11 @@ export class UserRoles {
 export const UserRolesSchema = defineEntity({
   class: UserRoles,
   properties: {
-    domain: () => p.manyToOne(Domains).primary().ref().deleteRule('cascade'),
+    domain: () => p.manyToOne(Domains).primary().ref().updateRule('no action'),
     domainKey: p.string().length(64).persist(false),
-    user: () => p.manyToOne(Users).primary().ref().deleteRule('cascade'),
+    user: () => p.manyToOne(Users).primary().ref().updateRule('no action'),
     userId: p.uuid().persist(false),
-    role: () => p.manyToOne(Roles).ref().deleteRule('cascade'),
+    role: () => p.manyToOne(Roles).ref().updateRule('no action').deleteRule('cascade'),
     roleKey: p.string().length(64).persist(false),
     createdAt: p.datetime().defaultRaw(\`CURRENT_TIMESTAMP\`),
     updatedAt: p.datetime().defaultRaw(\`CURRENT_TIMESTAMP\`),
@@ -976,7 +982,7 @@ export const UserRolesSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => Domains,
       ref: true,
-      deleteRule: 'cascade',
+      updateRule: 'no action',
     },
     domainKey: { type: 'string', length: 64, persist: false },
     user: {
@@ -984,10 +990,16 @@ export const UserRolesSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => Users,
       ref: true,
-      deleteRule: 'cascade',
+      updateRule: 'no action',
     },
     userId: { type: 'uuid', persist: false },
-    role: { kind: 'm:1', entity: () => Roles, ref: true, deleteRule: 'cascade' },
+    role: {
+      kind: 'm:1',
+      entity: () => Roles,
+      ref: true,
+      updateRule: 'no action',
+      deleteRule: 'cascade',
+    },
     roleKey: { type: 'string', length: 64, persist: false },
     createdAt: { type: 'datetime', defaultRaw: \`CURRENT_TIMESTAMP\` },
     updatedAt: { type: 'datetime', defaultRaw: \`CURRENT_TIMESTAMP\` },
@@ -1116,19 +1128,19 @@ export class UserRoles {
 
   [PrimaryKeyProp]?: ['domain', 'user'];
 
-  @ManyToOne({ entity: () => Domains, ref: true, deleteRule: 'cascade', primary: true })
+  @ManyToOne({ entity: () => Domains, ref: true, updateRule: 'no action', primary: true })
   domain!: Ref<Domains>;
 
   @Property({ length: 64, persist: false })
   domainKey!: string;
 
-  @ManyToOne({ entity: () => Users, ref: true, deleteRule: 'cascade', primary: true })
+  @ManyToOne({ entity: () => Users, ref: true, updateRule: 'no action', primary: true })
   user!: Ref<Users>;
 
   @Property({ type: 'uuid', persist: false })
   userId!: string;
 
-  @ManyToOne({ entity: () => Roles, ref: true, deleteRule: 'cascade' })
+  @ManyToOne({ entity: () => Roles, ref: true, updateRule: 'no action', deleteRule: 'cascade' })
   role!: Ref<Roles>;
 
   @Property({ length: 64, persist: false })
@@ -1226,11 +1238,11 @@ export const UserRoles = defineEntity({
   name: 'UserRoles',
   primaryKeys: ['domain', 'user'],
   properties: {
-    domain: () => p.manyToOne(Domains).primary().ref().deleteRule('cascade'),
+    domain: () => p.manyToOne(Domains).primary().ref().updateRule('no action'),
     domainKey: p.string().length(64).persist(false),
-    user: () => p.manyToOne(Users).primary().ref().deleteRule('cascade'),
+    user: () => p.manyToOne(Users).primary().ref().updateRule('no action'),
     userId: p.uuid().persist(false),
-    role: () => p.manyToOne(Roles).ref().deleteRule('cascade'),
+    role: () => p.manyToOne(Roles).ref().updateRule('no action').deleteRule('cascade'),
     roleKey: p.string().length(64).persist(false),
     createdAt: p.datetime().defaultRaw(\`CURRENT_TIMESTAMP\`),
     updatedAt: p.datetime().defaultRaw(\`CURRENT_TIMESTAMP\`),
@@ -1339,11 +1351,11 @@ export class UserRoles {
 export const UserRolesSchema = defineEntity({
   class: UserRoles,
   properties: {
-    domain: () => p.manyToOne(Domains).primary().ref().deleteRule('cascade'),
+    domain: () => p.manyToOne(Domains).primary().ref().updateRule('no action'),
     domainKey: p.string().length(64).persist(false),
-    user: () => p.manyToOne(Users).primary().ref().deleteRule('cascade'),
+    user: () => p.manyToOne(Users).primary().ref().updateRule('no action'),
     userId: p.uuid().persist(false),
-    role: () => p.manyToOne(Roles).ref().deleteRule('cascade'),
+    role: () => p.manyToOne(Roles).ref().updateRule('no action').deleteRule('cascade'),
     roleKey: p.string().length(64).persist(false),
     createdAt: p.datetime().defaultRaw(\`CURRENT_TIMESTAMP\`),
     updatedAt: p.datetime().defaultRaw(\`CURRENT_TIMESTAMP\`),
@@ -1476,7 +1488,7 @@ export const UserRolesSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => Domains,
       ref: true,
-      deleteRule: 'cascade',
+      updateRule: 'no action',
     },
     domainKey: { type: 'string', length: 64, persist: false },
     user: {
@@ -1484,10 +1496,16 @@ export const UserRolesSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => Users,
       ref: true,
-      deleteRule: 'cascade',
+      updateRule: 'no action',
     },
     userId: { type: 'uuid', persist: false },
-    role: { kind: 'm:1', entity: () => Roles, ref: true, deleteRule: 'cascade' },
+    role: {
+      kind: 'm:1',
+      entity: () => Roles,
+      ref: true,
+      updateRule: 'no action',
+      deleteRule: 'cascade',
+    },
     roleKey: { type: 'string', length: 64, persist: false },
     createdAt: { type: 'datetime', defaultRaw: \`CURRENT_TIMESTAMP\` },
     updatedAt: { type: 'datetime', defaultRaw: \`CURRENT_TIMESTAMP\` },

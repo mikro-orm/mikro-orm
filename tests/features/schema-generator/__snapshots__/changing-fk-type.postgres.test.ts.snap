@@ -8,6 +8,6 @@ alter table "book" drop constraint "book_author_id_foreign";
 alter table "author" alter column "id" type uuid using ("id"::text::uuid);
 
 alter table "book" alter column "author_id" type uuid using ("author_id"::text::uuid);
-alter table "book" add constraint "book_author_id_foreign" foreign key ("author_id") references "author" ("id") on update cascade;
+alter table "book" add constraint "book_author_id_foreign" foreign key ("author_id") references "author" ("id");
 "
 `;

@@ -974,12 +974,12 @@ export class SourceFile {
       options.referencedColumnNames = prop.referencedColumnNames.map(fieldName => this.quote(fieldName));
     }
 
-    if (!['no action', 'restrict'].includes(prop.updateRule!.toLowerCase())) {
-      options.updateRule = this.quote(prop.updateRule!);
+    if (prop.updateRule) {
+      options.updateRule = this.quote(prop.updateRule);
     }
 
-    if (!['no action', 'restrict'].includes(prop.deleteRule!.toLowerCase())) {
-      options.deleteRule = this.quote(prop.deleteRule!);
+    if (prop.deleteRule) {
+      options.deleteRule = this.quote(prop.deleteRule);
     }
 
     if (prop.primary) {

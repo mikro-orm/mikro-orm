@@ -163,6 +163,64 @@ export class EntityGenerator {
 
     this.detectManyToManyRelations(metadata, options.onlyPurePivotTables!, options.readOnlyPivotTables!, options.outputPurePivotTables!);
 
+    // Clear FK rules that match defaults for:
+    // 1. FK-as-PK entities (all PKs are FKs) - cascade for both update and delete
+    // 2. Fixed-order pivot tables (autoincrement id + 2 FK relations only) - cascade for both
+    // 3. Relations to composite PK targets - cascade for update
+    for (const meta of metadata) {
+      const pks = meta.getPrimaryProps();
+      const fkPks = pks.filter(pk => pk.kind !== ReferenceKind.SCALAR);
+
+      // Case 1: All PKs are FKs - default is cascade for both update and delete
+      if (fkPks.length > 0 && fkPks.length === pks.length) {
+        for (const pk of fkPks) {
+          if (pk.deleteRule === 'cascade') {
+            delete pk.deleteRule;
+          }
+          if (pk.updateRule === 'cascade') {
+            delete pk.updateRule;
+          }
+        }
+      }
+
+      // Case 2: Fixed-order pivot table (single autoincrement id PK + exactly 2 M:1 relations)
+      const hasAutoIncrementPk = pks.length === 1 && pks[0].autoincrement;
+      const m2oRelations = meta.relations.filter(r => r.kind === ReferenceKind.MANY_TO_ONE);
+
+      if (hasAutoIncrementPk && m2oRelations.length === 2) {
+        // Check if all columns are either the PK or FK columns
+        const fkColumns = new Set(m2oRelations.flatMap(r => r.fieldNames));
+        const pkColumns = new Set(pks.flatMap(p => p.fieldNames));
+        const allColumns = new Set(meta.props.filter(p => p.persist !== false).flatMap(p => p.fieldNames));
+        const isPivotLike = [...allColumns].every(col => fkColumns.has(col) || pkColumns.has(col));
+
+        if (isPivotLike) {
+          for (const rel of m2oRelations) {
+            if (rel.updateRule === 'cascade') {
+              delete rel.updateRule;
+            }
+            if (rel.deleteRule === 'cascade') {
+              delete rel.deleteRule;
+            }
+          }
+        }
+      }
+
+      // Case 3: Relations to composite PK targets - default is cascade for update
+      // Case 4: Nullable relations - default is set null for delete
+      for (const rel of meta.relations) {
+        if ([ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(rel.kind)) {
+          const targetMeta = metadata.find(m => m.className === rel.type);
+          if (targetMeta?.compositePK && rel.updateRule === 'cascade') {
+            delete rel.updateRule;
+          }
+          if (rel.nullable && rel.deleteRule === 'set null') {
+            delete rel.deleteRule;
+          }
+        }
+      }
+    }
+
     if (options.bidirectionalRelations) {
       this.generateBidirectionalRelations(metadata, options.outputPurePivotTables!);
     }
@@ -271,6 +329,19 @@ export class EntityGenerator {
       }
 
       meta.pivotTable = true;
+
+      // Clear FK rules that match the default for pivot tables (cascade)
+      // so they don't get output explicitly in generated code
+      for (const rel of meta.relations) {
+        if (rel.updateRule === 'cascade') {
+          delete rel.updateRule;
+        }
+
+        if (rel.deleteRule === 'cascade') {
+          delete rel.deleteRule;
+        }
+      }
+
       const owner = metadata.find(m => m.className === meta.relations[0].type)!;
 
       const name = this.namingStrategy.columnNameToProperty(meta.tableName.replace(new RegExp('^' + owner.tableName + '_'), ''));

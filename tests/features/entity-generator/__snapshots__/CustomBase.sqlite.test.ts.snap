@@ -40,7 +40,7 @@ export class Author4 {
   bornTime?: string;
 
   @MikroORM_Index({ name: 'author4_favourite_book_id_index' })
-  @MikroORM_ManyToOne({ entity: () => Book4, ref: true, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  @MikroORM_ManyToOne({ entity: () => Book4, ref: true, updateRule: 'no action', nullable: true })
   favouriteBook?: MikroORM_Ref<Book4>;
 
   @MikroORM_Property({ type: 'json', nullable: true })
@@ -108,11 +108,11 @@ export class Book4 {
   price?: unknown;
 
   @MikroORM_Index({ name: 'book4_author_id_index' })
-  @MikroORM_ManyToOne({ entity: () => Author4, ref: true, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  @MikroORM_ManyToOne({ entity: () => Author4, ref: true, updateRule: 'no action', nullable: true })
   author?: MikroORM_Ref<Author4>;
 
   @MikroORM_Index({ name: 'book4_publisher_id_index' })
-  @MikroORM_ManyToOne({ entity: () => Publisher4, ref: true, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  @MikroORM_ManyToOne({ entity: () => Publisher4, ref: true, updateRule: 'no action', nullable: true })
   publisher?: MikroORM_Ref<Publisher4>;
 
   @MikroORM_Property({ type: 'json', nullable: true })
@@ -149,11 +149,11 @@ export class FooBar4 {
   name: string & MikroORM_Opt = 'asd';
 
   @MikroORM_Unique({ name: 'foo_bar4_baz_id_unique' })
-  @MikroORM_OneToOne({ entity: () => FooBaz4, ref: true, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  @MikroORM_OneToOne({ entity: () => FooBaz4, ref: true, updateRule: 'no action', nullable: true })
   baz?: MikroORM_Ref<FooBaz4>;
 
   @MikroORM_Unique({ name: 'foo_bar4_foo_bar_id_unique' })
-  @MikroORM_OneToOne({ entity: () => FooBar4, ref: true, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  @MikroORM_OneToOne({ entity: () => FooBar4, ref: true, updateRule: 'no action', nullable: true })
   fooBar?: MikroORM_Ref<FooBar4>;
 
   @MikroORM_Property({ type: 'integer' })
@@ -256,11 +256,11 @@ export class Publisher4Tests {
   id!: number;
 
   @MikroORM_Index({ name: 'publisher4_tests_publisher4_id_index' })
-  @MikroORM_ManyToOne({ entity: () => Publisher4, ref: true, updateRule: 'cascade', deleteRule: 'cascade' })
+  @MikroORM_ManyToOne({ entity: () => Publisher4, ref: true })
   publisher4!: MikroORM_Ref<Publisher4>;
 
   @MikroORM_Index({ name: 'publisher4_tests_test4_id_index' })
-  @MikroORM_ManyToOne({ entity: () => Test4, ref: true, updateRule: 'cascade', deleteRule: 'cascade' })
+  @MikroORM_ManyToOne({ entity: () => Test4, ref: true })
   test4!: MikroORM_Ref<Test4>;
 
 }
@@ -277,11 +277,11 @@ export class TagsOrdered {
   id!: number;
 
   @MikroORM_Index({ name: 'tags_ordered_book4_id_index' })
-  @MikroORM_ManyToOne({ entity: () => Book4, ref: true, updateRule: 'cascade', deleteRule: 'cascade' })
+  @MikroORM_ManyToOne({ entity: () => Book4, ref: true })
   book4!: MikroORM_Ref<Book4>;
 
   @MikroORM_Index({ name: 'tags_ordered_book_tag4_id_index' })
-  @MikroORM_ManyToOne({ entity: () => BookTag4, ref: true, updateRule: 'cascade', deleteRule: 'cascade' })
+  @MikroORM_ManyToOne({ entity: () => BookTag4, ref: true })
   bookTag4!: MikroORM_Ref<BookTag4>;
 
 }
@@ -363,8 +363,7 @@ export const Author4Schema = new MikroORM_EntitySchema({
       kind: 'm:1',
       entity: () => Book4,
       ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'set null',
+      updateRule: 'no action',
       nullable: true,
     },
     identity: { type: 'json', nullable: true },
@@ -439,16 +438,14 @@ export const Book4Schema = new MikroORM_EntitySchema({
       kind: 'm:1',
       entity: () => Author4,
       ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'set null',
+      updateRule: 'no action',
       nullable: true,
     },
     publisher: {
       kind: 'm:1',
       entity: () => Publisher4,
       ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'set null',
+      updateRule: 'no action',
       nullable: true,
     },
     meta: { type: 'json', nullable: true },
@@ -501,16 +498,14 @@ export const FooBar4Schema = new MikroORM_EntitySchema({
       kind: '1:1',
       entity: () => FooBaz4,
       ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'set null',
+      updateRule: 'no action',
       nullable: true,
     },
     fooBar: {
       kind: '1:1',
       entity: () => FooBar4,
       ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'set null',
+      updateRule: 'no action',
       nullable: true,
     },
     version: { type: 'integer' },
@@ -601,20 +596,8 @@ export const Publisher4TestsSchema = new MikroORM_EntitySchema({
   tableName: 'publisher4_tests',
   properties: {
     id: { primary: true, type: 'integer' },
-    publisher4: {
-      kind: 'm:1',
-      entity: () => Publisher4,
-      ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
-    },
-    test4: {
-      kind: 'm:1',
-      entity: () => Test4,
-      ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
-    },
+    publisher4: { kind: 'm:1', entity: () => Publisher4, ref: true },
+    test4: { kind: 'm:1', entity: () => Test4, ref: true },
   },
 });
 ",
@@ -632,20 +615,8 @@ export const TagsOrderedSchema = new MikroORM_EntitySchema({
   class: TagsOrdered,
   properties: {
     id: { primary: true, type: 'integer' },
-    book4: {
-      kind: 'm:1',
-      entity: () => Book4,
-      ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
-    },
-    bookTag4: {
-      kind: 'm:1',
-      entity: () => BookTag4,
-      ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
-    },
+    book4: { kind: 'm:1', entity: () => Book4, ref: true },
+    bookTag4: { kind: 'm:1', entity: () => BookTag4, ref: true },
   },
 });
 ",
@@ -734,7 +705,7 @@ export class Author4 extends BaseEntity {
   bornTime?: string;
 
   @MikroORM_Index({ name: 'author4_favourite_book_id_index' })
-  @MikroORM_ManyToOne({ entity: () => Book4, ref: true, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  @MikroORM_ManyToOne({ entity: () => Book4, ref: true, updateRule: 'no action', nullable: true })
   favouriteBook?: MikroORM_Ref<Book4>;
 
   @MikroORM_Property({ type: 'json', nullable: true })
@@ -804,11 +775,11 @@ export class Book4 extends BaseEntity {
   price?: unknown;
 
   @MikroORM_Index({ name: 'book4_author_id_index' })
-  @MikroORM_ManyToOne({ entity: () => Author4, ref: true, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  @MikroORM_ManyToOne({ entity: () => Author4, ref: true, updateRule: 'no action', nullable: true })
   author?: MikroORM_Ref<Author4>;
 
   @MikroORM_Index({ name: 'book4_publisher_id_index' })
-  @MikroORM_ManyToOne({ entity: () => Publisher4, ref: true, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  @MikroORM_ManyToOne({ entity: () => Publisher4, ref: true, updateRule: 'no action', nullable: true })
   publisher?: MikroORM_Ref<Publisher4>;
 
   @MikroORM_Property({ type: 'json', nullable: true })
@@ -846,11 +817,11 @@ export class FooBar4 extends BaseEntity {
   name: string & MikroORM_Opt = 'asd';
 
   @MikroORM_Unique({ name: 'foo_bar4_baz_id_unique' })
-  @MikroORM_OneToOne({ entity: () => FooBaz4, ref: true, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  @MikroORM_OneToOne({ entity: () => FooBaz4, ref: true, updateRule: 'no action', nullable: true })
   baz?: MikroORM_Ref<FooBaz4>;
 
   @MikroORM_Unique({ name: 'foo_bar4_foo_bar_id_unique' })
-  @MikroORM_OneToOne({ entity: () => FooBar4, ref: true, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  @MikroORM_OneToOne({ entity: () => FooBar4, ref: true, updateRule: 'no action', nullable: true })
   fooBar?: MikroORM_Ref<FooBar4>;
 
   @MikroORM_Property({ type: 'integer' })
@@ -956,11 +927,11 @@ export class Publisher4Tests extends BaseEntity {
   id!: number;
 
   @MikroORM_Index({ name: 'publisher4_tests_publisher4_id_index' })
-  @MikroORM_ManyToOne({ entity: () => Publisher4, ref: true, updateRule: 'cascade', deleteRule: 'cascade' })
+  @MikroORM_ManyToOne({ entity: () => Publisher4, ref: true })
   publisher4!: MikroORM_Ref<Publisher4>;
 
   @MikroORM_Index({ name: 'publisher4_tests_test4_id_index' })
-  @MikroORM_ManyToOne({ entity: () => Test4, ref: true, updateRule: 'cascade', deleteRule: 'cascade' })
+  @MikroORM_ManyToOne({ entity: () => Test4, ref: true })
   test4!: MikroORM_Ref<Test4>;
 
 }
@@ -978,11 +949,11 @@ export class TagsOrdered extends BaseEntity {
   id!: number;
 
   @MikroORM_Index({ name: 'tags_ordered_book4_id_index' })
-  @MikroORM_ManyToOne({ entity: () => Book4, ref: true, updateRule: 'cascade', deleteRule: 'cascade' })
+  @MikroORM_ManyToOne({ entity: () => Book4, ref: true })
   book4!: MikroORM_Ref<Book4>;
 
   @MikroORM_Index({ name: 'tags_ordered_book_tag4_id_index' })
-  @MikroORM_ManyToOne({ entity: () => BookTag4, ref: true, updateRule: 'cascade', deleteRule: 'cascade' })
+  @MikroORM_ManyToOne({ entity: () => BookTag4, ref: true })
   bookTag4!: MikroORM_Ref<BookTag4>;
 
 }
@@ -1075,8 +1046,7 @@ export const Author4Schema = new MikroORM_EntitySchema({
       kind: 'm:1',
       entity: () => Book4,
       ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'set null',
+      updateRule: 'no action',
       nullable: true,
     },
     identity: { type: 'json', nullable: true },
@@ -1153,16 +1123,14 @@ export const Book4Schema = new MikroORM_EntitySchema({
       kind: 'm:1',
       entity: () => Author4,
       ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'set null',
+      updateRule: 'no action',
       nullable: true,
     },
     publisher: {
       kind: 'm:1',
       entity: () => Publisher4,
       ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'set null',
+      updateRule: 'no action',
       nullable: true,
     },
     meta: { type: 'json', nullable: true },
@@ -1216,16 +1184,14 @@ export const FooBar4Schema = new MikroORM_EntitySchema({
       kind: '1:1',
       entity: () => FooBaz4,
       ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'set null',
+      updateRule: 'no action',
       nullable: true,
     },
     fooBar: {
       kind: '1:1',
       entity: () => FooBar4,
       ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'set null',
+      updateRule: 'no action',
       nullable: true,
     },
     version: { type: 'integer' },
@@ -1319,20 +1285,8 @@ export const Publisher4TestsSchema = new MikroORM_EntitySchema({
   tableName: 'publisher4_tests',
   properties: {
     id: { primary: true, type: 'integer' },
-    publisher4: {
-      kind: 'm:1',
-      entity: () => Publisher4,
-      ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
-    },
-    test4: {
-      kind: 'm:1',
-      entity: () => Test4,
-      ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
-    },
+    publisher4: { kind: 'm:1', entity: () => Publisher4, ref: true },
+    test4: { kind: 'm:1', entity: () => Test4, ref: true },
   },
 });
 ",
@@ -1351,20 +1305,8 @@ export const TagsOrderedSchema = new MikroORM_EntitySchema({
   class: TagsOrdered,
   properties: {
     id: { primary: true, type: 'integer' },
-    book4: {
-      kind: 'm:1',
-      entity: () => Book4,
-      ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
-    },
-    bookTag4: {
-      kind: 'm:1',
-      entity: () => BookTag4,
-      ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
-    },
+    book4: { kind: 'm:1', entity: () => Book4, ref: true },
+    bookTag4: { kind: 'm:1', entity: () => BookTag4, ref: true },
   },
 });
 ",
@@ -1466,7 +1408,7 @@ export class Author4 extends BaseEntity2 {
   bornTime?: string;
 
   @MikroORM_Index({ name: 'author4_favourite_book_id_index' })
-  @MikroORM_ManyToOne({ entity: () => Book4, ref: true, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  @MikroORM_ManyToOne({ entity: () => Book4, ref: true, updateRule: 'no action', nullable: true })
   favouriteBook?: MikroORM_Ref<Book4>;
 
   @MikroORM_Property({ type: 'json', nullable: true })
@@ -1536,11 +1478,11 @@ export class Book4 extends BaseEntity2 {
   price?: unknown;
 
   @MikroORM_Index({ name: 'book4_author_id_index' })
-  @MikroORM_ManyToOne({ entity: () => Author4, ref: true, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  @MikroORM_ManyToOne({ entity: () => Author4, ref: true, updateRule: 'no action', nullable: true })
   author?: MikroORM_Ref<Author4>;
 
   @MikroORM_Index({ name: 'book4_publisher_id_index' })
-  @MikroORM_ManyToOne({ entity: () => Publisher4, ref: true, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  @MikroORM_ManyToOne({ entity: () => Publisher4, ref: true, updateRule: 'no action', nullable: true })
   publisher?: MikroORM_Ref<Publisher4>;
 
   @MikroORM_Property({ type: 'json', nullable: true })
@@ -1578,11 +1520,11 @@ export class FooBar4 extends BaseEntity2 {
   name: string & MikroORM_Opt = 'asd';
 
   @MikroORM_Unique({ name: 'foo_bar4_baz_id_unique' })
-  @MikroORM_OneToOne({ entity: () => FooBaz4, ref: true, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  @MikroORM_OneToOne({ entity: () => FooBaz4, ref: true, updateRule: 'no action', nullable: true })
   baz?: MikroORM_Ref<FooBaz4>;
 
   @MikroORM_Unique({ name: 'foo_bar4_foo_bar_id_unique' })
-  @MikroORM_OneToOne({ entity: () => FooBar4, ref: true, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  @MikroORM_OneToOne({ entity: () => FooBar4, ref: true, updateRule: 'no action', nullable: true })
   fooBar?: MikroORM_Ref<FooBar4>;
 
   @MikroORM_Property({ type: 'integer' })
@@ -1688,11 +1630,11 @@ export class Publisher4Tests extends BaseEntity2 {
   id!: number;
 
   @MikroORM_Index({ name: 'publisher4_tests_publisher4_id_index' })
-  @MikroORM_ManyToOne({ entity: () => Publisher4, ref: true, updateRule: 'cascade', deleteRule: 'cascade' })
+  @MikroORM_ManyToOne({ entity: () => Publisher4, ref: true })
   publisher4!: MikroORM_Ref<Publisher4>;
 
   @MikroORM_Index({ name: 'publisher4_tests_test4_id_index' })
-  @MikroORM_ManyToOne({ entity: () => Test4, ref: true, updateRule: 'cascade', deleteRule: 'cascade' })
+  @MikroORM_ManyToOne({ entity: () => Test4, ref: true })
   test4!: MikroORM_Ref<Test4>;
 
 }
@@ -1710,11 +1652,11 @@ export class TagsOrdered extends BaseEntity2 {
   id!: number;
 
   @MikroORM_Index({ name: 'tags_ordered_book4_id_index' })
-  @MikroORM_ManyToOne({ entity: () => Book4, ref: true, updateRule: 'cascade', deleteRule: 'cascade' })
+  @MikroORM_ManyToOne({ entity: () => Book4, ref: true })
   book4!: MikroORM_Ref<Book4>;
 
   @MikroORM_Index({ name: 'tags_ordered_book_tag4_id_index' })
-  @MikroORM_ManyToOne({ entity: () => BookTag4, ref: true, updateRule: 'cascade', deleteRule: 'cascade' })
+  @MikroORM_ManyToOne({ entity: () => BookTag4, ref: true })
   bookTag4!: MikroORM_Ref<BookTag4>;
 
 }
@@ -1802,8 +1744,7 @@ export const Author4Schema = new MikroORM_EntitySchema({
       kind: 'm:1',
       entity: () => Book4,
       ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'set null',
+      updateRule: 'no action',
       nullable: true,
     },
     identity: { type: 'json', nullable: true },
@@ -1880,16 +1821,14 @@ export const Book4Schema = new MikroORM_EntitySchema({
       kind: 'm:1',
       entity: () => Author4,
       ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'set null',
+      updateRule: 'no action',
       nullable: true,
     },
     publisher: {
       kind: 'm:1',
       entity: () => Publisher4,
       ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'set null',
+      updateRule: 'no action',
       nullable: true,
     },
     meta: { type: 'json', nullable: true },
@@ -1943,16 +1882,14 @@ export const FooBar4Schema = new MikroORM_EntitySchema({
       kind: '1:1',
       entity: () => FooBaz4,
       ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'set null',
+      updateRule: 'no action',
       nullable: true,
     },
     fooBar: {
       kind: '1:1',
       entity: () => FooBar4,
       ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'set null',
+      updateRule: 'no action',
       nullable: true,
     },
     version: { type: 'integer' },
@@ -2046,20 +1983,8 @@ export const Publisher4TestsSchema = new MikroORM_EntitySchema({
   tableName: 'publisher4_tests',
   properties: {
     id: { primary: true, type: 'integer' },
-    publisher4: {
-      kind: 'm:1',
-      entity: () => Publisher4,
-      ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
-    },
-    test4: {
-      kind: 'm:1',
-      entity: () => Test4,
-      ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
-    },
+    publisher4: { kind: 'm:1', entity: () => Publisher4, ref: true },
+    test4: { kind: 'm:1', entity: () => Test4, ref: true },
   },
 });
 ",
@@ -2078,20 +2003,8 @@ export const TagsOrderedSchema = new MikroORM_EntitySchema({
   class: TagsOrdered,
   properties: {
     id: { primary: true, type: 'integer' },
-    book4: {
-      kind: 'm:1',
-      entity: () => Book4,
-      ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
-    },
-    bookTag4: {
-      kind: 'm:1',
-      entity: () => BookTag4,
-      ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
-    },
+    book4: { kind: 'm:1', entity: () => Book4, ref: true },
+    bookTag4: { kind: 'm:1', entity: () => BookTag4, ref: true },
   },
 });
 ",
@@ -2181,7 +2094,7 @@ export class Author4 extends CustomBase {
   bornTime?: string;
 
   @MikroORM_Index({ name: 'author4_favourite_book_id_index' })
-  @MikroORM_ManyToOne({ entity: () => Book4, ref: true, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  @MikroORM_ManyToOne({ entity: () => Book4, ref: true, updateRule: 'no action', nullable: true })
   favouriteBook?: MikroORM_Ref<Book4>;
 
   @MikroORM_Property({ type: 'json', nullable: true })
@@ -2251,11 +2164,11 @@ export class Book4 extends CustomBase {
   price?: unknown;
 
   @MikroORM_Index({ name: 'book4_author_id_index' })
-  @MikroORM_ManyToOne({ entity: () => Author4, ref: true, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  @MikroORM_ManyToOne({ entity: () => Author4, ref: true, updateRule: 'no action', nullable: true })
   author?: MikroORM_Ref<Author4>;
 
   @MikroORM_Index({ name: 'book4_publisher_id_index' })
-  @MikroORM_ManyToOne({ entity: () => Publisher4, ref: true, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  @MikroORM_ManyToOne({ entity: () => Publisher4, ref: true, updateRule: 'no action', nullable: true })
   publisher?: MikroORM_Ref<Publisher4>;
 
   @MikroORM_Property({ type: 'json', nullable: true })
@@ -2293,11 +2206,11 @@ export class FooBar4 extends CustomBase {
   name: string & MikroORM_Opt = 'asd';
 
   @MikroORM_Unique({ name: 'foo_bar4_baz_id_unique' })
-  @MikroORM_OneToOne({ entity: () => FooBaz4, ref: true, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  @MikroORM_OneToOne({ entity: () => FooBaz4, ref: true, updateRule: 'no action', nullable: true })
   baz?: MikroORM_Ref<FooBaz4>;
 
   @MikroORM_Unique({ name: 'foo_bar4_foo_bar_id_unique' })
-  @MikroORM_OneToOne({ entity: () => FooBar4, ref: true, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  @MikroORM_OneToOne({ entity: () => FooBar4, ref: true, updateRule: 'no action', nullable: true })
   fooBar?: MikroORM_Ref<FooBar4>;
 
   @MikroORM_Property({ type: 'integer' })
@@ -2403,11 +2316,11 @@ export class Publisher4Tests extends CustomBase {
   id!: number;
 
   @MikroORM_Index({ name: 'publisher4_tests_publisher4_id_index' })
-  @MikroORM_ManyToOne({ entity: () => Publisher4, ref: true, updateRule: 'cascade', deleteRule: 'cascade' })
+  @MikroORM_ManyToOne({ entity: () => Publisher4, ref: true })
   publisher4!: MikroORM_Ref<Publisher4>;
 
   @MikroORM_Index({ name: 'publisher4_tests_test4_id_index' })
-  @MikroORM_ManyToOne({ entity: () => Test4, ref: true, updateRule: 'cascade', deleteRule: 'cascade' })
+  @MikroORM_ManyToOne({ entity: () => Test4, ref: true })
   test4!: MikroORM_Ref<Test4>;
 
 }
@@ -2425,11 +2338,11 @@ export class TagsOrdered extends CustomBase {
   id!: number;
 
   @MikroORM_Index({ name: 'tags_ordered_book4_id_index' })
-  @MikroORM_ManyToOne({ entity: () => Book4, ref: true, updateRule: 'cascade', deleteRule: 'cascade' })
+  @MikroORM_ManyToOne({ entity: () => Book4, ref: true })
   book4!: MikroORM_Ref<Book4>;
 
   @MikroORM_Index({ name: 'tags_ordered_book_tag4_id_index' })
-  @MikroORM_ManyToOne({ entity: () => BookTag4, ref: true, updateRule: 'cascade', deleteRule: 'cascade' })
+  @MikroORM_ManyToOne({ entity: () => BookTag4, ref: true })
   bookTag4!: MikroORM_Ref<BookTag4>;
 
 }
@@ -2522,8 +2435,7 @@ export const Author4Schema = new MikroORM_EntitySchema({
       kind: 'm:1',
       entity: () => Book4,
       ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'set null',
+      updateRule: 'no action',
       nullable: true,
     },
     identity: { type: 'json', nullable: true },
@@ -2600,16 +2512,14 @@ export const Book4Schema = new MikroORM_EntitySchema({
       kind: 'm:1',
       entity: () => Author4,
       ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'set null',
+      updateRule: 'no action',
       nullable: true,
     },
     publisher: {
       kind: 'm:1',
       entity: () => Publisher4,
       ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'set null',
+      updateRule: 'no action',
       nullable: true,
     },
     meta: { type: 'json', nullable: true },
@@ -2663,16 +2573,14 @@ export const FooBar4Schema = new MikroORM_EntitySchema({
       kind: '1:1',
       entity: () => FooBaz4,
       ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'set null',
+      updateRule: 'no action',
       nullable: true,
     },
     fooBar: {
       kind: '1:1',
       entity: () => FooBar4,
       ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'set null',
+      updateRule: 'no action',
       nullable: true,
     },
     version: { type: 'integer' },
@@ -2766,20 +2674,8 @@ export const Publisher4TestsSchema = new MikroORM_EntitySchema({
   tableName: 'publisher4_tests',
   properties: {
     id: { primary: true, type: 'integer' },
-    publisher4: {
-      kind: 'm:1',
-      entity: () => Publisher4,
-      ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
-    },
-    test4: {
-      kind: 'm:1',
-      entity: () => Test4,
-      ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
-    },
+    publisher4: { kind: 'm:1', entity: () => Publisher4, ref: true },
+    test4: { kind: 'm:1', entity: () => Test4, ref: true },
   },
 });
 ",
@@ -2798,20 +2694,8 @@ export const TagsOrderedSchema = new MikroORM_EntitySchema({
   class: TagsOrdered,
   properties: {
     id: { primary: true, type: 'integer' },
-    book4: {
-      kind: 'm:1',
-      entity: () => Book4,
-      ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
-    },
-    bookTag4: {
-      kind: 'm:1',
-      entity: () => BookTag4,
-      ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
-    },
+    book4: { kind: 'm:1', entity: () => Book4, ref: true },
+    bookTag4: { kind: 'm:1', entity: () => BookTag4, ref: true },
   },
 });
 ",
@@ -2912,7 +2796,7 @@ export class Author4 extends MikroORM_BaseEntity {
   bornTime?: string;
 
   @MikroORM_Index({ name: 'author4_favourite_book_id_index' })
-  @MikroORM_ManyToOne({ entity: () => Book4, ref: true, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  @MikroORM_ManyToOne({ entity: () => Book4, ref: true, updateRule: 'no action', nullable: true })
   favouriteBook?: MikroORM_Ref<Book4>;
 
   @MikroORM_Property({ type: 'json', nullable: true })
@@ -2980,11 +2864,11 @@ export class Book4 extends MikroORM_BaseEntity {
   price?: unknown;
 
   @MikroORM_Index({ name: 'book4_author_id_index' })
-  @MikroORM_ManyToOne({ entity: () => Author4, ref: true, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  @MikroORM_ManyToOne({ entity: () => Author4, ref: true, updateRule: 'no action', nullable: true })
   author?: MikroORM_Ref<Author4>;
 
   @MikroORM_Index({ name: 'book4_publisher_id_index' })
-  @MikroORM_ManyToOne({ entity: () => Publisher4, ref: true, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  @MikroORM_ManyToOne({ entity: () => Publisher4, ref: true, updateRule: 'no action', nullable: true })
   publisher?: MikroORM_Ref<Publisher4>;
 
   @MikroORM_Property({ type: 'json', nullable: true })
@@ -3021,11 +2905,11 @@ export class FooBar4 extends MikroORM_BaseEntity {
   name: string & MikroORM_Opt = 'asd';
 
   @MikroORM_Unique({ name: 'foo_bar4_baz_id_unique' })
-  @MikroORM_OneToOne({ entity: () => FooBaz4, ref: true, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  @MikroORM_OneToOne({ entity: () => FooBaz4, ref: true, updateRule: 'no action', nullable: true })
   baz?: MikroORM_Ref<FooBaz4>;
 
   @MikroORM_Unique({ name: 'foo_bar4_foo_bar_id_unique' })
-  @MikroORM_OneToOne({ entity: () => FooBar4, ref: true, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  @MikroORM_OneToOne({ entity: () => FooBar4, ref: true, updateRule: 'no action', nullable: true })
   fooBar?: MikroORM_Ref<FooBar4>;
 
   @MikroORM_Property({ type: 'integer' })
@@ -3128,11 +3012,11 @@ export class Publisher4Tests extends MikroORM_BaseEntity {
   id!: number;
 
   @MikroORM_Index({ name: 'publisher4_tests_publisher4_id_index' })
-  @MikroORM_ManyToOne({ entity: () => Publisher4, ref: true, updateRule: 'cascade', deleteRule: 'cascade' })
+  @MikroORM_ManyToOne({ entity: () => Publisher4, ref: true })
   publisher4!: MikroORM_Ref<Publisher4>;
 
   @MikroORM_Index({ name: 'publisher4_tests_test4_id_index' })
-  @MikroORM_ManyToOne({ entity: () => Test4, ref: true, updateRule: 'cascade', deleteRule: 'cascade' })
+  @MikroORM_ManyToOne({ entity: () => Test4, ref: true })
   test4!: MikroORM_Ref<Test4>;
 
 }
@@ -3149,11 +3033,11 @@ export class TagsOrdered extends MikroORM_BaseEntity {
   id!: number;
 
   @MikroORM_Index({ name: 'tags_ordered_book4_id_index' })
-  @MikroORM_ManyToOne({ entity: () => Book4, ref: true, updateRule: 'cascade', deleteRule: 'cascade' })
+  @MikroORM_ManyToOne({ entity: () => Book4, ref: true })
   book4!: MikroORM_Ref<Book4>;
 
   @MikroORM_Index({ name: 'tags_ordered_book_tag4_id_index' })
-  @MikroORM_ManyToOne({ entity: () => BookTag4, ref: true, updateRule: 'cascade', deleteRule: 'cascade' })
+  @MikroORM_ManyToOne({ entity: () => BookTag4, ref: true })
   bookTag4!: MikroORM_Ref<BookTag4>;
 
 }
@@ -3236,8 +3120,7 @@ export const Author4Schema = new MikroORM_EntitySchema({
       kind: 'm:1',
       entity: () => Book4,
       ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'set null',
+      updateRule: 'no action',
       nullable: true,
     },
     identity: { type: 'json', nullable: true },
@@ -3312,16 +3195,14 @@ export const Book4Schema = new MikroORM_EntitySchema({
       kind: 'm:1',
       entity: () => Author4,
       ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'set null',
+      updateRule: 'no action',
       nullable: true,
     },
     publisher: {
       kind: 'm:1',
       entity: () => Publisher4,
       ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'set null',
+      updateRule: 'no action',
       nullable: true,
     },
     meta: { type: 'json', nullable: true },
@@ -3374,16 +3255,14 @@ export const FooBar4Schema = new MikroORM_EntitySchema({
       kind: '1:1',
       entity: () => FooBaz4,
       ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'set null',
+      updateRule: 'no action',
       nullable: true,
     },
     fooBar: {
       kind: '1:1',
       entity: () => FooBar4,
       ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'set null',
+      updateRule: 'no action',
       nullable: true,
     },
     version: { type: 'integer' },
@@ -3474,20 +3353,8 @@ export const Publisher4TestsSchema = new MikroORM_EntitySchema({
   tableName: 'publisher4_tests',
   properties: {
     id: { primary: true, type: 'integer' },
-    publisher4: {
-      kind: 'm:1',
-      entity: () => Publisher4,
-      ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
-    },
-    test4: {
-      kind: 'm:1',
-      entity: () => Test4,
-      ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
-    },
+    publisher4: { kind: 'm:1', entity: () => Publisher4, ref: true },
+    test4: { kind: 'm:1', entity: () => Test4, ref: true },
   },
 });
 ",
@@ -3505,20 +3372,8 @@ export const TagsOrderedSchema = new MikroORM_EntitySchema({
   class: TagsOrdered,
   properties: {
     id: { primary: true, type: 'integer' },
-    book4: {
-      kind: 'm:1',
-      entity: () => Book4,
-      ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
-    },
-    bookTag4: {
-      kind: 'm:1',
-      entity: () => BookTag4,
-      ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
-    },
+    book4: { kind: 'm:1', entity: () => Book4, ref: true },
+    bookTag4: { kind: 'm:1', entity: () => BookTag4, ref: true },
   },
 });
 ",
@@ -3607,7 +3462,7 @@ export class Author4 extends BaseEntity {
   bornTime?: string;
 
   @MikroORM_Index({ name: 'author4_favourite_book_id_index' })
-  @MikroORM_ManyToOne({ entity: () => Book4, ref: true, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  @MikroORM_ManyToOne({ entity: () => Book4, ref: true, updateRule: 'no action', nullable: true })
   favouriteBook?: MikroORM_Ref<Book4>;
 
   @MikroORM_Property({ type: 'json', nullable: true })
@@ -3677,11 +3532,11 @@ export class Book4 extends BaseEntity {
   price?: unknown;
 
   @MikroORM_Index({ name: 'book4_author_id_index' })
-  @MikroORM_ManyToOne({ entity: () => Author4, ref: true, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  @MikroORM_ManyToOne({ entity: () => Author4, ref: true, updateRule: 'no action', nullable: true })
   author?: MikroORM_Ref<Author4>;
 
   @MikroORM_Index({ name: 'book4_publisher_id_index' })
-  @MikroORM_ManyToOne({ entity: () => Publisher4, ref: true, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  @MikroORM_ManyToOne({ entity: () => Publisher4, ref: true, updateRule: 'no action', nullable: true })
   publisher?: MikroORM_Ref<Publisher4>;
 
   @MikroORM_Property({ type: 'json', nullable: true })
@@ -3719,11 +3574,11 @@ export class FooBar4 extends BaseEntity {
   name: string & MikroORM_Opt = 'asd';
 
   @MikroORM_Unique({ name: 'foo_bar4_baz_id_unique' })
-  @MikroORM_OneToOne({ entity: () => FooBaz4, ref: true, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  @MikroORM_OneToOne({ entity: () => FooBaz4, ref: true, updateRule: 'no action', nullable: true })
   baz?: MikroORM_Ref<FooBaz4>;
 
   @MikroORM_Unique({ name: 'foo_bar4_foo_bar_id_unique' })
-  @MikroORM_OneToOne({ entity: () => FooBar4, ref: true, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  @MikroORM_OneToOne({ entity: () => FooBar4, ref: true, updateRule: 'no action', nullable: true })
   fooBar?: MikroORM_Ref<FooBar4>;
 
   @MikroORM_Property({ type: 'integer' })
@@ -3829,11 +3684,11 @@ export class Publisher4Tests extends BaseEntity {
   id!: number;
 
   @MikroORM_Index({ name: 'publisher4_tests_publisher4_id_index' })
-  @MikroORM_ManyToOne({ entity: () => Publisher4, ref: true, updateRule: 'cascade', deleteRule: 'cascade' })
+  @MikroORM_ManyToOne({ entity: () => Publisher4, ref: true })
   publisher4!: MikroORM_Ref<Publisher4>;
 
   @MikroORM_Index({ name: 'publisher4_tests_test4_id_index' })
-  @MikroORM_ManyToOne({ entity: () => Test4, ref: true, updateRule: 'cascade', deleteRule: 'cascade' })
+  @MikroORM_ManyToOne({ entity: () => Test4, ref: true })
   test4!: MikroORM_Ref<Test4>;
 
 }
@@ -3851,11 +3706,11 @@ export class TagsOrdered extends BaseEntity {
   id!: number;
 
   @MikroORM_Index({ name: 'tags_ordered_book4_id_index' })
-  @MikroORM_ManyToOne({ entity: () => Book4, ref: true, updateRule: 'cascade', deleteRule: 'cascade' })
+  @MikroORM_ManyToOne({ entity: () => Book4, ref: true })
   book4!: MikroORM_Ref<Book4>;
 
   @MikroORM_Index({ name: 'tags_ordered_book_tag4_id_index' })
-  @MikroORM_ManyToOne({ entity: () => BookTag4, ref: true, updateRule: 'cascade', deleteRule: 'cascade' })
+  @MikroORM_ManyToOne({ entity: () => BookTag4, ref: true })
   bookTag4!: MikroORM_Ref<BookTag4>;
 
 }
@@ -3948,8 +3803,7 @@ export const Author4Schema = new MikroORM_EntitySchema({
       kind: 'm:1',
       entity: () => Book4,
       ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'set null',
+      updateRule: 'no action',
       nullable: true,
     },
     identity: { type: 'json', nullable: true },
@@ -4026,16 +3880,14 @@ export const Book4Schema = new MikroORM_EntitySchema({
       kind: 'm:1',
       entity: () => Author4,
       ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'set null',
+      updateRule: 'no action',
       nullable: true,
     },
     publisher: {
       kind: 'm:1',
       entity: () => Publisher4,
       ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'set null',
+      updateRule: 'no action',
       nullable: true,
     },
     meta: { type: 'json', nullable: true },
@@ -4089,16 +3941,14 @@ export const FooBar4Schema = new MikroORM_EntitySchema({
       kind: '1:1',
       entity: () => FooBaz4,
       ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'set null',
+      updateRule: 'no action',
       nullable: true,
     },
     fooBar: {
       kind: '1:1',
       entity: () => FooBar4,
       ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'set null',
+      updateRule: 'no action',
       nullable: true,
     },
     version: { type: 'integer' },
@@ -4192,20 +4042,8 @@ export const Publisher4TestsSchema = new MikroORM_EntitySchema({
   tableName: 'publisher4_tests',
   properties: {
     id: { primary: true, type: 'integer' },
-    publisher4: {
-      kind: 'm:1',
-      entity: () => Publisher4,
-      ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
-    },
-    test4: {
-      kind: 'm:1',
-      entity: () => Test4,
-      ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
-    },
+    publisher4: { kind: 'm:1', entity: () => Publisher4, ref: true },
+    test4: { kind: 'm:1', entity: () => Test4, ref: true },
   },
 });
 ",
@@ -4224,20 +4062,8 @@ export const TagsOrderedSchema = new MikroORM_EntitySchema({
   class: TagsOrdered,
   properties: {
     id: { primary: true, type: 'integer' },
-    book4: {
-      kind: 'm:1',
-      entity: () => Book4,
-      ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
-    },
-    bookTag4: {
-      kind: 'm:1',
-      entity: () => BookTag4,
-      ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
-    },
+    book4: { kind: 'm:1', entity: () => Book4, ref: true },
+    bookTag4: { kind: 'm:1', entity: () => BookTag4, ref: true },
   },
 });
 ",
@@ -4339,7 +4165,7 @@ export class Author4 extends BaseEntity2 {
   bornTime?: string;
 
   @MikroORM_Index({ name: 'author4_favourite_book_id_index' })
-  @MikroORM_ManyToOne({ entity: () => Book4, ref: true, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  @MikroORM_ManyToOne({ entity: () => Book4, ref: true, updateRule: 'no action', nullable: true })
   favouriteBook?: MikroORM_Ref<Book4>;
 
   @MikroORM_Property({ type: 'json', nullable: true })
@@ -4409,11 +4235,11 @@ export class Book4 extends BaseEntity2 {
   price?: unknown;
 
   @MikroORM_Index({ name: 'book4_author_id_index' })
-  @MikroORM_ManyToOne({ entity: () => Author4, ref: true, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  @MikroORM_ManyToOne({ entity: () => Author4, ref: true, updateRule: 'no action', nullable: true })
   author?: MikroORM_Ref<Author4>;
 
   @MikroORM_Index({ name: 'book4_publisher_id_index' })
-  @MikroORM_ManyToOne({ entity: () => Publisher4, ref: true, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  @MikroORM_ManyToOne({ entity: () => Publisher4, ref: true, updateRule: 'no action', nullable: true })
   publisher?: MikroORM_Ref<Publisher4>;
 
   @MikroORM_Property({ type: 'json', nullable: true })
@@ -4451,11 +4277,11 @@ export class FooBar4 extends BaseEntity2 {
   name: string & MikroORM_Opt = 'asd';
 
   @MikroORM_Unique({ name: 'foo_bar4_baz_id_unique' })
-  @MikroORM_OneToOne({ entity: () => FooBaz4, ref: true, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  @MikroORM_OneToOne({ entity: () => FooBaz4, ref: true, updateRule: 'no action', nullable: true })
   baz?: MikroORM_Ref<FooBaz4>;
 
   @MikroORM_Unique({ name: 'foo_bar4_foo_bar_id_unique' })
-  @MikroORM_OneToOne({ entity: () => FooBar4, ref: true, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  @MikroORM_OneToOne({ entity: () => FooBar4, ref: true, updateRule: 'no action', nullable: true })
   fooBar?: MikroORM_Ref<FooBar4>;
 
   @MikroORM_Property({ type: 'integer' })
@@ -4561,11 +4387,11 @@ export class Publisher4Tests extends BaseEntity2 {
   id!: number;
 
   @MikroORM_Index({ name: 'publisher4_tests_publisher4_id_index' })
-  @MikroORM_ManyToOne({ entity: () => Publisher4, ref: true, updateRule: 'cascade', deleteRule: 'cascade' })
+  @MikroORM_ManyToOne({ entity: () => Publisher4, ref: true })
   publisher4!: MikroORM_Ref<Publisher4>;
 
   @MikroORM_Index({ name: 'publisher4_tests_test4_id_index' })
-  @MikroORM_ManyToOne({ entity: () => Test4, ref: true, updateRule: 'cascade', deleteRule: 'cascade' })
+  @MikroORM_ManyToOne({ entity: () => Test4, ref: true })
   test4!: MikroORM_Ref<Test4>;
 
 }
@@ -4583,11 +4409,11 @@ export class TagsOrdered extends BaseEntity2 {
   id!: number;
 
   @MikroORM_Index({ name: 'tags_ordered_book4_id_index' })
-  @MikroORM_ManyToOne({ entity: () => Book4, ref: true, updateRule: 'cascade', deleteRule: 'cascade' })
+  @MikroORM_ManyToOne({ entity: () => Book4, ref: true })
   book4!: MikroORM_Ref<Book4>;
 
   @MikroORM_Index({ name: 'tags_ordered_book_tag4_id_index' })
-  @MikroORM_ManyToOne({ entity: () => BookTag4, ref: true, updateRule: 'cascade', deleteRule: 'cascade' })
+  @MikroORM_ManyToOne({ entity: () => BookTag4, ref: true })
   bookTag4!: MikroORM_Ref<BookTag4>;
 
 }
@@ -4675,8 +4501,7 @@ export const Author4Schema = new MikroORM_EntitySchema({
       kind: 'm:1',
       entity: () => Book4,
       ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'set null',
+      updateRule: 'no action',
       nullable: true,
     },
     identity: { type: 'json', nullable: true },
@@ -4753,16 +4578,14 @@ export const Book4Schema = new MikroORM_EntitySchema({
       kind: 'm:1',
       entity: () => Author4,
       ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'set null',
+      updateRule: 'no action',
       nullable: true,
     },
     publisher: {
       kind: 'm:1',
       entity: () => Publisher4,
       ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'set null',
+      updateRule: 'no action',
       nullable: true,
     },
     meta: { type: 'json', nullable: true },
@@ -4816,16 +4639,14 @@ export const FooBar4Schema = new MikroORM_EntitySchema({
       kind: '1:1',
       entity: () => FooBaz4,
       ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'set null',
+      updateRule: 'no action',
       nullable: true,
     },
     fooBar: {
       kind: '1:1',
       entity: () => FooBar4,
       ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'set null',
+      updateRule: 'no action',
       nullable: true,
     },
     version: { type: 'integer' },
@@ -4919,20 +4740,8 @@ export const Publisher4TestsSchema = new MikroORM_EntitySchema({
   tableName: 'publisher4_tests',
   properties: {
     id: { primary: true, type: 'integer' },
-    publisher4: {
-      kind: 'm:1',
-      entity: () => Publisher4,
-      ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
-    },
-    test4: {
-      kind: 'm:1',
-      entity: () => Test4,
-      ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
-    },
+    publisher4: { kind: 'm:1', entity: () => Publisher4, ref: true },
+    test4: { kind: 'm:1', entity: () => Test4, ref: true },
   },
 });
 ",
@@ -4951,20 +4760,8 @@ export const TagsOrderedSchema = new MikroORM_EntitySchema({
   class: TagsOrdered,
   properties: {
     id: { primary: true, type: 'integer' },
-    book4: {
-      kind: 'm:1',
-      entity: () => Book4,
-      ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
-    },
-    bookTag4: {
-      kind: 'm:1',
-      entity: () => BookTag4,
-      ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
-    },
+    book4: { kind: 'm:1', entity: () => Book4, ref: true },
+    bookTag4: { kind: 'm:1', entity: () => BookTag4, ref: true },
   },
 });
 ",
@@ -5054,7 +4851,7 @@ export class Author4 extends CustomBase {
   bornTime?: string;
 
   @MikroORM_Index({ name: 'author4_favourite_book_id_index' })
-  @MikroORM_ManyToOne({ entity: () => Book4, ref: true, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  @MikroORM_ManyToOne({ entity: () => Book4, ref: true, updateRule: 'no action', nullable: true })
   favouriteBook?: MikroORM_Ref<Book4>;
 
   @MikroORM_Property({ type: 'json', nullable: true })
@@ -5124,11 +4921,11 @@ export class Book4 extends CustomBase {
   price?: unknown;
 
   @MikroORM_Index({ name: 'book4_author_id_index' })
-  @MikroORM_ManyToOne({ entity: () => Author4, ref: true, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  @MikroORM_ManyToOne({ entity: () => Author4, ref: true, updateRule: 'no action', nullable: true })
   author?: MikroORM_Ref<Author4>;
 
   @MikroORM_Index({ name: 'book4_publisher_id_index' })
-  @MikroORM_ManyToOne({ entity: () => Publisher4, ref: true, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  @MikroORM_ManyToOne({ entity: () => Publisher4, ref: true, updateRule: 'no action', nullable: true })
   publisher?: MikroORM_Ref<Publisher4>;
 
   @MikroORM_Property({ type: 'json', nullable: true })
@@ -5166,11 +4963,11 @@ export class FooBar4 extends CustomBase {
   name: string & MikroORM_Opt = 'asd';
 
   @MikroORM_Unique({ name: 'foo_bar4_baz_id_unique' })
-  @MikroORM_OneToOne({ entity: () => FooBaz4, ref: true, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  @MikroORM_OneToOne({ entity: () => FooBaz4, ref: true, updateRule: 'no action', nullable: true })
   baz?: MikroORM_Ref<FooBaz4>;
 
   @MikroORM_Unique({ name: 'foo_bar4_foo_bar_id_unique' })
-  @MikroORM_OneToOne({ entity: () => FooBar4, ref: true, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  @MikroORM_OneToOne({ entity: () => FooBar4, ref: true, updateRule: 'no action', nullable: true })
   fooBar?: MikroORM_Ref<FooBar4>;
 
   @MikroORM_Property({ type: 'integer' })
@@ -5276,11 +5073,11 @@ export class Publisher4Tests extends CustomBase {
   id!: number;
 
   @MikroORM_Index({ name: 'publisher4_tests_publisher4_id_index' })
-  @MikroORM_ManyToOne({ entity: () => Publisher4, ref: true, updateRule: 'cascade', deleteRule: 'cascade' })
+  @MikroORM_ManyToOne({ entity: () => Publisher4, ref: true })
   publisher4!: MikroORM_Ref<Publisher4>;
 
   @MikroORM_Index({ name: 'publisher4_tests_test4_id_index' })
-  @MikroORM_ManyToOne({ entity: () => Test4, ref: true, updateRule: 'cascade', deleteRule: 'cascade' })
+  @MikroORM_ManyToOne({ entity: () => Test4, ref: true })
   test4!: MikroORM_Ref<Test4>;
 
 }
@@ -5298,11 +5095,11 @@ export class TagsOrdered extends CustomBase {
   id!: number;
 
   @MikroORM_Index({ name: 'tags_ordered_book4_id_index' })
-  @MikroORM_ManyToOne({ entity: () => Book4, ref: true, updateRule: 'cascade', deleteRule: 'cascade' })
+  @MikroORM_ManyToOne({ entity: () => Book4, ref: true })
   book4!: MikroORM_Ref<Book4>;
 
   @MikroORM_Index({ name: 'tags_ordered_book_tag4_id_index' })
-  @MikroORM_ManyToOne({ entity: () => BookTag4, ref: true, updateRule: 'cascade', deleteRule: 'cascade' })
+  @MikroORM_ManyToOne({ entity: () => BookTag4, ref: true })
   bookTag4!: MikroORM_Ref<BookTag4>;
 
 }
@@ -5395,8 +5192,7 @@ export const Author4Schema = new MikroORM_EntitySchema({
       kind: 'm:1',
       entity: () => Book4,
       ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'set null',
+      updateRule: 'no action',
       nullable: true,
     },
     identity: { type: 'json', nullable: true },
@@ -5473,16 +5269,14 @@ export const Book4Schema = new MikroORM_EntitySchema({
       kind: 'm:1',
       entity: () => Author4,
       ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'set null',
+      updateRule: 'no action',
       nullable: true,
     },
     publisher: {
       kind: 'm:1',
       entity: () => Publisher4,
       ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'set null',
+      updateRule: 'no action',
       nullable: true,
     },
     meta: { type: 'json', nullable: true },
@@ -5536,16 +5330,14 @@ export const FooBar4Schema = new MikroORM_EntitySchema({
       kind: '1:1',
       entity: () => FooBaz4,
       ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'set null',
+      updateRule: 'no action',
       nullable: true,
     },
     fooBar: {
       kind: '1:1',
       entity: () => FooBar4,
       ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'set null',
+      updateRule: 'no action',
       nullable: true,
     },
     version: { type: 'integer' },
@@ -5639,20 +5431,8 @@ export const Publisher4TestsSchema = new MikroORM_EntitySchema({
   tableName: 'publisher4_tests',
   properties: {
     id: { primary: true, type: 'integer' },
-    publisher4: {
-      kind: 'm:1',
-      entity: () => Publisher4,
-      ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
-    },
-    test4: {
-      kind: 'm:1',
-      entity: () => Test4,
-      ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
-    },
+    publisher4: { kind: 'm:1', entity: () => Publisher4, ref: true },
+    test4: { kind: 'm:1', entity: () => Test4, ref: true },
   },
 });
 ",
@@ -5671,20 +5451,8 @@ export const TagsOrderedSchema = new MikroORM_EntitySchema({
   class: TagsOrdered,
   properties: {
     id: { primary: true, type: 'integer' },
-    book4: {
-      kind: 'm:1',
-      entity: () => Book4,
-      ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
-    },
-    bookTag4: {
-      kind: 'm:1',
-      entity: () => BookTag4,
-      ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
-    },
+    book4: { kind: 'm:1', entity: () => Book4, ref: true },
+    bookTag4: { kind: 'm:1', entity: () => BookTag4, ref: true },
   },
 });
 ",
@@ -5785,7 +5553,7 @@ export class Author4 {
   bornTime?: string;
 
   @MikroORM_Index({ name: 'author4_favourite_book_id_index' })
-  @MikroORM_ManyToOne({ entity: () => Book4, ref: true, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  @MikroORM_ManyToOne({ entity: () => Book4, ref: true, updateRule: 'no action', nullable: true })
   favouriteBook?: MikroORM_Ref<Book4>;
 
   @MikroORM_Property({ type: 'json', nullable: true })
@@ -5853,11 +5621,11 @@ export class Book4 {
   price?: unknown;
 
   @MikroORM_Index({ name: 'book4_author_id_index' })
-  @MikroORM_ManyToOne({ entity: () => Author4, ref: true, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  @MikroORM_ManyToOne({ entity: () => Author4, ref: true, updateRule: 'no action', nullable: true })
   author?: MikroORM_Ref<Author4>;
 
   @MikroORM_Index({ name: 'book4_publisher_id_index' })
-  @MikroORM_ManyToOne({ entity: () => Publisher4, ref: true, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  @MikroORM_ManyToOne({ entity: () => Publisher4, ref: true, updateRule: 'no action', nullable: true })
   publisher?: MikroORM_Ref<Publisher4>;
 
   @MikroORM_Property({ type: 'json', nullable: true })
@@ -5894,11 +5662,11 @@ export class FooBar4 {
   name: string & MikroORM_Opt = 'asd';
 
   @MikroORM_Unique({ name: 'foo_bar4_baz_id_unique' })
-  @MikroORM_OneToOne({ entity: () => FooBaz4, ref: true, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  @MikroORM_OneToOne({ entity: () => FooBaz4, ref: true, updateRule: 'no action', nullable: true })
   baz?: MikroORM_Ref<FooBaz4>;
 
   @MikroORM_Unique({ name: 'foo_bar4_foo_bar_id_unique' })
-  @MikroORM_OneToOne({ entity: () => FooBar4, ref: true, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  @MikroORM_OneToOne({ entity: () => FooBar4, ref: true, updateRule: 'no action', nullable: true })
   fooBar?: MikroORM_Ref<FooBar4>;
 
   @MikroORM_Property({ type: 'integer' })
@@ -6001,11 +5769,11 @@ export class Publisher4Tests {
   id!: number;
 
   @MikroORM_Index({ name: 'publisher4_tests_publisher4_id_index' })
-  @MikroORM_ManyToOne({ entity: () => Publisher4, ref: true, updateRule: 'cascade', deleteRule: 'cascade' })
+  @MikroORM_ManyToOne({ entity: () => Publisher4, ref: true })
   publisher4!: MikroORM_Ref<Publisher4>;
 
   @MikroORM_Index({ name: 'publisher4_tests_test4_id_index' })
-  @MikroORM_ManyToOne({ entity: () => Test4, ref: true, updateRule: 'cascade', deleteRule: 'cascade' })
+  @MikroORM_ManyToOne({ entity: () => Test4, ref: true })
   test4!: MikroORM_Ref<Test4>;
 
 }
@@ -6022,11 +5790,11 @@ export class TagsOrdered {
   id!: number;
 
   @MikroORM_Index({ name: 'tags_ordered_book4_id_index' })
-  @MikroORM_ManyToOne({ entity: () => Book4, ref: true, updateRule: 'cascade', deleteRule: 'cascade' })
+  @MikroORM_ManyToOne({ entity: () => Book4, ref: true })
   book4!: MikroORM_Ref<Book4>;
 
   @MikroORM_Index({ name: 'tags_ordered_book_tag4_id_index' })
-  @MikroORM_ManyToOne({ entity: () => BookTag4, ref: true, updateRule: 'cascade', deleteRule: 'cascade' })
+  @MikroORM_ManyToOne({ entity: () => BookTag4, ref: true })
   bookTag4!: MikroORM_Ref<BookTag4>;
 
 }
@@ -6109,8 +5877,7 @@ export const Author4Schema = new MikroORM_EntitySchema({
       kind: 'm:1',
       entity: () => Book4,
       ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'set null',
+      updateRule: 'no action',
       nullable: true,
     },
     identity: { type: 'json', nullable: true },
@@ -6187,16 +5954,14 @@ export const Book4Schema = new MikroORM_EntitySchema({
       kind: 'm:1',
       entity: () => Author4,
       ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'set null',
+      updateRule: 'no action',
       nullable: true,
     },
     publisher: {
       kind: 'm:1',
       entity: () => Publisher4,
       ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'set null',
+      updateRule: 'no action',
       nullable: true,
     },
     meta: { type: 'json', nullable: true },
@@ -6250,16 +6015,14 @@ export const FooBar4Schema = new MikroORM_EntitySchema({
       kind: '1:1',
       entity: () => FooBaz4,
       ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'set null',
+      updateRule: 'no action',
       nullable: true,
     },
     fooBar: {
       kind: '1:1',
       entity: () => FooBar4,
       ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'set null',
+      updateRule: 'no action',
       nullable: true,
     },
     version: { type: 'integer' },
@@ -6353,20 +6116,8 @@ export const Publisher4TestsSchema = new MikroORM_EntitySchema({
   tableName: 'publisher4_tests',
   properties: {
     id: { primary: true, type: 'integer' },
-    publisher4: {
-      kind: 'm:1',
-      entity: () => Publisher4,
-      ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
-    },
-    test4: {
-      kind: 'm:1',
-      entity: () => Test4,
-      ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
-    },
+    publisher4: { kind: 'm:1', entity: () => Publisher4, ref: true },
+    test4: { kind: 'm:1', entity: () => Test4, ref: true },
   },
 });
 ",
@@ -6385,20 +6136,8 @@ export const TagsOrderedSchema = new MikroORM_EntitySchema({
   class: TagsOrdered,
   properties: {
     id: { primary: true, type: 'integer' },
-    book4: {
-      kind: 'm:1',
-      entity: () => Book4,
-      ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
-    },
-    bookTag4: {
-      kind: 'm:1',
-      entity: () => BookTag4,
-      ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
-    },
+    book4: { kind: 'm:1', entity: () => Book4, ref: true },
+    bookTag4: { kind: 'm:1', entity: () => BookTag4, ref: true },
   },
 });
 ",
@@ -6489,7 +6228,7 @@ export class Author4 extends BaseEntity {
   bornTime?: string;
 
   @MikroORM_Index({ name: 'author4_favourite_book_id_index' })
-  @MikroORM_ManyToOne({ entity: () => Book4, ref: true, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  @MikroORM_ManyToOne({ entity: () => Book4, ref: true, updateRule: 'no action', nullable: true })
   favouriteBook?: MikroORM_Ref<Book4>;
 
   @MikroORM_Property({ type: 'json', nullable: true })
@@ -6559,11 +6298,11 @@ export class Book4 extends BaseEntity {
   price?: unknown;
 
   @MikroORM_Index({ name: 'book4_author_id_index' })
-  @MikroORM_ManyToOne({ entity: () => Author4, ref: true, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  @MikroORM_ManyToOne({ entity: () => Author4, ref: true, updateRule: 'no action', nullable: true })
   author?: MikroORM_Ref<Author4>;
 
   @MikroORM_Index({ name: 'book4_publisher_id_index' })
-  @MikroORM_ManyToOne({ entity: () => Publisher4, ref: true, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  @MikroORM_ManyToOne({ entity: () => Publisher4, ref: true, updateRule: 'no action', nullable: true })
   publisher?: MikroORM_Ref<Publisher4>;
 
   @MikroORM_Property({ type: 'json', nullable: true })
@@ -6601,11 +6340,11 @@ export class FooBar4 extends BaseEntity {
   name: string & MikroORM_Opt = 'asd';
 
   @MikroORM_Unique({ name: 'foo_bar4_baz_id_unique' })
-  @MikroORM_OneToOne({ entity: () => FooBaz4, ref: true, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  @MikroORM_OneToOne({ entity: () => FooBaz4, ref: true, updateRule: 'no action', nullable: true })
   baz?: MikroORM_Ref<FooBaz4>;
 
   @MikroORM_Unique({ name: 'foo_bar4_foo_bar_id_unique' })
-  @MikroORM_OneToOne({ entity: () => FooBar4, ref: true, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  @MikroORM_OneToOne({ entity: () => FooBar4, ref: true, updateRule: 'no action', nullable: true })
   fooBar?: MikroORM_Ref<FooBar4>;
 
   @MikroORM_Property({ type: 'integer' })
@@ -6711,11 +6450,11 @@ export class Publisher4Tests extends BaseEntity {
   id!: number;
 
   @MikroORM_Index({ name: 'publisher4_tests_publisher4_id_index' })
-  @MikroORM_ManyToOne({ entity: () => Publisher4, ref: true, updateRule: 'cascade', deleteRule: 'cascade' })
+  @MikroORM_ManyToOne({ entity: () => Publisher4, ref: true })
   publisher4!: MikroORM_Ref<Publisher4>;
 
   @MikroORM_Index({ name: 'publisher4_tests_test4_id_index' })
-  @MikroORM_ManyToOne({ entity: () => Test4, ref: true, updateRule: 'cascade', deleteRule: 'cascade' })
+  @MikroORM_ManyToOne({ entity: () => Test4, ref: true })
   test4!: MikroORM_Ref<Test4>;
 
 }
@@ -6733,11 +6472,11 @@ export class TagsOrdered extends BaseEntity {
   id!: number;
 
   @MikroORM_Index({ name: 'tags_ordered_book4_id_index' })
-  @MikroORM_ManyToOne({ entity: () => Book4, ref: true, updateRule: 'cascade', deleteRule: 'cascade' })
+  @MikroORM_ManyToOne({ entity: () => Book4, ref: true })
   book4!: MikroORM_Ref<Book4>;
 
   @MikroORM_Index({ name: 'tags_ordered_book_tag4_id_index' })
-  @MikroORM_ManyToOne({ entity: () => BookTag4, ref: true, updateRule: 'cascade', deleteRule: 'cascade' })
+  @MikroORM_ManyToOne({ entity: () => BookTag4, ref: true })
   bookTag4!: MikroORM_Ref<BookTag4>;
 
 }
@@ -6830,8 +6569,7 @@ export const Author4Schema = new MikroORM_EntitySchema({
       kind: 'm:1',
       entity: () => Book4,
       ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'set null',
+      updateRule: 'no action',
       nullable: true,
     },
     identity: { type: 'json', nullable: true },
@@ -6908,16 +6646,14 @@ export const Book4Schema = new MikroORM_EntitySchema({
       kind: 'm:1',
       entity: () => Author4,
       ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'set null',
+      updateRule: 'no action',
       nullable: true,
     },
     publisher: {
       kind: 'm:1',
       entity: () => Publisher4,
       ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'set null',
+      updateRule: 'no action',
       nullable: true,
     },
     meta: { type: 'json', nullable: true },
@@ -6971,16 +6707,14 @@ export const FooBar4Schema = new MikroORM_EntitySchema({
       kind: '1:1',
       entity: () => FooBaz4,
       ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'set null',
+      updateRule: 'no action',
       nullable: true,
     },
     fooBar: {
       kind: '1:1',
       entity: () => FooBar4,
       ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'set null',
+      updateRule: 'no action',
       nullable: true,
     },
     version: { type: 'integer' },
@@ -7074,20 +6808,8 @@ export const Publisher4TestsSchema = new MikroORM_EntitySchema({
   tableName: 'publisher4_tests',
   properties: {
     id: { primary: true, type: 'integer' },
-    publisher4: {
-      kind: 'm:1',
-      entity: () => Publisher4,
-      ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
-    },
-    test4: {
-      kind: 'm:1',
-      entity: () => Test4,
-      ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
-    },
+    publisher4: { kind: 'm:1', entity: () => Publisher4, ref: true },
+    test4: { kind: 'm:1', entity: () => Test4, ref: true },
   },
 });
 ",
@@ -7106,20 +6828,8 @@ export const TagsOrderedSchema = new MikroORM_EntitySchema({
   class: TagsOrdered,
   properties: {
     id: { primary: true, type: 'integer' },
-    book4: {
-      kind: 'm:1',
-      entity: () => Book4,
-      ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
-    },
-    bookTag4: {
-      kind: 'm:1',
-      entity: () => BookTag4,
-      ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
-    },
+    book4: { kind: 'm:1', entity: () => Book4, ref: true },
+    bookTag4: { kind: 'm:1', entity: () => BookTag4, ref: true },
   },
 });
 ",
@@ -7222,7 +6932,7 @@ export class Author4 extends BaseEntity2 {
   bornTime?: string;
 
   @MikroORM_Index({ name: 'author4_favourite_book_id_index' })
-  @MikroORM_ManyToOne({ entity: () => Book4, ref: true, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  @MikroORM_ManyToOne({ entity: () => Book4, ref: true, updateRule: 'no action', nullable: true })
   favouriteBook?: MikroORM_Ref<Book4>;
 
   @MikroORM_Property({ type: 'json', nullable: true })
@@ -7292,11 +7002,11 @@ export class Book4 extends BaseEntity2 {
   price?: unknown;
 
   @MikroORM_Index({ name: 'book4_author_id_index' })
-  @MikroORM_ManyToOne({ entity: () => Author4, ref: true, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  @MikroORM_ManyToOne({ entity: () => Author4, ref: true, updateRule: 'no action', nullable: true })
   author?: MikroORM_Ref<Author4>;
 
   @MikroORM_Index({ name: 'book4_publisher_id_index' })
-  @MikroORM_ManyToOne({ entity: () => Publisher4, ref: true, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  @MikroORM_ManyToOne({ entity: () => Publisher4, ref: true, updateRule: 'no action', nullable: true })
   publisher?: MikroORM_Ref<Publisher4>;
 
   @MikroORM_Property({ type: 'json', nullable: true })
@@ -7334,11 +7044,11 @@ export class FooBar4 extends BaseEntity2 {
   name: string & MikroORM_Opt = 'asd';
 
   @MikroORM_Unique({ name: 'foo_bar4_baz_id_unique' })
-  @MikroORM_OneToOne({ entity: () => FooBaz4, ref: true, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  @MikroORM_OneToOne({ entity: () => FooBaz4, ref: true, updateRule: 'no action', nullable: true })
   baz?: MikroORM_Ref<FooBaz4>;
 
   @MikroORM_Unique({ name: 'foo_bar4_foo_bar_id_unique' })
-  @MikroORM_OneToOne({ entity: () => FooBar4, ref: true, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  @MikroORM_OneToOne({ entity: () => FooBar4, ref: true, updateRule: 'no action', nullable: true })
   fooBar?: MikroORM_Ref<FooBar4>;
 
   @MikroORM_Property({ type: 'integer' })
@@ -7444,11 +7154,11 @@ export class Publisher4Tests extends BaseEntity2 {
   id!: number;
 
   @MikroORM_Index({ name: 'publisher4_tests_publisher4_id_index' })
-  @MikroORM_ManyToOne({ entity: () => Publisher4, ref: true, updateRule: 'cascade', deleteRule: 'cascade' })
+  @MikroORM_ManyToOne({ entity: () => Publisher4, ref: true })
   publisher4!: MikroORM_Ref<Publisher4>;
 
   @MikroORM_Index({ name: 'publisher4_tests_test4_id_index' })
-  @MikroORM_ManyToOne({ entity: () => Test4, ref: true, updateRule: 'cascade', deleteRule: 'cascade' })
+  @MikroORM_ManyToOne({ entity: () => Test4, ref: true })
   test4!: MikroORM_Ref<Test4>;
 
 }
@@ -7466,11 +7176,11 @@ export class TagsOrdered extends BaseEntity2 {
   id!: number;
 
   @MikroORM_Index({ name: 'tags_ordered_book4_id_index' })
-  @MikroORM_ManyToOne({ entity: () => Book4, ref: true, updateRule: 'cascade', deleteRule: 'cascade' })
+  @MikroORM_ManyToOne({ entity: () => Book4, ref: true })
   book4!: MikroORM_Ref<Book4>;
 
   @MikroORM_Index({ name: 'tags_ordered_book_tag4_id_index' })
-  @MikroORM_ManyToOne({ entity: () => BookTag4, ref: true, updateRule: 'cascade', deleteRule: 'cascade' })
+  @MikroORM_ManyToOne({ entity: () => BookTag4, ref: true })
   bookTag4!: MikroORM_Ref<BookTag4>;
 
 }
@@ -7558,8 +7268,7 @@ export const Author4Schema = new MikroORM_EntitySchema({
       kind: 'm:1',
       entity: () => Book4,
       ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'set null',
+      updateRule: 'no action',
       nullable: true,
     },
     identity: { type: 'json', nullable: true },
@@ -7636,16 +7345,14 @@ export const Book4Schema = new MikroORM_EntitySchema({
       kind: 'm:1',
       entity: () => Author4,
       ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'set null',
+      updateRule: 'no action',
       nullable: true,
     },
     publisher: {
       kind: 'm:1',
       entity: () => Publisher4,
       ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'set null',
+      updateRule: 'no action',
       nullable: true,
     },
     meta: { type: 'json', nullable: true },
@@ -7699,16 +7406,14 @@ export const FooBar4Schema = new MikroORM_EntitySchema({
       kind: '1:1',
       entity: () => FooBaz4,
       ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'set null',
+      updateRule: 'no action',
       nullable: true,
     },
     fooBar: {
       kind: '1:1',
       entity: () => FooBar4,
       ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'set null',
+      updateRule: 'no action',
       nullable: true,
     },
     version: { type: 'integer' },
@@ -7802,20 +7507,8 @@ export const Publisher4TestsSchema = new MikroORM_EntitySchema({
   tableName: 'publisher4_tests',
   properties: {
     id: { primary: true, type: 'integer' },
-    publisher4: {
-      kind: 'm:1',
-      entity: () => Publisher4,
-      ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
-    },
-    test4: {
-      kind: 'm:1',
-      entity: () => Test4,
-      ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
-    },
+    publisher4: { kind: 'm:1', entity: () => Publisher4, ref: true },
+    test4: { kind: 'm:1', entity: () => Test4, ref: true },
   },
 });
 ",
@@ -7834,20 +7527,8 @@ export const TagsOrderedSchema = new MikroORM_EntitySchema({
   class: TagsOrdered,
   properties: {
     id: { primary: true, type: 'integer' },
-    book4: {
-      kind: 'm:1',
-      entity: () => Book4,
-      ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
-    },
-    bookTag4: {
-      kind: 'm:1',
-      entity: () => BookTag4,
-      ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
-    },
+    book4: { kind: 'm:1', entity: () => Book4, ref: true },
+    bookTag4: { kind: 'm:1', entity: () => BookTag4, ref: true },
   },
 });
 ",
@@ -7938,7 +7619,7 @@ export class Author4 extends CustomBase {
   bornTime?: string;
 
   @MikroORM_Index({ name: 'author4_favourite_book_id_index' })
-  @MikroORM_ManyToOne({ entity: () => Book4, ref: true, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  @MikroORM_ManyToOne({ entity: () => Book4, ref: true, updateRule: 'no action', nullable: true })
   favouriteBook?: MikroORM_Ref<Book4>;
 
   @MikroORM_Property({ type: 'json', nullable: true })
@@ -8008,11 +7689,11 @@ export class Book4 extends CustomBase {
   price?: unknown;
 
   @MikroORM_Index({ name: 'book4_author_id_index' })
-  @MikroORM_ManyToOne({ entity: () => Author4, ref: true, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  @MikroORM_ManyToOne({ entity: () => Author4, ref: true, updateRule: 'no action', nullable: true })
   author?: MikroORM_Ref<Author4>;
 
   @MikroORM_Index({ name: 'book4_publisher_id_index' })
-  @MikroORM_ManyToOne({ entity: () => Publisher4, ref: true, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  @MikroORM_ManyToOne({ entity: () => Publisher4, ref: true, updateRule: 'no action', nullable: true })
   publisher?: MikroORM_Ref<Publisher4>;
 
   @MikroORM_Property({ type: 'json', nullable: true })
@@ -8050,11 +7731,11 @@ export class FooBar4 extends CustomBase {
   name: string & MikroORM_Opt = 'asd';
 
   @MikroORM_Unique({ name: 'foo_bar4_baz_id_unique' })
-  @MikroORM_OneToOne({ entity: () => FooBaz4, ref: true, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  @MikroORM_OneToOne({ entity: () => FooBaz4, ref: true, updateRule: 'no action', nullable: true })
   baz?: MikroORM_Ref<FooBaz4>;
 
   @MikroORM_Unique({ name: 'foo_bar4_foo_bar_id_unique' })
-  @MikroORM_OneToOne({ entity: () => FooBar4, ref: true, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  @MikroORM_OneToOne({ entity: () => FooBar4, ref: true, updateRule: 'no action', nullable: true })
   fooBar?: MikroORM_Ref<FooBar4>;
 
   @MikroORM_Property({ type: 'integer' })
@@ -8160,11 +7841,11 @@ export class Publisher4Tests extends CustomBase {
   id!: number;
 
   @MikroORM_Index({ name: 'publisher4_tests_publisher4_id_index' })
-  @MikroORM_ManyToOne({ entity: () => Publisher4, ref: true, updateRule: 'cascade', deleteRule: 'cascade' })
+  @MikroORM_ManyToOne({ entity: () => Publisher4, ref: true })
   publisher4!: MikroORM_Ref<Publisher4>;
 
   @MikroORM_Index({ name: 'publisher4_tests_test4_id_index' })
-  @MikroORM_ManyToOne({ entity: () => Test4, ref: true, updateRule: 'cascade', deleteRule: 'cascade' })
+  @MikroORM_ManyToOne({ entity: () => Test4, ref: true })
   test4!: MikroORM_Ref<Test4>;
 
 }
@@ -8182,11 +7863,11 @@ export class TagsOrdered extends CustomBase {
   id!: number;
 
   @MikroORM_Index({ name: 'tags_ordered_book4_id_index' })
-  @MikroORM_ManyToOne({ entity: () => Book4, ref: true, updateRule: 'cascade', deleteRule: 'cascade' })
+  @MikroORM_ManyToOne({ entity: () => Book4, ref: true })
   book4!: MikroORM_Ref<Book4>;
 
   @MikroORM_Index({ name: 'tags_ordered_book_tag4_id_index' })
-  @MikroORM_ManyToOne({ entity: () => BookTag4, ref: true, updateRule: 'cascade', deleteRule: 'cascade' })
+  @MikroORM_ManyToOne({ entity: () => BookTag4, ref: true })
   bookTag4!: MikroORM_Ref<BookTag4>;
 
 }
@@ -8279,8 +7960,7 @@ export const Author4Schema = new MikroORM_EntitySchema({
       kind: 'm:1',
       entity: () => Book4,
       ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'set null',
+      updateRule: 'no action',
       nullable: true,
     },
     identity: { type: 'json', nullable: true },
@@ -8357,16 +8037,14 @@ export const Book4Schema = new MikroORM_EntitySchema({
       kind: 'm:1',
       entity: () => Author4,
       ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'set null',
+      updateRule: 'no action',
       nullable: true,
     },
     publisher: {
       kind: 'm:1',
       entity: () => Publisher4,
       ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'set null',
+      updateRule: 'no action',
       nullable: true,
     },
     meta: { type: 'json', nullable: true },
@@ -8420,16 +8098,14 @@ export const FooBar4Schema = new MikroORM_EntitySchema({
       kind: '1:1',
       entity: () => FooBaz4,
       ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'set null',
+      updateRule: 'no action',
       nullable: true,
     },
     fooBar: {
       kind: '1:1',
       entity: () => FooBar4,
       ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'set null',
+      updateRule: 'no action',
       nullable: true,
     },
     version: { type: 'integer' },
@@ -8523,20 +8199,8 @@ export const Publisher4TestsSchema = new MikroORM_EntitySchema({
   tableName: 'publisher4_tests',
   properties: {
     id: { primary: true, type: 'integer' },
-    publisher4: {
-      kind: 'm:1',
-      entity: () => Publisher4,
-      ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
-    },
-    test4: {
-      kind: 'm:1',
-      entity: () => Test4,
-      ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
-    },
+    publisher4: { kind: 'm:1', entity: () => Publisher4, ref: true },
+    test4: { kind: 'm:1', entity: () => Test4, ref: true },
   },
 });
 ",
@@ -8555,20 +8219,8 @@ export const TagsOrderedSchema = new MikroORM_EntitySchema({
   class: TagsOrdered,
   properties: {
     id: { primary: true, type: 'integer' },
-    book4: {
-      kind: 'm:1',
-      entity: () => Book4,
-      ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
-    },
-    bookTag4: {
-      kind: 'm:1',
-      entity: () => BookTag4,
-      ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
-    },
+    book4: { kind: 'm:1', entity: () => Book4, ref: true },
+    bookTag4: { kind: 'm:1', entity: () => BookTag4, ref: true },
   },
 });
 ",
@@ -8670,7 +8322,7 @@ export class Author4 extends MikroORM_BaseEntity {
   bornTime?: string;
 
   @MikroORM_Index({ name: 'author4_favourite_book_id_index' })
-  @MikroORM_ManyToOne({ entity: () => Book4, ref: true, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  @MikroORM_ManyToOne({ entity: () => Book4, ref: true, updateRule: 'no action', nullable: true })
   favouriteBook?: MikroORM_Ref<Book4>;
 
   @MikroORM_Property({ type: 'json', nullable: true })
@@ -8738,11 +8390,11 @@ export class Book4 extends MikroORM_BaseEntity {
   price?: unknown;
 
   @MikroORM_Index({ name: 'book4_author_id_index' })
-  @MikroORM_ManyToOne({ entity: () => Author4, ref: true, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  @MikroORM_ManyToOne({ entity: () => Author4, ref: true, updateRule: 'no action', nullable: true })
   author?: MikroORM_Ref<Author4>;
 
   @MikroORM_Index({ name: 'book4_publisher_id_index' })
-  @MikroORM_ManyToOne({ entity: () => Publisher4, ref: true, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  @MikroORM_ManyToOne({ entity: () => Publisher4, ref: true, updateRule: 'no action', nullable: true })
   publisher?: MikroORM_Ref<Publisher4>;
 
   @MikroORM_Property({ type: 'json', nullable: true })
@@ -8779,11 +8431,11 @@ export class FooBar4 extends MikroORM_BaseEntity {
   name: string & MikroORM_Opt = 'asd';
 
   @MikroORM_Unique({ name: 'foo_bar4_baz_id_unique' })
-  @MikroORM_OneToOne({ entity: () => FooBaz4, ref: true, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  @MikroORM_OneToOne({ entity: () => FooBaz4, ref: true, updateRule: 'no action', nullable: true })
   baz?: MikroORM_Ref<FooBaz4>;
 
   @MikroORM_Unique({ name: 'foo_bar4_foo_bar_id_unique' })
-  @MikroORM_OneToOne({ entity: () => FooBar4, ref: true, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  @MikroORM_OneToOne({ entity: () => FooBar4, ref: true, updateRule: 'no action', nullable: true })
   fooBar?: MikroORM_Ref<FooBar4>;
 
   @MikroORM_Property({ type: 'integer' })
@@ -8886,11 +8538,11 @@ export class Publisher4Tests extends MikroORM_BaseEntity {
   id!: number;
 
   @MikroORM_Index({ name: 'publisher4_tests_publisher4_id_index' })
-  @MikroORM_ManyToOne({ entity: () => Publisher4, ref: true, updateRule: 'cascade', deleteRule: 'cascade' })
+  @MikroORM_ManyToOne({ entity: () => Publisher4, ref: true })
   publisher4!: MikroORM_Ref<Publisher4>;
 
   @MikroORM_Index({ name: 'publisher4_tests_test4_id_index' })
-  @MikroORM_ManyToOne({ entity: () => Test4, ref: true, updateRule: 'cascade', deleteRule: 'cascade' })
+  @MikroORM_ManyToOne({ entity: () => Test4, ref: true })
   test4!: MikroORM_Ref<Test4>;
 
 }
@@ -8907,11 +8559,11 @@ export class TagsOrdered extends MikroORM_BaseEntity {
   id!: number;
 
   @MikroORM_Index({ name: 'tags_ordered_book4_id_index' })
-  @MikroORM_ManyToOne({ entity: () => Book4, ref: true, updateRule: 'cascade', deleteRule: 'cascade' })
+  @MikroORM_ManyToOne({ entity: () => Book4, ref: true })
   book4!: MikroORM_Ref<Book4>;
 
   @MikroORM_Index({ name: 'tags_ordered_book_tag4_id_index' })
-  @MikroORM_ManyToOne({ entity: () => BookTag4, ref: true, updateRule: 'cascade', deleteRule: 'cascade' })
+  @MikroORM_ManyToOne({ entity: () => BookTag4, ref: true })
   bookTag4!: MikroORM_Ref<BookTag4>;
 
 }
@@ -8995,8 +8647,7 @@ export const Author4Schema = new MikroORM_EntitySchema({
       kind: 'm:1',
       entity: () => Book4,
       ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'set null',
+      updateRule: 'no action',
       nullable: true,
     },
     identity: { type: 'json', nullable: true },
@@ -9073,16 +8724,14 @@ export const Book4Schema = new MikroORM_EntitySchema({
       kind: 'm:1',
       entity: () => Author4,
       ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'set null',
+      updateRule: 'no action',
       nullable: true,
     },
     publisher: {
       kind: 'm:1',
       entity: () => Publisher4,
       ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'set null',
+      updateRule: 'no action',
       nullable: true,
     },
     meta: { type: 'json', nullable: true },
@@ -9136,16 +8785,14 @@ export const FooBar4Schema = new MikroORM_EntitySchema({
       kind: '1:1',
       entity: () => FooBaz4,
       ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'set null',
+      updateRule: 'no action',
       nullable: true,
     },
     fooBar: {
       kind: '1:1',
       entity: () => FooBar4,
       ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'set null',
+      updateRule: 'no action',
       nullable: true,
     },
     version: { type: 'integer' },
@@ -9239,20 +8886,8 @@ export const Publisher4TestsSchema = new MikroORM_EntitySchema({
   tableName: 'publisher4_tests',
   properties: {
     id: { primary: true, type: 'integer' },
-    publisher4: {
-      kind: 'm:1',
-      entity: () => Publisher4,
-      ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
-    },
-    test4: {
-      kind: 'm:1',
-      entity: () => Test4,
-      ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
-    },
+    publisher4: { kind: 'm:1', entity: () => Publisher4, ref: true },
+    test4: { kind: 'm:1', entity: () => Test4, ref: true },
   },
 });
 ",
@@ -9271,20 +8906,8 @@ export const TagsOrderedSchema = new MikroORM_EntitySchema({
   class: TagsOrdered,
   properties: {
     id: { primary: true, type: 'integer' },
-    book4: {
-      kind: 'm:1',
-      entity: () => Book4,
-      ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
-    },
-    bookTag4: {
-      kind: 'm:1',
-      entity: () => BookTag4,
-      ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
-    },
+    book4: { kind: 'm:1', entity: () => Book4, ref: true },
+    bookTag4: { kind: 'm:1', entity: () => BookTag4, ref: true },
   },
 });
 ",
@@ -9375,7 +8998,7 @@ export class Author4 extends BaseEntity {
   bornTime?: string;
 
   @MikroORM_Index({ name: 'author4_favourite_book_id_index' })
-  @MikroORM_ManyToOne({ entity: () => Book4, ref: true, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  @MikroORM_ManyToOne({ entity: () => Book4, ref: true, updateRule: 'no action', nullable: true })
   favouriteBook?: MikroORM_Ref<Book4>;
 
   @MikroORM_Property({ type: 'json', nullable: true })
@@ -9445,11 +9068,11 @@ export class Book4 extends BaseEntity {
   price?: unknown;
 
   @MikroORM_Index({ name: 'book4_author_id_index' })
-  @MikroORM_ManyToOne({ entity: () => Author4, ref: true, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  @MikroORM_ManyToOne({ entity: () => Author4, ref: true, updateRule: 'no action', nullable: true })
   author?: MikroORM_Ref<Author4>;
 
   @MikroORM_Index({ name: 'book4_publisher_id_index' })
-  @MikroORM_ManyToOne({ entity: () => Publisher4, ref: true, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  @MikroORM_ManyToOne({ entity: () => Publisher4, ref: true, updateRule: 'no action', nullable: true })
   publisher?: MikroORM_Ref<Publisher4>;
 
   @MikroORM_Property({ type: 'json', nullable: true })
@@ -9487,11 +9110,11 @@ export class FooBar4 extends BaseEntity {
   name: string & MikroORM_Opt = 'asd';
 
   @MikroORM_Unique({ name: 'foo_bar4_baz_id_unique' })
-  @MikroORM_OneToOne({ entity: () => FooBaz4, ref: true, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  @MikroORM_OneToOne({ entity: () => FooBaz4, ref: true, updateRule: 'no action', nullable: true })
   baz?: MikroORM_Ref<FooBaz4>;
 
   @MikroORM_Unique({ name: 'foo_bar4_foo_bar_id_unique' })
-  @MikroORM_OneToOne({ entity: () => FooBar4, ref: true, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  @MikroORM_OneToOne({ entity: () => FooBar4, ref: true, updateRule: 'no action', nullable: true })
   fooBar?: MikroORM_Ref<FooBar4>;
 
   @MikroORM_Property({ type: 'integer' })
@@ -9597,11 +9220,11 @@ export class Publisher4Tests extends BaseEntity {
   id!: number;
 
   @MikroORM_Index({ name: 'publisher4_tests_publisher4_id_index' })
-  @MikroORM_ManyToOne({ entity: () => Publisher4, ref: true, updateRule: 'cascade', deleteRule: 'cascade' })
+  @MikroORM_ManyToOne({ entity: () => Publisher4, ref: true })
   publisher4!: MikroORM_Ref<Publisher4>;
 
   @MikroORM_Index({ name: 'publisher4_tests_test4_id_index' })
-  @MikroORM_ManyToOne({ entity: () => Test4, ref: true, updateRule: 'cascade', deleteRule: 'cascade' })
+  @MikroORM_ManyToOne({ entity: () => Test4, ref: true })
   test4!: MikroORM_Ref<Test4>;
 
 }
@@ -9619,11 +9242,11 @@ export class TagsOrdered extends BaseEntity {
   id!: number;
 
   @MikroORM_Index({ name: 'tags_ordered_book4_id_index' })
-  @MikroORM_ManyToOne({ entity: () => Book4, ref: true, updateRule: 'cascade', deleteRule: 'cascade' })
+  @MikroORM_ManyToOne({ entity: () => Book4, ref: true })
   book4!: MikroORM_Ref<Book4>;
 
   @MikroORM_Index({ name: 'tags_ordered_book_tag4_id_index' })
-  @MikroORM_ManyToOne({ entity: () => BookTag4, ref: true, updateRule: 'cascade', deleteRule: 'cascade' })
+  @MikroORM_ManyToOne({ entity: () => BookTag4, ref: true })
   bookTag4!: MikroORM_Ref<BookTag4>;
 
 }
@@ -9716,8 +9339,7 @@ export const Author4Schema = new MikroORM_EntitySchema({
       kind: 'm:1',
       entity: () => Book4,
       ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'set null',
+      updateRule: 'no action',
       nullable: true,
     },
     identity: { type: 'json', nullable: true },
@@ -9794,16 +9416,14 @@ export const Book4Schema = new MikroORM_EntitySchema({
       kind: 'm:1',
       entity: () => Author4,
       ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'set null',
+      updateRule: 'no action',
       nullable: true,
     },
     publisher: {
       kind: 'm:1',
       entity: () => Publisher4,
       ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'set null',
+      updateRule: 'no action',
       nullable: true,
     },
     meta: { type: 'json', nullable: true },
@@ -9857,16 +9477,14 @@ export const FooBar4Schema = new MikroORM_EntitySchema({
       kind: '1:1',
       entity: () => FooBaz4,
       ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'set null',
+      updateRule: 'no action',
       nullable: true,
     },
     fooBar: {
       kind: '1:1',
       entity: () => FooBar4,
       ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'set null',
+      updateRule: 'no action',
       nullable: true,
     },
     version: { type: 'integer' },
@@ -9960,20 +9578,8 @@ export const Publisher4TestsSchema = new MikroORM_EntitySchema({
   tableName: 'publisher4_tests',
   properties: {
     id: { primary: true, type: 'integer' },
-    publisher4: {
-      kind: 'm:1',
-      entity: () => Publisher4,
-      ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
-    },
-    test4: {
-      kind: 'm:1',
-      entity: () => Test4,
-      ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
-    },
+    publisher4: { kind: 'm:1', entity: () => Publisher4, ref: true },
+    test4: { kind: 'm:1', entity: () => Test4, ref: true },
   },
 });
 ",
@@ -9992,20 +9598,8 @@ export const TagsOrderedSchema = new MikroORM_EntitySchema({
   class: TagsOrdered,
   properties: {
     id: { primary: true, type: 'integer' },
-    book4: {
-      kind: 'm:1',
-      entity: () => Book4,
-      ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
-    },
-    bookTag4: {
-      kind: 'm:1',
-      entity: () => BookTag4,
-      ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
-    },
+    book4: { kind: 'm:1', entity: () => Book4, ref: true },
+    bookTag4: { kind: 'm:1', entity: () => BookTag4, ref: true },
   },
 });
 ",
@@ -10108,7 +9702,7 @@ export class Author4 extends BaseEntity2 {
   bornTime?: string;
 
   @MikroORM_Index({ name: 'author4_favourite_book_id_index' })
-  @MikroORM_ManyToOne({ entity: () => Book4, ref: true, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  @MikroORM_ManyToOne({ entity: () => Book4, ref: true, updateRule: 'no action', nullable: true })
   favouriteBook?: MikroORM_Ref<Book4>;
 
   @MikroORM_Property({ type: 'json', nullable: true })
@@ -10178,11 +9772,11 @@ export class Book4 extends BaseEntity2 {
   price?: unknown;
 
   @MikroORM_Index({ name: 'book4_author_id_index' })
-  @MikroORM_ManyToOne({ entity: () => Author4, ref: true, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  @MikroORM_ManyToOne({ entity: () => Author4, ref: true, updateRule: 'no action', nullable: true })
   author?: MikroORM_Ref<Author4>;
 
   @MikroORM_Index({ name: 'book4_publisher_id_index' })
-  @MikroORM_ManyToOne({ entity: () => Publisher4, ref: true, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  @MikroORM_ManyToOne({ entity: () => Publisher4, ref: true, updateRule: 'no action', nullable: true })
   publisher?: MikroORM_Ref<Publisher4>;
 
   @MikroORM_Property({ type: 'json', nullable: true })
@@ -10220,11 +9814,11 @@ export class FooBar4 extends BaseEntity2 {
   name: string & MikroORM_Opt = 'asd';
 
   @MikroORM_Unique({ name: 'foo_bar4_baz_id_unique' })
-  @MikroORM_OneToOne({ entity: () => FooBaz4, ref: true, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  @MikroORM_OneToOne({ entity: () => FooBaz4, ref: true, updateRule: 'no action', nullable: true })
   baz?: MikroORM_Ref<FooBaz4>;
 
   @MikroORM_Unique({ name: 'foo_bar4_foo_bar_id_unique' })
-  @MikroORM_OneToOne({ entity: () => FooBar4, ref: true, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  @MikroORM_OneToOne({ entity: () => FooBar4, ref: true, updateRule: 'no action', nullable: true })
   fooBar?: MikroORM_Ref<FooBar4>;
 
   @MikroORM_Property({ type: 'integer' })
@@ -10330,11 +9924,11 @@ export class Publisher4Tests extends BaseEntity2 {
   id!: number;
 
   @MikroORM_Index({ name: 'publisher4_tests_publisher4_id_index' })
-  @MikroORM_ManyToOne({ entity: () => Publisher4, ref: true, updateRule: 'cascade', deleteRule: 'cascade' })
+  @MikroORM_ManyToOne({ entity: () => Publisher4, ref: true })
   publisher4!: MikroORM_Ref<Publisher4>;
 
   @MikroORM_Index({ name: 'publisher4_tests_test4_id_index' })
-  @MikroORM_ManyToOne({ entity: () => Test4, ref: true, updateRule: 'cascade', deleteRule: 'cascade' })
+  @MikroORM_ManyToOne({ entity: () => Test4, ref: true })
   test4!: MikroORM_Ref<Test4>;
 
 }
@@ -10352,11 +9946,11 @@ export class TagsOrdered extends BaseEntity2 {
   id!: number;
 
   @MikroORM_Index({ name: 'tags_ordered_book4_id_index' })
-  @MikroORM_ManyToOne({ entity: () => Book4, ref: true, updateRule: 'cascade', deleteRule: 'cascade' })
+  @MikroORM_ManyToOne({ entity: () => Book4, ref: true })
   book4!: MikroORM_Ref<Book4>;
 
   @MikroORM_Index({ name: 'tags_ordered_book_tag4_id_index' })
-  @MikroORM_ManyToOne({ entity: () => BookTag4, ref: true, updateRule: 'cascade', deleteRule: 'cascade' })
+  @MikroORM_ManyToOne({ entity: () => BookTag4, ref: true })
   bookTag4!: MikroORM_Ref<BookTag4>;
 
 }
@@ -10444,8 +10038,7 @@ export const Author4Schema = new MikroORM_EntitySchema({
       kind: 'm:1',
       entity: () => Book4,
       ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'set null',
+      updateRule: 'no action',
       nullable: true,
     },
     identity: { type: 'json', nullable: true },
@@ -10522,16 +10115,14 @@ export const Book4Schema = new MikroORM_EntitySchema({
       kind: 'm:1',
       entity: () => Author4,
       ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'set null',
+      updateRule: 'no action',
       nullable: true,
     },
     publisher: {
       kind: 'm:1',
       entity: () => Publisher4,
       ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'set null',
+      updateRule: 'no action',
       nullable: true,
     },
     meta: { type: 'json', nullable: true },
@@ -10585,16 +10176,14 @@ export const FooBar4Schema = new MikroORM_EntitySchema({
       kind: '1:1',
       entity: () => FooBaz4,
       ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'set null',
+      updateRule: 'no action',
       nullable: true,
     },
     fooBar: {
       kind: '1:1',
       entity: () => FooBar4,
       ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'set null',
+      updateRule: 'no action',
       nullable: true,
     },
     version: { type: 'integer' },
@@ -10688,20 +10277,8 @@ export const Publisher4TestsSchema = new MikroORM_EntitySchema({
   tableName: 'publisher4_tests',
   properties: {
     id: { primary: true, type: 'integer' },
-    publisher4: {
-      kind: 'm:1',
-      entity: () => Publisher4,
-      ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
-    },
-    test4: {
-      kind: 'm:1',
-      entity: () => Test4,
-      ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
-    },
+    publisher4: { kind: 'm:1', entity: () => Publisher4, ref: true },
+    test4: { kind: 'm:1', entity: () => Test4, ref: true },
   },
 });
 ",
@@ -10720,20 +10297,8 @@ export const TagsOrderedSchema = new MikroORM_EntitySchema({
   class: TagsOrdered,
   properties: {
     id: { primary: true, type: 'integer' },
-    book4: {
-      kind: 'm:1',
-      entity: () => Book4,
-      ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
-    },
-    bookTag4: {
-      kind: 'm:1',
-      entity: () => BookTag4,
-      ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
-    },
+    book4: { kind: 'm:1', entity: () => Book4, ref: true },
+    bookTag4: { kind: 'm:1', entity: () => BookTag4, ref: true },
   },
 });
 ",
@@ -10824,7 +10389,7 @@ export class Author4 extends CustomBase {
   bornTime?: string;
 
   @MikroORM_Index({ name: 'author4_favourite_book_id_index' })
-  @MikroORM_ManyToOne({ entity: () => Book4, ref: true, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  @MikroORM_ManyToOne({ entity: () => Book4, ref: true, updateRule: 'no action', nullable: true })
   favouriteBook?: MikroORM_Ref<Book4>;
 
   @MikroORM_Property({ type: 'json', nullable: true })
@@ -10894,11 +10459,11 @@ export class Book4 extends CustomBase {
   price?: unknown;
 
   @MikroORM_Index({ name: 'book4_author_id_index' })
-  @MikroORM_ManyToOne({ entity: () => Author4, ref: true, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  @MikroORM_ManyToOne({ entity: () => Author4, ref: true, updateRule: 'no action', nullable: true })
   author?: MikroORM_Ref<Author4>;
 
   @MikroORM_Index({ name: 'book4_publisher_id_index' })
-  @MikroORM_ManyToOne({ entity: () => Publisher4, ref: true, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  @MikroORM_ManyToOne({ entity: () => Publisher4, ref: true, updateRule: 'no action', nullable: true })
   publisher?: MikroORM_Ref<Publisher4>;
 
   @MikroORM_Property({ type: 'json', nullable: true })
@@ -10936,11 +10501,11 @@ export class FooBar4 extends CustomBase {
   name: string & MikroORM_Opt = 'asd';
 
   @MikroORM_Unique({ name: 'foo_bar4_baz_id_unique' })
-  @MikroORM_OneToOne({ entity: () => FooBaz4, ref: true, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  @MikroORM_OneToOne({ entity: () => FooBaz4, ref: true, updateRule: 'no action', nullable: true })
   baz?: MikroORM_Ref<FooBaz4>;
 
   @MikroORM_Unique({ name: 'foo_bar4_foo_bar_id_unique' })
-  @MikroORM_OneToOne({ entity: () => FooBar4, ref: true, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  @MikroORM_OneToOne({ entity: () => FooBar4, ref: true, updateRule: 'no action', nullable: true })
   fooBar?: MikroORM_Ref<FooBar4>;
 
   @MikroORM_Property({ type: 'integer' })
@@ -11046,11 +10611,11 @@ export class Publisher4Tests extends CustomBase {
   id!: number;
 
   @MikroORM_Index({ name: 'publisher4_tests_publisher4_id_index' })
-  @MikroORM_ManyToOne({ entity: () => Publisher4, ref: true, updateRule: 'cascade', deleteRule: 'cascade' })
+  @MikroORM_ManyToOne({ entity: () => Publisher4, ref: true })
   publisher4!: MikroORM_Ref<Publisher4>;
 
   @MikroORM_Index({ name: 'publisher4_tests_test4_id_index' })
-  @MikroORM_ManyToOne({ entity: () => Test4, ref: true, updateRule: 'cascade', deleteRule: 'cascade' })
+  @MikroORM_ManyToOne({ entity: () => Test4, ref: true })
   test4!: MikroORM_Ref<Test4>;
 
 }
@@ -11068,11 +10633,11 @@ export class TagsOrdered extends CustomBase {
   id!: number;
 
   @MikroORM_Index({ name: 'tags_ordered_book4_id_index' })
-  @MikroORM_ManyToOne({ entity: () => Book4, ref: true, updateRule: 'cascade', deleteRule: 'cascade' })
+  @MikroORM_ManyToOne({ entity: () => Book4, ref: true })
   book4!: MikroORM_Ref<Book4>;
 
   @MikroORM_Index({ name: 'tags_ordered_book_tag4_id_index' })
-  @MikroORM_ManyToOne({ entity: () => BookTag4, ref: true, updateRule: 'cascade', deleteRule: 'cascade' })
+  @MikroORM_ManyToOne({ entity: () => BookTag4, ref: true })
   bookTag4!: MikroORM_Ref<BookTag4>;
 
 }
@@ -11165,8 +10730,7 @@ export const Author4Schema = new MikroORM_EntitySchema({
       kind: 'm:1',
       entity: () => Book4,
       ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'set null',
+      updateRule: 'no action',
       nullable: true,
     },
     identity: { type: 'json', nullable: true },
@@ -11243,16 +10807,14 @@ export const Book4Schema = new MikroORM_EntitySchema({
       kind: 'm:1',
       entity: () => Author4,
       ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'set null',
+      updateRule: 'no action',
       nullable: true,
     },
     publisher: {
       kind: 'm:1',
       entity: () => Publisher4,
       ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'set null',
+      updateRule: 'no action',
       nullable: true,
     },
     meta: { type: 'json', nullable: true },
@@ -11306,16 +10868,14 @@ export const FooBar4Schema = new MikroORM_EntitySchema({
       kind: '1:1',
       entity: () => FooBaz4,
       ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'set null',
+      updateRule: 'no action',
       nullable: true,
     },
     fooBar: {
       kind: '1:1',
       entity: () => FooBar4,
       ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'set null',
+      updateRule: 'no action',
       nullable: true,
     },
     version: { type: 'integer' },
@@ -11409,20 +10969,8 @@ export const Publisher4TestsSchema = new MikroORM_EntitySchema({
   tableName: 'publisher4_tests',
   properties: {
     id: { primary: true, type: 'integer' },
-    publisher4: {
-      kind: 'm:1',
-      entity: () => Publisher4,
-      ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
-    },
-    test4: {
-      kind: 'm:1',
-      entity: () => Test4,
-      ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
-    },
+    publisher4: { kind: 'm:1', entity: () => Publisher4, ref: true },
+    test4: { kind: 'm:1', entity: () => Test4, ref: true },
   },
 });
 ",
@@ -11441,20 +10989,8 @@ export const TagsOrderedSchema = new MikroORM_EntitySchema({
   class: TagsOrdered,
   properties: {
     id: { primary: true, type: 'integer' },
-    book4: {
-      kind: 'm:1',
-      entity: () => Book4,
-      ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
-    },
-    bookTag4: {
-      kind: 'm:1',
-      entity: () => BookTag4,
-      ref: true,
-      updateRule: 'cascade',
-      deleteRule: 'cascade',
-    },
+    book4: { kind: 'm:1', entity: () => Book4, ref: true },
+    bookTag4: { kind: 'm:1', entity: () => BookTag4, ref: true },
   },
 });
 ",

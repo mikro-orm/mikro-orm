@@ -6,7 +6,7 @@ exports[`schema diffing 1`] = `
 create table "product_category" ("id" serial primary key, "rank" numeric not null default 0, "parent_category_id" integer null);
 alter table "product_category" add constraint "product_category_parent_category_id_rank_unique" unique ("parent_category_id", "rank") deferrable initially deferred;
 
-alter table "product_category" add constraint "product_category_parent_category_id_foreign" foreign key ("parent_category_id") references "product_category" ("id") on update cascade on delete set null;
+alter table "product_category" add constraint "product_category_parent_category_id_foreign" foreign key ("parent_category_id") references "product_category" ("id") on delete set null;
 "
 `;
 

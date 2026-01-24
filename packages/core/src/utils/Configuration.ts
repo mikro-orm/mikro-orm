@@ -1085,6 +1085,16 @@ export interface Options<
      * Database name to use for management operations (e.g., creating/dropping databases).
      */
     managementDbName?: string;
+    /**
+     * Default ON UPDATE rule for foreign keys.
+     * When not set, no rule is emitted and the database uses its native default (NO ACTION/RESTRICT).
+     */
+    defaultUpdateRule?: 'cascade' | 'no action' | 'set null' | 'set default' | 'restrict';
+    /**
+     * Default ON DELETE rule for foreign keys.
+     * When not set, no rule is emitted and the database uses its native default (NO ACTION/RESTRICT).
+     */
+    defaultDeleteRule?: 'cascade' | 'no action' | 'set null' | 'set default' | 'restrict';
   };
   /**
    * Embeddable entity configuration options.

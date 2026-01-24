@@ -92,14 +92,14 @@ alter table "author_to_friend" add constraint "author_to_friend_pkey" primary ke
 create table "author2_following" ("author2_1_id" int4 not null, "author2_2_id" int4 not null);
 alter table "author2_following" add constraint "author2_following_pkey" primary key ("author2_1_id", "author2_2_id");
 
-alter table "foo_bar2" add constraint "foo_bar2_baz_id_foreign" foreign key ("baz_id") references "foo_baz2" ("id") on update cascade on delete set null;
-alter table "foo_bar2" add constraint "foo_bar2_foo_bar_id_foreign" foreign key ("foo_bar_id") references "foo_bar2" ("id") on update cascade on delete set null;
+alter table "foo_bar2" add constraint "foo_bar2_baz_id_foreign" foreign key ("baz_id") references "foo_baz2" ("id") on delete set null;
+alter table "foo_bar2" add constraint "foo_bar2_foo_bar_id_foreign" foreign key ("foo_bar_id") references "foo_bar2" ("id") on delete set null;
 
 alter table "foo_param2" add constraint "foo_param2_bar_id_foreign" foreign key ("bar_id") references "foo_bar2" ("id") on update cascade;
 alter table "foo_param2" add constraint "foo_param2_baz_id_foreign" foreign key ("baz_id") references "foo_baz2" ("id") on update cascade;
 
 alter table "author2" add constraint "author2_favourite_book_uuid_pk_foreign" foreign key ("favourite_book_uuid_pk") references "book2" ("uuid_pk") on update no action on delete cascade;
-alter table "author2" add constraint "author2_favourite_author_id_foreign" foreign key ("favourite_author_id") references "author2" ("id") on update cascade on delete set null;
+alter table "author2" add constraint "author2_favourite_author_id_foreign" foreign key ("favourite_author_id") references "author2" ("id") on delete set null;
 
 alter table "address2" add constraint "address2_author_id_foreign" foreign key ("author_id") references "author2" ("id") on update cascade on delete cascade;
 
@@ -107,7 +107,7 @@ alter table "book2" add constraint "book2_author_id_foreign" foreign key ("autho
 alter table "book2" add constraint "book2_publisher_id_foreign" foreign key ("publisher_id") references "publisher2" ("id") on update cascade on delete cascade;
 
 alter table "test2" add constraint "test2_book_uuid_pk_foreign" foreign key ("book_uuid_pk") references "book2" ("uuid_pk") on delete set null;
-alter table "test2" add constraint "test2_parent_id_foreign" foreign key ("parent_id") references "test2" ("id") on update cascade on delete set null;
+alter table "test2" add constraint "test2_parent_id_foreign" foreign key ("parent_id") references "test2" ("id") on delete set null;
 
 alter table "configuration2" add constraint "configuration2_test_id_foreign" foreign key ("test_id") references "test2" ("id") on update cascade;
 

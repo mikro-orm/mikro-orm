@@ -18,7 +18,7 @@ export const TestSchema = defineEntity({
     id: p.bigint().primary().autoincrement(false),
     name: p.string().length(-1).nullable(),
     created: p.datetime().nullable(),
-    test: () => p.manyToOne(Test).ref().updateRule('cascade').deleteRule('set null').nullable(),
+    test: () => p.manyToOne(Test).ref().updateRule('cascade').nullable(),
     testCollection: () => p.oneToMany(Test).mappedBy('test'),
   },
 });
@@ -41,7 +41,7 @@ export const Schema1TestSchema = defineEntity({
     id: p.bigint().primary().autoincrement(false),
     name: p.string().length(-1).nullable(),
     created: p.datetime().nullable(),
-    test: () => p.manyToOne(Schema1Test).ref().updateRule('cascade').deleteRule('set null').nullable(),
+    test: () => p.manyToOne(Schema1Test).ref().updateRule('cascade').nullable(),
     schema1TestCollection: () => p.oneToMany(Schema1Test).mappedBy('test'),
   },
 });
@@ -64,7 +64,7 @@ export const Schema2TestSchema = defineEntity({
     id: p.bigint().primary().autoincrement(false),
     name: p.string().length(-1).nullable(),
     created: p.datetime().nullable(),
-    test: () => p.manyToOne(Schema2Test).ref().updateRule('cascade').deleteRule('set null').nullable(),
+    test: () => p.manyToOne(Schema2Test).ref().updateRule('cascade').nullable(),
     schema2TestCollection: () => p.oneToMany(Schema2Test).mappedBy('test'),
   },
 });
@@ -91,7 +91,7 @@ export const PublicTestSchema = defineEntity({
     id: p.bigint().primary().autoincrement(false),
     name: p.string().length(-1).nullable(),
     created: p.datetime().nullable(),
-    test: () => p.manyToOne(PublicTest).ref().updateRule('cascade').deleteRule('set null').nullable(),
+    test: () => p.manyToOne(PublicTest).ref().updateRule('cascade').nullable(),
     publicTestCollection: () => p.oneToMany(PublicTest).mappedBy('test'),
   },
 });
@@ -114,7 +114,7 @@ export const Schema1TestSchema = defineEntity({
     id: p.bigint().primary().autoincrement(false),
     name: p.string().length(-1).nullable(),
     created: p.datetime().nullable(),
-    test: () => p.manyToOne(Schema1Test).ref().updateRule('cascade').deleteRule('set null').nullable(),
+    test: () => p.manyToOne(Schema1Test).ref().updateRule('cascade').nullable(),
     schema1TestCollection: () => p.oneToMany(Schema1Test).mappedBy('test'),
   },
 });
@@ -137,7 +137,7 @@ export const Schema2TestSchema = defineEntity({
     id: p.bigint().primary().autoincrement(false),
     name: p.string().length(-1).nullable(),
     created: p.datetime().nullable(),
-    test: () => p.manyToOne(Schema2Test).ref().updateRule('cascade').deleteRule('set null').nullable(),
+    test: () => p.manyToOne(Schema2Test).ref().updateRule('cascade').nullable(),
     schema2TestCollection: () => p.oneToMany(Schema2Test).mappedBy('test'),
   },
 });

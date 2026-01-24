@@ -55,7 +55,7 @@ export const UserGroupSchema = defineEntity({
   uniques: [{ name: 'user_group_id_org_id_key', properties: ['id', 'org'] }],
   properties: {
     id: p.integer().primary(),
-    org: () => p.manyToOne(Org).ref().updateRule('cascade'),
+    org: () => p.manyToOne(Org).ref().updateRule('no action').deleteRule('no action'),
     quoteSettings: () => p.oneToOne(QuoteSettings).ref().mappedBy('userGroup'),
   },
 });

@@ -10,6 +10,6 @@ alter table "example"."users" add constraint "users_type_check" check ("type" in
 
 create table "relations" ("id" varchar(255) not null, "applied_by_id" varchar(255) not null, primary key ("id"));
 
-alter table "relations" add constraint "relations_applied_by_id_foreign" foreign key ("applied_by_id") references "example"."users" ("id") on update cascade on delete set null;
+alter table "relations" add constraint "relations_applied_by_id_foreign" foreign key ("applied_by_id") references "example"."users" ("id") on delete set null;
 "
 `;

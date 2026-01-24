@@ -12,9 +12,9 @@ alter table \`step\` add index \`step_id_user_action_id_user_action_index\` (\`i
 create table \`component\` (\`id_component\` varchar(255) not null, \`step_id\` int unsigned not null, \`step_user_action_id_user_action\` varchar(255) not null, \`resultComponentId\` varchar(255) null, primary key (\`id_component\`)) default character set utf8mb4 engine = InnoDB;
 alter table \`component\` add index \`component_step_id_step_user_action_id_user_action_index\` (\`step_id\`, \`step_user_action_id_user_action\`);
 
-alter table \`step\` add constraint \`step_user_action_id_user_action_foreign\` foreign key (\`user_action_id_user_action\`) references \`user_action\` (\`id_user_action\`) on update cascade on delete cascade;
+alter table \`step\` add constraint \`step_user_action_id_user_action_foreign\` foreign key (\`user_action_id_user_action\`) references \`user_action\` (\`id_user_action\`) on delete cascade;
 
 alter table \`component\` add constraint \`component_step_id_step_user_action_id_user_action_foreign\` foreign key (\`step_id\`, \`step_user_action_id_user_action\`) references \`step\` (\`id\`, \`user_action_id_user_action\`) on update cascade on delete cascade;
-alter table \`component\` add constraint \`component_resultComponentId_foreign\` foreign key (\`resultComponentId\`) references \`component\` (\`id_component\`) on update cascade on delete set null;
+alter table \`component\` add constraint \`component_resultComponentId_foreign\` foreign key (\`resultComponentId\`) references \`component\` (\`id_component\`) on delete set null;
 "
 `;

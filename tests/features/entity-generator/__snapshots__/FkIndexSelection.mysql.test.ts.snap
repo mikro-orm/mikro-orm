@@ -49,7 +49,7 @@ export class Users {
   @PrimaryKey()
   userId!: number;
 
-  @ManyToOne({ entity: () => Cars, nullable: true, index: 'fk_users_cars_idx' })
+  @ManyToOne({ entity: () => Cars, updateRule: 'no action', deleteRule: 'no action', nullable: true, index: 'fk_users_cars_idx' })
   favorite?: Cars;
 
   @Property({ nullable: true, persist: false })
@@ -64,7 +64,7 @@ export class Users {
   @Property({ nullable: true })
   favoriteBook?: string;
 
-  @ManyToOne({ entity: () => FashionableColors, fieldNames: ['favorite_car_year', 'favorite_color'], nullable: true, index: 'fk_users_fashionable_colors1_idx' })
+  @ManyToOne({ entity: () => FashionableColors, fieldNames: ['favorite_car_year', 'favorite_color'], updateRule: 'no action', deleteRule: 'no action', nullable: true, index: 'fk_users_fashionable_colors1_idx' })
   fashionableColors?: FashionableColors;
 
 }
@@ -137,6 +137,8 @@ export const UsersSchema = new EntitySchema({
     favorite: {
       kind: 'm:1',
       entity: () => Cars,
+      updateRule: 'no action',
+      deleteRule: 'no action',
       nullable: true,
       index: 'fk_users_cars_idx',
     },
@@ -153,6 +155,8 @@ export const UsersSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => FashionableColors,
       fieldNames: ['favorite_car_year', 'favorite_color'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       nullable: true,
       index: 'fk_users_fashionable_colors1_idx',
     },
@@ -211,7 +215,7 @@ export class Users {
   @PrimaryKey()
   userId!: number;
 
-  @ManyToOne({ entity: () => Cars, ref: true, nullable: true, index: 'fk_users_cars_idx' })
+  @ManyToOne({ entity: () => Cars, ref: true, updateRule: 'no action', deleteRule: 'no action', nullable: true, index: 'fk_users_cars_idx' })
   favorite?: Ref<Cars>;
 
   @Property({ nullable: true, persist: false })
@@ -226,7 +230,7 @@ export class Users {
   @Property({ nullable: true })
   favoriteBook?: string;
 
-  @ManyToOne({ entity: () => FashionableColors, ref: true, fieldNames: ['favorite_car_year', 'favorite_color'], nullable: true, index: 'fk_users_fashionable_colors1_idx' })
+  @ManyToOne({ entity: () => FashionableColors, ref: true, fieldNames: ['favorite_car_year', 'favorite_color'], updateRule: 'no action', deleteRule: 'no action', nullable: true, index: 'fk_users_fashionable_colors1_idx' })
   fashionableColors?: Ref<FashionableColors>;
 
 }
@@ -300,6 +304,8 @@ export const UsersSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => Cars,
       ref: true,
+      updateRule: 'no action',
+      deleteRule: 'no action',
       nullable: true,
       index: 'fk_users_cars_idx',
     },
@@ -317,6 +323,8 @@ export const UsersSchema = new EntitySchema({
       entity: () => FashionableColors,
       ref: true,
       fieldNames: ['favorite_car_year', 'favorite_color'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       nullable: true,
       index: 'fk_users_fashionable_colors1_idx',
     },
@@ -383,7 +391,7 @@ export class Users {
   @PrimaryKey()
   userId!: number;
 
-  @ManyToOne({ entity: () => Cars, nullable: true, index: 'fk_users_cars_idx' })
+  @ManyToOne({ entity: () => Cars, updateRule: 'no action', deleteRule: 'no action', nullable: true, index: 'fk_users_cars_idx' })
   favorite?: Cars;
 
   @Property({ nullable: true, persist: false })
@@ -398,7 +406,7 @@ export class Users {
   @Property({ nullable: true })
   favoriteBook?: string;
 
-  @ManyToOne({ entity: () => FashionableColors, fieldNames: ['favorite_car_year', 'favorite_color'], nullable: true, index: 'fk_users_fashionable_colors1_idx' })
+  @ManyToOne({ entity: () => FashionableColors, fieldNames: ['favorite_car_year', 'favorite_color'], updateRule: 'no action', deleteRule: 'no action', nullable: true, index: 'fk_users_fashionable_colors1_idx' })
   fashionableColors?: FashionableColors;
 
 }
@@ -481,6 +489,8 @@ export const UsersSchema = new EntitySchema({
     favorite: {
       kind: 'm:1',
       entity: () => Cars,
+      updateRule: 'no action',
+      deleteRule: 'no action',
       nullable: true,
       index: 'fk_users_cars_idx',
     },
@@ -497,6 +507,8 @@ export const UsersSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => FashionableColors,
       fieldNames: ['favorite_car_year', 'favorite_color'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       nullable: true,
       index: 'fk_users_fashionable_colors1_idx',
     },
@@ -563,7 +575,7 @@ export class Users {
   @PrimaryKey()
   userId!: number;
 
-  @ManyToOne({ entity: () => Cars, ref: true, nullable: true, index: 'fk_users_cars_idx' })
+  @ManyToOne({ entity: () => Cars, ref: true, updateRule: 'no action', deleteRule: 'no action', nullable: true, index: 'fk_users_cars_idx' })
   favorite?: Ref<Cars>;
 
   @Property({ nullable: true, persist: false })
@@ -578,7 +590,7 @@ export class Users {
   @Property({ nullable: true })
   favoriteBook?: string;
 
-  @ManyToOne({ entity: () => FashionableColors, ref: true, fieldNames: ['favorite_car_year', 'favorite_color'], nullable: true, index: 'fk_users_fashionable_colors1_idx' })
+  @ManyToOne({ entity: () => FashionableColors, ref: true, fieldNames: ['favorite_car_year', 'favorite_color'], updateRule: 'no action', deleteRule: 'no action', nullable: true, index: 'fk_users_fashionable_colors1_idx' })
   fashionableColors?: Ref<FashionableColors>;
 
 }
@@ -662,6 +674,8 @@ export const UsersSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => Cars,
       ref: true,
+      updateRule: 'no action',
+      deleteRule: 'no action',
       nullable: true,
       index: 'fk_users_cars_idx',
     },
@@ -679,6 +693,8 @@ export const UsersSchema = new EntitySchema({
       entity: () => FashionableColors,
       ref: true,
       fieldNames: ['favorite_car_year', 'favorite_color'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       nullable: true,
       index: 'fk_users_fashionable_colors1_idx',
     },
@@ -737,7 +753,7 @@ export class Users {
   userId!: number;
 
   @Index({ name: 'fk_users_fashionable_colors1_idx' })
-  @ManyToOne({ entity: () => FashionableColors, fieldNames: ['favorite_car_year', 'favorite_color'], nullable: true, index: 'fk_users_cars_idx' })
+  @ManyToOne({ entity: () => FashionableColors, fieldNames: ['favorite_car_year', 'favorite_color'], updateRule: 'no action', deleteRule: 'no action', nullable: true, index: 'fk_users_cars_idx' })
   favorite?: FashionableColors;
 
   @Property({ nullable: true })
@@ -813,6 +829,8 @@ export const UsersSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => FashionableColors,
       fieldNames: ['favorite_car_year', 'favorite_color'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       nullable: true,
       index: 'fk_users_cars_idx',
     },
@@ -872,7 +890,7 @@ export class Users {
   userId!: number;
 
   @Index({ name: 'fk_users_fashionable_colors1_idx' })
-  @ManyToOne({ entity: () => FashionableColors, ref: true, fieldNames: ['favorite_car_year', 'favorite_color'], nullable: true, index: 'fk_users_cars_idx' })
+  @ManyToOne({ entity: () => FashionableColors, ref: true, fieldNames: ['favorite_car_year', 'favorite_color'], updateRule: 'no action', deleteRule: 'no action', nullable: true, index: 'fk_users_cars_idx' })
   favorite?: Ref<FashionableColors>;
 
   @Property({ nullable: true })
@@ -949,6 +967,8 @@ export const UsersSchema = new EntitySchema({
       entity: () => FashionableColors,
       ref: true,
       fieldNames: ['favorite_car_year', 'favorite_color'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       nullable: true,
       index: 'fk_users_cars_idx',
     },
@@ -1012,7 +1032,7 @@ export class Users {
   userId!: number;
 
   @Index({ name: 'fk_users_fashionable_colors1_idx' })
-  @ManyToOne({ entity: () => FashionableColors, fieldNames: ['favorite_car_year', 'favorite_color'], nullable: true, index: 'fk_users_cars_idx' })
+  @ManyToOne({ entity: () => FashionableColors, fieldNames: ['favorite_car_year', 'favorite_color'], updateRule: 'no action', deleteRule: 'no action', nullable: true, index: 'fk_users_cars_idx' })
   favorite?: FashionableColors;
 
   @Property({ nullable: true })
@@ -1091,6 +1111,8 @@ export const UsersSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => FashionableColors,
       fieldNames: ['favorite_car_year', 'favorite_color'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       nullable: true,
       index: 'fk_users_cars_idx',
     },
@@ -1154,7 +1176,7 @@ export class Users {
   userId!: number;
 
   @Index({ name: 'fk_users_fashionable_colors1_idx' })
-  @ManyToOne({ entity: () => FashionableColors, ref: true, fieldNames: ['favorite_car_year', 'favorite_color'], nullable: true, index: 'fk_users_cars_idx' })
+  @ManyToOne({ entity: () => FashionableColors, ref: true, fieldNames: ['favorite_car_year', 'favorite_color'], updateRule: 'no action', deleteRule: 'no action', nullable: true, index: 'fk_users_cars_idx' })
   favorite?: Ref<FashionableColors>;
 
   @Property({ nullable: true })
@@ -1234,6 +1256,8 @@ export const UsersSchema = new EntitySchema({
       entity: () => FashionableColors,
       ref: true,
       fieldNames: ['favorite_car_year', 'favorite_color'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       nullable: true,
       index: 'fk_users_cars_idx',
     },
@@ -1293,7 +1317,7 @@ export class Users {
   userId!: number;
 
   @Index({ name: 'fk_users_fashionable_colors1_idx' })
-  @ManyToOne({ entity: () => FashionableColors, fieldNames: ['favorite_car_year', 'favorite_color'], nullable: true, index: 'fk_users_cars_idx' })
+  @ManyToOne({ entity: () => FashionableColors, fieldNames: ['favorite_car_year', 'favorite_color'], updateRule: 'no action', deleteRule: 'no action', nullable: true, index: 'fk_users_cars_idx' })
   favorite?: FashionableColors;
 
   @Property({ columnType: 'year', nullable: true, persist: false })
@@ -1373,6 +1397,8 @@ export const UsersSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => FashionableColors,
       fieldNames: ['favorite_car_year', 'favorite_color'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       nullable: true,
       index: 'fk_users_cars_idx',
     },
@@ -1438,7 +1464,7 @@ export class Users {
   userId!: number;
 
   @Index({ name: 'fk_users_fashionable_colors1_idx' })
-  @ManyToOne({ entity: () => FashionableColors, ref: true, fieldNames: ['favorite_car_year', 'favorite_color'], nullable: true, index: 'fk_users_cars_idx' })
+  @ManyToOne({ entity: () => FashionableColors, ref: true, fieldNames: ['favorite_car_year', 'favorite_color'], updateRule: 'no action', deleteRule: 'no action', nullable: true, index: 'fk_users_cars_idx' })
   favorite?: Ref<FashionableColors>;
 
   @Property({ columnType: 'year', nullable: true, persist: false })
@@ -1519,6 +1545,8 @@ export const UsersSchema = new EntitySchema({
       entity: () => FashionableColors,
       ref: true,
       fieldNames: ['favorite_car_year', 'favorite_color'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       nullable: true,
       index: 'fk_users_cars_idx',
     },
@@ -1588,7 +1616,7 @@ export class Users {
   userId!: number;
 
   @Index({ name: 'fk_users_fashionable_colors1_idx' })
-  @ManyToOne({ entity: () => FashionableColors, fieldNames: ['favorite_car_year', 'favorite_color'], nullable: true, index: 'fk_users_cars_idx' })
+  @ManyToOne({ entity: () => FashionableColors, fieldNames: ['favorite_car_year', 'favorite_color'], updateRule: 'no action', deleteRule: 'no action', nullable: true, index: 'fk_users_cars_idx' })
   favorite?: FashionableColors;
 
   @Property({ columnType: 'year', nullable: true, persist: false })
@@ -1671,6 +1699,8 @@ export const UsersSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => FashionableColors,
       fieldNames: ['favorite_car_year', 'favorite_color'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       nullable: true,
       index: 'fk_users_cars_idx',
     },
@@ -1740,7 +1770,7 @@ export class Users {
   userId!: number;
 
   @Index({ name: 'fk_users_fashionable_colors1_idx' })
-  @ManyToOne({ entity: () => FashionableColors, ref: true, fieldNames: ['favorite_car_year', 'favorite_color'], nullable: true, index: 'fk_users_cars_idx' })
+  @ManyToOne({ entity: () => FashionableColors, ref: true, fieldNames: ['favorite_car_year', 'favorite_color'], updateRule: 'no action', deleteRule: 'no action', nullable: true, index: 'fk_users_cars_idx' })
   favorite?: Ref<FashionableColors>;
 
   @Property({ columnType: 'year', nullable: true, persist: false })
@@ -1824,6 +1854,8 @@ export const UsersSchema = new EntitySchema({
       entity: () => FashionableColors,
       ref: true,
       fieldNames: ['favorite_car_year', 'favorite_color'],
+      updateRule: 'no action',
+      deleteRule: 'no action',
       nullable: true,
       index: 'fk_users_cars_idx',
     },

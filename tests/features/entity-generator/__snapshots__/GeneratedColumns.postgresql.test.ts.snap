@@ -44,7 +44,7 @@ export class Users {
   @Property({ type: 'date' })
   dateOfBirth!: string;
 
-  @ManyToOne({ entity: () => AllowedAgesAtCreation, ref: true, fieldName: 'age_at_creation', deleteRule: 'cascade', generated: () => "(EXTRACT(year FROM created_at) - EXTRACT(year FROM date_of_birth)) stored", nullable: true })
+  @ManyToOne({ entity: () => AllowedAgesAtCreation, ref: true, fieldName: 'age_at_creation', updateRule: 'restrict', deleteRule: 'cascade', generated: () => "(EXTRACT(year FROM created_at) - EXTRACT(year FROM date_of_birth)) stored", nullable: true })
   ageAtCreation?: Ref<AllowedAgesAtCreation>;
 
 }
@@ -96,7 +96,7 @@ export class Users {
   @Property({ type: 'date' })
   dateOfBirth!: string;
 
-  @ManyToOne({ entity: () => AllowedAgesAtCreation, ref: true, fieldName: 'age_at_creation', deleteRule: 'cascade', generated: '(EXTRACT(year FROM created_at) - EXTRACT(year FROM date_of_birth)) stored', nullable: true })
+  @ManyToOne({ entity: () => AllowedAgesAtCreation, ref: true, fieldName: 'age_at_creation', updateRule: 'restrict', deleteRule: 'cascade', generated: '(EXTRACT(year FROM created_at) - EXTRACT(year FROM date_of_birth)) stored', nullable: true })
   ageAtCreation?: Ref<AllowedAgesAtCreation>;
 
 }
@@ -162,6 +162,7 @@ export const UsersSchema = new EntitySchema({
       entity: () => AllowedAgesAtCreation,
       ref: true,
       fieldName: 'age_at_creation',
+      updateRule: 'restrict',
       deleteRule: 'cascade',
       generated: () => "(EXTRACT(year FROM created_at) - EXTRACT(year FROM date_of_birth)) stored",
       nullable: true,
@@ -230,6 +231,7 @@ export const UsersSchema = new EntitySchema({
       entity: () => AllowedAgesAtCreation,
       ref: true,
       fieldName: 'age_at_creation',
+      updateRule: 'restrict',
       deleteRule: 'cascade',
       generated: '(EXTRACT(year FROM created_at) - EXTRACT(year FROM date_of_birth)) stored',
       nullable: true,

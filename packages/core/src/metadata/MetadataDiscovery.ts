@@ -572,6 +572,18 @@ export class MetadataDiscovery {
     if (!prop.referencedColumnNames) {
       prop.referencedColumnNames = fieldNames;
     }
+
+    // Relations to composite PK targets need cascade update by default,
+    // since composite PKs are more likely to have mutable components
+    if (meta2.compositePK) {
+      prop.updateRule ??= 'cascade';
+    }
+
+    // Nullable relations default to 'set null' on delete - when the referenced
+    // entity is deleted, set the FK to null rather than failing
+    if (prop.nullable) {
+      prop.deleteRule ??= 'set null';
+    }
   }
 
   private initOneToManyFields(prop: EntityProperty): void {
@@ -592,9 +604,14 @@ export class MetadataDiscovery {
     meta.primaryKeys = pks.map(prop => prop.name);
     meta.compositePK = pks.length > 1;
 
-    // FK used as PK, we need to cascade
-    if (pks.length === 1 && pks[0].kind !== ReferenceKind.SCALAR) {
-      pks[0].deleteRule ??= 'cascade';
+    // FK used as PK, we need to cascade - applies to both single FK-as-PK
+    // and composite PKs where all PKs are FKs (e.g., pivot-like entities)
+    const fkPks = pks.filter(pk => pk.kind !== ReferenceKind.SCALAR);
+    if (fkPks.length > 0 && fkPks.length === pks.length) {
+      for (const pk of fkPks) {
+        pk.deleteRule ??= 'cascade';
+        pk.updateRule ??= 'cascade';
+      }
     }
 
     meta.forceConstructor ??= this.shouldForceConstructorUsage(meta);
@@ -808,10 +825,9 @@ export class MetadataDiscovery {
       createForeignKeyConstraint: prop.createForeignKeyConstraint,
     } as EntityProperty;
 
-    if (selfReferencing && !this.platform.supportsMultipleCascadePaths()) {
-      ret.updateRule ??= 'no action';
-      ret.deleteRule ??= 'no action';
-    }
+    const defaultRule = selfReferencing && !this.platform.supportsMultipleCascadePaths() ? 'no action' : 'cascade';
+    ret.updateRule ??= defaultRule;
+    ret.deleteRule ??= defaultRule;
 
     const meta = this.metadata.get(type);
     ret.targetMeta = meta;
