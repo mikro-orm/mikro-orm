@@ -596,7 +596,14 @@ export class QueryBuilderHelper {
       return { sql: '', params };
     }
 
-    if (op === '$fulltext') {
+    if (op === '$elemMatch') {
+      const mappedKey = this.mapper(key, type, value[op], null);
+      const column = this.platform.quoteIdentifier(mappedKey);
+      const innerConditions = this.processElemMatchConditions(value[op]);
+      const existsClause = this.platform.getJsonArrayContainsSql(column, innerConditions);
+      parts.push(existsClause.sql);
+      params.push(...existsClause.params);
+    } else if (op === '$fulltext') {
       /* v8 ignore next */
       if (!prop) {
         throw new Error(`Cannot use $fulltext operator on ${String(key)}, property not found`);
@@ -1014,6 +1021,131 @@ export class QueryBuilderHelper {
       qualifiedName,
       toString: () => alias,
     };
+  }
+
+  /**
+   * Processes conditions for $elemMatch operator on JSON arrays.
+   * Transforms conditions to use `__elem__` as the alias for each array element.
+   * @internal
+   */
+  private processElemMatchConditions(conditions: Dictionary): { sql: string; params: unknown[] } {
+    const parts: string[] = [];
+    const params: unknown[] = [];
+
+    for (const key of Object.keys(conditions)) {
+      if (key === '$and') {
+        const andParts: string[] = [];
+        for (const sub of conditions[key]) {
+          const result = this.processElemMatchConditions(sub);
+          andParts.push(result.sql);
+          params.push(...result.params);
+        }
+        parts.push(`(${andParts.join(' and ')})`);
+        continue;
+      }
+
+      if (key === '$or') {
+        const orParts: string[] = [];
+        for (const sub of conditions[key]) {
+          const result = this.processElemMatchConditions(sub);
+          orParts.push(result.sql);
+          params.push(...result.params);
+        }
+        parts.push(`(${orParts.join(' or ')})`);
+        continue;
+      }
+
+      const value = conditions[key];
+      const jsonPath = `__elem__->>'${key}'`;
+
+      if (Utils.isPlainObject(value)) {
+        // Handle operators like { $in: [...] }, { $eq: ... }, { $gt: ... }
+        for (const op of Object.keys(value)) {
+          const opValue = value[op];
+          const { sql, p } = this.processElemMatchOperator(jsonPath, op, opValue, key);
+          parts.push(sql);
+          params.push(...p);
+        }
+      } else {
+        // Simple equality: { field: 'value' }
+        parts.push(`${jsonPath} = ?`);
+        params.push(value);
+      }
+    }
+
+    return { sql: parts.join(' and '), params };
+  }
+
+  /**
+   * Processes a single operator condition for $elemMatch.
+   * @internal
+   */
+  private processElemMatchOperator(jsonPath: string, op: string, value: unknown, key: string): { sql: string; p: unknown[] } {
+    const params: unknown[] = [];
+
+    switch (op) {
+      case '$eq':
+        if (value === null) {
+          return { sql: `${jsonPath} is null`, p: [] };
+        }
+        params.push(value);
+        return { sql: `${jsonPath} = ?`, p: params };
+
+      case '$ne':
+        if (value === null) {
+          return { sql: `${jsonPath} is not null`, p: [] };
+        }
+        params.push(value);
+        return { sql: `${jsonPath} != ?`, p: params };
+
+      case '$in':
+        if (Array.isArray(value) && value.length === 0) {
+          return { sql: '1 = 0', p: [] };
+        }
+        (value as unknown[]).forEach(v => params.push(v));
+        return { sql: `${jsonPath} in (${(value as unknown[]).map(() => '?').join(', ')})`, p: params };
+
+      case '$nin':
+        if (Array.isArray(value) && value.length === 0) {
+          return { sql: '1 = 1', p: [] };
+        }
+        (value as unknown[]).forEach(v => params.push(v));
+        return { sql: `${jsonPath} not in (${(value as unknown[]).map(() => '?').join(', ')})`, p: params };
+
+      case '$gt':
+        params.push(value);
+        return { sql: `(${jsonPath})::numeric > ?`, p: params };
+
+      case '$gte':
+        params.push(value);
+        return { sql: `(${jsonPath})::numeric >= ?`, p: params };
+
+      case '$lt':
+        params.push(value);
+        return { sql: `(${jsonPath})::numeric < ?`, p: params };
+
+      case '$lte':
+        params.push(value);
+        return { sql: `(${jsonPath})::numeric <= ?`, p: params };
+
+      case '$like':
+        params.push(value);
+        return { sql: `${jsonPath} like ?`, p: params };
+
+      case '$ilike':
+        params.push(value);
+        return { sql: `${jsonPath} ilike ?`, p: params };
+
+      case '$re':
+        params.push(value);
+        return { sql: `${jsonPath} ~ ?`, p: params };
+
+      case '$exists':
+        return { sql: value ? `${jsonPath} is not null` : `${jsonPath} is null`, p: [] };
+
+      default:
+        throw new Error(`Unsupported operator '${op}' in $elemMatch for field '${key}'`);
+    }
   }
 
 }

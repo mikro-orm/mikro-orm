@@ -449,4 +449,14 @@ export class BasePostgreSqlPlatform extends AbstractSqlPlatform {
     return 'postgresql://postgres@127.0.0.1:5432';
   }
 
+  /**
+   * Returns the SQL clause for checking if any element in a JSON array matches the given conditions.
+   * Uses PostgreSQL's jsonb_array_elements function with an EXISTS subquery.
+   * @internal
+   */
+  override getJsonArrayContainsSql(column: string, conditions: { sql: string; params: unknown[] }): { sql: string; params: unknown[] } {
+    const sql = `exists (select 1 from jsonb_array_elements(${column}) as __elem__ where ${conditions.sql})`;
+    return { sql, params: conditions.params };
+  }
+
 }

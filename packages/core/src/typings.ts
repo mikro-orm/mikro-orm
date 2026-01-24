@@ -219,6 +219,7 @@ export type OperatorMap<T> = {
   $hasKey?: string;
   $hasKeys?: readonly string[];
   $hasSomeKeys?: readonly string[];
+  $elemMatch?: Dictionary;
 };
 
 export type FilterItemValue<T> = T | ExpandScalar<T> | Primary<T>;

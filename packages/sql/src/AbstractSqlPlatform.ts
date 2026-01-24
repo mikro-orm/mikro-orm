@@ -140,4 +140,13 @@ export abstract class AbstractSqlPlatform extends Platform {
     return [ `${column} ${direction.toLowerCase()}` ];
   }
 
+  /**
+   * Returns the SQL clause for checking if any element in a JSON array matches the given conditions.
+   * Override this method in platform-specific classes to provide database-specific implementations.
+   * @internal
+   */
+  getJsonArrayContainsSql(column: string, conditions: { sql: string; params: unknown[] }): { sql: string; params: unknown[] } {
+    throw new Error(`The $elemMatch operator is not supported on ${this.constructor.name}. It is currently only supported for PostgreSQL.`);
+  }
+
 }
