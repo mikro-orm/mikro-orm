@@ -498,6 +498,16 @@ export class UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys extends
     return this.assignOptions({ owner });
   }
 
+  /** For polymorphic relations. Specifies the property name that stores the entity type discriminator. Defaults to the property name. */
+  discriminator(discriminator: string): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
+    return this.assignOptions({ discriminator });
+  }
+
+  /** For polymorphic relations. Custom mapping of discriminator values to entity class names. */
+  discriminatorMap(discriminatorMap: Dictionary<string>): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
+    return this.assignOptions({ discriminatorMap });
+  }
+
   /** Point to the inverse side property name. */
   inversedBy(inversedBy: keyof Value | ((e: Value) => any)): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
     return this.assignOptions({ inversedBy });
@@ -688,8 +698,8 @@ const propertyBuilders = {
       kind: 'm:n',
     }),
 
-  manyToOne: <Target extends EntityTarget>(target: Target) =>
-    new UniversalPropertyOptionsBuilder<InferEntity<Target>, EmptyOptions & { kind: 'm:1' }, IncludeKeysForManyToOneOptions>({
+  manyToOne: <Target extends EntityTarget | EntityTarget[]>(target: Target) =>
+    new UniversalPropertyOptionsBuilder<InferEntity<Target extends (infer T)[] ? T : Target>, EmptyOptions & { kind: 'm:1' }, IncludeKeysForManyToOneOptions>({
       entity: () => target as any,
       kind: 'm:1',
     }),
@@ -700,8 +710,8 @@ const propertyBuilders = {
       kind: '1:m',
     }),
 
-  oneToOne: <Target extends EntityTarget>(target: Target) =>
-    new UniversalPropertyOptionsBuilder<InferEntity<Target>, EmptyOptions & { kind: '1:1' }, IncludeKeysForOneToOneOptions>({
+  oneToOne: <Target extends EntityTarget | EntityTarget[]>(target: Target) =>
+    new UniversalPropertyOptionsBuilder<InferEntity<Target extends (infer T)[] ? T : Target>, EmptyOptions & { kind: '1:1' }, IncludeKeysForOneToOneOptions>({
       entity: () => target as any,
       kind: '1:1',
     }),

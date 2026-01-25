@@ -41,6 +41,7 @@ import { EntityManager } from '../EntityManager.js';
 import { CursorError, ValidationError } from '../errors.js';
 import { DriverException } from '../exceptions.js';
 import { helper } from '../entity/wrap.js';
+import { PolymorphicRef } from '../entity/PolymorphicRef.js';
 import type { Logger } from '../logging/Logger.js';
 import { JsonType } from '../types/JsonType.js';
 import { MikroORM } from '../MikroORM.js';
@@ -366,6 +367,47 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
         }
 
         return;
+      }
+
+      // Handle polymorphic relations - convert tuple or PolymorphicRef to separate columns
+      // Tuple format: ['discriminator', id] or ['discriminator', id1, id2] for composite keys
+      // Must be checked BEFORE joinColumns array handling since polymorphic uses fieldNames (includes discriminator)
+      if (prop.polymorphic && prop.fieldNames && prop.fieldNames.length >= 2) {
+        let discriminator: string | undefined;
+        let ids: unknown[];
+
+        if (Array.isArray(data[k]) && typeof data[k][0] === 'string' && prop.discriminatorMap?.[data[k][0]]) {
+          // Tuple format: ['discriminator', ...ids]
+          const [disc, ...rest] = data[k];
+          discriminator = disc;
+          ids = rest;
+        } else if (data[k] instanceof PolymorphicRef) {
+          // PolymorphicRef wrapper (internal use)
+          discriminator = data[k].discriminator;
+          const polyId = data[k].id;
+          // Handle object-style composite key IDs like { tenantId: 1, orgId: 100 }
+          if (polyId && typeof polyId === 'object' && !Array.isArray(polyId)) {
+            const targetEntity = prop.discriminatorMap?.[discriminator];
+            const targetMeta = this.metadata.get(targetEntity!);
+            ids = targetMeta.primaryKeys.map(pk => (polyId as Record<string, unknown>)[pk]);
+          } else {
+            ids = Utils.asArray(polyId);
+          }
+        }
+
+        if (discriminator) {
+          const discriminatorColumn = prop.fieldNames[0];
+          const idColumns = prop.fieldNames.slice(1);
+
+          delete data[k];
+          data[discriminatorColumn] = discriminator;
+
+          idColumns.forEach((col, idx) => {
+            data[col] = ids[idx];
+          });
+
+          return;
+        }
       }
 
       if (prop.joinColumns && Array.isArray(data[k])) {

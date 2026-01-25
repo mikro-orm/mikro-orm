@@ -1,4 +1,5 @@
 import { Utils } from '../utils/Utils.js';
+import { QueryHelper } from '../utils/QueryHelper.js';
 import { type Configuration } from '../utils/Configuration.js';
 import { type EntityComparator } from '../utils/EntityComparator.js';
 import type { MetadataStorage } from '../metadata/MetadataStorage.js';
@@ -6,7 +7,8 @@ import type { AnyEntity, EntityData, EntityKey, EntityProperty, EntityValue } fr
 import { ChangeSet, ChangeSetType } from './ChangeSet.js';
 import { helper } from '../entity/wrap.js';
 import { validateEntity } from '../entity/validators.js';
-import { type Reference } from '../entity/Reference.js';
+import { Reference } from '../entity/Reference.js';
+import { PolymorphicRef } from '../entity/PolymorphicRef.js';
 import { type Collection } from '../entity/Collection.js';
 import type { Platform } from '../platforms/Platform.js';
 import { ReferenceKind } from '../enums.js';
@@ -173,9 +175,11 @@ export class ChangeSetComputer {
 
     const targets = Utils.unwrapProperty(changeSet.entity, changeSet.meta, prop) as [AnyEntity, number[]][];
 
-    targets.forEach(([target, idx]) => {
-      if (!target.__helper!.hasPrimaryKey()) {
-        // When targetKey is set, use that property value instead of the PK identifier
+    targets.forEach(([rawTarget, idx]) => {
+      const target = Reference.unwrapReference(rawTarget) as AnyEntity;
+      const needsProcessing = target != null && (prop.targetKey != null || !target.__helper!.hasPrimaryKey());
+
+      if (needsProcessing) {
         let value = prop.targetKey ? target[prop.targetKey] : target.__helper!.__identifier;
 
         /* v8 ignore next */
@@ -187,7 +191,12 @@ export class ChangeSetComputer {
           }
         }
 
-        Utils.setPayloadProperty<T>(changeSet.payload, changeSet.meta, prop, value, idx);
+        if (prop.polymorphic) {
+          const discriminator = QueryHelper.findDiscriminatorValue(prop.discriminatorMap!, target.constructor)!;
+          Utils.setPayloadProperty<T>(changeSet.payload, changeSet.meta, prop, new PolymorphicRef(discriminator, value), idx);
+        } else {
+          Utils.setPayloadProperty<T>(changeSet.payload, changeSet.meta, prop, value, idx);
+        }
       }
     });
   }

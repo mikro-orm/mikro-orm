@@ -132,6 +132,12 @@ export class MetadataValidator {
       throw MetadataError.fromWrongTypeDefinition(meta, prop);
     }
 
+    // Polymorphic relations have multiple targets, validate PK compatibility
+    if (prop.polymorphic && prop.polymorphTargets) {
+      this.validatePolymorphicTargets(meta, prop);
+      return;
+    }
+
     const targetMeta = prop.targetMeta;
 
     // references do have type of known entity
@@ -167,9 +173,65 @@ export class MetadataValidator {
       throw MetadataError.targetKeyNotFound(meta, prop);
     }
 
-    // targetKey must point to a unique property
-    if (!targetProp.unique && !targetMeta.uniques?.some(u => u.properties?.includes(prop.targetKey!))) {
+    // targetKey must point to a unique property (composite unique is not sufficient)
+    if (!this.isPropertyUnique(targetProp, targetMeta)) {
       throw MetadataError.targetKeyNotUnique(meta, prop);
+    }
+  }
+
+  /**
+   * Checks if a property has a unique constraint (either via `unique: true` or single-property `@Unique` decorator).
+   * Composite unique constraints are not sufficient for targetKey.
+   */
+  private isPropertyUnique(prop: EntityProperty, meta: EntityMetadata): boolean {
+    if (prop.unique) {
+      return true;
+    }
+
+    // Check for single-property unique constraint via @Unique decorator
+    return !!meta.uniques?.some(u => {
+      const props = Utils.asArray(u.properties);
+      return props.length === 1 && props[0] === prop.name && !u.options;
+    });
+  }
+
+  private validatePolymorphicTargets(meta: EntityMetadata, prop: EntityProperty): void {
+    const targets = prop.polymorphTargets!;
+
+    // Validate targetKey exists and is compatible across all targets
+    if (prop.targetKey) {
+      for (const target of targets) {
+        const targetProp = target.properties[prop.targetKey];
+
+        if (!targetProp) {
+          throw MetadataError.targetKeyNotFound(meta, prop, target);
+        }
+
+        // targetKey must point to a unique property (composite unique is not sufficient)
+        if (!this.isPropertyUnique(targetProp, target)) {
+          throw MetadataError.targetKeyNotUnique(meta, prop, target);
+        }
+      }
+    }
+
+    const firstPKs = targets[0].getPrimaryProps();
+
+    for (let i = 1; i < targets.length; i++) {
+      const target = targets[i];
+      const targetPKs = target.getPrimaryProps();
+
+      if (targetPKs.length !== firstPKs.length) {
+        throw MetadataError.incompatiblePolymorphicTargets(meta, prop, targets[0], target, 'different number of primary keys');
+      }
+
+      for (let j = 0; j < firstPKs.length; j++) {
+        const firstPK = firstPKs[j];
+        const targetPK = targetPKs[j];
+
+        if (firstPK.runtimeType !== targetPK.runtimeType) {
+          throw MetadataError.incompatiblePolymorphicTargets(meta, prop, targets[0], target, `incompatible primary key types: ${firstPK.name} (${firstPK.runtimeType}) vs ${targetPK.name} (${targetPK.runtimeType})`);
+        }
+      }
     }
   }
 
@@ -185,6 +247,31 @@ export class MetadataValidator {
   }
 
   private validateOwningSide(meta: EntityMetadata, prop: EntityProperty): void {
+    // For polymorphic relations, inversedBy may point to multiple entity types
+    if (prop.polymorphic && prop.polymorphTargets?.length) {
+      // For polymorphic relations, validate inversedBy against each target
+      // The inverse property should exist on the target entities and reference back to this property
+      for (const targetMeta of prop.polymorphTargets) {
+        const inverse = targetMeta.properties[prop.inversedBy!];
+
+        // The inverse property is optional - some targets may not have it
+        if (!inverse) {
+          continue;
+        }
+
+        // Validate the inverse property
+        if (inverse.targetMeta?.root.class !== meta.root.class) {
+          throw MetadataError.fromWrongReference(meta, prop, 'inversedBy', inverse);
+        }
+
+        // inverse side is not defined as owner
+        if (inverse.inversedBy || inverse.owner) {
+          throw MetadataError.fromWrongOwnership(meta, prop, 'inversedBy');
+        }
+      }
+      return;
+    }
+
     const inverse = prop.targetMeta!.properties[prop.inversedBy];
 
     // has correct `inversedBy` on owning side
@@ -214,7 +301,9 @@ export class MetadataValidator {
     }
 
     // has correct `mappedBy` reference type
-    if (owner.type !== meta.className && owner.targetMeta?.root.class !== meta.root.class) {
+    // For polymorphic relations, check if this entity is one of the polymorphic targets
+    const isValidPolymorphicInverse = owner.polymorphic && owner.polymorphTargets?.some(target => target.class === meta.root.class);
+    if (!isValidPolymorphicInverse && owner.type !== meta.className && owner.targetMeta?.root.class !== meta.root.class) {
       throw MetadataError.fromWrongReference(meta, prop, 'mappedBy', owner);
     }
 

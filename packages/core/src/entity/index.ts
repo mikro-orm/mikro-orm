@@ -1,5 +1,6 @@
 export * from './EntityRepository.js';
 export * from './EntityIdentifier.js';
+export * from './PolymorphicRef.js';
 export * from './EntityAssigner.js';
 export * from './EntityHelper.js';
 export * from './EntityFactory.js';

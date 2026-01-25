@@ -4,7 +4,7 @@ exports[`CompileCommand > handler generates CJS output 1`] = `
 "'use strict';
 module.exports = {
   __version: '[[MIKRO_ORM_VERSION]]',
-  'hydrator-user_0-full-false': function(isPrimaryKey, Collection, Reference) {
+  'hydrator-user_0-full-false': function(isPrimaryKey, Collection, Reference, PolymorphicRef, ValidationError) {
     // compiled hydrator for entity User ( normalized)
     return function(entity, data, factory, newEntity, convertCustomTypes, schema, parentSchema, normalizeAccessors) {
       if (data.id === null) {
@@ -19,7 +19,7 @@ module.exports = {
       }
     }
   },
-  'hydrator-user_0-full-true': function(isPrimaryKey, Collection, Reference) {
+  'hydrator-user_0-full-true': function(isPrimaryKey, Collection, Reference, PolymorphicRef, ValidationError) {
     // compiled hydrator for entity User ( normalized)
     return function(entity, data, factory, newEntity, convertCustomTypes, schema, parentSchema, normalizeAccessors) {
       if (data.id === null) {
@@ -77,7 +77,7 @@ module.exports = {
       return ret;
     }
   },
-  'resultMapper-user_0': function() {
+  'resultMapper-user_0': function(PolymorphicRef) {
     // compiled mapper for entity User
     return function(result) {
       const ret = {};
@@ -94,7 +94,7 @@ module.exports = {
       return ret;
     }
   },
-  'hydrator-user_0-reference-false': function(isPrimaryKey, Collection, Reference) {
+  'hydrator-user_0-reference-false': function(isPrimaryKey, Collection, Reference, PolymorphicRef, ValidationError) {
     // compiled hydrator for entity User ( normalized)
     return function(entity, data, factory, newEntity, convertCustomTypes, schema, parentSchema, normalizeAccessors) {
       if (data.id === null) {
@@ -104,7 +104,7 @@ module.exports = {
       }
     }
   },
-  'hydrator-user_0-reference-true': function(isPrimaryKey, Collection, Reference) {
+  'hydrator-user_0-reference-true': function(isPrimaryKey, Collection, Reference, PolymorphicRef, ValidationError) {
     // compiled hydrator for entity User ( normalized)
     return function(entity, data, factory, newEntity, convertCustomTypes, schema, parentSchema, normalizeAccessors) {
       if (data.id === null) {
@@ -132,7 +132,7 @@ module.exports = {
       return '' + entity.id;
     }
   },
-  'hydrator-undefined_1000-full-false': function(isPrimaryKey, Collection, Reference) {
+  'hydrator-undefined_1000-full-false': function(isPrimaryKey, Collection, Reference, PolymorphicRef, ValidationError) {
     // compiled hydrator for entity Address ( normalized)
     return function(entity, data, factory, newEntity, convertCustomTypes, schema, parentSchema, normalizeAccessors) {
       if (data.street === null) {
@@ -142,7 +142,7 @@ module.exports = {
       }
     }
   },
-  'hydrator-undefined_1000-full-true': function(isPrimaryKey, Collection, Reference) {
+  'hydrator-undefined_1000-full-true': function(isPrimaryKey, Collection, Reference, PolymorphicRef, ValidationError) {
     // compiled hydrator for entity Address ( normalized)
     return function(entity, data, factory, newEntity, convertCustomTypes, schema, parentSchema, normalizeAccessors) {
       if (data.street === null) {
@@ -181,7 +181,7 @@ module.exports = {
       return ret;
     }
   },
-  'resultMapper-undefined_1000': function() {
+  'resultMapper-undefined_1000': function(PolymorphicRef) {
     // compiled mapper for entity Address
     return function(result) {
       const ret = {};
@@ -201,7 +201,7 @@ module.exports = {
 exports[`CompileCommand > handler generates ESM output when project uses type=module 1`] = `
 "export default {
   __version: '[[MIKRO_ORM_VERSION]]',
-  'hydrator-user_2000-full-false': function(isPrimaryKey, Collection, Reference) {
+  'hydrator-user_2000-full-false': function(isPrimaryKey, Collection, Reference, PolymorphicRef, ValidationError) {
     // compiled hydrator for entity User ( normalized)
     return function(entity, data, factory, newEntity, convertCustomTypes, schema, parentSchema, normalizeAccessors) {
       if (data.id === null) {
@@ -216,7 +216,7 @@ exports[`CompileCommand > handler generates ESM output when project uses type=mo
       }
     }
   },
-  'hydrator-user_2000-full-true': function(isPrimaryKey, Collection, Reference) {
+  'hydrator-user_2000-full-true': function(isPrimaryKey, Collection, Reference, PolymorphicRef, ValidationError) {
     // compiled hydrator for entity User ( normalized)
     return function(entity, data, factory, newEntity, convertCustomTypes, schema, parentSchema, normalizeAccessors) {
       if (data.id === null) {
@@ -274,7 +274,7 @@ exports[`CompileCommand > handler generates ESM output when project uses type=mo
       return ret;
     }
   },
-  'resultMapper-user_2000': function() {
+  'resultMapper-user_2000': function(PolymorphicRef) {
     // compiled mapper for entity User
     return function(result) {
       const ret = {};
@@ -291,7 +291,7 @@ exports[`CompileCommand > handler generates ESM output when project uses type=mo
       return ret;
     }
   },
-  'hydrator-user_2000-reference-false': function(isPrimaryKey, Collection, Reference) {
+  'hydrator-user_2000-reference-false': function(isPrimaryKey, Collection, Reference, PolymorphicRef, ValidationError) {
     // compiled hydrator for entity User ( normalized)
     return function(entity, data, factory, newEntity, convertCustomTypes, schema, parentSchema, normalizeAccessors) {
       if (data.id === null) {
@@ -301,7 +301,7 @@ exports[`CompileCommand > handler generates ESM output when project uses type=mo
       }
     }
   },
-  'hydrator-user_2000-reference-true': function(isPrimaryKey, Collection, Reference) {
+  'hydrator-user_2000-reference-true': function(isPrimaryKey, Collection, Reference, PolymorphicRef, ValidationError) {
     // compiled hydrator for entity User ( normalized)
     return function(entity, data, factory, newEntity, convertCustomTypes, schema, parentSchema, normalizeAccessors) {
       if (data.id === null) {
@@ -329,7 +329,7 @@ exports[`CompileCommand > handler generates ESM output when project uses type=mo
       return '' + entity.id;
     }
   },
-  'hydrator-undefined_3000-full-false': function(isPrimaryKey, Collection, Reference) {
+  'hydrator-undefined_3000-full-false': function(isPrimaryKey, Collection, Reference, PolymorphicRef, ValidationError) {
     // compiled hydrator for entity Address ( normalized)
     return function(entity, data, factory, newEntity, convertCustomTypes, schema, parentSchema, normalizeAccessors) {
       if (data.street === null) {
@@ -339,7 +339,7 @@ exports[`CompileCommand > handler generates ESM output when project uses type=mo
       }
     }
   },
-  'hydrator-undefined_3000-full-true': function(isPrimaryKey, Collection, Reference) {
+  'hydrator-undefined_3000-full-true': function(isPrimaryKey, Collection, Reference, PolymorphicRef, ValidationError) {
     // compiled hydrator for entity Address ( normalized)
     return function(entity, data, factory, newEntity, convertCustomTypes, schema, parentSchema, normalizeAccessors) {
       if (data.street === null) {
@@ -378,7 +378,7 @@ exports[`CompileCommand > handler generates ESM output when project uses type=mo
       return ret;
     }
   },
-  'resultMapper-undefined_3000': function() {
+  'resultMapper-undefined_3000': function(PolymorphicRef) {
     // compiled mapper for entity Address
     return function(result) {
       const ret = {};

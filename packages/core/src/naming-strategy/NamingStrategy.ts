@@ -120,4 +120,9 @@ export interface NamingStrategy {
     schemaName?: string,
   ): string;
 
+  /**
+   * Returns the discriminator column name for polymorphic relations.
+   */
+  discriminatorColumnName(baseName: string): string;
+
 }

@@ -17,6 +17,7 @@ import { type EntityFactory } from './entity/EntityFactory.js';
 import { type EntityRepository } from './entity/EntityRepository.js';
 import { Reference, type ScalarReference } from './entity/Reference.js';
 import { EntityHelper } from './entity/EntityHelper.js';
+import { helper } from './entity/wrap.js';
 import type { SerializationContext } from './serialization/SerializationContext.js';
 import type { SerializeOptions } from './serialization/EntitySerializer.js';
 import type { MetadataStorage } from './metadata/MetadataStorage.js';
@@ -400,7 +401,19 @@ export type EntityName<T = any> = EntityClass<T> | EntityCtor<T> | EntitySchema<
 // we need to restrict the type in the generic argument, otherwise inference don't work, so we use two types here
 export type GetRepository<Entity extends { [k: PropertyKey]: any }, Fallback> = Entity[typeof EntityRepositoryType] extends EntityRepository<any> | undefined ? NonNullable<Entity[typeof EntityRepositoryType]> : Fallback;
 
-export type EntityDataPropValue<T> = T | Primary<T>;
+type PolymorphicPrimaryInner<T> = T extends object
+  ? Primary<T> extends readonly [infer First, infer Second, ...infer Rest]
+    ? readonly [string, First, Second, ...Rest] | [string, First, Second, ...Rest]
+    : readonly [string, Primary<T>] | [string, Primary<T>]
+  : never;
+/**
+ * Tuple format for polymorphic FK values: [discriminator, ...pkValues]
+ * Distributes over unions, so `Post | Comment` becomes `['post', number] | ['comment', number]`
+ * For composite keys like [tenantId, orgId], becomes ['discriminator', tenantId, orgId]
+ */
+export type PolymorphicPrimary<T> = true extends IsUnion<T> ? PolymorphicPrimaryInner<T> : never;
+
+export type EntityDataPropValue<T> = T | Primary<T> | PolymorphicPrimary<T>;
 type ExpandEntityProp<T, C extends boolean = false> = T extends Record<string, any>
   ? { [K in keyof T as CleanKeys<T, K>]?: EntityDataProp<ExpandProperty<T[K]>, C> | EntityDataPropValue<ExpandProperty<T[K]>> | null } | EntityDataPropValue<ExpandProperty<T>>
   : T;
@@ -484,9 +497,9 @@ type RequiredKeys<T, K extends keyof T, I> = IsOptional<T, K, I> extends false ?
 type OptionalKeys<T, K extends keyof T, I> = IsOptional<T, K, I> extends false ? never : CleanKeys<T, K>;
 export type EntityData<T, C extends boolean = false> = { [K in EntityKey<T>]?: EntityDataItem<T[K] & {}, C> };
 export type RequiredEntityData<T, I = never, C extends boolean = false> = {
-  [K in keyof T as RequiredKeys<T, K, I>]: T[K] | RequiredEntityDataProp<T[K], T, C> | Primary<T[K]> | Raw
+  [K in keyof T as RequiredKeys<T, K, I>]: T[K] | RequiredEntityDataProp<T[K], T, C> | Primary<T[K]> | PolymorphicPrimary<T[K]> | Raw
 } & {
-  [K in keyof T as OptionalKeys<T, K, I>]?: T[K] | RequiredEntityDataProp<T[K], T, C> | Primary<T[K]> | Raw | null
+  [K in keyof T as OptionalKeys<T, K, I>]?: T[K] | RequiredEntityDataProp<T[K], T, C> | Primary<T[K]> | PolymorphicPrimary<T[K]> | Raw | null
 };
 export type EntityDictionary<T> = EntityData<T> & Record<any, any>;
 
@@ -628,7 +641,12 @@ export interface EntityProperty<Owner = any, Target = any> {
   embeddedPath?: string[];
   embeddable: EntityClass<Owner>;
   embeddedProps: Dictionary<EntityProperty>;
-  discriminatorColumn?: string; // only for poly embeddables currently
+  discriminatorColumn?: string; // for poly embeddables only
+  discriminator?: string; // property name for polymorphic relations discriminator
+  polymorphic?: boolean; // marks this relation as polymorphic (pointing to multiple entity types)
+  polymorphTargets?: EntityMetadata[]; // array of target entity metadata for polymorphic relations
+  discriminatorMap?: Dictionary<EntityClass<Target>>; // maps discriminator values to entity classes
+  discriminatorValue?: string; // the value to use in the discriminator column for this entity (M:N polymorphic)
   object?: boolean;
   index?: boolean | string;
   unique?: boolean | string;
@@ -876,7 +894,10 @@ export class EntityMetadata<Entity = any, Class extends EntityCtor<Entity> = Ent
 
             // when propagation from inside hydration, we set the FK to the entity data immediately
             if (val && hydrator.isRunning() && wrapped.__originalEntityData && prop.owner) {
-              wrapped.__originalEntityData[prop.name] = Utils.getPrimaryKeyValues(val, prop.targetMeta!, true);
+              const targetMeta = prop.targetMeta ?? helper(entity)?.__meta;
+              if (targetMeta) {
+                wrapped.__originalEntityData[prop.name] = Utils.getPrimaryKeyValues(val, targetMeta, true);
+              }
             }
 
             EntityHelper.propagate(meta, entity, this, prop, Reference.unwrapReference(val), old);
@@ -997,6 +1018,8 @@ export interface EntityMetadata<Entity = any, Class extends EntityCtor<Entity> =
   polymorphs?: EntityMetadata[];
   root: EntityMetadata<Entity>;
   definedProperties: Dictionary;
+  /** For polymorphic M:N pivot tables, maps discriminator values to entity classes */
+  polymorphicDiscriminatorMap?: Dictionary<EntityClass>;
   // used to make ORM aware of externally defined triggers, can change resulting SQL in some condition like when inserting in mssql
   hasTriggers?: boolean;
   /** @internal can be used for computed numeric cache keys */
@@ -1270,6 +1293,11 @@ type CollectionKeys<T> = T extends object
   }[keyof T] & {}
   : never;
 
+// all relation keys (collections + to-one) - uses CleanKeys with scalar exclusion for efficiency
+type RelationKeys<T> = T extends object
+  ? { [K in keyof T]-?: CleanKeys<T, K, true> }[keyof T] & {}
+  : never;
+
 export type AutoPath<O, P extends string | boolean, E extends string = never, D extends Prev[number] = 9> =
   P extends boolean
     ? P
@@ -1283,7 +1311,7 @@ export type AutoPath<O, P extends string | boolean, E extends string = never, D 
               : never
             : P extends StringKeys<O, E>
               ? (NonNullable<GetStringKey<O, P & StringKeys<O, E>, E>> extends unknown ? Exclude<P, `${string}.`> : never) | (StringKeys<NonNullable<GetStringKey<O, P & StringKeys<O, E>, E>>, E> extends never ? never : `${P & string}.`)
-              : StringKeys<O, E> | `${CollectionKeys<O>}:ref`
+              : StringKeys<O, E> | `${RelationKeys<O>}:ref`
           : never
         : never;
 

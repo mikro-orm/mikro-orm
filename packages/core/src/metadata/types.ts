@@ -337,8 +337,8 @@ export interface PropertyOptions<Owner> {
 }
 
 export interface ReferenceOptions<Owner, Target> extends PropertyOptions<Owner> {
-  /** Set target entity type. */
-  entity?: () => EntityName<Target>;
+  /** Set target entity type. For polymorphic relations, pass an array of entity types. */
+  entity?: () => EntityName<Target> | EntityName<Target>[];
 
   /** Set what actions on owning entity should be cascaded to the relationship. Defaults to [Cascade.PERSIST, Cascade.MERGE] (see {@doclink cascading}). */
   cascade?: Cascade[];
@@ -368,7 +368,22 @@ export type ColumnType =
   | 'tsvector' | 'tsquery'
   | 'json' | 'jsonb';
 
-export interface ManyToOneOptions<Owner, Target> extends ReferenceOptions<Owner, Target> {
+interface PolymorphicOptions {
+  /**
+   * For polymorphic relations. Specifies the property name that stores the entity type discriminator.
+   * Defaults to the property name. Only used when `entity` returns an array of types.
+   * For M:N relations, this is the column name in the pivot table.
+   */
+  discriminator?: string;
+
+  /**
+   * For polymorphic relations. Custom mapping of discriminator values to entity class names.
+   * If not provided, table names are used as discriminator values.
+   */
+  discriminatorMap?: Dictionary<string>;
+}
+
+export interface ManyToOneOptions<Owner, Target> extends ReferenceOptions<Owner, Target>, PolymorphicOptions {
   /** Point to the inverse side property name. */
   inversedBy?: (string & keyof Target) | ((e: Target) => any);
 
@@ -447,7 +462,7 @@ export interface OneToManyOptions<Owner, Target> extends ReferenceOptions<Owner,
   mappedBy: (string & keyof Target) | ((e: Target) => any);
 }
 
-export interface OneToOneOptions<Owner, Target> extends Partial<Omit<OneToManyOptions<Owner, Target>, 'orderBy'>> {
+export interface OneToOneOptions<Owner, Target> extends Partial<Omit<OneToManyOptions<Owner, Target>, 'orderBy'>>, PolymorphicOptions {
   /** Set this side as owning. Owning side is where the foreign key is defined. This option is not required if you use `inversedBy` or `mappedBy` to distinguish owning and inverse side. */
   owner?: boolean;
 
@@ -485,7 +500,7 @@ export interface OneToOneOptions<Owner, Target> extends Partial<Omit<OneToManyOp
   createForeignKeyConstraint?: boolean;
 }
 
-export interface ManyToManyOptions<Owner, Target> extends ReferenceOptions<Owner, Target> {
+export interface ManyToManyOptions<Owner, Target> extends ReferenceOptions<Owner, Target>, PolymorphicOptions {
   /** Set this side as owning. Owning side is where the foreign key is defined. This option is not required if you use `inversedBy` or `mappedBy` to distinguish owning and inverse side. */
   owner?: boolean;
 
@@ -552,6 +567,9 @@ export interface EmbeddedOptions<Owner, Target> extends PropertyOptions<Owner> {
 export interface EmbeddableOptions<Owner> {
   /** Specify constructor parameters to be used in `em.create` or when `forceConstructor` is enabled. Those should be names of declared entity properties in the same order as your constructor uses them. The ORM tries to infer those automatically, use this option in case the inference fails. */
   constructorParams?: (Owner extends EntityClass<infer P> ? keyof P : string)[];
+  /** For polymorphic embeddables. Specify the property name that stores the discriminator value. Alias for `discriminatorColumn`. */
+  discriminator?: (Owner extends EntityClass<infer P> ? keyof P : string) | AnyString;
+  /** For polymorphic embeddables. @deprecated Use `discriminator` instead. */
   discriminatorColumn?: (Owner extends EntityClass<infer P> ? keyof P : string) | AnyString;
   discriminatorMap?: Dictionary<string>;
   discriminatorValue?: number | string;

@@ -2,10 +2,12 @@ import type { EntityData, EntityMetadata, EntityName, EntityProperty } from '../
 import { Hydrator } from './Hydrator.js';
 import { Collection } from '../entity/Collection.js';
 import { Reference, ScalarReference } from '../entity/Reference.js';
+import { PolymorphicRef } from '../entity/PolymorphicRef.js';
 import { parseJsonSafe, Utils } from '../utils/Utils.js';
 import { ReferenceKind } from '../enums.js';
 import type { EntityFactory } from '../entity/EntityFactory.js';
 import { Raw } from '../utils/RawQueryFragment.js';
+import { ValidationError } from '../errors.js';
 
 type EntityHydrator<T extends object> = (entity: T, data: EntityData<T>, factory: EntityFactory, newEntity: boolean, convertCustomTypes: boolean, schema?: string, parentSchema?: string, normalizeAccessors?: boolean) => void;
 
@@ -61,6 +63,8 @@ export class ObjectHydrator extends Hydrator {
     context.set('isPrimaryKey', Utils.isPrimaryKey);
     context.set('Collection', Collection);
     context.set('Reference', Reference);
+    context.set('PolymorphicRef', PolymorphicRef);
+    context.set('ValidationError', ValidationError);
 
     const registerCustomType = <T>(prop: EntityProperty<T>, convertorKey: string, method: 'convertToDatabaseValue' | 'convertToJSValue', context: Map<string, any>) => {
       context.set(`${method}_${convertorKey}`, (val: any) => {
@@ -168,25 +172,52 @@ export class ObjectHydrator extends Hydrator {
       const nullVal = this.config.get('forceUndefined') ? 'undefined' : 'null';
       ret.push(`  if (data${dataKey} === null) {\n    entity${entityKey} = ${nullVal};`);
       ret.push(`  } else if (typeof data${dataKey} !== 'undefined') {`);
-      ret.push(`    if (isPrimaryKey(data${dataKey}, true)) {`);
-      const targetKey = this.safeKey(`${prop.targetMeta!.tableName}_${this.tmpIndex++}`);
-      context.set(targetKey, prop.targetMeta!.class);
+
+      // For polymorphic: instanceof check; for regular: isPrimaryKey() check
+      const pkCheck = prop.polymorphic ? `data${dataKey} instanceof PolymorphicRef` : `isPrimaryKey(data${dataKey}, true)`;
+      ret.push(`    if (${pkCheck}) {`);
 
       // When targetKey is set, pass the key option to createReference so it uses the alternate key
       const keyOption = prop.targetKey ? `, key: '${prop.targetKey}'` : '';
 
-      if (prop.ref) {
-        ret.push(`      entity${entityKey} = Reference.create(factory.createReference(${targetKey}, data${dataKey}, { merge: true, convertCustomTypes, normalizeAccessors, schema${keyOption} }));`);
+      if (prop.polymorphic) {
+        // For polymorphic: target class from discriminator map, PK from data.id
+        const discriminatorMapKey = this.safeKey(`discriminatorMap_${prop.name}_${this.tmpIndex++}`);
+        context.set(discriminatorMapKey, prop.discriminatorMap);
+        ret.push(`      const targetClass = ${discriminatorMapKey}[data${dataKey}.discriminator];`);
+        ret.push(`      if (!targetClass) throw new ValidationError(\`Unknown discriminator value '\${data${dataKey}.discriminator}' for polymorphic relation '${prop.name}'. Valid values: \${Object.keys(${discriminatorMapKey}).join(', ')}\`);`);
+        if (prop.ref) {
+          ret.push(`      entity${entityKey} = Reference.create(factory.createReference(targetClass, data${dataKey}.id, { merge: true, convertCustomTypes, normalizeAccessors, schema${keyOption} }));`);
+        } else {
+          ret.push(`      entity${entityKey} = factory.createReference(targetClass, data${dataKey}.id, { merge: true, convertCustomTypes, normalizeAccessors, schema${keyOption} });`);
+        }
       } else {
-        ret.push(`      entity${entityKey} = factory.createReference(${targetKey}, data${dataKey}, { merge: true, convertCustomTypes, normalizeAccessors, schema${keyOption} });`);
+        // For regular: fixed target class, PK is the data itself
+        const targetKey = this.safeKey(`${prop.targetMeta!.tableName}_${this.tmpIndex++}`);
+        context.set(targetKey, prop.targetMeta!.class);
+        if (prop.ref) {
+          ret.push(`      entity${entityKey} = Reference.create(factory.createReference(${targetKey}, data${dataKey}, { merge: true, convertCustomTypes, normalizeAccessors, schema${keyOption} }));`);
+        } else {
+          ret.push(`      entity${entityKey} = factory.createReference(${targetKey}, data${dataKey}, { merge: true, convertCustomTypes, normalizeAccessors, schema${keyOption} });`);
+        }
       }
 
       ret.push(`    } else if (data${dataKey} && typeof data${dataKey} === 'object') {`);
 
-      if (prop.ref) {
-        ret.push(`      entity${entityKey} = Reference.create(factory.${method}(${targetKey}, data${dataKey}, { initialized: true, merge: true, newEntity, convertCustomTypes, normalizeAccessors, schema }));`);
+      // For full entity hydration, polymorphic needs to determine target class from entity itself
+      let hydrateTargetExpr: string;
+      if (prop.polymorphic) {
+        hydrateTargetExpr = `data${dataKey}.constructor`;
       } else {
-        ret.push(`      entity${entityKey} = factory.${method}(${targetKey}, data${dataKey}, { initialized: true, merge: true, newEntity, convertCustomTypes, normalizeAccessors, schema });`);
+        const targetKey = this.safeKey(`${prop.targetMeta!.tableName}_${this.tmpIndex++}`);
+        context.set(targetKey, prop.targetMeta!.class);
+        hydrateTargetExpr = targetKey;
+      }
+
+      if (prop.ref) {
+        ret.push(`      entity${entityKey} = Reference.create(factory.${method}(${hydrateTargetExpr}, data${dataKey}, { initialized: true, merge: true, newEntity, convertCustomTypes, normalizeAccessors, schema }));`);
+      } else {
+        ret.push(`      entity${entityKey} = factory.${method}(${hydrateTargetExpr}, data${dataKey}, { initialized: true, merge: true, newEntity, convertCustomTypes, normalizeAccessors, schema });`);
       }
 
       ret.push(`    }`);

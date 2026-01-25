@@ -217,7 +217,20 @@ export class EntityHelper {
   }
 
   static propagate<T extends object>(meta: EntityMetadata<T>, entity: T, owner: T, prop: EntityProperty<T>, value?: T[keyof T & string], old?: T): void {
-    for (const prop2 of prop.targetMeta!.bidirectionalRelations) {
+    // For polymorphic relations, get bidirectional relations from the actual entity's metadata
+    let bidirectionalRelations: EntityProperty<T>[];
+    if (prop.polymorphic && prop.polymorphTargets?.length) {
+      // For polymorphic relations, we need to get the bidirectional relations from the actual value's metadata
+      if (!value) {
+        return; // No value means no propagation needed
+      }
+
+      bidirectionalRelations = helper(value).__meta.bidirectionalRelations as EntityProperty<T>[];
+    } else {
+      bidirectionalRelations = prop.targetMeta!.bidirectionalRelations;
+    }
+
+    for (const prop2 of bidirectionalRelations) {
       if ((prop2.inversedBy || prop2.mappedBy) !== prop.name) {
         continue;
       }

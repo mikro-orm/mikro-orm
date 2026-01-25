@@ -636,7 +636,7 @@ export class QueryBuilder<
       return this as any;
     }
 
-    return this.select([...Utils.asArray(this._fields), ...Utils.asArray(fields)] as any) as any;
+    return this.select([...Utils.asArray(this._fields), ...Utils.asArray(fields as string)] as any) as any;
   }
 
   distinct(): SelectQueryBuilder<Entity, RootAlias, Hint, Context, RawAliases, Fields> {
@@ -730,7 +730,7 @@ export class QueryBuilder<
    */
   count<F extends Field<Entity, RootAlias, Context>>(field?: F | F[], distinct = false): CountQueryBuilder<Entity> {
     if (field) {
-      this._fields = Utils.asArray(field);
+      this._fields = Utils.asArray(field as string);
     } else if (distinct || this.hasToManyJoins()) {
       this._fields = this.mainAlias.meta!.primaryKeys;
     } else {
@@ -1481,7 +1481,7 @@ export class QueryBuilder<
     this._onConflict.push({
       fields: isRaw(fields)
         ? fields
-        : Utils.asArray(fields).flatMap(f => {
+        : Utils.asArray(fields as string).flatMap(f => {
           const key = f.toString() as EntityKey<Entity>;
           /* v8 ignore next */
           return meta.properties[key]?.fieldNames ?? [key];
@@ -1515,7 +1515,7 @@ export class QueryBuilder<
   }
 
   returning<F extends Field<Entity, RootAlias, Context>>(fields?: F | F[]): this {
-    this._returning = Utils.asArray(fields);
+    this._returning = Utils.asArray(fields as string);
     return this;
   }
 
@@ -1817,6 +1817,22 @@ export class QueryBuilder<
   getNextAlias(entityName: string | EntityName = 'e'): string {
     entityName = Utils.className(entityName);
     return this.driver.config.getNamingStrategy().aliasName(entityName, this.aliasCounter++);
+  }
+
+  /**
+   * Registers a join for a specific polymorphic target type.
+   * Used by the driver to create per-target LEFT JOINs for JOINED loading.
+   * @internal
+   */
+  addPolymorphicJoin(prop: EntityProperty, targetMeta: EntityMetadata, ownerAlias: string, alias: string, type: JoinType, path: string, schema?: string): void {
+    // Override referencedColumnNames to use the specific target's PK columns
+    // (polymorphic targets may have different PK column names, e.g. org_id vs user_id)
+    const referencedColumnNames = targetMeta.getPrimaryProps().flatMap(pk => pk.fieldNames);
+    const targetProp = { ...prop, targetMeta, referencedColumnNames } as EntityProperty;
+    const aliasedName = `${ownerAlias}.${prop.name}[${targetMeta.className}]#${alias}`;
+    this._joins[aliasedName] = this.helper.joinManyToOneReference(targetProp, ownerAlias, alias, type, {}, schema);
+    this._joins[aliasedName].path = path;
+    this.createAlias(targetMeta.class, alias);
   }
 
   /**
