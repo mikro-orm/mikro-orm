@@ -10,6 +10,7 @@ import {
   type EntityProperty,
   type FlatQueryOrderMap,
   type FormulaTable,
+  GroupOperator,
   inspect,
   isRaw,
   LockMode,
@@ -1033,25 +1034,16 @@ export class QueryBuilderHelper {
     const params: unknown[] = [];
 
     for (const key of Object.keys(conditions)) {
-      if (key === '$and') {
-        const andParts: string[] = [];
+      // Handle group operators ($and, $or) using GroupOperator enum
+      if (key in GroupOperator) {
+        const groupParts: string[] = [];
         for (const sub of conditions[key]) {
           const result = this.processElemMatchConditions(sub);
-          andParts.push(result.sql);
+          groupParts.push(result.sql);
           params.push(...result.params);
         }
-        parts.push(`(${andParts.join(' and ')})`);
-        continue;
-      }
-
-      if (key === '$or') {
-        const orParts: string[] = [];
-        for (const sub of conditions[key]) {
-          const result = this.processElemMatchConditions(sub);
-          orParts.push(result.sql);
-          params.push(...result.params);
-        }
-        parts.push(`(${orParts.join(' or ')})`);
+        const joiner = GroupOperator[key as keyof typeof GroupOperator];
+        parts.push(`(${groupParts.join(` ${joiner} `)})`);
         continue;
       }
 
@@ -1068,12 +1060,12 @@ export class QueryBuilderHelper {
       } else {
         // Simple equality: { field: 'value' }
         const jsonPath = this.platform.getJsonElementPropertySQL(key);
-        parts.push(`${jsonPath} = ?`);
+        parts.push(`${jsonPath} ${QueryOperator.$eq} ?`);
         params.push(value);
       }
     }
 
-    return { sql: parts.join(' and '), params };
+    return { sql: parts.join(` ${GroupOperator.$and} `), params };
   }
 
   /**
@@ -1086,69 +1078,45 @@ export class QueryBuilderHelper {
     const jsonPath = this.platform.getJsonElementPropertySQL(field);
     const numericJsonPath = this.platform.getJsonElementPropertySQL(field, 'number');
 
-    switch (op) {
-      case '$eq':
-        if (value === null) {
-          return { sql: `${jsonPath} is null`, p: [] };
-        }
-        params.push(value);
-        return { sql: `${jsonPath} = ?`, p: params };
-
-      case '$ne':
-        if (value === null) {
-          return { sql: `${jsonPath} is not null`, p: [] };
-        }
-        params.push(value);
-        return { sql: `${jsonPath} != ?`, p: params };
-
-      case '$in':
-        if (Array.isArray(value) && value.length === 0) {
-          return { sql: '1 = 0', p: [] };
-        }
-        (value as unknown[]).forEach(v => params.push(v));
-        return { sql: `${jsonPath} in (${(value as unknown[]).map(() => '?').join(', ')})`, p: params };
-
-      case '$nin':
-        if (Array.isArray(value) && value.length === 0) {
-          return { sql: '1 = 1', p: [] };
-        }
-        (value as unknown[]).forEach(v => params.push(v));
-        return { sql: `${jsonPath} not in (${(value as unknown[]).map(() => '?').join(', ')})`, p: params };
-
-      case '$gt':
-        params.push(value);
-        return { sql: `${numericJsonPath} > ?`, p: params };
-
-      case '$gte':
-        params.push(value);
-        return { sql: `${numericJsonPath} >= ?`, p: params };
-
-      case '$lt':
-        params.push(value);
-        return { sql: `${numericJsonPath} < ?`, p: params };
-
-      case '$lte':
-        params.push(value);
-        return { sql: `${numericJsonPath} <= ?`, p: params };
-
-      case '$like':
-        params.push(value);
-        return { sql: `${jsonPath} like ?`, p: params };
-
-      case '$ilike':
-        params.push(value);
-        return { sql: `${jsonPath} ilike ?`, p: params };
-
-      case '$re':
-        params.push(value);
-        return { sql: `${jsonPath} ~ ?`, p: params };
-
-      case '$exists':
-        return { sql: value ? `${jsonPath} is not null` : `${jsonPath} is null`, p: [] };
-
-      default:
-        throw new Error(`Unsupported operator '${op}' in $elemMatch for field '${field}'`);
+    // Handle null comparisons
+    if (value === null && (op === '$eq' || op === '$ne')) {
+      const nullOp = op === '$eq' ? 'is' : 'is not';
+      return { sql: `${jsonPath} ${nullOp} null`, p: [] };
     }
+
+    // Handle empty array edge cases
+    if (op === '$in' && Array.isArray(value) && value.length === 0) {
+      return { sql: '1 = 0', p: [] };
+    }
+    if (op === '$nin' && Array.isArray(value) && value.length === 0) {
+      return { sql: '1 = 1', p: [] };
+    }
+
+    // Handle $exists specially
+    if (op === '$exists') {
+      const existsOp = value ? 'is not' : 'is';
+      return { sql: `${jsonPath} ${existsOp} null`, p: [] };
+    }
+
+    // Use QueryOperator enum for standard operators
+    const sqlOperator = QueryOperator[op as keyof typeof QueryOperator];
+    if (!sqlOperator) {
+      throw new Error(`Unsupported operator '${op}' in $elemMatch for field '${field}'`);
+    }
+
+    // Numeric comparison operators need type casting
+    const numericOps = ['$gt', '$gte', '$lt', '$lte'];
+    const effectivePath = numericOps.includes(op) ? numericJsonPath : jsonPath;
+
+    // Handle array operators ($in, $nin)
+    if (op === '$in' || op === '$nin') {
+      (value as unknown[]).forEach(v => params.push(v));
+      return { sql: `${effectivePath} ${sqlOperator} (${(value as unknown[]).map(() => '?').join(', ')})`, p: params };
+    }
+
+    // Standard single-value operators
+    params.push(value);
+    return { sql: `${effectivePath} ${sqlOperator} ?`, p: params };
   }
 
 }
