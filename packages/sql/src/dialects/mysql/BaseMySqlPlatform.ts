@@ -162,17 +162,21 @@ export class BaseMySqlPlatform extends AbstractSqlPlatform {
   }
 
   /**
-   * Returns the SQL clause for checking if any element in a JSON array matches the given conditions.
-   * Uses MySQL's JSON_TABLE function to iterate over array elements.
    * @internal
    */
-  override getJsonArrayContainsSql(column: string, conditions: { sql: string; params: unknown[] }): { sql: string; params: unknown[] } {
-    // Replace __elem__ references with json_unquote(json_extract(jt.__elem__, '$.field')) pattern
-    let mysqlConditions = conditions.sql.replace(/__elem__->>'(\w+)'/g, 'json_unquote(json_extract(jt.__elem__, \'$.$1\'))');
-    // Replace PostgreSQL-style ::numeric casts with MySQL cast syntax
-    mysqlConditions = mysqlConditions.replace(/\(([^)]+)\)::numeric/g, 'cast($1 as decimal)');
-    const sql = `exists (select 1 from json_table(${column}, '$[*]' columns (__elem__ json path '$')) as jt where ${mysqlConditions})`;
-    return { sql, params: conditions.params };
+  override getJsonElementPropertySQL(field: string, type?: string): string {
+    const jsonPath = `json_unquote(json_extract(jt.__elem__, '$.${field}'))`;
+    if (type === 'number' || type === 'bigint') {
+      return `cast(${jsonPath} as decimal)`;
+    }
+    return jsonPath;
+  }
+
+  /**
+   * @internal
+   */
+  override getJsonArrayIteratorSQL(column: string): string {
+    return `json_table(${column}, '$[*]' columns (__elem__ json path '$')) as jt`;
   }
 
 }

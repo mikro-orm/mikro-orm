@@ -136,18 +136,21 @@ export abstract class BaseSqlitePlatform extends AbstractSqlPlatform {
   }
 
   /**
-   * Returns the SQL clause for checking if any element in a JSON array matches the given conditions.
-   * Uses SQLite's json_each function to iterate over array elements.
    * @internal
    */
-  override getJsonArrayContainsSql(column: string, conditions: { sql: string; params: unknown[] }): { sql: string; params: unknown[] } {
-    // Replace __elem__->>'field' with json_extract(je.value, '$.field')
-    let sqliteConditions = conditions.sql.replace(/__elem__->>'(\w+)'/g, 'json_extract(je.value, \'$.$1\')');
-    // Replace PostgreSQL-style ::numeric casts with SQLite cast syntax
-    // The pattern matches (json_extract(...))::numeric with nested parens
-    sqliteConditions = sqliteConditions.replace(/\(json_extract\(([^)]+)\)\)::numeric/g, 'cast(json_extract($1) as real)');
-    const sql = `exists (select 1 from json_each(${column}) as je where ${sqliteConditions})`;
-    return { sql, params: conditions.params };
+  override getJsonElementPropertySQL(field: string, type?: string): string {
+    const jsonPath = `json_extract(je.value, '$.${field}')`;
+    if (type === 'number' || type === 'bigint') {
+      return `cast(${jsonPath} as real)`;
+    }
+    return jsonPath;
+  }
+
+  /**
+   * @internal
+   */
+  override getJsonArrayIteratorSQL(column: string): string {
+    return `json_each(${column}) as je`;
   }
 
 }

@@ -141,12 +141,32 @@ export abstract class AbstractSqlPlatform extends Platform {
   }
 
   /**
-   * Returns the SQL clause for checking if any element in a JSON array matches the given conditions.
-   * Override this method in platform-specific classes to provide database-specific implementations.
+   * Returns the SQL expression for accessing a property of a JSON array element.
+   * Used within $elemMatch conditions.
    * @internal
    */
-  getJsonArrayContainsSql(column: string, conditions: { sql: string; params: unknown[] }): { sql: string; params: unknown[] } {
-    throw new Error(`The $elemMatch operator is not supported on ${this.constructor.name}. It is currently only supported for PostgreSQL.`);
+  getJsonElementPropertySQL(field: string, type?: string): string {
+    throw new Error(`The $elemMatch operator is not supported on ${this.constructor.name}.`);
+  }
+
+  /**
+   * Returns the SQL expression for iterating over a JSON array.
+   * Returns the FROM clause like "json_each(column) as alias".
+   * @internal
+   */
+  getJsonArrayIteratorSQL(column: string): string {
+    throw new Error(`The $elemMatch operator is not supported on ${this.constructor.name}.`);
+  }
+
+  /**
+   * Returns the SQL clause for checking if any element in a JSON array matches the given conditions.
+   * Uses getJsonArrayIteratorSQL to build the EXISTS subquery.
+   * @internal
+   */
+  getJsonArrayContainsSql(column: string, conditionsSql: string, params: unknown[]): { sql: string; params: unknown[] } {
+    const iterator = this.getJsonArrayIteratorSQL(column);
+    const sql = `exists (select 1 from ${iterator} where ${conditionsSql})`;
+    return { sql, params };
   }
 
 }

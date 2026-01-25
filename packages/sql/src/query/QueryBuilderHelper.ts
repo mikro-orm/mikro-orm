@@ -600,7 +600,7 @@ export class QueryBuilderHelper {
       const mappedKey = this.mapper(key, type, value[op], null);
       const column = this.platform.quoteIdentifier(mappedKey);
       const innerConditions = this.processElemMatchConditions(value[op]);
-      const existsClause = this.platform.getJsonArrayContainsSql(column, innerConditions);
+      const existsClause = this.platform.getJsonArrayContainsSql(column, innerConditions.sql, innerConditions.params);
       parts.push(existsClause.sql);
       params.push(...existsClause.params);
     } else if (op === '$fulltext') {
@@ -1025,7 +1025,7 @@ export class QueryBuilderHelper {
 
   /**
    * Processes conditions for $elemMatch operator on JSON arrays.
-   * Transforms conditions to use `__elem__` as the alias for each array element.
+   * Uses platform-specific methods for JSON element property access.
    * @internal
    */
   private processElemMatchConditions(conditions: Dictionary): { sql: string; params: unknown[] } {
@@ -1056,18 +1056,18 @@ export class QueryBuilderHelper {
       }
 
       const value = conditions[key];
-      const jsonPath = `__elem__->>'${key}'`;
 
       if (Utils.isPlainObject(value)) {
         // Handle operators like { $in: [...] }, { $eq: ... }, { $gt: ... }
         for (const op of Object.keys(value)) {
           const opValue = value[op];
-          const { sql, p } = this.processElemMatchOperator(jsonPath, op, opValue, key);
+          const { sql, p } = this.processElemMatchOperator(key, op, opValue);
           parts.push(sql);
           params.push(...p);
         }
       } else {
         // Simple equality: { field: 'value' }
+        const jsonPath = this.platform.getJsonElementPropertySQL(key);
         parts.push(`${jsonPath} = ?`);
         params.push(value);
       }
@@ -1078,10 +1078,13 @@ export class QueryBuilderHelper {
 
   /**
    * Processes a single operator condition for $elemMatch.
+   * Uses platform-specific methods for JSON element property access and type casting.
    * @internal
    */
-  private processElemMatchOperator(jsonPath: string, op: string, value: unknown, key: string): { sql: string; p: unknown[] } {
+  private processElemMatchOperator(field: string, op: string, value: unknown): { sql: string; p: unknown[] } {
     const params: unknown[] = [];
+    const jsonPath = this.platform.getJsonElementPropertySQL(field);
+    const numericJsonPath = this.platform.getJsonElementPropertySQL(field, 'number');
 
     switch (op) {
       case '$eq':
@@ -1114,19 +1117,19 @@ export class QueryBuilderHelper {
 
       case '$gt':
         params.push(value);
-        return { sql: `(${jsonPath})::numeric > ?`, p: params };
+        return { sql: `${numericJsonPath} > ?`, p: params };
 
       case '$gte':
         params.push(value);
-        return { sql: `(${jsonPath})::numeric >= ?`, p: params };
+        return { sql: `${numericJsonPath} >= ?`, p: params };
 
       case '$lt':
         params.push(value);
-        return { sql: `(${jsonPath})::numeric < ?`, p: params };
+        return { sql: `${numericJsonPath} < ?`, p: params };
 
       case '$lte':
         params.push(value);
-        return { sql: `(${jsonPath})::numeric <= ?`, p: params };
+        return { sql: `${numericJsonPath} <= ?`, p: params };
 
       case '$like':
         params.push(value);
@@ -1144,7 +1147,7 @@ export class QueryBuilderHelper {
         return { sql: value ? `${jsonPath} is not null` : `${jsonPath} is null`, p: [] };
 
       default:
-        throw new Error(`Unsupported operator '${op}' in $elemMatch for field '${key}'`);
+        throw new Error(`Unsupported operator '${op}' in $elemMatch for field '${field}'`);
     }
   }
 
