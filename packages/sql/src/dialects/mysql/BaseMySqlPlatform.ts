@@ -162,14 +162,22 @@ export class BaseMySqlPlatform extends AbstractSqlPlatform {
   }
 
   /**
+   * Wraps a JSON path expression with MySQL type cast if needed.
+   * @internal
+   */
+  protected override castJsonElementValue(expression: string, type?: string): string {
+    if (type === 'number' || type === 'bigint') {
+      return `cast(${expression} as decimal)`;
+    }
+    return expression;
+  }
+
+  /**
    * @internal
    */
   override getJsonElementPropertySQL(field: string, type?: string): string {
     const jsonPath = `json_unquote(json_extract(jt.__elem__, '$.${field}'))`;
-    if (type === 'number' || type === 'bigint') {
-      return `cast(${jsonPath} as decimal)`;
-    }
-    return jsonPath;
+    return this.castJsonElementValue(jsonPath, type);
   }
 
   /**

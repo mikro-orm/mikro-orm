@@ -136,14 +136,22 @@ export abstract class BaseSqlitePlatform extends AbstractSqlPlatform {
   }
 
   /**
+   * Wraps a JSON path expression with SQLite type cast if needed.
+   * @internal
+   */
+  protected override castJsonElementValue(expression: string, type?: string): string {
+    if (type === 'number' || type === 'bigint') {
+      return `cast(${expression} as real)`;
+    }
+    return expression;
+  }
+
+  /**
    * @internal
    */
   override getJsonElementPropertySQL(field: string, type?: string): string {
     const jsonPath = `json_extract(je.value, '$.${field}')`;
-    if (type === 'number' || type === 'bigint') {
-      return `cast(${jsonPath} as real)`;
-    }
-    return jsonPath;
+    return this.castJsonElementValue(jsonPath, type);
   }
 
   /**

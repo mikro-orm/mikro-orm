@@ -1,7 +1,6 @@
 import {
   ALIAS_REPLACEMENT,
   ARRAY_OPERATORS,
-  type Dictionary,
   type EntityProperty,
   type IsolationLevel,
   raw,
@@ -276,17 +275,33 @@ export class BasePostgreSqlPlatform extends AbstractSqlPlatform {
     return 'jsonb';
   }
 
+  /**
+   * Type casting map for JSON values: JS type -> PostgreSQL type.
+   * @internal
+   */
+  protected readonly jsonTypeCasts: Record<string, string> = {
+    number: 'float8',
+    bigint: 'int8',
+    boolean: 'bool',
+  };
+
+  /**
+   * Wraps a JSON path expression with PostgreSQL type cast if needed.
+   * @internal
+   */
+  protected override castJsonElementValue(expression: string, type?: string): string {
+    if (type && type in this.jsonTypeCasts) {
+      return `(${expression})::${this.jsonTypeCasts[type]}`;
+    }
+    return expression;
+  }
+
   override getSearchJsonPropertyKey(path: string[], type: string | undefined | Type, aliased: boolean, value?: unknown): string {
     const first = path.shift();
     const last = path.pop();
     const root = this.quoteIdentifier(aliased ? `${ALIAS_REPLACEMENT}.${first}` : first!);
-    type = typeof type === 'string' ? this.getMappedType(type).runtimeType : String(type);
-    const types = {
-      number: 'float8',
-      bigint: 'int8',
-      boolean: 'bool',
-    } as Dictionary;
-    const cast = (key: string) => raw(type as string in types ? `(${key})::${types[type as string]}` : key);
+    const resolvedType = typeof type === 'string' ? this.getMappedType(type).runtimeType : String(type);
+    const cast = (key: string) => raw(this.castJsonElementValue(key, resolvedType));
     let lastOperator = '->>';
 
     // force `->` for operator payloads with array values
@@ -453,16 +468,8 @@ export class BasePostgreSqlPlatform extends AbstractSqlPlatform {
    * @internal
    */
   override getJsonElementPropertySQL(field: string, type?: string): string {
-    const types: Record<string, string> = {
-      number: 'float8',
-      bigint: 'int8',
-      boolean: 'bool',
-    };
     const jsonPath = `__elem__->>'${field}'`;
-    if (type && type in types) {
-      return `(${jsonPath})::${types[type]}`;
-    }
-    return jsonPath;
+    return this.castJsonElementValue(jsonPath, type);
   }
 
   /**

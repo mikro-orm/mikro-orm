@@ -141,6 +141,16 @@ export abstract class AbstractSqlPlatform extends Platform {
   }
 
   /**
+   * Wraps a JSON element path expression with type cast if needed.
+   * Override in platform-specific classes to provide database-specific casting.
+   * Used by getJsonElementPropertySQL for $elemMatch.
+   * @internal
+   */
+  protected castJsonElementValue(expression: string, type?: string): string {
+    return expression;
+  }
+
+  /**
    * Returns the SQL expression for accessing a property of a JSON array element.
    * Used within $elemMatch conditions.
    * @internal
