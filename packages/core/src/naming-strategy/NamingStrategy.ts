@@ -103,4 +103,9 @@ export interface NamingStrategy {
    */
   inverseSideName(entityName: string, propertyName: string, kind: ReferenceKind): string;
 
+  /**
+   * Returns the discriminator column name for polymorphic relations.
+   */
+  discriminatorColumnName(baseName: string): string;
+
 }

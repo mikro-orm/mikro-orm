@@ -104,6 +104,13 @@ export abstract class AbstractNamingStrategy implements NamingStrategy {
     return entityName[0].toLowerCase() + entityName.substring(1) + suffix;
   }
 
+  /**
+   * @inheritDoc
+   */
+  discriminatorColumnName(baseName: string): string {
+    return this.propertyToColumnName(baseName + 'Type');
+  }
+
   abstract classToTableName(entityName: string, tableName?: string): string;
 
   abstract joinColumnName(propertyName: string): string;

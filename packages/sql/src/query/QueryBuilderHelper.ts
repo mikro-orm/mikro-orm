@@ -197,6 +197,15 @@ export class QueryBuilderHelper {
     schema ??= prop.targetMeta?.schema === '*' ? '*' : this.driver.getSchemaName(prop.targetMeta);
     cond = Utils.merge(cond, prop.where);
 
+    // For inverse side of polymorphic relations, add discriminator condition
+    if (!prop.owner && prop2.polymorphic && prop2.discriminatorColumn && prop2.discriminatorMap) {
+      const ownerMeta = this.aliasMap[ownerAlias]?.meta ?? this.metadata.get(this.entityName);
+      const discriminatorValue = Object.entries(prop2.discriminatorMap).find(([, cls]) => cls === ownerMeta.class)?.[0];
+      if (discriminatorValue) {
+        cond[`${alias}.${prop2.discriminatorColumn}`] = discriminatorValue;
+      }
+    }
+
     return {
       prop, type, cond, ownerAlias, alias, table, schema,
       joinColumns, inverseJoinColumns, primaryKeys,

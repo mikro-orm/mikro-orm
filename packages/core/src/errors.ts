@@ -305,6 +305,10 @@ export class MetadataError<T extends AnyEntity = AnyEntity> extends ValidationEr
     return this.fromMessage(meta, prop, `has 'targetKey' set to '${prop.targetKey}', but ${prop.type}.${prop.targetKey} does not exist`);
   }
 
+  static incompatiblePolymorphicTargets(meta: EntityMetadata, prop: EntityProperty, target1: EntityMetadata, target2: EntityMetadata, reason: string) {
+    return this.fromMessage(meta, prop, `has incompatible polymorphic targets ${target1.className} and ${target2.className}: ${reason}`);
+  }
+
   static dangerousPropertyName(meta: EntityMetadata, prop: EntityProperty) {
     return this.fromMessage(meta, prop, `uses a dangerous property name '${prop.name}' which could lead to prototype pollution. Please use a different property name.`);
   }

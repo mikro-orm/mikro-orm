@@ -17,6 +17,7 @@ import { type EntityFactory } from './entity/EntityFactory.js';
 import { type EntityRepository } from './entity/EntityRepository.js';
 import { Reference, type ScalarReference } from './entity/Reference.js';
 import { EntityHelper } from './entity/EntityHelper.js';
+import { helper } from './entity/wrap.js';
 import type { SerializationContext } from './serialization/SerializationContext.js';
 import type { SerializeOptions } from './serialization/EntitySerializer.js';
 import type { MetadataStorage } from './metadata/MetadataStorage.js';
@@ -554,7 +555,12 @@ export interface EntityProperty<Owner = any, Target = any> {
   embeddedPath?: string[];
   embeddable: EntityClass<Owner>;
   embeddedProps: Dictionary<EntityProperty>;
-  discriminatorColumn?: string; // only for poly embeddables currently
+  discriminatorColumn?: string; // for poly embeddables only
+  discriminator?: string; // property name for polymorphic relations discriminator
+  polymorphic?: boolean; // marks this relation as polymorphic (pointing to multiple entity types)
+  polymorphTargets?: EntityMetadata[]; // array of target entity metadata for polymorphic relations
+  discriminatorMap?: Dictionary<EntityClass<Target>>; // maps discriminator values to entity classes
+  discriminatorValue?: string; // the value to use in the discriminator column for this entity (M:N polymorphic)
   object?: boolean;
   index?: boolean | string;
   unique?: boolean | string;
@@ -793,7 +799,10 @@ export class EntityMetadata<Entity = any, Class extends EntityCtor<Entity> = Ent
 
             // when propagation from inside hydration, we set the FK to the entity data immediately
             if (val && hydrator.isRunning() && wrapped.__originalEntityData && prop.owner) {
-              wrapped.__originalEntityData[prop.name] = Utils.getPrimaryKeyValues(val, prop.targetMeta!, true);
+              const targetMeta = prop.targetMeta ?? helper(entity)?.__meta;
+              if (targetMeta) {
+                wrapped.__originalEntityData[prop.name] = Utils.getPrimaryKeyValues(val, targetMeta, true);
+              }
             }
 
             EntityHelper.propagate(meta, entity, this, prop, Reference.unwrapReference(val), old);
@@ -914,6 +923,8 @@ export interface EntityMetadata<Entity = any, Class extends EntityCtor<Entity> =
   polymorphs?: EntityMetadata[];
   root: EntityMetadata<Entity>;
   definedProperties: Dictionary;
+  /** For polymorphic M:N pivot tables, maps discriminator values to entity classes */
+  polymorphicDiscriminatorMap?: Dictionary<EntityClass>;
   // used to make ORM aware of externally defined triggers, can change resulting SQL in some condition like when inserting in mssql
   hasTriggers?: boolean;
   /** @internal can be used for computed numeric cache keys */
@@ -1182,6 +1193,26 @@ type CollectionKeys<T> = T extends object
   }[keyof T] & {}
   : never;
 
+// for :ref populate hint on to-one relations (Reference or entity objects)
+type ToOneRelationKeys<T> = T extends object
+  ? {
+    [K in keyof T]-?: T[K] extends Reference<any>
+      ? IsAny<T[K]> extends true
+        ? never
+        : K & string
+      : T[K] extends (Collection<any> | string | number | boolean | bigint | Date | undefined | null | any[])
+        ? never
+        : T[K] extends object
+          ? IsAny<T[K]> extends true
+            ? never
+            : K & string
+          : never
+  }[keyof T] & {}
+  : never;
+
+// all relation keys that support :ref suffix
+type RefableKeys<T> = CollectionKeys<T> | ToOneRelationKeys<T>;
+
 export type AutoPath<O, P extends string | boolean, E extends string = never, D extends Prev[number] = 9> =
   P extends boolean
     ? P
@@ -1196,7 +1227,7 @@ export type AutoPath<O, P extends string | boolean, E extends string = never, D 
                 : never
               : Q extends StringKeys<O, E>
                 ? (NonNullable<GetStringKey<O, Q, E>> extends unknown ? Exclude<P, `${string}.`> : never) | (StringKeys<NonNullable<GetStringKey<O, Q, E>>, E> extends never ? never : `${Q & string}.`)
-                : StringKeys<O, E> | `${CollectionKeys<O>}:ref`
+                : StringKeys<O, E> | `${RefableKeys<O>}:ref`
               : never
             : never
           : never;

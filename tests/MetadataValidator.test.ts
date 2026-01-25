@@ -531,4 +531,139 @@ describe('MetadataValidator', () => {
       expect(validateDiscoveryCommand).not.toThrow();
     });
   });
+
+  describe('polymorphic relations validation', () => {
+    test('validates polymorphic relation with missing inverse property', async () => {
+      class Post {}
+      class Comment {}
+      class Like {}
+
+      const postMeta = {
+        name: 'Post',
+        className: 'Post',
+        class: Post,
+        primaryKeys: ['id'],
+        properties: {
+          id: { name: 'id', kind: ReferenceKind.SCALAR, type: 'number', primary: true, runtimeType: 'number' },
+        },
+        getPrimaryProps() {
+          return [this.properties.id];
+        },
+      } as any;
+      postMeta.root = postMeta;
+
+      const commentMeta = {
+        name: 'Comment',
+        className: 'Comment',
+        class: Comment,
+        primaryKeys: ['id'],
+        properties: {
+          id: { name: 'id', kind: ReferenceKind.SCALAR, type: 'number', primary: true, runtimeType: 'number' },
+        },
+        getPrimaryProps() {
+          return [this.properties.id];
+        },
+      } as any;
+      commentMeta.root = commentMeta;
+
+      const likeMeta = {
+        name: 'Like',
+        className: 'Like',
+        class: Like,
+        primaryKeys: ['id'],
+        properties: {
+          id: { name: 'id', kind: ReferenceKind.SCALAR, type: 'number', primary: true, runtimeType: 'number' },
+          likeable: {
+            name: 'likeable',
+            kind: ReferenceKind.MANY_TO_ONE,
+            type: 'Post',
+            polymorphic: true,
+            polymorphTargets: [postMeta, commentMeta],
+            inversedBy: 'likes',
+            targetMeta: postMeta,
+          },
+        },
+        getPrimaryProps() {
+          return [this.properties.id];
+        },
+      } as any;
+      likeMeta.root = likeMeta;
+
+      const meta = { Post: postMeta, Comment: commentMeta, Like: likeMeta };
+
+      // Should not throw - inverse is optional for polymorphic targets
+      expect(() => validator.validateEntityDefinition(new MetadataStorage(meta), Like, options)).not.toThrow();
+    });
+
+    test('validates polymorphic relation with wrong inverse reference', async () => {
+      class Post {}
+      class Comment {}
+      class Like {}
+      class Other {}
+
+      const otherMeta = {
+        name: 'Other',
+        className: 'Other',
+        class: Other,
+        primaryKeys: ['id'],
+        properties: {
+          id: { name: 'id', kind: ReferenceKind.SCALAR, type: 'number', primary: true, runtimeType: 'number' },
+        },
+        getPrimaryProps() {
+          return [this.properties.id];
+        },
+      } as any;
+      otherMeta.root = otherMeta;
+
+      const postMeta = {
+        name: 'Post',
+        className: 'Post',
+        class: Post,
+        primaryKeys: ['id'],
+        properties: {
+          id: { name: 'id', kind: ReferenceKind.SCALAR, type: 'number', primary: true, runtimeType: 'number' },
+          likes: {
+            name: 'likes',
+            kind: ReferenceKind.ONE_TO_MANY,
+            type: 'Like',
+            mappedBy: 'likeable',
+            targetMeta: otherMeta, // Wrong reference - points to Other instead of Like
+          },
+        },
+        getPrimaryProps() {
+          return [this.properties.id];
+        },
+      } as any;
+      postMeta.root = postMeta;
+      postMeta.properties.likes.targetMeta = { root: otherMeta };
+
+      const likeMeta = {
+        name: 'Like',
+        className: 'Like',
+        class: Like,
+        primaryKeys: ['id'],
+        properties: {
+          id: { name: 'id', kind: ReferenceKind.SCALAR, type: 'number', primary: true, runtimeType: 'number' },
+          likeable: {
+            name: 'likeable',
+            kind: ReferenceKind.MANY_TO_ONE,
+            type: 'Post',
+            polymorphic: true,
+            polymorphTargets: [postMeta],
+            inversedBy: 'likes',
+            targetMeta: postMeta,
+          },
+        },
+        getPrimaryProps() {
+          return [this.properties.id];
+        },
+      } as any;
+      likeMeta.root = likeMeta;
+
+      const meta = { Post: postMeta, Like: likeMeta, Other: otherMeta };
+
+      expect(() => validator.validateEntityDefinition(new MetadataStorage(meta), Like, options))
+        .toThrow(/wrong 'inversedBy' reference/i);
+    });
+  });
 });

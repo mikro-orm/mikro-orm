@@ -76,7 +76,8 @@ export class CriteriaNodeFactory {
   static createObjectItemNode<T extends object>(metadata: MetadataStorage, entityName: EntityName<T>, node: ICriteriaNode<T>, payload: Dictionary, key: EntityKey<T> | RawQueryFragmentSymbol, meta?: EntityMetadata<T>) {
     const rawField = RawQueryFragment.isKnownFragmentSymbol(key);
     const prop = rawField ? null : meta?.properties[key];
-    const childEntity = prop && prop.kind !== ReferenceKind.SCALAR ? prop.targetMeta!.class : entityName;
+    // For polymorphic relations, use the entity name since there's no single target
+    const childEntity = prop && prop.kind !== ReferenceKind.SCALAR && !prop.polymorphic ? prop.targetMeta!.class : entityName;
     const isNotEmbedded = rawField || prop?.kind !== ReferenceKind.EMBEDDED;
     const val = payload[key as EntityKey<T>];
 

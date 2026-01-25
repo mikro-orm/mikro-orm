@@ -138,3 +138,9 @@ Returns the name of the inverse side property. Used in the `EntityGenerator` wit
 > This behavior changed in v6.3, before that, all the properties were named with the `Inverse` suffix as the M:N relations are now.
 
 ---
+
+#### `NamingStrategy.discriminatorColumnName(baseName: string): string`
+
+Returns the discriminator column name for polymorphic relations. The `baseName` is the discriminator property base name (e.g., `likeable`), and the default implementation appends `Type` and converts to column format (e.g., `likeable_type`).
+
+---
