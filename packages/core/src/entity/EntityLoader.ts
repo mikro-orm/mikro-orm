@@ -225,6 +225,10 @@ export class EntityLoader {
       return Utils.flatten(res);
     }
 
+    if (prop.polymorphic && prop.polymorphTargets) {
+      return this.populatePolymorphic<Entity>(entities, prop, options, !!ref);
+    }
+
     const { items, partial } = await this.findChildren<Entity>((options as Dictionary).filtered ?? entities, prop, populate, {
       ...options,
       where,
@@ -246,6 +250,75 @@ export class EntityLoader {
       fields: fields as never[],
       populate: [],
     });
+  }
+
+  private async populatePolymorphic<Entity extends object>(entities: Entity[], prop: EntityProperty<Entity>, options: Required<EntityLoaderOptions<Entity>>, ref: boolean): Promise<AnyEntity[]> {
+    const ownerMeta = this.metadata.get(entities[0].constructor);
+
+    // Separate entities: those with loaded refs vs those needing FK load
+    const toPopulate: Entity[] = [];
+    const needsFkLoad: Entity[] = [];
+
+    for (const entity of entities) {
+      const refValue = entity[prop.name];
+
+      if (refValue && helper(refValue).hasPrimaryKey()) {
+        if (
+          (ref && !options.refresh) || // :ref hint - already have reference
+          (!ref && helper(refValue).__initialized && !options.refresh) // already loaded
+        ) {
+          continue;
+        }
+        toPopulate.push(entity);
+      } else if (refValue == null && !helper(entity).__loadedProperties.has(prop.name)) {
+        // FK columns weren't loaded (partial loading) — need to re-fetch them.
+        // If the property IS in __loadedProperties, the FK was loaded and is genuinely null.
+        needsFkLoad.push(entity);
+      }
+    }
+
+    // Load FK columns using populateScalar pattern
+    if (needsFkLoad.length > 0) {
+      await this.populateScalar(ownerMeta, needsFkLoad, {
+        ...options,
+        fields: [...ownerMeta.primaryKeys, prop.name],
+      });
+
+      // After loading FKs, add to toPopulate if not using :ref hint
+      if (!ref) {
+        for (const entity of needsFkLoad) {
+          const refValue = entity[prop.name] as object | undefined;
+          if (refValue && helper(refValue).hasPrimaryKey()) {
+            toPopulate.push(entity);
+          }
+        }
+      }
+    }
+
+    if (toPopulate.length === 0) {
+      return [];
+    }
+
+    // Group references by target class for batch loading
+    const groups = new Map<string, AnyEntity[]>();
+    for (const entity of toPopulate) {
+      const refValue = Reference.unwrapReference(entity[prop.name] as AnyEntity);
+      const discriminator = QueryHelper.findDiscriminatorValue(prop.discriminatorMap!, helper(refValue).__meta.class)!;
+      const group = groups.get(discriminator) ?? [];
+      group.push(refValue);
+      groups.set(discriminator, group);
+    }
+
+    // Load each group concurrently - identity map handles merging with existing references
+    const allItems: AnyEntity[] = [];
+
+    await Promise.all([...groups].map(async ([discriminator, children]) => {
+      const targetMeta = this.metadata.find(prop.discriminatorMap![discriminator])!;
+      await this.populateScalar(targetMeta, children as any[], options);
+      allItems.push(...children);
+    }));
+
+    return allItems;
   }
 
   private initializeCollections<Entity extends object>(filtered: Entity[], prop: EntityProperty, field: keyof Entity, children: AnyEntity[], customOrder: boolean, partial: boolean): void {
@@ -306,12 +379,21 @@ export class EntityLoader {
     const children = Utils.unique(this.getChildReferences<Entity>(entities, prop, options, ref));
     const meta = prop.targetMeta!;
     // When targetKey is set, use it for FK lookup instead of the PK
-    let fk = prop.targetKey ?? Utils.getPrimaryKeyHash(meta.primaryKeys);
+    let fk: string | string[] = prop.targetKey ?? Utils.getPrimaryKeyHash(meta.primaryKeys);
     let schema: string | undefined = options.schema;
     const partial = !Utils.isEmpty(prop.where) || !Utils.isEmpty(options.where);
+    let polymorphicOwnerProp: EntityProperty | undefined;
 
     if (prop.kind === ReferenceKind.ONE_TO_MANY || (prop.kind === ReferenceKind.MANY_TO_MANY && !prop.owner)) {
-      fk = meta.properties[prop.mappedBy].name;
+      const ownerProp = meta.properties[prop.mappedBy];
+
+      if (ownerProp.polymorphic && ownerProp.fieldNames.length >= 2) {
+        const idColumns = ownerProp.fieldNames.slice(1);
+        fk = idColumns.length === 1 ? idColumns[0] : idColumns;
+        polymorphicOwnerProp = ownerProp;
+      } else {
+        fk = ownerProp.name;
+      }
     }
 
     if (prop.kind === ReferenceKind.ONE_TO_ONE && !prop.owner && !ref) {
@@ -328,9 +410,26 @@ export class EntityLoader {
       schema = children.find(e => e.__helper!.__schema)?.__helper!.__schema;
     }
 
-    // When targetKey is set, get the targetKey value instead of PK
     const ids = Utils.unique(children.map(e => prop.targetKey ? e[prop.targetKey] : e.__helper.getPrimaryKey()));
-    let where = this.mergePrimaryCondition<Entity>(ids, fk as FilterKey<Entity>, options, meta, this.metadata, this.driver.getPlatform());
+    let where: FilterQuery<Entity>;
+
+    if (polymorphicOwnerProp && Array.isArray(fk)) {
+      const conditions = ids.map(id => {
+        const pkValues = Object.values(id as Record<string, unknown>);
+        return Object.fromEntries((fk as string[]).map((col, idx) => [col, pkValues[idx]]));
+      });
+      where = (conditions.length === 1 ? conditions[0] : { $or: conditions }) as FilterQuery<Entity>;
+    } else {
+      where = this.mergePrimaryCondition<Entity>(ids, fk as FilterKey<Entity>, options, meta, this.metadata, this.driver.getPlatform());
+    }
+
+    if (polymorphicOwnerProp) {
+      const parentMeta = this.metadata.find(entities[0].constructor)!;
+      const discriminatorValue = QueryHelper.findDiscriminatorValue(polymorphicOwnerProp.discriminatorMap!, parentMeta.class) ?? parentMeta.tableName;
+      const discriminatorColumn = polymorphicOwnerProp.fieldNames[0];
+      where = { $and: [where, { [discriminatorColumn]: discriminatorValue }] } as FilterQuery<Entity>;
+    }
+
     const fields = this.buildFields(options.fields, prop, ref) as any;
 
     /* eslint-disable prefer-const */
@@ -498,31 +597,43 @@ export class EntityLoader {
       visited.add(entity);
     }
 
-    // skip lazy scalar properties
     if (!prop.targetMeta) {
       return;
     }
 
-    await this.populate<Entity>(prop.targetMeta!.class, unique, populate.children ?? populate.all as any, {
-      where: await this.extractChildCondition(options, prop, false) as FilterQuery<Entity>,
-      orderBy: innerOrderBy as QueryOrderMap<Entity>[],
-      fields,
-      exclude,
-      validate: false,
-      lookup: false,
-      filters,
-      ignoreLazyScalarProperties,
-      populateWhere,
-      connectionType,
-      logging,
-      schema,
-      // @ts-ignore not a public option, will be propagated to the populate call
-      refresh: refresh && !filtered.every(item => options.visited.has(item)),
-      // @ts-ignore not a public option, will be propagated to the populate call
-      visited: options.visited,
-      // @ts-ignore not a public option
-      filtered,
-    });
+    const populateChildren = async (targetMeta: EntityMetadata, items: Entity[]) => {
+      await this.populate<Entity>(targetMeta.class, items, populate.children ?? populate.all as any, {
+        where: await this.extractChildCondition(options, prop, false) as FilterQuery<Entity>,
+        orderBy: innerOrderBy as QueryOrderMap<Entity>[],
+        fields,
+        exclude,
+        validate: false,
+        lookup: false,
+        filters,
+        ignoreLazyScalarProperties,
+        populateWhere,
+        connectionType,
+        logging,
+        schema,
+        // @ts-ignore not a public option, will be propagated to the populate call
+        refresh: refresh && !filtered.every(item => options.visited.has(item)),
+        // @ts-ignore not a public option, will be propagated to the populate call
+        visited: options.visited,
+        // @ts-ignore not a public option
+        filtered,
+      });
+    };
+
+    if (prop.polymorphic && prop.polymorphTargets) {
+      await Promise.all(prop.polymorphTargets.map(async targetMeta => {
+        const targetChildren = unique.filter(child => helper(child).__meta.className === targetMeta.className);
+        if (targetChildren.length > 0) {
+          await populateChildren(targetMeta, targetChildren);
+        }
+      }));
+    } else {
+      await populateChildren(prop.targetMeta!, unique);
+    }
   }
 
   /** @internal */
@@ -532,7 +643,8 @@ export class EntityLoader {
     let where = await this.extractChildCondition(options, prop, true);
     const fields = this.buildFields(options.fields, prop);
     const exclude = Array.isArray(options.exclude) ? Utils.extractChildElements(options.exclude, prop.name) : options.exclude;
-    const options2 = { ...options, fields, exclude } as unknown as FindOptions<Entity, any, any, any>;
+    const populateFilter = (options as Dictionary).populateFilter?.[prop.name];
+    const options2 = { ...options, fields, exclude, populateFilter } as unknown as FindOptions<Entity, any, any, any>;
     (['limit', 'offset', 'first', 'last', 'before', 'after', 'overfetch'] as const).forEach(prop => delete options2[prop]);
     options2.populate = (populate?.children ?? []);
 

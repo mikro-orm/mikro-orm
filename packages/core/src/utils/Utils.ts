@@ -14,7 +14,7 @@ import { GroupOperator, PlainObject, QueryOperator, ReferenceKind } from '../enu
 import type { Collection } from '../entity/Collection.js';
 import type { Platform } from '../platforms/Platform.js';
 import { helper } from '../entity/wrap.js';
-import type { ScalarReference } from '../entity/Reference.js';
+import { Reference, type ScalarReference } from '../entity/Reference.js';
 import { Raw, type RawQueryFragmentSymbol } from './RawQueryFragment.js';
 
 function compareConstructors(a: any, b: any) {
@@ -432,7 +432,9 @@ export class Utils {
     }
 
     if (Utils.isEntity<T>(data, true)) {
-      const wrapped = helper(data);
+      // Unwrap Reference wrapper if present
+      const entity = Reference.unwrapReference(data);
+      const wrapped = helper(entity);
 
       if (wrapped.__meta.compositePK) {
         return wrapped.getPrimaryKeys() as Primary<T>;

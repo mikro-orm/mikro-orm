@@ -111,7 +111,10 @@ export class UnitOfWork {
       }
 
       if ([ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind) && Utils.isPlainObject(data[prop.name])) {
-        data[prop.name] = Utils.getPrimaryKeyValues(data[prop.name], prop.targetMeta!, true);
+        // Skip polymorphic relations - they use PolymorphicRef wrapper
+        if (!prop.polymorphic) {
+          data[prop.name] = Utils.getPrimaryKeyValues(data[prop.name], prop.targetMeta!, true);
+        }
       } else if (prop.kind === ReferenceKind.EMBEDDED && !prop.object && Utils.isPlainObject(data[prop.name])) {
         for (const p of prop.targetMeta!.props) {
           /* v8 ignore next */
@@ -1265,7 +1268,13 @@ export class UnitOfWork {
 
     for (const meta of set) {
       for (const prop of meta.relations) {
-        calc.discoverProperty(prop, meta._id);
+        if (prop.polymorphTargets) {
+          for (const targetMeta of prop.polymorphTargets) {
+            calc.discoverProperty({ ...prop, targetMeta }, meta._id);
+          }
+        } else {
+          calc.discoverProperty(prop, meta._id);
+        }
       }
     }
 

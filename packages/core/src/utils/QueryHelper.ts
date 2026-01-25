@@ -24,6 +24,13 @@ export class QueryHelper {
 
   static readonly SUPPORTED_OPERATORS = ['>', '<', '<=', '>=', '!', '!='];
 
+  /**
+   * Finds the discriminator value (key) for a given entity class in a discriminator map.
+   */
+  static findDiscriminatorValue<T>(discriminatorMap: Dictionary<T>, targetClass: T): string | undefined {
+    return Object.entries(discriminatorMap).find(([, cls]) => cls === targetClass)?.[0];
+  }
+
   static processParams(params: unknown): any {
     if (Reference.isReference(params)) {
       params = params.unwrap();
@@ -94,7 +101,10 @@ export class QueryHelper {
       const value = where[k];
       const prop = meta.properties[k as EntityKey<T>];
 
-      if (!prop || ![ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind)) {
+      // Polymorphic relations use multiple columns (discriminator + FK), so they cannot
+      // participate in the standard single-column FK expansion. Query by discriminator
+      // column directly instead, e.g. { likeableType: 'post', likeableId: 1 }.
+      if (!prop || ![ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind) || prop.polymorphic) {
         continue;
       }
 

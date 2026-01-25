@@ -56,7 +56,7 @@ export type UniversalPropertyKeys =
   | keyof ManyToManyOptions<any, any>;
 
 type BuilderExtraKeys = '~options' | '~type' | '$type';
-type ExcludeKeys = 'entity' | 'items';
+type ExcludeKeys = 'entity' | 'items' | 'discriminator' | 'discriminatorColumn' | 'discriminatorMap';
 type BuilderKeys = Exclude<UniversalPropertyKeys, ExcludeKeys> | BuilderExtraKeys;
 
 type IncludeKeysForProperty = Exclude<keyof PropertyOptions<any>, ExcludeKeys> | BuilderExtraKeys;

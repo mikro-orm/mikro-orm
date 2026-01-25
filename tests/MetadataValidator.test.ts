@@ -400,7 +400,7 @@ describe('MetadataValidator', () => {
       meta.Book.properties.author.targetMeta = meta.Author;
 
       expect(() => validator.validateEntityDefinition(new MetadataStorage(meta), Book, options))
-        .toThrow(`Book.author has 'targetKey' set to 'name', but Author.name is not marked as unique. The target property must have a unique constraint.`);
+        .toThrow(`Book.author has 'targetKey' set to 'name', but Author.name is not marked as unique`);
     });
 
     test('does not throw when targetKey references unique property', async () => {
@@ -440,7 +440,83 @@ describe('MetadataValidator', () => {
       expect(() => validator.validateEntityDefinition(new MetadataStorage(meta), Book, options)).not.toThrow();
     });
 
-    test('does not throw when targetKey references property in composite unique index', async () => {
+    test('does not throw when targetKey references property with @Unique decorator', async () => {
+      class Author {}
+      class Book {}
+      const meta = {
+        Author: {
+          name: 'Author',
+          className: 'Author',
+          class: Author,
+          primaryKeys: ['id'],
+          uniques: [{ properties: 'uuid' }], // Single-property @Unique decorator
+          properties: {
+            id: { name: 'id', kind: ReferenceKind.SCALAR, type: 'number', primary: true },
+            uuid: { name: 'uuid', kind: ReferenceKind.SCALAR, type: 'string' },
+          },
+        },
+        Book: {
+          name: 'Book',
+          className: 'Book',
+          class: Book,
+          primaryKeys: ['id'],
+          properties: {
+            id: { name: 'id', kind: ReferenceKind.SCALAR, type: 'number', primary: true },
+            author: {
+              name: 'author',
+              kind: ReferenceKind.MANY_TO_ONE,
+              type: 'Author',
+              targetKey: 'uuid',
+            },
+          },
+        },
+      } as any;
+      meta.Author.root = meta.Author;
+      meta.Book.root = meta.Book;
+      meta.Book.properties.author.targetMeta = meta.Author;
+
+      expect(() => validator.validateEntityDefinition(new MetadataStorage(meta), Book, options)).not.toThrow();
+    });
+
+    test('does not throw when targetKey references property with @Unique decorator (array format)', async () => {
+      class Author {}
+      class Book {}
+      const meta = {
+        Author: {
+          name: 'Author',
+          className: 'Author',
+          class: Author,
+          primaryKeys: ['id'],
+          uniques: [{ properties: ['uuid'] }], // Single-property @Unique decorator in array format
+          properties: {
+            id: { name: 'id', kind: ReferenceKind.SCALAR, type: 'number', primary: true },
+            uuid: { name: 'uuid', kind: ReferenceKind.SCALAR, type: 'string' },
+          },
+        },
+        Book: {
+          name: 'Book',
+          className: 'Book',
+          class: Book,
+          primaryKeys: ['id'],
+          properties: {
+            id: { name: 'id', kind: ReferenceKind.SCALAR, type: 'number', primary: true },
+            author: {
+              name: 'author',
+              kind: ReferenceKind.MANY_TO_ONE,
+              type: 'Author',
+              targetKey: 'uuid',
+            },
+          },
+        },
+      } as any;
+      meta.Author.root = meta.Author;
+      meta.Book.root = meta.Book;
+      meta.Book.properties.author.targetMeta = meta.Author;
+
+      expect(() => validator.validateEntityDefinition(new MetadataStorage(meta), Book, options)).not.toThrow();
+    });
+
+    test('throws when targetKey references property in composite unique index (not sufficient)', async () => {
       class Author {}
       class Book {}
       const meta = {
@@ -476,7 +552,9 @@ describe('MetadataValidator', () => {
       meta.Book.root = meta.Book;
       meta.Book.properties.author.targetMeta = meta.Author;
 
-      expect(() => validator.validateEntityDefinition(new MetadataStorage(meta), Book, options)).not.toThrow();
+      // Composite unique is not sufficient - the property must have unique: true directly
+      expect(() => validator.validateEntityDefinition(new MetadataStorage(meta), Book, options))
+        .toThrow(`Book.author has 'targetKey' set to 'email', but Author.email is not marked as unique`);
     });
   });
 
@@ -530,5 +608,199 @@ describe('MetadataValidator', () => {
       // Assert
       expect(validateDiscoveryCommand).not.toThrow();
     });
+  });
+
+  describe('polymorphic relations validation', () => {
+    test('validates polymorphic relation with missing inverse property', async () => {
+      class Post {}
+      class Comment {}
+      class Like {}
+
+      const postMeta = {
+        name: 'Post',
+        className: 'Post',
+        class: Post,
+        primaryKeys: ['id'],
+        properties: {
+          id: { name: 'id', kind: ReferenceKind.SCALAR, type: 'number', primary: true, runtimeType: 'number' },
+        },
+        getPrimaryProps() {
+          return [this.properties.id];
+        },
+      } as any;
+      postMeta.root = postMeta;
+
+      const commentMeta = {
+        name: 'Comment',
+        className: 'Comment',
+        class: Comment,
+        primaryKeys: ['id'],
+        properties: {
+          id: { name: 'id', kind: ReferenceKind.SCALAR, type: 'number', primary: true, runtimeType: 'number' },
+        },
+        getPrimaryProps() {
+          return [this.properties.id];
+        },
+      } as any;
+      commentMeta.root = commentMeta;
+
+      const likeMeta = {
+        name: 'Like',
+        className: 'Like',
+        class: Like,
+        primaryKeys: ['id'],
+        properties: {
+          id: { name: 'id', kind: ReferenceKind.SCALAR, type: 'number', primary: true, runtimeType: 'number' },
+          likeable: {
+            name: 'likeable',
+            kind: ReferenceKind.MANY_TO_ONE,
+            type: 'Post',
+            polymorphic: true,
+            polymorphTargets: [postMeta, commentMeta],
+            inversedBy: 'likes',
+            targetMeta: postMeta,
+          },
+        },
+        getPrimaryProps() {
+          return [this.properties.id];
+        },
+      } as any;
+      likeMeta.root = likeMeta;
+
+      const meta = { Post: postMeta, Comment: commentMeta, Like: likeMeta };
+
+      // Should not throw - inverse is optional for polymorphic targets
+      expect(() => validator.validateEntityDefinition(new MetadataStorage(meta), Like, options)).not.toThrow();
+    });
+
+    test('validates polymorphic relation with wrong inverse reference', async () => {
+      class Post {}
+      class Comment {}
+      class Like {}
+      class Other {}
+
+      const otherMeta = {
+        name: 'Other',
+        className: 'Other',
+        class: Other,
+        primaryKeys: ['id'],
+        properties: {
+          id: { name: 'id', kind: ReferenceKind.SCALAR, type: 'number', primary: true, runtimeType: 'number' },
+        },
+        getPrimaryProps() {
+          return [this.properties.id];
+        },
+      } as any;
+      otherMeta.root = otherMeta;
+
+      const postMeta = {
+        name: 'Post',
+        className: 'Post',
+        class: Post,
+        primaryKeys: ['id'],
+        properties: {
+          id: { name: 'id', kind: ReferenceKind.SCALAR, type: 'number', primary: true, runtimeType: 'number' },
+          likes: {
+            name: 'likes',
+            kind: ReferenceKind.ONE_TO_MANY,
+            type: 'Like',
+            mappedBy: 'likeable',
+            targetMeta: otherMeta, // Wrong reference - points to Other instead of Like
+          },
+        },
+        getPrimaryProps() {
+          return [this.properties.id];
+        },
+      } as any;
+      postMeta.root = postMeta;
+      postMeta.properties.likes.targetMeta = { root: otherMeta };
+
+      const likeMeta = {
+        name: 'Like',
+        className: 'Like',
+        class: Like,
+        primaryKeys: ['id'],
+        properties: {
+          id: { name: 'id', kind: ReferenceKind.SCALAR, type: 'number', primary: true, runtimeType: 'number' },
+          likeable: {
+            name: 'likeable',
+            kind: ReferenceKind.MANY_TO_ONE,
+            type: 'Post',
+            polymorphic: true,
+            polymorphTargets: [postMeta],
+            inversedBy: 'likes',
+            targetMeta: postMeta,
+          },
+        },
+        getPrimaryProps() {
+          return [this.properties.id];
+        },
+      } as any;
+      likeMeta.root = likeMeta;
+
+      const meta = { Post: postMeta, Like: likeMeta, Other: otherMeta };
+
+      expect(() => validator.validateEntityDefinition(new MetadataStorage(meta), Like, options))
+        .toThrow(/wrong 'inversedBy' reference/i);
+    });
+
+    test('validates polymorphic relation where inverse is incorrectly marked as owner', async () => {
+      class Post {}
+      class Like {}
+
+      const likeMeta = {
+        name: 'Like',
+        className: 'Like',
+        class: Like,
+        primaryKeys: ['id'],
+        properties: {
+          id: { name: 'id', kind: ReferenceKind.SCALAR, type: 'number', primary: true, runtimeType: 'number' },
+        },
+        getPrimaryProps() {
+          return [this.properties.id];
+        },
+      } as any;
+      likeMeta.root = likeMeta;
+
+      const postMeta = {
+        name: 'Post',
+        className: 'Post',
+        class: Post,
+        primaryKeys: ['id'],
+        properties: {
+          id: { name: 'id', kind: ReferenceKind.SCALAR, type: 'number', primary: true, runtimeType: 'number' },
+          likes: {
+            name: 'likes',
+            kind: ReferenceKind.ONE_TO_MANY,
+            type: 'Like',
+            mappedBy: 'likeable',
+            inversedBy: 'post', // Incorrectly defined as owner (has inversedBy)
+            targetMeta: likeMeta,
+          },
+        },
+        getPrimaryProps() {
+          return [this.properties.id];
+        },
+      } as any;
+      postMeta.root = postMeta;
+      postMeta.properties.likes.targetMeta = { root: likeMeta };
+
+      // Add likeable property to likeMeta after postMeta is defined
+      (likeMeta as any).properties.likeable = {
+        name: 'likeable',
+        kind: ReferenceKind.MANY_TO_ONE,
+        type: 'Post',
+        polymorphic: true,
+        polymorphTargets: [postMeta],
+        inversedBy: 'likes',
+        targetMeta: postMeta,
+      };
+
+      const meta = { Post: postMeta, Like: likeMeta };
+
+      expect(() => validator.validateEntityDefinition(new MetadataStorage(meta), Like, options))
+        .toThrow(/both .* are defined as owning sides/i);
+    });
+
   });
 });

@@ -39,9 +39,9 @@ exports[`6865 1`] = `
     entity.password = data.password;
   }
   const createCollectionItem_allowedTokens = (value, entity) => {
-    if (isPrimaryKey(value, false)) return factory.createReference(allowed_token_19, value, { convertCustomTypes, schema, normalizeAccessors, merge: true });
+    if (isPrimaryKey(value, false)) return factory.createReference(allowed_token_20, value, { convertCustomTypes, schema, normalizeAccessors, merge: true });
     if (value && value.__entity) return value;
-    return factory.create(allowed_token_19, value, { newEntity, convertCustomTypes, schema, normalizeAccessors, merge: true });
+    return factory.create(allowed_token_20, value, { newEntity, convertCustomTypes, schema, normalizeAccessors, merge: true });
   }
   if (data.allowedTokens && !Array.isArray(data.allowedTokens) && typeof data.allowedTokens === 'object') {
     data.allowedTokens = [data.allowedTokens];
