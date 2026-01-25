@@ -611,10 +611,13 @@ export class QueryBuilderHelper {
         column,
         innerConditions.sql,
         innerConditions.params,
-        meta?.tableName,
-        this.alias,
-        meta?.primaryKeys?.[0],
-        fieldName,
+        {
+          tableName: meta?.tableName,
+          alias: this.alias,
+          pkField: meta?.primaryKeys?.[0],
+          fieldName,
+          rawConditions: value[op],
+        },
       );
       parts.push(existsClause.sql);
       params.push(...existsClause.params);

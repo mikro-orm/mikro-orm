@@ -59,9 +59,9 @@ describe('$elemMatch operator for JSON arrays (MySQL)', () => {
       },
     });
 
-    expect(mock.mock.calls[0][0]).toMatch(
-      /exists \(select 1 from `balance_move` as `__jt_b0__`, json_table\([^)]+, '\$\[\*\]' columns \(__elem__ json path '\$'\)\) as jt where `__jt_b0__`\.`id` = `b0`\.`id` and json_unquote\(json_extract\(jt\.__elem__, '\$\.payment_method'\)\) = '7'\)/,
-    );
+    // Simple equality uses optimized JSON_CONTAINS
+    expect(mock.mock.calls[0][0]).toMatch(/json_contains\(`b0`\.`payments`, '/);
+    expect(mock.mock.calls[0][0]).toMatch(/payment_method/);
   });
 
   test('$in operator inside $elemMatch', async () => {
@@ -138,8 +138,10 @@ describe('$elemMatch operator for JSON arrays (MySQL)', () => {
       },
     });
 
-    expect(mock.mock.calls[0][0]).toMatch(/json_unquote\(json_extract\(jt\.__elem__, '\$\.payment_method'\)\) = '7'/);
-    expect(mock.mock.calls[0][0]).toMatch(/json_unquote\(json_extract\(jt\.__elem__, '\$\.amount'\)\) = '500'/);
+    // Multiple simple equality conditions use optimized JSON_CONTAINS
+    expect(mock.mock.calls[0][0]).toMatch(/json_contains\(`b0`\.`payments`, '/);
+    expect(mock.mock.calls[0][0]).toMatch(/payment_method/);
+    expect(mock.mock.calls[0][0]).toMatch(/amount/);
   });
 
   test('$not inside $elemMatch', async () => {

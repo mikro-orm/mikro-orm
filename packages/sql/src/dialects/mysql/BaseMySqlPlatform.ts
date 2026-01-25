@@ -7,6 +7,8 @@ import {
   DecimalType,
   DoubleType,
   type IsolationLevel,
+  GroupOperator,
+  QueryOperator,
 } from '@mikro-orm/core';
 import { MySqlSchemaHelper } from './MySqlSchemaHelper.js';
 import { MySqlExceptionConverter } from './MySqlExceptionConverter.js';
@@ -188,20 +190,27 @@ export class BaseMySqlPlatform extends AbstractSqlPlatform {
   }
 
   /**
-   * Override for MySQL to fix correlated subquery issue with json_table.
-   * MySQL doesn't support direct column references from outer query in json_table within EXISTS.
-   * We use an inner self-join pattern instead: EXISTS (SELECT 1 FROM table t2, json_table(t2.column, ...) WHERE t2.pk = outer.pk AND conditions)
+   * Override for MySQL to optimize $elemMatch queries.
+   * Uses JSON_CONTAINS for simple equality conditions (much faster).
+   * Falls back to json_table with inner self-join pattern for complex operators.
    * @internal
    */
-  override getJsonArrayContainsSql(column: string, conditionsSql: string, params: unknown[], tableName?: string, alias?: string, pkField?: string, fieldName?: string): { sql: string; params: unknown[] } {
-    // If we have full context (table info), use the inner self-join pattern
-    if (tableName && alias && pkField && fieldName) {
-      const innerAlias = `__jt_${alias}__`;
-      const innerColumn = this.quoteIdentifier(`${innerAlias}.${fieldName}`);
+  override getJsonArrayContainsSql(column: string, conditionsSql: string, params: unknown[], options?: { tableName?: string; alias?: string; pkField?: string; fieldName?: string; rawConditions?: unknown }): { sql: string; params: unknown[] } {
+    // Try to use JSON_CONTAINS optimization for simple equality conditions
+    if (options?.rawConditions && this.isSimpleEqualityConditions(options.rawConditions)) {
+      const jsonObject = JSON.stringify(options.rawConditions);
+      const sql = `json_contains(${column}, ?)`;
+      return { sql, params: [jsonObject] };
+    }
+
+    // If we have full context (table info), use the inner self-join pattern for complex conditions
+    if (options?.tableName && options?.alias && options?.pkField && options?.fieldName) {
+      const innerAlias = `__jt_${options.alias}__`;
+      const innerColumn = this.quoteIdentifier(`${innerAlias}.${options.fieldName}`);
       const iterator = this.getJsonArrayIteratorSQL(innerColumn);
-      const innerPk = this.quoteIdentifier(`${innerAlias}.${pkField}`);
-      const outerPk = this.quoteIdentifier(`${alias}.${pkField}`);
-      const sql = `exists (select 1 from ${this.quoteIdentifier(tableName)} as ${this.quoteIdentifier(innerAlias)}, ${iterator} where ${innerPk} = ${outerPk} and ${conditionsSql})`;
+      const innerPk = this.quoteIdentifier(`${innerAlias}.${options.pkField}`);
+      const outerPk = this.quoteIdentifier(`${options.alias}.${options.pkField}`);
+      const sql = `exists (select 1 from ${this.quoteIdentifier(options.tableName)} as ${this.quoteIdentifier(innerAlias)}, ${iterator} where ${innerPk} = ${outerPk} and ${conditionsSql})`;
       return { sql, params };
     }
 
@@ -209,6 +218,43 @@ export class BaseMySqlPlatform extends AbstractSqlPlatform {
     const iterator = this.getJsonArrayIteratorSQL(column);
     const sql = `exists (select 1 from ${iterator} where ${conditionsSql})`;
     return { sql, params };
+  }
+
+  /**
+   * Checks if the $elemMatch conditions are simple equality conditions (no operators).
+   * Simple conditions like { field: 'value' } can use the faster JSON_CONTAINS approach.
+   * Complex conditions like { field: { $gt: 10 } } require json_table.
+   * @internal
+   */
+  private isSimpleEqualityConditions(conditions: unknown): boolean {
+    if (!Utils.isPlainObject(conditions)) {
+      return false;
+    }
+
+    for (const key of Object.keys(conditions as object)) {
+      // Group operators ($and, $or) and $not require json_table
+      if (Object.values(GroupOperator).includes(key as GroupOperator) || key === QueryOperator.$not) {
+        return false;
+      }
+
+      // Check for other operators key starts with $ but strictly using enum check if possible
+      // While we can't check every possible string easily, all operators start with $
+      if (key.startsWith('$')) {
+        return false;
+      }
+
+      const value = (conditions as Record<string, unknown>)[key];
+
+      // If value is an object with $ operators, it's not simple equality
+      if (Utils.isPlainObject(value)) {
+        const valueKeys = Object.keys(value as object);
+        if (valueKeys.some(k => k.startsWith('$'))) {
+          return false;
+        }
+      }
+    }
+
+    return true;
   }
 
 }
