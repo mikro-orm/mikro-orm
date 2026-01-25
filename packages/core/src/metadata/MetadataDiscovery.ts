@@ -1166,10 +1166,10 @@ export class MetadataDiscovery {
         newProp.renamedFrom = name;
         newProp.name = name + '_' + (i++);
         meta.root.addProperty(newProp);
+        this.initFieldName(prop, prop.object);
 
         // Track all field variants and map discriminator values to field names
         if (!rootProp.stiFieldNames) {
-          this.initFieldName(prop, prop.object);
           this.initFieldName(rootProp, rootProp.object);
           rootProp.stiFieldNames = [...rootProp.fieldNames];
           rootProp.stiFieldNameMap = {};
