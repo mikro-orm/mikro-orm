@@ -134,7 +134,11 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
     // Sort views by dependencies (views depending on other views come later)
     const sortedViews = this.sortViewsByDependencies(toSchema.getViews());
     for (const view of sortedViews) {
-      this.append(ret, this.helper.createView(view.name, view.schema, view.definition), true);
+      if (view.materialized) {
+        this.append(ret, this.helper.createMaterializedView(view.name, view.schema, view.definition, view.withData ?? true));
+      } else {
+        this.append(ret, this.helper.createView(view.name, view.schema, view.definition), true);
+      }
     }
 
     return this.wrapSchema(ret, options);
@@ -196,7 +200,11 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
     const targetSchema = this.getTargetSchema(options.schema);
     const sortedViews = this.sortViewsByDependencies(targetSchema.getViews()).reverse();
     for (const view of sortedViews) {
-      this.append(ret, this.helper.dropViewIfExists(view.name, view.schema));
+      if (view.materialized) {
+        this.append(ret, this.helper.dropMaterializedViewIfExists(view.name, view.schema));
+      } else {
+        this.append(ret, this.helper.dropViewIfExists(view.name, view.schema));
+      }
     }
 
     // remove FKs explicitly if we can't use a cascading statement and we don't disable FK checks (we need this for circular relations)
@@ -313,7 +321,11 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
     if (options.dropTables && !options.safe) {
       const sortedRemovedViews = this.sortViewsByDependencies(Object.values(schemaDiff.removedViews)).reverse();
       for (const view of sortedRemovedViews) {
-        this.append(ret, this.helper.dropViewIfExists(view.name, view.schema));
+        if (view.materialized) {
+          this.append(ret, this.helper.dropMaterializedViewIfExists(view.name, view.schema));
+        } else {
+          this.append(ret, this.helper.dropViewIfExists(view.name, view.schema));
+        }
       }
     }
 
@@ -322,7 +334,11 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
     const changedViewsFrom = Object.values(schemaDiff.changedViews).map(v => v.from);
     const sortedChangedViewsFrom = this.sortViewsByDependencies(changedViewsFrom).reverse();
     for (const view of sortedChangedViewsFrom) {
-      this.append(ret, this.helper.dropViewIfExists(view.name, view.schema));
+      if (view.materialized) {
+        this.append(ret, this.helper.dropMaterializedViewIfExists(view.name, view.schema));
+      } else {
+        this.append(ret, this.helper.dropViewIfExists(view.name, view.schema));
+      }
     }
 
     if (!options.safe && this.options.createForeignKeyConstraints) {
@@ -398,14 +414,22 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
     // Sort views by dependencies (views depending on other views come later)
     const sortedNewViews = this.sortViewsByDependencies(Object.values(schemaDiff.newViews));
     for (const view of sortedNewViews) {
-      this.append(ret, this.helper.createView(view.name, view.schema, view.definition), true);
+      if (view.materialized) {
+        this.append(ret, this.helper.createMaterializedView(view.name, view.schema, view.definition, view.withData ?? true));
+      } else {
+        this.append(ret, this.helper.createView(view.name, view.schema, view.definition), true);
+      }
     }
 
     // Recreate changed views (also sorted by dependencies)
     const changedViews = Object.values(schemaDiff.changedViews).map(v => v.to);
     const sortedChangedViews = this.sortViewsByDependencies(changedViews);
     for (const view of sortedChangedViews) {
-      this.append(ret, this.helper.createView(view.name, view.schema, view.definition), true);
+      if (view.materialized) {
+        this.append(ret, this.helper.createMaterializedView(view.name, view.schema, view.definition, view.withData ?? true));
+      } else {
+        this.append(ret, this.helper.createView(view.name, view.schema, view.definition), true);
+      }
     }
 
     return this.wrapSchema(ret, options);

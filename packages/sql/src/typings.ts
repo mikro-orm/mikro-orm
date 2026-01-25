@@ -140,6 +140,10 @@ export interface DatabaseView {
   name: string;
   schema?: string;
   definition: string;
+  /** True if this is a materialized view (PostgreSQL only). */
+  materialized?: boolean;
+  /** For materialized views, whether data was populated on creation. */
+  withData?: boolean;
 }
 
 export interface SchemaDifference {

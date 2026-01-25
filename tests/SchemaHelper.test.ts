@@ -27,6 +27,11 @@ describe('SchemaHelper', () => {
     expect(() => helper.getAlterNativeEnumSQL('table')).toThrow('Not supported by given driver');
     expect(() => helper.getCreateNativeEnumSQL('table', [])).toThrow('Not supported by given driver');
     expect(() => helper.getDropNativeEnumSQL('table')).toThrow('Not supported by given driver');
+    expect(() => helper.createMaterializedView('table', undefined, '')).toThrow('Not supported by given driver');
+    expect(() => helper.dropMaterializedViewIfExists('table')).toThrow('Not supported by given driver');
+    expect(() => helper.refreshMaterializedView('table')).toThrow('Not supported by given driver');
+    expect(() => helper.getListMaterializedViewsSQL()).toThrow('Not supported by given driver');
+    await expect(helper.loadMaterializedViews({} as any, {} as any)).rejects.toThrow('Not supported by given driver');
   });
 
   test('mysql schema helper', async () => {

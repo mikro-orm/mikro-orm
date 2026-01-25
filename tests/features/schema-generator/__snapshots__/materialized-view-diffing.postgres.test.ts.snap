@@ -1,0 +1,38 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`materialized view diffing in postgres > schema generator adds new materialized view 1`] = `
+"create materialized view "author_stats_matview" as select a.id, a.name, count(b.id)::int as book_count from author a left join book b on b.author_id = a.id group by a.id with data;
+"
+`;
+
+exports[`materialized view diffing in postgres > schema generator handles add, modify, and remove in sequence 1`] = `
+"create materialized view "author_stats_matview" as select a.id, a.name, count(b.id)::int as book_count from author a left join book b on b.author_id = a.id group by a.id with data;
+"
+`;
+
+exports[`materialized view diffing in postgres > schema generator handles add, modify, and remove in sequence 2`] = `
+"create materialized view "book_stats_matview" as select count(*)::int as total_books from book with data;
+"
+`;
+
+exports[`materialized view diffing in postgres > schema generator handles add, modify, and remove in sequence 3`] = `
+"drop materialized view if exists "author_stats_matview" cascade;
+create materialized view "author_stats_matview" as select a.id, a.name, a.email, count(b.id)::int as book_count from author a left join book b on b.author_id = a.id group by a.id with data;
+"
+`;
+
+exports[`materialized view diffing in postgres > schema generator handles add, modify, and remove in sequence 4`] = `
+"drop materialized view if exists "book_stats_matview" cascade;
+"
+`;
+
+exports[`materialized view diffing in postgres > schema generator modifies materialized view expression 1`] = `
+"drop materialized view if exists "author_stats_matview" cascade;
+create materialized view "author_stats_matview" as select a.id, a.name, a.email, count(b.id)::int as book_count from author a left join book b on b.author_id = a.id group by a.id with data;
+"
+`;
+
+exports[`materialized view diffing in postgres > schema generator removes materialized view 1`] = `
+"drop materialized view if exists "book_stats_matview" cascade;
+"
+`;

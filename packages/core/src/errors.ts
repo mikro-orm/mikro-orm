@@ -313,6 +313,10 @@ export class MetadataError<T extends AnyEntity = AnyEntity> extends ValidationEr
     return new MetadataError(`View entity ${meta.className} is missing 'expression'. View entities must have an expression defining the SQL query.`);
   }
 
+  static materializedWithoutView(meta: EntityMetadata): MetadataError {
+    return new MetadataError(`Entity ${meta.className} has 'materialized: true' but is missing 'view: true'. Materialized views must also be marked as views.`);
+  }
+
   private static fromMessage(meta: EntityMetadata, prop: EntityProperty, message: string): MetadataError {
     return new MetadataError(`${meta.className}.${prop.name} ${message}`);
   }

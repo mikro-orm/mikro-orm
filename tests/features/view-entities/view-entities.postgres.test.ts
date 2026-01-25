@@ -750,3 +750,114 @@ describe('View entities as relation targets (postgres)', () => {
   });
 
 });
+
+// Materialized view entity
+const AuthorStatsMaterialized = defineEntity({
+  name: 'AuthorStatsMaterialized',
+  tableName: 'author_stats_matview',
+  view: true,
+  materialized: true,
+  expression: `select min(name) as name, (select count(*)::int from book2 b where b.author_id = a.id) as book_count from author2 a group by a.id`,
+  properties: {
+    name: p.string().primary(),
+    bookCount: p.integer(),
+  },
+});
+
+// Materialized view with no data on creation
+const AuthorStatsNoData = defineEntity({
+  name: 'AuthorStatsNoData',
+  tableName: 'author_stats_nodata_matview',
+  view: true,
+  materialized: true,
+  withData: false,
+  expression: `select min(name) as name, count(*)::int as book_count from author2 a group by a.id`,
+  properties: {
+    name: p.string().primary(),
+    bookCount: p.integer(),
+  },
+});
+
+describe('Materialized view entities (postgres)', () => {
+
+  let orm: MikroORM;
+
+  beforeAll(async () => {
+    orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
+      entities: [Author2, Book2, BookTag2, Publisher2, Test2, FooBar2, FooBaz2, AuthorStatsMaterialized, AuthorStatsNoData],
+      dbName: 'mikro_orm_test_matviews',
+    });
+
+    await orm.schema.refresh();
+  });
+
+  afterAll(async () => {
+    await orm.close(true);
+  });
+
+  test('materialized view entity metadata should have view: true, materialized: true, and readonly: true', async () => {
+    const meta = orm.getMetadata().get(AuthorStatsMaterialized);
+    expect(meta.view).toBe(true);
+    expect(meta.materialized).toBe(true);
+    expect(meta.readonly).toBe(true);
+  });
+
+  test('schema generator should create materialized views', async () => {
+    const sql = await orm.schema.getCreateSchemaSQL();
+    expect(sql).toMatchSnapshot();
+  });
+
+  test('schema generator should drop materialized views', async () => {
+    const sql = await orm.schema.getDropSchemaSQL();
+    expect(sql).toContain('drop materialized view');
+    expect(sql).toContain('author_stats_matview');
+  });
+
+  test('can query materialized view entity', async () => {
+    const em = orm.em.fork();
+
+    // First, insert some test data
+    const author = em.create(Author2, { name: 'Jon Snow', email: 'snow@wall.st' });
+    const book1 = em.create(Book2, { title: 'Book 1', author });
+    const book2 = em.create(Book2, { title: 'Book 2', author });
+    await em.flush();
+
+    // Refresh the materialized view to pick up new data
+    await em.refreshMaterializedView(AuthorStatsMaterialized);
+    em.clear();
+
+    // Query the materialized view
+    const stats = await em.find(AuthorStatsMaterialized, {});
+    expect(stats.length).toBe(1);
+    expect(stats[0].name).toBe('Jon Snow');
+    expect(stats[0].bookCount).toBe(2);
+  });
+
+  test('refreshMaterializedView method works', async () => {
+    const em = orm.em.fork();
+
+    // Insert more test data
+    const author2 = em.create(Author2, { name: 'Arya Stark', email: 'arya@wall.st' });
+    const book3 = em.create(Book2, { title: 'Book 3', author: author2 });
+    await em.flush();
+
+    // Before refresh, the materialized view should still show old data
+    let stats = await em.find(AuthorStatsMaterialized, {});
+    expect(stats.length).toBe(1); // Only Jon Snow from the previous test
+
+    // Refresh the materialized view
+    await em.refreshMaterializedView(AuthorStatsMaterialized);
+    em.clear();
+
+    // After refresh, should include the new author
+    stats = await em.find(AuthorStatsMaterialized, {});
+    expect(stats.length).toBe(2);
+    expect(stats.map(s => s.name).sort()).toEqual(['Arya Stark', 'Jon Snow']);
+  });
+
+  test('refreshMaterializedView throws for non-materialized view', async () => {
+    await expect(orm.em.refreshMaterializedView(Author2)).rejects.toThrow('Entity Author2 is not a materialized view');
+  });
+
+});

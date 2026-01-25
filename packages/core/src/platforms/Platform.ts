@@ -95,6 +95,10 @@ export abstract class Platform {
     return false;
   }
 
+  supportsMaterializedViews(): boolean {
+    return false;
+  }
+
   getSchemaHelper(): unknown {
     return undefined;
   }

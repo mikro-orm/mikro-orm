@@ -862,6 +862,10 @@ export interface EntityMetadata<Entity = any, Class extends EntityCtor<Entity> =
   virtual?: boolean;
   /** True if this entity represents a database view (not a virtual entity). */
   view?: boolean;
+  /** True if this is a materialized view (PostgreSQL only). Requires `view: true`. */
+  materialized?: boolean;
+  /** For materialized views, whether data is populated on creation. Defaults to true. */
+  withData?: boolean;
   // we need to use `em: any` here otherwise an expression would not be assignable with more narrow type like `SqlEntityManager`
   // also return type is unknown as it can be either QB instance (which we cannot type here) or array of POJOs (e.g. for mongodb)
   expression?: string | ((em: any, where: ObjectQuery<Entity>, options: FindOptions<Entity, any, any, any>, stream?: boolean) => MaybePromise<Raw | object | string>);

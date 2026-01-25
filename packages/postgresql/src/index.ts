@@ -2,6 +2,7 @@ export * from '@mikro-orm/sql';
 export * from './PostgreSqlConnection.js';
 export * from './PostgreSqlDriver.js';
 export * from './PostgreSqlPlatform.js';
+export { PostgreSqlEntityManager as EntityManager } from './PostgreSqlEntityManager.js';
 export {
   PostgreSqlMikroORM as MikroORM,
   type PostgreSqlOptions as Options,
