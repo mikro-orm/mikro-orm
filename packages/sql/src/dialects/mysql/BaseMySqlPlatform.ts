@@ -7,8 +7,6 @@ import {
   DecimalType,
   DoubleType,
   type IsolationLevel,
-  GroupOperator,
-  QueryOperator,
 } from '@mikro-orm/core';
 import { MySqlSchemaHelper } from './MySqlSchemaHelper.js';
 import { MySqlExceptionConverter } from './MySqlExceptionConverter.js';
@@ -232,25 +230,16 @@ export class BaseMySqlPlatform extends AbstractSqlPlatform {
     }
 
     for (const key of Object.keys(conditions as object)) {
-      // Group operators ($and, $or) and $not require json_table
-      if (Object.values(GroupOperator).includes(key as GroupOperator) || key === QueryOperator.$not) {
-        return false;
-      }
-
-      // Check for other operators key starts with $ but strictly using enum check if possible
-      // While we can't check every possible string easily, all operators start with $
-      if (key.startsWith('$')) {
+      // Any operator key requires json_table
+      if (Utils.isOperator(key)) {
         return false;
       }
 
       const value = (conditions as Record<string, unknown>)[key];
 
-      // If value is an object with $ operators, it's not simple equality
-      if (Utils.isPlainObject(value)) {
-        const valueKeys = Object.keys(value as object);
-        if (valueKeys.some(k => k.startsWith('$'))) {
-          return false;
-        }
+      // If value has operators, it's not simple equality
+      if (Utils.isPlainObject(value) && Object.keys(value as object).some(k => Utils.isOperator(k))) {
+        return false;
       }
     }
 
