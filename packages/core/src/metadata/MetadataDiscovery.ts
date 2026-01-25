@@ -1155,7 +1155,6 @@ export class MetadataDiscovery {
       return;
     }
 
-    let i = 1;
     Object.values(meta.properties).forEach(prop => {
       const newProp = { ...prop };
       const rootProp = meta.root.properties[prop.name];
@@ -1164,7 +1163,7 @@ export class MetadataDiscovery {
         const name = newProp.name;
         this.initFieldName(newProp, newProp.object);
         newProp.renamedFrom = name;
-        newProp.name = name + '_' + (i++);
+        newProp.name = `${name}_${meta._id}`;
         meta.root.addProperty(newProp);
         this.initFieldName(prop, prop.object);
 
