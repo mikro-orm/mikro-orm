@@ -570,25 +570,29 @@ export class QueryBuilderHelper {
       const mappedKey = this.mapper(key, type, value.$elemMatch, null);
       const column = this.platform.quoteIdentifier(mappedKey);
 
-      const elemMatchMapper = (field: string, numericCast?: boolean): string => {
-        return this.platform.getJsonElementPropertySQL(field, numericCast ? 'number' : undefined);
-      };
-
-      const innerConditions = this._appendQueryCondition(type, value.$elemMatch, undefined, elemMatchMapper);
-
-      // Get table context for platform-specific wrapping
+      // Get field info for generating unique alias
       const [a, f] = Raw.isKnownFragmentSymbol(key) ? [] : this.splitField(key as EntityKey);
       const prop: EntityProperty = f! && this.getProperty(f, a);
       const meta = this.metadata.find(this.entityName);
       const fieldName = prop?.fieldNames?.[0] ?? f;
 
+      // Generate unique alias from field name to avoid collisions with multiple $elemMatch
+      const jsonAlias = `${fieldName}_je`;
+
+      const elemMatchMapper = (field: string, numericCast?: boolean): string => {
+        return this.platform.getJsonElementPropertySQL(field, jsonAlias, numericCast ? 'number' : undefined);
+      };
+
+      const innerConditions = this._appendQueryCondition(type, value.$elemMatch, undefined, elemMatchMapper);
+
       const existsClause = this.platform.getJsonArrayContainsSql(
         column,
         innerConditions.sql,
+        jsonAlias,
         innerConditions.params,
         {
           tableName: meta?.tableName,
-          alias: this.alias,
+          tableAlias: this.alias,
           pkField: meta?.primaryKeys?.[0],
           fieldName,
           rawConditions: value.$elemMatch,

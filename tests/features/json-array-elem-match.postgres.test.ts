@@ -16,6 +16,11 @@ interface OrderItem {
   name: string;
 }
 
+interface Tag {
+  name: string;
+  priority: number;
+}
+
 const BalanceMove = defineEntity({
   name: 'BalanceMove',
   properties: {
@@ -30,6 +35,7 @@ const Order = defineEntity({
   properties: {
     id: p.integer().autoincrement().primary(),
     items: p.json().$type<OrderItem[]>(),
+    tags: p.json().$type<Tag[]>().nullable(),
   },
 });
 
@@ -60,7 +66,7 @@ describe('$elemMatch operator for JSON arrays (PostgreSQL)', () => {
     });
 
     expect(mock.mock.calls[0][0]).toMatch(
-      /exists \(select 1 from jsonb_array_elements\([^)]+\) as __elem__ where __elem__->>'payment_method' = '7'\)/,
+      /exists \(select 1 from jsonb_array_elements\([^)]+\) as "payments_je" where "payments_je"->>'payment_method' = '7'\)/,
     );
   });
 
@@ -76,7 +82,7 @@ describe('$elemMatch operator for JSON arrays (PostgreSQL)', () => {
     });
 
     expect(mock.mock.calls[0][0]).toMatch(
-      /exists \(select 1 from jsonb_array_elements\([^)]+\) as __elem__ where __elem__->>'payment_method' in \('7', '8', '9'\)\)/,
+      /exists \(select 1 from jsonb_array_elements\([^)]+\) as "payments_je" where "payments_je"->>'payment_method' in \('7', '8', '9'\)\)/,
     );
   });
 
@@ -92,7 +98,7 @@ describe('$elemMatch operator for JSON arrays (PostgreSQL)', () => {
     });
 
     expect(mock.mock.calls[0][0]).toMatch(
-      /exists \(select 1 from jsonb_array_elements\([^)]+\) as __elem__ where __elem__->>'payment_method' not in \('1', '2'\)\)/,
+      /exists \(select 1 from jsonb_array_elements\([^)]+\) as "payments_je" where "payments_je"->>'payment_method' not in \('1', '2'\)\)/,
     );
   });
 
@@ -107,7 +113,7 @@ describe('$elemMatch operator for JSON arrays (PostgreSQL)', () => {
       },
     });
 
-    expect(mock.mock.calls[0][0]).toMatch(/exists \(select 1 from jsonb_array_elements\([^)]+\) as __elem__ where 1 = 0\)/);
+    expect(mock.mock.calls[0][0]).toMatch(/exists \(select 1 from jsonb_array_elements\([^)]+\) as "payments_je" where 1 = 0\)/);
   });
 
   test('empty $nin returns true', async () => {
@@ -121,7 +127,7 @@ describe('$elemMatch operator for JSON arrays (PostgreSQL)', () => {
       },
     });
 
-    expect(mock.mock.calls[0][0]).toMatch(/exists \(select 1 from jsonb_array_elements\([^)]+\) as __elem__ where 1 = 1\)/);
+    expect(mock.mock.calls[0][0]).toMatch(/exists \(select 1 from jsonb_array_elements\([^)]+\) as "payments_je" where 1 = 1\)/);
   });
 
   test('multiple conditions with $and', async () => {
@@ -139,7 +145,7 @@ describe('$elemMatch operator for JSON arrays (PostgreSQL)', () => {
     });
 
     expect(mock.mock.calls[0][0]).toMatch(
-      /exists \(select 1 from jsonb_array_elements\([^)]+\) as __elem__ where __elem__->>'payment_method' = '7' and __elem__->>'amount' = '500'\)/,
+      /exists \(select 1 from jsonb_array_elements\([^)]+\) as "payments_je" where "payments_je"->>'payment_method' = '7' and "payments_je"->>'amount' = '500'\)/,
     );
   });
 
@@ -161,7 +167,7 @@ describe('$elemMatch operator for JSON arrays (PostgreSQL)', () => {
 
     // Native behavior: $and doesn't add outer parentheses (AND is associative)
     expect(mock.mock.calls[0][0]).toMatch(
-      /exists \(select 1 from jsonb_array_elements\([^)]+\) as __elem__ where __elem__->>'payment_method' in \('7', '8'\) and __elem__->>'amount' = '500'\)/,
+      /exists \(select 1 from jsonb_array_elements\([^)]+\) as "payments_je" where "payments_je"->>'payment_method' in \('7', '8'\) and "payments_je"->>'amount' = '500'\)/,
     );
   });
 
@@ -182,7 +188,7 @@ describe('$elemMatch operator for JSON arrays (PostgreSQL)', () => {
     });
 
     expect(mock.mock.calls[0][0]).toMatch(
-      /exists \(select 1 from jsonb_array_elements\([^)]+\) as __elem__ where \(__elem__->>'payment_method' = '7' or __elem__->>'payment_method' = '8'\)\)/,
+      /exists \(select 1 from jsonb_array_elements\([^)]+\) as "payments_je" where \("payments_je"->>'payment_method' = '7' or "payments_je"->>'payment_method' = '8'\)\)/,
     );
   });
 
@@ -200,7 +206,7 @@ describe('$elemMatch operator for JSON arrays (PostgreSQL)', () => {
     });
 
     expect(mock.mock.calls[0][0]).toMatch(
-      /exists \(select 1 from jsonb_array_elements\([^)]+\) as __elem__ where not \(__elem__->>'payment_method' = '7'\)\)/,
+      /exists \(select 1 from jsonb_array_elements\([^)]+\) as "payments_je" where not \("payments_je"->>'payment_method' = '7'\)\)/,
     );
   });
 
@@ -239,10 +245,10 @@ describe('$elemMatch operator for JSON arrays (PostgreSQL)', () => {
       },
     });
 
-    expect(mock.mock.calls[0][0]).toMatch(/\(__elem__->>'quantity'\)::float8 > 5/);
-    expect(mock.mock.calls[1][0]).toMatch(/\(__elem__->>'price'\)::float8 >= 100/);
-    expect(mock.mock.calls[2][0]).toMatch(/\(__elem__->>'quantity'\)::float8 < 10/);
-    expect(mock.mock.calls[3][0]).toMatch(/\(__elem__->>'price'\)::float8 <= 50/);
+    expect(mock.mock.calls[0][0]).toMatch(/\("items_je"->>'quantity'\)::float8 > 5/);
+    expect(mock.mock.calls[1][0]).toMatch(/\("items_je"->>'price'\)::float8 >= 100/);
+    expect(mock.mock.calls[2][0]).toMatch(/\("items_je"->>'quantity'\)::float8 < 10/);
+    expect(mock.mock.calls[3][0]).toMatch(/\("items_je"->>'price'\)::float8 <= 50/);
   });
 
   test('$like operator', async () => {
@@ -256,7 +262,7 @@ describe('$elemMatch operator for JSON arrays (PostgreSQL)', () => {
       },
     });
 
-    expect(mock.mock.calls[0][0]).toMatch(/__elem__->>'name' like '%Book%'/);
+    expect(mock.mock.calls[0][0]).toMatch(/"items_je"->>'name' like '%Book%'/);
   });
 
   test('$exists operator', async () => {
@@ -278,8 +284,8 @@ describe('$elemMatch operator for JSON arrays (PostgreSQL)', () => {
       },
     });
 
-    expect(mock.mock.calls[0][0]).toMatch(/__elem__->>'cheque_notes' is not null/);
-    expect(mock.mock.calls[1][0]).toMatch(/__elem__->>'cheque_notes' is null/);
+    expect(mock.mock.calls[0][0]).toMatch(/"payments_je"->>'cheque_notes' is not null/);
+    expect(mock.mock.calls[1][0]).toMatch(/"payments_je"->>'cheque_notes' is null/);
   });
 
   test('$eq and $ne operators', async () => {
@@ -301,8 +307,8 @@ describe('$elemMatch operator for JSON arrays (PostgreSQL)', () => {
       },
     });
 
-    expect(mock.mock.calls[0][0]).toMatch(/__elem__->>'payment_method' = '7'/);
-    expect(mock.mock.calls[1][0]).toMatch(/__elem__->>'payment_method' != '7'/);
+    expect(mock.mock.calls[0][0]).toMatch(/"payments_je"->>'payment_method' = '7'/);
+    expect(mock.mock.calls[1][0]).toMatch(/"payments_je"->>'payment_method' != '7'/);
   });
 
   test('null comparisons', async () => {
@@ -324,8 +330,8 @@ describe('$elemMatch operator for JSON arrays (PostgreSQL)', () => {
       },
     });
 
-    expect(mock.mock.calls[0][0]).toMatch(/__elem__->>'cheque_notes' is null/);
-    expect(mock.mock.calls[1][0]).toMatch(/__elem__->>'cheque_notes' is not null/);
+    expect(mock.mock.calls[0][0]).toMatch(/"payments_je"->>'cheque_notes' is null/);
+    expect(mock.mock.calls[1][0]).toMatch(/"payments_je"->>'cheque_notes' is not null/);
   });
 
   test('complex combined conditions', async () => {
@@ -349,9 +355,32 @@ describe('$elemMatch operator for JSON arrays (PostgreSQL)', () => {
       },
     });
 
-    expect(mock.mock.calls[0][0]).toMatch(/\(__elem__->>'quantity'\)::float8 >= 2/);
-    expect(mock.mock.calls[0][0]).toMatch(/\(__elem__->>'price'\)::float8 < 50/);
-    expect(mock.mock.calls[0][0]).toMatch(/__elem__->>'name' like '%Premium%'/);
+    expect(mock.mock.calls[0][0]).toMatch(/\("items_je"->>'quantity'\)::float8 >= 2/);
+    expect(mock.mock.calls[0][0]).toMatch(/\("items_je"->>'price'\)::float8 < 50/);
+    expect(mock.mock.calls[0][0]).toMatch(/"items_je"->>'name' like '%Premium%'/);
+  });
+
+  test('multiple $elemMatch on different JSON arrays uses unique aliases', async () => {
+    const mock = mockLogger(orm);
+
+    await orm.em.findAll(Order, {
+      where: {
+        items: {
+          $elemMatch: { quantity: { $gt: 5 } },
+        },
+        tags: {
+          $elemMatch: { priority: { $gte: 1 } },
+        },
+      },
+    });
+
+    const sql = mock.mock.calls[0][0];
+    // Each $elemMatch should have its own unique alias based on field name
+    expect(sql).toMatch(/jsonb_array_elements\([^)]+\) as "items_je"/);
+    expect(sql).toMatch(/jsonb_array_elements\([^)]+\) as "tags_je"/);
+    // The aliases should not conflict - both should be present
+    expect(sql).toMatch(/"items_je"->>/);
+    expect(sql).toMatch(/"tags_je"->>/);
   });
 
 });
@@ -491,6 +520,54 @@ describe('$elemMatch integration tests (PostgreSQL)', () => {
           quantity: { $gt: 5 },
           price: { $gt: 40 },
         },
+      },
+    }, { orderBy: { id: 1 } });
+
+    expect(results).toHaveLength(2);
+    expect(results[0].id).toBe(order1.id);
+    expect(results[1].id).toBe(order3.id);
+  });
+
+  test('finds with multiple $elemMatch on different JSON arrays', async () => {
+    const em = orm.em.fork();
+
+    const order1 = em.create(Order, {
+      items: [
+        { product_id: 1, quantity: 10, price: 50, name: 'Book A' },
+      ],
+      tags: [
+        { name: 'urgent', priority: 1 },
+        { name: 'sale', priority: 2 },
+      ],
+    });
+
+    const order2 = em.create(Order, {
+      items: [
+        { product_id: 2, quantity: 3, price: 100, name: 'Book B' },
+      ],
+      tags: [
+        { name: 'normal', priority: 0 },
+      ],
+    });
+
+    const order3 = em.create(Order, {
+      items: [
+        { product_id: 3, quantity: 8, price: 80, name: 'Notebook' },
+      ],
+      tags: [
+        { name: 'urgent', priority: 1 },
+      ],
+    });
+
+    await em.flush();
+
+    // Find orders with items quantity > 5 AND tags with priority >= 1
+    const results = await em.find(Order, {
+      items: {
+        $elemMatch: { quantity: { $gt: 5 } },
+      },
+      tags: {
+        $elemMatch: { priority: { $gte: 1 } },
       },
     }, { orderBy: { id: 1 } });
 

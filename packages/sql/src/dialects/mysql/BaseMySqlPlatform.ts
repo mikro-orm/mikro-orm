@@ -162,29 +162,18 @@ export class BaseMySqlPlatform extends AbstractSqlPlatform {
   }
 
   /**
-   * Wraps a JSON path expression with MySQL type cast if needed.
    * @internal
    */
-  protected override castJsonElementValue(expression: string, type?: string): string {
-    if (type === 'number' || type === 'bigint') {
-      return `cast(${expression} as decimal)`;
-    }
-    return expression;
-  }
-
-  /**
-   * @internal
-   */
-  override getJsonElementPropertySQL(field: string, type?: string): string {
-    const jsonPath = `json_unquote(json_extract(jt.__elem__, '$.${field}'))`;
+  override getJsonElementPropertySQL(field: string, alias: string, type?: string): string {
+    const jsonPath = `json_unquote(json_extract(${this.quoteIdentifier(alias)}.elem, '$.${field}'))`;
     return this.castJsonElementValue(jsonPath, type);
   }
 
   /**
    * @internal
    */
-  override getJsonArrayIteratorSQL(column: string): string {
-    return `json_table(${column}, '$[*]' columns (__elem__ json path '$')) as jt`;
+  override getJsonArrayIteratorSQL(column: string, alias: string): string {
+    return `json_table(${column}, '$[*]' columns (elem json path '$')) as ${this.quoteIdentifier(alias)}`;
   }
 
   /**
@@ -193,7 +182,7 @@ export class BaseMySqlPlatform extends AbstractSqlPlatform {
    * Falls back to json_table with inner self-join pattern for complex operators.
    * @internal
    */
-  override getJsonArrayContainsSql(column: string, conditionsSql: string, params: unknown[], options?: { tableName?: string; alias?: string; pkField?: string; fieldName?: string; rawConditions?: unknown }): { sql: string; params: unknown[] } {
+  override getJsonArrayContainsSql(column: string, conditionsSql: string, alias: string, params: unknown[], options?: { tableName?: string; tableAlias?: string; pkField?: string; fieldName?: string; rawConditions?: unknown }): { sql: string; params: unknown[] } {
     // Try to use JSON_CONTAINS optimization for simple equality conditions
     if (options?.rawConditions && this.isSimpleEqualityConditions(options.rawConditions)) {
       const jsonObject = JSON.stringify(options.rawConditions);
@@ -202,18 +191,18 @@ export class BaseMySqlPlatform extends AbstractSqlPlatform {
     }
 
     // If we have full context (table info), use the inner self-join pattern for complex conditions
-    if (options?.tableName && options?.alias && options?.pkField && options?.fieldName) {
-      const innerAlias = `__jt_${options.alias}__`;
-      const innerColumn = this.quoteIdentifier(`${innerAlias}.${options.fieldName}`);
-      const iterator = this.getJsonArrayIteratorSQL(innerColumn);
-      const innerPk = this.quoteIdentifier(`${innerAlias}.${options.pkField}`);
-      const outerPk = this.quoteIdentifier(`${options.alias}.${options.pkField}`);
+    if (options?.tableName && options?.tableAlias && options?.pkField && options?.fieldName) {
+      const innerAlias = `${options.tableAlias}_jt`;
+      const innerColumn = `${this.quoteIdentifier(innerAlias)}.${this.quoteIdentifier(options.fieldName)}`;
+      const iterator = this.getJsonArrayIteratorSQL(innerColumn, alias);
+      const innerPk = `${this.quoteIdentifier(innerAlias)}.${this.quoteIdentifier(options.pkField)}`;
+      const outerPk = `${this.quoteIdentifier(options.tableAlias)}.${this.quoteIdentifier(options.pkField)}`;
       const sql = `exists (select 1 from ${this.quoteIdentifier(options.tableName)} as ${this.quoteIdentifier(innerAlias)}, ${iterator} where ${innerPk} = ${outerPk} and ${conditionsSql})`;
       return { sql, params };
     }
 
     // Default fallback - use standard EXISTS (may not work for all MySQL versions with correlated subqueries)
-    const iterator = this.getJsonArrayIteratorSQL(column);
+    const iterator = this.getJsonArrayIteratorSQL(column, alias);
     const sql = `exists (select 1 from ${iterator} where ${conditionsSql})`;
     return { sql, params };
   }

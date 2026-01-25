@@ -149,16 +149,16 @@ export abstract class BaseSqlitePlatform extends AbstractSqlPlatform {
   /**
    * @internal
    */
-  override getJsonElementPropertySQL(field: string, type?: string): string {
-    const jsonPath = `json_extract(je.value, '$.${field}')`;
+  override getJsonElementPropertySQL(field: string, alias: string, type?: string): string {
+    const jsonPath = `json_extract(${this.quoteIdentifier(alias)}.value, '$.${field}')`;
     return this.castJsonElementValue(jsonPath, type);
   }
 
   /**
    * @internal
    */
-  override getJsonArrayIteratorSQL(column: string): string {
-    return `json_each(${column}) as je`;
+  override getJsonArrayIteratorSQL(column: string, alias: string): string {
+    return `json_each(${column}) as ${this.quoteIdentifier(alias)}`;
   }
 
 }

@@ -467,16 +467,16 @@ export class BasePostgreSqlPlatform extends AbstractSqlPlatform {
   /**
    * @internal
    */
-  override getJsonElementPropertySQL(field: string, type?: string): string {
-    const jsonPath = `__elem__->>'${field}'`;
+  override getJsonElementPropertySQL(field: string, alias: string, type?: string): string {
+    const jsonPath = `${this.quoteIdentifier(alias)}->>'${field}'`;
     return this.castJsonElementValue(jsonPath, type);
   }
 
   /**
    * @internal
    */
-  override getJsonArrayIteratorSQL(column: string): string {
-    return `jsonb_array_elements(${column}) as __elem__`;
+  override getJsonArrayIteratorSQL(column: string, alias: string): string {
+    return `jsonb_array_elements(${column}) as ${this.quoteIdentifier(alias)}`;
   }
 
 }
