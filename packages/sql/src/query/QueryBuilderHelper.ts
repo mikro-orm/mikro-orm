@@ -10,7 +10,6 @@ import {
   type EntityProperty,
   type FlatQueryOrderMap,
   type FormulaTable,
-  GroupOperator,
   inspect,
   isRaw,
   LockMode,
@@ -432,29 +431,29 @@ export class QueryBuilderHelper {
     qb[method](sql, params);
   }
 
-  _appendQueryCondition(type: QueryType, cond: any, operator?: '$and' | '$or'): { sql: string; params: unknown[] } {
+  _appendQueryCondition(type: QueryType, cond: any, operator?: '$and' | '$or', jsonFieldMapper?: (field: string, numericCast?: boolean) => string): { sql: string; params: unknown[] } {
     const parts: string[] = [];
     const params: unknown[] = [];
 
     for (const k of Utils.getObjectQueryKeys(cond)) {
       if (k === '$and' || k === '$or') {
         if (operator) {
-          this.append(() => this.appendGroupCondition(type, k, cond[k]), parts, params, operator);
+          this.append(() => this.appendGroupCondition(type, k, cond[k], jsonFieldMapper), parts, params, operator);
           continue;
         }
 
-        this.append(() => this.appendGroupCondition(type, k, cond[k]), parts, params);
+        this.append(() => this.appendGroupCondition(type, k, cond[k], jsonFieldMapper), parts, params);
         continue;
       }
 
       if (k === '$not') {
-        const res = this._appendQueryCondition(type, cond[k]);
+        const res = this._appendQueryCondition(type, cond[k], undefined, jsonFieldMapper);
         parts.push(`not (${res.sql})`);
         res.params.forEach(p => params.push(p));
         continue;
       }
 
-      this.append(() => this.appendQuerySubCondition(type, cond, k), parts, params);
+      this.append(() => this.appendQuerySubCondition(type, cond, k, jsonFieldMapper), parts, params);
     }
 
     return { sql: parts.join(' and '), params };
@@ -471,9 +470,27 @@ export class QueryBuilderHelper {
     res.params.forEach(p => params.push(p));
   }
 
-  private appendQuerySubCondition(type: QueryType, cond: any, key: string | RawQueryFragmentSymbol): { sql: string; params: unknown[] } {
+  private appendQuerySubCondition(type: QueryType, cond: any, key: string | RawQueryFragmentSymbol, jsonFieldMapper?: (field: string, numericCast?: boolean) => string): { sql: string; params: unknown[] } {
     const parts: string[] = [];
     const params: unknown[] = [];
+
+    // JSON field mapper context - simplified processing for $elemMatch inner conditions
+    if (jsonFieldMapper) {
+      const value = cond[key];
+
+      if (Utils.isPlainObject(value)) {
+        return this.processObjectSubCondition(cond, key, type, jsonFieldMapper);
+      }
+
+      // Simple equality: { field: 'value' }
+      const jsonPath = jsonFieldMapper(key as string);
+      const op = value === null ? 'is' : '=';
+      if (value !== null) {
+        params.push(value);
+      }
+      parts.push(`${jsonPath} ${op} ${value === null ? 'null' : '?'}`);
+      return { sql: parts.join(' and '), params };
+    }
 
     if (this.isSimpleRegExp(cond[key])) {
       parts.push(`${this.platform.quoteIdentifier(this.mapper(key, type))} like ?`);
@@ -518,7 +535,7 @@ export class QueryBuilderHelper {
     return { sql: parts.join(' and '), params };
   }
 
-  private processObjectSubCondition(cond: any, key: string | RawQueryFragmentSymbol, type: QueryType): { sql: string; params: unknown[] } {
+  private processObjectSubCondition(cond: any, key: string | RawQueryFragmentSymbol, type: QueryType, jsonFieldMapper?: (field: string, numericCast?: boolean) => string): { sql: string; params: unknown[] } {
     const parts: string[] = [];
     const params: unknown[] = [];
     let value = cond[key];
@@ -535,7 +552,7 @@ export class QueryBuilderHelper {
       });
 
       for (const sub of subCondition) {
-        this.append(() => this._appendQueryCondition(type, sub, '$and'), parts, params);
+        this.append(() => this._appendQueryCondition(type, sub, '$and', jsonFieldMapper), parts, params);
       }
 
       return { sql: parts.join(' and '), params };
@@ -548,63 +565,21 @@ export class QueryBuilderHelper {
     // operators
     const op = Object.keys(QueryOperator).find(op => op in value);
 
-    /* v8 ignore next */
-    if (!op) {
-      throw ValidationError.invalidQueryCondition(cond);
-    }
-
-    const replacement = this.getOperatorReplacement(op, value);
-    const rawField = Raw.isKnownFragmentSymbol(key);
-    const fields = rawField ? [key as unknown as string] : Utils.splitPrimaryKeys(key);
-
-    if (fields.length > 1 && Array.isArray(value[op])) {
-      const singleTuple = !value[op].every((v: unknown) => Array.isArray(v));
-
-      if (!this.platform.allowsComparingTuples()) {
-        const mapped = fields.map(f => this.mapper(f, type));
-
-        if (op === '$in') {
-          const conds = value[op].map(() => {
-            return `(${mapped.map(field => `${this.platform.quoteIdentifier(field)} = ?`).join(' and ')})`;
-          });
-          parts.push(`(${conds.join(' or ')})`);
-          params.push(...Utils.flatten(value[op]));
-          return { sql: parts.join(' and '), params };
-        }
-
-        parts.push(...mapped.map(field => `${this.platform.quoteIdentifier(field)} = ?`));
-        params.push(...Utils.flatten(value[op]));
-        return { sql: parts.join(' and '), params };
-      }
-
-      if (singleTuple) {
-        const tmp = value[op].length === 1 && Utils.isPlainObject(value[op][0]) ? fields.map(f => value[op][0][f]) : value[op];
-        const sql = `(${fields.map(() => '?').join(', ')})`;
-        value[op] = raw(sql, tmp);
-      }
-    }
-
-    if (this.subQueries[key as string]) {
-      const val = this.getValueReplacement(fields, value[op], params, op);
-      parts.push(`(${this.subQueries[key as string]}) ${replacement} ${val}`);
-      return { sql: parts.join(' and '), params };
-    }
-
-    const [a, f] = rawField ? [] : this.splitField(key as EntityKey);
-    const prop: EntityProperty = f! && this.getProperty(f, a);
-
-    if (prop && [ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(prop.kind)) {
-      return { sql: '', params };
-    }
-
-    if (op === '$elemMatch') {
-      const mappedKey = this.mapper(key, type, value[op], null);
+    // Handle $elemMatch - wrap inner conditions in EXISTS subquery with JSON array iteration
+    if ('$elemMatch' in value) {
+      const mappedKey = this.mapper(key, type, value.$elemMatch, null);
       const column = this.platform.quoteIdentifier(mappedKey);
-      const innerConditions = this.processElemMatchConditions(value[op]);
 
-      // Get table context for MySQL compatibility (it needs inner self-join pattern)
+      const elemMatchMapper = (field: string, numericCast?: boolean): string => {
+        return this.platform.getJsonElementPropertySQL(field, numericCast ? 'number' : undefined);
+      };
+
+      const innerConditions = this._appendQueryCondition(type, value.$elemMatch, undefined, elemMatchMapper);
+
+      // Get table context for platform-specific wrapping
+      const [a, f] = Raw.isKnownFragmentSymbol(key) ? [] : this.splitField(key as EntityKey);
+      const prop: EntityProperty = f! && this.getProperty(f, a);
       const meta = this.metadata.find(this.entityName);
-      // Use prop.fieldNames for the database field name, fall back to the raw field from splitField
       const fieldName = prop?.fieldNames?.[0] ?? f;
 
       const existsClause = this.platform.getJsonArrayContainsSql(
@@ -616,12 +591,66 @@ export class QueryBuilderHelper {
           alias: this.alias,
           pkField: meta?.primaryKeys?.[0],
           fieldName,
-          rawConditions: value[op],
+          rawConditions: value.$elemMatch,
         },
       );
       parts.push(existsClause.sql);
       params.push(...existsClause.params);
-    } else if (op === '$fulltext') {
+      return { sql: parts.join(' and '), params };
+    }
+
+    /* v8 ignore next */
+    if (!op) {
+      throw ValidationError.invalidQueryCondition(cond);
+    }
+
+    const replacement = this.getOperatorReplacement(op, value);
+    const rawField = Raw.isKnownFragmentSymbol(key);
+    const fields = rawField ? [key as unknown as string] : Utils.splitPrimaryKeys(key);
+
+    if (!jsonFieldMapper) {
+      if (fields.length > 1 && Array.isArray(value[op])) {
+        const singleTuple = !value[op].every((v: unknown) => Array.isArray(v));
+
+        if (!this.platform.allowsComparingTuples()) {
+          const mapped = fields.map(f => this.mapper(f, type));
+
+          if (op === '$in') {
+            const conds = value[op].map(() => {
+              return `(${mapped.map(field => `${this.platform.quoteIdentifier(field)} = ?`).join(' and ')})`;
+            });
+            parts.push(`(${conds.join(' or ')})`);
+            params.push(...Utils.flatten(value[op]));
+            return { sql: parts.join(' and '), params };
+          }
+
+          parts.push(...mapped.map(field => `${this.platform.quoteIdentifier(field)} = ?`));
+          params.push(...Utils.flatten(value[op]));
+          return { sql: parts.join(' and '), params };
+        }
+
+        if (singleTuple) {
+          const tmp = value[op].length === 1 && Utils.isPlainObject(value[op][0]) ? fields.map(f => value[op][0][f]) : value[op];
+          const sql = `(${fields.map(() => '?').join(', ')})`;
+          value[op] = raw(sql, tmp);
+        }
+      }
+
+      if (this.subQueries[key as string]) {
+        const val = this.getValueReplacement(fields, value[op], params, op);
+        parts.push(`(${this.subQueries[key as string]}) ${replacement} ${val}`);
+        return { sql: parts.join(' and '), params };
+      }
+    }
+
+    const [a, f] = rawField ? [] : this.splitField(key as EntityKey);
+    const prop = jsonFieldMapper ? undefined : (f ? this.getProperty(f, a) : undefined);
+
+    if (prop && [ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(prop.kind)) {
+      return { sql: '', params };
+    }
+
+    if (!jsonFieldMapper && op === '$fulltext') {
       /* v8 ignore next */
       if (!prop) {
         throw new Error(`Cannot use $fulltext operator on ${String(key)}, property not found`);
@@ -635,7 +664,7 @@ export class QueryBuilderHelper {
       params.push(...params2);
     } else if (['$in', '$nin'].includes(op) && Array.isArray(value[op]) && value[op].length === 0) {
       parts.push(`1 = ${op === '$in' ? 0 : 1}`);
-    } else if (value[op] instanceof Raw || value[op] instanceof NativeQueryBuilder) {
+    } else if (!jsonFieldMapper && (value[op] instanceof Raw || value[op] instanceof NativeQueryBuilder)) {
       const query = value[op] instanceof NativeQueryBuilder ? value[op].toRaw() : value[op];
       const mappedKey = this.mapper(key, type, query, null);
 
@@ -648,10 +677,15 @@ export class QueryBuilderHelper {
       parts.push(`${this.platform.quoteIdentifier(mappedKey)} ${replacement} ${sql}`);
       params.push(...query.params);
     } else {
-      const mappedKey = this.mapper(key, type, value[op], null);
+      // Native path: map field to column and quote
+      // JSON path: map field to JSON expression (already complete, no quoting)
+      const numericOps = ['$gt', '$gte', '$lt', '$lte'];
+      const mappedKey = jsonFieldMapper
+        ? jsonFieldMapper(key as string, numericOps.includes(op))
+        : this.platform.quoteIdentifier(this.mapper(key, type, value[op], null));
       const val = this.getValueReplacement(fields, value[op], params, op, prop);
 
-      parts.push(`${this.platform.quoteIdentifier(mappedKey)} ${replacement} ${val}`);
+      parts.push(`${mappedKey} ${replacement} ${val}`);
     }
 
     return { sql: parts.join(' and '), params };
@@ -926,14 +960,14 @@ export class QueryBuilderHelper {
     return ret;
   }
 
-  private appendGroupCondition(type: QueryType, operator: '$and' | '$or', subCondition: any[]): { sql: string; params: unknown[] } {
+  private appendGroupCondition(type: QueryType, operator: '$and' | '$or', subCondition: any[], jsonFieldMapper?: (field: string, numericCast?: boolean) => string): { sql: string; params: unknown[] } {
     const parts: string[] = [];
     const params: unknown[] = [];
 
     // single sub-condition can be ignored to reduce nesting of parens
     if (subCondition.length === 1 || operator === '$and') {
       for (const sub of subCondition) {
-        this.append(() => this._appendQueryCondition(type, sub), parts, params);
+        this.append(() => this._appendQueryCondition(type, sub, undefined, jsonFieldMapper), parts, params);
       }
 
       return { sql: parts.join(' and '), params };
@@ -946,11 +980,11 @@ export class QueryBuilderHelper {
       const simple = !Utils.isPlainObject(val) || Utils.getObjectKeysSize(val) === 1 || Object.keys(val).every(k => !Utils.isOperator(k));
 
       if (keys.length === 1 && simple) {
-        this.append(() => this._appendQueryCondition(type, sub, operator), parts, params);
+        this.append(() => this._appendQueryCondition(type, sub, operator, jsonFieldMapper), parts, params);
         continue;
       }
 
-      this.append(() => this._appendQueryCondition(type, sub), parts, params, operator);
+      this.append(() => this._appendQueryCondition(type, sub, undefined, jsonFieldMapper), parts, params, operator);
     }
 
     return { sql: `(${parts.join(' or ')})`, params };
@@ -1039,108 +1073,6 @@ export class QueryBuilderHelper {
       qualifiedName,
       toString: () => alias,
     };
-  }
-
-  /**
-   * Processes conditions for $elemMatch operator on JSON arrays.
-   * Uses platform-specific methods for JSON element property access.
-   * @internal
-   */
-  private processElemMatchConditions(conditions: Dictionary): { sql: string; params: unknown[] } {
-    const parts: string[] = [];
-    const params: unknown[] = [];
-
-    for (const key of Object.keys(conditions)) {
-      // Handle group operators ($and, $or) using GroupOperator enum
-      if (key in GroupOperator) {
-        const groupParts: string[] = [];
-        for (const sub of conditions[key]) {
-          const result = this.processElemMatchConditions(sub);
-          groupParts.push(result.sql);
-          params.push(...result.params);
-        }
-        const joiner = GroupOperator[key as keyof typeof GroupOperator];
-        parts.push(`(${groupParts.join(` ${joiner} `)})`);
-        continue;
-      }
-
-      if (key === '$not') {
-        const result = this.processElemMatchConditions(conditions[key]);
-        parts.push(`${QueryOperator.$not} (${result.sql})`);
-        params.push(...result.params);
-        continue;
-      }
-
-      const value = conditions[key];
-
-      if (Utils.isPlainObject(value)) {
-        // Handle operators like { $in: [...] }, { $eq: ... }, { $gt: ... }
-        for (const op of Object.keys(value)) {
-          const opValue = value[op];
-          const { sql, p } = this.processElemMatchOperator(key, op, opValue);
-          parts.push(sql);
-          params.push(...p);
-        }
-      } else {
-        // Simple equality: { field: 'value' }
-        const jsonPath = this.platform.getJsonElementPropertySQL(key);
-        parts.push(`${jsonPath} ${QueryOperator.$eq} ?`);
-        params.push(value);
-      }
-    }
-
-    return { sql: parts.join(` ${GroupOperator.$and} `), params };
-  }
-
-  /**
-   * Processes a single operator condition for $elemMatch.
-   * Uses platform-specific methods for JSON element property access and type casting.
-   * @internal
-   */
-  private processElemMatchOperator(field: string, op: string, value: unknown): { sql: string; p: unknown[] } {
-    const params: unknown[] = [];
-    const jsonPath = this.platform.getJsonElementPropertySQL(field);
-    const numericJsonPath = this.platform.getJsonElementPropertySQL(field, 'number');
-
-    // Handle null comparisons
-    if (value === null && (op === '$eq' || op === '$ne')) {
-      const nullOp = op === '$eq' ? 'is' : 'is not';
-      return { sql: `${jsonPath} ${nullOp} null`, p: [] };
-    }
-
-    // Handle empty array edge cases
-    if (op === '$in' && Array.isArray(value) && value.length === 0) {
-      return { sql: '1 = 0', p: [] };
-    }
-    if (op === '$nin' && Array.isArray(value) && value.length === 0) {
-      return { sql: '1 = 1', p: [] };
-    }
-
-    // Handle $exists specially
-    if (op === '$exists') {
-      const existsOp = value ? 'is not' : 'is';
-      return { sql: `${jsonPath} ${existsOp} null`, p: [] };
-    }
-
-    // Use QueryOperator enum for standard operators
-    const sqlOperator = QueryOperator[op as keyof typeof QueryOperator];
-    if (!sqlOperator) {
-      throw new Error(`Unsupported operator '${op}' in $elemMatch for field '${field}'`);
-    }
-
-    // Numeric comparison operators need type casting
-    const numericOps = ['$gt', '$gte', '$lt', '$lte'];
-    const effectivePath = numericOps.includes(op) ? numericJsonPath : jsonPath;
-
-    // Handle array operators ($in, $nin)
-    if (op === '$in' || op === '$nin') {
-      (value as unknown[]).forEach(v => params.push(v));
-      return { sql: `${effectivePath} ${sqlOperator} (${(value as unknown[]).map(() => '?').join(', ')})`, p: params };
-    }
-
-    // Standard single-value operators
-    params.push(value);
-    return { sql: `${effectivePath} ${sqlOperator} ?`, p: params };
   }
 
 }

@@ -159,8 +159,9 @@ describe('$elemMatch operator for JSON arrays (PostgreSQL)', () => {
       },
     });
 
+    // Native behavior: $and doesn't add outer parentheses (AND is associative)
     expect(mock.mock.calls[0][0]).toMatch(
-      /exists \(select 1 from jsonb_array_elements\([^)]+\) as __elem__ where \(__elem__->>'payment_method' in \('7', '8'\) and __elem__->>'amount' = '500'\)\)/,
+      /exists \(select 1 from jsonb_array_elements\([^)]+\) as __elem__ where __elem__->>'payment_method' in \('7', '8'\) and __elem__->>'amount' = '500'\)/,
     );
   });
 
