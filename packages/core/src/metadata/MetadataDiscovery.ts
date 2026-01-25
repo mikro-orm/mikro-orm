@@ -1520,6 +1520,10 @@ export class MetadataDiscovery {
     prop.referencedPKs = prop.targetKey ? [prop.targetKey as EntityKey] : meta2.primaryKeys;
     prop.targetMeta = meta2;
 
+    if (meta2.view) {
+      prop.createForeignKeyConstraint = false;
+    }
+
     if (!prop.formula && prop.persist === false && [ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind) && !prop.embedded) {
       prop.formula = table => `${table}.${this.platform.quoteIdentifier(prop.fieldNames[0])}`;
     }
