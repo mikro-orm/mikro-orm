@@ -36,12 +36,12 @@ const Order = defineEntity({
 let orm: MikroORM;
 
 beforeAll(async () => {
-  orm = await MikroORM.init({
+  orm = new MikroORM({
     entities: [BalanceMove, Order],
     dbName: 'mikro_orm_test_elem_match',
     password: 'mikro_orm_test',
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(() => orm.close(true));
