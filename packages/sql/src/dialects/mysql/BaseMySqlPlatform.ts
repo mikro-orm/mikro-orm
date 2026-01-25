@@ -187,4 +187,28 @@ export class BaseMySqlPlatform extends AbstractSqlPlatform {
     return `json_table(${column}, '$[*]' columns (__elem__ json path '$')) as jt`;
   }
 
+  /**
+   * Override for MySQL to fix correlated subquery issue with json_table.
+   * MySQL doesn't support direct column references from outer query in json_table within EXISTS.
+   * We use an inner self-join pattern instead: EXISTS (SELECT 1 FROM table t2, json_table(t2.column, ...) WHERE t2.pk = outer.pk AND conditions)
+   * @internal
+   */
+  override getJsonArrayContainsSql(column: string, conditionsSql: string, params: unknown[], tableName?: string, alias?: string, pkField?: string, fieldName?: string): { sql: string; params: unknown[] } {
+    // If we have full context (table info), use the inner self-join pattern
+    if (tableName && alias && pkField && fieldName) {
+      const innerAlias = `__jt_${alias}__`;
+      const innerColumn = this.quoteIdentifier(`${innerAlias}.${fieldName}`);
+      const iterator = this.getJsonArrayIteratorSQL(innerColumn);
+      const innerPk = this.quoteIdentifier(`${innerAlias}.${pkField}`);
+      const outerPk = this.quoteIdentifier(`${alias}.${pkField}`);
+      const sql = `exists (select 1 from ${this.quoteIdentifier(tableName)} as ${this.quoteIdentifier(innerAlias)}, ${iterator} where ${innerPk} = ${outerPk} and ${conditionsSql})`;
+      return { sql, params };
+    }
+
+    // Default fallback - use standard EXISTS (may not work for all MySQL versions with correlated subqueries)
+    const iterator = this.getJsonArrayIteratorSQL(column);
+    const sql = `exists (select 1 from ${iterator} where ${conditionsSql})`;
+    return { sql, params };
+  }
+
 }

@@ -173,7 +173,7 @@ export abstract class AbstractSqlPlatform extends Platform {
    * Uses getJsonArrayIteratorSQL to build the EXISTS subquery.
    * @internal
    */
-  getJsonArrayContainsSql(column: string, conditionsSql: string, params: unknown[]): { sql: string; params: unknown[] } {
+  getJsonArrayContainsSql(column: string, conditionsSql: string, params: unknown[], _tableName?: string, _alias?: string, _pkField?: string, _fieldName?: string): { sql: string; params: unknown[] } {
     const iterator = this.getJsonArrayIteratorSQL(column);
     const sql = `exists (select 1 from ${iterator} where ${conditionsSql})`;
     return { sql, params };

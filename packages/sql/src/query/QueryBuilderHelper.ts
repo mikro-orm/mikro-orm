@@ -601,7 +601,21 @@ export class QueryBuilderHelper {
       const mappedKey = this.mapper(key, type, value[op], null);
       const column = this.platform.quoteIdentifier(mappedKey);
       const innerConditions = this.processElemMatchConditions(value[op]);
-      const existsClause = this.platform.getJsonArrayContainsSql(column, innerConditions.sql, innerConditions.params);
+
+      // Get table context for MySQL compatibility (it needs inner self-join pattern)
+      const meta = this.metadata.find(this.entityName);
+      // Use prop.fieldNames for the database field name, fall back to the raw field from splitField
+      const fieldName = prop?.fieldNames?.[0] ?? f;
+
+      const existsClause = this.platform.getJsonArrayContainsSql(
+        column,
+        innerConditions.sql,
+        innerConditions.params,
+        meta?.tableName,
+        this.alias,
+        meta?.primaryKeys?.[0],
+        fieldName,
+      );
       parts.push(existsClause.sql);
       params.push(...existsClause.params);
     } else if (op === '$fulltext') {
@@ -1044,6 +1058,13 @@ export class QueryBuilderHelper {
         }
         const joiner = GroupOperator[key as keyof typeof GroupOperator];
         parts.push(`(${groupParts.join(` ${joiner} `)})`);
+        continue;
+      }
+
+      if (key === '$not') {
+        const result = this.processElemMatchConditions(conditions[key]);
+        parts.push(`${QueryOperator.$not} (${result.sql})`);
+        params.push(...result.params);
         continue;
       }
 

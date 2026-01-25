@@ -60,7 +60,7 @@ describe('$elemMatch operator for JSON arrays (MySQL)', () => {
     });
 
     expect(mock.mock.calls[0][0]).toMatch(
-      /exists \(select 1 from json_table\([^)]+, '\$\[\*\]' columns \(__elem__ json path '\$'\)\) as jt where json_unquote\(json_extract\(jt\.__elem__, '\$\.payment_method'\)\) = '7'\)/,
+      /exists \(select 1 from `balance_move` as `__jt_b0__`, json_table\([^)]+, '\$\[\*\]' columns \(__elem__ json path '\$'\)\) as jt where `__jt_b0__`\.`id` = `b0`\.`id` and json_unquote\(json_extract\(jt\.__elem__, '\$\.payment_method'\)\) = '7'\)/,
     );
   });
 
@@ -76,7 +76,7 @@ describe('$elemMatch operator for JSON arrays (MySQL)', () => {
     });
 
     expect(mock.mock.calls[0][0]).toMatch(
-      /exists \(select 1 from json_table\([^)]+, '\$\[\*\]' columns \(__elem__ json path '\$'\)\) as jt where json_unquote\(json_extract\(jt\.__elem__, '\$\.payment_method'\)\) in \('7', '8', '9'\)\)/,
+      /exists \(select 1 from `balance_move` as `__jt_b0__`, json_table\([^)]+, '\$\[\*\]' columns \(__elem__ json path '\$'\)\) as jt where `__jt_b0__`\.`id` = `b0`\.`id` and json_unquote\(json_extract\(jt\.__elem__, '\$\.payment_method'\)\) in \('7', '8', '9'\)\)/,
     );
   });
 
@@ -92,7 +92,7 @@ describe('$elemMatch operator for JSON arrays (MySQL)', () => {
     });
 
     expect(mock.mock.calls[0][0]).toMatch(
-      /exists \(select 1 from json_table\([^)]+, '\$\[\*\]' columns \(__elem__ json path '\$'\)\) as jt where json_unquote\(json_extract\(jt\.__elem__, '\$\.payment_method'\)\) not in \('1', '2'\)\)/,
+      /exists \(select 1 from `balance_move` as `__jt_b0__`, json_table\([^)]+, '\$\[\*\]' columns \(__elem__ json path '\$'\)\) as jt where `__jt_b0__`\.`id` = `b0`\.`id` and json_unquote\(json_extract\(jt\.__elem__, '\$\.payment_method'\)\) not in \('1', '2'\)\)/,
     );
   });
 
@@ -107,7 +107,7 @@ describe('$elemMatch operator for JSON arrays (MySQL)', () => {
       },
     });
 
-    expect(mock.mock.calls[0][0]).toMatch(/exists \(select 1 from json_table\([^)]+, '\$\[\*\]' columns \(__elem__ json path '\$'\)\) as jt where 1 = 0\)/);
+    expect(mock.mock.calls[0][0]).toMatch(/exists \(select 1 from `balance_move` as `__jt_b0__`, json_table\([^)]+, '\$\[\*\]' columns \(__elem__ json path '\$'\)\) as jt where `__jt_b0__`\.`id` = `b0`\.`id` and 1 = 0\)/);
   });
 
   test('empty $nin returns true', async () => {
@@ -121,7 +121,7 @@ describe('$elemMatch operator for JSON arrays (MySQL)', () => {
       },
     });
 
-    expect(mock.mock.calls[0][0]).toMatch(/exists \(select 1 from json_table\([^)]+, '\$\[\*\]' columns \(__elem__ json path '\$'\)\) as jt where 1 = 1\)/);
+    expect(mock.mock.calls[0][0]).toMatch(/exists \(select 1 from `balance_move` as `__jt_b0__`, json_table\([^)]+, '\$\[\*\]' columns \(__elem__ json path '\$'\)\) as jt where `__jt_b0__`\.`id` = `b0`\.`id` and 1 = 1\)/);
   });
 
   test('multiple conditions with $and', async () => {
@@ -140,6 +140,22 @@ describe('$elemMatch operator for JSON arrays (MySQL)', () => {
 
     expect(mock.mock.calls[0][0]).toMatch(/json_unquote\(json_extract\(jt\.__elem__, '\$\.payment_method'\)\) = '7'/);
     expect(mock.mock.calls[0][0]).toMatch(/json_unquote\(json_extract\(jt\.__elem__, '\$\.amount'\)\) = '500'/);
+  });
+
+  test('$not inside $elemMatch', async () => {
+    const mock = mockLogger(orm);
+
+    await orm.em.findAll(BalanceMove, {
+      where: {
+        payments: {
+          $elemMatch: {
+            $not: { payment_method: '7' },
+          },
+        },
+      },
+    });
+
+    expect(mock.mock.calls[0][0]).toMatch(/not \(json_unquote\(json_extract\(jt\.__elem__, '\$\.payment_method'\)\) = '7'\)/);
   });
 
   test('numeric comparison operators', async () => {
@@ -338,6 +354,37 @@ describe('$elemMatch integration tests (MySQL)', () => {
 
     expect(results).toHaveLength(2);
     expect(results[0].id).toBe(bm1.id);
+    expect(results[1].id).toBe(bm3.id);
+  });
+
+  test('finds with $not operator', async () => {
+    const em = orm.em.fork();
+
+    em.create(BalanceMove, {
+      payments: [{ amount: '500', cheque_date: '2026-01-16', cheque_notes: null, payment_method: '7' }],
+    });
+
+    const bm2 = em.create(BalanceMove, {
+      payments: [{ amount: '1000', cheque_date: '2026-01-18', cheque_notes: null, payment_method: '1' }],
+    });
+
+    const bm3 = em.create(BalanceMove, {
+      payments: [
+        { amount: '750', cheque_date: '2026-01-19', cheque_notes: null, payment_method: '7' },
+        { amount: '250', cheque_date: '2026-01-20', cheque_notes: null, payment_method: '8' },
+      ],
+    });
+
+    await em.flush();
+
+    const results = await em.find(BalanceMove, {
+      payments: {
+        $elemMatch: { $not: { payment_method: '7' } },
+      },
+    }, { orderBy: { id: 1 } });
+
+    expect(results).toHaveLength(2);
+    expect(results[0].id).toBe(bm2.id);
     expect(results[1].id).toBe(bm3.id);
   });
 

@@ -185,6 +185,24 @@ describe('$elemMatch operator for JSON arrays (PostgreSQL)', () => {
     );
   });
 
+  test('$not inside $elemMatch', async () => {
+    const mock = mockLogger(orm);
+
+    await orm.em.findAll(BalanceMove, {
+      where: {
+        payments: {
+          $elemMatch: {
+            $not: { payment_method: '7' },
+          },
+        },
+      },
+    });
+
+    expect(mock.mock.calls[0][0]).toMatch(
+      /exists \(select 1 from jsonb_array_elements\([^)]+\) as __elem__ where not \(__elem__->>'payment_method' = '7'\)\)/,
+    );
+  });
+
   test('numeric comparison operators', async () => {
     const mock = mockLogger(orm);
 
@@ -407,6 +425,37 @@ describe('$elemMatch integration tests (PostgreSQL)', () => {
 
     expect(results).toHaveLength(2);
     expect(results[0].id).toBe(bm1.id);
+    expect(results[1].id).toBe(bm3.id);
+  });
+
+  test('finds with $not operator', async () => {
+    const em = orm.em.fork();
+
+    em.create(BalanceMove, {
+      payments: [{ amount: '500', cheque_date: '2026-01-16', cheque_notes: null, payment_method: '7' }],
+    });
+
+    const bm2 = em.create(BalanceMove, {
+      payments: [{ amount: '1000', cheque_date: '2026-01-18', cheque_notes: null, payment_method: '1' }],
+    });
+
+    const bm3 = em.create(BalanceMove, {
+      payments: [
+        { amount: '750', cheque_date: '2026-01-19', cheque_notes: null, payment_method: '7' },
+        { amount: '250', cheque_date: '2026-01-20', cheque_notes: null, payment_method: '8' },
+      ],
+    });
+
+    await em.flush();
+
+    const results = await em.find(BalanceMove, {
+      payments: {
+        $elemMatch: { $not: { payment_method: '7' } },
+      },
+    }, { orderBy: { id: 1 } });
+
+    expect(results).toHaveLength(2);
+    expect(results[0].id).toBe(bm2.id);
     expect(results[1].id).toBe(bm3.id);
   });
 
