@@ -58,6 +58,9 @@ export class EntitySchema<Entity = any, Base = never, Class extends EntityCtor =
    */
   static REGISTRY = new Map<AnyEntity, EntitySchema>();
 
+  /** @internal Type-level marker for fast entity type inference */
+  declare readonly '~entity': Entity;
+
   private readonly _meta: EntityMetadata<Entity, Class>;
   private internal = false;
   private initialized = false;

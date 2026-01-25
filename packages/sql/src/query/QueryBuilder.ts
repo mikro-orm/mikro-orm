@@ -240,7 +240,7 @@ export class QueryBuilder<
    * @internal
    */
   constructor(
-    entityName: EntityName<Entity> | QueryBuilder<Entity, any, any>,
+    entityName: EntityName<Entity> | QueryBuilder<Entity, any, any, any>,
     protected readonly metadata: MetadataStorage,
     protected readonly driver: AbstractSqlDriver,
     protected readonly context?: Transaction,
@@ -2091,7 +2091,7 @@ export class QueryBuilder<
 
 }
 
-export interface RunQueryBuilder<Entity extends object> extends Omit<QueryBuilder<Entity, any, any>, 'getResult' | 'getSingleResult' | 'getResultList' | 'where'> {
+export interface RunQueryBuilder<Entity extends object> extends Omit<QueryBuilder<Entity, any, any, any>, 'getResult' | 'getSingleResult' | 'getResultList' | 'where'> {
   where(cond: QBFilterQuery<Entity> | string, params?: keyof typeof GroupOperator | any[], operator?: keyof typeof GroupOperator): this;
   execute<Result = QueryResult<Entity>>(method?: 'all' | 'get' | 'run', mapResults?: boolean): Promise<Result>;
 }

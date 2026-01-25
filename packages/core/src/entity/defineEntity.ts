@@ -718,7 +718,9 @@ export interface EntityMetadataWithProperties<
 > extends Omit<Partial<EntityMetadata<InferEntityFromProperties<TProperties, TPK, TBase>>>, 'properties' | 'extends' | 'primaryKeys' | 'hooks' | 'discriminatorColumn' | 'versionProperty' | 'concurrencyCheckKeys' | 'serializedPrimaryKey' | 'indexes' | 'uniques' > {
   name: TName;
   tableName?: TTableName;
-  extends?: EntityName<TBase>;
+  // Uses ~entity marker for fast type inference (avoids expensive EntitySchema matching)
+  // Also accepts entity constructors for compatibility with class-based entities
+  extends?: { '~entity': TBase } | EntityCtor<TBase>;
   properties: TProperties | ((properties: typeof propertyBuilders) => TProperties);
   primaryKeys?: TPK & InferPrimaryKey<TProperties>[];
   hooks?: DefineEntityHooks<InferEntityFromProperties<TProperties, TPK, TBase>>;
