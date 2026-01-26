@@ -715,7 +715,7 @@ export interface EntityMetadataWithProperties<
   TProperties extends Record<string, any>,
   TPK extends (keyof TProperties)[] | undefined = undefined,
   TBase = never,
-> extends Omit<Partial<EntityMetadata<InferEntityFromProperties<TProperties, TPK, TBase>>>, 'properties' | 'extends' | 'primaryKeys' | 'hooks' | 'discriminatorColumn' | 'versionProperty' | 'concurrencyCheckKeys' | 'serializedPrimaryKey' | 'indexes' | 'uniques' > {
+> extends Omit<Partial<EntityMetadata<InferEntityFromProperties<TProperties, TPK, TBase>>>, 'properties' | 'extends' | 'primaryKeys' | 'hooks' | 'discriminatorColumn' | 'versionProperty' | 'concurrencyCheckKeys' | 'serializedPrimaryKey' | 'indexes' | 'uniques' | 'repository' > {
   name: TName;
   tableName?: TTableName;
   // Uses ~entity marker for fast type inference (avoids expensive EntitySchema matching)
@@ -724,6 +724,9 @@ export interface EntityMetadataWithProperties<
   properties: TProperties | ((properties: typeof propertyBuilders) => TProperties);
   primaryKeys?: TPK & InferPrimaryKey<TProperties>[];
   hooks?: DefineEntityHooks<InferEntityFromProperties<TProperties, TPK, TBase>>;
+  // Use a loose type to avoid circular type inference issues when the repository
+  // extends EntityRepository<InferEntity<typeof Entity>>
+  repository?: (() => Constructor) | (() => unknown);
 
   // use keyof TProperties instead of EntityKey<T> to avoid circular type inference
   discriminatorColumn?: keyof TProperties;
