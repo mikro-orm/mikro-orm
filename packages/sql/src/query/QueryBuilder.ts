@@ -884,10 +884,11 @@ export class QueryBuilder<
     this._query = {} as any;
     this.finalize();
     const qb = this.getQueryBase(processVirtualEntity);
+    const schema = this.getSchema(this.mainAlias);
     const isNotEmptyObject = (obj: Dictionary) => Utils.hasObjectKeys(obj) || RawQueryFragment.hasObjectFragments(obj);
 
     Utils.runIfNotEmpty(() => this.helper.appendQueryCondition(this.type, this._cond, qb), this._cond && !this._onConflict);
-    Utils.runIfNotEmpty(() => qb.groupBy(this.prepareFields(this._groupBy, 'groupBy')), isNotEmptyObject(this._groupBy));
+    Utils.runIfNotEmpty(() => qb.groupBy(this.prepareFields(this._groupBy, 'groupBy', schema)), isNotEmptyObject(this._groupBy));
     Utils.runIfNotEmpty(() => this.helper.appendQueryCondition(this.type, this._having, qb, undefined, 'having'), isNotEmptyObject(this._having));
     Utils.runIfNotEmpty(() => {
       const queryOrder = this.helper.getQueryOrder(this.type, this._orderBy as FlatQueryOrderMap[], this._populateMap);
@@ -1456,10 +1457,10 @@ export class QueryBuilder<
     return { prop, key: aliasedName };
   }
 
-  protected prepareFields<T>(fields: Field<T>[], type: 'where' | 'groupBy' | 'sub-query' = 'where'): (string | RawQueryFragment)[] {
+  protected prepareFields<T>(fields: Field<T>[], type: 'where' | 'groupBy' | 'sub-query' = 'where', schema?: string): (string | RawQueryFragment)[] {
     const ret: Field<T>[] = [];
     const getFieldName = (name: string) => {
-      return this.helper.mapper(name, this.type, undefined, type === 'groupBy' ? null : undefined);
+      return this.helper.mapper(name, this.type, undefined, type === 'groupBy' ? null : undefined, schema);
     };
 
     fields.forEach(field => {
@@ -1582,10 +1583,10 @@ export class QueryBuilder<
 
     switch (this.type) {
       case QueryType.SELECT:
-        qb.select(this.prepareFields(this._fields!));
+        qb.select(this.prepareFields(this._fields!, 'where', schema));
 
         if (this._distinctOn) {
-          qb.distinctOn(this.prepareFields(this._distinctOn) as string[]);
+          qb.distinctOn(this.prepareFields(this._distinctOn, 'where', schema) as string[]);
         } else if (this.flags.has(QueryFlag.DISTINCT)) {
           qb.distinct();
         }
@@ -1593,7 +1594,7 @@ export class QueryBuilder<
         this.helper.processJoins(qb, this._joins, joinSchema);
         break;
       case QueryType.COUNT: {
-        const fields = this._fields!.map(f => this.helper.mapper(f as string, this.type));
+        const fields = this._fields!.map(f => this.helper.mapper(f as string, this.type, undefined, undefined, schema));
         qb.count(fields, this.flags.has(QueryFlag.DISTINCT));
         this.helper.processJoins(qb, this._joins, joinSchema);
         break;
@@ -1844,7 +1845,8 @@ export class QueryBuilder<
   }
 
   protected wrapPaginateSubQuery(meta: EntityMetadata): void {
-    const pks = this.prepareFields(meta.primaryKeys, 'sub-query') as string[];
+    const schema = this.getSchema(this.mainAlias);
+    const pks = this.prepareFields(meta.primaryKeys, 'sub-query', schema) as string[];
     const subQuery = this.clone(['_orderBy', '_fields', 'lockMode', 'lockTableAliases']).select(pks).groupBy(pks).limit(this._limit!);
 
     // revert the on conditions added via populateWhere, we want to apply those only once
@@ -1986,7 +1988,8 @@ export class QueryBuilder<
     // https://stackoverflow.com/questions/45494/mysql-error-1093-cant-specify-target-table-for-update-in-from-clause
     const subSubQuery = this.platform.createNativeQueryBuilder();
     const method = this.flags.has(QueryFlag.UPDATE_SUB_QUERY) ? 'update' : 'delete';
-    const pks = this.prepareFields(meta.primaryKeys, 'sub-query') as string[];
+    const schema = this.getSchema(this.mainAlias);
+    const pks = this.prepareFields(meta.primaryKeys, 'sub-query', schema) as string[];
     this._cond = {}; // otherwise we would trigger validation error
     this._joins = {}; // included in the subquery
     subSubQuery.select(pks).from(subQuery.as(this.mainAlias.aliasName));
