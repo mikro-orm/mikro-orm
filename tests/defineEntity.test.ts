@@ -6,6 +6,7 @@ import {
   EntityDTO,
   EntityMetadata,
   EntityName,
+  EntityRepository,
   EntitySchema,
   Hidden,
   InferEntity,
@@ -91,6 +92,27 @@ describe('defineEntity', () => {
         tags: { type: new types.array() },
       },
     }).meta));
+  });
+
+  it('should work with custom repository', () => {
+    type IQux = InferEntity<typeof Qux>;
+
+    class QuxRepository extends EntityRepository<IQux> {
+
+      anotherCustomMethod(): string {
+        return 'another-custom';
+      }
+
+    }
+
+    const Qux = defineEntity({
+      name: 'Qux',
+      repository: () => QuxRepository,
+      properties: {
+        id: p.integer().primary(),
+        title: p.string(),
+      },
+    });
   });
 
   it('should define entity with primary keys', () => {
