@@ -486,7 +486,7 @@ export class MetadataDiscovery {
     }
   }
 
-  private initManyToOneFieldName(prop: EntityProperty, name: string): string[] {
+  private initManyToOneFieldName(prop: EntityProperty, name: string, tableName?: string): string[] {
     const meta2 = prop.targetMeta!;
     const ret: string[] = [];
 
@@ -494,7 +494,7 @@ export class MetadataDiscovery {
       this.initFieldName(meta2.properties[primaryKey]);
 
       for (const fieldName of meta2.properties[primaryKey].fieldNames) {
-        ret.push(this.namingStrategy.joinKeyColumnName(name, fieldName, meta2.compositePK));
+        ret.push(this.namingStrategy.joinKeyColumnName(name, fieldName, meta2.compositePK, tableName));
       }
     }
 
@@ -547,8 +547,14 @@ export class MetadataDiscovery {
     }
 
     prop.referencedColumnNames ??= Utils.flatten(meta.primaryKeys.map(primaryKey => meta.properties[primaryKey].fieldNames));
-    prop.joinColumns ??= prop.referencedColumnNames.map(referencedColumnName => this.namingStrategy.joinKeyColumnName(meta.root.className, referencedColumnName, meta.compositePK, meta.root.tableName));
-    prop.inverseJoinColumns ??= this.initManyToOneFieldName(prop, meta2.root.className);
+    const ownerTableName = this.isExplicitTableName(meta.root) ? meta.root.tableName : undefined;
+    const inverseTableName = this.isExplicitTableName(meta2.root) ? meta2.root.tableName : undefined;
+    prop.joinColumns ??= prop.referencedColumnNames.map(referencedColumnName => this.namingStrategy.joinKeyColumnName(meta.root.className, referencedColumnName, meta.compositePK, ownerTableName));
+    prop.inverseJoinColumns ??= this.initManyToOneFieldName(prop, meta2.root.className, inverseTableName);
+  }
+
+  private isExplicitTableName(meta: EntityMetadata): boolean {
+    return meta.tableName !== this.namingStrategy.classToTableName(meta.className);
   }
 
   private initManyToOneFields(prop: EntityProperty): void {
@@ -769,13 +775,24 @@ export class MetadataDiscovery {
 
     // handle self-referenced m:n with same default field names
     if (meta.className === targetType && prop.joinColumns.every((joinColumn, idx) => joinColumn === prop.inverseJoinColumns[idx])) {
-      prop.joinColumns = prop.referencedColumnNames.map(name => this.namingStrategy.joinKeyColumnName(meta.tableName + '_1', name, meta.compositePK));
-      prop.inverseJoinColumns = prop.referencedColumnNames.map(name => this.namingStrategy.joinKeyColumnName(meta.tableName + '_2', name, meta.compositePK));
+      // use tableName only when explicitly provided by user, otherwise use className for backwards compatibility
+      const baseName = this.isExplicitTableName(meta) ? meta.tableName : meta.className;
+      prop.joinColumns = prop.referencedColumnNames.map(name => this.namingStrategy.joinKeyColumnName(baseName + '_1', name, meta.compositePK));
+      prop.inverseJoinColumns = prop.referencedColumnNames.map(name => this.namingStrategy.joinKeyColumnName(baseName + '_2', name, meta.compositePK));
 
       if (prop.inversedBy) {
         const prop2 = targetMeta.properties[prop.inversedBy];
         prop2.inverseJoinColumns = prop.joinColumns;
         prop2.joinColumns = prop.inverseJoinColumns;
+      }
+
+      // propagate updated joinColumns to all child entities that inherit this property (STI)
+      for (const childMeta of this.discovered.filter(m => m.root === meta && m !== meta)) {
+        const childProp = childMeta.properties[prop.name];
+        if (childProp) {
+          childProp.joinColumns = prop.joinColumns;
+          childProp.inverseJoinColumns = prop.inverseJoinColumns;
+        }
       }
     }
 

@@ -490,3 +490,39 @@ const UserSchema2 = new EntitySchema<User>({
   },
 });
 ```
+
+## Self-referencing M:N pivot table column naming
+
+When you have a self-referencing many-to-many relation with an **explicit `tableName`** that differs from the class name, the pivot table column names now use the `tableName` instead of `className`.
+
+This only affects you if:
+
+1. You have a self-referencing M:N relation
+2. You explicitly set a custom `tableName` different from what would be inferred for the class name
+
+```ts
+@Entity({ tableName: 'people' })
+class Person {
+  @ManyToMany(() => Person)
+  friends = new Collection<Person>(this);
+}
+
+// v6: pivot columns were person_1_id, person_2_id (from className)
+// v7: pivot columns are people_1_id, people_2_id (from explicit tableName)
+```
+
+If you do **not** explicitly set `tableName`, the behavior remains unchanged - columns use the class name as before.
+
+**Migration**: If you have existing data and want to avoid a schema migration, you can explicitly define the `joinColumns` and `inverseJoinColumns` to preserve the old column names:
+
+```ts
+@Entity({ tableName: 'people' })
+class Person {
+  @ManyToMany({
+    entity: () => Person,
+    joinColumns: ['person_1_id'],
+    inverseJoinColumns: ['person_2_id'],
+  })
+  friends = new Collection<Person>(this);
+}
+```
