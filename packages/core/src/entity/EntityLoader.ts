@@ -92,7 +92,7 @@ export class EntityLoader {
       await this.populateScalar(meta, references, { ...options, populateWhere: undefined } as any);
     }
 
-    populate = this.normalizePopulate<Entity>(entityName, populate as true, options.strategy as LoadStrategy | undefined, options.lookup);
+    populate = this.normalizePopulate<Entity>(entityName, populate as true, options.strategy as LoadStrategy | undefined, options.lookup, options.exclude as string[]);
     const invalid = populate.find(({ field }) => !this.em.canPopulate(entityName, field));
 
     /* v8 ignore next */
@@ -115,7 +115,7 @@ export class EntityLoader {
     }
   }
 
-  normalizePopulate<Entity>(entityName: EntityName<Entity>, populate: (PopulateOptions<Entity> | boolean)[] | PopulateOptions<Entity> | boolean, strategy?: LoadStrategy, lookup = true): PopulateOptions<Entity>[] {
+  normalizePopulate<Entity>(entityName: EntityName<Entity>, populate: (PopulateOptions<Entity> | boolean)[] | PopulateOptions<Entity> | boolean, strategy?: LoadStrategy, lookup = true, exclude?: string[]): PopulateOptions<Entity>[] {
     const meta = this.metadata.find(entityName)!;
     let normalized = Utils.asArray(populate).map(field => {
       return typeof field === 'boolean' || field.field === PopulatePath.ALL ? { all: !!field, field: meta.primaryKeys[0] } as PopulateOptions<Entity> : field;
@@ -129,7 +129,7 @@ export class EntityLoader {
     expandDotPaths(meta, normalized, true);
 
     if (lookup && populate !== false) {
-      normalized = this.lookupEagerLoadedRelationships(entityName, normalized, strategy);
+      normalized = this.lookupEagerLoadedRelationships(entityName, normalized, strategy, '', [], exclude);
 
       // convert nested `field` with dot syntax produced by eager relations
       expandDotPaths(meta, normalized, true);
@@ -774,7 +774,7 @@ export class EntityLoader {
     return `${this.getRelationName(meta, meta.properties[prop.embedded[0]])}.${prop.embedded[1]}` as EntityKey<Entity>;
   }
 
-  private lookupEagerLoadedRelationships<Entity>(entityName: EntityName<Entity>, populate: PopulateOptions<Entity>[], strategy?: LoadStrategy, prefix = '', visited: EntityMetadata[] = []): PopulateOptions<Entity>[] {
+  private lookupEagerLoadedRelationships<Entity>(entityName: EntityName<Entity>, populate: PopulateOptions<Entity>[], strategy?: LoadStrategy, prefix = '', visited: EntityMetadata[] = [], exclude?: string[]): PopulateOptions<Entity>[] {
     const meta = this.metadata.find<Entity>(entityName);
 
     if (!meta && !prefix) {
@@ -790,17 +790,20 @@ export class EntityLoader {
 
     meta.relations
       .filter(prop => {
+        const field = this.getRelationName(meta, prop);
+        const prefixed = prefix ? `${prefix}.${field}` : field;
+        const isExcluded = exclude?.includes(prefixed);
         const eager = prop.eager && !populate.some(p => p.field === `${prop.name}:ref`);
         const populated = populate.some(p => p.field === prop.name);
         const disabled = populate.some(p => p.field === prop.name && p.all === false);
 
-        return !disabled && (eager || populated);
+        return !disabled && !isExcluded && (eager || populated);
       })
       .forEach(prop => {
         const field = this.getRelationName(meta, prop);
         const prefixed = prefix ? `${prefix}.${field}` as EntityKey<Entity> : field;
         const nestedPopulate = populate.filter(p => p.field === prop.name).flatMap(p => p.children).filter(Boolean);
-        const nested = this.lookupEagerLoadedRelationships<Entity>(prop.targetMeta!.class, nestedPopulate as any, strategy, prefixed, visited.slice());
+        const nested = this.lookupEagerLoadedRelationships<Entity>(prop.targetMeta!.class, nestedPopulate as any, strategy, prefixed, visited.slice(), exclude);
 
         if (nested.length > 0) {
           ret.push(...nested);
