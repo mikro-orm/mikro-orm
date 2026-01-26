@@ -2138,7 +2138,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
   }
 
   /** @internal */
-  async preparePopulate<Entity extends object>(entityName: string, options: Pick<FindOptions<Entity, any, any>, 'populate' | 'strategy' | 'fields' | 'flags' | 'filters'>, validate = true): Promise<PopulateOptions<Entity>[]> {
+  async preparePopulate<Entity extends object>(entityName: string, options: Pick<FindOptions<Entity, any, any, any>, 'populate' | 'strategy' | 'fields' | 'flags' | 'filters' | 'exclude'>, validate = true): Promise<PopulateOptions<Entity>[]> {
     if (options.populate === false) {
       return [];
     }
@@ -2192,7 +2192,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     if (!options.populate) {
-      const populate = this.entityLoader.normalizePopulate<Entity>(entityName, [], options.strategy as LoadStrategy);
+      const populate = this.entityLoader.normalizePopulate<Entity>(entityName, [], options.strategy as LoadStrategy, true, options.exclude as string[]);
       await this.autoJoinRefsForFilters(meta, { ...options, populate });
 
       return populate;
@@ -2221,7 +2221,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       }).flat() as any;
     }
 
-    const populate: PopulateOptions<Entity>[] = this.entityLoader.normalizePopulate<Entity>(entityName, options.populate as true, options.strategy as LoadStrategy);
+    const populate: PopulateOptions<Entity>[] = this.entityLoader.normalizePopulate<Entity>(entityName, options.populate as true, options.strategy as LoadStrategy, true, options.exclude as string[]);
     const invalid = populate.find(({ field }) => !this.canPopulate(entityName, field));
 
     if (validate && invalid) {
