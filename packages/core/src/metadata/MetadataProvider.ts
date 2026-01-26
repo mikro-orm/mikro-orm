@@ -26,7 +26,7 @@ export class MetadataProvider {
         const tmp = prop.entity() as EntityClass;
         prop.type = Array.isArray(tmp) ? tmp.map(t => Utils.className(t)).sort().join(' | ') : Utils.className(tmp);
         prop.target = tmp instanceof EntitySchema ? tmp.meta.class : tmp;
-      } else if (!prop.type && !(prop.enum && (prop.items?.length ?? 0) > 0)) {
+      } else if (!prop.type && !((prop.enum || prop.array) && (prop.items?.length ?? 0) > 0)) {
         throw new Error(`Please provide either 'type' or 'entity' attribute in ${meta.className}.${prop.name}.`);
       }
     }
