@@ -822,6 +822,13 @@ export class MetadataDiscovery {
         prop2.inverseJoinColumns = prop.joinColumns;
         prop2.joinColumns = prop.inverseJoinColumns;
       }
+
+      // propagate updated joinColumns to all child entities that inherit this property (STI)
+      for (const childMeta of this.discovered.filter(m => m.root === meta && m !== meta)) {
+        const childProp = childMeta.properties[prop.name];
+        childProp.joinColumns = prop.joinColumns;
+        childProp.inverseJoinColumns = prop.inverseJoinColumns;
+      }
     }
 
     data.properties[meta.name + '_owner'] = this.definePivotProperty(prop, meta.name + '_owner', meta.className, targetType + '_inverse', true, meta.className === targetType);
