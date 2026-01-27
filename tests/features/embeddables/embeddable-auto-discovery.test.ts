@@ -5,8 +5,8 @@ const LocalizedText = defineEntity({
   embeddable: true,
   name: 'LocalizedText',
   properties: {
-    ar: p.text().nullable().default(null),
-    ar_EG: p.text().nullable().default(null),
+    ar: p.text().nullable(),
+    ar_EG: p.text().nullable(),
   },
 });
 

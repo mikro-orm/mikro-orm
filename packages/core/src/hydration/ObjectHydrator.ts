@@ -343,7 +343,7 @@ export class ObjectHydrator extends Hydrator {
           ret.push(`    }`);
         });
       } else {
-        const targetKey = this.safeKey(`${prop.targetMeta!.tableName}_${this.tmpIndex++}`);
+        const targetKey = this.safeKey(`${prop.targetMeta!.className}_${this.tmpIndex++}`);
         context.set(targetKey, prop.targetMeta!.class);
         ret.push(`    if (entity${entityKey} == null) {`);
         ret.push(`      entity${entityKey} = factory.createEmbeddable(${targetKey}, embeddedData, { newEntity, convertCustomTypes, normalizeAccessors });`);
