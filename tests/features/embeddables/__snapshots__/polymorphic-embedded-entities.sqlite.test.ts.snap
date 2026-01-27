@@ -49,7 +49,7 @@ exports[`polymorphic embeddables in sqlite > diffing 1`] = `
           mice: data.pet_food_mice,
         };
         if (entity.pet.food == null) {
-          entity.pet.food = factory.createEmbeddable(DogFood_6, embeddedData, { newEntity, convertCustomTypes, normalizeAccessors });
+          entity.pet.food = factory.createEmbeddable(dog_food_6, embeddedData, { newEntity, convertCustomTypes, normalizeAccessors });
         }
         if (data.pet_food_cats === null) {
           entity.pet.food.cats = null;
@@ -70,7 +70,7 @@ exports[`polymorphic embeddables in sqlite > diffing 1`] = `
       if (data.pet_food != null) {
         const embeddedData = data.pet_food;
         if (entity.pet.food == null) {
-          entity.pet.food = factory.createEmbeddable(DogFood_9, embeddedData, { newEntity, convertCustomTypes, normalizeAccessors });
+          entity.pet.food = factory.createEmbeddable(dog_food_9, embeddedData, { newEntity, convertCustomTypes, normalizeAccessors });
         }
         if (data.pet_food.cats === null) {
           entity.pet.food.cats = null;
@@ -115,7 +115,7 @@ exports[`polymorphic embeddables in sqlite > diffing 1`] = `
           mice: data.pet_food_mice,
         };
         if (entity.pet.food == null) {
-          entity.pet.food = factory.createEmbeddable(CatFood_16, embeddedData, { newEntity, convertCustomTypes, normalizeAccessors });
+          entity.pet.food = factory.createEmbeddable(cat_food_16, embeddedData, { newEntity, convertCustomTypes, normalizeAccessors });
         }
         if (data.pet_food_cats === null) {
           entity.pet.food.cats = null;
@@ -136,7 +136,7 @@ exports[`polymorphic embeddables in sqlite > diffing 1`] = `
       if (data.pet_food != null) {
         const embeddedData = data.pet_food;
         if (entity.pet.food == null) {
-          entity.pet.food = factory.createEmbeddable(CatFood_19, embeddedData, { newEntity, convertCustomTypes, normalizeAccessors });
+          entity.pet.food = factory.createEmbeddable(cat_food_19, embeddedData, { newEntity, convertCustomTypes, normalizeAccessors });
         }
         if (data.pet_food.cats === null) {
           entity.pet.food.cats = null;
@@ -189,7 +189,7 @@ exports[`polymorphic embeddables in sqlite > diffing 1`] = `
           mice: data.pet_food_mice,
         };
         if (entity.pet.food == null) {
-          entity.pet.food = factory.createEmbeddable(DogFood_26, embeddedData, { newEntity, convertCustomTypes, normalizeAccessors });
+          entity.pet.food = factory.createEmbeddable(dog_food_26, embeddedData, { newEntity, convertCustomTypes, normalizeAccessors });
         }
         if (data.pet_food_cats === null) {
           entity.pet.food.cats = null;
@@ -210,7 +210,7 @@ exports[`polymorphic embeddables in sqlite > diffing 1`] = `
       if (data.pet.food != null) {
         const embeddedData = data.pet.food;
         if (entity.pet.food == null) {
-          entity.pet.food = factory.createEmbeddable(DogFood_29, embeddedData, { newEntity, convertCustomTypes, normalizeAccessors });
+          entity.pet.food = factory.createEmbeddable(dog_food_29, embeddedData, { newEntity, convertCustomTypes, normalizeAccessors });
         }
         if (data.pet.food.cats === null) {
           entity.pet.food.cats = null;
@@ -255,7 +255,7 @@ exports[`polymorphic embeddables in sqlite > diffing 1`] = `
           mice: data.pet_food_mice,
         };
         if (entity.pet.food == null) {
-          entity.pet.food = factory.createEmbeddable(CatFood_36, embeddedData, { newEntity, convertCustomTypes, normalizeAccessors });
+          entity.pet.food = factory.createEmbeddable(cat_food_36, embeddedData, { newEntity, convertCustomTypes, normalizeAccessors });
         }
         if (data.pet_food_cats === null) {
           entity.pet.food.cats = null;
@@ -276,7 +276,7 @@ exports[`polymorphic embeddables in sqlite > diffing 1`] = `
       if (data.pet.food != null) {
         const embeddedData = data.pet.food;
         if (entity.pet.food == null) {
-          entity.pet.food = factory.createEmbeddable(CatFood_39, embeddedData, { newEntity, convertCustomTypes, normalizeAccessors });
+          entity.pet.food = factory.createEmbeddable(cat_food_39, embeddedData, { newEntity, convertCustomTypes, normalizeAccessors });
         }
         if (data.pet.food.cats === null) {
           entity.pet.food.cats = null;
@@ -329,7 +329,7 @@ exports[`polymorphic embeddables in sqlite > diffing 1`] = `
           mice: data['pet2~foodmice'],
         };
         if (entity.pet2.food == null) {
-          entity.pet2.food = factory.createEmbeddable(DogFood_46, embeddedData, { newEntity, convertCustomTypes, normalizeAccessors });
+          entity.pet2.food = factory.createEmbeddable(dog_food_46, embeddedData, { newEntity, convertCustomTypes, normalizeAccessors });
         }
         if (data['pet2~foodcats'] === null) {
           entity.pet2.food.cats = null;
@@ -350,7 +350,7 @@ exports[`polymorphic embeddables in sqlite > diffing 1`] = `
       if (data.pet2.food != null) {
         const embeddedData = data.pet2.food;
         if (entity.pet2.food == null) {
-          entity.pet2.food = factory.createEmbeddable(DogFood_49, embeddedData, { newEntity, convertCustomTypes, normalizeAccessors });
+          entity.pet2.food = factory.createEmbeddable(dog_food_49, embeddedData, { newEntity, convertCustomTypes, normalizeAccessors });
         }
         if (data.pet2.food.cats === null) {
           entity.pet2.food.cats = null;
@@ -395,7 +395,7 @@ exports[`polymorphic embeddables in sqlite > diffing 1`] = `
           mice: data['pet2~foodmice'],
         };
         if (entity.pet2.food == null) {
-          entity.pet2.food = factory.createEmbeddable(CatFood_56, embeddedData, { newEntity, convertCustomTypes, normalizeAccessors });
+          entity.pet2.food = factory.createEmbeddable(cat_food_56, embeddedData, { newEntity, convertCustomTypes, normalizeAccessors });
         }
         if (data['pet2~foodcats'] === null) {
           entity.pet2.food.cats = null;
@@ -416,7 +416,7 @@ exports[`polymorphic embeddables in sqlite > diffing 1`] = `
       if (data.pet2.food != null) {
         const embeddedData = data.pet2.food;
         if (entity.pet2.food == null) {
-          entity.pet2.food = factory.createEmbeddable(CatFood_59, embeddedData, { newEntity, convertCustomTypes, normalizeAccessors });
+          entity.pet2.food = factory.createEmbeddable(cat_food_59, embeddedData, { newEntity, convertCustomTypes, normalizeAccessors });
         }
         if (data.pet2.food.cats === null) {
           entity.pet2.food.cats = null;
@@ -475,7 +475,7 @@ exports[`polymorphic embeddables in sqlite > diffing 1`] = `
               mice: data['pets~foodmice'],
             };
             if (entity.pets[idx_62].food == null) {
-              entity.pets[idx_62].food = factory.createEmbeddable(DogFood_67, embeddedData, { newEntity, convertCustomTypes, normalizeAccessors });
+              entity.pets[idx_62].food = factory.createEmbeddable(dog_food_67, embeddedData, { newEntity, convertCustomTypes, normalizeAccessors });
             }
             if (data['pets~foodcats'] === null) {
               entity.pets[idx_62].food.cats = null;
@@ -496,7 +496,7 @@ exports[`polymorphic embeddables in sqlite > diffing 1`] = `
           if (data.pets[idx_62].food != null) {
             const embeddedData = data.pets[idx_62].food;
             if (entity.pets[idx_62].food == null) {
-              entity.pets[idx_62].food = factory.createEmbeddable(DogFood_70, embeddedData, { newEntity, convertCustomTypes, normalizeAccessors });
+              entity.pets[idx_62].food = factory.createEmbeddable(dog_food_70, embeddedData, { newEntity, convertCustomTypes, normalizeAccessors });
             }
             if (data.pets[idx_62].food.cats === null) {
               entity.pets[idx_62].food.cats = null;
@@ -541,7 +541,7 @@ exports[`polymorphic embeddables in sqlite > diffing 1`] = `
               mice: data['pets~foodmice'],
             };
             if (entity.pets[idx_62].food == null) {
-              entity.pets[idx_62].food = factory.createEmbeddable(CatFood_77, embeddedData, { newEntity, convertCustomTypes, normalizeAccessors });
+              entity.pets[idx_62].food = factory.createEmbeddable(cat_food_77, embeddedData, { newEntity, convertCustomTypes, normalizeAccessors });
             }
             if (data['pets~foodcats'] === null) {
               entity.pets[idx_62].food.cats = null;
@@ -562,7 +562,7 @@ exports[`polymorphic embeddables in sqlite > diffing 1`] = `
           if (data.pets[idx_62].food != null) {
             const embeddedData = data.pets[idx_62].food;
             if (entity.pets[idx_62].food == null) {
-              entity.pets[idx_62].food = factory.createEmbeddable(CatFood_80, embeddedData, { newEntity, convertCustomTypes, normalizeAccessors });
+              entity.pets[idx_62].food = factory.createEmbeddable(cat_food_80, embeddedData, { newEntity, convertCustomTypes, normalizeAccessors });
             }
             if (data.pets[idx_62].food.cats === null) {
               entity.pets[idx_62].food.cats = null;

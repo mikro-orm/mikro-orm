@@ -79,7 +79,7 @@ export class MetadataValidator {
       throw MetadataError.noEntityDiscovered();
     }
 
-    const tableNames = discovered.filter(meta => !meta.abstract && meta === meta.root && (meta.tableName || meta.collection) && meta.schema !== '*');
+    const tableNames = discovered.filter(meta => !meta.abstract && !meta.embeddable && meta === meta.root && (meta.tableName || meta.collection) && meta.schema !== '*');
     const duplicateTableNames = Utils.findDuplicates(tableNames.map(meta => {
       const tableName = meta.tableName || meta.collection;
       return (meta.schema ? '.' + meta.schema : '') + tableName;
