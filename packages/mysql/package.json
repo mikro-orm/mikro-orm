@@ -52,7 +52,7 @@
   "dependencies": {
     "@mikro-orm/sql": "6.6.4",
     "kysely": "0.28.10",
-    "mysql2": "3.16.1",
+    "mysql2": "3.16.2",
     "sqlstring": "2.3.3"
   },
   "devDependencies": {

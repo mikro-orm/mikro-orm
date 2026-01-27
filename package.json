@@ -143,7 +143,7 @@
     "tsimp": "2.0.12",
     "tsx": "4.21.0",
     "typescript": "5.9.3",
-    "typescript-eslint": "8.53.1",
+    "typescript-eslint": "8.54.0",
     "unplugin-swc": "1.5.9",
     "uuid": "11.1.0",
     "vitest": "4.0.18"
