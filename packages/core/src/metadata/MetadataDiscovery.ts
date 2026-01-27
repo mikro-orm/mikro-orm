@@ -265,9 +265,16 @@ export class MetadataDiscovery {
     for (const target of targets) {
       const isDiscoverable = typeof target === 'function' || target as unknown instanceof EntitySchema;
 
-      if (isDiscoverable && target.name && !this.metadata.has(target)) {
-        this.discoverReferences([target], false);
-        this.discoverMissingTargets();
+      if (isDiscoverable && target.name) {
+        // Get the actual class for EntitySchema, or use target directly for classes
+        const targetClass = target as unknown instanceof EntitySchema
+          ? (target as unknown as EntitySchema).init().meta.class
+          : target;
+
+        if (!this.metadata.has(targetClass)) {
+          this.discoverReferences([target], false);
+          this.discoverMissingTargets();
+        }
       }
     }
   }
