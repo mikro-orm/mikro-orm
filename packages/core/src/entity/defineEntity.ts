@@ -20,6 +20,7 @@ import type {
   Dictionary,
   EntityMetadata,
   PrimaryKeyProp,
+  EntityRepositoryType,
   Hidden,
   Opt,
   Primary,
@@ -715,7 +716,8 @@ export interface EntityMetadataWithProperties<
   TProperties extends Record<string, any>,
   TPK extends (keyof TProperties)[] | undefined = undefined,
   TBase = never,
-> extends Omit<Partial<EntityMetadata<InferEntityFromProperties<TProperties, TPK, TBase>>>, 'properties' | 'extends' | 'primaryKeys' | 'hooks' | 'discriminatorColumn' | 'versionProperty' | 'concurrencyCheckKeys' | 'serializedPrimaryKey' | 'indexes' | 'uniques' | 'repository' > {
+  TRepository = never,
+> extends Omit<Partial<EntityMetadata<InferEntityFromProperties<TProperties, TPK, TBase, TRepository>>>, 'properties' | 'extends' | 'primaryKeys' | 'hooks' | 'discriminatorColumn' | 'versionProperty' | 'concurrencyCheckKeys' | 'serializedPrimaryKey' | 'indexes' | 'uniques' | 'repository' > {
   name: TName;
   tableName?: TTableName;
   // Uses ~entity marker for fast type inference (avoids expensive EntitySchema matching)
@@ -723,10 +725,9 @@ export interface EntityMetadataWithProperties<
   extends?: { '~entity': TBase } | EntityCtor<TBase>;
   properties: TProperties | ((properties: typeof propertyBuilders) => TProperties);
   primaryKeys?: TPK & InferPrimaryKey<TProperties>[];
-  hooks?: DefineEntityHooks<InferEntityFromProperties<TProperties, TPK, TBase>>;
-  // Use a loose type to avoid circular type inference issues when the repository
-  // extends EntityRepository<InferEntity<typeof Entity>>
-  repository?: (() => Constructor) | (() => unknown);
+  hooks?: DefineEntityHooks<InferEntityFromProperties<TProperties, TPK, TBase, TRepository>>;
+  // Capture the repository type for InferEntity to include EntityRepositoryType
+  repository?: () => TRepository;
 
   // use keyof TProperties instead of EntityKey<T> to avoid circular type inference
   discriminatorColumn?: keyof TProperties;
@@ -755,9 +756,10 @@ export function defineEntity<
   const TProperties extends Record<string, any>,
   const TPK extends (keyof TProperties)[] | undefined = undefined,
   const TBase = never,
+  const TRepository = never,
 >(
-  meta: EntityMetadataWithProperties<TName, TTableName, TProperties, TPK, TBase>,
-): EntitySchemaWithMeta<TName, TTableName, InferEntityFromProperties<TProperties, TPK, TBase>, TBase, TProperties>;
+  meta: EntityMetadataWithProperties<TName, TTableName, TProperties, TPK, TBase, TRepository>,
+): EntitySchemaWithMeta<TName, TTableName, InferEntityFromProperties<TProperties, TPK, TBase, TRepository>, TBase, TProperties>;
 
 export function defineEntity<const TEntity = any, const TProperties extends Record<string, any> = Record<string, any>, const TClassName extends string = string, const TTableName extends string = string, const TBase = never, const TClass extends EntityCtor = EntityCtor<TEntity>>(
   meta: Omit<Partial<EntityMetadata<TEntity>>, 'properties' | 'extends' | 'className' | 'tableName'> & {
@@ -773,7 +775,7 @@ export function defineEntity(
   meta: Omit<Partial<EntityMetadata>, 'properties' | 'extends'> & {
     extends?: EntityName;
     properties: Record<string, any> | ((properties: typeof propertyBuilders) => Record<string, any>);
-  } | EntityMetadataWithProperties<any, any, any, any, any>,
+  } | EntityMetadataWithProperties<any, any, any, any, any, any>,
 ): EntitySchemaWithMeta<any, any, any, any, any, any> {
   const { properties: propertiesOrGetter, ...options } = meta;
   const propertyOptions = typeof propertiesOrGetter === 'function' ? propertiesOrGetter(propertyBuilders) : propertiesOrGetter;
@@ -847,11 +849,12 @@ type InferColumnType<T extends string> =
   T extends 'json' | 'jsonb' ? any :
   any;
 
-export type InferEntityFromProperties<Properties extends Record<string, any>, PK extends (keyof Properties)[] | undefined = undefined, Base = never> = {
+export type InferEntityFromProperties<Properties extends Record<string, any>, PK extends (keyof Properties)[] | undefined = undefined, Base = never, Repository = never> = {
   -readonly [K in keyof Properties]: InferBuilderValue<MaybeReturnType<Properties[K]>>;
 } & {
   [PrimaryKeyProp]?: InferCombinedPrimaryKey<Properties, PK, Base>;
-} & (IsNever<Base> extends true ? {} : Omit<Base, typeof PrimaryKeyProp>);
+} & (IsNever<Repository> extends true ? {} : { [EntityRepositoryType]?: Repository extends Constructor<infer R> ? R : Repository })
+& (IsNever<Base> extends true ? {} : Omit<Base, typeof PrimaryKeyProp>);
 
 // Combines primary keys from child properties and base entity
 type InferCombinedPrimaryKey<Properties extends Record<string, any>, PK, Base> =

@@ -7,6 +7,7 @@ import {
   EntityMetadata,
   EntityName,
   EntityRepository,
+  EntityRepositoryType,
   EntitySchema,
   Hidden,
   InferEntity,
@@ -122,6 +123,10 @@ describe('defineEntity', () => {
         title: p.string(),
       },
     });
+
+    // Verify repository type is inferred correctly
+    type QuxRepoType = IQux[typeof EntityRepositoryType];
+    assert<IsExact<QuxRepoType & {}, QuxRepository>>(true);
   });
 
   it('should define entity with primary keys', () => {
