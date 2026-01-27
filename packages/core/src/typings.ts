@@ -473,7 +473,9 @@ export type EntityDTOProp<E, T, C extends TypeConfig = never> = T extends Scalar
             : T extends Collection<infer U>
               ? PrimaryOrObject<E, U, C>[]
               : T extends readonly (infer U)[]
-                ? (T extends readonly any[] ? T : U[])
+                ? U extends Scalar
+                  ? T
+                  : EntityDTOProp<E, U, C>[]
                 : T extends Relation<T>
                   ? EntityDTO<T, C>
                   : T;
@@ -1217,8 +1219,10 @@ type LoadedLoadable<T, E extends object> =
     ? T & LoadedReference<E> // intersect with T (which is `Ref`) to include the PK props
     : T extends ScalarReference<infer U>
       ? LoadedScalarReference<U>
-      : T extends Scalar | any[]
-          ? T
+      : T extends Scalar
+        ? T
+        : T extends any[]
+          ? E[]
           : E;
 
 type IsTrue<T> = IsNever<T> extends true
