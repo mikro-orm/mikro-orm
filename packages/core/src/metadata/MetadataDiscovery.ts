@@ -1249,6 +1249,11 @@ export class MetadataDiscovery {
   }
 
   private initCheckConstraints(meta: EntityMetadata): void {
+    // Embeddables don't have tables, so they can't have check constraints
+    if (meta.embeddable) {
+      return;
+    }
+
     const map = meta.createColumnMappingObject();
 
     for (const check of meta.checks) {
