@@ -169,6 +169,37 @@ MikroORM.init({
 });
 ```
 
+For SQL drivers, you can also use `driverOptions` to pass an existing Kysely instance or a Kysely dialect directly (or a function returning one of those):
+
+```ts
+// Reusing an existing Kysely instance
+const kysely = orm.em.getKysely();
+
+MikroORM.init({
+  driverOptions: kysely,
+  // or as a function
+  driverOptions: () => kysely,
+});
+
+// Using a custom Kysely dialect
+MikroORM.init({
+  driverOptions: () => orm.driver.getConnection().createKyselyDialect({}),
+});
+```
+
+For MongoDB, you can pass an existing `MongoClient` instance directly (or a function returning one):
+
+```ts
+const mongo = orm.em.getConnection().getClient();
+
+MikroORM.init({
+  driver: MongoDriver,
+  driverOptions: mongo,
+  // or as a function
+  driverOptions: () => mongo,
+});
+```
+
 > From v3.5.1 you can also set the timezone directly in the ORM configuration:
 >
 > ```ts

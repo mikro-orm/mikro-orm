@@ -243,6 +243,54 @@ export default defineConfig({
 });
 ```
 
+## Using Cloudflare D1 database
+
+> **Experimental:** D1 support is experimental and has significant limitations. Use with caution.
+
+[Cloudflare D1](https://developers.cloudflare.com/d1/) is a serverless SQLite database. You can use MikroORM with D1 by passing a Kysely D1 dialect via `driverOptions`:
+
+```ts
+import { MikroORM } from '@mikro-orm/sqlite';
+import { D1Dialect } from 'kysely-d1';
+
+export default {
+  async fetch(request: Request, env: Env) {
+    const orm = await MikroORM.init({
+      entities: [...],
+      // the `dbName` is not used when a dialect is provided, but it's still required
+      dbName: 'd1',
+      driverOptions: new D1Dialect({ database: env.DB }),
+      // required: D1 does not support explicit transactions
+      implicitTransactions: false,
+    });
+
+    // ...
+  },
+};
+```
+
+You can also pass a factory function if you need to create the dialect lazily:
+
+```ts
+MikroORM.init({
+  entities: [...],
+  dbName: 'd1',
+  driverOptions: () => new D1Dialect({ database: env.DB }),
+  implicitTransactions: false,
+});
+```
+
+### D1 Limitations
+
+D1 has significant limitations compared to regular SQLite:
+
+- **No transaction support:** D1 does not support explicit transaction statements (`BEGIN TRANSACTION`). You must set `implicitTransactions: false` for `em.flush()` to work. This means changes are not applied atomically - if an error occurs mid-flush, some changes may be persisted while others are not.
+- **`em.transactional()` will not work:** Since there's no transaction support, wrapping code in `em.transactional()` provides no atomicity guarantees.
+- **No query streaming:** Large result sets cannot be streamed and must be fetched entirely into memory.
+- **Limited `ALTER TABLE`:** No support for `ALTER COLUMN` or `ADD CONSTRAINT`, which affects schema migrations.
+
+See the [D1 SQL documentation](https://developers.cloudflare.com/d1/sql-api/sql-statements/) for more details on supported SQL statements.
+
 ## MS SQL Server limitations
 
 - UUID values are returned in upper case
