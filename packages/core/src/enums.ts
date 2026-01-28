@@ -51,6 +51,7 @@ export enum QueryOperator {
   $hasKey = '?', // postgres only, json
   $hasKeys = '?&', // postgres only, json
   $hasSomeKeys = '?|', // postgres only, json
+  $elemMatch = 'elemMatch', // json array element match
 }
 
 export const ARRAY_OPERATORS = [
@@ -69,6 +70,10 @@ export const JSON_KEY_OPERATORS = [
   '$hasKey',
   '$hasKeys',
   '$hasSomeKeys',
+];
+
+export const JSON_ARRAY_OPERATORS = [
+  '$elemMatch',
 ];
 
 export enum QueryOrder {
