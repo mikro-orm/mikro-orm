@@ -59,6 +59,27 @@ export type IsNever<T, True = true, False = false> = [T] extends [never] ? True 
 export type MaybePromise<T> = T | Promise<T>;
 export type NoInfer<T> = [T][T extends any ? 0 : never];
 
+/**
+ * Structural type for matching Collection without triggering full interface evaluation.
+ * Using `T extends CollectionShape` instead of `T extends Collection<any, any>` avoids
+ * forcing TypeScript to evaluate Collection's 30+ methods, preventing instantiation explosion
+ * (~133k → ~2k instantiations).
+ *
+ * Usage:
+ * - Matching only: `T extends CollectionShape`
+ * - With inference: `T extends CollectionShape<infer U>`
+ */
+type CollectionShape<T = any> = { [k: number]: T; readonly owner: object };
+
+/**
+ * Structural type for matching LoadedCollection (extends CollectionShape with `$` property).
+ *
+ * Usage:
+ * - Matching only: `T extends LoadedCollectionShape`
+ * - With inference: `T extends LoadedCollectionShape<infer U>`
+ */
+type LoadedCollectionShape<T = any> = CollectionShape<T> & { $: any };
+
 // Get all keys from all union members (distributes over union)
 export type UnionKeys<T> = T extends any ? keyof T : never;
 
@@ -355,8 +376,8 @@ export type EntityDataProp<T, C extends boolean> = T extends Date
         ? EntityDataNested<U, C>
         : T extends ScalarReference<infer U>
           ? EntityDataProp<U, C>
-          : T extends Collection<infer U, any>
-            ? U | U[] | EntityDataNested<U, C> | EntityDataNested<U, C>[]
+          : T extends CollectionShape<infer U>
+            ? U | U[] | EntityDataNested<U & object, C> | EntityDataNested<U & object, C>[]
             : T extends readonly (infer U)[]
               ? U extends NonArrayObject
                 ? U | U[] | EntityDataNested<U, C> | EntityDataNested<U, C>[]
@@ -375,8 +396,8 @@ export type RequiredEntityDataProp<T, O, C extends boolean> = T extends Date
           ? RequiredEntityDataNested<U, O, C>
           : T extends ScalarReference<infer U>
             ? RequiredEntityDataProp<U, O, C>
-            : T extends Collection<infer U, any>
-              ? U | U[] | RequiredEntityDataNested<U, O, C> | RequiredEntityDataNested<U, O, C>[]
+            : T extends CollectionShape<infer U>
+              ? U | U[] | RequiredEntityDataNested<U & object, O, C> | RequiredEntityDataNested<U & object, O, C>[]
               : T extends readonly (infer U)[]
                 ? U extends NonArrayObject
                   ? U | U[] | RequiredEntityDataNested<U, O, C> | RequiredEntityDataNested<U, O, C>[]
@@ -401,7 +422,7 @@ type NullableKeys<T, V = null> = { [K in keyof T]: V extends T[K] ? K : never }[
 type RequiredNullableKeys<T> = { [K in keyof T]: Exclude<T[K], null> extends RequiredNullable.Brand ? K : never }[keyof T];
 type ProbablyOptionalProps<T> = PrimaryProperty<T> | ExplicitlyOptionalProps<T> | Exclude<NonNullable<NullableKeys<T, null | undefined>>, RequiredNullableKeys<T>>;
 
-type IsOptional<T, K extends keyof T, I> = T[K] extends Collection<any, any>
+type IsOptional<T, K extends keyof T, I> = T[K] extends CollectionShape
   ? true
   : ExtractType<T[K]> extends I
     ? true
@@ -468,10 +489,10 @@ export type EntityDTOProp<E, T, C extends TypeConfig = never> = T extends Scalar
         ? PrimaryOrObject<E, U, C>
         : T extends ScalarReference<infer U>
           ? U
-          : T extends LoadedCollection<infer U>
-            ? EntityDTO<U, C>[]
-            : T extends Collection<infer U>
-              ? PrimaryOrObject<E, U, C>[]
+          : T extends LoadedCollectionShape<infer U>
+            ? EntityDTO<U & object, C>[]
+            : T extends CollectionShape<infer U>
+              ? PrimaryOrObject<E, U & object, C>[]
               : T extends readonly (infer U)[]
                 ? U extends Scalar
                   ? T
@@ -1156,10 +1177,15 @@ export type PopulateOptions<T> = {
 };
 
 type Loadable<T extends object> = Collection<T, any> | Reference<T> | Ref<T> | readonly T[]; // we need to support raw arrays in embeddables too to allow population
-type ExtractType<T> = T extends Loadable<infer U> ? U : T;
+type ExtractType<T> =
+  T extends CollectionShape<infer U> ? U :
+  T extends Reference<infer U> ? U :
+  T extends Ref<infer U> ? U :
+  T extends readonly (infer U)[] ? U :
+  T;
 
 type ExtractStringKeys<T> = { [K in keyof T]-?: CleanKeys<T, K> }[keyof T] & {};
-type StringKeys<T, E extends string = never> = T extends Collection<any, any>
+type StringKeys<T, E extends string = never> = T extends CollectionShape
   ? ExtractStringKeys<ExtractType<T>> | E
   : T extends Reference<any>
     ? ExtractStringKeys<ExtractType<T>> | E
@@ -1174,7 +1200,7 @@ type Prev = [never, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
 // for pivot joining via populate hint, e.g. `tags:ref`
 type CollectionKeys<T> = T extends object
   ? {
-    [K in keyof T]-?: T[K] extends Collection<any>
+    [K in keyof T]-?: T[K] extends CollectionShape
       ? IsAny<T[K]> extends true
         ? never
         : K & string
@@ -1206,14 +1232,14 @@ export type ArrayElement<ArrayType extends unknown[]> = ArrayType extends (infer
 
 export type ExpandProperty<T> = T extends Reference<infer U>
   ? NonNullable<U>
-  : T extends Collection<infer U, any>
+  : T extends CollectionShape<infer U>
     ? NonNullable<U>
     : T extends (infer U)[]
       ? NonNullable<U>
       : NonNullable<T>;
 
 type LoadedLoadable<T, E extends object> =
-  T extends Collection<any, any>
+  T extends CollectionShape
   ? LoadedCollection<E>
   : T extends Reference<any>
     ? T & LoadedReference<E> // intersect with T (which is `Ref`) to include the PK props
