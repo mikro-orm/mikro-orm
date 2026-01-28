@@ -51,6 +51,7 @@
     "test:sqlite": "vitest --run **/*.sqlite.test.ts **/*.win.test.ts",
     "test:fast": "vitest --run --exclude='tests/features/schema-generator'",
     "bench": "tsx tests/bench/basic.bench.ts",
+    "bench:types": "bash -c 'for f in tests/bench/types/*.ts; do node --import=tsx \"$f\" || exit 1; done'",
     "clean-tests": "rimraf temp tests/generated-entities",
     "tsc-check-tests": "tsc --noEmit --project tests/tsconfig.json",
     "coverage": "yarn clean-tests && yarn test --coverage",
