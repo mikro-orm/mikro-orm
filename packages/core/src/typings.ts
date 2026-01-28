@@ -1221,8 +1221,10 @@ type LoadedLoadable<T, E extends object> =
       ? LoadedScalarReference<U>
       : T extends Scalar
         ? T
-        : T extends any[]
-          ? E[]
+        : T extends (infer U)[]
+          ? U extends Scalar
+            ? T // preserve scalar arrays (e.g., string[]) without Loaded<> wrapping
+            : E[]
           : E;
 
 type IsTrue<T> = IsNever<T> extends true

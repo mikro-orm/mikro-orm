@@ -13,6 +13,7 @@ import {
   InferEntity,
   InferEntityFromProperties,
   IType,
+  Loaded,
   Opt,
   Primary,
   PrimaryKeyProp,
@@ -822,6 +823,38 @@ describe('defineEntity', () => {
     });
 
     expect(Foo.meta).toEqual(asSnapshot(FooSchema.meta));
+  });
+
+  it('should preserve scalar array types in Loaded<>', () => {
+    const Bar = defineEntity({
+      name: 'Bar',
+      properties: p => ({
+        id: p.integer().primary().autoincrement(),
+        barcodes: p.array(String),
+        paymentMethods: p.enum(['CASH', 'CARD', 'CRYPTO'] as const).array(),
+        numbers: p.array(Number),
+        tags: p.array(),
+      }),
+    });
+
+    type IBar = InferEntity<typeof Bar>;
+    type LoadedBar = Loaded<IBar>;
+
+    // Verify InferEntity gives correct types
+    assert<IsExact<IBar, {
+      id: Opt<number>;
+      barcodes: string[];
+      paymentMethods: ('CASH' | 'CARD' | 'CRYPTO')[];
+      numbers: number[];
+      tags: string[];
+      [PrimaryKeyProp]?: 'id';
+    }>>(true);
+
+    // Verify Loaded<> preserves scalar array types without wrapping elements
+    assert<IsExact<LoadedBar['barcodes'], string[]>>(true);
+    assert<IsExact<LoadedBar['numbers'], number[]>>(true);
+    assert<IsExact<LoadedBar['tags'], string[]>>(true);
+    assert<IsExact<LoadedBar['paymentMethods'], ('CASH' | 'CARD' | 'CRYPTO')[]>>(true);
   });
 
   it('should define entity with decimal property', () => {
