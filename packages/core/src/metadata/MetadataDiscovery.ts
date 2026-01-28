@@ -168,6 +168,7 @@ export class MetadataDiscovery {
     };
 
     forEachProp((m, p) => this.initFactoryField(m, p));
+    forEachProp((m, p) => this.initPolymorphicRelation(m, p, filtered));
     forEachProp((_m, p) => this.initRelation(p));
     forEachProp((m, p) => this.initEmbeddables(m, p));
     forEachProp((_m, p) => this.initFieldName(p));
@@ -384,6 +385,12 @@ export class MetadataDiscovery {
 
   private discoverEntity<T>(schema: EntitySchema<T>): void {
     const meta = schema.meta;
+
+    // Normalize discriminator alias to discriminatorColumn
+    if ('discriminator' in meta && !meta.discriminatorColumn) {
+      meta.discriminatorColumn = meta.discriminator as string;
+    }
+
     const path = meta.path;
     this.logger.log('discovery', `- processing entity ${colors.cyan(meta.className)}${colors.grey(path ? ` (${path})` : '')}`);
     const root = this.getRootEntity(meta);
@@ -449,6 +456,13 @@ export class MetadataDiscovery {
         continue;
       }
 
+      // For polymorphic relations, ownColumns should include all fieldNames
+      // (discriminator + ID columns) since they are all owned by this relation
+      if (prop.polymorphic) {
+        prop.ownColumns = prop.fieldNames;
+        continue;
+      }
+
       if (prop.joinColumns.length > 1) {
         prop.ownColumns = prop.joinColumns.filter(col => {
           return !meta.props.find(p => p.name !== prop.name && (!p.fieldNames || p.fieldNames.includes(col)));
@@ -486,6 +500,10 @@ export class MetadataDiscovery {
     if (prop.kind === ReferenceKind.SCALAR || prop.kind === ReferenceKind.EMBEDDED) {
       prop.fieldNames = [this.namingStrategy.propertyToColumnName(prop.name, object)];
     } else if ([ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind)) {
+      // Skip for polymorphic relations - they are handled in initPolymorphicManyToOneFields
+      if (prop.polymorphic) {
+        return;
+      }
       prop.fieldNames = this.initManyToOneFieldName(prop, prop.name);
     } else if (prop.kind === ReferenceKind.MANY_TO_MANY && prop.owner) {
       prop.fieldNames = this.initManyToManyFieldName(prop, prop.name);
@@ -550,12 +568,25 @@ export class MetadataDiscovery {
       prop.fixedOrderColumn = prop2.fixedOrderColumn;
       prop.joinColumns = prop2.inverseJoinColumns;
       prop.inverseJoinColumns = prop2.joinColumns;
+      // Copy polymorphic settings from owning side
+      prop.polymorphic = prop2.polymorphic;
+      prop.discriminatorColumn = prop2.discriminatorColumn;
+      prop.discriminatorValue = prop2.discriminatorValue;
     }
 
     prop.referencedColumnNames ??= Utils.flatten(meta.primaryKeys.map(primaryKey => meta.properties[primaryKey].fieldNames));
-    const ownerTableName = this.isExplicitTableName(meta.root) ? meta.root.tableName : undefined;
+
+    // For polymorphic M:N, use discriminator base name for FK column (e.g., taggable_id instead of post_id)
+    if (prop.polymorphic && prop.discriminator) {
+      prop.joinColumns = prop.referencedColumnNames.map(referencedColumnName =>
+        this.namingStrategy.joinKeyColumnName(prop.discriminator!, referencedColumnName, prop.referencedColumnNames!.length > 1),
+      );
+    } else {
+      const ownerTableName = this.isExplicitTableName(meta.root) ? meta.root.tableName : undefined;
+      prop.joinColumns ??= prop.referencedColumnNames.map(referencedColumnName => this.namingStrategy.joinKeyColumnName(meta.root.className, referencedColumnName, meta.compositePK, ownerTableName));
+    }
+
     const inverseTableName = this.isExplicitTableName(meta2.root) ? meta2.root.tableName : undefined;
-    prop.joinColumns ??= prop.referencedColumnNames.map(referencedColumnName => this.namingStrategy.joinKeyColumnName(meta.root.className, referencedColumnName, meta.compositePK, ownerTableName));
     prop.inverseJoinColumns ??= this.initManyToOneFieldName(prop, meta2.root.className, inverseTableName);
   }
 
@@ -564,6 +595,12 @@ export class MetadataDiscovery {
   }
 
   private initManyToOneFields(prop: EntityProperty): void {
+    // Handle polymorphic relations differently
+    if (prop.polymorphic && prop.polymorphTargets && prop.polymorphTargets.length > 0) {
+      this.initPolymorphicManyToOneFields(prop);
+      return;
+    }
+
     const meta2 = prop.targetMeta!;
     let fieldNames: string[];
 
@@ -595,6 +632,67 @@ export class MetadataDiscovery {
     // entity is deleted, set the FK to null rather than failing
     if (prop.nullable) {
       prop.deleteRule ??= 'set null';
+    }
+  }
+
+  private initPolymorphicManyToOneFields(prop: EntityProperty): void {
+    const targets = prop.polymorphTargets!;
+
+    // For polymorphic relations, we use the first target's PK structure as reference
+    // (all targets should have compatible PK types for this to work)
+    const firstTarget = targets[0];
+    const fieldNames = Utils.flatten(firstTarget.primaryKeys.map(pk => firstTarget.properties[pk].fieldNames));
+
+    const discriminatorColumn = prop.discriminatorColumn!;
+    const idColumns = fieldNames.map(fieldName => this.namingStrategy.joinKeyColumnName(prop.discriminator!, fieldName, fieldNames.length > 1));
+
+    // Field names include both discriminator and ID columns
+    if (!prop.fieldNames || prop.fieldNames.length === 0) {
+      prop.fieldNames = [discriminatorColumn, ...idColumns];
+    }
+
+    if (!prop.joinColumns) {
+      prop.joinColumns = idColumns;
+    }
+
+    // For polymorphic relations, referencedColumnNames refers to the PK columns of target entities
+    if (!prop.referencedColumnNames) {
+      prop.referencedColumnNames = fieldNames;
+    }
+
+    // No single referenced table - this is polymorphic
+    // We'll use the first target's table as a placeholder, but FK constraints are disabled
+    prop.referencedTableName ??= firstTarget.tableName;
+  }
+
+  private initPolymorphicColumnTypes(prop: EntityProperty): void {
+    const targets = prop.polymorphTargets!;
+    const firstTarget = targets[0];
+
+    // Column types for polymorphic relations:
+    // 1. Discriminator column - varchar/string for storing the entity type
+    // 2. ID column(s) - same type as the target entity's primary key
+
+    prop.columnTypes = [];
+
+    // Discriminator column type - use varchar
+    const discriminatorType = this.platform.getVarcharTypeDeclarationSQL({ length: 255 });
+    prop.columnTypes.push(discriminatorType);
+
+    // ID column types - based on first target's PK (all targets should have compatible PKs)
+    const pkProps = firstTarget.getPrimaryProps();
+    for (const pkProp of pkProps) {
+      this.initCustomType(firstTarget, pkProp);
+      this.initColumnType(pkProp);
+
+      const mappedType = this.getMappedType(pkProp);
+      let columnTypes = pkProp.columnTypes;
+
+      if (pkProp.autoincrement) {
+        columnTypes = [mappedType.getColumnType({ ...pkProp, autoincrement: false }, this.platform)];
+      }
+
+      prop.columnTypes.push(...columnTypes);
     }
   }
 
@@ -749,7 +847,12 @@ export class MetadataDiscovery {
 
     if (pivotMeta) {
       prop.pivotEntity = pivotMeta.class;
-      this.ensureCorrectFKOrderInPivotEntity(pivotMeta, prop);
+      // For polymorphic M:N with shared pivot table, add this entity's discriminator value to existing map
+      if (prop.polymorphic && prop.discriminatorColumn) {
+        this.addPolymorphicDiscriminatorToPivot(pivotMeta, meta, prop);
+      } else {
+        this.ensureCorrectFKOrderInPivotEntity(pivotMeta, prop);
+      }
       return pivotMeta;
     }
 
@@ -802,10 +905,88 @@ export class MetadataDiscovery {
       }
     }
 
-    pivotMeta2.properties[meta.name + '_owner'] = this.definePivotProperty(prop, meta.name + '_owner', meta.class, targetType + '_inverse', true, meta.className === targetType);
-    pivotMeta2.properties[targetType + '_inverse'] = this.definePivotProperty(prop, targetType + '_inverse', targetMeta.class, meta.name + '_owner', false, meta.className === targetType);
+    // For polymorphic M:N, create discriminator column and polymorphic FK
+    if (prop.polymorphic && prop.discriminatorColumn) {
+      this.definePolymorphicPivotProperties(pivotMeta2, meta, prop, targetMeta);
+    } else {
+      pivotMeta2.properties[meta.name + '_owner'] = this.definePivotProperty(prop, meta.name + '_owner', meta.class, targetType + '_inverse', true, meta.className === targetType);
+      pivotMeta2.properties[targetType + '_inverse'] = this.definePivotProperty(prop, targetType + '_inverse', targetMeta.class, meta.name + '_owner', false, meta.className === targetType);
+    }
 
     return this.metadata.set(pivotMeta2.class, EntitySchema.fromMetadata(pivotMeta2).init().meta);
+  }
+
+  /**
+   * Define properties for a polymorphic pivot table.
+   * This creates a discriminator column and polymorphic FK columns.
+   */
+  private definePolymorphicPivotProperties(
+    pivotMeta: EntityMetadata,
+    meta: EntityMetadata,
+    prop: EntityProperty,
+    targetMeta: EntityMetadata,
+  ): void {
+    const discriminatorColumn = prop.discriminatorColumn!;
+    const discriminatorValue = prop.discriminatorValue!;
+
+    // Create discriminator scalar property (part of PK)
+    const discriminatorProp: EntityProperty = {
+      name: discriminatorColumn,
+      fieldNames: [discriminatorColumn],
+      columnTypes: [this.platform.getVarcharTypeDeclarationSQL({ length: 255 })],
+      type: 'string',
+      kind: ReferenceKind.SCALAR,
+      primary: true,
+      nullable: false,
+    } as EntityProperty;
+    this.initFieldName(discriminatorProp);
+    pivotMeta.properties[discriminatorColumn] = discriminatorProp;
+
+    // Create polymorphic FK columns (part of PK, no FK constraint)
+    // These point to the owner entity (Post, Video, etc.)
+    const ownerPropName = 'owner';  // Generic name since it can be any of the polymorphic types
+
+    // Get column types from owner entity's PKs
+    const columnTypes: string[] = [];
+    for (const pk of meta.primaryKeys) {
+      const pkProp = meta.properties[pk];
+      this.initCustomType(meta, pkProp);
+      this.initColumnType(pkProp);
+      columnTypes.push(...pkProp.columnTypes);
+    }
+
+    const ownerProp = {
+      name: ownerPropName,
+      fieldNames: [...prop.joinColumns],
+      columnTypes,
+      type: meta.className,
+      kind: ReferenceKind.SCALAR,  // Treat as scalar since it's polymorphic
+      primary: true,
+      nullable: false,
+    } as EntityProperty;
+
+    pivotMeta.properties[ownerPropName] = ownerProp;
+
+    // Create FK to target entity (Tag) - this can have FK constraint
+    const targetType = targetMeta.className;
+    const inverseProp = this.definePivotProperty(prop, targetType + '_inverse', targetMeta.class, ownerPropName, false, false);
+    pivotMeta.properties[targetType + '_inverse'] = inverseProp;
+
+    // Store discriminator map on pivot table for later use
+    pivotMeta.polymorphicDiscriminatorMap ??= {};
+    pivotMeta.polymorphicDiscriminatorMap[discriminatorValue] = meta.class;
+  }
+
+  /**
+   * Add a new entity type to an existing polymorphic pivot table.
+   */
+  private addPolymorphicDiscriminatorToPivot(
+    pivotMeta: EntityMetadata,
+    meta: EntityMetadata,
+    prop: EntityProperty,
+  ): void {
+    pivotMeta.polymorphicDiscriminatorMap ??= {};
+    pivotMeta.polymorphicDiscriminatorMap[prop.discriminatorValue!] = meta.class;
   }
 
   private defineFixedOrderProperty(prop: EntityProperty, targetMeta: EntityMetadata): EntityProperty {
@@ -1014,6 +1195,57 @@ export class MetadataDiscovery {
       embeddable.sync();
       discovered.push(embeddable);
       polymorphs.forEach(meta => meta.root = embeddable!);
+    }
+  }
+
+  private initPolymorphicRelation(meta: EntityMetadata, prop: EntityProperty, discovered: EntityMetadata[]): void {
+    if (!prop.discriminator && !prop.discriminatorColumn && !prop.discriminatorMap && !Array.isArray(prop.target)) {
+      return;
+    }
+
+    prop.polymorphic = true;
+    prop.discriminator ??= prop.name;
+    prop.discriminatorColumn ??= this.namingStrategy.discriminatorColumnName(prop.discriminator);
+    prop.createForeignKeyConstraint = false;
+
+    const isToOne = [ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind);
+
+    if (isToOne) {
+      const types = prop.type.split(/ ?\| ?/);
+      prop.polymorphTargets = discovered.filter(m => types.includes(m.className) && !m.embeddable);
+      prop.targetMeta = prop.polymorphTargets[0];
+      prop.referencedPKs = prop.targetMeta?.primaryKeys;
+    }
+
+    if (prop.discriminatorMap) {
+      const normalizedMap: Dictionary<EntityClass> = {};
+
+      for (const [key, value] of Object.entries(prop.discriminatorMap as unknown as Dictionary<string>)) {
+        const targetMeta = this.metadata.getByClassName(value, false);
+
+        if (!targetMeta) {
+          throw MetadataError.fromUnknownEntity(value, `${meta.className}.${prop.name} discriminatorMap`);
+        }
+
+        normalizedMap[key] = targetMeta.class;
+
+        if (targetMeta.class === meta.class) {
+          prop.discriminatorValue = key;
+        }
+      }
+
+      prop.discriminatorMap = normalizedMap;
+    } else if (isToOne) {
+      prop.discriminatorMap = {};
+      for (const target of prop.polymorphTargets!) {
+        prop.discriminatorMap[target.tableName] = target.class;
+      }
+    } else {
+      prop.discriminatorValue ??= meta.tableName;
+
+      if (!prop.discriminatorMap) {
+        prop.discriminatorMap = { [prop.discriminatorValue]: meta.class };
+      }
     }
   }
 
@@ -1502,7 +1734,7 @@ export class MetadataDiscovery {
       prop.type = prop.customType.name;
     }
 
-    if (!prop.customType && [ReferenceKind.ONE_TO_ONE, ReferenceKind.MANY_TO_ONE].includes(prop.kind) && prop.targetMeta!.compositePK) {
+    if (!prop.customType && [ReferenceKind.ONE_TO_ONE, ReferenceKind.MANY_TO_ONE].includes(prop.kind) && !prop.polymorphic && prop.targetMeta!.compositePK) {
       prop.customTypes = [];
 
       for (const pk of prop.targetMeta!.getPrimaryProps()) {
@@ -1533,7 +1765,7 @@ export class MetadataDiscovery {
   }
 
   private initRelation(prop: EntityProperty): void {
-    if (prop.kind === ReferenceKind.SCALAR) {
+    if (prop.kind === ReferenceKind.SCALAR || prop.polymorphTargets) {
       return;
     }
 
@@ -1599,6 +1831,12 @@ export class MetadataDiscovery {
     /* v8 ignore next */
     if (prop.kind === ReferenceKind.EMBEDDED && prop.object) {
       prop.columnTypes = [this.platform.getJsonDeclarationSQL()];
+      return;
+    }
+
+    // Handle polymorphic relations - they have multiple targets and special column structure
+    if (prop.polymorphic && prop.polymorphTargets && prop.polymorphTargets.length > 0) {
+      this.initPolymorphicColumnTypes(prop);
       return;
     }
 
@@ -1671,9 +1909,19 @@ export class MetadataDiscovery {
       return;
     }
 
-    if ([ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind)) {
+    if ([ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind) && !prop.polymorphic) {
       const meta2 = prop.targetMeta!;
       prop.unsigned = meta2.getPrimaryProps().some(pk => {
+        this.initUnsigned(pk);
+        return pk.unsigned;
+      });
+      return;
+    }
+
+    // For polymorphic relations, check if first target's PKs are unsigned
+    if ([ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind) && prop.polymorphic && prop.polymorphTargets?.length) {
+      const firstTarget = prop.polymorphTargets[0];
+      prop.unsigned = firstTarget.getPrimaryProps().some(pk => {
         this.initUnsigned(pk);
         return pk.unsigned;
       });

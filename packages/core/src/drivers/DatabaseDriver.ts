@@ -16,6 +16,7 @@ import type {
   ConnectionType,
   Constructor,
   Dictionary,
+  EntityClass,
   EntityData,
   EntityDictionary,
   EntityKey,
@@ -41,6 +42,7 @@ import { EntityManager } from '../EntityManager.js';
 import { CursorError, ValidationError } from '../errors.js';
 import { DriverException } from '../exceptions.js';
 import { helper } from '../entity/wrap.js';
+import { PolymorphicRef } from '../entity/PolymorphicRef.js';
 import type { Logger } from '../logging/Logger.js';
 import { JsonType } from '../types/JsonType.js';
 import { MikroORM } from '../MikroORM.js';
@@ -379,6 +381,36 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
       if (prop.joinColumns?.length > 1 && data[k] == null) {
         delete data[k];
         prop.ownColumns.forEach(joinColumn => data[joinColumn] = null);
+
+        return;
+      }
+
+      // Handle polymorphic relations - convert PolymorphicRef to separate columns
+      if (prop.polymorphic && prop.fieldNames && prop.fieldNames.length >= 2 && PolymorphicRef.is(data[k])) {
+        const polyValue = data[k];
+        const discriminatorColumn = prop.fieldNames[0];
+        const idColumns = prop.fieldNames.slice(1);
+
+        delete data[k];
+        data[discriminatorColumn] = polyValue.discriminator;
+
+        // Handle composite PKs: id may be an object { tenantId: 1, orgId: 100 }
+        let ids: unknown[];
+        if (polyValue.id && typeof polyValue.id === 'object' && !Array.isArray(polyValue.id)) {
+          // Composite PK - extract values in order of target entity's primary keys
+          const pkObj = polyValue.id as Record<string, unknown>;
+          const targetEntity = prop.discriminatorMap?.[polyValue.discriminator];
+          const targetMeta = targetEntity ? this.metadata.find(targetEntity as EntityClass) : undefined;
+          ids = targetMeta
+            ? targetMeta.primaryKeys.map(pk => pkObj[pk])
+            : Object.values(pkObj);
+        } else {
+          ids = Utils.asArray(polyValue.id);
+        }
+
+        idColumns.forEach((col, idx) => {
+          data[col] = ids[idx];
+        });
 
         return;
       }

@@ -225,6 +225,10 @@ export class EntityLoader {
       return Utils.flatten(res);
     }
 
+    if (prop.polymorphic && prop.polymorphTargets) {
+      return this.populatePolymorphic<Entity>(entities, prop, options, !!ref);
+    }
+
     const { items, partial } = await this.findChildren<Entity>((options as Dictionary).filtered ?? entities, prop, populate, {
       ...options,
       where,
@@ -246,6 +250,116 @@ export class EntityLoader {
       fields: fields as never[],
       populate: [],
     });
+  }
+
+  private async populatePolymorphic<Entity extends object>(entities: Entity[], prop: EntityProperty<Entity>, options: Required<EntityLoaderOptions<Entity>>, ref: boolean): Promise<AnyEntity[]> {
+    const discriminatorMap = prop.discriminatorMap!;
+    const allItems: AnyEntity[] = [];
+    const groups = new Map<string, { entity: Entity; targetId: Primary<any> }[]>();
+
+    // Filter entities that need population
+    const toPopulate: Entity[] = [];
+    const needsFkLoad: Entity[] = [];
+
+    for (const entity of entities) {
+      const refValue = entity[prop.name as keyof Entity] as object | undefined;
+
+      // If we have a reference with PK already set
+      if (refValue && helper(refValue).hasPrimaryKey()) {
+        // For :ref hint, we already have what we need - skip loading
+        if (ref && !options.refresh) {
+          continue;
+        }
+        // For full populate, check if already initialized
+        if (!ref && helper(refValue).__initialized && !options.refresh) {
+          continue;
+        }
+        toPopulate.push(entity);
+      } else if (refValue === undefined || refValue === null) {
+        // FK not loaded (lazy relation or partial loading)
+        // Need to load FK columns from owner first
+        needsFkLoad.push(entity);
+      }
+    }
+
+    // If there are entities that need FK loaded first, load them from the owner table
+    if (needsFkLoad.length > 0) {
+      const ownerMeta = this.metadata.find(entities[0].constructor as any)!;
+      const pk = Utils.getPrimaryKeyHash(ownerMeta.primaryKeys) as FilterKey<Entity>;
+      const ids = Utils.unique(needsFkLoad.map(e => Utils.getPrimaryKeyValues(e, ownerMeta, true)));
+      const where = this.mergePrimaryCondition<Entity>(ids as Entity[], pk, options, ownerMeta, this.metadata, this.driver.getPlatform());
+
+      // Load only the FK property for the polymorphic relation (prop.name, not fieldNames)
+      // This loads the discriminator + FK columns and hydrates the reference
+      await this.em.find(ownerMeta.class, where, {
+        filters: options.filters,
+        convertCustomTypes: options.convertCustomTypes,
+        connectionType: options.connectionType,
+        logging: options.logging,
+        fields: [...ownerMeta.primaryKeys as any[], prop.name as any],
+        populate: [],
+      });
+
+      // After loading FKs, add to toPopulate if not using :ref hint
+      if (!ref) {
+        for (const entity of needsFkLoad) {
+          const refValue = entity[prop.name as keyof Entity] as object | undefined;
+          if (refValue && helper(refValue).hasPrimaryKey()) {
+            toPopulate.push(entity);
+          }
+        }
+      }
+    }
+
+    // If :ref hint is used and all entities already have references, we're done
+    if (toPopulate.length === 0) {
+      return allItems;
+    }
+
+    // Group entities by discriminator for batch loading
+    for (const entity of toPopulate) {
+      const refValue = entity[prop.name as keyof Entity] as object;
+      const refMeta = helper(refValue).__meta;
+      const discriminatorEntry = Object.entries(discriminatorMap).find(([, cls]) => cls === refMeta.class);
+      const discriminatorValue = discriminatorEntry![0];
+      const targetId = helper(refValue).getPrimaryKey()!;
+
+      if (!groups.has(discriminatorValue)) {
+        groups.set(discriminatorValue, []);
+      }
+
+      groups.get(discriminatorValue)!.push({ entity, targetId });
+    }
+
+    for (const [discriminatorValue, entries] of groups) {
+      const targetClass = discriminatorMap[discriminatorValue];
+      const targetMeta = this.metadata.find(targetClass)!;
+      const pk = Utils.getPrimaryKeyHash(targetMeta.primaryKeys) as FilterKey<Entity>;
+      const uniqueIds = Utils.unique(entries.map(e => e.targetId));
+      const where = this.mergePrimaryCondition<Entity>(uniqueIds as Entity[], pk, options, targetMeta, this.metadata, this.driver.getPlatform());
+      const { filters, convertCustomTypes, lockMode, strategy, populateWhere, connectionType, logging } = options;
+
+      const items = await this.em.find(targetClass as any, where, {
+        filters, convertCustomTypes, lockMode, strategy, populateWhere, connectionType, logging,
+        populate: [],
+      });
+
+      const itemMap = new Map<string, AnyEntity>();
+      for (const item of items) {
+        itemMap.set(helper(item).getSerializedPrimaryKey(), item as AnyEntity);
+      }
+
+      for (const { entity, targetId } of entries) {
+        const item = itemMap.get(String(targetId));
+
+        if (item) {
+          entity[prop.name as keyof Entity] = Reference.wrapReference(item, prop);
+          allItems.push(item);
+        }
+      }
+    }
+
+    return allItems;
   }
 
   private initializeCollections<Entity extends object>(filtered: Entity[], prop: EntityProperty, field: keyof Entity, children: AnyEntity[], customOrder: boolean, partial: boolean): void {
@@ -306,12 +420,21 @@ export class EntityLoader {
     const children = Utils.unique(this.getChildReferences<Entity>(entities, prop, options, ref));
     const meta = prop.targetMeta!;
     // When targetKey is set, use it for FK lookup instead of the PK
-    let fk = prop.targetKey ?? Utils.getPrimaryKeyHash(meta.primaryKeys);
+    let fk: string | string[] = prop.targetKey ?? Utils.getPrimaryKeyHash(meta.primaryKeys);
     let schema: string | undefined = options.schema;
     const partial = !Utils.isEmpty(prop.where) || !Utils.isEmpty(options.where);
+    let polymorphicOwnerProp: EntityProperty | undefined;
 
     if (prop.kind === ReferenceKind.ONE_TO_MANY || (prop.kind === ReferenceKind.MANY_TO_MANY && !prop.owner)) {
-      fk = meta.properties[prop.mappedBy].name;
+      const ownerProp = meta.properties[prop.mappedBy];
+
+      if (ownerProp.polymorphic && ownerProp.fieldNames.length >= 2) {
+        const idColumns = ownerProp.fieldNames.slice(1);
+        fk = idColumns.length === 1 ? idColumns[0] : idColumns;
+        polymorphicOwnerProp = ownerProp;
+      } else {
+        fk = ownerProp.name;
+      }
     }
 
     if (prop.kind === ReferenceKind.ONE_TO_ONE && !prop.owner && !ref) {
@@ -328,9 +451,28 @@ export class EntityLoader {
       schema = children.find(e => e.__helper!.__schema)?.__helper!.__schema;
     }
 
-    // When targetKey is set, get the targetKey value instead of PK
     const ids = Utils.unique(children.map(e => prop.targetKey ? e[prop.targetKey] : e.__helper.getPrimaryKey()));
-    let where = this.mergePrimaryCondition<Entity>(ids, fk as FilterKey<Entity>, options, meta, this.metadata, this.driver.getPlatform());
+    let where: FilterQuery<Entity>;
+
+    if (polymorphicOwnerProp && Array.isArray(fk)) {
+      const conditions = ids.map(id => {
+        const pkValues = Object.values(id as Record<string, unknown>);
+        return Object.fromEntries((fk as string[]).map((col, idx) => [col, pkValues[idx]]));
+      });
+      where = (conditions.length === 1 ? conditions[0] : { $or: conditions }) as FilterQuery<Entity>;
+    } else {
+      where = this.mergePrimaryCondition<Entity>(ids, fk as FilterKey<Entity>, options, meta, this.metadata, this.driver.getPlatform());
+    }
+
+    if (polymorphicOwnerProp) {
+      const parentMeta = this.metadata.find(entities[0].constructor)!;
+      const discriminatorMap = polymorphicOwnerProp.discriminatorMap!;
+      const discriminatorEntry = Object.entries(discriminatorMap).find(([, cls]) => cls === parentMeta.class);
+      const discriminatorValue = discriminatorEntry?.[0] ?? parentMeta.tableName;
+      const discriminatorColumn = polymorphicOwnerProp.fieldNames[0];
+      where = { $and: [where, { [discriminatorColumn]: discriminatorValue }] } as FilterQuery<Entity>;
+    }
+
     const fields = this.buildFields(options.fields, prop, ref) as any;
 
     /* eslint-disable prefer-const */
@@ -498,31 +640,43 @@ export class EntityLoader {
       visited.add(entity);
     }
 
-    // skip lazy scalar properties
-    if (!prop.targetMeta) {
+    if (!prop.targetMeta && !prop.polymorphic) {
       return;
     }
 
-    await this.populate<Entity>(prop.targetMeta!.class, unique, populate.children ?? populate.all as any, {
-      where: await this.extractChildCondition(options, prop, false) as FilterQuery<Entity>,
-      orderBy: innerOrderBy as QueryOrderMap<Entity>[],
-      fields,
-      exclude,
-      validate: false,
-      lookup: false,
-      filters,
-      ignoreLazyScalarProperties,
-      populateWhere,
-      connectionType,
-      logging,
-      schema,
-      // @ts-ignore not a public option, will be propagated to the populate call
-      refresh: refresh && !filtered.every(item => options.visited.has(item)),
-      // @ts-ignore not a public option, will be propagated to the populate call
-      visited: options.visited,
-      // @ts-ignore not a public option
-      filtered,
-    });
+    const populateChildren = async (targetMeta: EntityMetadata, items: Entity[]) => {
+      await this.populate<Entity>(targetMeta.class, items, populate.children ?? populate.all as any, {
+        where: await this.extractChildCondition(options, prop, false) as FilterQuery<Entity>,
+        orderBy: innerOrderBy as QueryOrderMap<Entity>[],
+        fields,
+        exclude,
+        validate: false,
+        lookup: false,
+        filters,
+        ignoreLazyScalarProperties,
+        populateWhere,
+        connectionType,
+        logging,
+        schema,
+        // @ts-ignore not a public option, will be propagated to the populate call
+        refresh: refresh && !filtered.every(item => options.visited.has(item)),
+        // @ts-ignore not a public option, will be propagated to the populate call
+        visited: options.visited,
+        // @ts-ignore not a public option
+        filtered,
+      });
+    };
+
+    if (prop.polymorphic && prop.polymorphTargets) {
+      for (const targetMeta of prop.polymorphTargets) {
+        const targetChildren = unique.filter(child => helper(child).__meta.className === targetMeta.className);
+        if (targetChildren.length > 0) {
+          await populateChildren(targetMeta, targetChildren);
+        }
+      }
+    } else {
+      await populateChildren(prop.targetMeta!, unique);
+    }
   }
 
   /** @internal */
@@ -532,7 +686,8 @@ export class EntityLoader {
     let where = await this.extractChildCondition(options, prop, true);
     const fields = this.buildFields(options.fields, prop);
     const exclude = Array.isArray(options.exclude) ? Utils.extractChildElements(options.exclude, prop.name) : options.exclude;
-    const options2 = { ...options } as unknown as FindOptions<Entity, any, any, any>;
+    const populateFilter = (options as Dictionary).populateFilter?.[prop.name];
+    const options2 = { ...options, populateFilter } as unknown as FindOptions<Entity, any, any, any>;
     delete options2.limit;
     delete options2.offset;
     options2.fields = fields;
@@ -577,6 +732,11 @@ export class EntityLoader {
   private async extractChildCondition<Entity>(options: Required<EntityLoaderOptions<Entity>>, prop: EntityProperty<Entity>, filters = false) {
     const where = options.where as Dictionary;
     const subCond = Utils.isPlainObject(where[prop.name]) ? where[prop.name] : {};
+
+    if (prop.polymorphic) {
+      return subCond;
+    }
+
     const meta2 = prop.targetMeta!;
     const pk = Utils.getPrimaryKeyHash(meta2.primaryKeys);
 
@@ -790,6 +950,10 @@ export class EntityLoader {
 
     meta.relations
       .filter(prop => {
+        if (prop.polymorphic) {
+          return false;
+        }
+
         const field = this.getRelationName(meta, prop);
         const prefixed = prefix ? `${prefix}.${field}` : field;
         const isExcluded = exclude?.includes(prefixed);

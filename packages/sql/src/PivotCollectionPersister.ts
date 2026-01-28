@@ -110,31 +110,54 @@ export class PivotCollectionPersister<Entity extends object> {
   }
 
   private createInsertStatement(prop: EntityProperty<Entity>, fks: Primary<Entity>[], pks: Primary<Entity>[]) {
-    const data = prop.owner ? [...fks, ...pks] : [...pks, ...fks];
-    const keys = prop.owner
-      ? [...prop.inverseJoinColumns, ...prop.joinColumns]
-      : [...prop.joinColumns, ...prop.inverseJoinColumns];
-
+    const { data, keys } = this.buildPivotKeysAndData(prop, fks, pks);
     return new InsertStatement(keys, data, this.order++);
   }
 
   private enqueueDelete(prop: EntityProperty<Entity>, deleteDiff: Primary<Entity>[][] | true, pks: Primary<Entity>[]) {
     if (deleteDiff === true) {
-      const statement = new DeleteStatement(prop.joinColumns as EntityKey<Entity>[], pks as FilterQuery<Entity>);
+      const { data, keys } = this.buildPivotKeysAndData(prop, [], pks, true);
+      const statement = new DeleteStatement(keys as EntityKey<Entity>[], data as FilterQuery<Entity>);
       this.deletes.set(statement.getHash(), statement);
-
       return;
     }
 
     for (const fks of deleteDiff) {
-      const data = prop.owner ? [...fks, ...pks] : [...pks, ...fks];
-      const keys = prop.owner
-        ? [...prop.inverseJoinColumns, ...prop.joinColumns]
-        : [...prop.joinColumns, ...prop.inverseJoinColumns];
-
+      const { data, keys } = this.buildPivotKeysAndData(prop, fks, pks);
       const statement = new DeleteStatement(keys as EntityKey<Entity>[], data as FilterQuery<Entity>);
       this.deletes.set(statement.getHash(), statement);
     }
+  }
+
+  /**
+   * Build the keys and data arrays for pivot table operations.
+   * Handles polymorphic M:N by prepending the discriminator column/value.
+   */
+  private buildPivotKeysAndData(
+    prop: EntityProperty<Entity>,
+    fks: Primary<Entity>[],
+    pks: Primary<Entity>[],
+    deleteAll = false,
+  ): { data: Primary<Entity>[]; keys: string[] } {
+    let data: Primary<Entity>[];
+    let keys: string[];
+
+    if (deleteAll) {
+      data = pks;
+      keys = prop.joinColumns;
+    } else {
+      data = prop.owner ? [...fks, ...pks] : [...pks, ...fks];
+      keys = prop.owner
+        ? [...prop.inverseJoinColumns, ...prop.joinColumns]
+        : [...prop.joinColumns, ...prop.inverseJoinColumns];
+    }
+
+    if (prop.polymorphic && prop.discriminatorColumn && prop.discriminatorValue) {
+      data = [prop.discriminatorValue as Primary<Entity>, ...data];
+      keys = [prop.discriminatorColumn, ...keys];
+    }
+
+    return { data, keys };
   }
 
   private collectStatements(statements: Map<string, InsertStatement<Entity>>): EntityData<Entity>[] {

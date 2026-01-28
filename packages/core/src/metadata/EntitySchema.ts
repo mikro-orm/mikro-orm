@@ -33,7 +33,7 @@ import type {
 } from './types.js';
 
 type TypeType = string | NumberConstructor | StringConstructor | BooleanConstructor | DateConstructor | ArrayConstructor | Constructor<Type<any>> | Type<any>;
-type TypeDef<Target> = { type: TypeType } | { entity: () => EntityName<Target> };
+type TypeDef<Target> = { type: TypeType } | { entity: () => EntityName<Target> | EntityName[] };
 type EmbeddedTypeDef<Target> = { type: TypeType } | { entity: () => EntityName<Target> | EntityName[] };
 export type EntitySchemaProperty<Target, Owner> =
   | ({ kind: ReferenceKind.MANY_TO_ONE | 'm:1' } & TypeDef<Target> & ManyToOneOptions<Owner, Target>)
@@ -345,7 +345,7 @@ export class EntitySchema<Entity = any, Base = never, Class extends EntityCtor =
           this.addOneToMany<any>(name, options.type, options);
           break;
         case ReferenceKind.MANY_TO_ONE:
-          this.addManyToOne<any>(name, options.type, options);
+          this.addManyToOne<any>(name, options.type, options as unknown as ManyToOneOptions<any, any>);
           break;
         case ReferenceKind.MANY_TO_MANY:
           this.addManyToMany<any>(name, options.type, options as unknown as ManyToManyOptions<any, any>);

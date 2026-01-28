@@ -98,6 +98,11 @@ export class QueryHelper {
         continue;
       }
 
+      // Skip polymorphic relations as they don't have a single targetMeta
+      if (prop.polymorphic) {
+        continue;
+      }
+
       const op = this.liftGroupOperators(value, prop.targetMeta!, metadata, k);
 
       if (op) {

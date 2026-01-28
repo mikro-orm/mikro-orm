@@ -2,6 +2,7 @@ import type { EntityData, EntityMetadata, EntityName, EntityProperty } from '../
 import { Hydrator } from './Hydrator.js';
 import { Collection } from '../entity/Collection.js';
 import { Reference, ScalarReference } from '../entity/Reference.js';
+import { PolymorphicRef } from '../entity/PolymorphicRef.js';
 import { parseJsonSafe, Utils } from '../utils/Utils.js';
 import { ReferenceKind } from '../enums.js';
 import type { EntityFactory } from '../entity/EntityFactory.js';
@@ -61,6 +62,7 @@ export class ObjectHydrator extends Hydrator {
     context.set('isPrimaryKey', Utils.isPrimaryKey);
     context.set('Collection', Collection);
     context.set('Reference', Reference);
+    context.set('PolymorphicRef', PolymorphicRef);
 
     const registerCustomType = <T>(prop: EntityProperty<T>, convertorKey: string, method: 'convertToDatabaseValue' | 'convertToJSValue', context: Map<string, any>) => {
       context.set(`${method}_${convertorKey}`, (val: any) => {
@@ -168,6 +170,37 @@ export class ObjectHydrator extends Hydrator {
       const nullVal = this.config.get('forceUndefined') ? 'undefined' : 'null';
       ret.push(`  if (data${dataKey} === null) {\n    entity${entityKey} = ${nullVal};`);
       ret.push(`  } else if (typeof data${dataKey} !== 'undefined') {`);
+
+      // Handle polymorphic relations (discriminator + ID structure or entity)
+      if (prop.polymorphic) {
+        const discriminatorMapKey = this.safeKey(`discriminatorMap_${prop.name}_${this.tmpIndex++}`);
+        context.set(discriminatorMapKey, prop.discriminatorMap);
+        context.set('isEntity', Utils.isEntity.bind(Utils));
+
+        // If the value is already an entity (or Reference), just assign it
+        ret.push(`    if (isEntity(data${dataKey}, true)) {`);
+        if (prop.ref) {
+          ret.push(`      entity${entityKey} = Reference.create(data${dataKey});`);
+        } else {
+          ret.push(`      entity${entityKey} = data${dataKey};`);
+        }
+        ret.push(`    } else if (PolymorphicRef.is(data${dataKey})) {`);
+        ret.push(`      const targetClass = ${discriminatorMapKey}[data${dataKey}.discriminator];`);
+        ret.push(`      if (targetClass) {`);
+
+        if (prop.ref) {
+          ret.push(`        entity${entityKey} = Reference.create(factory.createReference(targetClass, data${dataKey}.id, { merge: true, convertCustomTypes, normalizeAccessors, schema }));`);
+        } else {
+          ret.push(`        entity${entityKey} = factory.createReference(targetClass, data${dataKey}.id, { merge: true, convertCustomTypes, normalizeAccessors, schema });`);
+        }
+
+        ret.push(`      }`);
+        ret.push(`    }`);
+        ret.push(`  }`);
+
+        return ret;
+      }
+
       ret.push(`    if (isPrimaryKey(data${dataKey}, true)) {`);
       const targetKey = this.safeKey(`${prop.targetMeta!.tableName}_${this.tmpIndex++}`);
       context.set(targetKey, prop.targetMeta!.class);
