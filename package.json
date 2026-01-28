@@ -113,7 +113,7 @@
     "@mikro-orm/sql-highlighter": "1.0.1",
     "@stylistic/eslint-plugin": "5.7.1",
     "@swc-node/register": "1.11.1",
-    "@swc/core": "1.15.10",
+    "@swc/core": "1.15.11",
     "@types/better-sqlite3": "7.6.13",
     "@types/node": "24.10.9",
     "@types/pg": "8.16.0",
