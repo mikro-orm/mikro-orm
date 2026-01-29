@@ -75,7 +75,7 @@ bench('EntityDTO<Loaded<EntityWithCollection>> - loaded with Collection', () => 
 
 bench('EntityDTO<Loaded<EntityWithCollection, "items">> - loaded with populated Collection', () => {
   useDTO<Loaded<EntityWithCollection, 'items'>>({} as EntityDTO<Loaded<EntityWithCollection, 'items'>>);
-}).types([2380, 'instantiations']);
+}).types([2376, 'instantiations']);
 
 // ============================================
 // Comparison: EntityDTO vs direct Loaded

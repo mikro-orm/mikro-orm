@@ -1949,6 +1949,204 @@ console.log(wrap(author).toJSON()); // { fullName: 'Jon Snow', fullName2: 'Jon S
 
 Starting with MikroORM 4.2, there is no limitation for entity file names. It is now also possible to define multiple entities in a single file using folder based discovery.
 
+## Default entity ordering
+
+You can define a default ordering for an entity using the `orderBy` option in `@Entity()`. This ordering is automatically applied when:
+
+- Querying the entity directly via `em.find()`, `em.findAll()`, etc.
+- Populating the entity as a relation
+
+All applicable orderings are combined together, with higher-priority orderings taking precedence for the same fields.
+
+<Tabs
+groupId="entity-def"
+defaultValue="define-entity"
+values={[
+{label: 'defineEntity', value: 'define-entity'},
+{label: 'reflect-metadata', value: 'reflect-metadata'},
+{label: 'ts-morph', value: 'ts-morph'},
+{label: 'EntitySchema', value: 'entity-schema'},
+]
+}>
+<TabItem value="reflect-metadata">
+
+```ts title="./entities/Comment.ts"
+@Entity({ orderBy: { createdAt: QueryOrder.DESC, id: QueryOrder.DESC } })
+export class Comment {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property()
+  createdAt!: Date;
+
+  @Property()
+  text!: string;
+
+  @ManyToOne(() => Post)
+  post!: Post;
+
+}
+```
+
+  </TabItem>
+  <TabItem value="ts-morph">
+
+```ts title="./entities/Comment.ts"
+@Entity({ orderBy: { createdAt: QueryOrder.DESC, id: QueryOrder.DESC } })
+export class Comment {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property()
+  createdAt!: Date;
+
+  @Property()
+  text!: string;
+
+  @ManyToOne()
+  post!: Post;
+
+}
+```
+
+  </TabItem>
+  <TabItem value="define-entity">
+
+```ts title="./entities/Comment.ts"
+import { defineEntity, p } from '@mikro-orm/core';
+
+export const Comment = defineEntity({
+  name: 'Comment',
+  orderBy: { createdAt: QueryOrder.DESC, id: QueryOrder.DESC },
+  properties: {
+    id: p.number().primary(),
+    createdAt: p.datetime(),
+    text: p.string(),
+    post: () => p.manyToOne(Post),
+  },
+});
+```
+
+  </TabItem>
+  <TabItem value="entity-schema">
+
+```ts title="./entities/Comment.ts"
+export const CommentSchema = new EntitySchema({
+  name: 'Comment',
+  orderBy: { createdAt: QueryOrder.DESC, id: QueryOrder.DESC },
+  properties: {
+    id: { type: 'number', primary: true },
+    createdAt: { type: 'Date' },
+    text: { type: 'string' },
+    post: { kind: 'm:1', entity: () => Post },
+  },
+});
+```
+
+  </TabItem>
+</Tabs>
+
+The ordering precedence (from highest to lowest) is:
+
+1. **Runtime `orderBy`** - Passed to `em.find()`, `collection.init()`, or `collection.matching()`
+2. **Relation-level `orderBy`** - Defined on `@OneToMany()` or `@ManyToMany()` decorators
+3. **Entity-level `orderBy`** - Defined on the `@Entity()` decorator
+
+All levels are combined together - if you specify `{ name: 'asc' }` at runtime and the entity has `{ createdAt: 'desc' }`, the result will order by `name` first, then by `createdAt`.
+
+<Tabs
+groupId="entity-def"
+defaultValue="define-entity"
+values={[
+{label: 'defineEntity', value: 'define-entity'},
+{label: 'reflect-metadata', value: 'reflect-metadata'},
+{label: 'ts-morph', value: 'ts-morph'},
+{label: 'EntitySchema', value: 'entity-schema'},
+]
+}>
+<TabItem value="reflect-metadata">
+
+```ts title="./entities/Post.ts"
+@Entity()
+export class Post {
+
+  @PrimaryKey()
+  id!: number;
+
+  @OneToMany(() => Comment, c => c.post)
+  comments = new Collection<Comment>(this);
+
+  @OneToMany(() => Comment, c => c.post, { orderBy: { text: QueryOrder.ASC } })
+  commentsAlphabetical = new Collection<Comment>(this);
+
+}
+```
+
+  </TabItem>
+  <TabItem value="ts-morph">
+
+```ts title="./entities/Post.ts"
+@Entity()
+export class Post {
+
+  @PrimaryKey()
+  id!: number;
+
+  @OneToMany(() => Comment, c => c.post)
+  comments = new Collection<Comment>(this);
+
+  @OneToMany(() => Comment, c => c.post, { orderBy: { text: QueryOrder.ASC } })
+  commentsAlphabetical = new Collection<Comment>(this);
+
+}
+```
+
+  </TabItem>
+  <TabItem value="define-entity">
+
+```ts title="./entities/Post.ts"
+import { defineEntity, p } from '@mikro-orm/core';
+
+export const Post = defineEntity({
+  name: 'Post',
+  properties: {
+    id: p.number().primary(),
+    comments: () => p.oneToMany(Comment).mappedBy('post'),
+    commentsAlphabetical: () => p.oneToMany(Comment).mappedBy('post').orderBy({ text: QueryOrder.ASC }),
+  },
+});
+```
+
+  </TabItem>
+  <TabItem value="entity-schema">
+
+```ts title="./entities/Post.ts"
+export const PostSchema = new EntitySchema({
+  name: 'Post',
+  properties: {
+    id: { type: 'number', primary: true },
+    comments: { kind: '1:m', entity: () => Comment, mappedBy: 'post' },
+    commentsAlphabetical: { kind: '1:m', entity: () => Comment, mappedBy: 'post', orderBy: { text: QueryOrder.ASC } },
+  },
+});
+```
+
+  </TabItem>
+</Tabs>
+
+```ts
+const comments = await em.find(Comment, {});
+// ordered by createdAt DESC (entity-level), then by id DESC
+
+const commentsAsc = await em.find(Comment, {}, { orderBy: { createdAt: QueryOrder.ASC } });
+// ordered by createdAt ASC (runtime), then by id DESC (entity-level)
+
+const post = await em.findOne(Post, 1, { populate: ['comments'] });
+// post.comments ordered by createdAt DESC, id DESC
+```
+
 ## Using custom base entity
 
 You can define your own base entity with properties that are required on all entities, like primary key and created/updated time. MikroORM supports two inheritance mapping strategies:

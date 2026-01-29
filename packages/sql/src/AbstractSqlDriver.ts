@@ -2298,21 +2298,21 @@ export abstract class AbstractSqlDriver<
         orderBy.push({ [`${alias}.${prop.fixedOrderColumn}`]: QueryOrder.ASC } as QueryOrderMap<T>);
       }
 
-      if (propOrderBy) {
-        for (const item of Utils.asArray(propOrderBy)) {
-          for (const field of Utils.getObjectQueryKeys(item)) {
-            const order = item[field as keyof typeof item];
+      const effectiveOrderBy = QueryHelper.mergeOrderBy(propOrderBy, prop.targetMeta?.orderBy);
 
-            if (RawQueryFragment.isKnownFragmentSymbol(field)) {
-              const { sql, params } = RawQueryFragment.getKnownFragment(field)!;
-              const sql2 = propAlias ? sql.replace(new RegExp(ALIAS_REPLACEMENT_RE, 'g'), propAlias) : sql;
-              const key = raw(sql2, params);
-              orderBy.push({ [key]: order } as QueryOrderMap<T>);
-              continue;
-            }
+      for (const item of effectiveOrderBy) {
+        for (const field of Utils.getObjectQueryKeys(item!)) {
+          const order = item![field as keyof typeof item];
 
-            orderBy.push({ [`${propAlias}.${field}` as EntityKey]: order } as QueryOrderMap<T>);
+          if (RawQueryFragment.isKnownFragmentSymbol(field)) {
+            const { sql, params } = RawQueryFragment.getKnownFragment(field)!;
+            const sql2 = propAlias ? sql.replace(new RegExp(ALIAS_REPLACEMENT_RE, 'g'), propAlias) : sql;
+            const key = raw(sql2, params);
+            orderBy.push({ [key]: order } as QueryOrderMap<T>);
+            continue;
           }
+
+          orderBy.push({ [`${propAlias}.${field}` as EntityKey]: order } as QueryOrderMap<T>);
         }
       }
 

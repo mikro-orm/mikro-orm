@@ -1115,6 +1115,11 @@ export interface EntityMetadata<Entity = any, Class extends EntityCtor<Entity> =
   ownProps?: EntityProperty<Entity>[];
   // used to make ORM aware of externally defined triggers, can change resulting SQL in some condition like when inserting in mssql
   hasTriggers?: boolean;
+  /**
+   * Default ordering for this entity. Applied when querying this entity directly
+   * or when it's populated as a relation. Combined with other orderings based on precedence.
+   */
+  orderBy?: QueryOrderMap<Entity> | QueryOrderMap<Entity>[];
   /** @internal can be used for computed numeric cache keys */
   readonly _id: number;
 }

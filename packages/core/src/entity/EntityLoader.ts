@@ -221,7 +221,8 @@ export class EntityLoader {
     const where = await this.extractChildCondition(options, prop);
 
     if (prop.kind === ReferenceKind.MANY_TO_MANY && this.driver.getPlatform().usesPivotTable()) {
-      const res = await this.findChildrenFromPivotTable<Entity>(filtered, prop, options, innerOrderBy as QueryOrderMap<Entity>[], populate, !!ref);
+      const pivotOrderBy = QueryHelper.mergeOrderBy<Entity>(innerOrderBy, prop.orderBy, prop.targetMeta?.orderBy);
+      const res = await this.findChildrenFromPivotTable<Entity>(filtered, prop, options, pivotOrderBy, populate, !!ref);
       return Utils.flatten(res);
     }
 
@@ -234,7 +235,8 @@ export class EntityLoader {
       where,
       orderBy: innerOrderBy!,
     }, !!(ref || prop.mapToPk));
-    this.initializeCollections<Entity>(filtered, prop, field, items, innerOrderBy.length > 0, partial);
+    const customOrder = innerOrderBy.length > 0 || !!prop.orderBy || !!prop.targetMeta?.orderBy;
+    this.initializeCollections<Entity>(filtered, prop, field, items, customOrder, partial);
 
     return items;
   }
@@ -453,10 +455,7 @@ export class EntityLoader {
       where = { $and: [where, prop.where] } as FilterQuery<Entity>;
     }
 
-    const orderBy = [...Utils.asArray(options.orderBy), ...Utils.asArray(prop.orderBy)].filter((order, idx, array) => {
-      // skip consecutive ordering with the same key to get around mongo issues
-      return idx === 0 || !Utils.equals(Utils.getObjectQueryKeys(array[idx - 1]), Utils.getObjectQueryKeys(order));
-    });
+    const orderBy = QueryHelper.mergeOrderBy(options.orderBy, prop.orderBy);
 
     const items = await this.em.find(meta.class, where, {
       filters, convertCustomTypes, lockMode, populateWhere, logging,

@@ -1008,8 +1008,8 @@ describe('EntityManagerMongo', () => {
     expect(orm.em.getUnitOfWork().getIdentityMap().keys()).toEqual([
       'Author-' + author.id,
       'Book-' + book1.id,
-      'BookTag-' + tag1.id,
       'BookTag-' + tag3.id,
+      'BookTag-' + tag1.id,
     ]);
     expect(author).not.toBe(cachedAuthor);
     expect(author.id).toBe(cachedAuthor.id);
@@ -2108,9 +2108,10 @@ describe('EntityManagerMongo', () => {
     orm.em.clear();
 
     const a4 = await orm.em.findOneOrFail(Author, god.id, { populate: ['books.tags'] });
-    expect(a4.books[0].tags.getIdentifiers()).toEqual([tag1.id, tag3.id]);
-    expect(a4.books[1].tags.getIdentifiers()).toEqual([tag1.id, tag2.id, tag5.id]);
-    expect(a4.books[2].tags.getIdentifiers()).toEqual([tag5.id, tag4.id]);
+    // Book.tags has orderBy: { name: 'asc' }, so tags are sorted alphabetically
+    expect(a4.books[0].tags.getIdentifiers()).toEqual([tag3.id, tag1.id]); // sick, silly
+    expect(a4.books[1].tags.getIdentifiers()).toEqual([tag2.id, tag5.id, tag1.id]); // funny, sexy, silly
+    expect(a4.books[2].tags.getIdentifiers()).toEqual([tag5.id, tag4.id]); // sexy, strange
   });
 
   test('property onCreate and onUpdate have reference to entity', async () => {

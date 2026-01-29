@@ -206,7 +206,12 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     await em.tryFlush(entityName, options);
     where = await em.processWhere(entityName, where, options, 'read');
     validateParams(where);
-    options.orderBy = options.orderBy || {};
+    const meta = this.metadata.get<Entity>(entityName);
+    if (meta.orderBy) {
+      options.orderBy = QueryHelper.mergeOrderBy(options.orderBy, meta.orderBy);
+    } else {
+      options.orderBy ??= {};
+    }
     options.populate = await em.preparePopulate(entityName, options) as any;
     const populate = options.populate as unknown as PopulateOptions<Entity>[];
     const cacheKey = em.cacheKey(entityName, options, 'em.find', where);
@@ -223,7 +228,6 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       return cached.data;
     }
 
-    const meta = this.metadata.get<Entity>(entityName);
     options = { ...options };
     // save the original hint value so we know it was infer/all
     (options as Dictionary)._populateWhere = options.populateWhere ?? this.config.get('populateWhere');
