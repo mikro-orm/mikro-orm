@@ -193,10 +193,13 @@ declare const __loadHint: unique symbol;
  * Expands a populate hint into all its prefixes.
  * e.g., Prefixes<'a.b.c'> = 'a' | 'a.b' | 'a.b.c'
  * This reflects that loading 'a.b.c' means 'a' and 'a.b' are also loaded.
+ * Special case: '*' returns string to ensure Loaded<T, '*'> is assignable to any Loaded<T, Hint>.
  */
-type Prefixes<S extends string> = S extends `${infer H}.${infer T}`
-  ? H | `${H}.${Prefixes<T>}`
-  : S;
+type Prefixes<S extends string> = S extends '*'
+  ? string
+  : S extends `${infer H}.${infer T}`
+    ? H | `${H}.${Prefixes<T>}`
+    : S;
 
 export type UnwrapPrimary<T> = T extends Scalar
   ? T

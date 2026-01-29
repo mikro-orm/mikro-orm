@@ -731,6 +731,10 @@ describe('check typings', () => {
     // But this should work - we have what's required
     const loadedABCD: Loaded<A, 'b.c.d'> = {} as any;
     requireBCD(loadedABCD);
+
+    // Wildcard should be assignable to specific hints (GH #7132 regression)
+    const loadedAll: Loaded<A, '*'> = {} as any;
+    requireBCD(loadedAll);
   });
 
   test('exclusion', async () => {
