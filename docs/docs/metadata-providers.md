@@ -18,6 +18,8 @@ There are 3 built-in metadata providers we can use:
 
 With `TsMorphMetadataProvider` MikroORM will use [`ts-morph`](https://github.com/dsherret/ts-morph) to read TypeScript source files of all entities to be able to detect all types. Thanks to this, defining the type is enough for runtime validation.
 
+> Using `TsMorphMetadataProvider` has implications for deployment - see the [Deployment guide](./deployment.md) for details on deploying applications that use this provider.
+
 To use it, first install the `@mikro-orm/reflection` package.
 
 ```ts

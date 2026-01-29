@@ -1113,81 +1113,74 @@ Now when you enable [debug mode](../logging.md) and try to access the endpoint s
 
 ## Deployment
 
-Our app is nearly ready, now let's prepare the production build. Since we are using the `ts-morph` metadata provider, our start-up time would be slow without a prebuilt cache. We can do that via the CLI:
+Our app is ready, let's prepare the production build. Since we use `defineEntity` with explicit entity references (not folder-based discovery), we have two deployment options.
 
-```bash
-npx mikro-orm cache:generate
-```
+### Basic TypeScript compilation
 
-But our production dependencies still contain the `@mikro-orm/reflection` package now, and that depends on TypeScript itself, making the bundle unnecessarily larger. To resolve this, we can generate a metadata cache bundle and use that via `GeneratedCacheAdapter`. This way you can keep the `@mikro-orm/reflection` package as a development dependency only, use the CLI to create the cache bundle, and depend only on that in your production build.
-
-```bash
-npx mikro-orm cache:generate --combined
-```
-
-This will create `./temp/metadata.json` file which can be used together with `GeneratedCacheAdapter` in your production configuration. Let's adjust our ORM config to dynamically use it when `NODE_ENV` is set to `production`:
-
-```diff title='src/mikro-orm.config.ts'
-import { defineConfig, GeneratedCacheAdapter, Options } from '@mikro-orm/sqlite';
-import { SqlHighlighter } from '@mikro-orm/sql-highlighter';
-import { SeedManager } from '@mikro-orm/seeder';
-import { Migrator } from '@mikro-orm/migrations';
-+import { existsSync, readFileSync } from 'node:fs';
-+
-+const options = {} as Options;
-+
-+if (process.env.NODE_ENV === 'production' && existsSync('./temp/metadata.json')) {
-+  options.metadataCache = {
-+    enabled: true,
-+    adapter: GeneratedCacheAdapter,
-+    // temp/metadata.json can be generated via `npx mikro-orm cache:generate --combine`
-+    options: {
-+      data: JSON.parse(readFileSync('./temp/metadata.json', { encoding: 'utf8' })),
-+    },
-+  };
-+} else {
-+  options.metadataProvider = (await import('@mikro-orm/reflection')).TsMorphMetadataProvider;
-+}
-
-export default defineConfig({
-   // for simplicity, we use the SQLite database, as it's available pretty much everywhere
-   dbName: 'sqlite.db',
-   // folder based discovery setup, using common filename suffix
-   entities: ['dist/**/*.entity.js'],
-   entitiesTs: ['src/**/*.entity.ts'],
-   // enable debug mode to log SQL queries and discovery information
-   debug: true,
-   // for vitest to get around `TypeError: Unknown file extension ".ts"` (ERR_UNKNOWN_FILE_EXTENSION)
-   dynamicImportProvider: id => import(id),
-   // for highlighting the SQL queries
-   highlighter: new SqlHighlighter(),
-   extensions: [SeedManager, Migrator],
--  metadataProvider: TsMorphMetadataProvider,
-+  ...options,
-});
-```
-
-Finally, let's adjust the NPM `build` script to generate the cache bundle, and add a production start script:
+The simplest approach is to compile TypeScript and run the output:
 
 ```json title='package.json'
 "scripts": {
-  // highlight-next-line
-  "build": "tsc && npx mikro-orm cache:generate --combined",
+  "build": "tsc",
   "start": "tsx src/server.ts",
-  // highlight-next-line
-  "start:prod": "NODE_ENV=production node dist/server.js",
+  "start:prod": "node dist/server.js",
   "test": "vitest"
 },
 ```
-
-Now you can build and run the production version of your app:
 
 ```bash
 npm run build
 npm run start:prod
 ```
 
-You can see in the logs that the `build` script uses `ts-morph` metadata provider, while the `start` script is using the default `reflect-metadata` one.
+### Bundling with Vite
+
+Since `defineEntity` doesn't require runtime file system access for entity discovery, our app is fully compatible with bundlers. This allows creating a single-file bundle with all dependencies included - perfect for containerized deployments or serverless environments.
+
+First, install Vite:
+
+```bash npm2yarn
+npm install vite --save-dev
+```
+
+Create a Vite configuration for SSR (server-side) bundling:
+
+```ts title='vite.config.ts'
+import { defineConfig } from 'vite';
+
+export default defineConfig({
+  build: {
+    ssr: 'src/server.ts',
+    outDir: 'dist',
+    sourcemap: true,
+    target: 'node22',
+  },
+  ssr: {
+    // bundle MikroORM packages into the output
+    noExternal: ['@mikro-orm/sqlite', '@mikro-orm/sql', '@mikro-orm/core'],
+  },
+});
+```
+
+Add the bundle script to your package.json:
+
+```json title='package.json'
+"scripts": {
+  "build": "tsc",
+  // highlight-next-line
+  "bundle": "vite build",
+  "start": "tsx src/server.ts",
+  "start:prod": "node dist/server.js",
+  "test": "vitest"
+},
+```
+
+Now you can create a bundled production build:
+
+```bash
+npm run bundle
+npm run start:prod
+```
 
 ## ⛳ Checkpoint 4
 
