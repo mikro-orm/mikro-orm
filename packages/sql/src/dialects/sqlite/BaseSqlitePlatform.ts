@@ -115,6 +115,20 @@ export abstract class BaseSqlitePlatform extends AbstractSqlPlatform {
     return false;
   }
 
+  /**
+   * SQLite supports schemas via ATTACH DATABASE. Returns true when there are
+   * attached databases configured.
+   */
+  override supportsSchemas(): boolean {
+    const attachDatabases = this.config.get('attachDatabases');
+    return !!attachDatabases?.length;
+  }
+
+  override getDefaultSchemaName(): string | undefined {
+    // Return 'main' only when schema support is active (i.e., databases are attached)
+    return this.supportsSchemas() ? 'main' : undefined;
+  }
+
   override getFullTextWhereClause(): string {
     return `:column: match :query`;
   }

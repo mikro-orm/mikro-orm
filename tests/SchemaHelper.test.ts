@@ -53,6 +53,63 @@ describe('SchemaHelper', () => {
     expect(helper.getRenameColumnSQL('table', 'test1', { name: 'test_123' } as Column)).toBe('alter table `table` rename column `test1` to `test_123`');
   });
 
+  describe('sqlite schema helper - ATTACH DATABASE support', () => {
+    test('getCreateNamespaceSQL returns empty string', () => {
+      const helper = new SqlitePlatform().getSchemaHelper()!;
+      expect(helper.getCreateNamespaceSQL('attached_db')).toBe('');
+    });
+
+    test('getDropNamespaceSQL returns empty string', () => {
+      const helper = new SqlitePlatform().getSchemaHelper()!;
+      expect(helper.getDropNamespaceSQL('attached_db')).toBe('');
+    });
+
+    test('getCreateIndexSQL handles schema prefix correctly', () => {
+      const helper = new SqlitePlatform().getSchemaHelper()!;
+
+      // Without schema prefix (regular table)
+      const indexNoSchema = helper.getCreateIndexSQL('my_table', {
+        keyName: 'my_index',
+        columnNames: ['col1', 'col2'],
+        unique: false,
+        primary: false,
+        constraint: false,
+      });
+      expect(indexNoSchema).toBe('create index `my_index` on `my_table` (`col1`, `col2`)');
+
+      // With main schema (should not add prefix to index name)
+      const indexMainSchema = helper.getCreateIndexSQL('main.my_table', {
+        keyName: 'my_index',
+        columnNames: ['col1'],
+        unique: true,
+        primary: false,
+        constraint: false,
+      });
+      expect(indexMainSchema).toBe('create unique index `my_index` on `my_table` (`col1`)');
+
+      // With attached database schema (should prefix the index name)
+      const indexAttachedSchema = helper.getCreateIndexSQL('attached_db.my_table', {
+        keyName: 'my_index',
+        columnNames: ['col1'],
+        unique: false,
+        primary: false,
+        constraint: false,
+      });
+      expect(indexAttachedSchema).toBe('create index `attached_db`.`my_index` on `my_table` (`col1`)');
+    });
+
+    test('getReferencedTableName strips schema prefix', () => {
+      const helper = new SqlitePlatform().getSchemaHelper()!;
+
+      // Plain table name
+      expect(helper.getReferencedTableName('my_table')).toBe('my_table');
+
+      // Schema-qualified table name should have schema stripped
+      expect(helper.getReferencedTableName('main.my_table')).toBe('my_table');
+      expect(helper.getReferencedTableName('attached_db.my_table')).toBe('my_table');
+    });
+  });
+
   describe('postgresql schema helper', () => {
     test('helper quotes schema name when dropping contraints', () => {
       const helper = new PostgreSqlPlatform().getSchemaHelper()!;

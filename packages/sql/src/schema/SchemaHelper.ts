@@ -92,6 +92,10 @@ export abstract class SchemaHelper {
     throw new Error('Not supported by given driver');
   }
 
+  async getAllTables(connection: AbstractSqlConnection, schemas?: string[]): Promise<Table[]> {
+    return connection.execute<Table[]>(this.getListTablesSQL());
+  }
+
   getListViewsSQL(): string {
     throw new Error('Not supported by given driver');
   }

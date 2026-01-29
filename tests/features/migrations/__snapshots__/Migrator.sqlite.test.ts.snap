@@ -222,6 +222,7 @@ exports[`Migrator (sqlite) > generate schema migration > migration-dump 1`] = `
 exports[`Migrator (sqlite) > up/down params [all or nothing disabled] > all-or-nothing-disabled 1`] = `
 [
   "select name as table_name from sqlite_master where type = 'table' and name != 'sqlite_sequence' and name != 'geometry_columns' and name != 'spatial_ref_sys' union all select name as table_name from sqlite_temp_master where type = 'table' order by name",
+  "pragma database_list",
   "create table \`mikro_orm_migrations\` (\`id\` integer not null primary key autoincrement, \`name\` text not null, \`executed_at\` datetime not null default current_timestamp);",
   "select \`m0\`.* from \`mikro_orm_migrations\` as \`m0\` order by \`m0\`.\`id\` asc",
   "[migrator] Processing 'Migration20191013214813'",
@@ -278,6 +279,7 @@ exports[`Migrator (sqlite) > up/down params [all or nothing disabled] > all-or-n
 exports[`Migrator (sqlite) > up/down params [all or nothing enabled] > all-or-nothing 1`] = `
 [
   "select name as table_name from sqlite_master where type = 'table' and name != 'sqlite_sequence' and name != 'geometry_columns' and name != 'spatial_ref_sys' union all select name as table_name from sqlite_temp_master where type = 'table' order by name",
+  "pragma database_list",
   "create table \`mikro_orm_migrations\` (\`id\` integer not null primary key autoincrement, \`name\` text not null, \`executed_at\` datetime not null default current_timestamp);",
   "begin",
   "select \`m0\`.* from \`mikro_orm_migrations\` as \`m0\` order by \`m0\`.\`id\` asc",
