@@ -346,8 +346,15 @@ export class EntityGenerator {
       }
 
       const owner = metadata.find(m => m.className === meta.relations[0].type)!;
+      const target = metadata.find(m => m.className === meta.relations[1].type)!;
 
-      const name = this.namingStrategy.columnNameToProperty(meta.tableName.replace(new RegExp('^' + owner.tableName + '_'), ''));
+      const name = this.namingStrategy.manyToManyPropertyName(
+        owner.className,
+        target.className,
+        meta.tableName,
+        owner.tableName,
+        meta.schema,
+      );
       const ownerProp = {
         name,
         kind: ReferenceKind.MANY_TO_MANY,

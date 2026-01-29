@@ -104,6 +104,19 @@ export abstract class AbstractNamingStrategy implements NamingStrategy {
     return entityName[0].toLowerCase() + entityName.substring(1) + suffix;
   }
 
+  /**
+   * @inheritDoc
+   */
+  manyToManyPropertyName(
+    ownerEntityName: string,
+    targetEntityName: string,
+    pivotTableName: string,
+    ownerTableName: string,
+    schemaName?: string,
+  ): string {
+    return this.columnNameToProperty(pivotTableName.replace(new RegExp('^' + ownerTableName + '_'), ''));
+  }
+
   abstract classToTableName(entityName: string, tableName?: string): string;
 
   abstract joinColumnName(propertyName: string): string;
