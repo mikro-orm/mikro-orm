@@ -133,8 +133,16 @@ Returns alias name for given entity. The alias needs to be unique across the que
 Returns the name of the inverse side property. Used in the `EntityGenerator` with `bidirectionalRelations` option. The default implementation will vary based on the property kind:
 
 - M:N relations will be named as `${propertyName}Inverse` (the property name is inferred from pivot table name).
-- Other relation kinds will use the target entity name, with first character lowercased, and `Collection` appended in case it's a 1:M collection. 
+- Other relation kinds will use the target entity name, with first character lowercased, and `Collection` appended in case it's a 1:M collection.
 
 > This behavior changed in v6.3, before that, all the properties were named with the `Inverse` suffix as the M:N relations are now.
+
+---
+
+#### `NamingStrategy.manyToManyPropertyName(ownerEntityName: string, targetEntityName: string, pivotTableName: string, ownerTableName: string, schemaName?: string): string`
+
+Returns the property name for a many-to-many relation. Used in the `EntityGenerator` when generating M:N relations from pivot tables. The default implementation strips the owner table name prefix from the pivot table name and converts it to a property name using `columnNameToProperty`.
+
+For example, with a pivot table `author_books` and owner table `author`, the default implementation returns `books`.
 
 ---

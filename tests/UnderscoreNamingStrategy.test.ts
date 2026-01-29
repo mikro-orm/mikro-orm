@@ -30,4 +30,12 @@ describe('UnderscoreNamingStrategy', () => {
     expect(ns.inverseSideName('User', 'friends', ReferenceKind.MANY_TO_MANY)).toBe('friendsInverse');
   });
 
+  test('many to many property name', async () => {
+    expect(ns.manyToManyPropertyName('Author', 'Book', 'author_books', 'author')).toBe('books');
+    expect(ns.manyToManyPropertyName('Author', 'Book', 'author_favorite_books', 'author')).toBe('favoriteBooks');
+    expect(ns.manyToManyPropertyName('User', 'Role', 'user_roles', 'user')).toBe('roles');
+    // when pivot table doesn't have owner prefix, returns full name
+    expect(ns.manyToManyPropertyName('Author', 'Book', 'books_authors', 'author')).toBe('booksAuthors');
+  });
+
 });

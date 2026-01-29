@@ -103,4 +103,21 @@ export interface NamingStrategy {
    */
   inverseSideName(entityName: string, propertyName: string, kind: ReferenceKind): string;
 
+  /**
+   * Return a property name for a many-to-many relation (used in `EntityGenerator`).
+   *
+   * @param ownerEntityName - The owner entity class name
+   * @param targetEntityName - The target entity class name
+   * @param pivotTableName - The pivot table name
+   * @param ownerTableName - The owner table name
+   * @param schemaName - The schema name (if any)
+   */
+  manyToManyPropertyName(
+    ownerEntityName: string,
+    targetEntityName: string,
+    pivotTableName: string,
+    ownerTableName: string,
+    schemaName?: string,
+  ): string;
+
 }
