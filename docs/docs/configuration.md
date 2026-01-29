@@ -224,6 +224,7 @@ export interface ConnectionOptions {
   charset?: string;
   multipleStatements?: boolean; // for mysql driver
   pool?: PoolConfig;
+  attachDatabases?: { name: string; path: string }[]; // SQLite/libSQL only
 }
 ```
 
@@ -255,6 +256,12 @@ MikroORM.init({
 ```
 
 Read more about this in [Installation](./quick-start.md) and [Read Connections](./read-connections.md) sections.
+
+### Attached Databases (SQLite)
+
+SQLite and libSQL drivers support attaching additional database files to a single connection via the `attachDatabases` option. Each attached database acts as a separate schema, allowing you to organize entities across multiple database files.
+
+Read more about this in [Using Multiple Schemas](./multiple-schemas.md#sqlite-attach-database) section.
 
 ### Using short-lived tokens
 

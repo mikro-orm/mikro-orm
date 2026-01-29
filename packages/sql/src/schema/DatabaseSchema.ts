@@ -8,7 +8,7 @@ import {
 } from '@mikro-orm/core';
 import { DatabaseTable } from './DatabaseTable.js';
 import type { AbstractSqlConnection } from '../AbstractSqlConnection.js';
-import type { DatabaseView, Table } from '../typings.js';
+import type { DatabaseView } from '../typings.js';
 import type { AbstractSqlPlatform } from '../AbstractSqlPlatform.js';
 
 /**
@@ -106,7 +106,7 @@ export class DatabaseSchema {
 
   static async create(connection: AbstractSqlConnection, platform: AbstractSqlPlatform, config: Configuration, schemaName?: string, schemas?: string[], takeTables?: (string | RegExp)[], skipTables?: (string | RegExp)[]): Promise<DatabaseSchema> {
     const schema = new DatabaseSchema(platform, schemaName ?? config.get('schema') ?? platform.getDefaultSchemaName());
-    const allTables = await connection.execute<Table[]>(platform.getSchemaHelper()!.getListTablesSQL());
+    const allTables = await platform.getSchemaHelper()!.getAllTables(connection, schemas);
     const parts = config.get('migrations').tableName!.split('.');
     const migrationsTableName = parts[1] ?? parts[0];
     const migrationsSchemaName = parts.length > 1 ? parts[0] : config.get('schema', platform.getDefaultSchemaName());

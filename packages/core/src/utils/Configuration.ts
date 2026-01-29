@@ -497,6 +497,18 @@ export interface ConnectionOptions {
   driverOptions?: Dictionary;
   /** Callback to execute when a new connection is created. */
   onCreateConnection?: (connection: unknown) => Promise<void>;
+  /**
+   * SQLite/libSQL: databases to attach on connection.
+   * Each attached database acts as a schema, accessible via `schema.table` syntax.
+   * Entities can reference attached databases via `@Entity({ schema: 'db_name' })`.
+   * Note: Not supported for remote libSQL connections.
+   * @example
+   * attachDatabases: [
+   *   { name: 'users_db', path: './users.db' },
+   *   { name: 'logs_db', path: '/var/data/logs.db' },
+   * ]
+   */
+  attachDatabases?: { name: string; path: string }[];
 }
 
 /**

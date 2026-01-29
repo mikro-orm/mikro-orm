@@ -19,9 +19,47 @@ export class SqliteSchemaHelper extends SchemaHelper {
     return false;
   }
 
+  override getCreateNamespaceSQL(name: string): string {
+    return '';
+  }
+
+  override getDropNamespaceSQL(name: string): string {
+    return '';
+  }
+
   override getListTablesSQL(): string {
     return `select name as table_name from sqlite_master where type = 'table' and name != 'sqlite_sequence' and name != 'geometry_columns' and name != 'spatial_ref_sys' `
       + `union all select name as table_name from sqlite_temp_master where type = 'table' order by name`;
+  }
+
+  override async getAllTables(connection: AbstractSqlConnection, schemas?: string[]): Promise<Table[]> {
+    const databases = await this.getDatabaseList(connection);
+    const hasAttachedDbs = databases.length > 1; // More than just 'main'
+
+    // If no attached databases, use original behavior
+    if (!hasAttachedDbs && !schemas?.length) {
+      return connection.execute<Table[]>(this.getListTablesSQL());
+    }
+
+    // With attached databases, query each one
+    const targetSchemas = schemas?.length ? schemas : databases;
+    const allTables: Table[] = [];
+
+    for (const dbName of targetSchemas) {
+      const prefix = this.getSchemaPrefix(dbName);
+      const tables = await connection.execute<{ name: string }[]>(
+        `select name from ${prefix}sqlite_master where type = 'table' ` +
+        `and name != 'sqlite_sequence' and name != 'geometry_columns' and name != 'spatial_ref_sys'`,
+      );
+      for (const t of tables) {
+        allTables.push({ table_name: t.name, schema_name: dbName });
+      }
+    }
+    return allTables;
+  }
+
+  override async getNamespaces(connection: AbstractSqlConnection): Promise<string[]> {
+    return this.getDatabaseList(connection);
   }
 
   override getListViewsSQL(): string {
@@ -29,13 +67,29 @@ export class SqliteSchemaHelper extends SchemaHelper {
   }
 
   override async loadViews(schema: DatabaseSchema, connection: AbstractSqlConnection, schemaName?: string): Promise<void> {
-    const views = await connection.execute<{ view_name: string; view_definition: string }[]>(this.getListViewsSQL());
+    const databases = await this.getDatabaseList(connection);
+    const hasAttachedDbs = databases.length > 1; // More than just 'main'
 
-    for (const view of views) {
-      // Extract the definition from CREATE VIEW statement
-      const match = view.view_definition.match(/create\s+view\s+[`"']?\w+[`"']?\s+as\s+(.*)/i);
-      const definition = match ? match[1] : view.view_definition;
-      schema.addView(view.view_name, schemaName, definition);
+    // If no attached databases and no specific schema, use original behavior
+    if (!hasAttachedDbs && !schemaName) {
+      const views = await connection.execute<{ view_name: string; view_definition: string }[]>(this.getListViewsSQL());
+      for (const view of views) {
+        schema.addView(view.view_name, schemaName, this.extractViewDefinition(view.view_definition));
+      }
+      return;
+    }
+
+    // With attached databases, query each one
+    /* v8 ignore next - schemaName branch not commonly used */
+    const targetDbs = schemaName ? [schemaName] : databases;
+    for (const dbName of targetDbs) {
+      const prefix = this.getSchemaPrefix(dbName);
+      const views = await connection.execute<{ view_name: string; view_definition: string }[]>(
+        `select name as view_name, sql as view_definition from ${prefix}sqlite_master where type = 'view' order by name`,
+      );
+      for (const view of views) {
+        schema.addView(view.view_name, dbName, this.extractViewDefinition(view.view_definition));
+      }
     }
   }
 
@@ -56,7 +110,7 @@ export class SqliteSchemaHelper extends SchemaHelper {
       const checks = await this.getChecks(connection, table.name, table.schema);
       const pks = await this.getPrimaryKeys(connection, indexes, table.name, table.schema);
       const fks = await this.getForeignKeys(connection, table.name, table.schema);
-      const enums = await this.getEnumDefinitions(connection, table.name);
+      const enums = await this.getEnumDefinitions(connection, table.name, table.schema);
       table.init(cols, indexes, checks, pks, fks, enums);
     }
   }
@@ -99,6 +153,10 @@ export class SqliteSchemaHelper extends SchemaHelper {
     }
 
     sql += ')';
+
+    if (table.comment) {
+      sql += ` /* ${table.comment} */`;
+    }
 
     const ret: string[] = [];
     this.append(ret, sql);
@@ -176,18 +234,29 @@ export class SqliteSchemaHelper extends SchemaHelper {
       return index.expression;
     }
 
-    tableName = this.quote(tableName);
-    const keyName = this.quote(index.keyName);
-    const sql = `create ${index.unique ? 'unique ' : ''}index ${keyName} on ${tableName} `;
+    // SQLite requires: CREATE INDEX schema.index_name ON table_name (columns)
+    // NOT: CREATE INDEX index_name ON schema.table_name (columns)
+    const [schemaName, rawTableName] = this.splitTableName(tableName);
+    const quotedTableName = this.quote(rawTableName);
 
-    if (index.columnNames.some(column => column.includes('.'))) {
-      // JSON columns can have unique index but not unique constraint, and we need to distinguish those, so we can properly drop them
-      const sql = `create ${index.unique ? 'unique ' : ''}index ${keyName} on ${tableName} `;
-      const columns = this.platform.getJsonIndexDefinition(index);
-      return `${sql}(${columns.join(', ')})`;
+    // If there's a schema, prefix the index name with it
+    let keyName: string;
+    if (schemaName && schemaName !== 'main') {
+      keyName = `${this.quote(schemaName)}.${this.quote(index.keyName)}`;
+    } else {
+      keyName = this.quote(index.keyName);
     }
 
-    return `${sql}(${index.columnNames.map(c => this.quote(c)).join(', ')})`;
+    const sqlPrefix = `create ${index.unique ? 'unique ' : ''}index ${keyName} on ${quotedTableName}`;
+
+    /* v8 ignore next 4 */
+    if (index.columnNames.some(column => column.includes('.'))) {
+      // JSON columns can have unique index but not unique constraint, and we need to distinguish those, so we can properly drop them
+      const columns = this.platform.getJsonIndexDefinition(index);
+      return `${sqlPrefix} (${columns.join(', ')})`;
+    }
+
+    return `${sqlPrefix} (${index.columnNames.map(c => this.quote(c)).join(', ')})`;
   }
 
   private parseTableDefinition(sql: string, cols: any[]) {
@@ -219,9 +288,38 @@ export class SqliteSchemaHelper extends SchemaHelper {
     return { columns, constraints };
   }
 
+  /**
+   * Returns schema prefix for pragma and sqlite_master queries.
+   * Returns empty string for main database (no prefix needed).
+   */
+  private getSchemaPrefix(schemaName?: string): string {
+    if (!schemaName || schemaName === 'main') {
+      return '';
+    }
+    return `${this.platform.quoteIdentifier(schemaName)}.`;
+  }
+
+  /**
+   * Returns all database names excluding 'temp'.
+   */
+  private async getDatabaseList(connection: AbstractSqlConnection): Promise<string[]> {
+    const databases = await connection.execute<{ name: string }[]>('pragma database_list');
+    return databases.filter(d => d.name !== 'temp').map(d => d.name);
+  }
+
+  /**
+   * Extracts the SELECT part from a CREATE VIEW statement.
+   */
+  private extractViewDefinition(viewDefinition: string): string {
+    const match = viewDefinition?.match(/create\s+view\s+[`"']?\w+[`"']?\s+as\s+(.*)/i);
+    /* v8 ignore next - fallback for non-standard view definitions */
+    return match ? match[1] : viewDefinition;
+  }
+
   private async getColumns(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<any[]> {
-    const columns = await connection.execute<any[]>(`pragma table_xinfo('${tableName}')`);
-    const sql = `select sql from sqlite_master where type = ? and name = ?`;
+    const prefix = this.getSchemaPrefix(schemaName);
+    const columns = await connection.execute<any[]>(`pragma ${prefix}table_xinfo('${tableName}')`);
+    const sql = `select sql from ${prefix}sqlite_master where type = ? and name = ?`;
     const tableDefinition = await connection.execute<{ sql: string }>(sql, ['table', tableName], 'get');
     const composite = columns.reduce((count, col) => count + (col.pk ? 1 : 0), 0) > 1;
     // there can be only one, so naive check like this should be enough
@@ -257,8 +355,9 @@ export class SqliteSchemaHelper extends SchemaHelper {
     });
   }
 
-  private async getEnumDefinitions(connection: AbstractSqlConnection, tableName: string): Promise<Dictionary<string[]>> {
-    const sql = `select sql from sqlite_master where type = ? and name = ?`;
+  private async getEnumDefinitions(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<Dictionary<string[]>> {
+    const prefix = this.getSchemaPrefix(schemaName);
+    const sql = `select sql from ${prefix}sqlite_master where type = ? and name = ?`;
     const tableDefinition = await connection.execute<{ sql: string }>(sql, ['table', tableName], 'get');
 
     const checkConstraints = [...(tableDefinition.sql.match(/[`["'][^`\]"']+[`\]"'] text check \(.*?\)/gi) ?? [])];
@@ -277,16 +376,18 @@ export class SqliteSchemaHelper extends SchemaHelper {
   }
 
   override async getPrimaryKeys(connection: AbstractSqlConnection, indexes: IndexDef[], tableName: string, schemaName?: string): Promise<string[]> {
-    const sql = `pragma table_info(\`${tableName}\`)`;
+    const prefix = this.getSchemaPrefix(schemaName);
+    const sql = `pragma ${prefix}table_info(\`${tableName}\`)`;
     const cols = await connection.execute<{ pk: number; name: string }[]>(sql);
 
     return cols.filter(col => !!col.pk).map(col => col.name);
   }
 
   private async getIndexes(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<IndexDef[]> {
-    const sql = `pragma table_info(\`${tableName}\`)`;
+    const prefix = this.getSchemaPrefix(schemaName);
+    const sql = `pragma ${prefix}table_info(\`${tableName}\`)`;
     const cols = await connection.execute<{ pk: number; name: string }[]>(sql);
-    const indexes = await connection.execute<any[]>(`pragma index_list(\`${tableName}\`)`);
+    const indexes = await connection.execute<any[]>(`pragma ${prefix}index_list(\`${tableName}\`)`);
     const ret: IndexDef[] = [];
 
     for (const col of cols.filter(c => c.pk)) {
@@ -300,7 +401,7 @@ export class SqliteSchemaHelper extends SchemaHelper {
     }
 
     for (const index of indexes.filter(index => !this.isImplicitIndex(index.name))) {
-      const res = await connection.execute<{ name: string }[]>(`pragma index_info(\`${index.name}\`)`);
+      const res = await connection.execute<{ name: string }[]>(`pragma ${prefix}index_info(\`${index.name}\`)`);
       ret.push(...res.map(row => ({
         columnNames: [row.name],
         keyName: index.name,
@@ -347,8 +448,9 @@ export class SqliteSchemaHelper extends SchemaHelper {
   }
 
   private async getColumnDefinitions(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<{ columns: Dictionary<{ name: string; definition: string }>; constraints: string[] }> {
-    const columns = await connection.execute<any[]>(`pragma table_xinfo('${tableName}')`);
-    const sql = `select sql from sqlite_master where type = ? and name = ?`;
+    const prefix = this.getSchemaPrefix(schemaName);
+    const columns = await connection.execute<any[]>(`pragma ${prefix}table_xinfo('${tableName}')`);
+    const sql = `select sql from ${prefix}sqlite_master where type = ? and name = ?`;
     const tableDefinition = await connection.execute<{ sql: string }>(sql, ['table', tableName], 'get');
 
     return this.parseTableDefinition(tableDefinition.sql, columns);
@@ -356,7 +458,9 @@ export class SqliteSchemaHelper extends SchemaHelper {
 
   private async getForeignKeys(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<Dictionary> {
     const { constraints } = await this.getColumnDefinitions(connection, tableName, schemaName);
-    const fks = await connection.execute<any[]>(`pragma foreign_key_list(\`${tableName}\`)`);
+    const prefix = this.getSchemaPrefix(schemaName);
+    const fks = await connection.execute<any[]>(`pragma ${prefix}foreign_key_list(\`${tableName}\`)`);
+    const qualifiedTableName = schemaName ? `${schemaName}.${tableName}` : tableName;
 
     return fks.reduce((ret, fk: any) => {
       const constraintName = this.platform.getIndexName(tableName, [fk.from], 'foreign');
@@ -365,7 +469,7 @@ export class SqliteSchemaHelper extends SchemaHelper {
         constraintName,
         columnName: fk.from,
         columnNames: [fk.from],
-        localTableName: tableName,
+        localTableName: qualifiedTableName,
         referencedTableName: fk.table,
         referencedColumnName: fk.to,
         referencedColumnNames: [fk.to],
@@ -401,6 +505,16 @@ export class SqliteSchemaHelper extends SchemaHelper {
 
   override dropIndex(table: string, index: IndexDef, oldIndexName = index.keyName) {
     return `drop index ${this.quote(oldIndexName)}`;
+  }
+
+  /**
+   * SQLite does not support schema-qualified table names in REFERENCES clauses.
+   * Foreign key references can only point to tables in the same database.
+   */
+  override getReferencedTableName(referencedTableName: string, schema?: string): string {
+    const [schemaName, tableName] = this.splitTableName(referencedTableName);
+    // Strip any schema prefix - SQLite REFERENCES clause doesn't support it
+    return tableName;
   }
 
   override alterTable(diff: TableDifference, safe?: boolean): string[] {
