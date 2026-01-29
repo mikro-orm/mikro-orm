@@ -64,11 +64,13 @@ function useFromEntityType<T>(_result: FromEntityType<T>): void {}
 
 bench('FromEntityType - plain entity', () => {
   useFromEntityType<Author>({} as FromEntityType<Author>);
-}).types([30, 'instantiations']);
+}).types([23, 'instantiations']);
 
 bench('FromEntityType - Loaded entity', () => {
-  useFromEntityType<Loaded<Author, 'books'>>({} as FromEntityType<Loaded<Author, 'books'>>);
-}).types([1200, 'instantiations']);
+  useFromEntityType<Loaded<Author, 'books'>>(
+    {} as FromEntityType<Loaded<Author, 'books'>>,
+  );
+}).types([1150, 'instantiations']);
 
 // ============================================
 // IsSubset benchmarks
@@ -80,13 +82,13 @@ bench('IsSubset - simple', () => {
   type R = IsSubset<EntityData<Author>, TestData>;
   const x = {} as R;
   void x;
-}).types([150, 'instantiations']);
+}).types([135, 'instantiations']);
 
 bench('IsSubset - with Loaded', () => {
   type R = IsSubset<EntityData<Author>, TestData>;
   const x = {} as R;
   void x;
-}).types([150, 'instantiations']);
+}).types([135, 'instantiations']);
 
 // ============================================
 // MergeSelected benchmarks (the known expensive one)
@@ -97,49 +99,53 @@ bench('MergeSelected - plain entity', () => {
   type R = MergeSelected<Author, Author, 'name'>;
   const x = {} as R;
   void x;
-}).types([15, 'instantiations']);
+}).types([7, 'instantiations']);
 
 bench('MergeSelected - Loaded entity', () => {
   type R = MergeSelected<Loaded<Author, 'books'>, Author, 'name'>;
   const x = {} as R;
   void x;
-}).types([2000, 'instantiations']);
+}).types([1958, 'instantiations']);
 
 // ============================================
 // Full assign signature simulation
 // ============================================
 
 // Simulate the assign return type computation
-type AssignReturnType<Entity extends object, Data> =
-  MergeSelected<Entity, FromEntityType<Entity>, keyof Data & string>;
+type AssignReturnType<Entity extends object, Data> = MergeSelected<
+  Entity,
+  FromEntityType<Entity>,
+  keyof Data & string
+>;
 
 bench('assign return type - plain entity', () => {
   type R = AssignReturnType<Author, { name: string }>;
   const x = {} as R;
   void x;
-}).types([30, 'instantiations']);
+}).types([22, 'instantiations']);
 
 bench('assign return type - Loaded entity', () => {
   type R = AssignReturnType<Loaded<Author, 'books'>, { name: string }>;
   const x = {} as R;
   void x;
-}).types([2000, 'instantiations']);
+}).types([1977, 'instantiations']);
 
 // ============================================
 // Data parameter type computation
 // ============================================
 
 type AssignDataType<Entity extends object, Convert extends boolean = false> =
-  EntityData<FromEntityType<Entity>, Convert> | Partial<EntityDTO<FromEntityType<Entity>>>;
+  | EntityData<FromEntityType<Entity>, Convert>
+  | Partial<EntityDTO<FromEntityType<Entity>>>;
 
 bench('assign data type - plain entity', () => {
   type R = AssignDataType<Author>;
   const x = {} as R;
   void x;
-}).types([3200, 'instantiations']);
+}).types([2214, 'instantiations']);
 
 bench('assign data type - Loaded entity', () => {
   type R = AssignDataType<Loaded<Author, 'books'>>;
   const x = {} as R;
   void x;
-}).types([4000, 'instantiations']);
+}).types([3315, 'instantiations']);

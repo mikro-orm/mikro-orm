@@ -80,6 +80,30 @@ type CollectionShape<T = any> = { [k: number]: T; readonly owner: object };
  */
 type LoadedCollectionShape<T = any> = CollectionShape<T> & { $: any };
 
+/**
+ * Structural type for matching Reference without triggering full class evaluation.
+ * Using `T extends ReferenceShape` instead of `T extends Reference<any>` avoids
+ * forcing TypeScript to evaluate Reference's methods, preventing instantiation overhead
+ * (~800 → ~15 instantiations).
+ *
+ * Usage:
+ * - Matching only: `T extends ReferenceShape`
+ * - With inference: `T extends ReferenceShape<infer U>`
+ */
+type ReferenceShape<T = any> = { unwrap(): T };
+
+/**
+ * Structural type for matching LoadedReference (Reference with `$` property).
+ */
+type LoadedReferenceShape<T = any> = ReferenceShape<T> & { $: T };
+
+/**
+ * Structural type for matching any loadable relation (Collection, Reference, or array).
+ * Using this instead of `Loadable<any>` in conditional type checks prevents
+ * TypeScript from evaluating the full Collection/Reference interfaces.
+ */
+type LoadableShape = CollectionShape | ReferenceShape | readonly any[];
+
 // Get all keys from all union members (distributes over union)
 export type UnionKeys<T> = T extends any ? keyof T : never;
 
@@ -156,9 +180,27 @@ export interface TypeConfig {
   forceObject?: boolean;
 }
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
+declare const __selectedType: unique symbol;
+
+// eslint-disable-next-line @typescript-eslint/naming-convention
+declare const __loadedType: unique symbol;
+
+// eslint-disable-next-line @typescript-eslint/naming-convention
+declare const __loadHint: unique symbol;
+
+/**
+ * Expands a populate hint into all its prefixes.
+ * e.g., Prefixes<'a.b.c'> = 'a' | 'a.b' | 'a.b.c'
+ * This reflects that loading 'a.b.c' means 'a' and 'a.b' are also loaded.
+ */
+type Prefixes<S extends string> = S extends `${infer H}.${infer T}`
+  ? H | `${H}.${Prefixes<T>}`
+  : S;
+
 export type UnwrapPrimary<T> = T extends Scalar
   ? T
-  : T extends Reference<infer U>
+  : T extends ReferenceShape<infer U>
     ? Primary<U>
     : Primary<T>;
 
@@ -258,7 +300,7 @@ type ExpandQueryMerged<T> = [T] extends [object]
     : FilterQuery<MergeUnion<T>>
   : FilterValue<T>;
 
-export type FilterObject<T> = { -readonly [K in EntityKey<T> | EntityKey<MergeUnion<T>>]?: ExpandQuery<ExpandProperty<FilterObjectProp<T, K>>> | ExpandQueryMerged<ExpandProperty<FilterObjectProp<T, K>>> | FilterValue<ExpandProperty<FilterObjectProp<T, K>>> | null };
+export type FilterObject<T> = { -readonly [K in EntityKey<T>]?: ExpandQuery<ExpandProperty<FilterObjectProp<T, K>>> | ExpandQueryMerged<ExpandProperty<FilterObjectProp<T, K>>> | FilterValue<ExpandProperty<FilterObjectProp<T, K>>> | null };
 
 export type ExpandQuery<T> = T extends object
   ? T extends Scalar
@@ -372,7 +414,7 @@ export type EntityDataProp<T, C extends boolean> = T extends Date
     ? T
     : T extends { __runtime?: infer Runtime; __raw?: infer Raw }
       ? (C extends true ? Raw : Runtime)
-      : T extends Reference<infer U>
+      : T extends ReferenceShape<infer U>
         ? EntityDataNested<U, C>
         : T extends ScalarReference<infer U>
           ? EntityDataProp<U, C>
@@ -392,7 +434,7 @@ export type RequiredEntityDataProp<T, O, C extends boolean> = T extends Date
       ? T
       : T extends { __runtime?: infer Runtime; __raw?: infer Raw }
         ? (C extends true ? Raw : Runtime)
-        : T extends Reference<infer U>
+        : T extends ReferenceShape<infer U>
           ? RequiredEntityDataNested<U, O, C>
           : T extends ScalarReference<infer U>
             ? RequiredEntityDataProp<U, O, C>
@@ -483,9 +525,9 @@ export type EntityDTOProp<E, T, C extends TypeConfig = never> = T extends Scalar
   ? T
   : T extends { __serialized?: infer U }
     ? (IsUnknown<U> extends false ? U : T)
-    : T extends LoadedReference<infer U>
+    : T extends LoadedReferenceShape<infer U>
       ? EntityDTO<U, C>
-      : T extends Reference<infer U>
+      : T extends ReferenceShape<infer U>
         ? PrimaryOrObject<E, U, C>
         : T extends ScalarReference<infer U>
           ? U
@@ -502,10 +544,12 @@ export type EntityDTOProp<E, T, C extends TypeConfig = never> = T extends Scalar
                   : T;
 
 // ideally this should also mark not populated collections as optional, but that would be breaking
-type DTOProbablyOptionalProps<T> = NonNullable<NullableKeys<T, undefined>>;
-type DTOIsOptional<T, K extends keyof T> = T[K] extends LoadedCollection<any>
+// Extract base entity type from Loaded<T> to avoid expensive type checks on complex Loaded types
+type UnwrapLoadedEntity<T> = T extends { [__loadedType]?: infer U } ? NonNullable<U> : T;
+type DTOProbablyOptionalProps<T> = NonNullable<NullableKeys<UnwrapLoadedEntity<T>, undefined>>;
+type DTOIsOptional<T, K extends keyof T> = T[K] extends LoadedCollectionShape
   ? false
-  : K extends PrimaryProperty<T>
+  : K extends PrimaryProperty<UnwrapLoadedEntity<T>>
     ? false
     : K extends DTOProbablyOptionalProps<T>
       ? true
@@ -1179,19 +1223,19 @@ export type PopulateOptions<T> = {
 type Loadable<T extends object> = Collection<T, any> | Reference<T> | Ref<T> | readonly T[]; // we need to support raw arrays in embeddables too to allow population
 type ExtractType<T> =
   T extends CollectionShape<infer U> ? U :
-  T extends Reference<infer U> ? U :
+  T extends ReferenceShape<infer U> ? U :
   T extends Ref<infer U> ? U :
   T extends readonly (infer U)[] ? U :
   T;
 
 type ExtractStringKeys<T> = { [K in keyof T]-?: CleanKeys<T, K> }[keyof T] & {};
-type StringKeys<T, E extends string = never> = T extends CollectionShape
+/**
+ * Extracts string keys from an entity type, handling Collection/Reference wrappers.
+ * Simplified to just check `T extends object` since ExtractType handles the unwrapping.
+ */
+type StringKeys<T, E extends string = never> = T extends object
   ? ExtractStringKeys<ExtractType<T>> | E
-  : T extends Reference<any>
-    ? ExtractStringKeys<ExtractType<T>> | E
-    : T extends object
-      ? ExtractStringKeys<ExtractType<T>> | E
-      : never;
+  : never;
 type GetStringKey<T, K extends StringKeys<T, string>, E extends string> = K extends keyof T ? ExtractType<T[K]> : (K extends E ? keyof T : never);
 
 // limit depth of the recursion to 5 (inspired by https://www.angularfix.com/2022/01/why-am-i-getting-instantiation-is.html)
@@ -1215,22 +1259,20 @@ export type AutoPath<O, P extends string | boolean, E extends string = never, D 
       ? never
       : P extends any
         ? P extends string
-          ? (P & `${string}.` extends never ? P : P & `${string}.`) extends infer Q
-            ? Q extends `${infer A}.${infer B}`
-              ? A extends StringKeys<O, E>
-                ? `${A}.${AutoPath<NonNullable<GetStringKey<O, A, E>>, B, E, Prev[D]>}`
-                : never
-              : Q extends StringKeys<O, E>
-                ? (NonNullable<GetStringKey<O, Q, E>> extends unknown ? Exclude<P, `${string}.`> : never) | (StringKeys<NonNullable<GetStringKey<O, Q, E>>, E> extends never ? never : `${Q & string}.`)
-                : StringKeys<O, E> | `${CollectionKeys<O>}:ref`
+          ? P extends `${infer A}.${infer B}`
+            ? A extends StringKeys<O, E>
+              ? `${A}.${AutoPath<NonNullable<GetStringKey<O, A, E>>, B, E, Prev[D]>}`
               : never
-            : never
-          : never;
+            : P extends StringKeys<O, E>
+              ? (NonNullable<GetStringKey<O, P & StringKeys<O, E>, E>> extends unknown ? Exclude<P, `${string}.`> : never) | (StringKeys<NonNullable<GetStringKey<O, P & StringKeys<O, E>, E>>, E> extends never ? never : `${P & string}.`)
+              : StringKeys<O, E> | `${CollectionKeys<O>}:ref`
+          : never
+        : never;
 
 export type UnboxArray<T> = T extends any[] ? ArrayElement<T> : T;
 export type ArrayElement<ArrayType extends unknown[]> = ArrayType extends (infer ElementType)[] ? ElementType : never;
 
-export type ExpandProperty<T> = T extends Reference<infer U>
+export type ExpandProperty<T> = T extends ReferenceShape<infer U>
   ? NonNullable<U>
   : T extends CollectionShape<infer U>
     ? NonNullable<U>
@@ -1241,10 +1283,10 @@ export type ExpandProperty<T> = T extends Reference<infer U>
 type LoadedLoadable<T, E extends object> =
   T extends CollectionShape
   ? LoadedCollection<E>
-  : T extends Reference<any>
-    ? T & LoadedReference<E> // intersect with T (which is `Ref`) to include the PK props
-    : T extends ScalarReference<infer U>
-      ? LoadedScalarReference<U>
+  : T extends ScalarReference<infer U>
+    ? LoadedScalarReference<U>
+    : T extends ReferenceShape
+      ? T & LoadedReference<E> // intersect with T (which is `Ref`) to include the PK props
       : T extends Scalar
         ? T
         : T extends (infer U)[]
@@ -1272,14 +1314,17 @@ export type IsPrefixed<T, K extends keyof T, L extends string, E extends string 
     : K extends symbol
       ? never
       : IsTrue<L> extends true
-        ? (T[K] & {} extends Loadable<any> ? K : never)
+        ? (T[K] & {} extends LoadableShape ? K : never)
         : IsNever<StringLiteral<L>> extends true
           ? never
-          : K extends Prefix<T, L>
+          // Fast path: '*' means all keys, skip the expensive Prefix computation
+          : L extends '*'
             ? K
-            : K extends PrimaryProperty<T>
+            : K extends Prefix<T, L>
               ? K
-              : never;
+              : K extends PrimaryProperty<T>
+                ? K
+                : never;
 
 // filter by prefix and map to suffix
 type Suffix<Key, Hint extends string, All = true | '*'> = Hint extends `${infer Pref}.${infer Suf}`
@@ -1293,12 +1338,6 @@ export type IsSubset<T, U> = keyof U extends keyof T
   : string extends keyof U // If U has an index signature (like Dictionary), allow it
     ? {}
     : { [K in keyof U as K extends keyof T ? never : CleanKeys<U, K>]: never; };
-
-// eslint-disable-next-line @typescript-eslint/naming-convention
-declare const __selectedType: unique symbol;
-
-// eslint-disable-next-line @typescript-eslint/naming-convention
-declare const __loadedType: unique symbol;
 
 /**
  * Fast check if T is a Loaded type by looking for the marker symbol.
@@ -1351,8 +1390,9 @@ type LoadedInternal<T, L extends string = never, F extends string = '*', E exten
 
 /**
  * Represents entity with its loaded relations (`populate` hint) and selected properties (`fields` hint).
+ * The __loadHint marker uses contravariance to ensure Loaded<A, 'b'> is NOT assignable to Loaded<A, 'b.c'>.
  */
-export type Loaded<T, L extends string = never, F extends string = '*', E extends string = never> = LoadedInternal<T, L, F, E> & { [__loadedType]?: T };
+export type Loaded<T, L extends string = never, F extends string = '*', E extends string = never> = LoadedInternal<T, L, F, E> & { [__loadedType]?: T; [__loadHint]?: (hint: Prefixes<L>) => void };
 
 export interface LoadedReference<T> extends Reference<NonNullable<T>> {
   $: NonNullable<T>;

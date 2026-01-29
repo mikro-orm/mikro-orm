@@ -52,32 +52,36 @@ interface Author {
 // AutoPath benchmarks
 // ============================================
 
-// eslint-disable-next-line
-function validatePath<T, P extends string>(_path: AutoPath<T, P, PopulatePath.ALL>): void {}
+
+function validatePath<T, P extends string>(
+  _path: AutoPath<T, P, PopulatePath.ALL>,
+): void { /* empty */ }
 
 bench('AutoPath - simple property access', () => {
   validatePath<Author, 'name'>('name');
-}).types([1800, 'instantiations']);
+}).types([682, 'instantiations']);
 
 bench('AutoPath - single relation', () => {
   validatePath<Author, 'books'>('books');
-}).types([1900, 'instantiations']);
+}).types([773, 'instantiations']);
 
 bench('AutoPath - nested relation (2 levels)', () => {
   validatePath<Author, 'books.publisher'>('books.publisher');
-}).types([2400, 'instantiations']);
+}).types([1000, 'instantiations']);
 
 bench('AutoPath - nested relation (3 levels)', () => {
   validatePath<Author, 'books.publisher.books'>('books.publisher.books');
-}).types([2500, 'instantiations']);
+}).types([1043, 'instantiations']);
 
 bench('AutoPath - nested relation (4 levels)', () => {
-  validatePath<Author, 'books.publisher.books.author'>('books.publisher.books.author');
-}).types([2600, 'instantiations']);
+  validatePath<Author, 'books.publisher.books.author'>(
+    'books.publisher.books.author',
+  );
+}).types([1106, 'instantiations']);
 
 bench('AutoPath - collection with :ref', () => {
   validatePath<Author, 'books:ref'>('books:ref');
-}).types([550, 'instantiations']);
+}).types([496, 'instantiations']);
 
 // ============================================
 // Loaded benchmarks
@@ -88,27 +92,33 @@ function useLoaded<T, L extends string = never>(_entity: Loaded<T, L>): void {}
 
 bench('Loaded - no populate', () => {
   useLoaded<Author>({} as Author);
-}).types([650, 'instantiations']);
+}).types([613, 'instantiations']);
 
 bench('Loaded - single relation', () => {
   useLoaded<Author, 'books'>({} as Loaded<Author, 'books'>);
-}).types([1000, 'instantiations']);
+}).types([989, 'instantiations']);
 
 bench('Loaded - nested relation (2 levels)', () => {
   useLoaded<Author, 'books.publisher'>({} as Loaded<Author, 'books.publisher'>);
-}).types([1000, 'instantiations']);
+}).types([989, 'instantiations']);
 
 bench('Loaded - nested relation (3 levels)', () => {
-  useLoaded<Author, 'books.publisher.books'>({} as Loaded<Author, 'books.publisher.books'>);
-}).types([1000, 'instantiations']);
+  useLoaded<Author, 'books.publisher.books'>(
+    {} as Loaded<Author, 'books.publisher.books'>,
+  );
+}).types([989, 'instantiations']);
 
 bench('Loaded - multiple relations', () => {
-  useLoaded<Author, 'books' | 'friends' | 'favouriteBook'>({} as Loaded<Author, 'books' | 'friends' | 'favouriteBook'>);
-}).types([1900, 'instantiations']);
+  useLoaded<Author, 'books' | 'friends' | 'favouriteBook'>(
+    {} as Loaded<Author, 'books' | 'friends' | 'favouriteBook'>,
+  );
+}).types([1397, 'instantiations']);
 
 bench('Loaded - complex nested paths', () => {
-  useLoaded<Author, 'books.tags' | 'books.publisher' | 'friends.books'>({} as Loaded<Author, 'books.tags' | 'books.publisher' | 'friends.books'>);
-}).types([1200, 'instantiations']);
+  useLoaded<Author, 'books.tags' | 'books.publisher' | 'friends.books'>(
+    {} as Loaded<Author, 'books.tags' | 'books.publisher' | 'friends.books'>,
+  );
+}).types([1276, 'instantiations']);
 
 // ============================================
 // Deep hierarchy tests
@@ -159,12 +169,16 @@ interface DeepRoot {
 }
 
 bench('AutoPath - deep hierarchy (6 levels)', () => {
-  validatePath<DeepRoot, 'level1.level2.level3.level4.level5'>('level1.level2.level3.level4.level5');
-}).types([3300, 'instantiations']);
+  validatePath<DeepRoot, 'level1.level2.level3.level4.level5'>(
+    'level1.level2.level3.level4.level5',
+  );
+}).types([1402, 'instantiations']);
 
 bench('Loaded - deep hierarchy (6 levels)', () => {
-  useLoaded<DeepRoot, 'level1.level2.level3.level4.level5'>({} as Loaded<DeepRoot, 'level1.level2.level3.level4.level5'>);
-}).types([1700, 'instantiations']);
+  useLoaded<DeepRoot, 'level1.level2.level3.level4.level5'>(
+    {} as Loaded<DeepRoot, 'level1.level2.level3.level4.level5'>,
+  );
+}).types([951, 'instantiations']);
 
 // ============================================
 // Wide entity (many properties) tests
@@ -192,11 +206,13 @@ interface WideEntity {
 
 bench('AutoPath - wide entity (15 properties)', () => {
   validatePath<WideEntity, 'rel1'>('rel1');
-}).types([2300, 'instantiations']);
+}).types([843, 'instantiations']);
 
 bench('Loaded - wide entity (15 properties)', () => {
-  useLoaded<WideEntity, 'rel1' | 'rel2' | 'rel3'>({} as Loaded<WideEntity, 'rel1' | 'rel2' | 'rel3'>);
-}).types([2100, 'instantiations']);
+  useLoaded<WideEntity, 'rel1' | 'rel2' | 'rel3'>(
+    {} as Loaded<WideEntity, 'rel1' | 'rel2' | 'rel3'>,
+  );
+}).types([1698, 'instantiations']);
 
 // ============================================
 // Eager props tests
@@ -212,8 +228,10 @@ interface EntityWithEager {
 }
 
 bench('Loaded - with eager props', () => {
-  useLoaded<EntityWithEager, 'normalRel'>({} as Loaded<EntityWithEager, 'normalRel'>);
-}).types([1700, 'instantiations']);
+  useLoaded<EntityWithEager, 'normalRel'>(
+    {} as Loaded<EntityWithEager, 'normalRel'>,
+  );
+}).types([1069, 'instantiations']);
 
 // ============================================
 // Fields selection tests
@@ -222,9 +240,9 @@ bench('Loaded - with eager props', () => {
 bench('Loaded - with fields selection', () => {
   const entity = {} as Loaded<Author, 'books', 'name' | 'email'>;
   void entity;
-}).types([900, 'instantiations']);
+}).types([929, 'instantiations']);
 
 bench('Loaded - with exclude', () => {
   const entity = {} as Loaded<Author, 'books', '*', 'age'>;
   void entity;
-}).types([700, 'instantiations']);
+}).types([619, 'instantiations']);
