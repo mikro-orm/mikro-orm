@@ -1647,10 +1647,13 @@ export abstract class AbstractSqlDriver<
         orderBy.push({ [`${alias}.${prop.fixedOrderColumn}`]: QueryOrder.ASC } as QueryOrderMap<T>);
       }
 
-      if (propOrderBy) {
-        for (const item of Utils.asArray(propOrderBy)) {
-          for (const field of Utils.getObjectQueryKeys(item)) {
-            const order = item[field as keyof typeof item];
+      // Use relation-level orderBy, or fall back to entity-level orderBy
+      const effectiveOrderBy = propOrderBy ?? meta2.orderBy;
+
+      if (effectiveOrderBy) {
+        for (const item of Utils.asArray(effectiveOrderBy as typeof propOrderBy)) {
+          for (const field of Utils.getObjectQueryKeys(item!)) {
+            const order = item![field as keyof typeof item];
 
             if (RawQueryFragment.isKnownFragmentSymbol(field)) {
               const { sql, params } = RawQueryFragment.getKnownFragment(field)!;
