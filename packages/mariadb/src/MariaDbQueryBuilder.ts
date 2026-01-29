@@ -2,7 +2,6 @@ import {
   type AnyEntity,
   type EntityKey,
   type EntityMetadata,
-  type PopulateOptions,
   raw,
   RawQueryFragment,
   Utils,
@@ -97,33 +96,15 @@ export class MariaDbQueryBuilder<
     this._limit = undefined;
     this._offset = undefined;
 
-    // remove joins that are not used for population or ordering to improve performance
-    const populate = new Set<string>();
-    const orderByAliases = this._orderBy
-      .flatMap(hint => Object.keys(hint))
-      .map(k => k.split('.')[0]);
+    // Save the original WHERE conditions before pruning joins
+    const originalCond = this._cond;
+    const populatePaths = this.getPopulatePaths();
 
-    function addPath(hints: PopulateOptions<any>[], prefix = '') {
-      for (const hint of hints) {
-        const field = hint.field.split(':')[0];
-        populate.add((prefix ? prefix + '.' : '') + field);
+    // Remove joins that are not used for population or ordering
+    this.pruneJoinsForPagination(meta, populatePaths);
 
-        if (hint.children) {
-          addPath(hint.children, (prefix ? prefix + '.' : '') + field);
-        }
-      }
-    }
-
-    addPath(this._populate);
-
-    for (const [key, join] of Object.entries(this._joins)) {
-      const path = join.path?.replace(/\[populate]|\[pivot]|:ref/g, '').replace(new RegExp(`^${meta.className}.`), '');
-
-      /* v8 ignore next */
-      if (!populate.has(path ?? '') && !orderByAliases.includes(join.alias)) {
-        delete this._joins[key];
-      }
-    }
+    // Transfer WHERE conditions to ORDER BY joins (GH #6160)
+    this.transferConditionsForOrderByJoins(meta, originalCond, populatePaths);
 
     const subquerySql = subSubQuery.toString();
     const key = meta.getPrimaryProps()[0].runtimeType === 'string' ? `concat('"', ${quotedPKs.join(', ')}, '"')` : quotedPKs.join(', ');

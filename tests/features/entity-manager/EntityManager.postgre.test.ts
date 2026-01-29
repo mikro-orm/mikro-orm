@@ -2193,9 +2193,11 @@ describe('EntityManagerPostgre', () => {
 
     expect(res2).toHaveLength(5);
     expect(res2.map(a => a.name)).toEqual(['God 04', 'God 05', 'God 06', 'God 07', 'God 08']);
+    // The outer query's join now includes the filter condition in its ON clause (GH #6160)
+    // This ensures ORDER BY uses the same filtered rows as the subquery
     expect(mock.mock.calls[0][0]).toMatch('select "a0".* ' +
       'from "author2" as "a0" ' +
-      'left join "book2" as "b1" on "a0"."id" = "b1"."author_id" where "a0"."id" in (select "a0"."id" ' +
+      'left join "book2" as "b1" on "a0"."id" = "b1"."author_id" and "b1"."title" like ? where "a0"."id" in (select "a0"."id" ' +
       'from (select "a0"."id" ' +
       'from "author2" as "a0" ' +
       'left join "book2" as "b1" on "a0"."id" = "b1"."author_id" ' +

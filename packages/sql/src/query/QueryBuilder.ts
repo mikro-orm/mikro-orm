@@ -1928,37 +1928,87 @@ export class QueryBuilder<
     this._limit = undefined;
     this._offset = undefined;
 
+    // Save the original WHERE conditions before pruning joins
+    const originalCond = this._cond;
+    const populatePaths = this.getPopulatePaths();
+
     if (!this._fields!.some(field => isRaw(field))) {
-      this.pruneExtraJoins(meta);
+      this.pruneJoinsForPagination(meta, populatePaths);
     }
+
+    // Transfer WHERE conditions to ORDER BY joins (GH #6160)
+    this.transferConditionsForOrderByJoins(meta, originalCond, populatePaths);
 
     const { sql, params } = subSubQuery.compile();
     this.select(this._fields!).where({ [Utils.getPrimaryKeyHash(meta.primaryKeys)]: { $in: raw(sql, params) } });
   }
 
-  private pruneExtraJoins(meta: EntityMetadata) {
-    // remove joins that are not used for population or ordering to improve performance
-    const populate = new Set<string>();
-    const orderByAliases = this._orderBy
-      .flatMap(hint => Object.keys(hint))
-      .map(k => k.split('.')[0]);
+  /**
+   * Computes the set of populate paths from the _populate hints.
+   */
+  protected getPopulatePaths(): Set<string> {
+    const paths = new Set<string>();
 
-    function addPath(hints: PopulateOptions<any>[], prefix = '') {
+    function addPath(hints: PopulateOptions<any>[], prefix = ''): void {
       for (const hint of hints) {
         const field = hint.field.split(':')[0];
-        populate.add((prefix ? prefix + '.' : '') + field);
+        const fullPath = prefix ? prefix + '.' + field : field;
+        paths.add(fullPath);
 
         if (hint.children) {
-          addPath(hint.children, (prefix ? prefix + '.' : '') + field);
+          addPath(hint.children, fullPath);
         }
       }
     }
 
     addPath(this._populate);
+    return paths;
+  }
+
+  protected normalizeJoinPath(join: JoinOptions, meta: EntityMetadata): string {
+    return join.path?.replace(/\[populate]|\[pivot]|:ref/g, '').replace(new RegExp(`^${meta.className}.`), '') ?? '';
+  }
+
+  /**
+   * Transfers WHERE conditions to ORDER BY joins that are not used for population.
+   * This ensures the outer query's ORDER BY uses the same filtered rows as the subquery.
+   * GH #6160
+   */
+  protected transferConditionsForOrderByJoins(meta: EntityMetadata, cond: Dictionary | undefined, populatePaths: Set<string>): void {
+    if (!cond || this._orderBy.length === 0) {
+      return;
+    }
+
+    const orderByAliases = new Set(
+      this._orderBy
+        .flatMap(hint => Object.keys(hint))
+        .filter(k => !RawQueryFragment.isKnownFragmentSymbol(k))
+        .map(k => k.split('.')[0]),
+    );
+
+    for (const join of Object.values(this._joins)) {
+      const joinPath = this.normalizeJoinPath(join, meta);
+      const isPopulateJoin = populatePaths.has(joinPath);
+
+      // Only transfer conditions for joins used for ORDER BY but not for population
+      if (orderByAliases.has(join.alias) && !isPopulateJoin) {
+        this.transferConditionsToJoin(cond, join);
+      }
+    }
+  }
+
+  /**
+   * Removes joins that are not used for population or ordering to improve performance.
+   */
+  protected pruneJoinsForPagination(meta: EntityMetadata, populatePaths: Set<string>): void {
+    const orderByAliases = this._orderBy
+      .flatMap(hint => Object.keys(hint))
+      .map(k => k.split('.')[0]);
+
     const joins = Object.entries(this._joins);
     const rootAlias = this.alias;
 
-    function addParentAlias(alias: string) {
+    function addParentAlias(alias: string): void {
       const join = joins.find(j => j[1].alias === alias);
 
       if (join && join[1].ownerAlias !== rootAlias) {
@@ -1972,10 +2022,40 @@ export class QueryBuilder<
     }
 
     for (const [key, join] of joins) {
-      const path = join.path?.replace(/\[populate]|\[pivot]|:ref/g, '').replace(new RegExp(`^${meta.className}.`), '');
+      const path = this.normalizeJoinPath(join, meta);
 
-      if (!populate.has(path ?? '') && !orderByAliases.includes(join.alias)) {
+      if (!populatePaths.has(path) && !orderByAliases.includes(join.alias)) {
         delete this._joins[key];
+      }
+    }
+  }
+
+  /**
+   * Transfers WHERE conditions that reference a join alias to the join's ON clause.
+   * This is needed when a join is kept for ORDER BY after pagination wrapping,
+   * so the outer query orders by the same filtered rows as the subquery.
+   * @internal
+   */
+  protected transferConditionsToJoin(cond: Dictionary, join: JoinOptions, path = ''): void {
+    const aliasPrefix = join.alias + '.';
+
+    for (const key of Object.keys(cond)) {
+      const value = cond[key];
+
+      // Handle $and/$or operators - recurse into nested conditions
+      if (key === '$and' || key === '$or') {
+        if (Array.isArray(value)) {
+          for (const item of value) {
+            this.transferConditionsToJoin(item, join, path);
+          }
+        }
+        continue;
+      }
+
+      // Check if this condition references the join alias
+      if (key.startsWith(aliasPrefix)) {
+        // Add condition to the join's ON clause
+        join.cond[key] = value;
       }
     }
   }
