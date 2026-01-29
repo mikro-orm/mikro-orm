@@ -1300,35 +1300,32 @@ declare const __selectedType: unique symbol;
 // eslint-disable-next-line @typescript-eslint/naming-convention
 declare const __loadedType: unique symbol;
 
-type AnyStringToNever<T> = string extends T ? never : T;
+/**
+ * Fast check if T is a Loaded type by looking for the marker symbol.
+ * This is much cheaper than matching against the full Loaded structure.
+ */
+type IsLoadedType<T> = T extends { [__loadedType]?: any } ? true : false;
 
+/**
+ * Optimized MergeSelected using intersection instead of extraction.
+ * When T is already Loaded, we intersect with a new Loaded type for the selected fields.
+ * This avoids the expensive pattern matching needed to extract hints from Loaded types.
+ */
 export type MergeSelected<T, U, F extends string> =
-  T extends Loaded<infer TT, infer P, infer FF, infer E>
-    ? IsNever<Exclude<E, F>> extends true
-      ? Loaded<TT, P, AnyStringToNever<F> | AnyStringToNever<FF>> // no excludes, we want to merge the partial hints
-      : Loaded<TT, AnyStringToNever<P>, AnyStringToNever<FF>, AnyStringToNever<Exclude<E, F>>> // with excludes, we only remove the property from it
+  IsLoadedType<T> extends true
+    ? T & Loaded<U, never, F, never>
     : T;
 
-// merge partial loading hints, and propagate populate: '*' to it
-type MergeFields<F1 extends string, F2 extends string, P1, P2> =
-  P1 | P2 extends '*'
-    ? '*'
-    : F1 | F2;
-
-type MergeExcludes<F extends string, E extends string> =
-  F extends E
-    ? never
-    : Exclude<E, F>;
-
-// used for `em.populate` and `em.refresh`, allows ignoring the previous Excluded hint, which is used for refreshing as thats the default behaviour
+/**
+ * Optimized MergeLoaded using intersection instead of extraction.
+ * When T is already Loaded, we intersect with a new Loaded type for the additional hints.
+ * This avoids the expensive pattern matching needed to extract hints from Loaded types.
+ * Used for `em.populate` and `em.refresh`.
+ */
 export type MergeLoaded<T, U, P extends string, F extends string, E extends string, R extends boolean = false> =
-  T extends Loaded<U, infer PP, infer FF, infer EE>
-    ? string extends FF
-      ? Loaded<T, P, F, AnyStringToNever<EE> | E>
-      : string extends P
-        ? Loaded<U, never, F | (FF & string), MergeExcludes<F | (FF & string), EE | E>>
-        : Loaded<U, P | AnyStringToNever<PP>, MergeFields<F, AnyStringToNever<FF>, P, PP>, MergeExcludes<MergeFields<F, AnyStringToNever<FF>, P, PP>, (R extends true ? never : EE) | E>>
-    : Loaded<T, P, F>;
+  IsLoadedType<T> extends true
+    ? T & Loaded<U, P, F, E>
+    : Loaded<T, P, F, E>;
 
 export type AddOptional<T> = undefined | null extends T ? null | undefined : null extends T ? null : undefined extends T ? undefined : never;
 type LoadedProp<T, L extends string = never, F extends string = '*', E extends string = never> = LoadedLoadable<T, Loaded<ExtractType<T>, L, F, E>>;
