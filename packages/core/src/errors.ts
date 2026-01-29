@@ -8,7 +8,7 @@ import type {
   IPrimaryKey,
 } from './typings.js';
 import { inspect } from './logging/inspect.js';
-import { Utils } from '@mikro-orm/core';
+import { Utils } from './utils/Utils.js';
 
 export class ValidationError<T extends AnyEntity = AnyEntity> extends Error {
 

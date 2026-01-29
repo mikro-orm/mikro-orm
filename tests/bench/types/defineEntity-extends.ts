@@ -40,7 +40,7 @@ bench('entity extends entity with discriminator', () => {
       extra: p.string(),
     },
   });
-}).types([1400, 'instantiations']);
+}).types([1427, 'instantiations']);
 
 bench('embeddable extends embeddable', () => {
   const base = defineEntity({
@@ -60,7 +60,7 @@ bench('embeddable extends embeddable', () => {
       bar: p.string(),
     },
   });
-}).types([850, 'instantiations']);
+}).types([849, 'instantiations']);
 
 bench('embeddable extends embeddable with discriminator', () => {
   const base = defineEntity({
@@ -83,7 +83,7 @@ bench('embeddable extends embeddable with discriminator', () => {
       bar: p.string(),
     },
   });
-}).types([900, 'instantiations']);
+}).types([876, 'instantiations']);
 
 bench('polymorphic embeddables', () => {
   const base = defineEntity({
@@ -195,11 +195,14 @@ bench('polymorphic embeddables', () => {
     name: 'Document',
     tableName: 'documents',
     properties: {
-      data: () => p.embedded([
-        documentDataAwEdCard,
-        documentDataCoCheckMig,
-        documentDataMvDiCard,
-      ]).object(),
+      data: () =>
+        p
+          .embedded([
+            documentDataAwEdCard,
+            documentDataCoCheckMig,
+            documentDataMvDiCard,
+          ])
+          .object(),
     },
   });
-}).types([3500, 'instantiations']);
+}).types([3469, 'instantiations']);

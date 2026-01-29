@@ -698,6 +698,41 @@ describe('check typings', () => {
     const circularReference: Ref<Book> = ref(circularReferenceBook);
   });
 
+  test('assignability of Loaded<T> type propertly disallows not fully compatible types (GH #5433)', async () => {
+    interface D {
+      id: number;
+      name: string;
+    }
+
+    interface C {
+      id: number;
+      d: Collection<D>;
+    }
+
+    interface B {
+      id: number;
+      c: Ref<C>;
+    }
+
+    interface A {
+      id: number;
+      b: Ref<B>;
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
+    function requireBCD(_a: Loaded<A, 'b.c.d'>) {}
+
+    const loadedABC: Loaded<A, 'b.c'> = {} as any;
+
+    // This SHOULD fail - we only have b.c loaded, not b.c.d
+    // @ts-expect-error - missing 'd' in the populate hint
+    requireBCD(loadedABC);
+
+    // But this should work - we have what's required
+    const loadedABCD: Loaded<A, 'b.c.d'> = {} as any;
+    requireBCD(loadedABCD);
+  });
+
   test('exclusion', async () => {
     interface Notification {
       id: string;
