@@ -3,6 +3,21 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.6.6](https://github.com/mikro-orm/mikro-orm/compare/v6.6.5...v6.6.6) (2026-01-30)
+
+
+### Bug Fixes
+
+* **core:** ensure column name conflicts in M:N are propagated to STI child entities ([5be76ae](https://github.com/mikro-orm/mikro-orm/commit/5be76ae21ccd05e161a74631288dbbd3c6f32401)), closes [#7123](https://github.com/mikro-orm/mikro-orm/issues/7123)
+* **core:** ensure no collisions in polymorphic embeddables with shadowed properties ([b7707b4](https://github.com/mikro-orm/mikro-orm/commit/b7707b45d26a85d83bc9e394c10c84799152d7e8))
+* **core:** fix result caching for custom types ([b0ed700](https://github.com/mikro-orm/mikro-orm/commit/b0ed700647ef31ddb1e0adb5a844f1c19093a6c9)), closes [#7112](https://github.com/mikro-orm/mikro-orm/issues/7112)
+* **core:** respect `exclude` option on eager properties ([cb26a7e](https://github.com/mikro-orm/mikro-orm/commit/cb26a7e7ac0f8c3053ce51d17c4004bff9efd3c7))
+* **core:** use less strict `repository` option type to fix issues with `defineEntity` and cycles ([aeb1bb1](https://github.com/mikro-orm/mikro-orm/commit/aeb1bb1126202c21464aa8ce86e2419ef7ef39c7))
+
+
+
+
+
 ## [6.6.5](https://github.com/mikro-orm/mikro-orm/compare/v6.6.4...v6.6.5) (2026-01-21)
 
 

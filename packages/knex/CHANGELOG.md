@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.6.6](https://github.com/mikro-orm/mikro-orm/compare/v6.6.5...v6.6.6) (2026-01-30)
+
+
+### Bug Fixes
+
+* **core:** support schema parameter in formula query when using QB with partial loading ([30b37f7](https://github.com/mikro-orm/mikro-orm/commit/30b37f7dea9e8d3acfbd2744e97991411f15a960)), closes [#7102](https://github.com/mikro-orm/mikro-orm/issues/7102)
+
+
+
+
+
 ## [6.6.5](https://github.com/mikro-orm/mikro-orm/compare/v6.6.4...v6.6.5) (2026-01-21)
 
 
