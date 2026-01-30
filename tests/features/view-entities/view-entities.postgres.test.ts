@@ -24,9 +24,9 @@ const BookSummary = defineEntity({
   view: true,
   expression: (em: EntityManager) => {
     return em.createQueryBuilder(Book2, 'b')
-      .select([sql`min(b.title)`.as('title'), sql`min(a.name)`.as('author_name')])
       .join('b.author', 'a')
-      .groupBy('b.uuid_pk');
+      .select([sql`min(b.title)`.as('title'), sql`min(a.name)`.as('author_name')])
+      .groupBy('b.uuid');
   },
   properties: {
     title: p.string().primary(),
@@ -741,8 +741,8 @@ describe('View entities as relation targets (postgres)', () => {
     const em = orm.em.fork();
 
     const qb = em.createQueryBuilder(BookForViewRelation, 'b')
-      .select(['b.title', 'a.name'])
       .join('b.authorView', 'a')
+      .select(['b.title', 'a.name'])
       .where({ 'a.name': 'View Author 1' });
 
     const results = await qb.execute();

@@ -9,7 +9,6 @@ import {
   type LockOptions,
   type LoggerNamespace,
   MikroORM,
-  type NoInfer,
 } from '@mikro-orm/sqlite';
 import { Entity, PrimaryKey, Property, Transactional } from '@mikro-orm/decorators/es';
 

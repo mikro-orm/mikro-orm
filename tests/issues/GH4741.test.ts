@@ -132,13 +132,12 @@ test(`GH4741 issue (1/3)`, async () => {
 test(`GH4741 issue (2/3)`, async () => {
 
   const em = orm.em.fork();
-  const qb = em.createQueryBuilder(Outer, 'o');
-
-  qb.select('*');
-  qb.leftJoinAndSelect('o.divisions', 'd');	// extra join
-  qb.leftJoinAndSelect('o.activeDivision', 'ad');
-  qb.leftJoinAndSelect('ad.inners', 'ai');
-  qb.leftJoinAndSelect('ai.geometry', 'g');
+  const qb = em.createQueryBuilder(Outer, 'o')
+    .select('*')
+    .leftJoinAndSelect('o.divisions', 'd')
+    .leftJoinAndSelect('o.activeDivision', 'ad')
+    .leftJoinAndSelect('ad.inners', 'ai')
+    .leftJoinAndSelect('ai.geometry', 'g');
 
   const q = qb.toQuery();
   expect(q.sql).toBe('select `o`.*, `d`.`id` as `d__id`, `d`.`outer_id` as `d__outer_id`, `ad`.`id` as `ad__id`, `ad`.`outer_id` as `ad__outer_id`, `ai`.`id` as `ai__id`, `ai`.`geometry_id` as `ai__geometry_id`, `ai`.`division_id` as `ai__division_id`, `g`.`id` as `g__id` from `outer` as `o` left join `division` as `d` on `o`.`id` = `d`.`outer_id` left join `division` as `ad` on `o`.`active_division_id` = `ad`.`id` left join `inner` as `ai` on `ad`.`id` = `ai`.`division_id` left join `geometry` as `g` on `ai`.`geometry_id` = `g`.`id`');
@@ -170,14 +169,13 @@ test(`GH4741 issue (2/3)`, async () => {
 //       |-> [Divisions] --> [Inners]
 test(`GH4741 issue (3/3)`, async () => {
   const em = orm.em.fork();
-  const qb = em.createQueryBuilder(Outer, 'o');
-
-  qb.select('*');
-  qb.leftJoinAndSelect('o.divisions', 'd');
-  qb.leftJoinAndSelect('d.inners', 'i');		// extra join
-  qb.leftJoinAndSelect('o.activeDivision', 'ad');
-  qb.leftJoinAndSelect('ad.inners', 'ai');
-  qb.leftJoinAndSelect('ai.geometry', 'g');
+  const qb = em.createQueryBuilder(Outer, 'o')
+    .select('*')
+    .leftJoinAndSelect('o.divisions', 'd')
+    .leftJoinAndSelect('d.inners', 'i')
+    .leftJoinAndSelect('o.activeDivision', 'ad')
+    .leftJoinAndSelect('ad.inners', 'ai')
+    .leftJoinAndSelect('ai.geometry', 'g');
 
   const q = qb.toQuery();
   expect(q.sql).toBe('select `o`.*, `d`.`id` as `d__id`, `d`.`outer_id` as `d__outer_id`, `i`.`id` as `i__id`, `i`.`geometry_id` as `i__geometry_id`, `i`.`division_id` as `i__division_id`, `ad`.`id` as `ad__id`, `ad`.`outer_id` as `ad__outer_id`, `ai`.`id` as `ai__id`, `ai`.`geometry_id` as `ai__geometry_id`, `ai`.`division_id` as `ai__division_id`, `g`.`id` as `g__id` from `outer` as `o` left join `division` as `d` on `o`.`id` = `d`.`outer_id` left join `inner` as `i` on `d`.`id` = `i`.`division_id` left join `division` as `ad` on `o`.`active_division_id` = `ad`.`id` left join `inner` as `ai` on `ad`.`id` = `ai`.`division_id` left join `geometry` as `g` on `ai`.`geometry_id` = `g`.`id`');

@@ -471,16 +471,33 @@ When you want to issue an atomic update query via flush, you can use the static 
 
 ```ts
 const ref = em.getReference(Author, 123);
-ref.age = raw(`age * 2`);
+ref.age = raw<number>(`age * 2`);
 
 await em.flush();
 console.log(ref.age); // real value is available after flush
 ```
 
+The `raw()` helper accepts a generic type parameter that specifies the return type. When assigning directly to entity properties, use `raw<T>()` where `T` matches the property type:
+
+```ts
+// Direct property assignment requires explicit type
+author.age = raw<number>(`age + 1`);
+author.name = raw<string>(`upper(name)`);
+book.price = raw<number>(`price * 1.1`);
+```
+
+When using `em.create()`, `em.assign()`, or similar methods, the type parameter is not required as `RawQueryFragment` is accepted in entity data types:
+
+```ts
+// No explicit type needed with em.create/em.assign
+em.assign(author, { age: raw(`age + 1`) });
+const book = em.create(Book, { price: raw(`price * 1.1`) });
+```
+
 The `raw()` helper returns special raw query fragment object. It disallows serialization (via `toJSON`) as well as working with the value (via [`valueOf()`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/valueOf)). Only single use of this value is allowed, if you try to reassign it to another entity, an error will be thrown to protect you from mistakes like this:
 
 ```ts
-order.number = raw(`(select max(num) + 1 from orders)`);
+order.number = raw<number>(`(select max(num) + 1 from orders)`);
 user.lastOrderNumber = order.number; // throws, it could resolve to a different value
 JSON.stringify(order); // throws, raw value cannot be serialized
 ```

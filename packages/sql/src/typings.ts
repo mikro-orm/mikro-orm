@@ -1,20 +1,20 @@
 import type { Generated, Kysely } from 'kysely';
 import type {
-  DeferMode,
   CheckCallback,
+  DeferMode,
   Dictionary,
-  EntityProperty,
-  GroupOperator,
-  RawQueryFragment,
-  QBFilterQuery,
-  QueryOrderMap,
-  Type,
-  QueryFlag,
   EntityName,
+  EntityProperty,
   EntitySchemaWithMeta,
+  FilterQuery,
+  GroupOperator,
+  Opt,
   Primary,
   PrimaryProperty,
-  Opt,
+  QueryFlag,
+  QueryOrderMap,
+  RawQueryFragment,
+  Type,
 } from '@mikro-orm/core';
 import type { JoinType, QueryType } from './query/enums.js';
 import type { DatabaseSchema } from './schema/DatabaseSchema.js';
@@ -29,9 +29,8 @@ export interface Table {
   table_comment?: string;
 }
 
-type AnyString = string & {};
-
-export type Field<T> = AnyString | keyof T | RawQueryFragment | QueryBuilder | NativeQueryBuilder;
+/** @internal */
+export type InternalField<T> = string | RawQueryFragment | QueryBuilder | NativeQueryBuilder;
 
 export interface JoinOptions {
   table: string;
@@ -164,33 +163,31 @@ export interface SchemaDifference {
 export interface IQueryBuilder<T> {
   readonly alias: string;
   readonly type: QueryType;
-  _fields?: Field<T>[];
+  /** @internal */
+  _fields?: InternalField<T>[];
   /** @internal */
   helper: any;
-  select(fields: Field<T> | Field<T>[], distinct?: boolean): this;
+  select(fields: string | RawQueryFragment | (string | RawQueryFragment)[], distinct?: boolean): this;
   addSelect(fields: string | string[]): this;
   from<T extends object>(target: EntityName<T> | IQueryBuilder<T>, aliasName?: string): IQueryBuilder<T>;
   insert(data: any): this;
   update(data: any): this;
-  delete(cond?: QBFilterQuery): this;
+  delete(cond?: FilterQuery<any>): this;
   truncate(): this;
   count(field?: string | string[], distinct?: boolean): this;
-  join(field: string, alias: string, cond?: QBFilterQuery, type?: JoinType, path?: string): this;
-  innerJoin(field: string, alias: string, cond?: QBFilterQuery): this;
-  leftJoin(field: string, alias: string, cond?: QBFilterQuery): this;
-  joinAndSelect(field: string, alias: string, cond?: QBFilterQuery): this;
-  leftJoinAndSelect(field: string, alias: string, cond?: QBFilterQuery, fields?: string[]): this;
-  innerJoinAndSelect(field: string, alias: string, cond?: QBFilterQuery, fields?: string[]): this;
+  join(field: string, alias: string, cond?: FilterQuery<any>, type?: JoinType, path?: string): this;
+  innerJoin(field: string, alias: string, cond?: FilterQuery<any>): this;
+  leftJoin(field: string, alias: string, cond?: FilterQuery<any>): this;
+  joinAndSelect(field: any, alias: string, cond?: FilterQuery<any>): this;
+  leftJoinAndSelect(field: any, alias: string, cond?: FilterQuery<any>, fields?: string[]): this;
+  innerJoinAndSelect(field: any, alias: string, cond?: FilterQuery<any>, fields?: string[]): this;
   withSubQuery(subQuery: RawQueryFragment | NativeQueryBuilder, alias: string): this;
-  where(cond: QBFilterQuery<T>, operator?: keyof typeof GroupOperator): this;
-  where(cond: string, params?: any[], operator?: keyof typeof GroupOperator): this;
-  andWhere(cond: QBFilterQuery<T>): this;
-  andWhere(cond: string, params?: any[]): this;
-  orWhere(cond: QBFilterQuery<T>): this;
-  orWhere(cond: string, params?: any[]): this;
+  where(cond: FilterQuery<T> | string | RawQueryFragment | Dictionary, operator?: keyof typeof GroupOperator | any[], operator2?: keyof typeof GroupOperator): this;
+  andWhere(cond: FilterQuery<T> | string | RawQueryFragment | Dictionary, params?: any[]): this;
+  orWhere(cond: FilterQuery<T> | string | RawQueryFragment | Dictionary, params?: any[]): this;
   orderBy(orderBy: QueryOrderMap<T>): this;
   groupBy(fields: (string | keyof T) | (string | keyof T)[]): this;
-  having(cond?: QBFilterQuery | string, params?: any[]): this;
+  having(cond?: FilterQuery<any> | string, params?: any[]): this;
   getAliasForJoinPath(path: string, options?: ICriteriaNodeProcessOptions): string | undefined;
   getJoinForPath(path?: string, options?: ICriteriaNodeProcessOptions): JoinOptions | undefined;
   getNextAlias(entityName?: string | EntityName<T>): string;

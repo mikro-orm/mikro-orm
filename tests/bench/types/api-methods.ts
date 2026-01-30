@@ -70,19 +70,19 @@ bench('em.find() return type - no options', () => {
   type R = ReturnType<typeof em.find<Author>>;
   const x = {} as R;
   void x;
-}).types([721, 'instantiations']);
+}).types([705, 'instantiations']);
 
 bench('em.find() return type - with populate', () => {
   type R = ReturnType<typeof em.find<Author, 'books'>>;
   const x = {} as R;
   void x;
-}).types([721, 'instantiations']);
+}).types([705, 'instantiations']);
 
 bench('em.find() return type - with populate and fields', () => {
   type R = ReturnType<typeof em.find<Author, 'books', 'name' | 'email'>>;
   const x = {} as R;
   void x;
-}).types([719, 'instantiations']);
+}).types([703, 'instantiations']);
 
 // ============================================
 // em.create() - input and return type computation
@@ -165,19 +165,19 @@ bench('FilterQuery<Author>', () => {
   type R = FilterQuery<Author>;
   const x = {} as R;
   void x;
-}).types([534, 'instantiations']);
+}).types([536, 'instantiations']);
 
 bench('FilterQuery<Book>', () => {
   type R = FilterQuery<Book>;
   const x = {} as R;
   void x;
-}).types([503, 'instantiations']);
+}).types([505, 'instantiations']);
 
 bench('FilterQuery<Loaded<Author, "books">>', () => {
   type R = FilterQuery<Loaded<Author, 'books'>>;
   const x = {} as R;
   void x;
-}).types([2497, 'instantiations']);
+}).types([2499, 'instantiations']);
 
 // ============================================
 // EntityData - used in em.assign()

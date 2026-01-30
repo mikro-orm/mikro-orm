@@ -56,12 +56,12 @@ import type { SelectQueryBuilder } from 'kysely';
  * export class Author { ... }
  * ```
  */
-export function raw<T extends object = any, R = any>(sql: SelectQueryBuilder<any, any, any> | QueryBuilder<T> | EntityKey<T> | EntityKey<T>[] | AnyString | ((alias: string) => string) | RawQueryFragment, params?: readonly unknown[] | Dictionary<unknown>): NoInfer<R> {
+export function raw<R = RawQueryFragment & symbol, T extends object = any>(sql: SelectQueryBuilder<any, any, any> | QueryBuilder<T> | EntityKey<T> | EntityKey<T>[] | AnyString | ((alias: string) => string) | RawQueryFragment, params?: readonly unknown[] | Dictionary<unknown>): R {
   if (Utils.isObject<SelectQueryBuilder<any, any, any>>(sql) && 'compile' in sql) {
     const query = sql.compile();
     const processed = query.sql.replaceAll(/\$\d+/g, '?');
-    return raw_(processed, query.parameters);
+    return raw_(processed, query.parameters) as R;
   }
 
-  return raw_(sql, params);
+  return raw_(sql, params) as R;
 }

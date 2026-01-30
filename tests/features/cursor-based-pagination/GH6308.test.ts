@@ -149,7 +149,6 @@ test('cursor pagination with relations', async () => {
 });
 
 test('cursor pagination with deeply nested missing property (3 levels)', async () => {
-  // This test hits line 262 in DatabaseDriver.ts - the nested object undefined check
   // The cursor has 'author' but author.profile is missing
   await expect(orm.em.findByCursor(Article, {
     first: 5,

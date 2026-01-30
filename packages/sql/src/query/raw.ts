@@ -57,16 +57,16 @@ import { QueryBuilder } from './QueryBuilder.js';
  * export class Author { ... }
  * ```
  */
-export function raw<T extends object = any, R = any>(sql: SelectQueryBuilder<any, any, any> | QueryBuilder<T> | EntityKey<T> | EntityKey<T>[] | AnyString | ((alias: string) => string) | RawQueryFragment, params?: readonly unknown[] | Dictionary<unknown>): NoInfer<R> {
+export function raw<R = RawQueryFragment & symbol, T extends object = any>(sql: SelectQueryBuilder<any, any, any> | QueryBuilder<T> | EntityKey<T> | EntityKey<T>[] | AnyString | ((alias: string) => string) | RawQueryFragment, params?: readonly unknown[] | Dictionary<unknown>): R {
   if (Utils.isObject<SelectQueryBuilder<any, any, any>>(sql) && 'compile' in sql) {
     const query = sql.compile();
-    return raw_(query.sql, query.parameters);
+    return raw_(query.sql, query.parameters) as R;
   }
 
   if (sql instanceof QueryBuilder) {
     const query = sql.toQuery();
-    return raw_(query.sql, query.params);
+    return raw_(query.sql, query.params) as R;
   }
 
-  return raw_(sql, params);
+  return raw_(sql, params) as R;
 }

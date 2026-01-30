@@ -53,7 +53,7 @@ export class EntityRepository<Entity extends object> {
     Fields extends string = '*',
     Excludes extends string = never,
   >(where: FilterQuery<Entity>, options?: FindOneOptions<Entity, Hint, Fields, Excludes>): Promise<Loaded<Entity, Hint, Fields, Excludes> | null> {
-    return this.getEntityManager().findOne<Entity, Hint, Fields, Excludes>(this.entityName, where, options);
+    return this.getEntityManager().findOne<Entity, Hint, Fields, Excludes>(this.entityName, where as any, options);
   }
 
   /**
@@ -66,7 +66,7 @@ export class EntityRepository<Entity extends object> {
     Fields extends string = '*',
     Excludes extends string = never,
   >(where: FilterQuery<Entity>, options?: FindOneOrFailOptions<Entity, Hint, Fields, Excludes>): Promise<Loaded<Entity, Hint, Fields, Excludes>> {
-    return this.getEntityManager().findOneOrFail<Entity, Hint, Fields, Excludes>(this.entityName, where, options);
+    return this.getEntityManager().findOneOrFail<Entity, Hint, Fields, Excludes>(this.entityName, where as any, options);
   }
 
   /**
@@ -132,7 +132,7 @@ export class EntityRepository<Entity extends object> {
     Fields extends string = '*',
     Excludes extends string = never,
   >(where: FilterQuery<Entity>, options?: FindOptions<Entity, Hint, Fields, Excludes>): Promise<Loaded<Entity, Hint, Fields, Excludes>[]> {
-    return this.getEntityManager().find(this.entityName, where as FilterQuery<Entity>, options);
+    return this.getEntityManager().find(this.entityName, where as any, options);
   }
 
   /**
@@ -144,7 +144,7 @@ export class EntityRepository<Entity extends object> {
     Fields extends string = '*',
     Excludes extends string = never,
   >(where: FilterQuery<Entity>, options?: FindOptions<Entity, Hint, Fields, Excludes>): Promise<[Loaded<Entity, Hint, Fields, Excludes>[], number]> {
-    return this.getEntityManager().findAndCount(this.entityName, where, options);
+    return this.getEntityManager().findAndCount(this.entityName, where as any, options);
   }
 
   /**
@@ -199,14 +199,14 @@ export class EntityRepository<Entity extends object> {
    * Fires native update query. Calling this has no side effects on the context (identity map).
    */
   async nativeUpdate(where: FilterQuery<Entity>, data: EntityData<Entity>, options?: UpdateOptions<Entity>): Promise<number> {
-    return this.getEntityManager().nativeUpdate(this.entityName, where, data, options);
+    return this.getEntityManager().nativeUpdate(this.entityName, where as any, data, options);
   }
 
   /**
    * Fires native delete query. Calling this has no side effects on the context (identity map).
    */
   async nativeDelete(where: FilterQuery<Entity>, options?: DeleteOptions<Entity>): Promise<number> {
-    return this.getEntityManager().nativeDelete(this.entityName, where, options);
+    return this.getEntityManager().nativeDelete(this.entityName, where as any, options);
   }
 
   /**
@@ -356,7 +356,7 @@ export class EntityRepository<Entity extends object> {
    * Returns total number of entities matching your `where` query.
    */
   async count<Hint extends string = never>(where: FilterQuery<Entity> = {} as FilterQuery<Entity>, options: CountOptions<Entity, Hint> = {}): Promise<number> {
-    return this.getEntityManager().count<Entity, Hint>(this.entityName, where, options);
+    return this.getEntityManager().count<Entity, Hint>(this.entityName, where as any, options);
   }
 
   getEntityName(): string {

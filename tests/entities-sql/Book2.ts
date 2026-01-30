@@ -1,27 +1,6 @@
 import { v4 } from 'uuid';
-import {
-  Cascade,
-  Collection,
-  Ref,
-  OptionalProps,
-  QueryOrder,
-  ref,
-  rel,
-  t,
-  sql,
-} from '@mikro-orm/core';
-import {
-  Entity,
-  Filter,
-  Formula,
-  Index,
-  ManyToMany,
-  ManyToOne,
-  OneToOne,
-  PrimaryKey,
-  Property,
-  Unique,
-} from '@mikro-orm/decorators/legacy';
+import { Cascade, Collection, Ref, OptionalProps, QueryOrder, ref, rel, t, sql } from '@mikro-orm/core';
+import { Entity, Filter, Formula, Index, ManyToMany, ManyToOne, OneToOne, PrimaryKey, Property, Unique } from '@mikro-orm/decorators/legacy';
 import { Publisher2 } from './Publisher2.js';
 import { Author2 } from './Author2.js';
 import { BookTag2 } from './BookTag2.js';
@@ -33,7 +12,6 @@ import { Test2 } from './Test2.js';
 @Filter({ name: 'hasAuthor', cond: { author: { $ne: null } }, default: true })
 @Filter({ name: 'writtenBy', cond: args => ({ author: { name: args.name } }) })
 export class Book2 {
-
   [OptionalProps]?: 'createdAt';
 
   @PrimaryKey({ name: 'uuid_pk', type: t.uuid })
@@ -92,13 +70,14 @@ export class Book2 {
       this.isbn = isbn;
     }
   }
-
 }
 
 export interface Book2Meta {
   category?: string;
   items?: number;
   valid?: boolean;
+  time?: number;
+  foo?: number;
   nested?: {
     foo: string;
     bar?: number;

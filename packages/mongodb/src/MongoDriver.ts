@@ -63,7 +63,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
 
     for await (const item of res) {
       if (options.rawResults) {
-        yield item;
+        yield item as any;
       } else {
         yield this.mapResult(item, this.metadata.find(entityName)) as T;
       }

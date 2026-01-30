@@ -45,10 +45,10 @@ const BookWithAuthor = new EntitySchema<IBookWithAuthor>({
   name: 'BookWithAuthor',
   expression: (em: EntityManager) => {
     return em.createQueryBuilder(Book2, 'b')
-      .select([sql`min(b.title)`.as('title'), 'author', sql`min(a.name)`.as('author_name'), raw('array_agg(t.name) as tags')])
       .join('b.author', 'a')
       .join('b.tags', 't')
-      .groupBy('b.uuid_pk');
+      .select([sql`min(b.title)`.as('title'), 'author', sql`min(a.name)`.as('author_name'), raw('array_agg(t.name) as tags')])
+      .groupBy('b.uuid');
   },
   properties: {
     title: { type: 'string' },

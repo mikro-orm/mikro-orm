@@ -6,12 +6,7 @@
  */
 
 import { bench } from '@ark/attest';
-import {
-  type Loaded,
-  type Ref,
-  type Collection,
-  PrimaryKeyProp,
-} from '@mikro-orm/core';
+import { type Loaded, type Ref, type Collection, PrimaryKeyProp } from '@mikro-orm/core';
 
 // ============================================
 // Test Entity Definitions
@@ -58,9 +53,9 @@ interface Author {
 // ============================================
 
 // eslint-disable-next-line
-function useLoaded<T, L extends string = never, F extends string = "*">(
-  _entity: Loaded<T, L, F>,
-): void { /* empty */ }
+function useLoaded<T, L extends string = never, F extends string = '*'>(_entity: Loaded<T, L, F>): void {
+  /* empty */
+}
 
 bench('Loaded<Author, "*"> - asterisk populate all', () => {
   useLoaded<Author, '*'>({} as Loaded<Author, '*'>);
@@ -80,9 +75,7 @@ bench('Loaded<Author, "books"> - single relation', () => {
 }).types([1163, 'instantiations']);
 
 bench('Loaded<Author, "books" | "friends"> - multiple relations', () => {
-  useLoaded<Author, 'books' | 'friends'>(
-    {} as Loaded<Author, 'books' | 'friends'>,
-  );
+  useLoaded<Author, 'books' | 'friends'>({} as Loaded<Author, 'books' | 'friends'>);
 }).types([1295, 'instantiations']);
 
 // ============================================
@@ -94,20 +87,14 @@ bench('Loaded<Author, "books", "*"> - default fields', () => {
 }).types([1023, 'instantiations']);
 
 bench('Loaded<Author, "books", "name" | "email"> - specific fields', () => {
-  useLoaded<Author, 'books', 'name' | 'email'>(
-    {} as Loaded<Author, 'books', 'name' | 'email'>,
-  );
+  useLoaded<Author, 'books', 'name' | 'email'>({} as Loaded<Author, 'books', 'name' | 'email'>);
 }).types([985, 'instantiations']);
 
 // ============================================
 // Helper type benchmarks
 // ============================================
 
-type Prefix<T, K> = K extends `${infer S}.${string}`
-  ? S
-  : K extends '*'
-    ? keyof T
-    : K;
+type Prefix<T, K> = K extends `${infer S}.${string}` ? S : K extends '*' ? keyof T : K;
 
 // eslint-disable-next-line
 function testPrefix<T, K>(_val: Prefix<T, K>): void {}
@@ -120,11 +107,7 @@ bench('Prefix<Author, "books.title"> - dotted path', () => {
   testPrefix<Author, 'books.title'>('books');
 }).types([9, 'instantiations']);
 
-type Suffix<
-  Key,
-  Hint extends string,
-  All = true | '*',
-> = Hint extends `${infer Pref}.${infer Suf}`
+type Suffix<Key, Hint extends string, All = true | '*'> = Hint extends `${infer Pref}.${infer Suf}`
   ? Pref extends Key
     ? Suf
     : never

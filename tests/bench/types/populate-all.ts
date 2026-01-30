@@ -6,13 +6,7 @@
  */
 
 import { bench } from '@ark/attest';
-import {
-  type AutoPath,
-  type PopulatePath,
-  type Ref,
-  type Collection,
-  PrimaryKeyProp,
-} from '@mikro-orm/core';
+import { type AutoPath, type PopulatePath, type Ref, type Collection, PrimaryKeyProp } from '@mikro-orm/core';
 
 // ============================================
 // Test Entity Definitions
@@ -58,10 +52,9 @@ interface Author {
 // AutoPath with boolean (populate: true pattern)
 // ============================================
 
-
-function validatePath<T, P extends string | boolean>(
-  _path: AutoPath<T, P, PopulatePath.ALL>,
-): void { /* empty */ }
+function validatePath<T, P extends string | boolean>(_path: AutoPath<T, P, PopulatePath.ALL>): void {
+  /* empty */
+}
 
 bench('AutoPath<Author, true> - populate all', () => {
   validatePath<Author, true>(true);

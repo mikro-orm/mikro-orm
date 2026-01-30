@@ -3,7 +3,6 @@ import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProv
 
 @Entity()
 class EntityA {
-
   @PrimaryKey()
   id!: number;
 
@@ -12,23 +11,19 @@ class EntityA {
 
   @OneToMany({ entity: () => EntityB, mappedBy: 'entityA' })
   entities_b = new Collection<EntityB>(this);
-
 }
 
 @Entity()
 class FieldB {
-
   @PrimaryKey()
   id!: number;
 
   @Property()
   name!: string;
-
 }
 
 @Entity()
 class EntityB {
-
   @PrimaryKey()
   id!: number;
 
@@ -36,7 +31,7 @@ class EntityB {
   organization!: string;
 
   @Property()
-  amount!: string;
+  amount!: number;
 
   @Property()
   fieldE!: boolean;
@@ -58,7 +53,6 @@ class EntityB {
 
   @ManyToOne({ entity: () => EntityA, nullable: true })
   entityA?: EntityA;
-
 }
 
 let orm: MikroORM;
@@ -75,7 +69,7 @@ beforeAll(async () => {
   orm.em.create(EntityB, {
     organization: 'orgId',
     entityA,
-    amount: '100',
+    amount: 100,
     fieldD: 1,
     fieldC: 1,
     fieldB: { name: 'anything' },
@@ -92,7 +86,8 @@ afterAll(async () => {
 });
 
 test('nesting $and and $or operators with complex conditions 1', async () => {
-  const qb = orm.em.qb(EntityA)
+  const qb = orm.em
+    .qb(EntityA)
     .select('*')
     .where({
       entities_b: {
@@ -102,9 +97,7 @@ test('nesting $and and $or operators with complex conditions 1', async () => {
               {
                 fieldB: {
                   id: {
-                    $nin: [
-                      'randomId1',
-                    ],
+                    $nin: [999],
                   },
                 },
               },
@@ -113,13 +106,16 @@ test('nesting $and and $or operators with complex conditions 1', async () => {
         ],
       },
     });
-  expect(qb.getQuery()).toBe('select `e0`.* from `entity_a` as `e0` left join `entity_b` as `e1` on `e0`.`id` = `e1`.`entity_a_id` where `e1`.`field_b_id` not in (?)');
+  expect(qb.getQuery()).toBe(
+    'select `e0`.* from `entity_a` as `e0` left join `entity_b` as `e1` on `e0`.`id` = `e1`.`entity_a_id` where `e1`.`field_b_id` not in (?)',
+  );
   const results = await qb.getResult();
   expect(results).toHaveLength(1);
 });
 
 test('nesting $and and $or operators with complex conditions 2', async () => {
-  const qb = orm.em.qb(EntityA)
+  const qb = orm.em
+    .qb(EntityA)
     .select('*')
     .where({
       organization: 'orgId',
@@ -150,10 +146,7 @@ test('nesting $and and $or operators with complex conditions 2', async () => {
                 $or: [
                   {
                     fieldD: {
-                      $nin: [
-                        2,
-                        3,
-                      ],
+                      $nin: [2, 3],
                     },
                   },
                   {
@@ -165,10 +158,7 @@ test('nesting $and and $or operators with complex conditions 2', async () => {
                 $or: [
                   {
                     fieldC: {
-                      $nin: [
-                        2,
-                        3,
-                      ],
+                      $nin: [2, 3],
                     },
                   },
                   {
@@ -183,9 +173,7 @@ test('nesting $and and $or operators with complex conditions 2', async () => {
               {
                 fieldB: {
                   id: {
-                    $nin: [
-                      'randomId1',
-                    ],
+                    $nin: [999],
                   },
                 },
               },
@@ -204,9 +192,12 @@ test('nesting $and and $or operators with complex conditions 2', async () => {
         ],
       },
     });
+
   const results = await qb.getResult();
-  expect(qb.getQuery()).toBe('select `e0`.* from `entity_a` as `e0` ' +
-    'left join `entity_b` as `e1` on `e0`.`id` = `e1`.`entity_a_id` ' +
-    'where `e0`.`organization` = ? and `e1`.`organization` = ? and (`e1`.`amount` != ? or `e1`.`amount` != ?) and `e1`.`field_f` = ? and `e1`.`field_e` = ? and (`e1`.`field_d` not in (?, ?) or `e1`.`field_d` is null) and (`e1`.`field_c` not in (?, ?) or `e1`.`field_c` is null) and (`e1`.`field_b_id` not in (?) or `e1`.`field_b_id` is null) and `e1`.`field_a` = ?');
+  expect(qb.getQuery()).toBe(
+    'select `e0`.* from `entity_a` as `e0` ' +
+      'left join `entity_b` as `e1` on `e0`.`id` = `e1`.`entity_a_id` ' +
+      'where `e0`.`organization` = ? and `e1`.`organization` = ? and (`e1`.`amount` != ? or `e1`.`amount` != ?) and `e1`.`field_f` = ? and `e1`.`field_e` = ? and (`e1`.`field_d` not in (?, ?) or `e1`.`field_d` is null) and (`e1`.`field_c` not in (?, ?) or `e1`.`field_c` is null) and (`e1`.`field_b_id` not in (?) or `e1`.`field_b_id` is null) and `e1`.`field_a` = ?',
+  );
   expect(results).toHaveLength(1);
 });

@@ -241,7 +241,7 @@ export class EntityLoader {
     const where = this.mergePrimaryCondition<Entity>(ids as Entity[], pk, options, meta, this.metadata, this.driver.getPlatform());
     const { filters, convertCustomTypes, lockMode, strategy, populateWhere, connectionType, logging, fields } = options;
 
-    await this.em.find(meta.class, where, {
+    await this.em.find(meta.class, where as any, {
       filters, convertCustomTypes, lockMode, strategy, populateWhere, connectionType, logging,
       fields: fields as never[],
       populate: [],

@@ -1,4 +1,4 @@
-import { defineEntity, p } from '@mikro-orm/core';
+import { defineEntity, p, sql } from '@mikro-orm/core';
 import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { EntityManager, MikroORM } from '@mikro-orm/mssql';
 import { Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, Test2, Address2, Configuration2 } from '../../entities-mssql/index.js';
@@ -24,8 +24,8 @@ const BookSummary = defineEntity({
   view: true,
   expression: (em: EntityManager) => {
     return em.createQueryBuilder(Book2, 'b')
-      .select(['b.title', 'a.name as author_name'])
-      .join('b.author', 'a');
+      .join('b.author', 'a')
+      .select(['b.title', sql.ref('a', 'name').as('author_name')]);
   },
   properties: {
     title: p.string().primary(),

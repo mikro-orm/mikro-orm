@@ -147,7 +147,7 @@ describe('custom types [mysql]', () => {
     orm.em.clear();
 
     const qb2 = orm.em.createQueryBuilder(Location);
-    const res2 = await qb2.select(['l0.*']).where({ id: loc.id }).getSingleResult();
+    const res2 = await qb2.select(['*']).where({ id: loc.id }).getSingleResult();
     expect(mock.mock.calls[9][0]).toMatch('select `l0`.*, ST_AsText(`l0`.`point`) as `point`, ST_AsText(`l0`.`extended_point`) as `extended_point` from `location` as `l0` where `l0`.`id` = 1');
     expect(res2).toMatchObject(l1);
     mock.mock.calls.length = 0;

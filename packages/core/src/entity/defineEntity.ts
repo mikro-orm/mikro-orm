@@ -34,6 +34,7 @@ import type {
   EntityCtor,
   IsNever,
 } from '../typings.js';
+import type { Raw } from '../utils/RawQueryFragment.js';
 import type { ScalarReference } from './Reference.js';
 import type { SerializeOptions } from '../serialization/EntitySerializer.js';
 import type { Cascade, DeferMode, EmbeddedPrefixMode, LoadStrategy, QueryOrderMap } from '../enums.js';
@@ -216,7 +217,7 @@ export class UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys extends
    * Specify default column value for {@link https://mikro-orm.io/docs/schema-generator Schema Generator}.
    * This is a runtime value, assignable to the entity property. (SQL only)
    */
-  default<T extends string | string[] | number | number[] | boolean | null>(defaultValue: T): Pick<UniversalPropertyOptionsBuilder<Value, Omit<Options, 'default'> & { default: T }, IncludeKeys>, IncludeKeys> {
+  default<T extends string | string[] | number | number[] | boolean | null | Date | Raw>(defaultValue: T): Pick<UniversalPropertyOptionsBuilder<Value, Omit<Options, 'default'> & { default: T }, IncludeKeys>, IncludeKeys> {
     return this.assignOptions({ default: defaultValue }) as any;
   }
 
@@ -918,7 +919,7 @@ type MaybeOpt<Value, Options> =
   Options extends { mapToPk: true } ? Value extends Opt<infer OriginalValue> ? OriginalValue : Value :
   Options extends { autoincrement: true } ? Opt<Value> :
   Options extends { onCreate: Function } ? Opt<Value> :
-  Options extends { default: string | string[] | number | number[] | boolean | null } ? Opt<Value> :
+  Options extends { default: string | string[] | number | number[] | boolean | null | Date | Raw } ? Opt<Value> :
   Options extends { defaultRaw: string } ? Opt<Value> :
   Options extends { persist: false } ? Opt<Value> :
   Options extends { version: true } ? Opt<Value> :

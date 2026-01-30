@@ -12,7 +12,7 @@ const pkg = require('../packages/core/package.json');
 
 const packages = [
   'core',
-  'knex',
+  'sql',
   'cli',
   'migrations',
   'entity-generator',

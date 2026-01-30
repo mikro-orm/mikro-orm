@@ -67,9 +67,7 @@ bench('FromEntityType - plain entity', () => {
 }).types([23, 'instantiations']);
 
 bench('FromEntityType - Loaded entity', () => {
-  useFromEntityType<Loaded<Author, 'books'>>(
-    {} as FromEntityType<Loaded<Author, 'books'>>,
-  );
+  useFromEntityType<Loaded<Author, 'books'>>({} as FromEntityType<Loaded<Author, 'books'>>);
 }).types([1150, 'instantiations']);
 
 // ============================================
@@ -112,11 +110,7 @@ bench('MergeSelected - Loaded entity', () => {
 // ============================================
 
 // Simulate the assign return type computation
-type AssignReturnType<Entity extends object, Data> = MergeSelected<
-  Entity,
-  FromEntityType<Entity>,
-  keyof Data & string
->;
+type AssignReturnType<Entity extends object, Data> = MergeSelected<Entity, FromEntityType<Entity>, keyof Data & string>;
 
 bench('assign return type - plain entity', () => {
   type R = AssignReturnType<Author, { name: string }>;
@@ -142,10 +136,10 @@ bench('assign data type - plain entity', () => {
   type R = AssignDataType<Author>;
   const x = {} as R;
   void x;
-}).types([2214, 'instantiations']);
+}).types([2219, 'instantiations']);
 
 bench('assign data type - Loaded entity', () => {
   type R = AssignDataType<Loaded<Author, 'books'>>;
   const x = {} as R;
   void x;
-}).types([3315, 'instantiations']);
+}).types([3320, 'instantiations']);

@@ -57,7 +57,6 @@ import type {
   Loaded,
   MergeLoaded,
   MergeSelected,
-  NoInfer,
   ObjectQuery,
   PopulateOptions,
   Primary,
@@ -205,7 +204,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     const em = this.getContext();
     em.prepareOptions(options);
     await em.tryFlush(entityName, options);
-    where = await em.processWhere(entityName, where, options, 'read') as FilterQuery<Entity>;
+    where = await em.processWhere(entityName, where, options, 'read');
     validateParams(where);
     options.orderBy = options.orderBy || {};
     options.populate = await em.preparePopulate(entityName, options) as any;
@@ -824,7 +823,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
 
     const em = this.getContext();
     em.prepareOptions(options);
-    let entity = em.unitOfWork.tryGetById<Entity>(entityName, where, options.schema);
+    let entity = em.unitOfWork.tryGetById(entityName, where, options.schema);
 
     // query for a not managed entity which is already in the identity map as it
     // was provided with a PK this entity does not exist in the db, there can't
@@ -867,7 +866,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     (options as Dictionary)._populateWhere = options.populateWhere ?? this.config.get('populateWhere');
     options.populateWhere = this.createPopulateWhere({ ...where } as ObjectQuery<Entity>, options);
     options.populateFilter = await this.getJoinedFilters(meta, options);
-    const data = await em.driver.findOne<Entity, Hint, Fields, Excludes>(entityName, where, {
+    const data = await em.driver.findOne(entityName, where, {
       ctx: em.transactionContext,
       em,
       ...options,
@@ -1754,7 +1753,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
   async count<
     Entity extends object,
     Hint extends string = never,
-  >(entityName: EntityName<Entity>, where: FilterQuery<NoInfer<Entity>> = {} as FilterQuery<Entity>, options: CountOptions<Entity, Hint> = {}): Promise<number> {
+  >(entityName: EntityName<Entity>, where: FilterQuery<NoInfer<Entity>> = {}, options: CountOptions<Entity, Hint> = {}): Promise<number> {
     const em = this.getContext(false);
 
     // Shallow copy options since the object will be modified when deleting orderBy
@@ -1762,7 +1761,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     em.prepareOptions(options);
 
     await em.tryFlush(entityName, options);
-    where = await em.processWhere(entityName, where, options as FindOptions<Entity, Hint>, 'read') as FilterQuery<Entity>;
+    where = await em.processWhere(entityName, where, options as FindOptions<Entity, Hint>, 'read');
     options.populate = await em.preparePopulate(entityName, options as FindOptions<Entity, Hint>) as any;
     options = { ...options };
     // save the original hint value so we know it was infer/all
@@ -1774,13 +1773,13 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     delete (options as FindOptions<Entity>).orderBy;
 
     const cacheKey = em.cacheKey(entityName, options, 'em.count', where);
-    const cached = await em.tryCache<Entity, number>(entityName, options.cache, cacheKey);
+    const cached = await em.tryCache(entityName, options.cache, cacheKey);
 
     if (cached?.data !== undefined) {
       return cached.data as number;
     }
 
-    const count = await em.driver.count<Entity, Hint>(entityName, where, { ctx: em.transactionContext, em, ...options });
+    const count = await em.driver.count(entityName, where, { ctx: em.transactionContext, em, ...options });
     await em.storeCache(options.cache, cached!, () => +count);
 
     return +count;

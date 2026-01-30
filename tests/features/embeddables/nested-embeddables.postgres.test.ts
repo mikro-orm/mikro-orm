@@ -411,7 +411,7 @@ describe('embedded entities in postgres', () => {
     await orm.em.fork().findOne(User, { profile1: { identity: { links: { url: 'foo@bar.baz' } } } }, { fields: ['profile1.identity.links.url'] }); // object embedded prop does not support nested partial loading
     expect(mock.mock.calls[1][0]).toMatch(`select "u0"."id", "u0"."profile1_identity_links" from "user" as "u0" where "u0"."profile1_identity_links"->>'url' = ? limit ?`);
 
-    await orm.em.fork().qb(User).select('profile1_identity_links').where({ profile1: { identity: { links: { url: 'foo@bar.baz' } } } }).execute();
+    await orm.em.fork().qb(User).select('profile1_identity_links' as any).where({ profile1: { identity: { links: { url: 'foo@bar.baz' } } } }).execute();
     expect(mock.mock.calls[2][0]).toMatch(`select "u0"."profile1_identity_links" from "user" as "u0" where "u0"."profile1_identity_links"->>'url' = ?`);
 
     await orm.em.fork().findOne(User, { profile1: { identity: { links: { url: 'foo@bar.baz' } } } }, { fields: ['profile1.identity.links'] });

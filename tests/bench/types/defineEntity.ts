@@ -1,14 +1,7 @@
 #!/usr/bin/env -S node --import @swc-node/register/esm-register
 
 import { bench } from '@ark/attest';
-import {
-  type ScalarReference,
-  type Reference,
-  defineEntity,
-  EntitySchema,
-  p,
-  PrimaryKeyProp,
-} from '@mikro-orm/core';
+import { type ScalarReference, type Reference, defineEntity, EntitySchema, p, PrimaryKeyProp } from '@mikro-orm/core';
 
 bench('defineEntity with relations', () => {
   const Foo = defineEntity({
@@ -65,7 +58,6 @@ bench('defineEntity only with nullable and ref', () => {
 
 bench('defineEntity with relations using class', () => {
   class Foo {
-
     name!: string;
     toOne!: Foo;
     toOneNullable!: Foo | null | undefined;
@@ -76,8 +68,7 @@ bench('defineEntity with relations using class', () => {
     scalarRef!: ScalarReference<string>;
     scalarRefNullable!: ScalarReference<string | null | undefined>;
     [PrimaryKeyProp]?: 'name';
-
-}
+  }
 
   const FooSchema = defineEntity({
     class: Foo,
@@ -95,11 +86,10 @@ bench('defineEntity with relations using class', () => {
       scalarRefNullable: p.string().ref().nullable(),
     },
   });
-}).types([11809, 'instantiations']);
+}).types([11808, 'instantiations']);
 
 bench('defineEntity with ref and nullable using class', () => {
   class Foo {
-
     name!: string;
     toOne!: Foo;
     toOneNullable!: Foo | null | undefined;
@@ -110,8 +100,7 @@ bench('defineEntity with ref and nullable using class', () => {
     scalarRef!: ScalarReference<string>;
     scalarRefNullable!: ScalarReference<string | null | undefined>;
     [PrimaryKeyProp]?: 'name';
-
-}
+  }
 
   const FooSchema = defineEntity({
     class: Foo,
@@ -129,16 +118,14 @@ bench('defineEntity with ref and nullable using class', () => {
       scalarRefNullable: p.string().ref().nullable(),
     },
   });
-}).types([11809, 'instantiations']);
+}).types([11808, 'instantiations']);
 
 bench('defineEntity only with ref and nullable using class', () => {
   class Foo {
-
     name!: string;
     toOneRefNullable!: Reference<Foo> | null | undefined;
     [PrimaryKeyProp]?: 'name';
-
-}
+  }
 
   const FooSchema = defineEntity({
     class: Foo,
@@ -149,16 +136,14 @@ bench('defineEntity only with ref and nullable using class', () => {
       toOneRefNullable: () => p.oneToOne(Foo).ref().nullable(),
     },
   });
-}).types([9749, 'instantiations']);
+}).types([9748, 'instantiations']);
 
 bench('defineEntity only with nullable and ref using class', () => {
   class Foo {
-
     name!: string;
     toOneRefNullable!: Reference<Foo> | null | undefined;
     [PrimaryKeyProp]?: 'name';
-
-}
+  }
 
   const FooSchema = defineEntity({
     class: Foo,
@@ -169,7 +154,7 @@ bench('defineEntity only with nullable and ref using class', () => {
       toOneRefNullable: () => p.oneToOne(Foo).nullable().ref(),
     },
   });
-}).types([9753, 'instantiations']);
+}).types([9752, 'instantiations']);
 
 bench('EntitySchema', () => {
   interface IFoo {
@@ -241,20 +226,16 @@ bench('defineEntity with setClass pattern (circular relations)', () => {
   });
 
   class Author extends AuthorSchema.class {
-
     fullName() {
       return `${this.firstName} ${this.lastName}`;
     }
-
-}
+  }
 
   class Book extends BookSchema.class {
-
     get summary() {
       return `"${this.title}" by ${this.author.fullName()}`;
     }
-
-}
+  }
 
   AuthorSchema.setClass(Author);
   BookSchema.setClass(Book);

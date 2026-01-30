@@ -8,6 +8,7 @@ export interface Book4Meta {
   category: string;
   items: number;
   valid?: boolean;
+  time?: number;
   nested?: { foo: string; bar?: number; deep?: { baz: number; qux: boolean } };
 }
 
@@ -17,7 +18,10 @@ export const Book4 = defineEntity({
   properties: {
     title: p.string(),
     price: p.float().nullable(),
-    priceTaxed: p.float().formula(a => `${a}.price * 1.19`).persist(false),
+    priceTaxed: p
+      .float()
+      .formula(a => `${a}.price * 1.19`)
+      .persist(false),
     author: () => p.manyToOne(Author4).nullable(),
     publisher: () => p.manyToOne(Publisher4).ref().nullable(),
     tags: () => p.manyToMany(BookTag4).pivotTable('tags_ordered').fixedOrder(true),

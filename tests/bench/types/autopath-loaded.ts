@@ -1,15 +1,7 @@
 #!/usr/bin/env -S node --import=tsx
 
 import { bench } from '@ark/attest';
-import {
-  type AutoPath,
-  type Loaded,
-  type Ref,
-  type Collection,
-  type PopulatePath,
-  PrimaryKeyProp,
-  EagerProps,
-} from '@mikro-orm/core';
+import { type AutoPath, type Loaded, type Ref, type Collection, type PopulatePath, PrimaryKeyProp, EagerProps } from '@mikro-orm/core';
 
 // ============================================
 // Test Entity Definitions (simple hierarchy)
@@ -52,10 +44,9 @@ interface Author {
 // AutoPath benchmarks
 // ============================================
 
-
-function validatePath<T, P extends string>(
-  _path: AutoPath<T, P, PopulatePath.ALL>,
-): void { /* empty */ }
+function validatePath<T, P extends string>(_path: AutoPath<T, P, PopulatePath.ALL>): void {
+  /* empty */
+}
 
 bench('AutoPath - simple property access', () => {
   validatePath<Author, 'name'>('name');
@@ -74,9 +65,7 @@ bench('AutoPath - nested relation (3 levels)', () => {
 }).types([1043, 'instantiations']);
 
 bench('AutoPath - nested relation (4 levels)', () => {
-  validatePath<Author, 'books.publisher.books.author'>(
-    'books.publisher.books.author',
-  );
+  validatePath<Author, 'books.publisher.books.author'>('books.publisher.books.author');
 }).types([1106, 'instantiations']);
 
 bench('AutoPath - collection with :ref', () => {
@@ -103,21 +92,15 @@ bench('Loaded - nested relation (2 levels)', () => {
 }).types([989, 'instantiations']);
 
 bench('Loaded - nested relation (3 levels)', () => {
-  useLoaded<Author, 'books.publisher.books'>(
-    {} as Loaded<Author, 'books.publisher.books'>,
-  );
+  useLoaded<Author, 'books.publisher.books'>({} as Loaded<Author, 'books.publisher.books'>);
 }).types([989, 'instantiations']);
 
 bench('Loaded - multiple relations', () => {
-  useLoaded<Author, 'books' | 'friends' | 'favouriteBook'>(
-    {} as Loaded<Author, 'books' | 'friends' | 'favouriteBook'>,
-  );
+  useLoaded<Author, 'books' | 'friends' | 'favouriteBook'>({} as Loaded<Author, 'books' | 'friends' | 'favouriteBook'>);
 }).types([1397, 'instantiations']);
 
 bench('Loaded - complex nested paths', () => {
-  useLoaded<Author, 'books.tags' | 'books.publisher' | 'friends.books'>(
-    {} as Loaded<Author, 'books.tags' | 'books.publisher' | 'friends.books'>,
-  );
+  useLoaded<Author, 'books.tags' | 'books.publisher' | 'friends.books'>({} as Loaded<Author, 'books.tags' | 'books.publisher' | 'friends.books'>);
 }).types([1276, 'instantiations']);
 
 // ============================================
@@ -169,15 +152,11 @@ interface DeepRoot {
 }
 
 bench('AutoPath - deep hierarchy (6 levels)', () => {
-  validatePath<DeepRoot, 'level1.level2.level3.level4.level5'>(
-    'level1.level2.level3.level4.level5',
-  );
+  validatePath<DeepRoot, 'level1.level2.level3.level4.level5'>('level1.level2.level3.level4.level5');
 }).types([1402, 'instantiations']);
 
 bench('Loaded - deep hierarchy (6 levels)', () => {
-  useLoaded<DeepRoot, 'level1.level2.level3.level4.level5'>(
-    {} as Loaded<DeepRoot, 'level1.level2.level3.level4.level5'>,
-  );
+  useLoaded<DeepRoot, 'level1.level2.level3.level4.level5'>({} as Loaded<DeepRoot, 'level1.level2.level3.level4.level5'>);
 }).types([951, 'instantiations']);
 
 // ============================================
@@ -209,9 +188,7 @@ bench('AutoPath - wide entity (15 properties)', () => {
 }).types([843, 'instantiations']);
 
 bench('Loaded - wide entity (15 properties)', () => {
-  useLoaded<WideEntity, 'rel1' | 'rel2' | 'rel3'>(
-    {} as Loaded<WideEntity, 'rel1' | 'rel2' | 'rel3'>,
-  );
+  useLoaded<WideEntity, 'rel1' | 'rel2' | 'rel3'>({} as Loaded<WideEntity, 'rel1' | 'rel2' | 'rel3'>);
 }).types([1698, 'instantiations']);
 
 // ============================================
@@ -228,9 +205,7 @@ interface EntityWithEager {
 }
 
 bench('Loaded - with eager props', () => {
-  useLoaded<EntityWithEager, 'normalRel'>(
-    {} as Loaded<EntityWithEager, 'normalRel'>,
-  );
+  useLoaded<EntityWithEager, 'normalRel'>({} as Loaded<EntityWithEager, 'normalRel'>);
 }).types([1069, 'instantiations']);
 
 // ============================================

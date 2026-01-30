@@ -21,32 +21,38 @@ function getCallSite(): string | null {
   }
 
   const lines = stack.split('\n');
-  const callerLine = lines[3];
 
-  if (!callerLine) {
-    return null;
+  // Find the first stack frame that's not in setup.ts
+  for (let i = 1; i < lines.length; i++) {
+    const callerLine = lines[i];
+
+    if (!callerLine || callerLine.includes('tests/setup.ts')) {
+      continue;
+    }
+
+    const match = callerLine.match(/\((.*):(\d+):(\d+)\)/) || callerLine.match(/at (.*):(\d+):(\d+)/);
+
+    if (!match) {
+      continue;
+    }
+
+    // eslint-disable-next-line prefer-const
+    let [, file, line, col] = match;
+
+    if (file.startsWith('file://')) {
+      file = fileURLToPath(file);
+    }
+
+    if (file.startsWith('node:')) {
+      continue;
+    }
+
+    const rel = path.relative(cwd, file);
+
+    return `${rel}:${line}:${col}`;
   }
 
-  const match = callerLine.match(/\((.*):(\d+):(\d+)\)/) || callerLine.match(/at (.*):(\d+):(\d+)/);
-
-  if (!match) {
-    return null;
-  }
-
-  // eslint-disable-next-line prefer-const
-  let [, file, line, col] = match;
-
-  if (file.startsWith('file://')) {
-    file = fileURLToPath(file);
-  }
-
-  if (file.startsWith('node:')) {
-    return null;
-  }
-
-  const rel = path.relative(cwd, file);
-
-  return `${rel}:${line}:${col}`;
+  return null;
 }
 
 for (const key of ['log', 'warn', 'error'] as const) {
@@ -55,7 +61,13 @@ for (const key of ['log', 'warn', 'error'] as const) {
     const loc = getCallSite();
 
     if (loc) {
-      original('\n', ...args, `\n\n  at ${loc}\n`);
+      // Prepend newline to first arg if it's a string (preserves format string substitution)
+      if (typeof args[0] === 'string') {
+        args[0] = '\n' + args[0];
+      } else {
+        args.unshift('\n');
+      }
+      original(...args, `\n\n  at ${loc}\n`);
     } else {
       original(...args);
     }

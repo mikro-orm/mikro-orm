@@ -1,8 +1,11 @@
+import { PrimaryKeyProp } from '@mikro-orm/core';
 import { Entity, Property, OneToOne } from '@mikro-orm/decorators/legacy';
 import { Author2 } from './Author2.js';
 
 @Entity({ comment: 'This is address table' })
 export class Address2 {
+
+  [PrimaryKeyProp]?: 'author';
 
   @OneToOne({ entity: () => Author2, primary: true, joinColumn: 'author_id', unique: 'address2_author_id_unique', eager: true })
   author: Author2;

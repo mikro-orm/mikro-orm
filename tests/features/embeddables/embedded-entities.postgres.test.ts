@@ -451,7 +451,7 @@ describe('embedded entities in postgresql', () => {
 
     const query = orm.em.qb(Foo, 'f')
       .leftJoin('f.user', 'u')
-      .select(['f.*', 'u.street']);
+      .select(['f.*', 'u.address3.street']);
     expect(query.getQuery()).toBe('select "f".*, "u"."street" from "foo" as "f" left join "user" as "u" on "f"."user_id" = "u"."id"');
     await expect(query.getResult()).resolves.toEqual([
       {

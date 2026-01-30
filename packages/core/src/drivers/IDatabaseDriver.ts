@@ -1,5 +1,5 @@
 import type {
-  ConnectionType, EntityData, EntityMetadata, EntityProperty, FilterQuery, Primary, Dictionary, QBFilterQuery,
+  ConnectionType, EntityData, EntityMetadata, EntityProperty, FilterQuery, Primary, Dictionary,
   IPrimaryKey, PopulateOptions, EntityDictionary, AutoPath, ObjectQuery, FilterObject, Populate, EntityName,
 } from '../typings.js';
 import type { Connection, QueryResult, Transaction } from '../connections/Connection.js';
@@ -198,7 +198,7 @@ export interface FindOptions<
   flags?: QueryFlag[];
   /** sql only */
   groupBy?: string | string[];
-  having?: QBFilterQuery<Entity>;
+  having?: FilterQuery<Entity>;
   /** sql only */
   strategy?: LoadStrategy | `${LoadStrategy}`;
   flushMode?: FlushMode | `${FlushMode}`;
@@ -265,7 +265,7 @@ export interface CountOptions<T extends object, P extends string = never>  {
   filters?: FilterOptions;
   schema?: string;
   groupBy?: string | readonly string[];
-  having?: QBFilterQuery<T>;
+  having?: FilterQuery<T>;
   cache?: boolean | number | [string, number];
   populate?: Populate<T, P>;
   populateWhere?: ObjectQuery<T> | PopulateHint | `${PopulateHint}`;

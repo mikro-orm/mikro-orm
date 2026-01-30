@@ -912,7 +912,7 @@ describe('EntityManagerMySql', () => {
     orm.em.clear();
 
     const mock = mockLogger(orm, ['query']);
-    const res4 = await orm.em.findOneOrFail(Book2, { [raw<Book2>(['price', 'createdAt'])]: { $lte: [100, new Date()] } });
+    const res4 = await orm.em.findOneOrFail(Book2, { [raw(['price', 'createdAt'])]: { $lte: [100, new Date()] } });
     expect(res4).toBeInstanceOf(Book2);
     expect(res4.createdAt).toBeDefined();
     expect(res4.price).toBe(100.00);
