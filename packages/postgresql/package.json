@@ -52,8 +52,8 @@
   "dependencies": {
     "@mikro-orm/sql": "6.6.4",
     "kysely": "0.28.10",
-    "pg": "8.17.2",
-    "pg-cursor": "2.16.2",
+    "pg": "8.18.0",
+    "pg-cursor": "2.17.0",
     "postgres-array": "3.0.4",
     "postgres-date": "2.1.0",
     "postgres-interval": "4.0.2"
