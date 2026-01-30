@@ -2892,7 +2892,7 @@ Let's add a count of comments to the article listing in that fashion. The proper
 +        runtimeType: 'number',
 +        default: 0,
 +        lazy: true,
-+        formula: (alias) => `(SELECT COUNT(*) FROM comments WHERE article = ${alias}.id)`,
++        formula: (cols, table) => `(SELECT COUNT(*) FROM comments WHERE article = ${table.alias}.id)`,
 +      });
 ...
 ```
@@ -2947,7 +2947,7 @@ import type { GenerateOptions } from '@mikro-orm/core';
         runtimeType: 'number',
         default: 0,
         lazy: true,
--        formula: (alias) => `(SELECT COUNT(*) FROM comments WHERE article = ${alias}.id)`,
+-        formula: (cols, table) => `(SELECT COUNT(*) FROM comments WHERE article = ${table.alias}.id)`,
 +        formula,
       });
 ```

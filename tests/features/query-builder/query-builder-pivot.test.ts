@@ -40,7 +40,7 @@ describe('QueryBuilder - Pivot', () => {
       .select('b.*')
       .where({ $or: [{ tags: null }, { tags: { $ne: 1 } }] });
     expect(qb2.getQuery()).toMatch(
-      'select `b`.*, `b`.price * 1.19 as `price_taxed` ' +
+      'select `b`.*, `b`.`price` * 1.19 as `price_taxed` ' +
         'from `book2` as `b` ' +
         'left join `book2_tags` as `e1` on `b`.`uuid_pk` = `e1`.`book2_uuid_pk` ' +
         'where (`e1`.`book_tag2_id` is null or `e1`.`book_tag2_id` != ?)',
@@ -96,7 +96,7 @@ describe('QueryBuilder - Pivot', () => {
       .select('b.*')
       .where({ tags: { id: 1 } });
     expect(qb1.getQuery()).toMatch(
-      'select `b`.*, `b`.price * 1.19 as `price_taxed` ' +
+      'select `b`.*, `b`.`price` * 1.19 as `price_taxed` ' +
         'from `book2` as `b` ' +
         'left join `book2_tags` as `e1` on `b`.`uuid_pk` = `e1`.`book2_uuid_pk` ' +
         'where `e1`.`book_tag2_id` = ?',
@@ -139,7 +139,7 @@ describe('QueryBuilder - Pivot', () => {
       .select('b.*')
       .where({ $or: [{ tags: { id: null } }, { tags: { $ne: 1 } }] });
     expect(qb2.getQuery()).toMatch(
-      'select `b`.*, `b`.price * 1.19 as `price_taxed` ' +
+      'select `b`.*, `b`.`price` * 1.19 as `price_taxed` ' +
         'from `book2` as `b` ' +
         'left join `book2_tags` as `e1` on `b`.`uuid_pk` = `e1`.`book2_uuid_pk` ' +
         'where (`e1`.`book_tag2_id` is null or `e1`.`book_tag2_id` != ?)',
@@ -171,7 +171,7 @@ describe('QueryBuilder - Pivot', () => {
       })
       .orderBy({ tags: { name: 1 } });
     expect(qb0.getQuery()).toEqual(
-      'select `e0`.*, `e0`.price * 1.19 as `price_taxed` ' +
+      'select `e0`.*, `e0`.`price` * 1.19 as `price_taxed` ' +
         'from `book2` as `e0` ' +
         'left join `book2_tags` as `e2` on `e0`.`uuid_pk` = `e2`.`book2_uuid_pk` ' +
         'left join `book_tag2` as `e1` on `e2`.`book_tag2_id` = `e1`.`id` ' +
@@ -185,7 +185,7 @@ describe('QueryBuilder - Pivot', () => {
       $and: [{ tags: { name: 'tag1' } }, { tags: { name: 'tag2' } }],
     });
     expect(qb1.getQuery()).toEqual(
-      'select `e0`.*, `e0`.price * 1.19 as `price_taxed` ' +
+      'select `e0`.*, `e0`.`price` * 1.19 as `price_taxed` ' +
         'from `book2` as `e0` ' +
         'left join `book2_tags` as `e2` on `e0`.`uuid_pk` = `e2`.`book2_uuid_pk` ' +
         'left join `book_tag2` as `e1` on `e2`.`book_tag2_id` = `e1`.`id` ' +
@@ -200,7 +200,7 @@ describe('QueryBuilder - Pivot', () => {
       $and: [{ author: { name: 'a1' } }, { author: { name: 'a2' } }],
     });
     expect(qb2.getQuery()).toEqual(
-      'select `e0`.*, `e0`.price * 1.19 as `price_taxed` ' +
+      'select `e0`.*, `e0`.`price` * 1.19 as `price_taxed` ' +
         'from `book2` as `e0` ' +
         'inner join `author2` as `e1` on `e0`.`author_id` = `e1`.`id` ' +
         'where `e1`.`name` = ? and `e1`.`name` = ?',
@@ -212,7 +212,7 @@ describe('QueryBuilder - Pivot', () => {
       $or: [{ author: { name: 'a1' } }, { author: { name: 'a2' } }],
     });
     expect(qb3.getQuery()).toEqual(
-      'select `e0`.*, `e0`.price * 1.19 as `price_taxed` ' +
+      'select `e0`.*, `e0`.`price` * 1.19 as `price_taxed` ' +
         'from `book2` as `e0` ' +
         'inner join `author2` as `e1` on `e0`.`author_id` = `e1`.`id` ' +
         'where (`e1`.`name` = ? or `e1`.`name` = ?)',
@@ -251,7 +251,7 @@ describe('QueryBuilder - Pivot', () => {
       },
     });
     expect(qb6.getQuery()).toEqual(
-      'select `e0`.*, `e0`.price * 1.19 as `price_taxed` ' +
+      'select `e0`.*, `e0`.`price` * 1.19 as `price_taxed` ' +
         'from `book2` as `e0` ' +
         'left join `book2_tags` as `e2` on `e0`.`uuid_pk` = `e2`.`book2_uuid_pk` ' +
         'left join `book_tag2` as `e1` on `e2`.`book_tag2_id` = `e1`.`id` ' +
@@ -264,7 +264,7 @@ describe('QueryBuilder - Pivot', () => {
       $and: [{ author: { favouriteBook: { title: 'a1' } } }, { author: { favouriteBook: { title: 'a2' } } }],
     });
     expect(qb7.getQuery()).toEqual(
-      'select `e0`.*, `e0`.price * 1.19 as `price_taxed` ' +
+      'select `e0`.*, `e0`.`price` * 1.19 as `price_taxed` ' +
         'from `book2` as `e0` ' +
         'inner join `author2` as `e1` on `e0`.`author_id` = `e1`.`id` ' +
         'left join `book2` as `e2` on `e1`.`favourite_book_uuid_pk` = `e2`.`uuid_pk` ' +
@@ -305,7 +305,7 @@ describe('QueryBuilder - Pivot', () => {
       ],
     });
     expect(qb9.getQuery()).toEqual(
-      'select `e0`.*, `e0`.price * 1.19 as `price_taxed` ' +
+      'select `e0`.*, `e0`.`price` * 1.19 as `price_taxed` ' +
         'from `book2` as `e0` ' +
         'inner join `author2` as `e1` on `e0`.`author_id` = `e1`.`id` ' +
         'left join `book2` as `e2` on `e1`.`favourite_book_uuid_pk` = `e2`.`uuid_pk` ' +
@@ -420,7 +420,7 @@ describe('QueryBuilder - Pivot', () => {
 
   test('query json property with operator directly (GH #3246)', async () => {
     const qb = orm.em.createQueryBuilder(Book2).where({ meta: { $ne: null } });
-    expect(qb.getFormattedQuery()).toBe('select `e0`.*, `e0`.price * 1.19 as `price_taxed` from `book2` as `e0` where `e0`.`meta` is not null');
+    expect(qb.getFormattedQuery()).toBe('select `e0`.*, `e0`.`price` * 1.19 as `price_taxed` from `book2` as `e0` where `e0`.`meta` is not null');
   });
 
   test('GH issue 786', async () => {
@@ -429,7 +429,7 @@ describe('QueryBuilder - Pivot', () => {
       $and: [{ uuid: { $ne: '...' }, createdAt: { $gt: '2020-08-26T20:01:48.863Z' } }, { tags: { name: { $in: ['tag1'] } } }],
     });
     expect(qb1.getQuery()).toEqual(
-      'select `e0`.*, `e0`.price * 1.19 as `price_taxed` ' +
+      'select `e0`.*, `e0`.`price` * 1.19 as `price_taxed` ' +
         'from `book2` as `e0` ' +
         'left join `book2_tags` as `e2` on `e0`.`uuid_pk` = `e2`.`book2_uuid_pk` ' +
         'left join `book_tag2` as `e1` on `e2`.`book_tag2_id` = `e1`.`id` ' +
@@ -441,7 +441,7 @@ describe('QueryBuilder - Pivot', () => {
       $and: [{ tags: { name: { $in: ['tag1'] } } }, { uuid: { $ne: '...' }, createdAt: { $gt: '2020-08-26T20:01:48.863Z' } }],
     });
     expect(qb2.getQuery()).toEqual(
-      'select `e0`.*, `e0`.price * 1.19 as `price_taxed` ' +
+      'select `e0`.*, `e0`.`price` * 1.19 as `price_taxed` ' +
         'from `book2` as `e0` ' +
         'left join `book2_tags` as `e2` on `e0`.`uuid_pk` = `e2`.`book2_uuid_pk` ' +
         'left join `book_tag2` as `e1` on `e2`.`book_tag2_id` = `e1`.`id` ' +

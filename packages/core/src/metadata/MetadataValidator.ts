@@ -75,6 +75,9 @@ export class MetadataValidator {
       throw MetadataError.noEntityDiscovered();
     }
 
+    // Validate no mixing of STI and TPT in the same hierarchy
+    this.validateInheritanceStrategies(discovered);
+
     const tableNames = discovered.filter(meta => !meta.abstract && !meta.embeddable && meta === meta.root && (meta.tableName || meta.collection) && meta.schema !== '*');
     const duplicateTableNames = Utils.findDuplicates(tableNames.map(meta => {
       const tableName = meta.tableName || meta.collection;
@@ -145,7 +148,7 @@ export class MetadataValidator {
       throw MetadataError.fromWrongTypeDefinition(meta, prop);
     }
 
-    if (targetMeta.abstract && !targetMeta.discriminatorColumn && !targetMeta.embeddable) {
+    if (targetMeta.abstract && !targetMeta.root?.inheritanceType && !targetMeta.embeddable) {
       throw MetadataError.targetIsAbstract(meta, prop);
     }
 
@@ -410,6 +413,39 @@ export class MetadataValidator {
 
     // Validate property names
     this.validatePropertyNames(meta);
+  }
+
+  /**
+   * Validates that STI and TPT are not mixed in the same inheritance hierarchy.
+   * An entity hierarchy can use either STI (discriminatorColumn) or TPT (inheritance: 'tpt'),
+   * but not both.
+   *
+   * Note: This validation runs before `initTablePerTypeInheritance` sets `inheritanceType`,
+   * so we check the raw `inheritance` option from the decorator/schema.
+   */
+  private validateInheritanceStrategies(discovered: EntityMetadata[]): void {
+    const checkedRoots = new Set<EntityMetadata>();
+
+    for (const meta of discovered) {
+      if (meta.embeddable) {
+        continue;
+      }
+
+      const root = meta.root;
+
+      if (checkedRoots.has(root)) {
+        continue;
+      }
+
+      checkedRoots.add(root);
+
+      const hasSTI = !!root.discriminatorColumn;
+      const hasTPT = root.inheritanceType === 'tpt' || (root as any).inheritance === 'tpt';
+
+      if (hasSTI && hasTPT) {
+        throw MetadataError.mixedInheritanceStrategies(root, meta);
+      }
+    }
   }
 
 }

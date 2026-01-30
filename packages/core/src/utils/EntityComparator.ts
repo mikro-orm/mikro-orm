@@ -262,7 +262,7 @@ export class EntityComparator {
     context.set('clone', clone);
     context.set('cloneEmbeddable', (o: any) => this.platform.cloneEmbeddable(o)); // do not clone prototypes
 
-    if (meta.discriminatorValue) {
+    if (meta.root.inheritanceType === 'sti' && meta.discriminatorValue) {
       lines.push(`  ret${this.wrap(meta.root.discriminatorColumn!)} = '${meta.discriminatorValue}'`);
     }
 

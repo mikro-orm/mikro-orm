@@ -33,7 +33,7 @@ class Article {
   images = new Collection<Image>(this);
 
   @OneToOne(() => Image, {
-    formula: alias => {
+    formula: (cols, alias) => {
       return `(select i.id from image i where i.type = '${ImageType.COVER}' and i.article_id = ${alias}.id)`;
     },
     ref: true,
@@ -42,7 +42,7 @@ class Article {
   cover?: Ref<Image>;
 
   @OneToOne(() => Image, {
-    formula: alias => {
+    formula: (cols, alias) => {
       return `(select i.id from image i where i.type = '${ImageType.THUMBNAIL}' and i.article_id = ${alias}.id)`;
     },
     nullable: true,
@@ -50,7 +50,7 @@ class Article {
   thumbnail?: Image;
 
   @OneToOne(() => Image, {
-    formula: alias => {
+    formula: (cols, alias) => {
       return `(select i.id from image i where i.type = '${ImageType.ICON}' and i.article_id = ${alias}.id)`;
     },
     nullable: true,

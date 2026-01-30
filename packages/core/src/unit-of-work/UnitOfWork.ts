@@ -3,6 +3,7 @@ import type {
   Dictionary,
   EntityClass,
   EntityData,
+  EntityDictionary,
   EntityKey,
   EntityMetadata,
   EntityName,
@@ -709,7 +710,77 @@ export class UnitOfWork {
     const changeSet = this.changeSetComputer.computeChangeSet(entity);
 
     if (changeSet && !this.checkUniqueProps(changeSet)) {
-      this.changeSets.set(entity, changeSet);
+      // For TPT child entities, create changesets for each table in hierarchy
+      if (wrapped.__meta.inheritanceType === 'tpt' && wrapped.__meta.tptParent) {
+        this.createTPTChangeSets(entity, changeSet);
+      } else {
+        this.changeSets.set(entity, changeSet);
+      }
+    }
+  }
+
+  /**
+   * For TPT inheritance, creates separate changesets for each table in the hierarchy.
+   * Uses the same entity instance for all changesets - only the metadata and payload differ.
+   */
+  private createTPTChangeSets<T extends object>(entity: T, originalChangeSet: ChangeSet<T>): void {
+    const meta = helper(entity).__meta;
+    const isCreate = originalChangeSet.type === ChangeSetType.CREATE;
+    let current: EntityMetadata | undefined = meta;
+    let leafCs: ChangeSet<T> | undefined;
+    const parentChangeSets: ChangeSet<T>[] = [];
+
+    while (current) {
+      const isRoot = !current.tptParent;
+      const payload: Dictionary = {};
+
+      for (const prop of current.ownProps!) {
+        if (prop.name in originalChangeSet.payload) {
+          payload[prop.name] = (originalChangeSet.payload as Dictionary)[prop.name];
+        }
+      }
+
+      // For CREATE on non-root tables, include the PK (EntityIdentifier for deferred resolution)
+      if (isCreate && !isRoot) {
+        const wrapped = helper(entity);
+        const identifier = wrapped.__identifier;
+        const identifiers = Array.isArray(identifier) ? identifier : [identifier];
+        for (let i = 0; i < current.primaryKeys.length; i++) {
+          const pk = current.primaryKeys[i];
+          payload[pk] = identifiers[i] ?? (originalChangeSet.payload as Dictionary)[pk];
+        }
+      }
+
+      if (!isCreate && Object.keys(payload).length === 0) {
+        current = current.tptParent;
+        continue;
+      }
+
+      const cs = new ChangeSet(entity, originalChangeSet.type, payload as EntityDictionary<T>, current as EntityMetadata<T>);
+
+      if (current === meta) {
+        cs.originalEntity = originalChangeSet.originalEntity;
+        leafCs = cs;
+      } else {
+        parentChangeSets.push(cs);
+      }
+
+      current = current.tptParent;
+    }
+
+    // When only parent properties changed (UPDATE), leaf payload is empty—create a stub anchor
+    if (!leafCs && parentChangeSets.length > 0) {
+      leafCs = new ChangeSet(entity, originalChangeSet.type, {} as EntityDictionary<T>, meta as EntityMetadata<T>);
+      leafCs.originalEntity = originalChangeSet.originalEntity;
+    }
+
+    // Store the leaf changeset in the main map (entity as key), with parent CSs attached
+    if (leafCs) {
+      if (parentChangeSets.length > 0) {
+        leafCs.tptChangeSets = parentChangeSets;
+      }
+
+      this.changeSets.set(entity, leafCs);
     }
   }
 
@@ -1096,9 +1167,25 @@ export class UnitOfWork {
 
           return false;
         });
+        continue;
       }
 
-      const cs = this.changeSets.get(Reference.unwrapReference(ref));
+      const refEntity = Reference.unwrapReference(ref);
+
+      // For mapToPk properties, the value is a primitive (string/array), not an entity
+      if (!Utils.isEntity(refEntity)) {
+        continue;
+      }
+
+      // For TPT entities, check if the ROOT table's changeset has been persisted
+      // (since the FK is to the root table, not the concrete entity's table)
+      let cs = this.changeSets.get(refEntity);
+
+      if (cs?.tptChangeSets?.length) {
+        // Root table changeset is the last one (ordered immediate parent → root)
+        cs = cs.tptChangeSets[cs.tptChangeSets.length - 1];
+      }
+
       const isScheduledForInsert = cs?.type === ChangeSetType.CREATE && !cs.persisted;
 
       if (isScheduledForInsert) {
@@ -1252,13 +1339,27 @@ export class UnitOfWork {
       [ChangeSetType.DELETE_EARLY]: new Map<EntityMetadata, ChangeSet<any>[]>(),
     };
 
-    for (const cs of this.changeSets.values()) {
+    const addToGroup = (cs: ChangeSet<any>) => {
+      // Skip stub TPT changesets with empty payload (e.g. leaf with no own-property changes on UPDATE)
+      if ((cs.type === ChangeSetType.UPDATE || cs.type === ChangeSetType.UPDATE_EARLY) && !Utils.hasObjectKeys(cs.payload)) {
+        return;
+      }
+
       const group = groups[cs.type];
-      const classGroup = group.get(cs.rootMeta) ?? [];
+      const groupKey = cs.meta.inheritanceType === 'tpt' ? cs.meta : cs.rootMeta;
+      const classGroup = group.get(groupKey) ?? [];
       classGroup.push(cs);
 
-      if (!group.has(cs.rootMeta)) {
-        group.set(cs.rootMeta, classGroup);
+      if (!group.has(groupKey)) {
+        group.set(groupKey, classGroup);
+      }
+    };
+
+    for (const cs of this.changeSets.values()) {
+      addToGroup(cs);
+
+      for (const parentCs of cs.tptChangeSets ?? []) {
+        addToGroup(parentCs);
       }
     }
 
@@ -1268,7 +1369,19 @@ export class UnitOfWork {
   private getCommitOrder(): EntityMetadata[] {
     const calc = new CommitOrderCalculator();
     const set = new Set<EntityMetadata>();
-    this.changeSets.forEach(cs => set.add(cs.rootMeta));
+
+    this.changeSets.forEach(cs => {
+      if (cs.meta.inheritanceType === 'tpt') {
+        set.add(cs.meta);
+
+        for (const parentCs of cs.tptChangeSets ?? []) {
+          set.add(parentCs.meta);
+        }
+      } else {
+        set.add(cs.rootMeta);
+      }
+    });
+
     set.forEach(meta => calc.addNode(meta._id));
 
     for (const meta of set) {
@@ -1280,6 +1393,11 @@ export class UnitOfWork {
         } else {
           calc.discoverProperty(prop, meta._id);
         }
+      }
+
+      // For TPT, parent table must be inserted BEFORE child tables
+      if (meta.inheritanceType === 'tpt' && meta.tptParent && set.has(meta.tptParent)) {
+        calc.addDependency(meta.tptParent._id, meta._id, 1);
       }
     }
 

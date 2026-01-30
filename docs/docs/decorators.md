@@ -36,6 +36,7 @@ For detailed information about decorator types, metadata providers, and configur
 | `collection`          | `string`                 | yes      | Alias for `tableName`.                                                             |
 | `comment`             | `string`                 | yes      | Specify comment to table. **(SQL only)**                                           |
 | `repository`          | `() => EntityRepository` | yes      | Set [custom repository class](./repositories.md#custom-repository).                |
+| `inheritance`         | `'tpt'`                  | yes      | For [Table-Per-Type Inheritance](./inheritance-mapping.md#table-per-type-inheritance-tpt). |
 | `discriminatorColumn` | `string`                 | yes      | For [Single Table Inheritance](./inheritance-mapping.md#single-table-inheritance). |
 | `discriminatorMap`    | `Dictionary<string>`     | yes      | For [Single Table Inheritance](./inheritance-mapping.md#single-table-inheritance). |
 | `discriminatorValue`  | `number` &#124; `string` | yes      | For [Single Table Inheritance](./inheritance-mapping.md#single-table-inheritance). |
@@ -225,11 +226,18 @@ See [Defining Entities](./defining-entities.md#formulas).
 
 | Parameter | Type                           | Optional | Description                                          |
 |-----------|--------------------------------|----------|------------------------------------------------------|
-| `formula` | `string` &#124; `() => string` | no       | SQL fragment that will be part of the select clause. |
+| `formula` | `string` &#124; `(columns, table) => string \| Raw` | no       | SQL fragment that will be part of the select clause. The callback receives `columns` (unquoted property-to-field mapping) and `table` (alias info). Use the `quote` helper for proper identifier quoting. |
 
 ```ts
+import { quote } from '@mikro-orm/core';
+
+// Simple string formula (no quoting)
 @Formula('obj_length * obj_height * obj_width')
 objectVolume?: number;
+
+// Callback with quote helper (recommended for cross-database compatibility)
+@Formula(cols => quote`${cols.price} * 1.19`)
+priceTaxed?: number;
 ```
 
 ### @Embedded()
@@ -302,7 +310,7 @@ export class Author {
 
 ### @Check()
 
-You can define check constraints via `@Check()` decorator. You can use it either on entity class, or on entity property. It has a required `expression` property, that can be either a string or a callback, that receives map of property names to column names. Note that you need to use the generic type argument if you want TypeScript suggestions for the property names.
+You can define check constraints via `@Check()` decorator. You can use it either on entity class, or on entity property. It has a required `expression` property, that can be either a string or a callback that receives `columns` (property-to-field mapping) and `table` (table info). The callback can return either a string or a `Raw` value from the `quote` helper for proper identifier quoting. Note that you need to use the generic type argument if you want TypeScript suggestions for the property names.
 
 > Check constraints are currently supported in PostgreSQL, MySQL 8 and MariaDB drivers. SQLite also supports creating check constraints, but schema inference is currently not implemented. Also note that SQLite does not support adding check constraints to existing tables.
 
@@ -319,7 +327,7 @@ See [Defining Entities](./defining-entities.md#check-constraints).
 // with generated name based on the table name
 @Check({ expression: 'price1 >= 0' })
 // with explicit name
-@Check({ name: 'foo', expression: columns => `${columns.price1} >= 0` })
+@Check({ name: 'foo', expression: (columns, table) => `${columns.price1} >= 0` })
 export class Book {
 
   @PrimaryKey()
@@ -332,7 +340,7 @@ export class Book {
   @Check({ expression: 'price2 >= 0' })
   price2!: number;
 
-  @Property({ check: columns => `${columns.price3} >= 0` })
+  @Property({ check: (columns, table) => `${columns.price3} >= 0` })
   price3!: number;
 
 }

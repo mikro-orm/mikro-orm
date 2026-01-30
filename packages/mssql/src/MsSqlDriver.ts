@@ -57,7 +57,8 @@ export class MsSqlDriver extends AbstractSqlDriver<MsSqlConnection> {
       return res;
     }
 
-    if (props.some(prop => prop.autoincrement)) {
+    // For TPT child entities, the parent table owns the identity column, not the child table
+    if (props.some(prop => prop.autoincrement && (!meta.ownProps || meta.ownProps.includes(prop)))) {
       return super.nativeInsertMany(entityName, data, options, sql => {
         return `set identity_insert ${tableName} on; ${sql}; set identity_insert ${tableName} off`;
       });

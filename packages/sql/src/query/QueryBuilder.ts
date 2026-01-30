@@ -499,9 +499,12 @@ export class QueryBuilder<
   protected subQueries: Dictionary<string> = {};
   protected _mainAlias?: Alias<Entity>;
   protected _aliases: Dictionary<Alias<any>> = {};
+  protected _tptAlias: Dictionary<string> = {}; // maps entity className to alias for TPT parent tables
   protected _helper?: QueryBuilderHelper;
   protected _query?: { sql?: string; params?: readonly unknown[]; qb: NativeQueryBuilder };
   protected readonly platform: AbstractSqlPlatform;
+  private tptJoinsApplied = false;
+  private readonly autoJoinedPaths: string[] = [];
 
   /**
    * @internal
@@ -1093,8 +1096,6 @@ export class QueryBuilder<
     const cond = await this.em.applyFilters(this.mainAlias.entityName, {}, filterOptions, 'read');
     this.andWhere(cond as any);
   }
-
-  private readonly autoJoinedPaths: string[] = [];
 
   /**
    * @internal
@@ -2183,6 +2184,22 @@ export class QueryBuilder<
     return res as unknown as string;
   }
 
+  /**
+   * Adds a join from a property object. Used internally for TPT joins where the property
+   * is synthetic (not in entity.properties) but defined on metadata (e.g., tptParentProp).
+   * The caller must create the alias first via createAlias().
+   * @internal
+   */
+  addPropertyJoin(prop: EntityProperty, ownerAlias: string, alias: string, type: JoinType, path: string, schema?: string): string {
+    schema ??= prop.targetMeta?.schema === '*' ? '*' : this.driver.getSchemaName(prop.targetMeta);
+    const key = `[tpt]${ownerAlias}#${alias}`;
+    this._joins[key] = prop.kind === ReferenceKind.MANY_TO_ONE
+      ? this.helper.joinManyToOneReference(prop, ownerAlias, alias, type, {}, schema)
+      : this.helper.joinOneToReference(prop, ownerAlias, alias, type, {}, schema);
+    this._joins[key].path = path;
+    return key;
+  }
+
   private joinReference(field: string | RawQueryFragment | NativeQueryBuilder | QueryBuilder, alias: string, cond: Dictionary, type: JoinType, path?: string, schema?: string, subquery?: string): { prop: EntityProperty<Entity>; key: string } {
     this.ensureNotFinalized();
 
@@ -2235,6 +2252,12 @@ export class QueryBuilder<
       throw new Error(`Trying to join ${q(field)}, but ${q(fromField)} is not a defined relation on ${meta.className}.`);
     }
 
+    // For TPT inheritance, owning relations (M:1 and owning 1:1) may have FK columns in a parent table
+    // Resolve the correct alias for the table that owns the FK column
+    const ownerAlias = (prop.kind === ReferenceKind.MANY_TO_ONE || (prop.kind === ReferenceKind.ONE_TO_ONE && prop.owner))
+      ? this.helper.getTPTAliasForProperty(fromField, fromAlias)
+      : fromAlias;
+
     this.createAlias(prop.targetMeta!.class, alias);
     cond = QueryHelper.processWhere({
       where: cond as FilterQuery<Entity>,
@@ -2268,10 +2291,10 @@ export class QueryBuilder<
       this._joins[aliasedName].path ??= path;
       aliasedName = Object.keys(joins)[1];
     } else if (prop.kind === ReferenceKind.ONE_TO_ONE) {
-      this._joins[aliasedName] = this.helper.joinOneToReference(prop, fromAlias, alias, type, cond, schema);
+      this._joins[aliasedName] = this.helper.joinOneToReference(prop, ownerAlias, alias, type, cond, schema);
       this._joins[aliasedName].path ??= path;
     } else { // MANY_TO_ONE
-      this._joins[aliasedName] = this.helper.joinManyToOneReference(prop, fromAlias, alias, type, cond, schema);
+      this._joins[aliasedName] = this.helper.joinManyToOneReference(prop, ownerAlias, alias, type, cond, schema);
       this._joins[aliasedName].path ??= path;
     }
 
@@ -2543,7 +2566,7 @@ export class QueryBuilder<
   private applyDiscriminatorCondition(): void {
     const meta = this.mainAlias.meta;
 
-    if (!meta.discriminatorValue) {
+    if (meta.root.inheritanceType !== 'sti' || !meta.discriminatorValue) {
       return;
     }
 
@@ -2562,6 +2585,114 @@ export class QueryBuilder<
     } as any);
   }
 
+  /**
+   * Ensures TPT joins are applied. Can be called early before finalize() to populate
+   * the _tptAlias map for use in join resolution. Safe to call multiple times.
+   * @internal
+   */
+  ensureTPTJoins(): void {
+    this.applyTPTJoins();
+  }
+
+  /**
+   * For TPT (Table-Per-Type) inheritance: INNER JOINs parent tables.
+   * When querying a child entity, we need to join all parent tables.
+   * Field selection is handled separately in addTPTParentFields().
+   */
+  private applyTPTJoins(): void {
+    const meta = this.mainAlias.meta;
+
+    if (meta?.inheritanceType !== 'tpt' || !meta.tptParent || ![QueryType.SELECT, QueryType.COUNT].includes(this.type)) {
+      return;
+    }
+
+    if (this.tptJoinsApplied) {
+      return;
+    }
+    this.tptJoinsApplied = true;
+
+    let childMeta: EntityMetadata = meta;
+    let childAlias = this.mainAlias.aliasName;
+
+    while (childMeta.tptParent) {
+      const parentMeta = childMeta.tptParent;
+      const parentAlias = this.getNextAlias(parentMeta.className);
+      this.createAlias(parentMeta.class, parentAlias);
+      this._tptAlias[parentMeta.className] = parentAlias;
+
+      this.addPropertyJoin(childMeta.tptParentProp!, childAlias, parentAlias, JoinType.innerJoin, `[tpt]${childMeta.className}`);
+
+      childMeta = parentMeta;
+      childAlias = parentAlias;
+    }
+  }
+
+  /**
+   * For TPT inheritance: adds field selections from parent tables.
+   */
+  private addTPTParentFields(): void {
+    const meta = this.mainAlias.meta;
+
+    if (meta?.inheritanceType !== 'tpt' || !meta.tptParent || ![QueryType.SELECT, QueryType.COUNT].includes(this.type)) {
+      return;
+    }
+
+    if (!this._fields?.includes('*') && !this._fields?.includes(`${this.mainAlias.aliasName}.*`)) {
+      return;
+    }
+
+    let parentMeta: EntityMetadata<Entity> | undefined = meta.tptParent;
+    while (parentMeta) {
+      const parentAlias = this._tptAlias[parentMeta.className];
+      if (parentAlias) {
+        const schema = parentMeta.schema === '*' ? '*' : this.driver.getSchemaName(parentMeta);
+        parentMeta.ownProps!
+          .filter(prop => this.platform.shouldHaveColumn(prop, []))
+          .forEach(prop => this._fields!.push(...this.driver.mapPropToFieldNames(this, prop, parentAlias, parentMeta!, schema)));
+      }
+      parentMeta = parentMeta.tptParent;
+    }
+  }
+
+  /**
+   * For TPT polymorphic queries: LEFT JOINs all child tables when querying a TPT base class.
+   * Adds discriminator and child fields to determine and load the concrete type.
+   */
+  private applyTPTPolymorphicJoins(): void {
+    const meta = this.mainAlias.meta;
+
+    const descendants = meta?.allTPTDescendants;
+
+    if (!descendants?.length || ![QueryType.SELECT, QueryType.COUNT].includes(this.type)) {
+      return;
+    }
+
+    if (!this._fields?.includes('*') && !this._fields?.includes(`${this.mainAlias.aliasName}.*`)) {
+      return;
+    }
+
+    // LEFT JOIN each descendant table and add their fields
+    for (const childMeta of descendants) {
+      const childAlias = this.getNextAlias(childMeta.className);
+      this.createAlias(childMeta.class, childAlias);
+      this._tptAlias[childMeta.className] = childAlias;
+
+      this.addPropertyJoin(childMeta.tptInverseProp!, this.mainAlias.aliasName, childAlias, JoinType.leftJoin, `[tpt]${meta.className}`);
+
+      // Add child fields
+      const schema = childMeta.schema === '*' ? '*' : this.driver.getSchemaName(childMeta);
+      childMeta.ownProps!
+        .filter(prop => !prop.primary && this.platform.shouldHaveColumn(prop, []))
+        .forEach(prop => this._fields!.push(...this.driver.mapPropToFieldNames(this, prop, childAlias, childMeta, schema) as Field<Entity>[]));
+    }
+
+    // Add computed discriminator (CASE WHEN to determine concrete type)
+    // descendants is pre-sorted by depth (deepest first) during discovery
+    if (meta.tptDiscriminatorColumn) {
+      this._fields!.push(this.driver.buildTPTDiscriminatorExpression(meta, descendants, this._tptAlias, this.mainAlias.aliasName));
+    }
+  }
+
   private finalize(): void {
     if (this.finalized) {
       return;
@@ -2573,20 +2704,29 @@ export class QueryBuilder<
 
     const meta = this.mainAlias.meta as EntityMetadata<Entity>;
     this.applyDiscriminatorCondition();
+    this.applyTPTJoins();
+    this.addTPTParentFields();
+    this.applyTPTPolymorphicJoins();
     this.processPopulateHint();
     this.processNestedJoins();
 
     if (meta && (this._fields?.includes('*') || this._fields?.includes(`${this.mainAlias.aliasName}.*`))) {
       const schema = this.getSchema(this.mainAlias);
-      const columns = meta.createColumnMappingObject();
+
+      // Create a column mapping with unquoted aliases - quoting should be handled by the user via `quote` helper
+      // For TPT, use helper to resolve correct alias per property (inherited props use parent alias)
+      const quotedMainAlias = this.platform.quoteIdentifier(this.mainAlias.aliasName).toString();
+      const columns = meta.createColumnMappingObject(
+        prop => this.helper.getTPTAliasForProperty(prop.name, this.mainAlias.aliasName),
+        quotedMainAlias,
+      );
 
       meta.props
         .filter(prop => prop.formula && (!prop.lazy || this.flags.has(QueryFlag.INCLUDE_LAZY_FORMULAS)))
         .map(prop => {
-          const alias = this.platform.quoteIdentifier(this.mainAlias.aliasName);
           const aliased = this.platform.quoteIdentifier(prop.fieldNames[0]);
-          const table = this.helper.createFormulaTable(alias.toString(), meta, schema);
-          return `${(prop.formula!(table, columns))} as ${aliased}`;
+          const table = this.helper.createFormulaTable(quotedMainAlias, meta, schema);
+          return `${this.driver.evaluateFormula(prop.formula!, columns, table)} as ${aliased}`;
         })
         .filter(field => !this._fields!.some(f => {
           if (isRaw(f)) {
@@ -3017,7 +3157,8 @@ export class QueryBuilder<
     return schema;
   }
 
-  private createAlias<U = unknown>(entityName: EntityName<U>, aliasName: string, subQuery?: NativeQueryBuilder): Alias<U> {
+  /** @internal */
+  createAlias<U = unknown>(entityName: EntityName<U>, aliasName: string, subQuery?: NativeQueryBuilder): Alias<U> {
     const meta = this.metadata.find(entityName)!;
     const alias = { aliasName, entityName, meta, subQuery } satisfies Alias<U>;
     this._aliases[aliasName] = alias;
@@ -3044,7 +3185,7 @@ export class QueryBuilder<
   }
 
   private createQueryBuilderHelper(): QueryBuilderHelper {
-    return new QueryBuilderHelper(this.mainAlias.entityName, this.mainAlias.aliasName, this._aliases, this.subQueries, this.driver);
+    return new QueryBuilderHelper(this.mainAlias.entityName, this.mainAlias.aliasName, this._aliases, this.subQueries, this.driver, this._tptAlias);
   }
 
   private ensureFromClause(): void {

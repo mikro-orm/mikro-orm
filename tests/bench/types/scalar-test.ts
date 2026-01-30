@@ -27,7 +27,7 @@ bench('AutoPath - scalar Date property should not expand', () => {
   // If this compiles with 'createdAt.' it means Date properties are being suggested
   // @ts-expect-error - createdAt is a Date, should not have nested paths
   validatePath<Author, 'createdAt.'>('createdAt.');
-}).types([1303, 'instantiations']);
+}).types([1501, 'instantiations']);
 
 bench('AutoPath - relation should expand', () => {
   // Use 'books.title' - a valid nested path (not 'books.' which is just a prefix)

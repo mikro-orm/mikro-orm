@@ -136,10 +136,10 @@ bench('assign data type - plain entity', () => {
   type R = AssignDataType<Author>;
   const x = {} as R;
   void x;
-}).types([2270, 'instantiations']);
+}).types([2312, 'instantiations']);
 
 bench('assign data type - Loaded entity', () => {
   type R = AssignDataType<Loaded<Author, 'books'>>;
   const x = {} as R;
   void x;
-}).types([3369, 'instantiations']);
+}).types([3411, 'instantiations']);

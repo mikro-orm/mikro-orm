@@ -15,8 +15,7 @@ const Employee = defineEntity({
     id: p.uuid().primary().onCreate(() => uuidv4()),
     surname: p.string(),
     name: p.string(),
-    // label: p.string().formula(alias => `${alias}.surname ||' '|| ${alias}.name`), // FIXME this should work too
-    label: p.string().persist(false).formula(alias => `${alias}.surname ||' '|| ${alias}.name`),
+    label: p.string().formula(cols => `${cols.surname} ||' '|| ${cols.name}`),
     boss: () => p.manyToOne(Employee).deleteRule('set null').updateRule('no action'),
   },
 });

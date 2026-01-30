@@ -47,9 +47,43 @@ export class QueryBuilderHelper {
     private readonly aliasMap: Dictionary<Alias<any>>,
     private readonly subQueries: Dictionary<string>,
     private readonly driver: AbstractSqlDriver,
+    private readonly tptAliasMap: Dictionary<string> = {},
   ) {
     this.platform = this.driver.getPlatform();
     this.metadata = this.driver.getMetadata();
+  }
+
+  /**
+   * For TPT inheritance, finds the correct alias for a property based on which entity owns it.
+   * Returns the main alias if not a TPT property or if the property belongs to the main entity.
+   */
+  getTPTAliasForProperty(propName: string, defaultAlias: string): string {
+    const meta = this.aliasMap[defaultAlias]?.meta ?? this.metadata.get(this.entityName);
+
+    if (meta?.inheritanceType !== 'tpt' || !meta.tptParent) {
+      return defaultAlias;
+    }
+
+    // Check if property is in the main entity's ownProps
+    if (meta.ownProps?.some(p => p.name === propName || p.fieldNames?.includes(propName))) {
+      return defaultAlias;
+    }
+
+    // Walk up the TPT hierarchy to find which parent owns this property
+    let parentMeta: EntityMetadata | undefined = meta.tptParent;
+
+    while (parentMeta) {
+      const parentAlias = this.tptAliasMap[parentMeta.className];
+
+      if (parentAlias && parentMeta.ownProps?.some(p => p.name === propName || p.fieldNames?.includes(propName))) {
+        return parentAlias;
+      }
+
+      parentMeta = parentMeta.tptParent;
+    }
+
+    // Property not found in hierarchy, return default alias
+    return defaultAlias;
   }
 
   mapper(field: string | Raw | RawQueryFragmentSymbol, type?: QueryType): string;
@@ -103,9 +137,15 @@ export class QueryBuilderHelper {
       return raw('(' + parts.map(part => this.platform.quoteIdentifier(part)).join(', ') + ')');
     }
 
-    const aliasPrefix = isTableNameAliasRequired ? this.alias + '.' : '';
     const [a, f] = this.splitField(field as EntityKey);
     const prop = this.getProperty(f, a);
+    // For TPT inheritance, resolve the correct alias for this property
+    // Only apply TPT resolution when `a` is an actual table alias (in aliasMap),
+    // not when it's an embedded property name like 'profile1.identity.links'
+    const isTableAlias = !!this.aliasMap[a];
+    const baseAlias = isTableAlias ? a : this.alias;
+    const resolvedAlias = isTableAlias ? this.getTPTAliasForProperty(prop?.name ?? f, a) : this.alias;
+    const aliasPrefix = isTableNameAliasRequired ? resolvedAlias + '.' : '';
     const fkIdx2 = prop?.fieldNames.findIndex(name => name === f) ?? -1;
     const fkIdx = fkIdx2 === -1 ? 0 : fkIdx2;
 
@@ -125,8 +165,11 @@ export class QueryBuilderHelper {
       const as = alias === null ? '' : ` as ${aliased}`;
       const meta = this.aliasMap[a]?.meta ?? this.metadata.get(this.entityName);
       const table = this.createFormulaTable(alias2, meta, schema);
-      const columns = meta.createColumnMappingObject();
-      let value = prop.formula(table, columns);
+      const columns = meta.createColumnMappingObject(
+        p => this.getTPTAliasForProperty(p.name, a),
+        alias2,
+      );
+      let value = this.driver.evaluateFormula(prop.formula, columns, table);
 
       if (!this.isTableNameAliasRequired(type)) {
         value = value.replaceAll(alias2 + '.', '');
@@ -164,7 +207,7 @@ export class QueryBuilderHelper {
       return ret;
     }
 
-    return this.alias + '.' + ret;
+    return resolvedAlias + '.' + ret;
   }
 
   processData(data: Dictionary, convertCustomTypes: boolean, multi = false): any {
@@ -281,11 +324,14 @@ export class QueryBuilderHelper {
         const right = `${join.alias}.${join.joinColumns![idx]}`;
 
         if (join.prop.formula) {
-          const alias = this.platform.quoteIdentifier(join.ownerAlias);
+          const quotedAlias = this.platform.quoteIdentifier(join.ownerAlias).toString();
           const ownerMeta = this.aliasMap[join.ownerAlias]?.meta ?? this.metadata.get(this.entityName);
-          const table = this.createFormulaTable(alias.toString(), ownerMeta, schema);
-          const columns = ownerMeta.createColumnMappingObject();
-          const left = join.prop.formula(table, columns);
+          const table = this.createFormulaTable(quotedAlias, ownerMeta, schema);
+          const columns = ownerMeta.createColumnMappingObject(
+            p => this.getTPTAliasForProperty(p.name, join.ownerAlias),
+            quotedAlias,
+          );
+          const left = this.driver.evaluateFormula(join.prop.formula, columns, table);
           conditions.push(`${left} = ${this.platform.quoteIdentifier(right)}`);
           return;
         }
@@ -298,10 +344,10 @@ export class QueryBuilderHelper {
       });
     }
 
-    if (join.prop.targetMeta?.discriminatorValue && !join.path?.endsWith('[pivot]')) {
-      const typeProperty = join.prop.targetMeta!.root.discriminatorColumn!;
+    if (join.prop.targetMeta?.root.inheritanceType === 'sti' && join.prop.targetMeta?.discriminatorValue && !join.path?.endsWith('[pivot]')) {
+      const typeProperty = join.prop.targetMeta.root.discriminatorColumn;
       const alias = join.inverseAlias ?? join.alias;
-      join.cond[`${alias}.${typeProperty}`] = join.prop.targetMeta!.discriminatorValue;
+      join.cond[`${alias}.${typeProperty}`] = join.prop.targetMeta.discriminatorValue;
     }
 
     // For polymorphic relations, add discriminator condition to filter by target entity type
@@ -892,8 +938,10 @@ export class QueryBuilderHelper {
     let ret: string;
 
     if (!this.isPrefixed(field)) {
-      const alias = always ? (quote ? this.alias : this.platform.quoteIdentifier(this.alias)) + '.' : '';
-      const fieldName = this.fieldName(field, this.alias, always, idx) as string | Raw;
+      // For TPT inheritance, resolve the correct alias for this property
+      const tptAlias = this.getTPTAliasForProperty(field, this.alias);
+      const alias = always ? (quote ? tptAlias : this.platform.quoteIdentifier(tptAlias)) + '.' : '';
+      const fieldName = this.fieldName(field, tptAlias, always, idx) as string | Raw;
 
       if (fieldName instanceof Raw) {
         return fieldName.sql;
@@ -903,13 +951,18 @@ export class QueryBuilderHelper {
     } else {
       const [a, ...rest] = field.split('.');
       const f = rest.join('.');
-      const fieldName = this.fieldName(f, a, always, idx) as string | Raw;
+      // For TPT inheritance, resolve the correct alias for this property
+      // Only apply TPT resolution when `a` is an actual table alias (in aliasMap),
+      // not when it's an embedded property name like 'profile1.identity.links'
+      const isTableAlias = !!this.aliasMap[a];
+      const resolvedAlias = isTableAlias ? this.getTPTAliasForProperty(f, a) : a;
+      const fieldName = this.fieldName(f, resolvedAlias, always, idx) as string | Raw;
 
       if (fieldName instanceof Raw) {
         return fieldName.sql;
       }
 
-      ret = a + '.' + fieldName;
+      ret = resolvedAlias + '.' + fieldName;
     }
 
     if (quote) {

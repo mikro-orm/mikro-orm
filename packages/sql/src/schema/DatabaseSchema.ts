@@ -181,16 +181,51 @@ export class DatabaseSchema {
       const table = schema.addTable(meta.collection, this.getSchemaName(meta, config, schemaName));
       table.comment = meta.comment;
 
-      for (const prop of meta.props) {
+      // For TPT child entities, only use ownProps (properties defined in this entity only)
+      // For all other entities (including TPT root), use all props
+      const propsToProcess = meta.inheritanceType === 'tpt' && meta.tptParent && meta.ownProps
+        ? meta.ownProps
+        : meta.props;
+
+      for (const prop of propsToProcess) {
         if (!this.shouldHaveColumn(meta, prop, skipColumns)) {
           continue;
         }
 
         table.addColumnFromProperty(prop, meta, config);
       }
+
+      // For TPT child entities, always include the PK columns (they form the FK to parent)
+      if (meta.inheritanceType === 'tpt' && meta.tptParent) {
+        const pkProps = meta.primaryKeys.map(pk => meta.properties[pk]);
+        for (const pkProp of pkProps) {
+          // Only add if not already added (it might be in ownProps if defined in this entity)
+          if (!propsToProcess.includes(pkProp)) {
+            table.addColumnFromProperty(pkProp, meta, config);
+          }
+
+          // Child PK must not be autoincrement — it references the parent PK via FK
+          for (const field of pkProp.fieldNames) {
+            const col = table.getColumn(field);
+
+            if (col) {
+              col.autoincrement = false;
+            }
+          }
+        }
+
+        // Add FK from child PK to parent PK with ON DELETE CASCADE
+        this.addTPTForeignKey(table, meta, config, platform);
+      }
+
       meta.indexes.forEach(index => table.addIndex(meta, index, 'index'));
       meta.uniques.forEach(index => table.addIndex(meta, index, 'unique'));
-      table.addIndex(meta, { properties: meta.props.filter(prop => prop.primary).map(prop => prop.name) }, 'primary');
+
+      // For TPT child entities, the PK is also defined here
+      const pkPropsForIndex = meta.inheritanceType === 'tpt' && meta.tptParent
+        ? meta.primaryKeys.map(pk => meta.properties[pk])
+        : meta.props.filter(prop => prop.primary);
+      table.addIndex(meta, { properties: pkPropsForIndex.map(prop => prop.name) }, 'primary');
 
       for (const check of meta.checks) {
         const columnName = check.property ? meta.properties[check.property].fieldNames[0] : undefined;
@@ -247,6 +282,35 @@ export class DatabaseSchema {
 
   private static getSchemaName(meta: EntityMetadata, config: Configuration, schema?: string): string | undefined {
     return (meta.schema === '*' ? schema : meta.schema) ?? config.get('schema');
+  }
+
+  /**
+   * Add a foreign key from a TPT child entity's PK to its parent entity's PK.
+   * This FK uses ON DELETE CASCADE to ensure child rows are deleted when parent is deleted.
+   */
+  private static addTPTForeignKey(table: DatabaseTable, meta: EntityMetadata, config: Configuration, platform: AbstractSqlPlatform): void {
+    const parent = meta.tptParent!;
+    const pkColumnNames = meta.primaryKeys.flatMap(pk => meta.properties[pk].fieldNames);
+    const parentPkColumnNames = parent.primaryKeys.flatMap(pk => parent.properties[pk].fieldNames);
+
+    // Determine the parent table name with schema
+    const parentSchema = parent.schema === '*' ? undefined : parent.schema ?? config.get('schema', platform.getDefaultSchemaName());
+    const parentTableName = parentSchema ? `${parentSchema}.${parent.tableName}` : parent.tableName;
+
+    // Create FK constraint name
+    const constraintName = platform.getIndexName(table.name, pkColumnNames, 'foreign');
+
+    // Add the foreign key to the table
+    const fks = table.getForeignKeys();
+    fks[constraintName] = {
+      constraintName,
+      columnNames: pkColumnNames,
+      localTableName: table.getShortestName(false),
+      referencedColumnNames: parentPkColumnNames,
+      referencedTableName: parentTableName,
+      deleteRule: 'cascade', // TPT always uses cascade delete
+      updateRule: 'cascade', // TPT always uses cascade update
+    };
   }
 
   private static matchName(name: string, nameToMatch: string | RegExp) {
