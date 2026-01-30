@@ -272,8 +272,8 @@ describe('read-replicas', () => {
     const schema = `${orm.config.get('dbName')}_schema_2`;
     const res1 = await orm.em.find(Book2, { publisher: { $ne: null } }, { schema, populate: ['perex'] });
     const res2 = await orm.em.find(Book2, { publisher: { $ne: null } }, { populate: ['perex'] });
-    expect(mock.mock.calls[0][0]).toMatch(`select \`b0\`.*, \`b0\`.price * 1.19 as \`price_taxed\`, \`t1\`.\`id\` as \`t1__id\` from \`${schema}\`.\`book2\` as \`b0\` left join \`${schema}\`.\`test2\` as \`t1\` on \`b0\`.\`uuid_pk\` = \`t1\`.\`book_uuid_pk\` where \`b0\`.\`author_id\` is not null and \`b0\`.\`publisher_id\` is not null`);
-    expect(mock.mock.calls[1][0]).toMatch('select `b0`.*, `b0`.price * 1.19 as `price_taxed`, `t1`.`id` as `t1__id` from `book2` as `b0` left join `test2` as `t1` on `b0`.`uuid_pk` = `t1`.`book_uuid_pk` where `b0`.`author_id` is not null and `b0`.`publisher_id` is not null');
+    expect(mock.mock.calls[0][0]).toMatch(`select \`b0\`.*, \`b0\`.\`price\` * 1.19 as \`price_taxed\`, \`t1\`.\`id\` as \`t1__id\` from \`${schema}\`.\`book2\` as \`b0\` left join \`${schema}\`.\`test2\` as \`t1\` on \`b0\`.\`uuid_pk\` = \`t1\`.\`book_uuid_pk\` where \`b0\`.\`author_id\` is not null and \`b0\`.\`publisher_id\` is not null`);
+    expect(mock.mock.calls[1][0]).toMatch('select `b0`.*, `b0`.`price` * 1.19 as `price_taxed`, `t1`.`id` as `t1__id` from `book2` as `b0` left join `test2` as `t1` on `b0`.`uuid_pk` = `t1`.`book_uuid_pk` where `b0`.`author_id` is not null and `b0`.`publisher_id` is not null');
     expect(res1.length).toBe(0);
     expect(res2.length).toBe(1);
   });

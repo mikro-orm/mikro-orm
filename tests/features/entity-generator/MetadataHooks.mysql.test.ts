@@ -65,7 +65,7 @@ const initialMetadataProcessor: MetadataProcessor = (metadata, platform) => {
         type: 'integer',
         runtimeType: 'number',
         lazy: true,
-        formula: alias => `TIMESTAMPDIFF(SECONDS, NOW(), ${alias}.updated_at)`,
+        formula: cols => `TIMESTAMPDIFF(SECONDS, NOW(), ${cols.updatedAt})`,
       });
       Object.entries(entity.properties).forEach(propEntry => {
         const [propName, propOptions] = propEntry;
@@ -112,11 +112,11 @@ const initialMetadataProcessor: MetadataProcessor = (metadata, platform) => {
       // the expression's callback present.
       entity.indexes.push({
         name: 'author2_custom_idx_on_email',
-        expression: (table, columns) => `create index "author2_custom_idx_on_email" on "${table.schema}"."${table.name}" ("${columns.email}")`,
+        expression: (columns, table) => `create index "author2_custom_idx_on_email" on "${table.schema}"."${table.name}" ("${columns.email}")`,
       } as IndexOptions<Author2>);
       entity.uniques.push({
         name: 'author2_custom_unique_on_email',
-        expression: (table, columns) => `alter table ${table} add constraint "author2_custom_unique_on_email" unique ("${columns.email}")`,
+        expression: (columns, table) => `alter table ${table} add constraint "author2_custom_unique_on_email" unique ("${columns.email}")`,
       } as UniqueOptions<Author2>);
     }
   });

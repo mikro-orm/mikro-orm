@@ -730,6 +730,9 @@ export interface EntityMetadataWithProperties<
   // Capture the repository type for InferEntity to include EntityRepositoryType
   repository?: () => TRepository;
 
+  // Table-per-type inheritance (each entity has its own table)
+  inheritance?: 'tpt';
+
   // use keyof TProperties instead of EntityKey<T> to avoid circular type inference
   discriminatorColumn?: keyof TProperties;
   versionProperty?: keyof TProperties;

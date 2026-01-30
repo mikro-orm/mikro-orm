@@ -103,7 +103,7 @@ describe('QueryBuilder - Advanced', () => {
     await qb.getResult();
 
     const sql =
-      'select `p`.*, `b`.`uuid_pk` as `b__uuid_pk`, `b`.`created_at` as `b__created_at`, `b`.`isbn` as `b__isbn`, `b`.`title` as `b__title`, `b`.`price` as `b__price`, `b`.price * 1.19 as `b__price_taxed`, `b`.`double` as `b__double`, `b`.`meta` as `b__meta`, `b`.`author_id` as `b__author_id`, `b`.`publisher_id` as `b__publisher_id`, ' +
+      'select `p`.*, `b`.`uuid_pk` as `b__uuid_pk`, `b`.`created_at` as `b__created_at`, `b`.`isbn` as `b__isbn`, `b`.`title` as `b__title`, `b`.`price` as `b__price`, `b`.`price` * 1.19 as `b__price_taxed`, `b`.`double` as `b__double`, `b`.`meta` as `b__meta`, `b`.`author_id` as `b__author_id`, `b`.`publisher_id` as `b__publisher_id`, ' +
       '`a`.`id` as `a__id`, `a`.`created_at` as `a__created_at`, `a`.`updated_at` as `a__updated_at`, `a`.`name` as `a__name`, `a`.`email` as `a__email`, `a`.`age` as `a__age`, `a`.`terms_accepted` as `a__terms_accepted`, `a`.`optional` as `a__optional`, `a`.`identities` as `a__identities`, `a`.`born` as `a__born`, `a`.`born_time` as `a__born_time`, `a`.`favourite_book_uuid_pk` as `a__favourite_book_uuid_pk`, `a`.`favourite_author_id` as `a__favourite_author_id`, `a`.`identity` as `a__identity`, ' +
       '`t`.`id` as `t__id`, `t`.`name` as `t__name` ' +
       'from `publisher2` as `p` ' +
@@ -362,7 +362,7 @@ describe('QueryBuilder - Advanced', () => {
       },
     };
     const expected =
-      "select `e0`.*, `e0`.price * 1.19 as `price_taxed` from `book2` as `e0` inner join `author2` as `e1` on `e0`.`author_id` = `e1`.`id` where (`e1`.`id` = 123 or `e1`.`name` like '%jon%')";
+      "select `e0`.*, `e0`.`price` * 1.19 as `price_taxed` from `book2` as `e0` inner join `author2` as `e1` on `e0`.`author_id` = `e1`.`id` where (`e1`.`id` = 123 or `e1`.`name` like '%jon%')";
     const sql1 = orm.em.createQueryBuilder(Book2).select('*').where(query).getFormattedQuery();
     expect(sql1).toBe(expected);
     const sql2 = orm.em.createQueryBuilder(Book2).where(query).getFormattedQuery();
@@ -386,7 +386,7 @@ describe('QueryBuilder - Advanced', () => {
         author: { email: 'ASC' },
       });
     expect(qb1.getQuery()).toEqual(
-      'select `a`.*, `a`.price * 1.19 as `price_taxed` from `book2` as `a` ' +
+      'select `a`.*, `a`.`price` * 1.19 as `price_taxed` from `book2` as `a` ' +
         'inner join `author2` as `e1` on `a`.`author_id` = `e1`.`id` ' +
         'left join `publisher2` as `e2` on `a`.`publisher_id` = `e2`.`id` ' +
         'where (`e1`.`name` = ? or `e2`.`name` = ?) ' +
@@ -400,7 +400,7 @@ describe('QueryBuilder - Advanced', () => {
       $or: [{ author: { name: 'test' } }, { $not: { author: { name: 'wut' } } }],
     });
     expect(qb1.getQuery()).toEqual(
-      'select `a`.*, `a`.price * 1.19 as `price_taxed` ' +
+      'select `a`.*, `a`.`price` * 1.19 as `price_taxed` ' +
         'from `book2` as `a` ' +
         'inner join `author2` as `e1` on `a`.`author_id` = `e1`.`id` ' +
         'where (`e1`.`name` = ? or not (`e1`.`name` = ?))',
@@ -413,7 +413,7 @@ describe('QueryBuilder - Advanced', () => {
       $or: [{ author: { name: 'test' } }, { author: { [raw(a => `lower(${a}.name)`)]: 'wut' } }],
     });
     expect(qb1.getQuery()).toEqual(
-      'select `a`.*, `a`.price * 1.19 as `price_taxed` ' +
+      'select `a`.*, `a`.`price` * 1.19 as `price_taxed` ' +
         'from `book2` as `a` ' +
         'inner join `author2` as `e1` on `a`.`author_id` = `e1`.`id` ' +
         'where (`e1`.`name` = ? or lower(e1.name) = ?)',

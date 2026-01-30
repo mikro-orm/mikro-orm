@@ -49,7 +49,8 @@ export type EntitySchemaMetadata<Entity, Base = never, Class extends EntityCtor 
   & Omit<Partial<EntityMetadata<Entity>>, 'name' | 'properties' | 'extends'>
   & ({ name: string } | { class: Class; name?: string })
   & { extends?: EntityName<Base> }
-  & { properties?: { [Key in keyof OmitBaseProps<Entity, Base> as CleanKeys<OmitBaseProps<Entity, Base>, Key>]-?: EntitySchemaProperty<ExpandProperty<NonNullable<Entity[Key]>>, Entity> } };
+  & { properties?: { [Key in keyof OmitBaseProps<Entity, Base> as CleanKeys<OmitBaseProps<Entity, Base>, Key>]-?: EntitySchemaProperty<ExpandProperty<NonNullable<Entity[Key]>>, Entity> } }
+  & { inheritance?: 'tpt' };
 
 export class EntitySchema<Entity = any, Base = never, Class extends EntityCtor = EntityCtor<Entity>> {
 
@@ -312,7 +313,13 @@ export class EntitySchema<Entity = any, Base = never, Class extends EntityCtor =
 
     this.setClass(this._meta.class);
 
-    if (this._meta.abstract && !this._meta.discriminatorColumn) {
+    // For abstract entities without discriminator, delete the name so they're not included
+    // in metadata storage. However, TPT abstract entities need to keep their name because
+    // they have their own table (tptDiscriminatorColumn is set during discovery).
+    // The inheritance option signals TPT before discovery runs.
+    // Also check if parent has TPT inheritance (for mid-level abstract entities like Animal -> Mammal -> Dog).
+    const isTPT = (this._meta as any).inheritance === 'tpt' || this.isPartOfTPTHierarchy();
+    if (this._meta.abstract && !this._meta.discriminatorColumn && !isTPT) {
       delete this._meta.name;
     }
 
@@ -330,6 +337,30 @@ export class EntitySchema<Entity = any, Base = never, Class extends EntityCtor =
     this.initialized = true;
 
     return this;
+  }
+
+  /**
+   * Check if this entity is part of a TPT hierarchy by walking up the extends chain.
+   * This handles mid-level abstract entities (e.g., Animal -> Mammal -> Dog where Mammal is abstract).
+   */
+  private isPartOfTPTHierarchy(): boolean {
+    let parent = this._meta.extends;
+
+    while (parent) {
+      // The parent could be an EntitySchema instance or a class reference
+      const parentSchema = parent instanceof EntitySchema ? parent : EntitySchema.REGISTRY.get(parent as any);
+      if (parentSchema) {
+        if ((parentSchema._meta as any).inheritance === 'tpt') {
+          return true;
+        }
+        parent = parentSchema._meta.extends;
+      } else {
+        // Parent is a class that's not an EntitySchema, stop traversal
+        break;
+      }
+    }
+
+    return false;
   }
 
   private initProperties(): void {

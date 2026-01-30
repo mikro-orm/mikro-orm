@@ -234,24 +234,24 @@ describe('QueryBuilder - Postgres', () => {
 
   test('json property queries', async () => {
     const qb11 = pg.em.createQueryBuilder(Book2).where({ meta: { foo: 123 } });
-    expect(qb11.getFormattedQuery()).toBe(`select "b0".*, "b0".price * 1.19 as "price_taxed" from "book2" as "b0" where ("b0"."meta"->>'foo')::float8 = 123`);
+    expect(qb11.getFormattedQuery()).toBe(`select "b0".*, "b0"."price" * 1.19 as "price_taxed" from "book2" as "b0" where ("b0"."meta"->>'foo')::float8 = 123`);
 
     const qb12 = pg.em.createQueryBuilder(Book2).where({ meta: { foo: { $eq: 123 } } });
-    expect(qb12.getFormattedQuery()).toBe(`select "b0".*, "b0".price * 1.19 as "price_taxed" from "book2" as "b0" where ("b0"."meta"->>'foo')::float8 = 123`);
+    expect(qb12.getFormattedQuery()).toBe(`select "b0".*, "b0"."price" * 1.19 as "price_taxed" from "book2" as "b0" where ("b0"."meta"->>'foo')::float8 = 123`);
 
     const qb13 = pg.em.createQueryBuilder(Book2).where({ meta: { foo: { $lte: 123 } } });
-    expect(qb13.getFormattedQuery()).toBe(`select "b0".*, "b0".price * 1.19 as "price_taxed" from "book2" as "b0" where ("b0"."meta"->>'foo')::float8 <= 123`);
+    expect(qb13.getFormattedQuery()).toBe(`select "b0".*, "b0"."price" * 1.19 as "price_taxed" from "book2" as "b0" where ("b0"."meta"->>'foo')::float8 <= 123`);
   });
 
   test('order by json property', async () => {
     const qb14 = pg.em.createQueryBuilder(Book2).orderBy({ meta: { foo: 'asc' } });
-    expect(qb14.getFormattedQuery()).toBe(`select "b0".*, "b0".price * 1.19 as "price_taxed" from "book2" as "b0" order by "b0"."meta"->>'foo' asc`);
+    expect(qb14.getFormattedQuery()).toBe(`select "b0".*, "b0"."price" * 1.19 as "price_taxed" from "book2" as "b0" order by "b0"."meta"->>'foo' asc`);
 
     const qb15 = pg.em.createQueryBuilder(Book2).orderBy({ meta: { bar: { str: 'asc' } } });
-    expect(qb15.getFormattedQuery()).toBe(`select "b0".*, "b0".price * 1.19 as "price_taxed" from "book2" as "b0" order by "b0"."meta"->'bar'->>'str' asc`);
+    expect(qb15.getFormattedQuery()).toBe(`select "b0".*, "b0"."price" * 1.19 as "price_taxed" from "book2" as "b0" order by "b0"."meta"->'bar'->>'str' asc`);
 
     const qb16 = pg.em.createQueryBuilder(Book2).orderBy({ meta: { bar: { num: QueryOrder.DESC } } });
-    expect(qb16.getFormattedQuery()).toBe(`select "b0".*, "b0".price * 1.19 as "price_taxed" from "book2" as "b0" order by "b0"."meta"->'bar'->>'num' desc`);
+    expect(qb16.getFormattedQuery()).toBe(`select "b0".*, "b0"."price" * 1.19 as "price_taxed" from "book2" as "b0" order by "b0"."meta"->'bar'->>'num' desc`);
   });
 
   test('complex condition for json property with update query (GH #2839)', async () => {
@@ -300,24 +300,24 @@ describe('QueryBuilder - Postgres', () => {
     await pg.em.transactional(async em => {
       const qb1 = em.createQueryBuilder(Book2);
       qb1.select('*').where({ title: 'test 123' }).setLockMode(LockMode.PESSIMISTIC_PARTIAL_READ);
-      expect(qb1.getQuery()).toEqual('select "b0".*, "b0".price * 1.19 as "price_taxed" from "book2" as "b0" where "b0"."title" = ? for share skip locked');
+      expect(qb1.getQuery()).toEqual('select "b0".*, "b0"."price" * 1.19 as "price_taxed" from "book2" as "b0" where "b0"."title" = ? for share skip locked');
 
       const qb2 = em.createQueryBuilder(Book2);
       qb2.select('*').where({ title: 'test 123' }).setLockMode(LockMode.PESSIMISTIC_PARTIAL_WRITE);
-      expect(qb2.getQuery()).toEqual('select "b0".*, "b0".price * 1.19 as "price_taxed" from "book2" as "b0" where "b0"."title" = ? for update skip locked');
+      expect(qb2.getQuery()).toEqual('select "b0".*, "b0"."price" * 1.19 as "price_taxed" from "book2" as "b0" where "b0"."title" = ? for update skip locked');
 
       const qb3 = em.createQueryBuilder(Book2);
       qb3.select('*').where({ title: 'test 123' }).setLockMode(LockMode.PESSIMISTIC_READ_OR_FAIL);
-      expect(qb3.getQuery()).toEqual('select "b0".*, "b0".price * 1.19 as "price_taxed" from "book2" as "b0" where "b0"."title" = ? for share nowait');
+      expect(qb3.getQuery()).toEqual('select "b0".*, "b0"."price" * 1.19 as "price_taxed" from "book2" as "b0" where "b0"."title" = ? for share nowait');
 
       const qb4 = em.createQueryBuilder(Book2);
       qb4.select('*').where({ title: 'test 123' }).setLockMode(LockMode.PESSIMISTIC_WRITE_OR_FAIL);
-      expect(qb4.getQuery()).toEqual('select "b0".*, "b0".price * 1.19 as "price_taxed" from "book2" as "b0" where "b0"."title" = ? for update nowait');
+      expect(qb4.getQuery()).toEqual('select "b0".*, "b0"."price" * 1.19 as "price_taxed" from "book2" as "b0" where "b0"."title" = ? for update nowait');
 
       const qb5 = em.createQueryBuilder(Book2);
       qb5.select('*').leftJoin('author', 'a').where({ title: 'test 123' }).setLockMode(LockMode.PESSIMISTIC_WRITE, ['book2']);
       expect(qb5.getQuery()).toEqual(
-        'select "b0".*, "b0".price * 1.19 as "price_taxed" from "book2" as "b0" left join "author2" as "a" on "b0"."author_id" = "a"."id" where "b0"."title" = ? for update of "book2"',
+        'select "b0".*, "b0"."price" * 1.19 as "price_taxed" from "book2" as "b0" left join "author2" as "a" on "b0"."author_id" = "a"."id" where "b0"."title" = ? for update of "book2"',
       );
     });
   });
@@ -326,7 +326,7 @@ describe('QueryBuilder - Postgres', () => {
     const qb = pg.em.createQueryBuilder(Book2, 'b');
     qb.select('*').leftJoinAndSelect('b.tags', 't').where({ 't.name': 'tag name' }).setFlag(QueryFlag.PAGINATE).offset(1).limit(20);
     const sql0 =
-      'select "b".*, "t"."id" as "t__id", "t"."name" as "t__name", "b".price * 1.19 as "price_taxed" ' +
+      'select "b".*, "t"."id" as "t__id", "t"."name" as "t__name", "b"."price" * 1.19 as "price_taxed" ' +
       'from "book2" as "b" ' +
       'left join "book2_tags" as "b1" on "b"."uuid_pk" = "b1"."book2_uuid_pk" ' +
       'left join "book_tag2" as "t" on "b1"."book_tag2_id" = "t"."id" where "b"."uuid_pk" in ' +
@@ -424,7 +424,7 @@ describe('QueryBuilder - Postgres', () => {
       .select(['*', 'sub.*'])
       .where({ 'sub.title': /^foo/ });
     expect(qb2.getFormattedQuery()).toEqual(
-      'select "a".*, "sub".* from "author2" as "a" left join lateral (select "b".*, "b".price * 1.19 as "price_taxed" from "book2" as "b" order by "b"."title" asc limit 1) as "sub" on "sub"."author_id" = "a"."id" where "sub"."title" like \'foo%\'',
+      'select "a".*, "sub".* from "author2" as "a" left join lateral (select "b".*, "b"."price" * 1.19 as "price_taxed" from "book2" as "b" order by "b"."title" asc limit 1) as "sub" on "sub"."author_id" = "a"."id" where "sub"."title" like \'foo%\'',
     );
     const res2 = await qb2.execute();
     expect(res2).toHaveLength(1);
@@ -446,7 +446,7 @@ describe('QueryBuilder - Postgres', () => {
       .select(['*', 'sub.*'])
       .where({ 'sub.title': /^foo/ });
     expect(qb2.getFormattedQuery()).toEqual(
-      'select "a".*, "sub".* from "author2" as "a" left join lateral (select "b".*, "b".price * 1.19 as "price_taxed" from "book2" as "b" order by "b"."title" asc limit 1) as "sub" on "sub"."author_id" = "a"."id" where "sub"."title" like \'foo%\'',
+      'select "a".*, "sub".* from "author2" as "a" left join lateral (select "b".*, "b"."price" * 1.19 as "price_taxed" from "book2" as "b" order by "b"."title" asc limit 1) as "sub" on "sub"."author_id" = "a"."id" where "sub"."title" like \'foo%\'',
     );
     const res3 = await qb3.execute();
     expect(res3).toHaveLength(1);
@@ -465,7 +465,7 @@ describe('QueryBuilder - Postgres', () => {
     const qb4 = pg.em.createQueryBuilder(Author2, 'a');
     qb4.select(['*']).innerJoinLateralAndSelect(['a.books', qb1], 'sub').leftJoinAndSelect('sub.tags', 't').where({ 'sub.title': /^foo/ });
     expect(qb4.getFormattedQuery()).toEqual(
-      'select "a".*, "sub"."uuid_pk" as "sub__uuid_pk", "sub"."created_at" as "sub__created_at", "sub"."isbn" as "sub__isbn", "sub"."title" as "sub__title", "sub"."price" as "sub__price", "sub".price * 1.19 as "sub__price_taxed", "sub"."double" as "sub__double", "sub"."meta" as "sub__meta", "sub"."author_id" as "sub__author_id", "sub"."publisher_id" as "sub__publisher_id", "t"."id" as "t__id", "t"."name" as "t__name" from "author2" as "a" inner join lateral (select "b".*, "b".price * 1.19 as "price_taxed" from "book2" as "b" order by "b"."title" asc limit 1) as "sub" on "a"."id" = "sub"."author_id" left join "book2_tags" as "b1" on "sub"."uuid_pk" = "b1"."book2_uuid_pk" left join "book_tag2" as "t" on "b1"."book_tag2_id" = "t"."id" where "sub"."title" like \'foo%\'',
+      'select "a".*, "sub"."uuid_pk" as "sub__uuid_pk", "sub"."created_at" as "sub__created_at", "sub"."isbn" as "sub__isbn", "sub"."title" as "sub__title", "sub"."price" as "sub__price", "sub"."price" * 1.19 as "sub__price_taxed", "sub"."double" as "sub__double", "sub"."meta" as "sub__meta", "sub"."author_id" as "sub__author_id", "sub"."publisher_id" as "sub__publisher_id", "t"."id" as "t__id", "t"."name" as "t__name" from "author2" as "a" inner join lateral (select "b".*, "b"."price" * 1.19 as "price_taxed" from "book2" as "b" order by "b"."title" asc limit 1) as "sub" on "a"."id" = "sub"."author_id" left join "book2_tags" as "b1" on "sub"."uuid_pk" = "b1"."book2_uuid_pk" left join "book_tag2" as "t" on "b1"."book_tag2_id" = "t"."id" where "sub"."title" like \'foo%\'',
     );
     const res4 = await qb4.getResult();
     expect(res4).toHaveLength(1);

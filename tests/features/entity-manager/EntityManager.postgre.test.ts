@@ -388,12 +388,12 @@ describe('EntityManagerPostgre', () => {
     await em.commit();
 
     expect(mock.mock.calls[0][0]).toMatch(`begin`);
-    expect(mock.mock.calls[1][0]).toMatch(`select "b0"."uuid_pk", "b0"."created_at", "b0"."isbn", "b0"."title", "b0"."price", "b0"."double", "b0"."meta", "b0"."author_id", "b0"."publisher_id", "b0".price * 1.19 as "price_taxed" from "book2" as "b0" where "b0"."author_id" is not null and "b0"."uuid_pk" = ? limit ?`);
+    expect(mock.mock.calls[1][0]).toMatch(`select "b0"."uuid_pk", "b0"."created_at", "b0"."isbn", "b0"."title", "b0"."price", "b0"."double", "b0"."meta", "b0"."author_id", "b0"."publisher_id", "b0"."price" * 1.19 as "price_taxed" from "book2" as "b0" where "b0"."author_id" is not null and "b0"."uuid_pk" = ? limit ?`);
     expect(mock.mock.calls[2][0]).toMatch(`select "p0".* from "publisher2" as "p0" where "p0"."id" = ? limit ? for update`);
     expect(mock.mock.calls[3][0]).toMatch(`select "p0"."id", "p0"."test2_id", "p0"."publisher2_id", "t1"."id" as "t1__id", "t1"."name" as "t1__name", "t1"."book_uuid_pk" as "t1__book_uuid_pk", "t1"."parent_id" as "t1__parent_id", "t1"."version" as "t1__version", "b2"."uuid_pk" as "b2__uuid_pk" from "publisher2_tests" as "p0" inner join "test2" as "t1" on "p0"."test2_id" = "t1"."id" left join "book2" as "b2" on "t1"."book_uuid_pk" = "b2"."uuid_pk" where "p0"."publisher2_id" in (?) order by "p0"."id" asc for update of "p0", "t1"`);
     expect(mock.mock.calls[4][0]).toMatch(`savepoint "trx`);
     expect(mock.mock.calls[5][0]).toMatch(`release savepoint "trx`);
-    expect(mock.mock.calls[6][0]).toMatch(`select "b0"."uuid_pk", "b0"."created_at", "b0"."isbn", "b0"."title", "b0"."price", "b0"."double", "b0"."meta", "b0"."author_id", "b0"."publisher_id", "b0".price * 1.19 as "price_taxed" from "book2" as "b0" where "b0"."author_id" is not null and "b0"."publisher_id" in (?) for update`);
+    expect(mock.mock.calls[6][0]).toMatch(`select "b0"."uuid_pk", "b0"."created_at", "b0"."isbn", "b0"."title", "b0"."price", "b0"."double", "b0"."meta", "b0"."author_id", "b0"."publisher_id", "b0"."price" * 1.19 as "price_taxed" from "book2" as "b0" where "b0"."author_id" is not null and "b0"."publisher_id" in (?) for update`);
     expect(mock.mock.calls[7][0]).toMatch(`commit`);
   });
 
@@ -924,7 +924,7 @@ describe('EntityManagerPostgre', () => {
     });
     expect(mock.mock.calls.length).toBe(3);
     expect(mock.mock.calls[0][0]).toMatch('begin');
-    expect(mock.mock.calls[1][0]).toMatch('select "b0"."uuid_pk", "b0"."created_at", "b0"."isbn", "b0"."title", "b0"."price", "b0"."double", "b0"."meta", "b0"."author_id", "b0"."publisher_id", "b0".price * 1.19 as "price_taxed", "a1"."id" as "a1__id", "a1"."created_at" as "a1__created_at", "a1"."updated_at" as "a1__updated_at", "a1"."name" as "a1__name", "a1"."email" as "a1__email", "a1"."age" as "a1__age", "a1"."terms_accepted" as "a1__terms_accepted", "a1"."optional" as "a1__optional", "a1"."identities" as "a1__identities", "a1"."born" as "a1__born", "a1"."born_time" as "a1__born_time", "a1"."favourite_book_uuid_pk" as "a1__favourite_book_uuid_pk", "a1"."favourite_author_id" as "a1__favourite_author_id", "a1"."identity" as "a1__identity", "f2"."uuid_pk" as "f2__uuid_pk" from "book2" as "b0" inner join "author2" as "a1" on "b0"."author_id" = "a1"."id" left join "book2" as "f2" on "a1"."favourite_book_uuid_pk" = "f2"."uuid_pk" and "f2"."author_id" is not null where "b0"."author_id" is not null for update of "b0" skip locked');
+    expect(mock.mock.calls[1][0]).toMatch('select "b0"."uuid_pk", "b0"."created_at", "b0"."isbn", "b0"."title", "b0"."price", "b0"."double", "b0"."meta", "b0"."author_id", "b0"."publisher_id", "b0"."price" * 1.19 as "price_taxed", "a1"."id" as "a1__id", "a1"."created_at" as "a1__created_at", "a1"."updated_at" as "a1__updated_at", "a1"."name" as "a1__name", "a1"."email" as "a1__email", "a1"."age" as "a1__age", "a1"."terms_accepted" as "a1__terms_accepted", "a1"."optional" as "a1__optional", "a1"."identities" as "a1__identities", "a1"."born" as "a1__born", "a1"."born_time" as "a1__born_time", "a1"."favourite_book_uuid_pk" as "a1__favourite_book_uuid_pk", "a1"."favourite_author_id" as "a1__favourite_author_id", "a1"."identity" as "a1__identity", "f2"."uuid_pk" as "f2__uuid_pk" from "book2" as "b0" inner join "author2" as "a1" on "b0"."author_id" = "a1"."id" left join "book2" as "f2" on "a1"."favourite_book_uuid_pk" = "f2"."uuid_pk" and "f2"."author_id" is not null where "b0"."author_id" is not null for update of "b0" skip locked');
     expect(mock.mock.calls[2][0]).toMatch('commit');
   });
 
@@ -942,7 +942,7 @@ describe('EntityManagerPostgre', () => {
     });
     expect(mock.mock.calls.length).toBe(5);
     expect(mock.mock.calls[0][0]).toMatch('begin');
-    expect(mock.mock.calls[1][0]).toMatch(`select "b0"."uuid_pk", "b0"."created_at", "b0"."isbn", "b0"."title", "b0"."price", "b0"."double", "b0"."meta", "b0"."author_id", "b0"."publisher_id", "b0".price * 1.19 as "price_taxed" from "book2" as "b0" where "b0"."author_id" is not null for update skip locked`);
+    expect(mock.mock.calls[1][0]).toMatch(`select "b0"."uuid_pk", "b0"."created_at", "b0"."isbn", "b0"."title", "b0"."price", "b0"."double", "b0"."meta", "b0"."author_id", "b0"."publisher_id", "b0"."price" * 1.19 as "price_taxed" from "book2" as "b0" where "b0"."author_id" is not null for update skip locked`);
     expect(mock.mock.calls[2][0]).toMatch(`select "a0".*, "f1"."uuid_pk" as "f1__uuid_pk" from "author2" as "a0" left join "book2" as "f1" on "a0"."favourite_book_uuid_pk" = "f1"."uuid_pk" and "f1"."author_id" is not null where "a0"."id" in (?) and "a0"."id" is not null for update of "a0" skip locked`);
     expect(mock.mock.calls[3][0]).toMatch(`select "b0"."order", "b0"."book_tag2_id", "b0"."book2_uuid_pk", "b1"."id" as "b1__id", "b1"."name" as "b1__name" from "book2_tags" as "b0" inner join "book_tag2" as "b1" on "b0"."book_tag2_id" = "b1"."id" where "b0"."book2_uuid_pk" in (?, ?, ?) order by "b0"."order" asc for update skip locked`);
     expect(mock.mock.calls[4][0]).toMatch('commit');
@@ -1554,7 +1554,7 @@ describe('EntityManagerPostgre', () => {
     expect(mock.mock.calls[0][0]).toMatch(`begin`);
     expect(mock.mock.calls[1][0]).toMatch(`insert into "book2" ("uuid_pk", "created_at", "title", "price", "author_id") values (?, ?, ?, ?, ?)`);
     expect(mock.mock.calls[2][0]).toMatch(`commit`);
-    expect(mock.mock.calls[3][0]).toMatch(`select "b0"."uuid_pk", "b0"."created_at", "b0"."isbn", "b0"."title", "b0"."price", "b0"."double", "b0"."meta", "b0"."author_id", "b0"."publisher_id", "b0".price * 1.19 as "price_taxed" from "book2" as "b0" where "b0"."author_id" is not null and "b0"."author_id" in (?) order by "b0"."title" asc`);
+    expect(mock.mock.calls[3][0]).toMatch(`select "b0"."uuid_pk", "b0"."created_at", "b0"."isbn", "b0"."title", "b0"."price", "b0"."double", "b0"."meta", "b0"."author_id", "b0"."publisher_id", "b0"."price" * 1.19 as "price_taxed" from "book2" as "b0" where "b0"."author_id" is not null and "b0"."author_id" in (?) order by "b0"."title" asc`);
   });
 
   test('nested populating', async () => {
@@ -1682,7 +1682,7 @@ describe('EntityManagerPostgre', () => {
     expect(res).toHaveLength(1);
     expect(res[0].books.length).toBe(3);
     expect(mock.mock.calls[0][0]).toMatch('select "a0".*, "f1"."uuid_pk" as "f1__uuid_pk" from "author2" as "a0" left join "book2" as "f1" on "a0"."favourite_book_uuid_pk" = "f1"."uuid_pk" and "f1"."author_id" is not null left join "book2" as "b2" on "a0"."id" = "b2"."author_id" and "b2"."author_id" is not null where "b2"."title" in (?, ?)');
-    expect(mock.mock.calls[1][0]).toMatch('select "b0".*, "b0".price * 1.19 as "price_taxed" from "book2" as "b0" where "b0"."author_id" is not null and "b0"."author_id" in (?) order by "b0"."title" asc');
+    expect(mock.mock.calls[1][0]).toMatch('select "b0".*, "b0"."price" * 1.19 as "price_taxed" from "book2" as "b0" where "b0"."author_id" is not null and "b0"."author_id" in (?) order by "b0"."title" asc');
   });
 
   test('trying to populate non-existing or non-reference property will throw', async () => {
@@ -1832,14 +1832,14 @@ describe('EntityManagerPostgre', () => {
       },
     }, { populate: ['perex'] });
     expect(books1).toHaveLength(2);
-    expect(mock.mock.calls[0][0]).toMatch(`select "b0".*, "b0".price * 1.19 as "price_taxed" from "book2" as "b0" inner join "author2" as "a1" on "b0"."author_id" = "a1"."id" where "b0"."author_id" is not null and a1.age::text ilike '%2%' and upper(title) in ('B1', 'B2')`);
+    expect(mock.mock.calls[0][0]).toMatch(`select "b0".*, "b0"."price" * 1.19 as "price_taxed" from "book2" as "b0" inner join "author2" as "a1" on "b0"."author_id" = "a1"."id" where "b0"."author_id" is not null and a1.age::text ilike '%2%' and upper(title) in ('B1', 'B2')`);
     orm.em.clear();
 
     const books2 = await orm.em.find(Book2, {
       [sql.upper('title')]: raw('upper(?)', ['b2']),
     }, { populate: ['perex'] });
     expect(books2).toHaveLength(1);
-    expect(mock.mock.calls[1][0]).toMatch(`select "b0".*, "b0".price * 1.19 as "price_taxed" from "book2" as "b0" where "b0"."author_id" is not null and upper(title) = upper('b2')`);
+    expect(mock.mock.calls[1][0]).toMatch(`select "b0".*, "b0"."price" * 1.19 as "price_taxed" from "book2" as "b0" where "b0"."author_id" is not null and upper(title) = upper('b2')`);
   });
 
   test('custom expressions require raw helper', async () => {
@@ -1974,7 +1974,7 @@ describe('EntityManagerPostgre', () => {
     expect(res1).toHaveLength(3);
     expect(res1[0].test).toBeUndefined();
     expect(mock.mock.calls.length).toBe(1);
-    expect(mock.mock.calls[0][0]).toMatch('select "b0".*, "b0".price * 1.19 as "price_taxed" ' +
+    expect(mock.mock.calls[0][0]).toMatch('select "b0".*, "b0"."price" * 1.19 as "price_taxed" ' +
       'from "book2" as "b0" ' +
       'inner join "author2" as "a1" on "b0"."author_id" = "a1"."id" ' +
       'where "b0"."author_id" is not null and "a1"."name" = ?');
@@ -1984,7 +1984,7 @@ describe('EntityManagerPostgre', () => {
     const res2 = await orm.em.find(Book2, { author: { favouriteBook: { author: { name: 'Jon Snow' } } } }, { populate: ['perex'] });
     expect(res2).toHaveLength(3);
     expect(mock.mock.calls.length).toBe(1);
-    expect(mock.mock.calls[0][0]).toMatch('select "b0".*, "b0".price * 1.19 as "price_taxed" ' +
+    expect(mock.mock.calls[0][0]).toMatch('select "b0".*, "b0"."price" * 1.19 as "price_taxed" ' +
       'from "book2" as "b0" ' +
       'inner join "author2" as "a1" on "b0"."author_id" = "a1"."id" ' +
       'left join ("book2" as "b2" ' +
@@ -1997,7 +1997,7 @@ describe('EntityManagerPostgre', () => {
     const res3 = await orm.em.find(Book2, { author: { favouriteBook: book3 } }, { populate: ['perex'] });
     expect(res3).toHaveLength(3);
     expect(mock.mock.calls.length).toBe(1);
-    expect(mock.mock.calls[0][0]).toMatch('select "b0".*, "b0".price * 1.19 as "price_taxed" ' +
+    expect(mock.mock.calls[0][0]).toMatch('select "b0".*, "b0"."price" * 1.19 as "price_taxed" ' +
       'from "book2" as "b0" ' +
       'inner join "author2" as "a1" on "b0"."author_id" = "a1"."id" ' +
       'where "b0"."author_id" is not null and "a1"."favourite_book_uuid_pk" = ?');
@@ -2007,7 +2007,7 @@ describe('EntityManagerPostgre', () => {
     const res4 = await orm.em.find(Book2, { author: { favouriteBook: { $or: [{ author: { name: 'Jon Snow' } }] } } }, { populate: ['perex'] });
     expect(res4).toHaveLength(3);
     expect(mock.mock.calls.length).toBe(1);
-    expect(mock.mock.calls[0][0]).toMatch('select "b0".*, "b0".price * 1.19 as "price_taxed" ' +
+    expect(mock.mock.calls[0][0]).toMatch('select "b0".*, "b0"."price" * 1.19 as "price_taxed" ' +
       'from "book2" as "b0" ' +
       'inner join "author2" as "a1" on "b0"."author_id" = "a1"."id" ' +
       'left join ("book2" as "b2" ' +
@@ -2057,9 +2057,9 @@ describe('EntityManagerPostgre', () => {
         },
       },
     });
-    expect(mock.mock.calls[0][0]).toMatch('select "b0".*, "b0".price * 1.19 as "price_taxed", ' +
+    expect(mock.mock.calls[0][0]).toMatch('select "b0".*, "b0"."price" * 1.19 as "price_taxed", ' +
       '"a1"."id" as "a1__id", "a1"."created_at" as "a1__created_at", "a1"."updated_at" as "a1__updated_at", "a1"."name" as "a1__name", "a1"."email" as "a1__email", "a1"."age" as "a1__age", "a1"."terms_accepted" as "a1__terms_accepted", "a1"."optional" as "a1__optional", "a1"."identities" as "a1__identities", "a1"."born" as "a1__born", "a1"."born_time" as "a1__born_time", "a1"."favourite_book_uuid_pk" as "a1__favourite_book_uuid_pk", "a1"."favourite_author_id" as "a1__favourite_author_id", "a1"."identity" as "a1__identity", ' +
-      '"b2"."uuid_pk" as "b2__uuid_pk", "b2"."created_at" as "b2__created_at", "b2"."isbn" as "b2__isbn", "b2"."title" as "b2__title", "b2"."price" as "b2__price", "b2".price * 1.19 as "b2__price_taxed", "b2"."double" as "b2__double", "b2"."meta" as "b2__meta", "b2"."author_id" as "b2__author_id", "b2"."publisher_id" as "b2__publisher_id", ' +
+      '"b2"."uuid_pk" as "b2__uuid_pk", "b2"."created_at" as "b2__created_at", "b2"."isbn" as "b2__isbn", "b2"."title" as "b2__title", "b2"."price" as "b2__price", "b2"."price" * 1.19 as "b2__price_taxed", "b2"."double" as "b2__double", "b2"."meta" as "b2__meta", "b2"."author_id" as "b2__author_id", "b2"."publisher_id" as "b2__publisher_id", ' +
       '"a3"."id" as "a3__id", "a3"."created_at" as "a3__created_at", "a3"."updated_at" as "a3__updated_at", "a3"."name" as "a3__name", "a3"."email" as "a3__email", "a3"."age" as "a3__age", "a3"."terms_accepted" as "a3__terms_accepted", "a3"."optional" as "a3__optional", "a3"."identities" as "a3__identities", "a3"."born" as "a3__born", "a3"."born_time" as "a3__born_time", "a3"."favourite_book_uuid_pk" as "a3__favourite_book_uuid_pk", "a3"."favourite_author_id" as "a3__favourite_author_id", "a3"."identity" as "a3__identity" ' +
       'from "book2" as "b0" ' +
       'inner join "author2" as "a1" on "b0"."author_id" = "a1"."id" ' +
@@ -2073,9 +2073,9 @@ describe('EntityManagerPostgre', () => {
     const res4 = await orm.em.find(Book2, { author: { favouriteBook: { $or: [{ author: { name: 'Jon Snow' } }] } } }, { populate: ['$infer'] });
     expect(res4).toHaveLength(3);
     expect(mock.mock.calls.length).toBe(1);
-    expect(mock.mock.calls[0][0]).toMatch('select "b0"."uuid_pk", "b0"."created_at", "b0"."isbn", "b0"."title", "b0"."price", "b0"."double", "b0"."meta", "b0"."author_id", "b0"."publisher_id", "b0".price * 1.19 as "price_taxed", ' +
+    expect(mock.mock.calls[0][0]).toMatch('select "b0"."uuid_pk", "b0"."created_at", "b0"."isbn", "b0"."title", "b0"."price", "b0"."double", "b0"."meta", "b0"."author_id", "b0"."publisher_id", "b0"."price" * 1.19 as "price_taxed", ' +
       '"a1"."id" as "a1__id", "a1"."created_at" as "a1__created_at", "a1"."updated_at" as "a1__updated_at", "a1"."name" as "a1__name", "a1"."email" as "a1__email", "a1"."age" as "a1__age", "a1"."terms_accepted" as "a1__terms_accepted", "a1"."optional" as "a1__optional", "a1"."identities" as "a1__identities", "a1"."born" as "a1__born", "a1"."born_time" as "a1__born_time", "a1"."favourite_book_uuid_pk" as "a1__favourite_book_uuid_pk", "a1"."favourite_author_id" as "a1__favourite_author_id", "a1"."identity" as "a1__identity", ' +
-      '"b2"."uuid_pk" as "b2__uuid_pk", "b2"."created_at" as "b2__created_at", "b2"."isbn" as "b2__isbn", "b2"."title" as "b2__title", "b2"."price" as "b2__price", "b2".price * 1.19 as "b2__price_taxed", "b2"."double" as "b2__double", "b2"."meta" as "b2__meta", "b2"."author_id" as "b2__author_id", "b2"."publisher_id" as "b2__publisher_id", ' +
+      '"b2"."uuid_pk" as "b2__uuid_pk", "b2"."created_at" as "b2__created_at", "b2"."isbn" as "b2__isbn", "b2"."title" as "b2__title", "b2"."price" as "b2__price", "b2"."price" * 1.19 as "b2__price_taxed", "b2"."double" as "b2__double", "b2"."meta" as "b2__meta", "b2"."author_id" as "b2__author_id", "b2"."publisher_id" as "b2__publisher_id", ' +
       '"a3"."id" as "a3__id", "a3"."created_at" as "a3__created_at", "a3"."updated_at" as "a3__updated_at", "a3"."name" as "a3__name", "a3"."email" as "a3__email", "a3"."age" as "a3__age", "a3"."terms_accepted" as "a3__terms_accepted", "a3"."optional" as "a3__optional", "a3"."identities" as "a3__identities", "a3"."born" as "a3__born", "a3"."born_time" as "a3__born_time", "a3"."favourite_book_uuid_pk" as "a3__favourite_book_uuid_pk", "a3"."favourite_author_id" as "a3__favourite_author_id", "a3"."identity" as "a3__identity" ' +
       'from "book2" as "b0" ' +
       'inner join "author2" as "a1" on "b0"."author_id" = "a1"."id" ' +

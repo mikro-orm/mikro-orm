@@ -1899,10 +1899,12 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       p = p.split(':', 2)[0];
     }
 
-    const ret = p in meta.root.properties;
+    // For TPT inheritance, check the entity's own properties, not just the root's
+    // For STI, meta.properties includes all properties anyway
+    const ret = p in meta.properties;
 
     if (parts.length > 0) {
-      return this.canPopulate(meta.root.properties[p as EntityKey<Entity>].targetMeta!.class, parts.join('.'));
+      return this.canPopulate(meta.properties[p as EntityKey<Entity>].targetMeta!.class, parts.join('.'));
     }
 
     return ret;
