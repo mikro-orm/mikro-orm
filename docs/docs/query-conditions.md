@@ -5,7 +5,7 @@ title: Query Conditions
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-When you want to make complex queries, we can easily end up with a lot of boilerplate code full of curly brackets:
+When you want to make complex queries, you can easily end up with a lot of boilerplate code full of curly brackets:
 
 ```ts
 const res = await orm.em.find(Author, { $and: [
@@ -19,7 +19,7 @@ const res = await orm.em.find(Author, { $and: [
 ] });
 ```
 
-For AND condition with single field, we can also do this:
+For AND condition with single field, you can also do this:
 
 ```ts
 const res = await orm.em.find(Author, {
@@ -41,7 +41,7 @@ There is also shortcut for `$in` - simply provide array as value, and it will be
 const res = await orm.em.find(Author, { favouriteBook: [1, 2, 7] });
 ```
 
-For primary key lookup, we can provide the array directly to `em.find()`:
+For primary key lookup, you can provide the array directly to `em.find()`:
 
 ```ts
 const res = await orm.em.find(Author, [1, 2, 7]);

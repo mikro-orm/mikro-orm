@@ -55,7 +55,7 @@ One common gotcha with `reflect-metadata` is that you need to explicitly state t
 createdAt: Date = new Date();
 ```
 
-Without the explicit type, we would infer `Object` instead of `Date`, which would be most probably mapped to JSON column type (depends on driver).
+Without the explicit type, `Object` would be inferred instead of `Date`, which would be most probably mapped to JSON column type (depends on driver).
 
 ## SqlEntityManager and MongoEntityManager
 
@@ -85,7 +85,7 @@ const ret = await em.aggregate(...);
 
 Implementation of `UnderscoreNamingStrategy` and `EntityCaseNamingStrategy` `joinTableName()` method has changed. You can use `pivotTable` on the owning side of M:N relation to specify the table name manually.
 
-Previously the table name did not respect property name, if one defined multiple M:N relations between same entities, there were conflicts and one would have to specify `pivotTable` name manually at least on one of them. With the new way, we can be sure that the table name won't conflict with other pivot tables.
+Previously the table name did not respect property name, if one defined multiple M:N relations between same entities, there were conflicts and one would have to specify `pivotTable` name manually at least on one of them. With the new way, you can be sure that the table name won't conflict with other pivot tables.
 
 Previously the name was constructed from 2 entity names as `entity_a_to_entity_b`, ignoring the actual property name. In v4 the name will be `entity_a_coll_name` in case of the collection property on the owning side being named `collName`.
 
@@ -169,11 +169,11 @@ Custom types used to be serialized to the database value. In v4, the runtime val
 
 ## Property `default` and `defaultRaw`
 
-Previously the `default` option of properties was used as is, so we had to wrap strings in quotes (e.g. `@Property({ default: "'foo bar'" })`).
+Previously the `default` option of properties was used as is, so you had to wrap strings in quotes (e.g. `@Property({ default: "'foo bar'" })`).
 
 In v4 the `default` is typed as `string | number | boolean | null` and when used with string value, it will be automatically quoted.
 
-To use SQL functions we now need to use `defaultRaw`: `@Property({ defaultRaw: 'now()' })`.
+To use SQL functions you now need to use `defaultRaw`: `@Property({ defaultRaw: 'now()' })`.
 
 ## `autoFlush` option has been removed
 

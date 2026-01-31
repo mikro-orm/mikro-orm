@@ -12,9 +12,9 @@ Embeddables are classes which are not entities themselves, but are embedded in e
 
 > Embeddables needs to be discovered just like regular entities, don't forget to add them to the list of entities when initializing the ORM.
 
-Embeddables can contain properties with basic `@Property()` mapping, nested `@Embedded()` properties or arrays of `@Embedded()` properties. From version 5.0 we can also use `@ManyToOne()` properties.
+Embeddables can contain properties with basic `@Property()` mapping, nested `@Embedded()` properties or arrays of `@Embedded()` properties. From version 5.0 you can also use `@ManyToOne()` properties.
 
-For the purposes of this tutorial, we will assume that you have a `User` class in your application, and you would like to store an address in the `User` class. We will model the `Address` class as an embeddable instead of simply adding the respective columns to the `User` class.
+For the purposes of this tutorial, let's assume that you have a `User` class in your application, and you would like to store an address in the `User` class. The `Address` class will be modeled as an embeddable instead of simply adding the respective columns to the `User` class.
 
 <Tabs
   groupId="entity-def"
@@ -109,7 +109,7 @@ export const User = defineEntity({
   },
 });
 
-export interface IUser extends InferEntity<typeof User> {}
+export type IUser = InferEntity<typeof User>;
 
 export const Address = defineEntity({
   name: 'Address',
@@ -122,7 +122,7 @@ export const Address = defineEntity({
   },
 });
 
-export interface IAddress extends InferEntity<typeof Address> {}
+export type IAddress = InferEntity<typeof Address>;
 ```
 
   </TabItem>
@@ -366,7 +366,7 @@ export const Contact = defineEntity({
   },
 });
 
-export interface IContact extends InferEntity<typeof Contact> {}
+export type IContact = InferEntity<typeof Contact>;
 
 export const User = defineEntity({
   name: 'User',
@@ -376,7 +376,7 @@ export const User = defineEntity({
   },
 });
 
-export interface IUser extends InferEntity<typeof User> {}
+export type IUser = InferEntity<typeof User>;
 ```
 
   </TabItem>
@@ -476,7 +476,7 @@ address: { kind: 'embedded', entity: () => Address, prefix: false },
 
 ## Storing embeddables as objects
 
-From MikroORM v4.2 we can also store the embeddable as an object instead of inlining its properties to the owing entity.
+You can also store the embeddable as an object instead of inlining its properties to the owning entity.
 
 <Tabs
   groupId="entity-def"
@@ -586,7 +586,7 @@ address: { kind: 'embedded', entity: () => Address, onCreate: () => [], array: t
 
 ## Nested embeddables
 
-Starting with v4.4, we can also nest embeddables, both in inline mode and object mode:
+You can also nest embeddables, both in inline mode and object mode:
 
 <Tabs
   groupId="entity-def"
@@ -708,7 +708,7 @@ export const User = defineEntity({
   },
 });
 
-export interface IUser extends InferEntity<typeof User> {}
+export type IUser = InferEntity<typeof User>;
 
 export const Profile = defineEntity({
   name: 'Profile',
@@ -719,7 +719,7 @@ export const Profile = defineEntity({
   },
 });
 
-export interface IProfile extends InferEntity<typeof Profile> {}
+export type IProfile = InferEntity<typeof Profile>;
 
 export const Identity = defineEntity({
   name: 'Identity',
@@ -729,7 +729,7 @@ export const Identity = defineEntity({
   },
 });
 
-export interface IIdentity extends InferEntity<typeof Identity> {}
+export type IIdentity = InferEntity<typeof Identity>;
 ```
 
   </TabItem>
@@ -787,7 +787,7 @@ export const IdentitySchema = new EntitySchema({
 
 ## Polymorphic embeddables
 
-Since v5, it is also possible to use polymorphic embeddables. This means we can define multiple classes for a single embedded property and the right one will be used based on the discriminator column, similar to how single table inheritance work.
+It is also possible to use polymorphic embeddables. This means you can define multiple classes for a single embedded property and the right one will be used based on the discriminator column, similar to how single table inheritance work.
 
 <Tabs
   groupId="entity-def"

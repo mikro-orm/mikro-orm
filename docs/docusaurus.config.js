@@ -84,6 +84,11 @@ const renames = {
   'logging': ['debugging'],
   'lifecycle-hooks': ['events'],
   'quick-start': [{min: '6.0', from: 'installation'}, ''],
+  // v7+ only redirects (sidebar restructure)
+  'core-concepts': [{min: '7.0', from: 'fundamentals'}, {min: '7.0', from: 'working-with-entities'}],
+  'schema-database': [{min: '7.0', from: 'database-schema'}],
+  'configuration': [{min: '7.0', from: 'configuration-deployment'}],
+  'wrap-helper': [{min: '7.0', from: 'entity-helper'}],
 };
 
 const docsRouteRegex = /^\/docs\/([^\/]+\/|)([^\/]*)$/;
@@ -124,7 +129,9 @@ module.exports = {
     hooks: {
       onBrokenMarkdownLinks: 'throw',
     },
+    mermaid: true,
   },
+  themes: ['@docusaurus/theme-mermaid'],
   onDuplicateRoutes: 'throw',
   future: {
     experimental_faster: {

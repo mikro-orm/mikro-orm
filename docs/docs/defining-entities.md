@@ -9,15 +9,15 @@ Entities are simple javascript objects (so called POJO) without restrictions and
 
 Entities can be defined in three ways:
 
-- Decorated classes - the attributes of the entity, as well as each property are provided via decorators. We use `@Entity()` decorator on the class. Entity properties are decorated either with `@Property` decorator, or with one of reference decorators: `@ManyToOne`, `@OneToMany`, `@OneToOne` and `@ManyToMany`. Check out the full [decorator reference](./decorators.md).
-- `EntitySchema` helper - With `EntitySchema` helper we define the schema programmatically. We can use regular classes as well as interfaces. This approach also allows to re-use partial entity definitions (e.g. traits/mixins). Read more about this in [Defining Entities via EntitySchema section](./entity-schema.md).
+- Decorated classes - the attributes of the entity, as well as each property are provided via decorators. You use `@Entity()` decorator on the class. Entity properties are decorated either with `@Property` decorator, or with one of reference decorators: `@ManyToOne`, `@OneToMany`, `@OneToOne` and `@ManyToMany`. Check out the full [decorator reference](./decorators.md).
+- `EntitySchema` helper - With `EntitySchema` helper you define the schema programmatically. You can use regular classes as well as interfaces. This approach also allows to re-use partial entity definitions (e.g. traits/mixins). Read more about this in [Defining Entities via EntitySchema section](./entity-schema.md).
 - `defineEntity` helper - Based on the `EntitySchema`, automatically infers entity interfaces using TypeScript's inference capabilities. Read more about this in [`defineEntity` section](./entity-schema#defineentity).
 
 Moreover, how the metadata extraction from decorators happens is controlled via `MetadataProvider`. Three main metadata providers are:
 
 - `MetadataProvider` - default provider that only enforces the types are provided explicitly.
 - `ReflectMetadataProvider` - uses `reflect-metadata` to read the property types. Faster but simpler and more verbose.
-- `TsMorphMetadataProvider` - uses `ts-morph` to read the type information from the TypeScript compiled API. Heavier (requires full TS as a dependency), but allows DRY entity definition. With `ts-morph` we are able to extract the type as it is defined in the code, including interface names, as well as optionality of properties.
+- `TsMorphMetadataProvider` - uses `ts-morph` to read the type information from the TypeScript compiled API. Heavier (requires full TS as a dependency), but allows DRY entity definition. With `ts-morph` you are able to extract the type as it is defined in the code, including interface names, as well as optionality of properties.
 
 Read more about them in the [Metadata Providers section](./metadata-providers.md). For a comprehensive guide on using decorators (including the new ES spec decorators in v7), see the [Using Decorators guide](./using-decorators.md). For glob-based entity discovery, see [Folder-based Discovery](./folder-based-discovery.md).
 
@@ -25,7 +25,7 @@ Read more about them in the [Metadata Providers section](./metadata-providers.md
 >
 > `ts-morph` is compatible only with the `tsc` approach.
 
-Example definition of a `Book` entity follows. We can switch the tabs to see the difference for various ways:
+Example definition of a `Book` entity follows. You can switch the tabs to see the difference for various ways:
 
 <Tabs
   groupId="entity-def"
@@ -100,7 +100,7 @@ export const Book = defineEntity({
   },
 });
 
-export interface IBook extends InferEntity<typeof Book> {}
+export type IBook = InferEntity<typeof Book>;
 ```
 
   </TabItem>
@@ -284,7 +284,7 @@ export const Author = defineEntity({
   },
 });
 
-export interface IAuthor extends InferEntity<typeof Author> {}
+export type IAuthor = InferEntity<typeof Author>;
 ```
 
   </TabItem>
@@ -345,7 +345,7 @@ For an example of Vanilla JavaScript usage, take a look [here](./usage-with-js.m
 
 ## Optional Properties
 
-With the default `reflect-metadata` provider, we need to mark each optional property as `nullable: true`. When using `ts-morph`, if you define the property as optional (marked with `?`), this will be automatically considered as nullable property (mainly for SQL schema generator).
+With the default `reflect-metadata` provider, you need to mark each optional property as `nullable: true`. When using `ts-morph`, if you define the property as optional (marked with `?`), this will be automatically considered as nullable property (mainly for SQL schema generator).
 
 <Tabs
   groupId="entity-def"
@@ -383,7 +383,7 @@ const SomeEntity = defineEntity({
   },
 });
 
-export interface ISomeEntity extends InferEntity<typeof SomeEntity> {}
+export type ISomeEntity = InferEntity<typeof SomeEntity>;
 ```
 
   </TabItem>
@@ -479,9 +479,9 @@ em.create(Book, {}); // compile error: missing title
 
 ## Default values
 
-We can set default value of a property in 2 ways:
+You can set default value of a property in 2 ways:
 
-1. Use a property initializer. This approach should be preferred as long as we are not using any native database function like `now()`. With this approach our entities will have the default value set even before it is actually persisted into the database (e.g. when we instantiate new entity via `new Author()` or `em.create(Author, { ... })`).
+1. Use a property initializer. This approach should be preferred as long as you are not using any native database function like `now()`. With this approach your entities will have the default value set even before it is actually persisted into the database (e.g. when you instantiate new entity via `new Author()` or `em.create(Author, { ... })`).
 
 > This is only possible if you have an actual entity class, not an interface. If you use `EntitySchema` without a class, or `defineEntity` helper, you can use the `onCreate` option to set the default value.
 
@@ -563,7 +563,7 @@ const schema = new EntitySchema({
 
 2. Use `default` parameter of `@Property` decorator. This way the actual default value will be provided by the database, and automatically mapped to the entity property after it is being persisted (after flush). To use SQL functions like `now()`, use `defaultRaw`.
 
-> Since v4 you should use `defaultRaw` for SQL functions, as `default` with string values will be automatically quoted.
+> Use `defaultRaw` for SQL functions, as `default` with string values will be automatically quoted.
 
 <Tabs
 groupId="entity-def"
@@ -630,17 +630,17 @@ properties: {
   </TabItem>
 </Tabs>
 
-Note that we use the `Opt` type to intersect with the property type to tell the ORM (on type level) that the property should be considered optional for input types (e.g. in `em.create()`), but will be present for managed entities (e.g. `EntityDTO` type).
+Note that the `Opt` type is used to intersect with the property type to tell the ORM (on type level) that the property should be considered optional for input types (e.g. in `em.create()`), but will be present for managed entities (e.g. `EntityDTO` type).
 
 ## Enums
 
 To define an enum property, use `@Enum()` decorator. Enums can be either numeric or string values.
 
-For schema generator to work properly in case of string enums, we need to define the enum in the same file as where it is used, so its values can be automatically discovered. If we want to define the enum in another file, we should re-export it also in place where we use it.
+For schema generator to work properly in case of string enums, you need to define the enum in the same file as where it is used, so its values can be automatically discovered. If you want to define the enum in another file, you should re-export it also in place where you use it.
 
-Another possibility is to provide the reference to the enum implementation in the decorator via `@Enum(() => UserRole)`.
+You can also provide the reference to the enum implementation in the decorator via `@Enum(() => UserRole)`.
 
-> We can also set enum items manually via `items: string[]` attribute.
+> You can also set enum items manually via `items: string[]` attribute.
 
 <Tabs
 groupId="entity-def"
@@ -685,7 +685,7 @@ export const enum UserStatus {
   ACTIVE,
 }
 
-// or we could reexport OutsideEnum
+// or you could reexport OutsideEnum
 // export { OutsideEnum } from './OutsideEnum.ts';
 ```
 
@@ -723,7 +723,7 @@ export const enum UserStatus {
   ACTIVE,
 }
 
-// or we could reexport OutsideEnum
+// or you could reexport OutsideEnum
 // export { OutsideEnum } from './OutsideEnum.ts';
 ```
 
@@ -854,7 +854,7 @@ properties: {
 
 ## Enum arrays
 
-We can also use array of values for enum, in that case, `EnumArrayType` type will be used automatically, that will validate items on flush.
+You can also use array of values for enum, in that case, `EnumArrayType` type will be used automatically, that will validate items on flush.
 
 <Tabs
 groupId="entity-def"
@@ -927,7 +927,7 @@ properties: {
 
 ## Mapping directly to primary keys
 
-Sometimes we might want to work only with the primary key of a relation. To do that, we can use `mapToPk` option on M:1 and 1:1 relations:
+Sometimes you might want to work only with the primary key of a relation. To do that, you can use `mapToPk` option on M:1 and 1:1 relations:
 
 <Tabs
 groupId="entity-def"
@@ -1153,9 +1153,9 @@ The `columns` parameter is a dictionary mapping property names to their database
 
 ## Indexes
 
-We can define indexes via `@Index()` decorator, for unique indexes, we can use `@Unique()` decorator. We can use it either on entity class, or on entity property.
+You can define indexes via `@Index()` decorator, for unique indexes, you can use `@Unique()` decorator. You can use it either on entity class, or on entity property.
 
-To define complex indexes, we can use index expressions. They allow us to specify the final `create index` query and an index name - this name is then used for index diffing, so the schema generator will only try to create it if it's not there yet, or remove it, if it's no longer defined in the entity. Index expressions are not bound to any property, rather to the entity itself (we can still define them on both entity and property level).
+To define complex indexes, you can use index expressions. They allow you to specify the final `create index` query and an index name - this name is then used for index diffing, so the schema generator will only try to create it if it's not there yet, or remove it, if it's no longer defined in the entity. Index expressions are not bound to any property, rather to the entity itself (you can still define them on both entity and property level).
 
 To define an index expression, you can either provide a raw SQL string, or use the expression callback to dynamically build the returned SQL.
 
@@ -1315,7 +1315,7 @@ export const AuthorSchema = new EntitySchema<Author, CustomBaseEntity>({
 
 ## Check constraints
 
-We can define check constraints via `@Check()` decorator. We can use it either on entity class, or on entity property. It has a required `expression` property, that can be either a string or a callback, that receives map of property names to column names. Note that we need to use the generic type argument if we want TypeScript suggestions for the property names.
+You can define check constraints via `@Check()` decorator. You can use it either on entity class, or on entity property. It has a required `expression` property, that can be either a string or a callback, that receives map of property names to column names. Note that you need to use the generic type argument if you want TypeScript suggestions for the property names.
 
 > Check constraints are currently supported only in postgres driver.
 
@@ -1431,7 +1431,7 @@ export const BookSchema = new EntitySchema({
 
 ## Custom Types
 
-We can define custom types by extending `Type` abstract class. It has 4 optional methods:
+You can define custom types by extending `Type` abstract class. It has 4 optional methods:
 
 - `convertToDatabaseValue(value: any, platform: Platform): any`
 
@@ -1453,7 +1453,7 @@ More information can be found in [Custom Types](./custom-types.md) section.
 
 ## Lazy scalar properties
 
-We can mark any property as `lazy: true` to omit it from the select clause. This can be handy for properties that are too large, and you want to have them available only sometimes, like a full text of an article.
+You can mark any property as `lazy: true` to omit it from the select clause. This can be handy for properties that are too large, and you want to have them available only sometimes, like a full text of an article.
 
 <Tabs
 groupId="entity-def"
@@ -1504,7 +1504,7 @@ properties: {
   </TabItem>
 </Tabs>
 
-We can use `populate` parameter to load them.
+You can use `populate` parameter to load them.
 
 ```ts
 const b1 = await em.find(Book, 1); // this will omit the `text` property
@@ -1515,7 +1515,7 @@ const b2 = await em.find(Book, 1, { populate: ['text'] }); // this will load the
 
 ### `ScalarReference` wrapper
 
-Similarly to the `Reference` wrapper, we can also wrap lazy scalars with `Ref` into a `ScalarReference` object. The `Ref` type automatically resolves to `ScalarReference` for non-object types, so the below is correct:
+Similarly to the `Reference` wrapper, you can also wrap lazy scalars with `Ref` into a `ScalarReference` object. The `Ref` type automatically resolves to `ScalarReference` for non-object types, so the below is correct:
 
 ```ts
 @Property({ lazy: true, ref: true })
@@ -1791,7 +1791,7 @@ export const UserSchema = new EntitySchema({
 
 ## Virtual Properties
 
-We can define our properties as virtual, either as a method, or via JavaScript `get/set`.
+You can define your properties as virtual, either as a method, or via JavaScript `get/set`.
 
 Following example defines User entity with `firstName` and `lastName` database fields, that are both hidden from the serialized response, replaced with virtual properties `fullName` (defined as a classic method) and `fullName2` (defined as a JavaScript getter).
 
@@ -1940,7 +1940,7 @@ Starting with MikroORM 4.2, there is no limitation for entity file names. It is 
 
 ## Using custom base entity
 
-We can define our own base entity with properties that are required on all entities, like primary key and created/updated time. Single table inheritance is also supported.
+You can define your own base entity with properties that are required on all entities, like primary key and created/updated time. Single table inheritance is also supported.
 
 Read more about this topic in [Inheritance Mapping](./inheritance-mapping.md) section.
 
@@ -2038,7 +2038,7 @@ export const schema = new EntitySchema<CustomBaseEntity>({
   </TabItem>
 </Tabs>
 
-There is a special case, when we need to annotate the base entity - if we are using folder based discovery, and the base entity is not using any decorators (e.g. it does not define any decorated property). In that case, we need to mark it as abstract:
+There is a special case, when you need to annotate the base entity - if you are using folder based discovery, and the base entity is not using any decorators (e.g. it does not define any decorated property). In that case, you need to mark it as abstract:
 
 ```ts
 @Entity({ abstract: true })
@@ -2686,7 +2686,7 @@ export const Book = new EntitySchema<IBook>({
 
 ### Using MikroORM's BaseEntity (previously WrappedEntity)
 
-From v4 `BaseEntity` class is provided with `init`, `isInitialized`, `assign` and other methods that are otherwise available via the `wrap()` helper.
+The `BaseEntity` class is provided with `init`, `isInitialized`, `assign` and other methods that are otherwise available via the `wrap()` helper.
 
 > Usage of the `BaseEntity` is optional.
 
@@ -2711,4 +2711,4 @@ const book = new Book();
 console.log(book.isInitialized()); // true
 ```
 
-Having the entities set up, we can now start [using entity manager](./entity-manager.md) and [repositories](./repositories.md) as described in following sections.
+Having the entities set up, you can now start [using entity manager](./entity-manager.md) and [repositories](./repositories.md) as described in following sections.

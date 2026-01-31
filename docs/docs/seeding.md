@@ -90,7 +90,7 @@ export class DatabaseSeeder extends Seeder {
 
 Instead of specifying all the attributes for every entity, you can also use [entity factories](#entity-factories). These can be used to generate large amounts of database records. Please read the [documentation on how to define factories](#entity-factories) to learn how to define your factories.
 
-In the following example, we generate 10 author entities.
+In the following example, 10 author entities are generated.
 
 ```ts
 import { EntityManager } from '@mikro-orm/core';
@@ -176,9 +176,9 @@ export class AuthorFactory extends Factory<Author> {
 }
 ```
 
-Here we extend the base `Factory` class, define a `model` property and a `definition` method. The `model` defines for which entity the factory generates entity instances. The `definition` method returns the default set of attribute values that should be applied when creating an entity using the factory.
+Here you extend the base `Factory` class, define a `model` property and a `definition` method. The `model` defines for which entity the factory generates entity instances. The `definition` method returns the default set of attribute values that should be applied when creating an entity using the factory.
 
-In this example, we use a library called [Faker](https://github.com/faker-js/faker), which allows you to conveniently generate various kinds of random data for testing.
+In this example, a library called [Faker](https://github.com/faker-js/faker) is used, which allows you to conveniently generate various kinds of random data for testing.
 
 > Since v6, Faker is no longer re-exported from the seeder package and needs to be installed separately.
 

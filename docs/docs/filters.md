@@ -38,7 +38,7 @@ There are three parameters you can use:
 
 ## Parameters
 
-You can define the `cond` dynamically as a callback. This callback can be also asynchronous. It will get three arguments:
+You can define the `cond` dynamically as a callback. This callback can also be asynchronous. It will get three arguments:
 
 - `args` - dictionary of parameters provided by user
 - `type` - type of operation that is being filtered, one of `'read'`, `'update'`, `'delete'`
@@ -69,7 +69,7 @@ const books = await orm.em.find(Book, {}, {
 
 ### Filters without parameters
 
-If we want to have a filter condition that do not need arguments, but we want to access the `type` parameter, we will need to explicitly set `args: false`, otherwise error will be raised due to missing parameters:
+If you want to have a filter condition that does not need arguments, but you want to access the `type` parameter, you will need to explicitly set `args: false`, otherwise error will be raised due to missing parameters:
 
 ```ts
 @Filter({
@@ -84,7 +84,7 @@ If we want to have a filter condition that do not need arguments, but we want to
 
 ## Global filters
 
-We can also register filters dynamically via `EntityManager` API. We call such filters global. They are enabled by default (unless disabled via last parameter in `addFilter()` method), and applied to all entities. You can limit the global filter to only specified entities.
+You can also register filters dynamically via `EntityManager` API. These are called global filters. They are enabled by default (unless disabled via last parameter in `addFilter()` method), and applied to all entities. You can limit the global filter to only specified entities.
 
 Each global filter name must be unique within a single `EntityManager`. Calling `addFilter()` again with the same name replaces the previous definition.
 
@@ -117,9 +117,9 @@ MikroORM.init({
 
 ## Using filters
 
-We can control what filters will be applied via `filter` parameter in `FindOptions`. We can either provide an array of names of filters you want to enable, or options object, where we can also disable a filter (that was enabled by default), or pass some parameters to those that are expecting them.
+You can control what filters will be applied via `filter` parameter in `FindOptions`. You can either provide an array of names of filters you want to enable, or options object, where you can also disable a filter (that was enabled by default), or pass some parameters to those that are expecting them.
 
-> By passing `filters: false` we can also disable all the filters for given call.
+> By passing `filters: false` you can also disable all the filters for given call.
 
 ```ts
 em.find(Book, {}); // same as `{ tenantId: 123 }`
@@ -174,7 +174,7 @@ const authors = await qb.getResult();
 
 ## Naming of filters
 
-When toggling filters via `FindOptions`, we do not care about the entity name. This means that when you have multiple filters defined on different entities, but with the same name, they will be controlled via single toggle in the `FindOptions`.
+When toggling filters via `FindOptions`, you do not care about the entity name. This means that when you have multiple filters defined on different entities, but with the same name, they will be controlled via single toggle in the `FindOptions`.
 
 ```ts
 @Entity()

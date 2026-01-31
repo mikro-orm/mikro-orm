@@ -41,7 +41,7 @@ npx mikro-orm schema:fresh --run --seed=UsersSeeder  # seed the database with th
 
 ## Configuration
 
-We can configure the schema generator globally via the ORM config:
+You can configure the schema generator globally via the ORM config:
 
 ```ts
 const orm = await MikroORM.init({
@@ -84,7 +84,7 @@ const orm = await MikroORM.init({
 });
 ```
 
-> Note that if we disable FK constraints and current schema is using them, the schema diffing will try to remove those that already exist.
+> Note that if you disable FK constraints and current schema is using them, the schema diffing will try to remove those that already exist.
 
 ## Skipping tables and columns
 
@@ -184,7 +184,7 @@ $ tsx create-schema
 
 ## Ignoring specific column changes
 
-When using generated columns, we'll get a perpetual diff on every `SchemaGenerator` run unless we set `ignoreSchemaChanges` to ignore changes to `type` and `extra`.
+When using generated columns, you'll get a perpetual diff on every `SchemaGenerator` run unless you set `ignoreSchemaChanges` to ignore changes to `type` and `extra`.
 
 See the [SQL Generated columns](./defining-entities.md#sql-generated-columns) section for more details.
 

@@ -25,7 +25,7 @@ $ npm i -s @mikro-orm/core @mikro-orm/nestjs @mikro-orm/postgresql  # for postgr
 $ npm i -s @mikro-orm/core @mikro-orm/nestjs @mikro-orm/sqlite      # for sqlite
 ```
 
-Once the installation process is completed, we can import the `MikroOrmModule` into the root `AppModule`.
+Once the installation process is completed, you can import the `MikroOrmModule` into the root `AppModule`.
 
 ```ts
 @Module({
@@ -44,7 +44,7 @@ export class AppModule {}
 
 The `forRoot()` method accepts the same configuration object as `init()` from the MikroORM package. Check [this page](./configuration.md) for the complete configuration documentation.
 
-Alternatively we can [configure the CLI](./quick-start.md#setting-up-the-commandline-tool) by creating a configuration file `mikro-orm.config.ts` and then call the `forRoot()` without any arguments. This won't work when you use a build tools that use tree shaking.
+Alternatively you can [configure the CLI](./quick-start.md#setting-up-the-commandline-tool) by creating a configuration file `mikro-orm.config.ts` and then call the `forRoot()` without any arguments. This won't work when you use a build tools that use tree shaking.
 
 ```ts
 @Module({
@@ -78,7 +78,7 @@ export class MyService {
 
 ## Repositories
 
-MikroORM supports the repository design pattern. For every entity we can create a repository. Read the complete [documentation on repositories here](./repositories.md). To define which repositories shall be registered in the current scope you can use the `forFeature()` method. For example, in this way:
+MikroORM supports the repository design pattern. For every entity you can create a repository. Read the complete [documentation on repositories here](./repositories.md). To define which repositories shall be registered in the current scope you can use the `forFeature()` method. For example, in this way:
 
 > You should **not** register your base entities via `forFeature()`, as there are no repositories for those. On the other hand, base entities need to be part of the list in `forRoot()` (or in the ORM config in general).
 
@@ -103,7 +103,7 @@ and import it into the root `AppModule`:
 export class AppModule {}
 ```
 
-In this way we can inject the `PhotoRepository` to the `PhotoService` using the `@InjectRepository()` decorator:
+In this way you can inject the `PhotoRepository` to the `PhotoService` using the `@InjectRepository()` decorator:
 
 ```ts
 @Injectable()
@@ -119,13 +119,13 @@ export class PhotoService {
 
 ## Using custom repositories
 
-When using custom repositories, we can get around the need for `@InjectRepository()` decorator by naming our repositories the same way as `getRepositoryToken()` method do:
+When using custom repositories, you can get around the need for `@InjectRepository()` decorator by naming your repositories the same way as `getRepositoryToken()` method do:
 
 ```ts
 export const getRepositoryToken = <T> (entity: EntityName<T>) => `${Utils.className(entity)}Repository`;
 ```
 
-In other words, as long as we name the repository same was as the entity is called, appending `Repository` suffix, the repository will be registered automatically in the Nest.js DI container.
+In other words, as long as you name the repository same was as the entity is called, appending `Repository` suffix, the repository will be registered automatically in the Nest.js DI container.
 
 `**./author.entity.ts**`
 
@@ -151,7 +151,7 @@ export class AuthorRepository extends EntityRepository<Author> {
 }
 ```
 
-As the custom repository name is the same as what `getRepositoryToken()` would return, we do not need the `@InjectRepository()` decorator anymore:
+As the custom repository name is the same as what `getRepositoryToken()` would return, you do not need the `@InjectRepository()` decorator anymore:
 
 ```ts
 @Injectable()
@@ -164,7 +164,7 @@ export class MyService {
 
 ## Load entities automatically
 
-> `autoLoadEntities` option was added in v4.1.0
+> The `autoLoadEntities` option automatically registers entities from `forFeature()` calls.
 
 Manually adding entities to the entities array of the connection options can be tedious. In addition, referencing entities from the root module breaks application domain boundaries and causes leaking implementation details to other parts of the application. To solve this issue, static glob paths can be used.
 
@@ -186,7 +186,7 @@ With that option specified, every entity registered through the `forFeature()` m
 
 > Note that entities that aren't registered through the `forFeature()` method, but are only referenced from the entity (via a relationship), won't be included by way of the `autoLoadEntities` setting.
 
-> Using `autoLoadEntities` also has no effect on the MikroORM CLI - for that we still need CLI config with the full list of entities. On the other hand, we can use globs there, as the CLI won't go through webpack.
+> Using `autoLoadEntities` also has no effect on the MikroORM CLI - for that you still need CLI config with the full list of entities. On the other hand, you can use globs there, as the CLI won't go through webpack.
 
 ## Request scoped handlers in queues
 
@@ -194,11 +194,11 @@ With that option specified, every entity registered through the `forFeature()` m
 
 > Before v6, `@CreateRequestContext()` was called `@UseRequestContext()`.
 
-As mentioned in the [docs](./identity-map.md), we need a clean state for each request. That is handled automatically thanks to the `RequestContext` helper registered via middleware.
+As mentioned in the [docs](./identity-map.md), you need a clean state for each request. That is handled automatically thanks to the `RequestContext` helper registered via middleware.
 
-But middlewares are executed only for regular HTTP request handles, what if we need a request scoped method outside of that? One example of that is queue handlers or scheduled tasks.
+But middlewares are executed only for regular HTTP request handles, what if you need a request scoped method outside of that? One example of that is queue handlers or scheduled tasks.
 
-We can use the `@CreateRequestContext()` decorator. It requires you to first inject the `MikroORM` instance to current context, it will be then used to create the context for you. Under the hood, the decorator will register new request context for your method and execute it inside the context.
+You can use the `@CreateRequestContext()` decorator. It requires you to first inject the `MikroORM` instance to current context, it will be then used to create the context for you. Under the hood, the decorator will register new request context for your method and execute it inside the context.
 
 > `@CreateRequestContext()` should be used only on the top level methods. It should not be nested - a method decorated with it should not call another method that is also decorated with it.
 
@@ -394,7 +394,7 @@ export class Book {
 
 The `@mikro-orm/nestjs` package exposes `getRepositoryToken()` function that returns prepared token based on a given entity to allow mocking the repository.
 
-> If we register the provider only via `getRepositoryToken()`, we need to use the `@InjectRepository` decorator. To be able to use custom repository without this decorator, we need to register it with `provide: PhotoRepository`. `provide`:
+> If you register the provider only via `getRepositoryToken()`, you need to use the `@InjectRepository` decorator. To be able to use custom repository without this decorator, you need to register it with `provide: PhotoRepository`. `provide`:
 
 ```ts
 @Module({

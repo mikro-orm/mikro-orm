@@ -91,7 +91,7 @@ const dependency = import(dependencyNameInVariable);
 
 As Webpack creates a file bundle, it isn't desired that it scans directories for entities or metadata. Therefore, you need to provide list of entities in the `entities` option in the initialization function, folder/file based discovery is not supported (see dynamically including entities as an alternative solution). Also, you need to fill `type` or `entity` attributes everywhere (see above) and disable caching (it will decrease start-time slightly).
 
-> In v4 caching is disabled by default when using `ReflectMetadataProvider`.
+> Caching is disabled by default when using `ReflectMetadataProvider`.
 
 #### Manually defining entities
 

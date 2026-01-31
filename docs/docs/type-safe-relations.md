@@ -5,68 +5,67 @@ title: Type-Safe Relations
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-Entity relations are mapped to entity references - instances of the entity that have at least the primary key available. This reference is stored in identity map, so you will get the same object reference when fetching the same document from database.
+Entity relations are mapped to entity references - instances of the entity that have at least the primary key available. This reference is stored in the identity map, so you will get the same object reference when fetching the same document from the database.
 
 ```ts
 @ManyToOne(() => Author)
-author!: Author; // the value is always instance of the `Author` entity
+author!: Author;
 ```
 
-You can check whether an entity is initialized via `wrap(entity).isInitialized()`, and use `await wrap(entity).init()` to initialize it. This will trigger database call and populate the entity, keeping the same reference in identity map.
+The problem with this approach is that TypeScript has no way of knowing whether the relation is loaded or not. The `author` property is always typed as `Author`, even when it's just an uninitialized reference.
 
 ```ts
-const author = em.getReference(Author, 123);
-console.log(author.id); // accessing the id will not trigger any db call
-console.log(wrap(author).isInitialized()); // false
-console.log(author.name); // undefined
-
-await wrap(author).init(); // this will trigger db call
-console.log(wrap(author).isInitialized()); // true
-console.log(author.name); // defined
-```
-
-The `isInitialized()` method can be used for runtime checks, but that could end up being quite tedious - we can do better! Instead of manual checks for entity state, we can use the `Reference` wrapper.
-
-## `Reference` wrapper
-
-When you define `@ManyToOne` and `@OneToOne` properties on your entity, TypeScript compiler will think that desired entities are always loaded:
-
-```ts
-@Entity()
-export class Book {
-
-  @PrimaryKey()
-  id!: number;
-
-  @ManyToOne()
-  author!: Author;
-
-  constructor(author: Author) {
-    this.author = author;
-  }
-
-}
-
 const book = await em.findOne(Book, 1);
 console.log(book.author instanceof Author); // true
 console.log(wrap(book.author).isInitialized()); // false
-console.log(book.author.name); // undefined as `Author` is not loaded yet
+console.log(book.author.name); // undefined - Author is not loaded!
 ```
 
-You can overcome this issue by using the `Reference` wrapper. It simply wraps the entity, defining `load(): Promise<T>` method that will first lazy load the association if not already available. You can also use `unwrap(): T` method to access the underlying entity without loading it.
+MikroORM provides several tools to make working with relations type-safe:
 
-You can also use `load<K extends keyof T>(prop: K): Promise<T[K]>`, which works like `load()` but returns the specified property.
+- **`Reference` wrapper** - wraps relations to distinguish between loaded and unloaded state
+- **`Loaded` type** - tracks which relations are populated at the type level
+- **`$` accessor** - provides type-safe synchronous access to loaded relations
+
+## `Reference` Wrapper
+
+The `Reference` wrapper wraps an entity reference and provides methods to safely access it:
+
+- `load(): Promise<T>` - loads the entity if not already loaded
+- `unwrap(): T` - returns the underlying entity (unsafe, may be uninitialized)
+- `isInitialized(): boolean` - checks if the entity is loaded
+- `getEntity(): T` - returns the entity, throws if not initialized
+- `$` or `get()` - synchronous access (only available when loaded)
+
+### Defining References
+
+Use the `Ref<T>` type and `ref: true` option to define a reference property:
 
 <Tabs
 groupId="entity-def"
-defaultValue="reflect-metadata"
+defaultValue="define-entity"
 values={[
+{label: 'defineEntity', value: 'define-entity'},
 {label: 'reflect-metadata', value: 'reflect-metadata'},
 {label: 'ts-morph', value: 'ts-morph'},
-{label: 'defineEntity', value: 'define-entity'},
 {label: 'EntitySchema', value: 'entity-schema'},
 ]
 }>
+<TabItem value="define-entity">
+
+```ts title="./entities/Book.ts"
+import { defineEntity, p } from '@mikro-orm/core';
+
+export const Book = defineEntity({
+  name: 'Book',
+  properties: {
+    id: p.integer().primary(),
+    author: p.manyToOne(() => Author).ref(),
+  },
+});
+```
+
+</TabItem>
 <TabItem value="reflect-metadata">
 
 ```ts title="./entities/Book.ts"
@@ -88,11 +87,11 @@ export class Book {
 }
 ```
 
-  </TabItem>
-  <TabItem value="ts-morph">
+</TabItem>
+<TabItem value="ts-morph">
 
 ```ts title="./entities/Book.ts"
-import { Entity, Ref, ManyToOne, PrimaryKey, Reference } from '@mikro-orm/core';
+import { Entity, Ref, ManyToOne, PrimaryKey, ref } from '@mikro-orm/core';
 
 @Entity()
 export class Book {
@@ -110,30 +109,15 @@ export class Book {
 }
 ```
 
-  </TabItem>
-  <TabItem value="define-entity">
+</TabItem>
+<TabItem value="entity-schema">
 
 ```ts title="./entities/Book.ts"
-import { type InferEntity, defineEntity, p } from '@mikro-orm/core';
+import { EntitySchema, Ref } from '@mikro-orm/core';
 
-export const Book = defineEntity({
-  name: 'Book',
-  properties: {
-    id: p.integer().primary(),
-    author: p.manyToOne(Author).ref(),
-  },
-});
-
-export interface IBook extends InferEntity<typeof Book> {}
-```
-
-  </TabItem>
-  <TabItem value="entity-schema">
-
-```ts title="./entities/Book.ts"
 export interface IBook {
   id: number;
-  author: Ref<Author>;
+  author: Ref<IAuthor>;
 }
 
 export const Book = new EntitySchema<IBook>({
@@ -145,113 +129,111 @@ export const Book = new EntitySchema<IBook>({
 });
 ```
 
-  </TabItem>
+</TabItem>
 </Tabs>
 
-```ts
-const book1 = await em.findOne(Book, 1);
-book.author instanceof Reference; // true
-book1.author; // Ref<Author> (instance of `Reference` class)
-book1.author.name; // type error, there is no `name` property
-book1.author.unwrap().name; // unsafe sync access, undefined as author is not loaded
-book1.author.isInitialized(); // false
-
-const book2 = await em.findOne(Book, 1, { populate: ['author'] });
-book2.author; // LoadedReference<Author> (instance of `Reference` class)
-book2.author.$.name; // type-safe sync access
-```
-
-There are also `getEntity()` and `getProperty()` methods that are synchronous getters, that will first check if the wrapped entity is initialized, and if not, it will throw and error.
+### Using References
 
 ```ts
 const book = await em.findOne(Book, 1);
-console.log(book.author instanceof Reference); // true
-console.log(wrap(book.author).isInitialized()); // false
-console.log(book.author.getEntity()); // Error: Reference<Author> 123 not initialized
-console.log(book.author.getProperty('name')); // Error: Reference<Author> 123 not initialized
-console.log(await book.author.load('name')); // ok, loading the author first
-console.log(book.author.getProperty('name')); // ok, author already loaded
+
+// The reference is not loaded yet
+book.author;                    // Ref<Author>
+book.author.isInitialized();    // false
+book.author.id;                 // OK - PK is always available
+book.author.name;               // TS error - no 'name' on Ref<Author>
+
+// Load the reference
+const author = await book.author.load();
+author.name;                    // OK - now it's loaded
+
+// Or load and access a specific property
+const name = await book.author.load('name');
 ```
 
-If you use different metadata provider than `TsMorphMetadataProvider` (e.g. `ReflectMetadataProvider`), you will also need to explicitly set `ref` parameter:
+When the relation is populated, you get a `LoadedReference` which allows synchronous access via `$`:
 
 ```ts
-@ManyToOne(() => Author, { ref: true })
-author!: Ref<Author>;
+const book = await em.findOne(Book, 1, { populate: ['author'] });
+
+book.author;                    // LoadedReference<Author>
+book.author.$.name;             // OK - type-safe synchronous access
+book.author.get().name;         // same as above, alternative syntax
 ```
 
-### Using `Reference.load()`
+### Reference Methods
 
-After retrieving a reference, you can load the full entity by utilizing the asynchronous `Reference.load()` method.
+| Method | Description |
+|--------|-------------|
+| `load()` | Loads the entity, returns `Promise<T>` |
+| `load(prop)` | Loads the entity and returns the specified property |
+| `unwrap()` | Returns the underlying entity (unsafe) |
+| `isInitialized()` | Returns `true` if the entity is loaded |
+| `getEntity()` | Returns the entity, throws if not initialized |
+| `getProperty(prop)` | Returns a property, throws if not initialized |
+| `$` / `get()` | Synchronous access (only on `LoadedReference`) |
 
 ```ts
-const book1 = await em.findOne(Book, 1);
-(await book1.author.load()).name; // async safe access
+const book = await em.findOne(Book, 1);
 
-const book2 = await em.findOne(Book, 2);
-const author = await book2.author.load();
-author.name;
-await book2.author.load(); // no additional query, already loaded
+// These throw if not initialized
+book.author.getEntity();           // Error: Reference<Author> not initialized
+book.author.getProperty('name');   // Error: Reference<Author> not initialized
+
+// Load first, then access synchronously
+await book.author.load();
+book.author.getEntity().name;      // OK
+book.author.getProperty('name');   // OK
 ```
 
-> As opposed to `wrap(e).init()` which always refreshes the entity, `Reference.load()` method will query the database only if the entity is not already loaded in Identity Map.
+> Unlike `wrap(entity).init()` which always refreshes from the database, `Reference.load()` only queries if the entity is not already in the Identity Map.
 
-### `ScalarReference` wrapper
+## `Loaded` Type
 
-Similarly to the `Reference` wrapper, we can also wrap scalars with `Ref` into a `ScalarReference` object. This is handy for lazy scalar properties.
-
-The `Ref` type automatically resolves to `ScalarReference` for non-object types, so the below is correct:
+The `Loaded<Entity, Hints>` type tracks which relations are populated at compile time. All `em.find*` methods return this type:
 
 ```ts
-@Property({ lazy: true, ref: true })
-passwordHash!: Ref<string>;
+// Type: Loaded<User, never>[]
+const users = await em.find(User, {});
+
+// Type: Loaded<User, 'identity' | 'friends'>[]
+const usersWithRelations = await em.find(User, {}, {
+  populate: ['identity', 'friends'],
+});
 ```
 
-```ts
-const user = await em.findOne(User, 1);
-const passwordHash = await user.passwordHash.load();
+Given the following `User` entity:
+
+<Tabs
+groupId="entity-def"
+defaultValue="define-entity"
+values={[
+{label: 'defineEntity', value: 'define-entity'},
+{label: 'reflect-metadata', value: 'reflect-metadata'},
+{label: 'ts-morph', value: 'ts-morph'},
+{label: 'EntitySchema', value: 'entity-schema'},
+]
+}>
+<TabItem value="define-entity">
+
+```ts title="./entities/User.ts"
+import { defineEntity, p } from '@mikro-orm/core';
+
+export const User = defineEntity({
+  name: 'User',
+  properties: {
+    id: p.integer().primary(),
+    identity: p.manyToOne(() => Identity).ref(),
+    friends: p.manyToMany(() => User),
+  },
+});
 ```
 
-For object-like types, if you choose to use the reference wrappers, you should use the `ScalarRef<T>` type explicitly. For example, you might want to lazily load a large JSON value:
+</TabItem>
+<TabItem value="reflect-metadata">
 
-```ts
-@Property({ type: 'json', nullable: true, lazy: true, ref: true })
-// ReportParameters is an object type, imagine it defined elsewhere.
-reportParameters!: ScalarRef<ReportParameters | null>; 
-```
-
-Keep in mind that once a scalar value is managed through a `ScalarReference`, accessing it through MikroORM managed objects will always return the `ScalarReference` wrapper. That can be confusing in case the property is also `nullable`, since the `ScalarReference` will always be truthy. In such cases, you should inform the type system of the nullability of the property through `ScalarReference<T>`'s type parameter as demonstrated above. Below is an example of how it all works:
-
-```ts
-// Say Report of id "1" has no reportParameters in the Database.
-const report = await em.findOne(Report, 1);
-if (report.reportParameters) {
-  // Logs Ref<?>, not the actual value. **Would always run***.
-  console.log(report.reportParameters);
-  //@ts-expect-error $/.get() is not available until the reference has been loaded.
-  // const mistake = report.reportParameters.$
-}
-const populatedReport = await em.populate(report, ['reportParameters']);
-// Logs `null`
-console.log(populatedReport.reportParameters.$); 
-```
-
-## `Loaded` type
-
-If you check the return type of `em.find` and `em.findOne` methods, you might be a bit confused - instead of the entity, they return `Loaded` type:
-
-```ts
-// res1 is of type `Loaded<User, never>[]`
-const res1 = await em.find(User, {});
-
-// res2 is of type `Loaded<User, 'identity' | 'friends'>[]`
-const res2 = await em.find(User, {}, { populate: ['identity', 'friends'] });
-```
-
-The `User` entity is defined as follows:
-
-```ts
-import { Entity, PrimaryKey, ManyToOne, OneToOne, Collection, Ref, ref } from '@mikro-orm/core';
+```ts title="./entities/User.ts"
+import { Entity, PrimaryKey, ManyToOne, ManyToMany, Collection, Ref, ref } from '@mikro-orm/core';
 
 @Entity()
 export class User {
@@ -259,7 +241,7 @@ export class User {
   @PrimaryKey()
   id!: number;
 
-  @ManyToOne(() => Identity)
+  @ManyToOne(() => Identity, { ref: true })
   identity: Ref<Identity>;
 
   @ManyToMany(() => User)
@@ -272,90 +254,179 @@ export class User {
 }
 ```
 
-The `Loaded` type will represent what relations of the entity are populated, and will add a special `$` symbol to them, allowing for type-safe synchronous access to the loaded properties. This works great in combination with the `Reference` wrapper:
+</TabItem>
+<TabItem value="ts-morph">
 
-> If you don't like symbols with magic names like `$`, you can as well use the `get()` method, which is an alias for it.
+```ts title="./entities/User.ts"
+import { Entity, PrimaryKey, ManyToOne, ManyToMany, Collection, Ref, ref } from '@mikro-orm/core';
+
+@Entity()
+export class User {
+
+  @PrimaryKey()
+  id!: number;
+
+  @ManyToOne()
+  identity: Ref<Identity>;
+
+  @ManyToMany(() => User)
+  friends = new Collection<User>(this);
+
+  constructor(identity: Identity) {
+    this.identity = ref(identity);
+  }
+
+}
+```
+
+</TabItem>
+<TabItem value="entity-schema">
+
+```ts title="./entities/User.ts"
+import { EntitySchema, Collection, Ref } from '@mikro-orm/core';
+
+export interface IUser {
+  id: number;
+  identity: Ref<IIdentity>;
+  friends: Collection<IUser>;
+}
+
+export const User = new EntitySchema<IUser>({
+  name: 'User',
+  properties: {
+    id: { type: Number, primary: true },
+    identity: { entity: () => Identity, ref: true },
+    friends: { entity: () => User, kind: 'm:n' },
+  },
+});
+```
+
+</TabItem>
+</Tabs>
+
+### Type-Safe Access with `$`
+
+When a relation is in the `Loaded` hints, you can access it synchronously via the `$` symbol:
 
 ```ts
-// res is of type `Loaded<User, 'identity'>`
+// Type: Loaded<User, 'identity'>
 const user = await em.findOneOrFail(User, 1, { populate: ['identity'] });
 
-// instead of the async `await user.identity.load()` call that would ensure the relation is loaded
-// you can use the dynamically added `$` symbol for synchronous and type-safe access to it:
+// Type-safe synchronous access
 console.log(user.identity.$.email);
 ```
 
-> If you'd omit the `populate` hint, type of `user` would be `Loaded<User, never>` and the `user.identity.$` symbol wouldn't be available - such call would end up with compilation error.
+Without the populate hint, accessing `$` is a compile error:
 
 ```ts
-// if we try without the populate hint, the type is `Loaded<User, never>`
-const user2 = await em.findOneOrFail(User, 2);
+// Type: Loaded<User, never>
+const user = await em.findOneOrFail(User, 1);
 
-// TS2339: Property '$' does not exist on type '{ id: number; } & Reference'.
+// TS Error: Property '$' does not exist on type 'Ref<Identity>'
 console.log(user.identity.$.email);
 ```
 
-Same works for the `Collection` wrapper, that offers runtime methods `isInitialized`, `loadItems` and `init`, as well as the type-safe `$` symbol.
+> If you don't like symbols with magic names like `$`, you can use the `get()` method, which is an alias for it.
+
+### Using `Loaded` in Function Signatures
+
+You can require populated relations in your function parameters:
 
 ```ts
-// res is of type `Loaded<User, 'friends'>`
+function sendWelcomeEmail(user: Loaded<User, 'identity'>) {
+  // Type-safe - identity is guaranteed to be loaded
+  const email = user.identity.$.email;
+  mailer.send(email, 'Welcome!');
+}
+
+// Works - identity is populated
+const user1 = await em.findOneOrFail(User, 1, { populate: ['identity'] });
+sendWelcomeEmail(user1);
+
+// Compile error - identity not populated
+const user2 = await em.findOneOrFail(User, 1);
+sendWelcomeEmail(user2);
+```
+
+### Collections
+
+The `$` accessor also works with `Collection`:
+
+```ts
+// Type: Loaded<User, 'friends'>
 const user = await em.findOneOrFail(User, 1, { populate: ['friends'] });
 
-// instead of the async `await user.friends.loadItems()` call that would ensure the collection items are loaded
-// you can use the dynamically added `$` symbol for synchronous and type-safe access to it:
+// Type-safe iteration over loaded collection
 for (const friend of user.friends.$) {
   console.log(friend.email);
 }
 ```
 
-You can also use the `Loaded` type in your own methods, to require on type level that some relations will be populated:
+> Note: `Loaded` is purely a compile-time construct. You can bypass it with type assertions, but this defeats the purpose of type safety.
 
-```ts
-function checkIdentity(user: Loaded<User, 'identity'>) {
-  if (!user.identity.$.email.includes('@')) {
-    throw new Error(`That's a weird e-mail!`);
-  }
-}
-```
+## Assigning References
 
-```ts
-// works
-const u1 = await em.findOneOrFail(User, 2, { populate: ['identity'] });
-checkIdentity(u1);
-
-// fails
-const u2 = await em.findOneOrFail(User, 2);
-checkIdentity(u2);
-```
-
-> Keep in mind this is all just a type-level information, you can easily trick it via type assertions.
-
-## Assigning to `Reference` properties
-
-When you define the property as `Reference` wrapper, you will need to assign the `Reference` instance to it instead of the entity. You can convert any entity to a `Reference` wrapper via `ref(entity)`, or use `wrapped` option of `em.getReference()`:
-
-> `ref(e)` is a shortcut for `wrap(e).toReference()`, which is the same as `Reference.create(e)`.
+When assigning to a `Ref<T>` property, you need to wrap the entity:
 
 ```ts
 import { ref } from '@mikro-orm/core';
 
 const book = await em.findOne(Book, 1);
-const repo = em.getRepository(Author);
 
-book.author = repo.getReference(2, { wrapped: true });
+// Using ref() helper
+book.author = ref(someAuthor);
 
-// same as:
-book.author = ref(repo.getReference(2));
-await em.flush();
+// Using getReference with wrapped option
+book.author = em.getReference(Author, 2, { wrapped: true });
+
+// Using toReference()
+book.author = wrap(someAuthor).toReference();
 ```
 
-Since v5 we can also create entity references without access to `EntityManager`. This can be handy if you want to create a reference from inside entity constructor:
+> `ref(e)` is a shortcut for `wrap(e).toReference()`, which is the same as `Reference.create(e)`.
 
-```ts
-import { Entity, ManyToOne, Rel, rel } from '@mikro-orm/core';
+### Creating References Without EntityManager
+
+You can create references inside entity constructors using `rel()`:
+
+<Tabs
+groupId="entity-def"
+defaultValue="define-entity"
+values={[
+{label: 'defineEntity', value: 'define-entity'},
+{label: 'reflect-metadata', value: 'reflect-metadata'},
+{label: 'ts-morph', value: 'ts-morph'},
+{label: 'EntitySchema', value: 'entity-schema'},
+]
+}>
+<TabItem value="define-entity">
+
+```ts title="./entities/Book.ts"
+import { defineEntity, p, rel } from '@mikro-orm/core';
+
+export const Book = defineEntity({
+  name: 'Book',
+  properties: {
+    id: p.integer().primary(),
+    author: p.manyToOne(() => Author).ref(),
+  },
+});
+
+// Usage: create book with author reference
+const book = em.create(Book, { author: rel(Author, authorId) });
+```
+
+</TabItem>
+<TabItem value="reflect-metadata">
+
+```ts title="./entities/Book.ts"
+import { Entity, ManyToOne, PrimaryKey, Ref, rel } from '@mikro-orm/core';
 
 @Entity()
 export class Book {
+
+  @PrimaryKey()
+  id!: number;
 
   @ManyToOne(() => Author, { ref: true })
   author!: Ref<Author>;
@@ -367,33 +438,101 @@ export class Book {
 }
 ```
 
-Another way is to use `toReference()` method available as part of [`WrappedEntity` interface](./entity-helper.md#wrappedentity-and-wrap-helper):
+</TabItem>
+<TabItem value="ts-morph">
+
+```ts title="./entities/Book.ts"
+import { Entity, ManyToOne, PrimaryKey, Ref, rel } from '@mikro-orm/core';
+
+@Entity()
+export class Book {
+
+  @PrimaryKey()
+  id!: number;
+
+  @ManyToOne()
+  author!: Ref<Author>;
+
+  constructor(authorId: number) {
+    this.author = rel(Author, authorId);
+  }
+
+}
+```
+
+</TabItem>
+<TabItem value="entity-schema">
+
+```ts title="./entities/Book.ts"
+import { EntitySchema, Ref, rel } from '@mikro-orm/core';
+
+export interface IBook {
+  id: number;
+  author: Ref<IAuthor>;
+}
+
+export const Book = new EntitySchema<IBook>({
+  name: 'Book',
+  properties: {
+    id: { type: Number, primary: true },
+    author: { entity: () => Author, ref: true },
+  },
+});
+
+// Usage: create book with author reference
+const book = em.create(Book, { author: rel(Author, authorId) });
+```
+
+</TabItem>
+</Tabs>
+
+Another way is to use `toReference()` method available as part of the [`wrap()` helper](./wrap-helper.md):
 
 ```ts
-const author = new Author(...)
+const author = new Author(...);
 book.author = wrap(author).toReference();
 ```
 
-If the reference already exist, you need to re-assign it with a new `Reference` instance - they hold identity just like entities, so you need to replace them:
+## Primary Key Access
 
-```ts
-article.author = ref(new User(...));
-```
-
-## What is `Ref` (`IdentifiedReference`)?
-
-`Ref` is an intersection type that adds primary key property to the `Reference` interface. It allows getting the primary key from `Reference` instance directly.
-
-By default, we try to detect the PK by checking if a property with a known name exists. We check for those in order: `_id`, `uuid`, `id` - with a way to manually set the property name via `PrimaryKeyProp` symbol (`[PrimaryKeyProp]?: 'foo';`).
+The `Ref<T>` type includes the entity's primary key, allowing direct access without loading:
 
 ```ts
 const book = await em.findOne(Book, 1);
-console.log(book.author.id); // ok, returns the PK
+console.log(book.author.id); // OK - PK is always available
 ```
 
-You can also have a non-standard primary key:
+MikroORM detects the PK property by checking for `_id`, `uuid`, or `id` in that order. For custom PK names, use the `PrimaryKeyProp` symbol:
 
-```ts
+<Tabs
+groupId="entity-def"
+defaultValue="define-entity"
+values={[
+{label: 'defineEntity', value: 'define-entity'},
+{label: 'reflect-metadata', value: 'reflect-metadata'},
+{label: 'ts-morph', value: 'ts-morph'},
+{label: 'EntitySchema', value: 'entity-schema'},
+]
+}>
+<TabItem value="define-entity">
+
+```ts title="./entities/Author.ts"
+import { defineEntity, p, PrimaryKeyProp } from '@mikro-orm/core';
+
+export const Author = defineEntity({
+  name: 'Author',
+  properties: {
+    myPrimaryKey: p.integer().primary(),
+  },
+});
+
+// PrimaryKeyProp is inferred automatically with defineEntity
+```
+
+</TabItem>
+<TabItem value="reflect-metadata">
+
+```ts title="./entities/Author.ts"
 import { Entity, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
 
 @Entity()
@@ -405,26 +544,86 @@ export class Author {
   [PrimaryKeyProp]?: 'myPrimaryKey';
 
 }
-
-const book = await em.findOne(Book, 1);
-console.log(book.author.myPrimaryKey); // ok, returns the PK
 ```
 
-For MongoDB, both `id` and `_id` PK values are available on the `Ref` type by default, as a `string` and `ObjectId` respectively:
+</TabItem>
+<TabItem value="ts-morph">
+
+```ts title="./entities/Author.ts"
+import { Entity, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
+
+@Entity()
+export class Author {
+
+  @PrimaryKey()
+  myPrimaryKey!: number;
+
+  [PrimaryKeyProp]?: 'myPrimaryKey';
+
+}
+```
+
+</TabItem>
+<TabItem value="entity-schema">
+
+```ts title="./entities/Author.ts"
+import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+
+export interface IAuthor {
+  myPrimaryKey: number;
+  [PrimaryKeyProp]?: 'myPrimaryKey';
+}
+
+export const Author = new EntitySchema<IAuthor>({
+  name: 'Author',
+  properties: {
+    myPrimaryKey: { type: Number, primary: true },
+  },
+});
+```
+
+</TabItem>
+</Tabs>
+
+```ts
+// Now works with custom PK name
+const book = await em.findOne(Book, 1);
+console.log(book.author.myPrimaryKey);
+```
+
+For MongoDB, both `id` (string) and `_id` (ObjectId) are available:
 
 <Tabs
 groupId="entity-def"
-defaultValue="reflect-metadata"
+defaultValue="define-entity"
 values={[
+{label: 'defineEntity', value: 'define-entity'},
 {label: 'reflect-metadata', value: 'reflect-metadata'},
 {label: 'ts-morph', value: 'ts-morph'},
-{label: 'defineEntity', value: 'define-entity'},
 {label: 'EntitySchema', value: 'entity-schema'},
 ]
 }>
+<TabItem value="define-entity">
+
+```ts title="./entities/Book.ts"
+import { defineEntity, p } from '@mikro-orm/core';
+
+export const Book = defineEntity({
+  name: 'Book',
+  properties: {
+    _id: p.type(ObjectId).primary(),
+    id: p.string().serializedPrimaryKey(),
+    author: p.manyToOne(() => Author).ref(),
+  },
+});
+```
+
+</TabItem>
 <TabItem value="reflect-metadata">
 
 ```ts title="./entities/Book.ts"
+import { Entity, PrimaryKey, SerializedPrimaryKey, ManyToOne, Ref } from '@mikro-orm/core';
+
 @Entity()
 export class Book {
 
@@ -440,10 +639,12 @@ export class Book {
 }
 ```
 
-  </TabItem>
-  <TabItem value="ts-morph">
+</TabItem>
+<TabItem value="ts-morph">
 
 ```ts title="./entities/Book.ts"
+import { Entity, PrimaryKey, SerializedPrimaryKey, ManyToOne, Ref } from '@mikro-orm/core';
+
 @Entity()
 export class Book {
 
@@ -459,28 +660,12 @@ export class Book {
 }
 ```
 
-  </TabItem>
-  <TabItem value="define-entity">
+</TabItem>
+<TabItem value="entity-schema">
 
 ```ts title="./entities/Book.ts"
-import { type InferEntity, defineEntity, p } from '@mikro-orm/core';
+import { EntitySchema, Ref } from '@mikro-orm/core';
 
-export const Book = defineEntity({
-  name: 'Book',
-  properties: {
-    _id: p.type(ObjectId).primary(),
-    id: p.string().serializedPrimaryKey(),
-    author: () => p.manyToOne(Author).ref(),
-  },
-});
-
-export interface IBook extends InferEntity<typeof Book> {}
-```
-
-  </TabItem>
-  <TabItem value="entity-schema">
-
-```ts title="./entities/Book.ts"
 export interface IBook {
   _id: ObjectId;
   id: string;
@@ -497,11 +682,57 @@ export const Book = new EntitySchema<IBook>({
 });
 ```
 
-  </TabItem>
+</TabItem>
 </Tabs>
 
 ```ts
 const book = await em.findOne(Book, 1);
-console.log(book.author.id); // ok, returns string PK
-console.log(book.author._id); // ok, returns ObjectId PK
+console.log(book.author.id);  // string
+console.log(book.author._id); // ObjectId
+```
+
+## `ScalarReference` Wrapper
+
+For lazy-loaded scalar properties (not relations), use `ScalarRef<T>`:
+
+```ts
+@Property({ lazy: true, ref: true })
+passwordHash!: Ref<string>;
+
+@Property({ type: 'json', lazy: true, ref: true })
+metadata!: ScalarRef<Record<string, unknown>>;
+```
+
+```ts
+const user = await em.findOne(User, 1);
+
+// Load the lazy scalar
+const hash = await user.passwordHash.load();
+
+// Or populate it
+const userWithHash = await em.findOne(User, 1, {
+  populate: ['passwordHash'],
+});
+console.log(userWithHash.passwordHash.$);
+```
+
+> For primitive types like `string` or `number`, `Ref<T>` automatically resolves to `ScalarReference`. For object types, use `ScalarRef<T>` explicitly.
+
+### Nullable Scalars
+
+When a scalar reference is nullable, the wrapper is always truthy. Check the value after loading:
+
+```ts
+@Property({ type: 'json', nullable: true, lazy: true, ref: true })
+config!: ScalarRef<Config | null>;
+```
+
+```ts
+const entity = await em.findOne(Entity, 1, { populate: ['config'] });
+
+// The wrapper exists, but the value might be null
+if (entity.config.$) {
+  // Safe to use
+  console.log(entity.config.$.setting);
+}
 ```

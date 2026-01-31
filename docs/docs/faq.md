@@ -21,7 +21,7 @@ Make sure you install `@mikro-orm/cli` package locally. If you want to have glob
 
 The method is there, the issue is in the TS type.
 
-In v4 the `core` package, where `EntityManager` and `EntityRepository` are defined, is not dependent on knex, and therefore it cannot have a method returning a `QueryBuilder`. You need to import the SQL flavour of the EM from the driver package to access the `createQueryBuilder()` method.
+The `core` package, where `EntityManager` and `EntityRepository` are defined, is database-agnostic. You need to import the SQL flavour of the EM from the driver package to access the `createQueryBuilder()` method.
 
 > The SQL flavour of EM is actually called `SqlEntityManager`, it is exported both under this name and under `EntityManager` alias, so you can just change the location from where you import.
 

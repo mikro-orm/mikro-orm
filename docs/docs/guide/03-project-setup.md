@@ -2,15 +2,15 @@
 title: 'Chapter 3: Project Setup'
 ---
 
-So far we were just toying around with our entities, let's start building something real. We said we will use Fastify as a web server, and Vitest for testing it. Let's set that up, create our first endpoint and test it.
+So far you were just toying around with your entities, let's start building something real. As mentioned earlier, you will use Fastify as a web server, and Vitest for testing it. Let's set that up, create your first endpoint and test it.
 
 ## Fastify
 
-Let's create new file `app.ts` inside `src` directory, and export a `bootstrap` function from it, where we create the fastify app instance. Remember how we were forking the [`EntityManager`](/api/core/class/EntityManager) to get around the global context validation? For web servers, we can leverage middlewares, or in fastify hooks, to achieve unique request contexts automatically. MikroORM provides a handy helper called `RequestContext` which can be used to create the fork for each request. The [`EntityManager`](/api/core/class/EntityManager) is aware of this class and tries to get the right context from it automatically.
+Let's create new file `app.ts` inside `src` directory, and export a `bootstrap` function from it, where you create the fastify app instance. Remember how you were forking the [`EntityManager`](/api/core/class/EntityManager) to get around the global context validation? For web servers, you can leverage middlewares, or in fastify hooks, to achieve unique request contexts automatically. MikroORM provides a handy helper called `RequestContext` which can be used to create the fork for each request. The [`EntityManager`](/api/core/class/EntityManager) is aware of this class and tries to get the right context from it automatically.
 
 :::info How does `RequestContext` helper work?
 
-Internally all [`EntityManager`](/api/core/class/EntityManager) methods that work with the Identity Map (e.g. [`em.find()`](/api/core/class/EntityManager#find) or [`em.getReference()`](/api/core/class/EntityManager#getReference)) first call `em.getContext()` to access the contextual fork. This method will first check if we are running inside `RequestContext` handler and prefer the [`EntityManager`](/api/core/class/EntityManager) fork from it.
+Internally all [`EntityManager`](/api/core/class/EntityManager) methods that work with the Identity Map (e.g. [`em.find()`](/api/core/class/EntityManager#find) or [`em.getReference()`](/api/core/class/EntityManager#getReference)) first call `em.getContext()` to access the contextual fork. This method will first check if the code is running inside `RequestContext` handler and prefer the [`EntityManager`](/api/core/class/EntityManager) fork from it.
 
 ```ts
 // we call em.find() on the global EM instance
@@ -23,7 +23,7 @@ const res = await orm.em.getContext().find(Book, {});
 const res = await RequestContext.getEntityManager().find(Book, {});
 ```
 
-The `RequestContext.getEntityManager()` method then checks `AsyncLocalStorage` static instance we use for creating new EM forks in the `RequestContext.create()` method.
+The `RequestContext.getEntityManager()` method then checks `AsyncLocalStorage` static instance used for creating new EM forks in the `RequestContext.create()` method.
 
 The [`AsyncLocalStorage`](https://nodejs.org/api/async_context.html#class-asynclocalstorage) class from Node.js core is the magician here. It allows us to track the context throughout the async calls. It allows us to decouple the [`EntityManager`](/api/core/class/EntityManager) fork creation (usually in a middleware as shown in the previous section) from its usage through the global [`EntityManager`](/api/core/class/EntityManager) instance.
 
@@ -88,9 +88,9 @@ The server is running, good! To stop it, press `CTRL + C`.
 
 ### User profile endpoint
 
-Let's add our first endpoint - `GET /article` which lists all existing articles. It is a public endpoint that can take `limit` and `offset` query parameters and return requested items together with the total count of all available articles.
+Let's add the first endpoint - `GET /article` which lists all existing articles. It is a public endpoint that can take `limit` and `offset` query parameters and return requested items together with the total count of all available articles.
 
-We could use `em.count()` to get the number of entities, but since we want to return the count next to the paginated list of entities, we have a better way - `em.findAndCount()`. This method serves exactly this purpose, retuning the paginated list with the total count of items.
+You could use `em.count()` to get the number of entities, but since you want to return the count next to the paginated list of entities, there's a better way - `em.findAndCount()`. This method serves exactly this purpose, retuning the paginated list with the total count of items.
 
 ```ts title='app.ts'
 app.get('/article', async request => {
@@ -105,9 +105,9 @@ app.get('/article', async request => {
 
 ## Basic Dependency Injection container
 
-Before we get to testing the first endpoint, let's refactor a bit to make the setup more future-proof. Add a new `src/db.ts` file, which will serve as a simple Dependency Injection (DI) container. It will export `initORM()` function that will first initialize the ORM and cache it into memory, so the following calls will return the same instance. Thanks to top-level await, we could just initialize the ORM and export it right ahead, but soon we will want to alter some options before we do so, for testing purposes, and having a function like this will help in achieving that.
+Before getting to testing the first endpoint, let's refactor a bit to make the setup more future-proof. Add a new `src/db.ts` file, which will serve as a simple Dependency Injection (DI) container. It will export `initORM()` function that will first initialize the ORM and cache it into memory, so the following calls will return the same instance. Thanks to top-level await, you could just initialize the ORM and export it right ahead, but soon you will want to alter some options before doing so, for testing purposes, and having a function like this will help in achieving that.
 
-> Note that we are importing all of `EntityManager`, `EntityRepository`, `MikroORM`, `Options` from the `@mikro-orm/sqlite` package - those exports are typed to the `SqliteDriver`.
+> Note that you are importing all of `EntityManager`, `EntityRepository`, `MikroORM`, `Options` from the `@mikro-orm/sqlite` package - those exports are typed to the `SqliteDriver`.
 
 ```ts title='db.ts'
 import { EntityManager, EntityRepository, MikroORM, Options } from '@mikro-orm/sqlite';
@@ -185,7 +185,7 @@ export async function bootstrap(port = 3001) {
 
 While [`EntityManager`](/api/core/class/EntityManager) and [`EntityRepository`](/api/core/class/EntityRepository) classes are provided by the `@mikro-orm/core` package, those are only the base - driver agnostic - implementations. One example of what that means is the `QueryBuilder` - as an SQL concept, it has no place in the `@mikro-orm/core` package, instead, an extension of the [`EntityManager`](/api/core/class/EntityManager) called `SqlEntityManager` is provided by the SQL driver packages (it is defined in `@mikro-orm/knex` package and reexported in every SQL driver packages that depend on it). This `SqlEntityManager` class provides the additional SQL related methods, like `em.createQueryBuilder()`.
 
-For convenience, the `SqlEntityManager` class is also reexported under [`EntityManager`](/api/core/class/EntityManager) alias. This means we can do `import { EntityManager } from '@mikro-orm/sqlite'` to access it.
+For convenience, the `SqlEntityManager` class is also reexported under [`EntityManager`](/api/core/class/EntityManager) alias. This means you can do `import { EntityManager } from '@mikro-orm/sqlite'` to access it.
 
 Under the hood, MikroORM will always use this driver-specific [`EntityManager`](/api/core/class/EntityManager) implementation (you can verify that by `console.log(orm.em)`, it will be an instance of `SqlEntityManager`), but for TypeScript to understand it, you will need to use the driver package to import it. The same applies to the [`EntityRepository`](/api/core/class/EntityRepository) and `SqlEntityRepository` classes.
 
@@ -201,7 +201,7 @@ You can also use `MikroORM`, `defineConfig` and `Options` exported from the driv
 
 Entity repositories are thin layers on top of [`EntityManager`](/api/core/class/EntityManager). They act as an extension point, so you can add custom methods, or even alter the existing ones. The default [`EntityRepository`](/api/core/class/EntityRepository) implementation just forwards the calls to the underlying [`EntityManager`](/api/core/class/EntityManager) instance.
 
-[`EntityRepository`](/api/core/class/EntityRepository) class carries the entity type, so we do not have to pass it to every `find` or `findOne` calls.
+[`EntityRepository`](/api/core/class/EntityRepository) class carries the entity type, so you do not have to pass it to every `find` or `findOne` calls.
 
 Note that there is no such thing as "flushing a repository" - it is just a shortcut to [`em.flush()`](/api/core/class/EntityManager#flush). In other words, we always flush the whole Unit of Work, not just a single entity that this repository represents.
 
@@ -209,9 +209,9 @@ Note that there is no such thing as "flushing a repository" - it is just a short
 
 The first endpoint is ready, let's test it. You already have `vitest` installed and available via `npm test`, now add a test case. Put it into the `test` folder and name the file with `.test.ts` extension so `vitest` knows it is a test file.
 
-So how should you test the endpoint? Fastify offers an easy way to test endpoints via `app.inject()`, all you need to do is to create the fastify app instance inside the test case (you already have the `bootstrap` method for that). But that would be testing against your production database, you don't want that!
+So how should you test the endpoint? Fastify offers an easy way to test endpoints via `app.inject()`, all you need to do is create the fastify app instance inside the test case (you already have the `bootstrap` method for that). But that would be testing against your production database, you don't want that!
 
-Let's create one more utility file before we get to the first test, and put it into the `test` folder too, but without the `.test.ts` suffix - let's call it `utils.ts`. We will define a function called `initTestApp` that initializes the ORM with overridden options for testing, create the schema and bootstrap our fastify app, all in one go. It will take the `port` number as a parameter, again to allow easy parallel runs when testing - every test case will have its own in-memory database and a fastify app running on its own port.
+Let's create one more utility file before getting to the first test, and put it into the `test` folder too, but without the `.test.ts` suffix - let's call it `utils.ts`. You will define a function called `initTestApp` that initializes the ORM with overridden options for testing, create the schema and bootstrap your fastify app, all in one go. It will take the `port` number as a parameter, again to allow easy parallel runs when testing - every test case will have its own in-memory database and a fastify app running on its own port.
 
 ```ts title='utils.ts'
 import { bootstrap } from '../src/app.js';
@@ -225,11 +225,11 @@ export async function initTestApp(port: number) {
     ...config,
     // no need for debug information, it would only pollute the logs
     debug: false,
-    // we will use in-memory database, this way we can easily parallelize our tests
+    // use in-memory database, this way tests can easily be parallelized
     dbName: ':memory:',
   });
 
-  // create the schema so we can use the database
+  // create the schema so the database can be used
   await orm.schema.createSchema();
 
   const { app } = await bootstrap(port);
@@ -238,9 +238,9 @@ export async function initTestApp(port: number) {
 }
 ```
 
-And now the test case, finally. Currently, there is no data as we are using an empty in-memory database, fresh for each test run, so the article listing endpoint will return just an empty array - we will handle that in a moment.
+And now the test case, finally. Currently, there is no data as you are using an empty in-memory database, fresh for each test run, so the article listing endpoint will return just an empty array - you will handle that in a moment.
 
-> Notice that we are using `beforeAll` hook to initialize the app and `afterAll` to tear it down - the `app.close()` will result in the `onClose` hook that calls `orm.close()`. Without that, the process would hang.
+> Notice that you are using `beforeAll` hook to initialize the app and `afterAll` to tear it down - the `app.close()` will result in the `onClose` hook that calls `orm.close()`. Without that, the process would hang.
 
 ```ts title='article.test.ts'
 import { afterAll, beforeAll, expect, test } from 'vitest';
@@ -250,7 +250,7 @@ import { initTestApp } from './utils.js';
 let app: FastifyInstance;
 
 beforeAll(async () => {
-  // we use different ports to allow parallel testing
+  // use different ports to allow parallel testing
   app = await initTestApp(30001);
 });
 
@@ -308,11 +308,11 @@ const orm = new MikroORM({
 
 There are many ways how to go about seeding your testing database. The obvious way is to do it directly in your test, for example in the `beforeAll` hook, right after you initialize the ORM.
 
-One alternative to that is using the Seeder, an ORM package (available via `@mikro-orm/seeder`), which offers utilities to populate our database with (not necessarily) fake data.
+One alternative to that is using the Seeder, an ORM package (available via `@mikro-orm/seeder`), which offers utilities to populate your database with (not necessarily) fake data.
 
-> We will be using Seeder for populating the test database with fake data, but it is a valid approach to have a seeder that creates initial data for a production database too - we could create the default set of article tags this way, or the initial admin user. You can set up a hierarchy of seeders or call them one by one.
+> You will be using Seeder for populating the test database with fake data, but it is a valid approach to have a seeder that creates initial data for a production database too - you could create the default set of article tags this way, or the initial admin user. You can set up a hierarchy of seeders or call them one by one.
 
-Let's install the seeder package and use the CLI to generate our test seeder:
+Let's install the seeder package and use the CLI to generate a test seeder:
 
 ```bash npm2yarn
 npm install @mikro-orm/seeder
@@ -351,7 +351,7 @@ export class TestSeeder extends Seeder {
 }
 ```
 
-We can use the [`em.create()`](/api/core/class/EntityManager#create) function we described earlier. It effectively calls `em.persist(entity)` before it returns the created entity, so you don't even need to do anything with the entity itself, calling [`em.create()`](/api/core/class/EntityManager#create) on its own will be enough. Time to test it!
+You can use the [`em.create()`](/api/core/class/EntityManager#create) function described earlier. It effectively calls `em.persist(entity)` before it returns the created entity, so you don't even need to do anything with the entity itself, calling [`em.create()`](/api/core/class/EntityManager#create) on its own will be enough. Time to test it!
 
 ```ts title='TestSeeder.ts'
 export class TestSeeder extends Seeder {
@@ -387,14 +387,14 @@ export class TestSeeder extends Seeder {
 }
 ```
 
-Then you need to run the `TestSeeder`, let's do that in your `initTestApp` helper, right after we call `orm.schema.createSchema()`:
+Then you need to run the `TestSeeder`, let's do that in your `initTestApp` helper, right after calling `orm.schema.createSchema()`:
 
 ```ts title='utils.ts'
 await orm.schema.createSchema();
 await orm.seeder.seed(TestSeeder);
 ```
 
-And adjust the test assertion, as we now get 3 articles in the feed:
+And adjust the test assertion, as you now get 3 articles in the feed:
 
 ```ts title='article.test.ts'
 expect(res.json()).toMatchObject({
@@ -409,11 +409,11 @@ expect(res.json()).toMatchObject({
 
 Now run `npm test` to verify things work as expected.
 
-That should be enough for now, but don't you worry, we will get back to this topic later on.
+That should be enough for now, but don't worry, you will get back to this topic later on.
 
 ## SchemaGenerator
 
-Earlier in the guide, when we needed to create the database for testing, we used the `SchemaGenerator` to recreate our database. Let's talk a bit more about this class.
+Earlier in the guide, when you needed to create the database for testing, you used the `SchemaGenerator` to recreate the database. Let's talk a bit more about this class.
 
 [`SchemaGenerator`](../schema-generator) is responsible for generating the SQL queries based on your entity metadata. In other words, it translates the entity definition into the Data Definition Language (DDL). Moreover, it can also understand your current database schema and compare it with the metadata, resulting in queries needed to put your schema in sync.
 
@@ -440,7 +440,7 @@ npx mikro-orm schema:update --dump  # Dumps update schema SQL
 npx mikro-orm schema:drop --dump    # Dumps drop schema SQL
 ```
 
-Your production database (the one in `sqlite.db` file in the root of your project) is probably out of sync, as we were mostly using the in-memory database inside the tests. Let's try to sync it via the CLI. First, run it with the `--dump` (or `-d`) flag to see what queries it generates, then run them via `--run` (or `-r`):
+Your production database (the one in `sqlite.db` file in the root of your project) is probably out of sync, as you were mostly using the in-memory database inside the tests. Let's try to sync it via the CLI. First, run it with the `--dump` (or `-d`) flag to see what queries it generates, then run them via `--run` (or `-r`):
 
 ```bash
 # first check what gets generated
@@ -452,7 +452,7 @@ npx mikro-orm schema:update --run
 
 > If this command does not work and produces some invalid queries, you can always recreate the schema from scratch, by first calling `schema:drop --run`.
 
-Working with `SchemaGenerator` can be handy when prototyping the initial app, or especially when testing, where you might want to have many databases with the latest schema, regardless of how your production schema looks like. But beware, it can be very dangerous when used on a real production database. Luckily, we have a solution for that - the migrations.
+Working with `SchemaGenerator` can be handy when prototyping the initial app, or especially when testing, where you might want to have many databases with the latest schema, regardless of how your production schema looks like. But beware, it can be very dangerous when used on a real production database. Luckily, there's a solution for that - the migrations.
 
 ## Migrations
 
@@ -491,7 +491,7 @@ If you followed the guide closely, you should see this message:
 No changes required, schema is up-to-date
 ```
 
-That is because you just synchronized the schema by called `npx mikro-orm schema:update --run` a moment ago. You have two options here, drop the schema first, or a less destructive one - an initial migration.
+That is because you just synchronized the schema by calling `npx mikro-orm schema:update --run` a moment ago. You have two options here, drop the schema first, or a less destructive one - an initial migration.
 
 ### Initial migration
 
@@ -503,7 +503,7 @@ If you want to start using migrations, and you already have the schema generated
 npx mikro-orm migration:create --initial
 ```
 
-This will create the initial migration in the `src/migrations` directory, containing queries from `schema:create` command. The migration will be automatically marked as executed because our schema was already in sync.
+This will create the initial migration in the `src/migrations` directory, containing queries from `schema:create` command. The migration will be automatically marked as executed because your schema was already in sync.
 
 ### Migration class
 
@@ -536,7 +536,7 @@ Read more about migrations in the [documentation](../migrations).
 
 ### One more entity
 
-The migrations are set up, let's test them by adding one more entity - the `Comment`, again belonging to the article module, so into `src/modules/article/comment.entity.ts`.
+The migrations are set up, let's test them by adding one more entity - the `Comment`, again belonging to the article module, so it goes into `src/modules/article/comment.entity.ts`.
 
 ```ts title='comment.entity.ts'
 import { Entity, ManyToOne, Property } from '@mikro-orm/core';
@@ -566,7 +566,7 @@ and a OneToMany inverse side in `Article` entity:
 comments = new Collection<Comment>(this);
 ```
 
-Don't forget to add the repository to our simple DI container too:
+Don't forget to add the repository to your simple DI container too:
 
 ```ts file='db.ts'
 export interface Services {
@@ -594,7 +594,7 @@ export function initORM(options?: Options): Promise<Services> {
 }
 ```
 
-> We are using two new options here, `eager` and `orphanRemoval`:
+> This uses two new options, `eager` and `orphanRemoval`:
 >
 > - `eager: true` will automatically populate this relation, just like if you would use `populate: ['comments']` explicitly.
 > - `orphanRemoval: true` is a special type of cascading, any entity removed from such collection will be deleted from the database, as opposed to being just detached from the relationship (by setting the foreign key to `null`).
@@ -663,7 +663,7 @@ Snapshotting can be disabled via `migrations.snapshot: false` in the ORM config.
 
 ### Running migrations automatically
 
-Before we call it a day, let's automate running the migrations a bit - we can use the `Migrator` programmatically, in a similar way like the `SchemaGenerator`. We want to run them during our app bootstrap cycle, before it starts to accept connections, so a good place for that is our `bootstrap` function, right after we initialize the ORM.
+Before calling it a day, let's automate running the migrations a bit - you can use the `Migrator` programmatically, in a similar way like the `SchemaGenerator`. You want to run them during your app bootstrap cycle, before it starts to accept connections, so a good place for that is your `bootstrap` function, right after you initialize the ORM.
 
 ```ts title='app.ts'
 export async function bootstrap(port = 3001, migrate = true) {
@@ -678,7 +678,7 @@ export async function bootstrap(port = 3001, migrate = true) {
 }
 ```
 
-We need to do this conditionally, as we want to run the migrations only for the production database, not for our testing ones (as they use the `SchemaGenerator` directly, together with the `Seeder`). Don't forget to pass `false` when calling the `bootstrap()` function from our test case:
+You need to do this conditionally, as you want to run the migrations only for the production database, not for your testing ones (as they use the `SchemaGenerator` directly, together with the `Seeder`). Don't forget to pass `false` when calling the `bootstrap()` function from your test case:
 
 ```ts title='utils.ts'
 export async function initTestApp(port: number) {
@@ -695,11 +695,11 @@ export async function initTestApp(port: number) {
 
 ## ⛳ Checkpoint 3
 
-We now have 4 entities, a working web app with a single get endpoint and a basic test case for it. We also set up migrations and seeding. This is our `app.ts` right now:
+You now have 4 entities, a working web app with a single get endpoint and a basic test case for it. You also set up migrations and seeding. This is your `app.ts` right now:
 
-> We use in-memory database, SQLite feature available via special database name `:memory:`.
+> This uses an in-memory database, a SQLite feature available via special database name `:memory:`.
 
-This is our [`app.ts` file](https://stackblitz.com/edit/mikro-orm-getting-started-guide-cp-3?file=src%2Fapp.ts) after this chapter:
+This is the [`app.ts` file](https://stackblitz.com/edit/mikro-orm-getting-started-guide-cp-3?file=src%2Fapp.ts) after this chapter:
 
 <iframe width="100%" height="800" frameborder="0" src="https://stackblitz.com/edit/mikro-orm-getting-started-guide-cp-3?embed=1&ctl=1&view=editor&file=src%2Fapp.ts">
 </iframe>

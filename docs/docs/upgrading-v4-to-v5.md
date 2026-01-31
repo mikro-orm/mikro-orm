@@ -70,9 +70,9 @@ Use `@Entity({ customRepository: () => CustomRepository })` in the entity defini
 
 ## Disallowed global identity map
 
-In v5, it is no longer possible to use the global identity map. This was a common issue that led to weird bugs, as using the global EM without request context is wrong, we always need to have a dedicated context for each request, so they do not interfere.
+In v5, it is no longer possible to use the global identity map. This was a common issue that led to weird bugs, as using the global EM without request context is wrong, you always need to have a dedicated context for each request, so they do not interfere.
 
-Now we get a validation error if we try to use the global context. We still can disable this check via `allowGlobalContext` configuration, or a connected environment variable `MIKRO_ORM_ALLOW_GLOBAL_CONTEXT` - this can be handy especially in unit tests.
+Now you get a validation error if you try to use the global context. You can still disable this check via `allowGlobalContext` configuration, or a connected environment variable `MIKRO_ORM_ALLOW_GLOBAL_CONTEXT` - this can be handy especially in unit tests.
 
 ## `LoadedCollection.get()` and `$` now return the `Collection` instance
 
@@ -82,7 +82,7 @@ Previously those dynamically added getters returned the array copy of collection
 
 Previously with select-in strategy as well as with QueryBuilder, table aliases were always the letter `e` followed by unique index. In v5, we use the same method as with joined strategy - the letter is inferred from the entity name.
 
-This can be breaking if you used the aliases somewhere, e.g. in custom SQL fragments. We can restore to the old behaviour by implementing custom naming strategy, overriding the `aliasName` method:
+This can be breaking if you used the aliases somewhere, e.g. in custom SQL fragments. You can restore to the old behaviour by implementing custom naming strategy, overriding the `aliasName` method:
 
 ```ts
 import { AbstractNamingStrategy } from '@mikro-orm/core';
@@ -102,7 +102,7 @@ Running migrations in production via node and tsx is now handled the same. This 
 
 ## Changes in `assign()` helper
 
-Embeddable instances are now created via `EntityFactory` and they respect the `forceEntityConstructor` configuration. Due to this we need to have EM instance when assigning to embedded properties.
+Embeddable instances are now created via `EntityFactory` and they respect the `forceEntityConstructor` configuration. Due to this you need to have EM instance when assigning to embedded properties.
 
 Using `em.assign()` should be preferred to get around this.
 
@@ -122,7 +122,7 @@ const [loadedAuthor] = await em.populate(author, ...);
 
 ## QueryBuilder is awaitable
 
-Previously awaiting of QB instance was a no-op. In v5, QB is promise-like interface, so we can await it. More about this in [Awaiting the QueryBuilder](./query-builder.md#awaiting-the-querybuilder) section.
+Previously awaiting of QB instance was a no-op. In v5, QB is promise-like interface, so we can await it. More about this in [Executing the Query](./query-builder.md#executing-the-query) section.
 
 ## `UnitOfWork.getScheduledCollectionDeletions()` has been removed
 
@@ -134,7 +134,7 @@ Also `IDatabaseDriver.clearCollection()` method is no longer present in the driv
 
 After flushing a new entity, all relations are marked as populated, just like if the entity was loaded from the db. This aligns the serialized output of `e.toJSON()` of a loaded entity and just-inserted one.
 
-In v4 this behaviour was disabled by default, so even after the new entity was flushed, the serialized form contained only FKs for its relations. We can opt in to this old behaviour via `populateAfterFlush: false`.
+In v4 this behaviour was disabled by default, so even after the new entity was flushed, the serialized form contained only FKs for its relations. You can opt in to this old behaviour via `populateAfterFlush: false`.
 
 ## `migrations.pattern` is removed in favour of `migrations.glob`
 
@@ -146,21 +146,21 @@ The default value for `glob` is `!(*.d).{js,ts}`, so both JS and TS files are ma
 
 > This applies only to SELECT_IN strategy, as JOINED strategy implies the inference.
 
-Previously when we used populate hints in `em.find()` and similar methods, the query for our entity would be analysed and parts of it extracted and used for the population. Following example would find all authors that have books with given IDs, and populate their books collection, again using this PK condition, resulting in only such books being in those collections.
+Previously when you used populate hints in `em.find()` and similar methods, the query for your entity would be analysed and parts of it extracted and used for the population. Following example would find all authors that have books with given IDs, and populate their books collection, again using this PK condition, resulting in only such books being in those collections.
 
 ```ts
 // this would end up with `Author.books` collections having only books of PK 1, 2, 3
 const a = await em.find(Author, { books: [1, 2, 3] }, { populate: ['books'] });
 ```
 
-Following this example, if we wanted to load all books, we would need a separate `em.populate()` call:
+Following this example, if you wanted to load all books, you would need a separate `em.populate()` call:
 
 ```ts
 const a = await em.find(Author, { books: [1, 2, 3] });
 await em.populate(a, ['books']);
 ```
 
-This behaviour changed and is now configurable both globally and locally, via `populateWhere` option. Globally we can specify one of `PopulateHint.ALL` and `PopulateHint.INFER`, the former being the default in v5, the latter being the default behaviour in v4. Locally (via `FindOptions`) we can also specify custom where condition that will be passed to `em.populate()` call.
+This behaviour changed and is now configurable both globally and locally, via `populateWhere` option. Globally you can specify one of `PopulateHint.ALL` and `PopulateHint.INFER`, the former being the default in v5, the latter being the default behaviour in v4. Locally (via `FindOptions`) you can also specify custom where condition that will be passed to `em.populate()` call.
 
 ```ts
 // revert back to the old behaviour locally
@@ -172,7 +172,7 @@ const a = await em.find(Author, { books: [1, 2, 3] }, {
 
 ## `em.create()` respects required properties
 
-`em.create()` will now require you to pass all non-optional properties. Some properties might be defined as required for TS, but we have a default value for them (either runtime, or database one) - for such we can use `OptionalProps` symbol to specify which properties should be considered as optional.
+`em.create()` will now require you to pass all non-optional properties. Some properties might be defined as required for TS, but you have a default value for them (either runtime, or database one) - for such you can use `OptionalProps` symbol to specify which properties should be considered as optional.
 
 ## Required properties are validated before insert
 
@@ -180,4 +180,4 @@ Previously the validation took place in the database, so it worked only for SQL 
 
 ## `PrimaryKeyType` symbol should be defined as optional
 
-Previously when we had nonstandard PK types, we could use `PrimaryKeyType` symbol to let the type system know it. It was required to define this property as required, now it can be defined as optional too.
+Previously when you had nonstandard PK types, you could use `PrimaryKeyType` symbol to let the type system know it. It was required to define this property as required, now it can be defined as optional too.

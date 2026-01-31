@@ -467,7 +467,7 @@ Objects typed as `Dictionary` or `Record<string, any>` still bypass the check to
 
 ## Private constructors no longer allowed with `defineEntity`/`EntitySchema`
 
-To be able to infer constructor parameters, we need the constructor to be public. The ORM will use the constructor internally (e.g. in `em.create`), so this was partially a lie. If you need to use a private constructor, please cast the `class` parameter to `any` and use the first generict parameter:
+To be able to infer constructor parameters, the constructor needs to be public. The ORM will use the constructor internally (e.g. in `em.create`), so this was partially a lie. If you need to use a private constructor, please cast the `class` parameter to `any` and use the first generict parameter:
 
 ```ts
 class User {

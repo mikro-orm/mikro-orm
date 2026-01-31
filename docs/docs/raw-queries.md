@@ -114,4 +114,4 @@ const books = await orm.em.find(Book, {
 
 ### Aliasing
 
-To select a raw fragment, we need to alias it. For that, we can use ```sql`(select 1 + 1)`.as('<alias>')```.
+To select a raw fragment, you need to alias it. For that, you can use ```sql`(select 1 + 1)`.as('<alias>')```.

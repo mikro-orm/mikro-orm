@@ -92,7 +92,7 @@ const books = await em.find(Book, { tags: { name: 'Fiction' } }, {
 });
 ```
 
-You're requesting books that have the tag of `'Fiction'` then asking to populate the tags on each book. Did you mean that you want to populate **all** tags on each book that matches the filter? If so, you'd expect that book `'One'` would have both `'Fiction'` and `'Hard Cover'` populated. Or did you mean that we should only populate the tags that match the outer filter? If so you'd expect that book `'One'` would only have `'Fiction'` in the populated collection because the outer filter specified that.
+You're requesting books that have the tag of `'Fiction'` then asking to populate the tags on each book. Did you mean that you want to populate **all** tags on each book that matches the filter? If so, you'd expect that book `'One'` would have both `'Fiction'` and `'Hard Cover'` populated. Or did you mean that only the tags that match the outer filter should be populated? If so you'd expect that book `'One'` would only have `'Fiction'` in the populated collection because the outer filter specified that.
 
 Both behaviors are useful in different cases, so MikroORM provides an option that allows you to control this called `populateWhere`. There are two options, `INFER` and `ALL`. The default is `ALL` which will ensure that all possible members of the collection are fetched in the populate (e.g. the first interpretation above).
 

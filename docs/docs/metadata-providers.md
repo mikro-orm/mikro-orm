@@ -2,9 +2,9 @@
 title: Metadata Providers
 ---
 
-As part of entity discovery process, MikroORM uses so called `MetadataProvider` to get necessary type information about our entities' properties.
+As part of entity discovery process, MikroORM uses so called `MetadataProvider` to get necessary type information about your entities' properties.
 
-> We can also implement custom metadata provider by extending abstract `MetadataProvider` class.
+> You can also implement custom metadata provider by extending abstract `MetadataProvider` class.
 
 :::tip
 
@@ -12,7 +12,7 @@ For a comprehensive guide on using decorators with metadata providers, including
 
 :::
 
-There are 3 built-in metadata providers we can use:
+There are 3 built-in metadata providers you can use:
 
 ## TsMorphMetadataProvider
 
@@ -31,15 +31,15 @@ await MikroORM.init({
 });
 ```
 
-If we use folder-based discovery, we should specify paths to the compiled entities via `entities` as well as paths to the TS source files of those entities via `entitiesTs`. When we run the ORM via `tsx` or similar, the latter will be used automatically, or if we explicitly pass `preferTs: true` in the config. Note that `preferTs: true` should not be part of production config.
+If you use folder-based discovery, you should specify paths to the compiled entities via `entities` as well as paths to the TS source files of those entities via `entitiesTs`. When you run the ORM via `tsx` or similar, the latter will be used automatically, or if you explicitly pass `preferTs: true` in the config. Note that `preferTs: true` should not be part of production config.
 
-> When running via `node`, `.d.ts` files are used to obtain the type, so we need to ship them in the production build. TS source files are no longer needed (since v4). Be sure to enable `compilerOptions.declaration` in our `tsconfig.json`.
+> When running via `node`, `.d.ts` files are used to obtain the type, so you need to ship them in the production build. TS source files are not needed. Be sure to enable `compilerOptions.declaration` in your `tsconfig.json`.
 
 After the discovery process ends, all [metadata will be cached](./metadata-cache.md). By default, `FileCacheAdapter` will be used to store the cache inside `./temp` folder in JSON files.
 
-> We can generate production cache via CLI command `mikro-orm cache:generate`.
+> You can generate production cache via CLI command `mikro-orm cache:generate`.
 
-> We can implement custom cache adapter by implementing `CacheAdapter` interface.
+> You can implement custom cache adapter by implementing `CacheAdapter` interface.
 
 ## ReflectMetadataProvider
 
@@ -51,13 +51,13 @@ In MikroORM v7, `ReflectMetadataProvider` is available in the `@mikro-orm/decora
 
 :::
 
-We will need to install `reflect-metadata` module and import at the top of our app's bootstrap script (e.g. `main.ts` or `app.ts`).
+You will need to install `reflect-metadata` module and import at the top of your app's bootstrap script (e.g. `main.ts` or `app.ts`).
 
 ```ts
 import 'reflect-metadata';
 ```
 
-Next step is to enable `emitDecoratorMetadata` and `experimentalDecorators` flags in our `tsconfig.json`.
+Next step is to enable `emitDecoratorMetadata` and `experimentalDecorators` flags in your `tsconfig.json`.
 
 > As this approach does not have performance impact, metadata caching is not really necessary.
 
@@ -78,7 +78,7 @@ While `TsMorphMetadataProvider` do not suffer from any of the following problems
 
 > Since v6, the type is inferred automatically based on the runtime default value, as long as it is possible to instantiate the entity without passing any constructor arguments. As long as you keep your constructors aware of that, this limitation does not apply.
 
-Type inference is not supported, we need to always explicitly specify the type:
+Type inference is not supported, you need to always explicitly specify the type:
 
 ```ts
 @Property()
@@ -87,7 +87,7 @@ createdAt: Date = new Date();
 
 #### Collection properties and Identified references
 
-We need to provide target entity type in `@OneToMany` and `@ManyToMany` decorators:
+You need to provide target entity type in `@OneToMany` and `@ManyToMany` decorators:
 
 ```ts
 @OneToMany(() => Book, b => b.author)
@@ -99,7 +99,7 @@ publisher!: Ref<Publisher>;
 
 #### Optional properties
 
-Reading property nullability is not supported, we need to explicitly set `nullable` attribute:
+Reading property nullability is not supported, you need to explicitly set `nullable` attribute:
 
 ```ts
 @Property({ nullable: true })
@@ -108,9 +108,9 @@ prop?: string;
 
 #### Enums
 
-By default, enum is considered as numeric type. For string enums, we need to explicitly provide one of:
+By default, enum is considered as numeric type. For string enums, you need to explicitly provide one of:
 
-- reference to the enum (which will force us to define the enum before defining the entity)
+- reference to the enum (which will force you to define the enum before defining the entity)
   ```ts
   @Enum(() => UserRole)
   role: UserRole;
@@ -146,7 +146,7 @@ This is also handy in ESM projects, where this problem can arise even when each 
 
 #### Additional typings might be required
 
-We might have to install additional typings, one example is use of `ObjectId` in MongoDB, which requires `@types/mongodb` to be installed.
+You might have to install additional typings, one example is use of `ObjectId` in MongoDB, which requires `@types/mongodb` to be installed.
 
 ## Using EntitySchema
 

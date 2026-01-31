@@ -19,7 +19,7 @@ export default defineConfig({
 
 :::
 
-> Since v5, migrations are stored without an extension.
+> Migrations are stored without an extension.
 
 By default, each migration will be executed inside a transaction, and all of them will be wrapped in one master transaction, so if one of them fails, everything will be rolled back.
 
@@ -96,7 +96,7 @@ Snapshotting can be disabled via `migrations.snapshot: false` in the ORM config.
 
 ## Configuration
 
-> Since v5, `umzug` 3.0 is used, and `pattern` option has been replaced with `glob`.
+> The `pattern` option has been replaced with `glob`.
 
 > `migrations.path` and `migrations.pathTs` works the same way as `entities` and `entitiesTs` in entity discovery.
 
@@ -183,7 +183,7 @@ You can also override those options using the [environment variables](./configur
 
 ## Running migrations in production
 
-In production environment you might want to use compiled migration files. Since v5, this should work almost out of box, all you need to do is to configure the migration path accordingly:
+In production environment you might want to use compiled migration files. This should work almost out of box, all you need to do is to configure the migration path accordingly:
 
 ```ts
 import { MikroORM, Utils } from '@mikro-orm/core';
@@ -374,7 +374,7 @@ await MikroORM.init({
 
 ## Using custom migration names
 
-Since v5.7, you can specify a custom migration name via `--name` CLI option. It will be appended to the generated prefix:
+You can specify a custom migration name via `--name` CLI option. It will be appended to the generated prefix:
 
 ```sh
 # generates file Migration20230421212713_add_email_property_to_user_table.ts
@@ -404,7 +404,7 @@ When overriding the `migrations.fileName` strategy, keep in mind that your migra
 
 ## MongoDB support
 
-Support for migrations in MongoDB has been added in v5.3. It uses its own package: `@mikro-orm/migrations-mongodb`, and should be otherwise compatible with the current CLI commands. Use `this.driver` or `this.getCollection()` to manipulate with the database.
+Migrations for MongoDB use a separate package: `@mikro-orm/migrations-mongodb`, and should be otherwise compatible with the current CLI commands. Use `this.driver` or `this.getCollection()` to manipulate with the database.
 
 ### Transactions
 

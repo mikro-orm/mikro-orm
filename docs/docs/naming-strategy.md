@@ -2,13 +2,13 @@
 title: Naming Strategy
 ---
 
-When mapping our entities to database tables and columns, their names will be defined by naming strategy. There are 3 basic naming strategies we can choose from:
+When mapping your entities to database tables and columns, their names will be defined by naming strategy. There are 3 basic naming strategies you can choose from:
 
 - `UnderscoreNamingStrategy` - default of all SQL drivers
 - `MongoNamingStrategy` - default of `MongoDriver`
 - `EntityCaseNamingStrategy` - uses unchanged entity and property names
 
-You can override this when initializing ORM. You can also provide our own naming strategy, just implement `NamingStrategy` interface and provide our implementation when bootstrapping ORM:
+You can override this when initializing ORM. You can also provide your own naming strategy, just implement `NamingStrategy` interface and provide your implementation when bootstrapping ORM:
 
 ```ts
 class MyCustomNamingStrategy implements NamingStrategy {
@@ -22,7 +22,7 @@ const orm = await MikroORM.init({
 });
 ```
 
-> You can also extend `AbstractNamingStrategy` which implements one method for we - `getClassName()` that is used to map entity file name to class name.
+> You can also extend `AbstractNamingStrategy` which implements one method for you - `getClassName()` that is used to map entity file name to class name.
 
 ## Naming Strategy in mongo driver
 
@@ -32,7 +32,7 @@ const orm = await MikroORM.init({
 
 ## Naming Strategy in SQL drivers
 
-`MySqlDriver` defaults to `UnderscoreNamingStrategy`, which means our all our database tables and columns will be lower-cased and words divided by underscored:
+`MySqlDriver` defaults to `UnderscoreNamingStrategy`, which means all your database tables and columns will be lower-cased and words divided by underscored:
 
 ```sql
 CREATE TABLE `author` (
@@ -124,7 +124,7 @@ Returns key/constraint name for given type. Some drivers might not support all t
 
 #### `NamingStrategy.aliasName(entityName: string, index: number): string`
 
-Returns alias name for given entity. The alias needs to be unique across the query, which is by default ensured via appended index parameter. It is optional to use it as long as we ensure it will be unique.
+Returns alias name for given entity. The alias needs to be unique across the query, which is by default ensured via appended index parameter. It is optional to use it as long as you ensure it will be unique.
 
 ---
 

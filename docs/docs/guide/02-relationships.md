@@ -107,7 +107,7 @@ There are 4 types of entity relationships in MikroORM:
 - OneToOne: One instance of the current Entity refers to One instance of the referred Entity.
 - ManyToMany: Many instances of the current Entity refers to Many instances of the referred Entity.
 
-Relations can be unidirectional and bidirectional. Unidirectional relation is defined only on one side (the owning side). Bidirectional ones are defined on both sides, while one is owning side (where references are stored), marked by `inversedBy` attribute pointing to the inverse side. On the inversed side we define it with `mappedBy` attribute pointing back to the owner.
+Relations can be unidirectional and bidirectional. Unidirectional relation is defined only on one side (the owning side). Bidirectional ones are defined on both sides, while one is owning side (where references are stored), marked by `inversedBy` attribute pointing to the inverse side. On the inversed side you define it with `mappedBy` attribute pointing back to the owner.
 
 > When modeling bidirectional relationship, you can also omit the `inversedBy` attribute, defining `mappedBy` on the inverse side is enough as it will be auto-wired.
 
@@ -247,7 +247,7 @@ const article = em.create(Article, {
 console.log(article);
 ```
 
-Running `npm start` we can see the `slug` and `description` populated with generated values:
+Running `npm start` you can see the `slug` and `description` populated with generated values:
 
 ```
 Article {
@@ -337,9 +337,9 @@ This would produce two separate queries instead of one joined query.
 
 ### Serialization
 
-What about the password? Seeing the logger `Article` entity with populated `author`, there is something we need to fix. We can see the user's password, in plain text! We will need to hash it and ensure it never leaks to the API response by adding `.hidden()` serialization flag. Moreover, we can mark it as `.lazy()`, just like we did with the `Article.text`, as we rarely want to select it.
+What about the password? Seeing the logger `Article` entity with populated `author`, there is something you need to fix. You can see the user's password, in plain text! You will need to hash it and ensure it never leaks to the API response by adding `.hidden()` serialization flag. Moreover, you can mark it as `.lazy()`, just like you did with the `Article.text`, as you rarely want to select it.
 
-For now, let's use `sha256` algorithm which we can create synchronously, and hash the value using `.onCreate()`:
+For now, let's use `sha256` algorithm which can be created synchronously, and hash the value using `.onCreate()`:
 
 ```ts title='user.entity.ts'
 import crypto from 'node:crypto';
@@ -383,11 +383,11 @@ User {
 }
 ```
 
-That should be good enough for the time being. Don't worry, we will improve on this later, using `argon2` via lifecycle hooks!
+That should be good enough for the time being. Don't worry, you will improve on this later, using `argon2` via lifecycle hooks!
 
 ## Collections: OneToMany and ManyToMany
 
-You have the `Article.author` property that defines the owning side of this relationship between `Article` and `User` entities. Now let's define the inverse side - for ManyToOne relation it is the OneToMany kind, represented by a `Collection` of `Article` entities. With `defineEntity`, we use `p.oneToMany()`:
+We have the `Article.author` property that defines the owning side of this relationship between `Article` and `User` entities. Now let's define the inverse side - for ManyToOne relation it is the OneToMany kind, represented by a `Collection` of `Article` entities. With `defineEntity`, you use `p.oneToMany()`:
 
 ```ts title='user.entity.ts'
 export class User extends BaseEntity {
@@ -411,7 +411,7 @@ export const UserSchema = defineEntity({
 });
 ```
 
-MikroORM represents the relation via the `Collection` class. Before we dive into what it means, let's add one more entity to the `Article` module to test the ManyToMany relation too. It will be a `Tag` entity, so we can categorize the article based on some dynamically defined tags.
+MikroORM represents the relation via the `Collection` class. Before diving into what it means, let's add one more entity to the `Article` module to test the ManyToMany relation too. It will be a `Tag` entity, so you can categorize the article based on some dynamically defined tags.
 
 > The `Tag` entity semantically belongs to the `Article` module, so let's put it there, to the `src/modules/article/tag.entity.ts` file. Don't forget to add it to the `entities` array in your config!
 
@@ -432,7 +432,7 @@ export const Tag = defineEntity({
 export type Tag = InferEntity<typeof Tag>;
 ```
 
-And we need to define the owning side too, which is `Article.tags`:
+And you need to define the owning side too, which is `Article.tags`:
 
 ```ts title='article.entity.ts'
 export const Article = defineEntity({
@@ -459,17 +459,17 @@ tags: () => p.manyToMany(Tag, { inversedBy: 'articles' }),
 
 The `Collection` class implements the [iterable protocol](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols#the_iterable_protocol), so you can use `for of` loop to iterate through it.
 
-Another way to access collection items is to use bracket syntax like when we access array items. Keep in mind that this approach will not check if the collection is initialized, while using the `getItems()` method will throw an error in this case.
+Another way to access collection items is to use bracket syntax like when you access array items. Keep in mind that this approach will not check if the collection is initialized, while using the `getItems()` method will throw an error in this case.
 
-> Note that array access in `Collection` is available only for reading already loaded items, we cannot add new items to `Collection` this way.
+> Note that array access in `Collection` is available only for reading already loaded items, you cannot add new items to `Collection` this way.
 
-To get all entities stored in a `Collection`, we can use `getItems()` method. It will throw in case the `Collection` is not initialized. If we want to disable this validation, we can use `getItems(false)`. This will give us the entity instances managed by the identity map.
+To get all entities stored in a `Collection`, you can use `getItems()` method. It will throw in case the `Collection` is not initialized. If you want to disable this validation, you can use `getItems(false)`. This will give you the entity instances managed by the identity map.
 
 Alternatively, you can use `toArray()` which will serialize the `Collection` to an array of DTOs. Modifying those will have no effect on the actual entity instances.
 
 :::tip `em.findOneOrFail()`
 
-So far we used `em.findOne()` which can return `null` if the entity is not found in the database. This results in extensive usage of the non-null assertion operator in TypeScript, which can get messy. A better solution is to use `em.findOneOrFail()`, which always returns the entity or throws an error, namely an instance of `NotFoundError` provided by the ORM.
+So far you used `em.findOne()` which can return `null` if the entity is not found in the database. This results in extensive usage of the non-null assertion operator in TypeScript, which can get messy. A better solution is to use `em.findOneOrFail()`, which always returns the entity or throws an error, namely an instance of `NotFoundError` provided by the ORM.
 
 :::
 
@@ -497,7 +497,7 @@ for (const article of user.articles) {
 
 > `Collection.init()` will always query the database, while `Collection.loadItems()` does only if the collection is not yet initialized, so calling `Collection.loadItems()` is safe without previous `isInitialized()` check.
 
-Running this, we get the following:
+Running this, you get the following:
 
 ```
 User {
@@ -541,7 +541,7 @@ console.log(article.tags);
 And just for the sake of it, try to remove one of the tags:
 
 ```ts title='server.ts'
-// to remove items from collection, we first need to initialize it, we can use `init()`, `loadItems()` or `em.populate()`
+// to remove items from collection, first initialize it using `init()`, `loadItems()` or `em.populate()`
 await em.populate(article, ['tags']);
 
 // remove 'old' tag by reference
@@ -557,7 +557,7 @@ Refer to the [Collections section](../collections) in the docs for more informat
 
 # Events and life cycle hooks
 
-Time to improve our password hashing. Let's use the `argon2` package, which provides `hash` and `verify` functions. They are both async, so we cannot use `.onCreate()` directly. Instead, we need to use the lifecycle hooks via the `hooks` option in `defineEntity`.
+Time to improve the password hashing. Let's use the `argon2` package, which provides `hash` and `verify` functions. They are both async, so you cannot use `.onCreate()` directly. Instead, you need to use the lifecycle hooks via the `hooks` option in `defineEntity`.
 
 > Don't forget to install the `argon2` package via `npm install argon2`.
 
@@ -565,9 +565,9 @@ The plan is following:
 
 - the password will remain in plaintext when assigned via `em.create()`
 - `hashPassword` function will become an event handler via the `hooks` option
-- we register it for both `beforeCreate` and `beforeUpdate` events
+- you register it for both `beforeCreate` and `beforeUpdate` events
 - the handler receives `EventArgs` which includes `changeSet` with the computed difference
-- we check `changeSet.payload.password` to only hash when the password changed
+- you check `changeSet.payload.password` to only hash when the password changed
 
 ```ts title='user.entity.ts'
 import { Collection, defineEntity, EventArgs, Opt, p } from '@mikro-orm/core';
@@ -617,9 +617,9 @@ export const UserSchema = defineEntity({
 
 We added 2 new entities: `Article` and `Tag` and a `BaseEntity` that they extend. You can find working StackBlitz for the current state here:
 
-> We use in-memory database, SQLite feature available via special database name `:memory:`.
+> This uses an in-memory database, a SQLite feature available via special database name `:memory:`.
 
-This is our [`server.ts` file](https://stackblitz.com/edit/mikro-orm-getting-started-guide-cp-2?file=src%2Fserver.ts) after this chapter:
+This is the [`server.ts` file](https://stackblitz.com/edit/mikro-orm-getting-started-guide-cp-2?file=src%2Fserver.ts) after this chapter:
 
 <iframe width="100%" height="800" frameborder="0" src="https://stackblitz.com/edit/mikro-orm-getting-started-guide-cp-2?embed=1&ctl=1&view=editor&file=src%2Fserver.ts">
 </iframe>

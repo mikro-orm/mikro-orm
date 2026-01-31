@@ -81,7 +81,7 @@ You can see a list of deprecation errors in [Configuration's section on deprecat
 
 Previously Highlight.js was used to highlight various things in the CLI, like SQL and mongo queries, or migrations or entities generated via CLI. While the library worked fine, it was causing performance issues mainly for those bundling via webpack and using lambdas, as the library was huge.
 
-Since v4, highlighting is disabled by default, and there are 2 highlighters you can optionally use (you need to install them first).
+Highlighting is disabled by default. There are 2 highlighters you can optionally use (you need to install them first).
 
 ```ts
 import { SqlHighlighter } from '@mikro-orm/sql-highlighter';

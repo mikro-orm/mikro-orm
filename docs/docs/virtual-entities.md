@@ -118,7 +118,7 @@ export const BookWithAuthor = defineEntity({
   },
 });
 
-export interface IBookWithAuthor extends InferEntity<typeof BookWithAuthor> {}
+export type IBookWithAuthor = InferEntity<typeof BookWithAuthor>;
 ```
 
   </TabItem>
