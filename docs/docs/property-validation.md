@@ -4,14 +4,14 @@ title: Property Validation
 
 ## Required properties
 
-Entity properties are by default considered as required, and as such, they will be validated on both type level and runtime level. To make a property nullable, we need to mark this both at type level and at metadata level (unless we are using `ts-morph` for metadata reflection):
+Entity properties are by default considered as required, and as such, they will be validated on both type level and runtime level. To make a property nullable, you need to mark this both at type level and at metadata level (unless you are using `ts-morph` for metadata reflection):
 
 ```ts
 @Property({ nullable: true })
 name?: string;
 ```
 
-In case we want to use explicit `null`, we should also provide property initializer:
+In case you want to use explicit `null`, you should also provide property initializer:
 
 ```ts
 @Property({ type: 'string', nullable: true })
@@ -20,7 +20,7 @@ name: string | null = null;
 
 ### Properties with default value
 
-The runtime validation will work fine if your required properties have default value. But when it comes to type validation, we will need additional hint for TypeScript, so it understands our property (for TS defined as required) is in fact optional too (because we have a default value for it). We have two options:
+The runtime validation will work fine if your required properties have default value. But when it comes to type validation, you will need additional hint for TypeScript, so it understands your property (for TS defined as required) is in fact optional too (because you have a default value for it). You have two options:
 
 Define property as optional even when it has a default value (not perfect as it will allow unsetting such property, which might not be what you want):
 
@@ -127,10 +127,10 @@ class User {
 
 ### Runtime validation
 
-The runtime validation happens on flush operation, right before we fire the insert queries.
+The runtime validation happens on flush operation, right before the insert queries are fired.
 
-If for some reason we don't want the ORM to throw on missing properties that are marked as required, we can disable the validation via `validateRequired: false`. This validation is enabled by default since v5.
+If for some reason you don't want the ORM to throw on missing properties that are marked as required, you can disable the validation via `validateRequired: false`. This validation is enabled by default.
 
 ### Note about optional properties and metadata reflection
 
-When we define our entities, we need to be careful about optional properties. With `reflect-metadata` provider (the default one), the property type can be inferred only if we mark properties as optional via `?` suffix - if we would use a type union like `string | null`, `reflect-metadata` won't help us with such type, and we will be forced to define it explicitly. This issue is not present with `ts-morph` provider.
+When you define your entities, you need to be careful about optional properties. With `reflect-metadata` provider (the default one), the property type can be inferred only if you mark properties as optional via `?` suffix - if you use a type union like `string | null`, `reflect-metadata` won't help you with such type, and you will be forced to define it explicitly. This issue is not present with `ts-morph` provider.

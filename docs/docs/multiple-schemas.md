@@ -72,7 +72,7 @@ fork.schema = null;
 
 ## Wildcard Schema
 
-Since v5, MikroORM also supports defining entities that can exist in multiple schemas. To do that, we just specify wildcard schema:
+MikroORM also supports defining entities that can exist in multiple schemas. To do that, you just specify wildcard schema:
 
 ```ts
 @Entity({ schema: '*' })
@@ -93,13 +93,13 @@ export class Book {
 }
 ```
 
-Entities like this will be by default ignored when using `SchemaGenerator`, as we need to specify which schema to use. For that we need to use the `schema` option of the `createSchema/updateSchema/dropSchema` methods or the `--schema` CLI parameter.
+Entities like this will be by default ignored when using `SchemaGenerator`, as you need to specify which schema to use. For that you need to use the `schema` option of the `createSchema/updateSchema/dropSchema` methods or the `--schema` CLI parameter.
 
 On runtime, the wildcard schema will be replaced with either `FindOptions.schema`, `EntityManager.schema` or with the `schema` option from the ORM config.
 
 ### Note about migrations
 
-Currently, this is not supported via migrations, they will always ignore wildcard schema entities, and `SchemaGenerator` needs to be used explicitly. Given the dynamic nature of such entities, it makes sense to only sync the schema dynamically, e.g. in an API endpoint. We could still use the ORM migrations, but we need to add the dynamic schema queries manually to migration files. It makes sense to use the `safe` mode for such queries.
+Currently, this is not supported via migrations, they will always ignore wildcard schema entities, and `SchemaGenerator` needs to be used explicitly. Given the dynamic nature of such entities, it makes sense to only sync the schema dynamically, e.g. in an API endpoint. You could still use the ORM migrations, but you need to add the dynamic schema queries manually to migration files. It makes sense to use the `safe` mode for such queries.
 
 ## SQLite ATTACH DATABASE
 

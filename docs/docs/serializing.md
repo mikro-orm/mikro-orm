@@ -90,7 +90,7 @@ console.log(wrap(book).toJSON().count); // 123
 
 ## Property Serializers
 
-As an alternative to custom `toJSON()` method, we can also use property serializers. They allow to specify a callback that will be used when serializing a property:
+As an alternative to custom `toJSON()` method, you can also use property serializers. They allow to specify a callback that will be used when serializing a property:
 
 ```ts
 @Entity()
@@ -184,12 +184,12 @@ const dtos = serialize([user1, user2]);
 const [dto] = serialize(user1); // always returns an array
 // { name: '...', books: [1, 2, 3], identity: 123 }
 
-// for a single entity instance we can as well use `wrap(e).serialize()`
+// for a single entity instance you can as well use `wrap(e).serialize()`
 const dto2 = wrap(user1).serialize();
 // { name: '...', books: [1, 2, 3], identity: 123 }
 ```
 
-By default, every relation is considered as not populated - this will result in the foreign key values to be present. Loaded collections will be represented as arrays of the foreign keys. To control the shape of the serialized response we can use the second `options` parameter:
+By default, every relation is considered as not populated - this will result in the foreign key values to be present. Loaded collections will be represented as arrays of the foreign keys. To control the shape of the serialized response you can use the second `options` parameter:
 
 ```ts
 interface SerializeOptions<T extends object, P extends string = never, E extends string = never> {

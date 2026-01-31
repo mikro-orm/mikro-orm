@@ -24,7 +24,7 @@ console.log(books); // Book[]
 
 :::info
 
-Since v4, you need to make sure you are working with correctly typed `EntityRepository` to have access to driver specific methods (like `createQueryBuilder()`). Use the one exported from your driver package.
+You need to make sure you are working with correctly typed `EntityRepository` to have access to driver specific methods (like `createQueryBuilder()`). Use the one exported from your driver package.
 
 :::
 
@@ -52,7 +52,7 @@ export class Author {
 }
 ```
 
-> `@Repository()` decorator has been removed in v5, use `@Entity({ repository: () => MyRepository })` instead.
+> Use `@Entity({ repository: () => MyRepository })` to register a custom repository.
 
 Note that you need to pass that repository reference inside a callback so you will not run into circular dependency issues when using entity references inside that repository.
 

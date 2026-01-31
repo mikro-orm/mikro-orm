@@ -2,11 +2,11 @@
 title: 'Chapter 4: Advanced'
 ---
 
-In this chapter, we will first implement all the methods of `/user` endpoint, including a basic JWT authentication provided via `@fastify/jwt` package, and proceed with the rest of the `/article` endpoints. We will touch on some of the more advanced concepts like custom repositories, virtual entities, `QueryBuilder`, flush events, and more.
+In this chapter, you will first implement all the methods of `/user` endpoint, including a basic JWT authentication provided via `@fastify/jwt` package, and proceed with the rest of the `/article` endpoints. This chapter touches on some of the more advanced concepts like custom repositories, virtual entities, `QueryBuilder`, flush events, and more.
 
 ## Improving route registration
 
-Before we jump in and implement the rest of the `User` and `Article` endpoint handlers, let's improve on how we register the routes. Let's create a `routes.ts` file in `src/modules/article`, and export a factory function from it:
+Before jumping in and implementing the rest of the `User` and `Article` endpoint handlers, let's improve how the routes are registered. Create a `routes.ts` file in `src/modules/article`, and export a factory function from it:
 
 ```ts title='modules/article/routes.ts'
 import { FastifyInstance } from 'fastify';
@@ -26,7 +26,7 @@ export async function registerArticleRoutes(app: FastifyInstance) {
 }
 ```
 
-And let's create a placeholder for the `User` module too, so in `src/modules/user` folder:
+And create a placeholder for the `User` module too, in the `src/modules/user` folder:
 
 ```ts title='modules/user/routes.ts'
 import { FastifyInstance } from 'fastify';
@@ -50,7 +50,7 @@ Now use them in your `bootstrap` function via `app.register()` method:
 
 ## Sign-up route
 
-Time to add our first `User` endpoint, for registering new users. It will be a `POST` endpoint, which will accept an object payload with `email`, `fullName` and `password` properties:
+Time to add the first `User` endpoint, for registering new users. It will be a `POST` endpoint, which will accept an object payload with `email`, `fullName` and `password` properties:
 
 ```ts title='modules/user/routes.ts'
 export async function registerUserRoutes(app: FastifyInstance) {
@@ -120,7 +120,7 @@ export const UserSchema = defineEntity({
 });
 ```
 
-And don't forget to adjust our `Services` type:
+And don't forget to adjust the `Services` type:
 
 ```diff
 export interface Services {
@@ -144,7 +144,7 @@ Now you can use it in the `sign-up` endpoint:
 
 ## Authentication
 
-Time to add the second `User` route, this time for logging in. Let's modify our `routes.ts` again. Let's again use a custom repository method for the `login`, we will implement that in a second:
+Time to add the second `User` route, this time for logging in. Modify `routes.ts` again. Let's again use a custom repository method for the `login`, which will be implemented in a second:
 
 ```ts title='modules/user/routes.ts'
 export async function registerUserRoutes(app: FastifyInstance) {
@@ -165,7 +165,7 @@ export async function registerUserRoutes(app: FastifyInstance) {
 }
 ```
 
-And now the `login` method, it will try to load the `User` entity based on the password, and compare it via our `user.verifyPassword()` method. If we don't find such a combination of the `email` and `password`, we throw an error.
+And now the `login` method, which will try to load the `User` entity based on the password, and compare it via the `user.verifyPassword()` method. If no such combination of the `email` and `password` is found, an error is thrown.
 
 ```ts title='modules/user/user.repository.ts'
 export class UserRepository extends EntityRepository<User> {
@@ -173,7 +173,7 @@ export class UserRepository extends EntityRepository<User> {
   // ...
 
   async login(email: string, password: string) {
-    // we use a more generic error so we don't leak such email is registered
+    // use a more generic error so you don't leak that such email is registered
     const err = new Error('Invalid combination of email and password');
     const user = await this.findOneOrFail({ email }, {
       populate: ['password'], // password is a lazy property, we need to populate it
@@ -192,7 +192,7 @@ export class UserRepository extends EntityRepository<User> {
 
 ### Testing the `User` endpoints
 
-We now have two new endpoints, we should test they work as expected. Add a new test case for the `User` endpoints:
+You now have two new endpoints, so test that they work as expected. Add a new test case for the `User` endpoints:
 
 ```ts title='tests/user.test.ts'
 import { FastifyInstance } from 'fastify';
@@ -202,12 +202,12 @@ import { initTestApp } from './utils.js';
 let app: FastifyInstance;
 
 beforeAll(async () => {
-  // we use different ports to allow parallel testing
+  // using different ports to allow parallel testing
   app = await initTestApp(30002);
 });
 
 afterAll(async () => {
-  // we close only the fastify app - it will close the database connection via onClose hook automatically
+  // closing only the fastify app - it will close the database connection via onClose hook automatically
   await app.close();
 });
 
@@ -253,11 +253,11 @@ AssertionError: expected 500 to be 401 // Object.is equality
 + 500
 ```
 
-That's because we don't handle this anywhere, we just throw an error - let's deal with that now, by integrating the authentication into our application.
+That's because this isn't handled anywhere, the code just throws an error - let's deal with that now by integrating authentication into the application.
 
 ### JSON Web Tokens
 
-So the plan is to add an authentication layer to our API. We will need generate an authentication token that will hold the identity - let's use so-called JSON Web Token (JWT), an industry standard. We can leverage the `@fastify/jwt` plugin for encoding/decoding them with ease.
+The plan is to add an authentication layer to the API. You will need to generate an authentication token that will hold the identity - let's use so-called JSON Web Token (JWT), an industry standard. You can leverage the `@fastify/jwt` plugin for encoding/decoding them with ease.
 
 ```bash npm2yarn
 npm install @fastify/jwt
@@ -276,21 +276,21 @@ app.register(fastifyJWT, {
 });
 ```
 
-With the JWT plugin, our `request` object will have a `user` property we can use to store data about the currently logged `User`, as well as two handy methods on the `app` object:
+With the JWT plugin, the `request` object has a `user` property you can use to store data about the currently logged `User`, as well as two handy methods on the `app` object:
 
 - `app.jwt.sign()` to create the token from a payload
 - `request.jwtVerify()` to verify and decode the token back to the payload
 
-We will use the token payload to store the `user.id`. Let's add a new property to our `User` entity for it:
+The token payload stores the `user.id`. Add a new property to the `User` entity for it:
 
 ```ts title='modules/user/user.entity.ts'
 @Property({ persist: false })
 token?: string;
 ```
 
-We used `persist: false` here, that means the property is virtual, it does not represent a database column (but can be mapped and serialized).
+The `persist: false` option means the property is virtual, it does not represent a database column (but can be mapped and serialized).
 
-Before we continue, let's add one more utility - a custom `AuthError` class, which we can use to detect authentication issues (e.g. wrong password).
+Before continuing, add one more utility - a custom `AuthError` class, which can be used to detect authentication issues (e.g. wrong password).
 
 ```ts title='modules/common/utils.ts'
 export class AuthError extends Error {}
@@ -307,7 +307,7 @@ export class UserRepository extends EntityRepository<User> {
   // ...
 
   async login(email: string, password: string) {
-    // we use a more generic error so we don't leak such email is registered
+    // use a more generic error so you don't leak that such email is registered
     // highlight-next-line
     const err = new AuthError('Invalid combination of email and password');
     const user = await this.findOneOrFail({ email }, {
@@ -384,7 +384,7 @@ app.setErrorHandler((error, request, reply) => {
 });
 ```
 
-And that's it, our tests should be passing now again, with a basic authentication mechanism in place! When the server detects a user token in the request headers, it will automatically load the corresponding user and store it into the `request.user` property.
+And that's it, the tests should be passing now again, with a basic authentication mechanism in place! When the server detects a user token in the request headers, it will automatically load the corresponding user and store it into the `request.user` property.
 
 Let's implement the last two endpoints for getting the current user profile and modifying it. First, create one new utility method: `getUserFromToken`.
 
@@ -425,9 +425,9 @@ Try implementing the tests for those endpoints now!
 
 ## Embeddables
 
-Before we move on back to the article endpoint, let's improve our user entity a bit. Say we want to have optional social handles for twitter, facebook or linkedin on the `User` entity. We can use [Embeddables](../embeddables.md) for this, a feature which allows mapping multiple columns to an object.
+Before moving back to the article endpoint, let's improve the user entity a bit. Say you want to have optional social handles for twitter, facebook or linkedin on the `User` entity. You can use [Embeddables](../embeddables.md) for this, a feature which allows mapping multiple columns to an object.
 
-With `defineEntity`, we can define an embeddable schema and embed it in our entity:
+With `defineEntity`, you can define an embeddable schema and embed it in your entity:
 
 ```ts title='user.entity.ts'
 import { defineEntity, InferEntity, p } from '@mikro-orm/core';
@@ -473,7 +473,7 @@ alter table `user` add column `social_facebook` text null;
 alter table `user` add column `social_linkedin` text null;
 ```
 
-But maybe it would be a better idea to store the social handles into a JSON column - we can easily achieve that with embeddables too:
+But maybe it would be a better idea to store the social handles into a JSON column - you can easily achieve that with embeddables too:
 
 ```ts
 social: () => p.embedded(Social, { object: true }).nullable(),
@@ -503,7 +503,7 @@ Successfully migrated up to the latest version
 
 ## Validation via Zod
 
-One more thing in the user module, we need to process this new `User.social` property in our `sign-up` endpoint. We're already using [`em.create()`](/api/core/class/EntityManager#create), so we can simply pass the social property:
+One more thing in the user module: process this new `User.social` property in the `sign-up` endpoint. Since [`em.create()`](/api/core/class/EntityManager#create) is already being used, you can simply pass the social property:
 
 ```ts title='modules/user/routes.ts'
 const user = db.em.create(User, {
@@ -517,7 +517,7 @@ const user = db.em.create(User, {
 await db.em.flush();
 ```
 
-Let's add some validation via Zod (we could pass `body` directly to `em.create()`:
+Let's add some validation via Zod (you could pass `body` directly to `em.create()`):
 
 ```diff file='modules/user/routes.ts'
 -const user = db.em.create(User, {
@@ -578,7 +578,7 @@ This example only shows a very basic validation with Zod, which mirrors what Mik
 
 ## Rest of the Article endpoints
 
-Let's implement the rest of the article endpoints. We will need a public one for the article detail, one for posting comments, one for updating the article and one for deleting it. The last two will be only allowed for the user who created given article.
+Let's implement the rest of the article endpoints. You need a public one for the article detail, one for posting comments, one for updating the article and one for deleting it. The last two will only be allowed for the user who created the given article.
 
 With the information you already have, implementing those endpoints should be pretty straightforward. The detail endpoint is really simple, all it does is using the `findOneOrFail()` method to get the `Article` based on its `slug`.
 
@@ -599,7 +599,7 @@ app.get('/:slug', async request => {
 
 ### Creating entities
 
-Then we define the endpoint for creating comments - here we use the `getUserFromToken` helper to access the current user based on the token, try to find the article (again based on the `slug` property) and create the comment entity. Since we use [`em.create()`](/api/core/class/EntityManager#create) here, we don't have to [`em.persist()`](/api/core/class/EntityManager#persist) the new entity, as it happens automatically this way.
+Then define the endpoint for creating comments - here the `getUserFromToken` helper is used to access the current user based on the token, try to find the article (again based on the `slug` property) and create the comment entity. Since [`em.create()`](/api/core/class/EntityManager#create) is used here, you don't have to [`em.persist()`](/api/core/class/EntityManager#persist) the new entity, as it happens automatically this way.
 
 ```ts title='modules/article/routes.ts'
 app.post('/:slug/comment', async request => {
@@ -641,7 +641,7 @@ app.post('/', async request => {
 
 ### Updating entities
 
-For updating we use `wrap(article).assign()`, a helper method which will map the data to entity graph correctly. It will transform foreign keys into entity references automatically.
+For updating, use `wrap(article).assign()`, a helper method which will map the data to entity graph correctly. It will transform foreign keys into entity references automatically.
 
 > Alternatively, you can use `em.assign()`, which will also work for not managed entities.
 
@@ -658,7 +658,7 @@ app.patch('/:id', async request => {
 });
 ```
 
-We also validate that only the author of the article can change it:
+Also validate that only the author of the article can change it:
 
 ```ts title='modules/common/utils.ts'
 export function verifyArticlePermissions(user: User, article: Article): void {
@@ -685,7 +685,7 @@ Read more about upserting in [Entity Manager](../entity-manager.md#upsert) secti
 
 ### Removing entities
 
-There are several approaches to removing an entity. In this case, we first load the entity, if it does not exist, we return `notFound: true` in the response, if it does, we remove it via `em.remove()`, which marks the entity for removal on the following `flush()` call.
+There are several approaches to removing an entity. In this case, the entity is first loaded, if it does not exist, `notFound: true` is returned in the response, if it does, it's removed via `em.remove()`, which marks the entity for removal on the following `flush()` call.
 
 ```ts title='modules/article/routes.ts'
 app.delete('/:id', async request => {
@@ -713,7 +713,7 @@ await db.article.nativeDelete(+params.id);
 
 ### Batch inserts, updates and deletes
 
-While we do not have such a use case in this guide, a huge benefit of using the [`EntityManager`](/api/core/class/EntityManager) with Unit of Work approach is automatic batching - all the `INSERT`, `UPDATE` and `DELETE` queries will be batched automatically into a single query per entity.
+While there is no such use case in this guide, a huge benefit of using the [`EntityManager`](/api/core/class/EntityManager) with Unit of Work approach is automatic batching - all the `INSERT`, `UPDATE` and `DELETE` queries will be batched automatically into a single query per entity.
 
 #### Insert
 
@@ -789,7 +789,7 @@ await db.em.flush(); // calling flush have no effect, as the entity is not manag
 
 ## Virtual entities
 
-Let's now improve our first article endpoint - we used `em.findAndCount()` to get paginated results easily, but what if we want to customize the response? One way to do that are [Virtual entities](../virtual-entities.md). They don't represent any database table, instead, they dynamically resolve to an SQL query, allowing you to map any kind of results onto an entity.
+Let's now improve the first article endpoint - `em.findAndCount()` was used to get paginated results easily, but what if you want to customize the response? One way is with [Virtual entities](../virtual-entities.md). They don't represent any database table, instead, they dynamically resolve to an SQL query, allowing you to map any kind of results onto an entity.
 
 :::info
 

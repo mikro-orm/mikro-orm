@@ -13,7 +13,7 @@ There are 4 types of entity relationships in MikroORM:
 - OneToOne
 - ManyToMany
 
-Relations can be unidirectional and bidirectional. Unidirectional are defined only on one side (the owning side). Bidirectional are defined on both sides, while one is owning side (where references are store), marked by `inversedBy` attribute pointing to the inverse side. On the inversed side we define it with `mappedBy` attribute pointing back to the owner:
+Relations can be unidirectional and bidirectional. Unidirectional are defined only on one side (the owning side). Bidirectional are defined on both sides, while one is owning side (where references are store), marked by `inversedBy` attribute pointing to the inverse side. On the inversed side you define it with `mappedBy` attribute pointing back to the owner:
 
 > When modeling bidirectional relationship, you can also omit the `inversedBy` attribute, defining `mappedBy` on the inverse side is enough as it will be auto-wired.
 
@@ -78,7 +78,7 @@ export const Book = defineEntity({
   },
 });
 
-export interface IBook extends InferEntity<typeof Book> {}
+export type IBook = InferEntity<typeof Book>;
 ```
 
   </TabItem>
@@ -168,7 +168,7 @@ export const Author = defineEntity({
   },
 });
 
-export interface IAuthor extends InferEntity<typeof Author> {}
+export type IAuthor = InferEntity<typeof Author>;
 ```
 
   </TabItem>
@@ -276,7 +276,7 @@ export const User = defineEntity({
   },
 });
 
-export interface IUser extends InferEntity<typeof User> {}
+export type IUser = InferEntity<typeof User>;
 ```
 
   </TabItem>
@@ -365,7 +365,7 @@ export const User = defineEntity({
   },
 });
 
-export interface IUser extends InferEntity<typeof User> {}
+export type IUser = InferEntity<typeof User>;
 ```
 
   </TabItem>
@@ -467,7 +467,7 @@ export const Book = defineEntity({
   },
 });
 
-export interface IBook extends InferEntity<typeof Book> {}
+export type IBook = InferEntity<typeof Book>;
 ```
 
   </TabItem>
@@ -548,7 +548,7 @@ export const BookTag = defineEntity({
   },
 });
 
-export interface IBookTag extends InferEntity<typeof BookTag> {}
+export type IBookTag = InferEntity<typeof BookTag>;
 ```
 
   </TabItem>
@@ -667,7 +667,7 @@ export const Author = defineEntity({
   },
 });
 
-export interface IAuthor extends InferEntity<typeof Author> {}
+export type IAuthor = InferEntity<typeof Author>;
 
 export const Book = defineEntity({
   name: 'Book',
@@ -678,7 +678,7 @@ export const Book = defineEntity({
   },
 });
 
-export interface IBook extends InferEntity<typeof Book> {}
+export type IBook = InferEntity<typeof Book>;
 ```
 
   </TabItem>
@@ -781,7 +781,7 @@ export const Book = defineEntity({
   },
 });
 
-export interface IBook extends InferEntity<typeof Book> {}
+export type IBook = InferEntity<typeof Book>;
 ```
 
 > With `defineEntity`, circular dependencies are handled automatically, no need for `Rel` wrapper.
@@ -864,7 +864,7 @@ export const Book = defineEntity({
   },
 });
 
-export interface IBook extends InferEntity<typeof Book> {}
+export type IBook = InferEntity<typeof Book>;
 ```
 
   </TabItem>
@@ -941,7 +941,7 @@ export const Book = defineEntity({
   },
 });
 
-export interface IBook extends InferEntity<typeof Book> {}
+export type IBook = InferEntity<typeof Book>;
 ```
 
   </TabItem>

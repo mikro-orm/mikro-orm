@@ -4,7 +4,7 @@ title: Usage with MongoDB
 
 To use MikroORM with mongo database, do not forget to install `@mikro-orm/mongodb` dependency. Then call `MikroORM.init()` as part of bootstrapping your app:
 
-> To access driver specific methods like `em.aggregate()` we need to specify the driver type when calling `MikroORM.init<D>()`. Alternatively we can cast the `orm.em` to `EntityManager` exported from the driver package:
+> To access driver specific methods like `em.aggregate()` you need to specify the driver type when calling `MikroORM.init<D>()`. Alternatively you can cast the `orm.em` to `EntityManager` exported from the driver package:
 >
 > ```ts
 > import { EntityManager } from '@mikro-orm/mongodb';
@@ -12,7 +12,7 @@ To use MikroORM with mongo database, do not forget to install `@mikro-orm/mongod
 > const qb = em.aggregate(...);
 > ```
 
-> We need to use `clientUrl` to set up hosts, using `host` or `port` is not supported.
+> You need to use `clientUrl` to set up hosts, using `host` or `port` is not supported.
 
 ```ts
 import { MikroORM } from '@mikro-orm/mongodb'; // or any other driver package
@@ -62,12 +62,12 @@ const bar2 = await repo.find({ _id: { $in: [new ObjectId(article)] }, favouriteB
 
 As opposed to SQL drivers that use pivot tables, in mongo we can leverage available array type to store array of collection items (identifiers). This approach has two main benefits:
 
-1. Collection is stored on owning side entity, so we know how many items are there even before initializing the collection.
+1. Collection is stored on owning side entity, so you know how many items are there even before initializing the collection.
 2. As there are no pivot tables, resulting database queries are much simpler.
 
 ## Transactions
 
-Starting with v3.4, MongoDB driver supports transactions. To use transactions, there are several things you need to respect:
+MongoDB driver supports transactions. To use transactions, there are several things you need to respect:
 
 - you need to use replica set (see [run-rs](https://github.com/vkarpov15/run-rs))
 - implicit transactions are disabled by default
@@ -96,7 +96,7 @@ await orm.schema.createSchema();
 
 ## Indexes
 
-Starting with v3.4, MongoDB driver supports indexes and unique constraints. You can use `@Index()` and `@Unique()` as described in [Defining Entities section](./defining-entities.md#indexes). To automatically create new indexes when initializing the ORM, you need to enable `ensureIndexes` option.
+MongoDB driver supports indexes and unique constraints. You can use `@Index()` and `@Unique()` as described in [Defining Entities section](./defining-entities.md#indexes). To automatically create new indexes when initializing the ORM, you need to enable `ensureIndexes` option.
 
 ```ts
 const orm = await MikroORM.init({
@@ -108,7 +108,7 @@ const orm = await MikroORM.init({
 
 Alternatively you can call `ensureIndexes()` method on the `SchemaGenerator`:
 
-> SchemaGenerator support for mongo was introduced in v5.
+> SchemaGenerator is also supported for MongoDB.
 
 ```ts
 await orm.schema.ensureIndexes();

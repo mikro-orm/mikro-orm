@@ -10,13 +10,13 @@ With folder-based discovery, cache is dependent on environment. If you run the T
 
 ## Automatic Invalidation
 
-Entity metadata are cached together with modified time of the source file, and every time the cache is requested, it first checks if the cache is not invalid. This way we can forget about the caching mechanism most of the time.
+Entity metadata are cached together with modified time of the source file, and every time the cache is requested, it first checks if the cache is not invalid. This way you can forget about the caching mechanism most of the time.
 
-One case where we can end up needing to wipe the cache manually is when we work within a git branch where contents of entities folder differs.
+One case where you can end up needing to wipe the cache manually is when you work within a git branch where contents of entities folder differs.
 
 ## Disabling Metadata Cache
 
-We can disable metadata caching via:
+You can disable metadata caching via:
 
 ```ts
 await MikroORM.init({
@@ -38,7 +38,7 @@ await MikroORM.init({
 
 ## Using Different temp Folder
 
-We can set the cache directory via:
+You can set the cache directory via:
 
 ```ts
 await MikroORM.init({

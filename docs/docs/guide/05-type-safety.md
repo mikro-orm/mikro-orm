@@ -23,7 +23,7 @@ console.log(wrap(user).isInitialized()); // true
 console.log(user.name); // defined
 ```
 
-The `isInitialized()` method can be used for runtime checks, but that could end up being quite tedious - we can do better! Instead of manual checks for entity state, we can use the [`Reference`](/api/core/class/Reference) wrapper.
+The `isInitialized()` method can be used for runtime checks, but that could end up being quite tedious - you can do better! Instead of manual checks for entity state, you can use the [`Reference`](/api/core/class/Reference) wrapper.
 
 ## `Reference` wrapper
 
@@ -128,7 +128,7 @@ await article2.author.load(); // no additional query, already loaded
 
 ### `ScalarReference` wrapper
 
-Similarly to the `Reference` wrapper, we can also wrap scalars with `Ref` into a `ScalarReference` object. This is handy for lazy scalar properties.
+Similarly to the `Reference` wrapper, you can also wrap scalars with `Ref` into a `ScalarReference` object. This is handy for lazy scalar properties.
 
 The `Ref` type automatically resolves to `ScalarReference` for non-object types, so the below is correct:
 
@@ -195,7 +195,7 @@ export const User = defineEntity({
 export type IUser = InferEntity<typeof User>;
 ```
 
-The `Loaded` type will represent what relations of the entity are populated, and will add a special `$` symbol to them, allowing for type-safe synchronous access to the loaded properties. This works great in combination with the [`Reference`](/api/core/class/Reference) wrapper:
+The `Loaded` type represents what relations of the entity are populated, and adds a special `$` symbol to them, allowing for type-safe synchronous access to the loaded properties. This works great in combination with the [`Reference`](/api/core/class/Reference) wrapper:
 
 > If you don't like symbols with magic names like `$`, you can as well use the `get()` method, which is an alias for it.
 
@@ -211,7 +211,7 @@ console.log(user.identity.$.email);
 > If you'd omit the `populate` hint, the type of `user` would be `Loaded<User, never>` and the `user.identity.$` symbol wouldn't be available - such call would end up with a compilation error.
 
 ```ts
-// if we try without the populate hint, the type is `Loaded<User, never>`
+// if you try without the populate hint, the type is `Loaded<User, never>`
 const user2 = await em.findOneOrFail(User, 2);
 
 // TS2339: Property '$' does not exist on type '{ id: number; } & Reference'.
@@ -286,7 +286,7 @@ export class Article {
 }
 ```
 
-Another way is to use `toReference()` method available as part of the [`WrappedEntity` interface](../entity-helper.md#wrappedentity-and-wrap-helper):
+Another way is to use `toReference()` method available as part of the [`wrap()` helper](../wrap-helper.md):
 
 ```ts
 const author = new User(...)

@@ -224,7 +224,7 @@ in your package.json file.
 
 ### Configuring TypeScript
 
-We will use almost the same config [as the "code first" guide one](./guide/01-first-entity.md#configuring-typescript). As mentioned there, already, adjust this config if you know what you’re doing.
+We will use almost the same config [as the "code first" guide one](./guide/01-first-entity.md#configuring-typescript). As mentioned there, already, adjust this config if you know what you're doing.
 
 ```json title='tsconfig.json'
 {
@@ -416,7 +416,7 @@ If all is good to this point, you should be seeing the following directory struc
 
 ## Manipulating entity file locations and names
 
-You may have noticed that the files aren’t following the `*.entity.ts` suffix we configured initially. Further, they're all under one folder. Both of these are because of the default names the entity generator uses. We can override the `fileName` option in the config to save our files in different locations, and add suffixes:
+You may have noticed that the files aren't following the `*.entity.ts` suffix we configured initially. Further, they're all under one folder. Both of these are because of the default names the entity generator uses. We can override the `fileName` option in the config to save our files in different locations, and add suffixes:
 
 ```ts title='src/mikro-orm.config.ts'
 import { defineConfig } from '@mikro-orm/mysql';
@@ -616,7 +616,7 @@ While you don’t need to run the check script before starting the application, 
 
 ## ⛳ Checkpoint 1
 
-At this point, we have an application similar to the one at ["Checkpoint 3" of the "code first" guide](./guide/03-project-setup.md#-checkpoint-3). The application itself can only list articles, which don’t exist yet, unless we manually add them with SQL queries. However, we already defined all the entities we'll use. We'll later do some tweaks on top of the generated entities to showcase the full extent of the entity generator's features in a useful way. However, you're already at a point where you can use the generated entities "as is" in your application code, and code the remaining logic around them.
+At this point, we have an application similar to the one at ["Checkpoint 3" of the "code first" guide](./guide/03-project-setup.md#-checkpoint-3). The application itself can only list articles, which don't exist yet, unless we manually add them with SQL queries. However, we already defined all the entities we'll use. We'll later do some tweaks on top of the generated entities to showcase the full extent of the entity generator's features in a useful way. However, you're already at a point where you can use the generated entities "as is" in your application code, and code the remaining logic around them.
 
 You can verify the application is working ok by starting it, and opening https://localhost:3001/article in your browser.
 
@@ -740,7 +740,7 @@ While there is a lot you can do on DB schema level with foreign key relations, c
 
 The two configuration options are `onInitialMetadata` and `onProcessedMetadata`. The first is made immediately after getting the raw metadata from your database, and the second is run after the entity generator goes through all the things it normally infers automatically for you from that metadata. Things like M:N relations, inverse sides of relations, base class and more. You can think of `onInitialMetadata` as the place to opt into extra features, and `onProcessedMetadata` as the place to opt out of features that you were otherwise opted into.
 
-If you went through the whole "code first" guide before, and now are going over through this guide, you may have noticed that we are missing a few things in the entity definitions. Let's add some of them.
+If you went through the whole "code first" guide before, and now are going through this guide, you may have noticed that there are a few things missing in the entity definitions. Let's add some of them.
 
 First, let's make the "text" of the "article" be lazy. Also, let's make the "password" lazy too, as well as make it "hidden", to avoid accidentally leaking it in responses. We'll do that in the `onInitialMetadata` hook, though these changes in particular can be done in `onProcessedMetadata` just the same.
 
@@ -961,7 +961,7 @@ const emptyHash = await Password.fromRaw('');
 
 It may look like the naming strategy is a more specialized version of the metadata hooks, but there is also one critical difference between changing the name from one vs the other. With a naming strategy, all references are also updated with the new name. With a metadata hook, changing the "original" does not update any references to it. You may update the references yourself, but doing so is less efficient than just overriding the naming strategy.
 
-But efficiency aside, this "loophole" can in fact be beneficial. We can use mapped superclasses. To do that, rename an entity via the application hooks, and then create a class with the original name, to take the place of the original class. The new "manual" class should inherit from the generated class.
+But efficiency aside, this "loophole" can in fact be beneficial. You can use mapped superclasses. To do that, rename an entity via the application hooks, and then create a class with the original name, to take the place of the original class. The new "manual" class should inherit from the generated class.
 
 This approach can be used to mitigate any shortcoming of the entity generator. Most notably, it is useful to create constructor functions and other helper methods, as the generator doesn’t give you any means to add such.
 
@@ -1019,7 +1019,7 @@ export default defineConfig({
 });
 ```
 
-And try to regenerate the entities... Oops, you'll crash the entity generator. What happened? The "Article" entity is involved in a M:N relationship, and upon trying to connect it on the Users end, it was not found, which is not OK. This is now a case where we need to bring in `onProcessedMetadata`, so that we only swap our the class after the M:N discovery has already happened.
+And try to regenerate the entities... Oops, you'll crash the entity generator. What happened? The "Article" entity is involved in a M:N relationship, and upon trying to connect it on the Users end, it was not found, which is not OK. This is now a case where you need to bring in `onProcessedMetadata`, so that you only swap out the class after the M:N discovery has already happened.
 
 Change the config to:
 
@@ -1264,7 +1264,7 @@ app.get('/profile', async request => {
 
 ## ⛳ Checkpoint 2
 
-Our application now has JWT authentication and profile view. Meanwhile, we also did a full DB change cycle. Before we move onto more entity generation features, let's do some refactoring to make the big app.ts file more manageable, and add some tests. This will make the final version of our application, complete with its additional features, easier to reason about.
+Your application now has JWT authentication and profile view. Meanwhile, a full DB change cycle was also completed. Before moving onto more entity generation features, let's do some refactoring to make the big app.ts file more manageable, and add some tests. This will make the final version of your application, complete with its additional features, easier to reason about.
 
 If you wanted to "manually" verify the application at this stage, you would need to issue the POST requests using curl, Postman or other similar tools. Or alternatively, use fetch() from a browser console or a separate Node REPL.
 
@@ -1416,7 +1416,7 @@ export default (async (app, { db }) => {
 }) as FastifyPluginAsync<{ db: Services }>;
 ```
 
-and let's also move out the hooks too. These would require we wrap them with `fastify-plugin` instead, since we want these hooks across all prefixes.
+and also move out the hooks too. These would require wrapping them with `fastify-plugin` instead, since you want these hooks across all prefixes.
 
 ```ts title="src/modules/common/hooks.ts"
 import { fastifyPlugin } from 'fastify-plugin';
@@ -1494,9 +1494,9 @@ which is much nicer. Our URL endpoints are now "/article", "/user/sign-up", "/us
 
 We mentioned earlier that you could split your config files if you need tool-specific configs. However, more generally, you will at least want a dev vs prod config, with "dev" basically being "when running the MikroORM CLI", while "prod" would basically be "when the application is running".
 
-We can detect whether we're running in the MikroORM CLI based on the arguments, and act accordingly.
+You can detect whether you're running in the MikroORM CLI based on the arguments, and act accordingly.
 
-And although we don't _require_ a tool-specific config, there is one annoying thing about entity generation that we can tackle with a config adjustment specifically to the entity generator. Because of the renames that we have to do for our entity regeneration after our mapped superclass was introduced, you may have seen your IDE fail to recognize the mapped superclass. And it stays like that until you restart your IDE's typescript server, or cut and paste the mapped superclass reference to force a re-check. We can avoid this annoyance by adjusting our config to not feature the entities at all, but only when running the regenerate-entities command from the MikroORM CLI.
+And although you don't _require_ a tool-specific config, there is one annoying thing about entity generation that you can tackle with a config adjustment specifically to the entity generator. Because of the renames that you have to do for your entity regeneration after your mapped superclass was introduced, you may have seen your IDE fail to recognize the mapped superclass. And it stays like that until you restart your IDE's typescript server, or cut and paste the mapped superclass reference to force a re-check. You can avoid this annoyance by adjusting your config to not feature the entities at all, but only when running the regenerate-entities command from the MikroORM CLI.
 
 ```ts title='src/mikro-orm.config.ts'
 import {
@@ -1528,7 +1528,7 @@ export default defineConfig({
 });
 ```
 
-And with that in place, we can revert the changes we made before to the entity generation process, i.e.
+And with that in place, you can revert the changes made before to the entity generation process, i.e.
 
 ```diff title="package.json"
 -  "regen": "rimraf -g ./src/**/*.entity.ts && renamer --silent --find /\\.customEntity\\.ts$/ --replace .customEntity.ts.bak ./src/** && mikro-orm generate-entities --save && renamer --silent --find /\\.customEntity\\.ts\\.bak$/ --replace .customEntity.ts ./src/**",
@@ -1541,7 +1541,7 @@ and
 npm uninstall renamer
 ```
 
-We should further make it so that migrations run in a separate connection where `multipleStatements` is enabled, while it is disabled for everything else, for the sake of security.
+You should further make it so that migrations run in a separate connection where `multipleStatements` is enabled, while it is disabled for everything else, for the sake of security.
 
 Let's make app.ts be like:
 
@@ -1583,11 +1583,11 @@ export async function bootstrap(port = 3001, migrate = true) {
 
 ### Testing the endpoints
 
-So far, when we've checked the resulting app, we've been doing so "manually". Let's add some tests, so that we can repeatedly check that everything is working as we make further changes and additions.
+So far, checking the resulting app has been done "manually". Let's add some tests, so you can repeatedly check that everything is working as you make further changes and additions.
 
 In a "code first" approach, you can let the schema generator create the test database's schema for you, based on your entity definitions. While you _could_ do the same in a "schema first" approach, if your database schema is sufficiently complex, you may end up in a situation where the schema generator will produce something slightly different from your true schema (which may be because of bugs originating in the entity generator not producing the correct/complete code, or because your schema includes features that MikroORM does not track yet in general, like triggers and routines), which will in turn make your test results be off, particularly when said differences are being relied on by your application. The best way to avoid issues like this is to simply run your migrations at the start of the test suite. If you have too many migrations, you may consider occasionally doing a database DDL dump using a tool native to your database engine (e.g. "mysqldump" in the case of MySQL) + a data dump of the MikroORM migrations table. Then execute these before running the rest of the migrations that were created after that dump.
 
-To keep this guide simple, we will just run the migrations.
+To keep this guide simple, just run the migrations.
 
 Let's create a test util to init our test database:
 
@@ -1658,7 +1658,7 @@ FAIL  test/article.test.ts [ test/article.test.ts ]
 TypeError: Unknown file extension ".ts" for /blog-api/src/modules/article/article.entity.ts
 ```
 
-and to fix it, we need to adjust the config to add a dynamic import:
+and to fix it, you need to adjust the config to add a dynamic import:
 ```diff title="test/utils.ts"
 import { bootstrap } from '../src/app.js';
 import { initORM } from '../src/db.js';
@@ -1710,7 +1710,7 @@ Add to your config
 
 and regenerate the entities. You can now run the test without an error. You may also remove `emitDecoratorMetadata` from `tsconfig.json` at this point, unless you need it for another library.
 
-Now that we have the article test working, let's also add tests for the user endpoint. We'll register a user, try to log in with them, see their profile, and remove the user at the end, to keep the test repeatable.
+Now that the article test is working, let's also add tests for the user endpoint. You'll register a user, try to log in with them, see their profile, and remove the user at the end, to keep the test repeatable.
 
 ```ts title="test/user.test.ts"
 import { FastifyInstance } from 'fastify';
@@ -1808,7 +1808,7 @@ test('full flow', async () => {
 });
 ```
 
-This test should also pass with no errors. If all is good, we can move on to a few more application refactorings.
+This test should also pass with no errors. If all is good, you can move on to a few more application refactorings.
 
 ### Adding better error handling
 
@@ -1934,7 +1934,7 @@ Next, we'll need to associate this repository with the user entity on the entity
 
 and regenerate the entities.
 
-The entity's options will now include a factory for the repository class, as well as a TypeScript hint. To use the custom repository class when available, and fallback to the default ones when not, we should modify our database wrapper to use the `GetRepository` type, like so:
+The entity's options will now include a factory for the repository class, as well as a TypeScript hint. To use the custom repository class when available, and fallback to the default ones when not, modify your database wrapper to use the `GetRepository` type, like so:
 
 ```diff title="src/db.ts"
 import {
@@ -1963,7 +1963,7 @@ import {
 
 The second type argument to the `GetRepository` type is a fallback class, in case the entity does not define a type hint. That fallback should match the class defined in the config as a default repository. We're using MikroORM's default, so we're just specifying that.
 
-Now that we have the repository defined and available, we can use it in `user.routes.ts`, like so:
+Now that the repository is defined and available, you can use it in `user.routes.ts`, like so:
 
 ```diff title="src/modules/user/user.routes.ts"
 ...
@@ -2010,7 +2010,7 @@ Now that we have the repository defined and available, we can use it in `user.ro
 
 ### Adding input runtime validation via Zod
 
-Every time we do `as` on something from `request`, we are effectively telling TypeScript we know what the user input will be shaped like. In reality, nothing is stopping the user from submitting something not conforming to that shape, or not even inputting JSON in the first place. We should validate all user input (which in our case means anything from "request") before passing it further along in our logic. One good way to do that is using Zod. Let's add such validation.
+Every time you do `as` on something from `request`, you are effectively telling TypeScript you know what the user input will be shaped like. In reality, nothing is stopping the user from submitting something not conforming to that shape, or not even inputting JSON in the first place. You should validate all user input (which in this case means anything from "request") before passing it further along in your logic. One good way to do that is using Zod. Let's add such validation.
 
 Install Zod:
 
@@ -2036,7 +2036,7 @@ First off, let's deal with the sign-in endpoint.
 ...
 ```
 
-Zod includes a validator for syntax validity of email, but we don't need it during sign-in. As long as the email is not empty, we can search it. If the email is not valid, it won't exist in the database to begin with. We'll make sure of that during the sign-up. Let's do that now, and while we're at it, let's automatically hash the password after validation, to simplify the call to the `create()` method:
+Zod includes a validator for syntax validity of email, but you don't need it during sign-in. As long as the email is not empty, you can search it. If the email is not valid, it won't exist in the database to begin with. You'll make sure of that during the sign-up. Let's do that now, and while we're at it, let's automatically hash the password after validation, to simplify the call to the `create()` method:
 
 ```diff title="src/modules/user.routes.ts"
 ...
@@ -2079,7 +2079,7 @@ Zod includes a validator for syntax validity of email, but we don't need it duri
 
 You could add a check constraint for that instead (or in addition to Zod), but the check constraint would be applied later, after we spend time to hash the new password. To save time and server resources on long creation procedures like that, you should include as much validation as you can, as early as you can, like we did here.
 
-Finally, let's add some validation for the query string in `article.routes.ts`. Unlike our sign-up and sign-in validator, there's a high chance we'll want to do paging in multiple places (e.g. in a list of users), so we should define our validator in a dedicated file.
+Finally, let's add some validation for the query string in `article.routes.ts`. Unlike the sign-up and sign-in validator, there's a high chance you'll want to do paging in multiple places (e.g. in a list of users), so you should define your validator in a dedicated file.
 
 ```ts title="src/common/validators.ts"
 import { z } from 'zod';
@@ -2107,7 +2107,7 @@ export default (async (app, { db }) => {
 
 ## Making backwards compatible changes to the database
 
-Near the end there, you may have noticed that we still had to check whether the user's email exists before adding them to the database. On a busy server however, it's possible for a user to be added right in between our check and the flush of the new user. Further, if we had many users, we would need to do a linear search on the table, as there's no index on the email column. We can add one, and we should make it unique to prevent double insertion on a busy server.
+Near the end there, you may have noticed that there still needs to be a check whether the user's email exists before adding them to the database. On a busy server however, it's possible for a user to be added right in between the check and the flush of the new user. Further, if there are many users, a linear search on the table would be needed, as there's no index on the email column. You can add one, and should make it unique to prevent double insertion on a busy server.
 
 Let's try to generate a new migration for that.
 
@@ -2133,9 +2133,9 @@ export class Migration00000000000002 extends Migration {
 }
 ```
 
-Because this migration is fully backwards compatible, and we are automatically running migrations during startup, we could deploy our code without regenerating the entities even. However, we should do that anyway, since the entity definitions have changed as a result of this.
+Because this migration is fully backwards compatible, and migrations are automatically running during startup, you could deploy your code without regenerating the entities even. However, you should do that anyway, since the entity definitions have changed as a result of this.
 
-After this migration is executed, we may now output a custom error when that unique constraint is violated. Note that we should still keep the application level check, performed before the `create` attempt. Attempting to insert will consume the auto increment ID even on unique constraint violations, so to prevent its early exhaustion, we should check in advance as well.
+After this migration is executed, you can now output a custom error when that unique constraint is violated. Note that you should still keep the application level check, performed before the `create` attempt. Attempting to insert will consume the auto increment ID even on unique constraint violations, so to prevent its early exhaustion, check in advance as well.
 
 Let's add that custom error class first:
 
@@ -2187,7 +2187,7 @@ And then wrap violations of the unique constraint on sign-up:
 ...
 ```
 
-And finally, we can return a different status code on this error again. Status `409 Conflict` seems like the most appropriate.
+And finally, you can return a different status code on this error again. Status `409 Conflict` seems like the most appropriate.
 
 ```diff title="src/modules/common/hooks.ts"
 ...
@@ -2211,7 +2211,7 @@ import { AuthError } from './auth.error.js';
 ...
 ```
 
-We can now adjust our test accordingly:
+You can now adjust your test accordingly:
 
 ```diff title="test/user.test.ts"
 ...
@@ -2231,7 +2231,7 @@ You can try to generalize this to work for any unique constraint violation by an
 
 ### Reusing the user authentication check
 
-We have the "/profile" endpoint, where we check whether the user is authenticated and return it if it is. For the sake of other endpoints that need to be authenticated, we should extract this into a function that will either give us the current user, or throw.
+The "/profile" endpoint checks whether the user is authenticated and returns it if so. For the sake of other endpoints that need to be authenticated, you should extract this into a function that will either give you the current user, or throw.
 
 ```ts title="src/modules/common/utils.ts"
 import { FastifyRequest } from 'fastify';
@@ -2247,7 +2247,7 @@ export function getUserFromToken(req: FastifyRequest): User {
 }
 ```
 
-and we can already adjust the `user.routes.ts` file to use it:
+and you can already adjust the `user.routes.ts` file to use it:
 
 ```diff title="src/modules/user/user.routes.ts"
 ...
@@ -2458,7 +2458,7 @@ You can try to implement a different pattern for handling the `*.gen.ts` files, 
 
 ## ⛳ Checkpoint 3
 
-Our application is now structured like an enterprise level application, ready for further modules or further additions to the existing modules. We even made another migration along the way. We are now ready to add more features.
+Your application is now structured like an enterprise level application, ready for further modules or further additions to the existing modules. Another migration was made along the way. You are now ready to add more features.
 
 ## Completing the project
 
@@ -2579,7 +2579,7 @@ export class Article extends _Article {
 }
 ```
 
-Technically, we could declare them as optional in the base class by modifying that in `onInitialMetadata` or `onProcessedMetadata`, but if we ever want to bypass the superclass for whatever reason, we will be prone to errors from the missing slug and description.
+Technically, you could declare them as optional in the base class by modifying that in `onInitialMetadata` or `onProcessedMetadata`, but if you ever want to bypass the superclass for whatever reason, you will be prone to errors from the missing slug and description.
 
 After the modifications to the mapped superclass, the code now compiles again.
 
@@ -2655,7 +2655,7 @@ import { wrap } from '@mikro-orm/mysql';
 // rest of the code
 ```
 
-Thanks to MikroORM's identity map, we can compare the objects like how we've done above.
+Thanks to MikroORM's identity map, you can compare the objects like shown above.
 
 Let's also add an endpoint to update our user profile:
 
@@ -2687,13 +2687,13 @@ MikroORM offers embeddable objects, which can serve one of two purposes.
 1. Group related columns in a table under a property.
 2. Provide a more entity-like experience to querying JSON columns.
 
-The entity generator is powerful enough to output such entities, when they are encoded in the metadata. However, we need to heavily alter the metadata to add new embeddable entities and add references to them. It is also perfectly valid to write embeddable entities manually, and just add references to them during entity generation.  We'll explore both types of embeddables and both ways of generating them.
+The entity generator is powerful enough to output such entities, when they are encoded in the metadata. However, you need to heavily alter the metadata to add new embeddable entities and add references to them. It is also perfectly valid to write embeddable entities manually, and just add references to them during entity generation. This guide explores both types of embeddables and both ways of generating them.
 
 #### Embeddable as a group of columns
 
 First, for the grouping of columns. In most of our entities, we have "created_at" and "updated_at" columns, but not quite all of them (case in point: the pivot tables). Let's make it a policy to add an optional "_track" property to any entity with such columns. That property will be an embeddable object having those two fields. We'll also remove them from their original properties, keeping only the copy in the embeddable object. For simplicity, we'll assume the type and defaults of all such columns are correct.
 
-Normally, embeddable objects map to a column formed by using the property as a prefix. In our case, that would be "track_created_at" and "track_updated_at". We don't want that, so we will set the `prefix` option to `false`, so that in the end, we still map to `created_at` and `updated_at`.
+Normally, embeddable objects map to a column formed by using the property as a prefix. In this case, that would be "track_created_at" and "track_updated_at". You don't want that, so set the `prefix` option to `false`, so that in the end, it still maps to `created_at` and `updated_at`.
 
 ```ts title="src/modules/common/track.gen.ts"
 import { EntityMetadata, ReferenceKind, type GenerateOptions } from '@mikro-orm/core';
@@ -2760,7 +2760,7 @@ const settings: GenerateOptions = {
 export default settings;
 ```
 
-If you regenerate the entities now, you'll see "src/modules/common/track.entity.ts" created, and other classes are now referencing it. Since we are creating the class dynamically, we can keep it saved with an `*.entity.ts` extension.
+If you regenerate the entities now, you'll see "src/modules/common/track.entity.ts" created, and other classes are now referencing it. Since the class is being created dynamically, you can keep it saved with an `*.entity.ts` extension.
 
 :::warning
 
@@ -2772,7 +2772,7 @@ When working on bigger projects and doing similar modifications, you should do e
 
 We explored custom types already, and can use them for JSON columns as well. But doing so means you opt out from MikroORM assisted queries to properties within the JSON. With a custom type, the JSON column is just a random object as far as MikroORM is concerned, and you only get to deal with it as an object after having fetched it. You can always write queries to JSON properties, of course (it's still a JSON column), but there will be no auto complete for object member names in your IDE within MikroORM calls. Not so with embeddable properties.
 
-Our schema is currently lacking any JSON properties. Let's add one. We can use one to store social media accounts of users, for example.
+Your schema is currently lacking any JSON properties. Let's add one. You can use one to store social media accounts of users, for example.
 
 Let's start by adding migration and regenerating our entities to include the "social" property.
 
@@ -2800,7 +2800,7 @@ export class Migration00000000000003 extends Migration {
 
 Execute the migration and regenerate the entities. You should see the "social" column defined with runtime type "any". OK, time to add the embeddable.
 
-We can define the embeddable class manually:
+You can define the embeddable class manually:
 
 ```ts title="src/modules/user/social.customEntity.ts"
 import { Embeddable, Property, type Opt } from "@mikro-orm/mysql";
@@ -2843,7 +2843,7 @@ Now, let's modify our `user.gen.ts` to reference the embeddable:
 ...
 ```
 
-Regenerating the entities again, we now have the embeddable representing the contents of the JSON column. Just as with column groups, there is a prefix for the related JSON properties, but by setting "prefix" to "false", we can ensure the props in our entities map to the same properties in the JSON column. And the "object" option being set to "true" is how we set that property to represent a JSON column, rather than a group of columns.
+Regenerating the entities again, you now have the embeddable representing the contents of the JSON column. Just as with column groups, there is a prefix for the related JSON properties, but by setting "prefix" to "false", you can ensure the props in your entities map to the same properties in the JSON column. And the "object" option being set to "true" is how you set that property to represent a JSON column, rather than a group of columns.
 
 :::info Exercise
 
@@ -2851,7 +2851,7 @@ Try to add a check constraint to the JSON column too. The embeddable helps ensur
 
 :::
 
-We should update our user endpoints to accept this new property:
+Update your user endpoints to accept this new property:
 
 ```diff title="src/modules/user/user.routes.ts"
   const signUpPayload = z.object({
@@ -2876,7 +2876,7 @@ We should update our user endpoints to accept this new property:
 
 Sometimes, you want to include some dynamic data per row. Generated columns can help when all the data you need is in the row, but what about when you want to include something non-deterministic (like the current time) or something from other tables (an aggregation perhaps) as the value? In SQL, this can be done with a subquery in your `SELECT` clause. MikroORM allows you to define such subqueries as `@Formula` decorated properties. These are not inferred from the database, but you can add such with `onInitialMetadata` and `onProcessedMetadata`.
 
-Let's add a count of comments to the article listing in that fashion. We'll make the property lazy, so that we don't necessarily compute it every time we get an article.
+Let's add a count of comments to the article listing in that fashion. The property will be lazy, so it's not necessarily computed every time you get an article.
 
 ```diff title="src/modules/article/article.gen.ts"
 ...
@@ -2914,7 +2914,7 @@ And let's regenerate the entities. Lastly, let's ensure we add it to the listing
 
 ## Using the query builder during entity generation
 
-Notice that we had to write the full query as a string. So what happens if we rename the columns in the future? No entity generation or build errors of any kind. We would only get an error at runtime, if we populate the property. That's not good. We can remedy that by constructing the query dynamically based on the metadata, and do the final replacement of the alias at the end. This will ensure we get errors during entity generation if we've renamed the involved table or columns.
+Notice that the full query had to be written as a string. So what happens if the columns are renamed in the future? No entity generation or build errors of any kind. You would only get an error at runtime, if you populate the property. That's not good. You can remedy that by constructing the query dynamically based on the metadata, and do the final replacement of the alias at the end. This will ensure you get errors during entity generation if you've renamed the involved table or columns.
 
 ```diff title="src/modules/article/article.gen.ts"
 import type { GenerateOptions } from '@mikro-orm/core';
@@ -2958,7 +2958,7 @@ If you regenerate the entities now, you'll see a slightly different function in 
 
 ### Running in production mode
 
-We have already added a "check" script to check our code without emitting anything. Let's actually emit our output, and run it with `node` rather than `tsx`:
+A "check" script was already added to check your code without emitting anything. Let's actually emit the output, and run it with `node` rather than `tsx`:
 
 ```json title="package.json"
 "scripts": {

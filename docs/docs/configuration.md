@@ -12,7 +12,7 @@ MikroORM.init({
 });
 ```
 
-We can also use folder based discovery by providing list of paths to the entities we want to discover (globs are supported as well). This way we also need to specify `entitiesTs`, where we point the paths to the TS source files instead of the JS compiled files (see more at [Metadata Providers](./metadata-providers.md)).
+You can also use folder based discovery by providing list of paths to the entities you want to discover (globs are supported as well). This way you also need to specify `entitiesTs`, where you point the paths to the TS source files instead of the JS compiled files (see more at [Metadata Providers](./metadata-providers.md)).
 
 > The `entitiesTs` option is used when running the app in TypeScript mode (e.g. via `tsx` or `swc`), as the ORM needs to discover the TS files. Always specify this option if you use folder/file based discovery.
 
@@ -65,7 +65,7 @@ Read more about this in [Metadata Providers](./metadata-providers.md) sections.
 
 ### Adjusting default type mapping
 
-Since v5.2 we can alter how the ORM picks the default mapped type representation based on the inferred type of property. One example is a mapping of `foo: string` to `varchar(255)`. If we wanted to change this default to a `text` type in postgres, we can use the `discover.getMappedType` callback:
+You can alter how the ORM picks the default mapped type representation based on the inferred type of property. One example is a mapping of `foo: string` to `varchar(255)`. If you wanted to change this default to a `text` type in postgres, you can use the `discover.getMappedType` callback:
 
 ```ts
 import { MikroORM, Platform, Type } from '@mikro-orm/core';
@@ -124,7 +124,7 @@ const orm = await MikroORM.init({
 
 ## Extensions
 
-Since v5.6, the ORM extensions like `SchemaGenerator`, `Migrator` or `EntityGenerator` can be registered via the `extensions` config option. This will be the only supported way to have the shortcuts like `orm.migrator` available in v6, so we no longer need to dynamically require those dependencies or specify them as optional peer dependencies (both of those things cause issues with various bundling tools like Webpack, or those used in Remix or Next.js).
+The ORM extensions like `SchemaGenerator`, `Migrator` or `EntityGenerator` can be registered via the `extensions` config option. This allows the shortcuts like `orm.migrator` to be available without dynamically requiring those dependencies or specifying them as optional peer dependencies (both of those things cause issues with various bundling tools like Webpack, or those used in Remix or Next.js).
 
 ```ts
 import { defineConfig } from '@mikro-orm/postgresql';
@@ -140,7 +140,7 @@ export default defineConfig({
 
 > The `SchemaGenerator` (as well as `MongoSchemaGenerator`) is registered automatically as it does not require any 3rd party dependencies to be installed.
 
-Since v6.3, the extensions are again checked dynamically if not explicitly registered, so it should be enough to have the given package (e.g. `@mikro-orm/seeder`) installed as in v5.
+Since v6.3, the extensions are again checked dynamically if not explicitly registered, so it should be enough to have the given package (e.g. `@mikro-orm/seeder`) installed.
 
 ## Driver
 
@@ -200,7 +200,7 @@ MikroORM.init({
 });
 ```
 
-> From v3.5.1 you can also set the timezone directly in the ORM configuration:
+> You can also set the timezone directly in the ORM configuration:
 >
 > ```ts
 > MikroORM.init({
@@ -325,7 +325,7 @@ Read more about this in [Naming Strategy](./naming-strategy.md) section.
 
 ## Auto-join of 1:1 owners
 
-By default, owning side of 1:1 relation will be auto-joined when you select the inverse side so we can have the reference to it. You can disable this behaviour via `autoJoinOneToOneOwner` configuration toggle.
+By default, owning side of 1:1 relation will be auto-joined when you select the inverse side so you can have the reference to it. You can disable this behaviour via `autoJoinOneToOneOwner` configuration toggle.
 
 ```ts
 MikroORM.init({
@@ -357,7 +357,7 @@ MikroORM.init({
 
 ## Mapping `null` values to `undefined`
 
-By default `null` values from nullable database columns are hydrated as `null`. Using `forceUndefined` we can tell the ORM to convert those `null` values to `undefined` instead.
+By default `null` values from nullable database columns are hydrated as `null`. Using `forceUndefined` you can tell the ORM to convert those `null` values to `undefined` instead.
 
 ```ts
 MikroORM.init({
@@ -382,7 +382,7 @@ await em.find(User, { email: undefined, { profiles: { foo: undefined } } });
 
 After flushing a new entity, all relations are marked as populated, just like if the entity was loaded from the db. This aligns the serialized output of `e.toJSON()` of a loaded entity and just-inserted one.
 
-In v4 this behaviour was disabled by default, so even after the new entity was flushed, the serialized form contained only FKs for its relations. We can opt in to this old behaviour via `populateAfterFlush: false`.
+This behaviour can be disabled via `populateAfterFlush: false`, which would result in the serialized form containing only FKs for relations.
 
 ```ts
 MikroORM.init({
@@ -394,26 +394,28 @@ MikroORM.init({
 
 > This applies only to SELECT_IN strategy, as JOINED strategy implies the inference.
 
-In v4, when we used populate hints in `em.find()` and similar methods, the query for our entity would be analysed and parts of it extracted and used for the population. Following example would find all authors that have books with given IDs, and populate their books collection, again using this PK condition, resulting in only such books being in those collections.
+When you use populate hints in `em.find()` and similar methods, by default all related entities are populated. Consider the following example - it would find all authors that have books with given IDs, and populate their books collection with **all** books, not just those matching the condition:
 
 ```ts
-// this would end up with `Author.books` collections having only books of PK 1, 2, 3
+// finds authors with books 1, 2, 3 - but populates ALL their books
 const a = await em.find(Author, { books: [1, 2, 3] }, { populate: ['books'] });
 ```
 
-Following this example, if we wanted to load all books, we would need a separate `em.populate()` call:
+If you wanted to populate only the books that match the filter condition, you can use `PopulateHint.INFER`:
 
 ```ts
-const a = await em.find(Author, { books: [1, 2, 3] });
-await em.populate(a, ['books']);
+// finds authors with books 1, 2, 3 - and populates ONLY those books
+const a = await em.find(Author, { books: [1, 2, 3] }, {
+  populate: ['books'],
+  populateWhere: PopulateHint.INFER,
+});
 ```
 
-This behaviour changed and is now configurable both globally and locally, via `populateWhere` option. Globally we can specify one of `PopulateHint.ALL` and `PopulateHint.INFER`, the former being the default in v5, the latter being the default behaviour in v4. Locally (via `FindOptions`) we can also specify custom where condition that will be passed to `em.populate()` call.
+This behaviour is configurable both globally and locally via `populateWhere` option. Globally you can specify one of `PopulateHint.ALL` (default) and `PopulateHint.INFER`. Locally (via `FindOptions`) you can also specify custom where condition that will be passed to `em.populate()` call.
 
 ```ts
 MikroORM.init({
-  // defaults to PopulateHint.ALL in v5
-  populateWhere: PopulateHint.INFER, // revert to v4 behaviour
+  populateWhere: PopulateHint.INFER, // infer populate condition from the filter
 });
 ```
 
@@ -443,7 +445,7 @@ Read more about this in [Repositories](./repositories.md) section.
 
 ## Strict Mode and property validation
 
-> Since v4.0.3 the validation needs to be explicitly enabled via `validate: true`. It has performance implications and usually should not be needed, as long as you don't modify your entities via `Object.assign()`.
+> The validation needs to be explicitly enabled via `validate: true`. It has performance implications and usually should not be needed, as long as you don't modify your entities via `Object.assign()`.
 
 `MikroORM` will validate your properties before actual persisting happens. It will try to fix wrong data types for you automatically. If automatic conversion fails, it will throw an error. You can enable strict mode to disable this feature and let ORM throw errors instead. Validation is triggered when persisting the entity.
 
@@ -458,7 +460,7 @@ Read more about this in [Property Validation](property-validation.md) section.
 
 ## Required properties validation
 
-Since v5, new entities are validated on runtime (just before executing insert queries), based on the entity metadata. This means that mongo users now need to use `nullable: true` on their optional properties too).
+New entities are validated on runtime (just before executing insert queries), based on the entity metadata. This means that mongo users need to use `nullable: true` on their optional properties too.
 
 This behaviour can be disabled globally via `validateRequired: false` in the ORM config.
 
@@ -602,7 +604,7 @@ MikroORM.init({
 
 ## Using native private properties
 
-If we want to use native private properties inside entities, the default approach of how MikroORM creates entity instances via `Object.create()` is not viable (more about this in the [issue](https://github.com/mikro-orm/mikro-orm/issues/1226)). To force usage of entity constructors, we can use `forceEntityConstructor` toggle:
+If you want to use native private properties inside entities, the default approach of how MikroORM creates entity instances via `Object.create()` is not viable (more about this in the [issue](https://github.com/mikro-orm/mikro-orm/issues/1226)). To force usage of entity constructors, you can use `forceEntityConstructor` toggle:
 
 ```ts
 MikroORM.init({
@@ -618,7 +620,7 @@ When you create new entity instance via `em.create()`, it will be automatically 
 
 ```ts
 MikroORM.init({
-  persistOnCreate: false, // defaults to true since v5.5
+  persistOnCreate: false, // defaults to true
 });
 ```
 
@@ -636,9 +638,9 @@ MikroORM.init({
 
 ## Using global Identity Map
 
-In v5, it is no longer possible to use the global identity map. This was a common issue that led to weird bugs, as using the global EM without request context is almost always wrong, we always need to have a dedicated context for each request, so they do not interfere.
+It is no longer possible to use the global identity map. This was a common issue that led to weird bugs, as using the global EM without request context is almost always wrong, you always need to have a dedicated context for each request, so they do not interfere.
 
-We still can disable this check via `allowGlobalContext` configuration, or a connected environment variable `MIKRO_ORM_ALLOW_GLOBAL_CONTEXT` - this can be handy especially in unit tests.
+You can still disable this check via `allowGlobalContext` configuration, or a connected environment variable `MIKRO_ORM_ALLOW_GLOBAL_CONTEXT` - this can be handy especially in unit tests.
 
 ```ts
 MikroORM.init({

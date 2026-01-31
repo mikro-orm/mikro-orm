@@ -1,10 +1,10 @@
 ---
-title: Using JSON properties
+title: JSON Properties
 ---
 
 ## Defining JSON properties
 
-Each database driver behaves a bit differently when it comes to JSON properties: Some will parse the values for you automatically, while others will return them as JSON strings. MikroORM tries to unify the experience via [JsonType](./custom-types.md#jsontype). This type will be also used if we specify `type: 'json'`.
+Each database driver behaves a bit differently when it comes to JSON properties: Some will parse the values for you automatically, while others will return them as JSON strings. MikroORM tries to unify the experience via [JsonType](./custom-types.md#jsontype). This type will be also used if you specify `type: 'json'`.
 
 ```ts
 @Entity()
@@ -18,9 +18,9 @@ export class Book {
 
 ## Querying by JSON object properties
 
-> Support for querying by JSON object properties was added in v4.4.2
+> You can query by JSON object properties.
 
-We can query by JSON object properties easily:
+You can query by JSON object properties easily:
 
 ```ts
 const b = await em.findOne(Book, {

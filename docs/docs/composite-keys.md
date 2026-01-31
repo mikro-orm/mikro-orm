@@ -677,7 +677,7 @@ export const OrderItem = new EntitySchema<IOrderItem>({
 
 :::info
 
-By default, a generated pivot table entity is used under the hood to represent the pivot table. Since v5.1 we can provide our own implementation via `pivotEntity` option.
+By default, a generated pivot table entity is used under the hood to represent the pivot table. You can provide your own implementation via `pivotEntity` option.
 
 The pivot table entity needs to have exactly two many-to-one properties, where first one needs to point to the owning entity and the second to the target entity of the many-to-many relation.
 
@@ -691,7 +691,7 @@ export class Order {
 }
 ```
 
-For bidirectional M:N relations, it is enough to specify the `pivotEntity` option only on the owning side. We still need to link the sides via `inversedBy` or `mappedBy` option.
+For bidirectional M:N relations, it is enough to specify the `pivotEntity` option only on the owning side. You still need to link the sides via `inversedBy` or `mappedBy` option.
 
 ```ts
 @Entity()
@@ -703,7 +703,7 @@ export class Product {
 }
 ```
 
-If we want to add new items to such M:N collection, we need to have all non-FK properties to define a database level default value.
+If you want to add new items to such M:N collection, you need to have all non-FK properties define a database level default value.
 
 ```ts
 @Entity()
@@ -721,7 +721,7 @@ export class OrderItem {
 }
 ```
 
-Alternatively, we can work with the pivot entity directly:
+Alternatively, you can work with the pivot entity directly:
 
 ```ts
 // create new item
@@ -736,7 +736,7 @@ await em.persist(item).flush();
 const em.nativeDelete(OrderItem, { order: 123, product: 321 });
 ```
 
-We can as well define the 1:m properties targeting the pivot entity as in the previous example, and use that for modifying the collection, while using the M:N property for easier reading and filtering purposes.
+You can also define the 1:m properties targeting the pivot entity as in the previous example, and use that for modifying the collection, while using the M:N property for easier reading and filtering purposes.
 
 :::
 

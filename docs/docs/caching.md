@@ -24,7 +24,7 @@ const res = await em.createQueryBuilder(Book)
   .getResultList();
 ```
 
-We can change the default expiration as well as provide custom cache adapter in the ORM configuration:
+You can change the default expiration as well as provide custom cache adapter in the ORM configuration:
 
 ```ts
 const orm = await MikroORM.init({
@@ -40,7 +40,7 @@ const orm = await MikroORM.init({
 });
 ```
 
-To clear the cached result, we need to load it with explicit cache key, and later on we can use `em.clearCache(cacheKey)` method.
+To clear the cached result, you need to load it with explicit cache key, and later on you can use `em.clearCache(cacheKey)` method.
 
 ```ts
 // set the cache key to 'book-cache-key', with expiration of 60s

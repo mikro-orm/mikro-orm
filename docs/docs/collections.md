@@ -6,15 +6,15 @@ title: Collections
 
 ## Working with collections
 
-The `Collection` class implements iterator, so we can use `for of` loop to iterate through it.
+The `Collection` class implements iterator, so you can use `for of` loop to iterate through it.
 
-Another way to access collection items is to use bracket syntax like when we access array items. Keep in mind that this approach will not check if the collection is initialized, while using `get` method will throw error in this case.
+Another way to access collection items is to use bracket syntax like when you access array items. Keep in mind that this approach will not check if the collection is initialized, while using `get` method will throw error in this case.
 
-> Note that array access in `Collection` is available only for reading already loaded items, we cannot add new items to `Collection` this way.
+> Note that array access in `Collection` is available only for reading already loaded items, you cannot add new items to `Collection` this way.
 
-To get all entities stored in a `Collection`, we can use `getItems()` method. It will throw in case the `Collection` is not initialized. If we want to disable this validation, we can use `getItems(false)`. This will give us the entity instances managed by the identity map.
+To get all entities stored in a `Collection`, you can use `getItems()` method. It will throw in case the `Collection` is not initialized. If you want to disable this validation, you can use `getItems(false)`. This will give you the entity instances managed by the identity map.
 
-Alternatively we can use `toArray()` which will serialize the `Collection` to an array of DTOs. Modifying those will have no effect on the actual entity instances.
+Alternatively you can use `toArray()` which will serialize the `Collection` to an array of DTOs. Modifying those will have no effect on the actual entity instances.
 
 ```ts
 const author = em.findOne(Author, '...', { populate: ['books'] }); // populating books collection
@@ -75,7 +75,7 @@ console.log(await author.books.loadItems()); // Book[]
 
 ### Removing items from collection
 
-Removing items from a collection does not necessarily imply deleting the target entity, it means we are disconnecting the relation - removing items from collection, not removing entities from database - `Collection.remove()` is not the same as `em.remove()`. When you use `em.assign()` to update entities you can also remove/disconnect entities from a collection, they do not get automatically removed from the database. If we want to delete the entity by removing it from collection, we need to enable `orphanRemoval: true`, which tells the ORM we don't want orphaned entities to exist, so we know those should be removed. Also check the documentation on [Orphan Removal](./cascading.md#orphan-removal)
+Removing items from a collection does not necessarily imply deleting the target entity, it means you are disconnecting the relation - removing items from collection, not removing entities from database - `Collection.remove()` is not the same as `em.remove()`. When you use `em.assign()` to update entities you can also remove/disconnect entities from a collection, they do not get automatically removed from the database. If you want to delete the entity by removing it from collection, you need to enable `orphanRemoval: true`, which tells the ORM you don't want orphaned entities to exist, so those should be removed. Also check the documentation on [Orphan Removal](./cascading.md#orphan-removal)
 
 ## OneToMany Collections
 
@@ -113,11 +113,11 @@ export class Author {
 
 For ManyToMany, SQL drivers use pivot table that holds reference to both entities.
 
-As opposed to them, with MongoDB we do not need to have join tables for `ManyToMany` relations. All references are stored as an array of `ObjectId`s on owning entity.
+As opposed to them, with MongoDB you do not need to have join tables for `ManyToMany` relations. All references are stored as an array of `ObjectId`s on owning entity.
 
 ### Unidirectional
 
-Unidirectional `ManyToMany` relations are defined only on one side, if we define only `entity` attribute, then it will be considered the owning side:
+Unidirectional `ManyToMany` relations are defined only on one side, if you define only `entity` attribute, then it will be considered the owning side:
 
 ```ts
 @ManyToMany(() => Book)
@@ -154,7 +154,7 @@ books = new Collection<Book>(this);
 
 ### Custom pivot table entity
 
-By default, a generated pivot table entity is used under the hood to represent the pivot table. Since v5.1 we can provide our own implementation via `pivotEntity` option.
+By default, a generated pivot table entity is used under the hood to represent the pivot table. You can provide your own implementation via `pivotEntity` option.
 
 The pivot table entity needs to have exactly two many-to-one properties, where first one needs to point to the owning entity and the second to the target entity of the many-to-many relation.
 
@@ -168,7 +168,7 @@ export class Order {
 }
 ```
 
-For bidirectional M:N relations, it is enough to specify the `pivotEntity` option only on the owning side. We still need to link the sides via `inversedBy` or `mappedBy` option.
+For bidirectional M:N relations, it is enough to specify the `pivotEntity` option only on the owning side. You still need to link the sides via `inversedBy` or `mappedBy` option.
 
 ```ts
 @Entity()
@@ -180,7 +180,7 @@ export class Product {
 }
 ```
 
-If we want to add new items to such M:N collection, we need to have all non-FK properties to define a database level default value.
+If you want to add new items to such M:N collection, you need to have all non-FK properties to define a database level default value.
 
 ```ts
 @Entity()
@@ -198,7 +198,7 @@ export class OrderItem {
 }
 ```
 
-Alternatively, we can work with the pivot entity directly:
+Alternatively, you can work with the pivot entity directly:
 
 ```ts
 // create new item
@@ -213,19 +213,19 @@ await em.persist(item).flush();
 const em.nativeDelete(OrderItem, { order: 123, product: 321 });
 ```
 
-We can as well define the 1:m properties targeting the pivot entity as in the previous example, and use that for modifying the collection, while using the M:N property for easier reading and filtering purposes.
+You can as well define the 1:m properties targeting the pivot entity as in the previous example, and use that for modifying the collection, while using the M:N property for easier reading and filtering purposes.
 
 ### Forcing fixed order of collection items
 
-> Since v3 many to many collections does not require having auto increment primary key, that was used to ensure fixed order of collection items.
+> Many to many collections do not require having auto increment primary key.
 
-To preserve fixed order of collections, we can use `fixedOrder: true` attribute, which will start ordering by `id` column. Schema generator will convert the pivot table to have auto increment primary key `id`. We can also change the order column name via `fixedOrderColumn: 'order'`.
+To preserve fixed order of collections, you can use `fixedOrder: true` attribute, which will start ordering by `id` column. Schema generator will convert the pivot table to have auto increment primary key `id`. You can also change the order column name via `fixedOrderColumn: 'order'`.
 
-We can also specify default ordering via `orderBy: { ... }` attribute. This will be used when we fully populate the collection including its items, as it orders by the referenced entity properties instead of pivot table columns (which `fixedOrderColumn` is). On the other hand, `fixedOrder` is used to maintain the insert order of items instead of ordering by some property.
+You can also specify default ordering via `orderBy: { ... }` attribute. This will be used when you fully populate the collection including its items, as it orders by the referenced entity properties instead of pivot table columns (which `fixedOrderColumn` is). On the other hand, `fixedOrder` is used to maintain the insert order of items instead of ordering by some property.
 
 ## Populating references
 
-Sometimes we might want to know only what items are part of a collection, and we don't care about the values of those items. For this, we can populate the collection only with references:
+Sometimes you might want to know only what items are part of a collection, and you don't care about the values of those items. For this, you can populate the collection only with references:
 
 ```ts
 const book1 = await em.findOne(Book, 1, { populate: ['tags:ref'] });
@@ -241,7 +241,7 @@ console.log(wrap(book2.tags[0]).isInitialized()); // false
 
 ## Propagation of Collection's add() and remove() operations
 
-When we use one of `Collection.add()` method, the item is added to given collection, and this action is also propagated to its counterpart.
+When you use one of `Collection.add()` method, the item is added to given collection, and this action is also propagated to its counterpart.
 
 ```ts
 // one to many
@@ -266,9 +266,9 @@ tag.books.add(book);
 console.log(book.tags.contains(tag)); // true
 ```
 
-> Since v5.2.2 propagation of adding new items to inverse side M:N relation also works if the owning collection is not initialized. For propagation of remove operation, both sides still have to be initialized.
+> Propagation of adding new items to inverse side M:N relation also works if the owning collection is not initialized. For propagation of remove operation, both sides still have to be initialized.
 
-> Although this propagation works also for M:N inverse side, we should always use owning side to manipulate the collection.
+> Although this propagation works also for M:N inverse side, you should always use owning side to manipulate the collection.
 
 Same applies for `Collection.remove()`.
 
@@ -323,7 +323,7 @@ class Book {
 
 ## Filtering Collections
 
-Collections have a `matching` method that allows to slice parts of data from a collection. By default, it will return the list of entities based on the query. We can use the `store` boolean parameter to save this list into the collection items - this will mark the collection as `readonly`, methods like `add` or `remove` will throw.
+Collections have a `matching` method that allows to slice parts of data from a collection. By default, it will return the list of entities based on the query. You can use the `store` boolean parameter to save this list into the collection items - this will mark the collection as `readonly`, methods like `add` or `remove` will throw.
 
 ```ts
 const a = await em.findOneOrFail(Author, 1);

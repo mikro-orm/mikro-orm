@@ -5,13 +5,13 @@ sidebar_label: Entity Manager
 
 ## Persist and Flush
 
-There are 2 methods we should first describe to understand how persisting works in MikroORM: `em.persist()` and `em.flush()`.
+There are 2 methods you should first understand to learn how persisting works in MikroORM: `em.persist()` and `em.flush()`.
 
 `em.persist(entity)` is used to mark new entities for future persisting. It will make the entity managed by given `EntityManager` and once `flush` will be called, it will be written to the database.
 
 To understand `flush`, lets first define what managed entity is: An entity is managed if it’s fetched from the database (via `em.find()`, `em.findOne()` or via other managed entity) or registered as new through `em.persist()`.
 
-`em.flush()` will go through all managed entities, compute appropriate change sets and perform according database queries. As an entity loaded from database becomes managed automatically, we do not have to call persist on those, and flush is enough to update them.
+`em.flush()` will go through all managed entities, compute appropriate change sets and perform according database queries. As an entity loaded from database becomes managed automatically, you do not have to call persist on those, and flush is enough to update them.
 
 ```ts
 const book = await em.findOne(Book, 1);
@@ -23,10 +23,10 @@ await em.flush();
 
 ## Persisting and Cascading
 
-To save entity state to database, we need to persist it. Persist determines whether to use `insert` or `update` and computes appropriate change-set. Entity references that are not persisted yet (does not have identifier) will be cascade persisted automatically.
+To save entity state to database, you need to persist it. Persist determines whether to use `insert` or `update` and computes appropriate change-set. Entity references that are not persisted yet (does not have identifier) will be cascade persisted automatically.
 
 ```ts
-// use constructors in our entities for required parameters
+// use constructors in your entities for required parameters
 const author = new Author('Jon Snow', 'snow@wall.st');
 author.born = new Date();
 
@@ -91,13 +91,13 @@ console.log('userRef is initialized:', wrap(userRef).isInitialized()); // true
 
 > You can also extend the `BaseEntity` provided by MikroORM. It defines all the public methods available via `wrap()` helper, so you could do `userRef.isInitialized()` or `userRef.init()`.
 
-The `WrappedEntity` instance also holds the state of the entity at the time it was loaded or flushed - this state is then used by the Unit of Work during flush to compute the differences. Another use case is serialization, we can use the `toObject()`, `toPOJO()` and `toJSON()` methods to convert the entity instance to a plain JavaScript object.
+The `WrappedEntity` instance also holds the state of the entity at the time it was loaded or flushed - this state is then used by the Unit of Work during flush to compute the differences. Another use case is serialization, you can use the `toObject()`, `toPOJO()` and `toJSON()` methods to convert the entity instance to a plain JavaScript object.
 
 ## Removing entities
 
-To delete entities via `EntityManager`, we have two possibilities:
+To delete entities via `EntityManager`, you have two possibilities:
 
-1. Mark entity instance via `em.remove()` - this means we first need to have the entity instance. But don't worry, you can get one even without loading it from the database - via `em.getReference()`.
+1. Mark entity instance via `em.remove()` - this means you first need to have the entity instance. But don't worry, you can get one even without loading it from the database - via `em.getReference()`.
 2. Fire `DELETE` query via `em.nativeDelete()` - when all you want is a simple delete query, it can be simple as that.
 
 Let's test the first approach with removing by entity instance:
@@ -110,7 +110,7 @@ await em.remove(book1).flush();
 
 ## Fetching Entities with EntityManager
 
-To fetch entities from database we can use `em.find()` and `em.findOne()`:
+To fetch entities from database you can use `em.find()` and `em.findOne()`:
 
 ```ts
 const author = await em.findOne(Author, 123);
@@ -140,7 +140,7 @@ const books = await em.findAll(Book, {
 });
 ```
 
-To populate entity relations, we can use `populate` parameter.
+To populate entity relations, you can use `populate` parameter.
 
 ```ts
 const books = await em.findAll(Book, {
@@ -156,7 +156,7 @@ You can also use `em.populate()` helper to populate relations (or to ensure they
 const authors = await em.createQueryBuilder(Author).select('*').getResult();
 await em.populate(authors, ['books.tags']);
 
-// now our Author entities will have `books` collections populated,
+// now the Author entities will have `books` collections populated,
 // as well as they will have their `tags` collections populated.
 console.log(authors[0].books[0].tags[0]); // initialized BookTag
 ```
@@ -191,13 +191,13 @@ const users = await em.find(User, [1, 2, 3, 4, 5]);
 const user1 = await em.findOne(User, 1);
 ```
 
-As we can see in the fifth example, one can also use operators like `$and`, `$or`, `$gte`, `$gt`, `$lte`, `$lt`, `$in`, `$nin`, `$eq`, `$ne`, `$like`, `$re` and `$fulltext`. More about that can be found in [Query Conditions](./query-conditions.md) section.
+As you can see in the fifth example, you can also use operators like `$and`, `$or`, `$gte`, `$gt`, `$lte`, `$lt`, `$in`, `$nin`, `$eq`, `$ne`, `$like`, `$re` and `$fulltext`. More about that can be found in [Query Conditions](./query-conditions.md) section.
 
 #### Using custom classes in `FilterQuery`
 
-If we decide to abstract the filter options in our own object then we might run into the problem that the find option does not return the results we'd expect. This is due to the fact that the `FilterQuery` should be provided as a plain object (POJO), and not a class instance with prototype.
+If you decide to abstract the filter options in your own object then you might run into the problem that the find option does not return the results you'd expect. This is due to the fact that the `FilterQuery` should be provided as a plain object (POJO), and not a class instance with prototype.
 
-If we want to provide our own `FilterQuery` DTO, then our DTO class should extend the `PlainObject` class. This way MikroORM knows it should be treated as such.
+If you want to provide your own `FilterQuery` DTO, then your DTO class should extend the `PlainObject` class. This way MikroORM knows it should be treated as such.
 
 ```ts
 import { PlainObject } from '@mikro-orm/core';
@@ -213,11 +213,11 @@ const res = await em.find(Author, where);
 
 #### Mitigating `Type instantiation is excessively deep and possibly infinite.ts(2589)` error
 
-Sometimes we might be facing TypeScript errors caused by too complex query for it to properly infer all types. Usually it can be solved by providing the type argument explicitly.
+Sometimes you might be facing TypeScript errors caused by too complex query for it to properly infer all types. Usually it can be solved by providing the type argument explicitly.
 
 You can also opt in to use repository instead, as there the type inference should not be problematic.
 
-> As a last resort, we can always type cast the query to `any`.
+> As a last resort, you can always type cast the query to `any`.
 
 ```ts
 const books = await em.find<Book>(Book, { ... our complex query ... });
@@ -227,11 +227,11 @@ const books = await em.getRepository(Book).find({ ... our complex query ... });
 const books = await em.find<any>(Book, { ... our complex query ... }) as Book[];
 ```
 
-Another problem we might be facing is `RangeError: Maximum call stack size exceeded` error thrown during TypeScript compilation (usually from file `node_modules/typescript/lib/typescript.js`). The solution to this is the same, just provide the type argument explicitly.
+Another problem you might be facing is `RangeError: Maximum call stack size exceeded` error thrown during TypeScript compilation (usually from file `node_modules/typescript/lib/typescript.js`). The solution to this is the same, just provide the type argument explicitly.
 
 ### Searching by referenced entity fields
 
-You can also search by referenced entity properties. Simply pass nested where condition like this and all requested relationships will be automatically joined. Currently, it will only join them so we can search and sort by those. To populate entities, do not forget to pass the populate parameter as well.
+You can also search by referenced entity properties. Simply pass nested where condition like this and all requested relationships will be automatically joined. Currently, it will only join them so you can search and sort by those. To populate entities, do not forget to pass the populate parameter as well.
 
 ```ts
 // find author of a book that has tag specified by name
@@ -244,7 +244,7 @@ console.log(author.books[0].tags.isInitialized()); // true, because it was popul
 console.log(author.books[0].tags[0].isInitialized()); // true, because it was populated
 ```
 
-> This feature is fully available only for SQL drivers. In MongoDB always we need to query from the owning side - so in the example above, first load book tag by name, then associated book, then the author. Another option is to denormalize the schema.
+> This feature is fully available only for SQL drivers. In MongoDB you always need to query from the owning side - so in the example above, first load book tag by name, then associated book, then the author. Another option is to denormalize the schema.
 
 ### Partial loading
 
@@ -295,7 +295,7 @@ const author = await em.findOne(Author, '...', {
 
 ### Fetching Paginated Results
 
-If we are going to paginate our results, we can use `em.findAndCount()` that will return total count of entities before applying limit and offset.
+If you are going to paginate your results, you can use `em.findAndCount()` that will return total count of entities before applying limit and offset.
 
 ```ts
 const [authors, count] = await em.findAndCount(Author, { ... }, { limit: 10, offset: 50 });
@@ -305,7 +305,7 @@ console.log(count); // total count, e.g. 1327
 
 ### Cursor-based pagination
 
-As an alternative to the offset based pagination with `limit` and `offset`, we can paginate based on a cursor. A cursor is an opaque string that defines specific place in ordered entity graph. You can use `em.findByCursor()` to access those options. Under the hood, it will call `em.find()` and `em.count()` just like the `em.findAndCount()` method, but will use the cursor options instead.
+As an alternative to the offset based pagination with `limit` and `offset`, you can paginate based on a cursor. A cursor is an opaque string that defines specific place in ordered entity graph. You can use `em.findByCursor()` to access those options. Under the hood, it will call `em.find()` and `em.count()` just like the `em.findAndCount()` method, but will use the cursor options instead.
 
 Supports `before`, `after`, `first` and `last` options while disallowing `limit` and `offset`. Explicit `orderBy` option is required. It also supports the `includeCount` (default to true) option. When explicitly set to false, entity manager will perform a `find` instead of `findAndCount`. The cursor `totalCount` will be set to null instead. This can be used as a performance optimization to avoid an expensive SQL count query, when knowing the exact number of pages is not important.
 
@@ -405,7 +405,7 @@ To stream raw results, use `QueryBuilder.stream()` or `driver.stream()` methods 
 
 ### Handling Not Found Entities
 
-When we call `em.findOne()` and no entity is found based on our criteria, `null` will be returned. If we rather have an `Error` instance thrown, we can use `em.findOneOrFail()`:
+When you call `em.findOne()` and no entity is found based on your criteria, `null` will be returned. If you rather have an `Error` instance thrown, you can use `em.findOneOrFail()`:
 
 ```ts
 const author = await em.findOne(Author, { name: 'does-not-exist' });
@@ -427,7 +427,7 @@ try {
     failHandler: (entityName: string, where: Record<string, any> | IPrimaryKey) => new Error(`Failed: ${entityName} in ${util.inspect(where)}`)
   });
 } catch (e) {
-  console.error(e); // our custom error
+  console.error(e); // your custom error
 }
 ```
 
@@ -454,7 +454,7 @@ Read more about this in [Using raw SQL query fragments](./raw-queries.md) sectio
 
 ## Updating references (not loaded entities)
 
-Since v5.5, we can update references via Unit of Work, just like if it was a loaded entity. This way it is possible to issue update queries without loading the entity.
+You can update references via Unit of Work, just like if it was a loaded entity. This way it is possible to issue update queries without loading the entity.
 
 ```ts
 const ref = em.getReference(Author, 123);
@@ -463,7 +463,7 @@ ref.email = 'new email';
 await em.flush();
 ```
 
-This is a rough equivalent to calling `em.nativeUpdate()`, with one significant difference - we use the flush operation which handles event execution, so all life cycle hooks as well as flush events will be fired.
+This is a rough equivalent to calling `em.nativeUpdate()`, with one significant difference - it uses the flush operation which handles event execution, so all life cycle hooks as well as flush events will be fired.
 
 ## Atomic updates via `raw()` helper
 
@@ -487,7 +487,7 @@ JSON.stringify(order); // throws, raw value cannot be serialized
 
 ## Upsert
 
-We can use `em.upsert()` create or update the entity, based on whether it is already present in the database. This method performs an `insert on conflict merge` query ensuring the database is in sync, returning a managed entity instance. The method accepts either `entityName` together with the entity `data`, or just entity instance.
+You can use `em.upsert()` to create or update the entity, based on whether it is already present in the database. This method performs an `insert on conflict merge` query ensuring the database is in sync, returning a managed entity instance. The method accepts either `entityName` together with the entity `data`, or just entity instance.
 
 ```ts
 // insert into "author" ("age", "email") values (33, 'foo@bar.com') on conflict ("email") do update set "age" = 33
@@ -511,7 +511,7 @@ const author = em.create(Author, { email: 'foo@bar.com', age: 33 });
 await em.upsert(author);
 ```
 
-Since v5.6 there is also `em.upsertMany()` with similar signature:
+There is also `em.upsertMany()` with similar signature:
 
 ```ts
 const [author1, author2, author3] = await em.upsertMany(Author, [
@@ -568,7 +568,7 @@ await em.upsert(Document, {
 
 ## Refreshing entity state
 
-We can use `em.refresh(entity)` to synchronize the entity state with database. This is a shortcut for calling `em.findOne()` with `refresh: true` and disabled auto-flush.
+You can use `em.refresh(entity)` to synchronize the entity state with database. This is a shortcut for calling `em.findOne()` with `refresh: true` and disabled auto-flush.
 
 > This results in loss of any changes done to that entity.
 
@@ -631,9 +631,9 @@ await em.flush();
 
 ## Disabling identity map and change set tracking
 
-Sometimes we might want to disable identity map and change set tracking for some query. This is possible via `disableIdentityMap` option. Behind the scenes, it will create new context, load the entities inside that, and clear it afterwards, so the main identity map will stay clean.
+Sometimes you might want to disable identity map and change set tracking for some query. This is possible via `disableIdentityMap` option. Behind the scenes, it will create new context, load the entities inside that, and clear it afterwards, so the main identity map will stay clean.
 
-> As opposed to _managed_ entities, such entities are called _detached_. To be able to work with them, we first need to merge them via `em.merge()`.
+> As opposed to _managed_ entities, such entities are called _detached_. To be able to work with them, you first need to merge them via `em.merge()`.
 
 ```ts
 const users = await em.find(User, { email: 'foo@bar.baz' }, {
@@ -648,13 +648,13 @@ await em.flush(); // calling flush have no effect, as the entity is not managed
 
 ## Entity Repositories
 
-Although we can use `EntityManager` directly, a more convenient way is to use [`EntityRepository` instead](https://mikro-orm.io/repositories/). You can register your repositories in dependency injection container like [InversifyJS](http://inversify.io/) so we do not need to get them from `EntityManager` each time.
+Although you can use `EntityManager` directly, a more convenient way is to use [`EntityRepository` instead](https://mikro-orm.io/repositories/). You can register your repositories in dependency injection container like [InversifyJS](http://inversify.io/) so you do not need to get them from `EntityManager` each time.
 
 For more examples, take a look at [`tests/EntityManager.mongo.test.ts`](https://github.com/mikro-orm/mikro-orm/blob/master/tests/EntityManager.mongo.test.ts) or [`tests/EntityManager.mysql.test.ts`](https://github.com/mikro-orm/mikro-orm/blob/master/tests/EntityManager.mysql.test.ts).
 
 ## Custom Property Ordering
 
-Entity properties provide some support for custom ordering via the `customOrder` attribute. This is useful for values that have a natural order that doesn't align with their underlying data representation. Consider the code below, the natural sorting order would be `high`, `low`, `medium`. However, we can provide the `customOrder` to indicate how the enum values should be sorted.
+Entity properties provide some support for custom ordering via the `customOrder` attribute. This is useful for values that have a natural order that doesn't align with their underlying data representation. Consider the code below, the natural sorting order would be `high`, `low`, `medium`. However, you can provide the `customOrder` to indicate how the enum values should be sorted.
 
 ```ts
 enum Priority {

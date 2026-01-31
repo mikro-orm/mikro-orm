@@ -427,7 +427,7 @@ Notice how:
 
 There are few types provided by MikroORM. All of them aim to provide similar experience among all the drivers, even if the particular feature is not supported out of box by the driver.
 
-Since v5, we can also use the `type` map exported from the `core` package. It contains a map of all mapped types provided by the ORM, allowing autocomplete.
+You can also use the `type` map exported from the `core` package. It contains a map of all mapped types provided by the ORM, allowing autocomplete.
 
 ```ts
 import { Property, types } from '@mikro-orm/core';
@@ -475,7 +475,7 @@ In PostgreSQL and MongoDB, it uses native arrays, otherwise it concatenates the 
 
 By default, array of strings is returned from the type. You can also have arrays of numbers or other data types - to do so, you will need to implement custom `hydrate` method that is used for converting the array values to the right type.
 
-> `ArrayType` will be used automatically if `type` is set to `array` (default behaviour of reflect-metadata) or `string[]` or `number[]` (either manually or via ts-morph). In case of `number[]` it will automatically handle the conversion to numbers. This means that the following examples would both have the `ArrayType` used automatically (but with reflect-metadata we would have a string array for both unless we specify the type manually as `type: 'number[]')
+> `ArrayType` will be used automatically if `type` is set to `array` (default behaviour of reflect-metadata) or `string[]` or `number[]` (either manually or via ts-morph). In case of `number[]` it will automatically handle the conversion to numbers. This means that the following examples would both have the `ArrayType` used automatically (but with reflect-metadata you would have a string array for both unless you specify the type manually as `type: 'number[]')
 
 ```ts
 @Property({ type: ArrayType, nullable: true })
@@ -575,7 +575,7 @@ blob?: Uint8Array;
 
 ### JsonType
 
-To store objects we can use `JsonType`. As some drivers are handling objects automatically and some don't, this type will handle the serialization in a driver independent way (calling `parse` and `stringify` only when needed).
+To store objects you can use `JsonType`. As some drivers are handling objects automatically and some don't, this type will handle the serialization in a driver independent way (calling `parse` and `stringify` only when needed).
 
 ```ts
 @Property({ type: JsonType, nullable: true })
@@ -584,7 +584,7 @@ object?: { foo: string; bar: number };
 
 ### DateType
 
-To store dates without time information, we can use `DateType`. It does use `date` column type and maps it to a `string`.
+To store dates without time information, you can use `DateType`. It uses the `date` column type and maps it to a `string`.
 
 ```ts
 @Property({ type: DateType, nullable: true })
@@ -593,7 +593,7 @@ born?: string;
 
 ### TimeType
 
-As opposed to the `DateType`, to store only the time information, we can use `TimeType`. It will use the `time` column type, the runtime type is string.
+As opposed to the `DateType`, to store only the time information, you can use `TimeType`. It will use the `time` column type, the runtime type is string.
 
 ```ts
 @Property({ type: TimeType, nullable: true })

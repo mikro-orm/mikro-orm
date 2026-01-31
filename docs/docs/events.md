@@ -3,228 +3,371 @@ title: Events and Lifecycle Hooks
 sidebar_label: Events and Hooks
 ---
 
-There are two ways to hook to the lifecycle of an entity:
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
 
-- **Lifecycle hooks** are methods defined on an entity prototype.
-- **EventSubscriber**s are classes that can be used to hook to multiple entities or when you do not want to have the method present on an entity prototype.
+There are two ways to hook into the lifecycle of an entity:
 
-> Hooks are internally executed the same way as subscribers.
+- **Lifecycle hooks** are methods defined on the entity that run at specific points in the entity's lifecycle.
+- **EventSubscribers** are separate classes that can listen to events from multiple entities.
 
-> Hooks are executed before subscribers.
+Both approaches support the same events. Hooks are executed before subscribers.
 
-## Hooks
+## Available Events
 
-You can use lifecycle hooks to run arbitrary code when an entity gets persisted. You can mark any of entity methods with them, and multiple methods can be marked with the same hook.
+| Event | When it fires |
+|-------|---------------|
+| `onInit` | When an entity instance is created (via `em.create()` or when loaded from database) |
+| `onLoad` | When an entity is fully loaded from the database (not for references) |
+| `beforeCreate` | Before a new entity is inserted into the database |
+| `afterCreate` | After a new entity is inserted and merged into the identity map |
+| `beforeUpdate` | Before an existing entity is updated in the database |
+| `afterUpdate` | After an entity is updated and changes are merged |
+| `beforeUpsert` | Before `em.upsert()` or `em.upsertMany()` executes |
+| `afterUpsert` | After upsert completes, receives the managed entity |
+| `beforeDelete` | Before an entity is deleted from the database |
+| `afterDelete` | After an entity is deleted and removed from identity map |
 
-All hooks support async methods with one exception - `@OnInit`.
+## Defining Hooks
 
-- `@OnInit` is fired when new instance of entity is created, either manually `em.create()`, or automatically when new entities are loaded from database
+<Tabs groupId="entity-def" defaultValue="define-entity" values={[
+  {label: 'defineEntity', value: 'define-entity'},
+  {label: 'Decorators', value: 'decorators'},
+]}>
+<TabItem value="define-entity">
 
-- `@OnLoad` is fired when new entity is loaded into context (e.g. via `em.find()` or `em.populate()`). As opposed to `@OnInit` this will be fired only for fully loaded entities, not references, and this hook can be async.
+With `defineEntity`, use the `addHook` method to register hook handlers:
 
-- `@BeforeCreate()` and `@BeforeUpdate()` is fired right before you persist an entity in database
+```ts title="./entities/Article.ts"
+import { defineEntity, InferEntity, EventArgs, p } from '@mikro-orm/core';
 
-- `@AfterCreate()` and `@AfterUpdate()` is fired right after an entity is updated in database and merged to identity map. Since this event entity will have reference to `EntityManager` and will be enabled to call `wrap(entity).init()` method (including all entity references and collections).
+export const Article = defineEntity({
+  name: 'Article',
+  properties: {
+    id: p.integer().primary(),
+    title: p.string(),
+    slug: p.string().unique(),
+    updatedAt: p.datetime(),
+  },
+});
 
-- `@BeforeDelete()` is fired right before you delete the record from database. It is fired only when removing entity or entity reference, not when deleting records by query.
+type IArticle = InferEntity<typeof Article>;
 
-- `@AfterDelete()` is fired right after the record gets deleted from database, and it is unset from the identity map.
+Article.addHook('beforeCreate', async (args: EventArgs<IArticle>) => {
+  const article = args.entity;
+  if (!article.slug) {
+    article.slug = article.title.toLowerCase().replace(/\s+/g, '-');
+  }
+});
 
-> `@OnInit` is not fired when you create an entity manually via its constructor (`new MyEntity()`)
-
-> `@OnInit` can be sometimes fired twice, once when an entity reference is created, and once after its populated. To distinguish between those you can use `wrap(this).isInitialized()`.
-
-### Upsert hooks
-
-`em.upsert()` and `em.upsertMany` cannot fire the create/update hooks, as you don't know if the query is an insert or update, those methods offer their own hooks - `beforeUpsert` and `afterUpsert`. The `beforeUpsert` event might provide a DTO instead of entity instance, based on how you call the upsert method. You can use the `EventArgs.meta` object to detect what kind of entity it belongs to. `afterUpsert` event will always receive already managed entity instance.
-
-### Collections and `@OnUpdate` {#collections-and-on-update}
-
-The `@OnUpdate` hook is fired when some values of an entity change and cause an `UPDATE` query. This means that only changes to the scalar properties and owning sides of M:1 and 1:1 relations are considered here - changes to `Collection`s won't trigger an update event.
-
-When you modify a 1:M collection, you are in fact changing the owning side of this relation, which is the M:1 property on the other entity (which will get the event triggered).
-
-For M:N relations with pivot entities (all SQL drivers), you won't get the update event fired on either of the sides, as the changes are made to the pivot table only. You can get the updated collection via `uow.getCollectionUpdates()`, and check how their last known database state looked like via `Collection.getSnapshot()`.
-
-### Limitations of lifecycle hooks
-
-Hooks (as well as event subscribers) are executed inside the commit action of unit of work, after all change sets are computed. This means that it is not possible to create new entities as usual from inside the hook. Calling `em.flush()` from hooks will result in validation error. Calling `em.persist()` can result in undefined behavior like locking errors.
-
-> The **internal** instance of `EntityManager` accessible under `wrap(this, true).__em` is not meant for public usage.
-
-## EventSubscriber
-
-Use `EventSubscriber` to hook to multiple entities or if you do not want to pollute the entity prototype. All methods are optional, if you omit the `getSubscribedEntities()` method, it means you are subscribing to all entities.
-
-> `getSubscribedEntities()` has no effect on flush and transaction events, those are always fired, since flush is not bound to an entity type.
-
-Subscribers are normally registered globally, via the ORM config:
-
-```ts
-MikroORM.init({
-  subscribers: [new AuthorSubscriber()],
+Article.addHook('beforeUpdate', async (args: EventArgs<IArticle>) => {
+  args.entity.updatedAt = new Date();
 });
 ```
 
-Alternatively, you register them dynamically via `em.getEventManager().registerSubscriber()`:
+The `addHook` method must be called after the entity is defined so that the `IArticle` type can be inferred from `typeof Article`.
 
-```ts
-em.getEventManager().registerSubscriber(new AuthorSubscriber());
+</TabItem>
+<TabItem value="decorators">
+
+With decorators, mark entity methods with hook decorators:
+
+```ts title="./entities/Article.ts"
+import { Entity, PrimaryKey, Property, BeforeCreate, BeforeUpdate } from '@mikro-orm/core';
+
+@Entity()
+export class Article {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property()
+  title!: string;
+
+  @Property({ unique: true })
+  slug!: string;
+
+  @Property()
+  updatedAt?: Date;
+
+  @BeforeCreate()
+  generateSlug() {
+    if (!this.slug) {
+      this.slug = this.title.toLowerCase().replace(/\s+/g, '-');
+    }
+  }
+
+  @BeforeUpdate()
+  updateTimestamp() {
+    this.updatedAt = new Date();
+  }
+
+}
 ```
 
-The following example shows a subscriber which implements all the supported events, and since there is no `getSubscribedEntities` method, it will be called for all entity types:
+Multiple methods can have the same hook decorator.
+
+</TabItem>
+</Tabs>
+
+### Hook Method Signatures
+
+All hooks receive an `EventArgs` object and can be async (except `onInit`):
 
 ```ts
-import { EventArgs, TransactionEventArgs, EventSubscriber } from '@mikro-orm/core';
+async function myHook(args: EventArgs<MyEntity>): Promise<void> {
+  const entity = args.entity;      // the entity instance
+  const em = args.em;              // the EntityManager
+  const changeSet = args.changeSet; // available during flush (create/update/delete)
+}
+```
 
-export class EverythingSubscriber implements EventSubscriber {
+### Notes on Specific Hooks
 
-  // entity life cycle events
-  onInit<T>(args: EventArgs<T>): void { ... }
-  async onLoad<T>(args: EventArgs<T>): Promise<void> { ... }
-  async beforeCreate<T>(args: EventArgs<T>): Promise<void> { ... }
-  async afterCreate<T>(args: EventArgs<T>): Promise<void> { ... }
-  async beforeUpdate<T>(args: EventArgs<T>): Promise<void> { ... }
-  async afterUpdate<T>(args: EventArgs<T>): Promise<void> { ... }
-  async beforeUpsert<T>(args: EventArgs<T>): Promise<void> { ... }
-  async afterUpsert<T>(args: EventArgs<T>): Promise<void> { ... }
-  async beforeDelete<T>(args: EventArgs<T>): Promise<void> { ... }
-  async afterDelete<T>(args: EventArgs<T>): Promise<void> { ... }
+**`onInit`**:
+- Fired when entities are created via `em.create()` or loaded from database
+- Not fired when using `new Entity()` directly
+- May fire twice for references (once on reference creation, once when populated) - use `wrap(this).isInitialized()` to distinguish
+- Must be synchronous
 
-  // flush events
-  async beforeFlush<T>(args: FlushEventArgs): Promise<void> { ... }
-  async onFlush<T>(args: FlushEventArgs): Promise<void> { ... }
-  async afterFlush<T>(args: FlushEventArgs): Promise<void> { ... }
+**`onLoad`**:
+- Only fires for fully loaded entities, not references
+- Can be async
 
-  // transaction events
-  async beforeTransactionStart(args: TransactionEventArgs): Promise<void> { ... }
-  async afterTransactionStart(args: TransactionEventArgs): Promise<void> { ... }
-  async beforeTransactionCommit(args: TransactionEventArgs): Promise<void> { ... }
-  async afterTransactionCommit(args: TransactionEventArgs): Promise<void> { ... }
-  async beforeTransactionRollback(args: TransactionEventArgs): Promise<void> { ... }
-  async afterTransactionRollback(args: TransactionEventArgs): Promise<void> { ... }
+**`beforeUpdate` / `afterUpdate`**:
+- Only fires when scalar properties or owning sides of relations change
+- Collection changes don't trigger update events (see [Collections and Updates](#collections-and-updates))
+
+### Upsert Hooks
+
+Since `em.upsert()` doesn't know if the operation will be an insert or update, it has dedicated hooks:
+
+- `beforeUpsert` - may receive a DTO instead of entity instance
+- `afterUpsert` - always receives the managed entity instance
+
+Use `EventArgs.meta` to identify the entity type when receiving a DTO.
+
+### Collections and Updates
+
+The `beforeUpdate`/`afterUpdate` hooks fire when an `UPDATE` query is generated. This only happens for changes to:
+- Scalar properties
+- Owning sides of M:1 and 1:1 relations
+
+Collection changes don't trigger update events because:
+- **1:M relations**: Changes affect the M:1 side on the related entity (which gets the event)
+- **M:N relations**: Changes only affect the pivot table
+
+To observe collection changes during flush, use `uow.getCollectionUpdates()` in a flush event subscriber.
+
+### Limitations
+
+Hooks execute inside the Unit of Work commit phase, after change sets are computed:
+
+- **Don't call `em.flush()`** - throws a validation error
+- **Don't call `em.persist()`** - can cause undefined behavior
+- **To create new entities**, use the `beforeFlush` event instead (see [Flush Events](#flush-events))
+
+## Event Subscribers
+
+Use `EventSubscriber` when you want to:
+- Listen to events from multiple entity types
+- Keep event logic separate from entity definitions
+- Access the full `EventArgs` including change sets
+
+### Registering Subscribers
+
+Register globally in the ORM config:
+
+```ts
+MikroORM.init({
+  subscribers: [new ArticleSubscriber(), new AuditSubscriber()],
+});
+```
+
+Or dynamically at runtime:
+
+```ts
+em.getEventManager().registerSubscriber(new ArticleSubscriber());
+```
+
+### Creating a Subscriber
+
+```ts
+import { EventSubscriber, EventArgs } from '@mikro-orm/core';
+import { Article } from './entities/Article.js';
+
+export class ArticleSubscriber implements EventSubscriber<Article> {
+
+  // Only subscribe to Article events
+  getSubscribedEntities() {
+    return [Article];
+  }
+
+  async beforeCreate(args: EventArgs<Article>) {
+    console.log('Creating article:', args.entity.title);
+  }
+
+  async afterUpdate(args: EventArgs<Article>) {
+    // args.changeSet contains the changes
+    console.log('Updated fields:', Object.keys(args.changeSet?.payload ?? {}));
+  }
+
+}
+```
+
+Omit `getSubscribedEntities()` to subscribe to all entities:
+
+```ts
+export class AuditSubscriber implements EventSubscriber {
+
+  async afterCreate(args: EventArgs<unknown>) {
+    console.log('Created:', args.changeSet?.name, args.changeSet?.entity);
+  }
+
+}
+```
+
+### Full Subscriber Interface
+
+```ts
+import { EventArgs, FlushEventArgs, TransactionEventArgs, EventSubscriber } from '@mikro-orm/core';
+
+export class FullSubscriber implements EventSubscriber {
+
+  // Entity lifecycle events
+  onInit<T>(args: EventArgs<T>): void { }
+  async onLoad<T>(args: EventArgs<T>): Promise<void> { }
+  async beforeCreate<T>(args: EventArgs<T>): Promise<void> { }
+  async afterCreate<T>(args: EventArgs<T>): Promise<void> { }
+  async beforeUpdate<T>(args: EventArgs<T>): Promise<void> { }
+  async afterUpdate<T>(args: EventArgs<T>): Promise<void> { }
+  async beforeUpsert<T>(args: EventArgs<T>): Promise<void> { }
+  async afterUpsert<T>(args: EventArgs<T>): Promise<void> { }
+  async beforeDelete<T>(args: EventArgs<T>): Promise<void> { }
+  async afterDelete<T>(args: EventArgs<T>): Promise<void> { }
+
+  // Flush events
+  async beforeFlush(args: FlushEventArgs): Promise<void> { }
+  async onFlush(args: FlushEventArgs): Promise<void> { }
+  async afterFlush(args: FlushEventArgs): Promise<void> { }
+
+  // Transaction events
+  async beforeTransactionStart(args: TransactionEventArgs): Promise<void> { }
+  async afterTransactionStart(args: TransactionEventArgs): Promise<void> { }
+  async beforeTransactionCommit(args: TransactionEventArgs): Promise<void> { }
+  async afterTransactionCommit(args: TransactionEventArgs): Promise<void> { }
+  async beforeTransactionRollback(args: TransactionEventArgs): Promise<void> { }
+  async afterTransactionRollback(args: TransactionEventArgs): Promise<void> { }
 
 }
 ```
 
 ## EventArgs
 
-As a parameter to the hook method you get `EventArgs` instance. It will always contain reference to the current `EntityManager` and the particular entity. Events fired from `UnitOfWork` during flush operation also contain the `ChangeSet` object.
+Event handlers receive an `EventArgs` object:
 
 ```ts
 interface EventArgs<T> {
   entity: T;
   em: EntityManager;
-  changeSet?: ChangeSet<T>;
+  changeSet?: ChangeSet<T>;  // Available during flush operations
 }
 
 interface ChangeSet<T> {
-  name: string;                   // entity name
-  collection: string;             // db table name
-  type: ChangeSetType;            // type of operation
-  entity: T;                      // up to date entity instance
-  payload: EntityData<T>;         // changes that will be used to build the update query
-  persisted: boolean;             // whether the changeset was already persisted/executed
-  originalEntity?: EntityData<T>; // snapshot of an entity when it was loaded from db
-}
-
-enum ChangeSetType {
-  CREATE = 'create',
-  UPDATE = 'update',
-  DELETE = 'delete',
-  DELETE_EARLY = 'delete_early',
+  name: string;                   // Entity name
+  collection: string;             // Database table name
+  type: ChangeSetType;            // 'create' | 'update' | 'delete' | 'delete_early'
+  entity: T;                      // The entity instance
+  payload: EntityData<T>;         // Changes for the UPDATE query
+  persisted: boolean;             // Whether already executed
+  originalEntity?: EntityData<T>; // Snapshot when loaded from database
 }
 ```
 
-## Flush events
+## Flush Events
 
-There is a special kind of events executed during the commit phase (flush operation). They are executed before, during and after the flush, and they are not bound to any entity in particular.
+Flush events fire during `em.flush()` and are not tied to any specific entity:
 
-- `beforeFlush` is executed before change sets are computed, this is the only event where it is safe to persist new entities.
-- `onFlush` is executed after the change sets are computed.
-- `afterFlush` is executed as the last step just before the `flush` call resolves. it will be executed even if there are no changes to be flushed.
-
-Flush event args will not contain any entity instance, as they are entity agnostic. They do contain additional reference to the `UnitOfWork` instance.
+| Event | When it fires | Use case |
+|-------|---------------|----------|
+| `beforeFlush` | Before change sets are computed | Safe to persist new entities here |
+| `onFlush` | After change sets are computed | Modify or add change sets |
+| `afterFlush` | After all queries complete | Cleanup, notifications |
 
 ```ts
 interface FlushEventArgs extends Omit<EventArgs<unknown>, 'entity'> {
-  uow?: UnitOfWork;
+  uow: UnitOfWork;
 }
 ```
 
-> Flush events are entity agnostic, specifying `getSubscribedEntities()` method will not have any effect for those. They are fired only once per the `flush` operation.
+> `getSubscribedEntities()` has no effect on flush events - they always fire regardless of entity type filters.
 
-## Transaction events
+### Accessing Changes in Flush Events
 
-You can also tap into the database transaction events:
-
-- `beforeTransactionStart`
-- `afterTransactionStart`
-- `beforeTransactionCommit`
-- `afterTransactionCommit`
-- `beforeTransactionRollback`
-- `afterTransactionRollback`
-
-Transaction event args will not contain any entity instance, as they are entity agnostic. They do contain additional reference to the `UnitOfWork` instance and native `Transaction` object (e.g. for SQL drivers it will be knex client instance).
+The `UnitOfWork` provides methods to inspect pending changes:
 
 ```ts
-export interface TransactionEventArgs extends Omit<EventArgs<unknown>, 'entity' | 'changeSet'> {
-  transaction?: Transaction;
-  uow?: UnitOfWork;
+async onFlush(args: FlushEventArgs) {
+  const uow = args.uow;
+
+  // All pending change sets
+  const changeSets = uow.getChangeSets();
+
+  // Original data when entity was loaded
+  const original = uow.getOriginalEntityData(entity);
+
+  // Entities marked for persist/remove
+  const toInsert = uow.getPersistStack();
+  const toDelete = uow.getRemoveStack();
+
+  // Collection modifications
+  const collectionUpdates = uow.getCollectionUpdates();
 }
 ```
 
-### Getting the changes from UnitOfWork
+### Creating Entities in Flush Events
 
-You can observe all the changes that are part of given UnitOfWork via those methods:
-
-```ts
-UnitOfWork.getChangeSets(): ChangeSet<AnyEntity>[];
-UnitOfWork.getOriginalEntityData(entity): EntityData<AnyEntity>;
-UnitOfWork.getPersistStack(): Set<AnyEntity>;
-UnitOfWork.getRemoveStack(): Set<AnyEntity>;
-UnitOfWork.getCollectionUpdates(): Collection<AnyEntity>[];
-UnitOfWork.getExtraUpdates(): Set<[AnyEntity, string, (AnyEntity | Reference<AnyEntity>)]>;
-```
-
-### Using onFlush event
-
-In following example we have 2 entities: `FooBar` and `FooBaz`, connected via M:1 relation. Our subscriber will automatically create new `FooBaz` entity and connect it to the `FooBar` when we detect it in the change sets.
-
-We first use `uow.getChangeSets()` method to look up the change set of entity we are interested in. After we create the `FooBaz` instance and link it with `FooBar`, we need to do two things:
-
-1. Call `uow.computeChangeSet(baz)` to compute the change set of newly created `FooBaz` entity
-2. Call `uow.recomputeSingleChangeSet(cs.entity)` to recalculate the existing change set of the `FooBar` entity.
+Use `beforeFlush` to safely create new entities:
 
 ```ts
-export class FooBarSubscriber implements EventSubscriber {
-
-  async onFlush(args: FlushEventArgs): Promise<void> {
-    const changeSets = args.uow.getChangeSets();
-    const cs = changeSets.find(cs => cs.type === ChangeSetType.CREATE && cs.entity instanceof FooBar);
-
-    if (cs) {
-      const baz = new FooBaz();
-      baz.name = 'dynamic';
-      cs.entity.baz = baz;
-      args.uow.computeChangeSet(baz);
-      args.uow.recomputeSingleChangeSet(cs.entity);
-    }
-  }
-
+async beforeFlush(args: FlushEventArgs) {
+  // Safe to create and persist new entities here
+  const log = args.em.create(AuditLog, { action: 'flush', timestamp: new Date() });
 }
-
-const bar = new FooBar();
-bar.name = 'bar';
-await em.persist(bar).flush();
 ```
 
-To create a `DELETE` changeset, you can use the second parameter of `uow.computeChangeSet()`:
+### Modifying Change Sets in onFlush
+
+In `onFlush`, you can add or modify change sets:
 
 ```ts
-async onFlush(args: FlushEventArgs): Promise<void> {
+async onFlush(args: FlushEventArgs) {
   const changeSets = args.uow.getChangeSets();
-  const cs = changeSets.find(cs => cs.type === ChangeSetType.UPDATE && cs.entity instanceof FooBar);
+  const cs = changeSets.find(cs =>
+    cs.type === ChangeSetType.CREATE && cs.name === 'FooBar'
+  );
+
+  if (cs) {
+    // Create a related entity
+    const related = new FooBaz();
+    related.name = 'auto-created';
+    cs.entity.baz = related;
+
+    // Compute change set for the new entity
+    args.uow.computeChangeSet(related);
+    // Recompute the original entity's change set
+    args.uow.recomputeSingleChangeSet(cs.entity);
+  }
+}
+```
+
+To convert an update to a delete:
+
+```ts
+async onFlush(args: FlushEventArgs) {
+  const cs = args.uow.getChangeSets().find(cs =>
+    cs.type === ChangeSetType.UPDATE && cs.entity.shouldDelete
+  );
 
   if (cs) {
     args.uow.computeChangeSet(cs.entity, ChangeSetType.DELETE);
@@ -232,15 +375,24 @@ async onFlush(args: FlushEventArgs): Promise<void> {
 }
 ```
 
-## Transaction events
+## Transaction Events
 
-Transaction events happen at the beginning and end of a transaction.
+Transaction events fire at transaction boundaries:
 
-- `beforeTransactionStart` is executed before a transaction starts.
-- `afterTransactionStart` is executed after a transaction starts.
-- `beforeTransactionCommit` is executed before a transaction is committed.
-- `afterTransactionCommit` is executed after a transaction is committed.
-- `beforeTransactionRollback` is executed before a transaction is rolled back.
-- `afterTransactionRollback` is executed after a transaction is rolled back.
+| Event | When it fires |
+|-------|---------------|
+| `beforeTransactionStart` | Before a transaction begins |
+| `afterTransactionStart` | After a transaction begins |
+| `beforeTransactionCommit` | Before a transaction commits |
+| `afterTransactionCommit` | After a transaction commits |
+| `beforeTransactionRollback` | Before a transaction rolls back |
+| `afterTransactionRollback` | After a transaction rolls back |
 
-They are also entity agnostic and will only reference the transaction, `UnitOfWork` instance and `EntityManager` instance.
+```ts
+interface TransactionEventArgs extends Omit<EventArgs<unknown>, 'entity' | 'changeSet'> {
+  transaction?: Transaction;  // Native transaction (e.g., Knex client for SQL)
+  uow?: UnitOfWork;
+}
+```
+
+Transaction events are entity-agnostic - `getSubscribedEntities()` has no effect on them.

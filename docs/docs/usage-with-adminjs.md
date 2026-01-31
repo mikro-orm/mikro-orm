@@ -47,7 +47,7 @@ $ yarn add @hapi/boom @hapi/cookie @hapi/hapi @hapi/inert
 
 ## Setup
 
-Once the installation process is completed, we need to set up AdminJS endpoints and database connection. The process is straightforward but differs based on which `plugin` you are using. Below you can find examples specific to supported frameworks:
+Once the installation process is completed, you need to set up AdminJS endpoints and database connection. The process is straightforward but differs based on which `plugin` you are using. Below you can find examples specific to supported frameworks:
 
 ### MikroORM + Express Plugin
 

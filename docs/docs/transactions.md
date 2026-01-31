@@ -2,7 +2,7 @@
 title: Transactions and Concurrency
 ---
 
-> Starting v3.4, transactions are also supported in [MongoDB driver](./usage-with-mongo.md).
+> Transactions are also supported in [MongoDB driver](./usage-with-mongo.md).
 
 ## Transaction Demarcation
 
@@ -24,7 +24,7 @@ user.name = 'George';
 await orm.em.persist(user).flush();
 ```
 
-Since we do not do any custom transaction demarcation in the above code, `em.flush()` will begin and commit/rollback a transaction. This behavior is made possible by the aggregation of the DML operations by the MikroORM and is sufficient if all the data manipulation that is part of a unit of work happens through the domain model and thus the ORM.
+Since there is no custom transaction demarcation in the above code, `em.flush()` will begin and commit/rollback a transaction. This behavior is made possible by the aggregation of the DML operations by the MikroORM and is sufficient if all the data manipulation that is part of a unit of work happens through the domain model and thus the ORM.
 
 ### Approach 2: Explicitly
 
@@ -485,7 +485,7 @@ If you intend to start another unit of work after an exception has occurred you 
 
 ## Locking Support
 
-### Why we need concurrency control?
+### Why is concurrency control needed?
 
 If transactions are executed serially (one at a time), no transaction concurrency exists. However, if concurrent transactions with interleaving operations are allowed, you may easily run into one of those problems:
 
@@ -563,9 +563,9 @@ try {
 
 ### Concurrency Checks
 
-As opposed to version fields that are handled automatically, we can use concurrency checks. They allow us to mark specific properties to be included in the concurrency check, just like the version field was. But this time, we will be responsible for updating the fields explicitly.
+As opposed to version fields that are handled automatically, you can use concurrency checks. They allow you to mark specific properties to be included in the concurrency check, just like the version field was. But this time, you will be responsible for updating the fields explicitly.
 
-When we try to update such entity without changing one of the concurrency fields, `OptimisticLockError` will be thrown. Same mechanism is then used to check whether the update succeeded, and throw the same type of error when not.
+When you try to update such entity without changing one of the concurrency fields, `OptimisticLockError` will be thrown. Same mechanism is then used to check whether the update succeeded, and throw the same type of error when not.
 
 ```ts
 @Entity()
@@ -663,7 +663,7 @@ You can use pessimistic locks in three different scenarios:
 2. Using `em.lock(entity, LockMode.PESSIMISTIC_WRITE)` or `em.lock(entity, LockMode.PESSIMISTIC_READ)`
 3. Using `QueryBuilder.setLockMode(LockMode.PESSIMISTIC_WRITE)` or `QueryBuilder.setLockMode(LockMode.PESSIMISTIC_READ)`
 
-Optionally we can also pass list of table aliases we want to lock via `lockTableAliases` option:
+Optionally you can also pass list of table aliases you want to lock via `lockTableAliases` option:
 
 ```ts
 const res = await em.find(User, { name: 'Jon' }, {
@@ -682,7 +682,7 @@ const res = await em.find(User, { name: 'Jon' }, {
 
 ## Isolation levels
 
-We can set the transaction isolation levels:
+You can set the transaction isolation levels:
 
 ```ts
 await orm.em.transactional(async em => {
@@ -700,7 +700,7 @@ Available isolation levels:
 
 ## Disabling transactions
 
-Since v5.7 is it possible to disable transactions, either globally via `disableTransactions` config option, or locally when using `em.transactional()`.
+It is possible to disable transactions, either globally via `disableTransactions` config option, or locally when using `em.transactional()`.
 
 ```ts
 // only the outer transaction will be opened

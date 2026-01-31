@@ -3,7 +3,7 @@ title: Usage with MySQL, MariaDB, PostgreSQL or SQLite
 sidebar_label: Usage with SQL Drivers
 ---
 
-To use `mikro-orm` with MySQL database, install the `@mikro-orm/mysql` dependency and set the type option to `mysql` when initializing ORM. Since v4 it is no longer needed to install the `mysql2` package manually.
+To use `mikro-orm` with MySQL database, install the `@mikro-orm/mysql` dependency and set the type option to `mysql` when initializing ORM. The `mysql2` package is included as a dependency, no need to install it manually.
 
 ```bash npm2yarn
 # for mongodb

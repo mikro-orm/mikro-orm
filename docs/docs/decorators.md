@@ -1,6 +1,25 @@
 ---
-title: Decorators
+title: Decorators Reference
 ---
+
+This page provides a complete reference for all decorators available in MikroORM.
+
+## Legacy vs ES Decorators
+
+MikroORM v7 supports two types of decorators:
+
+- **Legacy (Experimental) Decorators** - Traditional TypeScript decorators requiring `experimentalDecorators: true`. Import from `@mikro-orm/decorators/legacy`.
+- **ES Spec Decorators** - Modern TC39 Stage 3 decorators, supported natively by TypeScript 5.0+. Import from `@mikro-orm/decorators/es`.
+
+```ts
+// Legacy decorators
+import { Entity, Property } from '@mikro-orm/decorators/legacy';
+
+// ES spec decorators
+import { Entity, Property } from '@mikro-orm/decorators/es';
+```
+
+For detailed information about decorator types, metadata providers, and configuration, see [Using Decorators](./using-decorators.md).
 
 ## Entity Definition
 
@@ -27,6 +46,59 @@ title: Decorators
 ```ts
 @Entity({ tableName: 'authors' })
 export class Author { ... }
+```
+
+### @Embeddable()
+
+`@Embeddable()` decorator is used to mark classes as embeddable. Embeddables are classes that are not entities themselves but are embedded in entities.
+
+See [Embeddables](./embeddables.md) for more details.
+
+| Parameter             | Type                     | Optional | Description                                                                        |
+|-----------------------|--------------------------|----------|------------------------------------------------------------------------------------|
+| `discriminatorColumn` | `string`                 | yes      | For polymorphic embeddables.                                                       |
+| `discriminatorMap`    | `Dictionary<string>`     | yes      | For polymorphic embeddables.                                                       |
+| `discriminatorValue`  | `number` &#124; `string` | yes      | For polymorphic embeddables.                                                       |
+| `abstract`            | `boolean`                | yes      | Marks embeddable as abstract.                                                      |
+
+```ts
+@Embeddable()
+export class Address {
+
+  @Property()
+  street!: string;
+
+  @Property()
+  city!: string;
+
+}
+```
+
+### @Filter()
+
+`@Filter()` decorator is used to define filters on entities. Filters allow automatic application of conditions to queries.
+
+See [Filters](./filters.md) for more details.
+
+| Parameter | Type                                          | Optional | Description                                                             |
+|-----------|-----------------------------------------------|----------|-------------------------------------------------------------------------|
+| `name`    | `string`                                      | no       | Filter name used to enable/disable it.                                  |
+| `cond`    | `FilterQuery` &#124; `Function`               | no       | Filter condition or callback returning the condition.                   |
+| `default` | `boolean`                                     | yes      | Whether the filter is enabled by default.                               |
+| `args`    | `boolean`                                     | yes      | Whether the filter accepts arguments.                                   |
+
+```ts
+@Entity()
+@Filter({ name: 'isActive', cond: { active: true }, default: true })
+export class User {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property()
+  active!: boolean;
+
+}
 ```
 
 ## Entity Properties
@@ -160,6 +232,39 @@ See [Defining Entities](./defining-entities.md#formulas).
 objectVolume?: number;
 ```
 
+### @Embedded()
+
+`@Embedded()` decorator is used to embed another class into an entity.
+
+See [Embeddables](./embeddables.md) for more details.
+
+| Parameter    | Type                               | Optional | Description                                                          |
+|--------------|------------------------------------|----------|----------------------------------------------------------------------|
+| `entity`     | `() => EntityName`                 | yes      | Target embeddable class.                                             |
+| `prefix`     | `string` &#124; `boolean`          | yes      | Column name prefix. Set to `false` to disable prefixing.             |
+| `prefixMode` | `EmbeddedPrefixMode`               | yes      | How the prefix is applied.                                           |
+| `object`     | `boolean`                          | yes      | Store as JSON object instead of flattened columns. **(SQL only)**    |
+| `array`      | `boolean`                          | yes      | Store as array of embeddables.                                       |
+
+```ts
+@Entity()
+export class User {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Embedded(() => Address)
+  address!: Address;
+
+  @Embedded(() => Address, { prefix: 'shipping_' })
+  shippingAddress!: Address;
+
+  @Embedded(() => Address, { object: true })
+  billingAddress!: Address; // stored as JSON
+
+}
+```
+
 ### @Index() and @Unique()
 
 Use `@Index()` to create an index, or `@Unique()` to create unique constraint. You can use those decorators both on the entity level and on property level. To create compound index, use the decorator on the entity level and provide list of property names via the `properties` option.
@@ -197,7 +302,7 @@ export class Author {
 
 ### @Check()
 
-We can define check constraints via `@Check()` decorator. We can use it either on entity class, or on entity property. It has a required `expression` property, that can be either a string or a callback, that receives map of property names to column names. Note that we need to use the generic type argument if we want TypeScript suggestions for the property names.
+You can define check constraints via `@Check()` decorator. You can use it either on entity class, or on entity property. It has a required `expression` property, that can be either a string or a callback, that receives map of property names to column names. Note that you need to use the generic type argument if you want TypeScript suggestions for the property names.
 
 > Check constraints are currently supported in PostgreSQL, MySQL 8 and MariaDB drivers. SQLite also supports creating check constraints, but schema inference is currently not implemented. Also note that SQLite does not support adding check constraints to existing tables.
 
@@ -404,7 +509,7 @@ async doStuffOnLoad(args: EventArgs<this>) {
 
 ### @BeforeCreate()
 
-Fired right before we persist the new entity into the database.
+Fired right before the new entity is persisted into the database.
 
 ```ts
 @BeforeCreate()
@@ -426,7 +531,7 @@ async doStuffAfterCreate(args: EventArgs<this>) {
 
 ### @BeforeUpdate()
 
-Fired right before we update the entity in the database.
+Fired right before the entity is updated in the database.
 
 ```ts
 @BeforeUpdate()
@@ -446,9 +551,31 @@ async doStuffAfterUpdate(args: EventArgs<this>) {
 }
 ```
 
+### @BeforeUpsert()
+
+Fired right before the entity is upserted into the database.
+
+```ts
+@BeforeUpsert()
+async doStuffBeforeUpsert(args: EventArgs<this>) {
+  // ...
+}
+```
+
+### @AfterUpsert()
+
+Fired right after the entity is upserted into the database.
+
+```ts
+@AfterUpsert()
+async doStuffAfterUpsert(args: EventArgs<this>) {
+  // ...
+}
+```
+
 ### @BeforeDelete()
 
-Fired right before we delete the record from database. It is fired only when removing entity or entity reference, not when deleting records by query.
+Fired right before the record is deleted from database. It is fired only when removing entity or entity reference, not when deleting records by query.
 
 ```ts
 @BeforeDelete()
@@ -467,3 +594,89 @@ async doStuffAfterDelete(args: EventArgs<this>) {
   // ...
 }
 ```
+
+## Method Decorators
+
+### @CreateRequestContext()
+
+`@CreateRequestContext()` decorator can be used to create a new `RequestContext` for an async method. This is useful for ensuring each request has its own isolated `EntityManager` fork.
+
+See [Identity Map](./identity-map.md) for more details about request context.
+
+| Parameter                | Type                                      | Optional | Description                                             |
+|--------------------------|-------------------------------------------|----------|---------------------------------------------------------|
+| `contextProvider`        | `() => MikroORM` &#124; `() => EntityManager` | yes      | Callback to get the ORM instance or EntityManager.      |
+
+```ts
+export class MyService {
+
+  constructor(private readonly orm: MikroORM) {}
+
+  @CreateRequestContext()
+  async doSomething() {
+    // this method now runs in its own request context
+    const em = this.orm.em; // this is a forked EntityManager
+  }
+
+}
+
+// or with explicit context provider
+export class MyService {
+
+  constructor(private readonly em: EntityManager) {}
+
+  @CreateRequestContext((self: MyService) => self.em)
+  async doSomething() {
+    // ...
+  }
+
+}
+```
+
+### @EnsureRequestContext()
+
+`@EnsureRequestContext()` works like `@CreateRequestContext()` but reuses an existing context if one is already available.
+
+```ts
+@EnsureRequestContext()
+async doSomething() {
+  // reuses existing context or creates a new one
+}
+```
+
+### @Transactional()
+
+`@Transactional()` decorator wraps the method in a transaction. It supports all options from `em.transactional()`.
+
+See [Transactions](./transactions.md) for more details.
+
+| Parameter     | Type                                          | Optional | Description                                                  |
+|---------------|-----------------------------------------------|----------|--------------------------------------------------------------|
+| `context`     | `() => MikroORM` &#124; `() => EntityManager` | yes      | Callback to get the ORM instance or EntityManager.           |
+| `contextName` | `string`                                      | yes      | Name of the context to use.                                  |
+| `isolationLevel` | `IsolationLevel`                           | yes      | Transaction isolation level.                                 |
+| `readOnly`    | `boolean`                                     | yes      | Whether the transaction is read-only.                        |
+| `propagation` | `TransactionPropagation`                      | yes      | Transaction propagation mode. Defaults to `REQUIRED`.        |
+
+```ts
+export class MyService {
+
+  constructor(private readonly orm: MikroORM) {}
+
+  @Transactional()
+  async createUser(data: CreateUserDto) {
+    // this method runs in a transaction
+    const user = this.orm.em.create(User, data);
+    await this.orm.em.persist(user).flush();
+    return user;
+  }
+
+  @Transactional({ isolationLevel: IsolationLevel.SERIALIZABLE })
+  async transferMoney(from: number, to: number, amount: number) {
+    // runs with SERIALIZABLE isolation level
+  }
+
+}
+```
+
+Unlike `em.transactional()`, the `@Transactional()` decorator uses `REQUIRED` propagation by default, which means it will join an existing transaction if one is active.

@@ -550,7 +550,7 @@ The `Reference.load()` method allowed two signatures, one to ensure the entity i
 
 ## `em.insert()` respects required properties
 
-`em.insert()` will now require you to pass all non-optional properties just like `em.create()` already did. Some properties might be defined as required for TS, but we have a default value for them (either runtime, or database one) - for such we can use `OptionalProps` symbol (or the new `Opt` type) to specify which properties should be considered as optional.
+`em.insert()` will now require you to pass all non-optional properties just like `em.create()` already did. Some properties might be defined as required for TS, but you have a default value for them (either runtime, or database one) - for such you can use `OptionalProps` symbol (or the new `Opt` type) to specify which properties should be considered as optional.
 
 ## `.env` files are no longer automatically loaded
 

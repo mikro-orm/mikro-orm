@@ -3,9 +3,9 @@ title: Cascading persist, merge and remove
 sidebar_label: Cascading
 ---
 
-> From v4.2, cascade merging is no longer configurable (and is kept enabled for all relations).
+> Cascade merging is no longer configurable (and is kept enabled for all relations).
 
-> This section is about application level cascading. For that to work, we need to have relations populated.
+> This section is about application level cascading. For that to work, you need to have relations populated.
 
 When persisting or removing entity, all your references are by default cascade persisted. This means that by persisting any entity, ORM will automatically persist all of its associations.
 
@@ -71,7 +71,7 @@ const publisher = new Publisher(...);
 book1.publisher = book2.publisher = book3.publisher = publisher;
 await orm.em.remove(book1).flush(); // this will remove book1 and its publisher
 
-// but we still have reference to removed publisher here
+// but there is still a reference to the removed publisher here
 console.log(book2.publisher, book3.publisher);
 ```
 
@@ -96,7 +96,7 @@ With simple `Cascade.REMOVE`, you would need to remove the `Author` entity to ca
 ```ts
 await author.books.set([book1, book2]); // replace whole collection
 await author.books.remove(book1); // remove book from collection
-await orm.em.persist(author).flush(); // book1 will be removed, as well as all original items (before we called `set()`)
+await orm.em.persist(author).flush(); // book1 will be removed, as well as all original items (before `set()` was called)
 ```
 
 In this example, no `Book` would be removed with simple `Cascade.REMOVE` as no remove operation was executed.
@@ -105,7 +105,7 @@ In this example, no `Book` would be removed with simple `Cascade.REMOVE` as no r
 
 > This is only supported in SQL drivers.
 
-As opposed to the application level cascading controlled by the `cascade` option, we can also define database level referential integrity actions: `on update` and `on delete`.
+As opposed to the application level cascading controlled by the `cascade` option, you can also define database level referential integrity actions: `on update` and `on delete`.
 
 These rules are independent of the `cascade` option (which only controls ORM-level behavior). You can set FK rules via:
 

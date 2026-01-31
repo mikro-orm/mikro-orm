@@ -68,7 +68,7 @@ constructor(dto: { title: string; author: number }) {
 
 Similar (but more hidden) problem would appear if your `dto.author` was a POJO (so an object, but not an instance of the `Author` entity), as that might type check, although it won't work either. The ORM expects entity instances in relation properties, nothing else.
 
-But worry not, since v5.6 there is an easy way to convert a primary key to the entity reference, the `rel()` helper:
+But worry not, there is an easy way to convert a primary key to the entity reference, the `rel()` helper:
 
 ```ts
 @ManyToOne({ entity: () => Author })
@@ -80,7 +80,7 @@ constructor(dto: { title: string; author: number }) {
 }
 ```
 
-The `rel()` helper will create entity instance that is not yet managed (as we don't pass it any `EntityManager` instance), but it will be considered as existing entity reference once it becomes managed. This is in fact an equivalent to `em.getReference()`, but without having the `EntityManager` instance at hand.
+The `rel()` helper will create entity instance that is not yet managed (as you don't pass it any `EntityManager` instance), but it will be considered as existing entity reference once it becomes managed. This is in fact an equivalent to `em.getReference()`, but without having the `EntityManager` instance at hand.
 
 > `rel()` is a shortcut for `Reference.createNakedFromPK()`.
 

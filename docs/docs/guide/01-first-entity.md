@@ -4,7 +4,7 @@ title: 'Chapter 1: First Entity'
 
 ## Setting up
 
-Before we start, ensure you meet the following pre-requisites first:
+Before you start, ensure you meet the following pre-requisites first:
 
 1. Have Node.js version 22.11 or higher installed, but preferably version 24.
     - Visit [Node.js website](https://nodejs.org/en/download) to download or use [fnm](https://github.com/Schniz/fnm).
@@ -196,7 +196,7 @@ export type IUser = InferEntity<typeof User>;
 
 ### Defining the primary key
 
-Every entity needs to have a primary key. We define it using the `.primary()` builder method. For a single numeric primary key, auto-increment is assumed automatically:
+Every entity needs to have a primary key. You define it using the `.primary()` builder method. For a single numeric primary key, auto-increment is assumed automatically:
 
 ```ts
 id: p.integer().primary(),
@@ -322,7 +322,7 @@ await em.flush();
 To understand `flush`, let's first define what managed entity is: An entity is managed if it's fetched from the database (via [`em.find()`](/api/core/class/EntityManager#find)) or registered as new through [`em.persist()`](/api/core/class/EntityManager#persist) and flushed later (only after the `flush` it becomes managed).
 
 [`em.flush()`](/api/core/class/EntityManager#flush) will go through all managed entities, compute appropriate change sets and perform according database queries. As an entity loaded from the database becomes managed
-automatically, we do not have to call persist on those, and flush is enough to update them.
+automatically, you do not have to call persist on those, and flush is enough to update them.
 
 ```ts
 const user = await em.findOne(User, 1);
@@ -458,7 +458,7 @@ const user = em.create(User, {
 await em.flush();
 ```
 
-Running `npm start` again, we get past the global context validation error, but only to find another one:
+Running `npm start` again, you get past the global context validation error, but only to find another one:
 
 ```
 TableNotFoundException: insert into `user` (`bio`, `email`, `full_name`, `password`) values ('', 'foo@bar.com', 'Foo Bar', '123456') - no such table: user
@@ -544,11 +544,11 @@ We just used `em.findOneOrFail()` instead of `em.findOne()`, as you may have gue
 
 :::
 
-You can see there is a select query to load the user. This is because we used a new fork, that is clean by default—it has an empty Identity Map, and therefore it needs to load the entity from the database. In the previous example, we already had it present by the time we were calling `em.findOne()`. You queried the entity by its primary key, and such a query will always first check the identity map and prefer the results from it instead of querying the database.
+You can see there is a select query to load the user. This is because you used a new fork, that is clean by default—it has an empty Identity Map, and therefore it needs to load the entity from the database. In the previous example, you already had it present by the time you were calling `em.findOne()`. You queried the entity by its primary key, and such a query will always first check the identity map and prefer the results from it instead of querying the database.
 
 ### Refreshing loaded entities
 
-The behavior described above is often what we want and serves as a first-level cache, but what if you always want to reload that entity, regardless of the existing state? There are several options:
+The behavior described above is often what you want and serves as a first-level cache, but what if you always want to reload that entity, regardless of the existing state? There are several options:
 
 > [`FindOptions`](/api/core/interface/FindOptions) is the last parameter of `em.find/findOne` methods.
 
@@ -571,7 +571,7 @@ myUser2!.bio = 'some change, will be saved';
 await em2.flush();
 ```
 
-Running the `npm start` script again, we get the following:
+Running the `npm start` script again, you get the following:
 
 ```
 [query] select `u0`.* from `user` as `u0` where `u0`.`id` = 1 limit 1 [took 1 ms, 1 result]
