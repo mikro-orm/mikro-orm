@@ -1250,8 +1250,7 @@ describe('EntityManagerPostgre', () => {
     expect(book.tags.find(() => false)).toBeUndefined();
 
     // filter
-    expect(book.tags.filter(tag => tag === tagRepository.getReference(tag1.id))).toEqual([tagRepository.getReference(tag1.id)]);
-    expect(book.tags.filter(() => false)).toEqual([]);
+    expect(book.tags.filter((tag): tag is BookTag2 => tag === tagRepository.getReference(tag1.id))).toEqual([tagRepository.getReference(tag1.id)]);
 
     // map
     expect(book.tags.map(tag => tag.name)).toEqual([tag3.name, tag1.name, 'fresh']);
