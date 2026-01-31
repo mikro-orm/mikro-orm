@@ -670,7 +670,7 @@ export class Collection<T extends object, O extends object = object> {
   /**
    * Extracts a subset of the collection items.
    */
-  filter(cb: (item: T, index: number) => boolean): T[] {
+  filter<S extends T>(cb: (item: T, index: number) => item is S): S[] {
     this.checkInitialized();
     const items: T[] = [];
     let index = 0;
