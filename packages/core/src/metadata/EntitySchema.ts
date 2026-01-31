@@ -14,7 +14,8 @@ import {
 } from '../typings.js';
 import type { EntityRepository } from '../entity/EntityRepository.js';
 import { BaseEntity } from '../entity/BaseEntity.js';
-import { Cascade, ReferenceKind } from '../enums.js';
+import { type EventType, Cascade, ReferenceKind } from '../enums.js';
+import type { EventSubscriber } from '../events/EventSubscriber.js';
 import { Type } from '../types/Type.js';
 import { Utils } from '../utils/Utils.js';
 import { EnumArrayType } from '../types/EnumArrayType.js';
@@ -442,6 +443,32 @@ export class EntitySchema<Entity = any, Base = never, Class extends EntityCtor =
     this.rename(options, 'inverseJoinColumn', 'inverseJoinColumns');
     this.rename(options, 'referenceColumnName', 'referencedColumnNames');
     this.rename(options, 'columnType', 'columnTypes');
+  }
+
+  /**
+   * Adds a lifecycle hook handler to the entity schema.
+   * This method allows registering hooks after the entity is defined,
+   * which can be useful for avoiding circular type references.
+   *
+   * @example
+   * ```ts
+   * export const Article = defineEntity({
+   *   name: 'Article',
+   *   properties: { ... },
+   * });
+   *
+   * Article.addHook('beforeCreate', async args => {
+   *   args.entity.slug = args.entity.title.toLowerCase();
+   * });
+   * ```
+   */
+  addHook<Event extends EventType | `${EventType}`>(
+    event: Event,
+    handler: NonNullable<EventSubscriber<Entity>[Event]>,
+  ): this {
+    this._meta.hooks[event as EventType] ??= [];
+    this._meta.hooks[event as EventType]!.push(handler as any);
+    return this;
   }
 
 }

@@ -120,13 +120,10 @@ export const Author4Schema = defineEntity({
   hooks: {
     onLoad: [
       randomHook,
-      // FIXME this doesn't work with classes
-      // ({ entity: author }) => {
-      //   // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-      //   author.age;
-      //   // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-      //   author.email;
-      // },
+      ({ entity: author }) => {
+        const age = author.age;
+        const email = author.email;
+      },
     ],
     beforeCreate: ['beforeCreate'],
     afterCreate: ['afterCreate'],
@@ -135,4 +132,8 @@ export const Author4Schema = defineEntity({
     beforeDelete: ['beforeDelete', beforeDelete],
     afterDelete: ['afterDelete', afterDelete],
   },
+});
+
+Author4Schema.addHook('onLoad', args => {
+  const identity = args.entity.identity;
 });

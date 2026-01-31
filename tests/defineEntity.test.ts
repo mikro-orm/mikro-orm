@@ -917,6 +917,32 @@ describe('defineEntity', () => {
       },
     });
   });
+
+  it('supports entity inference for hooks', () => {
+    const Article = defineEntity({
+      name: 'Article',
+      properties: {
+        id: p.integer().primary(),
+        title: p.string(),
+        slug: p.string().unique(),
+        updatedAt: p.datetime(),
+      },
+    });
+
+    Article.addHook('beforeCreate', async args => {
+      const article = args.entity;
+      if (!article.slug) {
+        article.slug = article.title.toLowerCase().replace(/\s+/g, '-');
+      }
+    });
+
+    Article.addHook('beforeUpdate', async args => {
+      args.entity.updatedAt = new Date();
+    });
+
+    expect(Article.meta.hooks.beforeCreate).toHaveLength(1);
+    expect(Article.meta.hooks.beforeUpdate).toHaveLength(1);
+  });
 });
 
 describe('PropertyOptionsBuilder', () => {

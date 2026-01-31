@@ -36,12 +36,12 @@ import type {
 } from '../typings.js';
 import type { ScalarReference } from './Reference.js';
 import type { SerializeOptions } from '../serialization/EntitySerializer.js';
-import type { Cascade, DeferMode, EmbeddedPrefixMode, EventType, LoadStrategy, QueryOrderMap } from '../enums.js';
+import type { Cascade, DeferMode, EmbeddedPrefixMode, LoadStrategy, QueryOrderMap } from '../enums.js';
+import type { EventSubscriber } from '../events/EventSubscriber.js';
 import type { IType, Type } from '../types/Type.js';
 import { types } from '../types/index.js';
 import { EntitySchema } from '../metadata/EntitySchema.js';
 import type { Collection } from './Collection.js';
-import type { EventSubscriber } from '../events/EventSubscriber.js';
 import type { FilterOptions } from '../drivers/IDatabaseDriver.js';
 
 export type UniversalPropertyKeys =
@@ -725,7 +725,7 @@ export interface EntityMetadataWithProperties<
   extends?: { '~entity': TBase } | EntityCtor<TBase>;
   properties: TProperties | ((properties: typeof propertyBuilders) => TProperties);
   primaryKeys?: TPK & InferPrimaryKey<TProperties>[];
-  hooks?: DefineEntityHooks<InferEntityFromProperties<TProperties, TPK, TBase, TRepository>>;
+  hooks?: DefineEntityHooks;
   // Capture the repository type for InferEntity to include EntityRepositoryType
   repository?: () => TRepository;
 
@@ -762,12 +762,13 @@ export function defineEntity<
 ): EntitySchemaWithMeta<TName, TTableName, InferEntityFromProperties<TProperties, TPK, TBase, TRepository>, TBase, TProperties>;
 
 export function defineEntity<const TEntity = any, const TProperties extends Record<string, any> = Record<string, any>, const TClassName extends string = string, const TTableName extends string = string, const TBase = never, const TClass extends EntityCtor = EntityCtor<TEntity>>(
-  meta: Omit<Partial<EntityMetadata<TEntity>>, 'properties' | 'extends' | 'className' | 'tableName'> & {
+  meta: Omit<Partial<EntityMetadata<TEntity>>, 'properties' | 'extends' | 'className' | 'tableName' | 'hooks'> & {
     class: TClass;
     className?: TClassName;
     tableName?: TTableName;
     extends?: TBase;
     properties: TProperties | ((properties: typeof propertyBuilders) => TProperties);
+    hooks?: DefineEntityHooks<TEntity>;
   },
 ): EntitySchemaWithMeta<TClassName, TTableName, TEntity, TBase, TProperties, TClass>;
 
@@ -811,7 +812,20 @@ export function defineEntity(
 defineEntity.properties = propertyBuilders;
 export { propertyBuilders as p };
 
-export interface DefineEntityHooks<T> extends Partial<MapToArray<Pick<EventSubscriber<T>, keyof typeof EventType>>> {}
+type EntityHookValue<T, K extends keyof EventSubscriber<T>> = (keyof T | NonNullable<EventSubscriber<T>[K]>)[];
+
+export interface DefineEntityHooks<T = any> {
+  onInit?: EntityHookValue<T, 'onInit'>;
+  onLoad?: EntityHookValue<T, 'onLoad'>;
+  beforeCreate?: EntityHookValue<T, 'beforeCreate'>;
+  afterCreate?: EntityHookValue<T, 'afterCreate'>;
+  beforeUpdate?: EntityHookValue<T, 'beforeUpdate'>;
+  afterUpdate?: EntityHookValue<T, 'afterUpdate'>;
+  beforeUpsert?: EntityHookValue<T, 'beforeUpsert'>;
+  afterUpsert?: EntityHookValue<T, 'afterUpsert'>;
+  beforeDelete?: EntityHookValue<T, 'beforeDelete'>;
+  afterDelete?: EntityHookValue<T, 'afterDelete'>;
+}
 
 type MapToArray<T extends Record<string, any>> = {
   [K in keyof T]: NonNullable<T[K]>[];
