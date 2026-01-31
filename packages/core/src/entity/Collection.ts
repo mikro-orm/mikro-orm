@@ -672,7 +672,7 @@ export class Collection<T extends object, O extends object = object> {
    */
   filter<S extends T>(cb: (item: T, index: number) => item is S): S[] {
     this.checkInitialized();
-    const items: T[] = [];
+    const items: S[] = [];
     let index = 0;
 
     for (const item of this.items) {
