@@ -600,11 +600,20 @@ export class DatabaseTable {
       // Use the column name as a base for the FK prop.
       return columnName;
     }
-    if (!fks.some(fk => fk !== currentFk && fk.referencedTableName === currentFk.referencedTableName) && !this.getColumn(currentFk.referencedTableName)) {
-      // FK is the only one in this table that references this other table.
+    // Strip schema prefix from referenced table name (e.g., "public.fr_usuario" -> "fr_usuario")
+    const getTableName = (fullName: string) => {
+      const parts = fullName.split('.');
+      return parts[parts.length - 1];
+    };
+    const referencedTableName = getTableName(currentFk.referencedTableName);
+
+    // Check for conflicts using stripped table names (handles cross-schema FKs to same-named tables)
+    const hasConflictingFk = fks.some(fk => fk !== currentFk && getTableName(fk.referencedTableName) === referencedTableName);
+    if (!hasConflictingFk && !this.getColumn(referencedTableName)) {
+      // FK is the only one in this table that references a table with this name.
       // The name of the referenced table is not shared with a column in this table,
       // so it is safe to output prop name based on the referenced entity.
-      return currentFk.referencedTableName;
+      return referencedTableName;
     }
 
     // Any ambiguous FK is rendered with a name based on the FK constraint name

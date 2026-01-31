@@ -1,0 +1,106 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`GH5400: FK property names should not contain schema prefix 1`] = `
+[
+  "import { Collection, defineEntity, p } from '@mikro-orm/core';
+import { SftContato } from './SftContato';
+
+export class FrUsuario {
+  id!: bigint;
+  name?: string;
+  sftContatoCollection = new Collection<SftContato>(this);
+}
+
+export const FrUsuarioSchema = defineEntity({
+  class: FrUsuario,
+  properties: {
+    id: p.bigint().primary().autoincrement(false),
+    name: p.string().length(-1).nullable(),
+    sftContatoCollection: () => p.oneToMany(SftContato).mappedBy('frUsuario'),
+  },
+});
+",
+  "import { type Ref, defineEntity, p } from '@mikro-orm/core';
+import { FrUsuario } from './FrUsuario';
+
+export class SftContato {
+  id!: bigint;
+  usrCodigoApp!: bigint;
+  frUsuario!: Ref<FrUsuario>;
+}
+
+export const SftContatoSchema = defineEntity({
+  class: SftContato,
+  properties: {
+    id: p.bigint().primary().autoincrement(false),
+    usrCodigoApp: p.bigint().persist(false),
+    frUsuario: () => p.manyToOne(FrUsuario).ref().name('usr_codigo_app').updateRule('no action').deleteRule('no action'),
+  },
+});
+",
+]
+`;
+
+exports[`GH5400: cross-schema FKs to same-named tables should use constraint names 1`] = `
+[
+  "import { type Ref, defineEntity, p } from '@mikro-orm/core';
+import { Schema1Target } from './Schema1Target';
+import { Schema2Target } from './Schema2Target';
+
+export class Source {
+  id!: bigint;
+  schema1Target!: Ref<Schema1Target>;
+  schema1TargetId!: bigint;
+  schema2Target!: Ref<Schema2Target>;
+  schema2TargetId!: bigint;
+}
+
+export const SourceSchema = defineEntity({
+  class: Source,
+  properties: {
+    id: p.bigint().primary().autoincrement(false),
+    schema1Target: () => p.manyToOne(Schema1Target).ref().name('schema1_target_id').updateRule('no action').deleteRule('no action'),
+    schema1TargetId: p.bigint().name('schema1_target_id').persist(false),
+    schema2Target: () => p.manyToOne(Schema2Target).ref().name('schema2_target_id').updateRule('no action').deleteRule('no action'),
+    schema2TargetId: p.bigint().name('schema2_target_id').persist(false),
+  },
+});
+",
+  "import { Collection, defineEntity, p } from '@mikro-orm/core';
+import { Source } from './Source';
+
+export class Schema1Target {
+  id!: bigint;
+  sourceCollection = new Collection<Source>(this);
+}
+
+export const Schema1TargetSchema = defineEntity({
+  class: Schema1Target,
+  tableName: 'target',
+  schema: 'schema1',
+  properties: {
+    id: p.bigint().primary().autoincrement(false),
+    sourceCollection: () => p.oneToMany(Source).mappedBy('schema1Target'),
+  },
+});
+",
+  "import { Collection, defineEntity, p } from '@mikro-orm/core';
+import { Source } from './Source';
+
+export class Schema2Target {
+  id!: bigint;
+  sourceCollection = new Collection<Source>(this);
+}
+
+export const Schema2TargetSchema = defineEntity({
+  class: Schema2Target,
+  tableName: 'target',
+  schema: 'schema2',
+  properties: {
+    id: p.bigint().primary().autoincrement(false),
+    sourceCollection: () => p.oneToMany(Source).mappedBy('schema2Target'),
+  },
+});
+",
+]
+`;
