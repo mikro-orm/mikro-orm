@@ -61,7 +61,7 @@ test('filtering a collection narrows the output type', () => {
   directory.files.add(new JSONFile());
   directory.files.add(new MarkdownFile());
 
-  const filtered = directory.files.filter(item => item instanceof JSONFile);
+  const filtered = directory.files.filter((item): item is JSONFile => item instanceof JSONFile);
 
   expectTypeOf(filtered).toEqualTypeOf<JSONFile[]>();
 });
