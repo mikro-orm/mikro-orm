@@ -1,0 +1,12 @@
+{
+  "$schema": "https://raw.githubusercontent.com/nicolo-ribaudo/oxfmt/refs/heads/main/npm/oxfmt/schema.json",
+  "printWidth": 160,
+  "tabWidth": 2,
+  "useTabs": false,
+  "semi": true,
+  "singleQuote": true,
+  "quoteProps": "consistent",
+  "trailingComma": "all",
+  "bracketSpacing": true,
+  "arrowParens": "avoid"
+}

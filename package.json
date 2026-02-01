@@ -55,7 +55,10 @@
     "clean-tests": "rimraf temp tests/generated-entities",
     "tsc-check-tests": "tsc --noEmit --project tests/tsconfig.json",
     "coverage": "yarn clean-tests && yarn test --coverage",
-    "lint": "eslint \"packages/**/*.ts\" \"tests/**/*.ts\""
+    "lint": "oxlint packages tests --tsconfig=tsconfig.json",
+    "lint:fix": "oxlint packages tests --tsconfig=tsconfig.json --fix",
+    "format": "oxfmt packages tests --write",
+    "format:check": "oxfmt packages tests"
   },
   "commitlint": {
     "extends": [
@@ -64,7 +67,8 @@
   },
   "lint-staged": {
     "*.ts": [
-      "eslint \"packages/**/*.ts\" \"tests/**/*.ts\" --fix"
+      "oxlint --fix",
+      "oxfmt --write"
     ]
   },
   "renovate": {
@@ -109,10 +113,8 @@
     "@ark/attest": "0.56.0",
     "@commitlint/cli": "20.4.0",
     "@commitlint/config-conventional": "20.4.0",
-    "@eslint/js": "9.39.2",
     "@mikro-orm/mongo-highlighter": "1.0.0",
     "@mikro-orm/sql-highlighter": "1.0.1",
-    "@stylistic/eslint-plugin": "5.7.1",
     "@swc-node/register": "1.11.1",
     "@swc/core": "1.15.11",
     "@types/better-sqlite3": "7.6.13",
@@ -128,23 +130,19 @@
     "bson": "7.1.1",
     "conditional-type-checks": "1.0.6",
     "dataloader": "2.2.3",
-    "eslint": "9.39.2",
-    "eslint-plugin-import": "2.32.0",
-    "eslint-plugin-unicorn": "62.0.0",
-    "eslint-plugin-unused-imports": "4.3.0",
-    "globals": "17.2.0",
     "husky": "9.1.7",
     "jiti": "2.6.1",
     "knex": "3.1.0",
     "lerna": "9.0.3",
     "lint-staged": "16.2.7",
     "mongodb-memory-server-core": "11.0.1",
+    "oxfmt": "^0.27.0",
+    "oxlint": "^1.42.0",
     "reflect-metadata": "0.2.2",
     "rimraf": "6.1.2",
     "tsimp": "2.0.12",
     "tsx": "4.21.0",
     "typescript": "5.9.3",
-    "typescript-eslint": "8.54.0",
     "unplugin-swc": "1.5.9",
     "uuid": "11.1.0",
     "vitest": "4.0.18"
