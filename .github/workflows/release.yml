@@ -14,7 +14,7 @@ on:
         required: false
         type: string
       dist-tag:
-        description: NPM dist-tag (prod or next)
+        description: NPM dist-tag (prod, next, or rc)
         required: false
         type: string
         default: 'prod'
@@ -30,7 +30,7 @@ on:
         required: true
         type: string
       dist-tag:
-        description: NPM dist-tag (prod or next)
+        description: NPM dist-tag (prod, next, or rc)
         type: string
 
 permissions:
@@ -96,8 +96,8 @@ jobs:
         run: yarn publish:prod --yes
 
   canary-release:
-    if: inputs.dist-tag == 'next'
-    name: Release canary
+    if: inputs.dist-tag == 'next' || inputs.dist-tag == 'rc'
+    name: Release ${{ inputs.dist-tag == 'rc' && 'RC' || 'canary' }}
     runs-on: ubuntu-latest
 
     steps:
@@ -105,6 +105,7 @@ jobs:
         with:
           fetch-depth: 0
           ref: ${{ inputs.ref }}
+          token: ${{ secrets.GH_TOKEN }}
 
       - uses: actions/setup-node@v6
         with:
@@ -118,16 +119,32 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           cache: yarn
+          registry-url: 'https://registry.npmjs.org'
+          always-auth: false
+          provenance: true
 
       - name: Configure git
         run: |
           git config --global user.name 'MikroORM Release Bot'
           git config --global user.email 'noreply@mikro-orm.io'
 
-      - run: |
-          yarn
-          yarn build
-          yarn lerna run copy -- -- --canary=major
-          git commit -am 'chore: bump canary versions [skip ci]'
+      - run: yarn
+      - run: yarn build
+
+      - name: Bump version
+        run: |
+          PREID=${{ inputs.dist-tag == 'rc' && 'rc' || 'dev' }}
+          yarn lerna run copy -- -- --canary=major --preid=$PREID
+          git commit -am 'chore: bump ${{ inputs.dist-tag }} versions [skip ci]'
           git fetch --depth=1 origin +refs/tags/*:refs/tags/*
-          yarn publish:next --yes
+
+      - name: Publish to npm
+        run: yarn publish:${{ inputs.dist-tag }} --yes
+
+      - name: Create git tag
+        if: inputs.dist-tag == 'rc'
+        run: |
+          VERSION=$(node -p "require('./packages/core/dist/package.json').version")
+          git reset --hard HEAD~1
+          git tag "v$VERSION"
+          git push origin "refs/tags/v$VERSION"
