@@ -51,7 +51,7 @@
   },
   "dependencies": {
     "@mikro-orm/sql": "6.6.4",
-    "kysely": "0.28.10",
+    "kysely": "0.28.11",
     "libsql": "0.5.22",
     "sqlstring-sqlite": "0.1.1"
   },
