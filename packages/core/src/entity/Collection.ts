@@ -655,7 +655,15 @@ export class Collection<T extends object, O extends object = object> {
    * Returns the first element of this collection that satisfies the predicate.
    */
   find<S extends T>(cb: (item: T, index: number) => item is S): S | undefined;
+
+  /**
+   * Returns the first element of this collection that satisfies the predicate.
+   */
   find(cb: (item: T, index: number) => boolean): T | undefined;
+
+  /**
+   * Returns the first element of this collection that satisfies the predicate.
+   */
   find(cb: (item: T, index: number) => boolean): T | undefined {
     this.checkInitialized();
     let index = 0;
@@ -673,7 +681,15 @@ export class Collection<T extends object, O extends object = object> {
    * Extracts a subset of the collection items.
    */
   filter<S extends T>(cb: (item: T, index: number) => item is S): S[];
+
+  /**
+   * Extracts a subset of the collection items.
+   */
   filter(cb: (item: T, index: number) => boolean): T[];
+
+  /**
+   * Extracts a subset of the collection items.
+   */
   filter(cb: (item: T, index: number) => boolean): T[] {
     this.checkInitialized();
     const items: T[] = [];
