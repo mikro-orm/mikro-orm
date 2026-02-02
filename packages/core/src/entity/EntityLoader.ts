@@ -508,11 +508,8 @@ export class EntityLoader {
     let where = await this.extractChildCondition(options, prop, true);
     const fields = this.buildFields(options.fields, prop);
     const exclude = Array.isArray(options.exclude) ? Utils.extractChildElements(options.exclude, prop.name) : options.exclude;
-    const options2 = { ...options } as unknown as FindOptions<Entity, any, any, any>;
-    delete options2.limit;
-    delete options2.offset;
-    options2.fields = fields;
-    options2.exclude = exclude;
+    const options2 = { ...options, fields, exclude } as unknown as FindOptions<Entity, any, any, any>;
+    (['limit', 'offset', 'first', 'last', 'before', 'after', 'overfetch'] as const).forEach(prop => delete options2[prop]);
     options2.populate = (populate?.children ?? []);
 
     if (prop.customType) {
