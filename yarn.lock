@@ -308,12 +308,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@commitlint/cli@npm:20.4.0":
-  version: 20.4.0
-  resolution: "@commitlint/cli@npm:20.4.0"
+"@commitlint/cli@npm:20.4.1":
+  version: 20.4.1
+  resolution: "@commitlint/cli@npm:20.4.1"
   dependencies:
     "@commitlint/format": "npm:^20.4.0"
-    "@commitlint/lint": "npm:^20.4.0"
+    "@commitlint/lint": "npm:^20.4.1"
     "@commitlint/load": "npm:^20.4.0"
     "@commitlint/read": "npm:^20.4.0"
     "@commitlint/types": "npm:^20.4.0"
@@ -321,17 +321,17 @@ __metadata:
     yargs: "npm:^17.0.0"
   bin:
     commitlint: ./cli.js
-  checksum: 10/2269ab6a7a5c5e7efb3f64b1c809e5d82cba8d72fc4ee3b9b5d3c3359705b619df8bc208b55c1ab0e26300b1ba1ffbb04fd2926eb5da4aa4c7c73e0985a00dd5
+  checksum: 10/1779ec9f7ee4dd867d62ba972737fcc4ec9c86678906cede08310609bbeff372c2a355d9293eedf8fd125a07ef46515a3fb260c6e70c2f82698debb67cac6ee1
   languageName: node
   linkType: hard
 
-"@commitlint/config-conventional@npm:20.4.0":
-  version: 20.4.0
-  resolution: "@commitlint/config-conventional@npm:20.4.0"
+"@commitlint/config-conventional@npm:20.4.1":
+  version: 20.4.1
+  resolution: "@commitlint/config-conventional@npm:20.4.1"
   dependencies:
     "@commitlint/types": "npm:^20.4.0"
     conventional-changelog-conventionalcommits: "npm:^9.1.0"
-  checksum: 10/5e32209f78f29275cccc1b149ecb087252d66815b0cc2ed3232f9dd50e4f5ec2eea5d107c6a45d66e91ddbd85fe64b8a098117e63da57890c66af6fe5162fe2a
+  checksum: 10/fbef5f0858a0ee99a092cb8a61e011f6e8f1335825d17c81302b3ce96d4e3d79c0e97f11e2e56fe765baa7770956e99f50820278747ba9c5affa2c1394a8d34d
   languageName: node
   linkType: hard
 
@@ -345,13 +345,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@commitlint/ensure@npm:^20.4.0":
-  version: 20.4.0
-  resolution: "@commitlint/ensure@npm:20.4.0"
+"@commitlint/ensure@npm:^20.4.1":
+  version: 20.4.1
+  resolution: "@commitlint/ensure@npm:20.4.1"
   dependencies:
     "@commitlint/types": "npm:^20.4.0"
-    kasi: "npm:^2.0.1"
-  checksum: 10/cd6fa5ce3097b36763adf68d99f7951e0672f1339fdc655187261ec30193d086afdacd9f9e76483b0d9e1cb76789bbd0577fc91d04814257090faa4a2c94198c
+    lodash.camelcase: "npm:^4.3.0"
+    lodash.kebabcase: "npm:^4.1.1"
+    lodash.snakecase: "npm:^4.1.1"
+    lodash.startcase: "npm:^4.4.0"
+    lodash.upperfirst: "npm:^4.3.1"
+  checksum: 10/6790e1588981d970ad2850992dea85a1b77ca9631771b75d755dccd76b97bcdefa2c3c740780332dfba39c9302e9f55ddfa7517c3af3108a0a29f07aaea94504
   languageName: node
   linkType: hard
 
@@ -372,25 +376,25 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@commitlint/is-ignored@npm:^20.4.0":
-  version: 20.4.0
-  resolution: "@commitlint/is-ignored@npm:20.4.0"
+"@commitlint/is-ignored@npm:^20.4.1":
+  version: 20.4.1
+  resolution: "@commitlint/is-ignored@npm:20.4.1"
   dependencies:
     "@commitlint/types": "npm:^20.4.0"
     semver: "npm:^7.6.0"
-  checksum: 10/8d235fcdacc87930529e16717fdaade47e1b451bbbc1826128b3d2b84ee38f7d282d047ee6cf78ba1f97ea3905952ce1e449744e012e58250e45bb8ea49002fd
+  checksum: 10/f6c9dbbed7ab256fc18a669d3a7ebf2c79c2ca450a46c66a32b3ca508bd431a05e0ebf97b43999625719ba966fc8e519962ad2422d13bc42439dec872465ae3a
   languageName: node
   linkType: hard
 
-"@commitlint/lint@npm:^20.4.0":
-  version: 20.4.0
-  resolution: "@commitlint/lint@npm:20.4.0"
+"@commitlint/lint@npm:^20.4.1":
+  version: 20.4.1
+  resolution: "@commitlint/lint@npm:20.4.1"
   dependencies:
-    "@commitlint/is-ignored": "npm:^20.4.0"
-    "@commitlint/parse": "npm:^20.4.0"
-    "@commitlint/rules": "npm:^20.4.0"
+    "@commitlint/is-ignored": "npm:^20.4.1"
+    "@commitlint/parse": "npm:^20.4.1"
+    "@commitlint/rules": "npm:^20.4.1"
     "@commitlint/types": "npm:^20.4.0"
-  checksum: 10/7fb9adc080d67a8fa95d20489e8f234c78ee3ca690eb2d70f1674cd589a74b4604cef12623dc4b8e7c9615cb8243d1a5281e95e5cd94baeed72890bc54b0c467
+  checksum: 10/cad34b7d904be54875f34f475e272d7a5693df171e867923ad0cce60621c9855df1572ae912a5a7202cddffe83eb2ba0652544737cf112168208354d09df3e04
   languageName: node
   linkType: hard
 
@@ -418,14 +422,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@commitlint/parse@npm:^20.4.0":
-  version: 20.4.0
-  resolution: "@commitlint/parse@npm:20.4.0"
+"@commitlint/parse@npm:^20.4.1":
+  version: 20.4.1
+  resolution: "@commitlint/parse@npm:20.4.1"
   dependencies:
     "@commitlint/types": "npm:^20.4.0"
     conventional-changelog-angular: "npm:^8.1.0"
     conventional-commits-parser: "npm:^6.2.1"
-  checksum: 10/d37b45aa6873df51b3bc94aeabb3e9312a6fb81c1037b968d1a77e8ef95e1cfc5295c2385b080ee723647979be65036c325f9fd7e2a5a48a51aceacc45c196be
+  checksum: 10/c38c3964377c99e0b95f428f2161ac2d188a1e28e636bb0b2705a49996d8fbc34bb329eb4b265a77c71dbd520244d5ddce5ed519b9451b8530f22657f803a7a1
   languageName: node
   linkType: hard
 
@@ -456,15 +460,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@commitlint/rules@npm:^20.4.0":
-  version: 20.4.0
-  resolution: "@commitlint/rules@npm:20.4.0"
+"@commitlint/rules@npm:^20.4.1":
+  version: 20.4.1
+  resolution: "@commitlint/rules@npm:20.4.1"
   dependencies:
-    "@commitlint/ensure": "npm:^20.4.0"
+    "@commitlint/ensure": "npm:^20.4.1"
     "@commitlint/message": "npm:^20.4.0"
     "@commitlint/to-lines": "npm:^20.0.0"
     "@commitlint/types": "npm:^20.4.0"
-  checksum: 10/cc766288831f89713f39f976ff5ff39c24fb0fbdde6bd6a03aceda1aaedb107cbdc90d6bb6c1448ea9b30158ee88a6caeaf40b61cb80583c6359c04fb2dcad56
+  checksum: 10/e383cc925acd42b884cc52c7716a08f1bcb7f34a922310aaed52a812c629ec8f865de089a9a8c85a658a5563a7b7cee4ff314aa50809f3c394bc1f63a501ce64
   languageName: node
   linkType: hard
 
@@ -1606,8 +1610,8 @@ __metadata:
   resolution: "@mikro-orm/root@workspace:."
   dependencies:
     "@ark/attest": "npm:0.56.0"
-    "@commitlint/cli": "npm:20.4.0"
-    "@commitlint/config-conventional": "npm:20.4.0"
+    "@commitlint/cli": "npm:20.4.1"
+    "@commitlint/config-conventional": "npm:20.4.1"
     "@mikro-orm/mongo-highlighter": "npm:1.0.0"
     "@mikro-orm/sql-highlighter": "npm:1.0.1"
     "@swc-node/register": "npm:1.11.1"
@@ -1631,7 +1635,7 @@ __metadata:
     lerna: "npm:9.0.3"
     lint-staged: "npm:16.2.7"
     mongodb-memory-server-core: "npm:11.0.1"
-    oxfmt: "npm:^0.27.0"
+    oxfmt: "npm:^0.28.0"
     oxlint: "npm:^1.42.0"
     reflect-metadata: "npm:0.2.2"
     rimraf: "npm:6.1.2"
@@ -2365,58 +2369,58 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@oxfmt/darwin-arm64@npm:0.27.0":
-  version: 0.27.0
-  resolution: "@oxfmt/darwin-arm64@npm:0.27.0"
+"@oxfmt/darwin-arm64@npm:0.28.0":
+  version: 0.28.0
+  resolution: "@oxfmt/darwin-arm64@npm:0.28.0"
   conditions: os=darwin & cpu=arm64
   languageName: node
   linkType: hard
 
-"@oxfmt/darwin-x64@npm:0.27.0":
-  version: 0.27.0
-  resolution: "@oxfmt/darwin-x64@npm:0.27.0"
+"@oxfmt/darwin-x64@npm:0.28.0":
+  version: 0.28.0
+  resolution: "@oxfmt/darwin-x64@npm:0.28.0"
   conditions: os=darwin & cpu=x64
   languageName: node
   linkType: hard
 
-"@oxfmt/linux-arm64-gnu@npm:0.27.0":
-  version: 0.27.0
-  resolution: "@oxfmt/linux-arm64-gnu@npm:0.27.0"
+"@oxfmt/linux-arm64-gnu@npm:0.28.0":
+  version: 0.28.0
+  resolution: "@oxfmt/linux-arm64-gnu@npm:0.28.0"
   conditions: os=linux & cpu=arm64 & libc=glibc
   languageName: node
   linkType: hard
 
-"@oxfmt/linux-arm64-musl@npm:0.27.0":
-  version: 0.27.0
-  resolution: "@oxfmt/linux-arm64-musl@npm:0.27.0"
+"@oxfmt/linux-arm64-musl@npm:0.28.0":
+  version: 0.28.0
+  resolution: "@oxfmt/linux-arm64-musl@npm:0.28.0"
   conditions: os=linux & cpu=arm64 & libc=musl
   languageName: node
   linkType: hard
 
-"@oxfmt/linux-x64-gnu@npm:0.27.0":
-  version: 0.27.0
-  resolution: "@oxfmt/linux-x64-gnu@npm:0.27.0"
+"@oxfmt/linux-x64-gnu@npm:0.28.0":
+  version: 0.28.0
+  resolution: "@oxfmt/linux-x64-gnu@npm:0.28.0"
   conditions: os=linux & cpu=x64 & libc=glibc
   languageName: node
   linkType: hard
 
-"@oxfmt/linux-x64-musl@npm:0.27.0":
-  version: 0.27.0
-  resolution: "@oxfmt/linux-x64-musl@npm:0.27.0"
+"@oxfmt/linux-x64-musl@npm:0.28.0":
+  version: 0.28.0
+  resolution: "@oxfmt/linux-x64-musl@npm:0.28.0"
   conditions: os=linux & cpu=x64 & libc=musl
   languageName: node
   linkType: hard
 
-"@oxfmt/win32-arm64@npm:0.27.0":
-  version: 0.27.0
-  resolution: "@oxfmt/win32-arm64@npm:0.27.0"
+"@oxfmt/win32-arm64@npm:0.28.0":
+  version: 0.28.0
+  resolution: "@oxfmt/win32-arm64@npm:0.28.0"
   conditions: os=win32 & cpu=arm64
   languageName: node
   linkType: hard
 
-"@oxfmt/win32-x64@npm:0.27.0":
-  version: 0.27.0
-  resolution: "@oxfmt/win32-x64@npm:0.27.0"
+"@oxfmt/win32-x64@npm:0.28.0":
+  version: 0.28.0
+  resolution: "@oxfmt/win32-x64@npm:0.28.0"
   conditions: os=win32 & cpu=x64
   languageName: node
   linkType: hard
@@ -6465,13 +6469,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"kasi@npm:^2.0.1":
-  version: 2.0.1
-  resolution: "kasi@npm:2.0.1"
-  checksum: 10/011e7451c0e734950417142486671d1afed4c520b07fa497bad6f45207a2e8225caedec42cb4a4dccf2a6c156cffe4946a6f989b15eb4e734690ef2391d6955c
-  languageName: node
-  linkType: hard
-
 "kind-of@npm:^6.0.3":
   version: 6.0.3
   resolution: "kind-of@npm:6.0.3"
@@ -6772,6 +6769,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"lodash.camelcase@npm:^4.3.0":
+  version: 4.3.0
+  resolution: "lodash.camelcase@npm:4.3.0"
+  checksum: 10/c301cc379310441dc73cd6cebeb91fb254bea74e6ad3027f9346fc43b4174385153df420ffa521654e502fd34c40ef69ca4e7d40ee7129a99e06f306032bfc65
+  languageName: node
+  linkType: hard
+
 "lodash.includes@npm:^4.3.0":
   version: 4.3.0
   resolution: "lodash.includes@npm:4.3.0"
@@ -6821,6 +6825,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"lodash.kebabcase@npm:^4.1.1":
+  version: 4.1.1
+  resolution: "lodash.kebabcase@npm:4.1.1"
+  checksum: 10/d84ec5441ef8e5c718c50315f35b0a045a77c7e8ee3e54472c06dc31f6f3602e95551a16c0923d689198b51deb8902c4bbc54fc9b965b26c1f86e21df3a05f34
+  languageName: node
+  linkType: hard
+
 "lodash.mergewith@npm:^4.6.2":
   version: 4.6.2
   resolution: "lodash.mergewith@npm:4.6.2"
@@ -6832,6 +6843,27 @@ __metadata:
   version: 4.1.1
   resolution: "lodash.once@npm:4.1.1"
   checksum: 10/202f2c8c3d45e401b148a96de228e50ea6951ee5a9315ca5e15733d5a07a6b1a02d9da1e7fdf6950679e17e8ca8f7190ec33cae47beb249b0c50019d753f38f3
+  languageName: node
+  linkType: hard
+
+"lodash.snakecase@npm:^4.1.1":
+  version: 4.1.1
+  resolution: "lodash.snakecase@npm:4.1.1"
+  checksum: 10/82ed40935d840477ef8fee64f9f263f75989c6cde36b84aae817246d95826228e1b5a7f6093c51de324084f86433634c7af244cb89496633cacfe443071450d0
+  languageName: node
+  linkType: hard
+
+"lodash.startcase@npm:^4.4.0":
+  version: 4.4.0
+  resolution: "lodash.startcase@npm:4.4.0"
+  checksum: 10/3091048a54a2f92bcf2c6441d2bd9a706fb133d5f461ae7c310d6dca1530338a06c91e9e42a5b14b12e875ddae1814d448050dc02afe2cec09b3995d8e836837
+  languageName: node
+  linkType: hard
+
+"lodash.upperfirst@npm:^4.3.1":
+  version: 4.3.1
+  resolution: "lodash.upperfirst@npm:4.3.1"
+  checksum: 10/3e849d4eb4dbf26faee6435edda8e707b65a5dbd2f10f8def5a16a57bbbf38d3b7506950f0dd455e9c46ba73af35f1de75df4ef83952106949413d64eed59333
   languageName: node
   linkType: hard
 
@@ -7951,19 +7983,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"oxfmt@npm:^0.27.0":
-  version: 0.27.0
-  resolution: "oxfmt@npm:0.27.0"
+"oxfmt@npm:^0.28.0":
+  version: 0.28.0
+  resolution: "oxfmt@npm:0.28.0"
   dependencies:
-    "@oxfmt/darwin-arm64": "npm:0.27.0"
-    "@oxfmt/darwin-x64": "npm:0.27.0"
-    "@oxfmt/linux-arm64-gnu": "npm:0.27.0"
-    "@oxfmt/linux-arm64-musl": "npm:0.27.0"
-    "@oxfmt/linux-x64-gnu": "npm:0.27.0"
-    "@oxfmt/linux-x64-musl": "npm:0.27.0"
-    "@oxfmt/win32-arm64": "npm:0.27.0"
-    "@oxfmt/win32-x64": "npm:0.27.0"
-    tinypool: "npm:2.0.0"
+    "@oxfmt/darwin-arm64": "npm:0.28.0"
+    "@oxfmt/darwin-x64": "npm:0.28.0"
+    "@oxfmt/linux-arm64-gnu": "npm:0.28.0"
+    "@oxfmt/linux-arm64-musl": "npm:0.28.0"
+    "@oxfmt/linux-x64-gnu": "npm:0.28.0"
+    "@oxfmt/linux-x64-musl": "npm:0.28.0"
+    "@oxfmt/win32-arm64": "npm:0.28.0"
+    "@oxfmt/win32-x64": "npm:0.28.0"
+    tinypool: "npm:2.1.0"
   dependenciesMeta:
     "@oxfmt/darwin-arm64":
       optional: true
@@ -7983,7 +8015,7 @@ __metadata:
       optional: true
   bin:
     oxfmt: bin/oxfmt
-  checksum: 10/25595932a32b9c4190c901c06ab54e9e9e388a3aefde8706a92e2176f0f89e8704f84fcb2ccd7d785ba0d671df2bfb05f9573b496092c879b393711a99bd8694
+  checksum: 10/30f6f93831a994594f00934de9cc9be1b22500efd6eb704dfc7405e61110d118083788a81f3b269412b028d010b78c421d07b2d42a80dd161c81bbdeb77ad6be
   languageName: node
   linkType: hard
 
@@ -9899,10 +9931,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tinypool@npm:2.0.0":
-  version: 2.0.0
-  resolution: "tinypool@npm:2.0.0"
-  checksum: 10/0f9dbeb25b2f0d8243321d8044254accf35b14d1c5b343115dd86ef3a0aacd64b68fc6d319ea714a295165ed355e93d031757a7505067448ffd0fa688697a80d
+"tinypool@npm:2.1.0":
+  version: 2.1.0
+  resolution: "tinypool@npm:2.1.0"
+  checksum: 10/c11cfe84e8147d5bf198fe04ea789c068dfa8656c7f3483c76a7408c02d108b2e07d7301458021a0a98952d4a760efb6212ab49a01bac085c4aed3d6ee40ab2d
   languageName: node
   linkType: hard
 
