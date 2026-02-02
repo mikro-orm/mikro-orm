@@ -100,7 +100,7 @@ export abstract class SchemaHelper {
     throw new Error('Not supported by given driver');
   }
 
-  async loadViews(schema: DatabaseSchema, connection: AbstractSqlConnection): Promise<void> {
+  async loadViews(schema: DatabaseSchema, connection: AbstractSqlConnection, schemaName?: string): Promise<void> {
     throw new Error('Not supported by given driver');
   }
 

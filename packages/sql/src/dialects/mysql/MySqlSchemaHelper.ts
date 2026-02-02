@@ -51,12 +51,12 @@ export class MySqlSchemaHelper extends SchemaHelper {
     return `select table_name as table_name, nullif(table_schema, schema()) as schema_name, table_comment as table_comment from information_schema.tables where table_type = 'BASE TABLE' and table_schema = schema()`;
   }
 
-  override getListViewsSQL(schemaName?: string): string {
+  override getListViewsSQL(): string {
     return `select table_name as view_name, nullif(table_schema, schema()) as schema_name, view_definition from information_schema.views where table_schema = schema()`;
   }
 
   override async loadViews(schema: DatabaseSchema, connection: AbstractSqlConnection, schemaName?: string): Promise<void> {
-    const views = await connection.execute<{ view_name: string; schema_name: string | null; view_definition?: string }[]>(this.getListViewsSQL(schemaName));
+    const views = await connection.execute<{ view_name: string; schema_name: string | null; view_definition?: string }[]>(this.getListViewsSQL());
 
     for (const view of views) {
       // MySQL information_schema.views.view_definition requires SHOW VIEW privilege

@@ -104,7 +104,7 @@ export class DatabaseSchema {
     return [...this.namespaces];
   }
 
-  static async create(connection: AbstractSqlConnection, platform: AbstractSqlPlatform, config: Configuration, schemaName?: string, schemas?: string[], takeTables?: (string | RegExp)[], skipTables?: (string | RegExp)[]): Promise<DatabaseSchema> {
+  static async create(connection: AbstractSqlConnection, platform: AbstractSqlPlatform, config: Configuration, schemaName?: string, schemas?: string[], takeTables?: (string | RegExp)[], skipTables?: (string | RegExp)[], skipViews?: (string | RegExp)[]): Promise<DatabaseSchema> {
     const schema = new DatabaseSchema(platform, schemaName ?? config.get('schema') ?? platform.getDefaultSchemaName());
     const allTables = await platform.getSchemaHelper()!.getAllTables(connection, schemas);
     const parts = config.get('migrations').tableName!.split('.');
@@ -119,6 +119,11 @@ export class DatabaseSchema {
     // Load materialized views (PostgreSQL only)
     if (platform.supportsMaterializedViews()) {
       await platform.getSchemaHelper()!.loadMaterializedViews(schema, connection, schemaName);
+    }
+
+    // Filter out skipped views
+    if (skipViews && skipViews.length > 0) {
+      schema.views = schema.views.filter(v => this.isNameAllowed(v.name, skipViews));
     }
 
     return schema;
@@ -250,10 +255,14 @@ export class DatabaseSchema {
       : nameToMatch.test(name);
   }
 
+  private static isNameAllowed(name: string, skipNames?: (string | RegExp)[]) {
+    return !(skipNames?.some(pattern => this.matchName(name, pattern)) ?? false);
+  }
+
   private static isTableNameAllowed(tableName: string, takeTables?: (string | RegExp)[], skipTables?: (string | RegExp)[]) {
     return (
       (takeTables?.some(tableNameToMatch => this.matchName(tableName, tableNameToMatch)) ?? true) &&
-      !(skipTables?.some(tableNameToMatch => this.matchName(tableName, tableNameToMatch)) ?? false)
+      this.isNameAllowed(tableName, skipTables)
     );
   }
 
