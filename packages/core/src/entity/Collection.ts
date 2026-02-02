@@ -654,6 +654,8 @@ export class Collection<T extends object, O extends object = object> {
   /**
    * Returns the first element of this collection that satisfies the predicate.
    */
+  find<S extends T>(cb: (item: T, index: number) => item is S): S | undefined;
+  find(cb: (item: T, index: number) => boolean): T | undefined;
   find(cb: (item: T, index: number) => boolean): T | undefined {
     this.checkInitialized();
     let index = 0;

@@ -1,7 +1,13 @@
 import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { Collection, MikroORM, type Ref } from '@mikro-orm/sqlite';
 
-@Entity()
+@Entity({
+  discriminatorColumn: 'type',
+  discriminatorMap: {
+    json: 'JSONFile',
+    markdown: 'MarkdownFile',
+  },
+})
 class SavedFile {
 
   @PrimaryKey()
@@ -12,19 +18,23 @@ class SavedFile {
 
 }
 
-@Entity()
+@Entity({
+  discriminatorValue: 'json',
+})
 class JSONFile extends SavedFile {
 
   @Property()
-  jsonContent!: string;
+  extension = '.json';
 
 }
 
-@Entity()
+@Entity({
+  discriminatorValue: 'markdown',
+})
 class MarkdownFile extends SavedFile {
 
   @Property()
-  markdownContent!: string;
+  extension = '.md';
 
 }
 
@@ -55,13 +65,30 @@ afterAll(async () => {
   await orm.close(true);
 });
 
-test('filtering a collection narrows the output type', () => {
+test('filtering a collection returns the expected items', () => {
   const directory = new Directory();
 
-  directory.files.add(new JSONFile());
+  const jsonFile = new JSONFile();
+
+  directory.files.add(jsonFile);
   directory.files.add(new MarkdownFile());
 
-  const filtered = directory.files.filter((item): item is JSONFile => item instanceof JSONFile);
+  const filtered = directory.files.filter(item => item instanceof JSONFile);
 
+  expect(filtered).toStrictEqual([jsonFile]);
   expectTypeOf(filtered).toEqualTypeOf<JSONFile[]>();
+});
+
+test('finding an item in a collection returns the expected item', () => {
+  const directory = new Directory();
+
+  const jsonFile = new JSONFile();
+
+  directory.files.add(jsonFile);
+  directory.files.add(new MarkdownFile());
+
+  const result = directory.files.find(item => item instanceof JSONFile);
+
+  expect(result).toStrictEqual(jsonFile);
+  expectTypeOf(result).toEqualTypeOf<JSONFile | undefined>();
 });
