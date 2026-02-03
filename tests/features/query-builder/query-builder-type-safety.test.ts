@@ -136,4 +136,99 @@ describe('QueryBuilder type safety', () => {
 
   });
 
+  describe('aliased filter value validation', () => {
+
+    test('should validate filter operators on root alias keys', async () => {
+      const qb = orm.em.createQueryBuilder(Author2, 'a').select('*');
+
+      // Valid: string value
+      qb.where({ 'a.name': 'test' });
+
+      // Valid: filter operators
+      qb.where({ 'a.name': { $eq: 'test' } });
+      qb.where({ 'a.name': { $ne: 'test' } });
+      qb.where({ 'a.name': { $in: ['a', 'b'] } });
+      qb.where({ 'a.age': { $gt: 18 } });
+      qb.where({ 'a.age': { $gte: 18, $lt: 65 } });
+
+      // Type-only check for invalid operators
+      if (false as boolean) {
+        // @ts-expect-error - '$invalidOp' is not a valid filter operator
+        qb.where({ 'a.name': { $invalidOp: 'test' } });
+
+        // @ts-expect-error - '$foo' is not a valid filter operator
+        qb.where({ 'a.age': { $foo: 123 } });
+      }
+    });
+
+    test('should validate filter value types match property types (root alias)', async () => {
+      const qb = orm.em.createQueryBuilder(Author2, 'a').select('*');
+
+      // Valid: correct types
+      qb.where({ 'a.name': 'test' }); // string for string property
+      qb.where({ 'a.age': 18 }); // number for number property
+      qb.where({ 'a.termsAccepted': true }); // boolean for boolean property
+      qb.where({ 'a.name': { $like: '%test%' } }); // $like operator (string-only)
+    });
+
+    test('should validate filter operators on joined alias keys', async () => {
+      const qb = orm.em.createQueryBuilder(Author2, 'a')
+        .select('*')
+        .leftJoin('a.books', 'b');
+
+      // Valid: string value
+      qb.where({ 'b.title': 'test' });
+
+      // Valid: filter operators
+      qb.where({ 'b.title': { $eq: 'test' } });
+      qb.where({ 'b.title': { $like: '%test%' } });
+      qb.where({ 'b.price': { $gte: 10 } });
+
+      // Type-only check for invalid operators
+      if (false as boolean) {
+        // @ts-expect-error - '$badOperator' is not a valid filter operator
+        qb.where({ 'b.title': { $badOperator: 'test' } });
+
+        // @ts-expect-error - '$xyz' is not a valid filter operator
+        qb.where({ 'b.price': { $xyz: 100 } });
+      }
+    });
+
+    test('should validate filter operators in $and/$or/$not with aliased keys', async () => {
+      const qb = orm.em.createQueryBuilder(Author2, 'a')
+        .select('*')
+        .leftJoin('a.books', 'b');
+
+      // Valid: filter operators in $and
+      qb.where({
+        $and: [
+          { 'b.title': { $eq: 'test' } },
+          { 'a.name': { $like: '%foo%' } },
+        ],
+      });
+
+      // Valid: filter operators in $or
+      qb.where({
+        $or: [
+          { 'b.price': { $gt: 10 } },
+          { 'b.price': { $lt: 5 } },
+        ],
+      });
+
+      // Type-only check for invalid operators in nested conditions
+      if (false as boolean) {
+        // @ts-expect-error - '$invalidOp' is not a valid filter operator in $and
+        qb.where({
+          $and: [{ 'b.title': { $invalidOp: 'test' } }],
+        });
+
+        // @ts-expect-error - '$badOp' is not a valid filter operator in $or
+        qb.where({
+          $or: [{ 'a.name': { $badOp: 'test' } }],
+        });
+      }
+    });
+
+  });
+
 });

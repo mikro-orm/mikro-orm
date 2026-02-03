@@ -3,7 +3,6 @@ import { Entity, Formula, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMet
 
 @Entity()
 class Author {
-
   @PrimaryKey()
   id!: number;
 
@@ -12,12 +11,10 @@ class Author {
 
   @OneToMany(() => Book, book => book.author)
   books = new Collection<Book>(this);
-
 }
 
 @Entity()
 class Book {
-
   [OptionalProps]?: 'upperTitle';
 
   @PrimaryKey()
@@ -31,7 +28,6 @@ class Book {
 
   @ManyToOne(() => Author, { ref: true })
   author!: Ref<Author>;
-
 }
 
 let orm: MikroORM;
@@ -61,14 +57,7 @@ afterAll(async () => {
 });
 
 test('lazy formula an qb.joinAndSelect()', async () => {
-  const qb = orm.em
-    .createQueryBuilder(Author, 'a')
-    .select(['a.id'])
-    .leftJoinAndSelect('a.books', 'b', undefined, [
-      'b.id',
-      'b.title',
-      'b.upperTitle',
-    ]);
+  const qb = orm.em.createQueryBuilder(Author, 'a').select(['a.id']).leftJoinAndSelect('a.books', 'b', undefined, ['b.id', 'b.title', 'b.upperTitle']);
 
   const result = await qb.getResultList();
   expect(result[0].books.$.getItems()[0].upperTitle).toBe('BOOK 1');

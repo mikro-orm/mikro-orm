@@ -1,0 +1,226 @@
+import { MikroORM, Loaded } from '@mikro-orm/mysql';
+import { Author2, Book2 } from '../../entities-sql/index.js';
+import { initORMMySql } from '../../bootstrap.js';
+import { expectTypeOf } from 'vitest';
+import type { ModifyFields } from '@mikro-orm/sql';
+
+// ============================================
+// Internal helper types (copied for testing)
+// These mirror the types in QueryBuilder.ts
+// ============================================
+
+// Extract alias names from Context
+type ExtractAliasNames<Context> = Context[keyof Context] extends infer Join
+  ? Join extends any
+    ? Join extends [string, infer Alias, any, any]
+      ? Alias & string
+      : never
+    : never
+  : never;
+
+// Strip root alias prefix from a field path
+type StripRootAlias<F extends string, RootAlias extends string, Context = never> = F extends `${RootAlias}.${infer Field}`
+  ? Field
+  : F extends `${infer Alias}.${string}`
+    ? Alias extends ExtractAliasNames<Context>
+      ? never
+      : F
+    : F;
+
+// Extract root entity fields from selected fields
+type ExtractRootFields<Fields, RootAlias extends string, Context = never> = [Fields] extends ['*']
+  ? '*'
+  : Fields extends `${RootAlias}.*`
+    ? '*'
+    : Fields extends string
+      ? StripRootAlias<Fields, RootAlias, Context>
+      : never;
+
+describe('QueryBuilder Fields type tracking', () => {
+  let orm: MikroORM;
+
+  beforeAll(async () => (orm = await initORMMySql('mysql')));
+  afterAll(async () => await orm.close(true));
+
+  describe('StripRootAlias helper type', () => {
+    test('should strip root alias from simple field', () => {
+      type Result = StripRootAlias<'a.name', 'a'>;
+      expectTypeOf<Result>().toEqualTypeOf<'name'>();
+    });
+
+    test('should strip root alias from embedded property path', () => {
+      // 'a.identity.foo' -> 'identity.foo'
+      type Result = StripRootAlias<'a.identity.foo', 'a'>;
+      expectTypeOf<Result>().toEqualTypeOf<'identity.foo'>();
+    });
+
+    test('should return never for joined alias paths when Context is provided', () => {
+      // 'b.title' with root alias 'a' and 'b' in Context -> never
+      type Context = { b: ['books', 'b', Book2, true] };
+      type Result = StripRootAlias<'b.title', 'a', Context>;
+      expectTypeOf<Result>().toEqualTypeOf<never>();
+    });
+
+    test('should keep unaliased simple fields as-is', () => {
+      type Result = StripRootAlias<'name', 'a'>;
+      expectTypeOf<Result>().toEqualTypeOf<'name'>();
+    });
+
+    test('should handle unaliased embedded property paths (no Context)', () => {
+      // 'identity.foo' without alias should be preserved when Context is empty
+      type Result = StripRootAlias<'identity.foo', 'a'>;
+      expectTypeOf<Result>().toEqualTypeOf<'identity.foo'>();
+    });
+
+    test('should handle unaliased embedded property paths (with Context)', () => {
+      // 'identity.foo' should be preserved even when Context has other aliases
+      type Context = { b: ['books', 'b', Book2, true] };
+      type Result = StripRootAlias<'identity.foo', 'a', Context>;
+      expectTypeOf<Result>().toEqualTypeOf<'identity.foo'>();
+    });
+  });
+
+  describe('ExtractRootFields helper type', () => {
+    test('should handle wildcard', () => {
+      type Result = ExtractRootFields<'*', 'a'>;
+      expectTypeOf<Result>().toEqualTypeOf<'*'>();
+    });
+
+    test('should handle aliased wildcard', () => {
+      type Result = ExtractRootFields<'a.*', 'a'>;
+      expectTypeOf<Result>().toEqualTypeOf<'*'>();
+    });
+
+    test('should extract simple field from aliased path', () => {
+      type Result = ExtractRootFields<'a.name', 'a'>;
+      expectTypeOf<Result>().toEqualTypeOf<'name'>();
+    });
+
+    test('should extract embedded field from aliased path', () => {
+      type Result = ExtractRootFields<'a.identity.foo', 'a'>;
+      expectTypeOf<Result>().toEqualTypeOf<'identity.foo'>();
+    });
+
+    test('should return never for joined alias path with Context', () => {
+      type Context = { b: ['books', 'b', Book2, true] };
+      type Result = ExtractRootFields<'b.title', 'a', Context>;
+      expectTypeOf<Result>().toEqualTypeOf<never>();
+    });
+
+    test('should extract unaliased embedded property path (no Context)', () => {
+      // 'identity.foo' -> 'identity.foo' when no Context
+      type Result = ExtractRootFields<'identity.foo', 'a'>;
+      expectTypeOf<Result>().toEqualTypeOf<'identity.foo'>();
+    });
+
+    test('should extract unaliased embedded property path (with Context)', () => {
+      // 'identity.foo' -> 'identity.foo' even with Context
+      type Context = { b: ['books', 'b', Book2, true] };
+      type Result = ExtractRootFields<'identity.foo', 'a', Context>;
+      expectTypeOf<Result>().toEqualTypeOf<'identity.foo'>();
+    });
+  });
+
+  describe('ModifyFields helper type', () => {
+    test('should add join fields with proper path prefix', () => {
+      type Context = { b: ['books', 'b', Book2, true] };
+      type Result = ModifyFields<'*', 'a', Context, 'books', 'b', readonly ['title', 'price']>;
+      expectTypeOf<Result>().toEqualTypeOf<'*' | 'books.title' | 'books.price'>();
+    });
+
+    test('should strip alias prefix from join fields', () => {
+      type Context = { b: ['books', 'b', Book2, true] };
+      // Fields with alias prefix should be stripped: 'b.title' -> 'title' -> 'books.title'
+      type Result = ModifyFields<'*', 'a', Context, 'books', 'b', readonly ['b.title', 'b.price']>;
+      expectTypeOf<Result>().toEqualTypeOf<'*' | 'books.title' | 'books.price'>();
+    });
+
+    test('should preserve existing fields when no join fields specified', () => {
+      type Context = { b: ['books', 'b', Book2, true] };
+      type Result = ModifyFields<'id' | 'name', 'a', Context, 'books', 'b', undefined>;
+      expectTypeOf<Result>().toEqualTypeOf<'id' | 'name'>();
+    });
+  });
+
+  describe('select() method return type', () => {
+    test('should track selected fields from aliased paths', async () => {
+      const qb = orm.em.createQueryBuilder(Author2, 'a').select(['a.id', 'a.name']);
+
+      const result = await qb.getResultList();
+      expectTypeOf(result).toEqualTypeOf<Loaded<Author2, never, 'id' | 'name'>[]>();
+    });
+
+    test('should track wildcard selection', async () => {
+      const qb = orm.em.createQueryBuilder(Author2, 'a').select('*');
+
+      const result = await qb.getResultList();
+      expectTypeOf(result).toEqualTypeOf<Loaded<Author2, never, '*'>[]>();
+    });
+
+    test('should track aliased wildcard selection', async () => {
+      const qb = orm.em.createQueryBuilder(Author2, 'a').select('a.*');
+
+      const result = await qb.getResultList();
+      expectTypeOf(result).toEqualTypeOf<Loaded<Author2, never, '*'>[]>();
+    });
+  });
+
+  describe('addSelect() method return type', () => {
+    test('should accumulate fields', async () => {
+      const qb = orm.em.createQueryBuilder(Author2, 'a').select('a.id').addSelect('a.name');
+
+      const result = await qb.getResultList();
+      expectTypeOf(result).toEqualTypeOf<Loaded<Author2, never, 'id' | 'name'>[]>();
+    });
+  });
+
+  describe('joinAndSelect() method return type', () => {
+    test('should track join fields when specified', async () => {
+      const qb = orm.em.createQueryBuilder(Author2, 'a').select('a.id').leftJoinAndSelect('a.books', 'b', {}, ['title', 'price']);
+
+      const result = await qb.getResultList();
+      // Should include root fields + prefixed join fields
+      expectTypeOf(result).toEqualTypeOf<Loaded<Author2, 'books', 'id' | 'books.title' | 'books.price'>[]>();
+    });
+
+    test('should preserve fields when no join fields specified', async () => {
+      const qb = orm.em.createQueryBuilder(Author2, 'a').select('a.id').leftJoinAndSelect('a.books', 'b');
+
+      const result = await qb.getResultList();
+      expectTypeOf(result).toEqualTypeOf<Loaded<Author2, 'books', 'id'>[]>();
+    });
+  });
+
+  describe('getResult and getSingleResult return types', () => {
+    test('getResult should return Loaded with Fields', async () => {
+      const qb = orm.em.createQueryBuilder(Author2, 'a').select(['a.id', 'a.email']);
+
+      const result = await qb.getResult();
+      expectTypeOf(result).toEqualTypeOf<Loaded<Author2, never, 'id' | 'email'>[]>();
+    });
+
+    test('getSingleResult should return Loaded with Fields or null', async () => {
+      const qb = orm.em.createQueryBuilder(Author2, 'a').select(['a.id', 'a.email']);
+
+      const result = await qb.getSingleResult();
+      expectTypeOf(result).toEqualTypeOf<Loaded<Author2, never, 'id' | 'email'> | null>();
+    });
+
+    test('getResultAndCount should return tuple with Loaded', async () => {
+      const qb = orm.em.createQueryBuilder(Author2, 'a').select(['a.id', 'a.name']);
+
+      const result = await qb.getResultAndCount();
+      expectTypeOf(result).toEqualTypeOf<[Loaded<Author2, never, 'id' | 'name'>[], number]>();
+    });
+  });
+
+  describe('clone() preserves Fields type', () => {
+    test('clone should preserve selected fields', async () => {
+      const qb = orm.em.createQueryBuilder(Author2, 'a').select(['a.id', 'a.name']);
+
+      const cloned = qb.clone();
+      const result = await cloned.getResultList();
+      expectTypeOf(result).toEqualTypeOf<Loaded<Author2, never, 'id' | 'name'>[]>();
+    });
+  });
+});

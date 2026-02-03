@@ -6,7 +6,7 @@
 
 import { bench } from '@ark/attest';
 import type { Collection, Ref, PrimaryKeyProp } from '@mikro-orm/core';
-import type { Field, ContextOrderByMap, QBFilterQuery, ModifyHint, ModifyContext } from '@mikro-orm/sql';
+import type { Field, ContextOrderByMap, QBFilterQuery, ModifyHint, ModifyContext, ModifyFields } from '@mikro-orm/sql';
 
 // ============================================
 // Test Entity Definitions
@@ -71,7 +71,7 @@ type SimpleContext = { b: ['books', 'b', Book, false] };
 
 bench('Field<Author, "a", SimpleContext> - with one join', () => {
   useField<Author, 'a', SimpleContext>('b.title');
-}).types([224, 'instantiations']);
+}).types([228, 'instantiations']);
 
 type TwoJoinContext = {
   b: ['books', 'b', Book, false];
@@ -80,7 +80,7 @@ type TwoJoinContext = {
 
 bench('Field<Author, "a", TwoJoinContext> - with two joins', () => {
   useField<Author, 'a', TwoJoinContext>('t.name');
-}).types([269, 'instantiations']);
+}).types([273, 'instantiations']);
 
 // ============================================
 // ModifyHint benchmarks
@@ -105,12 +105,12 @@ function useContext<C>(_ctx: C): void {}
 bench('ModifyContext - add first join', () => {
   type Result = ModifyContext<Author, never, 'books', 'b'>;
   useContext<Result>({} as Result);
-}).types([139, 'instantiations']);
+}).types([136, 'instantiations']);
 
 bench('ModifyContext - add second join', () => {
   type Result = ModifyContext<Author, SimpleContext, 'tags', 't'>;
   useContext<Result>({} as Result);
-}).types([148, 'instantiations']);
+}).types([145, 'instantiations']);
 
 // ============================================
 // ContextOrderByMap benchmarks
@@ -121,11 +121,11 @@ function useOrderBy<E, R extends string, C>(_order: ContextOrderByMap<E, R, C>):
 
 bench('ContextOrderByMap<Author, "a", never> - no context', () => {
   useOrderBy<Author, 'a', never>({ name: 'asc' });
-}).types([746, 'instantiations']);
+}).types([789, 'instantiations']);
 
 bench('ContextOrderByMap<Author, "a", SimpleContext> - with join', () => {
   useOrderBy<Author, 'a', SimpleContext>({ 'b.title': 'asc' });
-}).types([781, 'instantiations']);
+}).types([865, 'instantiations']);
 
 // ============================================
 // QBFilterQuery benchmarks
@@ -136,14 +136,41 @@ function useFilter<E, R extends string, C>(_filter: QBFilterQuery<E, R, C>): voi
 
 bench('QBFilterQuery<Author, "a", never> - no context', () => {
   useFilter<Author, 'a', never>({ name: 'test' });
-}).types([1863, 'instantiations']);
+}).types([1977, 'instantiations']);
 
 bench('QBFilterQuery<Author, "a", SimpleContext> - with join', () => {
   useFilter<Author, 'a', SimpleContext>({ 'b.title': 'test' });
-}).types([1905, 'instantiations']);
+}).types([2086, 'instantiations']);
 
 bench('QBFilterQuery<Author, "a", SimpleContext> - with $and', () => {
   useFilter<Author, 'a', SimpleContext>({
     $and: [{ 'b.title': 'test' }, { name: 'foo' }],
   });
-}).types([1932, 'instantiations']);
+}).types([2143, 'instantiations']);
+
+// ============================================
+// ModifyFields benchmarks (Fields tracking)
+// ============================================
+
+// eslint-disable-next-line no-empty-function
+function useFields<F extends string>(_fields: F): void {}
+
+bench('ModifyFields - no join fields (passthrough)', () => {
+  type Result = ModifyFields<'id' | 'name', 'a', never, 'books', 'b', undefined>;
+  useFields<Result>('' as Result);
+}).types([5, 'instantiations']);
+
+bench('ModifyFields - with join fields (simple)', () => {
+  type Result = ModifyFields<'*', 'a', SimpleContext, 'books', 'b', readonly ['title', 'price']>;
+  useFields<Result>('' as Result);
+}).types([201, 'instantiations']);
+
+bench('ModifyFields - with join fields (accumulate)', () => {
+  type Result = ModifyFields<'id' | 'name', 'a', SimpleContext, 'books', 'b', readonly ['title']>;
+  useFields<Result>('' as Result);
+}).types([179, 'instantiations']);
+
+bench('ModifyFields - nested context', () => {
+  type Result = ModifyFields<'id', 'a', TwoJoinContext, 'tags', 't', readonly ['name']>;
+  useFields<Result>('' as Result);
+}).types([179, 'instantiations']);

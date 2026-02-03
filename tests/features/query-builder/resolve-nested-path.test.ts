@@ -210,8 +210,8 @@ describe('resolveNestedPath', () => {
   });
 
   test('where with flattened embedded path', async () => {
-    // Test filtering by embedded property - goes through mapper/getProperty directly
-    const qb = orm.em.qb(Author, 'a').select('a.id').where({ 'profile.bio': 'test' });
+    // Test filtering by embedded property - use nested object syntax (same as relations)
+    const qb = orm.em.qb(Author, 'a').select('a.id').where({ profile: { bio: 'test' } });
     expect(qb.getFormattedQuery()).toBe("select `a`.`id` from `author` as `a` where `a`.`profile_bio` = 'test'");
   });
 

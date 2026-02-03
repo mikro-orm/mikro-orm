@@ -93,8 +93,11 @@ type ReferenceShape<T = any> = { unwrap(): T };
 
 /**
  * Structural type for matching LoadedReference (Reference with `$` property).
+ * Note: We don't parameterize ReferenceShape here because for loaded relations,
+ * the Reference unwrap() returns the base type while $ returns the Loaded type.
+ * We infer T from $ to get the full Loaded type for EntityDTO.
  */
-type LoadedReferenceShape<T = any> = ReferenceShape<T> & { $: T };
+type LoadedReferenceShape<T = any> = ReferenceShape & { $: T };
 
 /**
  * Structural type for matching any loadable relation (Collection, Reference, or array).
@@ -1486,9 +1489,9 @@ export interface EntitySchemaWithMeta<
   TProperties extends Record<string, any> = Record<string, any>,
   TClass extends EntityCtor = EntityCtor<TEntity>,
 > extends EntitySchema<TEntity, TBase, TClass> {
-  readonly 'name': TName;
-  readonly 'properties': TProperties;
-  readonly 'tableName': TTableName;
+  readonly name: TName;
+  readonly properties: TProperties;
+  readonly tableName: TTableName;
   /** @internal Direct entity type access - avoids expensive pattern matching */
   readonly '~entity': TEntity;
 }
