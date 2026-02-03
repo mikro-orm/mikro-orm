@@ -1,9 +1,12 @@
-import { type EntityProperty, EnumType, Type, Utils, type Dictionary, DeferMode } from '@mikro-orm/core';
+import { DeferMode, type Dictionary, type EntityProperty, EnumType, Type, Utils } from '@mikro-orm/core';
 import { SchemaHelper } from '../../schema/SchemaHelper.js';
 import type { AbstractSqlConnection } from '../../AbstractSqlConnection.js';
 import type { CheckDef, Column, ForeignKey, IndexDef, Table, TableDifference } from '../../typings.js';
 import type { DatabaseSchema } from '../../schema/DatabaseSchema.js';
 import type { DatabaseTable } from '../../schema/DatabaseTable.js';
+
+/** PostGIS system views that should be automatically ignored */
+const POSTGIS_VIEWS = ['geography_columns', 'geometry_columns'];
 
 export class PostgreSqlSchemaHelper extends SchemaHelper {
 
@@ -40,10 +43,15 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       + `order by table_name`;
   }
 
+  private getIgnoredViewsCondition(): string {
+    return POSTGIS_VIEWS.map(v => `table_name != '${v}'`).join(' and ');
+  }
+
   override getListViewsSQL(): string {
     return `select table_name as view_name, table_schema as schema_name, view_definition `
       + `from information_schema.views `
       + `where ${this.getIgnoredNamespacesConditionSQL('table_schema')} `
+      + `and ${this.getIgnoredViewsCondition()} `
       + `order by table_name`;
   }
 

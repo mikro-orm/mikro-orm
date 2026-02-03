@@ -192,7 +192,7 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
     await this.ensureDatabase();
     const metadata = this.getOrderedMetadata(options.schema).reverse();
     const schemas = this.getTargetSchema(options.schema).getNamespaces();
-    const schema = await DatabaseSchema.create(this.connection, this.platform, this.config, options.schema, schemas);
+    const schema = await DatabaseSchema.create(this.connection, this.platform, this.config, options.schema, schemas, undefined, this.options.skipTables, this.options.skipViews);
     const ret: string[] = [];
 
     // Drop views first (views may depend on tables)
@@ -290,7 +290,7 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
     options.dropTables ??= true;
     const toSchema = this.getTargetSchema(options.schema);
     const schemas = toSchema.getNamespaces();
-    const fromSchema = options.fromSchema ?? (await DatabaseSchema.create(this.connection, this.platform, this.config, options.schema, schemas, undefined, this.options.skipTables));
+    const fromSchema = options.fromSchema ?? (await DatabaseSchema.create(this.connection, this.platform, this.config, options.schema, schemas, undefined, this.options.skipTables, this.options.skipViews));
     const wildcardSchemaTables = [...this.metadata.getAll().values()].filter(meta => meta.schema === '*').map(meta => meta.tableName);
     fromSchema.prune(options.schema, wildcardSchemaTables);
     toSchema.prune(options.schema, wildcardSchemaTables);

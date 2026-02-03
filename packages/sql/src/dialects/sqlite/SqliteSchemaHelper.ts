@@ -5,6 +5,21 @@ import type { CheckDef, Column, IndexDef, Table, TableDifference } from '../../t
 import type { DatabaseTable } from '../../schema/DatabaseTable.js';
 import type { DatabaseSchema } from '../../schema/DatabaseSchema.js';
 
+/** SpatiaLite system views that should be automatically ignored */
+const SPATIALITE_VIEWS = [
+  'geometry_columns',
+  'spatial_ref_sys',
+  'views_geometry_columns',
+  'virts_geometry_columns',
+  'geom_cols_ref_sys',
+  'spatial_ref_sys_aux',
+  'vector_layers',
+  'vector_layers_auth',
+  'vector_layers_field_infos',
+  'vector_layers_statistics',
+  'ElementaryGeometries',
+];
+
 export class SqliteSchemaHelper extends SchemaHelper {
 
   override disableForeignKeysSQL(): string {
@@ -62,8 +77,12 @@ export class SqliteSchemaHelper extends SchemaHelper {
     return this.getDatabaseList(connection);
   }
 
+  private getIgnoredViewsCondition(): string {
+    return SPATIALITE_VIEWS.map(v => `name != '${v}'`).join(' and ');
+  }
+
   override getListViewsSQL(): string {
-    return `select name as view_name, sql as view_definition from sqlite_master where type = 'view' order by name`;
+    return `select name as view_name, sql as view_definition from sqlite_master where type = 'view' and ${this.getIgnoredViewsCondition()} order by name`;
   }
 
   override async loadViews(schema: DatabaseSchema, connection: AbstractSqlConnection, schemaName?: string): Promise<void> {
@@ -85,7 +104,7 @@ export class SqliteSchemaHelper extends SchemaHelper {
     for (const dbName of targetDbs) {
       const prefix = this.getSchemaPrefix(dbName);
       const views = await connection.execute<{ view_name: string; view_definition: string }[]>(
-        `select name as view_name, sql as view_definition from ${prefix}sqlite_master where type = 'view' order by name`,
+        `select name as view_name, sql as view_definition from ${prefix}sqlite_master where type = 'view' and ${this.getIgnoredViewsCondition()} order by name`,
       );
       for (const view of views) {
         schema.addView(view.view_name, dbName, this.extractViewDefinition(view.view_definition));

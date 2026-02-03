@@ -1,7 +1,7 @@
 import type { AbstractSqlConnection, Column, DatabaseSchema, Table } from '@mikro-orm/sqlite';
 import { SchemaHelper, SqlitePlatform } from '@mikro-orm/sqlite';
 import { MySqlPlatform } from '@mikro-orm/mysql';
-import { ColumnDifference, PostgreSqlPlatform, TableDifference } from '@mikro-orm/postgresql';
+import { ColumnDifference, PostgreSqlPlatform, PostgreSqlSchemaHelper, TableDifference } from '@mikro-orm/postgresql';
 import { Dictionary } from '@mikro-orm/core';
 
 class SchemaHelperTest extends SchemaHelper {
@@ -51,6 +51,30 @@ describe('SchemaHelper', () => {
   test('sqlite schema helper', async () => {
     const helper = new SqlitePlatform().getSchemaHelper()!;
     expect(helper.getRenameColumnSQL('table', 'test1', { name: 'test_123' } as Column)).toBe('alter table `table` rename column `test1` to `test_123`');
+  });
+
+  test('sqlite schema helper excludes SpatiaLite system views', () => {
+    const helper = new SqlitePlatform().getSchemaHelper()!;
+    const sql = helper.getListViewsSQL();
+
+    // Should exclude all SpatiaLite system views
+    const spatialiteViews = [
+      'geometry_columns',
+      'spatial_ref_sys',
+      'views_geometry_columns',
+      'virts_geometry_columns',
+      'geom_cols_ref_sys',
+      'spatial_ref_sys_aux',
+      'vector_layers',
+      'vector_layers_auth',
+      'vector_layers_field_infos',
+      'vector_layers_statistics',
+      'ElementaryGeometries',
+    ];
+
+    for (const view of spatialiteViews) {
+      expect(sql).toContain(`name != '${view}'`);
+    }
   });
 
   describe('sqlite schema helper - ATTACH DATABASE support', () => {
@@ -111,6 +135,19 @@ describe('SchemaHelper', () => {
   });
 
   describe('postgresql schema helper', () => {
+    test('excludes PostGIS system views', () => {
+      const platform = {
+        getConfig: () => ({ get: () => ({ ignoreSchema: [] }) }),
+        quoteValue: (v: string) => `'${v}'`,
+      } as unknown as PostgreSqlPlatform;
+      const helper = new PostgreSqlSchemaHelper(platform);
+      const sql = helper.getListViewsSQL();
+
+      // Should exclude PostGIS system views
+      expect(sql).toContain(`table_name != 'geography_columns'`);
+      expect(sql).toContain(`table_name != 'geometry_columns'`);
+    });
+
     test('helper quotes schema name when dropping contraints', () => {
       const helper = new PostgreSqlPlatform().getSchemaHelper()!;
       const fromUuid = { name: 'test_uuid', nullable: false, type: 'uuid' } as Column;

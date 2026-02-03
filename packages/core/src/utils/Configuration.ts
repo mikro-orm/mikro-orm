@@ -121,6 +121,7 @@ const DEFAULTS = {
     createForeignKeyConstraints: true,
     ignoreSchema: [],
     skipTables: [],
+    skipViews: [],
     skipColumns: {},
   },
   embeddables: {
@@ -1088,6 +1089,11 @@ export interface Options<
      * @default []
      */
     skipTables?: (string | RegExp)[];
+    /**
+     * View names or patterns to skip during schema generation (e.g. PostGIS system views).
+     * @default []
+     */
+    skipViews?: (string | RegExp)[];
     /**
      * Column names or patterns to skip during schema generation, keyed by table name.
      * @default {}
