@@ -118,7 +118,7 @@
     "@swc-node/register": "1.11.1",
     "@swc/core": "1.15.11",
     "@types/better-sqlite3": "7.6.13",
-    "@types/node": "24.10.9",
+    "@types/node": "24.10.10",
     "@types/pg": "8.16.0",
     "@types/pg-cursor": "2.7.2",
     "@types/picomatch": "4.0.2",
