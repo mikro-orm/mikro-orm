@@ -234,6 +234,57 @@ describe('InferKyselyDB', () => {
     }>();
   });
 
+  test('infer table with oneToMany relation', async () => {
+    const User = defineEntity({
+      name: 'User',
+      tableName: 'users',
+      properties: {
+        name: p.string().primary(),
+        email: p.string().nullable(),
+        posts: () => p.oneToMany(Post).mappedBy(p => p.author),
+      },
+    });
+
+    const Post = defineEntity({
+      name: 'Post',
+      tableName: 'posts',
+      properties: {
+        id: p.integer().primary().autoincrement(),
+        title: p.string(),
+        description: p.text(),
+        author: () => p.manyToOne(User),
+      },
+    });
+
+    const orm = new MikroORM({
+      entities: [User, Post],
+      dbName: ':memory:',
+    });
+
+    const createDump = await orm.schema.getCreateSchemaSQL();
+    expect(createDump).toMatchInlineSnapshot(`
+      "create table \`users\` (\`name\` text not null primary key, \`email\` text null);
+
+      create table \`posts\` (\`id\` integer not null primary key autoincrement, \`title\` text not null, \`description\` text not null, \`author_name\` text not null, constraint \`posts_author_name_foreign\` foreign key (\`author_name\`) references \`users\` (\`name\`));
+      create index \`posts_author_name_index\` on \`posts\` (\`author_name\`);
+      "
+    `);
+
+    type KyselyDB = InferKyselyDB<typeof User | typeof Post, {}>;
+    type UserTable = KyselyDB['users'];
+    expectTypeOf<UserTable>().toEqualTypeOf<{
+      name: string;
+      email: string | null;
+    }>();
+    type PostTable = KyselyDB['posts'];
+    expectTypeOf<PostTable>().toEqualTypeOf<{
+      id: Generated<number>;
+      title: string;
+      description: string;
+      author_name: string;
+    }>();
+  });
+
   test('infer with defineEntity and class', async () => {
     class User {
       fullName!: string;

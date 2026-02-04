@@ -331,7 +331,13 @@ type MaybeJoinKey<TValue, TOptions> = TOptions extends { kind: 'm:1' }
 
 type UnwrapOpt<TValue> = TValue extends Opt<infer OriginalValue> ? OriginalValue : TValue;
 
-type MaybeNever<TValue, TOptions> = TOptions extends { persist: true } ? never : TOptions extends { kind: 'm:n' } ? never : TValue;
+type MaybeNever<TValue, TOptions> = TOptions extends { persist: false }
+  ? never
+  : TOptions extends { kind: 'm:n' }
+    ? never
+    : TOptions extends { kind: '1:m' }
+      ? never
+      : TValue;
 
 type ExcludeNever<TMap extends Record<string, any>> = {
   [K in keyof TMap as TMap[K] extends never ? never : K]: TMap[K];
