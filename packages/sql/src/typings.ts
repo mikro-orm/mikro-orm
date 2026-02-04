@@ -88,6 +88,20 @@ export interface ForeignKey {
   deferMode?: DeferMode;
 }
 
+/** Options for a column within an index definition. */
+export interface IndexColumnDef {
+  /** Column name. */
+  name: string;
+  /** Sort order for the column (default: ASC). */
+  sort?: 'ASC' | 'DESC';
+  /** NULLS ordering for the column (PostgreSQL). */
+  nulls?: 'FIRST' | 'LAST';
+  /** Prefix length for the column (MySQL, MariaDB). */
+  length?: number;
+  /** Collation for the column (PostgreSQL, SQLite). */
+  collation?: string;
+}
+
 export interface IndexDef {
   columnNames: string[];
   keyName: string;
@@ -99,6 +113,29 @@ export interface IndexDef {
   options?: Dictionary; // for driver specific options
   type?: string | Readonly<{ indexType?: string; storageEngineIndexType?: 'hash' | 'btree'; predicate?: string }>;
   deferMode?: DeferMode | `${DeferMode}`;
+  /**
+   * Advanced column options for the index.
+   * When specified, these options override the simple columnNames for index generation.
+   */
+  columns?: IndexColumnDef[];
+  /**
+   * Columns to include in the index but not as part of the key (PostgreSQL, MSSQL).
+   */
+  include?: string[];
+  /** Fill factor for the index as a percentage 0-100 (PostgreSQL, MSSQL). */
+  fillFactor?: number;
+  /**
+   * Whether the index is invisible/hidden from the query optimizer (MySQL 8+, MariaDB 10.6+, MongoDB).
+   */
+  invisible?: boolean;
+  /**
+   * Whether the index is disabled (MSSQL only).
+   */
+  disabled?: boolean;
+  /**
+   * Whether the index should be clustered (MariaDB, MSSQL).
+   */
+  clustered?: boolean;
 }
 
 export interface CheckDef<T = unknown> {

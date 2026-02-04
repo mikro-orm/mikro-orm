@@ -275,7 +275,8 @@ export class SqliteSchemaHelper extends SchemaHelper {
       return `${sqlPrefix} (${columns.join(', ')})`;
     }
 
-    return `${sqlPrefix} (${index.columnNames.map(c => this.quote(c)).join(', ')})`;
+    // Use getIndexColumns to support advanced options like sort order and collation
+    return `${sqlPrefix} (${this.getIndexColumns(index)})`;
   }
 
   private parseTableDefinition(sql: string, cols: any[]) {

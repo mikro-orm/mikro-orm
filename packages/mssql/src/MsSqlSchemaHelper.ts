@@ -185,7 +185,10 @@ export class MsSqlSchemaHelper extends SchemaHelper {
       ind.is_primary_key as is_primary_key,
       col.name as column_name,
       schema_name(t.schema_id) as schema_name,
-      (case when filter_definition is not null then concat('where ', filter_definition) else null end) as expression
+      (case when filter_definition is not null then concat('where ', filter_definition) else null end) as expression,
+      ind.is_disabled as is_disabled,
+      ind.type as index_type,
+      ind.fill_factor as fill_factor
       from sys.indexes ind
       inner join sys.index_columns ic on ind.object_id = ic.object_id and ind.index_id = ic.index_id
       inner join sys.columns col on ic.object_id = col.object_id and ic.column_id = col.column_id
@@ -205,6 +208,21 @@ export class MsSqlSchemaHelper extends SchemaHelper {
         primary: index.is_primary_key,
         constraint: index.is_unique,
       };
+
+      // Capture disabled flag
+      if (index.is_disabled) {
+        indexDef.disabled = true;
+      }
+
+      // Capture clustered flag (type 1 = clustered)
+      if (index.index_type === 1 && !index.is_primary_key) {
+        indexDef.clustered = true;
+      }
+
+      // Capture fill factor (0 means default, so only set if non-zero)
+      if (index.fill_factor > 0) {
+        indexDef.fillFactor = index.fill_factor;
+      }
 
       if (!index.column_name || index.column_name.match(/[(): ,"'`]/) || index.expression?.match(/where /i)) {
         indexDef.expression = index.expression; // required for the `getCreateIndexSQL()` call
@@ -513,14 +531,68 @@ export class MsSqlSchemaHelper extends SchemaHelper {
     }
 
     const keyName = this.quote(index.keyName);
-    const defer = index.deferMode ? ` deferrable initially ${index.deferMode}` : '';
-    const sql = `create ${index.unique ? 'unique ' : ''}index ${keyName} on ${this.quote(tableName)} `;
+    // Only add clustered keyword when explicitly requested, otherwise omit (defaults to nonclustered)
+    const clustered = index.clustered ? 'clustered ' : '';
+    let sql = `create ${index.unique ? 'unique ' : ''}${clustered}index ${keyName} on ${this.quote(tableName)} `;
 
     if (index.expression && partialExpression) {
-      return `${sql}(${index.expression})${defer}`;
+      return sql + `(${index.expression})` + this.getMsSqlIndexSuffix(index);
     }
 
-    return super.getCreateIndexSQL(tableName, index);
+    // Build column list with advanced options
+    const columns = this.getIndexColumns(index);
+    sql += `(${columns})`;
+
+    // Add INCLUDE clause for covering indexes
+    if (index.include?.length) {
+      sql += ` include (${index.include.map(c => this.quote(c)).join(', ')})`;
+    }
+
+    sql += this.getMsSqlIndexSuffix(index);
+
+    // Disabled indexes need to be created first, then disabled
+    if (index.disabled) {
+      sql += `;\nalter index ${keyName} on ${this.quote(tableName)} disable`;
+    }
+
+    return sql;
+  }
+
+  /**
+   * Build the column list for a MSSQL index.
+   */
+  protected override getIndexColumns(index: IndexDef): string {
+    if (index.columns?.length) {
+      return index.columns.map(col => {
+        let colDef = this.quote(col.name);
+
+        // MSSQL supports sort order
+        if (col.sort) {
+          colDef += ` ${col.sort}`;
+        }
+
+        return colDef;
+      }).join(', ');
+    }
+
+    return index.columnNames.map(c => this.quote(c)).join(', ');
+  }
+
+  /**
+   * Get MSSQL-specific index WITH options like fill factor.
+   */
+  private getMsSqlIndexSuffix(index: IndexDef): string {
+    const withOptions: string[] = [];
+
+    if (index.fillFactor != null) {
+      withOptions.push(`fillfactor = ${index.fillFactor}`);
+    }
+
+    if (withOptions.length > 0) {
+      return ` with (${withOptions.join(', ')})`;
+    }
+
+    return '';
   }
 
   override createIndex(index: IndexDef, table: DatabaseTable, createPrimary = false) {
@@ -533,15 +605,34 @@ export class MsSqlSchemaHelper extends SchemaHelper {
     }
 
     const quotedTableName = table.getQuotedName();
+    // Only add clustered keyword when explicitly requested, otherwise omit (defaults to nonclustered)
+    const clustered = index.clustered ? 'clustered ' : '';
+
+    // Build column list with advanced options
+    const columns = this.getIndexColumns(index);
+
+    // Build INCLUDE clause
+    const includeClause = index.include?.length
+      ? ` include (${index.include.map(c => this.quote(c)).join(', ')})`
+      : '';
+
+    let sql: string;
 
     if (index.unique) {
       const nullable = index.columnNames.some(column => table.getColumn(column)?.nullable);
       const where = nullable ? ' where ' + index.columnNames.map(c => `${this.quote(c)} is not null`).join(' and ') : '';
 
-      return `create unique index ${this.quote(index.keyName)} on ${quotedTableName} (${index.columnNames.map(c => this.quote(c)).join(', ')})${where}`;
+      sql = `create unique ${clustered}index ${this.quote(index.keyName)} on ${quotedTableName} (${columns})${includeClause}${this.getMsSqlIndexSuffix(index)}${where}`;
+    } else {
+      sql = `create ${clustered}index ${this.quote(index.keyName)} on ${quotedTableName} (${columns})${includeClause}${this.getMsSqlIndexSuffix(index)}`;
     }
 
-    return super.createIndex(index, table);
+    // Disabled indexes need to be created first, then disabled
+    if (index.disabled) {
+      sql += `;\nalter index ${this.quote(index.keyName)} on ${quotedTableName} disable`;
+    }
+
+    return sql;
   }
 
   override dropForeignKey(tableName: string, constraintName: string) {

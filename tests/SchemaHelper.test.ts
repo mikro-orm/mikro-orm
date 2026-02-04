@@ -34,6 +34,90 @@ describe('SchemaHelper', () => {
     await expect(helper.loadMaterializedViews({} as any, {} as any)).rejects.toThrow('Not supported by given driver');
   });
 
+  test('base getCreateIndexSQL with advanced options', () => {
+    const helper = new SchemaHelperTest(new MySqlPlatform());
+
+    // Test with INCLUDE clause
+    const indexWithInclude = helper.getCreateIndexSQL('my_table', {
+      keyName: 'my_index',
+      columnNames: ['col1'],
+      unique: false,
+      primary: false,
+      constraint: false,
+      include: ['col2', 'col3'],
+    });
+    expect(indexWithInclude).toBe('create index `my_index` on `my_table` (`col1`) include (`col2`, `col3`)');
+
+    // Test with columns array containing sort order, collation, and nulls
+    const indexWithColumns = helper.getCreateIndexSQL('my_table', {
+      keyName: 'advanced_index',
+      columnNames: ['col1', 'col2'],
+      unique: true,
+      primary: false,
+      constraint: false,
+      columns: [
+        { name: 'col1', sort: 'DESC', nulls: 'LAST' },
+        { name: 'col2', collation: 'C', sort: 'ASC' },
+      ],
+    });
+    expect(indexWithColumns).toBe('create unique index `advanced_index` on `my_table` (`col1` DESC nulls LAST, `col2` collate C ASC)');
+
+    // Test fallback to columnNames when no columns array
+    const simpleIndex = helper.getCreateIndexSQL('my_table', {
+      keyName: 'simple_index',
+      columnNames: ['col1', 'col2'],
+      unique: false,
+      primary: false,
+      constraint: false,
+    });
+    expect(simpleIndex).toBe('create index `simple_index` on `my_table` (`col1`, `col2`)');
+
+    // Test unique constraint (uses ALTER TABLE ADD CONSTRAINT)
+    const uniqueConstraint = helper.getCreateIndexSQL('my_table', {
+      keyName: 'my_constraint',
+      columnNames: ['col1'],
+      unique: true,
+      primary: false,
+      constraint: true,
+    });
+    expect(uniqueConstraint).toBe('alter table `my_table` add constraint `my_constraint` unique (`col1`)');
+
+    // Test JSON column index (column with dot in name)
+    // MySqlPlatform uses json_value with returning clause
+    const jsonIndex = helper.getCreateIndexSQL('my_table', {
+      keyName: 'json_index',
+      columnNames: ['data.nested_field'],
+      unique: false,
+      primary: false,
+      constraint: false,
+    });
+    expect(jsonIndex).toBe("create index `json_index` on `my_table` ((json_value(`data`, '$.nested_field' returning char(255))))");
+
+    // Test unique JSON column index (uses CREATE INDEX, not ADD CONSTRAINT, as JSON can't have constraints)
+    const uniqueJsonIndex = helper.getCreateIndexSQL('my_table', {
+      keyName: 'unique_json_index',
+      columnNames: ['data.field'],
+      unique: true,
+      primary: false,
+      constraint: true, // ignored for JSON columns
+    });
+    expect(uniqueJsonIndex).toBe("create unique index `unique_json_index` on `my_table` ((json_value(`data`, '$.field' returning char(255))))");
+  });
+
+  test('base mapIndexes merges columns array', async () => {
+    const helper = new SchemaHelperTest(new MySqlPlatform());
+
+    const indexes = await (helper as any).mapIndexes([
+      { keyName: 'multi_col_idx', columnNames: ['col1'], unique: false, primary: false, columns: [{ name: 'col1', sort: 'DESC' }] },
+      { keyName: 'multi_col_idx', columnNames: ['col2'], unique: false, primary: false, columns: [{ name: 'col2', sort: 'ASC' }] },
+    ]);
+
+    expect(indexes).toHaveLength(1);
+    expect(indexes[0].keyName).toBe('multi_col_idx');
+    expect(indexes[0].columnNames).toEqual(['col1', 'col2']);
+    expect(indexes[0].columns).toEqual([{ name: 'col1', sort: 'DESC' }, { name: 'col2', sort: 'ASC' }]);
+  });
+
   test('mysql schema helper', async () => {
     const helper = new MySqlPlatform().getSchemaHelper()!;
     const from = 'test1';

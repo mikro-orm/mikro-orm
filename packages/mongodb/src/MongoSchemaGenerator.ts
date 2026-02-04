@@ -201,11 +201,18 @@ export class MongoSchemaGenerator extends AbstractSchemaGenerator<MongoDriver> {
         fieldOrSpec = properties.reduce((o, i) => { o[i] = 1; return o; }, {} as Dictionary);
       }
 
-      res.push([collection.collectionName, this.executeQuery(collection, 'createIndex', fieldOrSpec, {
+      // MongoDB uses 'hidden' for invisible indexes
+      const indexOptions: Dictionary = {
         name: index.name,
         unique: false,
         ...index.options,
-      })]);
+      };
+
+      if (index.invisible) {
+        indexOptions.hidden = true;
+      }
+
+      res.push([collection.collectionName, this.executeQuery(collection, 'createIndex', fieldOrSpec, indexOptions)]);
     });
 
     return res;

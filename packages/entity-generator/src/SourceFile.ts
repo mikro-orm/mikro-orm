@@ -136,6 +136,32 @@ export class SourceFile {
     return ret;
   }
 
+  /**
+   * Convert index column options to quoted output format.
+   */
+  private getColumnOptions(columns: EntityMetadata['indexes'][number]['columns']): Record<string, unknown>[] | undefined {
+    if (!columns?.length) {
+      return undefined;
+    }
+
+    return columns.map(col => {
+      const colOpt: Record<string, unknown> = { name: this.quote(col.name) };
+      if (col.sort) {
+        colOpt.sort = this.quote(col.sort.toUpperCase());
+      }
+      if (col.nulls) {
+        colOpt.nulls = this.quote(col.nulls.toUpperCase());
+      }
+      if (col.length != null) {
+        colOpt.length = col.length;
+      }
+      if (col.collation) {
+        colOpt.collation = this.quote(col.collation);
+      }
+      return colOpt;
+    });
+  }
+
   protected getIndexOptions(index: EntityMetadata['indexes'][number], isAtEntityLevel = true) {
     const indexOpt: IndexOptions<Dictionary> = {};
 
@@ -151,6 +177,37 @@ export class SourceFile {
 
     if (isAtEntityLevel && index.properties) {
       indexOpt.properties = Utils.asArray(index.properties).map(prop => this.quote('' + prop)) as never[];
+    }
+
+    // Index type (e.g., 'fulltext', 'spatial', 'btree', 'hash')
+    if (index.type) {
+      indexOpt.type = this.quote(index.type);
+    }
+
+    // Advanced index options
+    const columns = this.getColumnOptions(index.columns);
+    if (columns) {
+      indexOpt.columns = columns as never[];
+    }
+
+    if (index.include) {
+      indexOpt.include = Utils.asArray(index.include).map(prop => this.quote('' + prop)) as never[];
+    }
+
+    if (index.fillFactor != null) {
+      indexOpt.fillFactor = index.fillFactor;
+    }
+
+    if (index.invisible) {
+      indexOpt.invisible = true;
+    }
+
+    if (index.disabled) {
+      indexOpt.disabled = true;
+    }
+
+    if (index.clustered) {
+      indexOpt.clustered = true;
     }
 
     return indexOpt;
@@ -175,6 +232,24 @@ export class SourceFile {
 
     if (index.deferMode) {
       uniqueOpt.deferMode = `${this.referenceCoreImport('DeferMode')}.INITIALLY_${index.deferMode.toUpperCase()}` as DeferMode;
+    }
+
+    const columns = this.getColumnOptions(index.columns);
+
+    if (columns) {
+      uniqueOpt.columns = columns as never[];
+    }
+
+    if (index.include) {
+      uniqueOpt.include = Utils.asArray(index.include).map(prop => this.quote('' + prop)) as never[];
+    }
+
+    if (index.fillFactor != null) {
+      uniqueOpt.fillFactor = index.fillFactor;
+    }
+
+    if (index.disabled) {
+      uniqueOpt.disabled = true;
     }
 
     return uniqueOpt;
