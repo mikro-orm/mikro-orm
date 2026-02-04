@@ -1509,7 +1509,7 @@ __metadata:
   dependencies:
     "@mikro-orm/core": "npm:^6.6.4"
     "@mikro-orm/mongodb": "npm:6.6.4"
-    mongodb: "npm:7.0.0"
+    mongodb: "npm:7.1.0"
     umzug: "npm:3.8.2"
   peerDependencies:
     "@mikro-orm/core": ^6.0.0
@@ -1542,7 +1542,7 @@ __metadata:
   resolution: "@mikro-orm/mongodb@workspace:packages/mongodb"
   dependencies:
     "@mikro-orm/core": "npm:^6.6.4"
-    mongodb: "npm:7.0.0"
+    mongodb: "npm:7.1.0"
   peerDependencies:
     "@mikro-orm/core": ^6.0.0
   languageName: unknown
@@ -1570,7 +1570,7 @@ __metadata:
     "@mikro-orm/core": "npm:^6.6.4"
     "@mikro-orm/sql": "npm:6.6.4"
     kysely: "npm:0.28.11"
-    mysql2: "npm:3.16.2"
+    mysql2: "npm:3.16.3"
     sqlstring: "npm:2.3.3"
   peerDependencies:
     "@mikro-orm/core": ^6.0.0
@@ -1626,7 +1626,7 @@ __metadata:
     "@types/uuid": "npm:11.0.0"
     "@types/yargs": "npm:17.0.35"
     "@vitest/coverage-v8": "npm:4.0.18"
-    bson: "npm:7.1.1"
+    bson: "npm:7.2.0"
     conditional-type-checks: "npm:1.0.6"
     dataloader: "npm:2.2.3"
     husky: "npm:9.1.7"
@@ -3794,7 +3794,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"bson@npm:7.1.1, bson@npm:^7.0.0":
+"bson@npm:7.2.0, bson@npm:^7.1.1":
+  version: 7.2.0
+  resolution: "bson@npm:7.2.0"
+  checksum: 10/a768e55d328a5961aa1bda0f1d1ea619e8bab911fb72018ca5c779000ae538cfc0cc8082fe75d4e941cb8ee928b6a7377b10bc0eb75872f36cdfaac8380512c6
+  languageName: node
+  linkType: hard
+
+"bson@npm:^7.0.0":
   version: 7.1.1
   resolution: "bson@npm:7.1.1"
   checksum: 10/4b5e801a6d3ce3cd2e120c4929e07c6b86b1032cfc95ddb05a582eac72b50b8c5f6c7fbcd3709ec00d2df58d9eae791a3636f18e18df1e3f893ec4938016f8f2
@@ -7405,7 +7412,41 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mongodb@npm:7.0.0, mongodb@npm:^7.0.0":
+"mongodb@npm:7.1.0":
+  version: 7.1.0
+  resolution: "mongodb@npm:7.1.0"
+  dependencies:
+    "@mongodb-js/saslprep": "npm:^1.3.0"
+    bson: "npm:^7.1.1"
+    mongodb-connection-string-url: "npm:^7.0.0"
+  peerDependencies:
+    "@aws-sdk/credential-providers": ^3.806.0
+    "@mongodb-js/zstd": ^7.0.0
+    gcp-metadata: ^7.0.1
+    kerberos: ^7.0.0
+    mongodb-client-encryption: ">=7.0.0 <7.1.0"
+    snappy: ^7.3.2
+    socks: ^2.8.6
+  peerDependenciesMeta:
+    "@aws-sdk/credential-providers":
+      optional: true
+    "@mongodb-js/zstd":
+      optional: true
+    gcp-metadata:
+      optional: true
+    kerberos:
+      optional: true
+    mongodb-client-encryption:
+      optional: true
+    snappy:
+      optional: true
+    socks:
+      optional: true
+  checksum: 10/412c6715ca70f2c123eb0ecacd99dcd3f7dad53ead5fb2f5591f7743cb08b747e23acf37cd74da88268d33c3fe20a2cf867fb32a17bb156499dac7bde9b51ff2
+  languageName: node
+  linkType: hard
+
+"mongodb@npm:^7.0.0":
   version: 7.0.0
   resolution: "mongodb@npm:7.0.0"
   dependencies:
@@ -7473,9 +7514,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mysql2@npm:3.16.2":
-  version: 3.16.2
-  resolution: "mysql2@npm:3.16.2"
+"mysql2@npm:3.16.3":
+  version: 3.16.3
+  resolution: "mysql2@npm:3.16.3"
   dependencies:
     aws-ssl-profiles: "npm:^1.1.2"
     denque: "npm:^2.1.0"
@@ -7486,7 +7527,7 @@ __metadata:
     named-placeholders: "npm:^1.1.6"
     seq-queue: "npm:^0.0.5"
     sqlstring: "npm:^2.3.3"
-  checksum: 10/b44cff80bb804b56eec422cce65555ea3879d8bb1ccc0e1e26df09c8300167a123396e8591da09c1f8769d16d498f9aa454d0b0a11e53235cfd403f0f6597ba2
+  checksum: 10/cc903e1534730439948976c8494a04aeebd01a494b003852a339e506cdaf36ae646a44d362019c1c4f4f1627b7ededaa9827291bc711e443d749b70a7d7748c4
   languageName: node
   linkType: hard
 
