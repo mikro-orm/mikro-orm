@@ -234,13 +234,14 @@ describe('InferKyselyDB', () => {
     }>();
   });
 
-  test('infer table with oneToMany relation', async () => {
+  test('infer table with non-persistent and oneToMany relation', async () => {
     const User = defineEntity({
       name: 'User',
       tableName: 'users',
       properties: {
         name: p.string().primary(),
         email: p.string().nullable(),
+        nonPersistent: p.string().persist(false),
         posts: () => p.oneToMany(Post).mappedBy(p => p.author),
       },
     });
