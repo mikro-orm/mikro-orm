@@ -231,26 +231,29 @@ export interface ICriteriaNode<T extends object> {
 
 export type MaybeReturnType<T> = T extends (...args: any[]) => infer R ? R : T;
 
-export type InferEntityProperties<Schema> =
-  Schema extends EntitySchemaWithMeta<any, any, any, any, infer Properties> ? Properties :
-  never;
+export type InferEntityProperties<Schema> = Schema extends EntitySchemaWithMeta<any, any, any, any, infer Properties> ? Properties : never;
 
-export type InferKyselyDB<TEntities extends { name: string }, TOptions extends MikroKyselyPluginOptions = {}> = MapValueAsTable<MapByName<TEntities>, TOptions>;
+export type InferKyselyDB<TEntities extends { name: string }, TOptions extends MikroKyselyPluginOptions = {}> = MapValueAsTable<
+  MapTableName<TEntities, TOptions>,
+  TOptions
+>;
 
 export type InferDBFromKysely<TKysely extends Kysely<any>> = TKysely extends Kysely<infer TDB> ? TDB : never;
 
-type PreferStringLiteral<TCandidate, TFallback> =
-  [TCandidate] extends [never] ? TFallback :
-  string extends TCandidate ? TFallback :
-  TCandidate extends string ? TCandidate : TFallback;
+type PreferStringLiteral<TCandidate, TFallback> = [TCandidate] extends [never]
+  ? TFallback
+  : string extends TCandidate
+    ? TFallback
+    : TCandidate extends string
+      ? TCandidate
+      : TFallback;
 
-export type MapByName<T extends { name: string; tableName?: string }> = {
-  [P in T as PreferStringLiteral<NonNullable<P['tableName']>, P['name']>]: P
+export type MapTableName<T extends { name: string; tableName?: string }, TOptions extends MikroKyselyPluginOptions = {}> = {
+  [P in T as TOptions['tableNamingStrategy'] extends 'entity' ? P['name'] : PreferStringLiteral<NonNullable<P['tableName']>, P['name']>]: P;
 };
 
 export type MapValueAsTable<TMap extends Record<string, any>, TOptions extends MikroKyselyPluginOptions = {}> = {
-  [K in keyof TMap as TransformName<K, TOptions['tableNamingStrategy'] extends 'entity' ? 'entity' : 'underscore' >]:
-    InferKyselyTable<TMap[K], TOptions>
+  [K in keyof TMap as TransformName<K, TOptions['tableNamingStrategy'] extends 'entity' ? 'entity' : 'underscore'>]: InferKyselyTable<TMap[K], TOptions>;
 };
 
 export type InferKyselyTable<TSchema extends EntitySchemaWithMeta, TOptions extends MikroKyselyPluginOptions = {}> = ExcludeNever<{
@@ -258,33 +261,38 @@ export type InferKyselyTable<TSchema extends EntitySchemaWithMeta, TOptions exte
     K,
     TOptions['columnNamingStrategy'] extends 'property' ? 'property' : 'underscore',
     MaybeReturnType<InferEntityProperties<TSchema>[K]>
-  >]:
-    InferColumnValue<
-      MaybeReturnType<InferEntityProperties<TSchema>[K]>,
-      TOptions['processOnCreateHooks'] extends true ? true : false
-    >;
+  >]: InferColumnValue<MaybeReturnType<InferEntityProperties<TSchema>[K]>, TOptions['processOnCreateHooks'] extends true ? true : false>;
 }>;
 
-type TransformName<TName, TNamingStrategy extends 'underscore' | 'entity'> =
-  TNamingStrategy extends 'underscore' ? TName extends string ? SnakeCase<TName> : TName :
-  TName;
+type TransformName<TName, TNamingStrategy extends 'underscore' | 'entity'> = TNamingStrategy extends 'underscore'
+  ? TName extends string
+    ? SnakeCase<TName>
+    : TName
+  : TName;
 
-type TransformColumnName<TName, TNamingStrategy extends 'underscore' | 'property', TBuilder> =
-  TNamingStrategy extends 'property' ? TName :
-  TBuilder extends { '~options': { fieldName: string } } ? TBuilder['~options']['fieldName'] :
-  TName extends string ? MaybeJoinColumnName<SnakeCase<TName>, TBuilder> :
-  never;
+type TransformColumnName<TName, TNamingStrategy extends 'underscore' | 'property', TBuilder> = TNamingStrategy extends 'property'
+  ? TName
+  : TBuilder extends { '~options': { fieldName: string } }
+    ? TBuilder['~options']['fieldName']
+    : TName extends string
+      ? MaybeJoinColumnName<SnakeCase<TName>, TBuilder>
+      : never;
 
-type MaybeJoinColumnName<TName extends string, TBuilder> =
-  TBuilder extends {
-    '~type'?: { value: infer Value };
-    '~options': { kind: 'm:1' };
-  } ? PrimaryProperty<Value> extends string ? `${TName}_${SnakeCase<PrimaryProperty<Value>>}` : never :
-  TBuilder extends {
-    '~type'?: { value: infer Value };
-    '~options': { kind: '1:1'; owner: true };
-  } ? PrimaryProperty<Value> extends string ? `${TName}_${SnakeCase<PrimaryProperty<Value>>}` : never :
-  TName;
+type MaybeJoinColumnName<TName extends string, TBuilder> = TBuilder extends {
+  '~type'?: { value: infer Value };
+  '~options': { kind: 'm:1' };
+}
+  ? PrimaryProperty<Value> extends string
+    ? `${TName}_${SnakeCase<PrimaryProperty<Value>>}`
+    : never
+  : TBuilder extends {
+        '~type'?: { value: infer Value };
+        '~options': { kind: '1:1'; owner: true };
+      }
+    ? PrimaryProperty<Value> extends string
+      ? `${TName}_${SnakeCase<PrimaryProperty<Value>>}`
+      : never
+    : TName;
 
 export type SnakeCase<TName extends string> = TName extends `${infer P1}${infer P2}`
   ? P2 extends Uncapitalize<P2>
@@ -295,38 +303,35 @@ export type SnakeCase<TName extends string> = TName extends `${infer P1}${infer 
 type InferColumnValue<TBuilder, TProcessOnCreate extends boolean> = TBuilder extends {
   '~type'?: { value: infer Value };
   '~options': infer TOptions;
-} ? MaybeNever<
-      MaybeGenerated<
-        MaybeJoinKey<Value, TOptions>,
-        TOptions,
-        TProcessOnCreate
-      >,
-      TOptions
-    >
+}
+  ? MaybeNever<MaybeGenerated<MaybeJoinKey<Value, TOptions>, TOptions, TProcessOnCreate>, TOptions>
   : never;
 
-type MaybeGenerated<TValue, TOptions, TProcessOnCreate extends boolean> =
-  TOptions extends { nullable: true } ? (TValue | null) :
-  TOptions extends { autoincrement: true } ? Generated<TValue> :
-  TOptions extends { default: true } ? Generated<TValue> :
-  TOptions extends { defaultRaw: true } ? Generated<TValue> :
-  TProcessOnCreate extends false ? TValue :
-  TOptions extends { onCreate: Function } ? Generated<TValue> :
-  TValue;
+type MaybeGenerated<TValue, TOptions, TProcessOnCreate extends boolean> = TOptions extends { nullable: true }
+  ? TValue | null
+  : TOptions extends { autoincrement: true }
+    ? Generated<TValue>
+    : TOptions extends { default: true }
+      ? Generated<TValue>
+      : TOptions extends { defaultRaw: true }
+        ? Generated<TValue>
+        : TProcessOnCreate extends false
+          ? TValue
+          : TOptions extends { onCreate: Function }
+            ? Generated<TValue>
+            : TValue;
 
-type MaybeJoinKey<TValue, TOptions> =
-  TOptions extends { kind: 'm:1' } ? UnwrapOpt<Primary<TValue>> :
-  TOptions extends { kind: '1:1' } ?
-    TOptions extends { owner: true } ? UnwrapOpt<Primary<TValue>> : never :
-  TValue;
+type MaybeJoinKey<TValue, TOptions> = TOptions extends { kind: 'm:1' }
+  ? UnwrapOpt<Primary<TValue>>
+  : TOptions extends { kind: '1:1' }
+    ? TOptions extends { owner: true }
+      ? UnwrapOpt<Primary<TValue>>
+      : never
+    : TValue;
 
-type UnwrapOpt<TValue> =
-  TValue extends Opt<infer OriginalValue> ? OriginalValue : TValue;
+type UnwrapOpt<TValue> = TValue extends Opt<infer OriginalValue> ? OriginalValue : TValue;
 
-type MaybeNever<TValue, TOptions> =
-  TOptions extends { persist: true } ? never :
-  TOptions extends { kind: 'm:n' } ? never :
-  TValue;
+type MaybeNever<TValue, TOptions> = TOptions extends { persist: true } ? never : TOptions extends { kind: 'm:n' } ? never : TValue;
 
 type ExcludeNever<TMap extends Record<string, any>> = {
   [K in keyof TMap as TMap[K] extends never ? never : K]: TMap[K];
