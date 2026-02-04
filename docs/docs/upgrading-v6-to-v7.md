@@ -450,17 +450,18 @@ class User {
 }
 ```
 
-## Stricter type checking for `em.assign()` data
+## Stricter type checking for `em.create()` and `em.assign()` data
 
-The `em.assign()` method now performs stricter type checking on the data parameter. Previously, typed objects (e.g., Zod-inferred types, custom DTO interfaces) would bypass validation because TypeScript's `Dictionary` type was considered compatible with any object type. This allowed typos in property names to go undetected.
+The `em.create()` and `em.assign()` methods now perform stricter type checking on the data parameter. Previously, typed objects (e.g., Zod-inferred types, custom DTO interfaces) would bypass validation because TypeScript's `Dictionary` type was considered compatible with any object type. This allowed typos in property names to go undetected.
 
 ```ts
 // Before v7: This compiled without errors, even with a typo
-type UpdateUserDto = { firstNme?: string }; // typo: should be firstName
+type CreateUserDto = { firstName: string; lastNme?: string }; // typo: should be lastName
+em.create(User, dto); // silently ignored at runtime
 em.assign(user, dto); // silently ignored at runtime
 
 // In v7: TypeScript will catch the typo
-// Error: Argument of type 'UpdateUserDto' is not assignable to parameter type...
+// Error: Argument of type 'CreateUserDto' is not assignable to parameter type...
 ```
 
 Objects typed as `Dictionary` or `Record<string, any>` still bypass the check to allow dynamic data assignment.

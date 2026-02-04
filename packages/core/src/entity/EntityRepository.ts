@@ -293,14 +293,17 @@ export class EntityRepository<Entity extends object> {
    * The newly created entity will be automatically marked for persistence via `em.persist` unless you disable this
    * behavior, either locally via `persist: false` option, or globally via `persistOnCreate` ORM config option.
    */
-  create<Convert extends boolean = false>(data: RequiredEntityData<Entity, never, Convert>, options?: CreateOptions<Convert>): Entity;
+  create<
+    Convert extends boolean = false,
+    Data extends RequiredEntityData<Entity, never, Convert> = RequiredEntityData<Entity, never, Convert>,
+  >(data: Data & IsSubset<RequiredEntityData<Entity, never, Convert>, Data>, options?: CreateOptions<Convert>): Entity;
 
   /**
    * Creates new instance of given entity and populates it with given data.
    * The entity constructor will be used unless you provide `{ managed: true }` in the `options` parameter.
    * The constructor will be given parameters based on the defined constructor of the entity. If the constructor
    * parameter matches a property name, its value will be extracted from `data`. If no matching property exists,
-   * the whole `data` parameter will be passed. This means we can also define `constructor(data: Partial<T>)` and
+   * the whole `data` parameter will be pass. This means we can also define `constructor(data: Partial<T>)` and
    * `em.create()` will pass the data into it (unless we have a property named `data` too).
    *
    * The parameters are strictly checked, you need to provide all required properties. You can use `OptionalProps`
@@ -310,7 +313,10 @@ export class EntityRepository<Entity extends object> {
    * The newly created entity will be automatically marked for persistence via `em.persist` unless you disable this
    * behavior, either locally via `persist: false` option, or globally via `persistOnCreate` ORM config option.
    */
-  create<Convert extends boolean = false>(data: EntityData<Entity, Convert>, options: CreateOptions<Convert> & { partial: true }): Entity;
+  create<
+    Convert extends boolean = false,
+    Data extends EntityData<Entity, Convert> = EntityData<Entity, Convert>,
+  >(data: Data & IsSubset<EntityData<Entity, Convert>, Data>, options: CreateOptions<Convert> & { partial: true }): Entity;
 
   /**
    * Creates new instance of given entity and populates it with given data.

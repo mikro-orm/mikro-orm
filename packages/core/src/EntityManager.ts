@@ -1619,7 +1619,11 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
    * The newly created entity will be automatically marked for persistence via `em.persist` unless you disable this
    * behavior, either locally via `persist: false` option, or globally via `persistOnCreate` ORM config option.
    */
-  create<Entity extends object, Convert extends boolean = false>(entityName: EntityName<Entity>, data: RequiredEntityData<Entity, never, Convert>, options?: CreateOptions<Convert>): Entity;
+  create<
+    Entity extends object,
+    Convert extends boolean = false,
+    Data extends RequiredEntityData<Entity, never, Convert> = RequiredEntityData<Entity, never, Convert>,
+  >(entityName: EntityName<Entity>, data: Data & IsSubset<RequiredEntityData<Entity, never, Convert>, Data>, options?: CreateOptions<Convert>): Entity;
 
   /**
    * Creates new instance of given entity and populates it with given data.
@@ -1636,7 +1640,11 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
    * The newly created entity will be automatically marked for persistence via `em.persist` unless you disable this
    * behavior, either locally via `persist: false` option, or globally via `persistOnCreate` ORM config option.
    */
-  create<Entity extends object, Convert extends boolean = false>(entityName: EntityName<Entity>, data: EntityData<Entity, Convert>, options: CreateOptions<Convert> & { partial: true }): Entity;
+  create<
+    Entity extends object,
+    Convert extends boolean = false,
+    Data extends EntityData<Entity, Convert> = EntityData<Entity, Convert>,
+  >(entityName: EntityName<Entity>, data: Data & IsSubset<EntityData<Entity, Convert>, Data>, options: CreateOptions<Convert> & { partial: true }): Entity;
 
   /**
    * Creates new instance of given entity and populates it with given data.

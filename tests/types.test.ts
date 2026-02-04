@@ -1168,4 +1168,34 @@ describe('check typings', () => {
     // @ts-expect-error - firstNme does not exist on User entity
     em.assign(user, dto);
   });
+
+  test('IsSubset catches invalid keys in em.create()', () => {
+    class User {
+
+      id!: number;
+      firstName!: string;
+      lastName: string | null = null;
+
+    }
+
+    const em = { create: vi.fn() as any } as EntityManager;
+
+    // Valid creation
+    em.create(User, { firstName: 'John' });
+
+    // @ts-expect-error - firstNme is a typo (inline object literal)
+    em.create(User, { firstNme: 'John' });
+
+    // Typed DTO with typo - the main issue from GH#7113
+    type CreateUserDto = { firstName: string; lastNme?: string | null };
+    const dto: CreateUserDto = { firstName: 'John', lastNme: 'Doe' };
+    // @ts-expect-error - lastNme does not exist on User entity
+    em.create(User, dto);
+
+    // Partial mode should also catch invalid keys
+    type PartialDto = { firstNme?: string };
+    const partialDto: PartialDto = { firstNme: 'test' };
+    // @ts-expect-error - firstNme does not exist on User entity
+    em.create(User, partialDto, { partial: true });
+  });
 });
