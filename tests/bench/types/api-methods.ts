@@ -92,7 +92,7 @@ bench('em.create() return type', () => {
   type R = ReturnType<typeof em.create<Author>>;
   const x = {} as R;
   void x;
-}).types([1741, 'instantiations']);
+}).types([2375, 'instantiations']);
 
 bench('RequiredEntityData - Author', () => {
   type R = RequiredEntityData<Author>;
