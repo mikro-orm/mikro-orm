@@ -127,7 +127,7 @@
     "@types/uuid": "11.0.0",
     "@types/yargs": "17.0.35",
     "@vitest/coverage-v8": "4.0.18",
-    "bson": "7.1.1",
+    "bson": "7.2.0",
     "conditional-type-checks": "1.0.6",
     "dataloader": "2.2.3",
     "husky": "9.1.7",
