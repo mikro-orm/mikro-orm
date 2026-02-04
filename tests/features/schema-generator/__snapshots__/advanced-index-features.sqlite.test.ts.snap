@@ -1,0 +1,16 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`advanced index features in sqlite > schema generator creates indexes with sort order and collation > create schema 1`] = `
+"create table \`adv_idx_sqlite_entity\` (\`id\` integer not null primary key autoincrement, \`name\` text not null, \`email\` text not null, \`created_at\` datetime not null);
+create index \`adv_idx_sqlite_entity_created_at_name_index\` on \`adv_idx_sqlite_entity\` (\`created_at\` DESC, \`name\` ASC);
+create index \`collation_idx\` on \`adv_idx_sqlite_entity\` (\`name\` collate NOCASE);
+"
+`;
+
+exports[`advanced index features in sqlite > schema generator diffs indexes with changed options > update schema 1`] = `
+"drop index \`collation_idx\`;
+drop index \`adv_idx_sqlite_entity_created_at_name_index\`;
+create index \`collation_idx\` on \`adv_idx_sqlite_entity\` (\`name\` collate BINARY);
+create index \`adv_idx_sqlite_entity_created_at_name_index\` on \`adv_idx_sqlite_entity\` (\`created_at\` ASC, \`name\` DESC);
+"
+`;

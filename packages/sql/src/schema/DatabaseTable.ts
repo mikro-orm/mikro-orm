@@ -7,6 +7,7 @@ import {
   type EntityProperty,
   EntitySchema,
   type IndexCallback,
+  type IndexOptions,
   type NamingStrategy,
   RawQueryFragment,
   ReferenceKind,
@@ -231,13 +232,43 @@ export class DatabaseTable {
       && !(index.columnNames.some(col => !col) && !index.expression),
     );
 
+    // Helper to map column name to property name
+    const columnToPropertyName = (colName: string) => this.getPropertyName(namingStrategy, colName);
+
     for (const index of potentiallyUnmappedIndexes) {
-      const ret: UniqueOptions<any> = {
+      // Build the index/unique options object with advanced options
+      const ret: IndexOptions<any> & UniqueOptions<any> = {
         name: index.keyName,
         deferMode: index.deferMode,
         expression: index.expression,
+        // Advanced index options - convert column names to property names
+        columns: index.columns?.map(col => ({
+          ...col,
+          name: columnToPropertyName(col.name),
+        })),
+        include: index.include?.map(colName => columnToPropertyName(colName)),
+        fillFactor: index.fillFactor,
+        disabled: index.disabled,
       };
-      const isTrivial = !index.deferMode && !index.expression;
+
+      // Index-only options (not valid for Unique)
+      if (!index.unique) {
+        if (index.type) {
+          // Convert index type - IndexDef.type can be string or object, IndexOptions.type is just string
+          ret.type = typeof index.type === 'string' ? index.type : index.type.indexType;
+        }
+        if (index.invisible) {
+          ret.invisible = index.invisible;
+        }
+        if (index.clustered) {
+          ret.clustered = index.clustered;
+        }
+      }
+
+      // An index is trivial if it has no special options that require entity-level declaration
+      const hasAdvancedOptions = index.columns?.length || index.include?.length || index.fillFactor ||
+        index.type || index.invisible || index.disabled || index.clustered;
+      const isTrivial = !index.deferMode && !index.expression && !hasAdvancedOptions;
 
       if (isTrivial) {
         // Index is for FK. Map to the FK prop and move on.
@@ -919,7 +950,18 @@ export class DatabaseTable {
     expression?: string | IndexCallback<any>;
     deferMode?: DeferMode | `${DeferMode}`;
     options?: Dictionary;
+    columns?: { name: string; sort?: 'ASC' | 'DESC' | 'asc' | 'desc'; nulls?: 'FIRST' | 'LAST' | 'first' | 'last'; length?: number; collation?: string }[];
+    include?: string | string[];
+    fillFactor?: number;
+    invisible?: boolean;
+    disabled?: boolean;
+    clustered?: boolean;
   }, type: 'index' | 'unique' | 'primary') {
+    // If columns are specified but properties are not, derive properties from column names
+    if (index.columns?.length && !index.expression && (!index.properties || Utils.asArray(index.properties).length === 0)) {
+      index = { ...index, properties: index.columns.map(c => c.name) };
+    }
+
     const properties = Utils.unique(Utils.flatten(Utils.asArray(index.properties).map(prop => {
       const parts = prop.split('.');
       const root = parts[0];
@@ -961,6 +1003,42 @@ export class DatabaseTable {
     }
 
     const name = this.getIndexName(index.name!, properties, type);
+
+    // Process include columns (map property names to field names)
+    const includeColumns = index.include ? Utils.unique(Utils.flatten(Utils.asArray(index.include).map(prop => {
+      if (meta.properties[prop]) {
+        return meta.properties[prop].fieldNames;
+      }
+      /* v8 ignore next */
+      return [prop];
+    }))) : undefined;
+
+    // Process columns with advanced options (map property names to field names)
+    const columns = index.columns?.map(col => {
+      const fieldName = meta.properties[col.name]?.fieldNames[0] ?? col.name;
+      return {
+        name: fieldName,
+        sort: col.sort?.toUpperCase() as 'ASC' | 'DESC' | undefined,
+        nulls: col.nulls?.toUpperCase() as 'FIRST' | 'LAST' | undefined,
+        length: col.length,
+        collation: col.collation,
+      };
+    });
+
+    // Validate that column options reference fields in the index properties
+    if (columns?.length && properties.length > 0) {
+      for (const col of columns) {
+        if (!properties.includes(col.name)) {
+          throw new Error(`Index '${name}' on entity '${meta.className}': column option references field '${col.name}' which is not in the index properties`);
+        }
+      }
+    }
+
+    // Validate fillFactor range
+    if (index.fillFactor != null && (index.fillFactor < 0 || index.fillFactor > 100)) {
+      throw new Error(`fillFactor must be between 0 and 100, got ${index.fillFactor} for index '${name}' on entity '${meta.className}'`);
+    }
+
     this.indexes.push({
       keyName: name,
       columnNames: properties,
@@ -973,6 +1051,12 @@ export class DatabaseTable {
       expression: this.processIndexExpression(name, index.expression, meta),
       options: index.options,
       deferMode: index.deferMode,
+      columns,
+      include: includeColumns,
+      fillFactor: index.fillFactor,
+      invisible: index.invisible,
+      disabled: index.disabled,
+      clustered: index.clustered,
     });
   }
 

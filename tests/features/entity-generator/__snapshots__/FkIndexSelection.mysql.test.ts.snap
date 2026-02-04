@@ -52,6 +52,7 @@ export class Users {
   @ManyToOne({ entity: () => Cars, updateRule: 'no action', deleteRule: 'no action', nullable: true, index: 'fk_users_cars_idx' })
   favorite?: Cars;
 
+  @Index({ name: 'fk_users_cars_idx', invisible: true })
   @Property({ nullable: true, persist: false })
   favoriteCarBrand?: string;
 
@@ -64,7 +65,8 @@ export class Users {
   @Property({ nullable: true })
   favoriteBook?: string;
 
-  @ManyToOne({ entity: () => FashionableColors, fieldNames: ['favorite_car_year', 'favorite_color'], updateRule: 'no action', deleteRule: 'no action', nullable: true, index: 'fk_users_fashionable_colors1_idx' })
+  @Index({ name: 'fk_users_fashionable_colors1_idx', invisible: true })
+  @ManyToOne({ entity: () => FashionableColors, fieldNames: ['favorite_car_year', 'favorite_color'], updateRule: 'no action', deleteRule: 'no action', nullable: true })
   fashionableColors?: FashionableColors;
 
 }
@@ -125,6 +127,16 @@ export const UsersSchema = new EntitySchema({
   class: Users,
   indexes: [
     { name: 'favorites_idx', properties: ['fashionableColors', 'favoriteBook'] },
+    {
+      name: 'fk_users_cars_idx',
+      properties: ['favoriteCarBrand'],
+      invisible: true,
+    },
+    {
+      name: 'fk_users_fashionable_colors1_idx',
+      properties: ['fashionableColors'],
+      invisible: true,
+    },
   ],
   uniques: [
     {
@@ -218,6 +230,7 @@ export class Users {
   @ManyToOne({ entity: () => Cars, ref: true, updateRule: 'no action', deleteRule: 'no action', nullable: true, index: 'fk_users_cars_idx' })
   favorite?: Ref<Cars>;
 
+  @Index({ name: 'fk_users_cars_idx', invisible: true })
   @Property({ nullable: true, persist: false })
   favoriteCarBrand?: string;
 
@@ -230,7 +243,8 @@ export class Users {
   @Property({ nullable: true })
   favoriteBook?: string;
 
-  @ManyToOne({ entity: () => FashionableColors, ref: true, fieldNames: ['favorite_car_year', 'favorite_color'], updateRule: 'no action', deleteRule: 'no action', nullable: true, index: 'fk_users_fashionable_colors1_idx' })
+  @Index({ name: 'fk_users_fashionable_colors1_idx', invisible: true })
+  @ManyToOne({ entity: () => FashionableColors, ref: true, fieldNames: ['favorite_car_year', 'favorite_color'], updateRule: 'no action', deleteRule: 'no action', nullable: true })
   fashionableColors?: Ref<FashionableColors>;
 
 }
@@ -291,6 +305,16 @@ export const UsersSchema = new EntitySchema({
   class: Users,
   indexes: [
     { name: 'favorites_idx', properties: ['fashionableColors', 'favoriteBook'] },
+    {
+      name: 'fk_users_cars_idx',
+      properties: ['favoriteCarBrand'],
+      invisible: true,
+    },
+    {
+      name: 'fk_users_fashionable_colors1_idx',
+      properties: ['fashionableColors'],
+      invisible: true,
+    },
   ],
   uniques: [
     {
@@ -394,6 +418,7 @@ export class Users {
   @ManyToOne({ entity: () => Cars, updateRule: 'no action', deleteRule: 'no action', nullable: true, index: 'fk_users_cars_idx' })
   favorite?: Cars;
 
+  @Index({ name: 'fk_users_cars_idx', invisible: true })
   @Property({ nullable: true, persist: false })
   favoriteCarBrand?: string;
 
@@ -406,7 +431,8 @@ export class Users {
   @Property({ nullable: true })
   favoriteBook?: string;
 
-  @ManyToOne({ entity: () => FashionableColors, fieldNames: ['favorite_car_year', 'favorite_color'], updateRule: 'no action', deleteRule: 'no action', nullable: true, index: 'fk_users_fashionable_colors1_idx' })
+  @Index({ name: 'fk_users_fashionable_colors1_idx', invisible: true })
+  @ManyToOne({ entity: () => FashionableColors, fieldNames: ['favorite_car_year', 'favorite_color'], updateRule: 'no action', deleteRule: 'no action', nullable: true })
   fashionableColors?: FashionableColors;
 
 }
@@ -477,6 +503,16 @@ export const UsersSchema = new EntitySchema({
   class: Users,
   indexes: [
     { name: 'favorites_idx', properties: ['fashionableColors', 'favoriteBook'] },
+    {
+      name: 'fk_users_cars_idx',
+      properties: ['favoriteCarBrand'],
+      invisible: true,
+    },
+    {
+      name: 'fk_users_fashionable_colors1_idx',
+      properties: ['fashionableColors'],
+      invisible: true,
+    },
   ],
   uniques: [
     {
@@ -578,6 +614,7 @@ export class Users {
   @ManyToOne({ entity: () => Cars, ref: true, updateRule: 'no action', deleteRule: 'no action', nullable: true, index: 'fk_users_cars_idx' })
   favorite?: Ref<Cars>;
 
+  @Index({ name: 'fk_users_cars_idx', invisible: true })
   @Property({ nullable: true, persist: false })
   favoriteCarBrand?: string;
 
@@ -590,7 +627,8 @@ export class Users {
   @Property({ nullable: true })
   favoriteBook?: string;
 
-  @ManyToOne({ entity: () => FashionableColors, ref: true, fieldNames: ['favorite_car_year', 'favorite_color'], updateRule: 'no action', deleteRule: 'no action', nullable: true, index: 'fk_users_fashionable_colors1_idx' })
+  @Index({ name: 'fk_users_fashionable_colors1_idx', invisible: true })
+  @ManyToOne({ entity: () => FashionableColors, ref: true, fieldNames: ['favorite_car_year', 'favorite_color'], updateRule: 'no action', deleteRule: 'no action', nullable: true })
   fashionableColors?: Ref<FashionableColors>;
 
 }
@@ -661,6 +699,16 @@ export const UsersSchema = new EntitySchema({
   class: Users,
   indexes: [
     { name: 'favorites_idx', properties: ['fashionableColors', 'favoriteBook'] },
+    {
+      name: 'fk_users_cars_idx',
+      properties: ['favoriteCarBrand'],
+      invisible: true,
+    },
+    {
+      name: 'fk_users_fashionable_colors1_idx',
+      properties: ['fashionableColors'],
+      invisible: true,
+    },
   ],
   uniques: [
     {
@@ -744,7 +792,9 @@ import { FashionableColors } from './FashionableColors';
 
 @Entity()
 @Index({ name: 'favorites_idx', expression: 'alter table \`users\` add index \`favorites_idx\` (\`favorite_car_year\`, \`favorite_color\`, \`favorite_book\`)' })
-@Unique({ name: 'when_set_unique', expression: 'alter table \`users\` add unique \`when_set_unique\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`)' })
+@Index({ name: 'fk_users_cars_idx', expression: 'alter table \`users\` add index \`fk_users_cars_idx\` (\`favorite_car_brand\`, \`favorite_car_year\`) invisible', invisible: true })
+@Index({ name: 'fk_users_fashionable_colors1_idx', expression: 'alter table \`users\` add index \`fk_users_fashionable_colors1_idx\` (\`favorite_car_year\`, \`favorite_color\`) invisible', invisible: true })
+@Unique({ name: 'when_set_unique', expression: 'alter table \`users\` add unique \`when_set_unique\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`) invisible' })
 export class Users {
 
   [PrimaryKeyProp]?: 'userId';
@@ -752,8 +802,7 @@ export class Users {
   @PrimaryKey()
   userId!: number;
 
-  @Index({ name: 'fk_users_fashionable_colors1_idx' })
-  @ManyToOne({ entity: () => FashionableColors, fieldNames: ['favorite_car_year', 'favorite_color'], updateRule: 'no action', deleteRule: 'no action', nullable: true, index: 'fk_users_cars_idx' })
+  @ManyToOne({ entity: () => FashionableColors, fieldNames: ['favorite_car_year', 'favorite_color'], updateRule: 'no action', deleteRule: 'no action', nullable: true })
   favorite?: FashionableColors;
 
   @Property({ nullable: true })
@@ -815,12 +864,21 @@ export const UsersSchema = new EntitySchema({
       name: 'favorites_idx',
       expression: 'alter table \`users\` add index \`favorites_idx\` (\`favorite_car_year\`, \`favorite_color\`, \`favorite_book\`)',
     },
-    { name: 'fk_users_fashionable_colors1_idx', properties: ['favorite'] },
+    {
+      name: 'fk_users_cars_idx',
+      expression: 'alter table \`users\` add index \`fk_users_cars_idx\` (\`favorite_car_brand\`, \`favorite_car_year\`) invisible',
+      invisible: true,
+    },
+    {
+      name: 'fk_users_fashionable_colors1_idx',
+      expression: 'alter table \`users\` add index \`fk_users_fashionable_colors1_idx\` (\`favorite_car_year\`, \`favorite_color\`) invisible',
+      invisible: true,
+    },
   ],
   uniques: [
     {
       name: 'when_set_unique',
-      expression: 'alter table \`users\` add unique \`when_set_unique\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`)',
+      expression: 'alter table \`users\` add unique \`when_set_unique\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`) invisible',
     },
   ],
   properties: {
@@ -832,7 +890,6 @@ export const UsersSchema = new EntitySchema({
       updateRule: 'no action',
       deleteRule: 'no action',
       nullable: true,
-      index: 'fk_users_cars_idx',
     },
     favoriteBook: { type: 'string', nullable: true },
   },
@@ -881,7 +938,9 @@ import { FashionableColors } from './FashionableColors';
 
 @Entity()
 @Index({ name: 'favorites_idx', expression: 'alter table \`users\` add index \`favorites_idx\` (\`favorite_car_year\`, \`favorite_color\`, \`favorite_book\`)' })
-@Unique({ name: 'when_set_unique', expression: 'alter table \`users\` add unique \`when_set_unique\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`)' })
+@Index({ name: 'fk_users_cars_idx', expression: 'alter table \`users\` add index \`fk_users_cars_idx\` (\`favorite_car_brand\`, \`favorite_car_year\`) invisible', invisible: true })
+@Index({ name: 'fk_users_fashionable_colors1_idx', expression: 'alter table \`users\` add index \`fk_users_fashionable_colors1_idx\` (\`favorite_car_year\`, \`favorite_color\`) invisible', invisible: true })
+@Unique({ name: 'when_set_unique', expression: 'alter table \`users\` add unique \`when_set_unique\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`) invisible' })
 export class Users {
 
   [PrimaryKeyProp]?: 'userId';
@@ -889,8 +948,7 @@ export class Users {
   @PrimaryKey()
   userId!: number;
 
-  @Index({ name: 'fk_users_fashionable_colors1_idx' })
-  @ManyToOne({ entity: () => FashionableColors, ref: true, fieldNames: ['favorite_car_year', 'favorite_color'], updateRule: 'no action', deleteRule: 'no action', nullable: true, index: 'fk_users_cars_idx' })
+  @ManyToOne({ entity: () => FashionableColors, ref: true, fieldNames: ['favorite_car_year', 'favorite_color'], updateRule: 'no action', deleteRule: 'no action', nullable: true })
   favorite?: Ref<FashionableColors>;
 
   @Property({ nullable: true })
@@ -952,12 +1010,21 @@ export const UsersSchema = new EntitySchema({
       name: 'favorites_idx',
       expression: 'alter table \`users\` add index \`favorites_idx\` (\`favorite_car_year\`, \`favorite_color\`, \`favorite_book\`)',
     },
-    { name: 'fk_users_fashionable_colors1_idx', properties: ['favorite'] },
+    {
+      name: 'fk_users_cars_idx',
+      expression: 'alter table \`users\` add index \`fk_users_cars_idx\` (\`favorite_car_brand\`, \`favorite_car_year\`) invisible',
+      invisible: true,
+    },
+    {
+      name: 'fk_users_fashionable_colors1_idx',
+      expression: 'alter table \`users\` add index \`fk_users_fashionable_colors1_idx\` (\`favorite_car_year\`, \`favorite_color\`) invisible',
+      invisible: true,
+    },
   ],
   uniques: [
     {
       name: 'when_set_unique',
-      expression: 'alter table \`users\` add unique \`when_set_unique\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`)',
+      expression: 'alter table \`users\` add unique \`when_set_unique\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`) invisible',
     },
   ],
   properties: {
@@ -970,7 +1037,6 @@ export const UsersSchema = new EntitySchema({
       updateRule: 'no action',
       deleteRule: 'no action',
       nullable: true,
-      index: 'fk_users_cars_idx',
     },
     favoriteBook: { type: 'string', nullable: true },
   },
@@ -1023,7 +1089,9 @@ import { FashionableColors } from './FashionableColors';
 
 @Entity()
 @Index({ name: 'favorites_idx', expression: 'alter table \`users\` add index \`favorites_idx\` (\`favorite_car_year\`, \`favorite_color\`, \`favorite_book\`)' })
-@Unique({ name: 'when_set_unique', expression: 'alter table \`users\` add unique \`when_set_unique\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`)' })
+@Index({ name: 'fk_users_cars_idx', expression: 'alter table \`users\` add index \`fk_users_cars_idx\` (\`favorite_car_brand\`, \`favorite_car_year\`) invisible', invisible: true })
+@Index({ name: 'fk_users_fashionable_colors1_idx', expression: 'alter table \`users\` add index \`fk_users_fashionable_colors1_idx\` (\`favorite_car_year\`, \`favorite_color\`) invisible', invisible: true })
+@Unique({ name: 'when_set_unique', expression: 'alter table \`users\` add unique \`when_set_unique\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`) invisible' })
 export class Users {
 
   [PrimaryKeyProp]?: 'userId';
@@ -1031,8 +1099,7 @@ export class Users {
   @PrimaryKey()
   userId!: number;
 
-  @Index({ name: 'fk_users_fashionable_colors1_idx' })
-  @ManyToOne({ entity: () => FashionableColors, fieldNames: ['favorite_car_year', 'favorite_color'], updateRule: 'no action', deleteRule: 'no action', nullable: true, index: 'fk_users_cars_idx' })
+  @ManyToOne({ entity: () => FashionableColors, fieldNames: ['favorite_car_year', 'favorite_color'], updateRule: 'no action', deleteRule: 'no action', nullable: true })
   favorite?: FashionableColors;
 
   @Property({ nullable: true })
@@ -1097,12 +1164,21 @@ export const UsersSchema = new EntitySchema({
       name: 'favorites_idx',
       expression: 'alter table \`users\` add index \`favorites_idx\` (\`favorite_car_year\`, \`favorite_color\`, \`favorite_book\`)',
     },
-    { name: 'fk_users_fashionable_colors1_idx', properties: ['favorite'] },
+    {
+      name: 'fk_users_cars_idx',
+      expression: 'alter table \`users\` add index \`fk_users_cars_idx\` (\`favorite_car_brand\`, \`favorite_car_year\`) invisible',
+      invisible: true,
+    },
+    {
+      name: 'fk_users_fashionable_colors1_idx',
+      expression: 'alter table \`users\` add index \`fk_users_fashionable_colors1_idx\` (\`favorite_car_year\`, \`favorite_color\`) invisible',
+      invisible: true,
+    },
   ],
   uniques: [
     {
       name: 'when_set_unique',
-      expression: 'alter table \`users\` add unique \`when_set_unique\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`)',
+      expression: 'alter table \`users\` add unique \`when_set_unique\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`) invisible',
     },
   ],
   properties: {
@@ -1114,7 +1190,6 @@ export const UsersSchema = new EntitySchema({
       updateRule: 'no action',
       deleteRule: 'no action',
       nullable: true,
-      index: 'fk_users_cars_idx',
     },
     favoriteBook: { type: 'string', nullable: true },
   },
@@ -1167,7 +1242,9 @@ import { FashionableColors } from './FashionableColors';
 
 @Entity()
 @Index({ name: 'favorites_idx', expression: 'alter table \`users\` add index \`favorites_idx\` (\`favorite_car_year\`, \`favorite_color\`, \`favorite_book\`)' })
-@Unique({ name: 'when_set_unique', expression: 'alter table \`users\` add unique \`when_set_unique\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`)' })
+@Index({ name: 'fk_users_cars_idx', expression: 'alter table \`users\` add index \`fk_users_cars_idx\` (\`favorite_car_brand\`, \`favorite_car_year\`) invisible', invisible: true })
+@Index({ name: 'fk_users_fashionable_colors1_idx', expression: 'alter table \`users\` add index \`fk_users_fashionable_colors1_idx\` (\`favorite_car_year\`, \`favorite_color\`) invisible', invisible: true })
+@Unique({ name: 'when_set_unique', expression: 'alter table \`users\` add unique \`when_set_unique\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`) invisible' })
 export class Users {
 
   [PrimaryKeyProp]?: 'userId';
@@ -1175,8 +1252,7 @@ export class Users {
   @PrimaryKey()
   userId!: number;
 
-  @Index({ name: 'fk_users_fashionable_colors1_idx' })
-  @ManyToOne({ entity: () => FashionableColors, ref: true, fieldNames: ['favorite_car_year', 'favorite_color'], updateRule: 'no action', deleteRule: 'no action', nullable: true, index: 'fk_users_cars_idx' })
+  @ManyToOne({ entity: () => FashionableColors, ref: true, fieldNames: ['favorite_car_year', 'favorite_color'], updateRule: 'no action', deleteRule: 'no action', nullable: true })
   favorite?: Ref<FashionableColors>;
 
   @Property({ nullable: true })
@@ -1241,12 +1317,21 @@ export const UsersSchema = new EntitySchema({
       name: 'favorites_idx',
       expression: 'alter table \`users\` add index \`favorites_idx\` (\`favorite_car_year\`, \`favorite_color\`, \`favorite_book\`)',
     },
-    { name: 'fk_users_fashionable_colors1_idx', properties: ['favorite'] },
+    {
+      name: 'fk_users_cars_idx',
+      expression: 'alter table \`users\` add index \`fk_users_cars_idx\` (\`favorite_car_brand\`, \`favorite_car_year\`) invisible',
+      invisible: true,
+    },
+    {
+      name: 'fk_users_fashionable_colors1_idx',
+      expression: 'alter table \`users\` add index \`fk_users_fashionable_colors1_idx\` (\`favorite_car_year\`, \`favorite_color\`) invisible',
+      invisible: true,
+    },
   ],
   uniques: [
     {
       name: 'when_set_unique',
-      expression: 'alter table \`users\` add unique \`when_set_unique\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`)',
+      expression: 'alter table \`users\` add unique \`when_set_unique\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`) invisible',
     },
   ],
   properties: {
@@ -1259,7 +1344,6 @@ export const UsersSchema = new EntitySchema({
       updateRule: 'no action',
       deleteRule: 'no action',
       nullable: true,
-      index: 'fk_users_cars_idx',
     },
     favoriteBook: { type: 'string', nullable: true },
   },
@@ -1308,7 +1392,9 @@ import { FashionableColors } from './FashionableColors';
 
 @Entity()
 @Index({ name: 'favorites_idx', expression: 'alter table \`users\` add index \`favorites_idx\` (\`favorite_car_year\`, \`favorite_color\`, \`favorite_book\`)' })
-@Unique({ name: 'when_set_unique', expression: 'alter table \`users\` add unique \`when_set_unique\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`)' })
+@Index({ name: 'fk_users_cars_idx', expression: 'alter table \`users\` add index \`fk_users_cars_idx\` (\`favorite_car_brand\`, \`favorite_car_year\`) invisible', invisible: true })
+@Index({ name: 'fk_users_fashionable_colors1_idx', expression: 'alter table \`users\` add index \`fk_users_fashionable_colors1_idx\` (\`favorite_car_year\`, \`favorite_color\`) invisible', invisible: true })
+@Unique({ name: 'when_set_unique', expression: 'alter table \`users\` add unique \`when_set_unique\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`) invisible' })
 export class Users {
 
   [PrimaryKeyProp]?: 'userId';
@@ -1316,8 +1402,7 @@ export class Users {
   @PrimaryKey()
   userId!: number;
 
-  @Index({ name: 'fk_users_fashionable_colors1_idx' })
-  @ManyToOne({ entity: () => FashionableColors, fieldNames: ['favorite_car_year', 'favorite_color'], updateRule: 'no action', deleteRule: 'no action', nullable: true, index: 'fk_users_cars_idx' })
+  @ManyToOne({ entity: () => FashionableColors, fieldNames: ['favorite_car_year', 'favorite_color'], updateRule: 'no action', deleteRule: 'no action', nullable: true })
   favorite?: FashionableColors;
 
   @Property({ columnType: 'year', nullable: true, persist: false })
@@ -1383,12 +1468,21 @@ export const UsersSchema = new EntitySchema({
       name: 'favorites_idx',
       expression: 'alter table \`users\` add index \`favorites_idx\` (\`favorite_car_year\`, \`favorite_color\`, \`favorite_book\`)',
     },
-    { name: 'fk_users_fashionable_colors1_idx', properties: ['favorite'] },
+    {
+      name: 'fk_users_cars_idx',
+      expression: 'alter table \`users\` add index \`fk_users_cars_idx\` (\`favorite_car_brand\`, \`favorite_car_year\`) invisible',
+      invisible: true,
+    },
+    {
+      name: 'fk_users_fashionable_colors1_idx',
+      expression: 'alter table \`users\` add index \`fk_users_fashionable_colors1_idx\` (\`favorite_car_year\`, \`favorite_color\`) invisible',
+      invisible: true,
+    },
   ],
   uniques: [
     {
       name: 'when_set_unique',
-      expression: 'alter table \`users\` add unique \`when_set_unique\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`)',
+      expression: 'alter table \`users\` add unique \`when_set_unique\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`) invisible',
     },
   ],
   properties: {
@@ -1400,7 +1494,6 @@ export const UsersSchema = new EntitySchema({
       updateRule: 'no action',
       deleteRule: 'no action',
       nullable: true,
-      index: 'fk_users_cars_idx',
     },
     favoriteCarYear: {
       type: 'unknown',
@@ -1455,7 +1548,9 @@ import { FashionableColors } from './FashionableColors';
 
 @Entity()
 @Index({ name: 'favorites_idx', expression: 'alter table \`users\` add index \`favorites_idx\` (\`favorite_car_year\`, \`favorite_color\`, \`favorite_book\`)' })
-@Unique({ name: 'when_set_unique', expression: 'alter table \`users\` add unique \`when_set_unique\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`)' })
+@Index({ name: 'fk_users_cars_idx', expression: 'alter table \`users\` add index \`fk_users_cars_idx\` (\`favorite_car_brand\`, \`favorite_car_year\`) invisible', invisible: true })
+@Index({ name: 'fk_users_fashionable_colors1_idx', expression: 'alter table \`users\` add index \`fk_users_fashionable_colors1_idx\` (\`favorite_car_year\`, \`favorite_color\`) invisible', invisible: true })
+@Unique({ name: 'when_set_unique', expression: 'alter table \`users\` add unique \`when_set_unique\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`) invisible' })
 export class Users {
 
   [PrimaryKeyProp]?: 'userId';
@@ -1463,8 +1558,7 @@ export class Users {
   @PrimaryKey()
   userId!: number;
 
-  @Index({ name: 'fk_users_fashionable_colors1_idx' })
-  @ManyToOne({ entity: () => FashionableColors, ref: true, fieldNames: ['favorite_car_year', 'favorite_color'], updateRule: 'no action', deleteRule: 'no action', nullable: true, index: 'fk_users_cars_idx' })
+  @ManyToOne({ entity: () => FashionableColors, ref: true, fieldNames: ['favorite_car_year', 'favorite_color'], updateRule: 'no action', deleteRule: 'no action', nullable: true })
   favorite?: Ref<FashionableColors>;
 
   @Property({ columnType: 'year', nullable: true, persist: false })
@@ -1530,12 +1624,21 @@ export const UsersSchema = new EntitySchema({
       name: 'favorites_idx',
       expression: 'alter table \`users\` add index \`favorites_idx\` (\`favorite_car_year\`, \`favorite_color\`, \`favorite_book\`)',
     },
-    { name: 'fk_users_fashionable_colors1_idx', properties: ['favorite'] },
+    {
+      name: 'fk_users_cars_idx',
+      expression: 'alter table \`users\` add index \`fk_users_cars_idx\` (\`favorite_car_brand\`, \`favorite_car_year\`) invisible',
+      invisible: true,
+    },
+    {
+      name: 'fk_users_fashionable_colors1_idx',
+      expression: 'alter table \`users\` add index \`fk_users_fashionable_colors1_idx\` (\`favorite_car_year\`, \`favorite_color\`) invisible',
+      invisible: true,
+    },
   ],
   uniques: [
     {
       name: 'when_set_unique',
-      expression: 'alter table \`users\` add unique \`when_set_unique\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`)',
+      expression: 'alter table \`users\` add unique \`when_set_unique\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`) invisible',
     },
   ],
   properties: {
@@ -1548,7 +1651,6 @@ export const UsersSchema = new EntitySchema({
       updateRule: 'no action',
       deleteRule: 'no action',
       nullable: true,
-      index: 'fk_users_cars_idx',
     },
     favoriteCarYear: {
       type: 'unknown',
@@ -1607,7 +1709,9 @@ import { FashionableColors } from './FashionableColors';
 
 @Entity()
 @Index({ name: 'favorites_idx', expression: 'alter table \`users\` add index \`favorites_idx\` (\`favorite_car_year\`, \`favorite_color\`, \`favorite_book\`)' })
-@Unique({ name: 'when_set_unique', expression: 'alter table \`users\` add unique \`when_set_unique\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`)' })
+@Index({ name: 'fk_users_cars_idx', expression: 'alter table \`users\` add index \`fk_users_cars_idx\` (\`favorite_car_brand\`, \`favorite_car_year\`) invisible', invisible: true })
+@Index({ name: 'fk_users_fashionable_colors1_idx', expression: 'alter table \`users\` add index \`fk_users_fashionable_colors1_idx\` (\`favorite_car_year\`, \`favorite_color\`) invisible', invisible: true })
+@Unique({ name: 'when_set_unique', expression: 'alter table \`users\` add unique \`when_set_unique\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`) invisible' })
 export class Users {
 
   [PrimaryKeyProp]?: 'userId';
@@ -1615,8 +1719,7 @@ export class Users {
   @PrimaryKey()
   userId!: number;
 
-  @Index({ name: 'fk_users_fashionable_colors1_idx' })
-  @ManyToOne({ entity: () => FashionableColors, fieldNames: ['favorite_car_year', 'favorite_color'], updateRule: 'no action', deleteRule: 'no action', nullable: true, index: 'fk_users_cars_idx' })
+  @ManyToOne({ entity: () => FashionableColors, fieldNames: ['favorite_car_year', 'favorite_color'], updateRule: 'no action', deleteRule: 'no action', nullable: true })
   favorite?: FashionableColors;
 
   @Property({ columnType: 'year', nullable: true, persist: false })
@@ -1685,12 +1788,21 @@ export const UsersSchema = new EntitySchema({
       name: 'favorites_idx',
       expression: 'alter table \`users\` add index \`favorites_idx\` (\`favorite_car_year\`, \`favorite_color\`, \`favorite_book\`)',
     },
-    { name: 'fk_users_fashionable_colors1_idx', properties: ['favorite'] },
+    {
+      name: 'fk_users_cars_idx',
+      expression: 'alter table \`users\` add index \`fk_users_cars_idx\` (\`favorite_car_brand\`, \`favorite_car_year\`) invisible',
+      invisible: true,
+    },
+    {
+      name: 'fk_users_fashionable_colors1_idx',
+      expression: 'alter table \`users\` add index \`fk_users_fashionable_colors1_idx\` (\`favorite_car_year\`, \`favorite_color\`) invisible',
+      invisible: true,
+    },
   ],
   uniques: [
     {
       name: 'when_set_unique',
-      expression: 'alter table \`users\` add unique \`when_set_unique\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`)',
+      expression: 'alter table \`users\` add unique \`when_set_unique\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`) invisible',
     },
   ],
   properties: {
@@ -1702,7 +1814,6 @@ export const UsersSchema = new EntitySchema({
       updateRule: 'no action',
       deleteRule: 'no action',
       nullable: true,
-      index: 'fk_users_cars_idx',
     },
     favoriteCarYear: {
       type: 'unknown',
@@ -1761,7 +1872,9 @@ import { FashionableColors } from './FashionableColors';
 
 @Entity()
 @Index({ name: 'favorites_idx', expression: 'alter table \`users\` add index \`favorites_idx\` (\`favorite_car_year\`, \`favorite_color\`, \`favorite_book\`)' })
-@Unique({ name: 'when_set_unique', expression: 'alter table \`users\` add unique \`when_set_unique\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`)' })
+@Index({ name: 'fk_users_cars_idx', expression: 'alter table \`users\` add index \`fk_users_cars_idx\` (\`favorite_car_brand\`, \`favorite_car_year\`) invisible', invisible: true })
+@Index({ name: 'fk_users_fashionable_colors1_idx', expression: 'alter table \`users\` add index \`fk_users_fashionable_colors1_idx\` (\`favorite_car_year\`, \`favorite_color\`) invisible', invisible: true })
+@Unique({ name: 'when_set_unique', expression: 'alter table \`users\` add unique \`when_set_unique\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`) invisible' })
 export class Users {
 
   [PrimaryKeyProp]?: 'userId';
@@ -1769,8 +1882,7 @@ export class Users {
   @PrimaryKey()
   userId!: number;
 
-  @Index({ name: 'fk_users_fashionable_colors1_idx' })
-  @ManyToOne({ entity: () => FashionableColors, ref: true, fieldNames: ['favorite_car_year', 'favorite_color'], updateRule: 'no action', deleteRule: 'no action', nullable: true, index: 'fk_users_cars_idx' })
+  @ManyToOne({ entity: () => FashionableColors, ref: true, fieldNames: ['favorite_car_year', 'favorite_color'], updateRule: 'no action', deleteRule: 'no action', nullable: true })
   favorite?: Ref<FashionableColors>;
 
   @Property({ columnType: 'year', nullable: true, persist: false })
@@ -1839,12 +1951,21 @@ export const UsersSchema = new EntitySchema({
       name: 'favorites_idx',
       expression: 'alter table \`users\` add index \`favorites_idx\` (\`favorite_car_year\`, \`favorite_color\`, \`favorite_book\`)',
     },
-    { name: 'fk_users_fashionable_colors1_idx', properties: ['favorite'] },
+    {
+      name: 'fk_users_cars_idx',
+      expression: 'alter table \`users\` add index \`fk_users_cars_idx\` (\`favorite_car_brand\`, \`favorite_car_year\`) invisible',
+      invisible: true,
+    },
+    {
+      name: 'fk_users_fashionable_colors1_idx',
+      expression: 'alter table \`users\` add index \`fk_users_fashionable_colors1_idx\` (\`favorite_car_year\`, \`favorite_color\`) invisible',
+      invisible: true,
+    },
   ],
   uniques: [
     {
       name: 'when_set_unique',
-      expression: 'alter table \`users\` add unique \`when_set_unique\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`)',
+      expression: 'alter table \`users\` add unique \`when_set_unique\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`) invisible',
     },
   ],
   properties: {
@@ -1857,7 +1978,6 @@ export const UsersSchema = new EntitySchema({
       updateRule: 'no action',
       deleteRule: 'no action',
       nullable: true,
-      index: 'fk_users_cars_idx',
     },
     favoriteCarYear: {
       type: 'unknown',

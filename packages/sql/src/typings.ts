@@ -8,6 +8,7 @@ import type {
   EntitySchemaWithMeta,
   FilterQuery,
   GroupOperator,
+  IndexColumnOptions,
   Opt,
   Primary,
   PrimaryProperty,
@@ -98,6 +99,29 @@ export interface IndexDef {
   options?: Dictionary; // for driver specific options
   type?: string | Readonly<{ indexType?: string; storageEngineIndexType?: 'hash' | 'btree'; predicate?: string }>;
   deferMode?: DeferMode | `${DeferMode}`;
+  /**
+   * Advanced column options for the index.
+   * When specified, these options override the simple columnNames for index generation.
+   */
+  columns?: IndexColumnOptions[];
+  /**
+   * Columns to include in the index but not as part of the key (PostgreSQL, MSSQL).
+   */
+  include?: string[];
+  /** Fill factor for the index as a percentage 0-100 (PostgreSQL, MSSQL). */
+  fillFactor?: number;
+  /**
+   * Whether the index is invisible/hidden from the query optimizer (MySQL 8+, MariaDB 10.6+, MongoDB).
+   */
+  invisible?: boolean;
+  /**
+   * Whether the index is disabled (MSSQL only).
+   */
+  disabled?: boolean;
+  /**
+   * Whether the index should be clustered (MariaDB, MSSQL).
+   */
+  clustered?: boolean;
 }
 
 export interface CheckDef<T = unknown> {

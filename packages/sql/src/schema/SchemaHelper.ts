@@ -121,23 +121,74 @@ export abstract class SchemaHelper {
       return index.expression;
     }
 
+    if (index.fillFactor != null && (index.fillFactor < 0 || index.fillFactor > 100)) {
+      throw new Error(`fillFactor must be between 0 and 100, got ${index.fillFactor} for index '${index.keyName}'`);
+    }
+
     tableName = this.quote(tableName);
     const keyName = this.quote(index.keyName);
     const defer = index.deferMode ? ` deferrable initially ${index.deferMode}` : '';
-    let sql = `create ${index.unique ? 'unique ' : ''}index ${keyName} on ${tableName} `;
+    let sql = `create ${index.unique ? 'unique ' : ''}index ${keyName} on ${tableName}`;
 
     if (index.unique && index.constraint) {
-      sql = `alter table ${tableName} add constraint ${keyName} unique `;
+      sql = `alter table ${tableName} add constraint ${keyName} unique`;
     }
 
     if (index.columnNames.some(column => column.includes('.'))) {
       // JSON columns can have unique index but not unique constraint, and we need to distinguish those, so we can properly drop them
-      const sql = `create ${index.unique ? 'unique ' : ''}index ${keyName} on ${tableName} `;
+      sql = `create ${index.unique ? 'unique ' : ''}index ${keyName} on ${tableName}`;
       const columns = this.platform.getJsonIndexDefinition(index);
-      return `${sql}(${columns.join(', ')})${defer}`;
+      return `${sql} (${columns.join(', ')})${this.getCreateIndexSuffix(index)}${defer}`;
     }
 
-    return `${sql}(${index.columnNames.map(c => this.quote(c)).join(', ')})${defer}`;
+    // Build column list with advanced options
+    const columns = this.getIndexColumns(index);
+    sql += ` (${columns})`;
+
+    // Add INCLUDE clause for covering indexes (PostgreSQL, MSSQL)
+    if (index.include?.length) {
+      sql += ` include (${index.include.map(c => this.quote(c)).join(', ')})`;
+    }
+
+    return sql + this.getCreateIndexSuffix(index) + defer;
+  }
+
+  /**
+   * Hook for adding driver-specific index options (e.g., fill factor for PostgreSQL).
+   */
+  protected getCreateIndexSuffix(_index: IndexDef): string {
+    return '';
+  }
+
+  /**
+   * Build the column list for an index, supporting advanced options like sort order, nulls ordering, and collation.
+   * Note: Prefix length is only supported by MySQL/MariaDB which override this method.
+   */
+  protected getIndexColumns(index: IndexDef): string {
+    if (index.columns?.length) {
+      return index.columns.map(col => {
+        let colDef = this.quote(col.name);
+
+        // Collation comes after column name (SQLite syntax: column COLLATE name)
+        if (col.collation) {
+          colDef += ` collate ${col.collation}`;
+        }
+
+        // Sort order
+        if (col.sort) {
+          colDef += ` ${col.sort}`;
+        }
+
+        // NULLS ordering (PostgreSQL)
+        if (col.nulls) {
+          colDef += ` nulls ${col.nulls}`;
+        }
+
+        return colDef;
+      }).join(', ');
+    }
+
+    return index.columnNames.map(c => this.quote(c)).join(', ');
   }
 
   getDropIndexSQL(tableName: string, index: IndexDef): string {
@@ -397,8 +448,22 @@ export abstract class SchemaHelper {
 
     indexes.forEach(index => {
       if (map[index.keyName]) {
-        map[index.keyName].composite = true;
-        map[index.keyName].columnNames.push(index.columnNames[0]);
+        if (index.columnNames.length > 0) {
+          map[index.keyName].composite = true;
+          map[index.keyName].columnNames.push(index.columnNames[0]);
+        }
+
+        // Merge columns array for advanced column options (sort, length, collation, etc.)
+        if (index.columns?.length) {
+          map[index.keyName].columns ??= [];
+          map[index.keyName].columns.push(index.columns[0]);
+        }
+
+        // Merge INCLUDE columns
+        if (index.include?.length) {
+          map[index.keyName].include ??= [];
+          map[index.keyName].include!.push(index.include[0]);
+        }
       } else {
         map[index.keyName] = index;
       }
