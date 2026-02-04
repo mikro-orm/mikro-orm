@@ -1,5 +1,5 @@
 import { defineEntity, p, PrimaryKeyProp } from '@mikro-orm/core';
-import { InferDBFromKysely, InferKyselyDB, InferKyselyTable } from '@mikro-orm/sql';
+import { InferDBFromKysely, InferKyselyDB, InferKyselyTable, MikroKyselyPluginOptions } from '@mikro-orm/sql';
 import { MikroORM } from '@mikro-orm/sqlite';
 
 describe('InferKyselyDB', () => {
@@ -78,13 +78,95 @@ describe('InferKyselyDB', () => {
     }>();
   });
 
+  test('infer table with tableNamingStrategy: entity', async () => {
+    const User = defineEntity({
+      name: 'User',
+      tableName: 'users',
+      properties: {
+        fullName: p.string().primary(),
+      },
+    });
+
+    const UserProfile = defineEntity({
+      name: 'UserProfile',
+      tableName: 'user_profiles',
+      properties: {
+        user: () => p.oneToOne(User).owner(true).primary(),
+        bio: p.string().nullable(),
+        avatar: p.string().nullable(),
+        location: p.string().nullable(),
+      },
+    });
+
+    const kyselyOptions = {
+      tableNamingStrategy: 'entity',
+      columnNamingStrategy: 'property',
+    } as const satisfies MikroKyselyPluginOptions;
+    type KyselyDB = InferKyselyDB<typeof User | typeof UserProfile, typeof kyselyOptions>;
+
+    expectTypeOf<KyselyDB>().toEqualTypeOf<{
+      User: {
+        fullName: string;
+      };
+      UserProfile: {
+        user: string;
+        bio: string | null;
+        avatar: string | null;
+        location: string | null;
+      };
+    }>();
+  });
+
+  test('infer table with tableNamingStrategy: table', async () => {
+    const User = defineEntity({
+      name: 'User',
+      tableName: 'users',
+      properties: {
+        fullName: p.string().primary(),
+      },
+    });
+
+    const UserProfile = defineEntity({
+      name: 'UserProfile',
+      tableName: 'user_profiles',
+      properties: {
+        user: () => p.oneToOne(User).owner(true).primary(),
+        bio: p.string().nullable(),
+        avatar: p.string().nullable(),
+        location: p.string().nullable(),
+      },
+    });
+
+    const kyselyOptions = {
+      tableNamingStrategy: 'table',
+      columnNamingStrategy: 'column',
+    } as const satisfies MikroKyselyPluginOptions;
+    type KyselyDB = InferKyselyDB<typeof User | typeof UserProfile, typeof kyselyOptions>;
+
+    expectTypeOf<KyselyDB>().toEqualTypeOf<{
+      users: {
+        full_name: string;
+      };
+      user_profiles: {
+        user_full_name: string;
+        bio: string | null;
+        avatar: string | null;
+        location: string | null;
+      };
+    }>();
+  });
+
   test('infer pivot table', async () => {
     const User = defineEntity({
       name: 'User',
       properties: {
         name: p.string().primary(),
         email: p.string().nullable(),
-        viewedPosts: () => p.manyToMany(Post).owner().pivotEntity(() => UserViewedPosts),
+        viewedPosts: () =>
+          p
+            .manyToMany(Post)
+            .owner()
+            .pivotEntity(() => UserViewedPosts),
       },
     });
 
@@ -130,7 +212,6 @@ describe('InferKyselyDB', () => {
       "
     `);
 
-
     const kysely = orm.em.getKysely();
     type KyselyDB = InferDBFromKysely<typeof kysely>;
     type UserTable = KyselyDB['user'];
@@ -155,7 +236,6 @@ describe('InferKyselyDB', () => {
 
   test('infer with defineEntity and class', async () => {
     class User {
-
       fullName!: string;
       email!: string | null;
       firstName!: string;
@@ -163,31 +243,25 @@ describe('InferKyselyDB', () => {
       profile!: UserProfile;
 
       [PrimaryKeyProp]?: 'fullName';
-
     }
 
     class UserProfile {
-
       user!: User;
       bio!: string | null;
       avatar!: string | null;
       location!: string | null;
 
       [PrimaryKeyProp]?: 'user';
-
     }
 
     class Post {
-
       id!: number;
       title!: string;
       description!: string;
       author!: User;
 
       [PrimaryKeyProp]?: 'id';
-
     }
-
 
     const UserSchema = defineEntity({
       class: User,
