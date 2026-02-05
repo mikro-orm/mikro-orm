@@ -316,6 +316,12 @@ The ORM now uses native Node.js glob implementation for file discovery instead o
 
 > Migrations and seeders still support brace expansion in their `glob` option.
 
+If you install `tinyglobby`, the ORM will automatically detect it and use it instead of the native Node.js glob. This can be useful in environments where the native glob has issues, e.g. in Bun. Note that this only works with the async `MikroORM.init()` method, as the detection uses a dynamic import.
+
+```bash npm2yarn
+npm install tinyglobby
+```
+
 ## Dotenv file support removed
 
 If you want to use a `.env` file, you need to use the `dotenv` package directly (and install it explicitly):

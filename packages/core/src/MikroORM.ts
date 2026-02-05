@@ -10,37 +10,40 @@ import { colors } from './logging/colors.js';
 import type { EntityManager } from './EntityManager.js';
 import type { AnyEntity, Constructor, EntityClass, EntityMetadata, EntityName, IEntityGenerator, IMigrator, ISeedManager } from './typings.js';
 
-async function registerExtension(name: string, mod: Promise<any>, extensions: Options['extensions']): Promise<void> {
-  /* v8 ignore next */
-  const resolved = await mod.catch(() => null);
-  const module = resolved?.[name];
+async function tryRegisterExtension(name: string, pkg: string, extensions: Options['extensions']): Promise<void> {
+  try {
+    const url = import.meta.resolve(pkg);
+    const mod = await import(url);
 
-  /* v8 ignore else */
-  if (module) {
-    extensions!.push(module);
+    if (mod[name]) {
+      extensions!.push(mod[name]);
+    }
+  } catch {
+    // not installed
   }
 }
 
 /** @internal */
-export async function lookupExtensions(options: Options): Promise<void> {
+export async function loadOptionalDependencies(options: Options): Promise<void> {
+  await import('@mikro-orm/core/fs-utils').then(m => m.fs.init()).catch(() => null);
   const extensions = options.extensions ?? [];
   const exists = (name: string) => extensions.some(ext => (ext as any).name === name);
 
   if (!exists('SeedManager')) {
-    await registerExtension('SeedManager', import('@mikro-orm/seeder'), extensions);
+    await tryRegisterExtension('SeedManager', '@mikro-orm/seeder', extensions);
   }
 
   if (!exists('Migrator')) {
-    await registerExtension('Migrator', import('@mikro-orm/migrations'), extensions);
+    await tryRegisterExtension('Migrator', '@mikro-orm/migrations', extensions);
   }
 
   /* v8 ignore if */
   if (!exists('Migrator')) {
-    await registerExtension('Migrator', import('@mikro-orm/migrations-mongodb'), extensions);
+    await tryRegisterExtension('Migrator', '@mikro-orm/migrations-mongodb', extensions);
   }
 
   if (!exists('EntityGenerator')) {
-    await registerExtension('EntityGenerator', import('@mikro-orm/entity-generator'), extensions);
+    await tryRegisterExtension('EntityGenerator', '@mikro-orm/entity-generator', extensions);
   }
 
   options.extensions = extensions;
@@ -113,7 +116,7 @@ export class MikroORM<
     options = { ...options };
     options.discovery ??= {};
     options.discovery.skipSyncDiscovery ??= true;
-    await lookupExtensions(options);
+    await loadOptionalDependencies(options);
     const orm = new this<D, EM, Entities>(options);
     const preferTs = orm.config.get('preferTs', Utils.detectTypeScriptSupport());
     orm.metadata = await orm.discovery.discover(preferTs);
