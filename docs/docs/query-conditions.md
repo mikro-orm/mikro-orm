@@ -52,7 +52,7 @@ const res = await orm.em.find(Author, [1, 2, 7]);
 ### Comparison
 
 | operator       | name             | description                                                                                 |
-| -------------- | ---------------- | ------------------------------------------------------------------------------------------- |
+|----------------|------------------|---------------------------------------------------------------------------------------------|
 | `$eq`          | equals           | Matches values that are equal to a specified value.                                         |
 | `$gt`          | greater          | Matches values that are greater than a specified value.                                     |
 | `$gte`         | greater or equal | Matches values that are greater than or equal to a specified value.                         |
@@ -71,6 +71,7 @@ const res = await orm.em.find(Author, [1, 2, 7]);
 | `$hasKey`      | ?                | (postgres only)                                                                             |
 | `$hasSomeKeys` | ?&#x7c;          | (postgres only)                                                                             |
 | `$hasKeys`     | ?&               | (postgres only)                                                                             |
+| `$elemMatch`   | element match    | Matches elements inside a JSON array of embeddables.                                        |
 
 ### Logical
 
@@ -145,6 +146,28 @@ const res3 = await em.find(Author, {
 // finds all authors with between 1 and 5 books
 const res4 = await em.find(Author, {
   books: { $size: { $gt: 0, $lte: 5 } },
+});
+```
+
+### JSON arrays
+
+The `$elemMatch` operator applies conditions to elements inside JSON array properties, which is useful for embedded JSON arrays:
+
+```ts
+const res = await orm.em.find(BalanceMove, {
+  payments: {
+    $elemMatch: { payment_method: { $in: ['7', '8'] } },
+  },
+});
+```
+
+You can also negate element conditions via `$not`:
+
+```ts
+const res = await orm.em.find(BalanceMove, {
+  payments: {
+    $elemMatch: { $not: { payment_method: '7' } },
+  },
 });
 ```
 

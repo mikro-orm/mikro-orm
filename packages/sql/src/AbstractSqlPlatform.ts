@@ -140,4 +140,48 @@ export abstract class AbstractSqlPlatform extends Platform {
     return [ `${column} ${direction.toLowerCase()}` ];
   }
 
+  /**
+   * Wraps a JSON element path expression with type cast if needed.
+   * Override in platform-specific classes to provide database-specific casting.
+   * Used by getJsonElementPropertySQL for $elemMatch.
+   * @internal
+   */
+  protected castJsonElementValue(expression: string, type?: string): string {
+    return expression;
+  }
+
+  /**
+   * Returns the SQL expression for accessing a property of a JSON array element.
+   * Used within $elemMatch conditions.
+   * @param field - The field name to access within the JSON element
+   * @param alias - Unique alias for the JSON iterator (to avoid collisions with multiple $elemMatch)
+   * @param type - Optional type hint for casting (e.g., 'number')
+   * @internal
+   */
+  getJsonElementPropertySQL(field: string, alias: string, type?: string): string {
+    throw new Error(`The $elemMatch operator is not supported on ${this.constructor.name}.`);
+  }
+
+  /**
+   * Returns the SQL expression for iterating over a JSON array.
+   * Returns the FROM clause like "json_each(column) as alias".
+   * @param column - The column containing the JSON array
+   * @param alias - Unique alias for the iterator (to avoid collisions with multiple $elemMatch)
+   * @internal
+   */
+  getJsonArrayIteratorSQL(column: string, alias: string): string {
+    throw new Error(`The $elemMatch operator is not supported on ${this.constructor.name}.`);
+  }
+
+  /**
+   * Returns the SQL clause for checking if any element in a JSON array matches the given conditions.
+   * Uses getJsonArrayIteratorSQL to build the EXISTS subquery.
+   * @internal
+   */
+  getJsonArrayContainsSql(column: string, conditionsSql: string, alias: string, params: unknown[], _options?: { tableName?: string; tableAlias?: string; pkField?: string; fieldName?: string; rawConditions?: unknown }): { sql: string; params: unknown[] } {
+    const iterator = this.getJsonArrayIteratorSQL(column, alias);
+    const sql = `exists (select 1 from ${iterator} where ${conditionsSql})`;
+    return { sql, params };
+  }
+
 }

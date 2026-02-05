@@ -161,4 +161,78 @@ export class BaseMySqlPlatform extends AbstractSqlPlatform {
     return 'mysql://root@127.0.0.1:3306';
   }
 
+  /**
+   * @internal
+   */
+  override getJsonElementPropertySQL(field: string, alias: string, type?: string): string {
+    const jsonPath = `json_unquote(json_extract(${this.quoteIdentifier(alias)}.elem, '$.${field}'))`;
+    return this.castJsonElementValue(jsonPath, type);
+  }
+
+  /**
+   * @internal
+   */
+  override getJsonArrayIteratorSQL(column: string, alias: string): string {
+    return `json_table(${column}, '$[*]' columns (elem json path '$')) as ${this.quoteIdentifier(alias)}`;
+  }
+
+  /**
+   * Override for MySQL to optimize $elemMatch queries.
+   * Uses JSON_CONTAINS for simple equality conditions (much faster).
+   * Falls back to json_table with inner self-join pattern for complex operators.
+   * @internal
+   */
+  override getJsonArrayContainsSql(column: string, conditionsSql: string, alias: string, params: unknown[], options?: { tableName?: string; tableAlias?: string; pkField?: string; fieldName?: string; rawConditions?: unknown }): { sql: string; params: unknown[] } {
+    // Try to use JSON_CONTAINS optimization for simple equality conditions
+    if (options?.rawConditions && this.isSimpleEqualityConditions(options.rawConditions)) {
+      const jsonObject = JSON.stringify(options.rawConditions);
+      const sql = `json_contains(${column}, ?)`;
+      return { sql, params: [jsonObject] };
+    }
+
+    // If we have full context (table info), use the inner self-join pattern for complex conditions
+    if (options?.tableName && options?.tableAlias && options?.pkField && options?.fieldName) {
+      const innerAlias = `${options.tableAlias}_jt`;
+      const innerColumn = `${this.quoteIdentifier(innerAlias)}.${this.quoteIdentifier(options.fieldName)}`;
+      const iterator = this.getJsonArrayIteratorSQL(innerColumn, alias);
+      const innerPk = `${this.quoteIdentifier(innerAlias)}.${this.quoteIdentifier(options.pkField)}`;
+      const outerPk = `${this.quoteIdentifier(options.tableAlias)}.${this.quoteIdentifier(options.pkField)}`;
+      const sql = `exists (select 1 from ${this.quoteIdentifier(options.tableName)} as ${this.quoteIdentifier(innerAlias)}, ${iterator} where ${innerPk} = ${outerPk} and ${conditionsSql})`;
+      return { sql, params };
+    }
+
+    // Default fallback - use standard EXISTS (may not work for all MySQL versions with correlated subqueries)
+    const iterator = this.getJsonArrayIteratorSQL(column, alias);
+    const sql = `exists (select 1 from ${iterator} where ${conditionsSql})`;
+    return { sql, params };
+  }
+
+  /**
+   * Checks if the $elemMatch conditions are simple equality conditions (no operators).
+   * Simple conditions like { field: 'value' } can use the faster JSON_CONTAINS approach.
+   * Complex conditions like { field: { $gt: 10 } } require json_table.
+   * @internal
+   */
+  private isSimpleEqualityConditions(conditions: unknown): boolean {
+    if (!Utils.isPlainObject(conditions)) {
+      return false;
+    }
+
+    for (const key of Object.keys(conditions as object)) {
+      // Any operator key requires json_table
+      if (Utils.isOperator(key)) {
+        return false;
+      }
+
+      const value = (conditions as Record<string, unknown>)[key];
+
+      // If value has operators, it's not simple equality
+      if (Utils.isPlainObject(value) && Object.keys(value as object).some(k => Utils.isOperator(k))) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
 }

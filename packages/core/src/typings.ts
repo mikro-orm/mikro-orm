@@ -258,6 +258,23 @@ export type ExpandScalar<T> = null | (T extends string
       ? bigint | string | number
       : T);
 
+type ElemMatchOperators<T> = Pick<OperatorMap<T>, '$eq' | '$ne' | '$in' | '$nin' | '$gt' | '$gte' | '$lt' | '$lte' | '$like' | '$re' | '$ilike' | '$exists'>;
+type ElemMatchFieldValue<T> = ExpandScalar<T> | ElemMatchOperators<T>;
+
+export type ElemMatchQuery<T> = IsAny<T> extends true
+  ? any
+  : [T] extends [object]
+    ? [T] extends [Scalar | readonly any[]]
+      ? never
+      : {
+        $and?: ElemMatchQuery<T>[];
+        $or?: ElemMatchQuery<T>[];
+        $not?: ElemMatchQuery<T>;
+      } & {
+        [K in EntityKey<MergeUnion<T>>]?: ElemMatchFieldValue<MergeUnion<T>[K]>;
+      }
+    : never;
+
 export type OperatorMap<T> = {
   $and?: ExpandQuery<T>[];
   $or?: ExpandQuery<T>[];
@@ -285,6 +302,7 @@ export type OperatorMap<T> = {
   $hasKey?: string;
   $hasKeys?: readonly string[];
   $hasSomeKeys?: readonly string[];
+  $elemMatch?: ElemMatchQuery<T>;
 };
 
 export type FilterItemValue<T> = T | ExpandScalar<T> | Primary<T>;
