@@ -151,12 +151,12 @@ test('serialize users with populated orders by left joining subquery', async () 
   const sampledOrdersQuery = orm.em
     .createQueryBuilder(Order, 'orders')
     .distinctOn([
-      raw('cast("orders"."time" as date)') as unknown as string,
+      raw('cast("orders"."time" as date)'),
       'shop',
     ])
     // TODO: add error check for combining raw with object syntax in orderBy
     .orderBy([
-      { [raw('cast("orders"."time" as date)') as unknown as string]: QueryOrder.DESC },
+      { [raw('cast("orders"."time" as date)')]: QueryOrder.DESC },
       {
         shop: QueryOrder.DESC,
         id: QueryOrder.DESC,
@@ -192,11 +192,11 @@ test('serialize users with populated orders by left joining subquery, mapping an
   const sampledOrdersQuery = orm.em
     .createQueryBuilder(Order, 'orders')
     .distinctOn([
-      raw('cast("orders"."time" as date)') as unknown as string,
+      raw('cast("orders"."time" as date)'),
       'shop',
     ])
     .orderBy([
-      { [raw('cast("orders"."time" as date)') as unknown as string]: QueryOrder.DESC },
+      { [raw('cast("orders"."time" as date)')]: QueryOrder.DESC },
       {
         shop: QueryOrder.DESC,
         id: QueryOrder.DESC,

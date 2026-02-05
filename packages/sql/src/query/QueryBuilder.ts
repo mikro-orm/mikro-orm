@@ -158,15 +158,6 @@ export type ModifyContext<Entity extends object, Context, Field extends string, 
 // Fields tracking helper types
 // ============================================
 
-// Extract alias names from Context (defined early for use in field tracking)
-type ExtractAliasNames<Context> = Context[keyof Context] extends infer Join
-  ? Join extends any
-    ? Join extends [string, infer Alias, any, any]
-      ? Alias & string
-      : never
-    : never
-  : never;
-
 // Strip root alias prefix from a field path
 // - 'a.name' with RootAlias='a' -> 'name'
 // - 'a.identity.foo' with RootAlias='a' -> 'identity.foo'
@@ -177,7 +168,7 @@ type StripRootAlias<F extends string, RootAlias extends string, Context = never>
   ? Field
   : F extends `${infer Alias}.${string}`
     ? // Check if the first segment is a known joined alias
-      Alias extends ExtractAliasNames<Context>
+      Alias extends AliasNames<Context>
       ? never
       : // Otherwise it's an embedded property path on root entity
         F
@@ -447,7 +438,7 @@ export class QueryBuilder<
   RawAliases extends string = never,
   Fields extends string = '*',
 > implements Subquery {
-  readonly __subquery = true as const;
+  declare readonly __subquery: true;
 
   get mainAlias(): Alias<Entity> {
     this.ensureFromClause();
@@ -618,8 +609,7 @@ export class QueryBuilder<
       if (typeof f !== 'string') {
         return f;
       }
-      const resolved = this.resolveNestedPath(f);
-      return Array.isArray(resolved) ? resolved : resolved;
+      return this.resolveNestedPath(f);
     }) as any;
 
     if (distinct) {
@@ -657,12 +647,12 @@ export class QueryBuilder<
   }
 
   /** postgres only */
-  distinctOn<F extends Field<Entity, RootAlias, Context>>(fields: F | F[]): SelectQueryBuilder<Entity, RootAlias, Hint, Context, RawAliases, Fields>;
-  /** @internal */
-  distinctOn(fields: string | string[]): SelectQueryBuilder<Entity, RootAlias, Hint, Context, RawAliases, Fields>;
-  distinctOn(fields: string | string[]): SelectQueryBuilder<Entity, RootAlias, Hint, Context, RawAliases, Fields> {
+  distinctOn<const F extends readonly Field<Entity, RootAlias, Context>[]>(fields: F): SelectQueryBuilder<Entity, RootAlias, Hint, Context, RawAliases, Fields>;
+  /** postgres only */
+  distinctOn<F extends Field<Entity, RootAlias, Context>>(fields: F): SelectQueryBuilder<Entity, RootAlias, Hint, Context, RawAliases, Fields>;
+  distinctOn(fields: unknown): SelectQueryBuilder<Entity, RootAlias, Hint, Context, RawAliases, Fields> {
     this.ensureNotFinalized();
-    this._distinctOn = Utils.asArray(fields);
+    this._distinctOn = Utils.asArray(fields as string);
     return this as SelectQueryBuilder<Entity, RootAlias, Hint, Context, RawAliases, Fields>;
   }
 
@@ -932,8 +922,7 @@ export class QueryBuilder<
 
     if (populate) {
       populate.children!.push(item);
-    } else {
-      // root entity
+    } else { // root entity
       this._populate.push(item);
     }
 
@@ -1104,7 +1093,7 @@ export class QueryBuilder<
     }
 
     const cond = await this.em.applyFilters(this.mainAlias.entityName, {}, filterOptions, 'read');
-    (this.andWhere as any)(cond!);
+    this.andWhere(cond as any);
   }
 
   private readonly autoJoinedPaths: string[] = [];
@@ -1141,10 +1130,7 @@ export class QueryBuilder<
       if (Utils.hasObjectKeys(cond) || RawQueryFragment.hasObjectFragments(cond)) {
         // remove nested filters, we only care about scalars here, nesting would require another join branch
         for (const key of Object.keys(cond)) {
-          if (
-            Utils.isPlainObject(cond[key]) &&
-            Object.keys(cond[key]).every(k => !(Utils.isOperator(k) && !['$some', '$none', '$every', '$size'].includes(k)))
-          ) {
+          if (Utils.isPlainObject(cond[key]) && Object.keys(cond[key]).every(k => !(Utils.isOperator(k) && !['$some', '$none', '$every', '$size'].includes(k)))) {
             delete cond[key];
           }
         }
@@ -1237,7 +1223,7 @@ export class QueryBuilder<
       }) as FilterQuery<Entity>;
     }
 
-    const op = operator || (params as keyof typeof GroupOperator);
+    const op = operator || params as keyof typeof GroupOperator;
     const topLevel = !op || !(Utils.hasObjectKeys(this._cond) || RawQueryFragment.hasObjectFragments(this._cond));
     const criteriaNode = CriteriaNodeFactory.createNode<Entity>(this.metadata, this.mainAlias.entityName, processedCond);
     const ignoreBranching = this.__populateWhere === 'infer';
@@ -1285,7 +1271,7 @@ export class QueryBuilder<
    */
   andWhere(cond: string | RawQueryFragment, params?: any[]): this;
   andWhere(cond: QBFilterQuery<Entity, RootAlias, Context, RawAliases> | string | RawQueryFragment, params?: any[]): this {
-    return (this.where as any)(cond, params, '$and');
+    return this.where(cond as any, params, '$and');
   }
 
   /**
@@ -1308,7 +1294,7 @@ export class QueryBuilder<
    */
   orWhere(cond: string | RawQueryFragment, params?: any[]): this;
   orWhere(cond: QBFilterQuery<Entity, RootAlias, Context, RawAliases> | string | RawQueryFragment, params?: any[]): this {
-    return (this.where as any)(cond, params, '$or');
+    return this.where(cond as any, params, '$or');
   }
 
   /**
@@ -1387,7 +1373,6 @@ export class QueryBuilder<
           type: 'orderBy',
         }),
       );
-      // this._orderBy.push(CriteriaNodeFactory.createNode<Entity>(this.metadata, Utils.className(this.mainAlias.entityName), processed).process(this, { matchPopulateJoins: true, type: 'orderBy' }));
     });
 
     return this as SelectQueryBuilder<Entity, RootAlias, Hint, Context, RawAliases, Fields>;
@@ -1431,8 +1416,7 @@ export class QueryBuilder<
       if (typeof f !== 'string') {
         return f;
       }
-      const resolved = this.resolveNestedPath(f);
-      return Array.isArray(resolved) ? resolved : resolved;
+      return this.resolveNestedPath(f);
     }) as any;
 
     return this as SelectQueryBuilder<Entity, RootAlias, Hint, Context, RawAliases, Fields>;
@@ -1500,10 +1484,10 @@ export class QueryBuilder<
       fields: isRaw(fields)
         ? fields
         : Utils.asArray(fields).flatMap(f => {
-            const key = f.toString() as EntityKey<Entity>;
-            /* v8 ignore next */
-            return meta.properties[key]?.fieldNames ?? [key];
-          }),
+          const key = f.toString() as EntityKey<Entity>;
+          /* v8 ignore next */
+          return meta.properties[key]?.fieldNames ?? [key];
+        }),
     });
     return this as InsertQueryBuilder<Entity, RootAlias, Context>;
   }
@@ -1728,7 +1712,7 @@ export class QueryBuilder<
 
     this.helper.finalize(this.type, qb, this.mainAlias.meta, this._data, this._returning);
 
-    return (this._query!.qb = qb);
+    return this._query!.qb = qb;
   }
 
   /**
@@ -2059,10 +2043,7 @@ export class QueryBuilder<
     } else {
       const qb = (this._type === undefined ? this : this.clone()) as QueryBuilder<Entity, RootAlias, Hint, Context>;
       qb.processPopulateHint(); // needs to happen sooner so `qb.hasToManyJoins()` reports correctly
-      qb.count(field, distinct ?? qb.hasToManyJoins())
-        .limit(undefined)
-        .offset(undefined)
-        .orderBy([]);
+      qb.count(field, distinct ?? qb.hasToManyJoins()).limit(undefined).offset(undefined).orderBy([]);
       res = await qb.execute<{ count: number }>('get', false);
     }
 
@@ -2124,29 +2105,9 @@ export class QueryBuilder<
 
     // clone array/object properties
     const properties = [
-      'flags',
-      '_populate',
-      '_populateWhere',
-      '_populateFilter',
-      '__populateWhere',
-      '_populateMap',
-      '_joins',
-      '_joinedProps',
-      '_cond',
-      '_data',
-      '_orderBy',
-      '_schema',
-      '_indexHint',
-      '_cache',
-      'subQueries',
-      'lockMode',
-      'lockTables',
-      '_groupBy',
-      '_having',
-      '_returning',
-      '_comments',
-      '_hintComments',
-      'aliasCounter',
+      'flags', '_populate', '_populateWhere', '_populateFilter', '__populateWhere', '_populateMap', '_joins', '_joinedProps', '_cond', '_data', '_orderBy',
+      '_schema', '_indexHint', '_cache', 'subQueries', 'lockMode', 'lockTables', '_groupBy', '_having', '_returning',
+      '_comments', '_hintComments', 'aliasCounter',
     ];
 
     for (const prop of Object.keys(this)) {
@@ -2208,15 +2169,7 @@ export class QueryBuilder<
     return res as unknown as string;
   }
 
-  private joinReference(
-    field: string | RawQueryFragment | NativeQueryBuilder | QueryBuilder,
-    alias: string,
-    cond: Dictionary,
-    type: JoinType,
-    path?: string,
-    schema?: string,
-    subquery?: string,
-  ): { prop: EntityProperty<Entity>; key: string } {
+  private joinReference(field: string | RawQueryFragment | NativeQueryBuilder | QueryBuilder, alias: string, cond: Dictionary, type: JoinType, path?: string, schema?: string, subquery?: string): { prop: EntityProperty<Entity>; key: string } {
     this.ensureNotFinalized();
 
     if (typeof field === 'object') {
@@ -2257,9 +2210,7 @@ export class QueryBuilder<
     const q = (str: string) => `'${str}'`;
 
     if (!this._aliases[fromAlias]) {
-      throw new Error(
-        `Trying to join ${q(fromField)} with alias ${q(fromAlias)}, but ${q(fromAlias)} is not a known alias. Available aliases are: ${Object.keys(this._aliases).map(q).join(', ')}.`,
-      );
+      throw new Error(`Trying to join ${q(fromField)} with alias ${q(fromAlias)}, but ${q(fromAlias)} is not a known alias. Available aliases are: ${Object.keys(this._aliases).map(q).join(', ')}.`);
     }
 
     const entityName = this._aliases[fromAlias].entityName;
@@ -2282,7 +2233,7 @@ export class QueryBuilder<
     const criteriaNode = CriteriaNodeFactory.createNode<Entity>(this.metadata, prop.targetMeta!.class, cond);
     cond = criteriaNode.process(this as IQueryBuilder<Entity>, { ignoreBranching: true, alias });
     let aliasedName = `${fromAlias}.${prop.name}#${alias}`;
-    path ??= `${Object.values(this._joins).find(j => j.alias === fromAlias)?.path ?? Utils.className(entityName)}.${prop.name}`;
+    path ??= `${(Object.values(this._joins).find(j => j.alias === fromAlias)?.path ?? Utils.className(entityName))}.${prop.name}`;
 
     if (prop.kind === ReferenceKind.ONE_TO_MANY) {
       this._joins[aliasedName] = this.helper.joinOneToReference(prop, fromAlias, alias, type, cond, schema);
@@ -2305,8 +2256,7 @@ export class QueryBuilder<
     } else if (prop.kind === ReferenceKind.ONE_TO_ONE) {
       this._joins[aliasedName] = this.helper.joinOneToReference(prop, fromAlias, alias, type, cond, schema);
       this._joins[aliasedName].path ??= path;
-    } else {
-      // MANY_TO_ONE
+    } else { // MANY_TO_ONE
       this._joins[aliasedName] = this.helper.joinManyToOneReference(prop, fromAlias, alias, type, cond, schema);
       this._joins[aliasedName].path ??= path;
     }
@@ -2329,7 +2279,7 @@ export class QueryBuilder<
       const join = Object.keys(this._joins).find(k => field === k.substring(0, k.indexOf('#')))!;
 
       if (join && type === 'where') {
-        ret.push(...(this.helper.mapJoinColumns(this.type, this._joins[join]) as string[]));
+        ret.push(...this.helper.mapJoinColumns(this.type, this._joins[join]) as string[]);
         return;
       }
 
@@ -2498,9 +2448,7 @@ export class QueryBuilder<
     this._type = type;
 
     if ([QueryType.UPDATE, QueryType.DELETE].includes(type) && Utils.hasObjectKeys(this._cond)) {
-      throw new Error(
-        `You are trying to call \`qb.where().${type.toLowerCase()}()\`. Calling \`qb.${type.toLowerCase()}()\` before \`qb.where()\` is required.`,
-      );
+      throw new Error(`You are trying to call \`qb.where().${type.toLowerCase()}()\`. Calling \`qb.${type.toLowerCase()}()\` before \`qb.where()\` is required.`);
     }
 
     if (!this.helper.isTableNameAliasRequired(type)) {
@@ -2595,10 +2543,9 @@ export class QueryBuilder<
       return children;
     };
     lookUpChildren(children, meta.class);
-    (this.andWhere as any)({
-      [meta.root.discriminatorColumn!]:
-        children.length > 0 ? { $in: [meta.discriminatorValue, ...children.map(c => c.discriminatorValue)] } : meta.discriminatorValue,
-    });
+    this.andWhere({
+      [meta.root.discriminatorColumn!]: children.length > 0 ? { $in: [meta.discriminatorValue, ...children.map(c => c.discriminatorValue)] } : meta.discriminatorValue,
+    } as any);
   }
 
   private finalize(): void {
@@ -2625,18 +2572,15 @@ export class QueryBuilder<
           const alias = this.platform.quoteIdentifier(this.mainAlias.aliasName);
           const aliased = this.platform.quoteIdentifier(prop.fieldNames[0]);
           const table = this.helper.createFormulaTable(alias.toString(), meta, schema);
-          return `${prop.formula!(table, columns)} as ${aliased}`;
+          return `${(prop.formula!(table, columns))} as ${aliased}`;
         })
-        .filter(
-          field =>
-            !this._fields!.some(f => {
-              if (isRaw(f)) {
-                return f.sql === field && f.params.length === 0;
-              }
+        .filter(field => !this._fields!.some(f => {
+          if (isRaw(f)) {
+            return f.sql === field && f.params.length === 0;
+          }
 
-              return f === field;
-            }),
-        )
+          return f === field;
+        }))
         .forEach(field => this._fields!.push(raw(field)));
     }
 
@@ -2671,13 +2615,7 @@ export class QueryBuilder<
     if (meta && this.flags.has(QueryFlag.AUTO_JOIN_ONE_TO_ONE_OWNER)) {
       const relationsToPopulate = this._populate.map(({ field }) => field);
       meta.relations
-        .filter(
-          prop =>
-            prop.kind === ReferenceKind.ONE_TO_ONE &&
-            !prop.owner &&
-            !relationsToPopulate.includes(prop.name) &&
-            !relationsToPopulate.includes(`${prop.name}:ref` as any),
-        )
+        .filter(prop => prop.kind === ReferenceKind.ONE_TO_ONE && !prop.owner && !relationsToPopulate.includes(prop.name) && !relationsToPopulate.includes(`${prop.name}:ref` as any))
         .map(prop => ({ field: `${prop.name}:ref` as any }))
         .forEach(item => this._populate.push(item));
     }
@@ -2697,7 +2635,7 @@ export class QueryBuilder<
         const alias = this.getNextAlias(prop.pivotEntity ?? prop.targetMeta!.class);
         const aliasedName = `${fromAlias}.${prop.name}#${alias}`;
         this._joins[aliasedName] = this.helper.joinOneToReference(prop, this.mainAlias.aliasName, alias, JoinType.leftJoin);
-        this._joins[aliasedName].path = `${Object.values(this._joins).find(j => j.alias === fromAlias)?.path ?? meta.className}.${prop.name}`;
+        this._joins[aliasedName].path = `${(Object.values(this._joins).find(j => j.alias === fromAlias)?.path ?? meta.className)}.${prop.name}`;
         this._populateMap[aliasedName] = this._joins[aliasedName].alias;
         this.createAlias(prop.targetMeta!.class, alias);
       }
@@ -2723,12 +2661,9 @@ export class QueryBuilder<
     }
 
     if (typeof this[key] === 'object') {
-      const cond = CriteriaNodeFactory.createNode<Entity>(this.metadata, this.mainAlias.entityName, this[key]).process(this as IQueryBuilder<Entity>, {
-        matchPopulateJoins: true,
-        ignoreBranching: true,
-        preferNoBranch: true,
-        filter,
-      });
+      const cond = CriteriaNodeFactory
+        .createNode<Entity>(this.metadata, this.mainAlias.entityName, this[key])
+        .process(this as IQueryBuilder<Entity>, { matchPopulateJoins: true, ignoreBranching: true, preferNoBranch: true, filter });
       // there might be new joins created by processing the `populateWhere` object
       joins = Object.values(this._joins);
       this.mergeOnConditions(joins, cond, filter);
@@ -2755,10 +2690,9 @@ export class QueryBuilder<
         // https://stackoverflow.com/a/56815807/3665878
         if (parentJoin && !filter) {
           const nested = (parentJoin!.nested ??= new Set());
-          join.type =
-            join.type === JoinType.innerJoin || [ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(parentJoin.prop.kind)
-              ? JoinType.nestedInnerJoin
-              : JoinType.nestedLeftJoin;
+          join.type = join.type === JoinType.innerJoin || ([ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(parentJoin.prop.kind))
+            ? JoinType.nestedInnerJoin
+            : JoinType.nestedLeftJoin;
           nested.add(join);
         }
 
@@ -2795,13 +2729,17 @@ export class QueryBuilder<
 
         // https://stackoverflow.com/a/56815807/3665878
         if (join.parent?.type === JoinType.leftJoin || join.parent?.type === JoinType.nestedLeftJoin) {
-          const nested = (join.parent!.nested ??= new Set());
-          join.type = join.type === JoinType.innerJoin ? JoinType.nestedInnerJoin : JoinType.nestedLeftJoin;
+          const nested = ((join.parent)!.nested ??= new Set());
+          join.type = join.type === JoinType.innerJoin
+            ? JoinType.nestedInnerJoin
+            : JoinType.nestedLeftJoin;
           nested.add(join);
         } else if (join.parent?.type === JoinType.nestedInnerJoin) {
           const group = lookupParentGroup(join.parent);
-          const nested = group ?? (join.parent!.nested ??= new Set());
-          join.type = join.type === JoinType.innerJoin ? JoinType.nestedInnerJoin : JoinType.nestedLeftJoin;
+          const nested = group ?? ((join.parent)!.nested ??= new Set());
+          join.type = join.type === JoinType.innerJoin
+            ? JoinType.nestedInnerJoin
+            : JoinType.nestedLeftJoin;
           nested.add(join);
         }
       }
@@ -2858,7 +2796,7 @@ export class QueryBuilder<
 
           const quoted = this.platform.quoteIdentifier(fieldName);
           const key = raw(`min(${quoted}${type})`);
-          orderBy.push({ [key as any]: direction });
+          orderBy.push({ [key]: direction });
         }
       }
 
@@ -2974,7 +2912,9 @@ export class QueryBuilder<
    * Removes joins that are not used for population or ordering to improve performance.
    */
   protected pruneJoinsForPagination(meta: EntityMetadata, populatePaths: Set<string>): void {
-    const orderByAliases = this._orderBy.flatMap(hint => Object.keys(hint)).map(k => k.split('.')[0]);
+    const orderByAliases = this._orderBy
+      .flatMap(hint => Object.keys(hint))
+      .map(k => k.split('.')[0]);
 
     const joins = Object.entries(this._joins);
     const rootAlias = this.alias;
@@ -3111,12 +3051,8 @@ export class QueryBuilder<
   [Symbol.for('nodejs.util.inspect.custom')](depth = 2) {
     const object = { ...this } as Dictionary;
     const hidden = ['metadata', 'driver', 'context', 'platform', 'type'];
-    Object.keys(object)
-      .filter(k => k.startsWith('_'))
-      .forEach(k => delete object[k]);
-    Object.keys(object)
-      .filter(k => object[k] == null)
-      .forEach(k => delete object[k]);
+    Object.keys(object).filter(k => k.startsWith('_')).forEach(k => delete object[k]);
+    Object.keys(object).filter(k => object[k] == null).forEach(k => delete object[k]);
     hidden.forEach(k => delete object[k]);
     let prefix = this.type ? this.type.substring(0, 1) + this.type.toLowerCase().substring(1) : '';
 
@@ -3146,6 +3082,7 @@ export class QueryBuilder<
 
     return ret === '[Object]' ? `[${name}]` : name + ' ' + ret;
   }
+
 }
 
 export interface RunQueryBuilder<

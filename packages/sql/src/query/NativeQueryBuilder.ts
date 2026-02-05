@@ -42,7 +42,7 @@ interface OnConflictClause {
 /** @internal */
 export class NativeQueryBuilder implements Subquery {
 
-  readonly __subquery = true as const;
+  declare readonly __subquery: true;
   protected type?: QueryType;
   protected parts: string[] = [];
   protected params: unknown[] = [];
