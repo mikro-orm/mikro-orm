@@ -1,11 +1,34 @@
-import { existsSync, globSync, mkdirSync, readFileSync, realpathSync, statSync } from 'node:fs';
+import { existsSync, globSync as nodeGlobSync, mkdirSync, readFileSync, realpathSync, statSync } from 'node:fs';
 import { isAbsolute, join, normalize, relative } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { Utils } from './Utils.js';
 import { type Dictionary } from '../typings.js';
 import { colors } from '../logging/colors.js';
 
+type GlobFn = (patterns: string | string[], options?: { cwd?: string; expandDirectories?: boolean }) => string[];
+
+let globSync: GlobFn = (patterns, options) => {
+  const files = nodeGlobSync(patterns, { ...options, withFileTypes: true });
+  return files.filter(f => f.isFile()).map(f => join(f.parentPath, f.name));
+};
+
 export const fs = {
+  async init(): Promise<void> {
+    const tinyGlobby = await import('tinyglobby').catch(() => null);
+
+    if (tinyGlobby) {
+      globSync = (patterns, options) => {
+        patterns = Utils.asArray(patterns).map(p => p.replace(/\\/g, '/'));
+
+        if (options?.cwd) {
+          options = { ...options, cwd: options.cwd.replace(/\\/g, '/') };
+        }
+
+        return tinyGlobby.globSync(patterns, { ...options, expandDirectories: false });
+      };
+    }
+  },
+
   pathExists(path: string): boolean {
     if (/[*?[\]]/.test(path)) {
       return globSync(path).length > 0;
@@ -63,16 +86,14 @@ export const fs = {
         const s = statSync(cwd ? this.normalizePath(cwd, input) : input);
 
         if (s.isDirectory()) {
-          const files = globSync(join(input, '**'), { cwd, withFileTypes: true });
-          return files.filter(f => f.isFile()).map(f => join(f.parentPath, f.name));
+          return globSync(join(input, '**'), { cwd });
         }
       } catch {
         // ignore
       }
     }
 
-    const files = globSync(input, { cwd, withFileTypes: true });
-    return files.filter(f => f.isFile()).map(f => join(f.parentPath, f.name));
+    return globSync(input, { cwd });
   },
 
   getPackageConfig<T extends Dictionary>(basePath = process.cwd()): T {

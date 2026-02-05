@@ -9,7 +9,7 @@ import {
   type EntityManagerType,
   type IDatabaseDriver,
   loadEnvironmentVars,
-  lookupExtensions,
+  loadOptionalDependencies,
   MikroORM,
   type Options,
   Utils,
@@ -42,7 +42,7 @@ export class CLIHelper {
 
     contextName ??= process.env.MIKRO_ORM_CONTEXT_NAME ?? 'default';
     const env = await this.loadEnvironmentVars();
-    await lookupExtensions(options);
+    await loadOptionalDependencies(options);
 
     const configFinder = (cfg: unknown) => {
       return typeof cfg === 'object' && cfg !== null && ('contextName' in cfg ? cfg.contextName === contextName : (contextName === 'default'));
@@ -105,7 +105,7 @@ export class CLIHelper {
     }
 
     const esmConfigOptions = this.isESM() ? { entityGenerator: { esmImport: true } } : {};
-    await lookupExtensions(tmp);
+    await loadOptionalDependencies(tmp);
 
     return new Configuration(Utils.mergeConfig({}, esmConfigOptions, tmp, options, env));
   }
