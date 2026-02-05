@@ -68,8 +68,7 @@
   },
   "lint-staged": {
     "*.ts": [
-      "oxlint --fix",
-      "oxfmt --write"
+      "oxlint --fix"
     ]
   },
   "renovate": {

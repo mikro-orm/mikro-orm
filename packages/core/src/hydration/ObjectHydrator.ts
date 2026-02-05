@@ -427,7 +427,8 @@ export class ObjectHydrator extends Hydrator {
     const code = `// compiled hydrator for entity ${meta.className} (${type + normalizeAccessors ? ' normalized' : ''})\n`
       + `return function(entity, data, factory, newEntity, convertCustomTypes, schema, parentSchema, normalizeAccessors) {\n`
       + `${lines.join('\n')}\n}`;
-    const hydrator = Utils.createFunction(context, code);
+    const fnKey = `hydrator-${meta.uniqueName}-${type}-${normalizeAccessors}`;
+    const hydrator = Utils.createFunction(context, code, this.config.get('compiledFunctions'), fnKey);
     this.hydrators[key].set(meta.class, hydrator);
 
     return hydrator;

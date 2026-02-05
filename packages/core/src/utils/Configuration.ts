@@ -4,6 +4,7 @@ import { type CacheAdapter, type SyncCacheAdapter } from '../cache/CacheAdapter.
 import type { EntityRepository } from '../entity/EntityRepository.js';
 import type {
   AnyEntity,
+  CompiledFunctions,
   Constructor,
   Dictionary,
   EnsureDatabaseOptions,
@@ -191,6 +192,15 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver, EM exten
       writer: this.options.logger,
     });
 
+    const cf = this.options.compiledFunctions as Record<string, unknown> | undefined;
+
+    if (cf && cf.__version !== Utils.getORMVersion()) {
+      this.logger.warn(
+        'discovery',
+        `Compiled functions were generated with MikroORM v${cf.__version ?? 'unknown'}, but the current version is v${Utils.getORMVersion()}. Please regenerate with \`npx mikro-orm compile\`.`,
+      );
+    }
+
     if (this.options.driver) {
       this.driver = new this.options.driver!(this);
       this.platform = this.driver.getPlatform() as ReturnType<D['getPlatform']>;
@@ -301,7 +311,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver, EM exten
    * Gets instance of Comparator. (cached)
    */
   getComparator(metadata: MetadataStorage) {
-    return this.getCachedService(EntityComparator, metadata, this.platform);
+    return this.getCachedService(EntityComparator, metadata, this.platform, this);
   }
 
   /**
@@ -920,6 +930,12 @@ export interface Options<
    * @default ObjectHydrator
    */
   hydrator?: HydratorConstructor;
+  /**
+   * Pre-generated compiled functions for hydration and comparison.
+   * Use the `compile` CLI command to create these functions.
+   * Enables deployment to runtimes that prohibit `new Function`/eval (e.g. Cloudflare Workers).
+   */
+  compiledFunctions?: CompiledFunctions;
   /**
    * Default loading strategy for relations.
    * - `'joined'`: Use SQL JOINs (single query, may cause cartesian product)

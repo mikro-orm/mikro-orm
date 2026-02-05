@@ -33,6 +33,49 @@ This way you can keep the `@mikro-orm/reflection` package as a development depen
 
 > The cache bundle can be statically imported, which is handy in case you are using some bundler.
 
+## Pre-build compiled functions
+
+Some runtimes like Cloudflare Workers and edge runtimes prohibit `new Function` / `eval`. MikroORM normally uses `new Function` at runtime to JIT-compile optimized per-entity functions for hydration and comparison. You can pre-generate these functions at build time using the CLI:
+
+```bash
+npx mikro-orm compile
+```
+
+The file is generated next to your ORM config by default. You can customize the output path with `--out`:
+
+```bash
+npx mikro-orm compile --out ./dist/compiled-functions.js
+```
+
+Then pass the generated file in your configuration:
+
+```ts
+import compiledFunctions from './compiled-functions.js';
+
+export default defineConfig({
+  compiledFunctions,
+});
+```
+
+This pairs well with `GeneratedCacheAdapter` for full production deployment without `ts-morph` or `new Function`:
+
+```ts
+import { GeneratedCacheAdapter, defineConfig } from '@mikro-orm/core';
+import compiledFunctions from './compiled-functions.js';
+import metadata from './temp/metadata.json';
+
+export default defineConfig({
+  compiledFunctions,
+  metadataCache: {
+    enabled: true,
+    adapter: GeneratedCacheAdapter,
+    options: { data: metadata },
+  },
+});
+```
+
+> You must regenerate the compiled functions file whenever entity definitions or driver configuration changes.
+
 ## Fill type or entity attributes everywhere
 
 What discovery process does is to sniff TS types and save their value to string, so it can be used later for validation. You can skip the whole process by simply providing those values manually:

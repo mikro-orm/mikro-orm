@@ -429,6 +429,30 @@ MikroORM.init({
 });
 ```
 
+## Pre-compiled Functions
+
+MikroORM uses `new Function()` at runtime to generate optimized hydration, comparison, and serialization functions. Some runtimes (e.g. Cloudflare Workers) prohibit this. You can pre-compile these functions ahead of time using the CLI:
+
+```bash
+npx mikro-orm compile
+```
+
+This generates a `compiled-functions.js` file next to your ORM config. Then pass it to your config:
+
+```ts
+import compiledFunctions from './compiled-functions.js';
+
+export default defineConfig({
+  compiledFunctions,
+});
+```
+
+Use the `--out` option to customize the output path:
+
+```bash
+npx mikro-orm compile --out ./dist/compiled-functions.js
+```
+
 ## Custom Repository
 
 You can also register custom base repository (for all entities where you do not specify `repository` option) globally:
