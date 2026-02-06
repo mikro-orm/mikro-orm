@@ -1,0 +1,396 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`CompileCommand > handler generates CJS output 1`] = `
+"'use strict';
+module.exports = {
+  __version: '[[MIKRO_ORM_VERSION]]',
+  'hydrator-user_0-full-false': function(isPrimaryKey, Collection, Reference) {
+    // compiled hydrator for entity User ( normalized)
+    return function(entity, data, factory, newEntity, convertCustomTypes, schema, parentSchema, normalizeAccessors) {
+      if (data.id === null) {
+        entity.id = null;
+      } else if (typeof data.id !== 'undefined') {
+        entity.id = data.id;
+      }
+      if (data.name === null) {
+        entity.name = null;
+      } else if (typeof data.name !== 'undefined') {
+        entity.name = data.name;
+      }
+    }
+  },
+  'hydrator-user_0-full-true': function(isPrimaryKey, Collection, Reference) {
+    // compiled hydrator for entity User ( normalized)
+    return function(entity, data, factory, newEntity, convertCustomTypes, schema, parentSchema, normalizeAccessors) {
+      if (data.id === null) {
+        entity.id = null;
+      } else if (typeof data.id !== 'undefined') {
+        entity.id = data.id;
+      }
+      if (data.name === null) {
+        entity.name = null;
+      } else if (typeof data.name !== 'undefined') {
+        entity.name = data.name;
+      }
+    }
+  },
+  'comparator-user_0': function(compareArrays, compareBooleans, compareBuffers, compareObjects, equals) {
+    // compiled comparator for entity User
+    return function(last, current, options) {
+      const diff = {};
+      if (current.id === null && last.id === undefined) {
+        diff.id = current.id;
+      } else if (current.id == null && last.id == null) {
+    
+      } else if ((current.id != null && last.id == null) || (current.id == null && last.id != null)) {
+        diff.id = current.id;
+      } else if (last.id !== current.id) {
+        diff.id = current.id;
+      }
+    
+      if (current.name === null && last.name === undefined) {
+        diff.name = current.name;
+      } else if (current.name == null && last.name == null) {
+    
+      } else if ((current.name != null && last.name == null) || (current.name == null && last.name != null)) {
+        diff.name = current.name;
+      } else if (last.name !== current.name) {
+        diff.name = current.name;
+      }
+    
+    if (options?.includeInverseSides) {
+    }
+      return diff;
+    }
+  },
+  'snapshotGenerator-user_0': function(clone, cloneEmbeddable) {
+    return function(entity) {
+      const ret = {};
+      if (typeof entity.id !== 'undefined') {
+        ret.id = entity.id;
+      }
+    
+      if (typeof entity.name !== 'undefined') {
+        ret.name = entity.name;
+      }
+    
+      return ret;
+    }
+  },
+  'resultMapper-user_0': function() {
+    // compiled mapper for entity User
+    return function(result) {
+      const ret = {};
+      const mapped = {};
+      if (typeof result.id !== 'undefined') {
+        ret.id = result.id;
+        mapped.id = true;
+      }
+      if (typeof result.name !== 'undefined') {
+        ret.name = result.name;
+        mapped.name = true;
+      }
+      for (let k in result) { if (Object.hasOwn(result, k) && !mapped[k] && ret[k] === undefined) ret[k] = result[k]; }
+      return ret;
+    }
+  },
+  'hydrator-user_0-reference-false': function(isPrimaryKey, Collection, Reference) {
+    // compiled hydrator for entity User ( normalized)
+    return function(entity, data, factory, newEntity, convertCustomTypes, schema, parentSchema, normalizeAccessors) {
+      if (data.id === null) {
+        entity.id = null;
+      } else if (typeof data.id !== 'undefined') {
+        entity.id = data.id;
+      }
+    }
+  },
+  'hydrator-user_0-reference-true': function(isPrimaryKey, Collection, Reference) {
+    // compiled hydrator for entity User ( normalized)
+    return function(entity, data, factory, newEntity, convertCustomTypes, schema, parentSchema, normalizeAccessors) {
+      if (data.id === null) {
+        entity.id = null;
+      } else if (typeof data.id !== 'undefined') {
+        entity.id = data.id;
+      }
+    }
+  },
+  'pkGetter-user_0': function() {
+    // compiled pk getter for entity User
+    return function(entity) {
+      return entity.id;
+    }
+  },
+  'pkGetterConverted-user_0': function() {
+    // compiled pk getter (with converted custom types) for entity User
+    return function(entity) {
+      return entity.id;
+    }
+  },
+  'pkSerializer-user_0': function(getCompositeKeyValue, getPrimaryKeyHash) {
+    // compiled pk serializer for entity User
+    return function(entity) {
+      return '' + entity.id;
+    }
+  },
+  'hydrator-undefined_1000-full-false': function(isPrimaryKey, Collection, Reference) {
+    // compiled hydrator for entity Address ( normalized)
+    return function(entity, data, factory, newEntity, convertCustomTypes, schema, parentSchema, normalizeAccessors) {
+      if (data.street === null) {
+        entity.street = null;
+      } else if (typeof data.street !== 'undefined') {
+        entity.street = data.street;
+      }
+    }
+  },
+  'hydrator-undefined_1000-full-true': function(isPrimaryKey, Collection, Reference) {
+    // compiled hydrator for entity Address ( normalized)
+    return function(entity, data, factory, newEntity, convertCustomTypes, schema, parentSchema, normalizeAccessors) {
+      if (data.street === null) {
+        entity.street = null;
+      } else if (typeof data.street !== 'undefined') {
+        entity.street = data.street;
+      }
+    }
+  },
+  'comparator-undefined_1000': function(compareArrays, compareBooleans, compareBuffers, compareObjects, equals) {
+    // compiled comparator for entity Address
+    return function(last, current, options) {
+      const diff = {};
+      if (current.street === null && last.street === undefined) {
+        diff.street = current.street;
+      } else if (current.street == null && last.street == null) {
+    
+      } else if ((current.street != null && last.street == null) || (current.street == null && last.street != null)) {
+        diff.street = current.street;
+      } else if (last.street !== current.street) {
+        diff.street = current.street;
+      }
+    
+    if (options?.includeInverseSides) {
+    }
+      return diff;
+    }
+  },
+  'snapshotGenerator-undefined_1000': function(clone, cloneEmbeddable) {
+    return function(entity) {
+      const ret = {};
+      if (typeof entity.street !== 'undefined') {
+        ret.street = entity.street;
+      }
+    
+      return ret;
+    }
+  },
+  'resultMapper-undefined_1000': function() {
+    // compiled mapper for entity Address
+    return function(result) {
+      const ret = {};
+      const mapped = {};
+      if (typeof result.street !== 'undefined') {
+        ret.street = result.street;
+        mapped.street = true;
+      }
+      for (let k in result) { if (Object.hasOwn(result, k) && !mapped[k] && ret[k] === undefined) ret[k] = result[k]; }
+      return ret;
+    }
+  }
+};
+"
+`;
+
+exports[`CompileCommand > handler generates ESM output when project uses type=module 1`] = `
+"export default {
+  __version: '[[MIKRO_ORM_VERSION]]',
+  'hydrator-user_2000-full-false': function(isPrimaryKey, Collection, Reference) {
+    // compiled hydrator for entity User ( normalized)
+    return function(entity, data, factory, newEntity, convertCustomTypes, schema, parentSchema, normalizeAccessors) {
+      if (data.id === null) {
+        entity.id = null;
+      } else if (typeof data.id !== 'undefined') {
+        entity.id = data.id;
+      }
+      if (data.name === null) {
+        entity.name = null;
+      } else if (typeof data.name !== 'undefined') {
+        entity.name = data.name;
+      }
+    }
+  },
+  'hydrator-user_2000-full-true': function(isPrimaryKey, Collection, Reference) {
+    // compiled hydrator for entity User ( normalized)
+    return function(entity, data, factory, newEntity, convertCustomTypes, schema, parentSchema, normalizeAccessors) {
+      if (data.id === null) {
+        entity.id = null;
+      } else if (typeof data.id !== 'undefined') {
+        entity.id = data.id;
+      }
+      if (data.name === null) {
+        entity.name = null;
+      } else if (typeof data.name !== 'undefined') {
+        entity.name = data.name;
+      }
+    }
+  },
+  'comparator-user_2000': function(compareArrays, compareBooleans, compareBuffers, compareObjects, equals) {
+    // compiled comparator for entity User
+    return function(last, current, options) {
+      const diff = {};
+      if (current.id === null && last.id === undefined) {
+        diff.id = current.id;
+      } else if (current.id == null && last.id == null) {
+    
+      } else if ((current.id != null && last.id == null) || (current.id == null && last.id != null)) {
+        diff.id = current.id;
+      } else if (last.id !== current.id) {
+        diff.id = current.id;
+      }
+    
+      if (current.name === null && last.name === undefined) {
+        diff.name = current.name;
+      } else if (current.name == null && last.name == null) {
+    
+      } else if ((current.name != null && last.name == null) || (current.name == null && last.name != null)) {
+        diff.name = current.name;
+      } else if (last.name !== current.name) {
+        diff.name = current.name;
+      }
+    
+    if (options?.includeInverseSides) {
+    }
+      return diff;
+    }
+  },
+  'snapshotGenerator-user_2000': function(clone, cloneEmbeddable) {
+    return function(entity) {
+      const ret = {};
+      if (typeof entity.id !== 'undefined') {
+        ret.id = entity.id;
+      }
+    
+      if (typeof entity.name !== 'undefined') {
+        ret.name = entity.name;
+      }
+    
+      return ret;
+    }
+  },
+  'resultMapper-user_2000': function() {
+    // compiled mapper for entity User
+    return function(result) {
+      const ret = {};
+      const mapped = {};
+      if (typeof result.id !== 'undefined') {
+        ret.id = result.id;
+        mapped.id = true;
+      }
+      if (typeof result.name !== 'undefined') {
+        ret.name = result.name;
+        mapped.name = true;
+      }
+      for (let k in result) { if (Object.hasOwn(result, k) && !mapped[k] && ret[k] === undefined) ret[k] = result[k]; }
+      return ret;
+    }
+  },
+  'hydrator-user_2000-reference-false': function(isPrimaryKey, Collection, Reference) {
+    // compiled hydrator for entity User ( normalized)
+    return function(entity, data, factory, newEntity, convertCustomTypes, schema, parentSchema, normalizeAccessors) {
+      if (data.id === null) {
+        entity.id = null;
+      } else if (typeof data.id !== 'undefined') {
+        entity.id = data.id;
+      }
+    }
+  },
+  'hydrator-user_2000-reference-true': function(isPrimaryKey, Collection, Reference) {
+    // compiled hydrator for entity User ( normalized)
+    return function(entity, data, factory, newEntity, convertCustomTypes, schema, parentSchema, normalizeAccessors) {
+      if (data.id === null) {
+        entity.id = null;
+      } else if (typeof data.id !== 'undefined') {
+        entity.id = data.id;
+      }
+    }
+  },
+  'pkGetter-user_2000': function() {
+    // compiled pk getter for entity User
+    return function(entity) {
+      return entity.id;
+    }
+  },
+  'pkGetterConverted-user_2000': function() {
+    // compiled pk getter (with converted custom types) for entity User
+    return function(entity) {
+      return entity.id;
+    }
+  },
+  'pkSerializer-user_2000': function(getCompositeKeyValue, getPrimaryKeyHash) {
+    // compiled pk serializer for entity User
+    return function(entity) {
+      return '' + entity.id;
+    }
+  },
+  'hydrator-undefined_3000-full-false': function(isPrimaryKey, Collection, Reference) {
+    // compiled hydrator for entity Address ( normalized)
+    return function(entity, data, factory, newEntity, convertCustomTypes, schema, parentSchema, normalizeAccessors) {
+      if (data.street === null) {
+        entity.street = null;
+      } else if (typeof data.street !== 'undefined') {
+        entity.street = data.street;
+      }
+    }
+  },
+  'hydrator-undefined_3000-full-true': function(isPrimaryKey, Collection, Reference) {
+    // compiled hydrator for entity Address ( normalized)
+    return function(entity, data, factory, newEntity, convertCustomTypes, schema, parentSchema, normalizeAccessors) {
+      if (data.street === null) {
+        entity.street = null;
+      } else if (typeof data.street !== 'undefined') {
+        entity.street = data.street;
+      }
+    }
+  },
+  'comparator-undefined_3000': function(compareArrays, compareBooleans, compareBuffers, compareObjects, equals) {
+    // compiled comparator for entity Address
+    return function(last, current, options) {
+      const diff = {};
+      if (current.street === null && last.street === undefined) {
+        diff.street = current.street;
+      } else if (current.street == null && last.street == null) {
+    
+      } else if ((current.street != null && last.street == null) || (current.street == null && last.street != null)) {
+        diff.street = current.street;
+      } else if (last.street !== current.street) {
+        diff.street = current.street;
+      }
+    
+    if (options?.includeInverseSides) {
+    }
+      return diff;
+    }
+  },
+  'snapshotGenerator-undefined_3000': function(clone, cloneEmbeddable) {
+    return function(entity) {
+      const ret = {};
+      if (typeof entity.street !== 'undefined') {
+        ret.street = entity.street;
+      }
+    
+      return ret;
+    }
+  },
+  'resultMapper-undefined_3000': function() {
+    // compiled mapper for entity Address
+    return function(result) {
+      const ret = {};
+      const mapped = {};
+      if (typeof result.street !== 'undefined') {
+        ret.street = result.street;
+        mapped.street = true;
+      }
+      for (let k in result) { if (Object.hasOwn(result, k) && !mapped[k] && ret[k] === undefined) ret[k] = result[k]; }
+      return ret;
+    }
+  }
+};
+"
+`;

@@ -629,6 +629,7 @@ Maybe you want to check, or regenerate your yarn.lock or package-lock.json file?
     expect(cli.getInternalMethods().getCommandInstance().getCommands()).toEqual([
       'cache:clear',
       'cache:generate',
+      'compile',
       'generate-entities',
       'database:create',
       'database:import',

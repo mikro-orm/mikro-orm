@@ -7,6 +7,7 @@ import { CreateSeederCommand } from './commands/CreateSeederCommand.js';
 import { DatabaseSeedCommand } from './commands/DatabaseSeedCommand.js';
 import { DebugCommand } from './commands/DebugCommand.js';
 import { GenerateCacheCommand } from './commands/GenerateCacheCommand.js';
+import { CompileCommand } from './commands/CompileCommand.js';
 import { GenerateEntitiesCommand } from './commands/GenerateEntitiesCommand.js';
 import { ImportCommand } from './commands/ImportCommand.js';
 import { MigrationCommandFactory } from './commands/MigrationCommandFactory.js';
@@ -66,6 +67,7 @@ export async function configure() {
     .version(version)
     .command(new ClearCacheCommand())
     .command(new GenerateCacheCommand())
+    .command(new CompileCommand())
     .command(new GenerateEntitiesCommand())
     .command(new CreateDatabaseCommand())
     .command(new ImportCommand())

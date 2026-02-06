@@ -1,5 +1,6 @@
 import { clone } from './clone.js';
 import type {
+  CompiledFunctions,
   Dictionary,
   EntityData,
   EntityDictionary,
@@ -856,7 +857,11 @@ export class Utils {
     return this.#ORM_VERSION;
   }
 
-  static createFunction(context: Map<string, any>, code: string) {
+  static createFunction(context: Map<string, any>, code: string, compiledFunctions?: CompiledFunctions, key?: string) {
+    if (key && compiledFunctions?.[key]) {
+      return compiledFunctions[key](...context.values());
+    }
+
     try {
       return new Function(...context.keys(), `'use strict';\n` + code)(...context.values());
       /* v8 ignore next */

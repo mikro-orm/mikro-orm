@@ -34,6 +34,7 @@ import { BaseEntity } from './entity/BaseEntity.js';
 
 export type Constructor<T = unknown> = new (...args: any[]) => T;
 export type Dictionary<T = any> = { [k: string]: T };
+export type CompiledFunctions = Record<string, (...args: any[]) => any>;
 // `EntityKey<T, true>` will skip scalar properties (and some other scalar like types like Date or Buffer)
 export type EntityKey<T = unknown, B extends boolean = false> = string & { [K in keyof T]-?: CleanKeys<T, K, B> extends never ? never : K; }[keyof T];
 export type EntityValue<T> = T[EntityKey<T>];

@@ -16,6 +16,7 @@ import { compareArrays, compareBooleans, compareBuffers, compareObjects, equals,
 import { JsonType } from '../types/JsonType.js';
 import { Raw } from './RawQueryFragment.js';
 import { EntityIdentifier } from '../entity/EntityIdentifier.js';
+import type { Configuration } from './Configuration.js';
 
 type Comparator<T> = (a: T, b: T, options?: { includeInverseSides?: boolean }) => EntityData<T>;
 type ResultMapper<T> = (result: EntityData<T>) => EntityData<T> | null;
@@ -37,6 +38,7 @@ export class EntityComparator {
   constructor(
     private readonly metadata: IMetadataStorage,
     private readonly platform: Platform,
+    private readonly config?: Configuration,
   ) { }
 
   /**
@@ -121,9 +123,10 @@ export class EntityComparator {
       lines.push(`  return entity${this.wrap(pk)};`);
     }
 
-    const code = `// compiled pk serializer for entity ${meta.className}\n`
+    const code = `// compiled pk getter for entity ${meta.className}\n`
       + `return function(entity) {\n${lines.join('\n')}\n}`;
-    const pkSerializer = Utils.createFunction(context, code);
+    const fnKey = `pkGetter-${meta.uniqueName}`;
+    const pkSerializer = Utils.createFunction(context, code, this.config?.get('compiledFunctions'), fnKey);
     this.pkGetters.set(meta, pkSerializer);
 
     return pkSerializer;
@@ -177,7 +180,8 @@ export class EntityComparator {
 
     const code = `// compiled pk getter (with converted custom types) for entity ${meta.className}\n`
       + `return function(entity) {\n${lines.join('\n')}\n}`;
-    const pkSerializer = Utils.createFunction(context, code);
+    const fnKey = `pkGetterConverted-${meta.uniqueName}`;
+    const pkSerializer = Utils.createFunction(context, code, this.config?.get('compiledFunctions'), fnKey);
     this.pkGettersConverted.set(meta, pkSerializer);
 
     return pkSerializer;
@@ -234,7 +238,8 @@ export class EntityComparator {
 
     const code = `// compiled pk serializer for entity ${meta.className}\n`
       + `return function(entity) {\n${lines.join('\n')}\n}`;
-    const pkSerializer = Utils.createFunction(context, code);
+    const fnKey = `pkSerializer-${meta.uniqueName}`;
+    const pkSerializer = Utils.createFunction(context, code, this.config?.get('compiledFunctions'), fnKey);
     this.pkSerializers.set(meta, pkSerializer);
 
     return pkSerializer;
@@ -271,7 +276,8 @@ export class EntityComparator {
       .forEach(prop => lines.push(this.getPropertySnapshot(meta, prop, context, this.wrap(prop.name), this.wrap(prop.name), [prop.name])));
 
     const code = `return function(entity) {\n  const ret = {};\n${lines.join('\n')}\n  return ret;\n}`;
-    const snapshotGenerator = Utils.createFunction(context, code);
+    const fnKey = `snapshotGenerator-${meta.uniqueName}`;
+    const snapshotGenerator = Utils.createFunction(context, code, this.config?.get('compiledFunctions'), fnKey);
     this.snapshotGenerators.set(meta, snapshotGenerator);
 
     return snapshotGenerator;
@@ -443,7 +449,8 @@ export class EntityComparator {
 
     const code = `// compiled mapper for entity ${meta.className}\n`
       + `return function(result) {\n  const ret = {};\n${lines.join('\n')}\n  return ret;\n}`;
-    const resultMapper = Utils.createFunction(context, code);
+    const fnKey = `resultMapper-${meta.uniqueName}`;
+    const resultMapper = Utils.createFunction(context, code, this.config?.get('compiledFunctions'), fnKey);
     this.mappers.set(meta, resultMapper);
 
     return resultMapper;
@@ -717,7 +724,8 @@ export class EntityComparator {
 
     const code = `// compiled comparator for entity ${meta.className}\n`
       + `return function(last, current, options) {\n  const diff = {};\n${lines.join('\n')}\n  return diff;\n}`;
-    const comparator = Utils.createFunction(context, code);
+    const fnKey = `comparator-${meta.uniqueName}`;
+    const comparator = Utils.createFunction(context, code, this.config?.get('compiledFunctions'), fnKey);
     this.comparators.set(meta, comparator);
 
     return comparator;
