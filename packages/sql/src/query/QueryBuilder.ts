@@ -1182,11 +1182,6 @@ export class QueryBuilder<
    */
   where(cond: QBFilterQuery<Entity, RootAlias, Context, RawAliases>, operator?: keyof typeof GroupOperator): this;
   /**
-   * Adds a WHERE clause using a plain `FilterQuery` (without alias support).
-   * This overload accepts pre-typed `FilterQuery<Entity>` variables and entity-level operators like `$in`.
-   */
-  where(cond: FilterQuery<Entity>, operator?: keyof typeof GroupOperator): this;
-  /**
    * Adds a WHERE clause to the query using a raw SQL string or fragment.
    *
    * @example
@@ -1200,7 +1195,7 @@ export class QueryBuilder<
    */
   where(cond: string | RawQueryFragment, params?: any[], operator?: keyof typeof GroupOperator): this;
   where(
-    cond: QBFilterQuery<Entity, RootAlias, Context, RawAliases> | FilterQuery<Entity> | string | RawQueryFragment,
+    cond: QBFilterQuery<Entity, RootAlias, Context, RawAliases> | string | RawQueryFragment,
     params?: keyof typeof GroupOperator | any[],
     operator?: keyof typeof GroupOperator,
   ): this {
@@ -1265,11 +1260,6 @@ export class QueryBuilder<
    */
   andWhere(cond: QBFilterQuery<Entity, RootAlias, Context, RawAliases>): this;
   /**
-   * Adds an AND WHERE clause using a plain `FilterQuery` (without alias support).
-   * This overload accepts pre-typed `FilterQuery<Entity>` variables and entity-level operators like `$in`.
-   */
-  andWhere(cond: FilterQuery<Entity>): this;
-  /**
    * Adds an AND WHERE clause to the query using a raw SQL string or fragment.
    *
    * @example
@@ -1278,7 +1268,7 @@ export class QueryBuilder<
    * ```
    */
   andWhere(cond: string | RawQueryFragment, params?: any[]): this;
-  andWhere(cond: QBFilterQuery<Entity, RootAlias, Context, RawAliases> | FilterQuery<Entity> | string | RawQueryFragment, params?: any[]): this {
+  andWhere(cond: QBFilterQuery<Entity, RootAlias, Context, RawAliases> | string | RawQueryFragment, params?: any[]): this {
     return this.where(cond as any, params, '$and');
   }
 
@@ -1293,11 +1283,6 @@ export class QueryBuilder<
    */
   orWhere(cond: QBFilterQuery<Entity, RootAlias, Context, RawAliases>): this;
   /**
-   * Adds an OR WHERE clause using a plain `FilterQuery` (without alias support).
-   * This overload accepts pre-typed `FilterQuery<Entity>` variables and entity-level operators like `$in`.
-   */
-  orWhere(cond: FilterQuery<Entity>): this;
-  /**
    * Adds an OR WHERE clause to the query using a raw SQL string or fragment.
    *
    * @example
@@ -1306,7 +1291,7 @@ export class QueryBuilder<
    * ```
    */
   orWhere(cond: string | RawQueryFragment, params?: any[]): this;
-  orWhere(cond: QBFilterQuery<Entity, RootAlias, Context, RawAliases> | FilterQuery<Entity> | string | RawQueryFragment, params?: any[]): this {
+  orWhere(cond: QBFilterQuery<Entity, RootAlias, Context, RawAliases> | string | RawQueryFragment, params?: any[]): this {
     return this.where(cond as any, params, '$or');
   }
 
@@ -1446,7 +1431,7 @@ export class QueryBuilder<
    * ```
    */
   having(
-    cond: QBFilterQuery<Entity, RootAlias, Context, RawAliases> | FilterQuery<Entity> | string = {},
+    cond: QBFilterQuery<Entity, RootAlias, Context, RawAliases> | string = {},
     params?: any[],
     operator?: keyof typeof GroupOperator,
   ): SelectQueryBuilder<Entity, RootAlias, Hint, Context, RawAliases, Fields> {

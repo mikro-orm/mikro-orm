@@ -1,4 +1,4 @@
-import { JsonType, MikroORM, FilterQuery } from '@mikro-orm/sqlite';
+import { JsonType, MikroORM, QBFilterQuery } from '@mikro-orm/sqlite';
 import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 @Entity()
@@ -42,14 +42,14 @@ afterAll(async () => {
 });
 
 test('simple - no getQuery', async () => {
-  const query: FilterQuery<Test> = { a: { value: 1 } };
+  const query: QBFilterQuery<Test> = { a: { value: 1 } };
   const qb = orm.em.qb(Test).where(query);
   const res = await qb.execute('get'); // proper sql query is generated
   expect(res).toEqual({ id: 1, a: '{"value":1}' });
 });
 
 test('simple - with getQuery', async () => {
-  const query: FilterQuery<Test> = { a: { value: 1 } };
+  const query: QBFilterQuery<Test> = { a: { value: 1 } };
   const qb = orm.em.qb(Test).where(query);
   qb.getQuery();
   const res = await qb.execute(); // proper sql query is generated

@@ -158,6 +158,23 @@ qb = qb.leftJoinAndSelect('p.books', 'b');
 qb = qb.leftJoinAndSelect('b.author', 'a');
 ```
 
+### Strict alias validation in `where`
+
+The `where`, `andWhere`, and `orWhere` methods now validate aliased keys strictly. Using an unknown alias (e.g., a typo) will produce a TypeScript error:
+
+```ts
+const qb = em.createQueryBuilder(Author, 'a')
+  .leftJoin('a.books', 'b')
+  .where({ 'typo.id': 1 }); // TS error: 'typo' is not a known alias
+```
+
+As part of this change, top-level entity operators like `$in` are no longer accepted directly in `qb.where()`. Use the explicit property form instead:
+
+```diff
+-qb.where({ $in: [1, 2] });
++qb.where({ id: { $in: [1, 2] } });
+```
+
 ### Escape hatch with `raw()`
 
 For dynamic or computed expressions that can't be statically typed, use `raw()`:

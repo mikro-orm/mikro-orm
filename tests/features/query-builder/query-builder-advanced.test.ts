@@ -422,7 +422,7 @@ describe('QueryBuilder - Advanced', () => {
 
   test('select by PK via operator', async () => {
     const qb1 = orm.em.createQueryBuilder(Author2, 'a');
-    qb1.select('*').where({ $in: [1, 2] });
+    qb1.select('*').where({ id: { $in: [1, 2] } });
     expect(qb1.getQuery()).toEqual('select `a`.* from `author2` as `a` where `a`.`id` in (?, ?)');
   });
 
@@ -430,7 +430,7 @@ describe('QueryBuilder - Advanced', () => {
     const qb1 = orm.em.createQueryBuilder(Author2, 'a');
     qb1
       .select(['*', sql`"1" as code`])
-      .where({ $in: [1, 2] })
+      .where({ id: { $in: [1, 2] } })
       .orderBy({ code: 'asc' });
     expect(qb1.getQuery()).toEqual('select `a`.*, "1" as code from `author2` as `a` where `a`.`id` in (?, ?) order by `code` asc');
   });
@@ -439,7 +439,7 @@ describe('QueryBuilder - Advanced', () => {
     const qb1 = orm.em.createQueryBuilder(Author2, 'a');
     qb1
       .select(['*', sql`"1" as code`])
-      .where({ $in: [1, 2] })
+      .where({ id: { $in: [1, 2] } })
       .having({
         code: { $gte: 'c' },
         $or: [{ code: { $gt: 'c' } }, { id: { $lt: 3 } }],
