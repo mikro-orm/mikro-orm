@@ -321,13 +321,12 @@ View entities are supported in all SQL databases:
 
 Materialized views are a database feature that allows you to pre-compute and store query results in a table.
 
-MikroORM supports materialized views in PostgreSQL through view entities by setting the `materialized: true` option:
+MikroORM supports materialized views in PostgreSQL through view entities by setting `view: { materialized: true }`:
 
 ```ts
 @Entity({
   tableName: 'author_stats_mat_view',
-  view: true,
-  materialized: true,
+  view: { materialized: true },
   expression: `
     select a.name, count(b.id) as book_count
     from author a
@@ -338,7 +337,7 @@ MikroORM supports materialized views in PostgreSQL through view entities by sett
 export class AuthorStatsMatView {
   @PrimaryKey()
   name!: string;
-  
+
   @Property()
   bookCount!: number;
 }

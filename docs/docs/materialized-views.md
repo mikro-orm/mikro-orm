@@ -9,7 +9,7 @@ Materialized views store the results of a query physically, providing faster rea
 
 ## Defining a Materialized View Entity
 
-To create a materialized view entity, set both `view: true` and `materialized: true` in your entity options:
+To create a materialized view entity, use `view: { materialized: true }` in your entity options:
 
 <Tabs
   groupId="entity-def"
@@ -29,8 +29,7 @@ import { defineEntity, p } from '@mikro-orm/postgresql';
 export const AuthorStats = defineEntity({
   name: 'AuthorStats',
   tableName: 'author_stats_matview',
-  view: true,
-  materialized: true,
+  view: { materialized: true },
   expression: `
     select
       a.id,
@@ -56,8 +55,7 @@ import { Entity, Property, PrimaryKey } from '@mikro-orm/postgresql';
 
 @Entity({
   tableName: 'author_stats_matview',
-  view: true,
-  materialized: true,
+  view: { materialized: true },
   expression: `
     select
       a.id,
@@ -90,8 +88,7 @@ import { Entity, Property, PrimaryKey } from '@mikro-orm/postgresql';
 
 @Entity({
   tableName: 'author_stats_matview',
-  view: true,
-  materialized: true,
+  view: { materialized: true },
   expression: `
     select
       a.id,
@@ -131,8 +128,7 @@ export interface IAuthorStats {
 export const AuthorStats = new EntitySchema<IAuthorStats>({
   name: 'AuthorStats',
   tableName: 'author_stats_matview',
-  view: true,
-  materialized: true,
+  view: { materialized: true },
   expression: `
     select
       a.id,
@@ -161,9 +157,7 @@ By default, materialized views are created with data populated immediately (`WIT
 const AuthorStats = defineEntity({
   name: 'AuthorStats',
   tableName: 'author_stats_matview',
-  view: true,
-  materialized: true,
-  withData: false, // Creates with "WITH NO DATA"
+  view: { materialized: true, withData: false }, // Creates with "WITH NO DATA"
   expression: `select ...`,
   properties: { ... },
 });
@@ -264,7 +258,7 @@ with no data;
 
 ## Limitations
 
-- **PostgreSQL only:** Materialized views are only supported on PostgreSQL. Other databases will throw an error if you try to use `materialized: true`.
+- **PostgreSQL only:** Materialized views are only supported on PostgreSQL. Other databases will throw an error if you try to use `view: { materialized: true }`.
 - **No automatic refresh:** MikroORM does not automatically refresh materialized views. You must call `refreshMaterializedView()` manually or set up a database-level refresh mechanism (triggers, cron jobs, etc.).
 
 ## Best Practices

@@ -802,6 +802,15 @@ export class EntityMetadata<Entity = any, Class extends EntityCtor<Entity> = Ent
       return this.root.uniqueName === prop.targetMeta?.root.uniqueName;
     });
     this.hasUniqueProps = this.uniques.length + this.uniqueProps.length > 0;
+
+    // Normalize object-form `view` option: `view: { materialized: true, withData: false }`
+    // into flat metadata fields (`view: true`, `materialized: true`, `withData: false`).
+    if (typeof this.view === 'object') {
+      this.materialized = this.view.materialized;
+      this.withData = this.view.withData;
+      this.view = true;
+    }
+
     // If `view` is set, this is a database view entity (not a virtual entity).
     // Virtual entities evaluate expressions at query time, view entities create actual database views.
     this.virtual = !!this.expression && !this.view;
@@ -934,8 +943,8 @@ export interface EntityMetadata<Entity = any, Class extends EntityCtor<Entity> =
   schema?: string;
   pivotTable?: boolean;
   virtual?: boolean;
-  /** True if this entity represents a database view (not a virtual entity). */
-  view?: boolean;
+  /** True if this entity represents a database view (not a virtual entity). Accepts `{ materialized: true }` as input, normalized to `true` during sync. */
+  view?: boolean | { materialized?: boolean; withData?: boolean };
   /** True if this is a materialized view (PostgreSQL only). Requires `view: true`. */
   materialized?: boolean;
   /** For materialized views, whether data is populated on creation. Defaults to true. */

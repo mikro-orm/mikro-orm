@@ -26,8 +26,7 @@ const Book = defineEntity({
 const AuthorStats0 = defineEntity({
   name: 'AuthorStats',
   tableName: 'author_stats_matview',
-  view: true,
-  materialized: true,
+  view: { materialized: true },
   expression: `select a.id, a.name, count(b.id)::int as book_count from author a left join book b on b.author_id = a.id group by a.id`,
   properties: {
     id: p.integer().primary(),
@@ -40,8 +39,7 @@ const AuthorStats0 = defineEntity({
 const AuthorStats1 = defineEntity({
   name: 'AuthorStats',
   tableName: 'author_stats_matview',
-  view: true,
-  materialized: true,
+  view: { materialized: true },
   expression: `select a.id, a.name, a.email, count(b.id)::int as book_count from author a left join book b on b.author_id = a.id group by a.id`,
   properties: {
     id: p.integer().primary(),
@@ -55,8 +53,7 @@ const AuthorStats1 = defineEntity({
 const BookStats0 = defineEntity({
   name: 'BookStats',
   tableName: 'book_stats_matview',
-  view: true,
-  materialized: true,
+  view: { materialized: true },
   expression: `select count(*)::int as total_books from book`,
   properties: {
     totalBooks: p.integer().primary(),
@@ -67,9 +64,7 @@ const BookStats0 = defineEntity({
 const AuthorStatsNoData = defineEntity({
   name: 'AuthorStatsNoData',
   tableName: 'author_stats_nodata_matview',
-  view: true,
-  materialized: true,
-  withData: false,
+  view: { materialized: true, withData: false },
   expression: `select a.id, a.name from author a`,
   properties: {
     id: p.integer().primary(),
@@ -81,9 +76,7 @@ const AuthorStatsNoData = defineEntity({
 const AuthorStatsWithData = defineEntity({
   name: 'AuthorStatsWithData',
   tableName: 'author_stats_nodata_matview',
-  view: true,
-  materialized: true,
-  withData: true,
+  view: { materialized: true, withData: true },
   expression: `select a.id, a.name from author a`,
   properties: {
     id: p.integer().primary(),

@@ -755,8 +755,7 @@ describe('View entities as relation targets (postgres)', () => {
 const AuthorStatsMaterialized = defineEntity({
   name: 'AuthorStatsMaterialized',
   tableName: 'author_stats_matview',
-  view: true,
-  materialized: true,
+  view: { materialized: true },
   expression: `select min(name) as name, (select count(*)::int from book2 b where b.author_id = a.id) as book_count from author2 a group by a.id`,
   properties: {
     name: p.string().primary(),
@@ -768,9 +767,7 @@ const AuthorStatsMaterialized = defineEntity({
 const AuthorStatsNoData = defineEntity({
   name: 'AuthorStatsNoData',
   tableName: 'author_stats_nodata_matview',
-  view: true,
-  materialized: true,
-  withData: false,
+  view: { materialized: true, withData: false },
   expression: `select min(name) as name, count(*)::int as book_count from author2 a group by a.id`,
   properties: {
     name: p.string().primary(),
