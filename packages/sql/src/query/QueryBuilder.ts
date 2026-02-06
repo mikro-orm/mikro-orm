@@ -10,6 +10,7 @@ import {
   type EntityName,
   type EntityProperty,
   type ExpandProperty,
+  type FilterObject,
   type FilterOptions,
   type FilterQuery,
   type FilterValue,
@@ -381,12 +382,12 @@ type ContextFilterKeys<Context> = { [K in ContextFieldKeys<Context>]?: AliasedFi
 type RawFilterKeys<RawAliases extends string> = { [K in RawAliases]?: AliasedFilterValue };
 
 // Internal type for nested filter conditions in group operators ($and, $or, $not)
-// Accepts both ObjectQuery (for plain entity keys) and aliased keys
+// Uses intersection to ensure unknown aliased keys are caught by excess property checking
 type NestedFilterCondition<Entity, RootAlias extends string, Context, RawAliases extends string> =
-  | ObjectQuery<Entity>
-  | ((IsNever<RootAlias> extends true ? {} : RootAliasFilterKeys<RootAlias, Entity>) &
-      ([Context] extends [never] ? {} : ContextFilterKeys<Context>) &
-      (IsNever<RawAliases> extends true ? {} : RawFilterKeys<RawAliases>));
+  ObjectQuery<Entity> &
+  (IsNever<RootAlias> extends true ? {} : string extends RootAlias ? {} : RootAliasFilterKeys<RootAlias, Entity>) &
+  ([Context] extends [never] ? {} : ContextFilterKeys<Context>) &
+  (IsNever<RawAliases> extends true ? {} : string extends RawAliases ? {} : RawFilterKeys<RawAliases>);
 
 // Group operators type that accepts both plain entity keys and aliased keys
 type GroupOperators<RootAlias extends string, Context, Entity, RawAliases extends string> = {
@@ -396,20 +397,17 @@ type GroupOperators<RootAlias extends string, Context, Entity, RawAliases extend
 };
 
 // Aliased keys filter condition - split into separate intersected parts for better caching
-// IMPORTANT: Plain entity keys are intentionally NOT included here.
-// They are validated by ObjectQuery<Entity> in QBFilterQuery union instead.
-// This ensures proper nested validation for relation traversal (e.g., { author: { name: '...' } })
+// Guards against widened `string` types for RootAlias/RawAliases to prevent string index signatures
 export type AliasedFilterCondition<RootAlias extends string, Context, Entity, RawAliases extends string = never> =
-  (IsNever<RootAlias> extends true ? {} : RootAliasFilterKeys<RootAlias, Entity>) &
+  (IsNever<RootAlias> extends true ? {} : string extends RootAlias ? {} : RootAliasFilterKeys<RootAlias, Entity>) &
   ([Context] extends [never] ? {} : ContextFilterKeys<Context>) &
-  (IsNever<RawAliases> extends true ? {} : RawFilterKeys<RawAliases>) &
+  (IsNever<RawAliases> extends true ? {} : string extends RawAliases ? {} : RawFilterKeys<RawAliases>) &
   GroupOperators<RootAlias, Context, Entity, RawAliases>;
 
 // Context-aware filter query for QueryBuilder
-// When Context is never but RootAlias exists, we still need aliased keys support
+// Uses intersection (not union) so that unknown aliased keys trigger excess property errors
 export type QBFilterQuery<Entity, RootAlias extends string = never, Context = never, RawAliases extends string = never> =
-  | ObjectQuery<Entity>
-  | AliasedFilterCondition<RootAlias, Context, Entity, RawAliases>;
+  FilterObject<Entity> & AliasedFilterCondition<RootAlias, Context, Entity, RawAliases>;
 
 /**
  * SQL query builder with fluent interface.
@@ -1184,6 +1182,11 @@ export class QueryBuilder<
    */
   where(cond: QBFilterQuery<Entity, RootAlias, Context, RawAliases>, operator?: keyof typeof GroupOperator): this;
   /**
+   * Adds a WHERE clause using a plain `FilterQuery` (without alias support).
+   * This overload accepts pre-typed `FilterQuery<Entity>` variables and entity-level operators like `$in`.
+   */
+  where(cond: FilterQuery<Entity>, operator?: keyof typeof GroupOperator): this;
+  /**
    * Adds a WHERE clause to the query using a raw SQL string or fragment.
    *
    * @example
@@ -1197,7 +1200,7 @@ export class QueryBuilder<
    */
   where(cond: string | RawQueryFragment, params?: any[], operator?: keyof typeof GroupOperator): this;
   where(
-    cond: QBFilterQuery<Entity, RootAlias, Context, RawAliases> | string | RawQueryFragment,
+    cond: QBFilterQuery<Entity, RootAlias, Context, RawAliases> | FilterQuery<Entity> | string | RawQueryFragment,
     params?: keyof typeof GroupOperator | any[],
     operator?: keyof typeof GroupOperator,
   ): this {
@@ -1262,6 +1265,11 @@ export class QueryBuilder<
    */
   andWhere(cond: QBFilterQuery<Entity, RootAlias, Context, RawAliases>): this;
   /**
+   * Adds an AND WHERE clause using a plain `FilterQuery` (without alias support).
+   * This overload accepts pre-typed `FilterQuery<Entity>` variables and entity-level operators like `$in`.
+   */
+  andWhere(cond: FilterQuery<Entity>): this;
+  /**
    * Adds an AND WHERE clause to the query using a raw SQL string or fragment.
    *
    * @example
@@ -1270,7 +1278,7 @@ export class QueryBuilder<
    * ```
    */
   andWhere(cond: string | RawQueryFragment, params?: any[]): this;
-  andWhere(cond: QBFilterQuery<Entity, RootAlias, Context, RawAliases> | string | RawQueryFragment, params?: any[]): this {
+  andWhere(cond: QBFilterQuery<Entity, RootAlias, Context, RawAliases> | FilterQuery<Entity> | string | RawQueryFragment, params?: any[]): this {
     return this.where(cond as any, params, '$and');
   }
 
@@ -1285,6 +1293,11 @@ export class QueryBuilder<
    */
   orWhere(cond: QBFilterQuery<Entity, RootAlias, Context, RawAliases>): this;
   /**
+   * Adds an OR WHERE clause using a plain `FilterQuery` (without alias support).
+   * This overload accepts pre-typed `FilterQuery<Entity>` variables and entity-level operators like `$in`.
+   */
+  orWhere(cond: FilterQuery<Entity>): this;
+  /**
    * Adds an OR WHERE clause to the query using a raw SQL string or fragment.
    *
    * @example
@@ -1293,7 +1306,7 @@ export class QueryBuilder<
    * ```
    */
   orWhere(cond: string | RawQueryFragment, params?: any[]): this;
-  orWhere(cond: QBFilterQuery<Entity, RootAlias, Context, RawAliases> | string | RawQueryFragment, params?: any[]): this {
+  orWhere(cond: QBFilterQuery<Entity, RootAlias, Context, RawAliases> | FilterQuery<Entity> | string | RawQueryFragment, params?: any[]): this {
     return this.where(cond as any, params, '$or');
   }
 
@@ -1433,14 +1446,14 @@ export class QueryBuilder<
    * ```
    */
   having(
-    cond: QBFilterQuery<Entity, RootAlias, Context, RawAliases> | string = {},
+    cond: QBFilterQuery<Entity, RootAlias, Context, RawAliases> | FilterQuery<Entity> | string = {},
     params?: any[],
     operator?: keyof typeof GroupOperator,
   ): SelectQueryBuilder<Entity, RootAlias, Hint, Context, RawAliases, Fields> {
     this.ensureNotFinalized();
 
     if (typeof cond === 'string') {
-      cond = { [raw(`(${cond})`, params)]: [] } as ObjectQuery<Entity>;
+      cond = { [raw(`(${cond})`, params)]: [] } as QBFilterQuery<Entity, RootAlias, Context, RawAliases>;
     }
 
     const processed = CriteriaNodeFactory.createNode<Entity>(

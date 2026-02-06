@@ -136,17 +136,17 @@ function useFilter<E, R extends string, C>(_filter: QBFilterQuery<E, R, C>): voi
 
 bench('QBFilterQuery<Author, "a", never> - no context', () => {
   useFilter<Author, 'a', never>({ name: 'test' });
-}).types([1977, 'instantiations']);
+}).types([607, 'instantiations']);
 
 bench('QBFilterQuery<Author, "a", SimpleContext> - with join', () => {
   useFilter<Author, 'a', SimpleContext>({ 'b.title': 'test' });
-}).types([2086, 'instantiations']);
+}).types([510, 'instantiations']);
 
 bench('QBFilterQuery<Author, "a", SimpleContext> - with $and', () => {
   useFilter<Author, 'a', SimpleContext>({
     $and: [{ 'b.title': 'test' }, { name: 'foo' }],
   });
-}).types([2143, 'instantiations']);
+}).types([922, 'instantiations']);
 
 // ============================================
 // ModifyFields benchmarks (Fields tracking)
