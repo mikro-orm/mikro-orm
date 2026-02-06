@@ -5,15 +5,7 @@
  */
 
 import { bench } from '@ark/attest';
-import {
-  type FilterQuery,
-  type FilterObject,
-  type ExpandQuery,
-  type EntityKey,
-  type Ref,
-  type Collection,
-  PrimaryKeyProp,
-} from '@mikro-orm/core';
+import { type FilterQuery, type FilterObject, type ExpandQuery, type EntityKey, type Ref, type Collection, PrimaryKeyProp } from '@mikro-orm/core';
 
 // ============================================
 // Test Entity Definitions
@@ -64,19 +56,19 @@ function useFilter<T>(_filter: FilterQuery<T>): void {}
 
 bench('FilterQuery<Tag> - simple entity', () => {
   useFilter<Tag>({ name: 'test' });
-}).types([434, 'instantiations']);
+}).types([419, 'instantiations']);
 
 bench('FilterQuery<Publisher> - entity with collection', () => {
   useFilter<Publisher>({ name: 'test' });
-}).types([461, 'instantiations']);
+}).types([446, 'instantiations']);
 
 bench('FilterQuery<Book> - entity with relations', () => {
   useFilter<Book>({ title: 'test' });
-}).types([493, 'instantiations']);
+}).types([478, 'instantiations']);
 
 bench('FilterQuery<Author> - complex entity', () => {
   useFilter<Author>({ name: 'test' });
-}).types([524, 'instantiations']);
+}).types([509, 'instantiations']);
 
 // ============================================
 // Nested query benchmarks
@@ -84,15 +76,15 @@ bench('FilterQuery<Author> - complex entity', () => {
 
 bench('FilterQuery<Author> - nested 1 level', () => {
   useFilter<Author>({ books: { title: 'test' } });
-}).types([1342, 'instantiations']);
+}).types([1034, 'instantiations']);
 
 bench('FilterQuery<Author> - nested 2 levels', () => {
   useFilter<Author>({ books: { publisher: { name: 'test' } } });
-}).types([1884, 'instantiations']);
+}).types([1312, 'instantiations']);
 
 bench('FilterQuery<Author> - nested 3 levels', () => {
   useFilter<Author>({ books: { publisher: { books: { title: 'test' } } } });
-}).types([1958, 'instantiations']);
+}).types([1343, 'instantiations']);
 
 // ============================================
 // Component type benchmarks
@@ -103,14 +95,14 @@ function useFilterObject<T>(_filter: FilterObject<T>): void {}
 
 bench('FilterObject<Author> - direct', () => {
   useFilterObject<Author>({ name: 'test' });
-}).types([442, 'instantiations']);
+}).types([427, 'instantiations']);
 
 // eslint-disable-next-line
 function useExpandQuery<T>(_filter: ExpandQuery<T>): void {}
 
 bench('ExpandQuery<Author> - direct', () => {
   useExpandQuery<Author>({ name: 'test' });
-}).types([594, 'instantiations']);
+}).types([579, 'instantiations']);
 
 // ============================================
 // EntityKey benchmarks

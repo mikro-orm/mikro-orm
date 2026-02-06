@@ -70,7 +70,7 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
             const pks = this.prop!.referencedColumnNames;
             const countExpr = raw(`count(${pks.map(() => '??').join(', ')})`, pks.map(pk => `${joinAlias}.${pk}`));
             sub.groupBy(parentMeta.primaryKeys);
-            sub.having({ $and: Object.keys(sizeCondition).map(op => ({ [countExpr]: { [op]: sizeCondition[op] } })) });
+            sub.having({ $and: Object.keys(sizeCondition).map(op => ({ [countExpr as any]: { [op]: sizeCondition[op] } })) });
           } else if (key === '$every') {
             sub.where({ $not: { [this.key!]: payload } });
           } else {
@@ -131,7 +131,11 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
         this.inlineCondition(childNode.renameFieldToPK(qb, alias), o, payload);
       } else if (isRawField) {
         const rawField = RawQueryFragment.getKnownFragment(field)!;
-        o[raw(rawField.sql.replaceAll(ALIAS_REPLACEMENT, alias!), rawField.params)] = payload;
+        o[raw(rawField.sql.replaceAll(ALIAS_REPLACEMENT, alias!), rawField.params) as any] = payload;
+      } else if (!childNode.validate && !childNode.prop && !field.includes('.') && !operator) {
+        // wrap unknown fields in raw() to prevent alias prefixing (e.g. raw SQL aliases in HAVING)
+        // use '??' placeholder to properly quote the identifier
+        o[raw('??', [field]) as any] = payload;
       } else if (primaryKey || virtual || operator || field.includes('.') || ![QueryType.SELECT, QueryType.COUNT].includes(qb.type)) {
         this.inlineCondition(field.replaceAll(ALIAS_REPLACEMENT, alias!), o, payload);
       } else {

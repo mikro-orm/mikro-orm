@@ -115,3 +115,38 @@ const books = await orm.em.find(Book, {
 ### Aliasing
 
 To select a raw fragment, you need to alias it. For that, you can use ```sql`(select 1 + 1)`.as('<alias>')```.
+
+```ts
+const qb = em.createQueryBuilder(User, 'u');
+qb.select(['*', sql`(select count(*) from books where author_id = u.id)`.as('bookCount')]);
+```
+
+When using `.as()` with QueryBuilder, the alias becomes available for use in subsequent `where()` or `orderBy()` calls with proper type inference:
+
+```ts
+const qb = em.createQueryBuilder(User, 'u')
+  .select(['*', sql`u.first_name || ' ' || u.last_name`.as('fullName')])
+  .orderBy({ fullName: 'asc' }); // 'fullName' is recognized as a valid key
+```
+
+### Return type
+
+The `raw()` function returns `RawQueryFragment` by default, which provides better type safety. When assigning a raw fragment directly to an entity property, you need to provide an explicit type parameter:
+
+```ts
+// Direct property assignment requires explicit type
+author.age = raw<number>(`age + 1`);
+```
+
+When using `em.create()`, `em.assign()`, or in filter conditions, no explicit type is needed:
+
+```ts
+// No explicit type needed with em.create/em.assign
+em.assign(author, { age: raw(`age + 1`) });
+
+// No explicit type needed in filters
+await em.find(User, { [raw('lower(name)')]: name.toLowerCase() });
+
+// No explicit type needed in QueryBuilder
+qb.select(raw('count(*) as count'));
+```

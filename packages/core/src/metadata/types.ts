@@ -18,6 +18,7 @@ import type { Type, types } from '../types/index.js';
 import type { EntityManager } from '../EntityManager.js';
 import type { FilterOptions, FindOptions } from '../drivers/IDatabaseDriver.js';
 import type { SerializeOptions } from '../serialization/EntitySerializer.js';
+import type { Raw } from '../utils/RawQueryFragment.js';
 
 export type EntityOptions<T, E = T extends EntityClass<infer P> ? P : T> = {
   /** Override default collection/table name. Alias for `collection`. */
@@ -144,12 +145,12 @@ export interface PropertyOptions<Owner> {
    * Specify default column value for {@link https://mikro-orm.io/docs/schema-generator Schema Generator}.
    * This is a runtime value, assignable to the entity property. (SQL only)
    */
-  default?: string | string[] | number | number[] | boolean | null;
+  default?: string | string[] | number | number[] | boolean | null | Date | Raw;
   /**
    * Specify SQL functions for {@link https://mikro-orm.io/docs/schema-generator Schema Generator}. (SQL only)
    * Since v4 you should use defaultRaw for SQL functions. e.g. now()
    */
-  defaultRaw?: string;
+  defaultRaw?: string | Raw;
   /**
    * Set to map some SQL snippet for the entity.
    *

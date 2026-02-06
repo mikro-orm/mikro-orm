@@ -23,32 +23,32 @@ import type { ICriteriaNode } from '../typings.js';
  */
 export class CriteriaNodeFactory {
 
-  static createNode<T extends object>(metadata: MetadataStorage, entityName: EntityName<T>, payload: any, parent?: ICriteriaNode<T>, key?: EntityKey<T> | RawQueryFragmentSymbol): ICriteriaNode<T> {
+  static createNode<T extends object>(metadata: MetadataStorage, entityName: EntityName<T>, payload: any, parent?: ICriteriaNode<T>, key?: EntityKey<T> | RawQueryFragmentSymbol, validate = true): ICriteriaNode<T> {
     const rawField = RawQueryFragment.isKnownFragmentSymbol(key);
     const scalar = Utils.isPrimaryKey(payload) || isRaw(payload) || payload as unknown instanceof RegExp || payload as unknown instanceof Date || rawField;
 
     if (Array.isArray(payload) && !scalar) {
-      return this.createArrayNode(metadata, entityName, payload, parent, key);
+      return this.createArrayNode(metadata, entityName, payload, parent, key, validate);
     }
 
     if (Utils.isPlainObject(payload) && !scalar) {
-      return this.createObjectNode(metadata, entityName, payload, parent, key);
+      return this.createObjectNode(metadata, entityName, payload, parent, key, validate);
     }
 
-    return this.createScalarNode(metadata, entityName, payload, parent, key);
+    return this.createScalarNode(metadata, entityName, payload, parent, key, validate);
   }
 
-  static createScalarNode<T extends object>(metadata: MetadataStorage, entityName: EntityName<T>, payload: any, parent?: ICriteriaNode<T>, key?: EntityKey<T> | RawQueryFragmentSymbol): ICriteriaNode<T> {
-    const node = new ScalarCriteriaNode<T>(metadata, entityName, parent, key);
+  static createScalarNode<T extends object>(metadata: MetadataStorage, entityName: EntityName<T>, payload: any, parent?: ICriteriaNode<T>, key?: EntityKey<T> | RawQueryFragmentSymbol, validate = true): ICriteriaNode<T> {
+    const node = new ScalarCriteriaNode<T>(metadata, entityName, parent, key, validate);
     node.payload = payload;
 
     return node;
   }
 
-  static createArrayNode<T extends object>(metadata: MetadataStorage, entityName: EntityName<T>, payload: any[], parent?: ICriteriaNode<T>, key?: EntityKey<T>): ICriteriaNode<T> {
-    const node = new ArrayCriteriaNode<T>(metadata, entityName, parent, key);
+  static createArrayNode<T extends object>(metadata: MetadataStorage, entityName: EntityName<T>, payload: any[], parent?: ICriteriaNode<T>, key?: EntityKey<T>, validate = true): ICriteriaNode<T> {
+    const node = new ArrayCriteriaNode<T>(metadata, entityName, parent, key, validate);
     node.payload = payload.map((item, index) => {
-      const n = this.createNode(metadata, entityName, item, node);
+      const n = this.createNode(metadata, entityName, item, node, undefined, validate);
 
       // we care about branching only for $and
       if (key === '$and' && payload.length > 1) {
@@ -61,19 +61,19 @@ export class CriteriaNodeFactory {
     return node;
   }
 
-  static createObjectNode<T extends object>(metadata: MetadataStorage, entityName: EntityName<T>, payload: Dictionary, parent?: ICriteriaNode<T>, key?: EntityKey<T>): ICriteriaNode<T> {
+  static createObjectNode<T extends object>(metadata: MetadataStorage, entityName: EntityName<T>, payload: Dictionary, parent?: ICriteriaNode<T>, key?: EntityKey<T>, validate = true): ICriteriaNode<T> {
     const meta = metadata.find(entityName);
-    const node = new ObjectCriteriaNode(metadata, entityName, parent, key, true, payload.__strict);
+    const node = new ObjectCriteriaNode(metadata, entityName, parent, key, validate, payload.__strict);
     node.payload = {} as Dictionary;
 
     for (const k of Utils.getObjectQueryKeys(payload)) {
-      node.payload[k] = this.createObjectItemNode(metadata, entityName, node, payload, k as EntityKey<T>, meta);
+      node.payload[k] = this.createObjectItemNode(metadata, entityName, node, payload, k as EntityKey<T>, meta, validate);
     }
 
     return node;
   }
 
-  static createObjectItemNode<T extends object>(metadata: MetadataStorage, entityName: EntityName<T>, node: ICriteriaNode<T>, payload: Dictionary, key: EntityKey<T> | RawQueryFragmentSymbol, meta?: EntityMetadata<T>) {
+  static createObjectItemNode<T extends object>(metadata: MetadataStorage, entityName: EntityName<T>, node: ICriteriaNode<T>, payload: Dictionary, key: EntityKey<T> | RawQueryFragmentSymbol, meta?: EntityMetadata<T>, validate = true) {
     const rawField = RawQueryFragment.isKnownFragmentSymbol(key);
     const prop = rawField ? null : meta?.properties[key];
     const childEntity = prop && prop.kind !== ReferenceKind.SCALAR ? prop.targetMeta!.class : entityName;
@@ -81,7 +81,7 @@ export class CriteriaNodeFactory {
     const val = payload[key as EntityKey<T>];
 
     if (isNotEmbedded && prop?.customType instanceof JsonType) {
-      return this.createScalarNode(metadata, childEntity, val, node, key);
+      return this.createScalarNode(metadata, childEntity, val, node, key, validate);
     }
 
     if (prop?.kind === ReferenceKind.SCALAR && val != null && Object.keys(val).some(f => f in GroupOperator)) {
@@ -89,7 +89,7 @@ export class CriteriaNodeFactory {
     }
 
     if (isNotEmbedded) {
-      return this.createNode(metadata, childEntity, val, node, key);
+      return this.createNode(metadata, childEntity, val, node, key, validate);
     }
 
     if (val == null) {
@@ -98,7 +98,7 @@ export class CriteriaNodeFactory {
         return oo;
       }, {} as Dictionary);
 
-      return this.createNode(metadata, entityName, map, node, key);
+      return this.createNode(metadata, entityName, map, node, key, validate);
     }
 
     // array operators can be used on embedded properties
@@ -127,7 +127,7 @@ export class CriteriaNodeFactory {
       return oo;
     }, {} as Dictionary);
 
-    return this.createNode(metadata, entityName, map, node, key);
+    return this.createNode(metadata, entityName, map, node, key, validate);
   }
 
 }

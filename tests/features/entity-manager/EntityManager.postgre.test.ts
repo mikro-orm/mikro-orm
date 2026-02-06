@@ -2136,14 +2136,14 @@ describe('EntityManagerPostgre', () => {
     expect(a2.address!.value).toBe('v2');
     expect(a2.address!.author).toBe(a2);
 
-    const address = await orm.em.findOneOrFail(Address2, author.id as any);
+    const address = await orm.em.findOneOrFail(Address2, author.id);
     expect(address.author).toBe(a2);
     expect(address.author.address).toBe(address);
 
     await orm.em.remove(a2).flush();
     const a3 = await orm.em.findOne(Author2, author.id);
     expect(a3).toBeNull();
-    const address2 = await orm.em.findOne(Address2, author.id as any);
+    const address2 = await orm.em.findOne(Address2, author.id);
     expect(address2).toBeNull();
   });
 

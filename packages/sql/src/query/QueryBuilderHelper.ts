@@ -8,6 +8,7 @@ import {
   type EntityMetadata,
   type EntityName,
   type EntityProperty,
+  type FilterQuery,
   type FlatQueryOrderMap,
   type FormulaTable,
   inspect,
@@ -15,9 +16,8 @@ import {
   LockMode,
   type MetadataStorage,
   OptimisticLockError,
-  type QBFilterQuery,
-  type QBQueryOrderMap,
   QueryOperator,
+  type QueryOrderMap,
   QueryOrderNumeric,
   raw,
   Raw,
@@ -27,7 +27,7 @@ import {
   ValidationError,
 } from '@mikro-orm/core';
 import { JoinType, QueryType } from './enums.js';
-import type { Field, JoinOptions } from '../typings.js';
+import type { InternalField, JoinOptions } from '../typings.js';
 import type { AbstractSqlDriver } from '../AbstractSqlDriver.js';
 import type { AbstractSqlPlatform } from '../AbstractSqlPlatform.js';
 import { NativeQueryBuilder } from './NativeQueryBuilder.js';
@@ -107,11 +107,6 @@ export class QueryBuilderHelper {
     const prop = this.getProperty(f, a);
     const fkIdx2 = prop?.fieldNames.findIndex(name => name === f) ?? -1;
     const fkIdx = fkIdx2 === -1 ? 0 : fkIdx2;
-
-    // embeddable nested path instead of a regular property with table alias, reset alias
-    if (prop?.name === a && prop.embeddedProps[f]) {
-      return aliasPrefix + prop.fieldNames[fkIdx];
-    }
 
     if (a === prop?.embedded?.[0]) {
       return aliasPrefix + prop.fieldNames[fkIdx];
@@ -687,7 +682,7 @@ export class QueryBuilderHelper {
     return replacement;
   }
 
-  validateQueryOrder<T>(orderBy: QBQueryOrderMap<T>): void {
+  validateQueryOrder<T>(orderBy: QueryOrderMap<T>): void {
     const strKeys: string[] = [];
     const rawKeys: Raw[] = [];
 
@@ -768,7 +763,7 @@ export class QueryBuilderHelper {
     return ret;
   }
 
-  finalize(type: QueryType, qb: NativeQueryBuilder, meta?: EntityMetadata, data?: Dictionary, returning?: Field<any>[]): void {
+  finalize(type: QueryType, qb: NativeQueryBuilder, meta?: EntityMetadata, data?: Dictionary, returning?: InternalField<any>[]): void {
     const usesReturningStatement = this.platform.usesReturningStatement() || this.platform.usesOutputStatement();
 
     if (!meta || !data || !usesReturningStatement) {
@@ -798,14 +793,15 @@ export class QueryBuilderHelper {
       const returningProps = meta.hydrateProps.filter(prop => prop.fieldNames && isRaw(data[prop.fieldNames[0]]));
 
       if (returningProps.length > 0) {
-        qb.returning(returningProps.flatMap(prop => {
+        const fields = returningProps.flatMap((prop): (string | Raw)[] => {
           if (prop.hasConvertToJSValueSQL) {
             const aliased = this.platform.quoteIdentifier(prop.fieldNames[0]);
             const sql = prop.customType!.convertToJSValueSQL!(aliased, this.platform) + ' as ' + this.platform.quoteIdentifier(prop.fieldNames[0]);
             return [raw(sql)];
           }
           return prop.fieldNames;
-        }) as any);
+        });
+        qb.returning(fields as any);
       }
     }
   }
@@ -935,7 +931,7 @@ export class QueryBuilderHelper {
     return !!field.match(/[\w`"[\]]+\./);
   }
 
-  private fieldName(field: string, alias?: string, always?: boolean, idx = 0): string {
+  private fieldName(field: string, alias?: string, always?: boolean, idx = 0): string | Raw {
     const prop = this.getProperty(field, alias);
 
     if (!prop) {
@@ -970,11 +966,6 @@ export class QueryBuilderHelper {
       const prop = meta.properties[alias];
 
       if (prop?.kind === ReferenceKind.EMBEDDED) {
-        // we want to select the full object property so hydration works as expected
-        if (prop.object) {
-          return prop;
-        }
-
         const parts = field.split('.');
         const nest = (p: EntityProperty): EntityProperty => parts.length > 0 ? nest(p.embeddedProps[parts.shift()!]) : p;
         return nest(prop);
@@ -992,7 +983,7 @@ export class QueryBuilderHelper {
     return [QueryType.SELECT, QueryType.COUNT].includes(type);
   }
 
-  processOnConflictCondition(cond: QBFilterQuery, schema?: string): QBFilterQuery {
+  processOnConflictCondition(cond: FilterQuery<any>, schema?: string): FilterQuery<any> {
     const meta = this.metadata.get(this.entityName);
     const tableName = meta.tableName;
 
@@ -1028,6 +1019,6 @@ export interface Alias<T> {
 export interface OnConflictClause<T> {
   fields: string[] | Raw;
   ignore?: boolean;
-  merge?: EntityData<T> | Field<T>[];
-  where?: QBFilterQuery<T>;
+  merge?: EntityData<T> | InternalField<T>[];
+  where?: FilterQuery<T>;
 }

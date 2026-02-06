@@ -1,4 +1,4 @@
-import { defineEntity, p, type EntityManager as EM } from '@mikro-orm/core';
+import { defineEntity, p, sql, type EntityManager as EM } from '@mikro-orm/core';
 import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { MikroORM as MySqlORM, EntityManager as MySqlEM } from '@mikro-orm/mysql';
 import { MikroORM as MariaDbORM, EntityManager as MariaDbEM } from '@mikro-orm/mariadb';
@@ -25,8 +25,8 @@ const BookSummary = defineEntity({
   view: true,
   expression: (em: EM) => {
     return (em as MySqlEM | MariaDbEM).createQueryBuilder(Book2, 'b')
-      .select(['b.title', 'a.name as author_name'])
-      .join('b.author', 'a');
+      .join('b.author', 'a')
+      .select(['b.title', sql.ref('a', 'name').as('author_name')]);
   },
   properties: {
     title: p.string().primary(),

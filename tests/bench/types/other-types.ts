@@ -70,19 +70,19 @@ function useFilter<T>(_filter: FilterQuery<T>): void {}
 
 bench('FilterQuery<Author> - simple', () => {
   useFilter<Author>({ name: 'test' });
-}).types([535, 'instantiations']);
+}).types([520, 'instantiations']);
 
 bench('FilterQuery<Author> - with relation', () => {
   useFilter<Author>({ books: { title: 'test' } });
-}).types([1389, 'instantiations']);
+}).types([1056, 'instantiations']);
 
 bench('FilterQuery<Author> - with operators', () => {
   useFilter<Author>({ age: { $gt: 18 }, name: { $like: '%test%' } });
-}).types([684, 'instantiations']);
+}).types([666, 'instantiations']);
 
 bench('FilterQuery<Book> - nested relations', () => {
   useFilter<Book>({ author: { books: { publisher: { name: 'test' } } } });
-}).types([2412, 'instantiations']);
+}).types([1428, 'instantiations']);
 
 // ============================================
 // EntityData benchmarks
@@ -93,7 +93,7 @@ function useEntityData<T>(_data: EntityData<T>): void {}
 
 bench('EntityData<Author> - simple', () => {
   useEntityData<Author>({ name: 'test', email: 'test@test.com' });
-}).types([192, 'instantiations']);
+}).types([193, 'instantiations']);
 
 bench('EntityData<Book> - with relations', () => {
   useEntityData<Book>({
@@ -101,7 +101,7 @@ bench('EntityData<Book> - with relations', () => {
     price: 10,
     author: { name: 'test' } as any,
   });
-}).types([554, 'instantiations']);
+}).types([557, 'instantiations']);
 
 // ============================================
 // RequiredEntityData benchmarks

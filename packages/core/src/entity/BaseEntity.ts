@@ -8,7 +8,6 @@ import type { FindOneOptions } from '../drivers/IDatabaseDriver.js';
 import type { PopulatePath } from '../enums.js';
 
 export abstract class BaseEntity {
-
   isInitialized(): boolean {
     return helper(this).__initialized;
   }
@@ -28,8 +27,67 @@ export abstract class BaseEntity {
     return Reference.create(this) as unknown as Ref<Entity> & LoadedReference<Loaded<Entity, AddEager<Entity>>>;
   }
 
+  /**
+   * Converts the entity to a plain object representation.
+   *
+   * **Note on typing with `Loaded` entities:** When called on a `Loaded<Entity, 'relation'>` type,
+   * the return type will be `EntityDTO<Entity>` (with relations as primary keys), not
+   * `EntityDTO<Loaded<Entity, 'relation'>>` (with loaded relations as nested objects).
+   * This is a TypeScript limitation - the `this` type resolves to the class, not the `Loaded` wrapper.
+   *
+   * For correct typing that reflects loaded relations, use `wrap()`:
+   * ```ts
+   * const result = await em.find(User, {}, { populate: ['profile'] });
+   * // Type: EntityDTO<User> (profile is number)
+   * const obj1 = result[0].toObject();
+   * // Type: EntityDTO<Loaded<User, 'profile'>> (profile is nested object)
+   * const obj2 = wrap(result[0]).toObject();
+   * ```
+   *
+   * Runtime values are correct in both cases - only the static types differ.
+   */
   toObject<Entity extends this = this>(): EntityDTO<Entity>;
+  /**
+   * Converts the entity to a plain object representation.
+   *
+   * **Note on typing with `Loaded` entities:** When called on a `Loaded<Entity, 'relation'>` type,
+   * the return type will be `EntityDTO<Entity>` (with relations as primary keys), not
+   * `EntityDTO<Loaded<Entity, 'relation'>>` (with loaded relations as nested objects).
+   * This is a TypeScript limitation - the `this` type resolves to the class, not the `Loaded` wrapper.
+   *
+   * For correct typing that reflects loaded relations, use `wrap()`:
+   * ```ts
+   * const result = await em.find(User, {}, { populate: ['profile'] });
+   * // Type: EntityDTO<User> (profile is number)
+   * const obj1 = result[0].toObject();
+   * // Type: EntityDTO<Loaded<User, 'profile'>> (profile is nested object)
+   * const obj2 = wrap(result[0]).toObject();
+   * ```
+   *
+   * Runtime values are correct in both cases - only the static types differ.
+   */
   toObject<Entity extends this = this>(ignoreFields: never[]): EntityDTO<Entity>;
+  /**
+   * Converts the entity to a plain object representation.
+   *
+   * **Note on typing with `Loaded` entities:** When called on a `Loaded<Entity, 'relation'>` type,
+   * the return type will be `EntityDTO<Entity>` (with relations as primary keys), not
+   * `EntityDTO<Loaded<Entity, 'relation'>>` (with loaded relations as nested objects).
+   * This is a TypeScript limitation - the `this` type resolves to the class, not the `Loaded` wrapper.
+   *
+   * For correct typing that reflects loaded relations, use `wrap()`:
+   * ```ts
+   * const result = await em.find(User, {}, { populate: ['profile'] });
+   * // Type: EntityDTO<User> (profile is number)
+   * const obj1 = result[0].toObject();
+   * // Type: EntityDTO<Loaded<User, 'profile'>> (profile is nested object)
+   * const obj2 = wrap(result[0]).toObject();
+   * ```
+   *
+   * Runtime values are correct in both cases - only the static types differ.
+   *
+   * @param ignoreFields - Array of field names to omit from the result.
+   */
   toObject<Entity extends this = this, Ignored extends EntityKey<Entity> = never>(ignoreFields: Ignored[]): Omit<EntityDTO<Entity>, Ignored>;
   toObject<Entity extends this = this, Ignored extends EntityKey<Entity> = never>(ignoreFields?: Ignored[]): Omit<EntityDTO<Entity>, Ignored> {
     return helper(this as Entity).toObject(ignoreFields!);
@@ -57,12 +115,9 @@ export abstract class BaseEntity {
     return EntityAssigner.assign(this as Entity, data as any, options) as any;
   }
 
-  init<
-    Entity extends this = this,
-    Hint extends string = never,
-    Fields extends string = '*',
-    Excludes extends string = never,
-  >(options?: FindOneOptions<Entity, Hint, Fields, Excludes>): Promise<Loaded<Entity, Hint, Fields, Excludes> | null> {
+  init<Entity extends this = this, Hint extends string = never, Fields extends string = '*', Excludes extends string = never>(
+    options?: FindOneOptions<Entity, Hint, Fields, Excludes>,
+  ): Promise<Loaded<Entity, Hint, Fields, Excludes> | null> {
     return helper(this as Entity).init(options);
   }
 
@@ -73,7 +128,6 @@ export abstract class BaseEntity {
   setSchema(schema?: string): void {
     helper(this).setSchema(schema);
   }
-
 }
 
 Object.defineProperty(BaseEntity.prototype, '__baseEntity', { value: true, writable: false, enumerable: false });

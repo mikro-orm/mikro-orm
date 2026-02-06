@@ -11,14 +11,7 @@
  */
 
 import { bench } from '@ark/attest';
-import {
-  type AutoPath,
-  type Loaded,
-  type Ref,
-  type Collection,
-  type PopulatePath,
-  PrimaryKeyProp,
-} from '@mikro-orm/core';
+import { type AutoPath, type Loaded, type Ref, type Collection, type PopulatePath, PrimaryKeyProp } from '@mikro-orm/core';
 
 // ============================================
 // LINEAR entity chain (no circular refs)
@@ -55,10 +48,9 @@ interface Person {
 // AutoPath with LINEAR entities
 // ============================================
 
-
-function validatePath<T, P extends string>(
-  _path: AutoPath<T, P, PopulatePath.ALL>,
-): void { /* empty */ }
+function validatePath<T, P extends string>(_path: AutoPath<T, P, PopulatePath.ALL>): void {
+  /* empty */
+}
 
 bench('AutoPath LINEAR - 1 level', () => {
   validatePath<Person, 'address'>('address');
@@ -92,9 +84,7 @@ bench('Loaded LINEAR - 2 levels (Ref)', () => {
 }).types([929, 'instantiations']);
 
 bench('Loaded LINEAR - 3 levels (Ref)', () => {
-  useLoaded<Person, 'address.city.country'>(
-    {} as Loaded<Person, 'address.city.country'>,
-  );
+  useLoaded<Person, 'address.city.country'>({} as Loaded<Person, 'address.city.country'>);
 }).types([929, 'instantiations']);
 
 // ============================================
@@ -161,9 +151,7 @@ bench('AutoPath CIRCULAR - 2 levels', () => {
 }).types([903, 'instantiations']);
 
 bench('AutoPath CIRCULAR - 3 levels', () => {
-  validatePath<Employee, 'department.manager.department'>(
-    'department.manager.department',
-  );
+  validatePath<Employee, 'department.manager.department'>('department.manager.department');
 }).types([951, 'instantiations']);
 
 bench('Loaded CIRCULAR - simple (Ref)', () => {
@@ -171,15 +159,11 @@ bench('Loaded CIRCULAR - simple (Ref)', () => {
 }).types([929, 'instantiations']);
 
 bench('Loaded CIRCULAR - 2 levels (Ref)', () => {
-  useLoaded<Employee, 'department.manager'>(
-    {} as Loaded<Employee, 'department.manager'>,
-  );
+  useLoaded<Employee, 'department.manager'>({} as Loaded<Employee, 'department.manager'>);
 }).types([929, 'instantiations']);
 
 bench('Loaded CIRCULAR - back to start (Ref)', () => {
-  useLoaded<Employee, 'department.manager.department'>(
-    {} as Loaded<Employee, 'department.manager.department'>,
-  );
+  useLoaded<Employee, 'department.manager.department'>({} as Loaded<Employee, 'department.manager.department'>);
 }).types([929, 'instantiations']);
 
 bench('Loaded CIRCULAR - collection', () => {
@@ -187,9 +171,7 @@ bench('Loaded CIRCULAR - collection', () => {
 }).types([923, 'instantiations']);
 
 bench('Loaded CIRCULAR - collection nested', () => {
-  useLoaded<Department, 'employees.department'>(
-    {} as Loaded<Department, 'employees.department'>,
-  );
+  useLoaded<Department, 'employees.department'>({} as Loaded<Department, 'employees.department'>);
 }).types([923, 'instantiations']);
 
 // ============================================
@@ -253,7 +235,5 @@ bench('Loaded WIDE - 5 refs no populate', () => {
 }).types([693, 'instantiations']);
 
 bench('Loaded WIDE - 5 refs all populated', () => {
-  useLoaded<WideWithRefs, 'r1' | 'r2' | 'r3' | 'r4' | 'r5'>(
-    {} as Loaded<WideWithRefs, 'r1' | 'r2' | 'r3' | 'r4' | 'r5'>,
-  );
+  useLoaded<WideWithRefs, 'r1' | 'r2' | 'r3' | 'r4' | 'r5'>({} as Loaded<WideWithRefs, 'r1' | 'r2' | 'r3' | 'r4' | 'r5'>);
 }).types([1961, 'instantiations']);

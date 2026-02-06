@@ -8,7 +8,6 @@ import {
   LockMode,
   type LockOptions,
   MikroORM,
-  type NoInfer,
 } from '@mikro-orm/sqlite';
 import { Entity, PrimaryKey, Property, ReflectMetadataProvider, Transactional } from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../../../bootstrap.js';

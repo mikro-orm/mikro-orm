@@ -85,7 +85,7 @@ const BookWithAuthor = new EntitySchema<IBookWithAuthor>({
   name: 'BookWithAuthor',
   expression: (em: EntityManager) => {
     return em.createQueryBuilder(Book4, 'b')
-      .select(['b.title', 'a.name as author_name', raw('group_concat(t.name) as tags')])
+      .select(['b.title', sql.ref('a.name').as('author_name'), sql`group_concat(t.name)`.as('tags')])
       .join('b.author', 'a')
       .join('b.tags', 't')
       .groupBy('b.id');
@@ -101,7 +101,7 @@ const BookWithAuthor2 = new EntitySchema<IBookWithAuthor>({
   name: 'BookWithAuthor2',
   expression: (em: EntityManager) => {
     return em.createQueryBuilder(Book4, 'b')
-      .select(['b.title', 'a.name as author_name', sql`group_concat(t.name) as tags`])
+      .select(['b.title', sql.ref('a.name').as('author_name'), sql`group_concat(t.name)`.as('tags')])
       .join('b.author', 'a')
       .join('b.tags', 't')
       .groupBy('b.id');
@@ -353,7 +353,7 @@ describe('virtual entities (sqlite)', () => {
     expect(someBooks4).toHaveLength(2);
     expect(someBooks4.map(p => p.title)).toEqual(['My Life on the Wall, part 1/2', 'My Life on the Wall, part 1/3']);
 
-    const sql = 'select `b`.`title`, `a`.`name` as `author_name`, group_concat(t.name) as tags ' +
+    const sql = 'select `b`.`title`, `a`.`name` as `author_name`, group_concat(t.name) as `tags` ' +
       'from `book4` as `b` ' +
       'inner join `author4` as `a` on `b`.`author_id` = `a`.`id` ' +
       'inner join `tags_ordered` as `t1` on `b`.`id` = `t1`.`book4_id` ' +

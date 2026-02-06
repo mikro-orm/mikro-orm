@@ -280,7 +280,7 @@ export class BasePostgreSqlPlatform extends AbstractSqlPlatform {
     return 'jsonb';
   }
 
-  override getSearchJsonPropertyKey(path: string[], type: string | undefined | Type, aliased: boolean, value?: unknown): string {
+  override getSearchJsonPropertyKey(path: string[], type: string | undefined | Type, aliased: boolean, value?: unknown): string | RawQueryFragment {
     const first = path.shift();
     const last = path.pop();
     const root = this.quoteIdentifier(aliased ? `${ALIAS_REPLACEMENT}.${first}` : first!);

@@ -200,7 +200,7 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
     }
   }
 
-  override getSearchJsonPropertyKey(path: string[], type: string, aliased: boolean, value?: unknown): string {
+  override getSearchJsonPropertyKey(path: string[], type: string, aliased: boolean, value?: unknown): string | RawQueryFragment {
     const [a, ...b] = path;
     /* v8 ignore next */
     const root = this.quoteIdentifier(aliased ? `${ALIAS_REPLACEMENT}.${a}` : a);

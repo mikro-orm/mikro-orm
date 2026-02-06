@@ -36,7 +36,7 @@ afterAll(async () => {
 });
 
 test('#5129', async () => {
-  const lengthOfTruncatedNameQuery = raw(
+  const lengthOfTruncatedNameQuery = raw<string>(
     alias => `length(substr(${alias}.name, 0, :maxLength))`,
     { maxLength: 3 },
   );
@@ -47,7 +47,6 @@ test('#5129', async () => {
     { orderBy: { [lengthOfTruncatedNameQuery]: 'ASC' } },
   );
 
-  expect(lengthOfTruncatedNameQuery.toJSON()).toBe(`raw('length(substr([::alias::].name, 0, ?))')`);
   expect(lengthOfTruncatedNameQuery.toString()).toBe(`[object raw('length(substr([::alias::].name, 0, ?))')]`);
 
   const e = new User('n', 'e');

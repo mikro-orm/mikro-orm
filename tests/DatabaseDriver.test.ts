@@ -2,9 +2,10 @@ import type {
   Connection,
   CountOptions,
   EntityData,
-  ObjectQuery,
+  FilterQuery,
   FindOneOptions,
   FindOptions,
+  ObjectQuery,
   Primary,
   QueryResult,
   Transaction,
@@ -14,27 +15,20 @@ import type {
   NativeInsertUpdateManyOptions,
   NativeInsertUpdateOptions,
   EntityName,
-  FilterQuery,
   StreamOptions,
 } from '@mikro-orm/core';
-import {
-  Configuration,
-  DatabaseDriver,
-  EntityManager,
-  EntityRepository,
-  LockMode,
-  Platform,
-} from '@mikro-orm/core';
+import { Configuration, DatabaseDriver, EntityManager, EntityRepository, LockMode, Platform } from '@mikro-orm/core';
 import { MongoDriver } from '@mikro-orm/mongodb';
 
-class Platform1 extends Platform { }
+class Platform1 extends Platform {}
 
 class Driver extends DatabaseDriver<Connection> implements IDatabaseDriver {
-
   protected override readonly platform = new Platform1();
 
-  constructor(override readonly config: Configuration,
-              dependencies: string[]) {
+  constructor(
+    override readonly config: Configuration,
+    dependencies: string[],
+  ) {
     super(config, dependencies);
   }
 
@@ -46,36 +40,55 @@ class Driver extends DatabaseDriver<Connection> implements IDatabaseDriver {
     throw new Error('Method not implemented.');
   }
 
-  async find<T extends object, P extends string = never, F extends string = '*', E extends string = never>(entityName: EntityName<T>, where: ObjectQuery<T>, options: FindOptions<T, P, F, E> | undefined): Promise<EntityData<T>[]> {
+  async find<T extends object, P extends string = never, F extends string = '*', E extends string = never>(
+    entityName: EntityName<T>,
+    where: ObjectQuery<T>,
+    options: FindOptions<T, P, F, E> | undefined,
+  ): Promise<EntityData<T>[]> {
     return [];
   }
 
-  async findOne<T extends object, P extends string = never, F extends string = '*', E extends string = never>(entityName: EntityName<T>, where: ObjectQuery<T>, options: FindOneOptions<T, P, F, E> | undefined): Promise<EntityData<T> | null> {
+  async findOne<T extends object, P extends string = never, F extends string = '*', E extends string = never>(
+    entityName: EntityName<T>,
+    where: ObjectQuery<T>,
+    options: FindOneOptions<T, P, F, E> | undefined,
+  ): Promise<EntityData<T> | null> {
     return null;
   }
 
-  async nativeDelete<T>(entityName: EntityName<T>, where: ObjectQuery<T>, ctx: Transaction | undefined): Promise<QueryResult<T>> {
+  async nativeDelete<T extends object>(entityName: EntityName<T>, where: FilterQuery<T>, ctx: Transaction | undefined): Promise<QueryResult<T>> {
     return { affectedRows: 0, insertId: 0 as Primary<T> };
   }
 
-  async nativeInsert<T extends AnyEntity<T>>(entityName: EntityName<T>, data: EntityDictionary<T>, options?: NativeInsertUpdateOptions<T>): Promise<QueryResult<T>> {
+  async nativeInsert<T extends AnyEntity<T>>(
+    entityName: EntityName<T>,
+    data: EntityDictionary<T>,
+    options?: NativeInsertUpdateOptions<T>,
+  ): Promise<QueryResult<T>> {
     return { affectedRows: 0, insertId: 0 as Primary<T> };
   }
 
-  async nativeInsertMany<T extends AnyEntity<T>>(entityName: EntityName<T>, data: EntityDictionary<T>[], options?: NativeInsertUpdateManyOptions<T>): Promise<QueryResult<T>> {
+  async nativeInsertMany<T extends AnyEntity<T>>(
+    entityName: EntityName<T>,
+    data: EntityDictionary<T>[],
+    options?: NativeInsertUpdateManyOptions<T>,
+  ): Promise<QueryResult<T>> {
     return { affectedRows: 0, insertId: 0 as Primary<T> };
   }
 
-  async nativeUpdate<T>(entityName: EntityName<T>, where: ObjectQuery<T>, data: EntityData<T>, ctx: Transaction | undefined): Promise<QueryResult<T>> {
+  async nativeUpdate<T extends object>(
+    entityName: EntityName<T>,
+    where: FilterQuery<T>,
+    data: EntityData<T>,
+    ctx: Transaction | undefined,
+  ): Promise<QueryResult<T>> {
     return { affectedRows: 0, insertId: 0 as Primary<T> };
   }
-
 }
 
 class Test {}
 
 describe('DatabaseDriver', () => {
-
   const config = new Configuration({ driver: MongoDriver, allowGlobalContext: true } as any, false);
   const driver = new Driver(config, []);
 
@@ -95,7 +108,8 @@ describe('DatabaseDriver', () => {
   test('not supported', async () => {
     expect(driver.getPlatform().supportsCreatingFullTextIndex()).toBe(false);
     expect(() => driver.getPlatform().getFullTextWhereClause({} as any)).toThrow('Full text searching is not supported by this driver.');
-    expect(() => driver.getPlatform().getFullTextIndexExpression({} as any, {} as any, {} as any, {} as any)).toThrow('Full text searching is not supported by this driver.');
+    expect(() => driver.getPlatform().getFullTextIndexExpression({} as any, {} as any, {} as any, {} as any)).toThrow(
+      'Full text searching is not supported by this driver.',
+    );
   });
-
 });

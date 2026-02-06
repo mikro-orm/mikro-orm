@@ -99,7 +99,7 @@ afterAll(async () => {
 test('should remove child entities', async () => {
   const parent = await orm.em.createQueryBuilder(ParentEntity, 'p')
     .leftJoinAndSelect('p.children', 'c')
-    .where({ id: 1 })
+    .where({ id: new Id('1') })
     .getSingleResult();
 
   parent!.children.removeAll();

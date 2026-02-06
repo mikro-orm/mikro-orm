@@ -6,7 +6,6 @@ import {
   type GetRepository,
   type TransactionOptions,
   type StreamOptions,
-  type NoInfer,
   type Loaded,
 } from '@mikro-orm/core';
 import type { Collection, Document, TransactionOptions as MongoTransactionOptions } from 'mongodb';

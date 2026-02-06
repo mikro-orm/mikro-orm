@@ -8,7 +8,7 @@ export class MsSqlQueryBuilder<
   Context extends object = never,
 > extends QueryBuilder<Entity, RootAlias, Hint, Context> {
 
-  override insert(data: RequiredEntityData<Entity> | RequiredEntityData<Entity>[]): InsertQueryBuilder<Entity> {
+  override insert(data: RequiredEntityData<Entity> | RequiredEntityData<Entity>[]): InsertQueryBuilder<Entity, RootAlias, Context> {
     this.checkIdentityInsert(data);
 
     if (!this.flags.has(QueryFlag.IDENTITY_INSERT) && this.metadata.has(this.mainAlias.entityName)) {

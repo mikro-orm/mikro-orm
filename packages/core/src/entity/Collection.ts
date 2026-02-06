@@ -356,9 +356,9 @@ export class Collection<T extends object, O extends object = object> {
       ...options,
       connectionType: options.connectionType,
       schema,
-      where: { [this.property.name]: options.where } as FilterQuery<TT>,
-      orderBy: { [this.property.name]: options.orderBy } as QueryOrderMap<TT>,
-    });
+      where: { [this.property.name]: options.where },
+      orderBy: { [this.property.name]: options.orderBy },
+    } as any);
 
     return this as unknown as LoadedCollection<Loaded<TT, P>>;
   }

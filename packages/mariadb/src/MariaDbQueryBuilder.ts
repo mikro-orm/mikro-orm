@@ -21,7 +21,7 @@ export class MariaDbQueryBuilder<
   protected override wrapPaginateSubQuery(meta: EntityMetadata): void {
     const pks = this.prepareFields(meta.primaryKeys, 'sub-query') as string[];
     const quotedPKs = pks.map(pk => this.platform.quoteIdentifier(pk));
-    const subQuery = this.clone(['_orderBy', '_fields']).select(pks).groupBy(pks).limit(this._limit!);
+    const subQuery = this.clone(['_orderBy', '_fields']).select(pks as any).groupBy(pks as any).limit(this._limit!);
     // revert the on conditions added via populateWhere, we want to apply those only once
     // @ts-ignore
     Object.values(subQuery._joins).forEach(join => join.cond = join.cond_ ?? {});
@@ -54,7 +54,7 @@ export class MariaDbQueryBuilder<
           }
 
           const key = raw(`min(${this.platform.quoteIdentifier(fieldName)}${type})`);
-          orderBy.push({ [key]: direction });
+          orderBy.push({ [key as any]: direction });
         }
       }
 
@@ -110,7 +110,7 @@ export class MariaDbQueryBuilder<
     const key = meta.getPrimaryProps()[0].runtimeType === 'string' ? `concat('"', ${quotedPKs.join(', ')}, '"')` : quotedPKs.join(', ');
     const sql = `json_contains((${subquerySql}), ${key})`;
     this._cond = {};
-    this.select(this._fields!).where(sql);
+    this.select(this._fields as any).where(sql);
   }
 
 }

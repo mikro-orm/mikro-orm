@@ -1,4 +1,4 @@
-import type { Dictionary, EntityKey, ExpandProperty } from './typings.js';
+import type { EntityKey, ExpandProperty } from './typings.js';
 import type { Transaction } from './connections/Connection.js';
 import type { LogContext } from './logging/Logger.js';
 
@@ -97,8 +97,6 @@ export type QueryOrderKeys<T> = QueryOrderKeysFlat | QueryOrderMap<T>;
 export type QueryOrderMap<T> = {
   [K in EntityKey<T>]?: QueryOrderKeys<ExpandProperty<T[K]>>;
 };
-
-export type QBQueryOrderMap<T> = QueryOrderMap<T> | Dictionary;
 
 export interface FlatQueryOrderMap {
   [x: string]: QueryOrderKeysFlat;

@@ -195,14 +195,7 @@ bench('polymorphic embeddables', () => {
     name: 'Document',
     tableName: 'documents',
     properties: {
-      data: () =>
-        p
-          .embedded([
-            documentDataAwEdCard,
-            documentDataCoCheckMig,
-            documentDataMvDiCard,
-          ])
-          .object(),
+      data: () => p.embedded([documentDataAwEdCard, documentDataCoCheckMig, documentDataMvDiCard]).object(),
     },
   });
 }).types([3469, 'instantiations']);

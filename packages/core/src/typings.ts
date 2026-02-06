@@ -57,7 +57,6 @@ export type IsUnknown<T> = T extends unknown ? unknown extends T ? true : never 
 export type IsAny<T> = 0 extends (1 & T) ? true : false;
 export type IsNever<T, True = true, False = false> = [T] extends [never] ? True : False;
 export type MaybePromise<T> = T | Promise<T>;
-export type NoInfer<T> = [T][T extends any ? 0 : never];
 
 /**
  * Structural type for matching Collection without triggering full interface evaluation.
@@ -94,8 +93,11 @@ type ReferenceShape<T = any> = { unwrap(): T };
 
 /**
  * Structural type for matching LoadedReference (Reference with `$` property).
+ * Note: We don't parameterize ReferenceShape here because for loaded relations,
+ * the Reference unwrap() returns the base type while $ returns the Loaded type.
+ * We infer T from $ to get the full Loaded type for EntityDTO.
  */
-type LoadedReferenceShape<T = any> = ReferenceShape<T> & { $: T };
+type LoadedReferenceShape<T = any> = ReferenceShape & { $: T };
 
 /**
  * Structural type for matching any loadable relation (Collection, Reference, or array).
@@ -108,16 +110,14 @@ type LoadableShape = CollectionShape | ReferenceShape | readonly any[];
 export type UnionKeys<T> = T extends any ? keyof T : never;
 
 // Get the type of property from all union members that have it
-export type UnionPropertyType<T, K extends PropertyKey> = T extends any
-  ? K extends keyof T ? T[K] : never
-  : never;
+export type UnionPropertyType<T, K extends PropertyKey> = T extends any ? (K extends keyof T ? T[K] : never) : never;
+
+// Check if T is a union type (non-distributing check)
+type IsUnion<T, U = T> = T extends any ? ([U] extends [T] ? false : true) : false;
 
 // Merge all union member properties into a single object for filtering
-export type MergeUnion<T> = [T] extends [object]
-  ? T extends Scalar
-    ? T
-    : { [K in UnionKeys<T>]: UnionPropertyType<T, K> }
-  : T;
+// Optimized: for non-union types, just returns T directly to avoid expensive key iteration
+export type MergeUnion<T> = [T] extends [object] ? (T extends Scalar ? T : IsUnion<T> extends true ? { [K in UnionKeys<T>]: UnionPropertyType<T, K> } : T) : T;
 
 export type DeepPartial<T> = T & {
   [P in keyof T]?: T[P] extends (infer U)[]
@@ -140,7 +140,7 @@ export declare namespace Opt {
   // eslint-disable-next-line @typescript-eslint/naming-convention
   const __optional: unique symbol;
   export interface Brand {
-      [__optional]?: 1;
+    [__optional]?: 1;
   }
 }
 
@@ -150,7 +150,7 @@ export declare namespace RequiredNullable {
   // eslint-disable-next-line @typescript-eslint/naming-convention
   const __requiredNullable: unique symbol;
   export interface Brand {
-      [__requiredNullable]?: 1;
+    [__requiredNullable]?: 1;
   }
 }
 
@@ -160,7 +160,7 @@ export declare namespace Hidden {
   // eslint-disable-next-line @typescript-eslint/naming-convention
   const __hidden: unique symbol;
   export interface Brand {
-      [__hidden]?: 1;
+    [__hidden]?: 1;
   }
 }
 
@@ -170,7 +170,7 @@ export declare namespace DefineConfig {
   // eslint-disable-next-line @typescript-eslint/naming-convention
   const __config: unique symbol;
   export interface Brand {
-      [__config]?: 1;
+    [__config]?: 1;
   }
 }
 
@@ -258,27 +258,32 @@ export type ExpandScalar<T> = null | (T extends string
       ? bigint | string | number
       : T);
 
+/** Marker interface for query builders that can be used as subqueries */
+export interface Subquery {
+  readonly __subquery: true;
+}
+
 export type OperatorMap<T> = {
   $and?: ExpandQuery<T>[];
   $or?: ExpandQuery<T>[];
-  $eq?: ExpandScalar<T> | readonly ExpandScalar<T>[];
-  $ne?: ExpandScalar<T>;
-  $in?: readonly ExpandScalar<T>[];
-  $nin?: readonly ExpandScalar<T>[];
+  $eq?: ExpandScalar<T> | readonly ExpandScalar<T>[] | Subquery;
+  $ne?: ExpandScalar<T> | readonly ExpandScalar<T>[] | Subquery;
+  $in?: readonly ExpandScalar<T>[] | readonly Primary<T>[] | Raw | Subquery;
+  $nin?: readonly ExpandScalar<T>[] | readonly Primary<T>[] | Raw | Subquery;
   $not?: ExpandQuery<T>;
   $none?: ExpandQuery<T>;
   $some?: ExpandQuery<T>;
   $every?: ExpandQuery<T>;
   $size?: number | { $eq?: number; $ne?: number; $gt?: number; $gte?: number; $lt?: number; $lte?: number };
-  $gt?: ExpandScalar<T>;
-  $gte?: ExpandScalar<T>;
-  $lt?: ExpandScalar<T>;
-  $lte?: ExpandScalar<T>;
+  $gt?: ExpandScalar<T> | readonly ExpandScalar<T>[] | Subquery;
+  $gte?: ExpandScalar<T> | readonly ExpandScalar<T>[] | Subquery;
+  $lt?: ExpandScalar<T> | readonly ExpandScalar<T>[] | Subquery;
+  $lte?: ExpandScalar<T> | readonly ExpandScalar<T>[] | Subquery;
   $like?: string;
   $re?: string;
   $ilike?: string;
   $fulltext?: string;
-  $overlap?:  readonly string[] | string | object;
+  $overlap?: readonly string[] | string | object;
   $contains?: readonly string[] | string | object;
   $contained?: readonly string[] | string | object;
   $exists?: boolean;
@@ -287,7 +292,7 @@ export type OperatorMap<T> = {
   $hasSomeKeys?: readonly string[];
 };
 
-export type FilterItemValue<T> = T | ExpandScalar<T> | Primary<T>;
+export type FilterItemValue<T> = T | ExpandScalar<T> | Primary<T> | Raw;
 export type FilterValue<T> = OperatorMap<FilterItemValue<T>> | FilterItemValue<T> | FilterItemValue<T>[] | null;
 
 type FilterObjectProp<T, K extends PropertyKey> = K extends keyof MergeUnion<T>
@@ -318,7 +323,6 @@ export type FilterQuery<T> =
   | NonNullable<ExpandScalar<Primary<T>>>
   | NonNullable<EntityProps<T> & OperatorMap<T>>
   | FilterQuery<T>[];
-export type QBFilterQuery<T = any> = ObjectQuery<T> | Dictionary;
 
 export interface IWrappedEntity<Entity extends object> {
   isInitialized(): boolean;
@@ -455,8 +459,8 @@ export type EntityDataNested<T, C extends boolean = false> = T extends undefined
     ? Readonly<T>
     : EntityData<T, C> | ExpandEntityProp<T, C>;
 type EntityDataItem<T, C extends boolean> = C extends false
-  ? T | EntityDataProp<T, C> | null
-  : EntityDataProp<T, C> | null;
+  ? T | EntityDataProp<T, C> | Raw | null
+  : EntityDataProp<T, C> | Raw | null;
 
 export type RequiredEntityDataNested<T, O, C extends boolean> = T extends any[]
   ? Readonly<T>
@@ -478,9 +482,9 @@ type RequiredKeys<T, K extends keyof T, I> = IsOptional<T, K, I> extends false ?
 type OptionalKeys<T, K extends keyof T, I> = IsOptional<T, K, I> extends false ? never : CleanKeys<T, K>;
 export type EntityData<T, C extends boolean = false> = { [K in EntityKey<T>]?: EntityDataItem<T[K] & {}, C> };
 export type RequiredEntityData<T, I = never, C extends boolean = false> = {
-  [K in keyof T as RequiredKeys<T, K, I>]: T[K] | RequiredEntityDataProp<T[K], T, C> | Primary<T[K]>
+  [K in keyof T as RequiredKeys<T, K, I>]: T[K] | RequiredEntityDataProp<T[K], T, C> | Primary<T[K]> | Raw
 } & {
-  [K in keyof T as OptionalKeys<T, K, I>]?: T[K] | RequiredEntityDataProp<T[K], T, C> | Primary<T[K]> | null
+  [K in keyof T as OptionalKeys<T, K, I>]?: T[K] | RequiredEntityDataProp<T[K], T, C> | Primary<T[K]> | Raw | null
 };
 export type EntityDictionary<T> = EntityData<T> & Record<any, any>;
 
@@ -574,13 +578,13 @@ export type FormulaTable = { alias: string; name: string; schema?: string; quali
 export type IndexCallback<T> = (table: TableName, columns: Record<PropertyName<T>, string>, indexName: string) => string | Raw;
 export type FormulaCallback<T> = (table: FormulaTable, columns: Record<PropertyName<T>, string>) => string;
 
-export type CheckCallback<T> = (columns: Record<PropertyName<T>, string>) => string;
+export type CheckCallback<T> = (columns: Record<PropertyName<T>, string>) => string | Raw;
 export type GeneratedColumnCallback<T> = (columns: Record<keyof T, string>) => string;
 
 export interface CheckConstraint<T = any> {
   name?: string;
   property?: string;
-  expression: string | CheckCallback<T>;
+  expression: string | Raw | CheckCallback<T>;
 }
 
 export type AnyString = string & {};
@@ -1365,9 +1369,7 @@ export type MergeSelected<T, U, F extends string> =
  * Used for `em.populate` and `em.refresh`.
  */
 export type MergeLoaded<T, U, P extends string, F extends string, E extends string, R extends boolean = false> =
-  IsLoadedType<T> extends true
-    ? T & Loaded<U, P, F, E>
-    : Loaded<T, P, F, E>;
+  IsLoadedType<T> extends true ? T & Loaded<U, P, F, E> : Loaded<T, P, F, E>;
 
 export type AddOptional<T> = undefined | null extends T ? null | undefined : null extends T ? null : undefined extends T ? undefined : never;
 type LoadedProp<T, L extends string = never, F extends string = '*', E extends string = never> = LoadedLoadable<T, Loaded<ExtractType<T>, L, F, E>>;
@@ -1384,18 +1386,20 @@ type LoadedEntityType<T> = { [__loadedType]?: T } | { [__selectedType]?: T };
 export type EntityType<T> = T | LoadedEntityType<T>;
 export type FromEntityType<T> = T extends LoadedEntityType<infer U> ? U : T;
 
-type LoadedInternal<T, L extends string = never, F extends string = '*', E extends string = never> =
-  [F] extends ['*']
-    ? IsNever<E> extends true
-      ? T & { [K in keyof T as IsPrefixed<T, K, ExpandHint<T, L>>]: LoadedProp<NonNullable<T[K]>, Suffix<K, L>, Suffix<K, F>, Suffix<K, E>> | AddOptional<T[K]>; }
-      : { [K in keyof T as IsPrefixed<T, K, ExpandHint<T, L>, E>]: LoadedProp<NonNullable<T[K]>, Suffix<K, L>, Suffix<K, F>, Suffix<K, E>> | AddOptional<T[K]>; }
-    : Selected<T, L, F>;
+type LoadedInternal<T, L extends string = never, F extends string = '*', E extends string = never> = [F] extends ['*']
+  ? IsNever<E> extends true
+    ? T & { [K in keyof T as IsPrefixed<T, K, ExpandHint<T, L>>]: LoadedProp<NonNullable<T[K]>, Suffix<K, L>, Suffix<K, F>, Suffix<K, E>> | AddOptional<T[K]> }
+    : { [K in keyof T as IsPrefixed<T, K, ExpandHint<T, L>, E>]: LoadedProp<NonNullable<T[K]>, Suffix<K, L>, Suffix<K, F>, Suffix<K, E>> | AddOptional<T[K]> }
+  : Selected<T, L, F>;
 
 /**
  * Represents entity with its loaded relations (`populate` hint) and selected properties (`fields` hint).
  * The __loadHint marker uses contravariance to ensure Loaded<A, 'b'> is NOT assignable to Loaded<A, 'b.c'>.
  */
-export type Loaded<T, L extends string = never, F extends string = '*', E extends string = never> = LoadedInternal<T, L, F, E> & { [__loadedType]?: T; [__loadHint]?: (hint: Prefixes<L>) => void };
+export type Loaded<T, L extends string = never, F extends string = '*', E extends string = never> = LoadedInternal<T, L, F, E> & {
+  [__loadedType]?: T;
+  [__loadHint]?: (hint: Prefixes<L>) => void;
+};
 
 export interface LoadedReference<T> extends Reference<NonNullable<T>> {
   $: NonNullable<T>;
@@ -1429,7 +1433,6 @@ export interface IMetadataStorage {
 }
 
 export interface IHydrator {
-
   /**
    * Hydrates the whole entity. This process handles custom type conversions, creating missing Collection instances,
    * mapping FKs to entity instances, as well as merging those entities.
@@ -1450,10 +1453,18 @@ export interface IHydrator {
   /**
    * Hydrates primary keys only
    */
-  hydrateReference<T extends object>(entity: T, meta: EntityMetadata<T>, data: EntityData<T>, factory: EntityFactory, convertCustomTypes?: boolean, schema?: string, parentSchema?: string, normalizeAccessors?: boolean): void;
+  hydrateReference<T extends object>(
+    entity: T,
+    meta: EntityMetadata<T>,
+    data: EntityData<T>,
+    factory: EntityFactory,
+    convertCustomTypes?: boolean,
+    schema?: string,
+    parentSchema?: string,
+    normalizeAccessors?: boolean,
+  ): void;
 
   isRunning(): boolean;
-
 }
 
 export interface HydratorConstructor {
@@ -1477,7 +1488,14 @@ export type MetadataProcessor = (metadata: EntityMetadata[], platform: Platform)
 
 export type MaybeReturnType<T> = T extends (...args: any[]) => infer R ? R : T;
 
-export interface EntitySchemaWithMeta<TName extends string = string, TTableName extends string = string, TEntity = any, TBase = never, TProperties extends Record<string, any> = Record<string, any>, TClass extends EntityCtor = EntityCtor<TEntity>> extends EntitySchema<TEntity, TBase, TClass> {
+export interface EntitySchemaWithMeta<
+  TName extends string = string,
+  TTableName extends string = string,
+  TEntity = any,
+  TBase = never,
+  TProperties extends Record<string, any> = Record<string, any>,
+  TClass extends EntityCtor = EntityCtor<TEntity>,
+> extends EntitySchema<TEntity, TBase, TClass> {
   readonly name: TName;
   readonly properties: TProperties;
   readonly tableName: TTableName;
@@ -1486,8 +1504,10 @@ export interface EntitySchemaWithMeta<TName extends string = string, TTableName 
 }
 
 // Fast path: direct property access avoids pattern matching against 6-parameter generic
-export type InferEntity<Schema> =
-  Schema extends { '~entity': infer E } ? E :
-  Schema extends EntitySchema<infer Entity> ? Entity :
-  Schema extends EntityClass<infer Entity> ? Entity :
-  Schema;
+export type InferEntity<Schema> = Schema extends { '~entity': infer E }
+  ? E
+  : Schema extends EntitySchema<infer Entity>
+    ? Entity
+    : Schema extends EntityClass<infer Entity>
+      ? Entity
+      : Schema;

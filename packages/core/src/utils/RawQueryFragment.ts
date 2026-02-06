@@ -7,12 +7,12 @@ export type RawQueryFragmentSymbol = symbol & {
   readonly [rawFragmentSymbolBrand]: true;
 };
 
-export class RawQueryFragment {
+export class RawQueryFragment<Alias extends string = string> {
 
-  // holds a weak reference to fragments used as object keys
   static #rawQueryReferences = new WeakMap<RawQueryFragmentSymbol, RawQueryFragment>();
-
   #key?: RawQueryFragmentSymbol;
+  /** @internal Type-level only - used to track the alias for type inference */
+  private declare readonly __alias?: Alias;
 
   constructor(readonly sql: string, readonly params: unknown[] = []) {}
 
@@ -25,8 +25,8 @@ export class RawQueryFragment {
     return this.#key;
   }
 
-  as(alias: string): RawQueryFragment {
-    return new RawQueryFragment(`${this.sql} as ??`, [...this.params, alias]);
+  as<A extends string>(alias: A): RawQueryFragment<A> {
+    return new RawQueryFragment<A>(`${this.sql} as ??`, [...this.params, alias]);
   }
 
   [Symbol.toPrimitive](hint: 'string'): RawQueryFragmentSymbol;
@@ -163,7 +163,7 @@ export const ALIAS_REPLACEMENT_RE = '\\[::alias::\\]';
  * export class Author { ... }
  * ```
  */
-export function raw<T extends object = any, R = any>(sql: EntityKey<T> | EntityKey<T>[] | AnyString | ((alias: string) => string) | RawQueryFragment, params?: readonly unknown[] | Dictionary<unknown>): NoInfer<R> {
+export function raw<R = RawQueryFragment & symbol, T extends object = any>(sql: EntityKey<T> | EntityKey<T>[] | AnyString | ((alias: string) => string) | RawQueryFragment, params?: readonly unknown[] | Dictionary<unknown>): R {
   if (sql instanceof RawQueryFragment) {
     return sql as R;
   }
@@ -209,24 +209,27 @@ export function raw<T extends object = any, R = any>(sql: EntityKey<T> | EntityK
  *
  * // value can be empty array
  * await em.find(User, { [sql`(select 1 = 1)`]: [] });
+ *
+ * // with type parameter for assignment without casting
+ * entity.date = sql<Date>`now()`;
  * ```
  */
-export function sql(sql: readonly string[], ...values: unknown[]) {
-  return raw(sql.join('?'), values);
+export function sql<R = RawQueryFragment & symbol>(sql: readonly string[], ...values: unknown[]): R {
+  return raw<R>(sql.join('?'), values);
 }
 
-export function createSqlFunction<T extends object, R = string>(func: string, key: string | ((alias: string) => string)): R {
+export function createSqlFunction<R = RawQueryFragment & symbol, T extends object = any>(func: string, key: string | ((alias: string) => string)): R {
   if (typeof key === 'string') {
-    return raw<T, R>(`${func}(${key})`);
+    return raw<R, T>(`${func}(${key})`);
   }
 
-  return raw<T, R>(a => `${func}(${(key(a))})`);
+  return raw<R, T>(a => `${func}(${(key(a))})`);
 }
 
-sql.ref = <T extends object>(...keys: string[]) => raw<T, RawQueryFragment>('??', [keys.join('.')]);
-sql.now = (length?: number) => raw<Date, string>('current_timestamp' + (length == null ? '' : `(${length})`));
-sql.lower = <T extends object>(key: string | ((alias: string) => string)) => createSqlFunction('lower', key);
-sql.upper = <T extends object>(key: string | ((alias: string) => string)) => createSqlFunction('upper', key);
+sql.ref = <T extends object = any>(...keys: string[]) => raw<RawQueryFragment & symbol, T>('??', [keys.join('.')]);
+sql.now = (length?: number) => raw('current_timestamp' + (length == null ? '' : `(${length})`));
+sql.lower = <R = RawQueryFragment & symbol, T extends object = any>(key: string | ((alias: string) => string)) => createSqlFunction<R, T>('lower', key);
+sql.upper = <R = RawQueryFragment & symbol, T extends object = any>(key: string | ((alias: string) => string)) => createSqlFunction<R, T>('upper', key);
 
 /**
  * Tag function providing quoting of db identifiers (table name, columns names, index names, ...).
@@ -236,7 +239,7 @@ sql.upper = <T extends object>(key: string | ((alias: string) => string)) => cre
  * ```ts
  * // On postgres, will produce: create index "index custom_idx_on_name" on "library.author" ("name")
  * // On mysql, will produce: create index `index custom_idx_on_name` on `library.author` (`name`)
- * @Index({ name: 'custom_idx_on_name', expression: (table, columns) => quote`create index ${'custom_idx_on_name'} on ${table} (${columns.name})` })
+ * @Index({ name: 'custom_idx_on_name', expression: (table, columns, indexName) => quote`create index ${indexName} on ${table} (${columns.name})` })
  * @Entity({ schema: 'library' })
  * export class Author { ... }
  * ```

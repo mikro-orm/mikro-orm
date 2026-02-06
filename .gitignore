@@ -18,3 +18,4 @@ COVERAGE_RESULT
 .yarn/*
 !.yarn/patches
 .eslintcache
+.attest

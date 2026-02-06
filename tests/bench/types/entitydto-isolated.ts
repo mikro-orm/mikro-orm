@@ -5,14 +5,7 @@
  */
 
 import { bench } from '@ark/attest';
-import {
-  type EntityDTO,
-  type Loaded,
-  type Ref,
-  type Collection,
-  PrimaryKeyProp,
-  OptionalProps,
-} from '@mikro-orm/core';
+import { type EntityDTO, type Loaded, type Ref, type Collection, PrimaryKeyProp, OptionalProps } from '@mikro-orm/core';
 
 // Simple entity without relations
 interface SimpleEntity {
@@ -72,32 +65,17 @@ bench('EntityDTO<Loaded<EntityWithRef>> - loaded with Ref', () => {
   useDTO<Loaded<EntityWithRef>>({} as EntityDTO<Loaded<EntityWithRef>>);
 }).types([1934, 'instantiations']);
 
-bench(
-  'EntityDTO<Loaded<EntityWithRef, "parent">> - loaded with populated Ref',
-  () => {
-    useDTO<Loaded<EntityWithRef, 'parent'>>(
-      {} as EntityDTO<Loaded<EntityWithRef, 'parent'>>,
-    );
-  },
-).types([2415, 'instantiations']);
+bench('EntityDTO<Loaded<EntityWithRef, "parent">> - loaded with populated Ref', () => {
+  useDTO<Loaded<EntityWithRef, 'parent'>>({} as EntityDTO<Loaded<EntityWithRef, 'parent'>>);
+}).types([2415, 'instantiations']);
 
-bench(
-  'EntityDTO<Loaded<EntityWithCollection>> - loaded with Collection',
-  () => {
-    useDTO<Loaded<EntityWithCollection>>(
-      {} as EntityDTO<Loaded<EntityWithCollection>>,
-    );
-  },
-).types([1748, 'instantiations']);
+bench('EntityDTO<Loaded<EntityWithCollection>> - loaded with Collection', () => {
+  useDTO<Loaded<EntityWithCollection>>({} as EntityDTO<Loaded<EntityWithCollection>>);
+}).types([1748, 'instantiations']);
 
-bench(
-  'EntityDTO<Loaded<EntityWithCollection, "items">> - loaded with populated Collection',
-  () => {
-    useDTO<Loaded<EntityWithCollection, 'items'>>(
-      {} as EntityDTO<Loaded<EntityWithCollection, 'items'>>,
-    );
-  },
-).types([2380, 'instantiations']);
+bench('EntityDTO<Loaded<EntityWithCollection, "items">> - loaded with populated Collection', () => {
+  useDTO<Loaded<EntityWithCollection, 'items'>>({} as EntityDTO<Loaded<EntityWithCollection, 'items'>>);
+}).types([2380, 'instantiations']);
 
 // ============================================
 // Comparison: EntityDTO vs direct Loaded
@@ -107,7 +85,5 @@ bench(
 function useLoaded<T, L extends string = never>(_entity: Loaded<T, L>): void {}
 
 bench('Loaded<EntityWithCollection, "items"> - without EntityDTO', () => {
-  useLoaded<EntityWithCollection, 'items'>(
-    {} as Loaded<EntityWithCollection, 'items'>,
-  );
+  useLoaded<EntityWithCollection, 'items'>({} as Loaded<EntityWithCollection, 'items'>);
 }).types([901, 'instantiations']);

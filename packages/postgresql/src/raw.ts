@@ -1,5 +1,8 @@
-import { type AnyString, type Dictionary, type EntityKey, type RawQueryFragment, type QueryBuilder, raw as raw_, Utils } from '@mikro-orm/sql';
-import type { SelectQueryBuilder } from 'kysely';
+import { type AnyString, type Dictionary, type EntityKey, type RawQueryFragment, raw as raw_, Utils } from '@mikro-orm/sql';
+import type { SelectQueryBuilder as KyselySelectQueryBuilder } from 'kysely';
+
+/** @internal Type for QueryBuilder instances passed to raw() - uses toRaw to distinguish from Kysely QueryBuilder */
+type QueryBuilderLike = { toQuery(): { sql: string; params: readonly unknown[] }; toRaw(): RawQueryFragment };
 
 /**
  * Creates raw SQL query fragment that can be assigned to a property or part of a filter. This fragment is represented
@@ -56,12 +59,15 @@ import type { SelectQueryBuilder } from 'kysely';
  * export class Author { ... }
  * ```
  */
-export function raw<T extends object = any, R = any>(sql: SelectQueryBuilder<any, any, any> | QueryBuilder<T> | EntityKey<T> | EntityKey<T>[] | AnyString | ((alias: string) => string) | RawQueryFragment, params?: readonly unknown[] | Dictionary<unknown>): NoInfer<R> {
-  if (Utils.isObject<SelectQueryBuilder<any, any, any>>(sql) && 'compile' in sql) {
+export function raw<R = RawQueryFragment & symbol, T extends object = any>(
+  sql: QueryBuilderLike | KyselySelectQueryBuilder<any, any, any> | EntityKey<T> | EntityKey<T>[] | AnyString | ((alias: string) => string) | RawQueryFragment,
+  params?: readonly unknown[] | Dictionary<unknown>,
+): R {
+  if (Utils.isObject<KyselySelectQueryBuilder<any, any, any>>(sql) && 'compile' in sql) {
     const query = sql.compile();
     const processed = query.sql.replaceAll(/\$\d+/g, '?');
-    return raw_(processed, query.parameters);
+    return raw_(processed, query.parameters) as R;
   }
 
-  return raw_(sql, params);
+  return raw_(sql, params) as R;
 }

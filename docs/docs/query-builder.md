@@ -439,6 +439,60 @@ const authors = await em.createQueryBuilder(Author, 'a')
   .getResultList();
 ```
 
+## Using `having()` with aggregates
+
+When using `groupBy()`, you can filter the grouped results with `having()`. The `having()` method accepts either a string with parameters or an object condition:
+
+```ts
+// String-based having
+const qb1 = em.createQueryBuilder(BookTag, 't')
+  .select(['t.*', sql`count(t.id)`.as('book_count')])
+  .leftJoin('t.books', 'b')
+  .groupBy('t.id')
+  .having('count(t.id) > ?', [5]);
+```
+
+```sql
+select `t`.*, count(t.id) as `book_count`
+from `book_tag` as `t`
+left join `book_tags` as `e1` on `t`.`id` = `e1`.`book_tag_id`
+group by `t`.`id`
+having count(t.id) > 5
+```
+
+### Type-safe `having()` with raw aliases
+
+When you use `sql`...`.as('alias')` to create an aliased aggregate in your select, the alias becomes available as a type-safe key in `having()`:
+
+```ts
+const qb = em.createQueryBuilder(BookTag, 't')
+  .leftJoin('t.books', 'b')
+  .select(['t.*', 'b.*', sql`count(t.id)`.as('tag_count')])
+  .groupBy(['b.uuid', 't.id'])
+  .having({ tag_count: { $gt: 0, $lt: 100 } }); // 'tag_count' is type-checked!
+```
+
+```sql
+select `t`.*, `b`.*, count(t.id) as `tag_count`
+from `book_tag` as `t`
+left join `book_tags` as `e1` on `t`.`id` = `e1`.`book_tag_id`
+left join `book` as `b` on `e1`.`book_uuid` = `b`.`uuid`
+group by `b`.`uuid`, `t`.`id`
+having `tag_count` > 0 and `tag_count` < 100
+```
+
+You can also use joined table aliases in `having()`:
+
+```ts
+const qb = em.createQueryBuilder(BookTag, 't')
+  .leftJoin('t.books', 'b')
+  .select(['t.*', sql`count(t.id)`.as('tags')])
+  .groupBy(['b.uuid', 't.id'])
+  .having({ 'b.title': { $like: '%test%' }, 't.name': { $ne: null } });
+```
+
+The `andHaving()` and `orHaving()` methods are also available for combining multiple having conditions.
+
 ## Overriding FROM clause
 
 You can specify the table used in the `FROM` clause, replacing the current table name if one has already been specified. This is typically used to specify a sub-query expression in SQL.

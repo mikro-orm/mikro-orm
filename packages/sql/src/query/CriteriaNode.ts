@@ -28,7 +28,7 @@ export class CriteriaNode<T extends object> implements ICriteriaNode<T> {
     readonly entityName: EntityName<T>,
     readonly parent?: ICriteriaNode<T>,
     readonly key?: EntityKey<T> | RawQueryFragmentSymbol,
-    validate = true,
+    readonly validate = true,
     readonly strict = false,
   ) {
     const meta = parent && metadata.find<T>(parent.entityName);
