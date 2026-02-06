@@ -236,6 +236,31 @@ ORM extensions are now registered before the metadata discovery process. If you 
 
 This env var is needed only for the CLI, it used to be respected in the async `init` method too, which was no longer necessary with the driver-specific exports of the `MikroORM` object, that infer the `driver` option automatically. The env var will still work in the CLI.
 
+## Environment variables no longer override explicit config
+
+Previously, environment variables always had the highest precedence — they would override both the config file and explicit options passed to `MikroORM.init()` or the `MikroORM` constructor. This meant that a stale `MIKRO_ORM_HOST` env var could silently override an explicitly provided `host` option.
+
+In v7, the priority order is: explicit options > env vars > config file > defaults. Environment variables still override the config file (which is the typical use case for per-environment overrides), but explicit options passed programmatically always win.
+
+```ts
+// v6: env var MIKRO_ORM_HOST=db.prod.internal would override the host below
+// v7: the explicit host option wins, env var is ignored
+const orm = await MikroORM.init({
+  host: 'localhost',
+  // ...
+});
+```
+
+Note that when you import your config file and pass it to `MikroORM.init(config)`, all values from the config file are treated as explicit options, so env vars won't override them. If you want to restore the v6 behavior where env vars always win, use the `preferEnvVars` option:
+
+```ts
+export default defineConfig({
+  preferEnvVars: true,
+  host: 'localhost',
+  // MIKRO_ORM_HOST env var will override 'localhost'
+});
+```
+
 ## `--config` support removed
 
 The command line argument `--config` is no longer supported outside the CLI. Use `MIKRO_ORM_CLI_CONFIG` env var instead.

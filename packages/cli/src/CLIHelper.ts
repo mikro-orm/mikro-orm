@@ -55,7 +55,7 @@ export class CLIHelper {
     const result = await this.getConfigFile(paths);
     if (!result[0]) {
       if (Utils.hasObjectKeys(env)) {
-        return new Configuration(Utils.mergeConfig({ contextName }, options, env));
+        return new Configuration(Utils.mergeConfig({ contextName }, options.preferEnvVars ? options : env, options.preferEnvVars ? env : options));
       }
       throw new Error(`MikroORM config file not found in ['${paths.join(`', '`)}']`);
     }
@@ -107,7 +107,8 @@ export class CLIHelper {
     const esmConfigOptions = this.isESM() ? { entityGenerator: { esmImport: true } } : {};
     await loadOptionalDependencies(tmp);
 
-    return new Configuration(Utils.mergeConfig({}, esmConfigOptions, tmp, options, env));
+    const preferEnvVars = options.preferEnvVars ?? tmp.preferEnvVars;
+    return new Configuration(Utils.mergeConfig({}, esmConfigOptions, tmp, preferEnvVars ? options : env, preferEnvVars ? env : options));
   }
 
   static commonJSCompat(options: Partial<Options>): void {

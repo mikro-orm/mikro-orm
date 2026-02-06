@@ -197,7 +197,7 @@ describe('MikroORM', () => {
     await orm.close();
   });
 
-  test('should prefer environment variables 1', async () => {
+  test('should use environment variables as defaults, but prefer explicit options', async () => {
     process.env.MIKRO_ORM_BASE_DIR = './tests';
     process.env.MIKRO_ORM_TYPE = 'sqlite';
     process.env.MIKRO_ORM_ENTITIES = './entities-schema';
@@ -222,7 +222,7 @@ describe('MikroORM', () => {
     expect(orm.config.getAll()).toMatchObject({
       driver: SqliteDriver,
       entities: ['./entities-schema'],
-      host: '123.0.0.4', // env vars have preference
+      host: '123.0.0.321', // explicit options have preference over env vars
       port: 1234,
       user: 'string',
       password: 'lol',
@@ -234,6 +234,27 @@ describe('MikroORM', () => {
       migrations: { path: './dist/migrations', glob: '*.js' },
     });
     expect([...orm.getMetadata().getAll().keys()].map(k => k.name).sort()).toEqual(['Author4', 'Book4', 'BookTag4', 'FooBar4', 'FooBaz4', 'Identity', 'Publisher4', 'Test4', 'User4', 'publisher4_tests', 'tags_ordered', 'tags_unordered']);
+  });
+
+  test('should prefer environment variables with preferEnvVars option', async () => {
+    process.env.MIKRO_ORM_BASE_DIR = './tests';
+    process.env.MIKRO_ORM_ENTITIES = './entities-schema';
+    process.env.MIKRO_ORM_HOST = '123.0.0.4';
+    process.env.MIKRO_ORM_DB_NAME = ':memory:';
+
+    const orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
+      driver: SqliteDriver,
+      host: '123.0.0.321',
+      preferEnvVars: true,
+    });
+    Object.keys(process.env).filter(k => k.startsWith('MIKRO_ORM_')).forEach(k => delete process.env[k]);
+
+    expect(orm).toBeInstanceOf(MikroORM);
+    expect(orm.config.getAll()).toMatchObject({
+      host: '123.0.0.4', // env vars win with preferEnvVars
+      dbName: ':memory:',
+    });
   });
 
   test('should work with dynamic passwords/tokens [mysql]', async () => {
