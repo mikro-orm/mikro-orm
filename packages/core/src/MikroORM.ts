@@ -133,7 +133,9 @@ export class MikroORM<
    */
   constructor(options: Options<Driver, EM, Entities>) {
     const env = loadEnvironmentVars();
-    options = Utils.merge(options, env);
+    options = options.preferEnvVars
+      ? Utils.merge(options, env)
+      : Utils.merge(env, options);
     this.config = new Configuration(options);
     const discovery = this.config.get('discovery');
     this.driver = this.config.getDriver();

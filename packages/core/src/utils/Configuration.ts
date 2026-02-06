@@ -992,6 +992,12 @@ export interface Options<
    */
   allowGlobalContext?: boolean;
   /**
+   * When enabled, environment variables take precedence over explicitly provided config options.
+   * By default, explicit options win over env vars.
+   * @default false
+   */
+  preferEnvVars?: boolean;
+  /**
    * Disable the identity map.
    * When disabled, each query returns new entity instances.
    * Not recommended for most use cases.

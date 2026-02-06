@@ -662,7 +662,17 @@ The full list of deprecation warnings:
 
 ## Using environment variables
 
-Most of the ORM options can be configured via environment variables. Environment variables always have precedence over the ORM config.
+Most of the ORM options can be configured via environment variables. Environment variables override the config file, but explicit options passed to `MikroORM.init()` or the `MikroORM` constructor always have the highest precedence. The full priority order (highest to lowest) is: explicit options > env vars > config file > defaults.
+
+Note that when you import your config file and pass it to `MikroORM.init(config)`, all values from the config file are treated as explicit options, so env vars won't override them. If you want env vars to take precedence over the config (e.g. for per-environment overrides in deployment), enable the `preferEnvVars` option:
+
+```ts
+export default defineConfig({
+  preferEnvVars: true,
+  host: 'localhost',
+  // MIKRO_ORM_HOST env var will override 'localhost'
+});
+```
 
 Full list of supported options:
 
