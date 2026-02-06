@@ -515,6 +515,11 @@ export class QueryBuilder<
           }
         }
 
+        // all conditions were nested and removed, skip
+        if (!Utils.hasObjectKeys(cond)) {
+          continue;
+        }
+
         if (Utils.hasObjectKeys(join.cond)) {
           /* istanbul ignore next */
           join.cond = { $and: [join.cond, cond] };

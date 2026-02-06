@@ -334,7 +334,7 @@ export class QueryBuilderHelper {
       const parts = value.map(sub => {
         return this.wrapQueryGroup(Object.keys(sub).map(k => {
           return this.processJoinClause(k, sub[k], alias, params);
-        }));
+        }).filter(clause => clause !== '()'));
       }).filter(clause => clause !== '()');
       return this.wrapQueryGroup(parts, key);
     }
