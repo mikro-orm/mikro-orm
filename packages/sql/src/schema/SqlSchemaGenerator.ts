@@ -513,7 +513,11 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
       return;
     }
 
-    await Utils.runSerial(groups.flat(), line => this.driver.execute(line));
+    const statements = groups.flatMap(group => {
+      return group.join('\n').split(';\n').map(s => s.trim()).filter(s => s);
+    });
+    await Utils.runSerial(statements, stmt => this.driver.execute(stmt));
+
   }
 
   async dropTableIfExists(name: string, schema?: string): Promise<void> {

@@ -90,19 +90,19 @@ Next, we will set up the CLI config for MikroORM. This config will be then autom
 
 ```ts title='src/mikro-orm.config.ts'
 import { defineConfig } from '@mikro-orm/sqlite';
-import { User } from './modules/user/user.entity.js';
+import { UserSchema } from './modules/user/user.entity.js';
 
 export default defineConfig({
   // for simplicity, we use the SQLite database, as it's available pretty much everywhere
   dbName: 'sqlite.db',
   // explicitly list your entities - we'll create the User entity next
-  entities: [User],
+  entities: [UserSchema],
   // enable debug mode to log SQL queries and discovery information
   debug: true,
 });
 ```
 
-We import entities directly and pass them to the `entities` array. You can use either the entity class (`User`) or the schema (`UserSchema`) - both work the same way. This is more explicit than folder-based discovery and gives you better control over what entities are registered.
+We import the entity schema directly and pass it to the `entities` array. This is more explicit than folder-based discovery and gives you better control over what entities are registered.
 
 > The `defineConfig` helper infers the driver type automatically, so no need to specify it explicitly.
 
@@ -148,18 +148,10 @@ Check out the [Defining Entities](../defining-entities.md) section which provide
 Time to create your first entity - the `User`! Create a `user.entity.ts` file in `src/modules/user` with the following contents:
 
 ```ts title='user.entity.ts'
-import { defineEntity, Opt, p } from '@mikro-orm/core';
-
-export class User {
-  id!: number;
-  fullName!: string;
-  email!: string;
-  password!: string;
-  bio!: string & Opt;
-}
+import { defineEntity, type InferEntity, p } from '@mikro-orm/core';
 
 export const UserSchema = defineEntity({
-  class: User,
+  name: 'User',
   properties: {
     id: p.integer().primary(),
     fullName: p.string(),
@@ -168,31 +160,36 @@ export const UserSchema = defineEntity({
     bio: p.text().default(''),
   },
 });
+
+export type User = InferEntity<typeof UserSchema>;
 ```
 
-So what do we have here? We define a `User` class with typed properties, then use the `defineEntity` helper to create an entity schema for it. When using `defineEntity` with a class, we pass `class: User` instead of `name: 'User'`. The entity name will be inferred from the class name.
+So what do we have here? We use the `defineEntity` helper to create an entity schema for the `User`. The `InferEntity` type utility extracts the TypeScript type from the schema, giving us a `User` type we can use throughout our code.
 
 The `p` export provides type-safe property builders like `p.string()`, `p.integer()`, `p.text()`, etc. These builders use a fluent API where you can chain options like `.primary()`, `.default()`, and more.
 
-The `Opt` type is used to mark properties that have default values as optional in TypeScript - this tells the ORM that `bio` doesn't need to be provided in `em.create()` calls since it has a default value.
+Properties with `.default()` or `.onCreate()` are automatically optional in `em.create()` calls - for example, `bio` has a default value of `''`, so it doesn't need to be provided.
 
-### Inferring the entity type
+### Using a custom class
 
-Alternatively, you can also use `defineEntity` without a class, and pass the entity name as the first argument:
+If you need to add custom methods to your entity, you can extend the schema's auto-generated class via `setClass()`:
 
 ```ts title='user.entity.ts'
-import { defineEntity, InferEntity, p } from '@mikro-orm/core';
-
-export const User = defineEntity({
+export const UserSchema = defineEntity({
   name: 'User',
   properties: {
     // ...
   },
 });
 
-// Export the inferred type for use elsewhere
-export type IUser = InferEntity<typeof User>;
+export class User extends UserSchema.class {
+  // custom methods go here
+}
+
+UserSchema.setClass(User);
 ```
+
+This avoids redeclaring all properties in the class - they are inferred from the schema automatically. We will use this pattern in Chapter 2 when adding methods to the `User` entity.
 
 ### Defining the primary key
 
@@ -300,11 +297,11 @@ There are 2 methods we should first describe to understand how persisting works 
 
 [`em.persist(entity)`](/api/core/class/EntityManager#persist) is used to mark new entities for future persisting. It will make the entity managed by the [`EntityManager`](/api/core/class/EntityManager) and once `flush` will be called, it will be written to the database.
 
-We use [`em.create()`](/api/core/class/EntityManager#create) to create entity instances. Since the `User` entity is defined with a class, you could also use `new User()` followed by `em.persist()`. Note that `em.create()` will call the entity constructor internally, so those are effectively the same things.
+We use [`em.create()`](/api/core/class/EntityManager#create) to create entity instances.
 
 ```ts
 // create a new user entity instance
-const user = em.create(User, {
+const user = em.create(UserSchema, {
   email: 'foo@bar.com',
   fullName: 'Foo Bar',
   password: '123456',
@@ -314,7 +311,7 @@ const user = em.create(User, {
 await em.flush();
 
 // alternatively, you can persist manually:
-const user2 = em.create(User, { ... }, { persist: false });
+const user2 = em.create(UserSchema, { ... }, { persist: false });
 em.persist(user2);
 await em.flush();
 ```
@@ -325,7 +322,7 @@ To understand `flush`, let's first define what managed entity is: An entity is m
 automatically, you do not have to call persist on those, and flush is enough to update them.
 
 ```ts
-const user = await em.findOne(User, 1);
+const user = await em.findOne(UserSchema, 1);
 user.bio = '...';
 
 // no need to persist `user` as it's already managed by the EM
@@ -337,12 +334,12 @@ Let's try to create our first record in the database, add this to the `server.ts
 ```ts title='server.ts'
 import { MikroORM } from '@mikro-orm/sqlite';
 import config from './mikro-orm.config.js';
-import { User } from './modules/user/user.entity.js';
+import { UserSchema } from './modules/user/user.entity.js';
 
 const orm = await MikroORM.init(config);
 
 // create new user entity instance via em.create()
-const user = orm.em.create(User, {
+const user = orm.em.create(UserSchema, {
   email: 'foo@bar.com',
   fullName: 'Foo Bar',
   password: '123456',
@@ -407,7 +404,7 @@ When you call [`em.flush()`](/api/core/class/EntityManager#flush), all computed 
 > You can also control the transaction boundaries manually via `em.transactional(cb)`.
 
 ```ts
-const user = await em.findOne(User, 1);
+const user = await em.findOne(UserSchema, 1);
 
 user.email = 'foo@bar.com';
 
@@ -450,7 +447,7 @@ So we understand the problem better now, what's the solution? The error suggests
 const em = orm.em.fork();
 
 // create and persist the user in the forked context
-const user = em.create(User, {
+const user = em.create(UserSchema, {
   email: 'foo@bar.com',
   fullName: 'Foo Bar',
   password: '123456',
@@ -489,12 +486,12 @@ You can see the insert query being wrapped inside a transaction. That is another
 We have our first entity stored in the database. To read it from there we can use `find()` and `findOne()` methods.
 
 ```ts title='server.ts'
-// find user by PK, same as `em.findOne(User, { id: 1 })`
-const userById = await em.findOne(User, 1);
+// find user by PK, same as `em.findOne(UserSchema, { id: 1 })`
+const userById = await em.findOne(UserSchema, 1);
 // find user by email
-const userByEmail = await em.findOne(User, { email: 'foo@bar.com' });
+const userByEmail = await em.findOne(UserSchema, { email: 'foo@bar.com' });
 // find all users
-const allUsers = await em.find(User, {});
+const allUsers = await em.find(UserSchema, {});
 ```
 
 We mentioned the Identity Map several times already - time to test how it works. We said the entity is managed, and the Unit of Work will track its changes, and compute them when we call `flush()`. We also said a new entity that is marked with `persist()` will become managed after flushing.
@@ -503,7 +500,7 @@ Put the following code into your `server.ts` file, right before the `orm.close()
 
 ```ts title='server.ts'
 // user entity is now managed, if we try to find it again, we get the same reference
-const myUser = await em.findOne(User, user.id);
+const myUser = await em.findOne(UserSchema, user.id);
 console.log('users are the same?', user === myUser)
 
 // modifying the user and flushing yields update queries
@@ -526,7 +523,7 @@ Next, let's try to do the same, but with an [`EntityManager`](/api/core/class/En
 // now try to create a new fork, does not matter if from `orm.em` or our existing `em` fork, as by default we get a clean one
 const em2 = em.fork();
 console.log('verify the EM ids are different:', em.id, em2.id);
-const myUser2 = await em2.findOneOrFail(User, user.id);
+const myUser2 = await em2.findOneOrFail(UserSchema, user.id);
 console.log('users are no longer the same, as they came from different EM:', user === myUser2);
 ```
 
@@ -610,7 +607,7 @@ MikroORM represents every entity as an object, even those that are not fully loa
 An alternative to the previous code snippet could be as well this:
 
 ```ts
-const userRef = em.getReference(User, 1);
+const userRef = em.getReference(UserSchema, 1);
 await em.remove(userRef).flush();
 ```
 
@@ -623,7 +620,7 @@ We just said that entity reference is a regular entity, but only with a primary 
 ```ts
 import { wrap } from '@mikro-orm/core';
 
-const userRef = em.getReference(User, 1);
+const userRef = em.getReference(UserSchema, 1);
 console.log('userRef is initialized:', wrap(userRef).isInitialized());
 
 await wrap(userRef).init();
@@ -634,7 +631,7 @@ The `WrappedEntity` instance also holds the state of the entity at the time it w
 
 ## Alternative Approaches
 
-In this guide, we use `defineEntity` with a class, which provides a simple, decorator-free way to define entities. The `defineEntity` helper can also be used without a class - it will infer the entity type automatically using `InferEntity<typeof Schema>`. However, MikroORM supports multiple ways to define entities:
+In this guide, we use `defineEntity` with `InferEntity` for type inference, and `setClass` when custom methods are needed. However, MikroORM supports multiple ways to define entities:
 
 ### Using Decorators
 
@@ -698,6 +695,29 @@ This tells MikroORM to use your application's import context instead of its own,
 :::
 
 Check the [Defining Entities](../defining-entities.md) documentation for more examples of all entity definition approaches.
+
+### Working with an Existing Database
+
+If you already have a database with tables and want to generate entity files from it, you can use the [Entity Generator](../entity-generator.md). Install the `@mikro-orm/entity-generator` package and register the `EntityGenerator` extension:
+
+```ts
+import { EntityGenerator } from '@mikro-orm/entity-generator';
+
+export default defineConfig({
+  // ...
+  extensions: [EntityGenerator],
+});
+```
+
+Then run it via CLI:
+
+```bash
+npx mikro-orm generate-entities --save --path=./src/modules
+```
+
+This will introspect your database schema and generate entity files for each table. You can then adjust the generated files and continue with the code-first approach from there.
+
+Alternatively, if you prefer to keep the database schema as the source of truth and regenerate entity files on every schema change, check out the [Schema First Guide](../schema-first-guide.md).
 
 ## ⛳ Checkpoint 1
 
