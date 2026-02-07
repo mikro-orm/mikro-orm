@@ -95,7 +95,7 @@ You could use `em.count()` to get the number of entities, but since you want to 
 ```ts title='app.ts'
 app.get('/article', async request => {
   const { limit, offset } = request.query as { limit?: number; offset?: number };
-  const [items, total] = await orm.em.findAndCount(Article, {}, {
+  const [items, total] = await orm.em.findAndCount(ArticleSchema, {}, {
     limit, offset,
   });
 
@@ -111,7 +111,10 @@ Before getting to testing the first endpoint, let's refactor a bit to make the s
 
 ```ts title='db.ts'
 import { EntityManager, EntityRepository, MikroORM, Options } from '@mikro-orm/sqlite';
-import config from '../src/mikro-orm.config.js';
+import { UserSchema, type User } from './modules/user/user.entity.js';
+import { ArticleSchema, type Article } from './modules/article/article.entity.js';
+import { TagSchema, type Tag } from './modules/article/tag.entity.js';
+import config from './mikro-orm.config.js';
 
 export interface Services {
   orm: MikroORM;
@@ -129,7 +132,7 @@ export function initORM(options?: Options): Services {
   }
 
   const orm = new MikroORM({
-    ...config,  
+    ...config,
     ...options,
   });
 
@@ -137,9 +140,9 @@ export function initORM(options?: Options): Services {
   return cache = {
     orm,
     em: orm.em,
-    article: orm.em.getRepository(Article),
-    user: orm.em.getRepository(User),
-    tag: orm.em.getRepository(Tag),
+    article: orm.em.getRepository(ArticleSchema),
+    user: orm.em.getRepository(UserSchema),
+    tag: orm.em.getRepository(TagSchema),
   };
 }
 ```
@@ -357,7 +360,7 @@ You can use the [`em.create()`](/api/core/class/EntityManager#create) function d
 export class TestSeeder extends Seeder {
 
   async run(em: EntityManager): Promise<void> {
-    em.create(User, {
+    em.create(UserSchema, {
       fullName: 'Foo Bar',
       email: 'foo@bar.com',
       password: 'password123',
@@ -539,31 +542,28 @@ Read more about migrations in the [documentation](../migrations).
 The migrations are set up, let's test them by adding one more entity - the `Comment`, again belonging to the article module, so it goes into `src/modules/article/comment.entity.ts`.
 
 ```ts title='comment.entity.ts'
-import { Entity, ManyToOne, Property } from '@mikro-orm/core';
-import { Article } from './article.entity.js';
-import { User } from '../user/user.entity.js';
-import { BaseEntity } from '../common/base.entity.js';
+import { defineEntity, type InferEntity, p } from '@mikro-orm/core';
+import { ArticleSchema } from './article.entity.js';
+import { UserSchema } from '../user/user.entity.js';
+import { BaseSchema } from '../common/base.entity.js';
 
-@Entity()
-export class Comment extends BaseEntity {
+export const CommentSchema = defineEntity({
+  name: 'Comment',
+  extends: BaseSchema,
+  properties: {
+    text: p.string(),
+    article: () => p.manyToOne(ArticleSchema).ref(),
+    author: () => p.manyToOne(UserSchema).ref(),
+  },
+});
 
-  @Property({ length: 1000 })
-  text!: string;
-
-  @ManyToOne()
-  article!: Article;
-
-  @ManyToOne()
-  author!: User;
-
-}
+export type Comment = InferEntity<typeof CommentSchema>;
 ```
 
 and a OneToMany inverse side in `Article` entity:
 
 ```ts
-@OneToMany({ mappedBy: 'article', eager: true, orphanRemoval: true })
-comments = new Collection<Comment>(this);
+comments: () => p.oneToMany(CommentSchema).mappedBy('article').eager().orphanRemoval(),
 ```
 
 Don't forget to add the repository to your simple DI container too:
@@ -585,19 +585,19 @@ export function initORM(options?: Options): Promise<Services> {
   return cache = {
    orm,
    em: orm.em,
-   user: orm.em.getRepository(User),
-   article: orm.em.getRepository(Article),
+   user: orm.em.getRepository(UserSchema),
+   article: orm.em.getRepository(ArticleSchema),
    // highlight-next-line
-   comment: orm.em.getRepository(Comment),
-   tag: orm.em.getRepository(Tag),
+   comment: orm.em.getRepository(CommentSchema),
+   tag: orm.em.getRepository(TagSchema),
   };
 }
 ```
 
-> This uses two new options, `eager` and `orphanRemoval`:
+> This uses two new builder methods, `.eager()` and `.orphanRemoval()`:
 >
-> - `eager: true` will automatically populate this relation, just like if you would use `populate: ['comments']` explicitly.
-> - `orphanRemoval: true` is a special type of cascading, any entity removed from such collection will be deleted from the database, as opposed to being just detached from the relationship (by setting the foreign key to `null`).
+> - `.eager()` will automatically populate this relation, just like if you would use `populate: ['comments']` explicitly.
+> - `.orphanRemoval()` is a special type of cascading, any entity removed from such collection will be deleted from the database, as opposed to being just detached from the relationship (by setting the foreign key to `null`).
 
 Now create the migration via CLI and run it. And just for the sake of testing, also try the other migration-related commands:
 

@@ -420,12 +420,12 @@ export type EntityDataProp<T, C extends boolean> = T extends Date
   ? string | Date
   : T extends Scalar
     ? T
-    : T extends { __runtime?: infer Runtime; __raw?: infer Raw }
-      ? (C extends true ? Raw : Runtime)
-      : T extends ReferenceShape<infer U>
-        ? EntityDataNested<U, C>
-        : T extends ScalarReference<infer U>
-          ? EntityDataProp<U, C>
+    : T extends ScalarReference<infer U>
+      ? EntityDataProp<U, C>
+      : T extends { __runtime?: infer Runtime; __raw?: infer Raw }
+        ? (C extends true ? Raw : Runtime)
+        : T extends ReferenceShape<infer U>
+          ? EntityDataNested<U, C>
           : T extends CollectionShape<infer U>
             ? U | U[] | EntityDataNested<U & object, C> | EntityDataNested<U & object, C>[]
             : T extends readonly (infer U)[]
@@ -440,12 +440,12 @@ export type RequiredEntityDataProp<T, O, C extends boolean> = T extends Date
     ? T | null
       : T extends Scalar
       ? T
-      : T extends { __runtime?: infer Runtime; __raw?: infer Raw }
-        ? (C extends true ? Raw : Runtime)
-        : T extends ReferenceShape<infer U>
-          ? RequiredEntityDataNested<U, O, C>
-          : T extends ScalarReference<infer U>
-            ? RequiredEntityDataProp<U, O, C>
+      : T extends ScalarReference<infer U>
+        ? RequiredEntityDataProp<U, O, C>
+        : T extends { __runtime?: infer Runtime; __raw?: infer Raw }
+          ? (C extends true ? Raw : Runtime)
+          : T extends ReferenceShape<infer U>
+            ? RequiredEntityDataNested<U, O, C>
             : T extends CollectionShape<infer U>
               ? U | U[] | RequiredEntityDataNested<U & object, O, C> | RequiredEntityDataNested<U & object, O, C>[]
               : T extends readonly (infer U)[]
@@ -459,8 +459,9 @@ export type EntityDataNested<T, C extends boolean = false> = T extends undefined
   : T extends any[]
     ? Readonly<T>
     : EntityData<T, C> | ExpandEntityProp<T, C>;
+type UnwrapScalarRef<T> = T extends ScalarReference<infer U> ? U : T;
 type EntityDataItem<T, C extends boolean> = C extends false
-  ? T | EntityDataProp<T, C> | Raw | null
+  ? UnwrapScalarRef<T> | EntityDataProp<T, C> | Raw | null
   : EntityDataProp<T, C> | Raw | null;
 
 export type RequiredEntityDataNested<T, O, C extends boolean> = T extends any[]
@@ -531,14 +532,14 @@ type PrimaryOrObject<T, U, C extends TypeConfig> =
 
 export type EntityDTOProp<E, T, C extends TypeConfig = never> = T extends Scalar
   ? T
-  : T extends { __serialized?: infer U }
-    ? (IsUnknown<U> extends false ? U : T)
-    : T extends LoadedReferenceShape<infer U>
-      ? EntityDTO<U, C>
-      : T extends ReferenceShape<infer U>
-        ? PrimaryOrObject<E, U, C>
-        : T extends ScalarReference<infer U>
-          ? U
+  : T extends ScalarReference<infer U>
+    ? U
+    : T extends { __serialized?: infer U }
+      ? (IsUnknown<U> extends false ? U : T)
+      : T extends LoadedReferenceShape<infer U>
+        ? EntityDTO<U, C>
+        : T extends ReferenceShape<infer U>
+          ? PrimaryOrObject<E, U, C>
           : T extends LoadedCollectionShape<infer U>
             ? EntityDTO<U & object, C>[]
             : T extends CollectionShape<infer U>

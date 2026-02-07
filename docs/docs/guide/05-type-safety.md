@@ -2,99 +2,146 @@
 title: 'Chapter 5: Type-safety'
 ---
 
-Entity relations are mapped to entity references - instances of the entity that have at least the primary key available. This reference is stored in the Identity Map, so you will get the same object reference when fetching the same document from the database.
+Now that we have a blog API with entities, relationships, and a QueryBuilder-powered listing, let's explore how MikroORM's type system keeps everything safe at compile time.
 
-With `defineEntity`, relations are defined using property builders like `p.manyToOne()`:
+## `Loaded` type and populate hints
 
-```ts
-author: () => p.manyToOne(User), // the value is always instance of the `User` entity
-```
-
-You can check whether an entity is initialized via `wrap(entity).isInitialized()`, and use `await wrap(entity).init()` to initialize it lazily. This will trigger a database call and populate the entity, keeping the same reference in the Identity Map.
+If you check the return type of `em.find` and `em.findOne`, you might notice they don't return the entity directly - they return a `Loaded` type:
 
 ```ts
-const user = em.getReference(User, 123);
-console.log(user.id); // prints `123`, accessing the id will not trigger any db call
-console.log(wrap(user).isInitialized()); // false, it's just a reference
-console.log(user.name); // undefined
+// res1 is of type `Loaded<Article, never>[]`
+const res1 = await em.find(ArticleSchema, {});
 
-await wrap(user).init(); // this will trigger db call
-console.log(wrap(user).isInitialized()); // true
-console.log(user.name); // defined
+// res2 is of type `Loaded<Article, 'author'>[]`
+const res2 = await em.find(ArticleSchema, {}, { populate: ['author'] });
 ```
 
-The `isInitialized()` method can be used for runtime checks, but that could end up being quite tedious - you can do better! Instead of manual checks for entity state, you can use the [`Reference`](/api/core/class/Reference) wrapper.
+The `Loaded` type tracks which relations have been populated, and adds a special `$` symbol to them for type-safe synchronous access. This works great in combination with the `Reference` wrapper (covered next):
+
+```ts
+// article is of type `Loaded<Article, 'author'>`
+const article = await em.findOneOrFail(ArticleSchema, 1, { populate: ['author'] });
+
+// type-safe sync access to the loaded author:
+console.log(article.author.$.fullName);
+```
+
+If you omit the `populate` hint, the type of `article` would be `Loaded<Article, never>` and the `article.author.$` symbol wouldn't be available - such call would end up with a compilation error.
+
+```ts
+// without populate, the type is `Loaded<Article, never>`
+const article2 = await em.findOneOrFail(ArticleSchema, 2);
+
+// TS2339: Property '$' does not exist on type '...'
+console.log(article2.author.$.fullName);
+```
+
+Same works for the `Collection` wrapper on OneToMany/ManyToMany relations:
+
+```ts
+// user is of type `Loaded<User, 'articles'>`
+const user = await em.findOneOrFail(User, 1, { populate: ['articles'] });
+
+// type-safe sync access to loaded collection items:
+for (const article of user.articles.$) {
+  console.log(article.title);
+}
+```
+
+> If you don't like symbols with magic names like `$`, you can use the `get()` method instead, which is an alias for it.
+
+You can also use the `Loaded` type in your own functions to require that certain relations are populated:
+
+```ts
+function publishArticle(article: Loaded<Article, 'author'>) {
+  // we can safely access the author without any async loading
+  console.log(`Publishing "${article.title}" by ${article.author.$.fullName}`);
+}
+```
+
+```ts
+// works - author is populated
+const a1 = await em.findOneOrFail(ArticleSchema, 1, { populate: ['author'] });
+publishArticle(a1);
+
+// compile error - author is not populated
+const a2 = await em.findOneOrFail(ArticleSchema, 1);
+publishArticle(a2);
+```
+
+> Keep in mind this is all just type-level information, you can easily trick it via type assertions.
 
 ## `Reference` wrapper
 
-When you define `manyToOne` or `oneToOne` relations, the TypeScript compiler will think that the desired entities are always loaded:
+When you define `manyToOne` or `oneToOne` relations, TypeScript will think the related entities are always loaded:
 
 ```ts
-class Article {
-  id!: number;
-  author!: User;
-}
-
-const ArticleSchema = defineEntity({
-  class: Article,
-  properties: {
-    id: p.integer().primary(),
-    author: () => p.manyToOne(User),
-  },
-});
-
-const article = await em.findOne(Article, 1);
-console.log(wrap(article.author).isInitialized()); // false
-console.log(article.author.name); // undefined as `User` is not loaded yet
+const article = await em.findOne(ArticleSchema, 1);
+console.log(article.author.fullName); // undefined, User is not loaded yet!
 ```
 
-You can overcome this issue by using the [`Reference`](/api/core/class/Reference) wrapper. It simply wraps the entity, defining `load(): Promise<T>` method that will first lazy load the association if not already available. You can also use `unwrap(): T` method to access the underlying entity without loading it.
+You can overcome this by using the `Reference` wrapper. It wraps the entity, defining a `load(): Promise<T>` method that will lazy load the association if not already available. With `defineEntity`, you enable it via `.ref()`:
 
-You can also use `load<K extends keyof T>(prop: K): Promise<T[K]>`, which works like `load()` but returns the specified property.
-
-With `defineEntity`, you can wrap relations in the `Reference` wrapper using `.ref()`:
-
-```ts title="./entities/Article.ts"
-import { defineEntity, p, Ref } from '@mikro-orm/core';
-
-export class Article {
-  id!: number;
-  author!: Ref<User>;
-}
+```ts title='article.entity.ts'
+import { defineEntity, type InferEntity, p } from '@mikro-orm/core';
+import { BaseSchema } from '../common/base.entity.js';
+import { UserSchema } from '../user/user.entity.js';
 
 export const ArticleSchema = defineEntity({
-  class: Article,
+  name: 'Article',
+  extends: BaseSchema,
   properties: {
-    id: p.integer().primary(),
+    // ...
     // Use .ref() to wrap the relation in a Reference
-    author: () => p.manyToOne(User).ref(),
+    author: () => p.manyToOne(UserSchema).ref(),
   },
 });
+
+export type Article = InferEntity<typeof ArticleSchema>;
+```
+
+Now the property type becomes `Ref<User>`, which prevents accidental access to unloaded properties:
+
+```ts
+const article1 = await em.findOne(ArticleSchema, 1);
+article1.author;       // Ref<User> (instance of Reference class)
+article1.author.fullName;  // type error! no `fullName` property on Ref<User>
+article1.author.id;    // ok, PK is always available on Ref
+
+const article2 = await em.findOne(ArticleSchema, 1, { populate: ['author'] });
+article2.author;          // LoadedReference<User>
+article2.author.$.fullName; // type-safe sync access after populate
+```
+
+### Using `Reference.load()`
+
+After retrieving a reference, you can load the full entity via the async `load()` method:
+
+```ts
+const article = await em.findOne(ArticleSchema, 1);
+const author = await article.author.load();
+author.fullName; // ok, author is now loaded
+
+await article.author.load(); // no additional query, already loaded
+```
+
+> As opposed to `wrap(e).init()` which always refreshes the entity, `Reference.load()` will query the database only if the entity is not already loaded in the Identity Map.
+
+### `ScalarReference` wrapper
+
+Similarly to the `Reference` wrapper, you can also wrap scalars with `Ref` into a `ScalarReference` object. This is handy for lazy scalar properties.
+
+The `Ref` type automatically resolves to `ScalarReference` for non-object types, so the following is correct:
+
+```ts
+// In our Article entity, the `text` property is lazy.
+// If we wrap it with .ref(), it becomes a ScalarReference:
+text: p.text().lazy().ref(),
 ```
 
 ```ts
-const article1 = await em.findOne(Article, 1);
-article.author instanceof Reference; // true
-article1.author; // Ref<User> (instance of `Reference` class)
-article1.author.name; // type error, there is no `name` property
-article1.author.unwrap().name; // unsafe sync access, undefined as author is not loaded
-article1.author.isInitialized(); // false
-
-const article2 = await em.findOne(Article, 1, { populate: ['author'] });
-article2.author; // LoadedReference<User> (instance of `Reference` class)
-article2.author.$.name; // type-safe sync access
-```
-
-There are also `getEntity()` and `getProperty()` methods that are synchronous getters, that will first check if the wrapped entity is initialized, and if not, it will throw and error.
-
-```ts
-const article = await em.findOne(Article, 1);
-console.log(article.author instanceof Reference); // true
-console.log(wrap(article.author).isInitialized()); // false
-console.log(article.author.getEntity()); // Error: Reference<User> 123 not initialized
-console.log(article.author.getProperty('name')); // Error: Reference<User> 123 not initialized
-console.log(await article.author.load('name')); // ok, loading the author first
-console.log(article.author.getProperty('name')); // ok, author already loaded
+const article = await em.findOne(ArticleSchema, 1);
+const text = await article.text.load(); // loads the lazy text property
 ```
 
 :::info Using decorators
@@ -110,159 +157,177 @@ With `defineEntity`, the `.ref()` method handles this automatically.
 
 :::
 
-### Using `Reference.load()`
+## Strict partial loading with `fields`
 
-After retrieving a reference, you can load the full entity by utilizing the asynchronous `Reference.load()` method.
-
-```ts
-const article1 = await em.findOne(Article, 1);
-(await article1.author.load()).name; // async safe access
-
-const article2 = await em.findOne(Article, 2);
-const author = await article2.author.load();
-author.name;
-await article2.author.load(); // no additional query, already loaded
-```
-
-> As opposed to `wrap(e).init()` which always refreshes the entity, the `Reference.load()` method will query the database only if the entity is not already loaded in the Identity Map.
-
-### `ScalarReference` wrapper
-
-Similarly to the `Reference` wrapper, you can also wrap scalars with `Ref` into a `ScalarReference` object. This is handy for lazy scalar properties.
-
-The `Ref` type automatically resolves to `ScalarReference` for non-object types, so the below is correct:
+The `Loaded` type also respects the partial loading hints (`fields` option). When used, the returned type will only allow accessing selected properties. Primary keys are always automatically selected and available.
 
 ```ts
-@Property({ lazy: true, ref: true })
-passwordHash!: Ref<string>;
-```
-
-```ts
-const user = await em.findOne(User, 1);
-const passwordHash = await user.passwordHash.load();
-```
-
-For object-like types, if you choose to use the reference wrappers, you should use the `ScalarRef<T>` type explicitly. For example, you might want to lazily load a large JSON value:
-
-```ts
-@Property({ type: 'json', nullable: true, lazy: true, ref: true })
-// ReportParameters is an object type, imagine it defined elsewhere.
-reportParameters!: ScalarRef<ReportParameters | null>; 
-```
-
-Keep in mind that once a scalar value is managed through a `ScalarReference`, accessing it through MikroORM managed objects will always return the `ScalarReference` wrapper. That can be confusing in case the property is also `nullable`, since the `ScalarReference` will always be truthy. In such cases, you should inform the type system of the nullability of the property through `ScalarReference<T>`'s type parameter as demonstrated above. Below is an example of how it all works:
-
-```ts
-// Say Report of id "1" has no reportParameters in the Database.
-const report = await em.findOne(Report, 1);
-if (report.reportParameters) {
-  // Logs Ref<?>, not the actual value. **Would always run***.
-  console.log(report.reportParameters);
-  //@ts-expect-error $/.get() is not available until the reference has been loaded.
-  // const mistake = report.reportParameters.$
-}
-const populatedReport = await em.populate(report, ['reportParameters']);
-// Logs `null`
-console.log(populatedReport.reportParameters.$); 
-```
-
-## `Loaded` type
-
-If you check the return type of `em.find` and `em.findOne` methods, you might be a bit confused - instead of the entity, they return `Loaded` type:
-
-```ts
-// res1 is of type `Loaded<User, never>[]`
-const res1 = await em.find(User, {});
-
-// res2 is of type `Loaded<User, 'identity' | 'friends'>[]`
-const res2 = await em.find(User, {}, { populate: ['identity', 'friends'] });
-```
-
-Using `defineEntity`, the `User` entity might be defined as follows:
-
-```ts
-import { defineEntity, InferEntity, p } from '@mikro-orm/core';
-
-export const User = defineEntity({
-  name: 'User',
-  properties: {
-    id: p.integer().primary(),
-    identity: () => p.manyToOne(Identity).ref(),
-    friends: () => p.manyToMany(User),
-  },
+// article is typed to `Selected<Article, 'author', 'title' | 'author.email'>`
+const article = await em.findOneOrFail(ArticleSchema, 1, {
+  fields: ['title', 'author.email'],
+  populate: ['author'],
 });
 
-export type IUser = InferEntity<typeof User>;
+const id = article.id;           // ok, PK is selected automatically
+const title = article.title;     // ok, title is selected
+const slug = article.slug;       // fail, not selected
+const authorId = article.author.id;    // ok, PK is selected automatically
+const email = article.author.email;    // ok, selected
+const name = article.author.fullName;  // fail, not selected
 ```
 
-The `Loaded` type represents what relations of the entity are populated, and adds a special `$` symbol to them, allowing for type-safe synchronous access to the loaded properties. This works great in combination with the [`Reference`](/api/core/class/Reference) wrapper:
+## QueryBuilder type safety
 
-> If you don't like symbols with magic names like `$`, you can as well use the `get()` method, which is an alias for it.
+In Chapter 4, we used `QueryBuilder` to build the article listing query. MikroORM's `QueryBuilder` has a fully type-safe API that tracks aliases, joined entities, and selected fields at the type level.
+
+### Context-aware joins
+
+Each `join`/`leftJoin` call adds to a `Context` type parameter that tracks which aliases are available and what entity types they point to:
 
 ```ts
-// res is of type `Loaded<User, 'identity'>`
-const user = await em.findOneOrFail(User, 1, { populate: ['identity'] });
-
-// instead of the async `await user.identity.load()` call that would ensure the relation is loaded
-// you can use the dynamically added `$` symbol for synchronous and type-safe access to it:
-console.log(user.identity.$.email);
+const qb = em.createQueryBuilder(ArticleSchema, 'a')
+  .leftJoin('a.author', 'u');  // Context now knows alias 'u' maps to User
 ```
 
-> If you'd omit the `populate` hint, the type of `user` would be `Loaded<User, never>` and the `user.identity.$` symbol wouldn't be available - such call would end up with a compilation error.
+After the join, TypeScript knows that `'u'` is a valid alias pointing to the `User` entity, and will validate any further usage of it.
+
+### Strict `select`
+
+The `select` method validates that field paths use known aliases and valid property names:
 
 ```ts
-// if you try without the populate hint, the type is `Loaded<User, never>`
-const user2 = await em.findOneOrFail(User, 2);
+const qb = em.createQueryBuilder(ArticleSchema, 'a')
+  .leftJoin('a.author', 'u')
+  .select(['a.title', 'u.fullName']);  // ok: 'a' is Article, 'u' is User
 
-// TS2339: Property '$' does not exist on type '{ id: number; } & Reference'.
-console.log(user.identity.$.email);
+// compile error: 'x' is not a known alias
+em.createQueryBuilder(ArticleSchema, 'a')
+  .select(['a.title', 'x.invalid']);
 ```
 
-Same works for the `Collection` wrapper, that offers runtime methods `isInitialized`, `loadItems` and `init`, as well as the type-safe `$` symbol.
+You can also use `addSelect` to add more fields, including raw SQL fragments:
 
 ```ts
-// res is of type `Loaded<User, 'friends'>`
-const user = await em.findOneOrFail(User, 1, { populate: ['friends'] });
-
-// instead of the async `await user.friends.loadItems()` call that would ensure the collection items are loaded
-// you can use the dynamically added `$` symbol for synchronous and type-safe access to it:
-for (const friend of user.friends.$) {
-  console.log(friend.email);
-}
+em.createQueryBuilder(ArticleSchema, 'a')
+  .select(['a.slug', 'a.title'])
+  .leftJoin('a.author', 'u')
+  .addSelect(sql.ref('u.full_name').as('authorName'));
 ```
 
-You can also use the `Loaded` type in your own methods, to require on type level that some relations will be populated:
+### Strict `where`
+
+The `where` method validates aliased object conditions against the known aliases and their entity types:
 
 ```ts
-function checkIdentity(user: Loaded<User, 'identity'>) {
-  if (!user.identity.$.email.includes('@')) {
-    throw new Error(`That's a weird e-mail!`);
-  }
-}
+const qb = em.createQueryBuilder(ArticleSchema, 'a')
+  .leftJoin('a.author', 'u');
+
+// ok: 'u' maps to User, which has a `fullName` property
+qb.where({ 'u.fullName': 'Jon' });
+
+// ok: 'a' maps to Article, which has a `title` property
+qb.where({ 'a.title': 'Hello World' });
+
+// compile error: 'x' is not a known alias
+qb.where({ 'x.foo': 1 });
 ```
+
+This also works with nested conditions:
 
 ```ts
-// works
-const u1 = await em.findOneOrFail(User, 2, { populate: ['identity'] });
-checkIdentity(u1);
-
-// fails
-const u2 = await em.findOneOrFail(User, 2);
-checkIdentity(u2);
+qb.where({
+  $or: [
+    { 'a.title': { $like: '%orm%' } },
+    { 'u.fullName': 'Jon' },
+  ],
+});
 ```
 
-> Keep in mind this is all just a type-level information, you can easily trick it via type assertions.
+### Result types with `joinAndSelect`
+
+When you use `joinAndSelect` or `leftJoinAndSelect`, the `Hint` type parameter is updated automatically, so `getResultList()` returns properly typed `Loaded` entities:
+
+```ts
+const articles = await em.createQueryBuilder(ArticleSchema, 'a')
+  .leftJoinAndSelect('a.author', 'u')
+  .getResultList();
+// articles is `Loaded<Article, 'author'>[]`
+
+// type-safe access to loaded author:
+articles[0].author.$.fullName; // ok
+```
+
+This is equivalent to using `em.find` with `populate: ['author']`, but with the flexibility of the QueryBuilder API.
+
+### Result types with `select`
+
+When you use `select` to pick specific fields, the `Fields` type parameter tracks which fields were selected:
+
+```ts
+const articles = await em.createQueryBuilder(ArticleSchema, 'a')
+  .select(['a.title', 'a.description'])
+  .getResultList();
+// articles is `Loaded<Article, never, 'title' | 'description'>[]`
+
+articles[0].title;       // ok, selected
+articles[0].description; // ok, selected
+articles[0].slug;        // fail, not selected
+articles[0].id;          // ok, PK is always available
+```
+
+### Awaiting the QueryBuilder
+
+You can directly `await` a `QueryBuilder` instance. The return type depends on what kind of query you're building:
+
+```ts
+// SelectQueryBuilder → awaiting yields entity array
+const articles = await em.qb(ArticleSchema)
+  .select('*')
+  .where({ title: { $like: '%orm%' } })
+  .limit(5);
+// articles is Article[]
+
+// CountQueryBuilder → awaiting yields number
+const count = await em.qb(ArticleSchema)
+  .count()
+  .where({ title: { $like: '%orm%' } });
+// count is number
+
+// InsertQueryBuilder → awaiting yields QueryResult
+const res1 = await em.qb(ArticleSchema).insert({
+  title: 'New Article',
+  text: 'Content here',
+  author: 1,
+});
+// res1 is QueryResult<Article>
+console.log(res1.insertId);
+
+// UpdateQueryBuilder → awaiting yields QueryResult
+const res2 = await em.qb(ArticleSchema)
+  .update({ title: 'Updated' })
+  .where({ id: 1 });
+// res2 is QueryResult<Article>
+console.log(res2.affectedRows);
+
+// DeleteQueryBuilder → awaiting yields QueryResult
+const res3 = await em.qb(ArticleSchema)
+  .delete()
+  .where({ id: 1 });
+// res3 is QueryResult<Article>
+```
+
+> `em.qb()` is a shortcut for `em.createQueryBuilder()`.
 
 ## Assigning to `Reference` properties
 
-When you define the property as [`Reference`](/api/core/class/Reference) wrapper, you will need to assign the [`Reference`](/api/core/class/Reference) instance to it instead of the entity. You can convert any entity to a [`Reference`](/api/core/class/Reference) wrapper via `ref(entity)`, or use the `wrapped` option of [`em.getReference()`](/api/core/class/EntityManager#getReference):
+When you define a property as a `Reference` wrapper, you will need to assign a `Reference` instance to it instead of the entity. You can convert any entity to a `Reference` via `ref(entity)`, or use the `wrapped` option of `em.getReference()`:
 
 > `ref(e)` is a shortcut for `wrap(e).toReference()`, which is the same as `Reference.create(e)`.
 
 ```ts
 import { ref } from '@mikro-orm/core';
 
-const article = await em.findOne(Article, 1);
+const article = await em.findOne(ArticleSchema, 1);
 const repo = em.getRepository(User);
 
 article.author = repo.getReference(2, { wrapped: true });
@@ -272,64 +337,14 @@ article.author = ref(repo.getReference(2));
 await em.flush();
 ```
 
-You can also create entity references without access to [`EntityManager`](/api/core/class/EntityManager) using the `rel()` helper:
+You can also create entity references without access to `EntityManager` using the `rel()` helper:
 
 ```ts
-import { Rel, rel } from '@mikro-orm/core';
+import { rel } from '@mikro-orm/core';
 
-export class Article {
-  author!: Ref<User>;
-
-  constructor(authorId: number) {
-    this.author = rel(User, authorId);
-  }
-}
-```
-
-Another way is to use `toReference()` method available as part of the [`wrap()` helper](../wrap-helper.md):
-
-```ts
-const author = new User(...)
-article.author = wrap(author).toReference();
-```
-
-If the reference already exist, you need to re-assign it with a new [`Reference`](/api/core/class/Reference) instance - they hold identity just like entities, so you need to replace them:
-
-```ts
-article.author = ref(new User(...));
-```
-
-## What is `Ref` type?
-
-`Ref` is an intersection type that adds primary key property to the [`Reference`](/api/core/class/Reference) interface. It allows getting the primary key from [`Reference`](/api/core/class/Reference) instance directly.
-
-By default, we try to detect the PK by checking if a property with a known name exists. We check for those in order: `_id`, `uuid`, `id` - with a way to manually set the property name via the `PrimaryKeyProp` symbol (`[PrimaryKeyProp]?: 'foo';`).
-
-```ts
-const article = await em.findOne(Article, 1);
-console.log(article.author.id); // ok, returns the PK
-```
-
-## Strict partial loading
-
-The `Loaded` type also respects the partial loading hints (`fields` option). When used, the returned type will only allow accessing selected properties. Primary keys are automatically selected and available on the type level.
-
-```ts
-// article is typed to `Selected<Article, 'author', 'title' | 'author.email'>`
-const article = await em.findOneOrFail(Article, 1, {
-  fields: ['title', 'author.email'],
-  populate: ['author'],
+const article = em.create(ArticleSchema, {
+  title: 'New Article',
+  text: 'Content here',
+  author: rel(User, 1),
 });
-
-const id = article.id; // ok, PK is selected automatically
-const title = article.title; // ok, title is selected
-const publisher = article.publisher; // fail, not selected
-const author = article.author.id; // ok, PK is selected automatically
-const email = article.author.email; // ok, selected
-const name = article.author.name; // fail, not selected
 ```
-
-See [live demo](https://stackblitz.com/edit/mikro-orm-v6-strict-partial-loading?file=basic.test.ts):
-
-<iframe width="100%" height="800" frameborder="0" src="https://stackblitz.com/edit/mikro-orm-v6-strict-partial-loading?embed=1&ctl=1&view=editor&file=basic.test.ts">
-</iframe>

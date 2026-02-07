@@ -361,6 +361,25 @@ async onFlush(args: FlushEventArgs) {
 }
 ```
 
+To convert a delete to an update (e.g. for soft deletes):
+
+```ts
+async onFlush(args: FlushEventArgs) {
+  for (const cs of args.uow.getChangeSets()) {
+    if (cs.type !== ChangeSetType.DELETE) {
+      continue;
+    }
+
+    if (!cs.meta.properties.deletedAt) {
+      continue;
+    }
+
+    cs.entity.deletedAt = new Date();
+    args.uow.computeChangeSet(cs.entity, ChangeSetType.UPDATE);
+  }
+}
+```
+
 To convert an update to a delete:
 
 ```ts

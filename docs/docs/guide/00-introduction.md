@@ -61,7 +61,7 @@ Full list of currently available drivers:
 
 ## What are we building?
 
-We already mentioned what technologies will be used, and now more about the project. It will be a simple API for a blog, with authentication, publishing, and commenting. For that, we will use four regular entities: `User`, `Article`, `Comment`, and `Tag`. Later on, we will add one more entity, `ArticleListing`, a virtual entity represented by an SQL expression rather than a database table.
+We already mentioned what technologies will be used, and now more about the project. It will be a simple API for a blog, with authentication, publishing, and commenting. For that, we will use four regular entities: `User`, `Article`, `Comment`, and `Tag`. Later on, we will add one more entity, `ArticleListing`, a virtual entity represented by an SQL expression rather than a database table, and then convert it to a native database view.
 
 And the API routes description:
 
@@ -87,7 +87,8 @@ The app will be using Node.js 24, TypeScript 5.9, and we will build it using a m
 Here is (an incomplete) list of features you will try going through this guide.
 
 - creating an app from scratch with TypeScript setup
-- defining entities with the `defineEntity` helper and full type inference
+- defining entities with the `defineEntity` helper and `InferEntity` for full type inference
+- extending entities with custom methods via `setClass`
 - request context management via middleware/fastify hook
 - entity relations, advanced entity definition (e.g. lazy scalar properties)
 - advanced type safety (e.g. `Reference` wrapper and `Loaded` type)

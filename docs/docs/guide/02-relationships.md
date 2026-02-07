@@ -20,9 +20,9 @@ The `.onUpdate()` callback is executed during the `flush` operation if the ORM d
 Now let's say we want to have these timestamps (and the primary key) on every entity in our app. With `defineEntity`, we can create a base entity that other entities extend. Put the following into `src/modules/common/base.entity.ts`:
 
 ```ts title='base.entity.ts'
-import { defineEntity, InferEntity, p } from '@mikro-orm/core';
+import { defineEntity, p } from '@mikro-orm/core';
 
-export const BaseEntity = defineEntity({
+export const BaseSchema = defineEntity({
   name: 'BaseEntity',
   abstract: true,
   properties: {
@@ -31,8 +31,6 @@ export const BaseEntity = defineEntity({
     updatedAt: p.datetime().onCreate(() => new Date()).onUpdate(() => new Date()),
   },
 });
-
-export type BaseEntity = InferEntity<typeof BaseEntity>;
 ```
 
 This is an abstract entity (it won't have its own table). Other entities can extend it using the `extends` option:
@@ -40,19 +38,12 @@ This is an abstract entity (it won't have its own table). Other entities can ext
 > You can see the import with `.js` extension - this is mandatory for ESM projects. If your project is targeting CommonJS, drop it.
 
 ```ts title='user.entity.ts'
-import { defineEntity, Opt, p } from '@mikro-orm/core';
-import { BaseEntity } from '../common/base.entity.js';
-
-export class User extends BaseEntity {
-  fullName!: string;
-  email!: string;
-  password!: string;
-  bio!: string & Opt;
-}
+import { defineEntity, type InferEntity, p } from '@mikro-orm/core';
+import { BaseSchema } from '../common/base.entity.js';
 
 export const UserSchema = defineEntity({
-  class: User,
-  extends: BaseEntity,
+  name: 'User',
+  extends: BaseSchema,
   properties: {
     fullName: p.string(),
     email: p.string(),
@@ -60,6 +51,8 @@ export const UserSchema = defineEntity({
     bio: p.text().default(''),
   },
 });
+
+export type User = InferEntity<typeof UserSchema>;
 ```
 
 ## More entities
@@ -68,22 +61,22 @@ Time to add the `Article` entity. It will have 4 string properties and one relat
 
 ```ts title='article.entity.ts'
 import { defineEntity, InferEntity, p } from '@mikro-orm/core';
-import { BaseEntity } from '../common/base.entity.js';
-import { User } from '../user/user.entity.js';
+import { BaseSchema } from '../common/base.entity.js';
+import { UserSchema } from '../user/user.entity.js';
 
-export const Article = defineEntity({
+export const ArticleSchema = defineEntity({
   name: 'Article',
-  extends: BaseEntity,
+  extends: BaseSchema,
   properties: {
     slug: p.string().unique(),
     title: p.string().index(),
     description: p.string().length(1000),
     text: p.text().lazy(),
-    author: () => p.manyToOne(User),
+    author: () => p.manyToOne(UserSchema),
   },
 });
 
-export type Article = InferEntity<typeof Article>;
+export type Article = InferEntity<typeof ArticleSchema>;
 ```
 
 Let's break this down, there are some new additions we haven't seen before:
@@ -92,9 +85,9 @@ Let's break this down, there are some new additions we haven't seen before:
 - `title` property is marked as `.index()`ed
 - `description` property has `.length(1000)`, the column will result in `varchar(1000)` with most SQL drivers
 - `text` property uses `.text()` for the text type, and is marked as `.lazy()`, meaning it won't be selected automatically
-- `author` property is our first relationship, defined with `p.manyToOne(User)`
+- `author` property is our first relationship, defined with `p.manyToOne(UserSchema)`
 
-Notice we use arrow functions for relations like `author: () => p.manyToOne(User)`. The arrow function wrapper is needed to handle circular references between entities.
+Notice we use arrow functions for relations like `author: () => p.manyToOne(UserSchema)`. The arrow function wrapper is needed to handle circular references between entities.
 
 > You can update your `mikro-orm.config.ts` to include the new `Article` entity in the `entities` array, but it is not strictly necessary. As long as the entity is part of some other discovered entity relationship, it will be discovered automatically.
 
@@ -128,7 +121,7 @@ We've been using [`em.create()`](/api/core/class/EntityManager#create) to create
 const em = orm.em.fork();
 
 // create new user entity instance
-const user = em.create(User, {
+const user = em.create(UserSchema, {
   email: 'foo@bar.com',
   fullName: 'Foo Bar',
   password: '123456',
@@ -141,7 +134,7 @@ await em.flush();
 em.clear();
 
 // create the article instance
-const article = em.create(Article, {
+const article = em.create(ArticleSchema, {
   slug: 'foo',
   title: 'Foo',
   text: 'Lorem impsum dolor sit amet',
@@ -212,8 +205,8 @@ We want the URL to remain the same after the article gets created, so let's gene
 
 ```ts title='article.entity.ts'
 import { defineEntity, InferEntity, p } from '@mikro-orm/core';
-import { BaseEntity } from '../common/base.entity.js';
-import { User } from '../user/user.entity.js';
+import { BaseSchema } from '../common/base.entity.js';
+import { UserSchema } from '../user/user.entity.js';
 
 function convertToSlug(text: string) {
   return text.toLowerCase()
@@ -221,25 +214,25 @@ function convertToSlug(text: string) {
              .replace(/ +/g, '-');
 }
 
-export const Article = defineEntity({
+export const ArticleSchema = defineEntity({
   name: 'Article',
-  extends: BaseEntity,
+  extends: BaseSchema,
   properties: {
-    slug: p.string().unique().onCreate((article: Article) => convertToSlug(article.title)),
+    slug: p.string().unique().onCreate(article => convertToSlug(article.title)),
     title: p.string().index(),
-    description: p.string().length(1000).onCreate((article: Article) => article.text.substring(0, 999) + '…'),
+    description: p.string().length(1000).onCreate(article => article.text.substring(0, 999) + '…'),
     text: p.text().lazy(),
-    author: () => p.manyToOne(User),
+    author: () => p.manyToOne(UserSchema),
   },
 });
 
-export type Article = InferEntity<typeof Article>;
+export type Article = InferEntity<typeof ArticleSchema>;
 ```
 
 With `.onCreate()`, the `slug` and `description` properties are automatically optional in [`em.create()`](/api/core/class/EntityManager#create) - no additional type configuration needed!
 
 ```ts
-const article = em.create(Article, {
+const article = em.create(ArticleSchema, {
   title: 'Foo is Bar',
   text: 'Lorem impsum dolor sit amet',
   author: user.id,
@@ -271,7 +264,7 @@ What if we want to fetch the `Article` together with the `author` relation? We c
 em.clear();
 
 // find article by id and populate its author
-const articleWithAuthor = await em.findOne(Article, article.id, { populate: ['author'] });
+const articleWithAuthor = await em.findOne(ArticleSchema, article.id, { populate: ['author'] });
 console.log(articleWithAuthor);
 ```
 
@@ -301,7 +294,7 @@ Article {
 You can see the `text` property being `undefined` - this is because we marked it as `lazy`, therefore the value is not automatically selected. If we add the `text` to populate hint, we will get the value:
 
 ```ts title='server.ts'
-const articleWithAuthor = await em.findOne(Article, article.id, {
+const articleWithAuthor = await em.findOne(ArticleSchema, article.id, {
   populate: ['author', 'text'],
 });
 ```
@@ -309,7 +302,7 @@ const articleWithAuthor = await em.findOne(Article, article.id, {
 Or if the entity is already loaded, you can use `em.populate()`:
 
 ```ts title='server.ts'
-const articleWithAuthor = await em.findOne(Article, article.id, {
+const articleWithAuthor = await em.findOne(ArticleSchema, article.id, {
   populate: ['author'],
 });
 await em.populate(articleWithAuthor!, ['text']);
@@ -325,7 +318,7 @@ Since `Article.author` is a ManyToOne (to-one) relation, the balanced strategy u
 - `LoadStrategy.SELECT_IN` - always use separate queries for all relations
 
 ```ts title='server.ts'
-const articleWithAuthor = await em.findOne(Article, article.id, {
+const articleWithAuthor = await em.findOne(ArticleSchema, article.id, {
   populate: ['author', 'text'],
   strategy: LoadStrategy.SELECT_IN, // use separate queries instead
 });
@@ -343,30 +336,25 @@ For now, let's use `sha256` algorithm which can be created synchronously, and ha
 
 ```ts title='user.entity.ts'
 import crypto from 'node:crypto';
-import { defineEntity, Opt, p } from '@mikro-orm/core';
+import { defineEntity, type InferEntity, p } from '@mikro-orm/core';
 import { BaseEntity } from '../common/base.entity.js';
 
-export class User extends BaseEntity {
-  fullName!: string;
-  email!: string;
-  password!: string;
-  bio!: string & Opt;
-
-  static hashPassword(password: string) {
-    return crypto.createHmac('sha256', password).digest('hex');
-  }
+function hashPassword(password: string) {
+  return crypto.createHmac('sha256', password).digest('hex');
 }
 
 export const UserSchema = defineEntity({
-  class: User,
+  name: 'User',
   extends: BaseEntity,
   properties: {
     fullName: p.string(),
     email: p.string(),
-    password: p.string().hidden().lazy().onCreate((user: User) => User.hashPassword(user.password)),
+    password: p.string().hidden().lazy().onCreate(user => hashPassword(user.password)),
     bio: p.text().default(''),
   },
 });
+
+export type User = InferEntity<typeof UserSchema>;
 ```
 
 After running `npm start`, you can see that the password is hashed, and later when you load the `Article.author`, the password is no longer selected:
@@ -390,25 +378,19 @@ That should be good enough for the time being. Don't worry, you will improve on 
 We have the `Article.author` property that defines the owning side of this relationship between `Article` and `User` entities. Now let's define the inverse side - for ManyToOne relation it is the OneToMany kind, represented by a `Collection` of `Article` entities. With `defineEntity`, you use `p.oneToMany()`:
 
 ```ts title='user.entity.ts'
-export class User extends BaseEntity {
-  fullName!: string;
-  email!: string;
-  password!: string;
-  bio!: string & Opt;
-  articles = new Collection<Article>(this);
-}
-
 export const UserSchema = defineEntity({
-  class: User,
-  extends: BaseEntity,
+  name: 'User',
+  extends: BaseSchema,
   properties: {
     fullName: p.string(),
     email: p.string(),
     password: p.string().hidden().lazy(),
     bio: p.text().default(''),
-    articles: () => p.oneToMany(Article, { mappedBy: 'author' }),
+    articles: () => p.oneToMany(ArticleSchema).mappedBy('author'),
   },
 });
+
+export type User = InferEntity<typeof UserSchema>;
 ```
 
 MikroORM represents the relation via the `Collection` class. Before diving into what it means, let's add one more entity to the `Article` module to test the ManyToMany relation too. It will be a `Tag` entity, so you can categorize the article based on some dynamically defined tags.
@@ -417,34 +399,34 @@ MikroORM represents the relation via the `Collection` class. Before diving into 
 
 ```ts title='tag.entity.ts'
 import { defineEntity, InferEntity, p } from '@mikro-orm/core';
-import { BaseEntity } from '../common/base.entity.js';
-import { Article } from './article.entity.js';
+import { BaseSchema } from '../common/base.entity.js';
+import { ArticleSchema } from './article.entity.js';
 
-export const Tag = defineEntity({
+export const TagSchema = defineEntity({
   name: 'Tag',
-  extends: BaseEntity,
+  extends: BaseSchema,
   properties: {
     name: p.string().length(20),
-    articles: () => p.manyToMany(Article, { mappedBy: 'tags' }),
+    articles: () => p.manyToMany(ArticleSchema).mappedBy('tags'),
   },
 });
 
-export type Tag = InferEntity<typeof Tag>;
+export type Tag = InferEntity<typeof TagSchema>;
 ```
 
 And you need to define the owning side too, which is `Article.tags`:
 
 ```ts title='article.entity.ts'
-export const Article = defineEntity({
+export const ArticleSchema = defineEntity({
   name: 'Article',
-  extends: BaseEntity,
+  extends: BaseSchema,
   properties: {
-    slug: p.string().unique().onCreate((article: Article) => convertToSlug(article.title)),
+    slug: p.string().unique().onCreate(article => convertToSlug(article.title)),
     title: p.string().index(),
-    description: p.string().length(1000).onCreate((article: Article) => article.text.substring(0, 999) + '…'),
+    description: p.string().length(1000).onCreate(article => article.text.substring(0, 999) + '…'),
     text: p.text().lazy(),
-    author: () => p.manyToOne(User),
-    tags: () => p.manyToMany(Tag),
+    author: () => p.manyToOne(UserSchema),
+    tags: () => p.manyToMany(TagSchema),
   },
 });
 ```
@@ -452,7 +434,7 @@ export const Article = defineEntity({
 It is enough to point to the owning side via `mappedBy` option from the inverse side (or vice versa). If you want to define the relation from owning side, use `inversedBy` option. A ManyToMany relation that does not define any of those two is always considered the owning side.
 
 ```ts
-tags: () => p.manyToMany(Tag, { inversedBy: 'articles' }),
+tags: () => p.manyToMany(TagSchema).inversedBy('articles'),
 ```
 
 ### Working with collections
@@ -478,7 +460,7 @@ So far you used `em.findOne()` which can return `null` if the entity is not foun
 em.clear();
 
 // populating User.articles collection
-const user = await em.findOneOrFail(User, 1, { populate: ['articles'] });
+const user = await em.findOneOrFail(UserSchema, 1, { populate: ['articles'] });
 console.log(user);
 
 // or you could lazy load the collection later via `init()` method
@@ -531,8 +513,8 @@ Now try to add some tags to the first article:
 ```ts title='server.ts'
 // create some tags and assign them to the first article
 const [article] = user.articles;
-const newTag = em.create(Tag, { name: 'new' });
-const oldTag = em.create(Tag, { name: 'old' });
+const newTag = em.create(TagSchema, { name: 'new' });
+const oldTag = em.create(TagSchema, { name: 'old' });
 article.tags.add(newTag, oldTag);
 await em.flush();
 console.log(article.tags);
@@ -555,6 +537,48 @@ await em.flush();
 
 Refer to the [Collections section](../collections) in the docs for more information and examples.
 
+## Cascading
+
+When persisting or removing entities, MikroORM automatically cascades the operation to associated entities. By default, `Cascade.PERSIST` is enabled on all relations - this means that when you persist an entity, all its loaded associations are persisted too. This is why `em.create()` with nested data "just works".
+
+You can control this behavior via the `.cascade()` builder method:
+
+```ts
+import { Cascade } from '@mikro-orm/core';
+
+// default: cascade persist only
+tags: () => p.manyToMany(TagSchema),
+
+// cascade both persist and remove
+tags: () => p.manyToMany(TagSchema).cascade(Cascade.PERSIST, Cascade.REMOVE),
+
+// cascade everything (persist + remove)
+tags: () => p.manyToMany(TagSchema).cascade(Cascade.ALL),
+
+// disable cascade entirely
+tags: () => p.manyToMany(TagSchema).cascade(),
+```
+
+`Cascade.REMOVE` means removing the parent entity will also remove the related entities. Be careful with this on ManyToOne relations, as the removed entity might still be referenced elsewhere.
+
+### Orphan removal
+
+In Chapter 3, when we add `Article.comments`, we use `orphanRemoval: true`. This is a more aggressive form of cascading: any entity removed from the collection will be deleted from the database entirely, rather than just having its foreign key set to `null`.
+
+```ts
+comments: () => p.oneToMany(CommentSchema).mappedBy('article').orphanRemoval(),
+```
+
+This is useful when child entities have no meaning without their parent - a comment removed from an article's collection should be deleted, not left orphaned in the database.
+
+### Propagation
+
+MikroORM also propagates relation assignments automatically. When you set `comment.article = article`, the `article.comments` collection is updated too (and vice versa). This works for all bidirectional relations and is what makes the Identity Map consistent.
+
+> The discovery phase (which happens during `MikroORM.init()` or `new MikroORM()`) is required for propagation to work. See the [Propagation](../propagation.md) docs for more details.
+
+Read more about [Cascading](../cascading.md) in the documentation.
+
 # Events and life cycle hooks
 
 Time to improve the password hashing. Let's use the `argon2` package, which provides `hash` and `verify` functions. They are both async, so you cannot use `.onCreate()` directly. Instead, you need to use the lifecycle hooks via the `hooks` option in `defineEntity`.
@@ -570,48 +594,47 @@ The plan is following:
 - you check `changeSet.payload.password` to only hash when the password changed
 
 ```ts title='user.entity.ts'
-import { Collection, defineEntity, EventArgs, Opt, p } from '@mikro-orm/core';
-import { BaseEntity } from '../common/base.entity.js';
-import { Article } from '../article/article.entity.js';
+import { defineEntity, type InferEntity, EventArgs, p } from '@mikro-orm/core';
+import { BaseSchema } from '../common/base.entity.js';
+import { ArticleSchema } from '../article/article.entity.js';
 import { hash, verify } from 'argon2';
 
 async function hashPassword(args: EventArgs<User>) {
   // hash only if the password was changed
   const password = args.changeSet?.payload.password;
 
-  if (password) {
+  if (typeof password === 'string') {
     args.entity.password = await hash(password);
   }
 }
 
-export class User extends BaseEntity {
-  fullName!: string;
-  email!: string;
-  password!: string;
-  bio!: string & Opt;
-  articles = new Collection<Article>(this);
-
-  async verifyPassword(password: string) {
-    return verify(this.password, password);
-  }
-}
-
 export const UserSchema = defineEntity({
-  class: User,
-  extends: BaseEntity,
+  name: 'User',
+  extends: BaseSchema,
   properties: {
     fullName: p.string(),
     email: p.string(),
     password: p.string().hidden().lazy(),
     bio: p.text().default(''),
-    articles: () => p.oneToMany(Article, { mappedBy: 'author' }),
+    articles: () => p.oneToMany(ArticleSchema).mappedBy('author'),
   },
   hooks: {
     beforeCreate: [hashPassword],
     beforeUpdate: [hashPassword],
   },
 });
+
+// Extend the schema's auto-generated class to add custom methods
+export class User extends UserSchema.class {
+  async verifyPassword(password: string) {
+    return verify(this.password, password);
+  }
+}
+
+UserSchema.setClass(User);
 ```
+
+Notice how we use `setClass()` to extend the schema's auto-generated class. This avoids redeclaring all properties in the class - they are inferred from the schema automatically. The `User` class only adds the `verifyPassword` method. After calling `setClass()`, MikroORM will use the custom `User` class for all entity instances, so `em.create(User, {...})` and `em.find(User, {})` both work.
 
 ## ⛳ Checkpoint 2
 

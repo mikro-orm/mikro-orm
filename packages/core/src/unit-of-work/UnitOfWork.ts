@@ -332,7 +332,7 @@ export class UnitOfWork {
   computeChangeSet<T extends object>(entity: T, type?: ChangeSetType): void {
     const wrapped = helper(entity);
 
-    if (type) {
+    if (type === ChangeSetType.DELETE || type === ChangeSetType.DELETE_EARLY) {
       this.changeSets.set(entity, new ChangeSet(entity, type, {}, wrapped.__meta));
       return;
     }
@@ -341,6 +341,10 @@ export class UnitOfWork {
 
     if (!cs || this.checkUniqueProps(cs)) {
       return;
+    }
+
+    if (type) {
+      cs.type = type;
     }
 
     this.initIdentifier(entity);
