@@ -394,11 +394,11 @@ export class Collection<T extends object, O extends object = object> {
   }
 
   private createOrderBy<TT extends T>(orderBy: QueryOrderMap<TT> | QueryOrderMap<TT>[] = []): QueryOrderMap<TT>[] {
-    if (Utils.isEmpty(orderBy) && !Raw.hasObjectFragments(orderBy) && this.property.orderBy) {
-      orderBy = this.property.orderBy;
-    }
-
-    return Utils.asArray(orderBy);
+    return [
+      ...Utils.asArray(orderBy),
+      ...Utils.asArray(this.property.orderBy),
+      ...Utils.asArray(this.property.targetMeta?.orderBy),
+    ].filter(o => o != null) as QueryOrderMap<TT>[];
   }
 
   private createManyToManyCondition<TT extends T>(cond: FilterQuery<TT>) {
