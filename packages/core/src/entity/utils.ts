@@ -6,7 +6,7 @@ import { Utils } from '../utils/Utils.js';
  * Expands `books.perex` like populate to use `children` array instead of the dot syntax
  */
 function expandNestedPopulate<Entity>(parentProp: EntityProperty, parts: string[], strategy?: LoadStrategy, all?: boolean): PopulateOptions<Entity> {
-  const meta = parentProp.targetMeta! as EntityMetadata<Entity>;
+  const meta = parentProp.targetMeta as EntityMetadata<Entity>;
   const field = parts.shift()! as EntityKey<Entity>;
   const prop = meta.properties[field];
   const ret = { field, strategy, all } as PopulateOptions<Entity>;

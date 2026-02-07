@@ -1820,6 +1820,22 @@ export class QueryBuilder<
   }
 
   /**
+   * Registers a join for a specific polymorphic target type.
+   * Used by the driver to create per-target LEFT JOINs for JOINED loading.
+   * @internal
+   */
+  addPolymorphicJoin(prop: EntityProperty, targetMeta: EntityMetadata, ownerAlias: string, alias: string, type: JoinType, path: string, schema?: string): void {
+    // Override referencedColumnNames to use the specific target's PK columns
+    // (polymorphic targets may have different PK column names, e.g. org_id vs user_id)
+    const referencedColumnNames = targetMeta.getPrimaryProps().flatMap(pk => pk.fieldNames);
+    const targetProp = { ...prop, targetMeta, referencedColumnNames } as EntityProperty;
+    const aliasedName = `${ownerAlias}.${prop.name}[${targetMeta.className}]#${alias}`;
+    this._joins[aliasedName] = this.helper.joinManyToOneReference(targetProp, ownerAlias, alias, type, {}, schema);
+    this._joins[aliasedName].path = path;
+    this.createAlias(targetMeta.class, alias);
+  }
+
+  /**
    * @internal
    */
   getAliasMap(): Dictionary<EntityName> {

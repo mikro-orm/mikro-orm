@@ -66,7 +66,16 @@ export class FileCacheAdapter implements SyncCacheAdapter {
   clear(): void {
     const path = this.path('*');
     const files = fs.glob(path);
-    files.forEach(file => unlinkSync(file));
+
+    for (const file of files) {
+      /* v8 ignore next */
+      try {
+        unlinkSync(file);
+      } catch {
+        // ignore if file is already gone
+      }
+    }
+
     this.cache = {};
   }
 

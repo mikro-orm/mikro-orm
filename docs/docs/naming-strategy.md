@@ -146,3 +146,9 @@ Returns the property name for a many-to-many relation. Used in the `EntityGenera
 For example, with a pivot table `author_books` and owner table `author`, the default implementation returns `books`.
 
 ---
+
+#### `NamingStrategy.discriminatorColumnName(baseName: string): string`
+
+Returns the discriminator column name for polymorphic relations. The `baseName` is the discriminator property base name (e.g., `likeable`), and the default implementation appends `Type` and converts to column format (e.g., `likeable_type`).
+
+---

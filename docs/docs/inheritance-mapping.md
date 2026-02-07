@@ -549,3 +549,15 @@ This strategy is very efficient for querying across all types in the hierarchy o
 For Single-Table-Inheritance to work in scenarios where you are using either a legacy database schema or a self-written database schema, you have to make sure that all columns that are not in the root entity but in any of the different sub-entities has to allow null values. Columns that have NOT NULL constraints have to be on the root entity of the single-table inheritance hierarchy.
 
 > This part of documentation is highly inspired by [doctrine docs](https://www.doctrine-project.org/projects/doctrine-orm/en/latest/reference/inheritance-mapping.html) as the behaviour here is pretty much the same.
+
+## See also: Polymorphic Relations
+
+If you need a relationship that can point to multiple unrelated entity types (each with their own table), consider using [Polymorphic Relations](./relationships.md#polymorphic-relations) instead of inheritance.
+
+| Feature      | Single Table Inheritance                         | Polymorphic Relations                           |
+|--------------|--------------------------------------------------|-------------------------------------------------|
+| Storage      | Single table for all types                       | Each type has its own table                     |
+| Use case     | Entities share common fields/behavior            | Flexible FK to unrelated entities               |
+| Inheritance  | Required (common base class)                     | Not required                                    |
+| Foreign keys | Native FK constraints with referential integrity | No FK constraints (no database-level integrity) |
+| Example      | `Cat`, `Dog` extending `Animal`                  | `Like` pointing to `Post` or `Comment`          |

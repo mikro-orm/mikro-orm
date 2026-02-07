@@ -27,7 +27,9 @@ export type EntityOptions<T, E = T extends EntityClass<infer P> ? P : T> = {
   schema?: string;
   /** Override default collection/table name. Alias for `tableName`. */
   collection?: string;
-  /** For {@doclink inheritance-mapping#single-table-inheritance | Single Table Inheritance}. */
+  /** For {@doclink inheritance-mapping#single-table-inheritance | Single Table Inheritance}. Specify the property name that stores the discriminator value. Alias for `discriminatorColumn`. */
+  discriminator?: (T extends EntityClass<infer P> ? keyof P : string) | AnyString;
+  /** For {@doclink inheritance-mapping#single-table-inheritance | Single Table Inheritance}. @deprecated Use `discriminator` instead. */
   discriminatorColumn?: (T extends EntityClass<infer P> ? keyof P : string) | AnyString;
   /** For {@doclink inheritance-mapping#single-table-inheritance | Single Table Inheritance}. */
   discriminatorMap?: Dictionary<string>;
@@ -337,8 +339,8 @@ export interface PropertyOptions<Owner> {
 }
 
 export interface ReferenceOptions<Owner, Target> extends PropertyOptions<Owner> {
-  /** Set target entity type. */
-  entity?: () => EntityName<Target>;
+  /** Set target entity type. For polymorphic relations, pass an array of entity types. */
+  entity?: () => EntityName<Target> | EntityName<Target>[];
 
   /** Set what actions on owning entity should be cascaded to the relationship. Defaults to [Cascade.PERSIST, Cascade.MERGE] (see {@doclink cascading}). */
   cascade?: Cascade[];
@@ -413,6 +415,18 @@ export interface ManyToOneOptions<Owner, Target> extends ReferenceOptions<Owner,
 
   /** Set a custom foreign key constraint name, overriding NamingStrategy.indexName(). */
   foreignKeyName?: string;
+
+  /**
+   * For polymorphic relations. Specifies the property name that stores the entity type discriminator.
+   * Defaults to `{property}Type`. Only used when `entity` returns an array of types.
+   */
+  discriminator?: string;
+
+  /**
+   * For polymorphic relations. Custom mapping of discriminator values to entity class names.
+   * If not provided, table names are used as discriminator values.
+   */
+  discriminatorMap?: Dictionary<string>;
 }
 
 export interface OneToManyOptions<Owner, Target> extends ReferenceOptions<Owner, Target> {
@@ -483,6 +497,18 @@ export interface OneToOneOptions<Owner, Target> extends Partial<Omit<OneToManyOp
 
   /** Enable/disable foreign key constraint creation on this relation */
   createForeignKeyConstraint?: boolean;
+
+  /**
+   * For polymorphic relations. Specifies the property name that stores the entity type discriminator.
+   * Defaults to `{property}Type`. Only used when `entity` returns an array of types.
+   */
+  discriminator?: string;
+
+  /**
+   * For polymorphic relations. Custom mapping of discriminator values to entity class names.
+   * If not provided, table names are used as discriminator values.
+   */
+  discriminatorMap?: Dictionary<string>;
 }
 
 export interface ManyToManyOptions<Owner, Target> extends ReferenceOptions<Owner, Target> {
@@ -539,6 +565,18 @@ export interface ManyToManyOptions<Owner, Target> extends ReferenceOptions<Owner
 
   /** Enable/disable foreign key constraint creation on this relation */
   createForeignKeyConstraint?: boolean;
+
+  /**
+   * For polymorphic M:N relations. Specifies the column name in the pivot table that stores the entity type discriminator.
+   * This allows multiple entities to share a pivot table with the same inverse entity.
+   */
+  discriminator?: string;
+
+  /**
+   * For polymorphic M:N relations. Custom mapping of discriminator values to entity class names.
+   * If not provided, table names are used as discriminator values.
+   */
+  discriminatorMap?: Dictionary<string>;
 }
 
 export interface EmbeddedOptions<Owner, Target> extends PropertyOptions<Owner> {
@@ -552,6 +590,9 @@ export interface EmbeddedOptions<Owner, Target> extends PropertyOptions<Owner> {
 export interface EmbeddableOptions<Owner> {
   /** Specify constructor parameters to be used in `em.create` or when `forceConstructor` is enabled. Those should be names of declared entity properties in the same order as your constructor uses them. The ORM tries to infer those automatically, use this option in case the inference fails. */
   constructorParams?: (Owner extends EntityClass<infer P> ? keyof P : string)[];
+  /** For polymorphic embeddables. Specify the property name that stores the discriminator value. Alias for `discriminatorColumn`. */
+  discriminator?: (Owner extends EntityClass<infer P> ? keyof P : string) | AnyString;
+  /** For polymorphic embeddables. @deprecated Use `discriminator` instead. */
   discriminatorColumn?: (Owner extends EntityClass<infer P> ? keyof P : string) | AnyString;
   discriminatorMap?: Dictionary<string>;
   discriminatorValue?: number | string;

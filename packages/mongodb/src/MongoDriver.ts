@@ -17,6 +17,7 @@ import {
   type FindOptions,
   type NativeInsertUpdateManyOptions,
   type NativeInsertUpdateOptions,
+  PolymorphicRef,
   type PopulateOptions,
   type PopulatePath,
   type QueryResult,
@@ -366,6 +367,26 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
           } else {
             copiedData[prop.name] = this.renameFields(prop.targetMeta!.class, copiedData[prop.name], dotPaths, prop.object || object, false);
           }
+        } else if (prop.polymorphic && prop.fieldNames?.length >= 2) {
+          // Polymorphic M:1: split into discriminator + FK fields
+          const value = copiedData[k];
+          delete copiedData[k];
+
+          if (value instanceof PolymorphicRef) {
+            copiedData[prop.fieldNames[0]] = value.discriminator;
+            const idField = prop.fieldNames[1];
+            const targetMeta = this.metadata.find(prop.discriminatorMap![value.discriminator] as any);
+            const hasObjectId = targetMeta && targetMeta.properties[targetMeta.primaryKeys[0]]?.type === 'ObjectId';
+            copiedData[idField] = hasObjectId ? this.convertObjectIds(value.id as any) : value.id;
+          } else if (Array.isArray(value)) {
+            // Tuple format: [discriminator, id]
+            copiedData[prop.fieldNames[0]] = value[0];
+            copiedData[prop.fieldNames[1]] = value[1] != null ? this.convertObjectIds(value[1]) : value[1];
+          } else if (value == null) {
+            prop.fieldNames.forEach(f => copiedData[f] = null);
+          }
+
+          return;
         } else {
           const meta2 = this.metadata.find(prop.targetMeta!.class)!;
           const pk = meta2.properties[meta2.primaryKeys[0]];

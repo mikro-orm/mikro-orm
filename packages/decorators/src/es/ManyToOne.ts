@@ -10,7 +10,7 @@ import {
 import { prepareMetadataContext, processDecoratorParameters } from '../utils.js';
 
 export function ManyToOne<Target extends object, Owner extends object>(
-  entity: ManyToOneOptions<Owner, Target> | ((e?: Owner) => EntityName<Target>) = {},
+  entity: ManyToOneOptions<Owner, Target> | ((e?: Owner) => EntityName<Target> | EntityName[]) = {},
   options: Partial<ManyToOneOptions<Owner, Target>> = {},
 ) {
   return function (_: unknown, context: ClassFieldDecoratorContext<Owner, Target | undefined | null | Ref<Target>>) {
