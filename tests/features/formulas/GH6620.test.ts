@@ -13,7 +13,7 @@ class User {
   @Property()
   lastName!: string;
 
-  @Formula(alias => `(CONCAT(${alias}.first_name, ' ',${alias}.last_name))`)
+  @Formula(cols => `(CONCAT(${cols.firstName}, ' ',${cols.lastName}))`)
   name!: Opt<string>;
 
 }

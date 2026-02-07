@@ -12,13 +12,13 @@ import type {
   EntityClass,
   IndexCallback,
   ObjectQuery,
+  Raw,
 } from '../typings.js';
 import type { Cascade, LoadStrategy, DeferMode, QueryOrderMap, EmbeddedPrefixMode } from '../enums.js';
 import type { Type, types } from '../types/index.js';
 import type { EntityManager } from '../EntityManager.js';
 import type { FilterOptions, FindOptions } from '../drivers/IDatabaseDriver.js';
 import type { SerializeOptions } from '../serialization/EntitySerializer.js';
-import type { Raw } from '../utils/RawQueryFragment.js';
 
 export type EntityOptions<T, E = T extends EntityClass<infer P> ? P : T> = {
   /** Override default collection/table name. Alias for `collection`. */
@@ -33,6 +33,8 @@ export type EntityOptions<T, E = T extends EntityClass<infer P> ? P : T> = {
   discriminatorMap?: Dictionary<string>;
   /** For {@doclink inheritance-mapping#single-table-inheritance | Single Table Inheritance}. */
   discriminatorValue?: number | string;
+  /** Set inheritance strategy: 'tpt' for {@doclink inheritance-mapping#table-per-type-inheritance-tpt | Table-Per-Type} inheritance. When set on the root entity, each entity in the hierarchy gets its own table with a FK from child PK to parent PK. */
+  inheritance?: 'tpt';
   /**	Enforce use of constructor when creating managed entity instances. */
   forceConstructor?: boolean;
   /** Specify constructor parameters to be used in `em.create` or when `forceConstructor` is enabled. Those should be names of declared entity properties in the same order as your constructor uses them. The ORM tries to infer those automatically, use this option in case the inference fails. */
@@ -152,7 +154,7 @@ export interface PropertyOptions<Owner> {
   /**
    * For generated columns. This will be appended to the column type after the `generated always` clause.
    */
-  generated?: string | GeneratedColumnCallback<Owner>;
+  generated?: string | Raw | GeneratedColumnCallback<Owner>;
   /**
    * Set column as nullable for {@link https://mikro-orm.io/docs/schema-generator Schema Generator}.
    */

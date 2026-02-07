@@ -74,6 +74,8 @@ export interface ChangeSet<T> {
   payload: EntityDictionary<T>;
   persisted: boolean;
   originalEntity?: EntityData<T>;
+  /** For TPT: changesets for parent tables, ordered from immediate parent to root */
+  tptChangeSets?: ChangeSet<T>[];
 }
 
 export enum ChangeSetType {

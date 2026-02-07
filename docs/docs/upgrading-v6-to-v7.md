@@ -652,3 +652,78 @@ class Person {
   friends = new Collection<Person>(this);
 }
 ```
+
+## Formula callback signature changed
+
+The `formula` callback signature has changed. The parameters are now swapped, with `columns` as the first parameter and `table` as the second parameter.
+
+The `columns` parameter contains **unquoted** `alias.fieldName` references for each property. You should use the `quote` helper for proper identifier quoting, which handles database-specific quoting (backticks for MySQL, double quotes for PostgreSQL, square brackets for MSSQL).
+
+```diff
+-import { Entity, Formula } from '@mikro-orm/core';
++import { Entity, Formula, quote } from '@mikro-orm/core';
+
+-@Formula(alias => `${alias}.price * 1.19`)
++@Formula(cols => quote`${cols.price} * 1.19`)
+priceTaxed?: number;
+```
+
+The `quote` helper ensures proper identifier quoting across all database platforms:
+- MySQL/SQLite: `` `b0`.`price` * 1.19 ``
+- PostgreSQL: `"b0"."price" * 1.19`
+- MSSQL: `[b0].[price] * 1.19`
+
+For backwards compatibility, `cols.toString()` returns the table alias (quoted), so the old syntax using template literals with the alias still works for simple cases:
+
+```ts
+// Old syntax still works for the alias
+formula: cols => `${cols}.first_name || ' ' || ${cols}.last_name`
+```
+
+However, this only quotes the alias, not the column names. For full identifier quoting, use the `quote` helper.
+
+### Raw return type support
+
+Formula, index, check constraint, and generated column callbacks can now return a `Raw` value from the `quote` helper:
+
+```ts
+import { quote } from '@mikro-orm/postgresql';
+
+@Formula((cols, table) => quote`(select ${cols.id} from ${table.qualifiedName})`)
+computedField?: string;
+```
+
+## Index and Check constraint callback signatures changed
+
+Similar to formula callbacks, the signatures for index expressions, check constraints, and generated column callbacks have been updated. The `columns` parameter is now first, followed by `table`. Column values are **unquoted** - use the `quote` helper for proper identifier quoting.
+
+### Index expressions
+
+```diff
+-expression: (table, columns, name) => `create index ${name} on ${table} (${columns.email})`
++expression: (columns, table, name) => quote`create index ${name} on ${table} (${columns.email})`
+```
+
+The `table` object now includes a `qualifiedName` property that contains the schema-qualified table name (e.g., `schema.table`).
+
+### Check constraints
+
+```diff
+-check: columns => `${columns.price} > 0`
++check: (columns, table) => quote`${columns.price} > 0`
+```
+
+Check constraints now receive a `table` parameter for consistency with other callbacks.
+
+### Generated columns
+
+```diff
+-generated: columns => `${columns.firstName} || ' ' || ${columns.lastName}`
++generated: (columns, table) => quote`${columns.firstName} || ' ' || ${columns.lastName}`
+```
+
+Generated column callbacks now receive a `table` parameter for consistency.
+
+### TPT inheritance behavior
+
+For Table-Per-Type (TPT) inheritance, the `columns` parameter in schema callbacks (indexes, checks, generated columns) only includes properties that belong to the current entity's table. Inherited properties from parent tables are not included, since they physically exist in different tables and cannot be referenced in schema definitions.

@@ -106,6 +106,11 @@ export class MetadataDiscovery {
 
     for (const meta of discovered) {
       meta.root = discovered.get(meta.root.class);
+
+      // Pass 3: Final ownProps computation on the returned metadata storage
+      if (meta.inheritanceType === 'tpt') {
+        this.computeTPTOwnProps(meta);
+      }
     }
 
     return discovered;
@@ -156,6 +161,7 @@ export class MetadataDiscovery {
     // sort so we discover entities first to get around issues with nested embeddables
     filtered.sort((a, b) => !a.embeddable === !b.embeddable ? 0 : (a.embeddable ? 1 : -1));
     filtered.forEach(meta => this.initSingleTableInheritance(meta, filtered));
+    filtered.forEach(meta => this.initTablePerTypeInheritance(meta, filtered, false));
     filtered.forEach(meta => this.defineBaseEntityProperties(meta));
     filtered.forEach(meta => {
       const newMeta = EntitySchema.fromMetadata(meta).init().meta;
@@ -171,6 +177,10 @@ export class MetadataDiscovery {
     forEachProp((_m, p) => this.initRelation(p));
     forEachProp((m, p) => this.initEmbeddables(m, p));
     forEachProp((_m, p) => this.initFieldName(p));
+    // Second pass for TPT: compute ownProps after fieldNames are initialized
+    filtered.forEach(meta => this.initTablePerTypeInheritance(meta, filtered, true));
+    // Pass 1: Compute TPT ownProps before initGeneratedColumn/initCheckConstraints so they use correct column mapping
+    filtered.forEach(meta => this.computeTPTOwnProps(meta));
     forEachProp((m, p) => this.initVersionProperty(m, p));
     forEachProp((m, p) => this.initCustomType(m, p));
     forEachProp((m, p) => this.initGeneratedColumn(m, p));
@@ -199,6 +209,11 @@ export class MetadataDiscovery {
       meta = this.metadata.get(meta.class);
       meta.sync(true);
       this.findReferencingProperties(meta, filtered);
+
+      // Pass 2: Recompute TPT ownProps on registry metadata after sync() populates final props
+      if (meta.inheritanceType === 'tpt') {
+        this.computeTPTOwnProps(meta);
+      }
 
       return meta;
     });
@@ -375,7 +390,8 @@ export class MetadataDiscovery {
 
     const root = this.getRootEntity(base);
 
-    if (root.discriminatorColumn) {
+    // For STI (discriminatorColumn) or TPT (inheritance: 'tpt'), use the root entity
+    if (root.discriminatorColumn || root.inheritanceType === 'tpt' || (root as any).inheritance === 'tpt') {
       return root;
     }
 
@@ -1229,6 +1245,231 @@ export class MetadataDiscovery {
     meta.root.checks = Utils.unique([...meta.root.checks, ...meta.checks]);
   }
 
+  /**
+   * Initialize Table-Per-Type (TPT) inheritance.
+   * In TPT, each entity in the hierarchy gets its own table with only its own properties.
+   * Child tables have a FK from their PK to the parent's PK.
+   *
+   * This is called twice:
+   * - First pass (computeOwnProps=false): Sets up relationships (inheritanceType, tptParent, tptChildren)
+   * - Second pass (computeOwnProps=true): Computes ownProps after properties have fieldNames set
+   */
+  private initTablePerTypeInheritance(meta: EntityMetadata, metadata: EntityMetadata[], computeOwnProps: boolean): void {
+    if (!computeOwnProps) {
+      // First pass: set up relationships
+      if (meta.root !== meta && !(meta as Dictionary).__tptProcessed) {
+        meta.root = metadata.find(m => m.class === meta.root.class)!;
+        (meta.root as Dictionary).__tptProcessed = true;
+      } else {
+        delete (meta.root as Dictionary).__tptProcessed;
+      }
+
+      const inheritance = (meta as Dictionary).inheritance;
+      if (inheritance === 'tpt' && meta.root === meta) {
+        meta.inheritanceType = 'tpt';
+        meta.tptChildren = [];
+      }
+
+      if (meta.root.inheritanceType !== 'tpt') {
+        return;
+      }
+
+      const parent = this.getTPTParent(meta, metadata);
+
+      if (parent) {
+        meta.tptParent = parent;
+        meta.inheritanceType = 'tpt';
+
+        parent.tptChildren ??= [];
+        if (!parent.tptChildren.includes(meta)) {
+          parent.tptChildren.push(meta);
+        }
+      }
+      return;
+    }
+
+    // Second pass: Re-resolve tptParent/tptChildren references and set inheritanceType on registry metadata
+    if (meta.inheritanceType !== 'tpt') {
+      return;
+    }
+
+    // Re-resolve tptParent/tptChildren to use the same metadata objects as in the filtered array
+    if (meta.tptParent) {
+      meta.tptParent = metadata.find(m => m.class === meta.tptParent!.class) ?? meta.tptParent;
+    }
+
+    if (meta.tptChildren) {
+      meta.tptChildren = meta.tptChildren.map(child =>
+        metadata.find(m => m.class === child.class) ?? child,
+      );
+    }
+
+    // Set TPT metadata on the registry metadata
+    const registryMeta = this.metadata.get(meta.class);
+    if (registryMeta && registryMeta !== meta) {
+      registryMeta.inheritanceType = meta.inheritanceType;
+      registryMeta.tptParent = meta.tptParent ? this.metadata.get(meta.tptParent.class) : undefined;
+      registryMeta.tptChildren = meta.tptChildren?.map(child => this.metadata.get(child.class));
+    }
+
+    // Set up TPT discriminator map and values for polymorphic loading
+    // This allows determining the concrete type when querying/populating a TPT base class
+    this.initTPTDiscriminator(meta, metadata);
+
+    // Note: ownProps is computed later in mapDiscoveredEntities/discover after all properties are finalized
+  }
+
+  /**
+   * Initialize TPT discriminator map and virtual discriminator property.
+   * Unlike STI where the discriminator is a persisted column, TPT discriminator is computed
+   * at query time using CASE WHEN expressions based on which child table has data.
+   */
+  private initTPTDiscriminator(meta: EntityMetadata, metadata: EntityMetadata[]): void {
+    // Collect descendants for every TPT entity (not just root) since we may query any level
+    const getDepth = (m: EntityMetadata) => { let d = 0; while (m.tptParent) { d++; m = m.tptParent; } return d; };
+    const allDescendants = this.collectAllTPTDescendants(meta, metadata);
+    allDescendants.sort((a, b) => getDepth(b) - getDepth(a));
+    meta.allTPTDescendants = allDescendants;
+
+    // Only process root entities for discriminator map setup
+    if (meta.root !== meta) {
+      return;
+    }
+
+    // Build discriminator map: className -> class
+    meta.root.discriminatorMap = {} as Dictionary<EntityClass>;
+
+    for (const m of allDescendants) {
+      const name = this.namingStrategy.classToTableName(m.className);
+      meta.root.discriminatorMap[name] = m.class;
+      m.discriminatorValue = name;
+    }
+
+    // Also include the root if it's not abstract
+    if (!meta.abstract) {
+      const name = this.namingStrategy.classToTableName(meta.className);
+      meta.root.discriminatorMap[name] = meta.class;
+      meta.discriminatorValue = name;
+    }
+
+    // Create virtual discriminator property (persist: false)
+    // This property is computed at query time, not stored in the database
+    const discriminatorColumn = '__tpt_type';
+    if (!meta.root.properties[discriminatorColumn]) {
+      meta.root.addProperty({
+        name: discriminatorColumn,
+        type: 'string',
+        kind: ReferenceKind.SCALAR,
+        persist: false,
+        userDefined: false,
+        hidden: true,
+      } as EntityProperty);
+    }
+
+    // Store the discriminator column name for query building
+    meta.root.tptDiscriminatorColumn = discriminatorColumn;
+  }
+
+  /**
+   * Recursively collect all TPT descendants (children, grandchildren, etc.)
+   */
+  private collectAllTPTDescendants(meta: EntityMetadata, metadata: EntityMetadata[]): EntityMetadata[] {
+    const descendants: EntityMetadata[] = [];
+
+    const collect = (parent: EntityMetadata) => {
+      for (const child of parent.tptChildren ?? []) {
+        const resolved = metadata.find(m => m.class === child.class) ?? child;
+        if (!resolved.abstract) {
+          descendants.push(resolved);
+        }
+        collect(resolved);
+      }
+    };
+
+    collect(meta);
+    return descendants;
+  }
+
+  /**
+   * Compute ownProps for TPT entities. ownProps contains only properties defined
+   * in THIS entity, not inherited from parent. This is used for schema generation
+   * and persistence to determine which table owns each property.
+   *
+   * Called multiple times during discovery because metadata is progressively built:
+   * 1. In processDiscoveredEntities(): after fieldNames are set but before schema callbacks
+   *    (so initGeneratedColumn/initCheckConstraints use correct column mappings)
+   * 2. In mapDiscoveredEntities(): on final registry metadata after sync() populates props
+   * 3. In discover(): final pass on the returned metadata storage
+   * Each pass uses the latest property set, so earlier results get overwritten. This is
+   * intentional — ownProps must reflect the final state of properties at each stage.
+   */
+  private computeTPTOwnProps(meta: EntityMetadata): void {
+    if (meta.inheritanceType !== 'tpt') {
+      return;
+    }
+
+    // Filter out virtual properties (like __tpt_type) which are not persisted
+    const isPersisted = (prop: EntityProperty) => prop.persist !== false || prop.primary;
+
+    // Use Object.values(meta.properties) instead of meta.props since props may not be populated yet
+    // (props is set in sync() which runs after EntitySchema.init())
+    const allProps = Object.values<EntityProperty>(meta.properties);
+
+    if (!meta.tptParent) {
+      meta.ownProps = allProps.filter(isPersisted);
+    } else {
+      const parentProps = Object.values<EntityProperty>(meta.tptParent.properties);
+      const parentPropNames = new Set(parentProps.map(p => p.name));
+      meta.ownProps = allProps.filter(prop => !parentPropNames.has(prop.name) && isPersisted(prop));
+
+      // Create synthetic property for the TPT parent join (child PK → parent PK)
+      const pkProps = meta.getPrimaryProps();
+      const parentPkProps = meta.tptParent.getPrimaryProps();
+      const childFieldNames = pkProps.flatMap(p => p.fieldNames);
+      const parentFieldNames = parentPkProps.flatMap(p => p.fieldNames);
+
+      meta.tptParentProp = {
+        name: '[tpt:parent]',
+        kind: ReferenceKind.MANY_TO_ONE,
+        targetMeta: meta.tptParent,
+        fieldNames: childFieldNames,
+        referencedColumnNames: parentFieldNames,
+        persist: false,
+      } as EntityProperty;
+
+      // Create inverse property for joining from parent to child (parent PK → child PK)
+      meta.tptInverseProp = {
+        name: '[tpt:child]',
+        kind: ReferenceKind.ONE_TO_ONE,
+        owner: true,
+        targetMeta: meta,
+        fieldNames: parentFieldNames,
+        joinColumns: parentFieldNames,
+        referencedColumnNames: childFieldNames,
+        persist: false,
+      } as EntityProperty;
+    }
+  }
+
+  /**
+   * Find the direct TPT parent entity for the given entity.
+   */
+  private getTPTParent(meta: EntityMetadata, metadata: EntityMetadata[]): EntityMetadata | undefined {
+    if (meta.root === meta) {
+      return undefined;
+    }
+
+    return metadata.find(m => {
+      const ext = meta.extends!;
+
+      if (ext instanceof EntitySchema) {
+        return m.class === ext.meta.class || m.className === ext.meta.className;
+      }
+
+      return m.class === ext || m.className === Utils.className(ext);
+    });
+  }
+
   private createDiscriminatorProperty(meta: EntityMetadata): void {
     meta.addProperty({
       name: meta.discriminatorColumn!,
@@ -1249,14 +1490,21 @@ export class MetadataDiscovery {
   }
 
   private initCheckConstraints(meta: EntityMetadata): void {
-    const map = meta.createColumnMappingObject();
+    const columns = meta.createSchemaColumnMappingObject();
+    const qualifiedName = meta.schema ? `${meta.schema}.${meta.tableName}` : meta.tableName;
+    const table = {
+      name: meta.tableName,
+      schema: meta.schema,
+      qualifiedName,
+      toString: () => qualifiedName,
+    };
 
     for (const check of meta.checks) {
-      const columns = check.property ? meta.properties[check.property].fieldNames : [];
-      check.name ??= this.namingStrategy.indexName(meta.tableName, columns, 'check');
+      const fieldNames = check.property ? meta.properties[check.property].fieldNames : [];
+      check.name ??= this.namingStrategy.indexName(meta.tableName, fieldNames, 'check');
 
       if (check.expression instanceof Function) {
-        check.expression = check.expression(map);
+        check.expression = check.expression(columns, table);
       }
     }
 
@@ -1294,10 +1542,16 @@ export class MetadataDiscovery {
       return;
     }
 
-    const map = meta.createColumnMappingObject();
-
     if (prop.generated instanceof Function) {
-      prop.generated = prop.generated(map);
+      const columns = meta.createSchemaColumnMappingObject();
+      const qualifiedName = meta.schema ? `${meta.schema}.${meta.tableName}` : meta.tableName;
+      const table = {
+        name: meta.tableName,
+        schema: meta.schema,
+        qualifiedName,
+        toString: () => qualifiedName,
+      };
+      prop.generated = prop.generated(columns, table);
     }
   }
 

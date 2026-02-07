@@ -148,6 +148,17 @@ export class ChangeSetPersister {
     options = this.prepareOptions(meta, options, {
       convertCustomTypes: false,
     });
+
+    // For TPT child tables, resolve EntityIdentifier values in PK fields
+    if (changeSet.meta.inheritanceType === 'tpt' && changeSet.meta.tptParent) {
+      for (const pk of changeSet.meta.primaryKeys) {
+        const value = changeSet.payload[pk] as unknown;
+        if (value instanceof EntityIdentifier) {
+          changeSet.payload[pk] = value.getValue();
+        }
+      }
+    }
+
     // Use changeSet's own meta for STI entities to get correct field mappings
     const res = await this.driver.nativeInsertMany(changeSet.meta.class, [changeSet.payload], options);
 
@@ -199,6 +210,19 @@ export class ChangeSetPersister {
       convertCustomTypes: false,
       processCollections: false,
     });
+
+    // For TPT child tables, resolve EntityIdentifier values in PK fields
+    if (meta.inheritanceType === 'tpt' && meta.tptParent) {
+      for (const changeSet of changeSets) {
+        for (const pk of meta.primaryKeys) {
+          const value = changeSet.payload[pk] as unknown;
+          if (value instanceof EntityIdentifier) {
+            changeSet.payload[pk] = value.getValue();
+          }
+        }
+      }
+    }
+
     const res = await this.driver.nativeInsertMany(meta.class, changeSets.map(cs => cs.payload), options);
 
     for (let i = 0; i < changeSets.length; i++) {
