@@ -1,0 +1,28 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`advanced index features in mariadb > schema generator creates clustered index syntax > clustered index 1`] = `
+"create table \`aria_table\` (\`id\` int unsigned not null auto_increment primary key, \`sort_key\` int not null) default character set utf8mb4 engine = InnoDB comment = 'ENGINE=Aria';
+alter table \`aria_table\` add index \`clustered_idx\` (\`sort_key\`) clustering=yes;
+"
+`;
+
+exports[`advanced index features in mariadb > schema generator creates indexes with sort order and prefix length > create schema 1`] = `
+"create table \`adv_idx_maria_entity\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`email\` varchar(255) not null, \`content\` text not null, \`created_at\` datetime not null) default character set utf8mb4 engine = InnoDB;
+alter table \`adv_idx_maria_entity\` add index \`adv_idx_maria_entity_created_at_name_index\` (\`created_at\` DESC, \`name\` ASC);
+alter table \`adv_idx_maria_entity\` add index \`prefix_idx\` (\`content\`(100));
+"
+`;
+
+exports[`advanced index features in mariadb > schema generator diffs indexes with changed options > update schema 1`] = `
+"alter table \`adv_idx_maria_entity\` drop index \`adv_idx_maria_entity_created_at_name_index\`;
+alter table \`adv_idx_maria_entity\` drop index \`prefix_idx\`;
+alter table \`adv_idx_maria_entity\` add index \`adv_idx_maria_entity_created_at_name_index\` (\`created_at\` ASC, \`name\` DESC);
+alter table \`adv_idx_maria_entity\` add index \`prefix_idx\` (\`content\`(50));
+"
+`;
+
+exports[`advanced index features in mariadb > schema generator uses IGNORED keyword instead of INVISIBLE > ignored index 1`] = `
+"create table \`ignored_idx_test\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null) default character set utf8mb4 engine = InnoDB;
+alter table \`ignored_idx_test\` add index \`ignored_idx\` (\`name\`) ignored;
+"
+`;

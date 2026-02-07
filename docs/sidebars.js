@@ -51,6 +51,7 @@ module.exports = {
         'relationships',
         'type-safe-relations',
         'inheritance-mapping',
+        'indexes',
         'embeddables',
         'composite-keys',
         'json-properties',

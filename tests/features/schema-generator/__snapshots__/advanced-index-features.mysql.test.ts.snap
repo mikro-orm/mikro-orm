@@ -1,0 +1,21 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`advanced index features in mysql > schema generator creates indexes with sort order, prefix length, invisible, and collation > create schema 1`] = `
+"create table \`adv_idx_mysql_entity\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`email\` varchar(255) not null, \`content\` text not null, \`created_at\` datetime not null) default character set utf8mb4 engine = InnoDB;
+alter table \`adv_idx_mysql_entity\` add index \`adv_idx_mysql_entity_created_at_name_index\` (\`created_at\` DESC, \`name\` ASC);
+alter table \`adv_idx_mysql_entity\` add index \`prefix_idx\` (\`content\`(100));
+alter table \`adv_idx_mysql_entity\` add index \`invisible_idx\` (\`email\`) invisible;
+alter table \`adv_idx_mysql_entity\` add index \`collation_idx\` ((\`name\` collate utf8mb4_unicode_ci));
+"
+`;
+
+exports[`advanced index features in mysql > schema generator diffs indexes with changed options > update schema 1`] = `
+"alter table \`adv_idx_mysql_entity\` drop index \`collation_idx\`;
+alter table \`adv_idx_mysql_entity\` drop index \`adv_idx_mysql_entity_created_at_name_index\`;
+alter table \`adv_idx_mysql_entity\` drop index \`invisible_idx\`;
+alter table \`adv_idx_mysql_entity\` drop index \`prefix_idx\`;
+alter table \`adv_idx_mysql_entity\` add index \`adv_idx_mysql_entity_created_at_name_index\` (\`created_at\` ASC, \`name\` DESC);
+alter table \`adv_idx_mysql_entity\` add index \`invisible_idx\` (\`email\`);
+alter table \`adv_idx_mysql_entity\` add index \`prefix_idx\` (\`content\`(50));
+"
+`;

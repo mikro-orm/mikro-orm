@@ -179,6 +179,9 @@ export class Book2 {
 
 export const Book2Schema = defineEntity({
   class: Book2,
+  indexes: [
+    { name: 'book2_title_index', properties: ['title'], type: 'fulltext' },
+  ],
   properties: {
     uuidPk: p.string().primary().length(36),
     createdAt: p.datetime().length(3).defaultRaw(\`current_timestamp(3)\`),
@@ -754,6 +757,9 @@ export class Book2 {
 
 export const Book2Schema = defineEntity({
   class: Book2,
+  indexes: [
+    { name: 'book2_title_index', properties: ['title'], type: 'fulltext' },
+  ],
   properties: {
     uuidPk: p.string().primary().length(36),
     createdAt: p.datetime().length(3).defaultRaw(\`current_timestamp(3)\`),
