@@ -146,6 +146,7 @@ module.exports = {
       },
       items: [
         'usage-with-sql',
+        'usage-with-cockroachdb',
         'usage-with-mongo',
         'usage-with-nestjs',
         'usage-with-nextjs',

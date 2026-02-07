@@ -60,6 +60,17 @@ services:
     healthcheck:
       test: /usr/bin/pg_isready -h 'localhost'
 
+  cockroachdb:
+    image: cockroachdb/cockroach:latest-v24.3
+    ports:
+      - "26257:26257"
+      - "8080:8080"
+    volumes:
+      - cockroachdb:/cockroach/cockroach-data
+    command: start-single-node --insecure
+    healthcheck:
+      test: cockroach sql --insecure -e 'select 1'
+
   mssql:
     # image: mcr.microsoft.com/azure-sql-edge:latest
     image: mcr.microsoft.com/mssql/server:2025-CTP2.0-ubuntu-22.04
@@ -89,6 +100,10 @@ volumes:
       type: tmpfs
       device: tmpfs
   postgis:
+    driver_opts:
+      type: tmpfs
+      device: tmpfs
+  cockroachdb:
     driver_opts:
       type: tmpfs
       device: tmpfs

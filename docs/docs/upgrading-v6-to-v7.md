@@ -64,6 +64,19 @@ export default defineConfig({
 - `em.getKnex()` is replaced with `em.getKysely()`
 - support for `qb.getKnexQuery()` is removed completely, the ORM now builds queries internally
 
+### `driverOptions` structure changed
+
+Since knex is no longer used, `driverOptions` are now passed directly to the underlying database client (e.g. `pg.Pool` for PostgreSQL, `mysql2` for MySQL) instead of being knex options. The `connection` nesting is no longer needed:
+
+```diff
+driverOptions: {
+-  connection: {
+-    ssl: { ca: '...' },
+-  },
++  ssl: { ca: '...' },
+}
+```
+
 ## `persistAndFlush` and `removeAndFlush` methods removed
 
 Use `em.persist(entity).flush()` and `em.remove(entity).flush()` instead.
