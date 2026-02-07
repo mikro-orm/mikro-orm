@@ -171,7 +171,10 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
       return super.clear(options);
     }
 
-    await this.execute(this.helper.disableForeignKeysSQL());
+    if (this.options.disableForeignKeysForClear) {
+      await this.execute(this.helper.disableForeignKeysSQL());
+    }
+
     const schema = options?.schema ?? this.config.get('schema', this.platform.getDefaultSchemaName());
 
     for (const meta of this.getOrderedMetadata(schema).reverse()) {
@@ -181,7 +184,9 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
         .execute();
     }
 
-    await this.execute(this.helper.enableForeignKeysSQL());
+    if (this.options.disableForeignKeysForClear) {
+      await this.execute(this.helper.enableForeignKeysSQL());
+    }
 
     if (options?.clearIdentityMap ?? true) {
       this.clearIdentityMap();

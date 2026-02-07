@@ -56,18 +56,14 @@ test('6405', async () => {
   mock.mockReset();
   await orm.schema.clear();
   expect(mock.mock.calls).toEqual([
-    ['[query] set session_replication_role = \'replica\';'],
     ['[query] truncate table "myschema"."license" restart identity cascade'],
     ['[query] truncate table "myschema"."customer" restart identity cascade'],
-    ['[query] set session_replication_role = \'origin\';'],
   ]);
   mock.mockReset();
   await orm.schema.clear({ schema: 'myschema' });
   expect(mock.mock.calls).toEqual([
-    ['[query] set session_replication_role = \'replica\';'],
     ['[query] truncate table "myschema"."license" restart identity cascade'],
     ['[query] truncate table "myschema"."customer" restart identity cascade'],
-    ['[query] set session_replication_role = \'origin\';'],
   ]);
   mock.mockReset();
   await orm.schema.drop();

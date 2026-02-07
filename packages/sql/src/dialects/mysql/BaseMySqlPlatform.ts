@@ -6,6 +6,7 @@ import {
   QueryOrder,
   DecimalType,
   DoubleType,
+  type MikroORM,
   type IsolationLevel,
 } from '@mikro-orm/core';
 import { MySqlSchemaHelper } from './MySqlSchemaHelper.js';
@@ -33,6 +34,11 @@ export class BaseMySqlPlatform extends AbstractSqlPlatform {
 
   override getDefaultCharset(): string {
     return 'utf8mb4';
+  }
+
+  override init(orm: MikroORM) {
+    super.init(orm);
+    orm.config.get('schemaGenerator').disableForeignKeysForClear ??= true;
   }
 
   override getBeginTransactionSQL(options?: { isolationLevel?: IsolationLevel; readOnly?: boolean }): string[] {

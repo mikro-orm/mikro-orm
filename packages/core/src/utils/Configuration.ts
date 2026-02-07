@@ -109,7 +109,6 @@ const DEFAULTS = {
     glob: '!(*.d).{js,ts,cjs}',
     silent: false,
     transactional: true,
-    disableForeignKeys: false,
     allOrNothing: true,
     dropTables: true,
     safe: false,
@@ -118,7 +117,6 @@ const DEFAULTS = {
     fileName: (timestamp: string, name?: string) => `Migration${timestamp}${name ? '_' + name : ''}`,
   },
   schemaGenerator: {
-    disableForeignKeys: false,
     createForeignKeyConstraints: true,
     ignoreSchema: [],
     skipTables: [],
@@ -1096,6 +1094,10 @@ export interface Options<
      * @default false
      */
     disableForeignKeys?: boolean;
+    /**
+     * Try to disable foreign key checks during `schema.clear()`. Enabled by default for MySQL/MariaDB.
+     */
+    disableForeignKeysForClear?: boolean;
     /**
      * Generate foreign key constraints.
      * @default true
