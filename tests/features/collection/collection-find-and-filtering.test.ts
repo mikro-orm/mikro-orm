@@ -55,7 +55,7 @@ beforeAll(async () => {
   orm = await MikroORM.init({
     metadataProvider: ReflectMetadataProvider,
     entities: [Directory, SavedFile, JSONFile, MarkdownFile],
-    dbName: `collection-filtering`,
+    dbName: ':memory:',
   });
 
   await orm.schema.refresh();
