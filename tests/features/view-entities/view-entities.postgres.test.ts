@@ -62,10 +62,10 @@ class BookPriceView {
   @Property({ type: 'decimal', precision: 8, scale: 2 })
   price!: string;
 
-  @Formula(alias => `${alias}.price * 1.19`)
+  @Formula(cols => `${cols.price} * 1.19`)
   priceTaxed!: string;
 
-  @Formula(alias => `upper(${alias}.title)`)
+  @Formula(cols => `upper(${cols.title})`)
   titleUpper!: string;
 
 }
@@ -150,9 +150,9 @@ const AuthorWithComputedFields = defineEntity({
     name: p.string(),
     email: p.string(),
     age: p.integer().nullable(),
-    // Formula computed from view columns
-    displayName: p.string().formula(alias => `${alias}.name || ' <' || ${alias}.email || '>'`),
-    isAdult: p.boolean().formula(alias => `${alias}.age >= 18`),
+    // Formula computed from view columns - cols contains fully-qualified alias.fieldName
+    displayName: p.string().formula(cols => `${cols.name} || ' <' || ${cols.email} || '>'`),
+    isAdult: p.boolean().formula(cols => `${cols.age} >= 18`),
   },
 });
 

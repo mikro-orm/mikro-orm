@@ -29,7 +29,7 @@ class Author {
   @OneToOne({
     entity: () => Book,
     ref: true,
-    formula: alias =>
+    formula: (cols, alias) =>
       `(select "b"."id"
       from (
         select "b"."author_id", min("b"."release_date") "release_date"

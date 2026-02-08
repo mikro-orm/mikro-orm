@@ -64,7 +64,7 @@ export const Author2Schema = defineEntity({
     { name: 'custom_email_index_name', properties: ['email'] },
     {
       name: 'author2_custom_idx_on_email',
-      expression: (table, columns) => \`create index "author2_custom_idx_on_email" on "\${table.schema}"."\${table.name}" ("\${columns.email}")\`,
+      expression: (columns, table) => \`create index "author2_custom_idx_on_email" on "\${table.schema}"."\${table.name}" ("\${columns.email}")\`,
     },
   ],
   uniques: [
@@ -72,7 +72,7 @@ export const Author2Schema = defineEntity({
     { name: 'custom_email_unique_name', properties: ['email'] },
     {
       name: 'author2_custom_unique_on_email',
-      expression: (table, columns) => \`alter table \${table} add constraint "author2_custom_unique_on_email" unique ("\${columns.email}")\`,
+      expression: (columns, table) => \`alter table \${table} add constraint "author2_custom_unique_on_email" unique ("\${columns.email}")\`,
     },
   ],
   properties: {
@@ -90,7 +90,7 @@ export const Author2Schema = defineEntity({
     favouriteBook: () => p.manyToOne(Book2).updateRule('no action').deleteRule('cascade').nullable().eager().cascade(Cascade.PERSIST, Cascade.MERGE),
     favouriteAuthor: () => p.manyToOne(Author2).updateRule('no action').nullable(),
     identity: () => p.embedded(IdentitiesContainer).array().prefix(false).nullable(),
-    secondsSinceLastModified: p.integer().formula((alias)=>\`TIMESTAMPDIFF(SECONDS, NOW(), \${alias}.updated_at)\`).lazy(),
+    secondsSinceLastModified: p.integer().formula((cols)=>\`TIMESTAMPDIFF(SECONDS, NOW(), \${cols.updatedAt})\`).lazy(),
     authorToFriend: () => p.manyToMany(Author2).pivotTable('author_to_friend').joinColumn('author2_1_id').inverseJoinColumn('author2_2_id').hidden(),
     following: () => p.manyToMany(Author2).joinColumn('author2_1_id').inverseJoinColumn('author2_2_id'),
     address2: () => p.oneToOne(Address2).mappedBy('author'),
@@ -751,7 +751,7 @@ export const Author2Schema = new EntitySchema({
     { name: 'custom_email_index_name', properties: ['email'] },
     {
       name: 'author2_custom_idx_on_email',
-      expression: (table, columns) => \`create index "author2_custom_idx_on_email" on "\${table.schema}"."\${table.name}" ("\${columns.email}")\`,
+      expression: (columns, table) => \`create index "author2_custom_idx_on_email" on "\${table.schema}"."\${table.name}" ("\${columns.email}")\`,
     },
   ],
   uniques: [
@@ -759,7 +759,7 @@ export const Author2Schema = new EntitySchema({
     { name: 'custom_email_unique_name', properties: ['email'] },
     {
       name: 'author2_custom_unique_on_email',
-      expression: (table, columns) => \`alter table \${table} add constraint "author2_custom_unique_on_email" unique ("\${columns.email}")\`,
+      expression: (columns, table) => \`alter table \${table} add constraint "author2_custom_unique_on_email" unique ("\${columns.email}")\`,
     },
   ],
   properties: {
@@ -824,7 +824,7 @@ export const Author2Schema = new EntitySchema({
     },
     secondsSinceLastModified: {
       type: 'integer',
-      formula: (alias)=>\`TIMESTAMPDIFF(SECONDS, NOW(), \${alias}.updated_at)\`,
+      formula: (cols)=>\`TIMESTAMPDIFF(SECONDS, NOW(), \${cols.updatedAt})\`,
       lazy: true,
     },
     authorToFriend: {
@@ -1669,9 +1669,9 @@ import { MyExtendedDataClass } from '../MyExtendedDataClass';
 
 @Entity({ readonly: true })
 @Index({ name: 'author2_name_age_index', properties: ['name', 'age'] })
-@Index({ name: 'author2_custom_idx_on_email', expression: (table, columns) => \`create index "author2_custom_idx_on_email" on "\${table.schema}"."\${table.name}" ("\${columns.email}")\` })
+@Index({ name: 'author2_custom_idx_on_email', expression: (columns, table) => \`create index "author2_custom_idx_on_email" on "\${table.schema}"."\${table.name}" ("\${columns.email}")\` })
 @Unique({ name: 'author2_name_email_unique', properties: ['name', 'email'] })
-@Unique({ name: 'author2_custom_unique_on_email', expression: (table, columns) => \`alter table \${table} add constraint "author2_custom_unique_on_email" unique ("\${columns.email}")\` })
+@Unique({ name: 'author2_custom_unique_on_email', expression: (columns, table) => \`alter table \${table} add constraint "author2_custom_unique_on_email" unique ("\${columns.email}")\` })
 export class Author2 {
 
   [EagerProps]?: 'favouriteBook';
@@ -1724,7 +1724,7 @@ export class Author2 {
   @Embedded({ entity: () => IdentitiesContainer, array: true, prefix: false, nullable: true })
   identity: IdentitiesContainer[] | null = null;
 
-  @Formula((alias)=>\`TIMESTAMPDIFF(SECONDS, NOW(), \${alias}.updated_at)\`, { lazy: true })
+  @Formula((cols)=>\`TIMESTAMPDIFF(SECONDS, NOW(), \${cols.updatedAt})\`, { lazy: true })
   secondsSinceLastModified!: number;
 
   @ManyToMany({ entity: () => Author2, pivotTable: 'author_to_friend', joinColumn: 'author2_1_id', inverseJoinColumn: 'author2_2_id', hidden: true })
@@ -2442,7 +2442,7 @@ export const Author2Schema = defineEntity({
     { name: 'custom_email_index_name', properties: ['email'] },
     {
       name: 'author2_custom_idx_on_email',
-      expression: (table, columns) => \`create index "author2_custom_idx_on_email" on "\${table.schema}"."\${table.name}" ("\${columns.email}")\`,
+      expression: (columns, table) => \`create index "author2_custom_idx_on_email" on "\${table.schema}"."\${table.name}" ("\${columns.email}")\`,
     },
   ],
   uniques: [
@@ -2450,7 +2450,7 @@ export const Author2Schema = defineEntity({
     { name: 'custom_email_unique_name', properties: ['email'] },
     {
       name: 'author2_custom_unique_on_email',
-      expression: (table, columns) => \`alter table \${table} add constraint "author2_custom_unique_on_email" unique ("\${columns.email}")\`,
+      expression: (columns, table) => \`alter table \${table} add constraint "author2_custom_unique_on_email" unique ("\${columns.email}")\`,
     },
   ],
   properties: {
@@ -2468,7 +2468,7 @@ export const Author2Schema = defineEntity({
     favouriteBook: () => p.manyToOne(Book2).ref().updateRule('no action').deleteRule('cascade').nullable().eager().cascade(Cascade.PERSIST, Cascade.MERGE),
     favouriteAuthor: () => p.manyToOne(Author2).ref().updateRule('no action').nullable(),
     identity: () => p.embedded(IdentitiesContainer).array().prefix(false).nullable(),
-    secondsSinceLastModified: p.integer().formula((alias)=>\`TIMESTAMPDIFF(SECONDS, NOW(), \${alias}.updated_at)\`).lazy(),
+    secondsSinceLastModified: p.integer().formula((cols)=>\`TIMESTAMPDIFF(SECONDS, NOW(), \${cols.updatedAt})\`).lazy(),
     authorToFriend: () => p.manyToMany(Author2).pivotTable('author_to_friend').joinColumn('author2_1_id').inverseJoinColumn('author2_2_id').hidden(),
     following: () => p.manyToMany(Author2).joinColumn('author2_1_id').inverseJoinColumn('author2_2_id'),
     address2: () => p.oneToOne(Address2).ref().mappedBy('author'),
@@ -3129,7 +3129,7 @@ export const Author2Schema = new EntitySchema({
     { name: 'custom_email_index_name', properties: ['email'] },
     {
       name: 'author2_custom_idx_on_email',
-      expression: (table, columns) => \`create index "author2_custom_idx_on_email" on "\${table.schema}"."\${table.name}" ("\${columns.email}")\`,
+      expression: (columns, table) => \`create index "author2_custom_idx_on_email" on "\${table.schema}"."\${table.name}" ("\${columns.email}")\`,
     },
   ],
   uniques: [
@@ -3137,7 +3137,7 @@ export const Author2Schema = new EntitySchema({
     { name: 'custom_email_unique_name', properties: ['email'] },
     {
       name: 'author2_custom_unique_on_email',
-      expression: (table, columns) => \`alter table \${table} add constraint "author2_custom_unique_on_email" unique ("\${columns.email}")\`,
+      expression: (columns, table) => \`alter table \${table} add constraint "author2_custom_unique_on_email" unique ("\${columns.email}")\`,
     },
   ],
   properties: {
@@ -3205,7 +3205,7 @@ export const Author2Schema = new EntitySchema({
     },
     secondsSinceLastModified: {
       type: 'integer',
-      formula: (alias)=>\`TIMESTAMPDIFF(SECONDS, NOW(), \${alias}.updated_at)\`,
+      formula: (cols)=>\`TIMESTAMPDIFF(SECONDS, NOW(), \${cols.updatedAt})\`,
       lazy: true,
     },
     authorToFriend: {
@@ -4074,9 +4074,9 @@ import { MyExtendedDataClass } from '../MyExtendedDataClass';
 
 @Entity({ readonly: true })
 @Index({ name: 'author2_name_age_index', properties: ['name', 'age'] })
-@Index({ name: 'author2_custom_idx_on_email', expression: (table, columns) => \`create index "author2_custom_idx_on_email" on "\${table.schema}"."\${table.name}" ("\${columns.email}")\` })
+@Index({ name: 'author2_custom_idx_on_email', expression: (columns, table) => \`create index "author2_custom_idx_on_email" on "\${table.schema}"."\${table.name}" ("\${columns.email}")\` })
 @Unique({ name: 'author2_name_email_unique', properties: ['name', 'email'] })
-@Unique({ name: 'author2_custom_unique_on_email', expression: (table, columns) => \`alter table \${table} add constraint "author2_custom_unique_on_email" unique ("\${columns.email}")\` })
+@Unique({ name: 'author2_custom_unique_on_email', expression: (columns, table) => \`alter table \${table} add constraint "author2_custom_unique_on_email" unique ("\${columns.email}")\` })
 export class Author2 {
 
   [EagerProps]?: 'favouriteBook';
@@ -4129,7 +4129,7 @@ export class Author2 {
   @Embedded({ entity: () => IdentitiesContainer, array: true, prefix: false, nullable: true })
   identity: IdentitiesContainer[] | null = null;
 
-  @Formula((alias)=>\`TIMESTAMPDIFF(SECONDS, NOW(), \${alias}.updated_at)\`, { lazy: true })
+  @Formula((cols)=>\`TIMESTAMPDIFF(SECONDS, NOW(), \${cols.updatedAt})\`, { lazy: true })
   secondsSinceLastModified!: number;
 
   @ManyToMany({ entity: () => Author2, pivotTable: 'author_to_friend', joinColumn: 'author2_1_id', inverseJoinColumn: 'author2_2_id', hidden: true })
@@ -4849,7 +4849,7 @@ export const Author2Schema = defineEntity({
     { name: 'custom_email_index_name', properties: ['email'] },
     {
       name: 'author2_custom_idx_on_email',
-      expression: (table, columns) => \`create index "author2_custom_idx_on_email" on "\${table.schema}"."\${table.name}" ("\${columns.email}")\`,
+      expression: (columns, table) => \`create index "author2_custom_idx_on_email" on "\${table.schema}"."\${table.name}" ("\${columns.email}")\`,
     },
   ],
   uniques: [
@@ -4857,7 +4857,7 @@ export const Author2Schema = defineEntity({
     { name: 'custom_email_unique_name', properties: ['email'] },
     {
       name: 'author2_custom_unique_on_email',
-      expression: (table, columns) => \`alter table \${table} add constraint "author2_custom_unique_on_email" unique ("\${columns.email}")\`,
+      expression: (columns, table) => \`alter table \${table} add constraint "author2_custom_unique_on_email" unique ("\${columns.email}")\`,
     },
   ],
   properties: {
@@ -4875,7 +4875,7 @@ export const Author2Schema = defineEntity({
     favouriteBook: () => p.manyToOne(Book2).updateRule('no action').deleteRule('cascade').nullable().eager().cascade(Cascade.PERSIST, Cascade.MERGE),
     favouriteAuthor: () => p.manyToOne(Author2).updateRule('no action').nullable(),
     identity: () => p.embedded(IdentitiesContainer).array().prefix(false).nullable(),
-    secondsSinceLastModified: p.integer().formula((alias)=>\`TIMESTAMPDIFF(SECONDS, NOW(), \${alias}.updated_at)\`).lazy(),
+    secondsSinceLastModified: p.integer().formula((cols)=>\`TIMESTAMPDIFF(SECONDS, NOW(), \${cols.updatedAt})\`).lazy(),
     authorToFriend: () => p.manyToMany(Author2).pivotTable('author_to_friend').joinColumn('author2_1_id').inverseJoinColumn('author2_2_id').hidden(),
     following: () => p.manyToMany(Author2).joinColumn('author2_1_id').inverseJoinColumn('author2_2_id'),
     address2: () => p.oneToOne(Address2).mappedBy('author'),
@@ -5536,7 +5536,7 @@ export const Author2Schema = new EntitySchema({
     { name: 'custom_email_index_name', properties: ['email'] },
     {
       name: 'author2_custom_idx_on_email',
-      expression: (table, columns) => \`create index "author2_custom_idx_on_email" on "\${table.schema}"."\${table.name}" ("\${columns.email}")\`,
+      expression: (columns, table) => \`create index "author2_custom_idx_on_email" on "\${table.schema}"."\${table.name}" ("\${columns.email}")\`,
     },
   ],
   uniques: [
@@ -5544,7 +5544,7 @@ export const Author2Schema = new EntitySchema({
     { name: 'custom_email_unique_name', properties: ['email'] },
     {
       name: 'author2_custom_unique_on_email',
-      expression: (table, columns) => \`alter table \${table} add constraint "author2_custom_unique_on_email" unique ("\${columns.email}")\`,
+      expression: (columns, table) => \`alter table \${table} add constraint "author2_custom_unique_on_email" unique ("\${columns.email}")\`,
     },
   ],
   properties: {
@@ -5609,7 +5609,7 @@ export const Author2Schema = new EntitySchema({
     },
     secondsSinceLastModified: {
       type: 'integer',
-      formula: (alias)=>\`TIMESTAMPDIFF(SECONDS, NOW(), \${alias}.updated_at)\`,
+      formula: (cols)=>\`TIMESTAMPDIFF(SECONDS, NOW(), \${cols.updatedAt})\`,
       lazy: true,
     },
     authorToFriend: {
@@ -6454,9 +6454,9 @@ import { MyExtendedDataClass } from '../MyExtendedDataClass';
 
 @Entity({ readonly: true })
 @Index({ name: 'author2_name_age_index', properties: ['name', 'age'] })
-@Index({ name: 'author2_custom_idx_on_email', expression: (table, columns) => \`create index "author2_custom_idx_on_email" on "\${table.schema}"."\${table.name}" ("\${columns.email}")\` })
+@Index({ name: 'author2_custom_idx_on_email', expression: (columns, table) => \`create index "author2_custom_idx_on_email" on "\${table.schema}"."\${table.name}" ("\${columns.email}")\` })
 @Unique({ name: 'author2_name_email_unique', properties: ['name', 'email'] })
-@Unique({ name: 'author2_custom_unique_on_email', expression: (table, columns) => \`alter table \${table} add constraint "author2_custom_unique_on_email" unique ("\${columns.email}")\` })
+@Unique({ name: 'author2_custom_unique_on_email', expression: (columns, table) => \`alter table \${table} add constraint "author2_custom_unique_on_email" unique ("\${columns.email}")\` })
 export class Author2 {
 
   [EagerProps]?: 'favouriteBook';
@@ -6509,7 +6509,7 @@ export class Author2 {
   @Embedded({ entity: () => IdentitiesContainer, array: true, prefix: false, nullable: true })
   identity?: IdentitiesContainer[];
 
-  @Formula((alias)=>\`TIMESTAMPDIFF(SECONDS, NOW(), \${alias}.updated_at)\`, { lazy: true })
+  @Formula((cols)=>\`TIMESTAMPDIFF(SECONDS, NOW(), \${cols.updatedAt})\`, { lazy: true })
   secondsSinceLastModified!: number;
 
   @ManyToMany({ entity: () => Author2, pivotTable: 'author_to_friend', joinColumn: 'author2_1_id', inverseJoinColumn: 'author2_2_id', hidden: true })
@@ -7227,7 +7227,7 @@ export const Author2Schema = defineEntity({
     { name: 'custom_email_index_name', properties: ['email'] },
     {
       name: 'author2_custom_idx_on_email',
-      expression: (table, columns) => \`create index "author2_custom_idx_on_email" on "\${table.schema}"."\${table.name}" ("\${columns.email}")\`,
+      expression: (columns, table) => \`create index "author2_custom_idx_on_email" on "\${table.schema}"."\${table.name}" ("\${columns.email}")\`,
     },
   ],
   uniques: [
@@ -7235,7 +7235,7 @@ export const Author2Schema = defineEntity({
     { name: 'custom_email_unique_name', properties: ['email'] },
     {
       name: 'author2_custom_unique_on_email',
-      expression: (table, columns) => \`alter table \${table} add constraint "author2_custom_unique_on_email" unique ("\${columns.email}")\`,
+      expression: (columns, table) => \`alter table \${table} add constraint "author2_custom_unique_on_email" unique ("\${columns.email}")\`,
     },
   ],
   properties: {
@@ -7253,7 +7253,7 @@ export const Author2Schema = defineEntity({
     favouriteBook: () => p.manyToOne(Book2).ref().updateRule('no action').deleteRule('cascade').nullable().eager().cascade(Cascade.PERSIST, Cascade.MERGE),
     favouriteAuthor: () => p.manyToOne(Author2).ref().updateRule('no action').nullable(),
     identity: () => p.embedded(IdentitiesContainer).array().prefix(false).nullable(),
-    secondsSinceLastModified: p.integer().formula((alias)=>\`TIMESTAMPDIFF(SECONDS, NOW(), \${alias}.updated_at)\`).lazy(),
+    secondsSinceLastModified: p.integer().formula((cols)=>\`TIMESTAMPDIFF(SECONDS, NOW(), \${cols.updatedAt})\`).lazy(),
     authorToFriend: () => p.manyToMany(Author2).pivotTable('author_to_friend').joinColumn('author2_1_id').inverseJoinColumn('author2_2_id').hidden(),
     following: () => p.manyToMany(Author2).joinColumn('author2_1_id').inverseJoinColumn('author2_2_id'),
     address2: () => p.oneToOne(Address2).ref().mappedBy('author'),
@@ -7914,7 +7914,7 @@ export const Author2Schema = new EntitySchema({
     { name: 'custom_email_index_name', properties: ['email'] },
     {
       name: 'author2_custom_idx_on_email',
-      expression: (table, columns) => \`create index "author2_custom_idx_on_email" on "\${table.schema}"."\${table.name}" ("\${columns.email}")\`,
+      expression: (columns, table) => \`create index "author2_custom_idx_on_email" on "\${table.schema}"."\${table.name}" ("\${columns.email}")\`,
     },
   ],
   uniques: [
@@ -7922,7 +7922,7 @@ export const Author2Schema = new EntitySchema({
     { name: 'custom_email_unique_name', properties: ['email'] },
     {
       name: 'author2_custom_unique_on_email',
-      expression: (table, columns) => \`alter table \${table} add constraint "author2_custom_unique_on_email" unique ("\${columns.email}")\`,
+      expression: (columns, table) => \`alter table \${table} add constraint "author2_custom_unique_on_email" unique ("\${columns.email}")\`,
     },
   ],
   properties: {
@@ -7990,7 +7990,7 @@ export const Author2Schema = new EntitySchema({
     },
     secondsSinceLastModified: {
       type: 'integer',
-      formula: (alias)=>\`TIMESTAMPDIFF(SECONDS, NOW(), \${alias}.updated_at)\`,
+      formula: (cols)=>\`TIMESTAMPDIFF(SECONDS, NOW(), \${cols.updatedAt})\`,
       lazy: true,
     },
     authorToFriend: {
@@ -8859,9 +8859,9 @@ import { MyExtendedDataClass } from '../MyExtendedDataClass';
 
 @Entity({ readonly: true })
 @Index({ name: 'author2_name_age_index', properties: ['name', 'age'] })
-@Index({ name: 'author2_custom_idx_on_email', expression: (table, columns) => \`create index "author2_custom_idx_on_email" on "\${table.schema}"."\${table.name}" ("\${columns.email}")\` })
+@Index({ name: 'author2_custom_idx_on_email', expression: (columns, table) => \`create index "author2_custom_idx_on_email" on "\${table.schema}"."\${table.name}" ("\${columns.email}")\` })
 @Unique({ name: 'author2_name_email_unique', properties: ['name', 'email'] })
-@Unique({ name: 'author2_custom_unique_on_email', expression: (table, columns) => \`alter table \${table} add constraint "author2_custom_unique_on_email" unique ("\${columns.email}")\` })
+@Unique({ name: 'author2_custom_unique_on_email', expression: (columns, table) => \`alter table \${table} add constraint "author2_custom_unique_on_email" unique ("\${columns.email}")\` })
 export class Author2 {
 
   [EagerProps]?: 'favouriteBook';
@@ -8914,7 +8914,7 @@ export class Author2 {
   @Embedded({ entity: () => IdentitiesContainer, array: true, prefix: false, nullable: true })
   identity?: IdentitiesContainer[];
 
-  @Formula((alias)=>\`TIMESTAMPDIFF(SECONDS, NOW(), \${alias}.updated_at)\`, { lazy: true })
+  @Formula((cols)=>\`TIMESTAMPDIFF(SECONDS, NOW(), \${cols.updatedAt})\`, { lazy: true })
   secondsSinceLastModified!: number;
 
   @ManyToMany({ entity: () => Author2, pivotTable: 'author_to_friend', joinColumn: 'author2_1_id', inverseJoinColumn: 'author2_2_id', hidden: true })

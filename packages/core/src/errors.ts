@@ -319,6 +319,14 @@ export class MetadataError<T extends AnyEntity = AnyEntity> extends ValidationEr
     return new MetadataError(`View entity ${meta.className} is missing 'expression'. View entities must have an expression defining the SQL query.`);
   }
 
+  static mixedInheritanceStrategies(root: EntityMetadata, child: EntityMetadata): MetadataError {
+    return new MetadataError(`Entity ${child.className} cannot mix STI (Single Table Inheritance) and TPT (Table-Per-Type) inheritance. Root entity ${root.className} uses STI (discriminatorColumn) but also has inheritance: 'tpt'. Choose one inheritance strategy per hierarchy.`);
+  }
+
+  static tptNotSupportedByDriver(meta: EntityMetadata): MetadataError {
+    return new MetadataError(`Entity ${meta.className} uses TPT (Table-Per-Type) inheritance which is not supported by the current driver. TPT requires SQL JOINs and is only available with SQL drivers.`);
+  }
+
   private static fromMessage(meta: EntityMetadata, prop: EntityProperty, message: string): MetadataError {
     return new MetadataError(`${meta.className}.${prop.name} ${message}`);
   }

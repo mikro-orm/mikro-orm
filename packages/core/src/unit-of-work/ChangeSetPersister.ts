@@ -149,6 +149,9 @@ export class ChangeSetPersister {
     options = this.prepareOptions(meta, options, {
       convertCustomTypes: false,
     });
+
+    this.resolveTPTIdentifiers(changeSet);
+
     // Use changeSet's own meta for STI entities to get correct field mappings
     const res = await this.driver.nativeInsertMany(changeSet.meta.class, [changeSet.payload], options);
 
@@ -200,6 +203,11 @@ export class ChangeSetPersister {
       convertCustomTypes: false,
       processCollections: false,
     });
+
+    for (const changeSet of changeSets) {
+      this.resolveTPTIdentifiers(changeSet);
+    }
+
     const res = await this.driver.nativeInsertMany(meta.class, changeSets.map(cs => cs.payload), options);
 
     for (let i = 0; i < changeSets.length; i++) {
@@ -460,6 +468,24 @@ export class ChangeSetPersister {
       const data = map.get(helper(changeSet.entity).getSerializedPrimaryKey());
       this.hydrator.hydrate<T>(changeSet.entity, meta, data as EntityData<T>, this.factory, 'full', false, true);
       Object.assign(changeSet.payload, data); // merge to the changeset payload, so it gets saved to the entity snapshot
+    }
+  }
+
+  /**
+   * For TPT child tables, resolve EntityIdentifier values in PK fields.
+   * The parent table insert assigns the actual PK value, which the child table references.
+   */
+  private resolveTPTIdentifiers<T extends object>(changeSet: ChangeSet<T>): void {
+    if (changeSet.meta.inheritanceType !== 'tpt' || !changeSet.meta.tptParent) {
+      return;
+    }
+
+    for (const pk of changeSet.meta.primaryKeys) {
+      const value = changeSet.payload[pk] as unknown;
+
+      if (value instanceof EntityIdentifier) {
+        changeSet.payload[pk] = value.getValue();
+      }
     }
   }
 

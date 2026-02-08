@@ -902,7 +902,7 @@ describe('defineEntity', () => {
       indexes: [
         {
           name: 'unique_name_children',
-          expression: (table, columns) =>
+          expression: (columns, table) =>
             `create unique index ${table.name}_${columns.name}_${columns.children} on ${table.name} (${columns.name}, ${columns.children})`,
         },
       ],

@@ -14,7 +14,7 @@ class User {
     entity: () => Rating,
     ref: true,
     nullable: true,
-    formula: tableAlias => {
+    formula: (cols, tableAlias) => {
       return `(select rating.id
               from rating
               where rating.user_id = ${tableAlias}.id

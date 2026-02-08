@@ -148,7 +148,7 @@ describe('QueryBuilder - GH Issues', () => {
       .where({ test: { id: 1 } })
       .getQuery();
     expect(sql4).toBe(
-      'select `e0`.*, `e1`.`id` as `e1__id`, `e0`.price * 1.19 as `price_taxed` ' +
+      'select `e0`.*, `e1`.`id` as `e1__id`, `e0`.`price` * 1.19 as `price_taxed` ' +
         'from `book2` as `e0` ' +
         'left join `test2` as `e1` on `e0`.`uuid_pk` = `e1`.`book_uuid_pk` ' +
         'where `e1`.`id` = ?',

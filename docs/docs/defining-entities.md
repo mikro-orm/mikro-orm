@@ -1082,7 +1082,7 @@ properties: {
   </TabItem>
 </Tabs>
 
-Formulas will be added to the select clause automatically. In case you are facing problems with `NonUniqueFieldNameException`, you can define the formula as a callback that will receive the entity alias in the parameter:
+Formulas will be added to the select clause automatically. You can define the formula as a callback that receives a `columns` object mapping property names to their unquoted column references (e.g., `alias.field_name`). Use the `quote` helper for proper identifier quoting across all database platforms:
 
 <Tabs
 groupId="entity-def"
@@ -1097,7 +1097,9 @@ values={[
 <TabItem value="reflect-metadata">
 
 ```ts title="./entities/Box.ts"
-@Formula(alias => `${alias}.obj_length * ${alias}.obj_height * ${alias}.obj_width`)
+import { quote } from '@mikro-orm/core';
+
+@Formula(cols => quote`${cols.objLength} * ${cols.objHeight} * ${cols.objWidth}`)
 objectVolume?: number;
 ```
 
@@ -1105,7 +1107,9 @@ objectVolume?: number;
   <TabItem value="ts-morph">
 
 ```ts title="./entities/Box.ts"
-@Formula(alias => `${alias}.obj_length * ${alias}.obj_height * ${alias}.obj_width`)
+import { quote } from '@mikro-orm/core';
+
+@Formula(cols => quote`${cols.objLength} * ${cols.objHeight} * ${cols.objWidth}`)
 objectVolume?: number;
 ```
 
@@ -1113,10 +1117,12 @@ objectVolume?: number;
   <TabItem value="define-entity">
 
 ```ts title="./entities/Box.ts"
+import { quote } from '@mikro-orm/core';
+
 export const Box = defineEntity({
   name: 'Box',
   properties: {
-    objectVolume: p.formula<number>((alias) => `${alias}.obj_length * ${alias}.obj_height * ${alias}.obj_width`),
+    objectVolume: p.formula<number>(cols => quote`${cols.objLength} * ${cols.objHeight} * ${cols.objWidth}`),
   },
 });
 ```
@@ -1125,31 +1131,36 @@ export const Box = defineEntity({
   <TabItem value="entity-schema">
 
 ```ts title="./entities/Box.ts"
+import { quote } from '@mikro-orm/core';
+
 properties: {
-  objectVolume: { formula: alias => `${alias}.obj_length * ${alias}.obj_height * ${alias}.obj_width` },
+  objectVolume: { formula: cols => quote`${cols.objLength} * ${cols.objHeight} * ${cols.objWidth}` },
 },
 ```
 
   </TabItem>
 </Tabs>
 
-For more complex scenarios, you can use an enhanced callback signature that provides access to table metadata and column name mappings. This is useful when you need to construct sub-selects with proper schema qualification:
+The `columns` object:
+- Maps property names to fully-qualified `alias.field_name` references
+- Works correctly with TPT (Table-Per-Type) inheritance - inherited properties automatically use the parent table's alias
+- Has `toString()` returning the table alias for backwards compatibility
+
+For more complex scenarios, you can use an enhanced callback signature that provides access to table metadata:
 
 ```ts
-@Formula((table, columns) => {
-  return `(select count(*) from other_table where other_table.ref_id = ${table.qualifiedName}.${columns.id})`;
+@Formula((cols, table) => {
+  return `(select count(*) from other_table where other_table.ref_id = ${table.qualifiedName}.${cols.id})`;
 })
 relatedCount?: number;
 ```
 
 The `table` parameter provides:
-- `alias`: The quoted table alias (same as the simple callback parameter)
+- `alias`: The quoted table alias
 - `name`: The table name
 - `schema`: The schema name (if applicable)
 - `qualifiedName`: The schema-qualified table name (`schema.table` or just `table`)
 - `toString()`: Returns the alias for convenience in template literals
-
-The `columns` parameter is a dictionary mapping property names to their database column names.
 
 ## Indexes
 
@@ -1197,11 +1208,11 @@ export class Author {
 
   // Custom index using expression callback
   // ${table.schema}, ${table.name}, and ${columns.title} return the unquoted identifiers.
-  @Index({ name: 'custom_index_country1', expression: (table, columns, indexName) => `create index \`${indexName}\` on \`${table.schema}\`.\`${table.name}\` (\`${columns.country}\`)` })
+  @Index({ name: 'custom_index_country1', expression: (columns, table, indexName) => `create index \`${indexName}\` on \`${table.schema}\`.\`${table.name}\` (\`${columns.country}\`)` })
   // Using quote helper to automatically quote identifiers.
-  @Index({ name: 'custom_index_country2', expression: (table, columns, indexName) => quote`create index ${indexName} on ${table} (${columns.country})` })
+  @Index({ name: 'custom_index_country2', expression: (columns, table, indexName) => quote`create index ${indexName} on ${table} (${columns.country})` })
   // Using raw function to automatically quote identifiers.
-  @Index({ name: 'custom_index_country3', expression: (table, columns, indexName) => raw(`create index ?? on ?? (??)`, [indexName, table, columns.country]) })
+  @Index({ name: 'custom_index_country3', expression: (columns, table, indexName) => raw(`create index ?? on ?? (??)`, [indexName, table, columns.country]) })
   @Property()
   country!: string;
 
@@ -1237,11 +1248,11 @@ export class Author {
 
   // Custom index using expression callback
   // ${table.schema}, ${table.name}, and ${columns.title} return the unquoted identifiers.
-  @Index({ name: 'custom_index_country1', expression: (table, columns, indexName) => `create index \`${indexName}\` on \`${table.schema}\`.\`${table.name}\` (\`${columns.country}\`)` })
+  @Index({ name: 'custom_index_country1', expression: (columns, table, indexName) => `create index \`${indexName}\` on \`${table.schema}\`.\`${table.name}\` (\`${columns.country}\`)` })
   // Using quote helper to automatically quote identifiers.
-  @Index({ name: 'custom_index_country2', expression: (table, columns, indexName) => quote`create index ${indexName} on ${table} (${columns.country})` })
+  @Index({ name: 'custom_index_country2', expression: (columns, table, indexName) => quote`create index ${indexName} on ${table} (${columns.country})` })
   // Using raw function to automatically quote identifiers.
-  @Index({ name: 'custom_index_country3', expression: (table, columns, indexName) => raw(`create index ?? on ?? (??)`, [indexName, table, columns.country]) })
+  @Index({ name: 'custom_index_country3', expression: (columns, table, indexName) => raw(`create index ?? on ?? (??)`, [indexName, table, columns.country]) })
   @Property()
   country!: string;
 
@@ -1267,11 +1278,11 @@ export const Author = defineEntity({
     { name: 'custom_idx_name', properties: ['name'] }, // simple index, with custom name
     // Custom index using expression callback
     // ${table.schema}, ${table.name}, and ${columns.title} return the unquoted identifiers.
-    { name: 'custom_index_country1', expression: (table, columns, indexName) => `create index \`${indexName}\` on \`${table.schema}\`.\`${table.name}\` (\`${columns.country}\`)` },
+    { name: 'custom_index_country1', expression: (columns, table, indexName) => `create index \`${indexName}\` on \`${table.schema}\`.\`${table.name}\` (\`${columns.country}\`)` },
     // Using quote helper to automatically quote identifiers.
-    { name: 'custom_index_country2', expression: (table, columns, indexName) => quote`create index ${indexName} on ${table} (${columns.country})` },
+    { name: 'custom_index_country2', expression: (columns, table, indexName) => quote`create index ${indexName} on ${table} (${columns.country})` },
     // Using raw function to automatically quote identifiers.
-    { name: 'custom_index_country3', expression: (table, columns, indexName) => raw(`create index ?? on ?? (??)`, [indexName, table, columns.country]) },
+    { name: 'custom_index_country3', expression: (columns, table, indexName) => raw(`create index ?? on ?? (??)`, [indexName, table, columns.country]) },
   ],
   uniques: [
     { properties: ['name', 'email'] },
@@ -1292,11 +1303,11 @@ export const AuthorSchema = new EntitySchema<Author, CustomBaseEntity>({
     { name: 'custom_index_expr', expression: 'alter table `author` add index `custom_index_expr`(`title`)' },
     // Custom index using expression callback
     // ${table.schema}, ${table.name}, and ${columns.title} return the unquoted identifiers.
-    { name: 'custom_index_country1', expression: (table, columns, indexName) => `create index \`${indexName}\` on \`${table.schema}\`.\`${table.name}\` (\`${columns.country}\`)` },
+    { name: 'custom_index_country1', expression: (columns, table, indexName) => `create index \`${indexName}\` on \`${table.schema}\`.\`${table.name}\` (\`${columns.country}\`)` },
     // Using quote helper to automatically quote identifiers.
-    { name: 'custom_index_country2', expression: (table, columns, indexName) => quote`create index ${indexName} on ${table} (${columns.country})` },
+    { name: 'custom_index_country2', expression: (columns, table, indexName) => quote`create index ${indexName} on ${table} (${columns.country})` },
     // Using raw function to automatically quote identifiers.
-    { name: 'custom_index_country3', expression: (table, columns, indexName) => raw(`create index ?? on ?? (??)`, [indexName, table, columns.country]) },
+    { name: 'custom_index_country3', expression: (columns, table, indexName) => raw(`create index ?? on ?? (??)`, [indexName, table, columns.country]) },
   ],
   uniques: [
     { properties: ['name', 'email'] },
@@ -1336,7 +1347,7 @@ values={[
 // with generated name based on the table name
 @Check({ expression: 'price1 >= 0' })
 // with explicit name
-@Check({ name: 'foo', expression: columns => `${columns.price1} >= 0` })
+@Check({ name: 'foo', expression: (columns, table) => `${columns.price1} >= 0` })
 export class Book {
 
   @PrimaryKey()
@@ -1349,7 +1360,7 @@ export class Book {
   @Check({ expression: 'price2 >= 0' })
   price2!: number;
 
-  @Property({ check: columns => `${columns.price3} >= 0` })
+  @Property({ check: (columns, table) => `${columns.price3} >= 0` })
   price3!: number;
 
 }
@@ -1363,7 +1374,7 @@ export class Book {
 // with generated name based on the table name
 @Check({ expression: 'price1 >= 0' })
 // with explicit name
-@Check({ name: 'foo', expression: columns => `${columns.price1} >= 0` })
+@Check({ name: 'foo', expression: (columns, table) => `${columns.price1} >= 0` })
 export class Book {
 
   @PrimaryKey()
@@ -1376,7 +1387,7 @@ export class Book {
   @Check({ expression: 'price2 >= 0' })
   price2!: number;
 
-  @Property({ check: columns => `${columns.price3} >= 0` })
+  @Property({ check: (columns, table) => `${columns.price3} >= 0` })
   price3!: number;
 
 }
@@ -1940,7 +1951,10 @@ Starting with MikroORM 4.2, there is no limitation for entity file names. It is 
 
 ## Using custom base entity
 
-You can define your own base entity with properties that are required on all entities, like primary key and created/updated time. Single table inheritance is also supported.
+You can define your own base entity with properties that are required on all entities, like primary key and created/updated time. MikroORM supports two inheritance mapping strategies:
+
+- **Single Table Inheritance (STI)** - All entities in the hierarchy share a single table with a discriminator column
+- **Table-Per-Type Inheritance (TPT)** - Each entity has its own table with foreign keys linking child tables to parent tables
 
 Read more about this topic in [Inheritance Mapping](./inheritance-mapping.md) section.
 

@@ -1,6 +1,28 @@
 import { v4 } from 'uuid';
-import { Cascade, Collection, Ref, OptionalProps, QueryOrder, ref, rel, t, sql } from '@mikro-orm/core';
-import { Entity, Filter, Formula, Index, ManyToMany, ManyToOne, OneToOne, PrimaryKey, Property, Unique } from '@mikro-orm/decorators/legacy';
+import {
+  Cascade,
+  Collection,
+  Ref,
+  OptionalProps,
+  QueryOrder,
+  quote,
+  ref,
+  rel,
+  t,
+  sql,
+} from '@mikro-orm/core';
+import {
+  Entity,
+  Filter,
+  Formula,
+  Index,
+  ManyToMany,
+  ManyToOne,
+  OneToOne,
+  PrimaryKey,
+  Property,
+  Unique,
+} from '@mikro-orm/decorators/legacy';
 import { Publisher2 } from './Publisher2.js';
 import { Author2 } from './Author2.js';
 import { BookTag2 } from './BookTag2.js';
@@ -34,7 +56,7 @@ export class Book2 {
   @Property({ type: t.decimal, precision: 8, scale: 2, nullable: true })
   price?: number;
 
-  @Formula(alias => `${alias}.price * 1.19`)
+  @Formula(cols => quote`${cols.price} * 1.19`)
   priceTaxed?: string;
 
   @Property({ type: t.double, nullable: true })

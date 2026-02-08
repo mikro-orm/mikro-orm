@@ -70,7 +70,7 @@ bench('AutoPath - nested relation (4 levels)', () => {
 
 bench('AutoPath - collection with :ref', () => {
   validatePath<Author, 'books:ref'>('books:ref');
-}).types([496, 'instantiations']);
+}).types([581, 'instantiations']);
 
 // ============================================
 // Loaded benchmarks

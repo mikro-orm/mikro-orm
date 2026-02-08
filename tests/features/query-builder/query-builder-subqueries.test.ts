@@ -117,7 +117,7 @@ describe('QueryBuilder - Subqueries', () => {
       .select(['*', 'sub.*'])
       .where({ 'sub.title': /^foo/ });
     expect(qb2.getFormattedQuery()).toEqual(
-      "select `a`.*, `sub`.* from `author2` as `a` left join (select `b`.*, `b`.price * 1.19 as `price_taxed` from `book2` as `b` order by `b`.`title` asc limit 1) as `sub` on `sub`.`author_id` = `a`.`id` where `sub`.`title` like 'foo%'",
+      "select `a`.*, `sub`.* from `author2` as `a` left join (select `b`.*, `b`.`price` * 1.19 as `price_taxed` from `book2` as `b` order by `b`.`title` asc limit 1) as `sub` on `sub`.`author_id` = `a`.`id` where `sub`.`title` like 'foo%'",
     );
     const res2 = await qb2.execute();
     expect(res2).toHaveLength(1);
@@ -140,7 +140,7 @@ describe('QueryBuilder - Subqueries', () => {
       .select(['*', 'sub.*'])
       .where({ 'sub.title': /^foo/ });
     expect(qb2.getFormattedQuery()).toEqual(
-      "select `a`.*, `sub`.* from `author2` as `a` left join (select `b`.*, `b`.price * 1.19 as `price_taxed` from `book2` as `b` order by `b`.`title` asc limit 1) as `sub` on `sub`.`author_id` = `a`.`id` where `sub`.`title` like 'foo%'",
+      "select `a`.*, `sub`.* from `author2` as `a` left join (select `b`.*, `b`.`price` * 1.19 as `price_taxed` from `book2` as `b` order by `b`.`title` asc limit 1) as `sub` on `sub`.`author_id` = `a`.`id` where `sub`.`title` like 'foo%'",
     );
     const res3 = await qb3.execute();
     expect(res3).toHaveLength(1);
@@ -160,7 +160,7 @@ describe('QueryBuilder - Subqueries', () => {
     const qb4 = orm.em.createQueryBuilder(Author2, 'a');
     qb4.select(['*']).leftJoinAndSelect(['a.books', qb1], 'sub').leftJoinAndSelect('sub.tags', 't').where({ 'sub.title': /^foo/ });
     expect(qb4.getFormattedQuery()).toEqual(
-      "select `a`.*, `sub`.`uuid_pk` as `sub__uuid_pk`, `sub`.`created_at` as `sub__created_at`, `sub`.`isbn` as `sub__isbn`, `sub`.`title` as `sub__title`, `sub`.`price` as `sub__price`, `sub`.price * 1.19 as `sub__price_taxed`, `sub`.`double` as `sub__double`, `sub`.`meta` as `sub__meta`, `sub`.`author_id` as `sub__author_id`, `sub`.`publisher_id` as `sub__publisher_id`, `t`.`id` as `t__id`, `t`.`name` as `t__name` from `author2` as `a` left join (select `b`.*, `b`.price * 1.19 as `price_taxed` from `book2` as `b` order by `b`.`title` asc limit 1) as `sub` on `a`.`id` = `sub`.`author_id` left join `book2_tags` as `e1` on `sub`.`uuid_pk` = `e1`.`book2_uuid_pk` left join `book_tag2` as `t` on `e1`.`book_tag2_id` = `t`.`id` where `sub`.`title` like 'foo%'",
+      "select `a`.*, `sub`.`uuid_pk` as `sub__uuid_pk`, `sub`.`created_at` as `sub__created_at`, `sub`.`isbn` as `sub__isbn`, `sub`.`title` as `sub__title`, `sub`.`price` as `sub__price`, `sub`.`price` * 1.19 as `sub__price_taxed`, `sub`.`double` as `sub__double`, `sub`.`meta` as `sub__meta`, `sub`.`author_id` as `sub__author_id`, `sub`.`publisher_id` as `sub__publisher_id`, `t`.`id` as `t__id`, `t`.`name` as `t__name` from `author2` as `a` left join (select `b`.*, `b`.`price` * 1.19 as `price_taxed` from `book2` as `b` order by `b`.`title` asc limit 1) as `sub` on `a`.`id` = `sub`.`author_id` left join `book2_tags` as `e1` on `sub`.`uuid_pk` = `e1`.`book2_uuid_pk` left join `book_tag2` as `t` on `e1`.`book_tag2_id` = `t`.`id` where `sub`.`title` like 'foo%'",
     );
     const res4 = await qb4.getResult();
     expect(res4).toHaveLength(1);
@@ -180,7 +180,7 @@ describe('QueryBuilder - Subqueries', () => {
     // with a regular join we get two books, as there is no limit
     const qb5 = orm.em.createQueryBuilder(Author2, 'a').select(['*']).leftJoinAndSelect('a.books', 'sub').where({ 'sub.title': /^foo/ });
     expect(qb5.getFormattedQuery()).toEqual(
-      "select `a`.*, `sub`.`uuid_pk` as `sub__uuid_pk`, `sub`.`created_at` as `sub__created_at`, `sub`.`isbn` as `sub__isbn`, `sub`.`title` as `sub__title`, `sub`.`price` as `sub__price`, `sub`.price * 1.19 as `sub__price_taxed`, `sub`.`double` as `sub__double`, `sub`.`meta` as `sub__meta`, `sub`.`author_id` as `sub__author_id`, `sub`.`publisher_id` as `sub__publisher_id` from `author2` as `a` left join `book2` as `sub` on `a`.`id` = `sub`.`author_id` where `sub`.`title` like 'foo%'",
+      "select `a`.*, `sub`.`uuid_pk` as `sub__uuid_pk`, `sub`.`created_at` as `sub__created_at`, `sub`.`isbn` as `sub__isbn`, `sub`.`title` as `sub__title`, `sub`.`price` as `sub__price`, `sub`.`price` * 1.19 as `sub__price_taxed`, `sub`.`double` as `sub__double`, `sub`.`meta` as `sub__meta`, `sub`.`author_id` as `sub__author_id`, `sub`.`publisher_id` as `sub__publisher_id` from `author2` as `a` left join `book2` as `sub` on `a`.`id` = `sub`.`author_id` where `sub`.`title` like 'foo%'",
     );
     const res5 = await qb5.getResult();
     expect(res5).toHaveLength(1);
@@ -191,7 +191,7 @@ describe('QueryBuilder - Subqueries', () => {
     const qb6 = orm.em.createQueryBuilder(Author2, 'a');
     qb6.select(['*']).leftJoinAndSelect(['a.books', qb1.toRaw()], 'sub').leftJoinAndSelect('sub.tags', 't').where({ 'sub.title': /^foo/ });
     expect(qb6.getFormattedQuery()).toEqual(
-      "select `a`.*, `sub`.`uuid_pk` as `sub__uuid_pk`, `sub`.`created_at` as `sub__created_at`, `sub`.`isbn` as `sub__isbn`, `sub`.`title` as `sub__title`, `sub`.`price` as `sub__price`, `sub`.price * 1.19 as `sub__price_taxed`, `sub`.`double` as `sub__double`, `sub`.`meta` as `sub__meta`, `sub`.`author_id` as `sub__author_id`, `sub`.`publisher_id` as `sub__publisher_id`, `t`.`id` as `t__id`, `t`.`name` as `t__name` from `author2` as `a` left join (select `b`.*, `b`.price * 1.19 as `price_taxed` from `book2` as `b` order by `b`.`title` asc limit 1) as `sub` on `a`.`id` = `sub`.`author_id` left join `book2_tags` as `e1` on `sub`.`uuid_pk` = `e1`.`book2_uuid_pk` left join `book_tag2` as `t` on `e1`.`book_tag2_id` = `t`.`id` where `sub`.`title` like 'foo%'",
+      "select `a`.*, `sub`.`uuid_pk` as `sub__uuid_pk`, `sub`.`created_at` as `sub__created_at`, `sub`.`isbn` as `sub__isbn`, `sub`.`title` as `sub__title`, `sub`.`price` as `sub__price`, `sub`.`price` * 1.19 as `sub__price_taxed`, `sub`.`double` as `sub__double`, `sub`.`meta` as `sub__meta`, `sub`.`author_id` as `sub__author_id`, `sub`.`publisher_id` as `sub__publisher_id`, `t`.`id` as `t__id`, `t`.`name` as `t__name` from `author2` as `a` left join (select `b`.*, `b`.`price` * 1.19 as `price_taxed` from `book2` as `b` order by `b`.`title` asc limit 1) as `sub` on `a`.`id` = `sub`.`author_id` left join `book2_tags` as `e1` on `sub`.`uuid_pk` = `e1`.`book2_uuid_pk` left join `book_tag2` as `t` on `e1`.`book_tag2_id` = `t`.`id` where `sub`.`title` like 'foo%'",
     );
     const res6 = await qb6.getResult();
     expect(res6).toHaveLength(1);
@@ -215,7 +215,7 @@ describe('QueryBuilder - Subqueries', () => {
       .leftJoin(qb1.toRaw(), 'sub', { author_id: sql.ref('a.id') })
       .where({ 'sub.title': /^foo/ });
     expect(qb7.getFormattedQuery()).toEqual(
-      "select `a`.* from `author2` as `a` left join (select `b`.*, `b`.price * 1.19 as `price_taxed` from `book2` as `b` order by `b`.`title` asc limit 1) as `sub` on `sub`.`author_id` = `a`.`id` where `sub`.`title` like 'foo%'",
+      "select `a`.* from `author2` as `a` left join (select `b`.*, `b`.`price` * 1.19 as `price_taxed` from `book2` as `b` order by `b`.`title` asc limit 1) as `sub` on `sub`.`author_id` = `a`.`id` where `sub`.`title` like 'foo%'",
     );
     const res7 = await qb7.getResult();
     expect(res7).toHaveLength(1);
@@ -228,7 +228,7 @@ describe('QueryBuilder - Subqueries', () => {
 
   test('sub-query order-by fields are always fully qualified', () => {
     const expected =
-      'select `e0`.*, `books`.`uuid_pk` as `books__uuid_pk`, `books`.`created_at` as `books__created_at`, `books`.`isbn` as `books__isbn`, `books`.`title` as `books__title`, `books`.`price` as `books__price`, `books`.price * 1.19 as `books__price_taxed`, `books`.`double` as `books__double`, `books`.`meta` as `books__meta`, `books`.`author_id` as `books__author_id`, `books`.`publisher_id` as `books__publisher_id` from `author2` as `e0` inner join `book2` as `books` on `e0`.`id` = `books`.`author_id` where `e0`.`id` in (select `e0`.`id` from (select `e0`.`id` from `author2` as `e0` inner join `book2` as `books` on `e0`.`id` = `books`.`author_id` group by `e0`.`id` order by min(`e0`.`id`) desc limit 10) as `e0`) order by `e0`.`id` desc';
+      'select `e0`.*, `books`.`uuid_pk` as `books__uuid_pk`, `books`.`created_at` as `books__created_at`, `books`.`isbn` as `books__isbn`, `books`.`title` as `books__title`, `books`.`price` as `books__price`, `books`.`price` * 1.19 as `books__price_taxed`, `books`.`double` as `books__double`, `books`.`meta` as `books__meta`, `books`.`author_id` as `books__author_id`, `books`.`publisher_id` as `books__publisher_id` from `author2` as `e0` inner join `book2` as `books` on `e0`.`id` = `books`.`author_id` where `e0`.`id` in (select `e0`.`id` from (select `e0`.`id` from `author2` as `e0` inner join `book2` as `books` on `e0`.`id` = `books`.`author_id` group by `e0`.`id` order by min(`e0`.`id`) desc limit 10) as `e0`) order by `e0`.`id` desc';
     const sql = orm.em.createQueryBuilder(Author2).select('*').joinAndSelect('books', 'books').orderBy({ id: QueryOrder.DESC }).limit(10).getFormattedQuery();
     expect(sql).toBe(expected);
   });
@@ -242,7 +242,7 @@ describe('QueryBuilder - Subqueries', () => {
       .limit(10)
       .getFormattedQuery();
     expect(sql).toBe(
-      'select `e0`.*, `books`.`uuid_pk` as `books__uuid_pk`, `books`.`created_at` as `books__created_at`, `books`.`isbn` as `books__isbn`, `books`.`title` as `books__title`, `books`.`price` as `books__price`, `books`.price * 1.19 as `books__price_taxed`, `books`.`double` as `books__double`, `books`.`meta` as `books__meta`, `books`.`author_id` as `books__author_id`, `books`.`publisher_id` as `books__publisher_id` from `author2` as `e0` inner join `book2` as `books` on `e0`.`id` = `books`.`author_id` where `e0`.`id` in (select `e0`.`id` from (select `e0`.`id` from `author2` as `e0` inner join `book2` as `books` on `e0`.`id` = `books`.`author_id` group by `e0`.`id` order by min(`books`.price * 1.19) desc, min(`e0`.`id`) desc limit 10) as `e0`) order by `books`.price * 1.19 desc, `e0`.`id` desc',
+      'select `e0`.*, `books`.`uuid_pk` as `books__uuid_pk`, `books`.`created_at` as `books__created_at`, `books`.`isbn` as `books__isbn`, `books`.`title` as `books__title`, `books`.`price` as `books__price`, `books`.`price` * 1.19 as `books__price_taxed`, `books`.`double` as `books__double`, `books`.`meta` as `books__meta`, `books`.`author_id` as `books__author_id`, `books`.`publisher_id` as `books__publisher_id` from `author2` as `e0` inner join `book2` as `books` on `e0`.`id` = `books`.`author_id` where `e0`.`id` in (select `e0`.`id` from (select `e0`.`id` from `author2` as `e0` inner join `book2` as `books` on `e0`.`id` = `books`.`author_id` group by `e0`.`id` order by min(`books`.`price` * 1.19) desc, min(`e0`.`id`) desc limit 10) as `e0`) order by `books`.`price` * 1.19 desc, `e0`.`id` desc',
     );
   });
 
@@ -255,7 +255,7 @@ describe('QueryBuilder - Subqueries', () => {
       .limit(10)
       .getFormattedQuery();
     expect(sql).toBe(
-      'select `e0`.`id`, `books`.price * 1.19 as `price_taxed` from `author2` as `e0` inner join `book2` as `books` on `e0`.`id` = `books`.`author_id` group by `books`.price * 1.19 limit 10',
+      'select `e0`.`id`, `books`.`price` * 1.19 as `price_taxed` from `author2` as `e0` inner join `book2` as `books` on `e0`.`id` = `books`.`author_id` group by `books`.`price` * 1.19 limit 10',
     );
   });
 

@@ -561,3 +561,361 @@ If you need a relationship that can point to multiple unrelated entity types (ea
 | Inheritance  | Required (common base class)                     | Not required                                    |
 | Foreign keys | Native FK constraints with referential integrity | No FK constraints (no database-level integrity) |
 | Example      | `Cat`, `Dog` extending `Animal`                  | `Like` pointing to `Post` or `Comment`          |
+
+## Table-Per-Type Inheritance (TPT)
+
+[Table-Per-Type Inheritance](https://martinfowler.com/eaaCatalog/classTableInheritance.html) (also known as Class Table Inheritance) is an inheritance mapping strategy where each class in the hierarchy has its own dedicated database table. Unlike STI where all entities share a single table with many nullable columns, TPT creates:
+
+- A separate table for each entity containing only its own properties
+- Child tables have a foreign key to the parent table (using the same primary key value)
+- `ON DELETE CASCADE` ensures proper cleanup when parent records are deleted
+
+### Configuration
+
+Use `inheritance: 'tpt'` on the root entity of the hierarchy:
+
+<Tabs
+  groupId="entity-def"
+  defaultValue="define-entity"
+  values={[
+    {label: 'defineEntity', value: 'define-entity'},
+    {label: 'decorators', value: 'decorators'},
+    {label: 'EntitySchema', value: 'entity-schema'},
+  ]
+}>
+  <TabItem value="decorators">
+
+```ts
+@Entity({ inheritance: 'tpt' })
+export abstract class Person {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property()
+  name!: string;
+
+}
+
+@Entity()
+export class Employee extends Person {
+
+  @Property()
+  department!: string;
+
+}
+
+@Entity()
+export class Customer extends Person {
+
+  @Property()
+  loyaltyPoints!: number;
+
+}
+```
+
+  </TabItem>
+  <TabItem value="define-entity">
+
+```ts
+export const Person = defineEntity({
+  name: 'Person',
+  abstract: true,
+  inheritance: 'tpt',
+  properties: {
+    id: p.number().primary(),
+    name: p.string(),
+  },
+});
+
+export const Employee = defineEntity({
+  name: 'Employee',
+  extends: Person,
+  properties: {
+    department: p.string(),
+  },
+});
+
+export const Customer = defineEntity({
+  name: 'Customer',
+  extends: Person,
+  properties: {
+    loyaltyPoints: p.number(),
+  },
+});
+```
+
+  </TabItem>
+  <TabItem value="entity-schema">
+
+```ts
+export const Person = new EntitySchema({
+  name: 'Person',
+  abstract: true,
+  inheritance: 'tpt',
+  properties: {
+    id: { type: 'number', primary: true },
+    name: { type: 'string' },
+  },
+});
+
+export const Employee = new EntitySchema({
+  name: 'Employee',
+  extends: Person,
+  properties: {
+    department: { type: 'string' },
+  },
+});
+
+export const Customer = new EntitySchema({
+  name: 'Customer',
+  extends: Person,
+  properties: {
+    loyaltyPoints: { type: 'number' },
+  },
+});
+```
+
+  </TabItem>
+</Tabs>
+
+### Generated Schema
+
+The above configuration generates the following schema:
+
+```sql
+CREATE TABLE person (
+  id INTEGER PRIMARY KEY,
+  name TEXT NOT NULL
+);
+
+CREATE TABLE employee (
+  id INTEGER PRIMARY KEY REFERENCES person(id) ON DELETE CASCADE,
+  department TEXT NOT NULL
+);
+
+CREATE TABLE customer (
+  id INTEGER PRIMARY KEY REFERENCES person(id) ON DELETE CASCADE,
+  loyalty_points INTEGER NOT NULL
+);
+```
+
+### How TPT Works
+
+#### INSERT Operations
+
+When inserting a TPT entity, MikroORM automatically inserts into all tables in the hierarchy, starting from the root:
+
+```ts
+const employee = em.create(Employee, {
+  name: 'John Doe',
+  department: 'Engineering',
+});
+await em.flush();
+
+// Executes:
+// INSERT INTO person (name) VALUES ('John Doe') -- returns id=1
+// INSERT INTO employee (id, department) VALUES (1, 'Engineering')
+```
+
+#### UPDATE Operations
+
+Updates are optimized to only modify tables that contain changed properties:
+
+```ts
+employee.department = 'Sales'; // Only updates employee table
+employee.name = 'Jane Doe';    // Only updates person table
+await em.flush();
+```
+
+#### DELETE Operations
+
+Deleting from the root table cascades to child tables automatically via the foreign key constraint:
+
+```ts
+em.remove(employee);
+await em.flush();
+
+// Executes:
+// DELETE FROM person WHERE id = 1
+// (employee row is deleted automatically via ON DELETE CASCADE)
+```
+
+#### SELECT Operations
+
+When querying a TPT entity, MikroORM automatically joins all parent tables:
+
+```ts
+const employees = await em.find(Employee, { department: 'Engineering' });
+
+// Executes:
+// SELECT e0.*, p1.*
+// FROM employee e0
+// INNER JOIN person p1 ON e0.id = p1.id
+// WHERE e0.department = 'Engineering'
+```
+
+### Multi-level Inheritance
+
+TPT supports deep inheritance hierarchies. Each level adds another table and join:
+
+<Tabs
+  groupId="entity-def"
+  defaultValue="define-entity"
+  values={[
+    {label: 'defineEntity', value: 'define-entity'},
+    {label: 'decorators', value: 'decorators'},
+    {label: 'EntitySchema', value: 'entity-schema'},
+  ]
+}>
+  <TabItem value="decorators">
+
+```ts
+@Entity({ inheritance: 'tpt' })
+export abstract class Person {
+  @PrimaryKey()
+  id!: number;
+
+  @Property()
+  name!: string;
+}
+
+@Entity()
+export class Employee extends Person {
+  @Property()
+  department!: string;
+}
+
+@Entity()
+export class Manager extends Employee {
+  @Property()
+  teamSize!: number;
+}
+```
+
+  </TabItem>
+  <TabItem value="define-entity">
+
+```ts
+export const Person = defineEntity({
+  name: 'Person',
+  abstract: true,
+  inheritance: 'tpt',
+  properties: {
+    id: p.number().primary(),
+    name: p.string(),
+  },
+});
+
+export const Employee = defineEntity({
+  name: 'Employee',
+  extends: Person,
+  properties: {
+    department: p.string(),
+  },
+});
+
+export const Manager = defineEntity({
+  name: 'Manager',
+  extends: Employee,
+  properties: {
+    teamSize: p.number(),
+  },
+});
+```
+
+  </TabItem>
+  <TabItem value="entity-schema">
+
+```ts
+export const Person = new EntitySchema({
+  name: 'Person',
+  abstract: true,
+  inheritance: 'tpt',
+  properties: {
+    id: { type: 'number', primary: true },
+    name: { type: 'string' },
+  },
+});
+
+export const Employee = new EntitySchema({
+  name: 'Employee',
+  extends: Person,
+  properties: {
+    department: { type: 'string' },
+  },
+});
+
+export const Manager = new EntitySchema({
+  name: 'Manager',
+  extends: Employee,
+  properties: {
+    teamSize: { type: 'number' },
+  },
+});
+```
+
+  </TabItem>
+</Tabs>
+
+This generates three tables with a chain of foreign keys:
+
+```sql
+CREATE TABLE person (id INTEGER PRIMARY KEY, name TEXT NOT NULL);
+CREATE TABLE employee (id INTEGER PRIMARY KEY REFERENCES person(id) ON DELETE CASCADE, department TEXT NOT NULL);
+CREATE TABLE manager (id INTEGER PRIMARY KEY REFERENCES employee(id) ON DELETE CASCADE, team_size INTEGER NOT NULL);
+```
+
+Querying `Manager` will join all three tables:
+
+```ts
+const managers = await em.find(Manager, {});
+
+// SELECT m0.*, e1.*, p2.*
+// FROM manager m0
+// INNER JOIN employee e1 ON m0.id = e1.id
+// INNER JOIN person p2 ON e1.id = p2.id
+```
+
+### Design-time Considerations
+
+TPT is ideal when:
+
+- **Schema normalization is important** - Each table contains only relevant columns with proper NOT NULL constraints
+- **Subtypes have many unique properties** - Avoids wide tables with many nullable columns
+- **You need to enforce data integrity** - Foreign keys ensure referential integrity across the hierarchy
+
+TPT may not be ideal when:
+
+- **You frequently query across the entire hierarchy** - Requires joins across all tables
+- **Performance is critical for read-heavy workloads** - STI can be faster for polymorphic queries
+- **The hierarchy is very deep** - Each level adds another join
+
+### Performance Impact
+
+- **Writes**: Slightly slower than STI due to multiple INSERT/UPDATE statements
+- **Reads of specific types**: Requires joins but returns only relevant data
+- **Polymorphic queries**: When querying a base class (e.g., `em.find(Person, {})`), the ORM LEFT JOINs all descendant tables to determine the concrete type. For hierarchies with many leaf types, this can produce wide queries. If this becomes a bottleneck, query concrete classes directly instead
+- **Schema size**: More tables but each table is narrower and better normalized
+
+### STI vs TPT Comparison
+
+| Aspect | STI | TPT |
+|--------|-----|-----|
+| Tables | Single table for hierarchy | One table per entity |
+| Columns | All columns, many nullable | Only own properties, properly constrained |
+| INSERT | Single statement | Multiple statements (parent first) |
+| SELECT | Single table scan | JOIN across hierarchy |
+| Schema | Denormalized | Normalized |
+| Best for | Simple hierarchies, read-heavy | Complex hierarchies, write-heavy with integrity needs |
+
+### Limitations
+
+- **Delete cascading and lifecycle hooks**: Child table rows are deleted via `ON DELETE CASCADE` at the database level. This means `beforeDelete`/`afterDelete` hooks will only fire for the entity being explicitly removed — not for child table rows cascaded by the database. If you need hooks on every table in the hierarchy, issue explicit deletes per table.
+- **Soft delete**: Because delete cascading is handled by the database, soft-delete patterns (e.g., `@Filter` to hide deleted rows) are not automatically TPT-aware. The database CASCADE will physically delete child rows even if the parent uses a soft-delete filter.
+- **Schema callbacks scope**: Index expressions, check constraints, and generated column callbacks for a TPT entity only have access to columns in that entity's own table. You cannot reference inherited columns from a parent table in these callbacks.
+- **Custom discriminator columns**: TPT uses a computed discriminator (CASE WHEN) at query time. Unlike STI, you cannot specify a custom persisted discriminator column.
+
+### Mixing STI and TPT
+
+Mixing STI and TPT within the same inheritance hierarchy is not supported and will result in a validation error. Each hierarchy must use one strategy consistently.

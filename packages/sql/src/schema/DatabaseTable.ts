@@ -115,7 +115,7 @@ export class DatabaseTable {
       this.columns[field] = {
         name: prop.fieldNames[idx],
         type: prop.columnTypes[idx],
-        generated: prop.generated as string,
+        generated: prop.generated instanceof RawQueryFragment ? this.platform.formatQuery(prop.generated.sql, prop.generated.params) : prop.generated as string,
         mappedType,
         unsigned: prop.unsigned && this.platform.isNumericColumn(mappedType),
         autoincrement: prop.autoincrement ?? (primary && prop.kind === ReferenceKind.SCALAR && this.platform.isNumericColumn(mappedType)),
@@ -897,18 +897,15 @@ export class DatabaseTable {
 
   private processIndexExpression(indexName: string, expression: string | IndexCallback<any> | undefined, meta: EntityMetadata) {
     if (expression instanceof Function) {
+      const qualifiedName = this.schema ? `${this.schema}.${this.name}` : this.name;
       const table = {
         name: this.name,
         schema: this.schema,
-        toString() {
-          if (this.schema) {
-            return `${this.schema}.${this.name}`;
-          }
-
-          return this.name;
-        },
+        qualifiedName,
+        toString: () => qualifiedName,
       };
-      const exp = expression(table, meta.createColumnMappingObject(), indexName);
+      const columns = meta.createSchemaColumnMappingObject();
+      const exp = expression(columns, table, indexName);
       return exp instanceof RawQueryFragment ? this.platform.formatQuery(exp.sql, exp.params) : exp;
     }
 

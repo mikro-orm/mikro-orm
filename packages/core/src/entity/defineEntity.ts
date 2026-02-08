@@ -740,6 +740,9 @@ export interface EntityMetadataWithProperties<
   // Capture the repository type for InferEntity to include EntityRepositoryType
   repository?: () => TRepository;
 
+  // Table-per-type inheritance (each entity has its own table)
+  inheritance?: 'tpt';
+
   // use keyof TProperties instead of EntityKey<T> to avoid circular type inference
   discriminatorColumn?: keyof TProperties;
   versionProperty?: keyof TProperties;
@@ -927,13 +930,15 @@ type MaybeScalarRef<Value, Options> =
 
 type MaybeOpt<Value, Options> =
   Options extends { mapToPk: true } ? Value extends Opt<infer OriginalValue> ? OriginalValue : Value :
-  Options extends { autoincrement: true } ? Opt<Value> :
-  Options extends { onCreate: Function } ? Opt<Value> :
-  Options extends { default: string | string[] | number | number[] | boolean | null | Date | Raw } ? Opt<Value> :
-  Options extends { defaultRaw: string } ? Opt<Value> :
-  Options extends { persist: false } ? Opt<Value> :
-  Options extends { version: true } ? Opt<Value> :
-  Options extends { formula: string | ((...args: any[]) => string) } ? Opt<Value> :
+  Options extends
+    | { autoincrement: true }
+    | { onCreate: Function }
+    | { default: string | string[] | number | number[] | boolean | null | Date | Raw }
+    | { defaultRaw: string }
+    | { persist: false }
+    | { version: true }
+    | { formula: string | ((...args: any[]) => any) }
+    ? Opt<Value> :
     Value;
 
 type MaybeHidden<Value, Options> = Options extends { hidden: true } ? Hidden<Value> : Value;

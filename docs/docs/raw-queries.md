@@ -43,7 +43,7 @@ The `raw` helper can be used within indexes and uniques to write database-agnost
 ```ts
 // On postgres, will produce: create index "index custom_idx_on_name" on "library.author" ("country")
 // On mysql, will produce: create index `index custom_idx_on_name` on `library.author` (`country`)
-@Index({ name: 'custom_idx_on_name', expression: (table, columns) => raw(`create index ?? on ?? (??)`, ['custom_idx_on_name', table, columns.name]) })
+@Index({ name: 'custom_idx_on_name', expression: (columns, table, indexName) => raw(`create index ?? on ?? (??)`, [indexName, table, columns.name]) })
 @Entity({ schema: 'library' })
 export class Author { ... }
 ```
@@ -51,7 +51,7 @@ export class Author { ... }
 You can also use the `quote` tag function to write database-agnostic SQL expressions. The end-result is the same as using the `raw` function regarding database identifiers quoting, only to have a more elegant expression syntax:
 
 ```ts
-@Index({ name: 'custom_idx_on_name', expression: (table, columns) => quote`create index ${'custom_idx_on_name'} on ${table} (${columns.name})` })
+@Index({ name: 'custom_idx_on_name', expression: (columns, table, indexName) => quote`create index ${indexName} on ${table} (${columns.name})` })
 @Entity({ schema: 'library' })
 export class Author { ... }
 ```

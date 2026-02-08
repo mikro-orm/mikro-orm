@@ -54,6 +54,7 @@ function createSimpleMetadata(): MetadataStorage {
       type: 'string',
     },
   } as any;
+  meta.root = meta;
   meta.props = Object.values(meta.properties);
   meta.comparableProps = [meta.properties.id as any, meta.properties.name as any];
   meta.hydrateProps = meta.props;
@@ -78,6 +79,7 @@ function createSimpleMetadata(): MetadataStorage {
       type: 'string',
     },
   } as any;
+  embeddableMeta.root = embeddableMeta;
   embeddableMeta.props = Object.values(embeddableMeta.properties);
   embeddableMeta.comparableProps = [embeddableMeta.properties.street as any];
   embeddableMeta.hydrateProps = embeddableMeta.props;

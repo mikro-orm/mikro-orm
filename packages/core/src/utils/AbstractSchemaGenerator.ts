@@ -126,15 +126,28 @@ export abstract class AbstractSchemaGenerator<D extends IDatabaseDriver> impleme
   protected getOrderedMetadata(schema?: string): EntityMetadata[] {
     const metadata = [...this.metadata.getAll().values()].filter(meta => {
       const isRootEntity = meta.root.class === meta.class;
-      return isRootEntity && !meta.embeddable && !meta.virtual;
+      const isTPTChild = meta.inheritanceType === 'tpt' && meta.tptParent;
+      return (isRootEntity || isTPTChild) && !meta.embeddable && !meta.virtual;
     });
     const calc = new CommitOrderCalculator();
-    metadata.forEach(meta => calc.addNode(meta.root._id));
+
+    metadata.forEach(meta => {
+      const nodeId = meta.inheritanceType === 'tpt' && meta.tptParent ? meta._id : meta.root._id;
+      calc.addNode(nodeId);
+    });
+
     let meta = metadata.pop();
 
     while (meta) {
+      const nodeId = meta.inheritanceType === 'tpt' && meta.tptParent ? meta._id : meta.root._id;
+
       for (const prop of meta.relations) {
-        calc.discoverProperty(prop, meta.root._id);
+        calc.discoverProperty(prop, nodeId);
+      }
+
+      if (meta.inheritanceType === 'tpt' && meta.tptParent) {
+        const parentId = meta.tptParent._id;
+        calc.addDependency(parentId, nodeId, 1);
       }
 
       meta = metadata.pop();
