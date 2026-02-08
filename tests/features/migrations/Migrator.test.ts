@@ -45,16 +45,20 @@ class MigrationTest2 extends Migration {
 describe('Migrator', () => {
 
   let orm: MikroORM<MySqlDriver>;
+  const migrationsPath = process.cwd() + '/temp/migrations-123';
 
   beforeAll(async () => {
     orm = await initORMMySql('mysql', {
       dbName: 'mikro_orm_test_migrations',
-      migrations: { path: process.cwd() + '/temp/migrations-123' },
+      migrations: { path: migrationsPath },
       loggerFactory: SimpleLogger.create,
     }, true);
-    await rm(process.cwd() + '/temp/migrations-123', { recursive: true, force: true });
+    await rm(migrationsPath, { recursive: true, force: true });
   });
-  beforeEach(() => orm.config.resetServiceCache());
+  beforeEach(async () => {
+    orm.config.resetServiceCache();
+    await rm(migrationsPath, { recursive: true, force: true });
+  });
   afterAll(async () => {
     await orm.schema.dropDatabase();
     await orm.close(true);
@@ -265,7 +269,7 @@ describe('Migrator', () => {
   });
 
   test('run schema migration without existing migrations folder (GH #907)', async () => {
-    await rm(process.cwd() + '/temp/migrations-123', { recursive: true, force: true });
+    await rm(migrationsPath, { recursive: true, force: true });
     const migrator = new Migrator(orm.em);
     await migrator.up();
   });
@@ -367,11 +371,13 @@ describe('Migrator', () => {
   });
 
   test('up/down params [all or nothing enabled]', async () => {
+    const dateMock = vi.spyOn(Date.prototype, 'toISOString');
+    dateMock.mockReturnValue('2019-10-13T21:48:13.382Z');
     await orm.schema.dropTableIfExists(orm.config.get('migrations').tableName!);
     const migrator = new Migrator(orm.em);
     // @ts-ignore
     migrator.options.disableForeignKeys = false;
-    const path = process.cwd() + '/temp/migrations-123';
+    const path = migrationsPath;
 
     const migration = await migrator.create(path, true);
     const migratorMock = vi.spyOn(Migration.prototype, 'down');
@@ -406,7 +412,7 @@ describe('Migrator', () => {
   test('up/down with explicit transaction', async () => {
     await orm.schema.dropTableIfExists(orm.config.get('migrations').tableName!);
     const migrator = new Migrator(orm.em);
-    const path = process.cwd() + '/temp/migrations-123';
+    const path = migrationsPath;
 
     // @ts-ignore
     migrator.options.disableForeignKeys = false;
@@ -444,13 +450,15 @@ describe('Migrator', () => {
   });
 
   test('up/down params [all or nothing disabled]', async () => {
+    const dateMock = vi.spyOn(Date.prototype, 'toISOString');
+    dateMock.mockReturnValue('2019-10-13T21:48:13.382Z');
     await orm.schema.dropTableIfExists(orm.config.get('migrations').tableName!);
     const migrator = new Migrator(orm.em);
     // @ts-ignore
     migrator.options.disableForeignKeys = false;
     // @ts-ignore
     migrator.options.allOrNothing = false;
-    const path = process.cwd() + '/temp/migrations-123';
+    const path = migrationsPath;
 
     const migration = await migrator.create(path, true);
     const migratorMock = vi.spyOn(Migration.prototype, 'down');
