@@ -748,17 +748,19 @@ export class EntityLoader {
       return ret;
     }, [] as EntityField<Entity>[]);
 
-    if (ret.length === 0) {
-      return undefined;
-    }
-
     // we need to automatically select the FKs too, e.g. for 1:m relations to be able to wire them with the items
     if (prop.kind === ReferenceKind.ONE_TO_MANY || prop.kind === ReferenceKind.MANY_TO_MANY) {
       const owner = prop.targetMeta!.properties[prop.mappedBy] as EntityProperty<Entity>;
 
-      if (owner && !ret.includes(owner.name)) {
+      // when the owning FK is lazy, we need to explicitly select it even without user-provided fields,
+      // otherwise the driver will exclude it and we won't be able to map children to their parent collections
+      if (owner && !ret.includes(owner.name) && (ret.length > 0 || owner.lazy)) {
         ret.push(owner.name);
       }
+    }
+
+    if (ret.length === 0) {
+      return undefined;
     }
 
     return ret;
