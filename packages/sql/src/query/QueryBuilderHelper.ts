@@ -22,6 +22,7 @@ import {
   raw,
   Raw,
   type RawQueryFragmentSymbol,
+  QueryHelper,
   ReferenceKind,
   Utils,
   ValidationError,
@@ -192,6 +193,15 @@ export class QueryBuilderHelper {
     schema ??= prop.targetMeta?.schema === '*' ? '*' : this.driver.getSchemaName(prop.targetMeta);
     cond = Utils.merge(cond, prop.where);
 
+    // For inverse side of polymorphic relations, add discriminator condition
+    if (!prop.owner && prop2.polymorphic && prop2.discriminatorColumn && prop2.discriminatorMap) {
+      const ownerMeta = this.aliasMap[ownerAlias]?.meta ?? this.metadata.get(this.entityName);
+      const discriminatorValue = QueryHelper.findDiscriminatorValue(prop2.discriminatorMap, ownerMeta.class);
+      if (discriminatorValue) {
+        cond[`${alias}.${prop2.discriminatorColumn}`] = discriminatorValue;
+      }
+    }
+
     return {
       prop, type, cond, ownerAlias, alias, table, schema,
       joinColumns, inverseJoinColumns, primaryKeys,
@@ -204,7 +214,9 @@ export class QueryBuilderHelper {
       table: this.getTableName(prop.targetMeta!.class),
       schema: prop.targetMeta?.schema === '*' ? '*' : this.driver.getSchemaName(prop.targetMeta, { schema }),
       joinColumns: prop.referencedColumnNames,
-      primaryKeys: prop.fieldNames,
+      // For polymorphic relations, fieldNames includes the discriminator column which is not
+      // part of the join condition - use joinColumns (the FK columns only) instead
+      primaryKeys: prop.polymorphic ? prop.joinColumns : prop.fieldNames,
     };
   }
 
@@ -290,6 +302,16 @@ export class QueryBuilderHelper {
       const typeProperty = join.prop.targetMeta!.root.discriminatorColumn!;
       const alias = join.inverseAlias ?? join.alias;
       join.cond[`${alias}.${typeProperty}`] = join.prop.targetMeta!.discriminatorValue;
+    }
+
+    // For polymorphic relations, add discriminator condition to filter by target entity type
+    if (join.prop.polymorphic && join.prop.discriminatorColumn && join.prop.discriminatorMap) {
+      const discriminatorValue = QueryHelper.findDiscriminatorValue(join.prop.discriminatorMap, join.prop.targetMeta!.class);
+      if (discriminatorValue) {
+        const discriminatorCol = this.platform.quoteIdentifier(`${join.ownerAlias}.${join.prop.discriminatorColumn}`);
+        conditions.push(`${discriminatorCol} = ?`);
+        params.push(discriminatorValue);
+      }
     }
 
     let sql = method + ' ';

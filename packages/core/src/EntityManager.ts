@@ -466,8 +466,11 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
   }
 
   protected async getJoinedFilters<Entity extends object>(meta: EntityMetadata<Entity>, options: FindOptions<Entity, any, any, any> | FindOneOptions<Entity, any, any, any>): Promise<ObjectQuery<Entity> | undefined> {
+    // If user provided populateFilter, merge it with computed filters
+    const userFilter = options.populateFilter;
+
     if (!this.config.get('filtersOnRelations') || !options.populate) {
-      return undefined;
+      return userFilter;
     }
 
     const ret = {} as ObjectQuery<Entity>;
@@ -507,7 +510,12 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       }
     }
 
-    return ret;
+    // Merge user-provided populateFilter with computed filters
+    if (userFilter) {
+      Utils.merge(ret, userFilter);
+    }
+
+    return Utils.hasObjectKeys(ret) ? ret : undefined;
   }
 
   /**

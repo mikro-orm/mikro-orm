@@ -40,6 +40,7 @@ import {
   type Options,
   type OrderDefinition,
   parseJsonSafe,
+  PolymorphicRef,
   type PopulateOptions,
   type PopulatePath,
   type Primary,
@@ -395,6 +396,55 @@ export abstract class AbstractSqlDriver<
         return;
       }
 
+      // Polymorphic to-one: iterate targets, find the matching one, build entity from its columns.
+      // Skip :ref hints — no JOINs were created, so the FK reference is already set by the result mapper.
+      if (prop.polymorphic && prop.polymorphTargets?.length && !ref && [ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind)) {
+        const basePath = parentJoinPath ? `${parentJoinPath}.${prop.name}` : `${meta.name}.${prop.name}`;
+        const pathPrefix = !parentJoinPath ? '[populate]' : '';
+        let matched = false;
+
+        for (const targetMeta of prop.polymorphTargets) {
+          const targetPath = `${pathPrefix}${basePath}[${targetMeta.className}]`;
+          const relationAlias = qb.getAliasForJoinPath(targetPath, { matchPopulateJoins: true })!;
+          const meta2 = targetMeta as EntityMetadata<T>;
+          const targetProps = meta2.props.filter(p => this.platform.shouldHaveColumn(p, (hint.children as any) || []));
+
+          const hasPK = meta2.getPrimaryProps().every(pk =>
+            pk.fieldNames.every(name => root![`${relationAlias}__${name}` as EntityKey] != null),
+          );
+
+          if (hasPK && !matched) {
+            matched = true;
+            let relationPojo: EntityData<T> = {};
+            const tz = this.platform.getTimezone();
+
+            for (const p of targetProps) {
+              this.mapJoinedProp(relationPojo, p, relationAlias, root, tz, meta2);
+            }
+
+            // Inject the entity class constructor so that the factory creates the correct type
+            Object.defineProperty(relationPojo, 'constructor', { value: meta2.class, enumerable: false, configurable: true });
+            result[prop.name] = relationPojo as EntityDataValue<T>;
+
+            const populateChildren = (hint.children as any) || [];
+            this.mapJoinedProps(relationPojo, meta2, populateChildren, qb, root, map, targetPath);
+          }
+
+          // Clean up aliased columns for ALL targets (even non-matching ones)
+          for (const p of targetProps) {
+            for (const name of p.fieldNames) {
+              delete root![`${relationAlias}__${name}` as EntityKey<T>];
+            }
+          }
+        }
+
+        if (!matched) {
+          result[prop.name] = null;
+        }
+
+        return;
+      }
+
       const pivotRefJoin = prop.kind === ReferenceKind.MANY_TO_MANY && ref;
       const meta2 = prop.targetMeta as EntityMetadata<T>;
       let path = parentJoinPath ? `${parentJoinPath}.${prop.name}` : `${meta.name}.${prop.name}`;
@@ -485,40 +535,7 @@ export abstract class AbstractSqlDriver<
       const tz = this.platform.getTimezone();
 
       for (const prop of targetProps) {
-        if (prop.fieldNames.every(name => typeof root![`${relationAlias}__${name}` as EntityKey<T>] === 'undefined')) {
-          continue;
-        }
-
-        if (prop.fieldNames.length > 1) {
-          // composite keys
-          const fk = prop.fieldNames.map(name => root![`${relationAlias}__${name}` as EntityKey<T>]) as Primary<T>[];
-          const pk = Utils.mapFlatCompositePrimaryKey(fk, prop) as unknown[];
-          relationPojo[prop.name] = pk.every(val => val != null) ? (pk as EntityDataValue<T>) : null;
-        } else if (prop.runtimeType === 'Date') {
-          const alias = `${relationAlias}__${prop.fieldNames[0]}` as EntityKey<T>;
-          const value = root![alias] as unknown;
-
-          if (tz && tz !== 'local' && typeof value === 'string' && !value.includes('+') && value.lastIndexOf('-') < 11 && !value.endsWith('Z')) {
-            relationPojo[prop.name] = this.platform.parseDate(value + tz) as EntityDataValue<T>;
-          } else if (['string', 'number'].includes(typeof value)) {
-            relationPojo[prop.name] = this.platform.parseDate(value as string) as EntityDataValue<T>;
-          } else {
-            relationPojo[prop.name] = value as EntityDataValue<T>;
-          }
-        } else {
-          const alias = `${relationAlias}__${prop.fieldNames[0]}` as EntityKey<T>;
-          relationPojo[prop.name] = root![alias];
-
-          if (prop.kind === ReferenceKind.EMBEDDED && (prop.object || meta.embeddable)) {
-            const item = parseJsonSafe(relationPojo[prop.name]);
-
-            if (Array.isArray(item)) {
-              relationPojo[prop.name] = item.map(row => (row == null ? row : this.comparator.mapResult(prop.targetMeta!, row))) as EntityDataValue<T>;
-            } else {
-              relationPojo[prop.name] = item == null ? item : (this.comparator.mapResult(prop.targetMeta!, item) as EntityDataValue<T>);
-            }
-          }
-        }
+        this.mapJoinedProp(relationPojo, prop, relationAlias, root, tz, meta2);
       }
 
       // properties can be mapped to multiple places, e.g. when sharing a column in multiple FKs,
@@ -545,6 +562,66 @@ export abstract class AbstractSqlDriver<
       const populateChildren = (hint.children as any) || [];
       this.mapJoinedProps(relationPojo, meta2, populateChildren, qb, root, map, path);
     });
+  }
+
+  /**
+   * Maps a single property from a joined result row into the relation pojo.
+   * Handles polymorphic FKs, composite keys, Date parsing, and embedded objects.
+   */
+  private mapJoinedProp<T extends object>(
+    relationPojo: EntityData<T>,
+    prop: EntityProperty<T>,
+    relationAlias: string,
+    root: EntityData<T>,
+    tz: string | undefined,
+    meta: EntityMetadata<T>,
+  ): void {
+    if (prop.fieldNames.every(name => typeof root[`${relationAlias}__${name}` as EntityKey<T>] === 'undefined')) {
+      return;
+    }
+
+    if (prop.polymorphic) {
+      const discriminatorAlias = `${relationAlias}__${prop.fieldNames[0]}` as EntityKey<T>;
+      const discriminatorValue = root[discriminatorAlias] as string;
+      const pkFieldNames = prop.fieldNames.slice(1);
+      const pkValues = pkFieldNames.map(name => root[`${relationAlias}__${name}` as EntityKey<T>]);
+      const pkValue = pkValues.length === 1 ? pkValues[0] : pkValues;
+
+      if (discriminatorValue != null && pkValue != null) {
+        relationPojo[prop.name] = new PolymorphicRef(discriminatorValue, pkValue) as EntityDataValue<T>;
+      } else {
+        relationPojo[prop.name] = null;
+      }
+    } else if (prop.fieldNames.length > 1) {
+      // composite keys
+      const fk = prop.fieldNames.map(name => root[`${relationAlias}__${name}` as EntityKey<T>]) as Primary<T>[];
+      const pk = Utils.mapFlatCompositePrimaryKey(fk, prop) as unknown[];
+      relationPojo[prop.name] = pk.every(val => val != null) ? (pk as EntityDataValue<T>) : null;
+    } else if (prop.runtimeType === 'Date') {
+      const alias = `${relationAlias}__${prop.fieldNames[0]}` as EntityKey<T>;
+      const value = root[alias] as unknown;
+
+      if (tz && tz !== 'local' && typeof value === 'string' && !value.includes('+') && value.lastIndexOf('-') < 11 && !value.endsWith('Z')) {
+        relationPojo[prop.name] = this.platform.parseDate(value + tz) as EntityDataValue<T>;
+      } else if (['string', 'number'].includes(typeof value)) {
+        relationPojo[prop.name] = this.platform.parseDate(value as string) as EntityDataValue<T>;
+      } else {
+        relationPojo[prop.name] = value as EntityDataValue<T>;
+      }
+    } else {
+      const alias = `${relationAlias}__${prop.fieldNames[0]}` as EntityKey<T>;
+      relationPojo[prop.name] = root[alias];
+
+      if (prop.kind === ReferenceKind.EMBEDDED && (prop.object || meta.embeddable)) {
+        const item = parseJsonSafe(relationPojo[prop.name]);
+
+        if (Array.isArray(item)) {
+          relationPojo[prop.name] = item.map(row => (row == null ? row : this.comparator.mapResult(prop.targetMeta!, row))) as EntityDataValue<T>;
+        } else {
+          relationPojo[prop.name] = item == null ? item : (this.comparator.mapResult(prop.targetMeta!, item) as EntityDataValue<T>);
+        }
+      }
+    }
   }
 
   async count<T extends object>(entityName: EntityName<T>, where: any, options: CountOptions<T> = {}): Promise<number> {
@@ -706,7 +783,15 @@ export abstract class AbstractSqlDriver<
 
             if (prop.fieldNames.length > 1) {
               const newFields: string[] = [];
-              const rawParam = Utils.asArray(row[prop.name]) ?? prop.fieldNames.map(() => null);
+              let rawParam: unknown[];
+              const target = row[prop.name] as unknown;
+
+              if (prop.polymorphic && target instanceof PolymorphicRef) {
+                rawParam = target.toTuple();
+              } else {
+                rawParam = Utils.asArray(target) ?? prop.fieldNames.map(() => null);
+              }
+
               // Deep flatten nested arrays when needed (for deeply nested composite keys like Tag -> Comment -> Post -> User)
               const needsFlatten = rawParam.length !== prop.fieldNames.length && rawParam.some(v => Array.isArray(v));
               const allParam = needsFlatten ? Utils.flatten(rawParam as unknown[][], true) : rawParam;
@@ -928,6 +1013,16 @@ export abstract class AbstractSqlDriver<
     for (const key of keys) {
       const prop = meta.properties[key] ?? meta.root.properties[key];
 
+      if (prop.polymorphic && prop.fieldNames.length > 1) {
+        for (let idx = 0; idx < data.length; idx++) {
+          const rowValue = data[idx][key] as Record<string, unknown> | null;
+
+          if (rowValue instanceof PolymorphicRef) {
+            data[idx][key] = rowValue.toTuple();
+          }
+        }
+      }
+
       prop.fieldNames.forEach((fieldName: string, fieldNameIdx: number) => {
         if (fields.has(fieldName) || (prop.ownColumns && !prop.ownColumns.includes(fieldName))) {
           return;
@@ -1143,11 +1238,17 @@ export abstract class AbstractSqlDriver<
     options?: FindOptions<T, any, any, any>,
     pivotJoin?: boolean,
   ): Promise<Dictionary<T[]>> {
+    /* v8 ignore next */
     if (owners.length === 0) {
       return {};
     }
 
     const pivotMeta = this.metadata.get(prop.pivotEntity);
+
+    if (prop.polymorphic && prop.discriminatorColumn && prop.discriminatorValue) {
+      return this.loadFromPolymorphicPivotTable(prop, owners, where, orderBy, ctx, options, pivotJoin);
+    }
+
     const pivotProp1 = pivotMeta.relations[prop.owner ? 1 : 0];
     const pivotProp2 = pivotMeta.relations[prop.owner ? 0 : 1];
     const ownerMeta = pivotProp2.targetMeta as EntityMetadata<O>;
@@ -1184,12 +1285,150 @@ export abstract class AbstractSqlDriver<
       populateWhere: undefined,
       // @ts-ignore
       _populateWhere: 'infer',
-      populateFilter:
-        !Utils.isEmpty(options?.populateFilter) || RawQueryFragment.hasObjectFragments(options?.populateFilter)
-          ? ({ [pivotProp2.name]: options?.populateFilter } as any)
-          : undefined,
+      populateFilter: this.wrapPopulateFilter(options, pivotProp2.name),
     });
 
+    return this.buildPivotResultMap(owners, res, pivotProp2.name, pivotProp1.name);
+  }
+
+  /**
+   * Load from a polymorphic M:N pivot table.
+   */
+  protected async loadFromPolymorphicPivotTable<T extends object, O extends object>(
+    prop: EntityProperty,
+    owners: Primary<O>[][],
+    where: FilterQuery<any> = {} as FilterQuery<any>,
+    orderBy?: OrderDefinition<T>,
+    ctx?: Transaction,
+    options?: FindOptions<T, any, any, any>,
+    pivotJoin?: boolean,
+  ): Promise<Dictionary<T[]>> {
+    const pivotMeta = this.metadata.get(prop.pivotEntity);
+    // Find the M:1 relation on the pivot pointing to the target entity.
+    // We exclude virtual polymorphic owner relations (persist: false) and non-M:1 relations.
+    const inverseProp = pivotMeta.relations.find(r => r.kind === ReferenceKind.MANY_TO_ONE && r.persist !== false && r.targetMeta === prop.targetMeta);
+
+    if (inverseProp) {
+      return this.loadPolymorphicPivotOwnerSide(prop, owners, where, orderBy, ctx, options, pivotJoin, inverseProp);
+    }
+
+    return this.loadPolymorphicPivotInverseSide(prop, owners, where, orderBy, ctx, options);
+  }
+
+  /**
+   * Load from owner side of polymorphic M:N (e.g., Post -> Tags)
+   */
+  protected async loadPolymorphicPivotOwnerSide<T extends object, O extends object>(
+    prop: EntityProperty,
+    owners: Primary<O>[][],
+    where: FilterQuery<any>,
+    orderBy?: OrderDefinition<T>,
+    ctx?: Transaction,
+    options?: FindOptions<T, any, any, any>,
+    pivotJoin?: boolean,
+    inverseProp?: EntityProperty,
+  ): Promise<Dictionary<T[]>> {
+    const pivotMeta = this.metadata.get(prop.pivotEntity);
+    const targetMeta = prop.targetMeta!;
+
+    // Build condition: discriminator = 'post' AND {discriminator} IN (...)
+    const cond: Dictionary = {
+      [prop.discriminatorColumn!]: prop.discriminatorValue,
+      [prop.discriminator!]: { $in: owners.length === 1 && owners[0].length === 1 ? owners.map(o => o[0]) : owners },
+    };
+
+    if (!Utils.isEmpty(where)) {
+      cond[inverseProp!.name] = { ...where };
+    }
+
+    const populateField = pivotJoin ? `${inverseProp!.name}:ref` : inverseProp!.name as EntityKey<T>;
+    const populate = this.autoJoinOneToOneOwner(targetMeta, options?.populate as PopulateOptions<T>[] ?? [], options?.fields);
+    const childFields = !Utils.isEmpty(options?.fields) ? options!.fields!.map(f => `${inverseProp!.name}.${f}`) : [];
+    const childExclude = !Utils.isEmpty(options?.exclude) ? options!.exclude!.map(f => `${inverseProp!.name}.${f}`) : [];
+    const fields = pivotJoin
+      ? [inverseProp!.name, prop.discriminator!, prop.discriminatorColumn!] as any[]
+      : [inverseProp!.name, prop.discriminator!, prop.discriminatorColumn!, ...childFields];
+
+    const res = await this.find(pivotMeta.class, cond as FilterQuery<any>, {
+      ctx,
+      ...options,
+      fields,
+      exclude: childExclude as any[],
+      orderBy: this.getPivotOrderBy(prop, inverseProp!, orderBy, options?.orderBy),
+      populate: [{ field: populateField, strategy: LoadStrategy.JOINED, joinType: JoinType.innerJoin, children: populate, dataOnly: inverseProp!.mapToPk && !pivotJoin } as any],
+      populateWhere: undefined,
+      // @ts-ignore
+      _populateWhere: 'infer',
+      populateFilter: this.wrapPopulateFilter(options, inverseProp!.name),
+    });
+
+    return this.buildPivotResultMap(owners, res, prop.discriminator!, inverseProp!.name);
+  }
+
+  /**
+   * Load from inverse side of polymorphic M:N (e.g., Tag -> Posts)
+   * Uses single query with join via virtual relation on pivot.
+   */
+  protected async loadPolymorphicPivotInverseSide<T extends object, O extends object>(
+    prop: EntityProperty,
+    owners: Primary<O>[][],
+    where: FilterQuery<any>,
+    orderBy?: OrderDefinition<T>,
+    ctx?: Transaction,
+    options?: FindOptions<T, any, any, any>,
+  ): Promise<Dictionary<T[]>> {
+    const pivotMeta = this.metadata.get(prop.pivotEntity);
+    const targetMeta = prop.targetMeta!;
+
+    // Find the relation to the entity we're starting from (e.g., Tag_inverse -> Tag)
+    // Exclude virtual polymorphic owner relations (persist: false) - we want the actual M:N inverse relation
+    const tagProp = pivotMeta.relations.find(r => r.persist !== false && r.targetMeta !== targetMeta)!;
+
+    // Find the virtual relation to the polymorphic owner (e.g., taggable_Post -> Post)
+    const ownerRelationName = `${prop.discriminator}_${targetMeta.tableName}`;
+    const ownerProp = pivotMeta.properties[ownerRelationName];
+
+    // Build condition: discriminator = 'post' AND Tag_inverse IN (tagIds)
+    const cond: Dictionary = {
+      [prop.discriminatorColumn!]: prop.discriminatorValue,
+      [tagProp.name]: { $in: owners.length === 1 && owners[0].length === 1 ? owners.map(o => o[0]) : owners },
+    };
+
+    if (!Utils.isEmpty(where)) {
+      cond[ownerRelationName] = { ...where };
+    }
+
+    const populateField = ownerRelationName as EntityKey<T>;
+    const populate = this.autoJoinOneToOneOwner(targetMeta, options?.populate as PopulateOptions<T>[] ?? [], options?.fields);
+    const childFields = !Utils.isEmpty(options?.fields) ? options!.fields!.map(f => `${ownerRelationName}.${f}`) : [];
+    const childExclude = !Utils.isEmpty(options?.exclude) ? options!.exclude!.map(f => `${ownerRelationName}.${f}`) : [];
+    const fields = [ownerRelationName, tagProp.name, prop.discriminatorColumn!, ...childFields] as any[];
+
+    const res = await this.find(pivotMeta.class, cond as FilterQuery<any>, {
+      ctx,
+      ...options,
+      fields,
+      exclude: childExclude as any[],
+      orderBy: this.getPivotOrderBy(prop, ownerProp, orderBy, options?.orderBy),
+      populate: [{ field: populateField, strategy: LoadStrategy.JOINED, joinType: JoinType.innerJoin, children: populate } as any],
+      populateWhere: undefined,
+      // @ts-ignore
+      _populateWhere: 'infer',
+      populateFilter: this.wrapPopulateFilter(options, ownerRelationName),
+    });
+
+    return this.buildPivotResultMap(owners, res, tagProp.name, ownerRelationName);
+  }
+
+  /**
+   * Build a map from owner PKs to their related entities from pivot table results.
+   */
+  private buildPivotResultMap<T extends object, O extends object>(
+    owners: Primary<O>[][],
+    results: object[],
+    keyProp: string,
+    valueProp: string,
+  ): Dictionary<T[]> {
     const map: Dictionary<T[]> = {};
 
     for (const owner of owners) {
@@ -1197,12 +1436,24 @@ export abstract class AbstractSqlDriver<
       map[key] = [];
     }
 
-    for (const item of res) {
-      const key = Utils.getPrimaryKeyHash(Utils.asArray((item as any)[pivotProp2.name]));
-      map[key].push((item as any)[pivotProp1.name]);
+    for (const item of results) {
+      const key = Utils.getPrimaryKeyHash(Utils.asArray((item as any)[keyProp]));
+      const entity = (item as any)[valueProp] as T;
+
+      if (map[key]) {
+        map[key].push(entity);
+      }
     }
 
     return map;
+  }
+
+  private wrapPopulateFilter(options: FindOptions<any, any, any, any> | undefined, propName: string): any {
+    if (!Utils.isEmpty(options?.populateFilter) || RawQueryFragment.hasObjectFragments(options?.populateFilter)) {
+      return { [propName]: options?.populateFilter } as any;
+    }
+
+    return undefined;
   }
 
   private getPivotOrderBy<T>(
@@ -1419,7 +1670,33 @@ export abstract class AbstractSqlDriver<
 
     for (const hint of joinedProps) {
       const [propName, ref] = hint.field.split(':', 2) as [EntityKey<T>, string | undefined];
-      const prop = meta.properties[propName];
+      const prop = meta.properties[propName]!;
+
+      // Polymorphic to-one: create a LEFT JOIN per target type
+      // Skip :ref hints — polymorphic to-one already has FK + discriminator in the row
+      if (prop.polymorphic && prop.polymorphTargets?.length && !ref && [ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind)) {
+        const basePath = options.parentJoinPath ? `${options.parentJoinPath}.${prop.name}` : `${meta.name}.${prop.name}`;
+        const pathPrefix = !options.parentJoinPath && populateWhereAll && !basePath.startsWith('[populate]') ? '[populate]' : '';
+
+        for (const targetMeta of prop.polymorphTargets) {
+          const tableAlias = qb.getNextAlias(targetMeta.className);
+          const targetPath = `${pathPrefix}${basePath}[${targetMeta.className}]`;
+          const schema = targetMeta.schema === '*' ? (options?.schema ?? this.config.get('schema')) : targetMeta.schema;
+          qb.addPolymorphicJoin(prop, targetMeta as EntityMetadata<T>, options.parentTableAlias, tableAlias, JoinType.leftJoin, targetPath, schema);
+
+          // Select fields from each target table
+          fields.push(
+            ...this.getFieldsForJoinedLoad(qb, targetMeta as EntityMetadata<T>, {
+              ...options,
+              populate: hint.children as any,
+              parentTableAlias: tableAlias,
+              parentJoinPath: targetPath,
+            }),
+          );
+        }
+
+        continue;
+      }
 
       // ignore ref joins of known FKs unless it's a filter hint
       if (ref && !hint.filter && (prop.kind === ReferenceKind.MANY_TO_ONE || (prop.kind === ReferenceKind.ONE_TO_ONE && prop.owner))) {
@@ -1652,11 +1929,14 @@ export abstract class AbstractSqlDriver<
       }
 
       if (hint.children) {
-        const inner = this.buildPopulateWhere(prop.targetMeta!, hint.children as any, {});
+        const targetMeta = prop.targetMeta;
+        if (targetMeta) {
+          const inner = this.buildPopulateWhere(targetMeta, hint.children as any, {});
 
-        if (!Utils.isEmpty(inner) || RawQueryFragment.hasObjectFragments(inner)) {
-          where[prop.name] ??= {} as any;
-          Object.assign(where[prop.name] as object, inner);
+          if (!Utils.isEmpty(inner) || RawQueryFragment.hasObjectFragments(inner)) {
+            where[prop.name] ??= {} as any;
+            Object.assign(where[prop.name] as object, inner);
+          }
         }
       }
     }
@@ -1798,8 +2078,6 @@ export abstract class AbstractSqlDriver<
       const join = qb.getJoinForPath(path, { matchPopulateJoins: true });
       const propAlias = qb.getAliasForJoinPath(join ?? path, { matchPopulateJoins: true });
 
-      const meta2 = prop.targetMeta!;
-
       if (prop.kind === ReferenceKind.MANY_TO_MANY && prop.fixedOrder && join) {
         const alias = ref ? propAlias : join.ownerAlias;
         orderBy.push({ [`${alias}.${prop.fixedOrderColumn}`]: QueryOrder.ASC } as QueryOrderMap<T>);
@@ -1824,7 +2102,7 @@ export abstract class AbstractSqlDriver<
       }
 
       if (hint.children) {
-        const buildJoinedPropsOrderBy = this.buildJoinedPropsOrderBy(qb, meta2, hint.children as any, options, path);
+        const buildJoinedPropsOrderBy = this.buildJoinedPropsOrderBy(qb, prop.targetMeta!, hint.children as any, options, path);
         orderBy.push(...buildJoinedPropsOrderBy);
       }
     }

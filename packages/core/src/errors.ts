@@ -297,12 +297,18 @@ export class MetadataError<T extends AnyEntity = AnyEntity> extends ValidationEr
     return this.fromMessage(meta, prop, `uses 'targetKey' option which is not supported for ManyToMany relations`);
   }
 
-  static targetKeyNotUnique(meta: EntityMetadata, prop: EntityProperty) {
-    return this.fromMessage(meta, prop, `has 'targetKey' set to '${prop.targetKey}', but ${prop.type}.${prop.targetKey} is not marked as unique. The target property must have a unique constraint.`);
+  static targetKeyNotUnique(meta: EntityMetadata, prop: EntityProperty, target?: EntityMetadata) {
+    const targetName = target?.className ?? prop.type;
+    return this.fromMessage(meta, prop, `has 'targetKey' set to '${prop.targetKey}', but ${targetName}.${prop.targetKey} is not marked as unique`);
   }
 
-  static targetKeyNotFound(meta: EntityMetadata, prop: EntityProperty) {
-    return this.fromMessage(meta, prop, `has 'targetKey' set to '${prop.targetKey}', but ${prop.type}.${prop.targetKey} does not exist`);
+  static targetKeyNotFound(meta: EntityMetadata, prop: EntityProperty, target?: EntityMetadata) {
+    const targetName = target?.className ?? prop.type;
+    return this.fromMessage(meta, prop, `has 'targetKey' set to '${prop.targetKey}', but ${targetName}.${prop.targetKey} does not exist`);
+  }
+
+  static incompatiblePolymorphicTargets(meta: EntityMetadata, prop: EntityProperty, target1: EntityMetadata, target2: EntityMetadata, reason: string) {
+    return this.fromMessage(meta, prop, `has incompatible polymorphic targets ${target1.className} and ${target2.className}: ${reason}`);
   }
 
   static dangerousPropertyName(meta: EntityMetadata, prop: EntityProperty) {

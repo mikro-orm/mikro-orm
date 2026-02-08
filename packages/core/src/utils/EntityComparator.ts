@@ -17,6 +17,7 @@ import { JsonType } from '../types/JsonType.js';
 import { Raw } from './RawQueryFragment.js';
 import { EntityIdentifier } from '../entity/EntityIdentifier.js';
 import type { Configuration } from './Configuration.js';
+import { PolymorphicRef } from '../entity/PolymorphicRef.js';
 
 type Comparator<T> = (a: T, b: T, options?: { includeInverseSides?: boolean }) => EntityData<T>;
 type ResultMapper<T> = (result: EntityData<T>) => EntityData<T> | null;
@@ -350,6 +351,7 @@ export class EntityComparator {
 
     const lines: string[] = [];
     const context = new Map<string, any>();
+    context.set('PolymorphicRef', PolymorphicRef);
 
     const tz = this.platform.getTimezone();
     const parseDate = (key: string, value: string, padding = '') => {
@@ -381,12 +383,31 @@ export class EntityComparator {
           continue;
         }
 
+        if (prop.polymorphic && prop.fieldNames.length >= 2) {
+          const discriminatorField = prop.fieldNames[0];
+          const idFields = prop.fieldNames.slice(1);
+
+          lines.push(`${padding}  if (${prop.fieldNames.map(field => `typeof ${this.propName(field)} === 'undefined'`).join(' && ')}) {`);
+          lines.push(`${padding}  } else if (${prop.fieldNames.map(field => `${this.propName(field)} != null`).join(' && ')}) {`);
+
+          if (idFields.length === 1) {
+            lines.push(`${padding}    ret${this.wrap(prop.name)} = new PolymorphicRef(${this.propName(discriminatorField)}, ${this.propName(idFields[0])});`);
+          } else {
+            lines.push(`${padding}    ret${this.wrap(prop.name)} = new PolymorphicRef(${this.propName(discriminatorField)}, [${idFields.map(f => this.propName(f)).join(', ')}]);`);
+          }
+
+          lines.push(...prop.fieldNames.map(field => `${padding}    ${this.propName(field, 'mapped')} = true;`));
+          lines.push(`${padding}  } else if (${prop.fieldNames.map(field => `${this.propName(field)} == null`).join(' && ')}) {\n${padding}    ret${this.wrap(prop.name)} = null;`);
+          lines.push(...prop.fieldNames.map(field => `${padding}    ${this.propName(field, 'mapped')} = true;`), '  }');
+          continue;
+        }
+
         if (prop.targetMeta && prop.fieldNames.length > 1) {
           lines.push(`${padding}  if (${prop.fieldNames.map(field => `typeof ${this.propName(field)} === 'undefined'`).join(' && ')}) {`);
           lines.push(`${padding}  } else if (${prop.fieldNames.map(field => `${this.propName(field)} != null`).join(' && ')}) {`);
           lines.push(`${padding}    ret${this.wrap(prop.name)} = ${this.createCompositeKeyArray(prop)};`);
           lines.push(...prop.fieldNames.map(field => `${padding}    ${this.propName(field, 'mapped')} = true;`));
-          lines.push(`${padding}  } else if (${prop.fieldNames.map(field => `${this.propName(field)} == null`).join(' && ')}) {\n    ret${this.wrap(prop.name)} = null;`);
+          lines.push(`${padding}  } else if (${prop.fieldNames.map(field => `${this.propName(field)} == null`).join(' && ')}) {\n${padding}    ret${this.wrap(prop.name)} = null;`);
           lines.push(...prop.fieldNames.map(field => `${padding}    ${this.propName(field, 'mapped')} = true;`), '  }');
           continue;
         }
@@ -630,6 +651,29 @@ export class EntityComparator {
         } else {
           ret += `    ret${dataKey} = entity${entityKey};\n`;
         }
+      } else if (prop.polymorphic) {
+        const discriminatorMapKey = `discriminatorMapReverse_${prop.name}`;
+        const reverseMap = new Map<Function, string>();
+
+        for (const [key, value] of Object.entries(prop.discriminatorMap!)) {
+          reverseMap.set(value as Function, key);
+        }
+
+        context.set(discriminatorMapKey, reverseMap);
+        this.setToArrayHelper(context);
+        context.set('EntityIdentifier', EntityIdentifier);
+        context.set('PolymorphicRef', PolymorphicRef);
+
+        ret += `    if (entity${entityKey} === null) {\n`;
+        ret += `      ret${dataKey} = null;\n`;
+        ret += `    } else if (typeof entity${entityKey} !== 'undefined') {\n`;
+        ret += `      const val${level} = entity${entityKey}${unwrap};\n`;
+        ret += `      const discriminator = ${discriminatorMapKey}.get(val${level}?.constructor);\n`;
+        ret += `      const pk = val${level}?.__helper?.__identifier && !val${level}?.__helper?.hasPrimaryKey()\n`;
+        ret += `        ? val${level}.__helper.__identifier\n`;
+        ret += `        : toArray(val${level}?.__helper?.getPrimaryKey(true));\n`;
+        ret += `      ret${dataKey} = new PolymorphicRef(discriminator, pk);\n`;
+        ret += `    }\n`;
       } else if (prop.targetKey) {
         // When targetKey is set, extract that property value instead of the PK
         const targetProp = prop.targetMeta?.properties[prop.targetKey];
@@ -648,15 +692,7 @@ export class EntityComparator {
 
         ret += `    }\n`;
       } else {
-        const toArray = (val: unknown): unknown => {
-          if (Utils.isPlainObject(val)) {
-            return Object.values(val).map(v => toArray(v));
-          }
-
-          return val;
-        };
-
-        context.set('toArray', toArray);
+        this.setToArrayHelper(context);
         context.set('EntityIdentifier', EntityIdentifier);
         ret += `    if (entity${entityKey} === null) {\n`;
         ret += `      ret${dataKey} = null;\n`;
@@ -746,12 +782,16 @@ export class EntityComparator {
     let type = prop.type.toLowerCase();
 
     if (prop.kind !== ReferenceKind.SCALAR && prop.kind !== ReferenceKind.EMBEDDED) {
-      const meta2 = prop.targetMeta!;
-
-      if (meta2.primaryKeys.length > 1) {
-        type = 'array';
+      if (prop.polymorphic) {
+        type = 'object';
       } else {
-        type = meta2.getPrimaryProp().type.toLowerCase();
+        const meta2 = prop.targetMeta!;
+
+        if (meta2.primaryKeys.length > 1) {
+          type = 'array';
+        } else {
+          type = meta2.getPrimaryProp().type.toLowerCase();
+        }
       }
     }
 
@@ -816,6 +856,25 @@ export class EntityComparator {
 
   private safeKey(key: string): string {
     return key.replace(/\W/g, '_');
+  }
+
+  /**
+   * Sets the toArray helper in the context if not already set.
+   * Used for converting composite PKs to arrays.
+   */
+  private setToArrayHelper(context: Map<string, any>): void {
+    if (context.has('toArray')) {
+      return;
+    }
+
+    const toArray = (val: unknown): unknown => {
+      if (Utils.isPlainObject(val)) {
+        return Object.values(val).map(v => toArray(v));
+      }
+      return val;
+    };
+
+    context.set('toArray', toArray);
   }
 
   /**

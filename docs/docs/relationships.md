@@ -975,3 +975,782 @@ const orm = await MikroORM.init({
   },
 });
 ```
+
+## Polymorphic Relations
+
+Polymorphic relations allow a property to reference entities of multiple different types. This is useful when you have a relationship that can point to various entity types, such as a "like" that can be associated with either a "post" or a "comment".
+
+:::info Polymorphic Relations vs Single Table Inheritance
+
+Polymorphic relations are different from [Single Table Inheritance (STI)](./inheritance-mapping.md#single-table-inheritance):
+
+- **STI**: Multiple entity *classes* stored in a **single table**, sharing a common base class. The discriminator identifies which class to instantiate. Supports native foreign key constraints with referential integrity.
+- **Polymorphic Relations**: Each entity type has its **own table**. The discriminator identifies which table the foreign key points to. No inheritance required. **No foreign key constraints** since the column can point to multiple tables, meaning no database-level referential integrity.
+
+Use STI when entities share common fields and behavior (inheritance). Use polymorphic relations when you need flexible relationships between unrelated entity types.
+
+:::
+
+### How it Works
+
+Polymorphic relations use two columns in the database:
+
+1. **Discriminator column** - stores the entity type (e.g., `'post'` or `'comment'`)
+2. **ID column(s)** - stores the foreign key value pointing to the target entity
+
+Unlike regular relations, polymorphic relations do not create foreign key constraints since they can point to multiple tables.
+
+### Defining Polymorphic Relations
+
+To define a polymorphic relation, pass an array of entity types to the `@ManyToOne()` decorator:
+
+<Tabs
+  groupId="entity-def"
+  defaultValue="define-entity"
+  values={[
+    {label: 'defineEntity', value: 'define-entity'},
+    {label: 'reflect-metadata', value: 'reflect-metadata'},
+    {label: 'ts-morph', value: 'ts-morph'},
+    {label: 'EntitySchema', value: 'entity-schema'},
+  ]
+  }>
+  <TabItem value="define-entity">
+
+```ts
+import { defineEntity, p, type InferEntity } from '@mikro-orm/core';
+
+export const Post = defineEntity({
+  name: 'Post',
+  properties: {
+    id: p.number().primary(),
+    title: p.string(),
+    // Inverse side of polymorphic relation
+    likes: () => p.oneToMany(UserLike).mappedBy('likeable'),
+  },
+});
+
+export interface IPost extends InferEntity<typeof Post> {}
+
+export const Comment = defineEntity({
+  name: 'Comment',
+  properties: {
+    id: p.number().primary(),
+    text: p.string(),
+    // Inverse side of polymorphic relation
+    likes: () => p.oneToMany(UserLike).mappedBy('likeable'),
+  },
+});
+
+export interface IComment extends InferEntity<typeof Comment> {}
+
+export const UserLike = defineEntity({
+  name: 'UserLike',
+  properties: {
+    id: p.number().primary(),
+    // Polymorphic relation - can point to either Post or Comment
+    likeable: () => p.manyToOne([Post, Comment]),
+  },
+});
+
+export interface IUserLike extends InferEntity<typeof UserLike> {}
+```
+
+  </TabItem>
+  <TabItem value="reflect-metadata">
+
+```ts
+@Entity()
+export class Post {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property()
+  title!: string;
+
+  // Inverse side of polymorphic relation
+  @OneToMany(() => UserLike, like => like.likeable)
+  likes = new Collection<UserLike>(this);
+
+}
+
+@Entity()
+export class Comment {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property()
+  text!: string;
+
+  // Inverse side of polymorphic relation
+  @OneToMany(() => UserLike, like => like.likeable)
+  likes = new Collection<UserLike>(this);
+
+}
+
+@Entity()
+export class UserLike {
+
+  @PrimaryKey()
+  id!: number;
+
+  // Polymorphic relation - can point to either Post or Comment
+  @ManyToOne(() => [Post, Comment])
+  likeable!: Post | Comment;
+
+}
+```
+
+  </TabItem>
+  <TabItem value="ts-morph">
+
+```ts
+@Entity()
+export class Post {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property()
+  title!: string;
+
+  @OneToMany(() => UserLike, like => like.likeable)
+  likes = new Collection<UserLike>(this);
+
+}
+
+@Entity()
+export class Comment {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property()
+  text!: string;
+
+  @OneToMany(() => UserLike, like => like.likeable)
+  likes = new Collection<UserLike>(this);
+
+}
+
+@Entity()
+export class UserLike {
+
+  @PrimaryKey()
+  id!: number;
+
+  // The type is inferred as Post | Comment
+  @ManyToOne(() => [Post, Comment])
+  likeable!: Post | Comment;
+
+}
+```
+
+  </TabItem>
+  <TabItem value="entity-schema">
+
+```ts
+import { EntitySchema, Collection } from '@mikro-orm/core';
+
+export interface IPost {
+  id: number;
+  title: string;
+  likes: Collection<IUserLike>;
+}
+
+export const Post = new EntitySchema<IPost>({
+  name: 'Post',
+  properties: {
+    id: { type: 'number', primary: true },
+    title: { type: 'string' },
+    // Inverse side of polymorphic relation
+    likes: { kind: '1:m', entity: () => UserLike, mappedBy: 'likeable' },
+  },
+});
+
+export interface IComment {
+  id: number;
+  text: string;
+  likes: Collection<IUserLike>;
+}
+
+export const Comment = new EntitySchema<IComment>({
+  name: 'Comment',
+  properties: {
+    id: { type: 'number', primary: true },
+    text: { type: 'string' },
+    // Inverse side of polymorphic relation
+    likes: { kind: '1:m', entity: () => UserLike, mappedBy: 'likeable' },
+  },
+});
+
+export interface IUserLike {
+  id: number;
+  likeable: IPost | IComment;
+}
+
+export const UserLike = new EntitySchema<IUserLike>({
+  name: 'UserLike',
+  properties: {
+    id: { type: 'number', primary: true },
+    // Polymorphic relation - can point to either Post or Comment
+    likeable: { kind: 'm:1', entity: () => [Post, Comment] },
+  },
+});
+```
+
+  </TabItem>
+</Tabs>
+
+### Configuration Options
+
+The `discriminator` option specifies the base name used for the discriminator column. The actual column name is derived using the `discriminatorColumnName()` method from your naming strategy, which by default appends `Type` and converts to column format (e.g., `likeable` becomes `likeable_type` with underscore naming strategy).
+
+If not specified, the discriminator defaults to the property name (e.g., `likeable` for a property named `likeable`).
+
+### Database Schema
+
+For the example above, the `user_like` table will have:
+
+```sql
+CREATE TABLE user_like (
+  id INTEGER PRIMARY KEY,
+  likeable_type VARCHAR(255),  -- discriminator column
+  likeable_id INTEGER          -- foreign key column
+);
+```
+
+Note that no foreign key constraint is created since the `likeable_id` can point to either the `post` or `comment` table.
+
+### Loading Polymorphic Relations
+
+When loading entities with polymorphic relations, MikroORM automatically determines the correct entity type based on the discriminator value:
+
+```ts
+// Load a UserLike with its polymorphic relation
+const like = await orm.em.findOne(UserLike, { id: 1 });
+
+// The likeable property will be the correct entity type
+if (like.likeable instanceof Post) {
+  console.log('Liked a post:', like.likeable.title);
+} else if (like.likeable instanceof Comment) {
+  console.log('Liked a comment:', like.likeable.text);
+}
+```
+
+### Loading Inverse Side
+
+The inverse side (OneToMany) collections work correctly with polymorphic relations. When populating, MikroORM automatically filters to only include items pointing to the correct entity type:
+
+```ts
+// Load a Post with all its likes
+const post = await orm.em.findOne(Post, { id: 1 }, { populate: ['likes'] });
+
+// Only likes pointing to this post are included
+console.log('This post has', post.likes.length, 'likes');
+```
+
+### Persisting Polymorphic Relations
+
+When persisting, MikroORM automatically sets the discriminator value based on the entity type being assigned:
+
+```ts
+const post = new Post();
+post.title = 'My Post';
+
+const like = new UserLike();
+like.likeable = post;  // MikroORM will set likeable_type = 'post'
+
+orm.em.persist([post, like]);
+await orm.em.flush();
+```
+
+### Discriminator Values
+
+By default, the discriminator value is the table name of the target entity. In the example above:
+
+- Pointing to `Post` entity → discriminator value is `'post'`
+- Pointing to `Comment` entity → discriminator value is `'comment'`
+
+### Exposing the Discriminator for Querying
+
+The discriminator column is managed automatically by MikroORM, but you can expose it as a read-only property for querying purposes. Use `persist: false` to prevent it from being persisted (since the relation already handles that):
+
+```ts
+@Entity()
+class UserLike {
+
+  @PrimaryKey()
+  id!: number;
+
+  // Expose discriminator for querying (persist: false since it's managed by the relation)
+  @Property({ persist: false })
+  likeableType?: string;
+
+  @ManyToOne(() => [Post, Comment])
+  likeable!: Post | Comment;
+
+}
+```
+
+This allows you to query directly on the discriminator value:
+
+```ts
+// Find all likes for posts
+const postLikes = await orm.em.find(UserLike, {
+  likeableType: 'post',
+});
+```
+
+### Requirements and Limitations
+
+1. **All target entities must have compatible primary key types** - Since the same ID column stores the foreign key for all target types, they must use the same type (e.g., all integer PKs or all string PKs).
+
+2. **No foreign key constraints** - Polymorphic relations cannot have database-level foreign key constraints since they point to multiple tables.
+
+3. **Composite primary keys** - Polymorphic relations support targets with composite primary keys. Multiple ID columns will be created to store all parts of the composite key.
+
+### Many-to-Many Polymorphic Relations
+
+Polymorphic relations also support many-to-many relationships. This is useful when you have a shared relation like "tags" that can be associated with multiple different entity types (e.g., both posts and videos can have tags).
+
+#### How M:N Polymorphic Works
+
+Unlike regular M:N relations that use a simple pivot table with two foreign keys, polymorphic M:N uses a pivot table with a discriminator column to identify which entity type each row belongs to:
+
+```sql
+CREATE TABLE taggables (
+  taggable_type VARCHAR(255),  -- discriminator: 'post' or 'video'
+  taggable_id INTEGER,          -- FK to post.id or video.id
+  tag_id INTEGER,               -- FK to tag.id
+  PRIMARY KEY (taggable_type, taggable_id, tag_id)
+);
+```
+
+Multiple entity types share the same pivot table, distinguished by the discriminator value.
+
+#### Defining M:N Polymorphic Relations
+
+To define a polymorphic M:N relation, use the `discriminator` option on `@ManyToMany()`:
+
+<Tabs
+  groupId="entity-def"
+  defaultValue="define-entity"
+  values={[
+    {label: 'defineEntity', value: 'define-entity'},
+    {label: 'reflect-metadata', value: 'reflect-metadata'},
+    {label: 'ts-morph', value: 'ts-morph'},
+    {label: 'EntitySchema', value: 'entity-schema'},
+  ]
+  }>
+  <TabItem value="define-entity">
+
+```ts
+import { defineEntity, p, type InferEntity } from '@mikro-orm/core';
+
+export const Tag = defineEntity({
+  name: 'Tag',
+  properties: {
+    id: p.number().primary(),
+    name: p.string(),
+    // Inverse sides - separate collections per entity type
+    posts: () => p.manyToMany(Post).mappedBy('tags'),
+    videos: () => p.manyToMany(Video).mappedBy('tags'),
+  },
+});
+
+export interface ITag extends InferEntity<typeof Tag> {}
+
+export const Post = defineEntity({
+  name: 'Post',
+  properties: {
+    id: p.number().primary(),
+    title: p.string(),
+    // Owner side - polymorphic M:N via shared pivot table
+    tags: () => p.manyToMany(Tag).pivotTable('taggables').discriminator('taggable'),
+  },
+});
+
+export interface IPost extends InferEntity<typeof Post> {}
+
+export const Video = defineEntity({
+  name: 'Video',
+  properties: {
+    id: p.number().primary(),
+    url: p.string(),
+    // Owner side - same pivot table, different discriminator value
+    tags: () => p.manyToMany(Tag).pivotTable('taggables').discriminator('taggable'),
+  },
+});
+
+export interface IVideo extends InferEntity<typeof Video> {}
+```
+
+  </TabItem>
+  <TabItem value="reflect-metadata">
+
+```ts
+@Entity()
+export class Tag {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property()
+  name!: string;
+
+  // Inverse sides - separate collections per entity type
+  @ManyToMany(() => Post, post => post.tags)
+  posts = new Collection<Post>(this);
+
+  @ManyToMany(() => Video, video => video.tags)
+  videos = new Collection<Video>(this);
+
+}
+
+@Entity()
+export class Post {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property()
+  title!: string;
+
+  // Owner side - polymorphic M:N via shared pivot table
+  @ManyToMany(() => Tag, tag => tag.posts, {
+    pivotTable: 'taggables',
+    discriminator: 'taggable',
+    owner: true,
+  })
+  tags = new Collection<Tag>(this);
+
+}
+
+@Entity()
+export class Video {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property()
+  url!: string;
+
+  // Owner side - same pivot table, different discriminator value
+  @ManyToMany(() => Tag, tag => tag.videos, {
+    pivotTable: 'taggables',
+    discriminator: 'taggable',
+    owner: true,
+  })
+  tags = new Collection<Tag>(this);
+
+}
+```
+
+  </TabItem>
+  <TabItem value="ts-morph">
+
+```ts
+@Entity()
+export class Tag {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property()
+  name!: string;
+
+  @ManyToMany(() => Post, post => post.tags)
+  posts = new Collection<Post>(this);
+
+  @ManyToMany(() => Video, video => video.tags)
+  videos = new Collection<Video>(this);
+
+}
+
+@Entity()
+export class Post {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property()
+  title!: string;
+
+  @ManyToMany(() => Tag, tag => tag.posts, {
+    pivotTable: 'taggables',
+    discriminator: 'taggable',
+    owner: true,
+  })
+  tags = new Collection<Tag>(this);
+
+}
+
+@Entity()
+export class Video {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property()
+  url!: string;
+
+  @ManyToMany(() => Tag, tag => tag.videos, {
+    pivotTable: 'taggables',
+    discriminator: 'taggable',
+    owner: true,
+  })
+  tags = new Collection<Tag>(this);
+
+}
+```
+
+  </TabItem>
+  <TabItem value="entity-schema">
+
+```ts
+import { EntitySchema, Collection } from '@mikro-orm/core';
+
+export interface ITag {
+  id: number;
+  name: string;
+  posts: Collection<IPost>;
+  videos: Collection<IVideo>;
+}
+
+export const Tag = new EntitySchema<ITag>({
+  name: 'Tag',
+  properties: {
+    id: { type: 'number', primary: true },
+    name: { type: 'string' },
+    // Inverse sides - separate collections per entity type
+    posts: { kind: 'm:n', entity: () => Post, mappedBy: 'tags' },
+    videos: { kind: 'm:n', entity: () => Video, mappedBy: 'tags' },
+  },
+});
+
+export interface IPost {
+  id: number;
+  title: string;
+  tags: Collection<ITag>;
+}
+
+export const Post = new EntitySchema<IPost>({
+  name: 'Post',
+  properties: {
+    id: { type: 'number', primary: true },
+    title: { type: 'string' },
+    // Owner side - polymorphic M:N via shared pivot table
+    tags: {
+      kind: 'm:n',
+      entity: () => Tag,
+      pivotTable: 'taggables',
+      discriminator: 'taggable',
+      owner: true,
+    },
+  },
+});
+
+export interface IVideo {
+  id: number;
+  url: string;
+  tags: Collection<ITag>;
+}
+
+export const Video = new EntitySchema<IVideo>({
+  name: 'Video',
+  properties: {
+    id: { type: 'number', primary: true },
+    url: { type: 'string' },
+    // Owner side - same pivot table, different discriminator value
+    tags: {
+      kind: 'm:n',
+      entity: () => Tag,
+      pivotTable: 'taggables',
+      discriminator: 'taggable',
+      owner: true,
+    },
+  },
+});
+```
+
+  </TabItem>
+</Tabs>
+
+#### Configuration Options
+
+| Option | Description |
+|--------|-------------|
+| `pivotTable` | Name of the shared pivot table. All polymorphic entities using the same discriminator should use the same pivot table name. |
+| `discriminator` | Name of the discriminator property. Defaults to the property name. The column name is derived using your naming strategy (e.g., `taggable` → `taggable_type`). |
+| `discriminatorMap` | (Optional) Custom mapping of discriminator values to entity classes. See [Custom Discriminator Values](#custom-discriminator-values) below. |
+| `owner` | Must be `true` on the polymorphic side. |
+
+#### Discriminator Values
+
+By default, the discriminator value is the table name of the entity:
+- `Post` entity → `'post'`
+- `Video` entity → `'video'`
+
+The polymorphic FK column name is derived from the discriminator property name (e.g., `taggable` → `taggable_id`).
+
+#### Custom Discriminator Values
+
+You can specify custom discriminator values using the `discriminatorMap` option. This is useful when you want shorter or more meaningful type identifiers:
+
+<Tabs
+  groupId="entity-def-style"
+  defaultValue="reflect-metadata"
+  values={[
+    {label: 'defineEntity', value: 'define-entity'},
+    {label: 'reflect-metadata', value: 'reflect-metadata'},
+    {label: 'EntitySchema', value: 'entity-schema'},
+  ]
+  }>
+  <TabItem value="define-entity">
+
+```ts
+export const Article = defineEntity({
+  name: 'Article',
+  properties: {
+    id: p.number().primary(),
+    categories: () => p.manyToMany(Category)
+      .inversedBy('articles')
+      .pivotTable('categorizables')
+      .discriminator('categorizable')
+      .discriminatorMap({ art: 'Article', prod: 'Product' })
+      .owner(),
+  },
+});
+
+export const Product = defineEntity({
+  name: 'Product',
+  properties: {
+    id: p.number().primary(),
+    categories: () => p.manyToMany(Category)
+      .inversedBy('products')
+      .pivotTable('categorizables')
+      .discriminator('categorizable')
+      .discriminatorMap({ art: 'Article', prod: 'Product' })
+      .owner(),
+  },
+});
+```
+
+  </TabItem>
+  <TabItem value="reflect-metadata">
+
+```ts
+@Entity()
+export class Article {
+
+  @PrimaryKey()
+  id!: number;
+
+  @ManyToMany(() => Category, cat => cat.articles, {
+    pivotTable: 'categorizables',
+    discriminator: 'categorizable',
+    discriminatorMap: {
+      art: 'Article',      // 'art' instead of 'article'
+      prod: 'Product',     // 'prod' instead of 'product'
+    },
+    owner: true,
+  })
+  categories = new Collection<Category>(this);
+
+}
+
+@Entity()
+export class Product {
+
+  @PrimaryKey()
+  id!: number;
+
+  @ManyToMany(() => Category, cat => cat.products, {
+    pivotTable: 'categorizables',
+    discriminator: 'categorizable',
+    discriminatorMap: {
+      art: 'Article',
+      prod: 'Product',
+    },
+    owner: true,
+  })
+  categories = new Collection<Category>(this);
+
+}
+```
+
+  </TabItem>
+  <TabItem value="entity-schema">
+
+```ts
+export const Article = new EntitySchema<IArticle>({
+  name: 'Article',
+  properties: {
+    id: { type: 'number', primary: true },
+    categories: {
+      kind: 'm:n',
+      entity: () => Category,
+      inversedBy: 'articles',
+      pivotTable: 'categorizables',
+      discriminator: 'categorizable',
+      discriminatorMap: { art: 'Article', prod: 'Product' },
+      owner: true,
+    },
+  },
+});
+
+export const Product = new EntitySchema<IProduct>({
+  name: 'Product',
+  properties: {
+    id: { type: 'number', primary: true },
+    categories: {
+      kind: 'm:n',
+      entity: () => Category,
+      inversedBy: 'products',
+      pivotTable: 'categorizables',
+      discriminator: 'categorizable',
+      discriminatorMap: { art: 'Article', prod: 'Product' },
+      owner: true,
+    },
+  },
+});
+```
+
+  </TabItem>
+</Tabs>
+
+The `discriminatorMap` should be defined identically on all entities sharing the same pivot table. Values must be entity class names (strings) - entity class references cannot be used due to JavaScript circular import limitations.
+
+#### Using M:N Polymorphic Relations
+
+```ts
+// Create entities with tags
+const tag1 = new Tag('TypeScript');
+const tag2 = new Tag('Tutorial');
+
+const post = new Post('Learning MikroORM');
+post.tags.add(tag1, tag2);
+
+const video = new Video('https://example.com/video.mp4');
+video.tags.add(tag1);  // Same tag can be used by both
+
+await orm.em.persist([post, video]).flush();
+
+// Load with populated tags
+const loadedPost = await orm.em.findOne(Post, post.id, { populate: ['tags'] });
+console.log(loadedPost.tags.getItems()); // [Tag, Tag]
+
+// Load from inverse side
+const loadedTag = await orm.em.findOne(Tag, tag1.id, { populate: ['posts', 'videos'] });
+console.log(loadedTag.posts.length);  // 1
+console.log(loadedTag.videos.length); // 1
+```
+
+#### Differences from Regular M:N
+
+1. **Shared pivot table** - Multiple entity types share the same pivot table, distinguished by the discriminator column.
+2. **No FK constraint on polymorphic side** - The pivot table cannot have a foreign key constraint on the polymorphic columns since they point to different tables.
+3. **Separate inverse collections** - On the inverse side (Tag), you need separate collections for each entity type (`posts`, `videos`) rather than a single polymorphic collection.
+4. **Same discriminator property** - All entities sharing a pivot table must use the same `discriminator` property name.

@@ -117,6 +117,13 @@ export abstract class AbstractNamingStrategy implements NamingStrategy {
     return this.columnNameToProperty(pivotTableName.replace(new RegExp('^' + ownerTableName + '_'), ''));
   }
 
+  /**
+   * @inheritDoc
+   */
+  discriminatorColumnName(baseName: string): string {
+    return this.propertyToColumnName(baseName + 'Type');
+  }
+
   abstract classToTableName(entityName: string, tableName?: string): string;
 
   abstract joinColumnName(propertyName: string): string;

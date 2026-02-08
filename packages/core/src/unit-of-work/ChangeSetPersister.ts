@@ -1,6 +1,7 @@
 import type { MetadataStorage } from '../metadata/MetadataStorage.js';
 import type { AnyEntity, Dictionary, EntityData, EntityDictionary, EntityMetadata, EntityProperty, EntityKey, FilterQuery, IHydrator, IPrimaryKey } from '../typings.js';
 import { EntityIdentifier } from '../entity/EntityIdentifier.js';
+import { PolymorphicRef } from '../entity/PolymorphicRef.js';
 import { type Collection } from '../entity/Collection.js';
 import { type EntityFactory } from '../entity/EntityFactory.js';
 import { helper } from '../entity/wrap.js';
@@ -468,6 +469,13 @@ export class ChangeSetPersister {
 
     if (value instanceof EntityIdentifier) {
       changeSet.payload[prop.name] = value.getValue();
+      return;
+    }
+
+    if (value instanceof PolymorphicRef) {
+      if (value.id instanceof EntityIdentifier) {
+        value.id = value.id.getValue();
+      }
       return;
     }
 

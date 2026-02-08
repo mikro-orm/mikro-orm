@@ -14,7 +14,7 @@ import { GroupOperator, PlainObject, QueryOperator, ReferenceKind } from '../enu
 import type { Collection } from '../entity/Collection.js';
 import type { Platform } from '../platforms/Platform.js';
 import { helper } from '../entity/wrap.js';
-import type { ScalarReference } from '../entity/Reference.js';
+import { Reference, type ScalarReference } from '../entity/Reference.js';
 import { Raw, type RawQueryFragmentSymbol } from './RawQueryFragment.js';
 
 function compareConstructors(a: any, b: any) {

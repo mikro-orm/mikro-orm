@@ -8,7 +8,7 @@ import {
 import { processDecoratorParameters, validateSingleDecorator, getMetadataFromDecorator } from '../utils.js';
 
 export function ManyToOne<Target extends object, Owner extends object>(
-  entity: (e?: any) => EntityName<Target>,
+  entity: (e?: any) => EntityName<Target> | EntityName[],
   options?: Partial<ManyToOneOptions<Owner, Target>>,
 ): (target: Owner, propertyName: string) => void;
 export function ManyToOne<Target extends object, Owner extends object>(
@@ -19,7 +19,7 @@ export function ManyToOne<Target extends object, Owner extends object>(
   options?: ManyToOneOptions<Owner, Target>,
 ): (target: Owner, propertyName: string) => void;
 export function ManyToOne<Target extends object, Owner extends object>(
-  entity: ManyToOneOptions<Owner, Target> | ((e?: any) => EntityName<Target>) = {},
+  entity: ManyToOneOptions<Owner, Target> | ((e?: any) => EntityName<Target> | EntityName[]) = {},
   options: Partial<ManyToOneOptions<Owner, Target>> = {},
 ) {
   return function (target: Owner, propertyName: keyof Owner) {
