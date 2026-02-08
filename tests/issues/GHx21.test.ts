@@ -10,7 +10,6 @@ import {
 
 @Entity()
 class UnitDetails {
-
   @OneToOne(() => Unit, u => u.details, {
     primary: true,
     owner: true,
@@ -19,12 +18,10 @@ class UnitDetails {
 
   @OneToMany(() => UnitDetailPicture, re => re.unitDetail)
   pictures = new Collection<UnitDetailPicture>(this);
-
 }
 
 @Entity()
 class Unit {
-
   @PrimaryKey()
   id!: string;
 
@@ -33,12 +30,10 @@ class Unit {
     eager: true,
   })
   details: UnitDetails | null = null;
-
 }
 
 @Entity()
 class UnitDetailPicture {
-
   @PrimaryKey()
   id!: string;
 
@@ -46,7 +41,6 @@ class UnitDetailPicture {
     eager: true,
   })
   unitDetail!: UnitDetails;
-
 }
 
 let orm: MikroORM;

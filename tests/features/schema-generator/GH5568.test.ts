@@ -3,18 +3,15 @@ import { Entity, OneToOne, PrimaryKey, ReflectMetadataProvider } from '@mikro-or
 
 @Entity()
 class Parent {
-
   @PrimaryKey()
   id!: string;
 
   @PrimaryKey()
   tenant!: string;
-
 }
 
 @Entity()
 class Child {
-
   @PrimaryKey()
   id!: string;
 
@@ -23,7 +20,6 @@ class Child {
 
   @OneToOne(() => Parent, { deleteRule: 'set null ("parent_id")', nullable: true })
   parent?: Parent;
-
 }
 let orm: MikroORM;
 

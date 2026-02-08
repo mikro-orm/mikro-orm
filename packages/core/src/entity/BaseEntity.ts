@@ -1,5 +1,16 @@
 import { Reference, type Ref } from './Reference.js';
-import type { AutoPath, EntityData, EntityDTO, Loaded, LoadedReference, AddEager, EntityKey, FromEntityType, IsSubset, MergeSelected } from '../typings.js';
+import type {
+  AutoPath,
+  EntityData,
+  EntityDTO,
+  Loaded,
+  LoadedReference,
+  AddEager,
+  EntityKey,
+  FromEntityType,
+  IsSubset,
+  MergeSelected,
+} from '../typings.js';
 import { EntityAssigner, type AssignOptions } from './EntityAssigner.js';
 import type { EntityLoaderOptions } from './EntityLoader.js';
 import { EntitySerializer, type SerializeOptions } from '../serialization/EntitySerializer.js';
@@ -88,8 +99,12 @@ export abstract class BaseEntity {
    *
    * @param ignoreFields - Array of field names to omit from the result.
    */
-  toObject<Entity extends this = this, Ignored extends EntityKey<Entity> = never>(ignoreFields: Ignored[]): Omit<EntityDTO<Entity>, Ignored>;
-  toObject<Entity extends this = this, Ignored extends EntityKey<Entity> = never>(ignoreFields?: Ignored[]): Omit<EntityDTO<Entity>, Ignored> {
+  toObject<Entity extends this = this, Ignored extends EntityKey<Entity> = never>(
+    ignoreFields: Ignored[],
+  ): Omit<EntityDTO<Entity>, Ignored>;
+  toObject<Entity extends this = this, Ignored extends EntityKey<Entity> = never>(
+    ignoreFields?: Ignored[],
+  ): Omit<EntityDTO<Entity>, Ignored> {
     return helper(this as Entity).toObject(ignoreFields!);
   }
 
@@ -110,14 +125,22 @@ export abstract class BaseEntity {
     Entity extends this,
     Naked extends FromEntityType<Entity> = FromEntityType<Entity>,
     Convert extends boolean = false,
-    Data extends EntityData<Naked, Convert> | Partial<EntityDTO<Naked>> = EntityData<Naked, Convert> | Partial<EntityDTO<Naked>>,
-  >(data: Data & IsSubset<EntityData<Naked>, Data>, options: AssignOptions<Convert> = {}): MergeSelected<Entity, Naked, keyof Data & string> {
+    Data extends EntityData<Naked, Convert> | Partial<EntityDTO<Naked>> =
+      | EntityData<Naked, Convert>
+      | Partial<EntityDTO<Naked>>,
+  >(
+    data: Data & IsSubset<EntityData<Naked>, Data>,
+    options: AssignOptions<Convert> = {},
+  ): MergeSelected<Entity, Naked, keyof Data & string> {
     return EntityAssigner.assign(this as Entity, data as any, options) as any;
   }
 
-  init<Entity extends this = this, Hint extends string = never, Fields extends string = '*', Excludes extends string = never>(
-    options?: FindOneOptions<Entity, Hint, Fields, Excludes>,
-  ): Promise<Loaded<Entity, Hint, Fields, Excludes> | null> {
+  init<
+    Entity extends this = this,
+    Hint extends string = never,
+    Fields extends string = '*',
+    Excludes extends string = never,
+  >(options?: FindOneOptions<Entity, Hint, Fields, Excludes>): Promise<Loaded<Entity, Hint, Fields, Excludes> | null> {
     return helper(this as Entity).init(options);
   }
 

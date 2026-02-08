@@ -4,7 +4,6 @@ import { parse as uuidParse, stringify as uuidStringify } from 'uuid';
 import { mockLogger } from '../../helpers.js';
 
 export class UuidBinaryType extends Type<string, Buffer> {
-
   convertToDatabaseValue(value: string): Buffer {
     return Buffer.from(uuidParse(value) as any);
   }
@@ -16,12 +15,10 @@ export class UuidBinaryType extends Type<string, Buffer> {
   getColumnType(): string {
     return 'binary(16)';
   }
-
 }
 
 @Entity()
 class User {
-
   @PrimaryKey({ type: UuidBinaryType })
   id!: string;
 
@@ -35,7 +32,6 @@ class User {
     this.name = name;
     this.email = email;
   }
-
 }
 
 let orm: MikroORM;
@@ -72,10 +68,14 @@ test('basic CRUD example', async () => {
   expect(count2).toBe(0);
 
   expect(mock.mock.calls).toEqual([
-    ['[query] insert into `user` (`name`, `email`, `id`) values (\'Foo\', \'foo\', X\'f47ac10b58cc4372a5670e02b2c3d479\')'],
-    ['[query] update `user` set `name` = \'bar\', `id` = X\'f47ac10b58cc4372a5670e02b2c3d479\' where `id` = X\'f47ac10b58cc4372a5670e02b2c3d479\''],
-    ['[query] select count(*) as `count` from `user` as `u0` where `u0`.`name` = \'bar\' and `u0`.`id` = X\'f47ac10b58cc4372a5670e02b2c3d479\''],
-    ['[query] delete from `user` where `id` = X\'f47ac10b58cc4372a5670e02b2c3d479\''],
+    ["[query] insert into `user` (`name`, `email`, `id`) values ('Foo', 'foo', X'f47ac10b58cc4372a5670e02b2c3d479')"],
+    [
+      "[query] update `user` set `name` = 'bar', `id` = X'f47ac10b58cc4372a5670e02b2c3d479' where `id` = X'f47ac10b58cc4372a5670e02b2c3d479'",
+    ],
+    [
+      "[query] select count(*) as `count` from `user` as `u0` where `u0`.`name` = 'bar' and `u0`.`id` = X'f47ac10b58cc4372a5670e02b2c3d479'",
+    ],
+    ["[query] delete from `user` where `id` = X'f47ac10b58cc4372a5670e02b2c3d479'"],
     ['[query] select count(*) as `count` from `user` as `u0`'],
   ]);
 });

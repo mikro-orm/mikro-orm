@@ -1,10 +1,22 @@
 import {
-  ConnectionException, ExceptionConverter, InvalidFieldNameException, LockWaitTimeoutException, NonUniqueFieldNameException, CheckConstraintViolationException,
-  NotNullConstraintViolationException, ReadOnlyException, SyntaxErrorException, TableExistsException, TableNotFoundException, UniqueConstraintViolationException, ForeignKeyConstraintViolationException, type Dictionary, type DriverException,
+  ConnectionException,
+  ExceptionConverter,
+  InvalidFieldNameException,
+  LockWaitTimeoutException,
+  NonUniqueFieldNameException,
+  CheckConstraintViolationException,
+  NotNullConstraintViolationException,
+  ReadOnlyException,
+  SyntaxErrorException,
+  TableExistsException,
+  TableNotFoundException,
+  UniqueConstraintViolationException,
+  ForeignKeyConstraintViolationException,
+  type Dictionary,
+  type DriverException,
 } from '@mikro-orm/core';
 
 export class SqliteExceptionConverter extends ExceptionConverter {
-
   /**
    * @inheritDoc
    * @see http://www.sqlite.org/c3ref/c_abort.html
@@ -70,5 +82,4 @@ export class SqliteExceptionConverter extends ExceptionConverter {
 
     return super.convertException(exception);
   }
-
 }

@@ -10,15 +10,12 @@ import {
 
 @Entity()
 class Test {
-
   @PrimaryKey()
   id!: number;
-
 }
 
 @Entity()
 class Author {
-
   @PrimaryKey()
   id!: number;
 
@@ -30,12 +27,10 @@ class Author {
 
   @OneToMany(() => Book, item => item.author, { cascade: [], orphanRemoval: true })
   books = new Collection<Book>(this);
-
 }
 
 @Entity()
 class Book {
-
   @PrimaryKey()
   id!: number;
 
@@ -44,7 +39,6 @@ class Book {
 
   @ManyToOne({ entity: () => Author, strategy: 'joined', deleteRule: 'cascade' })
   author!: Author;
-
 }
 
 let orm: MikroORM;
@@ -74,16 +68,19 @@ test('collection item can be removed in a clean transaction, and afterwards the 
   const t2 = new Test();
   await orm.em.persist([book1, book2, book3, t2]).flush();
 
-  await orm.em.transactional(async em => {
-    const book = await em.findOneOrFail(Book, { title: 'book 1' });
-    await em.remove(book).flush();
+  await orm.em.transactional(
+    async em => {
+      const book = await em.findOneOrFail(Book, { title: 'book 1' });
+      await em.remove(book).flush();
 
-    const nestedAuthor = await em.findOneOrFail(Author, { id: author.id });
-    nestedAuthor.name = 'new name';
-    nestedAuthor.test = t2;
-    const books: { title: string }[] = await nestedAuthor.books.loadItems();
-    expect(books.map(b => b.title)).toEqual(['book 2', 'book 3']);
-  }, { clear: true });
+      const nestedAuthor = await em.findOneOrFail(Author, { id: author.id });
+      nestedAuthor.name = 'new name';
+      nestedAuthor.test = t2;
+      const books: { title: string }[] = await nestedAuthor.books.loadItems();
+      expect(books.map(b => b.title)).toEqual(['book 2', 'book 3']);
+    },
+    { clear: true },
+  );
 
   expect(author.name).toBe('new name');
   expect(author.test.id).toBe(t2.id);
@@ -94,8 +91,5 @@ test('collection item can be removed in a clean transaction, and afterwards the 
   expect(booksBeforeReload.map(b => b.title)).toEqual(['book 1', 'book 2', 'book 3']);
 
   const booksAfterReload: { title: string }[] = await author.books.loadItems({ refresh: true });
-  expect(booksAfterReload.map(b => b.title)).toEqual([
-    'book 2',
-    'book 3',
-  ]);
+  expect(booksAfterReload.map(b => b.title)).toEqual(['book 2', 'book 3']);
 });

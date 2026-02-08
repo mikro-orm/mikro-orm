@@ -36,7 +36,6 @@ const emMongo = vi.fn(() => methods as any)();
 const repoMongo = new MongoEntityRepository(emMongo, Publisher);
 
 describe('EntityRepository', () => {
-
   test('should forward calls to EntityManager', async () => {
     repo.getReference('bar');
     expect(methods.getReference.mock.calls[0]).toEqual([Publisher, 'bar', undefined]);
@@ -46,7 +45,10 @@ describe('EntityRepository', () => {
     await repo.findAndCount({ name: 'bar' });
     expect(methods.findAndCount.mock.calls[0]).toEqual([Publisher, { name: 'bar' }, undefined]);
     await repo.findByCursor({ where: { name: 'bar' }, first: 10, after: '...' });
-    expect(methods.findByCursor.mock.calls[0]).toEqual([Publisher, { where: { name: 'bar' }, first: 10, after: '...' }]);
+    expect(methods.findByCursor.mock.calls[0]).toEqual([
+      Publisher,
+      { where: { name: 'bar' }, first: 10, after: '...' },
+    ]);
     await repo.findOne('bar');
     expect(methods.findOne.mock.calls[0]).toEqual([Publisher, 'bar', undefined]);
     await repo.findOneOrFail('bar');
@@ -113,8 +115,12 @@ describe('EntityRepository', () => {
 
   test('assign() and populate() validates entity type', async () => {
     const e = Object.create(Author.prototype, {});
-    await expect(repo.populate(e, [])).rejects.toThrow(`Trying to use EntityRepository.populate() with 'Author' entity while the repository is of type 'Publisher'`);
-    expect(() => repo.assign(e, {})).toThrow(`Trying to use EntityRepository.assign() with 'Author' entity while the repository is of type 'Publisher'`);
+    await expect(repo.populate(e, [])).rejects.toThrow(
+      `Trying to use EntityRepository.populate() with 'Author' entity while the repository is of type 'Publisher'`,
+    );
+    expect(() => repo.assign(e, {})).toThrow(
+      `Trying to use EntityRepository.assign() with 'Author' entity while the repository is of type 'Publisher'`,
+    );
   });
 
   test('stream() supports calling with config object', async () => {
@@ -137,5 +143,4 @@ describe('EntityRepository', () => {
   test('getEntityName() returns the correct value', async () => {
     expect(repoMongo.getEntityName()).toEqual(Publisher.name);
   });
-
 });

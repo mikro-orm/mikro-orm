@@ -12,7 +12,6 @@ import { randomUUID } from 'node:crypto';
 
 @Entity()
 class Category {
-
   @PrimaryKey({
     length: 36,
   })
@@ -28,12 +27,10 @@ class Category {
     cascade: [Cascade.ALL],
   })
   articles = new Collection<Article>(this);
-
 }
 
 @Entity()
 class Article {
-
   @PrimaryKey({
     length: 36,
   })
@@ -57,12 +54,10 @@ class Article {
     cascade: [Cascade.ALL],
   })
   attributes = new Collection<ArticleAttribute>(this);
-
 }
 
 @Entity()
 class ArticleAttribute {
-
   @PrimaryKey({ length: 36 })
   id!: string;
 
@@ -79,7 +74,6 @@ class ArticleAttribute {
   article!: Ref<Article>;
 
   [PrimaryKeyProp]?: ['id', 'article'];
-
 }
 
 let orm: MikroORM;

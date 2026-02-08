@@ -1,21 +1,26 @@
 import { MikroORM } from '@mikro-orm/sqlite';
-import { Embeddable, Embedded, Entity, Index, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Embeddable,
+  Embedded,
+  Entity,
+  Index,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Embeddable()
 class Name {
-
   @Property()
   first!: string;
 
   @Property()
   last!: string;
-
 }
 
 @Entity()
 @Index({ properties: ['name.first'] })
 class User {
-
   @PrimaryKey()
   id!: number;
 
@@ -24,7 +29,6 @@ class User {
 
   @Property({ unique: true })
   email!: string;
-
 }
 
 let orm: MikroORM;

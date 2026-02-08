@@ -17,7 +17,11 @@ import type { Reference } from '../entity/Reference.js';
 import { SerializationContext } from './SerializationContext.js';
 import { isRaw } from '../utils/RawQueryFragment.js';
 
-function isVisible<Entity extends object>(meta: EntityMetadata<Entity>, propName: EntityKey<Entity>, ignoreFields: string[] = []): boolean {
+function isVisible<Entity extends object>(
+  meta: EntityMetadata<Entity>,
+  propName: EntityKey<Entity>,
+  ignoreFields: string[] = [],
+): boolean {
   const prop = meta.properties[propName];
   const visible = prop && !prop.hidden;
   const prefixed = prop && !prop.primary && !prop.accessor && propName.startsWith('_'); // ignore prefixed properties, if it's not a PK
@@ -26,8 +30,11 @@ function isVisible<Entity extends object>(meta: EntityMetadata<Entity>, propName
 }
 
 export class EntityTransformer {
-
-  static toObject<Entity extends object, Ignored extends EntityKey<Entity> = never>(entity: Entity, ignoreFields: Ignored[] = [], raw = false): Omit<EntityDTO<Entity>, Ignored> {
+  static toObject<Entity extends object, Ignored extends EntityKey<Entity> = never>(
+    entity: Entity,
+    ignoreFields: Ignored[] = [],
+    raw = false,
+  ): Omit<EntityDTO<Entity>, Ignored> {
     if (!Array.isArray(ignoreFields)) {
       ignoreFields = [];
     }
@@ -133,7 +140,12 @@ export class EntityTransformer {
         const populated = root.isMarkedAsPopulated(meta.class, prop.name);
 
         if (visible) {
-          ret[this.propertyName(meta, prop.name, raw)] = this.processProperty(prop.getterName as EntityKey, entity, raw, populated);
+          ret[this.propertyName(meta, prop.name, raw)] = this.processProperty(
+            prop.getterName as EntityKey,
+            entity,
+            raw,
+            populated,
+          );
         }
       } else {
         // decorated getters
@@ -153,7 +165,11 @@ export class EntityTransformer {
     return ret as EntityDTO<Entity>;
   }
 
-  private static propertyName<Entity>(meta: EntityMetadata<Entity>, prop: EntityKey<Entity>, raw?: boolean): EntityKey<Entity> {
+  private static propertyName<Entity>(
+    meta: EntityMetadata<Entity>,
+    prop: EntityKey<Entity>,
+    raw?: boolean,
+  ): EntityKey<Entity> {
     if (raw) {
       return prop;
     }
@@ -169,14 +185,19 @@ export class EntityTransformer {
     return prop;
   }
 
-  private static processProperty<Entity extends object>(prop: EntityKey<Entity>, entity: Entity, raw: boolean, populated: boolean): EntityValue<Entity> | undefined {
+  private static processProperty<Entity extends object>(
+    prop: EntityKey<Entity>,
+    entity: Entity,
+    raw: boolean,
+    populated: boolean,
+  ): EntityValue<Entity> | undefined {
     const wrapped = helper(entity);
     const property = wrapped.__meta.properties[prop] ?? { name: prop };
     const serializer = property?.serializer;
     const value = entity[prop];
 
     // getter method
-    if (entity[prop] as unknown instanceof Function) {
+    if ((entity[prop] as unknown) instanceof Function) {
       const returnValue = (entity[prop] as unknown as () => Entity[keyof Entity & string])();
       if (serializer && !raw) {
         return serializer(returnValue);
@@ -194,7 +215,13 @@ export class EntityTransformer {
     }
 
     if (Utils.isEntity(value, true)) {
-      return EntityTransformer.processEntity(property, entity, wrapped.__platform, raw, populated) as EntityValue<Entity>;
+      return EntityTransformer.processEntity(
+        property,
+        entity,
+        wrapped.__platform,
+        raw,
+        populated,
+      ) as EntityValue<Entity>;
     }
 
     if (Utils.isScalarReference(value)) {
@@ -210,7 +237,7 @@ export class EntityTransformer {
       }
 
       const wrapped = value && helper(value!);
-      return wrapped ? wrapped.toJSON() as EntityValue<Entity> : value;
+      return wrapped ? (wrapped.toJSON() as EntityValue<Entity>) : value;
     }
 
     const customType = property?.customType;
@@ -226,7 +253,13 @@ export class EntityTransformer {
     return value;
   }
 
-  private static processEntity<Entity extends object>(prop: EntityProperty<Entity>, entity: Entity, platform: Platform, raw: boolean, populated: boolean): EntityValue<Entity> | undefined {
+  private static processEntity<Entity extends object>(
+    prop: EntityProperty<Entity>,
+    entity: Entity,
+    platform: Platform,
+    raw: boolean,
+    populated: boolean,
+  ): EntityValue<Entity> | undefined {
     const child = entity[prop.name] as Entity | Reference<Entity>;
     const wrapped = helper(child as Entity);
     const meta = wrapped.__meta;
@@ -266,7 +299,9 @@ export class EntityTransformer {
       const pruned = Utils.primaryKeyToObject(meta, pk, visible) as EntityValue<Entity>;
 
       if (visible.length === 1) {
-        return platform.normalizePrimaryKey(pruned[visible[0] as keyof typeof pruned] as IPrimaryKey) as EntityValue<Entity>;
+        return platform.normalizePrimaryKey(
+          pruned[visible[0] as keyof typeof pruned] as IPrimaryKey,
+        ) as EntityValue<Entity>;
       }
 
       return pruned;
@@ -275,7 +310,12 @@ export class EntityTransformer {
     return platform.normalizePrimaryKey(pk as IPrimaryKey) as EntityValue<Entity>;
   }
 
-  private static processCollection<Entity extends object>(prop: EntityProperty<Entity>, entity: Entity, raw: boolean, populated: boolean): EntityValue<Entity> | undefined {
+  private static processCollection<Entity extends object>(
+    prop: EntityProperty<Entity>,
+    entity: Entity,
+    raw: boolean,
+    populated: boolean,
+  ): EntityValue<Entity> | undefined {
     const col = entity[prop.name] as Collection<AnyEntity>;
 
     if (raw && col.isInitialized(true)) {
@@ -308,5 +348,4 @@ export class EntityTransformer {
 
     return undefined;
   }
-
 }

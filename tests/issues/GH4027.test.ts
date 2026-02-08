@@ -5,7 +5,6 @@ import { mockLogger } from '../helpers.js';
 
 @Entity()
 export class Parent {
-
   @PrimaryKey()
   id!: string;
 
@@ -14,18 +13,15 @@ export class Parent {
 
   @ManyToMany({ entity: () => Child, owner: true })
   refs = new Collection<Child>(this);
-
 }
 
 @Entity()
 export class Child {
-
   @PrimaryKey()
   id!: string;
 
   @Property()
   createdAt!: Date;
-
 }
 
 let orm: MikroORM;
@@ -71,8 +67,12 @@ test('GH 4027', async () => {
     ["[query] insert into `child` (`id`, `created_at`) values ('e80ccf60-5cb2-4972-9227-7a4b9138c845', 1676050010440)"],
     ['[query] commit'],
     ['[query] begin'],
-    ["[query] insert into `parent` (`id`, `created_at`) values ('9a061473-4a98-477d-ad03-fd7bcba3ec4f', 1676050010441)"],
-    ["[query] insert into `parent_refs` (`child_id`, `parent_id`) values ('e80ccf60-5cb2-4972-9227-7a4b9138c845', '9a061473-4a98-477d-ad03-fd7bcba3ec4f')"],
+    [
+      "[query] insert into `parent` (`id`, `created_at`) values ('9a061473-4a98-477d-ad03-fd7bcba3ec4f', 1676050010441)",
+    ],
+    [
+      "[query] insert into `parent_refs` (`child_id`, `parent_id`) values ('e80ccf60-5cb2-4972-9227-7a4b9138c845', '9a061473-4a98-477d-ad03-fd7bcba3ec4f')",
+    ],
     ['[query] commit'],
   ]);
 });

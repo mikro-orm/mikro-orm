@@ -12,15 +12,12 @@ import { mockLogger } from '../helpers.js';
 
 @Entity()
 class Node {
-
   @PrimaryKey()
   id!: number;
-
 }
 
 @Entity()
 class A {
-
   [PrimaryKeyProp]?: 'node';
   @OneToOne({ entity: () => Node, ref: true, primary: true, deleteRule: 'cascade', updateRule: 'cascade' })
   node!: Ref<Node>;
@@ -30,12 +27,10 @@ class A {
 
   @Property()
   name!: string;
-
 }
 
 @Entity()
 class B {
-
   @PrimaryKey()
   id!: number;
 
@@ -44,12 +39,9 @@ class B {
 
   @Property()
   type!: number;
-
 }
 
-
 describe('GH issue 1111', () => {
-
   let orm: MikroORM;
   const log = vi.fn();
 
@@ -112,5 +104,4 @@ describe('GH issue 1111', () => {
     const a2 = await orm.em.findOneOrFail(A, { name: 'test' }, { populate: ['bs'] });
     expect(a2.bs.count()).toBe(2);
   });
-
 });

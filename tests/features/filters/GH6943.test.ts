@@ -3,19 +3,16 @@ import { Entity, Filter, ManyToOne, PrimaryKey, Property, ReflectMetadataProvide
 
 @Entity()
 class Account {
-
   @PrimaryKey()
   id!: number;
 
   @Property()
   name!: string;
-
 }
 
 @Entity()
 @Filter({ name: 'notDeleted', cond: { deleted: false }, default: true })
 class Document {
-
   @PrimaryKey()
   id!: number;
 
@@ -24,12 +21,10 @@ class Document {
 
   @Property()
   deleted: Opt<boolean> = false;
-
 }
 
 @Entity()
 class User {
-
   @PrimaryKey()
   id!: number;
 
@@ -46,7 +41,6 @@ class User {
     this.email = email;
     this.account = ref(account);
   }
-
 }
 
 let orm: MikroORM;

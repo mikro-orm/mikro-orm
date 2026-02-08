@@ -10,7 +10,6 @@ import {
 import { SourceFile } from './SourceFile.js';
 
 export class EntitySchemaSourceFile extends SourceFile {
-
   override generate(): string {
     const classDefinition = this.generateClassDefinition();
     const enumDefinitions: string[] = [];
@@ -34,7 +33,11 @@ export class EntitySchemaSourceFile extends SourceFile {
     ret += `\n`;
     const entitySchemaOptions: Partial<Record<keyof EntitySchemaMetadata<AnyEntity>, any>> & { [Config]?: any } = {
       class: this.meta.className,
-      ...(this.meta.embeddable ? this.getEmbeddableDeclOptions() : (this.meta.collection ? this.getEntityDeclOptions() : {})),
+      ...(this.meta.embeddable
+        ? this.getEmbeddableDeclOptions()
+        : this.meta.collection
+          ? this.getEntityDeclOptions()
+          : {}),
     };
     const declLine = `export const ${this.meta.className}Schema = new ${this.referenceCoreImport('EntitySchema')}(`;
     ret += declLine;
@@ -48,9 +51,7 @@ export class EntitySchemaSourceFile extends SourceFile {
     }
 
     entitySchemaOptions.properties = Object.fromEntries(
-      Object.entries(this.meta.properties).map(
-        ([name, prop]) => [name, this.getPropertyOptions(prop)],
-      ),
+      Object.entries(this.meta.properties).map(([name, prop]) => [name, this.getPropertyOptions(prop)]),
     );
 
     // Force top level and properties to be indented, regardless of line length
@@ -167,7 +168,7 @@ export class EntitySchemaSourceFile extends SourceFile {
 
       const defaultName = this.platform.getIndexName(this.meta.collection, prop.fieldNames, type);
       /* v8 ignore next */
-      options[type] = (propType === true || defaultName === propType) ? 'true' : this.quote(propType);
+      options[type] = propType === true || defaultName === propType ? 'true' : this.quote(propType);
       const expected = {
         index: this.platform.indexForeignKeys(),
         unique: prop.kind === ReferenceKind.ONE_TO_ONE,
@@ -192,5 +193,4 @@ export class EntitySchemaSourceFile extends SourceFile {
 
     super.getScalarPropertyDecoratorOptions(options, prop, quote);
   }
-
 }

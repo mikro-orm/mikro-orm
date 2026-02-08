@@ -11,18 +11,15 @@ import { mockLogger } from '../helpers.js';
 
 @Entity()
 class User {
-
   @PrimaryKey()
   id!: bigint;
 
   @OneToMany(() => UserOrganization, 'user')
   organizations = new Collection<UserOrganization>(this);
-
 }
 
 @Entity()
 class UserOrganization {
-
   @PrimaryKey()
   id!: bigint;
 
@@ -36,11 +33,9 @@ class UserOrganization {
     this.user = user;
     this.isAdmin = isAdmin;
   }
-
 }
 
 describe('GH issue 940, 1117', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -87,5 +82,4 @@ describe('GH issue 940, 1117', () => {
     await orm.em.flush();
     expect(mock.mock.calls).toHaveLength(0);
   });
-
 });

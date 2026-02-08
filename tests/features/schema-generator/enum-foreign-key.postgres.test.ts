@@ -2,32 +2,27 @@ import { MikroORM } from '@mikro-orm/postgresql';
 
 import { Entity, Enum, ManyToOne, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 enum BrandType {
-    Foo = 'foo',
-    Bar = 'bar',
-    Baz = 'baz'
+  Foo = 'foo',
+  Bar = 'bar',
+  Baz = 'baz',
 }
 
 @Entity({ tableName: 'brand' })
 class Brand {
-
   @Enum({ primary: true, items: () => BrandType })
   id!: BrandType;
-
 }
 
 @Entity({ tableName: 'product' })
 class Product {
-
   @PrimaryKey()
   id!: number;
 
   @ManyToOne(() => Brand)
   brand!: Brand;
-
 }
 
 describe('using enum as a foreign key value', () => {
-
   test('schema generator creates the correct type', async () => {
     const orm = await MikroORM.init({
       metadataProvider: ReflectMetadataProvider,
@@ -45,5 +40,4 @@ describe('using enum as a foreign key value', () => {
 
     await orm.close(true);
   });
-
 });

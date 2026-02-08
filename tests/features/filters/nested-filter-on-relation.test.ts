@@ -1,20 +1,25 @@
-import { Entity, Filter, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  Filter,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { BaseEntity, Collection, MikroORM, Rel } from '@mikro-orm/sqlite';
 
 @Entity()
 class Company extends BaseEntity {
-
   @PrimaryKey({ autoincrement: true })
   readonly id!: number;
 
   @Property()
   name!: string;
-
 }
 
 @Entity()
 class Location extends BaseEntity {
-
   @PrimaryKey({ autoincrement: true })
   readonly id!: number;
 
@@ -23,7 +28,6 @@ class Location extends BaseEntity {
 
   @ManyToOne(() => Company)
   company!: Rel<Company>;
-
 }
 
 @Entity()
@@ -34,7 +38,6 @@ class Location extends BaseEntity {
   }),
 })
 class User extends BaseEntity {
-
   @PrimaryKey({ autoincrement: true })
   readonly id!: number;
 
@@ -43,7 +46,6 @@ class User extends BaseEntity {
 
   @ManyToOne(() => Location)
   location!: Rel<Location>;
-
 }
 
 @Entity()
@@ -60,7 +62,6 @@ class User extends BaseEntity {
   cond: () => ({ deletedAt: null }),
 })
 class ClientManagementObject extends BaseEntity {
-
   @PrimaryKey({ autoincrement: true })
   readonly id!: number;
 
@@ -75,7 +76,6 @@ class ClientManagementObject extends BaseEntity {
 
   @ManyToOne(() => User)
   owner!: Rel<User>;
-
 }
 
 @Entity()
@@ -90,7 +90,6 @@ class ClientManagementObject extends BaseEntity {
   }),
 })
 class Client extends BaseEntity {
-
   @PrimaryKey({ autoincrement: true })
   readonly id!: number;
 
@@ -99,7 +98,6 @@ class Client extends BaseEntity {
 
   @OneToMany(() => ClientManagementObject, cmo => cmo.client)
   managementObjects = new Collection<ClientManagementObject>(this);
-
 }
 
 let orm: MikroORM;

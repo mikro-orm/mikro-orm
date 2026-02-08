@@ -14,7 +14,11 @@ import {
 /**
  * The type of context that the user intends to inject.
  */
-export type ContextProvider<T> = MaybePromise<MikroORM> | ((type: T) => MaybePromise<MikroORM | EntityManager | EntityRepository<any> | { getEntityManager(): EntityManager }>);
+export type ContextProvider<T> =
+  | MaybePromise<MikroORM>
+  | ((
+      type: T,
+    ) => MaybePromise<MikroORM | EntityManager | EntityRepository<any> | { getEntityManager(): EntityManager }>);
 
 function getEntityManager(caller: { orm?: MikroORM; em?: EntityManager }, context: unknown): EntityManager | undefined {
   if (context instanceof EntityManager) {
@@ -43,7 +47,10 @@ function getEntityManager(caller: { orm?: MikroORM; em?: EntityManager }, contex
 /**
  * Find `EntityManager` in provided context, or else in instance's `orm` or `em` properties.
  */
-export async function resolveContextProvider<T>(caller: T & { orm?: MaybePromise<MikroORM>; em?: MaybePromise<EntityManager> }, provider?: ContextProvider<T>): Promise<EntityManager | undefined> {
+export async function resolveContextProvider<T>(
+  caller: T & { orm?: MaybePromise<MikroORM>; em?: MaybePromise<EntityManager> },
+  provider?: ContextProvider<T>,
+): Promise<EntityManager | undefined> {
   const context = typeof provider === 'function' ? await provider(caller) : await provider;
   return getEntityManager({ orm: await caller.orm, em: await caller.em }, context);
 }
@@ -72,8 +79,10 @@ export function processDecoratorParameters<T>(params: Dictionary): T {
   // validate only first parameter is used if its an option object
   const empty = (v: unknown) => v == null || (Utils.isPlainObject(v) && !Utils.hasObjectKeys(v));
   if (values.slice(1).some(v => !empty(v))) {
-    throw new Error('Mixing first decorator parameter as options object with other parameters is forbidden. ' +
-      'If you want to use the options parameter at first position, provide all options inside it.');
+    throw new Error(
+      'Mixing first decorator parameter as options object with other parameters is forbidden. ' +
+        'If you want to use the options parameter at first position, provide all options inside it.',
+    );
   }
 
   return values[0] as T;
@@ -95,7 +104,10 @@ export function validateSingleDecorator(meta: EntityMetadata, propertyName: stri
  * We need to use the `Object.hasOwn` here, since the metadata object respects inheritance, and the `properties` object might already
  * exist for some base entity.
  */
-export function prepareMetadataContext<T>(context: ClassFieldDecoratorContext<T> | ClassGetterDecoratorContext<T> | ClassMethodDecoratorContext<T>, kind?: ReferenceKind): EntityMetadata<T> {
+export function prepareMetadataContext<T>(
+  context: ClassFieldDecoratorContext<T> | ClassGetterDecoratorContext<T> | ClassMethodDecoratorContext<T>,
+  kind?: ReferenceKind,
+): EntityMetadata<T> {
   const meta = context.metadata as unknown as EntityMetadata<T>;
 
   if (!Object.hasOwn(meta, 'properties')) {
@@ -127,7 +139,9 @@ export function lookupPathFromDecorator(name: string, stack?: string[]): string 
   if (line === -1) {
     // here we handle bun which stack is different from nodejs so we search for reflect-metadata
     // Different bun versions might have different stack traces. The "last index" works for both 1.2.6 and 1.2.7.
-    const reflectLine = stack.findLastIndex(line => line.replace(/\\/g, '/').includes('node_modules/reflect-metadata/Reflect.js'));
+    const reflectLine = stack.findLastIndex(line =>
+      line.replace(/\\/g, '/').includes('node_modules/reflect-metadata/Reflect.js'),
+    );
 
     if (reflectLine === -1 || reflectLine + 2 >= stack.length || !stack[reflectLine + 1].includes('bun:wrap')) {
       return name;
@@ -152,13 +166,14 @@ export function lookupPathFromDecorator(name: string, stack?: string[]): string 
   }
 }
 
-export function getMetadataFromDecorator<T = any>(target: T & Dictionary & { [MetadataStorage.PATH_SYMBOL]?: string }): EntityMetadata<T> {
+export function getMetadataFromDecorator<T = any>(
+  target: T & Dictionary & { [MetadataStorage.PATH_SYMBOL]?: string },
+): EntityMetadata<T> {
   if (!Object.hasOwn(target, MetadataStorage.PATH_SYMBOL)) {
-    Object.defineProperty(
-      target,
-      MetadataStorage.PATH_SYMBOL,
-      { value: lookupPathFromDecorator(target.name), writable: true },
-    );
+    Object.defineProperty(target, MetadataStorage.PATH_SYMBOL, {
+      value: lookupPathFromDecorator(target.name),
+      writable: true,
+    });
   }
 
   return MetadataStorage.getMetadata(target.name, target[MetadataStorage.PATH_SYMBOL]!);

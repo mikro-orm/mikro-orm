@@ -3,10 +3,8 @@ import { mockLogger } from '../helpers.js';
 
 // Case 1: No explicit tableName - should use className
 class PersonImplicit {
-
   id!: number;
   friends = new Collection<PersonImplicit>(this);
-
 }
 
 const PersonImplicitSchema = new EntitySchema<PersonImplicit>({
@@ -20,10 +18,8 @@ const PersonImplicitSchema = new EntitySchema<PersonImplicit>({
 
 // Case 2: Explicit tableName - should use tableName
 class PersonExplicit {
-
   id!: number;
   friends = new Collection<PersonExplicit>(this);
-
 }
 
 const PersonExplicitSchema = new EntitySchema<PersonExplicit>({
@@ -36,7 +32,6 @@ const PersonExplicitSchema = new EntitySchema<PersonExplicit>({
 });
 
 describe('GH #7123', () => {
-
   test('self-ref m:n without explicit tableName should use className', async () => {
     const orm = await MikroORM.init({
       entities: [PersonImplicitSchema],
@@ -70,13 +65,11 @@ describe('GH #7123', () => {
   test('self-ref m:n with STI should propagate joinColumns to child entities', async () => {
     // STI base class
     class BaseContent {
-
       pid!: string;
       catalogName!: string;
       catalogLanguage!: string;
       type!: string;
       relatedContents = new Collection<BaseContent>(this);
-
     }
 
     class Article extends BaseContent {}
@@ -134,10 +127,13 @@ describe('GH #7123', () => {
     // Verify child entity has same joinColumns as parent
     const contentMeta = orm.getMetadata(BaseContent);
     const articleMeta = orm.getMetadata(Article);
-    expect(articleMeta.properties.relatedContents.joinColumns).toEqual(contentMeta.properties.relatedContents.joinColumns);
-    expect(articleMeta.properties.relatedContents.inverseJoinColumns).toEqual(contentMeta.properties.relatedContents.inverseJoinColumns);
+    expect(articleMeta.properties.relatedContents.joinColumns).toEqual(
+      contentMeta.properties.relatedContents.joinColumns,
+    );
+    expect(articleMeta.properties.relatedContents.inverseJoinColumns).toEqual(
+      contentMeta.properties.relatedContents.inverseJoinColumns,
+    );
 
     await orm.close(true);
   });
-
 });

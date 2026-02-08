@@ -3,7 +3,6 @@ import { Entity, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from 
 import { parse, stringify } from 'uuid';
 
 class ULIDType extends Type<string, Buffer> {
-
   convertToDatabaseValue(value: string): Buffer {
     return Buffer.from(parse(value));
   }
@@ -15,12 +14,10 @@ class ULIDType extends Type<string, Buffer> {
   getColumnType() {
     return 'binary(16)';
   }
-
 }
 
 @Entity()
 class ChecklistItemPart {
-
   @PrimaryKey()
   id!: string;
 
@@ -33,18 +30,15 @@ class ChecklistItemPart {
     entity: () => Part,
   })
   part!: Ref<Part>;
-
 }
 
 @Entity()
 class Part {
-
   @PrimaryKey({ type: ULIDType })
   id!: string;
 
   @Property()
   name!: string;
-
 }
 
 let orm: MikroORM;

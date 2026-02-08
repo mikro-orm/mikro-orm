@@ -3,7 +3,6 @@ import { Author } from './Author.js';
 
 @Entity()
 export class AuthorAddress {
-
   @OneToOne({ entity: () => Author, primary: true })
   author: Author;
 
@@ -14,5 +13,4 @@ export class AuthorAddress {
     this.author = author;
     this.value = value;
   }
-
 }

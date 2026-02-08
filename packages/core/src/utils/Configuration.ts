@@ -66,8 +66,10 @@ const DEFAULTS = {
   // eslint-disable-next-line no-console
   logger: console.log.bind(console),
   colors: true,
-  findOneOrFailHandler: (entityName: string, where: Dictionary | IPrimaryKey) => NotFoundError.findOneFailed(entityName, where),
-  findExactlyOneOrFailHandler: (entityName: string, where: Dictionary | IPrimaryKey) => NotFoundError.findExactlyOneFailed(entityName, where),
+  findOneOrFailHandler: (entityName: string, where: Dictionary | IPrimaryKey) =>
+    NotFoundError.findOneFailed(entityName, where),
+  findExactlyOneOrFailHandler: (entityName: string, where: Dictionary | IPrimaryKey) =>
+    NotFoundError.findExactlyOneFailed(entityName, where),
   baseDir: globalThis.process?.cwd?.(),
   hydrator: ObjectHydrator,
   flushMode: FlushMode.AUTO,
@@ -161,8 +163,10 @@ const DEFAULTS = {
   dynamicImportProvider: /* v8 ignore next */ (id: string) => import(id),
 } as const;
 
-export class Configuration<D extends IDatabaseDriver = IDatabaseDriver, EM extends EntityManager<D> = D[typeof EntityManagerType] & EntityManager<D>> {
-
+export class Configuration<
+  D extends IDatabaseDriver = IDatabaseDriver,
+  EM extends EntityManager<D> = D[typeof EntityManagerType] & EntityManager<D>,
+> {
   private readonly options: RequiredOptions<D, EM>;
   private readonly logger: Logger;
   private readonly driver!: D;
@@ -323,14 +327,22 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver, EM exten
    * Gets instance of metadata CacheAdapter. (cached)
    */
   getMetadataCacheAdapter(): SyncCacheAdapter {
-    return this.getCachedService(this.options.metadataCache.adapter!, this.options.metadataCache.options, this.options.baseDir, this.options.metadataCache.pretty);
+    return this.getCachedService(
+      this.options.metadataCache.adapter!,
+      this.options.metadataCache.options,
+      this.options.baseDir,
+      this.options.metadataCache.pretty,
+    );
   }
 
   /**
    * Gets instance of CacheAdapter for result cache. (cached)
    */
   getResultCacheAdapter(): CacheAdapter {
-    return this.getCachedService(this.options.resultCache.adapter!, { expiration: this.options.resultCache.expiration, ...this.options.resultCache.options });
+    return this.getCachedService(this.options.resultCache.adapter!, {
+      expiration: this.options.resultCache.expiration,
+      ...this.options.resultCache.options,
+    });
   }
 
   /**
@@ -351,7 +363,10 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver, EM exten
   /**
    * Creates instance of given service and caches it.
    */
-  getCachedService<T extends { new(...args: any[]): InstanceType<T> }>(cls: T, ...args: ConstructorParameters<T>): InstanceType<T> {
+  getCachedService<T extends { new (...args: any[]): InstanceType<T> }>(
+    cls: T,
+    ...args: ConstructorParameters<T>
+  ): InstanceType<T> {
     if (!this.cache.has(cls.name)) {
       this.cache.set(cls.name, new cls(...args));
     }
@@ -376,7 +391,9 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver, EM exten
     this.options.implicitTransactions ??= this.platform.usesImplicitTransactions();
 
     if (validate && metadataCache.enabled && !metadataCache.adapter) {
-      throw new Error('No metadata cache adapter specified, please fill in `metadataCache.adapter` option or use the async MikroORM.init() method which can autoload it.');
+      throw new Error(
+        'No metadata cache adapter specified, please fill in `metadataCache.adapter` option or use the async MikroORM.init() method which can autoload it.',
+      );
     }
 
     try {
@@ -427,11 +444,15 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver, EM exten
   private validateOptions(): void {
     /* v8 ignore next */
     if ('type' in this.options) {
-      throw new Error('The `type` option has been removed in v6, please fill in the `driver` option instead or use `defineConfig` helper (to define your ORM config) or `MikroORM` class (to call the `init` method) exported from the driver package (e.g. `import { defineConfig } from \'@mikro-orm/mysql\'; export default defineConfig({ ... })`).');
+      throw new Error(
+        "The `type` option has been removed in v6, please fill in the `driver` option instead or use `defineConfig` helper (to define your ORM config) or `MikroORM` class (to call the `init` method) exported from the driver package (e.g. `import { defineConfig } from '@mikro-orm/mysql'; export default defineConfig({ ... })`).",
+      );
     }
 
     if (!this.options.driver) {
-      throw new Error('No driver specified, please fill in the `driver` option or use `defineConfig` helper (to define your ORM config) or `MikroORM` class (to call the `init` method) exported from the driver package (e.g. `import { defineConfig } from \'@mikro-orm/mysql\'; export defineConfig({ ... })`).');
+      throw new Error(
+        "No driver specified, please fill in the `driver` option or use `defineConfig` helper (to define your ORM config) or `MikroORM` class (to call the `init` method) exported from the driver package (e.g. `import { defineConfig } from '@mikro-orm/mysql'; export defineConfig({ ... })`).",
+      );
     }
 
     if (!this.options.dbName && !this.options.clientUrl) {
@@ -442,11 +463,13 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver, EM exten
       throw new Error('No entities found, please use `entities` option');
     }
 
-    if (typeof this.options.driverOptions === 'function' && this.options.driverOptions.constructor.name === 'AsyncFunction') {
+    if (
+      typeof this.options.driverOptions === 'function' &&
+      this.options.driverOptions.constructor.name === 'AsyncFunction'
+    ) {
       throw new Error('`driverOptions` callback cannot be async');
     }
   }
-
 }
 
 /**
@@ -455,7 +478,11 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver, EM exten
 export function defineConfig<
   D extends IDatabaseDriver = IDatabaseDriver,
   EM extends EntityManager<D> = EntityManager<D>,
-  Entities extends (string | EntityClass<AnyEntity> | EntitySchema)[] = (string | EntityClass<AnyEntity> | EntitySchema)[],
+  Entities extends (string | EntityClass<AnyEntity> | EntitySchema)[] = (
+    | string
+    | EntityClass<AnyEntity>
+    | EntitySchema
+  )[],
 >(options: Options<D, EM, Entities>) {
   return options;
 }
@@ -714,8 +741,13 @@ export interface MetadataDiscoveryOptions {
  */
 export interface Options<
   Driver extends IDatabaseDriver = IDatabaseDriver,
-  EM extends EntityManager<Driver> & Driver[typeof EntityManagerType] = EntityManager<Driver> & Driver[typeof EntityManagerType],
-  Entities extends (string | EntityClass<AnyEntity> | EntitySchema)[] = (string | EntityClass<AnyEntity> | EntitySchema)[],
+  EM extends EntityManager<Driver> & Driver[typeof EntityManagerType] = EntityManager<Driver> &
+    Driver[typeof EntityManagerType],
+  Entities extends (string | EntityClass<AnyEntity> | EntitySchema)[] = (
+    | string
+    | EntityClass<AnyEntity>
+    | EntitySchema
+  )[],
 > extends ConnectionOptions {
   /**
    * Array of entity classes or paths to entity modules.
@@ -768,13 +800,13 @@ export interface Options<
    *   dbName: 'my_db',
    * });
    */
-  driver?: { new(config: Configuration): Driver };
+  driver?: { new (config: Configuration): Driver };
   /**
    * Custom naming strategy class for mapping entity/property names to database table/column names.
    * Built-in options: `UnderscoreNamingStrategy`, `MongoNamingStrategy`, `EntityCaseNamingStrategy`.
    * @see https://mikro-orm.io/docs/naming-strategy
    */
-  namingStrategy?: { new(): NamingStrategy };
+  namingStrategy?: { new (): NamingStrategy };
   /**
    * Enable implicit transactions for all write operations.
    * When enabled, all queries will be wrapped in a transaction.
@@ -1176,7 +1208,7 @@ export interface Options<
     /**
      * Cache adapter class to use. When cache is enabled, and no adapter is provided explicitly, {@link FileCacheAdapter} is used automatically - but only if you use the async `MikroORM.init()` method.
      */
-    adapter?: { new(...params: any[]): SyncCacheAdapter };
+    adapter?: { new (...params: any[]): SyncCacheAdapter };
     /**
      * Options passed to the cache adapter constructor.
      * @default { cacheDir: process.cwd() + '/temp' }
@@ -1196,7 +1228,7 @@ export interface Options<
      * Cache adapter class to use.
      * @default MemoryCacheAdapter
      */
-    adapter?: { new(...params: any[]): CacheAdapter };
+    adapter?: { new (...params: any[]): CacheAdapter };
     /**
      * Options passed to the cache adapter constructor.
      * @default {}
@@ -1214,7 +1246,7 @@ export interface Options<
    * @default ReflectMetadataProvider
    * @see https://mikro-orm.io/docs/metadata-providers
    */
-  metadataProvider?: { new(config: Configuration): MetadataProvider; useCache?: MetadataProvider['useCache'] };
+  metadataProvider?: { new (config: Configuration): MetadataProvider; useCache?: MetadataProvider['useCache'] };
   /**
    * Seeder configuration options.
    * @see https://mikro-orm.io/docs/seeding
@@ -1241,5 +1273,9 @@ type MarkRequired<T, D> = {
 export type RequiredOptions<
   D extends IDatabaseDriver = IDatabaseDriver,
   EM extends EntityManager<D> = EntityManager<D>,
-  Entities extends (string | EntityClass<AnyEntity> | EntitySchema)[] = (string | EntityClass<AnyEntity> | EntitySchema)[],
+  Entities extends (string | EntityClass<AnyEntity> | EntitySchema)[] = (
+    | string
+    | EntityClass<AnyEntity>
+    | EntitySchema
+  )[],
 > = MarkRequired<Options<D, EM, Entities>, typeof DEFAULTS>;

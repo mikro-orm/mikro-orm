@@ -4,7 +4,7 @@ import { Author2, Book2 } from '../entities-sql/index.js';
 
 let orm: MikroORM;
 
-beforeAll(async () => orm = await initORMPostgreSql());
+beforeAll(async () => (orm = await initORMPostgreSql()));
 beforeEach(async () => {
   await orm.schema.clear();
   const author = new Author2('Bartleby', 'bartelby@writer.org');

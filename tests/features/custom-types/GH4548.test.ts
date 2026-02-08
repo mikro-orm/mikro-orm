@@ -8,13 +8,11 @@ type GeoItem = {
 
 @Entity()
 class ServicePerson {
-
   @PrimaryKey()
   id!: number;
 
   @Property({ columnType: 'jsonb', default: '[]' })
   serviceArea: GeoItem[] = [];
-
 }
 
 let orm: MikroORM;

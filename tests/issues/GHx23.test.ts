@@ -3,7 +3,6 @@ import { Entity, ManyToMany, PrimaryKey, Property, ReflectMetadataProvider } fro
 
 @Entity()
 class Tag {
-
   @PrimaryKey()
   id!: number;
 
@@ -12,12 +11,10 @@ class Tag {
 
   @ManyToMany(() => Book, x => x.tags)
   books = new Collection<Book>(this);
-
 }
 
 @Entity()
 class Book {
-
   @PrimaryKey()
   id!: number;
 
@@ -26,7 +23,6 @@ class Book {
 
   @ManyToMany(() => Tag)
   tags = new Collection<Tag>(this);
-
 }
 
 let orm: MikroORM;
@@ -59,22 +55,14 @@ test(`GH issue 1003`, async () => {
   await em.flush();
   em.clear();
 
-  const subqb = em
-    .createQueryBuilder(Tag, 't1')
-    .select(['t1.id', 't1.name'])
-    .where({ name: 'Tag 1' });
+  const subqb = em.createQueryBuilder(Tag, 't1').select(['t1.id', 't1.name']).where({ name: 'Tag 1' });
 
   const qb = em
     .createQueryBuilder(Book, 'b')
     .select(['b.id', 'b.title'])
-    .leftJoinAndSelect(['b.tags', subqb], 't2', undefined, [
-      't2.id',
-      't2.name',
-    ]);
+    .leftJoinAndSelect(['b.tags', subqb], 't2', undefined, ['t2.id', 't2.name']);
 
   const result = await qb.getResultList();
 
-  expect(result.map(b => wrap(b).toObject())).toEqual([
-    { id: 1, title: 'Book 1', tags: [{ id: 1, name: 'Tag 1' }] },
-  ]);
+  expect(result.map(b => wrap(b).toObject())).toEqual([{ id: 1, title: 'Book 1', tags: [{ id: 1, name: 'Tag 1' }] }]);
 });

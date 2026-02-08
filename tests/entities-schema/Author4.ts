@@ -4,15 +4,16 @@ import { BaseProperties } from './BaseEntity5.js';
 import { BaseEntity4 } from './BaseEntity4.js';
 
 export class Identity {
-
   [HiddenProps]?: 'foo' | 'bar';
 
-  constructor(public foo: string, public bar: number) {}
+  constructor(
+    public foo: string,
+    public bar: number,
+  ) {}
 
   get fooBar() {
     return this.foo + ' ' + this.bar;
   }
-
 }
 
 export const IdentitySchema = defineEntity({
@@ -26,7 +27,6 @@ export const IdentitySchema = defineEntity({
 });
 
 export class Author4 extends BaseEntity4 {
-
   name!: string;
   email!: string;
   age?: number;
@@ -74,7 +74,6 @@ export class Author4 extends BaseEntity4 {
   afterDelete() {
     Author4.afterDestroyCalled += 1;
   }
-
 }
 
 async function beforeUpdate(this: Author4, args: EventArgs<Author4>) {
@@ -107,7 +106,10 @@ export const Author4Schema = defineEntity({
     name: p.string(),
     email: p.string().unique(),
     age: p.smallint().nullable(),
-    termsAccepted: p.boolean().default(0).onCreate(() => false),
+    termsAccepted: p
+      .boolean()
+      .default(0)
+      .onCreate(() => false),
     identities: p.array().nullable(),
     born: p.date().nullable(),
     bornTime: p.time(3).nullable(),

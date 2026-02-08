@@ -4,24 +4,20 @@ import { mockLogger } from '../helpers.js';
 
 @Entity()
 export class User {
-
   @PrimaryKey()
   id!: number;
 
   @OneToMany(() => Order, ({ user }) => user)
   orders: Collection<Order> = new Collection<Order>(this);
-
 }
 
 @Entity()
 export class Order {
-
   @PrimaryKey()
   id!: number;
 
   @ManyToOne({ deleteRule: 'cascade' })
   user!: User;
-
 }
 
 let orm: MikroORM;

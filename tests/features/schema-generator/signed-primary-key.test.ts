@@ -3,13 +3,11 @@ import { Entity, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorato
 
 @Entity()
 class Article {
-
   @PrimaryKey()
   id!: number;
 
   @PrimaryKey({ unsigned: false })
   someOtherId!: number;
-
 }
 
 test('allow signed primary key when explicitly specified', async () => {

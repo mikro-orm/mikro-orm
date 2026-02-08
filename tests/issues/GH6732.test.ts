@@ -1,9 +1,16 @@
 import { Collection, MikroORM } from '@mikro-orm/sqlite';
-import { Entity, Filter, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  Filter,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class Author {
-
   @PrimaryKey()
   id!: number;
 
@@ -18,22 +25,22 @@ class Author {
 
   @OneToMany(() => Book, b => b.author)
   fictionBooks = new Collection<Book>(this);
-
 }
 
 @Entity()
 @Filter({
-  name: 'favoriteFilter', cond: args => {
+  name: 'favoriteFilter',
+  cond: args => {
     return { isFavorite: true };
   },
 })
 @Filter({
-  name: 'fictionFilter', cond: args => {
+  name: 'fictionFilter',
+  cond: args => {
     return { isFiction: true };
   },
 })
 class Book {
-
   @PrimaryKey()
   id!: number;
 
@@ -51,7 +58,6 @@ class Book {
 
   @Property()
   pageLength!: number;
-
 }
 
 let orm: MikroORM;

@@ -7,7 +7,6 @@ import { SqliteDriver } from '@mikro-orm/sqlite';
 import { TsMorphMetadataProvider } from '@mikro-orm/reflection';
 
 class Foo {
-
   @PrimaryKey()
   id!: number;
 
@@ -22,23 +21,19 @@ class Foo {
 
   @Property({ default: true })
   bool!: boolean & Opt;
-
 }
 
 @Entity()
 class Foo0 extends Foo {
-
   @Property({ defaultRaw: sql.now() })
   bar2!: Opt<Date>;
 
   @Property({ default: sql.now(6), length: 6 })
   bar3!: Date & Opt;
-
 }
 
 @Entity()
 class Foo1 extends Foo {
-
   @Property({ default: sql.now() })
   bar2!: Date;
 
@@ -48,12 +43,10 @@ class Foo1 extends Foo {
 
   @Property({ type: 'json', default: JSON.stringify({ value: 42 }) })
   metadata!: any;
-
 }
 
 @Entity()
 class Foo2 extends Foo {
-
   @Property({ default: sql.now() })
   bar2!: Date;
 
@@ -62,22 +55,18 @@ class Foo2 extends Foo {
 
   @Property({ type: 'json', default: JSON.stringify({ value: 42 }) })
   metadata!: any;
-
 }
 
 @Entity()
 class Foo3 extends Foo {
-
   @Property({ default: sql.now() })
   bar2!: Date;
 
   @Property({ type: 'json', default: JSON.stringify({ value: 43 }) })
   metadata!: any;
-
 }
 
 describe('diffing default values (GH #2385)', () => {
-
   test('string defaults do not produce additional diffs [mysql]', async () => {
     const orm = await MikroORM.init({
       entities: [Foo0],
@@ -132,5 +121,4 @@ describe('diffing default values (GH #2385)', () => {
     await expect(orm.schema.getUpdateSchemaSQL({ wrap: false })).resolves.toBe('');
     await orm.close();
   });
-
 });

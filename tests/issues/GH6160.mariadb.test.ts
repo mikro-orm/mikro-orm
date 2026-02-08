@@ -1,9 +1,15 @@
 import { Collection, MikroORM, ref, Ref } from '@mikro-orm/mariadb';
-import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class User {
-
   @PrimaryKey()
   id!: number;
 
@@ -20,12 +26,10 @@ class User {
     this.name = name;
     this.email = email;
   }
-
 }
 
 @Entity()
 class Address {
-
   @PrimaryKey()
   id!: number;
 
@@ -43,7 +47,6 @@ class Address {
     this.country = country;
     this.user = ref(user);
   }
-
 }
 
 let orm: MikroORM;

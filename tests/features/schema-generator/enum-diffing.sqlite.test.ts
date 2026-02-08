@@ -14,7 +14,6 @@ enum SomeEnum2 {
 
 @Entity({ tableName: 'author' })
 class Author0 {
-
   @PrimaryKey()
   id!: number;
 
@@ -23,12 +22,10 @@ class Author0 {
 
   @Enum(() => SomeEnum)
   someEnum!: SomeEnum;
-
 }
 
 @Entity({ tableName: 'author' })
 class Author1 {
-
   @PrimaryKey()
   id!: number;
 
@@ -37,7 +34,6 @@ class Author1 {
 
   @Enum({ items: () => SomeEnum2 })
   someEnum!: SomeEnum2;
-
 }
 
 test('GH #5672', async () => {

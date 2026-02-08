@@ -3,7 +3,6 @@ import { BeforeDelete, BeforeUpdate, Entity, Enum, PrimaryKey, Property } from '
 
 @Entity()
 class A {
-
   @PrimaryKey({ type: 'integer' })
   id!: number;
 
@@ -22,11 +21,9 @@ class A {
   async beforeDelete() {
     await wrap(this, true).__em!.flush();
   }
-
 }
 
 describe('GH issue 493', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {

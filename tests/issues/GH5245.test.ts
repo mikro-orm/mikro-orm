@@ -3,18 +3,15 @@ import { Entity, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from 
 
 @Entity()
 class Test {
-
   @PrimaryKey()
   id!: number;
 
   @OneToOne(() => TestRelation, tr => tr.test, { ref: true, nullable: true })
   relation?: Ref<TestRelation>;
-
 }
 
 @Entity()
 class TestRelation {
-
   @PrimaryKey()
   id!: number;
 
@@ -23,7 +20,6 @@ class TestRelation {
 
   @Property()
   name!: string;
-
 }
 
 let orm: MikroORM;

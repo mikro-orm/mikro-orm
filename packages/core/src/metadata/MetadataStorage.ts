@@ -13,7 +13,6 @@ function getGlobalStorage(namespace: string): Dictionary {
 }
 
 export class MetadataStorage {
-
   static readonly PATH_SYMBOL = Symbol('MetadataStorage.PATH_SYMBOL');
 
   private static readonly metadata: Dictionary<EntityMetadata> = getGlobalStorage('metadata');
@@ -124,12 +123,10 @@ export class MetadataStorage {
   }
 
   decorate(em: EntityManager): void {
-    [...this.metadata.values()]
-      .filter(meta => meta.prototype)
-      .forEach(meta => EntityHelper.decorate(meta, em));
+    [...this.metadata.values()].filter(meta => meta.prototype).forEach(meta => EntityHelper.decorate(meta, em));
   }
 
-  * [Symbol.iterator](): IterableIterator<EntityMetadata> {
+  *[Symbol.iterator](): IterableIterator<EntityMetadata> {
     for (const meta of this.metadata.values()) {
       yield meta;
     }
@@ -164,5 +161,4 @@ export class MetadataStorage {
 
     return meta as any;
   }
-
 }

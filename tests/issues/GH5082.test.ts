@@ -1,9 +1,15 @@
 import { Collection, MikroORM, ref, Ref, wrap } from '@mikro-orm/libsql';
-import { Entity, ManyToMany, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToMany,
+  ManyToOne,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class Item {
-
   @PrimaryKey()
   id!: number;
 
@@ -13,12 +19,10 @@ class Item {
   constructor(name: string) {
     this.name = name;
   }
-
 }
 
 @Entity()
 class User {
-
   @PrimaryKey()
   id!: number;
 
@@ -38,7 +42,6 @@ class User {
     this.name = name;
     this.email = email;
   }
-
 }
 
 let orm: MikroORM;

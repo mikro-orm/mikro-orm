@@ -3,7 +3,6 @@ import { Entity, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider } from
 
 @Entity()
 export class Author {
-
   @PrimaryKey()
   id!: number;
 
@@ -12,12 +11,10 @@ export class Author {
 
   @Property()
   name!: string;
-
 }
 
 @Entity()
 export class Book {
-
   @PrimaryKey()
   id!: number;
 
@@ -32,11 +29,9 @@ export class Book {
 
   @ManyToOne(() => Book)
   template!: Book;
-
 }
 
 describe('GH issue 2829', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -71,5 +66,4 @@ describe('GH issue 2829', () => {
     // @ts-expect-error invalid property name
     fn = () => orm.em.find(Book, {}, { orderBy: [{ template: { name1: 1 } }] });
   });
-
 });

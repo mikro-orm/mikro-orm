@@ -4,13 +4,11 @@ import { mockLogger } from '../../helpers.js';
 
 @Entity()
 export class Example {
-
   @PrimaryKey()
   id!: number;
 
   @Property()
   name!: string;
-
 }
 
 let orm: MikroORM;

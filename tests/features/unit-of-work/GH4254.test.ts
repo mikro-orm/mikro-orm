@@ -4,7 +4,6 @@ import { MikroORM } from '@mikro-orm/sqlite';
 
 @Entity()
 export class OrderSummary {
-
   @OneToOne({
     entity: () => Order,
     deleteRule: 'cascade',
@@ -15,12 +14,10 @@ export class OrderSummary {
 
   @Property()
   prop!: string;
-
 }
 
 @Entity()
 export class Order {
-
   @PrimaryKey()
   id!: number;
 
@@ -29,7 +26,6 @@ export class Order {
     eager: true,
   })
   summary!: OrderSummary;
-
 }
 
 let orm: MikroORM;

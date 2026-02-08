@@ -10,7 +10,6 @@ import {
 
 @Entity()
 class Post {
-
   @PrimaryKey()
   id!: number;
 
@@ -27,12 +26,10 @@ class Post {
     this.title = title;
     this.content = content;
   }
-
 }
 
 @Entity()
 class Comment {
-
   @PrimaryKey()
   id!: number;
 
@@ -45,12 +42,10 @@ class Comment {
   constructor(text: string) {
     this.text = text;
   }
-
 }
 
 @Entity()
 class Like {
-
   @PrimaryKey()
   id!: number;
 
@@ -59,11 +54,9 @@ class Like {
 
   @Property({ nullable: true })
   createdAt?: Date;
-
 }
 
 describe('polymorphic relations in PostgreSQL', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -141,7 +134,12 @@ describe('polymorphic relations in PostgreSQL', () => {
 
     const loadedPost = await orm.em.findOneOrFail(Post, { id: post.id }, { populate: ['likes'] });
     expect(loadedPost.likes).toHaveLength(2);
-    expect(loadedPost.likes.getItems().map(l => l.id).sort()).toEqual([like1.id, like2.id].sort());
+    expect(
+      loadedPost.likes
+        .getItems()
+        .map(l => l.id)
+        .sort(),
+    ).toEqual([like1.id, like2.id].sort());
   });
 
   test('can populate inverse side (OneToMany) for Comment', async () => {
@@ -224,5 +222,4 @@ describe('polymorphic relations in PostgreSQL', () => {
     const loadedPost = await orm.em.findOneOrFail(Post, { id: post.id }, { populate: ['likes'] });
     expect(loadedPost.likes).toHaveLength(3);
   });
-
 });

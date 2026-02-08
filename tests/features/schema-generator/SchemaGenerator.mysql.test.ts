@@ -2,18 +2,39 @@ import { EntitySchema, EnumType, MikroORM, ReferenceKind, Type, Utils } from '@m
 import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { SchemaGenerator } from '@mikro-orm/sql';
 import { BASE_DIR, initORMMySql } from '../../bootstrap.js';
-import { Address2, Author2, Book2, BookTag2, Configuration2, FooBar2, FooBaz2, Publisher2, Test2 } from '../../entities-sql/index.js';
+import {
+  Address2,
+  Author2,
+  Book2,
+  BookTag2,
+  Configuration2,
+  FooBar2,
+  FooBaz2,
+  Publisher2,
+  Test2,
+} from '../../entities-sql/index.js';
 import { BaseEntity22 } from '../../entities-sql/BaseEntity22.js';
 import { BaseEntity2 } from '../../entities-sql/BaseEntity2.js';
 import { MySqlDriver } from '@mikro-orm/mysql';
 
 describe('SchemaGenerator', () => {
-
   test('create/drop database [mysql]', async () => {
     const dbName = `mikro_orm_test_${Date.now()}`;
     const orm = await MikroORM.init({
       metadataProvider: ReflectMetadataProvider,
-      entities: [FooBar2, FooBaz2, Test2, Book2, Author2, Configuration2, Publisher2, BookTag2, Address2, BaseEntity2, BaseEntity22],
+      entities: [
+        FooBar2,
+        FooBaz2,
+        Test2,
+        Book2,
+        Author2,
+        Configuration2,
+        Publisher2,
+        BookTag2,
+        Address2,
+        BaseEntity2,
+        BaseEntity22,
+      ],
       dbName,
       port: 3308,
       baseDir: BASE_DIR,
@@ -29,7 +50,19 @@ describe('SchemaGenerator', () => {
     const dbName = `mikro_orm_test_${Date.now()}`;
     const orm = await MikroORM.init({
       metadataProvider: ReflectMetadataProvider,
-      entities: [FooBar2, FooBaz2, Test2, Book2, Author2, Configuration2, Publisher2, BookTag2, Address2, BaseEntity2, BaseEntity22],
+      entities: [
+        FooBar2,
+        FooBaz2,
+        Test2,
+        Book2,
+        Author2,
+        Configuration2,
+        Publisher2,
+        BookTag2,
+        Address2,
+        BaseEntity2,
+        BaseEntity22,
+      ],
       dbName,
       port: 3308,
       baseDir: BASE_DIR,
@@ -45,7 +78,6 @@ describe('SchemaGenerator', () => {
   });
 
   describe('read-only schema tests', () => {
-
     let orm: Awaited<ReturnType<typeof initORMMySql>>;
 
     beforeAll(async () => {
@@ -85,7 +117,6 @@ describe('SchemaGenerator', () => {
       dropSchema.mockRestore();
       createSchema.mockRestore();
     });
-
   });
 
   test('update schema [mysql]', async () => {
@@ -207,8 +238,8 @@ describe('SchemaGenerator', () => {
     await orm.schema.execute(diff);
 
     // clean up old references manually (they would not be valid if we did a full meta sync)
-    meta.getByClassName('author2_following').props.forEach(prop => prop.kind = ReferenceKind.SCALAR);
-    meta.getByClassName('author_to_friend').props.forEach(prop => prop.kind = ReferenceKind.SCALAR);
+    meta.getByClassName('author2_following').props.forEach(prop => (prop.kind = ReferenceKind.SCALAR));
+    meta.getByClassName('author_to_friend').props.forEach(prop => (prop.kind = ReferenceKind.SCALAR));
     meta.get(Book2).properties.author.kind = ReferenceKind.SCALAR;
     meta.get(Address2).properties.author.kind = ReferenceKind.SCALAR;
     meta.get(Address2).properties.author.autoincrement = false;
@@ -243,7 +274,9 @@ describe('SchemaGenerator', () => {
     favouriteAuthorProp.joinColumns = ['favourite_writer_id'];
     authorMeta.removeProperty('favouriteAuthor');
     authorMeta.addProperty(favouriteAuthorProp);
-    await expect(orm.schema.getUpdateSchemaSQL({ wrap: false })).resolves.toMatchSnapshot('mysql-update-schema-rename-column');
+    await expect(orm.schema.getUpdateSchemaSQL({ wrap: false })).resolves.toMatchSnapshot(
+      'mysql-update-schema-rename-column',
+    );
     await orm.schema.update();
 
     await orm.schema.dropDatabase();
@@ -279,7 +312,10 @@ describe('SchemaGenerator', () => {
 
     newTableMeta.properties.enumTest.items = ['a', 'b'];
     delete newTableMeta.properties.enumTest.columnTypes[0];
-    newTableMeta.properties.enumTest.columnTypes[0] = Type.getType(EnumType).getColumnType(newTableMeta.properties.enumTest, orm.em.getPlatform());
+    newTableMeta.properties.enumTest.columnTypes[0] = Type.getType(EnumType).getColumnType(
+      newTableMeta.properties.enumTest,
+      orm.em.getPlatform(),
+    );
     newTableMeta.properties.enumTest.enum = true;
     newTableMeta.properties.enumTest.type = 'object';
     diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
@@ -288,7 +324,10 @@ describe('SchemaGenerator', () => {
 
     newTableMeta.properties.enumTest.items = ['a', 'b', 'c'];
     delete newTableMeta.properties.enumTest.columnTypes[0];
-    newTableMeta.properties.enumTest.columnTypes[0] = Type.getType(EnumType).getColumnType(newTableMeta.properties.enumTest, orm.em.getPlatform());
+    newTableMeta.properties.enumTest.columnTypes[0] = Type.getType(EnumType).getColumnType(
+      newTableMeta.properties.enumTest,
+      orm.em.getPlatform(),
+    );
     diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff).toMatchSnapshot('mysql-update-schema-enums-3');
     await orm.schema.execute(diff);
@@ -309,5 +348,4 @@ describe('SchemaGenerator', () => {
     await orm.schema.dropDatabase();
     await orm.close(true);
   });
-
 });

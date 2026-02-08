@@ -3,7 +3,6 @@ import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-or
 
 @Entity()
 class User {
-
   @PrimaryKey()
   id!: number;
 
@@ -12,7 +11,6 @@ class User {
 
   @Property({ nullable: true })
   name?: string;
-
 }
 
 let orm: MikroORM;
@@ -70,14 +68,17 @@ test('MsSqlNativeQueryBuilder', async () => {
 
   const qb8 = new MsSqlNativeQueryBuilder(orm.em.getPlatform());
   const date = new Date();
-  qb8.insert({ foo: 'bar' }).into('baz').onConflict({
-    fields: ['field1', 'field2'],
-    merge: {
-      name: 'John Doe',
-      updatedAt: date,
-    },
-    where: { sql: '? = ?', params: [1, 1] },
-  });
+  qb8
+    .insert({ foo: 'bar' })
+    .into('baz')
+    .onConflict({
+      fields: ['field1', 'field2'],
+      merge: {
+        name: 'John Doe',
+        updatedAt: date,
+      },
+      where: { sql: '? = ?', params: [1, 1] },
+    });
   qb8.where('foo1', ['bar1']);
   expect(qb8.compile()).toEqual({
     sql: 'merge into [baz] using (values (?)) as tsource([foo]) on [baz].[field1] = tsource.[field1] and [baz].[field2] = tsource.[field2] when not matched then insert ([foo]) values (tsource.[foo]) when matched and ? = ? then update set [baz].[name] = ?, [baz].[updatedAt] = ?;',

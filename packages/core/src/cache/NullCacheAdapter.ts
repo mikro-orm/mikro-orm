@@ -1,7 +1,6 @@
 import type { SyncCacheAdapter } from './CacheAdapter.js';
 
 export class NullCacheAdapter implements SyncCacheAdapter {
-
   /**
    * @inheritDoc
    */
@@ -29,5 +28,4 @@ export class NullCacheAdapter implements SyncCacheAdapter {
   clear(): void {
     // ignore
   }
-
 }

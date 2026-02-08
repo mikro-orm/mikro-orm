@@ -49,7 +49,6 @@ export interface FactoryOptions {
 }
 
 export class EntityFactory {
-
   private readonly driver: IDatabaseDriver;
   private readonly platform: Platform;
   private readonly config: Configuration;
@@ -68,7 +67,11 @@ export class EntityFactory {
     this.comparator = this.em.getComparator();
   }
 
-  create<T extends object, P extends string = string>(entityName: EntityName<T>, data: EntityData<T>, options: FactoryOptions = {}): New<T, P> {
+  create<T extends object, P extends string = string>(
+    entityName: EntityName<T>,
+    data: EntityData<T>,
+    options: FactoryOptions = {},
+  ): New<T, P> {
     data = Reference.unwrapReference(data as T);
     options.initialized ??= true;
 
@@ -126,12 +129,18 @@ export class EntityFactory {
               continue;
             }
 
-            if ([ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind) && Utils.isPlainObject(data[prop.name])) {
+            if (
+              [ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind) &&
+              Utils.isPlainObject(data[prop.name])
+            ) {
               data[prop.name] = Utils.getPrimaryKeyValues(data[prop.name], prop.targetMeta!, true);
             }
 
             if (prop.customType instanceof JsonType && this.platform.convertsJsonAutomatically()) {
-              data[prop.name] = prop.customType.convertToDatabaseValue(data[prop.name], this.platform, { key: prop.name, mode: 'hydration' }) as any;
+              data[prop.name] = prop.customType.convertToDatabaseValue(data[prop.name], this.platform, {
+                key: prop.name,
+                mode: 'hydration',
+              }) as any;
             }
           }
         }
@@ -167,15 +176,24 @@ export class EntityFactory {
     return entity as New<T, P>;
   }
 
-  mergeData<T extends object>(meta: EntityMetadata<T>, entity: T, data: EntityData<T>, options: FactoryOptions = {}): void {
+  mergeData<T extends object>(
+    meta: EntityMetadata<T>,
+    entity: T,
+    data: EntityData<T>,
+    options: FactoryOptions = {},
+  ): void {
     // merge unchanged properties automatically
     data = QueryHelper.processParams(data);
     const existsData = this.comparator.prepareEntity(entity);
-    const originalEntityData = helper(entity).__originalEntityData ?? {} as EntityData<T>;
+    const originalEntityData = helper(entity).__originalEntityData ?? ({} as EntityData<T>);
     const diff = this.comparator.diffEntities(meta.class, originalEntityData, existsData);
 
     // version properties are not part of entity snapshots
-    if (meta.versionProperty && data[meta.versionProperty] && data[meta.versionProperty] !== originalEntityData[meta.versionProperty]) {
+    if (
+      meta.versionProperty &&
+      data[meta.versionProperty] &&
+      data[meta.versionProperty] !== originalEntityData[meta.versionProperty]
+    ) {
       diff[meta.versionProperty] = data[meta.versionProperty];
     }
 
@@ -184,19 +202,25 @@ export class EntityFactory {
     // do not override values changed by user
     Utils.keys(diff).forEach(key => delete diff2[key]);
 
-    Utils.keys(diff2).filter(key => {
-      // ignore null values if there is already present non-null value
-      if (existsData[key] != null) {
-        return diff2[key] == null;
-      }
+    Utils.keys(diff2)
+      .filter(key => {
+        // ignore null values if there is already present non-null value
+        if (existsData[key] != null) {
+          return diff2[key] == null;
+        }
 
-      return diff2[key] === undefined;
-    }).forEach(key => delete diff2[key]);
+        return diff2[key] === undefined;
+      })
+      .forEach(key => delete diff2[key]);
 
     // but always add collection properties and formulas if they are part of the `data`
     Utils.keys(data)
-      .filter(key => meta.properties[key]?.formula || [ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(meta.properties[key]?.kind))
-      .forEach(key => diff2[key] = data[key]);
+      .filter(
+        key =>
+          meta.properties[key]?.formula ||
+          [ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(meta.properties[key]?.kind),
+      )
+      .forEach(key => (diff2[key] = data[key]));
 
     // rehydrated with the new values, skip those changed by user
     this.hydrate(entity, meta, diff2, options);
@@ -206,11 +230,19 @@ export class EntityFactory {
     Utils.keys(diff2).forEach(key => {
       const prop = meta.properties[key];
 
-      if ([ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind) && Utils.isPlainObject(data[prop.name])) {
+      if (
+        [ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind) &&
+        Utils.isPlainObject(data[prop.name])
+      ) {
+        // oxfmt-ignore
         diff2[key] = entity[prop.name] ? helper(entity[prop.name]!).getPrimaryKey(options.convertCustomTypes) as EntityDataValue<T> : null;
       }
 
-      if ([ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE, ReferenceKind.SCALAR].includes(prop.kind) && prop.customType?.ensureComparable(meta, prop) && diff2[key] != null) {
+      if (
+        [ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE, ReferenceKind.SCALAR].includes(prop.kind) &&
+        prop.customType?.ensureComparable(meta, prop) &&
+        diff2[key] != null
+      ) {
         const converted = prop.customType.convertToJSValue(diff2[key], this.platform, { force: true });
         diff2[key] = prop.customType.convertToDatabaseValue(converted, this.platform, { fromQuery: true });
       }
@@ -221,7 +253,10 @@ export class EntityFactory {
 
     // in case of joined loading strategy, we need to cascade the merging to possibly loaded relations manually
     meta.relations.forEach(prop => {
-      if ([ReferenceKind.MANY_TO_MANY, ReferenceKind.ONE_TO_MANY].includes(prop.kind) && Array.isArray(data[prop.name])) {
+      if (
+        [ReferenceKind.MANY_TO_MANY, ReferenceKind.ONE_TO_MANY].includes(prop.kind) &&
+        Array.isArray(data[prop.name])
+      ) {
         // instead of trying to match the collection items (which could easily fail if the collection was loaded with different ordering),
         // we just create the entity from scratch, which will automatically pick the right one from the identity map and call `mergeData` on it
         (data[prop.name] as EntityData<T>[])
@@ -231,7 +266,12 @@ export class EntityFactory {
         return;
       }
 
-      if ([ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind) && Utils.isPlainObject(data[prop.name]) && entity[prop.name] && helper(entity[prop.name]!).__initialized) {
+      if (
+        [ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind) &&
+        Utils.isPlainObject(data[prop.name]) &&
+        entity[prop.name] &&
+        helper(entity[prop.name]!).__initialized
+      ) {
         this.create(prop.targetMeta!.class, data[prop.name] as EntityData<T>, options); // we can ignore the value, we just care about the `mergeData` call
       }
     });
@@ -239,14 +279,19 @@ export class EntityFactory {
     this.unitOfWork.normalizeEntityData(meta, originalEntityData);
   }
 
-  createReference<T extends object>(entityName: EntityName<T>, id: Primary<T> | Primary<T>[] | Record<string, Primary<T>>, options: Pick<FactoryOptions, 'merge' | 'convertCustomTypes' | 'schema' | 'key'> = {}): T {
+  createReference<T extends object>(
+    entityName: EntityName<T>,
+    id: Primary<T> | Primary<T>[] | Record<string, Primary<T>>,
+    options: Pick<FactoryOptions, 'merge' | 'convertCustomTypes' | 'schema' | 'key'> = {},
+  ): T {
     options.convertCustomTypes ??= true;
     const meta = this.metadata.get<T>(entityName);
     const schema = this.driver.getSchemaName(meta, options);
 
     // Handle alternate key lookup
     if (options.key) {
-      const value = '' + (Array.isArray(id) ? id[0] : Utils.isPlainObject(id) ? (id as Record<string, any>)[options.key] : id);
+      const value =
+        '' + (Array.isArray(id) ? id[0] : Utils.isPlainObject(id) ? (id as Record<string, any>)[options.key] : id);
       const exists = this.unitOfWork.getByKey(entityName, options.key, value, schema, options.convertCustomTypes);
 
       if (exists) {
@@ -289,7 +334,11 @@ export class EntityFactory {
     return this.create<T>(entityName, id as EntityData<T>, { ...options, initialized: false }) as T;
   }
 
-  createEmbeddable<T extends object>(entityName: EntityName<T>, data: EntityData<T>, options: Pick<FactoryOptions, 'newEntity' | 'convertCustomTypes'> = {}): T {
+  createEmbeddable<T extends object>(
+    entityName: EntityName<T>,
+    data: EntityData<T>,
+    options: Pick<FactoryOptions, 'newEntity' | 'convertCustomTypes'> = {},
+  ): T {
     data = { ...data };
     const meta = this.metadata.get(entityName);
     const meta2 = this.processDiscriminatorColumn<T>(meta, data);
@@ -343,7 +392,15 @@ export class EntityFactory {
     helper(entity).__schema = schema;
 
     if (options.merge && !options.newEntity) {
-      this.hydrator.hydrateReference(entity, meta, data, this, options.convertCustomTypes, options.schema, options.parentSchema);
+      this.hydrator.hydrateReference(
+        entity,
+        meta,
+        data,
+        this,
+        options.convertCustomTypes,
+        options.schema,
+        options.parentSchema,
+      );
       this.unitOfWork.register(entity);
     }
 
@@ -362,11 +419,36 @@ export class EntityFactory {
     }
   }
 
-  private hydrate<T extends object>(entity: T, meta: EntityMetadata<T>, data: EntityData<T>, options: FactoryOptions): void {
+  private hydrate<T extends object>(
+    entity: T,
+    meta: EntityMetadata<T>,
+    data: EntityData<T>,
+    options: FactoryOptions,
+  ): void {
     if (options.initialized) {
-      this.hydrator.hydrate(entity, meta, data, this, 'full', options.newEntity, options.convertCustomTypes, options.schema, this.driver.getSchemaName(meta, options), options.normalizeAccessors);
+      this.hydrator.hydrate(
+        entity,
+        meta,
+        data,
+        this,
+        'full',
+        options.newEntity,
+        options.convertCustomTypes,
+        options.schema,
+        this.driver.getSchemaName(meta, options),
+        options.normalizeAccessors,
+      );
     } else {
-      this.hydrator.hydrateReference(entity, meta, data, this, options.convertCustomTypes, options.schema, this.driver.getSchemaName(meta, options), options.normalizeAccessors);
+      this.hydrator.hydrateReference(
+        entity,
+        meta,
+        data,
+        this,
+        options.convertCustomTypes,
+        options.schema,
+        this.driver.getSchemaName(meta, options),
+        options.normalizeAccessors,
+      );
     }
 
     Utils.keys(data).forEach(key => {
@@ -381,7 +463,11 @@ export class EntityFactory {
     }
   }
 
-  private findEntity<T extends object>(data: EntityData<T>, meta: EntityMetadata<T>, options: FactoryOptions): T | undefined {
+  private findEntity<T extends object>(
+    data: EntityData<T>,
+    meta: EntityMetadata<T>,
+    options: FactoryOptions,
+  ): T | undefined {
     const schema = this.driver.getSchemaName(meta, options);
 
     if (meta.simplePK) {
@@ -397,7 +483,10 @@ export class EntityFactory {
     return this.unitOfWork.getById<T>(meta.class, pks, schema);
   }
 
-  private processDiscriminatorColumn<T extends object>(meta: EntityMetadata<T>, data: EntityData<T>): EntityMetadata<T> {
+  private processDiscriminatorColumn<T extends object>(
+    meta: EntityMetadata<T>,
+    data: EntityData<T>,
+  ): EntityMetadata<T> {
     // Handle STI discriminator (persisted column)
     if (meta.root.inheritanceType === 'sti') {
       const prop = meta.properties[meta.root.discriminatorColumn as EntityKey<T>];
@@ -431,7 +520,9 @@ export class EntityFactory {
     }
 
     if (pk.type === 'ObjectId' && (data[pk.name] != null || data[spk.name] != null)) {
-      data[pk.name] = this.platform.denormalizePrimaryKey((data[spk.name] || data[pk.name]) as string) as EntityDataValue<T>;
+      data[pk.name] = this.platform.denormalizePrimaryKey(
+        (data[spk.name] || data[pk.name]) as string,
+      ) as EntityDataValue<T>;
       delete data[spk.name];
     }
   }
@@ -439,7 +530,11 @@ export class EntityFactory {
   /**
    * returns parameters for entity constructor, creating references from plain ids
    */
-  private extractConstructorParams<T extends object>(meta: EntityMetadata<T>, data: EntityData<T>, options: FactoryOptions): EntityValue<T>[] | [EntityData<T>] {
+  private extractConstructorParams<T extends object>(
+    meta: EntityMetadata<T>,
+    data: EntityData<T>,
+    options: FactoryOptions,
+  ): EntityValue<T>[] | [EntityData<T>] {
     if (!meta.constructorParams) {
       return [data];
     }
@@ -489,8 +584,15 @@ export class EntityFactory {
             continue;
           }
 
-          if ([ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind) && Utils.isPlainObject(tmp[prop.name]) && !Utils.extractPK(tmp[prop.name], prop.targetMeta, true)) {
-            tmp[prop.name] = Reference.wrapReference(this.create(prop.targetMeta!.class, tmp[prop.name]!, options), prop);
+          if (
+            [ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind) &&
+            Utils.isPlainObject(tmp[prop.name]) &&
+            !Utils.extractPK(tmp[prop.name], prop.targetMeta, true)
+          ) {
+            tmp[prop.name] = Reference.wrapReference(
+              this.create(prop.targetMeta!.class, tmp[prop.name]!, options),
+              prop,
+            );
           } else if (prop.kind === ReferenceKind.SCALAR) {
             tmp[prop.name] = prop.customType.convertToJSValue(tmp[prop.name], this.platform) as any;
           }
@@ -510,5 +612,4 @@ export class EntityFactory {
   private get unitOfWork() {
     return this.em.getUnitOfWork(false);
   }
-
 }

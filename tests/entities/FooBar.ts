@@ -1,28 +1,11 @@
 import { ObjectId } from 'bson';
-import {
-  Entity,
-  Index,
-  OneToOne,
-  PrimaryKey,
-  Property,
-  SerializedPrimaryKey,
-} from '@mikro-orm/decorators/legacy';
-import {
-  ArrayType,
-  EagerProps,
-  JsonType,
-  OptionalProps,
-  Opt,
-} from '@mikro-orm/core';
+import { Entity, Index, OneToOne, PrimaryKey, Property, SerializedPrimaryKey } from '@mikro-orm/decorators/legacy';
+import { ArrayType, EagerProps, JsonType, OptionalProps, Opt } from '@mikro-orm/core';
 import { FooBaz } from './FooBaz.js';
 
 @Entity()
-@Index({ options: [
-  { name: 'text', str: 'text', baz: 1 },
-  { weights: { name: 10, str: 5 } },
-] })
+@Index({ options: [{ name: 'text', str: 'text', baz: 1 }, { weights: { name: 10, str: 5 } }] })
 export default class FooBar {
-
   [EagerProps]?: 'baz';
   [OptionalProps]?: 'meta';
 
@@ -35,7 +18,14 @@ export default class FooBar {
   @Property()
   name!: string;
 
-  @OneToOne({ entity: () => FooBaz, eager: true, orphanRemoval: true, nullable: true, serializedName: 'fooBaz', serializer: value => `FooBaz id: ${value.id}` })
+  @OneToOne({
+    entity: () => FooBaz,
+    eager: true,
+    orphanRemoval: true,
+    nullable: true,
+    serializedName: 'fooBaz',
+    serializer: value => `FooBaz id: ${value.id}`,
+  })
   baz!: FooBaz | null;
 
   @OneToOne(() => FooBar, undefined, { nullable: true })
@@ -59,10 +49,10 @@ export default class FooBar {
   @Property({ type: JsonType, nullable: true })
   object?: { foo: string; bar: number } | any;
 
-  @Property({ onCreate: bar => bar.meta.onCreateCalled = true })
+  @Property({ onCreate: bar => (bar.meta.onCreateCalled = true) })
   onCreateTest?: boolean;
 
-  @Property({ onCreate: bar => bar.meta.onUpdateCalled = true })
+  @Property({ onCreate: bar => (bar.meta.onUpdateCalled = true) })
   onUpdateTest?: boolean;
 
   @Property({ nullable: true })
@@ -79,5 +69,4 @@ export default class FooBar {
 
     return bar;
   }
-
 }

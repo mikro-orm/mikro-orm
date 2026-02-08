@@ -1,31 +1,34 @@
 import { MikroORM } from '@mikro-orm/sqlite';
-import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider, Unique } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+  Unique,
+} from '@mikro-orm/decorators/legacy';
 import { v4 } from 'uuid';
 import { Collection, PrimaryKeyProp, Ref } from '@mikro-orm/core';
 
 @Entity()
 class Company {
-
   @PrimaryKey({ columnType: 'uuid' })
   id: string = v4();
 
   @Unique({ name: 'company_name_unique' })
   @Property({ columnType: 'text', length: 255 })
   name!: string;
-
 }
 
 @Entity()
 class User {
-
   @PrimaryKey({ columnType: 'uuid' })
   id: string = v4();
-
 }
 
 @Entity()
 class Reader {
-
   [PrimaryKeyProp]?: ['user_id', 'company_id', 'book_id'];
 
   @ManyToOne({
@@ -50,12 +53,10 @@ class Reader {
     joinColumns: ['book_id', 'company_id'],
   })
   book!: Ref<Book>;
-
 }
 
 @Entity()
 class Book {
-
   [PrimaryKeyProp]?: ['id', 'company'];
 
   @Unique({ name: 'book_id_unique' })
@@ -82,12 +83,10 @@ class Book {
     orphanRemoval: true,
   })
   reviewers = new Collection<BookReviewer>(this);
-
 }
 
 @Entity()
 class BookReviewer {
-
   @Unique({ name: 'book_reviewer_id_unique' })
   @PrimaryKey({ columnType: 'uuid' })
   id: string = v4();
@@ -109,7 +108,6 @@ class BookReviewer {
 
   @ManyToOne({ entity: () => User, ref: true })
   user!: Ref<User>;
-
 }
 
 let orm: MikroORM;

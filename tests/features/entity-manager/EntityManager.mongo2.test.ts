@@ -6,7 +6,6 @@ import { BASE_DIR } from '../../bootstrap.js';
 import FooBar from '../../entities/FooBar.js';
 
 describe('EntityManagerMongo2', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -60,7 +59,11 @@ describe('EntityManagerMongo2', () => {
     await orm.em.persist(bible).flush();
     orm.em.clear();
 
-    const book0 = await orm.em.findOne(Book, { author: { books: { publisher: ['1', '2'] } } }, { populate: ['publisher', 'tags'] });
+    const book0 = await orm.em.findOne(
+      Book,
+      { author: { books: { publisher: ['1', '2'] } } },
+      { populate: ['publisher', 'tags'] },
+    );
     expect(book0).toBeNull();
 
     const book1 = await orm.em.findOneOrFail(Book, bible, { populate: ['*'] });
@@ -79,16 +82,24 @@ describe('EntityManagerMongo2', () => {
     expect(book2.tags.$[0].name).toBeUndefined();
     orm.em.clear();
     // @ts-expect-error base entity helpers and other functions are excluded
-    await expect(() => orm.em.findOneOrFail(Book, bible, { populate: 'populate' })).rejects.toThrow("Entity 'Book' does not have property 'populate'");
+    await expect(() => orm.em.findOneOrFail(Book, bible, { populate: 'populate' })).rejects.toThrow(
+      "Entity 'Book' does not have property 'populate'",
+    );
 
-    const books = await orm.em.find(Book, { id: bible.id }, {
-      populate: ['publisher.books.publisher'],
-      fields: ['*', 'publisher.name'],
-    });
+    const books = await orm.em.find(
+      Book,
+      { id: bible.id },
+      {
+        populate: ['publisher.books.publisher'],
+        fields: ['*', 'publisher.name'],
+      },
+    );
     expect(books[0].publisher!.get().books.get()[0].publisher!.$.name).toBe('Publisher 123');
-    expect(books[0].publisher!.$
-      // @ts-expect-error
-      .type).toBeUndefined();
+    expect(
+      books[0].publisher!.$
+        // @ts-expect-error
+        .type,
+    ).toBeUndefined();
 
     const book5 = await orm.em.findOneOrFail(Book, bible, { populate: ['publisher', 'tags', 'perex'] });
     expect(book5.publisher!.$.name).toBe('Publisher 123');
@@ -154,7 +165,9 @@ describe('EntityManagerMongo2', () => {
     expect(tags).toHaveLength(5);
     expect(books[0].tags).toHaveLength(5);
     expect(tags.map(t => t.name)).toEqual(['tag 11-06', 'tag 11-07', 'tag 11-08', 'tag 11-09', 'tag 11-10']);
-    expect(() => books[0].tags.add(orm.em.create(BookTag, { name: 'new' }))).toThrow('You cannot modify collection Book.tags as it is marked as readonly.');
+    expect(() => books[0].tags.add(orm.em.create(BookTag, { name: 'new' }))).toThrow(
+      'You cannot modify collection Book.tags as it is marked as readonly.',
+    );
     expect(wrap(books[0]).toObject()).toMatchObject({
       tags: books[0].tags.getItems().map(t => ({ name: t.name })),
     });
@@ -197,7 +210,7 @@ describe('EntityManagerMongo2', () => {
     orm.em.clear();
 
     // Updates when removing an item
-    author = (await orm.em.findOneOrFail(Author, author.id));
+    author = await orm.em.findOneOrFail(Author, author.id);
     expect(await author.books.loadCount()).toEqual(3);
     await author.books.init();
     author.books.remove(author.books[0]);
@@ -207,7 +220,7 @@ describe('EntityManagerMongo2', () => {
     orm.em.clear();
 
     // Resets the counter when hydrating
-    author = (await orm.em.findOneOrFail(Author, author.id));
+    author = await orm.em.findOneOrFail(Author, author.id);
     await author.books.loadCount();
     author.books.hydrate([]);
     expect(await author.books.loadCount()).toEqual(0);
@@ -216,7 +229,11 @@ describe('EntityManagerMongo2', () => {
     // n:m relations
     let taggedBook = orm.em.create(Book, { title: 'FullyTagged', author });
     await orm.em.persist(taggedBook).flush();
-    const tags = [orm.em.create(BookTag, { name: 'science-fiction' }), orm.em.create(BookTag, { name: 'adventure' }), orm.em.create(BookTag, { name: 'horror' })] as const;
+    const tags = [
+      orm.em.create(BookTag, { name: 'science-fiction' }),
+      orm.em.create(BookTag, { name: 'adventure' }),
+      orm.em.create(BookTag, { name: 'horror' }),
+    ] as const;
     taggedBook.tags.add(...tags);
     await expect(taggedBook.tags.loadCount()).resolves.toEqual(3); // with mongo m:n owners this works based on the collection state
     await orm.em.flush();
@@ -227,7 +244,7 @@ describe('EntityManagerMongo2', () => {
     expect(taggedBook.tags.isInitialized()).toBe(true); // mongo m:n owner is always (partially) initialized
     await taggedBook.tags.init();
     await expect(taggedBook.tags.loadCount()).resolves.toEqual(tags.length);
-    const removing  = taggedBook.tags[0];
+    const removing = taggedBook.tags[0];
     taggedBook.tags.remove(removing);
     await expect(taggedBook.tags.loadCount()).resolves.toEqual(tags.length - 1);
     await expect(taggedBook.tags.loadCount(true)).resolves.toEqual(tags.length - 1); // with mongo m:n owners this works based on the collection state
@@ -349,7 +366,9 @@ describe('EntityManagerMongo2', () => {
   test('findOne supports optimistic locking [unversioned entity]', async () => {
     const author = new Author('name', 'email');
     await orm.em.persist(author).flush();
-    await expect(orm.em.lock(author, LockMode.OPTIMISTIC)).rejects.toThrow('Cannot obtain optimistic lock on unversioned entity Author');
+    await expect(orm.em.lock(author, LockMode.OPTIMISTIC)).rejects.toThrow(
+      'Cannot obtain optimistic lock on unversioned entity Author',
+    );
   });
 
   test('findOne supports optimistic locking [versioned entity]', async () => {
@@ -363,28 +382,27 @@ describe('EntityManagerMongo2', () => {
     const test = new Test();
     test.name = 'test';
     await orm.em.persist(test).flush();
-    await expect(orm.em.lock(test, LockMode.OPTIMISTIC, test.version + 1)).rejects.toThrow('The optimistic lock failed, version 2 was expected, but is actually 1');
+    await expect(orm.em.lock(test, LockMode.OPTIMISTIC, test.version + 1)).rejects.toThrow(
+      'The optimistic lock failed, version 2 was expected, but is actually 1',
+    );
   });
 
   test('findOne supports optimistic locking [testLockUnmanagedEntityThrowsException]', async () => {
     const test = new Test();
     test.name = 'test';
-    await expect(orm.em.lock(test, LockMode.OPTIMISTIC)).rejects.toThrow('Entity Test is not managed. An entity is managed if its fetched from the database or registered as new through EntityManager.persist()');
+    await expect(orm.em.lock(test, LockMode.OPTIMISTIC)).rejects.toThrow(
+      'Entity Test is not managed. An entity is managed if its fetched from the database or registered as new through EntityManager.persist()',
+    );
   });
 
   test('batch updates increments version field (optimistic locking)', async () => {
-    const tests = [
-      new Test({ name: 't1' }),
-      new Test({ name: 't2' }),
-      new Test({ name: 't3' }),
-    ];
+    const tests = [new Test({ name: 't1' }), new Test({ name: 't2' }), new Test({ name: 't3' })];
     await orm.em.persist(tests).flush();
     expect(tests.map(t => t.version)).toEqual([1, 1, 1]);
-    tests.forEach(t => t.name += ' changed!');
+    tests.forEach(t => (t.name += ' changed!'));
     await orm.em.flush();
     expect(tests.map(t => t.version)).toEqual([2, 2, 2]);
   });
 
   afterAll(async () => orm.close(true));
-
 });

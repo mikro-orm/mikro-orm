@@ -5,7 +5,6 @@ import { BaseEntity } from './entities/BaseEntity.js';
 import { BaseEntity5 } from './entities-schema/BaseEntity5.js';
 
 describe('EntitySchema', () => {
-
   test('create schema', async () => {
     const schema = new EntitySchema({ class: Author, tableName: 'authors' });
     schema.addPrimaryKey('_id', 'ObjectId');
@@ -43,5 +42,4 @@ describe('EntitySchema', () => {
     expect(meta.uniques).toEqual([{ properties: ['name', 'email'] }]);
     expect(schema.properties).toBe(meta.properties);
   });
-
 });

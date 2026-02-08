@@ -9,7 +9,6 @@ import { AfterCreate, AfterUpdate, Entity, PrimaryKey, Property } from '@mikro-o
   },
 })
 export abstract class BaseUser2 {
-
   @PrimaryKey()
   id!: number;
 
@@ -35,5 +34,4 @@ export abstract class BaseUser2 {
   afterUpdate1() {
     this.baseState = 'updated';
   }
-
 }

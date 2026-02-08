@@ -4,7 +4,6 @@ import { PLATFORMS } from '../bootstrap.js';
 
 @Entity()
 class EntityA {
-
   @PrimaryKey()
   id!: string;
 
@@ -15,12 +14,10 @@ class EntityA {
   createdAt?: Date;
 
   [PrimaryKeyProp]?: ['id', 'envID'];
-
 }
 
 @Entity()
 class EntityB {
-
   @PrimaryKey()
   id!: string;
 
@@ -39,7 +36,6 @@ class EntityB {
   entityA: Ref<EntityA> | null = null;
 
   [PrimaryKeyProp]?: ['id', 'envID'];
-
 }
 
 const options = {
@@ -47,7 +43,7 @@ const options = {
   postgresql: { dbName: 'mikro_orm_upsert_4945' },
 };
 
-describe.each(Utils.keys(options))('GH #4945 [%s]',  type => {
+describe.each(Utils.keys(options))('GH #4945 [%s]', type => {
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -68,11 +64,21 @@ describe.each(Utils.keys(options))('GH #4945 [%s]',  type => {
 
   test('GH #4945 em.upsert()', async () => {
     const a = await orm.em.upsert(EntityA, { id: 'entity-a-1', envID: 'env-1' });
-    const b = await orm.em.upsert(EntityB, { id: 'entity-b-1', envID: 'env-1', name: 'entity-b-1', entityA: ref(EntityA, ['entity-a-1', 'env-1']) });
+    const b = await orm.em.upsert(EntityB, {
+      id: 'entity-b-1',
+      envID: 'env-1',
+      name: 'entity-b-1',
+      entityA: ref(EntityA, ['entity-a-1', 'env-1']),
+    });
     expect(a).toMatchObject({ createdAt: expect.any(Date) });
     orm.em.clear();
     const entityA = await orm.em.upsert(EntityA, { id: 'entity-a-1', envID: 'env-1' });
-    const entityB = await orm.em.upsert(EntityB, { id: 'entity-b-1', envID: 'env-1', name: 'entity-b-1', entityA: ref(EntityA, ['entity-a-1', 'env-1']) });
+    const entityB = await orm.em.upsert(EntityB, {
+      id: 'entity-b-1',
+      envID: 'env-1',
+      name: 'entity-b-1',
+      entityA: ref(EntityA, ['entity-a-1', 'env-1']),
+    });
     expect(entityA).toMatchObject({ createdAt: expect.any(Date) });
 
     await orm.em.flush();
@@ -82,13 +88,25 @@ describe.each(Utils.keys(options))('GH #4945 [%s]',  type => {
   });
 
   test('GH #4945 em.upsertMany()', async () => {
-    const a = await orm.em.upsertMany(EntityA, [{ id: 'entity-a-1', envID: 'env-1' }, { id: 'entity-a-2', envID: 'env-1' }]);
-    const b = await orm.em.upsertMany(EntityB, [{ id: 'entity-b-1', envID: 'env-1', name: 'entity-b-1', entityA: ref(EntityA, ['entity-a-1', 'env-1']) }, { id: 'entity-b-2', envID: 'env-1', name: 'entity-b-2', entityA: ref(EntityA, ['entity-a-2', 'env-1']) }]);
+    const a = await orm.em.upsertMany(EntityA, [
+      { id: 'entity-a-1', envID: 'env-1' },
+      { id: 'entity-a-2', envID: 'env-1' },
+    ]);
+    const b = await orm.em.upsertMany(EntityB, [
+      { id: 'entity-b-1', envID: 'env-1', name: 'entity-b-1', entityA: ref(EntityA, ['entity-a-1', 'env-1']) },
+      { id: 'entity-b-2', envID: 'env-1', name: 'entity-b-2', entityA: ref(EntityA, ['entity-a-2', 'env-1']) },
+    ]);
     expect(a[0]).toMatchObject({ createdAt: expect.any(Date) });
     orm.em.clear();
 
-    const entitiesA = await orm.em.upsertMany(EntityA, [{ id: 'entity-a-1', envID: 'env-1' }, { id: 'entity-a-2', envID: 'env-1' }]);
-    const entitiesB = await orm.em.upsertMany(EntityB, [{ id: 'entity-b-1', envID: 'env-1', name: 'entity-b-1', entityA: ref(EntityA, ['entity-a-1', 'env-1']) }, { id: 'entity-b-2', envID: 'env-1', name: 'entity-b-2', entityA: ref(EntityA, ['entity-a-2', 'env-1']) }]);
+    const entitiesA = await orm.em.upsertMany(EntityA, [
+      { id: 'entity-a-1', envID: 'env-1' },
+      { id: 'entity-a-2', envID: 'env-1' },
+    ]);
+    const entitiesB = await orm.em.upsertMany(EntityB, [
+      { id: 'entity-b-1', envID: 'env-1', name: 'entity-b-1', entityA: ref(EntityA, ['entity-a-1', 'env-1']) },
+      { id: 'entity-b-2', envID: 'env-1', name: 'entity-b-2', entityA: ref(EntityA, ['entity-a-2', 'env-1']) },
+    ]);
     expect(entitiesA[0]).toMatchObject({ createdAt: expect.any(Date) });
 
     await orm.em.flush();
@@ -96,5 +114,4 @@ describe.each(Utils.keys(options))('GH #4945 [%s]',  type => {
     expect(entitiesA).toHaveLength(2);
     expect(entitiesB).toHaveLength(2);
   });
-
 });

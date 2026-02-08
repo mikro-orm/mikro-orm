@@ -24,7 +24,6 @@ import {
 
 @Entity()
 class A {
-
   @PrimaryKey({ type: 'number' })
   id!: number;
 
@@ -33,12 +32,10 @@ class A {
 
   @Property({ type: String })
   prop!: string;
-
 }
 
 @Entity()
 class C {
-
   [EagerProps]?: 'bCollection';
 
   @PrimaryKey({ type: Number })
@@ -52,12 +49,10 @@ class C {
 
   @ManyToMany(() => B)
   manyBs = new Collection<B>(this);
-
 }
 
 @Entity()
 class B {
-
   @PrimaryKey({ type: Number })
   id!: number;
 
@@ -70,12 +65,10 @@ class B {
   @Property({ type: String })
   @Check({ expression: c => quote`${c.prop} <> 'data'` })
   prop!: string;
-
 }
 
 @Embeddable()
 class Identity {
-
   @Property({ type: 'string', hidden: true })
   foo: string & Hidden;
 
@@ -91,7 +84,6 @@ class Identity {
   get fooBar() {
     return this.foo + ' ' + this.bar;
   }
-
 }
 
 @Entity()
@@ -99,7 +91,6 @@ class Identity {
 @Index({ name: 'custom_idx_name_123', properties: ['name'] })
 @Unique({ properties: ['name', 'email'] })
 class Author {
-
   static beforeDestroyCalled = 0;
   static afterDestroyCalled = 0;
 
@@ -224,11 +215,9 @@ class Author {
   get code2(): string & Opt {
     return `${this.email} - ${this.name}`;
   }
-
 }
 
 describe('GH issue 222', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -314,5 +303,4 @@ describe('GH issue 222', () => {
     expect(Author.beforeDestroyCalled).toBe(2);
     expect(Author.afterDestroyCalled).toBe(2);
   });
-
 });

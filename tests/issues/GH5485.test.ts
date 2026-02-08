@@ -3,21 +3,17 @@ import { Entity, ManyToOne, PrimaryKey, ReflectMetadataProvider } from '@mikro-o
 
 @Entity()
 class User {
-
   @PrimaryKey({ autoincrement: false, unsigned: false })
   id!: number;
-
 }
 
 @Entity()
 class Message {
-
   @PrimaryKey()
   id!: number;
 
   @ManyToOne(() => User)
   user!: User;
-
 }
 
 let orm: MikroORM;

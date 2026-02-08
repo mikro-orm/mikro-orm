@@ -7,7 +7,6 @@ process.env.FORCE_COLOR = '0';
 type Point = { x: number; y: number };
 
 class PointType extends Type<Point, Raw> {
-
   override convertToDatabaseValue(value: Point): Raw {
     return raw(`point(?,?)`, [value.x, value.y]);
   }
@@ -24,18 +23,15 @@ class PointType extends Type<Point, Raw> {
   override getColumnType() {
     return 'point';
   }
-
 }
 
 @Entity()
 class A {
-
   @PrimaryKey()
   id!: number;
 
   @Property({ type: PointType })
   prop!: Point;
-
 }
 
 let orm: MikroORM;
@@ -119,7 +115,9 @@ test(`multi insert with custom types and raw() (GH #1841)`, async () => {
   expect(mock.mock.calls[2][0]).toMatch('commit');
   expect(mock.mock.calls[3][0]).toMatch('select "a0".* from "a" as "a0"');
   expect(mock.mock.calls[4][0]).toMatch('begin');
-  expect(mock.mock.calls[5][0]).toMatch('update "a" set "prop" = case when ("id" = ?) then ? when ("id" = ?) then ? else "prop" end where "id" in (?, ?)');
+  expect(mock.mock.calls[5][0]).toMatch(
+    'update "a" set "prop" = case when ("id" = ?) then ? when ("id" = ?) then ? else "prop" end where "id" in (?, ?)',
+  );
   expect(mock.mock.calls[6][0]).toMatch('commit');
   expect(mock.mock.calls[7][0]).toMatch('select "a0".* from "a" as "a0"');
 });

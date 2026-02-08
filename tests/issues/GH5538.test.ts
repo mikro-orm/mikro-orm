@@ -3,7 +3,6 @@ import { Entity, ManyToMany, PrimaryKey, Property, ReflectMetadataProvider } fro
 
 @Entity()
 class User {
-
   @PrimaryKey()
   id!: number;
 
@@ -20,12 +19,10 @@ class User {
     this.name = name;
     this.email = email;
   }
-
 }
 
 @Entity()
 class Tag {
-
   @PrimaryKey()
   id!: number;
 
@@ -41,7 +38,6 @@ class Tag {
   constructor(name: string) {
     this.name = name;
   }
-
 }
 
 let orm: MikroORM;

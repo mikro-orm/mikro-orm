@@ -66,7 +66,9 @@ describe('defineEntity', () => {
     });
 
     type IBook = InferEntity<typeof Book>;
-    assert<IsExact<IBook, { _id: ObjectId; id: string; title: string; tags: string[]; [PrimaryKeyProp]?: '_id' }>>(true);
+    assert<IsExact<IBook, { _id: ObjectId; id: string; title: string; tags: string[]; [PrimaryKeyProp]?: '_id' }>>(
+      true,
+    );
   });
 
   it('should define entity with class', () => {
@@ -78,11 +80,9 @@ describe('defineEntity', () => {
     };
 
     class Book implements InferEntityFromProperties<typeof bookProperties> {
-
       id!: string;
       title!: string;
       tags!: string[];
-
     }
 
     const BookSchema = defineEntity({
@@ -95,25 +95,27 @@ describe('defineEntity', () => {
     expectTypeOf(BookSchema.name).toEqualTypeOf<'Book'>();
     expectTypeOf(BookSchema.tableName).toEqualTypeOf<'books'>();
 
-    expect(BookSchema.meta).toMatchObject(asSnapshot(new EntitySchema({
-      class: Book,
-      properties: {
-        id: { type: types.string, serializedPrimaryKey: true },
-        title: { type: types.string },
-        tags: { type: new types.array() },
-      },
-    }).meta));
+    expect(BookSchema.meta).toMatchObject(
+      asSnapshot(
+        new EntitySchema({
+          class: Book,
+          properties: {
+            id: { type: types.string, serializedPrimaryKey: true },
+            title: { type: types.string },
+            tags: { type: new types.array() },
+          },
+        }).meta,
+      ),
+    );
   });
 
   it('should work with custom repository', () => {
     type IQux = InferEntity<typeof Qux>;
 
     class QuxRepository extends EntityRepository<IQux> {
-
       anotherCustomMethod(): string {
         return 'another-custom';
       }
-
     }
 
     const Qux = defineEntity({
@@ -175,12 +177,17 @@ describe('defineEntity', () => {
 
     expect(WithPrimaryKeys.init().meta.primaryKeys).toEqual(['firstName', 'lastName']);
     type IBar = InferEntity<typeof WithPrimaryKeys>;
-    assert<IsExact<IBar, {
-      firstName: string;
-      lastName: string;
-      age: number;
-      [PrimaryKeyProp]?: ['firstName', 'lastName'];
-    }>>(true);
+    assert<
+      IsExact<
+        IBar,
+        {
+          firstName: string;
+          lastName: string;
+          age: number;
+          [PrimaryKeyProp]?: ['firstName', 'lastName'];
+        }
+      >
+    >(true);
   });
 
   it('should be able to custom types with $type', async () => {
@@ -229,9 +236,9 @@ describe('defineEntity', () => {
 
     const CustomBaseProperties = {
       id: p.integer().primary(),
-      createdAt: p.datetime()
-        .onCreate(() => new Date()),
-      updatedAt: p.datetime()
+      createdAt: p.datetime().onCreate(() => new Date()),
+      updatedAt: p
+        .datetime()
         .onCreate(() => new Date())
         .onUpdate(() => new Date()),
     };
@@ -245,15 +252,15 @@ describe('defineEntity', () => {
     });
 
     type IFoo = InferEntity<typeof Foo>;
-    assert<IsExact<IFoo, { id: number; name: string; createdAt: Opt<Date>; updatedAt: Opt<Date>; [PrimaryKeyProp]?: 'id' }>>(true);
+    assert<
+      IsExact<IFoo, { id: number; name: string; createdAt: Opt<Date>; updatedAt: Opt<Date>; [PrimaryKeyProp]?: 'id' }>
+    >(true);
   });
 
   it('should define entity with class constructor as extends', () => {
     class BaseEntity {
-
       id!: number;
       createdAt!: Date;
-
     }
 
     const BaseSchema = defineEntity({
@@ -266,11 +273,9 @@ describe('defineEntity', () => {
     });
 
     class User {
-
       id!: number;
       createdAt!: Date;
       name!: string;
-
     }
 
     const UserSchema = defineEntity({
@@ -296,7 +301,9 @@ describe('defineEntity', () => {
     });
 
     type IFoo = InferEntity<typeof Foo>;
-    assert<IsExact<IFoo, { id: Opt<number>; name: string; settings: { theme: string }; [PrimaryKeyProp]?: 'id' }>>(true);
+    assert<IsExact<IFoo, { id: Opt<number>; name: string; settings: { theme: string }; [PrimaryKeyProp]?: 'id' }>>(
+      true,
+    );
 
     const FooSchema = new EntitySchema({
       name: 'Foo',
@@ -333,7 +340,17 @@ describe('defineEntity', () => {
     });
 
     type IFoo = InferEntity<typeof Foo>;
-    assert<IsExact<IFoo, { id: Opt<number>; name: string | null | undefined; settings: { theme: string } | null | undefined; [PrimaryKeyProp]?: 'id' }>>(true);
+    assert<
+      IsExact<
+        IFoo,
+        {
+          id: Opt<number>;
+          name: string | null | undefined;
+          settings: { theme: string } | null | undefined;
+          [PrimaryKeyProp]?: 'id';
+        }
+      >
+    >(true);
 
     const FooSchema = new EntitySchema({
       name: 'Foo',
@@ -377,24 +394,29 @@ describe('defineEntity', () => {
     const profile = p.json<IProfile>().lazy();
     const Foo = defineEntity({
       name: 'Foo',
-      properties: ({
+      properties: {
         id: p.integer().primary(),
         name: p.string().ref(),
         profileLazy: profile,
         profileNullable: profile.nullable(),
         profile: profile.ref(false),
-      }),
+      },
     });
 
     type IFoo = InferEntity<typeof Foo>;
-    assert<IsExact<IFoo, {
-      id: number;
-      name: Ref<string>;
-      profile: IProfile;
-      profileLazy: ScalarRef<IProfile>;
-      profileNullable: ScalarRef<IProfile | null | undefined>;
-      [PrimaryKeyProp]?: 'id';
-    }>>(true);
+    assert<
+      IsExact<
+        IFoo,
+        {
+          id: number;
+          name: Ref<string>;
+          profile: IProfile;
+          profileLazy: ScalarRef<IProfile>;
+          profileNullable: ScalarRef<IProfile | null | undefined>;
+          [PrimaryKeyProp]?: 'id';
+        }
+      >
+    >(true);
 
     const FooSchema = new EntitySchema({
       name: 'Foo',
@@ -529,13 +551,18 @@ describe('defineEntity', () => {
     });
 
     type IFoo = InferEntity<typeof Foo>;
-    assert<IsExact<IFoo, {
-      id: Opt<number>;
-      name: string;
-      friend: Ref<IFoo>;
-      friendNullable: Ref<IFoo> | null | undefined;
-      [PrimaryKeyProp]?: 'id';
-    }>>(true);
+    assert<
+      IsExact<
+        IFoo,
+        {
+          id: Opt<number>;
+          name: string;
+          friend: Ref<IFoo>;
+          friendNullable: Ref<IFoo> | null | undefined;
+          [PrimaryKeyProp]?: 'id';
+        }
+      >
+    >(true);
     assert<IsExact<UnwrapRef<UnwrapRef<UnwrapRef<IFoo['friend']>['friend']>['friend']>['name'], string>>(true);
     assert<IsExact<UnwrapRef<UnwrapRef<UnwrapRef<IFoo['friend']>['friend']>['friend']>['name'], number>>(false);
 
@@ -573,7 +600,9 @@ describe('defineEntity', () => {
 
     type IFolder = InferEntity<typeof Folder>;
     type IFile = InferEntity<typeof File>;
-    assert<IsExact<IFolder, { id: Opt<number>; name: string; files: Collection<IFile>; [PrimaryKeyProp]?: 'id' }>>(true);
+    assert<IsExact<IFolder, { id: Opt<number>; name: string; files: Collection<IFile>; [PrimaryKeyProp]?: 'id' }>>(
+      true,
+    );
     assert<IsExact<IFile, { id: Opt<number>; name: string; folder: Ref<IFolder>; [PrimaryKeyProp]?: 'id' }>>(true);
 
     const FolderSchema = new EntitySchema({
@@ -604,17 +633,19 @@ describe('defineEntity', () => {
       properties: p => ({
         id: p.integer().primary().autoincrement(),
         name: p.string(),
-        friends: () => p.manyToMany(Foo)
-          .owner()
-          .inversedBy('friends')
-          .fixedOrder()
-          .fixedOrderColumn('order')
-          .pivotTable('foo_friends')
-          .joinColumn('foo_id')
-          .inverseJoinColumn('friend_id')
-          .referenceColumnName('id')
-          .deleteRule('cascade')
-          .updateRule('cascade'),
+        friends: () =>
+          p
+            .manyToMany(Foo)
+            .owner()
+            .inversedBy('friends')
+            .fixedOrder()
+            .fixedOrderColumn('order')
+            .pivotTable('foo_friends')
+            .joinColumn('foo_id')
+            .inverseJoinColumn('friend_id')
+            .referenceColumnName('id')
+            .deleteRule('cascade')
+            .updateRule('cascade'),
       }),
     });
 
@@ -626,12 +657,14 @@ describe('defineEntity', () => {
       properties: p => ({
         id: p.integer().primary().autoincrement(),
         name: p.string(),
-        courses: () => p.manyToMany(Course)
-          .owner()
-          .inversedBy('students')
-          .inverseJoinColumns('id')
-          .orderBy({ name: 'ASC' })
-          .where({ name: { $ilike: '%test%' } }),
+        courses: () =>
+          p
+            .manyToMany(Course)
+            .owner()
+            .inversedBy('students')
+            .inverseJoinColumns('id')
+            .orderBy({ name: 'ASC' })
+            .where({ name: { $ilike: '%test%' } }),
       }),
     });
 
@@ -640,9 +673,11 @@ describe('defineEntity', () => {
       properties: p => ({
         id: p.integer().primary().autoincrement(),
         name: p.string(),
-        students: () => p.manyToMany(Student)
-          .orderBy({ name: 'ASC' })
-          .where({ name: { $ilike: '%test%' } }),
+        students: () =>
+          p
+            .manyToMany(Student)
+            .orderBy({ name: 'ASC' })
+            .where({ name: { $ilike: '%test%' } }),
       }),
     });
 
@@ -763,14 +798,19 @@ describe('defineEntity', () => {
     });
 
     type IFoo = InferEntity<typeof Foo>;
-    assert<IsExact<IFoo, {
-      id: Opt<number>;
-      name: string;
-      bigintValue: bigint;
-      bigintAsNumber: number;
-      bigintAsString: string;
-      [PrimaryKeyProp]?: 'id';
-    }>>(true);
+    assert<
+      IsExact<
+        IFoo,
+        {
+          id: Opt<number>;
+          name: string;
+          bigintValue: bigint;
+          bigintAsNumber: number;
+          bigintAsString: string;
+          [PrimaryKeyProp]?: 'id';
+        }
+      >
+    >(true);
 
     const FooSchema = new EntitySchema({
       name: 'Foo',
@@ -802,14 +842,19 @@ describe('defineEntity', () => {
     });
 
     type IFoo = InferEntity<typeof Foo>;
-    assert<IsExact<IFoo, {
-      id: Opt<number>;
-      name: string;
-      tags: string[];
-      numbers: number[];
-      customArray: { id: number; name: string }[];
-      [PrimaryKeyProp]?: 'id';
-    }>>(true);
+    assert<
+      IsExact<
+        IFoo,
+        {
+          id: Opt<number>;
+          name: string;
+          tags: string[];
+          numbers: number[];
+          customArray: { id: number; name: string }[];
+          [PrimaryKeyProp]?: 'id';
+        }
+      >
+    >(true);
 
     const FooSchema = new EntitySchema({
       name: 'Foo',
@@ -817,8 +862,18 @@ describe('defineEntity', () => {
         id: { type: types.integer, primary: true, autoincrement: true },
         name: { type: types.string },
         tags: { type: new types.array() },
-        numbers: { type: new types.array(i => Number(i), n => String(n)) },
-        customArray: { type: new types.array(i => JSON.parse(i), o => JSON.stringify(o)) },
+        numbers: {
+          type: new types.array(
+            i => Number(i),
+            n => String(n),
+          ),
+        },
+        customArray: {
+          type: new types.array(
+            i => JSON.parse(i),
+            o => JSON.stringify(o),
+          ),
+        },
       },
     });
 
@@ -841,14 +896,19 @@ describe('defineEntity', () => {
     type LoadedBar = Loaded<IBar>;
 
     // Verify InferEntity gives correct types
-    assert<IsExact<IBar, {
-      id: Opt<number>;
-      barcodes: string[];
-      paymentMethods: ('CASH' | 'CARD' | 'CRYPTO')[];
-      numbers: number[];
-      tags: string[];
-      [PrimaryKeyProp]?: 'id';
-    }>>(true);
+    assert<
+      IsExact<
+        IBar,
+        {
+          id: Opt<number>;
+          barcodes: string[];
+          paymentMethods: ('CASH' | 'CARD' | 'CRYPTO')[];
+          numbers: number[];
+          tags: string[];
+          [PrimaryKeyProp]?: 'id';
+        }
+      >
+    >(true);
 
     // Verify Loaded<> preserves scalar array types without wrapping elements
     assert<IsExact<LoadedBar['barcodes'], string[]>>(true);
@@ -870,14 +930,19 @@ describe('defineEntity', () => {
     });
 
     type IFoo = InferEntity<typeof Foo>;
-    assert<IsExact<IFoo, {
-      id: Opt<number>;
-      name: string;
-      price: string;
-      amount: number;
-      balance: string;
-      [PrimaryKeyProp]?: 'id';
-    }>>(true);
+    assert<
+      IsExact<
+        IFoo,
+        {
+          id: Opt<number>;
+          name: string;
+          price: string;
+          amount: number;
+          balance: string;
+          [PrimaryKeyProp]?: 'id';
+        }
+      >
+    >(true);
 
     const FooSchema = new EntitySchema({
       name: 'Foo',
@@ -896,9 +961,7 @@ describe('defineEntity', () => {
   it('should define entity with unique constraint', () => {
     const Category = defineEntity({
       name: 'Category',
-      uniques: [
-        { properties: ['name', 'children'] },
-      ],
+      uniques: [{ properties: ['name', 'children'] }],
       indexes: [
         {
           name: 'unique_name_children',
@@ -954,7 +1017,10 @@ describe('PropertyOptionsBuilder', () => {
         name: p.string().nullable().unique().index().comment('user name'),
         age: p.integer().unsigned().default(18).precision(3).scale(1),
         email: p.string().length(255).columnType('varchar').fieldName('user_email'),
-        createdAt: p.datetime().defaultRaw('now()').onCreate(() => new Date()),
+        createdAt: p
+          .datetime()
+          .defaultRaw('now()')
+          .onCreate(() => new Date()),
         updatedAt: p.datetime().onUpdate(() => new Date()),
         settings: p.json<{ theme: string }>().hidden(),
         bio: p.text().formula('concat(first_name, " ", last_name)'),
@@ -1009,24 +1075,29 @@ describe('PropertyOptionsBuilder', () => {
     });
 
     type IFoo = InferEntity<typeof Foo>;
-    assert<IsExact<IFoo, {
-      id: Opt<number>;
-      name: string;
-      age: number;
-      email: string;
-      version: Opt<number>;
-      concurrency: number;
-      getter: string;
-      serializedPk: string;
-      serializedName: string;
-      groups: string;
-      persist: string;
-      hydrate: string;
-      persistFalse: Opt<string>;
-      hydrateFalse: string;
-      returning: string;
-      [PrimaryKeyProp]?: 'id';
-    }>>(true);
+    assert<
+      IsExact<
+        IFoo,
+        {
+          id: Opt<number>;
+          name: string;
+          age: number;
+          email: string;
+          version: Opt<number>;
+          concurrency: number;
+          getter: string;
+          serializedPk: string;
+          serializedName: string;
+          groups: string;
+          persist: string;
+          hydrate: string;
+          persistFalse: Opt<string>;
+          hydrateFalse: string;
+          returning: string;
+          [PrimaryKeyProp]?: 'id';
+        }
+      >
+    >(true);
 
     const FooSchema = new EntitySchema({
       name: 'Foo',
@@ -1070,19 +1141,24 @@ describe('PropertyOptionsBuilder', () => {
     });
 
     type IFoo = InferEntity<typeof Foo>;
-    assert<IsExact<IFoo, {
-      id: Opt<number>;
-      name: string;
-      age: number;
-      email: string;
-      createdAt: Date;
-      updatedAt: ScalarReference<Date>;
-      settings: ScalarReference<{ theme: string } | null | undefined>;
-      bio: string;
-      status: Opt<('active' | 'inactive')[]>;
-      type: number;
-      [PrimaryKeyProp]?: 'id';
-    }>>(true);
+    assert<
+      IsExact<
+        IFoo,
+        {
+          id: Opt<number>;
+          name: string;
+          age: number;
+          email: string;
+          createdAt: Date;
+          updatedAt: ScalarReference<Date>;
+          settings: ScalarReference<{ theme: string } | null | undefined>;
+          bio: string;
+          status: Opt<('active' | 'inactive')[]>;
+          type: number;
+          [PrimaryKeyProp]?: 'id';
+        }
+      >
+    >(true);
 
     const FooSchema = new EntitySchema({
       name: 'Foo',
@@ -1112,7 +1188,10 @@ describe('PropertyOptionsBuilder', () => {
         score: p.float().scale(2),
         insertedId: p.integer().returning(),
         serializedId: p.string().serializedPrimaryKey(),
-        email: p.string().serializer(value => value.toLowerCase()).serializedName('user_email'),
+        email: p
+          .string()
+          .serializer(value => value.toLowerCase())
+          .serializedName('user_email'),
         role: p.string().groups('admin', 'user'),
       }),
     });
@@ -1152,14 +1231,8 @@ describe('EmbeddedOptionsBuilder', () => {
       properties: p => ({
         id: p.integer().primary().autoincrement(),
         name: p.string(),
-        homeAddress: p.embedded(Address)
-          .prefix('home_')
-          .prefixMode('relative')
-          .object(),
-        workAddress: p.embedded(Address)
-          .prefix('work_')
-          .prefixMode('relative')
-          .array(),
+        homeAddress: p.embedded(Address).prefix('home_').prefixMode('relative').object(),
+        workAddress: p.embedded(Address).prefix('work_').prefixMode('relative').array(),
       }),
     });
 
@@ -1197,17 +1270,19 @@ describe('ManyToManyRelationOptionsBuilder', () => {
       properties: p => ({
         id: p.integer().primary().autoincrement(),
         name: p.string(),
-        friends: () => p.manyToMany(User)
-          .owner()
-          .inversedBy('friends')
-          .fixedOrder()
-          .fixedOrderColumn('order')
-          .pivotTable('user_friends')
-          .joinColumn('user_id')
-          .inverseJoinColumn('friend_id')
-          .referenceColumnName('id')
-          .deleteRule('cascade')
-          .updateRule('cascade'),
+        friends: () =>
+          p
+            .manyToMany(User)
+            .owner()
+            .inversedBy('friends')
+            .fixedOrder()
+            .fixedOrderColumn('order')
+            .pivotTable('user_friends')
+            .joinColumn('user_id')
+            .inverseJoinColumn('friend_id')
+            .referenceColumnName('id')
+            .deleteRule('cascade')
+            .updateRule('cascade'),
       }),
     });
 
@@ -1262,17 +1337,19 @@ describe('OneToManyRelationOptionsBuilder', () => {
       properties: p => ({
         id: p.integer().primary().autoincrement(),
         name: p.string(),
-        posts: () => p.oneToMany(Post)
-          .mappedBy('author')
-          .orphanRemoval()
-          .orderBy({ title: 'ASC' })
-          .where({ title: { $like: '%test%' } })
-          .joinColumn('blog_id')
-          .joinColumns('id')
-          .inverseJoinColumns('post_id')
-          .inverseJoinColumn('post_id')
-          .referenceColumnName('id')
-          .referencedColumnNames('id', 'post_id'),
+        posts: () =>
+          p
+            .oneToMany(Post)
+            .mappedBy('author')
+            .orphanRemoval()
+            .orderBy({ title: 'ASC' })
+            .where({ title: { $like: '%test%' } })
+            .joinColumn('blog_id')
+            .joinColumns('id')
+            .inverseJoinColumns('post_id')
+            .inverseJoinColumn('post_id')
+            .referenceColumnName('id')
+            .referencedColumnNames('id', 'post_id'),
       }),
     });
 
@@ -1309,15 +1386,17 @@ describe('OneToOneRelationOptionsBuilder', () => {
       properties: p => ({
         id: p.integer().primary().autoincrement(),
         name: p.string(),
-        profile: () => p.oneToOne(Profile)
-          .owner()
-          .inversedBy('user')
-          .ref()
-          .primary()
-          .ownColumns('profile_id')
-          .deleteRule('cascade')
-          .updateRule('cascade')
-          .deferMode('deferred'),
+        profile: () =>
+          p
+            .oneToOne(Profile)
+            .owner()
+            .inversedBy('user')
+            .ref()
+            .primary()
+            .ownColumns('profile_id')
+            .deleteRule('cascade')
+            .updateRule('cascade')
+            .deferMode('deferred'),
       }),
     });
 
@@ -1365,12 +1444,17 @@ describe('OneToOneRelationOptionsBuilder', () => {
     });
 
     type IProfile = InferEntity<typeof Profile>;
-    assert<IsExact<IProfile, {
-      id: Opt<number>;
-      bio: string;
-      user: IUser;
-      [PrimaryKeyProp]?: 'id';
-    }>>(true);
+    assert<
+      IsExact<
+        IProfile,
+        {
+          id: Opt<number>;
+          bio: string;
+          user: IUser;
+          [PrimaryKeyProp]?: 'id';
+        }
+      >
+    >(true);
 
     const User = defineEntity({
       name: 'User',
@@ -1382,12 +1466,17 @@ describe('OneToOneRelationOptionsBuilder', () => {
     });
 
     type IUser = InferEntity<typeof User>;
-    assert<IsExact<IUser, {
-      id: Opt<number>;
-      name: string;
-      profile: number;
-      [PrimaryKeyProp]?: 'id';
-    }>>(true);
+    assert<
+      IsExact<
+        IUser,
+        {
+          id: Opt<number>;
+          name: string;
+          profile: number;
+          [PrimaryKeyProp]?: 'id';
+        }
+      >
+    >(true);
 
     const ProfileSchema = new EntitySchema({
       name: 'Profile',
@@ -1428,17 +1517,19 @@ describe('ManyToOneRelationOptionsBuilder', () => {
       properties: p => ({
         id: p.integer().primary().autoincrement(),
         title: p.string(),
-        author: () => p.manyToOne(User)
-          .inversedBy('posts')
-          .ref()
-          .primary()
-          .createForeignKeyConstraint(false)
-          .foreignKeyName('author_id')
-          .joinColumn('author_id')
-          .referenceColumnName('id')
-          .deleteRule('cascade')
-          .updateRule('cascade')
-          .deferMode('immediate'),
+        author: () =>
+          p
+            .manyToOne(User)
+            .inversedBy('posts')
+            .ref()
+            .primary()
+            .createForeignKeyConstraint(false)
+            .foreignKeyName('author_id')
+            .joinColumn('author_id')
+            .referenceColumnName('id')
+            .deleteRule('cascade')
+            .updateRule('cascade')
+            .deferMode('immediate'),
       }),
     });
 
@@ -1473,17 +1564,26 @@ describe('ManyToOneRelationOptionsBuilder', () => {
     const Group = defineEntity({
       name: 'Group',
       properties: p => ({
-        name: p.string().primary().unique().onCreate(() => ''),
+        name: p
+          .string()
+          .primary()
+          .unique()
+          .onCreate(() => ''),
         users: () => p.oneToMany(User).mappedBy('group'),
       }),
     });
 
     type IGroup = InferEntity<typeof Group>;
-    assert<IsExact<IGroup, {
-      name: Opt<string>;
-      users: Collection<IUser>;
-      [PrimaryKeyProp]?: 'name';
-    }>>(true);
+    assert<
+      IsExact<
+        IGroup,
+        {
+          name: Opt<string>;
+          users: Collection<IUser>;
+          [PrimaryKeyProp]?: 'name';
+        }
+      >
+    >(true);
 
     const User = defineEntity({
       name: 'User',
@@ -1495,12 +1595,17 @@ describe('ManyToOneRelationOptionsBuilder', () => {
     });
 
     type IUser = InferEntity<typeof User>;
-    assert<IsExact<IUser, {
-      id: Opt<number>;
-      name: string;
-      group: string;
-      [PrimaryKeyProp]?: 'id';
-    }>>(true);
+    assert<
+      IsExact<
+        IUser,
+        {
+          id: Opt<number>;
+          name: string;
+          group: string;
+          [PrimaryKeyProp]?: 'id';
+        }
+      >
+    >(true);
 
     const GroupSchema = new EntitySchema({
       name: 'Group',
@@ -1539,10 +1644,7 @@ describe('ReferenceOptionsBuilder', () => {
       properties: p => ({
         id: p.integer().primary().autoincrement(),
         title: p.string(),
-        author: () => p.manyToOne(User)
-          .cascade(Cascade.PERSIST, Cascade.MERGE)
-          .eager()
-          .strategy('joined'),
+        author: () => p.manyToOne(User).cascade(Cascade.PERSIST, Cascade.MERGE).eager().strategy('joined'),
       }),
     });
 
@@ -1580,10 +1682,12 @@ describe('ManyToManyOptionsBuilder', () => {
       properties: p => ({
         id: p.integer().primary().autoincrement(),
         name: p.string(),
-        users: () => p.manyToMany(User)
-          .joinColumns('id')
-          .pivotEntity(() => UserTag)
-          .referencedColumnNames('user_id', 'tag_id'),
+        users: () =>
+          p
+            .manyToMany(User)
+            .joinColumns('id')
+            .pivotEntity(() => UserTag)
+            .referencedColumnNames('user_id', 'tag_id'),
       }),
     });
 
@@ -1632,11 +1736,9 @@ describe('EntitySchema.setClass', () => {
 
     // Create a custom class extending the auto-generated one
     class CustomUser extends UserSchema.class {
-
       fullName() {
         return `${this.firstName} ${this.lastName}`;
       }
-
     }
 
     // Replace the class - this registers the custom class
@@ -1660,19 +1762,15 @@ describe('EntitySchema.setClass', () => {
     });
 
     class CustomBook1 extends BookSchema.class {
-
       getTitle() {
         return this.title;
       }
-
     }
 
     class CustomBook2 extends CustomBook1 {
-
       getUpperTitle() {
         return this.title.toUpperCase();
       }
-
     }
 
     // First replacement - registers CustomBook1
@@ -1687,10 +1785,8 @@ describe('EntitySchema.setClass', () => {
 
   it('should remove old class from registry when replaced with explicitly provided class', () => {
     class Author {
-
       id!: number;
       name!: string;
-
     }
 
     const AuthorSchema = new EntitySchema({
@@ -1707,11 +1803,9 @@ describe('EntitySchema.setClass', () => {
 
     // Create an extended class
     class ExtendedAuthor extends Author {
-
       fullName() {
         return this.name;
       }
-
     }
 
     // Replace the class
@@ -1738,10 +1832,12 @@ describe('ManyToOneOptionsBuilder', () => {
       properties: p => ({
         id: p.integer().primary().autoincrement(),
         title: p.string(),
-        author: () => p.manyToOne(User)
-          .ownColumns('id')
-          .joinColumns('author_id', 'author_version')
-          .referencedColumnNames('id', 'version'),
+        author: () =>
+          p
+            .manyToOne(User)
+            .ownColumns('id')
+            .joinColumns('author_id', 'author_version')
+            .referencedColumnNames('id', 'version'),
       }),
     });
 
@@ -1764,12 +1860,8 @@ describe('ManyToOneOptionsBuilder', () => {
   });
 });
 
-
-type UnwrapRef<T> = T extends ScalarReference<any>
-  ? UnwrapScalarReference<T>
-  : T extends Reference<any>
-    ? UnwrapReference<T>
-    : T;
+type UnwrapRef<T> =
+  T extends ScalarReference<any> ? UnwrapScalarReference<T> : T extends Reference<any> ? UnwrapReference<T> : T;
 
 type UnwrapScalarReference<T extends ScalarReference<any>> = T extends ScalarReference<infer Value> ? Value : T;
 

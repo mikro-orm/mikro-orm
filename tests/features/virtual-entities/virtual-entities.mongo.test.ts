@@ -13,7 +13,15 @@ import { Author, Book, schema } from '../../entities/index.js';
       { $project: { _id: 0, title: 1, author: 1 } },
       { $sort },
       { $match: where ?? {} },
-      { $lookup: { from: 'author', localField: 'author', foreignField: '_id', as: 'author', pipeline: [{ $project: { name: 1 } }] } },
+      {
+        $lookup: {
+          from: 'author',
+          localField: 'author',
+          foreignField: '_id',
+          as: 'author',
+          pipeline: [{ $project: { name: 1 } }],
+        },
+      },
       { $unwind: '$author' },
       { $set: { authorName: '$author.name' } },
       { $unset: ['author'] },
@@ -35,17 +43,14 @@ import { Author, Book, schema } from '../../entities/index.js';
   },
 })
 class BookWithAuthor {
-
   @Property({ hidden: true })
   title!: string;
 
   @Property({ serializedName: 'author', serializer: val => `The value is: ${val}` })
   authorName!: string;
-
 }
 
 describe('virtual entities (mongo)', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -59,7 +64,11 @@ describe('virtual entities (mongo)', () => {
   afterAll(async () => orm.close(true));
 
   async function createEntities(index: number): Promise<Author> {
-    const author = orm.em.create(Author, { name: 'Jon Snow ' + index, email: 'snow@wall.st-' + index, age: Math.floor(Math.random() * 100) });
+    const author = orm.em.create(Author, {
+      name: 'Jon Snow ' + index,
+      email: 'snow@wall.st-' + index,
+      age: Math.floor(Math.random() * 100),
+    });
     orm.em.create(Book, { title: 'My Life on the Wall, part 1/' + index, author });
     orm.em.create(Book, { title: 'My Life on the Wall, part 2/' + index, author });
     orm.em.create(Book, { title: 'My Life on the Wall, part 3/' + index, author });
@@ -145,39 +154,46 @@ describe('virtual entities (mongo)', () => {
     expect(someBooks3).toHaveLength(2);
     expect(someBooks3.map(p => p.title)).toEqual(['My Life on the Wall, part 1/1', 'My Life on the Wall, part 1/2']);
 
-    const someBooks4 = await orm.em.find(BookWithAuthor, { title: { $in: ['My Life on the Wall, part 1/2', 'My Life on the Wall, part 1/3'] } });
+    const someBooks4 = await orm.em.find(BookWithAuthor, {
+      title: { $in: ['My Life on the Wall, part 1/2', 'My Life on the Wall, part 1/3'] },
+    });
     expect(someBooks4).toHaveLength(2);
     expect(someBooks4.map(p => p.title)).toEqual(['My Life on the Wall, part 1/2', 'My Life on the Wall, part 1/3']);
 
     expect(mock.mock.calls).toHaveLength(7);
-    expect(mock.mock.calls[0][0]).toMatch(`db.getCollection('books-table').aggregate([ { '$project': { _id: 0, title: 1, author: 1 } }, { '$sort': { _id: 1 } }, { '$match': { title: 'My Life on the Wall, part 3/1' } }, { '$lookup': { from: 'author', localField: 'author', foreignField: '_id', as: 'author', pipeline: [ { '$project': { name: 1 } } ] } }, { '$unwind': '$author' }, { '$set': { authorName: '$author.name' } }, { '$unset': [ 'author' ] } ], {}).toArray()`);
-    expect(mock.mock.calls[1][0]).toMatch(`db.getCollection('books-table').aggregate([ { '$project': { _id: 0, title: 1, author: 1 } }, { '$sort': { _id: 1 } }, { '$match': {} }, { '$lookup': { from: 'author', localField: 'author', foreignField: '_id', as: 'author', pipeline: [ { '$project': { name: 1 } } ] } }, { '$unwind': '$author' }, { '$set': { authorName: '$author.name' } }, { '$unset': [ 'author' ] } ], {}).toArray()`);
-    expect(mock.mock.calls[2][0]).toMatch(`db.getCollection('books-table').aggregate([ { '$project': { _id: 0, title: 1, author: 1 } }, { '$sort': { _id: 1 } }, { '$match': {} }, { '$lookup': { from: 'author', localField: 'author', foreignField: '_id', as: 'author', pipeline: [ { '$project': { name: 1 } } ] } }, { '$unwind': '$author' }, { '$set': { authorName: '$author.name' } }, { '$unset': [ 'author' ] } ], {})`);
-    expect(mock.mock.calls[3][0]).toMatch(`db.getCollection('books-table').aggregate([ { '$project': { _id: 0, title: 1, author: 1 } }, { '$sort': { title: 1, _id: 1 } }, { '$match': {} }, { '$lookup': { from: 'author', localField: 'author', foreignField: '_id', as: 'author', pipeline: [ { '$project': { name: 1 } } ] } }, { '$unwind': '$author' }, { '$set': { authorName: '$author.name' } }, { '$unset': [ 'author' ] }, { '$skip': 1 }, { '$limit': 2 } ], {}).toArray();`);
-    expect(mock.mock.calls[4][0]).toMatch(`db.getCollection('books-table').aggregate([ { '$project': { _id: 0, title: 1, author: 1 } }, { '$sort': { title: 1, _id: 1 } }, { '$match': {} }, { '$lookup': { from: 'author', localField: 'author', foreignField: '_id', as: 'author', pipeline: [ { '$project': { name: 1 } } ] } }, { '$unwind': '$author' }, { '$set': { authorName: '$author.name' } }, { '$unset': [ 'author' ] }, { '$limit': 2 } ], {}).toArray();`);
-    expect(mock.mock.calls[5][0]).toMatch(`db.getCollection('books-table').aggregate([ { '$project': { _id: 0, title: 1, author: 1 } }, { '$sort': { title: 1, _id: 1 } }, { '$match': { title: /^My Life/ } }, { '$lookup': { from: 'author', localField: 'author', foreignField: '_id', as: 'author', pipeline: [ { '$project': { name: 1 } } ] } }, { '$unwind': '$author' }, { '$set': { authorName: '$author.name' } }, { '$unset': [ 'author' ] }, { '$limit': 2 } ], {}).toArray();`);
-    expect(mock.mock.calls[6][0]).toMatch(`db.getCollection('books-table').aggregate([ { '$project': { _id: 0, title: 1, author: 1 } }, { '$sort': { _id: 1 } }, { '$match': { title: { '$in': [ 'My Life on the Wall, part 1/2', 'My Life on the Wall, part 1/3' ] } } }, { '$lookup': { from: 'author', localField: 'author', foreignField: '_id', as: 'author', pipeline: [ { '$project': { name: 1 } } ] } }, { '$unwind': '$author' }, { '$set': { authorName: '$author.name' } }, { '$unset': [ 'author' ] } ], {}).toArray();`);
+    expect(mock.mock.calls[0][0]).toMatch(
+      `db.getCollection('books-table').aggregate([ { '$project': { _id: 0, title: 1, author: 1 } }, { '$sort': { _id: 1 } }, { '$match': { title: 'My Life on the Wall, part 3/1' } }, { '$lookup': { from: 'author', localField: 'author', foreignField: '_id', as: 'author', pipeline: [ { '$project': { name: 1 } } ] } }, { '$unwind': '$author' }, { '$set': { authorName: '$author.name' } }, { '$unset': [ 'author' ] } ], {}).toArray()`,
+    );
+    expect(mock.mock.calls[1][0]).toMatch(
+      `db.getCollection('books-table').aggregate([ { '$project': { _id: 0, title: 1, author: 1 } }, { '$sort': { _id: 1 } }, { '$match': {} }, { '$lookup': { from: 'author', localField: 'author', foreignField: '_id', as: 'author', pipeline: [ { '$project': { name: 1 } } ] } }, { '$unwind': '$author' }, { '$set': { authorName: '$author.name' } }, { '$unset': [ 'author' ] } ], {}).toArray()`,
+    );
+    expect(mock.mock.calls[2][0]).toMatch(
+      `db.getCollection('books-table').aggregate([ { '$project': { _id: 0, title: 1, author: 1 } }, { '$sort': { _id: 1 } }, { '$match': {} }, { '$lookup': { from: 'author', localField: 'author', foreignField: '_id', as: 'author', pipeline: [ { '$project': { name: 1 } } ] } }, { '$unwind': '$author' }, { '$set': { authorName: '$author.name' } }, { '$unset': [ 'author' ] } ], {})`,
+    );
+    expect(mock.mock.calls[3][0]).toMatch(
+      `db.getCollection('books-table').aggregate([ { '$project': { _id: 0, title: 1, author: 1 } }, { '$sort': { title: 1, _id: 1 } }, { '$match': {} }, { '$lookup': { from: 'author', localField: 'author', foreignField: '_id', as: 'author', pipeline: [ { '$project': { name: 1 } } ] } }, { '$unwind': '$author' }, { '$set': { authorName: '$author.name' } }, { '$unset': [ 'author' ] }, { '$skip': 1 }, { '$limit': 2 } ], {}).toArray();`,
+    );
+    expect(mock.mock.calls[4][0]).toMatch(
+      `db.getCollection('books-table').aggregate([ { '$project': { _id: 0, title: 1, author: 1 } }, { '$sort': { title: 1, _id: 1 } }, { '$match': {} }, { '$lookup': { from: 'author', localField: 'author', foreignField: '_id', as: 'author', pipeline: [ { '$project': { name: 1 } } ] } }, { '$unwind': '$author' }, { '$set': { authorName: '$author.name' } }, { '$unset': [ 'author' ] }, { '$limit': 2 } ], {}).toArray();`,
+    );
+    expect(mock.mock.calls[5][0]).toMatch(
+      `db.getCollection('books-table').aggregate([ { '$project': { _id: 0, title: 1, author: 1 } }, { '$sort': { title: 1, _id: 1 } }, { '$match': { title: /^My Life/ } }, { '$lookup': { from: 'author', localField: 'author', foreignField: '_id', as: 'author', pipeline: [ { '$project': { name: 1 } } ] } }, { '$unwind': '$author' }, { '$set': { authorName: '$author.name' } }, { '$unset': [ 'author' ] }, { '$limit': 2 } ], {}).toArray();`,
+    );
+    expect(mock.mock.calls[6][0]).toMatch(
+      `db.getCollection('books-table').aggregate([ { '$project': { _id: 0, title: 1, author: 1 } }, { '$sort': { _id: 1 } }, { '$match': { title: { '$in': [ 'My Life on the Wall, part 1/2', 'My Life on the Wall, part 1/3' ] } } }, { '$lookup': { from: 'author', localField: 'author', foreignField: '_id', as: 'author', pipeline: [ { '$project': { name: 1 } } ] } }, { '$unwind': '$author' }, { '$set': { authorName: '$author.name' } }, { '$unset': [ 'author' ] } ], {}).toArray();`,
+    );
 
     expect(orm.em.getUnitOfWork().getIdentityMap().keys()).toHaveLength(0);
 
     // serialization
     const pojos1 = someBooks4.map(b => JSON.stringify(b));
-    expect(pojos1).toEqual([
-      '{"author":"The value is: Jon Snow 2"}',
-      '{"author":"The value is: Jon Snow 3"}',
-    ]);
+    expect(pojos1).toEqual(['{"author":"The value is: Jon Snow 2"}', '{"author":"The value is: Jon Snow 3"}']);
 
     // toJSON and toObject works the same
     const pojos2 = someBooks4.map(b => wrap(b).toJSON());
-    expect(pojos2).toEqual([
-      { author: 'The value is: Jon Snow 2' },
-      { author: 'The value is: Jon Snow 3' },
-    ]);
+    expect(pojos2).toEqual([{ author: 'The value is: Jon Snow 2' }, { author: 'The value is: Jon Snow 3' }]);
     const pojos3 = someBooks4.map(b => wrap(b).toObject());
-    expect(pojos3).toEqual([
-      { author: 'The value is: Jon Snow 2' },
-      { author: 'The value is: Jon Snow 3' },
-    ]);
+    expect(pojos3).toEqual([{ author: 'The value is: Jon Snow 2' }, { author: 'The value is: Jon Snow 3' }]);
 
     // toPOJO ignores `hidden` flag
     const pojos4 = someBooks4.map(b => wrap(b).toPOJO());
@@ -186,5 +202,4 @@ describe('virtual entities (mongo)', () => {
       { authorName: 'Jon Snow 3', title: 'My Life on the Wall, part 1/3' },
     ]);
   });
-
 });

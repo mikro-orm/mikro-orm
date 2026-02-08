@@ -5,7 +5,6 @@ import { mockLogger } from '../../helpers.js';
 
 @Entity()
 export class A {
-
   @PrimaryKey()
   id!: number;
 
@@ -17,12 +16,10 @@ export class A {
 
   @Property({ length: 64, name: 'name', type: 'varchar' })
   name!: string;
-
 }
 
 @Entity()
 export class B {
-
   @PrimaryKey()
   id!: number;
 
@@ -31,7 +28,6 @@ export class B {
 
   @ManyToOne(() => A, { ref: true })
   a!: Ref<A>;
-
 }
 
 let orm: MikroORM;
@@ -71,11 +67,11 @@ test('update triggered after insert (GH #4266)', async () => {
 
   expect(mock.mock.calls).toEqual([
     ['[query] begin'],
-    ['[query] insert into `a` (`id`, `name`) values (1, \'a\')'],
+    ["[query] insert into `a` (`id`, `name`) values (1, 'a')"],
     ['[query] commit'],
-    ['[query] select `a0`.* from `a` as `a0` where `a0`.`name` = \'a\' limit 1'],
+    ["[query] select `a0`.* from `a` as `a0` where `a0`.`name` = 'a' limit 1"],
     ['[query] begin'],
-    ['[query] insert into `b` (`id`, `name`, `a_id`) values (2, \'b\', 1)'],
+    ["[query] insert into `b` (`id`, `name`, `a_id`) values (2, 'b', 1)"],
     ['[query] commit'],
   ]);
 });

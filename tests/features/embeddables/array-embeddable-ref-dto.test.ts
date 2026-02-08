@@ -9,10 +9,8 @@ import {
 } from '@mikro-orm/sqlite';
 
 class Base extends BaseEntity {
-
   [HiddenProps]!: 'id';
   id!: number;
-
 }
 
 const baseEntity = new EntitySchema({
@@ -28,9 +26,7 @@ const baseEntity = new EntitySchema({
 });
 
 class Person extends Base {
-
   firstName!: string;
-
 }
 
 const personEntity = new EntitySchema({
@@ -69,9 +65,7 @@ const documentTravelerEntity = new EntitySchema({
 });
 
 class Document extends Base {
-
   travelers!: DocumentTraveler[];
-
 }
 
 const documentEntity = new EntitySchema({
@@ -89,7 +83,6 @@ const documentEntity = new EntitySchema({
 });
 
 describe('array embeddable with Ref in EntityDTO', () => {
-
   let orm: MikroORM;
   let em: EntityManager;
 
@@ -137,9 +130,13 @@ describe('array embeddable with Ref in EntityDTO', () => {
     await em.flush();
     em.clear();
 
-    const foundDocument = await em.findOne(documentEntity, { id: document.id }, {
-      populate: ['travelers.person'],
-    });
+    const foundDocument = await em.findOne(
+      documentEntity,
+      { id: document.id },
+      {
+        populate: ['travelers.person'],
+      },
+    );
 
     expect(foundDocument).toBeDefined();
     const object = foundDocument!.toObject();
@@ -150,5 +147,4 @@ describe('array embeddable with Ref in EntityDTO', () => {
     const typeCheck: EntityDTO<Person> | undefined = travelerPerson;
     expect(typeCheck).toHaveProperty('firstName');
   });
-
 });

@@ -4,7 +4,6 @@ import type { Platform } from '../platforms/Platform.js';
 import { ValidationError } from '../errors.js';
 
 export class ArrayType<T = string> extends Type<T[] | null, string | null> {
-
   constructor(
     private readonly toJsValue: (i: string) => T = i => i as T,
     private readonly toDbValue: (i: T) => string = i => i as string,
@@ -52,5 +51,4 @@ export class ArrayType<T = string> extends Type<T[] | null, string | null> {
   override getColumnType(prop: EntityProperty, platform: Platform): string {
     return platform.getArrayDeclarationSQL();
   }
-
 }

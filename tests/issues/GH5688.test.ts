@@ -3,17 +3,14 @@ import { Entity, ManyToOne, PrimaryKey, ReflectMetadataProvider } from '@mikro-o
 
 @Entity()
 class Workspace {
-
   [PrimaryKeyProp]?: 'sid';
 
   @PrimaryKey()
   sid!: number;
-
 }
 
 @Entity()
 class Project {
-
   [PrimaryKeyProp]?: 'sid';
 
   @PrimaryKey()
@@ -21,7 +18,6 @@ class Project {
 
   @ManyToOne(() => Workspace)
   workspace!: Workspace;
-
 }
 
 let orm: MikroORM;

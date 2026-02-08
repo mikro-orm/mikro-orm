@@ -26,7 +26,6 @@ import { UnicodeString, UnicodeStringType } from './UnicodeStringType.js';
 import type { MsSqlDriver } from './MsSqlDriver.js';
 
 export class MsSqlPlatform extends AbstractSqlPlatform {
-
   protected override readonly schemaHelper: MsSqlSchemaHelper = new MsSqlSchemaHelper(this);
   protected override readonly exceptionConverter = new MsSqlExceptionConverter();
 
@@ -125,7 +124,13 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
     return super.getVarcharTypeDeclarationSQL(column);
   }
 
-  override getEnumTypeDeclarationSQL(column: { items?: unknown[]; fieldNames: string[]; length?: number; unsigned?: boolean; autoincrement?: boolean }): string {
+  override getEnumTypeDeclarationSQL(column: {
+    items?: unknown[];
+    fieldNames: string[];
+    length?: number;
+    unsigned?: boolean;
+    autoincrement?: boolean;
+  }): string {
     if (column.items?.every(item => typeof item === 'string')) {
       return Type.getType(UnicodeStringType).getColumnType({ length: 100, ...column }, this);
     }
@@ -188,9 +193,9 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
   override validateMetadata(meta: EntityMetadata): void {
     for (const prop of meta.props) {
       if (
-        (prop.runtimeType === 'string' || ['string', 'nvarchar'].includes(prop.type))
-        && !['uuid'].includes(prop.type)
-        && !prop.columnTypes[0].startsWith('varchar')
+        (prop.runtimeType === 'string' || ['string', 'nvarchar'].includes(prop.type)) &&
+        !['uuid'].includes(prop.type) &&
+        !prop.columnTypes[0].startsWith('varchar')
       ) {
         prop.customType ??= new UnicodeStringType();
         prop.customType.prop = prop;
@@ -200,7 +205,12 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
     }
   }
 
-  override getSearchJsonPropertyKey(path: string[], type: string, aliased: boolean, value?: unknown): string | RawQueryFragment {
+  override getSearchJsonPropertyKey(
+    path: string[],
+    type: string,
+    aliased: boolean,
+    value?: unknown,
+  ): string | RawQueryFragment {
     const [a, ...b] = path;
     /* v8 ignore next */
     const root = this.quoteIdentifier(aliased ? `${ALIAS_REPLACEMENT}.${a}` : a);
@@ -208,7 +218,7 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
       boolean: 'bit',
     } as Dictionary;
     const cast = (key: string) => raw(type in types ? `cast(${key} as ${types[type]})` : key);
-    const quoteKey = (key: string) => key.match(/^[a-z]\w*$/i) ? key : `"${key}"`;
+    const quoteKey = (key: string) => (key.match(/^[a-z]\w*$/i) ? key : `"${key}"`);
 
     /* v8 ignore next */
     if (path.length === 0) {
@@ -218,7 +228,9 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
     return cast(`json_value(${root}, '$.${b.map(quoteKey).join('.')}')`);
   }
 
-  override normalizePrimaryKey<T extends number | string = number | string>(data: Primary<T> | IPrimaryKey | string): T {
+  override normalizePrimaryKey<T extends number | string = number | string>(
+    data: Primary<T> | IPrimaryKey | string,
+  ): T {
     /* v8 ignore next */
     if (data instanceof UnicodeString) {
       return data.value as T;
@@ -265,7 +277,7 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
 
   /* v8 ignore next: kept for type inference only */
   override getSchemaGenerator(driver: IDatabaseDriver, em?: EntityManager): MsSqlSchemaGenerator {
-    return new MsSqlSchemaGenerator(em ?? driver as any);
+    return new MsSqlSchemaGenerator(em ?? (driver as any));
   }
 
   override allowsComparingTuples() {
@@ -290,5 +302,4 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
   override getDefaultClientUrl(): string {
     return 'mssql://sa@localhost:1433';
   }
-
 }

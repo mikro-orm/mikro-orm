@@ -2,15 +2,12 @@ import { MikroORM, Rel } from '@mikro-orm/postgresql';
 import { Entity, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 class SubObject {
-
   field1!: string;
   field2!: number;
-
 }
 
 @Entity()
 class Bar {
-
   @PrimaryKey({ type: 'uuid', defaultRaw: 'gen_random_uuid()' })
   id!: string;
 
@@ -19,18 +16,15 @@ class Bar {
 
   @OneToOne(() => Foo, 'bar')
   foo!: Rel<Foo>;
-
 }
 
 @Entity()
 class Foo {
-
   @PrimaryKey({ type: 'uuid', defaultRaw: 'gen_random_uuid()' })
   id!: string;
 
   @OneToOne({ inversedBy: 'foo' })
   bar?: Bar;
-
 }
 
 let orm: MikroORM;
@@ -53,7 +47,10 @@ test('refresh serialization', async () => {
   const fooEntity = orm.em.create(Foo, foo);
 
   const bar = new Bar();
-  bar.jsonb_field = [{ field1: 'string1', field2: 1 }, { field1: 'string2', field2: 2 }];
+  bar.jsonb_field = [
+    { field1: 'string1', field2: 1 },
+    { field1: 'string2', field2: 2 },
+  ];
   const barEntity = orm.em.create(Bar, bar);
   barEntity.foo = fooEntity;
 

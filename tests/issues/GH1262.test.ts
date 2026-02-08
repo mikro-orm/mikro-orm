@@ -5,7 +5,6 @@ import { TEMP_DIR } from '../helpers.js';
 
 @Entity({ tableName: 'user' })
 class UserBefore {
-
   @PrimaryKey()
   id!: string;
 
@@ -17,12 +16,10 @@ class UserBefore {
 
   @Property()
   deleted: Date = new Date();
-
 }
 
 @Entity({ tableName: 'user' })
 class UserAfter {
-
   @PrimaryKey()
   id!: string;
 
@@ -34,11 +31,9 @@ class UserAfter {
 
   @Property()
   deletedAt: Date = new Date();
-
 }
 
 describe('GH issue 1262', () => {
-
   beforeAll(async () => {
     await rm(TEMP_DIR + '/gh_1262.db', { force: true });
   });
@@ -64,5 +59,4 @@ describe('GH issue 1262', () => {
     // Simulates adding `profile` to the User entity
     await createAndRunMigration([UserAfter]);
   });
-
 });

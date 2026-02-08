@@ -6,7 +6,6 @@ import { parse, stringify, v1 } from 'uuid';
 let orm: MikroORM;
 
 class UuidBinaryType extends Type<string, Buffer> {
-
   override convertToDatabaseValue(uuid: string) {
     return Buffer.from(parse(uuid));
   }
@@ -18,12 +17,10 @@ class UuidBinaryType extends Type<string, Buffer> {
   override getColumnType() {
     return 'binary(16)';
   }
-
 }
 
 @Entity()
 export class Customer {
-
   @PrimaryKey({ type: UuidBinaryType })
   uuid: string = v1();
 
@@ -32,12 +29,10 @@ export class Customer {
 
   @ManyToMany(() => Role)
   roles = new Collection<Role>(this);
-
 }
 
 @Entity()
 export class Role {
-
   @PrimaryKey({ type: UuidBinaryType })
   uuid: string = v1();
 
@@ -46,7 +41,6 @@ export class Role {
 
   @ManyToMany(() => Customer, 'roles')
   customers = new Collection<Customer>(this);
-
 }
 
 beforeAll(async () => {
@@ -64,10 +58,7 @@ afterAll(async () => {
 });
 
 test(`GH issue 4219`, async () => {
-  const roles = [
-    orm.em.create(Role, { name: 'customer' }),
-    orm.em.create(Role, { name: 'reseller' }),
-  ];
+  const roles = [orm.em.create(Role, { name: 'customer' }), orm.em.create(Role, { name: 'reseller' })];
   const customers = Array(1000)
     .fill(0)
     .map((el, index) =>
@@ -84,9 +75,7 @@ test(`GH issue 4219`, async () => {
     .getRepository(Customer)
     .findAll({ strategy: LoadStrategy.JOINED, populate: ['roles.name'] });
 
-  const customersBySelectIn = await newEm
-    .getRepository(Customer)
-    .findAll({ populate: ['roles.name'] });
+  const customersBySelectIn = await newEm.getRepository(Customer).findAll({ populate: ['roles.name'] });
 
   expect(customersByJoined.length).toBe(customersBySelectIn.length);
 });

@@ -5,26 +5,21 @@ import { mockLogger } from '../helpers.js';
 
 @Entity()
 class User {
-
   @PrimaryKey()
   id!: number;
 
   @OneToMany(() => Team, team => team.owner)
   teams = new Collection<Team>(this);
-
 }
 
 @Entity()
 class Team {
-
   @PrimaryKey()
   id!: number;
 
   @ManyToOne(() => User)
   owner?: User;
-
 }
-
 
 let orm: MikroORM;
 

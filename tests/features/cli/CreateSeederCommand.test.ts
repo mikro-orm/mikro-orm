@@ -8,7 +8,6 @@ import { CreateSeederCommand } from '../../../packages/cli/src/commands/CreateSe
 import { initORMSqlite } from '../../bootstrap.js';
 
 describe('CreateSeederCommand', () => {
-
   let orm: MikroORM<SqliteDriver>;
 
   beforeAll(async () => {
@@ -33,7 +32,8 @@ describe('CreateSeederCommand', () => {
     cmd.builder(args as any);
     expect(mockPositional).toHaveBeenCalledWith('seeder', {
       demandOption: true,
-      describe: 'Name for the seeder class. (e.g. "test" will generate "TestSeeder" or "TestSeeder" will generate "TestSeeder")',
+      describe:
+        'Name for the seeder class. (e.g. "test" will generate "TestSeeder" or "TestSeeder" will generate "TestSeeder")',
     });
 
     await expect(cmd.handler({ seeder: 'DatabaseSeeder' } as any)).resolves.toBeUndefined();

@@ -73,7 +73,9 @@ export type EntityOptions<T, E = T extends EntityClass<infer P> ? P : T> = {
   // we need to use `em: any` here otherwise an expression would not be assignable with more narrow type like `SqlEntityManager`
   // also return type is unknown as it can be either QB instance (which we cannot type here) or array of POJOs (e.g. for mongodb)
   /** SQL query that maps to a {@doclink virtual-entities | virtual entity}, or for view entities, the view definition. */
-  expression?: string | ((em: any, where: ObjectQuery<E>, options: FindOptions<E, any, any, any>, stream?: boolean) => object);
+  expression?:
+    | string
+    | ((em: any, where: ObjectQuery<E>, options: FindOptions<E, any, any, any>, stream?: boolean) => object);
   /** Set {@doclink repositories#custom-repository | custom repository class}. */
   repository?: () => Constructor;
 };
@@ -110,7 +112,16 @@ export interface PropertyOptions<Owner> {
    * @see https://mikro-orm.io/docs/metadata-providers
    * @see https://mikro-orm.io/docs/custom-types
    */
-  type?: keyof typeof types | 'ObjectId' | Date | Constructor<AnyEntity> | Constructor<Type<any>> | Type<any> | (() => unknown) | ColumnType | AnyString;
+  type?:
+    | keyof typeof types
+    | 'ObjectId'
+    | Date
+    | Constructor<AnyEntity>
+    | Constructor<Type<any>>
+    | Type<any>
+    | (() => unknown)
+    | ColumnType
+    | AnyString;
   /**
    * Runtime type of the property. This is the JS type that your property is mapped to, e.g. `string` or `number`, and is normally inferred automatically via `reflect-metadata`.
    * In some cases, the inference won't work, and you might need to specify the `runtimeType` explicitly - the most common one is when you use a union type with null like `foo: number | null`.
@@ -371,15 +382,62 @@ export interface ReferenceOptions<Owner, Target> extends PropertyOptions<Owner> 
  * @ignore
  */
 export type ColumnType =
-  | 'int' | 'int4' | 'integer' | 'bigint' | 'int8' | 'int2' | 'tinyint' | 'smallint' | 'mediumint'
-  | 'double' | 'double precision' | 'real' | 'float8' | 'decimal' | 'numeric' | 'float' | 'float4'
-  | 'datetime' | 'time' | 'time with time zone' | 'timestamp' | 'timestamp with time zone' | 'timetz' | 'timestamptz' | 'date' | 'interval'
-  | 'character varying' | 'varchar' | 'char' | 'character' | 'uuid' | 'text' | 'tinytext' | 'mediumtext' | 'longtext'
-  | 'boolean' | 'bool' | 'bit' | 'enum'
-  | 'blob' | 'tinyblob' | 'mediumblob' | 'longblob' | 'bytea'
-  | 'point' | 'line' | 'lseg' | 'box' | 'circle' | 'path' | 'polygon' | 'geometry'
-  | 'tsvector' | 'tsquery'
-  | 'json' | 'jsonb';
+  | 'int'
+  | 'int4'
+  | 'integer'
+  | 'bigint'
+  | 'int8'
+  | 'int2'
+  | 'tinyint'
+  | 'smallint'
+  | 'mediumint'
+  | 'double'
+  | 'double precision'
+  | 'real'
+  | 'float8'
+  | 'decimal'
+  | 'numeric'
+  | 'float'
+  | 'float4'
+  | 'datetime'
+  | 'time'
+  | 'time with time zone'
+  | 'timestamp'
+  | 'timestamp with time zone'
+  | 'timetz'
+  | 'timestamptz'
+  | 'date'
+  | 'interval'
+  | 'character varying'
+  | 'varchar'
+  | 'char'
+  | 'character'
+  | 'uuid'
+  | 'text'
+  | 'tinytext'
+  | 'mediumtext'
+  | 'longtext'
+  | 'boolean'
+  | 'bool'
+  | 'bit'
+  | 'enum'
+  | 'blob'
+  | 'tinyblob'
+  | 'mediumblob'
+  | 'longblob'
+  | 'bytea'
+  | 'point'
+  | 'line'
+  | 'lseg'
+  | 'box'
+  | 'circle'
+  | 'path'
+  | 'polygon'
+  | 'geometry'
+  | 'tsvector'
+  | 'tsquery'
+  | 'json'
+  | 'jsonb';
 
 interface PolymorphicOptions {
   /**
@@ -475,7 +533,8 @@ export interface OneToManyOptions<Owner, Target> extends ReferenceOptions<Owner,
   mappedBy: (string & keyof Target) | ((e: Target) => any);
 }
 
-export interface OneToOneOptions<Owner, Target> extends Partial<Omit<OneToManyOptions<Owner, Target>, 'orderBy'>>, PolymorphicOptions {
+export interface OneToOneOptions<Owner, Target>
+  extends Partial<Omit<OneToManyOptions<Owner, Target>, 'orderBy'>>, PolymorphicOptions {
   /** Set this side as owning. Owning side is where the foreign key is defined. This option is not required if you use `inversedBy` or `mappedBy` to distinguish owning and inverse side. */
   owner?: boolean;
 
@@ -596,7 +655,7 @@ export interface EnumOptions<T> extends PropertyOptions<T> {
   nativeEnumName?: string;
 }
 
-export interface PrimaryKeyOptions<T> extends PropertyOptions<T> { }
+export interface PrimaryKeyOptions<T> extends PropertyOptions<T> {}
 
 export interface SerializedPrimaryKeyOptions<T> extends PropertyOptions<T> {
   type?: any;
@@ -621,7 +680,7 @@ export interface IndexColumnOptions {
 
 interface BaseOptions<T, H extends string> {
   name?: string;
-  properties?: (T extends EntityClass<infer P> ? Properties<P, H> : Properties<T, H>);
+  properties?: T extends EntityClass<infer P> ? Properties<P, H> : Properties<T, H>;
   options?: Dictionary;
   expression?: string | (T extends EntityClass<infer P> ? IndexCallback<P> : IndexCallback<T>);
   /**
@@ -635,7 +694,7 @@ interface BaseOptions<T, H extends string> {
    * Columns to include in the index but not as part of the key (PostgreSQL, MSSQL).
    * These columns are stored in the leaf level of the index but not used for searching.
    */
-  include?: (T extends EntityClass<infer P> ? Properties<P, H> : Properties<T, H>);
+  include?: T extends EntityClass<infer P> ? Properties<P, H> : Properties<T, H>;
   /** Fill factor for the index as a percentage 0-100 (PostgreSQL, MSSQL). */
   fillFactor?: number;
 }

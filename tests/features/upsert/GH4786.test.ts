@@ -1,11 +1,18 @@
 import { Collection, OptionalProps, SimpleLogger, sql } from '@mikro-orm/core';
-import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider, Unique } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+  Unique,
+} from '@mikro-orm/decorators/legacy';
 import { MikroORM } from '@mikro-orm/sqlite';
 import { mockLogger } from '../../helpers.js';
 
 @Entity({ abstract: true })
 abstract class ApplicationEntity<Optionals = never> {
-
   [OptionalProps]?: Optionals | 'createdAt' | 'updatedAt';
 
   @PrimaryKey()
@@ -16,24 +23,20 @@ abstract class ApplicationEntity<Optionals = never> {
 
   @Property({ name: 'updated_at', default: sql.now(), onUpdate: () => new Date() })
   updatedAt!: Date;
-
 }
 
 @Entity()
 class InternalRole extends ApplicationEntity {
-
   @Property()
   name!: string;
 
   @OneToMany(() => InternalRolePermission, permission => permission.internalRole, { orphanRemoval: true })
   permissions = new Collection<InternalRolePermission>(this);
-
 }
 
 @Entity()
 @Unique({ properties: ['subject', 'action', 'internalRole'] })
 class InternalRolePermission extends ApplicationEntity {
-
   @Property()
   subject!: string;
 
@@ -42,7 +45,6 @@ class InternalRolePermission extends ApplicationEntity {
 
   @ManyToOne(() => InternalRole, { deleteRule: 'cascade' })
   internalRole!: InternalRole;
-
 }
 
 let orm: MikroORM;
@@ -76,7 +78,9 @@ test('4786 (em.upsert)', async () => {
 
   expect(mock.mock.calls).toEqual([
     ['[query] select `i0`.* from `internal_role` as `i0` where `i0`.`id` = 1 limit 1'],
-    ['[query] insert into `internal_role_permission` (`subject`, `action`, `internal_role_id`) values (\'User\', \'read\', 1) on conflict (`subject`, `action`, `internal_role_id`) do nothing returning `id`, `created_at`, `updated_at`'],
+    [
+      "[query] insert into `internal_role_permission` (`subject`, `action`, `internal_role_id`) values ('User', 'read', 1) on conflict (`subject`, `action`, `internal_role_id`) do nothing returning `id`, `created_at`, `updated_at`",
+    ],
   ]);
 
   mock.mockReset();
@@ -86,8 +90,12 @@ test('4786 (em.upsert)', async () => {
 
   expect(mock.mock.calls).toEqual([
     ['[query] select `i0`.* from `internal_role` as `i0` where `i0`.`id` = 1 limit 1'],
-    ['[query] insert into `internal_role_permission` (`subject`, `action`, `internal_role_id`) values (\'User\', \'read\', 1) on conflict (`subject`, `action`, `internal_role_id`) do nothing returning `id`, `created_at`, `updated_at`'],
-    ['[query] select `i0`.`id`, `i0`.`created_at`, `i0`.`updated_at` from `internal_role_permission` as `i0` where `i0`.`subject` = \'User\' and `i0`.`action` = \'read\' and `i0`.`internal_role_id` = 1 limit 1'],
+    [
+      "[query] insert into `internal_role_permission` (`subject`, `action`, `internal_role_id`) values ('User', 'read', 1) on conflict (`subject`, `action`, `internal_role_id`) do nothing returning `id`, `created_at`, `updated_at`",
+    ],
+    [
+      "[query] select `i0`.`id`, `i0`.`created_at`, `i0`.`updated_at` from `internal_role_permission` as `i0` where `i0`.`subject` = 'User' and `i0`.`action` = 'read' and `i0`.`internal_role_id` = 1 limit 1",
+    ],
   ]);
 });
 
@@ -105,7 +113,9 @@ test('4786 (em.upsertMany)', async () => {
 
   expect(mock.mock.calls).toEqual([
     ['[query] select `i0`.* from `internal_role` as `i0` where `i0`.`id` = 1 limit 1'],
-    ['[query] insert into `internal_role_permission` (`subject`, `action`, `internal_role_id`) values (\'User\', \'read\', 1), (\'User\', \'update\', 1) on conflict (`subject`, `action`, `internal_role_id`) do nothing returning `id`, `created_at`, `updated_at`'],
+    [
+      "[query] insert into `internal_role_permission` (`subject`, `action`, `internal_role_id`) values ('User', 'read', 1), ('User', 'update', 1) on conflict (`subject`, `action`, `internal_role_id`) do nothing returning `id`, `created_at`, `updated_at`",
+    ],
   ]);
 
   mock.mockReset();
@@ -118,7 +128,11 @@ test('4786 (em.upsertMany)', async () => {
 
   expect(mock.mock.calls).toEqual([
     ['[query] select `i0`.* from `internal_role` as `i0` where `i0`.`id` = 1 limit 1'],
-    ['[query] insert into `internal_role_permission` (`subject`, `action`, `internal_role_id`) values (\'User\', \'read\', 1), (\'User\', \'update\', 1) on conflict (`subject`, `action`, `internal_role_id`) do nothing returning `id`, `created_at`, `updated_at`'],
-    ['[query] select `i0`.`id`, `i0`.`created_at`, `i0`.`updated_at`, `i0`.`subject`, `i0`.`action`, `i0`.`internal_role_id` from `internal_role_permission` as `i0` where ((`i0`.`subject` = \'User\' and `i0`.`action` = \'read\' and `i0`.`internal_role_id` = 1) or (`i0`.`subject` = \'User\' and `i0`.`action` = \'update\' and `i0`.`internal_role_id` = 1))'],
+    [
+      "[query] insert into `internal_role_permission` (`subject`, `action`, `internal_role_id`) values ('User', 'read', 1), ('User', 'update', 1) on conflict (`subject`, `action`, `internal_role_id`) do nothing returning `id`, `created_at`, `updated_at`",
+    ],
+    [
+      "[query] select `i0`.`id`, `i0`.`created_at`, `i0`.`updated_at`, `i0`.`subject`, `i0`.`action`, `i0`.`internal_role_id` from `internal_role_permission` as `i0` where ((`i0`.`subject` = 'User' and `i0`.`action` = 'read' and `i0`.`internal_role_id` = 1) or (`i0`.`subject` = 'User' and `i0`.`action` = 'update' and `i0`.`internal_role_id` = 1))",
+    ],
   ]);
 });

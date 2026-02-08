@@ -6,7 +6,6 @@ import { TsMorphMetadataProvider } from '@mikro-orm/reflection';
 
 @Embeddable()
 class ApiIpApiRequest {
-
   @Property()
   body?: Record<string, unknown>;
 
@@ -18,20 +17,16 @@ class ApiIpApiRequest {
 
   @Property()
   url!: string;
-
 }
 
 @Embeddable()
 class ApiIpApiResponse {
-
   @Property()
   json?: Record<string, unknown>;
-
 }
 
 @Entity()
 class ApiIpApi {
-
   @PrimaryKey()
   _id!: ObjectId;
 
@@ -40,7 +35,6 @@ class ApiIpApi {
 
   @Embedded(() => ApiIpApiResponse, { object: true })
   response?: ApiIpApiResponse;
-
 }
 
 let orm: MikroORM;

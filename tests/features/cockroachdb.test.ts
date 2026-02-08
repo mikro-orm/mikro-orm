@@ -130,7 +130,6 @@ beforeEach(async () => {
 });
 
 describe('CockroachDB compatibility', () => {
-
   test('basic connection works', async () => {
     const conn = orm.em.getConnection();
     const result = await conn.execute('SELECT version()');
@@ -342,10 +341,14 @@ describe('CockroachDB compatibility', () => {
     await em.flush();
 
     const em2 = orm.em.fork();
-    const books = await em2.find(CrdbBook, {}, {
-      populate: ['author', 'publisher', 'tags'],
-      strategy: LoadStrategy.JOINED,
-    });
+    const books = await em2.find(
+      CrdbBook,
+      {},
+      {
+        populate: ['author', 'publisher', 'tags'],
+        strategy: LoadStrategy.JOINED,
+      },
+    );
 
     expect(books).toHaveLength(1);
     expect(books[0].title).toBe('Joined Book');
@@ -362,11 +365,15 @@ describe('CockroachDB compatibility', () => {
     await em.flush();
 
     const em2 = orm.em.fork();
-    const [tags, total] = await em2.findAndCount(CrdbTag, { name: { $like: 'page-tag-%' } }, {
-      limit: 3,
-      offset: 2,
-      orderBy: { name: 'asc' },
-    });
+    const [tags, total] = await em2.findAndCount(
+      CrdbTag,
+      { name: { $like: 'page-tag-%' } },
+      {
+        limit: 3,
+        offset: 2,
+        orderBy: { name: 'asc' },
+      },
+    );
 
     expect(total).toBe(10);
     expect(tags).toHaveLength(3);
@@ -393,7 +400,10 @@ describe('CockroachDB compatibility', () => {
       populate: ['tags'],
     });
     expect(foundBook.tags.length).toBe(3);
-    const tagNames = foundBook.tags.getItems().map(t => t.name).sort();
+    const tagNames = foundBook.tags
+      .getItems()
+      .map(t => t.name)
+      .sort();
     expect(tagNames).toEqual(['m2m-tag-1', 'm2m-tag-2', 'm2m-tag-3']);
   });
 
@@ -483,5 +493,4 @@ describe('CockroachDB compatibility', () => {
     const found = await em2.findOneOrFail(CrdbFooParam, [bar.id, baz.id]);
     expect(found.value).toBe('test-value');
   });
-
 });

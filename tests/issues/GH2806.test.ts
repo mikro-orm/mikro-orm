@@ -3,7 +3,6 @@ import { Entity, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from 
 
 @Entity()
 export class A {
-
   @PrimaryKey()
   id!: number;
 
@@ -12,12 +11,10 @@ export class A {
 
   @OneToOne({ entity: () => B, nullable: true, orphanRemoval: true })
   b?: any;
-
 }
 
 @Entity()
 export class B {
-
   @PrimaryKey()
   id!: number;
 
@@ -26,11 +23,9 @@ export class B {
 
   @OneToOne(() => A, a => a.b, { nullable: true })
   a?: A;
-
 }
 
 describe('GH issue 2806', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -56,5 +51,4 @@ describe('GH issue 2806', () => {
     const a2 = await orm.em.fork().findOneOrFail(A, a, { populate: ['b'] });
     expect(a2.b).toBeDefined();
   });
-
 });

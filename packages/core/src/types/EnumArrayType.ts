@@ -13,10 +13,11 @@ function mapHydrator<T>(items: T[] | undefined, hydrate: (i: string) => T): (i: 
 }
 
 export class EnumArrayType<T extends string | number = string> extends ArrayType<T> {
-
-  constructor(private readonly owner: string,
-              private readonly items?: T[],
-              hydrate: (i: string) => T = i => i as T) {
+  constructor(
+    private readonly owner: string,
+    private readonly items?: T[],
+    hydrate: (i: string) => T = i => i as T,
+  ) {
     super(mapHydrator(items, hydrate));
   }
 
@@ -39,5 +40,4 @@ export class EnumArrayType<T extends string | number = string> extends ArrayType
 
     return super.getColumnType(prop, platform);
   }
-
 }

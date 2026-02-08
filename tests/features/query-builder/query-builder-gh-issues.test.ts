@@ -30,7 +30,8 @@ describe('QueryBuilder - GH Issues', () => {
     expect(sql0).toBe(
       'select `e0`.*, `e1`.`id` as `e1__id` from `foo_baz2` as `e0` left join `foo_bar2` as `e1` on `e0`.`id` = `e1`.`baz_id` where `e1`.`id` = ?',
     );
-    const expected = 'select `e0`.* from `foo_baz2` as `e0` left join `foo_bar2` as `e1` on `e0`.`id` = `e1`.`baz_id` where `e1`.`id` in (?)';
+    const expected =
+      'select `e0`.* from `foo_baz2` as `e0` left join `foo_bar2` as `e1` on `e0`.`id` = `e1`.`baz_id` where `e1`.`id` in (?)';
     const sql1 = orm.em
       .createQueryBuilder(FooBaz2)
       .where({ bar: [123] })
@@ -71,8 +72,11 @@ describe('QueryBuilder - GH Issues', () => {
 
   test('query by 1:m PK (GH issue 857)', async () => {
     const sql0 = orm.em.createQueryBuilder(Author2).select('*').where({ books: '123' }).getQuery();
-    expect(sql0).toBe('select `e0`.* from `author2` as `e0` left join `book2` as `e1` on `e0`.`id` = `e1`.`author_id` where `e1`.`uuid_pk` = ?');
-    const expected = 'select `e0`.* from `author2` as `e0` left join `book2` as `e1` on `e0`.`id` = `e1`.`author_id` where `e1`.`uuid_pk` in (?)';
+    expect(sql0).toBe(
+      'select `e0`.* from `author2` as `e0` left join `book2` as `e1` on `e0`.`id` = `e1`.`author_id` where `e1`.`uuid_pk` = ?',
+    );
+    const expected =
+      'select `e0`.* from `author2` as `e0` left join `book2` as `e1` on `e0`.`id` = `e1`.`author_id` where `e1`.`uuid_pk` in (?)';
     const sql1 = orm.em
       .createQueryBuilder(Author2)
       .where({ books: ['123'] })
@@ -139,7 +143,10 @@ describe('QueryBuilder - GH Issues', () => {
       .where({ test: { id: 1 } })
       .getQuery();
     expect(sql3).toBe(
-      'select count(*) as `count` ' + 'from `book2` as `e0` ' + 'left join `test2` as `e1` on `e0`.`uuid_pk` = `e1`.`book_uuid_pk` ' + 'where `e1`.`id` = ?',
+      'select count(*) as `count` ' +
+        'from `book2` as `e0` ' +
+        'left join `test2` as `e1` on `e0`.`uuid_pk` = `e1`.`book_uuid_pk` ' +
+        'where `e1`.`id` = ?',
     );
 
     const sql4 = orm.em

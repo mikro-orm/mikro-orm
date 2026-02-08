@@ -3,7 +3,6 @@ import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-or
 
 @Entity()
 class Amount {
-
   @PrimaryKey()
   id!: number;
 
@@ -12,7 +11,6 @@ class Amount {
 
   @Property({ type: DoubleType })
   amount2!: string;
-
 }
 
 let orm: MikroORM;

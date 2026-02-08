@@ -6,7 +6,6 @@ import { rm } from 'node:fs/promises';
 @Entity()
 @Check({ expression: columns => `${columns.price} >= 0` })
 class FooEntity {
-
   @PrimaryKey()
   id!: number;
 
@@ -19,11 +18,9 @@ class FooEntity {
 
   @Property({ check: 'price3 >= 0' })
   price3!: number;
-
 }
 
 describe('check constraint [mysql8]', () => {
-
   test('check constraint is generated for decorator [mysql8]', async () => {
     const orm = await MikroORM.init({
       entities: [FooEntity],
@@ -132,9 +129,7 @@ describe('check constraint [mysql8]', () => {
       },
       name: 'NewTable',
       tableName: 'new_table',
-      checks: [
-        { name: 'foo', expression: 'priceColumn >= 0' },
-      ],
+      checks: [{ name: 'foo', expression: 'priceColumn >= 0' }],
     }).init().meta;
     meta.set(newTableMeta.class, newTableMeta);
 
@@ -167,5 +162,4 @@ describe('check constraint [mysql8]', () => {
 
     await orm.close();
   });
-
 });

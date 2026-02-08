@@ -10,7 +10,6 @@ import {
 
 @Entity()
 class Table {
-
   @PrimaryKey()
   id!: number;
 
@@ -26,12 +25,10 @@ class Table {
   constructor(name: string) {
     this.name = name;
   }
-
 }
 
 @Entity()
 class Column {
-
   @PrimaryKey()
   id!: number;
 
@@ -45,13 +42,10 @@ class Column {
     this.table = table;
     this.name = name;
   }
-
 }
-
 
 @Entity()
 class TableVersion {
-
   @PrimaryKey()
   id!: number;
 
@@ -68,12 +62,10 @@ class TableVersion {
     this.table = table;
     this.versionNumber = versionNumber;
   }
-
 }
 
 @Entity()
 class Row {
-
   @PrimaryKey()
   id!: number;
 
@@ -86,12 +78,10 @@ class Row {
   constructor(tableVersion: TableVersion) {
     this.tableVersion = tableVersion;
   }
-
 }
 
 @Entity()
 class Cell {
-
   @PrimaryKey()
   id!: number;
 
@@ -109,7 +99,6 @@ class Cell {
     this.column = column;
     this.value = value;
   }
-
 }
 
 describe('MikroORM Performance Regression', () => {
@@ -118,13 +107,7 @@ describe('MikroORM Performance Regression', () => {
   beforeAll(async () => {
     orm = await MikroORM.init({
       metadataProvider: ReflectMetadataProvider,
-      entities: [
-        Table,
-        Column,
-        TableVersion,
-        Row,
-        Cell,
-      ],
+      entities: [Table, Column, TableVersion, Row, Cell],
       dbName: ':memory:',
     });
     await orm.schema.refresh();
@@ -139,11 +122,7 @@ describe('MikroORM Performance Regression', () => {
     const rows: Row[] = [];
     for (let i = 0; i < numberOfRows; i++) {
       const row = new Row(version);
-      row.cells.set(columns.map((column, idx) => new Cell(
-        row,
-        column,
-        `input_${i}_${idx}`,
-      )));
+      row.cells.set(columns.map((column, idx) => new Cell(row, column, `input_${i}_${idx}`)));
       rows.push(row);
     }
     return rows;
@@ -160,9 +139,7 @@ describe('MikroORM Performance Regression', () => {
       const table = new Table('Test Table');
 
       // Create 6 columns
-      const columns: Column[] = ['1', '2', '3', '4', '5', '6'].map(
-        i => new Column(table, `Column ${i}`),
-      );
+      const columns: Column[] = ['1', '2', '3', '4', '5', '6'].map(i => new Column(table, `Column ${i}`));
 
       // Create 2 versions
       const version1 = new TableVersion(table, 1);

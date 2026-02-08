@@ -11,7 +11,6 @@ import { mockLogger } from '../helpers.js';
 
 @Entity()
 export class RadioOption {
-
   @PrimaryKey()
   id!: number;
 
@@ -23,12 +22,10 @@ export class RadioOption {
 
   @ManyToOne(() => Radio, { ref: true })
   radio!: Ref<Radio>;
-
 }
 
 @Entity()
 export class Radio {
-
   @PrimaryKey()
   id!: number;
 
@@ -36,54 +33,45 @@ export class Radio {
   order!: number;
 
   @Property()
-  question: string = Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, 10);
+  question: string = Math.random()
+    .toString(36)
+    .replace(/[^a-z]+/g, '')
+    .substr(0, 10);
 
   @ManyToOne(() => Project, { ref: true })
   project!: Ref<Project>;
 
-  @OneToMany(
-    () => RadioOption,
-    option => option.radio,
-    {
-      eager: true,
-      orderBy: { order: QueryOrder.ASC, id: QueryOrder.ASC },
-    },
-  )
+  @OneToMany(() => RadioOption, option => option.radio, {
+    eager: true,
+    orderBy: { order: QueryOrder.ASC, id: QueryOrder.ASC },
+  })
   options = new Collection<RadioOption>(this);
 
   constructor(order: number) {
     this.order = order;
   }
-
 }
 
 @Entity()
 export class Project {
-
   @PrimaryKey()
   id!: number;
 
   @Property()
   name: string;
 
-  @OneToMany(
-    () => Radio,
-    radio => radio.project,
-    {
-      eager: true,
-      orderBy: { order: QueryOrder.ASC, id: QueryOrder.ASC },
-    },
-  )
+  @OneToMany(() => Radio, radio => radio.project, {
+    eager: true,
+    orderBy: { order: QueryOrder.ASC, id: QueryOrder.ASC },
+  })
   radios = new Collection<Radio>(this);
 
   constructor(name: string) {
     this.name = name;
   }
-
 }
 
 describe('GH issue 1334', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -116,5 +104,4 @@ describe('GH issue 1334', () => {
     await orm.em.flush();
     expect(mock.mock.calls).toHaveLength(0);
   });
-
 });

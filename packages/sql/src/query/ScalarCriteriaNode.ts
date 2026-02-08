@@ -8,9 +8,10 @@ import { QueryBuilder } from './QueryBuilder.js';
  * @internal
  */
 export class ScalarCriteriaNode<T extends object> extends CriteriaNode<T> {
-
   override process(qb: IQueryBuilder<T>, options?: ICriteriaNodeProcessOptions): any {
-    const matchPopulateJoins = options?.matchPopulateJoins || (this.prop && [ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(this.prop!.kind));
+    const matchPopulateJoins =
+      options?.matchPopulateJoins ||
+      (this.prop && [ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(this.prop!.kind));
     const nestedAlias = qb.getAliasForJoinPath(this.getPath(options), { ...options, matchPopulateJoins });
 
     if (this.shouldJoin(qb, nestedAlias)) {
@@ -32,7 +33,9 @@ export class ScalarCriteriaNode<T extends object> extends CriteriaNode<T> {
     }
 
     if (this.payload && typeof this.payload === 'object') {
-      const keys = Object.keys(this.payload).filter(key => ARRAY_OPERATORS.includes(key) && Array.isArray(this.payload[key]));
+      const keys = Object.keys(this.payload).filter(
+        key => ARRAY_OPERATORS.includes(key) && Array.isArray(this.payload[key]),
+      );
 
       for (const key of keys) {
         this.payload[key] = JSON.stringify(this.payload[key]);
@@ -47,16 +50,23 @@ export class ScalarCriteriaNode<T extends object> extends CriteriaNode<T> {
   }
 
   private shouldJoin(qb: IQueryBuilder<T>, nestedAlias: string | undefined): boolean {
-    if (!this.parent || !this.prop || (nestedAlias && [QueryType.SELECT, QueryType.COUNT].includes(qb.type ?? QueryType.SELECT))) {
+    if (
+      !this.parent ||
+      !this.prop ||
+      (nestedAlias && [QueryType.SELECT, QueryType.COUNT].includes(qb.type ?? QueryType.SELECT))
+    ) {
       return false;
     }
 
     switch (this.prop.kind) {
-      case ReferenceKind.ONE_TO_MANY: return true;
-      case ReferenceKind.MANY_TO_MANY: return true;
-      case ReferenceKind.ONE_TO_ONE: return !this.prop.owner;
-      default: return false; // SCALAR, MANY_TO_ONE
+      case ReferenceKind.ONE_TO_MANY:
+        return true;
+      case ReferenceKind.MANY_TO_MANY:
+        return true;
+      case ReferenceKind.ONE_TO_ONE:
+        return !this.prop.owner;
+      default:
+        return false; // SCALAR, MANY_TO_ONE
     }
   }
-
 }

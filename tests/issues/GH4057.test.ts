@@ -3,13 +3,11 @@ import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-or
 
 @Entity()
 class Test {
-
   @PrimaryKey()
   id!: string;
 
   @Property({ nullable: true })
   date?: Date;
-
 }
 
 test('null dates stay null when fetched', async () => {

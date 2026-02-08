@@ -5,7 +5,6 @@ import { SqliteSchemaHelper } from './SqliteSchemaHelper.js';
 import { SqliteExceptionConverter } from './SqliteExceptionConverter.js';
 
 export abstract class BaseSqlitePlatform extends AbstractSqlPlatform {
-
   protected override readonly schemaHelper: SqliteSchemaHelper = new SqliteSchemaHelper(this);
   protected override readonly exceptionConverter = new SqliteExceptionConverter();
 
@@ -38,7 +37,13 @@ export abstract class BaseSqlitePlatform extends AbstractSqlPlatform {
     return ['begin'];
   }
 
-  override getEnumTypeDeclarationSQL(column: { items?: unknown[]; fieldNames: string[]; length?: number; unsigned?: boolean; autoincrement?: boolean }): string {
+  override getEnumTypeDeclarationSQL(column: {
+    items?: unknown[];
+    fieldNames: string[];
+    length?: number;
+    unsigned?: boolean;
+    autoincrement?: boolean;
+  }): string {
     if (column.items?.every(item => typeof item === 'string')) {
       return 'text';
     }
@@ -47,15 +52,27 @@ export abstract class BaseSqlitePlatform extends AbstractSqlPlatform {
     return this.getTinyIntTypeDeclarationSQL(column);
   }
 
-  override getTinyIntTypeDeclarationSQL(column: { length?: number; unsigned?: boolean; autoincrement?: boolean }): string {
+  override getTinyIntTypeDeclarationSQL(column: {
+    length?: number;
+    unsigned?: boolean;
+    autoincrement?: boolean;
+  }): string {
     return this.getIntegerTypeDeclarationSQL(column);
   }
 
-  override getSmallIntTypeDeclarationSQL(column: { length?: number; unsigned?: boolean; autoincrement?: boolean }): string {
+  override getSmallIntTypeDeclarationSQL(column: {
+    length?: number;
+    unsigned?: boolean;
+    autoincrement?: boolean;
+  }): string {
     return this.getIntegerTypeDeclarationSQL(column);
   }
 
-  override getIntegerTypeDeclarationSQL(column: { length?: number; unsigned?: boolean; autoincrement?: boolean }): string {
+  override getIntegerTypeDeclarationSQL(column: {
+    length?: number;
+    unsigned?: boolean;
+    autoincrement?: boolean;
+  }): string {
     return 'integer';
   }
 
@@ -103,7 +120,11 @@ export abstract class BaseSqlitePlatform extends AbstractSqlPlatform {
     return value as number;
   }
 
-  override getIndexName(tableName: string, columns: string[], type: 'index' | 'unique' | 'foreign' | 'primary' | 'sequence'): string {
+  override getIndexName(
+    tableName: string,
+    columns: string[],
+    type: 'index' | 'unique' | 'foreign' | 'primary' | 'sequence',
+  ): string {
     if (type === 'primary') {
       return this.getDefaultPrimaryName(tableName, columns);
     }
@@ -148,5 +169,4 @@ export abstract class BaseSqlitePlatform extends AbstractSqlPlatform {
 
     return super.quoteValue(value);
   }
-
 }

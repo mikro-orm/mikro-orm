@@ -3,7 +3,6 @@ import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-or
 
 @Entity()
 class EntityA {
-
   @PrimaryKey({ type: types.integer })
   id!: number;
 
@@ -14,7 +13,6 @@ class EntityA {
   expiryDate!: Date;
 
   [OptionalProps]?: 'expiryDate';
-
 }
 
 let orm: MikroORM;
@@ -37,8 +35,5 @@ test('insert rows, some with, some without values for defaultRaw columns', async
   const sixMonthsFromNow = new Date(currentDate);
   sixMonthsFromNow.setMonth(currentDate.getMonth() + 6);
 
-  await orm.em.insertMany(EntityA, [
-    { title: 'First item' },
-    { title: 'Second item', expiryDate: sixMonthsFromNow },
-  ]);
+  await orm.em.insertMany(EntityA, [{ title: 'First item' }, { title: 'Second item', expiryDate: sixMonthsFromNow }]);
 });

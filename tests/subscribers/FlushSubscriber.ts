@@ -1,7 +1,6 @@
 import type { EventSubscriber, FlushEventArgs } from '@mikro-orm/core';
 
 export class FlushSubscriber implements EventSubscriber {
-
   static readonly log: [string, FlushEventArgs][] = [];
 
   async beforeFlush(args: FlushEventArgs): Promise<void> {
@@ -15,5 +14,4 @@ export class FlushSubscriber implements EventSubscriber {
   async afterFlush(args: FlushEventArgs): Promise<void> {
     FlushSubscriber.log.push(['afterFlush', args]);
   }
-
 }

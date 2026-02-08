@@ -2,7 +2,6 @@ import { initORMMsSql } from '../../bootstrap.js';
 import type { MikroORM } from '@mikro-orm/mssql';
 
 describe('EntityGenerator', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -30,5 +29,4 @@ describe('EntityGenerator', () => {
     });
     expect(dump).toMatchSnapshot('mssql-entity-dump');
   });
-
 });

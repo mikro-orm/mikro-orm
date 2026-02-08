@@ -28,63 +28,89 @@ export interface GetKyselyOptions extends MikroKyselyPluginOptions {
  * @inheritDoc
  */
 export class SqlEntityManager<Driver extends AbstractSqlDriver = AbstractSqlDriver> extends EntityManager<Driver> {
-
   /**
    * Creates a QueryBuilder instance
    */
-  createQueryBuilder<Entity extends object, RootAlias extends string = never>(entityName: EntityName<Entity> | QueryBuilder<Entity>, alias?: RootAlias, type?: ConnectionType, loggerContext?: LoggingOptions): QueryBuilder<Entity, RootAlias> {
+  createQueryBuilder<Entity extends object, RootAlias extends string = never>(
+    entityName: EntityName<Entity> | QueryBuilder<Entity>,
+    alias?: RootAlias,
+    type?: ConnectionType,
+    loggerContext?: LoggingOptions,
+  ): QueryBuilder<Entity, RootAlias> {
     const context = this.getContext(false);
-    return this.driver.createQueryBuilder(entityName as EntityName<Entity>, context.getTransactionContext(), type, true, loggerContext ?? context.loggerContext, alias, this) as any;
+    return this.driver.createQueryBuilder(
+      entityName as EntityName<Entity>,
+      context.getTransactionContext(),
+      type,
+      true,
+      loggerContext ?? context.loggerContext,
+      alias,
+      this,
+    ) as any;
   }
 
   /**
    * Shortcut for `createQueryBuilder()`
    */
-  qb<Entity extends object, RootAlias extends string = never>(entityName: EntityName<Entity>, alias?: RootAlias, type?: ConnectionType, loggerContext?: LoggingOptions) {
+  qb<Entity extends object, RootAlias extends string = never>(
+    entityName: EntityName<Entity>,
+    alias?: RootAlias,
+    type?: ConnectionType,
+    loggerContext?: LoggingOptions,
+  ) {
     return this.createQueryBuilder(entityName, alias, type, loggerContext);
   }
 
   /**
    * Returns configured Kysely instance.
    */
-  getKysely<
-    TDB = undefined,
-    TOptions extends GetKyselyOptions = GetKyselyOptions,
-  >(options: TOptions = {} as TOptions): Kysely<TDB extends undefined ? InferKyselyDB<EntitiesFromManager<this>, TOptions> : TDB> {
+  getKysely<TDB = undefined, TOptions extends GetKyselyOptions = GetKyselyOptions>(
+    options: TOptions = {} as TOptions,
+  ): Kysely<TDB extends undefined ? InferKyselyDB<EntitiesFromManager<this>, TOptions> : TDB> {
     let kysely = this.getConnection(options.type).getClient();
-    if (options.columnNamingStrategy != null
-         || options.tableNamingStrategy != null
-         || options.processOnCreateHooks != null
-         || options.processOnUpdateHooks != null
-         || options.convertValues != null) {
+    if (
+      options.columnNamingStrategy != null ||
+      options.tableNamingStrategy != null ||
+      options.processOnCreateHooks != null ||
+      options.processOnUpdateHooks != null ||
+      options.convertValues != null
+    ) {
       kysely = kysely.withPlugin(new MikroKyselyPlugin(this, options));
     }
     return kysely;
   }
 
-  async execute<
-    T extends QueryResult | EntityData<AnyEntity> | EntityData<AnyEntity>[] = EntityData<AnyEntity>[],
-  >(
+  async execute<T extends QueryResult | EntityData<AnyEntity> | EntityData<AnyEntity>[] = EntityData<AnyEntity>[]>(
     query: string | NativeQueryBuilder | RawQueryFragment,
     params: any[] = [],
     method: 'all' | 'get' | 'run' = 'all',
     loggerContext?: LoggingOptions,
   ): Promise<T> {
-    return this.getDriver().execute(query, params, method, this.getContext(false).getTransactionContext(), loggerContext);
+    return this.getDriver().execute(
+      query,
+      params,
+      method,
+      this.getContext(false).getTransactionContext(),
+      loggerContext,
+    );
   }
 
-  override getRepository<T extends object, U extends EntityRepository<T> = SqlEntityRepository<T>>(entityName: EntityName<T>): GetRepository<T, U> {
+  override getRepository<T extends object, U extends EntityRepository<T> = SqlEntityRepository<T>>(
+    entityName: EntityName<T>,
+  ): GetRepository<T, U> {
     return super.getRepository<T, U>(entityName);
   }
 
-  protected override applyDiscriminatorCondition<Entity extends object>(entityName: EntityName<Entity>, where: FilterQuery<Entity>): FilterQuery<Entity> {
+  protected override applyDiscriminatorCondition<Entity extends object>(
+    entityName: EntityName<Entity>,
+    where: FilterQuery<Entity>,
+  ): FilterQuery<Entity> {
     // this is handled in QueryBuilder now for SQL drivers
     return where;
   }
-
 }
 
 type EntitiesFromManager<TEntityManager extends EntityManager<any>> =
   NonNullable<TEntityManager['~entities']> extends any[]
-    ? (Extract<NonNullable<TEntityManager['~entities']>[number], EntitySchemaWithMeta>)
+    ? Extract<NonNullable<TEntityManager['~entities']>[number], EntitySchemaWithMeta>
     : never;

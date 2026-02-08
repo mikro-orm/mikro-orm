@@ -7,7 +7,6 @@ import { DatabaseSeeder } from '../../database/seeder/database.seeder.js';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 
 describe('Run seeders', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -32,5 +31,4 @@ describe('Run seeders', () => {
     const users = await orm.em.findAndCount(User, {});
     expect(users[1]).toBe(1);
   });
-
 });

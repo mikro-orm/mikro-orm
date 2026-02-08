@@ -1,20 +1,25 @@
 import { Collection, MikroORM, Ref } from '@mikro-orm/sqlite';
-import { Entity, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  OneToOne,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class Organisation {
-
   @PrimaryKey()
   id!: number;
 
   @Property()
   name!: string;
-
 }
 
 @Entity()
 class User {
-
   @ManyToOne({
     entity: () => Organisation,
     fieldName: 'org_id',
@@ -51,12 +56,10 @@ class User {
     ref: true,
   })
   request?: Ref<UserRequest>;
-
 }
 
 @Entity()
 class Profile {
-
   @ManyToOne({
     entity: () => Organisation,
     fieldName: 'org_id',
@@ -77,12 +80,10 @@ class Profile {
     ref: true,
   })
   user?: Ref<User>;
-
 }
 
 @Entity()
 class Workspace {
-
   @ManyToOne({
     entity: () => Organisation,
     fieldName: 'org_id',
@@ -103,12 +104,10 @@ class Workspace {
     ref: true,
   })
   users = new Collection<User>(this);
-
 }
 
 @Entity()
 class UserRequest {
-
   @ManyToOne({
     entity: () => Organisation,
     fieldName: 'org_id',
@@ -130,7 +129,6 @@ class UserRequest {
     ownColumns: ['user_id'],
   })
   user!: Ref<User>;
-
 }
 
 let orm: MikroORM;

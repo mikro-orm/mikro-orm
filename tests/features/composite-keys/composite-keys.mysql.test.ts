@@ -1,14 +1,25 @@
 import type { MikroORM, ValidationError } from '@mikro-orm/core';
 import { LoadStrategy, wrap } from '@mikro-orm/core';
 import { AbstractSqlConnection, MySqlDriver } from '@mikro-orm/mysql';
-import { Author2, Configuration2, FooBar2, FooBaz2, FooParam2, Test2, Address2, Car2, CarOwner2, User2, Sandwich } from '../../entities-sql/index.js';
+import {
+  Author2,
+  Configuration2,
+  FooBar2,
+  FooBaz2,
+  FooParam2,
+  Test2,
+  Address2,
+  Car2,
+  CarOwner2,
+  User2,
+  Sandwich,
+} from '../../entities-sql/index.js';
 import { initORMMySql, mockLogger } from '../../bootstrap.js';
 
 describe('composite keys in mysql', () => {
-
   let orm: MikroORM<MySqlDriver>;
 
-  beforeAll(async () => orm = await initORMMySql('mysql', { loadStrategy: 'joined' }, true));
+  beforeAll(async () => (orm = await initORMMySql('mysql', { loadStrategy: 'joined' }, true)));
   beforeEach(async () => orm.schema.clear());
   afterAll(async () => {
     await orm.schema.dropDatabase();
@@ -57,7 +68,11 @@ describe('composite keys in mysql', () => {
     expect(p2.bar.id).toBe(bar.id);
     expect(p2.baz.id).toBe(baz.id);
     expect(p2.value).toBe('val2');
-    expect(orm.em.getUnitOfWork().getIdentityMap().keys().sort()).toEqual(['FooBar2-7', 'FooBaz2-3', 'FooParam2-7~~~3']);
+    expect(orm.em.getUnitOfWork().getIdentityMap().keys().sort()).toEqual([
+      'FooBar2-7',
+      'FooBaz2-3',
+      'FooParam2-7~~~3',
+    ]);
 
     const p3 = await orm.em.findOneOrFail(FooParam2, { bar: param.bar.id, baz: param.baz.id });
     expect(p3).toBe(p2);
@@ -357,7 +372,9 @@ describe('composite keys in mysql', () => {
     expect(mock.mock.calls[0][0]).toMatch('begin');
     expect(mock.mock.calls[1][0]).toMatch('insert into `car2` (`name`, `year`, `price`) values (?, ?, ?), (?, ?, ?)'); // c1, c2
     expect(mock.mock.calls[2][0]).toMatch('insert into `user2` (`first_name`, `last_name`) values (?, ?)'); // u1
-    expect(mock.mock.calls[3][0]).toMatch('insert into `user2_cars` (`car2_name`, `car2_year`, `user2_first_name`, `user2_last_name`) values (?, ?, ?, ?), (?, ?, ?, ?), (?, ?, ?, ?)');
+    expect(mock.mock.calls[3][0]).toMatch(
+      'insert into `user2_cars` (`car2_name`, `car2_year`, `user2_first_name`, `user2_last_name`) values (?, ?, ?, ?), (?, ?, ?, ?), (?, ?, ?, ?)',
+    );
     expect(mock.mock.calls[4][0]).toMatch('commit');
   });
 
@@ -421,10 +438,7 @@ describe('composite keys in mysql', () => {
   });
 
   test('changing PK (batch)', async () => {
-    const cars = [
-      new Car2('Audi A8 a', 2011, 200_000),
-      new Car2('Audi A8 b', 2012, 200_000),
-    ];
+    const cars = [new Car2('Audi A8 a', 2011, 200_000), new Car2('Audi A8 b', 2012, 200_000)];
     await orm.em.persist(cars).flush();
     cars[0].year = 2015;
     cars[1].year = 2016;
@@ -432,7 +446,9 @@ describe('composite keys in mysql', () => {
     const mock = mockLogger(orm);
     await orm.em.flush();
     expect(mock).toHaveBeenCalledTimes(3);
-    expect(mock.mock.calls[1][0]).toMatch("update `car2` set `year` = case when (`name` = 'Audi A8 a' and `year` = 2011) then 2015 when (`name` = 'Audi A8 b' and `year` = 2012) then 2016 else `year` end where (`name`, `year`) in (('Audi A8 a', 2011), ('Audi A8 b', 2012))");
+    expect(mock.mock.calls[1][0]).toMatch(
+      "update `car2` set `year` = case when (`name` = 'Audi A8 a' and `year` = 2011) then 2015 when (`name` = 'Audi A8 b' and `year` = 2012) then 2016 else `year` end where (`name`, `year`) in (('Audi A8 a', 2011), ('Audi A8 b', 2012))",
+    );
 
     const c1 = await orm.em.fork().findOne(Car2, cars[0]);
     expect(c1).toBeDefined();
@@ -453,7 +469,8 @@ describe('composite keys in mysql', () => {
     await orm.em.persist(author).flush();
     orm.em.clear();
 
-    const addr1 = await orm.em.createQueryBuilder(Address2, 'addr')
+    const addr1 = await orm.em
+      .createQueryBuilder(Address2, 'addr')
       .select('addr.*')
       .leftJoinAndSelect('addr.author', 'a')
       .where({ 'a.id': author.id })
@@ -464,7 +481,8 @@ describe('composite keys in mysql', () => {
     expect(addr1!.author.email).toBe('e');
     orm.em.clear();
 
-    const a1 = await orm.em.createQueryBuilder(Author2, 'a')
+    const a1 = await orm.em
+      .createQueryBuilder(Author2, 'a')
       .select('a.*')
       .leftJoinAndSelect('a.address', 'addr')
       .where({ id: author.id })
@@ -475,5 +493,4 @@ describe('composite keys in mysql', () => {
     expect(a1!.address!.value).toBe('v1');
     expect(a1!.address!.author).toBe(a1);
   });
-
 });

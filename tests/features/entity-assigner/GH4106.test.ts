@@ -1,34 +1,34 @@
 import { Ref, Reference } from '@mikro-orm/core';
-import { Embeddable, Embedded, Entity, ManyToOne, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Embeddable,
+  Embedded,
+  Entity,
+  ManyToOne,
+  PrimaryKey,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { MikroORM } from '@mikro-orm/sqlite';
 
 @Entity()
 class C {
-
   @PrimaryKey()
   id!: number;
-
 }
 
 @Embeddable()
 class B {
-
   @ManyToOne(() => C, { ref: true })
   c!: Ref<C>;
-
 }
 
 @Entity()
 class A {
-
   @PrimaryKey()
   id!: number;
 
   @Embedded(() => B)
   b!: B;
-
 }
-
 
 let orm: MikroORM;
 

@@ -3,24 +3,20 @@ import { Entity, ManyToOne, OneToMany, PrimaryKey, ReflectMetadataProvider } fro
 
 @Entity()
 class A {
-
   @PrimaryKey()
   id!: number;
 
   @OneToMany(() => B, b => b.a)
   bItems = new Collection<B>(this);
-
 }
 
 @Entity()
 class B {
-
   @PrimaryKey()
   id!: number;
 
   @ManyToOne(() => A, { nullable: true })
   a?: A;
-
 }
 
 describe('GH issue 949', () => {

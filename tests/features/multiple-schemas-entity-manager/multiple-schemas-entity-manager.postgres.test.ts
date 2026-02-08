@@ -1,11 +1,19 @@
 import { BaseEntity, Cascade, Collection, MikroORM, wrap } from '@mikro-orm/core';
-import { Entity, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToMany,
+  ManyToOne,
+  OneToMany,
+  OneToOne,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { mockLogger } from '../../helpers.js';
 
 @Entity({ schema: 'n1' })
 class Author {
-
   @PrimaryKey()
   id!: number;
 
@@ -17,23 +25,19 @@ class Author {
 
   @OneToMany(() => Book, e => e.author, { cascade: [Cascade.REMOVE, Cascade.PERSIST] })
   books = new Collection<Book>(this);
-
 }
 
 @Entity({ schema: '*' })
 class BookTag extends BaseEntity {
-
   @PrimaryKey()
   id!: number;
 
   @Property({ nullable: true })
   name?: string;
-
 }
 
 @Entity({ schema: '*' })
 class Book extends BaseEntity {
-
   @PrimaryKey()
   id!: number;
 
@@ -48,11 +52,9 @@ class Book extends BaseEntity {
 
   @ManyToMany(() => BookTag, undefined, { cascade: [Cascade.ALL] })
   tags = new Collection<BookTag>(this);
-
 }
 
 describe('multiple connected schemas in postgres', () => {
-
   let orm: MikroORM<PostgreSqlDriver>;
 
   beforeAll(async () => {
@@ -168,9 +170,13 @@ describe('multiple connected schemas in postgres', () => {
     await fork.flush();
 
     expect(mock.mock.calls[0][0]).toMatch(`begin`);
-    expect(mock.mock.calls[1][0]).toMatch(`update "n2"."book_tag" set "name" = case when ("id" = 1) then 'new name 1' when ("id" = 4) then 'new name 2' when ("id" = 7) then 'new name 3' else "name" end where "id" in (1, 4, 7)`);
+    expect(mock.mock.calls[1][0]).toMatch(
+      `update "n2"."book_tag" set "name" = case when ("id" = 1) then 'new name 1' when ("id" = 4) then 'new name 2' when ("id" = 7) then 'new name 3' else "name" end where "id" in (1, 4, 7)`,
+    );
     expect(mock.mock.calls[2][0]).toMatch(`update "n1"."author" set "name" = 'new name' where "id" = 1`);
-    expect(mock.mock.calls[3][0]).toMatch(`update "n2"."book" set "name" = case when ("id" = 1) then 'new name 1' when ("id" = 2) then 'new name 2' when ("id" = 3) then 'new name 3' else "name" end where "id" in (1, 2, 3)`);
+    expect(mock.mock.calls[3][0]).toMatch(
+      `update "n2"."book" set "name" = case when ("id" = 1) then 'new name 1' when ("id" = 2) then 'new name 2' when ("id" = 3) then 'new name 3' else "name" end where "id" in (1, 2, 3)`,
+    );
     expect(mock.mock.calls[4][0]).toMatch(`commit`);
     mock.mockReset();
 
@@ -272,9 +278,13 @@ describe('multiple connected schemas in postgres', () => {
     await fork.flush();
 
     expect(mock.mock.calls[0][0]).toMatch(`begin`);
-    expect(mock.mock.calls[1][0]).toMatch(`update "n2"."book_tag" set "name" = case when ("id" = 1) then 'new name 1' when ("id" = 4) then 'new name 2' when ("id" = 7) then 'new name 3' else "name" end where "id" in (1, 4, 7)`);
+    expect(mock.mock.calls[1][0]).toMatch(
+      `update "n2"."book_tag" set "name" = case when ("id" = 1) then 'new name 1' when ("id" = 4) then 'new name 2' when ("id" = 7) then 'new name 3' else "name" end where "id" in (1, 4, 7)`,
+    );
     expect(mock.mock.calls[2][0]).toMatch(`update "n1"."author" set "name" = 'new name' where "id" = 1`);
-    expect(mock.mock.calls[3][0]).toMatch(`update "n2"."book" set "name" = case when ("id" = 1) then 'new name 1' when ("id" = 2) then 'new name 2' when ("id" = 3) then 'new name 3' else "name" end where "id" in (1, 2, 3)`);
+    expect(mock.mock.calls[3][0]).toMatch(
+      `update "n2"."book" set "name" = case when ("id" = 1) then 'new name 1' when ("id" = 2) then 'new name 2' when ("id" = 3) then 'new name 3' else "name" end where "id" in (1, 2, 3)`,
+    );
     expect(mock.mock.calls[4][0]).toMatch(`commit`);
     mock.mockReset();
 
@@ -375,9 +385,13 @@ describe('multiple connected schemas in postgres', () => {
     await fork.flush();
 
     expect(mock.mock.calls[0][0]).toMatch(`begin`);
-    expect(mock.mock.calls[1][0]).toMatch(`update "n2"."book_tag" set "name" = case when ("id" = 1) then 'new name 1' when ("id" = 4) then 'new name 2' when ("id" = 7) then 'new name 3' else "name" end where "id" in (1, 4, 7)`);
+    expect(mock.mock.calls[1][0]).toMatch(
+      `update "n2"."book_tag" set "name" = case when ("id" = 1) then 'new name 1' when ("id" = 4) then 'new name 2' when ("id" = 7) then 'new name 3' else "name" end where "id" in (1, 4, 7)`,
+    );
     expect(mock.mock.calls[2][0]).toMatch(`update "n1"."author" set "name" = 'new name' where "id" = 1`);
-    expect(mock.mock.calls[3][0]).toMatch(`update "n2"."book" set "name" = case when ("id" = 1) then 'new name 1' when ("id" = 2) then 'new name 2' when ("id" = 3) then 'new name 3' else "name" end where "id" in (1, 2, 3)`);
+    expect(mock.mock.calls[3][0]).toMatch(
+      `update "n2"."book" set "name" = case when ("id" = 1) then 'new name 1' when ("id" = 2) then 'new name 2' when ("id" = 3) then 'new name 3' else "name" end where "id" in (1, 2, 3)`,
+    );
     expect(mock.mock.calls[4][0]).toMatch(`commit`);
     mock.mockReset();
 
@@ -424,12 +438,7 @@ describe('multiple connected schemas in postgres', () => {
     book51.setSchema('n5');
     const book52 = mainForkN4.create(Book, {});
     wrap(book52).setSchema('n5');
-    author.books.add(
-      mainForkN4.create(Book, {}, { schema: 'n3' }),
-      mainForkN4.create(Book, {}),
-      book51,
-      book52,
-    );
+    author.books.add(mainForkN4.create(Book, {}, { schema: 'n3' }), mainForkN4.create(Book, {}), book51, book52);
     author.books[0].tags.add(new BookTag(), new BookTag(), new BookTag());
     author.books[1].basedOn = author.books[0];
     author.books[1].tags.add(new BookTag(), new BookTag(), new BookTag());
@@ -461,18 +470,30 @@ describe('multiple connected schemas in postgres', () => {
       'Book-n4:1',
     ]);
     expect(mock.mock.calls[0][0]).toMatch(`begin`);
-    expect(mock.mock.calls[1][0]).toMatch(`insert into "n3"."book_tag" ("id") values (default), (default), (default) returning "id"`);
-    expect(mock.mock.calls[2][0]).toMatch(`insert into "n5"."book_tag" ("id") values (default), (default), (default), (default), (default), (default) returning "id"`);
-    expect(mock.mock.calls[3][0]).toMatch(`insert into "n4"."book_tag" ("id") values (default), (default), (default) returning "id"`);
+    expect(mock.mock.calls[1][0]).toMatch(
+      `insert into "n3"."book_tag" ("id") values (default), (default), (default) returning "id"`,
+    );
+    expect(mock.mock.calls[2][0]).toMatch(
+      `insert into "n5"."book_tag" ("id") values (default), (default), (default), (default), (default), (default) returning "id"`,
+    );
+    expect(mock.mock.calls[3][0]).toMatch(
+      `insert into "n4"."book_tag" ("id") values (default), (default), (default) returning "id"`,
+    );
     expect(mock.mock.calls[4][0]).toMatch(`insert into "n1"."author" ("name") values ('a1') returning "id"`);
     expect(mock.mock.calls[5][0]).toMatch(`insert into "n3"."book" ("author_id") values (1) returning "id"`);
     expect(mock.mock.calls[6][0]).toMatch(`insert into "n5"."book" ("author_id") values (1), (1) returning "id"`);
     expect(mock.mock.calls[7][0]).toMatch(`insert into "n4"."book" ("author_id") values (1) returning "id"`);
     expect(mock.mock.calls[8][0]).toMatch(`update "n5"."book" set "based_on_id" = 1 where "id" = 1`);
     expect(mock.mock.calls[9][0]).toMatch(`update "n4"."book" set "based_on_id" = 1 where "id" = 1`);
-    expect(mock.mock.calls[10][0]).toMatch(`insert into "n3"."book_tags" ("book_tag_id", "book_id") values (1, 1), (2, 1), (3, 1)`);
-    expect(mock.mock.calls[11][0]).toMatch(`insert into "n5"."book_tags" ("book_tag_id", "book_id") values (1, 1), (2, 1), (3, 1), (4, 2), (5, 2), (6, 2)`);
-    expect(mock.mock.calls[12][0]).toMatch(`insert into "n4"."book_tags" ("book_tag_id", "book_id") values (1, 1), (2, 1), (3, 1)`);
+    expect(mock.mock.calls[10][0]).toMatch(
+      `insert into "n3"."book_tags" ("book_tag_id", "book_id") values (1, 1), (2, 1), (3, 1)`,
+    );
+    expect(mock.mock.calls[11][0]).toMatch(
+      `insert into "n5"."book_tags" ("book_tag_id", "book_id") values (1, 1), (2, 1), (3, 1), (4, 2), (5, 2), (6, 2)`,
+    );
+    expect(mock.mock.calls[12][0]).toMatch(
+      `insert into "n4"."book_tags" ("book_tag_id", "book_id") values (1, 1), (2, 1), (3, 1)`,
+    );
     expect(mock.mock.calls[13][0]).toMatch(`commit`);
     mock.mockReset();
 
@@ -503,9 +524,13 @@ describe('multiple connected schemas in postgres', () => {
     expect(mock.mock.calls[1][0]).toMatch(`update "n1"."author" set "name" = 'new name' where "id" = 1`);
     expect(mock.mock.calls[2][0]).toMatch(`update "n3"."book" set "name" = 'new name 1' where "id" = 1`);
     expect(mock.mock.calls[3][0]).toMatch(`update "n4"."book" set "name" = 'new name 2' where "id" = 1`);
-    expect(mock.mock.calls[4][0]).toMatch(`update "n5"."book" set "name" = case when ("id" = 1) then 'new name 3' when ("id" = 2) then 'new name 4' else "name" end where "id" in (1, 2)`);
+    expect(mock.mock.calls[4][0]).toMatch(
+      `update "n5"."book" set "name" = case when ("id" = 1) then 'new name 3' when ("id" = 2) then 'new name 4' else "name" end where "id" in (1, 2)`,
+    );
     expect(mock.mock.calls[5][0]).toMatch(`update "n3"."book_tag" set "name" = 'new name 1' where "id" = 1`);
-    expect(mock.mock.calls[6][0]).toMatch(`update "n5"."book_tag" set "name" = case when ("id" = 1) then 'new name 3' when ("id" = 4) then 'new name 4' else "name" end where "id" in (1, 4)`);
+    expect(mock.mock.calls[6][0]).toMatch(
+      `update "n5"."book_tag" set "name" = case when ("id" = 1) then 'new name 3' when ("id" = 4) then 'new name 4' else "name" end where "id" in (1, 4)`,
+    );
     expect(mock.mock.calls[7][0]).toMatch(`update "n4"."book_tag" set "name" = 'new name 2' where "id" = 1`);
     expect(mock.mock.calls[8][0]).toMatch(`commit`);
     mock.mockReset();
@@ -515,7 +540,9 @@ describe('multiple connected schemas in postgres', () => {
 
     expect(mock.mock.calls[0][0]).toMatch(`select "a0".* from "n1"."author" as "a0" where "a0"."id" = 1 limit 1`);
     expect(mock.mock.calls[1][0]).toMatch(`select "b0".* from "n5"."book" as "b0" where "b0"."author_id" in (1)`);
-    expect(mock.mock.calls[2][0]).toMatch(`select "b0"."book_tag_id", "b0"."book_id", "b1"."id" as "b1__id", "b1"."name" as "b1__name" from "n5"."book_tags" as "b0" inner join "n5"."book_tag" as "b1" on "b0"."book_tag_id" = "b1"."id" where "b0"."book_id" in (2, 1)`);
+    expect(mock.mock.calls[2][0]).toMatch(
+      `select "b0"."book_tag_id", "b0"."book_id", "b1"."id" as "b1__id", "b1"."name" as "b1__name" from "n5"."book_tags" as "b0" inner join "n5"."book_tag" as "b1" on "b0"."book_tag_id" = "b1"."id" where "b0"."book_id" in (2, 1)`,
+    );
     mock.mockReset();
 
     expect(fork.getUnitOfWork().getIdentityMap().keys()).toEqual([
@@ -561,6 +588,4 @@ describe('multiple connected schemas in postgres', () => {
     expect(n4tags).toHaveLength(0);
     expect(n5tags).toHaveLength(0);
   });
-
-
 });

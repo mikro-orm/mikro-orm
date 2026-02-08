@@ -3,7 +3,6 @@ import { Entity, ManyToMany, PrimaryKey, ReflectMetadataProvider } from '@mikro-
 
 @Entity()
 class Group {
-
   @PrimaryKey()
   id!: number;
 
@@ -12,12 +11,10 @@ class Group {
     mappedBy: 'groups',
   })
   participants = new Collection<Participant>(this);
-
 }
 
 @Entity()
 class Participant {
-
   @PrimaryKey()
   id!: number;
 
@@ -26,7 +23,6 @@ class Participant {
     inversedBy: 'participants',
   })
   groups = new Collection<Group>(this);
-
 }
 
 let orm: MikroORM;

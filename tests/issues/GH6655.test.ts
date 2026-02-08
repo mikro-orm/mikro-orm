@@ -4,18 +4,15 @@ import { mockLogger } from '../helpers.js';
 
 @Entity()
 class User {
-
   @PrimaryKey()
   id!: string;
 
   @OneToOne(() => Pet, pet => pet.owner, { ref: true, nullable: true })
   pet!: Ref<Pet> | null;
-
 }
 
 @Entity()
 class Pet {
-
   @PrimaryKey()
   id!: string;
 
@@ -25,7 +22,6 @@ class Pet {
     nullable: true,
   })
   owner!: Ref<User> | null;
-
 }
 
 let orm: MikroORM;

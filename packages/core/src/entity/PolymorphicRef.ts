@@ -6,7 +6,6 @@ import { Utils } from '../utils/Utils.js';
  * Used internally to track polymorphic FK values before hydration.
  */
 export class PolymorphicRef {
-
   constructor(
     public readonly discriminator: string,
     public id: unknown,
@@ -16,5 +15,4 @@ export class PolymorphicRef {
   toTuple(): unknown[] {
     return [this.discriminator, ...Utils.asArray(this.id)];
   }
-
 }

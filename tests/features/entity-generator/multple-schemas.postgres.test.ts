@@ -41,7 +41,6 @@ test('multiple schemas with same table name 1', async () => {
     ensureDatabase: false,
     extensions: [EntityGenerator],
     namingStrategy: class extends UnderscoreNamingStrategy {
-
       getEntityName(tableName: string, schemaName?: string): string {
         if (schemaName !== 'public') {
           return super.getClassName(`${schemaName}_${tableName}`, '_');
@@ -49,7 +48,6 @@ test('multiple schemas with same table name 1', async () => {
 
         return super.getClassName(tableName, '_');
       }
-
     },
   });
 

@@ -6,7 +6,6 @@ import type { EntityProperty } from '../typings.js';
  * Type that maps an SQL DECIMAL to a JS string or number.
  */
 export class DecimalType<Mode extends 'number' | 'string' = 'string'> extends Type<JSTypeByMode<Mode>, string> {
-
   constructor(public mode?: Mode) {
     super();
   }
@@ -41,7 +40,6 @@ export class DecimalType<Mode extends 'number' | 'string' = 'string'> extends Ty
   override compareAsType(): string {
     return this.mode ?? this.prop?.runtimeType ?? 'string';
   }
-
 }
 
 type JSTypeByMode<Mode extends 'number' | 'string'> = Mode extends 'number' ? number : string;

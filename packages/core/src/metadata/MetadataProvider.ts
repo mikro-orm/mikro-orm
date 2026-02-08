@@ -14,8 +14,7 @@ export interface IConfiguration {
 }
 
 export class MetadataProvider {
-
-  constructor(protected readonly config: IConfiguration) { }
+  constructor(protected readonly config: IConfiguration) {}
 
   loadEntityMetadata(meta: EntityMetadata): void {
     for (const prop of meta.props) {
@@ -24,7 +23,12 @@ export class MetadataProvider {
         prop.type = prop.entity;
       } else if (prop.entity) {
         const tmp = prop.entity() as EntityClass;
-        prop.type = Array.isArray(tmp) ? tmp.map(t => Utils.className(t)).sort().join(' | ') : Utils.className(tmp);
+        prop.type = Array.isArray(tmp)
+          ? tmp
+              .map(t => Utils.className(t))
+              .sort()
+              .join(' | ')
+          : Utils.className(tmp);
         prop.target = tmp instanceof EntitySchema ? tmp.meta.class : tmp;
       } else if (!prop.type && !((prop.enum || prop.array) && (prop.items?.length ?? 0) > 0)) {
         throw new Error(`Please provide either 'type' or 'entity' attribute in ${meta.className}.${prop.name}.`);
@@ -57,7 +61,10 @@ export class MetadataProvider {
     //
   }
 
-  getCachedMetadata<T>(meta: Pick<EntityMetadata<T>, 'className' | 'path' | 'root'>, root: EntityMetadata<T>): EntityMetadata<T> | undefined {
+  getCachedMetadata<T>(
+    meta: Pick<EntityMetadata<T>, 'className' | 'path' | 'root'>,
+    root: EntityMetadata<T>,
+  ): EntityMetadata<T> | undefined {
     if (!this.useCache()) {
       return undefined;
     }
@@ -84,5 +91,4 @@ export class MetadataProvider {
   getCacheKey(meta: Pick<EntityMetadata, 'className' | 'path'>): string {
     return meta.className;
   }
-
 }

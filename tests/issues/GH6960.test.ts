@@ -5,7 +5,6 @@ import { MikroORM } from '@mikro-orm/sqlite';
 
 @Entity()
 class Bad {
-
   @PrimaryKey()
   id!: number;
 
@@ -13,11 +12,10 @@ class Bad {
   '3ds'?: string;
 
   @Property()
-  "4ds"?: string;
+  '4ds'?: string;
 
   @Property()
   [`5ds`]?: string;
-
 }
 
 test('GH #6960', async () => {

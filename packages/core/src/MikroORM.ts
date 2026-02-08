@@ -8,7 +8,16 @@ import { Utils } from './utils/Utils.js';
 import { type Logger } from './logging/Logger.js';
 import { colors } from './logging/colors.js';
 import type { EntityManager } from './EntityManager.js';
-import type { AnyEntity, Constructor, EntityClass, EntityMetadata, EntityName, IEntityGenerator, IMigrator, ISeedManager } from './typings.js';
+import type {
+  AnyEntity,
+  Constructor,
+  EntityClass,
+  EntityMetadata,
+  EntityName,
+  IEntityGenerator,
+  IMigrator,
+  ISeedManager,
+} from './typings.js';
 
 async function tryRegisterExtension(name: string, pkg: string, extensions: Options['extensions']): Promise<void> {
   try {
@@ -56,7 +65,6 @@ export async function loadOptionalDependencies(options: Options): Promise<void> 
   }
 }
 
-
 /**
  * The main class used to configure and bootstrap the ORM.
  *
@@ -87,10 +95,14 @@ export async function loadOptionalDependencies(options: Options): Promise<void> 
  */
 export class MikroORM<
   Driver extends IDatabaseDriver = IDatabaseDriver,
-  EM extends Driver[typeof EntityManagerType] & EntityManager<Driver> = Driver[typeof EntityManagerType] & EntityManager<Driver>,
-  Entities extends (string | EntityClass<AnyEntity> | EntitySchema)[] = (string | EntityClass<AnyEntity> | EntitySchema)[],
+  EM extends Driver[typeof EntityManagerType] & EntityManager<Driver> = Driver[typeof EntityManagerType] &
+    EntityManager<Driver>,
+  Entities extends (string | EntityClass<AnyEntity> | EntitySchema)[] = (
+    | string
+    | EntityClass<AnyEntity>
+    | EntitySchema
+  )[],
 > {
-
   /** The global EntityManager instance. If you are using `RequestContext` helper, it will automatically pick the request specific context under the hood */
   em!: EM & { '~entities'?: Entities };
   readonly driver: Driver;
@@ -106,7 +118,11 @@ export class MikroORM<
   static async init<
     D extends IDatabaseDriver = IDatabaseDriver,
     EM extends D[typeof EntityManagerType] & EntityManager<D> = D[typeof EntityManagerType] & EntityManager<D>,
-    Entities extends (string | EntityClass<AnyEntity> | EntitySchema)[] = (string | EntityClass<AnyEntity> | EntitySchema)[],
+    Entities extends (string | EntityClass<AnyEntity> | EntitySchema)[] = (
+      | string
+      | EntityClass<AnyEntity>
+      | EntitySchema
+    )[],
   >(options: Options<D, EM, Entities>): Promise<MikroORM<D, EM, Entities>> {
     /* v8 ignore next */
     if (!options) {
@@ -133,9 +149,7 @@ export class MikroORM<
    */
   constructor(options: Options<Driver, EM, Entities>) {
     const env = loadEnvironmentVars();
-    options = options.preferEnvVars
-      ? Utils.merge(options, env)
-      : Utils.merge(env, options);
+    options = options.preferEnvVars ? Utils.merge(options, env) : Utils.merge(env, options);
     this.config = new Configuration(options);
     const discovery = this.config.get('discovery');
     this.driver = this.config.getDriver();
@@ -271,7 +285,8 @@ export class MikroORM<
    * Gets the EntityGenerator.
    */
   get entityGenerator(): IEntityGenerator {
-    return this.driver.getPlatform().getExtension('EntityGenerator', '@mikro-orm/entity-generator', '@mikro-orm/entity-generator', this.em);
+    return this.driver
+      .getPlatform()
+      .getExtension('EntityGenerator', '@mikro-orm/entity-generator', '@mikro-orm/entity-generator', this.em);
   }
-
 }

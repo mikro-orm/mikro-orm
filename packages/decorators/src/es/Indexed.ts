@@ -1,7 +1,10 @@
 import { type IndexOptions, type UniqueOptions, type EntityMetadata, type Constructor } from '@mikro-orm/core';
 
 function createDecorator<T extends object>(options: IndexOptions<T> | UniqueOptions<T>, unique: boolean) {
-  return function (value: unknown, context: ClassDecoratorContext<T & Constructor> | ClassFieldDecoratorContext<T>): any {
+  return function (
+    value: unknown,
+    context: ClassDecoratorContext<T & Constructor> | ClassFieldDecoratorContext<T>,
+  ): any {
     const meta = context.metadata as Partial<EntityMetadata<T>>;
 
     if (context.kind === 'field') {

@@ -244,13 +244,17 @@ describe('QueryBuilder - Advanced', () => {
         { name: 'value3', email: 'value4' },
       ],
     });
-    expect(qb1.getQuery()).toEqual('select `a`.* from `author2` as `a` where ((`a`.`name` = ? and `a`.`email` = ?) or (`a`.`name` = ? and `a`.`email` = ?))');
+    expect(qb1.getQuery()).toEqual(
+      'select `a`.* from `author2` as `a` where ((`a`.`name` = ? and `a`.`email` = ?) or (`a`.`name` = ? and `a`.`email` = ?))',
+    );
 
     const qb2 = orm.em.createQueryBuilder(Author2, 'a');
     qb2.select('*').where({
       $or: [{ $and: [{ name: 'value1', email: 'value2' }] }, { $and: [{ name: 'value3', email: 'value4' }] }],
     });
-    expect(qb2.getQuery()).toEqual('select `a`.* from `author2` as `a` where ((`a`.`name` = ? and `a`.`email` = ?) or (`a`.`name` = ? and `a`.`email` = ?))');
+    expect(qb2.getQuery()).toEqual(
+      'select `a`.* from `author2` as `a` where ((`a`.`name` = ? and `a`.`email` = ?) or (`a`.`name` = ? and `a`.`email` = ?))',
+    );
 
     const qb3 = orm.em.createQueryBuilder(Author2, 'a');
     qb3.select('*').where({
@@ -268,17 +272,25 @@ describe('QueryBuilder - Advanced', () => {
     qb5.select('*').where({
       $and: [{ $or: [{ name: 'value1' }, { email: 'value2' }] }, { $or: [{ name: 'value3' }, { email: 'value4' }] }],
     });
-    expect(qb5.getQuery()).toEqual('select `a`.* from `author2` as `a` where (`a`.`name` = ? or `a`.`email` = ?) and (`a`.`name` = ? or `a`.`email` = ?)');
+    expect(qb5.getQuery()).toEqual(
+      'select `a`.* from `author2` as `a` where (`a`.`name` = ? or `a`.`email` = ?) and (`a`.`name` = ? or `a`.`email` = ?)',
+    );
 
     const qb6 = orm.em.createQueryBuilder(Author2, 'a');
     qb6.select('*').where({
       $and: [{ $or: [{ name: 'value1', email: 'value2' }] }, { $or: [{ name: 'value3', email: 'value4' }] }],
     });
-    expect(qb6.getQuery()).toEqual('select `a`.* from `author2` as `a` where `a`.`name` = ? and `a`.`email` = ? and `a`.`name` = ? and `a`.`email` = ?');
+    expect(qb6.getQuery()).toEqual(
+      'select `a`.* from `author2` as `a` where `a`.`name` = ? and `a`.`email` = ? and `a`.`name` = ? and `a`.`email` = ?',
+    );
 
     const qb7 = orm.em.createQueryBuilder(Author2, 'a');
     qb7.select('*').where({
-      $or: [{ $and: [{ name: 'value1', email: 'value2' }] }, { $and: [{ name: 'value3', email: 'value4' }] }, { $or: [{ name: 'value5', email: 'value6' }] }],
+      $or: [
+        { $and: [{ name: 'value1', email: 'value2' }] },
+        { $and: [{ name: 'value3', email: 'value4' }] },
+        { $or: [{ name: 'value5', email: 'value6' }] },
+      ],
     });
     expect(qb7.getQuery()).toEqual(
       'select `a`.* from `author2` as `a` where ((`a`.`name` = ? and `a`.`email` = ?) or (`a`.`name` = ? and `a`.`email` = ?) or (`a`.`name` = ? and `a`.`email` = ?))',
@@ -286,7 +298,11 @@ describe('QueryBuilder - Advanced', () => {
 
     const qb8 = orm.em.createQueryBuilder(Author2, 'a');
     qb8.select('*').where({
-      $and: [{ $or: [{ name: 'value1', email: 'value2' }] }, { $or: [{ name: 'value3', email: 'value4' }] }, { $and: [{ name: 'value5', email: 'value6' }] }],
+      $and: [
+        { $or: [{ name: 'value1', email: 'value2' }] },
+        { $or: [{ name: 'value3', email: 'value4' }] },
+        { $and: [{ name: 'value5', email: 'value6' }] },
+      ],
     });
     expect(qb8.getQuery()).toEqual(
       'select `a`.* from `author2` as `a` where ' +
@@ -316,7 +332,9 @@ describe('QueryBuilder - Advanced', () => {
     qb10.select('*').where({
       $or: [{ email: 'value1' }, { name: { $in: ['value2'], $ne: 'value3' } }],
     });
-    expect(qb10.getQuery()).toEqual('select `a`.* from `author2` as `a` where (`a`.`email` = ? or (`a`.`name` in (?) and `a`.`name` != ?))');
+    expect(qb10.getQuery()).toEqual(
+      'select `a`.* from `author2` as `a` where (`a`.`email` = ? or (`a`.`name` in (?) and `a`.`name` != ?))',
+    );
 
     const qb11 = orm.em.createQueryBuilder(Author2, 'a');
     qb11.select('*').where({
@@ -372,7 +390,9 @@ describe('QueryBuilder - Advanced', () => {
   test('select fk by operator should not trigger auto-joining', async () => {
     const qb1 = orm.em.createQueryBuilder(Author2, 'a');
     qb1.select('*').where({ favouriteBook: { $in: ['1', '2', '3'] } });
-    expect(qb1.getQuery()).toEqual('select `a`.* from `author2` as `a` where `a`.`favourite_book_uuid_pk` in (?, ?, ?)');
+    expect(qb1.getQuery()).toEqual(
+      'select `a`.* from `author2` as `a` where `a`.`favourite_book_uuid_pk` in (?, ?, ?)',
+    );
   });
 
   test('select and order by auto-joined property', async () => {
@@ -432,7 +452,9 @@ describe('QueryBuilder - Advanced', () => {
       .select(['*', sql`"1" as code`])
       .where({ id: { $in: [1, 2] } })
       .orderBy({ code: 'asc' });
-    expect(qb1.getQuery()).toEqual('select `a`.*, "1" as code from `author2` as `a` where `a`.`id` in (?, ?) order by `code` asc');
+    expect(qb1.getQuery()).toEqual(
+      'select `a`.*, "1" as code from `author2` as `a` where `a`.`id` in (?, ?) order by `code` asc',
+    );
   });
 
   test('having with virtual property', async () => {
@@ -531,7 +553,9 @@ describe('QueryBuilder - Advanced', () => {
       .where({
         $or: [
           {
-            $and: [{ books2: { $and: [{ publisher: { $and: [{ tests: { $and: [{ name: { $in: ['name'] } }] } }] } }] } }],
+            $and: [
+              { books2: { $and: [{ publisher: { $and: [{ tests: { $and: [{ name: { $in: ['name'] } }] } }] } }] } },
+            ],
           },
         ],
       });

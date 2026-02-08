@@ -4,24 +4,20 @@ import { MikroORM } from '@mikro-orm/sqlite';
 
 @Entity()
 class Sea {
-
   @PrimaryKey()
   id!: number;
 
   @OneToMany(() => Fish, ({ sea }) => sea)
   fishes = new Collection<Fish>(this);
-
 }
 
 @Entity()
 class Fish {
-
   @PrimaryKey()
   id!: number;
 
   @ManyToOne(() => Sea)
   sea!: Sea;
-
 }
 
 let orm: MikroORM;

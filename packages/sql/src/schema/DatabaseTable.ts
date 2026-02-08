@@ -25,7 +25,6 @@ import type { AbstractSqlPlatform } from '../AbstractSqlPlatform.js';
  * @internal
  */
 export class DatabaseTable {
-
   private columns: Dictionary<Column> = {};
   private indexes: IndexDef[] = [];
   private checks: CheckDef[] = [];
@@ -33,9 +32,11 @@ export class DatabaseTable {
   public nativeEnums: Dictionary<{ name: string; schema?: string; items: string[] }> = {}; // for postgres
   public comment?: string;
 
-  constructor(private readonly platform: AbstractSqlPlatform,
-              readonly name: string,
-              readonly schema?: string) {
+  constructor(
+    private readonly platform: AbstractSqlPlatform,
+    readonly name: string,
+    readonly schema?: string,
+  ) {
     Object.defineProperties(this, {
       platform: { enumerable: false, writable: true },
     });
@@ -65,7 +66,14 @@ export class DatabaseTable {
     return this.checks;
   }
 
-  init(cols: Column[], indexes: IndexDef[] = [], checks: CheckDef[] = [], pks: string[], fks: Dictionary<ForeignKey> = {}, enums: Dictionary<string[]> = {}): void {
+  init(
+    cols: Column[],
+    indexes: IndexDef[] = [],
+    checks: CheckDef[] = [],
+    pks: string[],
+    fks: Dictionary<ForeignKey> = {},
+    enums: Dictionary<string[]> = {},
+  ): void {
     this.indexes = indexes;
     this.checks = checks;
     this.foreignKeys = fks;
@@ -116,10 +124,15 @@ export class DatabaseTable {
       this.columns[field] = {
         name: prop.fieldNames[idx],
         type: prop.columnTypes[idx],
-        generated: prop.generated instanceof RawQueryFragment ? this.platform.formatQuery(prop.generated.sql, prop.generated.params) : prop.generated as string,
+        generated:
+          prop.generated instanceof RawQueryFragment
+            ? this.platform.formatQuery(prop.generated.sql, prop.generated.params)
+            : (prop.generated as string),
         mappedType,
         unsigned: prop.unsigned && this.platform.isNumericColumn(mappedType),
-        autoincrement: prop.autoincrement ?? (primary && prop.kind === ReferenceKind.SCALAR && this.platform.isNumericColumn(mappedType)),
+        autoincrement:
+          prop.autoincrement ??
+          (primary && prop.kind === ReferenceKind.SCALAR && this.platform.isNumericColumn(mappedType)),
         primary,
         nullable: this.columns[field]?.nullable ?? !!prop.nullable,
         nativeEnumName: prop.nativeEnumName,
@@ -127,7 +140,8 @@ export class DatabaseTable {
         precision: prop.precision,
         scale: prop.scale,
         default: prop.defaultRaw,
-        enumItems: prop.nativeEnumName || prop.items?.every(i => typeof i === 'string') ? prop.items as string[] : undefined,
+        enumItems:
+          prop.nativeEnumName || prop.items?.every(i => typeof i === 'string') ? (prop.items as string[]) : undefined,
         comment: prop.comment,
         extra: prop.extra,
         ignoreSchemaChanges: prop.ignoreSchemaChanges,
@@ -144,7 +158,10 @@ export class DatabaseTable {
 
     if ([ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind) && !prop.polymorphic) {
       const constraintName = this.getIndexName(prop.foreignKeyName ?? true, prop.fieldNames, 'foreign');
-      let schema = prop.targetMeta!.root.schema === '*' ? this.schema : (prop.targetMeta!.root.schema ?? config.get('schema', this.platform.getDefaultSchemaName()));
+      let schema =
+        prop.targetMeta!.root.schema === '*'
+          ? this.schema
+          : (prop.targetMeta!.root.schema ?? config.get('schema', this.platform.getDefaultSchemaName()));
 
       if (prop.referencedTableName.includes('.')) {
         schema = undefined;
@@ -193,7 +210,11 @@ export class DatabaseTable {
     }
   }
 
-  private getIndexName(value: boolean | string, columnNames: string[], type: 'unique' | 'index' | 'primary' | 'foreign'): string {
+  private getIndexName(
+    value: boolean | string,
+    columnNames: string[],
+    type: 'unique' | 'index' | 'primary' | 'foreign',
+  ): string {
     if (typeof value === 'string') {
       return value;
     }
@@ -206,14 +227,8 @@ export class DatabaseTable {
     schemaHelper: SchemaHelper,
     scalarPropertiesForRelations: 'always' | 'never' | 'smart',
   ): EntityMetadata {
-    const {
-      fksOnColumnProps,
-      fksOnStandaloneProps,
-      columnFks,
-      fkIndexes,
-      nullableForeignKeys,
-      skippedColumnNames,
-    } = this.foreignKeysToProps(namingStrategy, scalarPropertiesForRelations);
+    const { fksOnColumnProps, fksOnStandaloneProps, columnFks, fkIndexes, nullableForeignKeys, skippedColumnNames } =
+      this.foreignKeysToProps(namingStrategy, scalarPropertiesForRelations);
 
     const name = namingStrategy.getEntityName(this.name, this.schema);
     const schema = new EntitySchema({ name, collection: this.name, schema: this.schema, comment: this.comment });
@@ -221,15 +236,17 @@ export class DatabaseTable {
     const compositeFkIndexes: Dictionary<Pick<IndexDef, 'keyName'>> = {};
     const compositeFkUniques: Dictionary<Pick<IndexDef, 'keyName'>> = {};
 
-    const potentiallyUnmappedIndexes = this.indexes.filter(index =>
-      !index.primary // Skip primary index. Whether it's in use by scalar column or FK, it's already mapped.
-      && ((// Non-trivial non-composite indexes will be declared at the entity's metadata, though later outputted in the property
-        index.columnNames.length > 1 // All composite indexes are to be mapped to entity decorators or FK props.
-          || skippedColumnNames.includes(index.columnNames[0]) // Non-composite indexes for skipped columns are to be mapped as entity decorators.
-          || index.deferMode || index.expression || !(index.columnNames[0] in columnFks)) // Trivial non-composite indexes for scalar props are to be mapped to the column.
-      )
-      // ignore indexes that don't have all column names (this can happen in sqlite where there is no way to infer this for expressions)
-      && !(index.columnNames.some(col => !col) && !index.expression),
+    const potentiallyUnmappedIndexes = this.indexes.filter(
+      index =>
+        !index.primary && // Skip primary index. Whether it's in use by scalar column or FK, it's already mapped.
+        // Non-trivial non-composite indexes will be declared at the entity's metadata, though later outputted in the property
+        (index.columnNames.length > 1 || // All composite indexes are to be mapped to entity decorators or FK props.
+          skippedColumnNames.includes(index.columnNames[0]) || // Non-composite indexes for skipped columns are to be mapped as entity decorators.
+          index.deferMode ||
+          index.expression ||
+          !(index.columnNames[0] in columnFks)) && // Trivial non-composite indexes for scalar props are to be mapped to the column.
+        // ignore indexes that don't have all column names (this can happen in sqlite where there is no way to infer this for expressions)
+        !(index.columnNames.some(col => !col) && !index.expression),
     );
 
     // Helper to map column name to property name
@@ -266,8 +283,14 @@ export class DatabaseTable {
       }
 
       // An index is trivial if it has no special options that require entity-level declaration
-      const hasAdvancedOptions = index.columns?.length || index.include?.length || index.fillFactor ||
-        index.type || index.invisible || index.disabled || index.clustered;
+      const hasAdvancedOptions =
+        index.columns?.length ||
+        index.include?.length ||
+        index.fillFactor ||
+        index.type ||
+        index.invisible ||
+        index.disabled ||
+        index.clustered;
       const isTrivial = !index.deferMode && !index.expression && !hasAdvancedOptions;
 
       if (isTrivial) {
@@ -284,7 +307,9 @@ export class DatabaseTable {
         }
       }
 
-      const properties = ret.properties ?? this.getIndexProperties(index, columnFks, fksOnColumnProps, fksOnStandaloneProps, namingStrategy);
+      const properties =
+        ret.properties ??
+        this.getIndexProperties(index, columnFks, fksOnColumnProps, fksOnStandaloneProps, namingStrategy);
 
       // If there is a column that cannot be unambiguously mapped to a prop, render an expression.
       if (typeof properties === 'undefined') {
@@ -311,7 +336,7 @@ export class DatabaseTable {
       schema.addIndex(ret);
     }
 
-    const addedStandaloneFkPropsBasedOnColumn = new Set<string>;
+    const addedStandaloneFkPropsBasedOnColumn = new Set<string>();
     const nonSkippedColumns = this.getColumns().filter(column => !skippedColumnNames.includes(column.name));
 
     for (const column of nonSkippedColumns) {
@@ -320,11 +345,27 @@ export class DatabaseTable {
       if (standaloneFkPropBasedOnColumn && !fksOnColumnProps.get(columnName)) {
         addedStandaloneFkPropsBasedOnColumn.add(columnName);
         const { fkIndex, currentFk } = standaloneFkPropBasedOnColumn;
-        const prop = this.getForeignKeyDeclaration(currentFk, namingStrategy, schemaHelper, fkIndex, nullableForeignKeys.has(currentFk), columnName, fksOnColumnProps);
+        const prop = this.getForeignKeyDeclaration(
+          currentFk,
+          namingStrategy,
+          schemaHelper,
+          fkIndex,
+          nullableForeignKeys.has(currentFk),
+          columnName,
+          fksOnColumnProps,
+        );
         schema.addProperty(prop.name, prop.type, prop);
       }
 
-      const prop = this.getPropertyDeclaration(column, namingStrategy, schemaHelper, compositeFkIndexes, compositeFkUniques, columnFks, fksOnColumnProps.get(columnName));
+      const prop = this.getPropertyDeclaration(
+        column,
+        namingStrategy,
+        schemaHelper,
+        compositeFkIndexes,
+        compositeFkUniques,
+        columnFks,
+        fksOnColumnProps.get(columnName),
+      );
       schema.addProperty(prop.name, prop.type, prop);
     }
 
@@ -332,15 +373,26 @@ export class DatabaseTable {
       if (addedStandaloneFkPropsBasedOnColumn.has(propBaseName)) {
         continue;
       }
-      const prop = this.getForeignKeyDeclaration(currentFk, namingStrategy, schemaHelper, fkIndex, nullableForeignKeys.has(currentFk), propBaseName, fksOnColumnProps);
+      const prop = this.getForeignKeyDeclaration(
+        currentFk,
+        namingStrategy,
+        schemaHelper,
+        fkIndex,
+        nullableForeignKeys.has(currentFk),
+        propBaseName,
+        fksOnColumnProps,
+      );
       schema.addProperty(prop.name, prop.type, prop);
     }
 
     const meta = schema.init().meta;
-    const oneToOneCandidateProperties = meta.relations
-      .filter(prop => prop.primary && prop.kind === ReferenceKind.MANY_TO_ONE);
-    if (oneToOneCandidateProperties.length === 1
-      && oneToOneCandidateProperties[0].fieldNames.length === (new Set(meta.getPrimaryProps().flatMap(prop => prop.fieldNames))).size
+    const oneToOneCandidateProperties = meta.relations.filter(
+      prop => prop.primary && prop.kind === ReferenceKind.MANY_TO_ONE,
+    );
+    if (
+      oneToOneCandidateProperties.length === 1 &&
+      oneToOneCandidateProperties[0].fieldNames.length ===
+        new Set(meta.getPrimaryProps().flatMap(prop => prop.fieldNames)).size
     ) {
       oneToOneCandidateProperties[0].kind = ReferenceKind.ONE_TO_ONE;
     }
@@ -363,7 +415,12 @@ export class DatabaseTable {
     for (const currentFk of fks) {
       const fkIndex = this.findFkIndex(currentFk);
 
-      if (currentFk.columnNames.length === 1 && !fks.some(fk => fk !== currentFk && fk.columnNames.length === 1 && currentFk.columnNames[0] === fk.columnNames[0])) {
+      if (
+        currentFk.columnNames.length === 1 &&
+        !fks.some(
+          fk => fk !== currentFk && fk.columnNames.length === 1 && currentFk.columnNames[0] === fk.columnNames[0],
+        )
+      ) {
         // Non-composite FK is the only possible one for a column. Render the column with it.
         const columnName = currentFk.columnNames[0];
         columnFks[columnName] ??= [];
@@ -410,7 +467,12 @@ export class DatabaseTable {
         nullableForeignKeys.add(currentFk);
       }
 
-      if (specificColumnNames.length === 1 && ((nullableColumnsInFk.length === currentFk.columnNames.length || nullableColumnsInFk.length === 0) || (nullableColumnsInFk.length === 1 && nullableColumnsInFk[0] === specificColumnNames[0]))) {
+      if (
+        specificColumnNames.length === 1 &&
+        (nullableColumnsInFk.length === currentFk.columnNames.length ||
+          nullableColumnsInFk.length === 0 ||
+          (nullableColumnsInFk.length === 1 && nullableColumnsInFk[0] === specificColumnNames[0]))
+      ) {
         // Composite FK has exactly one column which is not used in any other FK.
         // The FK also doesn't have a mix of nullable and non-nullable columns,
         // or its only nullable column is this very one.
@@ -492,16 +554,24 @@ export class DatabaseTable {
       // But also does not skip if the column is not nullable, and yet all involved FKs are nullable,
       // or if one or more FKs involved has multiple nullable columns.
       smart: (column: Column) => {
-        return columnsInFks.includes(column.name)
-          && !fksOnColumnProps.has(column.name)
-          && (column.nullable
-            ? columnFks[column.name].some(fk => !fk.columnNames.some(fkColumnName => fkColumnName !== column.name && this.getColumn(fkColumnName)?.nullable))
-            : columnFks[column.name].some(fk => !nullableForeignKeys.has(fk))
-          );
+        return (
+          columnsInFks.includes(column.name) &&
+          !fksOnColumnProps.has(column.name) &&
+          (column.nullable
+            ? columnFks[column.name].some(
+                fk =>
+                  !fk.columnNames.some(
+                    fkColumnName => fkColumnName !== column.name && this.getColumn(fkColumnName)?.nullable,
+                  ),
+              )
+            : columnFks[column.name].some(fk => !nullableForeignKeys.has(fk)))
+        );
       },
     };
 
-    const skippedColumnNames = this.getColumns().filter(skippingHandlers[scalarPropertiesForRelations]).map(column => column.name);
+    const skippedColumnNames = this.getColumns()
+      .filter(skippingHandlers[scalarPropertiesForRelations])
+      .map(column => column.name);
 
     // Check standalone FKs named after columns for potential conflicts among themselves.
     // This typically happens when two standalone FKs named after a column resolve to the same prop name
@@ -548,7 +618,10 @@ export class DatabaseTable {
   private findFkIndex(currentFk: ForeignKey) {
     const fkColumnsLength = currentFk.columnNames.length;
     const possibleIndexes = this.indexes.filter(index => {
-      return index.columnNames.length === fkColumnsLength && !currentFk.columnNames.some((columnName, i) => index.columnNames[i] !== columnName);
+      return (
+        index.columnNames.length === fkColumnsLength &&
+        !currentFk.columnNames.some((columnName, i) => index.columnNames[i] !== columnName)
+      );
     });
     possibleIndexes.sort((a, b) => {
       if (a.primary !== b.primary) {
@@ -565,7 +638,13 @@ export class DatabaseTable {
     return possibleIndexes.at(0);
   }
 
-  private getIndexProperties(index: IndexDef, columnFks: Record<string, ForeignKey[]>, fksOnColumnProps: Map<string, ForeignKey>, fksOnStandaloneProps: Map<string, { fkIndex?: IndexDef; currentFk: ForeignKey }>, namingStrategy: NamingStrategy) {
+  private getIndexProperties(
+    index: IndexDef,
+    columnFks: Record<string, ForeignKey[]>,
+    fksOnColumnProps: Map<string, ForeignKey>,
+    fksOnStandaloneProps: Map<string, { fkIndex?: IndexDef; currentFk: ForeignKey }>,
+    namingStrategy: NamingStrategy,
+  ) {
     const propBaseNames = new Set<string>();
     const columnNames = index.columnNames;
     const l = columnNames.length;
@@ -621,11 +700,21 @@ export class DatabaseTable {
       return;
     }
 
-    return Array.from(propBaseNames).map(baseName => this.getPropertyName(namingStrategy, baseName, fksOnColumnProps.get(baseName)));
+    return Array.from(propBaseNames).map(baseName =>
+      this.getPropertyName(namingStrategy, baseName, fksOnColumnProps.get(baseName)),
+    );
   }
 
-  private getSafeBaseNameForFkProp(namingStrategy: NamingStrategy, currentFk: ForeignKey, fks: ForeignKey[], columnName?: string) {
-    if (columnName && this.getPropertyName(namingStrategy, columnName, currentFk) !== this.getPropertyName(namingStrategy, columnName)) {
+  private getSafeBaseNameForFkProp(
+    namingStrategy: NamingStrategy,
+    currentFk: ForeignKey,
+    fks: ForeignKey[],
+    columnName?: string,
+  ) {
+    if (
+      columnName &&
+      this.getPropertyName(namingStrategy, columnName, currentFk) !== this.getPropertyName(namingStrategy, columnName)
+    ) {
       // The eligible scalar column name is different from the name of the FK prop of the same column.
       // Both can be safely rendered.
       // Use the column name as a base for the FK prop.
@@ -639,7 +728,9 @@ export class DatabaseTable {
     const referencedTableName = getTableName(currentFk.referencedTableName);
 
     // Check for conflicts using stripped table names (handles cross-schema FKs to same-named tables)
-    const hasConflictingFk = fks.some(fk => fk !== currentFk && getTableName(fk.referencedTableName) === referencedTableName);
+    const hasConflictingFk = fks.some(
+      fk => fk !== currentFk && getTableName(fk.referencedTableName) === referencedTableName,
+    );
     if (!hasConflictingFk && !this.getColumn(referencedTableName)) {
       // FK is the only one in this table that references a table with this name.
       // The name of the referenced table is not shared with a column in this table,
@@ -665,7 +756,11 @@ export class DatabaseTable {
   getShortestName(skipDefaultSchema = true): string {
     const defaultSchema = this.platform.getDefaultSchemaName();
 
-    if (!this.schema || this.name.startsWith(defaultSchema + '.') || (this.schema === defaultSchema && skipDefaultSchema)) {
+    if (
+      !this.schema ||
+      this.name.startsWith(defaultSchema + '.') ||
+      (this.schema === defaultSchema && skipDefaultSchema)
+    ) {
       return this.name;
     }
 
@@ -714,7 +809,7 @@ export class DatabaseTable {
     fksOnColumnProps: Map<string, ForeignKey>,
   ) {
     const prop = this.getPropertyName(namingStrategy, propNameBase, fk);
-    const kind = (fkIndex?.unique && !fkIndex.primary) ? this.getReferenceKind(fk, fkIndex) : this.getReferenceKind(fk);
+    const kind = fkIndex?.unique && !fkIndex.primary ? this.getReferenceKind(fk, fkIndex) : this.getReferenceKind(fk);
     const runtimeType = this.getPropertyTypeForForeignKey(namingStrategy, fk);
 
     const fkOptions: Partial<EntityProperty> = {};
@@ -733,8 +828,8 @@ export class DatabaseTable {
       const defaultRaw = this.getPropertyDefaultValue(schemaHelper, column, column.type, true);
       const defaultTs = this.getPropertyDefaultValue(schemaHelper, column, column.type);
 
-      columnOptions.default = (defaultRaw !== defaultTs || defaultRaw === '') ? defaultTs : undefined;
-      columnOptions.defaultRaw = (column.nullable && defaultRaw === 'null') ? undefined : defaultRaw;
+      columnOptions.default = defaultRaw !== defaultTs || defaultRaw === '' ? defaultTs : undefined;
+      columnOptions.defaultRaw = column.nullable && defaultRaw === 'null' ? undefined : defaultRaw;
       columnOptions.optional = typeof column.generated !== 'undefined' || defaultRaw !== 'null';
       columnOptions.generated = column.generated;
       columnOptions.nullable = column.nullable;
@@ -755,9 +850,10 @@ export class DatabaseTable {
       kind,
       ...columnOptions,
       nullable,
-      primary: fkIndex?.primary || !fk.columnNames.some(columnName => !this.getPrimaryKey()?.columnNames.includes(columnName)),
+      primary:
+        fkIndex?.primary || !fk.columnNames.some(columnName => !this.getPrimaryKey()?.columnNames.includes(columnName)),
       index: !fkIndex?.unique ? fkIndex?.keyName : undefined,
-      unique: (fkIndex?.unique && !fkIndex.primary) ? fkIndex.keyName : undefined,
+      unique: fkIndex?.unique && !fkIndex.primary ? fkIndex.keyName : undefined,
       ...fkOptions,
     };
   }
@@ -773,20 +869,29 @@ export class DatabaseTable {
   ) {
     const prop = this.getPropertyName(namingStrategy, column.name, fk);
     const persist = !(column.name in columnFks && typeof fk === 'undefined');
-    const index = compositeFkIndexes[prop] || this.indexes.find(idx => idx.columnNames[0] === column.name && !idx.composite && !idx.unique && !idx.primary);
-    const unique = compositeFkUniques[prop] || this.indexes.find(idx => idx.columnNames[0] === column.name && !idx.composite && idx.unique && !idx.primary);
+    const index =
+      compositeFkIndexes[prop] ||
+      this.indexes.find(idx => idx.columnNames[0] === column.name && !idx.composite && !idx.unique && !idx.primary);
+    const unique =
+      compositeFkUniques[prop] ||
+      this.indexes.find(idx => idx.columnNames[0] === column.name && !idx.composite && idx.unique && !idx.primary);
 
     const kind = this.getReferenceKind(fk, unique);
     const runtimeType = this.getPropertyTypeForColumn(namingStrategy, column, fk);
-    const type = fk ? runtimeType : (Utils.keys(t).find(k => {
-      const typeInCoreMap = this.platform.getMappedType(k);
-      return (typeInCoreMap !== Type.getType(UnknownType) || k === 'unknown') && typeInCoreMap === column.mappedType;
-    }) ?? runtimeType);
-    const ignoreSchemaChanges: EntityProperty['ignoreSchemaChanges'] = (type === 'unknown' && column.length) ? (column.extra ? ['type', 'extra'] : ['type']) : undefined;
+    const type = fk
+      ? runtimeType
+      : (Utils.keys(t).find(k => {
+          const typeInCoreMap = this.platform.getMappedType(k);
+          return (
+            (typeInCoreMap !== Type.getType(UnknownType) || k === 'unknown') && typeInCoreMap === column.mappedType
+          );
+        }) ?? runtimeType);
+    const ignoreSchemaChanges: EntityProperty['ignoreSchemaChanges'] =
+      type === 'unknown' && column.length ? (column.extra ? ['type', 'extra'] : ['type']) : undefined;
 
     const defaultRaw = this.getPropertyDefaultValue(schemaHelper, column, runtimeType, true);
     const defaultParsed = this.getPropertyDefaultValue(schemaHelper, column, runtimeType);
-    const defaultTs = (defaultRaw !== defaultParsed || defaultParsed === '') ? defaultParsed : undefined;
+    const defaultTs = defaultRaw !== defaultParsed || defaultParsed === '' ? defaultParsed : undefined;
     const fkOptions: Partial<EntityProperty> = {};
 
     if (fk) {
@@ -809,7 +914,7 @@ export class DatabaseTable {
       optional: defaultRaw !== 'null' || defaultTs != null || typeof column.generated !== 'undefined',
       columnType: column.type,
       default: defaultTs,
-      defaultRaw: (column.nullable && defaultRaw === 'null') ? undefined : defaultRaw,
+      defaultRaw: column.nullable && defaultRaw === 'null' ? undefined : defaultRaw,
       nullable: column.nullable,
       primary: column.primary && persist,
       autoincrement: column.autoincrement,
@@ -872,7 +977,7 @@ export class DatabaseTable {
 
   private getPropertyTypeForForeignKey(namingStrategy: NamingStrategy, fk: ForeignKey): string {
     const parts = fk.referencedTableName.split('.', 2);
-    return namingStrategy.getEntityName(...parts.reverse() as [string, string]);
+    return namingStrategy.getEntityName(...(parts.reverse() as [string, string]));
   }
 
   private getPropertyTypeForColumn(namingStrategy: NamingStrategy, column: Column, fk?: ForeignKey): string {
@@ -905,7 +1010,7 @@ export class DatabaseTable {
     const val = schemaHelper.normalizeDefaultValue(defaultValue, column.length);
 
     if (val === 'null') {
-      return raw ? 'null' : (column.nullable ? null : undefined);
+      return raw ? 'null' : column.nullable ? null : undefined;
     }
 
     if (propType === 'boolean' && !raw) {
@@ -926,7 +1031,11 @@ export class DatabaseTable {
     return '' + val;
   }
 
-  private processIndexExpression(indexName: string, expression: string | IndexCallback<any> | undefined, meta: EntityMetadata) {
+  private processIndexExpression(
+    indexName: string,
+    expression: string | IndexCallback<any> | undefined,
+    meta: EntityMetadata,
+  ) {
     if (expression instanceof Function) {
       const qualifiedName = this.schema ? `${this.schema}.${this.name}` : this.name;
       const table = {
@@ -943,60 +1052,78 @@ export class DatabaseTable {
     return expression;
   }
 
-  addIndex(meta: EntityMetadata, index: {
-    properties?: string | string[];
-    name?: string;
-    type?: string;
-    expression?: string | IndexCallback<any>;
-    deferMode?: DeferMode | `${DeferMode}`;
-    options?: Dictionary;
-    columns?: { name: string; sort?: 'ASC' | 'DESC' | 'asc' | 'desc'; nulls?: 'FIRST' | 'LAST' | 'first' | 'last'; length?: number; collation?: string }[];
-    include?: string | string[];
-    fillFactor?: number;
-    invisible?: boolean;
-    disabled?: boolean;
-    clustered?: boolean;
-  }, type: 'index' | 'unique' | 'primary') {
+  addIndex(
+    meta: EntityMetadata,
+    index: {
+      properties?: string | string[];
+      name?: string;
+      type?: string;
+      expression?: string | IndexCallback<any>;
+      deferMode?: DeferMode | `${DeferMode}`;
+      options?: Dictionary;
+      columns?: {
+        name: string;
+        sort?: 'ASC' | 'DESC' | 'asc' | 'desc';
+        nulls?: 'FIRST' | 'LAST' | 'first' | 'last';
+        length?: number;
+        collation?: string;
+      }[];
+      include?: string | string[];
+      fillFactor?: number;
+      invisible?: boolean;
+      disabled?: boolean;
+      clustered?: boolean;
+    },
+    type: 'index' | 'unique' | 'primary',
+  ) {
     // If columns are specified but properties are not, derive properties from column names
-    if (index.columns?.length && !index.expression && (!index.properties || Utils.asArray(index.properties).length === 0)) {
+    if (
+      index.columns?.length &&
+      !index.expression &&
+      (!index.properties || Utils.asArray(index.properties).length === 0)
+    ) {
       index = { ...index, properties: index.columns.map(c => c.name) };
     }
 
-    const properties = Utils.unique(Utils.flatten(Utils.asArray(index.properties).map(prop => {
-      const parts = prop.split('.');
-      const root = parts[0];
+    const properties = Utils.unique(
+      Utils.flatten(
+        Utils.asArray(index.properties).map(prop => {
+          const parts = prop.split('.');
+          const root = parts[0];
 
-      if (meta.properties[prop]) {
-        if (meta.properties[prop].embeddedPath) {
-          return [meta.properties[prop].embeddedPath!.join('.')];
-        }
+          if (meta.properties[prop]) {
+            if (meta.properties[prop].embeddedPath) {
+              return [meta.properties[prop].embeddedPath!.join('.')];
+            }
 
-        return meta.properties[prop].fieldNames;
-      }
-
-      const rootProp = meta.properties[root];
-
-      // inline embedded property index, we need to find the field name of the child property
-      if (rootProp?.embeddable && !rootProp.object && parts.length > 1) {
-        const expand = (p: EntityProperty, i: number): string => {
-          if (parts.length === i) {
-            return p.fieldNames[0];
+            return meta.properties[prop].fieldNames;
           }
 
-          return expand(p.embeddedProps[parts[i]], i + 1);
-        };
+          const rootProp = meta.properties[root];
 
-        return [expand(rootProp, 1)];
-      }
+          // inline embedded property index, we need to find the field name of the child property
+          if (rootProp?.embeddable && !rootProp.object && parts.length > 1) {
+            const expand = (p: EntityProperty, i: number): string => {
+              if (parts.length === i) {
+                return p.fieldNames[0];
+              }
 
-      // json index, we need to rename the column only
-      if (rootProp) {
-        return [prop.replace(root, rootProp.fieldNames[0])];
-      }
+              return expand(p.embeddedProps[parts[i]], i + 1);
+            };
 
-      /* v8 ignore next */
-      return [prop];
-    })));
+            return [expand(rootProp, 1)];
+          }
+
+          // json index, we need to rename the column only
+          if (rootProp) {
+            return [prop.replace(root, rootProp.fieldNames[0])];
+          }
+
+          /* v8 ignore next */
+          return [prop];
+        }),
+      ),
+    );
 
     if (properties.length === 0 && !index.expression) {
       return;
@@ -1005,13 +1132,19 @@ export class DatabaseTable {
     const name = this.getIndexName(index.name!, properties, type);
 
     // Process include columns (map property names to field names)
-    const includeColumns = index.include ? Utils.unique(Utils.flatten(Utils.asArray(index.include).map(prop => {
-      if (meta.properties[prop]) {
-        return meta.properties[prop].fieldNames;
-      }
-      /* v8 ignore next */
-      return [prop];
-    }))) : undefined;
+    const includeColumns = index.include
+      ? Utils.unique(
+          Utils.flatten(
+            Utils.asArray(index.include).map(prop => {
+              if (meta.properties[prop]) {
+                return meta.properties[prop].fieldNames;
+              }
+              /* v8 ignore next */
+              return [prop];
+            }),
+          ),
+        )
+      : undefined;
 
     // Process columns with advanced options (map property names to field names)
     const columns = index.columns?.map(col => {
@@ -1029,14 +1162,18 @@ export class DatabaseTable {
     if (columns?.length && properties.length > 0) {
       for (const col of columns) {
         if (!properties.includes(col.name)) {
-          throw new Error(`Index '${name}' on entity '${meta.className}': column option references field '${col.name}' which is not in the index properties`);
+          throw new Error(
+            `Index '${name}' on entity '${meta.className}': column option references field '${col.name}' which is not in the index properties`,
+          );
         }
       }
     }
 
     // Validate fillFactor range
     if (index.fillFactor != null && (index.fillFactor < 0 || index.fillFactor > 100)) {
-      throw new Error(`fillFactor must be between 0 and 100, got ${index.fillFactor} for index '${name}' on entity '${meta.className}'`);
+      throw new Error(
+        `fillFactor must be between 0 and 100, got ${index.fillFactor} for index '${name}' on entity '${meta.className}'`,
+      );
     }
 
     this.indexes.push({
@@ -1076,5 +1213,4 @@ export class DatabaseTable {
 
     return { columns: columnsMapped, ...rest };
   }
-
 }

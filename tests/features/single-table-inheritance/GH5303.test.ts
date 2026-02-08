@@ -1,9 +1,15 @@
 import { Cascade, Collection, MikroORM } from '@mikro-orm/sqlite';
-import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class User {
-
   @PrimaryKey()
   id!: number;
 
@@ -24,12 +30,10 @@ class User {
     cascade: [Cascade.ALL],
   })
   profile_pictures: Collection<ProfilePicture> = new Collection<ProfilePicture>(this);
-
 }
 
 @Entity({ abstract: true, discriminatorColumn: 'type' })
 abstract class BasePicture {
-
   @PrimaryKey()
   id!: number;
 
@@ -39,12 +43,10 @@ abstract class BasePicture {
   constructor(path: string) {
     this.path = path;
   }
-
 }
 
 @Entity({ discriminatorValue: 'cover' })
 class CoverPicture extends BasePicture {
-
   @ManyToOne({ entity: () => User })
   cover_user: User;
 
@@ -52,12 +54,10 @@ class CoverPicture extends BasePicture {
     super(path);
     this.cover_user = user;
   }
-
 }
 
 @Entity({ discriminatorValue: 'profile' })
 class ProfilePicture extends BasePicture {
-
   @ManyToOne({ entity: () => User })
   profile_user: User;
 
@@ -65,7 +65,6 @@ class ProfilePicture extends BasePicture {
     super(path);
     this.profile_user = user;
   }
-
 }
 
 let orm: MikroORM;

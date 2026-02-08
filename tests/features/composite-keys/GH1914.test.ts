@@ -5,19 +5,16 @@ import { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()
 export class Category {
-
   @PrimaryKey()
   id!: number;
 
   constructor(id: number) {
     this.id = id;
   }
-
 }
 
 @Entity()
 export class Site {
-
   @PrimaryKey()
   id!: number;
 
@@ -27,12 +24,10 @@ export class Site {
   constructor(id: number) {
     this.id = id;
   }
-
 }
 
 @Entity()
 export class SiteCategory {
-
   constructor(site: Site, category: Category) {
     this.site = site;
     this.category = category;
@@ -45,7 +40,6 @@ export class SiteCategory {
   category!: Category;
 
   [PrimaryKeyProp]?: ['site', 'category'];
-
 }
 
 describe('GH #1914', () => {

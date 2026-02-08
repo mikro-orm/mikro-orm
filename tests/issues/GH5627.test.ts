@@ -3,32 +3,26 @@ import { Entity, ManyToMany, PrimaryKey, ReflectMetadataProvider } from '@mikro-
 
 @Entity()
 class A {
-
   @PrimaryKey()
   id!: number;
 
   @ManyToMany(() => B)
   b = new Collection<B>(this);
-
 }
 
 @Entity()
 class B {
-
   @PrimaryKey()
   id!: number;
 
   @ManyToMany(() => A, 'b')
   a = new Collection<A>(this);
-
 }
 
 @Entity()
 class C {
-
   @PrimaryKey()
   id!: number;
-
 }
 
 let orm: MikroORM;

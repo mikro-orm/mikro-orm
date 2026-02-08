@@ -10,18 +10,15 @@ import {
 
 @Entity({ tableName: 'brands' })
 class Brand {
-
   @PrimaryKey()
   id!: number;
 
   @OneToMany({ entity: () => BrandSiteRestriction, mappedBy: 'brand' })
   brandSiteRestrictions = new Collection<BrandSiteRestriction>(this);
-
 }
 
 @Entity({ tableName: 'brand_site_restrictions' })
 class BrandSiteRestriction {
-
   @PrimaryKey()
   id!: number;
 
@@ -30,12 +27,10 @@ class BrandSiteRestriction {
 
   @ManyToOne({ entity: () => Brand })
   brand!: Brand;
-
 }
 
 @Entity({ tableName: 'placements' })
 class Placement {
-
   @PrimaryKey()
   id!: number;
 
@@ -44,23 +39,19 @@ class Placement {
 
   @ManyToOne({ entity: () => Site })
   site!: any;
-
 }
 
 @Entity({ tableName: 'publishers' })
 class Publisher {
-
   @OneToMany({ entity: () => Site, mappedBy: 'publisher' })
   sites = new Collection<Site>(this);
 
   @PrimaryKey()
   id!: number;
-
 }
 
 @Entity({ tableName: 'sites' })
 class Site {
-
   @ManyToOne({ entity: () => Publisher, nullable: true })
   publisher?: Publisher;
 
@@ -75,11 +66,9 @@ class Site {
 
   @Property({ length: 191, nullable: true })
   name?: string;
-
 }
 
 describe('GH issue 1009', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -104,5 +93,4 @@ describe('GH issue 1009', () => {
     br.brand = brand;
     await expect(orm.em.persist(br).flush()).resolves.toBeUndefined();
   });
-
 });

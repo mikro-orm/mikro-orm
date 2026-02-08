@@ -3,7 +3,6 @@ import { Publisher } from './Publisher.js';
 
 @Entity()
 export class PublisherAddress {
-
   @OneToOne({ entity: () => Publisher, primary: true, createForeignKeyConstraint: false })
   publisher: Publisher;
 
@@ -14,5 +13,4 @@ export class PublisherAddress {
     this.publisher = publisher;
     this.value = value;
   }
-
 }

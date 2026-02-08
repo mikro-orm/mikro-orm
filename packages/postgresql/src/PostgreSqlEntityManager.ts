@@ -5,8 +5,9 @@ import type { PostgreSqlDriver } from './PostgreSqlDriver.js';
 /**
  * @inheritDoc
  */
-export class PostgreSqlEntityManager<Driver extends PostgreSqlDriver = PostgreSqlDriver> extends SqlEntityManager<Driver> {
-
+export class PostgreSqlEntityManager<
+  Driver extends PostgreSqlDriver = PostgreSqlDriver,
+> extends SqlEntityManager<Driver> {
   /**
    * Refreshes a materialized view.
    *
@@ -30,5 +31,4 @@ export class PostgreSqlEntityManager<Driver extends PostgreSqlDriver = PostgreSq
 
     await this.execute(sql);
   }
-
 }

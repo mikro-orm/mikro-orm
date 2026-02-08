@@ -1,31 +1,33 @@
 import { Collection, MikroORM } from '@mikro-orm/sqlite';
-import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class Part {
-
   @PrimaryKey()
   id!: string;
 
   @Property()
   name!: string;
-
 }
 
 @Entity()
 class Job {
-
   @PrimaryKey()
   id!: string;
 
   @OneToMany(() => JobConnection, so => so.job, { orphanRemoval: true })
   jobConnections = new Collection<JobConnection>(this);
-
 }
 
 @Entity()
 class JobConnection {
-
   @PrimaryKey()
   id!: string;
 
@@ -34,12 +36,10 @@ class JobConnection {
 
   @ManyToOne(() => Job)
   job?: Job;
-
 }
 
 @Entity()
 class OrderItem {
-
   @PrimaryKey()
   id!: string;
 
@@ -48,7 +48,6 @@ class OrderItem {
 
   @ManyToOne(() => JobConnection)
   jobConnection?: JobConnection;
-
 }
 
 let orm: MikroORM;

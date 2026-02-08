@@ -11,7 +11,6 @@ import {
 
 @Entity()
 class Project {
-
   @PrimaryKey()
   id!: number;
 
@@ -20,12 +19,10 @@ class Project {
 
   @OneToMany(() => Risk, risk => risk.project)
   risks = new Collection<Risk>(this);
-
 }
 
 @Entity()
 class Risk {
-
   @PrimaryKey()
   id!: number;
 
@@ -43,12 +40,10 @@ class Risk {
 
   @ManyToOne(() => Project)
   project!: Project;
-
 }
 
 @Entity()
 class Cause {
-
   @PrimaryKey()
   id!: number;
 
@@ -57,12 +52,10 @@ class Cause {
 
   @ManyToMany(() => Measure, measure => measure.causes)
   measures = new Collection<Measure>(this);
-
 }
 
 @Entity()
 class Measure {
-
   @PrimaryKey()
   id!: number;
 
@@ -72,20 +65,14 @@ class Measure {
   @ManyToMany(() => Cause, cause => cause.measures, { owner: true })
   causes = new Collection<Cause>(this);
 
-  @ManyToMany(
-    () => MeasureFilterValue,
-    measureFilterValue => measureFilterValue.measures,
-    {
-      owner: true,
-    },
-  )
+  @ManyToMany(() => MeasureFilterValue, measureFilterValue => measureFilterValue.measures, {
+    owner: true,
+  })
   measureFilterValues = new Collection<MeasureFilterValue>(this);
-
 }
 
 @Entity()
 class MeasureFilter {
-
   @PrimaryKey()
   id!: number;
 
@@ -94,12 +81,10 @@ class MeasureFilter {
 
   @ManyToOne(() => Project)
   project!: Project;
-
 }
 
 @Entity()
 class MeasureFilterValue {
-
   @PrimaryKey()
   id!: number;
 
@@ -108,7 +93,6 @@ class MeasureFilterValue {
 
   @ManyToMany(() => Measure, measure => measure.measureFilterValues)
   measures = new Collection<Measure>(this);
-
 }
 
 let orm: MikroORM;
@@ -117,14 +101,7 @@ beforeAll(async () => {
   orm = await MikroORM.init({
     metadataProvider: ReflectMetadataProvider,
     dbName: ':memory:',
-    entities: [
-      Cause,
-      Measure,
-      MeasureFilter,
-      MeasureFilterValue,
-      Project,
-      Risk,
-    ],
+    entities: [Cause, Measure, MeasureFilter, MeasureFilterValue, Project, Risk],
     allowGlobalContext: true, // only for testing
   });
   await orm.schema.refresh();

@@ -10,19 +10,16 @@ import {
 
 @Embeddable()
 class Settings {
-
   @Property()
   name: string;
 
   constructor(settings: Settings) {
     this.name = settings.name;
   }
-
 }
 
 @Entity()
 class User {
-
   @PrimaryKey()
   id: number;
 
@@ -33,7 +30,6 @@ class User {
     this.id = user.id;
     this.settings = new Settings(user.settings);
   }
-
 }
 
 let orm: MikroORM;
@@ -41,7 +37,7 @@ let orm: MikroORM;
 beforeAll(async () => {
   orm = await MikroORM.init({
     metadataProvider: ReflectMetadataProvider,
-    entities: [ User, Settings ],
+    entities: [User, Settings],
     dbName: ':memory:',
   });
   await orm.schema.create();
@@ -57,7 +53,7 @@ test('insert an object with embeddable using a QueryBuilder', async () => {
   const bar = new User({ id: 2, settings: { name: 'bar' } });
   const repo = orm.em.getRepository(User);
 
-  await repo.createQueryBuilder().insert([ foo, bar ]).execute();
+  await repo.createQueryBuilder().insert([foo, bar]).execute();
 
   expect(await repo.findOneOrFail(1)).toEqual(foo);
   expect(await repo.findOneOrFail(2)).toEqual(bar);
@@ -86,7 +82,10 @@ test('should be able to query against embeddable properties', async () => {
 
   const repo = orm.em.getRepository(User);
 
-  await expect(repo.createQueryBuilder()
-    .where({ settings: { name: 'eh' } })
-    .getResult()).resolves.toEqual([foo]);
+  await expect(
+    repo
+      .createQueryBuilder()
+      .where({ settings: { name: 'eh' } })
+      .getResult(),
+  ).resolves.toEqual([foo]);
 });

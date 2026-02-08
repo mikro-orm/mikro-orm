@@ -12,7 +12,6 @@ import {
 } from '@mikro-orm/core';
 
 export class MsSqlExceptionConverter extends ExceptionConverter {
-
   /**
    * @see https://docs.microsoft.com/en-us/sql/relational-databases/errors-events/mssqlserver-511-database-engine-error?view=sql-server-ver15
    * @see https://github.com/doctrine/dbal/blob/master/src/Driver/AbstractPostgreSQLDriver.php
@@ -21,7 +20,12 @@ export class MsSqlExceptionConverter extends ExceptionConverter {
     let errno = exception.number;
 
     /* v8 ignore next */
-    if ('errors' in exception && Array.isArray(exception.errors) && typeof exception.errors[0] === 'object' && 'message' in exception.errors[0]) {
+    if (
+      'errors' in exception &&
+      Array.isArray(exception.errors) &&
+      typeof exception.errors[0] === 'object' &&
+      'message' in exception.errors[0]
+    ) {
       exception.message += '\n' + exception.errors.map(e => e.message).join('\n');
       errno ??= exception.errors[0].number;
       exception.lineNumber ??= exception.errors[0].lineNumber;
@@ -46,5 +50,4 @@ export class MsSqlExceptionConverter extends ExceptionConverter {
 
     return super.convertException(exception);
   }
-
 }

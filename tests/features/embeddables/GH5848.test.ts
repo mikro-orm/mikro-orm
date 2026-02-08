@@ -1,10 +1,16 @@
 import { MikroORM } from '@mikro-orm/sqlite';
-import { Embeddable, Embedded, Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Embeddable,
+  Embedded,
+  Entity,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../../helpers.js';
 
 @Embeddable()
 class Properties {
-
   @Property({ lazy: true })
   tag: string;
 
@@ -15,12 +21,10 @@ class Properties {
     this.tag = tag;
     this.value = 'val 123';
   }
-
 }
 
 @Entity()
 class User {
-
   @PrimaryKey()
   id!: number;
 
@@ -38,7 +42,6 @@ class User {
     this.email = email;
     this.properties = properties;
   }
-
 }
 
 let orm: MikroORM;
@@ -67,22 +70,18 @@ test('5848', async () => {
 
   const mock = mockLogger(orm);
 
-  const user1 = await orm.em.fork().findOneOrFail(
-    User,
-    { email: 'foo' },
-    { populate: ['properties.tag'] },
-  );
+  const user1 = await orm.em.fork().findOneOrFail(User, { email: 'foo' }, { populate: ['properties.tag'] });
   expect(user1.name).toBe('Foo');
   expect(user1.email).toBe('foo');
   expect(user1.properties.tag).toBe('Bar');
   expect(user1.properties.value).toBeUndefined();
-  expect(mock.mock.calls[0][0]).toMatch("select `u0`.`id`, `u0`.`name`, `u0`.`email`, `u0`.`properties_tag` from `user` as `u0` where `u0`.`email` = 'foo' limit 1");
-
-  const user2 = await orm.em.fork().findOneOrFail(
-    User,
-    { email: 'foo' },
-    { populate: ['properties.tag', 'properties.value'] },
+  expect(mock.mock.calls[0][0]).toMatch(
+    "select `u0`.`id`, `u0`.`name`, `u0`.`email`, `u0`.`properties_tag` from `user` as `u0` where `u0`.`email` = 'foo' limit 1",
   );
+
+  const user2 = await orm.em
+    .fork()
+    .findOneOrFail(User, { email: 'foo' }, { populate: ['properties.tag', 'properties.value'] });
   expect(user2.name).toBe('Foo');
   expect(user2.email).toBe('foo');
   expect(user2.properties.tag).toBe('Bar');

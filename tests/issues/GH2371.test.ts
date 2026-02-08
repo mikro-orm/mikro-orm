@@ -3,13 +3,11 @@ import { Entity, ManyToOne, OneToMany, PrimaryKey, ReflectMetadataProvider } fro
 
 @Entity({ tableName: 'vehicle', discriminatorColumn: 'type', abstract: true })
 class Vehicle {
-
   @PrimaryKey()
   id!: number;
 
   @ManyToOne(() => Garage, { ref: true })
   garage!: Ref<Garage>;
-
 }
 
 @Entity({ discriminatorValue: 'car' })
@@ -20,7 +18,6 @@ class Truck extends Vehicle {}
 
 @Entity({ tableName: 'garage' })
 class Garage {
-
   @PrimaryKey()
   id!: number;
 
@@ -32,11 +29,9 @@ class Garage {
 
   @OneToMany(() => Truck, v => v.garage)
   trucks = new Collection<Truck>(this);
-
 }
 
 describe('GH issue 2371', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {

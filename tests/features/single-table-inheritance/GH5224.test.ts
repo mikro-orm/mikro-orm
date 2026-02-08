@@ -3,7 +3,6 @@ import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../../helpers.js';
 
 abstract class User {
-
   id!: number;
   name: string;
   email: Email;
@@ -13,7 +12,6 @@ abstract class User {
     this.name = name;
     this.email = email;
   }
-
 }
 
 class Student extends User {}
@@ -21,7 +19,6 @@ class Student extends User {}
 class Teacher extends User {}
 
 class Email {
-
   static regExEmail = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
   value: string;
 
@@ -32,7 +29,6 @@ class Email {
 
     this.value = value;
   }
-
 }
 
 const userSchema = new EntitySchema<User>({
@@ -125,7 +121,11 @@ test('optimistic locks and STI', async () => {
   res[1].name = 'new name 2';
   await orm.em.flush();
   expect(mock.mock.calls[0][0]).toMatch('begin');
-  expect(mock.mock.calls[1][0]).toMatch('select `u0`.`id`, `u0`.`type` from `user` as `u0` where ((`u0`.`id` = 1 and `u0`.`version` = 1) or (`u0`.`id` = 2 and `u0`.`version` = 1))');
-  expect(mock.mock.calls[2][0]).toMatch('update `user` set `name` = case when (`id` = 1) then \'new name 1\' when (`id` = 2) then \'new name 2\' else `name` end, `version` = `version` + 1 where `id` in (1, 2) returning `id`, `version`');
+  expect(mock.mock.calls[1][0]).toMatch(
+    'select `u0`.`id`, `u0`.`type` from `user` as `u0` where ((`u0`.`id` = 1 and `u0`.`version` = 1) or (`u0`.`id` = 2 and `u0`.`version` = 1))',
+  );
+  expect(mock.mock.calls[2][0]).toMatch(
+    "update `user` set `name` = case when (`id` = 1) then 'new name 1' when (`id` = 2) then 'new name 2' else `name` end, `version` = `version` + 1 where `id` in (1, 2) returning `id`, `version`",
+  );
   expect(mock.mock.calls[3][0]).toMatch('commit');
 });

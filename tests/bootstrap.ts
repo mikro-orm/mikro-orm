@@ -55,9 +55,7 @@ let ensureIndexes = true; // ensuring indexes is slow, and it is enough to make 
 
 export async function initORMMongo(replicaSet = false, overrideOptions: Partial<Options> = {}) {
   const dbName = `mikro-orm-test-${(Math.random() + 1).toString(36).substring(2)}`;
-  const clientUrl = replicaSet
-    ? `${process.env.MONGO_URI}/${dbName}`
-    : `mongodb://localhost:27017/${dbName}`;
+  const clientUrl = replicaSet ? `${process.env.MONGO_URI}/${dbName}` : `mongodb://localhost:27017/${dbName}`;
   const orm = await MikroORM.init({
     entities: ['entities'],
     preferTs: false,
@@ -81,32 +79,60 @@ export async function initORMMongo(replicaSet = false, overrideOptions: Partial<
   return orm as MikroORM<MongoDriver>;
 }
 
-export async function initORMMySql<D extends MySqlDriver | MariaDbDriver = MySqlDriver>(type: 'mysql' | 'mariadb' = 'mysql', additionalOptions: Partial<Options> = {}, simple?: boolean, createSchema = true) {
+export async function initORMMySql<D extends MySqlDriver | MariaDbDriver = MySqlDriver>(
+  type: 'mysql' | 'mariadb' = 'mysql',
+  additionalOptions: Partial<Options> = {},
+  simple?: boolean,
+  createSchema = true,
+) {
   const dbName = `mikro_orm_test_${(Math.random() + 1).toString(36).substring(2)}`;
-  let orm = new MikroORM<AbstractSqlDriver>(Utils.merge({
-    entities: [Author2, Address2, Book2, BookTag2, Publisher2, Test2, FooBar2, FooBaz2, FooParam2, Configuration2, User2, CarOwner2, CompanyOwner2, Employee2, Manager2, BaseUser2, Dummy2],
-    clientUrl: `mysql://root@127.0.0.1:3306/${dbName}`,
-    port: type === 'mysql' ? 3308 : 3309,
-    baseDir: BASE_DIR,
-    debug: ['query', 'query-params'],
-    timezone: 'Z',
-    charset: 'utf8mb4',
-    logger: (i: any) => i,
-    metadataProvider: ReflectMetadataProvider,
-    multipleStatements: true,
-    autoJoinRefsForFilters: false,
-    loadStrategy: LoadStrategy.BALANCED,
-    populateAfterFlush: false,
-    entityRepository: SqlEntityRepository,
-    driver: type === 'mysql' ? MySqlDriver : MariaDbDriver,
-    replicas: [
-      { name: 'read-1', driverOptions: { enableKeepAlive: true } },
-      { name: 'read-2', driverOptions: { enableKeepAlive: false } },
-    ],
-    migrations: { path: BASE_DIR + '/../temp/migrations', snapshot: false },
-    extensions: [Migrator, SeedManager, EntityGenerator],
-    subscribers: new Set([new Test2Subscriber()]),
-  }, additionalOptions));
+  let orm = new MikroORM<AbstractSqlDriver>(
+    Utils.merge(
+      {
+        entities: [
+          Author2,
+          Address2,
+          Book2,
+          BookTag2,
+          Publisher2,
+          Test2,
+          FooBar2,
+          FooBaz2,
+          FooParam2,
+          Configuration2,
+          User2,
+          CarOwner2,
+          CompanyOwner2,
+          Employee2,
+          Manager2,
+          BaseUser2,
+          Dummy2,
+        ],
+        clientUrl: `mysql://root@127.0.0.1:3306/${dbName}`,
+        port: type === 'mysql' ? 3308 : 3309,
+        baseDir: BASE_DIR,
+        debug: ['query', 'query-params'],
+        timezone: 'Z',
+        charset: 'utf8mb4',
+        logger: (i: any) => i,
+        metadataProvider: ReflectMetadataProvider,
+        multipleStatements: true,
+        autoJoinRefsForFilters: false,
+        loadStrategy: LoadStrategy.BALANCED,
+        populateAfterFlush: false,
+        entityRepository: SqlEntityRepository,
+        driver: type === 'mysql' ? MySqlDriver : MariaDbDriver,
+        replicas: [
+          { name: 'read-1', driverOptions: { enableKeepAlive: true } },
+          { name: 'read-2', driverOptions: { enableKeepAlive: false } },
+        ],
+        migrations: { path: BASE_DIR + '/../temp/migrations', snapshot: false },
+        extensions: [Migrator, SeedManager, EntityGenerator],
+        subscribers: new Set([new Test2Subscriber()]),
+      },
+      additionalOptions,
+    ),
+  );
   const buf = await readFile(import.meta.dirname + '/mysql-schema.sql');
 
   if (createSchema) {
@@ -138,7 +164,20 @@ export async function initORMMySql<D extends MySqlDriver | MariaDbDriver = MySql
 export async function initORMPostgreSql(loadStrategy = LoadStrategy.SELECT_IN, entities: any[] = [], cache = false) {
   const dbName = `mikro_orm_test_${(Math.random() + 1).toString(36).substring(2)}`;
   const orm = new MikroORM({
-    entities: [Author2, Address2, Book2, BookTag2, Publisher2, Test2, FooBar2, FooBaz2, FooParam2, Label2, Configuration2, ...entities],
+    entities: [
+      Author2,
+      Address2,
+      Book2,
+      BookTag2,
+      Publisher2,
+      Test2,
+      FooBar2,
+      FooBaz2,
+      FooParam2,
+      Label2,
+      Configuration2,
+      ...entities,
+    ],
     dbName,
     baseDir: BASE_DIR,
     driver: PostgreSqlDriver,

@@ -1,13 +1,20 @@
 import { OptionalProps, MikroORM, Collection, Opt } from '@mikro-orm/postgresql';
 
-import { Entity, Enum, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  Enum,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 export enum CommentObjectTypeEnum {
   comment = 'comment',
   post = 'post',
 }
 
 abstract class BaseEntity {
-
   [OptionalProps]?: 'createdAt' | 'updatedAt';
 
   @PrimaryKey()
@@ -18,12 +25,10 @@ abstract class BaseEntity {
 
   @Property({ defaultRaw: 'now()', onUpdate: () => new Date() })
   updatedAt = new Date();
-
 }
 
 @Entity({ tableName: 'authors' })
 class Author extends BaseEntity {
-
   @Property()
   name!: string;
 
@@ -32,12 +37,10 @@ class Author extends BaseEntity {
 
   @OneToMany(() => Post, post => post.author)
   posts = new Collection<Post>(this);
-
 }
 
 @Entity({ tableName: 'posts' })
 class Post extends BaseEntity {
-
   @Property()
   title!: string;
 
@@ -65,12 +68,10 @@ class Post extends BaseEntity {
     },
   })
   comments = new Collection<Comment>(this);
-
 }
 
 @Entity({ tableName: 'comments' })
 class Comment {
-
   @Enum({
     items: () => CommentObjectTypeEnum,
     nativeEnumName: 'comment_object_type_enum',
@@ -96,7 +97,6 @@ class Comment {
     primary: true,
   })
   post!: Post;
-
 }
 
 let orm: MikroORM;
@@ -146,11 +146,7 @@ afterAll(async () => {
 test('define joined columns in leftJoinAndSelect()', async () => {
   const posts = await orm.em
     .createQueryBuilder(Post, 'post')
-    .leftJoinAndSelect('post.author', 'author', {}, [
-      'id',
-      'name',
-      'biography',
-    ])
+    .leftJoinAndSelect('post.author', 'author', {}, ['id', 'name', 'biography'])
     .leftJoinAndSelect('post.comments', 'comments', {}, [
       'comments.content',
       'comments.created_at',
@@ -164,11 +160,14 @@ test('define joined columns in leftJoinAndSelect()', async () => {
 });
 
 test('em.find', async () => {
-  const posts = await orm.em
-    .find(Post, { id: 5 }, {
+  const posts = await orm.em.find(
+    Post,
+    { id: 5 },
+    {
       populate: ['author', 'comments'],
       fields: ['author.name', 'author.biography'],
-    });
+    },
+  );
 
   expect(posts[0].comments).toBeDefined();
   expect(posts[0].comments.length).toBe(1);

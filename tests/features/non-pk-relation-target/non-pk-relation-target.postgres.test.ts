@@ -1,10 +1,17 @@
 import { MikroORM, Ref, Collection } from '@mikro-orm/postgresql';
-import { Entity, PrimaryKey, Property, ManyToOne, OneToMany, Unique, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  PrimaryKey,
+  Property,
+  ManyToOne,
+  OneToMany,
+  Unique,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 // Entity in custom schema
 @Entity({ schema: 'custom_schema' })
 class Author {
-
   @PrimaryKey()
   id!: number;
 
@@ -17,12 +24,10 @@ class Author {
 
   @OneToMany(() => Book, b => b.author)
   books = new Collection<Book>(this);
-
 }
 
 @Entity({ schema: 'custom_schema' })
 class Book {
-
   @PrimaryKey()
   id!: number;
 
@@ -31,11 +36,9 @@ class Book {
 
   @ManyToOne(() => Author, { ref: true, targetKey: 'uuid' })
   author!: Ref<Author>;
-
 }
 
 describe('non-PK relation target with schema (postgres)', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -74,9 +77,13 @@ describe('non-PK relation target with schema (postgres)', () => {
     orm.em.clear();
 
     // Load the book and verify the author reference works
-    const loadedBook = await orm.em.findOneOrFail(Book, { title: 'Test Book' }, {
-      populate: ['author'],
-    });
+    const loadedBook = await orm.em.findOneOrFail(
+      Book,
+      { title: 'Test Book' },
+      {
+        populate: ['author'],
+      },
+    );
     expect(loadedBook.author.unwrap().uuid).toBe('uuid-123');
     expect(loadedBook.author.unwrap().name).toBe('John Doe');
   });
@@ -121,16 +128,19 @@ describe('non-PK relation target with schema (postgres)', () => {
     orm.em.clear();
 
     // Load books with select-in strategy
-    const books = await orm.em.find(Book, {}, {
-      populate: ['author'],
-      strategy: 'select-in',
-      orderBy: { title: 'asc' },
-    });
+    const books = await orm.em.find(
+      Book,
+      {},
+      {
+        populate: ['author'],
+        strategy: 'select-in',
+        orderBy: { title: 'asc' },
+      },
+    );
 
     expect(books).toHaveLength(2);
     // Both books should reference the same author instance
     expect(books[0].author.unwrap()).toBe(books[1].author.unwrap());
     expect(books[0].author.unwrap().uuid).toBe('uuid-123');
   });
-
 });

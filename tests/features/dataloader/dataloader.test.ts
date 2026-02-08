@@ -1,5 +1,28 @@
-import { Collection, DataloaderType, DataloaderUtils, helper, MikroORM, Primary, PrimaryKeyProp, QueryOrder, Ref, ref, serialize, SimpleLogger } from '@mikro-orm/sqlite';
-import { Entity, Enum, Filter, ManyToMany, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Collection,
+  DataloaderType,
+  DataloaderUtils,
+  helper,
+  MikroORM,
+  Primary,
+  PrimaryKeyProp,
+  QueryOrder,
+  Ref,
+  ref,
+  serialize,
+  SimpleLogger,
+} from '@mikro-orm/sqlite';
+import {
+  Entity,
+  Enum,
+  Filter,
+  ManyToMany,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../../helpers.js';
 
 enum PublisherType {
@@ -10,7 +33,6 @@ enum PublisherType {
 @Filter({ name: 'young', cond: { age: { $lt: 80 } }, default: true })
 @Entity()
 class Author {
-
   @PrimaryKey()
   id!: number;
 
@@ -48,12 +70,10 @@ class Author {
     this.age = age;
     this.email = email;
   }
-
 }
 
 @Entity()
 class Book {
-
   @PrimaryKey()
   id!: number;
 
@@ -73,12 +93,10 @@ class Book {
     this.title = title;
     this.author = ref(author);
   }
-
 }
 
 @Entity()
 class Publisher {
-
   @PrimaryKey()
   id!: number;
 
@@ -98,12 +116,10 @@ class Publisher {
     this.name = name;
     this.type = type;
   }
-
 }
 
 @Entity()
 class Chat {
-
   @ManyToOne(() => Author, { ref: true, primary: true })
   owner: Ref<Author>;
 
@@ -119,12 +135,10 @@ class Chat {
     this.owner = ref(owner);
     this.recipient = ref(recipient);
   }
-
 }
 
 @Entity()
 class Message {
-
   @PrimaryKey()
   id!: number;
 
@@ -143,15 +157,14 @@ class Message {
     }
     this.content = content;
   }
-
 }
 
 async function populateDatabase(em: MikroORM['em']) {
   const authors = [
-    new Author({ id : 1, name: 'a', age: 31, email: 'a@a.com' }),
+    new Author({ id: 1, name: 'a', age: 31, email: 'a@a.com' }),
     new Author({ id: 2, name: 'b', age: 47, email: 'b@b.com' }),
     new Author({ id: 3, name: 'c', age: 26, email: 'c@c.com' }),
-    new Author({ id: 4, name: 'd', age: 87, email:  'd@d.com' }),
+    new Author({ id: 4, name: 'd', age: 87, email: 'd@d.com' }),
     new Author({ id: 5, name: 'e', age: 39, email: 'e@e.com' }),
   ];
   authors[0].friends.add([authors[1], authors[3], authors[4]]);
@@ -177,10 +190,7 @@ async function populateDatabase(em: MikroORM['em']) {
   chats[3].messages.add([new Message({ content: 'C1' })]);
   em.persist(chats);
 
-  const publishers = [
-    new Publisher({ id: 1, name: 'AAA' }),
-    new Publisher({ id: 2, name: 'BBB' }),
-  ];
+  const publishers = [new Publisher({ id: 1, name: 'AAA' }), new Publisher({ id: 2, name: 'BBB' })];
   em.persist(publishers);
 
   const books = [
@@ -208,7 +218,13 @@ function getReferences(em: MikroORM['em']): Ref<any>[] {
   return [
     ...[1, 2].map(id => forkedEm.getReference(Author, id, { wrapped: true })),
     ...[5, 3, 4].map(id => forkedEm.getReference(Book, id, { wrapped: true })),
-    ...([[1, 2], [1, 3], [3, 1]] as const).map(pk => forkedEm.getReference(Chat, pk, { wrapped: true })),
+    ...(
+      [
+        [1, 2],
+        [1, 3],
+        [3, 1],
+      ] as const
+    ).map(pk => forkedEm.getReference(Chat, pk, { wrapped: true })),
   ] as Ref<any>[];
 }
 
@@ -234,7 +250,6 @@ async function getCollections(em: MikroORM['em']): Promise<Collection<any>[]> {
 }
 
 describe('Dataloader', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -288,8 +303,20 @@ describe('Dataloader', () => {
     expect(res[5] instanceof Chat).toBe(true);
     expect(res[6] instanceof Chat).toBe(true);
     expect(res[7] instanceof Chat).toBe(true);
-    expect(Array.from(res).slice(0, 5).map((el => el.id))).toEqual([1, 2, 5, 3, 4]);
-    expect(Array.from(res).slice(5).map((({ owner: { id: ownerId }, recipient: { id: recipientId } }) => [ownerId, recipientId]))).toEqual([[1, 2], [1, 3], [3, 1]]);
+    expect(
+      Array.from(res)
+        .slice(0, 5)
+        .map(el => el.id),
+    ).toEqual([1, 2, 5, 3, 4]);
+    expect(
+      Array.from(res)
+        .slice(5)
+        .map(({ owner: { id: ownerId }, recipient: { id: recipientId } }) => [ownerId, recipientId]),
+    ).toEqual([
+      [1, 2],
+      [1, 3],
+      [3, 1],
+    ]);
   });
 
   test('Reference.load', async () => {
@@ -396,38 +423,59 @@ describe('Dataloader', () => {
     expect(collections).toBeDefined();
 
     const map = DataloaderUtils.groupInversedOrMappedKeysByEntityAndOpts(collections.map(col => [col]));
-    expect(Array.from(map.keys()).map(key => key.substring(0, key.indexOf('|')))).toEqual(['book_1000', 'author_0', 'chat_3000', 'message_4000']);
-    const mapObj = Array.from(map.entries()).reduce<Record<string, Record<string, number[]>>>((acc, [key, filterMap]) => {
-      const className = key.substring(0, key.indexOf('|'));
-      acc[className] = Array.from(filterMap.entries()).reduce<Record<string, number[]>>((acc, [prop, set]) => {
-        acc[prop] = Array.from(set.values());
+    expect(Array.from(map.keys()).map(key => key.substring(0, key.indexOf('|')))).toEqual([
+      'book_1000',
+      'author_0',
+      'chat_3000',
+      'message_4000',
+    ]);
+    const mapObj = Array.from(map.entries()).reduce<Record<string, Record<string, number[]>>>(
+      (acc, [key, filterMap]) => {
+        const className = key.substring(0, key.indexOf('|'));
+        acc[className] = Array.from(filterMap.entries()).reduce<Record<string, number[]>>((acc, [prop, set]) => {
+          acc[prop] = Array.from(set.values());
+          return acc;
+        }, {});
         return acc;
-      }, {});
-      return acc;
-    }, {});
+      },
+      {},
+    );
     expect(mapObj).toEqual({
       book_1000: { author: [1, 2, 3], publisher: [1, 2] },
       author_0: { buddiesInverse: [1, 2, 3] },
       chat_3000: { owner: [1, 2, 3] },
-      message_4000: { chat: [{ owner: 1, recipient: 2 }, { owner: 1, recipient: 3 }] },
+      message_4000: {
+        chat: [
+          { owner: 1, recipient: 2 },
+          { owner: 1, recipient: 3 },
+        ],
+      },
     });
   });
 
   test('entitiesAndOptsMapToQueries', async () => {
     const map = new Map([
-      ['book_1000|{}', new Map([
-        ['author', new Set<Primary<any>>([1, 2, 3])],
-        ['publisher', new Set<Primary<any>>([1, 2])],
-      ])],
-      ['author_0|{}', new Map([
-        ['buddiesInverse', new Set<Primary<any>>([1, 2, 3])],
-      ])],
-      ['chat_3000|{}', new Map([
-        ['owner', new Set<Primary<any>>([1, 2, 3])],
-      ])],
-      ['message_4000|{}', new Map([
-        ['chat', new Set<Primary<any>>([{ owner: 1, recipient: 2 }, { owner: 1, recipient: 3 }])],
-      ])],
+      [
+        'book_1000|{}',
+        new Map([
+          ['author', new Set<Primary<any>>([1, 2, 3])],
+          ['publisher', new Set<Primary<any>>([1, 2])],
+        ]),
+      ],
+      ['author_0|{}', new Map([['buddiesInverse', new Set<Primary<any>>([1, 2, 3])]])],
+      ['chat_3000|{}', new Map([['owner', new Set<Primary<any>>([1, 2, 3])]])],
+      [
+        'message_4000|{}',
+        new Map([
+          [
+            'chat',
+            new Set<Primary<any>>([
+              { owner: 1, recipient: 2 },
+              { owner: 1, recipient: 3 },
+            ]),
+          ],
+        ]),
+      ],
     ]);
     const queries = DataloaderUtils.entitiesAndOptsMapToQueries(map, orm.em);
     expect(queries).toHaveLength(4);
@@ -437,21 +485,32 @@ describe('Dataloader', () => {
   });
 
   test('getColFilter', async () => {
-    const promises = DataloaderUtils.entitiesAndOptsMapToQueries(new Map([
-      ['book_1000|{}', new Map([
-        ['author', new Set<Primary<any>>([1, 2, 3])],
-        ['publisher', new Set<Primary<any>>([1, 2])],
-      ])],
-      ['author_0|{}', new Map([
-        ['buddiesInverse', new Set<Primary<any>>([1, 2, 3])],
-      ])],
-      ['chat_3000|{}', new Map([
-        ['owner', new Set<Primary<any>>([1, 2, 3])],
-      ])],
-      ['message_4000|{}', new Map([
-        ['chat', new Set<Primary<any>>([{ owner: 1, recipient: 2 }, { owner: 1, recipient: 3 }])],
-      ])],
-    ]), orm.em);
+    const promises = DataloaderUtils.entitiesAndOptsMapToQueries(
+      new Map([
+        [
+          'book_1000|{}',
+          new Map([
+            ['author', new Set<Primary<any>>([1, 2, 3])],
+            ['publisher', new Set<Primary<any>>([1, 2])],
+          ]),
+        ],
+        ['author_0|{}', new Map([['buddiesInverse', new Set<Primary<any>>([1, 2, 3])]])],
+        ['chat_3000|{}', new Map([['owner', new Set<Primary<any>>([1, 2, 3])]])],
+        [
+          'message_4000|{}',
+          new Map([
+            [
+              'chat',
+              new Set<Primary<any>>([
+                { owner: 1, recipient: 2 },
+                { owner: 1, recipient: 3 },
+              ]),
+            ],
+          ]),
+        ],
+      ]),
+      orm.em,
+    );
     const resultsMap = new Map(await Promise.all(promises));
     const collections = await getCollections(orm.em);
 
@@ -488,7 +547,9 @@ describe('Dataloader', () => {
     for (const [colA, colB] of colsA.map((colA, i) => [colA, colsB[i]])) {
       expect(colA.isInitialized()).toBe(true);
       expect(colB.isInitialized()).toBe(true);
-      expect(colA.getItems().map(el => helper(el).getPrimaryKey())).toEqual(colB.getItems().map(el => helper(el).getPrimaryKey()));
+      expect(colA.getItems().map(el => helper(el).getPrimaryKey())).toEqual(
+        colB.getItems().map(el => helper(el).getPrimaryKey()),
+      );
     }
   });
 
@@ -504,7 +565,9 @@ describe('Dataloader', () => {
     for (const [colA, colB] of colsA.map((colA, i) => [colA, colsB[i]])) {
       expect(colA.isInitialized()).toBe(true);
       expect(colB.isInitialized()).toBe(true);
-      expect(colA.getItems().map(el => helper(el).getPrimaryKey())).toEqual(colB.getItems().map(el => helper(el).getPrimaryKey()));
+      expect(colA.getItems().map(el => helper(el).getPrimaryKey())).toEqual(
+        colB.getItems().map(el => helper(el).getPrimaryKey()),
+      );
     }
   });
 
@@ -530,11 +593,11 @@ describe('Dataloader', () => {
     */
     const optsMap = [
       {},
-      { where: { title: [ 'One', 'Two', 'Six' ] } },
+      { where: { title: ['One', 'Two', 'Six'] } },
       // { where: { title: [ 'One', 'Six' ] } },
       // { where: { title: [ 'Six' ] } },
       // { where: { title: [ 'One', 'Two', 'Six' ] } },
-      { where: { title: [ 'One', 'Two', 'Six' ] } },
+      { where: { title: ['One', 'Two', 'Six'] } },
     ];
     const resultsA = await Promise.all(colsA.map((col, i) => col.loadItems(optsMap[i])));
     const mock = mockLogger(orm);
@@ -545,7 +608,9 @@ describe('Dataloader', () => {
     for (const [colA, colB] of colsA.map((colA, i) => [colA, colsB[i]])) {
       expect(colA.isInitialized()).toBe(true);
       expect(colB.isInitialized()).toBe(true);
-      expect(colA.getItems().map(el => helper(el).getPrimaryKey())).toEqual(colB.getItems().map(el => helper(el).getPrimaryKey()));
+      expect(colA.getItems().map(el => helper(el).getPrimaryKey())).toEqual(
+        colB.getItems().map(el => helper(el).getPrimaryKey()),
+      );
     }
     for (const [resA, resB] of resultsA.map((resA, i) => [resA, resultsB[i]])) {
       expect(resA.map(el => helper(el).getPrimaryKey())).toEqual(resB.map(el => helper(el).getPrimaryKey()));
@@ -555,9 +620,7 @@ describe('Dataloader', () => {
   test('Collection.load with where (Many to Many + Inverse side)', async () => {
     const getCols = async () => {
       const em = orm.em.fork();
-      return [
-        ...(await em.find(Author, { id: [1, 2, 3] })).map(({ buddies }) => buddies),
-      ];
+      return [...(await em.find(Author, { id: [1, 2, 3] })).map(({ buddies }) => buddies)];
     };
     const colsA = await getCols();
     const colsB = await getCols();
@@ -577,7 +640,9 @@ describe('Dataloader', () => {
     for (const [colA, colB] of colsA.map((colA, i) => [colA, colsB[i]])) {
       expect(colA.isInitialized()).toBe(true);
       expect(colB.isInitialized()).toBe(true);
-      expect(colA.getItems().map(el => helper(el).getPrimaryKey())).toEqual(colB.getItems().map(el => helper(el).getPrimaryKey()));
+      expect(colA.getItems().map(el => helper(el).getPrimaryKey())).toEqual(
+        colB.getItems().map(el => helper(el).getPrimaryKey()),
+      );
     }
     for (const [resA, resB] of resultsA.map((resA, i) => [resA, resultsB[i]])) {
       expect(resA.map(el => helper(el).getPrimaryKey())).toEqual(resB.map(el => helper(el).getPrimaryKey()));
@@ -587,9 +652,7 @@ describe('Dataloader', () => {
   test('Collection.load with where (Many to Many + Inverse side + custom where filters)', async () => {
     const getCols = async () => {
       const em = orm.em.fork();
-      return [
-        ...(await em.find(Author, { id: [1, 2, 3] })).map(({ buddies }) => buddies),
-      ];
+      return [...(await em.find(Author, { id: [1, 2, 3] })).map(({ buddies }) => buddies)];
     };
     const colsA = await getCols();
     const colsB = await getCols();
@@ -600,16 +663,20 @@ describe('Dataloader', () => {
     authors[3].buddies.add([authors[0], authors[2]]);   (d) OLD   -> 'a', 'c'
     authors[4].buddies.add([authors[0]]);                         -> 'a'
     */
-    const resultsA = await Promise.all(colsA.map((col, i) => col.loadItems({ where: { name: [ 'b', 'd' ] } })));
+    const resultsA = await Promise.all(colsA.map((col, i) => col.loadItems({ where: { name: ['b', 'd'] } })));
     const mock = mockLogger(orm);
-    const resultsB = await Promise.all(colsB.map((col, i) => col.loadItems({ where: { name: [ 'b', 'd' ] }, dataloader: true })));
+    const resultsB = await Promise.all(
+      colsB.map((col, i) => col.loadItems({ where: { name: ['b', 'd'] }, dataloader: true })),
+    );
     await orm.em.flush();
     expect(mock.mock.calls).toMatchSnapshot();
     expect(colsA.length).toBe(colsB.length);
     for (const [colA, colB] of colsA.map((colA, i) => [colA, colsB[i]])) {
       expect(colA.isInitialized()).toBe(true);
       expect(colB.isInitialized()).toBe(true);
-      expect(colA.getItems().map(el => helper(el).getPrimaryKey())).toEqual(colB.getItems().map(el => helper(el).getPrimaryKey()));
+      expect(colA.getItems().map(el => helper(el).getPrimaryKey())).toEqual(
+        colB.getItems().map(el => helper(el).getPrimaryKey()),
+      );
     }
     for (const [resA, resB] of resultsA.map((resA, i) => [resA, resultsB[i]])) {
       expect(resA.map(el => helper(el).getPrimaryKey())).toEqual(resB.map(el => helper(el).getPrimaryKey()));
@@ -619,16 +686,14 @@ describe('Dataloader', () => {
   test('Collection.load with where (Many to Many + Inverse side + different custom where filters for each collection)', async () => {
     const getCols = async () => {
       const em = orm.em.fork();
-      return [
-        ...(await em.find(Author, { id: [1, 2, 3] })).map(({ buddies }) => buddies),
-      ];
+      return [...(await em.find(Author, { id: [1, 2, 3] })).map(({ buddies }) => buddies)];
     };
     const colsA = await getCols();
     const colsB = await getCols();
     const optsMap = [
-      { where: { name: [ 'b', 'd' ] } },
-      { where: { name: [ 'a', 'b', 'c', 'd', 'e' ] } },
-      { where: { name: [ 'a', 'b', 'c', 'd', 'e' ] } },
+      { where: { name: ['b', 'd'] } },
+      { where: { name: ['a', 'b', 'c', 'd', 'e'] } },
+      { where: { name: ['a', 'b', 'c', 'd', 'e'] } },
     ];
     /*
     authors[0].buddies.add([authors[1], authors[3], authors[4]]); -> 'b', 'd', 'e' -> 'b', 'e' ('d' is old)
@@ -646,7 +711,9 @@ describe('Dataloader', () => {
     for (const [colA, colB] of colsA.map((colA, i) => [colA, colsB[i]])) {
       expect(colA.isInitialized()).toBe(true);
       expect(colB.isInitialized()).toBe(true);
-      expect(colA.getItems().map(el => helper(el).getPrimaryKey())).toEqual(colB.getItems().map(el => helper(el).getPrimaryKey()));
+      expect(colA.getItems().map(el => helper(el).getPrimaryKey())).toEqual(
+        colB.getItems().map(el => helper(el).getPrimaryKey()),
+      );
     }
     for (const [resA, resB] of resultsA.map((resA, i) => [resA, resultsB[i]])) {
       expect(resA.map(el => helper(el).getPrimaryKey())).toEqual(resB.map(el => helper(el).getPrimaryKey()));
@@ -656,9 +723,9 @@ describe('Dataloader', () => {
   test('Collection.load with populate', async () => {
     const colsA = (await orm.em.fork().find(Author, { id: [1, 2, 3] })).map(({ books }) => books);
     const colsB = (await orm.em.fork().find(Author, { id: [1, 2, 3] })).map(({ books }) => books);
-    await Promise.all(colsA.map(col => col.loadItems({ populate: [ 'publisher' ] })));
+    await Promise.all(colsA.map(col => col.loadItems({ populate: ['publisher'] })));
     const mock = mockLogger(orm);
-    await Promise.all(colsB.map(col => col.load({ populate: [ 'publisher' ], dataloader: true })));
+    await Promise.all(colsB.map(col => col.load({ populate: ['publisher'], dataloader: true })));
     await orm.em.flush();
     expect(mock.mock.calls).toMatchSnapshot();
     expect(colsA.length).toBe(colsB.length);
@@ -669,16 +736,18 @@ describe('Dataloader', () => {
         expect(book.publisher!.isInitialized()).toBeTruthy();
       }
       expect(colB.isInitialized()).toBe(true);
-      expect(colA.getItems().map(el => helper(el).getPrimaryKey())).toEqual(colB.getItems().map(el => helper(el).getPrimaryKey()));
+      expect(colA.getItems().map(el => helper(el).getPrimaryKey())).toEqual(
+        colB.getItems().map(el => helper(el).getPrimaryKey()),
+      );
     }
   });
 
   test('Collection.load with wildcard populate', async () => {
     const colsA = (await orm.em.fork().find(Author, { id: [1, 2, 3] })).map(({ books }) => books);
     const colsB = (await orm.em.fork().find(Author, { id: [1, 2, 3] })).map(({ books }) => books);
-    await Promise.all(colsA.map(col => col.loadItems({ populate: [ '*' ] })));
+    await Promise.all(colsA.map(col => col.loadItems({ populate: ['*'] })));
     const mock = mockLogger(orm);
-    await Promise.all(colsB.map(col => col.load({ populate: [ '*' ], dataloader: true })));
+    await Promise.all(colsB.map(col => col.load({ populate: ['*'], dataloader: true })));
     await orm.em.flush();
     expect(mock.mock.calls).toMatchSnapshot();
     expect(colsA.length).toBe(colsB.length);
@@ -689,7 +758,9 @@ describe('Dataloader', () => {
         expect(book.publisher!.isInitialized()).toBeTruthy();
       }
       expect(colB.isInitialized()).toBe(true);
-      expect(colA.getItems().map(el => helper(el).getPrimaryKey())).toEqual(colB.getItems().map(el => helper(el).getPrimaryKey()));
+      expect(colA.getItems().map(el => helper(el).getPrimaryKey())).toEqual(
+        colB.getItems().map(el => helper(el).getPrimaryKey()),
+      );
     }
   });
 

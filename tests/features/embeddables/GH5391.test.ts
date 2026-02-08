@@ -1,17 +1,22 @@
 import { MikroORM, Ref } from '@mikro-orm/libsql';
-import { Embeddable, Embedded, Entity, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Embeddable,
+  Embedded,
+  Entity,
+  ManyToOne,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Embeddable()
 class RoleMeta {
-
   @Property()
   testString!: string;
-
 }
 
 @Entity()
 class Role {
-
   @PrimaryKey()
   id!: number;
 
@@ -20,12 +25,10 @@ class Role {
 
   @Embedded({ entity: () => RoleMeta, nullable: true, object: true })
   meta?: RoleMeta;
-
 }
 
 @Entity()
 class User {
-
   @PrimaryKey()
   id!: number;
 
@@ -37,7 +40,6 @@ class User {
 
   @ManyToOne(() => Role, { ref: true })
   role!: Ref<Role>;
-
 }
 
 let orm: MikroORM;

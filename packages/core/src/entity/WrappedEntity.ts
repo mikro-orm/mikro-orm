@@ -36,7 +36,6 @@ import type { FindOneOptions, LoadHint } from '../drivers/IDatabaseDriver.js';
 import { expandDotPaths } from './utils.js';
 
 export class WrappedEntity<Entity extends object> {
-
   declare __initialized: boolean;
   declare __populated?: boolean;
   declare __managed?: boolean;
@@ -102,12 +101,10 @@ export class WrappedEntity<Entity extends object> {
     this.__populated = populated;
   }
 
-  setSerializationContext<
-    Hint extends string = never,
-    Fields extends string = '*',
-    Exclude extends string = never,
-  >(options: LoadHint<Entity, Hint, Fields, Exclude>): void {
-    const exclude = options.exclude as readonly string[] ?? [];
+  setSerializationContext<Hint extends string = never, Fields extends string = '*', Exclude extends string = never>(
+    options: LoadHint<Entity, Hint, Fields, Exclude>,
+  ): void {
+    const exclude = (options.exclude as readonly string[]) ?? [];
     const context = this.__serializationContext;
     const populate = expandDotPaths(this.__meta, options.populate as any);
     context.populate = context.populate ? context.populate.concat(populate) : populate;
@@ -131,7 +128,9 @@ export class WrappedEntity<Entity extends object> {
     return EntityTransformer.toObject(this.entity, ignoreFields);
   }
 
-  serialize<Hint extends string = never, Exclude extends string = never>(options?: SerializeOptions<Entity, Hint, Exclude>): EntityDTO<Loaded<Entity, Hint>> {
+  serialize<Hint extends string = never, Exclude extends string = never>(
+    options?: SerializeOptions<Entity, Hint, Exclude>,
+  ): EntityDTO<Loaded<Entity, Hint>> {
     return EntitySerializer.serialize(this.entity, options);
   }
 
@@ -147,8 +146,13 @@ export class WrappedEntity<Entity extends object> {
   assign<
     Naked extends FromEntityType<Entity> = FromEntityType<Entity>,
     Convert extends boolean = false,
-    Data extends EntityData<Naked, Convert> | Partial<EntityDTO<Naked>> = EntityData<Naked, Convert> | Partial<EntityDTO<Naked>>,
-  >(data: Data & IsSubset<EntityData<Naked>, Data>, options?: AssignOptions<Convert>): MergeSelected<Entity, Naked, keyof Data & string> {
+    Data extends EntityData<Naked, Convert> | Partial<EntityDTO<Naked>> =
+      | EntityData<Naked, Convert>
+      | Partial<EntityDTO<Naked>>,
+  >(
+    data: Data & IsSubset<EntityData<Naked>, Data>,
+    options?: AssignOptions<Convert>,
+  ): MergeSelected<Entity, Naked, keyof Data & string> {
     if ('assign' in this.entity) {
       return (this.entity as Dictionary).assign(data, options);
     }
@@ -156,16 +160,18 @@ export class WrappedEntity<Entity extends object> {
     return EntityAssigner.assign(this.entity, data as any, options) as any;
   }
 
-  async init<
-    Hint extends string = never,
-    Fields extends string = '*',
-    Excludes extends string = never,
-  >(options?: FindOneOptions<Entity, Hint, Fields, Excludes>): Promise<Loaded<Entity, Hint, Fields, Excludes> | null> {
+  async init<Hint extends string = never, Fields extends string = '*', Excludes extends string = never>(
+    options?: FindOneOptions<Entity, Hint, Fields, Excludes>,
+  ): Promise<Loaded<Entity, Hint, Fields, Excludes> | null> {
     if (!this.__em) {
       throw ValidationError.entityNotManaged(this.entity);
     }
 
-    return this.__em.findOne(this.entity.constructor, this.entity, { ...options, refresh: true, schema: this.__schema });
+    return this.__em.findOne(this.entity.constructor, this.entity, {
+      ...options,
+      refresh: true,
+      schema: this.__schema,
+    });
   }
 
   async populate<Hint extends string = never>(
@@ -195,7 +201,12 @@ export class WrappedEntity<Entity extends object> {
     }
 
     if (this.__pk != null && this.__meta.compositePK) {
-      return Utils.getCompositeKeyValue(this.__pk, this.__meta, convertCustomTypes ? 'convertToDatabaseValue' : false, this.__platform);
+      return Utils.getCompositeKeyValue(
+        this.__pk,
+        this.__meta,
+        convertCustomTypes ? 'convertToDatabaseValue' : false,
+        this.__platform,
+      );
     }
 
     if (convertCustomTypes && this.__pk != null && prop.customType) {
@@ -223,7 +234,7 @@ export class WrappedEntity<Entity extends object> {
 
         if (Utils.isEntity(child, true)) {
           const childPk = helper(child).getPrimaryKeys(convertCustomTypes);
-          ret.push(...childPk as Primary<Entity>[]);
+          ret.push(...(childPk as Primary<Entity>[]));
         } else {
           ret.push(child as Primary<Entity>);
         }
@@ -272,5 +283,4 @@ export class WrappedEntity<Entity extends object> {
   [Symbol.for('nodejs.util.inspect.custom')]() {
     return `[WrappedEntity<${this.__meta!.className}>]`;
   }
-
 }

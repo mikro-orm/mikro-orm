@@ -3,18 +3,15 @@ import { Entity, OneToOne, PrimaryKey, ReflectMetadataProvider } from '@mikro-or
 
 @Entity()
 export class First {
-
   @PrimaryKey()
   id!: number;
 
   @OneToOne(() => Second, second => second.first)
   second?: any;
-
 }
 
 @Entity()
 export class Second {
-
   @PrimaryKey()
   id!: number;
 
@@ -24,7 +21,6 @@ export class Second {
   constructor(first: First) {
     this.first = first;
   }
-
 }
 
 describe('GH issue 2238', () => {

@@ -1,31 +1,35 @@
 import { Collection, FilterQuery, MikroORM } from '@mikro-orm/sqlite';
-import { Embeddable, Embedded, Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Embeddable,
+  Embedded,
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Embeddable()
 class UserSocials {
-
   @Property()
   instagram!: string;
 
   @Property()
   twitter!: string;
-
 }
 
 @Embeddable()
 class UserAddress {
-
   @Property()
   name!: string;
 
   @Property()
   addressNo!: number;
-
 }
 
 @Entity()
 class User {
-
   @PrimaryKey()
   id!: number;
 
@@ -37,12 +41,10 @@ class User {
 
   @OneToMany(() => UserDetails, (details: UserDetails) => details.user)
   details = new Collection<UserDetails>(this);
-
 }
 
 @Entity()
 class UserDetails {
-
   @PrimaryKey()
   id!: number;
 
@@ -57,7 +59,6 @@ class UserDetails {
 
   @Embedded(() => UserSocials, { prefix: 'social_' })
   socials = new UserSocials();
-
 }
 
 let orm: MikroORM;
@@ -107,7 +108,11 @@ beforeEach(() => {
 
 test('should expand embeddable on 1:m', async () => {
   const userDetailsQ: FilterQuery<UserDetails> = { address: { name: { $eq: 'FooBar' } } };
-  const user = await orm.em.findOneOrFail(User, { email: 'foo', details: { $some: userDetailsQ } }, { fields: ['name', 'details.address'], populate: ['details'], populateWhere: { details: userDetailsQ } });
+  const user = await orm.em.findOneOrFail(
+    User,
+    { email: 'foo', details: { $some: userDetailsQ } },
+    { fields: ['name', 'details.address'], populate: ['details'], populateWhere: { details: userDetailsQ } },
+  );
 
   expect(user!.name).toBe('Foo');
   expect(user!.details.count()).toEqual(1);
@@ -119,10 +124,14 @@ test('should expand embeddable on 1:m', async () => {
 
 test('should partially expand embeddable on 1:m', async () => {
   const userDetailsQ: FilterQuery<UserDetails> = { address: { name: { $eq: 'FooBar' } } };
-  const user = await orm.em.findOneOrFail(User, {
-    email: 'foo',
-    details: { $some: userDetailsQ },
-  }, { fields: ['name', 'details.address.name'], populate: ['details'], populateWhere: { details: userDetailsQ } });
+  const user = await orm.em.findOneOrFail(
+    User,
+    {
+      email: 'foo',
+      details: { $some: userDetailsQ },
+    },
+    { fields: ['name', 'details.address.name'], populate: ['details'], populateWhere: { details: userDetailsQ } },
+  );
 
   expect(user!.name).toBe('Foo');
   expect(user!.details.count()).toEqual(1);
@@ -134,7 +143,11 @@ test('should partially expand embeddable on 1:m', async () => {
 
 test('should expand object embeddable on 1:m', async () => {
   const userDetailsQ: FilterQuery<UserDetails> = { address: { name: { $eq: 'FooBar' } } };
-  const user = await orm.em.findOneOrFail(User, { email: 'foo', details: { $some: userDetailsQ } }, { fields: ['name', 'details.socials'], populate: ['details'], populateWhere: { details: userDetailsQ } });
+  const user = await orm.em.findOneOrFail(
+    User,
+    { email: 'foo', details: { $some: userDetailsQ } },
+    { fields: ['name', 'details.socials'], populate: ['details'], populateWhere: { details: userDetailsQ } },
+  );
 
   expect(user!.name).toBe('Foo');
   expect(user!.details.count()).toEqual(1);
@@ -145,7 +158,11 @@ test('should expand object embeddable on 1:m', async () => {
 });
 
 test('should expand embeddable on 1:m without populateWhere', async () => {
-  const user = await orm.em.findOneOrFail(User, { email: 'foo' }, { fields: ['name', 'details.socials', 'details.address.name'], populate: ['details'] });
+  const user = await orm.em.findOneOrFail(
+    User,
+    { email: 'foo' },
+    { fields: ['name', 'details.socials', 'details.address.name'], populate: ['details'] },
+  );
 
   expect(user!.name).toBe('Foo');
   expect(user!.details.count()).toEqual(3);

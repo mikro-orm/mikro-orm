@@ -18,7 +18,6 @@ import type { AbstractSqlPlatform } from './AbstractSqlPlatform.js';
 import { NativeQueryBuilder } from './query/NativeQueryBuilder.js';
 
 export abstract class AbstractSqlConnection extends Connection {
-
   declare protected platform: AbstractSqlPlatform;
   #client?: Kysely<any>;
 
@@ -95,7 +94,16 @@ export abstract class AbstractSqlConnection extends Connection {
     return this.#client!;
   }
 
-  override async transactional<T>(cb: (trx: Transaction<ControlledTransaction<any, any>>) => Promise<T>, options: { isolationLevel?: IsolationLevel; readOnly?: boolean; ctx?: ControlledTransaction<any>; eventBroadcaster?: TransactionEventBroadcaster; loggerContext?: LogContext } = {}): Promise<T> {
+  override async transactional<T>(
+    cb: (trx: Transaction<ControlledTransaction<any, any>>) => Promise<T>,
+    options: {
+      isolationLevel?: IsolationLevel;
+      readOnly?: boolean;
+      ctx?: ControlledTransaction<any>;
+      eventBroadcaster?: TransactionEventBroadcaster;
+      loggerContext?: LogContext;
+    } = {},
+  ): Promise<T> {
     const trx = await this.begin(options);
 
     try {
@@ -109,7 +117,15 @@ export abstract class AbstractSqlConnection extends Connection {
     }
   }
 
-  override async begin(options: { isolationLevel?: IsolationLevel; readOnly?: boolean; ctx?: ControlledTransaction<any, any>; eventBroadcaster?: TransactionEventBroadcaster; loggerContext?: LogContext } = {}): Promise<ControlledTransaction<any, any>> {
+  override async begin(
+    options: {
+      isolationLevel?: IsolationLevel;
+      readOnly?: boolean;
+      ctx?: ControlledTransaction<any, any>;
+      eventBroadcaster?: TransactionEventBroadcaster;
+      loggerContext?: LogContext;
+    } = {},
+  ): Promise<ControlledTransaction<any, any>> {
     if (options.ctx) {
       const ctx = options.ctx as Dictionary;
       await options.eventBroadcaster?.dispatchEvent(EventType.beforeTransactionStart, ctx);
@@ -156,7 +172,11 @@ export abstract class AbstractSqlConnection extends Connection {
     return trx;
   }
 
-  override async commit(ctx: ControlledTransaction<any, any>, eventBroadcaster?: TransactionEventBroadcaster, loggerContext?: LogContext): Promise<void> {
+  override async commit(
+    ctx: ControlledTransaction<any, any>,
+    eventBroadcaster?: TransactionEventBroadcaster,
+    loggerContext?: LogContext,
+  ): Promise<void> {
     if (ctx.isRolledBack) {
       return;
     }
@@ -174,7 +194,11 @@ export abstract class AbstractSqlConnection extends Connection {
     await eventBroadcaster?.dispatchEvent(EventType.afterTransactionCommit, ctx);
   }
 
-  override async rollback(ctx: ControlledTransaction<any, any>, eventBroadcaster?: TransactionEventBroadcaster, loggerContext?: LogContext): Promise<void> {
+  override async rollback(
+    ctx: ControlledTransaction<any, any>,
+    eventBroadcaster?: TransactionEventBroadcaster,
+    loggerContext?: LogContext,
+  ): Promise<void> {
     await eventBroadcaster?.dispatchEvent(EventType.beforeTransactionRollback, ctx);
     if ('savepointName' in ctx) {
       await ctx.rollbackToSavepoint(ctx.savepointName).execute();
@@ -187,7 +211,10 @@ export abstract class AbstractSqlConnection extends Connection {
     await eventBroadcaster?.dispatchEvent(EventType.afterTransactionRollback, ctx);
   }
 
-  private prepareQuery(query: string | NativeQueryBuilder | RawQueryFragment, params: readonly unknown[] = []): { query: string; params: readonly unknown[]; formatted: string } {
+  private prepareQuery(
+    query: string | NativeQueryBuilder | RawQueryFragment,
+    params: readonly unknown[] = [],
+  ): { query: string; params: readonly unknown[]; formatted: string } {
     if (query instanceof NativeQueryBuilder) {
       query = query.toRaw();
     }
@@ -203,19 +230,34 @@ export abstract class AbstractSqlConnection extends Connection {
     return { query, params, formatted };
   }
 
-  async execute<T extends QueryResult | EntityData<AnyEntity> | EntityData<AnyEntity>[] = EntityData<AnyEntity>[]>(query: string | NativeQueryBuilder | RawQueryFragment, params: readonly unknown[] = [], method: 'all' | 'get' | 'run' = 'all', ctx?: Transaction, loggerContext?: LoggingOptions): Promise<T> {
+  async execute<T extends QueryResult | EntityData<AnyEntity> | EntityData<AnyEntity>[] = EntityData<AnyEntity>[]>(
+    query: string | NativeQueryBuilder | RawQueryFragment,
+    params: readonly unknown[] = [],
+    method: 'all' | 'get' | 'run' = 'all',
+    ctx?: Transaction,
+    loggerContext?: LoggingOptions,
+  ): Promise<T> {
     await this.ensureConnection();
     const q = this.prepareQuery(query, params);
     const sql = this.getSql(q.query, q.formatted, loggerContext);
 
-    return this.executeQuery<T>(sql, async () => {
-      const compiled = CompiledQuery.raw(q.formatted);
-      const res = await (ctx ?? this.#client).executeQuery(compiled);
-      return this.transformRawResult<T>(res, method);
-    }, { ...q, ...loggerContext });
+    return this.executeQuery<T>(
+      sql,
+      async () => {
+        const compiled = CompiledQuery.raw(q.formatted);
+        const res = await (ctx ?? this.#client).executeQuery(compiled);
+        return this.transformRawResult<T>(res, method);
+      },
+      { ...q, ...loggerContext },
+    );
   }
 
-  async *stream<T extends EntityData<AnyEntity>>(query: string | NativeQueryBuilder | RawQueryFragment, params: readonly unknown[] = [], ctx?: Transaction<Kysely<any>>, loggerContext?: LoggingOptions): AsyncIterableIterator<T> {
+  async *stream<T extends EntityData<AnyEntity>>(
+    query: string | NativeQueryBuilder | RawQueryFragment,
+    params: readonly unknown[] = [],
+    ctx?: Transaction<Kysely<any>>,
+    loggerContext?: LoggingOptions,
+  ): AsyncIterableIterator<T> {
     await this.ensureConnection();
     const q = this.prepareQuery(query, params);
     const sql = this.getSql(q.query, q.formatted, loggerContext);
@@ -233,7 +275,8 @@ export abstract class AbstractSqlConnection extends Connection {
       const res = (ctx ?? this.getClient()).getExecutor().stream(compiled, 1);
 
       this.logQuery(sql, {
-        sql, params,
+        sql,
+        params,
         ...loggerContext,
         affected: Utils.isPlainObject<QueryResult>(res) ? res.affectedRows : undefined,
       });
@@ -292,5 +335,4 @@ export abstract class AbstractSqlConnection extends Connection {
       rows: res.rows,
     } as unknown as T;
   }
-
 }

@@ -4,7 +4,6 @@ import { mockLogger } from '../helpers.js';
 
 @Entity()
 class Project {
-
   @PrimaryKey()
   id!: number;
 
@@ -23,12 +22,10 @@ class Project {
     ref: true,
   })
   secondaryOwner?: Ref<User>;
-
 }
 
 @Entity()
 class User {
-
   @PrimaryKey()
   id!: number;
 
@@ -48,7 +45,6 @@ class User {
     nullable: true,
   })
   project2?: Ref<Project>;
-
 }
 
 let orm: MikroORM;
@@ -165,4 +161,3 @@ test('change a 1:1 relation by setting the FK on the new entity', async () => {
   const oldOwner2 = await orm.em.fork().findOne(User, oldOwner.id);
   expect(oldOwner2).toBeNull();
 });
-

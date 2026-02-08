@@ -3,18 +3,15 @@ import { Entity, ManyToOne, OneToMany, PrimaryKey, ReflectMetadataProvider } fro
 
 @Entity()
 export class User {
-
   @PrimaryKey()
   id!: number;
 
   @OneToMany(() => Chat, 'owner')
   ownedChats = new Collection<Chat>(this);
-
 }
 
 @Entity()
 export class Chat {
-
   @ManyToOne(() => User, { primary: true, ref: true })
   owner: Ref<User>;
 
@@ -28,11 +25,9 @@ export class Chat {
     this.owner = Reference.create(owner);
     this.recipient = Reference.create(recipient);
   }
-
 }
 
 describe('GH issue 589', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -85,5 +80,4 @@ describe('GH issue 589', () => {
 
     await orm.em.find(Chat, {}, { populate: ['User'] });
   });
-
 });

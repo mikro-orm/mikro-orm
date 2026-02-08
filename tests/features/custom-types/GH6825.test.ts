@@ -2,7 +2,6 @@ import { Collection, MikroORM, Type, ValidationError } from '@mikro-orm/sqlite';
 import { Entity, ManyToOne, OneToMany, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 class MyDateType extends Type<Date, string> {
-
   convertToDatabaseValue(value: Date | string | undefined): string {
     if (value instanceof Date) {
       return value.toISOString().substring(0, 10);
@@ -32,23 +31,19 @@ class MyDateType extends Type<Date, string> {
   getColumnType() {
     return 'date(10)';
   }
-
 }
 
 @Entity()
 class User {
-
   @PrimaryKey()
   name!: string;
 
   @OneToMany(() => Range, address => address.user)
   ranges = new Collection<Range>(this);
-
 }
 
 @Entity()
 class Range {
-
   @PrimaryKey({ type: MyDateType })
   from!: Date;
 
@@ -57,7 +52,6 @@ class Range {
 
   @ManyToOne(() => User)
   user!: User;
-
 }
 
 let orm: MikroORM;

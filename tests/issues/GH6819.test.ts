@@ -3,18 +3,15 @@ import { Entity, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider } from
 
 @Entity()
 class Organisation {
-
   @PrimaryKey()
   id!: number;
 
   @Property()
   name!: string;
-
 }
 
 @Entity()
 class User {
-
   @ManyToOne({
     entity: () => Organisation,
     fieldName: 'org_id',
@@ -36,12 +33,10 @@ class User {
     ownColumns: ['workspace_id'],
   })
   workspace!: Ref<Workspace>;
-
 }
 
 @Entity()
 class Workspace {
-
   @ManyToOne({
     entity: () => Organisation,
     fieldName: 'org_id',
@@ -55,12 +50,10 @@ class Workspace {
 
   @Property()
   name!: string;
-
 }
 
 @Entity()
 class UserRequest {
-
   @ManyToOne({
     entity: () => Organisation,
     fieldName: 'org_id',
@@ -82,7 +75,6 @@ class UserRequest {
     ownColumns: ['user_id'],
   })
   user!: Ref<User>;
-
 }
 
 let orm: MikroORM;

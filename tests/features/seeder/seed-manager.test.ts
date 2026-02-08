@@ -8,7 +8,6 @@ import { Book3Seeder } from '../../database/seeder/book3.seeder.js';
 import { Author3Seeder } from '../../database/seeder/author3.seeder.js';
 
 describe('Seeder', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -81,5 +80,4 @@ describe('Seeder', () => {
     expect(fileContents).toContain('exports.Publisher3Seeder = Publisher3Seeder;');
     await rm(seederFile);
   });
-
 });

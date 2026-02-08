@@ -3,7 +3,6 @@ import { Entity, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider } from
 
 @Entity()
 class User {
-
   @PrimaryKey()
   id!: number;
 
@@ -12,12 +11,10 @@ class User {
 
   @Property()
   age!: number;
-
 }
 
 @Entity()
 class Book {
-
   @PrimaryKey()
   id!: number;
 
@@ -26,7 +23,6 @@ class Book {
 
   @ManyToOne(() => User)
   owner!: User;
-
 }
 
 @Entity({
@@ -38,7 +34,6 @@ class Book {
   `,
 })
 class UserBookSummary {
-
   @Property()
   id!: number;
 
@@ -50,7 +45,6 @@ class UserBookSummary {
 
   @Property()
   bookCount!: number;
-
 }
 
 let orm: MikroORM;

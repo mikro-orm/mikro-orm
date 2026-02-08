@@ -10,7 +10,6 @@ import {
 
 @Entity()
 class SomeMany {
-
   @PrimaryKey()
   id!: number;
 
@@ -19,12 +18,10 @@ class SomeMany {
 
   @ManyToOne(() => Test)
   ref!: any;
-
 }
 
 @Entity()
 class Test {
-
   @PrimaryKey()
   id!: number;
 
@@ -33,7 +30,6 @@ class Test {
 
   @OneToMany(() => SomeMany, ent => ent.ref)
   coll = new Collection<SomeMany>(this);
-
 }
 
 let orm: MikroORM;

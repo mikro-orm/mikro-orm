@@ -19,15 +19,12 @@ import {
 import { BASE_DIR, mockLogger } from '../../bootstrap.js';
 
 class MigrationTest1 extends Migration {
-
   async up(): Promise<void> {
     this.addSql('select 1 + 1');
   }
-
 }
 
 class MigrationTest2 extends Migration {
-
   async up(): Promise<void> {
     this.addSql('select 1 + 1');
     this.addSql(raw('select 1 + 1'));
@@ -41,11 +38,9 @@ class MigrationTest2 extends Migration {
   override isTransactional(): boolean {
     return false;
   }
-
 }
 
 describe('Migrator (postgres)', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -61,7 +56,9 @@ describe('Migrator (postgres)', () => {
 
     await orm.schema.refresh();
     await orm.schema.execute('alter table "custom"."book2" add column "foo" varchar null default \'lol\';');
-    await orm.schema.execute('alter table "custom"."book2" alter column "double" type numeric using ("double"::numeric);');
+    await orm.schema.execute(
+      'alter table "custom"."book2" alter column "double" type numeric using ("double"::numeric);',
+    );
     await orm.schema.execute('alter table "custom"."test2" add column "path" polygon null default null;');
     await rm(process.cwd() + '/temp/migrations-456', { recursive: true, force: true });
   });
@@ -83,20 +80,24 @@ describe('Migrator (postgres)', () => {
     const dateMock = vi.spyOn(Date.prototype, 'toISOString');
     dateMock.mockReturnValue('2019-10-13T21:48:13.382Z');
     const migrationsSettings = orm.config.get('migrations');
-    orm.config.set('migrations', { ...migrationsSettings, generator: class extends TSMigrationGenerator {
+    orm.config.set('migrations', {
+      ...migrationsSettings,
+      generator: class extends TSMigrationGenerator {
+        override generateMigrationFile(className: string, diff: { up: string[]; down: string[] }): string {
+          const comment = '// this file was generated via custom migration generator\n\n';
+          return comment + super.generateMigrationFile(className, diff);
+        }
 
-      override generateMigrationFile(className: string, diff: { up: string[]; down: string[] }): string {
-        const comment = '// this file was generated via custom migration generator\n\n';
-        return comment + super.generateMigrationFile(className, diff);
-      }
+        override createStatement(sql: string, padLeft: number): string {
+          sql = sql
+            .split('\n')
+            .map((l, i) => (i === 0 ? l : `${' '.repeat(padLeft + 13)}${l}`))
+            .join('\n');
 
-      override createStatement(sql: string, padLeft: number): string {
-        sql = sql.split('\n').map((l, i) => i === 0 ? l : `${' '.repeat(padLeft + 13)}${l}`).join('\n');
-
-        return super.createStatement(sql, padLeft);
-      }
-
-    } });
+          return super.createStatement(sql, padLeft);
+        }
+      },
+    });
     const migration = await orm.migrator.create();
     expect(migration).toMatchSnapshot('migration-ts-dump');
     orm.config.set('migrations', migrationsSettings); // Revert migration config changes
@@ -299,10 +300,10 @@ describe('Migrator (postgres)', () => {
     expect(spy1).toHaveBeenCalledWith('select 1 + 1');
     expect(mock.mock.calls.length).toBe(6);
     expect(mock.mock.calls[0][0]).toMatch('begin');
-    expect(mock.mock.calls[1][0]).toMatch('set names \'utf8\';');
-    expect(mock.mock.calls[2][0]).toMatch('set session_replication_role = \'replica\';');
+    expect(mock.mock.calls[1][0]).toMatch("set names 'utf8';");
+    expect(mock.mock.calls[2][0]).toMatch("set session_replication_role = 'replica';");
     expect(mock.mock.calls[3][0]).toMatch('select 1 + 1');
-    expect(mock.mock.calls[4][0]).toMatch('set session_replication_role = \'origin\';');
+    expect(mock.mock.calls[4][0]).toMatch("set session_replication_role = 'origin';");
     expect(mock.mock.calls[5][0]).toMatch('commit');
     mock.mock.calls.length = 0;
 
@@ -318,7 +319,9 @@ describe('Migrator (postgres)', () => {
     expect(mock.mock.calls).toHaveLength(8);
     expect(mock.mock.calls[0][0]).toMatch('select 1 + 1 as count1');
     expect(mock.mock.calls[1][0]).toMatch('begin');
-    expect(mock.mock.calls[2][0]).toMatch('insert into "custom"."foo_bar2" ("name") values (?) returning "id", "version"');
+    expect(mock.mock.calls[2][0]).toMatch(
+      'insert into "custom"."foo_bar2" ("name") values (?) returning "id", "version"',
+    );
     expect(mock.mock.calls[3][0]).toMatch('commit');
     expect(mock.mock.calls[4][0]).toMatch(`set names 'utf8'`);
     expect(mock.mock.calls[5][0]).toMatch('select 1 + 1');
@@ -448,10 +451,16 @@ test('ensureTable when the schema does not exist', async () => {
 
   const mock = mockLogger(orm);
   await storage.ensureTable!(); // ensures the schema first
-  expect(mock.mock.calls[0][0]).toMatch(`select table_name, table_schema as schema_name, (select pg_catalog.obj_description(c.oid) from pg_catalog.pg_class c where c.oid = (select ('"' || table_schema || '"."' || table_name || '"')::regclass::oid) and c.relname = table_name) as table_comment from information_schema.tables where "table_schema" not like 'pg_%' and "table_schema" not like 'crdb_%' and "table_schema" not like '_timescaledb_%' and "table_schema" not in ('information_schema', 'tiger', 'topology') and table_name != 'geometry_columns' and table_name != 'spatial_ref_sys' and table_type != 'VIEW' and table_name not in (select inhrelid::regclass::text from pg_inherits) order by table_name`);
-  expect(mock.mock.calls[1][0]).toMatch(`select schema_name from information_schema.schemata where "schema_name" not like 'pg_%' and "schema_name" not like 'crdb_%' and "schema_name" not like '_timescaledb_%' and "schema_name" not in ('information_schema', 'tiger', 'topology') order by schema_name`);
+  expect(mock.mock.calls[0][0]).toMatch(
+    `select table_name, table_schema as schema_name, (select pg_catalog.obj_description(c.oid) from pg_catalog.pg_class c where c.oid = (select ('"' || table_schema || '"."' || table_name || '"')::regclass::oid) and c.relname = table_name) as table_comment from information_schema.tables where "table_schema" not like 'pg_%' and "table_schema" not like 'crdb_%' and "table_schema" not like '_timescaledb_%' and "table_schema" not in ('information_schema', 'tiger', 'topology') and table_name != 'geometry_columns' and table_name != 'spatial_ref_sys' and table_type != 'VIEW' and table_name not in (select inhrelid::regclass::text from pg_inherits) order by table_name`,
+  );
+  expect(mock.mock.calls[1][0]).toMatch(
+    `select schema_name from information_schema.schemata where "schema_name" not like 'pg_%' and "schema_name" not like 'crdb_%' and "schema_name" not like '_timescaledb_%' and "schema_name" not in ('information_schema', 'tiger', 'topology') order by schema_name`,
+  );
   expect(mock.mock.calls[2][0]).toMatch(`create schema if not exists "custom2"`);
-  expect(mock.mock.calls[3][0]).toMatch(`create table "custom2"."mikro_orm_migrations" ("id" serial primary key, "name" varchar(255) not null, "executed_at" timestamptz(6) not null default current_timestamp(6))`);
+  expect(mock.mock.calls[3][0]).toMatch(
+    `create table "custom2"."mikro_orm_migrations" ("id" serial primary key, "name" varchar(255) not null, "executed_at" timestamptz(6) not null default current_timestamp(6))`,
+  );
   await orm.close();
 });
 
@@ -464,11 +473,13 @@ test('respects the skipTables option when diffing schemas', async () => {
     metadataProvider: ReflectMetadataProvider,
     migrations: { path: BASE_DIR + '/../temp/migrations-456', snapshot: false },
   };
-  const initOrm =  await MikroORM.init(baseConfig);
+  const initOrm = await MikroORM.init(baseConfig);
 
   await initOrm.schema.refresh();
   await initOrm.schema.execute('alter table "custom"."book2" add column "foo" varchar null default \'lol\';');
-  await initOrm.schema.execute('alter table "custom"."book2" alter column "double" type numeric using ("double"::numeric);');
+  await initOrm.schema.execute(
+    'alter table "custom"."book2" alter column "double" type numeric using ("double"::numeric);',
+  );
   await initOrm.schema.execute('alter table "custom"."test2" add column "path" polygon null default null;');
   await rm(process.cwd() + '/temp/migrations-456', { force: true, recursive: true });
   await initOrm.close();

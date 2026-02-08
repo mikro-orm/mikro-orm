@@ -1,10 +1,16 @@
 import { BaseEntity, Collection, MikroORM, Cascade } from '@mikro-orm/sqlite';
-import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { v4 as uuidv4 } from 'uuid';
 
 @Entity()
 class LocalizedString extends BaseEntity {
-
   @PrimaryKey()
   id!: string;
 
@@ -19,7 +25,6 @@ class LocalizedString extends BaseEntity {
     this.de_DE = de;
     this.en_US = en;
   }
-
 }
 
 enum BookGenre {
@@ -31,7 +36,6 @@ enum BookGenre {
 
 @Entity()
 class Genre {
-
   @PrimaryKey()
   id!: string;
 
@@ -45,12 +49,10 @@ class Genre {
     this.type = type;
     this.title = title;
   }
-
 }
 
 @Entity()
 class Author {
-
   @PrimaryKey()
   id!: string;
 
@@ -67,12 +69,10 @@ class Author {
     this.firstName = firstName;
     this.lastName = lastName;
   }
-
 }
 
 @Entity()
 class Book {
-
   @PrimaryKey()
   id!: string;
 
@@ -90,7 +90,6 @@ class Book {
     this.author = author;
     this.genre = genre;
   }
-
 }
 
 let orm: MikroORM;
@@ -153,20 +152,12 @@ describe('basic CRUD example', () => {
   });
 
   test('populate books with genre', async () => {
-    const authors = await orm.em.find(
-      Author,
-      { firstName: 'Jon' },
-      { populate: ['books', 'books.genre'] },
-    );
+    const authors = await orm.em.find(Author, { firstName: 'Jon' }, { populate: ['books', 'books.genre'] });
     expect(authors).toHaveLength(1);
     const books = authors[0].books;
     expect(books).toHaveLength(2);
-    expect(books.map(book => book.genre.type).sort()).toEqual(
-      [BookGenre.crime, BookGenre.fantasy].sort(),
-    );
+    expect(books.map(book => book.genre.type).sort()).toEqual([BookGenre.crime, BookGenre.fantasy].sort());
     // Should load title when populating books.genre according to eager: true
-    expect(books.map(book => book.genre.title.en_US).sort()).toEqual(
-      ['Crime', 'Fantasy'].sort(),
-    );
+    expect(books.map(book => book.genre.title.en_US).sort()).toEqual(['Crime', 'Fantasy'].sort());
   });
 });

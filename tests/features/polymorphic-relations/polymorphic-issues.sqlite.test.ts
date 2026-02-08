@@ -12,10 +12,8 @@ import {
 import { vi } from 'vitest';
 
 describe('polymorphic M:N with composite keys on owner side (fixed)', () => {
-
   @Entity()
   class Article {
-
     @PrimaryKey()
     tenantId!: number;
 
@@ -37,12 +35,10 @@ describe('polymorphic M:N with composite keys on owner side (fixed)', () => {
       this.articleId = articleId;
       this.title = title;
     }
-
   }
 
   @Entity()
   class Product {
-
     @PrimaryKey()
     tenantId!: number;
 
@@ -64,12 +60,10 @@ describe('polymorphic M:N with composite keys on owner side (fixed)', () => {
       this.productId = productId;
       this.name = name;
     }
-
   }
 
   @Entity()
   class Category {
-
     @PrimaryKey()
     id!: number;
 
@@ -85,7 +79,6 @@ describe('polymorphic M:N with composite keys on owner side (fixed)', () => {
     constructor(name: string) {
       this.name = name;
     }
-
   }
 
   let orm: MikroORM;
@@ -119,9 +112,13 @@ describe('polymorphic M:N with composite keys on owner side (fixed)', () => {
     await orm.em.flush();
     orm.em.clear();
 
-    const loaded = await orm.em.findOneOrFail(Category, { id: category.id }, {
-      populate: ['articles', 'products'],
-    });
+    const loaded = await orm.em.findOneOrFail(
+      Category,
+      { id: category.id },
+      {
+        populate: ['articles', 'products'],
+      },
+    );
 
     expect(loaded.articles).toHaveLength(2);
     expect(loaded.products).toHaveLength(1);
@@ -131,14 +128,11 @@ describe('polymorphic M:N with composite keys on owner side (fixed)', () => {
     expect(loadedArticle1!.tenantId).toBe(1);
     expect(loadedArticle1!.title).toBe('Article 1');
   });
-
 });
 
 describe('polymorphic to-one with joined strategy', () => {
-
   @Entity()
   class Tag {
-
     @PrimaryKey()
     tenantId!: number;
 
@@ -147,23 +141,19 @@ describe('polymorphic to-one with joined strategy', () => {
 
     @Property()
     label!: string;
-
   }
 
   @Embeddable()
   class Address {
-
     @Property()
     city!: string;
 
     @Property()
     country!: string;
-
   }
 
   @Entity()
   class TargetA {
-
     @PrimaryKey()
     id!: number;
 
@@ -175,12 +165,10 @@ describe('polymorphic to-one with joined strategy', () => {
 
     @ManyToOne(() => Tag, { nullable: true })
     tag?: Tag;
-
   }
 
   @Entity()
   class TargetB {
-
     @PrimaryKey()
     id!: number;
 
@@ -189,12 +177,10 @@ describe('polymorphic to-one with joined strategy', () => {
 
     @Embedded(() => Address, { object: true, nullable: true })
     address?: Address;
-
   }
 
   @Entity()
   class Owner {
-
     @PrimaryKey()
     id!: number;
 
@@ -203,7 +189,6 @@ describe('polymorphic to-one with joined strategy', () => {
 
     @ManyToOne(() => [TargetA, TargetB], { nullable: true })
     target!: TargetA | TargetB | null;
-
   }
 
   let orm: MikroORM;
@@ -240,11 +225,15 @@ describe('polymorphic to-one with joined strategy', () => {
     logger.setDebugMode(true);
     logger.log = mock;
 
-    const owners = await orm.em.find(Owner, {}, {
-      populate: ['target'],
-      strategy: LoadStrategy.SELECT_IN,
-      orderBy: { id: QueryOrder.ASC },
-    });
+    const owners = await orm.em.find(
+      Owner,
+      {},
+      {
+        populate: ['target'],
+        strategy: LoadStrategy.SELECT_IN,
+        orderBy: { id: QueryOrder.ASC },
+      },
+    );
 
     logger.setDebugMode(false);
 
@@ -265,11 +254,15 @@ describe('polymorphic to-one with joined strategy', () => {
     logger.setDebugMode(true);
     logger.log = mock;
 
-    const owners = await orm.em.find(Owner, {}, {
-      populate: ['target'],
-      strategy: LoadStrategy.JOINED,
-      orderBy: { id: QueryOrder.ASC },
-    });
+    const owners = await orm.em.find(
+      Owner,
+      {},
+      {
+        populate: ['target'],
+        strategy: LoadStrategy.JOINED,
+        orderBy: { id: QueryOrder.ASC },
+      },
+    );
 
     logger.setDebugMode(false);
 
@@ -307,10 +300,14 @@ describe('polymorphic to-one with joined strategy', () => {
     await tzOrm.em.flush();
     tzOrm.em.clear();
 
-    const owners = await tzOrm.em.find(Owner, {}, {
-      populate: ['target'],
-      strategy: LoadStrategy.JOINED,
-    });
+    const owners = await tzOrm.em.find(
+      Owner,
+      {},
+      {
+        populate: ['target'],
+        strategy: LoadStrategy.JOINED,
+      },
+    );
 
     expect(owners).toHaveLength(1);
     expect(owners[0].target).toBeInstanceOf(TargetA);
@@ -318,37 +315,30 @@ describe('polymorphic to-one with joined strategy', () => {
 
     await tzOrm.close(true);
   });
-
 });
 
 describe('polymorphic relation with STI target (fixed)', () => {
-
   test('throws error when polymorphic targets share the same table (STI)', async () => {
     @Entity({
       discriminatorColumn: 'type',
       discriminatorMap: { person: 'Person', employee: 'Employee' },
     })
     class Person {
-
       @PrimaryKey()
       id!: number;
 
       @Property()
       name!: string;
-
     }
 
     @Entity({ discriminatorValue: 'employee' })
     class Employee extends Person {
-
       @Property()
       department!: string;
-
     }
 
     @Entity()
     class Task {
-
       @PrimaryKey()
       id!: number;
 
@@ -359,7 +349,6 @@ describe('polymorphic relation with STI target (fixed)', () => {
       // Use separate @ManyToOne(() => Person) properties instead
       @ManyToOne(() => [Person, Employee], { nullable: true })
       assignee!: Person | Employee | null;
-
     }
 
     await expect(
@@ -370,42 +359,34 @@ describe('polymorphic relation with STI target (fixed)', () => {
       }),
     ).rejects.toThrow(/incompatible polymorphic targets.*both use table 'person'.*Use separate properties/i);
   });
-
 });
 
 describe('invalid discriminator value handling (fixed)', () => {
-
   @Entity()
   class TypeA {
-
     @PrimaryKey()
     id!: number;
 
     @Property()
     value!: string;
-
   }
 
   @Entity()
   class TypeB {
-
     @PrimaryKey()
     id!: number;
 
     @Property()
     value!: string;
-
   }
 
   @Entity()
   class Container {
-
     @PrimaryKey()
     id!: number;
 
     @ManyToOne(() => [TypeA, TypeB])
     item!: TypeA | TypeB;
-
   }
 
   let orm: MikroORM;
@@ -431,46 +412,36 @@ describe('invalid discriminator value handling (fixed)', () => {
     await conn.execute(`INSERT INTO type_a (id, value) VALUES (1, 'A')`);
     await conn.execute(`INSERT INTO container (id, item_type, item_id) VALUES (1, 'invalid_type', 1)`);
 
-    await expect(
-      orm.em.findOneOrFail(Container, { id: 1 }),
-    ).rejects.toThrow(/discriminator|unknown|invalid/i);
+    await expect(orm.em.findOneOrFail(Container, { id: 1 })).rejects.toThrow(/discriminator|unknown|invalid/i);
   });
-
 });
 
 describe('ChangeSetComputer with polymorphic relations (fixed)', () => {
-
   @Entity()
   class Target {
-
     @PrimaryKey()
     id!: number;
 
     @Property()
     name!: string;
-
   }
 
   @Entity()
   class Target2 {
-
     @PrimaryKey()
     id!: number;
 
     @Property()
     name!: string;
-
   }
 
   @Entity()
   class Parent {
-
     @PrimaryKey()
     id!: number;
 
     @ManyToOne(() => [Target, Target2])
     poly!: Target | Target2;
-
   }
 
   let orm: MikroORM;
@@ -506,5 +477,4 @@ describe('ChangeSetComputer with polymorphic relations (fixed)', () => {
     const parentChanges = changes.filter(cs => cs.entity === parent);
     expect(parentChanges).toHaveLength(0);
   });
-
 });

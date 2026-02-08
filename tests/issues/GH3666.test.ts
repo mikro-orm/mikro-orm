@@ -3,32 +3,26 @@ import { Entity, ManyToOne, OneToMany, PrimaryKey, ReflectMetadataProvider } fro
 
 @Entity()
 class Competition {
-
   @PrimaryKey()
   id!: number;
 
   @OneToMany(() => Registration, 'competition', { orphanRemoval: true })
   registrations = new Collection<Registration>(this);
-
 }
 
 @Entity()
 class User {
-
   @PrimaryKey()
   id!: number;
-
 }
 
 @Entity()
 class Registration {
-
   @ManyToOne({ primary: true })
   competition!: Competition;
 
   @ManyToOne({ primary: true })
   user!: User;
-
 }
 
 let orm: MikroORM;

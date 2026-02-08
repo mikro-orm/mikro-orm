@@ -1,7 +1,17 @@
 import { defineEntity, p, sql } from '@mikro-orm/core';
 import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { EntityManager, MikroORM } from '@mikro-orm/mssql';
-import { Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, Test2, Address2, Configuration2 } from '../../entities-mssql/index.js';
+import {
+  Author2,
+  Book2,
+  BookTag2,
+  FooBar2,
+  FooBaz2,
+  Publisher2,
+  Test2,
+  Address2,
+  Configuration2,
+} from '../../entities-mssql/index.js';
 
 // View entity with string expression
 const authorStatsSQL = `select min(name) as name, (select count(*) from book2 b where b.author_id = a.id) as book_count from author2 a group by a.id`;
@@ -23,7 +33,8 @@ const BookSummary = defineEntity({
   tableName: 'book_summary_view',
   view: true,
   expression: (em: EntityManager) => {
-    return em.createQueryBuilder(Book2, 'b')
+    return em
+      .createQueryBuilder(Book2, 'b')
       .join('b.author', 'a')
       .select(['b.title', sql.ref('a', 'name').as('author_name')]);
   },
@@ -46,13 +57,25 @@ const ProlificAuthors = defineEntity({
 });
 
 describe('View entities (mssql)', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
       metadataProvider: ReflectMetadataProvider,
-      entities: [Author2, Book2, BookTag2, Publisher2, Test2, FooBar2, FooBaz2, Address2, Configuration2, AuthorStats, BookSummary, ProlificAuthors],
+      entities: [
+        Author2,
+        Book2,
+        BookTag2,
+        Publisher2,
+        Test2,
+        FooBar2,
+        FooBaz2,
+        Address2,
+        Configuration2,
+        AuthorStats,
+        BookSummary,
+        ProlificAuthors,
+      ],
       dbName: 'mikro_orm_test_views',
       password: 'Root.Root',
     });
@@ -134,5 +157,4 @@ describe('View entities (mssql)', () => {
     const sql = await orm.schema.getUpdateSchemaSQL();
     expect(sql).toBe('');
   });
-
 });

@@ -51,7 +51,6 @@ import { Raw } from '../utils/RawQueryFragment.js';
 export const JsonProperty = Symbol('JsonProperty');
 
 export abstract class Platform {
-
   protected readonly exceptionConverter = new ExceptionConverter();
   protected config!: Configuration;
   protected namingStrategy!: NamingStrategy;
@@ -69,7 +68,7 @@ export abstract class Platform {
     return true;
   }
 
-  getNamingStrategy(): { new(): NamingStrategy } {
+  getNamingStrategy(): { new (): NamingStrategy } {
     return UnderscoreNamingStrategy;
   }
 
@@ -246,7 +245,13 @@ export abstract class Platform {
     return `text`;
   }
 
-  getEnumTypeDeclarationSQL(column: { items?: unknown[]; fieldNames: string[]; length?: number; unsigned?: boolean; autoincrement?: boolean }): string {
+  getEnumTypeDeclarationSQL(column: {
+    items?: unknown[];
+    fieldNames: string[];
+    length?: number;
+    unsigned?: boolean;
+    autoincrement?: boolean;
+  }): string {
     if (column.items?.every(item => typeof item === 'string')) {
       return `enum('${column.items.join("','")}')`;
     }
@@ -297,35 +302,58 @@ export abstract class Platform {
 
     switch (this.extractSimpleType(type)) {
       case 'character':
-      case 'char': return Type.getType(CharacterType);
+      case 'char':
+        return Type.getType(CharacterType);
       case 'string':
-      case 'varchar': return Type.getType(StringType);
-      case 'interval': return Type.getType(IntervalType);
-      case 'text': return Type.getType(TextType);
+      case 'varchar':
+        return Type.getType(StringType);
+      case 'interval':
+        return Type.getType(IntervalType);
+      case 'text':
+        return Type.getType(TextType);
       case 'int':
-      case 'number': return Type.getType(IntegerType);
-      case 'bigint': return Type.getType(BigIntType);
-      case 'smallint': return Type.getType(SmallIntType);
-      case 'tinyint': return Type.getType(TinyIntType);
-      case 'mediumint': return Type.getType(MediumIntType);
-      case 'float': return Type.getType(FloatType);
-      case 'double': return Type.getType(DoubleType);
-      case 'integer': return Type.getType(IntegerType);
+      case 'number':
+        return Type.getType(IntegerType);
+      case 'bigint':
+        return Type.getType(BigIntType);
+      case 'smallint':
+        return Type.getType(SmallIntType);
+      case 'tinyint':
+        return Type.getType(TinyIntType);
+      case 'mediumint':
+        return Type.getType(MediumIntType);
+      case 'float':
+        return Type.getType(FloatType);
+      case 'double':
+        return Type.getType(DoubleType);
+      case 'integer':
+        return Type.getType(IntegerType);
       case 'decimal':
-      case 'numeric': return Type.getType(DecimalType);
-      case 'boolean': return Type.getType(BooleanType);
+      case 'numeric':
+        return Type.getType(DecimalType);
+      case 'boolean':
+        return Type.getType(BooleanType);
       case 'blob':
-      case 'buffer': return Type.getType(BlobType);
-      case 'uint8array': return Type.getType(Uint8ArrayType);
-      case 'uuid': return Type.getType(UuidType);
-      case 'date': return Type.getType(DateType);
+      case 'buffer':
+        return Type.getType(BlobType);
+      case 'uint8array':
+        return Type.getType(Uint8ArrayType);
+      case 'uuid':
+        return Type.getType(UuidType);
+      case 'date':
+        return Type.getType(DateType);
       case 'datetime':
-      case 'timestamp': return Type.getType(DateTimeType);
-      case 'time': return Type.getType(TimeType);
+      case 'timestamp':
+        return Type.getType(DateTimeType);
+      case 'time':
+        return Type.getType(TimeType);
       case 'object':
-      case 'json': return Type.getType(JsonType);
-      case 'enum': return Type.getType(EnumType);
-      default: return Type.getType(UnknownType);
+      case 'json':
+        return Type.getType(JsonType);
+      case 'enum':
+        return Type.getType(EnumType);
+      default:
+        return Type.getType(UnknownType);
     }
   }
 
@@ -382,7 +410,12 @@ export abstract class Platform {
     return false;
   }
 
-  getFullTextIndexExpression(indexName: string, schemaName: string | undefined, tableName: string, columns: SimpleColumnMeta[]): string {
+  getFullTextIndexExpression(
+    indexName: string,
+    schemaName: string | undefined,
+    tableName: string,
+    columns: SimpleColumnMeta[],
+  ): string {
     throw new Error('Full text searching is not supported by this driver.');
   }
 
@@ -453,7 +486,9 @@ export abstract class Platform {
     }
 
     /* v8 ignore next */
-    throw new Error(`${extensionName} extension not registered. Provide it in the ORM config, or use the async \`MikroORM.init()\` method to load extensions automatically.`);
+    throw new Error(
+      `${extensionName} extension not registered. Provide it in the ORM config, or use the async \`MikroORM.init()\` method to load extensions automatically.`,
+    );
   }
 
   /* v8 ignore next: kept for type inference only */
@@ -570,7 +605,11 @@ export abstract class Platform {
   /**
    * Returns the default name of index for the given columns
    */
-  getIndexName(tableName: string, columns: string[], type: 'index' | 'unique' | 'foreign' | 'primary' | 'sequence'): string {
+  getIndexName(
+    tableName: string,
+    columns: string[],
+    type: 'index' | 'unique' | 'foreign' | 'primary' | 'sequence',
+  ): string {
     return this.namingStrategy.indexName(tableName, columns, type);
   }
 
@@ -586,7 +625,13 @@ export abstract class Platform {
     return populate === true || (populate !== false && populate.some(p => p.field === key || p.all));
   }
 
-  shouldHaveColumn<T>(prop: EntityProperty<T>, populate: readonly PopulateOptions<T>[] | boolean, exclude?: string[], includeFormulas = true, ignoreInlineEmbeddables = true): boolean {
+  shouldHaveColumn<T>(
+    prop: EntityProperty<T>,
+    populate: readonly PopulateOptions<T>[] | boolean,
+    exclude?: string[],
+    includeFormulas = true,
+    ignoreInlineEmbeddables = true,
+  ): boolean {
     if (exclude?.includes(prop.name)) {
       return false;
     }
@@ -674,5 +719,4 @@ export abstract class Platform {
   [Symbol.for('nodejs.util.inspect.custom')]() {
     return `[${this.constructor.name}]`;
   }
-
 }

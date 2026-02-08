@@ -1,6 +1,13 @@
 import { MikroORM } from '@mikro-orm/core';
 import { MongoDriver, ObjectId, MongoSchemaGenerator } from '@mikro-orm/mongodb';
-import { Entity, Index, PrimaryKey, Property, SerializedPrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  Index,
+  PrimaryKey,
+  Property,
+  SerializedPrimaryKey,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Entity({ tableName: 'test_collection' })
 @Index({
@@ -12,7 +19,6 @@ import { Entity, Index, PrimaryKey, Property, SerializedPrimaryKey, ReflectMetad
   invisible: true,
 })
 class TestEntity {
-
   @PrimaryKey()
   _id!: ObjectId;
 
@@ -24,11 +30,9 @@ class TestEntity {
 
   @Property()
   email!: string;
-
 }
 
 describe('advanced index features in mongodb', () => {
-
   let orm: MikroORM<MongoDriver>;
 
   beforeAll(async () => {
@@ -53,14 +57,17 @@ describe('advanced index features in mongodb', () => {
     const createIndexCalls: { fieldOrSpec: unknown; options: any }[] = [];
     const originalExecuteQuery = (MongoSchemaGenerator.prototype as any).executeQuery;
 
-    vi.spyOn(MongoSchemaGenerator.prototype as any, 'executeQuery').mockImplementation(
-      function (this: any, collection: any, method: any, ...args: any[]) {
-        if (method === 'createIndex') {
-          createIndexCalls.push({ fieldOrSpec: args[0], options: args[1] });
-        }
-        return originalExecuteQuery.call(this, collection, method, ...args);
-      },
-    );
+    vi.spyOn(MongoSchemaGenerator.prototype as any, 'executeQuery').mockImplementation(function (
+      this: any,
+      collection: any,
+      method: any,
+      ...args: any[]
+    ) {
+      if (method === 'createIndex') {
+        createIndexCalls.push({ fieldOrSpec: args[0], options: args[1] });
+      }
+      return originalExecuteQuery.call(this, collection, method, ...args);
+    });
 
     await orm.schema.create();
 
@@ -76,5 +83,4 @@ describe('advanced index features in mongodb', () => {
 
     vi.restoreAllMocks();
   });
-
 });

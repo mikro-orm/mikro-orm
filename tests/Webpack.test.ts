@@ -6,7 +6,6 @@ import { MikroORM } from '@mikro-orm/core';
 import { MySqlDriver } from '@mikro-orm/mysql';
 
 describe('Webpack', () => {
-
   test('should create entity', async () => {
     const orm = await MikroORM.init({
       metadataProvider: ReflectMetadataProvider,
@@ -48,5 +47,4 @@ describe('Webpack', () => {
     expect(() => new MikroORM(options)).toThrow(err);
     await expect(MikroORM.init(options)).rejects.toThrow('No entities were discovered');
   });
-
 });

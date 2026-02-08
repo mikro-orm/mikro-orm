@@ -1,10 +1,16 @@
 import { Collection, wrap } from '@mikro-orm/core';
-import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { MikroORM } from '@mikro-orm/sqlite';
 
 @Entity()
 class User {
-
   @PrimaryKey()
   id!: number;
 
@@ -19,12 +25,10 @@ class User {
 
   @OneToMany(() => Product, product => product.owner)
   product = new Collection<Product>(this);
-
 }
 
 @Entity()
 class Shop {
-
   @PrimaryKey()
   id!: number;
 
@@ -36,12 +40,10 @@ class Shop {
 
   @ManyToOne(() => User)
   owner!: User;
-
 }
 
 @Entity()
 export class Product {
-
   @PrimaryKey()
   id!: number;
 
@@ -53,7 +55,6 @@ export class Product {
 
   @ManyToOne(() => User)
   owner!: User;
-
 }
 
 let orm: MikroORM;
@@ -97,9 +98,13 @@ afterAll(() => orm.close());
 beforeEach(() => orm.em.clear());
 
 test('serialization works based on populate hint', async () => {
-  const [shop] = await orm.em.find(Shop, {}, {
-    populate: ['products', 'owner'],
-  });
+  const [shop] = await orm.em.find(
+    Shop,
+    {},
+    {
+      populate: ['products', 'owner'],
+    },
+  );
 
   expect(wrap(shop).toObject()).toEqual({
     id: 1,
@@ -145,9 +150,13 @@ test('serialization works based on populate hint', async () => {
 
 test('serialization respects partial loading hints 1', async () => {
   // populate hint is inferred and `products.owner` is skipped from it as we don't need to populate it for its FK
-  const [shop1] = await orm.em.find(Shop, {}, {
-    fields: ['name', 'products.name', 'products.owner', 'owner.name'],
-  });
+  const [shop1] = await orm.em.find(
+    Shop,
+    {},
+    {
+      fields: ['name', 'products.name', 'products.owner', 'owner.name'],
+    },
+  );
   expect(wrap(shop1).toObject()).toEqual({
     id: 1,
     name: 'shop-1',
@@ -159,9 +168,13 @@ test('serialization respects partial loading hints 1', async () => {
   });
 
   orm.config.get('serialization').includePrimaryKeys = false;
-  const [shop2] = await orm.em.find(Shop, {}, {
-    fields: ['name', 'products.name', 'products.owner', 'owner.name'],
-  });
+  const [shop2] = await orm.em.find(
+    Shop,
+    {},
+    {
+      fields: ['name', 'products.name', 'products.owner', 'owner.name'],
+    },
+  );
   expect(wrap(shop2).toObject()).toEqual({
     name: 'shop-1',
     products: [
@@ -175,9 +188,13 @@ test('serialization respects partial loading hints 1', async () => {
 
 test('serialization respects partial loading hints 2', async () => {
   // but it gets populated if we select some of its properties
-  const [shop] = await orm.em.find(Shop, {}, {
-    fields: ['name', 'products.name', 'products.owner.email', 'owner.name'],
-  });
+  const [shop] = await orm.em.find(
+    Shop,
+    {},
+    {
+      fields: ['name', 'products.name', 'products.owner.email', 'owner.name'],
+    },
+  );
   expect(wrap(shop).toObject()).toEqual({
     id: 1,
     name: 'shop-1',
@@ -193,10 +210,14 @@ test('serialization respects partial loading hints 2', async () => {
 
 test('serialization respects partial loading hints 3', async () => {
   // same result with joined strategy
-  const [shop] = await orm.em.find(Shop, {}, {
-    fields: ['name', 'products.name', 'products.owner.email', 'owner.name'],
-    strategy: 'joined',
-  });
+  const [shop] = await orm.em.find(
+    Shop,
+    {},
+    {
+      fields: ['name', 'products.name', 'products.owner.email', 'owner.name'],
+      strategy: 'joined',
+    },
+  );
   expect(wrap(shop).toObject()).toEqual({
     id: 1,
     name: 'shop-1',
@@ -211,9 +232,13 @@ test('serialization respects partial loading hints 3', async () => {
 });
 
 test('serialization respects partial loading hints 4', async () => {
-  const [shop] = await orm.em.find(Shop, {}, {
-    fields: ['name', 'products.name', 'owner.name'],
-  });
+  const [shop] = await orm.em.find(
+    Shop,
+    {},
+    {
+      fields: ['name', 'products.name', 'owner.name'],
+    },
+  );
   expect(wrap(shop).toObject()).toEqual({
     id: 1,
     name: 'shop-1',

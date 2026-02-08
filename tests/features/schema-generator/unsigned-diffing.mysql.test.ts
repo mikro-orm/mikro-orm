@@ -3,7 +3,6 @@ import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-or
 
 @Entity({ tableName: 'book' })
 class Book0 {
-
   @PrimaryKey()
   id!: number;
 
@@ -15,12 +14,10 @@ class Book0 {
 
   @Property({ type: 'double' })
   price3!: string;
-
 }
 
 @Entity({ tableName: 'book' })
 class Book1 {
-
   @PrimaryKey()
   id!: number;
 
@@ -32,12 +29,10 @@ class Book1 {
 
   @Property({ type: 'double', unsigned: true })
   price3!: string;
-
 }
 
 @Entity({ tableName: 'book' })
 class Book2 {
-
   @PrimaryKey()
   id!: number;
 
@@ -49,11 +44,9 @@ class Book2 {
 
   @Property({ type: 'double' })
   price3!: string;
-
 }
 
 describe('unsigned diffing in mysql', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -86,5 +79,4 @@ describe('unsigned diffing in mysql', () => {
       up: '',
     });
   });
-
 });

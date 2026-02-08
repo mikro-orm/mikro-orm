@@ -1,31 +1,35 @@
 import { Collection, MikroORM, Ref, raw } from '@mikro-orm/sqlite';
-import { Embeddable, Embedded, Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Embeddable,
+  Embedded,
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Embeddable()
 class Address {
-
   @Property()
   street!: string;
 
   @Property()
   city!: string;
-
 }
 
 @Embeddable()
 class Profile {
-
   @Property()
   bio!: string;
 
   @Embedded(() => Address)
   address = new Address();
-
 }
 
 @Entity()
 class Author {
-
   @PrimaryKey()
   id!: number;
 
@@ -40,12 +44,10 @@ class Author {
 
   @OneToMany(() => Book, book => book.author)
   books = new Collection<Book>(this);
-
 }
 
 @Entity()
 class Book {
-
   @PrimaryKey()
   id!: number;
 
@@ -57,18 +59,15 @@ class Book {
 
   @ManyToOne(() => Publisher, { nullable: true })
   publisher?: Ref<Publisher>;
-
 }
 
 @Entity()
 class Publisher {
-
   @PrimaryKey()
   id!: number;
 
   @Property()
   name!: string;
-
 }
 
 let orm: MikroORM;
@@ -99,7 +98,9 @@ describe('resolveNestedPath', () => {
 
   test('flattened embedded - select whole embedded returns all fields', async () => {
     const qb = orm.em.qb(Author, 'a').select(['a.id', 'a.profile']);
-    expect(qb.getFormattedQuery()).toBe('select `a`.`id`, `a`.`profile_bio`, `a`.`profile_address_street`, `a`.`profile_address_city` from `author` as `a`');
+    expect(qb.getFormattedQuery()).toBe(
+      'select `a`.`id`, `a`.`profile_bio`, `a`.`profile_address_street`, `a`.`profile_address_city` from `author` as `a`',
+    );
   });
 
   test('flattened embedded - select nested property', async () => {
@@ -132,7 +133,9 @@ describe('resolveNestedPath', () => {
 
   test('relation - navigate through relation with auto-join', async () => {
     const qb = orm.em.qb(Book, 'b').select(['b.id', 'b.author.name']);
-    expect(qb.getFormattedQuery()).toMatch(/select `b`.`id`, `a\d+`.`name` from `book` as `b` left join `author` as `a\d+` on `b`.`author_id` = `a\d+`.`id`/);
+    expect(qb.getFormattedQuery()).toMatch(
+      /select `b`.`id`, `a\d+`.`name` from `book` as `b` left join `author` as `a\d+` on `b`.`author_id` = `a\d+`.`id`/,
+    );
   });
 
   test('relation - navigate through multiple relations', async () => {
@@ -143,7 +146,8 @@ describe('resolveNestedPath', () => {
   });
 
   test('groupBy with nested path', async () => {
-    const qb = orm.em.qb(Book, 'b')
+    const qb = orm.em
+      .qb(Book, 'b')
       .join('b.author', 'author')
       .select(['author.name', raw('count(b.id) as book_count')])
       .groupBy('author.name');
@@ -151,7 +155,8 @@ describe('resolveNestedPath', () => {
   });
 
   test('groupBy with flattened embedded path', async () => {
-    const qb = orm.em.qb(Author, 'a')
+    const qb = orm.em
+      .qb(Author, 'a')
       .select(['a.profile.address.city'])
       .addSelect(raw('count(a.id) as author_count'))
       .groupBy('a.profile.address.city');
@@ -160,20 +165,20 @@ describe('resolveNestedPath', () => {
 
   test('existing join is reused - simple alias reference', async () => {
     // Join added before select, then reference by alias
-    const qb = orm.em.qb(Book, 'b')
-      .join('b.author', 'author')
-      .select(['b.id', 'author.name']);
+    const qb = orm.em.qb(Book, 'b').join('b.author', 'author').select(['b.id', 'author.name']);
     // Should use the existing join alias
-    expect(qb.getFormattedQuery()).toBe('select `b`.`id`, `author`.`name` from `book` as `b` inner join `author` as `author` on `b`.`author_id` = `author`.`id`');
+    expect(qb.getFormattedQuery()).toBe(
+      'select `b`.`id`, `author`.`name` from `book` as `b` inner join `author` as `author` on `b`.`author_id` = `author`.`id`',
+    );
   });
 
   test('existing join is reused - via path resolution', async () => {
     // Join added before select, then use full path that resolves to same join
-    const qb = orm.em.qb(Author, 'a')
-      .join('a.books', 'b')
-      .select(['a.id', 'a.books.title']);
+    const qb = orm.em.qb(Author, 'a').join('a.books', 'b').select(['a.id', 'a.books.title']);
     // Should reuse the existing 'b' join, not create a new one
-    expect(qb.getFormattedQuery()).toBe('select `a`.`id`, `b`.`title` from `author` as `a` inner join `book` as `b` on `a`.`id` = `b`.`author_id`');
+    expect(qb.getFormattedQuery()).toBe(
+      'select `a`.`id`, `b`.`title` from `author` as `a` inner join `book` as `b` on `a`.`id` = `b`.`author_id`',
+    );
   });
 
   test('nested embedded in auto-joined relation', async () => {
@@ -211,19 +216,28 @@ describe('resolveNestedPath', () => {
 
   test('where with flattened embedded path', async () => {
     // Test filtering by embedded property - use nested object syntax (same as relations)
-    const qb = orm.em.qb(Author, 'a').select('a.id').where({ profile: { bio: 'test' } });
+    const qb = orm.em
+      .qb(Author, 'a')
+      .select('a.id')
+      .where({ profile: { bio: 'test' } });
     expect(qb.getFormattedQuery()).toBe("select `a`.`id` from `author` as `a` where `a`.`profile_bio` = 'test'");
   });
 
   test('where with object embedded', async () => {
     // Test filtering by object embedded
-    const qb = orm.em.qb(Author, 'a').select('a.id').where({ objectAddress: { street: 'Main' } });
+    const qb = orm.em
+      .qb(Author, 'a')
+      .select('a.id')
+      .where({ objectAddress: { street: 'Main' } });
     expect(qb.getFormattedQuery()).toMatch(/where.*object_address/);
   });
 
   test('orderBy with embedded path (nested object)', async () => {
     // Test ordering by embedded property using nested object syntax
-    const qb = orm.em.qb(Author, 'a').select('a.id').orderBy({ profile: { bio: 'asc' } });
+    const qb = orm.em
+      .qb(Author, 'a')
+      .select('a.id')
+      .orderBy({ profile: { bio: 'asc' } });
     expect(qb.getFormattedQuery()).toBe('select `a`.`id` from `author` as `a` order by `a`.`profile_bio` asc');
   });
 
@@ -235,7 +249,8 @@ describe('resolveNestedPath', () => {
 
   test('groupBy with raw fragment', async () => {
     // Test groupBy with non-string field (RawQueryFragment)
-    const qb = orm.em.qb(Author, 'a')
+    const qb = orm.em
+      .qb(Author, 'a')
       .select([raw('count(*) as cnt')])
       .groupBy([raw('1')]);
     expect(qb.getFormattedQuery()).toBe('select count(*) as cnt from `author` as `a` group by 1');

@@ -1,9 +1,15 @@
 import { Collection, MikroORM, t } from '@mikro-orm/sqlite';
-import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class User {
-
   @PrimaryKey({ type: t.integer })
   id!: number;
 
@@ -32,12 +38,10 @@ class User {
     this.qDate = date;
     this.Date = date;
   }
-
 }
 
 @Entity()
 class Article {
-
   @PrimaryKey({ type: t.integer })
   id!: number;
 
@@ -67,7 +71,6 @@ class Article {
     this.qDate = date;
     this.Date = date;
   }
-
 }
 
 let orm: MikroORM;

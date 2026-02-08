@@ -19,10 +19,13 @@ export function loadEnvironmentVars(): Partial<Options> {
   const ret: Dictionary = {};
 
   const getEnvKey = (key: string, envPrefix = 'MIKRO_ORM_') => {
-    return envPrefix + key
-      .replace(/([a-z0-9])([A-Z])/g, '$1_$2')
-      .replace(/([A-Z])([A-Z][a-z])/g, '$1_$2')
-      .toUpperCase();
+    return (
+      envPrefix +
+      key
+        .replace(/([a-z0-9])([A-Z])/g, '$1_$2')
+        .replace(/([A-Z])([A-Z][a-z])/g, '$1_$2')
+        .toUpperCase()
+    );
   };
   const array = (v: string) => v.split(',').map(vv => vv.trim());
   const bool = (v: string) => ['true', 't', '1'].includes(v.toLowerCase());
@@ -35,7 +38,7 @@ export function loadEnvironmentVars(): Partial<Options> {
       o[key] = mapper(getEnv(envKey)!);
     }
   };
-  const cleanup = (o: Dictionary, k: string) => Utils.hasObjectKeys(o[k]) ? {} : delete o[k];
+  const cleanup = (o: Dictionary, k: string) => (Utils.hasObjectKeys(o[k]) ? {} : delete o[k]);
 
   const read0 = read.bind(null, ret, 'MIKRO_ORM_');
   read0('baseDir');

@@ -3,7 +3,6 @@ import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-or
 
 @Entity({ tableName: 'users' })
 class User {
-
   @PrimaryKey()
   id!: number;
 
@@ -18,12 +17,10 @@ class User {
 
   @Property({ nullable: true })
   phone?: string;
-
 }
 
 @Entity({ tableName: 'posts' })
 class Post {
-
   @PrimaryKey()
   id!: number;
 
@@ -35,12 +32,10 @@ class Post {
 
   @Property()
   userId!: number;
-
 }
 
 @Entity({ tableName: 'comments' })
 class Comment {
-
   @PrimaryKey()
   id!: number;
 
@@ -49,7 +44,6 @@ class Comment {
 
   @Property()
   postId!: number;
-
 }
 
 let orm: MikroORM;
@@ -57,7 +51,6 @@ let orm: MikroORM;
 afterAll(() => orm?.close());
 
 describe('SchemaGenerator skipTables and skipColumns', () => {
-
   test('should skip tables specified in skipTables option', async () => {
     orm = await MikroORM.init({
       metadataProvider: ReflectMetadataProvider,
@@ -196,5 +189,4 @@ describe('SchemaGenerator skipTables and skipColumns', () => {
 
     await orm.close();
   });
-
 });

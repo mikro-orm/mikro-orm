@@ -1,9 +1,17 @@
 import { MikroORM, Opt, Collection } from '@mikro-orm/sqlite';
-import { Embeddable, Embedded, Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Embeddable,
+  Embedded,
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class User {
-
   @PrimaryKey()
   id!: number;
 
@@ -23,20 +31,16 @@ class User {
     this.name = name;
     this.email = email;
   }
-
 }
 
 @Embeddable()
 class Metadata {
-
   @Property()
   valid: Opt<boolean> = false;
-
 }
 
 @Entity()
 class Post {
-
   @PrimaryKey()
   id!: number;
 
@@ -48,7 +52,6 @@ class Post {
 
   @Embedded(() => Metadata)
   metadata: Opt<Metadata> = new Metadata();
-
 }
 
 let orm: MikroORM;
@@ -57,7 +60,7 @@ beforeAll(async () => {
   orm = await MikroORM.init({
     metadataProvider: ReflectMetadataProvider,
     dbName: ':memory:',
-    entities: [ User, Post, Metadata ],
+    entities: [User, Post, Metadata],
   });
   await orm.schema.refresh();
 });
@@ -83,7 +86,8 @@ test("should be able to query against joined property's embeddable properties", 
   await orm.em.flush();
   orm.em.clear();
 
-  const res = await orm.em.createQueryBuilder(User, 'u')
+  const res = await orm.em
+    .createQueryBuilder(User, 'u')
     .leftJoinAndSelect('u.posts', 'p', { metadata: { valid: true } })
     .getResult();
 

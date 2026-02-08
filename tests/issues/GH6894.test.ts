@@ -1,9 +1,15 @@
 import { Collection, MikroORM, PrimaryKeyProp, wrap } from '@mikro-orm/sqlite';
-import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class User {
-
   @PrimaryKey()
   id!: number;
 
@@ -17,12 +23,10 @@ class User {
     this.id = id;
     this.email = email;
   }
-
 }
 
 @Entity()
 class Post {
-
   @PrimaryKey()
   id!: number;
 
@@ -41,12 +45,10 @@ class Post {
     this.id = id;
     this.user = user;
   }
-
 }
 
 @Entity()
 class Comment {
-
   @PrimaryKey()
   id!: number;
 
@@ -65,12 +67,10 @@ class Comment {
     this.id = id;
     this.post = post;
   }
-
 }
 
 @Entity()
 class Tag {
-
   @PrimaryKey()
   id!: number;
 
@@ -86,7 +86,6 @@ class Tag {
     this.id = id;
     this.comment = comment;
   }
-
 }
 
 let orm: MikroORM;
@@ -111,26 +110,36 @@ test('GH6894 - cascading create with composite PKs via em.create()', async () =>
   const user = em.create(User, {
     id: 1,
     email: 'user1@example.com',
-    posts: [{
-      id: 1,
-      title: 'Post 1',
-      comments: [{
+    posts: [
+      {
         id: 1,
-        text: 'Comment 1',
-        tags: [{
-          id: 1,
-          name: 'Tag 1',
-        }],
-      }],
-    }],
+        title: 'Post 1',
+        comments: [
+          {
+            id: 1,
+            text: 'Comment 1',
+            tags: [
+              {
+                id: 1,
+                name: 'Tag 1',
+              },
+            ],
+          },
+        ],
+      },
+    ],
   });
 
   await em.flush();
 
   // Verify everything was persisted
-  const loadedUser = await em.findOneOrFail(User, { id: 1, email: 'user1@example.com' }, {
-    populate: ['posts.comments.tags'],
-  });
+  const loadedUser = await em.findOneOrFail(
+    User,
+    { id: 1, email: 'user1@example.com' },
+    {
+      populate: ['posts.comments.tags'],
+    },
+  );
 
   expect(loadedUser.posts).toHaveLength(1);
   expect(loadedUser.posts[0].comments).toHaveLength(1);
@@ -147,26 +156,36 @@ test('GH6894 - cascading create with composite PKs via assign()', async () => {
 
   // Now assign nested data
   wrap(user).assign({
-    posts: [{
-      id: 2,
-      title: 'Post 2',
-      comments: [{
+    posts: [
+      {
         id: 2,
-        text: 'Comment 2',
-        tags: [{
-          id: 2,
-          name: 'Tag 2',
-        }],
-      }],
-    }],
+        title: 'Post 2',
+        comments: [
+          {
+            id: 2,
+            text: 'Comment 2',
+            tags: [
+              {
+                id: 2,
+                name: 'Tag 2',
+              },
+            ],
+          },
+        ],
+      },
+    ],
   });
 
   await em.flush();
 
   // Verify everything was persisted
-  const loadedUser = await em.findOneOrFail(User, { id: 2, email: 'user2@example.com' }, {
-    populate: ['posts.comments.tags'],
-  });
+  const loadedUser = await em.findOneOrFail(
+    User,
+    { id: 2, email: 'user2@example.com' },
+    {
+      populate: ['posts.comments.tags'],
+    },
+  );
 
   expect(loadedUser.posts).toHaveLength(1);
   expect(loadedUser.posts[0].comments).toHaveLength(1);
@@ -197,9 +216,13 @@ test('GH6894 - cascading create with 4-level deep nesting via persist on leaf en
   em.clear();
 
   // Verify everything was persisted
-  const loadedUser = await em.findOneOrFail(User, { id: 3, email: 'user3@example.com' }, {
-    populate: ['posts.comments.tags'],
-  });
+  const loadedUser = await em.findOneOrFail(
+    User,
+    { id: 3, email: 'user3@example.com' },
+    {
+      populate: ['posts.comments.tags'],
+    },
+  );
 
   expect(loadedUser.posts).toHaveLength(1);
   expect(loadedUser.posts[0].comments).toHaveLength(1);

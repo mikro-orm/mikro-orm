@@ -3,7 +3,6 @@ import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-or
 
 @Entity()
 abstract class BaseUser {
-
   @PrimaryKey()
   _id!: ObjectId;
 
@@ -12,31 +11,24 @@ abstract class BaseUser {
 
   @Property()
   lastName!: string;
-
 }
 
 @Entity()
 class Employee extends BaseUser {
-
   @Property()
   employeeProp!: number;
-
 }
 
 @Entity()
 class Manager extends BaseUser {
-
   @Property()
   managerProp!: string;
-
 }
 
 @Entity()
 class CompanyOwner extends Manager {
-
   @Property()
   ownerProp!: string;
-
 }
 
 @Entity({
@@ -47,18 +39,14 @@ class CompanyOwner extends Manager {
   },
 })
 class Person {
-
   @PrimaryKey()
   _id!: ObjectId;
-
 }
 
 @Entity()
 class Employee2 extends Person {
-
   @Property()
   number?: number;
-
 }
 
 let orm: MikroORM;

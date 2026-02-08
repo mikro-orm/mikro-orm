@@ -5,7 +5,6 @@ import { FooBaz2 } from './FooBaz2.js';
 
 @Entity()
 export class FooBar2 extends BaseEntity22 {
-
   @PrimaryKey()
   id!: number;
 
@@ -39,5 +38,4 @@ export class FooBar2 extends BaseEntity22 {
 
     return bar;
   }
-
 }

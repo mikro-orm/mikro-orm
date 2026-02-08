@@ -6,12 +6,11 @@ import { Author, Book, Publisher, BaseEntity, BaseEntity3, BookTagSchema, Test, 
 import FooBar from './entities/FooBar.js';
 
 // we need to define those to get around typescript issues with reflection (ts-morph would return `any` for the type otherwise)
-export class Collection<T extends object> extends Collection_<T> { }
-export class Reference<T extends object> extends Reference_<T> { }
-export type Ref<T extends object> = ({ [K in PrimaryProperty<T> & keyof T]?: T[K] } & Reference<T>);
+export class Collection<T extends object> extends Collection_<T> {}
+export class Reference<T extends object> extends Reference_<T> {}
+export type Ref<T extends object> = { [K in PrimaryProperty<T> & keyof T]?: T[K] } & Reference<T>;
 
 describe('TsMorphMetadataProvider', () => {
-
   test('should load TS files directly', async () => {
     const orm = await MikroORM.init({
       entities: [Author, Book, Publisher, BaseEntity, BaseEntity3, BookTagSchema, Test, FooBaz, FooBar],
@@ -22,7 +21,16 @@ describe('TsMorphMetadataProvider', () => {
     });
 
     expect([...orm.getMetadata().getAll().keys()].map(e => Utils.className(e)).sort()).toEqual([
-      'Author', 'Book', 'BookTag', 'FooBar', 'FooBaz', 'Publisher', 'Test', 'author_friends', 'book_tags', 'publisher_tests',
+      'Author',
+      'Book',
+      'BookTag',
+      'FooBar',
+      'FooBaz',
+      'Publisher',
+      'Test',
+      'author_friends',
+      'book_tags',
+      'publisher_tests',
     ]);
     await orm.close();
   });
@@ -38,7 +46,16 @@ describe('TsMorphMetadataProvider', () => {
     });
 
     expect([...orm.getMetadata().getAll().keys()].map(e => Utils.className(e)).sort()).toEqual([
-      'Author', 'Book', 'BookTag', 'FooBar', 'FooBaz', 'Publisher', 'Test', 'author_friends', 'book_tags', 'publisher_tests',
+      'Author',
+      'Book',
+      'BookTag',
+      'FooBar',
+      'FooBaz',
+      'Publisher',
+      'Test',
+      'author_friends',
+      'book_tags',
+      'publisher_tests',
     ]);
     await orm.close();
   });
@@ -93,10 +110,12 @@ describe('TsMorphMetadataProvider', () => {
     const provider = new TsMorphMetadataProvider(orm.config);
     const cacheAdapter = orm.config.getMetadataCacheAdapter();
     const cache = cacheAdapter.get('Publisher.ts');
-    const meta = { properties: {
-      types: { name: 'types', customType: new EnumArrayType('Publisher.types') },
-      types2: { name: 'types2', customType: new EnumArrayType('Publisher.types2') },
-    } } as unknown as EntityMetadata;
+    const meta = {
+      properties: {
+        types: { name: 'types', customType: new EnumArrayType('Publisher.types') },
+        types2: { name: 'types2', customType: new EnumArrayType('Publisher.types2') },
+      },
+    } as unknown as EntityMetadata;
     provider.loadFromCache(meta, cache);
     expect(meta.properties.types.array).toBe(true);
     expect(meta.properties.types.enum).toBe(false);
@@ -121,5 +140,4 @@ describe('TsMorphMetadataProvider', () => {
     const error = `Source file './path/to/entity.ts' not found. Check your 'entitiesTs' option and verify you have 'compilerOptions.declaration' enabled in your 'tsconfig.json'. If you are using webpack, see https://bit.ly/35pPDNn`;
     expect(() => provider.getExistingSourceFile('./path/to/entity.js')).toThrow(error);
   });
-
 });

@@ -2,7 +2,6 @@ import { type ClearDatabaseOptions, type DropSchemaOptions, type MikroORM, Schem
 import type { MsSqlDriver } from './MsSqlDriver.js';
 
 export class MsSqlSchemaGenerator extends SchemaGenerator {
-
   static override register(orm: MikroORM<MsSqlDriver>): void {
     orm.config.registerExtension('@mikro-orm/schema-generator', () => new MsSqlSchemaGenerator(orm.em));
   }
@@ -32,5 +31,4 @@ export class MsSqlSchemaGenerator extends SchemaGenerator {
   override async getDropSchemaSQL(options: Omit<DropSchemaOptions, 'dropDb'> = {}): Promise<string> {
     return super.getDropSchemaSQL({ dropForeignKeys: true, ...options });
   }
-
 }

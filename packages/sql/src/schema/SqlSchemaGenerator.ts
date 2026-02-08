@@ -20,13 +20,15 @@ import { SchemaComparator } from './SchemaComparator.js';
 import type { SqlEntityManager } from '../SqlEntityManager.js';
 
 export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDriver> implements ISchemaGenerator {
-
   protected readonly helper = this.platform.getSchemaHelper()!;
   protected readonly options = this.config.get('schemaGenerator');
   protected lastEnsuredDatabase?: string;
 
   static register(orm: MikroORM): void {
-    orm.config.registerExtension('@mikro-orm/schema-generator', () => new SqlSchemaGenerator(orm.em as SqlEntityManager));
+    orm.config.registerExtension(
+      '@mikro-orm/schema-generator',
+      () => new SqlSchemaGenerator(orm.em as SqlEntityManager),
+    );
   }
 
   override async create(options?: CreateSchemaOptions): Promise<void> {
@@ -114,7 +116,11 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
 
         created.push(enumName);
 
-        const sql = this.helper.getCreateNativeEnumSQL(enumOptions.name, enumOptions.items, this.getSchemaName(enumOptions, options));
+        const sql = this.helper.getCreateNativeEnumSQL(
+          enumOptions.name,
+          enumOptions.items,
+          this.getSchemaName(enumOptions, options),
+        );
         this.append(ret, sql);
       }
     }
@@ -135,7 +141,10 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
     const sortedViews = this.sortViewsByDependencies(toSchema.getViews());
     for (const view of sortedViews) {
       if (view.materialized) {
-        this.append(ret, this.helper.createMaterializedView(view.name, view.schema, view.definition, view.withData ?? true));
+        this.append(
+          ret,
+          this.helper.createMaterializedView(view.name, view.schema, view.definition, view.withData ?? true),
+        );
       } else {
         this.append(ret, this.helper.createView(view.name, view.schema, view.definition), true);
       }
@@ -178,7 +187,8 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
     const schema = options?.schema ?? this.config.get('schema', this.platform.getDefaultSchemaName());
 
     for (const meta of this.getOrderedMetadata(schema).reverse()) {
-      await this.driver.createQueryBuilder(meta.class, this.em?.getTransactionContext(), 'write', false)
+      await this.driver
+        .createQueryBuilder(meta.class, this.em?.getTransactionContext(), 'write', false)
         .withSchema(schema)
         .truncate()
         .execute();
@@ -197,7 +207,16 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
     await this.ensureDatabase();
     const metadata = this.getOrderedMetadata(options.schema).reverse();
     const schemas = this.getTargetSchema(options.schema).getNamespaces();
-    const schema = await DatabaseSchema.create(this.connection, this.platform, this.config, options.schema, schemas, undefined, this.options.skipTables, this.options.skipViews);
+    const schema = await DatabaseSchema.create(
+      this.connection,
+      this.platform,
+      this.config,
+      options.schema,
+      schemas,
+      undefined,
+      this.options.skipTables,
+      this.options.skipViews,
+    );
     const ret: string[] = [];
 
     // Drop views first (views may depend on tables)
@@ -241,7 +260,10 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
     }
 
     if (options.dropMigrationsTable) {
-      this.append(ret, this.helper.dropTableIfExists(this.config.get('migrations').tableName!, this.config.get('schema')));
+      this.append(
+        ret,
+        this.helper.dropTableIfExists(this.config.get('migrations').tableName!, this.config.get('schema')),
+      );
     }
 
     return this.wrapSchema(ret, options);
@@ -274,7 +296,9 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
     return this.diffToSQL(diffUp, options);
   }
 
-  override async getUpdateSchemaMigrationSQL(options: UpdateSchemaOptions<DatabaseSchema> = {}): Promise<{ up: string; down: string }> {
+  override async getUpdateSchemaMigrationSQL(
+    options: UpdateSchemaOptions<DatabaseSchema> = {},
+  ): Promise<{ up: string; down: string }> {
     if (!options.fromSchema) {
       await this.ensureDatabase();
     }
@@ -295,15 +319,31 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
     options.dropTables ??= true;
     const toSchema = this.getTargetSchema(options.schema);
     const schemas = toSchema.getNamespaces();
-    const fromSchema = options.fromSchema ?? (await DatabaseSchema.create(this.connection, this.platform, this.config, options.schema, schemas, undefined, this.options.skipTables, this.options.skipViews));
-    const wildcardSchemaTables = [...this.metadata.getAll().values()].filter(meta => meta.schema === '*').map(meta => meta.tableName);
+    const fromSchema =
+      options.fromSchema ??
+      (await DatabaseSchema.create(
+        this.connection,
+        this.platform,
+        this.config,
+        options.schema,
+        schemas,
+        undefined,
+        this.options.skipTables,
+        this.options.skipViews,
+      ));
+    const wildcardSchemaTables = [...this.metadata.getAll().values()]
+      .filter(meta => meta.schema === '*')
+      .map(meta => meta.tableName);
     fromSchema.prune(options.schema, wildcardSchemaTables);
     toSchema.prune(options.schema, wildcardSchemaTables);
 
     return { fromSchema, toSchema };
   }
 
-  diffToSQL(schemaDiff: SchemaDifference, options: { wrap?: boolean; safe?: boolean; dropTables?: boolean; schema?: string }): string {
+  diffToSQL(
+    schemaDiff: SchemaDifference,
+    options: { wrap?: boolean; safe?: boolean; dropTables?: boolean; schema?: string },
+  ): string {
     const ret: string[] = [];
     (globalThis as Dictionary).idx = 0;
 
@@ -316,7 +356,11 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
 
     if (this.platform.supportsNativeEnums()) {
       for (const newNativeEnum of schemaDiff.newNativeEnums) {
-        const sql = this.helper.getCreateNativeEnumSQL(newNativeEnum.name, newNativeEnum.items, this.getSchemaName(newNativeEnum, options));
+        const sql = this.helper.getCreateNativeEnumSQL(
+          newNativeEnum.name,
+          newNativeEnum.items,
+          this.getSchemaName(newNativeEnum, options),
+        );
         this.append(ret, sql);
       }
     }
@@ -420,7 +464,10 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
     const sortedNewViews = this.sortViewsByDependencies(Object.values(schemaDiff.newViews));
     for (const view of sortedNewViews) {
       if (view.materialized) {
-        this.append(ret, this.helper.createMaterializedView(view.name, view.schema, view.definition, view.withData ?? true));
+        this.append(
+          ret,
+          this.helper.createMaterializedView(view.name, view.schema, view.definition, view.withData ?? true),
+        );
       } else {
         this.append(ret, this.helper.createView(view.name, view.schema, view.definition), true);
       }
@@ -431,7 +478,10 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
     const sortedChangedViews = this.sortViewsByDependencies(changedViews);
     for (const view of sortedChangedViews) {
       if (view.materialized) {
-        this.append(ret, this.helper.createMaterializedView(view.name, view.schema, view.definition, view.withData ?? true));
+        this.append(
+          ret,
+          this.helper.createMaterializedView(view.name, view.schema, view.definition, view.withData ?? true),
+        );
       } else {
         this.append(ret, this.helper.createView(view.name, view.schema, view.definition), true);
       }
@@ -514,10 +564,13 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
     }
 
     const statements = groups.flatMap(group => {
-      return group.join('\n').split(';\n').map(s => s.trim()).filter(s => s);
+      return group
+        .join('\n')
+        .split(';\n')
+        .map(s => s.trim())
+        .filter(s => s);
     });
     await Utils.runSerial(statements, stmt => this.driver.execute(stmt));
-
   }
 
   async dropTableIfExists(name: string, schema?: string): Promise<void> {
@@ -565,9 +618,7 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
     }
 
     const fullTableName = schemaName ? `${schemaName}.${tableName}` : tableName;
-    return skipTables.some(pattern =>
-      this.matchName(tableName, pattern) || this.matchName(fullTableName, pattern),
-    );
+    return skipTables.some(pattern => this.matchName(tableName, pattern) || this.matchName(fullTableName, pattern));
   }
 
   /**
@@ -604,12 +655,12 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
 
         // Check if the definition references the other view's name
         // Use word boundary matching to avoid false positives
-        const patterns = [
-          new RegExp(`\\b${this.escapeRegExp(otherView.name.toLowerCase())}\\b`),
-        ];
+        const patterns = [new RegExp(`\\b${this.escapeRegExp(otherView.name.toLowerCase())}\\b`)];
 
         if (otherView.schema) {
-          patterns.push(new RegExp(`\\b${this.escapeRegExp(`${otherView.schema}.${otherView.name}`.toLowerCase())}\\b`));
+          patterns.push(
+            new RegExp(`\\b${this.escapeRegExp(`${otherView.schema}.${otherView.name}`.toLowerCase())}\\b`),
+          );
         }
 
         for (const pattern of patterns) {
@@ -631,7 +682,6 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
   private escapeRegExp(string: string): string {
     return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   }
-
 }
 
 // for back compatibility

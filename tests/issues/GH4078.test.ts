@@ -10,7 +10,6 @@ type Setup = {
 
 @Entity()
 class Contract {
-
   @PrimaryKey()
   id!: number;
 
@@ -19,7 +18,6 @@ class Contract {
 
   @Property({ type: JsonType, nullable: true })
   setup: Setup | null = null;
-
 }
 
 let orm: MikroORM;

@@ -1,21 +1,25 @@
 import { Collection, MikroORM, Rel } from '@mikro-orm/mssql';
-import { Entity, ManyToOne, OneToMany, OneToOne, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  OneToOne,
+  PrimaryKey,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../../helpers.js';
 
 @Entity()
 class Order {
-
   @PrimaryKey({ autoincrement: false })
   id!: number;
 
   @OneToMany(() => OrderItem, orderItem => orderItem.order)
   orderItems = new Collection<OrderItem>(this);
-
 }
 
 @Entity()
 class OrderItem {
-
   @PrimaryKey({ autoincrement: false })
   id!: number;
 
@@ -24,18 +28,15 @@ class OrderItem {
 
   @OneToOne(() => Storey, storey => storey.orderItem)
   storey!: Rel<Storey>;
-
 }
 
 @Entity()
 class Storey {
-
   @PrimaryKey({ autoincrement: false })
   id!: number;
 
   @OneToOne(() => OrderItem, { primary: true })
   orderItem!: OrderItem;
-
 }
 
 let orm: MikroORM;
@@ -45,11 +46,7 @@ beforeAll(async () => {
     metadataProvider: ReflectMetadataProvider,
     dbName: 'test2',
     password: 'Root.Root',
-    entities: [
-      Order,
-      OrderItem,
-      Storey,
-    ],
+    entities: [Order, OrderItem, Storey],
   });
   await orm.schema.refresh();
 });
@@ -90,8 +87,12 @@ test('composite keys in sql server', async () => {
 
   const mock = mockLogger(orm);
   await orm.em.fork().find(Storey, { id: 1, orderItem: orderItems[0] });
-  expect(mock.mock.calls[0][0]).toMatch('select [s0].* from [storey] as [s0] where [s0].[id] = 1 and [s0].[order_item_id] = 1 and [s0].[order_item_order_id] = 1');
+  expect(mock.mock.calls[0][0]).toMatch(
+    'select [s0].* from [storey] as [s0] where [s0].[id] = 1 and [s0].[order_item_id] = 1 and [s0].[order_item_order_id] = 1',
+  );
 
   await orm.em.fork().find(Storey, { orderItem: orderItems });
-  expect(mock.mock.calls[1][0]).toMatch('select [s0].* from [storey] as [s0] where (([s0].[order_item_id] = 1 and [s0].[order_item_order_id] = 1) or ([s0].[order_item_id] = 2 and [s0].[order_item_order_id] = 1))');
+  expect(mock.mock.calls[1][0]).toMatch(
+    'select [s0].* from [storey] as [s0] where (([s0].[order_item_id] = 1 and [s0].[order_item_order_id] = 1) or ([s0].[order_item_id] = 2 and [s0].[order_item_order_id] = 1))',
+  );
 });

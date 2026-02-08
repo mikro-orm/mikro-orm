@@ -3,29 +3,24 @@ import { Entity, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider } from
 
 @Entity({ tableName: 'author' })
 class Author0 {
-
   @PrimaryKey()
   id!: number;
 
   @Property()
   name!: string;
-
 }
 
 @Entity({ tableName: 'author' })
 class Author1 {
-
   @PrimaryKey({ type: 'uuid' })
   id!: string;
 
   @Property()
   name!: string;
-
 }
 
 @Entity({ tableName: 'book' })
 class Book0 {
-
   @PrimaryKey()
   id!: number;
 
@@ -34,12 +29,10 @@ class Book0 {
 
   @ManyToOne(() => Book0, { nullable: true })
   basedOn?: Book0;
-
 }
 
 @Entity({ tableName: 'book' })
 class Book1 {
-
   @PrimaryKey()
   id!: number;
 
@@ -48,7 +41,6 @@ class Book1 {
 
   @ManyToOne(() => Book1, { nullable: true })
   basedOn?: Book1;
-
 }
 
 test('changing PK/FK type from int to uuid', async () => {

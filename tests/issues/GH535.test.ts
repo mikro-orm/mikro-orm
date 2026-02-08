@@ -3,7 +3,6 @@ import { Entity, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from 
 
 @Entity()
 class A {
-
   @PrimaryKey()
   id!: number;
 
@@ -19,12 +18,10 @@ class A {
   get calcProp(): string {
     return this.b.getEntity().prop;
   }
-
 }
 
 @Entity()
 class B {
-
   @PrimaryKey()
   id!: number;
 
@@ -33,11 +30,9 @@ class B {
 
   @Property()
   prop: string = 'foo';
-
 }
 
 describe('GH issue 535', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -65,7 +60,13 @@ describe('GH issue 535', () => {
     expect(fetchedA1.calcProp).toBe('foo');
     expect(wrap(fetchedA1).toObject()).toEqual({ id: 1, b: { id: 1 }, calcProp: 'foo' });
 
-    const fetchedA2 = await orm.em.fork().qb(A).where({ id: a.id }).select(['id', 'calcProp']).leftJoinAndSelect('b', 'b').getResult();
+    const fetchedA2 = await orm.em
+      .fork()
+      .qb(A)
+      .where({ id: a.id })
+      .select(['id', 'calcProp'])
+      .leftJoinAndSelect('b', 'b')
+      .getResult();
     expect(fetchedA2[0].calcProp).toBe('foo');
     expect(wrap(fetchedA2[0]).toObject()).toEqual({ id: 1, b: { id: 1, a: 1, prop: 'foo' }, calcProp: 'foo' });
   });

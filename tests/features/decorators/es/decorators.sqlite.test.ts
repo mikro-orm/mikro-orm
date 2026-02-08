@@ -10,10 +10,11 @@ const TEST_VALUE = 'expected value';
 
 let DI = {} as any;
 
-const ASYNC_ORM: Promise<MikroORM> =  Promise.resolve(Object.create(MikroORM.prototype, { em: { value: { name: 'default', fork: vi.fn() } } }));
+const ASYNC_ORM: Promise<MikroORM> = Promise.resolve(
+  Object.create(MikroORM.prototype, { em: { value: { name: 'default', fork: vi.fn() } } }),
+);
 
 class TestClass {
-
   constructor(private readonly orm: MikroORM) {}
 
   @CreateRequestContext()
@@ -55,11 +56,9 @@ class TestClass {
   async methodWithAsyncOrmInstance() {
     return TEST_VALUE;
   }
-
 }
 
 class TestClass2 {
-
   constructor(private readonly orm: MikroORM) {}
 
   @EnsureRequestContext()
@@ -91,33 +90,27 @@ class TestClass2 {
   async methodWithCallbackReturnsEm() {
     //
   }
-
 }
 
 class TestClass3 {
-
   constructor(private readonly orm: Promise<MikroORM>) {}
 
   @CreateRequestContext()
   async methodWithAsyncOrmPropertyAndReturnsNothing() {
     //
   }
-
 }
 
 class TestClass4 {
-
   constructor(private readonly em: EntityManager) {}
 
   @CreateRequestContext()
   async foo() {
     //
   }
-
 }
 
 class BookRepository extends EntityRepository<Book> {
-
   save(book: Book): void {
     this.em.persist(book);
   }
@@ -125,11 +118,9 @@ class BookRepository extends EntityRepository<Book> {
   flush(): Promise<void> {
     return this.em.flush();
   }
-
 }
 
 export class Book {
-
   id!: string;
 
   @Property({
@@ -141,22 +132,18 @@ export class Book {
   name!: string;
 
   [EntityRepositoryType]?: BookRepository;
-
 }
 
 class TestClass5 {
-
   constructor(private readonly repo: BookRepository) {}
 
   @CreateRequestContext<TestClass5>(t => t.repo)
   async foo() {
     //
   }
-
 }
 
 describe('decorators', () => {
-
   beforeEach(() => {
     // To make sure DI is empty before each test for accurate results
     DI = {};
@@ -188,7 +175,8 @@ describe('decorators', () => {
     const ret7 = await test2.methodWithCallbackReturnsEm();
     expect(ret7).toBeUndefined();
 
-    const err = '@CreateRequestContext() decorator can only be applied to methods of classes with `orm: MikroORM` property, `em: EntityManager` property, or with a callback parameter like `@CreateRequestContext(() => orm)` that returns one of those types. The parameter will contain a reference to current `this`. Returning an EntityRepository from it is also supported.';
+    const err =
+      '@CreateRequestContext() decorator can only be applied to methods of classes with `orm: MikroORM` property, `em: EntityManager` property, or with a callback parameter like `@CreateRequestContext(() => orm)` that returns one of those types. The parameter will contain a reference to current `this`. Returning an EntityRepository from it is also supported.';
     await expect(test2.asyncMethodReturnsValue()).rejects.toThrow(err);
     const ret8 = await test.methodWithAsyncCallback();
     expect(ret8).toEqual(TEST_VALUE);
@@ -234,7 +222,8 @@ describe('decorators', () => {
     const ret7 = await test2.methodWithCallbackReturnsEm();
     expect(ret7).toBeUndefined();
 
-    const err = '@EnsureRequestContext() decorator can only be applied to methods of classes with `orm: MikroORM` property, `em: EntityManager` property, or with a callback parameter like `@EnsureRequestContext(() => orm)` that returns one of those types. The parameter will contain a reference to current `this`. Returning an EntityRepository from it is also supported.';
+    const err =
+      '@EnsureRequestContext() decorator can only be applied to methods of classes with `orm: MikroORM` property, `em: EntityManager` property, or with a callback parameter like `@EnsureRequestContext(() => orm)` that returns one of those types. The parameter will contain a reference to current `this`. Returning an EntityRepository from it is also supported.';
     await expect(test2.asyncMethodReturnsValue()).rejects.toThrow(err);
 
     await RequestContext.create(orm.em, async () => {
@@ -245,16 +234,13 @@ describe('decorators', () => {
   test('should throw exception', async () => {
     try {
       class Dummy {
-
         @CreateRequestContext()
         dummy() {
           //
         }
-
       }
     } catch (e: any) {
       expect(e.message).toBe('@CreateRequestContext() should be use with async functions');
     }
   });
-
 });

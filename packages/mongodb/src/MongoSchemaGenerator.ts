@@ -14,9 +14,11 @@ import type { MongoDriver } from './MongoDriver.js';
 import type { MongoEntityManager } from './MongoEntityManager.js';
 
 export class MongoSchemaGenerator extends AbstractSchemaGenerator<MongoDriver> {
-
   static register(orm: MikroORM): void {
-    orm.config.registerExtension('@mikro-orm/schema-generator', () => new MongoSchemaGenerator(orm.em as MongoEntityManager));
+    orm.config.registerExtension(
+      '@mikro-orm/schema-generator',
+      () => new MongoSchemaGenerator(orm.em as MongoEntityManager),
+    );
   }
 
   override async create(options: MongoCreateSchemaOptions = {}): Promise<void> {
@@ -28,14 +30,16 @@ export class MongoSchemaGenerator extends AbstractSchemaGenerator<MongoDriver> {
     /* v8 ignore next */
     const promises = metadata
       .filter(meta => !existing.includes(meta.collection))
-      .map(meta => this.connection.createCollection(meta.class).catch(err => {
-        const existsErrorMessage = `Collection ${this.config.get('dbName')}.${meta.collection} already exists.`;
+      .map(meta =>
+        this.connection.createCollection(meta.class).catch(err => {
+          const existsErrorMessage = `Collection ${this.config.get('dbName')}.${meta.collection} already exists.`;
 
-        // ignore errors about the collection already existing
-        if (!(err.name === 'MongoServerError' && err.message.includes(existsErrorMessage))) {
-          throw err;
-        }
-      }));
+          // ignore errors about the collection already existing
+          if (!(err.name === 'MongoServerError' && err.message.includes(existsErrorMessage))) {
+            throw err;
+          }
+        }),
+      );
 
     if (options.ensureIndexes) {
       await this.ensureIndexes({ ensureCollections: false });
@@ -74,7 +78,10 @@ export class MongoSchemaGenerator extends AbstractSchemaGenerator<MongoDriver> {
     await this.create(options);
   }
 
-  async dropIndexes(options?: { skipIndexes?: { collection: string; indexName: string }[]; collectionsWithFailedIndexes?: string[] }): Promise<void> {
+  async dropIndexes(options?: {
+    skipIndexes?: { collection: string; indexName: string }[];
+    collectionsWithFailedIndexes?: string[];
+  }): Promise<void> {
     await this.connection.ensureConnection();
     const db = this.connection.getDb();
     const collections = await db.listCollections().toArray();
@@ -91,7 +98,10 @@ export class MongoSchemaGenerator extends AbstractSchemaGenerator<MongoDriver> {
         const isIdIndex = index.key._id === 1 && Utils.getObjectKeysSize(index.key) === 1;
 
         /* v8 ignore next */
-        if (!isIdIndex && !options?.skipIndexes?.find(idx => idx.collection === collection.name && idx.indexName === index.name)) {
+        if (
+          !isIdIndex &&
+          !options?.skipIndexes?.find(idx => idx.collection === collection.name && idx.indexName === index.name)
+        ) {
           promises.push(this.executeQuery(db.collection(collection.name), 'dropIndex', index.name));
         }
       }
@@ -160,16 +170,18 @@ export class MongoSchemaGenerator extends AbstractSchemaGenerator<MongoDriver> {
   }
 
   private mapIndexProperties<T>(index: { properties?: EntityKey<T> | EntityKey<T>[] }, meta: EntityMetadata<any>) {
-    return Utils.flatten(Utils.asArray(index.properties).map(propName => {
-      const rootPropName = propName.split('.')[0];
-      const prop = meta.properties[rootPropName];
+    return Utils.flatten(
+      Utils.asArray(index.properties).map(propName => {
+        const rootPropName = propName.split('.')[0];
+        const prop = meta.properties[rootPropName];
 
-      if (propName.includes('.')) {
-        return [prop.fieldNames[0] + propName.substring(propName.indexOf('.'))];
-      }
+        if (propName.includes('.')) {
+          return [prop.fieldNames[0] + propName.substring(propName.indexOf('.'))];
+        }
 
-      return prop?.fieldNames ?? propName;
-    }));
+        return prop?.fieldNames ?? propName;
+      }),
+    );
   }
 
   private createIndexes(meta: EntityMetadata): [string, Promise<string>][] {
@@ -195,10 +207,13 @@ export class MongoSchemaGenerator extends AbstractSchemaGenerator<MongoDriver> {
         }
 
         const spec: Dictionary<string> = {};
-        properties.forEach(prop => spec[prop] = index.type!);
+        properties.forEach(prop => (spec[prop] = index.type!));
         fieldOrSpec = spec;
       } else {
-        fieldOrSpec = properties.reduce((o, i) => { o[i] = 1; return o; }, {} as Dictionary);
+        fieldOrSpec = properties.reduce((o, i) => {
+          o[i] = 1;
+          return o;
+        }, {} as Dictionary);
       }
 
       // MongoDB uses 'hidden' for invisible indexes
@@ -237,13 +252,19 @@ export class MongoSchemaGenerator extends AbstractSchemaGenerator<MongoDriver> {
     const res: [string, Promise<string>][] = [];
     meta.uniques.forEach(index => {
       const properties = this.mapIndexProperties(index, meta);
-      const fieldOrSpec = properties.reduce((o, i) => { o[i] = 1; return o; }, {} as Dictionary);
+      const fieldOrSpec = properties.reduce((o, i) => {
+        o[i] = 1;
+        return o;
+      }, {} as Dictionary);
       const collection = this.connection.getCollection(meta.class);
-      res.push([collection.collectionName, this.executeQuery(collection, 'createIndex', fieldOrSpec, {
-        name: index.name,
-        unique: true,
-        ...index.options,
-      })]);
+      res.push([
+        collection.collectionName,
+        this.executeQuery(collection, 'createIndex', fieldOrSpec, {
+          name: index.name,
+          unique: true,
+          ...index.options,
+        }),
+      ]);
     });
 
     return res;
@@ -257,15 +278,22 @@ export class MongoSchemaGenerator extends AbstractSchemaGenerator<MongoDriver> {
     const collection = this.connection.getCollection(meta.class);
     const fieldOrSpec = prop.embeddedPath
       ? prop.embeddedPath.join('.')
-      : prop.fieldNames.reduce((o, i) => { o[i] = 1; return o; }, {} as Dictionary);
+      : prop.fieldNames.reduce((o, i) => {
+          o[i] = 1;
+          return o;
+        }, {} as Dictionary);
 
-    return [[collection.collectionName, this.executeQuery(collection, 'createIndex', fieldOrSpec, {
-      name: typeof prop[type] === 'string' ? prop[type] : undefined,
-      unique: type === 'unique',
-      sparse: prop.nullable === true,
-    })]] as [string, Promise<string>][];
+    return [
+      [
+        collection.collectionName,
+        this.executeQuery(collection, 'createIndex', fieldOrSpec, {
+          name: typeof prop[type] === 'string' ? prop[type] : undefined,
+          unique: type === 'unique',
+          sparse: prop.nullable === true,
+        }),
+      ],
+    ] as [string, Promise<string>][];
   }
-
 }
 
 export interface MongoCreateSchemaOptions extends CreateSchemaOptions {

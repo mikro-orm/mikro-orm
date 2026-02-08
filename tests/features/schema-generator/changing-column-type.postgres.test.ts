@@ -3,7 +3,6 @@ import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-or
 
 @Entity({ tableName: 'book' })
 class Book1 {
-
   @PrimaryKey()
   id!: number;
 
@@ -15,12 +14,10 @@ class Book1 {
 
   @Property({ columnType: 'integer[3][3]' })
   sudokuSquare!: number[][];
-
 }
 
 @Entity({ tableName: 'book' })
 class Book2 {
-
   @PrimaryKey()
   id!: number;
 
@@ -32,12 +29,10 @@ class Book2 {
 
   @Property({ columnType: 'integer[3][3]' })
   sudokuSquare!: number[][];
-
 }
 
 @Entity({ tableName: 'book' })
 class Book3 {
-
   @PrimaryKey()
   id!: number;
 
@@ -46,33 +41,27 @@ class Book3 {
 
   @Property({ type: 'character varying', columnType: 'character varying' })
   myStrCol: string = '';
-
 }
 
 @Entity({ tableName: 'book' })
 class Book4 {
-
   @PrimaryKey()
   id!: number;
 
   @Property({ default: false, nullable: true, comment: 'lalala' })
   myColumn: boolean = false;
-
 }
 
 @Entity({ tableName: 'book' })
 class Book5 {
-
   @PrimaryKey()
   id!: number;
 
   @Property({ default: false, nullable: true, comment: 'lololo' })
   myColumn: boolean = false;
-
 }
 
 describe('changing column in postgres (GH 2407)', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -115,5 +104,4 @@ comment on column "book"."my_column" is 'lalala';\n`);
     expect(diff5).toBe(`comment on column "book"."my_column" is 'lololo';\n`);
     await orm.schema.execute(diff5);
   });
-
 });

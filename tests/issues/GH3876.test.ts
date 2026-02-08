@@ -13,7 +13,6 @@ import { v4 } from 'uuid';
 
 @Entity()
 class Book {
-
   @PrimaryKey({ type: 'uuid' })
   id: string = v4();
 
@@ -25,12 +24,10 @@ class Book {
 
   @ManyToOne({ entity: () => User })
   user!: Rel<User>;
-
 }
 
 @Entity()
 class ProfileInfo {
-
   @PrimaryKey({ type: 'uuid' })
   id: string = v4();
 
@@ -42,12 +39,10 @@ class ProfileInfo {
     mappedBy: user => user.profileInfo,
   })
   user!: Rel<User>;
-
 }
 
 @Entity()
 class User {
-
   @PrimaryKey({ type: 'uuid' })
   id: string = v4();
 
@@ -65,7 +60,6 @@ class User {
     mappedBy: book => book.user,
   })
   books = new Collection<Book>(this);
-
 }
 
 let orm: MikroORM;

@@ -6,10 +6,9 @@ import { Author, Book, BookTag } from '../../entities/index.js';
 import { initORMMongo } from '../../bootstrap.js';
 
 describe('EntityAssignerMongo', () => {
-
   let orm: MikroORM<MongoDriver>;
 
-  beforeAll(async () => orm = await initORMMongo());
+  beforeAll(async () => (orm = await initORMMongo()));
   beforeEach(async () => orm.schema.clear());
 
   test('#assign() should update entity values', async () => {
@@ -56,8 +55,12 @@ describe('EntityAssignerMongo', () => {
     assign(book, { tags: [wrap(tag2).toObject()] });
     expect(book.tags.getIdentifiers('_id')).toMatchObject([tag2._id]);
     expect(book.tags.isDirty()).toBe(true);
-    expect(() => assign(book, { tags: [false] } as any)).toThrow(`Invalid collection values provided for 'Book.tags' in Book.assign(): [ false ]`);
-    expect(() => assign(book, { publisher: [{ foo: 'bar' }] } as EntityData<Book>)).toThrow(`Invalid reference value provided for 'Book.publisher' in Book.assign(): [{"foo":"bar"}]`);
+    expect(() => assign(book, { tags: [false] } as any)).toThrow(
+      `Invalid collection values provided for 'Book.tags' in Book.assign(): [ false ]`,
+    );
+    expect(() => assign(book, { publisher: [{ foo: 'bar' }] } as EntityData<Book>)).toThrow(
+      `Invalid reference value provided for 'Book.publisher' in Book.assign(): [{"foo":"bar"}]`,
+    );
   });
 
   test('#assign() should ignore undefined properties', async () => {
@@ -89,9 +92,17 @@ describe('EntityAssignerMongo', () => {
 
   test('#assign() should merge collection items', async () => {
     const jon = new Author('Jon Snow', 'snow@wall.st');
-    orm.em.assign(jon, { books: [{ _id: ObjectId.createFromTime(1), title: 'b1' }] }, { merge: false, updateNestedEntities: false });
+    orm.em.assign(
+      jon,
+      { books: [{ _id: ObjectId.createFromTime(1), title: 'b1' }] },
+      { merge: false, updateNestedEntities: false },
+    );
     expect(wrap(jon.books[0], true).__em).toBeUndefined();
-    orm.em.assign(jon, { books: [{ _id: ObjectId.createFromTime(2), title: 'b2' }] }, { merge: true, updateNestedEntities: false });
+    orm.em.assign(
+      jon,
+      { books: [{ _id: ObjectId.createFromTime(2), title: 'b2' }] },
+      { merge: true, updateNestedEntities: false },
+    );
     expect(wrap(jon.books[0], true).__em).not.toBeUndefined();
   });
 
@@ -151,8 +162,9 @@ describe('EntityAssignerMongo', () => {
   test('#assign() should not allow new 1:1 when onlyOwnProperties : true (#5327)', async () => {
     const jon = new Author('Jon SnowOwn', 'snowown@wall.st');
     const book = new Book('Book2');
-    expect(() => assign<any>(book, { author: jon, title: 'GreatBook' }, { em: orm.em, onlyOwnProperties: true }))
-    .toThrow();
+    expect(() =>
+      assign<any>(book, { author: jon, title: 'GreatBook' }, { em: orm.em, onlyOwnProperties: true }),
+    ).toThrow();
   });
 
   test('#assign() should not create nested owned entity when onlyOwnProperties : true (#5327)', async () => {
@@ -167,7 +179,6 @@ describe('EntityAssignerMongo', () => {
     const em2 = orm.em.fork();
     const dbJon = await em2.findOne(Author, { _id: jon._id });
     expect(dbJon).toBeNull();
-
   });
 
   test('#assign() should not create nested owned entity when onlyOwnProperties : true (reference) (#5327)', async () => {
@@ -186,18 +197,15 @@ describe('EntityAssignerMongo', () => {
     const em2 = orm.em.fork();
     const dbJon = await em2.findOne(Author, { _id: jon._id });
     expect(dbJon).toBeNull();
-
   });
 
- test('#assign() should not update nested owned entity when onlyOwnProperties : true (#5327)', async () => {
-
+  test('#assign() should not update nested owned entity when onlyOwnProperties : true (#5327)', async () => {
     const em = orm.em.fork();
     const jon = new Author('Jon SnowOwn', 'snowown@wall.st');
     jon._id = new ObjectId();
     await em.persist([jon]).flush();
 
     expect(jon.termsAccepted).toBe(false);
-
 
     const payloadJon = {
       _id: jon._id,
@@ -266,7 +274,6 @@ describe('EntityAssignerMongo', () => {
     expect(ref.author).toBeTruthy();
   });
 
-
   test('#assign() should allow assign of owned many_to_many relation when onlyOwnProperties : true (reference) (#6812)', async () => {
     const jon = new Author('Jon SnowOwn', 'snowown@wall.st');
     const friend1 = new Author('Jon SnowOwn Friend 1', 'friend1@wall.st');
@@ -302,5 +309,4 @@ describe('EntityAssignerMongo', () => {
   });
 
   afterAll(async () => orm.close(true));
-
 });

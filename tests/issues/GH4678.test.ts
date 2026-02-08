@@ -1,21 +1,25 @@
 import { Collection, MikroORM } from '@mikro-orm/postgresql';
-import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../helpers.js';
 
 @Entity()
 class User {
-
   @PrimaryKey()
   id!: number;
 
   @OneToMany(() => Book, book => book.user)
   books = new Collection<Book>(this);
-
 }
 
 @Entity()
 class Book {
-
   @PrimaryKey()
   id!: number;
 
@@ -27,14 +31,12 @@ class Book {
 
   @ManyToOne(() => User)
   user!: User;
-
 }
 
 interface BooksParameters {
   pages: number;
   seasons: SeasonType[];
 }
-
 
 interface SeasonType {
   name: string;
@@ -53,7 +55,6 @@ beforeAll(async () => {
 
 afterAll(() => orm.close(true));
 
-
 test('GH #4678 ($hasKey operator)', async () => {
   const mock = mockLogger(orm);
   await orm.em.findAll(Book, {
@@ -71,15 +72,11 @@ test('GH #4678 ($hasKey operator)', async () => {
     where: { authors: { $hasKey: 'Lewis Carroll' } },
   });
 
-  expect(mock.mock.calls[0][0]).toMatch(
-    `select "b0".* from "book" as "b0" where "b0"."parameters" ? 'seasons'`,
-  );
+  expect(mock.mock.calls[0][0]).toMatch(`select "b0".* from "book" as "b0" where "b0"."parameters" ? 'seasons'`);
   expect(mock.mock.calls[1][0]).toMatch(
     `select "u0".* from "user" as "u0" left join "book" as "b1" on "u0"."id" = "b1"."user_id" where "b1"."parameters" ? 'seasons'`,
   );
-  expect(mock.mock.calls[2][0]).toMatch(
-    `select "b0".* from "book" as "b0" where "b0"."authors" ? 'Lewis Carroll'`,
-  );
+  expect(mock.mock.calls[2][0]).toMatch(`select "b0".* from "book" as "b0" where "b0"."authors" ? 'Lewis Carroll'`);
 });
 
 test('GH #4678 ($hasSomeKeys operator)', async () => {
@@ -107,7 +104,6 @@ test('GH #4678 ($hasSomeKeys operator)', async () => {
   expect(mock.mock.calls[2][0]).toMatch(
     `select "b0".* from "book" as "b0" where "b0"."authors" ?| '{Lewis Carroll,Stephen King}'`,
   );
-
 });
 
 test('GH #4678 ($hasKeys operator)', async () => {

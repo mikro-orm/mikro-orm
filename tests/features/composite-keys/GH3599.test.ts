@@ -6,7 +6,6 @@ import { mockLogger } from '../../helpers.js';
 
 @Entity()
 export class Group {
-
   @PrimaryKey({ type: 'uuid' })
   id: string = v4();
 
@@ -15,12 +14,10 @@ export class Group {
     mappedBy: (gm: GroupMember) => gm.group,
   })
   members = new Collection<GroupMember>(this);
-
 }
 
 @Entity()
 export class Member {
-
   @PrimaryKey({ type: 'uuid' })
   id: string = v4();
 
@@ -31,12 +28,10 @@ export class Member {
     orphanRemoval: true,
   })
   groups = new Collection<GroupMember>(this);
-
 }
 
 @Entity()
 export class GroupMember {
-
   @ManyToOne({
     entity: () => Member,
     inversedBy: (member: Member) => member.groups,
@@ -57,7 +52,6 @@ export class GroupMember {
     this.member = wrap(member).toReference();
     this.group = wrap(group).toReference();
   }
-
 }
 
 let orm: MikroORM;
@@ -131,28 +125,21 @@ test('GH 3599 with assign helper', async () => {
 
   // adding a row to the pivot table
   orm.em.assign(member, {
-    groups: [
-      { group: group1.id },
-    ],
+    groups: [{ group: group1.id }],
   });
 
   await orm.em.flush();
 
   // adding a new row to the pivot table
   orm.em.assign(member, {
-    groups: [
-      { group: group1.id },
-      { group: group2.id },
-    ],
+    groups: [{ group: group1.id }, { group: group2.id }],
   });
 
   await orm.em.flush();
 
   // removing a row from the pivot table
   orm.em.assign(member, {
-    groups: [
-      { group: group1.id },
-    ],
+    groups: [{ group: group1.id }],
   });
 
   await orm.em.flush();
@@ -179,28 +166,21 @@ test('em.create and composite PK propagation', async () => {
   const mock = mockLogger(orm, ['query']);
 
   const member = orm.em.create(Member, {
-    groups: [
-      { group: group1.id },
-    ],
+    groups: [{ group: group1.id }],
   });
 
   await orm.em.flush();
 
   // adding a new row to the pivot table
   orm.em.assign(member, {
-    groups: [
-      { group: group1.id },
-      { group: group2.id },
-    ],
+    groups: [{ group: group1.id }, { group: group2.id }],
   });
 
   await orm.em.flush();
 
   // removing a row from the pivot table
   orm.em.assign(member, {
-    groups: [
-      { group: group1.id },
-    ],
+    groups: [{ group: group1.id }],
   });
 
   await orm.em.flush();

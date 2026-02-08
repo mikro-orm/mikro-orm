@@ -1,9 +1,16 @@
 import { Collection, JoinType, MikroORM, sql } from '@mikro-orm/mssql';
-import { Entity, Formula, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  Formula,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class User {
-
   @PrimaryKey({ autoincrement: false })
   id!: number;
 
@@ -24,12 +31,10 @@ class User {
 
   @Formula('(select 22)')
   user_sql?: string;
-
 }
 
 @Entity()
 class Tag {
-
   @PrimaryKey()
   id!: number;
 
@@ -41,7 +46,6 @@ class Tag {
 
   @Formula('(select 23)')
   tag_query?: string;
-
 }
 
 let orm: MikroORM;
@@ -68,7 +72,8 @@ beforeAll(async () => {
 afterAll(() => orm.close(true));
 
 test('6547', async () => {
-  const qb = orm.em.createQueryBuilder(User, 'user')
+  const qb = orm.em
+    .createQueryBuilder(User, 'user')
     .select(['id', 'username', 'email', 'image', 'created_at', 'user_sql'])
     .joinAndSelect('user.tag', 'tag', {}, JoinType.innerJoin, undefined, ['id', 'tag', 'tag_query']);
 
@@ -88,5 +93,7 @@ test('6547', async () => {
       ],
     },
   ]);
-  expect(sql).toBe('select [user].[id], [user].[username], [user].[email], [user].[image], [user].[created_at], (select 22) as [user_sql], [tag].[id] as [tag__id], [tag].[tag] as [tag__tag], (select 23) as [tag__tag_query] from [user] as [user] inner join [tag] as [tag] on [user].[id] = [tag].[user_id]');
+  expect(sql).toBe(
+    'select [user].[id], [user].[username], [user].[email], [user].[image], [user].[created_at], (select 22) as [user_sql], [tag].[id] as [tag__id], [tag].[tag] as [tag__tag], (select 23) as [tag__tag_query] from [user] as [user] inner join [tag] as [tag] on [user].[id] = [tag].[user_id]',
+  );
 });

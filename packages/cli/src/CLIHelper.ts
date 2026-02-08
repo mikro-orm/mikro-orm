@@ -20,7 +20,6 @@ import { fs } from '@mikro-orm/core/fs-utils';
  * @internal
  */
 export class CLIHelper {
-
   /**
    * Gets a named configuration
    *
@@ -44,8 +43,9 @@ export class CLIHelper {
     const env = await this.loadEnvironmentVars();
     await loadOptionalDependencies(options);
 
+    // oxfmt-ignore
     const configFinder = (cfg: unknown) => {
-      return typeof cfg === 'object' && cfg !== null && ('contextName' in cfg ? cfg.contextName === contextName : (contextName === 'default'));
+      return typeof cfg === 'object' && cfg !== null && ('contextName' in cfg ? cfg.contextName === contextName : contextName === 'default');
     };
 
     const isValidConfigFactoryResult = (cfg: unknown) => {
@@ -55,7 +55,13 @@ export class CLIHelper {
     const result = await this.getConfigFile(paths);
     if (!result[0]) {
       if (Utils.hasObjectKeys(env)) {
-        return new Configuration(Utils.mergeConfig({ contextName }, options.preferEnvVars ? options : env, options.preferEnvVars ? env : options));
+        return new Configuration(
+          Utils.mergeConfig(
+            { contextName },
+            options.preferEnvVars ? options : env,
+            options.preferEnvVars ? env : options,
+          ),
+        );
       }
       throw new Error(`MikroORM config file not found in ['${paths.join(`', '`)}']`);
     }
@@ -81,12 +87,16 @@ export class CLIHelper {
           break;
         }
         if (Array.isArray(tmp)) {
-          throw new Error(`MikroORM config '${contextName}' was not found within the config file '${path}'. Either add a config with this name to the array, or add a function that when given this name will return a configuration object without a name, or with name set to this name.`);
+          throw new Error(
+            `MikroORM config '${contextName}' was not found within the config file '${path}'. Either add a config with this name to the array, or add a function that when given this name will return a configuration object without a name, or with name set to this name.`,
+          );
         }
       } else {
         const tmpLastIndex = tmp.findLastIndex(configFinder);
         if (tmpLastIndex !== tmpFirstIndex) {
-          throw new Error(`MikroORM config '${contextName}' is not unique within the array exported by '${path}' (first occurrence index: ${tmpFirstIndex}; last occurrence index: ${tmpLastIndex})`);
+          throw new Error(
+            `MikroORM config '${contextName}' is not unique within the array exported by '${path}' (first occurrence index: ${tmpFirstIndex}; last occurrence index: ${tmpLastIndex})`,
+          );
         }
         tmp = tmp[tmpFirstIndex];
       }
@@ -95,7 +105,9 @@ export class CLIHelper {
         tmp = await tmp(contextName);
 
         if (!isValidConfigFactoryResult(tmp)) {
-          throw new Error(`MikroORM config '${contextName}' was not what the function exported from '${path}' provided. Ensure it returns a config object with no name, or name matching the requested one.`);
+          throw new Error(
+            `MikroORM config '${contextName}' was not what the function exported from '${path}' provided. Ensure it returns a config object with no name, or name matching the requested one.`,
+          );
         }
       } else {
         if (!configFinder(tmp)) {
@@ -108,7 +120,9 @@ export class CLIHelper {
     await loadOptionalDependencies(tmp);
 
     const preferEnvVars = options.preferEnvVars ?? tmp.preferEnvVars;
-    return new Configuration(Utils.mergeConfig({}, esmConfigOptions, tmp, preferEnvVars ? options : env, preferEnvVars ? env : options));
+    return new Configuration(
+      Utils.mergeConfig({}, esmConfigOptions, tmp, preferEnvVars ? options : env, preferEnvVars ? env : options),
+    );
   }
 
   static commonJSCompat(options: Partial<Options>): void {
@@ -123,7 +137,11 @@ export class CLIHelper {
     };
   }
 
-  static async getORM<D extends IDatabaseDriver = IDatabaseDriver>(contextName?: string, configPaths?: string[], opts: Partial<Options<D>> = {}): Promise<MikroORM<D>> {
+  static async getORM<D extends IDatabaseDriver = IDatabaseDriver>(
+    contextName?: string,
+    configPaths?: string[],
+    opts: Partial<Options<D>> = {},
+  ): Promise<MikroORM<D>> {
     const options = await this.getConfiguration<D>(contextName, configPaths, opts);
     const settings = this.getSettings();
     options.set('allowGlobalContext', true);
@@ -177,10 +195,12 @@ export class CLIHelper {
     const config = fs.getPackageConfig();
     const settings = { ...config['mikro-orm'] } as Settings;
     const bool = (v: string) => ['true', 't', '1'].includes(v.toLowerCase());
-    settings.preferTs = process.env.MIKRO_ORM_CLI_PREFER_TS != null ? bool(process.env.MIKRO_ORM_CLI_PREFER_TS) : settings.preferTs;
-    settings.tsLoader = process.env.MIKRO_ORM_CLI_TS_LOADER as any ?? settings.tsLoader;
+    settings.preferTs =
+      process.env.MIKRO_ORM_CLI_PREFER_TS != null ? bool(process.env.MIKRO_ORM_CLI_PREFER_TS) : settings.preferTs;
+    settings.tsLoader = (process.env.MIKRO_ORM_CLI_TS_LOADER as any) ?? settings.tsLoader;
     settings.tsConfigPath = process.env.MIKRO_ORM_CLI_TS_CONFIG_PATH ?? settings.tsConfigPath;
-    settings.verbose = process.env.MIKRO_ORM_CLI_VERBOSE != null ? bool(process.env.MIKRO_ORM_CLI_VERBOSE) : settings.verbose;
+    settings.verbose =
+      process.env.MIKRO_ORM_CLI_VERBOSE != null ? bool(process.env.MIKRO_ORM_CLI_VERBOSE) : settings.verbose;
 
     if (process.env.MIKRO_ORM_CLI_CONFIG?.endsWith('.ts')) {
       settings.preferTs = true;
@@ -208,7 +228,7 @@ export class CLIHelper {
     const distDir = fs.pathExists(process.cwd() + '/dist');
     const buildDir = fs.pathExists(process.cwd() + '/build');
     /* v8 ignore next */
-    const path = distDir ? 'dist' : (buildDir ? 'build' : 'src');
+    const path = distDir ? 'dist' : buildDir ? 'build' : 'src';
     paths.push(`./${path}/mikro-orm.config.js`);
     paths.push('./mikro-orm.config.js');
 
@@ -235,13 +255,27 @@ export class CLIHelper {
 
     /* v8 ignore next */
     switch (process.env.MIKRO_ORM_TYPE) {
-      case 'mongo': ret.driver ??= await import('@mikro-orm/sqlite').then(m => m.SqliteDriver); break;
-      case 'mysql': ret.driver ??= await import('@mikro-orm/mysql').then(m => m.MySqlDriver); break;
-      case 'mssql': ret.driver ??= await import('@mikro-orm/mssql').then(m => m.MsSqlDriver); break;
-      case 'mariadb': ret.driver ??= await import('@mikro-orm/mariadb').then(m => m.MariaDbDriver); break;
-      case 'postgresql': ret.driver ??= await import('@mikro-orm/postgresql').then(m => m.PostgreSqlDriver); break;
-      case 'sqlite': ret.driver ??= await import('@mikro-orm/sqlite').then(m => m.SqliteDriver); break;
-      case 'libsql': ret.driver ??= await import('@mikro-orm/libsql').then(m => m.LibSqlDriver); break;
+      case 'mongo':
+        ret.driver ??= await import('@mikro-orm/sqlite').then(m => m.SqliteDriver);
+        break;
+      case 'mysql':
+        ret.driver ??= await import('@mikro-orm/mysql').then(m => m.MySqlDriver);
+        break;
+      case 'mssql':
+        ret.driver ??= await import('@mikro-orm/mssql').then(m => m.MsSqlDriver);
+        break;
+      case 'mariadb':
+        ret.driver ??= await import('@mikro-orm/mariadb').then(m => m.MariaDbDriver);
+        break;
+      case 'postgresql':
+        ret.driver ??= await import('@mikro-orm/postgresql').then(m => m.PostgreSqlDriver);
+        break;
+      case 'sqlite':
+        ret.driver ??= await import('@mikro-orm/sqlite').then(m => m.SqliteDriver);
+        break;
+      case 'libsql':
+        ret.driver ??= await import('@mikro-orm/libsql').then(m => m.LibSqlDriver);
+        break;
     }
 
     return ret as Options<D>;
@@ -310,10 +344,21 @@ export class CLIHelper {
 
     let ret = '';
     ret += colors.grey('┌' + lengths.map(length => '─'.repeat(length)).join('┬') + '┐\n');
-    ret += colors.grey('│') + lengths.map((length, idx) => ' ' + colors.red(options.columns[idx]) + ' '.repeat(length - options.columns[idx].length - 1)).join(colors.grey('│')) + colors.grey('│\n');
+    ret +=
+      colors.grey('│') +
+      lengths
+        .map(
+          (length, idx) =>
+            ' ' + colors.red(options.columns[idx]) + ' '.repeat(length - options.columns[idx].length - 1),
+        )
+        .join(colors.grey('│')) +
+      colors.grey('│\n');
     ret += colors.grey('├' + lengths.map(length => '─'.repeat(length)).join('┼') + '┤\n');
     options.rows.forEach(row => {
-      ret += colors.grey('│') + lengths.map((length, idx) => ' ' + row[idx] + ' '.repeat(length - row[idx].length - 1)).join(colors.grey('│')) + colors.grey('│\n');
+      ret +=
+        colors.grey('│') +
+        lengths.map((length, idx) => ' ' + row[idx] + ' '.repeat(length - row[idx].length - 1)).join(colors.grey('│')) +
+        colors.grey('│\n');
     });
     ret += colors.grey('└' + lengths.map(length => '─'.repeat(length)).join('┴') + '┘');
 
@@ -325,7 +370,10 @@ export class CLIHelper {
    * Use `MIKRO_ORM_CLI_TS_LOADER` env var to set the loader explicitly.
    * This method is used only in CLI context.
    */
-  static async registerTypeScriptSupport(configPath = 'tsconfig.json', tsLoader?: 'swc' | 'tsx' | 'jiti' | 'tsimp' | 'auto'): Promise<boolean> {
+  static async registerTypeScriptSupport(
+    configPath = 'tsconfig.json',
+    tsLoader?: 'swc' | 'tsx' | 'jiti' | 'tsimp' | 'auto',
+  ): Promise<boolean> {
     /* v8 ignore if */
     if (process.versions.bun) {
       return true;
@@ -339,9 +387,14 @@ export class CLIHelper {
     const loaders = {
       swc: { esm: '@swc-node/register/esm-register', cjs: '@swc-node/register' },
       tsx: { esm: 'tsx/esm/api', cjs: 'tsx/cjs/api', cb: (tsx: any) => tsx.register({ tsconfig: configPath }) },
-      jiti: { cjs: 'jiti/register', cb: () => {
-        return (globalThis as any).dynamicImportProvider = (id: string) => import(id).then(mod => mod?.default ?? mod);
-      } },
+      jiti: {
+        cjs: 'jiti/register',
+        /* v8 ignore next */
+        cb: () => {
+          return ((globalThis as any).dynamicImportProvider = (id: string) =>
+            import(id).then(mod => mod?.default ?? mod));
+        },
+      },
       tsimp: { cjs: 'tsimp/import' },
     } as const;
 
@@ -363,7 +416,9 @@ export class CLIHelper {
     }
 
     // eslint-disable-next-line no-console
-    console.warn('Neither `swc`, `tsx`, `jiti` nor `tsimp` found in the project dependencies, support for working with TypeScript files might not work. To use `swc`, you need to install both `@swc-node/register` and `@swc/core`.');
+    console.warn(
+      'Neither `swc`, `tsx`, `jiti` nor `tsimp` found in the project dependencies, support for working with TypeScript files might not work. To use `swc`, you need to install both `@swc-node/register` and `@swc/core`.',
+    );
 
     return false;
   }
@@ -379,7 +434,6 @@ export class CLIHelper {
   static showHelp() {
     yargs(process.argv.slice(2)).showHelp();
   }
-
 }
 
 export interface Settings {

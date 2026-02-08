@@ -16,7 +16,6 @@ import type { IndexDef } from '../../typings.js';
 import { MySqlNativeQueryBuilder } from './MySqlNativeQueryBuilder.js';
 
 export class BaseMySqlPlatform extends AbstractSqlPlatform {
-
   protected override readonly schemaHelper: MySqlSchemaHelper = new MySqlSchemaHelper(this);
   protected override readonly exceptionConverter = new MySqlExceptionConverter();
 
@@ -70,15 +69,14 @@ export class BaseMySqlPlatform extends AbstractSqlPlatform {
   }
 
   override getJsonIndexDefinition(index: IndexDef): string[] {
-    return index.columnNames
-      .map(column => {
-        if (!column.includes('.')) {
-          return column;
-        }
+    return index.columnNames.map(column => {
+      if (!column.includes('.')) {
+        return column;
+      }
 
-        const [root, ...path] = column.split('.');
-        return `(json_value(${this.quoteIdentifier(root)}, '$.${path.join('.')}' returning ${index.options?.returning ?? 'char(255)'}))`;
-      });
+      const [root, ...path] = column.split('.');
+      return `(json_value(${this.quoteIdentifier(root)}, '$.${path.join('.')}' returning ${index.options?.returning ?? 'char(255)'}))`;
+    });
   }
 
   override getBooleanTypeDeclarationSQL(): string {
@@ -115,7 +113,11 @@ export class BaseMySqlPlatform extends AbstractSqlPlatform {
    * Returns the default name of index for the given columns
    * cannot go past 64 character length for identifiers in MySQL
    */
-  override getIndexName(tableName: string, columns: string[], type: 'index' | 'unique' | 'foreign' | 'primary' | 'sequence'): string {
+  override getIndexName(
+    tableName: string,
+    columns: string[],
+    type: 'index' | 'unique' | 'foreign' | 'primary' | 'sequence',
+  ): string {
     if (type === 'primary') {
       return this.getDefaultPrimaryName(tableName, columns);
     }
@@ -141,7 +143,12 @@ export class BaseMySqlPlatform extends AbstractSqlPlatform {
     return `match(:column:) against (:query in boolean mode)`;
   }
 
-  override getFullTextIndexExpression(indexName: string, schemaName: string | undefined, tableName: string, columns: SimpleColumnMeta[]): string {
+  override getFullTextIndexExpression(
+    indexName: string,
+    schemaName: string | undefined,
+    tableName: string,
+    columns: SimpleColumnMeta[],
+  ): string {
     /* v8 ignore next */
     const quotedTableName = this.quoteIdentifier(schemaName ? `${schemaName}.${tableName}` : tableName);
     const quotedColumnNames = columns.map(c => this.quoteIdentifier(c.name));
@@ -166,5 +173,4 @@ export class BaseMySqlPlatform extends AbstractSqlPlatform {
   override getDefaultClientUrl(): string {
     return 'mysql://root@127.0.0.1:3306';
   }
-
 }

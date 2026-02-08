@@ -3,7 +3,6 @@ import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-or
 import { mockLogger } from '../helpers.js';
 
 class NativeBigIntType extends BigIntType {
-
   override convertToJSValue(value: any): any {
     if (!value) {
       return value;
@@ -11,12 +10,10 @@ class NativeBigIntType extends BigIntType {
 
     return BigInt(value);
   }
-
 }
 
 @Entity()
 class Author {
-
   @PrimaryKey({ type: NativeBigIntType, comment: 'PK' })
   id!: bigint;
 
@@ -30,7 +27,6 @@ class Author {
 
   @Property({ persist: false })
   foo?: string = '123';
-
 }
 
 describe('GH issue 1626', () => {
@@ -84,9 +80,7 @@ describe('GH issue 1626', () => {
     await orm.em.remove(authors).flush();
 
     expect(mock.mock.calls[0][0]).toMatch('begin');
-    expect(mock.mock.calls[1][0]).toMatch(
-      'insert into `author` (`name`) values (?), (?)',
-    );
+    expect(mock.mock.calls[1][0]).toMatch('insert into `author` (`name`) values (?), (?)');
     expect(mock.mock.calls[2][0]).toMatch('commit');
     expect(mock.mock.calls[3][0]).toMatch('begin');
     expect(mock.mock.calls[4][0]).toMatch(
@@ -94,9 +88,7 @@ describe('GH issue 1626', () => {
     );
     expect(mock.mock.calls[5][0]).toMatch('commit');
     expect(mock.mock.calls[6][0]).toMatch('begin');
-    expect(mock.mock.calls[7][0]).toMatch(
-      'delete from `author` where `id` in (?, ?)',
-    );
+    expect(mock.mock.calls[7][0]).toMatch('delete from `author` where `id` in (?, ?)');
     expect(mock.mock.calls[8][0]).toMatch('commit');
     expect(mock.mock.calls.length).toBe(9);
   });

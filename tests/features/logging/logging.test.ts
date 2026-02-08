@@ -5,7 +5,6 @@ import { Mock } from 'vitest';
 
 @Entity()
 class Example {
-
   @PrimaryKey()
   id!: number;
 
@@ -14,11 +13,9 @@ class Example {
 
   @ManyToMany(() => Example)
   examples = new Collection<Example>(this);
-
 }
 
 export class CustomLogger extends DefaultLogger {
-
   override log(namespace: LoggerNamespace, message: string, context?: LogContext): void {
     if (!this.isEnabled(namespace, context)) {
       return;
@@ -30,11 +27,9 @@ export class CustomLogger extends DefaultLogger {
 
     this.writer(`[${namespace}][em#${context?.id ?? 0}] ${label}${message}`);
   }
-
 }
 
 describe('logging', () => {
-
   let orm: MikroORM;
   let mockedLogger: Mock;
   const setDebug = (debug: LoggerNamespace[] = ['query', 'query-params']) => {
@@ -107,10 +102,14 @@ describe('logging', () => {
       loggerContext: { foo: 0, bar: true, label: 'fork' },
     });
 
-    const example = await em.findOneOrFail(Example, { id: 1 }, {
-      logging: { debugMode: ['query'] },
-      loggerContext: { foo: 123 },
-    });
+    const example = await em.findOneOrFail(
+      Example,
+      { id: 1 },
+      {
+        logging: { debugMode: ['query'] },
+        loggerContext: { foo: 123 },
+      },
+    );
     example.title = 'An update';
     await em.persist(example).flush();
 
@@ -131,14 +130,22 @@ describe('logging', () => {
 
     const em = orm.em.fork({ loggerContext: { label: 'foo', bar: 123 } });
     const logSpy = vi.spyOn(CustomLogger.prototype, 'log');
-    await em.findOne(Example, { id: 1 }, {
-      logging: { label: 'foo 123' },
-      loggerContext: { bar: 456, new: true },
-    });
+    await em.findOne(
+      Example,
+      { id: 1 },
+      {
+        logging: { label: 'foo 123' },
+        loggerContext: { bar: 456, new: true },
+      },
+    );
 
-    await em.count(Example, { id: 1 }, {
-      logging: { enabled: false },
-    });
+    await em.count(
+      Example,
+      { id: 1 },
+      {
+        logging: { enabled: false },
+      },
+    );
 
     await em.findOne(Example, { id: 1 }, { refresh: true });
 
@@ -151,5 +158,4 @@ describe('logging', () => {
     expect(mock.mock.calls[1][0]).toMatch('(foo)');
     expect(logSpy.mock.calls[1][2]).toMatchObject({ id: em.id, label: 'foo', bar: 123 });
   });
-
 });

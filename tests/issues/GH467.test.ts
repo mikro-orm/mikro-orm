@@ -3,28 +3,23 @@ import { Entity, ManyToOne, OneToMany, PrimaryKey, ReflectMetadataProvider } fro
 
 @Entity()
 class A {
-
   @PrimaryKey()
   id!: string;
 
   @ManyToOne({ entity: () => B, ref: true, nullable: true })
   b?: Ref<B>;
-
 }
 
 @Entity()
 class B {
-
   @PrimaryKey()
   id!: string;
 
   @OneToMany(() => A, a => a.b)
   as = new Collection<A>(this);
-
 }
 
 describe('GH issue 467', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -88,5 +83,4 @@ describe('GH issue 467', () => {
     const b2 = await orm.em.findOneOrFail(B, 'b3', { populate: ['as'] });
     expect(b2.as.getIdentifiers()).toEqual(['a3']);
   });
-
 });

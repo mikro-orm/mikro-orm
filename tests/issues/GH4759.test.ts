@@ -13,7 +13,6 @@ import { v4 } from 'uuid';
 
 @Entity()
 class Author {
-
   @PrimaryKey()
   id = v4();
 
@@ -46,12 +45,10 @@ class Author {
   constructor(name: string) {
     this.name = name;
   }
-
 }
 
 @Entity()
 class Book {
-
   @PrimaryKey()
   id = v4();
 
@@ -71,9 +68,8 @@ class Book {
   constructor(releaseDate: Date = new Date(), name: string, author: Author) {
     this.releaseDate = releaseDate;
     this.name = name;
-    this.author = ref((author));
+    this.author = ref(author);
   }
-
 }
 
 let orm: MikroORM;
@@ -95,6 +91,10 @@ test(`GH issue 4759`, async () => {
   const book2 = new Book(new Date('2023-01-01'), 'My first book', author);
   await orm.em.fork().persist([author, book1, book2]).flush();
 
-  const authorFound = await orm.em.find(Author, { firstBook: { name: 'My first book' } }, { populate: ['books', 'firstBook'] });
+  const authorFound = await orm.em.find(
+    Author,
+    { firstBook: { name: 'My first book' } },
+    { populate: ['books', 'firstBook'] },
+  );
   expect(authorFound[0].firstBook?.$.name).toBe('My first book');
 });

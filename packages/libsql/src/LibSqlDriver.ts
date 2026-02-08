@@ -5,7 +5,6 @@ import { LibSqlPlatform } from './LibSqlPlatform.js';
 import { LibSqlMikroORM } from './LibSqlMikroORM.js';
 
 export class LibSqlDriver extends AbstractSqlDriver<LibSqlConnection> {
-
   constructor(config: Configuration) {
     super(config, new LibSqlPlatform(), LibSqlConnection, ['kysely', 'libsql']);
   }
@@ -14,5 +13,4 @@ export class LibSqlDriver extends AbstractSqlDriver<LibSqlConnection> {
   override getORMClass(): Constructor<LibSqlMikroORM> {
     return LibSqlMikroORM;
   }
-
 }

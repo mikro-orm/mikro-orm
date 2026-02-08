@@ -1,5 +1,5 @@
 {
-  "extends": "../tsconfig.json", /* omg */
+  "extends": "../tsconfig.json" /* omg */,
   "include": ["**/*", "**/.*", "../packages/*/src/**/*"],
   "exclude": ["features/decorators/es/**"],
   "compilerOptions": {

@@ -5,7 +5,6 @@ import { mockLogger } from '../helpers.js';
 
 @Entity()
 class User {
-
   [OptionalProps]?: 'options';
 
   @PrimaryKey()
@@ -13,7 +12,6 @@ class User {
 
   @Property({ type: 'string[]', default: ['foo'] })
   options = ['foo'];
-
 }
 
 let orm: MikroORM;
@@ -39,9 +37,7 @@ test('4796', async () => {
 
   expect(mock.mock.calls).toEqual([
     ['[query] begin'],
-    [
-      '[query] insert into "user" ("options") values ( E\'{"\\\\\\\\"}\') returning "id"',
-    ],
+    ['[query] insert into "user" ("options") values ( E\'{"\\\\\\\\"}\') returning "id"'],
     ['[query] commit'],
   ]);
 

@@ -1,11 +1,17 @@
 import { Collection, MikroORM } from '@mikro-orm/sqlite';
-import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Entity({
   tableName: 'person',
 })
 export class PersonEntity {
-
   @PrimaryKey()
   id!: number;
 
@@ -14,14 +20,12 @@ export class PersonEntity {
 
   @OneToMany(() => TaskEntity, task => task.person)
   tasks = new Collection<TaskEntity>(this);
-
 }
 
 @Entity({
   tableName: 'task',
 })
 export class TaskEntity {
-
   @PrimaryKey()
   id!: number;
 
@@ -30,11 +34,9 @@ export class TaskEntity {
 
   @ManyToOne(() => PersonEntity)
   person!: PersonEntity;
-
 }
 
 describe('GH #2729', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -91,5 +93,4 @@ describe('GH #2729', () => {
     expect(tasks2[0].person.id).toBe(0);
     expect(tasks2[0].person.name).toBe('zero');
   });
-
 });

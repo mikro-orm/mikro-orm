@@ -7,13 +7,11 @@ import { PostgreSqlDriver } from '@mikro-orm/postgresql';
   schema: 'foo',
 })
 class PersonEntity {
-
   @PrimaryKey()
   id!: number;
 
   @Property()
   name!: string;
-
 }
 
 @Entity({
@@ -21,17 +19,14 @@ class PersonEntity {
   schema: 'bar',
 })
 class TaskEntity {
-
   @PrimaryKey()
   id!: number;
 
   @ManyToOne(() => PersonEntity)
   person!: PersonEntity;
-
 }
 
 describe('GH #2740', () => {
-
   let orm: MikroORM<PostgreSqlDriver>;
 
   beforeAll(async () => {
@@ -53,7 +48,8 @@ describe('GH #2740', () => {
       person: { name: 'test' },
     });
 
-    expect(qb.getQuery()).toBe(`select "t0".* from "bar"."task" as "t0" inner join "foo"."person" as "p1" on "t0"."person_id" = "p1"."id" where "p1"."name" = ?`);
+    expect(qb.getQuery()).toBe(
+      `select "t0".* from "bar"."task" as "t0" inner join "foo"."person" as "p1" on "t0"."person_id" = "p1"."id" where "p1"."name" = ?`,
+    );
   });
-
 });

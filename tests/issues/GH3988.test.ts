@@ -4,17 +4,14 @@ import { MikroORM } from '@mikro-orm/sqlite';
 import { mockLogger } from '../helpers.js';
 
 class Id {
-
   readonly value: number;
 
   constructor(value: number) {
     this.value = value;
   }
-
 }
 
 export class IdType extends Type<Id, string> {
-
   override convertToDatabaseValue(value: any) {
     if (value instanceof Id) {
       return value.value;
@@ -42,12 +39,10 @@ export class IdType extends Type<Id, string> {
   override getColumnType() {
     return 'integer';
   }
-
 }
 
 @Entity()
 class ParentEntity {
-
   @PrimaryKey({ type: IdType, autoincrement: false })
   id!: Id;
 
@@ -59,18 +54,15 @@ class ParentEntity {
     mappedBy: 'parent',
   })
   children = new Collection<ChildEntity>(this);
-
 }
 
 @Entity()
 class ChildEntity {
-
   @PrimaryKey({ type: IdType, autoincrement: false })
   id!: Id;
 
   @ManyToOne(() => ParentEntity)
   parent!: ParentEntity;
-
 }
 
 let orm: MikroORM;

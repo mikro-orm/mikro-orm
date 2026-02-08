@@ -8,7 +8,6 @@ import { MigrationCommandFactory } from '../../../packages/cli/src/commands/Migr
 import { initORMSqlite } from '../../bootstrap.js';
 
 describe('CreateMigrationCommand', () => {
-
   let orm: MikroORM<SqliteDriver>;
 
   beforeAll(async () => {
@@ -50,5 +49,4 @@ describe('CreateMigrationCommand', () => {
     expect(closeSpy).toHaveBeenCalledTimes(3);
     expect(dumpMock).toHaveBeenLastCalledWith('No changes required, schema is up-to-date');
   });
-
 });

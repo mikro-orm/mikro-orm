@@ -1,7 +1,15 @@
 #!/usr/bin/env -S node --import=tsx
 
 import { bench } from '@ark/attest';
-import { type AutoPath, type Loaded, type Ref, type Collection, type PopulatePath, PrimaryKeyProp, EagerProps } from '@mikro-orm/core';
+import {
+  type AutoPath,
+  type Loaded,
+  type Ref,
+  type Collection,
+  type PopulatePath,
+  PrimaryKeyProp,
+  EagerProps,
+} from '@mikro-orm/core';
 
 // ============================================
 // Test Entity Definitions (simple hierarchy)
@@ -100,7 +108,9 @@ bench('Loaded - multiple relations', () => {
 }).types([1397, 'instantiations']);
 
 bench('Loaded - complex nested paths', () => {
-  useLoaded<Author, 'books.tags' | 'books.publisher' | 'friends.books'>({} as Loaded<Author, 'books.tags' | 'books.publisher' | 'friends.books'>);
+  useLoaded<Author, 'books.tags' | 'books.publisher' | 'friends.books'>(
+    {} as Loaded<Author, 'books.tags' | 'books.publisher' | 'friends.books'>,
+  );
 }).types([1276, 'instantiations']);
 
 // ============================================
@@ -156,7 +166,9 @@ bench('AutoPath - deep hierarchy (6 levels)', () => {
 }).types([1402, 'instantiations']);
 
 bench('Loaded - deep hierarchy (6 levels)', () => {
-  useLoaded<DeepRoot, 'level1.level2.level3.level4.level5'>({} as Loaded<DeepRoot, 'level1.level2.level3.level4.level5'>);
+  useLoaded<DeepRoot, 'level1.level2.level3.level4.level5'>(
+    {} as Loaded<DeepRoot, 'level1.level2.level3.level4.level5'>,
+  );
 }).types([951, 'instantiations']);
 
 // ============================================

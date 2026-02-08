@@ -1,14 +1,11 @@
-import {
-  type EntityKey,
-  type EntityProperty,
-  type PropertyOptions,
-  ReferenceKind,
-  Utils,
-} from '@mikro-orm/core';
+import { type EntityKey, type EntityProperty, type PropertyOptions, ReferenceKind, Utils } from '@mikro-orm/core';
 import { prepareMetadataContext } from '../utils.js';
 
 export function Property<T extends object>(options: PropertyOptions<T> = {}) {
-  return function (value: unknown, context: ClassFieldDecoratorContext<T> | ClassGetterDecoratorContext<T> | ClassMethodDecoratorContext<T>) {
+  return function (
+    value: unknown,
+    context: ClassFieldDecoratorContext<T> | ClassGetterDecoratorContext<T> | ClassMethodDecoratorContext<T>,
+  ) {
     const meta = prepareMetadataContext(context, ReferenceKind.SCALAR);
     const { check, ...opts } = options;
     const prop = { kind: ReferenceKind.SCALAR, ...opts } as EntityProperty<T>;

@@ -2,7 +2,6 @@ import type { EntityName, EventArgs, EventSubscriber } from '@mikro-orm/core';
 import { Author2 } from '../entities-sql/index.js';
 
 export class Author2Subscriber implements EventSubscriber<Author2> {
-
   static readonly log: [string, EventArgs<Author2>][] = [];
 
   getSubscribedEntities(): EntityName<Author2>[] {
@@ -36,5 +35,4 @@ export class Author2Subscriber implements EventSubscriber<Author2> {
   onInit(args: EventArgs<Author2>): void {
     Author2Subscriber.log.push(['onInit', args]);
   }
-
 }

@@ -4,7 +4,6 @@ import { Entity, PrimaryKey, Property, ReflectMetadataProvider, Unique } from '@
 @Entity()
 @Unique({ properties: ['uniq1', 'uniq2'] })
 class MyEntity1 {
-
   @PrimaryKey()
   id?: number;
 
@@ -16,7 +15,6 @@ class MyEntity1 {
 
   @Property()
   name!: string;
-
 }
 
 let orm: MikroORM;

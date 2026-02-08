@@ -8,7 +8,6 @@ import { MigrationCommandFactory } from '../../../packages/cli/src/commands/Migr
 import { initORMSqlite } from '../../bootstrap.js';
 
 describe('MigrateUpCommand', () => {
-
   let orm: MikroORM<SqliteDriver>;
 
   beforeAll(async () => {
@@ -67,5 +66,4 @@ describe('MigrateUpCommand', () => {
     expect(up.mock.calls[5][0]).toEqual({ migrations: ['a'] });
     expect(closeSpy).toHaveBeenCalledTimes(6);
   });
-
 });

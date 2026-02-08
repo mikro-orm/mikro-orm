@@ -13,12 +13,11 @@ import { MikroORM } from '@mikro-orm/mysql';
 enum UserRoleEnum {
   Admin = 'Admin',
   DataManager = 'Data Manager',
-  DataEntry = 'Data Entry'
+  DataEntry = 'Data Entry',
 }
 
 @Entity({ tableName: 'user' })
 class User {
-
   @PrimaryKey({
     defaultRaw: '(UUID())',
     length: 38,
@@ -34,12 +33,10 @@ class User {
 
   @OneToMany({ entity: () => WorkspaceUser, mappedBy: 'user' })
   workspaceRoles = new Collection<WorkspaceUser>(this);
-
 }
 
 @Entity({ tableName: 'workspace' })
 class Workspace {
-
   @PrimaryKey({
     fieldName: 'idWorkspace',
     length: 38,
@@ -54,12 +51,10 @@ class Workspace {
     type: 'string',
   })
   orgName!: string;
-
 }
 
 @Entity({ tableName: 'userroles' })
 class UserRole {
-
   @PrimaryKey({
     name: 'UserRole',
     fieldName: 'userRole',
@@ -72,12 +67,10 @@ class UserRole {
     columnType: 'TINYINT',
   })
   Level!: number;
-
 }
 
 @Entity({ tableName: 'workspaceuser' })
 class WorkspaceUser {
-
   @ManyToOne({
     entity: () => User,
     primary: true,
@@ -97,7 +90,6 @@ class WorkspaceUser {
     fieldName: 'userRole',
   })
   userRole!: UserRole;
-
 }
 
 let orm: MikroORM;
@@ -121,8 +113,12 @@ beforeAll(async () => {
   await orm.em.execute("INSERT INTO `workspace` VALUES ('8724b13e-9472-462f-b4be-927dc06f11fe', 'Test');");
   await orm.em.execute("INSERT INTO `workspace` VALUES ('d278edec-97fc-4a7c-9999-df0b28967dba', 'Test2');");
 
-  await orm.em.execute("INSERT INTO `workspaceuser` VALUES ('445bff08-0258-45c4-98b8-a1b1b3997de5', '8724b13e-9472-462f-b4be-927dc06f11fe', 'Admin');");
-  await orm.em.execute("INSERT INTO `workspaceuser` VALUES ('445bff08-0258-45c4-98b8-a1b1b3997de5', 'd278edec-97fc-4a7c-9999-df0b28967dba', 'Admin');");
+  await orm.em.execute(
+    "INSERT INTO `workspaceuser` VALUES ('445bff08-0258-45c4-98b8-a1b1b3997de5', '8724b13e-9472-462f-b4be-927dc06f11fe', 'Admin');",
+  );
+  await orm.em.execute(
+    "INSERT INTO `workspaceuser` VALUES ('445bff08-0258-45c4-98b8-a1b1b3997de5', 'd278edec-97fc-4a7c-9999-df0b28967dba', 'Admin');",
+  );
 });
 
 afterAll(() => orm.close(true));

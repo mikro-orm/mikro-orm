@@ -1,10 +1,4 @@
-import {
-  Utils,
-  ReferenceKind,
-  type EntityProperty,
-  type EntityKey,
-  type PropertyOptions,
-} from '@mikro-orm/core';
+import { Utils, ReferenceKind, type EntityProperty, type EntityKey, type PropertyOptions } from '@mikro-orm/core';
 import { validateSingleDecorator, getMetadataFromDecorator } from '../utils.js';
 
 export function Property<T extends object>(options: PropertyOptions<T> = {}) {

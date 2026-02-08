@@ -6,8 +6,7 @@ import type { DatabaseSchema } from './DatabaseSchema.js';
 import type { DatabaseTable } from './DatabaseTable.js';
 
 export abstract class SchemaHelper {
-
-  constructor(protected readonly platform: AbstractSqlPlatform) { }
+  constructor(protected readonly platform: AbstractSqlPlatform) {}
 
   getSchemaBeginning(_charset: string, disableForeignKeys?: boolean): string {
     if (disableForeignKeys) {
@@ -45,7 +44,12 @@ export abstract class SchemaHelper {
     return true;
   }
 
-  async getPrimaryKeys(connection: AbstractSqlConnection, indexes: IndexDef[] = [], tableName: string, schemaName?: string): Promise<string[]> {
+  async getPrimaryKeys(
+    connection: AbstractSqlConnection,
+    indexes: IndexDef[] = [],
+    tableName: string,
+    schemaName?: string,
+  ): Promise<string[]> {
     const pks = indexes.filter(i => i.primary).map(pk => pk.columnNames);
     return Utils.flatten(pks);
   }
@@ -86,7 +90,12 @@ export abstract class SchemaHelper {
     throw new Error('Not supported by given driver');
   }
 
-  abstract loadInformationSchema(schema: DatabaseSchema, connection: AbstractSqlConnection, tables: Table[], schemas?: string[]): Promise<void>;
+  abstract loadInformationSchema(
+    schema: DatabaseSchema,
+    connection: AbstractSqlConnection,
+    tables: Table[],
+    schemas?: string[],
+  ): Promise<void>;
 
   getListTablesSQL(): string {
     throw new Error('Not supported by given driver');
@@ -109,7 +118,7 @@ export abstract class SchemaHelper {
     oldColumnName = this.quote(oldColumnName);
     const columnName = this.quote(to.name);
 
-    const schemaReference = (schemaName !== undefined && schemaName !== 'public') ? ('"' + schemaName + '".') : '';
+    const schemaReference = schemaName !== undefined && schemaName !== 'public' ? '"' + schemaName + '".' : '';
     const tableReference = schemaReference + tableName;
 
     return `alter table ${tableReference} rename column ${oldColumnName} to ${columnName}`;
@@ -166,26 +175,28 @@ export abstract class SchemaHelper {
    */
   protected getIndexColumns(index: IndexDef): string {
     if (index.columns?.length) {
-      return index.columns.map(col => {
-        let colDef = this.quote(col.name);
+      return index.columns
+        .map(col => {
+          let colDef = this.quote(col.name);
 
-        // Collation comes after column name (SQLite syntax: column COLLATE name)
-        if (col.collation) {
-          colDef += ` collate ${col.collation}`;
-        }
+          // Collation comes after column name (SQLite syntax: column COLLATE name)
+          if (col.collation) {
+            colDef += ` collate ${col.collation}`;
+          }
 
-        // Sort order
-        if (col.sort) {
-          colDef += ` ${col.sort}`;
-        }
+          // Sort order
+          if (col.sort) {
+            colDef += ` ${col.sort}`;
+          }
 
-        // NULLS ordering (PostgreSQL)
-        if (col.nulls) {
-          colDef += ` nulls ${col.nulls}`;
-        }
+          // NULLS ordering (PostgreSQL)
+          if (col.nulls) {
+            colDef += ` nulls ${col.nulls}`;
+          }
 
-        return colDef;
-      }).join(', ');
+          return colDef;
+        })
+        .join(', ');
     }
 
     return index.columnNames.map(c => this.quote(c)).join(', ');
@@ -214,9 +225,10 @@ export abstract class SchemaHelper {
           continue;
         }
 
-        const key = schemaName && schemaName !== this.platform.getDefaultSchemaName() && !column.nativeEnumName.includes('.')
-          ? schemaName + '.' + column.nativeEnumName
-          : column.nativeEnumName;
+        const key =
+          schemaName && schemaName !== this.platform.getDefaultSchemaName() && !column.nativeEnumName.includes('.')
+            ? schemaName + '.' + column.nativeEnumName
+            : column.nativeEnumName;
 
         if (changedProperties.has('enumItems') && key in diff.fromTable.nativeEnums) {
           changedNativeEnums.push([column.nativeEnumName, column.enumItems!, diff.fromTable.nativeEnums[key].items]);
@@ -229,7 +241,9 @@ export abstract class SchemaHelper {
 
         if (enumName.includes('.')) {
           const [enumSchemaName, rawEnumName] = enumName.split('.');
-          ret.push(...newItems.map(val => this.getAlterNativeEnumSQL(rawEnumName, enumSchemaName, val, itemsNew, itemsOld)));
+          ret.push(
+            ...newItems.map(val => this.getAlterNativeEnumSQL(rawEnumName, enumSchemaName, val, itemsNew, itemsOld)),
+          );
           return;
         }
 
@@ -263,7 +277,9 @@ export abstract class SchemaHelper {
     }
 
     for (const column of Object.values(diff.addedColumns)) {
-      const foreignKey = Object.values(diff.addedForeignKeys).find(fk => fk.columnNames.length === 1 && fk.columnNames[0] === column.name);
+      const foreignKey = Object.values(diff.addedForeignKeys).find(
+        fk => fk.columnNames.length === 1 && fk.columnNames[0] === column.name,
+      );
 
       if (foreignKey && this.options.createForeignKeyConstraints) {
         delete diff.addedForeignKeys[foreignKey.constraintName];
@@ -283,8 +299,12 @@ export abstract class SchemaHelper {
       this.append(ret, this.alterTableColumn(column, diff.fromTable, changedProperties));
     }
 
-    for (const { column, changedProperties } of Object.values(diff.changedColumns).filter(diff => diff.changedProperties.has('comment'))) {
-      if (['type', 'nullable', 'autoincrement', 'unsigned', 'default', 'enumItems'].some(t => changedProperties.has(t))) {
+    for (const { column, changedProperties } of Object.values(diff.changedColumns).filter(diff =>
+      diff.changedProperties.has('comment'),
+    )) {
+      if (
+        ['type', 'nullable', 'autoincrement', 'unsigned', 'default', 'enumItems'].some(t => changedProperties.has(t))
+      ) {
         continue; // will be handled via column update
       }
 
@@ -336,9 +356,11 @@ export abstract class SchemaHelper {
   }
 
   getAddColumnsSQL(table: DatabaseTable, columns: Column[]): string[] {
-    const adds = columns.map(column => {
-      return `add ${this.createTableColumn(column, table)!}`;
-    }).join(', ');
+    const adds = columns
+      .map(column => {
+        return `add ${this.createTableColumn(column, table)!}`;
+      })
+      .join(', ');
 
     return [`alter table ${table.getQuotedName()} ${adds}`];
   }
@@ -381,11 +403,15 @@ export abstract class SchemaHelper {
         type = this.quote(this.getTableName(type, table.schema));
       }
 
-      sql.push(`alter table ${table.getQuotedName()} alter column ${this.quote(column.name)} type ${type + this.castColumn(column.name, type)}`);
+      sql.push(
+        `alter table ${table.getQuotedName()} alter column ${this.quote(column.name)} type ${type + this.castColumn(column.name, type)}`,
+      );
     }
 
     if (changedProperties.has('default') && column.default != null) {
-      sql.push(`alter table ${table.getQuotedName()} alter column ${this.quote(column.name)} set default ${column.default}`);
+      sql.push(
+        `alter table ${table.getQuotedName()} alter column ${this.quote(column.name)} set default ${column.default}`,
+      );
     }
 
     if (changedProperties.has('nullable')) {
@@ -409,13 +435,29 @@ export abstract class SchemaHelper {
     Utils.runIfNotEmpty(() => col.push('auto_increment'), column.autoincrement);
     Utils.runIfNotEmpty(() => col.push('unique'), column.autoincrement && !column.primary);
 
-    if (column.autoincrement && !column.generated && !compositePK && (!changedProperties || changedProperties.has('autoincrement') || changedProperties.has('type'))) {
+    if (
+      column.autoincrement &&
+      !column.generated &&
+      !compositePK &&
+      (!changedProperties || changedProperties.has('autoincrement') || changedProperties.has('type'))
+    ) {
       Utils.runIfNotEmpty(() => col.push('primary key'), primaryKey && column.primary);
     }
 
     if (useDefault) {
       // https://dev.mysql.com/doc/refman/9.0/en/data-type-defaults.html
-      const needsExpression = ['blob', 'text', 'json', 'point', 'linestring', 'polygon', 'multipoint', 'multilinestring', 'multipolygon', 'geometrycollection'].some(type => column.type.toLowerCase().startsWith(type));
+      const needsExpression = [
+        'blob',
+        'text',
+        'json',
+        'point',
+        'linestring',
+        'polygon',
+        'multipoint',
+        'multilinestring',
+        'multipolygon',
+        'geometrycollection',
+      ].some(type => column.type.toLowerCase().startsWith(type));
       const defaultSql = needsExpression && !column.default!.startsWith('(') ? `(${column.default})` : column.default;
 
       col.push(`default ${defaultSql}`);
@@ -482,7 +524,9 @@ export abstract class SchemaHelper {
           columnNames: [fk.column_name],
           constraintName: fk.constraint_name,
           localTableName: schemaName ? `${schemaName}.${tableName}` : tableName,
-          referencedTableName: fk.referenced_schema_name ? `${fk.referenced_schema_name}.${fk.referenced_table_name}` : fk.referenced_table_name,
+          referencedTableName: fk.referenced_schema_name
+            ? `${fk.referenced_schema_name}.${fk.referenced_table_name}`
+            : fk.referenced_table_name,
           referencedColumnNames: [fk.referenced_column_name],
           updateRule: fk.update_rule.toLowerCase(),
           deleteRule: fk.delete_rule.toLowerCase(),
@@ -494,7 +538,11 @@ export abstract class SchemaHelper {
     }, {});
   }
 
-  normalizeDefaultValue(defaultValue: string | RawQueryFragment, length?: number, defaultValues: Dictionary<string[]> = {}): string | number {
+  normalizeDefaultValue(
+    defaultValue: string | RawQueryFragment,
+    length?: number,
+    defaultValues: Dictionary<string[]> = {},
+  ): string | number {
     if (defaultValue == null) {
       return defaultValue;
     }
@@ -600,7 +648,8 @@ export abstract class SchemaHelper {
     }
 
     const primaryKey = table.getPrimaryKey();
-    const createPrimary = !table.getColumns().some(c => c.autoincrement && c.primary) || this.hasNonDefaultPrimaryKeyName(table);
+    const createPrimary =
+      !table.getColumns().some(c => c.autoincrement && c.primary) || this.hasNonDefaultPrimaryKeyName(table);
 
     if (createPrimary && primaryKey) {
       const name = this.hasNonDefaultPrimaryKeyName(table) ? `constraint ${this.quote(primaryKey.keyName)} ` : '';
@@ -608,7 +657,11 @@ export abstract class SchemaHelper {
     }
 
     sql += ')';
-    sql += this.finalizeTable(table, this.platform.getConfig().get('charset'), this.platform.getConfig().get('collate'));
+    sql += this.finalizeTable(
+      table,
+      this.platform.getConfig().get('charset'),
+      this.platform.getConfig().get('collate'),
+    );
 
     const ret: string[] = [];
     this.append(ret, sql);
@@ -816,8 +869,11 @@ export abstract class SchemaHelper {
     throw new Error('Not supported by given driver');
   }
 
-  async loadMaterializedViews(schema: DatabaseSchema, connection: AbstractSqlConnection, schemaName?: string): Promise<void> {
+  async loadMaterializedViews(
+    schema: DatabaseSchema,
+    connection: AbstractSqlConnection,
+    schemaName?: string,
+  ): Promise<void> {
     throw new Error('Not supported by given driver');
   }
-
 }

@@ -1,7 +1,6 @@
 import type { AnyEntity, EntityCtor, EntityMetadata } from '../typings.js';
 
 export class IdentityMap {
-
   constructor(private readonly defaultSchema?: string) {}
 
   private readonly registry = new Map<EntityCtor, Map<string, AnyEntity>>();
@@ -79,7 +78,7 @@ export class IdentityMap {
     return ret;
   }
 
-  * [Symbol.iterator](): IterableIterator<AnyEntity> {
+  *[Symbol.iterator](): IterableIterator<AnyEntity> {
     for (const store of this.registry.values()) {
       for (const item of store.values()) {
         yield item;
@@ -138,5 +137,4 @@ export class IdentityMap {
 
     return hash;
   }
-
 }

@@ -1,9 +1,16 @@
 import { MikroORM } from '@mikro-orm/sqlite';
-import { Embeddable, Embedded, Entity, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Embeddable,
+  Embedded,
+  Entity,
+  ManyToOne,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class Organization {
-
   @PrimaryKey()
   id!: number;
 
@@ -17,24 +24,20 @@ class Organization {
     this.name = name;
     this.tag = tag;
   }
-
 }
 
 @Embeddable()
 class Properties {
-
   @ManyToOne({ entity: () => Organization })
   organization: Organization;
 
   constructor(organization: Organization) {
     this.organization = organization;
   }
-
 }
 
 @Entity()
 class User {
-
   @PrimaryKey()
   id!: number;
 
@@ -52,7 +55,6 @@ class User {
     this.email = email;
     this.properties = properties;
   }
-
 }
 
 let orm: MikroORM;
@@ -76,17 +78,13 @@ test('GH #5956', async () => {
   await orm.em.flush();
   orm.em.clear();
 
-  const user = await orm.em.fork().findOneOrFail(
-    User,
-    { email: 'foo' },
-    { populate: ['properties.organization.tag'], strategy: 'joined' },
-  );
+  const user = await orm.em
+    .fork()
+    .findOneOrFail(User, { email: 'foo' }, { populate: ['properties.organization.tag'], strategy: 'joined' });
   expect(user.properties.organization.tag).toBe('bar');
 
-  const user2 = await orm.em.fork().findOneOrFail(
-    User,
-    { email: 'foo' },
-    { populate: ['properties.organization.tag'], strategy: 'select-in' },
-  );
+  const user2 = await orm.em
+    .fork()
+    .findOneOrFail(User, { email: 'foo' }, { populate: ['properties.organization.tag'], strategy: 'select-in' });
   expect(user2.properties.organization.tag).toBe('bar');
 });

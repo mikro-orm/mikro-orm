@@ -3,7 +3,6 @@ import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-or
 
 @Entity()
 class User {
-
   @PrimaryKey()
   id!: number;
 
@@ -12,7 +11,6 @@ class User {
 
   @Property({ nullable: true })
   name?: string;
-
 }
 
 let orm: MikroORM;

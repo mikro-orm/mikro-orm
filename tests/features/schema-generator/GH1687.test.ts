@@ -10,7 +10,6 @@ import {
 
 @Entity()
 class Country {
-
   @PrimaryKey()
   id!: number;
 
@@ -25,12 +24,10 @@ class Country {
 
   @OneToMany(() => State, 'country', { cascade: [Cascade.ALL], nullable: true })
   states = new Collection<State>(this);
-
 }
 
 @Entity()
 class State {
-
   @ManyToOne(() => Country, { primary: true })
   country!: Country;
 
@@ -42,12 +39,10 @@ class State {
 
   @OneToMany(() => City, 'state', { cascade: [Cascade.ALL], nullable: true })
   cities = new Collection<City>(this);
-
 }
 
 @Entity()
 class City {
-
   @ManyToOne(() => State, { primary: true })
   state!: State;
 
@@ -56,12 +51,10 @@ class City {
 
   @Property()
   name!: string;
-
 }
 
 @Entity()
 class User {
-
   @PrimaryKey()
   id!: string;
 
@@ -85,11 +78,9 @@ class User {
 
   @ManyToOne()
   city!: City;
-
 }
 
 describe('adding m:1 with composite PK (FK as PK + scalar PK) (GH 1687, 1695)', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -146,5 +137,4 @@ describe('adding m:1 with composite PK (FK as PK + scalar PK) (GH 1687, 1695)', 
     expect(u2.created).toBeInstanceOf(Date);
     expect(u2.modified).toBeInstanceOf(Date);
   });
-
 });

@@ -1,5 +1,30 @@
-import { Collection, QueryOrder, DateType, TimeType, Cascade, LoadStrategy, EventArgs, OptionalProps } from '@mikro-orm/core';
-import { AfterCreate, AfterDelete, AfterUpdate, BeforeCreate, BeforeDelete, BeforeUpdate, Entity, Index, ManyToMany, ManyToOne, OnInit, OneToMany, OneToOne, Property, Unique } from '@mikro-orm/decorators/legacy';
+import {
+  Collection,
+  QueryOrder,
+  DateType,
+  TimeType,
+  Cascade,
+  LoadStrategy,
+  EventArgs,
+  OptionalProps,
+} from '@mikro-orm/core';
+import {
+  AfterCreate,
+  AfterDelete,
+  AfterUpdate,
+  BeforeCreate,
+  BeforeDelete,
+  BeforeUpdate,
+  Entity,
+  Index,
+  ManyToMany,
+  ManyToOne,
+  OnInit,
+  OneToMany,
+  OneToOne,
+  Property,
+  Unique,
+} from '@mikro-orm/decorators/legacy';
 
 import { Book2 } from './Book2.js';
 import { BaseEntity2 } from './BaseEntity2.js';
@@ -10,8 +35,16 @@ import { Address2 } from './Address2.js';
 @Index({ name: 'custom_idx_name_123', properties: ['name'] })
 @Unique({ properties: ['name', 'email'] })
 export class Author2 extends BaseEntity2 {
-
-  [OptionalProps]?: 'createdAt' | 'updatedAt' | 'termsAccepted' | 'version' | 'versionAsString' | 'code' | 'booksTotal' | 'hookParams' | 'hookTest';
+  [OptionalProps]?:
+    | 'createdAt'
+    | 'updatedAt'
+    | 'termsAccepted'
+    | 'version'
+    | 'versionAsString'
+    | 'code'
+    | 'booksTotal'
+    | 'hookParams'
+    | 'hookTest';
 
   static beforeDestroyCalled = 0;
   static afterDestroyCalled = 0;
@@ -51,7 +84,12 @@ export class Author2 extends BaseEntity2 {
   @OneToMany({ entity: () => Book2, mappedBy: 'author', orderBy: { title: QueryOrder.ASC } })
   books = new Collection<Book2>(this);
 
-  @OneToMany({ entity: () => Book2, mappedBy: 'author', strategy: LoadStrategy.JOINED, orderBy: { title: QueryOrder.ASC } })
+  @OneToMany({
+    entity: () => Book2,
+    mappedBy: 'author',
+    strategy: LoadStrategy.JOINED,
+    orderBy: { title: QueryOrder.ASC },
+  })
   books2 = new Collection<Book2>(this);
 
   @OneToOne({ entity: () => Address2, mappedBy: address => address.author, cascade: [Cascade.ALL], lazy: true })
@@ -131,5 +169,4 @@ export class Author2 extends BaseEntity2 {
   afterDelete() {
     Author2.afterDestroyCalled += 1;
   }
-
 }

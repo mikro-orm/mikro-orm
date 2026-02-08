@@ -1,8 +1,39 @@
 {
   "name": "@mikro-orm/core",
-  "type": "module",
   "version": "6.6.4",
   "description": "TypeScript ORM for Node.js based on Data Mapper, Unit of Work and Identity Map patterns. Supports MongoDB, MySQL, PostgreSQL and SQLite databases as well as usage with vanilla JavaScript.",
+  "keywords": [
+    "data-mapper",
+    "ddd",
+    "entity",
+    "identity-map",
+    "javascript",
+    "js",
+    "mariadb",
+    "mikro-orm",
+    "mongo",
+    "mongodb",
+    "mysql",
+    "orm",
+    "postgresql",
+    "sqlite",
+    "sqlite3",
+    "ts",
+    "typescript",
+    "unit-of-work"
+  ],
+  "homepage": "https://mikro-orm.io",
+  "bugs": {
+    "url": "https://github.com/mikro-orm/mikro-orm/issues"
+  },
+  "license": "MIT",
+  "author": "Martin Adámek",
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/mikro-orm/mikro-orm.git"
+  },
+  "funding": "https://github.com/sponsors/b4nan",
+  "type": "module",
   "exports": {
     "./package.json": "./package.json",
     ".": "./src/index.ts",
@@ -15,48 +46,14 @@
       "browser": "./src/not-supported.ts"
     }
   },
-  "repository": {
-    "type": "git",
-    "url": "git+ssh://git@github.com/mikro-orm/mikro-orm.git"
-  },
-  "funding": "https://github.com/sponsors/b4nan",
-  "keywords": [
-    "orm",
-    "mongo",
-    "mongodb",
-    "mysql",
-    "mariadb",
-    "postgresql",
-    "sqlite",
-    "sqlite3",
-    "ts",
-    "typescript",
-    "js",
-    "javascript",
-    "entity",
-    "ddd",
-    "mikro-orm",
-    "unit-of-work",
-    "data-mapper",
-    "identity-map"
-  ],
-  "author": "Martin Adámek",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/mikro-orm/mikro-orm/issues"
-  },
-  "homepage": "https://mikro-orm.io",
-  "engines": {
-    "node": ">= 22.17.0"
+  "publishConfig": {
+    "access": "public"
   },
   "scripts": {
     "build": "yarn compile && yarn copy",
     "clean": "yarn run -T rimraf ./dist",
     "compile": "yarn run -T tsc -p tsconfig.build.json",
     "copy": "node ../../scripts/copy.mjs"
-  },
-  "publishConfig": {
-    "access": "public"
   },
   "peerDependencies": {
     "dataloader": "2.2.3"
@@ -65,5 +62,8 @@
     "dataloader": {
       "optional": true
     }
+  },
+  "engines": {
+    "node": ">= 22.17.0"
   }
 }

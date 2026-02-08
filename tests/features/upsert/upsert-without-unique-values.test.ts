@@ -5,24 +5,20 @@ import { mockLogger, PLATFORMS } from '../../bootstrap.js';
 
 @Entity()
 class Book {
-
   @PrimaryKey()
   id!: number;
 
   @Property()
   title!: string;
-
 }
 
 @Entity()
 class MongoBook {
-
   @PrimaryKey({ name: '_id' })
   id!: ObjectId;
 
   @Property()
   title!: string;
-
 }
 
 const options = {
@@ -32,7 +28,7 @@ const options = {
   postgresql: { dbName: 'mikro_orm_upsert2' },
 };
 
-describe.each(Utils.keys(options))('em.upsert without unique values [%s]',  type => {
+describe.each(Utils.keys(options))('em.upsert without unique values [%s]', type => {
   let orm: MikroORM;
 
   beforeAll(async () => {

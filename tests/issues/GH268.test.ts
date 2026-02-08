@@ -4,7 +4,6 @@ import { Entity, ManyToMany, PrimaryKey, Property, ReflectMetadataProvider } fro
 
 @Entity()
 export class A {
-
   @PrimaryKey()
   uuid: string = v4();
 
@@ -13,12 +12,10 @@ export class A {
 
   @ManyToMany(() => B, b => b.aCollection)
   bCollection = new Collection<B>(this);
-
 }
 
 @Entity()
 export class B {
-
   @PrimaryKey()
   uuid: string = v4();
 
@@ -27,11 +24,9 @@ export class B {
 
   @ManyToMany(() => A, undefined, { fixedOrder: true })
   aCollection = new Collection<A>(this);
-
 }
 
 describe('GH issue 268', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -60,5 +55,4 @@ describe('GH issue 268', () => {
     const res = await orm.em.getConnection().execute('select * from b_a_collection');
     expect(res[0]).toEqual({ id: 1, a_uuid: a1.uuid, b_uuid: b.uuid });
   });
-
 });

@@ -11,7 +11,6 @@ import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 @Entity({ schema: '*' })
 export class Author {
-
   @PrimaryKey()
   id!: number;
 
@@ -20,12 +19,10 @@ export class Author {
 
   @OneToMany(() => Book, b => b.author)
   books = new Collection<Book>(this);
-
 }
 
 @Entity({ schema: '*' })
 export class Book {
-
   @PrimaryKey()
   id!: number;
 
@@ -34,11 +31,9 @@ export class Book {
 
   @ManyToOne({ entity: () => Author, deleteRule: 'cascade' })
   author!: Author;
-
 }
 
 describe('GH issue 2909 & 3270', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -135,5 +130,4 @@ describe('GH issue 2909 & 3270', () => {
       orm.em.clear();
     }
   });
-
 });

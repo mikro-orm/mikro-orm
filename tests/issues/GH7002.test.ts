@@ -3,17 +3,14 @@ import { EntityComparator, EntityData, MikroORM } from '@mikro-orm/sqlite';
 
 @Entity()
 class GH7002 {
-
   @PrimaryKey({ type: 'integer' })
   id!: number;
 
   @Property({ type: 'Date' })
   createdAt!: Date;
-
 }
 
 describe('GH7002', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -46,5 +43,4 @@ describe('GH7002', () => {
     expect(hydrated.createdAt).toBeInstanceOf(Date);
     expect((hydrated.createdAt as Date).getTime()).toBe(timestamp);
   });
-
 });

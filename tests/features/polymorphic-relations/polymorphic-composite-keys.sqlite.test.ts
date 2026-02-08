@@ -1,9 +1,15 @@
 import { Collection, MikroORM, PolymorphicRef, PrimaryKeyProp } from '@mikro-orm/sqlite';
-import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class Organization {
-
   [PrimaryKeyProp]?: ['tenantId', 'orgId'];
 
   @PrimaryKey()
@@ -23,12 +29,10 @@ class Organization {
     this.orgId = orgId;
     this.name = name;
   }
-
 }
 
 @Entity()
 class User {
-
   [PrimaryKeyProp]?: ['tenantId', 'userId'];
 
   @PrimaryKey()
@@ -48,12 +52,10 @@ class User {
     this.userId = userId;
     this.email = email;
   }
-
 }
 
 @Entity()
 class Notification {
-
   @PrimaryKey()
   id!: number;
 
@@ -67,11 +69,9 @@ class Notification {
   constructor(message: string) {
     this.message = message;
   }
-
 }
 
 describe('polymorphic relations with composite primary keys', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -197,7 +197,12 @@ describe('polymorphic relations with composite primary keys', () => {
     );
 
     expect(loadedOrg.notifications).toHaveLength(2);
-    expect(loadedOrg.notifications.getItems().map(n => n.message).sort()).toEqual(['N1', 'N2']);
+    expect(
+      loadedOrg.notifications
+        .getItems()
+        .map(n => n.message)
+        .sort(),
+    ).toEqual(['N1', 'N2']);
   });
 
   test('handles same composite key values in different tables', async () => {
@@ -234,10 +239,14 @@ describe('polymorphic relations with composite primary keys', () => {
     orm.em.clear();
 
     // Load all notifications with populated recipients
-    const notifications = await orm.em.find(Notification, {}, {
-      populate: ['recipient'],
-      orderBy: { message: 'ASC' },
-    });
+    const notifications = await orm.em.find(
+      Notification,
+      {},
+      {
+        populate: ['recipient'],
+        orderBy: { message: 'ASC' },
+      },
+    );
 
     expect(notifications).toHaveLength(3);
     expect(notifications[0].recipient).toBeInstanceOf(Organization);
@@ -285,9 +294,13 @@ describe('polymorphic relations with composite primary keys', () => {
     orm.em.clear();
 
     // Load all notifications and change their recipients
-    const notifications = await orm.em.find(Notification, {}, {
-      orderBy: { id: 'ASC' },
-    });
+    const notifications = await orm.em.find(
+      Notification,
+      {},
+      {
+        orderBy: { id: 'ASC' },
+      },
+    );
 
     // Change recipients to different users (batch update)
     notifications[0].recipient = await orm.em.findOneOrFail(User, { tenantId: 1, userId: 42 });
@@ -298,10 +311,14 @@ describe('polymorphic relations with composite primary keys', () => {
     orm.em.clear();
 
     // Verify updates
-    const reloaded = await orm.em.find(Notification, {}, {
-      populate: ['recipient'],
-      orderBy: { id: 'ASC' },
-    });
+    const reloaded = await orm.em.find(
+      Notification,
+      {},
+      {
+        populate: ['recipient'],
+        orderBy: { id: 'ASC' },
+      },
+    );
 
     expect(reloaded[0].recipient).toBeInstanceOf(User);
     expect((reloaded[0].recipient as User).email).toBe('user1@test.com');
@@ -321,15 +338,21 @@ describe('polymorphic relations with composite primary keys', () => {
 
     // Insert notification using QueryBuilder with tuple format: ['discriminator', ...ids]
     const qb = orm.em.createQueryBuilder(Notification);
-    await qb.insert({
-      message: 'Via QB with tuple',
-      recipient: ['organization', 1, 100] as const,
-    }).execute();
+    await qb
+      .insert({
+        message: 'Via QB with tuple',
+        recipient: ['organization', 1, 100] as const,
+      })
+      .execute();
 
     orm.em.clear();
 
     // Verify it was inserted correctly
-    const loaded = await orm.em.findOneOrFail(Notification, { message: 'Via QB with tuple' }, { populate: ['recipient'] });
+    const loaded = await orm.em.findOneOrFail(
+      Notification,
+      { message: 'Via QB with tuple' },
+      { populate: ['recipient'] },
+    );
     expect(loaded.recipient).toBeInstanceOf(Organization);
     expect((loaded.recipient as Organization).tenantId).toBe(1);
     expect((loaded.recipient as Organization).orgId).toBe(100);
@@ -355,10 +378,14 @@ describe('polymorphic relations with composite primary keys', () => {
     orm.em.clear();
 
     // Verify
-    const notifications = await orm.em.find(Notification, { message: { $like: 'Batch N%' } }, {
-      populate: ['recipient'],
-      orderBy: { message: 'ASC' },
-    });
+    const notifications = await orm.em.find(
+      Notification,
+      { message: { $like: 'Batch N%' } },
+      {
+        populate: ['recipient'],
+        orderBy: { message: 'ASC' },
+      },
+    );
 
     expect(notifications).toHaveLength(3);
     expect(notifications[0].recipient).toBeInstanceOf(Organization);
@@ -378,10 +405,12 @@ describe('polymorphic relations with composite primary keys', () => {
 
     // Insert using PolymorphicRef with object-style ID (not array)
     const qb = orm.em.createQueryBuilder(Notification);
-    await qb.insert({
-      message: 'Via PolymorphicRef with object ID',
-      recipient: new PolymorphicRef('organization', { tenantId: 1, orgId: 100 }) as any,
-    }).execute();
+    await qb
+      .insert({
+        message: 'Via PolymorphicRef with object ID',
+        recipient: new PolymorphicRef('organization', { tenantId: 1, orgId: 100 }) as any,
+      })
+      .execute();
 
     orm.em.clear();
 
@@ -394,5 +423,4 @@ describe('polymorphic relations with composite primary keys', () => {
     expect((loaded.recipient as Organization).tenantId).toBe(1);
     expect((loaded.recipient as Organization).orgId).toBe(100);
   });
-
 });

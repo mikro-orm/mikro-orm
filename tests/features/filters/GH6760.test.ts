@@ -13,13 +13,11 @@ import {
 
 @Filter({ name: 'notDeleted', cond: { deletedAt: null }, default: true })
 class BaseEntity {
-
   @PrimaryKey({ type: 'string' })
   id!: string;
 
   @Property({ type: 'Date', nullable: true })
   deletedAt: Date | null = null;
-
 }
 
 enum ProjectMemberType {
@@ -28,32 +26,25 @@ enum ProjectMemberType {
 }
 
 @Entity()
-class RoleEntity extends BaseEntity {
-
-}
+class RoleEntity extends BaseEntity {}
 
 @Entity()
 class User extends BaseEntity {
-
   @OneToMany(() => ProjectMember, projectMember => projectMember.user)
   projectMembers!: Collection<ProjectMember>;
 
   @ManyToOne(() => RoleEntity, { strategy: 'joined' })
   role!: RoleEntity;
-
 }
 
 @Entity()
 class Project extends BaseEntity {
-
   @OneToMany(() => ProjectMember, member => member.project)
   members!: Collection<ProjectMember>;
-
 }
 
 @Entity()
 class ProjectMember extends BaseEntity {
-
   @Enum({
     items: () => ProjectMemberType,
     default: ProjectMemberType.TYPE1,
@@ -65,7 +56,6 @@ class ProjectMember extends BaseEntity {
 
   @ManyToOne(() => Project)
   project!: Project;
-
 }
 
 let orm: MikroORM;
@@ -112,27 +102,30 @@ afterAll(async () => {
   await orm.close(true);
 });
 
-test.each(Object.values(LoadStrategy))('should populate project members with specific type using populateWhere using "%s" strategy', async strategy => {
-  const row = await orm.em.findOneOrFail(Project, '1', {
-    populate: ['members.user.role'],
-    populateWhere: {
-      members: {
-        type: ProjectMemberType.TYPE1,
+test.each(Object.values(LoadStrategy))(
+  'should populate project members with specific type using populateWhere using "%s" strategy',
+  async strategy => {
+    const row = await orm.em.findOneOrFail(Project, '1', {
+      populate: ['members.user.role'],
+      populateWhere: {
+        members: {
+          type: ProjectMemberType.TYPE1,
+        },
       },
-    },
-    strategy,
-  });
-  expect(wrap(row).toObject()).toMatchObject({
-    id: '1',
-    deletedAt: null,
-    members: [
-      {
-        id: '2',
-        deletedAt: null,
-        type: 'TYPE1',
-        user: { id: '2', deletedAt: null, role: { id: '2', deletedAt: null } },
-        project: '1',
-      },
-    ],
-  });
-});
+      strategy,
+    });
+    expect(wrap(row).toObject()).toMatchObject({
+      id: '1',
+      deletedAt: null,
+      members: [
+        {
+          id: '2',
+          deletedAt: null,
+          type: 'TYPE1',
+          user: { id: '2', deletedAt: null, role: { id: '2', deletedAt: null } },
+          project: '1',
+        },
+      ],
+    });
+  },
+);

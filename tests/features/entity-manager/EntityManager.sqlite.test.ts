@@ -33,10 +33,9 @@ import {
 import { Author4Schema } from '../../entities-schema/Author4.js';
 
 describe.each(['sqlite', 'libsql'] as const)('EntityManager (%s)', driver => {
-
   let orm: SqliteMikroORM | LibSqlMikroORM;
 
-  beforeAll(async () => orm = await initORMSqlite<any>(driver));
+  beforeAll(async () => (orm = await initORMSqlite<any>(driver)));
   beforeEach(async () => orm.schema.clear());
   afterAll(async () => orm.close(true));
 
@@ -72,17 +71,23 @@ describe.each(['sqlite', 'libsql'] as const)('EntityManager (%s)', driver => {
     expect(await driver.nativeInsert(BookTag4, { name: 'tag', books: [1] })).not.toBeNull();
     await expect(driver.getConnection().execute('select 1 as count')).resolves.toEqual([{ count: 1 }]);
     await expect(driver.getConnection().execute('select 1 as count', [], 'get')).resolves.toEqual({ count: 1 });
-    await expect(driver.getConnection().execute('insert into test4 (name) values (?)', ['test'], 'run')).resolves.toEqual({
+    await expect(
+      driver.getConnection().execute('insert into test4 (name) values (?)', ['test'], 'run'),
+    ).resolves.toEqual({
       affectedRows: 1,
       insertId: 1,
       rows: [],
     });
-    await expect(driver.getConnection().execute('update test4 set name = ? where name = ?', ['test 2', 'test'], 'run')).resolves.toEqual({
+    await expect(
+      driver.getConnection().execute('update test4 set name = ? where name = ?', ['test 2', 'test'], 'run'),
+    ).resolves.toEqual({
       affectedRows: 1,
       insertId: 1,
       rows: [],
     });
-    await expect(driver.getConnection().execute('delete from test4 where name = ?', ['test 2'], 'run')).resolves.toEqual({
+    await expect(
+      driver.getConnection().execute('delete from test4 where name = ?', ['test 2'], 'run'),
+    ).resolves.toEqual({
       affectedRows: 1,
       insertId: 1,
       rows: [],
@@ -97,7 +102,12 @@ describe.each(['sqlite', 'libsql'] as const)('EntityManager (%s)', driver => {
     ]);
 
     // sqlite returns the last inserted id
-    expect(res).toMatchObject({ insertId: 1, affectedRows: 3, row: { id: 1 }, rows: [{ id: 1 }, { id: 2 }, { id: 3 }] });
+    expect(res).toMatchObject({
+      insertId: 1,
+      affectedRows: 3,
+      row: { id: 1 },
+      rows: [{ id: 1 }, { id: 2 }, { id: 3 }],
+    });
     const res2 = await driver.find(Publisher4, {});
     expect(res2).toMatchObject([
       { id: 1, name: 'test 1', type: 'global' },
@@ -153,11 +163,14 @@ describe.each(['sqlite', 'libsql'] as const)('EntityManager (%s)', driver => {
 
   test('disable nested transactions', async () => {
     const mock = mockLogger(orm);
-    await orm.em.transactional(async () => {
-      await orm.em.transactional(async () => {
-        await orm.em.execute('select 1');
-      });
-    }, { ignoreNestedTransactions: true });
+    await orm.em.transactional(
+      async () => {
+        await orm.em.transactional(async () => {
+          await orm.em.execute('select 1');
+        });
+      },
+      { ignoreNestedTransactions: true },
+    );
     expect(mock.mock.calls).toHaveLength(3);
     expect(mock.mock.calls[0][0]).toMatch('begin');
     expect(mock.mock.calls[1][0]).toMatch('select 1');
@@ -172,7 +185,7 @@ describe.each(['sqlite', 'libsql'] as const)('EntityManager (%s)', driver => {
         await em.persist(god1).flush();
         throw new Error(); // rollback the transaction
       });
-    } catch { }
+    } catch {}
 
     const res1 = await orm.em.findOne(Author4, { name: 'God1' });
     expect(res1).toBeNull();
@@ -231,7 +244,7 @@ describe.each(['sqlite', 'libsql'] as const)('EntityManager (%s)', driver => {
           await em2.persist(god1).flush();
           throw new Error(); // rollback the transaction
         });
-      } catch { }
+      } catch {}
 
       const res1 = await em.findOne(Author4, { name: 'God1' });
       expect(res1).toBeNull();
@@ -257,7 +270,7 @@ describe.each(['sqlite', 'libsql'] as const)('EntityManager (%s)', driver => {
           await em2.persist(orm.em.create(Author4, { name: 'God', email: 'hello@heaven.god' })).flush();
           throw new Error(); // rollback the transaction
         });
-      } catch { }
+      } catch {}
 
       await em.persist(orm.em.create(Author4, { name: 'God Persisted!', email: 'hello-persisted@heaven.god' })).flush();
     });
@@ -267,13 +280,25 @@ describe.each(['sqlite', 'libsql'] as const)('EntityManager (%s)', driver => {
     expect(mock.mock.calls).toHaveLength(10);
     expect(mock.mock.calls[0][0]).toMatch('begin');
     expect(mock.mock.calls[1][0]).toMatch('savepoint `trx');
-    expect(mock.mock.calls[2][0]).toMatch('select `b0`.*, `b0`.`price` * 1.19 as `price_taxed` from `book4` as `b0` where `b0`.`title` is not null limit ?');
-    expect(mock.mock.calls[3][0]).toMatch('insert into `author4` (`created_at`, `updated_at`, `name`, `email`, `terms_accepted`) values (?, ?, ?, ?, ?)');
-    expect(mock.mock.calls[4][0]).toMatch('select `b0`.*, `b0`.`price` * 1.19 as `price_taxed` from `book4` as `b0` where `b0`.`title` not in (?) limit ?');
+    expect(mock.mock.calls[2][0]).toMatch(
+      'select `b0`.*, `b0`.`price` * 1.19 as `price_taxed` from `book4` as `b0` where `b0`.`title` is not null limit ?',
+    );
+    expect(mock.mock.calls[3][0]).toMatch(
+      'insert into `author4` (`created_at`, `updated_at`, `name`, `email`, `terms_accepted`) values (?, ?, ?, ?, ?)',
+    );
+    expect(mock.mock.calls[4][0]).toMatch(
+      'select `b0`.*, `b0`.`price` * 1.19 as `price_taxed` from `book4` as `b0` where `b0`.`title` not in (?) limit ?',
+    );
     expect(mock.mock.calls[5][0]).toMatch('rollback to savepoint `trx');
-    expect(mock.mock.calls[6][0]).toMatch('select `b0`.*, `b0`.`price` * 1.19 as `price_taxed` from `book4` as `b0` where `b0`.`title` is not null limit ?');
-    expect(mock.mock.calls[7][0]).toMatch('insert into `author4` (`created_at`, `updated_at`, `name`, `email`, `terms_accepted`) values (?, ?, ?, ?, ?)');
-    expect(mock.mock.calls[8][0]).toMatch('select `b0`.*, `b0`.`price` * 1.19 as `price_taxed` from `book4` as `b0` where `b0`.`title` not in (?) limit ?');
+    expect(mock.mock.calls[6][0]).toMatch(
+      'select `b0`.*, `b0`.`price` * 1.19 as `price_taxed` from `book4` as `b0` where `b0`.`title` is not null limit ?',
+    );
+    expect(mock.mock.calls[7][0]).toMatch(
+      'insert into `author4` (`created_at`, `updated_at`, `name`, `email`, `terms_accepted`) values (?, ?, ?, ?, ?)',
+    );
+    expect(mock.mock.calls[8][0]).toMatch(
+      'select `b0`.*, `b0`.`price` * 1.19 as `price_taxed` from `book4` as `b0` where `b0`.`title` not in (?) limit ?',
+    );
     expect(mock.mock.calls[9][0]).toMatch('commit');
     await expect(orm.em.findOne(Author4, { name: 'God Persisted!' })).resolves.not.toBeNull();
   });
@@ -385,12 +410,15 @@ describe.each(['sqlite', 'libsql'] as const)('EntityManager (%s)', driver => {
     expect(twoBooks[0].title).toBe('My Life on The Wall, part 3');
     expect(twoBooks[1].title).toBe('My Life on The Wall, part 2');
 
-    const lastBook = await booksRepository.find({ author: jon.id }, {
-      populate: ['author'],
-      orderBy: { title: QueryOrder.DESC },
-      limit: 2,
-      offset: 2,
-    });
+    const lastBook = await booksRepository.find(
+      { author: jon.id },
+      {
+        populate: ['author'],
+        orderBy: { title: QueryOrder.DESC },
+        limit: 2,
+        offset: 2,
+      },
+    );
     expect(lastBook.length).toBe(1);
     expect(lastBook[0].title).toBe('My Life on The Wall, part 1');
     expect(lastBook[0].author!.constructor.name).toBe('Author4');
@@ -502,7 +530,9 @@ describe.each(['sqlite', 'libsql'] as const)('EntityManager (%s)', driver => {
   test('findOne supports optimistic locking [unversioned entity]', async () => {
     const author = orm.em.create(Author4, { name: 'name', email: 'email' });
     await orm.em.persist(author).flush();
-    await expect(orm.em.lock(author, LockMode.OPTIMISTIC)).rejects.toThrow('Cannot obtain optimistic lock on unversioned entity Author4');
+    await expect(orm.em.lock(author, LockMode.OPTIMISTIC)).rejects.toThrow(
+      'Cannot obtain optimistic lock on unversioned entity Author4',
+    );
   });
 
   test('findOne supports optimistic locking [versioned entity]', async () => {
@@ -516,22 +546,34 @@ describe.each(['sqlite', 'libsql'] as const)('EntityManager (%s)', driver => {
     const test = orm.em.create(Test4, {});
     test.name = 'test';
     await orm.em.flush();
-    await expect(orm.em.lock(test, LockMode.OPTIMISTIC, test.version + 1)).rejects.toThrow('The optimistic lock failed, version 2 was expected, but is actually 1');
+    await expect(orm.em.lock(test, LockMode.OPTIMISTIC, test.version + 1)).rejects.toThrow(
+      'The optimistic lock failed, version 2 was expected, but is actually 1',
+    );
   });
 
   test('findOne supports optimistic locking [testLockUnmanagedEntityThrowsException]', async () => {
     const test = orm.em.create(Test4, {});
     test.name = 'test';
-    await expect(orm.em.lock(test, LockMode.OPTIMISTIC)).rejects.toThrow('Entity Test4 is not managed. An entity is managed if its fetched from the database or registered as new through EntityManager.persist()');
+    await expect(orm.em.lock(test, LockMode.OPTIMISTIC)).rejects.toThrow(
+      'Entity Test4 is not managed. An entity is managed if its fetched from the database or registered as new through EntityManager.persist()',
+    );
   });
 
   test('pessimistic locking requires active transaction', async () => {
     const test = orm.em.create(Test4, { name: 'Lock test' });
     await orm.em.flush();
-    await expect(orm.em.findOne(Test4, test.id, { lockMode: LockMode.PESSIMISTIC_READ })).rejects.toThrow('An open transaction is required for this operation');
-    await expect(orm.em.findOne(Test4, test.id, { lockMode: LockMode.PESSIMISTIC_WRITE })).rejects.toThrow('An open transaction is required for this operation');
-    await expect(orm.em.lock(test, LockMode.PESSIMISTIC_READ)).rejects.toThrow('An open transaction is required for this operation');
-    await expect(orm.em.lock(test, LockMode.PESSIMISTIC_WRITE)).rejects.toThrow('An open transaction is required for this operation');
+    await expect(orm.em.findOne(Test4, test.id, { lockMode: LockMode.PESSIMISTIC_READ })).rejects.toThrow(
+      'An open transaction is required for this operation',
+    );
+    await expect(orm.em.findOne(Test4, test.id, { lockMode: LockMode.PESSIMISTIC_WRITE })).rejects.toThrow(
+      'An open transaction is required for this operation',
+    );
+    await expect(orm.em.lock(test, LockMode.PESSIMISTIC_READ)).rejects.toThrow(
+      'An open transaction is required for this operation',
+    );
+    await expect(orm.em.lock(test, LockMode.PESSIMISTIC_WRITE)).rejects.toThrow(
+      'An open transaction is required for this operation',
+    );
   });
 
   test('findOne does not support pessimistic locking [pessimistic write]', async () => {
@@ -570,7 +612,10 @@ describe.each(['sqlite', 'libsql'] as const)('EntityManager (%s)', driver => {
     const god = orm.em.create(Author4, { name: 'God', email: 'hello@heaven.god' });
     const bible = orm.em.create(Book4, { title: 'Bible', author: god });
     const bible2 = orm.em.create(Book4, { title: 'Bible pt. 2', author: god });
-    const bible3 = orm.em.create(Book4, { title: 'Bible pt. 3', author: orm.em.create(Author4, { name: 'Lol', email: 'lol@lol.lol' }) });
+    const bible3 = orm.em.create(Book4, {
+      title: 'Bible pt. 3',
+      author: orm.em.create(Author4, { name: 'Lol', email: 'lol@lol.lol' }),
+    });
     await orm.em.persist([bible, bible2, bible3]).flush();
     orm.em.clear();
 
@@ -593,7 +638,10 @@ describe.each(['sqlite', 'libsql'] as const)('EntityManager (%s)', driver => {
     bible.publisher = wrap(pub).toReference();
     const bible2 = orm.em.create(Book4, { title: 'Bible pt. 2', author: god });
     bible2.publisher = wrap(pub).toReference();
-    const bible3 = orm.em.create(Book4, { title: 'Bible pt. 3', author: orm.em.create(Author4, { name: 'Lol', email: 'lol@lol.lol' }) });
+    const bible3 = orm.em.create(Book4, {
+      title: 'Bible pt. 3',
+      author: orm.em.create(Author4, { name: 'Lol', email: 'lol@lol.lol' }),
+    });
     bible3.publisher = wrap(pub).toReference();
     await orm.em.persist([bible, bible2, bible3]).flush();
     orm.em.clear();
@@ -615,7 +663,12 @@ describe.each(['sqlite', 'libsql'] as const)('EntityManager (%s)', driver => {
     const god = orm.em.create(Author4, { name: 'God', email: 'hello@heaven.god' });
     god.identities = ['fb-123', 'pw-231', 'tw-321'];
     const bible = orm.em.create(Book4, { title: 'Bible', author: god });
-    bible.meta = { category: 'god like', items: 3, valid: true, nested: { foo: '123', bar: 321, deep: { baz: 59, qux: false } } };
+    bible.meta = {
+      category: 'god like',
+      items: 3,
+      valid: true,
+      nested: { foo: '123', bar: 321, deep: { baz: 59, qux: false } },
+    };
     await orm.em.persist(bible).flush();
     orm.em.clear();
 
@@ -623,7 +676,12 @@ describe.each(['sqlite', 'libsql'] as const)('EntityManager (%s)', driver => {
     expect(Array.isArray(g.identities)).toBe(true);
     expect(g.identities).toEqual(['fb-123', 'pw-231', 'tw-321']);
     expect(typeof g.books[0].meta).toBe('object');
-    expect(g.books[0].meta).toEqual({ category: 'god like', items: 3, valid: true, nested: { foo: '123', bar: 321, deep: { baz: 59, qux: false } } });
+    expect(g.books[0].meta).toEqual({
+      category: 'god like',
+      items: 3,
+      valid: true,
+      nested: { foo: '123', bar: 321, deep: { baz: 59, qux: false } },
+    });
     orm.em.clear();
 
     const b1 = await orm.em.findOneOrFail(Book4, { meta: { category: 'god like' } });
@@ -631,8 +689,12 @@ describe.each(['sqlite', 'libsql'] as const)('EntityManager (%s)', driver => {
     const b3 = await orm.em.findOneOrFail(Book4, { meta: { nested: { bar: 321 } } });
     const b4 = await orm.em.findOneOrFail(Book4, { meta: { nested: { foo: '123', bar: 321 } } });
     const b5 = await orm.em.findOneOrFail(Book4, { meta: { valid: true, nested: { foo: '123', bar: 321 } } });
-    const b6 = await orm.em.findOneOrFail(Book4, { meta: { valid: true, nested: { foo: '123', bar: 321, deep: { baz: 59 } } } });
-    const b7 = await orm.em.findOneOrFail(Book4, { meta: { valid: true, nested: { foo: '123', bar: 321, deep: { baz: 59, qux: false } } } });
+    const b6 = await orm.em.findOneOrFail(Book4, {
+      meta: { valid: true, nested: { foo: '123', bar: 321, deep: { baz: 59 } } },
+    });
+    const b7 = await orm.em.findOneOrFail(Book4, {
+      meta: { valid: true, nested: { foo: '123', bar: 321, deep: { baz: 59, qux: false } } },
+    });
     expect(b1).toBe(b2);
     expect(b1).toBe(b3);
     expect(b1).toBe(b4);
@@ -642,21 +704,22 @@ describe.each(['sqlite', 'libsql'] as const)('EntityManager (%s)', driver => {
   });
 
   test('complex condition for json property with update query (GH #2839)', async () => {
-    const qb141 = orm.em.createQueryBuilder(Book4).update({ meta: { items: 3 } }).where({
-      $and: [
-        { id: 123 },
-        { $or: [
-            { meta: null },
-            { meta: { $eq: null } },
-            { meta: { time: { $lt: 1646147306 } } },
-          ] },
-      ],
-    });
-    expect(qb141.getFormattedQuery()).toBe('update `book4` set `meta` = \'{"items":3}\' ' +
-      'where `id` = 123 ' +
-      'and (`meta` is null ' +
-      'or `meta` is null ' +
-      'or json_extract(`meta`, \'$.time\') < 1646147306)');
+    const qb141 = orm.em
+      .createQueryBuilder(Book4)
+      .update({ meta: { items: 3 } })
+      .where({
+        $and: [
+          { id: 123 },
+          { $or: [{ meta: null }, { meta: { $eq: null } }, { meta: { time: { $lt: 1646147306 } } }] },
+        ],
+      });
+    expect(qb141.getFormattedQuery()).toBe(
+      'update `book4` set `meta` = \'{"items":3}\' ' +
+        'where `id` = 123 ' +
+        'and (`meta` is null ' +
+        'or `meta` is null ' +
+        "or json_extract(`meta`, '$.time') < 1646147306)",
+    );
   });
 
   test('findOne by id', async () => {
@@ -740,7 +803,9 @@ describe.each(['sqlite', 'libsql'] as const)('EntityManager (%s)', driver => {
     expect(tags[0].books.isInitialized()).toBe(false);
     expect(tags[0].books.isDirty()).toBe(false);
     expect(() => tags[0].books.getItems()).toThrow(/Collection<Book4> of entity BookTag4\[\d+] not initialized/);
-    expect(() => tags[0].books.remove(book1, book2)).toThrow(/Collection<Book4> of entity BookTag4\[\d+] not initialized/);
+    expect(() => tags[0].books.remove(book1, book2)).toThrow(
+      /Collection<Book4> of entity BookTag4\[\d+] not initialized/,
+    );
     expect(() => tags[0].books.contains(book1)).toThrow(/Collection<Book4> of entity BookTag4\[\d+] not initialized/);
 
     // test M:N lazy load
@@ -834,7 +899,9 @@ describe.each(['sqlite', 'libsql'] as const)('EntityManager (%s)', driver => {
     expect(tags).toHaveLength(5);
     expect(books[0].tags).toHaveLength(5);
     expect(tags.map(t => t.name)).toEqual(['tag 11-06', 'tag 11-07', 'tag 11-08', 'tag 11-09', 'tag 11-10']);
-    expect(() => books[0].tags.add(orm.em.create(BookTag4, { name: 'new' }))).toThrow('You cannot modify collection Book4.tags as it is marked as readonly.');
+    expect(() => books[0].tags.add(orm.em.create(BookTag4, { name: 'new' }))).toThrow(
+      'You cannot modify collection Book4.tags as it is marked as readonly.',
+    );
     expect(wrap(books[0]).toObject()).toMatchObject({
       tags: books[0].tags.getItems().map(t => ({ name: t.name })),
     });
@@ -868,10 +935,14 @@ describe.each(['sqlite', 'libsql'] as const)('EntityManager (%s)', driver => {
     await orm.em.persist(book3).flush();
     orm.em.clear();
 
-    const authors = await orm.em.find(Author4, {}, {
-      populate: ['books.tags'],
-      disableIdentityMap: true,
-    });
+    const authors = await orm.em.find(
+      Author4,
+      {},
+      {
+        populate: ['books.tags'],
+        disableIdentityMap: true,
+      },
+    );
 
     expect(authors).toHaveLength(1);
     expect(authors[0].id).toBe(author.id);
@@ -954,8 +1025,12 @@ describe.each(['sqlite', 'libsql'] as const)('EntityManager (%s)', driver => {
     await orm.em.persist(author).flush();
     orm.em.clear();
 
-    await expect(repo.findAll({ populate: ['tests'] as never })).rejects.toThrow(`Entity 'Author4' does not have property 'tests'`);
-    await expect(repo.findOne(author.id, { populate: ['tests'] as never })).rejects.toThrow(`Entity 'Author4' does not have property 'tests'`);
+    await expect(repo.findAll({ populate: ['tests'] as never })).rejects.toThrow(
+      `Entity 'Author4' does not have property 'tests'`,
+    );
+    await expect(repo.findOne(author.id, { populate: ['tests'] as never })).rejects.toThrow(
+      `Entity 'Author4' does not have property 'tests'`,
+    );
   });
 
   test('many to many collection does have fixed order', async () => {
@@ -1022,10 +1097,19 @@ describe.each(['sqlite', 'libsql'] as const)('EntityManager (%s)', driver => {
     const res3 = await orm.em.nativeDelete(Author4, { name: 'new native name' });
     expect(res3).toBe(1);
 
-    const res4 = await orm.em.insert(Author4, { createdAt: new Date('1989-11-17'), updatedAt: new Date('2018-10-28'), name: 'native name 2', email: 'native2@email.com' });
+    const res4 = await orm.em.insert(Author4, {
+      createdAt: new Date('1989-11-17'),
+      updatedAt: new Date('2018-10-28'),
+      name: 'native name 2',
+      email: 'native2@email.com',
+    });
     expect(typeof res4).toBe('number');
 
-    const res5 = await orm.em.nativeUpdate(Author4, { name: 'native name 2' }, { name: 'new native name', updatedAt: new Date('2018-10-28') });
+    const res5 = await orm.em.nativeUpdate(
+      Author4,
+      { name: 'native name 2' },
+      { name: 'new native name', updatedAt: new Date('2018-10-28') },
+    );
     expect(res5).toBe(1);
   });
 
@@ -1035,7 +1119,9 @@ describe.each(['sqlite', 'libsql'] as const)('EntityManager (%s)', driver => {
     await orm.em.persist(author).flush();
     orm.em.clear();
 
-    const res = await orm.em.getConnection().execute<{ created_at: number }[]>(`select created_at as created_at from author4 where id = ${author.id}`);
+    const res = await orm.em
+      .getConnection()
+      .execute<{ created_at: number }[]>(`select created_at as created_at from author4 where id = ${author.id}`);
     expect(res[0].created_at).toBe(+author.createdAt);
     const a = await orm.em.findOneOrFail(Author4, author.id);
     expect(+a.createdAt!).toBe(+author.createdAt);
@@ -1067,9 +1153,29 @@ describe.each(['sqlite', 'libsql'] as const)('EntityManager (%s)', driver => {
       name: 'Jon Snow',
       email: 'snow@wall.st',
       books: [
-        { title: 'My Life on The Wall, part 1', tags: [{ id: 1, name: 'silly' }, { id: 3, name: 'sick' }] },
-        { title: 'My Life on The Wall, part 2', tags: [{ id: 1, name: 'silly' }, { id: 2, name: 'funny' }, { id: 5, name: 'sexy' }] },
-        { title: 'My Life on The Wall, part 3', tags: [{ id: 2, name: 'funny' }, { id: 4, name: 'strange' }, { id: 5, name: 'sexy' }] },
+        {
+          title: 'My Life on The Wall, part 1',
+          tags: [
+            { id: 1, name: 'silly' },
+            { id: 3, name: 'sick' },
+          ],
+        },
+        {
+          title: 'My Life on The Wall, part 2',
+          tags: [
+            { id: 1, name: 'silly' },
+            { id: 2, name: 'funny' },
+            { id: 5, name: 'sexy' },
+          ],
+        },
+        {
+          title: 'My Life on The Wall, part 3',
+          tags: [
+            { id: 2, name: 'funny' },
+            { id: 4, name: 'strange' },
+            { id: 5, name: 'sexy' },
+          ],
+        },
       ],
     });
     author.favouriteBook = author.books[0];
@@ -1138,8 +1244,12 @@ describe.each(['sqlite', 'libsql'] as const)('EntityManager (%s)', driver => {
     await orm.em.flush();
 
     expect(mock.mock.calls[0][0]).toMatch('begin');
-    expect(mock.mock.calls[1][0]).toMatch('select `f0`.`id` from `foo_bar4` as `f0` where ((`f0`.`id` = ? and `f0`.`version` = ?) or (`f0`.`id` = ? and `f0`.`version` = ?))');
-    expect(mock.mock.calls[2][0]).toMatch('update `foo_bar4` set `foo_bar_id` = case when (`id` = ?) then ? else `foo_bar_id` end, `updated_at` = case when (`id` = ?) then ? when (`id` = ?) then ? else `updated_at` end, `version` = `version` + 1 where `id` in (?, ?) returning `id`, `version`');
+    expect(mock.mock.calls[1][0]).toMatch(
+      'select `f0`.`id` from `foo_bar4` as `f0` where ((`f0`.`id` = ? and `f0`.`version` = ?) or (`f0`.`id` = ? and `f0`.`version` = ?))',
+    );
+    expect(mock.mock.calls[2][0]).toMatch(
+      'update `foo_bar4` set `foo_bar_id` = case when (`id` = ?) then ? else `foo_bar_id` end, `updated_at` = case when (`id` = ?) then ? when (`id` = ?) then ? else `updated_at` end, `version` = `version` + 1 where `id` in (?, ?) returning `id`, `version`',
+    );
     // this was flaky because the second update query might be executed too quickly, so there might be no `updated_at` change
     // expect(mock.mock.calls[3][0]).toMatch('update `foo_bar4` set `foo_bar_id` = ?, `updated_at` = ?, `version` = ? where `id` = ? and `version` = ? returning `version`');
     expect(mock.mock.calls[3][0]).toMatch('update `foo_bar4` set `foo_bar_id` = ?');
@@ -1150,7 +1260,7 @@ describe.each(['sqlite', 'libsql'] as const)('EntityManager (%s)', driver => {
     await orm.em.insert(FooBar4, { id: 123, name: 'n1', array: [1, 2, 3] });
     await orm.em.insert(FooBar4, { id: 456, name: 'n2', array: [] });
 
-    const bar = orm.em.create(FooBar4, { name: 'b1 \'the bad\' lol' });
+    const bar = orm.em.create(FooBar4, { name: "b1 'the bad' lol" });
     bar.blob = Buffer.from([1, 2, 3, 4, 5]);
     bar.blob2 = new Uint8Array([1, 2, 3, 4, 5]);
     bar.array = [];
@@ -1218,14 +1328,15 @@ describe.each(['sqlite', 'libsql'] as const)('EntityManager (%s)', driver => {
       .leftJoinAndSelect('a.books', 'b')
       .leftJoinAndSelect('b.tags', 't')
       .where({ 't.name': ['sick', 'sexy'] });
-    const sql = 'select `a`.*, ' +
+    const sql =
+      'select `a`.*, ' +
       '`b`.`id` as `b__id`, `b`.`created_at` as `b__created_at`, `b`.`updated_at` as `b__updated_at`, `b`.`title` as `b__title`, `b`.`price` as `b__price`, `b`.`price` * 1.19 as `b__price_taxed`, `b`.`author_id` as `b__author_id`, `b`.`publisher_id` as `b__publisher_id`, `b`.`meta` as `b__meta`, ' +
       '`t`.`id` as `t__id`, `t`.`created_at` as `t__created_at`, `t`.`updated_at` as `t__updated_at`, `t`.`name` as `t__name`, `t`.`version` as `t__version` ' +
       'from `author4` as `a` ' +
       'left join `book4` as `b` on `a`.`id` = `b`.`author_id` ' +
       'left join `tags_ordered` as `t1` on `b`.`id` = `t1`.`book4_id` ' +
       'left join `book_tag4` as `t` on `t1`.`book_tag4_id` = `t`.`id` ' +
-      'where `t`.`name` in (\'sick\', \'sexy\')';
+      "where `t`.`name` in ('sick', 'sexy')";
     expect(qb.getFormattedQuery()).toEqual(sql);
     const res = await qb.getSingleResult();
     expect(res).not.toBeNull();
@@ -1298,8 +1409,12 @@ describe.each(['sqlite', 'libsql'] as const)('EntityManager (%s)', driver => {
     expect(count4).toBe(0);
     expect(mock.mock.calls[0][0]).toMatch('select count(*) as `count` from `author4` as `a0`');
     expect(mock.mock.calls[1][0]).toMatch('select count(`a0`.`terms_accepted`) as `count` from `author4` as `a0`');
-    expect(mock.mock.calls[2][0]).toMatch('select count(distinct `a0`.`terms_accepted`) as `count` from `author4` as `a0`');
-    expect(mock.mock.calls[3][0]).toMatch('select count(*) as `count` from `author4` as `a0` where `a0`.`email` = \'123\'');
+    expect(mock.mock.calls[2][0]).toMatch(
+      'select count(distinct `a0`.`terms_accepted`) as `count` from `author4` as `a0`',
+    );
+    expect(mock.mock.calls[3][0]).toMatch(
+      "select count(*) as `count` from `author4` as `a0` where `a0`.`email` = '123'",
+    );
   });
 
   test('using collection methods with null/undefined (GH issue #1408)', async () => {
@@ -1325,9 +1440,15 @@ describe.each(['sqlite', 'libsql'] as const)('EntityManager (%s)', driver => {
     expect(wrap(ref).isInitialized()).toBe(true);
 
     expect(mock.mock.calls[0][0]).toMatch('begin');
-    expect(mock.mock.calls[1][0]).toMatch('select `b0`.*, `b0`.`price` * 1.19 as `price_taxed` from `book4` as `b0` where `b0`.`title` is not null limit ?');
-    expect(mock.mock.calls[2][0]).toMatch('update `author4` set `name` = ?, `email` = ?, `updated_at` = ? where `id` = ?');
-    expect(mock.mock.calls[3][0]).toMatch('select `b0`.*, `b0`.`price` * 1.19 as `price_taxed` from `book4` as `b0` where `b0`.`title` not in (?) limit ?');
+    expect(mock.mock.calls[1][0]).toMatch(
+      'select `b0`.*, `b0`.`price` * 1.19 as `price_taxed` from `book4` as `b0` where `b0`.`title` is not null limit ?',
+    );
+    expect(mock.mock.calls[2][0]).toMatch(
+      'update `author4` set `name` = ?, `email` = ?, `updated_at` = ? where `id` = ?',
+    );
+    expect(mock.mock.calls[3][0]).toMatch(
+      'select `b0`.*, `b0`.`price` * 1.19 as `price_taxed` from `book4` as `b0` where `b0`.`title` not in (?) limit ?',
+    );
     expect(mock.mock.calls[4][0]).toMatch('commit');
   });
 
@@ -1358,7 +1479,7 @@ describe.each(['sqlite', 'libsql'] as const)('EntityManager (%s)', driver => {
     await orm.em.flush();
     authors.forEach(author => expect(author.id).toBeGreaterThan(0));
 
-    authors.forEach(a => a.termsAccepted = true);
+    authors.forEach(a => (a.termsAccepted = true));
     await orm.em.flush();
   });
 
@@ -1385,7 +1506,7 @@ describe.each(['sqlite', 'libsql'] as const)('EntityManager (%s)', driver => {
     orm.em.clear();
 
     // Updates when removing an item
-    author = (await orm.em.findOneOrFail(Author4, author.id));
+    author = await orm.em.findOneOrFail(Author4, author.id);
     expect(await author.books.loadCount()).toEqual(3);
     await author.books.init();
     author.books.remove(author.books[0]);
@@ -1395,7 +1516,7 @@ describe.each(['sqlite', 'libsql'] as const)('EntityManager (%s)', driver => {
     orm.em.clear();
 
     // Resets the counter when hydrating
-    author = (await orm.em.findOneOrFail(Author4, author.id));
+    author = await orm.em.findOneOrFail(Author4, author.id);
     await author.books.loadCount();
     author.books.hydrate([]);
     expect(await author.books.loadCount()).toEqual(0);
@@ -1404,7 +1525,11 @@ describe.each(['sqlite', 'libsql'] as const)('EntityManager (%s)', driver => {
     // n:m relations
     let taggedBook = orm.em.create(Book4, { title: 'FullyTagged' });
     await orm.em.persist(taggedBook).flush();
-    const tags = [orm.em.create(BookTag4, { name: 'science-fiction' }), orm.em.create(BookTag4, { name: 'adventure' }), orm.em.create(BookTag4, { name: 'horror' })] as const;
+    const tags = [
+      orm.em.create(BookTag4, { name: 'science-fiction' }),
+      orm.em.create(BookTag4, { name: 'adventure' }),
+      orm.em.create(BookTag4, { name: 'horror' }),
+    ] as const;
     taggedBook.tags.add(...tags);
     await expect(taggedBook.tags.loadCount()).resolves.toEqual(3);
     await orm.em.flush();
@@ -1415,7 +1540,7 @@ describe.each(['sqlite', 'libsql'] as const)('EntityManager (%s)', driver => {
     expect(taggedBook.tags.isInitialized()).toBe(false);
     await taggedBook.tags.init();
     await expect(taggedBook.tags.loadCount()).resolves.toEqual(tags.length);
-    const removing  = taggedBook.tags[0];
+    const removing = taggedBook.tags[0];
     taggedBook.tags.remove(removing);
     await expect(taggedBook.tags.loadCount()).resolves.toEqual(tags.length - 1);
     await expect(taggedBook.tags.loadCount(true)).resolves.toEqual(tags.length);
@@ -1451,7 +1576,11 @@ describe.each(['sqlite', 'libsql'] as const)('EntityManager (%s)', driver => {
   test('loadCount with m:n relationships', async () => {
     let bible = orm.em.create(Book4, { title: 'Bible' });
     bible.author = orm.em.create(Author4, { name: 'a', email: 'b' });
-    bible.tags.add(orm.em.create(BookTag4, { name: 't1' }), orm.em.create(BookTag4, { name: 't2' }), orm.em.create(BookTag4, { name: 't3' }));
+    bible.tags.add(
+      orm.em.create(BookTag4, { name: 't1' }),
+      orm.em.create(BookTag4, { name: 't2' }),
+      orm.em.create(BookTag4, { name: 't3' }),
+    );
     await orm.em.persist(bible).flush();
     orm.em.clear();
 
@@ -1469,11 +1598,7 @@ describe.each(['sqlite', 'libsql'] as const)('EntityManager (%s)', driver => {
   test('findAndCount with populate (GH issue #1736)', async () => {
     const publisher = orm.em.create(Publisher4, {
       name: 'pub',
-      tests: [
-        { name: 't1' },
-        { name: 't2' },
-        { name: 't3' },
-      ],
+      tests: [{ name: 't1' }, { name: 't2' }, { name: 't3' }],
     });
     await orm.em.fork().persist(publisher).flush();
 
@@ -1486,20 +1611,24 @@ describe.each(['sqlite', 'libsql'] as const)('EntityManager (%s)', driver => {
     const author = orm.em.create(Author4, { name: 'a1', email: 'e1' });
     orm.em.persist(author);
     orm.em.assign(author, {
-      books: [
-        { title: 't1' },
-        { title: 't2' },
-        { title: 't3' },
-      ],
+      books: [{ title: 't1' }, { title: 't2' }, { title: 't3' }],
     });
 
     const mock = mockLogger(orm, ['query']);
     await orm.em.flush();
     expect(mock.mock.calls[0][0]).toMatch('begin');
-    expect(mock.mock.calls[1][0]).toMatch('select `b0`.*, `b0`.`price` * 1.19 as `price_taxed` from `book4` as `b0` where `b0`.`title` is not null limit ?');
-    expect(mock.mock.calls[2][0]).toMatch('insert into `author4` (`created_at`, `updated_at`, `name`, `email`, `terms_accepted`) values');
-    expect(mock.mock.calls[3][0]).toMatch('select `b0`.*, `b0`.`price` * 1.19 as `price_taxed` from `book4` as `b0` where `b0`.`title` not in (?) limit ?');
-    expect(mock.mock.calls[4][0]).toMatch('insert into `book4` (`created_at`, `updated_at`, `title`, `author_id`) values');
+    expect(mock.mock.calls[1][0]).toMatch(
+      'select `b0`.*, `b0`.`price` * 1.19 as `price_taxed` from `book4` as `b0` where `b0`.`title` is not null limit ?',
+    );
+    expect(mock.mock.calls[2][0]).toMatch(
+      'insert into `author4` (`created_at`, `updated_at`, `name`, `email`, `terms_accepted`) values',
+    );
+    expect(mock.mock.calls[3][0]).toMatch(
+      'select `b0`.*, `b0`.`price` * 1.19 as `price_taxed` from `book4` as `b0` where `b0`.`title` not in (?) limit ?',
+    );
+    expect(mock.mock.calls[4][0]).toMatch(
+      'insert into `book4` (`created_at`, `updated_at`, `title`, `author_id`) values',
+    );
     expect(mock.mock.calls[5][0]).toMatch('commit');
   });
 
@@ -1513,10 +1642,19 @@ describe.each(['sqlite', 'libsql'] as const)('EntityManager (%s)', driver => {
     const res3 = await orm.em.nativeDelete(Author4, { name: 'new native name' });
     expect(res3).toBe(1);
 
-    const res4 = await orm.em.insert(Author4, { createdAt: new Date('1989-11-17'), updatedAt: new Date('2018-10-28'), name: 'native name 2', email: 'native2@email.com' });
+    const res4 = await orm.em.insert(Author4, {
+      createdAt: new Date('1989-11-17'),
+      updatedAt: new Date('2018-10-28'),
+      name: 'native name 2',
+      email: 'native2@email.com',
+    });
     expect(typeof res4).toBe('number');
 
-    const res5 = await orm.em.nativeUpdate(Author4, { name: 'native name 2' }, { name: 'new native name', updatedAt: new Date('2018-10-28') });
+    const res5 = await orm.em.nativeUpdate(
+      Author4,
+      { name: 'native name 2' },
+      { name: 'new native name', updatedAt: new Date('2018-10-28') },
+    );
     expect(res5).toBe(1);
   });
 
@@ -1526,7 +1664,11 @@ describe.each(['sqlite', 'libsql'] as const)('EntityManager (%s)', driver => {
     await orm.em.persist(author).flush();
     orm.em.clear();
 
-    const res = await orm.em.getConnection().execute<{ created_at: number; updated_at: number }[]>(`select created_at as created_at, updated_at as updated_at from author4 where id = ${author.id}`);
+    const res = await orm.em
+      .getConnection()
+      .execute<{ created_at: number; updated_at: number }[]>(
+        `select created_at as created_at, updated_at as updated_at from author4 where id = ${author.id}`,
+      );
     expect(res[0].created_at).toBe(+author.createdAt);
     expect(res[0].updated_at).toBe(+author.updatedAt);
     const a = await orm.em.findOneOrFail(Author4, author.id);
@@ -1541,7 +1683,9 @@ describe.each(['sqlite', 'libsql'] as const)('EntityManager (%s)', driver => {
   test('exceptions', async () => {
     const driver = orm.em.getDriver();
     await driver.nativeInsert(Author4, { name: 'author', email: 'email' });
-    await expect(driver.nativeInsert(Author4, { name: 'author', email: 'email' })).rejects.toThrow(UniqueConstraintViolationException);
+    await expect(driver.nativeInsert(Author4, { name: 'author', email: 'email' })).rejects.toThrow(
+      UniqueConstraintViolationException,
+    );
     await expect(driver.nativeInsert(Author4, {})).rejects.toThrow(NotNullConstraintViolationException);
     orm.getMetadata(Author4).tableName = 'test';
     await expect(driver.nativeInsert(Author4, { foo: 'bar' })).rejects.toThrow(TableNotFoundException);
@@ -1557,12 +1701,20 @@ describe.each(['sqlite', 'libsql'] as const)('EntityManager (%s)', driver => {
     await orm.em.find(Author4, { email: undefined, name: 'foo' });
     await orm.em.find(Author4, { email: undefined, name: 'foo', books: { title: undefined } });
     await orm.em.find(Author4, { email: undefined, name: 'foo', books: { title: undefined, createdAt: new Date() } });
-    await orm.em.find(Author4, { email: undefined, name: 'foo', books: { title: { $ne: undefined, $gte: undefined }, createdAt: new Date() } });
+    await orm.em.find(Author4, {
+      email: undefined,
+      name: 'foo',
+      books: { title: { $ne: undefined, $gte: undefined }, createdAt: new Date() },
+    });
 
     expect(mock.mock.calls[0][0]).toBe('[query] select `a0`.* from `author4` as `a0` where `a0`.`name` = ?');
     expect(mock.mock.calls[1][0]).toBe('[query] select `a0`.* from `author4` as `a0` where `a0`.`name` = ?');
-    expect(mock.mock.calls[2][0]).toBe('[query] select `a0`.* from `author4` as `a0` left join `book4` as `b1` on `a0`.`id` = `b1`.`author_id` where `a0`.`name` = ? and `b1`.`created_at` = ?');
-    expect(mock.mock.calls[3][0]).toBe('[query] select `a0`.* from `author4` as `a0` left join `book4` as `b1` on `a0`.`id` = `b1`.`author_id` where `a0`.`name` = ? and `b1`.`created_at` = ?');
+    expect(mock.mock.calls[2][0]).toBe(
+      '[query] select `a0`.* from `author4` as `a0` left join `book4` as `b1` on `a0`.`id` = `b1`.`author_id` where `a0`.`name` = ? and `b1`.`created_at` = ?',
+    );
+    expect(mock.mock.calls[3][0]).toBe(
+      '[query] select `a0`.* from `author4` as `a0` left join `book4` as `b1` on `a0`.`id` = `b1`.`author_id` where `a0`.`name` = ? and `b1`.`created_at` = ?',
+    );
   });
 
   test('hooks', async () => {
@@ -1631,5 +1783,4 @@ describe.each(['sqlite', 'libsql'] as const)('EntityManager (%s)', driver => {
     const res = await orm.em.find(Book5, { title: { $fulltext: 'life wall' } });
     expect(res).toHaveLength(3);
   });
-
 });

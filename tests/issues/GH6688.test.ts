@@ -1,5 +1,13 @@
 import { MikroORM, t, Opt, Utils, AbstractSqlDriver } from '@mikro-orm/sql';
-import { Embeddable, Embedded, Entity, Enum, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Embeddable,
+  Embedded,
+  Entity,
+  Enum,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { PLATFORMS } from '../bootstrap.js';
 
 enum EnumItems {
@@ -10,15 +18,12 @@ enum EnumItems {
 
 @Embeddable()
 class Account {
-
   @Property()
   type!: string;
-
 }
 
 @Entity()
 class A {
-
   @PrimaryKey()
   id!: number;
 
@@ -30,7 +35,6 @@ class A {
 
   @Enum({ items: () => EnumItems, array: true, default: [] })
   items: Opt<EnumItems[]> = [];
-
 }
 
 const options = {

@@ -3,7 +3,6 @@ import { initORMMsSql } from '../../bootstrap.js';
 import { Address2, Author2, Book2, FooBar2, FooBaz2 } from '../../entities-mssql/index.js';
 
 describe('SchemaGenerator', () => {
-
   test('create/drop database [mssql]', async () => {
     const dbName = `mikro_orm_test_${Date.now()}`;
     const orm = await initORMMsSql({ dbName }, false);
@@ -22,7 +21,6 @@ describe('SchemaGenerator', () => {
   });
 
   describe('read-only schema tests', () => {
-
     let orm: Awaited<ReturnType<typeof initORMMsSql>>;
 
     beforeAll(async () => {
@@ -62,7 +60,6 @@ describe('SchemaGenerator', () => {
       dropSchema.mockRestore();
       createSchema.mockRestore();
     });
-
   });
 
   test('update schema [mssql]', async () => {
@@ -184,8 +181,8 @@ describe('SchemaGenerator', () => {
     await orm.schema.execute(diff);
 
     // clean up old references manually (they would not be valid if we did a full meta sync)
-    meta.getByClassName('author2_following').props.forEach(prop => prop.kind = ReferenceKind.SCALAR);
-    meta.getByClassName('author_to_friend').props.forEach(prop => prop.kind = ReferenceKind.SCALAR);
+    meta.getByClassName('author2_following').props.forEach(prop => (prop.kind = ReferenceKind.SCALAR));
+    meta.getByClassName('author_to_friend').props.forEach(prop => (prop.kind = ReferenceKind.SCALAR));
     expect(() => meta.getByClassName('foo')).toThrow('Metadata for entity foo not found');
     meta.get(Book2).properties.author.kind = ReferenceKind.SCALAR;
     meta.get(Address2).properties.author.kind = ReferenceKind.SCALAR;
@@ -221,7 +218,9 @@ describe('SchemaGenerator', () => {
     favouriteAuthorProp.joinColumns = ['favourite_writer_id'];
     authorMeta.removeProperty('favouriteAuthor');
     authorMeta.addProperty(favouriteAuthorProp);
-    await expect(orm.schema.getUpdateSchemaSQL({ wrap: false })).resolves.toMatchSnapshot('mssql-update-schema-rename-column');
+    await expect(orm.schema.getUpdateSchemaSQL({ wrap: false })).resolves.toMatchSnapshot(
+      'mssql-update-schema-rename-column',
+    );
     await orm.schema.update();
 
     await orm.schema.dropDatabase();
@@ -256,7 +255,10 @@ describe('SchemaGenerator', () => {
     await orm.schema.execute(diff);
 
     newTableMeta.properties.enumTest.items = ['a', 'b'];
-    newTableMeta.properties.enumTest.columnTypes[0] = Type.getType(EnumType).getColumnType(newTableMeta.properties.enumTest, orm.em.getPlatform());
+    newTableMeta.properties.enumTest.columnTypes[0] = Type.getType(EnumType).getColumnType(
+      newTableMeta.properties.enumTest,
+      orm.em.getPlatform(),
+    );
     newTableMeta.properties.enumTest.enum = true;
     newTableMeta.properties.enumTest.type = 'object';
     newTableMeta.sync(false, orm.config);
@@ -266,7 +268,10 @@ describe('SchemaGenerator', () => {
 
     newTableMeta.properties.enumTest.items = ['a', 'b', 'c'];
     delete newTableMeta.properties.enumTest.columnTypes[0];
-    newTableMeta.properties.enumTest.columnTypes[0] = Type.getType(EnumType).getColumnType(newTableMeta.properties.enumTest, orm.em.getPlatform());
+    newTableMeta.properties.enumTest.columnTypes[0] = Type.getType(EnumType).getColumnType(
+      newTableMeta.properties.enumTest,
+      orm.em.getPlatform(),
+    );
     newTableMeta.sync(false, orm.config);
     diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff).toMatchSnapshot('mssql-update-schema-enums-3');
@@ -289,5 +294,4 @@ describe('SchemaGenerator', () => {
     await orm.schema.dropDatabase();
     await orm.close(true);
   });
-
 });

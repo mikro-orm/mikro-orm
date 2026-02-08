@@ -21,7 +21,6 @@ const SPATIALITE_VIEWS = [
 ];
 
 export class SqliteSchemaHelper extends SchemaHelper {
-
   override disableForeignKeysSQL(): string {
     return 'pragma foreign_keys = off;';
   }
@@ -43,8 +42,10 @@ export class SqliteSchemaHelper extends SchemaHelper {
   }
 
   override getListTablesSQL(): string {
-    return `select name as table_name from sqlite_master where type = 'table' and name != 'sqlite_sequence' and name != 'geometry_columns' and name != 'spatial_ref_sys' `
-      + `union all select name as table_name from sqlite_temp_master where type = 'table' order by name`;
+    return (
+      `select name as table_name from sqlite_master where type = 'table' and name != 'sqlite_sequence' and name != 'geometry_columns' and name != 'spatial_ref_sys' ` +
+      `union all select name as table_name from sqlite_temp_master where type = 'table' order by name`
+    );
   }
 
   override async getAllTables(connection: AbstractSqlConnection, schemas?: string[]): Promise<Table[]> {
@@ -64,7 +65,7 @@ export class SqliteSchemaHelper extends SchemaHelper {
       const prefix = this.getSchemaPrefix(dbName);
       const tables = await connection.execute<{ name: string }[]>(
         `select name from ${prefix}sqlite_master where type = 'table' ` +
-        `and name != 'sqlite_sequence' and name != 'geometry_columns' and name != 'spatial_ref_sys'`,
+          `and name != 'sqlite_sequence' and name != 'geometry_columns' and name != 'spatial_ref_sys'`,
       );
       for (const t of tables) {
         allTables.push({ table_name: t.name, schema_name: dbName });
@@ -85,7 +86,11 @@ export class SqliteSchemaHelper extends SchemaHelper {
     return `select name as view_name, sql as view_definition from sqlite_master where type = 'view' and ${this.getIgnoredViewsCondition()} order by name`;
   }
 
-  override async loadViews(schema: DatabaseSchema, connection: AbstractSqlConnection, schemaName?: string): Promise<void> {
+  override async loadViews(
+    schema: DatabaseSchema,
+    connection: AbstractSqlConnection,
+    schemaName?: string,
+  ): Promise<void> {
     const databases = await this.getDatabaseList(connection);
     const hasAttachedDbs = databases.length > 1; // More than just 'main'
 
@@ -121,7 +126,12 @@ export class SqliteSchemaHelper extends SchemaHelper {
     return `drop database if exists ${this.quote(name)}`;
   }
 
-  override async loadInformationSchema(schema: DatabaseSchema, connection: AbstractSqlConnection, tables: Table[], schemas?: string[]): Promise<void> {
+  override async loadInformationSchema(
+    schema: DatabaseSchema,
+    connection: AbstractSqlConnection,
+    tables: Table[],
+    schemas?: string[],
+  ): Promise<void> {
     for (const t of tables) {
       const table = schema.addTable(t.table_name, t.schema_name, t.table_comment);
       const cols = await this.getColumns(connection, table.name, table.schema);
@@ -187,7 +197,11 @@ export class SqliteSchemaHelper extends SchemaHelper {
     return ret;
   }
 
-  override createTableColumn(column: Column, table: DatabaseTable, _changedProperties?: Set<string>): string | undefined {
+  override createTableColumn(
+    column: Column,
+    table: DatabaseTable,
+    _changedProperties?: Set<string>,
+  ): string | undefined {
     const col = [this.quote(column.name)];
     const checks = table.getChecks();
     const check = checks.findIndex(check => check.columnName === column.name);
@@ -223,7 +237,9 @@ export class SqliteSchemaHelper extends SchemaHelper {
     return columns.map(column => {
       let sql = `alter table ${table.getQuotedName()} add column ${this.createTableColumn(column, table)!}`;
 
-      const foreignKey = Object.values(diff!.addedForeignKeys).find(fk => fk.columnNames.length === 1 && fk.columnNames[0] === column.name);
+      const foreignKey = Object.values(diff!.addedForeignKeys).find(
+        fk => fk.columnNames.length === 1 && fk.columnNames[0] === column.name,
+      );
 
       if (foreignKey && this.options.createForeignKeyConstraints) {
         delete diff!.addedForeignKeys[foreignKey.constraintName];
@@ -240,11 +256,15 @@ export class SqliteSchemaHelper extends SchemaHelper {
 
   override getDropColumnsSQL(tableName: string, columns: Column[], schemaName?: string): string {
     /* v8 ignore next */
-    const name = this.quote((schemaName && schemaName !== this.platform.getDefaultSchemaName() ? schemaName + '.' : '') + tableName);
+    const name = this.quote(
+      (schemaName && schemaName !== this.platform.getDefaultSchemaName() ? schemaName + '.' : '') + tableName,
+    );
 
-    return columns.map(column => {
-      return `alter table ${name} drop column ${this.quote(column.name)}`;
-    }).join(';\n');
+    return columns
+      .map(column => {
+        return `alter table ${name} drop column ${this.quote(column.name)}`;
+      })
+      .join(';\n');
   }
 
   override getCreateIndexSQL(tableName: string, index: IndexDef): string {
@@ -375,27 +395,39 @@ export class SqliteSchemaHelper extends SchemaHelper {
     });
   }
 
-  private async getEnumDefinitions(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<Dictionary<string[]>> {
+  private async getEnumDefinitions(
+    connection: AbstractSqlConnection,
+    tableName: string,
+    schemaName?: string,
+  ): Promise<Dictionary<string[]>> {
     const prefix = this.getSchemaPrefix(schemaName);
     const sql = `select sql from ${prefix}sqlite_master where type = ? and name = ?`;
     const tableDefinition = await connection.execute<{ sql: string }>(sql, ['table', tableName], 'get');
 
     const checkConstraints = [...(tableDefinition.sql.match(/[`["'][^`\]"']+[`\]"'] text check \(.*?\)/gi) ?? [])];
-    return checkConstraints.reduce((o, item) => {
-      // check constraints are defined as (note that last closing paren is missing):
-      // `type` text check (`type` in ('local', 'global')
-      const match = item.match(/[`["']([^`\]"']+)[`\]"'] text check \(.* \((.*)\)/i);
+    return checkConstraints.reduce(
+      (o, item) => {
+        // check constraints are defined as (note that last closing paren is missing):
+        // `type` text check (`type` in ('local', 'global')
+        const match = item.match(/[`["']([^`\]"']+)[`\]"'] text check \(.* \((.*)\)/i);
 
-      /* v8 ignore next */
-      if (match) {
-        o[match[1]] = match[2].split(',').map((item: string) => item.trim().match(/^\(?'(.*)'/)![1]);
-      }
+        /* v8 ignore next 3 */
+        if (match) {
+          o[match[1]] = match[2].split(',').map((item: string) => item.trim().match(/^\(?'(.*)'/)![1]);
+        }
 
-      return o;
-    }, {} as Dictionary<string[]>);
+        return o;
+      },
+      {} as Dictionary<string[]>,
+    );
   }
 
-  override async getPrimaryKeys(connection: AbstractSqlConnection, indexes: IndexDef[], tableName: string, schemaName?: string): Promise<string[]> {
+  override async getPrimaryKeys(
+    connection: AbstractSqlConnection,
+    indexes: IndexDef[],
+    tableName: string,
+    schemaName?: string,
+  ): Promise<string[]> {
     const prefix = this.getSchemaPrefix(schemaName);
     const sql = `pragma ${prefix}table_info(\`${tableName}\`)`;
     const cols = await connection.execute<{ pk: number; name: string }[]>(sql);
@@ -403,7 +435,11 @@ export class SqliteSchemaHelper extends SchemaHelper {
     return cols.filter(col => !!col.pk).map(col => col.name);
   }
 
-  private async getIndexes(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<IndexDef[]> {
+  private async getIndexes(
+    connection: AbstractSqlConnection,
+    tableName: string,
+    schemaName?: string,
+  ): Promise<IndexDef[]> {
     const prefix = this.getSchemaPrefix(schemaName);
     const sql = `pragma ${prefix}table_info(\`${tableName}\`)`;
     const cols = await connection.execute<{ pk: number; name: string }[]>(sql);
@@ -422,19 +458,25 @@ export class SqliteSchemaHelper extends SchemaHelper {
 
     for (const index of indexes.filter(index => !this.isImplicitIndex(index.name))) {
       const res = await connection.execute<{ name: string }[]>(`pragma ${prefix}index_info(\`${index.name}\`)`);
-      ret.push(...res.map(row => ({
-        columnNames: [row.name],
-        keyName: index.name,
-        unique: !!index.unique,
-        constraint: !!index.unique,
-        primary: false,
-      })));
+      ret.push(
+        ...res.map(row => ({
+          columnNames: [row.name],
+          keyName: index.name,
+          unique: !!index.unique,
+          constraint: !!index.unique,
+          primary: false,
+        })),
+      );
     }
 
     return this.mapIndexes(ret);
   }
 
-  private async getChecks(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<CheckDef[]> {
+  private async getChecks(
+    connection: AbstractSqlConnection,
+    tableName: string,
+    schemaName?: string,
+  ): Promise<CheckDef[]> {
     const { columns, constraints } = await this.getColumnDefinitions(connection, tableName, schemaName);
     const checks: CheckDef[] = [];
 
@@ -467,7 +509,11 @@ export class SqliteSchemaHelper extends SchemaHelper {
     return checks;
   }
 
-  private async getColumnDefinitions(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<{ columns: Dictionary<{ name: string; definition: string }>; constraints: string[] }> {
+  private async getColumnDefinitions(
+    connection: AbstractSqlConnection,
+    tableName: string,
+    schemaName?: string,
+  ): Promise<{ columns: Dictionary<{ name: string; definition: string }>; constraints: string[] }> {
     const prefix = this.getSchemaPrefix(schemaName);
     const columns = await connection.execute<any[]>(`pragma ${prefix}table_xinfo('${tableName}')`);
     const sql = `select sql from ${prefix}sqlite_master where type = ? and name = ?`;
@@ -476,7 +522,11 @@ export class SqliteSchemaHelper extends SchemaHelper {
     return this.parseTableDefinition(tableDefinition.sql, columns);
   }
 
-  private async getForeignKeys(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<Dictionary> {
+  private async getForeignKeys(
+    connection: AbstractSqlConnection,
+    tableName: string,
+    schemaName?: string,
+  ): Promise<Dictionary> {
     const { constraints } = await this.getColumnDefinitions(connection, tableName, schemaName);
     const prefix = this.getSchemaPrefix(schemaName);
     const fks = await connection.execute<any[]>(`pragma ${prefix}foreign_key_list(\`${tableName}\`)`);
@@ -542,10 +592,10 @@ export class SqliteSchemaHelper extends SchemaHelper {
     const [schemaName, tableName] = this.splitTableName(diff.name);
 
     if (
-      Utils.hasObjectKeys(diff.removedChecks)
-      || Utils.hasObjectKeys(diff.changedChecks)
-      || Utils.hasObjectKeys(diff.changedForeignKeys)
-      || Utils.hasObjectKeys(diff.changedColumns)
+      Utils.hasObjectKeys(diff.removedChecks) ||
+      Utils.hasObjectKeys(diff.changedChecks) ||
+      Utils.hasObjectKeys(diff.changedForeignKeys) ||
+      Utils.hasObjectKeys(diff.changedColumns)
     ) {
       return this.getAlterTempTableSQL(diff);
     }
@@ -596,7 +646,7 @@ export class SqliteSchemaHelper extends SchemaHelper {
   }
 
   private getAlterTempTableSQL(changedTable: TableDifference): string[] {
-    const tempName = `${(changedTable.toTable.name)}__temp_alter`;
+    const tempName = `${changedTable.toTable.name}__temp_alter`;
     const quotedName = this.quote(changedTable.toTable.name);
     const quotedTempName = this.quote(tempName);
     const [first, ...rest] = this.createTable(changedTable.toTable);
@@ -626,5 +676,4 @@ export class SqliteSchemaHelper extends SchemaHelper {
 
     return sql;
   }
-
 }

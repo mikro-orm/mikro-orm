@@ -1,17 +1,21 @@
 import { Collection, MikroORM, Type, Platform, EntityProperty, ValidationError } from '@mikro-orm/sqlite';
-import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { v4 } from 'uuid';
 
 class IdentityType extends String {
-
   constructor(id = v4()) {
     super(id);
   }
-
 }
 
 class MikroormIdentityType<SubType> extends Type<IdentityType, string> {
-
   private readonly className;
 
   constructor(className: new (value: string) => SubType) {
@@ -47,12 +51,10 @@ class MikroormIdentityType<SubType> extends Type<IdentityType, string> {
   getColumnType(prop: EntityProperty, platform: Platform) {
     return platform.getUuidTypeDeclarationSQL({});
   }
-
 }
 
 @Entity()
 class User {
-
   @PrimaryKey({
     type: new MikroormIdentityType<IdentityType>(IdentityType),
   })
@@ -71,12 +73,10 @@ class User {
     this.id = id;
     this.name = name;
   }
-
 }
 
 @Entity()
 class Book {
-
   @PrimaryKey({
     type: new MikroormIdentityType(IdentityType),
   })
@@ -102,12 +102,10 @@ class Book {
     this.name = name;
     this.user = user;
   }
-
 }
 
 @Entity()
 class BookNote {
-
   @PrimaryKey({
     type: new MikroormIdentityType(IdentityType),
   })
@@ -127,7 +125,6 @@ class BookNote {
     this.name = name;
     this.book = book;
   }
-
 }
 
 let orm: MikroORM;

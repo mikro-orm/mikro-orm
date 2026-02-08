@@ -3,7 +3,6 @@ import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-or
 
 @Entity()
 class User {
-
   @PrimaryKey()
   id!: number;
 
@@ -18,12 +17,10 @@ class User {
 
   @Property({ columnType: `varchar(100) generated always as (concat(first_name, ' ', last_name)) virtual` })
   fullName2!: string & Opt;
-
 }
 
 @Entity({ tableName: 'user' })
 class User1 {
-
   @PrimaryKey()
   id!: number;
 
@@ -38,12 +35,10 @@ class User1 {
 
   @Property({ columnType: `varchar(100) generated always as (concat(first_name, ' ', last_name)) virtual` })
   fullName2!: string & Opt;
-
 }
 
 @Entity()
 class Foo {
-
   @PrimaryKey()
   id!: number;
 
@@ -69,12 +64,10 @@ class Foo {
     nullable: true,
   })
   generated2?: string;
-
 }
 
 @Entity({ tableName: 'foo' })
 class Foo1 {
-
   @PrimaryKey()
   id!: number;
 
@@ -100,7 +93,6 @@ class Foo1 {
     nullable: true,
   })
   generated2?: string;
-
 }
 
 let orm: MikroORM;
@@ -154,7 +146,6 @@ test('validation', async () => {
     fullName2: 'First Changed',
   });
 });
-
 
 test('schema', async () => {
   const createSQL = await orm.schema.getCreateSchemaSQL();

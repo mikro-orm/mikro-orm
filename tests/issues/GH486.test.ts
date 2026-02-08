@@ -10,7 +10,6 @@ import {
 
 @Entity()
 class A {
-
   @PrimaryKey()
   id!: number;
 
@@ -19,22 +18,18 @@ class A {
 
   @Property()
   prop: string = 'foo';
-
 }
 
 @Entity()
 class B {
-
   @PrimaryKey()
   id!: number;
 
   @ManyToOne(() => A)
   a!: A;
-
 }
 
 describe('GH issue 486', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {

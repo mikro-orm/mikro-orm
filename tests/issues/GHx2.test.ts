@@ -1,10 +1,16 @@
 import { Collection, MikroORM } from '@mikro-orm/sqlite';
 
-import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Entity()
 export class Author {
-
   @PrimaryKey()
   id!: number;
 
@@ -17,12 +23,10 @@ export class Author {
   constructor(name: string) {
     this.name = name;
   }
-
 }
 
 @Entity()
 export class Book {
-
   @PrimaryKey()
   id!: number;
 
@@ -36,7 +40,6 @@ export class Book {
     this.title = title;
     this.author = author;
   }
-
 }
 
 test(`default value for relation property`, async () => {

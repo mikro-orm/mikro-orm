@@ -2,7 +2,6 @@ import { MikroORM, Type } from '@mikro-orm/mysql';
 
 import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 class Point {
-
   latitude!: number;
   longitude!: number;
 
@@ -10,11 +9,9 @@ class Point {
     this.latitude = latitude;
     this.longitude = longitude;
   }
-
 }
 
 class PointType extends Type<Point | undefined, string | undefined> {
-
   convertToDatabaseValue(value: Point | undefined): string | undefined {
     if (!value) {
       return value;
@@ -44,12 +41,10 @@ class PointType extends Type<Point | undefined, string | undefined> {
   getColumnType(): string {
     return 'geometry';
   }
-
 }
 
 @Entity()
 class Person {
-
   @PrimaryKey()
   id!: number;
 
@@ -58,7 +53,6 @@ class Person {
 
   @Property({ type: PointType })
   homeAddress!: Point;
-
 }
 
 let orm: MikroORM;

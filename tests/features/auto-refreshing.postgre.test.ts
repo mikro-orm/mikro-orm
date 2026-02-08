@@ -6,10 +6,9 @@ import { initORMPostgreSql, mockLogger } from '../bootstrap.js';
 import { Author2, Book2, FooBar2, FooBaz2 } from '../entities-sql/index.js';
 
 describe('automatic refreshing of already loaded entities', () => {
-
   let orm: MikroORM<PostgreSqlDriver>;
 
-  beforeAll(async () => orm = await initORMPostgreSql());
+  beforeAll(async () => (orm = await initORMPostgreSql()));
   beforeEach(async () => orm.schema.clear());
   afterAll(async () => {
     await orm.schema.dropDatabase();
@@ -57,7 +56,9 @@ describe('automatic refreshing of already loaded entities', () => {
     const mock = mockLogger(orm);
     await orm.em.flush();
     expect(mock.mock.calls[0][0]).toMatch('begin');
-    expect(mock.mock.calls[1][0]).toMatch(/update "author2" set "email" = 'lol', "updated_at" = '\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z' where "id" = 2/);
+    expect(mock.mock.calls[1][0]).toMatch(
+      /update "author2" set "email" = 'lol', "updated_at" = '\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z' where "id" = 2/,
+    );
     expect(mock.mock.calls[2][0]).toMatch('commit');
   });
 
@@ -71,28 +72,38 @@ describe('automatic refreshing of already loaded entities', () => {
     expect(r1[0].name).toBeUndefined();
     expect(r1[0].termsAccepted).toBeUndefined();
     // with auto-flush mode, this would trigger flushing as we have dirty author and we query for authors
-    const r2 = await orm.em.find(Author2, god, { populate: ['books', 'books.perex'], strategy: LoadStrategy.JOINED, flushMode: FlushMode.COMMIT });
+    const r2 = await orm.em.find(Author2, god, {
+      populate: ['books', 'books.perex'],
+      strategy: LoadStrategy.JOINED,
+      flushMode: FlushMode.COMMIT,
+    });
     expect(r2).toHaveLength(1);
     expect(r2[0].id).toBe(god.id);
     expect(r2[0].name).toBe(god.name);
     expect(r2[0].termsAccepted).toBe(false);
     expect(r2[0].email).toBe('lol@lol.lol');
     expect(r2[0].books[0].title).toBe('Bible 1');
-    expect(r2[0].books[0].price).toBe(123.00);
+    expect(r2[0].books[0].price).toBe(123.0);
     expect(r2[0].books[0].perex?.$).toBe('b1 perex');
     expect(r1[0]).toBe(r2[0]);
 
     const mock = mockLogger(orm);
     await orm.em.flush();
     expect(mock.mock.calls[0][0]).toMatch('begin');
-    expect(mock.mock.calls[1][0]).toMatch(/update "author2" set "email" = 'lol@lol\.lol', "updated_at" = '\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z' where "id" = 2/);
+    expect(mock.mock.calls[1][0]).toMatch(
+      /update "author2" set "email" = 'lol@lol\.lol', "updated_at" = '\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z' where "id" = 2/,
+    );
     expect(mock.mock.calls[2][0]).toMatch('commit');
   });
 
   test('em.find() with relations and joined strategy 2', async () => {
     const { god } = await createEntities();
 
-    const r1 = await orm.em.find(Author2, god, { fields: ['id', 'books.title', 'books.author'], populate: ['books'], strategy: LoadStrategy.JOINED });
+    const r1 = await orm.em.find(Author2, god, {
+      fields: ['id', 'books.title', 'books.author'],
+      populate: ['books'],
+      strategy: LoadStrategy.JOINED,
+    });
     // @ts-expect-error
     r1[0].email = 'lol@lol.lol';
     r1[0].books[0].title = 'lol';
@@ -110,21 +121,27 @@ describe('automatic refreshing of already loaded entities', () => {
     // @ts-expect-error
     expect(r1[0].books[0].perex.$).toBeUndefined();
     // with auto-flush mode, this would trigger flushing as we have dirty author and we query for authors
-    const r2 = await orm.em.find(Author2, god, { populate: ['books', 'books.perex'], strategy: LoadStrategy.JOINED, flushMode: FlushMode.COMMIT });
+    const r2 = await orm.em.find(Author2, god, {
+      populate: ['books', 'books.perex'],
+      strategy: LoadStrategy.JOINED,
+      flushMode: FlushMode.COMMIT,
+    });
     expect(r2).toHaveLength(1);
     expect(r2[0].id).toBe(god.id);
     expect(r2[0].name).toBe(god.name);
     expect(r2[0].termsAccepted).toBe(false);
     expect(r2[0].email).toBe('lol@lol.lol');
     expect(r2[0].books[0].title).toBe('lol');
-    expect(r2[0].books[0].price).toBe(123.00);
+    expect(r2[0].books[0].price).toBe(123.0);
     expect(r2[0].books[0].perex?.$).toBe('b1 perex');
     expect(r1[0]).toBe(r2[0]);
 
     const mock = mockLogger(orm);
     await orm.em.flush();
     expect(mock.mock.calls[0][0]).toMatch('begin');
-    expect(mock.mock.calls[1][0]).toMatch(/update "author2" set "email" = 'lol@lol\.lol', "updated_at" = '\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z' where "id" = 2/);
+    expect(mock.mock.calls[1][0]).toMatch(
+      /update "author2" set "email" = 'lol@lol\.lol', "updated_at" = '\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z' where "id" = 2/,
+    );
     expect(mock.mock.calls[2][0]).toMatch(/update "book2" set "title" = 'lol' where "uuid_pk" = '[\w-]{36}'/);
     expect(mock.mock.calls[3][0]).toMatch('commit');
   });
@@ -132,7 +149,11 @@ describe('automatic refreshing of already loaded entities', () => {
   test('em.find() with relations and joined strategy 3', async () => {
     const { god } = await createEntities();
 
-    const r1 = await orm.em.find(Author2, god, { fields: ['id', 'favouriteAuthor.name'], populate: ['favouriteAuthor'], strategy: LoadStrategy.JOINED });
+    const r1 = await orm.em.find(Author2, god, {
+      fields: ['id', 'favouriteAuthor.name'],
+      populate: ['favouriteAuthor'],
+      strategy: LoadStrategy.JOINED,
+    });
     // @ts-expect-error
     r1[0].email = 'lol@lol.lol';
     expect(r1).toHaveLength(1);
@@ -147,7 +168,11 @@ describe('automatic refreshing of already loaded entities', () => {
     expect(r1[0].favouriteAuthor!.age).toBeUndefined();
     r1[0].favouriteAuthor!.name = 'lol';
     // with auto-flush mode, this would trigger flushing as we have dirty author and we query for authors
-    const r2 = await orm.em.find(Author2, god, { populate: ['favouriteAuthor'], strategy: LoadStrategy.JOINED, flushMode: FlushMode.COMMIT });
+    const r2 = await orm.em.find(Author2, god, {
+      populate: ['favouriteAuthor'],
+      strategy: LoadStrategy.JOINED,
+      flushMode: FlushMode.COMMIT,
+    });
     expect(r2).toHaveLength(1);
     expect(r2[0].id).toBe(god.id);
     expect(r2[0].name).toBe(god.name);
@@ -160,7 +185,9 @@ describe('automatic refreshing of already loaded entities', () => {
     const mock = mockLogger(orm);
     await orm.em.flush();
     expect(mock.mock.calls[0][0]).toMatch('begin');
-    expect(mock.mock.calls[1][0]).toMatch(/update "author2" set "email" = case when \("id" = 2\) then 'lol@lol\.lol' else "email" end, "updated_at" = case when \("id" = 2\) then '\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z' when \("id" = 1\) then '\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z' else "updated_at" end, "name" = case when \("id" = 1\) then 'lol' else "name" end where "id" in \(2, 1\)/);
+    expect(mock.mock.calls[1][0]).toMatch(
+      /update "author2" set "email" = case when \("id" = 2\) then 'lol@lol\.lol' else "email" end, "updated_at" = case when \("id" = 2\) then '\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z' when \("id" = 1\) then '\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z' else "updated_at" end, "name" = case when \("id" = 1\) then 'lol' else "name" end where "id" in \(2, 1\)/,
+    );
     expect(mock.mock.calls[2][0]).toMatch('commit');
   });
 
@@ -214,14 +241,20 @@ describe('automatic refreshing of already loaded entities', () => {
     expect(b11).toBe(a1.books[0]);
 
     // reloading with additional lazy scalar properties will work without `refresh: true`
-    const b12 = await orm.em.findOneOrFail(Book2, god.books[0], { populate: ['perex'], filters: false, flushMode: FlushMode.COMMIT });
+    const b12 = await orm.em.findOneOrFail(Book2, god.books[0], {
+      populate: ['perex'],
+      filters: false,
+      flushMode: FlushMode.COMMIT,
+    });
     expect(mock).toHaveBeenCalledTimes(5);
     expect(b11).toBe(b12);
 
     mock.mockReset();
     await orm.em.flush();
     expect(mock.mock.calls[0][0]).toMatch('begin');
-    expect(mock.mock.calls[1][0]).toMatch(/update "author2" set "email" = 'lol', "age" = 1000, "updated_at" = '\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z' where "id" = 2/);
+    expect(mock.mock.calls[1][0]).toMatch(
+      /update "author2" set "email" = 'lol', "age" = 1000, "updated_at" = '\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z' where "id" = 2/,
+    );
     expect(mock.mock.calls[2][0]).toMatch('commit');
   });
 
@@ -229,7 +262,11 @@ describe('automatic refreshing of already loaded entities', () => {
     const { god } = await createEntities();
 
     const mock = mockLogger(orm);
-    const a1 = await orm.em.findOneOrFail(Author2, god, { fields: ['id', 'email'], populate: ['books'], strategy: LoadStrategy.JOINED });
+    const a1 = await orm.em.findOneOrFail(Author2, god, {
+      fields: ['id', 'email'],
+      populate: ['books'],
+      strategy: LoadStrategy.JOINED,
+    });
     expect(mock).toHaveBeenCalledTimes(1);
     expect(a1.id).toBe(god.id);
     expect(a1.email).toBe(god.email);
@@ -261,7 +298,11 @@ describe('automatic refreshing of already loaded entities', () => {
 
     // reloading without partial loading will work without `refresh: true`
     // with auto-flush mode, this would trigger flushing as we have dirty author and we query for authors
-    const a2 = await orm.em.findOneOrFail(Author2, god, { populate: ['books'], strategy: LoadStrategy.JOINED, flushMode: FlushMode.COMMIT });
+    const a2 = await orm.em.findOneOrFail(Author2, god, {
+      populate: ['books'],
+      strategy: LoadStrategy.JOINED,
+      flushMode: FlushMode.COMMIT,
+    });
     expect(mock).toHaveBeenCalledTimes(3);
     expect(a2.id).toBe(god.id);
     expect(a2.name).toBe(god.name);
@@ -277,14 +318,20 @@ describe('automatic refreshing of already loaded entities', () => {
 
     // reloading with additional lazy scalar properties will work without `refresh: true`
     // with auto-flush mode, this would trigger flushing as we have dirty author and we query for authors
-    const b12 = await orm.em.findOneOrFail(Book2, god.books[0], { populate: ['perex'], filters: false, flushMode: FlushMode.COMMIT });
+    const b12 = await orm.em.findOneOrFail(Book2, god.books[0], {
+      populate: ['perex'],
+      filters: false,
+      flushMode: FlushMode.COMMIT,
+    });
     expect(mock).toHaveBeenCalledTimes(4);
     expect(b11).toBe(b12);
 
     mock.mockReset();
     await orm.em.flush();
     expect(mock.mock.calls[0][0]).toMatch('begin');
-    expect(mock.mock.calls[1][0]).toMatch(/update "author2" set "email" = 'lol', "age" = 1000, "updated_at" = '\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z' where "id" = 2/);
+    expect(mock.mock.calls[1][0]).toMatch(
+      /update "author2" set "email" = 'lol', "age" = 1000, "updated_at" = '\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z' where "id" = 2/,
+    );
     expect(mock.mock.calls[2][0]).toMatch('commit');
   });
 
@@ -305,5 +352,4 @@ describe('automatic refreshing of already loaded entities', () => {
     await orm.em.flush();
     expect(mock.mock.calls.length).toBe(0);
   });
-
 });

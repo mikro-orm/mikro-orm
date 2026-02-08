@@ -3,7 +3,6 @@ import { Entity, ManyToMany, PrimaryKey, Property, ReflectMetadataProvider } fro
 
 @Entity()
 class Author {
-
   @PrimaryKey()
   id!: number;
 
@@ -12,12 +11,10 @@ class Author {
 
   @ManyToMany(() => Book, book => book.authors)
   books = new Collection<Book>(this);
-
 }
 
 @Entity()
 class Book {
-
   @PrimaryKey()
   id!: number;
 
@@ -30,7 +27,6 @@ class Book {
     pivotTable: 'book2author',
   })
   authors = new Collection<Author>(this);
-
 }
 
 let orm: MikroORM;

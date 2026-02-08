@@ -1,4 +1,4 @@
 export declare enum PublisherType {
-    LOCAL = "local",
-    GLOBAL = "global"
+  LOCAL = 'local',
+  GLOBAL = 'global',
 }

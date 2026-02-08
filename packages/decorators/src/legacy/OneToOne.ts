@@ -9,7 +9,7 @@ import {
 import { processDecoratorParameters, validateSingleDecorator, getMetadataFromDecorator } from '../utils.js';
 
 export function OneToOne<Target, Owner>(
-  entity: ((e: Owner) => EntityName<Target> | EntityName[]),
+  entity: (e: Owner) => EntityName<Target> | EntityName[],
   mappedByOrOptions?: (string & keyof Target) | ((e: Target) => any) | Partial<OneToOneOptions<Owner, Target>>,
   options?: Partial<OneToOneOptions<Owner, Target>>,
 ): (target: Owner, propertyName: string) => void;
@@ -28,6 +28,10 @@ export function OneToOne<Target, Owner>(
     const meta = getMetadataFromDecorator((target as any).constructor);
     validateSingleDecorator(meta, propertyName, ReferenceKind.ONE_TO_ONE);
     const property = { name: propertyName, kind: ReferenceKind.ONE_TO_ONE } as EntityProperty<Target>;
-    meta.properties[propertyName as EntityKey<Target>] = Object.assign(meta.properties[propertyName as EntityKey<Target>] ?? {}, property, options);
+    meta.properties[propertyName as EntityKey<Target>] = Object.assign(
+      meta.properties[propertyName as EntityKey<Target>] ?? {},
+      property,
+      options,
+    );
   };
 }

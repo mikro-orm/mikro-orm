@@ -1,7 +1,6 @@
 import { ReferenceKind, UnderscoreNamingStrategy } from '@mikro-orm/core';
 
 describe('UnderscoreNamingStrategy', () => {
-
   const ns = new UnderscoreNamingStrategy();
 
   test('should convert camel case to snake case', async () => {
@@ -37,5 +36,4 @@ describe('UnderscoreNamingStrategy', () => {
     // when pivot table doesn't have owner prefix, returns full name
     expect(ns.manyToManyPropertyName('Author', 'Book', 'books_authors', 'author')).toBe('booksAuthors');
   });
-
 });

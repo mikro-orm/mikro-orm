@@ -2,7 +2,6 @@ import { MikroORM, EntitySchema, ReferenceKind } from '@mikro-orm/sqlite';
 import { mockLogger } from '../../helpers.js';
 
 class TestEntity1 {
-
   id: string;
   customProp: CustomProp;
 
@@ -10,11 +9,9 @@ class TestEntity1 {
     this.id = id;
     this.customProp = customProp;
   }
-
 }
 
 class TestEntity2 {
-
   id: string;
   customProp: CustomProp;
 
@@ -22,17 +19,14 @@ class TestEntity2 {
     this.id = id;
     this.customProp = customProp;
   }
-
 }
 
 class CustomProp {
-
   someValue: string;
 
   private constructor(someValue: string) {
     this.someValue = someValue;
   }
-
 }
 
 const TestEntity1Schema = new EntitySchema<TestEntity1>({

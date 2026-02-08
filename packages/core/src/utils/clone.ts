@@ -10,10 +10,7 @@
  * @param obj - The object to get the property descriptor from.
  * @param prop - The property to get the descriptor for.
  */
-function getPropertyDescriptor<T>(
-  obj: T,
-  prop: keyof T,
-): PropertyDescriptor | null {
+function getPropertyDescriptor<T>(obj: T, prop: keyof T): PropertyDescriptor | null {
   const descriptor = Object.getOwnPropertyDescriptor(obj, prop);
 
   if (descriptor) {
@@ -27,7 +24,6 @@ function getPropertyDescriptor<T>(
 
   return null;
 }
-
 
 export function clone<T>(parent: T, respectCustomCloneMethod = true): T {
   const allParents: unknown[] = [];
@@ -149,4 +145,3 @@ export function clone<T>(parent: T, respectCustomCloneMethod = true): T {
 
   return _clone(parent);
 }
-

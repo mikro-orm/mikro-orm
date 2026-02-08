@@ -32,7 +32,6 @@ export interface Edge {
  * @internal
  */
 export class CommitOrderCalculator {
-
   /** Matrix of nodes, keys are provided hashes and values are the node definition objects. */
   private nodes = new Map<Hash, Node>();
 
@@ -61,7 +60,8 @@ export class CommitOrderCalculator {
   }
 
   discoverProperty(prop: EntityProperty, entityName: Hash): void {
-    const toOneOwner = (prop.kind === ReferenceKind.ONE_TO_ONE && prop.owner) || prop.kind === ReferenceKind.MANY_TO_ONE;
+    const toOneOwner =
+      (prop.kind === ReferenceKind.ONE_TO_ONE && prop.owner) || prop.kind === ReferenceKind.MANY_TO_ONE;
     const toManyOwner = prop.kind === ReferenceKind.MANY_TO_MANY && prop.owner && !prop.pivotEntity;
 
     if (!toOneOwner && !toManyOwner) {
@@ -111,13 +111,17 @@ export class CommitOrderCalculator {
       const target = this.nodes.get(edge.to)!;
 
       switch (target.state) {
-        case NodeState.VISITED: break; // Do nothing, since node was already visited
-        case NodeState.IN_PROGRESS: this.visitOpenNode(node, target, edge); break;
-        case NodeState.NOT_VISITED: this.visit(target);
+        case NodeState.VISITED:
+          break; // Do nothing, since node was already visited
+        case NodeState.IN_PROGRESS:
+          this.visitOpenNode(node, target, edge);
+          break;
+        case NodeState.NOT_VISITED:
+          this.visit(target);
       }
     }
 
-    if (node.state as unknown !== NodeState.VISITED) {
+    if ((node.state as unknown) !== NodeState.VISITED) {
       node.state = NodeState.VISITED;
       this.sortedNodeList.push(node.hash);
     }
@@ -142,5 +146,4 @@ export class CommitOrderCalculator {
     target.state = NodeState.VISITED;
     this.sortedNodeList.push(target.hash);
   }
-
 }

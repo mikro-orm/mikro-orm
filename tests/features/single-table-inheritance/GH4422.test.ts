@@ -13,7 +13,6 @@ import { mockLogger } from '../../bootstrap.js';
 
 @Entity()
 class Company {
-
   @PrimaryKey()
   id!: number;
 
@@ -33,7 +32,6 @@ class Company {
   // this one is owner
   @ManyToMany(() => Tag2, tag => tag.companies, { owner: true })
   tags2 = new Collection<Tag2>(this);
-
 }
 
 @Entity({
@@ -41,7 +39,6 @@ class Company {
   abstract: true,
 })
 class Tag {
-
   @PrimaryKey()
   id!: number;
 
@@ -50,25 +47,20 @@ class Tag {
 
   @Enum()
   type!: 'tag1' | 'tag2';
-
 }
 
 @Entity({ discriminatorValue: 'tag1' })
 class Tag1 extends Tag {
-
   @ManyToMany(() => Company, company => company.tags1, {
     owner: true,
   })
   companies = new Collection<Tag>(this);
-
 }
 
 @Entity({ discriminatorValue: 'tag2' })
 class Tag2 extends Tag {
-
   @ManyToMany(() => Company, company => company.tags2)
   companies = new Collection<Tag>(this);
-
 }
 
 @Entity({
@@ -76,7 +68,6 @@ class Tag2 extends Tag {
   abstract: true,
 })
 class User {
-
   @PrimaryKey({ type: Number })
   id!: number;
 
@@ -88,23 +79,18 @@ class User {
 
   @Enum()
   type!: 'employee' | 'manager';
-
 }
 
 @Entity({ discriminatorValue: 'employee' })
 class Employee extends User {
-
   @ManyToOne(() => Manager, { ref: true, nullable: true })
   manager?: Ref<Manager>;
-
 }
 
 @Entity({ discriminatorValue: 'manager' })
 class Manager extends User {
-
   @OneToMany(() => Employee, employee => employee.manager)
   employees = new Collection<Employee>(this);
-
 }
 
 describe('GH issue 4422', () => {

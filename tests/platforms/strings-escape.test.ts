@@ -6,7 +6,6 @@ import { PLATFORMS } from '../bootstrap.js';
 
 @Entity()
 class Test {
-
   @PrimaryKey()
   id!: number;
 
@@ -15,7 +14,6 @@ class Test {
 
   @Property({ columnType: 'varchar(255)' })
   nonUnicode?: string;
-
 }
 
 const options = {
@@ -76,17 +74,25 @@ describe.each(Utils.keys(options))('String escape [%s]', type => {
     switch (type) {
       case 'sqlite':
       case 'libsql':
-        expect(mock.mock.calls[1][0]).toMatch("insert into `test` (`unicode`, `non_unicode`) values ('\\\\path\\to\\directory', '\\\\path\\to\\directory'), ('It''s sunny today', 'It''s raining today'), ('It''s ''quoted''', 'It''s ''quoted''') returning `id`");
-       break;
+        expect(mock.mock.calls[1][0]).toMatch(
+          "insert into `test` (`unicode`, `non_unicode`) values ('\\\\path\\to\\directory', '\\\\path\\to\\directory'), ('It''s sunny today', 'It''s raining today'), ('It''s ''quoted''', 'It''s ''quoted''') returning `id`",
+        );
+        break;
       case 'mysql':
       case 'mariadb':
-        expect(mock.mock.calls[1][0]).toMatch("insert into `test` (`unicode`, `non_unicode`) values ('\\\\\\\\path\\\\to\\\\directory', '\\\\\\\\path\\\\to\\\\directory'), ('It\\'s sunny today', 'It\\'s raining today'), ('It\\'s \\'quoted\\'', 'It\\'s \\'quoted\\'')");
+        expect(mock.mock.calls[1][0]).toMatch(
+          "insert into `test` (`unicode`, `non_unicode`) values ('\\\\\\\\path\\\\to\\\\directory', '\\\\\\\\path\\\\to\\\\directory'), ('It\\'s sunny today', 'It\\'s raining today'), ('It\\'s \\'quoted\\'', 'It\\'s \\'quoted\\'')",
+        );
         break;
       case 'mssql':
-        expect(mock.mock.calls[1][0]).toMatch("insert into [test] ([unicode], [non_unicode]) output inserted.[id] values (N'\\\\path\\to\\directory', '\\\\path\\to\\directory'), (N'It''s sunny today', 'It''s raining today'), (N'It''s ''quoted''', 'It''s ''quoted''')");
+        expect(mock.mock.calls[1][0]).toMatch(
+          "insert into [test] ([unicode], [non_unicode]) output inserted.[id] values (N'\\\\path\\to\\directory', '\\\\path\\to\\directory'), (N'It''s sunny today', 'It''s raining today'), (N'It''s ''quoted''', 'It''s ''quoted''')",
+        );
         break;
       case 'postgresql':
-        expect(mock.mock.calls[1][0]).toMatch(`insert into "test" ("unicode", "non_unicode") values ( E'\\\\\\\\path\\\\to\\\\directory', E'\\\\\\\\path\\\\to\\\\directory'), ('It''s sunny today', 'It''s raining today'), ('It''s ''quoted''', 'It''s ''quoted''') returning "id"`);
+        expect(mock.mock.calls[1][0]).toMatch(
+          `insert into "test" ("unicode", "non_unicode") values ( E'\\\\\\\\path\\\\to\\\\directory', E'\\\\\\\\path\\\\to\\\\directory'), ('It''s sunny today', 'It''s raining today'), ('It''s ''quoted''', 'It''s ''quoted''') returning "id"`,
+        );
         break;
     }
 

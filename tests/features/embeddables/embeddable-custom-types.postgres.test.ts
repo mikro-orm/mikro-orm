@@ -1,11 +1,17 @@
 import type { EntityProperty, Platform } from '@mikro-orm/core';
-import { Embeddable, Embedded, Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Embeddable,
+  Embedded,
+  Entity,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { DoubleType, MikroORM, Type } from '@mikro-orm/core';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { mockLogger } from '../../helpers.js';
 
 export class AlwaysConvertsToAbc extends Type<string, string> {
-
   override convertToDatabaseValue(value: string, platform: Platform): string {
     return 'abc';
   }
@@ -17,24 +23,20 @@ export class AlwaysConvertsToAbc extends Type<string, string> {
   override getColumnType(): string {
     return 'varchar(255)';
   }
-
 }
 
 @Embeddable()
 class Inner {
-
   @Property({ type: AlwaysConvertsToAbc })
   someValue: string;
 
   constructor(someValue: string) {
     this.someValue = someValue;
   }
-
 }
 
 @Embeddable()
 class Nested {
-
   @Property({ type: AlwaysConvertsToAbc })
   someValue: string;
 
@@ -45,12 +47,10 @@ class Nested {
     this.someValue = someValue;
     this.deep = new Inner(someValue);
   }
-
 }
 
 @Entity()
 class Parent {
-
   @PrimaryKey()
   id!: number;
 
@@ -65,11 +65,9 @@ class Parent {
 
   @Property({ type: AlwaysConvertsToAbc, nullable: true })
   someValue?: string;
-
 }
 
 export class Numeric extends Type<number, string> {
-
   override convertToDatabaseValue(value: number): string {
     return value.toString();
   }
@@ -81,24 +79,20 @@ export class Numeric extends Type<number, string> {
   override getColumnType(prop: EntityProperty, platform: Platform): string {
     return 'numeric(14,2)';
   }
-
 }
 
 @Embeddable()
 class Savings {
-
   @Property({ type: Numeric })
   amount: number;
 
   constructor(amount: number) {
     this.amount = amount;
   }
-
 }
 
 @Embeddable()
 class Statistic {
-
   @Property({ type: DoubleType })
   total: number;
 
@@ -108,12 +102,10 @@ class Statistic {
   constructor(total: number) {
     this.total = total;
   }
-
 }
 
 @Entity()
 class User {
-
   @PrimaryKey()
   id!: number;
 
@@ -125,11 +117,9 @@ class User {
 
   @Property({ nullable: true })
   after?: number; // property after embeddables to verify order props in resulting schema
-
 }
 
 describe('embedded entities with custom types', () => {
-
   let orm: MikroORM<PostgreSqlDriver>;
 
   beforeAll(async () => {
@@ -160,7 +150,9 @@ describe('embedded entities with custom types', () => {
     await orm.em.persist(parent).flush();
     orm.em.clear();
     expect(mock.mock.calls[0][0]).toMatch(`begin`);
-    expect(mock.mock.calls[1][0]).toMatch(`insert into "parent" ("nested_some_value", "nested_deep_some_value", "nested2", "some_value") values ('abc', 'abc', '{"some_value":"abc","deep":{"some_value":"abc"}}', 'abc') returning "id"`);
+    expect(mock.mock.calls[1][0]).toMatch(
+      `insert into "parent" ("nested_some_value", "nested_deep_some_value", "nested2", "some_value") values ('abc', 'abc', '{"some_value":"abc","deep":{"some_value":"abc"}}', 'abc') returning "id"`,
+    );
     expect(mock.mock.calls[2][0]).toMatch(`commit`);
 
     const p = await orm.em.findOneOrFail(Parent, parent.id);
@@ -214,5 +206,4 @@ describe('embedded entities with custom types', () => {
     expect(mock.mock.calls[0][0]).toMatch('select "u0".* from "user" as "u0" where "u0"."savings_amount" = ? limit ?');
     expect(u1.savings.amount).toBe(15200.23);
   });
-
 });

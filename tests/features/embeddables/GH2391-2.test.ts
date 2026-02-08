@@ -11,7 +11,6 @@ import { mockLogger } from '../../helpers.js';
 
 @Embeddable()
 class NestedAudit {
-
   @Property({ nullable: true, name: 'archivedAt' })
   archived?: Date;
 
@@ -20,12 +19,10 @@ class NestedAudit {
 
   @Property({ onCreate: () => new Date() })
   created!: Date;
-
 }
 
 @Embeddable()
 class Audit {
-
   @Property({ nullable: true, name: 'archivedAt' })
   archived?: Date;
 
@@ -37,12 +34,10 @@ class Audit {
 
   @Embedded(() => NestedAudit)
   nestedAudit1 = new NestedAudit();
-
 }
 
 @Entity()
 class MyEntity {
-
   [OptionalProps]?: 'fooAudit1' | 'barAudit2';
 
   @PrimaryKey()
@@ -53,11 +48,9 @@ class MyEntity {
 
   @Embedded(() => Audit, { object: true })
   barAudit2 = new Audit();
-
 }
 
 describe('onCreate and onUpdate in embeddables (GH 2283 and 2391)', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -66,7 +59,6 @@ describe('onCreate and onUpdate in embeddables (GH 2283 and 2391)', () => {
       entities: [MyEntity],
       dbName: ':memory:',
       namingStrategy: class extends UnderscoreNamingStrategy {
-
         propertyToColumnName(propertyName: string, object?: boolean): string {
           if (object) {
             return propertyName;
@@ -74,7 +66,6 @@ describe('onCreate and onUpdate in embeddables (GH 2283 and 2391)', () => {
 
           return super.propertyToColumnName(propertyName, object);
         }
-
       },
     });
     await orm.schema.create();
@@ -102,7 +93,9 @@ describe('onCreate and onUpdate in embeddables (GH 2283 and 2391)', () => {
     line.barAudit2.nestedAudit1.updatedAt = new Date(1698010995740);
     await orm.em.fork().persist(line).flush();
     expect(mock).toHaveBeenCalledTimes(3);
-    expect(mock.mock.calls[1][0]).toMatch('insert into `my_entity` (`foo_audit1_updated_at`, `foo_audit1_created`, `foo_audit1_nested_audit1_updated_at`, `foo_audit1_nested_audit1_created`, `bar_audit2`) values (1698010995740, 1698010995740, 1698010995740, 1698010995740, \'{"updatedAt":"2023-10-22T21:43:15.740Z","created":"2023-10-22T21:43:15.740Z","nestedAudit1":{"updatedAt":"2023-10-22T21:43:15.740Z","created":"2023-10-22T21:43:15.740Z"}}\') returning `id`');
+    expect(mock.mock.calls[1][0]).toMatch(
+      'insert into `my_entity` (`foo_audit1_updated_at`, `foo_audit1_created`, `foo_audit1_nested_audit1_updated_at`, `foo_audit1_nested_audit1_created`, `bar_audit2`) values (1698010995740, 1698010995740, 1698010995740, 1698010995740, \'{"updatedAt":"2023-10-22T21:43:15.740Z","created":"2023-10-22T21:43:15.740Z","nestedAudit1":{"updatedAt":"2023-10-22T21:43:15.740Z","created":"2023-10-22T21:43:15.740Z"}}\') returning `id`',
+    );
     mock.mockReset();
 
     expect(!!line.fooAudit1.created).toBeTruthy();
@@ -126,22 +119,28 @@ describe('onCreate and onUpdate in embeddables (GH 2283 and 2391)', () => {
 
     vi.useFakeTimers();
     vi.setSystemTime(new Date(1698010995749));
-    const tmp1 = line.fooAudit1.archived = new Date(1698010995749);
+    const tmp1 = (line.fooAudit1.archived = new Date(1698010995749));
     await orm.em.flush();
     expect(mock).toHaveBeenCalledTimes(3);
-    expect(mock.mock.calls[1][0]).toMatch('update `my_entity` set `foo_audit1_archivedAt` = 1698010995749, `foo_audit1_updated_at` = 1698010995749, `foo_audit1_nested_audit1_updated_at` = 1698010995749, `bar_audit2` = \'{"updatedAt":"2023-10-22T21:43:15.749Z","created":"2023-10-22T21:43:15.740Z","nestedAudit1":{"updatedAt":"2023-10-22T21:43:15.749Z","created":"2023-10-22T21:43:15.740Z"}}\' where `id` = 1');
+    expect(mock.mock.calls[1][0]).toMatch(
+      'update `my_entity` set `foo_audit1_archivedAt` = 1698010995749, `foo_audit1_updated_at` = 1698010995749, `foo_audit1_nested_audit1_updated_at` = 1698010995749, `bar_audit2` = \'{"updatedAt":"2023-10-22T21:43:15.749Z","created":"2023-10-22T21:43:15.740Z","nestedAudit1":{"updatedAt":"2023-10-22T21:43:15.749Z","created":"2023-10-22T21:43:15.740Z"}}\' where `id` = 1',
+    );
     mock.mockReset();
 
-    const tmp2 = line.barAudit2.archived = new Date(1698010995750);
+    const tmp2 = (line.barAudit2.archived = new Date(1698010995750));
     await orm.em.flush();
     expect(mock).toHaveBeenCalledTimes(3);
-    expect(mock.mock.calls[1][0]).toMatch('update `my_entity` set `bar_audit2` = \'{"archivedAt":"2023-10-22T21:43:15.750Z","updatedAt":"2023-10-22T21:43:15.749Z","created":"2023-10-22T21:43:15.740Z","nestedAudit1":{"updatedAt":"2023-10-22T21:43:15.749Z","created":"2023-10-22T21:43:15.740Z"}}\' where `id` = 1');
+    expect(mock.mock.calls[1][0]).toMatch(
+      'update `my_entity` set `bar_audit2` = \'{"archivedAt":"2023-10-22T21:43:15.750Z","updatedAt":"2023-10-22T21:43:15.749Z","created":"2023-10-22T21:43:15.740Z","nestedAudit1":{"updatedAt":"2023-10-22T21:43:15.749Z","created":"2023-10-22T21:43:15.740Z"}}\' where `id` = 1',
+    );
     mock.mockReset();
 
-    const tmp3 = line.barAudit2.nestedAudit1.archived = new Date(1698010995751);
+    const tmp3 = (line.barAudit2.nestedAudit1.archived = new Date(1698010995751));
     await orm.em.flush();
     expect(mock).toHaveBeenCalledTimes(3);
-    expect(mock.mock.calls[1][0]).toMatch('update `my_entity` set `bar_audit2` = \'{"archivedAt":"2023-10-22T21:43:15.750Z","updatedAt":"2023-10-22T21:43:15.749Z","created":"2023-10-22T21:43:15.740Z","nestedAudit1":{"archivedAt":"2023-10-22T21:43:15.751Z","updatedAt":"2023-10-22T21:43:15.749Z","created":"2023-10-22T21:43:15.740Z"}}\' where `id` = 1');
+    expect(mock.mock.calls[1][0]).toMatch(
+      'update `my_entity` set `bar_audit2` = \'{"archivedAt":"2023-10-22T21:43:15.750Z","updatedAt":"2023-10-22T21:43:15.749Z","created":"2023-10-22T21:43:15.740Z","nestedAudit1":{"archivedAt":"2023-10-22T21:43:15.751Z","updatedAt":"2023-10-22T21:43:15.749Z","created":"2023-10-22T21:43:15.740Z"}}\' where `id` = 1',
+    );
     mock.mockRestore();
 
     const line2 = await orm.em.fork().findOneOrFail(MyEntity, line.id);
@@ -151,5 +150,4 @@ describe('onCreate and onUpdate in embeddables (GH 2283 and 2391)', () => {
 
     vi.useRealTimers();
   });
-
 });

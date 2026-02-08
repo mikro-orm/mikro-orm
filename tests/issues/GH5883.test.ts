@@ -4,24 +4,20 @@ import { mockLogger } from '../helpers.js';
 
 @Entity({ tableName: 'users' })
 class User {
-
   @PrimaryKey()
   id!: number;
 
   @ManyToOne({ entity: () => Role, nullable: true })
   role?: Rel<Role>;
-
 }
 
 @Entity({ tableName: 'roles' })
 class Role {
-
   @PrimaryKey()
   id!: number;
 
   @OneToMany(() => User, user => user.role)
   users = new Collection<User>(this);
-
 }
 
 let orm: MikroORM;

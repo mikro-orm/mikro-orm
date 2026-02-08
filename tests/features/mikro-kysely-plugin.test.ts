@@ -10,8 +10,15 @@ describe('MikroKyselyPlugin', () => {
     name: 'Person',
     properties: {
       id: p.integer().autoincrement().primary(),
-      createdAt: p.datetime().nullable().onCreate(() => new Date()),
-      updatedAt: p.datetime().nullable().onCreate(() => new Date()).onUpdate(() => new Date()),
+      createdAt: p
+        .datetime()
+        .nullable()
+        .onCreate(() => new Date()),
+      updatedAt: p
+        .datetime()
+        .nullable()
+        .onCreate(() => new Date())
+        .onUpdate(() => new Date()),
       firstName: p.string().nullable(),
       middleName: p.string().nullable(),
       lastName: p.string().nullable(),
@@ -26,7 +33,10 @@ describe('MikroKyselyPlugin', () => {
     properties: {
       id: p.integer().primary().autoincrement(),
       createdAt: p.datetime().onCreate(() => new Date()),
-      updatedAt: p.datetime().onCreate(() => new Date()).onUpdate(() => new Date()),
+      updatedAt: p
+        .datetime()
+        .onCreate(() => new Date())
+        .onUpdate(() => new Date()),
       name: p.string(),
       owner: p.manyToOne(Person),
       species: p.enum(['dog', 'cat', 'hamster']),
@@ -38,7 +48,10 @@ describe('MikroKyselyPlugin', () => {
     properties: {
       id: p.integer().primary().autoincrement(),
       createdAt: p.datetime().onCreate(() => new Date()),
-      updatedAt: p.datetime().onCreate(() => new Date()).onUpdate(() => new Date()),
+      updatedAt: p
+        .datetime()
+        .onCreate(() => new Date())
+        .onUpdate(() => new Date()),
       name: p.string(),
       price: p.float(),
       pet: p.manyToOne(Pet),
@@ -99,15 +112,15 @@ describe('MikroKyselyPlugin', () => {
     });
 
     test('SELECT with specific columns', () => {
-      expect(
-        kysely.selectFrom('Person').select(['id', 'first_name', 'last_name']).compile().sql,
-      ).toMatchInlineSnapshot(`"select "id", "first_name", "last_name" from "person""`);
+      expect(kysely.selectFrom('Person').select(['id', 'first_name', 'last_name']).compile().sql).toMatchInlineSnapshot(
+        `"select "id", "first_name", "last_name" from "person""`,
+      );
     });
 
     test('SELECT with WHERE clause', () => {
-      expect(
-        kysely.selectFrom('Person').selectAll().where('id', '=', 1).compile().sql,
-      ).toMatchInlineSnapshot(`"select * from "person" where "id" = ?"`);
+      expect(kysely.selectFrom('Person').selectAll().where('id', '=', 1).compile().sql).toMatchInlineSnapshot(
+        `"select * from "person" where "id" = ?"`,
+      );
     });
 
     test('SELECT with ORDER BY', () => {
@@ -117,44 +130,58 @@ describe('MikroKyselyPlugin', () => {
     });
 
     test('SELECT with table alias', () => {
-      expect(
-        kysely.selectFrom('Person as p').select(['p.id', 'p.first_name']).compile().sql,
-      ).toMatchInlineSnapshot(`"select "p"."id", "p"."first_name" from "person" as "p""`);
+      expect(kysely.selectFrom('Person as p').select(['p.id', 'p.first_name']).compile().sql).toMatchInlineSnapshot(
+        `"select "p"."id", "p"."first_name" from "person" as "p""`,
+      );
     });
 
     test('INSERT query', () => {
       expect(
-        kysely.insertInto('Person').values({
-          id: 1,
-          created_at: new Date(),
-          updated_at: new Date(),
-          first_name: 'John',
-          last_name: 'Doe',
-          gender: 'male',
-          children: 0,
-        }).compile().sql,
-      ).toMatchInlineSnapshot(`"insert into "person" ("id", "created_at", "updated_at", "first_name", "last_name", "gender", "children") values (?, ?, ?, ?, ?, ?, ?)"`);
+        kysely
+          .insertInto('Person')
+          .values({
+            id: 1,
+            created_at: new Date(),
+            updated_at: new Date(),
+            first_name: 'John',
+            last_name: 'Doe',
+            gender: 'male',
+            children: 0,
+          })
+          .compile().sql,
+      ).toMatchInlineSnapshot(
+        `"insert into "person" ("id", "created_at", "updated_at", "first_name", "last_name", "gender", "children") values (?, ?, ?, ?, ?, ?, ?)"`,
+      );
     });
 
     test('UPDATE query', () => {
       expect(
-        kysely.updateTable('Person').set({
-          first_name: 'Jane',
-          last_name: 'Smith',
-        }).where('id', '=', 1).compile().sql,
+        kysely
+          .updateTable('Person')
+          .set({
+            first_name: 'Jane',
+            last_name: 'Smith',
+          })
+          .where('id', '=', 1)
+          .compile().sql,
       ).toMatchInlineSnapshot(`"update "person" set "first_name" = ?, "last_name" = ? where "id" = ?"`);
     });
 
     test('UPDATE with RETURNING', () => {
       expect(
-        kysely.updateTable('Person').set({ first_name: 'Test' }).where('id', '=', 1).returning(['id', 'first_name']).compile().sql,
+        kysely
+          .updateTable('Person')
+          .set({ first_name: 'Test' })
+          .where('id', '=', 1)
+          .returning(['id', 'first_name'])
+          .compile().sql,
       ).toMatchInlineSnapshot(`"update "person" set "first_name" = ? where "id" = ? returning "id", "first_name""`);
     });
 
     test('DELETE query', () => {
-      expect(
-        kysely.deleteFrom('Person').where('id', '=', 1).compile().sql,
-      ).toMatchInlineSnapshot(`"delete from "person" where "id" = ?"`);
+      expect(kysely.deleteFrom('Person').where('id', '=', 1).compile().sql).toMatchInlineSnapshot(
+        `"delete from "person" where "id" = ?"`,
+      );
     });
 
     test('DELETE with RETURNING', () => {
@@ -165,12 +192,11 @@ describe('MikroKyselyPlugin', () => {
 
     test('INNER JOIN', () => {
       expect(
-        kysely
-          .selectFrom('Toy as t')
-          .innerJoin('Pet as p', 't.pet_id', 'p.id')
-          .select(['t.name', 'p.name'])
-          .compile().sql,
-      ).toMatchInlineSnapshot(`"select "t"."name", "p"."name" from "toy" as "t" inner join "pet" as "p" on "t"."pet_id" = "p"."id""`);
+        kysely.selectFrom('Toy as t').innerJoin('Pet as p', 't.pet_id', 'p.id').select(['t.name', 'p.name']).compile()
+          .sql,
+      ).toMatchInlineSnapshot(
+        `"select "t"."name", "p"."name" from "toy" as "t" inner join "pet" as "p" on "t"."pet_id" = "p"."id""`,
+      );
     });
 
     test('LEFT JOIN', () => {
@@ -180,7 +206,9 @@ describe('MikroKyselyPlugin', () => {
           .leftJoin('Person as per', 'p.owner_id', 'per.id')
           .select(['p.name', 'per.first_name'])
           .compile().sql,
-      ).toMatchInlineSnapshot(`"select "p"."name", "per"."first_name" from "pet" as "p" left join "person" as "per" on "p"."owner_id" = "per"."id""`);
+      ).toMatchInlineSnapshot(
+        `"select "p"."name", "per"."first_name" from "pet" as "p" left join "person" as "per" on "p"."owner_id" = "per"."id""`,
+      );
     });
 
     test('multiple JOINs', () => {
@@ -191,7 +219,9 @@ describe('MikroKyselyPlugin', () => {
           .leftJoin('Person as per', 'p.owner_id', 'per.id')
           .select(['t.name', 'p.name', 'per.first_name'])
           .compile().sql,
-      ).toMatchInlineSnapshot(`"select "t"."name", "p"."name", "per"."first_name" from "toy" as "t" inner join "pet" as "p" on "t"."pet_id" = "p"."id" left join "person" as "per" on "p"."owner_id" = "per"."id""`);
+      ).toMatchInlineSnapshot(
+        `"select "t"."name", "p"."name", "per"."first_name" from "toy" as "t" inner join "pet" as "p" on "t"."pet_id" = "p"."id" left join "person" as "per" on "p"."owner_id" = "per"."id""`,
+      );
     });
 
     test('JOIN with WHERE condition', () => {
@@ -202,7 +232,9 @@ describe('MikroKyselyPlugin', () => {
           .where('p.species', '=', 'dog')
           .select(['t.name'])
           .compile().sql,
-      ).toMatchInlineSnapshot(`"select "t"."name" from "toy" as "t" inner join "pet" as "p" on "t"."pet_id" = "p"."id" where "p"."species" = ?"`);
+      ).toMatchInlineSnapshot(
+        `"select "t"."name" from "toy" as "t" inner join "pet" as "p" on "t"."pet_id" = "p"."id" where "p"."species" = ?"`,
+      );
     });
 
     test('subquery in WHERE clause', () => {
@@ -210,13 +242,11 @@ describe('MikroKyselyPlugin', () => {
         kysely
           .selectFrom('Person')
           .selectAll()
-          .where('id', 'in', eb =>
-            eb.selectFrom('Pet')
-              .select('owner_id')
-              .where('species', '=', 'dog'),
-          )
+          .where('id', 'in', eb => eb.selectFrom('Pet').select('owner_id').where('species', '=', 'dog'))
           .compile().sql,
-      ).toMatchInlineSnapshot(`"select * from "person" where "id" in (select "owner_id" from "pet" where "species" = ?)"`);
+      ).toMatchInlineSnapshot(
+        `"select * from "person" where "id" in (select "owner_id" from "pet" where "species" = ?)"`,
+      );
     });
 
     test('subquery in SELECT clause', () => {
@@ -226,13 +256,16 @@ describe('MikroKyselyPlugin', () => {
           .select([
             'p.first_name',
             eb =>
-              eb.selectFrom('Pet')
+              eb
+                .selectFrom('Pet')
                 .select(eb => eb.fn.count('id').as('count'))
                 .whereRef('owner_id', '=', 'p.id')
                 .as('petCount'),
           ])
           .compile().sql,
-      ).toMatchInlineSnapshot(`"select "p"."first_name", (select count("id") as "count" from "pet" where "owner_id" = "p"."id") as "petCount" from "person" as "p""`);
+      ).toMatchInlineSnapshot(
+        `"select "p"."first_name", (select count("id") as "count" from "pet" where "owner_id" = "p"."id") as "petCount" from "person" as "p""`,
+      );
     });
 
     test('EXISTS subquery', () => {
@@ -240,40 +273,40 @@ describe('MikroKyselyPlugin', () => {
         kysely
           .selectFrom('Person')
           .selectAll()
-          .where(eb => eb.exists(
-            eb.selectFrom('Pet')
-              .select('id')
-              .whereRef('owner_id', '=', 'Person.id')
-              .where('species', '=', 'dog'),
-          ))
+          .where(eb =>
+            eb.exists(
+              eb.selectFrom('Pet').select('id').whereRef('owner_id', '=', 'Person.id').where('species', '=', 'dog'),
+            ),
+          )
           .compile().sql,
-      ).toMatchInlineSnapshot(`"select * from "person" where exists (select "id" from "pet" where "owner_id" = "person"."id" and "species" = ?)"`);
+      ).toMatchInlineSnapshot(
+        `"select * from "person" where exists (select "id" from "pet" where "owner_id" = "person"."id" and "species" = ?)"`,
+      );
     });
 
     test('CTE (Common Table Expression)', () => {
       expect(
         kysely
           .with('active_persons', db =>
-            db.selectFrom('Person')
-              .select(['id', 'first_name'])
-              .where('first_name', 'is not', null),
+            db.selectFrom('Person').select(['id', 'first_name']).where('first_name', 'is not', null),
           )
           .selectFrom('active_persons')
           .selectAll()
           .compile().sql,
-      ).toMatchInlineSnapshot(`"with "active_persons" as (select "id", "first_name" from "person" where "first_name" is not null) select * from "active_persons""`);
+      ).toMatchInlineSnapshot(
+        `"with "active_persons" as (select "id", "first_name" from "person" where "first_name" is not null) select * from "active_persons""`,
+      );
     });
 
     test('multiple CTEs', () => {
       expect(
         kysely
           .with('person_stats', db =>
-            db.selectFrom('Person')
-              .select(['id', 'first_name'])
-              .where('first_name', 'is not', null),
+            db.selectFrom('Person').select(['id', 'first_name']).where('first_name', 'is not', null),
           )
           .with('pet_stats', db =>
-            db.selectFrom('Pet')
+            db
+              .selectFrom('Pet')
               .select(['owner_id', eb => eb.fn.count('id').as('count')])
               .groupBy('owner_id'),
           )
@@ -281,7 +314,9 @@ describe('MikroKyselyPlugin', () => {
           .leftJoin('pet_stats as pst', 'ps.id', 'pst.owner_id')
           .select(['ps.first_name', 'pst.count'])
           .compile().sql,
-      ).toMatchInlineSnapshot(`"with "person_stats" as (select "id", "first_name" from "person" where "first_name" is not null), "pet_stats" as (select "owner_id", count("id") as "count" from "pet" group by "owner_id") select "ps"."first_name", "pst"."count" from "person_stats" as "ps" left join "pet_stats" as "pst" on "ps"."id" = "pst"."owner_id""`);
+      ).toMatchInlineSnapshot(
+        `"with "person_stats" as (select "id", "first_name" from "person" where "first_name" is not null), "pet_stats" as (select "owner_id", count("id") as "count" from "pet" group by "owner_id") select "ps"."first_name", "pst"."count" from "person_stats" as "ps" left join "pet_stats" as "pst" on "ps"."id" = "pst"."owner_id""`,
+      );
     });
 
     test('all entity names should work', () => {
@@ -352,9 +387,18 @@ describe('MikroKyselyPlugin', () => {
   });
 
   describe('columnNamingStrategy: property', () => {
-    interface PersonTable extends InferKyselyTable<typeof Person, { columnNamingStrategy: 'property'; processOnCreateHooks: true }> {}
-    interface PetTable extends InferKyselyTable<typeof Pet, { columnNamingStrategy: 'property'; processOnCreateHooks: true }> {}
-    interface ToyTable extends InferKyselyTable<typeof Toy, { columnNamingStrategy: 'property'; processOnCreateHooks: true }> {}
+    interface PersonTable extends InferKyselyTable<
+      typeof Person,
+      { columnNamingStrategy: 'property'; processOnCreateHooks: true }
+    > {}
+    interface PetTable extends InferKyselyTable<
+      typeof Pet,
+      { columnNamingStrategy: 'property'; processOnCreateHooks: true }
+    > {}
+    interface ToyTable extends InferKyselyTable<
+      typeof Toy,
+      { columnNamingStrategy: 'property'; processOnCreateHooks: true }
+    > {}
     interface DB {
       person: PersonTable;
       pet: PetTable;
@@ -487,12 +531,16 @@ describe('MikroKyselyPlugin', () => {
         gender: 'male',
         children: 0,
       });
-      expect(query.compile().sql).toMatchInlineSnapshot(`"insert into "person" ("id", "created_at", "updated_at", "first_name", "last_name", "gender", "children") values (?, ?, ?, ?, ?, ?, ?)"`);
+      expect(query.compile().sql).toMatchInlineSnapshot(
+        `"insert into "person" ("id", "created_at", "updated_at", "first_name", "last_name", "gender", "children") values (?, ?, ?, ?, ?, ?, ?)"`,
+      );
     });
 
     test('SELECT with table alias', async () => {
       const query = kysely.selectFrom('person as p').select(['p.firstName', 'p.lastName']);
-      expect(query.compile().sql).toMatchInlineSnapshot(`"select "p"."first_name", "p"."last_name" from "person" as "p""`);
+      expect(query.compile().sql).toMatchInlineSnapshot(
+        `"select "p"."first_name", "p"."last_name" from "person" as "p""`,
+      );
       const result = await query.execute();
       expect(result).toHaveLength(2);
       expect(result[0]).toMatchObject({ firstName: 'John', lastName: 'Doe' });
@@ -501,7 +549,9 @@ describe('MikroKyselyPlugin', () => {
 
     test('SELECT with column alias', async () => {
       const query = kysely.selectFrom('person').select(['firstName', 'person.lastName as name']);
-      expect(query.compile().sql).toMatchInlineSnapshot(`"select "first_name", "person"."last_name" as "name" from "person""`);
+      expect(query.compile().sql).toMatchInlineSnapshot(
+        `"select "first_name", "person"."last_name" as "name" from "person""`,
+      );
       const result = await query.execute();
       expect(result).toHaveLength(2);
       expect(result[0]).toMatchObject({ firstName: 'John', name: 'Doe' });
@@ -525,11 +575,17 @@ describe('MikroKyselyPlugin', () => {
     });
 
     test('UPDATE query', async () => {
-      const query = kysely.updateTable('person').set({
-        firstName: 'Janet',
-        lastName: 'Smithson',
-      }).where('firstName', '=', 'Jane').returning('lastName');
-      expect(query.compile().sql).toMatchInlineSnapshot(`"update "person" set "first_name" = ?, "last_name" = ? where "first_name" = ? returning "last_name""`);
+      const query = kysely
+        .updateTable('person')
+        .set({
+          firstName: 'Janet',
+          lastName: 'Smithson',
+        })
+        .where('firstName', '=', 'Jane')
+        .returning('lastName');
+      expect(query.compile().sql).toMatchInlineSnapshot(
+        `"update "person" set "first_name" = ?, "last_name" = ? where "first_name" = ? returning "last_name""`,
+      );
       const result = await query.execute();
       expect(result).toHaveLength(1);
       expect(result[0]).toMatchObject({ lastName: 'Smithson' });
@@ -559,9 +615,7 @@ describe('MikroKyselyPlugin', () => {
     });
 
     test('SELECT relation property', async () => {
-      const query = kysely
-        .selectFrom('pet')
-        .select(['owner']);
+      const query = kysely.selectFrom('pet').select(['owner']);
       expect(query.compile().sql).toMatchInlineSnapshot(`"select "owner_id" from "pet""`);
       const result = await query.execute();
       expect(result).toHaveLength(2);
@@ -574,7 +628,9 @@ describe('MikroKyselyPlugin', () => {
         .selectFrom('toy as t')
         .innerJoin('pet as p', 't.pet', 'p.id')
         .select(['t.name as toyName', 'p.name as petName', 'p.species']);
-      expect(query.compile().sql).toMatchInlineSnapshot(`"select "t"."name" as "toyName", "p"."name" as "petName", "p"."species" from "toy" as "t" inner join "pet" as "p" on "t"."pet_id" = "p"."id""`);
+      expect(query.compile().sql).toMatchInlineSnapshot(
+        `"select "t"."name" as "toyName", "p"."name" as "petName", "p"."species" from "toy" as "t" inner join "pet" as "p" on "t"."pet_id" = "p"."id""`,
+      );
       const result = await query.execute();
       expect(result).toHaveLength(2);
       expect(result[0]).toMatchObject({ toyName: 'Ball', petName: 'Buddy', species: 'dog' });
@@ -586,7 +642,9 @@ describe('MikroKyselyPlugin', () => {
         .selectFrom('pet as p')
         .leftJoin('person as per', 'p.owner', 'per.id')
         .select(['p.name', 'per.firstName', 'per.lastName']);
-      expect(query.compile().sql).toMatchInlineSnapshot(`"select "p"."name", "per"."first_name", "per"."last_name" from "pet" as "p" left join "person" as "per" on "p"."owner_id" = "per"."id""`);
+      expect(query.compile().sql).toMatchInlineSnapshot(
+        `"select "p"."name", "per"."first_name", "per"."last_name" from "pet" as "p" left join "person" as "per" on "p"."owner_id" = "per"."id""`,
+      );
       const result = await query.execute();
       expect(result).toHaveLength(2);
       expect(result[0]).toMatchObject({ name: 'Buddy', firstName: 'John', lastName: 'Doe' });
@@ -599,7 +657,9 @@ describe('MikroKyselyPlugin', () => {
         .innerJoin('pet as p', 't.pet', 'p.id')
         .where('p.species', '=', 'dog')
         .select(['t.name as toyName', 'p.name as petName']);
-      expect(query.compile().sql).toMatchInlineSnapshot(`"select "t"."name" as "toyName", "p"."name" as "petName" from "toy" as "t" inner join "pet" as "p" on "t"."pet_id" = "p"."id" where "p"."species" = ?"`);
+      expect(query.compile().sql).toMatchInlineSnapshot(
+        `"select "t"."name" as "toyName", "p"."name" as "petName" from "toy" as "t" inner join "pet" as "p" on "t"."pet_id" = "p"."id" where "p"."species" = ?"`,
+      );
       const result = await query.execute();
       expect(result).toHaveLength(1);
       expect(result[0]).toMatchObject({ toyName: 'Ball', petName: 'Buddy' });
@@ -611,7 +671,9 @@ describe('MikroKyselyPlugin', () => {
         .innerJoin('pet as p', 't.pet', 'p.id')
         .leftJoin('person as per', 'p.owner', 'per.id')
         .select(['t.name as toyName', 'p.name as petName', 'per.firstName']);
-      expect(query.compile().sql).toMatchInlineSnapshot(`"select "t"."name" as "toyName", "p"."name" as "petName", "per"."first_name" from "toy" as "t" inner join "pet" as "p" on "t"."pet_id" = "p"."id" left join "person" as "per" on "p"."owner_id" = "per"."id""`);
+      expect(query.compile().sql).toMatchInlineSnapshot(
+        `"select "t"."name" as "toyName", "p"."name" as "petName", "per"."first_name" from "toy" as "t" inner join "pet" as "p" on "t"."pet_id" = "p"."id" left join "person" as "per" on "p"."owner_id" = "per"."id""`,
+      );
       const result = await query.execute();
       expect(result).toHaveLength(2);
       expect(result[0]).toMatchObject({ toyName: 'Ball', petName: 'Buddy', firstName: 'John' });
@@ -624,7 +686,9 @@ describe('MikroKyselyPlugin', () => {
         .innerJoin('pet as p', 't.pet', 'p.id')
         .orderBy('p.name', 'asc')
         .select(['t.name']);
-      expect(query.compile().sql).toMatchInlineSnapshot(`"select "t"."name" from "toy" as "t" inner join "pet" as "p" on "t"."pet_id" = "p"."id" order by "p"."name" asc"`);
+      expect(query.compile().sql).toMatchInlineSnapshot(
+        `"select "t"."name" from "toy" as "t" inner join "pet" as "p" on "t"."pet_id" = "p"."id" order by "p"."name" asc"`,
+      );
       const result = await query.execute();
       expect(result).toHaveLength(2);
       expect(result[0]).toMatchObject({ name: 'Ball' });
@@ -635,29 +699,28 @@ describe('MikroKyselyPlugin', () => {
       const query = kysely
         .selectFrom('person')
         .selectAll()
-        .where('id', 'in', eb =>
-          eb.selectFrom('pet')
-            .select('owner')
-            .where('species', '=', 'dog'),
-        );
-      expect(query.compile().sql).toMatchInlineSnapshot(`"select * from "person" where "id" in (select "owner_id" from "pet" where "species" = ?)"`);
+        .where('id', 'in', eb => eb.selectFrom('pet').select('owner').where('species', '=', 'dog'));
+      expect(query.compile().sql).toMatchInlineSnapshot(
+        `"select * from "person" where "id" in (select "owner_id" from "pet" where "species" = ?)"`,
+      );
       const result = await query.execute();
       expect(result).toHaveLength(1);
       expect(result[0]).toMatchObject({ firstName: 'John' });
     });
 
     test('subquery in SELECT clause', async () => {
-      const query = kysely
-        .selectFrom('person as p')
-        .select([
-          'p.firstName',
-          eb =>
-            eb.selectFrom('pet')
-              .select(eb => eb.fn.count('id').as('count'))
-              .whereRef('owner', '=', 'p.id')
-              .as('petCount'),
-        ]);
-      expect(query.compile().sql).toMatchInlineSnapshot(`"select "p"."first_name", (select count("id") as "count" from "pet" where "owner_id" = "p"."id") as "petCount" from "person" as "p""`);
+      const query = kysely.selectFrom('person as p').select([
+        'p.firstName',
+        eb =>
+          eb
+            .selectFrom('pet')
+            .select(eb => eb.fn.count('id').as('count'))
+            .whereRef('owner', '=', 'p.id')
+            .as('petCount'),
+      ]);
+      expect(query.compile().sql).toMatchInlineSnapshot(
+        `"select "p"."first_name", (select count("id") as "count" from "pet" where "owner_id" = "p"."id") as "petCount" from "person" as "p""`,
+      );
       const result = await query.execute();
       expect(result).toHaveLength(2);
       expect(result[0]).toMatchObject({ firstName: 'John', petCount: 1 });
@@ -669,14 +732,17 @@ describe('MikroKyselyPlugin', () => {
         .selectFrom('person as p')
         .leftJoin(
           eb =>
-            eb.selectFrom('pet')
+            eb
+              .selectFrom('pet')
               .select(['owner', eb => eb.fn.count('id').as('count')])
               .groupBy('owner')
               .as('pet_stats'),
           join => join.onRef('pet_stats.owner', '=', 'p.id'),
         )
         .select(['p.firstName', 'pet_stats.count']);
-      expect(query.compile().sql).toMatchInlineSnapshot(`"select "p"."first_name", "pet_stats"."count" from "person" as "p" left join (select "owner_id", count("id") as "count" from "pet" group by "owner_id") as "pet_stats" on "pet_stats"."owner_id" = "p"."id""`);
+      expect(query.compile().sql).toMatchInlineSnapshot(
+        `"select "p"."first_name", "pet_stats"."count" from "person" as "p" left join (select "owner_id", count("id") as "count" from "pet" group by "owner_id") as "pet_stats" on "pet_stats"."owner_id" = "p"."id""`,
+      );
       const result = await query.execute();
       expect(result).toHaveLength(2);
       expect(result[0]).toMatchObject({ firstName: 'John', count: 1 });
@@ -687,13 +753,12 @@ describe('MikroKyselyPlugin', () => {
       const query = kysely
         .selectFrom('person')
         .selectAll()
-        .where(eb => eb.exists(
-          eb.selectFrom('pet')
-            .select('id')
-            .whereRef('owner', '=', 'person.id')
-            .where('species', '=', 'dog'),
-        ));
-      expect(query.compile().sql).toMatchInlineSnapshot(`"select * from "person" where exists (select "id" from "pet" where "owner_id" = "person"."id" and "species" = ?)"`);
+        .where(eb =>
+          eb.exists(eb.selectFrom('pet').select('id').whereRef('owner', '=', 'person.id').where('species', '=', 'dog')),
+        );
+      expect(query.compile().sql).toMatchInlineSnapshot(
+        `"select * from "person" where exists (select "id" from "pet" where "owner_id" = "person"."id" and "species" = ?)"`,
+      );
       const result = await query.execute();
       expect(result).toHaveLength(1);
       expect(result[0]).toMatchObject({ firstName: 'John' });
@@ -702,14 +767,17 @@ describe('MikroKyselyPlugin', () => {
     test('CTE with JOIN', async () => {
       const query = kysely
         .with('pet_toys', db =>
-          db.selectFrom('toy as t')
+          db
+            .selectFrom('toy as t')
             .innerJoin('pet as p', 't.pet', 'p.id')
             .select(['t.id', 't.name', 'p.name as petName']),
         )
         .selectFrom('pet_toys')
         .selectAll()
         .where('petName', '=', 'Buddy');
-      expect(query.compile().sql).toMatchInlineSnapshot(`"with "pet_toys" as (select "t"."id", "t"."name", "p"."name" as "petName" from "toy" as "t" inner join "pet" as "p" on "t"."pet_id" = "p"."id") select * from "pet_toys" where "petName" = ?"`);
+      expect(query.compile().sql).toMatchInlineSnapshot(
+        `"with "pet_toys" as (select "t"."id", "t"."name", "p"."name" as "petName" from "toy" as "t" inner join "pet" as "p" on "t"."pet_id" = "p"."id") select * from "pet_toys" where "petName" = ?"`,
+      );
       const result = await query.execute();
       expect(result).toHaveLength(1);
       expect(result[0]).toMatchObject({ petName: 'Buddy' });
@@ -718,12 +786,11 @@ describe('MikroKyselyPlugin', () => {
     test('multiple CTEs', async () => {
       const query = kysely
         .with('person_stats', db =>
-          db.selectFrom('person')
-            .select(['id', 'firstName'])
-            .where('firstName', 'is not', null),
+          db.selectFrom('person').select(['id', 'firstName']).where('firstName', 'is not', null),
         )
         .with('pet_stats', db =>
-          db.selectFrom('pet')
+          db
+            .selectFrom('pet')
             .select(['owner', eb => eb.fn.count('id').as('count')])
             .groupBy('owner'),
         )
@@ -731,7 +798,9 @@ describe('MikroKyselyPlugin', () => {
         .leftJoin('pet_stats as pst', 'ps.id', 'pst.owner')
         .select(['ps.firstName', 'pst.count'])
         .orderBy('ps.firstName', 'asc');
-      expect(query.compile().sql).toMatchInlineSnapshot(`"with "person_stats" as (select "id", "first_name" from "person" where "first_name" is not null), "pet_stats" as (select "owner_id", count("id") as "count" from "pet" group by "owner_id") select "ps"."first_name", "pst"."count" from "person_stats" as "ps" left join "pet_stats" as "pst" on "ps"."id" = "pst"."owner_id" order by "ps"."first_name" asc"`);
+      expect(query.compile().sql).toMatchInlineSnapshot(
+        `"with "person_stats" as (select "id", "first_name" from "person" where "first_name" is not null), "pet_stats" as (select "owner_id", count("id") as "count" from "pet" group by "owner_id") select "ps"."first_name", "pst"."count" from "person_stats" as "ps" left join "pet_stats" as "pst" on "ps"."id" = "pst"."owner_id" order by "ps"."first_name" asc"`,
+      );
       const result = await query.execute();
       expect(result).toHaveLength(2);
       expect(result[0]).toMatchObject({ firstName: 'Jane', count: 1 });
@@ -741,15 +810,15 @@ describe('MikroKyselyPlugin', () => {
     test('CTE alias resolved via subquery alias map (findOwnerEntityInContext)', async () => {
       const query = kysely
         .with('active_people', db =>
-          db.selectFrom('person')
-            .select(['id', 'firstName'])
-            .where('firstName', 'is not', null),
+          db.selectFrom('person').select(['id', 'firstName']).where('firstName', 'is not', null),
         )
         .selectFrom('active_people as ap')
         .select(['ap.firstName'])
         .orderBy('ap.firstName');
 
-      expect(query.compile().sql).toMatchInlineSnapshot(`"with "active_people" as (select "id", "first_name" from "person" where "first_name" is not null) select "ap"."first_name" from "active_people" as "ap" order by "ap"."first_name""`);
+      expect(query.compile().sql).toMatchInlineSnapshot(
+        `"with "active_people" as (select "id", "first_name" from "person" where "first_name" is not null) select "ap"."first_name" from "active_people" as "ap" order by "ap"."first_name""`,
+      );
 
       const result = await query.execute();
       expect(result).toHaveLength(2);
@@ -762,18 +831,22 @@ describe('MikroKyselyPlugin', () => {
       // The actual recursion behavior depends on the database and data
       const query = kysely
         .withRecursive('person_hierarchy', db =>
-          db.selectFrom('person')
+          db
+            .selectFrom('person')
             .select(['id', 'firstName'])
             .limit(1)
             .unionAll(db =>
-              db.selectFrom('person as p')
+              db
+                .selectFrom('person as p')
                 .innerJoin('person_hierarchy as ph', 'p.id', 'ph.id')
                 .select(['p.id', 'p.firstName']),
             ),
         )
         .selectFrom('person_hierarchy')
         .selectAll();
-      expect(query.compile().sql).toMatchInlineSnapshot(`"with recursive "person_hierarchy" as (select "id", "first_name" from "person" union all select "p"."id", "p"."first_name" from "person" as "p" inner join "person_hierarchy" as "ph" on "p"."id" = "ph"."id" limit ?) select * from "person_hierarchy""`);
+      expect(query.compile().sql).toMatchInlineSnapshot(
+        `"with recursive "person_hierarchy" as (select "id", "first_name" from "person" union all select "p"."id", "p"."first_name" from "person" as "p" inner join "person_hierarchy" as "ph" on "p"."id" = "ph"."id" limit ?) select * from "person_hierarchy""`,
+      );
       // The result depends on database-specific recursive CTE implementation
       const result = await query.execute();
       expect(result.length).toBeGreaterThanOrEqual(1);
@@ -782,14 +855,14 @@ describe('MikroKyselyPlugin', () => {
     test('simple CTE', async () => {
       const query = kysely
         .with('active_persons', db =>
-          db.selectFrom('person')
-            .select(['id', 'firstName', 'lastName'])
-            .where('firstName', 'is not', null),
+          db.selectFrom('person').select(['id', 'firstName', 'lastName']).where('firstName', 'is not', null),
         )
         .selectFrom('active_persons')
         .selectAll()
         .orderBy('firstName');
-      expect(query.compile().sql).toMatchInlineSnapshot(`"with "active_persons" as (select "id", "first_name", "last_name" from "person" where "first_name" is not null) select * from "active_persons" order by "first_name""`);
+      expect(query.compile().sql).toMatchInlineSnapshot(
+        `"with "active_persons" as (select "id", "first_name", "last_name" from "person" where "first_name" is not null) select * from "active_persons" order by "first_name""`,
+      );
       const result = await query.execute();
       expect(result).toHaveLength(2);
       expect(result[0]).toMatchObject({ firstName: 'Jane' });
@@ -798,9 +871,18 @@ describe('MikroKyselyPlugin', () => {
   });
 
   describe('processOnCreateHooks', () => {
-    interface PersonTable extends InferKyselyTable<typeof Person, { columnNamingStrategy: 'property'; processOnCreateHooks: true }> {}
-    interface PetTable extends InferKyselyTable<typeof Pet, { columnNamingStrategy: 'property'; processOnCreateHooks: true }> {}
-    interface ToyTable extends InferKyselyTable<typeof Toy, { columnNamingStrategy: 'property'; processOnCreateHooks: true }> {}
+    interface PersonTable extends InferKyselyTable<
+      typeof Person,
+      { columnNamingStrategy: 'property'; processOnCreateHooks: true }
+    > {}
+    interface PetTable extends InferKyselyTable<
+      typeof Pet,
+      { columnNamingStrategy: 'property'; processOnCreateHooks: true }
+    > {}
+    interface ToyTable extends InferKyselyTable<
+      typeof Toy,
+      { columnNamingStrategy: 'property'; processOnCreateHooks: true }
+    > {}
     interface DB {
       Person: PersonTable;
       Pet: PetTable;
@@ -838,7 +920,9 @@ describe('MikroKyselyPlugin', () => {
         lastName: 'Doe',
         gender: 'male',
       });
-      expect(query.compile().sql).toMatchInlineSnapshot(`"insert into "person" ("first_name", "last_name", "gender", "created_at", "updated_at", "children") values (?, ?, ?, ?, ?, ?)"`);
+      expect(query.compile().sql).toMatchInlineSnapshot(
+        `"insert into "person" ("first_name", "last_name", "gender", "created_at", "updated_at", "children") values (?, ?, ?, ?, ?, ?)"`,
+      );
       // Expected: INSERT should include created_at, updated_at, and children with default values
     });
 
@@ -850,7 +934,9 @@ describe('MikroKyselyPlugin', () => {
         gender: 'female',
         children: 5, // Explicitly provided, should not be overridden by onCreate hook
       });
-      expect(query.compile().sql).toMatchInlineSnapshot(`"insert into "person" ("first_name", "last_name", "gender", "children", "created_at", "updated_at") values (?, ?, ?, ?, ?, ?)"`);
+      expect(query.compile().sql).toMatchInlineSnapshot(
+        `"insert into "person" ("first_name", "last_name", "gender", "children", "created_at", "updated_at") values (?, ?, ?, ?, ?, ?)"`,
+      );
       // Expected: children = 5 should be used, not the default 0 from onCreate
     });
 
@@ -865,16 +951,21 @@ describe('MikroKyselyPlugin', () => {
         createdAt: now,
         updatedAt: now,
       });
-      expect(query.compile().sql).toMatchInlineSnapshot(`"insert into "person" ("first_name", "last_name", "gender", "children", "created_at", "updated_at") values (?, ?, ?, ?, ?, ?)"`);
+      expect(query.compile().sql).toMatchInlineSnapshot(
+        `"insert into "person" ("first_name", "last_name", "gender", "children", "created_at", "updated_at") values (?, ?, ?, ?, ?, ?)"`,
+      );
     });
 
     test('INSERT with onCreate hook and execute - verify values are inserted correctly', async () => {
       // Actual execution to verify onCreate hooks work
-      const query = kysely.insertInto('Person').values({
-        firstName: 'TestUser',
-        lastName: 'Hook',
-        gender: 'male',
-      }).returning(['id', 'firstName', 'children', 'createdAt', 'updatedAt']);
+      const query = kysely
+        .insertInto('Person')
+        .values({
+          firstName: 'TestUser',
+          lastName: 'Hook',
+          gender: 'male',
+        })
+        .returning(['id', 'firstName', 'children', 'createdAt', 'updatedAt']);
 
       const result = await query.execute();
       expect(result).toHaveLength(1);
@@ -891,10 +982,13 @@ describe('MikroKyselyPlugin', () => {
 
     test('INSERT multiple rows with onCreate hooks', async () => {
       // Test batch insert with onCreate hooks
-      const query = kysely.insertInto('Person').values([
-        { firstName: 'User1', lastName: 'Test1', gender: 'male' },
-        { firstName: 'User2', lastName: 'Test2', gender: 'female' },
-      ]).returning('id');
+      const query = kysely
+        .insertInto('Person')
+        .values([
+          { firstName: 'User1', lastName: 'Test1', gender: 'male' },
+          { firstName: 'User2', lastName: 'Test2', gender: 'female' },
+        ])
+        .returning('id');
 
       const result = await query.execute();
       expect(result).toHaveLength(2);
@@ -916,16 +1010,21 @@ describe('MikroKyselyPlugin', () => {
         owner: personId,
         species: 'dog',
       });
-      expect(query.compile().sql).toMatchInlineSnapshot(`"insert into "pet" ("name", "owner_id", "species", "created_at", "updated_at") values (?, ?, ?, ?, ?)"`);
+      expect(query.compile().sql).toMatchInlineSnapshot(
+        `"insert into "pet" ("name", "owner_id", "species", "created_at", "updated_at") values (?, ?, ?, ?, ?)"`,
+      );
     });
 
     test('INSERT with onCreate - dateTime property should be converted correctly', async () => {
       // Verify that Date objects from onCreate are properly converted for SQLite
-      const query = kysely.insertInto('Person').values({
-        firstName: 'DateTest',
-        lastName: 'User',
-        gender: 'male',
-      }).returning('id');
+      const query = kysely
+        .insertInto('Person')
+        .values({
+          firstName: 'DateTest',
+          lastName: 'User',
+          gender: 'male',
+        })
+        .returning('id');
 
       const result = await query.execute();
       expect(result).toHaveLength(1);
@@ -934,14 +1033,17 @@ describe('MikroKyselyPlugin', () => {
     test('INSERT with onCreate hook - explicit null should be respected', async () => {
       // If user explicitly provides null for an onCreate property, behavior depends on implementation
       // This tests the edge case where null is explicitly passed
-      const query = kysely.insertInto('Person').values({
-        firstName: 'NullTest',
-        lastName: 'User',
-        gender: 'male',
-        children: 0,
-        createdAt: null,
-        updatedAt: null,
-      }).returning(['id', 'children', 'createdAt', 'updatedAt']);
+      const query = kysely
+        .insertInto('Person')
+        .values({
+          firstName: 'NullTest',
+          lastName: 'User',
+          gender: 'male',
+          children: 0,
+          createdAt: null,
+          updatedAt: null,
+        })
+        .returning(['id', 'children', 'createdAt', 'updatedAt']);
 
       const result = await query.execute();
       expect(result).toHaveLength(1);
@@ -959,12 +1061,15 @@ describe('MikroKyselyPlugin', () => {
         .then(r => r.id);
 
       // Insert Pet using subquery for owner
-      const query = kysely.insertInto('Pet').values(eb => ({
-        name: 'SubqueryPet',
-        owner: eb.selectFrom('Person').select('id').where('id', '=', personId),
-        species: 'cat',
-        // createdAt and updatedAt should be auto-filled by onCreate hooks
-      })).returning(['id', 'name', 'createdAt', 'updatedAt']);
+      const query = kysely
+        .insertInto('Pet')
+        .values(eb => ({
+          name: 'SubqueryPet',
+          owner: eb.selectFrom('Person').select('id').where('id', '=', personId),
+          species: 'cat',
+          // createdAt and updatedAt should be auto-filled by onCreate hooks
+        }))
+        .returning(['id', 'name', 'createdAt', 'updatedAt']);
 
       const result = await query.execute();
       expect(result).toHaveLength(1);
@@ -975,9 +1080,18 @@ describe('MikroKyselyPlugin', () => {
   });
 
   describe('processOnUpdateHooks', () => {
-    interface PersonTable extends InferKyselyTable<typeof Person, { columnNamingStrategy: 'property'; processOnCreateHooks: true }> {}
-    interface PetTable extends InferKyselyTable<typeof Pet, { columnNamingStrategy: 'property'; processOnCreateHooks: true }> {}
-    interface ToyTable extends InferKyselyTable<typeof Toy, { columnNamingStrategy: 'property'; processOnCreateHooks: true }> {}
+    interface PersonTable extends InferKyselyTable<
+      typeof Person,
+      { columnNamingStrategy: 'property'; processOnCreateHooks: true }
+    > {}
+    interface PetTable extends InferKyselyTable<
+      typeof Pet,
+      { columnNamingStrategy: 'property'; processOnCreateHooks: true }
+    > {}
+    interface ToyTable extends InferKyselyTable<
+      typeof Toy,
+      { columnNamingStrategy: 'property'; processOnCreateHooks: true }
+    > {}
     interface DB {
       Person: PersonTable;
       Pet: PetTable;
@@ -1018,14 +1132,17 @@ describe('MikroKyselyPlugin', () => {
     beforeEach(async () => {
       // Insert test data
       const now = new Date();
-      await kysely.insertInto('Person').values({
-        firstName: 'InitialName',
-        lastName: 'InitialLast',
-        gender: 'male',
-        children: 0,
-        createdAt: now,
-        updatedAt: now,
-      }).execute();
+      await kysely
+        .insertInto('Person')
+        .values({
+          firstName: 'InitialName',
+          lastName: 'InitialLast',
+          gender: 'male',
+          children: 0,
+          createdAt: now,
+          updatedAt: now,
+        })
+        .execute();
     });
 
     afterEach(async () => {
@@ -1037,29 +1154,44 @@ describe('MikroKyselyPlugin', () => {
     test('UPDATE with onUpdate hook - missing onUpdate properties should be auto-filled', () => {
       // Person.updatedAt has onUpdate hook
       // When not explicitly set, it should be auto-filled
-      const query = kysely.updateTable('Person').set({
-        firstName: 'UpdatedName',
-      }).where('firstName', '=', 'InitialName');
-      expect(query.compile().sql).toMatchInlineSnapshot(`"update "person" set "first_name" = ?, "updated_at" = ? where "first_name" = ?"`);
+      const query = kysely
+        .updateTable('Person')
+        .set({
+          firstName: 'UpdatedName',
+        })
+        .where('firstName', '=', 'InitialName');
+      expect(query.compile().sql).toMatchInlineSnapshot(
+        `"update "person" set "first_name" = ?, "updated_at" = ? where "first_name" = ?"`,
+      );
       // Expected: SET should include "updated_at" = ? automatically
     });
 
     test('UPDATE with onUpdate hook - explicit onUpdate property should be respected (not overridden)', () => {
       // If user explicitly provides updatedAt, it should not be overridden
       const now = new Date('2020-01-01');
-      const query = kysely.updateTable('Person').set({
-        firstName: 'UpdatedName',
-        updatedAt: now, // Explicitly provided
-      }).where('firstName', '=', 'InitialName');
-      expect(query.compile().sql).toMatchInlineSnapshot(`"update "person" set "first_name" = ?, "updated_at" = ? where "first_name" = ?"`);
+      const query = kysely
+        .updateTable('Person')
+        .set({
+          firstName: 'UpdatedName',
+          updatedAt: now, // Explicitly provided
+        })
+        .where('firstName', '=', 'InitialName');
+      expect(query.compile().sql).toMatchInlineSnapshot(
+        `"update "person" set "first_name" = ?, "updated_at" = ? where "first_name" = ?"`,
+      );
     });
 
     test('UPDATE without onUpdate hook - non-hooked columns should work normally', () => {
       // Update a column that doesn't have an onUpdate hook
-      const query = kysely.updateTable('Person').set({
-        children: 5,
-      }).where('firstName', '=', 'InitialName');
-      expect(query.compile().sql).toMatchInlineSnapshot(`"update "person" set "children" = ?, "updated_at" = ? where "first_name" = ?"`);
+      const query = kysely
+        .updateTable('Person')
+        .set({
+          children: 5,
+        })
+        .where('firstName', '=', 'InitialName');
+      expect(query.compile().sql).toMatchInlineSnapshot(
+        `"update "person" set "children" = ?, "updated_at" = ? where "first_name" = ?"`,
+      );
       // Expected: Should not auto-fill updatedAt (since it's not in SET explicitly)
       // Actual behavior: depends on strategy - should auto-fill based on improved plan
     });
@@ -1069,9 +1201,13 @@ describe('MikroKyselyPlugin', () => {
       const beforeUpdate = new Date();
 
       // Update it
-      const query = kysely.updateTable('Person').set({
-        firstName: 'NewName',
-      }).where('firstName', '=', 'InitialName').returning(['firstName', 'updatedAt']);
+      const query = kysely
+        .updateTable('Person')
+        .set({
+          firstName: 'NewName',
+        })
+        .where('firstName', '=', 'InitialName')
+        .returning(['firstName', 'updatedAt']);
 
       const result = await query.execute();
       expect(result).toHaveLength(1);
@@ -1085,11 +1221,15 @@ describe('MikroKyselyPlugin', () => {
 
     test('UPDATE multiple columns with mixed hook/non-hook properties', async () => {
       // Some columns have hooks, some don't
-      const query = kysely.updateTable('Person').set({
-        firstName: 'Updated',
-        children: 3,
-        // updatedAt should be auto-filled
-      }).where('firstName', '=', 'InitialName').returning('updatedAt');
+      const query = kysely
+        .updateTable('Person')
+        .set({
+          firstName: 'Updated',
+          children: 3,
+          // updatedAt should be auto-filled
+        })
+        .where('firstName', '=', 'InitialName')
+        .returning('updatedAt');
 
       const result = await query.execute();
       expect(result).toHaveLength(1);
@@ -1101,7 +1241,14 @@ describe('MikroKyselyPlugin', () => {
       // Insert a Person and Pet
       const personId = await kysely
         .insertInto('Person')
-        .values({ firstName: 'Owner', lastName: 'Person', gender: 'male', children: 0, createdAt: new Date(), updatedAt: new Date() })
+        .values({
+          firstName: 'Owner',
+          lastName: 'Person',
+          gender: 'male',
+          children: 0,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        })
         .returning('id')
         .executeTakeFirstOrThrow()
         .then(r => r.id);
@@ -1120,19 +1267,28 @@ describe('MikroKyselyPlugin', () => {
         .then(r => r.id);
 
       // Update Pet - should auto-fill updatedAt
-      const query = kysely.updateTable('Pet').set({
-        name: 'UpdatedPetName',
-      }).where('id', '=', petId);
+      const query = kysely
+        .updateTable('Pet')
+        .set({
+          name: 'UpdatedPetName',
+        })
+        .where('id', '=', petId);
 
-      expect(query.compile().sql).toMatchInlineSnapshot(`"update "pet" set "name" = ?, "updated_at" = ? where "id" = ?"`);
+      expect(query.compile().sql).toMatchInlineSnapshot(
+        `"update "pet" set "name" = ?, "updated_at" = ? where "id" = ?"`,
+      );
       // Expected: SET should include "updated_at" = ?
     });
 
     test('UPDATE with onUpdate - dateTime should be converted correctly', async () => {
       // Verify that Date objects from onUpdate are properly converted for SQLite
-      const query = kysely.updateTable('Person').set({
-        firstName: 'TestUpdate',
-      }).where('firstName', '=', 'InitialName').returning('updatedAt');
+      const query = kysely
+        .updateTable('Person')
+        .set({
+          firstName: 'TestUpdate',
+        })
+        .where('firstName', '=', 'InitialName')
+        .returning('updatedAt');
 
       // Should not throw conversion error
       const result = await query.execute();
@@ -1144,20 +1300,30 @@ describe('MikroKyselyPlugin', () => {
 
     test('UPDATE with WHERE condition and onUpdate hook', async () => {
       // More complex: update with WHERE and onUpdate
-      const query = kysely.updateTable('Person').set({
-        lastName: 'UpdatedLast',
-      }).where('firstName', '=', 'InitialName').where('children', '=', 0);
+      const query = kysely
+        .updateTable('Person')
+        .set({
+          lastName: 'UpdatedLast',
+        })
+        .where('firstName', '=', 'InitialName')
+        .where('children', '=', 0);
 
-      expect(query.compile().sql).toMatchInlineSnapshot(`"update "person" set "last_name" = ?, "updated_at" = ? where "first_name" = ? and "children" = ?"`);
+      expect(query.compile().sql).toMatchInlineSnapshot(
+        `"update "person" set "last_name" = ?, "updated_at" = ? where "first_name" = ? and "children" = ?"`,
+      );
       // Expected: Should auto-fill updatedAt
     });
 
     test('UPDATE with onUpdate hook - explicit null should be respected', async () => {
       // If user explicitly provides null for an onUpdate property, behavior depends on implementation
-      const query = kysely.updateTable('Person').set({
-        firstName: 'NullUpdateTest',
-        updatedAt: null,
-      }).where('firstName', '=', 'InitialName').returning('updatedAt');
+      const query = kysely
+        .updateTable('Person')
+        .set({
+          firstName: 'NullUpdateTest',
+          updatedAt: null,
+        })
+        .where('firstName', '=', 'InitialName')
+        .returning('updatedAt');
 
       const result = await query.execute();
       expect(result).toHaveLength(1);
@@ -1166,15 +1332,36 @@ describe('MikroKyselyPlugin', () => {
 
     test('UPDATE multiple rows with onUpdate hook', async () => {
       // Insert multiple test records
-      await kysely.insertInto('Person').values([
-        { firstName: 'Batch1', lastName: 'Test', gender: 'male', children: 0, createdAt: new Date(), updatedAt: new Date() },
-        { firstName: 'Batch2', lastName: 'Test', gender: 'female', children: 0, createdAt: new Date(), updatedAt: new Date() },
-      ]).execute();
+      await kysely
+        .insertInto('Person')
+        .values([
+          {
+            firstName: 'Batch1',
+            lastName: 'Test',
+            gender: 'male',
+            children: 0,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          },
+          {
+            firstName: 'Batch2',
+            lastName: 'Test',
+            gender: 'female',
+            children: 0,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          },
+        ])
+        .execute();
 
       // Update multiple rows - all should get updatedAt from onUpdate hook
-      const query = kysely.updateTable('Person').set({
-        lastName: 'BatchUpdated',
-      }).where('lastName', '=', 'Test').returning(['id', 'lastName', 'updatedAt']);
+      const query = kysely
+        .updateTable('Person')
+        .set({
+          lastName: 'BatchUpdated',
+        })
+        .where('lastName', '=', 'Test')
+        .returning(['id', 'lastName', 'updatedAt']);
 
       const result = await query.execute();
       expect(result.length).toBeGreaterThanOrEqual(2);
@@ -1191,16 +1378,27 @@ describe('MikroKyselyPlugin', () => {
       // Test UPDATE with subquery - onUpdate hooks should still work
       const personId = await kysely
         .insertInto('Person')
-        .values({ firstName: 'SubqueryUpdate', lastName: 'Test', gender: 'male', children: 0, createdAt: new Date(), updatedAt: new Date() })
+        .values({
+          firstName: 'SubqueryUpdate',
+          lastName: 'Test',
+          gender: 'male',
+          children: 0,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        })
         .returning('id')
         .executeTakeFirstOrThrow()
         .then(r => r.id);
 
       // Update using subquery in set
-      const query = kysely.updateTable('Person').set(eb => ({
-        firstName: eb.selectFrom('Person').select('firstName').where('id', '=', personId),
-        // updatedAt should be auto-filled by onUpdate hook
-      })).where('id', '=', personId).returning(['firstName', 'updatedAt']);
+      const query = kysely
+        .updateTable('Person')
+        .set(eb => ({
+          firstName: eb.selectFrom('Person').select('firstName').where('id', '=', personId),
+          // updatedAt should be auto-filled by onUpdate hook
+        }))
+        .where('id', '=', personId)
+        .returning(['firstName', 'updatedAt']);
 
       const result = await query.execute();
       expect(result).toHaveLength(1);
@@ -1212,21 +1410,25 @@ describe('MikroKyselyPlugin', () => {
 
     test('ON CONFLICT with onUpdate hooks', async () => {
       const now = new Date();
-      await kysely.insertInto('Person').values({
-        id: 999,
-        firstName: 'Conflict',
-        lastName: 'Test',
-        gender: 'male',
-        children: 0,
-        createdAt: now,
-        updatedAt: now,
-      }).execute();
+      await kysely
+        .insertInto('Person')
+        .values({
+          id: 999,
+          firstName: 'Conflict',
+          lastName: 'Test',
+          gender: 'male',
+          children: 0,
+          createdAt: now,
+          updatedAt: now,
+        })
+        .execute();
 
       // Wait a bit to ensure timestamp difference for onUpdate hook
       await new Promise(resolve => setTimeout(resolve, 10));
 
       // Update using ON CONFLICT - should trigger onUpdate hook for updatedAt
-      await kysely.insertInto('Person')
+      await kysely
+        .insertInto('Person')
         .values({
           id: 999, // Conflict on ID
           firstName: 'NewName',
@@ -1236,13 +1438,15 @@ describe('MikroKyselyPlugin', () => {
           createdAt: now,
           // updatedAt not provided, should be updated by hook
         })
-        .onConflict(oc => oc.column('id').doUpdateSet({
-          firstName: 'NewName',
-          lastName: 'NewLast',
-          gender: 'female',
-          children: 1,
-          // updatedAt will be added by hook
-        }))
+        .onConflict(oc =>
+          oc.column('id').doUpdateSet({
+            firstName: 'NewName',
+            lastName: 'NewLast',
+            gender: 'female',
+            children: 1,
+            // updatedAt will be added by hook
+          }),
+        )
         .execute();
 
       const result = await kysely.selectFrom('Person').selectAll().where('id', '=', 999).executeTakeFirstOrThrow();
@@ -1261,7 +1465,14 @@ describe('MikroKyselyPlugin', () => {
       // Insert test data
       const personId = await kysely
         .insertInto('Person')
-        .values({ firstName: 'JoinTest', lastName: 'Person', gender: 'male', children: 0, createdAt: new Date(), updatedAt: new Date() })
+        .values({
+          firstName: 'JoinTest',
+          lastName: 'Person',
+          gender: 'male',
+          children: 0,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        })
         .returning('id')
         .executeTakeFirstOrThrow()
         .then(r => r.id);
@@ -1284,11 +1495,7 @@ describe('MikroKyselyPlugin', () => {
       const queryBuilder = kysely
         .updateTable('Pet')
         .set({ name: 'UpdatedJoinPet' })
-        .where('id', 'in', eb =>
-          eb.selectFrom('Person')
-            .select('id')
-            .where('firstName', '=', 'JoinTest'),
-        );
+        .where('id', 'in', eb => eb.selectFrom('Person').select('id').where('firstName', '=', 'JoinTest'));
 
       // This should work - using subquery instead of direct JOIN
       expect(queryBuilder.compile().sql).toContain('update');
@@ -1344,11 +1551,7 @@ describe('MikroKyselyPlugin', () => {
       expect(updateResult.numUpdatedRows).toBeGreaterThan(0n);
 
       // Verify the update was applied
-      const updated = await pgKysely
-        .selectFrom('Pet')
-        .selectAll()
-        .where('id', '=', petId)
-        .executeTakeFirstOrThrow();
+      const updated = await pgKysely.selectFrom('Pet').selectAll().where('id', '=', petId).executeTakeFirstOrThrow();
 
       expect(updated.name).toBe('UpdatedViaJoin');
 
@@ -1361,7 +1564,14 @@ describe('MikroKyselyPlugin', () => {
       // Insert test data
       const personId = await kysely
         .insertInto('Person')
-        .values({ firstName: 'DeleteJoin', lastName: 'Test', gender: 'male', children: 0, createdAt: new Date(), updatedAt: new Date() })
+        .values({
+          firstName: 'DeleteJoin',
+          lastName: 'Test',
+          gender: 'male',
+          children: 0,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        })
         .returning('id')
         .executeTakeFirstOrThrow()
         .then(r => r.id);
@@ -1390,7 +1600,10 @@ describe('MikroKyselyPlugin', () => {
 
     test('UPDATE with convertValues false', async () => {
       // Create kysely instance without convertValues
-      interface PersonTableNoConvert extends InferKyselyTable<typeof Person, { columnNamingStrategy: 'property'; processOnCreateHooks: true }> {}
+      interface PersonTableNoConvert extends InferKyselyTable<
+        typeof Person,
+        { columnNamingStrategy: 'property'; processOnCreateHooks: true }
+      > {}
       interface DBNoConvert {
         Person: PersonTableNoConvert;
       }
@@ -1401,9 +1614,12 @@ describe('MikroKyselyPlugin', () => {
         convertValues: false, // Disable value conversion
       });
 
-      const query = kyselyNoConvert.updateTable('Person').set({
-        firstName: 'NoConvert',
-      }).where('firstName', '=', 'InitialName');
+      const query = kyselyNoConvert
+        .updateTable('Person')
+        .set({
+          firstName: 'NoConvert',
+        })
+        .where('firstName', '=', 'InitialName');
 
       expect(query.compile().sql).toContain('update');
       // Value conversion should be skipped
@@ -1411,18 +1627,24 @@ describe('MikroKyselyPlugin', () => {
 
     test('ON CONFLICT with convertValues false', async () => {
       const now = new Date();
-      await kysely.insertInto('Person').values({
-        id: 888,
-        firstName: 'ConflictNoConvert',
-        lastName: 'Test',
-        gender: 'male',
-        children: 0,
-        createdAt: now,
-        updatedAt: now,
-      }).execute();
+      await kysely
+        .insertInto('Person')
+        .values({
+          id: 888,
+          firstName: 'ConflictNoConvert',
+          lastName: 'Test',
+          gender: 'male',
+          children: 0,
+          createdAt: now,
+          updatedAt: now,
+        })
+        .execute();
 
       // Create kysely instance without convertValues
-      interface PersonTableNoConvert extends InferKyselyTable<typeof Person, { columnNamingStrategy: 'property'; processOnCreateHooks: true }> {}
+      interface PersonTableNoConvert extends InferKyselyTable<
+        typeof Person,
+        { columnNamingStrategy: 'property'; processOnCreateHooks: true }
+      > {}
       interface DBNoConvert {
         Person: PersonTableNoConvert;
       }
@@ -1433,7 +1655,8 @@ describe('MikroKyselyPlugin', () => {
         convertValues: false, // Disable value conversion
       });
 
-      const query = kyselyNoConvert.insertInto('Person')
+      const query = kyselyNoConvert
+        .insertInto('Person')
         .values({
           id: 888,
           firstName: 'NewName',
@@ -1441,10 +1664,12 @@ describe('MikroKyselyPlugin', () => {
           gender: 'female',
           children: 1,
         })
-        .onConflict(oc => oc.column('id').doUpdateSet({
-          firstName: 'NewName',
-          lastName: 'NewLast',
-        }));
+        .onConflict(oc =>
+          oc.column('id').doUpdateSet({
+            firstName: 'NewName',
+            lastName: 'NewLast',
+          }),
+        );
 
       expect(query.compile().sql).toContain('on conflict');
       // Value conversion should be skipped in ON CONFLICT
@@ -1452,18 +1677,24 @@ describe('MikroKyselyPlugin', () => {
 
     test('ON CONFLICT with processOnUpdateHooks false', async () => {
       const now = new Date();
-      await kysely.insertInto('Person').values({
-        id: 777,
-        firstName: 'ConflictNoHook',
-        lastName: 'Test',
-        gender: 'male',
-        children: 0,
-        createdAt: now,
-        updatedAt: now,
-      }).execute();
+      await kysely
+        .insertInto('Person')
+        .values({
+          id: 777,
+          firstName: 'ConflictNoHook',
+          lastName: 'Test',
+          gender: 'male',
+          children: 0,
+          createdAt: now,
+          updatedAt: now,
+        })
+        .execute();
 
       // Create kysely instance without processOnUpdateHooks
-      interface PersonTableNoHook extends InferKyselyTable<typeof Person, { columnNamingStrategy: 'property'; processOnCreateHooks: true }> {}
+      interface PersonTableNoHook extends InferKyselyTable<
+        typeof Person,
+        { columnNamingStrategy: 'property'; processOnCreateHooks: true }
+      > {}
       interface DBNoHook {
         Person: PersonTableNoHook;
       }
@@ -1475,7 +1706,8 @@ describe('MikroKyselyPlugin', () => {
         convertValues: true,
       });
 
-      const query = kyselyNoHook.insertInto('Person')
+      const query = kyselyNoHook
+        .insertInto('Person')
         .values({
           id: 777,
           firstName: 'NewName',
@@ -1483,10 +1715,12 @@ describe('MikroKyselyPlugin', () => {
           gender: 'female',
           children: 1,
         })
-        .onConflict(oc => oc.column('id').doUpdateSet({
-          firstName: 'NewName',
-          lastName: 'NewLast',
-        }));
+        .onConflict(oc =>
+          oc.column('id').doUpdateSet({
+            firstName: 'NewName',
+            lastName: 'NewLast',
+          }),
+        );
 
       expect(query.compile().sql).toContain('on conflict');
       // onUpdate hooks should be skipped in ON CONFLICT
@@ -1525,14 +1759,17 @@ describe('MikroKyselyPlugin', () => {
 
     test('SELECT should convert values but keep column names', async () => {
       const now = new Date();
-      await kysely.insertInto('person').values({
-        first_name: 'ValueTest',
-        last_name: 'User',
-        gender: 'male',
-        created_at: now,
-        updated_at: now,
-        children: 0,
-      }).execute();
+      await kysely
+        .insertInto('person')
+        .values({
+          first_name: 'ValueTest',
+          last_name: 'User',
+          gender: 'male',
+          created_at: now,
+          updated_at: now,
+          children: 0,
+        })
+        .execute();
 
       const query = kysely.selectFrom('person').selectAll().where('first_name', '=', 'ValueTest');
       const result = await query.execute();
@@ -1549,14 +1786,17 @@ describe('MikroKyselyPlugin', () => {
     test('SELECT with empty entityMap should return rows as-is', async () => {
       // Test transformResult with empty entityMap (line 1048-1049)
       const now = new Date();
-      await kysely.insertInto('person').values({
-        first_name: 'EmptyMapTest',
-        last_name: 'User',
-        gender: 'male',
-        created_at: now,
-        updated_at: now,
-        children: 0,
-      }).execute();
+      await kysely
+        .insertInto('person')
+        .values({
+          first_name: 'EmptyMapTest',
+          last_name: 'User',
+          gender: 'male',
+          created_at: now,
+          updated_at: now,
+          children: 0,
+        })
+        .execute();
 
       // Query that doesn't match any entity (raw query scenario)
       const query = kysely.selectFrom('person').selectAll().where('first_name', '=', 'EmptyMapTest');
@@ -1569,7 +1809,10 @@ describe('MikroKyselyPlugin', () => {
   });
 
   describe('type conversions and timezone handling', () => {
-    interface TypeTable extends InferKyselyTable<typeof TypeEntity, { columnNamingStrategy: 'property'; processOnCreateHooks: true }> {}
+    interface TypeTable extends InferKyselyTable<
+      typeof TypeEntity,
+      { columnNamingStrategy: 'property'; processOnCreateHooks: true }
+    > {}
     interface DB {
       TypeEntity: TypeTable;
     }
@@ -1633,10 +1876,7 @@ describe('MikroKyselyPlugin', () => {
       const entityMap = new Map<string, typeof meta>();
       entityMap.set(meta.tableName, meta);
 
-      const rows = transformer.transformResult(
-        [{ created_at: '2024-01-01 10:00:00' }] as any,
-        entityMap,
-      );
+      const rows = transformer.transformResult([{ created_at: '2024-01-01 10:00:00' }] as any, entityMap);
 
       expect(parseSpy).toHaveBeenCalledWith('2024-01-01 10:00:00+05:00');
       expect(rows?.[0]?.created_at).toBeInstanceOf(Date);
@@ -1664,7 +1904,10 @@ describe('MikroTransformer', () => {
       id: p.integer().primary().autoincrement(),
       name: p.string(),
       createdAt: p.datetime().onCreate(() => new Date()),
-      updatedAt: p.datetime().nullable().onUpdate(() => new Date()),
+      updatedAt: p
+        .datetime()
+        .nullable()
+        .onUpdate(() => new Date()),
       flag: p.boolean().nullable(),
       payload: p.json().nullable(),
     },
@@ -1730,11 +1973,7 @@ describe('MikroTransformer', () => {
     const node: any = {
       kind: 'InsertQueryNode',
       columns: [ColumnNode.create('id'), ColumnNode.create('name')],
-      values: ValuesNode.create([
-        ValueListNode.create([
-          ValueNode.create(1),
-        ]),
-      ]),
+      values: ValuesNode.create([ValueListNode.create([ValueNode.create(1)])]),
     };
 
     expect(transformer.processInsertValues(node, getMeta())).toBe(node);
@@ -1761,7 +2000,10 @@ describe('MikroTransformer', () => {
     const platform = orm.em.getDriver().getPlatform();
     const processDateSpy = vi.spyOn(platform, 'processDateProperty').mockReturnValue('processed-date' as any);
 
-    const propWithCustom = { name: 'payload', customType: { convertToDatabaseValue: vi.fn().mockReturnValue('db-json') } } as any;
+    const propWithCustom = {
+      name: 'payload',
+      customType: { convertToDatabaseValue: vi.fn().mockReturnValue('db-json') },
+    } as any;
     const propWithDate = { name: 'createdAt', customType: undefined } as any;
 
     expect(transformer.prepareInputValue(propWithCustom, { foo: 'bar' }, true)).toBe('db-json');
@@ -1801,7 +2043,11 @@ describe('MikroTransformer', () => {
     test('returns original when columns missing or values not ValuesNode', () => {
       const meta = getMeta();
       const nodeNoColumns: any = { kind: 'InsertQueryNode', values: ValuesNode.create([]) };
-      const nodeNonValues: any = { kind: 'InsertQueryNode', columns: [ColumnNode.create('id')], values: { kind: 'NotValuesNode' } };
+      const nodeNonValues: any = {
+        kind: 'InsertQueryNode',
+        columns: [ColumnNode.create('id')],
+        values: { kind: 'NotValuesNode' },
+      };
 
       expect(transformer.processInsertValues(nodeNoColumns, meta)).toBe(nodeNoColumns);
       expect(transformer.processInsertValues(nodeNonValues, meta)).toBe(nodeNonValues);
@@ -1828,10 +2074,12 @@ describe('MikroTransformer', () => {
       const meta = getMeta();
       const node: any = {
         kind: 'UpdateQueryNode',
-        updates: [{
-          column: { kind: 'NotColumn' } as any,
-          value: ValueNode.create('value'),
-        }],
+        updates: [
+          {
+            column: { kind: 'NotColumn' } as any,
+            value: ValueNode.create('value'),
+          },
+        ],
       };
 
       expect(transformer.processUpdateValues(node, meta)).toBe(node);
@@ -1844,10 +2092,12 @@ describe('MikroTransformer', () => {
 
       const node: any = {
         kind: 'UpdateQueryNode',
-        updates: [{
-          column: ColumnNode.create('created_at'),
-          value: ValueNode.createImmediate(new Date('2024-01-01')),
-        }],
+        updates: [
+          {
+            column: ColumnNode.create('created_at'),
+            value: ValueNode.createImmediate(new Date('2024-01-01')),
+          },
+        ],
       };
 
       const result: any = transformer.processUpdateValues(node, meta);
@@ -1874,10 +2124,16 @@ describe('MikroTransformer', () => {
         node: {
           kind: 'SelectQueryNode',
           from: {
-            froms: [{
-              kind: 'TableNode',
-              table: { kind: 'SchemableIdentifierNode', schema: undefined, identifier: { kind: 'IdentifierNode', name: 'test_entity' } },
-            }],
+            froms: [
+              {
+                kind: 'TableNode',
+                table: {
+                  kind: 'SchemableIdentifierNode',
+                  schema: undefined,
+                  identifier: { kind: 'IdentifierNode', name: 'test_entity' },
+                },
+              },
+            ],
           },
         },
         alias: { kind: 'IdentifierNode', name: 'sq' },
@@ -1910,7 +2166,11 @@ describe('MikroTransformer', () => {
         kind: 'JoinNode',
         table: {
           kind: 'TableNode',
-          table: { kind: 'SchemableIdentifierNode', schema: undefined, identifier: { kind: 'IdentifierNode', name: 'non_existing_table' } },
+          table: {
+            kind: 'SchemableIdentifierNode',
+            schema: undefined,
+            identifier: { kind: 'IdentifierNode', name: 'non_existing_table' },
+          },
         },
       };
 
@@ -1951,13 +2211,18 @@ describe('MikroTransformer', () => {
       };
       const entityMap = new Map<string, any>();
       entityMap.set(fakeMeta.tableName, fakeMeta);
-      const transformerWithProperty = new MikroTransformer(orm.em, { columnNamingStrategy: 'property', convertValues: false });
+      const transformerWithProperty = new MikroTransformer(orm.em, {
+        columnNamingStrategy: 'property',
+        convertValues: false,
+      });
 
-      const rows = [{
-        first_name: 'Overwritten',
-        firstName: 'KeepMe',
-        owner_id: 123,
-      }];
+      const rows = [
+        {
+          first_name: 'Overwritten',
+          firstName: 'KeepMe',
+          owner_id: 123,
+        },
+      ];
 
       const result = transformerWithProperty.transformResult(rows as any, entityMap)!;
       expect(result[0].firstName).toBe('Overwritten'); // overwritten
@@ -1968,14 +2233,9 @@ describe('MikroTransformer', () => {
     test('transformRow relation mover runs when property map is empty', () => {
       const transformerWithProperty = new MikroTransformer(orm.em, { columnNamingStrategy: 'property' });
       const row = { owner_id: 55 };
-      const mapped = transformerWithProperty.transformRow(
-        row,
-        {},
-        { owner_id: 'owner' },
-      );
+      const mapped = transformerWithProperty.transformRow(row, {}, { owner_id: 'owner' });
       expect(mapped.owner).toBe(55);
       expect(mapped.owner_id).toBeUndefined();
     });
   });
-
 });

@@ -3,7 +3,6 @@ import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-or
 
 @Entity()
 class Test {
-
   @PrimaryKey()
   id!: number;
 
@@ -13,7 +12,6 @@ class Test {
   constructor(a: any) {
     this.a = a;
   }
-
 }
 
 let orm: MikroORM;
@@ -25,14 +23,18 @@ beforeAll(async () => {
     entities: [Test],
   });
   await orm.schema.create();
-  orm.em.create(Test, { a: {
+  orm.em.create(Test, {
+    a: {
       value: 1,
-    } });
-  orm.em.create(Test, { a: {
+    },
+  });
+  orm.em.create(Test, {
+    a: {
       complex: {
         bool: true,
       },
-    } });
+    },
+  });
   await orm.em.flush();
   orm.em.clear();
 });
@@ -66,8 +68,12 @@ test('complex working', async () => {
 test('complex not working', async () => {
   const query = { $and: [{ $or: [{ a: { value: 1 } }, { a: { complex: { bool: true } } }] }] };
   const qb = orm.em.qb(Test).where(query);
-  expect(qb.getFormattedQuery()).toBe("select `t0`.* from `test` as `t0` where (json_extract(`t0`.`a`, '$.value') = 1 or json_extract(`t0`.`a`, '$.complex.bool') = true)");
-  expect(qb.getQuery()).toBe("select `t0`.* from `test` as `t0` where (json_extract(`t0`.`a`, '$.value') = ? or json_extract(`t0`.`a`, '$.complex.bool') = ?)");
+  expect(qb.getFormattedQuery()).toBe(
+    "select `t0`.* from `test` as `t0` where (json_extract(`t0`.`a`, '$.value') = 1 or json_extract(`t0`.`a`, '$.complex.bool') = true)",
+  );
+  expect(qb.getQuery()).toBe(
+    "select `t0`.* from `test` as `t0` where (json_extract(`t0`.`a`, '$.value') = ? or json_extract(`t0`.`a`, '$.complex.bool') = ?)",
+  );
   const res = await qb.execute(); // faulty sql query is generated
   expect(res.length).toBe(2);
 });

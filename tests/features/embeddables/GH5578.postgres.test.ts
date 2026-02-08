@@ -1,34 +1,38 @@
 import { Collection, MikroORM, raw } from '@mikro-orm/postgresql';
-import { Embeddable, Embedded, Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Embeddable,
+  Embedded,
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Embeddable()
 class Statistic {
-
   @Property()
   revenue!: number;
-
 }
 
 @Entity()
 class Event {
-
   @PrimaryKey()
   id!: number;
 
   @Property()
   name!: string;
 
-  @OneToMany({ entity: () => Order,  mappedBy: order => order.event })
+  @OneToMany({ entity: () => Order, mappedBy: order => order.event })
   orders = new Collection<Order>(this);
 
   @Embedded({ entity: () => Statistic, nullable: true, prefix: false, persist: false })
   statistic?: Statistic;
-
 }
 
 @Entity()
 class Order {
-
   @PrimaryKey()
   id!: number;
 
@@ -37,7 +41,6 @@ class Order {
 
   @ManyToOne(() => Event, { nullable: true })
   event!: Event;
-
 }
 
 let orm: MikroORM;
@@ -67,13 +70,10 @@ test('Hydrate non persistent properties on embeddable', async () => {
   const qb = orm.em.createQueryBuilder(Event, 'e');
 
   const results = await qb
-      .select([
-        'e.*',
-        raw('sum(o.total)::int4 as revenue'),
-      ])
-      .leftJoin('e.orders', 'o')
-      .groupBy('e.id')
-      .getResult();
+    .select(['e.*', raw('sum(o.total)::int4 as revenue')])
+    .leftJoin('e.orders', 'o')
+    .groupBy('e.id')
+    .getResult();
 
   expect(results.find(e => e.name === 'Foo')?.statistic?.revenue).toBe(250);
   expect(results.find(e => e.name === 'Bar')?.statistic?.revenue).toBe(60);

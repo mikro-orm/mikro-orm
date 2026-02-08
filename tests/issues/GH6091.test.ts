@@ -1,6 +1,12 @@
 import { MikroORM, ObjectId } from '@mikro-orm/mongodb';
 
-import { Entity, PrimaryKey, Property, ReflectMetadataProvider, SerializedPrimaryKey } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+  SerializedPrimaryKey,
+} from '@mikro-orm/decorators/legacy';
 interface Event {
   name: string;
   actorId: ObjectId;
@@ -8,7 +14,6 @@ interface Event {
 
 @Entity()
 class User {
-
   @PrimaryKey()
   _id!: ObjectId;
 
@@ -20,7 +25,6 @@ class User {
 
   @Property({ type: 'json' })
   events: Event[] = [];
-
 }
 
 let orm: MikroORM;

@@ -3,7 +3,6 @@ import { Entity, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider } from
 
 @Entity()
 class User {
-
   @PrimaryKey()
   id!: number;
 
@@ -12,7 +11,6 @@ class User {
 
   @ManyToOne(() => User, { nullable: true })
   test?: Ref<User> = ref(User, 1);
-
 }
 
 test('GH #6853', async () => {

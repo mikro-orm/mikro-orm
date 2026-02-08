@@ -11,7 +11,6 @@ import { MikroORM } from '@mikro-orm/sqlite';
 
 @Entity()
 export class EndUser {
-
   @PrimaryKey()
   id!: number;
 
@@ -20,29 +19,22 @@ export class EndUser {
 
   @OneToMany(() => Booking, booking => booking.endUser)
   bookings = new Collection<Booking>(this);
-
 }
 
 @Entity()
 export class Event {
-
   @PrimaryKey()
   id!: number;
 
   @Property()
   name!: string;
 
-  @OneToMany(
-    () => Booking,
-    booking => booking.event,
-  )
+  @OneToMany(() => Booking, booking => booking.event)
   bookings = new Collection<Booking>(this);
-
 }
 
 @Entity()
 export class Booking {
-
   @PrimaryKey()
   id!: number;
 
@@ -51,11 +43,9 @@ export class Booking {
 
   @ManyToOne(() => Event)
   event!: Event;
-
 }
 
 describe('Collection.loadCount where option', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {

@@ -13,7 +13,6 @@ import { mockLogger } from '../../helpers.js';
 
 @Entity()
 class TestEntity {
-
   @PrimaryKey()
   id!: number;
 
@@ -25,7 +24,6 @@ class TestEntity {
 
   @Property({ onCreate: () => new Date(), nullable: true })
   createdAt?: Date;
-
 }
 
 const options = {
@@ -67,11 +65,14 @@ describe.each(Utils.keys(options))('Transaction Propagation [%s]', type => {
     await em.transactional(async em1 => {
       outerTrx = (em1 as any).transactionContext;
 
-      await em1.transactional(async em2 => {
-        innerTrx = (em2 as any).transactionContext;
-        const entity = em2.create(TestEntity, { name: 'test' });
-        await em2.persist(entity).flush();
-      }, { propagation: TransactionPropagation.REQUIRED });
+      await em1.transactional(
+        async em2 => {
+          innerTrx = (em2 as any).transactionContext;
+          const entity = em2.create(TestEntity, { name: 'test' });
+          await em2.persist(entity).flush();
+        },
+        { propagation: TransactionPropagation.REQUIRED },
+      );
     });
 
     expect(outerTrx).toBeDefined();
@@ -88,26 +89,23 @@ describe.each(Utils.keys(options))('Transaction Propagation [%s]', type => {
     await em.transactional(async em1 => {
       await em1.persist(em1.create(TestEntity, { name: 'outer' })).flush();
 
-      await em1.transactional(async em2 => {
-        await em2.persist(em2.create(TestEntity, { name: 'inner' })).flush();
-      }, { propagation: TransactionPropagation.REQUIRED });
+      await em1.transactional(
+        async em2 => {
+          await em2.persist(em2.create(TestEntity, { name: 'inner' })).flush();
+        },
+        { propagation: TransactionPropagation.REQUIRED },
+      );
     });
 
     // Verify only one BEGIN and one COMMIT
-    const beginCalls = mock.mock.calls.filter(c =>
-      c[0].toLowerCase().includes('begin'),
-    );
+    const beginCalls = mock.mock.calls.filter(c => c[0].toLowerCase().includes('begin'));
     expect(beginCalls).toHaveLength(1);
 
-    const commitCalls = mock.mock.calls.filter(c =>
-      c[0].toLowerCase().includes('commit'),
-    );
+    const commitCalls = mock.mock.calls.filter(c => c[0].toLowerCase().includes('commit'));
     expect(commitCalls).toHaveLength(1);
 
     // No savepoints should be created for REQUIRED
-    const savepointCalls = mock.mock.calls.filter(c =>
-      c[0].toLowerCase().includes('savepoint'),
-    );
+    const savepointCalls = mock.mock.calls.filter(c => c[0].toLowerCase().includes('savepoint'));
     expect(savepointCalls).toHaveLength(0);
   });
 
@@ -115,11 +113,14 @@ describe.each(Utils.keys(options))('Transaction Propagation [%s]', type => {
     const em = orm.em.fork();
     let trx: any;
 
-    await em.transactional(async em1 => {
-      trx = (em1 as any).transactionContext;
-      const entity = em1.create(TestEntity, { name: 'test' });
-      await em1.persist(entity).flush();
-    }, { propagation: TransactionPropagation.REQUIRED });
+    await em.transactional(
+      async em1 => {
+        trx = (em1 as any).transactionContext;
+        const entity = em1.create(TestEntity, { name: 'test' });
+        await em1.persist(entity).flush();
+      },
+      { propagation: TransactionPropagation.REQUIRED },
+    );
 
     expect(trx).toBeDefined();
     const count = await orm.em.count(TestEntity);
@@ -134,11 +135,14 @@ describe.each(Utils.keys(options))('Transaction Propagation [%s]', type => {
         const entity1 = em1.create(TestEntity, { name: 'outer' });
         await em1.persist(entity1).flush();
 
-        await em1.transactional(async em2 => {
-          const entity2 = em2.create(TestEntity, { name: 'inner' });
-          await em2.persist(entity2).flush();
-          throw new Error('Inner error');
-        }, { propagation: TransactionPropagation.REQUIRED });
+        await em1.transactional(
+          async em2 => {
+            const entity2 = em2.create(TestEntity, { name: 'inner' });
+            await em2.persist(entity2).flush();
+            throw new Error('Inner error');
+          },
+          { propagation: TransactionPropagation.REQUIRED },
+        );
       });
     } catch (e) {
       // Expected error
@@ -158,17 +162,23 @@ describe.each(Utils.keys(options))('Transaction Propagation [%s]', type => {
       const entity1 = em1.create(TestEntity, { name: 'first' });
       await em1.persist(entity1).flush();
 
-      await em1.transactional(async em2 => {
-        contexts.push((em2 as any).transactionContext);
-        const entity2 = em2.create(TestEntity, { name: 'second' });
-        await em2.persist(entity2).flush();
-      }, { propagation: TransactionPropagation.REQUIRED });
+      await em1.transactional(
+        async em2 => {
+          contexts.push((em2 as any).transactionContext);
+          const entity2 = em2.create(TestEntity, { name: 'second' });
+          await em2.persist(entity2).flush();
+        },
+        { propagation: TransactionPropagation.REQUIRED },
+      );
 
-      await em1.transactional(async em3 => {
-        contexts.push((em3 as any).transactionContext);
-        const entity3 = em3.create(TestEntity, { name: 'third' });
-        await em3.persist(entity3).flush();
-      }, { propagation: TransactionPropagation.REQUIRED });
+      await em1.transactional(
+        async em3 => {
+          contexts.push((em3 as any).transactionContext);
+          const entity3 = em3.create(TestEntity, { name: 'third' });
+          await em3.persist(entity3).flush();
+        },
+        { propagation: TransactionPropagation.REQUIRED },
+      );
     });
 
     // All should share the same context
@@ -189,11 +199,14 @@ describe.each(Utils.keys(options))('Transaction Propagation [%s]', type => {
       const entity1 = em1.create(TestEntity, { name: 'outer' });
       await em1.persist(entity1).flush();
 
-      await em1.transactional(async em2 => {
-        innerTrx = (em2 as any).transactionContext;
-        const entity2 = em2.create(TestEntity, { name: 'inner' });
-        await em2.persist(entity2).flush();
-      }, { propagation: TransactionPropagation.REQUIRES_NEW });
+      await em1.transactional(
+        async em2 => {
+          innerTrx = (em2 as any).transactionContext;
+          const entity2 = em2.create(TestEntity, { name: 'inner' });
+          await em2.persist(entity2).flush();
+        },
+        { propagation: TransactionPropagation.REQUIRES_NEW },
+      );
     });
 
     expect(outerTrx).toBeDefined();
@@ -212,11 +225,14 @@ describe.each(Utils.keys(options))('Transaction Propagation [%s]', type => {
       await em1.persist(entity1).flush();
 
       try {
-        await em1.transactional(async em2 => {
-          const entity2 = em2.create(TestEntity, { name: 'inner' });
-          await em2.persist(entity2).flush();
-          throw new Error('Rollback inner');
-        }, { propagation: TransactionPropagation.REQUIRES_NEW });
+        await em1.transactional(
+          async em2 => {
+            const entity2 = em2.create(TestEntity, { name: 'inner' });
+            await em2.persist(entity2).flush();
+            throw new Error('Rollback inner');
+          },
+          { propagation: TransactionPropagation.REQUIRES_NEW },
+        );
       } catch (e) {
         // Inner transaction rolled back
       }
@@ -242,10 +258,13 @@ describe.each(Utils.keys(options))('Transaction Propagation [%s]', type => {
         const entity1 = em1.create(TestEntity, { name: 'outer-fail' });
         await em1.persist(entity1).flush();
 
-        await em1.transactional(async em2 => {
-          const entity2 = em2.create(TestEntity, { name: 'inner-success' });
-          await em2.persist(entity2).flush();
-        }, { propagation: TransactionPropagation.REQUIRES_NEW });
+        await em1.transactional(
+          async em2 => {
+            const entity2 = em2.create(TestEntity, { name: 'inner-success' });
+            await em2.persist(entity2).flush();
+          },
+          { propagation: TransactionPropagation.REQUIRES_NEW },
+        );
 
         throw new Error('Outer transaction error');
       });
@@ -267,11 +286,14 @@ describe.each(Utils.keys(options))('Transaction Propagation [%s]', type => {
       contexts.push((em1 as any).transactionContext);
 
       for (let i = 0; i < 3; i++) {
-        await em1.transactional(async em2 => {
-          contexts.push((em2 as any).transactionContext);
-          const entity = em2.create(TestEntity, { name: `entity-${i}` });
-          await em2.persist(entity).flush();
-        }, { propagation: TransactionPropagation.REQUIRES_NEW });
+        await em1.transactional(
+          async em2 => {
+            contexts.push((em2 as any).transactionContext);
+            const entity = em2.create(TestEntity, { name: `entity-${i}` });
+            await em2.persist(entity).flush();
+          },
+          { propagation: TransactionPropagation.REQUIRES_NEW },
+        );
       }
     });
 
@@ -292,42 +314,51 @@ describe.each(Utils.keys(options))('Transaction Propagation [%s]', type => {
     await em.transactional(async em1 => {
       await em1.persist(em1.create(TestEntity, { name: 'outer-tx' })).flush();
 
-      await em1.transactional(async em2 => {
-        await em2.persist(em2.create(TestEntity, { name: 'inner-tx' })).flush();
-      }, { propagation: TransactionPropagation.REQUIRES_NEW });
+      await em1.transactional(
+        async em2 => {
+          await em2.persist(em2.create(TestEntity, { name: 'inner-tx' })).flush();
+        },
+        { propagation: TransactionPropagation.REQUIRES_NEW },
+      );
 
       await em1.persist(em1.create(TestEntity, { name: 'after-inner' })).flush();
     });
 
     // Should have two separate BEGIN and COMMIT pairs
-    const beginCalls = mock.mock.calls.filter(c =>
-      c[0].toLowerCase().includes('begin'),
-    );
+    const beginCalls = mock.mock.calls.filter(c => c[0].toLowerCase().includes('begin'));
     expect(beginCalls).toHaveLength(2);
 
-    const commitCalls = mock.mock.calls.filter(c =>
-      c[0].toLowerCase().includes('commit'),
-    );
+    const commitCalls = mock.mock.calls.filter(c => c[0].toLowerCase().includes('commit'));
     expect(commitCalls).toHaveLength(2);
 
     // Verify query execution order
-    const queryTypes = mock.mock.calls.map(c => {
-      const query = c[0].toLowerCase();
-      if (query.includes('begin')) { return 'BEGIN'; }
-      if (query.includes('commit')) { return 'COMMIT'; }
-      if (query.includes('insert')) { return 'INSERT'; }
-      if (query.includes('rollback')) { return 'ROLLBACK'; }
-      return 'OTHER';
-    }).filter(type => type !== 'OTHER');
+    const queryTypes = mock.mock.calls
+      .map(c => {
+        const query = c[0].toLowerCase();
+        if (query.includes('begin')) {
+          return 'BEGIN';
+        }
+        if (query.includes('commit')) {
+          return 'COMMIT';
+        }
+        if (query.includes('insert')) {
+          return 'INSERT';
+        }
+        if (query.includes('rollback')) {
+          return 'ROLLBACK';
+        }
+        return 'OTHER';
+      })
+      .filter(type => type !== 'OTHER');
 
     // Expected order: BEGIN (outer), INSERT, BEGIN (inner), INSERT, COMMIT (inner), INSERT, COMMIT (outer)
-    expect(queryTypes[0]).toBe('BEGIN');   // Outer transaction starts
-    expect(queryTypes[1]).toBe('INSERT');  // First entity
-    expect(queryTypes[2]).toBe('BEGIN');   // Inner transaction starts
-    expect(queryTypes[3]).toBe('INSERT');  // Second entity
-    expect(queryTypes[4]).toBe('COMMIT');  // Inner transaction commits
-    expect(queryTypes[5]).toBe('INSERT');  // Third entity
-    expect(queryTypes[6]).toBe('COMMIT');  // Outer transaction commits
+    expect(queryTypes[0]).toBe('BEGIN'); // Outer transaction starts
+    expect(queryTypes[1]).toBe('INSERT'); // First entity
+    expect(queryTypes[2]).toBe('BEGIN'); // Inner transaction starts
+    expect(queryTypes[3]).toBe('INSERT'); // Second entity
+    expect(queryTypes[4]).toBe('COMMIT'); // Inner transaction commits
+    expect(queryTypes[5]).toBe('INSERT'); // Third entity
+    expect(queryTypes[6]).toBe('COMMIT'); // Outer transaction commits
   });
 
   test('REQUIRES_NEW propagation should prevent deadlock by using independent transactions', async () => {
@@ -338,10 +369,12 @@ describe.each(Utils.keys(options))('Transaction Propagation [%s]', type => {
     const em = orm.em.fork();
 
     // Create initial data
-    await em.persist([
-      em.create(TestEntity, { name: 'resource-a', value: 1 }),
-      em.create(TestEntity, { name: 'resource-b', value: 2 }),
-    ]).flush();
+    await em
+      .persist([
+        em.create(TestEntity, { name: 'resource-a', value: 1 }),
+        em.create(TestEntity, { name: 'resource-b', value: 2 }),
+      ])
+      .flush();
 
     // Test that REQUIRES_NEW creates truly independent transactions
     await em.transactional(async em1 => {
@@ -351,11 +384,14 @@ describe.each(Utils.keys(options))('Transaction Propagation [%s]', type => {
       await em1.persist(entityA!).flush();
 
       // Inner REQUIRES_NEW transaction should be able to access resource-b independently
-      await em1.transactional(async em2 => {
-        const entityB = await em2.findOne(TestEntity, { name: 'resource-b' });
-        entityB!.value = 20;
-        await em2.persist(entityB!).flush();
-      }, { propagation: TransactionPropagation.REQUIRES_NEW });
+      await em1.transactional(
+        async em2 => {
+          const entityB = await em2.findOne(TestEntity, { name: 'resource-b' });
+          entityB!.value = 20;
+          await em2.persist(entityB!).flush();
+        },
+        { propagation: TransactionPropagation.REQUIRES_NEW },
+      );
 
       // After inner transaction completes, outer can continue
       entityA!.value = 15;
@@ -379,11 +415,14 @@ describe.each(Utils.keys(options))('Transaction Propagation [%s]', type => {
       await em1.persist(entity1).flush();
 
       try {
-        await em1.transactional(async em2 => {
-          const entity2 = em2.create(TestEntity, { name: 'inner' });
-          await em2.persist(entity2).flush();
-          throw new Error('Rollback inner');
-        }, { propagation: TransactionPropagation.NESTED });
+        await em1.transactional(
+          async em2 => {
+            const entity2 = em2.create(TestEntity, { name: 'inner' });
+            await em2.persist(entity2).flush();
+            throw new Error('Rollback inner');
+          },
+          { propagation: TransactionPropagation.NESTED },
+        );
       } catch (e) {
         // Inner transaction rolled back to savepoint
       }
@@ -400,10 +439,13 @@ describe.each(Utils.keys(options))('Transaction Propagation [%s]', type => {
   test('NESTED propagation should create new transaction if none exists', async () => {
     const em = orm.em.fork();
 
-    await em.transactional(async em1 => {
-      const entity = em1.create(TestEntity, { name: 'test' });
-      await em1.persist(entity).flush();
-    }, { propagation: TransactionPropagation.NESTED });
+    await em.transactional(
+      async em1 => {
+        const entity = em1.create(TestEntity, { name: 'test' });
+        await em1.persist(entity).flush();
+      },
+      { propagation: TransactionPropagation.NESTED },
+    );
 
     const count = await orm.em.count(TestEntity);
     expect(count).toBe(1);
@@ -416,23 +458,29 @@ describe.each(Utils.keys(options))('Transaction Propagation [%s]', type => {
       const entity1 = em1.create(TestEntity, { name: 'level1' });
       await em1.persist(entity1).flush();
 
-      await em1.transactional(async em2 => {
-        const entity2 = em2.create(TestEntity, { name: 'level2' });
-        await em2.persist(entity2).flush();
+      await em1.transactional(
+        async em2 => {
+          const entity2 = em2.create(TestEntity, { name: 'level2' });
+          await em2.persist(entity2).flush();
 
-        try {
-          await em2.transactional(async em3 => {
-            const entity3 = em3.create(TestEntity, { name: 'level3' });
-            await em3.persist(entity3).flush();
-            throw new Error('Rollback level3');
-          }, { propagation: TransactionPropagation.NESTED });
-        } catch (e) {
-          // Level 3 rolled back
-        }
+          try {
+            await em2.transactional(
+              async em3 => {
+                const entity3 = em3.create(TestEntity, { name: 'level3' });
+                await em3.persist(entity3).flush();
+                throw new Error('Rollback level3');
+              },
+              { propagation: TransactionPropagation.NESTED },
+            );
+          } catch (e) {
+            // Level 3 rolled back
+          }
 
-        const entity4 = em2.create(TestEntity, { name: 'level2-after' });
-        await em2.persist(entity4).flush();
-      }, { propagation: TransactionPropagation.NESTED });
+          const entity4 = em2.create(TestEntity, { name: 'level2-after' });
+          await em2.persist(entity4).flush();
+        },
+        { propagation: TransactionPropagation.NESTED },
+      );
     });
 
     const entities = await orm.em.find(TestEntity, {});
@@ -450,20 +498,26 @@ describe.each(Utils.keys(options))('Transaction Propagation [%s]', type => {
 
       // First nested - will fail
       try {
-        await em1.transactional(async em2 => {
-          const entity2 = em2.create(TestEntity, { name: 'nested1' });
-          await em2.persist(entity2).flush();
-          throw new Error('Rollback nested1');
-        }, { propagation: TransactionPropagation.NESTED });
+        await em1.transactional(
+          async em2 => {
+            const entity2 = em2.create(TestEntity, { name: 'nested1' });
+            await em2.persist(entity2).flush();
+            throw new Error('Rollback nested1');
+          },
+          { propagation: TransactionPropagation.NESTED },
+        );
       } catch (e) {
         // Expected
       }
 
       // Second nested - should succeed
-      await em1.transactional(async em2 => {
-        const entity3 = em2.create(TestEntity, { name: 'nested2' });
-        await em2.persist(entity3).flush();
-      }, { propagation: TransactionPropagation.NESTED });
+      await em1.transactional(
+        async em2 => {
+          const entity3 = em2.create(TestEntity, { name: 'nested2' });
+          await em2.persist(entity3).flush();
+        },
+        { propagation: TransactionPropagation.NESTED },
+      );
     });
 
     const entities = await orm.em.find(TestEntity, {});
@@ -479,20 +533,23 @@ describe.each(Utils.keys(options))('Transaction Propagation [%s]', type => {
     await em.transactional(async em1 => {
       await em1.persist(em1.create(TestEntity, { name: 'outer' })).flush();
 
-      await em1.transactional(async em2 => {
-        await em2.persist(em2.create(TestEntity, { name: 'nested' })).flush();
-      }, { propagation: TransactionPropagation.NESTED });
+      await em1.transactional(
+        async em2 => {
+          await em2.persist(em2.create(TestEntity, { name: 'nested' })).flush();
+        },
+        { propagation: TransactionPropagation.NESTED },
+      );
     });
 
     // Verify savepoint creation
-    const savepointCalls = mock.mock.calls.filter(c =>
-      c[0].toLowerCase().includes('savepoint') || c[0].toLowerCase().includes('save transaction'),
+    const savepointCalls = mock.mock.calls.filter(
+      c => c[0].toLowerCase().includes('savepoint') || c[0].toLowerCase().includes('save transaction'),
     );
     expect(savepointCalls.length).toBeGreaterThan(0);
 
     // Check savepoint naming pattern
-    const savepointCreate = savepointCalls.find(c =>
-      !c[0].toLowerCase().includes('release') && !c[0].toLowerCase().includes('rollback'),
+    const savepointCreate = savepointCalls.find(
+      c => !c[0].toLowerCase().includes('release') && !c[0].toLowerCase().includes('rollback'),
     );
     expect(savepointCreate).toBeDefined();
     expect(savepointCreate![0]).toMatch(/savepoint|save transaction/i);
@@ -506,10 +563,13 @@ describe.each(Utils.keys(options))('Transaction Propagation [%s]', type => {
       await em1.persist(em1.create(TestEntity, { name: 'before-savepoint' })).flush();
 
       try {
-        await em1.transactional(async em2 => {
-          await em2.persist(em2.create(TestEntity, { name: 'in-savepoint' })).flush();
-          throw new Error('Nested error');
-        }, { propagation: TransactionPropagation.NESTED });
+        await em1.transactional(
+          async em2 => {
+            await em2.persist(em2.create(TestEntity, { name: 'in-savepoint' })).flush();
+            throw new Error('Nested error');
+          },
+          { propagation: TransactionPropagation.NESTED },
+        );
       } catch (e) {
         // Expected
       }
@@ -518,16 +578,30 @@ describe.each(Utils.keys(options))('Transaction Propagation [%s]', type => {
     });
 
     // Should have: BEGIN, INSERT, SAVEPOINT, INSERT, ROLLBACK TO SAVEPOINT, INSERT, COMMIT
-    const queryTypes = mock.mock.calls.map(c => {
-      const query = c[0].toLowerCase();
-      if (query.includes('begin')) { return 'BEGIN'; }
-      if (query.includes('commit')) { return 'COMMIT'; }
-      if (query.includes('insert')) { return 'INSERT'; }
-      if (query.includes('rollback to savepoint') || query.includes('rollback transaction')) { return 'ROLLBACK_TO_SAVEPOINT'; }
-      if (query.includes('release savepoint')) { return 'RELEASE_SAVEPOINT'; }
-      if (query.includes('savepoint') || query.includes('save transaction')) { return 'SAVEPOINT'; }
-      return 'OTHER';
-    }).filter(type => type !== 'OTHER');
+    const queryTypes = mock.mock.calls
+      .map(c => {
+        const query = c[0].toLowerCase();
+        if (query.includes('begin')) {
+          return 'BEGIN';
+        }
+        if (query.includes('commit')) {
+          return 'COMMIT';
+        }
+        if (query.includes('insert')) {
+          return 'INSERT';
+        }
+        if (query.includes('rollback to savepoint') || query.includes('rollback transaction')) {
+          return 'ROLLBACK_TO_SAVEPOINT';
+        }
+        if (query.includes('release savepoint')) {
+          return 'RELEASE_SAVEPOINT';
+        }
+        if (query.includes('savepoint') || query.includes('save transaction')) {
+          return 'SAVEPOINT';
+        }
+        return 'OTHER';
+      })
+      .filter(type => type !== 'OTHER');
 
     // Verify ROLLBACK TO SAVEPOINT was called
     expect(queryTypes).toContain('ROLLBACK_TO_SAVEPOINT');
@@ -550,10 +624,13 @@ describe.each(Utils.keys(options))('Transaction Propagation [%s]', type => {
       const entity1 = em1.create(TestEntity, { name: 'with-tx' });
       await em1.persist(entity1).flush();
 
-      await em1.transactional(async em2 => {
-        const entity2 = em2.create(TestEntity, { name: 'without-tx' });
-        await em2.persist(entity2).flush();
-      }, { propagation: TransactionPropagation.NOT_SUPPORTED });
+      await em1.transactional(
+        async em2 => {
+          const entity2 = em2.create(TestEntity, { name: 'without-tx' });
+          await em2.persist(entity2).flush();
+        },
+        { propagation: TransactionPropagation.NOT_SUPPORTED },
+      );
     });
 
     const count = await orm.em.count(TestEntity);
@@ -569,10 +646,13 @@ describe.each(Utils.keys(options))('Transaction Propagation [%s]', type => {
         await em1.persist(entity1).flush();
 
         // This should commit immediately, not part of transaction
-        await em1.transactional(async em2 => {
-          const entity2 = em2.create(TestEntity, { name: 'no-tx-success' });
-          await em2.persist(entity2).flush();
-        }, { propagation: TransactionPropagation.NOT_SUPPORTED });
+        await em1.transactional(
+          async em2 => {
+            const entity2 = em2.create(TestEntity, { name: 'no-tx-success' });
+            await em2.persist(entity2).flush();
+          },
+          { propagation: TransactionPropagation.NOT_SUPPORTED },
+        );
 
         throw new Error('Outer transaction error');
       });
@@ -594,11 +674,14 @@ describe.each(Utils.keys(options))('Transaction Propagation [%s]', type => {
       await em1.persist(entity1).flush();
 
       try {
-        await em1.transactional(async em2 => {
-          const entity2 = em2.create(TestEntity, { name: 'no-tx-fail' });
-          await em2.persist(entity2).flush();
-          throw new Error('NOT_SUPPORTED error');
-        }, { propagation: TransactionPropagation.NOT_SUPPORTED });
+        await em1.transactional(
+          async em2 => {
+            const entity2 = em2.create(TestEntity, { name: 'no-tx-fail' });
+            await em2.persist(entity2).flush();
+            throw new Error('NOT_SUPPORTED error');
+          },
+          { propagation: TransactionPropagation.NOT_SUPPORTED },
+        );
       } catch (e) {
         // Error in NOT_SUPPORTED should not affect outer transaction
       }
@@ -621,11 +704,14 @@ describe.each(Utils.keys(options))('Transaction Propagation [%s]', type => {
     await em.transactional(async em1 => {
       outerTrx = (em1 as any).transactionContext;
 
-      await em1.transactional(async em2 => {
-        innerTrx = (em2 as any).transactionContext;
-        const entity = em2.create(TestEntity, { name: 'supports-with-tx' });
-        await em2.persist(entity).flush();
-      }, { propagation: TransactionPropagation.SUPPORTS });
+      await em1.transactional(
+        async em2 => {
+          innerTrx = (em2 as any).transactionContext;
+          const entity = em2.create(TestEntity, { name: 'supports-with-tx' });
+          await em2.persist(entity).flush();
+        },
+        { propagation: TransactionPropagation.SUPPORTS },
+      );
     });
 
     expect(outerTrx).toBeDefined();
@@ -639,11 +725,14 @@ describe.each(Utils.keys(options))('Transaction Propagation [%s]', type => {
     const em = orm.em.fork();
     let trx: any;
 
-    await em.transactional(async em1 => {
-      trx = (em1 as any).transactionContext;
-      const entity = em1.create(TestEntity, { name: 'supports-no-tx' });
-      await em1.persist(entity).flush();
-    }, { propagation: TransactionPropagation.SUPPORTS });
+    await em.transactional(
+      async em1 => {
+        trx = (em1 as any).transactionContext;
+        const entity = em1.create(TestEntity, { name: 'supports-no-tx' });
+        await em1.persist(entity).flush();
+      },
+      { propagation: TransactionPropagation.SUPPORTS },
+    );
 
     expect(trx).toBeFalsy(); // No transaction context
 
@@ -663,11 +752,14 @@ describe.each(Utils.keys(options))('Transaction Propagation [%s]', type => {
       const entity1 = em1.create(TestEntity, { name: 'outer' });
       await em1.persist(entity1).flush();
 
-      await em1.transactional(async em2 => {
-        innerTrx = (em2 as any).transactionContext;
-        const entity2 = em2.create(TestEntity, { name: 'mandatory-with-tx' });
-        await em2.persist(entity2).flush();
-      }, { propagation: TransactionPropagation.MANDATORY });
+      await em1.transactional(
+        async em2 => {
+          innerTrx = (em2 as any).transactionContext;
+          const entity2 = em2.create(TestEntity, { name: 'mandatory-with-tx' });
+          await em2.persist(entity2).flush();
+        },
+        { propagation: TransactionPropagation.MANDATORY },
+      );
     });
 
     expect(outerTrx).toBeDefined();
@@ -681,10 +773,13 @@ describe.each(Utils.keys(options))('Transaction Propagation [%s]', type => {
     const em = orm.em.fork();
 
     await expect(
-      em.transactional(async em1 => {
-        const entity = em1.create(TestEntity, { name: 'should-not-exist' });
-        await em1.persist(entity).flush();
-      }, { propagation: TransactionPropagation.MANDATORY }),
+      em.transactional(
+        async em1 => {
+          const entity = em1.create(TestEntity, { name: 'should-not-exist' });
+          await em1.persist(entity).flush();
+        },
+        { propagation: TransactionPropagation.MANDATORY },
+      ),
     ).rejects.toThrow('No existing transaction found for transaction marked with propagation "mandatory"');
 
     const count = await orm.em.count(TestEntity);
@@ -697,11 +792,14 @@ describe.each(Utils.keys(options))('Transaction Propagation [%s]', type => {
     const em = orm.em.fork();
     let trx: any;
 
-    await em.transactional(async em1 => {
-      trx = (em1 as any).transactionContext;
-      const entity = em1.create(TestEntity, { name: 'never-no-tx' });
-      await em1.persist(entity).flush();
-    }, { propagation: TransactionPropagation.NEVER });
+    await em.transactional(
+      async em1 => {
+        trx = (em1 as any).transactionContext;
+        const entity = em1.create(TestEntity, { name: 'never-no-tx' });
+        await em1.persist(entity).flush();
+      },
+      { propagation: TransactionPropagation.NEVER },
+    );
 
     expect(trx).toBeFalsy(); // No transaction context
 
@@ -717,10 +815,13 @@ describe.each(Utils.keys(options))('Transaction Propagation [%s]', type => {
       await em1.persist(entity1).flush();
 
       await expect(
-        em1.transactional(async em2 => {
-          const entity2 = em2.create(TestEntity, { name: 'should-not-exist' });
-          await em2.persist(entity2).flush();
-        }, { propagation: TransactionPropagation.NEVER }),
+        em1.transactional(
+          async em2 => {
+            const entity2 = em2.create(TestEntity, { name: 'should-not-exist' });
+            await em2.persist(entity2).flush();
+          },
+          { propagation: TransactionPropagation.NEVER },
+        ),
       ).rejects.toThrow('Existing transaction found for transaction marked with propagation "never"');
     });
 
@@ -771,19 +872,28 @@ describe.each(Utils.keys(options))('Transaction Propagation [%s]', type => {
       contexts.push({ level: 1, context: (em1 as any).transactionContext });
 
       // REQUIRED should share context
-      await em1.transactional(async em2 => {
-        contexts.push({ level: 2, type: 'REQUIRED', context: (em2 as any).transactionContext });
-      }, { propagation: TransactionPropagation.REQUIRED });
+      await em1.transactional(
+        async em2 => {
+          contexts.push({ level: 2, type: 'REQUIRED', context: (em2 as any).transactionContext });
+        },
+        { propagation: TransactionPropagation.REQUIRED },
+      );
 
       // REQUIRES_NEW should have new context
-      await em1.transactional(async em2 => {
-        contexts.push({ level: 2, type: 'REQUIRES_NEW', context: (em2 as any).transactionContext });
-      }, { propagation: TransactionPropagation.REQUIRES_NEW });
+      await em1.transactional(
+        async em2 => {
+          contexts.push({ level: 2, type: 'REQUIRES_NEW', context: (em2 as any).transactionContext });
+        },
+        { propagation: TransactionPropagation.REQUIRES_NEW },
+      );
 
       // NESTED should share context but with savepoint
-      await em1.transactional(async em2 => {
-        contexts.push({ level: 2, type: 'NESTED', context: (em2 as any).transactionContext });
-      }, { propagation: TransactionPropagation.NESTED });
+      await em1.transactional(
+        async em2 => {
+          contexts.push({ level: 2, type: 'NESTED', context: (em2 as any).transactionContext });
+        },
+        { propagation: TransactionPropagation.NESTED },
+      );
     });
 
     // Verify context propagation
@@ -807,20 +917,29 @@ describe.each(Utils.keys(options))('Transaction Propagation [%s]', type => {
       const entity1 = em1.create(TestEntity, { name: 'level1' });
       await em1.persist(entity1).flush();
 
-      await em1.transactional(async em2 => {
-        const entity2 = em2.create(TestEntity, { name: 'level2-required' });
-        await em2.persist(entity2).flush();
+      await em1.transactional(
+        async em2 => {
+          const entity2 = em2.create(TestEntity, { name: 'level2-required' });
+          await em2.persist(entity2).flush();
 
-        await em2.transactional(async em3 => {
-          const entity3 = em3.create(TestEntity, { name: 'level3-nested' });
-          await em3.persist(entity3).flush();
-        }, { propagation: TransactionPropagation.NESTED });
+          await em2.transactional(
+            async em3 => {
+              const entity3 = em3.create(TestEntity, { name: 'level3-nested' });
+              await em3.persist(entity3).flush();
+            },
+            { propagation: TransactionPropagation.NESTED },
+          );
 
-        await em2.transactional(async em3 => {
-          const entity4 = em3.create(TestEntity, { name: 'level3-new' });
-          await em3.persist(entity4).flush();
-        }, { propagation: TransactionPropagation.REQUIRES_NEW });
-      }, { propagation: TransactionPropagation.REQUIRED });
+          await em2.transactional(
+            async em3 => {
+              const entity4 = em3.create(TestEntity, { name: 'level3-new' });
+              await em3.persist(entity4).flush();
+            },
+            { propagation: TransactionPropagation.REQUIRES_NEW },
+          );
+        },
+        { propagation: TransactionPropagation.REQUIRED },
+      );
     });
 
     const count = await orm.em.count(TestEntity);
@@ -836,23 +955,32 @@ describe.each(Utils.keys(options))('Transaction Propagation [%s]', type => {
         await em1.persist(entity1).flush();
 
         // REQUIRES_NEW - should commit independently
-        await em1.transactional(async em2 => {
-          const entity2 = em2.create(TestEntity, { name: 'independent' });
-          await em2.persist(entity2).flush();
-        }, { propagation: TransactionPropagation.REQUIRES_NEW });
+        await em1.transactional(
+          async em2 => {
+            const entity2 = em2.create(TestEntity, { name: 'independent' });
+            await em2.persist(entity2).flush();
+          },
+          { propagation: TransactionPropagation.REQUIRES_NEW },
+        );
 
         // NESTED - will create savepoint but still fail with outer
-        await em1.transactional(async em2 => {
-          const entity3 = em2.create(TestEntity, { name: 'nested' });
-          await em2.persist(entity3).flush();
-        }, { propagation: TransactionPropagation.NESTED });
+        await em1.transactional(
+          async em2 => {
+            const entity3 = em2.create(TestEntity, { name: 'nested' });
+            await em2.persist(entity3).flush();
+          },
+          { propagation: TransactionPropagation.NESTED },
+        );
 
         // REQUIRED - should rollback with outer
-        await em1.transactional(async em2 => {
-          const entity4 = em2.create(TestEntity, { name: 'joined' });
-          await em2.persist(entity4).flush();
-          throw new Error('Inner REQUIRED error');
-        }, { propagation: TransactionPropagation.REQUIRED });
+        await em1.transactional(
+          async em2 => {
+            const entity4 = em2.create(TestEntity, { name: 'joined' });
+            await em2.persist(entity4).flush();
+            throw new Error('Inner REQUIRED error');
+          },
+          { propagation: TransactionPropagation.REQUIRED },
+        );
       });
     } catch (e) {
       // Expected error
@@ -868,23 +996,32 @@ describe.each(Utils.keys(options))('Transaction Propagation [%s]', type => {
     const em = orm.em.fork();
     const contexts: any[] = [];
 
-    await em.transactional(async em1 => {
-      contexts.push((em1 as any).transactionContext);
-      const entity1 = em1.create(TestEntity, { name: 'required' });
-      await em1.persist(entity1).flush();
+    await em.transactional(
+      async em1 => {
+        contexts.push((em1 as any).transactionContext);
+        const entity1 = em1.create(TestEntity, { name: 'required' });
+        await em1.persist(entity1).flush();
 
-      await em1.transactional(async em2 => {
-        contexts.push((em2 as any).transactionContext);
-        const entity2 = em2.create(TestEntity, { name: 'nested' });
-        await em2.persist(entity2).flush();
+        await em1.transactional(
+          async em2 => {
+            contexts.push((em2 as any).transactionContext);
+            const entity2 = em2.create(TestEntity, { name: 'nested' });
+            await em2.persist(entity2).flush();
 
-        await em2.transactional(async em3 => {
-          contexts.push((em3 as any).transactionContext);
-          const entity3 = em3.create(TestEntity, { name: 'requires-new' });
-          await em3.persist(entity3).flush();
-        }, { propagation: TransactionPropagation.REQUIRES_NEW });
-      }, { propagation: TransactionPropagation.NESTED });
-    }, { propagation: TransactionPropagation.REQUIRED });
+            await em2.transactional(
+              async em3 => {
+                contexts.push((em3 as any).transactionContext);
+                const entity3 = em3.create(TestEntity, { name: 'requires-new' });
+                await em3.persist(entity3).flush();
+              },
+              { propagation: TransactionPropagation.REQUIRES_NEW },
+            );
+          },
+          { propagation: TransactionPropagation.NESTED },
+        );
+      },
+      { propagation: TransactionPropagation.REQUIRED },
+    );
 
     // NESTED creates a savepoint which may have a different context object
     // but it's still part of the same transaction
@@ -907,20 +1044,29 @@ describe.each(Utils.keys(options))('Transaction Propagation [%s]', type => {
       const entity1 = em1.create(TestEntity, { name: 'level1-required' });
       await em1.persist(entity1).flush();
 
-      await em1.transactional(async em2 => {
-        const entity2 = em2.create(TestEntity, { name: 'level2-nested' });
-        await em2.persist(entity2).flush();
+      await em1.transactional(
+        async em2 => {
+          const entity2 = em2.create(TestEntity, { name: 'level2-nested' });
+          await em2.persist(entity2).flush();
 
-        await em2.transactional(async em3 => {
-          const entity3 = em3.create(TestEntity, { name: 'level3-new' });
-          await em3.persist(entity3).flush();
+          await em2.transactional(
+            async em3 => {
+              const entity3 = em3.create(TestEntity, { name: 'level3-new' });
+              await em3.persist(entity3).flush();
 
-          await em3.transactional(async em4 => {
-            const entity4 = em4.create(TestEntity, { name: 'level4-required' });
-            await em4.persist(entity4).flush();
-          }, { propagation: TransactionPropagation.REQUIRED });
-        }, { propagation: TransactionPropagation.REQUIRES_NEW });
-      }, { propagation: TransactionPropagation.NESTED });
+              await em3.transactional(
+                async em4 => {
+                  const entity4 = em4.create(TestEntity, { name: 'level4-required' });
+                  await em4.persist(entity4).flush();
+                },
+                { propagation: TransactionPropagation.REQUIRED },
+              );
+            },
+            { propagation: TransactionPropagation.REQUIRES_NEW },
+          );
+        },
+        { propagation: TransactionPropagation.NESTED },
+      );
     });
 
     const count = await orm.em.count(TestEntity);
@@ -938,29 +1084,38 @@ describe.each(Utils.keys(options))('Transaction Propagation [%s]', type => {
       const found1 = await em1.findOne(TestEntity, { name: 'parent' });
       expect(found1).toBeDefined();
 
-      await em1.transactional(async em2 => {
-        // Should see parent data in REQUIRED
-        const found2 = await em2.findOne(TestEntity, { name: 'parent' });
-        expect(found2).toBeDefined();
+      await em1.transactional(
+        async em2 => {
+          // Should see parent data in REQUIRED
+          const found2 = await em2.findOne(TestEntity, { name: 'parent' });
+          expect(found2).toBeDefined();
 
-        const entity2 = em2.create(TestEntity, { name: 'child-required' });
-        await em2.persist(entity2).flush();
-      }, { propagation: TransactionPropagation.REQUIRED });
+          const entity2 = em2.create(TestEntity, { name: 'child-required' });
+          await em2.persist(entity2).flush();
+        },
+        { propagation: TransactionPropagation.REQUIRED },
+      );
 
-      await em1.transactional(async em3 => {
-        // Should see parent data in NESTED
-        const found3 = await em3.findOne(TestEntity, { name: 'parent' });
-        expect(found3).toBeDefined();
+      await em1.transactional(
+        async em3 => {
+          // Should see parent data in NESTED
+          const found3 = await em3.findOne(TestEntity, { name: 'parent' });
+          expect(found3).toBeDefined();
 
-        const entity3 = em3.create(TestEntity, { name: 'child-nested' });
-        await em3.persist(entity3).flush();
-      }, { propagation: TransactionPropagation.NESTED });
+          const entity3 = em3.create(TestEntity, { name: 'child-nested' });
+          await em3.persist(entity3).flush();
+        },
+        { propagation: TransactionPropagation.NESTED },
+      );
 
-      await em1.transactional(async em4 => {
-        // REQUIRES_NEW has its own transaction, may not see uncommitted data
-        const entity4 = em4.create(TestEntity, { name: 'child-new' });
-        await em4.persist(entity4).flush();
-      }, { propagation: TransactionPropagation.REQUIRES_NEW });
+      await em1.transactional(
+        async em4 => {
+          // REQUIRES_NEW has its own transaction, may not see uncommitted data
+          const entity4 = em4.create(TestEntity, { name: 'child-new' });
+          await em4.persist(entity4).flush();
+        },
+        { propagation: TransactionPropagation.REQUIRES_NEW },
+      );
     });
 
     const count = await orm.em.count(TestEntity);
@@ -971,32 +1126,56 @@ describe.each(Utils.keys(options))('Transaction Propagation [%s]', type => {
     const em = orm.em.fork();
 
     // Empty transactions should not cause issues
-    await em.transactional(async () => {
-      // Empty transaction
-    }, { propagation: TransactionPropagation.REQUIRED });
-    await em.transactional(async () => {
-      // Empty transaction
-    }, { propagation: TransactionPropagation.REQUIRES_NEW });
-    await em.transactional(async () => {
-      // Empty transaction
-    }, { propagation: TransactionPropagation.NESTED });
-    await em.transactional(async () => {
-      // Empty transaction
-    }, { propagation: TransactionPropagation.NOT_SUPPORTED });
+    await em.transactional(
+      async () => {
+        // Empty transaction
+      },
+      { propagation: TransactionPropagation.REQUIRED },
+    );
+    await em.transactional(
+      async () => {
+        // Empty transaction
+      },
+      { propagation: TransactionPropagation.REQUIRES_NEW },
+    );
+    await em.transactional(
+      async () => {
+        // Empty transaction
+      },
+      { propagation: TransactionPropagation.NESTED },
+    );
+    await em.transactional(
+      async () => {
+        // Empty transaction
+      },
+      { propagation: TransactionPropagation.NOT_SUPPORTED },
+    );
 
     await em.transactional(async em1 => {
-      await em1.transactional(async () => {
-        // Empty transaction
-      }, { propagation: TransactionPropagation.REQUIRED });
-      await em1.transactional(async () => {
-        // Empty transaction
-      }, { propagation: TransactionPropagation.REQUIRES_NEW });
-      await em1.transactional(async () => {
-        // Empty transaction
-      }, { propagation: TransactionPropagation.NESTED });
-      await em1.transactional(async () => {
-        // Empty transaction
-      }, { propagation: TransactionPropagation.NOT_SUPPORTED });
+      await em1.transactional(
+        async () => {
+          // Empty transaction
+        },
+        { propagation: TransactionPropagation.REQUIRED },
+      );
+      await em1.transactional(
+        async () => {
+          // Empty transaction
+        },
+        { propagation: TransactionPropagation.REQUIRES_NEW },
+      );
+      await em1.transactional(
+        async () => {
+          // Empty transaction
+        },
+        { propagation: TransactionPropagation.NESTED },
+      );
+      await em1.transactional(
+        async () => {
+          // Empty transaction
+        },
+        { propagation: TransactionPropagation.NOT_SUPPORTED },
+      );
     });
 
     const count = await orm.em.count(TestEntity);
@@ -1009,12 +1188,15 @@ describe.each(Utils.keys(options))('Transaction Propagation [%s]', type => {
     const em = orm.em.fork();
     const mock = mockLogger(orm);
 
-    await em.transactional(async () => {
-      // Transaction code
-    }, {
-      propagation: TransactionPropagation.REQUIRED,
-      isolationLevel: IsolationLevel.SERIALIZABLE,
-    });
+    await em.transactional(
+      async () => {
+        // Transaction code
+      },
+      {
+        propagation: TransactionPropagation.REQUIRED,
+        isolationLevel: IsolationLevel.SERIALIZABLE,
+      },
+    );
 
     // Check for isolation level setting (case insensitive)
     const hasIsolationLevel = mock.mock.calls.some(call => {
@@ -1028,16 +1210,22 @@ describe.each(Utils.keys(options))('Transaction Propagation [%s]', type => {
     const em = orm.em.fork();
     const mock = mockLogger(orm);
 
-    await em.transactional(async em1 => {
-      await em1.transactional(async () => {
-        // Inner transaction
-      }, {
-        propagation: TransactionPropagation.REQUIRES_NEW,
-        isolationLevel: IsolationLevel.READ_UNCOMMITTED,
-      });
-    }, {
-      isolationLevel: IsolationLevel.SERIALIZABLE,
-    });
+    await em.transactional(
+      async em1 => {
+        await em1.transactional(
+          async () => {
+            // Inner transaction
+          },
+          {
+            propagation: TransactionPropagation.REQUIRES_NEW,
+            isolationLevel: IsolationLevel.READ_UNCOMMITTED,
+          },
+        );
+      },
+      {
+        isolationLevel: IsolationLevel.SERIALIZABLE,
+      },
+    );
 
     const calls = mock.mock.calls.map(c => c[0].toLowerCase());
     const isolationCalls = calls.filter(c => c.includes('isolation level'));
@@ -1048,17 +1236,23 @@ describe.each(Utils.keys(options))('Transaction Propagation [%s]', type => {
     const em = orm.em.fork();
     const mock = mockLogger(orm);
 
-    await em.transactional(async em1 => {
-      await em1.transactional(async em2 => {
-        const entity = em2.create(TestEntity, { name: 'inner' });
-        await em2.persist(entity).flush();
-      }, {
-        propagation: TransactionPropagation.REQUIRED,
-        isolationLevel: IsolationLevel.REPEATABLE_READ, // Should be ignored
-      });
-    }, {
-      isolationLevel: IsolationLevel.SERIALIZABLE,
-    });
+    await em.transactional(
+      async em1 => {
+        await em1.transactional(
+          async em2 => {
+            const entity = em2.create(TestEntity, { name: 'inner' });
+            await em2.persist(entity).flush();
+          },
+          {
+            propagation: TransactionPropagation.REQUIRED,
+            isolationLevel: IsolationLevel.REPEATABLE_READ, // Should be ignored
+          },
+        );
+      },
+      {
+        isolationLevel: IsolationLevel.SERIALIZABLE,
+      },
+    );
 
     // Only outer transaction isolation level should be set
     const calls = mock.mock.calls.map(c => c[0].toLowerCase());
@@ -1075,13 +1269,18 @@ describe.each(Utils.keys(options))('Transaction Propagation [%s]', type => {
     }
     const em = orm.em.fork();
 
-    await expect(em.transactional(async em1 => {
-      const entity = em1.create(TestEntity, { name: 'test' });
-      await em1.persist(entity).flush();
-    }, {
-      propagation: TransactionPropagation.REQUIRED,
-      readOnly: true,
-    })).rejects.toThrow(/read-only transaction|READ ONLY|read only/i);
+    await expect(
+      em.transactional(
+        async em1 => {
+          const entity = em1.create(TestEntity, { name: 'test' });
+          await em1.persist(entity).flush();
+        },
+        {
+          propagation: TransactionPropagation.REQUIRED,
+          readOnly: true,
+        },
+      ),
+    ).rejects.toThrow(/read-only transaction|READ ONLY|read only/i);
   });
 
   test('Read-only transaction should allow writes in REQUIRES_NEW inside read-only', async () => {
@@ -1091,21 +1290,27 @@ describe.each(Utils.keys(options))('Transaction Propagation [%s]', type => {
     }
     const em = orm.em.fork();
 
-    await em.transactional(async em1 => {
-      // Read-only outer transaction
-      await em1.find(TestEntity, {});
+    await em.transactional(
+      async em1 => {
+        // Read-only outer transaction
+        await em1.find(TestEntity, {});
 
-      // REQUIRES_NEW creates independent writable transaction
-      await em1.transactional(async em2 => {
-        const entity = em2.create(TestEntity, { name: 'writable' });
-        await em2.persist(entity).flush();
-      }, {
-        propagation: TransactionPropagation.REQUIRES_NEW,
-        readOnly: false,
-      });
-    }, {
-      readOnly: true,
-    });
+        // REQUIRES_NEW creates independent writable transaction
+        await em1.transactional(
+          async em2 => {
+            const entity = em2.create(TestEntity, { name: 'writable' });
+            await em2.persist(entity).flush();
+          },
+          {
+            propagation: TransactionPropagation.REQUIRES_NEW,
+            readOnly: false,
+          },
+        );
+      },
+      {
+        readOnly: true,
+      },
+    );
 
     const count = await orm.em.count(TestEntity);
     expect(count).toBe(1);
@@ -1118,17 +1323,25 @@ describe.each(Utils.keys(options))('Transaction Propagation [%s]', type => {
     }
     const em = orm.em.fork();
 
-    await expect(em.transactional(async em1 => {
-      await em1.transactional(async em2 => {
-        const entity = em2.create(TestEntity, { name: 'inner' });
-        await em2.persist(entity).flush();
-      }, {
-        propagation: TransactionPropagation.REQUIRED,
-        readOnly: false, // Should be overridden by outer
-      });
-    }, {
-      readOnly: true,
-    })).rejects.toThrow();
+    await expect(
+      em.transactional(
+        async em1 => {
+          await em1.transactional(
+            async em2 => {
+              const entity = em2.create(TestEntity, { name: 'inner' });
+              await em2.persist(entity).flush();
+            },
+            {
+              propagation: TransactionPropagation.REQUIRED,
+              readOnly: false, // Should be overridden by outer
+            },
+          );
+        },
+        {
+          readOnly: true,
+        },
+      ),
+    ).rejects.toThrow();
   });
 
   // Flush Mode with Propagation
@@ -1140,13 +1353,16 @@ describe.each(Utils.keys(options))('Transaction Propagation [%s]', type => {
       const entity = em1.create(TestEntity, { name: 'test' });
 
       // COMMIT mode - won't flush automatically
-      await em1.transactional(async () => {
-        entity.name = 'changed';
-        // Should not flush here
-      }, {
-        propagation: TransactionPropagation.NESTED,
-        flushMode: FlushMode.COMMIT,
-      });
+      await em1.transactional(
+        async () => {
+          entity.name = 'changed';
+          // Should not flush here
+        },
+        {
+          propagation: TransactionPropagation.NESTED,
+          flushMode: FlushMode.COMMIT,
+        },
+      );
 
       // Manually flush
       await em1.flush();
@@ -1160,20 +1376,26 @@ describe.each(Utils.keys(options))('Transaction Propagation [%s]', type => {
     const em = orm.em.fork();
     const mock = mockLogger(orm);
 
-    await em.transactional(async em1 => {
-      const entity = em1.create(TestEntity, { name: 'outer' });
+    await em.transactional(
+      async em1 => {
+        const entity = em1.create(TestEntity, { name: 'outer' });
 
-      await em1.transactional(async em2 => {
-        const entity2 = em2.create(TestEntity, { name: 'inner' });
-        await em2.persist(entity2).flush();
-        // Explicit flush to ensure the insert happens
-      }, {
-        propagation: TransactionPropagation.REQUIRES_NEW,
-        flushMode: FlushMode.AUTO,
-      });
-    }, {
-      flushMode: FlushMode.COMMIT,
-    });
+        await em1.transactional(
+          async em2 => {
+            const entity2 = em2.create(TestEntity, { name: 'inner' });
+            await em2.persist(entity2).flush();
+            // Explicit flush to ensure the insert happens
+          },
+          {
+            propagation: TransactionPropagation.REQUIRES_NEW,
+            flushMode: FlushMode.AUTO,
+          },
+        );
+      },
+      {
+        flushMode: FlushMode.COMMIT,
+      },
+    );
 
     // Check that inner transaction executed insert
     const calls = mock.mock.calls.map(c => c[0]);
@@ -1188,15 +1410,18 @@ describe.each(Utils.keys(options))('Transaction Propagation [%s]', type => {
     const entity = em.create(TestEntity, { name: 'test' });
     await em.persist(entity).flush();
 
-    await em.transactional(async em1 => {
-      // clear: true should clear the identity map
-      // Since identity map was cleared, loaded entity should be different instance
-      const loaded = await em1.findOne(TestEntity, { name: 'test' });
-      expect(loaded).toBeDefined();
-      expect(loaded).not.toBe(entity);
-    }, {
-      clear: true,
-    });
+    await em.transactional(
+      async em1 => {
+        // clear: true should clear the identity map
+        // Since identity map was cleared, loaded entity should be different instance
+        const loaded = await em1.findOne(TestEntity, { name: 'test' });
+        expect(loaded).toBeDefined();
+        expect(loaded).not.toBe(entity);
+      },
+      {
+        clear: true,
+      },
+    );
   });
 
   test('Clear Option should maintain separate identity maps with REQUIRES_NEW', async () => {
@@ -1210,14 +1435,17 @@ describe.each(Utils.keys(options))('Transaction Propagation [%s]', type => {
       const entity1 = em1.create(TestEntity, { name: 'outer' });
       await em1.persist(entity1).flush();
 
-      await em1.transactional(async em2 => {
-        // REQUIRES_NEW should have separate identity map
-        const loaded = await em2.findOne(TestEntity, { name: 'outer' });
-        expect(loaded).toBeDefined();
-        expect(loaded).not.toBe(entity1); // Different instances
-      }, {
-        propagation: TransactionPropagation.REQUIRES_NEW,
-      });
+      await em1.transactional(
+        async em2 => {
+          // REQUIRES_NEW should have separate identity map
+          const loaded = await em2.findOne(TestEntity, { name: 'outer' });
+          expect(loaded).toBeDefined();
+          expect(loaded).not.toBe(entity1); // Different instances
+        },
+        {
+          propagation: TransactionPropagation.REQUIRES_NEW,
+        },
+      );
 
       // Original entity should still be in outer transaction's identity map
       const reloaded = await em1.findOne(TestEntity, { name: 'outer' });
@@ -1230,15 +1458,18 @@ describe.each(Utils.keys(options))('Transaction Propagation [%s]', type => {
   test('Combined Options should combine multiple options correctly', async () => {
     const em = orm.em.fork();
 
-    await em.transactional(async em1 => {
-      const entity = em1.create(TestEntity, { name: 'combined' });
-      await em1.persist(entity).flush();
-    }, {
-      propagation: TransactionPropagation.REQUIRES_NEW,
-      isolationLevel: IsolationLevel.REPEATABLE_READ,
-      flushMode: FlushMode.AUTO,
-      clear: true,
-    });
+    await em.transactional(
+      async em1 => {
+        const entity = em1.create(TestEntity, { name: 'combined' });
+        await em1.persist(entity).flush();
+      },
+      {
+        propagation: TransactionPropagation.REQUIRES_NEW,
+        isolationLevel: IsolationLevel.REPEATABLE_READ,
+        flushMode: FlushMode.AUTO,
+        clear: true,
+      },
+    );
 
     // Verify entity was created
     const count = await orm.em.count(TestEntity);
@@ -1248,29 +1479,38 @@ describe.each(Utils.keys(options))('Transaction Propagation [%s]', type => {
   test('Combined Options should handle complex nested scenarios with options', async () => {
     const em = orm.em.fork();
 
-    await em.transactional(async em1 => {
-      const entity1 = em1.create(TestEntity, { name: 'level1' });
-      await em1.persist(entity1).flush();
+    await em.transactional(
+      async em1 => {
+        const entity1 = em1.create(TestEntity, { name: 'level1' });
+        await em1.persist(entity1).flush();
 
-      await em1.transactional(async em2 => {
-        const entity2 = em2.create(TestEntity, { name: 'level2' });
-        await em2.persist(entity2).flush();
+        await em1.transactional(
+          async em2 => {
+            const entity2 = em2.create(TestEntity, { name: 'level2' });
+            await em2.persist(entity2).flush();
 
-        await em2.transactional(async em3 => {
-          const entity3 = em3.create(TestEntity, { name: 'level3' });
-          await em3.persist(entity3).flush();
-        }, {
-          propagation: TransactionPropagation.REQUIRES_NEW,
-          isolationLevel: IsolationLevel.READ_COMMITTED,
-        });
-      }, {
-        propagation: TransactionPropagation.NESTED,
-        flushMode: FlushMode.AUTO,
-      });
-    }, {
-      isolationLevel: IsolationLevel.REPEATABLE_READ,
-      flushMode: FlushMode.COMMIT,
-    });
+            await em2.transactional(
+              async em3 => {
+                const entity3 = em3.create(TestEntity, { name: 'level3' });
+                await em3.persist(entity3).flush();
+              },
+              {
+                propagation: TransactionPropagation.REQUIRES_NEW,
+                isolationLevel: IsolationLevel.READ_COMMITTED,
+              },
+            );
+          },
+          {
+            propagation: TransactionPropagation.NESTED,
+            flushMode: FlushMode.AUTO,
+          },
+        );
+      },
+      {
+        isolationLevel: IsolationLevel.REPEATABLE_READ,
+        flushMode: FlushMode.COMMIT,
+      },
+    );
 
     const count = await orm.em.count(TestEntity);
     expect(count).toBe(3);
@@ -1279,11 +1519,16 @@ describe.each(Utils.keys(options))('Transaction Propagation [%s]', type => {
   test('Should throw error for unsupported propagation type', async () => {
     const em = orm.em.fork();
 
-    await expect(em.transactional(async () => {
-      return;
-    }, {
-      propagation: 'UNSUPPORTED_TYPE' as any,
-    })).rejects.toThrow('Unsupported transaction propagation type: UNSUPPORTED_TYPE');
+    await expect(
+      em.transactional(
+        async () => {
+          return;
+        },
+        {
+          propagation: 'UNSUPPORTED_TYPE' as any,
+        },
+      ),
+    ).rejects.toThrow('Unsupported transaction propagation type: UNSUPPORTED_TYPE');
   });
 
   test('Should handle transaction without options parameter', async () => {
@@ -1306,12 +1551,15 @@ describe.each(Utils.keys(options))('Transaction Propagation [%s]', type => {
     const em = orm.em.fork({ disableTransactions: true });
 
     let callbackExecuted = false;
-    const result = await em.transactional(async () => {
-      callbackExecuted = true;
-      return 'disabled-result';
-    }, {
-      propagation: TransactionPropagation.REQUIRED,
-    });
+    const result = await em.transactional(
+      async () => {
+        callbackExecuted = true;
+        return 'disabled-result';
+      },
+      {
+        propagation: TransactionPropagation.REQUIRED,
+      },
+    );
 
     expect(callbackExecuted).toBe(true);
     expect(result).toBe('disabled-result');
@@ -1369,12 +1617,15 @@ describe.each(Utils.keys(options))('Transaction Propagation [%s]', type => {
       // Use NOT_SUPPORTED propagation - this calls executeTransactionFlow directly
       // With em.global = true and allowGlobalContext = false,
       // shouldPropagateToUpperContext returns false, triggering lines 312-314
-      const result = await em.transactional(async innerEm => {
-        const entity = innerEm.create(TestEntity, { name: 'not-supported-global' });
-        entityCreated = true;
-        callbackExecuted = true;
-        return 'test-result-312-314';
-      }, { propagation: TransactionPropagation.NOT_SUPPORTED });
+      const result = await em.transactional(
+        async innerEm => {
+          const entity = innerEm.create(TestEntity, { name: 'not-supported-global' });
+          entityCreated = true;
+          callbackExecuted = true;
+          return 'test-result-312-314';
+        },
+        { propagation: TransactionPropagation.NOT_SUPPORTED },
+      );
 
       expect(callbackExecuted).toBe(true);
       expect(flushCalledAutomatically).toBe(true);
@@ -1395,29 +1646,40 @@ describe.each(Utils.keys(options))('Transaction Propagation [%s]', type => {
     }
     const em = orm.em.fork();
 
-    await expect(em.transactional(async em1 => {
-      await em1.transactional(async em2 => {
-        const entity = em2.create(TestEntity, { name: 'fail' });
-        await em2.persist(entity).flush();
-      }, {
-        propagation: TransactionPropagation.NESTED,
-      });
-    }, {
-      readOnly: true,
-    })).rejects.toThrow();
+    await expect(
+      em.transactional(
+        async em1 => {
+          await em1.transactional(
+            async em2 => {
+              const entity = em2.create(TestEntity, { name: 'fail' });
+              await em2.persist(entity).flush();
+            },
+            {
+              propagation: TransactionPropagation.NESTED,
+            },
+          );
+        },
+        {
+          readOnly: true,
+        },
+      ),
+    ).rejects.toThrow();
   });
 
   test('Error Scenarios should rollback correctly with custom isolation levels', async () => {
     const em = orm.em.fork();
 
     try {
-      await em.transactional(async em1 => {
-        const entity = em1.create(TestEntity, { name: 'will-rollback' });
-        await em1.persist(entity).flush();
-        throw new Error('Rollback');
-      }, {
-        isolationLevel: IsolationLevel.SERIALIZABLE,
-      });
+      await em.transactional(
+        async em1 => {
+          const entity = em1.create(TestEntity, { name: 'will-rollback' });
+          await em1.persist(entity).flush();
+          throw new Error('Rollback');
+        },
+        {
+          isolationLevel: IsolationLevel.SERIALIZABLE,
+        },
+      );
     } catch (e) {
       // Expected
     }

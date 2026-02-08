@@ -63,7 +63,9 @@ export function validateParams(params: any, type = 'search condition', field?: s
 
 /** @internal */
 export function validatePrimaryKey<T>(entity: EntityData<T>, meta: EntityMetadata<T>): void {
-  const pkExists = meta.primaryKeys.every(pk => entity[pk] != null) || (meta.serializedPrimaryKey && entity[meta.serializedPrimaryKey] != null);
+  const pkExists =
+    meta.primaryKeys.every(pk => entity[pk] != null) ||
+    (meta.serializedPrimaryKey && entity[meta.serializedPrimaryKey] != null);
 
   if (!entity || !pkExists) {
     throw ValidationError.fromMergeWithoutPK(meta);

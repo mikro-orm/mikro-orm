@@ -1,20 +1,25 @@
 import { Ref, MikroORM } from '@mikro-orm/mssql';
-import { Entity, Index, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider, Unique } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  Index,
+  ManyToOne,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+  Unique,
+} from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class Author {
-
   @PrimaryKey()
   id!: number;
 
   @Property()
   name!: string;
-
 }
 
 @Entity({ tableName: 'book' })
 class Book1 {
-
   @PrimaryKey()
   id!: number;
 
@@ -38,15 +43,16 @@ class Book1 {
 
   @Property({ unique: true })
   isbn!: string;
-
 }
 
 @Entity({ tableName: 'book' })
 @Index({ properties: 'author1' })
 @Index({ properties: 'author3' })
-@Index({ name: 'custom_index_expr123', expression: 'create index [custom_index_expr123] on [book] ([isbn]) where [isbn] is not null' })
+@Index({
+  name: 'custom_index_expr123',
+  expression: 'create index [custom_index_expr123] on [book] ([isbn]) where [isbn] is not null',
+})
 class Book2 {
-
   @PrimaryKey()
   id!: number;
 
@@ -73,16 +79,17 @@ class Book2 {
 
   @Property({ unique: 'isbn_unique_constr' })
   isbn!: string;
-
 }
 
 @Entity({ tableName: 'book' })
 @Index({ properties: 'author1' })
 @Index({ properties: 'author3', name: 'lol31' })
 @Index({ properties: 'author3', name: 'lol41' })
-@Index({ name: 'custom_index_expr123', expression: 'create index [custom_index_expr123] on [book] ([isbn]) where [isbn] is not null' })
+@Index({
+  name: 'custom_index_expr123',
+  expression: 'create index [custom_index_expr123] on [book] ([isbn]) where [isbn] is not null',
+})
 class Book3 {
-
   @PrimaryKey()
   id!: number;
 
@@ -110,7 +117,6 @@ class Book3 {
   @Property()
   @Unique()
   isbn!: string;
-
 }
 
 @Entity({ tableName: 'book' })
@@ -118,7 +124,6 @@ class Book3 {
 @Index({ properties: 'author3', name: 'lol32' })
 @Index({ properties: 'author3', name: 'lol42' })
 class Book4 {
-
   @PrimaryKey()
   id!: number;
 
@@ -145,11 +150,9 @@ class Book4 {
   @Property()
   @Unique()
   isbn!: string;
-
 }
 
 describe('indexes on FKs in mssql (GH 1518)', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -186,5 +189,4 @@ describe('indexes on FKs in mssql (GH 1518)', () => {
     expect(diff4).toMatchSnapshot();
     await orm.schema.execute(diff4);
   });
-
 });

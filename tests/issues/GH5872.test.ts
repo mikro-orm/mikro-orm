@@ -1,9 +1,16 @@
 import { Collection, MikroORM, Ref } from '@mikro-orm/sqlite';
-import { Entity, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  OneToOne,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class Node {
-
   @PrimaryKey()
   id!: number;
 
@@ -12,12 +19,10 @@ class Node {
 
   @OneToOne({ entity: () => B, nullable: true })
   b!: B | null;
-
 }
 
 @Entity()
 class A {
-
   @PrimaryKey()
   id!: number;
 
@@ -26,12 +31,10 @@ class A {
 
   @OneToMany(() => B, b => b.a)
   bColl = new Collection<B>(this);
-
 }
 
 @Entity()
 class B {
-
   @PrimaryKey()
   id!: number;
 
@@ -43,7 +46,6 @@ class B {
 
   @OneToOne({ mappedBy: 'b', orphanRemoval: true })
   node!: Node;
-
 }
 
 let orm: MikroORM;
@@ -79,17 +81,25 @@ afterAll(async () => {
 });
 
 test('basic populateWhere', async () => {
-  const test1 = await orm.em.fork().findOneOrFail(A, { name: 'A1' }, {
-    populate: ['bColl'],
-    populateWhere: { bColl: { name: 'B1' } },
-  });
+  const test1 = await orm.em.fork().findOneOrFail(
+    A,
+    { name: 'A1' },
+    {
+      populate: ['bColl'],
+      populateWhere: { bColl: { name: 'B1' } },
+    },
+  );
   expect(test1.bColl.count()).toBe(1);
 });
 
 test('nested populateWhere', async () => {
-  const test2 = await orm.em.fork().findOneOrFail(A, { name: 'A1' }, {
-    populate: ['bColl'],
-    populateWhere: { bColl: { node: { name: 'Node1' } } },
-  });
+  const test2 = await orm.em.fork().findOneOrFail(
+    A,
+    { name: 'A1' },
+    {
+      populate: ['bColl'],
+      populateWhere: { bColl: { node: { name: 'Node1' } } },
+    },
+  );
   expect(test2.bColl.count()).toBe(1);
 });

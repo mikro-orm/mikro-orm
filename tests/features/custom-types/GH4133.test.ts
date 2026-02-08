@@ -3,7 +3,6 @@ import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-or
 import { MikroORM } from '@mikro-orm/sqlite';
 
 class RailsArrayType extends Type<string[], string> {
-
   override convertToDatabaseValue(values: string[]): string {
     if (!values) {
       return null!;
@@ -24,12 +23,10 @@ class RailsArrayType extends Type<string[], string> {
   override getColumnType(): string {
     return 'text';
   }
-
 }
 
 @Entity()
 class LegacyUser {
-
   @PrimaryKey()
   id!: number;
 
@@ -41,7 +38,6 @@ class LegacyUser {
     nullable: true,
   })
   teams?: string[];
-
 }
 
 let orm: MikroORM;

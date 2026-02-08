@@ -1,11 +1,19 @@
 import { Collection, EagerProps, MikroORM, Ref, t } from '@mikro-orm/sqlite';
 
-import { Embeddable, Embedded, Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Embeddable,
+  Embedded,
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { v4 as uuidv4 } from 'uuid';
 
 @Embeddable()
 class ExampleEmbeddable {
-
   @Property({
     type: t.text,
   })
@@ -15,12 +23,10 @@ class ExampleEmbeddable {
     type: t.text,
   })
   secondProperty!: string;
-
 }
 
 @Entity()
 class Foo {
-
   @PrimaryKey({ type: t.uuid })
   id: string = uuidv4();
 
@@ -29,12 +35,10 @@ class Foo {
 
   @Embedded(() => ExampleEmbeddable)
   embeddedProperty!: ExampleEmbeddable;
-
 }
 
 @Entity()
 class Bar {
-
   [EagerProps]?: 'foo';
 
   @PrimaryKey({ type: t.uuid })
@@ -42,9 +46,7 @@ class Bar {
 
   @ManyToOne({ entity: () => Foo, nullable: false, ref: true, eager: true })
   foo!: Ref<Foo>;
-
 }
-
 
 let orm: MikroORM;
 

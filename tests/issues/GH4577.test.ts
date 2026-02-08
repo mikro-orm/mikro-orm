@@ -5,7 +5,6 @@ import { mockLogger } from '../helpers.js';
 
 @Entity()
 class Customer {
-
   @PrimaryKey({ type: 'uuid' })
   uuid: string = v4();
 
@@ -15,7 +14,6 @@ class Customer {
   // autoincrement column cannot have a default, it will be ignored
   @Property({ autoincrement: true, default: 0 })
   number?: number;
-
 }
 
 let orm: MikroORM;

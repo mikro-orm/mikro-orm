@@ -6,10 +6,16 @@ const Author = defineEntity({
   properties: p => ({
     _id: p.type(ObjectId).primary(),
     createdAt: p.datetime().onCreate(() => new Date()),
-    updatedAt: p.datetime().onCreate(() => new Date()).onUpdate(() => new Date()),
+    updatedAt: p
+      .datetime()
+      .onCreate(() => new Date())
+      .onUpdate(() => new Date()),
     name: p.string(),
     email: p.string().unique(),
-    termsAccepted: p.boolean().name('terms_accepted').onCreate(() => false),
+    termsAccepted: p
+      .boolean()
+      .name('terms_accepted')
+      .onCreate(() => false),
     books: () => p.oneToMany(Book).mappedBy('author'),
   }),
 });
@@ -32,7 +38,6 @@ const BookTag = defineEntity({
     books: () => p.manyToMany(Book).mappedBy('tags'),
   }),
 });
-
 
 let orm: MikroORM;
 
@@ -113,7 +118,8 @@ test('populate option is disallowed', async () => {
   });
 
   await expect(async () => {
-    for await (const author of stream) {}
+    for await (const author of stream) {
+    }
   }).rejects.toThrow('Populate option is not supported when streaming results in MongoDB');
 });
 
@@ -181,10 +187,14 @@ test('streaming row-by-row', async () => {
 });
 
 test('streaming raw results', async () => {
-  const stream = orm.em.getDriver().stream(Author, {}, {
-    orderBy: { _id: -1 },
-    rawResults: true,
-  });
+  const stream = orm.em.getDriver().stream(
+    Author,
+    {},
+    {
+      orderBy: { _id: -1 },
+      rawResults: true,
+    },
+  );
   const authors = [];
 
   for await (const author of stream) {

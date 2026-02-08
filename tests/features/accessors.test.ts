@@ -6,7 +6,6 @@ const usageMap = {} as Dictionary<[get: number, set: number]>;
 
 @Entity({ tableName: 'user' })
 class User11 {
-
   @PrimaryKey()
   id!: number;
 
@@ -28,12 +27,10 @@ class User11 {
     usageMap.User11[1]++;
     this._foo = structuredClone(untrusted);
   }
-
 }
 
 @Entity({ forceConstructor: true, tableName: 'user' })
 class User12 {
-
   @PrimaryKey()
   id!: number;
 
@@ -55,12 +52,10 @@ class User12 {
     usageMap.User12[1]++;
     this.#foo = structuredClone(untrusted);
   }
-
 }
 
 @Entity({ tableName: 'user' })
 class User13 {
-
   @PrimaryKey()
   id!: number;
 
@@ -82,11 +77,9 @@ class User13 {
     usageMap.User13[1]++;
     this._foo = structuredClone(untrusted);
   }
-
 }
 
 class User22 {
-
   id!: number;
   version: number & Opt = 1;
   private _foo!: unknown;
@@ -102,7 +95,6 @@ class User22 {
     usageMap.User22[1]++;
     this._foo = structuredClone(untrusted);
   }
-
 }
 
 const User22Schema = defineEntity({
@@ -116,7 +108,6 @@ const User22Schema = defineEntity({
 });
 
 class User23 {
-
   id!: number;
   version: number & Opt = 1;
   #foo!: unknown;
@@ -132,7 +123,6 @@ class User23 {
     usageMap.User23[1]++;
     this.#foo = structuredClone(untrusted);
   }
-
 }
 
 const User23Schema = defineEntity({
@@ -165,7 +155,9 @@ describe.each([User11, User13, User22] as const)('accessors with direct backing 
 
   test('schema', async () => {
     const dump = await orm.schema.getCreateSchemaSQL();
-    expect(dump.trim()).toBe('create table `user` (`id` integer not null primary key autoincrement, `version` integer not null default 1, `foo` json not null);');
+    expect(dump.trim()).toBe(
+      'create table `user` (`id` integer not null primary key autoincrement, `version` integer not null default 1, `foo` json not null);',
+    );
   });
 
   test('working with accessors', async () => {
@@ -230,7 +222,9 @@ describe.each([User12, User23] as const)('accessors with opaque backing property
 
   test('schema', async () => {
     const dump = await orm.schema.getCreateSchemaSQL();
-    expect(dump.trim()).toBe('create table `user` (`id` integer not null primary key autoincrement, `version` integer not null default 1, `foo` json not null);');
+    expect(dump.trim()).toBe(
+      'create table `user` (`id` integer not null primary key autoincrement, `version` integer not null default 1, `foo` json not null);',
+    );
   });
 
   test('working with accessors', async () => {

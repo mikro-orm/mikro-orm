@@ -8,7 +8,6 @@ import { User } from './entities/user.entity.js';
 import { MockInstance } from 'vitest';
 
 export class ProjectFactory extends Factory<Project> {
-
   model = Project;
 
   definition(): EntityData<Project> {
@@ -22,11 +21,9 @@ export class ProjectFactory extends Factory<Project> {
       worth: 120000,
     };
   }
-
 }
 
 export class HouseFactory extends Factory<House> {
-
   model = House;
 
   definition(input?: EntityData<House>): EntityData<House> {
@@ -35,14 +32,9 @@ export class HouseFactory extends Factory<House> {
       ...input,
     };
   }
-
 }
 
-export class MaybeMansionFactory extends Factory<
-  House,
-  EntityData<House> & { mansion: boolean }
-> {
-
+export class MaybeMansionFactory extends Factory<House, EntityData<House> & { mansion: boolean }> {
   model = House;
 
   definition(input: EntityData<House> & { mansion: boolean }) {
@@ -51,7 +43,6 @@ export class MaybeMansionFactory extends Factory<
       ...input,
     };
   }
-
 }
 
 describe('Factory', () => {

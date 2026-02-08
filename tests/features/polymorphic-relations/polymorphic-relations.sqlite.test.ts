@@ -1,9 +1,15 @@
 import { Collection, MikroORM } from '@mikro-orm/sqlite';
-import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class Post {
-
   @PrimaryKey()
   id!: number;
 
@@ -21,12 +27,10 @@ class Post {
     this.title = title;
     this.content = content;
   }
-
 }
 
 @Entity()
 class Comment {
-
   @PrimaryKey()
   id!: number;
 
@@ -40,12 +44,10 @@ class Comment {
   constructor(text: string) {
     this.text = text;
   }
-
 }
 
 @Entity()
 class UserLike {
-
   @PrimaryKey()
   id!: number;
 
@@ -56,11 +58,9 @@ class UserLike {
   // Polymorphic relation - can point to either Post or Comment
   @ManyToOne(() => [Post, Comment], { nullable: true })
   likeable!: Post | Comment | null;
-
 }
 
 describe('polymorphic relations in sqlite', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -284,11 +284,15 @@ describe('polymorphic relations in sqlite', () => {
     orm.em.clear();
 
     // Load all likes with joined strategy - this should trigger mapJoinedProps for both
-    const likes = await orm.em.find(UserLike, {}, {
-      populate: ['likeable'],
-      strategy: 'joined',
-      orderBy: { id: 'ASC' },
-    });
+    const likes = await orm.em.find(
+      UserLike,
+      {},
+      {
+        populate: ['likeable'],
+        strategy: 'joined',
+        orderBy: { id: 'ASC' },
+      },
+    );
 
     expect(likes).toHaveLength(2);
     expect(likes[0].likeable).toBeInstanceOf(Post);
@@ -426,9 +430,11 @@ describe('polymorphic relations in sqlite', () => {
 
     // Insert using tuple format: ['discriminator', id]
     const qb = orm.em.createQueryBuilder(UserLike);
-    await qb.insert({
-      likeable: ['post', post.id],
-    }).execute();
+    await qb
+      .insert({
+        likeable: ['post', post.id],
+      })
+      .execute();
 
     orm.em.clear();
 
@@ -454,17 +460,20 @@ describe('polymorphic relations in sqlite', () => {
 
     orm.em.clear();
 
-    const likes = await orm.em.find(UserLike, { likeable: { $ne: null } }, {
-      populate: ['likeable'],
-      orderBy: { id: 'ASC' },
-    });
+    const likes = await orm.em.find(
+      UserLike,
+      { likeable: { $ne: null } },
+      {
+        populate: ['likeable'],
+        orderBy: { id: 'ASC' },
+      },
+    );
 
     expect(likes).toHaveLength(3);
     expect(likes[0].likeable).toBeInstanceOf(Post);
     expect(likes[1].likeable).toBeInstanceOf(Post);
     expect(likes[2].likeable).toBeInstanceOf(Comment);
   });
-
 });
 
 // Test polymorphic with Ref wrapper
@@ -472,7 +481,6 @@ import { Reference, ReferenceKind } from '@mikro-orm/core';
 
 @Entity()
 class BlogPost {
-
   @PrimaryKey()
   id!: number;
 
@@ -482,12 +490,10 @@ class BlogPost {
   constructor(title: string) {
     this.title = title;
   }
-
 }
 
 @Entity()
 class Podcast {
-
   @PrimaryKey()
   id!: number;
 
@@ -497,18 +503,15 @@ class Podcast {
   constructor(url: string) {
     this.url = url;
   }
-
 }
 
 @Entity()
 class Bookmark {
-
   @PrimaryKey()
   id!: number;
 
   @ManyToOne(() => [BlogPost, Podcast], { ref: true })
   bookmarkable!: Reference<BlogPost | Podcast>;
-
 }
 
 describe('polymorphic relations with Ref wrapper', () => {
@@ -604,10 +607,14 @@ describe('polymorphic relations with Ref wrapper', () => {
     orm.em.clear();
 
     // Verify updates
-    const reloaded = await orm.em.find(Bookmark, {}, {
-      populate: ['bookmarkable'],
-      orderBy: { id: 'ASC' },
-    });
+    const reloaded = await orm.em.find(
+      Bookmark,
+      {},
+      {
+        populate: ['bookmarkable'],
+        orderBy: { id: 'ASC' },
+      },
+    );
 
     expect(reloaded[0].bookmarkable.unwrap()).toBeInstanceOf(Podcast);
     expect(reloaded[1].bookmarkable.unwrap()).toBeInstanceOf(Podcast);
@@ -617,7 +624,6 @@ describe('polymorphic relations with Ref wrapper', () => {
   test('discriminatorMap with class name strings', async () => {
     @Entity()
     class Article {
-
       @PrimaryKey()
       id!: number;
 
@@ -626,12 +632,10 @@ describe('polymorphic relations with Ref wrapper', () => {
 
       @OneToMany(() => Rating, r => r.rateable)
       ratings = new Collection<Rating>(this);
-
     }
 
     @Entity()
     class Video {
-
       @PrimaryKey()
       id!: number;
 
@@ -640,12 +644,10 @@ describe('polymorphic relations with Ref wrapper', () => {
 
       @OneToMany(() => Rating, r => r.rateable)
       ratings = new Collection<Rating>(this);
-
     }
 
     @Entity()
     class Rating {
-
       @PrimaryKey()
       id!: number;
 
@@ -660,7 +662,6 @@ describe('polymorphic relations with Ref wrapper', () => {
         },
       })
       rateable!: Article | Video;
-
     }
 
     const orm2 = await MikroORM.init({
@@ -688,10 +689,14 @@ describe('polymorphic relations with Ref wrapper', () => {
     await orm2.em.persist([rating1, rating2]).flush();
     orm2.em.clear();
 
-    const ratings = await orm2.em.find(Rating, {}, {
-      populate: ['rateable'],
-      orderBy: { id: 'ASC' },
-    });
+    const ratings = await orm2.em.find(
+      Rating,
+      {},
+      {
+        populate: ['rateable'],
+        orderBy: { id: 'ASC' },
+      },
+    );
 
     expect(ratings).toHaveLength(2);
     expect(ratings[0].rateable).toBeInstanceOf(Article);
@@ -703,25 +708,21 @@ describe('polymorphic relations with Ref wrapper', () => {
   test('single target union type works as polymorphic', async () => {
     @Entity()
     class SingleTarget {
-
       @PrimaryKey()
       id!: number;
 
       @Property()
       name!: string;
-
     }
 
     @Entity()
     class Reference {
-
       @PrimaryKey()
       id!: number;
 
       // Union type with only one actual target - still works as polymorphic
       @ManyToOne(() => [SingleTarget])
       target!: SingleTarget;
-
     }
 
     const orm2 = await MikroORM.init({
@@ -742,23 +743,18 @@ describe('polymorphic relations with Ref wrapper', () => {
   test('throws error for invalid class name in discriminatorMap', async () => {
     @Entity()
     class ValidTarget {
-
       @PrimaryKey()
       id!: number;
-
     }
 
     @Entity()
     class AnotherTarget {
-
       @PrimaryKey()
       id!: number;
-
     }
 
     @Entity()
     class Reference {
-
       @PrimaryKey()
       id!: number;
 
@@ -769,20 +765,20 @@ describe('polymorphic relations with Ref wrapper', () => {
         },
       })
       target!: ValidTarget | AnotherTarget;
-
     }
 
-    await expect(MikroORM.init({
-      entities: [ValidTarget, AnotherTarget, Reference],
-      dbName: ':memory:',
-      metadataProvider: ReflectMetadataProvider,
-    })).rejects.toThrow(/NonExistentEntity.*was not discovered.*Reference\.target discriminatorMap/);
+    await expect(
+      MikroORM.init({
+        entities: [ValidTarget, AnotherTarget, Reference],
+        dbName: ':memory:',
+        metadataProvider: ReflectMetadataProvider,
+      }),
+    ).rejects.toThrow(/NonExistentEntity.*was not discovered.*Reference\.target discriminatorMap/);
   });
 
   test('polymorphic relation with targetKey persists correctly', async () => {
     @Entity()
     class SlugArticle {
-
       @PrimaryKey()
       id!: number;
 
@@ -791,12 +787,10 @@ describe('polymorphic relations with Ref wrapper', () => {
 
       @Property()
       title!: string;
-
     }
 
     @Entity()
     class SlugVideo {
-
       @PrimaryKey()
       id!: number;
 
@@ -805,18 +799,15 @@ describe('polymorphic relations with Ref wrapper', () => {
 
       @Property()
       url!: string;
-
     }
 
     @Entity()
     class SlugBookmark {
-
       @PrimaryKey()
       id!: number;
 
       @ManyToOne(() => [SlugArticle, SlugVideo], { targetKey: 'slug' })
       bookmarkable!: SlugArticle | SlugVideo;
-
     }
 
     const orm2 = await MikroORM.init({
@@ -851,160 +842,143 @@ describe('polymorphic relations with Ref wrapper', () => {
   test('throws on incompatible polymorphic target PK types', async () => {
     @Entity()
     class NumberPKEntity {
-
       @PrimaryKey()
       id!: number;
-
     }
 
     @Entity()
     class StringPKEntity {
-
       @PrimaryKey()
       id!: string;
-
     }
 
     @Entity()
     class IncompatibleRef {
-
       @PrimaryKey()
       id!: number;
 
       @ManyToOne(() => [NumberPKEntity, StringPKEntity])
       target!: NumberPKEntity | StringPKEntity;
-
     }
 
-    await expect(MikroORM.init({
-      entities: [NumberPKEntity, StringPKEntity, IncompatibleRef],
-      dbName: ':memory:',
-      metadataProvider: ReflectMetadataProvider,
-    })).rejects.toThrow(/incompatible polymorphic targets.*incompatible primary key types/);
+    await expect(
+      MikroORM.init({
+        entities: [NumberPKEntity, StringPKEntity, IncompatibleRef],
+        dbName: ':memory:',
+        metadataProvider: ReflectMetadataProvider,
+      }),
+    ).rejects.toThrow(/incompatible polymorphic targets.*incompatible primary key types/);
   });
 
   test('throws on incompatible polymorphic target PK count', async () => {
     @Entity()
     class SimplePKEntity {
-
       @PrimaryKey()
       id!: number;
-
     }
 
     @Entity()
     class CompositePKEntity {
-
       @PrimaryKey()
       id1!: number;
 
       @PrimaryKey()
       id2!: number;
-
     }
 
     @Entity()
     class IncompatibleRef {
-
       @PrimaryKey()
       id!: number;
 
       @ManyToOne(() => [SimplePKEntity, CompositePKEntity])
       target!: SimplePKEntity | CompositePKEntity;
-
     }
 
-    await expect(MikroORM.init({
-      entities: [SimplePKEntity, CompositePKEntity, IncompatibleRef],
-      dbName: ':memory:',
-      metadataProvider: ReflectMetadataProvider,
-    })).rejects.toThrow(/incompatible polymorphic targets.*different number of primary keys/);
+    await expect(
+      MikroORM.init({
+        entities: [SimplePKEntity, CompositePKEntity, IncompatibleRef],
+        dbName: ':memory:',
+        metadataProvider: ReflectMetadataProvider,
+      }),
+    ).rejects.toThrow(/incompatible polymorphic targets.*different number of primary keys/);
   });
 
   test('throws when targetKey is missing on polymorphic target', async () => {
     @Entity()
     class EntityWithSlug {
-
       @PrimaryKey()
       id!: number;
 
       @Property({ unique: true })
       slug!: string;
-
     }
 
     @Entity()
     class EntityWithoutSlug {
-
       @PrimaryKey()
       id!: number;
-
     }
 
     @Entity()
     class RefWithTargetKey {
-
       @PrimaryKey()
       id!: number;
 
       @ManyToOne(() => [EntityWithSlug, EntityWithoutSlug], { targetKey: 'slug' })
       target!: EntityWithSlug | EntityWithoutSlug;
-
     }
 
-    await expect(MikroORM.init({
-      entities: [EntityWithSlug, EntityWithoutSlug, RefWithTargetKey],
-      dbName: ':memory:',
-      metadataProvider: ReflectMetadataProvider,
-    })).rejects.toThrow(/targetKey.*slug.*EntityWithoutSlug\.slug does not exist/);
+    await expect(
+      MikroORM.init({
+        entities: [EntityWithSlug, EntityWithoutSlug, RefWithTargetKey],
+        dbName: ':memory:',
+        metadataProvider: ReflectMetadataProvider,
+      }),
+    ).rejects.toThrow(/targetKey.*slug.*EntityWithoutSlug\.slug does not exist/);
   });
 
   test('throws when targetKey is not unique on polymorphic target', async () => {
     @Entity()
     class EntityWithUniqueSlug {
-
       @PrimaryKey()
       id!: number;
 
       @Property({ unique: true })
       slug!: string;
-
     }
 
     @Entity()
     class EntityWithNonUniqueSlug {
-
       @PrimaryKey()
       id!: number;
 
       @Property()
       slug!: string;
-
     }
 
     @Entity()
     class RefWithTargetKey {
-
       @PrimaryKey()
       id!: number;
 
       @ManyToOne(() => [EntityWithUniqueSlug, EntityWithNonUniqueSlug], { targetKey: 'slug' })
       target!: EntityWithUniqueSlug | EntityWithNonUniqueSlug;
-
     }
 
-    await expect(MikroORM.init({
-      entities: [EntityWithUniqueSlug, EntityWithNonUniqueSlug, RefWithTargetKey],
-      dbName: ':memory:',
-      metadataProvider: ReflectMetadataProvider,
-    })).rejects.toThrow(/targetKey.*slug.*EntityWithNonUniqueSlug\.slug is not marked as unique/);
+    await expect(
+      MikroORM.init({
+        entities: [EntityWithUniqueSlug, EntityWithNonUniqueSlug, RefWithTargetKey],
+        dbName: ':memory:',
+        metadataProvider: ReflectMetadataProvider,
+      }),
+    ).rejects.toThrow(/targetKey.*slug.*EntityWithNonUniqueSlug\.slug is not marked as unique/);
   });
 
   test('schema is up-to-date for polymorphic relations', async () => {
     const sql = await orm.schema.getUpdateSchemaSQL();
     expect(sql).toBe('');
   });
-
 });
 
 // Test polymorphic with @OneToOne
@@ -1012,7 +986,6 @@ import { OneToOne } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class User {
-
   @PrimaryKey()
   id!: number;
 
@@ -1022,12 +995,10 @@ class User {
   constructor(name: string) {
     this.name = name;
   }
-
 }
 
 @Entity()
 class Organization {
-
   @PrimaryKey()
   id!: number;
 
@@ -1037,12 +1008,10 @@ class Organization {
   constructor(title: string) {
     this.title = title;
   }
-
 }
 
 @Entity()
 class Profile {
-
   @PrimaryKey()
   id!: number;
 
@@ -1055,7 +1024,6 @@ class Profile {
   constructor(bio: string) {
     this.bio = bio;
   }
-
 }
 
 describe('polymorphic @OneToOne relations', () => {
@@ -1132,10 +1100,14 @@ describe('polymorphic @OneToOne relations', () => {
     await orm.em.flush();
     orm.em.clear();
 
-    const profiles = await orm.em.find(Profile, {}, {
-      populate: ['owner'],
-      orderBy: { id: 'ASC' },
-    });
+    const profiles = await orm.em.find(
+      Profile,
+      {},
+      {
+        populate: ['owner'],
+        orderBy: { id: 'ASC' },
+      },
+    );
 
     expect(profiles).toHaveLength(2);
     expect(profiles[0].owner).toBeInstanceOf(User);
@@ -1169,5 +1141,4 @@ describe('polymorphic @OneToOne relations', () => {
     const sql = await orm.schema.getUpdateSchemaSQL();
     expect(sql).toBe('');
   });
-
 });

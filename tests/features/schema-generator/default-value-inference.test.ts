@@ -3,7 +3,6 @@ import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-or
 
 @Entity()
 class Author1 {
-
   @PrimaryKey()
   id!: number;
 
@@ -18,12 +17,10 @@ class Author1 {
 
   @Property()
   data: Buffer = Buffer.from([]);
-
 }
 
 @Entity()
 class Author2 {
-
   @PrimaryKey()
   id!: number;
 
@@ -38,7 +35,6 @@ class Author2 {
 
   @Property()
   data = Buffer.from([]);
-
 }
 
 let orm: MikroORM;
@@ -57,7 +53,7 @@ test('infer property type from its default value when type is not set', async ()
   const meta = orm.getMetadata(Author2);
   await expect(orm.schema.getCreateSchemaSQL({ wrap: false })).resolves.toBe(
     `create table "author1" ("id" serial primary key, "age" int not null default 0, "nullable" int null, "created_at" timestamptz not null, "data" bytea not null);\n\n` +
-    `create table "author2" ("id" serial primary key, "age" int not null default 0, "nullable" int null, "created_at" timestamptz not null, "data" bytea not null);\n`,
+      `create table "author2" ("id" serial primary key, "age" int not null default 0, "nullable" int null, "created_at" timestamptz not null, "data" bytea not null);\n`,
   );
   expect(meta.properties.age.type).toBe('number');
   expect(meta.properties.createdAt.type).toBe('Date');

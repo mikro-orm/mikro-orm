@@ -45,7 +45,6 @@ const UserSchema = new EntitySchema<User>({
 });
 
 describe('GH7111 - FilterQuery type safety for union types', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -97,10 +96,7 @@ describe('GH7111 - FilterQuery type safety for union types', () => {
 
   test('filter with $or on discriminator', async () => {
     const filter: FilterQuery<User> = {
-      $or: [
-        { status: { type: 'available' } },
-        { status: { type: 'unknown' } },
-      ],
+      $or: [{ status: { type: 'available' } }, { status: { type: 'unknown' } }],
     };
 
     const users = await orm.em.find(UserSchema, filter);
@@ -141,9 +137,13 @@ describe('GH7111 - FilterQuery type safety for union types', () => {
     orm.em.clear();
 
     // Query using $in on discriminator - the exact case from the issue
-    const availableOrUnavailable = await orm.em.find(UserSchema, {
-      status: { type: { $in: ['available', 'unavailable'] } },
-    }, { orderBy: { firstName: 'asc' } });
+    const availableOrUnavailable = await orm.em.find(
+      UserSchema,
+      {
+        status: { type: { $in: ['available', 'unavailable'] } },
+      },
+      { orderBy: { firstName: 'asc' } },
+    );
 
     expect(availableOrUnavailable).toHaveLength(2);
     expect(availableOrUnavailable[0].firstName).toBe('Available');
@@ -157,5 +157,4 @@ describe('GH7111 - FilterQuery type safety for union types', () => {
     expect(unknownOnly).toHaveLength(1);
     expect(unknownOnly[0].firstName).toBe('Unknown');
   });
-
 });

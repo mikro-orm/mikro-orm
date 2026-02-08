@@ -103,7 +103,6 @@ beforeAll(async () => {
   if (await orm.schema.ensureDatabase({ create: true })) {
     await orm.schema.execute(schema);
   }
-
 });
 
 afterAll(async () => {
@@ -111,19 +110,22 @@ afterAll(async () => {
 });
 
 describe(schemaName, () => {
-  describe.each(['never', 'always', 'smart'] as const)('scalarPropertiesForRelations=%s', scalarPropertiesForRelations => {
-    describe.each([true, false])('bidirectionalRelations=%s', bidirectionalRelations => {
-      describe.each([true, false])('identifiedReferences=%s', identifiedReferences => {
-        test.each(['entitySchema', 'decorators'] as const)('entityDefinition=%s', async entityDefinition => {
-          const dump = await orm.entityGenerator.generate({
-            scalarPropertiesForRelations,
-            bidirectionalRelations,
-            identifiedReferences,
-            entityDefinition,
+  describe.each(['never', 'always', 'smart'] as const)(
+    'scalarPropertiesForRelations=%s',
+    scalarPropertiesForRelations => {
+      describe.each([true, false])('bidirectionalRelations=%s', bidirectionalRelations => {
+        describe.each([true, false])('identifiedReferences=%s', identifiedReferences => {
+          test.each(['entitySchema', 'decorators'] as const)('entityDefinition=%s', async entityDefinition => {
+            const dump = await orm.entityGenerator.generate({
+              scalarPropertiesForRelations,
+              bidirectionalRelations,
+              identifiedReferences,
+              entityDefinition,
+            });
+            expect(dump).toMatchSnapshot('dump');
           });
-          expect(dump).toMatchSnapshot('dump');
         });
       });
-    });
-  });
+    },
+  );
 });

@@ -4,7 +4,6 @@ import { MikroORM, Type, ValidationError } from '@mikro-orm/mysql';
 import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 class Tid {
-
   toString() {
     return this._id;
   }
@@ -14,11 +13,9 @@ class Tid {
   }
 
   private readonly _id;
-
 }
 
 class TidType extends Type<Tid | undefined, string | undefined> {
-
   override convertToDatabaseValue(value: Tid | undefined): string | undefined {
     if (!value) {
       return;
@@ -50,12 +47,10 @@ class TidType extends Type<Tid | undefined, string | undefined> {
   override compareAsType(): string {
     return 'string';
   }
-
 }
 
 @Entity()
 class User {
-
   @PrimaryKey({
     type: TidType,
   })
@@ -63,7 +58,6 @@ class User {
 
   @Property({ unique: true })
   name!: string;
-
 }
 
 let orm: MikroORM;

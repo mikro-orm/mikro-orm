@@ -3,7 +3,6 @@ import { Entity, ManyToMany, PrimaryKey, ReflectMetadataProvider } from '@mikro-
 
 @Entity()
 class Author {
-
   @PrimaryKey()
   id!: number;
 
@@ -12,12 +11,10 @@ class Author {
 
   @ManyToMany(() => Post)
   posts = new Collection<Post>(this);
-
 }
 
 @Entity()
 class Tag {
-
   @PrimaryKey()
   id!: number;
 
@@ -26,12 +23,10 @@ class Tag {
 
   @ManyToMany(() => Author, 'tags')
   authors = new Collection<Post>(this);
-
 }
 
 @Entity()
 class Post {
-
   @PrimaryKey()
   id!: number;
 
@@ -40,7 +35,6 @@ class Post {
 
   @ManyToMany(() => Author, 'posts')
   authors = new Collection<Author>(this);
-
 }
 
 let orm: MikroORM;

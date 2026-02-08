@@ -8,7 +8,10 @@ import {
 } from '@mikro-orm/core';
 import { prepareMetadataContext } from '../utils.js';
 
-export function Embedded<Owner extends object, Target>(type: EmbeddedOptions<Owner, Target> | (() => EntityName<Target> | EntityName[]) = {}, options: EmbeddedOptions<Owner, Target> = {}) {
+export function Embedded<Owner extends object, Target>(
+  type: EmbeddedOptions<Owner, Target> | (() => EntityName<Target> | EntityName[]) = {},
+  options: EmbeddedOptions<Owner, Target> = {},
+) {
   return function (value: unknown, context: ClassFieldDecoratorContext<Owner>) {
     const meta = prepareMetadataContext(context, ReferenceKind.EMBEDDED);
     options = type instanceof Function ? { entity: type, ...options } : { ...type, ...options };

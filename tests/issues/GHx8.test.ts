@@ -11,15 +11,12 @@ import { v4 } from 'uuid';
 
 @Entity()
 class Organization {
-
   @PrimaryKey({ columnType: 'uuid' })
   id!: string;
-
 }
 
 @Entity()
 class Project {
-
   [PrimaryKeyProp]?: ['id', 'organization'];
 
   @PrimaryKey({ columnType: 'uuid' })
@@ -44,12 +41,10 @@ class Project {
     joinColumns: ['project_id_2', 'organization_id'],
   })
   projectUpdate2!: Ref<ProjectUpdate>;
-
 }
 
 @Entity()
 class ProjectUpdate {
-
   [PrimaryKeyProp]?: ['id', 'organization'];
 
   @PrimaryKey({ columnType: 'uuid' })
@@ -75,7 +70,6 @@ class ProjectUpdate {
     joinColumns: ['id', 'organization_id'],
   })
   projects2 = new Collection<Project>(this);
-
 }
 
 let orm: MikroORM;
@@ -108,7 +102,8 @@ test('bulk update props with compound keys', async () => {
   await initEm.persist(org).flush();
 
   const projectUpdate1 = new ProjectUpdate();
-  initEm.assign(projectUpdate1,
+  initEm.assign(
+    projectUpdate1,
     {
       id: updateId,
       organization: orgId,
@@ -117,7 +112,8 @@ test('bulk update props with compound keys', async () => {
   );
 
   const projectUpdate2 = new ProjectUpdate();
-  initEm.assign(projectUpdate2,
+  initEm.assign(
+    projectUpdate2,
     {
       id: updateId2,
       organization: orgId,
@@ -126,7 +122,8 @@ test('bulk update props with compound keys', async () => {
   );
 
   const project = new Project();
-  initEm.assign(project,
+  initEm.assign(
+    project,
     {
       id: projectId,
       organization: orgId,
@@ -137,7 +134,8 @@ test('bulk update props with compound keys', async () => {
     { em: initEm },
   );
   const project2 = new Project();
-  initEm.assign(project2,
+  initEm.assign(
+    project2,
     {
       id: projectId2,
       organization: orgId,

@@ -55,9 +55,7 @@ export interface MikroKyselyPluginOptions {
   convertValues?: boolean;
 }
 
-
 export class MikroKyselyPlugin implements KyselyPlugin {
-
   protected static queryNodeCache = new WeakMap<any, QueryTransformCache>();
 
   protected readonly transformer: MikroTransformer;
@@ -100,15 +98,11 @@ export class MikroKyselyPlugin implements KyselyPlugin {
     }
 
     // Transform the result rows using the transformer
-    const transformedRows = this.transformer.transformResult(
-      (args.result.rows as any) ?? [],
-      cache.entityMap,
-    );
+    const transformedRows = this.transformer.transformResult((args.result.rows as any) ?? [], cache.entityMap);
 
     return {
       ...args.result,
       rows: transformedRows ?? [],
     };
   }
-
 }

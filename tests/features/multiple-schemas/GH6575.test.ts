@@ -3,7 +3,6 @@ import { Entity, ManyToMany, PrimaryKey, Property, ReflectMetadataProvider } fro
 
 @Entity({ tableName: 'tags', schema: '*' })
 class Tag extends BaseEntity {
-
   @PrimaryKey({ type: 'number' })
   id!: number;
 
@@ -12,12 +11,10 @@ class Tag extends BaseEntity {
 
   @ManyToMany(() => Book, book => book.tags)
   books = new Collection<Book>(this);
-
 }
 
 @Entity({ tableName: 'books', schema: '*' })
 class Book extends BaseEntity {
-
   @PrimaryKey({ type: 'number' })
   id!: number;
 
@@ -26,7 +23,6 @@ class Book extends BaseEntity {
 
   @ManyToMany({ entity: () => Tag, cascade: [], owner: true })
   tags = new Collection<Tag>(this);
-
 }
 
 let orm: MikroORM;

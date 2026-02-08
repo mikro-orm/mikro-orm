@@ -3,7 +3,6 @@ import type { Platform } from '../platforms/Platform.js';
 import type { EntityProperty } from '../typings.js';
 
 export class TextType extends Type<string | null | undefined, string | null | undefined> {
-
   override getColumnType(prop: EntityProperty, platform: Platform) {
     return platform.getTextTypeDeclarationSQL(prop);
   }
@@ -15,5 +14,4 @@ export class TextType extends Type<string | null | undefined, string | null | un
   override ensureComparable(): boolean {
     return false;
   }
-
 }

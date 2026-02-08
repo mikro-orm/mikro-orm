@@ -4,7 +4,6 @@ import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 @Entity()
 export class BookTag {
-
   @PrimaryKey()
   id!: number;
 
@@ -14,12 +13,10 @@ export class BookTag {
   constructor(name: string) {
     this.name = name;
   }
-
 }
 
 @Entity()
 export class Book {
-
   @PrimaryKey()
   id!: number;
 
@@ -32,11 +29,9 @@ export class Book {
   constructor(name: string) {
     this.name = name;
   }
-
 }
 
 describe('different schema from config', () => {
-
   let orm: MikroORM<PostgreSqlDriver>;
 
   beforeAll(async () => {
@@ -90,11 +85,10 @@ describe('different schema from config', () => {
     expect(wrap(res[1]).getSchema()).toBe('privateschema');
     expect(wrap(res[2]).getSchema()).toBe('privateschema');
 
-    res.forEach(row => row.name = `name ${row.id}`);
+    res.forEach(row => (row.name = `name ${row.id}`));
     res[0].tags.set([new BookTag('t21')]);
     res[1].tags.set([new BookTag('t22')]);
     res[2].tags.set([new BookTag('t23')]);
     await orm.em.flush();
   });
-
 });

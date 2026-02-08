@@ -1,10 +1,5 @@
 import { ObjectId } from 'bson';
-import {
-  Collection,
-  OptionalProps,
-  PrimaryKeyProp,
-  EagerProps,
-} from '@mikro-orm/core';
+import { Collection, OptionalProps, PrimaryKeyProp, EagerProps } from '@mikro-orm/core';
 import {
   Entity,
   ManyToMany,
@@ -21,7 +16,6 @@ import { PublisherType } from './PublisherType.js';
 
 @Entity()
 export class Publisher {
-
   [OptionalProps]?: 'type';
   [PrimaryKeyProp]?: 'id' | '_id';
   [EagerProps]?: 'tests';
@@ -56,5 +50,4 @@ export class Publisher {
   beforeCreate() {
     // do sth
   }
-
 }

@@ -1,9 +1,15 @@
 import { MikroORM, Ref, Collection, Opt } from '@mikro-orm/sqlite';
-import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class User {
-
   @PrimaryKey()
   id!: number;
 
@@ -31,15 +37,15 @@ class User {
   hasBarPost!: Opt<Ref<string | null>>;
 
   @Property({
-    lazy: true, nullable: true, ref: true,
+    lazy: true,
+    nullable: true,
+    ref: true,
   })
   scalarRef?: Ref<string>;
-
 }
 
 @Entity()
 class Post {
-
   @PrimaryKey()
   id!: number;
 
@@ -48,7 +54,6 @@ class Post {
 
   @ManyToOne()
   user!: User;
-
 }
 
 let orm: MikroORM;
@@ -93,20 +98,14 @@ describe('should populate and load `hasBarPost` when bar post is added', () => {
   });
 
   test('using Reference.load()', async () => {
-    const user = await orm.em.findOneOrFail(
-      User,
-      { email },
-    );
+    const user = await orm.em.findOneOrFail(User, { email });
     await user.hasBarPost.load();
     expect(user.hasBarPost.isInitialized()).toEqual(true);
     expect(await user.hasBarPost.load()).toEqual('true');
   });
 
   test('using em.populate()', async () => {
-    const user = await orm.em.findOneOrFail(
-      User,
-      { email },
-    );
+    const user = await orm.em.findOneOrFail(User, { email });
     await orm.em.populate(user, ['hasBarPost']);
     expect(user.hasBarPost.isInitialized()).toEqual(true);
     expect(await user.hasBarPost.load()).toEqual('true');
@@ -150,20 +149,14 @@ describe('should populate and load `hasBarPost` when no bar post is added', () =
   });
 
   test('using Reference.load()', async () => {
-    const user = await orm.em.findOneOrFail(
-      User,
-      { email },
-    );
+    const user = await orm.em.findOneOrFail(User, { email });
     await user.hasBarPost.load();
     expect(user.hasBarPost.isInitialized()).toEqual(true);
     expect(await user.hasBarPost.load()).toEqual(null);
   });
 
   test('using em.populate()', async () => {
-    const user = await orm.em.findOneOrFail(
-      User,
-      { email },
-    );
+    const user = await orm.em.findOneOrFail(User, { email });
     await orm.em.populate(user, ['hasBarPost']);
     expect(user.hasBarPost.isInitialized()).toEqual(true);
     expect(await user.hasBarPost.load()).toEqual(null);

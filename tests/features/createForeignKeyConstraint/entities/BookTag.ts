@@ -5,7 +5,6 @@ import { BaseEntity } from './BaseEntity.js';
 
 @Entity()
 export class BookTag extends BaseEntity {
-
   @Property()
   name: string;
 
@@ -16,5 +15,4 @@ export class BookTag extends BaseEntity {
     super();
     this.name = name;
   }
-
 }

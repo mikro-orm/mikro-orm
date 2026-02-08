@@ -13,34 +13,27 @@ import { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()
 export class D {
-
   @PrimaryKey()
   id: string = v4();
 
   @ManyToOne({ entity: () => A })
   a!: any;
-
 }
 
 @Entity()
 export class C {
-
   @PrimaryKey()
   id: string = v4();
-
 }
 
 @Entity()
 export class B {
-
   @PrimaryKey()
   id: string = v4();
-
 }
 
 @Entity()
 export class A {
-
   @OneToOne({ entity: () => B, joinColumn: 'id', primary: true })
   id!: B;
 
@@ -49,11 +42,9 @@ export class A {
 
   @OneToMany({ entity: () => D, mappedBy: 'a', eager: true })
   d = new Collection<D>(this);
-
 }
 
 describe('GH issue 1157', () => {
-
   let orm: MikroORM<AbstractSqlDriver>;
 
   beforeAll(async () => {
@@ -78,5 +69,4 @@ describe('GH issue 1157', () => {
     const d1 = await orm.em.findOneOrFail(D, { a });
     expect(d1.a.id).toBeInstanceOf(B);
   });
-
 });

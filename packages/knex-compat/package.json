@@ -2,43 +2,43 @@
   "name": "@mikro-orm/knex-compat",
   "version": "6.6.4",
   "description": "TypeScript ORM for Node.js based on Data Mapper, Unit of Work and Identity Map patterns. Supports MongoDB, MySQL, PostgreSQL and SQLite databases as well as usage with vanilla JavaScript.",
-  "type": "module",
-  "exports": {
-    "./package.json": "./package.json",
-    ".": "./src/index.ts"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+ssh://git@github.com/mikro-orm/mikro-orm.git"
-  },
   "keywords": [
-    "orm",
+    "data-mapper",
+    "ddd",
+    "entity",
+    "identity-map",
+    "javascript",
+    "js",
+    "mariadb",
+    "mikro-orm",
     "mongo",
     "mongodb",
     "mysql",
-    "mariadb",
+    "orm",
     "postgresql",
     "sqlite",
     "sqlite3",
     "ts",
     "typescript",
-    "js",
-    "javascript",
-    "entity",
-    "ddd",
-    "mikro-orm",
-    "unit-of-work",
-    "data-mapper",
-    "identity-map"
+    "unit-of-work"
   ],
-  "author": "Martin Adámek",
-  "license": "MIT",
+  "homepage": "https://mikro-orm.io",
   "bugs": {
     "url": "https://github.com/mikro-orm/mikro-orm/issues"
   },
-  "homepage": "https://mikro-orm.io",
-  "engines": {
-    "node": ">= 22.17.0"
+  "license": "MIT",
+  "author": "Martin Adámek",
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/mikro-orm/mikro-orm.git"
+  },
+  "type": "module",
+  "exports": {
+    "./package.json": "./package.json",
+    ".": "./src/index.ts"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "scripts": {
     "build": "yarn compile && yarn copy",
@@ -46,14 +46,14 @@
     "compile": "yarn run -T tsc -p tsconfig.build.json",
     "copy": "node ../../scripts/copy.mjs"
   },
-  "publishConfig": {
-    "access": "public"
-  },
   "devDependencies": {
     "@mikro-orm/sql": "^6.6.4"
   },
   "peerDependencies": {
     "@mikro-orm/sql": "^6.0.0",
     "knex": "^3.0.0"
+  },
+  "engines": {
+    "node": ">= 22.17.0"
   }
 }

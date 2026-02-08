@@ -3,7 +3,6 @@ import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-or
 
 @Entity({ tableName: 'book' })
 class Book1 {
-
   @PrimaryKey()
   id!: number;
 
@@ -18,12 +17,10 @@ class Book1 {
 
   @Property({ lazy: true, type: 'longblob', nullable: true })
   blob5?: Buffer;
-
 }
 
 @Entity({ tableName: 'book' })
 class Book2 {
-
   @PrimaryKey()
   id!: number;
 
@@ -38,12 +35,10 @@ class Book2 {
 
   @Property({ lazy: true, type: 'longblob', nullable: true })
   blob5?: Buffer;
-
 }
 
 @Entity({ tableName: 'book' })
 class Book3 {
-
   @PrimaryKey()
   id!: number;
 
@@ -62,12 +57,10 @@ class Book3 {
 
   @Property({ lazy: true, type: 'longblob', nullable: true })
   blob5?: Buffer;
-
 }
 
 @Entity({ tableName: 'book' })
 class Book4 {
-
   @PrimaryKey()
   id!: number;
 
@@ -86,12 +79,10 @@ class Book4 {
 
   @Property({ lazy: true, type: 'longblob', nullable: true })
   blob5?: Buffer;
-
 }
 
 @Entity({ tableName: 'book' })
 class Book5 {
-
   @PrimaryKey()
   id!: number;
 
@@ -106,7 +97,6 @@ class Book5 {
 
   @Property({ lazy: true, type: 'longblob', nullable: true })
   blob5?: Buffer;
-
 }
 
 describe('ignore specific schema changes (GH 1904)', () => {
@@ -131,7 +121,9 @@ describe('ignore specific schema changes (GH 1904)', () => {
 
   test('create schema with various blobs', async () => {
     const sql = await orm.schema.getCreateSchemaSQL({ wrap: false });
-    expect(sql.trim()).toBe('create table `book` (`id` int unsigned not null auto_increment primary key, `changing_field` int not null, `blob3` tinyblob null, `blob4` mediumblob null, `blob5` longblob null) default character set utf8mb4 engine = InnoDB;');
+    expect(sql.trim()).toBe(
+      'create table `book` (`id` int unsigned not null auto_increment primary key, `changing_field` int not null, `blob3` tinyblob null, `blob4` mediumblob null, `blob5` longblob null) default character set utf8mb4 engine = InnoDB;',
+    );
   });
 
   test('schema generator respects ignoreSchemaChanges for `type`', async () => {

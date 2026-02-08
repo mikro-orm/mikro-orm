@@ -1,7 +1,6 @@
 import { MigrationGenerator } from './MigrationGenerator.js';
 
 export class TSMigrationGenerator extends MigrationGenerator {
-
   /**
    * @inheritDoc
    */
@@ -9,12 +8,12 @@ export class TSMigrationGenerator extends MigrationGenerator {
     let ret = `import { Migration } from '@mikro-orm/migrations';\n\n`;
     ret += `export class ${className} extends Migration {\n\n`;
     ret += `  override async up(): Promise<void> {\n`;
-    diff.up.forEach(sql => ret += this.createStatement(sql, 4));
+    diff.up.forEach(sql => (ret += this.createStatement(sql, 4)));
     ret += `  }\n\n`;
 
     if (diff.down.length > 0) {
       ret += `  override async down(): Promise<void> {\n`;
-      diff.down.forEach(sql => ret += this.createStatement(sql, 4));
+      diff.down.forEach(sql => (ret += this.createStatement(sql, 4)));
       ret += `  }\n\n`;
     }
 
@@ -22,5 +21,4 @@ export class TSMigrationGenerator extends MigrationGenerator {
 
     return ret;
   }
-
 }

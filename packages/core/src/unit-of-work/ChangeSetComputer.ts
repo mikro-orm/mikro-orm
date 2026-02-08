@@ -15,7 +15,6 @@ import { ReferenceKind } from '../enums.js';
 import type { EntityManager } from '../EntityManager.js';
 
 export class ChangeSetComputer {
-
   private readonly comparator: EntityComparator;
   private readonly metadata: MetadataStorage;
   private readonly platform: Platform;
@@ -44,7 +43,8 @@ export class ChangeSetComputer {
 
     // Execute `onCreate` and `onUpdate` on properties recursively, saves `onUpdate` results
     // to the `map` as we want to apply those only if something else changed.
-    if (type === ChangeSetType.CREATE) { // run update hooks only after we know there are other changes
+    if (type === ChangeSetType.CREATE) {
+      // run update hooks only after we know there are other changes
       for (const prop of meta.hydrateProps) {
         this.processPropertyInitializers(entity, prop, type, map);
       }
@@ -97,14 +97,18 @@ export class ChangeSetComputer {
   /**
    * Traverses entity graph and executes `onCreate` and `onUpdate` methods, assigning the values to given properties.
    */
-  private processPropertyInitializers<T>(entity: T, prop: EntityProperty<T>, type: ChangeSetType, map: Map<T, [string, unknown][]>, nested?: boolean): void {
+  private processPropertyInitializers<T>(
+    entity: T,
+    prop: EntityProperty<T>,
+    type: ChangeSetType,
+    map: Map<T, [string, unknown][]>,
+    nested?: boolean,
+  ): void {
     if (
-      prop.onCreate
-      && type === ChangeSetType.CREATE
-      && (
-        entity[prop.name] == null
-        || (Utils.isScalarReference(entity[prop.name]) && (entity[prop.name] as Reference<any>).unwrap() == null)
-      )
+      prop.onCreate &&
+      type === ChangeSetType.CREATE &&
+      (entity[prop.name] == null ||
+        (Utils.isScalarReference(entity[prop.name]) && (entity[prop.name] as Reference<any>).unwrap() == null))
     ) {
       entity[prop.name] = prop.onCreate(entity, this.em);
     }
@@ -160,7 +164,8 @@ export class ChangeSetComputer {
       return;
     }
 
-    if (Utils.isCollection(target)) { // m:n or 1:m
+    if (Utils.isCollection(target)) {
+      // m:n or 1:m
       this.processToMany(prop, changeSet);
     }
 
@@ -170,7 +175,8 @@ export class ChangeSetComputer {
   }
 
   private processToOne<T extends object>(prop: EntityProperty<T>, changeSet: ChangeSet<T>): void {
-    const isToOneOwner = prop.kind === ReferenceKind.MANY_TO_ONE || (prop.kind === ReferenceKind.ONE_TO_ONE && prop.owner);
+    const isToOneOwner =
+      prop.kind === ReferenceKind.MANY_TO_ONE || (prop.kind === ReferenceKind.ONE_TO_ONE && prop.owner);
 
     if (!isToOneOwner || prop.mapToPk) {
       return;
@@ -196,7 +202,13 @@ export class ChangeSetComputer {
 
         if (prop.polymorphic) {
           const discriminator = QueryHelper.findDiscriminatorValue(prop.discriminatorMap!, target.constructor)!;
-          Utils.setPayloadProperty<T>(changeSet.payload, changeSet.meta, prop, new PolymorphicRef(discriminator, value), idx);
+          Utils.setPayloadProperty<T>(
+            changeSet.payload,
+            changeSet.meta,
+            prop,
+            new PolymorphicRef(discriminator, value),
+            idx,
+          );
         } else {
           Utils.setPayloadProperty<T>(changeSet.payload, changeSet.meta, prop, value, idx);
         }
@@ -221,5 +233,4 @@ export class ChangeSetComputer {
       });
     }
   }
-
 }

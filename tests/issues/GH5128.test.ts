@@ -3,7 +3,6 @@ import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-or
 
 @Entity()
 class User extends BaseEntity {
-
   @PrimaryKey()
   id!: number;
 
@@ -18,7 +17,6 @@ class User extends BaseEntity {
     this.name = name;
     this.email = email;
   }
-
 }
 
 let orm: MikroORM;

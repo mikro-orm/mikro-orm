@@ -1,20 +1,25 @@
 import { Collection, MikroORM, Ref } from '@mikro-orm/sqlite';
-import { Entity, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  OneToOne,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class Series {
-
   @PrimaryKey()
   id!: number;
 
   @OneToMany(() => SeriesPost, seriesPost => seriesPost.series)
   seriesPosts = new Collection<SeriesPost>(this);
-
 }
 
 @Entity()
 class Post {
-
   @PrimaryKey()
   id!: number;
 
@@ -30,12 +35,10 @@ class Post {
     nullable: true,
   })
   publishedAt?: Date;
-
 }
 
 @Entity()
 class SeriesPost {
-
   @PrimaryKey()
   id!: number;
 
@@ -61,7 +64,6 @@ class SeriesPost {
     inversedBy: 'seriesPost',
   })
   post!: Ref<Post>;
-
 }
 
 let orm: MikroORM;
@@ -87,35 +89,34 @@ afterAll(async () => {
 });
 
 test('GH #6635', async () => {
-  const [posts, total] = await orm.em.findAndCount(Post, {}, {
-    strategy: 'select-in',
-    populate: [
-      'seriesPost',
-      'seriesPost.series',
-      'seriesPost.nextPart',
-      'seriesPost.previousPart',
-    ],
-    populateWhere: {
-      seriesPost: {
-        $or: [
-          {
-            nextPart: {
-              publishedAt: {
-                $ne: null,
+  const [posts, total] = await orm.em.findAndCount(
+    Post,
+    {},
+    {
+      strategy: 'select-in',
+      populate: ['seriesPost', 'seriesPost.series', 'seriesPost.nextPart', 'seriesPost.previousPart'],
+      populateWhere: {
+        seriesPost: {
+          $or: [
+            {
+              nextPart: {
+                publishedAt: {
+                  $ne: null,
+                },
               },
             },
-          },
-          {
-            previousPart: {
-              publishedAt: {
-                $ne: null,
+            {
+              previousPart: {
+                publishedAt: {
+                  $ne: null,
+                },
               },
             },
-          },
-        ],
+          ],
+        },
       },
     },
-  });
+  );
   expect(posts.length).toBe(1);
   expect(total).toBe(1);
 });

@@ -23,10 +23,11 @@ const Rating = defineEntity({
   properties: {
     id: p.integer().primary().autoincrement(),
     score: p.integer(),
-    rateable: () => p.manyToOne([Article, Video]).discriminatorMap({
-      art: 'Article',
-      vid: 'Video',
-    }),
+    rateable: () =>
+      p.manyToOne([Article, Video]).discriminatorMap({
+        art: 'Article',
+        vid: 'Video',
+      }),
   },
 });
 
@@ -45,12 +46,14 @@ const Post = defineEntity({
   properties: {
     id: p.integer().primary().autoincrement(),
     title: p.string(),
-    categories: () => p.manyToMany(Category)
-      .mappedBy('posts')
-      .pivotTable('categorizables')
-      .discriminator('categorizable')
-      .discriminatorMap({ post: 'Post', prod: 'Product' })
-      .owner(),
+    categories: () =>
+      p
+        .manyToMany(Category)
+        .mappedBy('posts')
+        .pivotTable('categorizables')
+        .discriminator('categorizable')
+        .discriminatorMap({ post: 'Post', prod: 'Product' })
+        .owner(),
   },
 });
 
@@ -59,12 +62,14 @@ const Product = defineEntity({
   properties: {
     id: p.integer().primary().autoincrement(),
     sku: p.string(),
-    categories: () => p.manyToMany(Category)
-      .mappedBy('products')
-      .pivotTable('categorizables')
-      .discriminator('categorizable')
-      .discriminatorMap({ post: 'Post', prod: 'Product' })
-      .owner(),
+    categories: () =>
+      p
+        .manyToMany(Category)
+        .mappedBy('products')
+        .pivotTable('categorizables')
+        .discriminator('categorizable')
+        .discriminatorMap({ post: 'Post', prod: 'Product' })
+        .owner(),
   },
 });
 
@@ -73,7 +78,6 @@ type Post = InferEntity<typeof Post>;
 type Product = InferEntity<typeof Product>;
 
 describe('polymorphic M:1 via defineEntity', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -109,10 +113,14 @@ describe('polymorphic M:1 via defineEntity', () => {
     await orm.em.flush();
     orm.em.clear();
 
-    const ratings = await orm.em.find(Rating, {}, {
-      populate: ['rateable'],
-      orderBy: { id: 'ASC' },
-    });
+    const ratings = await orm.em.find(
+      Rating,
+      {},
+      {
+        populate: ['rateable'],
+        orderBy: { id: 'ASC' },
+      },
+    );
 
     expect(ratings).toHaveLength(2);
     expect(ratings[0].rateable).toBeInstanceOf(Article.meta.class);
@@ -128,11 +136,9 @@ describe('polymorphic M:1 via defineEntity', () => {
     const [row] = await conn.execute('SELECT * FROM rating WHERE id = ?', [rating.id]);
     expect(row.rateable_type).toBe('art');
   });
-
 });
 
 describe('polymorphic M:N via defineEntity', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -200,5 +206,4 @@ describe('polymorphic M:N via defineEntity', () => {
     expect(rows).toHaveLength(1);
     expect(rows[0].categorizable_type).toBe('post');
   });
-
 });

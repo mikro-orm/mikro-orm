@@ -1,12 +1,10 @@
 import { getEnv } from '../utils/env-vars.js';
 
 const bool = (k: string) => ['true', 't', '1'].includes(getEnv(k)?.toLowerCase() ?? '');
-const boolIfDefined = (k: string) => getEnv(k) != null ? bool(k) : true;
-const enabled = () => !bool('NO_COLOR')
-  && !bool('MIKRO_ORM_NO_COLOR')
-  && boolIfDefined('FORCE_COLOR')
-  && boolIfDefined('MIKRO_ORM_COLORS');
-const wrap = (fn: (text: string) => string) => (text: string) => enabled() ? fn(text) : text;
+const boolIfDefined = (k: string) => (getEnv(k) != null ? bool(k) : true);
+const enabled = () =>
+  !bool('NO_COLOR') && !bool('MIKRO_ORM_NO_COLOR') && boolIfDefined('FORCE_COLOR') && boolIfDefined('MIKRO_ORM_COLORS');
+const wrap = (fn: (text: string) => string) => (text: string) => (enabled() ? fn(text) : text);
 
 /** @internal */
 export const colors = {
