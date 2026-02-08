@@ -1,12 +1,23 @@
 import { existsSync } from 'node:fs';
 import { rm } from 'node:fs/promises';
 import { DatabaseTable } from '@mikro-orm/sql';
+import type { MikroORM } from '@mikro-orm/postgresql';
 import { initORMPostgreSql } from '../../bootstrap.js';
 
 describe('EntityGenerator', () => {
 
+  let orm: MikroORM;
+
+  beforeAll(async () => {
+    orm = await initORMPostgreSql();
+  });
+
+  afterAll(async () => {
+    await orm.schema.dropDatabase();
+    await orm.close(true);
+  });
+
   test('generate entities from schema [postgres]', async () => {
-    const orm = await initORMPostgreSql();
     const dump = await orm.entityGenerator.generate();
     expect(dump).toMatchSnapshot('postgres-entity-dump');
 
@@ -45,31 +56,24 @@ describe('EntityGenerator', () => {
     expect(meta.properties.test.defaultRaw).toBe(`'foo'`);
     expect(meta.properties.test.nullable).toBe(true);
     expect(meta.properties.test.columnTypes[0]).toBe('varchar(50)');
-
-    await orm.close(true);
   });
 
   test('generate entities from schema with forceUndefined = false [postgres]', async () => {
-    const orm = await initORMPostgreSql();
     const dump = await orm.entityGenerator.generate({
       forceUndefined: false,
     });
     expect(dump).toMatchSnapshot('postgres-entity-dump');
-    await orm.close(true);
   });
 
   test('generate entities from schema with forceUndefined = false and undefinedDefaults = true [postgres]', async () => {
-    const orm = await initORMPostgreSql();
     const dump = await orm.entityGenerator.generate({
       forceUndefined: false,
       undefinedDefaults: true,
     });
     expect(dump).toMatchSnapshot('postgres-entity-dump');
-    await orm.close(true);
   });
 
   test('skipTables [postgres]', async () => {
-    const orm = await initORMPostgreSql();
     const dump = await orm.entityGenerator.generate({
       save: true,
       path: './temp/entities-pg-skipTables',
@@ -81,13 +85,9 @@ describe('EntityGenerator', () => {
     expect(existsSync('./temp/entities-pg-skipTables/Test2.ts')).toBe(false);
     expect(existsSync('./temp/entities-pg-skipTables/FooBar2.ts')).toBe(true);
     await rm('./temp/entities-pg-skipTables', { recursive: true, force: true });
-
-    await orm.schema.dropDatabase();
-    await orm.close(true);
   });
 
   test('takeTables [postgres]', async () => {
-    const orm = await initORMPostgreSql();
     const dump = await orm.entityGenerator.generate({
       save: true,
       path: './temp/entities-pg-takeTables',
@@ -98,13 +98,9 @@ describe('EntityGenerator', () => {
     expect(existsSync('./temp/entities-pg-takeTables/Test2.ts')).toBe(true);
     expect(existsSync('./temp/entities-pg-takeTables/FooBar2.ts')).toBe(true);
     await rm('./temp/entities-pg-takeTables', { recursive: true, force: true });
-
-    await orm.schema.dropDatabase();
-    await orm.close(true);
   });
 
   test('takeTables and skipTables [postgres]', async () => {
-    const orm = await initORMPostgreSql();
     const dump = await orm.entityGenerator.generate({
       save: true,
       path: './temp/entities-pg',
@@ -116,20 +112,15 @@ describe('EntityGenerator', () => {
     expect(existsSync('./temp/entities-pg/Test2.ts')).toBe(true);
     expect(existsSync('./temp/entities-pg/FooBar2.ts')).toBe(false);
     await rm('./temp/entities-pg', { recursive: true, force: true });
-
-    await orm.schema.dropDatabase();
-    await orm.close(true);
   });
 
   test('enum with default value [postgres]', async () => {
-    const orm = await initORMPostgreSql();
     await orm.schema.drop();
     const schema = `create table "publisher2" ("id" serial primary key, "test" varchar null default '123', "type" text check ("type" in ('local', 'global')) not null default 'local', "type2" text check ("type2" in ('LOCAL', 'GLOBAL')) default 'LOCAL')`;
     await orm.schema.execute(schema);
     const dump = await orm.entityGenerator.generate({ save: false, path: './temp/entities-pg-enum' });
     expect(dump).toMatchSnapshot('postgres-entity-dump-enum-default-value');
     await orm.schema.execute(`drop table if exists "publisher2"`);
-    await orm.close(true);
   });
 
 });

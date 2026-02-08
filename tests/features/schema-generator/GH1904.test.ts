@@ -111,6 +111,7 @@ class Book5 {
 
 describe('ignore specific schema changes (GH 1904)', () => {
   let orm: MikroORM;
+  let schemaReady = false;
 
   beforeEach(async () => {
     orm = await MikroORM.init({
@@ -119,7 +120,11 @@ describe('ignore specific schema changes (GH 1904)', () => {
       dbName: `mikro_orm_test_gh_1904`,
       port: 3308,
     });
-    await orm.schema.refresh();
+
+    if (!schemaReady) {
+      await orm.schema.refresh();
+      schemaReady = true;
+    }
   });
 
   afterEach(() => orm.close(true));

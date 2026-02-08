@@ -86,44 +86,31 @@ beforeAll(async () => {
     await orm.schema.execute(schema);
   }
 
-  await orm.close(true);
 });
 
-beforeEach(async () => {
-  orm = await MikroORM.init({
-    metadataProvider: ReflectMetadataProvider,
-    dbName: schemaName,
-    discovery: { warnWhenNoEntities: false },
-    extensions: [EntityGenerator],
-    multipleStatements: true,
-  });
-});
-
-afterEach(async () => {
+afterAll(async () => {
   await orm.close(true);
 });
 
 describe(schemaName, () => {
   describe.each(['decorators', 'entitySchema'] as const)('%s', entityDefinition => {
-    beforeEach(() => {
-      orm.config.get('entityGenerator').entityDefinition = entityDefinition;
-    });
-
     test('generates from db', async () => {
-      const dump = await orm.entityGenerator.generate();
+      const dump = await orm.entityGenerator.generate({ entityDefinition });
       expect(dump).toMatchSnapshot('dump');
     });
 
     test('as functions from extensions', async () => {
-      orm.config.get('entityGenerator').onInitialMetadata = metadata => {
-        const usersMeta = metadata.find(meta => meta.className === 'Users')!;
-        Object.entries(usersMeta.properties).forEach(([propName, propOptions]) => {
-          if (typeof propOptions.generated === 'string') {
-            propOptions.generated = Utils.createFunction(new Map(), `return () => ${JSON.stringify(propOptions.generated)}`);
-          }
-        });
-      };
-      const dump = await orm.entityGenerator.generate();
+      const dump = await orm.entityGenerator.generate({
+        entityDefinition,
+        onInitialMetadata: metadata => {
+          const usersMeta = metadata.find(meta => meta.className === 'Users')!;
+          Object.entries(usersMeta.properties).forEach(([propName, propOptions]) => {
+            if (typeof propOptions.generated === 'string') {
+              propOptions.generated = Utils.createFunction(new Map(), `return () => ${JSON.stringify(propOptions.generated)}`);
+            }
+          });
+        },
+      });
       expect(dump).toMatchSnapshot('dump');
     });
   });

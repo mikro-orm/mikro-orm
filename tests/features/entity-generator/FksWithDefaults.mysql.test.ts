@@ -62,49 +62,25 @@ beforeAll(async () => {
   if (await orm.schema.ensureDatabase({ create: true })) {
     await orm.schema.execute(schema);
   }
-  await orm.close(true);
 });
 
-beforeEach(async () => {
-  orm = await MikroORM.init({
-    metadataProvider: ReflectMetadataProvider,
-    dbName: schemaName,
-    port: 3308,
-    discovery: { warnWhenNoEntities: false },
-    extensions: [EntityGenerator],
-    multipleStatements: true,
-  });
-});
-
-afterEach(async () => {
+afterAll(async () => {
   await orm.close(true);
 });
 
 describe(schemaName, () => {
   describe.each(['never', 'always', 'smart'] as const)('scalarPropertiesForRelations=%s', scalarPropertiesForRelations => {
-    beforeEach(() => {
-      orm.config.get('entityGenerator').scalarPropertiesForRelations = scalarPropertiesForRelations;
-    });
-
     describe.each([true, false])('bidirectionalRelations=%s', bidirectionalRelations => {
-      beforeEach(() => {
-        orm.config.get('entityGenerator').bidirectionalRelations = bidirectionalRelations;
-      });
-
       describe.each([true, false])('identifiedReferences=%s', identifiedReferences => {
-        beforeEach(() => {
-          orm.config.get('entityGenerator').identifiedReferences = identifiedReferences;
-        });
-
         describe.each([true, false])('esmImport=%s', esmImport => {
-          beforeEach(() => {
-            orm.config.get('entityGenerator').esmImport = esmImport;
-          });
-
           test.each(['entitySchema', 'decorators'] as const)('entityDefinition=%s', async entityDefinition => {
-            orm.config.get('entityGenerator').entityDefinition = entityDefinition;
-
-            const dump = await orm.entityGenerator.generate();
+            const dump = await orm.entityGenerator.generate({
+              scalarPropertiesForRelations,
+              bidirectionalRelations,
+              identifiedReferences,
+              esmImport,
+              entityDefinition,
+            });
             expect(dump).toMatchSnapshot('dump');
           });
         });

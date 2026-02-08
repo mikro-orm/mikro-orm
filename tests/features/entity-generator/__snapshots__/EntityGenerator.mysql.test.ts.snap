@@ -1,6 +1,6 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`EntityGenerator (enumMode=dictionary) [mysql] > decorators > generate entities from schema > mysql-decorators-dictionary-dump 1`] = `
+exports[`EntityGenerator [mysql] > enumMode=dictionary > decorators > generate entities from schema > mysql-decorators-dictionary-dump 1`] = `
 [
   "import { PrimaryKeyProp, type Ref } from '@mikro-orm/core';
 import { Entity, OneToOne, Property } from '@mikro-orm/decorators/legacy';
@@ -644,7 +644,7 @@ export class User2 {
 ]
 `;
 
-exports[`EntityGenerator (enumMode=dictionary) [mysql] > decorators > generate entities from schema with forceUndefined = false > mysql-decorators-dictionary-dump 1`] = `
+exports[`EntityGenerator [mysql] > enumMode=dictionary > decorators > generate entities from schema with forceUndefined = false > mysql-decorators-dictionary-dump 1`] = `
 [
   "import { PrimaryKeyProp, type Ref } from '@mikro-orm/core';
 import { Entity, OneToOne, Property } from '@mikro-orm/decorators/legacy';
@@ -1288,7 +1288,7 @@ export class User2 {
 ]
 `;
 
-exports[`EntityGenerator (enumMode=dictionary) [mysql] > decorators > generate entities from schema with forceUndefined = false and undefinedDefaults = true > mysql-decorators-dictionary-dump 1`] = `
+exports[`EntityGenerator [mysql] > enumMode=dictionary > decorators > generate entities from schema with forceUndefined = false and undefinedDefaults = true > mysql-decorators-dictionary-dump 1`] = `
 [
   "import { PrimaryKeyProp, type Ref } from '@mikro-orm/core';
 import { Entity, OneToOne, Property } from '@mikro-orm/decorators/legacy';
@@ -1932,7 +1932,7 @@ export class User2 {
 ]
 `;
 
-exports[`EntityGenerator (enumMode=dictionary) [mysql] > defineEntity > generate entities from schema > mysql-defineEntity-dictionary-dump 1`] = `
+exports[`EntityGenerator [mysql] > enumMode=dictionary > defineEntity > generate entities from schema > mysql-defineEntity-dictionary-dump 1`] = `
 [
   "import { Config, type DefineConfig, PrimaryKeyProp, type Ref, defineEntity, p } from '@mikro-orm/core';
 import { Author2 } from './Author2';
@@ -2491,7 +2491,7 @@ export const User2Schema = defineEntity({
 ]
 `;
 
-exports[`EntityGenerator (enumMode=dictionary) [mysql] > defineEntity > generate entities from schema with forceUndefined = false > mysql-defineEntity-dictionary-dump 1`] = `
+exports[`EntityGenerator [mysql] > enumMode=dictionary > defineEntity > generate entities from schema with forceUndefined = false > mysql-defineEntity-dictionary-dump 1`] = `
 [
   "import { Config, type DefineConfig, PrimaryKeyProp, type Ref, defineEntity, p } from '@mikro-orm/core';
 import { Author2 } from './Author2';
@@ -3050,7 +3050,7 @@ export const User2Schema = defineEntity({
 ]
 `;
 
-exports[`EntityGenerator (enumMode=dictionary) [mysql] > defineEntity > generate entities from schema with forceUndefined = false and undefinedDefaults = true > mysql-defineEntity-dictionary-dump 1`] = `
+exports[`EntityGenerator [mysql] > enumMode=dictionary > defineEntity > generate entities from schema with forceUndefined = false and undefinedDefaults = true > mysql-defineEntity-dictionary-dump 1`] = `
 [
   "import { Config, type DefineConfig, PrimaryKeyProp, type Ref, defineEntity, p } from '@mikro-orm/core';
 import { Author2 } from './Author2';
@@ -3609,7 +3609,7 @@ export const User2Schema = defineEntity({
 ]
 `;
 
-exports[`EntityGenerator (enumMode=dictionary) [mysql] > defineEntity+types > generate entities from schema > mysql-defineEntity+types-dictionary-dump 1`] = `
+exports[`EntityGenerator [mysql] > enumMode=dictionary > defineEntity+types > generate entities from schema > mysql-defineEntity+types-dictionary-dump 1`] = `
 [
   "import { InferEntity, defineEntity, p } from '@mikro-orm/core';
 import { Author2 } from './Author2';
@@ -4001,7 +4001,7 @@ export interface IUser2 extends InferEntity<typeof User2> {}
 ]
 `;
 
-exports[`EntityGenerator (enumMode=dictionary) [mysql] > defineEntity+types > generate entities from schema with forceUndefined = false > mysql-defineEntity+types-dictionary-dump 1`] = `
+exports[`EntityGenerator [mysql] > enumMode=dictionary > defineEntity+types > generate entities from schema with forceUndefined = false > mysql-defineEntity+types-dictionary-dump 1`] = `
 [
   "import { InferEntity, defineEntity, p } from '@mikro-orm/core';
 import { Author2 } from './Author2';
@@ -4393,7 +4393,7 @@ export interface IUser2 extends InferEntity<typeof User2> {}
 ]
 `;
 
-exports[`EntityGenerator (enumMode=dictionary) [mysql] > defineEntity+types > generate entities from schema with forceUndefined = false and undefinedDefaults = true > mysql-defineEntity+types-dictionary-dump 1`] = `
+exports[`EntityGenerator [mysql] > enumMode=dictionary > defineEntity+types > generate entities from schema with forceUndefined = false and undefinedDefaults = true > mysql-defineEntity+types-dictionary-dump 1`] = `
 [
   "import { InferEntity, defineEntity, p } from '@mikro-orm/core';
 import { Author2 } from './Author2';
@@ -4785,7 +4785,7 @@ export interface IUser2 extends InferEntity<typeof User2> {}
 ]
 `;
 
-exports[`EntityGenerator (enumMode=dictionary) [mysql] > entitySchema > generate entities from schema > mysql-entitySchema-dictionary-dump 1`] = `
+exports[`EntityGenerator [mysql] > enumMode=dictionary > entitySchema > generate entities from schema > mysql-entitySchema-dictionary-dump 1`] = `
 [
   "import { Config, type DefineConfig, EntitySchema, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
 import { Author2 } from './Author2';
@@ -5553,7 +5553,7 @@ export const User2Schema = new EntitySchema({
 ]
 `;
 
-exports[`EntityGenerator (enumMode=dictionary) [mysql] > entitySchema > generate entities from schema with forceUndefined = false > mysql-entitySchema-dictionary-dump 1`] = `
+exports[`EntityGenerator [mysql] > enumMode=dictionary > entitySchema > generate entities from schema with forceUndefined = false > mysql-entitySchema-dictionary-dump 1`] = `
 [
   "import { Config, type DefineConfig, EntitySchema, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
 import { Author2 } from './Author2';
@@ -6321,7 +6321,7 @@ export const User2Schema = new EntitySchema({
 ]
 `;
 
-exports[`EntityGenerator (enumMode=dictionary) [mysql] > entitySchema > generate entities from schema with forceUndefined = false and undefinedDefaults = true > mysql-entitySchema-dictionary-dump 1`] = `
+exports[`EntityGenerator [mysql] > enumMode=dictionary > entitySchema > generate entities from schema with forceUndefined = false and undefinedDefaults = true > mysql-entitySchema-dictionary-dump 1`] = `
 [
   "import { Config, type DefineConfig, EntitySchema, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
 import { Author2 } from './Author2';
@@ -7089,7 +7089,7 @@ export const User2Schema = new EntitySchema({
 ]
 `;
 
-exports[`EntityGenerator (enumMode=ts-enum) [mysql] > decorators > generate entities from schema > mysql-decorators-ts-enum-dump 1`] = `
+exports[`EntityGenerator [mysql] > enumMode=ts-enum > decorators > generate entities from schema > mysql-decorators-ts-enum-dump 1`] = `
 [
   "import { PrimaryKeyProp, type Ref } from '@mikro-orm/core';
 import { Entity, OneToOne, Property } from '@mikro-orm/decorators/legacy';
@@ -7723,7 +7723,7 @@ export class User2 {
 ]
 `;
 
-exports[`EntityGenerator (enumMode=ts-enum) [mysql] > decorators > generate entities from schema with forceUndefined = false > mysql-decorators-ts-enum-dump 1`] = `
+exports[`EntityGenerator [mysql] > enumMode=ts-enum > decorators > generate entities from schema with forceUndefined = false > mysql-decorators-ts-enum-dump 1`] = `
 [
   "import { PrimaryKeyProp, type Ref } from '@mikro-orm/core';
 import { Entity, OneToOne, Property } from '@mikro-orm/decorators/legacy';
@@ -8357,7 +8357,7 @@ export class User2 {
 ]
 `;
 
-exports[`EntityGenerator (enumMode=ts-enum) [mysql] > decorators > generate entities from schema with forceUndefined = false and undefinedDefaults = true > mysql-decorators-ts-enum-dump 1`] = `
+exports[`EntityGenerator [mysql] > enumMode=ts-enum > decorators > generate entities from schema with forceUndefined = false and undefinedDefaults = true > mysql-decorators-ts-enum-dump 1`] = `
 [
   "import { PrimaryKeyProp, type Ref } from '@mikro-orm/core';
 import { Entity, OneToOne, Property } from '@mikro-orm/decorators/legacy';
@@ -8991,7 +8991,7 @@ export class User2 {
 ]
 `;
 
-exports[`EntityGenerator (enumMode=ts-enum) [mysql] > defineEntity > generate entities from schema > mysql-defineEntity-ts-enum-dump 1`] = `
+exports[`EntityGenerator [mysql] > enumMode=ts-enum > defineEntity > generate entities from schema > mysql-defineEntity-ts-enum-dump 1`] = `
 [
   "import { Config, type DefineConfig, PrimaryKeyProp, type Ref, defineEntity, p } from '@mikro-orm/core';
 import { Author2 } from './Author2';
@@ -9540,7 +9540,7 @@ export const User2Schema = defineEntity({
 ]
 `;
 
-exports[`EntityGenerator (enumMode=ts-enum) [mysql] > defineEntity > generate entities from schema with forceUndefined = false > mysql-defineEntity-ts-enum-dump 1`] = `
+exports[`EntityGenerator [mysql] > enumMode=ts-enum > defineEntity > generate entities from schema with forceUndefined = false > mysql-defineEntity-ts-enum-dump 1`] = `
 [
   "import { Config, type DefineConfig, PrimaryKeyProp, type Ref, defineEntity, p } from '@mikro-orm/core';
 import { Author2 } from './Author2';
@@ -10089,7 +10089,7 @@ export const User2Schema = defineEntity({
 ]
 `;
 
-exports[`EntityGenerator (enumMode=ts-enum) [mysql] > defineEntity > generate entities from schema with forceUndefined = false and undefinedDefaults = true > mysql-defineEntity-ts-enum-dump 1`] = `
+exports[`EntityGenerator [mysql] > enumMode=ts-enum > defineEntity > generate entities from schema with forceUndefined = false and undefinedDefaults = true > mysql-defineEntity-ts-enum-dump 1`] = `
 [
   "import { Config, type DefineConfig, PrimaryKeyProp, type Ref, defineEntity, p } from '@mikro-orm/core';
 import { Author2 } from './Author2';
@@ -10638,7 +10638,7 @@ export const User2Schema = defineEntity({
 ]
 `;
 
-exports[`EntityGenerator (enumMode=ts-enum) [mysql] > defineEntity+types > generate entities from schema > mysql-defineEntity+types-ts-enum-dump 1`] = `
+exports[`EntityGenerator [mysql] > enumMode=ts-enum > defineEntity+types > generate entities from schema > mysql-defineEntity+types-ts-enum-dump 1`] = `
 [
   "import { InferEntity, defineEntity, p } from '@mikro-orm/core';
 import { Author2 } from './Author2';
@@ -11020,7 +11020,7 @@ export interface IUser2 extends InferEntity<typeof User2> {}
 ]
 `;
 
-exports[`EntityGenerator (enumMode=ts-enum) [mysql] > defineEntity+types > generate entities from schema with forceUndefined = false > mysql-defineEntity+types-ts-enum-dump 1`] = `
+exports[`EntityGenerator [mysql] > enumMode=ts-enum > defineEntity+types > generate entities from schema with forceUndefined = false > mysql-defineEntity+types-ts-enum-dump 1`] = `
 [
   "import { InferEntity, defineEntity, p } from '@mikro-orm/core';
 import { Author2 } from './Author2';
@@ -11402,7 +11402,7 @@ export interface IUser2 extends InferEntity<typeof User2> {}
 ]
 `;
 
-exports[`EntityGenerator (enumMode=ts-enum) [mysql] > defineEntity+types > generate entities from schema with forceUndefined = false and undefinedDefaults = true > mysql-defineEntity+types-ts-enum-dump 1`] = `
+exports[`EntityGenerator [mysql] > enumMode=ts-enum > defineEntity+types > generate entities from schema with forceUndefined = false and undefinedDefaults = true > mysql-defineEntity+types-ts-enum-dump 1`] = `
 [
   "import { InferEntity, defineEntity, p } from '@mikro-orm/core';
 import { Author2 } from './Author2';
@@ -11784,7 +11784,7 @@ export interface IUser2 extends InferEntity<typeof User2> {}
 ]
 `;
 
-exports[`EntityGenerator (enumMode=ts-enum) [mysql] > entitySchema > generate entities from schema > mysql-entitySchema-ts-enum-dump 1`] = `
+exports[`EntityGenerator [mysql] > enumMode=ts-enum > entitySchema > generate entities from schema > mysql-entitySchema-ts-enum-dump 1`] = `
 [
   "import { Config, type DefineConfig, EntitySchema, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
 import { Author2 } from './Author2';
@@ -12542,7 +12542,7 @@ export const User2Schema = new EntitySchema({
 ]
 `;
 
-exports[`EntityGenerator (enumMode=ts-enum) [mysql] > entitySchema > generate entities from schema with forceUndefined = false > mysql-entitySchema-ts-enum-dump 1`] = `
+exports[`EntityGenerator [mysql] > enumMode=ts-enum > entitySchema > generate entities from schema with forceUndefined = false > mysql-entitySchema-ts-enum-dump 1`] = `
 [
   "import { Config, type DefineConfig, EntitySchema, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
 import { Author2 } from './Author2';
@@ -13300,7 +13300,7 @@ export const User2Schema = new EntitySchema({
 ]
 `;
 
-exports[`EntityGenerator (enumMode=ts-enum) [mysql] > entitySchema > generate entities from schema with forceUndefined = false and undefinedDefaults = true > mysql-entitySchema-ts-enum-dump 1`] = `
+exports[`EntityGenerator [mysql] > enumMode=ts-enum > entitySchema > generate entities from schema with forceUndefined = false and undefinedDefaults = true > mysql-entitySchema-ts-enum-dump 1`] = `
 [
   "import { Config, type DefineConfig, EntitySchema, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
 import { Author2 } from './Author2';
@@ -14058,7 +14058,7 @@ export const User2Schema = new EntitySchema({
 ]
 `;
 
-exports[`EntityGenerator (enumMode=union-type) [mysql] > decorators > generate entities from schema > mysql-decorators-union-type-dump 1`] = `
+exports[`EntityGenerator [mysql] > enumMode=union-type > decorators > generate entities from schema > mysql-decorators-union-type-dump 1`] = `
 [
   "import { PrimaryKeyProp, type Ref } from '@mikro-orm/core';
 import { Entity, OneToOne, Property } from '@mikro-orm/decorators/legacy';
@@ -14676,7 +14676,7 @@ export class User2 {
 ]
 `;
 
-exports[`EntityGenerator (enumMode=union-type) [mysql] > decorators > generate entities from schema with forceUndefined = false > mysql-decorators-union-type-dump 1`] = `
+exports[`EntityGenerator [mysql] > enumMode=union-type > decorators > generate entities from schema with forceUndefined = false > mysql-decorators-union-type-dump 1`] = `
 [
   "import { PrimaryKeyProp, type Ref } from '@mikro-orm/core';
 import { Entity, OneToOne, Property } from '@mikro-orm/decorators/legacy';
@@ -15294,7 +15294,7 @@ export class User2 {
 ]
 `;
 
-exports[`EntityGenerator (enumMode=union-type) [mysql] > decorators > generate entities from schema with forceUndefined = false and undefinedDefaults = true > mysql-decorators-union-type-dump 1`] = `
+exports[`EntityGenerator [mysql] > enumMode=union-type > decorators > generate entities from schema with forceUndefined = false and undefinedDefaults = true > mysql-decorators-union-type-dump 1`] = `
 [
   "import { PrimaryKeyProp, type Ref } from '@mikro-orm/core';
 import { Entity, OneToOne, Property } from '@mikro-orm/decorators/legacy';
@@ -15912,7 +15912,7 @@ export class User2 {
 ]
 `;
 
-exports[`EntityGenerator (enumMode=union-type) [mysql] > defineEntity > generate entities from schema > mysql-defineEntity-union-type-dump 1`] = `
+exports[`EntityGenerator [mysql] > enumMode=union-type > defineEntity > generate entities from schema > mysql-defineEntity-union-type-dump 1`] = `
 [
   "import { Config, type DefineConfig, PrimaryKeyProp, type Ref, defineEntity, p } from '@mikro-orm/core';
 import { Author2 } from './Author2';
@@ -16445,7 +16445,7 @@ export const User2Schema = defineEntity({
 ]
 `;
 
-exports[`EntityGenerator (enumMode=union-type) [mysql] > defineEntity > generate entities from schema with forceUndefined = false > mysql-defineEntity-union-type-dump 1`] = `
+exports[`EntityGenerator [mysql] > enumMode=union-type > defineEntity > generate entities from schema with forceUndefined = false > mysql-defineEntity-union-type-dump 1`] = `
 [
   "import { Config, type DefineConfig, PrimaryKeyProp, type Ref, defineEntity, p } from '@mikro-orm/core';
 import { Author2 } from './Author2';
@@ -16978,7 +16978,7 @@ export const User2Schema = defineEntity({
 ]
 `;
 
-exports[`EntityGenerator (enumMode=union-type) [mysql] > defineEntity > generate entities from schema with forceUndefined = false and undefinedDefaults = true > mysql-defineEntity-union-type-dump 1`] = `
+exports[`EntityGenerator [mysql] > enumMode=union-type > defineEntity > generate entities from schema with forceUndefined = false and undefinedDefaults = true > mysql-defineEntity-union-type-dump 1`] = `
 [
   "import { Config, type DefineConfig, PrimaryKeyProp, type Ref, defineEntity, p } from '@mikro-orm/core';
 import { Author2 } from './Author2';
@@ -17511,7 +17511,7 @@ export const User2Schema = defineEntity({
 ]
 `;
 
-exports[`EntityGenerator (enumMode=union-type) [mysql] > defineEntity+types > generate entities from schema > mysql-defineEntity+types-union-type-dump 1`] = `
+exports[`EntityGenerator [mysql] > enumMode=union-type > defineEntity+types > generate entities from schema > mysql-defineEntity+types-union-type-dump 1`] = `
 [
   "import { InferEntity, defineEntity, p } from '@mikro-orm/core';
 import { Author2 } from './Author2';
@@ -17877,7 +17877,7 @@ export interface IUser2 extends InferEntity<typeof User2> {}
 ]
 `;
 
-exports[`EntityGenerator (enumMode=union-type) [mysql] > defineEntity+types > generate entities from schema with forceUndefined = false > mysql-defineEntity+types-union-type-dump 1`] = `
+exports[`EntityGenerator [mysql] > enumMode=union-type > defineEntity+types > generate entities from schema with forceUndefined = false > mysql-defineEntity+types-union-type-dump 1`] = `
 [
   "import { InferEntity, defineEntity, p } from '@mikro-orm/core';
 import { Author2 } from './Author2';
@@ -18243,7 +18243,7 @@ export interface IUser2 extends InferEntity<typeof User2> {}
 ]
 `;
 
-exports[`EntityGenerator (enumMode=union-type) [mysql] > defineEntity+types > generate entities from schema with forceUndefined = false and undefinedDefaults = true > mysql-defineEntity+types-union-type-dump 1`] = `
+exports[`EntityGenerator [mysql] > enumMode=union-type > defineEntity+types > generate entities from schema with forceUndefined = false and undefinedDefaults = true > mysql-defineEntity+types-union-type-dump 1`] = `
 [
   "import { InferEntity, defineEntity, p } from '@mikro-orm/core';
 import { Author2 } from './Author2';
@@ -18609,7 +18609,7 @@ export interface IUser2 extends InferEntity<typeof User2> {}
 ]
 `;
 
-exports[`EntityGenerator (enumMode=union-type) [mysql] > entitySchema > generate entities from schema > mysql-entitySchema-union-type-dump 1`] = `
+exports[`EntityGenerator [mysql] > enumMode=union-type > entitySchema > generate entities from schema > mysql-entitySchema-union-type-dump 1`] = `
 [
   "import { Config, type DefineConfig, EntitySchema, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
 import { Author2 } from './Author2';
@@ -19351,7 +19351,7 @@ export const User2Schema = new EntitySchema({
 ]
 `;
 
-exports[`EntityGenerator (enumMode=union-type) [mysql] > entitySchema > generate entities from schema with forceUndefined = false > mysql-entitySchema-union-type-dump 1`] = `
+exports[`EntityGenerator [mysql] > enumMode=union-type > entitySchema > generate entities from schema with forceUndefined = false > mysql-entitySchema-union-type-dump 1`] = `
 [
   "import { Config, type DefineConfig, EntitySchema, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
 import { Author2 } from './Author2';
@@ -20093,7 +20093,7 @@ export const User2Schema = new EntitySchema({
 ]
 `;
 
-exports[`EntityGenerator (enumMode=union-type) [mysql] > entitySchema > generate entities from schema with forceUndefined = false and undefinedDefaults = true > mysql-entitySchema-union-type-dump 1`] = `
+exports[`EntityGenerator [mysql] > enumMode=union-type > entitySchema > generate entities from schema with forceUndefined = false and undefinedDefaults = true > mysql-entitySchema-union-type-dump 1`] = `
 [
   "import { Config, type DefineConfig, EntitySchema, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
 import { Author2 } from './Author2';

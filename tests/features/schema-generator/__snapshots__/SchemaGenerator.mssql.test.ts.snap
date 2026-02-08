@@ -1,6 +1,6 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`SchemaGenerator > generate schema from metadata [mssql] > mssql-create-schema-dump 1`] = `
+exports[`SchemaGenerator > read-only schema tests > generate schema from metadata [mssql] > mssql-create-schema-dump 1`] = `
 "create table [base_user2] ([id] int identity(1,1) not null primary key, [first_name] nvarchar(100) not null, [last_name] nvarchar(100) not null, [type] nvarchar(100) not null, [owner_prop] nvarchar(255) null, [favourite_employee_id] int null, [favourite_manager_id] int null, [employee_prop] int null, [manager_prop] nvarchar(255) null);
 create index [base_user2_type_index] on [base_user2] ([type]);
 create unique index [base_user2_favourite_manager_id_unique] on [base_user2] ([favourite_manager_id]) where [favourite_manager_id] is not null;
@@ -125,7 +125,7 @@ alter table [user2_sandwiches] add constraint [user2_sandwiches_sandwich_id_fore
 "
 `;
 
-exports[`SchemaGenerator > generate schema from metadata [mssql] > mssql-drop-schema-dump 1`] = `
+exports[`SchemaGenerator > read-only schema tests > generate schema from metadata [mssql] > mssql-drop-schema-dump 1`] = `
 "alter table [user2_sandwiches] drop constraint [user2_sandwiches_sandwich_id_foreign];
 alter table [user2_sandwiches] drop constraint [user2_sandwiches_user2_first_name_user2_last_name_foreign];
 alter table [user2_cars] drop constraint [user2_cars_car2_name_car2_year_foreign];
@@ -181,7 +181,7 @@ if object_id('[base_user2]', 'U') is not null drop table [base_user2];
 "
 `;
 
-exports[`SchemaGenerator > generate schema from metadata [mssql] > mssql-update-schema-dump 1`] = `""`;
+exports[`SchemaGenerator > read-only schema tests > generate schema from metadata [mssql] > mssql-update-schema-dump 1`] = `""`;
 
 exports[`SchemaGenerator > rename column [mssql] > mssql-update-schema-rename-column 1`] = `
 "alter table [author2] drop constraint [author2_favourite_author_id_foreign];
