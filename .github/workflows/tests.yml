@@ -40,11 +40,40 @@ jobs:
       - name: Install
         run: yarn
 
-      - name: Test TS
-        run: yarn tsc-check-tests
-
       - name: Build
         run: yarn build
+
+  typecheck:
+    name: Typecheck
+    if: ${{ !contains(github.event.head_commit.message, '[skip ci]') }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Source code
+        uses: actions/checkout@v6
+
+      - name: Use Node.js 22
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          package-manager-cache: false
+
+      - name: Enable corepack
+        run: |
+          corepack enable
+          corepack prepare yarn@stable --activate
+
+      # Yarn dependencies cannot be cached until yarn is installed
+      # WORKAROUND: https://github.com/actions/setup-node/issues/531
+      - name: Extract cached dependencies
+        uses: actions/setup-node@v6
+        with:
+          cache: yarn
+
+      - name: Install
+        run: yarn
+
+      - name: Typecheck tests
+        run: yarn tsc-check-tests
 
   docs:
     name: Docs build
@@ -125,13 +154,14 @@ jobs:
         run: yarn lint
 
   test:
-    name: Tests
+    name: Tests (node ${{ matrix.node-version }}, ${{ matrix.shard }}/3)
     if: ${{ !contains(github.event.head_commit.message, '[skip ci]') }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         node-version: [ 22, 24 ]
+        shard: [ 1, 2, 3 ]
     steps:
       - name: Checkout Source code
         uses: actions/checkout@v6
@@ -154,12 +184,14 @@ jobs:
         with:
           cache: yarn
 
-      - name: Install
-        run: yarn
+      - name: Install & pull docker images
+        run: |
+          docker compose pull &
+          yarn
+          wait
 
       - name: Init docker
-        run: |
-          docker compose up -d --wait
+        run: docker compose up -d --wait
 
       - name: Set CC Required env vars
         run: export GIT_BRANCH=$GITHUB_HEAD_REF && export GIT_COMMIT_SHA=$(git rev-parse origin/$GITHUB_HEAD_REF)
@@ -171,7 +203,7 @@ jobs:
       - name: Test
         if: matrix.node-version != 24
         run: |
-          yarn test --max-workers ${{ steps.cpu-cores.outputs.count }}
+          yarn test --max-workers ${{ steps.cpu-cores.outputs.count }} --shard ${{ matrix.shard }}/3
           git status && git diff
         env:
           RETRY_TESTS: 1
@@ -179,7 +211,8 @@ jobs:
       - name: Coverage
         if: matrix.node-version == 24
         run: |
-          yarn coverage --max-workers ${{ steps.cpu-cores.outputs.count }}
+          yarn clean-tests
+          yarn test --coverage --max-workers ${{ steps.cpu-cores.outputs.count }} --shard ${{ matrix.shard }}/3
           git status && git diff
         env:
           RETRY_TESTS: 1
@@ -257,7 +290,7 @@ jobs:
         run: yarn bench:types
 
   test-windows:
-    name: Tests (windows)
+    name: Tests (windows, node ${{ matrix.node-version }})
     if: ${{ !contains(github.event.head_commit.message, '[skip ci]') }}
     runs-on: 'windows-latest'
     strategy:
@@ -296,7 +329,7 @@ jobs:
     name: Release
     if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/v7') && github.repository_owner == 'mikro-orm'
     runs-on: ubuntu-latest
-    needs: [ build, test, lint, docs ]
+    needs: [ build, typecheck, test, lint, docs ]
     steps:
       - name: Publish packages
         uses: apify/workflows/execute-workflow@main

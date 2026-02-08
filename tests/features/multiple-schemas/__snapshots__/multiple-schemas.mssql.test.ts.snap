@@ -1,6 +1,6 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`generate entities for all schemas 1`] = `
+exports[`multiple connected schemas in mssql > generate entities for all schemas 1`] = `
 [
   "import { Collection, type Ref, defineEntity, p } from '@mikro-orm/core';
 import { N2Book } from './N2Book';

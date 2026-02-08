@@ -74,64 +74,47 @@ beforeAll(async () => {
     await orm.schema.execute(schema);
   }
 
-  await orm.close(true);
 });
 
-beforeEach(async () => {
-  orm = await MikroORM.init({
-    metadataProvider: ReflectMetadataProvider,
-    dbName: schemaName,
-    port: 3308,
-    discovery: { warnWhenNoEntities: false },
-    extensions: [EntityGenerator],
-    multipleStatements: true,
-  });
-});
-
-afterEach(async () => {
+afterAll(async () => {
   await orm.close(true);
 });
 
 describe(schemaName, () => {
 
   test.each(['entitySchema', 'decorators'] as const)('entityDefinition=%s', async entityDefinition => {
-    const options = orm.config.get('entityGenerator');
-    options.entityDefinition = entityDefinition;
-    options.bidirectionalRelations = true;
-    options.readOnlyPivotTables = true;
-    options.coreImportsPrefix = 'MikroORM_';
-    orm.config.set('entityGenerator', options);
-
-    const dump = await orm.entityGenerator.generate(
-      {
-        onInitialMetadata: (metadata, platform) => {
-          metadata[0].addProperty({
-            type: 'MyUnknownClass',
-            kind: ReferenceKind.EMBEDDED,
-            name: 'test',
-            fieldNames: ['test'],
-            persist: false,
-            hydrate: false,
-          });
-          metadata[0].addProperty({
-            type: 'Entity',
-            kind: ReferenceKind.EMBEDDED,
-            name: 'test2',
-            fieldNames: ['test2'],
-            persist: false,
-            hydrate: false,
-          });
-          metadata[0].addProperty({
-            type: 'EntitySchema',
-            kind: ReferenceKind.EMBEDDED,
-            name: 'test3',
-            fieldNames: ['test3'],
-            persist: false,
-            hydrate: false,
-          });
-        },
+    const dump = await orm.entityGenerator.generate({
+      entityDefinition,
+      bidirectionalRelations: true,
+      readOnlyPivotTables: true,
+      coreImportsPrefix: 'MikroORM_',
+      onInitialMetadata: (metadata, platform) => {
+        metadata[0].addProperty({
+          type: 'MyUnknownClass',
+          kind: ReferenceKind.EMBEDDED,
+          name: 'test',
+          fieldNames: ['test'],
+          persist: false,
+          hydrate: false,
+        });
+        metadata[0].addProperty({
+          type: 'Entity',
+          kind: ReferenceKind.EMBEDDED,
+          name: 'test2',
+          fieldNames: ['test2'],
+          persist: false,
+          hydrate: false,
+        });
+        metadata[0].addProperty({
+          type: 'EntitySchema',
+          kind: ReferenceKind.EMBEDDED,
+          name: 'test3',
+          fieldNames: ['test3'],
+          persist: false,
+          hydrate: false,
+        });
       },
-    );
+    });
     expect(dump).toMatchSnapshot('dump');
   });
 

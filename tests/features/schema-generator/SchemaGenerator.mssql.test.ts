@@ -21,21 +21,48 @@ describe('SchemaGenerator', () => {
     await orm.isConnected();
   });
 
-  test('generate schema from metadata [mssql]', async () => {
-    const orm = await initORMMsSql({ verbose: true, debug: ['schema'] });
-    await orm.schema.ensureDatabase();
+  describe('read-only schema tests', () => {
 
-    const dropDump = await orm.schema.getDropSchemaSQL();
-    expect(dropDump).toMatchSnapshot('mssql-drop-schema-dump');
+    let orm: Awaited<ReturnType<typeof initORMMsSql>>;
 
-    const createDump = await orm.schema.getCreateSchemaSQL();
-    expect(createDump).toMatchSnapshot('mssql-create-schema-dump');
+    beforeAll(async () => {
+      orm = await initORMMsSql({ verbose: true, debug: ['schema'] });
+    });
 
-    const updateDump = await orm.schema.getUpdateSchemaSQL();
-    expect(updateDump).toMatchSnapshot('mssql-update-schema-dump');
+    afterAll(async () => {
+      await orm.schema.dropDatabase();
+      await orm.close(true);
+    });
 
-    await orm.schema.dropDatabase();
-    await orm.close(true);
+    test('generate schema from metadata [mssql]', async () => {
+      await orm.schema.ensureDatabase();
+
+      const dropDump = await orm.schema.getDropSchemaSQL();
+      expect(dropDump).toMatchSnapshot('mssql-drop-schema-dump');
+
+      const createDump = await orm.schema.getCreateSchemaSQL();
+      expect(createDump).toMatchSnapshot('mssql-create-schema-dump');
+
+      const updateDump = await orm.schema.getUpdateSchemaSQL();
+      expect(updateDump).toMatchSnapshot('mssql-update-schema-dump');
+    });
+
+    test('refreshDatabase [mssql]', async () => {
+      const dropSchema = vi.spyOn(SchemaGenerator.prototype, 'drop');
+      const createSchema = vi.spyOn(SchemaGenerator.prototype, 'create');
+
+      dropSchema.mockImplementation(() => Promise.resolve());
+      createSchema.mockImplementation(() => Promise.resolve());
+
+      await orm.schema.refresh();
+
+      expect(dropSchema).toHaveBeenCalledTimes(1);
+      expect(createSchema).toHaveBeenCalledTimes(1);
+
+      dropSchema.mockRestore();
+      createSchema.mockRestore();
+    });
+
   });
 
   test('update schema [mssql]', async () => {
@@ -263,24 +290,4 @@ describe('SchemaGenerator', () => {
     await orm.close(true);
   });
 
-  test('refreshDatabase [mssql]', async () => {
-    const orm = await initORMMsSql();
-
-    const dropSchema = vi.spyOn(SchemaGenerator.prototype, 'drop');
-    const createSchema = vi.spyOn(SchemaGenerator.prototype, 'create');
-
-    dropSchema.mockImplementation(() => Promise.resolve());
-    createSchema.mockImplementation(() => Promise.resolve());
-
-    await orm.schema.refresh();
-
-    expect(dropSchema).toHaveBeenCalledTimes(1);
-    expect(createSchema).toHaveBeenCalledTimes(1);
-
-    dropSchema.mockRestore();
-    createSchema.mockRestore();
-
-    await orm.schema.dropDatabase();
-    await orm.close(true);
-  });
 });

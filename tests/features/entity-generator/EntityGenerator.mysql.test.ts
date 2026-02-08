@@ -7,57 +7,63 @@ import { MariaDbDriver } from '@mikro-orm/mariadb';
 import { initORMMySql } from '../../bootstrap.js';
 import { EntityGenerator } from '@mikro-orm/entity-generator';
 
-describe.each(['ts-enum', 'union-type', 'dictionary'] as const)('EntityGenerator (enumMode=%s) [mysql]', enumMode => {
-  describe.each(['entitySchema', 'defineEntity', 'defineEntity+types', 'decorators'] as const)('%s', entityDefinition => {
-    let orm: MikroORM;
+describe('EntityGenerator [mysql]', () => {
+  let orm: MikroORM;
 
-    beforeAll(async () => {
-      orm = await initORMMySql('mysql', {
-        dbName: 'entity-generator-tests',
-        serialization: { forceObject: true },
-        entityGenerator: {
-          enumMode,
-          entityDefinition: entityDefinition === 'defineEntity+types' ? 'defineEntity' : entityDefinition,
-          inferEntityType: entityDefinition === 'defineEntity+types',
-          identifiedReferences: true,
-          bidirectionalRelations: true,
-        },
-      }, true);
-    });
+  beforeAll(async () => {
+    orm = await initORMMySql('mysql', {
+      dbName: 'entity-generator-tests',
+      serialization: { forceObject: true },
+    }, true);
+  });
 
-    afterAll(() => orm.close(true));
+  afterAll(() => orm.close(true));
 
-    test('generate entities from schema', async () => {
-      const path = `./tests/temp/entities-${entityDefinition}-${enumMode}-mysql`;
-      const dump = await orm.entityGenerator.generate({
-        save: true,
-        path,
-      });
-      expect(dump).toMatchSnapshot(`mysql-${entityDefinition}-${enumMode}-dump`);
+  describe.each(['ts-enum', 'union-type', 'dictionary'] as const)('enumMode=%s', enumMode => {
+    describe.each(['entitySchema', 'defineEntity', 'defineEntity+types', 'decorators'] as const)('%s', entityDefinition => {
+      const genOptions = {
+        enumMode,
+        entityDefinition: (entityDefinition === 'defineEntity+types' ? 'defineEntity' : entityDefinition) as 'entitySchema' | 'defineEntity' | 'decorators',
+        inferEntityType: entityDefinition === 'defineEntity+types',
+        identifiedReferences: true,
+        bidirectionalRelations: true,
+      };
 
-      // try to discover the entities to verify they are valid
-      await MikroORM.init({
-        metadataProvider: ReflectMetadataProvider,
-        driver: SqliteDriver,
-        entities: [path],
-        dbName: ':memory:',
+      test('generate entities from schema', async () => {
+        const path = `./tests/temp/entities-${entityDefinition}-${enumMode}-mysql`;
+        const dump = await orm.entityGenerator.generate({
+          ...genOptions,
+          save: true,
+          path,
         });
-      await rm(path, { recursive: true, force: true });
-    });
+        expect(dump).toMatchSnapshot(`mysql-${entityDefinition}-${enumMode}-dump`);
 
-    test('generate entities from schema with forceUndefined = false', async () => {
-      const dump = await orm.entityGenerator.generate({
-        forceUndefined: false,
+        // try to discover the entities to verify they are valid
+        await MikroORM.init({
+          metadataProvider: ReflectMetadataProvider,
+          driver: SqliteDriver,
+          entities: [path],
+          dbName: ':memory:',
+        });
+        await rm(path, { recursive: true, force: true });
       });
-      expect(dump).toMatchSnapshot(`mysql-${entityDefinition}-${enumMode}-dump`);
-    });
 
-    test('generate entities from schema with forceUndefined = false and undefinedDefaults = true', async () => {
-      const dump = await orm.entityGenerator.generate({
-        forceUndefined: false,
-        undefinedDefaults: true,
+      test('generate entities from schema with forceUndefined = false', async () => {
+        const dump = await orm.entityGenerator.generate({
+          ...genOptions,
+          forceUndefined: false,
+        });
+        expect(dump).toMatchSnapshot(`mysql-${entityDefinition}-${enumMode}-dump`);
       });
-      expect(dump).toMatchSnapshot(`mysql-${entityDefinition}-${enumMode}-dump`);
+
+      test('generate entities from schema with forceUndefined = false and undefinedDefaults = true', async () => {
+        const dump = await orm.entityGenerator.generate({
+          ...genOptions,
+          forceUndefined: false,
+          undefinedDefaults: true,
+        });
+        expect(dump).toMatchSnapshot(`mysql-${entityDefinition}-${enumMode}-dump`);
+      });
     });
   });
 });

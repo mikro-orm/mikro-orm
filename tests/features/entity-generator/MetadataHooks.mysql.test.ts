@@ -393,53 +393,50 @@ const getMappedTypeOverride = (type: string, platform: Platform) => {
 
 let orm: Awaited<ReturnType<typeof initORMMySql>>;
 
+const generateOptions = {
+  save: false,
+  bidirectionalRelations: true,
+  fileName: (className: string) => {
+    if (className === 'Author2') {
+      return 'subfolder/Author2';
+    }
+    return className;
+  },
+  onImport: customImportResolver,
+  extraImports: (basePath: string, originFileName: string) => {
+    if (originFileName === 'Author2.ts') {
+      return ['EmailSerializer'];
+    }
+    return [];
+  },
+  onInitialMetadata: initialMetadataProcessor,
+  onProcessedMetadata: processedMetadataProcessor,
+};
+
 describe('MetadataHooks [mysql]', () => {
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     orm = await initORMMySql('mysql', {
       discovery: {
         getMappedType: getMappedTypeOverride,
       },
-      entityGenerator: {
-        save: false,
-        bidirectionalRelations: true,
-        fileName: className => {
-          if (className === 'Author2') {
-            return 'subfolder/Author2';
-          }
-          return className;
-        },
-        onImport: customImportResolver,
-        extraImports: (basePath, originFileName) => {
-          if (originFileName === 'Author2.ts') {
-            return ['EmailSerializer'];
-          }
-          return [];
-        },
-        onInitialMetadata: initialMetadataProcessor,
-        onProcessedMetadata: processedMetadataProcessor,
-      },
+      entityGenerator: generateOptions,
     });
   });
 
-  afterEach(async () => {
+  afterAll(async () => {
     await orm.close(true);
   });
 
   describe.each([false, true])('forceUndefined=%s', forceUndefined => {
 
-    beforeEach(async () => {
-      orm.config.get('entityGenerator').forceUndefined = forceUndefined;
-    });
-
     describe.each([false, true])('identifiedReferences=%s', identifiedReferences => {
-
-      beforeEach(async () => {
-        orm.config.get('entityGenerator').identifiedReferences = identifiedReferences;
-      });
 
       test('metadata hooks with legacy', async () => {
         const dump = await orm.entityGenerator.generate({
+          ...generateOptions,
+          forceUndefined,
+          identifiedReferences,
           entityDefinition: 'decorators',
           save: true,
           path: './temp/entities-metadata-hooks',
@@ -452,6 +449,9 @@ describe('MetadataHooks [mysql]', () => {
 
       test('metadata hooks with entity schema', async () => {
         const dump = await orm.entityGenerator.generate({
+          ...generateOptions,
+          forceUndefined,
+          identifiedReferences,
           entityDefinition: 'entitySchema',
         });
         expect(dump).toMatchSnapshot('mysql-EntitySchema-dump');
@@ -459,6 +459,9 @@ describe('MetadataHooks [mysql]', () => {
 
       test('metadata hooks with defineEntity', async () => {
         const dump = await orm.entityGenerator.generate({
+          ...generateOptions,
+          forceUndefined,
+          identifiedReferences,
           entityDefinition: 'defineEntity',
         });
         expect(dump).toMatchSnapshot('mysql-defineEntity-dump');

@@ -60,39 +60,6 @@ export class Book extends BaseEntity {
 
 }
 
-test('generate entities for all schemas', async () => {
-  const orm = await MikroORM.init({
-    metadataProvider: ReflectMetadataProvider,
-    entities: [Author, Book, BookTag],
-    dbName: `mikro_orm_test_multi_schemas`,
-    password: 'Root.Root',
-    extensions: [EntityGenerator],
-  });
-
-  await orm.schema.createNamespace('dbo');
-
-  // `n1` needs to go last as other schemas have FKs pointing to it
-  for (const ns of ['n2', 'n3', 'n4', 'n5', 'n1']) {
-    await orm.schema.drop({ schema: ns });
-    await orm.schema.dropNamespace(ns);
-  }
-
-  // `*` schema will be ignored
-  await orm.schema.update(); // `*` schema will be ignored
-
-  // we need to pass schema for book
-  await orm.schema.update({ schema: 'n2' });
-  await orm.schema.update({ schema: 'n3' });
-  await orm.schema.update({ schema: 'n4' });
-  await orm.schema.update({ schema: 'n5' });
-
-  orm.config.set('schema', 'n2'); // set the schema so we can work with book entities without options param
-  const entities = await orm.entityGenerator.generate();
-  expect(entities).toMatchSnapshot();
-
-  await orm.close();
-});
-
 describe('multiple connected schemas in mssql', () => {
 
   let orm: MikroORM;
@@ -124,6 +91,11 @@ describe('multiple connected schemas in mssql', () => {
     await orm.schema.update({ schema: 'n5' });
 
     orm.config.set('schema', 'n2'); // set the schema so we can work with book entities without options param
+  });
+
+  test('generate entities for all schemas', async () => {
+    const entities = await orm.entityGenerator.generate();
+    expect(entities).toMatchSnapshot();
   });
 
   afterAll(async () => {
