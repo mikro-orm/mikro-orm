@@ -146,4 +146,4 @@ bench('EntityDTO<Author> - simple', () => {
 
 bench('EntityDTO<Loaded<Author, "books">> - with loaded hint', () => {
   useDTO<Loaded<Author, 'books'>>({} as EntityDTO<Loaded<Author, 'books'>>);
-}).types([3885, 'instantiations']);
+}).types([3881, 'instantiations']);

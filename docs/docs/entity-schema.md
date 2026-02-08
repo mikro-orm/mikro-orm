@@ -134,6 +134,7 @@ uniques: { properties: string | string[]; name?: string }[];
 repository: () => Constructor<EntityRepository<T>>;
 hooks: Partial<Record<keyof typeof EventType, ((string & keyof T) | NonNullable<EventSubscriber[keyof EventSubscriber]>)[]>>;
 abstract: boolean;
+orderBy: QueryOrderMap<T> | QueryOrderMap<T>[]; // default ordering for the entity
 ```
 
 Every property then needs to contain a type specification - one of `type` or `entity` options. Here are some examples of various property types:

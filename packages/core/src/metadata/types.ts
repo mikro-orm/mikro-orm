@@ -27,6 +27,17 @@ export type EntityOptions<T, E = T extends EntityClass<infer P> ? P : T> = {
   schema?: string;
   /** Override default collection/table name. Alias for `tableName`. */
   collection?: string;
+  /**
+   * Set default ordering for this entity. This ordering is applied when:
+   * - Querying the entity directly via `em.find()`, `em.findAll()`, etc.
+   * - Populating the entity as a relation
+   *
+   * All orderings are combined together. Precedence (highest to lowest):
+   * 1. Runtime `FindOptions.orderBy`
+   * 2. Relation-level `@OneToMany({ orderBy })` / `@ManyToMany({ orderBy })`
+   * 3. Entity-level `@Entity({ orderBy })`
+   */
+  orderBy?: QueryOrderMap<E> | QueryOrderMap<E>[];
   /** For {@doclink inheritance-mapping#single-table-inheritance | Single Table Inheritance}. */
   discriminatorColumn?: (T extends EntityClass<infer P> ? keyof P : string) | AnyString;
   /** For {@doclink inheritance-mapping#single-table-inheritance | Single Table Inheritance}. */

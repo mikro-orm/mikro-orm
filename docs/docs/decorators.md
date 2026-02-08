@@ -29,20 +29,21 @@ For detailed information about decorator types, metadata providers, and configur
 
 `@Entity` decorator is used to mark your model classes as entities. Do not use it for abstract base classes.
 
-| Parameter             | Type                     | Optional | Description                                                                        |
-|-----------------------|--------------------------|----------|------------------------------------------------------------------------------------|
-| `tableName`           | `string`                 | yes      | Override default collection/table name.                                            |
-| `schema`              | `string`                 | yes      | Sets the schema name.                                                              |
-| `collection`          | `string`                 | yes      | Alias for `tableName`.                                                             |
-| `comment`             | `string`                 | yes      | Specify comment to table. **(SQL only)**                                           |
-| `repository`          | `() => EntityRepository` | yes      | Set [custom repository class](./repositories.md#custom-repository).                |
-| `inheritance`         | `'tpt'`                  | yes      | For [Table-Per-Type Inheritance](./inheritance-mapping.md#table-per-type-inheritance-tpt). |
-| `discriminatorColumn` | `string`                 | yes      | For [Single Table Inheritance](./inheritance-mapping.md#single-table-inheritance). |
-| `discriminatorMap`    | `Dictionary<string>`     | yes      | For [Single Table Inheritance](./inheritance-mapping.md#single-table-inheritance). |
-| `discriminatorValue`  | `number` &#124; `string` | yes      | For [Single Table Inheritance](./inheritance-mapping.md#single-table-inheritance). |
-| `forceConstructor`    | `boolean`                | yes      | Enforce use of constructor when creating managed entity instances                  |
-| `abstract`            | `boolean`                | yes      | Marks entity as abstract, such entities are inlined during discovery.              |
-| `readonly`            | `boolean`                | yes      | Disables change tracking - such entities are ignored during flush.                 |
+| Parameter             | Type                       | Optional | Description                                                                        |
+|-----------------------|----------------------------|----------|------------------------------------------------------------------------------------|
+| `tableName`           | `string`                   | yes      | Override default collection/table name.                                            |
+| `schema`              | `string`                   | yes      | Sets the schema name.                                                              |
+| `collection`          | `string`                   | yes      | Alias for `tableName`.                                                             |
+| `comment`             | `string`                   | yes      | Specify comment to table. **(SQL only)**                                           |
+| `repository`          | `() => EntityRepository`   | yes      | Set [custom repository class](./repositories.md#custom-repository).                |
+| `inheritance`         | `'tpt'`                    | yes      | For [Table-Per-Type Inheritance](./inheritance-mapping.md#table-per-type-inheritance-tpt). |
+| `discriminatorColumn` | `string`                   | yes      | For [Single Table Inheritance](./inheritance-mapping.md#single-table-inheritance). |
+| `discriminatorMap`    | `Dictionary<string>`       | yes      | For [Single Table Inheritance](./inheritance-mapping.md#single-table-inheritance). |
+| `discriminatorValue`  | `number` &#124; `string`   | yes      | For [Single Table Inheritance](./inheritance-mapping.md#single-table-inheritance). |
+| `forceConstructor`    | `boolean`                  | yes      | Enforce use of constructor when creating managed entity instances                  |
+| `abstract`            | `boolean`                  | yes      | Marks entity as abstract, such entities are inlined during discovery.              |
+| `readonly`            | `boolean`                  | yes      | Disables change tracking - such entities are ignored during flush.                 |
+| `orderBy`             | `QueryOrderMap` &#124; `QueryOrderMap[]` | yes      | Set default ordering for this entity. See [collections](./collections.md#entity-level-default-ordering). |
 
 ```ts
 @Entity({ tableName: 'authors' })

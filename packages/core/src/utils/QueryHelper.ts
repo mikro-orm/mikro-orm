@@ -11,7 +11,7 @@ import type {
   FilterKey,
   FilterQuery,
 } from '../typings.js';
-import { ARRAY_OPERATORS, GroupOperator, JSON_KEY_OPERATORS, ReferenceKind } from '../enums.js';
+import { ARRAY_OPERATORS, GroupOperator, JSON_KEY_OPERATORS, type QueryOrderMap, ReferenceKind } from '../enums.js';
 import type { Platform } from '../platforms/Platform.js';
 import type { MetadataStorage } from '../metadata/MetadataStorage.js';
 import { JsonType } from '../types/JsonType.js';
@@ -390,6 +390,34 @@ export class QueryHelper {
     const meta = entityName ? options.metadata.find<T>(entityName) : undefined;
 
     return meta?.properties[propName];
+  }
+
+  /**
+   * Merges multiple orderBy sources with key-level deduplication (first-seen key wins).
+   * RawQueryFragment symbol keys are never deduped (each is unique).
+   */
+  static mergeOrderBy<T>(...sources: (QueryOrderMap<T> | QueryOrderMap<T>[] | undefined)[]): QueryOrderMap<T>[] {
+    const result: QueryOrderMap<T>[] = [];
+    const seenKeys = new Set<string>();
+
+    for (const source of sources) {
+      if (source == null) {
+        continue;
+      }
+
+      for (const item of Utils.asArray(source)) {
+        for (const key of Utils.getObjectQueryKeys(item)) {
+          if (typeof key === 'symbol') {
+            result.push({ [key]: item[key as EntityKey] } as QueryOrderMap<T>);
+          } else if (!seenKeys.has(key)) {
+            seenKeys.add(key);
+            result.push({ [key]: item[key] } as QueryOrderMap<T>);
+          }
+        }
+      }
+    }
+
+    return result;
   }
 
 }

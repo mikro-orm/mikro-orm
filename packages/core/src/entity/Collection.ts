@@ -136,16 +136,19 @@ export class Collection<T extends object, O extends object = object> {
   async matching<TT extends T, P extends string = never>(options: MatchingOptions<T, P>): Promise<Loaded<TT, P>[]> {
     const em = this.getEntityManager()!;
     const { where, ctx, ...opts } = options;
-    opts.orderBy = this.createOrderBy(opts.orderBy);
     let items: Loaded<TT, P>[];
 
     if (this.property.kind === ReferenceKind.MANY_TO_MANY && em.getPlatform().usesPivotTable()) {
+      // M:N via pivot table bypasses em.find(), so merge all 3 levels here
+      opts.orderBy = QueryHelper.mergeOrderBy(opts.orderBy, this.property.orderBy, this.property.targetMeta?.orderBy);
       options.populate = await em.preparePopulate(this.property.targetMeta!.class, options) as any;
       const cond = await em.applyFilters(this.property.targetMeta!.class, where, options.filters ?? {}, 'read') as FilterQuery<T>;
       const map = await em.getDriver().loadFromPivotTable(this.property, [helper(this.owner).__primaryKeys], cond, opts.orderBy, ctx, options);
       items = map[helper(this.owner).getSerializedPrimaryKey()].map((item: EntityData<TT>) => em.merge(this.property.targetMeta!.class, item, { convertCustomTypes: true })) as any;
       await em.populate(items, options.populate as any, options as any);
     } else {
+      // em.find() merges entity-level orderBy, so only merge runtime + relation here
+      opts.orderBy = QueryHelper.mergeOrderBy(opts.orderBy, this.property.orderBy);
       items = await em.find(this.property.targetMeta!.class, this.createCondition(where), opts as any) as any;
     }
 
@@ -314,7 +317,7 @@ export class Collection<T extends object, O extends object = object> {
 
     if (options.dataloader ?? [DataloaderType.ALL, DataloaderType.COLLECTION].includes(em.config.getDataloaderType())) {
       const order = [...this.items]; // copy order of references
-      const orderBy = this.createOrderBy(options.orderBy);
+      const orderBy = QueryHelper.mergeOrderBy(options.orderBy, this.property.orderBy, this.property.targetMeta?.orderBy);
       const customOrder = orderBy.length > 0;
       const pivotTable = this.property.kind === ReferenceKind.MANY_TO_MANY && em.getPlatform().usesPivotTable();
       const loader = await em.getDataLoader(pivotTable ? 'm:n' : '1:m');
@@ -391,14 +394,6 @@ export class Collection<T extends object, O extends object = object> {
     }
 
     return cond;
-  }
-
-  private createOrderBy<TT extends T>(orderBy: QueryOrderMap<TT> | QueryOrderMap<TT>[] = []): QueryOrderMap<TT>[] {
-    if (Utils.isEmpty(orderBy) && !Raw.hasObjectFragments(orderBy) && this.property.orderBy) {
-      orderBy = this.property.orderBy;
-    }
-
-    return Utils.asArray(orderBy);
   }
 
   private createManyToManyCondition<TT extends T>(cond: FilterQuery<TT>) {

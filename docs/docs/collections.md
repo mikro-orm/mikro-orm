@@ -285,6 +285,12 @@ await book.tags.init({
 
 > You should never modify partially loaded collections.
 
+## Entity-level default ordering
+
+You can define a default `orderBy` on the entity itself using `@Entity({ orderBy: ... })`. When populating a collection, all applicable orderings are combined with runtime `orderBy` taking highest priority, followed by relation-level `orderBy`, and finally entity-level `orderBy`.
+
+See [Default Entity Ordering](./defining-entities.md#default-entity-ordering) for full documentation and examples.
+
 ## Declarative partial loading
 
 Collections can also represent only a subset of the target entities:

@@ -37,7 +37,7 @@ import type {
 import type { Raw } from '../utils/RawQueryFragment.js';
 import type { ScalarReference } from './Reference.js';
 import type { SerializeOptions } from '../serialization/EntitySerializer.js';
-import type { Cascade, DeferMode, EmbeddedPrefixMode, LoadStrategy, QueryOrderMap } from '../enums.js';
+import type { Cascade, DeferMode, EmbeddedPrefixMode, LoadStrategy, QueryOrderKeysFlat, QueryOrderMap } from '../enums.js';
 import type { EventSubscriber } from '../events/EventSubscriber.js';
 import type { IType, Type } from '../types/Type.js';
 import { types } from '../types/index.js';
@@ -721,6 +721,9 @@ function getBuilderOptions(builder: any) {
   return '~options' in builder ? builder['~options'] : builder;
 }
 
+/** Own keys + base entity keys (when TBase is not `never`). Guards against `keyof never = string | number | symbol`. */
+type AllKeys<TProperties, TBase> = keyof TProperties | (IsNever<TBase> extends true ? never : keyof TBase);
+
 export interface EntityMetadataWithProperties<
   TName extends string,
   TTableName extends string,
@@ -728,7 +731,7 @@ export interface EntityMetadataWithProperties<
   TPK extends (keyof TProperties)[] | undefined = undefined,
   TBase = never,
   TRepository = never,
-> extends Omit<Partial<EntityMetadata<InferEntityFromProperties<TProperties, TPK, TBase, TRepository>>>, 'properties' | 'extends' | 'primaryKeys' | 'hooks' | 'discriminatorColumn' | 'versionProperty' | 'concurrencyCheckKeys' | 'serializedPrimaryKey' | 'indexes' | 'uniques' | 'repository' > {
+> extends Omit<Partial<EntityMetadata<InferEntityFromProperties<TProperties, TPK, TBase, TRepository>>>, 'properties' | 'extends' | 'primaryKeys' | 'hooks' | 'discriminatorColumn' | 'versionProperty' | 'concurrencyCheckKeys' | 'serializedPrimaryKey' | 'indexes' | 'uniques' | 'repository' | 'orderBy' > {
   name: TName;
   tableName?: TTableName;
   // Uses ~entity marker for fast type inference (avoids expensive EntitySchema matching)
@@ -743,11 +746,12 @@ export interface EntityMetadataWithProperties<
   // Table-per-type inheritance (each entity has its own table)
   inheritance?: 'tpt';
 
-  // use keyof TProperties instead of EntityKey<T> to avoid circular type inference
-  discriminatorColumn?: keyof TProperties;
-  versionProperty?: keyof TProperties;
-  concurrencyCheckKeys?: Set<keyof TProperties>;
-  serializedPrimaryKey?: keyof TProperties;
+  // use keyof TProperties (+ keyof TBase when present) instead of EntityKey<T> to avoid circular type inference
+  orderBy?: { [K in Extract<AllKeys<TProperties, TBase>, string>]?: QueryOrderKeysFlat } | { [K in Extract<AllKeys<TProperties, TBase>, string>]?: QueryOrderKeysFlat }[];
+  discriminatorColumn?: string;
+  versionProperty?: AllKeys<TProperties, TBase>;
+  concurrencyCheckKeys?: Set<AllKeys<TProperties, TBase>>;
+  serializedPrimaryKey?: AllKeys<TProperties, TBase>;
   indexes?: {
     properties?: keyof TProperties | (keyof TProperties)[];
     name?: string;

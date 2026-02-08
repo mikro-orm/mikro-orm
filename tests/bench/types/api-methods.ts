@@ -149,13 +149,13 @@ bench('EntityDTO<Loaded<Author, "books">>', () => {
   type R = EntityDTO<Loaded<Author, 'books'>>;
   const x = {} as R;
   void x;
-}).types([3617, 'instantiations']);
+}).types([3613, 'instantiations']);
 
 bench('EntityDTO<Loaded<Author, "books.publisher">>', () => {
   type R = EntityDTO<Loaded<Author, 'books.publisher'>>;
   const x = {} as R;
   void x;
-}).types([3617, 'instantiations']);
+}).types([3613, 'instantiations']);
 
 // ============================================
 // FilterQuery - used in where clauses
@@ -177,7 +177,7 @@ bench('FilterQuery<Loaded<Author, "books">>', () => {
   type R = FilterQuery<Loaded<Author, 'books'>>;
   const x = {} as R;
   void x;
-}).types([2499, 'instantiations']);
+}).types([2495, 'instantiations']);
 
 // ============================================
 // EntityData - used in em.assign()
@@ -193,7 +193,7 @@ bench('EntityData<Loaded<Author, "books">>', () => {
   type R = EntityData<Loaded<Author, 'books'>>;
   const x = {} as R;
   void x;
-}).types([1880, 'instantiations']);
+}).types([1876, 'instantiations']);
 
 // ============================================
 // Simulating wrap(e).toObject()
@@ -212,7 +212,7 @@ bench('wrap(loadedAuthor).toObject() return type', () => {
   type R = ToObjectReturn<Loaded<Author, 'books'>>;
   const x = {} as R;
   void x;
-}).types([3619, 'instantiations']);
+}).types([3615, 'instantiations']);
 
 // ============================================
 // Complex scenarios
@@ -224,4 +224,4 @@ bench('find result then EntityDTO', () => {
   type DTOResult = EntityDTO<FindResult>;
   const x = {} as DTOResult;
   void x;
-}).types([3617, 'instantiations']);
+}).types([3613, 'instantiations']);

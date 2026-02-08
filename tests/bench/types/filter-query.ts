@@ -68,7 +68,7 @@ bench('EntityKey<Loaded<Author, "books">>', () => {
   type R = EntityKey<Loaded<Author, 'books'>>;
   const x = {} as R;
   void x;
-}).types([1759, 'instantiations']);
+}).types([1755, 'instantiations']);
 
 // ============================================
 // FilterObject benchmarks
