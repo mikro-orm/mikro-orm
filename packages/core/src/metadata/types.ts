@@ -605,17 +605,69 @@ export interface SerializedPrimaryKeyOptions<T> extends PropertyOptions<T> {
 type MaybeArray<T> = T | T[];
 type Properties<T, H extends string> = MaybeArray<AutoPath<T, H>>;
 
+/** Options for column within an index, supporting advanced index features like prefix length and collation. */
+export interface IndexColumnOptions {
+  /** Column name or property path. */
+  name: string;
+  /** Sort order for the column (default: ASC). */
+  sort?: 'ASC' | 'DESC' | 'asc' | 'desc';
+  /** NULLS ordering for the column (PostgreSQL). */
+  nulls?: 'FIRST' | 'LAST' | 'first' | 'last';
+  /** Prefix length for the column (MySQL, MariaDB). */
+  length?: number;
+  /** Collation for the column (PostgreSQL, SQLite, or MySQL/MariaDB via expression). */
+  collation?: string;
+}
+
 interface BaseOptions<T, H extends string> {
   name?: string;
   properties?: (T extends EntityClass<infer P> ? Properties<P, H> : Properties<T, H>);
   options?: Dictionary;
   expression?: string | (T extends EntityClass<infer P> ? IndexCallback<P> : IndexCallback<T>);
+  /**
+   * Advanced column options for the index.
+   * When specified, allows fine-grained control over each column in the index including
+   * sort order, nulls ordering, prefix length, and collation.
+   * If both `columns` and `properties` are specified, `columns` takes precedence for index creation.
+   */
+  columns?: IndexColumnOptions[];
+  /**
+   * Columns to include in the index but not as part of the key (PostgreSQL, MSSQL).
+   * These columns are stored in the leaf level of the index but not used for searching.
+   */
+  include?: (T extends EntityClass<infer P> ? Properties<P, H> : Properties<T, H>);
+  /** Fill factor for the index as a percentage 0-100 (PostgreSQL, MSSQL). */
+  fillFactor?: number;
 }
 
 export interface UniqueOptions<T, H extends string = string> extends BaseOptions<T, H> {
   deferMode?: DeferMode | `${DeferMode}`;
+  /**
+   * Whether the index is disabled (MSSQL only).
+   * A disabled index is not used for query planning and is not maintained on writes.
+   * It can be re-enabled later using `ALTER INDEX ... REBUILD`.
+   */
+  disabled?: boolean;
 }
 
 export interface IndexOptions<T, H extends string = string> extends BaseOptions<T, H> {
   type?: string;
+  /**
+   * Whether the index is invisible/hidden from the query optimizer (MySQL 8+, MariaDB 10.6+, MongoDB).
+   * An invisible index is still maintained on writes but not used for query planning.
+   * Useful for testing the impact of removing an index before actually dropping it.
+   */
+  invisible?: boolean;
+  /**
+   * Whether the index is disabled (MSSQL only).
+   * A disabled index is not used for query planning and is not maintained on writes.
+   * It can be re-enabled later using `ALTER INDEX ... REBUILD`.
+   */
+  disabled?: boolean;
+  /**
+   * Whether the index should be clustered (MariaDB, MSSQL).
+   * A clustered index determines the physical order of data in the table.
+   * Only one clustered index can exist per table.
+   */
+  clustered?: boolean;
 }

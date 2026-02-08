@@ -194,7 +194,7 @@ export class Book2 {
   @Property({ type: 'character', length: 13, nullable: true, unique: true })
   isbn?: string;
 
-  @Index({ name: 'book2_title_index' })
+  @Index({ name: 'book2_title_index', type: 'fulltext' })
   @Property({ type: 'string', nullable: true })
   title?: string = '';
 
@@ -838,7 +838,7 @@ export class Book2 {
   @Property({ type: 'character', length: 13, nullable: true, unique: true })
   isbn: string | null = null;
 
-  @Index({ name: 'book2_title_index' })
+  @Index({ name: 'book2_title_index', type: 'fulltext' })
   @Property({ type: 'string', nullable: true })
   title?: string | null = '';
 
@@ -1482,7 +1482,7 @@ export class Book2 {
   @Property({ type: 'character', length: 13, nullable: true, unique: true })
   isbn?: string | null;
 
-  @Index({ name: 'book2_title_index' })
+  @Index({ name: 'book2_title_index', type: 'fulltext' })
   @Property({ type: 'string', nullable: true })
   title?: string | null = '';
 
@@ -2104,6 +2104,9 @@ export class Book2 {
 
 export const Book2Schema = defineEntity({
   class: Book2,
+  indexes: [
+    { name: 'book2_title_index', properties: ['title'], type: 'fulltext' },
+  ],
   properties: {
     uuidPk: p.string().primary().length(36),
     createdAt: p.datetime().length(3).defaultRaw(\`current_timestamp(3)\`),
@@ -2663,6 +2666,9 @@ export class Book2 {
 
 export const Book2Schema = defineEntity({
   class: Book2,
+  indexes: [
+    { name: 'book2_title_index', properties: ['title'], type: 'fulltext' },
+  ],
   properties: {
     uuidPk: p.string().primary().length(36),
     createdAt: p.datetime().length(3).defaultRaw(\`current_timestamp(3)\`),
@@ -3222,6 +3228,9 @@ export class Book2 {
 
 export const Book2Schema = defineEntity({
   class: Book2,
+  indexes: [
+    { name: 'book2_title_index', properties: ['title'], type: 'fulltext' },
+  ],
   properties: {
     uuidPk: p.string().primary().length(36),
     createdAt: p.datetime().length(3).defaultRaw(\`current_timestamp(3)\`),
@@ -3714,6 +3723,9 @@ import { Test2 } from './Test2';
 
 export const Book2 = defineEntity({
   name: 'Book2',
+  indexes: [
+    { name: 'book2_title_index', properties: ['title'], type: 'fulltext' },
+  ],
   properties: {
     uuidPk: p.string().primary().length(36),
     createdAt: p.datetime().length(3).defaultRaw(\`current_timestamp(3)\`),
@@ -4106,6 +4118,9 @@ import { Test2 } from './Test2';
 
 export const Book2 = defineEntity({
   name: 'Book2',
+  indexes: [
+    { name: 'book2_title_index', properties: ['title'], type: 'fulltext' },
+  ],
   properties: {
     uuidPk: p.string().primary().length(36),
     createdAt: p.datetime().length(3).defaultRaw(\`current_timestamp(3)\`),
@@ -4498,6 +4513,9 @@ import { Test2 } from './Test2';
 
 export const Book2 = defineEntity({
   name: 'Book2',
+  indexes: [
+    { name: 'book2_title_index', properties: ['title'], type: 'fulltext' },
+  ],
   properties: {
     uuidPk: p.string().primary().length(36),
     createdAt: p.datetime().length(3).defaultRaw(\`current_timestamp(3)\`),
@@ -5039,6 +5057,9 @@ export class Book2 {
 
 export const Book2Schema = new EntitySchema({
   class: Book2,
+  indexes: [
+    { name: 'book2_title_index', properties: ['title'], type: 'fulltext' },
+  ],
   properties: {
     uuidPk: { primary: true, type: 'string', length: 36 },
     createdAt: { type: 'datetime', length: 3, defaultRaw: \`current_timestamp(3)\` },
@@ -5807,6 +5828,9 @@ export class Book2 {
 
 export const Book2Schema = new EntitySchema({
   class: Book2,
+  indexes: [
+    { name: 'book2_title_index', properties: ['title'], type: 'fulltext' },
+  ],
   properties: {
     uuidPk: { primary: true, type: 'string', length: 36 },
     createdAt: { type: 'datetime', length: 3, defaultRaw: \`current_timestamp(3)\` },
@@ -6575,6 +6599,9 @@ export class Book2 {
 
 export const Book2Schema = new EntitySchema({
   class: Book2,
+  indexes: [
+    { name: 'book2_title_index', properties: ['title'], type: 'fulltext' },
+  ],
   properties: {
     uuidPk: { primary: true, type: 'string', length: 36 },
     createdAt: { type: 'datetime', length: 3, defaultRaw: \`current_timestamp(3)\` },
@@ -7281,7 +7308,7 @@ export class Book2 {
   @Property({ type: 'character', length: 13, nullable: true, unique: true })
   isbn?: string;
 
-  @Index({ name: 'book2_title_index' })
+  @Index({ name: 'book2_title_index', type: 'fulltext' })
   @Property({ type: 'string', nullable: true })
   title?: string = '';
 
@@ -7915,7 +7942,7 @@ export class Book2 {
   @Property({ type: 'character', length: 13, nullable: true, unique: true })
   isbn: string | null = null;
 
-  @Index({ name: 'book2_title_index' })
+  @Index({ name: 'book2_title_index', type: 'fulltext' })
   @Property({ type: 'string', nullable: true })
   title?: string | null = '';
 
@@ -8549,7 +8576,7 @@ export class Book2 {
   @Property({ type: 'character', length: 13, nullable: true, unique: true })
   isbn?: string | null;
 
-  @Index({ name: 'book2_title_index' })
+  @Index({ name: 'book2_title_index', type: 'fulltext' })
   @Property({ type: 'string', nullable: true })
   title?: string | null = '';
 
@@ -9161,6 +9188,9 @@ export class Book2 {
 
 export const Book2Schema = defineEntity({
   class: Book2,
+  indexes: [
+    { name: 'book2_title_index', properties: ['title'], type: 'fulltext' },
+  ],
   properties: {
     uuidPk: p.string().primary().length(36),
     createdAt: p.datetime().length(3).defaultRaw(\`current_timestamp(3)\`),
@@ -9710,6 +9740,9 @@ export class Book2 {
 
 export const Book2Schema = defineEntity({
   class: Book2,
+  indexes: [
+    { name: 'book2_title_index', properties: ['title'], type: 'fulltext' },
+  ],
   properties: {
     uuidPk: p.string().primary().length(36),
     createdAt: p.datetime().length(3).defaultRaw(\`current_timestamp(3)\`),
@@ -10259,6 +10292,9 @@ export class Book2 {
 
 export const Book2Schema = defineEntity({
   class: Book2,
+  indexes: [
+    { name: 'book2_title_index', properties: ['title'], type: 'fulltext' },
+  ],
   properties: {
     uuidPk: p.string().primary().length(36),
     createdAt: p.datetime().length(3).defaultRaw(\`current_timestamp(3)\`),
@@ -10741,6 +10777,9 @@ import { Test2 } from './Test2';
 
 export const Book2 = defineEntity({
   name: 'Book2',
+  indexes: [
+    { name: 'book2_title_index', properties: ['title'], type: 'fulltext' },
+  ],
   properties: {
     uuidPk: p.string().primary().length(36),
     createdAt: p.datetime().length(3).defaultRaw(\`current_timestamp(3)\`),
@@ -11123,6 +11162,9 @@ import { Test2 } from './Test2';
 
 export const Book2 = defineEntity({
   name: 'Book2',
+  indexes: [
+    { name: 'book2_title_index', properties: ['title'], type: 'fulltext' },
+  ],
   properties: {
     uuidPk: p.string().primary().length(36),
     createdAt: p.datetime().length(3).defaultRaw(\`current_timestamp(3)\`),
@@ -11505,6 +11547,9 @@ import { Test2 } from './Test2';
 
 export const Book2 = defineEntity({
   name: 'Book2',
+  indexes: [
+    { name: 'book2_title_index', properties: ['title'], type: 'fulltext' },
+  ],
   properties: {
     uuidPk: p.string().primary().length(36),
     createdAt: p.datetime().length(3).defaultRaw(\`current_timestamp(3)\`),
@@ -12036,6 +12081,9 @@ export class Book2 {
 
 export const Book2Schema = new EntitySchema({
   class: Book2,
+  indexes: [
+    { name: 'book2_title_index', properties: ['title'], type: 'fulltext' },
+  ],
   properties: {
     uuidPk: { primary: true, type: 'string', length: 36 },
     createdAt: { type: 'datetime', length: 3, defaultRaw: \`current_timestamp(3)\` },
@@ -12794,6 +12842,9 @@ export class Book2 {
 
 export const Book2Schema = new EntitySchema({
   class: Book2,
+  indexes: [
+    { name: 'book2_title_index', properties: ['title'], type: 'fulltext' },
+  ],
   properties: {
     uuidPk: { primary: true, type: 'string', length: 36 },
     createdAt: { type: 'datetime', length: 3, defaultRaw: \`current_timestamp(3)\` },
@@ -13552,6 +13603,9 @@ export class Book2 {
 
 export const Book2Schema = new EntitySchema({
   class: Book2,
+  indexes: [
+    { name: 'book2_title_index', properties: ['title'], type: 'fulltext' },
+  ],
   properties: {
     uuidPk: { primary: true, type: 'string', length: 36 },
     createdAt: { type: 'datetime', length: 3, defaultRaw: \`current_timestamp(3)\` },
@@ -14246,7 +14300,7 @@ export class Book2 {
   @Property({ type: 'character', length: 13, nullable: true, unique: true })
   isbn?: string;
 
-  @Index({ name: 'book2_title_index' })
+  @Index({ name: 'book2_title_index', type: 'fulltext' })
   @Property({ type: 'string', nullable: true })
   title?: string = '';
 
@@ -14864,7 +14918,7 @@ export class Book2 {
   @Property({ type: 'character', length: 13, nullable: true, unique: true })
   isbn: string | null = null;
 
-  @Index({ name: 'book2_title_index' })
+  @Index({ name: 'book2_title_index', type: 'fulltext' })
   @Property({ type: 'string', nullable: true })
   title?: string | null = '';
 
@@ -15482,7 +15536,7 @@ export class Book2 {
   @Property({ type: 'character', length: 13, nullable: true, unique: true })
   isbn?: string | null;
 
-  @Index({ name: 'book2_title_index' })
+  @Index({ name: 'book2_title_index', type: 'fulltext' })
   @Property({ type: 'string', nullable: true })
   title?: string | null = '';
 
@@ -16078,6 +16132,9 @@ export class Book2 {
 
 export const Book2Schema = defineEntity({
   class: Book2,
+  indexes: [
+    { name: 'book2_title_index', properties: ['title'], type: 'fulltext' },
+  ],
   properties: {
     uuidPk: p.string().primary().length(36),
     createdAt: p.datetime().length(3).defaultRaw(\`current_timestamp(3)\`),
@@ -16611,6 +16668,9 @@ export class Book2 {
 
 export const Book2Schema = defineEntity({
   class: Book2,
+  indexes: [
+    { name: 'book2_title_index', properties: ['title'], type: 'fulltext' },
+  ],
   properties: {
     uuidPk: p.string().primary().length(36),
     createdAt: p.datetime().length(3).defaultRaw(\`current_timestamp(3)\`),
@@ -17144,6 +17204,9 @@ export class Book2 {
 
 export const Book2Schema = defineEntity({
   class: Book2,
+  indexes: [
+    { name: 'book2_title_index', properties: ['title'], type: 'fulltext' },
+  ],
   properties: {
     uuidPk: p.string().primary().length(36),
     createdAt: p.datetime().length(3).defaultRaw(\`current_timestamp(3)\`),
@@ -17610,6 +17673,9 @@ import { Test2 } from './Test2';
 
 export const Book2 = defineEntity({
   name: 'Book2',
+  indexes: [
+    { name: 'book2_title_index', properties: ['title'], type: 'fulltext' },
+  ],
   properties: {
     uuidPk: p.string().primary().length(36),
     createdAt: p.datetime().length(3).defaultRaw(\`current_timestamp(3)\`),
@@ -17976,6 +18042,9 @@ import { Test2 } from './Test2';
 
 export const Book2 = defineEntity({
   name: 'Book2',
+  indexes: [
+    { name: 'book2_title_index', properties: ['title'], type: 'fulltext' },
+  ],
   properties: {
     uuidPk: p.string().primary().length(36),
     createdAt: p.datetime().length(3).defaultRaw(\`current_timestamp(3)\`),
@@ -18342,6 +18411,9 @@ import { Test2 } from './Test2';
 
 export const Book2 = defineEntity({
   name: 'Book2',
+  indexes: [
+    { name: 'book2_title_index', properties: ['title'], type: 'fulltext' },
+  ],
   properties: {
     uuidPk: p.string().primary().length(36),
     createdAt: p.datetime().length(3).defaultRaw(\`current_timestamp(3)\`),
@@ -18857,6 +18929,9 @@ export class Book2 {
 
 export const Book2Schema = new EntitySchema({
   class: Book2,
+  indexes: [
+    { name: 'book2_title_index', properties: ['title'], type: 'fulltext' },
+  ],
   properties: {
     uuidPk: { primary: true, type: 'string', length: 36 },
     createdAt: { type: 'datetime', length: 3, defaultRaw: \`current_timestamp(3)\` },
@@ -19599,6 +19674,9 @@ export class Book2 {
 
 export const Book2Schema = new EntitySchema({
   class: Book2,
+  indexes: [
+    { name: 'book2_title_index', properties: ['title'], type: 'fulltext' },
+  ],
   properties: {
     uuidPk: { primary: true, type: 'string', length: 36 },
     createdAt: { type: 'datetime', length: 3, defaultRaw: \`current_timestamp(3)\` },
@@ -20341,6 +20419,9 @@ export class Book2 {
 
 export const Book2Schema = new EntitySchema({
   class: Book2,
+  indexes: [
+    { name: 'book2_title_index', properties: ['title'], type: 'fulltext' },
+  ],
   properties: {
     uuidPk: { primary: true, type: 'string', length: 36 },
     createdAt: { type: 'datetime', length: 3, defaultRaw: \`current_timestamp(3)\` },

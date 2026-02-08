@@ -655,6 +655,36 @@ export class SchemaComparator {
       return false;
     }
 
+    // Compare advanced column options (sort order, nulls, length, collation)
+    if (!this.compareIndexColumns(index1, index2)) {
+      return false;
+    }
+
+    // Compare INCLUDE columns for covering indexes
+    if (!this.compareArrays(index1.include, index2.include)) {
+      return false;
+    }
+
+    // Compare fill factor
+    if (index1.fillFactor !== index2.fillFactor) {
+      return false;
+    }
+
+    // Compare invisible flag
+    if (!!index1.invisible !== !!index2.invisible) {
+      return false;
+    }
+
+    // Compare disabled flag
+    if (!!index1.disabled !== !!index2.disabled) {
+      return false;
+    }
+
+    // Compare clustered flag
+    if (!!index1.clustered !== !!index2.clustered) {
+      return false;
+    }
+
     if (!index1.unique && !index1.primary) {
       // this is a special case: If the current key is neither primary or unique, any unique or
       // primary key will always have the same effect for the index and there cannot be any constraint
@@ -668,6 +698,72 @@ export class SchemaComparator {
     }
 
     return index1.primary === index2.primary && index1.unique === index2.unique;
+  }
+
+  /**
+   * Compare advanced column options between two indexes.
+   */
+  private compareIndexColumns(index1: IndexDef, index2: IndexDef): boolean {
+    const cols1 = index1.columns ?? [];
+    const cols2 = index2.columns ?? [];
+
+    // If neither has column options, they match
+    if (cols1.length === 0 && cols2.length === 0) {
+      return true;
+    }
+
+    // If only one has column options, they don't match
+    if (cols1.length !== cols2.length) {
+      return false;
+    }
+
+    // Compare each column's options
+    // Note: We don't check c1.name !== c2.name because the indexes already have matching columnNames
+    // and the columns array is derived from those same column names
+    for (let i = 0; i < cols1.length; i++) {
+      const c1 = cols1[i];
+      const c2 = cols2[i];
+
+      const sort1 = c1.sort?.toUpperCase() ?? 'ASC';
+      const sort2 = c2.sort?.toUpperCase() ?? 'ASC';
+
+      if (sort1 !== sort2) {
+        return false;
+      }
+
+      const defaultNulls = (s: string) => s === 'DESC' ? 'FIRST' : 'LAST';
+      const nulls1 = c1.nulls?.toUpperCase() ?? defaultNulls(sort1);
+      const nulls2 = c2.nulls?.toUpperCase() ?? defaultNulls(sort2);
+
+      if (nulls1 !== nulls2) {
+        return false;
+      }
+
+      if (c1.length !== c2.length) {
+        return false;
+      }
+
+      if (c1.collation !== c2.collation) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  /**
+   * Compare two arrays for equality (order matters).
+   */
+  private compareArrays(arr1?: string[], arr2?: string[]): boolean {
+    if (!arr1 && !arr2) {
+      return true;
+    }
+
+    if (!arr1 || !arr2 || arr1.length !== arr2.length) {
+      return false;
+    }
+
+    return arr1.every((val, i) => val === arr2[i]);
   }
 
   diffExpression(expr1: string, expr2: string): boolean {

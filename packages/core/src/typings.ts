@@ -22,6 +22,7 @@ import type { SerializationContext } from './serialization/SerializationContext.
 import type { SerializeOptions } from './serialization/EntitySerializer.js';
 import type { MetadataStorage } from './metadata/MetadataStorage.js';
 import type { EntitySchema } from './metadata/EntitySchema.js';
+import type { IndexColumnOptions } from './metadata/types.js';
 import type { Type, types } from './types/index.js';
 import type { Platform } from './platforms/Platform.js';
 import type { Configuration } from './utils/Configuration.js';
@@ -1078,8 +1079,30 @@ export interface EntityMetadata<Entity = any, Class extends EntityCtor<Entity> =
   validateProps: EntityProperty<Entity>[]; // for entity validation
   uniqueProps: EntityProperty<Entity>[];
   getterProps: EntityProperty<Entity>[];
-  indexes: { properties?: EntityKey<Entity> | EntityKey<Entity>[]; name?: string; type?: string; options?: Dictionary; expression?: string | IndexCallback<Entity> }[];
-  uniques: { properties?: EntityKey<Entity> | EntityKey<Entity>[]; name?: string; options?: Dictionary; expression?: string | IndexCallback<Entity>; deferMode?: DeferMode | `${DeferMode}` }[];
+  indexes: {
+    properties?: EntityKey<Entity> | EntityKey<Entity>[];
+    name?: string;
+    type?: string;
+    options?: Dictionary;
+    expression?: string | IndexCallback<Entity>;
+    columns?: IndexColumnOptions[];
+    include?: EntityKey<Entity> | EntityKey<Entity>[];
+    fillFactor?: number;
+    invisible?: boolean;
+    disabled?: boolean;
+    clustered?: boolean;
+  }[];
+  uniques: {
+    properties?: EntityKey<Entity> | EntityKey<Entity>[];
+    name?: string;
+    options?: Dictionary;
+    expression?: string | IndexCallback<Entity>;
+    deferMode?: DeferMode | `${DeferMode}`;
+    columns?: IndexColumnOptions[];
+    include?: EntityKey<Entity> | EntityKey<Entity>[];
+    fillFactor?: number;
+    disabled?: boolean;
+  }[];
   checks: CheckConstraint<Entity>[];
   repositoryClass?: string; // for EntityGenerator
   repository: () => EntityClass<EntityRepository<any>>;

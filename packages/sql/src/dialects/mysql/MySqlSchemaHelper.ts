@@ -98,7 +98,7 @@ export class MySqlSchemaHelper extends SchemaHelper {
   }
 
   async getAllIndexes(connection: AbstractSqlConnection, tables: Table[]): Promise<Dictionary<IndexDef[]>> {
-    const sql = `select table_name as table_name, nullif(table_schema, schema()) as schema_name, index_name as index_name, non_unique as non_unique, column_name as column_name /*!80013 , expression as expression */
+    const sql = `select table_name as table_name, nullif(table_schema, schema()) as schema_name, index_name as index_name, non_unique as non_unique, column_name as column_name, index_type as index_type, sub_part as sub_part, collation as sort_order /*!80013 , expression as expression, is_visible as is_visible */
         from information_schema.statistics where table_schema = database()
         and table_name in (${tables.map(t => this.platform.quoteValue(t.table_name)).join(', ')})
         order by schema_name, table_name, index_name, seq_in_index`;
@@ -114,6 +114,28 @@ export class MySqlSchemaHelper extends SchemaHelper {
         primary: index.index_name === 'PRIMARY',
         constraint: !index.non_unique,
       };
+
+      // Capture column options (prefix length, sort order)
+      if (index.sub_part != null || index.sort_order === 'D') {
+        indexDef.columns = [{
+          name: index.column_name,
+          ...(index.sub_part != null && { length: index.sub_part }),
+          ...(index.sort_order === 'D' && { sort: 'DESC' as const }),
+        }];
+      }
+
+      // Capture index type for fulltext and spatial indexes
+      if (index.index_type === 'FULLTEXT') {
+        indexDef.type = 'fulltext';
+      } else if (index.index_type === 'SPATIAL') {
+        /* v8 ignore next */
+        indexDef.type = 'spatial';
+      }
+
+      // Capture invisible flag (MySQL 8.0.13+)
+      if (index.is_visible === 'NO') {
+        indexDef.invisible = true;
+      }
 
       if (!index.column_name || index.expression?.match(/ where /i)) {
         indexDef.expression = index.expression; // required for the `getCreateIndexSQL()` call
@@ -139,20 +161,79 @@ export class MySqlSchemaHelper extends SchemaHelper {
 
     tableName = this.quote(tableName);
     const keyName = this.quote(index.keyName);
-    const sql = `alter table ${tableName} add ${index.unique ? 'unique' : 'index'} ${keyName} `;
+    let sql = `alter table ${tableName} add ${index.unique ? 'unique' : 'index'} ${keyName} `;
 
     if (index.expression && partialExpression) {
-      return `${sql}(${index.expression})`;
+      sql += `(${index.expression})`;
+      return this.appendMySqlIndexSuffix(sql, index);
     }
 
     // JSON columns can have unique index but not unique constraint, and we need to distinguish those, so we can properly drop them
     if (index.columnNames.some(column => column.includes('.'))) {
       const columns = this.platform.getJsonIndexDefinition(index);
-      const sql = `alter table ${tableName} add ${index.unique ? 'unique ' : ''}index ${keyName} `;
-      return `${sql}(${columns.join(', ')})`;
+      sql = `alter table ${tableName} add ${index.unique ? 'unique ' : ''}index ${keyName} `;
+      sql += `(${columns.join(', ')})`;
+      return this.appendMySqlIndexSuffix(sql, index);
     }
 
-    return `${sql}(${index.columnNames.map(c => this.quote(c)).join(', ')})`;
+    // Build column list with advanced options
+    const columns = this.getIndexColumns(index);
+    sql += `(${columns})`;
+
+    return this.appendMySqlIndexSuffix(sql, index);
+  }
+
+  /**
+   * Build the column list for a MySQL index, with MySQL-specific handling for collation.
+   * MySQL requires collation to be specified as an expression: (column_name COLLATE collation_name)
+   */
+  protected override getIndexColumns(index: IndexDef): string {
+    if (index.columns?.length) {
+      return index.columns.map(col => {
+        const quotedName = this.quote(col.name);
+
+        // MySQL supports collation via expression: (column_name COLLATE collation_name)
+        // When collation is specified, wrap in parentheses as an expression
+        if (col.collation) {
+          let expr = col.length ? `${quotedName}(${col.length})` : quotedName;
+          expr = `(${expr} collate ${col.collation})`;
+          // Sort order comes after the expression
+          if (col.sort) {
+            expr += ` ${col.sort}`;
+          }
+          return expr;
+        }
+
+        // Standard column definition without collation
+        let colDef = quotedName;
+
+        // MySQL supports prefix length
+        if (col.length) {
+          colDef += `(${col.length})`;
+        }
+
+        // MySQL supports sort order
+        if (col.sort) {
+          colDef += ` ${col.sort}`;
+        }
+
+        return colDef;
+      }).join(', ');
+    }
+
+    return index.columnNames.map(c => this.quote(c)).join(', ');
+  }
+
+  /**
+   * Append MySQL-specific index suffixes like INVISIBLE.
+   */
+  protected appendMySqlIndexSuffix(sql: string, index: IndexDef): string {
+    // MySQL 8.0+ supports INVISIBLE indexes
+    if (index.invisible) {
+      sql += ' invisible';
+    }
+
+    return sql;
   }
 
   async getAllColumns(connection: AbstractSqlConnection, tables: Table[]): Promise<Dictionary<Column[]>> {

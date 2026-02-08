@@ -4,12 +4,29 @@ import {
   type Column,
   type IndexDef,
   type DatabaseSchema,
+  type DatabaseTable,
   type Table,
   MySqlSchemaHelper,
 } from '@mikro-orm/mysql';
 import { type Dictionary, type Type } from '@mikro-orm/core';
 
 export class MariaDbSchemaHelper extends MySqlSchemaHelper {
+
+  protected override appendMySqlIndexSuffix(sql: string, index: IndexDef): string {
+    // MariaDB uses IGNORED instead of MySQL's INVISIBLE keyword
+    if (index.invisible) {
+      sql += ' ignored';
+    }
+
+    // MariaDB supports CLUSTERING=YES only with the Aria storage engine.
+    // Using this option with InnoDB tables will have no effect (silently ignored).
+    // See: https://mariadb.com/kb/en/create-index/#clustering-yes
+    if (index.clustered) {
+      sql += ' clustering=yes';
+    }
+
+    return sql;
+  }
 
   override async loadInformationSchema(schema: DatabaseSchema, connection: AbstractSqlConnection, tables: Table[]): Promise<void> {
     /* v8 ignore next */
@@ -32,7 +49,7 @@ export class MariaDbSchemaHelper extends MySqlSchemaHelper {
   }
 
   override async getAllIndexes(connection: AbstractSqlConnection, tables: Table[]): Promise<Dictionary<IndexDef[]>> {
-    const sql = `select table_name as table_name, nullif(table_schema, schema()) as schema_name, index_name as index_name, non_unique as non_unique, column_name as column_name
+    const sql = `select table_name as table_name, nullif(table_schema, schema()) as schema_name, index_name as index_name, non_unique as non_unique, column_name as column_name, index_type as index_type, sub_part as sub_part, collation as sort_order /*M!100600 , ignored as ignored */
         from information_schema.statistics where table_schema = database()
         and table_name in (${tables.map(t => this.platform.quoteValue(t.table_name)).join(', ')})
         order by schema_name, table_name, index_name, seq_in_index`;
@@ -41,14 +58,39 @@ export class MariaDbSchemaHelper extends MySqlSchemaHelper {
 
     for (const index of allIndexes) {
       const key = this.getTableKey(index);
-      ret[key] ??= [];
-      ret[key].push({
+      const indexDef: IndexDef = {
         columnNames: [index.column_name],
         keyName: index.index_name,
         unique: !index.non_unique,
         primary: index.index_name === 'PRIMARY',
         constraint: !index.non_unique,
-      });
+      };
+
+      // Capture column options (prefix length, sort order)
+      if (index.sub_part != null || index.sort_order === 'D') {
+        indexDef.columns = [{
+          name: index.column_name,
+          ...(index.sub_part != null && { length: index.sub_part }),
+          ...(index.sort_order === 'D' && { sort: 'DESC' as const }),
+        }];
+      }
+
+      // Capture index type for fulltext and spatial indexes
+      if (index.index_type === 'FULLTEXT') {
+        indexDef.type = 'fulltext';
+      } else if (index.index_type === 'SPATIAL') {
+        /* v8 ignore next */
+        indexDef.type = 'spatial';
+      }
+
+      // Capture ignored flag (MariaDB 10.6+, equivalent to MySQL's INVISIBLE)
+      /* v8 ignore next */
+      if (index.ignored === 'YES') {
+        indexDef.invisible = true;
+      }
+
+      ret[key] ??= [];
+      ret[key].push(indexDef);
     }
 
     for (const key of Object.keys(ret)) {

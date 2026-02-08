@@ -1,0 +1,28 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`advanced index features in postgres > schema generator creates deferred unique constraints > deferred unique 1`] = `
+"create table "deferred_entity" ("id" serial primary key, "email" varchar(255) not null);
+alter table "deferred_entity" add constraint "deferred_entity_email_unique" unique ("email") deferrable initially deferred;
+"
+`;
+
+exports[`advanced index features in postgres > schema generator creates indexes with sort order, nulls ordering, include, fill factor, and unique with include > create schema 1`] = `
+"create table "adv_idx_pg_entity" ("id" serial primary key, "name" varchar(255) not null, "email" varchar(255) not null, "created_at" timestamptz not null);
+create index "adv_idx_pg_entity_created_at_name_index" on "adv_idx_pg_entity" ("created_at" DESC nulls LAST, "name" ASC);
+create index "covering_idx" on "adv_idx_pg_entity" ("email") include ("name", "created_at");
+create index "fill_factor_idx" on "adv_idx_pg_entity" ("name") with (fillfactor = 70);
+create index "collation_idx" on "adv_idx_pg_entity" ("name" collate "C");
+alter table "adv_idx_pg_entity" add constraint "unique_with_include" unique ("email") include ("name") with (fillfactor = 80);
+"
+`;
+
+exports[`advanced index features in postgres > schema generator diffs indexes with changed options > update schema 1`] = `
+"drop index "collation_idx";
+drop index "adv_idx_pg_entity_created_at_name_index";
+drop index "covering_idx";
+drop index "fill_factor_idx";
+create index "adv_idx_pg_entity_created_at_name_index" on "adv_idx_pg_entity" ("created_at" ASC nulls FIRST, "name" DESC);
+create index "covering_idx" on "adv_idx_pg_entity" ("email") include ("name");
+create index "fill_factor_idx" on "adv_idx_pg_entity" ("name") with (fillfactor = 90);
+"
+`;

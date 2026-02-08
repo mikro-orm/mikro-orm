@@ -1,0 +1,367 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`EntityGenerator advanced index options (MSSQL) > generates entities with clustered index > clustered index 1`] = `
+[
+  "import { defineEntity, p } from '@mikro-orm/core';
+
+export class TestClustered {
+  id!: number;
+  sortKey!: number;
+}
+
+export const TestClusteredSchema = defineEntity({
+  class: TestClustered,
+  indexes: [{ name: 'clustered_idx', properties: ['sortKey'], clustered: true }],
+  properties: {
+    id: p.integer().primary().autoincrement(false),
+    sortKey: p.integer().index('clustered_idx'),
+  },
+});
+",
+]
+`;
+
+exports[`EntityGenerator advanced index options (MSSQL) > generates entities with disabled index > disabled index 1`] = `
+[
+  "import { defineEntity, p } from '@mikro-orm/core';
+
+export class TestDisabled {
+  id!: number;
+  name!: string;
+}
+
+export const TestDisabledSchema = defineEntity({
+  class: TestDisabled,
+  indexes: [{ name: 'disabled_idx', properties: ['name'], disabled: true }],
+  properties: {
+    id: p.integer().primary(),
+    name: p.string().columnType('varchar(255)').index('disabled_idx'),
+  },
+});
+",
+]
+`;
+
+exports[`EntityGenerator advanced index options (MSSQL) > generates entities with disabled unique constraint > disabled unique 1`] = `
+[
+  "import { defineEntity, p } from '@mikro-orm/core';
+
+export class TestDisabledUnique {
+  id!: number;
+  email!: string;
+}
+
+export const TestDisabledUniqueSchema = defineEntity({
+  class: TestDisabledUnique,
+  uniques: [
+    { name: 'disabled_unique_idx', properties: ['email'], disabled: true },
+  ],
+  properties: {
+    id: p.integer().primary(),
+    email: p.string().columnType('varchar(255)').unique('disabled_unique_idx'),
+  },
+});
+",
+]
+`;
+
+exports[`EntityGenerator advanced index options (MariaDB) > generates entities with fulltext index > fulltext index 1`] = `
+[
+  "import { defineEntity, p } from '@mikro-orm/core';
+
+export class TestFulltext {
+  id!: number;
+  content!: string;
+}
+
+export const TestFulltextSchema = defineEntity({
+  class: TestFulltext,
+  indexes: [{ name: 'fulltext_idx', properties: ['content'], type: 'fulltext' }],
+  properties: {
+    id: p.integer().primary().unsigned(false),
+    content: p.text().length(65535).index('fulltext_idx'),
+  },
+});
+",
+]
+`;
+
+exports[`EntityGenerator advanced index options (MySQL) > generates entities with fulltext index > fulltext index 1`] = `
+[
+  "import { defineEntity, p } from '@mikro-orm/core';
+
+export class TestFulltext {
+  id!: number;
+  content!: string;
+}
+
+export const TestFulltextSchema = defineEntity({
+  class: TestFulltext,
+  indexes: [{ name: 'fulltext_idx', properties: ['content'], type: 'fulltext' }],
+  properties: {
+    id: p.integer().primary().unsigned(false),
+    content: p.text().length(65535).index('fulltext_idx'),
+  },
+});
+",
+]
+`;
+
+exports[`EntityGenerator advanced index options (MySQL) > generates entities with invisible index > invisible index 1`] = `
+[
+  "import { defineEntity, p } from '@mikro-orm/core';
+
+export class TestInvisible {
+  id!: number;
+  name!: string;
+}
+
+export const TestInvisibleSchema = defineEntity({
+  class: TestInvisible,
+  indexes: [{ name: 'invisible_idx', properties: ['name'], invisible: true }],
+  properties: {
+    id: p.integer().primary().unsigned(false),
+    name: p.string().index('invisible_idx'),
+  },
+});
+",
+]
+`;
+
+exports[`EntityGenerator advanced index options (MySQL) > generates entities with prefix length in index > prefix length index 1`] = `
+[
+  "import { defineEntity, p } from '@mikro-orm/core';
+
+export class TestPrefix {
+  id!: number;
+  content!: string;
+}
+
+export const TestPrefixSchema = defineEntity({
+  class: TestPrefix,
+  indexes: [
+    {
+      name: 'prefix_idx',
+      properties: ['content'],
+      columns: [{ name: 'content', length: 100 }],
+    },
+  ],
+  properties: {
+    id: p.integer().primary().unsigned(false),
+    content: p.text().length(65535).index('prefix_idx'),
+  },
+});
+",
+]
+`;
+
+exports[`EntityGenerator advanced index options > generates entities with clustered index > clustered index 1`] = `
+[
+  "import { defineEntity, p } from '@mikro-orm/core';
+
+export class TestClustered {
+  id!: number;
+  sortKey!: number;
+}
+
+export const TestClusteredSchema = defineEntity({
+  class: TestClustered,
+  properties: {
+    id: p.integer().primary(),
+    sortKey: p.integer().index('clustered_idx'),
+  },
+});
+",
+]
+`;
+
+exports[`EntityGenerator advanced index options > generates entities with collation in index > collation index 1`] = `
+[
+  "import { defineEntity, p } from '@mikro-orm/core';
+
+export class TestCollation {
+  id!: number;
+  name!: string;
+}
+
+export const TestCollationSchema = defineEntity({
+  class: TestCollation,
+  indexes: [
+    {
+      name: 'collation_idx',
+      properties: ['name'],
+      columns: [{ name: 'name', collation: 'C' }],
+    },
+  ],
+  properties: {
+    id: p.integer().primary(),
+    name: p.string().index('collation_idx'),
+  },
+});
+",
+]
+`;
+
+exports[`EntityGenerator advanced index options > generates entities with covering index (INCLUDE) > covering index 1`] = `
+[
+  "import { defineEntity, p } from '@mikro-orm/core';
+
+export class TestInclude {
+  id!: number;
+  email!: string;
+  name!: string;
+  createdAt!: Date;
+}
+
+export const TestIncludeSchema = defineEntity({
+  class: TestInclude,
+  indexes: [
+    {
+      name: 'covering_idx',
+      properties: ['email'],
+      include: ['name', 'createdAt'],
+    },
+  ],
+  properties: {
+    id: p.integer().primary(),
+    email: p.string().index('covering_idx'),
+    name: p.string(),
+    createdAt: p.datetime().columnType('timestamp(6)'),
+  },
+});
+",
+]
+`;
+
+exports[`EntityGenerator advanced index options > generates entities with fillFactor > fillFactor 1`] = `
+[
+  "import { defineEntity, p } from '@mikro-orm/core';
+
+export class TestFillFactor {
+  id!: number;
+  name!: string;
+}
+
+export const TestFillFactorSchema = defineEntity({
+  class: TestFillFactor,
+  indexes: [{ name: 'fill_factor_idx', properties: ['name'], fillFactor: 70 }],
+  properties: {
+    id: p.integer().primary(),
+    name: p.string().index('fill_factor_idx'),
+  },
+});
+",
+]
+`;
+
+exports[`EntityGenerator advanced index options > generates entities with index type (GIN) > index type 1`] = `
+[
+  "import { defineEntity, p } from '@mikro-orm/core';
+
+export class TestIndexType {
+  id!: number;
+  tags!: string[];
+}
+
+export const TestIndexTypeSchema = defineEntity({
+  class: TestIndexType,
+  indexes: [{ name: 'gin_idx', properties: ['tags'], type: 'gin' }],
+  properties: {
+    id: p.integer().primary(),
+    tags: p.type(string[]).index('gin_idx'),
+  },
+});
+",
+]
+`;
+
+exports[`EntityGenerator advanced index options > generates entities with sort order and NULLS ordering > sort and nulls ordering 1`] = `
+[
+  "import { defineEntity, p } from '@mikro-orm/core';
+
+export class TestSortNulls {
+  id!: number;
+  name!: string;
+  createdAt!: Date;
+}
+
+export const TestSortNullsSchema = defineEntity({
+  class: TestSortNulls,
+  indexes: [
+    {
+      name: 'sort_nulls_idx',
+      properties: ['createdAt', 'name'],
+      columns: [
+        { name: 'createdAt', sort: 'DESC', nulls: 'LAST' },
+        { name: 'name' },
+      ],
+    },
+  ],
+  properties: {
+    id: p.integer().primary(),
+    name: p.string(),
+    createdAt: p.datetime().columnType('timestamp(6)'),
+  },
+});
+",
+]
+`;
+
+exports[`EntityGenerator advanced index options > generates entities with unique constraint and advanced options > unique with advanced options 1`] = `
+[
+  "import { defineEntity, p } from '@mikro-orm/core';
+
+export class TestUniqueOpts {
+  id!: number;
+  email!: string;
+  name!: string;
+}
+
+export const TestUniqueOptsSchema = defineEntity({
+  class: TestUniqueOpts,
+  uniques: [
+    {
+      name: 'unique_with_include',
+      properties: ['email'],
+      include: ['name'],
+      fillFactor: 80,
+    },
+  ],
+  properties: {
+    id: p.integer().primary(),
+    email: p.string().unique('unique_with_include'),
+    name: p.string(),
+  },
+});
+",
+]
+`;
+
+exports[`EntityGenerator advanced index options > generates entities with unique constraint with sort order > unique with sort order 1`] = `
+[
+  "import { defineEntity, p } from '@mikro-orm/core';
+
+export class TestUniqueSort {
+  id!: number;
+  email!: string;
+  createdAt!: Date;
+}
+
+export const TestUniqueSortSchema = defineEntity({
+  class: TestUniqueSort,
+  uniques: [
+    {
+      name: 'unique_sort_idx',
+      properties: ['email', 'createdAt'],
+      columns: [{ name: 'email', sort: 'DESC' }, { name: 'createdAt' }],
+    },
+  ],
+  properties: {
+    id: p.integer().primary(),
+    email: p.string(),
+    createdAt: p.datetime().columnType('timestamp(6)'),
+  },
+});
+",
+]
+`;

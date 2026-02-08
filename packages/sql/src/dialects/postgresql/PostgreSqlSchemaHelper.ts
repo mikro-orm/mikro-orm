@@ -1,4 +1,4 @@
-import { DeferMode, type Dictionary, type EntityProperty, EnumType, Type, Utils } from '@mikro-orm/core';
+import { DeferMode, type Dictionary, type EntityProperty, EnumType, type IndexColumnOptions, Type, Utils } from '@mikro-orm/core';
 import { SchemaHelper } from '../../schema/SchemaHelper.js';
 import type { AbstractSqlConnection } from '../../AbstractSqlConnection.js';
 import type { CheckDef, Column, ForeignKey, IndexDef, Table, TableDifference } from '../../typings.js';
@@ -163,15 +163,36 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
 
     for (const index of allIndexes) {
       const key = this.getTableKey(index);
+
+      // Extract INCLUDE columns from expression first, to filter them from key columns
+      const includeMatch = index.expression?.match(/include\s*\(([^)]+)\)/i);
+      const includeColumns = includeMatch
+        ? includeMatch[1].split(',').map((col: string) => unquote(col.trim()))
+        : [];
+
+      // Filter out INCLUDE columns from the column definitions to get only key columns
+      const keyColumnDefs = index.index_def.filter((col: string) => !includeColumns.includes(unquote(col)));
+
+      // Parse sort order and NULLS ordering from the full expression
+      // pg_get_indexdef individual columns don't include sort modifiers, so we parse from full expression
+      const columns = this.parseIndexColumnsFromExpression(index.expression, keyColumnDefs, unquote);
+      const columnNames = columns.map(col => col.name);
+      const hasAdvancedColumnOptions = columns.some(col => col.sort || col.nulls || col.collation);
+
       const indexDef: IndexDef = {
-        columnNames: index.index_def.map((name: string) => unquote(name)),
-        composite: index.index_def.length > 1,
+        columnNames,
+        composite: columnNames.length > 1,
         // JSON columns can have unique index but not unique constraint, and we need to distinguish those, so we can properly drop them
         constraint: index.contype === 'u',
         keyName: index.constraint_name,
         unique: index.unique,
         primary: index.primary,
       };
+
+      // Add columns array if there are advanced options
+      if (hasAdvancedColumnOptions) {
+        indexDef.columns = columns;
+      }
 
       if (index.condeferrable) {
         indexDef.deferMode = index.condeferred ? DeferMode.INITIALLY_DEFERRED : DeferMode.INITIALLY_IMMEDIATE;
@@ -185,11 +206,108 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
         indexDef.deferMode = index.initially_deferred ? DeferMode.INITIALLY_DEFERRED : DeferMode.INITIALLY_IMMEDIATE;
       }
 
+      // Extract fillFactor from reloptions
+      if (index.reloptions) {
+        const fillFactorMatch = index.reloptions.find((opt: string) => opt.startsWith('fillfactor='));
+        if (fillFactorMatch) {
+          indexDef.fillFactor = parseInt(fillFactorMatch.split('=')[1], 10);
+        }
+      }
+
+      // Add INCLUDE columns (already extracted above)
+      if (includeColumns.length > 0) {
+        indexDef.include = includeColumns;
+      }
+
+      // Add index type if not btree (the default)
+      if (index.index_type && index.index_type !== 'btree') {
+        indexDef.type = index.index_type;
+      }
+
       ret[key] ??= [];
       ret[key].push(indexDef);
     }
 
     return ret;
+  }
+
+  /**
+   * Parses column definitions from the full CREATE INDEX expression.
+   * Since pg_get_indexdef(oid, col_num, true) doesn't include sort modifiers,
+   * we extract them from the full expression instead.
+   *
+   * We use columnDefs (from individual pg_get_indexdef calls) as the source
+   * of column names, and find their modifiers in the expression.
+   */
+  private parseIndexColumnsFromExpression(
+    expression: string,
+    columnDefs: string[],
+    unquote: (s: string) => string,
+  ): IndexColumnOptions[] {
+    // Extract just the column list from the expression (between first parens after USING)
+    // Pattern: ... USING method (...columns...) [INCLUDE (...)] [WHERE ...]
+    // Note: pg_get_indexdef always returns a valid expression with USING clause
+    const usingMatch = expression.match(/using\s+\w+\s*\(/i)!;
+    const startIdx = usingMatch.index! + usingMatch[0].length - 1; // Position of opening (
+    const columnsStr = this.extractParenthesizedContent(expression, startIdx)!;
+
+    // Use the column names from columnDefs and find their modifiers in the expression
+    return columnDefs.map(colDef => {
+      const name = unquote(colDef);
+      const result: IndexColumnOptions = { name };
+
+      // Find this column in the expression and extract modifiers
+      // Create a pattern that matches the column name (quoted or unquoted) followed by modifiers
+      const escapedName = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const colPattern = new RegExp(`"?${escapedName}"?\\s*([^,)]*?)(?:,|$)`, 'i');
+      const colMatch = columnsStr.match(colPattern);
+
+      if (colMatch) {
+        const modifiers = colMatch[1];
+
+        // Extract sort order (PostgreSQL omits ASC in output as it's the default)
+        if (/\bdesc\b/i.test(modifiers)) {
+          result.sort = 'DESC';
+        }
+
+        // Extract NULLS ordering
+        const nullsMatch = modifiers.match(/nulls\s+(first|last)/i);
+        if (nullsMatch) {
+          result.nulls = nullsMatch[1].toUpperCase() as 'FIRST' | 'LAST';
+        }
+
+        // Extract collation
+        const collateMatch = modifiers.match(/collate\s+"?([^"\s,)]+)"?/i);
+        if (collateMatch) {
+          result.collation = collateMatch[1];
+        }
+      }
+
+      return result;
+    });
+  }
+
+  /**
+   * Extracts the content inside parentheses starting at the given position.
+   * Handles nested parentheses correctly.
+   */
+  private extractParenthesizedContent(str: string, startIdx: number): string {
+    let depth = 0;
+    const start = startIdx + 1;
+
+    for (let i = startIdx; i < str.length; i++) {
+      if (str[i] === '(') {
+        depth++;
+      } else if (str[i] === ')') {
+        depth--;
+        if (depth === 0) {
+          return str.slice(start, i);
+        }
+      }
+    }
+
+    /* v8 ignore next - pg_get_indexdef always returns balanced parentheses */
+    return '';
   }
 
   async getAllColumns(connection: AbstractSqlConnection, tablesBySchemas: Map<string | undefined, Table[]>, nativeEnums?: Dictionary<{ name: string; schema?: string; items: string[] }>): Promise<Dictionary<Column[]>> {
@@ -604,7 +722,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
   override getChangeColumnCommentSQL(tableName: string, to: Column, schemaName?: string): string {
     const name = this.quote((schemaName && schemaName !== this.platform.getDefaultSchemaName() ? schemaName + '.' : '') + tableName);
     const value = to.comment ? this.platform.quoteValue(to.comment) : 'null';
-    return `comment on column ${name}."${to.name}" is ${value}`;
+    return `comment on column ${name}.${this.quote(to.name)} is ${value}`;
   }
 
   override alterTableComment(table: DatabaseTable, comment?: string): string {
@@ -652,7 +770,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
   }
 
   override getDatabaseNotExistsError(dbName: string): string {
-    return `database "${dbName}" does not exist`;
+    return `database ${this.quote(dbName)} does not exist`;
   }
 
   override getManagementDbName(): string {
@@ -682,6 +800,53 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     return `drop index ${this.quote(oldIndexName)}`;
   }
 
+  /**
+   * Build the column list for a PostgreSQL index.
+   */
+  protected override getIndexColumns(index: IndexDef): string {
+    if (index.columns?.length) {
+      return index.columns.map(col => {
+        let colDef = this.quote(col.name);
+
+        // PostgreSQL supports collation with double quotes
+        if (col.collation) {
+          colDef += ` collate ${this.quote(col.collation)}`;
+        }
+
+        // PostgreSQL supports sort order
+        if (col.sort) {
+          colDef += ` ${col.sort}`;
+        }
+
+        // PostgreSQL supports NULLS FIRST/LAST
+        if (col.nulls) {
+          colDef += ` nulls ${col.nulls}`;
+        }
+
+        return colDef;
+      }).join(', ');
+    }
+
+    return index.columnNames.map(c => this.quote(c)).join(', ');
+  }
+
+  /**
+   * PostgreSQL-specific index options like fill factor.
+   */
+  protected override getCreateIndexSuffix(index: IndexDef): string {
+    const withOptions: string[] = [];
+
+    if (index.fillFactor != null) {
+      withOptions.push(`fillfactor = ${index.fillFactor}`);
+    }
+
+    if (withOptions.length > 0) {
+      return ` with (${withOptions.join(', ')})`;
+    }
+
+    return super.getCreateIndexSuffix(index);
+  }
+
   private getIndexesSQL(tables: Table[]): string {
     return `select indrelid::regclass as table_name, ns.nspname as schema_name, relname as constraint_name, idx.indisunique as unique, idx.indisprimary as primary, contype, condeferrable, condeferred,
       array(
@@ -691,10 +856,13 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       ) as index_def,
       pg_get_indexdef(idx.indexrelid) as expression,
       c.condeferrable as deferrable,
-      c.condeferred as initially_deferred
+      c.condeferred as initially_deferred,
+      i.reloptions,
+      am.amname as index_type
       from pg_index idx
       join pg_class as i on i.oid = idx.indexrelid
       join pg_namespace as ns on i.relnamespace = ns.oid
+      join pg_am as am on am.oid = i.relam
       left join pg_constraint as c on c.conname = i.relname
       where indrelid in (${tables.map(t => `${this.platform.quoteValue(`${this.quote(t.schema_name)}.${this.quote(t.table_name)}`)}::regclass`).join(', ')})
       order by relname`;

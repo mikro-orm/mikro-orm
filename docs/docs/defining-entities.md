@@ -1166,6 +1166,12 @@ The `table` parameter provides:
 
 You can define indexes via `@Index()` decorator, for unique indexes, you can use `@Unique()` decorator. You can use it either on entity class, or on entity property.
 
+:::tip Comprehensive Index Guide
+
+For advanced index features including column sort order, NULLS ordering, prefix length, covering indexes (INCLUDE), fill factor, invisible indexes, clustered indexes, and database-specific options, see the dedicated [Indexes and Unique Constraints](./indexes.md) guide.
+
+:::
+
 To define complex indexes, you can use index expressions. They allow you to specify the final `create index` query and an index name - this name is then used for index diffing, so the schema generator will only try to create it if it's not there yet, or remove it, if it's no longer defined in the entity. Index expressions are not bound to any property, rather to the entity itself (you can still define them on both entity and property level).
 
 To define an index expression, you can either provide a raw SQL string, or use the expression callback to dynamically build the returned SQL.
