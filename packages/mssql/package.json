@@ -53,7 +53,7 @@
     "@mikro-orm/sql": "6.6.4",
     "kysely": "0.28.11",
     "tarn": "3.0.2",
-    "tedious": "19.2.0",
+    "tedious": "19.2.1",
     "tsqlstring": "1.0.1"
   },
   "devDependencies": {
