@@ -99,8 +99,8 @@ export const fs = {
   getPackageConfig<T extends Dictionary>(basePath = process.cwd()): T {
     if (this.pathExists(`${basePath}/package.json`)) {
       try {
-        const path = import.meta.resolve(`${basePath}/package.json`);
-        return this.readJSONSync(fileURLToPath(path));
+        const path = this.normalizePath(import.meta.resolve(`${basePath}/package.json`));
+        return this.readJSONSync(path);
       } catch (e) {
         /* v8 ignore next */
         return {} as T;

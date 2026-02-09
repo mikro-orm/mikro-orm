@@ -601,6 +601,18 @@ describe('Utils', () => {
     expect(Utils.removeDuplicates([{ v: 'foo' }, { v: 'bar' }, { v: 'foo' }, { v: 'bar2' }])).toEqual([{ v: 'foo' }, { v: 'bar' }, { v: 'bar2' }]);
   });
 
+  test('getORMPackageVersion', () => {
+    const version = fs.getORMPackageVersion('@mikro-orm/core');
+    expect(version).toBeDefined();
+    expect(typeof version).toBe('string');
+  });
+
+  test('getPackageConfig', () => {
+    const config = fs.getPackageConfig();
+    expect(config).toBeDefined();
+    expect(config.name).toBe('@mikro-orm/root');
+  });
+
   afterAll(async () => orm.close(true));
 
 });
