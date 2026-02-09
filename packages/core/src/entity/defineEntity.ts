@@ -579,7 +579,7 @@ export class UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys extends
   }
 
   /** Specify the property name on the target entity that this FK references instead of the primary key. */
-  targetKey(targetKey: string): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
+  targetKey(targetKey: keyof Value): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
     return this.assignOptions({ targetKey });
   }
 
@@ -636,7 +636,7 @@ export interface EmptyOptions extends Partial<Record<UniversalPropertyKeys, unkn
 export class OneToManyOptionsBuilderOnlyMappedBy<Value extends object> extends UniversalPropertyOptionsBuilder<Value, EmptyOptions & { kind: '1:m' }, IncludeKeysForOneToManyOptions> {
 
   /** Point to the owning side property name. */
-  override mappedBy(mappedBy: (AnyString & keyof Value) | ((e: Value) => any)): Pick<UniversalPropertyOptionsBuilder<Value, EmptyOptions & { kind: '1:m' }, IncludeKeysForOneToManyOptions>, IncludeKeysForOneToManyOptions> {
+  override mappedBy(mappedBy: (keyof Value) | ((e: Value) => any)): Pick<UniversalPropertyOptionsBuilder<Value, EmptyOptions & { kind: '1:m' }, IncludeKeysForOneToManyOptions>, IncludeKeysForOneToManyOptions> {
     return new UniversalPropertyOptionsBuilder({ ...this['~options'], mappedBy });
   }
 
