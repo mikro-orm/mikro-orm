@@ -1,6 +1,16 @@
 import { defineEntity, LoadStrategy, MikroORM, p, QueryOrder } from '@mikro-orm/sqlite';
 import { mockLogger } from '../bootstrap.js';
 
+const Profile = defineEntity({
+  name: 'Profile',
+  orderBy: { bio: QueryOrder.ASC },
+  properties: {
+    id: p.integer().primary(),
+    bio: p.string(),
+    author: () => p.oneToOne(Author).owner(),
+  },
+});
+
 const Author = defineEntity({
   name: 'Author',
   orderBy: { name: QueryOrder.ASC },
@@ -8,6 +18,7 @@ const Author = defineEntity({
     id: p.integer().primary(),
     name: p.string(),
     posts: () => p.oneToMany(Post).mappedBy('author'),
+    profile: () => p.oneToOne(Profile).mappedBy('author').nullable(),
   },
 });
 
@@ -94,7 +105,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
-    entities: [Author, Post, Comment, Reply, Tag, Item, Event],
+    entities: [Author, Post, Comment, Reply, Tag, Item, Event, Profile],
     dbName: ':memory:',
   });
 
@@ -109,8 +120,11 @@ async function createTestData() {
   const em = orm.em.fork();
 
   const author1 = em.create(Author, { name: 'Charlie' });
-  em.create(Author, { name: 'Alice' });
+  const author2 = em.create(Author, { name: 'Alice' });
   em.create(Author, { name: 'Bob' });
+
+  em.create(Profile, { bio: 'Charlie bio', author: author1 });
+  em.create(Profile, { bio: 'Alice bio', author: author2 });
 
   const post1 = em.create(Post, { title: 'Post 1', createdAt: new Date('2024-01-15'), author: author1 });
   const post2 = em.create(Post, { title: 'Post 2', createdAt: new Date('2024-01-20'), author: author1 });
@@ -403,6 +417,54 @@ describe('entity-level default orderBy', () => {
 
   });
 
+  describe('1:1 relations with entity-level orderBy', () => {
+
+    test('1:1 inverse side auto-join does not crash with target entity orderBy', async () => {
+      // Author has 1:1 inverse `profile` -> Profile which has orderBy: { bio: ASC }
+      // The auto-join for 1:1 inverse should not try to apply targetMeta.orderBy
+      const authors = await orm.em.findAll(Author);
+      expect(authors.map(a => a.name)).toEqual(['Alice', 'Bob', 'Charlie']);
+    });
+
+    test('1:1 inverse side with explicit populate does not apply target orderBy', async () => {
+      const mock = mockLogger(orm);
+      const authors = await orm.em.find(Author, {}, {
+        populate: ['profile'],
+      });
+      expect(authors.map(a => a.name)).toEqual(['Alice', 'Bob', 'Charlie']);
+      expect(authors[0].profile?.bio).toBe('Alice bio');
+      // The ORDER BY clause should not contain profile's bio column
+      const sql = mock.mock.calls[0][0];
+      const orderByPart = sql.split('order by')[1];
+      expect(orderByPart).not.toMatch(/bio/);
+    });
+
+    test('1:1 inverse with JOINED strategy does not crash', async () => {
+      const authors = await orm.em.find(Author, {}, {
+        populate: ['profile'],
+        strategy: LoadStrategy.JOINED,
+      });
+      expect(authors.map(a => a.name)).toEqual(['Alice', 'Bob', 'Charlie']);
+      expect(authors[0].profile?.bio).toBe('Alice bio');
+      expect(authors[2].profile?.bio).toBe('Charlie bio');
+    });
+
+    test('1:1 inverse with SELECT_IN strategy does not crash', async () => {
+      const authors = await orm.em.find(Author, {}, {
+        populate: ['profile'],
+        strategy: LoadStrategy.SELECT_IN,
+      });
+      expect(authors.map(a => a.name)).toEqual(['Alice', 'Bob', 'Charlie']);
+      expect(authors[0].profile?.bio).toBe('Alice bio');
+    });
+
+    test('querying the 1:1 owner entity directly still applies its entity-level orderBy', async () => {
+      const profiles = await orm.em.findAll(Profile);
+      expect(profiles.map(p => p.bio)).toEqual(['Alice bio', 'Charlie bio']);
+    });
+
+  });
+
   describe('deeply nested relations', () => {
 
     test('3-level nesting with SELECT_IN: Author -> Posts -> Comments', async () => {
@@ -521,6 +583,21 @@ describe('entity-level default orderBy', () => {
         'First comment',
       ]);
       expect(post1.tags.getItems().map(t => t.title)).toEqual([
+        'Apple',
+        'Banana',
+        'Zebra',
+      ]);
+    });
+
+    test('JOINED through a to-one applies entity-level orderBy to nested to-many', async () => {
+      // Comment -> post (M:1, to-one) -> tags (M:N, to-many)
+      // The recursion through the to-one `post` must propagate so that
+      // Tag's entity-level orderBy { title: ASC } is applied in the SQL.
+      const comment = await orm.em.findOneOrFail(Comment, { text: 'First comment' }, {
+        populate: ['post.tags'],
+        strategy: LoadStrategy.JOINED,
+      });
+      expect(comment.post.tags.getItems().map(t => t.title)).toEqual([
         'Apple',
         'Banana',
         'Zebra',

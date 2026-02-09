@@ -2283,46 +2283,56 @@ export abstract class AbstractSqlDriver<
     for (const hint of joinedProps) {
       const [propName, ref] = hint.field.split(':', 2) as [EntityKey<T>, string | undefined];
       const prop = meta.properties[propName];
-      const propOrderBy = prop.orderBy;
       let path = `${parentPath}.${propName}`;
 
       if (prop.kind === ReferenceKind.MANY_TO_MANY && ref) {
         path += '[pivot]';
       }
 
-      const join = qb.getJoinForPath(path, { matchPopulateJoins: true });
-      const propAlias = qb.getAliasForJoinPath(join ?? path, { matchPopulateJoins: true });
-
-      if (prop.kind === ReferenceKind.MANY_TO_MANY && prop.fixedOrder && join) {
-        const alias = ref ? propAlias : join.ownerAlias;
-        orderBy.push({ [`${alias}.${prop.fixedOrderColumn}`]: QueryOrder.ASC } as QueryOrderMap<T>);
-      }
-
-      const effectiveOrderBy = QueryHelper.mergeOrderBy(propOrderBy, prop.targetMeta?.orderBy);
-
-      for (const item of effectiveOrderBy) {
-        for (const field of Utils.getObjectQueryKeys(item!)) {
-          const order = item![field as keyof typeof item];
-
-          if (RawQueryFragment.isKnownFragmentSymbol(field)) {
-            const { sql, params } = RawQueryFragment.getKnownFragment(field)!;
-            const sql2 = propAlias ? sql.replace(new RegExp(ALIAS_REPLACEMENT_RE, 'g'), propAlias) : sql;
-            const key = raw(sql2, params);
-            orderBy.push({ [key]: order } as QueryOrderMap<T>);
-            continue;
-          }
-
-          orderBy.push({ [`${propAlias}.${field}` as EntityKey]: order } as QueryOrderMap<T>);
-        }
+      if ([ReferenceKind.MANY_TO_MANY, ReferenceKind.ONE_TO_MANY].includes(prop.kind)) {
+        this.buildToManyOrderBy(qb, prop, path, ref, orderBy);
       }
 
       if (hint.children) {
-        const buildJoinedPropsOrderBy = this.buildJoinedPropsOrderBy(qb, prop.targetMeta!, hint.children as any, options, path);
-        orderBy.push(...buildJoinedPropsOrderBy);
+        orderBy.push(...this.buildJoinedPropsOrderBy(qb, prop.targetMeta!, hint.children as any, options, path));
       }
     }
 
     return orderBy;
+  }
+
+  private buildToManyOrderBy<T extends object>(
+    qb: QueryBuilder<T, any, any, any, any, any>,
+    prop: EntityProperty<T>,
+    path: string,
+    ref: string | undefined,
+    orderBy: QueryOrderMap<T>[],
+  ): void {
+    const join = qb.getJoinForPath(path, { matchPopulateJoins: true });
+    const propAlias = qb.getAliasForJoinPath(join ?? path, { matchPopulateJoins: true });
+
+    if (prop.kind === ReferenceKind.MANY_TO_MANY && prop.fixedOrder && join) {
+      const alias = ref ? propAlias : join.ownerAlias;
+      orderBy.push({ [`${alias}.${prop.fixedOrderColumn}`]: QueryOrder.ASC } as QueryOrderMap<T>);
+    }
+
+    const effectiveOrderBy = QueryHelper.mergeOrderBy(prop.orderBy, prop.targetMeta?.orderBy);
+
+    for (const item of effectiveOrderBy) {
+      for (const field of Utils.getObjectQueryKeys(item!)) {
+        const order = item![field as keyof typeof item];
+
+        if (RawQueryFragment.isKnownFragmentSymbol(field)) {
+          const { sql, params } = RawQueryFragment.getKnownFragment(field)!;
+          const sql2 = propAlias ? sql.replace(new RegExp(ALIAS_REPLACEMENT_RE, 'g'), propAlias) : sql;
+          const key = raw(sql2, params);
+          orderBy.push({ [key]: order } as QueryOrderMap<T>);
+          continue;
+        }
+
+        orderBy.push({ [`${propAlias}.${field}` as EntityKey]: order } as QueryOrderMap<T>);
+      }
+    }
   }
 
   protected normalizeFields<T extends object>(fields: InternalField<T>[], prefix = ''): string[] {
