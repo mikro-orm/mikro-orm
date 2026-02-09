@@ -161,6 +161,7 @@ const options = {
   mariadb: { dbName: 'mikro_orm_upsert', port: 3309 },
   postgresql: { dbName: 'mikro_orm_upsert' },
   mongo: { dbName: 'mikro_orm_upsert' },
+  oracledb: { dbName: 'mikro_orm_upsert', password: 'oracle123' },
 };
 
 describe.each(Utils.keys(options))('em.upsert [%s]',  type => {
@@ -359,7 +360,10 @@ describe.each(Utils.keys(options))('em.upsert [%s]',  type => {
     }
 
     const entities = await orm.em.upsertMany(Author, data, { batchSize: 100 });
-    expect(mock).toHaveBeenCalledTimes(orm.em.getPlatform().usesReturningStatement() ? 10 : 20);
+    // Oracle multi-row MERGE doesn't support RETURNING, so extra SELECTs are needed for batch operations
+    const expectedCalls = orm.em.getPlatform().usesReturningStatement() ? 10 : 20;
+    const oracleMultiplier = type === 'oracledb' ? 2 : 1;
+    expect(mock).toHaveBeenCalledTimes(expectedCalls * oracleMultiplier);
     expect(entities).toHaveLength(1000);
   });
 
