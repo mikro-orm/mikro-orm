@@ -22,14 +22,19 @@ export class ChangeSetPersister {
   private readonly platform: Platform;
   private readonly comparator: EntityComparator;
   private readonly usesReturningStatement: boolean;
+  private readonly driver: IDatabaseDriver;
+  private readonly metadata: MetadataStorage;
+  private readonly hydrator: IHydrator;
+  private readonly factory: EntityFactory;
+  private readonly config: Configuration;
 
-  constructor(private readonly driver: IDatabaseDriver,
-              private readonly metadata: MetadataStorage,
-              private readonly hydrator: IHydrator,
-              private readonly factory: EntityFactory,
-              private readonly config: Configuration,
-              private readonly em: EntityManager) {
+  constructor(private readonly em: EntityManager) {
+    this.driver = this.em.getDriver();
+    this.config = this.em.config;
+    this.metadata = this.em.getMetadata();
+    this.factory = this.em.getEntityFactory();
     this.platform = this.driver.getPlatform();
+    this.hydrator = this.config.getHydrator(this.metadata);
     this.comparator = this.config.getComparator(this.metadata);
     this.usesReturningStatement = this.platform.usesReturningStatement() || this.platform.usesOutputStatement();
   }

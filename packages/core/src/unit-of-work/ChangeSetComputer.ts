@@ -17,14 +17,17 @@ import type { EntityManager } from '../EntityManager.js';
 export class ChangeSetComputer {
 
   private readonly comparator: EntityComparator;
+  private readonly metadata: MetadataStorage;
+  private readonly platform: Platform;
+  private readonly config: Configuration;
 
   constructor(
-    private readonly collectionUpdates: Set<Collection<AnyEntity>>,
-    private readonly metadata: MetadataStorage,
-    private readonly platform: Platform,
-    private readonly config: Configuration,
     private readonly em: EntityManager,
+    private readonly collectionUpdates: Set<Collection<AnyEntity>>,
   ) {
+    this.config = this.em.config;
+    this.metadata = this.em.getMetadata();
+    this.platform = this.em.getPlatform();
     this.comparator = this.config.getComparator(this.metadata);
   }
 
