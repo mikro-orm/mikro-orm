@@ -3,7 +3,6 @@ import { Entity, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider } from
 
 @Entity()
 class Address {
-
   @PrimaryKey()
   id!: number;
 
@@ -19,12 +18,10 @@ class Address {
   constructor(companyName: string) {
     this.companyName = companyName;
   }
-
 }
 
 @Entity()
 class Customer {
-
   @PrimaryKey()
   id!: number;
 
@@ -44,11 +41,9 @@ class Customer {
     this.customerNumber = customerNumber;
     this.companyAddress = companyAddress;
   }
-
 }
 
 describe('GH issue 2781', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -73,5 +68,4 @@ describe('GH issue 2781', () => {
     customer.companyAddress = new Address('test2');
     await orm.em.flush();
   });
-
 });

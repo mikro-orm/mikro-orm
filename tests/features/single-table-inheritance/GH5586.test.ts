@@ -1,9 +1,16 @@
 import { Collection, MikroORM } from '@mikro-orm/sqlite';
-import { Entity, ManyToMany, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToMany,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class PrivilegeGroup {
-
   @PrimaryKey()
   id!: number;
 
@@ -16,12 +23,10 @@ class PrivilegeGroup {
   constructor(name: string) {
     this.name = name;
   }
-
 }
 
 @Entity()
 class Privilege {
-
   @PrimaryKey()
   id!: number;
 
@@ -37,12 +42,10 @@ class Privilege {
   constructor(name: string) {
     this.name = name;
   }
-
 }
 
 @Entity({ discriminatorColumn: 'type' })
 class User {
-
   @PrimaryKey()
   id!: number;
 
@@ -59,7 +62,6 @@ class User {
     this.name = name;
     this.email = email;
   }
-
 }
 
 @Entity()

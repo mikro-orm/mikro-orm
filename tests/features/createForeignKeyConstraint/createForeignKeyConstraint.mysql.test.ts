@@ -11,9 +11,7 @@ import { PublisherAddress } from './entities/PublisherAddress.js';
 import { v4 } from 'uuid';
 
 describe('createForeignKeyConstraint [mysql]', () => {
-
   test('create SQL schema', async () => {
-
     /**
      * In this test, some foreign key constraints creations are disabled, on
      * some specific OneToOne, ManyToOne, ManyToMany relations (aka when
@@ -37,7 +35,6 @@ describe('createForeignKeyConstraint [mysql]', () => {
   });
 
   test('create SQL schema (with global createForeignKeyConstraints set to false)', async () => {
-
     /**
      * In this test, all foreign key constraints creations are disabled (aka when
      * "createForeignKeyConstraints" is set to false at the global level).
@@ -63,5 +60,4 @@ describe('createForeignKeyConstraint [mysql]', () => {
     await orm.schema.dropDatabase();
     await orm.close(true);
   });
-
 });

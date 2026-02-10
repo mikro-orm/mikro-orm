@@ -6,7 +6,6 @@ type SquadType = 'GROUND' | 'AIR';
 
 @Entity()
 class Soldier {
-
   @PrimaryKey()
   id!: number;
 
@@ -18,12 +17,10 @@ class Soldier {
 
   @ManyToMany({ entity: () => Squad })
   squads = new Collection<Squad>(this);
-
 }
 
 @Entity()
 class Squad {
-
   @PrimaryKey()
   id!: number;
 
@@ -38,7 +35,6 @@ class Squad {
 
   @ManyToMany({ entity: () => Soldier, mappedBy: 'squads' })
   soldiers = new Collection<Soldier>(this);
-
 }
 
 let orm: MikroORM;
@@ -81,11 +77,7 @@ test(`GH issue 3240`, async () => {
   await orm.em.persist(squad).flush();
   orm.em.clear();
 
-  const fetchedSquad = await orm.em.findOneOrFail(
-    Squad,
-    { type: 'AIR' },
-    { populate: ['soldiers'] },
-  );
+  const fetchedSquad = await orm.em.findOneOrFail(Squad, { type: 'AIR' }, { populate: ['soldiers'] });
   expect(fetchedSquad.soldiers).toHaveLength(2);
 
   await orm.close();

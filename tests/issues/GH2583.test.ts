@@ -10,13 +10,11 @@ export enum WithEnumArrayValue {
 
 @Entity()
 class WithEnumArray {
-
   @PrimaryKey()
   id!: number;
 
   @Enum({ items: () => WithEnumArrayValue, array: true })
   values: WithEnumArrayValue[] = [];
-
 }
 
 describe('enum array with native PG enums (GH issue 2583)', () => {
@@ -57,5 +55,4 @@ describe('enum array with native PG enums (GH issue 2583)', () => {
     const expected = await orm.em.findOneOrFail(WithEnumArray, entity.id);
     expect(expected.values).toEqual([]);
   });
-
 });

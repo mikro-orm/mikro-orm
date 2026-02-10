@@ -4,7 +4,6 @@ import type { EntityProperty } from '../typings.js';
 import { ValidationError } from '../errors.js';
 
 export class TimeType extends Type {
-
   override convertToDatabaseValue(value: any, platform: Platform): string {
     if (value && !value.toString().match(/^\d{2,}:(?:[0-5]\d):(?:[0-5]\d)$/)) {
       throw ValidationError.invalidType(TimeType, value, 'JS');
@@ -28,5 +27,4 @@ export class TimeType extends Type {
   override getDefaultLength(platform: Platform): number {
     return platform.getDefaultDateTimeLength();
   }
-
 }

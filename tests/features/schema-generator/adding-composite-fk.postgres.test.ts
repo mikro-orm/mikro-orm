@@ -1,9 +1,15 @@
 import { Cascade, Collection, MikroORM } from '@mikro-orm/postgresql';
-import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class Country {
-
   @PrimaryKey()
   id!: number;
 
@@ -18,12 +24,10 @@ class Country {
 
   @OneToMany(() => State, 'country', { cascade: [Cascade.ALL], nullable: true })
   states = new Collection<State>(this);
-
 }
 
 @Entity()
 class State {
-
   @ManyToOne(() => Country, { primary: true })
   country!: Country;
 
@@ -35,12 +39,10 @@ class State {
 
   @OneToMany(() => City, 'state', { cascade: [Cascade.ALL], nullable: true })
   cities = new Collection<City>(this);
-
 }
 
 @Entity()
 class City {
-
   @ManyToOne(() => State, { primary: true })
   state!: State;
 
@@ -49,12 +51,10 @@ class City {
 
   @Property()
   name!: string;
-
 }
 
 @Entity()
 class User {
-
   @PrimaryKey()
   id!: string;
 
@@ -75,12 +75,10 @@ class User {
 
   @Property({ columnType: 'timestamptz', onUpdate: () => new Date().toISOString() })
   modified = new Date();
-
 }
 
 @Entity({ tableName: 'user' })
 class User1 {
-
   @PrimaryKey()
   id!: string;
 
@@ -104,11 +102,9 @@ class User1 {
 
   @ManyToOne()
   city!: City;
-
 }
 
 describe('adding m:1 with composite PK (FK as PK + scalar PK) (GH 1687)', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -137,5 +133,4 @@ describe('adding m:1 with composite PK (FK as PK + scalar PK) (GH 1687)', () => 
     await orm.schema.execute(diff1.down);
     await orm.schema.execute(diff0.down);
   });
-
 });

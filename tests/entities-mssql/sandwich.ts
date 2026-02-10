@@ -4,7 +4,6 @@ import { User2 } from './User2.js';
 
 @Entity()
 export class Sandwich {
-
   @PrimaryKey()
   id!: number;
 
@@ -21,5 +20,4 @@ export class Sandwich {
     this.name = name;
     this.price = price;
   }
-
 }

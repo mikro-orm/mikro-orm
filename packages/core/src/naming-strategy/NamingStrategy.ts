@@ -1,7 +1,6 @@
 import type { ReferenceKind } from '../enums.js';
 
 export interface NamingStrategy {
-
   /**
    * Return a name of the class based on its file name
    */
@@ -90,7 +89,11 @@ export interface NamingStrategy {
   /**
    * Returns key/constraint name for the given type. Some drivers might not support all the types (e.g. mysql and sqlite enforce the PK name).
    */
-  indexName(tableName: string, columns: string[], type: 'primary' | 'foreign' | 'unique' | 'index' | 'sequence' | 'check' | 'default'): string;
+  indexName(
+    tableName: string,
+    columns: string[],
+    type: 'primary' | 'foreign' | 'unique' | 'index' | 'sequence' | 'check' | 'default',
+  ): string;
 
   /**
    * Returns alias name for given entity. The alias needs to be unique across the query, which is by default
@@ -124,5 +127,4 @@ export interface NamingStrategy {
    * Returns the discriminator column name for polymorphic relations.
    */
   discriminatorColumnName(baseName: string): string;
-
 }

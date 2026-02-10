@@ -1,5 +1,13 @@
 import { Collection, Cascade, Ref, MikroORM, LoadStrategy } from '@mikro-orm/sqlite';
-import { Entity, ManyToOne, OneToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class User {

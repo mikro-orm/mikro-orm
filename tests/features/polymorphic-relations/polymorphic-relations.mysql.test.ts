@@ -1,9 +1,15 @@
 import { Collection, MikroORM } from '@mikro-orm/mysql';
-import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class Product {
-
   @PrimaryKey()
   id!: number;
 
@@ -20,12 +26,10 @@ class Product {
     this.name = name;
     this.price = price;
   }
-
 }
 
 @Entity()
 class Article {
-
   @PrimaryKey()
   id!: number;
 
@@ -38,12 +42,10 @@ class Article {
   constructor(title: string) {
     this.title = title;
   }
-
 }
 
 @Entity()
 class Image {
-
   @PrimaryKey()
   id!: number;
 
@@ -55,11 +57,9 @@ class Image {
 
   @Property({ nullable: true })
   altText?: string;
-
 }
 
 describe('polymorphic relations in MySQL', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -177,16 +177,21 @@ describe('polymorphic relations in MySQL', () => {
     await orm.em.flush();
     orm.em.clear();
 
-    const loadedProduct = await orm.em.findOneOrFail(Product, { id: product.id }, {
-      populate: ['images'],
-    });
+    const loadedProduct = await orm.em.findOneOrFail(
+      Product,
+      { id: product.id },
+      {
+        populate: ['images'],
+      },
+    );
 
     expect(loadedProduct.images).toHaveLength(3);
-    expect(loadedProduct.images.getItems().map(i => i.url).sort()).toEqual([
-      'mouse1.jpg',
-      'mouse2.jpg',
-      'mouse3.jpg',
-    ]);
+    expect(
+      loadedProduct.images
+        .getItems()
+        .map(i => i.url)
+        .sort(),
+    ).toEqual(['mouse1.jpg', 'mouse2.jpg', 'mouse3.jpg']);
   });
 
   test('removing entity with polymorphic relations', async () => {
@@ -248,5 +253,4 @@ describe('polymorphic relations in MySQL', () => {
     expect(prodImg!.imageable).toBeInstanceOf(Product);
     expect(artImg!.imageable).toBeInstanceOf(Article);
   });
-
 });

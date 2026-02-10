@@ -3,15 +3,12 @@ import { Entity, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorato
 
 @Entity()
 class User {
-
   @PrimaryKey({ type: 'bigserial' })
   id!: string;
 
   constructor(id: string) {
     this.id = id;
   }
-
-
 }
 
 let orm: MikroORM;

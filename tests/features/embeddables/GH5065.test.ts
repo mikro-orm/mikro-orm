@@ -1,26 +1,20 @@
 import { EntitySchema, MikroORM } from '@mikro-orm/sqlite';
 
 class Place {
-
   id!: number;
   name!: string;
   altitude!: Altitude;
   population!: Population;
-
 }
 
 class Altitude {
-
   value1!: number;
   value2!: number;
-
 }
 
 class Population {
-
   value1!: number;
   value2!: number;
-
 }
 
 const placeSchema = new EntitySchema({
@@ -86,5 +80,7 @@ afterAll(async () => {
 });
 
 test(`GH #5065`, async () => {
-  expect(await orm.schema.getCreateSchemaSQL({ wrap: false })).toMatch(`create table \`Place\` (\`id\` integer not null primary key autoincrement, \`name\` text not null, \`altitude\` integer not null, \`altitude2\` integer not null, \`population\` integer not null, \`population2\` integer not null);`);
+  expect(await orm.schema.getCreateSchemaSQL({ wrap: false })).toMatch(
+    `create table \`Place\` (\`id\` integer not null primary key autoincrement, \`name\` text not null, \`altitude\` integer not null, \`altitude2\` integer not null, \`population\` integer not null, \`population2\` integer not null);`,
+  );
 });

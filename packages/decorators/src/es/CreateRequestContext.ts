@@ -1,7 +1,10 @@
 import { RequestContext, TransactionContext } from '@mikro-orm/core';
 import { type ContextProvider, resolveContextProvider } from '../utils.js';
 
-export function CreateRequestContext<T extends object>(contextProvider?: ContextProvider<T>, respectExistingContext = false) {
+export function CreateRequestContext<T extends object>(
+  contextProvider?: ContextProvider<T>,
+  respectExistingContext = false,
+) {
   return function (value: (this: T, ...args: any) => any, context: ClassMethodDecoratorContext<T>) {
     const name = respectExistingContext ? 'EnsureRequestContext' : 'CreateRequestContext';
 
@@ -13,7 +16,9 @@ export function CreateRequestContext<T extends object>(contextProvider?: Context
       const em = await resolveContextProvider(this, contextProvider);
 
       if (!em) {
-        throw new Error(`@${name}() decorator can only be applied to methods of classes with \`orm: MikroORM\` property, \`em: EntityManager\` property, or with a callback parameter like \`@${name}(() => orm)\` that returns one of those types. The parameter will contain a reference to current \`this\`. Returning an EntityRepository from it is also supported.`);
+        throw new Error(
+          `@${name}() decorator can only be applied to methods of classes with \`orm: MikroORM\` property, \`em: EntityManager\` property, or with a callback parameter like \`@${name}(() => orm)\` that returns one of those types. The parameter will contain a reference to current \`this\`. Returning an EntityRepository from it is also supported.`,
+        );
       }
 
       // reuse existing context if available for given respect `contextName`

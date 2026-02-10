@@ -14,7 +14,6 @@ import { EntityGenerator } from '@mikro-orm/entity-generator';
 
 @Entity({ schema: 'n1' })
 export class Author {
-
   @PrimaryKey()
   id!: number;
 
@@ -26,23 +25,19 @@ export class Author {
 
   @OneToMany(() => Book, e => e.author, { cascade: [Cascade.REMOVE, Cascade.PERSIST] })
   books = new Collection<Book>(this);
-
 }
 
 @Entity({ schema: '*' })
 export class BookTag extends BaseEntity {
-
   @PrimaryKey()
   id!: number;
 
   @Property({ nullable: true })
   name?: string;
-
 }
 
 @Entity({ schema: '*' })
 export class Book extends BaseEntity {
-
   @PrimaryKey()
   id!: number;
 
@@ -57,11 +52,9 @@ export class Book extends BaseEntity {
 
   @ManyToMany(() => BookTag, undefined, { cascade: [Cascade.ALL] })
   tags = new Collection<BookTag>(this);
-
 }
 
 describe('multiple connected schemas in mssql', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -176,9 +169,13 @@ describe('multiple connected schemas in mssql', () => {
     await orm.em.flush();
 
     expect(mock.mock.calls[0][0]).toMatch(`begin`);
-    expect(mock.mock.calls[1][0]).toMatch(`update [n2].[book_tag] set [name] = case when ([id] = 1) then N'new name 1' when ([id] = 4) then N'new name 2' when ([id] = 7) then N'new name 3' else [name] end where [id] in (1, 4, 7)`);
+    expect(mock.mock.calls[1][0]).toMatch(
+      `update [n2].[book_tag] set [name] = case when ([id] = 1) then N'new name 1' when ([id] = 4) then N'new name 2' when ([id] = 7) then N'new name 3' else [name] end where [id] in (1, 4, 7)`,
+    );
     expect(mock.mock.calls[2][0]).toMatch(`update [n1].[author] set [name] = N'new name' where [id] = 1`);
-    expect(mock.mock.calls[3][0]).toMatch(`update [n2].[book] set [name] = case when ([id] = 1) then N'new name 1' when ([id] = 2) then N'new name 2' when ([id] = 3) then N'new name 3' else [name] end where [id] in (1, 2, 3)`);
+    expect(mock.mock.calls[3][0]).toMatch(
+      `update [n2].[book] set [name] = case when ([id] = 1) then N'new name 1' when ([id] = 2) then N'new name 2' when ([id] = 3) then N'new name 3' else [name] end where [id] in (1, 2, 3)`,
+    );
     expect(mock.mock.calls[4][0]).toMatch(`commit`);
     mock.mockReset();
 
@@ -260,18 +257,32 @@ describe('multiple connected schemas in mssql', () => {
     //   'Book-n4:1',
     // ]);
     expect(mock.mock.calls[0][0]).toMatch(`begin`);
-    expect(mock.mock.calls[1][0]).toMatch(`merge into [n3].[book_tag] using (select * from (values (0),(1),(2)) v (id) where 1 = 1) s on 1 = 0 when not matched then insert default values output inserted.[id]`);
-    expect(mock.mock.calls[2][0]).toMatch(`merge into [n5].[book_tag] using (select * from (values (0),(1),(2),(3),(4),(5)) v (id) where 1 = 1) s on 1 = 0 when not matched then insert default values output inserted.[id]`);
-    expect(mock.mock.calls[3][0]).toMatch(`merge into [n4].[book_tag] using (select * from (values (0),(1),(2)) v (id) where 1 = 1) s on 1 = 0 when not matched then insert default values output inserted.[id]`);
-    expect(mock.mock.calls[4][0]).toMatch(`set identity_insert [n1].[author] on; insert into [n1].[author] ([id], [name]) values (1, N'a1'); set identity_insert [n1].[author] off`);
+    expect(mock.mock.calls[1][0]).toMatch(
+      `merge into [n3].[book_tag] using (select * from (values (0),(1),(2)) v (id) where 1 = 1) s on 1 = 0 when not matched then insert default values output inserted.[id]`,
+    );
+    expect(mock.mock.calls[2][0]).toMatch(
+      `merge into [n5].[book_tag] using (select * from (values (0),(1),(2),(3),(4),(5)) v (id) where 1 = 1) s on 1 = 0 when not matched then insert default values output inserted.[id]`,
+    );
+    expect(mock.mock.calls[3][0]).toMatch(
+      `merge into [n4].[book_tag] using (select * from (values (0),(1),(2)) v (id) where 1 = 1) s on 1 = 0 when not matched then insert default values output inserted.[id]`,
+    );
+    expect(mock.mock.calls[4][0]).toMatch(
+      `set identity_insert [n1].[author] on; insert into [n1].[author] ([id], [name]) values (1, N'a1'); set identity_insert [n1].[author] off`,
+    );
     expect(mock.mock.calls[5][0]).toMatch(`insert into [n3].[book] ([author_id]) output inserted.[id] values (1)`);
     expect(mock.mock.calls[6][0]).toMatch(`insert into [n5].[book] ([author_id]) output inserted.[id] values (1), (1)`);
     expect(mock.mock.calls[7][0]).toMatch(`insert into [n4].[book] ([author_id]) output inserted.[id] values (1)`);
     expect(mock.mock.calls[8][0]).toMatch(`update [n5].[book] set [based_on_id] = 1 where [id] = 1`);
     expect(mock.mock.calls[9][0]).toMatch(`update [n4].[book] set [based_on_id] = 1 where [id] = 1`);
-    expect(mock.mock.calls[10][0]).toMatch(`insert into [n3].[book_tags] ([book_tag_id], [book_id]) values (1, 1), (2, 1), (3, 1)`);
-    expect(mock.mock.calls[11][0]).toMatch(`insert into [n5].[book_tags] ([book_tag_id], [book_id]) values (1, 1), (2, 1), (3, 1), (4, 2), (5, 2), (6, 2)`);
-    expect(mock.mock.calls[12][0]).toMatch(`insert into [n4].[book_tags] ([book_tag_id], [book_id]) values (1, 1), (2, 1), (3, 1)`);
+    expect(mock.mock.calls[10][0]).toMatch(
+      `insert into [n3].[book_tags] ([book_tag_id], [book_id]) values (1, 1), (2, 1), (3, 1)`,
+    );
+    expect(mock.mock.calls[11][0]).toMatch(
+      `insert into [n5].[book_tags] ([book_tag_id], [book_id]) values (1, 1), (2, 1), (3, 1), (4, 2), (5, 2), (6, 2)`,
+    );
+    expect(mock.mock.calls[12][0]).toMatch(
+      `insert into [n4].[book_tags] ([book_tag_id], [book_id]) values (1, 1), (2, 1), (3, 1)`,
+    );
     expect(mock.mock.calls[13][0]).toMatch(`commit`);
     mock.mockReset();
 
@@ -299,13 +310,27 @@ describe('multiple connected schemas in mssql', () => {
     await orm.em.flush();
 
     expect(mock.mock.calls[0][0]).toMatch(`begin`);
-    expect(mock.mock.calls[1][0]).toMatch(`update [n3].[book_tag] set [name] = N'new name 1' where [id] = 1; select @@rowcount;`);
-    expect(mock.mock.calls[2][0]).toMatch(`update [n4].[book_tag] set [name] = N'new name 2' where [id] = 1; select @@rowcount;`);
-    expect(mock.mock.calls[3][0]).toMatch(`update [n5].[book_tag] set [name] = case when ([id] = 1) then N'new name 3' when ([id] = 4) then N'new name 4' else [name] end where [id] in (1, 4)`);
-    expect(mock.mock.calls[4][0]).toMatch(`update [n1].[author] set [name] = N'new name' where [id] = 1; select @@rowcount;`);
-    expect(mock.mock.calls[5][0]).toMatch(`update [n3].[book] set [name] = N'new name 1' where [id] = 1; select @@rowcount;`);
-    expect(mock.mock.calls[6][0]).toMatch(`update [n4].[book] set [name] = N'new name 2' where [id] = 1; select @@rowcount;`);
-    expect(mock.mock.calls[7][0]).toMatch(`update [n5].[book] set [name] = case when ([id] = 1) then N'new name 3' when ([id] = 2) then N'new name 4' else [name] end where [id] in (1, 2)`);
+    expect(mock.mock.calls[1][0]).toMatch(
+      `update [n3].[book_tag] set [name] = N'new name 1' where [id] = 1; select @@rowcount;`,
+    );
+    expect(mock.mock.calls[2][0]).toMatch(
+      `update [n4].[book_tag] set [name] = N'new name 2' where [id] = 1; select @@rowcount;`,
+    );
+    expect(mock.mock.calls[3][0]).toMatch(
+      `update [n5].[book_tag] set [name] = case when ([id] = 1) then N'new name 3' when ([id] = 4) then N'new name 4' else [name] end where [id] in (1, 4)`,
+    );
+    expect(mock.mock.calls[4][0]).toMatch(
+      `update [n1].[author] set [name] = N'new name' where [id] = 1; select @@rowcount;`,
+    );
+    expect(mock.mock.calls[5][0]).toMatch(
+      `update [n3].[book] set [name] = N'new name 1' where [id] = 1; select @@rowcount;`,
+    );
+    expect(mock.mock.calls[6][0]).toMatch(
+      `update [n4].[book] set [name] = N'new name 2' where [id] = 1; select @@rowcount;`,
+    );
+    expect(mock.mock.calls[7][0]).toMatch(
+      `update [n5].[book] set [name] = case when ([id] = 1) then N'new name 3' when ([id] = 2) then N'new name 4' else [name] end where [id] in (1, 2)`,
+    );
     expect(mock.mock.calls[8][0]).toMatch(`commit`);
     mock.mockReset();
 
@@ -314,7 +339,9 @@ describe('multiple connected schemas in mssql', () => {
 
     expect(mock.mock.calls[0][0]).toMatch(`select top (1) [a0].* from [n1].[author] as [a0] where [a0].[id] = 1`);
     expect(mock.mock.calls[1][0]).toMatch(`select [b0].* from [n5].[book] as [b0] where [b0].[author_id] in (1)`);
-    expect(mock.mock.calls[2][0]).toMatch(`select [b0].[book_tag_id], [b0].[book_id], [b1].[id] as [b1__id], [b1].[name] as [b1__name] from [n5].[book_tags] as [b0] inner join [n5].[book_tag] as [b1] on [b0].[book_tag_id] = [b1].[id] where [b0].[book_id] in (1, 2)`);
+    expect(mock.mock.calls[2][0]).toMatch(
+      `select [b0].[book_tag_id], [b0].[book_id], [b1].[id] as [b1__id], [b1].[name] as [b1__name] from [n5].[book_tags] as [b0] inner join [n5].[book_tag] as [b1] on [b0].[book_tag_id] = [b1].[id] where [b0].[book_id] in (1, 2)`,
+    );
     mock.mockReset();
 
     expect(fork.getUnitOfWork().getIdentityMap().keys()).toEqual([
@@ -385,7 +412,9 @@ describe('multiple connected schemas in mssql', () => {
 
     await orm.em.transactional(async em => {
       await orm.em.lock(author, LockMode.PESSIMISTIC_PARTIAL_WRITE);
-      await orm.em.getDriver().lockPessimistic(author, { lockMode: LockMode.PESSIMISTIC_PARTIAL_WRITE, ctx: em.getTransactionContext() });
+      await orm.em
+        .getDriver()
+        .lockPessimistic(author, { lockMode: LockMode.PESSIMISTIC_PARTIAL_WRITE, ctx: em.getTransactionContext() });
     });
   });
 
@@ -429,10 +458,18 @@ describe('multiple connected schemas in mssql', () => {
       'Book-n5:1',
       'Book-n5:2',
     ]);
-    expect(mock.mock.calls[0][0]).toMatch(`set identity_insert [n1].[author] on; insert into [n1].[author] ([id], [name]) values (1, N'a1'); set identity_insert [n1].[author] off`);
-    expect(mock.mock.calls[1][0]).toMatch(`set identity_insert [n5].[book] on; insert into [n5].[book] ([id], [author_id]) values (1, 1), (2, 1); set identity_insert [n5].[book] off`);
-    expect(mock.mock.calls[2][0]).toMatch(`set identity_insert [n3].[book] on; insert into [n3].[book] ([id], [author_id]) values (1, 1); set identity_insert [n3].[book] off`);
-    expect(mock.mock.calls[3][0]).toMatch(`set identity_insert [n4].[book] on; insert into [n4].[book] ([id], [author_id]) values (1, 1); set identity_insert [n4].[book] off`);
+    expect(mock.mock.calls[0][0]).toMatch(
+      `set identity_insert [n1].[author] on; insert into [n1].[author] ([id], [name]) values (1, N'a1'); set identity_insert [n1].[author] off`,
+    );
+    expect(mock.mock.calls[1][0]).toMatch(
+      `set identity_insert [n5].[book] on; insert into [n5].[book] ([id], [author_id]) values (1, 1), (2, 1); set identity_insert [n5].[book] off`,
+    );
+    expect(mock.mock.calls[2][0]).toMatch(
+      `set identity_insert [n3].[book] on; insert into [n3].[book] ([id], [author_id]) values (1, 1); set identity_insert [n3].[book] off`,
+    );
+    expect(mock.mock.calls[3][0]).toMatch(
+      `set identity_insert [n4].[book] on; insert into [n4].[book] ([id], [author_id]) values (1, 1); set identity_insert [n4].[book] off`,
+    );
     mock.mockReset();
 
     // schema is saved after flush as if the entity was loaded from db
@@ -442,5 +479,4 @@ describe('multiple connected schemas in mssql', () => {
     expect(author.books[2].getSchema()).toBe('n5');
     expect(author.books[3].getSchema()).toBe('n5');
   });
-
 });

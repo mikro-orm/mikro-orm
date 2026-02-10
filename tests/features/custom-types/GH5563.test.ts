@@ -2,7 +2,6 @@ import { MikroORM, Type, BaseEntity } from '@mikro-orm/postgresql';
 import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 class IntervalType extends Type<number, number | null | undefined> {
-
   getColumnType() {
     return `interval`;
   }
@@ -22,18 +21,15 @@ class IntervalType extends Type<number, number | null | undefined> {
   convertToDatabaseValueSQL(key: string) {
     return `(${key} || 'milliseconds')::interval`;
   }
-
 }
 
 @Entity()
 class A extends BaseEntity {
-
   @PrimaryKey()
   id!: number;
 
   @Property({ type: IntervalType })
   end!: number;
-
 }
 
 let orm: MikroORM;

@@ -52,7 +52,12 @@ function expandFields<T>(meta: EntityMetadata<T> | undefined, fields: (keyof T)[
 }
 
 /** @internal */
-export function getOnConflictFields<T>(meta: EntityMetadata<T> | undefined, data: EntityData<T>, uniqueFields: (keyof T)[] | Raw, options: UpsertOptions<T>): (keyof T)[] {
+export function getOnConflictFields<T>(
+  meta: EntityMetadata<T> | undefined,
+  data: EntityData<T>,
+  uniqueFields: (keyof T)[] | Raw,
+  options: UpsertOptions<T>,
+): (keyof T)[] {
   if (options.onConflictMergeFields) {
     const onConflictMergeFields = expandFields(meta, options.onConflictMergeFields);
     return onConflictMergeFields.flatMap(f => {
@@ -90,23 +95,30 @@ export function getOnConflictFields<T>(meta: EntityMetadata<T> | undefined, data
 }
 
 /** @internal */
-export function getOnConflictReturningFields<T, P extends string>(meta: EntityMetadata<T> | undefined, data: EntityData<T>, uniqueFields: (keyof T)[] | Raw, options: UpsertOptions<T, P>): (keyof T)[] | '*' {
+export function getOnConflictReturningFields<T, P extends string>(
+  meta: EntityMetadata<T> | undefined,
+  data: EntityData<T>,
+  uniqueFields: (keyof T)[] | Raw,
+  options: UpsertOptions<T, P>,
+): (keyof T)[] | '*' {
   /* v8 ignore next */
   if (!meta) {
     return '*';
   }
 
-  const keys = meta.comparableProps.filter(p => {
-    if (p.lazy || p.embeddable) {
-      return false;
-    }
+  const keys = meta.comparableProps
+    .filter(p => {
+      if (p.lazy || p.embeddable) {
+        return false;
+      }
 
-    if (p.autoincrement) {
-      return true;
-    }
+      if (p.autoincrement) {
+        return true;
+      }
 
-    return Array.isArray(uniqueFields) && !uniqueFields.includes(p.name);
-  }).map(p => p.name) as (keyof T)[];
+      return Array.isArray(uniqueFields) && !uniqueFields.includes(p.name);
+    })
+    .map(p => p.name) as (keyof T)[];
 
   if (meta.versionProperty) {
     keys.push(meta.versionProperty);
@@ -147,12 +159,15 @@ function getPropertyValue(obj: Dictionary, key: string) {
 
 /** @internal */
 export function getWhereCondition<T extends object>(
-  meta: EntityMetadata<T>, onConflictFields: (keyof T)[] | Raw | undefined,
+  meta: EntityMetadata<T>,
+  onConflictFields: (keyof T)[] | Raw | undefined,
   data: EntityData<T>,
   where: FilterQuery<T>,
 ): { where: FilterQuery<T>; propIndex: number | false } {
-  const unique = onConflictFields as string[] ?? meta.props.filter(p => p.unique).map(p => p.name);
-  const propIndex = !isRaw(unique) && unique.findIndex(p => (data as Dictionary)[p] ?? (data as Dictionary)[p.substring(0, p.indexOf('.'))] != null);
+  const unique = (onConflictFields as string[]) ?? meta.props.filter(p => p.unique).map(p => p.name);
+  const propIndex =
+    !isRaw(unique) &&
+    unique.findIndex(p => (data as Dictionary)[p] ?? (data as Dictionary)[p.substring(0, p.indexOf('.'))] != null);
 
   if (onConflictFields || where == null) {
     if (propIndex !== false && propIndex >= 0) {

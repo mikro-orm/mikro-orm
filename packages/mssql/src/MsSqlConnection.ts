@@ -1,22 +1,19 @@
-import {
-  AbstractSqlConnection,
-  type ConnectionConfig,
-  type TransactionEventBroadcaster,
-  Utils,
-} from '@mikro-orm/sql';
+import { AbstractSqlConnection, type ConnectionConfig, type TransactionEventBroadcaster, Utils } from '@mikro-orm/sql';
 import { type ControlledTransaction, MssqlDialect } from 'kysely';
 import type { ConnectionConfiguration } from 'tedious';
 import * as Tedious from 'tedious';
 import * as Tarn from 'tarn';
 
 export class MsSqlConnection extends AbstractSqlConnection {
-
   override createKyselyDialect(overrides: ConnectionConfiguration) {
     const options = this.mapOptions(overrides);
-    const poolOptions = Utils.mergeConfig({
-      min: 0,
-      max: 10,
-    }, this.config.get('pool'));
+    const poolOptions = Utils.mergeConfig(
+      {
+        min: 0,
+        max: 10,
+      },
+      this.config.get('pool'),
+    );
     const password = options.authentication?.options?.password as ConnectionConfig['password'];
     const onCreateConnection = this.options.onCreateConnection ?? this.config.get('onCreateConnection');
 
@@ -68,7 +65,10 @@ export class MsSqlConnection extends AbstractSqlConnection {
     return Utils.mergeConfig(ret, overrides);
   }
 
-  override async commit(ctx: ControlledTransaction<any, any>, eventBroadcaster?: TransactionEventBroadcaster): Promise<void> {
+  override async commit(
+    ctx: ControlledTransaction<any, any>,
+    eventBroadcaster?: TransactionEventBroadcaster,
+  ): Promise<void> {
     if ('savepointName' in ctx) {
       return;
     }
@@ -86,7 +86,7 @@ export class MsSqlConnection extends AbstractSqlConnection {
     }
 
     const rowCount = res.rows.length;
-    const hasEmptyCount = (rowCount === 1) && ('' in res.rows[0]);
+    const hasEmptyCount = rowCount === 1 && '' in res.rows[0];
     const emptyRow = hasEmptyCount && Number(res.rows[0]['']);
 
     return {
@@ -95,5 +95,4 @@ export class MsSqlConnection extends AbstractSqlConnection {
       rows: res.rows,
     } as unknown as T;
   }
-
 }

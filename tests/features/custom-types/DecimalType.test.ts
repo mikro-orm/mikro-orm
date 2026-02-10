@@ -1,10 +1,18 @@
 import { Collection, DecimalType, MikroORM } from '@mikro-orm/postgresql';
-import { Embeddable, Embedded, Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Embeddable,
+  Embedded,
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../../helpers.js';
 
 @Embeddable()
 class Money {
-
   @Property({
     type: new DecimalType('number'),
     runtimeType: 'number',
@@ -19,12 +27,10 @@ class Money {
     this.amount = amount;
     this.currencyCode = currencyCode;
   }
-
 }
 
 @Entity({ tableName: 'test_user' })
 class User {
-
   @PrimaryKey()
   id!: number;
 
@@ -46,23 +52,16 @@ class User {
   })
   books = new Collection<Book, this>(this);
 
-  constructor(
-    id: number,
-    name: string,
-    email: string,
-    decimal: number | null = null,
-  ) {
+  constructor(id: number, name: string, email: string, decimal: number | null = null) {
     this.id = id;
     this.name = name;
     this.email = email;
     this.decimal = decimal;
   }
-
 }
 
 @Entity({ tableName: 'test_books' })
 class Book {
-
   @PrimaryKey()
   id!: number;
 
@@ -85,20 +84,13 @@ class Book {
   })
   user: User;
 
-  constructor(
-    id: number,
-    name: string,
-    decimalAmount: number,
-    price: Money,
-    user: User,
-  ) {
+  constructor(id: number, name: string, decimalAmount: number, price: Money, user: User) {
     this.id = id;
     this.name = name;
     this.decimalAmount = decimalAmount;
     this.price = price;
     this.user = user;
   }
-
 }
 
 let orm: MikroORM;

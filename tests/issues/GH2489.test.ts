@@ -3,7 +3,6 @@ import { MikroORM, Type } from '@mikro-orm/postgresql';
 import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 class IntegerArrayType extends Type<number[], string> {
-
   constructor(private readonly length?: number) {
     super();
   }
@@ -35,22 +34,18 @@ class IntegerArrayType extends Type<number[], string> {
   override getColumnType(): string {
     return 'int4[]';
   }
-
 }
 
 @Entity()
 class Test {
-
   @PrimaryKey()
   id!: number;
 
   @Property({ type: new IntegerArrayType() })
   numArray = [1, 2, 3];
-
 }
 
 describe('GH issue 2489', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -76,5 +71,4 @@ describe('GH issue 2489', () => {
     const e1 = await orm.em.findOneOrFail(Test, e);
     expect(e1.numArray).toEqual([1, 2, 3]);
   });
-
 });

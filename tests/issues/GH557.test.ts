@@ -10,7 +10,6 @@ import {
 
 @Entity()
 class Rate {
-
   @PrimaryKey()
   id!: number;
 
@@ -26,12 +25,10 @@ class Rate {
   constructor(name: string) {
     this.name = name;
   }
-
 }
 
 @Entity()
 class Application {
-
   @PrimaryKey()
   id!: number;
 
@@ -46,11 +43,9 @@ class Application {
 
   @ManyToOne({ joinColumn: 'application_rate4_id' })
   rate4!: Rate;
-
 }
 
 describe('GH issue 557', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -79,5 +74,4 @@ describe('GH issue 557', () => {
     expect(res.rate3.name).toBe('r3');
     expect(res.rate4.name).toBe('r4');
   });
-
 });

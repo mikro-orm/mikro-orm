@@ -19,7 +19,11 @@ type ExtractAliasNames<Context> = Context[keyof Context] extends infer Join
   : never;
 
 // Strip root alias prefix from a field path
-type StripRootAlias<F extends string, RootAlias extends string, Context = never> = F extends `${RootAlias}.${infer Field}`
+type StripRootAlias<
+  F extends string,
+  RootAlias extends string,
+  Context = never,
+> = F extends `${RootAlias}.${infer Field}`
   ? Field
   : F extends `${infer Alias}.${string}`
     ? Alias extends ExtractAliasNames<Context>
@@ -176,7 +180,10 @@ describe('QueryBuilder Fields type tracking', () => {
 
   describe('joinAndSelect() method return type', () => {
     test('should track join fields when specified', async () => {
-      const qb = orm.em.createQueryBuilder(Author2, 'a').select('a.id').leftJoinAndSelect('a.books', 'b', {}, ['title', 'price']);
+      const qb = orm.em
+        .createQueryBuilder(Author2, 'a')
+        .select('a.id')
+        .leftJoinAndSelect('a.books', 'b', {}, ['title', 'price']);
 
       const result = await qb.getResultList();
       // Should include root fields + prefixed join fields

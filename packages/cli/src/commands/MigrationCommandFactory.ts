@@ -13,7 +13,6 @@ import type { BaseArgs, BaseCommand } from '../CLIConfigurator.js';
 import { CLIHelper } from '../CLIHelper.js';
 
 export class MigrationCommandFactory {
-
   static readonly DESCRIPTIONS = {
     create: 'Create new migration with current schema diff',
     up: 'Migrate up to the latest version',
@@ -25,6 +24,7 @@ export class MigrationCommandFactory {
   };
 
   static create<const T extends MigratorMethod>(command: T) {
+    // oxfmt-ignore
     return {
       command: `migration:${command}`,
       describe: MigrationCommandFactory.DESCRIPTIONS[command],
@@ -33,7 +33,10 @@ export class MigrationCommandFactory {
     } satisfies BaseCommand<MigrationOptionsMap[T]>;
   }
 
-  static configureMigrationCommand<const T extends MigratorMethod>(args: Argv<BaseArgs>, method: T): Argv<MigrationOptionsMap[T]> {
+  static configureMigrationCommand<const T extends MigratorMethod>(
+    args: Argv<BaseArgs>,
+    method: T,
+  ): Argv<MigrationOptionsMap[T]> {
     if (method === 'create') {
       return this.configureCreateCommand(args);
     }
@@ -141,7 +144,11 @@ export class MigrationCommandFactory {
     return args as Argv<MigratorFreshOptions>;
   }
 
-  private static async handleUpDownCommand(args: ArgumentsCamelCase<CliUpDownOptions>, migrator: IMigrator, method: 'up' | 'down') {
+  private static async handleUpDownCommand(
+    args: ArgumentsCamelCase<CliUpDownOptions>,
+    migrator: IMigrator,
+    method: 'up' | 'down',
+  ) {
     const opts = MigrationCommandFactory.getUpDownOptions(args);
     await migrator[method](opts);
     const message = this.getUpDownSuccessMessage(method, opts);
@@ -171,7 +178,11 @@ export class MigrationCommandFactory {
     });
   }
 
-  private static async handleCreateCommand(migrator: IMigrator, args: ArgumentsCamelCase<MigratorCreateOptions>, config: Configuration): Promise<void> {
+  private static async handleCreateCommand(
+    migrator: IMigrator,
+    args: ArgumentsCamelCase<MigratorCreateOptions>,
+    config: Configuration,
+  ): Promise<void> {
     const ret = await migrator.create(args.path, args.blank, args.initial, args.name);
 
     if (ret.diff.up.length === 0) {
@@ -188,7 +199,10 @@ export class MigrationCommandFactory {
         CLIHelper.dump(colors.green('down:'));
         CLIHelper.dump(ret.diff.down.map(sql => '  ' + sql).join('\n'), config);
       } else {
-        CLIHelper.dump(colors.yellow(`(${config.getDriver().constructor.name} does not support automatic down migrations)`));
+        /* v8 ignore next */
+        CLIHelper.dump(
+          colors.yellow(`(${config.getDriver().constructor.name} does not support automatic down migrations)`),
+        );
       }
     }
 
@@ -204,7 +218,11 @@ export class MigrationCommandFactory {
     process.exit(1);
   }
 
-  private static async handleFreshCommand(args: ArgumentsCamelCase<MigratorFreshOptions>, migrator: IMigrator, orm: MikroORM) {
+  private static async handleFreshCommand(
+    args: ArgumentsCamelCase<MigratorFreshOptions>,
+    migrator: IMigrator,
+    orm: MikroORM,
+  ) {
     await orm.schema.drop({ dropMigrationsTable: true, dropDb: args.dropDb });
     CLIHelper.dump(colors.green('Dropped schema successfully'));
     const opts = MigrationCommandFactory.getUpDownOptions(args);
@@ -226,7 +244,7 @@ export class MigrationCommandFactory {
 
     const ret: MigrateOptions = {};
 
-    (['from', 'to'] as const).filter(k => flags[k]).forEach(k => ret[k] = flags[k] === '0' ? 0 : flags[k]);
+    (['from', 'to'] as const).filter(k => flags[k]).forEach(k => (ret[k] = flags[k] === '0' ? 0 : flags[k]));
 
     return ret;
   }
@@ -257,12 +275,17 @@ export class MigrationCommandFactory {
 
     return msg;
   }
-
 }
 
 type CliUpDownOptions = BaseArgs & { to?: string | number; from?: string | number; only?: string };
 type MigratorFreshOptions = BaseArgs & { dropDb?: boolean; seed?: string };
-type MigratorCreateOptions = BaseArgs & { blank?: boolean; initial?: boolean; path?: string; dump?: boolean;  name?: string };
+type MigratorCreateOptions = BaseArgs & {
+  blank?: boolean;
+  initial?: boolean;
+  path?: string;
+  dump?: boolean;
+  name?: string;
+};
 
 type MigrationOptionsMap = {
   create: MigratorCreateOptions;

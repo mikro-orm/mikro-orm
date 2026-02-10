@@ -1,10 +1,9 @@
 import type { CacheAdapter } from './CacheAdapter.js';
 
 export class MemoryCacheAdapter implements CacheAdapter {
-
   private readonly data = new Map<string, { data: any; expiration: number }>();
 
-  constructor(private readonly options: { expiration: number }) { }
+  constructor(private readonly options: { expiration: number }) {}
 
   /**
    * @inheritDoc
@@ -43,5 +42,4 @@ export class MemoryCacheAdapter implements CacheAdapter {
   clear(): void {
     this.data.clear();
   }
-
 }

@@ -11,7 +11,6 @@ import { mockLogger } from '../helpers.js';
 
 @Entity()
 class Race {
-
   @PrimaryKey()
   id!: bigint;
 
@@ -23,12 +22,10 @@ class Race {
     mappedBy: runner => runner.race,
   })
   runners = new Collection<Runner>(this);
-
 }
 
 @Entity()
 class Runner {
-
   @PrimaryKey()
   id!: bigint;
 
@@ -40,7 +37,6 @@ class Runner {
 
   @ManyToOne(() => Race)
   race!: Race;
-
 }
 
 let orm: MikroORM;
@@ -76,19 +72,21 @@ test('5693', async () => {
   orm.em.clear();
 
   const mock = mockLogger(orm);
-  const loadedRace = await orm.em.findOneOrFail(Race, { id: { $ne: null } }, {
-    populate: ['runners'],
-    populateOrderBy: {
-      runners: {
-        position: 'asc',
+  const loadedRace = await orm.em.findOneOrFail(
+    Race,
+    { id: { $ne: null } },
+    {
+      populate: ['runners'],
+      populateOrderBy: {
+        runners: {
+          position: 'asc',
+        },
       },
     },
-  });
+  );
   expect(mock.mock.calls[0][0]).toMatch('select `r0`.* from `race` as `r0` where `r0`.`id` is not null limit 1');
-  expect(mock.mock.calls[1][0]).toMatch('select `r0`.* from `runner` as `r0` where `r0`.`race_id` in (\'1\') order by `r0`.`position` asc');
-  expect(loadedRace.runners.getItems()).toMatchObject([
-    { position: 1 },
-    { position: 2 },
-    { position: 3 },
-  ]);
+  expect(mock.mock.calls[1][0]).toMatch(
+    "select `r0`.* from `runner` as `r0` where `r0`.`race_id` in ('1') order by `r0`.`position` asc",
+  );
+  expect(loadedRace.runners.getItems()).toMatchObject([{ position: 1 }, { position: 2 }, { position: 3 }]);
 });

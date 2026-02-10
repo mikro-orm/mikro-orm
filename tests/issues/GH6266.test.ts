@@ -1,9 +1,15 @@
 import { DeferMode, MikroORM, ref, Ref } from '@mikro-orm/postgresql';
-import { Entity, ManyToOne, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToOne,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class Dimension {
-
   @PrimaryKey({ type: 'varchar' })
   id: string;
 
@@ -18,12 +24,10 @@ class Dimension {
     this.name = name;
     this.referenceUnit = referenceUnit;
   }
-
 }
 
 @Entity()
 class Unit {
-
   @PrimaryKey({ type: 'varchar' })
   id: string;
 
@@ -42,7 +46,6 @@ class Unit {
     this.dimension = dimension;
     this.conversionFactor = conversionFactor;
   }
-
 }
 
 let orm: MikroORM;

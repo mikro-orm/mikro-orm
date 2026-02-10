@@ -1,9 +1,7 @@
 import { type Collection, EntitySchema, MikroORM } from '@mikro-orm/sqlite';
 
 abstract class Base {
-
   id!: string;
-
 }
 
 const BaseSchema = new EntitySchema({
@@ -18,9 +16,7 @@ const BaseSchema = new EntitySchema({
 });
 
 class Person extends Base {
-
   documents?: Collection<Document>;
-
 }
 
 const PersonSchema = new EntitySchema({
@@ -37,9 +33,7 @@ const PersonSchema = new EntitySchema({
 });
 
 class DocumentDataBase {
-
   type!: string;
-
 }
 
 const DocumentDataBaseSchema = new EntitySchema({
@@ -53,9 +47,7 @@ const DocumentDataBaseSchema = new EntitySchema({
 });
 
 class DocumentDataIlOccupation {
-
   person!: Person;
-
 }
 
 const DocumentDataIlOccupationSchema = new EntitySchema({
@@ -70,9 +62,7 @@ const DocumentDataIlOccupationSchema = new EntitySchema({
 });
 
 class DocumentDataIlParent {
-
   person!: Person;
-
 }
 
 const DocumentDataIlParentSchema = new EntitySchema({
@@ -87,12 +77,10 @@ const DocumentDataIlParentSchema = new EntitySchema({
 });
 
 class DocumentDataIl extends DocumentDataBase {
-
   declare type: 'IL';
 
   occupations!: DocumentDataIlOccupation[];
   parents?: DocumentDataIlParent[];
-
 }
 
 const DocumentDataIlSchema = new EntitySchema({
@@ -116,9 +104,7 @@ const DocumentDataIlSchema = new EntitySchema({
 });
 
 class DocumentDataTwVisa {
-
   person!: Person;
-
 }
 
 const DocumentDataTwVisaSchema = new EntitySchema({
@@ -133,10 +119,8 @@ const DocumentDataTwVisaSchema = new EntitySchema({
 });
 
 class DocumentDataTw extends DocumentDataBase {
-
   declare type: 'TW';
   visas!: DocumentDataTwVisa[];
-
 }
 
 const DocumentDataTwSchema = new EntitySchema({
@@ -154,10 +138,8 @@ const DocumentDataTwSchema = new EntitySchema({
 });
 
 class Document extends Base {
-
   persons!: Collection<Person>;
   data!: DocumentDataIl | DocumentDataTw;
-
 }
 
 const DocumentSchema = new EntitySchema({

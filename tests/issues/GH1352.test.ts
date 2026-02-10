@@ -10,7 +10,6 @@ import {
 
 @Entity()
 export class Manager {
-
   @PrimaryKey()
   id!: number;
 
@@ -23,12 +22,10 @@ export class Manager {
   constructor(name: string) {
     this.name = name;
   }
-
 }
 
 @Entity()
 export class Owner {
-
   @PrimaryKey()
   id!: number;
 
@@ -41,12 +38,10 @@ export class Owner {
   constructor(name: string) {
     this.name = name;
   }
-
 }
 
 @Entity()
 export class Risk {
-
   @PrimaryKey()
   id!: number;
 
@@ -62,12 +57,10 @@ export class Risk {
   constructor(value: string) {
     this.value = value;
   }
-
 }
 
 @Entity()
 export class Project {
-
   @PrimaryKey()
   id!: number;
 
@@ -83,11 +76,9 @@ export class Project {
   constructor(name: string) {
     this.name = name;
   }
-
 }
 
 describe('GH issue 1352', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -125,5 +116,4 @@ describe('GH issue 1352', () => {
     expect(queriedProject.project.unwrap().managers.isInitialized()).toBeTruthy();
     expect(queriedProject.project.unwrap().risks.isInitialized()).toBeTruthy();
   });
-
 });

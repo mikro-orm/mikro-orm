@@ -3,7 +3,6 @@ import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-or
 
 @Entity()
 export class Author {
-
   @PrimaryKey({ name: '_id' })
   id: string = '' + Math.random();
 
@@ -12,7 +11,6 @@ export class Author {
 
   @Property({ persist: false })
   foo = '123';
-
 }
 
 let orm: MikroORM;
@@ -37,9 +35,13 @@ test('GH issue 3897', async () => {
   author2.termsAccepted = true;
   await orm.em.flush();
 
-  const r1 = await orm.em.fork().find(Author, {}, {
-    fields: ['foo', 'termsAccepted'],
-  });
+  const r1 = await orm.em.fork().find(
+    Author,
+    {},
+    {
+      fields: ['foo', 'termsAccepted'],
+    },
+  );
   expect(r1[0].termsAccepted).toBe(true);
   expect(r1[1].termsAccepted).toBe(true);
 });

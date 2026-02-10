@@ -61,10 +61,7 @@ afterAll(() => orm.close(true));
 test('collection operators', async () => {
   const books = await orm.em.findAll(Book, {
     where: {
-      $and: [
-        { tags: { $some: { name: 'Fiction' } } },
-        { tags: { $some: { name: 'Fantasy' } } },
-      ],
+      $and: [{ tags: { $some: { name: 'Fiction' } } }, { tags: { $some: { name: 'Fantasy' } } }],
     },
     populate: ['tags'],
     orderBy: { title: 'asc', tags: { name: 'asc' } },

@@ -11,7 +11,6 @@ import { Entity, PrimaryKey, Property, ReflectMetadataProvider, Unique } from '@
   expression: 'create unique index a_non_null on `a` (`z`, `y`, `x`) where `x` is not null',
 })
 class A {
-
   @PrimaryKey()
   id!: number;
 
@@ -23,7 +22,6 @@ class A {
 
   @Property()
   z!: string;
-
 }
 
 let orm: MikroORM;
@@ -59,17 +57,15 @@ test('5668', async () => {
     },
   );
 
-  await orm.em.fork().upsertMany(
-    A,
-    [{ y: 'y1', z: 'z1' }],
-    {
-      onConflictFields: sql`(z, y) where x is null`,
-      onConflictAction: 'ignore',
-      onConflictMergeFields: ['z'],
-    },
-  );
+  await orm.em.fork().upsertMany(A, [{ y: 'y1', z: 'z1' }], {
+    onConflictFields: sql`(z, y) where x is null`,
+    onConflictAction: 'ignore',
+    onConflictMergeFields: ['z'],
+  });
 
-  await orm.em.fork().qb(A)
+  await orm.em
+    .fork()
+    .qb(A)
     .insert({ y: 'y1', z: 'z1' })
     .onConflict(sql`(z, y) where x is null`)
     .merge()

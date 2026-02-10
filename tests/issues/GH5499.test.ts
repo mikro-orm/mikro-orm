@@ -5,7 +5,6 @@ import { PLATFORMS } from '../bootstrap.js';
 
 @Entity()
 class User {
-
   @PrimaryKey({ name: '_id' })
   id!: number;
 
@@ -19,7 +18,6 @@ class User {
     this.name = name;
     this.foo = foo;
   }
-
 }
 
 const options = {
@@ -29,8 +27,7 @@ const options = {
   postgresql: { dbName: '5499' },
 };
 
-describe.each(Utils.keys(options))('GH #5499 [%s]',  type => {
-
+describe.each(Utils.keys(options))('GH #5499 [%s]', type => {
   let orm: MikroORM;
 
   beforeAll(async () => {

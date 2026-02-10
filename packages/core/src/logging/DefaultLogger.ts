@@ -3,7 +3,6 @@ import { colors } from './colors.js';
 import type { Highlighter } from '../typings.js';
 
 export class DefaultLogger implements Logger {
-
   debugMode: boolean | LoggerNamespace[];
   readonly writer: (message: string) => void;
   private readonly usesReplicas?: boolean;
@@ -37,9 +36,7 @@ export class DefaultLogger implements Logger {
       message = colors.yellow(message);
     }
 
-    const label = context?.label
-      ? colors.cyan(`(${context.label}) `)
-      : '';
+    const label = context?.label ? colors.cyan(`(${context.label}) `) : '';
 
     this.writer(colors.grey(`[${namespace}] `) + label + message);
   }
@@ -66,14 +63,16 @@ export class DefaultLogger implements Logger {
   }
 
   isEnabled(namespace: LoggerNamespace, context?: LogContext) {
-    if (context?.enabled !== undefined) { return context.enabled; }
+    if (context?.enabled !== undefined) {
+      return context.enabled;
+    }
     const debugMode = context?.debugMode ?? this.debugMode;
 
     if (namespace === 'deprecated') {
       const { ignoreDeprecations = false } = this.options;
       return Array.isArray(ignoreDeprecations)
-        /* v8 ignore next */
-        ? !ignoreDeprecations.includes(context?.label ?? '')
+        ? /* v8 ignore next */
+          !ignoreDeprecations.includes(context?.label ?? '')
         : !ignoreDeprecations;
     }
 
@@ -115,5 +114,4 @@ export class DefaultLogger implements Logger {
   static create(this: void, options: LoggerOptions) {
     return new DefaultLogger(options);
   }
-
 }

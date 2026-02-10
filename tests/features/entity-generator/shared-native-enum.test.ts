@@ -64,19 +64,22 @@ afterAll(async () => {
 });
 
 describe.each(['ts-enum', 'union-type', 'dictionary'] as const)('shared native enums [%s]', enumMode => {
-  describe.each(['entitySchema', 'defineEntity', 'defineEntity+types', 'decorators'] as const)('[%s]', entityDefinition => {
-    test('shared native enum', async () => {
-      const dump = await orm.entityGenerator.generate({
-        entityDefinition: entityDefinition === 'defineEntity+types' ? 'defineEntity' : entityDefinition,
-        inferEntityType: entityDefinition === 'defineEntity+types',
-        enumMode,
-        bidirectionalRelations: true,
-        identifiedReferences: true,
-        scalarPropertiesForRelations: 'always',
-        onlyPurePivotTables: false,
-        outputPurePivotTables: true,
+  describe.each(['entitySchema', 'defineEntity', 'defineEntity+types', 'decorators'] as const)(
+    '[%s]',
+    entityDefinition => {
+      test('shared native enum', async () => {
+        const dump = await orm.entityGenerator.generate({
+          entityDefinition: entityDefinition === 'defineEntity+types' ? 'defineEntity' : entityDefinition,
+          inferEntityType: entityDefinition === 'defineEntity+types',
+          enumMode,
+          bidirectionalRelations: true,
+          identifiedReferences: true,
+          scalarPropertiesForRelations: 'always',
+          onlyPurePivotTables: false,
+          outputPurePivotTables: true,
+        });
+        expect(dump).toMatchSnapshot();
       });
-      expect(dump).toMatchSnapshot();
-    });
-  });
+    },
+  );
 });

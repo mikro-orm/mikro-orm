@@ -1,9 +1,16 @@
 import { Collection, MikroORM } from '@mikro-orm/sqlite';
-import { Entity, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  OneToOne,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class MediaSet {
-
   @PrimaryKey()
   id!: number;
 
@@ -12,12 +19,10 @@ class MediaSet {
     mappedBy: media => media.set,
   })
   medias = new Collection<Media>(this);
-
 }
 
 @Entity()
 class Media {
-
   @PrimaryKey()
   id!: number;
 
@@ -31,16 +36,14 @@ class Media {
   @Property({ type: 'text' })
   url: string;
 
-  constructor({ url, set }: { url: string; set: MediaSet}) {
+  constructor({ url, set }: { url: string; set: MediaSet }) {
     this.url = url;
     this.set = set;
   }
-
 }
 
 @Entity()
 class Product {
-
   @PrimaryKey()
   id!: number;
 
@@ -52,7 +55,6 @@ class Product {
   constructor({ imageList }: { imageList: MediaSet }) {
     this.imageList = imageList;
   }
-
 }
 
 let orm: MikroORM;

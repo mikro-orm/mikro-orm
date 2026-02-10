@@ -16,7 +16,6 @@ function decrypt(value: string): string {
 }
 
 class EncryptedType extends Type<string, string> {
-
   convertToDatabaseValue(value: string): string {
     return encrypt(value);
   }
@@ -28,12 +27,10 @@ class EncryptedType extends Type<string, string> {
   getColumnType(): string {
     return 'text';
   }
-
 }
 
 @Entity()
 class EntityWithEncryptedProp {
-
   @PrimaryKey()
   id!: number;
 
@@ -42,7 +39,6 @@ class EntityWithEncryptedProp {
 
   @Property({ type: EncryptedType })
   secret!: string;
-
 }
 
 let orm: MikroORM;
@@ -63,7 +59,6 @@ beforeEach(async () => {
 afterAll(() => orm.close(true));
 
 describe('result cache with custom types (GH 7112)', () => {
-
   test('custom type with encrypt/decrypt should work with cache', async () => {
     const entity = new EntityWithEncryptedProp();
     entity.secret = 'my-secret-value';
@@ -105,5 +100,4 @@ describe('result cache with custom types (GH 7112)', () => {
     expect(mockLog.mock.calls).toHaveLength(1); // cache hit, no new query fired
     expect(res2.map(e => e.secret)).toEqual(['secret-1', 'secret-2']);
   });
-
 });

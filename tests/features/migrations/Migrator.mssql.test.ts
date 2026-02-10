@@ -19,15 +19,12 @@ import {
 import { BASE_DIR, mockLogger } from '../../bootstrap.js';
 
 class MigrationTest1 extends Migration {
-
   async up(): Promise<void> {
     this.addSql('select 1 + 1');
   }
-
 }
 
 class MigrationTest2 extends Migration {
-
   async up(): Promise<void> {
     this.addSql('select 1 + 1');
     this.addSql(raw('select 1 + 1'));
@@ -41,11 +38,9 @@ class MigrationTest2 extends Migration {
   override isTransactional(): boolean {
     return false;
   }
-
 }
 
 describe('Migrator (mssql)', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -61,9 +56,13 @@ describe('Migrator (mssql)', () => {
     });
 
     await orm.schema.refresh();
-    await orm.schema.execute('alter table [custom].[book2] add [foo] varchar null constraint [book2_foo_default] default \'lol\';');
+    await orm.schema.execute(
+      "alter table [custom].[book2] add [foo] varchar null constraint [book2_foo_default] default 'lol';",
+    );
     await orm.schema.execute('alter table [custom].[book2] alter column [double] numeric;');
-    await orm.schema.execute('alter table [custom].[test2] add [path] text null constraint [test2_path_default] default null;');
+    await orm.schema.execute(
+      'alter table [custom].[test2] add [path] text null constraint [test2_path_default] default null;',
+    );
     await rm(process.cwd() + '/temp/migrations-222', { recursive: true, force: true });
   });
   beforeEach(() => orm.config.resetServiceCache());
@@ -84,20 +83,24 @@ describe('Migrator (mssql)', () => {
     const dateMock = vi.spyOn(Date.prototype, 'toISOString');
     dateMock.mockReturnValue('2019-10-13T21:48:13.382Z');
     const migrationsSettings = orm.config.get('migrations');
-    orm.config.set('migrations', { ...migrationsSettings, generator: class extends TSMigrationGenerator {
+    orm.config.set('migrations', {
+      ...migrationsSettings,
+      generator: class extends TSMigrationGenerator {
+        override generateMigrationFile(className: string, diff: { up: string[]; down: string[] }): string {
+          const comment = '// this file was generated via custom migration generator\n\n';
+          return comment + super.generateMigrationFile(className, diff);
+        }
 
-      override generateMigrationFile(className: string, diff: { up: string[]; down: string[] }): string {
-        const comment = '// this file was generated via custom migration generator\n\n';
-        return comment + super.generateMigrationFile(className, diff);
-      }
+        override createStatement(sql: string, padLeft: number): string {
+          sql = sql
+            .split('\n')
+            .map((l, i) => (i === 0 ? l : `${' '.repeat(padLeft + 13)}${l}`))
+            .join('\n');
 
-      override createStatement(sql: string, padLeft: number): string {
-        sql = sql.split('\n').map((l, i) => i === 0 ? l : `${' '.repeat(padLeft + 13)}${l}`).join('\n');
-
-        return super.createStatement(sql, padLeft);
-      }
-
-    } });
+          return super.createStatement(sql, padLeft);
+        }
+      },
+    });
     const migrator = orm.migrator;
     const migration = await migrator.create();
     expect(migration).toMatchSnapshot('migration-ts-dump');
@@ -310,9 +313,9 @@ describe('Migrator (mssql)', () => {
     expect(spy1).toHaveBeenCalledWith('select 1 + 1');
     expect(mock.mock.calls.length).toBe(5);
     expect(mock.mock.calls[0][0]).toMatch('begin');
-    expect(mock.mock.calls[1][0]).toMatch('exec sp_MSforeachtable \'alter table ? nocheck constraint all\';');
+    expect(mock.mock.calls[1][0]).toMatch("exec sp_MSforeachtable 'alter table ? nocheck constraint all';");
     expect(mock.mock.calls[2][0]).toMatch('select 1 + 1');
-    expect(mock.mock.calls[3][0]).toMatch('exec sp_MSforeachtable \'alter table ? check constraint all\';');
+    expect(mock.mock.calls[3][0]).toMatch("exec sp_MSforeachtable 'alter table ? check constraint all';");
     expect(mock.mock.calls[4][0]).toMatch('commit');
     mock.mock.calls.length = 0;
 
@@ -328,7 +331,9 @@ describe('Migrator (mssql)', () => {
     expect(mock.mock.calls.length).toBe(7);
     expect(mock.mock.calls[0][0]).toMatch('select 1 + 1 as count1');
     expect(mock.mock.calls[1][0]).toMatch('begin');
-    expect(mock.mock.calls[2][0]).toMatch('insert into [custom].[foo_bar2] ([name]) output inserted.[id], inserted.[version] values (?)');
+    expect(mock.mock.calls[2][0]).toMatch(
+      'insert into [custom].[foo_bar2] ([name]) output inserted.[id], inserted.[version] values (?)',
+    );
     expect(mock.mock.calls[3][0]).toMatch('commit');
     expect(mock.mock.calls[4][0]).toMatch('select 1 + 1');
     expect(mock.mock.calls[5][0]).toMatch('select 1 + 1');
@@ -438,7 +443,6 @@ describe('Migrator (mssql)', () => {
     });
     expect(calls).toMatchSnapshot('all-or-nothing-disabled');
   });
-
 });
 
 test('ensureTable when the schema does not exist', async () => {
@@ -458,9 +462,15 @@ test('ensureTable when the schema does not exist', async () => {
 
   const mock = mockLogger(orm);
   await storage.ensureTable!(); // ensures the schema first
-  expect(mock.mock.calls[0][0]).toMatch(`select t.name as table_name, schema_name(t2.schema_id) schema_name, ep.value as table_comment from sysobjects t inner join sys.tables t2 on t2.object_id = t.id left join sys.extended_properties ep on ep.major_id = t.id and ep.name = 'MS_Description' and ep.minor_id = 0`);
+  expect(mock.mock.calls[0][0]).toMatch(
+    `select t.name as table_name, schema_name(t2.schema_id) schema_name, ep.value as table_comment from sysobjects t inner join sys.tables t2 on t2.object_id = t.id left join sys.extended_properties ep on ep.major_id = t.id and ep.name = 'MS_Description' and ep.minor_id = 0`,
+  );
   expect(mock.mock.calls[1][0]).toMatch(`select name as schema_name from sys.schemas order by name`);
-  expect(mock.mock.calls[2][0]).toMatch(`if (schema_id('custom2') is null) begin exec ('create schema [custom2] authorization [dbo]') end`);
-  expect(mock.mock.calls[3][0]).toMatch(`create table [custom2].[mikro_orm_migrations] ([id] int identity(1,1) not null primary key, [name] varchar(255) not null, [executed_at] datetime2(7) not null constraint [mikro_orm_migrations_executed_at_default] default current_timestamp)`);
+  expect(mock.mock.calls[2][0]).toMatch(
+    `if (schema_id('custom2') is null) begin exec ('create schema [custom2] authorization [dbo]') end`,
+  );
+  expect(mock.mock.calls[3][0]).toMatch(
+    `create table [custom2].[mikro_orm_migrations] ([id] int identity(1,1) not null primary key, [name] varchar(255) not null, [executed_at] datetime2(7) not null constraint [mikro_orm_migrations_executed_at_default] default current_timestamp)`,
+  );
   await orm.close();
 });

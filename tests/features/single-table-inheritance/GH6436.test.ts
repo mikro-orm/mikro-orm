@@ -1,12 +1,20 @@
 import { MikroORM, Collection, Opt, ref, Ref } from '@mikro-orm/sqlite';
-import { Entity, Enum, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  Enum,
+  ManyToOne,
+  OneToMany,
+  OneToOne,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Entity({
   discriminatorColumn: 'type',
   abstract: true,
 })
 abstract class BasePerson {
-
   @PrimaryKey()
   id!: number;
 
@@ -15,31 +23,25 @@ abstract class BasePerson {
 
   @Property()
   name!: string;
-
 }
 
 @Entity({ discriminatorValue: 'customer' })
 class Customer extends BasePerson {
-
   @Property()
   amtMoney!: number;
-
 }
 
 @Entity({ discriminatorValue: 'employee' })
 class Employee extends BasePerson {
-
   @Property()
   hoursWorked!: number;
 
   @OneToMany(() => Break, b => b.employee)
   breaks = new Collection<Break>(this);
-
 }
 
 @Entity()
 class Break {
-
   @PrimaryKey()
   id!: number;
 
@@ -48,12 +50,10 @@ class Break {
 
   @ManyToOne(() => Employee, { ref: true })
   employee!: Ref<Employee>;
-
 }
 
 @Entity()
 class Store {
-
   @PrimaryKey()
   id!: number;
 
@@ -62,7 +62,6 @@ class Store {
 
   @OneToOne(() => Employee, { ref: true })
   manager!: Ref<Employee>;
-
 }
 
 let orm: MikroORM;

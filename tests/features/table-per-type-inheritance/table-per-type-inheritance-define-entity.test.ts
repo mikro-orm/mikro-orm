@@ -127,9 +127,7 @@ const CatDef = defineEntity({
 // ============================================================
 
 describe('TPT with defineEntity', () => {
-
   describe('basic TPT operations', () => {
-
     test('basic TPT operations without relations to abstract', async () => {
       const orm = await MikroORM.init({
         dbName: ':memory:',
@@ -222,11 +220,9 @@ describe('TPT with defineEntity', () => {
 
       await orm.close();
     });
-
   });
 
   describe('TPT with relations', () => {
-
     test('relation to abstract base class (owner -> vehicles)', async () => {
       const orm = await MikroORM.init({
         dbName: ':memory:',
@@ -279,11 +275,9 @@ describe('TPT with defineEntity', () => {
 
       await orm.close();
     });
-
   });
 
   describe('multi-level TPT inheritance', () => {
-
     test('three-level hierarchy (Animal -> Mammal -> Dog/Cat)', async () => {
       const orm = await MikroORM.init({
         dbName: ':memory:',
@@ -325,11 +319,9 @@ describe('TPT with defineEntity', () => {
 
       await orm.close();
     });
-
   });
 
   describe('partial loading and fields', () => {
-
     test('partial loading with fields option', async () => {
       const orm = await MikroORM.init({
         dbName: ':memory:',
@@ -356,11 +348,9 @@ describe('TPT with defineEntity', () => {
 
       await orm.close();
     });
-
   });
 
   describe('ordering and pagination', () => {
-
     test('ordering by parent and child properties', async () => {
       const orm = await MikroORM.init({
         dbName: ':memory:',
@@ -405,11 +395,15 @@ describe('TPT with defineEntity', () => {
       orm.em.clear();
 
       // Get page 2 with 3 items per page
-      const page2 = await orm.em.find(CarDef, {}, {
-        orderBy: { brand: 'ASC' },
-        limit: 3,
-        offset: 3,
-      });
+      const page2 = await orm.em.find(
+        CarDef,
+        {},
+        {
+          orderBy: { brand: 'ASC' },
+          limit: 3,
+          offset: 3,
+        },
+      );
 
       expect(page2).toHaveLength(3);
       expect(page2[0].brand).toBe('Brand04');
@@ -417,7 +411,5 @@ describe('TPT with defineEntity', () => {
 
       await orm.close();
     });
-
   });
-
 });

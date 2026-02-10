@@ -1,11 +1,28 @@
-import { Cascade, Collection, MikroORM, ValidationError, wrap, LoadStrategy, PrimaryKeyProp, Dictionary } from '@mikro-orm/core';
-import { Entity, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Cascade,
+  Collection,
+  MikroORM,
+  ValidationError,
+  wrap,
+  LoadStrategy,
+  PrimaryKeyProp,
+  Dictionary,
+} from '@mikro-orm/core';
+import {
+  Entity,
+  ManyToMany,
+  ManyToOne,
+  OneToMany,
+  OneToOne,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { AbstractSqlConnection, SqliteDriver } from '@mikro-orm/sqlite';
 import { mockLogger } from '../../helpers.js';
 
 @Entity()
 class FooBar12 {
-
   @PrimaryKey()
   id!: number;
 
@@ -15,12 +32,10 @@ class FooBar12 {
   constructor(name: string) {
     this.name = name;
   }
-
 }
 
 @Entity()
 class FooBaz12 {
-
   @PrimaryKey()
   id!: number;
 
@@ -30,12 +45,10 @@ class FooBaz12 {
   constructor(name: string) {
     this.name = name;
   }
-
 }
 
 @Entity()
 class FooParam12 {
-
   @ManyToOne(() => FooBar12, { primary: true })
   bar!: FooBar12;
 
@@ -55,12 +68,10 @@ class FooParam12 {
     this.baz = baz;
     this.value = value;
   }
-
 }
 
 @Entity()
 class Configuration12 {
-
   @PrimaryKey()
   property: string;
 
@@ -75,12 +86,10 @@ class Configuration12 {
     this.property = property;
     this.value = value;
   }
-
 }
 
 @Entity()
 class Test12 {
-
   @PrimaryKey()
   id!: number;
 
@@ -98,14 +107,15 @@ class Test12 {
   }
 
   getConfiguration(): Record<string, string> {
-    return this.config.getItems().reduce((c, v) => { c[v.property] = v.value; return c; }, {} as Dictionary);
+    return this.config.getItems().reduce((c, v) => {
+      c[v.property] = v.value;
+      return c;
+    }, {} as Dictionary);
   }
-
 }
 
 @Entity()
 class Author12 {
-
   @PrimaryKey()
   id!: number;
 
@@ -118,12 +128,10 @@ class Author12 {
   constructor(name: string) {
     this.name = name;
   }
-
 }
 
 @Entity({ comment: 'This is address table' })
 class Address12 {
-
   @OneToOne({ entity: () => Author12, primary: true, joinColumn: 'author_id', unique: 'address2_author_id_unique' })
   author: Author12;
 
@@ -134,12 +142,10 @@ class Address12 {
     this.author = author;
     this.value = value;
   }
-
 }
 
 @Entity()
 class Car12 {
-
   @PrimaryKey({ length: 100 })
   name: string;
 
@@ -159,12 +165,10 @@ class Car12 {
     this.year = year;
     this.price = price;
   }
-
 }
 
 @Entity()
 class User12 {
-
   @PrimaryKey({ length: 100 })
   firstName: string;
 
@@ -189,12 +193,10 @@ class User12 {
     this.firstName = firstName;
     this.lastName = lastName;
   }
-
 }
 
 @Entity()
 class Sandwich12 {
-
   @PrimaryKey()
   id!: number;
 
@@ -211,12 +213,10 @@ class Sandwich12 {
     this.name = name;
     this.price = price;
   }
-
 }
 
 @Entity()
 class CarOwner12 {
-
   @PrimaryKey()
   id!: number;
 
@@ -229,11 +229,9 @@ class CarOwner12 {
   constructor(name: string) {
     this.name = name;
   }
-
 }
 
 describe('composite keys in sqlite', () => {
-
   let orm: MikroORM<SqliteDriver>;
 
   beforeAll(async () => {
@@ -241,7 +239,19 @@ describe('composite keys in sqlite', () => {
       metadataProvider: ReflectMetadataProvider,
       driver: SqliteDriver,
       dbName: ':memory:',
-      entities: [Author12, Address12, FooBar12, FooBaz12, FooParam12, Configuration12, Test12, User12, Car12, CarOwner12, Sandwich12],
+      entities: [
+        Author12,
+        Address12,
+        FooBar12,
+        FooBaz12,
+        FooParam12,
+        Configuration12,
+        Test12,
+        User12,
+        Car12,
+        CarOwner12,
+        Sandwich12,
+      ],
     });
     await orm.schema.refresh();
   });
@@ -304,7 +314,11 @@ describe('composite keys in sqlite', () => {
     expect(p2.bar.id).toBe(bar.id);
     expect(p2.baz.id).toBe(baz.id);
     expect(p2.value).toBe('val2');
-    expect([...orm.em.getUnitOfWork().getIdentityMap().keys()].sort()).toEqual(['FooBar12-7', 'FooBaz12-3', 'FooParam12-7~~~3']);
+    expect([...orm.em.getUnitOfWork().getIdentityMap().keys()].sort()).toEqual([
+      'FooBar12-7',
+      'FooBaz12-3',
+      'FooParam12-7~~~3',
+    ]);
 
     const p3 = await orm.em.findOneOrFail(FooParam12, { bar: param.bar.id, baz: param.baz.id });
     expect(p3).toBe(p2);
@@ -495,7 +509,9 @@ describe('composite keys in sqlite', () => {
     await orm.em.flush();
 
     expect(mock.mock.calls[0][0]).toMatch('begin');
-    expect(mock.mock.calls[1][0]).toMatch('delete from `user12_sandwiches` where ((`sandwich12_id` = 2 and `user12_first_name` = \'Henry\' and `user12_last_name` = \'Doe 2\') or (`sandwich12_id` = 3 and `user12_first_name` = \'Henry\' and `user12_last_name` = \'Doe 2\'))');
+    expect(mock.mock.calls[1][0]).toMatch(
+      "delete from `user12_sandwiches` where ((`sandwich12_id` = 2 and `user12_first_name` = 'Henry' and `user12_last_name` = 'Doe 2') or (`sandwich12_id` = 3 and `user12_first_name` = 'Henry' and `user12_last_name` = 'Doe 2'))",
+    );
     expect(mock.mock.calls[2][0]).toMatch('commit');
   });
 
@@ -575,7 +591,9 @@ describe('composite keys in sqlite', () => {
     expect(mock.mock.calls[0][0]).toMatch('begin');
     expect(mock.mock.calls[1][0]).toMatch('insert into `car12` (`name`, `year`, `price`) values (?, ?, ?), (?, ?, ?)'); // c1, c2
     expect(mock.mock.calls[2][0]).toMatch('insert into `user12` (`first_name`, `last_name`) values (?, ?)'); // u1
-    expect(mock.mock.calls[3][0]).toMatch('insert into `user12_cars` (`car12_name`, `car12_year`, `user12_first_name`, `user12_last_name`) values (?, ?, ?, ?), (?, ?, ?, ?), (?, ?, ?, ?)');
+    expect(mock.mock.calls[3][0]).toMatch(
+      'insert into `user12_cars` (`car12_name`, `car12_year`, `user12_first_name`, `user12_last_name`) values (?, ?, ?, ?), (?, ?, ?, ?), (?, ?, ?, ?)',
+    );
     expect(mock.mock.calls[4][0]).toMatch('commit');
   });
 
@@ -628,6 +646,4 @@ describe('composite keys in sqlite', () => {
   });
 
   afterAll(async () => orm.close(true));
-
 });
-

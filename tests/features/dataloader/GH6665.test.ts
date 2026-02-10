@@ -12,7 +12,6 @@ import { mockLogger } from '../../helpers.js';
 
 @Entity()
 class Video {
-
   @PrimaryKey()
   id!: number;
 
@@ -30,12 +29,10 @@ class Video {
 
   @OneToMany(() => Captions, captions => captions.video)
   captions = new Collection<Captions>(this);
-
 }
 
 @Entity()
 class Category {
-
   @PrimaryKey()
   id!: number;
 
@@ -44,12 +41,10 @@ class Category {
 
   @ManyToMany(() => Video, video => video.categories)
   video = new Collection<Video>(this);
-
 }
 
 @Entity()
 class Image {
-
   @PrimaryKey()
   id!: number;
 
@@ -58,12 +53,10 @@ class Image {
 
   @ManyToOne(() => Video, { nullable: true, ref: true })
   video?: Ref<Video>;
-
 }
 
 @Entity()
 class Captions {
-
   @PrimaryKey()
   id!: number;
 
@@ -72,7 +65,6 @@ class Captions {
 
   @ManyToOne(() => Video, { nullable: true, ref: true })
   video?: Ref<Video>;
-
 }
 
 let orm: MikroORM;

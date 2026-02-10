@@ -7,7 +7,6 @@ import { FooBaz } from '../../entities/FooBaz.js';
 import { Dummy } from '../../entities/Dummy.js';
 
 describe('UnitOfWork', () => {
-
   let orm: MikroORM;
   let uow: UnitOfWork;
   let computer: ChangeSetComputer;
@@ -59,7 +58,11 @@ describe('UnitOfWork', () => {
 
   test('getters', async () => {
     const uow = new UnitOfWork(orm.em);
-    const author = orm.em.create(Author, { id: '00000001885f0a3cc37dc9f0', name: 'test', email: 'test' }, { managed: true });
+    const author = orm.em.create(
+      Author,
+      { id: '00000001885f0a3cc37dc9f0', name: 'test', email: 'test' },
+      { managed: true },
+    );
     uow.persist(author);
     expect([...uow.getPersistStack()]).toEqual([author]);
     expect([...uow.getRemoveStack()]).toEqual([]);
@@ -75,7 +78,6 @@ describe('UnitOfWork', () => {
     let changeSets: ChangeSet<any>[] = [];
 
     class Subscriber implements EventSubscriber {
-
       async onFlush(args: FlushEventArgs): Promise<void> {
         const changeSets = args.uow.getChangeSets();
         const cs = changeSets.find(cs => cs.type === ChangeSetType.CREATE && cs.entity instanceof FooBar);
@@ -98,7 +100,6 @@ describe('UnitOfWork', () => {
       async afterFlush(args: FlushEventArgs): Promise<void> {
         changeSets = [...args.uow.getChangeSets()];
       }
-
     }
 
     const em = orm.em.fork();
@@ -109,7 +110,9 @@ describe('UnitOfWork', () => {
     const mock = mockLogger(orm);
     await em.persist(bar).flush();
     expect(mock.mock.calls[0][0]).toMatch(`db.getCollection('foo-baz').insertMany([ { name: 'dynamic' } ], {})`);
-    expect(mock.mock.calls[1][0]).toMatch(/db\.getCollection\('foo-bar'\)\.insertMany\(\[ { name: 'bar', onCreateTest: true, onUpdateTest: true, baz: ObjectId\('\w+'\), version: ISODate\('.+'\) } ], {}\)/);
+    expect(mock.mock.calls[1][0]).toMatch(
+      /db\.getCollection\('foo-bar'\)\.insertMany\(\[ { name: 'bar', onCreateTest: true, onUpdateTest: true, baz: ObjectId\('\w+'\), version: ISODate\('.+'\) } ], {}\)/,
+    );
 
     expect(changeSets.map(cs => [cs.type, cs.meta.className])).toEqual([
       [ChangeSetType.CREATE, 'FooBar'],
@@ -119,12 +122,11 @@ describe('UnitOfWork', () => {
 
     bar.name = 'remove me';
     await em.flush();
-    expect(mock.mock.calls[0][0]).toMatch(/db\.getCollection\('foo-bar'\)\.deleteMany\(\{ _id: \{ '\$in': \[ ObjectId\('\w{24}'\) ] } }, \{}\)/);
-    expect(changeSets.map(cs => [cs.type, cs.meta.className])).toEqual([
-      [ChangeSetType.DELETE, 'FooBar'],
-    ]);
+    expect(mock.mock.calls[0][0]).toMatch(
+      /db\.getCollection\('foo-bar'\)\.deleteMany\(\{ _id: \{ '\$in': \[ ObjectId\('\w{24}'\) ] } }, \{}\)/,
+    );
+    expect(changeSets.map(cs => [cs.type, cs.meta.className])).toEqual([[ChangeSetType.DELETE, 'FooBar']]);
   });
 
   afterAll(async () => orm.close(true));
-
 });

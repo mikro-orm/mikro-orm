@@ -1,5 +1,13 @@
 import { MikroORM } from '@mikro-orm/sqlite';
-import { Embeddable, Embedded, Entity, Enum, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Embeddable,
+  Embedded,
+  Entity,
+  Enum,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 enum ChangeType {
   BOOLEAN = 'BOOLEAN',
@@ -8,43 +16,36 @@ enum ChangeType {
 
 @Embeddable()
 class BooleanChangeEntry {
-
   @Property({ type: 'boolean', nullable: true })
   value: boolean | null;
 
   constructor({ value }: { value: boolean | null }) {
     this.value = value;
   }
-
 }
 
 @Embeddable()
 class StringChangeEntry {
-
   @Property({ type: 'string', nullable: true })
   value: string | null;
 
   constructor({ value }: { value: string | null }) {
     this.value = value;
   }
-
 }
 
 @Embeddable({ abstract: true, discriminatorColumn: 'type' })
 abstract class AbstractChangeType {
-
   @Enum(() => ChangeType)
   type: ChangeType;
 
   constructor(type: ChangeType) {
     this.type = type;
   }
-
 }
 
 @Embeddable({ discriminatorValue: ChangeType.BOOLEAN })
 class ChangeBooleanValue extends AbstractChangeType {
-
   @Embedded(() => BooleanChangeEntry, { object: true, array: true })
   entries: BooleanChangeEntry[];
 
@@ -52,12 +53,10 @@ class ChangeBooleanValue extends AbstractChangeType {
     super(ChangeType.BOOLEAN);
     this.entries = entries.map(entry => new BooleanChangeEntry(entry));
   }
-
 }
 
 @Embeddable({ discriminatorValue: ChangeType.STRING })
 class ChangeStringValue extends AbstractChangeType {
-
   @Embedded(() => StringChangeEntry, { object: true, array: true })
   entries: StringChangeEntry[];
 
@@ -65,12 +64,10 @@ class ChangeStringValue extends AbstractChangeType {
     super(ChangeType.STRING);
     this.entries = entries.map(entry => new StringChangeEntry(entry));
   }
-
 }
 
 @Entity()
 class ChangeOwner {
-
   @PrimaryKey()
   id: number;
 
@@ -81,7 +78,6 @@ class ChangeOwner {
     this.id = id;
     this.fields = fields;
   }
-
 }
 
 let orm: MikroORM;
@@ -90,13 +86,7 @@ beforeAll(async () => {
   orm = await MikroORM.init({
     metadataProvider: ReflectMetadataProvider,
     dbName: ':memory:',
-    entities: [
-      ChangeOwner,
-      ChangeBooleanValue,
-      ChangeStringValue,
-      BooleanChangeEntry,
-      StringChangeEntry,
-    ],
+    entities: [ChangeOwner, ChangeBooleanValue, ChangeStringValue, BooleanChangeEntry, StringChangeEntry],
   });
   await orm.schema.refresh();
 });

@@ -1,10 +1,16 @@
 import { EntitySchema, IntegerType, MikroORM, ReferenceKind, StringType } from '@mikro-orm/sqlite';
-import { Embeddable, Embedded, Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Embeddable,
+  Embedded,
+  Entity,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../../helpers.js';
 
 @Embeddable()
 class Address1 {
-
   @Property({ name: 'street' })
   _street: string;
 
@@ -17,23 +23,16 @@ class Address1 {
   @Property({ name: 'country' })
   _country: string;
 
-  constructor(
-    street: string,
-    postalCode: string,
-    city: string,
-    country: string,
-  ) {
+  constructor(street: string, postalCode: string, city: string, country: string) {
     this._street = street;
     this._postalCode = postalCode;
     this._city = city;
     this._country = country;
   }
-
 }
 
 @Entity()
 class User1 {
-
   @PrimaryKey({ name: 'id' })
   _id!: number;
 
@@ -47,32 +46,23 @@ class User1 {
     this._fullName = fullName;
     this._address = address;
   }
-
 }
 
 class Address {
-
   _street: string;
   _postalCode: string;
   _city: string;
   _country: string;
 
-  constructor(
-    street: string,
-    postalCode: string,
-    city: string,
-    country: string,
-  ) {
+  constructor(street: string, postalCode: string, city: string, country: string) {
     this._street = street;
     this._postalCode = postalCode;
     this._city = city;
     this._country = country;
   }
-
 }
 
 class User {
-
   _id!: number;
   _fullName: string;
   _address: Address;
@@ -81,7 +71,6 @@ class User {
     this._fullName = fullName;
     this._address = address;
   }
-
 }
 
 const addressEntitySchema = new EntitySchema({
@@ -177,6 +166,10 @@ test('Should create the right db schema', async () => {
   const mock = mockLogger(orm);
   await orm.em.flush();
   expect(mock).toHaveBeenCalledTimes(4);
-  expect(mock.mock.calls[1][0]).toMatch('insert into `user1` (`fullName`, `address`) values (\'name\', \'{"street":"street","postalCode":"postalCode","city":"city","country":"country"}\') returning `id`');
-  expect(mock.mock.calls[2][0]).toMatch('insert into `User` (`fullName`, `address`) values (\'name\', \'{"street":"street","postalCode":"postalCode","city":"city","country":"country"}\') returning `id`');
+  expect(mock.mock.calls[1][0]).toMatch(
+    'insert into `user1` (`fullName`, `address`) values (\'name\', \'{"street":"street","postalCode":"postalCode","city":"city","country":"country"}\') returning `id`',
+  );
+  expect(mock.mock.calls[2][0]).toMatch(
+    'insert into `User` (`fullName`, `address`) values (\'name\', \'{"street":"street","postalCode":"postalCode","city":"city","country":"country"}\') returning `id`',
+  );
 });

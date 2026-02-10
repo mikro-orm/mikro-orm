@@ -3,28 +3,23 @@ import { Entity, ManyToOne, OneToMany, PrimaryKey, ReflectMetadataProvider } fro
 
 @Entity()
 class Parent {
-
   @PrimaryKey()
   id!: number;
 
   @OneToMany(() => Child, child => child.parent)
   children = new Collection<Child>(this);
-
 }
 
 @Entity()
 export default class Child {
-
   @PrimaryKey()
   id!: number;
 
   @ManyToOne(() => Parent)
   parent!: Parent;
-
 }
 
 describe('GH issue 2882', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -65,5 +60,4 @@ describe('GH issue 2882', () => {
     expect(parent.children).toHaveLength(1);
     expect(wrap(parent.children[0], true).__em?.id).toBe(1);
   });
-
 });

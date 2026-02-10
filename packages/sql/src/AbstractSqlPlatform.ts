@@ -19,7 +19,6 @@ import type { IndexDef } from './typings.js';
 import { NativeQueryBuilder } from './query/NativeQueryBuilder.js';
 
 export abstract class AbstractSqlPlatform extends Platform {
-
   protected readonly schemaHelper?: SchemaHelper;
 
   override usesPivotTable(): boolean {
@@ -45,7 +44,7 @@ export abstract class AbstractSqlPlatform extends Platform {
 
   /* v8 ignore next: kept for type inference only */
   override getSchemaGenerator(driver: IDatabaseDriver, em?: EntityManager): SqlSchemaGenerator {
-    return new SqlSchemaGenerator(em ?? driver as any);
+    return new SqlSchemaGenerator(em ?? (driver as any));
   }
 
   /** @internal */
@@ -98,9 +97,14 @@ export abstract class AbstractSqlPlatform extends Platform {
     return this.getSearchJsonPropertyKey(path.split('->'), type, aliased);
   }
 
-  override getSearchJsonPropertyKey(path: string[], type: string, aliased: boolean, value?: unknown): string | RawQueryFragment {
+  override getSearchJsonPropertyKey(
+    path: string[],
+    type: string,
+    aliased: boolean,
+    value?: unknown,
+  ): string | RawQueryFragment {
     const [a, ...b] = path;
-    const quoteKey = (key: string) => key.match(/^[a-z]\w*$/i) ? key : `"${key}"`;
+    const quoteKey = (key: string) => (key.match(/^[a-z]\w*$/i) ? key : `"${key}"`);
 
     if (aliased) {
       return raw(alias => `json_extract(${this.quoteIdentifier(`${alias}.${a}`)}, '$.${b.map(quoteKey).join('.')}')`);
@@ -110,15 +114,14 @@ export abstract class AbstractSqlPlatform extends Platform {
   }
 
   override getJsonIndexDefinition(index: IndexDef): string[] {
-    return index.columnNames
-      .map(column => {
-        if (!column.includes('.')) {
-          return column;
-        }
+    return index.columnNames.map(column => {
+      if (!column.includes('.')) {
+        return column;
+      }
 
-        const [root, ...path] = column.split('.');
-        return `(json_extract(${root}, '$.${path.join('.')}'))`;
-      });
+      const [root, ...path] = column.split('.');
+      return `(json_extract(${root}, '$.${path.join('.')}'))`;
+    });
   }
 
   supportsSchemas(): boolean {
@@ -138,7 +141,6 @@ export abstract class AbstractSqlPlatform extends Platform {
    * @internal
    */
   getOrderByExpression(column: string, direction: string): string[] {
-    return [ `${column} ${direction.toLowerCase()}` ];
+    return [`${column} ${direction.toLowerCase()}`];
   }
-
 }

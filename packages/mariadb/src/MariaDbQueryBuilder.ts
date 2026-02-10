@@ -1,11 +1,4 @@
-import {
-  type AnyEntity,
-  type EntityKey,
-  type EntityMetadata,
-  raw,
-  RawQueryFragment,
-  Utils,
-} from '@mikro-orm/core';
+import { type AnyEntity, type EntityKey, type EntityMetadata, raw, RawQueryFragment, Utils } from '@mikro-orm/core';
 import { QueryBuilder } from '@mikro-orm/mysql';
 
 /**
@@ -17,14 +10,16 @@ export class MariaDbQueryBuilder<
   Hint extends string = never,
   Context extends object = never,
 > extends QueryBuilder<Entity, RootAlias, Hint, Context> {
-
   protected override wrapPaginateSubQuery(meta: EntityMetadata): void {
     const pks = this.prepareFields(meta.primaryKeys, 'sub-query') as string[];
     const quotedPKs = pks.map(pk => this.platform.quoteIdentifier(pk));
-    const subQuery = this.clone(['_orderBy', '_fields']).select(pks as any).groupBy(pks as any).limit(this._limit!);
+    const subQuery = this.clone(['_orderBy', '_fields'])
+      .select(pks as any)
+      .groupBy(pks as any)
+      .limit(this._limit!);
     // revert the on conditions added via populateWhere, we want to apply those only once
     // @ts-ignore
-    Object.values(subQuery._joins).forEach(join => join.cond = join.cond_ ?? {});
+    Object.values(subQuery._joins).forEach(join => (join.cond = join.cond_ ?? {}));
 
     if (this._offset) {
       subQuery.offset(this._offset);
@@ -107,10 +102,12 @@ export class MariaDbQueryBuilder<
     this.transferConditionsForOrderByJoins(meta, originalCond, populatePaths);
 
     const subquerySql = subSubQuery.toString();
-    const key = meta.getPrimaryProps()[0].runtimeType === 'string' ? `concat('"', ${quotedPKs.join(', ')}, '"')` : quotedPKs.join(', ');
+    const key =
+      meta.getPrimaryProps()[0].runtimeType === 'string'
+        ? `concat('"', ${quotedPKs.join(', ')}, '"')`
+        : quotedPKs.join(', ');
     const sql = `json_contains((${subquerySql}), ${key})`;
     this._cond = {};
     this.select(this._fields as any).where(sql);
   }
-
 }

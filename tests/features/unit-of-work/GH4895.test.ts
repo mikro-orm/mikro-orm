@@ -3,18 +3,14 @@ import { Entity, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorato
 
 @Entity()
 class A {
-
   @PrimaryKey()
   id!: string;
-
 }
 
 @Entity()
 class B {
-
   @PrimaryKey()
   id!: string;
-
 }
 
 let orm: MikroORM;
@@ -25,12 +21,14 @@ beforeAll(async () => {
     metadataProvider: ReflectMetadataProvider,
     entities: [A, B],
     dbName: ':memory:',
-    subscribers: [{
-      onFlush: args => {
-        const changeSets = args.uow.getChangeSets();
-        types.push(changeSets.map(cs => cs.type));
+    subscribers: [
+      {
+        onFlush: args => {
+          const changeSets = args.uow.getChangeSets();
+          types.push(changeSets.map(cs => cs.type));
+        },
       },
-    }],
+    ],
   });
 
   await orm.schema.ensureDatabase();

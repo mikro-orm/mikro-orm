@@ -1,21 +1,27 @@
 import { BaseEntity, Collection, DateTimeType, MikroORM, Ref } from '@mikro-orm/sqlite';
-import { Entity, Filter, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  Filter,
+  ManyToOne,
+  OneToMany,
+  OneToOne,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Entity({ abstract: true })
 @Filter({ name: 'softDelete', cond: { deletedAt: null }, default: true })
 abstract class CustomBaseEntity extends BaseEntity {
-
   @PrimaryKey({ autoincrement: true })
   readonly id!: string;
 
   @Property({ type: DateTimeType, nullable: true })
   deletedAt?: Date;
-
 }
 
 @Entity()
 class User extends CustomBaseEntity {
-
   @Property({ unique: true })
   email!: string;
 
@@ -24,29 +30,24 @@ class User extends CustomBaseEntity {
 
   @OneToMany(() => Login, l => l.user)
   logins = new Collection<Login>(this);
-
 }
 
 @Entity()
 class Address extends CustomBaseEntity {
-
   @Property()
   country!: string;
 
   @OneToOne(() => User, u => u.address, { ref: true, owner: true })
   user!: Ref<User>;
-
 }
 
 @Entity()
 class Login extends CustomBaseEntity {
-
   @Property()
   ip!: string;
 
   @ManyToOne(() => User, { ref: true })
   user!: Ref<User>;
-
 }
 
 let orm: MikroORM;
@@ -62,20 +63,14 @@ beforeAll(async () => {
 
   orm.em.create(User, {
     email: 'johny@example.com',
-    logins: [
-      { ip: '127.0.0.1' },
-      { ip: '8.8.8.8', deletedAt: new Date() },
-      { ip: '192.168.0.1' },
-    ],
+    logins: [{ ip: '127.0.0.1' }, { ip: '8.8.8.8', deletedAt: new Date() }, { ip: '192.168.0.1' }],
     address: { country: 'neverland', deletedAt: new Date() },
   });
 
   // deleted user
   orm.em.create(User, {
     email: 'joshua@example.com',
-    logins: [
-      { ip: '10.0.0.0' },
-    ],
+    logins: [{ ip: '10.0.0.0' }],
     deletedAt: new Date(),
   });
 

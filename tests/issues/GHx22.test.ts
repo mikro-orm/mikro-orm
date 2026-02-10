@@ -1,9 +1,16 @@
 import { Collection, MikroORM, Ref } from '@mikro-orm/sqlite';
-import { Entity, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  OneToOne,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class Account {
-
   @PrimaryKey()
   id!: number;
 
@@ -14,12 +21,10 @@ class Account {
     ref: true,
   })
   billingDetail!: Ref<BillingDetail>;
-
 }
 
 @Entity()
 class BillingDetail {
-
   @PrimaryKey()
   id!: number;
 
@@ -31,12 +36,10 @@ class BillingDetail {
     ref: true,
   })
   account!: Ref<Account>;
-
 }
 
 @Entity()
 class Event {
-
   @PrimaryKey()
   id!: number;
 
@@ -45,12 +48,10 @@ class Event {
 
   @OneToMany(() => Notification, x => x.event)
   notifications = new Collection<Notification>(this);
-
 }
 
 @Entity()
 class Notification {
-
   @PrimaryKey()
   id!: number;
 
@@ -59,7 +60,6 @@ class Notification {
 
   @ManyToOne(() => Account, { ref: true })
   account!: Ref<Account>;
-
 }
 
 let orm: MikroORM;
@@ -80,9 +80,7 @@ beforeAll(async () => {
   });
   orm.em.create(Event, {
     createdBy: account,
-    notifications: [
-      { account },
-    ],
+    notifications: [{ account }],
   });
 
   await orm.em.flush();
@@ -94,7 +92,8 @@ afterAll(async () => {
 });
 
 test('qb.leftJoinAndSelect', async () => {
-  const qb = orm.em.createQueryBuilder(Event, 'e0')
+  const qb = orm.em
+    .createQueryBuilder(Event, 'e0')
     .select(['e0.id'])
     .leftJoinAndSelect('e0.createdBy', 'e1', undefined, ['e1.id'])
     .leftJoinAndSelect('e0.notifications', 'e2', undefined, ['e2.id'])

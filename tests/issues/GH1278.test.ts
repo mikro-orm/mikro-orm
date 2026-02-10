@@ -4,7 +4,6 @@ import { mockLogger } from '../helpers.js';
 
 @Entity()
 export class GroupCode {
-
   @PrimaryKey()
   id!: number;
 
@@ -13,22 +12,18 @@ export class GroupCode {
 
   @OneToOne({ type: 'Group', mappedBy: 'code', nullable: true })
   group?: any;
-
 }
 
 @Entity()
 export class Group {
-
   @PrimaryKey()
   id!: number;
 
   @OneToOne({ nullable: true, orphanRemoval: true })
   code?: GroupCode;
-
 }
 
 describe('GH issue 1278', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -71,5 +66,4 @@ describe('GH issue 1278', () => {
     expect(mock.mock.calls[9][0]).toMatch('update `group` set `code_id` = ? where `id` = ?');
     expect(mock.mock.calls[10][0]).toMatch('commit');
   });
-
 });

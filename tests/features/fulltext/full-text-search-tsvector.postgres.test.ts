@@ -7,7 +7,6 @@ const createWeightedValue = (book: Book): WeightedFullTextValue => ({ A: book.ti
 
 @Entity({ tableName: 'book' })
 export class Book {
-
   @PrimaryKey()
   id!: number;
 
@@ -18,15 +17,30 @@ export class Book {
   description!: string | null;
 
   @Index({ type: 'fulltext' })
-  @Property({ type: FullTextType, nullable: true, onUpdate: (book: Book) => book.title, onCreate: (book: Book) => book.title })
+  @Property({
+    type: FullTextType,
+    nullable: true,
+    onUpdate: (book: Book) => book.title,
+    onCreate: (book: Book) => book.title,
+  })
   searchableTitle!: string;
 
   @Index({ type: 'fulltext' })
-  @Property({ type: 'tsvector', nullable: true, onUpdate: (book: Book) => book.title, onCreate: (book: Book) => book.title })
+  @Property({
+    type: 'tsvector',
+    nullable: true,
+    onUpdate: (book: Book) => book.title,
+    onCreate: (book: Book) => book.title,
+  })
   searchableTitleNoType!: string;
 
   @Index({ type: 'fulltext' })
-  @Property({ type: new FullTextType('english'), nullable: true, onUpdate: (book: Book) => book.title, onCreate: (book: Book) => book.title })
+  @Property({
+    type: new FullTextType('english'),
+    nullable: true,
+    onUpdate: (book: Book) => book.title,
+    onCreate: (book: Book) => book.title,
+  })
   searchableTitleEnglish!: string;
 
   @Index({ type: 'fulltext' })
@@ -36,11 +50,9 @@ export class Book {
   constructor(title: string | null) {
     this.title = title;
   }
-
 }
 
 describe('full text search tsvector in postgres', () => {
-
   let orm: MikroORM<PostgreSqlDriver>;
 
   beforeAll(async () => {
@@ -115,7 +127,9 @@ describe('full text search tsvector in postgres', () => {
     await orm.em.flush();
 
     expect(mock.mock.calls[0][0]).toMatch(`begin`);
-    expect(mock.mock.calls[1][0]).toMatch(`insert into "book" ("title", "searchable_title", "searchable_title_no_type", "searchable_title_english", "searchable_title_weighted") values ('My Life on The ? Wall, part 1', to_tsvector('simple', 'My Life on The ? Wall, part 1'), to_tsvector('simple', 'My Life on The ? Wall, part 1'), to_tsvector('english', 'My Life on The ? Wall, part 1'), setweight(to_tsvector('simple', 'My Life on The ? Wall, part 1'), 'A')) returning "id"`);
+    expect(mock.mock.calls[1][0]).toMatch(
+      `insert into "book" ("title", "searchable_title", "searchable_title_no_type", "searchable_title_english", "searchable_title_weighted") values ('My Life on The ? Wall, part 1', to_tsvector('simple', 'My Life on The ? Wall, part 1'), to_tsvector('simple', 'My Life on The ? Wall, part 1'), to_tsvector('english', 'My Life on The ? Wall, part 1'), setweight(to_tsvector('simple', 'My Life on The ? Wall, part 1'), 'A')) returning "id"`,
+    );
     expect(mock.mock.calls[2][0]).toMatch(`commit`);
 
     book.title = 'Test title';
@@ -126,7 +140,9 @@ describe('full text search tsvector in postgres', () => {
     await orm.em.flush();
 
     expect(mock.mock.calls[0][0]).toMatch(`begin`);
-    expect(mock.mock.calls[1][0]).toMatch(`update "book" set "title" = 'Test title', "description" = 'Test description of book', "searchable_title" = to_tsvector('simple', 'Test title'), "searchable_title_no_type" = to_tsvector('simple', 'Test title'), "searchable_title_english" = to_tsvector('english', 'Test title'), "searchable_title_weighted" = setweight(to_tsvector('simple', 'Test title'), 'A') || setweight(to_tsvector('simple', 'Test description of book'), 'B') where "id" = 1`);
+    expect(mock.mock.calls[1][0]).toMatch(
+      `update "book" set "title" = 'Test title', "description" = 'Test description of book', "searchable_title" = to_tsvector('simple', 'Test title'), "searchable_title_no_type" = to_tsvector('simple', 'Test title'), "searchable_title_english" = to_tsvector('english', 'Test title'), "searchable_title_weighted" = setweight(to_tsvector('simple', 'Test title'), 'A') || setweight(to_tsvector('simple', 'Test description of book'), 'B') where "id" = 1`,
+    );
     expect(mock.mock.calls[2][0]).toMatch(`commit`);
   });
 
@@ -142,7 +158,9 @@ describe('full text search tsvector in postgres', () => {
     await orm.em.flush();
 
     expect(mock.mock.calls[0][0]).toMatch(`begin`);
-    expect(mock.mock.calls[1][0]).toMatch(`insert into "book" ("title", "searchable_title", "searchable_title_no_type", "searchable_title_english", "searchable_title_weighted") values ('My Life on The ? Wall, part 1', to_tsvector('simple', 'My Life on The ? Wall, part 1'), to_tsvector('simple', 'My Life on The ? Wall, part 1'), to_tsvector('english', 'My Life on The ? Wall, part 1'), null) returning "id"`);
+    expect(mock.mock.calls[1][0]).toMatch(
+      `insert into "book" ("title", "searchable_title", "searchable_title_no_type", "searchable_title_english", "searchable_title_weighted") values ('My Life on The ? Wall, part 1', to_tsvector('simple', 'My Life on The ? Wall, part 1'), to_tsvector('simple', 'My Life on The ? Wall, part 1'), to_tsvector('english', 'My Life on The ? Wall, part 1'), null) returning "id"`,
+    );
     expect(mock.mock.calls[2][0]).toMatch(`commit`);
 
     orm.em.clear();
@@ -156,7 +174,9 @@ describe('full text search tsvector in postgres', () => {
     await orm.em.flush();
 
     expect(mock.mock.calls[0][0]).toMatch(`begin`);
-    expect(mock.mock.calls[1][0]).toMatch(`insert into "book" ("title", "searchable_title", "searchable_title_no_type", "searchable_title_english", "searchable_title_weighted") values ('My Life on The ? Wall, part 1', to_tsvector('simple', 'My Life on The ? Wall, part 1'), to_tsvector('simple', 'My Life on The ? Wall, part 1'), to_tsvector('english', 'My Life on The ? Wall, part 1'), null) returning "id"`);
+    expect(mock.mock.calls[1][0]).toMatch(
+      `insert into "book" ("title", "searchable_title", "searchable_title_no_type", "searchable_title_english", "searchable_title_weighted") values ('My Life on The ? Wall, part 1', to_tsvector('simple', 'My Life on The ? Wall, part 1'), to_tsvector('simple', 'My Life on The ? Wall, part 1'), to_tsvector('english', 'My Life on The ? Wall, part 1'), null) returning "id"`,
+    );
     expect(mock.mock.calls[2][0]).toMatch(`commit`);
   });
 
@@ -187,18 +207,23 @@ describe('full text search tsvector in postgres', () => {
     const mock = mockLogger(orm);
 
     const fullTextBooks = (await repo.find({ searchableTitle: { $fulltext: 'life wall' } }))!;
-    expect(mock.mock.calls[0][0]).toMatch(`select "b0".* from "book" as "b0" where "b0"."searchable_title" @@ plainto_tsquery('simple', 'life wall')`);
+    expect(mock.mock.calls[0][0]).toMatch(
+      `select "b0".* from "book" as "b0" where "b0"."searchable_title" @@ plainto_tsquery('simple', 'life wall')`,
+    );
     expect(fullTextBooks).toHaveLength(1);
     mock.mockReset();
 
     const fullTextBooks2 = (await repo.find({ searchableTitleEnglish: { $fulltext: 'life wall' } }))!;
-    expect(mock.mock.calls[0][0]).toMatch(`select "b0".* from "book" as "b0" where "b0"."searchable_title_english" @@ plainto_tsquery('english', 'life wall')`);
+    expect(mock.mock.calls[0][0]).toMatch(
+      `select "b0".* from "book" as "b0" where "b0"."searchable_title_english" @@ plainto_tsquery('english', 'life wall')`,
+    );
     expect(fullTextBooks2).toHaveLength(1);
     mock.mockReset();
 
     const fullTextBooks3 = (await repo.find({ searchableTitleWeighted: { $fulltext: 'life wall' } }))!;
-    expect(mock.mock.calls[0][0]).toMatch(`select "b0".* from "book" as "b0" where "b0"."searchable_title_weighted" @@ plainto_tsquery('simple', 'life wall')`);
+    expect(mock.mock.calls[0][0]).toMatch(
+      `select "b0".* from "book" as "b0" where "b0"."searchable_title_weighted" @@ plainto_tsquery('simple', 'life wall')`,
+    );
     expect(fullTextBooks3).toHaveLength(1);
   });
-
 });

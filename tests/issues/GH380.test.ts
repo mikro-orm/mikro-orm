@@ -3,7 +3,6 @@ import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-or
 
 @Entity()
 class A {
-
   @PrimaryKey()
   id!: number;
 
@@ -12,11 +11,9 @@ class A {
 
   @Property({ default: 'baz' })
   bar!: string;
-
 }
 
 describe('GH issue 380', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -34,5 +31,4 @@ describe('GH issue 380', () => {
     const dump = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(dump).toBe('');
   });
-
 });

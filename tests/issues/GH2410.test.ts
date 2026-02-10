@@ -4,18 +4,15 @@ import { BigIntType } from '@mikro-orm/postgresql';
 
 @Entity({ tableName: 'user' })
 class User {
-
   @PrimaryKey({ type: BigIntType })
   id!: number;
 
   @ManyToOne(() => Member, { fieldName: 'ownerMemberId', nullable: true, ref: true })
   ownerMember?: Ref<Member>;
-
 }
 
 @Entity({ tableName: 'member' })
 class Member {
-
   @PrimaryKey()
   id!: bigint;
 
@@ -24,12 +21,10 @@ class Member {
 
   @OneToMany(() => MemberUser, 'member', { orphanRemoval: true })
   users = new Collection<MemberUser>(this);
-
 }
 
 @Entity({ tableName: 'member_user' })
 class MemberUser {
-
   @PrimaryKey({ type: BigIntType })
   id!: string;
 
@@ -38,11 +33,9 @@ class MemberUser {
 
   @ManyToOne(() => User, { fieldName: 'userId', ref: true })
   user?: Ref<User>;
-
 }
 
 describe('GH issue 2410', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -87,5 +80,4 @@ describe('GH issue 2410', () => {
       }
     });
   });
-
 });

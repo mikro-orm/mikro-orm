@@ -7,7 +7,6 @@ type GeoPoint = {
   lng: number;
 };
 class GeoPointType extends Type<GeoPoint | undefined, string | undefined> {
-
   override convertToDatabaseValue(value: GeoPoint | undefined) {
     return value ? `point(${value.lat} ${value.lng})` : value;
   }
@@ -28,18 +27,15 @@ class GeoPointType extends Type<GeoPoint | undefined, string | undefined> {
   override getColumnType() {
     return 'geometry(Point)';
   }
-
 }
 
 @Entity()
 class Place {
-
   @PrimaryKey()
   id!: number;
 
   @Property({ type: GeoPointType, lazy: true })
   location!: GeoPoint;
-
 }
 
 let orm: MikroORM;
@@ -60,7 +56,6 @@ afterAll(async () => {
   await orm.close(true);
 });
 
-
 test('should handle lazy scalar properties with custom types correctly', async () => {
   const place = orm.em.create(Place, { id: 1, location: { lat: 2, lng: 3 } });
 
@@ -80,5 +75,3 @@ test('should handle lazy scalar properties with custom types correctly', async (
   expect(r2[0]).toEqual({ id: 1, location: { lat: 2, lng: 3 } });
   expect(mock.mock.calls[0][0]).toMatch('select "p0".*, ST_AsText("p0"."location") as "location" from "place" as "p0"');
 });
-
-

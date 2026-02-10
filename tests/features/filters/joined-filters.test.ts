@@ -4,7 +4,6 @@ import { mockLogger } from '../../helpers.js';
 
 @Entity()
 class Item {
-
   @PrimaryKey()
   id!: number;
 
@@ -18,12 +17,10 @@ class Item {
 
   @Property({ nullable: true, index: true })
   deletedAt?: Date;
-
 }
 
 @Entity()
 class HouseDecorationSlot {
-
   @PrimaryKey()
   id!: number;
 
@@ -35,7 +32,6 @@ class HouseDecorationSlot {
 
   @Property({ nullable: true, index: true })
   deletedAt?: Date;
-
 }
 
 let orm: MikroORM;

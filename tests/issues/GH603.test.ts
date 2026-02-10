@@ -2,20 +2,16 @@ import { Collection, EntitySchema, MikroORM, OptionalProps } from '@mikro-orm/my
 import { v4 } from 'uuid';
 
 class TaskProps {
-
   id = v4();
   version = new Date();
   projects = new Collection<ProjectProps>(this);
   [OptionalProps]?: 'version';
-
 }
 
 class ProjectProps {
-
   id = v4();
   name!: string;
   tasks = new Collection<TaskProps>(this);
-
 }
 
 const TaskSchema = new EntitySchema<TaskProps>({
@@ -61,7 +57,6 @@ const ProjectSchema = new EntitySchema<ProjectProps>({
 });
 
 describe('GH issue 603', () => {
-
   let orm: MikroORM;
   let projectId: string;
   let taskId: string;
@@ -105,5 +100,4 @@ describe('GH issue 603', () => {
     await expect(orm.em.flush()).resolves.not.toThrow();
     orm.em.clear();
   });
-
 });

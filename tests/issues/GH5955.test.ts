@@ -1,33 +1,38 @@
 import { MikroORM, Opt, Collection, BaseEntity, BigIntType, type Ref, DateTimeType } from '@mikro-orm/postgresql';
-import { Entity, Enum, Filter, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  Enum,
+  Filter,
+  ManyToOne,
+  OneToMany,
+  OneToOne,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Entity({ abstract: true })
 @Filter({ name: 'softDelete', cond: { deletedAt: null }, default: true })
 abstract class CustomBaseEntity extends BaseEntity {
-
   @PrimaryKey({ autoincrement: true, type: new BigIntType('string') })
   readonly id!: string;
 
   @Property({ type: DateTimeType, nullable: true })
   deletedAt?: Date;
-
 }
 
 @Entity()
 @Filter({ name: 'active', cond: { activated: true }, default: true })
 class EntityE extends CustomBaseEntity {
-
   @ManyToOne(() => EntityB, { ref: true })
   entityB!: Ref<EntityB>;
 
   @Property()
   activated: Opt<boolean> = true;
-
 }
 
 @Entity()
 class EntityB extends CustomBaseEntity {
-
   @ManyToOne(() => EntityA, { ref: true })
   entityA!: Ref<EntityA>;
 
@@ -36,18 +41,15 @@ class EntityB extends CustomBaseEntity {
 
   @OneToMany(() => EntityE, a => a.entityB)
   entitiesE = new Collection<EntityE>(this);
-
 }
 
 @Entity()
 class EntityC extends CustomBaseEntity {
-
   @OneToOne(() => EntityB, { ref: true })
   entityB!: Ref<EntityB>;
 
   @OneToMany(() => EntityD, m => m.entityC)
   entitiesD = new Collection<EntityD>(this);
-
 }
 
 enum EntityDDiscriminator {
@@ -56,26 +58,20 @@ enum EntityDDiscriminator {
 
 @Entity({ discriminatorColumn: 'discriminator', abstract: true })
 class EntityDAbstract extends CustomBaseEntity {
-
   @Enum(() => EntityDDiscriminator)
   discriminator!: Opt<EntityDDiscriminator>;
-
 }
 
 @Entity({ discriminatorValue: EntityDDiscriminator.SOME_VALUE })
 class EntityD extends EntityDAbstract {
-
   @ManyToOne(() => EntityC, { ref: true })
   entityC!: Ref<EntityC>;
-
 }
 
 @Entity()
 class EntityA extends CustomBaseEntity {
-
   @OneToMany(() => EntityB, m => m.entityA)
   entitiesB = new Collection<EntityB>(this);
-
 }
 
 let orm: MikroORM;
@@ -96,9 +92,6 @@ afterAll(async () => {
 test('Load nested relations with filters', async () => {
   await orm.em.insert(EntityA, { id: '5' });
   await orm.em.findOneOrFail(EntityA, '5', {
-    populate: [
-      'entitiesB.entitiesE',
-      'entitiesB.entityC.entitiesD',
-    ],
+    populate: ['entitiesB.entitiesE', 'entitiesB.entityC.entitiesD'],
   });
 });

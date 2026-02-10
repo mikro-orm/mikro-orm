@@ -1,21 +1,25 @@
 import { Collection, MikroORM, QueryOrder, raw } from '@mikro-orm/mariadb';
-import { Entity, ManyToMany, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToMany,
+  ManyToOne,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../../helpers.js';
 
 @Entity()
 class Job {
-
   @PrimaryKey()
   id!: number;
 
   @Property({ fieldName: 'DateCompleted', nullable: true })
   dateCompleted?: Date | null;
-
 }
 
 @Entity()
 class Tag {
-
   @PrimaryKey()
   id!: number;
 
@@ -30,7 +34,6 @@ class Tag {
 
   @ManyToMany(() => Job)
   jobs = new Collection<Job>(this);
-
 }
 
 let orm: MikroORM;
@@ -77,10 +80,12 @@ test('raw fragments with orderBy on relation', async () => {
       },
     },
   });
-  expect(mock.mock.calls[0][0]).toMatch('select `t0`.*, `j1`.`id` as `j1__id`, `j1`.`DateCompleted` as `j1__DateCompleted` ' +
-    'from `tag` as `t0` ' +
-    'inner join `job` as `j1` on `t0`.`custom_name` = `j1`.`id` ' +
-    'order by j1.DateCompleted desc');
+  expect(mock.mock.calls[0][0]).toMatch(
+    'select `t0`.*, `j1`.`id` as `j1__id`, `j1`.`DateCompleted` as `j1__DateCompleted` ' +
+      'from `tag` as `t0` ' +
+      'inner join `job` as `j1` on `t0`.`custom_name` = `j1`.`id` ' +
+      'order by j1.DateCompleted desc',
+  );
 });
 
 test('raw fragments with populateOrderBy on relation', async () => {
@@ -92,10 +97,12 @@ test('raw fragments with populateOrderBy on relation', async () => {
       { job: { [raw(alias => `${alias}.DateCompleted`)]: 'desc' } },
     ],
   });
-  expect(mock.mock.calls[0][0]).toMatch('select `t0`.*, `j1`.`id` as `j1__id`, `j1`.`DateCompleted` as `j1__DateCompleted` ' +
-    'from `tag` as `t0` ' +
-    'inner join `job` as `j1` on `t0`.`custom_name` = `j1`.`id` ' +
-    'order by t0.created desc, j1.DateCompleted desc');
+  expect(mock.mock.calls[0][0]).toMatch(
+    'select `t0`.*, `j1`.`id` as `j1__id`, `j1`.`DateCompleted` as `j1__DateCompleted` ' +
+      'from `tag` as `t0` ' +
+      'inner join `job` as `j1` on `t0`.`custom_name` = `j1`.`id` ' +
+      'order by t0.created desc, j1.DateCompleted desc',
+  );
 });
 
 test('raw fragments with multiple items in filter', async () => {
@@ -109,7 +116,8 @@ test('raw fragments with multiple items in filter', async () => {
 });
 
 test('qb.joinAndSelect', async () => {
-  const query = orm.em.qb(Tag, 'u')
+  const query = orm.em
+    .qb(Tag, 'u')
     .select('*')
     .leftJoinAndSelect('jobs', 'a')
     .where({
@@ -120,12 +128,14 @@ test('qb.joinAndSelect', async () => {
     })
     .limit(100)
     .offset(0);
-  expect(query.toQuery().sql).toMatch('select `u`.*, `a`.`id` as `a__id`, `a`.`DateCompleted` as `a__DateCompleted` ' +
-    'from `tag` as `u` ' +
-    'left join `tag_jobs` as `t1` on `u`.`id` = `t1`.`tag_id` ' +
-    'left join `job` as `a` on `t1`.`job_id` = `a`.`id` ' +
-    'where (json_contains((select json_arrayagg(`u`.`id`) from (select `u`.`id` from `tag` as `u` left join `tag_jobs` as `t1` on `u`.`id` = `t1`.`tag_id` left join `job` as `a` on `t1`.`job_id` = `a`.`id` where coalesce(`u`.`name`, \'abc\') >= 0.3 group by `u`.`id` order by coalesce(`u`.`name`, \'def\') is null, coalesce(`u`.`name`, \'def\') desc limit 100) as `u`), `u`.`id`)) ' +
-    'order by coalesce(`u`.`name`, \'def\') is null, coalesce(`u`.`name`, \'def\') desc');
+  expect(query.toQuery().sql).toMatch(
+    'select `u`.*, `a`.`id` as `a__id`, `a`.`DateCompleted` as `a__DateCompleted` ' +
+      'from `tag` as `u` ' +
+      'left join `tag_jobs` as `t1` on `u`.`id` = `t1`.`tag_id` ' +
+      'left join `job` as `a` on `t1`.`job_id` = `a`.`id` ' +
+      "where (json_contains((select json_arrayagg(`u`.`id`) from (select `u`.`id` from `tag` as `u` left join `tag_jobs` as `t1` on `u`.`id` = `t1`.`tag_id` left join `job` as `a` on `t1`.`job_id` = `a`.`id` where coalesce(`u`.`name`, 'abc') >= 0.3 group by `u`.`id` order by coalesce(`u`.`name`, 'def') is null, coalesce(`u`.`name`, 'def') desc limit 100) as `u`), `u`.`id`)) " +
+      "order by coalesce(`u`.`name`, 'def') is null, coalesce(`u`.`name`, 'def') desc",
+  );
   await query.getResult();
 });
 
@@ -140,8 +150,10 @@ test('em.findByCursor', async () => {
     ],
   });
   const queries = mock.mock.calls.flat().sort();
-  expect(queries[0]).toMatch('select `t0`.*, `j1`.`id` as `j1__id`, `j1`.`DateCompleted` as `j1__DateCompleted` ' +
-    'from `tag` as `t0` ' +
-    'inner join `job` as `j1` on `t0`.`custom_name` = `j1`.`id` ' +
-    'order by t0.created desc, j1.DateCompleted desc');
+  expect(queries[0]).toMatch(
+    'select `t0`.*, `j1`.`id` as `j1__id`, `j1`.`DateCompleted` as `j1__DateCompleted` ' +
+      'from `tag` as `t0` ' +
+      'inner join `job` as `j1` on `t0`.`custom_name` = `j1`.`id` ' +
+      'order by t0.created desc, j1.DateCompleted desc',
+  );
 });

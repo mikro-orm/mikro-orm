@@ -3,17 +3,17 @@ import { createPool, type PoolOptions } from 'mysql2';
 import { type ConnectionConfig, Utils, AbstractSqlConnection, type TransactionEventBroadcaster } from '@mikro-orm/sql';
 
 export class MySqlConnection extends AbstractSqlConnection {
-
   override createKyselyDialect(overrides: PoolOptions) {
     const options = this.mapOptions(overrides);
     const password = options.password as ConnectionConfig['password'];
 
     if (typeof password === 'function') {
       return new MysqlDialect({
-        pool: async () => createPool({
-          ...options,
-          password: await password(),
-        }) as any,
+        pool: async () =>
+          createPool({
+            ...options,
+            password: await password(),
+          }) as any,
         onCreateConnection: this.options.onCreateConnection ?? this.config.get('onCreateConnection'),
       });
     }
@@ -48,7 +48,10 @@ export class MySqlConnection extends AbstractSqlConnection {
     return Utils.mergeConfig(ret, overrides);
   }
 
-  override async commit(ctx: ControlledTransaction<any, any>, eventBroadcaster?: TransactionEventBroadcaster): Promise<void> {
+  override async commit(
+    ctx: ControlledTransaction<any, any>,
+    eventBroadcaster?: TransactionEventBroadcaster,
+  ): Promise<void> {
     if (!ctx.isRolledBack && 'savepointName' in ctx) {
       try {
         await ctx.releaseSavepoint(ctx.savepointName as string).execute();
@@ -65,5 +68,4 @@ export class MySqlConnection extends AbstractSqlConnection {
 
     await super.commit(ctx, eventBroadcaster);
   }
-
 }

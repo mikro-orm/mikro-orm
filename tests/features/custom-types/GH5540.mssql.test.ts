@@ -5,7 +5,6 @@ type JSType = Date | number | undefined;
 type DBType = string | number | undefined;
 
 class TimestampType extends Type<JSType, DBType> {
-
   compareAsType(): string {
     return 'string';
   }
@@ -36,12 +35,10 @@ class TimestampType extends Type<JSType, DBType> {
   getColumnType() {
     return 'bigint';
   }
-
 }
 
 @Entity()
 class UserEntity {
-
   @PrimaryKey()
   id!: number;
 
@@ -49,7 +46,6 @@ class UserEntity {
   createdAt: Date = new Date();
 
   [OptionalProps]?: 'createdAt';
-
 }
 
 let orm: MikroORM;

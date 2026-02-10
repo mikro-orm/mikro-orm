@@ -1,82 +1,75 @@
 import { EventArgs, EventSubscriber, PrimaryKeyProp, Ref } from '@mikro-orm/core';
-import { Embeddable, Embedded, Entity, ManyToOne, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Embeddable,
+  Embedded,
+  Entity,
+  ManyToOne,
+  OneToOne,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { MikroORM } from '@mikro-orm/sqlite';
 
 @Embeddable()
 class A {
-
   @Property({ nullable: true })
   alpha!: number | null;
 
   @ManyToOne(() => C, { ref: true })
   c!: Ref<C>;
-
 }
 
 @Entity()
 class B {
-
   @PrimaryKey()
   id!: number;
 
   @Embedded({ entity: () => A, object: false, nullable: true })
   a!: A | null;
-
 }
 
 @Entity()
 class C {
-
   [PrimaryKeyProp]!: 'node';
   @OneToOne({ entity: () => D, primary: true, deleteRule: 'cascade', updateRule: 'cascade' })
   node!: Ref<D>;
-
 }
 
 @Entity()
 class D {
-
   @PrimaryKey()
   id!: number;
-
 }
 
 @Embeddable()
 class A2 {
-
   @Property()
   alpha!: number | null;
 
   @ManyToOne(() => C2, { ref: true })
   c2!: Ref<C2>;
-
 }
 
 @Entity()
 class B2 {
-
   @PrimaryKey()
   id!: number;
 
   @Embedded({ entity: () => A2, object: false, nullable: true })
   a2!: A2 | null;
-
 }
 
 @Entity()
 class C2 {
-
   @PrimaryKey()
   id!: number;
-
 }
 
 class FooBarSubscriber implements EventSubscriber {
-
   async afterUpdate(args: EventArgs<any>): Promise<void> {
     throw new Error('afterUpdate called but nothing changed');
   }
-
 }
 
 let orm: MikroORM;

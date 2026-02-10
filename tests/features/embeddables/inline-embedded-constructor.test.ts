@@ -3,26 +3,19 @@ import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { v4 } from 'uuid';
 
 class LectureId {
-
   readonly id: string;
 
   constructor(id?: string) {
     this.id = id ?? v4();
   }
-
 }
 
 class Lecture {
-
   id: LectureId;
   title: string;
   period?: Period;
 
-  constructor(props: {
-    id: LectureId | string;
-    title: string;
-    period?: Period;
-  }) {
+  constructor(props: { id: LectureId | string; title: string; period?: Period }) {
     this.id = typeof props.id === 'string' ? new LectureId(props.id) : props.id;
     this.title = props.title;
     this.period = props.period;
@@ -53,7 +46,6 @@ class Lecture {
       period: this.period?.toJSON(),
     };
   }
-
 }
 
 type PeriodProps = {
@@ -62,7 +54,6 @@ type PeriodProps = {
 };
 
 class Period {
-
   readonly start: Date;
   readonly end: Date | null;
 
@@ -92,15 +83,11 @@ class Period {
       end: this.end,
     };
   }
-
 }
 
 class LectureIdSchemaType extends Type<LectureId, string> {
-
   convertToDatabaseValue(valueObject: LectureId | undefined | null): string {
-    return valueObject instanceof LectureId
-      ? valueObject.id
-      : (valueObject as unknown as string);
+    return valueObject instanceof LectureId ? valueObject.id : (valueObject as unknown as string);
   }
 
   convertToJSValue(value: string): LectureId {
@@ -110,7 +97,6 @@ class LectureIdSchemaType extends Type<LectureId, string> {
   getColumnType(prop: EntityProperty) {
     return `varchar(24)`;
   }
-
 }
 
 const PeriodSchema = new EntitySchema<Period>({
@@ -177,8 +163,6 @@ it('should create the required entities', async () => {
   orm.em.clear();
 
   const updatedLecture = await orm.em.findOne(Lecture, { id: lecture.id });
-  expect(updatedLecture?.period?.start).toEqual(
-    insertedLecture!.period!.start,
-  );
+  expect(updatedLecture?.period?.start).toEqual(insertedLecture!.period!.start);
   expect(updatedLecture?.period?.end).toEqual(insertedLecture!.period!.end);
 });

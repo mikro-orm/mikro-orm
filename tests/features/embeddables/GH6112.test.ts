@@ -1,18 +1,21 @@
 import { EntityClass, MikroORM, Options } from '@mikro-orm/sqlite';
-import { Embeddable, Embedded, Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Embeddable,
+  Embedded,
+  Entity,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Embeddable()
 class Address {
-
   @Property()
   city!: string;
-
 }
-
 
 @Embeddable()
 class Company {
-
   @Property()
   name!: string;
 
@@ -21,12 +24,10 @@ class Company {
 
   @Embedded(() => Address, { prefix: 'addr2_' /* mode from configuration */ })
   address2!: Address;
-
 }
 
 @Entity()
 class Person {
-
   @PrimaryKey()
   id!: number;
 
@@ -35,7 +36,6 @@ class Person {
 
   @Embedded(() => Company, { prefix: 'comp_' })
   company!: Company;
-
 }
 
 describe('GH #6112', () => {
@@ -72,17 +72,17 @@ describe('GH #6112', () => {
   it('should have the property prefixed with the one of its parent', async () => {
     const { fieldNames, orm } = await loadORM(Person, { embeddables: { prefixMode: 'absolute' } });
     expect(fieldNames).toStrictEqual([
-      [ 'address', 'address' ],
-      [ 'address_city', 'address_city' ],
+      ['address', 'address'],
+      ['address_city', 'address_city'],
       // mode: relative
-      [ 'comp_address_city', 'comp_addr_city' ],
+      ['comp_address_city', 'comp_addr_city'],
       // mode: absolute
-      [ 'comp_address2_city', 'addr2_city' ],
-      [ 'company', 'company' ],
-      [ 'company_address', 'comp_address' ],
-      [ 'company_address2', 'comp_address2' ],
-      [ 'company_name', 'comp_name' ],
-      [ 'id', 'id' ],
+      ['comp_address2_city', 'addr2_city'],
+      ['company', 'company'],
+      ['company_address', 'comp_address'],
+      ['company_address2', 'comp_address2'],
+      ['company_name', 'comp_name'],
+      ['id', 'id'],
     ]);
 
     // To assure create & read
@@ -105,17 +105,17 @@ describe('GH #6112', () => {
   it('should have the property prefixed with the one of its parent2', async () => {
     const { fieldNames, orm } = await loadORM(Person);
     expect(fieldNames).toStrictEqual([
-      [ 'address', 'address' ],
-      [ 'address_city', 'address_city' ],
+      ['address', 'address'],
+      ['address_city', 'address_city'],
       // mode: relative
-      [ 'comp_address_city', 'comp_addr_city' ],
+      ['comp_address_city', 'comp_addr_city'],
       // mode: relative (from configuration)
-      [ 'comp_address2_city', 'comp_addr2_city' ],
-      [ 'company', 'company' ],
-      [ 'company_address', 'comp_address' ],
-      [ 'company_address2', 'comp_address2' ],
-      [ 'company_name', 'comp_name' ],
-      [ 'id', 'id' ],
+      ['comp_address2_city', 'comp_addr2_city'],
+      ['company', 'company'],
+      ['company_address', 'comp_address'],
+      ['company_address2', 'comp_address2'],
+      ['company_name', 'comp_name'],
+      ['id', 'id'],
     ]);
 
     // To assure create & read
@@ -138,7 +138,6 @@ describe('GH #6112', () => {
   it('should create the metadata without conflict', async () => {
     @Entity()
     class PersonWithAddr {
-
       @PrimaryKey()
       id!: number;
 
@@ -148,22 +147,21 @@ describe('GH #6112', () => {
 
       @Embedded(() => Company)
       company!: Company;
-
     }
 
     const { fieldNames, orm } = await loadORM(PersonWithAddr, { embeddables: { prefixMode: 'absolute' } });
     expect(fieldNames).toStrictEqual([
-      [ 'addr', 'addr' ],
-      [ 'addr_city', 'addr_city' ],
-      [ 'company', 'company' ],
-      [ 'company_address', 'company_address' ],
+      ['addr', 'addr'],
+      ['addr_city', 'addr_city'],
+      ['company', 'company'],
+      ['company_address', 'company_address'],
       // mode: relative
-      [ 'company_address_city', 'company_addr_city' ],
-      [ 'company_address2', 'company_address2' ],
+      ['company_address_city', 'company_addr_city'],
+      ['company_address2', 'company_address2'],
       // mode: absolute
-      [ 'company_address2_city', 'addr2_city' ],
-      [ 'company_name', 'company_name' ],
-      [ 'id', 'id' ],
+      ['company_address2_city', 'addr2_city'],
+      ['company_name', 'company_name'],
+      ['id', 'id'],
     ]);
 
     // To assure create & read

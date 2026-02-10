@@ -1,9 +1,15 @@
 import { Collection, MikroORM } from '@mikro-orm/mysql';
-import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class Author {
-
   @PrimaryKey({ columnType: 'mediumint' })
   id!: number;
 
@@ -12,12 +18,10 @@ class Author {
 
   @OneToMany(() => Book, book => book.author)
   books = new Collection<Book>(this);
-
 }
 
 @Entity()
 class Book {
-
   @PrimaryKey({ columnType: 'mediumint' })
   bookId!: number;
 
@@ -26,7 +30,6 @@ class Book {
 
   @ManyToOne(() => Author)
   author!: Author;
-
 }
 
 let orm: MikroORM;

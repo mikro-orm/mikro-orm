@@ -1,38 +1,38 @@
 import { MikroORM } from '@mikro-orm/sqlite';
 
-import { Embeddable, Embedded, Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Embeddable,
+  Embedded,
+  Entity,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 @Embeddable()
 class Nested {
-
   @Property({ nullable: true })
   value: string | null = null;
-
 }
 
 @Embeddable()
 class Name {
-
   @Property({ nullable: true })
   value: string | null = null;
 
   @Embedded()
   nested!: Nested;
-
 }
 
 @Entity()
 class User {
-
   @PrimaryKey()
   id!: number;
 
   @Embedded()
   name!: Name;
-
 }
 
 describe('GH issue 2774', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -56,5 +56,4 @@ describe('GH issue 2774', () => {
     expect(user.name).toBeDefined();
     expect(user.name.value).toBeNull();
   });
-
 });

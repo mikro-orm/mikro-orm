@@ -100,7 +100,6 @@ beforeAll(async () => {
   if (await orm.schema.ensureDatabase()) {
     await orm.schema.execute(schema);
   }
-
 });
 
 afterAll(async () => {

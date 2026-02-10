@@ -4,7 +4,6 @@ import { Check, Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@m
 @Entity()
 @Check({ expression: columns => `${columns.price} >= 0` })
 class FooEntity {
-
   @PrimaryKey()
   id!: number;
 
@@ -17,11 +16,9 @@ class FooEntity {
 
   @Property({ check: 'price3 >= 0' })
   price3!: number;
-
 }
 
 describe('check constraint [mariadb]', () => {
-
   test('check constraint is generated for decorator [mariadb]', async () => {
     const orm = await MikroORM.init({
       metadataProvider: ReflectMetadataProvider,
@@ -66,9 +63,7 @@ describe('check constraint [mariadb]', () => {
       },
       name: 'NewTable',
       tableName: 'new_table',
-      checks: [
-        { name: 'foo', expression: 'priceColumn >= 0' },
-      ],
+      checks: [{ name: 'foo', expression: 'priceColumn >= 0' }],
     }).init().meta;
     meta.set(newTableMeta.class, newTableMeta);
 
@@ -101,5 +96,4 @@ describe('check constraint [mariadb]', () => {
 
     await orm.close();
   });
-
 });

@@ -11,7 +11,6 @@ function mockLogger(orm: MikroORM, debug: LoggerNamespace[] = ['query', 'query-p
 
 @Embeddable()
 class Address1 {
-
   @Property({ type: 'string' })
   street?: string;
 
@@ -30,12 +29,10 @@ class Address1 {
     this.city = city;
     this.country = country;
   }
-
 }
 
 @Embeddable()
 class Address2 {
-
   @Property({ type: 'string' })
   street!: string;
 
@@ -54,12 +51,10 @@ class Address2 {
     this.country = country;
     this.postalCode = postalCode;
   }
-
 }
 
 @Entity()
 class User {
-
   @PrimaryKey({ type: 'integer' })
   id!: number;
 
@@ -80,12 +75,10 @@ class User {
 
   @Property({ type: 'integer', nullable: true })
   after?: number; // property after embeddables to verify order props in resulting schema
-
 }
 
 @Entity()
 class UserWithCity {
-
   @PrimaryKey({ type: 'integer' })
   id!: number;
 
@@ -94,11 +87,9 @@ class UserWithCity {
 
   @Property({ type: 'string' })
   city!: string;
-
 }
 
 describe('embedded entities in mysql', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -169,7 +160,9 @@ describe('embedded entities in mysql', () => {
     await orm.em.persist(user).flush();
     orm.em.clear();
     expect(mock.mock.calls[0][0]).toMatch('begin');
-    expect(mock.mock.calls[1][0]).toMatch('insert into `user` (`address1_street`, `address1_postal_code`, `address1_city`, `address1_country`, `addr_street`, `addr_city`, `addr_country`, `street`, `postal_code`, `city`, `country`, `address4`) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
+    expect(mock.mock.calls[1][0]).toMatch(
+      'insert into `user` (`address1_street`, `address1_postal_code`, `address1_city`, `address1_country`, `addr_street`, `addr_city`, `addr_country`, `street`, `postal_code`, `city`, `country`, `address4`) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+    );
     expect(mock.mock.calls[2][0]).toMatch('commit');
 
     const u = await orm.em.findOneOrFail(User, user.id);
@@ -212,24 +205,36 @@ describe('embedded entities in mysql', () => {
     orm.em.clear();
 
     const u1 = await orm.em.findOneOrFail(User, { address1: { city: 'London 1', postalCode: '123' } });
-    expect(mock.mock.calls[7][0]).toMatch('select `u0`.* from `user` as `u0` where `u0`.`address1_city` = ? and `u0`.`address1_postal_code` = ? limit ?');
+    expect(mock.mock.calls[7][0]).toMatch(
+      'select `u0`.* from `user` as `u0` where `u0`.`address1_city` = ? and `u0`.`address1_postal_code` = ? limit ?',
+    );
     expect(u1.address1.city).toBe('London 1');
     expect(u1.address1.postalCode).toBe('123');
     const u2 = await orm.em.findOneOrFail(User, { address1: { city: /^London/ } });
-    expect(mock.mock.calls[8][0]).toMatch('select `u0`.* from `user` as `u0` where `u0`.`address1_city` like ? limit ?');
+    expect(mock.mock.calls[8][0]).toMatch(
+      'select `u0`.* from `user` as `u0` where `u0`.`address1_city` like ? limit ?',
+    );
     expect(u2.address1.city).toBe('London 1');
     expect(u2.address1.postalCode).toBe('123');
     expect(u2).toBe(u1);
-    const u3 = await orm.em.findOneOrFail(User, { $or: [{ address1: { city: 'London 1' } }, { address1: { city: 'Berlin' } }] });
-    expect(mock.mock.calls[9][0]).toMatch('select `u0`.* from `user` as `u0` where (`u0`.`address1_city` = ? or `u0`.`address1_city` = ?) limit ?');
+    const u3 = await orm.em.findOneOrFail(User, {
+      $or: [{ address1: { city: 'London 1' } }, { address1: { city: 'Berlin' } }],
+    });
+    expect(mock.mock.calls[9][0]).toMatch(
+      'select `u0`.* from `user` as `u0` where (`u0`.`address1_city` = ? or `u0`.`address1_city` = ?) limit ?',
+    );
     expect(u3.address1.city).toBe('London 1');
     expect(u3.address1.postalCode).toBe('123');
     expect(u3).toBe(u1);
     const err = `Using operators inside embeddables is not allowed, move the operator above. (property: User.address1, payload: { address1: { '$or': [ [Object], [Object] ] } })`;
-    await expect(orm.em.findOneOrFail(User, { address1: { $or: [{ city: 'London 1' }, { city: 'Berlin' }] } })).rejects.toThrow(err);
+    await expect(
+      orm.em.findOneOrFail(User, { address1: { $or: [{ city: 'London 1' }, { city: 'Berlin' }] } }),
+    ).rejects.toThrow(err);
     const u4 = await orm.em.findOneOrFail(User, { address4: { postalCode: '999' } });
     expect(u4).toBe(u1);
-    expect(mock.mock.calls[10][0]).toMatch('select `u0`.* from `user` as `u0` where json_extract(`u0`.`address4`, \'$.postal_code\') = ? limit ?');
+    expect(mock.mock.calls[10][0]).toMatch(
+      "select `u0`.* from `user` as `u0` where json_extract(`u0`.`address4`, '$.postal_code') = ? limit ?",
+    );
   });
 
   test('GH issue 3063', async () => {
@@ -246,11 +251,14 @@ describe('embedded entities in mysql', () => {
 
   test('assign', async () => {
     const user = new User();
-    wrap(user).assign({
-      address1: { street: 'Downing street 10', postalCode: '123', city: 'London 1', country: 'UK 1' },
-      address2: { street: 'Downing street 11', city: 'London 2', country: 'UK 2' },
-      address3: { street: 'Downing street 12', postalCode: '789', city: 'London 3', country: 'UK 3' },
-    }, { em: orm.em });
+    wrap(user).assign(
+      {
+        address1: { street: 'Downing street 10', postalCode: '123', city: 'London 1', country: 'UK 1' },
+        address2: { street: 'Downing street 11', city: 'London 2', country: 'UK 2' },
+        address3: { street: 'Downing street 12', postalCode: '789', city: 'London 3', country: 'UK 3' },
+      },
+      { em: orm.em },
+    );
     orm.em.assign(user, { address4: { city: '41', country: '42', postalCode: '43', street: '44' } });
     expect(user.address4).toMatchObject({ city: '41', country: '42', postalCode: '43', street: '44' });
 
@@ -292,7 +300,6 @@ describe('embedded entities in mysql', () => {
       orm.em.assign(user, { address4: null });
     }).toThrow('You must pass a non-null value to the property address4 of entity User.');
 
-
     orm.em.assign(user, { address5: undefined });
     expect(user.address5).toBe(undefined);
 
@@ -302,10 +309,11 @@ describe('embedded entities in mysql', () => {
 
   test('should throw error with colliding definition of inlined embeddables without prefix', async () => {
     const err = `Duplicate fieldNames are not allowed: UserWithCity.city (fieldName: 'city'), UserWithCity.address1.city (fieldName: 'city')`;
-    await expect(MikroORM.init({
-      entities: [Address1, UserWithCity],
-      dbName: ':memory:',
-    })).rejects.toThrow(err);
+    await expect(
+      MikroORM.init({
+        entities: [Address1, UserWithCity],
+        dbName: ':memory:',
+      }),
+    ).rejects.toThrow(err);
   });
-
 });

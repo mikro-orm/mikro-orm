@@ -6,7 +6,6 @@ import { mockLogger } from '../../helpers.js';
 
 @Entity()
 class Something {
-
   @PrimaryKey()
   id!: number;
 
@@ -16,7 +15,6 @@ class Something {
     nullable: true,
   })
   durationBuggy?: Dictionary | string;
-
 }
 
 test('interval columns (postgres)', async () => {
@@ -81,11 +79,11 @@ test('interval columns (sqlite)', async () => {
 
   expect(mock.mock.calls).toHaveLength(7);
   expect(mock.mock.calls[0][0]).toMatch('begin');
-  expect(mock.mock.calls[1][0]).toMatch('insert into `something` (`duration_buggy`) values (\'1s\') returning `id`');
+  expect(mock.mock.calls[1][0]).toMatch("insert into `something` (`duration_buggy`) values ('1s') returning `id`");
   expect(mock.mock.calls[2][0]).toMatch('commit');
   expect(mock.mock.calls[3][0]).toMatch('select `s0`.* from `something` as `s0` where `s0`.`id` = 1 limit 1');
   expect(mock.mock.calls[4][0]).toMatch('begin');
-  expect(mock.mock.calls[5][0]).toMatch('update `something` set `duration_buggy` = \'5s\' where `id` = 1');
+  expect(mock.mock.calls[5][0]).toMatch("update `something` set `duration_buggy` = '5s' where `id` = 1");
   expect(mock.mock.calls[6][0]).toMatch('commit');
 
   await orm.close(true);

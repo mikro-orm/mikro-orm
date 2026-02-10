@@ -3,7 +3,6 @@ import { Entity, OneToOne, PrimaryKey, ReflectMetadataProvider } from '@mikro-or
 
 @Entity()
 class EntityA {
-
   @PrimaryKey()
   orgId!: bigint;
 
@@ -11,19 +10,16 @@ class EntityA {
   id!: string;
 
   [PrimaryKeyProp]?: ['orgId', 'id'];
-
 }
 
 @Entity()
 class EntityC {
-
   @OneToOne({
     entity: () => EntityA,
     primary: true,
     ref: true,
   })
   a!: Ref<EntityA>;
-
 }
 
 let orm: MikroORM;

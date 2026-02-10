@@ -1,12 +1,20 @@
 import { Ref, MikroORM, Collection } from '@mikro-orm/sqlite';
-import { Entity, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property, ReflectMetadataProvider, Unique } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  OneToOne,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+  Unique,
+} from '@mikro-orm/decorators/legacy';
 
 @Entity({ tableName: 'servers_clients_tags' })
 @Unique({
   properties: ['purchase', 'name'],
 })
 class Note {
-
   @PrimaryKey()
   readonly id?: number;
 
@@ -20,12 +28,10 @@ class Note {
 
   @Property({ length: 2000 })
   value!: string;
-
 }
 
 @Entity()
 class Purchases {
-
   @PrimaryKey()
   readonly id?: number;
 
@@ -34,12 +40,10 @@ class Purchases {
 
   @OneToMany(() => Note, x => x.purchase)
   notes = new Collection<Note>(this);
-
 }
 
 @Entity()
 class Account {
-
   @PrimaryKey()
   readonly id?: number;
 
@@ -51,12 +55,10 @@ class Account {
 
   @OneToMany(() => Purchases, x => x.account)
   serverClients = new Collection<Purchases>(this);
-
 }
 
 @Entity()
 class Address {
-
   @PrimaryKey()
   readonly id?: number;
 
@@ -70,7 +72,6 @@ class Address {
     ref: true,
   })
   account!: Ref<Account>;
-
 }
 
 let orm: MikroORM;
@@ -105,9 +106,13 @@ afterAll(async () => {
 });
 
 test(`GH issue 5165 upsert one`, async () => {
-  const purchase = await orm.em.findOneOrFail(Purchases, { id: 1 }, {
-    populate: ['notes'],
-  });
+  const purchase = await orm.em.findOneOrFail(
+    Purchases,
+    { id: 1 },
+    {
+      populate: ['notes'],
+    },
+  );
   await orm.em.upsert(Note, {
     purchase,
     name: 'testKey',
@@ -116,9 +121,13 @@ test(`GH issue 5165 upsert one`, async () => {
 });
 
 test(`GH issue 5165 upsert many`, async () => {
-  const purchase = await orm.em.findOneOrFail(Purchases, { id: 1 }, {
-    populate: ['notes'],
-  });
+  const purchase = await orm.em.findOneOrFail(
+    Purchases,
+    { id: 1 },
+    {
+      populate: ['notes'],
+    },
+  );
   await orm.em.upsertMany(Note, [
     {
       purchase,

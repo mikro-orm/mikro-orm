@@ -1,9 +1,15 @@
 import { Collection, MikroORM, OptionalProps } from '@mikro-orm/sqlite';
-import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class TestCase {
-
   [OptionalProps]?: 'version';
 
   @PrimaryKey()
@@ -17,12 +23,10 @@ class TestCase {
 
   @OneToMany(() => TestCaseRevision, 'testCase')
   revisions = new Collection<TestCaseRevision>(this);
-
 }
 
 @Entity()
 class TestCaseRevision {
-
   @PrimaryKey()
   id!: number;
 
@@ -34,7 +38,6 @@ class TestCaseRevision {
 
   @ManyToOne(() => TestCase)
   testCase!: TestCase;
-
 }
 
 let orm: MikroORM;

@@ -11,7 +11,6 @@ import { v4 } from 'uuid';
 
 @Entity()
 class List {
-
   @PrimaryKey({ type: 'uuid' })
   id: string = v4();
 
@@ -22,12 +21,10 @@ class List {
     orderBy: [{ index: 'asc' }],
   })
   items = new Collection<ListItem>(this);
-
 }
 
 @Entity()
 class ListItem {
-
   @PrimaryKey({ type: 'uuid' })
   id: string = v4();
 
@@ -39,7 +36,6 @@ class ListItem {
 
   @ManyToOne(() => List, { ref: true, nullable: false })
   list!: Ref<List>;
-
 }
 
 let orm: MikroORM;

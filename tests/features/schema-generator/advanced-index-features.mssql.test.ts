@@ -1,12 +1,10 @@
 import { defineEntity, MikroORM, MsSqlSchemaHelper, p, type IndexDef } from '@mikro-orm/mssql';
 
 class TestEntity {
-
   id!: number;
   name!: string;
   email!: string;
   createdAt!: Date;
-
 }
 
 const TestEntity1 = defineEntity({
@@ -96,7 +94,6 @@ const TestEntity2 = defineEntity({
 });
 
 describe('advanced index features in mssql', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -180,10 +177,8 @@ describe('advanced index features in mssql', () => {
 
   test('schema comparator detects disabled flag change only', async () => {
     class DisabledTestEntity {
-
       id!: number;
       name!: string;
-
     }
 
     const DisabledTest1 = defineEntity({
@@ -226,22 +221,22 @@ describe('advanced index features in mssql', () => {
 
   test('throws on invalid fillFactor in getCreateIndexSQL', () => {
     const schemaHelper = orm.em.getDriver().getPlatform().getSchemaHelper()! as MsSqlSchemaHelper;
-    expect(() => schemaHelper.getCreateIndexSQL('test_table', {
-      keyName: 'bad_ff_idx',
-      columnNames: ['name'],
-      unique: false,
-      primary: false,
-      constraint: false,
-      fillFactor: -1,
-    })).toThrow('fillFactor must be between 0 and 100, got -1');
+    expect(() =>
+      schemaHelper.getCreateIndexSQL('test_table', {
+        keyName: 'bad_ff_idx',
+        columnNames: ['name'],
+        unique: false,
+        primary: false,
+        constraint: false,
+        fillFactor: -1,
+      }),
+    ).toThrow('fillFactor must be between 0 and 100, got -1');
   });
 
   test('createIndex with disabled unique on nullable column', async () => {
     class DisabledUniqueEntity {
-
       id!: number;
       email?: string;
-
     }
 
     const DisabledUniqueSchema = defineEntity({
@@ -271,10 +266,8 @@ describe('advanced index features in mssql', () => {
 
   test('schema comparator detects clustered flag change only', async () => {
     class ClusteredTestEntity {
-
       id!: number;
       name!: string;
-
     }
 
     const ClusteredTest1 = defineEntity({
@@ -314,5 +307,4 @@ describe('advanced index features in mssql', () => {
     await orm2.schema.drop();
     await orm2.close();
   });
-
 });

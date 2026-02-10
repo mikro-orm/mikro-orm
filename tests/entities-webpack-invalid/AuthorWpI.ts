@@ -4,7 +4,6 @@ import type { BookWpI } from './index.js';
 
 @Entity()
 export class AuthorWpI {
-
   @PrimaryKey()
   id!: number;
 
@@ -19,5 +18,4 @@ export class AuthorWpI {
 
   @OneToMany({ mappedBy: 'author' })
   books = new Collection<BookWpI>(this);
-
 }

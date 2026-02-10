@@ -3,25 +3,21 @@ import { Entity, OneToOne, PrimaryKey, ReflectMetadataProvider } from '@mikro-or
 
 @Entity()
 class Parent {
-
   @PrimaryKey()
   id!: string;
 
   // Tenant ID should be hidden from user
   @PrimaryKey({ hidden: true })
   tenant!: string;
-
 }
 
 @Entity()
 class Child {
-
   @PrimaryKey()
   id!: string;
 
   @OneToOne(() => Parent, { ref: true, nullable: true })
   parent!: Ref<Parent>;
-
 }
 
 let orm: MikroORM;

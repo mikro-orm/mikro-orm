@@ -1,20 +1,25 @@
 import { JoinType, MikroORM, Ref } from '@mikro-orm/sqlite';
-import { Embeddable, Embedded, Entity, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Embeddable,
+  Embedded,
+  Entity,
+  OneToOne,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Embeddable()
 class UserAddress {
-
   @Property()
   name!: string;
 
   @Property()
   addressNo!: number;
-
 }
 
 @Entity()
 class User {
-
   @PrimaryKey()
   id!: number;
 
@@ -26,12 +31,10 @@ class User {
 
   @OneToOne(() => UserDetails, (details: UserDetails) => details.user)
   details!: Ref<UserDetails> | null;
-
 }
 
 @Entity()
 class UserDetails {
-
   @OneToOne(() => User, { owner: true, primary: true })
   user!: User;
 
@@ -40,7 +43,6 @@ class UserDetails {
 
   @Embedded(() => UserAddress, { prefix: false })
   address = new UserAddress();
-
 }
 
 let orm: MikroORM;
@@ -72,14 +74,7 @@ test('should populate with joinAndSelect', async () => {
 
   const qb = orm.em.qb(User, 'u');
   const user = await qb
-    .joinAndSelect(
-      'u.details',
-      'details',
-      undefined,
-      JoinType.innerJoin,
-      undefined,
-      ['id', 'address'],
-    )
+    .joinAndSelect('u.details', 'details', undefined, JoinType.innerJoin, undefined, ['id', 'address'])
     .where({ email: 'foo' })
     .getSingleResult();
 

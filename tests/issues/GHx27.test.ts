@@ -28,7 +28,10 @@ const Order = defineEntity({
     posId: p.string().length(50),
     posVersion: p.string().length(15),
     shiftId: p.uuid(),
-    paymentMethods: p.enum(() => PaymentMethod).nativeEnumName('Payment_methods_enum').array(),
+    paymentMethods: p
+      .enum(() => PaymentMethod)
+      .nativeEnumName('Payment_methods_enum')
+      .array(),
     receiptSequence: p.string().length(20),
   },
 });

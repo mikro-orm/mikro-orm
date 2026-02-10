@@ -1,9 +1,15 @@
 import { Collection, MikroORM, sql } from '@mikro-orm/sqlite';
-import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Entity()
 export class Author {
-
   @PrimaryKey({ comment: 'PK' })
   id!: bigint;
 
@@ -17,12 +23,10 @@ export class Author {
 
   @Property({ persist: false })
   postTotal?: number;
-
 }
 
 @Entity()
 export class Post {
-
   @PrimaryKey({ comment: 'PK' })
   id!: bigint;
 
@@ -34,11 +38,9 @@ export class Post {
 
   @ManyToOne(() => Author)
   author!: Author;
-
 }
 
 describe('GH issue 1538', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -53,13 +55,15 @@ describe('GH issue 1538', () => {
   afterAll(() => orm.close(true));
 
   test(`sub-queries with custom type PK (bigint)`, async () => {
-    const qb1 = orm.em.createQueryBuilder(Post, 'b')
+    const qb1 = orm.em
+      .createQueryBuilder(Post, 'b')
       .count('b.id', true)
       .where({ author: sql.ref('a.id') })
       .as(Author, 'postTotal');
     const qb2 = orm.em.createQueryBuilder(Author, 'a');
     qb2.select(['*', qb1]).orderBy({ postTotal: 'desc' });
-    expect(qb2.getFormattedQuery()).toBe('select `a`.*, (select count(distinct `b`.`id`) as `count` from `post` as `b` where `b`.`author_id` = `a`.`id`) as `post_total` from `author` as `a` order by `post_total` desc');
+    expect(qb2.getFormattedQuery()).toBe(
+      'select `a`.*, (select count(distinct `b`.`id`) as `count` from `post` as `b` where `b`.`author_id` = `a`.`id`) as `post_total` from `author` as `a` order by `post_total` desc',
+    );
   });
-
 });

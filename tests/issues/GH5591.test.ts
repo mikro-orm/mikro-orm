@@ -4,7 +4,6 @@ import { PLATFORMS } from '../bootstrap.js';
 
 @Entity()
 class Test {
-
   @PrimaryKey()
   id!: number;
 
@@ -13,7 +12,6 @@ class Test {
 
   @Property()
   date2!: Date;
-
 }
 
 const options = {

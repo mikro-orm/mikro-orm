@@ -153,6 +153,38 @@ jobs:
       - name: Lint
         run: yarn lint
 
+  format:
+    name: Format
+    if: ${{ !contains(github.event.head_commit.message, '[skip ci]') }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Source code
+        uses: actions/checkout@v6
+
+      - name: Use Node.js 22
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          package-manager-cache: false
+
+      - name: Enable corepack
+        run: |
+          corepack enable
+          corepack prepare yarn@stable --activate
+
+      # Yarn dependencies cannot be cached until yarn is installed
+      # WORKAROUND: https://github.com/actions/setup-node/issues/531
+      - name: Extract cached dependencies
+        uses: actions/setup-node@v6
+        with:
+          cache: yarn
+
+      - name: Install
+        run: yarn
+
+      - name: Check formatting
+        run: yarn format:check
+
   test:
     name: Tests (node ${{ matrix.node-version }}, ${{ matrix.shard }}/3)
     if: ${{ !contains(github.event.head_commit.message, '[skip ci]') }}
@@ -329,7 +361,7 @@ jobs:
     name: Release
     if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/v7') && github.repository_owner == 'mikro-orm'
     runs-on: ubuntu-latest
-    needs: [ build, typecheck, test, lint, docs ]
+    needs: [ build, typecheck, test, lint, format, docs ]
     steps:
       - name: Publish packages
         uses: apify/workflows/execute-workflow@main

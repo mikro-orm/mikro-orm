@@ -3,7 +3,6 @@ import { Entity, Formula, ManyToOne, PrimaryKey, Property, SerializedPrimaryKey 
 
 @Entity()
 class User {
-
   @PrimaryKey({ type: 'integer' })
   _id!: number;
 
@@ -18,12 +17,10 @@ class User {
 
   @Formula(cols => `(CONCAT(${cols.firstName}, ' ',${cols.lastName}))`, { type: 'string' })
   name!: Opt<string>;
-
 }
 
 @Entity()
 class Pet {
-
   @PrimaryKey({ type: 'integer' })
   id!: number;
 
@@ -32,7 +29,6 @@ class Pet {
 
   @ManyToOne(() => User, { nullable: true, ref: true })
   owner!: Opt<Ref<User>> | null;
-
 }
 
 let orm: MikroORM;

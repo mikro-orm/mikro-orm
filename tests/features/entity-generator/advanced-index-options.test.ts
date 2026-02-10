@@ -4,7 +4,6 @@ import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { EntityGenerator } from '@mikro-orm/entity-generator';
 
 describe('EntityGenerator advanced index options', () => {
-
   test('introspects sort order and NULLS ordering from database', async () => {
     const orm = await MikroORM.init({
       metadataProvider: ReflectMetadataProvider,
@@ -237,17 +236,17 @@ describe('EntityGenerator advanced index options', () => {
         "created_at" timestamp NOT NULL
       )
     `);
-    await orm.schema.execute('CREATE UNIQUE INDEX "unique_sort_idx" ON "test_unique_sort" ("email" DESC, "created_at" ASC)');
+    await orm.schema.execute(
+      'CREATE UNIQUE INDEX "unique_sort_idx" ON "test_unique_sort" ("email" DESC, "created_at" ASC)',
+    );
 
     const dump = await orm.entityGenerator.generate();
     expect(dump).toMatchSnapshot('unique with sort order');
     await orm.close(true);
   });
-
 });
 
 describe('EntityGenerator advanced index options (MySQL)', () => {
-
   test('generates entities with invisible index', async () => {
     const { MikroORM } = await import('@mikro-orm/mysql');
     const orm = await MikroORM.init({
@@ -260,7 +259,9 @@ describe('EntityGenerator advanced index options (MySQL)', () => {
 
     await orm.schema.ensureDatabase({ create: true });
     await orm.schema.execute('DROP TABLE IF EXISTS test_invisible');
-    await orm.schema.execute('CREATE TABLE test_invisible (id int PRIMARY KEY AUTO_INCREMENT, name varchar(255) NOT NULL)');
+    await orm.schema.execute(
+      'CREATE TABLE test_invisible (id int PRIMARY KEY AUTO_INCREMENT, name varchar(255) NOT NULL)',
+    );
     await orm.schema.execute('CREATE INDEX invisible_idx ON test_invisible (name) INVISIBLE');
 
     const dump = await orm.entityGenerator.generate();
@@ -307,11 +308,9 @@ describe('EntityGenerator advanced index options (MySQL)', () => {
     expect(dump).toMatchSnapshot('fulltext index');
     await orm.close(true);
   });
-
 });
 
 describe('EntityGenerator advanced index options (MariaDB)', () => {
-
   test('generates entities with fulltext index', async () => {
     const { MikroORM } = await import('@mikro-orm/mariadb');
     const orm = await MikroORM.init({
@@ -331,11 +330,9 @@ describe('EntityGenerator advanced index options (MariaDB)', () => {
     expect(dump).toMatchSnapshot('fulltext index');
     await orm.close(true);
   });
-
 });
 
 describe('EntityGenerator advanced index options (MSSQL)', () => {
-
   test('generates entities with disabled index', async () => {
     const { MikroORM } = await import('@mikro-orm/mssql');
     const orm = await MikroORM.init({
@@ -369,7 +366,9 @@ describe('EntityGenerator advanced index options (MSSQL)', () => {
 
     await orm.schema.ensureDatabase({ create: true });
     await orm.schema.execute('DROP TABLE IF EXISTS test_disabled_unique');
-    await orm.schema.execute('CREATE TABLE test_disabled_unique (id int PRIMARY KEY IDENTITY, email varchar(255) NOT NULL)');
+    await orm.schema.execute(
+      'CREATE TABLE test_disabled_unique (id int PRIMARY KEY IDENTITY, email varchar(255) NOT NULL)',
+    );
     await orm.schema.execute('CREATE UNIQUE INDEX disabled_unique_idx ON test_disabled_unique (email)');
     await orm.schema.execute('ALTER INDEX disabled_unique_idx ON test_disabled_unique DISABLE');
 
@@ -398,5 +397,4 @@ describe('EntityGenerator advanced index options (MSSQL)', () => {
     expect(dump).toMatchSnapshot('clustered index');
     await orm.close(true);
   });
-
 });

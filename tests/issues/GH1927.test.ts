@@ -1,10 +1,16 @@
 import { Collection, MikroORM } from '@mikro-orm/sqlite';
-import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../helpers.js';
 
 @Entity()
 class Author {
-
   @PrimaryKey()
   id!: number;
 
@@ -17,12 +23,10 @@ class Author {
   constructor(name: string) {
     this.name = name;
   }
-
 }
 
 @Entity()
 class Book {
-
   @PrimaryKey()
   id!: number;
 
@@ -35,11 +39,9 @@ class Book {
   constructor(name: string) {
     this.name = name;
   }
-
 }
 
 describe('GH issue 1927', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -68,5 +70,4 @@ describe('GH issue 1927', () => {
     await orm.em.flush();
     expect(mock.mock.calls).toHaveLength(0);
   });
-
 });

@@ -5,7 +5,6 @@ import { v4 } from 'uuid';
 
 @Entity()
 class TestResourceEntity {
-
   @PrimaryKey()
   id = v4();
 
@@ -20,18 +19,15 @@ class TestResourceEntity {
 
   @Property({ type: 'character', length: 24, nullable: true })
   resourceReferenceId?: string;
-
 }
 
 @Entity()
 class TestResourceReferenceEntity {
-
   @PrimaryKey()
   id = v4();
 
   @Property({ type: 'character varying' })
   refEntityDirect: any;
-
 }
 
 let orm: MikroORM;
@@ -61,52 +57,56 @@ afterAll(async () => await orm.close(true));
 beforeEach(async () => orm.em.clear());
 
 test('SELECT_IN - .findOne()  - returns populated related property', async () => {
-  const testResource = await orm.em.findOneOrFail(TestResourceEntity, { id }, {
-    fields: [
-      'entityDirect',
-      'resourceReference.refEntityDirect',
-    ],
-    strategy: LoadStrategy.SELECT_IN,
-  });
+  const testResource = await orm.em.findOneOrFail(
+    TestResourceEntity,
+    { id },
+    {
+      fields: ['entityDirect', 'resourceReference.refEntityDirect'],
+      strategy: LoadStrategy.SELECT_IN,
+    },
+  );
 
   expect(testResource.entityDirect).toBe('Foo');
   expect(testResource.resourceReference?.refEntityDirect).toBe('Bar');
 });
 
 test('JOINED    - .findOne()  - returns populated related property', async () => {
-  const testResource = await orm.em.findOneOrFail(TestResourceEntity, { id }, {
-    fields: [
-      'entityDirect',
-      'resourceReference.refEntityDirect',
-    ],
-    strategy: LoadStrategy.JOINED,
-  });
+  const testResource = await orm.em.findOneOrFail(
+    TestResourceEntity,
+    { id },
+    {
+      fields: ['entityDirect', 'resourceReference.refEntityDirect'],
+      strategy: LoadStrategy.JOINED,
+    },
+  );
 
   expect(testResource.entityDirect).toBe('Foo');
   expect(testResource.resourceReference?.refEntityDirect).toBe('Bar');
 });
 
 test('SELECT_IN - .find()     - returns populated related property', async () => {
-  const [testResource] = await orm.em.find(TestResourceEntity, { id }, {
-    fields: [
-      'entityDirect',
-      'resourceReference.refEntityDirect',
-    ],
-    strategy: LoadStrategy.SELECT_IN,
-  });
+  const [testResource] = await orm.em.find(
+    TestResourceEntity,
+    { id },
+    {
+      fields: ['entityDirect', 'resourceReference.refEntityDirect'],
+      strategy: LoadStrategy.SELECT_IN,
+    },
+  );
 
   expect(testResource.entityDirect).toBe('Foo');
   expect(testResource.resourceReference?.refEntityDirect).toBe('Bar');
 });
 
 test('JOINED    - .find()     - returns populated related property', async () => {
-  const [testResource] = await orm.em.find(TestResourceEntity, { id }, {
-    fields: [
-      'entityDirect',
-      'resourceReference.refEntityDirect',
-    ],
-    strategy: LoadStrategy.JOINED,
-  });
+  const [testResource] = await orm.em.find(
+    TestResourceEntity,
+    { id },
+    {
+      fields: ['entityDirect', 'resourceReference.refEntityDirect'],
+      strategy: LoadStrategy.JOINED,
+    },
+  );
 
   expect(testResource.entityDirect).toBe('Foo');
   expect(testResource.resourceReference?.refEntityDirect).toBe('Bar');

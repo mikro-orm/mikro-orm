@@ -1,5 +1,13 @@
 import { Collection, Ref } from '@mikro-orm/core';
-import { Entity, Enum, ManyToOne, OneToMany, OneToOne, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  Enum,
+  ManyToOne,
+  OneToMany,
+  OneToOne,
+  PrimaryKey,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { MikroORM } from '@mikro-orm/sqlite';
 import { mockLogger } from '../helpers.js';
 
@@ -11,7 +19,6 @@ enum ImageType {
 
 @Entity()
 class Image {
-
   @PrimaryKey()
   id!: number;
 
@@ -20,12 +27,10 @@ class Image {
 
   @ManyToOne(() => Article, { ref: true })
   article!: Ref<Article>;
-
 }
 
 @Entity()
 class Article {
-
   @PrimaryKey()
   id!: number;
 
@@ -57,7 +62,6 @@ class Article {
     mapToPk: true,
   })
   icon?: number;
-
 }
 
 let orm: MikroORM;

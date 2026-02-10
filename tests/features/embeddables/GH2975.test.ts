@@ -1,9 +1,16 @@
 import { MikroORM, t } from '@mikro-orm/sqlite';
-import { Embeddable, Embedded, Entity, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Embeddable,
+  Embedded,
+  Entity,
+  ManyToOne,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class Country {
-
   @PrimaryKey({ type: t.bigint })
   id!: string;
 
@@ -13,12 +20,10 @@ class Country {
   constructor(countryName: string) {
     this.countryName = countryName;
   }
-
 }
 
 @Embeddable()
 class Address {
-
   @Property()
   streetName!: string;
 
@@ -29,12 +34,10 @@ class Address {
     this.streetName = streetName;
     this.country = country;
   }
-
 }
 
 @Entity()
 class Provider {
-
   @PrimaryKey({ type: t.bigint })
   id!: string;
 
@@ -48,7 +51,6 @@ class Provider {
     this.name = name;
     this.address = address;
   }
-
 }
 
 let orm: MikroORM;
@@ -67,13 +69,7 @@ afterAll(async () => {
 });
 
 test(`GH issue 2975`, async () => {
-  const provider = new Provider(
-    'Coffee provider',
-    new Address(
-      'Sesame St.',
-      new Country('Atlantida'),
-    ),
-  );
+  const provider = new Provider('Coffee provider', new Address('Sesame St.', new Country('Atlantida')));
   await orm.em.fork().persist(provider).flush();
 
   const loadedProvider = await orm.em.findOneOrFail(Provider, { name: 'Coffee provider' });

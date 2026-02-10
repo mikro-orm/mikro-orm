@@ -1,12 +1,19 @@
 import { Collection, Ref, LoadStrategy, MikroORM, Reference, wrap, PrimaryKeyProp } from '@mikro-orm/core';
-import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider, Unique } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+  Unique,
+} from '@mikro-orm/decorators/legacy';
 import { v4 } from 'uuid';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 @Entity()
 export class Organization {
-
   @PrimaryKey({ type: 'uuid' })
   id: string = v4();
 
@@ -23,12 +30,10 @@ export class Organization {
   constructor(value: Partial<Organization> = {}) {
     Object.assign(this, value);
   }
-
 }
 
 @Entity()
 export class User {
-
   @PrimaryKey({ columnType: 'varchar' })
   id!: string;
 
@@ -59,12 +64,10 @@ export class User {
   constructor(value: Partial<User> = {}) {
     Object.assign(this, value);
   }
-
 }
 
 @Entity()
 export class Role {
-
   @PrimaryKey({ columnType: 'varchar' })
   id!: string;
 
@@ -77,12 +80,10 @@ export class Role {
   constructor(value: Partial<Role> = {}) {
     Object.assign(this, value);
   }
-
 }
 
 @Entity()
 export class UserRole {
-
   @ManyToOne({
     entity: () => User,
     inversedBy: x => x.userRoles,
@@ -108,12 +109,10 @@ export class UserRole {
   constructor(value: Partial<UserRole> = {}) {
     Object.assign(this, value);
   }
-
 }
 
 @Entity()
 export class Program {
-
   @PrimaryKey({ columnType: 'varchar' })
   id!: string;
 
@@ -134,12 +133,10 @@ export class Program {
   constructor(value: Partial<Program> = {}) {
     Object.assign(this, value);
   }
-
 }
 
 @Entity()
 export class Site {
-
   @PrimaryKey({ columnType: 'varchar' })
   id!: string;
 
@@ -162,11 +159,9 @@ export class Site {
   constructor(value: Partial<Site> = {}) {
     Object.assign(this, value);
   }
-
 }
 
 describe('GH issue 1624, 1658 (postgres)', () => {
-
   let orm: MikroORM<PostgreSqlDriver>;
 
   beforeAll(async () => {
@@ -189,7 +184,13 @@ describe('GH issue 1624, 1658 (postgres)', () => {
     const orgId = v4();
     const role = new Role({ id: roleId, name: 'r' });
     const org = new Organization({ id: orgId, name: 'on' });
-    const user = new User({ email: 'e', firstName: 'f', lastName: 'l', organization: wrap(org).toReference(), id: userId });
+    const user = new User({
+      email: 'e',
+      firstName: 'f',
+      lastName: 'l',
+      organization: wrap(org).toReference(),
+      id: userId,
+    });
     const userRole = new UserRole({ role: wrap(role).toReference(), user: wrap(user).toReference() });
     user.userRoles.add(userRole);
     await orm.em.persist(user).flush();
@@ -255,11 +256,9 @@ describe('GH issue 1624, 1658 (postgres)', () => {
     const updatedSite = await orm.em.findOneOrFail(Site, { id: site.id });
     expect(updatedSite.name).toBe(createdSite.name);
   });
-
 });
 
 describe('GH issue 1624, 1658 (sqlite)', () => {
-
   let orm: MikroORM<SqliteDriver>;
 
   beforeAll(async () => {
@@ -282,7 +281,13 @@ describe('GH issue 1624, 1658 (sqlite)', () => {
     const orgId = v4();
     const role = new Role({ id: roleId, name: 'r' });
     const org = new Organization({ id: orgId, name: 'on' });
-    const user = new User({ email: 'e', firstName: 'f', lastName: 'l', organization: wrap(org).toReference(), id: userId });
+    const user = new User({
+      email: 'e',
+      firstName: 'f',
+      lastName: 'l',
+      organization: wrap(org).toReference(),
+      id: userId,
+    });
     const userRole = new UserRole({ role: wrap(role).toReference(), user: wrap(user).toReference() });
     user.userRoles.add(userRole);
     await orm.em.persist(user).flush();
@@ -348,5 +353,4 @@ describe('GH issue 1624, 1658 (sqlite)', () => {
     const updatedSite = await orm.em.findOneOrFail(Site, { id: site.id });
     expect(updatedSite.name).toBe(createdSite.name);
   });
-
 });

@@ -3,29 +3,24 @@ import { Entity, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider } from
 
 @Entity()
 class A {
-
   @PrimaryKey()
   id!: number;
 
   @Property({ nullable: true })
   foo?: string;
-
 }
 
 @Entity()
 class B {
-
   @PrimaryKey()
   id!: number;
 
   @Property({ nullable: true })
   foo?: string;
-
 }
 
 @Entity()
 class C {
-
   @PrimaryKey()
   id!: number;
 
@@ -39,11 +34,9 @@ class C {
     this.a = a;
     this.b = b;
   }
-
 }
 
 describe('GH issue 533', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {

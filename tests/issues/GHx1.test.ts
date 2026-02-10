@@ -12,18 +12,15 @@ enum TaskStatus {
 
 @Entity()
 class Status {
-
   @Enum({ primary: true, length: 20, items: () => TaskStatus })
   name!: TaskStatus;
 
   @Property()
   displayName!: string;
-
 }
 
 @Entity()
 class Task {
-
   @PrimaryKey()
   id!: number;
 
@@ -32,7 +29,6 @@ class Task {
     default: TaskStatus.OPENED,
   })
   status!: Status;
-
 }
 
 test(`default value for relation property`, async () => {

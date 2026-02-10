@@ -13,7 +13,6 @@ type Nullable<T> = T | null;
 
 @Entity()
 class User {
-
   @PrimaryKey()
   id!: number;
 
@@ -25,7 +24,6 @@ class User {
 
   @Enum({ items: () => OrderState })
   state: Opt<OrderState> = OrderState.NEW;
-
 }
 
 let orm: MikroORM;

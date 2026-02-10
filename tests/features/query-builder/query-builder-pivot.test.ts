@@ -62,7 +62,11 @@ describe('QueryBuilder - Pivot', () => {
     );
     expect(qb3.getParams()).toEqual([]);
 
-    const qb4 = orm.em.createQueryBuilder(Author2, 'a').select('a.*').where({ friends: null }).orderBy({ friends: QueryOrder.ASC });
+    const qb4 = orm.em
+      .createQueryBuilder(Author2, 'a')
+      .select('a.*')
+      .where({ friends: null })
+      .orderBy({ friends: QueryOrder.ASC });
     expect(qb4.getQuery()).toMatch(
       'select `a`.* ' +
         'from `author2` as `a` ' +
@@ -420,13 +424,18 @@ describe('QueryBuilder - Pivot', () => {
 
   test('query json property with operator directly (GH #3246)', async () => {
     const qb = orm.em.createQueryBuilder(Book2).where({ meta: { $ne: null } });
-    expect(qb.getFormattedQuery()).toBe('select `e0`.*, `e0`.`price` * 1.19 as `price_taxed` from `book2` as `e0` where `e0`.`meta` is not null');
+    expect(qb.getFormattedQuery()).toBe(
+      'select `e0`.*, `e0`.`price` * 1.19 as `price_taxed` from `book2` as `e0` where `e0`.`meta` is not null',
+    );
   });
 
   test('GH issue 786', async () => {
     const qb1 = orm.em.createQueryBuilder(Book2);
     qb1.select('*').where({
-      $and: [{ uuid: { $ne: '...' }, createdAt: { $gt: '2020-08-26T20:01:48.863Z' } }, { tags: { name: { $in: ['tag1'] } } }],
+      $and: [
+        { uuid: { $ne: '...' }, createdAt: { $gt: '2020-08-26T20:01:48.863Z' } },
+        { tags: { name: { $in: ['tag1'] } } },
+      ],
     });
     expect(qb1.getQuery()).toEqual(
       'select `e0`.*, `e0`.`price` * 1.19 as `price_taxed` ' +
@@ -438,7 +447,10 @@ describe('QueryBuilder - Pivot', () => {
 
     const qb2 = orm.em.createQueryBuilder(Book2);
     qb2.select('*').where({
-      $and: [{ tags: { name: { $in: ['tag1'] } } }, { uuid: { $ne: '...' }, createdAt: { $gt: '2020-08-26T20:01:48.863Z' } }],
+      $and: [
+        { tags: { name: { $in: ['tag1'] } } },
+        { uuid: { $ne: '...' }, createdAt: { $gt: '2020-08-26T20:01:48.863Z' } },
+      ],
     });
     expect(qb2.getQuery()).toEqual(
       'select `e0`.*, `e0`.`price` * 1.19 as `price_taxed` ' +

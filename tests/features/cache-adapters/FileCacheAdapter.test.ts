@@ -33,5 +33,4 @@ describe('FileCacheAdapter', () => {
     expect(cache.get('cache-test-handle-2')).toBeNull();
     cache.clear();
   });
-
 });

@@ -3,7 +3,6 @@ import type { EntityManager } from '../EntityManager.js';
 import type { TransactionEventType } from '../enums.js';
 
 export class TransactionEventBroadcaster {
-
   constructor(
     private readonly em: EntityManager,
     readonly context?: { topLevelTransaction?: boolean },
@@ -16,5 +15,4 @@ export class TransactionEventBroadcaster {
       transaction,
     });
   }
-
 }

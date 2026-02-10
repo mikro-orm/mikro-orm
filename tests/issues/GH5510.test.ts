@@ -4,7 +4,6 @@ import { mockLogger } from '../helpers.js';
 
 @Entity()
 class Other {
-
   @PrimaryKey()
   id!: number;
 
@@ -13,12 +12,10 @@ class Other {
 
   @Property({ nullable: true, onUpdate: () => new Date() })
   updatedAt?: Date;
-
 }
 
 @Entity()
 class Test {
-
   @PrimaryKey()
   id!: number;
 
@@ -30,7 +27,6 @@ class Test {
 
   @OneToOne(() => Other, { nullable: true })
   other?: Other;
-
 }
 
 let orm: MikroORM;
@@ -59,7 +55,5 @@ it('should merge all changes of one record into one sql update statement', async
   const mock = mockLogger(orm);
   await orm.em.flush();
 
-  expect(mock.mock.calls).toHaveLength(
-    [['begin'], ['insert into other'], ['update test'], ['commit']].length,
-  );
+  expect(mock.mock.calls).toHaveLength([['begin'], ['insert into other'], ['update test'], ['commit']].length);
 });

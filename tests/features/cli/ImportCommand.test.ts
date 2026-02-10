@@ -5,7 +5,6 @@ import { MongoDriver } from '@mikro-orm/mongodb';
 import { ImportCommand } from '../../../packages/cli/src/commands/ImportCommand.js';
 
 describe('ImportDatabaseCommand', () => {
-
   test('handler', async () => {
     const close = vi.fn();
     const config = new Configuration({ driver: MongoDriver } as any, false);
@@ -24,5 +23,4 @@ describe('ImportDatabaseCommand', () => {
     expect(close).toHaveBeenCalledTimes(1);
     expect(connection.executeDump.mock.calls.length).toBe(1);
   });
-
 });

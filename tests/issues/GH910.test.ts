@@ -10,7 +10,6 @@ import {
 import { mockLogger } from '../helpers.js';
 
 export class Sku {
-
   private constructor(private readonly value: string) {}
 
   static create(value: string): Sku {
@@ -20,11 +19,9 @@ export class Sku {
   toString(): string {
     return this.value;
   }
-
 }
 
 export class SkuType extends Type<Sku, string> {
-
   override convertToDatabaseValue(value: Sku | string, platform: Platform): string {
     return value.toString();
   }
@@ -36,12 +33,10 @@ export class SkuType extends Type<Sku, string> {
 
     return Sku.create(value);
   }
-
 }
 
 @Entity()
 export class Cart {
-
   @PrimaryKey()
   readonly id: string;
 
@@ -60,12 +55,10 @@ export class Cart {
   removeItem(item: CartItem): void {
     this.items.remove(item);
   }
-
 }
 
 @Entity()
 export class CartItem {
-
   @ManyToOne({ primary: true, entity: () => Cart })
   readonly cart!: Cart;
 
@@ -91,11 +84,9 @@ export class CartItem {
   updateQuantity(quantity: number) {
     this.quantity = quantity;
   }
-
 }
 
 describe('GH issue 910', () => {
-
   test(`composite keys with custom type PK that uses object value`, async () => {
     const orm = await MikroORM.init({
       metadataProvider: ReflectMetadataProvider,
@@ -119,13 +110,16 @@ describe('GH issue 910', () => {
     await orm.em.flush();
 
     expect(mock.mock.calls[0][0]).toMatch('begin');
-    expect(mock.mock.calls[1][0]).toMatch('insert into `cart` (`id`) values (\'123\')');
-    expect(mock.mock.calls[2][0]).toMatch('insert into `cart_item` (`cart_id`, `sku`, `quantity`, `singular_price_unensured`, `singular_price`) values (\'123\', \'sku1\', 10, 0, 0), (\'123\', \'sku2\', 10, 0, 0)');
+    expect(mock.mock.calls[1][0]).toMatch("insert into `cart` (`id`) values ('123')");
+    expect(mock.mock.calls[2][0]).toMatch(
+      "insert into `cart_item` (`cart_id`, `sku`, `quantity`, `singular_price_unensured`, `singular_price`) values ('123', 'sku1', 10, 0, 0), ('123', 'sku2', 10, 0, 0)",
+    );
     expect(mock.mock.calls[3][0]).toMatch('commit');
     expect(mock.mock.calls[4][0]).toMatch('begin');
-    expect(mock.mock.calls[5][0]).toMatch('update `cart_item` set `quantity` = 33 where `cart_id` = \'123\' and `sku` = \'sku2\'');
+    expect(mock.mock.calls[5][0]).toMatch(
+      "update `cart_item` set `quantity` = 33 where `cart_id` = '123' and `sku` = 'sku2'",
+    );
     expect(mock.mock.calls[6][0]).toMatch('commit');
     await orm.close();
   });
-
 });

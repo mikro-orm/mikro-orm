@@ -1,17 +1,21 @@
 import { MikroORM } from '@mikro-orm/sqlite';
-import { Embeddable, Embedded, Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Embeddable,
+  Embedded,
+  Entity,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Embeddable()
 export class Profile {
-
   @Property()
   username?: string;
-
 }
 
 @Entity()
 export class User {
-
   @PrimaryKey()
   id!: number;
 
@@ -20,7 +24,6 @@ export class User {
 
   @Embedded(() => Profile, { array: true })
   profiles: Profile[] = [];
-
 }
 
 let orm: MikroORM;

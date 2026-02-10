@@ -1,11 +1,18 @@
 import { Collection, LoadStrategy, MikroORM } from '@mikro-orm/core';
-import { Entity, Enum, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  Enum,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { mockLogger } from '../helpers.js';
 
 @Entity({ schema: '*' })
 class Topic {
-
   @PrimaryKey()
   id!: number;
 
@@ -26,18 +33,15 @@ class Topic {
 
   @OneToMany(() => Category, e => e.topic)
   category = new Collection<Category>(this);
-
 }
 
 @Entity({ schema: '*' })
 class Category {
-
   @PrimaryKey()
   id!: number;
 
   @ManyToOne(() => Topic, { nullable: true })
   topic?: Topic;
-
 }
 
 describe('multiple connected schemas in postgres', () => {
@@ -112,9 +116,7 @@ describe('multiple connected schemas in postgres', () => {
       },
     );
 
-    expect(mock.mock.calls[0][0]).toMatch(
-      'select "t0"."id" from "n2"."topic" as "t0" where "t0"."id" = 1',
-    );
+    expect(mock.mock.calls[0][0]).toMatch('select "t0"."id" from "n2"."topic" as "t0" where "t0"."id" = 1');
   });
 
   test('#5456', async () => {

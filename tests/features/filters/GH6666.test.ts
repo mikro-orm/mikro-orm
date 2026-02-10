@@ -1,6 +1,15 @@
 import { Collection, MikroORM, DateTimeType, Ref } from '@mikro-orm/sqlite';
 
-import { Entity, Filter, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  Filter,
+  ManyToOne,
+  OneToMany,
+  OneToOne,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 @Filter({
   name: 'softDelete',
   cond: {
@@ -9,29 +18,24 @@ import { Entity, Filter, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property, R
   default: true,
 })
 abstract class BE {
-
   @PrimaryKey({ autoincrement: true })
   readonly id!: string;
 
   @Property({ type: DateTimeType, nullable: true })
   deletedAt?: Date;
-
 }
 
 @Entity()
 class A extends BE {
-
   @Property()
   title!: string;
 
   @ManyToOne(() => B, { ref: true })
   b!: Ref<B>;
-
 }
 
 @Entity()
 class B extends BE {
-
   @OneToMany(() => A, a => a.b)
   a = new Collection<A>(this);
 
@@ -39,15 +43,12 @@ class B extends BE {
     ref: true,
   })
   c?: Ref<C>;
-
 }
 
 @Entity()
 class C extends BE {
-
   @OneToOne(() => B, { ref: true })
   b?: Ref<B>;
-
 }
 
 let orm: MikroORM;

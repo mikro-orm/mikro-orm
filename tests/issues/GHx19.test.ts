@@ -1,21 +1,25 @@
 import { BaseEntity, LoadStrategy, LockMode, MikroORM, PopulateHint, Ref } from '@mikro-orm/postgresql';
-import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../helpers.js';
 
 @Entity()
 class Client extends BaseEntity {
-
   @PrimaryKey()
   id!: number;
 
   @OneToMany(() => AccountNotes, note => note.client)
   note!: Ref<AccountNotes>;
-
 }
 
 @Entity()
 class AccountNotes extends BaseEntity {
-
   @PrimaryKey()
   id!: number;
 
@@ -24,7 +28,6 @@ class AccountNotes extends BaseEntity {
 
   @ManyToOne(() => Client)
   client!: Ref<Client>;
-
 }
 
 let orm: MikroORM;

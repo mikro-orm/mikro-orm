@@ -2,7 +2,6 @@ import { Opt } from '@mikro-orm/core';
 import { BeforeCreate, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 
 export abstract class BaseEntity2 {
-
   @PrimaryKey()
   id!: number;
 
@@ -13,5 +12,4 @@ export abstract class BaseEntity2 {
   baseBeforeCreate() {
     this.hookTest = true;
   }
-
 }

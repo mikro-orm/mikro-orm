@@ -4,7 +4,6 @@ import { v4 as uuid } from 'uuid';
 
 @Entity()
 class A {
-
   @PrimaryKey({ hidden: true })
   _id!: number;
 
@@ -17,11 +16,9 @@ class A {
   constructor(name: string) {
     this.name = name;
   }
-
 }
 
 describe('GH issue 1444', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {

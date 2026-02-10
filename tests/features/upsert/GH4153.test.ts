@@ -5,7 +5,6 @@ import { PLATFORMS } from '../../bootstrap.js';
 @Entity()
 @Unique({ properties: ['uniq1', 'uniq2'] })
 class MyEntity1 {
-
   @PrimaryKey()
   id?: number;
 
@@ -17,7 +16,6 @@ class MyEntity1 {
 
   @Property()
   name!: string;
-
 }
 
 const options = {
@@ -25,7 +23,7 @@ const options = {
   mariadb: { port: 3309 },
 };
 
-describe.each(Utils.keys(options))('GH 4153 [%s]',  type => {
+describe.each(Utils.keys(options))('GH 4153 [%s]', type => {
   let orm: MikroORM;
 
   beforeAll(async () => {

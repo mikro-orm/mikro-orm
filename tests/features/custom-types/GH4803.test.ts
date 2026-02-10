@@ -2,18 +2,14 @@ import { Collection, defineEntity, p, EntityProperty, Platform, Type } from '@mi
 import { MikroORM } from '@mikro-orm/sqlite';
 
 class User {
-
   readonly id!: Id;
   readonly email!: string;
   readonly profiles = new Collection<Profile>(this);
-
 }
 
 class Profile {
-
   readonly id!: string;
   readonly user!: Id;
-
 }
 
 const profileSchema = defineEntity({
@@ -25,7 +21,6 @@ const profileSchema = defineEntity({
 });
 
 class Id extends Type<Id | undefined, string> {
-
   readonly value?: bigint;
 
   constructor(value: bigint | number) {
@@ -50,7 +45,6 @@ class Id extends Type<Id | undefined, string> {
   compareAsType(): string {
     return 'string';
   }
-
 }
 
 const userSchema = defineEntity({
@@ -89,9 +83,13 @@ test('A profile user id should be a custom type', async () => {
   });
   await em.persist(aProfile).flush();
 
-  const userProfile = await em.findOneOrFail(Profile, { id: aProfile.id }, {
-    refresh: true,
-  });
+  const userProfile = await em.findOneOrFail(
+    Profile,
+    { id: aProfile.id },
+    {
+      refresh: true,
+    },
+  );
 
   expect(userProfile).toBeTruthy();
   expect(userProfile.user).toBeInstanceOf(Id);

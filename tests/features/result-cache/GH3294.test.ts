@@ -4,7 +4,6 @@ import { mockLogger } from '../../helpers.js';
 
 @Entity()
 export class EntityWithHiddenProp {
-
   @PrimaryKey()
   id!: number;
 
@@ -13,7 +12,6 @@ export class EntityWithHiddenProp {
 
   @Property({ hidden: true })
   hiddenProp: Hidden<string> = 'hidden prop';
-
 }
 
 let orm: MikroORM;
@@ -33,9 +31,7 @@ beforeEach(async () => {
 
 afterAll(() => orm.close(true));
 
-
 describe('hidden properties are still included when cached (GH 3294)', () => {
-
   test('single entity (findOne)', async () => {
     const singleEntity = new EntityWithHiddenProp();
     await orm.em.persist(singleEntity).flush();
@@ -76,8 +72,8 @@ describe('hidden properties are still included when cached (GH 3294)', () => {
     expect(mockLog.mock.calls).toHaveLength(1); // cache hit, no new query fired
 
     // Expect both hidden and not hidden props to be accessible in cached and uncached versions
-    expect(res1.map(e => ({ hidden: e.hiddenProp, notHidden: e.notHiddenProp })))
-      .toEqual(res2.map(e => ({ hidden: e.hiddenProp, notHidden: e.notHiddenProp })));
+    expect(res1.map(e => ({ hidden: e.hiddenProp, notHidden: e.notHiddenProp }))).toEqual(
+      res2.map(e => ({ hidden: e.hiddenProp, notHidden: e.notHiddenProp })),
+    );
   });
-
 });

@@ -4,21 +4,24 @@ import { MikroORM } from '@mikro-orm/postgresql';
 
 @Entity({ schema: 'staff', tableName: 'person' })
 class Person {
-
   @PrimaryKey({ nullable: true })
   id?: number;
 
   @Property()
   name!: string;
 
-  @ManyToMany({ entity: () => Phone, owner: true, pivotTable: 'tic.person_phone', joinColumn: 'person_id', inverseJoinColumn: 'phone_id' })
+  @ManyToMany({
+    entity: () => Phone,
+    owner: true,
+    pivotTable: 'tic.person_phone',
+    joinColumn: 'person_id',
+    inverseJoinColumn: 'phone_id',
+  })
   phones = new Collection<Phone>(this);
-
 }
 
 @Entity({ schema: 'tic', tableName: 'phone' })
 class Phone {
-
   @PrimaryKey({ nullable: true })
   id?: number;
 
@@ -27,7 +30,6 @@ class Phone {
 
   @ManyToMany({ entity: () => Person, mappedBy: (e: Person) => e.phones })
   people: Collection<Person> = new Collection<Person>(this);
-
 }
 
 let orm: MikroORM;

@@ -3,7 +3,6 @@ import type { Platform } from '../platforms/Platform.js';
 import type { EntityProperty } from '../typings.js';
 
 export class DateTimeType extends Type<Date, string> {
-
   override getColumnType(prop: EntityProperty, platform: Platform): string {
     return platform.getDateTimeTypeDeclarationSQL({ length: prop.length });
   }
@@ -23,5 +22,4 @@ export class DateTimeType extends Type<Date, string> {
   override getDefaultLength(platform: Platform): number {
     return platform.getDefaultDateTimeLength();
   }
-
 }

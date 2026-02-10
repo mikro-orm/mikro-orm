@@ -5,7 +5,6 @@ import { Test2 } from './Test2.js';
 
 @Entity()
 export class FooBar2 extends BaseEntity {
-
   [OptionalProps]?: 'version';
 
   @PrimaryKey()
@@ -53,5 +52,4 @@ export class FooBar2 extends BaseEntity {
 
     return bar;
   }
-
 }

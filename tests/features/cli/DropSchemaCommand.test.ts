@@ -9,7 +9,6 @@ import { SchemaCommandFactory } from '../../../packages/cli/src/commands/SchemaC
 import { initORMSqlite } from '../../bootstrap.js';
 
 describe('DropSchemaCommand', () => {
-
   let orm: MikroORM<SqliteDriver>;
 
   beforeAll(async () => {
@@ -63,8 +62,12 @@ describe('DropSchemaCommand', () => {
 
     await expect(cmd.handler({ run: true, dropDb: true } as any)).resolves.toBeUndefined();
     expect(dropSchema.mock.calls.length).toBe(3);
-    expect(dropSchema.mock.calls[2][0]).toEqual({ wrap: undefined, dropMigrationsTable: undefined, dropDb: true, run: true });
+    expect(dropSchema.mock.calls[2][0]).toEqual({
+      wrap: undefined,
+      dropMigrationsTable: undefined,
+      dropDb: true,
+      run: true,
+    });
     expect(closeSpy).toHaveBeenCalledTimes(5);
   });
-
 });

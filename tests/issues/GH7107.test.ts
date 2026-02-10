@@ -1,10 +1,16 @@
 import { Collection, MikroORM, PrimaryKeyProp } from '@mikro-orm/core';
-import { Entity, ManyToMany, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToMany,
+  ManyToOne,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()
 class User {
-
   @PrimaryKey()
   id!: number;
 
@@ -13,12 +19,10 @@ class User {
 
   @ManyToMany({ entity: () => Role, pivotEntity: () => UserRole, owner: true })
   roles = new Collection<Role>(this);
-
 }
 
 @Entity()
 class Role {
-
   @PrimaryKey()
   id!: number;
 
@@ -27,12 +31,10 @@ class Role {
 
   @ManyToMany({ entity: () => User, mappedBy: 'roles' })
   users = new Collection<User>(this);
-
 }
 
 @Entity()
 class UserRole {
-
   @ManyToOne({ entity: () => User, primary: true, mapToPk: true })
   user!: number;
 
@@ -40,11 +42,9 @@ class UserRole {
   role!: number;
 
   [PrimaryKeyProp]?: ['user', 'role'];
-
 }
 
 describe('GH #7107 - ManyToMany with mapToPk in pivot entity', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -84,7 +84,12 @@ describe('GH #7107 - ManyToMany with mapToPk in pivot entity', () => {
 
     expect(adminRole.users.isInitialized()).toBe(true);
     expect(adminRole.users.getItems()).toHaveLength(2);
-    expect(adminRole.users.getItems().map(u => u.name).sort()).toEqual(['User 1', 'User 2']);
+    expect(
+      adminRole.users
+        .getItems()
+        .map(u => u.name)
+        .sort(),
+    ).toEqual(['User 1', 'User 2']);
 
     expect(editorRole.users.isInitialized()).toBe(true);
     expect(editorRole.users.getItems()).toHaveLength(1);
@@ -107,7 +112,11 @@ describe('GH #7107 - ManyToMany with mapToPk in pivot entity', () => {
 
     expect(loadedUser.roles.isInitialized()).toBe(true);
     expect(loadedUser.roles.getItems()).toHaveLength(2);
-    expect(loadedUser.roles.getItems().map(r => r.name).sort()).toEqual(['Role A', 'Role B']);
+    expect(
+      loadedUser.roles
+        .getItems()
+        .map(r => r.name)
+        .sort(),
+    ).toEqual(['Role A', 'Role B']);
   });
-
 });

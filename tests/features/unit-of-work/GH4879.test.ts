@@ -10,7 +10,6 @@ type ProfileProps = {
 };
 
 class Profile {
-
   readonly id: number;
   readonly imageUrl: string;
   readonly active: boolean;
@@ -22,7 +21,6 @@ class Profile {
     this.id = props.id ?? 1;
     this.user = ref(User, props.userOrId);
   }
-
 }
 
 type CreateUserProps = {
@@ -35,7 +33,6 @@ type CreateUserProps = {
 };
 
 class User {
-
   readonly id!: number;
   readonly firstName!: string;
   readonly lastName!: string;
@@ -48,7 +45,6 @@ class User {
   constructor(props: CreateUserProps) {
     wrap<User>(this).assign(props);
   }
-
 }
 
 const profileSchema = new EntitySchema({
@@ -156,10 +152,14 @@ test('creates a user and assign a profile to it (using entity)', async () => {
   await em.persist(aProfile).flush();
 
   // Assert
-  const userWithProfile = await em.findOneOrFail(User, { id: aUser.id }, {
-    populate: ['profile'],
-    refresh: true,
-  });
+  const userWithProfile = await em.findOneOrFail(
+    User,
+    { id: aUser.id },
+    {
+      populate: ['profile'],
+      refresh: true,
+    },
+  );
   expect(userWithProfile.profile).toBeTruthy();
 });
 
@@ -185,9 +185,13 @@ test('creates a user and assign a profile to it (using id)', async () => {
   await em.persist(aProfile).flush();
 
   // Assert
-  const userWithProfile = await em.findOneOrFail(User, { id: aUser.id }, {
-    populate: ['profile'],
-    refresh: true,
-  });
+  const userWithProfile = await em.findOneOrFail(
+    User,
+    { id: aUser.id },
+    {
+      populate: ['profile'],
+      refresh: true,
+    },
+  );
   expect(userWithProfile.profile).toBeTruthy();
 });

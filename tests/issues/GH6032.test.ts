@@ -11,7 +11,6 @@ import {
 
 @Entity()
 class A {
-
   @PrimaryKey()
   id!: number;
 
@@ -20,12 +19,10 @@ class A {
 
   @Property()
   prop!: string;
-
 }
 
 @Entity()
 class C {
-
   @PrimaryKey()
   id!: number;
 
@@ -34,12 +31,10 @@ class C {
 
   @OneToMany(() => B, b => b.c)
   bCollection = new Collection<B>(this);
-
 }
 
 @Entity()
 class B {
-
   @PrimaryKey()
   id!: number;
 
@@ -51,7 +46,6 @@ class B {
 
   @Property()
   prop!: string;
-
 }
 
 let orm: MikroORM;
@@ -71,7 +65,6 @@ afterAll(() => orm.close(true));
 // addDependency B A 1
 // addDependency A C 1
 //  [ [EntityMetadata<B>], [EntityMetadata<A>], [EntityMetadata<C>] ]
-
 
 // Set(3) {
 //   [EntityMetadata<B>],

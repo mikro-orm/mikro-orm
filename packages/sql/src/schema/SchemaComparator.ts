@@ -20,7 +20,6 @@ import type { SchemaHelper } from './SchemaHelper.js';
  * Compares two Schemas and return an instance of SchemaDifference.
  */
 export class SchemaComparator {
-
   private readonly helper: SchemaHelper;
   private readonly logger: Logger;
 
@@ -86,7 +85,11 @@ export class SchemaComparator {
         continue;
       }
 
-      if (key.startsWith(`${fromSchema.name}.`) && (fromSchema.name !== toSchema.name || toSchema.getNativeEnum(key.substring(fromSchema.name.length + 1))?.schema === '*')) {
+      if (
+        key.startsWith(`${fromSchema.name}.`) &&
+        (fromSchema.name !== toSchema.name ||
+          toSchema.getNativeEnum(key.substring(fromSchema.name.length + 1))?.schema === '*')
+      ) {
         continue;
       }
 
@@ -99,7 +102,11 @@ export class SchemaComparator {
       if (!fromSchema.hasTable(tableName)) {
         diff.newTables[tableName] = toSchema.getTable(tableName)!;
       } else {
-        const tableDifferences = this.diffTable(fromSchema.getTable(tableName)!, toSchema.getTable(tableName)!, inverseDiff?.changedTables[tableName]);
+        const tableDifferences = this.diffTable(
+          fromSchema.getTable(tableName)!,
+          toSchema.getTable(tableName)!,
+          inverseDiff?.changedTables[tableName],
+        );
 
         if (tableDifferences !== false) {
           diff.changedTables[tableName] = tableDifferences;
@@ -188,7 +195,11 @@ export class SchemaComparator {
    * Returns the difference between the tables fromTable and toTable.
    * If there are no differences this method returns the boolean false.
    */
-  diffTable(fromTable: DatabaseTable, toTable: DatabaseTable, inverseTableDiff?: TableDifference): TableDifference | false {
+  diffTable(
+    fromTable: DatabaseTable,
+    toTable: DatabaseTable,
+    inverseTableDiff?: TableDifference,
+  ): TableDifference | false {
     let changes = 0;
     const tableDifferences: TableDifference = {
       name: fromTable.getShortestName(),
@@ -212,7 +223,10 @@ export class SchemaComparator {
 
     if (this.diffComment(fromTable.comment, toTable.comment)) {
       tableDifferences.changedComment = toTable.comment;
-      this.log(`table comment changed for ${tableDifferences.name}`, { fromTableComment: fromTable.comment, toTableComment: toTable.comment });
+      this.log(`table comment changed for ${tableDifferences.name}`, {
+        fromTableComment: fromTable.comment,
+        toTableComment: toTable.comment,
+      });
     }
 
     const fromTableColumns = fromTable.getColumns();
@@ -281,7 +295,7 @@ export class SchemaComparator {
     // See if there are any removed indexes in "to" table
     for (const index of fromTableIndexes) {
       // See if index is removed in "to" table.
-      if ((index.primary && !toTable.hasPrimaryKey()) || !index.primary && !toTable.hasIndex(index.keyName)) {
+      if ((index.primary && !toTable.hasPrimaryKey()) || (!index.primary && !toTable.hasIndex(index.keyName))) {
         tableDifferences.removedIndexes[index.keyName] = index;
         this.log(`index ${index.keyName} removed from table ${tableDifferences.name}`);
         changes++;
@@ -296,7 +310,10 @@ export class SchemaComparator {
       }
 
       tableDifferences.changedIndexes[index.keyName] = toTableIndex!;
-      this.log(`index ${index.keyName} changed in table ${tableDifferences.name}`, { fromTableIndex: index, toTableIndex });
+      this.log(`index ${index.keyName} changed in table ${tableDifferences.name}`, {
+        fromTableIndex: index,
+        toTableIndex,
+      });
       changes++;
     }
 
@@ -334,11 +351,18 @@ export class SchemaComparator {
         continue;
       }
 
-      if (fromColumn?.enumItems && toColumn?.enumItems && !this.diffEnumItems(fromColumn.enumItems, toColumn.enumItems)) {
+      if (
+        fromColumn?.enumItems &&
+        toColumn?.enumItems &&
+        !this.diffEnumItems(fromColumn.enumItems, toColumn.enumItems)
+      ) {
         continue;
       }
 
-      this.log(`check constraint ${check.name} changed in table ${tableDifferences.name}`, { fromTableCheck: check, toTableCheck });
+      this.log(`check constraint ${check.name} changed in table ${tableDifferences.name}`, {
+        fromTableCheck: check,
+        toTableCheck,
+      });
       tableDifferences.changedChecks[check.name] = toTableCheck;
       changes++;
     }
@@ -352,7 +376,10 @@ export class SchemaComparator {
           delete fromForeignKeys[fromConstraint.constraintName];
           delete toForeignKeys[toConstraint.constraintName];
         } else if (fromConstraint.constraintName.toLowerCase() === toConstraint.constraintName.toLowerCase()) {
-          this.log(`FK constraint ${fromConstraint.constraintName} changed in table ${tableDifferences.name}`, { fromConstraint, toConstraint });
+          this.log(`FK constraint ${fromConstraint.constraintName} changed in table ${tableDifferences.name}`, {
+            fromConstraint,
+            toConstraint,
+          });
           tableDifferences.changedForeignKeys[toConstraint.constraintName] = toConstraint;
           changes++;
           delete fromForeignKeys[fromConstraint.constraintName];
@@ -369,7 +396,9 @@ export class SchemaComparator {
 
     for (const toConstraint of Object.values(toForeignKeys)) {
       tableDifferences.addedForeignKeys[toConstraint.constraintName] = toConstraint;
-      this.log(`FK constraint ${toConstraint.constraintName} added to table ${tableDifferences.name}`, { constraint: toConstraint });
+      this.log(`FK constraint ${toConstraint.constraintName} added to table ${tableDifferences.name}`, {
+        constraint: toConstraint,
+      });
       changes++;
     }
 
@@ -428,7 +457,10 @@ export class SchemaComparator {
       tableDifferences.renamedColumns[removedColumnName] = addedColumn;
       delete tableDifferences.addedColumns[addedColumnName];
       delete tableDifferences.removedColumns[removedColumnName];
-      this.log(`renamed column detected in table ${tableDifferences.name}`, { old: removedColumnName, new: addedColumnName });
+      this.log(`renamed column detected in table ${tableDifferences.name}`, {
+        old: removedColumnName,
+        new: addedColumnName,
+      });
     }
   }
 
@@ -469,7 +501,10 @@ export class SchemaComparator {
       tableDifferences.renamedIndexes[removedIndexName] = addedIndex;
       delete tableDifferences.addedIndexes[addedIndexName];
       delete tableDifferences.removedIndexes[removedIndexName];
-      this.log(`renamed index detected in table ${tableDifferences.name}`, { old: removedIndexName, new: addedIndexName });
+      this.log(`renamed index detected in table ${tableDifferences.name}`, {
+        old: removedIndexName,
+        new: addedIndexName,
+      });
     }
   }
 
@@ -504,10 +539,7 @@ export class SchemaComparator {
 
     const defaultRule = ['restrict', 'no action'];
     const rule = (key: ForeignKey, method: 'updateRule' | 'deleteRule') => {
-      return (key[method] ?? defaultRule[0])
-        .toLowerCase()
-        .replace(defaultRule[1], defaultRule[0])
-        .replace(/"/g, '');
+      return (key[method] ?? defaultRule[0]).toLowerCase().replace(defaultRule[1], defaultRule[0]).replace(/"/g, '');
     };
     const compare = (method: 'updateRule' | 'deleteRule') => rule(key1, method) === rule(key2, method);
 
@@ -521,9 +553,17 @@ export class SchemaComparator {
     const changedProperties = new Set<string>();
     const fromProp = this.mapColumnToProperty({ ...fromColumn, autoincrement: false });
     const toProp = this.mapColumnToProperty({ ...toColumn, autoincrement: false });
-    const fromColumnType = this.platform.normalizeColumnType(fromColumn.mappedType.getColumnType(fromProp, this.platform).toLowerCase(), fromProp);
-    const fromNativeEnum = fromTable.nativeEnums[fromColumnType] ?? Object.values(fromTable.nativeEnums).find(e => e.name === fromColumnType && e.schema !== '*');
-    let toColumnType = this.platform.normalizeColumnType(toColumn.mappedType.getColumnType(toProp, this.platform).toLowerCase(), toProp);
+    const fromColumnType = this.platform.normalizeColumnType(
+      fromColumn.mappedType.getColumnType(fromProp, this.platform).toLowerCase(),
+      fromProp,
+    );
+    const fromNativeEnum =
+      fromTable.nativeEnums[fromColumnType] ??
+      Object.values(fromTable.nativeEnums).find(e => e.name === fromColumnType && e.schema !== '*');
+    let toColumnType = this.platform.normalizeColumnType(
+      toColumn.mappedType.getColumnType(toProp, this.platform).toLowerCase(),
+      toProp,
+    );
 
     const log = (msg: string, params: Dictionary) => {
       if (logging) {
@@ -537,9 +577,14 @@ export class SchemaComparator {
       fromColumnType !== toColumnType &&
       (!fromNativeEnum || `${fromNativeEnum.schema}.${fromNativeEnum.name}` !== toColumnType) &&
       !(fromColumn.ignoreSchemaChanges?.includes('type') || toColumn.ignoreSchemaChanges?.includes('type')) &&
-      !fromColumn.generated && !toColumn.generated
+      !fromColumn.generated &&
+      !toColumn.generated
     ) {
-      if (!toColumnType.includes('.') && fromTable.schema && fromTable.schema !== this.platform.getDefaultSchemaName()) {
+      if (
+        !toColumnType.includes('.') &&
+        fromTable.schema &&
+        fromTable.schema !== this.platform.getDefaultSchemaName()
+      ) {
         toColumnType = `${fromTable.schema}.${toColumnType}`;
       }
 
@@ -570,10 +615,9 @@ export class SchemaComparator {
     }
 
     if (
-      !(
-        fromColumn.ignoreSchemaChanges?.includes('default') ||
-        toColumn.ignoreSchemaChanges?.includes('default')
-      ) && !this.hasSameDefaultValue(fromColumn, toColumn)) {
+      !(fromColumn.ignoreSchemaChanges?.includes('default') || toColumn.ignoreSchemaChanges?.includes('default')) &&
+      !this.hasSameDefaultValue(fromColumn, toColumn)
+    ) {
       log(`'default' changed for column ${fromTable.name}.${fromColumn.name}`, { fromColumn, toColumn });
       changedProperties.add('default');
     }
@@ -594,10 +638,7 @@ export class SchemaComparator {
 
     if (
       (fromColumn.extra || '').toLowerCase() !== (toColumn.extra || '').toLowerCase() &&
-      !(
-        fromColumn.ignoreSchemaChanges?.includes('extra') ||
-        toColumn.ignoreSchemaChanges?.includes('extra')
-      )
+      !(fromColumn.ignoreSchemaChanges?.includes('extra') || toColumn.ignoreSchemaChanges?.includes('extra'))
     ) {
       log(`'extra' changed for column ${fromTable.name}.${fromColumn.name}`, { fromColumn, toColumn });
       changedProperties.add('extra');
@@ -731,7 +772,7 @@ export class SchemaComparator {
         return false;
       }
 
-      const defaultNulls = (s: string) => s === 'DESC' ? 'FIRST' : 'LAST';
+      const defaultNulls = (s: string) => (s === 'DESC' ? 'FIRST' : 'LAST');
       const nulls1 = c1.nulls?.toUpperCase() ?? defaultNulls(sort1);
       const nulls2 = c2.nulls?.toUpperCase() ?? defaultNulls(sort2);
 
@@ -770,33 +811,35 @@ export class SchemaComparator {
     // expressions like check constraints might be normalized by the driver,
     // e.g. quotes might be added (https://github.com/mikro-orm/mikro-orm/issues/3827)
     const simplify = (str?: string) => {
-      return str
-        ?.replace(/_\w+'(.*?)'/g, '$1')
-        .replace(/in\s*\((.*?)\)/ig, '= any (array[$1])')
-        // MySQL normalizes count(*) to count(0)
-        .replace(/\bcount\s*\(\s*0\s*\)/gi, 'count(*)')
-        // Remove quotes first so we can process identifiers
-        .replace(/['"`]/g, '')
-        // MySQL adds table/alias prefixes to columns (e.g., a.name or table_name.column vs just column)
-        // Strip these prefixes - match word.word patterns and keep only the last part
-        .replace(/\b\w+\.(\w+)/g, '$1')
-        // Normalize JOIN syntax: inner join -> join (equivalent in SQL)
-        .replace(/\binner\s+join\b/gi, 'join')
-        // Remove redundant column aliases like `title AS title` -> `title`
-        .replace(/\b(\w+)\s+as\s+\1\b/gi, '$1')
-        // Remove AS keyword (optional in SQL, MySQL may add/remove it)
-        .replace(/\bas\b/gi, '')
-        // Remove remaining special chars, parentheses, type casts, asterisks, and normalize whitespace
-        .replace(/[()\n[\]*]|::\w+| +/g, '')
-        .replace(/anyarray\[(.*)]/ig, '$1')
-        .toLowerCase()
-        // PostgreSQL adds default aliases to aggregate functions (e.g., count(*) AS count)
-        // After removing AS and whitespace, this results in duplicate adjacent words
-        // Remove these duplicates: "countcount" -> "count", "minmin" -> "min"
-        // Use lookahead to match repeated patterns of 3+ chars (avoid false positives on short sequences)
-        .replace(/(\w{3,})\1/g, '$1')
-        // Remove trailing semicolon (PostgreSQL adds it to view definitions)
-        .replace(/;$/, '');
+      return (
+        str
+          ?.replace(/_\w+'(.*?)'/g, '$1')
+          .replace(/in\s*\((.*?)\)/gi, '= any (array[$1])')
+          // MySQL normalizes count(*) to count(0)
+          .replace(/\bcount\s*\(\s*0\s*\)/gi, 'count(*)')
+          // Remove quotes first so we can process identifiers
+          .replace(/['"`]/g, '')
+          // MySQL adds table/alias prefixes to columns (e.g., a.name or table_name.column vs just column)
+          // Strip these prefixes - match word.word patterns and keep only the last part
+          .replace(/\b\w+\.(\w+)/g, '$1')
+          // Normalize JOIN syntax: inner join -> join (equivalent in SQL)
+          .replace(/\binner\s+join\b/gi, 'join')
+          // Remove redundant column aliases like `title AS title` -> `title`
+          .replace(/\b(\w+)\s+as\s+\1\b/gi, '$1')
+          // Remove AS keyword (optional in SQL, MySQL may add/remove it)
+          .replace(/\bas\b/gi, '')
+          // Remove remaining special chars, parentheses, type casts, asterisks, and normalize whitespace
+          .replace(/[()\n[\]*]|::\w+| +/g, '')
+          .replace(/anyarray\[(.*)]/gi, '$1')
+          .toLowerCase()
+          // PostgreSQL adds default aliases to aggregate functions (e.g., count(*) AS count)
+          // After removing AS and whitespace, this results in duplicate adjacent words
+          // Remove these duplicates: "countcount" -> "count", "minmin" -> "min"
+          // Use lookahead to match repeated patterns of 3+ chars (avoid false positives on short sequences)
+          .replace(/(\w{3,})\1/g, '$1')
+          // Remove trailing semicolon (PostgreSQL adds it to view definitions)
+          .replace(/;$/, '')
+      );
     };
     return simplify(expr1) !== simplify(expr2);
   }
@@ -807,15 +850,17 @@ export class SchemaComparator {
       return null;
     }
 
-    const val = defaultValue
-      .replace(/^(_\w+\\)?'(.*?)\\?'$/, '$2')
-      .replace(/^\(?'(.*?)'\)?$/, '$1');
+    const val = defaultValue.replace(/^(_\w+\\)?'(.*?)\\?'$/, '$2').replace(/^\(?'(.*?)'\)?$/, '$1');
 
     return parseJsonSafe(val);
   }
 
   hasSameDefaultValue(from: Column, to: Column): boolean {
-    if (from.default == null || from.default.toString().toLowerCase() === 'null' || from.default.toString().startsWith('nextval(')) {
+    if (
+      from.default == null ||
+      from.default.toString().toLowerCase() === 'null' ||
+      from.default.toString().startsWith('nextval(')
+    ) {
       return to.default == null || to.default!.toLowerCase() === 'null';
     }
 
@@ -861,7 +906,7 @@ export class SchemaComparator {
       fieldNames: [column.name],
       columnTypes: [column.type],
       items: column.enumItems,
-      ...column as Dictionary,
+      ...(column as Dictionary),
       length: length ? +length[1] : column.length,
       precision: match ? +match[1] : column.precision,
       scale: match ? +match[2] : column.scale,
@@ -875,5 +920,4 @@ export class SchemaComparator {
 
     this.logger.log('schema', message);
   }
-
 }

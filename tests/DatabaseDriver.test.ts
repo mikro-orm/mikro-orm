@@ -32,11 +32,19 @@ class Driver extends DatabaseDriver<Connection> implements IDatabaseDriver {
     super(config, dependencies);
   }
 
-  async count<T extends object>(entityName: EntityName<T>, where: ObjectQuery<T>, options: CountOptions<T>): Promise<number> {
+  async count<T extends object>(
+    entityName: EntityName<T>,
+    where: ObjectQuery<T>,
+    options: CountOptions<T>,
+  ): Promise<number> {
     return 0;
   }
 
-  stream<T extends object>(entityName: EntityName<T>, where: FilterQuery<T>, options: StreamOptions<T>): AsyncIterableIterator<T> {
+  stream<T extends object>(
+    entityName: EntityName<T>,
+    where: FilterQuery<T>,
+    options: StreamOptions<T>,
+  ): AsyncIterableIterator<T> {
     throw new Error('Method not implemented.');
   }
 
@@ -56,7 +64,11 @@ class Driver extends DatabaseDriver<Connection> implements IDatabaseDriver {
     return null;
   }
 
-  async nativeDelete<T extends object>(entityName: EntityName<T>, where: FilterQuery<T>, ctx: Transaction | undefined): Promise<QueryResult<T>> {
+  async nativeDelete<T extends object>(
+    entityName: EntityName<T>,
+    where: FilterQuery<T>,
+    ctx: Transaction | undefined,
+  ): Promise<QueryResult<T>> {
     return { affectedRows: 0, insertId: 0 as Primary<T> };
   }
 
@@ -97,8 +109,12 @@ describe('DatabaseDriver', () => {
     expect(driver.getPlatform().getRepositoryClass()).toBe(EntityRepository);
     expect(driver.getPlatform().quoteValue('a')).toBe('a');
     await expect(driver.aggregate(Test, [])).rejects.toThrow('Aggregations are not supported by Driver driver');
-    await expect(driver.nativeUpdateMany(Test, [], [])).rejects.toThrow('Batch updates are not supported by Driver driver');
-    await expect(driver.lockPessimistic({}, { lockMode: LockMode.NONE })).rejects.toThrow('Pessimistic locks are not supported by Driver driver');
+    await expect(driver.nativeUpdateMany(Test, [], [])).rejects.toThrow(
+      'Batch updates are not supported by Driver driver',
+    );
+    await expect(driver.lockPessimistic({}, { lockMode: LockMode.NONE })).rejects.toThrow(
+      'Pessimistic locks are not supported by Driver driver',
+    );
     const e1 = driver.convertException(new Error('test'));
     const e2 = driver.convertException(e1);
     expect(e1).toBe(e2);
@@ -107,7 +123,9 @@ describe('DatabaseDriver', () => {
 
   test('not supported', async () => {
     expect(driver.getPlatform().supportsCreatingFullTextIndex()).toBe(false);
-    expect(() => driver.getPlatform().getFullTextWhereClause({} as any)).toThrow('Full text searching is not supported by this driver.');
+    expect(() => driver.getPlatform().getFullTextWhereClause({} as any)).toThrow(
+      'Full text searching is not supported by this driver.',
+    );
     expect(() => driver.getPlatform().getFullTextIndexExpression({} as any, {} as any, {} as any, {} as any)).toThrow(
       'Full text searching is not supported by this driver.',
     );

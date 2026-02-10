@@ -3,36 +3,29 @@ import { Entity, ManyToOne, OneToOne, PrimaryKey, ReflectMetadataProvider } from
 
 @Entity()
 class Parent {
-
   @PrimaryKey()
   id!: number;
-
 }
 
 @Entity()
 class Child {
-
   @PrimaryKey()
   id!: number;
 
   @ManyToOne(() => Parent, { ref: true, deferMode: DeferMode.INITIALLY_DEFERRED })
   parent!: Ref<Parent>;
-
 }
 
 @Entity()
 class Child1 {
-
   @PrimaryKey()
   id!: number;
 
   @OneToOne(() => Parent, { ref: true, deferMode: DeferMode.INITIALLY_DEFERRED })
   parent!: Ref<Parent>;
-
 }
 
 describe('deferrable constraints in postgres', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -86,5 +79,4 @@ describe('deferrable constraints in postgres', () => {
       em.persist([child1, child2]);
     });
   });
-
 });

@@ -4,7 +4,6 @@ import { mockLogger } from '../helpers.js';
 
 @Entity()
 class User {
-
   @PrimaryKey()
   id!: number;
 
@@ -21,12 +20,10 @@ class User {
     this.name = name;
     this.email = email;
   }
-
 }
 
 @Entity()
 class UserMeta {
-
   [PrimaryKeyProp]?: 'user';
 
   @OneToOne({ entity: () => User, primary: true })
@@ -39,7 +36,6 @@ class UserMeta {
     this.user = user;
     this.bio = bio;
   }
-
 }
 
 let orm: MikroORM;

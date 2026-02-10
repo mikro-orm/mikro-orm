@@ -1,11 +1,20 @@
 import { Collection, EntitySchema, MikroORM, quote, Ref, wrap, raw, Type, Opt } from '@mikro-orm/sqlite';
-import { Embeddable, Embedded, Entity, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Embeddable,
+  Embedded,
+  Entity,
+  ManyToOne,
+  OneToMany,
+  OneToOne,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../../bootstrap.js';
 
 // Base entity with TPT inheritance strategy
 @Entity({ inheritance: 'tpt' })
 abstract class Integration {
-
   @PrimaryKey()
   id!: number;
 
@@ -14,13 +23,11 @@ abstract class Integration {
 
   @Property({ default: true })
   active?: boolean = true;
-
 }
 
 // Child entity - FooIntegration
 @Entity()
 class FooIntegration extends Integration {
-
   @Property()
   fooData!: string;
 
@@ -31,34 +38,28 @@ class FooIntegration extends Integration {
     generated: (cols, table) => `(upper(${cols.fooData}) || ' from ' || '${table}') stored`,
   })
   fooDataUpper!: Opt<string>;
-
 }
 
 // Child entity - BarIntegration
 @Entity()
 class BarIntegration extends Integration {
-
   @Property()
   barData!: string;
 
   @Property({ nullable: true })
   barExtra?: string;
-
 }
 
 // Multi-level TPT: GrandChild extends BarIntegration
 @Entity()
 class BazIntegration extends BarIntegration {
-
   @Property()
   bazData!: string;
-
 }
 
 // Entity that references TPT entities
 @Entity()
 class Project {
-
   @PrimaryKey()
   id!: number;
 
@@ -67,13 +68,11 @@ class Project {
 
   @ManyToOne(() => Integration, { ref: true, nullable: true })
   integration?: Ref<Integration>;
-
 }
 
 // Entity with collection of TPT entities
 @Entity()
 class Workspace {
-
   @PrimaryKey()
   id!: number;
 
@@ -82,12 +81,10 @@ class Workspace {
 
   @OneToMany(() => WorkspaceIntegration, wi => wi.workspace)
   integrations = new Collection<WorkspaceIntegration>(this);
-
 }
 
 @Entity()
 class WorkspaceIntegration {
-
   @PrimaryKey()
   id!: number;
 
@@ -96,11 +93,9 @@ class WorkspaceIntegration {
 
   @ManyToOne(() => Integration, { ref: true })
   integration!: Ref<Integration>;
-
 }
 
 describe('TPT (Table-Per-Type) Inheritance', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -121,7 +116,6 @@ describe('TPT (Table-Per-Type) Inheritance', () => {
   });
 
   describe('metadata', () => {
-
     test('TPT metadata is set correctly', () => {
       const integrationMeta = orm.getMetadata().get(Integration);
       const fooMeta = orm.getMetadata().get(FooIntegration);
@@ -168,11 +162,9 @@ describe('TPT (Table-Per-Type) Inheritance', () => {
       // BazIntegration owns only bazData
       expect(bazMeta.ownProps?.map(p => p.name)).toEqual(['bazData']);
     });
-
   });
 
   describe('schema', () => {
-
     test('generates separate tables with FK constraints', async () => {
       const sql = await orm.schema.getCreateSchemaSQL();
 
@@ -187,11 +179,9 @@ describe('TPT (Table-Per-Type) Inheritance', () => {
       expect(sql).toMatch(/bar_integration.*references.*integration/is);
       expect(sql).toMatch(/baz_integration.*references.*bar_integration/is);
     });
-
   });
 
   describe('persistence', () => {
-
     test('INSERT creates records in multiple tables', async () => {
       const mock = mockLogger(orm);
 
@@ -287,11 +277,9 @@ describe('TPT (Table-Per-Type) Inheritance', () => {
       const integrationCount = await orm.em.count(Integration, { id: fooId });
       expect(integrationCount).toBe(0);
     });
-
   });
 
   describe.each(['select-in', 'joined'] as const)('querying (%s strategy)', strategy => {
-
     beforeEach(async () => {
       // Create test data
       orm.em.create(FooIntegration, { name: 'Foo 1', fooData: 'foo-data-1' });
@@ -354,30 +342,42 @@ describe('TPT (Table-Per-Type) Inheritance', () => {
     });
 
     test('ORDER BY on inherited properties', async () => {
-      const foos = await orm.em.find(FooIntegration, {}, {
-        strategy,
-        orderBy: { name: 'DESC' },
-      });
+      const foos = await orm.em.find(
+        FooIntegration,
+        {},
+        {
+          strategy,
+          orderBy: { name: 'DESC' },
+        },
+      );
       expect(foos).toHaveLength(2);
       expect(foos[0].name).toBe('Foo 2');
       expect(foos[1].name).toBe('Foo 1');
     });
 
     test('ORDER BY on own properties', async () => {
-      const foos = await orm.em.find(FooIntegration, {}, {
-        strategy,
-        orderBy: { fooData: 'DESC' },
-      });
+      const foos = await orm.em.find(
+        FooIntegration,
+        {},
+        {
+          strategy,
+          orderBy: { fooData: 'DESC' },
+        },
+      );
       expect(foos).toHaveLength(2);
       expect(foos[0].fooData).toBe('foo-data-2');
       expect(foos[1].fooData).toBe('foo-data-1');
     });
 
     test('partial loading with fields option', async () => {
-      const foos = await orm.em.find(FooIntegration, {}, {
-        strategy,
-        fields: ['name', 'fooData'],
-      });
+      const foos = await orm.em.find(
+        FooIntegration,
+        {},
+        {
+          strategy,
+          fields: ['name', 'fooData'],
+        },
+      );
       expect(foos).toHaveLength(2);
       expect(wrap(foos[0]).toObject()).toMatchObject({
         id: expect.any(Number),
@@ -387,29 +387,35 @@ describe('TPT (Table-Per-Type) Inheritance', () => {
     });
 
     test('partial loading with only child fields', async () => {
-      const foos = await orm.em.find(FooIntegration, {}, {
-        strategy,
-        fields: ['id', 'fooData'],
-      });
+      const foos = await orm.em.find(
+        FooIntegration,
+        {},
+        {
+          strategy,
+          fields: ['id', 'fooData'],
+        },
+      );
       expect(foos).toHaveLength(2);
       expect(foos[0].fooData).toBeDefined();
       expect(foos[0].id).toBeDefined();
     });
 
     test('partial loading with only inherited fields', async () => {
-      const foos = await orm.em.find(FooIntegration, {}, {
-        strategy,
-        fields: ['id', 'name'],
-      });
+      const foos = await orm.em.find(
+        FooIntegration,
+        {},
+        {
+          strategy,
+          fields: ['id', 'name'],
+        },
+      );
       expect(foos).toHaveLength(2);
       expect(foos[0].name).toBeDefined();
       expect(foos[0].id).toBeDefined();
     });
-
   });
 
   describe('relations with TPT entities', () => {
-
     test('ManyToOne to TPT entity', async () => {
       const foo = orm.em.create(FooIntegration, { name: 'Foo', fooData: 'data' });
       const project = orm.em.create(Project, { title: 'Project 1', integration: foo });
@@ -440,13 +446,10 @@ describe('TPT (Table-Per-Type) Inheritance', () => {
       expect(loaded.integrations[0].integration?.unwrap()).toBeInstanceOf(Integration);
       expect(loaded.integrations[1].integration?.unwrap()).toBeInstanceOf(Integration);
     });
-
   });
-
 });
 
 describe('TPT validation and edge cases', () => {
-
   test('throws when mixing STI and TPT', async () => {
     // Entity with both discriminatorColumn (STI) and inheritance: 'tpt'
     @Entity({
@@ -455,49 +458,43 @@ describe('TPT validation and edge cases', () => {
       discriminatorMap: { base: 'MixedBase2', child: 'MixedChild2' },
     })
     abstract class MixedBase2 {
-
       @PrimaryKey()
       id!: number;
 
       @Property()
       type!: string;
-
     }
 
     @Entity({ discriminatorValue: 'child' })
     class MixedChild2 extends MixedBase2 {
-
       @Property()
       data!: string;
-
     }
 
-    await expect(MikroORM.init({
-      metadataProvider: ReflectMetadataProvider,
-      dbName: ':memory:',
-      entities: [MixedBase2, MixedChild2],
-    })).rejects.toThrow(/cannot mix STI.*and TPT/i);
+    await expect(
+      MikroORM.init({
+        metadataProvider: ReflectMetadataProvider,
+        dbName: ':memory:',
+        entities: [MixedBase2, MixedChild2],
+      }),
+    ).rejects.toThrow(/cannot mix STI.*and TPT/i);
   });
 
   test('TPT with non-abstract root entity', async () => {
     // Non-abstract root entity is allowed
     @Entity({ inheritance: 'tpt' })
     class ConcreteRoot {
-
       @PrimaryKey()
       id!: number;
 
       @Property()
       rootProp!: string;
-
     }
 
     @Entity()
     class ConcreteChild extends ConcreteRoot {
-
       @Property()
       childProp!: string;
-
     }
 
     const orm = await MikroORM.init({
@@ -525,7 +522,6 @@ describe('TPT validation and edge cases', () => {
   test('TPT query with complex WHERE conditions', async () => {
     @Entity({ inheritance: 'tpt' })
     abstract class Base {
-
       @PrimaryKey()
       id!: number;
 
@@ -534,15 +530,12 @@ describe('TPT validation and edge cases', () => {
 
       @Property({ nullable: true })
       optional?: string;
-
     }
 
     @Entity()
     class Child extends Base {
-
       @Property()
       value!: number;
-
     }
 
     const orm = await MikroORM.init({
@@ -561,12 +554,13 @@ describe('TPT validation and edge cases', () => {
     orm.em.clear();
 
     // Query with conditions on both parent and child properties
-    const results = await orm.em.find(Child, {
-      $or: [
-        { name: 'A', value: { $gte: 10 } },
-        { optional: 'y' },
-      ],
-    }, { orderBy: { name: 'ASC' } });
+    const results = await orm.em.find(
+      Child,
+      {
+        $or: [{ name: 'A', value: { $gte: 10 } }, { optional: 'y' }],
+      },
+      { orderBy: { name: 'ASC' } },
+    );
 
     expect(results).toHaveLength(2);
     expect(results[0].name).toBe('A');
@@ -578,21 +572,17 @@ describe('TPT validation and edge cases', () => {
   test('TPT with raw query fragments', async () => {
     @Entity({ inheritance: 'tpt' })
     abstract class BaseEntity {
-
       @PrimaryKey()
       id!: number;
 
       @Property()
       score!: number;
-
     }
 
     @Entity()
     class DerivedEntity extends BaseEntity {
-
       @Property()
       multiplier!: number;
-
     }
 
     const orm = await MikroORM.init({
@@ -622,21 +612,17 @@ describe('TPT validation and edge cases', () => {
   test('TPT with COUNT queries', async () => {
     @Entity({ inheritance: 'tpt' })
     abstract class CountBase {
-
       @PrimaryKey()
       id!: number;
 
       @Property()
       category!: string;
-
     }
 
     @Entity()
     class CountChild extends CountBase {
-
       @Property()
       value!: number;
-
     }
 
     const orm = await MikroORM.init({
@@ -672,21 +658,17 @@ describe('TPT validation and edge cases', () => {
   test('TPT with bulk insert (insertMany)', async () => {
     @Entity({ inheritance: 'tpt' })
     abstract class BulkBase {
-
       @PrimaryKey()
       id!: number;
 
       @Property()
       name!: string;
-
     }
 
     @Entity()
     class BulkChild extends BulkBase {
-
       @Property()
       data!: string;
-
     }
 
     const orm = await MikroORM.init({
@@ -727,21 +709,17 @@ describe('TPT validation and edge cases', () => {
   test('TPT with findOne and findOneOrFail', async () => {
     @Entity({ inheritance: 'tpt' })
     abstract class FindBase {
-
       @PrimaryKey()
       id!: number;
 
       @Property()
       name!: string;
-
     }
 
     @Entity()
     class FindChild extends FindBase {
-
       @Property()
       data!: string;
-
     }
 
     const orm = await MikroORM.init({
@@ -779,21 +757,17 @@ describe('TPT validation and edge cases', () => {
   test('TPT with qb.getCount()', async () => {
     @Entity({ inheritance: 'tpt' })
     abstract class QbCountBase {
-
       @PrimaryKey()
       id!: number;
 
       @Property()
       status!: string;
-
     }
 
     @Entity()
     class QbCountChild extends QbCountBase {
-
       @Property()
       priority!: number;
-
     }
 
     const orm = await MikroORM.init({
@@ -827,18 +801,14 @@ describe('TPT validation and edge cases', () => {
     // When a child extends a TPT root, it automatically becomes TPT
     @Entity({ inheritance: 'tpt' })
     abstract class AutoBase {
-
       @PrimaryKey()
       id!: number;
-
     }
 
     @Entity()
     class AutoChild extends AutoBase {
-
       @Property()
       data!: string;
-
     }
 
     const orm = await MikroORM.init({
@@ -859,25 +829,19 @@ describe('TPT validation and edge cases', () => {
 
     await orm.close();
   });
-
 });
 
 describe('TPT with EntitySchema', () => {
-
   test('TPT works with EntitySchema-based entities', async () => {
     // Define entities using EntitySchema instead of decorators
     // Note: Using non-abstract base entity since abstract entities don't have their own table in TPT
     class SchemaBase {
-
       id!: number;
       baseName!: string;
-
     }
 
     class SchemaChild extends SchemaBase {
-
       childValue!: number;
-
     }
 
     const schemaBase = new EntitySchema({
@@ -928,28 +892,23 @@ describe('TPT with EntitySchema', () => {
 
     await orm.close();
   });
-
 });
 
 describe('TPT with OneToOne owner relation in parent', () => {
-
   test('TPT parent with OneToOne owner relation', async () => {
     // Target entity for the OneToOne relation
     @Entity()
     class Profile {
-
       @PrimaryKey()
       id!: number;
 
       @Property()
       bio!: string;
-
     }
 
     // TPT base with OneToOne owner relation
     @Entity({ inheritance: 'tpt' })
     abstract class Person {
-
       @PrimaryKey()
       id!: number;
 
@@ -958,15 +917,12 @@ describe('TPT with OneToOne owner relation in parent', () => {
 
       @OneToOne(() => Profile, { owner: true, nullable: true, ref: true })
       profile?: Ref<Profile>;
-
     }
 
     @Entity()
     class Employee extends Person {
-
       @Property()
       department!: string;
-
     }
 
     const orm = await MikroORM.init({
@@ -1010,37 +966,29 @@ describe('TPT with OneToOne owner relation in parent', () => {
 
     await orm.close();
   });
-
 });
 
 describe('TPT polymorphic queries', () => {
-
   test('querying base class returns concrete types', async () => {
     @Entity({ inheritance: 'tpt' })
     abstract class Animal {
-
       @PrimaryKey()
       id!: number;
 
       @Property()
       name!: string;
-
     }
 
     @Entity()
     class Dog extends Animal {
-
       @Property()
       breed!: string;
-
     }
 
     @Entity()
     class Cat extends Animal {
-
       @Property()
       color!: string;
-
     }
 
     const orm = await MikroORM.init({
@@ -1078,29 +1026,23 @@ describe('TPT polymorphic queries', () => {
 
     await orm.close();
   });
-
 });
 
 describe('TPT UPDATE and DELETE operations', () => {
-
   test('UPDATE on TPT entity updates only changed columns in correct tables', async () => {
     @Entity({ inheritance: 'tpt' })
     abstract class UpdateBase {
-
       @PrimaryKey()
       id!: number;
 
       @Property()
       baseProp!: string;
-
     }
 
     @Entity()
     class UpdateChild extends UpdateBase {
-
       @Property()
       childProp!: string;
-
     }
 
     const orm = await MikroORM.init({
@@ -1139,21 +1081,17 @@ describe('TPT UPDATE and DELETE operations', () => {
   test('DELETE on TPT entity cascades to all tables', async () => {
     @Entity({ inheritance: 'tpt' })
     abstract class DeleteBase {
-
       @PrimaryKey()
       id!: number;
 
       @Property()
       baseProp!: string;
-
     }
 
     @Entity()
     class DeleteChild extends DeleteBase {
-
       @Property()
       childProp!: string;
-
     }
 
     const orm = await MikroORM.init({
@@ -1178,42 +1116,33 @@ describe('TPT UPDATE and DELETE operations', () => {
 
     await orm.close();
   });
-
 });
 
 describe('TPT loading strategies', () => {
-
   test('LoadStrategy.JOINED loads TPT entities in single query', async () => {
     @Entity({ inheritance: 'tpt' })
     abstract class Animal {
-
       @PrimaryKey()
       id!: number;
 
       @Property()
       name!: string;
-
     }
 
     @Entity()
     class Dog extends Animal {
-
       @Property()
       breed!: string;
-
     }
 
     @Entity()
     class Cat extends Animal {
-
       @Property()
       color!: string;
-
     }
 
     @Entity()
     class Person {
-
       @PrimaryKey()
       id!: number;
 
@@ -1222,7 +1151,6 @@ describe('TPT loading strategies', () => {
 
       @ManyToOne(() => Animal, { ref: true, nullable: true })
       pet?: Ref<Animal>;
-
     }
 
     const orm = await MikroORM.init({
@@ -1243,11 +1171,15 @@ describe('TPT loading strategies', () => {
     const mock = mockLogger(orm);
 
     const { LoadStrategy } = await import('@mikro-orm/core');
-    const people = await orm.em.find(Person, {}, {
-      populate: ['pet'],
-      strategy: LoadStrategy.JOINED,
-      orderBy: { name: 'ASC' },
-    });
+    const people = await orm.em.find(
+      Person,
+      {},
+      {
+        populate: ['pet'],
+        strategy: LoadStrategy.JOINED,
+        orderBy: { name: 'ASC' },
+      },
+    );
 
     expect(people).toHaveLength(2);
 
@@ -1268,34 +1200,27 @@ describe('TPT loading strategies', () => {
   test('LoadStrategy.SELECT_IN loads TPT polymorphic relations', async () => {
     @Entity({ inheritance: 'tpt' })
     abstract class Animal {
-
       @PrimaryKey()
       id!: number;
 
       @Property()
       name!: string;
-
     }
 
     @Entity()
     class Dog extends Animal {
-
       @Property()
       breed!: string;
-
     }
 
     @Entity()
     class Cat extends Animal {
-
       @Property()
       color!: string;
-
     }
 
     @Entity()
     class Person {
-
       @PrimaryKey()
       id!: number;
 
@@ -1304,7 +1229,6 @@ describe('TPT loading strategies', () => {
 
       @ManyToOne(() => Animal, { ref: true, nullable: true })
       pet?: Ref<Animal>;
-
     }
 
     const orm = await MikroORM.init({
@@ -1325,11 +1249,15 @@ describe('TPT loading strategies', () => {
     const mock = mockLogger(orm);
 
     const { LoadStrategy } = await import('@mikro-orm/core');
-    const people = await orm.em.find(Person, {}, {
-      populate: ['pet'],
-      strategy: LoadStrategy.SELECT_IN,
-      orderBy: { name: 'ASC' },
-    });
+    const people = await orm.em.find(
+      Person,
+      {},
+      {
+        populate: ['pet'],
+        strategy: LoadStrategy.SELECT_IN,
+        orderBy: { name: 'ASC' },
+      },
+    );
 
     expect(people).toHaveLength(2);
     expect(people[0].pet?.unwrap()).toBeInstanceOf(Dog);
@@ -1342,42 +1270,33 @@ describe('TPT loading strategies', () => {
 
     await orm.close();
   });
-
 });
 
 describe('TPT nested relations', () => {
-
   test('deep nesting with TPT at multiple levels', async () => {
     @Entity({ inheritance: 'tpt' })
     abstract class Content {
-
       @PrimaryKey()
       id!: number;
 
       @Property()
       title!: string;
-
     }
 
     @Entity()
     class Article extends Content {
-
       @Property()
       body!: string;
-
     }
 
     @Entity()
     class Video extends Content {
-
       @Property()
       duration!: number;
-
     }
 
     @Entity()
     class Category {
-
       @PrimaryKey()
       id!: number;
 
@@ -1386,12 +1305,10 @@ describe('TPT nested relations', () => {
 
       @OneToMany(() => ContentItem, ci => ci.category)
       items = new Collection<ContentItem>(this);
-
     }
 
     @Entity()
     class ContentItem {
-
       @PrimaryKey()
       id!: number;
 
@@ -1403,7 +1320,6 @@ describe('TPT nested relations', () => {
 
       @Property({ default: 0 })
       sortOrder?: number;
-
     }
 
     const orm = await MikroORM.init({
@@ -1430,10 +1346,14 @@ describe('TPT nested relations', () => {
     await orm.em.flush();
     orm.em.clear();
 
-    const categories = await orm.em.find(Category, {}, {
-      populate: ['items.content'],
-      orderBy: { name: 'ASC' },
-    });
+    const categories = await orm.em.find(
+      Category,
+      {},
+      {
+        populate: ['items.content'],
+        orderBy: { name: 'ASC' },
+      },
+    );
 
     expect(categories).toHaveLength(2);
 
@@ -1464,7 +1384,6 @@ describe('TPT nested relations', () => {
   test('bidirectional relations with TPT', async () => {
     @Entity({ inheritance: 'tpt' })
     abstract class TeamMember {
-
       @PrimaryKey()
       id!: number;
 
@@ -1473,28 +1392,22 @@ describe('TPT nested relations', () => {
 
       @ManyToOne(() => Team, { ref: true })
       team!: Ref<Team>;
-
     }
 
     @Entity()
     class TeamManager extends TeamMember {
-
       @Property()
       budget!: number;
-
     }
 
     @Entity()
     class TeamDeveloper extends TeamMember {
-
       @Property()
       programmingLanguage!: string;
-
     }
 
     @Entity()
     class Team {
-
       @PrimaryKey()
       id!: number;
 
@@ -1503,7 +1416,6 @@ describe('TPT nested relations', () => {
 
       @OneToMany(() => TeamMember, e => e.team)
       members = new Collection<TeamMember>(this);
-
     }
 
     const orm = await MikroORM.init({
@@ -1525,10 +1437,14 @@ describe('TPT nested relations', () => {
     await orm.em.flush();
     orm.em.clear();
 
-    const teams = await orm.em.find(Team, {}, {
-      populate: ['members'],
-      orderBy: { name: 'ASC' },
-    });
+    const teams = await orm.em.find(
+      Team,
+      {},
+      {
+        populate: ['members'],
+        orderBy: { name: 'ASC' },
+      },
+    );
 
     expect(teams).toHaveLength(2);
 
@@ -1553,37 +1469,29 @@ describe('TPT nested relations', () => {
 
     await orm.close();
   });
-
 });
 
 describe('TPT with different primary key types', () => {
-
   test('TPT with UUID primary key', async () => {
     @Entity({ inheritance: 'tpt' })
     abstract class UuidBase {
-
       @PrimaryKey({ type: 'uuid' })
       id: string = crypto.randomUUID();
 
       @Property({ default: 'now()' })
       createdAt?: Date = new Date();
-
     }
 
     @Entity()
     class UuidUser extends UuidBase {
-
       @Property()
       username!: string;
-
     }
 
     @Entity()
     class UuidAdmin extends UuidUser {
-
       @Property()
       adminLevel!: number;
-
     }
 
     const orm = await MikroORM.init({
@@ -1618,34 +1526,27 @@ describe('TPT with different primary key types', () => {
 
     await orm.close();
   });
-
 });
 
 describe('TPT edge cases', () => {
-
   test('empty collection with TPT entities', async () => {
     @Entity({ inheritance: 'tpt' })
     abstract class Item {
-
       @PrimaryKey()
       id!: number;
 
       @Property()
       name!: string;
-
     }
 
     @Entity()
     class PhysicalItem extends Item {
-
       @Property()
       weight!: number;
-
     }
 
     @Entity()
     class Container {
-
       @PrimaryKey()
       id!: number;
 
@@ -1654,12 +1555,10 @@ describe('TPT edge cases', () => {
 
       @OneToMany(() => ContainerItem, ci => ci.container)
       items = new Collection<ContainerItem>(this);
-
     }
 
     @Entity()
     class ContainerItem {
-
       @PrimaryKey()
       id!: number;
 
@@ -1668,7 +1567,6 @@ describe('TPT edge cases', () => {
 
       @ManyToOne(() => Item, { ref: true })
       item!: Ref<Item>;
-
     }
 
     const orm = await MikroORM.init({
@@ -1695,26 +1593,21 @@ describe('TPT edge cases', () => {
   test('null reference to TPT entity', async () => {
     @Entity({ inheritance: 'tpt' })
     abstract class Vehicle {
-
       @PrimaryKey()
       id!: number;
 
       @Property()
       brand!: string;
-
     }
 
     @Entity()
     class Car extends Vehicle {
-
       @Property()
       model!: string;
-
     }
 
     @Entity()
     class Driver {
-
       @PrimaryKey()
       id!: number;
 
@@ -1723,7 +1616,6 @@ describe('TPT edge cases', () => {
 
       @ManyToOne(() => Vehicle, { ref: true, nullable: true })
       vehicle?: Ref<Vehicle>;
-
     }
 
     const orm = await MikroORM.init({
@@ -1740,10 +1632,14 @@ describe('TPT edge cases', () => {
     await orm.em.flush();
     orm.em.clear();
 
-    const drivers = await orm.em.find(Driver, {}, {
-      populate: ['vehicle'],
-      orderBy: { name: 'ASC' },
-    });
+    const drivers = await orm.em.find(
+      Driver,
+      {},
+      {
+        populate: ['vehicle'],
+        orderBy: { name: 'ASC' },
+      },
+    );
 
     expect(drivers).toHaveLength(2);
     expect(drivers[0].name).toBe('Car Owner');
@@ -1758,24 +1654,20 @@ describe('TPT edge cases', () => {
   test('querying with orderBy on child property', async () => {
     @Entity({ inheritance: 'tpt' })
     abstract class Shape {
-
       @PrimaryKey()
       id!: number;
 
       @Property()
       color!: string;
-
     }
 
     @Entity()
     class Rectangle extends Shape {
-
       @Property()
       width!: number;
 
       @Property()
       height!: number;
-
     }
 
     const orm = await MikroORM.init({
@@ -1806,7 +1698,6 @@ describe('TPT edge cases', () => {
   test('querying with WHERE on both parent and child properties', async () => {
     @Entity({ inheritance: 'tpt' })
     abstract class Appliance {
-
       @PrimaryKey()
       id!: number;
 
@@ -1815,18 +1706,15 @@ describe('TPT edge cases', () => {
 
       @Property()
       powerWatts!: number;
-
     }
 
     @Entity()
     class WashingMachine extends Appliance {
-
       @Property()
       capacityKg!: number;
 
       @Property()
       spinSpeed!: number;
-
     }
 
     const orm = await MikroORM.init({
@@ -1855,28 +1743,23 @@ describe('TPT edge cases', () => {
 
     await orm.close();
   });
-
 });
 
 describe('TPT additional coverage', () => {
-
   test('TPT entity with nullable FK to non-TPT entity', async () => {
     // Tests the findExtraUpdates non-entity check for TPT
 
     @Entity()
     class Department {
-
       @PrimaryKey()
       id!: number;
 
       @Property()
       name!: string;
-
     }
 
     @Entity({ inheritance: 'tpt' })
     abstract class Worker {
-
       @PrimaryKey()
       id!: number;
 
@@ -1885,15 +1768,12 @@ describe('TPT additional coverage', () => {
 
       @ManyToOne(() => Department, { ref: true, nullable: true })
       department?: Ref<Department>;
-
     }
 
     @Entity()
     class Engineer extends Worker {
-
       @Property()
       specialty!: string;
-
     }
 
     const orm = await MikroORM.init({
@@ -1925,24 +1805,20 @@ describe('TPT additional coverage', () => {
 
     @Entity({ inheritance: 'tpt' })
     abstract class Shape {
-
       @PrimaryKey()
       id!: number;
 
       @Property()
       color!: string;
-
     }
 
     @Entity()
     class Rectangle extends Shape {
-
       @Property()
       width!: number;
 
       @Property()
       height!: number;
-
     }
 
     const orm = await MikroORM.init({
@@ -1984,7 +1860,6 @@ describe('TPT additional coverage', () => {
   test('TPT update that changes both parent and child properties', async () => {
     @Entity({ inheritance: 'tpt' })
     abstract class Product {
-
       @PrimaryKey()
       id!: number;
 
@@ -1993,18 +1868,15 @@ describe('TPT additional coverage', () => {
 
       @Property()
       price!: number;
-
     }
 
     @Entity()
     class Book extends Product {
-
       @Property()
       isbn!: string;
 
       @Property()
       pages!: number;
-
     }
 
     const orm = await MikroORM.init({
@@ -2026,7 +1898,7 @@ describe('TPT additional coverage', () => {
 
     // Update both parent and child properties
     loaded.price = 29.99; // parent property
-    loaded.pages = 500;   // child property
+    loaded.pages = 500; // child property
     await orm.em.flush();
 
     // Should update both tables
@@ -2046,21 +1918,17 @@ describe('TPT additional coverage', () => {
   test('TPT delete cascades properly', async () => {
     @Entity({ inheritance: 'tpt' })
     abstract class Document {
-
       @PrimaryKey()
       id!: number;
 
       @Property()
       title!: string;
-
     }
 
     @Entity()
     class Report extends Document {
-
       @Property()
       author!: string;
-
     }
 
     const orm = await MikroORM.init({
@@ -2097,29 +1965,23 @@ describe('TPT additional coverage', () => {
 
     @Entity({ inheritance: 'tpt' })
     class Creature {
-
       @PrimaryKey()
       id!: number;
 
       @Property()
       name!: string;
-
     }
 
     @Entity()
     class Canine extends Creature {
-
       @Property()
       breed!: string;
-
     }
 
     @Entity()
     class Feline extends Creature {
-
       @Property()
       indoor!: boolean;
-
     }
 
     const orm = await MikroORM.init({
@@ -2163,32 +2025,26 @@ describe('TPT additional coverage', () => {
 
     @Entity({ inheritance: 'tpt' })
     abstract class Event {
-
       @PrimaryKey()
       id!: number;
 
       @Property()
       title!: string;
-
     }
 
     @Entity()
     class Meeting extends Event {
-
       @Property()
       startTime!: Date;
 
       @Property()
       location!: string;
-
     }
 
     @Entity()
     class Reminder extends Event {
-
       @Property()
       remindAt!: Date;
-
     }
 
     const orm = await MikroORM.init({
@@ -2222,15 +2078,12 @@ describe('TPT additional coverage', () => {
 
     await orm.close();
   });
-
 });
 
 describe('TPT with advanced properties', () => {
-
   test('TPT with formula referencing inherited property', async () => {
     @Entity({ inheritance: 'tpt' })
     abstract class FormulaDocument {
-
       @PrimaryKey()
       id!: number;
 
@@ -2239,20 +2092,21 @@ describe('TPT with advanced properties', () => {
 
       @Property({ type: 'string' })
       lastName!: string;
-
     }
 
     @Entity()
     class FormulaEmployee extends FormulaDocument {
-
       @Property({ type: 'string' })
       department!: string;
 
       // Formula that references inherited properties (firstName, lastName)
       // Use the quote helper for proper identifier quoting
-      @Property({ type: 'string', persist: false, formula: cols => quote`${cols.firstName} || ' ' || ${cols.lastName}` })
+      @Property({
+        type: 'string',
+        persist: false,
+        formula: cols => quote`${cols.firstName} || ' ' || ${cols.lastName}`,
+      })
       fullName!: Opt<string>;
-
     }
 
     const orm = await MikroORM.init({
@@ -2293,24 +2147,20 @@ describe('TPT with advanced properties', () => {
   test('TPT with lazy property', async () => {
     @Entity({ inheritance: 'tpt' })
     abstract class LazyDocument {
-
       @PrimaryKey()
       id!: number;
 
       @Property({ type: 'string' })
       title!: string;
-
     }
 
     @Entity()
     class LazyArticle extends LazyDocument {
-
       @Property({ type: 'string', lazy: true })
       content!: string;
 
       @Property({ type: 'string' })
       summary!: string;
-
     }
 
     const orm = await MikroORM.init({
@@ -2351,7 +2201,6 @@ describe('TPT with advanced properties', () => {
   test('TPT with embedded property in child', async () => {
     @Embeddable()
     class Address {
-
       @Property({ type: 'string' })
       street!: string;
 
@@ -2360,26 +2209,21 @@ describe('TPT with advanced properties', () => {
 
       @Property({ type: 'string' })
       zipCode!: string;
-
     }
 
     @Entity({ inheritance: 'tpt' })
     abstract class Person {
-
       @PrimaryKey()
       id!: number;
 
       @Property({ type: 'string' })
       name!: string;
-
     }
 
     @Entity()
     class Customer extends Person {
-
       @Embedded(() => Address)
       address!: Address;
-
     }
 
     const orm = await MikroORM.init({
@@ -2408,7 +2252,6 @@ describe('TPT with advanced properties', () => {
 
   test('TPT with custom type', async () => {
     class PointType extends Type<{ x: number; y: number }, string> {
-
       convertToDatabaseValue(value: { x: number; y: number }): string {
         return `${value.x},${value.y}`;
       }
@@ -2421,29 +2264,24 @@ describe('TPT with advanced properties', () => {
       getColumnType(): string {
         return 'text';
       }
-
     }
 
     @Entity({ inheritance: 'tpt' })
     abstract class CustomTypeShape {
-
       @PrimaryKey()
       id!: number;
 
       @Property({ type: 'string' })
       name!: string;
-
     }
 
     @Entity()
     class CustomTypeCircle extends CustomTypeShape {
-
       @Property({ type: PointType })
       center!: { x: number; y: number };
 
       @Property({ type: 'number' })
       radius!: number;
-
     }
 
     const orm = await MikroORM.init({
@@ -2473,7 +2311,6 @@ describe('TPT with advanced properties', () => {
   test('TPT with default values in child', async () => {
     @Entity({ inheritance: 'tpt' })
     abstract class Notification {
-
       @PrimaryKey()
       id!: number;
 
@@ -2482,18 +2319,15 @@ describe('TPT with advanced properties', () => {
 
       @Property({ type: 'boolean', default: false })
       read: boolean & Opt = false;
-
     }
 
     @Entity()
     class EmailNotification extends Notification {
-
       @Property({ type: 'string' })
       emailAddress!: string;
 
       @Property({ type: 'string', default: 'low' })
       priority: string & Opt = 'low';
-
     }
 
     const orm = await MikroORM.init({
@@ -2538,7 +2372,6 @@ describe('TPT with advanced properties', () => {
   test('TPT with onCreate and onUpdate hooks', async () => {
     @Entity({ inheritance: 'tpt' })
     abstract class AuditedEntity {
-
       @PrimaryKey()
       id!: number;
 
@@ -2547,15 +2380,12 @@ describe('TPT with advanced properties', () => {
 
       @Property({ type: 'Date', onCreate: () => new Date(), onUpdate: () => new Date() })
       updatedAt!: Date & Opt;
-
     }
 
     @Entity()
     class AuditedPost extends AuditedEntity {
-
       @Property({ type: 'string' })
       title!: string;
-
     }
 
     const orm = await MikroORM.init({
@@ -2588,15 +2418,12 @@ describe('TPT with advanced properties', () => {
 
     await orm.close();
   });
-
 });
 
 describe('TPT with composite primary key', () => {
-
   test('TPT with composite PK inserts and queries correctly', async () => {
     @Entity({ inheritance: 'tpt' })
     abstract class CompositeBase {
-
       @PrimaryKey()
       tenantId!: number;
 
@@ -2605,15 +2432,12 @@ describe('TPT with composite primary key', () => {
 
       @Property()
       name!: string;
-
     }
 
     @Entity()
     class CompositeChild extends CompositeBase {
-
       @Property()
       childData!: string;
-
     }
 
     const orm = await MikroORM.init({
@@ -2646,17 +2470,14 @@ describe('TPT with composite primary key', () => {
 
     await orm.close();
   });
-
 });
 
 describe('TPT with filters', () => {
-
   test('filter on inherited property works with TPT', async () => {
     @Entity({
       inheritance: 'tpt',
     })
     abstract class FilterBase {
-
       @PrimaryKey()
       id!: number;
 
@@ -2665,15 +2486,12 @@ describe('TPT with filters', () => {
 
       @Property({ default: true })
       active: boolean & Opt = true;
-
     }
 
     @Entity()
     class FilterChild extends FilterBase {
-
       @Property()
       childProp!: string;
-
     }
 
     const orm = await MikroORM.init({
@@ -2700,43 +2518,35 @@ describe('TPT with filters', () => {
 
     await orm.close();
   });
-
 });
 
 describe('TPT concurrent flush', () => {
-
   test('two TPT entities referencing each other in same flush', async () => {
     @Entity()
     class Tag {
-
       @PrimaryKey()
       id!: number;
 
       @Property()
       label!: string;
-
     }
 
     @Entity({ inheritance: 'tpt' })
     abstract class Node {
-
       @PrimaryKey()
       id!: number;
 
       @Property()
       title!: string;
-
     }
 
     @Entity()
     class LeafNode extends Node {
-
       @Property()
       content!: string;
 
       @ManyToOne(() => Tag, { ref: true, nullable: true })
       tag?: Ref<Tag>;
-
     }
 
     const orm = await MikroORM.init({
@@ -2764,7 +2574,6 @@ describe('TPT concurrent flush', () => {
 
     await orm.close();
   });
-
 });
 
 test('createColumnMappingObject warns when accessing old FormulaTable properties', async () => {
@@ -2798,7 +2607,6 @@ test('createColumnMappingObject warns when accessing old FormulaTable properties
 });
 
 describe('TPT MongoDB validation', () => {
-
   test('MongoPlatform rejects TPT inheritance', async () => {
     const { MongoPlatform } = await import('@mikro-orm/mongodb');
     const platform = new MongoPlatform();
@@ -2806,11 +2614,9 @@ describe('TPT MongoDB validation', () => {
 
     expect(() => platform.validateMetadata(meta)).toThrow(/TPT.*not supported by the current driver/);
   });
-
 });
 
 describe('TPT delete operations', () => {
-
   test('em.remove() on 3-level entity only issues DELETE for leaf table', async () => {
     const orm = await MikroORM.init({
       metadataProvider: ReflectMetadataProvider,
@@ -2876,11 +2682,9 @@ describe('TPT delete operations', () => {
 
     await orm.close();
   });
-
 });
 
 describe('TPT QueryBuilder update/delete', () => {
-
   test('qb.update() on child entity targets correct table', async () => {
     const orm = await MikroORM.init({
       metadataProvider: ReflectMetadataProvider,
@@ -2926,5 +2730,4 @@ describe('TPT QueryBuilder update/delete', () => {
 
     await orm.close();
   });
-
 });

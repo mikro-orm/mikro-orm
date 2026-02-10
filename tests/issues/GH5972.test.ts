@@ -3,24 +3,20 @@ import { Entity, ManyToOne, OneToMany, PrimaryKey, ReflectMetadataProvider } fro
 
 @Entity()
 class User {
-
   @PrimaryKey()
   id!: number;
 
   @OneToMany({ type: 'Article', mappedBy: 'author' })
   articles = new Collection<Article>(this);
-
 }
 
 @Entity()
 class Article {
-
   @PrimaryKey()
   id!: number;
 
   @ManyToOne({ type: 'User' })
   author!: User;
-
 }
 
 let orm: MikroORM;

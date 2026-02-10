@@ -3,13 +3,11 @@ import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-or
 
 @Entity()
 class User {
-
   @PrimaryKey()
   readonly id!: bigint;
 
   @Property({ type: DateTimeType })
   createdAt: Opt<Date> = new Date();
-
 }
 
 let orm: MikroORM;
@@ -33,12 +31,11 @@ test('put sql parameters in right order', async () => {
   await orm.em.flush();
   orm.em.clear();
 
-  const query = orm.em.createQueryBuilder(User, 'user')
-    .where({
-      [raw(`(?? at time zone ? at time zone ?)::date`, ['created_at', 'utc', 'Europe/Bratislava'])]: {
-        $nin: [raw(`?::date`, ['2024-06-13'])],
-      },
-    });
+  const query = orm.em.createQueryBuilder(User, 'user').where({
+    [raw(`(?? at time zone ? at time zone ?)::date`, ['created_at', 'utc', 'Europe/Bratislava'])]: {
+      $nin: [raw(`?::date`, ['2024-06-13'])],
+    },
+  });
 
   await expect(query.getResult()).resolves.not.toThrow();
 });

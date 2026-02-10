@@ -8,13 +8,11 @@ export enum SomeEnum {
 
 @Entity({ discriminatorColumn: 'type', abstract: true })
 export class AbstractClass extends BaseEntity {
-
   @PrimaryKey()
   id!: string;
 
   @Enum(() => SomeEnum)
   type!: SomeEnum;
-
 }
 
 @Entity({ discriminatorValue: SomeEnum.CLASS_A })

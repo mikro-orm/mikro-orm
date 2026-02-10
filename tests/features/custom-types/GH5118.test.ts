@@ -2,7 +2,6 @@ import { MikroORM, Type } from '@mikro-orm/sqlite';
 import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 class Value {
-
   protected readonly value: string;
 
   toString() {
@@ -12,21 +11,14 @@ class Value {
   constructor(id: string) {
     this.value = id;
   }
-
 }
 
-class SimpleType extends Type<
-  Value | undefined,
-  string | undefined
-> {
-
+class SimpleType extends Type<Value | undefined, string | undefined> {
   constructor(private classRef: new (value: any) => Value) {
     super();
   }
 
-  convertToDatabaseValue(
-    value: Value | string | null | undefined,
-  ): string | undefined {
+  convertToDatabaseValue(value: Value | string | null | undefined): string | undefined {
     if (!value) {
       return undefined;
     }
@@ -36,22 +28,16 @@ class SimpleType extends Type<
     return value.toString();
   }
 
-  convertToJSValue(
-    value: Value | string | undefined,
-  ): Value | undefined {
+  convertToJSValue(value: Value | string | undefined): Value | undefined {
     if (!value) {
       return undefined;
     }
-    return new this.classRef(
-      typeof value === 'object' ? value.toString() : value,
-    );
+    return new this.classRef(typeof value === 'object' ? value.toString() : value);
   }
-
 }
 
 @Entity()
 class File {
-
   @PrimaryKey({ type: new SimpleType(Value) })
   readonly id: Value;
 
@@ -62,7 +48,6 @@ class File {
     this.id = id;
     this.uri = uri;
   }
-
 }
 
 let orm: MikroORM;
@@ -82,10 +67,15 @@ afterAll(async () => {
 });
 
 test(`custom types and forceEntityConstructor`, async () => {
-  await orm.em.fork().persist(new File({
-    id: new Value('foo'),
-    uri: new Value('bar'),
-  })).flush();
+  await orm.em
+    .fork()
+    .persist(
+      new File({
+        id: new Value('foo'),
+        uri: new Value('bar'),
+      }),
+    )
+    .flush();
 
   const retrieved = await orm.em.findOneOrFail(File, {
     id: new Value('foo'),

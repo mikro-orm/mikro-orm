@@ -49,7 +49,9 @@ describe('QueryBuilder - Mutations', () => {
 
     const qb2 = orm.em.createQueryBuilder(Author2);
     qb2.insert({ name: 'test 123', email: 'e', favouriteBook: '2359', termsAccepted: true });
-    expect(qb2.getQuery()).toEqual('insert into `author2` (`name`, `email`, `favourite_book_uuid_pk`, `terms_accepted`) values (?, ?, ?, ?)');
+    expect(qb2.getQuery()).toEqual(
+      'insert into `author2` (`name`, `email`, `favourite_book_uuid_pk`, `terms_accepted`) values (?, ?, ?, ?)',
+    );
     expect(qb2.getParams()).toEqual(['test 123', 'e', '2359', true]);
 
     const qb3 = orm.em.createQueryBuilder<any>(BookTag2);
@@ -127,7 +129,9 @@ describe('QueryBuilder - Mutations', () => {
       .onConflict()
       .ignore();
 
-    expect(qb4.getQuery()).toEqual('insert ignore into `author2` (`created_at`, `email`, `name`, `updated_at`) values (?, ?, ?, ?)');
+    expect(qb4.getQuery()).toEqual(
+      'insert ignore into `author2` (`created_at`, `email`, `name`, `updated_at`) values (?, ?, ?, ?)',
+    );
     expect(qb4.getParams()).toEqual([timestamp, 'ignore@example.com', 'John Doe', timestamp]);
 
     const qb5 = orm.em.createQueryBuilder(Author2).insert({
@@ -148,7 +152,14 @@ describe('QueryBuilder - Mutations', () => {
       { name: 'test 3', type: PublisherType.GLOBAL },
     ]);
     expect(qb1.getQuery()).toEqual('insert into `publisher2` (`name`, `type`) values (?, ?), (?, ?), (?, ?)');
-    expect(qb1.getParams()).toEqual(['test 1', PublisherType.GLOBAL, 'test 2', PublisherType.LOCAL, 'test 3', PublisherType.GLOBAL]);
+    expect(qb1.getParams()).toEqual([
+      'test 1',
+      PublisherType.GLOBAL,
+      'test 2',
+      PublisherType.LOCAL,
+      'test 3',
+      PublisherType.GLOBAL,
+    ]);
   });
 
   test('update query', async () => {
@@ -178,14 +189,18 @@ describe('QueryBuilder - Mutations', () => {
     const qb = orm.em.createQueryBuilder(Book2);
     const meta = sql`jsonb_set(payload, '$.{consumed}', ${123})`;
     qb.update({ meta }).where({ uuid: '456' });
-    expect(qb.getFormattedQuery()).toEqual("update `book2` set `meta` = jsonb_set(payload, '$.{consumed}', 123) where `uuid_pk` = '456'");
+    expect(qb.getFormattedQuery()).toEqual(
+      "update `book2` set `meta` = jsonb_set(payload, '$.{consumed}', 123) where `uuid_pk` = '456'",
+    );
   });
 
   test('raw() with named bindings', async () => {
     const qb = orm.em.createQueryBuilder(Book2);
     const meta = raw(`jsonb_set(payload, '$.{consumed}', :val)`, { val: 123 });
     qb.update({ meta }).where({ uuid: '456' });
-    expect(qb.getFormattedQuery()).toEqual("update `book2` set `meta` = jsonb_set(payload, '$.{consumed}', 123) where `uuid_pk` = '456'");
+    expect(qb.getFormattedQuery()).toEqual(
+      "update `book2` set `meta` = jsonb_set(payload, '$.{consumed}', 123) where `uuid_pk` = '456'",
+    );
   });
 
   test('update query with auto-joining', async () => {
@@ -214,7 +229,9 @@ describe('QueryBuilder - Mutations', () => {
 
   test('update query with joins', async () => {
     const qb = orm.em.createQueryBuilder(Publisher2, 'p');
-    qb.update({ name: 'test 123', type: PublisherType.GLOBAL }).join('p.books', 'b', { title: 'foo' }).where({ 'b.author': 123 });
+    qb.update({ name: 'test 123', type: PublisherType.GLOBAL })
+      .join('p.books', 'b', { title: 'foo' })
+      .where({ 'b.author': 123 });
     expect(qb.getQuery()).toEqual(
       'update `publisher2` as `p` ' +
         'inner join `book2` as `b` on `p`.`id` = `b`.`publisher_id` and `b`.`title` = ? ' +
@@ -226,7 +243,12 @@ describe('QueryBuilder - Mutations', () => {
 
   test('trying to call qb.update/delete() after qb.where() will throw', async () => {
     const err1 = 'You are trying to call `qb.where().update()`. Calling `qb.update()` before `qb.where()` is required.';
-    expect(() => orm.em.qb(Publisher2).where({ id: 123, type: PublisherType.LOCAL }).update({ name: 'test 123', type: PublisherType.GLOBAL })).toThrow(err1);
+    expect(() =>
+      orm.em
+        .qb(Publisher2)
+        .where({ id: 123, type: PublisherType.LOCAL })
+        .update({ name: 'test 123', type: PublisherType.GLOBAL }),
+    ).toThrow(err1);
     expect(() =>
       orm.em
         .qb(Book2)
@@ -256,7 +278,9 @@ describe('QueryBuilder - Mutations', () => {
 
   test('update query with or condition and auto-joining', async () => {
     const qb = orm.em.createQueryBuilder(Publisher2);
-    qb.update({ name: 'test 123', type: PublisherType.GLOBAL }).where({ $or: [{ books: { author: 123 } }, { books: { title: 'book' } }] });
+    qb.update({ name: 'test 123', type: PublisherType.GLOBAL }).where({
+      $or: [{ books: { author: 123 } }, { books: { title: 'book' } }],
+    });
     expect(qb.getQuery()).toEqual(
       'update `publisher2` set `name` = ?, `type` = ? ' +
         'where `id` in (select `e0`.`id` from (' +
@@ -305,7 +329,9 @@ describe('QueryBuilder - Mutations', () => {
     const test = Test2.create('test');
     test.id = 321;
     qb.update({ name: 'test 123', test }).where({ id: 123, type: PublisherType.LOCAL });
-    expect(qb.getQuery()).toEqual('update `test123`.`publisher2` set `name` = ?, `test` = ? where `id` = ? and `type` = ?');
+    expect(qb.getQuery()).toEqual(
+      'update `test123`.`publisher2` set `name` = ?, `test` = ? where `id` = ? and `type` = ?',
+    );
     expect(qb.getParams()).toEqual(['test 123', 321, 123, PublisherType.LOCAL]);
   });
 
@@ -422,7 +448,9 @@ describe('QueryBuilder - Mutations', () => {
       .indexHint('force index(custom_email_index_name)')
       .where({ favouriteBook: { $in: ['1', '2', '3'] } })
       .getFormattedQuery();
-    expect(sql1).toBe("select `e0`.* from `author2` as `e0` force index(custom_email_index_name) where `e0`.`favourite_book_uuid_pk` in ('1', '2', '3')");
+    expect(sql1).toBe(
+      "select `e0`.* from `author2` as `e0` force index(custom_email_index_name) where `e0`.`favourite_book_uuid_pk` in ('1', '2', '3')",
+    );
 
     const sql2 = orm.em
       .createQueryBuilder(Author2)
@@ -441,7 +469,9 @@ describe('QueryBuilder - Mutations', () => {
       .indexHint('force index(custom_email_index_name)')
       .where({ favouriteBook: { $in: ['1', '2', '3'] } })
       .getFormattedQuery();
-    expect(sql3).toBe("update `my_schema`.`author2` force index(custom_email_index_name) set `name` = '...' where `favourite_book_uuid_pk` in ('1', '2', '3')");
+    expect(sql3).toBe(
+      "update `my_schema`.`author2` force index(custom_email_index_name) set `name` = '...' where `favourite_book_uuid_pk` in ('1', '2', '3')",
+    );
   });
 
   test('query comments', async () => {
@@ -451,7 +481,9 @@ describe('QueryBuilder - Mutations', () => {
       .hintComment('test 123')
       .where({ favouriteBook: { $in: ['1', '2', '3'] } })
       .getFormattedQuery();
-    expect(sql1).toBe("/* test 123 */ select /*+ test 123 */ `e0`.* from `author2` as `e0` where `e0`.`favourite_book_uuid_pk` in ('1', '2', '3')");
+    expect(sql1).toBe(
+      "/* test 123 */ select /*+ test 123 */ `e0`.* from `author2` as `e0` where `e0`.`favourite_book_uuid_pk` in ('1', '2', '3')",
+    );
 
     const sql2 = orm.em
       .createQueryBuilder(Author2)

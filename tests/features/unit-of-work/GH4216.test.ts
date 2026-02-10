@@ -1,11 +1,17 @@
 import { Collection, LoadStrategy, PopulateHint, Ref, Rel } from '@mikro-orm/core';
-import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { MikroORM } from '@mikro-orm/sqlite';
 import { v4 } from 'uuid';
 
 @Entity()
 class Shipment {
-
   @PrimaryKey({ type: 'uuid' })
   id: string = v4();
 
@@ -23,12 +29,10 @@ class Shipment {
 
   @ManyToOne(() => Order, { hidden: true, deleteRule: 'cascade' })
   order!: Rel<Order>;
-
 }
 
 @Entity()
 class LineItem {
-
   @PrimaryKey()
   id!: string;
 
@@ -50,12 +54,10 @@ class LineItem {
 
   @ManyToOne(() => Shipment, { hidden: true })
   shipment!: Ref<Shipment>;
-
 }
 
 @Entity()
 class Order {
-
   @PrimaryKey()
   id!: number;
 
@@ -76,7 +78,6 @@ class Order {
 
   @OneToMany({ entity: () => Shipment, mappedBy: 'order' })
   shipments = new Collection<Shipment>(this);
-
 }
 
 let orm: MikroORM;
@@ -122,10 +123,7 @@ test(`GH issue 4219`, async () => {
   const lineItems = [
     orm.em.create(LineItem, {
       id: v4(),
-      shipment: orm.em.getReference(
-        Shipment,
-        '67e24192-4454-41d5-af5f-25940b63b759',
-      ),
+      shipment: orm.em.getReference(Shipment, '67e24192-4454-41d5-af5f-25940b63b759'),
       order: orm.em.getReference(Order, 1234),
       sku: 'TEST_SKU',
       name: 'Test Product',
@@ -134,10 +132,7 @@ test(`GH issue 4219`, async () => {
     }),
     orm.em.create(LineItem, {
       id: v4(),
-      shipment: orm.em.getReference(
-        Shipment,
-        '8d466cb1-8abc-4423-a1a8-5081ec43d26e',
-      ),
+      shipment: orm.em.getReference(Shipment, '8d466cb1-8abc-4423-a1a8-5081ec43d26e'),
       order: orm.em.getReference(Order, 1234),
       sku: 'TEST_SKU_2',
       name: 'Test Product 2',

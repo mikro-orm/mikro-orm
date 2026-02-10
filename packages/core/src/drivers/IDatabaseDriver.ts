@@ -1,9 +1,30 @@
 import type {
-  ConnectionType, EntityData, EntityMetadata, EntityProperty, FilterQuery, Primary, Dictionary,
-  IPrimaryKey, PopulateOptions, EntityDictionary, AutoPath, ObjectQuery, FilterObject, Populate, EntityName,
+  ConnectionType,
+  EntityData,
+  EntityMetadata,
+  EntityProperty,
+  FilterQuery,
+  Primary,
+  Dictionary,
+  IPrimaryKey,
+  PopulateOptions,
+  EntityDictionary,
+  AutoPath,
+  ObjectQuery,
+  FilterObject,
+  Populate,
+  EntityName,
 } from '../typings.js';
 import type { Connection, QueryResult, Transaction } from '../connections/Connection.js';
-import type { FlushMode, LockMode, QueryOrderMap, QueryFlag, LoadStrategy, PopulateHint, PopulatePath } from '../enums.js';
+import type {
+  FlushMode,
+  LockMode,
+  QueryOrderMap,
+  QueryFlag,
+  LoadStrategy,
+  PopulateHint,
+  PopulatePath,
+} from '../enums.js';
 import type { Platform } from '../platforms/Platform.js';
 import type { MetadataStorage } from '../metadata/MetadataStorage.js';
 import type { Collection } from '../entity/Collection.js';
@@ -16,7 +37,6 @@ import type { Raw } from '../utils/RawQueryFragment.js';
 export const EntityManagerType = Symbol('EntityManagerType');
 
 export interface IDatabaseDriver<C extends Connection = Connection> {
-
   [EntityManagerType]: EntityManager<this>;
   readonly config: Configuration;
 
@@ -33,39 +53,97 @@ export interface IDatabaseDriver<C extends Connection = Connection> {
   /**
    * Finds selection of entities
    */
-  find<T extends object, P extends string = never, F extends string = '*', E extends string = never>(entityName: EntityName<T>, where: FilterQuery<T>, options?: FindOptions<T, P, F, E>): Promise<EntityData<T>[]>;
+  find<T extends object, P extends string = never, F extends string = '*', E extends string = never>(
+    entityName: EntityName<T>,
+    where: FilterQuery<T>,
+    options?: FindOptions<T, P, F, E>,
+  ): Promise<EntityData<T>[]>;
 
   /**
    * Finds single entity (table row, document)
    */
-  findOne<T extends object, P extends string = never, F extends string = '*', E extends string = never>(entityName: EntityName<T>, where: FilterQuery<T>, options?: FindOneOptions<T, P, F, E>): Promise<EntityData<T> | null>;
+  findOne<T extends object, P extends string = never, F extends string = '*', E extends string = never>(
+    entityName: EntityName<T>,
+    where: FilterQuery<T>,
+    options?: FindOneOptions<T, P, F, E>,
+  ): Promise<EntityData<T> | null>;
 
-  findVirtual<T extends object>(entityName: EntityName<T>, where: FilterQuery<T>, options: FindOptions<T, any, any, any>): Promise<EntityData<T>[]>;
+  findVirtual<T extends object>(
+    entityName: EntityName<T>,
+    where: FilterQuery<T>,
+    options: FindOptions<T, any, any, any>,
+  ): Promise<EntityData<T>[]>;
 
-  stream<T extends object>(entityName: EntityName<T>, where: FilterQuery<T>, options: StreamOptions<T>): AsyncIterableIterator<T>;
+  stream<T extends object>(
+    entityName: EntityName<T>,
+    where: FilterQuery<T>,
+    options: StreamOptions<T>,
+  ): AsyncIterableIterator<T>;
 
-  nativeInsert<T extends object>(entityName: EntityName<T>, data: EntityDictionary<T>, options?: NativeInsertUpdateOptions<T>): Promise<QueryResult<T>>;
+  nativeInsert<T extends object>(
+    entityName: EntityName<T>,
+    data: EntityDictionary<T>,
+    options?: NativeInsertUpdateOptions<T>,
+  ): Promise<QueryResult<T>>;
 
-  nativeInsertMany<T extends object>(entityName: EntityName<T>, data: EntityDictionary<T>[], options?: NativeInsertUpdateManyOptions<T>, transform?: (sql: string) => string): Promise<QueryResult<T>>;
+  nativeInsertMany<T extends object>(
+    entityName: EntityName<T>,
+    data: EntityDictionary<T>[],
+    options?: NativeInsertUpdateManyOptions<T>,
+    transform?: (sql: string) => string,
+  ): Promise<QueryResult<T>>;
 
-  nativeUpdate<T extends object>(entityName: EntityName<T>, where: FilterQuery<T>, data: EntityDictionary<T>, options?: NativeInsertUpdateOptions<T>): Promise<QueryResult<T>>;
+  nativeUpdate<T extends object>(
+    entityName: EntityName<T>,
+    where: FilterQuery<T>,
+    data: EntityDictionary<T>,
+    options?: NativeInsertUpdateOptions<T>,
+  ): Promise<QueryResult<T>>;
 
-  nativeUpdateMany<T extends object>(entityName: EntityName<T>, where: FilterQuery<T>[], data: EntityDictionary<T>[], options?: NativeInsertUpdateManyOptions<T>): Promise<QueryResult<T>>;
+  nativeUpdateMany<T extends object>(
+    entityName: EntityName<T>,
+    where: FilterQuery<T>[],
+    data: EntityDictionary<T>[],
+    options?: NativeInsertUpdateManyOptions<T>,
+  ): Promise<QueryResult<T>>;
 
-  nativeDelete<T extends object>(entityName: EntityName<T>, where: FilterQuery<T>, options?: NativeDeleteOptions<T>): Promise<QueryResult<T>>;
+  nativeDelete<T extends object>(
+    entityName: EntityName<T>,
+    where: FilterQuery<T>,
+    options?: NativeDeleteOptions<T>,
+  ): Promise<QueryResult<T>>;
 
-  syncCollections<T extends object, O extends object>(collections: Iterable<Collection<T, O>>, options?: DriverMethodOptions): Promise<void>;
+  syncCollections<T extends object, O extends object>(
+    collections: Iterable<Collection<T, O>>,
+    options?: DriverMethodOptions,
+  ): Promise<void>;
 
-  count<T extends object, P extends string = never>(entityName: EntityName<T>, where: FilterQuery<T>, options?: CountOptions<T, P>): Promise<number>;
+  count<T extends object, P extends string = never>(
+    entityName: EntityName<T>,
+    where: FilterQuery<T>,
+    options?: CountOptions<T, P>,
+  ): Promise<number>;
 
   aggregate(entityName: EntityName, pipeline: any[]): Promise<any[]>;
 
-  mapResult<T extends object>(result: EntityDictionary<T>, meta: EntityMetadata<T>, populate?: PopulateOptions<T>[]): EntityData<T> | null;
+  mapResult<T extends object>(
+    result: EntityDictionary<T>,
+    meta: EntityMetadata<T>,
+    populate?: PopulateOptions<T>[],
+  ): EntityData<T> | null;
 
   /**
    * When driver uses pivot tables for M:N, this method will load identifiers for given collections from them
    */
-  loadFromPivotTable<T extends object, O extends object>(prop: EntityProperty, owners: Primary<O>[][], where?: FilterQuery<T>, orderBy?: OrderDefinition<T>, ctx?: Transaction, options?: FindOptions<T, any, any, any>, pivotJoin?: boolean): Promise<Dictionary<T[]>>;
+  loadFromPivotTable<T extends object, O extends object>(
+    prop: EntityProperty,
+    owners: Primary<O>[][],
+    where?: FilterQuery<T>,
+    orderBy?: OrderDefinition<T>,
+    ctx?: Transaction,
+    options?: FindOptions<T, any, any, any>,
+    pivotJoin?: boolean,
+  ): Promise<Dictionary<T[]>>;
 
   getPlatform(): Platform;
 
@@ -90,14 +168,21 @@ export interface IDatabaseDriver<C extends Connection = Connection> {
    * @internal
    */
   getSchemaName(meta?: EntityMetadata, options?: { schema?: string; parentSchema?: string }): string | undefined;
-
 }
 
-export type EntityField<T, P extends string = PopulatePath.ALL> = keyof T | PopulatePath.ALL | AutoPath<T, P, `${PopulatePath.ALL}`>;
+export type EntityField<T, P extends string = PopulatePath.ALL> =
+  | keyof T
+  | PopulatePath.ALL
+  | AutoPath<T, P, `${PopulatePath.ALL}`>;
 
 export type OrderDefinition<T> = (QueryOrderMap<T> & { 0?: never }) | QueryOrderMap<T>[];
 
-export interface FindAllOptions<T, P extends string = never, F extends string = '*', E extends string = never> extends FindOptions<T, P, F, E> {
+export interface FindAllOptions<
+  T,
+  P extends string = never,
+  F extends string = '*',
+  E extends string = never,
+> extends FindOptions<T, P, F, E> {
   where?: FilterQuery<T>;
 }
 
@@ -106,7 +191,10 @@ export interface StreamOptions<
   Populate extends string = never,
   Fields extends string = '*',
   Exclude extends string = never,
-> extends Omit<FindAllOptions<Entity, Populate, Fields, Exclude>, 'cache' | 'before' | 'after' | 'first' | 'last' | 'overfetch' | 'strategy'> {
+> extends Omit<
+  FindAllOptions<Entity, Populate, Fields, Exclude>,
+  'cache' | 'before' | 'after' | 'first' | 'last' | 'overfetch' | 'strategy'
+> {
   /**
    * When populating to-many relations, the ORM streams fully merged entities instead of yielding every row.
    * You can opt out of this behavior by specifying `mergeResults: false`. This will yield every row from
@@ -221,16 +309,32 @@ export interface FindOptions<
   em?: EntityManager;
 }
 
-export interface FindByCursorOptions<T extends object, P extends string = never, F extends string = '*', E extends string = never, I extends boolean = true> extends Omit<FindAllOptions<T, P, F, E>, 'limit' | 'offset'> {
+export interface FindByCursorOptions<
+  T extends object,
+  P extends string = never,
+  F extends string = '*',
+  E extends string = never,
+  I extends boolean = true,
+> extends Omit<FindAllOptions<T, P, F, E>, 'limit' | 'offset'> {
   includeCount?: I;
 }
 
-export interface FindOneOptions<T, P extends string = never, F extends string = '*', E extends string = never> extends Omit<FindOptions<T, P, F, E>, 'limit' | 'lockMode'> {
+export interface FindOneOptions<
+  T,
+  P extends string = never,
+  F extends string = '*',
+  E extends string = never,
+> extends Omit<FindOptions<T, P, F, E>, 'limit' | 'lockMode'> {
   lockMode?: LockMode;
   lockVersion?: number | Date;
 }
 
-export interface FindOneOrFailOptions<T extends object, P extends string = never, F extends string = '*', E extends string = never> extends FindOneOptions<T, P, F, E> {
+export interface FindOneOrFailOptions<
+  T extends object,
+  P extends string = never,
+  F extends string = '*',
+  E extends string = never,
+> extends FindOneOptions<T, P, F, E> {
   failHandler?: (entityName: string, where: Dictionary | IPrimaryKey | any) => Error;
   strict?: boolean;
 }
@@ -248,7 +352,10 @@ export interface NativeInsertUpdateManyOptions<T> extends NativeInsertUpdateOpti
   processCollections?: boolean;
 }
 
-export interface UpsertOptions<Entity, Fields extends string = never> extends Omit<NativeInsertUpdateOptions<Entity>, 'upsert'> {
+export interface UpsertOptions<Entity, Fields extends string = never> extends Omit<
+  NativeInsertUpdateOptions<Entity>,
+  'upsert'
+> {
   onConflictFields?: (keyof Entity)[] | Raw;
   onConflictAction?: 'ignore' | 'merge';
   onConflictMergeFields?: AutoPath<Entity, Fields, `${PopulatePath.ALL}`>[];
@@ -261,7 +368,7 @@ export interface UpsertManyOptions<Entity, Fields extends string = never> extend
   batchSize?: number;
 }
 
-export interface CountOptions<T extends object, P extends string = never>  {
+export interface CountOptions<T extends object, P extends string = never> {
   filters?: FilterOptions;
   schema?: string;
   groupBy?: string | readonly string[];

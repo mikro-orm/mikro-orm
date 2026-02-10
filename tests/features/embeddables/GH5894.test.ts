@@ -1,28 +1,31 @@
 import { MikroORM, Ref } from '@mikro-orm/sqlite';
-import { Embeddable, Embedded, Entity, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Embeddable,
+  Embedded,
+  Entity,
+  ManyToOne,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Embeddable()
 class Metadata {
-
   @Property({ nullable: true })
   author?: string;
-
 }
 
 @Entity()
 class UserEntity {
-
   @PrimaryKey()
   id!: number;
 
   @Property()
   private!: boolean;
-
 }
 
 @Entity()
 class PostEntity {
-
   @PrimaryKey()
   id!: number;
 
@@ -31,7 +34,6 @@ class PostEntity {
 
   @ManyToOne(() => UserEntity, { ref: true })
   author!: Ref<UserEntity>;
-
 }
 
 let orm: MikroORM;

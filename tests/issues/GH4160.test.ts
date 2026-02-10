@@ -1,10 +1,17 @@
 import { Collection, LoadStrategy, OptionalProps, Rel } from '@mikro-orm/core';
-import { Entity, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  OneToOne,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { MikroORM } from '@mikro-orm/sqlite';
 
 @Entity()
 class Account {
-
   [OptionalProps]?: 'client';
 
   @PrimaryKey()
@@ -15,29 +22,24 @@ class Account {
 
   @OneToOne(() => Client, c => c.account)
   client!: Rel<Client>;
-
 }
 
 @Entity()
 class Client {
-
   @OneToOne({ primary: true, entity: () => Account })
   account!: Account;
 
   @OneToMany(() => Brand, brand => brand.client, { orphanRemoval: true })
   brands = new Collection<Brand>(this);
-
 }
 
 @Entity()
 class Brand {
-
   @PrimaryKey()
   id!: string;
 
   @ManyToOne(() => Client)
   client!: Client;
-
 }
 
 let orm: MikroORM;
@@ -66,20 +68,28 @@ afterAll(async () => {
 });
 
 it('populate with select-in strategy', async () => {
-  const brands1 = await orm.em.find(Brand, {}, {
-    populate: ['client.account'],
-    strategy: LoadStrategy.SELECT_IN,
-  });
+  const brands1 = await orm.em.find(
+    Brand,
+    {},
+    {
+      populate: ['client.account'],
+      strategy: LoadStrategy.SELECT_IN,
+    },
+  );
 
   expect(brands1[0].client.account).toMatchObject({ id: '1', name: 'Account 1' });
   expect(brands1[1].client.account).toMatchObject({ id: '1', name: 'Account 1' });
 });
 
 it('populate with joined strategy', async () => {
-  const brands1 = await orm.em.find(Brand, {}, {
-    populate: ['client.account'],
-    strategy: LoadStrategy.JOINED,
-  });
+  const brands1 = await orm.em.find(
+    Brand,
+    {},
+    {
+      populate: ['client.account'],
+      strategy: LoadStrategy.JOINED,
+    },
+  );
 
   expect(brands1[0].client.account).toMatchObject({ id: '1', name: 'Account 1' });
   expect(brands1[1].client.account).toMatchObject({ id: '1', name: 'Account 1' });

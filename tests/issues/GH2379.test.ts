@@ -1,10 +1,16 @@
 import { Collection, Ref, MikroORM, OptionalProps } from '@mikro-orm/sqlite';
-import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { performance } from 'node:perf_hooks';
 
 @Entity()
 class VendorBuyerRelationship {
-
   [OptionalProps]?: 'created';
 
   @PrimaryKey()
@@ -21,12 +27,10 @@ class VendorBuyerRelationship {
 
   @OneToMany(() => Order, o => o.buyerRel)
   orders = new Collection<Order>(this);
-
 }
 
 @Entity()
 class Member {
-
   [OptionalProps]?: 'created';
 
   @PrimaryKey()
@@ -46,12 +50,10 @@ class Member {
 
   @ManyToOne(() => Member, { ref: true, nullable: true })
   parent?: Ref<Member>;
-
 }
 
 @Entity()
 class Job {
-
   [OptionalProps]?: 'rejected';
 
   @PrimaryKey()
@@ -80,12 +82,10 @@ class Job {
 
   @ManyToOne(() => Member, { ref: true, nullable: true })
   assignee?: Ref<Member>;
-
 }
 
 @Entity()
 export class Order {
-
   [OptionalProps]?: 'created';
 
   @PrimaryKey()
@@ -102,7 +102,6 @@ export class Order {
 
   @ManyToOne(() => Member, { ref: true, nullable: true })
   vendor?: Ref<Member>;
-
 }
 
 describe('GH issue 2379', () => {
@@ -154,7 +153,7 @@ describe('GH issue 2379', () => {
     await orm.em.flush();
     orm.em.clear();
 
-    const jobs = await orm.em.find(Job, { }, { populate: ['order'] });
+    const jobs = await orm.em.find(Job, {}, { populate: ['order'] });
     await orm.em.flush();
     const took = performance.now() - start;
 
@@ -162,5 +161,4 @@ describe('GH issue 2379', () => {
       process.stdout.write(`flush test took ${took}\n`);
     }
   });
-
 });

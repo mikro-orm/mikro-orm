@@ -3,7 +3,6 @@ import { Car2 } from './Car2.js';
 
 @Entity()
 export class CarOwner2 {
-
   @PrimaryKey()
   id!: number;
 
@@ -16,5 +15,4 @@ export class CarOwner2 {
   constructor(name: string) {
     this.name = name;
   }
-
 }

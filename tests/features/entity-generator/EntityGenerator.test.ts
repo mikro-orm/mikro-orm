@@ -6,11 +6,13 @@ import { MongoDriver } from '@mikro-orm/mongodb';
 import { initORMSqlite } from '../../bootstrap.js';
 
 describe('EntityGenerator', () => {
-
   test('not supported [mongodb]', async () => {
     const orm = await MikroORM.init({
- metadataProvider: ReflectMetadataProvider,
- driver: MongoDriver, dbName: 'mikro-orm-test', discovery: { warnWhenNoEntities: false } });
+      metadataProvider: ReflectMetadataProvider,
+      driver: MongoDriver,
+      dbName: 'mikro-orm-test',
+      discovery: { warnWhenNoEntities: false },
+    });
     expect(() => orm.entityGenerator).toThrow('EntityGenerator is not supported for this driver.');
   });
 
@@ -18,7 +20,11 @@ describe('EntityGenerator', () => {
     const orm = await initORMSqlite();
     const dump = await orm.entityGenerator.generate({
       save: true,
-      fileName: name => name.replace(/([a-z])([A-Z])/g, '$1-$2').replace(/[\s_]+/g, '-').toLowerCase(),
+      fileName: name =>
+        name
+          .replace(/([a-z])([A-Z])/g, '$1-$2')
+          .replace(/[\s_]+/g, '-')
+          .toLowerCase(),
     });
     expect(dump).toMatchSnapshot('sqlite-entity-dump');
     expect(existsSync('./tests/generated-entities/author4.ts')).toBe(true);
@@ -26,5 +32,4 @@ describe('EntityGenerator', () => {
 
     await orm.close(true);
   });
-
 });

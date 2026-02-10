@@ -3,7 +3,6 @@ import { Entity, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider } from
 
 @Entity()
 class A {
-
   @PrimaryKey()
   id!: number;
 
@@ -12,18 +11,15 @@ class A {
 
   @ManyToOne(() => B, { ref: true })
   b!: Ref<B>;
-
 }
 
 @Entity()
 class B {
-
   @PrimaryKey()
   id!: number;
 
   @Property()
   name!: string;
-
 }
 
 let orm: MikroORM;
@@ -121,7 +117,7 @@ describe.each(['select-in', 'joined'] as const)('GH #4433 (%s strategy)', strate
   test('4', async () => {
     const result = await orm.em.fork().find(
       A,
-      { },
+      {},
       {
         populate: ['*'],
         fields: ['*', 'b.id'],

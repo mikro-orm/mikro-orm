@@ -1,9 +1,15 @@
 import { MikroORM, DeferMode } from '@mikro-orm/sqlite';
-import { Entity, ManyToOne, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToOne,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class Door {
-
   @PrimaryKey({ autoincrement: false })
   id!: number;
 
@@ -15,12 +21,10 @@ class Door {
 
   @Property()
   state!: 'open' | 'closed';
-
 }
 
 @Entity({ tableName: 'sequence' })
 class Sequence0 {
-
   @PrimaryKey()
   id!: number;
 
@@ -31,25 +35,17 @@ class Sequence0 {
   action!: 'on' | 'off' | 'low' | 'high';
 
   @Property()
-  target!:
-    | 'relay1'
-    | 'relay2'
-    | 'relay3'
-    | 'digitalOutput1'
-    | 'digitalOutput2'
-    | 'digitalOutput3';
+  target!: 'relay1' | 'relay2' | 'relay3' | 'digitalOutput1' | 'digitalOutput2' | 'digitalOutput3';
 
   @Property()
   duration!: number;
 
   @ManyToOne(() => Door)
   door!: Door;
-
 }
 
 @Entity({ tableName: 'sequence' })
 class Sequence1 {
-
   @PrimaryKey()
   id!: number;
 
@@ -63,24 +59,16 @@ class Sequence1 {
   anotherProperty?: string;
 
   @Property()
-  target!:
-    | 'relay1'
-    | 'relay2'
-    | 'relay3'
-    | 'digitalOutput1'
-    | 'digitalOutput2'
-    | 'digitalOutput3';
+  target!: 'relay1' | 'relay2' | 'relay3' | 'digitalOutput1' | 'digitalOutput2' | 'digitalOutput3';
 
   @Property()
   duration!: number;
 
   @ManyToOne(() => Door)
   door!: Door;
-
 }
 
 describe('dropping tables with FKs in postgres', () => {
-
   test('schema generator removes stale FKs on target table dropping 1', async () => {
     const orm = await MikroORM.init({
       metadataProvider: ReflectMetadataProvider,
@@ -97,34 +85,28 @@ describe('dropping tables with FKs in postgres', () => {
 
     await orm.close(true);
   });
-
 });
 
 @Entity({ tableName: 'author' })
 class Author1 {
-
   @PrimaryKey()
   pk!: number;
 
   @Property()
   name!: string;
-
 }
 
 @Entity({ tableName: 'book' })
 class Book3 {
-
   @PrimaryKey()
   id!: number;
 
   @ManyToOne(() => Author1)
   author1!: Author1;
-
 }
 
 @Entity({ tableName: 'book' })
 class Book4 {
-
   @PrimaryKey()
   id!: number;
 
@@ -133,12 +115,10 @@ class Book4 {
 
   @OneToOne(() => Author1)
   author2!: Author1;
-
 }
 
 @Entity({ tableName: 'book' })
 class Book41 {
-
   @PrimaryKey()
   id!: number;
 
@@ -147,12 +127,10 @@ class Book41 {
 
   @OneToOne(() => Author1, { deferMode: DeferMode.INITIALLY_DEFERRED })
   author2!: Author1;
-
 }
 
 @Entity({ tableName: 'book' })
 class Book42 {
-
   @PrimaryKey()
   id!: number;
 
@@ -161,11 +139,9 @@ class Book42 {
 
   @OneToOne(() => Author1, { deferMode: DeferMode.INITIALLY_IMMEDIATE })
   author2!: Author1;
-
 }
 
 describe('updating tables with FKs in sqlite', () => {
-
   test('schema generator updates foreign keys on deferrable change', async () => {
     const orm = await MikroORM.init({
       metadataProvider: ReflectMetadataProvider,
@@ -197,5 +173,4 @@ describe('updating tables with FKs in sqlite', () => {
 
     await orm.close(true);
   });
-
 });

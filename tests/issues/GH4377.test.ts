@@ -5,7 +5,6 @@ import { randomUUID } from 'node:crypto';
 
 @Entity()
 class NonRoot {
-
   @PrimaryKey()
   id!: string;
 
@@ -17,12 +16,10 @@ class NonRoot {
   root!: Ref<Root>;
 
   [PrimaryKeyProp]?: ['id', 'root'];
-
 }
 
 @Entity()
 class Root {
-
   @PrimaryKey()
   id!: string;
 
@@ -33,7 +30,6 @@ class Root {
     cascade: [Cascade.ALL],
   })
   nonRoot!: NonRoot;
-
 }
 
 let orm: MikroORM;

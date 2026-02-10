@@ -7,7 +7,6 @@ import { rm } from 'node:fs/promises';
 import { initORMMySql, mockLogger } from '../../bootstrap.js';
 
 class MigrationTest1 extends Migration {
-
   async up(): Promise<void> {
     this.addSql('select 1 + 1');
   }
@@ -15,11 +14,9 @@ class MigrationTest1 extends Migration {
   override async down(): Promise<void> {
     this.addSql('select 1 - 1');
   }
-
 }
 
 class MigrationTest2 extends Migration {
-
   async up(): Promise<void> {
     this.addSql('select 1 + 1');
     this.addSql(raw('select 1 + 1'));
@@ -39,20 +36,22 @@ class MigrationTest2 extends Migration {
   override isTransactional(): boolean {
     return false;
   }
-
 }
 
 describe('Migrator', () => {
-
   let orm: MikroORM<MySqlDriver>;
   const migrationsPath = process.cwd() + '/temp/migrations-123';
 
   beforeAll(async () => {
-    orm = await initORMMySql('mysql', {
-      dbName: 'mikro_orm_test_migrations',
-      migrations: { path: migrationsPath },
-      loggerFactory: SimpleLogger.create,
-    }, true);
+    orm = await initORMMySql(
+      'mysql',
+      {
+        dbName: 'mikro_orm_test_migrations',
+        migrations: { path: migrationsPath },
+        loggerFactory: SimpleLogger.create,
+      },
+      true,
+    );
     await rm(migrationsPath, { recursive: true, force: true });
   });
   beforeEach(async () => {
@@ -127,16 +126,9 @@ describe('Migrator', () => {
       snapshot: true,
     });
     const migrator = orm.migrator;
-    await expect(migrator.create()).rejects.toThrow(
-      'Migration name is required',
-    );
+    await expect(migrator.create()).rejects.toThrow('Migration name is required');
     // retry creating migration with specified name
-    const migration = await migrator.create(
-      undefined,
-      false,
-      false,
-      'with-custom-name',
-    );
+    const migration = await migrator.create(undefined, false, false, 'with-custom-name');
     expect(migration.fileName).toEqual('migration-20191013214813-with-custom-name.ts');
     expect(migration).toMatchSnapshot('migration-dump');
     orm.config.set('migrations', migrationsSettings); // Revert migration config changes
@@ -386,7 +378,9 @@ describe('Migrator', () => {
     const mock = mockLogger(orm, ['query']);
 
     const migrated: unknown[] = [];
-    const migratedHandler = (e: UmzugMigration) => { migrated.push(e); };
+    const migratedHandler = (e: UmzugMigration) => {
+      migrated.push(e);
+    };
     migrator.on('migrated', migratedHandler);
 
     await migrator.up(migration.fileName);
@@ -483,25 +477,27 @@ describe('Migrator', () => {
     });
     expect(calls).toMatchSnapshot('all-or-nothing-disabled');
   });
-
 });
 
 describe('Migrator - with explicit migrations', () => {
-
   let orm: MikroORM<MySqlDriver>;
 
   beforeAll(async () => {
-    orm = await initORMMySql(undefined, {
-      dbName: 'mikro_orm_test_migrations',
-      migrations: {
-        migrationsList: [
-          {
-            name: 'test.ts',
-            class: MigrationTest1,
-          },
-        ],
+    orm = await initORMMySql(
+      undefined,
+      {
+        dbName: 'mikro_orm_test_migrations',
+        migrations: {
+          migrationsList: [
+            {
+              name: 'test.ts',
+              class: MigrationTest1,
+            },
+          ],
+        },
       },
-    }, true);
+      true,
+    );
   });
   afterAll(async () => {
     await orm.schema.dropDatabase();
@@ -529,23 +525,23 @@ describe('Migrator - with explicit migrations', () => {
     });
     expect(calls).toMatchSnapshot('migrator-migrations-list');
   });
-
 });
 
 describe('Migrator - with explicit migrations class only (#6099)', () => {
-
   let orm: MikroORM<MySqlDriver>;
 
   beforeAll(async () => {
-    orm = await initORMMySql(undefined, {
-      dbName: 'mikro_orm_test_migrations',
-      loggerFactory: SimpleLogger.create,
-      migrations: {
-        migrationsList: [
-          MigrationTest1,
-        ],
+    orm = await initORMMySql(
+      undefined,
+      {
+        dbName: 'mikro_orm_test_migrations',
+        loggerFactory: SimpleLogger.create,
+        migrations: {
+          migrationsList: [MigrationTest1],
+        },
       },
-    }, true);
+      true,
+    );
   });
   afterAll(async () => {
     await orm.schema.dropDatabase();
@@ -573,5 +569,4 @@ describe('Migrator - with explicit migrations class only (#6099)', () => {
     });
     expect(calls).toMatchSnapshot('migrator-migrations-list');
   });
-
 });

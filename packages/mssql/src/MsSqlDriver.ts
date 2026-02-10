@@ -22,16 +22,21 @@ import { MsSqlQueryBuilder } from './MsSqlQueryBuilder.js';
 import { MsSqlMikroORM } from './MsSqlMikroORM.js';
 
 export class MsSqlDriver extends AbstractSqlDriver<MsSqlConnection> {
-
   constructor(config: Configuration) {
     super(config, new MsSqlPlatform(), MsSqlConnection, ['kysely', 'tedious']);
   }
 
-  override async nativeInsertMany<T extends AnyEntity<T>>(entityName: EntityName<T>, data: EntityDictionary<T>[], options: NativeInsertUpdateManyOptions<T> = {}): Promise<QueryResult<T>> {
+  override async nativeInsertMany<T extends AnyEntity<T>>(
+    entityName: EntityName<T>,
+    data: EntityDictionary<T>[],
+    options: NativeInsertUpdateManyOptions<T> = {},
+  ): Promise<QueryResult<T>> {
     const meta = this.metadata.get(entityName);
     const keys = new Set<string>();
     data.forEach(row => Object.keys(row).forEach(k => keys.add(k)));
-    const props = [...keys].map(name => meta.properties[name as EntityKey] ?? { name, fieldNames: [name] }) as EntityProperty<T>[];
+    const props = [...keys].map(
+      name => meta.properties[name as EntityKey] ?? { name, fieldNames: [name] },
+    ) as EntityProperty<T>[];
     const fields = Utils.flatten(props.map(prop => prop.fieldNames));
     const tableName = this.getTableName(meta, options);
     const hasFields = fields.length > 0;
@@ -42,7 +47,10 @@ export class MsSqlDriver extends AbstractSqlDriver<MsSqlConnection> {
       const returningFields = Utils.flatten(returningProps.map(prop => prop.fieldNames));
       const using2 = `select * from (values ${data.map((x, i) => `(${i})`).join(',')}) v (id) where 1 = 1`;
       /* v8 ignore next */
-      const output = returningFields.length > 0 ? `output ${returningFields.map(field => 'inserted.' + this.platform.quoteIdentifier(field)).join(', ')}` : '';
+      const output =
+        returningFields.length > 0
+          ? `output ${returningFields.map(field => 'inserted.' + this.platform.quoteIdentifier(field)).join(', ')}`
+          : '';
       const sql = `merge into ${tableName} using (${using2}) s on 1 = 0 when not matched then insert default values ${output};`;
 
       const res = await this.execute<QueryResult<T>>(sql, [], 'run', options.ctx);
@@ -64,13 +72,34 @@ export class MsSqlDriver extends AbstractSqlDriver<MsSqlConnection> {
       });
     }
 
-    return super.nativeInsertMany(entityName, data, options, sql => meta.hasTriggers ? this.appendOutputTable(entityName, data, sql) : sql);
+    return super.nativeInsertMany(entityName, data, options, sql =>
+      meta.hasTriggers ? this.appendOutputTable(entityName, data, sql) : sql,
+    );
   }
 
-  override createQueryBuilder<T extends AnyEntity<T>>(entityName: EntityName<T>, ctx?: Transaction, preferredConnectionType?: ConnectionType, convertCustomTypes?: boolean, loggerContext?: LoggingOptions, alias?: string, em?: SqlEntityManager): MsSqlQueryBuilder<T, any, any, any> {
+  override createQueryBuilder<T extends AnyEntity<T>>(
+    entityName: EntityName<T>,
+    ctx?: Transaction,
+    preferredConnectionType?: ConnectionType,
+    convertCustomTypes?: boolean,
+    loggerContext?: LoggingOptions,
+    alias?: string,
+    em?: SqlEntityManager,
+  ): MsSqlQueryBuilder<T, any, any, any> {
     // do not compute the connectionType if EM is provided as it will be computed from it in the QB later on
-    const connectionType = em ? preferredConnectionType : this.resolveConnectionType({ ctx, connectionType: preferredConnectionType });
-    const qb = new MsSqlQueryBuilder<T, any, any, any>(entityName, this.metadata, this, ctx, alias, connectionType, em, loggerContext);
+    const connectionType = em
+      ? preferredConnectionType
+      : this.resolveConnectionType({ ctx, connectionType: preferredConnectionType });
+    const qb = new MsSqlQueryBuilder<T, any, any, any>(
+      entityName,
+      this.metadata,
+      this,
+      ctx,
+      alias,
+      connectionType,
+      em,
+      loggerContext,
+    );
 
     if (!convertCustomTypes) {
       qb.unsetFlag(QueryFlag.CONVERT_CUSTOM_TYPES);
@@ -79,10 +108,14 @@ export class MsSqlDriver extends AbstractSqlDriver<MsSqlConnection> {
     return qb;
   }
 
-  private appendOutputTable<T extends AnyEntity<T>>(entityName: EntityName<T>, data: EntityDictionary<T>[], sql: string) {
+  private appendOutputTable<T extends AnyEntity<T>>(
+    entityName: EntityName<T>,
+    data: EntityDictionary<T>[],
+    sql: string,
+  ) {
     const meta = this.metadata.get<T>(entityName);
     const returningProps = meta.props
-      .filter(prop => prop.persist !== false && prop.defaultRaw || prop.autoincrement || prop.generated)
+      .filter(prop => (prop.persist !== false && prop.defaultRaw) || prop.autoincrement || prop.generated)
       .filter(prop => !(prop.name in data[0]) || isRaw(data[0][prop.name]));
     const returningFields = Utils.flatten(returningProps.map(prop => prop.fieldNames));
 
@@ -93,9 +126,7 @@ export class MsSqlDriver extends AbstractSqlDriver<MsSqlConnection> {
 
     const tableName = this.getTableName(meta, {}, true);
 
-    const selections = returningFields
-      .map((field: string) => `[t].${this.platform.quoteIdentifier(field)}`)
-      .join(',');
+    const selections = returningFields.map((field: string) => `[t].${this.platform.quoteIdentifier(field)}`).join(',');
 
     const position = sql.indexOf(' values ');
     const sqlBeforeValues = sql.substring(0, position);
@@ -113,5 +144,4 @@ export class MsSqlDriver extends AbstractSqlDriver<MsSqlConnection> {
   override getORMClass(): Constructor<MsSqlMikroORM> {
     return MsSqlMikroORM;
   }
-
 }

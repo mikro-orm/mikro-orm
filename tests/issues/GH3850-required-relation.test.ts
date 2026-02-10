@@ -4,7 +4,6 @@ import { MikroORM } from '@mikro-orm/sqlite';
 
 @Entity()
 class User {
-
   @PrimaryKey()
   id!: number;
 
@@ -16,12 +15,10 @@ class User {
     nullable: false,
   })
   project!: Project | null;
-
 }
 
 @Entity()
 class Project {
-
   @PrimaryKey()
   id!: number;
 
@@ -30,7 +27,6 @@ class Project {
 
   @OneToOne(() => User, user => user.project, { nullable: false })
   owner?: User;
-
 }
 
 let orm: MikroORM;
@@ -156,5 +152,3 @@ describe('Required 1-to-1 relation propagation', () => {
     expect(oldOwner).toBeFalsy();
   });
 });
-
-

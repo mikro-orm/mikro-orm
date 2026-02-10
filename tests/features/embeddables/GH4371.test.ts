@@ -11,18 +11,15 @@ import { MikroORM } from '@mikro-orm/mongodb';
 
 @Embeddable()
 class E {
-
   @Property()
   camelCase: string = 'c';
 
   @Property({ fieldName: 'alias' })
   someField: string = 'w';
-
 }
 
 @Entity()
 class A {
-
   @PrimaryKey()
   _id = '1';
 
@@ -31,7 +28,6 @@ class A {
 
   @Embedded({ entity: () => E, object: true })
   emBedded = new E();
-
 }
 
 let orm: MikroORM;

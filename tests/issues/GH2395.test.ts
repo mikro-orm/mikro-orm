@@ -3,7 +3,6 @@ import { Entity, ManyToOne, OneToMany, PrimaryKey, ReflectMetadataProvider } fro
 
 @Entity()
 class Parent {
-
   @PrimaryKey()
   id!: number;
 
@@ -15,44 +14,36 @@ class Parent {
 
   @OneToMany(() => Child3, 'parent', { orphanRemoval: true })
   children3 = new Collection<Child>(this);
-
 }
 
 @Entity()
 class Child {
-
   @PrimaryKey()
   id!: number;
 
   @ManyToOne(() => Parent, { ref: true })
   parent!: Ref<Parent>;
-
 }
 
 @Entity()
 class Child2 {
-
   @PrimaryKey()
   id!: number;
 
   @ManyToOne(() => Parent, { ref: true, cascade: [Cascade.ALL] })
   parent!: Ref<Parent>;
-
 }
 
 @Entity()
 export class Child3 {
-
   @PrimaryKey()
   id!: number;
 
   @ManyToOne(() => Parent, { ref: true })
   parent!: Ref<Parent>;
-
 }
 
 describe('GH issue 2395', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -116,5 +107,4 @@ describe('GH issue 2395', () => {
     const found = await orm.em.find(Child3, {});
     expect(found).toHaveLength(0);
   });
-
 });

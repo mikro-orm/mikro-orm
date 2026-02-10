@@ -4,24 +4,20 @@ import { v4 } from 'uuid';
 
 @Entity()
 class B {
-
   @PrimaryKey()
   id: string = v4();
 
   @Property()
   name!: string;
-
 }
 
 @Entity()
 class A {
-
   @PrimaryKey()
   id!: string;
 
   @OneToOne(() => B)
   b!: B;
-
 }
 
 describe('GH issue 1171', () => {
@@ -57,5 +53,4 @@ describe('GH issue 1171', () => {
     expect(orderedAs.map(e => e.id)).toEqual([a3.id, a2.id, a1.id]);
     expect(orderedAs.map(e => e.b.name)).toEqual([b3.name, b2.name, b1.name]);
   });
-
 });

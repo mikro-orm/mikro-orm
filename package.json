@@ -68,7 +68,8 @@
   },
   "lint-staged": {
     "*.ts": [
-      "oxlint --fix"
+      "oxlint --fix",
+      "oxfmt --write --no-error-on-unmatched-pattern"
     ]
   },
   "renovate": {

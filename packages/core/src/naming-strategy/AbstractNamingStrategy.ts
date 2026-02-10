@@ -4,7 +4,6 @@ import { PopulatePath, type ReferenceKind } from '../enums.js';
 const populatePathMembers = Object.values(PopulatePath);
 
 export abstract class AbstractNamingStrategy implements NamingStrategy {
-
   getClassName(file: string, separator = '-'): string {
     const name = file.split('.')[0];
     const ret = name.replace(new RegExp(`(?:${separator})+(\\w)`, 'ug'), (_, p1) => p1.toUpperCase());
@@ -22,7 +21,11 @@ export abstract class AbstractNamingStrategy implements NamingStrategy {
     return migrationName;
   }
 
-  indexName(tableName: string, columns: string[], type: 'primary' | 'foreign' | 'unique' | 'index' | 'sequence' | 'check' | 'default'): string {
+  indexName(
+    tableName: string,
+    columns: string[],
+    type: 'primary' | 'foreign' | 'unique' | 'index' | 'sequence' | 'check' | 'default',
+  ): string {
     /* v8 ignore next */
     if (tableName.includes('.')) {
       tableName = tableName.substring(tableName.indexOf('.') + 1);
@@ -50,11 +53,19 @@ export abstract class AbstractNamingStrategy implements NamingStrategy {
    */
   getEntityName(tableName: string, schemaName?: string): string {
     const name = tableName.match(/^[^$_\p{ID_Start}]/u) ? `E_${tableName}` : tableName;
-    return this.getClassName(name.replaceAll(/[^\u200C\u200D\p{ID_Continue}]+/ug, r => r.split('').map(c => `$${c.codePointAt(0)}`).join('')), '_');
+    return this.getClassName(
+      name.replaceAll(/[^\u200C\u200D\p{ID_Continue}]+/gu, r =>
+        r
+          .split('')
+          .map(c => `$${c.codePointAt(0)}`)
+          .join(''),
+      ),
+      '_',
+    );
   }
 
   columnNameToProperty(columnName: string): string {
-    const propName = columnName.replace(/[_\- ]+(\w)/ug, (_, p1) => p1.toUpperCase());
+    const propName = columnName.replace(/[_\- ]+(\w)/gu, (_, p1) => p1.toUpperCase());
     if (populatePathMembers.includes(propName.replace(/^\${2,}/u, '$$').replace(/^\$\*$/u, '*') as PopulatePath)) {
       return `$${propName}`;
     }
@@ -128,12 +139,16 @@ export abstract class AbstractNamingStrategy implements NamingStrategy {
 
   abstract joinColumnName(propertyName: string): string;
 
-  abstract joinKeyColumnName(entityName: string, referencedColumnName?: string, composite?: boolean, tableName?: string): string;
+  abstract joinKeyColumnName(
+    entityName: string,
+    referencedColumnName?: string,
+    composite?: boolean,
+    tableName?: string,
+  ): string;
 
   abstract joinTableName(sourceEntity: string, targetEntity: string, propertyName?: string, tableName?: string): string;
 
   abstract propertyToColumnName(propertyName: string, object?: boolean): string;
 
   abstract referenceColumnName(): string;
-
 }

@@ -1,9 +1,15 @@
 import { Collection, MikroORM } from '@mikro-orm/sqlite';
-import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class Author {
-
   @PrimaryKey()
   id!: number;
 
@@ -15,12 +21,10 @@ class Author {
 
   @OneToMany(() => Book, b => b.author, { where: { isFavorite: true } })
   favoriteBooks = new Collection<Book>(this);
-
 }
 
 @Entity()
 class Book {
-
   @PrimaryKey()
   id!: number;
 
@@ -32,7 +36,6 @@ class Book {
 
   @ManyToOne()
   author!: Author;
-
 }
 
 let orm: MikroORM;
@@ -52,8 +55,14 @@ afterAll(async () => {
 
 test('declarative partial loading disables propagation (GH #6734)', async () => {
   const authorId = await orm.em.insert(Author, { name: 'Foo' });
-  await orm.em.insertMany(Book, Array.from(Array(1)).map(_ => ({ title: 'Foo', author: authorId, isFavorite: false })));
-  await orm.em.insertMany(Book, Array.from(Array(1)).map(_ => ({ title: 'Foo', author: authorId, isFavorite: true })));
+  await orm.em.insertMany(
+    Book,
+    Array.from(Array(1)).map(_ => ({ title: 'Foo', author: authorId, isFavorite: false })),
+  );
+  await orm.em.insertMany(
+    Book,
+    Array.from(Array(1)).map(_ => ({ title: 'Foo', author: authorId, isFavorite: true })),
+  );
   orm.em.clear();
 
   const author = (await orm.em.findOne(Author, { id: authorId }))!;

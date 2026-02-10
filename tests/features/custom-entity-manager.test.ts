@@ -3,18 +3,14 @@ import { Entity, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorato
 
 @Entity()
 class Author {
-
   @PrimaryKey()
   id!: number;
-
 }
 
 class MyEntityManager extends SqlEntityManager<SqliteDriver> {
-
   myCustomMethod(base: number): number {
     return base * Math.random();
   }
-
 }
 
 test('using custom EM class', async () => {

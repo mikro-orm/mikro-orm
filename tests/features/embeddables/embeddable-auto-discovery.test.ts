@@ -69,10 +69,7 @@ describe('embeddable auto-discovery with defineEntity', () => {
 
     await orm.em.flush();
 
-    const [brands, categories] = await Promise.all([
-      orm.em.findAll(Brand),
-      orm.em.findAll(Category),
-    ]);
+    const [brands, categories] = await Promise.all([orm.em.findAll(Brand), orm.em.findAll(Category)]);
     expect(brands).toHaveLength(1);
     expect(categories).toHaveLength(1);
   });

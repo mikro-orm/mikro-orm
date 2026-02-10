@@ -4,7 +4,6 @@ import { MikroORM } from '@mikro-orm/sqlite';
 
 @Entity()
 class BidEntity {
-
   @PrimaryKey()
   id!: bigint;
 
@@ -13,12 +12,10 @@ class BidEntity {
     serializedName: 'itemId',
   })
   item: any;
-
 }
 
 @Entity()
 class ItemEntity {
-
   @PrimaryKey()
   id!: bigint;
 
@@ -28,7 +25,6 @@ class ItemEntity {
     mappedBy: 'item',
   })
   bids = new Collection<BidEntity>(this);
-
 }
 
 let orm: MikroORM;

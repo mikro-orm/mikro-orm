@@ -6,10 +6,18 @@ import { GenerateCacheCommand } from '../../../packages/cli/src/commands/Generat
 import { MySqlDriver } from '@mikro-orm/mysql';
 
 describe('GenerateCacheCommand', () => {
-
   test('handler', async () => {
     const getConfigurationMock = vi.spyOn(CLIHelper, 'getConfiguration');
-    getConfigurationMock.mockResolvedValue(new Configuration({ driver: MySqlDriver, metadataCache: { enabled: true, adapter: FileCacheAdapter }, getDriver: () => ({ getPlatform: vi.fn() }) } as any, false));
+    getConfigurationMock.mockResolvedValue(
+      new Configuration(
+        {
+          driver: MySqlDriver,
+          metadataCache: { enabled: true, adapter: FileCacheAdapter },
+          getDriver: () => ({ getPlatform: vi.fn() }),
+        } as any,
+        false,
+      ),
+    );
     const discoverMock = vi.spyOn(MetadataDiscovery.prototype, 'discover');
     discoverMock.mockResolvedValue({} as MetadataStorage);
     vi.spyOn(CLIHelper, 'dump').mockImplementation(i => i);
@@ -33,5 +41,4 @@ describe('GenerateCacheCommand', () => {
     expect(discoverMock.mock.calls.length).toBe(2);
     expect(discoverMock.mock.calls[1][0]).toBe(true);
   });
-
 });

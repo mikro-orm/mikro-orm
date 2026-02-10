@@ -6,7 +6,6 @@ import type { DatabaseSchema } from '../../schema/DatabaseSchema.js';
 import type { DatabaseTable } from '../../schema/DatabaseTable.js';
 
 export class MySqlSchemaHelper extends SchemaHelper {
-
   private readonly _cache: Dictionary = {};
 
   static readonly DEFAULT_VALUES = {
@@ -55,8 +54,14 @@ export class MySqlSchemaHelper extends SchemaHelper {
     return `select table_name as view_name, nullif(table_schema, schema()) as schema_name, view_definition from information_schema.views where table_schema = schema()`;
   }
 
-  override async loadViews(schema: DatabaseSchema, connection: AbstractSqlConnection, schemaName?: string): Promise<void> {
-    const views = await connection.execute<{ view_name: string; schema_name: string | null; view_definition?: string }[]>(this.getListViewsSQL());
+  override async loadViews(
+    schema: DatabaseSchema,
+    connection: AbstractSqlConnection,
+    schemaName?: string,
+  ): Promise<void> {
+    const views = await connection.execute<
+      { view_name: string; schema_name: string | null; view_definition?: string }[]
+    >(this.getListViewsSQL());
 
     for (const view of views) {
       // MySQL information_schema.views.view_definition requires SHOW VIEW privilege
@@ -64,7 +69,9 @@ export class MySqlSchemaHelper extends SchemaHelper {
       let definition = view.view_definition?.trim();
 
       if (!definition) {
-        const createView = await connection.execute<{ View: string; 'Create View': string }[]>(`show create view \`${view.view_name}\``);
+        const createView = await connection.execute<{ View: string; 'Create View': string }[]>(
+          `show create view \`${view.view_name}\``,
+        );
         if (createView[0]?.['Create View']) {
           // Extract SELECT statement from CREATE VIEW ... AS SELECT ...
           const match = createView[0]['Create View'].match(/\bAS\s+(.+)$/is);
@@ -78,7 +85,11 @@ export class MySqlSchemaHelper extends SchemaHelper {
     }
   }
 
-  override async loadInformationSchema(schema: DatabaseSchema, connection: AbstractSqlConnection, tables: Table[]): Promise<void> {
+  override async loadInformationSchema(
+    schema: DatabaseSchema,
+    connection: AbstractSqlConnection,
+    tables: Table[],
+  ): Promise<void> {
     if (tables.length === 0) {
       return;
     }
@@ -117,11 +128,13 @@ export class MySqlSchemaHelper extends SchemaHelper {
 
       // Capture column options (prefix length, sort order)
       if (index.sub_part != null || index.sort_order === 'D') {
-        indexDef.columns = [{
-          name: index.column_name,
-          ...(index.sub_part != null && { length: index.sub_part }),
-          ...(index.sort_order === 'D' && { sort: 'DESC' as const }),
-        }];
+        indexDef.columns = [
+          {
+            name: index.column_name,
+            ...(index.sub_part != null && { length: index.sub_part }),
+            ...(index.sort_order === 'D' && { sort: 'DESC' as const }),
+          },
+        ];
       }
 
       // Capture index type for fulltext and spatial indexes
@@ -189,36 +202,38 @@ export class MySqlSchemaHelper extends SchemaHelper {
    */
   protected override getIndexColumns(index: IndexDef): string {
     if (index.columns?.length) {
-      return index.columns.map(col => {
-        const quotedName = this.quote(col.name);
+      return index.columns
+        .map(col => {
+          const quotedName = this.quote(col.name);
 
-        // MySQL supports collation via expression: (column_name COLLATE collation_name)
-        // When collation is specified, wrap in parentheses as an expression
-        if (col.collation) {
-          let expr = col.length ? `${quotedName}(${col.length})` : quotedName;
-          expr = `(${expr} collate ${col.collation})`;
-          // Sort order comes after the expression
-          if (col.sort) {
-            expr += ` ${col.sort}`;
+          // MySQL supports collation via expression: (column_name COLLATE collation_name)
+          // When collation is specified, wrap in parentheses as an expression
+          if (col.collation) {
+            let expr = col.length ? `${quotedName}(${col.length})` : quotedName;
+            expr = `(${expr} collate ${col.collation})`;
+            // Sort order comes after the expression
+            if (col.sort) {
+              expr += ` ${col.sort}`;
+            }
+            return expr;
           }
-          return expr;
-        }
 
-        // Standard column definition without collation
-        let colDef = quotedName;
+          // Standard column definition without collation
+          let colDef = quotedName;
 
-        // MySQL supports prefix length
-        if (col.length) {
-          colDef += `(${col.length})`;
-        }
+          // MySQL supports prefix length
+          if (col.length) {
+            colDef += `(${col.length})`;
+          }
 
-        // MySQL supports sort order
-        if (col.sort) {
-          colDef += ` ${col.sort}`;
-        }
+          // MySQL supports sort order
+          if (col.sort) {
+            colDef += ` ${col.sort}`;
+          }
 
-        return colDef;
-      }).join(', ');
+          return colDef;
+        })
+        .join(', ');
     }
 
     return index.columnNames.map(c => this.quote(c)).join(', ');
@@ -254,24 +269,31 @@ export class MySqlSchemaHelper extends SchemaHelper {
       from information_schema.columns where table_schema = database() and table_name in (${tables.map(t => this.platform.quoteValue(t.table_name))})
       order by ordinal_position`;
     const allColumns = await connection.execute<any[]>(sql);
-    const str = (val?: string | number) => val != null ? '' + val : val;
-    const extra = (val: string) => val.replace(/auto_increment|default_generated|(stored|virtual) generated/i, '').trim() || undefined;
+    const str = (val?: string | number) => (val != null ? '' + val : val);
+    const extra = (val: string) =>
+      val.replace(/auto_increment|default_generated|(stored|virtual) generated/i, '').trim() || undefined;
     const ret = {} as Dictionary;
 
     for (const col of allColumns) {
       const mappedType = this.platform.getMappedType(col.column_type);
-      const defaultValue = str(this.normalizeDefaultValue(
-        (mappedType.compareAsType() === 'boolean' && ['0', '1'].includes(col.column_default))
-          ? ['false', 'true'][+col.column_default]
-          : col.column_default,
-        col.length,
-      ));
+      const defaultValue = str(
+        this.normalizeDefaultValue(
+          mappedType.compareAsType() === 'boolean' && ['0', '1'].includes(col.column_default)
+            ? ['false', 'true'][+col.column_default]
+            : col.column_default,
+          col.length,
+        ),
+      );
       const key = this.getTableKey(col);
-      const generated = col.generation_expression ? `(${col.generation_expression.replaceAll(`\\'`, `'`)}) ${col.extra.match(/stored generated/i) ? 'stored' : 'virtual'}` : undefined;
+      const generated = col.generation_expression
+        ? `(${col.generation_expression.replaceAll(`\\'`, `'`)}) ${col.extra.match(/stored generated/i) ? 'stored' : 'virtual'}`
+        : undefined;
       ret[key] ??= [];
       ret[key].push({
         name: col.column_name,
-        type: this.platform.isNumericColumn(mappedType) ? col.column_type.replace(/ unsigned$/, '').replace(/\(\d+\)$/, '') : col.column_type,
+        type: this.platform.isNumericColumn(mappedType)
+          ? col.column_type.replace(/ unsigned$/, '').replace(/\(\d+\)$/, '')
+          : col.column_type,
         mappedType,
         unsigned: col.column_type.endsWith(' unsigned'),
         length: col.length,
@@ -298,7 +320,10 @@ export class MySqlSchemaHelper extends SchemaHelper {
     }
 
     const sql = this.getChecksSQL(tables);
-    const allChecks = await connection.execute<{ name: string; column_name: string; schema_name: string; table_name: string; expression: string }[]>(sql);
+    const allChecks =
+      await connection.execute<
+        { name: string; column_name: string; schema_name: string; table_name: string; expression: string }[]
+      >(sql);
     const ret = {} as Dictionary;
 
     for (const check of allChecks) {
@@ -315,7 +340,10 @@ export class MySqlSchemaHelper extends SchemaHelper {
     return ret;
   }
 
-  async getAllForeignKeys(connection: AbstractSqlConnection, tables: Table[]): Promise<Dictionary<Dictionary<ForeignKey>>> {
+  async getAllForeignKeys(
+    connection: AbstractSqlConnection,
+    tables: Table[],
+  ): Promise<Dictionary<Dictionary<ForeignKey>>> {
     const sql = `select k.constraint_name as constraint_name, nullif(k.table_schema, schema()) as schema_name, k.table_name as table_name, k.column_name as column_name, k.referenced_table_name as referenced_table_name, k.referenced_column_name as referenced_column_name, c.update_rule as update_rule, c.delete_rule as delete_rule
         from information_schema.key_column_usage k
         inner join information_schema.referential_constraints c on c.constraint_name = k.constraint_name and c.table_name = k.table_name
@@ -353,7 +381,10 @@ export class MySqlSchemaHelper extends SchemaHelper {
       .filter(col => tableDiff.fromTable.hasColumn(col))
       .map(col => tableDiff.fromTable.getColumn(col)!)
       .filter(col => col.autoincrement)
-      .map(col => `alter table \`${tableDiff.name}\` modify \`${col.name}\` ${this.getColumnDeclarationSQL({ ...col, autoincrement: false })}`);
+      .map(
+        col =>
+          `alter table \`${tableDiff.name}\` modify \`${col.name}\` ${this.getColumnDeclarationSQL({ ...col, autoincrement: false })}`,
+      );
   }
 
   override getRenameColumnSQL(tableName: string, oldColumnName: string, to: Column): string {
@@ -396,17 +427,26 @@ export class MySqlSchemaHelper extends SchemaHelper {
     return ret;
   }
 
-  async getAllEnumDefinitions(connection: AbstractSqlConnection, tables: Table[]): Promise<Dictionary<Dictionary<string[]>>> {
+  async getAllEnumDefinitions(
+    connection: AbstractSqlConnection,
+    tables: Table[],
+  ): Promise<Dictionary<Dictionary<string[]>>> {
     const sql = `select column_name as column_name, column_type as column_type, table_name as table_name
       from information_schema.columns
       where data_type = 'enum' and table_name in (${tables.map(t => `'${t.table_name}'`).join(', ')}) and table_schema = database()`;
     const enums = await connection.execute<any[]>(sql);
 
-    return enums.reduce((o, item) => {
-      o[item.table_name] ??= {};
-      o[item.table_name][item.column_name] = item.column_type.match(/enum\((.*)\)/)[1].split(',').map((item: string) => item.match(/'(.*)'/)![1]);
-      return o;
-    }, {} as Dictionary<string[]>);
+    return enums.reduce(
+      (o, item) => {
+        o[item.table_name] ??= {};
+        o[item.table_name][item.column_name] = item.column_type
+          .match(/enum\((.*)\)/)[1]
+          .split(',')
+          .map((item: string) => item.match(/'(.*)'/)![1]);
+        return o;
+      },
+      {} as Dictionary<string[]>,
+    );
   }
 
   private async supportsCheckConstraints(connection: AbstractSqlConnection): Promise<boolean> {
@@ -417,7 +457,7 @@ export class MySqlSchemaHelper extends SchemaHelper {
     const sql = `select 1 from information_schema.tables where table_name = 'CHECK_CONSTRAINTS' and table_schema = 'information_schema'`;
     const res = await connection.execute(sql);
 
-    return this._cache.supportsCheckConstraints = res.length > 0;
+    return (this._cache.supportsCheckConstraints = res.length > 0);
   }
 
   protected getChecksSQL(tables: Table[]): string {
@@ -439,5 +479,4 @@ export class MySqlSchemaHelper extends SchemaHelper {
     const stringType = type instanceof StringType || type instanceof TextType || type instanceof EnumType;
     return typeof val === 'string' && val.length > 0 && stringType ? this.platform.quoteValue(val) : val;
   }
-
 }

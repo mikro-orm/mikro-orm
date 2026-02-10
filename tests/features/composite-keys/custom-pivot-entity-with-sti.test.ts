@@ -16,43 +16,35 @@ import { SqliteDriver } from '@mikro-orm/sqlite';
   },
 })
 class User {
-
   @PrimaryKey()
   id!: number;
 
   @Property()
   role: 'CREATOR' = 'CREATOR' as const;
-
 }
 
 @Entity()
 class Creator extends User {
-
   @ManyToMany({ entity: () => Task, pivotEntity: () => CreatorsOnTasks })
   tasks = new Collection<Task>(this);
-
 }
 
 @Entity()
 class Task {
-
   @PrimaryKey()
   id!: number;
 
   @ManyToMany(() => Creator, c => c.tasks)
   creators = new Collection<Creator>(this);
-
 }
 
 @Entity()
 class CreatorsOnTasks {
-
   @ManyToOne({ primary: true, entity: () => Creator })
   creator!: Creator;
 
   @ManyToOne({ primary: true, entity: () => Task })
   task!: Task;
-
 }
 
 let orm: MikroORM;

@@ -11,25 +11,21 @@ import {
 
 @Embeddable()
 export class TradeVessel {
-
   @Property()
   imo: string;
 
   constructor(imo: string) {
     this.imo = imo;
   }
-
 }
 
 @Entity()
 export class Trade {
-
   @PrimaryKey()
   _id!: ObjectId;
 
   @Embedded(() => TradeVessel, { object: true, nullable: true })
   vessel: TradeVessel | null = null;
-
 }
 
 let orm: MikroORM;
@@ -48,10 +44,7 @@ afterAll(() => orm.close(true));
 beforeEach(() => orm.em.nativeDelete(Trade, {}));
 
 test('hydration of null value in embeddable property (GH #3258)', async () => {
-  await orm.em.getDriver().nativeInsertMany(Trade, [
-    { vessel: { imo: '123' } },
-    { vessel: null },
-  ]);
+  await orm.em.getDriver().nativeInsertMany(Trade, [{ vessel: { imo: '123' } }, { vessel: null }]);
 
   const t = await orm.em.find(Trade, {});
   expect(t[0].vessel?.imo).toBe('123');

@@ -3,15 +3,12 @@ import { Entity, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider } from
 
 @Entity()
 class Organisation {
-
   @PrimaryKey({ fieldName: 'org_id' })
   id!: number;
-
 }
 
 @Entity({ abstract: true })
 abstract class OrgEntity {
-
   @ManyToOne({
     entity: () => Organisation,
     fieldName: 'org_id',
@@ -22,20 +19,16 @@ abstract class OrgEntity {
 
   @PrimaryKey()
   id!: number;
-
 }
 
 @Entity()
 class User extends OrgEntity {
-
   @Property()
   name!: string;
-
 }
 
 @Entity()
 class Book extends OrgEntity {
-
   @Property()
   name!: string;
 
@@ -46,7 +39,6 @@ class Book extends OrgEntity {
     ref: true,
   })
   user!: Ref<User>;
-
 }
 
 let orm: MikroORM;
@@ -78,10 +70,10 @@ afterAll(async () => {
 
 test('GH #6951', async () => {
   const bookQ1 = await orm.em.findOneOrFail(Book, { id: 21 }, { populate: ['user'] });
-  expect(helper(bookQ1).__originalEntityData).toEqual({ org: 1, id: 21, name: 'Book 1', user: [ 1, 11 ] });
+  expect(helper(bookQ1).__originalEntityData).toEqual({ org: 1, id: 21, name: 'Book 1', user: [1, 11] });
 
   const bookQ2 = await orm.em.findOneOrFail(Book, { id: 21 }, { populate: ['user'] });
-  expect(helper(bookQ2).__originalEntityData).toEqual({ org: 1, id: 21, name: 'Book 1', user: [ 1, 11 ] });
+  expect(helper(bookQ2).__originalEntityData).toEqual({ org: 1, id: 21, name: 'Book 1', user: [1, 11] });
   expect(bookQ1).toBe(bookQ2);
 
   orm.em.getUnitOfWork().computeChangeSets();

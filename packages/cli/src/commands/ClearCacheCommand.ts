@@ -4,7 +4,6 @@ import type { BaseArgs, BaseCommand } from '../CLIConfigurator.js';
 import { CLIHelper } from '../CLIHelper.js';
 
 export class ClearCacheCommand implements BaseCommand {
-
   command = 'cache:clear';
   describe = 'Clear metadata cache';
 
@@ -15,7 +14,9 @@ export class ClearCacheCommand implements BaseCommand {
     const config = await CLIHelper.getConfiguration(args.contextName, args.config);
 
     if (!config.get('metadataCache').enabled) {
-      CLIHelper.dump(colors.red('Metadata cache is disabled in your configuration. Set cache.enabled to true to use this command.'));
+      CLIHelper.dump(
+        colors.red('Metadata cache is disabled in your configuration. Set cache.enabled to true to use this command.'),
+      );
       return;
     }
 
@@ -24,5 +25,4 @@ export class ClearCacheCommand implements BaseCommand {
 
     CLIHelper.dump(colors.green('Metadata cache was successfully cleared'));
   }
-
 }

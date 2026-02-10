@@ -51,10 +51,14 @@ test('eager loading with exclusions', async () => {
   await orm.em.flush();
   orm.em.clear();
 
-  const loadedPost = await orm.em.findOneOrFail(Post, { id: post.id }, {
-    populate: ['createdBy'],
-    exclude: ['createdBy.name', 'createdBy.roles'],
-  });
+  const loadedPost = await orm.em.findOneOrFail(
+    Post,
+    { id: post.id },
+    {
+      populate: ['createdBy'],
+      exclude: ['createdBy.name', 'createdBy.roles'],
+    },
+  );
   const json = wrap(loadedPost).toObject().createdBy;
   // @ts-expect-error
   expect(json.roles).toBe(undefined);

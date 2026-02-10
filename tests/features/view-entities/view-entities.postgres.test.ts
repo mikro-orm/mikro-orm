@@ -1,20 +1,36 @@
 import { defineEntity, p, sql, Collection } from '@mikro-orm/core';
-import { Entity, Formula, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  Formula,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { EntityManager, MikroORM } from '@mikro-orm/postgresql';
-import { Author2, Book2, BookTag2, Publisher2, Test2, FooBar2, FooBaz2, Address2, Configuration2 } from '../../entities-sql/index.js';
+import {
+  Author2,
+  Book2,
+  BookTag2,
+  Publisher2,
+  Test2,
+  FooBar2,
+  FooBaz2,
+  Address2,
+  Configuration2,
+} from '../../entities-sql/index.js';
 
 // View entity with string expression using decorator
 const authorStatsSQL = `select min(name) as name, (select count(*)::int from book2 b where b.author_id = a.id) as book_count from author2 a group by a.id`;
 
 @Entity({ tableName: 'author_stats_view', view: true, expression: authorStatsSQL })
 class AuthorStats {
-
   @PrimaryKey()
   name!: string;
 
   @Property()
   bookCount!: number;
-
 }
 
 // View entity with QueryBuilder expression using defineEntity
@@ -23,7 +39,8 @@ const BookSummary = defineEntity({
   tableName: 'book_summary_view',
   view: true,
   expression: (em: EntityManager) => {
-    return em.createQueryBuilder(Book2, 'b')
+    return em
+      .createQueryBuilder(Book2, 'b')
       .join('b.author', 'a')
       .select([sql`min(b.title)`.as('title'), sql`min(a.name)`.as('author_name')])
       .groupBy('b.uuid');
@@ -52,7 +69,6 @@ const bookPriceViewSQL = `select uuid_pk, title, price from book2 where price is
 
 @Entity({ tableName: 'book_price_view', view: true, expression: bookPriceViewSQL })
 class BookPriceView {
-
   @PrimaryKey({ type: 'uuid' })
   uuidPk!: string;
 
@@ -67,7 +83,6 @@ class BookPriceView {
 
   @Formula(cols => `upper(${cols.title})`)
   titleUpper!: string;
-
 }
 
 // View entity with custom types (enum, json, decimal) using defineEntity
@@ -104,7 +119,6 @@ const authorViewSQL = `select id, name, email, age from author2`;
 
 @Entity({ tableName: 'author_view', view: true, expression: authorViewSQL })
 class AuthorView {
-
   @PrimaryKey()
   id!: number;
 
@@ -120,13 +134,11 @@ class AuthorView {
   // One-to-many from view to regular entity (view is the "one" side)
   @OneToMany(() => BookForViewRelation, book => book.authorView)
   books = new Collection<BookForViewRelation>(this);
-
 }
 
 // Regular entity that references a view entity
 @Entity({ tableName: 'book_for_view_relation' })
 class BookForViewRelation {
-
   @PrimaryKey()
   id!: number;
 
@@ -136,7 +148,6 @@ class BookForViewRelation {
   // Many-to-one to a view entity - no FK constraint since views can't be FK targets
   @ManyToOne(() => AuthorView, { nullable: true })
   authorView?: AuthorView;
-
 }
 
 // View entity with formula using defineEntity
@@ -157,13 +168,25 @@ const AuthorWithComputedFields = defineEntity({
 });
 
 describe('View entities (postgres)', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
       metadataProvider: ReflectMetadataProvider,
-      entities: [Author2, Book2, BookTag2, Publisher2, Test2, FooBar2, FooBaz2, Address2, Configuration2, AuthorStats, BookSummary, ProlificAuthors],
+      entities: [
+        Author2,
+        Book2,
+        BookTag2,
+        Publisher2,
+        Test2,
+        FooBar2,
+        FooBaz2,
+        Address2,
+        Configuration2,
+        AuthorStats,
+        BookSummary,
+        ProlificAuthors,
+      ],
       dbName: 'mikro_orm_test_views',
     });
 
@@ -260,7 +283,18 @@ describe('View entities (postgres)', () => {
 
     const orm2 = await MikroORM.init({
       metadataProvider: ReflectMetadataProvider,
-      entities: [Author2, Book2, BookTag2, Publisher2, Test2, FooBar2, FooBaz2, ModifiedAuthorStats, BookSummary, ProlificAuthors],
+      entities: [
+        Author2,
+        Book2,
+        BookTag2,
+        Publisher2,
+        Test2,
+        FooBar2,
+        FooBaz2,
+        ModifiedAuthorStats,
+        BookSummary,
+        ProlificAuthors,
+      ],
       dbName: 'mikro_orm_test_views',
     });
 
@@ -285,7 +319,19 @@ describe('View entities (postgres)', () => {
 
     const orm2 = await MikroORM.init({
       metadataProvider: ReflectMetadataProvider,
-      entities: [Author2, Book2, BookTag2, Publisher2, Test2, FooBar2, FooBaz2, AuthorStats, BookSummary, ProlificAuthors, NewView],
+      entities: [
+        Author2,
+        Book2,
+        BookTag2,
+        Publisher2,
+        Test2,
+        FooBar2,
+        FooBaz2,
+        AuthorStats,
+        BookSummary,
+        ProlificAuthors,
+        NewView,
+      ],
       dbName: 'mikro_orm_test_views',
     });
 
@@ -423,17 +469,26 @@ describe('View entities (postgres)', () => {
       await orm2.close();
     }
   });
-
 });
 
 describe('View entities with formulas (postgres)', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
       metadataProvider: ReflectMetadataProvider,
-      entities: [Author2, Book2, BookTag2, Publisher2, Test2, FooBar2, FooBaz2, Address2, Configuration2, BookPriceView],
+      entities: [
+        Author2,
+        Book2,
+        BookTag2,
+        Publisher2,
+        Test2,
+        FooBar2,
+        FooBaz2,
+        Address2,
+        Configuration2,
+        BookPriceView,
+      ],
       dbName: 'mikro_orm_test_views_formulas',
     });
 
@@ -442,8 +497,8 @@ describe('View entities with formulas (postgres)', () => {
     // Create test data with prices
     const em = orm.em.fork();
     const author = em.create(Author2, { name: 'Formula Author', email: 'formula@test.com' });
-    em.create(Book2, { title: 'Priced Book', author, price: 100.00 });
-    em.create(Book2, { title: 'Another Priced Book', author, price: 50.50 });
+    em.create(Book2, { title: 'Priced Book', author, price: 100.0 });
+    em.create(Book2, { title: 'Another Priced Book', author, price: 50.5 });
     await em.flush();
   });
 
@@ -487,17 +542,26 @@ describe('View entities with formulas (postgres)', () => {
     expect(expensiveBooks.length).toBe(1);
     expect(expensiveBooks[0].title).toBe('Priced Book');
   });
-
 });
 
 describe('View entities with custom types (postgres)', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
       metadataProvider: ReflectMetadataProvider,
-      entities: [Author2, Book2, BookTag2, Publisher2, Test2, FooBar2, FooBaz2, Address2, Configuration2, BookMetadataView],
+      entities: [
+        Author2,
+        Book2,
+        BookTag2,
+        Publisher2,
+        Test2,
+        FooBar2,
+        FooBaz2,
+        Address2,
+        Configuration2,
+        BookMetadataView,
+      ],
       dbName: 'mikro_orm_test_views_custom_types',
     });
 
@@ -509,13 +573,13 @@ describe('View entities with custom types (postgres)', () => {
     em.create(Book2, {
       title: 'Expensive Book',
       author,
-      price: 150.00,
+      price: 150.0,
       meta: { category: 'fiction', items: 5 },
     });
     em.create(Book2, {
       title: 'Cheap Book',
       author,
-      price: 50.00,
+      price: 50.0,
       meta: { category: 'non-fiction', items: 3 },
     });
     await em.flush();
@@ -579,17 +643,26 @@ describe('View entities with custom types (postgres)', () => {
     expect(books.length).toBe(1);
     expect(books[0].price).toBe('150.00');
   });
-
 });
 
 describe('View entities with formulas via defineEntity (postgres)', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
       metadataProvider: ReflectMetadataProvider,
-      entities: [Author2, Book2, BookTag2, Publisher2, Test2, FooBar2, FooBaz2, Address2, Configuration2, AuthorWithComputedFields],
+      entities: [
+        Author2,
+        Book2,
+        BookTag2,
+        Publisher2,
+        Test2,
+        FooBar2,
+        FooBaz2,
+        Address2,
+        Configuration2,
+        AuthorWithComputedFields,
+      ],
       dbName: 'mikro_orm_test_views_define_entity_formulas',
     });
 
@@ -641,25 +714,39 @@ describe('View entities with formulas via defineEntity (postgres)', () => {
     const em = orm.em.fork();
 
     // Order by formula property
-    const authors = await em.find(AuthorWithComputedFields, {}, {
-      orderBy: { displayName: 'asc' },
-    });
+    const authors = await em.find(
+      AuthorWithComputedFields,
+      {},
+      {
+        orderBy: { displayName: 'asc' },
+      },
+    );
     expect(authors.length).toBe(2);
     // "Adult Author <adult@test.com>" comes before "Young Author <young@test.com>"
     expect(authors[0].name).toBe('Adult Author');
     expect(authors[1].name).toBe('Young Author');
   });
-
 });
 
 describe('View entities as relation targets (postgres)', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
       metadataProvider: ReflectMetadataProvider,
-      entities: [Author2, Book2, BookTag2, Publisher2, Test2, FooBar2, FooBaz2, Address2, Configuration2, AuthorView, BookForViewRelation],
+      entities: [
+        Author2,
+        Book2,
+        BookTag2,
+        Publisher2,
+        Test2,
+        FooBar2,
+        FooBaz2,
+        Address2,
+        Configuration2,
+        AuthorView,
+        BookForViewRelation,
+      ],
       dbName: 'mikro_orm_test_views_relations',
     });
 
@@ -700,10 +787,14 @@ describe('View entities as relation targets (postgres)', () => {
   test('can query entity with ManyToOne to view', async () => {
     const em = orm.em.fork();
 
-    const books = await em.find(BookForViewRelation, {}, {
-      populate: ['authorView'],
-      orderBy: { id: 'asc' },
-    });
+    const books = await em.find(
+      BookForViewRelation,
+      {},
+      {
+        populate: ['authorView'],
+        orderBy: { id: 'asc' },
+      },
+    );
 
     expect(books.length).toBe(3);
     expect(books[0].authorView?.name).toBe('View Author 1');
@@ -725,10 +816,14 @@ describe('View entities as relation targets (postgres)', () => {
   test('can query view with OneToMany to regular entity', async () => {
     const em = orm.em.fork();
 
-    const authors = await em.find(AuthorView, {}, {
-      populate: ['books'],
-      orderBy: { name: 'asc' },
-    });
+    const authors = await em.find(
+      AuthorView,
+      {},
+      {
+        populate: ['books'],
+        orderBy: { name: 'asc' },
+      },
+    );
 
     expect(authors.length).toBe(2);
     expect(authors[0].name).toBe('View Author 1');
@@ -740,7 +835,8 @@ describe('View entities as relation targets (postgres)', () => {
   test('can use view entity in join', async () => {
     const em = orm.em.fork();
 
-    const qb = em.createQueryBuilder(BookForViewRelation, 'b')
+    const qb = em
+      .createQueryBuilder(BookForViewRelation, 'b')
       .join('b.authorView', 'a')
       .select(['b.title', 'a.name'])
       .where({ 'a.name': 'View Author 1' });
@@ -748,7 +844,6 @@ describe('View entities as relation targets (postgres)', () => {
     const results = await qb.execute();
     expect(results.length).toBe(2);
   });
-
 });
 
 // Materialized view entity
@@ -776,13 +871,22 @@ const AuthorStatsNoData = defineEntity({
 });
 
 describe('Materialized view entities (postgres)', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
       metadataProvider: ReflectMetadataProvider,
-      entities: [Author2, Book2, BookTag2, Publisher2, Test2, FooBar2, FooBaz2, AuthorStatsMaterialized, AuthorStatsNoData],
+      entities: [
+        Author2,
+        Book2,
+        BookTag2,
+        Publisher2,
+        Test2,
+        FooBar2,
+        FooBaz2,
+        AuthorStatsMaterialized,
+        AuthorStatsNoData,
+      ],
       dbName: 'mikro_orm_test_matviews',
     });
 
@@ -856,5 +960,4 @@ describe('Materialized view entities (postgres)', () => {
   test('refreshMaterializedView throws for non-materialized view', async () => {
     await expect(orm.em.refreshMaterializedView(Author2)).rejects.toThrow('Entity Author2 is not a materialized view');
   });
-
 });

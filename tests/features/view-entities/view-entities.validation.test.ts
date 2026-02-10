@@ -2,21 +2,20 @@ import { defineEntity, p, MikroORM } from '@mikro-orm/sqlite';
 import { Entity, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 describe('View entity validation', () => {
-
   test('view entity without expression should throw', async () => {
     @Entity({ tableName: 'invalid_view', view: true })
     class InvalidView {
-
       @PrimaryKey()
       id!: number;
-
     }
 
-    await expect(MikroORM.init({
-      entities: [InvalidView],
-      dbName: ':memory:',
-      metadataProvider: ReflectMetadataProvider,
-    })).rejects.toThrow(/view.*expression/i);
+    await expect(
+      MikroORM.init({
+        entities: [InvalidView],
+        dbName: ':memory:',
+        metadataProvider: ReflectMetadataProvider,
+      }),
+    ).rejects.toThrow(/view.*expression/i);
   });
 
   test('view entity with expression should be valid', async () => {
@@ -40,5 +39,4 @@ describe('View entity validation', () => {
 
     await orm.close();
   });
-
 });

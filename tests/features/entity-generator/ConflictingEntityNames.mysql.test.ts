@@ -73,7 +73,6 @@ beforeAll(async () => {
   if (await orm.schema.ensureDatabase({ create: true })) {
     await orm.schema.execute(schema);
   }
-
 });
 
 afterAll(async () => {
@@ -81,7 +80,6 @@ afterAll(async () => {
 });
 
 describe(schemaName, () => {
-
   test.each(['entitySchema', 'decorators'] as const)('entityDefinition=%s', async entityDefinition => {
     const dump = await orm.entityGenerator.generate({
       entityDefinition,
@@ -117,5 +115,4 @@ describe(schemaName, () => {
     });
     expect(dump).toMatchSnapshot('dump');
   });
-
 });

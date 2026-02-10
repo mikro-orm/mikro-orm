@@ -11,7 +11,6 @@ import {
 import { type Dictionary, type Type } from '@mikro-orm/core';
 
 export class MariaDbSchemaHelper extends MySqlSchemaHelper {
-
   protected override appendMySqlIndexSuffix(sql: string, index: IndexDef): string {
     // MariaDB uses IGNORED instead of MySQL's INVISIBLE keyword
     if (index.invisible) {
@@ -28,7 +27,11 @@ export class MariaDbSchemaHelper extends MySqlSchemaHelper {
     return sql;
   }
 
-  override async loadInformationSchema(schema: DatabaseSchema, connection: AbstractSqlConnection, tables: Table[]): Promise<void> {
+  override async loadInformationSchema(
+    schema: DatabaseSchema,
+    connection: AbstractSqlConnection,
+    tables: Table[],
+  ): Promise<void> {
     /* v8 ignore next */
     if (tables.length === 0) {
       return;
@@ -68,11 +71,13 @@ export class MariaDbSchemaHelper extends MySqlSchemaHelper {
 
       // Capture column options (prefix length, sort order)
       if (index.sub_part != null || index.sort_order === 'D') {
-        indexDef.columns = [{
-          name: index.column_name,
-          ...(index.sub_part != null && { length: index.sub_part }),
-          ...(index.sort_order === 'D' && { sort: 'DESC' as const }),
-        }];
+        indexDef.columns = [
+          {
+            name: index.column_name,
+            ...(index.sub_part != null && { length: index.sub_part }),
+            ...(index.sort_order === 'D' && { sort: 'DESC' as const }),
+          },
+        ];
       }
 
       // Capture index type for fulltext and spatial indexes
@@ -84,7 +89,7 @@ export class MariaDbSchemaHelper extends MySqlSchemaHelper {
       }
 
       // Capture ignored flag (MariaDB 10.6+, equivalent to MySQL's INVISIBLE)
-      /* v8 ignore next */
+      /* v8 ignore next 3 */
       if (index.ignored === 'YES') {
         indexDef.invisible = true;
       }
@@ -118,25 +123,30 @@ export class MariaDbSchemaHelper extends MySqlSchemaHelper {
       from information_schema.columns where table_schema = database() and table_name in (${tables.map(t => this.platform.quoteValue(t.table_name)).join(', ')})
       order by ordinal_position`;
     const allColumns = await connection.execute<any[]>(sql);
-    const str = (val?: string | number | null) => val != null ? '' + val : val;
-    const extra = (val: string) => val.replace(/auto_increment|default_generated|(stored|virtual) generated/i, '').trim() || undefined;
+    const str = (val?: string | number | null) => (val != null ? '' + val : val);
+    const extra = (val: string) =>
+      val.replace(/auto_increment|default_generated|(stored|virtual) generated/i, '').trim() || undefined;
     const ret = {} as Dictionary;
 
     for (const col of allColumns) {
       const mappedType = this.platform.getMappedType(col.column_type);
       const tmp = this.normalizeDefaultValue(
-        (mappedType.compareAsType() === 'boolean' && ['0', '1'].includes(col.column_default))
+        mappedType.compareAsType() === 'boolean' && ['0', '1'].includes(col.column_default)
           ? ['false', 'true'][+col.column_default]
           : col.column_default,
         col.length,
       );
       const defaultValue = str(tmp === 'NULL' && col.is_nullable === 'YES' ? null : tmp);
       const key = this.getTableKey(col);
-      const generated = col.generation_expression ? `${col.generation_expression.replaceAll(`\\'`, `'`)} ${col.extra.match(/stored generated/i) ? 'stored' : 'virtual'}` : undefined;
+      const generated = col.generation_expression
+        ? `${col.generation_expression.replaceAll(`\\'`, `'`)} ${col.extra.match(/stored generated/i) ? 'stored' : 'virtual'}`
+        : undefined;
       ret[key] ??= [];
       ret[key].push({
         name: col.column_name,
-        type: this.platform.isNumericColumn(mappedType) ? col.column_type.replace(/ unsigned$/, '').replace(/\(\d+\)$/, '') : col.column_type,
+        type: this.platform.isNumericColumn(mappedType)
+          ? col.column_type.replace(/ unsigned$/, '').replace(/\(\d+\)$/, '')
+          : col.column_type,
         mappedType,
         unsigned: col.column_type.endsWith(' unsigned'),
         length: col.length,
@@ -156,9 +166,16 @@ export class MariaDbSchemaHelper extends MySqlSchemaHelper {
     return ret;
   }
 
-  override async getAllChecks(connection: AbstractSqlConnection, tables: Table[], columns?: Dictionary<Column[]>): Promise<Dictionary<CheckDef[]>> {
+  override async getAllChecks(
+    connection: AbstractSqlConnection,
+    tables: Table[],
+    columns?: Dictionary<Column[]>,
+  ): Promise<Dictionary<CheckDef[]>> {
     const sql = this.getChecksSQL(tables);
-    const allChecks = await connection.execute<{ name: string; column_name: string; schema_name: string; table_name: string; expression: string }[]>(sql);
+    const allChecks =
+      await connection.execute<
+        { name: string; column_name: string; schema_name: string; table_name: string; expression: string }[]
+      >(sql);
     const ret = {} as Dictionary;
 
     for (const check of allChecks) {
@@ -200,5 +217,4 @@ export class MariaDbSchemaHelper extends MySqlSchemaHelper {
   protected override wrap(val: string | undefined | null, type: Type<unknown>): string | undefined | null {
     return val;
   }
-
 }

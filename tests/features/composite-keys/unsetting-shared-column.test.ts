@@ -4,15 +4,12 @@ import { v4 } from 'uuid';
 
 @Entity()
 class Organization extends BaseEntity {
-
   @PrimaryKey({ type: 'uuid' })
   id!: string;
-
 }
 
 @Entity()
 class TaskReviewer extends BaseEntity {
-
   [PrimaryKeyProp]?: ['id', 'organization'];
 
   @PrimaryKey({ type: 'uuid' })
@@ -37,12 +34,10 @@ class TaskReviewer extends BaseEntity {
     joinColumns: ['previous_reviewer_id', 'organization_id'],
   })
   previousReviewer?: Ref<TaskReviewer> | null;
-
 }
 
 @Entity()
 class Task extends BaseEntity {
-
   [PrimaryKeyProp]?: ['id', 'organization'];
 
   @PrimaryKey({ type: 'uuid' })
@@ -57,7 +52,6 @@ class Task extends BaseEntity {
     orphanRemoval: true,
   })
   reviewers = new Collection<TaskReviewer>(this);
-
 }
 
 let orm: MikroORM;

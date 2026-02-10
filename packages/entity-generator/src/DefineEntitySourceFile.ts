@@ -10,7 +10,6 @@ import {
 import { EntitySchemaSourceFile } from './EntitySchemaSourceFile.js';
 
 export class DefineEntitySourceFile extends EntitySchemaSourceFile {
-
   override generate(): string {
     const enumDefinitions: string[] = [];
 
@@ -46,7 +45,10 @@ export class DefineEntitySourceFile extends EntitySchemaSourceFile {
       entitySchemaOptions.class = this.meta.className;
     }
 
-    Object.assign(entitySchemaOptions, (this.meta.embeddable ? this.getEmbeddableDeclOptions() : (this.meta.collection ? this.getEntityDeclOptions() : {})));
+    Object.assign(
+      entitySchemaOptions,
+      this.meta.embeddable ? this.getEmbeddableDeclOptions() : this.meta.collection ? this.getEntityDeclOptions() : {},
+    );
     const nameSuffix = this.options.inferEntityType ? '' : 'Schema';
     const declLine = `export const ${this.meta.className + nameSuffix} = ${this.referenceCoreImport('defineEntity')}(`;
     ret += declLine;
@@ -60,9 +62,7 @@ export class DefineEntitySourceFile extends EntitySchemaSourceFile {
     }
 
     entitySchemaOptions.properties = Object.fromEntries(
-      Object.entries(this.meta.properties).map(
-        ([name, prop]) => [name, this.getPropertyBuilder(prop)],
-      ),
+      Object.entries(this.meta.properties).map(([name, prop]) => [name, this.getPropertyBuilder(prop)]),
     );
 
     // Force top level and properties to be indented, regardless of line length
@@ -87,11 +87,21 @@ export class DefineEntitySourceFile extends EntitySchemaSourceFile {
     let builder = '';
 
     switch (prop.kind) {
-      case ReferenceKind.ONE_TO_ONE: builder += `() => ${p}.oneToOne(${prop.type})`; break;
-      case ReferenceKind.ONE_TO_MANY: builder += `() => ${p}.oneToMany(${prop.type})`; break;
-      case ReferenceKind.MANY_TO_ONE: builder += `() => ${p}.manyToOne(${prop.type})`; break;
-      case ReferenceKind.MANY_TO_MANY: builder += `() => ${p}.manyToMany(${prop.type})`; break;
-      case ReferenceKind.EMBEDDED: builder += `() => ${p}.embedded(${prop.type})`; break;
+      case ReferenceKind.ONE_TO_ONE:
+        builder += `() => ${p}.oneToOne(${prop.type})`;
+        break;
+      case ReferenceKind.ONE_TO_MANY:
+        builder += `() => ${p}.oneToMany(${prop.type})`;
+        break;
+      case ReferenceKind.MANY_TO_ONE:
+        builder += `() => ${p}.manyToOne(${prop.type})`;
+        break;
+      case ReferenceKind.MANY_TO_MANY:
+        builder += `() => ${p}.manyToMany(${prop.type})`;
+        break;
+      case ReferenceKind.EMBEDDED:
+        builder += `() => ${p}.embedded(${prop.type})`;
+        break;
       case ReferenceKind.SCALAR:
       default: {
         if (options.type && !(options.type in types)) {
@@ -103,14 +113,45 @@ export class DefineEntitySourceFile extends EntitySchemaSourceFile {
     }
 
     const simpleOptions = new Set([
-      'primary', 'ref', 'nullable', 'array', 'object', 'mapToPk', 'hidden', 'concurrencyCheck', 'lazy', 'eager',
-      'orphanRemoval', 'version', 'unsigned', 'returning', 'createForeignKeyConstraint', 'fixedOrder', 'owner',
-      'getter', 'setter', 'unique', 'index', 'hydrate', 'persist', 'autoincrement',
+      'primary',
+      'ref',
+      'nullable',
+      'array',
+      'object',
+      'mapToPk',
+      'hidden',
+      'concurrencyCheck',
+      'lazy',
+      'eager',
+      'orphanRemoval',
+      'version',
+      'unsigned',
+      'returning',
+      'createForeignKeyConstraint',
+      'fixedOrder',
+      'owner',
+      'getter',
+      'setter',
+      'unique',
+      'index',
+      'hydrate',
+      'persist',
+      'autoincrement',
     ]);
     const skipOptions = new Set(['entity', 'kind', 'type', 'items']);
     const spreadOptions = new Set([
-      'fieldNames', 'joinColumns', 'inverseJoinColumns', 'referencedColumnNames', 'ownColumns', 'columnTypes',
-      'cascade', 'ignoreSchemaChanges', 'customOrder', 'groups', 'where', 'orderBy',
+      'fieldNames',
+      'joinColumns',
+      'inverseJoinColumns',
+      'referencedColumnNames',
+      'ownColumns',
+      'columnTypes',
+      'cascade',
+      'ignoreSchemaChanges',
+      'customOrder',
+      'groups',
+      'where',
+      'orderBy',
     ]);
     const rename: Dictionary<string> = {
       fieldName: 'name',
@@ -136,5 +177,4 @@ export class DefineEntitySourceFile extends EntitySchemaSourceFile {
 
     return builder;
   }
-
 }

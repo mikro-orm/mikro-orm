@@ -1,11 +1,17 @@
 import { Collection, MikroORM } from '@mikro-orm/core';
-import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import type { AbstractSqlDriver } from '@mikro-orm/sql';
 import { MySqlDriver } from '@mikro-orm/mysql';
 
 @Entity({ tableName: 'very_long_table_name_64_chars_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx' })
 class ChildEntity {
-
   @PrimaryKey()
   id!: number;
 
@@ -14,18 +20,15 @@ class ChildEntity {
 
   @Property({ unique: true })
   key!: string;
-
 }
 
 @Entity()
 class ParentEntity {
-
   @PrimaryKey()
   id!: number;
 
   @OneToMany({ entity: () => ChildEntity, mappedBy: 'parent' })
   children = new Collection<ChildEntity>(this);
-
 }
 
 describe('index and FK names should be a max of 64 chars in mysql (GH 1271)', () => {
@@ -50,5 +53,4 @@ describe('index and FK names should be a max of 64 chars in mysql (GH 1271)', ()
     expect(sql).toMatchSnapshot();
     await orm.schema.execute(sql);
   });
-
 });

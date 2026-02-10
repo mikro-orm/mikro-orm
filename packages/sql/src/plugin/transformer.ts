@@ -34,7 +34,6 @@ import type { SqlEntityManager } from '../SqlEntityManager.js';
 import type { AbstractSqlPlatform } from '../AbstractSqlPlatform.js';
 
 export class MikroTransformer extends OperationNodeTransformer {
-
   /**
    * Context stack to support nested queries (subqueries, CTEs)
    * Each level of query scope has its own Map of table aliases/names to EntityMetadata
@@ -75,10 +74,7 @@ export class MikroTransformer extends OperationNodeTransformer {
     return this.entityMap;
   }
 
-  override transformSelectQuery(
-    node: SelectQueryNode,
-    queryId: QueryId,
-  ): SelectQueryNode {
+  override transformSelectQuery(node: SelectQueryNode, queryId: QueryId): SelectQueryNode {
     // Push a new context for this query scope (starts with inherited parent context)
     const currentContext = new Map<string, EntityMetadata | undefined>();
     this.contextStack.push(currentContext);
@@ -110,10 +106,7 @@ export class MikroTransformer extends OperationNodeTransformer {
     }
   }
 
-  override transformInsertQuery(
-    node: InsertQueryNode,
-    queryId?: QueryId,
-  ): InsertQueryNode {
+  override transformInsertQuery(node: InsertQueryNode, queryId?: QueryId): InsertQueryNode {
     const currentContext = new Map<string, EntityMetadata | undefined>();
     this.contextStack.push(currentContext);
 
@@ -130,12 +123,10 @@ export class MikroTransformer extends OperationNodeTransformer {
           }
         }
       }
-      const nodeWithHooks = this.options.processOnCreateHooks && entityMeta
-        ? this.processOnCreateHooks(node, entityMeta)
-        : node;
-      const nodeWithConvertedValues = this.options.convertValues && entityMeta
-        ? this.processInsertValues(nodeWithHooks, entityMeta)
-        : nodeWithHooks;
+      const nodeWithHooks =
+        this.options.processOnCreateHooks && entityMeta ? this.processOnCreateHooks(node, entityMeta) : node;
+      const nodeWithConvertedValues =
+        this.options.convertValues && entityMeta ? this.processInsertValues(nodeWithHooks, entityMeta) : nodeWithHooks;
       // Handle ON CONFLICT clause
       let finalNode = nodeWithConvertedValues;
 
@@ -153,8 +144,8 @@ export class MikroTransformer extends OperationNodeTransformer {
           : node.onConflict.updates;
 
         const tempUpdateNodeWithHooks: UpdateQueryNode = {
-           ...tempUpdateNode,
-           updates: updatesWithHooks,
+          ...tempUpdateNode,
+          updates: updatesWithHooks,
         };
 
         const updatesWithConvertedValues = this.options.convertValues
@@ -162,8 +153,8 @@ export class MikroTransformer extends OperationNodeTransformer {
           : updatesWithHooks;
 
         if (updatesWithConvertedValues && updatesWithConvertedValues !== node.onConflict.updates) {
-           // Construct the new OnConflictNode with updated values
-           finalNode = {
+          // Construct the new OnConflictNode with updated values
+          finalNode = {
             ...finalNode,
             onConflict: {
               ...node.onConflict,
@@ -179,10 +170,7 @@ export class MikroTransformer extends OperationNodeTransformer {
     }
   }
 
-  override transformUpdateQuery(
-    node: UpdateQueryNode,
-    queryId?: QueryId,
-  ): UpdateQueryNode {
+  override transformUpdateQuery(node: UpdateQueryNode, queryId?: QueryId): UpdateQueryNode {
     const currentContext = new Map<string, EntityMetadata | undefined>();
     this.contextStack.push(currentContext);
 
@@ -214,22 +202,17 @@ export class MikroTransformer extends OperationNodeTransformer {
         }
       }
 
-      const nodeWithHooks = this.options.processOnUpdateHooks && entityMeta
-        ? this.processOnUpdateHooks(node, entityMeta)
-        : node;
-      const nodeWithConvertedValues = this.options.convertValues && entityMeta
-        ? this.processUpdateValues(nodeWithHooks, entityMeta)
-        : nodeWithHooks;
+      const nodeWithHooks =
+        this.options.processOnUpdateHooks && entityMeta ? this.processOnUpdateHooks(node, entityMeta) : node;
+      const nodeWithConvertedValues =
+        this.options.convertValues && entityMeta ? this.processUpdateValues(nodeWithHooks, entityMeta) : nodeWithHooks;
       return super.transformUpdateQuery(nodeWithConvertedValues, queryId);
     } finally {
       this.contextStack.pop();
     }
   }
 
-  override transformDeleteQuery(
-    node: DeleteQueryNode,
-    queryId?: QueryId,
-  ): DeleteQueryNode {
+  override transformDeleteQuery(node: DeleteQueryNode, queryId?: QueryId): DeleteQueryNode {
     const currentContext = new Map<string, EntityMetadata | undefined>();
     this.contextStack.push(currentContext);
 
@@ -262,10 +245,7 @@ export class MikroTransformer extends OperationNodeTransformer {
     }
   }
 
-  override transformMergeQuery(
-    node: MergeQueryNode,
-    queryId?: QueryId,
-  ): MergeQueryNode {
+  override transformMergeQuery(node: MergeQueryNode, queryId?: QueryId): MergeQueryNode {
     const currentContext = new Map<string, EntityMetadata | undefined>();
     this.contextStack.push(currentContext);
 
@@ -276,10 +256,7 @@ export class MikroTransformer extends OperationNodeTransformer {
     }
   }
 
-  override transformIdentifier(
-    node: IdentifierNode,
-    queryId: QueryId,
-  ): IdentifierNode {
+  override transformIdentifier(node: IdentifierNode, queryId: QueryId): IdentifierNode {
     node = super.transformIdentifier(node, queryId);
 
     const parent = this.nodeStack[this.nodeStack.length - 2];
@@ -297,7 +274,11 @@ export class MikroTransformer extends OperationNodeTransformer {
 
     // Transform column names when columnNamingStrategy is 'property'
     // Support ColumnNode, ColumnUpdateNode, and ReferenceNode (for JOIN conditions)
-    if (this.options.columnNamingStrategy === 'property' && parent && (ColumnNode.is(parent) || ColumnUpdateNode.is(parent) || ReferenceNode.is(parent))) {
+    if (
+      this.options.columnNamingStrategy === 'property' &&
+      parent &&
+      (ColumnNode.is(parent) || ColumnUpdateNode.is(parent) || ReferenceNode.is(parent))
+    ) {
       const ownerMeta = this.findOwnerEntityInContext();
 
       if (ownerMeta) {
@@ -452,10 +433,7 @@ export class MikroTransformer extends OperationNodeTransformer {
     const newUpdates = [...node.updates];
     for (const prop of missingProps) {
       const val = prop.onUpdate!(undefined, this.em);
-      newUpdates.push(ColumnUpdateNode.create(
-        ColumnNode.create(prop.name),
-        ValueNode.create(val),
-      ));
+      newUpdates.push(ColumnUpdateNode.create(ColumnNode.create(prop.name), ValueNode.create(val)));
     }
 
     return {
@@ -619,7 +597,11 @@ export class MikroTransformer extends OperationNodeTransformer {
     }
 
     if (prop.customType && !isRaw(value)) {
-      return prop.customType.convertToDatabaseValue(value, this.platform, { fromQuery: true, key: prop.name, mode: 'query-data' });
+      return prop.customType.convertToDatabaseValue(value, this.platform, {
+        fromQuery: true,
+        key: prop.name,
+        mode: 'query-data',
+      });
     }
 
     if (value instanceof Date) {
@@ -648,10 +630,7 @@ export class MikroTransformer extends OperationNodeTransformer {
   /**
    * Process WITH node (CTE definitions)
    */
-  processWithNode(
-    withNode: WithNode,
-    context: Map<string, EntityMetadata | undefined>,
-  ): void {
+  processWithNode(withNode: WithNode, context: Map<string, EntityMetadata | undefined>): void {
     for (const cte of withNode.expressions) {
       const cteName = this.getCTEName(cte.name);
       if (cteName) {
@@ -677,9 +656,7 @@ export class MikroTransformer extends OperationNodeTransformer {
   /**
    * Extract CTE name from CommonTableExpressionNameNode
    */
-  getCTEName(
-    nameNode: CommonTableExpressionNameNode,
-  ): string | undefined {
+  getCTEName(nameNode: CommonTableExpressionNameNode): string | undefined {
     if (TableNode.is(nameNode.table)) {
       return this.getTableName(nameNode.table);
     }
@@ -745,10 +722,7 @@ export class MikroTransformer extends OperationNodeTransformer {
   /**
    * Process a JOIN node
    */
-  processJoinNode(
-    join: JoinNode,
-    context: Map<string, EntityMetadata | undefined>,
-  ): void {
+  processJoinNode(join: JoinNode, context: Map<string, EntityMetadata | undefined>): void {
     const joinTable = join.table;
 
     if (AliasNode.is(joinTable)) {
@@ -887,7 +861,11 @@ export class MikroTransformer extends OperationNodeTransformer {
     entityMap: Map<string, EntityMetadata>,
   ): Record<string, any>[] | undefined {
     // Only transform if columnNamingStrategy is 'property' or convertValues is true, and we have data
-    if ((this.options.columnNamingStrategy !== 'property' && !this.options.convertValues) || !rows || rows.length === 0) {
+    if (
+      (this.options.columnNamingStrategy !== 'property' && !this.options.convertValues) ||
+      !rows ||
+      rows.length === 0
+    ) {
       return rows;
     }
 
@@ -1067,7 +1045,10 @@ export class MikroTransformer extends OperationNodeTransformer {
 
       // For non-local timezone, check if value already has timezone info
       // Number (timestamp) doesn't need timezone handling, string needs check
-      if (typeof value === 'number' || (typeof value === 'string' && (value.includes('+') || value.lastIndexOf('-') > 10 || value.endsWith('Z')))) {
+      if (
+        typeof value === 'number' ||
+        (typeof value === 'string' && (value.includes('+') || value.lastIndexOf('-') > 10 || value.endsWith('Z')))
+      ) {
         return this.platform.parseDate(value as string | number);
       }
 
@@ -1079,5 +1060,4 @@ export class MikroTransformer extends OperationNodeTransformer {
     // EntityComparator just assigns directly without conversion
     return value;
   }
-
 }

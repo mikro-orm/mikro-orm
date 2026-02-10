@@ -3,17 +3,14 @@ import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-or
 
 @Entity()
 export class User {
-
   @PrimaryKey()
   id!: number;
 
   @Property({ type: ArrayType })
   groups!: readonly string[];
-
 }
 
 describe('GH issue 2679', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {

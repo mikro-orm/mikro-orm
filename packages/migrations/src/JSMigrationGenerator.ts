@@ -1,7 +1,6 @@
 import { MigrationGenerator } from './MigrationGenerator.js';
 
 export class JSMigrationGenerator extends MigrationGenerator {
-
   /**
    * @inheritDoc
    */
@@ -11,13 +10,13 @@ export class JSMigrationGenerator extends MigrationGenerator {
     ret += `const { Migration } = require('@mikro-orm/migrations');\n\n`;
     ret += `class ${className} extends Migration {\n\n`;
     ret += `  async up() {\n`;
-    diff.up.forEach(sql => ret += this.createStatement(sql, 4));
+    diff.up.forEach(sql => (ret += this.createStatement(sql, 4)));
     ret += `  }\n\n`;
 
     /* v8 ignore next */
     if (diff.down.length > 0) {
       ret += `  async down() {\n`;
-      diff.down.forEach(sql => ret += this.createStatement(sql, 4));
+      diff.down.forEach(sql => (ret += this.createStatement(sql, 4)));
       ret += `  }\n\n`;
     }
 
@@ -26,5 +25,4 @@ export class JSMigrationGenerator extends MigrationGenerator {
 
     return ret;
   }
-
 }

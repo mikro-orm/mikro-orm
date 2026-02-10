@@ -14,14 +14,14 @@ interface Ingredient {
 
 enum CookingDevice {
   OVEN = 'Oven',
-  MICRO = 'Microwave'
+  MICRO = 'Microwave',
 }
 
 type CookingInstructions = {
   [device in CookingDevice]?: {
     degrees: number;
     time: number;
-  }
+  };
 };
 
 interface Instructions {
@@ -32,7 +32,6 @@ interface Instructions {
 
 @Entity()
 class Recipe {
-
   @PrimaryKey()
   id!: number;
 
@@ -41,7 +40,6 @@ class Recipe {
 
   @Property({ type: JsonType })
   instructions!: Instructions;
-
 }
 
 let orm: MikroORM;
@@ -88,7 +86,7 @@ test(`GH 4428: issue updating nested props`, async () => {
         },
       ],
       cooking: {
-        Oven : {
+        Oven: {
           degrees: 200,
           time: 12,
         },
@@ -131,7 +129,7 @@ test(`GH 4428: issue updating nested props`, async () => {
         },
       ],
       cooking: {
-        Oven : {
+        Oven: {
           degrees: 200,
           time: 12,
         },
@@ -181,7 +179,7 @@ test(`GH 4428: issue updating nested props directly`, async () => {
         },
       ],
       cooking: {
-        Oven : {
+        Oven: {
           degrees: 200,
           time: 12,
         },
@@ -224,7 +222,7 @@ test(`GH 4428: issue updating nested props directly`, async () => {
         },
       ],
       cooking: {
-        Oven : {
+        Oven: {
           degrees: 200,
           time: 12,
         },

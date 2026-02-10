@@ -1,10 +1,16 @@
 import { Collection, LoadStrategy, MikroORM, OptionalProps } from '@mikro-orm/sqlite';
-import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { randomUUID } from 'node:crypto';
 
 @Entity()
 class Question {
-
   [OptionalProps]?: 'createdAt';
 
   @PrimaryKey({ type: 'uuid' })
@@ -18,12 +24,10 @@ class Question {
 
   @Property({ length: 255 })
   name!: string;
-
 }
 
 @Entity()
 class Answer {
-
   [OptionalProps]?: 'createdAt' | 'question';
 
   @PrimaryKey({ type: 'uuid' })
@@ -34,11 +38,9 @@ class Answer {
 
   @ManyToOne({ entity: () => Question })
   question!: Question;
-
 }
 
 describe('GH issue 3738', () => {
-
   let orm: MikroORM;
   let question: Question;
 
@@ -75,7 +77,11 @@ describe('GH issue 3738', () => {
   });
 
   test('test with query builder 2', async () => {
-    const foundWithQb = await orm.em.createQueryBuilder(Answer).leftJoin('question', 'q').where({ question }).getResult();
+    const foundWithQb = await orm.em
+      .createQueryBuilder(Answer)
+      .leftJoin('question', 'q')
+      .where({ question })
+      .getResult();
     expect(foundWithQb).toBeDefined();
     expect(foundWithQb[0].question).toBeDefined();
   });

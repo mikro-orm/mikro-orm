@@ -4,13 +4,14 @@ import type { AbstractSqlDriver, EntityManager, NativeQueryBuilder } from '@mikr
 export type Query = string | NativeQueryBuilder | RawQueryFragment;
 
 export abstract class Migration {
-
   private readonly queries: Query[] = [];
   protected ctx?: Transaction;
   private em?: EntityManager;
 
-  constructor(protected readonly driver: AbstractSqlDriver,
-              protected readonly config: Configuration) { }
+  constructor(
+    protected readonly driver: AbstractSqlDriver,
+    protected readonly config: Configuration,
+  ) {}
 
   abstract up(): Promise<void> | void;
 
@@ -59,5 +60,4 @@ export abstract class Migration {
   getQueries(): Query[] {
     return this.queries;
   }
-
 }

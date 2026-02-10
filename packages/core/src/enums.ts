@@ -53,23 +53,9 @@ export enum QueryOperator {
   $hasSomeKeys = '?|', // postgres only, json
 }
 
-export const ARRAY_OPERATORS = [
-  '$eq',
-  '$gt',
-  '$gte',
-  '$lt',
-  '$lte',
-  '$ne',
-  '$overlap',
-  '$contains',
-  '$contained',
-];
+export const ARRAY_OPERATORS = ['$eq', '$gt', '$gte', '$lt', '$lte', '$ne', '$overlap', '$contains', '$contained'];
 
-export const JSON_KEY_OPERATORS = [
-  '$hasKey',
-  '$hasKeys',
-  '$hasSomeKeys',
-];
+export const JSON_KEY_OPERATORS = ['$hasKey', '$hasKeys', '$hasSomeKeys'];
 
 export enum QueryOrder {
   ASC = 'ASC',
@@ -117,7 +103,16 @@ export enum QueryFlag {
   OUTPUT_TABLE = 'OUTPUT_TABLE', // mssql only
 }
 
-export const SCALAR_TYPES = new Set(['string', 'number', 'boolean', 'bigint', 'Uint8Array', 'Date', 'Buffer', 'RegExp']);
+export const SCALAR_TYPES = new Set([
+  'string',
+  'number',
+  'boolean',
+  'bigint',
+  'Uint8Array',
+  'Date',
+  'Buffer',
+  'RegExp',
+]);
 
 export enum ReferenceKind {
   SCALAR = 'scalar',
@@ -194,12 +189,21 @@ export enum EventType {
   afterTransactionRollback = 'afterTransactionRollback',
 }
 
-export const EventTypeMap = Object.keys(EventType).reduce((a, b, i) => {
-  a[b as EventType] = i;
-  return a;
-}, {} as Record<EventType, number>);
+export const EventTypeMap = Object.keys(EventType).reduce(
+  (a, b, i) => {
+    a[b as EventType] = i;
+    return a;
+  },
+  {} as Record<EventType, number>,
+);
 
-export type TransactionEventType = EventType.beforeTransactionStart | EventType.afterTransactionStart | EventType.beforeTransactionCommit | EventType.afterTransactionCommit | EventType.beforeTransactionRollback | EventType.afterTransactionRollback;
+export type TransactionEventType =
+  | EventType.beforeTransactionStart
+  | EventType.afterTransactionStart
+  | EventType.beforeTransactionCommit
+  | EventType.afterTransactionCommit
+  | EventType.beforeTransactionRollback
+  | EventType.afterTransactionRollback;
 
 export enum TransactionPropagation {
   REQUIRED = 'required',
@@ -222,8 +226,7 @@ export interface TransactionOptions {
   loggerContext?: LogContext;
 }
 
-export abstract class PlainObject {
-}
+export abstract class PlainObject {}
 
 export enum DeferMode {
   INITIALLY_IMMEDIATE = 'immediate',

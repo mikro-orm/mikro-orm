@@ -32,7 +32,6 @@ export const identifierRegex = /^(?:[$_\p{ID_Start}])(?:[$\u200C\u200D\p{ID_Cont
 const primitivesAndLibs = [...SCALAR_TYPES, 'unknown', 'object', 'any'];
 
 export class SourceFile {
-
   protected readonly coreImports = new Set<string>();
   protected readonly decoratorImports = new Set<string>();
   protected readonly entityImports = new Set<string>();
@@ -43,7 +42,7 @@ export class SourceFile {
     protected readonly namingStrategy: NamingStrategy,
     protected readonly platform: Platform,
     protected readonly options: GenerateOptions,
-  ) { }
+  ) {}
 
   generate(): string {
     let ret = '';
@@ -139,7 +138,9 @@ export class SourceFile {
   /**
    * Convert index column options to quoted output format.
    */
-  private getColumnOptions(columns: EntityMetadata['indexes'][number]['columns']): Record<string, unknown>[] | undefined {
+  private getColumnOptions(
+    columns: EntityMetadata['indexes'][number]['columns'],
+  ): Record<string, unknown>[] | undefined {
     if (!columns?.length) {
       return undefined;
     }
@@ -231,7 +232,8 @@ export class SourceFile {
     }
 
     if (index.deferMode) {
-      uniqueOpt.deferMode = `${this.referenceCoreImport('DeferMode')}.INITIALLY_${index.deferMode.toUpperCase()}` as DeferMode;
+      uniqueOpt.deferMode =
+        `${this.referenceCoreImport('DeferMode')}.INITIALLY_${index.deferMode.toUpperCase()}` as DeferMode;
     }
 
     const columns = this.getColumnOptions(index.columns);
@@ -259,26 +261,36 @@ export class SourceFile {
     const imports = new Set<string>();
 
     if (this.coreImports.size > 0) {
-      imports.add(`import { ${([...this.coreImports].sort().map(t => {
-        let ret = POSSIBLE_TYPE_IMPORTS.includes(t as typeof POSSIBLE_TYPE_IMPORTS[number]) ? `type ${t}` : t;
-        if (this.options.coreImportsPrefix) {
-          const resolvedIdentifier = `${this.options.coreImportsPrefix}${t}`;
-          ret += ` as ${resolvedIdentifier}`;
-        }
-        return ret;
-      }).join(', ')) } } from '@mikro-orm/core';`);
+      imports.add(
+        `import { ${[...this.coreImports]
+          .sort()
+          .map(t => {
+            let ret = POSSIBLE_TYPE_IMPORTS.includes(t as (typeof POSSIBLE_TYPE_IMPORTS)[number]) ? `type ${t}` : t;
+            if (this.options.coreImportsPrefix) {
+              const resolvedIdentifier = `${this.options.coreImportsPrefix}${t}`;
+              ret += ` as ${resolvedIdentifier}`;
+            }
+            return ret;
+          })
+          .join(', ')} } from '@mikro-orm/core';`,
+      );
     }
 
     if (this.decoratorImports.size > 0) {
       const type = this.options.decorators!;
-      imports.add(`import { ${([...this.decoratorImports].sort().map(t => {
-        let ret = t;
-        if (this.options.coreImportsPrefix) {
-          const resolvedIdentifier = `${this.options.coreImportsPrefix}${t}`;
-          ret += ` as ${resolvedIdentifier}`;
-        }
-        return ret;
-      }).join(', ')) } } from '@mikro-orm/decorators/${type}';`);
+      imports.add(
+        `import { ${[...this.decoratorImports]
+          .sort()
+          .map(t => {
+            let ret = t;
+            if (this.options.coreImportsPrefix) {
+              const resolvedIdentifier = `${this.options.coreImportsPrefix}${t}`;
+              ret += ` as ${resolvedIdentifier}`;
+            }
+            return ret;
+          })
+          .join(', ')} } from '@mikro-orm/decorators/${type}';`,
+      );
     }
 
     const extension = this.options.esmImport ? '.js' : '';
@@ -312,7 +324,10 @@ export class SourceFile {
         importMap.set(file.path, `import { ${entity} } from ${this.quote(file.path)};`);
         continue;
       }
-      importMap.set(file.path, `import { ${identifierRegex.test(file.name) ? file.name : this.quote(file.name)} as ${entity} } from ${this.quote(file.path)};`);
+      importMap.set(
+        file.path,
+        `import { ${identifierRegex.test(file.name) ? file.name : this.quote(file.name)} as ${entity} } from ${this.quote(file.path)};`,
+      );
     }
 
     if (this.enumImports.size) {
@@ -377,7 +392,9 @@ export class SourceFile {
 
     const propType = prop.mapToPk
       ? (() => {
-          const runtimeTypes = prop.columnTypes.map((t, i) => (prop.customTypes?.[i] ?? this.platform.getMappedType(t)).runtimeType);
+          const runtimeTypes = prop.columnTypes.map(
+            (t, i) => (prop.customTypes?.[i] ?? this.platform.getMappedType(t)).runtimeType,
+          );
           return runtimeTypes.length === 1 ? runtimeTypes[0] : this.serializeObject(runtimeTypes);
         })()
       : (() => {
@@ -407,26 +424,35 @@ export class SourceFile {
           return prop.type;
         })();
 
-    const hasUsableNullDefault = (prop.nullable && !this.options.forceUndefined && prop.default === null);
-    const useDefault = hasUsableNullDefault || (!(typeof prop.default === 'undefined' || prop.default === null) && propType !== 'unknown' && typeof breakdownOfIType === 'undefined');
-    const optional = (prop.nullable && (this.options.forceUndefined || prop.optional)) ? '?' : (useDefault ? '' : '!');
+    const hasUsableNullDefault = prop.nullable && !this.options.forceUndefined && prop.default === null;
+    const useDefault =
+      hasUsableNullDefault ||
+      (!(typeof prop.default === 'undefined' || prop.default === null) &&
+        propType !== 'unknown' &&
+        typeof breakdownOfIType === 'undefined');
+    const optional = prop.nullable && (this.options.forceUndefined || prop.optional) ? '?' : useDefault ? '' : '!';
 
     let ret = `${propName}${optional}: `;
     const isArray = prop.array && (prop.kind === ReferenceKind.EMBEDDED || prop.enum);
     const complexType = isArray ? `${propType}[]` : propType;
     let wrappedType = prop.ref
-      ? `${this.referenceCoreImport('Ref')}<${complexType}${(isScalar && prop.nullable && !this.options.forceUndefined) ? ' | null' : ''}>`
-      : ((this.options.esmImport && !isScalar) ? `${this.referenceCoreImport('Rel')}<${complexType}>` : complexType);
+      ? `${this.referenceCoreImport('Ref')}<${complexType}${isScalar && prop.nullable && !this.options.forceUndefined ? ' | null' : ''}>`
+      : this.options.esmImport && !isScalar
+        ? `${this.referenceCoreImport('Rel')}<${complexType}>`
+        : complexType;
 
-    if (prop.nullable && !this.options.forceUndefined && (!isScalar || (!prop.ref && !wrappedType.includes(' | null')))) {
+    if (
+      prop.nullable &&
+      !this.options.forceUndefined &&
+      (!isScalar || (!prop.ref && !wrappedType.includes(' | null')))
+    ) {
       wrappedType += ' | null';
     }
 
-    const optionalType = (optional !== '?' && prop.optional)
-      ? ` & ${this.referenceCoreImport('Opt')}`
-      : '';
+    const optionalType = optional !== '?' && prop.optional ? ` & ${this.referenceCoreImport('Opt')}` : '';
 
-    ret += (!this.options.forceUndefined && prop.nullable && (hiddenType || optionalType)) ? `(${wrappedType})` : wrappedType;
+    ret +=
+      !this.options.forceUndefined && prop.nullable && (hiddenType || optionalType) ? `(${wrappedType})` : wrappedType;
     ret += hiddenType;
     ret += optionalType;
 
@@ -443,7 +469,12 @@ export class SourceFile {
         ? this.namingStrategy.getEnumClassName(prop.nativeEnumName, undefined, this.meta.schema)
         : this.namingStrategy.getEnumClassName(prop.fieldNames[0], this.meta.collection, this.meta.schema);
 
-      const enumVal = this.namingStrategy.enumValueToEnumProperty(prop.default, prop.fieldNames[0], this.meta.collection, this.meta.schema);
+      const enumVal = this.namingStrategy.enumValueToEnumProperty(
+        prop.default,
+        prop.fieldNames[0],
+        this.meta.collection,
+        this.meta.schema,
+      );
       return `${padding}${ret} = ${enumClassName}${identifierRegex.test(enumVal) ? `.${enumVal}` : `[${this.quote(enumVal)}]`};\n`;
     }
 
@@ -483,8 +514,16 @@ export class SourceFile {
       return '';
     }
 
-    const enumClassName = this.namingStrategy.getEnumClassName(prop.fieldNames[0], this.meta.collection, this.meta.schema);
-    const enumTypeName = this.namingStrategy.getEnumTypeName(prop.fieldNames[0], this.meta.collection, this.meta.schema);
+    const enumClassName = this.namingStrategy.getEnumClassName(
+      prop.fieldNames[0],
+      this.meta.collection,
+      this.meta.schema,
+    );
+    const enumTypeName = this.namingStrategy.getEnumTypeName(
+      prop.fieldNames[0],
+      this.meta.collection,
+      this.meta.schema,
+    );
     const padding = ' '.repeat(padLeft);
     const enumValues = prop.items as string[];
 
@@ -501,7 +540,12 @@ export class SourceFile {
     }
 
     for (const enumValue of enumValues) {
-      const enumName = this.namingStrategy.enumValueToEnumProperty(enumValue, prop.fieldNames[0], this.meta.collection, this.meta.schema);
+      const enumName = this.namingStrategy.enumValueToEnumProperty(
+        enumValue,
+        prop.fieldNames[0],
+        this.meta.collection,
+        this.meta.schema,
+      );
 
       if (enumMode === 'dictionary') {
         ret += `${padding}${identifierRegex.test(enumName) ? enumName : this.quote(enumName)}: ${this.quote(enumValue)},\n`;
@@ -530,19 +574,19 @@ export class SourceFile {
         return res;
       }
     }
-    const nextWordwrap = typeof wordwrap === 'number' ? 80 - (spaces ?? 0) - (level * 2) : undefined;
+    const nextWordwrap = typeof wordwrap === 'number' ? 80 - (spaces ?? 0) - level * 2 : undefined;
     const sep = typeof spaces === 'undefined' ? ', ' : `,\n${' '.repeat(spaces)}`;
     const doIndent = typeof spaces !== 'undefined';
     if (Array.isArray(options)) {
-      return `[${doIndent ? `\n${' '.repeat(spaces)}` : ''}${options.map(val => `${doIndent ? ' '.repeat((level * 2) + (spaces + 2)) : ''}${this.serializeValue(val, typeof nextWordwrap === 'number' ? nextWordwrap : undefined, doIndent ? spaces : undefined, level + 1)}`).join(sep)}${doIndent ? `${options.length > 0 ? ',\n' : ''}${' '.repeat(spaces + (level * 2))}` : ''}]`;
+      return `[${doIndent ? `\n${' '.repeat(spaces)}` : ''}${options.map(val => `${doIndent ? ' '.repeat(level * 2 + (spaces + 2)) : ''}${this.serializeValue(val, typeof nextWordwrap === 'number' ? nextWordwrap : undefined, doIndent ? spaces : undefined, level + 1)}`).join(sep)}${doIndent ? `${options.length > 0 ? ',\n' : ''}${' '.repeat(spaces + level * 2)}` : ''}]`;
     }
     const entries = Object.entries(options);
-    return `{${doIndent ? `\n${' '.repeat(spaces)}` : ' '}${entries.map(
-      ([opt, val]) => {
+    return `{${doIndent ? `\n${' '.repeat(spaces)}` : ' '}${entries
+      .map(([opt, val]) => {
         const key = identifierRegex.test(opt) ? opt : this.quote(opt);
-        return `${doIndent ? ' '.repeat((level * 2) + (spaces + 2)) : ''}${key}: ${this.serializeValue(val, typeof nextWordwrap === 'number' ? nextWordwrap - key.length - 2/* ': '.length*/ : undefined, doIndent ? spaces : undefined, level + 1)}`;
-      },
-    ).join(sep) }${doIndent ? `${entries.length > 0 ? ',\n' : ''}${' '.repeat(spaces + (level * 2))}` : ' '}}`;
+        return `${doIndent ? ' '.repeat(level * 2 + (spaces + 2)) : ''}${key}: ${this.serializeValue(val, typeof nextWordwrap === 'number' ? nextWordwrap - key.length - 2 /* ': '.length*/ : undefined, doIndent ? spaces : undefined, level + 1)}`;
+      })
+      .join(sep)}${doIndent ? `${entries.length > 0 ? ',\n' : ''}${' '.repeat(spaces + level * 2)}` : ' '}}`;
   }
 
   protected serializeValue(val: unknown, wordwrap?: number, spaces?: number, level = 1) {
@@ -599,7 +643,10 @@ export class SourceFile {
     }
 
     if (this.meta.discriminatorValue) {
-      options.discriminatorValue = typeof this.meta.discriminatorValue === 'string' ? this.quote(this.meta.discriminatorValue) : this.meta.discriminatorValue;
+      options.discriminatorValue =
+        typeof this.meta.discriminatorValue === 'string'
+          ? this.quote(this.meta.discriminatorValue)
+          : this.meta.discriminatorValue;
     }
 
     if (this.meta.discriminatorColumn) {
@@ -607,8 +654,12 @@ export class SourceFile {
     }
 
     if (this.meta.discriminatorMap) {
-      options.discriminatorMap = Object.fromEntries(Object.entries(this.meta.discriminatorMap)
-        .map(([discriminatorValue, cls]) => [discriminatorValue, this.quote(Utils.className(cls))]));
+      options.discriminatorMap = Object.fromEntries(
+        Object.entries(this.meta.discriminatorMap).map(([discriminatorValue, cls]) => [
+          discriminatorValue,
+          this.quote(Utils.className(cls)),
+        ]),
+      );
     }
 
     return options;
@@ -654,7 +705,7 @@ export class SourceFile {
       }
 
       const defaultName = this.platform.getIndexName(this.meta.collection, prop.fieldNames, type);
-      options[type] = (propType === true || defaultName === propType) ? 'true' : this.quote(propType);
+      options[type] = propType === true || defaultName === propType ? 'true' : this.quote(propType);
       const expected = {
         index: this.platform.indexForeignKeys(),
         unique: prop.kind === ReferenceKind.ONE_TO_ONE,
@@ -671,7 +722,9 @@ export class SourceFile {
     const ret: string[] = [];
 
     let propIndexIsNonTrivialIndex = false;
-    const nonTrivialIndexes = this.meta.indexes.filter(i => i.properties?.length === 1 && i.properties[0] === prop.name);
+    const nonTrivialIndexes = this.meta.indexes.filter(
+      i => i.properties?.length === 1 && i.properties[0] === prop.name,
+    );
     for (const i of nonTrivialIndexes) {
       ret.push(`@${this.referenceDecoratorImport('Index')}(${this.serializeObject(this.getIndexOptions(i, false))})`);
       if (prop.index === i.name) {
@@ -681,7 +734,9 @@ export class SourceFile {
     }
 
     if (prop.index && !options.index && !propIndexIsNonTrivialIndex) {
-      ret.push(`@${this.referenceDecoratorImport('Index')}(${typeof prop.index === 'string' ? `{ name: ${this.quote(prop.index)} }` : '' })`);
+      ret.push(
+        `@${this.referenceDecoratorImport('Index')}(${typeof prop.index === 'string' ? `{ name: ${this.quote(prop.index)} }` : ''})`,
+      );
     }
 
     let propIndexIsNonTrivialUnique = false;
@@ -695,7 +750,9 @@ export class SourceFile {
     }
 
     if (prop.unique && !options.unique && !propIndexIsNonTrivialUnique) {
-      ret.push(`@${this.referenceDecoratorImport('Unique')}(${typeof prop.unique === 'string' ? `{ name: ${this.quote(prop.unique)} }` : '' })`);
+      ret.push(
+        `@${this.referenceDecoratorImport('Unique')}(${typeof prop.unique === 'string' ? `{ name: ${this.quote(prop.unique)} }` : ''})`,
+      );
     }
 
     return ret;
@@ -710,13 +767,11 @@ export class SourceFile {
       options.primary = true;
     }
 
-    (['persist', 'hydrate'] as const)
-      .filter(key => prop[key] === false)
-      .forEach(key => options[key] = false);
+    (['persist', 'hydrate'] as const).filter(key => prop[key] === false).forEach(key => (options[key] = false));
 
     (['onCreate', 'onUpdate', 'serializer'] as const)
       .filter(key => typeof prop[key] === 'function')
-      .forEach(key => options[key] = `${prop[key]}`);
+      .forEach(key => (options[key] = `${prop[key]}`));
 
     if (typeof prop.serializedName === 'string') {
       options.serializedName = this.quote(prop.serializedName);
@@ -728,7 +783,7 @@ export class SourceFile {
 
     (['hidden', 'version', 'concurrencyCheck', 'eager', 'lazy', 'orphanRemoval'] as const)
       .filter(key => prop[key])
-      .forEach(key => options[key] = true);
+      .forEach(key => (options[key] = true));
 
     if (prop.cascade && (prop.cascade.length !== 1 || prop.cascade[0] !== Cascade.PERSIST)) {
       options.cascade = `[${prop.cascade.map(value => `${this.referenceCoreImport('Cascade')}.${value.toUpperCase()}`).join(', ')}]`;
@@ -740,11 +795,20 @@ export class SourceFile {
 
     // TODO: Composite FKs with default values require additions to default/defaultRaw that are not yet supported.
     if (prop.fieldNames?.length <= 1) {
-      if (typeof prop.defaultRaw !== 'undefined' && prop.defaultRaw !== 'null' && prop.defaultRaw !== '' &&
+      if (
+        typeof prop.defaultRaw !== 'undefined' &&
+        prop.defaultRaw !== 'null' &&
+        prop.defaultRaw !== '' &&
         prop.defaultRaw !== (typeof prop.default === 'string' ? this.quote(prop.default) : `${prop.default}`)
       ) {
         options.defaultRaw = `\`${prop.defaultRaw}\``;
-      } else if (!(typeof prop.default === 'undefined' || prop.default === null) && (prop.ref || (!prop.enum && (typeof prop.kind === 'undefined' || prop.kind === ReferenceKind.SCALAR) && (prop.type === 'unknown' || typeof this.breakdownOfIType(prop) !== 'undefined')))) {
+      } else if (
+        !(typeof prop.default === 'undefined' || prop.default === null) &&
+        (prop.ref ||
+          (!prop.enum &&
+            (typeof prop.kind === 'undefined' || prop.kind === ReferenceKind.SCALAR) &&
+            (prop.type === 'unknown' || typeof this.breakdownOfIType(prop) !== 'undefined')))
+      ) {
         options.default = typeof prop.default === 'string' ? this.quote(prop.default) : prop.default;
       }
     }
@@ -771,12 +835,14 @@ export class SourceFile {
     }
 
     const mappedDeclaredType = this.platform.getMappedType(prop.type);
-    const mappedRawType = (prop.customTypes?.[0] ?? ((prop.type !== 'unknown' && mappedDeclaredType instanceof UnknownType)
-      ? this.platform.getMappedType(prop.columnTypes[0])
-      : mappedDeclaredType));
+    const mappedRawType =
+      prop.customTypes?.[0] ??
+      (prop.type !== 'unknown' && mappedDeclaredType instanceof UnknownType
+        ? this.platform.getMappedType(prop.columnTypes[0])
+        : mappedDeclaredType);
     const rawType = mappedRawType.runtimeType;
 
-    const mappedSerializedType = (prop.customType ?? mappedRawType);
+    const mappedSerializedType = prop.customType ?? mappedRawType;
     const serializedType = mappedSerializedType.runtimeType;
 
     // Add non-lib imports where needed.
@@ -792,11 +858,15 @@ export class SourceFile {
       mappedRawType.prop?.nullable ?? prop.nullable ?? false,
       mappedSerializedType.prop?.nullable ?? prop.nullable ?? false,
     ] as const;
-    const hasMixedNullability = (new Set(nullables)).size > 1;
+    const hasMixedNullability = new Set(nullables).size > 1;
 
     if (prop.runtimeType !== rawType || rawType !== serializedType || hasMixedNullability) {
       const nullType = this.options.forceUndefined ? ' | undefined' : ' | null';
-      if (rawType !== serializedType || nullables[1] !== nullables[2] || (prop.hidden && nullables[0] !== nullables[1])) {
+      if (
+        rawType !== serializedType ||
+        nullables[1] !== nullables[2] ||
+        (prop.hidden && nullables[0] !== nullables[1])
+      ) {
         const r: [string, string, string] = [prop.runtimeType, rawType, serializedType];
         if (hasMixedNullability || prop.hidden) {
           for (let i = r.length - 1; i >= 0; --i) {
@@ -841,7 +911,11 @@ export class SourceFile {
         options.items = `() => ${enumClassName}`;
         options.nativeEnumName = this.quote(prop.nativeEnumName);
       } else {
-        const enumClassName = this.namingStrategy.getEnumClassName(prop.fieldNames[0], this.meta.collection, this.meta.schema);
+        const enumClassName = this.namingStrategy.getEnumClassName(
+          prop.fieldNames[0],
+          this.meta.collection,
+          this.meta.schema,
+        );
         options.items = `() => ${enumClassName}`;
       }
     }
@@ -854,9 +928,10 @@ export class SourceFile {
 
     const mappedColumnType = this.platform.getMappedType(prop.columnTypes[0]);
     // If the column's runtimeType matches the declared runtimeType, assume it's the same underlying type.
-    const mappedRuntimeType = mappedColumnType.runtimeType === prop.runtimeType
-      ? mappedColumnType
-      : this.platform.getMappedType(prop.runtimeType);
+    const mappedRuntimeType =
+      mappedColumnType.runtimeType === prop.runtimeType
+        ? mappedColumnType
+        : this.platform.getMappedType(prop.runtimeType);
 
     const mappedDeclaredType = this.platform.getMappedType(prop.type);
     const isTypeStringMissingFromMap = prop.type !== 'unknown' && mappedDeclaredType instanceof UnknownType;
@@ -865,15 +940,21 @@ export class SourceFile {
       this.entityImports.add(prop.type);
       options.type = prop.type;
     } else {
-      if (this.options.scalarTypeInDecorator // always output type if forced by the generator options
-        || (prop.nullable && !this.options.forceUndefined) // also when there is the "| null" type modifier (because reflect-metadata can't extract the base)
-        || prop.hidden // also when there is the "& Hidden" type modifier (because reflect-metadata can't extract the base)
-        || (new Set([mappedRuntimeType.name, mappedColumnType.name, mappedDeclaredType.name, this.platform.getMappedType(prop.runtimeType === 'Date' ? 'datetime' : prop.runtimeType).name])).size > 1 // also, if there's any ambiguity in the type
-        || (() => {
-          const hasUsableNullDefault = (prop.nullable && !this.options.forceUndefined && prop.default === null);
+      if (
+        this.options.scalarTypeInDecorator || // always output type if forced by the generator options
+        (prop.nullable && !this.options.forceUndefined) || // also when there is the "| null" type modifier (because reflect-metadata can't extract the base)
+        prop.hidden || // also when there is the "& Hidden" type modifier (because reflect-metadata can't extract the base)
+        new Set([
+          mappedRuntimeType.name,
+          mappedColumnType.name,
+          mappedDeclaredType.name,
+          this.platform.getMappedType(prop.runtimeType === 'Date' ? 'datetime' : prop.runtimeType).name,
+        ]).size > 1 || // also, if there's any ambiguity in the type
+        (() => {
+          const hasUsableNullDefault = prop.nullable && !this.options.forceUndefined && prop.default === null;
           const useDefault = hasUsableNullDefault || !(typeof prop.default === 'undefined' || prop.default === null);
 
-          return ((useDefault && !hasUsableNullDefault) || (prop.optional && !prop.nullable));
+          return (useDefault && !hasUsableNullDefault) || (prop.optional && !prop.nullable);
         })() // also when there is the "| Opt" type modifier (because reflect-metadata can't extract the base)
       ) {
         options.type = quote ? this.quote(prop.type) : prop.type;
@@ -894,15 +975,24 @@ export class SourceFile {
     );
 
     const needsExplicitColumnType = () => {
-      if (isTypeStringMissingFromMap || [mappedRuntimeType, mappedColumnType, columnTypeFromMappedDeclaredType].some(t => t instanceof UnknownType)) {
+      if (
+        isTypeStringMissingFromMap ||
+        [mappedRuntimeType, mappedColumnType, columnTypeFromMappedDeclaredType].some(t => t instanceof UnknownType)
+      ) {
         return true;
       }
 
-      if (this.platform.normalizeColumnType(prop.columnTypes[0], prop) !== this.platform.normalizeColumnType(columnTypeFromMappedColumnType, prop)) {
+      if (
+        this.platform.normalizeColumnType(prop.columnTypes[0], prop) !==
+        this.platform.normalizeColumnType(columnTypeFromMappedColumnType, prop)
+      ) {
         return prop.columnTypes[0] !== columnTypeFromMappedColumnType;
       }
 
-      return columnTypeFromMappedRuntimeType !== columnTypeFromMappedColumnType || columnTypeFromMappedDeclaredType !== columnTypeFromMappedColumnType;
+      return (
+        columnTypeFromMappedRuntimeType !== columnTypeFromMappedColumnType ||
+        columnTypeFromMappedDeclaredType !== columnTypeFromMappedColumnType
+      );
     };
 
     if (needsExplicitColumnType()) {
@@ -915,7 +1005,11 @@ export class SourceFile {
       }
     };
 
-    if (!options.columnType && (typeof mappedColumnType.getDefaultLength === 'undefined' || mappedColumnType.getDefaultLength(this.platform) !== prop.length)) {
+    if (
+      !options.columnType &&
+      (typeof mappedColumnType.getDefaultLength === 'undefined' ||
+        mappedColumnType.getDefaultLength(this.platform) !== prop.length)
+    ) {
       assign('length');
     }
 
@@ -926,17 +1020,20 @@ export class SourceFile {
       assign('scale');
     }
 
-    if (this.platform.supportsUnsigned() &&
-      (
-        (!prop.primary && prop.unsigned) ||
-        (prop.primary && !prop.unsigned && this.platform.isNumericColumn(mappedColumnType))
-      )
+    if (
+      this.platform.supportsUnsigned() &&
+      ((!prop.primary && prop.unsigned) ||
+        (prop.primary && !prop.unsigned && this.platform.isNumericColumn(mappedColumnType)))
     ) {
       assign('unsigned');
     }
 
     if (prop.autoincrement) {
-      if (!prop.primary || !this.platform.isNumericColumn(mappedColumnType) || this.meta.getPrimaryProps().length !== 1) {
+      if (
+        !prop.primary ||
+        !this.platform.isNumericColumn(mappedColumnType) ||
+        this.meta.getPrimaryProps().length !== 1
+      ) {
         options.autoincrement = true;
       }
     } else {
@@ -963,7 +1060,10 @@ export class SourceFile {
       return;
     }
 
-    if (prop.pivotTable !== this.namingStrategy.joinTableName(this.meta.collection, prop.type, prop.name, this.meta.tableName)) {
+    if (
+      prop.pivotTable !==
+      this.namingStrategy.joinTableName(this.meta.collection, prop.type, prop.name, this.meta.tableName)
+    ) {
       options.pivotTable = this.quote(prop.pivotTable);
     }
 
@@ -1040,7 +1140,13 @@ export class SourceFile {
         options.fieldName = this.quote(prop.fieldNames[0]);
       }
     } else {
-      if (prop.fieldNames.length > 1 && prop.fieldNames.some((fieldName, i) => fieldName !== this.namingStrategy.joinKeyColumnName(prop.name, prop.referencedColumnNames[i]))) {
+      if (
+        prop.fieldNames.length > 1 &&
+        prop.fieldNames.some(
+          (fieldName, i) =>
+            fieldName !== this.namingStrategy.joinKeyColumnName(prop.name, prop.referencedColumnNames[i]),
+        )
+      ) {
         options.fieldNames = prop.fieldNames.map(fieldName => this.quote(fieldName));
       }
     }
@@ -1109,16 +1215,11 @@ export class SourceFile {
 
   protected referenceCoreImport(identifier: string): string {
     this.coreImports.add(identifier);
-    return this.options.coreImportsPrefix
-      ? `${this.options.coreImportsPrefix}${identifier}`
-      : identifier;
+    return this.options.coreImportsPrefix ? `${this.options.coreImportsPrefix}${identifier}` : identifier;
   }
 
   protected referenceDecoratorImport(identifier: string): string {
     this.decoratorImports.add(identifier);
-    return this.options.coreImportsPrefix
-      ? `${this.options.coreImportsPrefix}${identifier}`
-      : identifier;
+    return this.options.coreImportsPrefix ? `${this.options.coreImportsPrefix}${identifier}` : identifier;
   }
-
 }

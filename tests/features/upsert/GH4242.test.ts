@@ -5,7 +5,6 @@ import { mockLogger } from '../../helpers.js';
 
 @Entity()
 class B {
-
   @PrimaryKey({ type: 'uuid', defaultRaw: 'gen_random_uuid()' })
   id!: string;
 
@@ -17,13 +16,11 @@ class B {
 
   @Property({ length: 6, default: sql.now(), onUpdate: () => new Date() })
   updatedAt: Date = new Date();
-
 }
 
 @Entity()
 @Unique({ properties: ['tenantWorkflowId'] })
 class D {
-
   @PrimaryKey({ type: 'uuid', defaultRaw: 'gen_random_uuid()' })
   id!: string;
 
@@ -35,7 +32,6 @@ class D {
 
   @Property({ nullable: true })
   optional?: string;
-
 }
 
 let orm: MikroORM;
@@ -67,61 +63,69 @@ function formatDate(date: Date) {
 test('4242 1/4', async () => {
   const mock = mockLogger(orm);
 
-  const loadedDs = await orm.em.fork().upsertMany(D, [
-    { tenantWorkflowId: 1, optional: 'foo' },
+  const loadedDs = await orm.em.fork().upsertMany(D, [{ tenantWorkflowId: 1, optional: 'foo' }]);
+  expect(loadedDs).toEqual([
+    {
+      id: expect.any(String),
+      optional: 'foo',
+      updatedAt: expect.any(Date),
+      tenantWorkflowId: 1,
+    },
   ]);
-  expect(loadedDs).toEqual([{
-    id: expect.any(String),
-    optional: 'foo',
-    updatedAt: expect.any(Date),
-    tenantWorkflowId: 1,
-  }]);
   expect(mock.mock.calls).toEqual([
-    [`[query] insert into "d" ("tenant_workflow_id", "optional") values (1, 'foo') on conflict ("tenant_workflow_id") do update set "optional" = excluded."optional" returning "id", "updated_at"`],
+    [
+      `[query] insert into "d" ("tenant_workflow_id", "optional") values (1, 'foo') on conflict ("tenant_workflow_id") do update set "optional" = excluded."optional" returning "id", "updated_at"`,
+    ],
   ]);
   mock.mockReset();
 
-  const loadedDs2 = await orm.em.fork().upsertMany(D, [
-    { tenantWorkflowId: 1 },
+  const loadedDs2 = await orm.em.fork().upsertMany(D, [{ tenantWorkflowId: 1 }]);
+  expect(loadedDs2).toEqual([
+    {
+      id: expect.any(String),
+      optional: 'foo',
+      updatedAt: expect.any(Date),
+      tenantWorkflowId: 1,
+    },
   ]);
-  expect(loadedDs2).toEqual([{
-    id: expect.any(String),
-    optional: 'foo',
-    updatedAt: expect.any(Date),
-    tenantWorkflowId: 1,
-  }]);
   expect(mock.mock.calls).toEqual([
-    ['[query] insert into "d" ("tenant_workflow_id") values (1) on conflict ("tenant_workflow_id") do nothing returning "id", "updated_at", "optional"'],
-    ['[query] select "d0"."id", "d0"."updated_at", "d0"."optional", "d0"."tenant_workflow_id" from "d" as "d0" where "d0"."tenant_workflow_id" = 1'],
+    [
+      '[query] insert into "d" ("tenant_workflow_id") values (1) on conflict ("tenant_workflow_id") do nothing returning "id", "updated_at", "optional"',
+    ],
+    [
+      '[query] select "d0"."id", "d0"."updated_at", "d0"."optional", "d0"."tenant_workflow_id" from "d" as "d0" where "d0"."tenant_workflow_id" = 1',
+    ],
   ]);
   mock.mockReset();
 
   const date = new Date();
-  const loadedDs3 = await orm.em.fork().upsertMany(D, [
-    { tenantWorkflowId: 1, updatedAt: date },
+  const loadedDs3 = await orm.em.fork().upsertMany(D, [{ tenantWorkflowId: 1, updatedAt: date }]);
+  expect(loadedDs3).toEqual([
+    {
+      id: expect.any(String),
+      optional: 'foo',
+      updatedAt: expect.any(Date),
+      tenantWorkflowId: 1,
+    },
   ]);
-  expect(loadedDs3).toEqual([{
-    id: expect.any(String),
-    optional: 'foo',
-    updatedAt: expect.any(Date),
-    tenantWorkflowId: 1,
-  }]);
   expect(mock.mock.calls).toEqual([
-    [`[query] insert into "d" ("tenant_workflow_id", "updated_at") values (1, '${formatDate(date)}') on conflict ("tenant_workflow_id") do update set "updated_at" = excluded."updated_at" returning "id", "optional"`],
+    [
+      `[query] insert into "d" ("tenant_workflow_id", "updated_at") values (1, '${formatDate(date)}') on conflict ("tenant_workflow_id") do update set "updated_at" = excluded."updated_at" returning "id", "optional"`,
+    ],
   ]);
   mock.mockReset();
 });
 
 test('4242 2/4', async () => {
-  const loadedDs4 = await orm.em.upsertMany(D, [
-    { tenantWorkflowId: 1 },
+  const loadedDs4 = await orm.em.upsertMany(D, [{ tenantWorkflowId: 1 }]);
+  expect(loadedDs4).toEqual([
+    {
+      id: expect.any(String),
+      updatedAt: expect.any(Date),
+      optional: null,
+      tenantWorkflowId: 1,
+    },
   ]);
-  expect(loadedDs4).toEqual([{
-    id: expect.any(String),
-    updatedAt: expect.any(Date),
-    optional: null,
-    tenantWorkflowId: 1,
-  }]);
   await orm.em.flush();
 
   const b = await orm.em.upsert(B, {
@@ -150,7 +154,9 @@ test('4242 3/4', async () => {
     tenantWorkflowId: 1,
   });
   expect(mock.mock.calls).toEqual([
-    [`[query] insert into "d" ("tenant_workflow_id", "optional") values (1, 'foo') on conflict ("tenant_workflow_id") do update set "optional" = excluded."optional" returning "id", "updated_at"`],
+    [
+      `[query] insert into "d" ("tenant_workflow_id", "optional") values (1, 'foo') on conflict ("tenant_workflow_id") do update set "optional" = excluded."optional" returning "id", "updated_at"`,
+    ],
   ]);
   mock.mockReset();
 
@@ -162,8 +168,12 @@ test('4242 3/4', async () => {
     tenantWorkflowId: 1,
   });
   expect(mock.mock.calls).toEqual([
-    ['[query] insert into "d" ("tenant_workflow_id") values (1) on conflict ("tenant_workflow_id") do nothing returning "id", "updated_at", "optional"'],
-    ['[query] select "d0"."id", "d0"."updated_at", "d0"."optional" from "d" as "d0" where "d0"."tenant_workflow_id" = 1 limit 1'],
+    [
+      '[query] insert into "d" ("tenant_workflow_id") values (1) on conflict ("tenant_workflow_id") do nothing returning "id", "updated_at", "optional"',
+    ],
+    [
+      '[query] select "d0"."id", "d0"."updated_at", "d0"."optional" from "d" as "d0" where "d0"."tenant_workflow_id" = 1 limit 1',
+    ],
   ]);
   mock.mockReset();
 
@@ -176,7 +186,9 @@ test('4242 3/4', async () => {
     tenantWorkflowId: 1,
   });
   expect(mock.mock.calls).toEqual([
-    [`[query] insert into "d" ("tenant_workflow_id", "updated_at") values (1, '${formatDate(date)}') on conflict ("tenant_workflow_id") do update set "updated_at" = excluded."updated_at" returning "id", "optional"`],
+    [
+      `[query] insert into "d" ("tenant_workflow_id", "updated_at") values (1, '${formatDate(date)}') on conflict ("tenant_workflow_id") do update set "updated_at" = excluded."updated_at" returning "id", "optional"`,
+    ],
   ]);
   mock.mockReset();
 });

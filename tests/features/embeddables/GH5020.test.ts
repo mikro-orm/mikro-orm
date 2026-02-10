@@ -1,9 +1,16 @@
 import { MikroORM, Ref, types } from '@mikro-orm/sqlite';
-import { Embeddable, Embedded, Entity, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Embeddable,
+  Embedded,
+  Entity,
+  ManyToOne,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Embeddable()
 class Settings {
-
   @Property({ type: types.string })
   name!: string;
 
@@ -18,12 +25,10 @@ class Settings {
     this.memberCount = memberCount;
     this.isActive = isActive;
   }
-
 }
 
 @Entity()
 class Organization {
-
   @PrimaryKey()
   id!: number;
 
@@ -33,12 +38,10 @@ class Organization {
   constructor(settings: Settings) {
     this.settings = settings;
   }
-
 }
 
 @Entity()
 class User {
-
   @PrimaryKey()
   id!: number;
 
@@ -55,7 +58,6 @@ class User {
     this.name = name;
     this.email = email;
   }
-
 }
 
 let orm: MikroORM;
@@ -84,11 +86,7 @@ afterAll(async () => {
 });
 
 test('joined strategy and object embeddables with not matching field names', async () => {
-  const user = await orm.em.findOneOrFail(
-    User,
-    { email: 'foo' },
-    { populate: ['organization'] },
-  );
+  const user = await orm.em.findOneOrFail(User, { email: 'foo' }, { populate: ['organization'] });
   const relatedOrganization = user.organization.getEntity();
   expect(user.name).toBe('Foo');
   expect(relatedOrganization.settings.name).toBe('Bar');

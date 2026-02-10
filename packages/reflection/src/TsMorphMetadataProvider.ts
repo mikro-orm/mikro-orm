@@ -1,5 +1,13 @@
 import { extname } from 'node:path';
-import { ComputedPropertyName, ModuleKind, NoSubstitutionTemplateLiteral, Project, StringLiteral, type PropertyDeclaration, type SourceFile } from 'ts-morph';
+import {
+  ComputedPropertyName,
+  ModuleKind,
+  NoSubstitutionTemplateLiteral,
+  Project,
+  StringLiteral,
+  type PropertyDeclaration,
+  type SourceFile,
+} from 'ts-morph';
 import {
   type EntityClass,
   type EntityMetadata,
@@ -16,7 +24,6 @@ import {
 import { fs } from '@mikro-orm/core/fs-utils';
 
 export class TsMorphMetadataProvider extends MetadataProvider {
-
   private project!: Project;
   private sources!: SourceFile[];
 
@@ -61,7 +68,9 @@ export class TsMorphMetadataProvider extends MetadataProvider {
   private extractType(meta: EntityMetadata, prop: EntityProperty): { type: string; target?: EntityClass } {
     /* v8 ignore next */
     if (typeof prop.entity === 'string') {
-      throw new Error(`Relation target needs to be an entity class or EntitySchema instance, '${prop.entity}' given instead for ${meta.className}.${prop.name}.`);
+      throw new Error(
+        `Relation target needs to be an entity class or EntitySchema instance, '${prop.entity}' given instead for ${meta.className}.${prop.name}.`,
+      );
     }
 
     if (!prop.entity) {
@@ -76,11 +85,7 @@ export class TsMorphMetadataProvider extends MetadataProvider {
 
   private cleanUpTypeTags(type: string): string {
     const genericTags = [/Opt<(.*?)>/, /Hidden<(.*?)>/, /RequiredNullable<(.*?)>/];
-    const intersectionTags = [
-      'Opt.Brand',
-      'Hidden.Brand',
-      'RequiredNullable.Brand',
-    ];
+    const intersectionTags = ['Opt.Brand', 'Hidden.Brand', 'RequiredNullable.Brand'];
 
     for (const tag of genericTags) {
       type = type.replace(tag, '$1');
@@ -121,7 +126,9 @@ export class TsMorphMetadataProvider extends MetadataProvider {
 
     /* v8 ignore next */
     if (!cls) {
-      throw new MetadataError(`Source class for entity ${meta.className} not found. Verify you have 'compilerOptions.declaration' enabled in your 'tsconfig.json'. If you are using webpack, see https://bit.ly/35pPDNn`);
+      throw new MetadataError(
+        `Source class for entity ${meta.className} not found. Verify you have 'compilerOptions.declaration' enabled in your 'tsconfig.json'. If you are using webpack, see https://bit.ly/35pPDNn`,
+      );
     }
 
     const properties = cls.getInstanceProperties();
@@ -162,7 +169,10 @@ export class TsMorphMetadataProvider extends MetadataProvider {
 
       /* v8 ignore next */
       if (tsType.getArrayElementType()!.isEnum()) {
-        prop.items = tsType.getArrayElementType()!.getUnionTypes().map(t => t.getLiteralValueOrThrow()) as string[];
+        prop.items = tsType
+          .getArrayElementType()!
+          .getUnionTypes()
+          .map(t => t.getLiteralValueOrThrow()) as string[];
       }
     }
 
@@ -172,14 +182,15 @@ export class TsMorphMetadataProvider extends MetadataProvider {
 
     let type = typeName;
     const union = type.split(' | ');
-    const optional = property.hasQuestionToken?.() || union.includes('null') || union.includes('undefined') || tsType.isNullable();
+    const optional =
+      property.hasQuestionToken?.() || union.includes('null') || union.includes('undefined') || tsType.isNullable();
     type = union.filter(t => !['null', 'undefined'].includes(t)).join(' | ');
 
     prop.array ??= type.endsWith('[]') || !!type.match(/Array<(.*)>/);
     type = type
       .replace(/Array<(.*)>/, '$1') // unwrap array
-      .replace(/\[]$/, '')          // remove array suffix
-      .replace(/\((.*)\)/, '$1');   // unwrap union types
+      .replace(/\[]$/, '') // remove array suffix
+      .replace(/\((.*)\)/, '$1'); // unwrap union types
 
     // keep the array suffix in the type, it is needed in few places in discovery and comparator (`prop.array` is used only for enum arrays)
     if (prop.array && !type.includes(' | ') && prop.kind === ReferenceKind.SCALAR) {
@@ -208,7 +219,9 @@ export class TsMorphMetadataProvider extends MetadataProvider {
     const source = this.sources.find(s => s.getFilePath().endsWith(path));
 
     if (!source && validate) {
-      throw new MetadataError(`Source file '${fs.relativePath(tsPath, baseDir)}' not found. Check your 'entitiesTs' option and verify you have 'compilerOptions.declaration' enabled in your 'tsconfig.json'. If you are using webpack, see https://bit.ly/35pPDNn`);
+      throw new MetadataError(
+        `Source file '${fs.relativePath(tsPath, baseDir)}' not found. Check your 'entitiesTs' option and verify you have 'compilerOptions.declaration' enabled in your 'tsconfig.json'. If you are using webpack, see https://bit.ly/35pPDNn`,
+      );
     }
 
     return source;
@@ -224,9 +237,7 @@ export class TsMorphMetadataProvider extends MetadataProvider {
     // `{ object?: import("...").Entity | undefined; } & import("...").Reference<Entity>`
     // `{ node?: ({ id?: number | undefined; } & import("...").Reference<import("...").Entity>) | undefined; } & import("...").Reference<Entity>`
     // the regexp is looking for the `wrapper`, possible prefixed with `.` or wrapped in parens.
-    const type = prop.type
-      .replace(/import\(.*\)\./g, '')
-      .replace(/\{ .* } & ([\w &]+)/g, '$1');
+    const type = prop.type.replace(/import\(.*\)\./g, '').replace(/\{ .* } & ([\w &]+)/g, '$1');
     const m = type.match(new RegExp(`(?:^|[.( ])${wrapper}<(\\w+),?.*>(?:$|[) ])`));
 
     if (!m) {
@@ -274,9 +285,7 @@ export class TsMorphMetadataProvider extends MetadataProvider {
     // the ts-morph reflection.
     for (const meta of Utils.values(MetadataStorage.getMetadata())) {
       /* v8 ignore next */
-      const path = meta.path.match(/\.[jt]s$/)
-        ? meta.path.replace(/\.js$/, '.d.ts')
-        : `${meta.path}.d.ts`; // when entities are bundled, their paths are just their names
+      const path = meta.path.match(/\.[jt]s$/) ? meta.path.replace(/\.js$/, '.d.ts') : `${meta.path}.d.ts`; // when entities are bundled, their paths are just their names
       const sourceFile = this.project.addSourceFileAtPathIfExists(path);
 
       if (sourceFile) {
@@ -324,10 +333,17 @@ export class TsMorphMetadataProvider extends MetadataProvider {
       Reflect.deleteProperty(prop, 'targetMeta');
     }
 
-    ([
-      'prototype', 'props', 'referencingProperties', 'propertyOrder', 'relations',
-      'concurrencyCheckKeys', 'checks',
-    ] as const).forEach(key => delete copy[key]);
+    (
+      [
+        'prototype',
+        'props',
+        'referencingProperties',
+        'propertyOrder',
+        'relations',
+        'concurrencyCheckKeys',
+        'checks',
+      ] as const
+    ).forEach(key => delete copy[key]);
 
     // base entity without properties might not have path, but nothing to cache there
     if (meta.path) {
@@ -340,5 +356,4 @@ export class TsMorphMetadataProvider extends MetadataProvider {
     /* v8 ignore next */
     return meta.className + (meta.path ? extname(meta.path) : '');
   }
-
 }

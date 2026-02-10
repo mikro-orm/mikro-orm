@@ -7,9 +7,18 @@ import {
   ref,
   wrap,
   serialize,
-  EntityOptions, EntityRepositoryType,
+  EntityOptions,
+  EntityRepositoryType,
 } from '@mikro-orm/core';
-import type { BaseEntity, Ref, Reference, Collection, EntityManager, EntityName, RequiredEntityData } from '@mikro-orm/core';
+import type {
+  BaseEntity,
+  Ref,
+  Reference,
+  Collection,
+  EntityManager,
+  EntityName,
+  RequiredEntityData,
+} from '@mikro-orm/core';
 import type { Has, IsExact } from 'conditional-type-checks';
 import { assert } from 'conditional-type-checks';
 import type { ObjectId } from 'bson';
@@ -32,7 +41,6 @@ import type { Author, Book } from './entities/index.js';
 type IsAssignable<T, Expected> = Expected extends T ? true : false;
 
 describe('check typings', () => {
-
   test('Primary', async () => {
     assert<IsExact<Primary<Book2>, string>>(true);
     assert<IsExact<Primary<Book2>, number>>(false);
@@ -103,7 +111,9 @@ describe('check typings', () => {
   });
 
   test('EntityDTO', async () => {
-    const b = { author: { books: [{}], identities: [''] } } as unknown as EntityDTO<Loaded<Book2, 'publisher' | 'author.books'>>;
+    const b = { author: { books: [{}], identities: [''] } } as unknown as EntityDTO<
+      Loaded<Book2, 'publisher' | 'author.books'>
+    >;
     const b1 = b.author.name;
     const b2 = b.test?.name;
     const b3 = b.test?.book?.author.books2;
@@ -221,7 +231,9 @@ describe('check typings', () => {
     assert<IsAssignable<ExpandQuery<Author2>, { books: { author: { born: string } }; favouriteBook: null }>>(true);
     assert<IsAssignable<ExpandQuery<Author2>, { books: { author: { born: string } }; favouriteBook: Book2 }>>(true);
     assert<IsAssignable<ExpandQuery<Author2>, { books: { author: { born: string } }; favouriteBook: null }>>(true);
-    assert<IsAssignable<ExpandQuery<Author2>, { books: { author: { born: string } }; favouriteBook: { title: null } }>>(true);
+    assert<IsAssignable<ExpandQuery<Author2>, { books: { author: { born: string } }; favouriteBook: { title: null } }>>(
+      true,
+    );
 
     let t1: ExpandQuery<Book2>;
     t1 = { author: { books: { publisher: 1 } } }; // ok
@@ -260,10 +272,21 @@ describe('check typings', () => {
     // assert<IsAssignable<FilterQueryOrPrimary<Author2>, { age: { $gta: ['1'] } }>>(false); // hard to test failures
 
     assert<IsAssignable<FilterQuery<Author2>, { age: { $gte: number } }>>(true);
-    assert<IsAssignable<FilterQuery<Author2>, { age: { $gte: number }; born: { $lt: string }; $and: [{ name: { $ne: 'John' } }, { name: { $in: ['Ben', 'Paul'] } }] }>>(true);
+    assert<
+      IsAssignable<
+        FilterQuery<Author2>,
+        {
+          age: { $gte: number };
+          born: { $lt: string };
+          $and: [{ name: { $ne: 'John' } }, { name: { $in: ['Ben', 'Paul'] } }];
+        }
+      >
+    >(true);
     assert<Has<FilterQuery<Author2>, { favouriteBook?: Book2 }>>(true);
     assert<IsAssignable<FilterQuery<Author2>, { $and: [{ favouriteBook: Book2 }, { name: string }] }>>(true);
-    assert<IsAssignable<FilterQuery<Author2>, { $and: [{ favouriteBook: { title: string } }, { name: string }] }>>(true);
+    assert<IsAssignable<FilterQuery<Author2>, { $and: [{ favouriteBook: { title: string } }, { name: string }] }>>(
+      true,
+    );
     assert<IsAssignable<FilterQuery<Author2>, { $and: [{ favouriteBook: string }, { name: string }] }>>(true);
     // assert<Has<FilterQuery<Author2>, Author2>>(true);
     assert<Has<FilterQuery<Author2>, number>>(true);
@@ -295,8 +318,8 @@ describe('check typings', () => {
     }
 
     // simulate usage of ORM base entity so `wrap` will return its parameter
-    const book = { __baseEntity: true, toReference: () => ({} as any) } as unknown as Book;
-    const publisher = { __baseEntity: true, toReference: () => ({} as any) } as unknown as Publisher;
+    const book = { __baseEntity: true, toReference: () => ({}) as any } as unknown as Book;
+    const publisher = { __baseEntity: true, toReference: () => ({}) as any } as unknown as Publisher;
 
     book.publisher = publisher;
     // @ts-expect-error
@@ -639,7 +662,10 @@ describe('check typings', () => {
     }
 
     const em = { findOne: vi.fn() as any } as EntityManager;
-    const res: Loaded<MemberNotification> | null = await em.findOne({ name: 'MemberNotification' } as EntityName<MemberNotification>, {} as MemberNotification | string);
+    const res: Loaded<MemberNotification> | null = await em.findOne(
+      { name: 'MemberNotification' } as EntityName<MemberNotification>,
+      {} as MemberNotification | string,
+    );
   });
 
   test('Ref.load() returns Loaded type (#3755)', async () => {
@@ -845,7 +871,6 @@ describe('check typings', () => {
       foobar: Collection<FooBar>;
     }
 
-
     function preloaded(event: Loaded<CalendarEvent, 'calendar.owner'>) {
       // no-op
     }
@@ -893,17 +918,13 @@ describe('check typings', () => {
       status?: string;
     }
 
-    class AbstractRepository<
-      Entity extends AbstractEntity
-    > extends EntityRepository<Entity> {
-
+    class AbstractRepository<Entity extends AbstractEntity> extends EntityRepository<Entity> {
       async countWaiting() {
         // TODO this was passing with TS 5.6 without the `as unknown` assertion
         return this.find({
           status: 'waiting',
         } as unknown as FilterQuery<Entity>);
       }
-
     }
   });
 
@@ -919,7 +940,7 @@ describe('check typings', () => {
 
     const schema = new EntitySchema<User>({
       name: 'User',
-      repository: () => ({} as Constructor<UserRepository>),
+      repository: () => ({}) as Constructor<UserRepository>,
       properties: {
         id: { type: 'number', primary: true },
         name: { type: 'string' },
@@ -947,9 +968,7 @@ describe('check typings', () => {
     }
 
     class MyEntity {
-
       myClass!: IType<MyClass, string>;
-
     }
 
     function create<T>(type: EntityName<T>, data: EntityData<T> | RequiredEntityData<T>) {
@@ -1016,12 +1035,10 @@ describe('check typings', () => {
 
   test('foo', async () => {
     class User {
-
       id!: number;
       name!: string;
       email!: string;
       foo!: number | null;
-
     }
 
     const em = { create: vi.fn() as any, assign: vi.fn() as any } as EntityManager;
@@ -1036,9 +1053,7 @@ describe('check typings', () => {
 
   test('GH #6481', async () => {
     class Test {
-
       foo!: string;
-
     }
 
     const entityOptions: EntityOptions<typeof Test> = {
@@ -1050,10 +1065,8 @@ describe('check typings', () => {
 
   test('GH #6609', async () => {
     class User {
-
       id!: number;
       stringArrays!: string[][];
-
     }
 
     const em = { create: vi.fn() as any } as EntityManager;
@@ -1070,55 +1083,44 @@ describe('check typings', () => {
 
   test('GH #6481', async () => {
     class Animal {
-
       [EntityRepositoryType]?: AnimalRepository;
       name!: string;
-
     }
 
     class Bee extends Animal {
-
       [EntityRepositoryType]?: BeeRepository;
       sting!: boolean;
-
     }
 
     class AnimalRepository extends EntityRepository<Animal> {}
 
     class BeeRepository extends AnimalRepository {
-
       foo(): string {
         return 'bar';
       }
-
     }
 
     class Service {
-
       protected readonly em!: EntityManager;
 
       test() {
         const beeRepository = this.em.getRepository(Bee);
         const s: string = beeRepository.foo();
       }
-
     }
   });
 
   test('RequiredNullable', () => {
-
     class User {
-
       id!: number;
       nullableString!: string | null;
       requiredNullableString!: RequiredNullable<string>;
-
     }
 
     const em = { create: vi.fn() as any } as EntityManager;
 
     // @ts-expect-error
-    em.create(User, { });
+    em.create(User, {});
 
     em.create(User, { requiredNullableString: 'some string' });
     em.create(User, { requiredNullableString: null });
@@ -1146,11 +1148,9 @@ describe('check typings', () => {
 
   test('IsSubset catches invalid keys in em.assign()', () => {
     class User {
-
       id!: number;
       firstName!: string;
       lastName!: string;
-
     }
 
     const em = { assign: vi.fn() as any } as EntityManager;
@@ -1171,11 +1171,9 @@ describe('check typings', () => {
 
   test('IsSubset catches invalid keys in em.create()', () => {
     class User {
-
       id!: number;
       firstName!: string;
       lastName: string | null = null;
-
     }
 
     const em = { create: vi.fn() as any } as EntityManager;

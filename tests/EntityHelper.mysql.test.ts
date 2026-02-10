@@ -5,10 +5,9 @@ import { initORMMySql } from './bootstrap.js';
 import { FooBar2, FooBaz2 } from './entities-sql/index.js';
 
 describe('EntityHelperMySql', () => {
-
   let orm: MikroORM<MySqlDriver>;
 
-  beforeAll(async () => orm = await initORMMySql('mysql', {}, true));
+  beforeAll(async () => (orm = await initORMMySql('mysql', {}, true)));
   beforeEach(async () => orm.schema.clear());
   afterAll(async () => {
     await orm.schema.dropDatabase();
@@ -107,5 +106,4 @@ describe('EntityHelperMySql', () => {
       blob2: null,
     });
   });
-
 });

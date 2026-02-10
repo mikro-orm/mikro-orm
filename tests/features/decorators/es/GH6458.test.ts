@@ -4,7 +4,6 @@ import { Entity, Filter, ManyToOne, OneToMany, PrimaryKey, Property } from '@mik
 @Entity()
 @Filter({ name: 'soft-delete', cond: { deletedAt: null }, default: true })
 class Author {
-
   @PrimaryKey({ type: 'integer' })
   id!: number;
 
@@ -20,13 +19,11 @@ class Author {
   constructor(name: string) {
     this.name = name;
   }
-
 }
 
 @Entity()
 @Filter({ name: 'soft-delete', cond: { deletedAt: null }, default: true })
 class Book {
-
   @PrimaryKey({ type: 'integer' })
   id!: number;
 
@@ -42,7 +39,6 @@ class Book {
   constructor(title: string) {
     this.title = title;
   }
-
 }
 
 let orm: MikroORM;
@@ -68,25 +64,14 @@ test('GH #6458', async () => {
   orm.em.clear();
 
   // When finding a book by a deleted author, it should return an empty array.
-  const result1 = await orm.em.find(
-    Book,
-    { author: { name: 'Tolkien' } },
-    { populate: ['author'] },
-  );
+  const result1 = await orm.em.find(Book, { author: { name: 'Tolkien' } }, { populate: ['author'] });
   expect(result1).toHaveLength(0);
 
   // When finding an author by the title of a deleted book, it should return an empty array.
-  const result2 = await orm.em.find(
-    Author,
-    { books: { title: 'The Stand' } },
-  );
+  const result2 = await orm.em.find(Author, { books: { title: 'The Stand' } });
   expect(result2).toHaveLength(0);
 
   // When finding an author by the title of a deleted book, it should return an empty array.
-  const result3 = await orm.em.find(
-    Author,
-    { books: { title: 'The Stand' } },
-    { populate: ['books'] },
-  );
+  const result3 = await orm.em.find(Author, { books: { title: 'The Stand' } }, { populate: ['books'] });
   expect(result3).toHaveLength(0);
 });

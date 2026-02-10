@@ -1,10 +1,17 @@
 import { Collection, helper, OptionalProps, Ref } from '@mikro-orm/core';
-import { Entity, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  OneToOne,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { MikroORM } from '@mikro-orm/sqlite';
 
 @Entity()
 class Organization {
-
   @PrimaryKey()
   id!: number;
 
@@ -19,12 +26,10 @@ class Organization {
 
   @Property()
   name!: string;
-
 }
 
 @Entity()
 class License {
-
   [OptionalProps]?: 'organization';
 
   @PrimaryKey()
@@ -35,12 +40,10 @@ class License {
 
   @Property()
   name!: string;
-
 }
 
 @Entity()
 class Workspace {
-
   [OptionalProps]?: 'organization';
 
   @PrimaryKey()
@@ -51,7 +54,6 @@ class Workspace {
 
   @ManyToOne(() => Organization, { ref: true })
   organization!: Ref<Organization>;
-
 }
 
 let orm: MikroORM;
@@ -75,9 +77,7 @@ test('3941', async () => {
     license: {
       name: 'License',
     },
-    workspaces: [
-      { name: 'Workspace' },
-    ],
+    workspaces: [{ name: 'Workspace' }],
   });
   await orm.em.flush();
   orm.em.clear();

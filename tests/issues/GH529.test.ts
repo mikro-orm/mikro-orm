@@ -10,15 +10,12 @@ import {
 
 @Entity()
 export class Customer {
-
   @PrimaryKey()
   id!: number;
-
 }
 
 @Entity()
 export class Order {
-
   @PrimaryKey()
   id!: number;
 
@@ -40,12 +37,10 @@ export class Order {
   constructor(customer: Customer) {
     this.customer = customer;
   }
-
 }
 
 @Entity()
 export class Product {
-
   @PrimaryKey()
   id!: number;
 
@@ -59,12 +54,10 @@ export class Product {
     this.name = name;
     this.currentPrice = currentPrice;
   }
-
 }
 
 @Entity()
 export class OrderItem {
-
   @ManyToOne({ primary: true })
   order: Order;
 
@@ -83,11 +76,9 @@ export class OrderItem {
     this.offeredPrice = product.currentPrice;
     this.amount = amount;
   }
-
 }
 
 describe('GH issue 529', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -125,5 +116,4 @@ describe('GH issue 529', () => {
     const sql = await orm.schema.getCreateSchemaSQL();
     expect(sql).toMatchSnapshot();
   });
-
 });

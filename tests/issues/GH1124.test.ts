@@ -3,25 +3,20 @@ import { Entity, OneToOne, PrimaryKey, ReflectMetadataProvider } from '@mikro-or
 
 @Entity()
 export class B {
-
-  @OneToOne({ entity: () => A, joinColumn: 'id', primary: true, mapToPk: true  })
+  @OneToOne({ entity: () => A, joinColumn: 'id', primary: true, mapToPk: true })
   id!: number;
-
 }
 
 @Entity()
 export class A {
-
   @PrimaryKey()
   id!: number;
 
   @OneToOne({ entity: () => B, mappedBy: 'id' })
   entity!: B;
-
 }
 
 describe('GH issue 1124', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {

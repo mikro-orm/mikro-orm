@@ -4,7 +4,6 @@ import { Utils } from '../utils/Utils.js';
 import { inspect } from '../logging/inspect.js';
 
 export class ChangeSet<T extends object> {
-
   private primaryKey?: Primary<T> | null;
   private serializedPrimaryKey?: string;
 
@@ -29,10 +28,10 @@ export class ChangeSet<T extends object> {
     }
 
     if (
-      !this.meta.compositePK
-      && this.meta.getPrimaryProp().targetMeta?.compositePK
-      && typeof this.primaryKey === 'object'
-      && this.primaryKey !==  null
+      !this.meta.compositePK &&
+      this.meta.getPrimaryProp().targetMeta?.compositePK &&
+      typeof this.primaryKey === 'object' &&
+      this.primaryKey !== null
     ) {
       this.primaryKey = this.meta.getPrimaryProp().targetMeta!.primaryKeys.map(childPK => {
         return this.primaryKey![childPK as EntityKey];
@@ -62,7 +61,6 @@ export class ChangeSet<T extends object> {
     /* v8 ignore next */
     return ret === '[Object]' ? `[${name}]` : name + ' ' + ret;
   }
-
 }
 
 export interface ChangeSet<T> {

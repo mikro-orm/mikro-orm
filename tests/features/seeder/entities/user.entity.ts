@@ -3,7 +3,6 @@ import { Entity, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 export class User {
-
   [OptionalProps]?: 'createdAt';
 
   @PrimaryKey()
@@ -20,5 +19,4 @@ export class User {
 
   @Property()
   createdAt: Date = new Date();
-
 }

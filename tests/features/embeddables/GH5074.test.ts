@@ -9,19 +9,14 @@ import {
 } from '@mikro-orm/decorators/legacy';
 
 class GeoPoint {
-
   constructor(
     readonly latitude: number,
     readonly longitude: number,
   ) {}
-
 }
 
 class GeoPointType extends Type<GeoPoint | undefined, string | undefined> {
-
-  override convertToDatabaseValue(
-    value: GeoPoint | undefined,
-  ): string | undefined {
+  override convertToDatabaseValue(value: GeoPoint | undefined): string | undefined {
     if (!value) {
       return value;
     }
@@ -50,12 +45,10 @@ class GeoPointType extends Type<GeoPoint | undefined, string | undefined> {
   override getColumnType(): string {
     return 'point SRID 4326';
   }
-
 }
 
 @Embeddable()
 class SnapshotMore {
-
   @Property({
     type: GeoPointType,
   })
@@ -65,22 +58,18 @@ class SnapshotMore {
     nullable: true,
   })
   description?: string;
-
 }
 
 @Embeddable()
 class Snapshot {
-
   @Embedded(() => SnapshotMore, {
     object: true,
   })
   ref!: SnapshotMore;
-
 }
 
 @Entity()
 class Outer {
-
   @PrimaryKey()
   id!: number;
 
@@ -88,7 +77,6 @@ class Outer {
     object: true,
   })
   bigSnapshot!: Snapshot;
-
 }
 
 let orm: MikroORM;

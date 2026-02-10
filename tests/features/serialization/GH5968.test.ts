@@ -1,29 +1,38 @@
-import { MikroORM, Collection, BaseEntity, BigIntType, type Ref, serialize, SerializeOptions } from '@mikro-orm/postgresql';
-import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  MikroORM,
+  Collection,
+  BaseEntity,
+  BigIntType,
+  type Ref,
+  serialize,
+  SerializeOptions,
+} from '@mikro-orm/postgresql';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Entity({ abstract: true })
 abstract class CustomBaseEntity extends BaseEntity {
-
   @PrimaryKey({ autoincrement: true, type: new BigIntType('string') })
   readonly id!: string;
-
 }
 
 @Entity()
 class EntityC extends CustomBaseEntity {
-
   @ManyToOne(() => EntityB, { ref: true })
   entityB!: Ref<EntityB>;
 
   @Property()
   name!: string;
-
 }
-
 
 @Entity()
 class EntityB extends CustomBaseEntity {
-
   @Property()
   name!: string;
 
@@ -35,24 +44,19 @@ class EntityB extends CustomBaseEntity {
       if (!value.isInitialized()) {
         return undefined;
       }
-      return value
-        .getItems()
-        .map(a => serialize(a, opts));
+      return value.getItems().map(a => serialize(a, opts));
     },
   })
   entitiesC = new Collection<EntityC>(this);
-
 }
 
 @Entity()
 class EntityA extends CustomBaseEntity {
-
   @OneToMany(() => EntityB, slot => slot.entityA)
   entitiesB = new Collection<EntityB>(this);
 
   @Property()
   name!: string;
-
 }
 
 let orm: MikroORM;
@@ -67,17 +71,14 @@ beforeAll(async () => {
   await orm.schema.create();
 });
 
-
 afterAll(async () => {
   await orm.schema.drop();
   await orm.close(true);
 });
 
-
 afterEach(async () => {
   await orm.schema.clear();
 });
-
 
 test('Serialize newly created entity', async () => {
   let entityA = orm.em.create(EntityA, { name: 'I am entity A' });

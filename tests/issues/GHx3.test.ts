@@ -14,7 +14,6 @@ import { mockLogger } from '../helpers.js';
 
 @Entity()
 class Course {
-
   @PrimaryKey()
   id: string = v4();
 
@@ -23,31 +22,25 @@ class Course {
 
   @OneToOne({ entity: () => Customization, nullable: true })
   published?: Rel<Customization>;
-
 }
 
 @Entity()
 class Customization {
-
   @PrimaryKey()
   id: string = v4();
 
   @Embedded(() => Topic, { array: true, nullable: true })
   topics?: Topic[] = [];
-
 }
-
 
 @Embeddable()
 class Topic {
-
   @Property()
   private _name!: string;
 
   get name(): string {
     return this._name;
   }
-
 }
 
 function createCustomization() {

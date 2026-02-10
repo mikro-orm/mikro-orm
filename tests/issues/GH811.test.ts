@@ -4,18 +4,15 @@ import { v4 } from 'uuid';
 
 @Entity()
 class Address {
-
   @PrimaryKey({ type: 'uuid' })
   id = v4();
 
   @Property({ type: 'string' })
   name!: string;
-
 }
 
 @Entity()
 class Contact {
-
   @PrimaryKey({ type: 'uuid' })
   id = v4();
 
@@ -27,12 +24,10 @@ class Contact {
 
   @OneToOne({ type: Address, nullable: true })
   address?: Address;
-
 }
 
 @Entity()
 class Employee {
-
   @PrimaryKey({ type: 'uuid' })
   id = v4();
 
@@ -41,11 +36,9 @@ class Employee {
 
   @OneToOne({ type: Contact, nullable: true })
   contact?: Contact;
-
 }
 
 describe('GH issue 811', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -91,14 +84,24 @@ describe('GH issue 811', () => {
     contact.address = address;
 
     // Find my previously created employee
-    expect(orm.em.getUnitOfWork().getIdentityMap().values().map(e => helper(e).__originalEntityData)).toEqual([
-      { id: contact.id, name: 'My Contact', address: null, created: expect.any(Date) },
-      undefined,
-    ]);
+    expect(
+      orm.em
+        .getUnitOfWork()
+        .getIdentityMap()
+        .values()
+        .map(e => helper(e).__originalEntityData),
+    ).toEqual([{ id: contact.id, name: 'My Contact', address: null, created: expect.any(Date) }, undefined]);
     const employee = await orm.em.findOneOrFail(Employee, employeeCreate.id);
 
     // previously the `Employee.contact.address` was accidentally cascade merged
-    expect(orm.em.getUnitOfWork().getIdentityMap().values().map(e => helper(e).__originalEntityData).filter(Boolean)).toEqual([
+    expect(
+      orm.em
+        .getUnitOfWork()
+        .getIdentityMap()
+        .values()
+        .map(e => helper(e).__originalEntityData)
+        .filter(Boolean),
+    ).toEqual([
       { id: contact.id, name: 'My Contact', address: null, created: expect.any(Date) },
       { id: employee.id, contact: contact.id, name: 'My Employee' },
     ]);
@@ -106,5 +109,4 @@ describe('GH issue 811', () => {
 
     expect(employee).toBeInstanceOf(Employee);
   });
-
 });

@@ -1,9 +1,15 @@
 import { Collection, MikroORM } from '@mikro-orm/sqlite';
-import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class BlogPost {
-
   @PrimaryKey()
   id!: number;
 
@@ -16,12 +22,10 @@ class BlogPost {
   constructor(title: string) {
     this.title = title;
   }
-
 }
 
 @Entity()
 class ForumPost {
-
   @PrimaryKey()
   id!: number;
 
@@ -34,12 +38,10 @@ class ForumPost {
   constructor(content: string) {
     this.content = content;
   }
-
 }
 
 @Entity()
 class Activity {
-
   @PrimaryKey()
   id!: number;
 
@@ -61,11 +63,9 @@ class Activity {
   constructor(action: string) {
     this.action = action;
   }
-
 }
 
 describe('polymorphic relations with custom discriminator map', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -163,14 +163,15 @@ describe('polymorphic relations with custom discriminator map', () => {
     await orm.em.flush();
     orm.em.clear();
 
-    const loadedPost = await orm.em.findOneOrFail(
-      BlogPost,
-      { id: blogPost.id },
-      { populate: ['activities'] },
-    );
+    const loadedPost = await orm.em.findOneOrFail(BlogPost, { id: blogPost.id }, { populate: ['activities'] });
 
     expect(loadedPost.activities).toHaveLength(2);
-    expect(loadedPost.activities.getItems().map(a => a.action).sort()).toEqual(['like', 'view']);
+    expect(
+      loadedPost.activities
+        .getItems()
+        .map(a => a.action)
+        .sort(),
+    ).toEqual(['like', 'view']);
   });
 
   test('updating between different types with custom discriminator', async () => {
@@ -200,18 +201,15 @@ describe('polymorphic relations with custom discriminator map', () => {
   test('discriminator map prevents using table names directly', async () => {
     // Insert data with table name instead of custom value
     const connection = orm.em.getConnection();
-    await connection.execute(
-      "INSERT INTO blog_post (id, title) VALUES (1, 'Test')",
-    );
+    await connection.execute("INSERT INTO blog_post (id, title) VALUES (1, 'Test')");
     await connection.execute(
       "INSERT INTO activity (id, action, subject_type, subject_id) VALUES (1, 'test', 'blog_post', 1)",
     );
 
     // When we try to load, it should throw an error because
     // 'blog_post' is not in the discriminator map (only 'blog' and 'forum' are valid)
-    await expect(
-      orm.em.findOne(Activity, { id: 1 }),
-    ).rejects.toThrow(/Unknown discriminator value 'blog_post' for polymorphic relation 'subject'/);
+    await expect(orm.em.findOne(Activity, { id: 1 })).rejects.toThrow(
+      /Unknown discriminator value 'blog_post' for polymorphic relation 'subject'/,
+    );
   });
-
 });

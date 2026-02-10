@@ -62,7 +62,6 @@ export class Cursor<
   Excludes extends string = never,
   IncludeCount extends boolean = true,
 > {
-
   readonly hasPrevPage: boolean;
   readonly hasNextPage: boolean;
 
@@ -112,7 +111,12 @@ export class Cursor<
    * Computes the cursor value for a given entity.
    */
   from(entity: Entity | Loaded<Entity, Hint, Fields, Excludes>) {
-    const processEntity = <T extends object> (entity: T, prop: EntityKey<T>, direction: QueryOrderKeys<T>, object = false) => {
+    const processEntity = <T extends object>(
+      entity: T,
+      prop: EntityKey<T>,
+      direction: QueryOrderKeys<T>,
+      object = false,
+    ) => {
       if (Utils.isPlainObject(direction)) {
         const unwrapped = Reference.unwrapReference(entity[prop] as T);
 
@@ -144,7 +148,7 @@ export class Cursor<
       }
 
       if (object) {
-        return ({ [prop]: value });
+        return { [prop]: value };
       }
 
       return value;
@@ -153,7 +157,7 @@ export class Cursor<
     return Cursor.encode(value);
   }
 
-  * [Symbol.iterator](): IterableIterator<Loaded<Entity, Hint, Fields, Excludes>> {
+  *[Symbol.iterator](): IterableIterator<Loaded<Entity, Hint, Fields, Excludes>> {
     for (const item of this.items) {
       yield item;
     }
@@ -166,15 +170,21 @@ export class Cursor<
   /**
    * Computes the cursor value for given entity and order definition.
    */
-  static for<Entity extends object>(meta: EntityMetadata<Entity>, entity: FilterObject<Entity>, orderBy: OrderDefinition<Entity>) {
+  static for<Entity extends object>(
+    meta: EntityMetadata<Entity>,
+    entity: FilterObject<Entity>,
+    orderBy: OrderDefinition<Entity>,
+  ) {
     const definition = this.getDefinition(meta, orderBy);
-    return Cursor.encode(definition.map(([key]) => {
-      const value = entity[key];
-      if (value === undefined) {
-        throw CursorError.missingValue(meta.className, key as string);
-      }
-      return value;
-    }));
+    return Cursor.encode(
+      definition.map(([key]) => {
+        const value = entity[key];
+        if (value === undefined) {
+          throw CursorError.missingValue(meta.className, key as string);
+        }
+        return value;
+      }),
+    );
   }
 
   static encode(value: unknown[]): string {
@@ -204,7 +214,13 @@ export class Cursor<
         const prop = meta.properties[key];
 
         /* v8 ignore next */
-        if (!prop || !([ReferenceKind.SCALAR, ReferenceKind.EMBEDDED, ReferenceKind.MANY_TO_ONE].includes(prop.kind) || (prop.kind === ReferenceKind.ONE_TO_ONE && prop.owner))) {
+        if (
+          !prop ||
+          !(
+            [ReferenceKind.SCALAR, ReferenceKind.EMBEDDED, ReferenceKind.MANY_TO_ONE].includes(prop.kind) ||
+            (prop.kind === ReferenceKind.ONE_TO_ONE && prop.owner)
+          )
+        ) {
           continue;
         }
 
@@ -220,8 +236,10 @@ export class Cursor<
   [Symbol.for('nodejs.util.inspect.custom')]() {
     const type = this.items[0]?.constructor.name;
     const { items, startCursor, endCursor, hasPrevPage, hasNextPage, totalCount, length } = this;
-    const options = inspect({ startCursor, endCursor, totalCount, hasPrevPage, hasNextPage, items, length }, { depth: 0 });
+    const options = inspect(
+      { startCursor, endCursor, totalCount, hasPrevPage, hasNextPage, items, length },
+      { depth: 0 },
+    );
     return `Cursor${type ? `<${type}>` : ''} ${options.replace('items: [Array]', 'items: [...]')}`;
   }
-
 }

@@ -3,7 +3,6 @@ import { NativeQueryBuilder } from '../../query/NativeQueryBuilder.js';
 
 /** @internal */
 export class MySqlNativeQueryBuilder extends NativeQueryBuilder {
-
   protected override compileInsert() {
     if (!this.options.data) {
       throw new Error('No data provided');
@@ -89,5 +88,4 @@ export class MySqlNativeQueryBuilder extends NativeQueryBuilder {
       this.parts.push(`(${fields.join(', ')})`);
     }
   }
-
 }

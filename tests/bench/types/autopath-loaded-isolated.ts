@@ -11,7 +11,14 @@
  */
 
 import { bench } from '@ark/attest';
-import { type AutoPath, type Loaded, type Ref, type Collection, type PopulatePath, PrimaryKeyProp } from '@mikro-orm/core';
+import {
+  type AutoPath,
+  type Loaded,
+  type Ref,
+  type Collection,
+  type PopulatePath,
+  PrimaryKeyProp,
+} from '@mikro-orm/core';
 
 // ============================================
 // LINEAR entity chain (no circular refs)
@@ -235,5 +242,7 @@ bench('Loaded WIDE - 5 refs no populate', () => {
 }).types([693, 'instantiations']);
 
 bench('Loaded WIDE - 5 refs all populated', () => {
-  useLoaded<WideWithRefs, 'r1' | 'r2' | 'r3' | 'r4' | 'r5'>({} as Loaded<WideWithRefs, 'r1' | 'r2' | 'r3' | 'r4' | 'r5'>);
+  useLoaded<WideWithRefs, 'r1' | 'r2' | 'r3' | 'r4' | 'r5'>(
+    {} as Loaded<WideWithRefs, 'r1' | 'r2' | 'r3' | 'r4' | 'r5'>,
+  );
 }).types([1961, 'instantiations']);

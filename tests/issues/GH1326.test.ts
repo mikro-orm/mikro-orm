@@ -11,7 +11,6 @@ import { mockLogger } from '../helpers.js';
 
 @Entity()
 export class Driver {
-
   @PrimaryKey()
   id!: number;
 
@@ -20,12 +19,10 @@ export class Driver {
 
   @OneToMany(() => License, 'driver')
   licenses = new Collection<License>(this);
-
 }
 
 @Entity()
 export class LicenseType {
-
   @PrimaryKey()
   id!: number;
 
@@ -34,12 +31,10 @@ export class LicenseType {
 
   @OneToMany(() => License, 'licenseType')
   licenses = new Collection<License>(this);
-
 }
 
 @Entity()
 export class License {
-
   @PrimaryKey()
   id!: number;
 
@@ -51,11 +46,9 @@ export class License {
 
   @ManyToOne(() => LicenseType, { inversedBy: 'licenses', ref: true })
   licenseType!: Ref<LicenseType>;
-
 }
 
 describe('GH issue 1326', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -76,12 +69,14 @@ describe('GH issue 1326', () => {
     orm.em.clear();
     const newDriver = orm.em.create(Driver, {
       name: 'Martin Adámek',
-      licenses: [{
-        expiresAt: new Date(2050, 0, 1),
-        licenseType: {
-          name: 'Standard Driver License',
+      licenses: [
+        {
+          expiresAt: new Date(2050, 0, 1),
+          licenseType: {
+            name: 'Standard Driver License',
+          },
         },
-      }],
+      ],
     });
     const mock = mockLogger(orm, ['query']);
     await orm.em.persist(newDriver).flush();
@@ -89,7 +84,9 @@ describe('GH issue 1326', () => {
     expect(mock.mock.calls[0][0]).toMatch('begin');
     expect(mock.mock.calls[1][0]).toMatch('insert into `license_type` (`name`) values (?)');
     expect(mock.mock.calls[2][0]).toMatch('insert into `driver` (`name`) values (?)');
-    expect(mock.mock.calls[3][0]).toMatch('insert into `license` (`expires_at`, `driver_id`, `license_type_id`) values (?, ?, ?)');
+    expect(mock.mock.calls[3][0]).toMatch(
+      'insert into `license` (`expires_at`, `driver_id`, `license_type_id`) values (?, ?, ?)',
+    );
     expect(mock.mock.calls[4][0]).toMatch('commit');
     expect(newDriver.id).toBeDefined();
     expect(newDriver.licenses[0].id).toBeDefined();
@@ -101,12 +98,14 @@ describe('GH issue 1326', () => {
     const newDriver = new Driver();
     orm.em.assign(newDriver, {
       name: 'Martin Adámek',
-      licenses: [{
-        expiresAt: new Date(2050, 0, 1),
-        licenseType: {
-          name: 'Standard Driver License',
+      licenses: [
+        {
+          expiresAt: new Date(2050, 0, 1),
+          licenseType: {
+            name: 'Standard Driver License',
+          },
         },
-      }],
+      ],
     });
     const mock = mockLogger(orm, ['query']);
     await orm.em.persist(newDriver).flush();
@@ -114,11 +113,12 @@ describe('GH issue 1326', () => {
     expect(mock.mock.calls[0][0]).toMatch('begin');
     expect(mock.mock.calls[1][0]).toMatch('insert into `license_type` (`name`) values (?)');
     expect(mock.mock.calls[2][0]).toMatch('insert into `driver` (`name`) values (?)');
-    expect(mock.mock.calls[3][0]).toMatch('insert into `license` (`expires_at`, `driver_id`, `license_type_id`) values (?, ?, ?)');
+    expect(mock.mock.calls[3][0]).toMatch(
+      'insert into `license` (`expires_at`, `driver_id`, `license_type_id`) values (?, ?, ?)',
+    );
     expect(mock.mock.calls[4][0]).toMatch('commit');
     expect(newDriver.id).toBeDefined();
     expect(newDriver.licenses[0].id).toBeDefined();
     expect(newDriver.licenses[0].licenseType.id).toBeDefined();
   });
-
 });

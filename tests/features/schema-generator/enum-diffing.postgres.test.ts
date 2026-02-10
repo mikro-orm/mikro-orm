@@ -20,7 +20,6 @@ enum TestEnum {
 
 @Entity({ tableName: 'author' })
 class Author0 {
-
   @PrimaryKey()
   id!: number;
 
@@ -32,12 +31,10 @@ class Author0 {
 
   @Enum(() => TestEnum)
   testEnum!: TestEnum;
-
 }
 
 @Entity({ tableName: 'author' })
 class Author1 {
-
   @PrimaryKey()
   id!: number;
 
@@ -49,12 +46,10 @@ class Author1 {
 
   @Enum(() => TestEnum)
   testEnum!: TestEnum;
-
 }
 
 @Entity({ tableName: 'author' })
 class Author2 {
-
   @PrimaryKey()
   id!: number;
 
@@ -66,12 +61,10 @@ class Author2 {
 
   @Enum(() => TestEnum)
   testEnum!: TestEnum;
-
 }
 
 @Entity({ tableName: 'author' })
 class Author3 {
-
   @PrimaryKey()
   id!: number;
 
@@ -83,12 +76,10 @@ class Author3 {
 
   @Enum(() => TestEnum)
   testEnum!: TestEnum;
-
 }
 
 @Entity({ tableName: 'author' })
 class Author4 {
-
   @PrimaryKey()
   id!: number;
 
@@ -100,7 +91,6 @@ class Author4 {
 
   @Enum(() => TestEnum)
   testEnum!: TestEnum;
-
 }
 
 test('GH #4112 and #5751', async () => {

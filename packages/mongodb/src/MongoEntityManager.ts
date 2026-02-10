@@ -16,7 +16,6 @@ import type { MongoEntityRepository } from './MongoEntityRepository.js';
  * @inheritDoc
  */
 export class MongoEntityManager<Driver extends MongoDriver = MongoDriver> extends EntityManager<Driver> {
-
   /**
    * Shortcut to driver's aggregate method. Available in MongoDriver only.
    */
@@ -39,7 +38,10 @@ export class MongoEntityManager<Driver extends MongoDriver = MongoDriver> extend
     Hint extends string = never,
     Fields extends string = '*',
     Excludes extends string = never,
-  >(entityName: EntityName<Entity>, options: StreamOptions<NoInfer<Entity>, Hint, Fields, Excludes> = {}): AsyncIterableIterator<Loaded<Entity, Hint, Fields, Excludes>> {
+  >(
+    entityName: EntityName<Entity>,
+    options: StreamOptions<NoInfer<Entity>, Hint, Fields, Excludes> = {},
+  ): AsyncIterableIterator<Loaded<Entity, Hint, Fields, Excludes>> {
     if (!Utils.isEmpty(options.populate)) {
       throw new Error('Populate option is not supported when streaming results in MongoDB');
     }
@@ -54,22 +56,28 @@ export class MongoEntityManager<Driver extends MongoDriver = MongoDriver> extend
   /**
    * @inheritDoc
    */
-  override getRepository<T extends object, U extends EntityRepository<T> = MongoEntityRepository<T>>(entityName: EntityName<T>): GetRepository<T, U> {
+  override getRepository<T extends object, U extends EntityRepository<T> = MongoEntityRepository<T>>(
+    entityName: EntityName<T>,
+  ): GetRepository<T, U> {
     return super.getRepository<T, U>(entityName);
   }
 
   /**
    * @inheritDoc
    */
-  override async begin(options: Omit<TransactionOptions, 'ignoreNestedTransactions'> & MongoTransactionOptions = {}): Promise<void> {
+  override async begin(
+    options: Omit<TransactionOptions, 'ignoreNestedTransactions'> & MongoTransactionOptions = {},
+  ): Promise<void> {
     return super.begin(options);
   }
 
   /**
    * @inheritDoc
    */
-  override async transactional<T>(cb: (em: this) => Promise<T>, options: TransactionOptions & MongoTransactionOptions = {}): Promise<T> {
+  override async transactional<T>(
+    cb: (em: this) => Promise<T>,
+    options: TransactionOptions & MongoTransactionOptions = {},
+  ): Promise<T> {
     return super.transactional(cb, options);
   }
-
 }

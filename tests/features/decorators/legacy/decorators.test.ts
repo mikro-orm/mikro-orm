@@ -1,5 +1,22 @@
-import { MikroORM, MetadataStorage, ReferenceKind, Utils, RequestContext, EntityManager, EntityRepository, EntityRepositoryType } from '@mikro-orm/core';
-import { CreateRequestContext, EnsureRequestContext, ManyToMany, ManyToOne, OneToMany, OneToOne, Property } from '@mikro-orm/decorators/legacy';
+import {
+  MikroORM,
+  MetadataStorage,
+  ReferenceKind,
+  Utils,
+  RequestContext,
+  EntityManager,
+  EntityRepository,
+  EntityRepositoryType,
+} from '@mikro-orm/core';
+import {
+  CreateRequestContext,
+  EnsureRequestContext,
+  ManyToMany,
+  ManyToOne,
+  OneToMany,
+  OneToOne,
+  Property,
+} from '@mikro-orm/decorators/legacy';
 import type { Dictionary } from '@mikro-orm/core';
 import { Test } from '../../../entities/index.js';
 
@@ -12,10 +29,11 @@ const TEST_VALUE = 'expected value';
 
 let DI = {} as Dictionary;
 
-const ASYNC_ORM: Promise<MikroORM> =  Promise.resolve(Object.create(MikroORM.prototype, { em: { value: { name: 'default', fork: vi.fn() } } }));
+const ASYNC_ORM: Promise<MikroORM> = Promise.resolve(
+  Object.create(MikroORM.prototype, { em: { value: { name: 'default', fork: vi.fn() } } }),
+);
 
 class TestClass {
-
   constructor(private readonly orm: MikroORM) {}
 
   @CreateRequestContext()
@@ -57,11 +75,9 @@ class TestClass {
   async methodWithAsyncOrmInstance() {
     return TEST_VALUE;
   }
-
 }
 
 class TestClass2 {
-
   constructor(private readonly orm: MikroORM) {}
 
   @EnsureRequestContext()
@@ -93,33 +109,27 @@ class TestClass2 {
   async methodWithCallbackReturnsEm() {
     //
   }
-
 }
 
 class TestClass3 {
-
   constructor(private readonly orm: Promise<MikroORM>) {}
 
   @CreateRequestContext()
   async methodWithAsyncOrmPropertyAndReturnsNothing() {
     //
   }
-
 }
 
 class TestClass4 {
-
   constructor(private readonly em: EntityManager) {}
 
   @CreateRequestContext()
   async foo() {
     //
   }
-
 }
 
 class BookRepository extends EntityRepository<Book> {
-
   save(book: Book): void {
     this.em.persist(book);
   }
@@ -127,11 +137,9 @@ class BookRepository extends EntityRepository<Book> {
   flush(): Promise<void> {
     return this.em.flush();
   }
-
 }
 
 export class Book {
-
   id!: string;
 
   @Property({
@@ -143,26 +151,22 @@ export class Book {
   name!: string;
 
   [EntityRepositoryType]?: BookRepository;
-
 }
 
 class TestClass5 {
-
   constructor(private readonly repo: BookRepository) {}
 
   @CreateRequestContext<TestClass5>(t => t.repo)
   async foo() {
     //
   }
-
 }
 
 describe('decorators', () => {
-
   const hash = Utils.hash('/path/to/entity');
 
   vi.mock('../../../../packages/decorators/src/utils.js', async importOriginal => ({
-    ...await importOriginal(),
+    ...(await importOriginal()),
     getMetadataFromDecorator: (target: any) => {
       return MetadataStorage.getMetadata(target.name, '/path/to/entity');
     },
@@ -176,8 +180,11 @@ describe('decorators', () => {
   test('ManyToMany', () => {
     const storage = MetadataStorage.getMetadata();
     const key = 'Test2-' + hash;
-    const err = 'Mixing first decorator parameter as options object with other parameters is forbidden. If you want to use the options parameter at first position, provide all options inside it.';
-    expect(() => ManyToMany({ entity: () => Test } as any, 'name')(new Test2() as never, 'test0' as never)).toThrow(err);
+    const err =
+      'Mixing first decorator parameter as options object with other parameters is forbidden. If you want to use the options parameter at first position, provide all options inside it.';
+    expect(() => ManyToMany({ entity: () => Test } as any, 'name')(new Test2() as never, 'test0' as never)).toThrow(
+      err,
+    );
     ManyToMany({ entity: () => Test })(new Test2(), 'test0' as never);
     ManyToMany({ entity: () => Test })(new Test2(), 'test0' as never); // calling multiple times won't throw
     expect(storage[key].properties.test0).toMatchObject({ kind: ReferenceKind.MANY_TO_MANY, name: 'test0' });
@@ -198,7 +205,11 @@ describe('decorators', () => {
     const storage = MetadataStorage.getMetadata();
     const key = 'Test6-' + hash;
     OneToOne({ entity: () => Test, inversedBy: 'test5' } as any)(new Test6(), 'test1');
-    expect(storage[key].properties.test1).toMatchObject({ kind: ReferenceKind.ONE_TO_ONE, name: 'test1', inversedBy: 'test5' });
+    expect(storage[key].properties.test1).toMatchObject({
+      kind: ReferenceKind.ONE_TO_ONE,
+      name: 'test1',
+      inversedBy: 'test5',
+    });
     expect(storage[key].properties.test1.entity()).toBe(Test);
   });
 
@@ -207,7 +218,11 @@ describe('decorators', () => {
     const key = 'Test4-' + hash;
     OneToMany({ entity: () => Test, mappedBy: 'test' } as any)(new Test4(), 'test2');
     OneToMany({ entity: () => Test, mappedBy: 'test' } as any)(new Test4(), 'test2'); // calling multiple times won't throw
-    expect(storage[key].properties.test2).toMatchObject({ kind: ReferenceKind.ONE_TO_MANY, name: 'test2', mappedBy: 'test' });
+    expect(storage[key].properties.test2).toMatchObject({
+      kind: ReferenceKind.ONE_TO_MANY,
+      name: 'test2',
+      mappedBy: 'test',
+    });
     expect(storage[key].properties.test2.entity()).toBe(Test);
   });
 
@@ -244,7 +259,8 @@ describe('decorators', () => {
     const ret7 = await test2.methodWithCallbackReturnsEm();
     expect(ret7).toBeUndefined();
 
-    const err = '@CreateRequestContext() decorator can only be applied to methods of classes with `orm: MikroORM` property, `em: EntityManager` property, or with a callback parameter like `@CreateRequestContext(() => orm)` that returns one of those types. The parameter will contain a reference to current `this`. Returning an EntityRepository from it is also supported.';
+    const err =
+      '@CreateRequestContext() decorator can only be applied to methods of classes with `orm: MikroORM` property, `em: EntityManager` property, or with a callback parameter like `@CreateRequestContext(() => orm)` that returns one of those types. The parameter will contain a reference to current `this`. Returning an EntityRepository from it is also supported.';
     await expect(test2.asyncMethodReturnsValue()).rejects.toThrow(err);
     const ret8 = await test.methodWithAsyncCallback();
     expect(ret8).toEqual(TEST_VALUE);
@@ -290,7 +306,8 @@ describe('decorators', () => {
     const ret7 = await test2.methodWithCallbackReturnsEm();
     expect(ret7).toBeUndefined();
 
-    const err = '@EnsureRequestContext() decorator can only be applied to methods of classes with `orm: MikroORM` property, `em: EntityManager` property, or with a callback parameter like `@EnsureRequestContext(() => orm)` that returns one of those types. The parameter will contain a reference to current `this`. Returning an EntityRepository from it is also supported.';
+    const err =
+      '@EnsureRequestContext() decorator can only be applied to methods of classes with `orm: MikroORM` property, `em: EntityManager` property, or with a callback parameter like `@EnsureRequestContext(() => orm)` that returns one of those types. The parameter will contain a reference to current `this`. Returning an EntityRepository from it is also supported.';
     await expect(test2.asyncMethodReturnsValue()).rejects.toThrow(err);
 
     await RequestContext.create(orm.em, async () => {
@@ -301,16 +318,13 @@ describe('decorators', () => {
   test('should throw exception', async () => {
     try {
       class Dummy {
-
         @CreateRequestContext()
         dummy() {
           //
         }
-
       }
     } catch (e: any) {
       expect(e.message).toBe('@CreateRequestContext() should be use with async functions');
     }
   });
-
 });

@@ -3,7 +3,6 @@ import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-or
 
 @Entity()
 class Foo {
-
   @PrimaryKey()
   id!: string;
 
@@ -31,12 +30,10 @@ class Foo {
     nullable: true,
   })
   embedding3?: unknown;
-
 }
 
 @Entity({ tableName: 'foo' })
 class Foo2 {
-
   @PrimaryKey()
   id!: string;
 
@@ -64,7 +61,6 @@ class Foo2 {
     nullable: true,
   })
   embedding3?: unknown;
-
 }
 
 let orm: MikroORM;

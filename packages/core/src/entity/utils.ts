@@ -5,7 +5,12 @@ import { Utils } from '../utils/Utils.js';
 /**
  * Expands `books.perex` like populate to use `children` array instead of the dot syntax
  */
-function expandNestedPopulate<Entity>(parentProp: EntityProperty, parts: string[], strategy?: LoadStrategy, all?: boolean): PopulateOptions<Entity> {
+function expandNestedPopulate<Entity>(
+  parentProp: EntityProperty,
+  parts: string[],
+  strategy?: LoadStrategy,
+  all?: boolean,
+): PopulateOptions<Entity> {
   const meta = parentProp.targetMeta as EntityMetadata<Entity>;
   const field = parts.shift()! as EntityKey<Entity>;
   const prop = meta.properties[field];
@@ -21,17 +26,23 @@ function expandNestedPopulate<Entity>(parentProp: EntityProperty, parts: string[
 /**
  * @internal
  */
-export function expandDotPaths<Entity>(meta: EntityMetadata<Entity>, populate?: readonly (string | PopulateOptions<Entity>)[], normalized = false) {
-  const ret = normalized ? populate as PopulateOptions<Entity>[] : Utils.asArray(populate).map(field => {
-    if (typeof field === 'string') {
-      return { field } as PopulateOptions<Entity>;
-    }
+export function expandDotPaths<Entity>(
+  meta: EntityMetadata<Entity>,
+  populate?: readonly (string | PopulateOptions<Entity>)[],
+  normalized = false,
+) {
+  const ret = normalized
+    ? (populate as PopulateOptions<Entity>[])
+    : Utils.asArray(populate).map(field => {
+        if (typeof field === 'string') {
+          return { field } as PopulateOptions<Entity>;
+        }
 
-    /* v8 ignore next */
-    return typeof field === 'boolean' || field.field === PopulatePath.ALL
-      ? { all: !!field, field: meta.primaryKeys[0] } as PopulateOptions<Entity>
-      : field;
-  });
+        /* v8 ignore next */
+        return typeof field === 'boolean' || field.field === PopulatePath.ALL
+          ? ({ all: !!field, field: meta.primaryKeys[0] } as PopulateOptions<Entity>)
+          : field;
+      });
 
   for (const p of ret) {
     if (!p.field.includes('.')) {
@@ -44,8 +55,8 @@ export function expandDotPaths<Entity>(meta: EntityMetadata<Entity>, populate?: 
     const prop = meta.properties[p.field];
 
     if (parts[0] === PopulatePath.ALL) {
-      prop.targetMeta!.props
-        .filter(prop => prop.lazy || prop.kind !== ReferenceKind.SCALAR)
+      prop
+        .targetMeta!.props.filter(prop => prop.lazy || prop.kind !== ReferenceKind.SCALAR)
         .forEach(prop => p.children!.push({ field: prop.name as EntityKey, strategy: p.strategy }));
     } else if (prop.kind === ReferenceKind.EMBEDDED) {
       const embeddedProp = Object.values(prop.embeddedProps).find(c => c.embedded![1] === parts[0]);
@@ -68,7 +79,10 @@ export function expandDotPaths<Entity>(meta: EntityMetadata<Entity>, populate?: 
  * If `BALANCED` strategy is used, it will return JOINED if the property is a to-one relation.
  * @internal
  */
-export function getLoadingStrategy(strategy: LoadStrategy | `${LoadStrategy}`, kind: ReferenceKind): LoadStrategy.SELECT_IN | LoadStrategy.JOINED {
+export function getLoadingStrategy(
+  strategy: LoadStrategy | `${LoadStrategy}`,
+  kind: ReferenceKind,
+): LoadStrategy.SELECT_IN | LoadStrategy.JOINED {
   if (strategy === LoadStrategy.BALANCED) {
     return [ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(kind)
       ? LoadStrategy.JOINED

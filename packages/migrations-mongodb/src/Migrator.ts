@@ -29,7 +29,6 @@ import { TSMigrationGenerator } from './TSMigrationGenerator.js';
 import { JSMigrationGenerator } from './JSMigrationGenerator.js';
 
 export class Migrator implements IMigrator {
-
   private umzug!: Umzug;
   private runner!: MigrationRunner;
   private storage!: MigrationStorage;
@@ -46,7 +45,7 @@ export class Migrator implements IMigrator {
     this.detectSourceFolder();
 
     /* v8 ignore next */
-    const key = (this.config.get('preferTs', Utils.detectTypeScriptSupport()) && this.options.pathTs) ? 'pathTs' : 'path';
+    const key = this.config.get('preferTs', Utils.detectTypeScriptSupport()) && this.options.pathTs ? 'pathTs' : 'path';
     this.absolutePath = fs.absolutePath(this.options[key]!, this.config.get('baseDir'));
     this.createUmzug();
   }
@@ -77,7 +76,7 @@ export class Migrator implements IMigrator {
     const buildDir = fs.pathExists(baseDir + '/build');
     // if neither `dist` nor `build` exist, we use the `src` folder as it might be a JS project without building, but with `src` folder
     /* v8 ignore next */
-    const path = distDir ? './dist' : (buildDir ? './build' : './src');
+    const path = distDir ? './dist' : buildDir ? './build' : './src';
 
     // only if the user did not provide any values and if the default path does not exist
     if (!this.options.path && !this.options.pathTs && !exists) {
@@ -210,7 +209,9 @@ export class Migrator implements IMigrator {
   protected resolve(params: MigrationParams<any>): RunnableMigration<any> {
     const createMigrationHandler = async (method: 'up' | 'down') => {
       const migration = await fs.dynamicImport(params.path!);
-      const MigrationClass = Object.values(migration).find(cls => typeof cls === 'function' && typeof cls.constructor === 'function') as Constructor<Migration>;
+      const MigrationClass = Object.values(migration).find(
+        cls => typeof cls === 'function' && typeof cls.constructor === 'function',
+      ) as Constructor<Migration>;
       const instance = new MigrationClass(this.driver, this.config);
 
       await this.runner.run(instance, method);
@@ -239,7 +240,12 @@ export class Migrator implements IMigrator {
     return name.match(/^\d{14}$/) ? this.options.fileName!(name) : name;
   }
 
-  private prefix<T extends string | string[] | { from?: string | number; to?: string | number; migrations?: string[]; transaction?: Transaction }>(options?: T): MigrateUpOptions & MigrateDownOptions {
+  private prefix<
+    T extends
+      | string
+      | string[]
+      | { from?: string | number; to?: string | number; migrations?: string[]; transaction?: Transaction },
+  >(options?: T): MigrateUpOptions & MigrateDownOptions {
     if (typeof options === 'string' || Array.isArray(options)) {
       return { migrations: Utils.asArray(options).map(name => this.getMigrationFilename(name)) };
     }
@@ -256,7 +262,9 @@ export class Migrator implements IMigrator {
       delete options.transaction;
     }
 
-    (['from', 'to'] as const).filter(k => options[k]).forEach(k => options[k] = this.getMigrationFilename(options[k] as string));
+    (['from', 'to'] as const)
+      .filter(k => options[k])
+      .forEach(k => (options[k] = this.getMigrationFilename(options[k] as string)));
 
     return options as MigrateUpOptions;
   }
@@ -275,7 +283,11 @@ export class Migrator implements IMigrator {
     return this.driver.getConnection().transactional(trx => this.runInTransaction(trx, method, options));
   }
 
-  private async runInTransaction(trx: Transaction, method: 'up' | 'down', options: string | string[] | undefined | MigrateOptions) {
+  private async runInTransaction(
+    trx: Transaction,
+    method: 'up' | 'down',
+    options: string | string[] | undefined | MigrateOptions,
+  ) {
     this.runner.setMasterMigration(trx);
     this.storage.setMasterMigration(trx);
     const ret = await this.umzug[method](this.prefix(options));
@@ -290,5 +302,4 @@ export class Migrator implements IMigrator {
       fs.ensureDir(this.absolutePath);
     }
   }
-
 }

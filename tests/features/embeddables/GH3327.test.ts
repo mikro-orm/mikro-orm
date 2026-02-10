@@ -11,7 +11,6 @@ import { mockLogger, PLATFORMS } from '../../bootstrap.js';
 
 @Embeddable()
 class FieldValue {
-
   @Property({ type: t.json, nullable: true })
   primitive?: string | number | boolean | null;
 
@@ -20,12 +19,10 @@ class FieldValue {
 
   @Property({ nullable: true })
   array?: string[];
-
 }
 
 @Entity()
 class Field {
-
   @PrimaryKey({ name: '_id' })
   id: number = 1;
 
@@ -37,11 +34,9 @@ class Field {
 
   @Embedded({ entity: () => FieldValue, object: false })
   inline?: FieldValue;
-
 }
 
 describe.each(['sqlite', 'mysql', 'postgresql', 'mssql', 'mongo'] as const)('GH #3327 (%s)', type => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -102,5 +97,4 @@ describe.each(['sqlite', 'mysql', 'postgresql', 'mssql', 'mongo'] as const)('GH 
       inline: { primitive: null, object: { field: false }, array: ['4', '5', '6'] },
     });
   });
-
 });

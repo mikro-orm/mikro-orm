@@ -2,24 +2,20 @@ import { MikroORM, type Opt } from '@mikro-orm/sqlite';
 import { Entity, PrimaryKey, Property } from '@mikro-orm/decorators/es';
 
 abstract class BaseEntity {
-
   @Property({ type: 'timestamptz', defaultRaw: 'now' })
   created_at!: Date & Opt;
 
   @Property({ type: 'timestamptz', defaultRaw: 'now' })
   updated_at!: Date & Opt;
-
 }
 
 @Entity({ tableName: 'parents' })
 class Parent extends BaseEntity {
-
   @PrimaryKey({ type: 'bigint' })
   id!: number;
 
   @Property({ type: 'text' })
   name!: string;
-
 }
 
 let orm: MikroORM;

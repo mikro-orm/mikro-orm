@@ -1,20 +1,24 @@
 import { MikroORM } from '@mikro-orm/sqlite';
-import { Embeddable, Embedded, Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Embeddable,
+  Embedded,
+  Entity,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Embeddable()
 class Address {
-
   @Property()
   street!: string;
 
   @Property()
   city!: string;
-
 }
 
 @Entity()
 class User {
-
   @PrimaryKey()
   id!: number;
 
@@ -26,7 +30,6 @@ class User {
 
   @Embedded(() => Address, { nullable: true })
   address?: Address;
-
 }
 
 let orm: MikroORM;

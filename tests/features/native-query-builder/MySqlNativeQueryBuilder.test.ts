@@ -3,7 +3,6 @@ import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-or
 
 @Entity()
 class User {
-
   @PrimaryKey()
   id!: number;
 
@@ -12,7 +11,6 @@ class User {
 
   @Property({ nullable: true })
   name?: string;
-
 }
 
 let orm: MikroORM;
@@ -70,14 +68,17 @@ test('MySqlNativeQueryBuilder', async () => {
 
   const qb8 = new MySqlNativeQueryBuilder(orm.em.getPlatform());
   const date = new Date();
-  qb8.insert({ foo: 'bar' }).into('baz').onConflict({
-    fields: ['field1', 'field2'],
-    merge: {
-      name: 'John Doe',
-      updatedAt: date,
-    },
-    where: { sql: '? = ?', params: [1, 1] },
-  });
+  qb8
+    .insert({ foo: 'bar' })
+    .into('baz')
+    .onConflict({
+      fields: ['field1', 'field2'],
+      merge: {
+        name: 'John Doe',
+        updatedAt: date,
+      },
+      where: { sql: '? = ?', params: [1, 1] },
+    });
   qb8.where('foo1', ['bar1']);
   expect(qb8.compile()).toEqual({
     sql: 'insert into `baz` (`foo`) values (?) on duplicate key update `name` = ?, `updatedAt` = ? where ? = ?',
@@ -85,9 +86,12 @@ test('MySqlNativeQueryBuilder', async () => {
   });
 
   const qb9 = new MySqlNativeQueryBuilder(orm.em.getPlatform());
-  qb9.insert({ foo: 'bar' }).into('baz').onConflict({
-    fields: ['field1', 'field2'],
-  });
+  qb9
+    .insert({ foo: 'bar' })
+    .into('baz')
+    .onConflict({
+      fields: ['field1', 'field2'],
+    });
   expect(qb9.compile()).toEqual({
     sql: 'insert into `baz` (`foo`) values (?) on conflict (`field1`, `field2`)',
     params: ['bar'],

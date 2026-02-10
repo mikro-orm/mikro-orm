@@ -1,24 +1,25 @@
 import { MikroORM } from '@mikro-orm/sqlite';
-import { CreateRequestContext, EnsureRequestContext, Entity, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  CreateRequestContext,
+  EnsureRequestContext,
+  Entity,
+  PrimaryKey,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class BarEntity {
-
   @PrimaryKey()
   id!: number;
-
 }
 
 @Entity()
 class FooEntity {
-
   @PrimaryKey()
   id!: number;
-
 }
 
 class BarService {
-
   constructor(private orm: MikroORM) {}
 
   @EnsureRequestContext()
@@ -33,11 +34,9 @@ class BarService {
   async execute2() {
     await this.execute();
   }
-
 }
 
 class FooService {
-
   constructor(
     private barService: BarService,
     private orm: MikroORM,
@@ -60,7 +59,6 @@ class FooService {
 
     await this.barService.execute2();
   }
-
 }
 
 let fooORM: MikroORM;

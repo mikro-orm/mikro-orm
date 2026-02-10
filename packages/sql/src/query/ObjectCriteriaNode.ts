@@ -20,9 +20,10 @@ const COLLECTION_OPERATORS = ['$some', '$none', '$every', '$size'];
  * @internal
  */
 export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
-
   override process(qb: IQueryBuilder<T>, options?: ICriteriaNodeProcessOptions): any {
-    const matchPopulateJoins = options?.matchPopulateJoins || (this.prop && [ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(this.prop!.kind));
+    const matchPopulateJoins =
+      options?.matchPopulateJoins ||
+      (this.prop && [ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(this.prop!.kind));
     const nestedAlias = qb.getAliasForJoinPath(this.getPath(options), { ...options, matchPopulateJoins });
     const ownerAlias = options?.alias || qb.alias;
     const keys = Utils.getObjectQueryKeys(this.payload);
@@ -37,15 +38,20 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
         if (![ReferenceKind.MANY_TO_MANY, ReferenceKind.ONE_TO_MANY].includes(this.prop!.kind)) {
           // ignore collection operators when used on a non-relational property - this can happen when they get into
           // populateWhere via `infer` on m:n properties with select-in strategy
-          if (this.parent?.parent) { // we validate only usage on top level
+          if (this.parent?.parent) {
+            // we validate only usage on top level
             return {};
           }
 
-          throw new Error(`Collection operators can be used only inside a collection property context, but it was used for ${this.getPath()}.`);
+          throw new Error(
+            `Collection operators can be used only inside a collection property context, but it was used for ${this.getPath()}.`,
+          );
         }
 
         const $and: Dictionary[] = [];
-        const knownKey = [ReferenceKind.SCALAR, ReferenceKind.MANY_TO_ONE, ReferenceKind.EMBEDDED].includes(this.prop!.kind) || (this.prop!.kind === ReferenceKind.ONE_TO_ONE && this.prop!.owner);
+        const knownKey =
+          [ReferenceKind.SCALAR, ReferenceKind.MANY_TO_ONE, ReferenceKind.EMBEDDED].includes(this.prop!.kind) ||
+          (this.prop!.kind === ReferenceKind.ONE_TO_ONE && this.prop!.owner);
         const parentMeta = this.metadata.find(this.parent!.entityName)!;
         const primaryKeys = parentMeta.primaryKeys.map(pk => {
           return [QueryType.SELECT, QueryType.COUNT].includes(qb.type!) ? `${knownKey ? alias : ownerAlias}.${pk}` : pk;
@@ -68,9 +74,14 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
           if (key === '$size') {
             const sizeCondition = typeof payload === 'number' ? { $eq: payload } : payload;
             const pks = this.prop!.referencedColumnNames;
-            const countExpr = raw(`count(${pks.map(() => '??').join(', ')})`, pks.map(pk => `${joinAlias}.${pk}`));
+            const countExpr = raw(
+              `count(${pks.map(() => '??').join(', ')})`,
+              pks.map(pk => `${joinAlias}.${pk}`),
+            );
             sub.groupBy(parentMeta.primaryKeys);
-            sub.having({ $and: Object.keys(sizeCondition).map(op => ({ [countExpr as any]: { [op]: sizeCondition[op] } })) });
+            sub.having({
+              $and: Object.keys(sizeCondition).map(op => ({ [countExpr as any]: { [op]: sizeCondition[op] } })),
+            });
           } else if (key === '$every') {
             sub.where({ $not: { [this.key!]: payload } });
           } else {
@@ -121,7 +132,8 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
       const virtual = childNode.prop?.persist === false && !childNode.prop?.formula;
       // if key is missing, we are inside group operator and we need to prefix with alias
       const primaryKey = this.key && this.metadata.find(this.entityName)?.primaryKeys.includes(field as EntityKey);
-      const isToOne = childNode.prop && [ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(childNode.prop.kind);
+      const isToOne =
+        childNode.prop && [ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(childNode.prop.kind);
 
       if (childNode.shouldInline(payload)) {
         const childAlias = qb.getAliasForJoinPath(childNode.getPath(), { preferNoBranch: isToOne, ...options });
@@ -136,7 +148,13 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
         // wrap unknown fields in raw() to prevent alias prefixing (e.g. raw SQL aliases in HAVING)
         // use '??' placeholder to properly quote the identifier
         o[raw('??', [field]) as any] = payload;
-      } else if (primaryKey || virtual || operator || field.includes('.') || ![QueryType.SELECT, QueryType.COUNT].includes(qb.type)) {
+      } else if (
+        primaryKey ||
+        virtual ||
+        operator ||
+        field.includes('.') ||
+        ![QueryType.SELECT, QueryType.COUNT].includes(qb.type)
+      ) {
         this.inlineCondition(field.replaceAll(ALIAS_REPLACEMENT, alias!), o, payload);
       } else {
         this.inlineCondition(`${alias ?? qb.alias}.${field}`, o, payload);
@@ -147,9 +165,12 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
   }
 
   override isStrict(): boolean {
-    return this.strict || Utils.getObjectQueryKeys(this.payload).some(key => {
-      return this.payload[key].isStrict();
-    });
+    return (
+      this.strict ||
+      Utils.getObjectQueryKeys(this.payload).some(key => {
+        return this.payload[key].isStrict();
+      })
+    );
   }
 
   override unwrap(): any {
@@ -180,8 +201,13 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
 
   override shouldInline(payload: any): boolean {
     const rawField = RawQueryFragment.isKnownFragmentSymbol(this.key);
-    const scalar = Utils.isPrimaryKey(payload) || payload as unknown instanceof RegExp || payload as unknown instanceof Date || rawField;
-    const operator = Utils.isObject(payload) && Utils.getObjectQueryKeys(payload).every(k => Utils.isOperator(k, false));
+    const scalar =
+      Utils.isPrimaryKey(payload) ||
+      (payload as unknown) instanceof RegExp ||
+      (payload as unknown) instanceof Date ||
+      rawField;
+    const operator =
+      Utils.isObject(payload) && Utils.getObjectQueryKeys(payload).every(k => Utils.isOperator(k, false));
 
     return !!this.prop && this.prop.kind !== ReferenceKind.SCALAR && !scalar && !operator;
   }
@@ -193,19 +219,37 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
       : k;
   }
 
-  private inlineArrayChildPayload(obj: Dictionary, payload: Dictionary[], k: string, prop: EntityProperty, childAlias?: string, alias?: string) {
+  private inlineArrayChildPayload(
+    obj: Dictionary,
+    payload: Dictionary[],
+    k: string,
+    prop: EntityProperty,
+    childAlias?: string,
+    alias?: string,
+  ) {
     const key = this.getChildKey(k as EntityKey, prop, childAlias);
-    const value = payload.map((child: Dictionary) => Utils.getObjectQueryKeys(child).reduce((inner, childKey) => {
-      const key = (RawQueryFragment.isKnownFragmentSymbol(childKey) || this.isPrefixed(childKey) || Utils.isOperator(childKey)) ? childKey : this.aliased(childKey, childAlias);
-      inner[key as string] = child[childKey as string];
+    const value = payload.map((child: Dictionary) =>
+      Utils.getObjectQueryKeys(child).reduce((inner, childKey) => {
+        const key =
+          RawQueryFragment.isKnownFragmentSymbol(childKey) || this.isPrefixed(childKey) || Utils.isOperator(childKey)
+            ? childKey
+            : this.aliased(childKey, childAlias);
+        inner[key as string] = child[childKey as string];
 
-      return inner;
-    }, {} as Dictionary));
+        return inner;
+      }, {} as Dictionary),
+    );
 
     this.inlineCondition(key, obj, value);
   }
 
-  private inlineChildPayload(o: Dictionary, payload: Dictionary, field: EntityKey<T>, alias?: string, childAlias?: string) {
+  private inlineChildPayload(
+    o: Dictionary,
+    payload: Dictionary,
+    field: EntityKey<T>,
+    alias?: string,
+    childAlias?: string,
+  ) {
     const prop = this.metadata.find(this.entityName)!.properties[field];
 
     for (const k of Utils.getObjectQueryKeys(payload)) {
@@ -261,19 +305,28 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
 
     const meta = this.metadata.find(this.entityName)!;
     const embeddable = this.prop.kind === ReferenceKind.EMBEDDED;
-    const knownKey = [ReferenceKind.SCALAR, ReferenceKind.MANY_TO_ONE, ReferenceKind.EMBEDDED].includes(this.prop.kind) || (this.prop.kind === ReferenceKind.ONE_TO_ONE && this.prop.owner);
+    const knownKey =
+      [ReferenceKind.SCALAR, ReferenceKind.MANY_TO_ONE, ReferenceKind.EMBEDDED].includes(this.prop.kind) ||
+      (this.prop.kind === ReferenceKind.ONE_TO_ONE && this.prop.owner);
     const operatorKeys = knownKey && keys.every(key => Utils.isOperator(key, false));
-    const primaryKeys = knownKey && keys.every(key => {
-      if (typeof key !== 'string' || !meta.primaryKeys.includes(key)) {
-        return false;
-      }
+    const primaryKeys =
+      knownKey &&
+      keys.every(key => {
+        if (typeof key !== 'string' || !meta.primaryKeys.includes(key)) {
+          return false;
+        }
 
-      if (!Utils.isPlainObject(this.payload[key].payload) || ![ReferenceKind.ONE_TO_ONE, ReferenceKind.MANY_TO_ONE].includes(meta.properties[key].kind)) {
-        return true;
-      }
+        if (
+          !Utils.isPlainObject(this.payload[key].payload) ||
+          ![ReferenceKind.ONE_TO_ONE, ReferenceKind.MANY_TO_ONE].includes(meta.properties[key].kind)
+        ) {
+          return true;
+        }
 
-      return Utils.getObjectQueryKeys(this.payload[key].payload).every(k => typeof k === 'string' && meta.properties[key].targetMeta!.primaryKeys.includes(k));
-    });
+        return Utils.getObjectQueryKeys(this.payload[key].payload).every(
+          k => typeof k === 'string' && meta.properties[key].targetMeta!.primaryKeys.includes(k),
+        );
+      });
 
     return !primaryKeys && !nestedAlias && !operatorKeys && !embeddable;
   }
@@ -281,8 +334,14 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
   private autoJoin(qb: IQueryBuilder<T>, alias: string, options?: ICriteriaNodeProcessOptions): string {
     const nestedAlias = qb.getNextAlias(this.prop?.pivotEntity ?? this.entityName);
     const rawField = RawQueryFragment.isKnownFragmentSymbol(this.key);
-    const scalar = Utils.isPrimaryKey(this.payload) || this.payload as unknown instanceof RegExp || this.payload as unknown instanceof Date || rawField;
-    const operator = Utils.isPlainObject(this.payload) && Utils.getObjectQueryKeys(this.payload).every(k => Utils.isOperator(k, false));
+    const scalar =
+      Utils.isPrimaryKey(this.payload) ||
+      (this.payload as unknown) instanceof RegExp ||
+      (this.payload as unknown) instanceof Date ||
+      rawField;
+    const operator =
+      Utils.isPlainObject(this.payload) &&
+      Utils.getObjectQueryKeys(this.payload).every(k => Utils.isOperator(k, false));
     const field = `${alias}.${this.prop!.name}`;
     const method = qb.hasFlag(QueryFlag.INFER_POPULATE) ? 'joinAndSelect' : 'join';
     const path = this.getPath();
@@ -292,9 +351,7 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
     } else {
       const prev = qb._fields?.slice();
       const toOneProperty = [ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(this.prop!.kind);
-      const joinType = toOneProperty && !this.prop!.nullable
-        ? JoinType.innerJoin
-        : JoinType.leftJoin;
+      const joinType = toOneProperty && !this.prop!.nullable ? JoinType.innerJoin : JoinType.leftJoin;
       qb[method](field, nestedAlias, undefined, joinType, path);
 
       if (!qb.hasFlag(QueryFlag.INFER_POPULATE)) {
@@ -312,5 +369,4 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
   private isPrefixed(field: string): boolean {
     return !!field.match(/\w+\./);
   }
-
 }

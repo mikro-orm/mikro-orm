@@ -2,29 +2,22 @@ import { Collection, EntitySchema, MikroORM } from '@mikro-orm/sqlite';
 
 // A piece of Content can belong to many Archives
 class Content {
-
   id!: number;
   name!: string;
   type!: string;
 
   archives = new Collection<Archive>(this);
-
 }
 
 // An Archive contains many items of Content, and can also be treated as Content itself
 class Archive extends Content {
-
   items = new Collection<Content>(this);
-
 }
 
 // Video Archive
 class VideoArchive extends Archive {
-
   studioName?: string;
-
 }
-
 
 const ContentSchema = new EntitySchema<Content>({
   class: Content,

@@ -1,21 +1,26 @@
 import { Collection, MikroORM } from '@mikro-orm/sqlite';
-import { Embeddable, Embedded, Entity, ManyToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Embeddable,
+  Embedded,
+  Entity,
+  ManyToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Embeddable()
 class FileEmbeddable {
-
   @Property()
   url: string;
 
   constructor(url: string) {
     this.url = url;
   }
-
 }
 
 @Entity()
 class User {
-
   @PrimaryKey()
   id!: number;
 
@@ -34,12 +39,10 @@ class User {
     this.email = email;
     this.avatar = avatar;
   }
-
 }
 
 @Entity()
 export class MailingList {
-
   @PrimaryKey()
   id!: number;
 
@@ -55,7 +58,6 @@ export class MailingList {
   constructor(name: string) {
     this.name = name;
   }
-
 }
 
 let orm: MikroORM;
@@ -81,10 +83,14 @@ test('5992', async () => {
   orm.em.create(MailingList, { name: 'foolist', recipients: [user] });
   await orm.em.flush();
 
-  const actual = await orm.em.find(MailingList, { name: 'foolist' }, {
-    fields: ['recipients.avatar.url'],
-    refresh: true,
-  });
+  const actual = await orm.em.find(
+    MailingList,
+    { name: 'foolist' },
+    {
+      fields: ['recipients.avatar.url'],
+      refresh: true,
+    },
+  );
 
   expect(actual[0].recipients[0].avatar.url).toBe('https://foo.com');
 });

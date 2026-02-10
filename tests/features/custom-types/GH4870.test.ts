@@ -3,7 +3,6 @@ import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-or
 import { mockLogger } from '../../helpers.js';
 
 class SpecialTextType extends TextType {
-
   convertToDatabaseValue(value?: string | undefined): string | undefined {
     return `${value}-${Math.random()}`;
   }
@@ -15,18 +14,15 @@ class SpecialTextType extends TextType {
   compareValues(a?: string, b?: string): boolean {
     return a?.split('-')[0] === b?.split('-')[0];
   }
-
 }
 
 @Entity()
 class Driver {
-
   @PrimaryKey()
   id!: number;
 
   @Property({ type: SpecialTextType })
   name!: string;
-
 }
 
 let orm: MikroORM;

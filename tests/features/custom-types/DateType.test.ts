@@ -2,7 +2,6 @@ import { DateType } from '@mikro-orm/core';
 import { MongoPlatform } from '@mikro-orm/mongodb';
 
 describe('DateType', () => {
-
   const type = new DateType();
   const platform = new MongoPlatform();
 
@@ -22,5 +21,4 @@ describe('DateType', () => {
   test('getColumnType', () => {
     expect(type.getColumnType({ columnType: 'asd' } as any, platform)).toBe('date');
   });
-
 });

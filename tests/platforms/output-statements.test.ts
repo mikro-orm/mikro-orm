@@ -5,35 +5,29 @@ import { mockLogger } from '../helpers.js';
 
 @Entity({ hasTriggers: true })
 class WithTriggers {
-
   @PrimaryKey()
   id!: number;
 
   @Property({ type: 'string', length: 255, nullable: true })
   value?: string | null;
-
 }
 
 @Entity()
 class WithoutTriggers {
-
   @PrimaryKey()
   id!: number;
 
   @Property({ type: 'string', length: 255, nullable: true })
   value?: string | null;
-
 }
 
 @Entity()
 class WithoutAutoincrement {
-
   @PrimaryKey({ autoincrement: false })
   id!: number;
 
   @Property({ type: 'string', length: 255, nullable: true })
   value?: string | null;
-
 }
 
 describe('Output statements [mssql]', () => {
@@ -82,39 +76,46 @@ describe('Output statements [mssql]', () => {
 
     const withTriggersReselected = await orm.em.findOne(WithTriggers, { value: 'entity with triggers' });
 
-    expect(mock.mock.calls[0][0]).toMatch('[query] select top(0) [t].[id] into #out from [with_triggers] as t left join [with_triggers] on 0 = 1; insert into [with_triggers] ([value]) output inserted.[id] into #out values (N\'entity with triggers\'); select [t].[id] from #out as t; drop table #out');
-    expect(mock.mock.calls[1][0]).toMatch('[query] insert into [without_triggers] ([value]) output inserted.[id] values (N\'entity without triggers\')');
-    expect(mock.mock.calls[2][0]).toMatch('[query] set identity_insert [with_triggers] on; insert into [with_triggers] ([id], [value]) values (2, N\'entity with triggers and identity insert\'); set identity_insert [with_triggers] off');
-    expect(mock.mock.calls[3][0]).toMatch('[query] insert into [without_autoincrement] ([id], [value]) values (1, N\'entity without autoincrement\')');
+    expect(mock.mock.calls[0][0]).toMatch(
+      "[query] select top(0) [t].[id] into #out from [with_triggers] as t left join [with_triggers] on 0 = 1; insert into [with_triggers] ([value]) output inserted.[id] into #out values (N'entity with triggers'); select [t].[id] from #out as t; drop table #out",
+    );
+    expect(mock.mock.calls[1][0]).toMatch(
+      "[query] insert into [without_triggers] ([value]) output inserted.[id] values (N'entity without triggers')",
+    );
+    expect(mock.mock.calls[2][0]).toMatch(
+      "[query] set identity_insert [with_triggers] on; insert into [with_triggers] ([id], [value]) values (2, N'entity with triggers and identity insert'); set identity_insert [with_triggers] off",
+    );
+    expect(mock.mock.calls[3][0]).toMatch(
+      "[query] insert into [without_autoincrement] ([id], [value]) values (1, N'entity without autoincrement')",
+    );
     expect(withTriggersReselected?.id).toBe(withTriggers.id); // ensure select from #out table works.
   });
 
   test(`insert using query builder`, async () => {
     const mock = mockLogger(orm, ['query', 'query-params']);
 
-    await orm.em
-      .createQueryBuilder(WithTriggers)
-      .insert({ value: 'entity with triggers' })
-      .execute();
+    await orm.em.createQueryBuilder(WithTriggers).insert({ value: 'entity with triggers' }).execute();
 
-    await orm.em
-      .createQueryBuilder(WithoutTriggers)
-      .insert({ value: 'entity with triggers' })
-      .execute();
+    await orm.em.createQueryBuilder(WithoutTriggers).insert({ value: 'entity with triggers' }).execute();
 
-    await orm.em
-      .createQueryBuilder(WithTriggers)
-      .insert({ id: 2, value: 'entity with triggers' })
-      .execute();
+    await orm.em.createQueryBuilder(WithTriggers).insert({ id: 2, value: 'entity with triggers' }).execute();
 
     await orm.em
       .createQueryBuilder(WithoutAutoincrement)
       .insert({ id: 1, value: 'entity without autoincrement' })
       .execute();
 
-    expect(mock.mock.calls[0][0]).toMatch('[query] select top(0) [t].[id] into #out from [with_triggers] as t left join [with_triggers] on 0 = 1; insert into [with_triggers] ([value]) output inserted.[id] into #out values (N\'entity with triggers\'); select [t].[id] from #out as t; drop table #out');
-    expect(mock.mock.calls[1][0]).toMatch('[query] insert into [without_triggers] ([value]) output inserted.[id] values (N\'entity with triggers\')');
-    expect(mock.mock.calls[2][0]).toMatch('[query] set identity_insert [with_triggers] on; insert into [with_triggers] ([id], [value]) values (2, N\'entity with triggers\'); select @@rowcount; set identity_insert [with_triggers] off;');
-    expect(mock.mock.calls[3][0]).toMatch('[query] insert into [without_autoincrement] ([id], [value]) values (1, N\'entity without autoincrement\')');
+    expect(mock.mock.calls[0][0]).toMatch(
+      "[query] select top(0) [t].[id] into #out from [with_triggers] as t left join [with_triggers] on 0 = 1; insert into [with_triggers] ([value]) output inserted.[id] into #out values (N'entity with triggers'); select [t].[id] from #out as t; drop table #out",
+    );
+    expect(mock.mock.calls[1][0]).toMatch(
+      "[query] insert into [without_triggers] ([value]) output inserted.[id] values (N'entity with triggers')",
+    );
+    expect(mock.mock.calls[2][0]).toMatch(
+      "[query] set identity_insert [with_triggers] on; insert into [with_triggers] ([id], [value]) values (2, N'entity with triggers'); select @@rowcount; set identity_insert [with_triggers] off;",
+    );
+    expect(mock.mock.calls[3][0]).toMatch(
+      "[query] insert into [without_autoincrement] ([id], [value]) values (1, N'entity without autoincrement')",
+    );
   });
 });

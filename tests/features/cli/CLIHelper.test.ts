@@ -5,13 +5,16 @@ import { fs } from '@mikro-orm/core/fs-utils';
 import { Configuration, Options, Utils, MongoDriver } from '@mikro-orm/mongodb';
 import { SchemaCommandFactory } from '../../../packages/cli/src/commands/SchemaCommandFactory.js';
 
-const pkg = { 'type': 'module', 'mikro-orm': {} } as any;
+const pkg = { type: 'module', 'mikro-orm': {} } as any;
 vi.mock(`./package.json`, () => ({ default: pkg }));
 
 const tscBase = { compilerOptions: { baseUrl: '.', paths: { '@some-path/some': './libs/paths' } } } as any;
 vi.mock('./tsconfig.base.json', () => ({ default: tscBase }));
 
-const tscExtendedAbs = { extends: process.cwd() + '/tsconfig.base.json', compilerOptions: { module: 'commonjs' } } as any;
+const tscExtendedAbs = {
+  extends: process.cwd() + '/tsconfig.base.json',
+  compilerOptions: { module: 'commonjs' },
+} as any;
 vi.mock('./tsconfig.extended-abs.json', () => tscExtendedAbs);
 
 const tscExtended = { extends: './tsconfig.extended-abs.json', compilerOptions: { module: 'commonjs' } } as any;
@@ -20,7 +23,7 @@ vi.mock('./tsconfig.extended.json', () => tscExtended);
 const tscWithoutBaseUrl = { compilerOptions: { paths: { '@some-path/some': './libs/paths' } } };
 vi.mock('./tsconfig.without-baseurl.json', () => tscWithoutBaseUrl);
 
-const tsc = { compilerOptions: { } } as any;
+const tsc = { compilerOptions: {} } as any;
 vi.mock('./tsconfig.json', () => tsc);
 
 process.env.FORCE_COLOR = '0';
@@ -37,54 +40,49 @@ describe('CLIHelper', () => {
 
   const resolve = (path: any) => {
     switch (path.substring(path.lastIndexOf('/') + 1)) {
-      case 'package.json': return pkg;
-      case 'mikro-orm.config.js': return config;
-      case 'mikro-orm.config.ts': return config;
-      case 'mikro-orm-async.config.js': return Promise.resolve(config);
-      case 'mikro-orm-async-catch.config.js': return Promise.reject('FooError');
-      case 'mikro-orm-factory.config.js': return (contextName: string) => (contextName === 'boom' ? undefined : Object.assign(
-        {},
-        config,
-        {
-          dbName: `tenant_${contextName}`,
-          logger: message => {
-            loggerMessages.push(message);
-          },
-        } satisfies Options,
-      ));
-      case 'mikro-orm-array.config.js': return [
-        config,
-        Object.assign(
-          {},
+      case 'package.json':
+        return pkg;
+      case 'mikro-orm.config.js':
+        return config;
+      case 'mikro-orm.config.ts':
+        return config;
+      case 'mikro-orm-async.config.js':
+        return Promise.resolve(config);
+      case 'mikro-orm-async-catch.config.js':
+        return Promise.reject('FooError');
+      case 'mikro-orm-factory.config.js':
+        return (contextName: string) =>
+          contextName === 'boom'
+            ? undefined
+            : Object.assign({}, config, {
+                dbName: `tenant_${contextName}`,
+                logger: message => {
+                  loggerMessages.push(message);
+                },
+              } satisfies Options);
+      case 'mikro-orm-array.config.js':
+        return [config, Object.assign({}, config, { contextName: 'cfg2', user: 'user2' } satisfies Options)];
+      case 'mikro-orm-array-invalid.config.js':
+        return [config, config];
+      case 'mikro-orm-factory-array.config.js':
+        return [
           config,
-          { contextName: 'cfg2', user: 'user2' } satisfies Options,
-        ),
-      ];
-      case 'mikro-orm-array-invalid.config.js': return [
-        config,
-        config,
-      ];
-      case 'mikro-orm-factory-array.config.js': return [
-        config,
-        Object.assign(
-          {},
-          config,
-          { contextName: 'cfg2', user: 'user2' } satisfies Options,
-        ),
-        (contextName: string) => ((contextName === 'boom' || contextName === 'unknown') ? undefined : Object.assign(
-          {},
-          config,
-          { dbName: `tenant_${contextName}` } satisfies Options,
-        )),
-        async (contextName: string) => (contextName === 'unknown' ? undefined : Object.assign(
-          {},
-          config,
-          { dbName: `tenant_${contextName}`, user: 'user2' } satisfies Options,
-        )),
-      ];
-      case 'mikro-orm-invalid.config.js': return 'Not a config';
-      case 'file-discovery': return ({ discoverEntities: () => [] });
-      default: return undefined;
+          Object.assign({}, config, { contextName: 'cfg2', user: 'user2' } satisfies Options),
+          (contextName: string) =>
+            contextName === 'boom' || contextName === 'unknown'
+              ? undefined
+              : Object.assign({}, config, { dbName: `tenant_${contextName}` } satisfies Options),
+          async (contextName: string) =>
+            contextName === 'unknown'
+              ? undefined
+              : Object.assign({}, config, { dbName: `tenant_${contextName}`, user: 'user2' } satisfies Options),
+        ];
+      case 'mikro-orm-invalid.config.js':
+        return 'Not a config';
+      case 'file-discovery':
+        return { discoverEntities: () => [] };
+      default:
+        return undefined;
     }
   };
 
@@ -98,7 +96,9 @@ describe('CLIHelper', () => {
   });
 
   afterEach(() => {
-    Object.keys(process.env).filter(k => k.startsWith('MIKRO_ORM_')).forEach(k => delete process.env[k]);
+    Object.keys(process.env)
+      .filter(k => k.startsWith('MIKRO_ORM_'))
+      .forEach(k => delete process.env[k]);
     process.env.MIKRO_ORM_ALLOW_GLOBAL_CONTEXT = '1';
     process.env.MIKRO_ORM_ALLOW_GLOBAL_CLI = '1';
     process.env.MIKRO_ORM_ALLOW_VERSION_MISMATCH = '1';
@@ -122,7 +122,7 @@ describe('CLIHelper', () => {
     pkg['mikro-orm'].tsLoader = loader;
     tryImportMock.mockReturnValueOnce({ register: vi.fn() });
 
-    const cli = await configure() as any;
+    const cli = (await configure()) as any;
     expect(cli.$0).toBe('mikro-orm');
     expect(tryImportMock).toHaveBeenCalledTimes(1);
     expect(tryImportMock).toHaveBeenCalledWith({ module });
@@ -151,7 +151,7 @@ describe('CLIHelper', () => {
 
       return undefined;
     });
-    const cli = await configure() as any;
+    const cli = (await configure()) as any;
     expect(cli.$0).toBe('mikro-orm');
     expect(tryImportMock).toHaveBeenCalledTimes(1);
     expect(tryImportMock).toHaveBeenCalledWith({ module: '@swc-node/register/esm-register' });
@@ -163,14 +163,15 @@ describe('CLIHelper', () => {
     pkg['mikro-orm'].preferTs = true;
     tryImportMock.mockImplementation(() => undefined);
     const warnSpy = vi.spyOn(console, 'warn').mockImplementation(i => i);
-    const cli = await configure() as any;
+    const cli = (await configure()) as any;
     expect(cli.$0).toBe('mikro-orm');
     expect(tryImportMock).toHaveBeenCalledTimes(4);
     expect(tryImportMock).toHaveBeenCalledWith({ module: '@swc-node/register/esm-register' });
     expect(tryImportMock).toHaveBeenCalledWith({ module: 'tsx/esm/api' });
     expect(tryImportMock).toHaveBeenCalledWith({ module: 'jiti/register' });
     expect(tryImportMock).toHaveBeenCalledWith({ module: 'tsimp/import' });
-    const warning = 'Neither `swc`, `tsx`, `jiti` nor `tsimp` found in the project dependencies, support for working with TypeScript files might not work. To use `swc`, you need to install both `@swc-node/register` and `@swc/core`.';
+    const warning =
+      'Neither `swc`, `tsx`, `jiti` nor `tsimp` found in the project dependencies, support for working with TypeScript files might not work. To use `swc`, you need to install both `@swc-node/register` and `@swc/core`.';
     expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining(warning));
     pkg['mikro-orm'].preferTs = false;
   });
@@ -197,7 +198,7 @@ describe('CLIHelper', () => {
 
       return undefined;
     });
-    const cli = await configure() as any;
+    const cli = (await configure()) as any;
     expect(cli.$0).toBe('mikro-orm');
     expect(tryImportMock).toHaveBeenCalledTimes(1);
     expect(tryImportMock).toHaveBeenCalledWith({ module: '@swc-node/register/esm-register' });
@@ -208,18 +209,24 @@ describe('CLIHelper', () => {
 
   test('disallows global install of CLI package', async () => {
     delete process.env.MIKRO_ORM_ALLOW_GLOBAL_CLI;
-    await expect(CLIHelper.getConfiguration()).rejects.toThrow(`@mikro-orm/cli needs to be installed as a local dependency!`);
+    await expect(CLIHelper.getConfiguration()).rejects.toThrow(
+      `@mikro-orm/cli needs to be installed as a local dependency!`,
+    );
   });
 
   test('gets ORM configuration [no mikro-orm.config]', async () => {
     delete process.env.MIKRO_ORM_ALLOW_GLOBAL_CONTEXT;
-    await expect(CLIHelper.getConfiguration()).rejects.toThrow(`MikroORM config file not found in ['./src/mikro-orm.config.ts', './mikro-orm.config.ts', './src/mikro-orm.config.js', './mikro-orm.config.js']`);
+    await expect(CLIHelper.getConfiguration()).rejects.toThrow(
+      `MikroORM config file not found in ['./src/mikro-orm.config.ts', './mikro-orm.config.ts', './src/mikro-orm.config.js', './mikro-orm.config.js']`,
+    );
 
     process.env.MIKRO_ORM_TYPE = 'sqlite';
     process.env.MIKRO_ORM_ENTITIES = './entities-schema';
     process.env.MIKRO_ORM_DB_NAME = ':memory:';
     await expect(CLIHelper.getConfiguration()).resolves.toBeInstanceOf(Configuration);
-    Object.keys(process.env).filter(k => k.startsWith('MIKRO_ORM_')).forEach(k => delete process.env[k]);
+    Object.keys(process.env)
+      .filter(k => k.startsWith('MIKRO_ORM_'))
+      .forEach(k => delete process.env[k]);
   });
 
   test('disallows version mismatch of ORM packages', async () => {
@@ -484,7 +491,9 @@ Maybe you want to check, or regenerate your yarn.lock or package-lock.json file?
       const str = path as string;
       return str.includes('/mikro-orm.config.js') && !str.includes('/src/mikro-orm.config.js');
     });
-    expect(CLIHelper.getDriverDependencies(await CLIHelper.getConfiguration('default', await CLIHelper.getConfigPaths()))).toEqual(['mongodb']);
+    expect(
+      CLIHelper.getDriverDependencies(await CLIHelper.getConfiguration('default', await CLIHelper.getConfigPaths())),
+    ).toEqual(['mongodb']);
   });
 
   test('dumpDependencies', async () => {
@@ -519,7 +528,9 @@ Maybe you want to check, or regenerate your yarn.lock or package-lock.json file?
     pkg['mikro-orm'] = undefined;
 
     expect(CLIHelper.getSettings()).toEqual({});
-    await expect(CLIHelper.getConfiguration('default', await CLIHelper.getConfigPaths())).resolves.toBeInstanceOf(Configuration);
+    await expect(CLIHelper.getConfiguration('default', await CLIHelper.getConfigPaths())).resolves.toBeInstanceOf(
+      Configuration,
+    );
 
     process.env.MIKRO_ORM_CLI_PREFER_TS = '1';
     process.env.MIKRO_ORM_CLI_TS_CONFIG_PATH = 'foo/tsconfig.json';
@@ -566,7 +577,11 @@ Maybe you want to check, or regenerate your yarn.lock or package-lock.json file?
     dumpSpy.mockImplementation(() => void 0);
     CLIHelper.dumpTable({
       columns: ['Name', 'Executed at'],
-      rows: [['val 1', 'val 2'], ['val 3', 'val 4'], ['val 5', 'val 6']],
+      rows: [
+        ['val 1', 'val 2'],
+        ['val 3', 'val 4'],
+        ['val 5', 'val 6'],
+      ],
       empty: 'Empty...',
     });
     expect(dumpSpy.mock.calls[0][0]).toMatchInlineSnapshot(`
@@ -599,32 +614,69 @@ Maybe you want to check, or regenerate your yarn.lock or package-lock.json file?
   test('getConfigPaths', async () => {
     process.argv = ['node', 'start.js'];
     process.env.MIKRO_ORM_CLI_CONFIG = './override/orm-config.ts';
-    await expect(CLIHelper.getConfigPaths()).resolves.toEqual(['./override/orm-config.ts', './src/mikro-orm.config.ts', './mikro-orm.config.ts', './src/mikro-orm.config.js', './mikro-orm.config.js']);
+    await expect(CLIHelper.getConfigPaths()).resolves.toEqual([
+      './override/orm-config.ts',
+      './src/mikro-orm.config.ts',
+      './mikro-orm.config.ts',
+      './src/mikro-orm.config.js',
+      './mikro-orm.config.js',
+    ]);
     delete process.env.MIKRO_ORM_CLI_CONFIG;
-    await expect(CLIHelper.getConfigPaths()).resolves.toEqual(['./src/mikro-orm.config.ts', './mikro-orm.config.ts', './src/mikro-orm.config.js', './mikro-orm.config.js']);
+    await expect(CLIHelper.getConfigPaths()).resolves.toEqual([
+      './src/mikro-orm.config.ts',
+      './mikro-orm.config.ts',
+      './src/mikro-orm.config.js',
+      './mikro-orm.config.js',
+    ]);
 
     process.env.MIKRO_ORM_CLI_PREFER_TS = '1';
-    await expect(CLIHelper.getConfigPaths()).resolves.toEqual(['./src/mikro-orm.config.ts', './mikro-orm.config.ts', './src/mikro-orm.config.js', './mikro-orm.config.js']);
+    await expect(CLIHelper.getConfigPaths()).resolves.toEqual([
+      './src/mikro-orm.config.ts',
+      './mikro-orm.config.ts',
+      './src/mikro-orm.config.js',
+      './mikro-orm.config.js',
+    ]);
     delete process.env.MIKRO_ORM_CLI_PREFER_TS;
 
     pkg['mikro-orm'] = { preferTs: true };
-    await expect(CLIHelper.getConfigPaths()).resolves.toEqual(['./src/mikro-orm.config.ts', './mikro-orm.config.ts', './src/mikro-orm.config.js', './mikro-orm.config.js']);
+    await expect(CLIHelper.getConfigPaths()).resolves.toEqual([
+      './src/mikro-orm.config.ts',
+      './mikro-orm.config.ts',
+      './src/mikro-orm.config.js',
+      './mikro-orm.config.js',
+    ]);
     pkg['mikro-orm'] = undefined;
 
     pathExistsMock.mockReturnValue(true);
     pkg['mikro-orm'] = { configPaths: ['orm-config'] };
-    await expect(CLIHelper.getConfigPaths()).resolves.toEqual(['orm-config', './src/mikro-orm.config.ts', './mikro-orm.config.ts', './dist/mikro-orm.config.js', './mikro-orm.config.js']);
+    await expect(CLIHelper.getConfigPaths()).resolves.toEqual([
+      'orm-config',
+      './src/mikro-orm.config.ts',
+      './mikro-orm.config.ts',
+      './dist/mikro-orm.config.js',
+      './mikro-orm.config.js',
+    ]);
 
     // allows explicit opt-out
     pkg['mikro-orm'].preferTs = false;
-    await expect(CLIHelper.getConfigPaths()).resolves.toEqual(['orm-config', './dist/mikro-orm.config.js', './mikro-orm.config.js']);
+    await expect(CLIHelper.getConfigPaths()).resolves.toEqual([
+      'orm-config',
+      './dist/mikro-orm.config.js',
+      './mikro-orm.config.js',
+    ]);
 
     pkg['mikro-orm'].preferTs = true;
-    await expect(CLIHelper.getConfigPaths()).resolves.toEqual(['orm-config', './src/mikro-orm.config.ts', './mikro-orm.config.ts', './dist/mikro-orm.config.js', './mikro-orm.config.js']);
+    await expect(CLIHelper.getConfigPaths()).resolves.toEqual([
+      'orm-config',
+      './src/mikro-orm.config.ts',
+      './mikro-orm.config.ts',
+      './dist/mikro-orm.config.js',
+      './mikro-orm.config.js',
+    ]);
   });
 
   test('configures yargs instance', async () => {
-    const cli = await configure() as any;
+    const cli = (await configure()) as any;
     expect(cli.$0).toBe('mikro-orm');
     expect(cli.getInternalMethods().getCommandInstance().getCommands()).toEqual([
       'cache:clear',

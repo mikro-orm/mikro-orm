@@ -3,45 +3,34 @@ import { Entity, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from 
 
 @Entity()
 class UserProfile {
-
   @PrimaryKey()
   id!: number;
 
   @Property({ default: true, nullable: true, type: new BooleanType() })
   enabled?: boolean & Opt = true;
 
-  @OneToOne(
-    () => User,
-    user => user.profile,
-    {
-      cascade: [Cascade.ALL],
-      lazy: true,
-      orphanRemoval: true,
-      ref: true,
-    },
-  )
+  @OneToOne(() => User, user => user.profile, {
+    cascade: [Cascade.ALL],
+    lazy: true,
+    orphanRemoval: true,
+    ref: true,
+  })
   user?: Ref<User>;
-
 }
 
 @Entity()
 class User {
-
   @Property({ default: true, nullable: true, type: new BooleanType() })
   enabled?: boolean & Opt = true;
 
-  @OneToOne(
-    () => UserProfile,
-    profile => profile.user,
-    {
-      cascade: [Cascade.ALL],
-      lazy: true,
-      nullable: true,
-      orphanRemoval: true,
-      owner: true,
-      ref: true,
-    },
-  )
+  @OneToOne(() => UserProfile, profile => profile.user, {
+    cascade: [Cascade.ALL],
+    lazy: true,
+    nullable: true,
+    orphanRemoval: true,
+    owner: true,
+    ref: true,
+  })
   profile?: Ref<UserProfile>;
 
   @PrimaryKey()
@@ -52,7 +41,6 @@ class User {
     type: new BooleanType(),
   })
   verified?: boolean & Opt = false;
-
 }
 
 let orm: MikroORM;

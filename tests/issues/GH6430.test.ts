@@ -4,29 +4,24 @@ import { mockLogger } from '../helpers.js';
 
 @Entity()
 class A {
-
   @PrimaryKey()
   id!: number;
 
   @Property()
   number!: number;
-
 }
 
 @Entity()
 class B {
-
   @PrimaryKey()
   id!: number;
 
   @Property()
   number!: number;
-
 }
 
 @Entity()
 class Composite {
-
   @ManyToOne(() => A, { fieldName: 'a_id', primary: true })
   entityA!: A;
 
@@ -34,12 +29,10 @@ class Composite {
   entityB!: B;
 
   [PrimaryKeyProp]?: ['entityA', 'entityB'];
-
 }
 
 @Entity()
 class Dependent {
-
   @ManyToOne(() => Composite, { fieldNames: ['a_id', 'b_id'], primary: true })
   composite!: Composite;
 
@@ -47,17 +40,14 @@ class Dependent {
   anotherId!: number;
 
   [PrimaryKeyProp]?: ['composite', 'anotherId'];
-
 }
 
 @Entity()
 class Dependent2 {
-
   @ManyToOne(() => Composite, { fieldNames: ['a_id', 'b_id'], primary: true })
   composite!: Composite;
 
   [PrimaryKeyProp]?: 'composite';
-
 }
 
 let orm: MikroORM;

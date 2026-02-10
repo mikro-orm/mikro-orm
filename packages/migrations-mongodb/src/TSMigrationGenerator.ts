@@ -1,7 +1,6 @@
 import { MigrationGenerator } from './MigrationGenerator.js';
 
 export class TSMigrationGenerator extends MigrationGenerator {
-
   /**
    * @inheritDoc
    */
@@ -10,13 +9,13 @@ export class TSMigrationGenerator extends MigrationGenerator {
     ret += `export class ${className} extends Migration {\n\n`;
     ret += `  async up(): Promise<void> {\n`;
     /* v8 ignore next */
-    diff.up.forEach(sql => ret += this.createStatement(sql, 4));
+    diff.up.forEach(sql => (ret += this.createStatement(sql, 4)));
     ret += `  }\n\n`;
 
     /* v8 ignore next */
     if (diff.down.length > 0) {
       ret += `  async down(): Promise<void> {\n`;
-      diff.down.forEach(sql => ret += this.createStatement(sql, 4));
+      diff.down.forEach(sql => (ret += this.createStatement(sql, 4)));
       ret += `  }\n\n`;
     }
 
@@ -24,5 +23,4 @@ export class TSMigrationGenerator extends MigrationGenerator {
 
     return ret;
   }
-
 }

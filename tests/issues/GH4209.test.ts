@@ -5,7 +5,6 @@ import { v4 } from 'uuid';
 
 @Entity()
 class Foo {
-
   @PrimaryKey()
   _id!: number;
 
@@ -17,40 +16,33 @@ class Foo {
 
   @ManyToOne({ entity: () => Bar3, nullable: true })
   bar3?: Rel<Bar3>;
-
 }
 
 @Entity()
 class Bar1 {
-
   @PrimaryKey()
   _id!: number;
 
   @OneToMany({ entity: () => Foo, mappedBy: book => book.bar1 })
   foos = new Collection<Foo>(this);
-
 }
 
 @Entity()
 class Bar2 {
-
   @PrimaryKey()
   _id = v4();
 
   @OneToMany({ entity: () => Foo, mappedBy: book => book.bar2 })
   foos = new Collection<Foo>(this);
-
 }
 
 @Entity()
 class Bar3 {
-
   @PrimaryKey()
   _id!: string;
 
   @OneToMany({ entity: () => Foo, mappedBy: book => book.bar3 })
   foos = new Collection<Foo>(this);
-
 }
 
 let orm: MikroORM;

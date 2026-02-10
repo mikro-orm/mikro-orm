@@ -1,11 +1,19 @@
 import { Collection, LoadStrategy, MikroORM, Rel } from '@mikro-orm/sqlite';
-import { Entity, Filter, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  Filter,
+  ManyToOne,
+  OneToMany,
+  OneToOne,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../../helpers.js';
 
 @Entity()
 @Filter({ name: 'softDelete', cond: { deletedAt: null }, default: true })
 class Author {
-
   @PrimaryKey()
   id!: number;
 
@@ -17,12 +25,10 @@ class Author {
 
   @Property({ nullable: true })
   deletedAt?: Date;
-
 }
 
 @Entity()
 class Book {
-
   @PrimaryKey()
   id!: number;
 
@@ -34,12 +40,10 @@ class Book {
 
   @OneToOne(() => Cover, cover => cover.book)
   cover?: Rel<Cover>;
-
 }
 
 @Entity()
 class Cover {
-
   @PrimaryKey()
   id!: number;
 
@@ -48,7 +52,6 @@ class Cover {
 
   @OneToOne(() => Book, book => book.cover, { owner: true, nullable: true })
   book!: Book | null;
-
 }
 
 let orm: MikroORM;
@@ -76,10 +79,14 @@ test.each(Object.values(LoadStrategy))('GH #6460 using "%s" strategy', async str
   const books = await orm.em.findAll(Book);
   expect(books).toHaveLength(0);
 
-  const cover = await orm.em.findOneOrFail(Cover, { name: 'Cover 1' }, {
-    populate: ['book'],
-    strategy,
-  });
+  const cover = await orm.em.findOneOrFail(
+    Cover,
+    { name: 'Cover 1' },
+    {
+      populate: ['book'],
+      strategy,
+    },
+  );
   expect(cover.book).toBeNull();
 
   const mock = mockLogger(orm);

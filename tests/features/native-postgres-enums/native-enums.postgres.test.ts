@@ -24,7 +24,6 @@ enum Enum2 {
 
 @Entity()
 class EnumEntity {
-
   @PrimaryKey()
   id!: number;
 
@@ -45,11 +44,9 @@ class EnumEntity {
 
   @Enum({ items: ['a'], nullable: true, nativeEnumName: 'enum5' })
   enum5?: any;
-
 }
 
 describe('native enums in postgres', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -117,7 +114,10 @@ describe('native enums in postgres', () => {
     newTableMeta.properties.enumTest.nativeEnumName = 'enum_test';
     newTableMeta.properties.enumTest.type = 'object';
     delete newTableMeta.properties.enumTest.columnTypes[0];
-    newTableMeta.properties.enumTest.columnTypes[0] = Type.getType(EnumType).getColumnType(newTableMeta.properties.enumTest, orm.em.getPlatform());
+    newTableMeta.properties.enumTest.columnTypes[0] = Type.getType(EnumType).getColumnType(
+      newTableMeta.properties.enumTest,
+      orm.em.getPlatform(),
+    );
     newTableMeta.sync(false, orm.config);
     diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff).toMatchSnapshot('postgres-update-schema-enums-2');
@@ -126,7 +126,10 @@ describe('native enums in postgres', () => {
     // change enum items
     newTableMeta.properties.enumTest.items = ['a', 'b', 'c'];
     delete newTableMeta.properties.enumTest.columnTypes[0];
-    newTableMeta.properties.enumTest.columnTypes[0] = Type.getType(EnumType).getColumnType(newTableMeta.properties.enumTest, orm.em.getPlatform());
+    newTableMeta.properties.enumTest.columnTypes[0] = Type.getType(EnumType).getColumnType(
+      newTableMeta.properties.enumTest,
+      orm.em.getPlatform(),
+    );
     newTableMeta.sync(false, orm.config);
     diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff).toMatchSnapshot('postgres-update-schema-enums-3');
@@ -146,5 +149,4 @@ describe('native enums in postgres', () => {
     expect(diff).toMatchSnapshot('postgres-update-schema-enums-4');
     await orm.schema.execute(diff);
   });
-
 });

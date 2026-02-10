@@ -29,7 +29,6 @@ import { PLATFORMS } from '../../bootstrap.js';
 
 @Entity()
 class Author {
-
   [OptionalProps]?: 'foo';
 
   static id = 1;
@@ -67,12 +66,10 @@ class Author {
   afterUpsert() {
     Author.hooks.push('afterUpsert');
   }
-
 }
 
 @Entity()
 class Book {
-
   static id = 1;
 
   @PrimaryKey({ name: '_id' })
@@ -88,13 +85,11 @@ class Book {
     this.name = name;
     this.author = ref(author);
   }
-
 }
 
 @Entity()
 @Unique({ properties: ['author', 'name'] })
 class FooBar {
-
   static id = 1;
 
   @PrimaryKey({ name: '_id' })
@@ -113,12 +108,10 @@ class FooBar {
     this.name = name;
     this.author = ref(author);
   }
-
 }
 
 @Entity()
 class FooBarWithEmbeddable {
-
   static id = 1;
 
   @PrimaryKey({ name: '_id' })
@@ -126,19 +119,15 @@ class FooBarWithEmbeddable {
 
   @Embedded(() => FooBarEmbeddable)
   fooBarEmbeddable = new FooBarEmbeddable();
-
 }
 
 @Embeddable()
 class FooBarEmbeddable {
-
   @Property({ nullable: true })
   name?: string;
-
 }
 
 class Subscriber implements EventSubscriber {
-
   static log: any[] = [];
 
   beforeUpsert(args: EventArgs<any>): void | Promise<void> {
@@ -152,7 +141,6 @@ class Subscriber implements EventSubscriber {
   onInit(args: EventArgs<any>) {
     Subscriber.log.push(['onInit', args]);
   }
-
 }
 
 const options = {
@@ -163,7 +151,7 @@ const options = {
   mongo: { dbName: 'mikro_orm_upsert' },
 };
 
-describe.each(Utils.keys(options))('em.upsert [%s]',  type => {
+describe.each(Utils.keys(options))('em.upsert [%s]', type => {
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -517,7 +505,6 @@ describe.each(Utils.keys(options))('em.upsert [%s]',  type => {
     await assertFooBars([fooBar1, fooBar2, fooBar3], mock);
   });
 
-
   test('em.upsert(entity) with embeddable', async () => {
     const testEntity = orm.em.create(FooBarWithEmbeddable, { fooBarEmbeddable: {} });
 
@@ -536,7 +523,9 @@ describe.each(Utils.keys(options))('em.upsert [%s]',  type => {
 
     expect(testEntity.id).toBeDefined();
 
-    const [insertedEntity2] = await orm.em.upsertMany(FooBarWithEmbeddable, [{ id: testEntity.id, fooBarEmbeddable: {} }]);
+    const [insertedEntity2] = await orm.em.upsertMany(FooBarWithEmbeddable, [
+      { id: testEntity.id, fooBarEmbeddable: {} },
+    ]);
 
     expect(insertedEntity2).toBe(testEntity);
   });
@@ -806,12 +795,15 @@ describe.each(Utils.keys(options))('em.upsert [%s]',  type => {
   test('em.upsertMany(Type, data) with disableIdentityMap', async () => {
     await createEntities();
     await orm.em.nativeDelete(Book, [2, 3]);
-    await orm.em.upsertMany(Author, [
-      { id: 1, email: 'a1', age: 41 }, // exists
-      { id: 2, email: 'a2', age: 42 }, // inserts
-      { id: 3, email: 'a3', age: 43 }, // inserts
-    ], { disableIdentityMap: true });
+    await orm.em.upsertMany(
+      Author,
+      [
+        { id: 1, email: 'a1', age: 41 }, // exists
+        { id: 2, email: 'a2', age: 42 }, // inserts
+        { id: 3, email: 'a3', age: 43 }, // inserts
+      ],
+      { disableIdentityMap: true },
+    );
     expect(orm.em.getUnitOfWork().getIdentityMap().keys()).toHaveLength(0);
   });
-
 });

@@ -5,7 +5,6 @@ import { PLATFORMS } from '../../bootstrap.js';
 
 @Entity()
 class User {
-
   static id = 1;
 
   @PrimaryKey({ name: '_id' })
@@ -13,7 +12,6 @@ class User {
 
   @Property({ type: 'json' })
   value: any;
-
 }
 
 const options = {
@@ -25,7 +23,7 @@ const options = {
   mongo: { dbName: 'mikro_orm_json_props' },
 };
 
-describe.each(Utils.keys(options))('JSON properties [%s]',  type => {
+describe.each(Utils.keys(options))('JSON properties [%s]', type => {
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -178,5 +176,4 @@ describe.each(Utils.keys(options))('JSON properties [%s]',  type => {
       [key5]: 'test 5',
     });
   });
-
 });

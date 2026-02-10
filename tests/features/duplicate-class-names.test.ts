@@ -64,10 +64,7 @@ test('duplicate class names', async () => {
 
   const books = await orm.em.findAll(Book, {
     where: {
-      $and: [
-        { tags: { $some: { name: 'Fiction' } } },
-        { tags: { $some: { name: 'Fantasy' } } },
-      ],
+      $and: [{ tags: { $some: { name: 'Fiction' } } }, { tags: { $some: { name: 'Fantasy' } } }],
     },
     populate: ['tags', 'author'],
     orderBy: { title: 'asc', tags: { name: 'asc' } },

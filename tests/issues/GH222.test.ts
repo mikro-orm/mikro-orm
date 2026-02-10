@@ -11,7 +11,6 @@ import {
 
 @Entity()
 class A {
-
   @PrimaryKey({ type: 'number' })
   id!: number;
 
@@ -20,12 +19,10 @@ class A {
 
   @Property({ type: String })
   prop!: string;
-
 }
 
 @Entity()
 class C {
-
   [EagerProps]?: 'bCollection';
 
   @PrimaryKey({ type: Number })
@@ -36,12 +33,10 @@ class C {
 
   @OneToMany(() => B, b => b.c, { eager: true })
   bCollection = new Collection<B>(this);
-
 }
 
 @Entity()
 class B {
-
   @PrimaryKey({ type: Number })
   id!: number;
 
@@ -53,11 +48,9 @@ class B {
 
   @Property({ type: String })
   prop!: string;
-
 }
 
 describe('GH issue 222', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -111,5 +104,4 @@ describe('GH issue 222', () => {
     const ccJson = wrap(cc).toJSON();
     expect(ccJson.a.prop).toEqual(ccJson.bCollection[0].a.prop);
   });
-
 });

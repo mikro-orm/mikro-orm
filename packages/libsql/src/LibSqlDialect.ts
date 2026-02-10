@@ -10,7 +10,6 @@ import {
 const CONNECTION_TIMEOUT = 10_000;
 
 class ConnectionMutex {
-
   #promise?: Promise<void>;
   #resolve?: () => void;
 
@@ -32,11 +31,9 @@ class ConnectionMutex {
 
     resolve?.();
   }
-
 }
 
 class LibSqlConnection implements DatabaseConnection {
-
   private readonly created = Date.now();
   declare memory: boolean;
 
@@ -59,7 +56,10 @@ class LibSqlConnection implements DatabaseConnection {
     const query = sql.trim().toLowerCase();
 
     /* v8 ignore next */
-    if (query.startsWith('select') || ((query.startsWith('insert into') || query.startsWith('update ')) && query.includes(' returning '))) {
+    if (
+      query.startsWith('select') ||
+      ((query.startsWith('insert into') || query.startsWith('update ')) && query.includes(' returning '))
+    ) {
       return {
         rows: stmt.all(parameters) as R[],
       };
@@ -88,11 +88,9 @@ class LibSqlConnection implements DatabaseConnection {
       };
     }
   }
-
 }
 
 class LibSqlKyselyDriver extends SqliteDriver {
-
   private db!: SqliteDatabase;
   private connection!: LibSqlConnection;
   private connectionMutex = new ConnectionMutex();
@@ -130,11 +128,9 @@ class LibSqlKyselyDriver extends SqliteDriver {
   override async destroy() {
     this.db.close();
   }
-
 }
 
 export class LibSqlDialect extends SqliteDialect {
-
   constructor(private readonly config: SqliteDialectConfig) {
     super(config);
   }
@@ -142,5 +138,4 @@ export class LibSqlDialect extends SqliteDialect {
   override createDriver() {
     return new LibSqlKyselyDriver(this.config);
   }
-
 }

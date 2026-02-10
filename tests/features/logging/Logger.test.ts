@@ -14,7 +14,6 @@ describe('Logger', () => {
   });
 
   describe('DefaultLogger', () => {
-
     test('should have debug mode disabled by default, but still output deprecated', async () => {
       const logger = new DefaultLogger({ writer: mockWriter });
       expect(logger.debugMode).toBe(false);
@@ -175,7 +174,6 @@ describe('Logger', () => {
   });
 
   describe('SimpleLogger', () => {
-
     test('should print correctly without a label', () => {
       const logger = new SimpleLogger({ writer: mockWriter, debugMode: ['query'] });
       const namespace = 'query';
@@ -194,5 +192,3 @@ describe('Logger', () => {
     });
   });
 });
-
-

@@ -10,7 +10,6 @@ import FooBar from '../../entities/FooBar.js';
 import { FooBaz } from '../../entities/FooBaz.js';
 
 describe('DebugCommand', () => {
-
   test('handler', async () => {
     const getSettings = vi.spyOn(CLIHelper, 'getSettings');
     const dump = vi.spyOn(CLIHelper, 'dump');
@@ -33,7 +32,7 @@ describe('DebugCommand', () => {
       ['Current MikroORM CLI configuration'],
       [' - TypeScript support enabled (auto)'],
       [' - searched config paths:'],
-      [`   - ${fs.normalizePath(process.cwd() + '/path/orm-config.ts') } (found)`],
+      [`   - ${fs.normalizePath(process.cwd() + '/path/orm-config.ts')} (found)`],
       [' - searched for config name: default'],
       [' - configuration found'],
       [' - driver dependencies:'],
@@ -43,7 +42,16 @@ describe('DebugCommand', () => {
 
     getSettings.mockResolvedValue({ preferTs: true });
     pathExistsMock.mockImplementation(path => path.endsWith('entities-1') || path.endsWith('orm-config.ts'));
-    getConfiguration.mockResolvedValue(new Configuration(defineConfig({ preferTs: true, entities: ['./dist/entities-1', './dist/entities-2'], entitiesTs: ['./src/entities-1', './src/entities-2'] }), false));
+    getConfiguration.mockResolvedValue(
+      new Configuration(
+        defineConfig({
+          preferTs: true,
+          entities: ['./dist/entities-1', './dist/entities-2'],
+          entitiesTs: ['./src/entities-1', './src/entities-2'],
+        }),
+        false,
+      ),
+    );
     dump.mock.calls.length = 0;
     await expect(cmd.handler({ contextName: 'default' } as any)).resolves.toBeUndefined();
     expect(dumpDependencies).toHaveBeenCalledTimes(2);
@@ -51,23 +59,27 @@ describe('DebugCommand', () => {
       ['Current MikroORM CLI configuration'],
       [' - TypeScript support enabled (auto)'],
       [' - searched config paths:'],
-      [`   - ${fs.normalizePath(process.cwd() + '/path/orm-config.ts') } (found)`],
+      [`   - ${fs.normalizePath(process.cwd() + '/path/orm-config.ts')} (found)`],
       [' - searched for config name: default'],
       [' - configuration found'],
       [' - driver dependencies:'],
       [`   - mongodb ${CLIHelper.getModuleVersion('mongodb')}`],
       [' - database connection successful'],
-      [' - `preferTs` flag explicitly set to true, will use `entitiesTs` array (this value should be set to `false` when running compiled code!)'],
+      [
+        ' - `preferTs` flag explicitly set to true, will use `entitiesTs` array (this value should be set to `false` when running compiled code!)',
+      ],
       [' - could use `entities` array (contains 0 references and 2 paths)'],
-      [`   - ${fs.normalizePath(process.cwd() + '/dist/entities-1') } (found)`],
-      [`   - ${fs.normalizePath(process.cwd() + '/dist/entities-2') } (not found)`],
+      [`   - ${fs.normalizePath(process.cwd() + '/dist/entities-1')} (found)`],
+      [`   - ${fs.normalizePath(process.cwd() + '/dist/entities-2')} (not found)`],
       [' - will use `entitiesTs` array (contains 0 references and 2 paths)'],
-      [`   - ${fs.normalizePath(process.cwd() + '/src/entities-1') } (found)`],
-      [`   - ${fs.normalizePath(process.cwd() + '/src/entities-2') } (not found)`],
+      [`   - ${fs.normalizePath(process.cwd() + '/src/entities-1')} (found)`],
+      [`   - ${fs.normalizePath(process.cwd() + '/src/entities-2')} (not found)`],
     ];
     expect(dump.mock.calls).toEqual(expected);
 
-    getConfiguration.mockResolvedValue(new Configuration(defineConfig({ preferTs: false, entities: [FooBar, FooBaz] }), false));
+    getConfiguration.mockResolvedValue(
+      new Configuration(defineConfig({ preferTs: false, entities: [FooBar, FooBaz] }), false),
+    );
     dump.mock.calls.length = 0;
     await expect(cmd.handler({ contextName: 'default' } as any)).resolves.toBeUndefined();
     expect(dumpDependencies).toHaveBeenCalledTimes(3);
@@ -75,7 +87,7 @@ describe('DebugCommand', () => {
       ['Current MikroORM CLI configuration'],
       [' - TypeScript support enabled (auto)'],
       [' - searched config paths:'],
-      [`   - ${fs.normalizePath(process.cwd() + '/path/orm-config.ts') } (found)`],
+      [`   - ${fs.normalizePath(process.cwd() + '/path/orm-config.ts')} (found)`],
       [' - searched for config name: default'],
       [' - configuration found'],
       [' - driver dependencies:'],
@@ -93,7 +105,7 @@ describe('DebugCommand', () => {
       ['Current MikroORM CLI configuration'],
       [' - TypeScript support enabled (auto)'],
       [' - searched config paths:'],
-      [`   - ${fs.normalizePath(process.cwd() + '/path/orm-config.ts') } (found)`],
+      [`   - ${fs.normalizePath(process.cwd() + '/path/orm-config.ts')} (found)`],
       [' - searched for config name: default'],
       ['- configuration not found (test error message)'],
     ]);
@@ -106,7 +118,7 @@ describe('DebugCommand', () => {
       ['Current MikroORM CLI configuration'],
       [' - TypeScript support enabled (auto)'],
       [' - searched config paths:'],
-      [`   - ${fs.normalizePath(process.cwd() + '/path/orm-config.ts') } (not found)`],
+      [`   - ${fs.normalizePath(process.cwd() + '/path/orm-config.ts')} (not found)`],
       [' - searched for config name: default'],
       [' - configuration found'],
       [' - driver dependencies:'],
@@ -122,14 +134,14 @@ describe('DebugCommand', () => {
     getConfiguration.mockResolvedValue(new Configuration(defineConfig({}), false));
     getConfigPaths.mockResolvedValue(['./path/orm-config.ts']);
     const connectionMock = vi.spyOn(CLIHelper, 'isDBConnected');
-    connectionMock.mockImplementation(async (_, reason) => reason ? 'host not found' : false as never);
+    connectionMock.mockImplementation(async (_, reason) => (reason ? 'host not found' : (false as never)));
     await expect(cmd.handler({ contextName: 'default' } as any)).resolves.toBeUndefined();
     expect(dumpDependencies).toHaveBeenCalledTimes(6);
     expect(dump.mock.calls).toEqual([
       ['Current MikroORM CLI configuration'],
       [' - TypeScript support enabled (auto)'],
       [' - searched config paths:'],
-      [`   - ${fs.normalizePath(process.cwd() + '/path/orm-config.ts') } (not found)`],
+      [`   - ${fs.normalizePath(process.cwd() + '/path/orm-config.ts')} (not found)`],
       [' - searched for config name: default'],
       [' - configuration found'],
       [' - driver dependencies:'],

@@ -1,9 +1,16 @@
 import { Collection, MikroORM, QueryOrder, raw, Ref, wrap } from '@mikro-orm/postgresql';
-import { Entity, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  OneToOne,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class User {
-
   @PrimaryKey()
   id!: number;
 
@@ -12,12 +19,10 @@ class User {
 
   @OneToOne(() => Shop, shop => shop.user, { ref: true, owner: true })
   shop!: Ref<Shop>;
-
 }
 
 @Entity()
 class Shop {
-
   @PrimaryKey()
   id!: number;
 
@@ -29,12 +34,10 @@ class Shop {
 
   @OneToMany(() => Order, order => order.shop)
   orders = new Collection<Order>(this);
-
 }
 
 @Entity()
 class Order {
-
   @PrimaryKey()
   id!: number;
 
@@ -43,7 +46,6 @@ class Order {
 
   @ManyToOne(() => Shop, { ref: true })
   shop!: Ref<Shop>;
-
 }
 
 let orm: MikroORM;
@@ -88,11 +90,7 @@ afterAll(async () => {
 });
 
 test('serialize users retrieved from em', async () => {
-  const users = await orm.em.find(
-    User,
-    {},
-    { populate: ['shop', 'shop.orders'] },
-  );
+  const users = await orm.em.find(User, {}, { populate: ['shop', 'shop.orders'] });
 
   expect(wrap(users[0]).toObject()).toEqual({
     id: 1,
@@ -150,10 +148,7 @@ test('serialize users retrieved from qb', async () => {
 test('serialize users with populated orders by left joining subquery', async () => {
   const sampledOrdersQuery = orm.em
     .createQueryBuilder(Order, 'orders')
-    .distinctOn([
-      raw('cast("orders"."time" as date)'),
-      'shop',
-    ])
+    .distinctOn([raw('cast("orders"."time" as date)'), 'shop'])
     // TODO: add error check for combining raw with object syntax in orderBy
     .orderBy([
       { [raw('cast("orders"."time" as date)')]: QueryOrder.DESC },
@@ -191,10 +186,7 @@ test('serialize users with populated orders by left joining subquery', async () 
 test('serialize users with populated orders by left joining subquery, mapping and setting populate hint manually', async () => {
   const sampledOrdersQuery = orm.em
     .createQueryBuilder(Order, 'orders')
-    .distinctOn([
-      raw('cast("orders"."time" as date)'),
-      'shop',
-    ])
+    .distinctOn([raw('cast("orders"."time" as date)'), 'shop'])
     .orderBy([
       { [raw('cast("orders"."time" as date)')]: QueryOrder.DESC },
       {
@@ -211,10 +203,7 @@ test('serialize users with populated orders by left joining subquery, mapping an
     .execute();
 
   const mappedUsers = users.map(user => orm.em.map(User, user));
-  const loadedUsers = await orm.em.populate(mappedUsers, [
-    'shop',
-    'shop.orders',
-  ]);
+  const loadedUsers = await orm.em.populate(mappedUsers, ['shop', 'shop.orders']);
 
   expect(wrap(loadedUsers[0]).toObject()).toEqual({
     id: 1,

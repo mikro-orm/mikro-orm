@@ -5,10 +5,9 @@ import { initORMMySql } from '../../bootstrap.js';
 import { Author2, Book2, BookTag2, FooBar2, Publisher2, PublisherType } from '../../entities-sql/index.js';
 
 describe('EntityAssignerMySql', () => {
-
   let orm: MikroORM<MySqlDriver>;
 
-  beforeAll(async () => orm = await initORMMySql('mysql', {}, true));
+  beforeAll(async () => (orm = await initORMMySql('mysql', {}, true)));
   beforeEach(async () => orm.schema.clear());
   afterAll(async () => {
     await orm.schema.dropDatabase();
@@ -101,7 +100,10 @@ describe('EntityAssignerMySql', () => {
 
     const value = Reference.unwrapReference(book2.publisher!);
 
-    wrap(book2).assign({ author: { name: 'Jon Snow2' }, publisher: { name: 'Better Books LLC' } }, { updateNestedEntities: true });
+    wrap(book2).assign(
+      { author: { name: 'Jon Snow2' }, publisher: { name: 'Better Books LLC' } },
+      { updateNestedEntities: true },
+    );
 
     expect(book2.author).not.toEqual(originalAuthorRef);
     expect(book2.publisher).not.toEqual(originalPublisherWrappedRef);
@@ -131,7 +133,10 @@ describe('EntityAssignerMySql', () => {
     const originalRef = book2.publisher!;
     expect(originalValue.name).toEqual('Good Books LLC');
 
-    wrap(book2).assign({ author: { name: 'Jon Snow2' }, publisher: { name: 'Better Books LLC' } }, { updateByPrimaryKey: false });
+    wrap(book2).assign(
+      { author: { name: 'Jon Snow2' }, publisher: { name: 'Better Books LLC' } },
+      { updateByPrimaryKey: false },
+    );
 
     // this means that the original object has been replaced, something updateNestedEntities does not do
     expect(book2.publisher).toEqual(originalRef);
@@ -199,10 +204,7 @@ describe('EntityAssignerMySql', () => {
     const entity = orm.em.create(Author2, {
       name: 'god',
       email: 'e',
-      books: [
-        { title: 'b1' },
-        { title: 'b2' },
-      ],
+      books: [{ title: 'b1' }, { title: 'b2' }],
     }) as Loaded<Author2, 'books'>;
     entity.books.populated();
     const updated = wrap(entity).toObject();
@@ -210,5 +212,4 @@ describe('EntityAssignerMySql', () => {
     orm.em.assign(entity, updated); // `updateNestedEntities` defaults to true since v5
     expect(entity.books[0].title).toBe('updated name');
   });
-
 });

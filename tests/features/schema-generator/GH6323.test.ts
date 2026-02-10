@@ -4,7 +4,6 @@ import { EntityGenerator } from '@mikro-orm/entity-generator';
 
 @Entity({ tableName: 'quote_settings' })
 class QuoteSettings {
-
   @PrimaryKey({ type: 'integer' })
   id!: number;
 
@@ -21,12 +20,10 @@ class QuoteSettings {
     unique: 'quote_settings_user_group_id_key',
   })
   user_group?: Rel<UserGroup>;
-
 }
 
 @Entity({ tableName: 'quote_settings' })
 class InvalidQuoteSettings {
-
   @PrimaryKey({ type: 'integer' })
   id!: number;
 
@@ -42,27 +39,22 @@ class InvalidQuoteSettings {
     unique: 'quote_settings_user_group_id_key',
   })
   user_group?: Rel<UserGroup>;
-
 }
 
 @Entity({ tableName: 'user_group' })
 @Unique({ name: 'user_group_id_org_id_key', properties: ['id', 'org'] })
 class UserGroup {
-
   @PrimaryKey({ type: 'integer' })
   id!: number;
 
   @ManyToOne({ entity: () => Org, fieldName: 'org_id' })
   org!: Rel<Org>;
-
 }
 
 @Entity({ tableName: 'org' })
 class Org {
-
   @PrimaryKey({ type: 'integer' })
   id!: number;
-
 }
 
 let orm: MikroORM;
@@ -88,9 +80,13 @@ test('entity generator', async () => {
 });
 
 test('validation', async () => {
-  await expect(MikroORM.init({
-    metadataProvider: ReflectMetadataProvider,
-    entities: [Org, UserGroup, InvalidQuoteSettings],
-    dbName: '6323',
-  })).rejects.toThrow(`InvalidQuoteSettings.user_group requires explicit 'referencedColumnNames' option, since the 'joinColumns' are not matching the length.`);
+  await expect(
+    MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
+      entities: [Org, UserGroup, InvalidQuoteSettings],
+      dbName: '6323',
+    }),
+  ).rejects.toThrow(
+    `InvalidQuoteSettings.user_group requires explicit 'referencedColumnNames' option, since the 'joinColumns' are not matching the length.`,
+  );
 });

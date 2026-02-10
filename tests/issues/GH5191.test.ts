@@ -1,9 +1,15 @@
 import { Collection, MikroORM, Opt, PrimaryKeyProp, Rel, wrap } from '@mikro-orm/sqlite';
-import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class Page {
-
   @PrimaryKey()
   pageId!: number;
 
@@ -23,12 +29,10 @@ class Page {
 
   @Property({ persist: false })
   userId!: number & Opt;
-
 }
 
 @Entity()
 class User {
-
   @PrimaryKey()
   userId!: number;
 
@@ -42,12 +46,10 @@ class User {
 
   @OneToMany(() => Page, page => page.user)
   pages = new Collection<Page>(this);
-
 }
 
 @Entity()
 class Book {
-
   @PrimaryKey()
   bookId!: number;
 
@@ -68,7 +70,6 @@ class Book {
 
   @Property({ persist: false })
   userId!: number & Opt;
-
 }
 
 let orm: MikroORM;

@@ -1,35 +1,41 @@
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
+var __decorate =
+  (this && this.__decorate) ||
+  function (decorators, target, key, desc) {
+    var c = arguments.length,
+      r = c < 3 ? target : desc === null ? (desc = Object.getOwnPropertyDescriptor(target, key)) : desc,
+      d;
+    if (typeof Reflect === 'object' && typeof Reflect.decorate === 'function')
+      r = Reflect.decorate(decorators, target, key, desc);
+    else
+      for (var i = decorators.length - 1; i >= 0; i--)
+        if ((d = decorators[i])) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return (c > 3 && r && Object.defineProperty(target, key, r), r);
+  };
 import { Entity, ManyToOne, OneToOne, PrimaryKey, Property, SerializedPrimaryKey } from '@mikro-orm/decorators/legacy';
 import FooBar from './FooBar.js';
 import { Book } from './Book.js';
 let FooBaz = class FooBaz {
-    _id;
-    id;
-    name;
-    bar;
-    book;
+  _id;
+  id;
+  name;
+  bar;
+  book;
 };
-__decorate([
-    PrimaryKey()
-], FooBaz.prototype, "_id", void 0);
-__decorate([
-    SerializedPrimaryKey()
-], FooBaz.prototype, "id", void 0);
-__decorate([
-    Property()
-], FooBaz.prototype, "name", void 0);
-__decorate([
-    OneToOne(() => FooBar, bar => bar.baz, { eager: true })
-], FooBaz.prototype, "bar", void 0);
-__decorate([
-    ManyToOne(() => Book, { eager: true })
-], FooBaz.prototype, "book", void 0);
-FooBaz = __decorate([
-    Entity()
-], FooBaz);
+__decorate([PrimaryKey()], FooBaz.prototype, '_id', void 0);
+__decorate([SerializedPrimaryKey()], FooBaz.prototype, 'id', void 0);
+__decorate([Property()], FooBaz.prototype, 'name', void 0);
+__decorate(
+  [
+    OneToOne(
+      () => FooBar,
+      bar => bar.baz,
+      { eager: true },
+    ),
+  ],
+  FooBaz.prototype,
+  'bar',
+  void 0,
+);
+__decorate([ManyToOne(() => Book, { eager: true })], FooBaz.prototype, 'book', void 0);
+FooBaz = __decorate([Entity()], FooBaz);
 export { FooBaz };

@@ -1,7 +1,6 @@
 import { BaseEntity, defineEntity, Opt, p } from '@mikro-orm/core';
 
 export class BaseEntity4 extends BaseEntity {
-
   id!: number;
   createdAt: Date & Opt = new Date();
   updatedAt: Date & Opt = new Date();
@@ -34,7 +33,6 @@ export class BaseEntity4 extends BaseEntity {
   baseAfterDelete() {
     BaseEntity4.afterDestroyCalled += 1;
   }
-
 }
 
 async function beforeUpdate(this: BaseEntity4) {
@@ -66,8 +64,15 @@ export const BaseEntity4Schema = defineEntity({
   },
   properties: {
     id: p.integer().primary(),
-    createdAt: p.datetime().onCreate(() => new Date()).nullable(),
-    updatedAt: p.datetime().onCreate(() => new Date()).nullable().onUpdate(() => new Date()),
+    createdAt: p
+      .datetime()
+      .onCreate(() => new Date())
+      .nullable(),
+    updatedAt: p
+      .datetime()
+      .onCreate(() => new Date())
+      .nullable()
+      .onUpdate(() => new Date()),
     baseVersion: p.integer().persist(false),
     baseVersionAsString: p.string().persist(false),
   },

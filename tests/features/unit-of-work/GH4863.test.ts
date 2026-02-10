@@ -3,29 +3,24 @@ import { Entity, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider } from
 
 @Entity()
 class Department {
-
   @PrimaryKey()
   id!: number;
 
   @Property()
   name!: string;
-
 }
 
 @Entity()
 class Person {
-
   @PrimaryKey()
   id!: number;
 
   @Property()
   name!: string;
-
 }
 
 @Entity()
 class Employee {
-
   @PrimaryKey()
   id!: number;
 
@@ -34,7 +29,6 @@ class Employee {
 
   @ManyToOne({ deleteRule: 'cascade' })
   person!: Person;
-
 }
 
 let orm: MikroORM;

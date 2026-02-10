@@ -4,7 +4,6 @@ import type { BaseArgs, BaseCommand } from '../CLIConfigurator.js';
 import { CLIHelper } from '../CLIHelper.js';
 
 export class SchemaCommandFactory {
-
   static readonly DESCRIPTIONS = {
     create: 'Create database schema based on current metadata',
     update: 'Update database schema based on current metadata',
@@ -26,7 +25,8 @@ export class SchemaCommandFactory {
       command: `schema:${command}`,
       describe: SchemaCommandFactory.DESCRIPTIONS[command],
       builder: (args: Argv<BaseArgs>) => SchemaCommandFactory.configureSchemaCommand(args, command),
-      handler: (args: ArgumentsCamelCase<OptionsMap[T]>) => SchemaCommandFactory.handleSchemaCommand(args as ArgumentsCamelCase<Options>, command, successMessage),
+      handler: (args: ArgumentsCamelCase<OptionsMap[T]>) =>
+        SchemaCommandFactory.handleSchemaCommand(args as ArgumentsCamelCase<Options>, command, successMessage),
     } satisfies BaseCommand<OptionsMap[T]>;
   }
 
@@ -91,7 +91,11 @@ export class SchemaCommandFactory {
     return args as Argv<OptionsMap[T]>;
   }
 
-  static async handleSchemaCommand(args: ArgumentsCamelCase<Options>, method: SchemaMethod, successMessage: string): Promise<void> {
+  static async handleSchemaCommand(
+    args: ArgumentsCamelCase<Options>,
+    method: SchemaMethod,
+    successMessage: string,
+  ): Promise<void> {
     if (!args.run && !args.dump) {
       return CLIHelper.showHelp();
     }
@@ -100,7 +104,10 @@ export class SchemaCommandFactory {
     const params = { wrap: args.fkChecks == null ? undefined : !args.fkChecks, ...args };
 
     if (args.dump) {
-      const m = `get${method.substr(0, 1).toUpperCase()}${method.substr(1)}SchemaSQL` as 'getCreateSchemaSQL' | 'getUpdateSchemaSQL' | 'getDropSchemaSQL';
+      const m = `get${method.substr(0, 1).toUpperCase()}${method.substr(1)}SchemaSQL` as
+        | 'getCreateSchemaSQL'
+        | 'getUpdateSchemaSQL'
+        | 'getDropSchemaSQL';
       const dump = await orm.schema[m](params);
 
       /* v8 ignore if */
@@ -123,7 +130,6 @@ export class SchemaCommandFactory {
     CLIHelper.dump(colors.green(successMessage));
     await orm.close(true);
   }
-
 }
 
 type SchemaOptions = BaseArgs & {

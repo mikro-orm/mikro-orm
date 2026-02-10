@@ -3,7 +3,7 @@ import { getMetadataFromDecorator } from '../utils.js';
 
 export function Embeddable<T>(options: EmbeddableOptions<T> = {}) {
   return function (target: T) {
-    const meta = getMetadataFromDecorator(target as (T & Dictionary));
+    const meta = getMetadataFromDecorator(target as T & Dictionary);
     meta.class = target as unknown as Constructor<T>;
     meta.name = meta.class.name;
     meta.embeddable = true;

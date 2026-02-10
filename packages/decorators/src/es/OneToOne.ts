@@ -20,6 +20,10 @@ export function OneToOne<Target extends object, Owner extends object>(
     const meta = prepareMetadataContext(context, ReferenceKind.ONE_TO_ONE);
     options = processDecoratorParameters<OneToManyOptions<Owner, Target>>({ entity, mappedBy, options });
     const property = { name: context.name, kind: ReferenceKind.ONE_TO_ONE } as EntityProperty<Owner>;
-    meta.properties[context.name as EntityKey<Owner>] = Object.assign(meta.properties[context.name as EntityKey<Owner>] ?? {}, property, options);
+    meta.properties[context.name as EntityKey<Owner>] = Object.assign(
+      meta.properties[context.name as EntityKey<Owner>] ?? {},
+      property,
+      options,
+    );
   };
 }

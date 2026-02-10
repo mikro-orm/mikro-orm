@@ -4,7 +4,6 @@ import { v4 } from 'uuid';
 
 @Entity()
 class User {
-
   @PrimaryKey({ type: t.uuid })
   id: string = v4();
 
@@ -13,7 +12,6 @@ class User {
 
   @Property()
   email!: string;
-
 }
 
 let orm: MikroORM;
@@ -49,7 +47,9 @@ test('should ignore undefined properties when using assign() when using ignoreUn
   const user1 = await emRead1.findOneOrFail(User, userInit.id);
   const updateContent1 = { name: 'Eugene Poubelle', email: undefined };
 
-  expect(() => wrap(user1).assign(updateContent1)).toThrow('You must pass a non-undefined value to the property email of entity User.');
+  expect(() => wrap(user1).assign(updateContent1)).toThrow(
+    'You must pass a non-undefined value to the property email of entity User.',
+  );
 
   // without using ignoreUndefined on a nullable field
   const emRead2 = orm.em.fork();
@@ -74,5 +74,4 @@ test('should ignore undefined properties when using assign() when using ignoreUn
   const test4 = wrap(user4).assign(updateContent4, { ignoreUndefined: true });
 
   expect(test4).toEqual({ id: expect.any(String), name: 'Eugene', email: 'edward@eugene.app' });
-
 });

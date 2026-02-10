@@ -1,5 +1,12 @@
 import { Collection, Ref, SimpleLogger } from '@mikro-orm/core';
-import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { MikroORM } from '@mikro-orm/sqlite';
 import { v4 } from 'uuid';
 import { mockLogger } from '../../helpers.js';
@@ -26,7 +33,6 @@ function generateProducts(amountOfProducts: number, amountOfVariants: number) {
 
 @Entity()
 class Store {
-
   @PrimaryKey({ type: 'uuid' })
   id: string = v4();
 
@@ -35,12 +41,10 @@ class Store {
 
   @OneToMany(() => Product, product => product.store, { orphanRemoval: true })
   products = new Collection<Product>(this);
-
 }
 
 @Entity()
 class Product {
-
   @PrimaryKey({ type: 'uuid' })
   id: string = v4();
 
@@ -49,7 +53,6 @@ class Product {
 
   @ManyToOne(() => Store, { ref: true, deleteRule: 'cascade' })
   store!: Ref<Store>;
-
 }
 
 let orm: MikroORM;

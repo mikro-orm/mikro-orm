@@ -1,4 +1,10 @@
-import { type EntityKey, type EntityProperty, type FormulaCallback, type PropertyOptions, ReferenceKind } from '@mikro-orm/core';
+import {
+  type EntityKey,
+  type EntityProperty,
+  type FormulaCallback,
+  type PropertyOptions,
+  ReferenceKind,
+} from '@mikro-orm/core';
 import { getMetadataFromDecorator } from '../utils.js';
 
 export function Formula<T extends object>(formula: string | FormulaCallback<T>, options: PropertyOptions<T> = {}) {

@@ -4,18 +4,15 @@ import { initORMSqlite } from '../../bootstrap.js';
 
 @Check({ expression: columns => `${columns.price} >= 0` })
 abstract class Base {
-
   @PrimaryKey()
   id!: number;
 
   @Property()
   price!: number;
-
 }
 
 @Entity()
 class FooEntity extends Base {
-
   @Property()
   @Check({ expression: columns => `${columns.price2} >= 0` })
   price2!: number;
@@ -25,11 +22,9 @@ class FooEntity extends Base {
 
   @Property({ check: 'email = lower(email)' })
   email!: string;
-
 }
 
 describe('check constraint [sqlite]', () => {
-
   test('check constraint is generated for decorator [sqlite]', async () => {
     const orm = await MikroORM.init({
       metadataProvider: ReflectMetadataProvider,
@@ -118,9 +113,7 @@ describe('check constraint [sqlite]', () => {
       },
       name: 'NewTable',
       tableName: 'new_table',
-      checks: [
-        { name: 'foo', expression: 'price >= 0' },
-      ],
+      checks: [{ name: 'foo', expression: 'price >= 0' }],
     }).init().meta;
     meta.set(newTableMeta.class, newTableMeta);
 
@@ -156,5 +149,4 @@ describe('check constraint [sqlite]', () => {
     await orm.schema.dropDatabase();
     await orm.close();
   });
-
 });

@@ -2,20 +2,21 @@ import 'reflect-metadata';
 import { existsSync, mkdirSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
+import { Collection, MikroORM, Ref, SimpleLogger } from '@mikro-orm/core';
 import {
-  Collection,
-  MikroORM,
-  Ref,
-  SimpleLogger,
-} from '@mikro-orm/core';
-import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 import { LibSqlDriver } from '@mikro-orm/libsql';
 
 // Test entities for the main database
 @Entity({ schema: 'main' })
 class MainAuthor {
-
   @PrimaryKey()
   id!: number;
 
@@ -24,12 +25,10 @@ class MainAuthor {
 
   @OneToMany(() => MainBook, book => book.author)
   books = new Collection<MainBook>(this);
-
 }
 
 @Entity({ schema: 'main' })
 class MainBook {
-
   @PrimaryKey()
   id!: number;
 
@@ -38,13 +37,11 @@ class MainBook {
 
   @ManyToOne(() => MainAuthor, { ref: true })
   author!: Ref<MainAuthor>;
-
 }
 
 // Test entities for the attached 'users_db' database
 @Entity({ schema: 'users_db' })
 class UserProfile {
-
   @PrimaryKey()
   id!: number;
 
@@ -53,13 +50,11 @@ class UserProfile {
 
   @Property()
   email!: string;
-
 }
 
 // Test entities for the attached 'logs_db' database
 @Entity({ schema: 'logs_db' })
 class LogEntry {
-
   @PrimaryKey()
   id!: number;
 
@@ -71,7 +66,6 @@ class LogEntry {
 
   @Property()
   createdAt: Date = new Date();
-
 }
 
 describe.each(['sqlite', 'libsql'] as const)('ATTACH DATABASE (%s)', driver => {
@@ -91,7 +85,7 @@ describe.each(['sqlite', 'libsql'] as const)('ATTACH DATABASE (%s)', driver => {
     orm = await MikroORM.init({
       entities: [MainAuthor, MainBook, UserProfile, LogEntry],
       dbName: mainDbPath,
-      driver: driver === 'sqlite' ? SqliteDriver : LibSqlDriver as any,
+      driver: driver === 'sqlite' ? SqliteDriver : (LibSqlDriver as any),
       metadataProvider: ReflectMetadataProvider,
       debug: ['query'],
       logger: i => i,
@@ -270,7 +264,9 @@ describe.each(['sqlite', 'libsql'] as const)('ATTACH DATABASE (%s)', driver => {
 
     // Clean up - recreate the table without the extra column
     await connection.execute('drop table users_db.user_profile');
-    await connection.execute('create table users_db.user_profile (id integer not null primary key autoincrement, username text not null, email text not null)');
+    await connection.execute(
+      'create table users_db.user_profile (id integer not null primary key autoincrement, username text not null, email text not null)',
+    );
   });
 
   test('schema.getCreateSchemaSQL() should not include CREATE SCHEMA statements', async () => {
@@ -350,26 +346,21 @@ describe.each(['sqlite', 'libsql'] as const)('ATTACH DATABASE (%s)', driver => {
     orm.em.remove(result!);
     await orm.em.flush();
   });
-
 });
 
 @Entity({ schema: 'attached_db' })
 class RelPathTestEntity {
-
   @PrimaryKey()
   id!: number;
 
   @Property()
   value!: string;
-
 }
 
 @Entity()
 class RemoteTestEntity {
-
   @PrimaryKey()
   id!: number;
-
 }
 
 describe('ATTACH DATABASE - relative path resolution', () => {
@@ -430,9 +421,7 @@ describe('ATTACH DATABASE - libSQL remote validation', () => {
       driver: LibSqlDriver,
       metadataProvider: ReflectMetadataProvider,
       logger: i => i,
-      attachDatabases: [
-        { name: 'attached_db', path: './attached.db' },
-      ],
+      attachDatabases: [{ name: 'attached_db', path: './attached.db' }],
     });
     // Connection happens lazily - calling connect() should trigger the error
     await expect(orm.connect()).rejects.toThrow('ATTACH DATABASE is not supported for remote libSQL connections');
@@ -446,9 +435,7 @@ describe('ATTACH DATABASE - libSQL remote validation', () => {
       driver: LibSqlDriver,
       metadataProvider: ReflectMetadataProvider,
       logger: i => i,
-      attachDatabases: [
-        { name: 'attached_db', path: './attached.db' },
-      ],
+      attachDatabases: [{ name: 'attached_db', path: './attached.db' }],
     });
     // Connection happens lazily - calling connect() should trigger the error
     await expect(orm.connect()).rejects.toThrow('ATTACH DATABASE is not supported for remote libSQL connections');

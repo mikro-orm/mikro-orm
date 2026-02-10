@@ -8,7 +8,6 @@ import { mockLogger } from '../../helpers.js';
   properties: ['RevisionID', 'UserID'],
 })
 export class TestEntity {
-
   [PrimaryKeyProp]?: 'DeliveryID';
 
   @PrimaryKey({
@@ -38,7 +37,6 @@ export class TestEntity {
 
   @Property({ fieldName: 'EndDate', type: 'date' })
   EndDate!: string;
-
 }
 
 let orm: MikroORM;
@@ -96,6 +94,10 @@ test('GH #6390', async () => {
   expect(upsert1).toHaveLength(2);
   expect(upsert2).toHaveLength(2);
 
-  expect(mock.mock.calls[0][0]).toMatch(`merge into [TestEntityTable] using (values ('2022-01-01', '2022-01-01', N'Test', N'Test', N'Test'), ('2022-01-01', '2022-01-01', N'Test', N'User 2', N'Test')) as tsource([EndDate], [StartDate], [Title], [UserID], [RevisionID]) on [TestEntityTable].[RevisionID] = tsource.[RevisionID] and [TestEntityTable].[UserID] = tsource.[UserID] when not matched then insert ([EndDate], [StartDate], [Title], [UserID], [RevisionID]) values (tsource.[EndDate], tsource.[StartDate], tsource.[Title], tsource.[UserID], tsource.[RevisionID]) when matched then update set [EndDate] = tsource.[EndDate], [StartDate] = tsource.[StartDate], [Title] = tsource.[Title] output inserted.[DeliveryID];`);
-  expect(mock.mock.calls[1][0]).toMatch(`merge into [TestEntityTable] using (values ('2022-01-01', '2022-01-01', N'Test', N'Test', N'Test'), ('2022-01-01', '2022-01-01', N'Test', N'User 2', N'Test')) as tsource([EndDate], [StartDate], [Title], [UserID], [RevisionID]) on [TestEntityTable].[RevisionID] = tsource.[RevisionID] and [TestEntityTable].[UserID] = tsource.[UserID] when not matched then insert ([EndDate], [StartDate], [Title], [UserID], [RevisionID]) values (tsource.[EndDate], tsource.[StartDate], tsource.[Title], tsource.[UserID], tsource.[RevisionID]) when matched then update set [EndDate] = tsource.[EndDate], [StartDate] = tsource.[StartDate], [Title] = tsource.[Title] output inserted.[DeliveryID];`);
+  expect(mock.mock.calls[0][0]).toMatch(
+    `merge into [TestEntityTable] using (values ('2022-01-01', '2022-01-01', N'Test', N'Test', N'Test'), ('2022-01-01', '2022-01-01', N'Test', N'User 2', N'Test')) as tsource([EndDate], [StartDate], [Title], [UserID], [RevisionID]) on [TestEntityTable].[RevisionID] = tsource.[RevisionID] and [TestEntityTable].[UserID] = tsource.[UserID] when not matched then insert ([EndDate], [StartDate], [Title], [UserID], [RevisionID]) values (tsource.[EndDate], tsource.[StartDate], tsource.[Title], tsource.[UserID], tsource.[RevisionID]) when matched then update set [EndDate] = tsource.[EndDate], [StartDate] = tsource.[StartDate], [Title] = tsource.[Title] output inserted.[DeliveryID];`,
+  );
+  expect(mock.mock.calls[1][0]).toMatch(
+    `merge into [TestEntityTable] using (values ('2022-01-01', '2022-01-01', N'Test', N'Test', N'Test'), ('2022-01-01', '2022-01-01', N'Test', N'User 2', N'Test')) as tsource([EndDate], [StartDate], [Title], [UserID], [RevisionID]) on [TestEntityTable].[RevisionID] = tsource.[RevisionID] and [TestEntityTable].[UserID] = tsource.[UserID] when not matched then insert ([EndDate], [StartDate], [Title], [UserID], [RevisionID]) values (tsource.[EndDate], tsource.[StartDate], tsource.[Title], tsource.[UserID], tsource.[RevisionID]) when matched then update set [EndDate] = tsource.[EndDate], [StartDate] = tsource.[StartDate], [Title] = tsource.[Title] output inserted.[DeliveryID];`,
+  );
 });

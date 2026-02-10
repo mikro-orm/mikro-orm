@@ -3,7 +3,6 @@ import { Entity, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from 
 
 @Entity()
 class User {
-
   @PrimaryKey()
   id!: number;
 
@@ -15,12 +14,10 @@ class User {
     owner: true,
   })
   project!: Project | null;
-
 }
 
 @Entity()
 class Project {
-
   @PrimaryKey()
   id!: number;
 
@@ -31,7 +28,6 @@ class Project {
     nullable: true,
   })
   owner!: User | null;
-
 }
 
 let orm: MikroORM;
@@ -75,7 +71,6 @@ async function createProject(props?: Partial<Project>) {
 }
 
 describe('GH3850 - Broken propagation with nullable 1-to-1 relation', () => {
-
   // Adding a new entity and linking to an existing entity via the relation
   test('can link new inverse entity to owner entity (from null)', async () => {
     let owner = await createUser();
@@ -291,5 +286,3 @@ describe('GH3850 - Broken propagation with nullable 1-to-1 relation', () => {
     expect(deletedOwner).toBeNull();
   });
 });
-
-

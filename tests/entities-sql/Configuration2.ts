@@ -3,7 +3,6 @@ import { Test2 } from './Test2.js';
 
 @Entity()
 export class Configuration2 {
-
   @PrimaryKey()
   property: string;
 
@@ -18,5 +17,4 @@ export class Configuration2 {
     this.property = property;
     this.value = value;
   }
-
 }

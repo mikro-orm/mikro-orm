@@ -4,7 +4,6 @@ import { mockLogger } from '../../helpers.js';
 
 @Entity()
 class User {
-
   @PrimaryKey({ type: new BigIntType('string') })
   id!: string;
 
@@ -13,12 +12,10 @@ class User {
 
   @Property()
   email!: string;
-
 }
 
 @Entity()
 class UserInfo {
-
   @PrimaryKey({ type: new BigIntType('string') })
   id!: string;
 
@@ -27,12 +24,10 @@ class UserInfo {
 
   @ManyToOne(() => User, { nullable: true })
   user!: User & Opt;
-
 }
 
 @Entity()
 class Book {
-
   @PrimaryKey({ type: new BigIntType('string') })
   id!: string;
 
@@ -41,7 +36,6 @@ class Book {
 
   @ManyToOne(() => UserInfo, { nullable: false })
   createdByUserInfo!: UserInfo;
-
 }
 
 let orm: MikroORM;
@@ -70,19 +64,23 @@ test('GH #4678', async () => {
   const setupUserInfo = await orm.em.findOneOrFail(UserInfo, {
     id: '1',
   });
-  orm.em.create(Book, { name: 'MikroORM',  createdByUserInfo: setupUserInfo });
+  orm.em.create(Book, { name: 'MikroORM', createdByUserInfo: setupUserInfo });
   await orm.em.flush();
 
   orm.em.clear();
 
-  const book = await orm.em.findOne(Book, {
-    id: '1',
-  }, {
-    populate: ['createdByUserInfo.user'],
-    orderBy: {
-      id: 'DESC',
+  const book = await orm.em.findOne(
+    Book,
+    {
+      id: '1',
     },
-  });
+    {
+      populate: ['createdByUserInfo.user'],
+      orderBy: {
+        id: 'DESC',
+      },
+    },
+  );
   expect(book?.name).toBe('MikroORM');
 
   const mock = mockLogger(orm);

@@ -3,13 +3,11 @@ import { Entity, Enum, OneToOne, PrimaryKey, ReflectMetadataProvider } from '@mi
 
 @Entity()
 class User {
-
   @PrimaryKey()
   id!: number;
 
   @OneToOne(() => Readable)
   readable!: Rel<Readable>;
-
 }
 
 @Entity({
@@ -17,7 +15,6 @@ class User {
   abstract: true,
 })
 abstract class Readable {
-
   @PrimaryKey()
   id!: number;
 
@@ -26,7 +23,6 @@ abstract class Readable {
 
   @OneToOne(() => User, user => user.readable)
   user!: User;
-
 }
 
 @Entity({ discriminatorValue: 'book' })
@@ -52,5 +48,7 @@ afterAll(async () => {
 
 test('should allow relation to STI', async () => {
   const sql = await orm.schema.getCreateSchemaSQL({ wrap: false });
-  expect(sql).toMatch("create table `readable` (`id` integer not null primary key autoincrement, `type` text check (`type` in ('book', 'magazine')) not null);");
+  expect(sql).toMatch(
+    "create table `readable` (`id` integer not null primary key autoincrement, `type` text check (`type` in ('book', 'magazine')) not null);",
+  );
 });

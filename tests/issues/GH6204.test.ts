@@ -1,9 +1,15 @@
 import { Collection, MikroORM, PrimaryKeyProp } from '@mikro-orm/mssql';
-import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class Client {
-
   @PrimaryKey()
   id!: number;
 
@@ -12,23 +18,19 @@ class Client {
 
   @OneToMany(() => EmployeeClients, employee => employee.client)
   employeeClients = new Collection<EmployeeClients>(this);
-
 }
 
 @Entity()
 class Employee {
-
   @PrimaryKey()
   id!: number;
 
   @Property()
   name!: string;
-
 }
 
 @Entity()
 class EmployeeClients {
-
   [PrimaryKeyProp]?: ['client', 'employee'];
 
   @ManyToOne({ entity: () => Client, primary: true })
@@ -36,7 +38,6 @@ class EmployeeClients {
 
   @ManyToOne({ entity: () => Employee, primary: true })
   employee!: Employee;
-
 }
 
 let orm: MikroORM;

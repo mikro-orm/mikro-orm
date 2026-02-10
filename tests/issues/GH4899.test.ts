@@ -1,21 +1,26 @@
 import { Collection } from '@mikro-orm/core';
-import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider, Unique } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+  Unique,
+} from '@mikro-orm/decorators/legacy';
 import { MikroORM } from '@mikro-orm/sqlite';
 
 @Entity()
 class User {
-
   @PrimaryKey()
   id!: number;
 
   @OneToMany({ entity: () => UserSkill, mappedBy: 'user' })
   userSkills = new Collection<UserSkill>(this);
-
 }
 
 @Entity()
 class Skill {
-
   @PrimaryKey()
   id!: number;
 
@@ -24,13 +29,11 @@ class Skill {
 
   @OneToMany(() => UserSkill, 'skill')
   userSkills = new Collection<UserSkill>(this);
-
 }
 
 @Entity()
 @Unique({ properties: ['user', 'skill'] })
 class UserSkill {
-
   @PrimaryKey()
   id!: number;
 
@@ -39,7 +42,6 @@ class UserSkill {
 
   @ManyToOne(() => Skill)
   skill!: Skill;
-
 }
 
 let orm: MikroORM;

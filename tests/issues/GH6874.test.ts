@@ -1,9 +1,15 @@
 import { Collection, LoadStrategy, MikroORM } from '@mikro-orm/sqlite';
-import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class Post {
-
   @PrimaryKey()
   id!: number;
 
@@ -16,18 +22,15 @@ class Post {
   constructor(title: string) {
     this.title = title;
   }
-
 }
 
 @Entity()
 class Comment {
-
   @PrimaryKey()
   id!: number;
 
   @ManyToOne(() => Post)
   post!: Post;
-
 }
 
 let orm: MikroORM;

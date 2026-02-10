@@ -5,7 +5,6 @@ import type { MikroORM } from '@mikro-orm/postgresql';
 import { initORMPostgreSql } from '../../bootstrap.js';
 
 describe('EntityGenerator', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -47,7 +46,11 @@ describe('EntityGenerator', () => {
     });
 
     const helper = orm.em.getDriver().getPlatform().getSchemaHelper()!;
-    const meta = table.getEntityDeclaration(orm.config.getNamingStrategy(), helper, orm.config.get('entityGenerator').scalarPropertiesForRelations!);
+    const meta = table.getEntityDeclaration(
+      orm.config.getNamingStrategy(),
+      helper,
+      orm.config.get('entityGenerator').scalarPropertiesForRelations!,
+    );
     expect(meta.properties.name.default).toBeNull();
     expect(meta.properties.name.defaultRaw).toBeUndefined();
     expect(meta.properties.name.nullable).toBe(true);
@@ -122,5 +125,4 @@ describe('EntityGenerator', () => {
     expect(dump).toMatchSnapshot('postgres-entity-dump-enum-default-value');
     await orm.schema.execute(`drop table if exists "publisher2"`);
   });
-
 });

@@ -15,7 +15,6 @@ const dumpMock = vi.spyOn(CLIHelper, 'dump');
 dumpMock.mockImplementation(() => void 0);
 
 describe('CreateDatabaseCommand', () => {
-
   let orm: MikroORM<SqliteDriver>;
 
   beforeAll(async () => {
@@ -32,5 +31,4 @@ describe('CreateDatabaseCommand', () => {
     expect(ensureDatabase).toHaveBeenCalled();
     expect(closeSpy).toHaveBeenCalledTimes(1);
   });
-
 });

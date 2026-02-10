@@ -1,10 +1,17 @@
 import { Collection, LoadStrategy, PrimaryKeyProp } from '@mikro-orm/core';
-import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider, Unique } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+  Unique,
+} from '@mikro-orm/decorators/legacy';
 import { MikroORM } from '@mikro-orm/postgresql';
 
 @Entity()
 class Parent {
-
   @PrimaryKey()
   id!: number;
 
@@ -17,11 +24,9 @@ class Parent {
 
   @Property()
   data!: string;
-
 }
 @Entity()
 class ChildType {
-
   [PrimaryKeyProp]?: ['foo', 'boo'];
 
   @PrimaryKey()
@@ -32,12 +37,10 @@ class ChildType {
 
   @Property()
   data!: string;
-
 }
 
 @Entity()
 class Child {
-
   [PrimaryKeyProp]?: ['parent', 'type'];
 
   @ManyToOne({ entity: () => Parent, primary: true })
@@ -48,7 +51,6 @@ class Child {
 
   @Property()
   data!: string;
-
 }
 
 let orm: MikroORM;

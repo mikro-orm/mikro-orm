@@ -3,7 +3,6 @@ import { Entity, Enum, OneToOne, PrimaryKey, Property, ReflectMetadataProvider }
 
 @Entity()
 export class Person {
-
   @PrimaryKey()
   id!: number;
 
@@ -18,7 +17,6 @@ export class Person {
 
   @OneToOne({ entity: () => User, mappedBy: 'person' })
   user!: any;
-
 }
 
 export enum State {
@@ -29,7 +27,6 @@ export enum State {
 
 @Entity()
 export class User {
-
   @PrimaryKey()
   id!: number;
 
@@ -44,11 +41,9 @@ export class User {
 
   @Enum({ items: () => State })
   state!: number;
-
 }
 
 describe('GH issue 1150', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -84,5 +79,4 @@ describe('GH issue 1150', () => {
   it('numeric enum diffing (GH issue #1096)', async () => {
     await expect(orm.schema.getUpdateSchemaSQL({ wrap: false })).resolves.toBe('');
   });
-
 });

@@ -33,7 +33,6 @@ export interface MatchingOptions<T extends object, P extends string = never> ext
 }
 
 export class Collection<T extends object, O extends object = object> {
-
   [k: number]: T;
 
   protected readonly items = new Set<T>();
@@ -46,12 +45,16 @@ export class Collection<T extends object, O extends object = object> {
   private _property?: EntityProperty;
   private _populated?: boolean;
 
-  constructor(readonly owner: O, items?: T[], initialized = true) {
+  constructor(
+    readonly owner: O,
+    items?: T[],
+    initialized = true,
+  ) {
     /* v8 ignore next */
     if (items) {
       let i = 0;
       this.items = new Set(items);
-      this.items.forEach(item => this[i++] = item);
+      this.items.forEach(item => (this[i++] = item));
     }
 
     this.initialized = !!items || initialized;
@@ -60,7 +63,12 @@ export class Collection<T extends object, O extends object = object> {
   /**
    * Creates new Collection instance, assigns it to the owning entity and sets the items to it (propagating them to their inverse sides)
    */
-  static create<T extends object, O extends object = object>(owner: O, prop: EntityKey<O>, items: undefined | T[], initialized: boolean): Collection<T, O> {
+  static create<T extends object, O extends object = object>(
+    owner: O,
+    prop: EntityKey<O>,
+    items: undefined | T[],
+    initialized: boolean,
+  ): Collection<T, O> {
     const coll = new Collection<T, O>(owner, undefined, initialized);
     coll.property = helper(owner).__meta.properties[prop as EntityKey] as any;
     owner[prop] = coll as EntityValue<O>;
@@ -76,7 +84,9 @@ export class Collection<T extends object, O extends object = object> {
    * Ensures the collection is loaded first (without reloading it if it already is loaded).
    * Returns the Collection instance (itself), works the same as `Reference.load()`.
    */
-  async load<TT extends T, P extends string = never>(options: InitCollectionOptions<TT, P> = {}): Promise<LoadedCollection<Loaded<TT, P>>> {
+  async load<TT extends T, P extends string = never>(
+    options: InitCollectionOptions<TT, P> = {},
+  ): Promise<LoadedCollection<Loaded<TT, P>>> {
     if (this.isInitialized(true) && !options.refresh) {
       const em = this.getEntityManager(this.items, false);
       options = { ...options, filters: QueryHelper.mergePropertyFilters(this.property.filters, options.filters)! };
@@ -92,15 +102,17 @@ export class Collection<T extends object, O extends object = object> {
   private setSerializationContext<TT extends T>(options: LoadHint<TT, any, any, any>): void {
     helper(this.owner).setSerializationContext({
       populate: Array.isArray(options.populate)
-        ? options.populate.map(hint => `${this.property.name}.${hint}`) as any
-        : options.populate ?? [this.property.name],
+        ? (options.populate.map(hint => `${this.property.name}.${hint}`) as any)
+        : (options.populate ?? [this.property.name]),
     });
   }
 
   /**
    * Initializes the collection and returns the items
    */
-  async loadItems<TT extends T, P extends string = never>(options?: InitCollectionOptions<TT, P>): Promise<Loaded<TT, P>[]> {
+  async loadItems<TT extends T, P extends string = never>(
+    options?: InitCollectionOptions<TT, P>,
+  ): Promise<Loaded<TT, P>[]> {
     await this.load(options);
     return this.getItems(false) as Loaded<TT, P>[];
   }
@@ -119,11 +131,15 @@ export class Collection<T extends object, O extends object = object> {
 
     const em = this.getEntityManager()!;
 
-    if (!em.getPlatform().usesPivotTable() && this.property.kind === ReferenceKind.MANY_TO_MANY && this.property.owner) {
-      return this._count = this.length;
+    if (
+      !em.getPlatform().usesPivotTable() &&
+      this.property.kind === ReferenceKind.MANY_TO_MANY &&
+      this.property.owner
+    ) {
+      return (this._count = this.length);
     }
 
-    const cond = this.createLoadCountCondition(where ?? {} as FilterQuery<T>);
+    const cond = this.createLoadCountCondition(where ?? ({} as FilterQuery<T>));
     const count = await em.count(this.property.targetMeta!.class, cond, countOptions as any);
 
     if (!where) {
@@ -141,15 +157,24 @@ export class Collection<T extends object, O extends object = object> {
     if (this.property.kind === ReferenceKind.MANY_TO_MANY && em.getPlatform().usesPivotTable()) {
       // M:N via pivot table bypasses em.find(), so merge all 3 levels here
       opts.orderBy = QueryHelper.mergeOrderBy(opts.orderBy, this.property.orderBy, this.property.targetMeta?.orderBy);
-      options.populate = await em.preparePopulate(this.property.targetMeta!.class, options) as any;
-      const cond = await em.applyFilters(this.property.targetMeta!.class, where, options.filters ?? {}, 'read') as FilterQuery<T>;
-      const map = await em.getDriver().loadFromPivotTable(this.property, [helper(this.owner).__primaryKeys], cond, opts.orderBy, ctx, options);
-      items = map[helper(this.owner).getSerializedPrimaryKey()].map((item: EntityData<TT>) => em.merge(this.property.targetMeta!.class, item, { convertCustomTypes: true })) as any;
+      options.populate = (await em.preparePopulate(this.property.targetMeta!.class, options)) as any;
+      const cond = (await em.applyFilters(
+        this.property.targetMeta!.class,
+        where,
+        options.filters ?? {},
+        'read',
+      )) as FilterQuery<T>;
+      const map = await em
+        .getDriver()
+        .loadFromPivotTable(this.property, [helper(this.owner).__primaryKeys], cond, opts.orderBy, ctx, options);
+      items = map[helper(this.owner).getSerializedPrimaryKey()].map((item: EntityData<TT>) =>
+        em.merge(this.property.targetMeta!.class, item, { convertCustomTypes: true }),
+      ) as any;
       await em.populate(items, options.populate as any, options as any);
     } else {
       // em.find() merges entity-level orderBy, so only merge runtime + relation here
       opts.orderBy = QueryHelper.mergeOrderBy(opts.orderBy, this.property.orderBy);
-      items = await em.find(this.property.targetMeta!.class, this.createCondition(where), opts as any) as any;
+      items = (await em.find(this.property.targetMeta!.class, this.createCondition(where), opts as any)) as any;
     }
 
     if (options.store) {
@@ -181,7 +206,10 @@ export class Collection<T extends object, O extends object = object> {
     return this.toArray();
   }
 
-  add<TT extends T>(entity: TT | Reference<TT> | Iterable<TT | Reference<TT>>, ...entities: (TT | Reference<TT>)[]): number {
+  add<TT extends T>(
+    entity: TT | Reference<TT> | Iterable<TT | Reference<TT>>,
+    ...entities: (TT | Reference<TT>)[]
+  ): number {
     entities = Utils.asArray(entity).concat(entities);
     const unwrapped = entities.map(i => Reference.unwrapReference(i)) as T[];
     this.validateModification(unwrapped);
@@ -216,7 +244,10 @@ export class Collection<T extends object, O extends object = object> {
    * is not the same as `em.remove()`. If we want to delete the entity by removing it from collection, we need to enable `orphanRemoval: true`,
    * which tells the ORM we don't want orphaned entities to exist, so we know those should be removed.
    */
-  remove<TT extends T>(entity: TT | Reference<TT> | Iterable<TT | Reference<TT>> | ((item: TT) => boolean), ...entities: (TT | Reference<TT>)[]): number {
+  remove<TT extends T>(
+    entity: TT | Reference<TT> | Iterable<TT | Reference<TT>> | ((item: TT) => boolean),
+    ...entities: (TT | Reference<TT>)[]
+  ): number {
     if (entity instanceof Function) {
       let removed = 0;
 
@@ -302,7 +333,9 @@ export class Collection<T extends object, O extends object = object> {
     this._populated = populated;
   }
 
-  async init<TT extends T, P extends string = never>(options: InitCollectionOptions<TT, P> = {}): Promise<LoadedCollection<Loaded<TT, P>>> {
+  async init<TT extends T, P extends string = never>(
+    options: InitCollectionOptions<TT, P> = {},
+  ): Promise<LoadedCollection<Loaded<TT, P>>> {
     if (this.dirty) {
       const items = [...this.items];
       this.dirty = false;
@@ -317,7 +350,11 @@ export class Collection<T extends object, O extends object = object> {
 
     if (options.dataloader ?? [DataloaderType.ALL, DataloaderType.COLLECTION].includes(em.config.getDataloaderType())) {
       const order = [...this.items]; // copy order of references
-      const orderBy = QueryHelper.mergeOrderBy(options.orderBy, this.property.orderBy, this.property.targetMeta?.orderBy);
+      const orderBy = QueryHelper.mergeOrderBy(
+        options.orderBy,
+        this.property.orderBy,
+        this.property.targetMeta?.orderBy,
+      );
       const customOrder = orderBy.length > 0;
       const pivotTable = this.property.kind === ReferenceKind.MANY_TO_MANY && em.getPlatform().usesPivotTable();
       const loader = await em.getDataLoader(pivotTable ? 'm:n' : '1:m');
@@ -349,11 +386,9 @@ export class Collection<T extends object, O extends object = object> {
     }
 
     const populate = Array.isArray(options.populate)
-      ? options.populate.map(f => f === '*' ? f : `${this.property.name}.${f}`)
+      ? options.populate.map(f => (f === '*' ? f : `${this.property.name}.${f}`))
       : [`${this.property.name}${options.ref ? ':ref' : ''}`];
-    const schema = this.property.targetMeta!.schema === '*'
-      ? helper(this.owner).__schema
-      : undefined;
+    const schema = this.property.targetMeta!.schema === '*' ? helper(this.owner).__schema : undefined;
     await em.populate(this.owner as TT[], populate, {
       refresh: true,
       ...options,
@@ -389,7 +424,8 @@ export class Collection<T extends object, O extends object = object> {
   private createCondition<TT extends T>(cond: FilterQuery<TT> = {}): FilterQuery<TT> {
     if (this.property.kind === ReferenceKind.ONE_TO_MANY) {
       cond[this.property.mappedBy as unknown as FilterKey<TT>] = helper(this.owner).getPrimaryKey() as any;
-    } else { // MANY_TO_MANY
+    } else {
+      // MANY_TO_MANY
       this.createManyToManyCondition(cond);
     }
 
@@ -426,7 +462,9 @@ export class Collection<T extends object, O extends object = object> {
 
   private checkInitialized(): void {
     if (!this.isInitialized()) {
-      throw new Error(`Collection<${this.property.type}> of entity ${helper(this.owner).__meta.name}[${helper(this.owner).getSerializedPrimaryKey()}] not initialized`);
+      throw new Error(
+        `Collection<${this.property.type}> of entity ${helper(this.owner).__meta.name}[${helper(this.owner).getSerializedPrimaryKey()}] not initialized`,
+      );
     }
   }
 
@@ -499,7 +537,9 @@ export class Collection<T extends object, O extends object = object> {
       return [];
     }
 
-    field ??= targetMeta.compositePK ? targetMeta.primaryKeys : (targetMeta.serializedPrimaryKey ?? targetMeta.primaryKeys[0]);
+    field ??= targetMeta.compositePK
+      ? targetMeta.primaryKeys
+      : (targetMeta.serializedPrimaryKey ?? targetMeta.primaryKeys[0]);
 
     const cb = (i: T, f: keyof T) => {
       if (Utils.isEntity(i[f], true)) {
@@ -744,7 +784,10 @@ export class Collection<T extends object, O extends object = object> {
    * Maps the collection items to a dictionary, indexed by the key you specify.
    * If there are more items with the same key, only the first one will be present.
    */
-  indexBy<K1 extends keyof T, K2 extends keyof T = never>(key: K1, valueKey?: K2): Record<T[K1] & PropertyKey, T> | Record<T[K1] & PropertyKey, T[K2]> {
+  indexBy<K1 extends keyof T, K2 extends keyof T = never>(
+    key: K1,
+    valueKey?: K2,
+  ): Record<T[K1] & PropertyKey, T> | Record<T[K1] & PropertyKey, T[K2]> {
     return this.reduce((obj, item) => {
       obj[item[key] as string] ??= valueKey ? item[valueKey] : item;
       return obj;
@@ -781,7 +824,7 @@ export class Collection<T extends object, O extends object = object> {
     return this.count();
   }
 
-  * [Symbol.iterator](): IterableIterator<T> {
+  *[Symbol.iterator](): IterableIterator<T> {
     for (const item of this.getItems()) {
       yield item;
     }
@@ -811,13 +854,17 @@ export class Collection<T extends object, O extends object = object> {
   /**
    * @internal
    */
-  get property(): EntityProperty { // cannot be typed to `EntityProperty<O, T>` as it causes issues in assignability of `Loaded` type
+  get property(): EntityProperty {
+    // cannot be typed to `EntityProperty<O, T>` as it causes issues in assignability of `Loaded` type
     if (!this._property) {
       const meta = wrap(this.owner, true).__meta;
 
       /* v8 ignore next */
       if (!meta) {
-        throw MetadataError.fromUnknownEntity(this.owner.constructor.name, 'Collection.property getter, maybe you just forgot to initialize the ORM?');
+        throw MetadataError.fromUnknownEntity(
+          this.owner.constructor.name,
+          'Collection.property getter, maybe you just forgot to initialize the ORM?',
+        );
       }
 
       this._property = meta.relations.find(prop => this.owner[prop.name] === this)!;
@@ -829,7 +876,8 @@ export class Collection<T extends object, O extends object = object> {
   /**
    * @internal
    */
-  set property(prop: EntityProperty) { // cannot be typed to `EntityProperty<O, T>` as it causes issues in assignability of `Loaded` type
+  set property(prop: EntityProperty) {
+    // cannot be typed to `EntityProperty<O, T>` as it causes issues in assignability of `Loaded` type
     this._property = prop;
   }
 
@@ -845,7 +893,7 @@ export class Collection<T extends object, O extends object = object> {
     const collection = item[this.property.inversedBy as keyof T] as Collection<O, T>;
 
     if (this.shouldPropagateToCollection(collection, method)) {
-      method = method === 'takeSnapshot' ? method : (method + 'WithoutPropagation') as any;
+      method = method === 'takeSnapshot' ? method : ((method + 'WithoutPropagation') as any);
       collection[method as 'add'](this.owner);
     }
   }
@@ -883,7 +931,10 @@ export class Collection<T extends object, O extends object = object> {
     }
   }
 
-  protected shouldPropagateToCollection(collection: Collection<O, T>, method: 'add' | 'remove' | 'takeSnapshot'): boolean {
+  protected shouldPropagateToCollection(
+    collection: Collection<O, T>,
+    method: 'add' | 'remove' | 'takeSnapshot',
+  ): boolean {
     if (!collection) {
       return false;
     }
@@ -907,23 +958,46 @@ export class Collection<T extends object, O extends object = object> {
   /** @ignore */
   [Symbol.for('nodejs.util.inspect.custom')](depth = 2) {
     const object = { ...this } as Dictionary;
-    const hidden = ['items', 'owner', '_property', '_count', 'snapshot', '_populated', '_lazyInitialized', '_em', 'readonly', 'partial'];
+    const hidden = [
+      'items',
+      'owner',
+      '_property',
+      '_count',
+      'snapshot',
+      '_populated',
+      '_lazyInitialized',
+      '_em',
+      'readonly',
+      'partial',
+    ];
     hidden.forEach(k => delete object[k]);
     const ret = inspect(object, { depth });
     const name = `${this.constructor.name}<${this.property?.type ?? 'unknown'}>`;
 
     return ret === '[Object]' ? `[${name}]` : name + ' ' + ret;
   }
-
 }
 
 Object.defineProperties(Collection.prototype, {
-  $: { get() { return this; } },
-  get: { get() { return () => this; } },
+  $: {
+    get() {
+      return this;
+    },
+  },
+  get: {
+    get() {
+      return () => this;
+    },
+  },
   __collection: { value: true, enumerable: false, writable: false },
 });
 
-export interface InitCollectionOptions<T, P extends string = never, F extends string = '*', E extends string = never> extends EntityLoaderOptions<T, F, E>{
+export interface InitCollectionOptions<
+  T,
+  P extends string = never,
+  F extends string = '*',
+  E extends string = never,
+> extends EntityLoaderOptions<T, F, E> {
   dataloader?: boolean;
   populate?: Populate<T, P>;
   ref?: boolean; // populate only references, works only with M:N collections that use pivot table

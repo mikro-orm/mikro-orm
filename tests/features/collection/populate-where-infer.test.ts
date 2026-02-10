@@ -1,10 +1,16 @@
 import { Collection, MikroORM, Ref, wrap } from '@mikro-orm/postgresql';
-import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../../helpers.js';
 
 @Entity()
 class User {
-
   @PrimaryKey()
   id!: number;
 
@@ -19,12 +25,10 @@ class User {
 
   @Property({ type: 'json', nullable: true })
   data: any;
-
 }
 
 @Entity()
 class Server {
-
   @PrimaryKey()
   id!: number;
 
@@ -36,12 +40,10 @@ class Server {
 
   @ManyToOne(() => Location, { ref: true })
   location!: Ref<Location>;
-
 }
 
 @Entity()
 class Location {
-
   @PrimaryKey()
   id!: number;
 
@@ -50,23 +52,19 @@ class Location {
 
   @OneToMany(() => User, x => x.location)
   users = new Collection<User>(this);
-
 }
 
 @Entity()
 class ServerProvisioning {
-
   @PrimaryKey()
   readonly id!: number;
 
   @ManyToOne(() => ServerOrder, { ref: true })
   serverOrder!: Ref<ServerOrder>;
-
 }
 
 @Entity()
 class ServerOrder {
-
   @PrimaryKey()
   readonly id!: number;
 
@@ -75,7 +73,6 @@ class ServerOrder {
 
   @OneToMany(() => ServerProvisioning, x => x.serverOrder)
   serverProvisionings = new Collection<ServerProvisioning>(this);
-
 }
 
 let orm: MikroORM;
@@ -115,9 +112,7 @@ beforeAll(async () => {
     location: {
       location: 'test',
     },
-    servers: [
-      { id: 4, name: 'test', location },
-    ],
+    servers: [{ id: 4, name: 'test', location }],
     name: 'u2',
     data: { foo: 'baz' },
   });
@@ -149,7 +144,9 @@ test('$every without populateWhere', async () => {
     },
   );
   expect(res).toHaveLength(0);
-  expect(mock.mock.calls[0][0]).toMatch(`select "u0".* from "user" as "u0" where "u0"."id" not in (select "u0"."id" from "user" as "u0" inner join "server" as "s1" on "u0"."id" = "s1"."user_id" where not ("s1"."name" != 'test'))`);
+  expect(mock.mock.calls[0][0]).toMatch(
+    `select "u0".* from "user" as "u0" where "u0"."id" not in (select "u0"."id" from "user" as "u0" inner join "server" as "s1" on "u0"."id" = "s1"."user_id" where not ("s1"."name" != 'test'))`,
+  );
 });
 
 test('$every with populateWhere: infer', async () => {
@@ -172,30 +169,37 @@ test('$every with populateWhere: infer', async () => {
     },
   );
   expect(res).toHaveLength(0);
-  expect(mock.mock.calls[0][0]).toMatch(`select "u0".* from "user" as "u0" where "u0"."id" not in (select "u0"."id" from "user" as "u0" inner join "server" as "s1" on "u0"."id" = "s1"."user_id" where not ("s1"."name" != 'test'))`);
+  expect(mock.mock.calls[0][0]).toMatch(
+    `select "u0".* from "user" as "u0" where "u0"."id" not in (select "u0"."id" from "user" as "u0" inner join "server" as "s1" on "u0"."id" = "s1"."user_id" where not ("s1"."name" != 'test'))`,
+  );
 });
 
 test('disallow $every on top level', async () => {
-  await expect(orm.em.fork().find(
-    User,
-    {
-      $every: {
-        servers: {
-          name: {
-            $ne: 'test',
+  await expect(
+    orm.em.fork().find(
+      User,
+      {
+        $every: {
+          servers: {
+            name: {
+              $ne: 'test',
+            },
           },
         },
       },
-    },
-    {
-      populate: ['servers'],
-      populateWhere: 'infer',
-    },
-  )).rejects.toThrow('Collection operators can be used only inside a collection property context, but it was used for User.id.');
+      {
+        populate: ['servers'],
+        populateWhere: 'infer',
+      },
+    ),
+  ).rejects.toThrow(
+    'Collection operators can be used only inside a collection property context, but it was used for User.id.',
+  );
 });
 
 test('invalid query', async () => {
-  const res = await orm.em.fork()
+  const res = await orm.em
+    .fork()
     .createQueryBuilder(User, 'user')
     .leftJoinAndSelect('user.servers', 'test')
     .select('user.id')
@@ -209,7 +213,8 @@ test('invalid query', async () => {
 });
 
 test('invalid query 2', async () => {
-  const query = orm.em.createQueryBuilder(User, 'user')
+  const query = orm.em
+    .createQueryBuilder(User, 'user')
     .clone()
     .where({
       location: {
@@ -217,14 +222,17 @@ test('invalid query 2', async () => {
       },
     });
 
-  expect(query.getFormattedQuery()).toBe(`select "user".* from "user" as "user" inner join "location" as "l1" on "user"."location_id" = "l1"."id" where "l1"."location" = 'loc name'`);
+  expect(query.getFormattedQuery()).toBe(
+    `select "user".* from "user" as "user" inner join "location" as "l1" on "user"."location_id" = "l1"."id" where "l1"."location" = 'loc name'`,
+  );
   const res = await query.getResult();
   expect(res).toHaveLength(1);
 });
 
 test('invalid query 3', async () => {
   const mock = mockLogger(orm);
-  const [users, count] = await orm.em.fork()
+  const [users, count] = await orm.em
+    .fork()
     .createQueryBuilder(User)
     .select('*')
     .where({ data: { foo: { $ne: null } } })
@@ -235,10 +243,15 @@ test('invalid query 3', async () => {
   expect(users).toHaveLength(1);
   expect(users[0].servers).toHaveLength(3);
   expect(count).toBe(2);
-  expect(mock.mock.calls[0][0]).toMatch(`select "u0".*, "s"."id" as "s__id", "s"."name" as "s__name", "s"."user_id" as "s__user_id", "s"."location_id" as "s__location_id" from "user" as "u0" left join "server" as "s" on "u0"."id" = "s"."user_id" where "u0"."id" in (select "u0"."id" from (select "u0"."id" from "user" as "u0" left join "server" as "s" on "u0"."id" = "s"."user_id" where "u0"."data"->>'foo' is not null group by "u0"."id" limit 1) as "u0")`);
-  expect(mock.mock.calls[1][0]).toMatch(`select count(distinct "u0"."id") as "count" from "user" as "u0" left join "server" as "s" on "u0"."id" = "s"."user_id" where "u0"."data"->>'foo' is not null`);
+  expect(mock.mock.calls[0][0]).toMatch(
+    `select "u0".*, "s"."id" as "s__id", "s"."name" as "s__name", "s"."user_id" as "s__user_id", "s"."location_id" as "s__location_id" from "user" as "u0" left join "server" as "s" on "u0"."id" = "s"."user_id" where "u0"."id" in (select "u0"."id" from (select "u0"."id" from "user" as "u0" left join "server" as "s" on "u0"."id" = "s"."user_id" where "u0"."data"->>'foo' is not null group by "u0"."id" limit 1) as "u0")`,
+  );
+  expect(mock.mock.calls[1][0]).toMatch(
+    `select count(distinct "u0"."id") as "count" from "user" as "u0" left join "server" as "s" on "u0"."id" = "s"."user_id" where "u0"."data"->>'foo' is not null`,
+  );
 
-  const [users2, count2] = await orm.em.fork()
+  const [users2, count2] = await orm.em
+    .fork()
     .createQueryBuilder(User)
     .select('*')
     .where({ data: { foo: { $ne: null } } })
@@ -250,8 +263,12 @@ test('invalid query 3', async () => {
   expect(users2[0].servers).toHaveLength(3);
   expect(users2[1].servers).toHaveLength(1);
   expect(count2).toBe(2);
-  expect(mock.mock.calls[2][0]).toMatch(`select "u0".*, "s"."id" as "s__id", "s"."name" as "s__name", "s"."user_id" as "s__user_id", "s"."location_id" as "s__location_id" from "user" as "u0" left join "server" as "s" on "u0"."id" = "s"."user_id" where "u0"."id" in (select "u0"."id" from (select "u0"."id" from "user" as "u0" left join "server" as "s" on "u0"."id" = "s"."user_id" where "u0"."data"->>'foo' is not null group by "u0"."id" limit 3) as "u0")`);
-  expect(mock.mock.calls[3][0]).toMatch(`select count(distinct "u0"."id") as "count" from "user" as "u0" left join "server" as "s" on "u0"."id" = "s"."user_id" where "u0"."data"->>'foo' is not null`);
+  expect(mock.mock.calls[2][0]).toMatch(
+    `select "u0".*, "s"."id" as "s__id", "s"."name" as "s__name", "s"."user_id" as "s__user_id", "s"."location_id" as "s__location_id" from "user" as "u0" left join "server" as "s" on "u0"."id" = "s"."user_id" where "u0"."id" in (select "u0"."id" from (select "u0"."id" from "user" as "u0" left join "server" as "s" on "u0"."id" = "s"."user_id" where "u0"."data"->>'foo' is not null group by "u0"."id" limit 3) as "u0")`,
+  );
+  expect(mock.mock.calls[3][0]).toMatch(
+    `select count(distinct "u0"."id") as "count" from "user" as "u0" left join "server" as "s" on "u0"."id" = "s"."user_id" where "u0"."data"->>'foo' is not null`,
+  );
 });
 
 test('invalid query 4', async () => {
@@ -278,7 +295,9 @@ test('invalid query 4', async () => {
   );
   expect(results[3].user).toBeNull();
   expect(mock.mock.calls).toHaveLength(1);
-  expect(mock.mock.calls[0][0]).toMatch(`select "s0".*, "u1"."id" as "u1__id", "u1"."location_id" as "u1__location_id", "u1"."name" as "u1__name", "u1"."data" as "u1__data" from "server" as "s0" left join "user" as "u1" on "s0"."user_id" = "u1"."id" and ("u1"."name" = 'u1' or "u1"."id" is null) where ("u1"."name" = 'u1' or "u1"."id" is null)`);
+  expect(mock.mock.calls[0][0]).toMatch(
+    `select "s0".*, "u1"."id" as "u1__id", "u1"."location_id" as "u1__location_id", "u1"."name" as "u1__name", "u1"."data" as "u1__data" from "server" as "s0" left join "user" as "u1" on "s0"."user_id" = "u1"."id" and ("u1"."name" = 'u1' or "u1"."id" is null) where ("u1"."name" = 'u1' or "u1"."id" is null)`,
+  );
 });
 
 test('invalid query 5/1', async () => {
@@ -308,11 +327,13 @@ test('invalid query 5/1', async () => {
 });
 
 test('invalid query 5/2', async () => {
-  const results = await orm.em
-    .fork()
-    .find(ServerProvisioning, {}, {
+  const results = await orm.em.fork().find(
+    ServerProvisioning,
+    {},
+    {
       populate: ['serverOrder.server.location'],
-    });
+    },
+  );
 
   expect(wrap(results[0]).toObject()).toEqual({
     id: 1,

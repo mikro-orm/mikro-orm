@@ -7,7 +7,6 @@ import { v4 } from 'uuid';
   abstract: true,
 })
 abstract class Sku {
-
   @PrimaryKey()
   id = v4();
 
@@ -19,13 +18,10 @@ abstract class Sku {
 
   @Enum()
   skuType!: string & Opt;
-
 }
 
 @Entity({ discriminatorValue: 'item' })
-class Item extends Sku {
-
-}
+class Item extends Sku {}
 
 let orm: MikroORM;
 

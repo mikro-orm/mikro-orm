@@ -3,28 +3,23 @@ import { Entity, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider } from
 
 @Entity()
 class B {
-
   @PrimaryKey()
   id!: number;
 
   @Property()
   property!: string;
-
 }
 
 @Entity()
 class A {
-
   @PrimaryKey()
   id!: number;
 
   @ManyToOne(() => B)
   property!: B;
-
 }
 
 describe('GH issue 1115', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {

@@ -3,26 +3,22 @@ import { Entity, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorato
 
 @Entity()
 class UserConstructorWithDefault {
-
   @PrimaryKey()
   readonly id!: bigint;
 
   constructor(data: EntityData<UserConstructorWithDefault> = {}) {
     Object.assign(this, data);
   }
-
 }
 
 @Entity()
 class UserConstructorWithoutDefault {
-
   @PrimaryKey()
   readonly id!: bigint;
 
   constructor(data?: EntityData<UserConstructorWithoutDefault>) {
     Object.assign(this, data ?? {});
   }
-
 }
 
 let orm: MikroORM;

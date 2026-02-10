@@ -1,10 +1,16 @@
 import type { EventSubscriber, FlushEventArgs } from '@mikro-orm/sqlite';
-import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { Collection, MikroORM } from '@mikro-orm/sqlite';
 
 @Entity({ tableName: 'customers' })
 class Customer {
-
   @PrimaryKey()
   id!: number;
 
@@ -13,12 +19,10 @@ class Customer {
 
   @OneToMany(() => Order, order => order.customer)
   orders = new Collection<Order>(this);
-
 }
 
 @Entity({ tableName: 'orders' })
 class Order {
-
   @PrimaryKey()
   id!: number;
 
@@ -27,11 +31,9 @@ class Order {
 
   @ManyToOne(() => Customer)
   customer!: Customer;
-
 }
 
 class OrdersSubscriber implements EventSubscriber<Order> {
-
   static emptyChangelogs: boolean[] = [];
 
   async afterFlush(args: FlushEventArgs): Promise<void> {
@@ -45,7 +47,6 @@ class OrdersSubscriber implements EventSubscriber<Order> {
       }
     }
   }
-
 }
 
 let orm: MikroORM;

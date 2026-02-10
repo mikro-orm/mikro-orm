@@ -4,7 +4,6 @@ import { TsMorphMetadataProvider } from '@mikro-orm/reflection';
 
 @Entity()
 class Video {
-
   @PrimaryKey()
   id!: number;
 
@@ -13,12 +12,10 @@ class Video {
 
   @OneToMany(() => Comment, comment => comment.commentable)
   comments = new Collection<Comment>(this);
-
 }
 
 @Entity()
 class Photo {
-
   @PrimaryKey()
   id!: number;
 
@@ -27,12 +24,10 @@ class Photo {
 
   @OneToMany(() => Comment, comment => comment.commentable)
   comments = new Collection<Comment>(this);
-
 }
 
 @Entity()
 class Comment {
-
   @PrimaryKey()
   id!: number;
 
@@ -41,11 +36,9 @@ class Comment {
 
   @ManyToOne(() => [Video, Photo])
   commentable!: Video | Photo;
-
 }
 
 describe('polymorphic relations with ts-morph', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -96,7 +89,6 @@ describe('polymorphic relations with ts-morph', () => {
     expect((loaded.commentable as Video).title).toBe('My Video');
   });
 
-
   test('can create and persist comment to Photo', async () => {
     const photo = orm.em.create(Photo, { caption: 'Beautiful sunset' });
 
@@ -123,12 +115,21 @@ describe('polymorphic relations with ts-morph', () => {
     await orm.em.flush();
     orm.em.clear();
 
-    const loaded = await orm.em.findOneOrFail(Video, { id: video.id }, {
-      populate: ['comments'],
-    });
+    const loaded = await orm.em.findOneOrFail(
+      Video,
+      { id: video.id },
+      {
+        populate: ['comments'],
+      },
+    );
 
     expect(loaded.comments).toHaveLength(2);
-    expect(loaded.comments.getItems().map(c => c.text).sort()).toEqual(['C1', 'C2']);
+    expect(
+      loaded.comments
+        .getItems()
+        .map(c => c.text)
+        .sort(),
+    ).toEqual(['C1', 'C2']);
   });
 
   test('can update polymorphic relation', async () => {
@@ -151,5 +152,4 @@ describe('polymorphic relations with ts-morph', () => {
     await orm.em.populate(reloaded, ['commentable']);
     expect((reloaded.commentable as Photo).caption).toBe('Photo');
   });
-
 });

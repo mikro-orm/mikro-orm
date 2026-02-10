@@ -5,7 +5,6 @@ import { DefaultLogger } from './DefaultLogger.js';
  * A basic logger that provides fully formatted output without color
  */
 export class SimpleLogger extends DefaultLogger {
-
   /**
    * @inheritDoc
    */
@@ -35,5 +34,4 @@ export class SimpleLogger extends DefaultLogger {
   static override create(this: void, options: LoggerOptions) {
     return new SimpleLogger(options);
   }
-
 }

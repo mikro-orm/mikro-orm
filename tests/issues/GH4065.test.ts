@@ -4,10 +4,9 @@ import { Author, Book } from '../entities/index.js';
 import { initORMMongo } from '../bootstrap.js';
 
 describe('GH4065', () => {
-
   let orm: MikroORM;
 
-  beforeAll(async () => orm = await initORMMongo());
+  beforeAll(async () => (orm = await initORMMongo()));
   beforeEach(async () => orm.schema.clear());
 
   afterAll(async () => {

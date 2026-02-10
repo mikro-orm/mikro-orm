@@ -1,9 +1,7 @@
 import { BigIntType, EntitySchema, MikroORM } from '@mikro-orm/sqlite';
 
 export class UserEntity {
-
   id!: string;
-
 }
 
 export const UserEntitySchema = new EntitySchema({

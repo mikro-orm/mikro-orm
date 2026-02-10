@@ -4,7 +4,6 @@ import { mockLogger } from '../helpers.js';
 
 @Entity()
 class User {
-
   @PrimaryKey()
   id!: number;
 
@@ -16,12 +15,10 @@ class User {
 
   @Property()
   isActive!: boolean;
-
 }
 
 @Entity()
 class Customer {
-
   @PrimaryKey()
   id!: number;
 
@@ -33,7 +30,6 @@ class Customer {
 
   @OneToOne(() => User)
   user!: User;
-
 }
 
 let orm: MikroORM;

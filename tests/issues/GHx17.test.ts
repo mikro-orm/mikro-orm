@@ -1,5 +1,13 @@
 import { BaseEntity, Collection, LoadStrategy, MikroORM, PopulateHint, Ref, wrap } from '@mikro-orm/postgresql';
-import { Entity, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  OneToOne,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 let orm: MikroORM;
 

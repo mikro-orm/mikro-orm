@@ -11,7 +11,6 @@ import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 @Entity()
 class Customer {
-
   @PrimaryKey()
   id!: number;
 
@@ -20,12 +19,10 @@ class Customer {
 
   @OneToMany({ entity: () => License, mappedBy: 'customer' })
   licenses = new Collection<License>(this);
-
 }
 
 @Entity()
 class License {
-
   @PrimaryKey()
   id!: number;
 
@@ -35,7 +32,6 @@ class License {
   constructor(customer: Customer | Ref<Customer>) {
     this.customer = Reference.create(customer);
   }
-
 }
 
 let orm: MikroORM;

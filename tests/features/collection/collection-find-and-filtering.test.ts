@@ -1,4 +1,11 @@
-import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { Collection, MikroORM, type Ref } from '@mikro-orm/sqlite';
 
 @Entity({
@@ -9,44 +16,36 @@ import { Collection, MikroORM, type Ref } from '@mikro-orm/sqlite';
   },
 })
 class SavedFile {
-
   @PrimaryKey()
   id!: number;
 
   @ManyToOne(() => Directory)
   directory!: Ref<Directory>;
-
 }
 
 @Entity({
   discriminatorValue: 'json',
 })
 class JSONFile extends SavedFile {
-
   @Property()
   extension = '.json';
-
 }
 
 @Entity({
   discriminatorValue: 'markdown',
 })
 class MarkdownFile extends SavedFile {
-
   @Property()
   extension = '.md';
-
 }
 
 @Entity()
 class Directory {
-
   @PrimaryKey()
   id!: number;
 
   @OneToMany(() => SavedFile, file => file.directory)
   files = new Collection<SavedFile>(this);
-
 }
 
 let orm: MikroORM;
