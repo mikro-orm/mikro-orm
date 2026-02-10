@@ -128,7 +128,9 @@ export const fs = {
   getORMPackageVersion(name: string): string | undefined {
     try {
       const path = import.meta.resolve(`${name}/package.json`);
+      console.log(path);
       const pkg = this.readJSONSync(fileURLToPath(path));
+      console.log(pkg);
       return pkg?.version;
     } catch (e) {
       return undefined;

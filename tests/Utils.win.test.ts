@@ -603,6 +603,7 @@ describe('Utils', () => {
 
   test('getORMPackageVersion', () => {
     const version = fs.getORMPackageVersion('@mikro-orm/core');
+    console.log(version);
     expect(version).toBeDefined();
     expect(typeof version).toBe('string');
   });
