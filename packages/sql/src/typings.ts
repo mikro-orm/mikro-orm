@@ -206,7 +206,11 @@ export interface IQueryBuilder<T> {
   leftJoinAndSelect(field: any, alias: string, cond?: FilterQuery<any>, fields?: string[]): this;
   innerJoinAndSelect(field: any, alias: string, cond?: FilterQuery<any>, fields?: string[]): this;
   withSubQuery(subQuery: RawQueryFragment | NativeQueryBuilder, alias: string): this;
-  where(cond: FilterQuery<T> | string | RawQueryFragment | Dictionary, operator?: keyof typeof GroupOperator | any[], operator2?: keyof typeof GroupOperator): this;
+  where(
+    cond: FilterQuery<T> | string | RawQueryFragment | Dictionary,
+    operator?: keyof typeof GroupOperator | any[],
+    operator2?: keyof typeof GroupOperator,
+  ): this;
   andWhere(cond: FilterQuery<T> | string | RawQueryFragment | Dictionary, params?: any[]): this;
   orWhere(cond: FilterQuery<T> | string | RawQueryFragment | Dictionary, params?: any[]): this;
   orderBy(orderBy: QueryOrderMap<T>): this;
@@ -315,11 +319,17 @@ type MaybeJoinColumnName<TName extends string, TBuilder> = TBuilder extends {
       : never
     : TName;
 
-export type SnakeCase<TName extends string> = TName extends `${infer P1}${infer P2}`
-  ? P2 extends Uncapitalize<P2>
-    ? `${Uncapitalize<P1>}${SnakeCase<P2>}`
-    : `${Uncapitalize<P1>}_${SnakeCase<Uncapitalize<P2>>}`
-  : TName;
+export type SnakeCase<TName extends string> = TName extends `${infer A}${infer B}${infer Rest}`
+  ? IsUpperLetter<B> extends never
+    ? `${Lowercase<A>}${SnakeCase<`${B}${Rest}`>}`
+    : IsLowerLetter<A> extends never
+      ? `${Lowercase<A>}${SnakeCase<`${B}${Rest}`>}`
+      : `${Lowercase<A>}_${SnakeCase<`${B}${Rest}`>}`
+  : Lowercase<TName>;
+
+type IsLowerLetter<C extends string> = C extends Lowercase<C> ? (C extends Uppercase<C> ? never : C) : never;
+
+type IsUpperLetter<C extends string> = C extends Uppercase<C> ? (C extends Lowercase<C> ? never : C) : never;
 
 type InferColumnValue<TBuilder, TProcessOnCreate extends boolean> = TBuilder extends {
   '~type'?: { value: infer Value };
@@ -352,10 +362,7 @@ type MaybeJoinKey<TValue, TOptions> = TOptions extends { kind: 'm:1' }
 
 type UnwrapOpt<TValue> = TValue extends Opt<infer OriginalValue> ? OriginalValue : TValue;
 
-type MaybeNever<TValue, TOptions> =
-  TOptions extends { persist: false } | { kind: 'm:n' | '1:m' }
-    ? never
-    : TValue;
+type MaybeNever<TValue, TOptions> = TOptions extends { persist: false } | { kind: 'm:n' | '1:m' } ? never : TValue;
 
 type ExcludeNever<TMap extends Record<string, any>> = {
   [K in keyof TMap as TMap[K] extends never ? never : K]: TMap[K];
