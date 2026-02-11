@@ -8,7 +8,7 @@ import {
 import { prepareMetadataContext } from '../utils.js';
 
 export function Property<T extends object>(options: PropertyOptions<T> = {}) {
-  return function (value: unknown, context: ClassFieldDecoratorContext<T> | ClassGetterDecoratorContext<T> | ClassMethodDecoratorContext<T>) {
+  return function (value: unknown, context: ClassFieldDecoratorContext<T> | ClassGetterDecoratorContext<T> | ClassSetterDecoratorContext<T> | ClassAccessorDecoratorContext<T> | ClassMethodDecoratorContext<T>) {
     const meta = prepareMetadataContext(context, ReferenceKind.SCALAR);
     const { check, ...opts } = options;
     const prop = { kind: ReferenceKind.SCALAR, ...opts } as EntityProperty<T>;
@@ -23,6 +23,18 @@ export function Property<T extends object>(options: PropertyOptions<T> = {}) {
       prop.name = context.name as EntityKey<T>;
       prop.getter = false;
       prop.setter = false;
+    } else if (context.kind === 'getter') {
+      prop.name = context.name as EntityKey<T>;
+      prop.getter = true;
+      prop.setter = false;
+    } else if (context.kind === 'setter') {
+      prop.name = context.name as EntityKey<T>;
+      prop.getter = false;
+      prop.setter = true;
+    } else if (context.kind === 'accessor') {
+      prop.name = context.name as EntityKey<T>;
+      prop.getter = true;
+      prop.setter = true;
     } else if (context.kind === 'method') {
       prop.getter = true;
       prop.persist = false;
