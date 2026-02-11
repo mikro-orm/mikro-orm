@@ -95,7 +95,7 @@ export function validateSingleDecorator(meta: EntityMetadata, propertyName: stri
  * We need to use the `Object.hasOwn` here, since the metadata object respects inheritance, and the `properties` object might already
  * exist for some base entity.
  */
-export function prepareMetadataContext<T>(context: ClassFieldDecoratorContext<T> | ClassGetterDecoratorContext<T> | ClassMethodDecoratorContext<T>, kind?: ReferenceKind): EntityMetadata<T> {
+export function prepareMetadataContext<T>(context: ClassFieldDecoratorContext<T> | ClassGetterDecoratorContext<T> | ClassSetterDecoratorContext<T> | ClassAccessorDecoratorContext<T> | ClassMethodDecoratorContext<T>, kind?: ReferenceKind): EntityMetadata<T> {
   const meta = context.metadata as unknown as EntityMetadata<T>;
 
   if (!Object.hasOwn(meta, 'properties')) {
