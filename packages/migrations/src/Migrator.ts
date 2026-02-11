@@ -334,12 +334,45 @@ export class Migrator implements IMigrator {
     const up: string[] = [];
     const down: string[] = [];
 
+    // Split SQL by statement boundaries (semicolons followed by newline) rather than
+    // just newlines, to preserve multiline statements like view definitions.
+    // Blank lines (from double newlines) are preserved as empty strings for grouping.
+    // Splits inside single-quoted string literals are re-merged (GH #7185).
+    const splitStatements = (sql: string) => {
+      const result: string[] = [];
+      let buf = '';
+
+      for (const chunk of sql.split(/;\n/)) {
+        buf += (buf ? ';\n' : '') + chunk;
+
+        // odd number of single quotes means we're inside a string literal
+        if (buf.split(`'`).length % 2 === 0) {
+          continue;
+        }
+
+        // A chunk starting with \n indicates there was a blank line (grouping separator)
+        if (buf.startsWith('\n')) {
+          result.push('');
+        }
+
+        const trimmed = buf.trim();
+
+        if (trimmed) {
+          result.push(trimmed.endsWith(';') ? trimmed : trimmed + ';');
+        }
+
+        buf = '';
+      }
+
+      return result;
+    };
+
     if (blank) {
       up.push('select 1');
       down.push('select 1');
     } else if (initial) {
       const dump = await this.schemaGenerator.getCreateSchemaSQL({ wrap: false });
-      up.push(...dump.split('\n'));
+      up.push(...splitStatements(dump));
     } else {
       const diff = await this.schemaGenerator.getUpdateSchemaMigrationSQL({
         wrap: false,
@@ -347,8 +380,8 @@ export class Migrator implements IMigrator {
         dropTables: this.options.dropTables,
         fromSchema: this.getSchemaFromSnapshot(),
       });
-      up.push(...diff.up.split('\n'));
-      down.push(...diff.down.split('\n'));
+      up.push(...splitStatements(diff.up));
+      down.push(...splitStatements(diff.down));
     }
 
     const cleanUp = (diff: string[]) => {

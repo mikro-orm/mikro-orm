@@ -1,0 +1,102 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`GH7185 [mariadb] multiline comments are not split in migration SQL 1`] = `
+"import { Migration } from '@mikro-orm/migrations';
+
+export class Migration20250101000000 extends Migration {
+
+  override async up(): Promise<void> {
+    this.addSql(\`create table \\\`test_entity\\\` (\\\`id\\\` int unsigned not null auto_increment primary key comment 'line1;\\\\nline2;\\\\nline3', \\\`name\\\` varchar(255) not null comment 'line1;\\\\nline2;\\\\nline3') default character set utf8mb4 engine = InnoDB comment = 'line1;\\\\nline2;\\\\nline3';\`);
+  }
+
+  override async down(): Promise<void> {
+    this.addSql(\`drop table if exists \\\`test_entity\\\`;\`);
+  }
+
+}
+"
+`;
+
+exports[`GH7185 [mssql] multiline comments are not split in migration SQL 1`] = `
+"import { Migration } from '@mikro-orm/migrations';
+
+export class Migration20250101000000 extends Migration {
+
+  override async up(): Promise<void> {
+    this.addSql(\`CREATE TABLE [test_entity] ([id] int identity(1,1) not null primary key, [name] nvarchar(255) not null);\`);
+    this.addSql(\`IF EXISTS(SELECT * FROM sys.fn_listextendedproperty(N'MS_Description', N'Schema', N'dbo', N'Table', N'test_entity', NULL, NULL))
+  EXEC sys.sp_updateextendedproperty N'MS_Description', N'line1;
+line2;
+line3', N'Schema', N'dbo', N'Table', N'test_entity'
+ELSE
+  EXEC sys.sp_addextendedproperty N'MS_Description', N'line1;
+line2;
+line3', N'Schema', N'dbo', N'Table', N'test_entity';\`);
+    this.addSql(\`IF EXISTS(SELECT * FROM sys.fn_listextendedproperty(N'MS_Description', N'Schema', N'dbo', N'Table', N'test_entity', N'Column', N'id'))
+  EXEC sys.sp_updateextendedproperty N'MS_Description', N'line1;
+line2;
+line3', N'Schema', N'dbo', N'Table', N'test_entity', N'Column', N'id'
+ELSE
+  EXEC sys.sp_addextendedproperty N'MS_Description', N'line1;
+line2;
+line3', N'Schema', N'dbo', N'Table', N'test_entity', N'Column', N'id';\`);
+    this.addSql(\`IF EXISTS(SELECT * FROM sys.fn_listextendedproperty(N'MS_Description', N'Schema', N'dbo', N'Table', N'test_entity', N'Column', N'name'))
+  EXEC sys.sp_updateextendedproperty N'MS_Description', N'line1;
+line2;
+line3', N'Schema', N'dbo', N'Table', N'test_entity', N'Column', N'name'
+ELSE
+  EXEC sys.sp_addextendedproperty N'MS_Description', N'line1;
+line2;
+line3', N'Schema', N'dbo', N'Table', N'test_entity', N'Column', N'name';\`);
+  }
+
+  override async down(): Promise<void> {
+    this.addSql(\`if object_id('[test_entity]', 'U') is not null DROP TABLE [test_entity];\`);
+  }
+
+}
+"
+`;
+
+exports[`GH7185 [mysql] multiline comments are not split in migration SQL 1`] = `
+"import { Migration } from '@mikro-orm/migrations';
+
+export class Migration20250101000000 extends Migration {
+
+  override async up(): Promise<void> {
+    this.addSql(\`create table \\\`test_entity\\\` (\\\`id\\\` int unsigned not null auto_increment primary key comment 'line1;\\\\nline2;\\\\nline3', \\\`name\\\` varchar(255) not null comment 'line1;\\\\nline2;\\\\nline3') default character set utf8mb4 engine = InnoDB comment = 'line1;\\\\nline2;\\\\nline3';\`);
+  }
+
+  override async down(): Promise<void> {
+    this.addSql(\`drop table if exists \\\`test_entity\\\`;\`);
+  }
+
+}
+"
+`;
+
+exports[`GH7185 [postgresql] multiline comments are not split in migration SQL 1`] = `
+"import { Migration } from '@mikro-orm/migrations';
+
+export class Migration20250101000000 extends Migration {
+
+  override async up(): Promise<void> {
+    this.addSql(\`create table "test_entity" ("id" serial primary key, "name" varchar(255) not null);\`);
+    this.addSql(\`comment on table "test_entity" is 'line1;
+line2;
+line3';\`);
+    this.addSql(\`comment on column "test_entity"."id" is 'line1;
+line2;
+line3';\`);
+    this.addSql(\`comment on column "test_entity"."name" is 'line1;
+line2;
+line3';\`);
+  }
+
+  override async down(): Promise<void> {
+    this.addSql(\`drop table if exists "test_entity" cascade;\`);
+  }
+
+}
+"
+`;

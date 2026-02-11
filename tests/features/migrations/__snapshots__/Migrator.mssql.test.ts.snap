@@ -42,14 +42,14 @@ export class Migration20191013214813 extends Migration {
     this.addSql(\`CREATE TABLE [custom].[author_to_friend] ([author2_1_id] int not null, [author2_2_id] int not null, CONSTRAINT [author_to_friend_pkey] PRIMARY KEY ([author2_1_id], [author2_2_id]));\`);
 
     this.addSql(\`CREATE TABLE [custom].[address2] ([author_id] int not null, [value] nvarchar(255) not null, CONSTRAINT [address2_pkey] PRIMARY KEY ([author_id]));\`);
-    this.addSql(\`IF EXISTS(SELECT * FROM sys.fn_listextendedproperty(N'MS_Description', N'Schema', N'custom', N'Table', N'address2', NULL, NULL))\`);
-    this.addSql(\`  EXEC sys.sp_updateextendedproperty N'MS_Description', N'This is address table', N'Schema', N'custom', N'Table', N'address2'\`);
-    this.addSql(\`ELSE\`);
-    this.addSql(\`  EXEC sys.sp_addextendedproperty N'MS_Description', N'This is address table', N'Schema', N'custom', N'Table', N'address2';\`);
-    this.addSql(\`IF EXISTS(SELECT * FROM sys.fn_listextendedproperty(N'MS_Description', N'Schema', N'custom', N'Table', N'address2', N'Column', N'value'))\`);
-    this.addSql(\`  EXEC sys.sp_updateextendedproperty N'MS_Description', N'This is address property', N'Schema', N'custom', N'Table', N'address2', N'Column', N'value'\`);
-    this.addSql(\`ELSE\`);
-    this.addSql(\`  EXEC sys.sp_addextendedproperty N'MS_Description', N'This is address property', N'Schema', N'custom', N'Table', N'address2', N'Column', N'value';\`);
+    this.addSql(\`IF EXISTS(SELECT * FROM sys.fn_listextendedproperty(N'MS_Description', N'Schema', N'custom', N'Table', N'address2', NULL, NULL))
+  EXEC sys.sp_updateextendedproperty N'MS_Description', N'This is address table', N'Schema', N'custom', N'Table', N'address2'
+ELSE
+  EXEC sys.sp_addextendedproperty N'MS_Description', N'This is address table', N'Schema', N'custom', N'Table', N'address2';\`);
+    this.addSql(\`IF EXISTS(SELECT * FROM sys.fn_listextendedproperty(N'MS_Description', N'Schema', N'custom', N'Table', N'address2', N'Column', N'value'))
+  EXEC sys.sp_updateextendedproperty N'MS_Description', N'This is address property', N'Schema', N'custom', N'Table', N'address2', N'Column', N'value'
+ELSE
+  EXEC sys.sp_addextendedproperty N'MS_Description', N'This is address property', N'Schema', N'custom', N'Table', N'address2', N'Column', N'value';\`);
 
     this.addSql(\`CREATE TABLE [custom].[test2] ([id] int identity(1,1) not null primary key, [name] nvarchar(255) null, [book_uuid_pk] uniqueidentifier null, [version] int not null CONSTRAINT [test2_version_default] DEFAULT 1);\`);
     this.addSql(\`CREATE UNIQUE INDEX [test2_book_uuid_pk_unique] ON [custom].[test2] ([book_uuid_pk]) WHERE [book_uuid_pk] IS NOT NULL;\`);
@@ -132,14 +132,14 @@ export class Migration20191013214813 extends Migration {
       "CREATE TABLE [custom].[author_to_friend] ([author2_1_id] int not null, [author2_2_id] int not null, CONSTRAINT [author_to_friend_pkey] PRIMARY KEY ([author2_1_id], [author2_2_id]));",
       "",
       "CREATE TABLE [custom].[address2] ([author_id] int not null, [value] nvarchar(255) not null, CONSTRAINT [address2_pkey] PRIMARY KEY ([author_id]));",
-      "IF EXISTS(SELECT * FROM sys.fn_listextendedproperty(N'MS_Description', N'Schema', N'custom', N'Table', N'address2', NULL, NULL))",
-      "  EXEC sys.sp_updateextendedproperty N'MS_Description', N'This is address table', N'Schema', N'custom', N'Table', N'address2'",
-      "ELSE",
-      "  EXEC sys.sp_addextendedproperty N'MS_Description', N'This is address table', N'Schema', N'custom', N'Table', N'address2';",
-      "IF EXISTS(SELECT * FROM sys.fn_listextendedproperty(N'MS_Description', N'Schema', N'custom', N'Table', N'address2', N'Column', N'value'))",
-      "  EXEC sys.sp_updateextendedproperty N'MS_Description', N'This is address property', N'Schema', N'custom', N'Table', N'address2', N'Column', N'value'",
-      "ELSE",
-      "  EXEC sys.sp_addextendedproperty N'MS_Description', N'This is address property', N'Schema', N'custom', N'Table', N'address2', N'Column', N'value';",
+      "IF EXISTS(SELECT * FROM sys.fn_listextendedproperty(N'MS_Description', N'Schema', N'custom', N'Table', N'address2', NULL, NULL))
+  EXEC sys.sp_updateextendedproperty N'MS_Description', N'This is address table', N'Schema', N'custom', N'Table', N'address2'
+ELSE
+  EXEC sys.sp_addextendedproperty N'MS_Description', N'This is address table', N'Schema', N'custom', N'Table', N'address2';",
+      "IF EXISTS(SELECT * FROM sys.fn_listextendedproperty(N'MS_Description', N'Schema', N'custom', N'Table', N'address2', N'Column', N'value'))
+  EXEC sys.sp_updateextendedproperty N'MS_Description', N'This is address property', N'Schema', N'custom', N'Table', N'address2', N'Column', N'value'
+ELSE
+  EXEC sys.sp_addextendedproperty N'MS_Description', N'This is address property', N'Schema', N'custom', N'Table', N'address2', N'Column', N'value';",
       "",
       "CREATE TABLE [custom].[test2] ([id] int identity(1,1) not null primary key, [name] nvarchar(255) null, [book_uuid_pk] uniqueidentifier null, [version] int not null CONSTRAINT [test2_version_default] DEFAULT 1);",
       "CREATE UNIQUE INDEX [test2_book_uuid_pk_unique] ON [custom].[test2] ([book_uuid_pk]) WHERE [book_uuid_pk] IS NOT NULL;",
@@ -228,14 +228,14 @@ export class Migration20191013214813 extends Migration {
     this.addSql(\`CREATE TABLE [custom].[author_to_friend] ([author2_1_id] int not null, [author2_2_id] int not null, CONSTRAINT [author_to_friend_pkey] PRIMARY KEY ([author2_1_id], [author2_2_id]));\`);
 
     this.addSql(\`CREATE TABLE [custom].[address2] ([author_id] int not null, [value] nvarchar(255) not null, CONSTRAINT [address2_pkey] PRIMARY KEY ([author_id]));\`);
-    this.addSql(\`IF EXISTS(SELECT * FROM sys.fn_listextendedproperty(N'MS_Description', N'Schema', N'custom', N'Table', N'address2', NULL, NULL))\`);
-    this.addSql(\`  EXEC sys.sp_updateextendedproperty N'MS_Description', N'This is address table', N'Schema', N'custom', N'Table', N'address2'\`);
-    this.addSql(\`ELSE\`);
-    this.addSql(\`  EXEC sys.sp_addextendedproperty N'MS_Description', N'This is address table', N'Schema', N'custom', N'Table', N'address2';\`);
-    this.addSql(\`IF EXISTS(SELECT * FROM sys.fn_listextendedproperty(N'MS_Description', N'Schema', N'custom', N'Table', N'address2', N'Column', N'value'))\`);
-    this.addSql(\`  EXEC sys.sp_updateextendedproperty N'MS_Description', N'This is address property', N'Schema', N'custom', N'Table', N'address2', N'Column', N'value'\`);
-    this.addSql(\`ELSE\`);
-    this.addSql(\`  EXEC sys.sp_addextendedproperty N'MS_Description', N'This is address property', N'Schema', N'custom', N'Table', N'address2', N'Column', N'value';\`);
+    this.addSql(\`IF EXISTS(SELECT * FROM sys.fn_listextendedproperty(N'MS_Description', N'Schema', N'custom', N'Table', N'address2', NULL, NULL))
+  EXEC sys.sp_updateextendedproperty N'MS_Description', N'This is address table', N'Schema', N'custom', N'Table', N'address2'
+ELSE
+  EXEC sys.sp_addextendedproperty N'MS_Description', N'This is address table', N'Schema', N'custom', N'Table', N'address2';\`);
+    this.addSql(\`IF EXISTS(SELECT * FROM sys.fn_listextendedproperty(N'MS_Description', N'Schema', N'custom', N'Table', N'address2', N'Column', N'value'))
+  EXEC sys.sp_updateextendedproperty N'MS_Description', N'This is address property', N'Schema', N'custom', N'Table', N'address2', N'Column', N'value'
+ELSE
+  EXEC sys.sp_addextendedproperty N'MS_Description', N'This is address property', N'Schema', N'custom', N'Table', N'address2', N'Column', N'value';\`);
 
     this.addSql(\`CREATE TABLE [custom].[test2] ([id] int identity(1,1) not null primary key, [name] nvarchar(255) null, [book_uuid_pk] uniqueidentifier null, [version] int not null CONSTRAINT [test2_version_default] DEFAULT 1);\`);
     this.addSql(\`CREATE UNIQUE INDEX [test2_book_uuid_pk_unique] ON [custom].[test2] ([book_uuid_pk]) WHERE [book_uuid_pk] IS NOT NULL;\`);
@@ -318,14 +318,14 @@ export class Migration20191013214813 extends Migration {
       "CREATE TABLE [custom].[author_to_friend] ([author2_1_id] int not null, [author2_2_id] int not null, CONSTRAINT [author_to_friend_pkey] PRIMARY KEY ([author2_1_id], [author2_2_id]));",
       "",
       "CREATE TABLE [custom].[address2] ([author_id] int not null, [value] nvarchar(255) not null, CONSTRAINT [address2_pkey] PRIMARY KEY ([author_id]));",
-      "IF EXISTS(SELECT * FROM sys.fn_listextendedproperty(N'MS_Description', N'Schema', N'custom', N'Table', N'address2', NULL, NULL))",
-      "  EXEC sys.sp_updateextendedproperty N'MS_Description', N'This is address table', N'Schema', N'custom', N'Table', N'address2'",
-      "ELSE",
-      "  EXEC sys.sp_addextendedproperty N'MS_Description', N'This is address table', N'Schema', N'custom', N'Table', N'address2';",
-      "IF EXISTS(SELECT * FROM sys.fn_listextendedproperty(N'MS_Description', N'Schema', N'custom', N'Table', N'address2', N'Column', N'value'))",
-      "  EXEC sys.sp_updateextendedproperty N'MS_Description', N'This is address property', N'Schema', N'custom', N'Table', N'address2', N'Column', N'value'",
-      "ELSE",
-      "  EXEC sys.sp_addextendedproperty N'MS_Description', N'This is address property', N'Schema', N'custom', N'Table', N'address2', N'Column', N'value';",
+      "IF EXISTS(SELECT * FROM sys.fn_listextendedproperty(N'MS_Description', N'Schema', N'custom', N'Table', N'address2', NULL, NULL))
+  EXEC sys.sp_updateextendedproperty N'MS_Description', N'This is address table', N'Schema', N'custom', N'Table', N'address2'
+ELSE
+  EXEC sys.sp_addextendedproperty N'MS_Description', N'This is address table', N'Schema', N'custom', N'Table', N'address2';",
+      "IF EXISTS(SELECT * FROM sys.fn_listextendedproperty(N'MS_Description', N'Schema', N'custom', N'Table', N'address2', N'Column', N'value'))
+  EXEC sys.sp_updateextendedproperty N'MS_Description', N'This is address property', N'Schema', N'custom', N'Table', N'address2', N'Column', N'value'
+ELSE
+  EXEC sys.sp_addextendedproperty N'MS_Description', N'This is address property', N'Schema', N'custom', N'Table', N'address2', N'Column', N'value';",
       "",
       "CREATE TABLE [custom].[test2] ([id] int identity(1,1) not null primary key, [name] nvarchar(255) null, [book_uuid_pk] uniqueidentifier null, [version] int not null CONSTRAINT [test2_version_default] DEFAULT 1);",
       "CREATE UNIQUE INDEX [test2_book_uuid_pk_unique] ON [custom].[test2] ([book_uuid_pk]) WHERE [book_uuid_pk] IS NOT NULL;",
