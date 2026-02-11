@@ -18,6 +18,14 @@ class FooEntity {
     return `${this.firstName} ${this.lastName}`;
   }
 
+  @Property({ type: 'string', persist: false })
+  set nickname(value: string) {
+    this.firstName = value;
+  }
+
+  @Property({ type: 'string', persist: false })
+  accessor displayName: string & Opt = '';
+
 }
 
 let orm: MikroORM;
@@ -52,4 +60,22 @@ test('GH #7183 - @Property on getter decorator context', async () => {
   expect(res.firstName).toBe('John');
   expect(res.lastName).toBe('Snow');
   expect(res.fullName).toBe('John Snow');
+});
+
+test('GH #7183 - @Property on setter decorator context', () => {
+  const meta = orm.getMetadata().get(FooEntity);
+  const nicknameProp = meta.properties.nickname;
+  expect(nicknameProp).toBeDefined();
+  expect(nicknameProp.getter).toBe(false);
+  expect(nicknameProp.setter).toBe(true);
+  expect(nicknameProp.persist).toBe(false);
+});
+
+test('GH #7183 - @Property on accessor decorator context', () => {
+  const meta = orm.getMetadata().get(FooEntity);
+  const displayNameProp = meta.properties.displayName;
+  expect(displayNameProp).toBeDefined();
+  expect(displayNameProp.getter).toBe(true);
+  expect(displayNameProp.setter).toBe(true);
+  expect(displayNameProp.persist).toBe(false);
 });
