@@ -2047,7 +2047,7 @@ export abstract class AbstractSqlDriver<
     }
 
     return prop.fieldNames.map(fieldName => {
-      return `${tableAlias}.${fieldName} as ${tableAlias}__${fieldName}`;
+      return raw('?? as ??', [`${tableAlias}.${fieldName}`, `${tableAlias}__${fieldName}`]);
     });
   }
 

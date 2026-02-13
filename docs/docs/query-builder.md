@@ -493,6 +493,43 @@ const qb = em.createQueryBuilder(BookTag, 't')
 
 The `andHaving()` and `orHaving()` methods are also available for combining multiple having conditions.
 
+### Aliasing fields with `as`
+
+You can alias any selected field — including `@Formula` properties — using the `as` syntax:
+
+```ts
+// String 'as' syntax
+const qb = em.createQueryBuilder(Book, 'b')
+  .select(['b.title', 'b.priceTaxed as tax'])
+  .where({ title: 'test' });
+```
+
+```sql
+select `b`.`title`, `b`.`price` * 1.19 as `tax`
+from `book` as `b`
+where `b`.`title` = 'test'
+```
+
+You can also use `sql.ref().as()` for formula properties:
+
+```ts
+const qb = em.createQueryBuilder(Book, 'b')
+  .select(['b.title', sql.ref('b.priceTaxed').as('tax')])
+  .where({ title: 'test' });
+```
+
+Aliases created via either mechanism feed into `having()` and `orderBy()`, so you can type-check aggregated aliases:
+
+```ts
+const qb = em.createQueryBuilder(FooBar, 'fb')
+  .select(['fb.id', 'random as rnd'])
+  .groupBy('fb.id')
+  .having({ rnd: { $gt: 0 } }) // 'rnd' is type-checked!
+  .orderBy({ rnd: 'desc' });
+```
+
+> **Note:** Field aliasing is only supported in QueryBuilder. Custom aliases break entity hydration, so they are not available in `em.find()`.
+
 ## Overriding FROM clause
 
 You can specify the table used in the `FROM` clause, replacing the current table name if one has already been specified. This is typically used to specify a sub-query expression in SQL.

@@ -1,4 +1,4 @@
-import { JoinType, MikroORM, Ref } from '@mikro-orm/sqlite';
+import { JoinType, MikroORM, Ref, sql } from '@mikro-orm/sqlite';
 import { Embeddable, Embedded, Entity, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 @Embeddable()
@@ -86,4 +86,12 @@ test('should populate with joinAndSelect', async () => {
   expect(user!.name).toBe('Foo');
   expect(user?.details?.toJSON().address).toBeDefined();
   expect(user?.details?.toJSON().address).toEqual({ name: 'Bar', addressNo: 1 });
+});
+
+test('alias on flat embedded property throws', async () => {
+  const qb = orm.em.createQueryBuilder(UserDetails, 'ud');
+  qb.select(['ud.phoneNumber', 'ud.address as addr']);
+  expect(() => qb.getQuery()).toThrow(
+    `Cannot use 'as addr' alias on embedded property 'ud.address' because it expands to multiple columns. Alias individual fields instead (e.g. 'ud.address.propertyName as addr').`,
+  );
 });

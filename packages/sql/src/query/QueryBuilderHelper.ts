@@ -161,8 +161,8 @@ export class QueryBuilderHelper {
 
     if (prop?.formula) {
       const alias2 = this.platform.quoteIdentifier(a).toString();
-      const aliased = this.platform.quoteIdentifier(prop.fieldNames[0]).toString();
-      const as = alias === null ? '' : ` as ${aliased}`;
+      const aliasName = alias === undefined ? prop.fieldNames[0] : alias;
+      const as = aliasName === null ? '' : ` as ${this.platform.quoteIdentifier(aliasName)}`;
       const meta = this.aliasMap[a]?.meta ?? this.metadata.get(this.entityName);
       const table = this.createFormulaTable(alias2, meta, schema);
       const columns = meta.createColumnMappingObject(
