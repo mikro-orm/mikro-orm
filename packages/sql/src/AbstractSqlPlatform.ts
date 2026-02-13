@@ -137,8 +137,28 @@ export abstract class AbstractSqlPlatform extends Platform {
   /**
    * @internal
    */
-  getOrderByExpression(column: string, direction: string): string[] {
-    return [ `${column} ${direction.toLowerCase()}` ];
+  getOrderByExpression(column: string, direction: string, collation?: string): string[] {
+    if (collation) {
+      return [`${column} collate ${this.quoteCollation(collation)} ${direction.toLowerCase()}`];
+    }
+
+    return [`${column} ${direction.toLowerCase()}`];
+  }
+
+  /**
+   * Quotes a collation name for use in COLLATE clauses.
+   * @internal
+   */
+  quoteCollation(collation: string): string {
+    this.validateCollationName(collation);
+    return this.quoteIdentifier(collation);
+  }
+
+  /** @internal */
+  protected validateCollationName(collation: string): void {
+    if (!/^[\w]+$/.test(collation)) {
+      throw new Error(`Invalid collation name: '${collation}'. Collation names must contain only word characters.`);
+    }
   }
 
 }

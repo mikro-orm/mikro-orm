@@ -408,6 +408,29 @@ describe('QueryBuilder - Postgres', () => {
     );
   });
 
+  test('collation', async () => {
+    const sql1 = pg.em
+      .createQueryBuilder(Author2)
+      .collation('en_US')
+      .orderBy({ name: 'asc' })
+      .getFormattedQuery();
+    expect(sql1).toBe('select "a0".* from "author2" as "a0" order by "a0"."name" collate "en_US" asc');
+
+    const sql2 = pg.em
+      .createQueryBuilder(Author2)
+      .collation('en_US')
+      .orderBy({ name: 'asc', email: 'desc' })
+      .getFormattedQuery();
+    expect(sql2).toBe('select "a0".* from "author2" as "a0" order by "a0"."name" collate "en_US" asc, "a0"."email" collate "en_US" desc');
+
+    // without collation, normal behavior
+    const sql3 = pg.em
+      .createQueryBuilder(Author2)
+      .orderBy({ name: 'asc' })
+      .getFormattedQuery();
+    expect(sql3).toBe('select "a0".* from "author2" as "a0" order by "a0"."name" asc');
+  });
+
   test('lateral join', async () => {
     const author = await pg.em.insert(Author2, { name: 'a', email: 'e' });
     const t1 = await pg.em.insert(BookTag2, { name: 't1' });

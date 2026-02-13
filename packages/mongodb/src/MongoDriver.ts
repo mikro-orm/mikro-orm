@@ -28,7 +28,7 @@ import {
   type UpsertOptions,
   Utils,
 } from '@mikro-orm/core';
-import { MongoConnection } from './MongoConnection.js';
+import { MongoConnection, type MongoQueryOptions } from './MongoConnection.js';
 import { MongoPlatform } from './MongoPlatform.js';
 import { MongoEntityManager } from './MongoEntityManager.js';
 import { MongoMikroORM } from './MongoMikroORM.js';
@@ -60,7 +60,10 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     const orderBy = Utils.asArray(options.orderBy).map(orderBy =>
       this.renameFields(entityName, orderBy as T, true),
     );
-    const res = this.getConnection('read').stream(entityName, where, orderBy, options.limit, options.offset, fields, options.ctx);
+    const res = this.getConnection('read').stream(entityName, where, {
+      orderBy, limit: options.limit, offset: options.offset, fields, ctx: options.ctx,
+      ...this.buildQueryOptions(options),
+    });
 
     for await (const item of res) {
       if (options.rawResults) {
@@ -97,7 +100,10 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
       const { orderBy: newOrderBy, where: newWhere } = this.processCursorOptions(meta, options, options.orderBy!);
       const newWhereConverted = this.renameFields(entityName, newWhere as T, true);
       const orderBy = Utils.asArray(newOrderBy).map(order => this.renameFields(entityName, order as T, true));
-      const res = await this.rethrow(this.getConnection('read').find(entityName, andWhere(where, newWhereConverted), orderBy, options.limit, options.offset, fields, options.ctx, options.logging));
+      const res = await this.rethrow(this.getConnection('read').find(entityName, andWhere(where, newWhereConverted), {
+        orderBy, limit: options.limit, offset: options.offset, fields, ctx: options.ctx, loggerContext: options.logging,
+        ...this.buildQueryOptions(options),
+      }));
 
       if (isCursorPagination && !first && !!last) {
         res.reverse();
@@ -109,7 +115,10 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     const orderBy = Utils.asArray(options.orderBy).map(orderBy =>
       this.renameFields(entityName, orderBy as T, true),
     );
-    const res = await this.rethrow(this.getConnection('read').find(entityName, where, orderBy, options.limit, options.offset, fields, options.ctx));
+    const res = await this.rethrow(this.getConnection('read').find(entityName, where, {
+      orderBy, limit: options.limit, offset: options.offset, fields, ctx: options.ctx,
+      ...this.buildQueryOptions(options),
+    }));
 
     return res.map(r => this.mapResult<T>(r, this.metadata.find<T>(entityName))!);
   }
@@ -130,7 +139,10 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     const orderBy = Utils.asArray(options.orderBy).map(orderBy =>
       this.renameFields(entityName, orderBy as T, true),
     );
-    const res = await this.rethrow(this.getConnection('read').find(entityName, where, orderBy, 1, undefined, fields, options.ctx, options.logging));
+    const res = await this.rethrow(this.getConnection('read').find(entityName, where, {
+      orderBy, limit: 1, fields, ctx: options.ctx, loggerContext: options.logging,
+      ...this.buildQueryOptions(options),
+    }));
 
     return this.mapResult<T>(res[0], this.metadata.find(entityName)!);
   }
@@ -162,14 +174,19 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     return super.findVirtual(entityName, where, options);
   }
 
-  async count<T extends object>(entityName: EntityName<T>, where: FilterQuery<T>, options: CountOptions<T> = {}, ctx?: Transaction<ClientSession>): Promise<number> {
+  async count<T extends object>(entityName: EntityName<T>, where: FilterQuery<T>, options: CountOptions<T> = {}): Promise<number> {
     /* v8 ignore next */
     if (this.metadata.find(entityName)?.virtual) {
       return this.countVirtual(entityName, where, options);
     }
 
     where = this.renameFields(entityName, where as T, true);
-    return this.rethrow(this.getConnection('read').countDocuments(entityName, where as object, ctx));
+    const queryOpts = this.buildQueryOptions(options);
+    return this.rethrow(this.getConnection('read').countDocuments(entityName, where as object, {
+      ctx: options.ctx,
+      loggerContext: options.logging,
+      ...queryOpts,
+    }));
   }
 
   async nativeInsert<T extends object>(entityName: EntityName<T>, data: EntityDictionary<T>, options: NativeInsertUpdateOptions<T> = {}): Promise<QueryResult<T>> {
@@ -289,6 +306,32 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
 
   override getPlatform(): MongoPlatform {
     return this.platform;
+  }
+
+  private buildQueryOptions(options: Pick<FindOptions<any, any, any, any>, 'collation' | 'indexHint' | 'maxTimeMS' | 'allowDiskUse'>): MongoQueryOptions {
+    if (options.collation != null && typeof options.collation === 'string') {
+      throw new Error('Collation option for MongoDB must be a CollationOptions object (e.g. { locale: \'en\' }). Use a string only with SQL drivers.');
+    }
+
+    const ret: MongoQueryOptions = {};
+
+    if (options.collation) {
+      ret.collation = options.collation;
+    }
+
+    if (options.indexHint != null) {
+      ret.indexHint = options.indexHint;
+    }
+
+    if (options.maxTimeMS != null) {
+      ret.maxTimeMS = options.maxTimeMS;
+    }
+
+    if (options.allowDiskUse != null) {
+      ret.allowDiskUse = options.allowDiskUse;
+    }
+
+    return ret;
   }
 
   private renameFields<T extends object>(entityName: EntityName<T>, data: T, dotPaths = false, object?: boolean, root = true): T {

@@ -209,12 +209,18 @@ export interface FindOptions<
   lockTableAliases?: string[];
   ctx?: Transaction;
   connectionType?: ConnectionType;
-  /** sql only */
-  indexHint?: string;
+  /** SQL: appended to FROM clause (e.g. `'force index(my_index)'`); MongoDB: index name or spec passed as `hint`. */
+  indexHint?: string | Dictionary;
   /** sql only */
   comments?: string | string[];
   /** sql only */
   hintComments?: string | string[];
+  /** SQL: collation name string applied as COLLATE to ORDER BY; MongoDB: CollationOptions object. */
+  collation?: CollationOptions | string;
+  /** mongodb only */
+  maxTimeMS?: number;
+  /** mongodb only */
+  allowDiskUse?: boolean;
   loggerContext?: LogContext;
   logging?: LoggingOptions;
   /** @internal used to apply filters to the auto-joined relations */
@@ -273,12 +279,16 @@ export interface CountOptions<T extends object, P extends string = never>  {
   ctx?: Transaction;
   connectionType?: ConnectionType;
   flushMode?: FlushMode | `${FlushMode}`;
-  /** sql only */
-  indexHint?: string;
+  /** SQL: appended to FROM clause (e.g. `'force index(my_index)'`); MongoDB: index name or spec passed as `hint`. */
+  indexHint?: string | Dictionary;
   /** sql only */
   comments?: string | string[];
   /** sql only */
   hintComments?: string | string[];
+  /** SQL: collation name string applied as COLLATE; MongoDB: CollationOptions object. */
+  collation?: CollationOptions | string;
+  /** mongodb only */
+  maxTimeMS?: number;
   loggerContext?: LogContext;
   logging?: LoggingOptions;
   /** @internal used to apply filters to the auto-joined relations */
@@ -310,6 +320,17 @@ export interface DriverMethodOptions {
   ctx?: Transaction;
   schema?: string;
   loggerContext?: LogContext;
+}
+
+export interface CollationOptions {
+  locale: string;
+  caseLevel?: boolean;
+  caseFirst?: string;
+  strength?: number;
+  numericOrdering?: boolean;
+  alternate?: string;
+  maxVariable?: string;
+  backwards?: boolean;
 }
 
 export interface GetReferenceOptions {

@@ -150,15 +150,16 @@ export class BaseMySqlPlatform extends AbstractSqlPlatform {
     return `alter table ${quotedTableName} add fulltext index ${quotedIndexName}(${quotedColumnNames.join(',')})`;
   }
 
-  override getOrderByExpression(column: string, direction: string): string[] {
+  override getOrderByExpression(column: string, direction: string, collation?: string): string[] {
     const ret: string[] = [];
     const dir = direction.toLowerCase() as keyof typeof this.ORDER_BY_NULLS_TRANSLATE;
+    const col = collation ? `${column} collate ${this.quoteCollation(collation)}` : column;
 
     if (dir in this.ORDER_BY_NULLS_TRANSLATE) {
-      ret.push(`${column} ${this.ORDER_BY_NULLS_TRANSLATE[dir]}`);
+      ret.push(`${col} ${this.ORDER_BY_NULLS_TRANSLATE[dir]}`);
     }
 
-    ret.push(`${column} ${dir.replace(/(\s|nulls|first|last)*/gi, '')}`);
+    ret.push(`${col} ${dir.replace(/(\s|nulls|first|last)*/gi, '')}`);
 
     return ret;
   }

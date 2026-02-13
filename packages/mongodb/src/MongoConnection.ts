@@ -19,6 +19,7 @@ import {
 } from 'mongodb';
 import {
   type AnyEntity,
+  type CollationOptions,
   type Configuration,
   Connection,
   type ConnectionOptions,
@@ -177,40 +178,60 @@ export class MongoConnection extends Connection {
     throw new Error(`${this.constructor.name} does not support generic execute method`);
   }
 
-  async find<T extends object>(entityName: EntityName<T>, where: FilterQuery<T>, orderBy?: QueryOrderMap<T> | QueryOrderMap<T>[], limit?: number, offset?: number, fields?: string[], ctx?: Transaction<ClientSession>, loggerContext?: LoggingOptions): Promise<EntityData<T>[]> {
-    const { cursor, query } = await this._find<T>(entityName, where, orderBy, limit, offset, fields, ctx, loggerContext);
+  async find<T extends object>(entityName: EntityName<T>, where: FilterQuery<T>, opts: MongoFindOptions<T> = {}): Promise<EntityData<T>[]> {
+    const { cursor, query } = await this._find<T>(entityName, where, opts);
     const now = Date.now();
     const res = await cursor.toArray();
-    this.logQuery(`${query}.toArray();`, { took: Date.now() - now, results: res.length, ...loggerContext });
+    this.logQuery(`${query}.toArray();`, { took: Date.now() - now, results: res.length, ...opts.loggerContext });
 
     return res as EntityData<T>[];
   }
 
-  async* stream<T extends object>(entityName: EntityName<T>, where: FilterQuery<T>, orderBy?: QueryOrderMap<T> | QueryOrderMap<T>[], limit?: number, offset?: number, fields?: string[], ctx?: Transaction<ClientSession>, loggerContext?: LoggingOptions): AsyncIterableIterator<T> {
-    const { cursor, query } = await this._find<T>(entityName, where, orderBy, limit, offset, fields, ctx, loggerContext);
-    this.logQuery(`${query}.toArray();`, loggerContext);
+  async* stream<T extends object>(entityName: EntityName<T>, where: FilterQuery<T>, opts: MongoFindOptions<T> = {}): AsyncIterableIterator<T> {
+    const { cursor, query } = await this._find<T>(entityName, where, opts);
+    this.logQuery(`${query}.toArray();`, opts.loggerContext);
     yield* cursor;
   }
 
-  private async _find<T extends object>(entityName: EntityName<T>, where: FilterQuery<T>, orderBy?: QueryOrderMap<T> | QueryOrderMap<T>[], limit?: number, offset?: number, fields?: string[], ctx?: Transaction<ClientSession>, loggerContext?: LoggingOptions): Promise<{ cursor: FindCursor<T>; query: string }> {
+  private async _find<T extends object>(entityName: EntityName<T>, where: FilterQuery<T>, opts: MongoFindOptions<T> = {}): Promise<{ cursor: FindCursor<T>; query: string }> {
     await this.ensureConnection();
     const collection = this.getCollectionName(entityName);
-    const options: Dictionary = ctx ? { session: ctx } : {};
+    const options: Dictionary = opts.ctx ? { session: opts.ctx } : {};
 
-    if (fields) {
-      options.projection = fields.reduce((o, k) => Object.assign(o, { [k]: 1 }), {});
+    if (opts.fields) {
+      options.projection = opts.fields.reduce((o, k) => Object.assign(o, { [k]: 1 }), {});
+    }
+
+    if (opts.collation) {
+      options.collation = opts.collation;
+    }
+
+    if (opts.indexHint != null) {
+      options.hint = opts.indexHint;
+    }
+
+    if (opts.maxTimeMS != null) {
+      options.maxTimeMS = opts.maxTimeMS;
+    }
+
+    if (opts.allowDiskUse != null) {
+      options.allowDiskUse = opts.allowDiskUse;
     }
 
     const resultSet = this.getCollection<T>(entityName).find(where as Filter<T>, options);
     let query = `db.getCollection('${collection}').find(${this.logObject(where)}, ${this.logObject(options)})`;
-    orderBy = Utils.asArray(orderBy);
+    const orderBy = Utils.asArray(opts.orderBy);
 
-    if (Array.isArray(orderBy) && orderBy.length > 0) {
+    if (orderBy.length > 0) {
       const orderByTuples: [string, SortDirection][] = [];
       orderBy.forEach(o => {
         Utils.keys(o).forEach(k => {
           const direction = o[k] as SortDirection;
-          orderByTuples.push([k.toString(), typeof direction === 'string' ? direction.toUpperCase() === QueryOrder.ASC ? 1 : -1 : direction]);
+          if (typeof direction === 'string') {
+            orderByTuples.push([k.toString(), direction.toUpperCase() === QueryOrder.ASC ? 1 : -1]);
+          } else {
+            orderByTuples.push([k.toString(), direction]);
+          }
         });
       });
       if (orderByTuples.length > 0) {
@@ -219,14 +240,14 @@ export class MongoConnection extends Connection {
       }
     }
 
-    if (limit !== undefined) {
-      query += `.limit(${limit})`;
-      resultSet.limit(limit);
+    if (opts.limit !== undefined) {
+      query += `.limit(${opts.limit})`;
+      resultSet.limit(opts.limit);
     }
 
-    if (offset !== undefined) {
-      query += `.skip(${offset})`;
-      resultSet.skip(offset);
+    if (opts.offset !== undefined) {
+      query += `.skip(${opts.offset})`;
+      resultSet.skip(opts.offset);
     }
 
     return { cursor: resultSet as any, query };
@@ -241,11 +262,11 @@ export class MongoConnection extends Connection {
   }
 
   async updateMany<T extends object>(entityName: EntityName<T>, where: FilterQuery<T>, data: Partial<T>, ctx?: Transaction<ClientSession>, upsert?: boolean, upsertOptions?: UpsertOptions<T>): Promise<QueryResult<T>> {
-    return this.runQuery<T>('updateMany', entityName, data, where, ctx, upsert, upsertOptions);
+    return this.runQuery<T>('updateMany', entityName, data, where, ctx, { upsert, upsertOptions });
   }
 
   async bulkUpdateMany<T extends object>(entityName: EntityName<T>, where: FilterQuery<T>[], data: Partial<T>[], ctx?: Transaction<ClientSession>, upsert?: boolean, upsertOptions?: UpsertManyOptions<T>): Promise<QueryResult<T>> {
-    return this.runQuery<T>('bulkUpdateMany', entityName, data, where, ctx, upsert, upsertOptions);
+    return this.runQuery<T>('bulkUpdateMany', entityName, data, where, ctx, { upsert, upsertOptions });
   }
 
   async deleteMany<T extends object>(entityName: EntityName<T>, where: FilterQuery<T>, ctx?: Transaction<ClientSession>): Promise<QueryResult<T>> {
@@ -277,8 +298,13 @@ export class MongoConnection extends Connection {
     yield* cursor as AsyncIterableIterator<T>;
   }
 
-  async countDocuments<T extends object>(entityName: EntityName<T>, where: FilterQuery<T>, ctx?: Transaction<ClientSession>): Promise<number> {
-    return this.runQuery<T, number>('countDocuments', entityName, undefined, where, ctx);
+  async countDocuments<T extends object>(entityName: EntityName<T>, where: FilterQuery<T>, opts: MongoCountOptions = {}): Promise<number> {
+    return this.runQuery<T, number>('countDocuments', entityName, undefined, where, opts.ctx, {
+      loggerContext: opts.loggerContext,
+      collation: opts.collation,
+      indexHint: opts.indexHint,
+      maxTimeMS: opts.maxTimeMS,
+    });
   }
 
   override async transactional<T>(cb: (trx: Transaction<ClientSession>) => Promise<T>, options: { isolationLevel?: IsolationLevel; ctx?: Transaction<ClientSession>; eventBroadcaster?: TransactionEventBroadcaster } & TransactionOptions = {}): Promise<T> {
@@ -329,8 +355,9 @@ export class MongoConnection extends Connection {
     await eventBroadcaster?.dispatchEvent(EventType.afterTransactionRollback, ctx);
   }
 
-  private async runQuery<T extends object, U extends QueryResult<T> | number = QueryResult<T>>(method: 'insertOne' | 'insertMany' | 'updateMany' | 'bulkUpdateMany' | 'deleteMany' | 'countDocuments', entityName: EntityName<T>, data?: Partial<T> | Partial<T>[], where?: FilterQuery<T> | FilterQuery<T>[], ctx?: Transaction<ClientSession>, upsert?: boolean, upsertOptions?: UpsertOptions<T>, loggerContext?: LoggingOptions): Promise<U> {
+  private async runQuery<T extends object, U extends QueryResult<T> | number = QueryResult<T>>(method: 'insertOne' | 'insertMany' | 'updateMany' | 'bulkUpdateMany' | 'deleteMany' | 'countDocuments', entityName: EntityName<T>, data?: Partial<T> | Partial<T>[], where?: FilterQuery<T> | FilterQuery<T>[], ctx?: Transaction<ClientSession>, opts?: { upsert?: boolean; upsertOptions?: UpsertOptions<T>; loggerContext?: LoggingOptions; collation?: CollationOptions; indexHint?: string | Dictionary; maxTimeMS?: number }): Promise<U> {
     await this.ensureConnection();
+    const { upsert, upsertOptions, loggerContext, collation, indexHint, maxTimeMS } = opts ?? {};
     const collection = this.getCollectionName(entityName);
     const logger = this.config.getLogger();
     const options: Dictionary = ctx ? { session: ctx, upsert } : { upsert };
@@ -392,6 +419,20 @@ export class MongoConnection extends Connection {
       }
       case 'deleteMany':
       case 'countDocuments':
+        if (method === 'countDocuments') {
+          if (collation) {
+            options.collation = collation;
+          }
+
+          if (indexHint != null) {
+            options.hint = indexHint;
+          }
+
+          if (maxTimeMS != null) {
+            options.maxTimeMS = maxTimeMS;
+          }
+        }
+
         query = log(() => `db.getCollection('${collection}').${method}(${this.logObject(where)}, ${this.logObject(options)});`);
         res = await this.rethrow(this.getCollection(entityName)[method](where as Filter<T>, options) as Promise<number>, query);
         break;
@@ -504,4 +545,25 @@ export class MongoConnection extends Connection {
     return inspect(o, { depth: 5, compact: true, breakLength: 300 });
   }
 
+}
+
+export interface MongoQueryOptions {
+  collation?: CollationOptions;
+  indexHint?: string | Dictionary;
+  maxTimeMS?: number;
+  allowDiskUse?: boolean;
+}
+
+export interface MongoFindOptions<T extends object> extends MongoQueryOptions {
+  orderBy?: QueryOrderMap<T> | QueryOrderMap<T>[];
+  limit?: number;
+  offset?: number;
+  fields?: string[];
+  ctx?: Transaction<ClientSession>;
+  loggerContext?: LoggingOptions;
+}
+
+export interface MongoCountOptions extends Omit<MongoQueryOptions, 'allowDiskUse'> {
+  ctx?: Transaction<ClientSession>;
+  loggerContext?: LoggingOptions;
 }

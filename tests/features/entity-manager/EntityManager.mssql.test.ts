@@ -1375,6 +1375,15 @@ describe('EntityManagerMsSql', () => {
     expect(author.books.getItems().every(b => b.uuid)).toBe(true);
   });
 
+  test('collation option', async () => {
+    const mock = mockLogger(orm, ['query']);
+    await orm.em.find(Author2, {}, {
+      collation: 'Latin1_General_CI_AS',
+      orderBy: { name: 'asc' },
+    });
+    expect(mock.mock.calls[0][0]).toMatch('order by [a0].[name] collate Latin1_General_CI_AS asc');
+  });
+
   // this should run in ~700ms (when running single test locally)
   test('perf: batch insert and update', async () => {
     const authors = new Set<Author2>();

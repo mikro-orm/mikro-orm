@@ -452,6 +452,68 @@ order by (point(loc_latitude, loc_longitude) <@> point(0, 0)) asc
 
 Read more about this in [Using raw SQL query fragments](./raw-queries.md) section.
 
+### Query Options
+
+The `em.find()` and `em.count()` methods accept several driver-specific query options:
+
+#### Collation
+
+Controls string comparison rules. The `collation` option accepts different types depending on the driver:
+
+- **SQL drivers**: Pass a collation name **string**. It will be applied as `COLLATE` to **every** column in the `ORDER BY` clause. Passing a `CollationOptions` object to a SQL driver will throw an error.
+- **MongoDB**: Pass a `CollationOptions` **object**. Passing a string to MongoDB will throw an error.
+
+```ts
+// SQL: applies COLLATE to ORDER BY
+const users = await em.find(User, {}, {
+  collation: 'utf8mb4_general_ci',
+  orderBy: { name: 'asc' },
+});
+// produces: ... ORDER BY `name` COLLATE `utf8mb4_general_ci` ASC
+
+// MongoDB: structured collation object
+const users = await em.find(User, {}, {
+  collation: { locale: 'en', strength: 2 },
+  orderBy: { name: QueryOrder.ASC },
+});
+```
+
+To use collation in `WHERE` conditions (SQL only), use raw SQL fragments:
+
+```ts
+const users = await em.find(User, {
+  [sql`name collate utf8mb4_general_ci`]: 'john',
+});
+// produces: ... WHERE name collate `utf8mb4_general_ci` = 'john'
+```
+
+For MongoDB, the `collation` option applies to the entire query (both filtering and sorting), which is the native MongoDB behavior.
+
+#### Index Hints
+
+For SQL, pass a string to append to the `FROM` clause. For MongoDB, pass a string (index name) or object (index spec) as a `hint` to the native driver.
+
+```ts
+// SQL
+const users = await em.find(User, {}, {
+  indexHint: 'force index(my_index)',
+});
+
+// MongoDB
+const users = await em.find(User, {}, {
+  indexHint: 'name_1', // or { name: 1 }
+});
+```
+
+#### MongoDB-only Options
+
+```ts
+const users = await em.find(User, {}, {
+  maxTimeMS: 5000,     // query timeout in milliseconds
+  allowDiskUse: true,  // allow disk use for large sorts
+});
+```
+
 ## Updating references (not loaded entities)
 
 You can update references via Unit of Work, just like if it was a loaded entity. This way it is possible to issue update queries without loading the entity.
