@@ -196,31 +196,11 @@ export interface FindOptions<
   disableIdentityMap?: boolean;
   schema?: string;
   flags?: QueryFlag[];
-  /** sql only */
-  groupBy?: string | string[];
-  having?: FilterQuery<Entity>;
-  /** sql only */
   strategy?: LoadStrategy | `${LoadStrategy}`;
   flushMode?: FlushMode | `${FlushMode}`;
   filters?: FilterOptions;
-  /** sql only */
-  lockMode?: Exclude<LockMode, LockMode.OPTIMISTIC>;
-  /** sql only */
-  lockTableAliases?: string[];
   ctx?: Transaction;
   connectionType?: ConnectionType;
-  /** SQL: appended to FROM clause (e.g. `'force index(my_index)'`); MongoDB: index name or spec passed as `hint`. */
-  indexHint?: string | Dictionary;
-  /** sql only */
-  comments?: string | string[];
-  /** sql only */
-  hintComments?: string | string[];
-  /** SQL: collation name string applied as COLLATE to ORDER BY; MongoDB: CollationOptions object. */
-  collation?: CollationOptions | string;
-  /** mongodb only */
-  maxTimeMS?: number;
-  /** mongodb only */
-  allowDiskUse?: boolean;
   loggerContext?: LogContext;
   logging?: LoggingOptions;
   /** @internal used to apply filters to the auto-joined relations */
@@ -270,8 +250,6 @@ export interface UpsertManyOptions<Entity, Fields extends string = never> extend
 export interface CountOptions<T extends object, P extends string = never>  {
   filters?: FilterOptions;
   schema?: string;
-  groupBy?: string | readonly string[];
-  having?: FilterQuery<T>;
   cache?: boolean | number | [string, number];
   populate?: Populate<T, P>;
   populateWhere?: ObjectQuery<T> | PopulateHint | `${PopulateHint}`;
@@ -279,16 +257,6 @@ export interface CountOptions<T extends object, P extends string = never>  {
   ctx?: Transaction;
   connectionType?: ConnectionType;
   flushMode?: FlushMode | `${FlushMode}`;
-  /** SQL: appended to FROM clause (e.g. `'force index(my_index)'`); MongoDB: index name or spec passed as `hint`. */
-  indexHint?: string | Dictionary;
-  /** sql only */
-  comments?: string | string[];
-  /** sql only */
-  hintComments?: string | string[];
-  /** SQL: collation name string applied as COLLATE; MongoDB: CollationOptions object. */
-  collation?: CollationOptions | string;
-  /** mongodb only */
-  maxTimeMS?: number;
   loggerContext?: LogContext;
   logging?: LoggingOptions;
   /** @internal used to apply filters to the auto-joined relations */
@@ -320,17 +288,6 @@ export interface DriverMethodOptions {
   ctx?: Transaction;
   schema?: string;
   loggerContext?: LogContext;
-}
-
-export interface CollationOptions {
-  locale: string;
-  caseLevel?: boolean;
-  caseFirst?: string;
-  strength?: number;
-  numericOrdering?: boolean;
-  alternate?: string;
-  maxVariable?: string;
-  backwards?: boolean;
 }
 
 export interface GetReferenceOptions {

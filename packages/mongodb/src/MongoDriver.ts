@@ -308,11 +308,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     return this.platform;
   }
 
-  private buildQueryOptions(options: Pick<FindOptions<any, any, any, any>, 'collation' | 'indexHint' | 'maxTimeMS' | 'allowDiskUse'>): MongoQueryOptions {
-    if (options.collation != null && typeof options.collation === 'string') {
-      throw new Error('Collation option for MongoDB must be a CollationOptions object (e.g. { locale: \'en\' }). Use a string only with SQL drivers.');
-    }
-
+  private buildQueryOptions(options: Dictionary): MongoQueryOptions {
     const ret: MongoQueryOptions = {};
 
     if (options.collation) {

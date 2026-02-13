@@ -251,7 +251,7 @@ export class EntityLoader {
       filters, convertCustomTypes, lockMode, strategy, populateWhere, connectionType, logging,
       fields: fields as never[],
       populate: [],
-    });
+    } as any);
   }
 
   private async populatePolymorphic<Entity extends object>(entities: Entity[], prop: EntityProperty<Entity>, options: Required<EntityLoaderOptions<Entity>>, ref: boolean): Promise<AnyEntity[]> {
@@ -467,7 +467,7 @@ export class EntityLoader {
       refresh: refresh && !children.every(item => options.visited.has(item)),
       // @ts-ignore not a public option, will be propagated to the populate call
       visited: options.visited,
-    });
+    } as any);
 
     // For targetKey relations, wire up loaded entities to parent references
     // This is needed because the references were created under alternate key,

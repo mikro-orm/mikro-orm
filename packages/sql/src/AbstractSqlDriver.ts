@@ -66,7 +66,7 @@ import { QueryBuilder } from './query/QueryBuilder.js';
 import { type NativeQueryBuilder } from './query/NativeQueryBuilder.js';
 import { JoinType, QueryType } from './query/enums.js';
 import { SqlEntityManager } from './SqlEntityManager.js';
-import type { InternalField } from './typings.js';
+import type { InternalField, SqlCountOptions, SqlFindOptions } from './typings.js';
 import { PivotCollectionPersister } from './PivotCollectionPersister.js';
 
 export abstract class AbstractSqlDriver<
@@ -108,15 +108,6 @@ export abstract class AbstractSqlDriver<
     return { alias, name: meta.tableName, schema: effectiveSchema, qualifiedName, toString: () => alias };
   }
 
-  private validateSqlOptions(options: { collation?: any; indexHint?: any }): void {
-    if (options.collation != null && typeof options.collation !== 'string') {
-      throw new Error('Collation option for SQL drivers must be a string (collation name). Use a CollationOptions object only with MongoDB.');
-    }
-
-    if (options.indexHint != null && typeof options.indexHint !== 'string') {
-      throw new Error('indexHint for SQL drivers must be a string (e.g. \'force index(my_index)\'). Use an object only with MongoDB.');
-    }
-  }
 
   override createEntityManager(useContext?: boolean): this[typeof EntityManagerType] {
     const EntityManagerClass = this.config.get('entityManager', SqlEntityManager);
@@ -128,6 +119,7 @@ export abstract class AbstractSqlDriver<
     where: FilterQuery<T>,
     options: FindOptions<T, any, any, any> = {},
   ): Promise<QueryBuilder<T, any, any, any>> {
+    const { groupBy, having, comments, hintComments, indexHint, collation } = options as SqlFindOptions<T>;
     const connectionType = this.resolveConnectionType({ ctx: options.ctx, connectionType: options.connectionType });
     const populate = this.autoJoinOneToOneOwner(meta, options.populate as unknown as PopulateOptions<T>[], options.fields);
     const joinedProps = this.joinedProps(meta, populate, options);
@@ -142,8 +134,6 @@ export abstract class AbstractSqlDriver<
       where = { [Utils.getPrimaryKeyHash(meta.primaryKeys)]: where } as ObjectQuery<T>;
     }
 
-    this.validateSqlOptions(options);
-
     const { first, last, before, after } = options as FindByCursorOptions<T>;
     const isCursorPagination = [first, last, before, after].some(v => v != null);
     qb.__populateWhere = (options as Dictionary)._populateWhere;
@@ -151,12 +141,12 @@ export abstract class AbstractSqlDriver<
       // only add populateWhere if we are populate-joining, as this will be used to add `on` conditions
       .populate(populate, joinedProps.length > 0 ? populateWhere : undefined, joinedProps.length > 0 ? options.populateFilter : undefined)
       .where(where as any)
-      .groupBy(options.groupBy as any)
-      .having(options.having as any)
-      .indexHint(options.indexHint as string)
-      .collation(options.collation as string)
-      .comment(options.comments!)
-      .hintComment(options.hintComments!);
+      .groupBy(groupBy as any)
+      .having(having as any)
+      .indexHint(indexHint!)
+      .collation(collation!)
+      .comment(comments!)
+      .hintComment(hintComments!);
 
     if (isCursorPagination) {
       const { orderBy: newOrderBy, where } = this.processCursorOptions(meta, options, orderBy);
@@ -169,8 +159,9 @@ export abstract class AbstractSqlDriver<
       qb.limit(options.limit, options.offset);
     }
 
-    if (options.lockMode) {
-      qb.setLockMode(options.lockMode, options.lockTableAliases);
+    const { lockMode, lockTableAliases } = options as SqlFindOptions<T>;
+    if (lockMode) {
+      qb.setLockMode(lockMode, lockTableAliases);
     }
 
     if (options.em) {
@@ -718,6 +709,7 @@ export abstract class AbstractSqlDriver<
     }
 
     options = { populate: [], ...options };
+    const { groupBy, having, comments, hintComments, indexHint, collation } = options as SqlCountOptions<T>;
     const populate = options.populate as unknown as PopulateOptions<T>[];
     const joinedProps = this.joinedProps(meta, populate, options as FindOptions<T>);
     const schema = this.getSchemaName(meta, options);
@@ -728,15 +720,13 @@ export abstract class AbstractSqlDriver<
       this.buildFields(meta, populate, joinedProps, qb, qb.alias, options as FindOptions<T>, schema);
     }
 
-    this.validateSqlOptions(options);
-
     qb.__populateWhere = (options as Dictionary)._populateWhere;
-    qb.indexHint(options.indexHint as string)
-      .collation(options.collation as string)
-      .comment(options.comments!)
-      .hintComment(options.hintComments!)
-      .groupBy(options.groupBy as any)
-      .having(options.having as any)
+    qb.indexHint(indexHint!)
+      .collation(collation!)
+      .comment(comments!)
+      .hintComment(hintComments!)
+      .groupBy(groupBy as any)
+      .having(having as any)
       .populate(populate, joinedProps.length > 0 ? populateWhere : undefined, joinedProps.length > 0 ? options.populateFilter : undefined)
       .withSchema(schema)
       .where(where as any);

@@ -490,11 +490,33 @@ describe('EntityManagerMongo', () => {
     expect(countLog).toMatch(/maxTimeMS: 5000/);
   });
 
-  test('collation option rejects string for MongoDB', async () => {
-    await expect(orm.em.find(Author, {}, {
-      collation: 'en_US' as any,
-      orderBy: { name: QueryOrder.ASC },
-    })).rejects.toThrow('Collation option for MongoDB must be a CollationOptions object');
+  test('driver-specific find options type safety', async () => {
+    // MongoDB-specific options should be accepted
+    await orm.em.find(Author, {}, {
+      collation: { locale: 'en', strength: 2 },
+      maxTimeMS: 5000,
+      allowDiskUse: true,
+      indexHint: '_id_',
+    });
+
+    await orm.em.findOne(Author, { name: 'test' }, {
+      collation: { locale: 'en', strength: 2 },
+      maxTimeMS: 5000,
+      allowDiskUse: true,
+      indexHint: { _id: 1 },
+    });
+
+    await orm.em.findAndCount(Author, {}, {
+      collation: { locale: 'en' },
+      maxTimeMS: 1000,
+      allowDiskUse: true,
+    });
+
+    await orm.em.count(Author, {}, {
+      collation: { locale: 'en', strength: 2 },
+      indexHint: '_id_',
+      maxTimeMS: 5000,
+    });
   });
 
   test('should throw when trying to merge entity without id', async () => {

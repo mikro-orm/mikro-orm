@@ -1,20 +1,27 @@
 import type { Generated, Kysely } from 'kysely';
 import type {
   CheckCallback,
+  CountOptions,
   DeferMode,
   Dictionary,
   EntityName,
   EntityProperty,
   EntitySchemaWithMeta,
+  FindAllOptions,
   FilterQuery,
+  FindOneOptions,
+  FindOneOrFailOptions,
+  FindOptions,
   GroupOperator,
   IndexColumnOptions,
+  LockMode,
   Opt,
   Primary,
   PrimaryProperty,
   QueryFlag,
   QueryOrderMap,
   RawQueryFragment,
+  StreamOptions,
   Type,
 } from '@mikro-orm/core';
 import type { JoinType, QueryType } from './query/enums.js';
@@ -367,3 +374,80 @@ type MaybeNever<TValue, TOptions> = TOptions extends { persist: false } | { kind
 type ExcludeNever<TMap extends Record<string, any>> = {
   [K in keyof TMap as TMap[K] extends never ? never : K]: TMap[K];
 };
+
+export interface SqlQueryExtras {
+  groupBy?: string | string[];
+  having?: FilterQuery<any>;
+  lockMode?: Exclude<LockMode, LockMode.OPTIMISTIC>;
+  lockTableAliases?: string[];
+  /** Appended to FROM clause (e.g. `'force index(my_index)'`). */
+  indexHint?: string;
+  /** Collation name string applied as COLLATE to ORDER BY. */
+  collation?: string;
+  comments?: string | string[];
+  hintComments?: string | string[];
+}
+
+export interface SqlFindOptions<
+  Entity,
+  Hint extends string = never,
+  Fields extends string = '*',
+  Excludes extends string = never,
+> extends FindOptions<Entity, Hint, Fields, Excludes>, SqlQueryExtras {
+  having?: FilterQuery<Entity>;
+}
+
+/**
+ * Extends `FindOneOptions` (which widens `lockMode` to include `LockMode.OPTIMISTIC`)
+ * and adds SQL-specific extras like `groupBy`, `having`, `indexHint`, etc.
+ * Omits `lockMode` from `SqlQueryExtras` to avoid conflict with `FindOneOptions.lockMode`.
+ */
+export interface SqlFindOneOptions<
+  T,
+  P extends string = never,
+  F extends string = '*',
+  E extends string = never,
+> extends FindOneOptions<T, P, F, E>, Omit<SqlQueryExtras, 'lockMode'> {
+  having?: FilterQuery<T>;
+}
+
+export interface SqlFindOneOrFailOptions<
+  T extends object,
+  P extends string = never,
+  F extends string = '*',
+  E extends string = never,
+> extends FindOneOrFailOptions<T, P, F, E>, Omit<SqlQueryExtras, 'lockMode'> {
+  having?: FilterQuery<T>;
+}
+
+export interface SqlFindAllOptions<
+  T,
+  P extends string = never,
+  F extends string = '*',
+  E extends string = never,
+> extends FindAllOptions<T, P, F, E>, SqlQueryExtras {
+  having?: FilterQuery<T>;
+}
+
+export interface SqlFindByCursorOptions<
+  T extends object,
+  P extends string = never,
+  F extends string = '*',
+  E extends string = never,
+  I extends boolean = true,
+> extends Omit<SqlFindAllOptions<T, P, F, E>, 'limit' | 'offset'> {
+  includeCount?: I;
+}
+
+export interface SqlStreamOptions<
+  Entity,
+  Populate extends string = never,
+  Fields extends string = '*',
+  Exclude extends string = never,
+> extends StreamOptions<Entity, Populate, Fields, Exclude>, SqlQueryExtras {
+  having?: FilterQuery<Entity>;
+}
+
+export interface SqlCountOptions<T extends object, P extends string = never> extends CountOptions<T, P>, SqlQueryExtras {
+  having?: FilterQuery<T>;
+}

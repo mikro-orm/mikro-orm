@@ -2796,24 +2796,56 @@ describe('EntityManagerMySql', () => {
     expect(mock.mock.calls[0][0]).toMatch('order by `a0`.`name` collate `utf8mb4_general_ci` asc');
   });
 
-  test('collation option rejects object for SQL driver', async () => {
-    await expect(orm.em.find(Author2, {}, {
-      collation: { locale: 'en', strength: 2 } as any,
-      orderBy: { name: 'asc' },
-    })).rejects.toThrow('Collation option for SQL drivers must be a string');
-  });
-
-  test('indexHint option rejects object for SQL driver', async () => {
-    await expect(orm.em.find(Author2, {}, {
-      indexHint: { name: 1 },
-    })).rejects.toThrow('indexHint for SQL drivers must be a string');
-  });
-
   test('collation rejects invalid collation name', async () => {
     await expect(orm.em.find(Author2, {}, {
       collation: 'utf8; DROP TABLE users',
       orderBy: { name: 'asc' },
     })).rejects.toThrow('Invalid collation name');
+  });
+
+  test('driver-specific find options type safety', async () => {
+    const mock = mockLogger(orm, ['query']);
+
+    // SQL-specific options should be accepted on find
+    await orm.em.find(Author2, {}, {
+      indexHint: 'force index(custom_email_index_name)',
+      collation: 'utf8mb4_general_ci',
+      comments: ['test comment'],
+      hintComments: 'hint',
+      orderBy: { name: 'asc' },
+    });
+
+    expect(mock.mock.calls[0][0]).toMatch('force index(custom_email_index_name)');
+    expect(mock.mock.calls[0][0]).toMatch('collate `utf8mb4_general_ci`');
+    expect(mock.mock.calls[0][0]).toMatch('/* test comment */');
+    expect(mock.mock.calls[0][0]).toMatch('/*+ hint */');
+
+    mock.mockReset();
+
+    // SQL-specific options should be accepted on findOne
+    await orm.em.findOne(Author2, 1, {
+      indexHint: 'force index(custom_email_index_name)',
+      comments: ['findOne comment'],
+    });
+
+    expect(mock.mock.calls[0][0]).toMatch('force index(custom_email_index_name)');
+    expect(mock.mock.calls[0][0]).toMatch('/* findOne comment */');
+
+    mock.mockReset();
+
+    // SQL-specific options should be accepted on count
+    await orm.em.count(Author2, {}, {
+      groupBy: 'name',
+      having: { name: 'foo' },
+      indexHint: 'force index(custom_email_index_name)',
+      collation: 'utf8mb4_general_ci',
+      comments: ['count comment'],
+      hintComments: 'hint',
+    });
+
+    expect(mock.mock.calls[0][0]).toMatch('group by `a0`.`name`');
+    expect(mock.mock.calls[0][0]).toMatch('having `a0`.`name` = ?');
+    expect(mock.mock.calls[0][0]).toMatch('force index(custom_email_index_name)');
   });
 
   // this should run in ~800ms (when running single test locally)

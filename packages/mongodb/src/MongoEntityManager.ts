@@ -1,16 +1,30 @@
 import {
   EntityManager,
   Utils,
+  type CountOptions,
+  type Cursor,
   type EntityName,
   type EntityRepository,
+  type FilterQuery,
+  type FindOneOrFailOptions,
+  type FromEntityType,
   type GetRepository,
-  type TransactionOptions,
-  type StreamOptions,
   type Loaded,
+  type MergeLoaded,
+  type TransactionOptions,
 } from '@mikro-orm/core';
 import type { Collection, Document, TransactionOptions as MongoTransactionOptions } from 'mongodb';
 import type { MongoDriver } from './MongoDriver.js';
 import type { MongoEntityRepository } from './MongoEntityRepository.js';
+import type {
+  MongoCountOptions,
+  MongoFindAllOptions,
+  MongoFindByCursorOptions,
+  MongoFindOneOptions,
+  MongoFindOneOrFailOptions,
+  MongoFindOptions,
+  MongoStreamOptions,
+} from './typings.js';
 
 /**
  * @inheritDoc
@@ -34,17 +48,113 @@ export class MongoEntityManager<Driver extends MongoDriver = MongoDriver> extend
   /**
    * @inheritDoc
    */
+  override find<
+    Entity extends object,
+    Hint extends string = never,
+    Fields extends string = '*',
+    Excludes extends string = never,
+  >(entityName: EntityName<Entity>, where: FilterQuery<NoInfer<Entity>>, options?: MongoFindOptions<Entity, Hint, Fields, Excludes>): Promise<Loaded<Entity, Hint, Fields, Excludes>[]> {
+    return super.find(entityName, where, options);
+  }
+
+  /**
+   * @inheritDoc
+   */
+  override findOne<
+    Entity extends object,
+    Hint extends string = never,
+    Fields extends string = '*',
+    Excludes extends string = never,
+  >(entityName: EntityName<Entity>, where: FilterQuery<NoInfer<Entity>>, options?: MongoFindOneOptions<Entity, Hint, Fields, Excludes>): Promise<Loaded<Entity, Hint, Fields, Excludes> | null> {
+    return super.findOne(entityName, where, options);
+  }
+
+  /**
+   * @inheritDoc
+   */
+  override findOneOrFail<
+    Entity extends object,
+    Hint extends string = never,
+    Fields extends string = '*',
+    Excludes extends string = never,
+  >(entityName: EntityName<Entity>, where: FilterQuery<NoInfer<Entity>>, options?: MongoFindOneOrFailOptions<Entity, Hint, Fields, Excludes>): Promise<Loaded<Entity, Hint, Fields, Excludes>> {
+    return super.findOneOrFail(entityName, where, options as FindOneOrFailOptions<Entity, Hint, Fields, Excludes>);
+  }
+
+  /**
+   * @inheritDoc
+   */
+  override findAll<
+    Entity extends object,
+    Hint extends string = never,
+    Fields extends string = '*',
+    Excludes extends string = never,
+  >(entityName: EntityName<Entity>, options?: MongoFindAllOptions<NoInfer<Entity>, Hint, Fields, Excludes>): Promise<Loaded<Entity, Hint, Fields, Excludes>[]> {
+    return super.findAll(entityName, options);
+  }
+
+  /**
+   * @inheritDoc
+   */
+  override findAndCount<
+    Entity extends object,
+    Hint extends string = never,
+    Fields extends string = '*',
+    Excludes extends string = never,
+  >(entityName: EntityName<Entity>, where: FilterQuery<NoInfer<Entity>>, options?: MongoFindOptions<Entity, Hint, Fields, Excludes>): Promise<[Loaded<Entity, Hint, Fields, Excludes>[], number]> {
+    return super.findAndCount(entityName, where, options);
+  }
+
+  /**
+   * @inheritDoc
+   */
+  override findByCursor<
+    Entity extends object,
+    Hint extends string = never,
+    Fields extends string = '*',
+    Excludes extends string = never,
+    IncludeCount extends boolean = true,
+  >(entityName: EntityName<Entity>, options: MongoFindByCursorOptions<Entity, Hint, Fields, Excludes, IncludeCount>): Promise<Cursor<Entity, Hint, Fields, Excludes, IncludeCount>> {
+    return super.findByCursor(entityName, options);
+  }
+
+  /**
+   * @inheritDoc
+   */
   override async *stream<
     Entity extends object,
     Hint extends string = never,
     Fields extends string = '*',
     Excludes extends string = never,
-  >(entityName: EntityName<Entity>, options: StreamOptions<NoInfer<Entity>, Hint, Fields, Excludes> = {}): AsyncIterableIterator<Loaded<Entity, Hint, Fields, Excludes>> {
+  >(entityName: EntityName<Entity>, options: MongoStreamOptions<NoInfer<Entity>, Hint, Fields, Excludes> = {}): AsyncIterableIterator<Loaded<Entity, Hint, Fields, Excludes>> {
     if (!Utils.isEmpty(options.populate)) {
       throw new Error('Populate option is not supported when streaming results in MongoDB');
     }
 
     yield* super.stream(entityName, options);
+  }
+
+  /**
+   * @inheritDoc
+   */
+  override count<
+    Entity extends object,
+    Hint extends string = never,
+  >(entityName: EntityName<Entity>, where?: FilterQuery<NoInfer<Entity>>, options?: MongoCountOptions<Entity, Hint>): Promise<number> {
+    return super.count(entityName, where, options as CountOptions<Entity, Hint>);
+  }
+
+  /**
+   * @inheritDoc
+   */
+  override refresh<
+    Entity extends object,
+    Naked extends FromEntityType<Entity> = FromEntityType<Entity>,
+    Hint extends string = never,
+    Fields extends string = '*',
+    Excludes extends string = never,
+  >(entity: Entity, options?: MongoFindOneOptions<Entity, Hint, Fields, Excludes>): Promise<MergeLoaded<Entity, Naked, Hint, Fields, Excludes, true> | null> {
+    return super.refresh(entity, options);
   }
 
   getCollection<T extends Document>(entityName: EntityName<T>): Collection<T> {
