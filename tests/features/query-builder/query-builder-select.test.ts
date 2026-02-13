@@ -1160,6 +1160,162 @@ describe('QueryBuilder - Select', () => {
     expect(qb4.getParams()).toEqual([0.5]);
   });
 
+  test('select formula property with string alias', async () => {
+    // formula with 'as' alias
+    const qb1 = orm.em.createQueryBuilder(FooBar2);
+    qb1.select(['id', 'random as rnd']).where({ id: 1 });
+    expect(qb1.getQuery()).toEqual('select `e0`.`id`, (select 123) as `rnd` from `foo_bar2` as `e0` where `e0`.`id` = ?');
+    expect(qb1.getParams()).toEqual([1]);
+
+    // regular property with 'as' alias
+    const qb2 = orm.em.createQueryBuilder(FooBar2);
+    qb2.select(['id', 'name as userName']).where({ id: 1 });
+    expect(qb2.getQuery()).toEqual('select `e0`.`id`, `e0`.`name` as `userName` from `foo_bar2` as `e0` where `e0`.`id` = ?');
+    expect(qb2.getParams()).toEqual([1]);
+
+    // formula with sql.ref().as()
+    const qb3 = orm.em.createQueryBuilder(FooBar2);
+    qb3.select(['id', sql.ref('random').as('rnd')]).where({ id: 1 });
+    expect(qb3.getQuery()).toEqual('select `e0`.`id`, (select 123) as `rnd` from `foo_bar2` as `e0` where `e0`.`id` = ?');
+    expect(qb3.getParams()).toEqual([1]);
+
+    // aliased table + formula with string alias
+    const qb4 = orm.em.createQueryBuilder(FooBar2, 'fb');
+    qb4.select(['fb.id', 'fb.random as rnd']).where({ id: 1 });
+    expect(qb4.getQuery()).toEqual('select `fb`.`id`, (select 123) as `rnd` from `foo_bar2` as `fb` where `fb`.`id` = ?');
+    expect(qb4.getParams()).toEqual([1]);
+
+    // Book2 formula with string alias
+    const qb5 = orm.em.createQueryBuilder(Book2, 'b');
+    qb5.select(['b.title', 'b.priceTaxed as tax']).where({ title: 'test' });
+    expect(qb5.getQuery()).toEqual('select `b`.`title`, `b`.`price` * 1.19 as `tax` from `book2` as `b` where `b`.`title` = ?');
+    expect(qb5.getParams()).toEqual(['test']);
+
+    // Book2 formula with sql.ref().as()
+    const qb6 = orm.em.createQueryBuilder(Book2, 'b');
+    qb6.select(['b.title', sql.ref('b.priceTaxed').as('tax')]).where({ title: 'test' });
+    expect(qb6.getQuery()).toEqual('select `b`.`title`, `b`.`price` * 1.19 as `tax` from `book2` as `b` where `b`.`title` = ?');
+    expect(qb6.getParams()).toEqual(['test']);
+  });
+
+  test('select regular property with sql.ref().as()', async () => {
+    // sql.ref('name').as('alias') for non-formula property should resolve to table-prefixed column
+    const qb = orm.em.createQueryBuilder(FooBar2);
+    qb.select(['id', sql.ref('name').as('userName')]).where({ id: 1 });
+    expect(qb.getQuery()).toEqual('select `e0`.`id`, `e0`.`name` as `userName` from `foo_bar2` as `e0` where `e0`.`id` = ?');
+    expect(qb.getParams()).toEqual([1]);
+
+    // with explicit table alias
+    const qb2 = orm.em.createQueryBuilder(FooBar2, 'fb');
+    qb2.select(['fb.id', sql.ref('fb.name').as('userName')]).where({ id: 1 });
+    expect(qb2.getQuery()).toEqual('select `fb`.`id`, `fb`.`name` as `userName` from `foo_bar2` as `fb` where `fb`.`id` = ?');
+    expect(qb2.getParams()).toEqual([1]);
+  });
+
+  test('select formula via sql.ref() without alias', async () => {
+    // sql.ref('formula') without .as() should expand the formula with default alias
+    const qb = orm.em.createQueryBuilder(FooBar2);
+    qb.select(['id', sql.ref('random')]).where({ id: 1 });
+    expect(qb.getQuery()).toEqual('select `e0`.`id`, (select 123) as `random` from `foo_bar2` as `e0` where `e0`.`id` = ?');
+    expect(qb.getParams()).toEqual([1]);
+  });
+
+  test('select with join context alias', async () => {
+    // alias on a joined field via string 'as'
+    const qb = orm.em.createQueryBuilder(Author2, 'a');
+    qb.leftJoin('a.books', 'b').select(['a.id', 'b.title as bookTitle']);
+    expect(qb.getQuery()).toEqual('select `a`.`id`, `b`.`title` as `bookTitle` from `author2` as `a` left join `book2` as `b` on `a`.`id` = `b`.`author_id`');
+
+    // sql.ref() formula on a joined alias
+    const qb2 = orm.em.createQueryBuilder(Author2, 'a');
+    qb2.leftJoin('a.books', 'b').select(['a.id', sql.ref('b.priceTaxed').as('tax')]);
+    expect(qb2.getQuery()).toEqual('select `a`.`id`, `b`.`price` * 1.19 as `tax` from `author2` as `a` left join `book2` as `b` on `a`.`id` = `b`.`author_id`');
+  });
+
+  test('select embedded with alias', async () => {
+    // object embedded property with 'as' alias
+    const qb = orm.em.createQueryBuilder(Author2, 'a');
+    qb.select(['a.id', 'a.identity as ident']).where({ id: 1 });
+    expect(qb.getQuery()).toEqual('select `a`.`id`, `a`.`identity` as `ident` from `author2` as `a` where `a`.`id` = ?');
+    expect(qb.getParams()).toEqual([1]);
+  });
+
+  test('select formula alias feeds into having()', async () => {
+    const qb = orm.em
+      .createQueryBuilder(FooBar2, 'fb')
+      .select(['fb.id', sql.ref('random').as('rnd')])
+      .groupBy('fb.id')
+      .having({ rnd: { $gt: 0 } });
+    expect(qb.getQuery()).toEqual(
+      'select `fb`.`id`, (select 123) as `rnd` from `foo_bar2` as `fb` group by `fb`.`id` having `rnd` > ?',
+    );
+    expect(qb.getParams()).toEqual([0]);
+
+    // string alias also feeds into having
+    const qb2 = orm.em
+      .createQueryBuilder(FooBar2, 'fb')
+      .select(['fb.id', 'random as rnd'])
+      .groupBy('fb.id')
+      .having({ rnd: { $gt: 0 } });
+    expect(qb2.getQuery()).toEqual(
+      'select `fb`.`id`, (select 123) as `rnd` from `foo_bar2` as `fb` group by `fb`.`id` having `rnd` > ?',
+    );
+    expect(qb2.getParams()).toEqual([0]);
+  });
+
+  test('select alias feeds into orderBy()', async () => {
+    // ordering by a raw alias from sql.ref().as()
+    const qb = orm.em
+      .createQueryBuilder(FooBar2, 'fb')
+      .select(['fb.id', sql.ref('random').as('rnd')])
+      .orderBy({ rnd: 'desc' });
+    expect(qb.getQuery()).toEqual(
+      'select `fb`.`id`, (select 123) as `rnd` from `foo_bar2` as `fb` order by `rnd` desc',
+    );
+
+    // ordering by a string alias
+    const qb2 = orm.em
+      .createQueryBuilder(FooBar2, 'fb')
+      .select(['fb.id', 'random as rnd'])
+      .orderBy({ rnd: 'asc' });
+    expect(qb2.getQuery()).toEqual(
+      'select `fb`.`id`, (select 123) as `rnd` from `foo_bar2` as `fb` order by `rnd` asc',
+    );
+  });
+
+  test('groupBy with aliased formula field suppresses alias', async () => {
+    // formula in groupBy should not emit an alias
+    const qb = orm.em
+      .createQueryBuilder(FooBar2, 'fb')
+      .select(['fb.id', 'random as rnd'])
+      .groupBy(['fb.id', 'random'])
+      .having({ rnd: { $gt: 0 } });
+    expect(qb.getQuery()).toEqual(
+      'select `fb`.`id`, (select 123) as `rnd` from `foo_bar2` as `fb` group by `fb`.`id`, (select 123) having `rnd` > ?',
+    );
+    expect(qb.getParams()).toEqual([0]);
+
+    // same with sql.ref() in groupBy
+    const qb2 = orm.em
+      .createQueryBuilder(FooBar2, 'fb')
+      .select(['fb.id', sql.ref('random').as('rnd')])
+      .groupBy(['fb.id', sql.ref('random')])
+      .having({ rnd: { $gt: 0 } });
+    expect(qb2.getQuery()).toEqual(
+      'select `fb`.`id`, (select 123) as `rnd` from `foo_bar2` as `fb` group by `fb`.`id`, (select 123) having `rnd` > ?',
+    );
+    expect(qb2.getParams()).toEqual([0]);
+  });
+
+  test('alias on multi-column field throws', async () => {
+    // composite FK (CarOwner2.car -> Car2 with composite PK [name, year])
+    const qb = orm.em.createQueryBuilder(CarOwner2);
+    qb.select(['id', 'car as myCar']);
+    expect(() => qb.getQuery()).toThrow(
+      `Cannot use 'as myCar' alias on 'car' because it expands to multiple columns (car_name, car_year).`,
+    );
+  });
+
   test('select with populate and join of 1:m', async () => {
     const qb = orm.em.createQueryBuilder(Author2);
     qb.select('*')

@@ -175,6 +175,9 @@ type StripRootAlias<F extends string, RootAlias extends string, Context = never>
         F
     : F;
 
+// Strip ' as alias' suffix from a field path
+type StripFieldAlias<F extends string> = F extends `${infer Path} as ${string}` ? Path : F;
+
 // Extract root entity fields from selected fields
 // Context is needed to distinguish between joined alias paths and embedded property paths
 type ExtractRootFields<Fields, RootAlias extends string, Context = never> = [Fields] extends ['*']
@@ -182,7 +185,7 @@ type ExtractRootFields<Fields, RootAlias extends string, Context = never> = [Fie
   : Fields extends `${RootAlias}.*`
     ? '*'
     : Fields extends string
-      ? StripRootAlias<Fields, RootAlias, Context>
+      ? StripRootAlias<StripFieldAlias<Fields>, RootAlias, Context>
       : never;
 
 // Prefix field with relation path: ('books', 'title') -> 'books.title'
@@ -261,12 +264,15 @@ type ContextFieldKeys<Context> = Context[keyof Context] extends infer Join
     : never
   : never;
 
+// Helper type to add ' as alias' variants
+type WithAlias<T extends string> = T | `${T} as ${string}`;
+
 // Field type for select/where/etc. - provides autocomplete and validates
 export type Field<Entity, RootAlias extends string = never, Context = never> =
   // Autocomplete hints (computed union for IDE support)
-  | EntityKey<Entity>
-  | (IsNever<RootAlias> extends true ? never : `${RootAlias}.${EntityKey<Entity>}` | `${RootAlias}.*`)
-  | ([Context] extends [never] ? never : ContextFieldKeys<Context> | `${AliasNames<Context>}.*`)
+  | WithAlias<EntityKey<Entity>>
+  | (IsNever<RootAlias> extends true ? never : WithAlias<`${RootAlias}.${EntityKey<Entity>}`> | `${RootAlias}.*`)
+  | ([Context] extends [never] ? never : WithAlias<ContextFieldKeys<Context>> | `${AliasNames<Context>}.*`)
   | '*'
   | QueryBuilder<any>
   | NativeQueryBuilder
@@ -279,9 +285,11 @@ type ContextOrderKeys<Context> = { [K in ContextFieldKeys<Context>]?: QueryOrder
 
 // Context-aware orderBy map that supports aliased keys
 // Uses split mapped types for better TypeScript caching
-export type ContextOrderByMap<Entity, RootAlias extends string = never, Context = never> =
+type RawOrderKeys<RawAliases extends string> = { [K in RawAliases]?: QueryOrderKeysFlat };
+
+export type ContextOrderByMap<Entity, RootAlias extends string = never, Context = never, RawAliases extends string = never> =
   | QueryOrderMap<Entity>
-  | ((IsNever<RootAlias> extends true ? {} : RootAliasOrderKeys<RootAlias, Entity>) & ([Context] extends [never] ? {} : ContextOrderKeys<Context>));
+  | ((IsNever<RootAlias> extends true ? {} : RootAliasOrderKeys<RootAlias, Entity>) & ([Context] extends [never] ? {} : ContextOrderKeys<Context>) & (IsNever<RawAliases> extends true ? {} : string extends RawAliases ? {} : RawOrderKeys<RawAliases>));
 
 // Validate aliased paths like 'f.address.city' or 'f.*'
 type AliasedPath<Alias extends string, Type, P extends string> = P extends `${Alias}.*`
@@ -304,7 +312,9 @@ type ContextAliasedPath<Context, P extends string> = Context[keyof Context] exte
 // Excludes ':ref' patterns which are only valid for populate hints, not select fields
 type NestedAutoPath<Entity, RootAlias extends string, Context, P extends string> = P extends `${string}:ref`
   ? never
-  : AliasedPath<RootAlias, Entity, P> | ContextAliasedPath<Context, P> | AutoPath<Entity, P, `${PopulatePath.ALL}`>;
+  : P extends `${infer Path} as ${string}`
+    ? (AliasedPath<RootAlias, Entity, Path> | ContextAliasedPath<Context, Path> | AutoPath<Entity, Path, `${PopulatePath.ALL}`>) extends never ? never : P
+    : AliasedPath<RootAlias, Entity, P> | ContextAliasedPath<Context, P> | AutoPath<Entity, P, `${PopulatePath.ALL}`>;
 
 // Aliased object query that maps 'alias.property' keys to their filter values
 type AliasedObjectQuery<Entity extends object, Alias extends string> = {
@@ -320,8 +330,11 @@ type RawJoinCondition = {
   [key: string]: FilterValue<Scalar> | RawQueryFragment;
 };
 
-// Extract raw aliases from a field type (for sql`...`.as('alias'))
-type ExtractRawAliasFromField<F> = F extends RawQueryFragment<infer A> ? (A extends string ? A : never) : never;
+// Extract raw aliases from a field type (for sql`...`.as('alias') or 'prop as alias')
+type ExtractRawAliasFromField<F> =
+  F extends RawQueryFragment<infer A> ? (A extends string ? A : never) :
+  F extends `${string} as ${infer A}` ? A :
+  never;
 
 // Extract all raw aliases from a tuple of fields (preserves literal types)
 type ExtractRawAliasesFromTuple<T extends readonly unknown[]> = T extends readonly [infer Head, ...infer Tail]
@@ -408,6 +421,9 @@ export type AliasedFilterCondition<RootAlias extends string, Context, Entity, Ra
 // Uses intersection (not union) so that unknown aliased keys trigger excess property errors
 export type QBFilterQuery<Entity, RootAlias extends string = never, Context = never, RawAliases extends string = never> =
   FilterObject<Entity> & AliasedFilterCondition<RootAlias, Context, Entity, RawAliases>;
+
+/** Matches 'path as alias' — safe because ORM property names are JS identifiers (no spaces). */
+const FIELD_ALIAS_RE = /^(.+?)\s+as\s+(\w+)$/i;
 
 /**
  * SQL query builder with fluent interface.
@@ -542,6 +558,10 @@ export class QueryBuilder<
    * // Select with raw expressions
    * qb.select([raw('count(*) as total')]);
    *
+   * // Select with aliases (works for regular and formula properties)
+   * qb.select(['id', 'fullName as displayName']);
+   * qb.select(['id', sql.ref('fullName').as('displayName')]);
+   *
    * // Select with distinct
    * qb.select('*', true);
    * ```
@@ -608,8 +628,24 @@ export class QueryBuilder<
     this.ensureNotFinalized();
     this._fields = Utils.asArray(fields as Field<Entity, RootAlias, Context>[]).flatMap(f => {
       if (typeof f !== 'string') {
+        // Normalize sql.ref('prop') and sql.ref('prop').as('alias') to string form
+        if (isRaw(f) && f.sql === '??' && f.params.length === 1) {
+          return this.resolveNestedPath(String(f.params[0]));
+        }
+
+        if (isRaw(f) && f.sql === '?? as ??' && f.params.length === 2) {
+          return `${this.resolveNestedPath(String(f.params[0]))} as ${String(f.params[1])}`;
+        }
+
         return f;
       }
+
+      const asMatch = f.match(FIELD_ALIAS_RE);
+
+      if (asMatch) {
+        return `${this.resolveNestedPath(asMatch[1].trim())} as ${asMatch[2]}`;
+      }
+
       return this.resolveNestedPath(f);
     }) as any;
 
@@ -1308,7 +1344,7 @@ export class QueryBuilder<
    * ```
    */
   orderBy(
-    orderBy: ContextOrderByMap<Entity, RootAlias, Context> | ContextOrderByMap<Entity, RootAlias, Context>[],
+    orderBy: ContextOrderByMap<Entity, RootAlias, Context, RawAliases> | ContextOrderByMap<Entity, RootAlias, Context, RawAliases>[],
   ): SelectQueryBuilder<Entity, RootAlias, Hint, Context, RawAliases, Fields>;
   /**
    * Adds an ORDER BY clause to the query, replacing any existing order.
@@ -1322,7 +1358,7 @@ export class QueryBuilder<
    * ```
    */
   orderBy<const T extends Record<string, QueryOrderKeysFlat>>(
-    orderBy: T & { [K in keyof T]: K extends NestedAutoPath<Entity, RootAlias, Context, K & string> ? T[K] : never },
+    orderBy: T & { [K in keyof T]: K extends NestedAutoPath<Entity, RootAlias, Context, K & string> ? T[K] : (K extends RawAliases ? T[K] : never) },
   ): SelectQueryBuilder<Entity, RootAlias, Hint, Context, RawAliases, Fields>;
   orderBy(orderBy: unknown): SelectQueryBuilder<Entity, RootAlias, Hint, Context, RawAliases, Fields> {
     return this.processOrderBy(orderBy as QueryOrderMap<Entity>, true);
@@ -1332,13 +1368,13 @@ export class QueryBuilder<
    * Adds additional ORDER BY clause without replacing existing order.
    */
   andOrderBy(
-    orderBy: ContextOrderByMap<Entity, RootAlias, Context> | ContextOrderByMap<Entity, RootAlias, Context>[],
+    orderBy: ContextOrderByMap<Entity, RootAlias, Context, RawAliases> | ContextOrderByMap<Entity, RootAlias, Context, RawAliases>[],
   ): SelectQueryBuilder<Entity, RootAlias, Hint, Context, RawAliases, Fields>;
   /**
    * Adds additional ORDER BY clause without replacing existing order.
    */
   andOrderBy<const T extends Record<string, QueryOrderKeysFlat>>(
-    orderBy: T & { [K in keyof T]: K extends NestedAutoPath<Entity, RootAlias, Context, K & string> ? T[K] : never },
+    orderBy: T & { [K in keyof T]: K extends NestedAutoPath<Entity, RootAlias, Context, K & string> ? T[K] : (K extends RawAliases ? T[K] : never) },
   ): SelectQueryBuilder<Entity, RootAlias, Hint, Context, RawAliases, Fields>;
   andOrderBy(orderBy: unknown): SelectQueryBuilder<Entity, RootAlias, Hint, Context, RawAliases, Fields> {
     return this.processOrderBy(orderBy as QueryOrderMap<Entity>, false);
@@ -1354,7 +1390,21 @@ export class QueryBuilder<
       this._orderBy = [];
     }
 
-    Utils.asArray<QueryOrderMap<Entity>>(orderBy).forEach(o => {
+    const selectAliases = this.getSelectAliases();
+
+    Utils.asArray<QueryOrderMap<Entity>>(orderBy).forEach(orig => {
+      // Shallow clone to avoid mutating the caller's object — safe because the clone
+      // is only used within this loop iteration and `orig` is not referenced afterward.
+      const o = { ...orig } as Dictionary;
+
+      // Wrap known select aliases in raw() so they bypass property validation and alias prefixing
+      for (const key of Object.keys(o)) {
+        if (selectAliases.has(key)) {
+          o[raw('??', [key]) as any] = o[key];
+          delete o[key];
+        }
+      }
+
       this.helper.validateQueryOrder(o);
       const processed = QueryHelper.processWhere({
         where: o as FilterQuery<Entity>,
@@ -1375,6 +1425,23 @@ export class QueryBuilder<
     });
 
     return this as SelectQueryBuilder<Entity, RootAlias, Hint, Context, RawAliases, Fields>;
+  }
+
+  /** Collect custom aliases from select fields (stored as 'resolved as alias' strings by select()). */
+  private getSelectAliases(): Set<string> {
+    const aliases = new Set<string>();
+
+    for (const field of this._fields ?? []) {
+      if (typeof field === 'string') {
+        const m = field.match(FIELD_ALIAS_RE);
+
+        if (m) {
+          aliases.add(m[2]);
+        }
+      }
+    }
+
+    return aliases;
   }
 
   /**
@@ -1413,6 +1480,11 @@ export class QueryBuilder<
     this.ensureNotFinalized();
     this._groupBy = Utils.asArray(fields as Field<Entity, RootAlias, Context> | readonly Field<Entity, RootAlias, Context>[]).flatMap(f => {
       if (typeof f !== 'string') {
+        // Normalize sql.ref('prop') to string for proper formula resolution
+        if (isRaw(f) && f.sql === '??' && f.params.length === 1) {
+          return this.resolveNestedPath(String(f.params[0]));
+        }
+
         return f;
       }
       return this.resolveNestedPath(f);
@@ -2303,14 +2375,25 @@ export class QueryBuilder<
 
   protected prepareFields<T>(fields: InternalField<T>[], type: 'where' | 'groupBy' | 'sub-query' = 'where', schema?: string): (string | RawQueryFragment)[] {
     const ret: InternalField<T>[] = [];
-    const getFieldName = (name: string) => {
-      return this.helper.mapper(name, this.type, undefined, type === 'groupBy' ? null : undefined, schema);
+    const getFieldName = (name: string, customAlias?: string) => {
+      const alias = customAlias ?? (type === 'groupBy' ? null : undefined);
+      return this.helper.mapper(name, this.type, undefined, alias, schema);
     };
 
-    fields.forEach(field => {
-      if (typeof field !== 'string') {
-        ret.push(field);
+    fields.forEach(originalField => {
+      if (typeof originalField !== 'string') {
+        ret.push(originalField);
         return;
+      }
+
+      // Strip 'as alias' suffix if present — the alias is passed to mapper at the end
+      let field = originalField;
+      let customAlias: string | undefined;
+      const asMatch = originalField.match(FIELD_ALIAS_RE);
+
+      if (asMatch) {
+        field = asMatch[1].trim();
+        customAlias = asMatch[2];
       }
 
       const join = Object.keys(this._joins).find(k => field === k.substring(0, k.indexOf('#')))!;
@@ -2335,11 +2418,15 @@ export class QueryBuilder<
       if (prop?.embedded || (prop?.kind === ReferenceKind.EMBEDDED && prop.object)) {
         const name = prop.embeddedPath?.join('.') ?? prop.fieldNames[0];
         const aliased = this._aliases[a] ? `${a}.${name}` : name;
-        ret.push(getFieldName(aliased));
+        ret.push(getFieldName(aliased, customAlias));
         return;
       }
 
       if (prop?.kind === ReferenceKind.EMBEDDED) {
+        if (customAlias) {
+          throw new Error(`Cannot use 'as ${customAlias}' alias on embedded property '${field}' because it expands to multiple columns. Alias individual fields instead (e.g. '${field}.propertyName as ${customAlias}').`);
+        }
+
         const nest = (prop: EntityProperty): void => {
           for (const childProp of Object.values(prop.embeddedProps)) {
             if (childProp.fieldNames && (childProp.kind !== ReferenceKind.EMBEDDED || childProp.object) && childProp.persist !== false) {
@@ -2354,12 +2441,16 @@ export class QueryBuilder<
         return;
       }
 
-      if (prop && prop.fieldNames.length > 1) {
+      if (prop && prop.fieldNames.length > 1 && !prop.fieldNames.includes(f)) {
+        if (customAlias) {
+          throw new Error(`Cannot use 'as ${customAlias}' alias on '${field}' because it expands to multiple columns (${prop.fieldNames.join(', ')}).`);
+        }
+
         ret.push(...prop.fieldNames.map(f => getFieldName(f)));
         return;
       }
 
-      ret.push(getFieldName(field));
+      ret.push(getFieldName(field, customAlias));
     });
 
     const requiresSQLConversion = this.mainAlias.meta.props.filter(p => p.hasConvertToJSValueSQL && p.persist !== false);

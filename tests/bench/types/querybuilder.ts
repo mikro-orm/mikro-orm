@@ -56,22 +56,22 @@ function useField<E, R extends string, C>(_field: Field<E, R, C>): void {}
 
 bench('Field<Author, "a", never> - no context', () => {
   useField<Author, 'a', never>('name');
-}).types([137, 'instantiations']);
+}).types([144, 'instantiations']);
 
 bench('Field<Author, "a", never> - wildcard', () => {
   useField<Author, 'a', never>('*');
-}).types([137, 'instantiations']);
+}).types([144, 'instantiations']);
 
 bench('Field<Author, "a", never> - alias wildcard', () => {
   useField<Author, 'a', never>('a.*');
-}).types([137, 'instantiations']);
+}).types([144, 'instantiations']);
 
 // Context uses tuple format: [Path, Alias, Type, Select]
 type SimpleContext = { b: ['books', 'b', Book, false] };
 
 bench('Field<Author, "a", SimpleContext> - with one join', () => {
   useField<Author, 'a', SimpleContext>('b.title');
-}).types([228, 'instantiations']);
+}).types([240, 'instantiations']);
 
 type TwoJoinContext = {
   b: ['books', 'b', Book, false];
@@ -80,7 +80,7 @@ type TwoJoinContext = {
 
 bench('Field<Author, "a", TwoJoinContext> - with two joins', () => {
   useField<Author, 'a', TwoJoinContext>('t.name');
-}).types([273, 'instantiations']);
+}).types([285, 'instantiations']);
 
 // ============================================
 // ModifyHint benchmarks
