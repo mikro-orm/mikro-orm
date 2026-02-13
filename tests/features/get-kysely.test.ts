@@ -36,15 +36,31 @@ describe('InferKyselyDB', () => {
       },
     });
 
+    const Book = defineEntity({
+      name: 'Book',
+      properties: {
+        // tricky column names to verify SnakeCase vs UnderscoreNamingStrategy alignment
+        ISBN: p.string().primary(),
+        htmlContent: p.string(),
+        userID: p.string(),
+        XMLHttpRequestLog: p.string(),
+        user2FAEnabled: p.boolean(),
+        sslError: p.string(),
+        title: p.string(),
+      },
+    });
+
     const orm = new MikroORM({
-      entities: [User, UserProfile, Post],
+      entities: [User, UserProfile, Post, Book],
       dbName: ':memory:',
     });
 
     const generator = orm.schema;
     const createDump = await generator.getCreateSchemaSQL();
     expect(createDump).toMatchInlineSnapshot(`
-      "create table \`user_profile\` (\`user_full_name\` text not null primary key, \`bio\` text null, \`avatar\` text null, \`location\` text null, constraint \`user_profile_user_full_name_foreign\` foreign key (\`user_full_name\`) references \`users\` (\`full_name\`) on update cascade on delete cascade);
+      "create table \`book\` (\`isbn\` text not null primary key, \`html_content\` text not null, \`user_id\` text not null, \`xmlhttp_request_log\` text not null, \`user2faenabled\` integer not null, \`ssl_error\` text not null, \`title\` text not null);
+
+      create table \`user_profile\` (\`user_full_name\` text not null primary key, \`bio\` text null, \`avatar\` text null, \`location\` text null, constraint \`user_profile_user_full_name_foreign\` foreign key (\`user_full_name\`) references \`users\` (\`full_name\`) on update cascade on delete cascade);
 
       create table \`users\` (\`full_name\` text not null primary key, \`email\` text null, \`first_name\` text not null, \`the_last_name\` text not null, \`profile_user_full_name\` text not null, constraint \`users_profile_user_full_name_foreign\` foreign key (\`profile_user_full_name\`) references \`user_profile\` (\`user_full_name\`));
       create unique index \`users_profile_user_full_name_unique\` on \`users\` (\`profile_user_full_name\`);
@@ -54,7 +70,7 @@ describe('InferKyselyDB', () => {
       "
     `);
 
-    type KyselyDB = InferKyselyDB<typeof User | typeof UserProfile | typeof Post, {}>;
+    type KyselyDB = InferKyselyDB<typeof User | typeof UserProfile | typeof Post | typeof Book, {}>;
     type UserTable = KyselyDB['users'];
     expectTypeOf<UserTable>().toEqualTypeOf<{
       full_name: string;
@@ -75,6 +91,17 @@ describe('InferKyselyDB', () => {
       title: string;
       description: string;
       author_full_name: string;
+    }>();
+
+    type BookTable = KyselyDB['book'];
+    expectTypeOf<BookTable>().toEqualTypeOf<{
+      isbn: string;
+      html_content: string;
+      user_id: string;
+      xmlhttp_request_log: string;
+      user2faenabled: NonNullable<boolean | null | undefined>;
+      ssl_error: string;
+      title: string;
     }>();
   });
 
