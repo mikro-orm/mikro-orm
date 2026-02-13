@@ -779,15 +779,15 @@ export class QueryBuilderHelper {
     }
   }
 
-  getQueryOrder(type: QueryType, orderBy: FlatQueryOrderMap | FlatQueryOrderMap[], populate: Dictionary<string>): string[] {
+  getQueryOrder(type: QueryType, orderBy: FlatQueryOrderMap | FlatQueryOrderMap[], populate: Dictionary<string>, collation?: string): string[] {
     if (Array.isArray(orderBy)) {
-      return orderBy.flatMap(o => this.getQueryOrder(type, o, populate));
+      return orderBy.flatMap(o => this.getQueryOrder(type, o, populate, collation));
     }
 
-    return this.getQueryOrderFromObject(type, orderBy, populate);
+    return this.getQueryOrderFromObject(type, orderBy, populate, collation);
   }
 
-  getQueryOrderFromObject(type: QueryType, orderBy: FlatQueryOrderMap, populate: Dictionary<string>): string[] {
+  getQueryOrderFromObject(type: QueryType, orderBy: FlatQueryOrderMap, populate: Dictionary<string>, collation?: string): string[] {
     const ret: string[] = [];
 
     for (const key of Utils.getObjectQueryKeys(orderBy)) {
@@ -796,7 +796,7 @@ export class QueryBuilderHelper {
 
       if (Raw.isKnownFragmentSymbol(key)) {
         const raw = Raw.getKnownFragment(key)!;
-        ret.push(...this.platform.getOrderByExpression(this.platform.formatQuery(raw.sql, raw.params), order));
+        ret.push(...this.platform.getOrderByExpression(this.platform.formatQuery(raw.sql, raw.params), order, collation));
         continue;
       }
 
@@ -821,9 +821,9 @@ export class QueryBuilderHelper {
         }
 
         if (Array.isArray(order)) {
-          order.forEach(part => ret.push(...this.getQueryOrderFromObject(type, part, populate)));
+          order.forEach(part => ret.push(...this.getQueryOrderFromObject(type, part, populate, collation)));
         } else {
-          ret.push(...this.platform.getOrderByExpression(colPart, order));
+          ret.push(...this.platform.getOrderByExpression(colPart, order, collation));
         }
       }
     }

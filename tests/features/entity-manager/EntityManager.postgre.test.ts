@@ -2328,6 +2328,15 @@ describe('EntityManagerPostgre', () => {
     expect(ttt1.parent).toBe(t3.id);
   });
 
+  test('collation option', async () => {
+    const mock = mockLogger(orm, ['query']);
+    await orm.em.find(Author2, {}, {
+      collation: 'en_US',
+      orderBy: { name: 'asc' },
+    });
+    expect(mock.mock.calls[0][0]).toMatch('order by "a0"."name" collate "en_US" asc');
+  });
+
   test('perf: delete', async () => {
     const start = performance.now();
     for (let i = 1; i <= 5_000; i++) {

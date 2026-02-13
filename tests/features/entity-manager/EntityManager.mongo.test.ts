@@ -417,6 +417,86 @@ describe('EntityManagerMongo', () => {
     expect(mock.mock.calls[0][0]).toMatch(/db\.getCollection\('author'\)\.deleteMany\({ _id: ObjectId\('\w+'\) }, {}\)/);
   });
 
+  test('query options (collation, maxTimeMS, allowDiskUse)', async () => {
+    const author = new Author('test collation', 'test-collation@test.com');
+    await orm.em.persist(author).flush();
+    orm.em.clear();
+
+    const mock = mockLogger(orm);
+
+    await orm.em.find(Author, {}, {
+      collation: { locale: 'en', strength: 2 },
+      maxTimeMS: 5000,
+      allowDiskUse: true,
+      orderBy: { name: QueryOrder.ASC },
+    });
+
+    const findLog = mock.mock.calls[0][0];
+    expect(findLog).toMatch(/collation: { locale: 'en', strength: 2 }/);
+    expect(findLog).toMatch(/maxTimeMS: 5000/);
+    expect(findLog).toMatch(/allowDiskUse: true/);
+
+    mock.mockReset();
+
+    await orm.em.count(Author, {}, {
+      collation: { locale: 'en', strength: 2 },
+    });
+
+    const countLog = mock.mock.calls[0][0];
+    expect(countLog).toMatch(/collation: { locale: 'en', strength: 2 }/);
+  });
+
+  test('query options (indexHint)', async () => {
+    const author = new Author('test hint', 'test-hint@test.com');
+    await orm.em.persist(author).flush();
+    orm.em.clear();
+
+    const mock = mockLogger(orm);
+
+    // use _id index which always exists
+    await orm.em.find(Author, {}, {
+      indexHint: '_id_',
+    });
+
+    const findLog = mock.mock.calls[0][0];
+    expect(findLog).toMatch(/hint: '_id_'/);
+
+    mock.mockReset();
+
+    await orm.em.find(Author, {}, {
+      indexHint: { _id: 1 },
+    });
+
+    const findLog2 = mock.mock.calls[0][0];
+    expect(findLog2).toMatch(/hint: { _id: 1 }/);
+  });
+
+  test('count with indexHint and maxTimeMS', async () => {
+    const author = new Author('test count opts', 'test-count-opts@test.com');
+    await orm.em.persist(author).flush();
+    orm.em.clear();
+
+    const mock = mockLogger(orm);
+
+    await orm.em.count(Author, {}, {
+      collation: { locale: 'en', strength: 2 },
+      indexHint: '_id_',
+      maxTimeMS: 5000,
+    });
+
+    const countLog = mock.mock.calls[0][0];
+    expect(countLog).toMatch(/collation: { locale: 'en', strength: 2 }/);
+    expect(countLog).toMatch(/hint: '_id_'/);
+    expect(countLog).toMatch(/maxTimeMS: 5000/);
+  });
+
+  test('collation option rejects string for MongoDB', async () => {
+    await expect(orm.em.find(Author, {}, {
+      collation: 'en_US' as any,
+      orderBy: { name: QueryOrder.ASC },
+    })).rejects.toThrow('Collation option for MongoDB must be a CollationOptions object');
+  });
+
   test('should throw when trying to merge entity without id', async () => {
     const author = new Author('test', 'test');
     expect(() => orm.em.merge(author)).toThrow(`You cannot merge entity 'Author' without identifier!`);

@@ -1345,6 +1345,15 @@ describe.each(['sqlite', 'libsql'] as const)('EntityManager (%s)', driver => {
     expect(author.books.getItems().every(b => b.id)).toBe(true);
   });
 
+  test('collation option', async () => {
+    const mock = mockLogger(orm, ['query']);
+    await orm.em.find(Author4, {}, {
+      collation: 'NOCASE',
+      orderBy: { name: 'asc' },
+    });
+    expect(mock.mock.calls[0][0]).toMatch('order by `a0`.`name` collate `NOCASE` asc');
+  });
+
   // this should run in ~400ms (when running single test locally)
   test('perf: batch insert and update', async () => {
     const authors = new Set<Author4>();

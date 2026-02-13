@@ -507,6 +507,7 @@ export class QueryBuilder<
   protected _joinedProps = new Map<string, PopulateOptions<any>>();
   protected _cache?: boolean | number | [string, number];
   protected _indexHint?: string;
+  protected _collation?: string;
   protected _comments: string[] = [];
   protected _hintComments: string[] = [];
   protected flushMode?: FlushMode;
@@ -1700,6 +1701,15 @@ export class QueryBuilder<
   }
 
   /**
+   * Adds COLLATE clause to ORDER BY expressions.
+   */
+  collation(collation: string | undefined): this {
+    this.ensureNotFinalized();
+    this._collation = collation;
+    return this;
+  }
+
+  /**
    * Prepend comment to the sql query using the syntax `/* ... *&#8205;/`. Some characters are forbidden such as `/*, *&#8205;/` and `?`.
    */
   comment(comment: string | string[] | undefined): this {
@@ -1763,7 +1773,7 @@ export class QueryBuilder<
     Utils.runIfNotEmpty(() => qb.groupBy(this.prepareFields(this._groupBy, 'groupBy', schema)), isNotEmptyObject(this._groupBy));
     Utils.runIfNotEmpty(() => this.helper.appendQueryCondition(this.type, this._having, qb, undefined, 'having'), isNotEmptyObject(this._having));
     Utils.runIfNotEmpty(() => {
-      const queryOrder = this.helper.getQueryOrder(this.type, this._orderBy as FlatQueryOrderMap[], this._populateMap);
+      const queryOrder = this.helper.getQueryOrder(this.type, this._orderBy as FlatQueryOrderMap[], this._populateMap, this._collation);
 
       if (queryOrder.length > 0) {
         const sql = Utils.unique(queryOrder).join(', ');
@@ -2193,7 +2203,7 @@ export class QueryBuilder<
     // clone array/object properties
     const properties = [
       'flags', '_populate', '_populateWhere', '_populateFilter', '__populateWhere', '_populateMap', '_joins', '_joinedProps', '_cond', '_data', '_orderBy',
-      '_schema', '_indexHint', '_cache', 'subQueries', 'lockMode', 'lockTables', '_groupBy', '_having', '_returning',
+      '_schema', '_indexHint', '_collation', '_cache', 'subQueries', 'lockMode', 'lockTables', '_groupBy', '_having', '_returning',
       '_comments', '_hintComments', 'aliasCounter',
     ];
 

@@ -2787,6 +2787,35 @@ describe('EntityManagerMySql', () => {
       'left join `address2` as `a1` on `a0`.`id` = `a1`.`author_id`');
   });
 
+  test('collation option', async () => {
+    const mock = mockLogger(orm, ['query']);
+    await orm.em.find(Author2, {}, {
+      collation: 'utf8mb4_general_ci',
+      orderBy: { name: 'asc' },
+    });
+    expect(mock.mock.calls[0][0]).toMatch('order by `a0`.`name` collate `utf8mb4_general_ci` asc');
+  });
+
+  test('collation option rejects object for SQL driver', async () => {
+    await expect(orm.em.find(Author2, {}, {
+      collation: { locale: 'en', strength: 2 } as any,
+      orderBy: { name: 'asc' },
+    })).rejects.toThrow('Collation option for SQL drivers must be a string');
+  });
+
+  test('indexHint option rejects object for SQL driver', async () => {
+    await expect(orm.em.find(Author2, {}, {
+      indexHint: { name: 1 },
+    })).rejects.toThrow('indexHint for SQL drivers must be a string');
+  });
+
+  test('collation rejects invalid collation name', async () => {
+    await expect(orm.em.find(Author2, {}, {
+      collation: 'utf8; DROP TABLE users',
+      orderBy: { name: 'asc' },
+    })).rejects.toThrow('Invalid collation name');
+  });
+
   // this should run in ~800ms (when running single test locally)
   test('perf: batch insert and update', async () => {
     const authors = new Set<Author2>();

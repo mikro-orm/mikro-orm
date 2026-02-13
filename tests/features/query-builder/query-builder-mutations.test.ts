@@ -444,6 +444,29 @@ describe('QueryBuilder - Mutations', () => {
     expect(sql3).toBe("update `my_schema`.`author2` force index(custom_email_index_name) set `name` = '...' where `favourite_book_uuid_pk` in ('1', '2', '3')");
   });
 
+  test('collation', async () => {
+    const sql1 = orm.em
+      .createQueryBuilder(Author2)
+      .collation('utf8_general_ci')
+      .orderBy({ name: 'asc' })
+      .getFormattedQuery();
+    expect(sql1).toBe('select `e0`.* from `author2` as `e0` order by `e0`.`name` collate `utf8_general_ci` asc');
+
+    const sql2 = orm.em
+      .createQueryBuilder(Author2)
+      .collation('utf8_general_ci')
+      .orderBy({ name: 'asc', email: 'desc' })
+      .getFormattedQuery();
+    expect(sql2).toBe('select `e0`.* from `author2` as `e0` order by `e0`.`name` collate `utf8_general_ci` asc, `e0`.`email` collate `utf8_general_ci` desc');
+
+    // without collation, normal behavior
+    const sql3 = orm.em
+      .createQueryBuilder(Author2)
+      .orderBy({ name: 'asc' })
+      .getFormattedQuery();
+    expect(sql3).toBe('select `e0`.* from `author2` as `e0` order by `e0`.`name` asc');
+  });
+
   test('query comments', async () => {
     const sql1 = orm.em
       .createQueryBuilder(Author2)

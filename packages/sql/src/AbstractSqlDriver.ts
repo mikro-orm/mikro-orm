@@ -108,6 +108,16 @@ export abstract class AbstractSqlDriver<
     return { alias, name: meta.tableName, schema: effectiveSchema, qualifiedName, toString: () => alias };
   }
 
+  private validateSqlOptions(options: { collation?: any; indexHint?: any }): void {
+    if (options.collation != null && typeof options.collation !== 'string') {
+      throw new Error('Collation option for SQL drivers must be a string (collation name). Use a CollationOptions object only with MongoDB.');
+    }
+
+    if (options.indexHint != null && typeof options.indexHint !== 'string') {
+      throw new Error('indexHint for SQL drivers must be a string (e.g. \'force index(my_index)\'). Use an object only with MongoDB.');
+    }
+  }
+
   override createEntityManager(useContext?: boolean): this[typeof EntityManagerType] {
     const EntityManagerClass = this.config.get('entityManager', SqlEntityManager);
     return new EntityManagerClass(this.config, this, this.metadata, useContext);
@@ -132,6 +142,8 @@ export abstract class AbstractSqlDriver<
       where = { [Utils.getPrimaryKeyHash(meta.primaryKeys)]: where } as ObjectQuery<T>;
     }
 
+    this.validateSqlOptions(options);
+
     const { first, last, before, after } = options as FindByCursorOptions<T>;
     const isCursorPagination = [first, last, before, after].some(v => v != null);
     qb.__populateWhere = (options as Dictionary)._populateWhere;
@@ -141,7 +153,8 @@ export abstract class AbstractSqlDriver<
       .where(where as any)
       .groupBy(options.groupBy as any)
       .having(options.having as any)
-      .indexHint(options.indexHint!)
+      .indexHint(options.indexHint as string)
+      .collation(options.collation as string)
       .comment(options.comments!)
       .hintComment(options.hintComments!);
 
@@ -715,8 +728,11 @@ export abstract class AbstractSqlDriver<
       this.buildFields(meta, populate, joinedProps, qb, qb.alias, options as FindOptions<T>, schema);
     }
 
+    this.validateSqlOptions(options);
+
     qb.__populateWhere = (options as Dictionary)._populateWhere;
-    qb.indexHint(options.indexHint!)
+    qb.indexHint(options.indexHint as string)
+      .collation(options.collation as string)
       .comment(options.comments!)
       .hintComment(options.hintComments!)
       .groupBy(options.groupBy as any)

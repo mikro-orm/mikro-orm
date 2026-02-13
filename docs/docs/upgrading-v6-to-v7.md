@@ -724,6 +724,16 @@ Check constraints now receive a `table` parameter for consistency with other cal
 
 Generated column callbacks now receive a `table` parameter for consistency.
 
-### TPT inheritance behavior
+## `MongoConnection` method signatures changed
 
-For Table-Per-Type (TPT) inheritance, the `columns` parameter in schema callbacks (indexes, checks, generated columns) only includes properties that belong to the current entity's table. Inherited properties from parent tables are not included, since they physically exist in different tables and cannot be referenced in schema definitions.
+The `MongoConnection.find()`, `MongoConnection.stream()`, and `MongoConnection.countDocuments()` methods now accept an options object instead of many positional parameters. This is only relevant if you call these methods directly (not through the EntityManager).
+
+```diff
+-connection.find(entityName, where, orderBy, limit, offset, fields, ctx, loggerContext);
++connection.find(entityName, where, { orderBy, limit, offset, fields, ctx, loggerContext });
+
+-connection.countDocuments(entityName, where, ctx);
++connection.countDocuments(entityName, where, { ctx });
+```
+
+The `MongoDriver.count()` method no longer accepts a separate `ctx` parameter — use `options.ctx` instead.

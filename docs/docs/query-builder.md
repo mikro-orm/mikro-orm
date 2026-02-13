@@ -674,6 +674,33 @@ console.log(qb.getQuery()); // for Postgres
 //   for update of "u" skip locked
 ```
 
+## Collation
+
+You can set a collation for `ORDER BY` expressions using the `collation()` method. This appends `COLLATE <collation>` to **every** column in the `ORDER BY` clause:
+
+```ts
+const qb = em.createQueryBuilder(User);
+qb.select('*')
+  .collation('utf8mb4_general_ci')
+  .orderBy({ name: 'asc' });
+
+console.log(qb.getQuery());
+// select `e0`.* from `user` as `e0`
+//   order by `e0`.`name` collate `utf8mb4_general_ci` asc
+```
+
+To use collation in `WHERE` conditions, use raw SQL fragments:
+
+```ts
+const qb = em.createQueryBuilder(User);
+qb.select('*')
+  .where({ [sql`name collate utf8mb4_general_ci`]: 'john' });
+
+console.log(qb.getQuery());
+// select `e0`.* from `user` as `e0`
+//   where name collate `utf8mb4_general_ci` = ?
+```
+
 ## Using Kysely
 
 MikroORM builds SQL queries natively and executes them via [Kysely](https://kysely.dev/). You can access the configured Kysely instance via `em.getKysely()` method and use it to run your own queries:

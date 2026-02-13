@@ -167,3 +167,45 @@ There is also shortcut for calling `aggregate` method:
 em.aggregate(entityName: string, pipeline: any[]): Promise<any[]>;
 EntityRepository.aggregate(pipeline: any[]): Promise<any[]>;
 ```
+
+## Query Options
+
+You can pass MongoDB-specific query options to `em.find()` and `em.count()`:
+
+### Collation
+
+Controls string comparison rules for both filtering and sorting. Pass a `CollationOptions` object — in MongoDB, collation applies to the entire query operation, affecting both `WHERE` conditions and `ORDER BY`:
+
+```ts
+// Case-insensitive find and sort
+const users = await em.find(User, { name: 'john' }, {
+  collation: { locale: 'en', strength: 2 },
+  orderBy: { name: QueryOrder.ASC },
+});
+```
+
+### Index Hints
+
+Pass a string (index name) or object (index spec) to the native `hint` option:
+
+```ts
+const users = await em.find(User, {}, {
+  indexHint: 'name_1',
+});
+
+// or with index spec
+const users = await em.find(User, {}, {
+  indexHint: { name: 1 },
+});
+```
+
+### `maxTimeMS` and `allowDiskUse`
+
+```ts
+const users = await em.find(User, {}, {
+  maxTimeMS: 5000,     // query timeout in milliseconds
+  allowDiskUse: true,  // allow disk use for large sorts
+});
+```
+
+> The `collation`, `indexHint`, and `maxTimeMS` options also work with `em.count()`. The `allowDiskUse` option is only available for `em.find()`.
