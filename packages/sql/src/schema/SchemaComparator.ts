@@ -213,6 +213,7 @@ export class SchemaComparator {
     if (this.diffComment(fromTable.comment, toTable.comment)) {
       tableDifferences.changedComment = toTable.comment;
       this.log(`table comment changed for ${tableDifferences.name}`, { fromTableComment: fromTable.comment, toTableComment: toTable.comment });
+      changes++;
     }
 
     const fromTableColumns = fromTable.getColumns();
