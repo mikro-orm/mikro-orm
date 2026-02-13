@@ -1570,7 +1570,7 @@ __metadata:
     "@mikro-orm/core": "npm:^6.6.4"
     "@mikro-orm/sql": "npm:6.6.4"
     kysely: "npm:0.28.11"
-    mysql2: "npm:3.17.0"
+    mysql2: "npm:3.17.1"
     sqlstring: "npm:2.3.3"
   peerDependencies:
     "@mikro-orm/core": ^6.0.0
@@ -7492,9 +7492,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mysql2@npm:3.17.0":
-  version: 3.17.0
-  resolution: "mysql2@npm:3.17.0"
+"mysql2@npm:3.17.1":
+  version: 3.17.1
+  resolution: "mysql2@npm:3.17.1"
   dependencies:
     aws-ssl-profiles: "npm:^1.1.2"
     denque: "npm:^2.1.0"
@@ -7504,8 +7504,8 @@ __metadata:
     lru.min: "npm:^1.1.3"
     named-placeholders: "npm:^1.1.6"
     seq-queue: "npm:^0.0.5"
-    sql-escaper: "npm:^1.3.1"
-  checksum: 10/90052855af7ee9239696b265fc4acf6b01d012c2e70b26e91a950533b7b837a4847bdb6b0c2a971498e150fef2d5321b8730107cf5b0e27279ad7691f92b18ad
+    sql-escaper: "npm:^1.3.2"
+  checksum: 10/5d2b3dcec97668a0e8ac888c6a26a89fbe4e220a58d3dd717eed9f2d91feca65e33458057376fcce78809054b4bf7d13d4c119a57222e29e0a228aec4998b8a0
   languageName: node
   linkType: hard
 
@@ -9613,10 +9613,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"sql-escaper@npm:^1.3.1":
-  version: 1.3.1
-  resolution: "sql-escaper@npm:1.3.1"
-  checksum: 10/7acfca295c15416b4c5b6841f29d80e5b440828915d3597b6829ce092e34b52ad0edf57eb0cc5ef5ec886fd815d287e45edb3874eaae61174a9c2a6ea4243067
+"sql-escaper@npm:^1.3.2":
+  version: 1.3.2
+  resolution: "sql-escaper@npm:1.3.2"
+  checksum: 10/94b2839e43038fb885afd26f429f44dd4c1214e7ef3ca665d04b27cb4da58f880b18465ab0053457da84f58af89848974b52fb985d5fa7249e8e4eb5e3766ec0
   languageName: node
   linkType: hard
 
