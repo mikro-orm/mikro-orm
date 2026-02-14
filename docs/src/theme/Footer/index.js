@@ -1,10 +1,3 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- */
-
 import React from 'react';
 import classnames from 'classnames';
 
@@ -67,49 +60,19 @@ function Footer() {
                 Array.isArray(linkItem.items) &&
                 linkItem.items.length > 0 ? (
                   <ul className="footer__items">
-                    {linkItem.items.map((item, key) => {
-                      if (item.label === 'GitHub Stars') {
-                        return (
-                          <li key={item.href || item.to} className="footer__item">
-                            <iframe src="https://ghbtns.com/github-btn.html?user=mikro-orm&repo=mikro-orm&type=star&count=true"
-                                    style={{ marginTop: 10 }}
-                                    frameBorder={0}
-                                    scrolling={0}
-                                    width={150}
-                                    height={30}
-                                    title="GitHub Stars"
-                                    key={key}
-                            />
-                          </li>
-                        );
-                      }
-
-                      if (item.label === 'GitHub Sponsors') {
-                        return (
-                          <li key={item.href || item.to} className="footer__item">
-                            <iframe src="https://ghbtns.com/github-btn.html?user=mikro-orm&type=sponsor"
-                                    frameBorder={0}
-                                    scrolling={0}
-                                    width={150}
-                                    height={30}
-                                    title="Sponsor B4nan" />
-                          </li>
-                        );
-                      }
-
-                      return item.html ? (
-                          <div
-                            key={key}
-                            dangerouslySetInnerHTML={{
-                              __html: item.html,
-                            }}
-                          />
-                        ) : (
-                          <li key={item.href || item.to} className="footer__item">
-                            <FooterLink {...item} />
-                          </li>
-                        );
-                      },
+                    {linkItem.items.map((item, key) =>
+                      item.html ? (
+                        <div
+                          key={key}
+                          dangerouslySetInnerHTML={{
+                            __html: item.html,
+                          }}
+                        />
+                      ) : (
+                        <li key={item.href || item.to} className="footer__item">
+                          <FooterLink {...item} />
+                        </li>
+                      ),
                     )}
                   </ul>
                 ) : null}
@@ -134,8 +97,7 @@ function Footer() {
                 )}
               </div>
             )}
-            {copyright}{' '}
-            Icons made by <a href="https://www.flaticon.com/authors/surang" title="surang">surang</a> and <a href="https://www.flaticon.com/authors/skyclick" title="Skyclick">Skyclick</a>.
+            {copyright}
           </div>
         )}
       </div>
