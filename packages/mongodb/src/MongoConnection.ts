@@ -19,7 +19,6 @@ import {
 } from 'mongodb';
 import {
   type AnyEntity,
-  type CollationOptions,
   type Configuration,
   Connection,
   type ConnectionOptions,
@@ -42,6 +41,7 @@ import {
   Utils,
   ValidationError,
 } from '@mikro-orm/core';
+import type { CollationOptions } from './typings.js';
 
 export class MongoConnection extends Connection {
 
@@ -178,7 +178,7 @@ export class MongoConnection extends Connection {
     throw new Error(`${this.constructor.name} does not support generic execute method`);
   }
 
-  async find<T extends object>(entityName: EntityName<T>, where: FilterQuery<T>, opts: MongoFindOptions<T> = {}): Promise<EntityData<T>[]> {
+  async find<T extends object>(entityName: EntityName<T>, where: FilterQuery<T>, opts: MongoConnectionFindOptions<T> = {}): Promise<EntityData<T>[]> {
     const { cursor, query } = await this._find<T>(entityName, where, opts);
     const now = Date.now();
     const res = await cursor.toArray();
@@ -187,13 +187,13 @@ export class MongoConnection extends Connection {
     return res as EntityData<T>[];
   }
 
-  async* stream<T extends object>(entityName: EntityName<T>, where: FilterQuery<T>, opts: MongoFindOptions<T> = {}): AsyncIterableIterator<T> {
+  async* stream<T extends object>(entityName: EntityName<T>, where: FilterQuery<T>, opts: MongoConnectionFindOptions<T> = {}): AsyncIterableIterator<T> {
     const { cursor, query } = await this._find<T>(entityName, where, opts);
     this.logQuery(`${query}.toArray();`, opts.loggerContext);
     yield* cursor;
   }
 
-  private async _find<T extends object>(entityName: EntityName<T>, where: FilterQuery<T>, opts: MongoFindOptions<T> = {}): Promise<{ cursor: FindCursor<T>; query: string }> {
+  private async _find<T extends object>(entityName: EntityName<T>, where: FilterQuery<T>, opts: MongoConnectionFindOptions<T> = {}): Promise<{ cursor: FindCursor<T>; query: string }> {
     await this.ensureConnection();
     const collection = this.getCollectionName(entityName);
     const options: Dictionary = opts.ctx ? { session: opts.ctx } : {};
@@ -298,7 +298,7 @@ export class MongoConnection extends Connection {
     yield* cursor as AsyncIterableIterator<T>;
   }
 
-  async countDocuments<T extends object>(entityName: EntityName<T>, where: FilterQuery<T>, opts: MongoCountOptions = {}): Promise<number> {
+  async countDocuments<T extends object>(entityName: EntityName<T>, where: FilterQuery<T>, opts: MongoConnectionCountOptions = {}): Promise<number> {
     return this.runQuery<T, number>('countDocuments', entityName, undefined, where, opts.ctx, {
       loggerContext: opts.loggerContext,
       collation: opts.collation,
@@ -554,7 +554,7 @@ export interface MongoQueryOptions {
   allowDiskUse?: boolean;
 }
 
-export interface MongoFindOptions<T extends object> extends MongoQueryOptions {
+export interface MongoConnectionFindOptions<T extends object> extends MongoQueryOptions {
   orderBy?: QueryOrderMap<T> | QueryOrderMap<T>[];
   limit?: number;
   offset?: number;
@@ -563,7 +563,7 @@ export interface MongoFindOptions<T extends object> extends MongoQueryOptions {
   loggerContext?: LoggingOptions;
 }
 
-export interface MongoCountOptions extends Omit<MongoQueryOptions, 'allowDiskUse'> {
+export interface MongoConnectionCountOptions extends Omit<MongoQueryOptions, 'allowDiskUse'> {
   ctx?: Transaction<ClientSession>;
   loggerContext?: LoggingOptions;
 }

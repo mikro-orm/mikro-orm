@@ -5,6 +5,7 @@ export * from './MongoDriver.js';
 export * from './MongoPlatform.js';
 export * from './MongoEntityManager.js';
 export * from './MongoEntityRepository.js';
+export * from './typings.js';
 export * from './MongoSchemaGenerator.js';
 export { MongoEntityManager as EntityManager } from './MongoEntityManager.js';
 export { MongoEntityRepository as EntityRepository } from './MongoEntityRepository.js';

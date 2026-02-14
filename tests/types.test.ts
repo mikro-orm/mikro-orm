@@ -26,6 +26,7 @@ import type {
   ExpandQuery,
   RequiredNullable,
 } from '../packages/core/src/typings.js';
+import type { FindOptions, CountOptions } from '@mikro-orm/core';
 import type { Author2, Book2, BookTag2, Car2, FooBar2, FooParam2, Publisher2, User2 } from './entities-sql/index.js';
 import type { Author, Book } from './entities/index.js';
 
@@ -1197,5 +1198,35 @@ describe('check typings', () => {
     const partialDto: PartialDto = { firstNme: 'test' };
     // @ts-expect-error - firstNme does not exist on User entity
     em.create(User, partialDto, { partial: true });
+  });
+
+  test('driver-specific find options are not on core FindOptions/CountOptions', () => {
+    // Core FindOptions should NOT have SQL/MongoDB-specific properties
+    // @ts-expect-error - groupBy is SQL-specific
+    const _a: FindOptions<Author> = { groupBy: 'name' };
+    // @ts-expect-error - having is SQL-specific
+    const _b: FindOptions<Author> = { having: { name: 'foo' } };
+    // @ts-expect-error - indexHint is driver-specific
+    const _c: FindOptions<Author> = { indexHint: 'force index(idx)' };
+    // @ts-expect-error - collation is driver-specific
+    const _d: FindOptions<Author> = { collation: 'utf8mb4_general_ci' };
+    // @ts-expect-error - comments is SQL-specific
+    const _e: FindOptions<Author> = { comments: ['foo'] };
+    // @ts-expect-error - hintComments is SQL-specific
+    const _f: FindOptions<Author> = { hintComments: 'bar' };
+    // @ts-expect-error - maxTimeMS is MongoDB-specific
+    const _g: FindOptions<Author> = { maxTimeMS: 5000 };
+    // @ts-expect-error - allowDiskUse is MongoDB-specific
+    const _h: FindOptions<Author> = { allowDiskUse: true };
+
+    // @ts-expect-error - groupBy is SQL-specific on CountOptions
+    const _i: CountOptions<Author> = { groupBy: 'name' };
+    // @ts-expect-error - having is SQL-specific on CountOptions
+    const _j: CountOptions<Author> = { having: { name: 'foo' } };
+
+    // @ts-expect-error - lockTableAliases is SQL-specific
+    const _k: FindOptions<Author> = { lockTableAliases: ['a0'] };
+    // @ts-expect-error - pessimistic lockMode on find() is SQL-specific
+    const _l: FindOptions<Author> = { lockMode: 1 as any };
   });
 });

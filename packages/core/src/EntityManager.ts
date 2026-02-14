@@ -233,7 +233,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     (options as Dictionary)._populateWhere = options.populateWhere ?? this.config.get('populateWhere');
     options.populateWhere = this.createPopulateWhere({ ...where } as ObjectQuery<Entity>, options);
     options.populateFilter = await this.getJoinedFilters(meta, options);
-    const results = await em.driver.find(entityName, where, { ctx: em.transactionContext, em, ...options });
+    const results = await em.driver.find(entityName, where, { ctx: em.transactionContext, em, ...options } as FindOptions<Entity>);
 
     if (results.length === 0) {
       await em.storeCache(options.cache, cached!, []);
@@ -306,8 +306,8 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     options = { ...options };
     // save the original hint value so we know it was infer/all
     (options as Dictionary)._populateWhere = options.populateWhere ?? this.config.get('populateWhere');
-    options.populateWhere = this.createPopulateWhere({ ...where } as ObjectQuery<Entity>, options);
-    options.populateFilter = await this.getJoinedFilters(meta, options);
+    (options as FindOptions<Entity>).populateWhere = this.createPopulateWhere({ ...where } as ObjectQuery<Entity>, options as FindOptions<Entity>);
+    (options as FindOptions<Entity>).populateFilter = await this.getJoinedFilters(meta, options as FindOptions<Entity>);
     const stream = em.driver.stream(entityName, where, {
       ctx: em.transactionContext,
       mapResults: false,
@@ -735,8 +735,8 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     const [entities, count] = options.includeCount !== false
-      ? await em.findAndCount(entityName, options.where, options)
-      : [await em.find(entityName, options.where, options)];
+      ? await em.findAndCount(entityName, options.where as FilterQuery<NoInfer<Entity>>, options)
+      : [await em.find(entityName, options.where as FilterQuery<NoInfer<Entity>>, options)];
     return new Cursor(
       entities,
       count as IncludeCount extends true ? number : undefined,
@@ -882,7 +882,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       ctx: em.transactionContext,
       em,
       ...options,
-    });
+    } as FindOneOptions<Entity>);
 
     if (!data) {
       await em.storeCache(options.cache, cached!, null);
@@ -1799,7 +1799,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       return cached.data as number;
     }
 
-    const count = await em.driver.count(entityName, where, { ctx: em.transactionContext, em, ...options });
+    const count = await em.driver.count(entityName, where, { ctx: em.transactionContext, em, ...options } as CountOptions<Entity>);
     await em.storeCache(options.cache, cached!, () => +count);
 
     return +count;
@@ -2136,7 +2136,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     if (!meta.virtual && options.lockMode === LockMode.OPTIMISTIC) {
       await this.lock(entity, options.lockMode, {
         lockVersion: options.lockVersion,
-        lockTableAliases: options.lockTableAliases,
+        lockTableAliases: (options as Dictionary).lockTableAliases,
       });
     }
 
