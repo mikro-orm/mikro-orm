@@ -1198,4 +1198,41 @@ describe('check typings', () => {
     // @ts-expect-error - firstNme does not exist on User entity
     em.create(User, partialDto, { partial: true });
   });
+
+  test('em.create() with discriminated union entity type (#7193)', () => {
+    interface MessageBase {
+      _id: string;
+      type: string;
+      data: unknown;
+    }
+
+    interface TextMessage extends MessageBase {
+      type: 'text';
+      data: { text: string };
+    }
+
+    interface PingMessage extends MessageBase {
+      type: 'ping';
+    }
+
+    type Message = TextMessage | PingMessage;
+
+    const messageSchema = new EntitySchema<Message>({
+      name: 'Message',
+      properties: {
+        _id: { type: 'string', primary: true },
+        type: { type: 'string' },
+        data: { type: 'json' },
+      },
+    });
+
+    const em = {} as EntityManager;
+    const msg = {} as Message;
+
+    // Type-only checks (no runtime validation for field names in where)
+    if (false as boolean) {
+      // Should not error - discriminated union with `data: unknown` in base
+      em.create(messageSchema, msg);
+    }
+  });
 });
