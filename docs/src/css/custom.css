@@ -1,11 +1,4 @@
 /**
- * Copyright (c) 2017-present, Facebook, Inc.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- */
-
-/**
  * Any CSS included here will be global. The classic template
  * bundles Infima by default. Infima is a CSS framework designed to
  * work well for content-centric websites.
@@ -13,34 +6,38 @@
 
 /* You can override the default Infima variables here. */
 :root {
-  --ifm-color-primary: #25c2a0;
-  --ifm-color-primary-dark: rgb(33, 175, 144);
-  --ifm-color-primary-darker: rgb(31, 165, 136);
-  --ifm-color-primary-darkest: rgb(26, 136, 112);
-  --ifm-color-primary-light: rgb(70, 203, 174);
-  --ifm-color-primary-lighter: rgb(102, 212, 189);
-  --ifm-color-primary-lightest: rgb(146, 224, 208);
+  --ifm-color-primary: #18b898;
+  --ifm-color-primary-dark: #15a688;
+  --ifm-color-primary-darker: #139d80;
+  --ifm-color-primary-darkest: #0f8169;
+  --ifm-color-primary-light: #1bcaa8;
+  --ifm-color-primary-lighter: #2dd4b1;
+  --ifm-color-primary-lightest: #5ee0c4;
   --prism-color: #393A34;
   --prism-background-color: #f6f8fa;
+  --ifm-font-family-base: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --ifm-heading-font-weight: 700;
 }
 
 html[data-theme="light"] {
-  --ifm-link-color: rgb(19, 108, 89);
-  --ifm-menu-color-active: rgb(19, 108, 89);
+  --ifm-link-color: #0d7d66;
+  --ifm-menu-color-active: #0d7d66;
   --ifm-color-warning: #fff3cd;
   --ifm-alert-background-color: #fff3cd;
   --ifm-alert-border-color: #ffeeba;
   --ifm-alert-color: #856404;
   --ra-admonition-icon-color: #856404;
   --docusaurus-highlighted-code-line-bg: rgb(218, 221, 227);
-  --ifm-breadcrumb-color-active: rgb(19, 108, 89);
+  --ifm-breadcrumb-color-active: #0d7d66;
 }
 
 html[data-theme="dark"] {
-  --ifm-background-color: #131313;
-  --ifm-navbar-background-color: #131313;
-  --ifm-navbar-shadow: #fff;
-  --docusaurus-highlighted-code-line-bg: #1d1e27;
+  --ifm-background-color: #121212;
+  --ifm-navbar-background-color: #121212;
+  --ifm-navbar-shadow: none;
+  --docusaurus-highlighted-code-line-bg: #1c1c1c;
+  --ifm-footer-background-color: #0e0e0e;
+  --prism-background-color: #282a36;
 }
 
 html[data-theme="light"] .admonition-info {
@@ -58,9 +55,14 @@ html[data-theme="light"] .admonition-info {
   padding: 0 var(--ifm-pre-padding);
 }
 
+/* Hero */
 .hero.hero--primary {
-  background-color: #159957;
-  background-image: linear-gradient(120deg, #155799, #159957);
+  background-color: #18b898;
+  background-image: linear-gradient(160deg, #0a0a0a 0%, #071a15 35%, #0c2e25 65%, #134d3e 100%);
+}
+
+html[data-theme="light"] .hero.hero--primary {
+  background-image: linear-gradient(135deg, #0a3d5c 0%, #0d7d66 50%, #18b898 100%);
 }
 
 .hero.hero--primary .button.button--secondary.button--outline {
@@ -72,21 +74,54 @@ html[data-theme="light"] .admonition-info {
 }
 
 .hero.hero--primary .hero__subtitle {
-  color: #f5f6f7;
-  font-size: 2.4rem;
-  text-align: left;
-  max-width: 500px;
-  margin: 30px 0;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 1.35rem;
+  text-align: center;
+  max-width: 600px;
+  margin: 0 auto 2rem;
+  font-weight: 400;
+  line-height: 1.6;
 }
 
 .hero.hero--primary .button.button--outline:hover,
 .hero.hero--primary .button.button--outline:active,
 .hero.hero--primary .button.button--outline.button--active {
-  background-color: rgba(70, 203, 174, 0.5);
+  background-color: rgba(24, 184, 152, 0.3);
+}
+
+/* Navbar */
+.navbar {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: none;
+  padding: 0.5rem 1rem;
+}
+
+html[data-theme="dark"] .navbar {
+  border-bottom-color: rgba(255, 255, 255, 0.06);
 }
 
 .navbar .navbar__logo {
-  max-height: 100%;
+  height: 22px;
+}
+
+.navbar .navbar__link {
+  font-weight: 500;
+  font-size: 0.9rem;
+  border-radius: 6px;
+  padding: 0.4rem 0.75rem;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.navbar .navbar__link:hover {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+html[data-theme="dark"] .navbar .navbar__link:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.navbar .navbar__link--active {
+  font-weight: 600;
 }
 
 .navbar .icon[href*=github],
@@ -104,8 +139,8 @@ html[data-theme="light"] .admonition-info {
 .navbar .icon[href*=slack]::before {
   content: '';
   display: block;
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   background-size: cover;
 }
 
@@ -136,17 +171,23 @@ html[data-theme="light"] .admonition-info {
   margin: 0 0 0 8px;
 }
 
+/* Buttons */
 .button {
   border-radius: 100px;
   margin: 0 10px;
+  transition: all 0.2s ease;
 }
 
-.github-button {
-  margin: 4px 0 0 20px;
-  position: relative;
-  top: 5px;
+.button:hover {
+  transform: translateY(-1px);
 }
 
+/* Code blocks */
+.prism-code {
+  border-radius: 8px;
+}
+
+/* Edit page button */
 a[href*=\/mikro-orm\/mikro-orm\/edit\/] {
   border: 1px solid #ccc;
   border-radius: 100px;
@@ -155,6 +196,11 @@ a[href*=\/mikro-orm\/mikro-orm\/edit\/] {
   margin: 0 auto;
   width: 200px;
   text-align: center;
+  transition: all 0.2s ease;
+}
+
+a[href*=\/mikro-orm\/mikro-orm\/edit\/]:hover {
+  border-color: var(--ifm-color-primary);
 }
 
 .margin-vert--xl {
@@ -162,38 +208,24 @@ a[href*=\/mikro-orm\/mikro-orm\/edit\/] {
   margin-top: 3rem !important;
 }
 
+/* Pagination */
 .pagination-nav .pagination-nav__item a {
-  border-radius: 100px 20px 20px 100px;
-  padding-left: 40px;
+  border-radius: 12px;
+  padding-left: 24px;
+  transition: all 0.2s ease;
 }
 
 .pagination-nav .pagination-nav__item--next a {
-  border-radius: 20px 100px 100px 20px;
-  padding-right: 40px;
+  border-radius: 12px;
+  padding-right: 24px;
 }
 
-html[data-theme="dark"] .navbar .navbar__brand,
-html[data-theme="dark"] .main-wrapper a[class*='sidebarLogo'] {
-  background-image: url('/static/img/logo-dark.svg');
-  background-repeat: no-repeat;
-  background-position: left center;
-  background-size: contain;
+.pagination-nav .pagination-nav__item a:hover {
+  border-color: var(--ifm-color-primary);
 }
 
-html[data-theme="dark"] .navbar .navbar__brand img,
-html[data-theme="dark"] .main-wrapper a[class*='sidebarLogo'] img {
-  visibility: hidden;
-}
 
-html[data-theme="dark"] .main-wrapper a[class*='sidebarLogo'] {
-  margin-right: 70px;
-}
-
-html[data-theme="dark"] .hero.hero--primary {
-  background-color: #0d572f;
-  background-image: linear-gradient(120deg, #0c335a, #0c5430);
-}
-
+/* Dark mode navbar icons */
 html[data-theme="dark"] .navbar .navbar__link[href*=github]:before {
   background-image: url('/static/img/github-brand-dark.svg');
 }
@@ -210,51 +242,39 @@ html[data-theme="dark"] .navbar .navbar__link[href*=twitter]:before {
   background-image: url('/static/img/twitter-brand-dark.svg');
 }
 
+/* Responsive */
 @media screen and (max-width: 1024px) {
   .hero.hero--primary .hero__subtitle {
-    font-size: 2rem;
-  }
-
-  .hero.hero--primary .container img {
-    height: 260px;
+    font-size: 1.2rem;
   }
 }
 
 @media screen and (max-width: 700px) {
   .hero.hero--primary .hero__subtitle {
-    font-size: 2rem;
-    text-align: center;
+    font-size: 1.1rem;
     max-width: inherit;
-  }
-
-  .buttons_src-pages- {
-    max-width: inherit !important;
-  }
-
-  .hero.hero--primary .container img {
-    display: none;
   }
 }
 
 @media screen and (max-width: 500px) {
   .hero.hero--primary .hero__subtitle {
-    font-size: 1.4rem;
-  }
-
-  .buttons_src-pages- {
-    margin: 0 -30px;
+    font-size: 1rem;
   }
 }
 
-@media screen and (min-width: 995px) and (max-width: 1130px) {
-  .navbar .icon[href*=twitter],
-  .navbar .icon[href*=slack] {
+@media screen and (min-width: 997px) and (max-width: 1250px) {
+  .navbar a[data-type="versions"] {
     display: none;
   }
 }
 
-@media screen and (min-width: 995px) and (max-width: 1030px) {
-  .navbar a[data-type="versions"] {
+@media screen and (min-width: 997px) and (max-width: 1100px) {
+  .navbar .icon[href*=twitter],
+  .navbar .icon[href*=slack] {
+    display: none;
+  }
+
+  .navbar .changelog {
     display: none;
   }
 }
@@ -265,19 +285,79 @@ html[data-theme="dark"] .navbar .navbar__link[href*=twitter]:before {
   }
 }
 
-html a code {
-  color: inherit
+/* Sidebar */
+.menu {
+  font-size: 0.92rem;
+  padding: 0.75rem !important;
 }
 
+.menu__link {
+  border-radius: 6px;
+  padding: 0.35rem 0.75rem;
+  font-weight: 450;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.menu__link:hover:not(.menu__link--active) {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+html[data-theme="dark"] .menu__link:hover:not(.menu__link--active) {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.menu__link--active:not(.menu__link--sublist) {
+  background: rgba(24, 184, 152, 0.08);
+  font-weight: 600;
+}
+
+html[data-theme="dark"] .menu__link--active:not(.menu__link--sublist) {
+  background: rgba(24, 184, 152, 0.12);
+}
+
+.menu > .menu__list > .menu__list-item > .menu__link--sublist {
+  font-weight: 600;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--ifm-color-emphasis-600);
+}
+
+.menu__list .menu__list {
+  padding-left: 0.75rem;
+  margin-left: 0.5rem;
+  border-left: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+html[data-theme="dark"] .menu__list .menu__list {
+  border-left-color: rgba(255, 255, 255, 0.08);
+}
+
+.menu__list-item {
+  margin-top: 1px;
+}
+
+/* Links */
+html a code {
+  color: inherit;
+}
+
+a {
+  transition: color 0.15s ease;
+}
+
+/* External link icons */
 .navbar svg[class*=iconExternalLink],
 aside svg[class*=iconExternalLink] {
   display: none;
 }
 
+/* API docs */
 .apiItemContainer .tsd-readme h1:first-child {
   display: none;
 }
 
+/* Blockquotes */
 .markdown blockquote {
   --ifm-code-background: var(--ifm-alert-background-color-highlight);
   --ifm-alert-background-color: #f8feff;
@@ -291,18 +371,20 @@ aside svg[class*=iconExternalLink] {
 }
 
 html[data-theme="dark"] .markdown blockquote {
-  --ifm-alert-background-color: #02242a;
-  --ifm-alert-border-color: #637c80;
-  --ifm-alert-color: #f8feff;
+  --ifm-alert-background-color: #0f1a17;
+  --ifm-alert-border-color: #1e3a30;
+  --ifm-alert-color: #f0faf6;
   --ifm-link-color: rgb(146, 224, 208);
   --ifm-link-hover-color: rgb(146, 224, 208);
 }
 
+/* Giscus */
 #giscus-comments {
   display: block;
   margin-top: 50px;
 }
 
+/* GitHub mode images */
 [data-theme='light'] img[src$='#gh-dark-mode-only'],
 [data-theme='dark'] img[src$='#gh-light-mode-only'] {
   display: none;

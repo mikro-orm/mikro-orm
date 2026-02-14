@@ -60,7 +60,7 @@ export const Book = defineEntity({
   name: 'Book',
   properties: {
     id: p.integer().primary(),
-    author: p.manyToOne(() => Author).ref(),
+    author: () => p.manyToOne(Author).ref(),
   },
 });
 ```
@@ -223,8 +223,8 @@ export const User = defineEntity({
   name: 'User',
   properties: {
     id: p.integer().primary(),
-    identity: p.manyToOne(() => Identity).ref(),
-    friends: p.manyToMany(() => User),
+    identity: () => p.manyToOne(Identity).ref(),
+    friends: () => p.manyToMany(User),
   },
 });
 ```
@@ -408,7 +408,7 @@ export const Book = defineEntity({
   name: 'Book',
   properties: {
     id: p.integer().primary(),
-    author: p.manyToOne(() => Author).ref(),
+    author: () => p.manyToOne(Author).ref(),
   },
 });
 
@@ -613,7 +613,7 @@ export const Book = defineEntity({
   properties: {
     _id: p.type(ObjectId).primary(),
     id: p.string().serializedPrimaryKey(),
-    author: p.manyToOne(() => Author).ref(),
+    author: () => p.manyToOne(Author).ref(),
   },
 });
 ```
