@@ -379,7 +379,7 @@ favouriteBook?: Book;
 const SomeEntity = defineEntity({
   name: 'SomeEntity',
   properties: {
-    favouriteBook: p.manyToOne(Book).nullable(),
+    favouriteBook: () => p.manyToOne(Book).nullable(),
   },
 });
 
