@@ -127,7 +127,7 @@ export class MongoConnection extends Connection {
     return this.#client!;
   }
 
-  getCollection<T extends object>(name: EntityName<T>): Collection<T> {
+  getCollection<T extends object>(name: EntityName<T> | string): Collection<T> {
     return this.getDb().collection<T>(this.getCollectionName(name));
   }
 
@@ -532,8 +532,8 @@ export class MongoConnection extends Connection {
     };
   }
 
-  private getCollectionName<T>(entityName: EntityName<T>): string {
-    const meta = this.metadata.find(entityName);
+  private getCollectionName<T>(entityName: EntityName<T> | string): string {
+    const meta = this.metadata.find(entityName as EntityName<T>);
     return meta ? meta.collection : Utils.className(entityName);
   }
 

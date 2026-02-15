@@ -1,6 +1,6 @@
 import type { Configuration, Transaction, EntityName } from '@mikro-orm/core';
 import type { MongoDriver } from '@mikro-orm/mongodb';
-import type { Collection, ClientSession, Document } from 'mongodb';
+import type { Collection, ClientSession, Document, Db } from 'mongodb';
 
 export abstract class Migration {
 
@@ -27,8 +27,12 @@ export abstract class Migration {
     this.ctx = ctx;
   }
 
-  getCollection<T extends Document>(entityName: EntityName): Collection<T> {
-    return this.driver.getConnection().getCollection(entityName);
+  getCollection<T extends Document>(entityOrCollectionName: EntityName<T> | string): Collection<T> {
+    return this.driver.getConnection().getCollection(entityOrCollectionName);
+  }
+
+  getDb(): Db {
+    return this.driver.getConnection().getDb();
   }
 
 }

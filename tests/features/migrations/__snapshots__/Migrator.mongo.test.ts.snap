@@ -193,7 +193,6 @@ exports[`Migrator (mongo) - with explicit migrations class only (#6099) > runner
   "db.begin();",
   "db.getCollection('mikro_orm_migrations').find({}, { session: '[ClientSession]' }).sort([ [ '_id', 1 ] ]).toArray();",
   "[migrator] Processing 'MigrationTest1'",
-  "db.getCollection('books-table').deleteMany({ foo: true }, { session: '[ClientSession]' });",
   "db.getCollection('mikro_orm_migrations').insertOne({ name: 'MigrationTest1', executed_at: ISODate(...) }, { session: '[ClientSession]' });",
   "[migrator] Applied 'MigrationTest1'",
   "db.commit();",

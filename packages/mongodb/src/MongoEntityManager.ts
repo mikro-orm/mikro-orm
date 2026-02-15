@@ -47,8 +47,8 @@ export class MongoEntityManager<Driver extends MongoDriver = MongoDriver> extend
     yield* super.stream(entityName, options);
   }
 
-  getCollection<T extends Document>(entityName: EntityName<T>): Collection<T> {
-    return this.getConnection().getCollection(entityName);
+  getCollection<T extends Document>(entityOrCollectionName: EntityName<T> | string): Collection<T> {
+    return this.getConnection().getCollection(entityOrCollectionName);
   }
 
   /**

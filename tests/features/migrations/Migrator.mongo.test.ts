@@ -10,8 +10,8 @@ import { Book } from '../../entities/Book.js';
 class MigrationTest1 extends Migration {
 
   async up(): Promise<void> {
-    await this.getCollection(Book).updateMany({}, { $set: { updatedAt: new Date() } });
-    await this.driver.nativeDelete<any>(Book, { foo: true }, { ctx: this.ctx });
+    await this.getCollection('book').updateMany({}, { $set: { updatedAt: new Date() } });
+    await this.getDb().collection('book').deleteMany({ foo: true }, { session: this.ctx });
   }
 
 }
@@ -19,7 +19,7 @@ class MigrationTest1 extends Migration {
 class MigrationTest2 extends Migration {
 
   async up(): Promise<void> {
-    await this.getCollection(Book).updateMany({}, { $unset: { title: 1 } }, { session: this.ctx });
+    await this.getCollection('book').updateMany({}, { $unset: { title: 1 } }, { session: this.ctx });
     await this.driver.nativeDelete<any>(Book, { foo: false }, { ctx: this.ctx });
   }
 
@@ -170,12 +170,11 @@ describe('Migrator (mongo)', () => {
     const spy1 = vi.spyOn(Migration.prototype, 'getCollection');
     mock.mock.calls.length = 0;
     await runner.run(migration1, 'up');
-    expect(spy1).toHaveBeenCalledWith(Book);
-    // no logging for collection methods, only for driver ones
-    expect(mock.mock.calls).toHaveLength(3);
+    expect(spy1).toHaveBeenCalledWith('book');
+    // no logging for collection methods
+    expect(mock.mock.calls).toHaveLength(2);
     expect(mock.mock.calls[0][0]).toMatch('db.begin()');
-    expect(mock.mock.calls[1][0]).toMatch(`db.getCollection('books-table').deleteMany({ foo: true }, { session: '[ClientSession]' })`);
-    expect(mock.mock.calls[2][0]).toMatch('db.commit()');
+    expect(mock.mock.calls[1][0]).toMatch('db.commit()');
     mock.mock.calls.length = 0;
 
     await expect(runner.run(migration1, 'down')).rejects.toThrow('This migration cannot be reverted');

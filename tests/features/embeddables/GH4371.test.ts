@@ -54,7 +54,7 @@ afterAll(async () => {
 });
 
 test('Ensure that embedded entity has underscore naming and fieldName is applied', async () => {
-  const collection = orm.em.getCollection(A);
+  const collection = orm.em.getCollection<A>('a');
   expect(await collection.findOne({}, { projection: { _id: 0 } })).toEqual({
     complex_name: 'n',
     em_bedded: {

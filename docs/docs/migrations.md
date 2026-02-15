@@ -404,20 +404,29 @@ When overriding the `migrations.fileName` strategy, keep in mind that your migra
 
 ## MongoDB support
 
-Migrations for MongoDB use a separate package: `@mikro-orm/migrations-mongodb`, and should be otherwise compatible with the current CLI commands. Use `this.driver` or `this.getCollection()` to manipulate with the database.
+Migrations for MongoDB use a separate package: `@mikro-orm/migrations-mongodb`, and should be otherwise compatible with the current CLI commands. Use `this.getCollection()` or `this.getDb()` to manipulate the database.
+
+:::warning
+
+Avoid using entity class references in migrations. Entity definitions change over time, which can break older migrations. Use collection string names with `this.getCollection()` or the raw `Db` instance via `this.getDb()` instead.
+
+:::
+
+### Available methods
+
+The MongoDB `Migration` class provides the following helpers:
+
+- `this.getCollection(name)` — returns a typed MongoDB `Collection` instance by collection name
+- `this.getDb()` — returns the raw MongoDB `Db` instance for full access to the database
 
 ### Transactions
 
 The default options for `Migrator` will use transactions, and those impose some additional requirements in mongo, namely the collections need to exist upfront, and you need to run a replicaset. You might want to disable transactions for `migrations: { transactional: false }`.
 
-```ts
-await this.driver.nativeDelete('Book', { foo: true }, { ctx: this.ctx });
-```
-
-You need to provide the transaction context manually to your queries, either via the `ctx` option of the driver methods, or via the MongoDB `session` option when using the `this.getCollection()` method.
+You need to provide the transaction context manually to your queries via the MongoDB `session` option:
 
 ```ts
-await this.getCollection('Book').updateMany({}, { $set: { updatedAt: new Date() } }, { session: this.ctx });
+await this.getCollection('book').updateMany({}, { $set: { updatedAt: new Date() } }, { session: this.ctx });
 ```
 
 ### Migration class
@@ -430,11 +439,11 @@ import { Migration } from '@mikro-orm/migrations-mongodb';
 export class MigrationTest1 extends Migration {
 
   async up(): Promise<void> {
-    // use `this.getCollection()` to work with the mongodb collection directly
-    await this.getCollection('Book').updateMany({}, { $set: { updatedAt: new Date() } }, { session: this.ctx });
+    // use `this.getCollection()` to work with a mongodb collection directly
+    await this.getCollection('book').updateMany({}, { $set: { updatedAt: new Date() } }, { session: this.ctx });
 
-    // or use `this.driver` to work with the `MongoDriver` API instead
-    await this.driver.nativeDelete('Book', { foo: true }, { ctx: this.ctx });
+    // or use `this.getDb()` for full access to the database
+    await this.getDb().collection('book').deleteMany({ foo: true }, { session: this.ctx });
   }
 
 }
