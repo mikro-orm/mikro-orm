@@ -6,7 +6,7 @@
 
 import { bench } from '@ark/attest';
 import type { Collection, Ref, PrimaryKeyProp } from '@mikro-orm/core';
-import type { Field, ContextOrderByMap, QBFilterQuery, ModifyHint, ModifyContext, ModifyFields } from '@mikro-orm/sql';
+import type { Field, ContextOrderByMap, QBFilterQuery, ModifyHint, ModifyContext, ModifyFields, JoinSelectField } from '@mikro-orm/sql';
 
 // ============================================
 // Test Entity Definitions
@@ -174,3 +174,18 @@ bench('ModifyFields - nested context', () => {
   type Result = ModifyFields<'id', 'a', TwoJoinContext, 'tags', 't', readonly ['name']>;
   useFields<Result>('' as Result);
 }).types([179, 'instantiations']);
+
+// ============================================
+// JoinSelectField benchmarks
+// ============================================
+
+// eslint-disable-next-line no-empty-function
+function useJoinField<E, A extends string>(_field: JoinSelectField<E, A>): void {}
+
+bench('JoinSelectField<Book, "b"> - plain key', () => {
+  useJoinField<Book, 'b'>('title');
+}).types([6, 'instantiations']);
+
+bench('JoinSelectField<Book, "b"> - alias-prefixed key', () => {
+  useJoinField<Book, 'b'>('b.title');
+}).types([6, 'instantiations']);

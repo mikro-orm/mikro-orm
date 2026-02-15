@@ -425,24 +425,24 @@ describe('QueryBuilder - Select', () => {
   test('select leftJoin 1:m with multiple conditions', async () => {
     const qb = orm.em.createQueryBuilder(Author2, 'a');
     qb.leftJoin('a.books', 'b', {
-      'b.baz': { $gt: 1, $lte: 10 },
+      'b.price': { $gt: 1, $lte: 10 },
       'b.title': { $fulltext: 'test' },
       '$or': [
         {
-          'b.foo': null,
-          'b.qux': { $ne: null },
-          'b.quux': { $eq: null },
-          'b.baz': 0,
+          'b.double': null,
+          'b.isbn': { $ne: null },
+          'b.title': { $eq: null },
+          'b.price': 0,
         },
         {
-          'b.foo': { $nin: [0, 1] },
-          'b.baz': { $in: [2, 3] },
-          'b.qux': { $exists: true },
-          'b.bar': /test/,
+          'b.double': { $nin: [0, 1] },
+          'b.price': { $in: [2, 3] },
+          'b.isbn': { $exists: true },
+          'b.title': /test/,
         },
         {
-          'b.qux': { $exists: false },
-          'b.bar': /^(te){1,3}st$/,
+          'b.isbn': { $exists: false },
+          'b.title': /^(te){1,3}st$/,
         },
         {
           $and: [
@@ -459,9 +459,9 @@ describe('QueryBuilder - Select', () => {
       'select `a`.*, `b`.* from `author2` as `a` ' +
       'left join `book2` as `b` ' +
       'on `a`.`id` = `b`.`author_id` ' +
-      'and `b`.`baz` > ? and `b`.`baz` <= ? ' +
+      'and `b`.`price` > ? and `b`.`price` <= ? ' +
       'and match(??) against (? in boolean mode) ' +
-      'and ((`b`.`foo` is null and `b`.`qux` is not null and `b`.`quux` is null and `b`.`baz` = ?) or (`b`.`foo` not in (?, ?) and `b`.`baz` in (?, ?) and `b`.`qux` is not null and `b`.`bar` like ?) or (`b`.`qux` is null and `b`.`bar` regexp ?) or (json_contains(`b`.`meta`, ?) and json_contains(`b`.`meta`, ?) = ? and lower(??) = ?)) ' +
+      'and ((`b`.`double` is null and `b`.`isbn` is not null and `b`.`title` is null and `b`.`price` = ?) or (`b`.`double` not in (?, ?) and `b`.`price` in (?, ?) and `b`.`isbn` is not null and `b`.`title` like ?) or (`b`.`isbn` is null and `b`.`title` regexp ?) or (json_contains(`b`.`meta`, ?) and json_contains(`b`.`meta`, ?) = ? and lower(??) = ?)) ' +
       'where `b`.`title` = ?';
     expect(qb.getQuery()).toEqual(sql2);
     expect(qb.getParams()).toEqual([

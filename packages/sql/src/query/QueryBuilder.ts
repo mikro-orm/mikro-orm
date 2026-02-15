@@ -123,11 +123,13 @@ type GetType<Type extends object, Context, Field extends string> =
   GetAlias<Field> extends infer Alias
     ? IsNever<Alias> extends true
       ? Type
-      : Alias extends keyof Context
-        ? Context[Alias] extends [string, string, infer PropType, any]
-          ? PropType & object
+      : [Context] extends [never]
+        ? Type
+        : Alias extends keyof Context
+          ? Context[Alias] extends [string, string, infer PropType, any]
+            ? PropType & object
+            : Type
           : Type
-        : Type
     : Type;
 
 type AddToHint<RootAlias, Context, Field extends string, Select extends boolean = false> = Select extends true
@@ -193,6 +195,12 @@ type PrefixWithPath<Path extends string, Field extends string> = `${Path}.${Fiel
 
 // Strip alias prefix from join field: ('b.title', 'b') -> 'title', ('title', 'b') -> 'title'
 type StripJoinAlias<F extends string, Alias extends string> = F extends `${Alias}.${infer Field}` ? Field : F;
+
+// Valid field names for joinAndSelect partial loading: plain key or alias-prefixed key
+// Uses `keyof` instead of EntityKey for performance (O(1) vs O(n)), consistent with ContextFieldKeys
+export type JoinSelectField<JoinedEntity, Alias extends string> =
+  | (keyof JoinedEntity & string)
+  | `${Alias}.${keyof JoinedEntity & string}`;
 
 // Add fields from joinAndSelect to the Fields hint
 // Uses AddToHint to compute the correct path based on Context
@@ -322,7 +330,12 @@ type AliasedObjectQuery<Entity extends object, Alias extends string> = {
 };
 
 // Join condition type - supports both direct properties and aliased properties
-type JoinCondition<JoinedEntity extends object, Alias extends string> = ObjectQuery<JoinedEntity> | AliasedObjectQuery<JoinedEntity, Alias>;
+// Overrides $not/$or/$and to accept aliased keys at all nesting levels
+type JoinCondition<JoinedEntity extends object, Alias extends string> = (ObjectQuery<JoinedEntity> | AliasedObjectQuery<JoinedEntity, Alias>) & {
+  $not?: JoinCondition<JoinedEntity, Alias>;
+  $or?: JoinCondition<JoinedEntity, Alias>[];
+  $and?: JoinCondition<JoinedEntity, Alias>[];
+};
 
 // Condition type for raw/subquery joins where we don't know the entity type
 // Uses string keys with filter values instead of permissive Dictionary
@@ -917,7 +930,7 @@ export class QueryBuilder<
    *   .where({ 'a.name': 'John' });
    * ```
    */
-  joinAndSelect<Field extends QBField<Entity, RootAlias, Context>, Alias extends string, const JoinFields extends readonly string[] | undefined = undefined>(
+  joinAndSelect<Field extends QBField<Entity, RootAlias, Context>, Alias extends string, const JoinFields extends readonly [JoinSelectField<JoinedEntityType<Entity, Context, Field & string>, Alias>, ...JoinSelectField<JoinedEntityType<Entity, Context, Field & string>, Alias>[]] | undefined = undefined>(
     field: Field | [Field, RawQueryFragment | QueryBuilder<any>],
     alias: Alias,
     cond: JoinCondition<JoinedEntityType<Entity, Context, Field & string>, Alias> = {} as JoinCondition<
@@ -973,7 +986,7 @@ export class QueryBuilder<
   leftJoinAndSelect<
     Field extends QBField<Entity, RootAlias, Context>,
     Alias extends string,
-    const JoinFields extends readonly string[] | undefined = undefined,
+    const JoinFields extends readonly [JoinSelectField<JoinedEntityType<Entity, Context, Field & string>, Alias>, ...JoinSelectField<JoinedEntityType<Entity, Context, Field & string>, Alias>[]] | undefined = undefined,
   >(
     field: Field | [Field, RawQueryFragment | QueryBuilder<any>],
     alias: Alias,
@@ -997,7 +1010,7 @@ export class QueryBuilder<
   leftJoinLateralAndSelect<
     Field extends QBField<Entity, RootAlias, Context>,
     Alias extends string,
-    const JoinFields extends readonly string[] | undefined = undefined,
+    const JoinFields extends readonly [JoinSelectField<JoinedEntityType<Entity, Context, Field & string>, Alias>, ...JoinSelectField<JoinedEntityType<Entity, Context, Field & string>, Alias>[]] | undefined = undefined,
   >(
     field: [Field, RawQueryFragment | QueryBuilder<any>],
     alias: Alias,
@@ -1022,7 +1035,7 @@ export class QueryBuilder<
   innerJoinAndSelect<
     Field extends QBField<Entity, RootAlias, Context>,
     Alias extends string,
-    const JoinFields extends readonly string[] | undefined = undefined,
+    const JoinFields extends readonly [JoinSelectField<JoinedEntityType<Entity, Context, Field & string>, Alias>, ...JoinSelectField<JoinedEntityType<Entity, Context, Field & string>, Alias>[]] | undefined = undefined,
   >(
     field: Field | [Field, RawQueryFragment | QueryBuilder<any>],
     alias: Alias,
@@ -1046,7 +1059,7 @@ export class QueryBuilder<
   innerJoinLateralAndSelect<
     Field extends QBField<Entity, RootAlias, Context>,
     Alias extends string,
-    const JoinFields extends readonly string[] | undefined = undefined,
+    const JoinFields extends readonly [JoinSelectField<JoinedEntityType<Entity, Context, Field & string>, Alias>, ...JoinSelectField<JoinedEntityType<Entity, Context, Field & string>, Alias>[]] | undefined = undefined,
   >(
     field: [Field, RawQueryFragment | QueryBuilder<any>],
     alias: Alias,
@@ -1095,7 +1108,7 @@ export class QueryBuilder<
       fields.push(...this.driver.mapPropToFieldNames<Entity>(this, p, alias, targetMeta, schema));
     }
 
-    if (explicitFields) {
+    if (explicitFields && explicitFields.length > 0) {
       for (const field of explicitFields) {
         const [a, f] = this.helper.splitField(field as EntityKey<Entity>);
         const p = targetMeta.properties[f];
@@ -1110,7 +1123,7 @@ export class QueryBuilder<
 
     targetMeta.props
       .filter(prop => {
-        if (!explicitFields) {
+        if (!explicitFields || explicitFields.length === 0) {
           return this.platform.shouldHaveColumn(prop, populate);
         }
 

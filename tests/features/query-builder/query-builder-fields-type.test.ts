@@ -191,6 +191,44 @@ describe('QueryBuilder Fields type tracking', () => {
     });
   });
 
+  describe('joinAndSelect fields type safety', () => {
+    test('should reject invalid field names', async () => {
+      const qb = orm.em.createQueryBuilder(Author2, 'a').select('*');
+      // @ts-expect-error 'nameasd' is not a valid field of Book2
+      qb.leftJoinAndSelect('a.books', 'b', {}, ['nameasd']);
+    });
+
+    test('should reject empty array', async () => {
+      const qb = orm.em.createQueryBuilder(Author2, 'a').select('*');
+      // @ts-expect-error empty array is not allowed
+      qb.leftJoinAndSelect('a.books', 'b', {}, []);
+    });
+
+    test('should accept valid field names without alias prefix', async () => {
+      const qb = orm.em.createQueryBuilder(Author2, 'a').select('*').leftJoinAndSelect('a.books', 'b', {}, ['title', 'price']);
+      const result = await qb.getResultList();
+      expectTypeOf(result).toEqualTypeOf<Loaded<Author2, 'books', '*' | 'books.title' | 'books.price'>[]>();
+    });
+
+    test('should accept valid field names with alias prefix', async () => {
+      const qb = orm.em.createQueryBuilder(Author2, 'a').select('*').leftJoinAndSelect('a.books', 'b', {}, ['b.title', 'b.price']);
+      const result = await qb.getResultList();
+      expectTypeOf(result).toEqualTypeOf<Loaded<Author2, 'books', '*' | 'books.title' | 'books.price'>[]>();
+    });
+
+    test('should work with innerJoinAndSelect', async () => {
+      const qb = orm.em.createQueryBuilder(Author2, 'a').select('*').innerJoinAndSelect('a.books', 'b', {}, ['title']);
+      const result = await qb.getResultList();
+      expectTypeOf(result).toEqualTypeOf<Loaded<Author2, 'books', '*' | 'books.title'>[]>();
+    });
+
+    test('should reject invalid fields in innerJoinAndSelect', async () => {
+      const qb = orm.em.createQueryBuilder(Author2, 'a').select('*');
+      // @ts-expect-error 'invalid' is not a valid field of Book2
+      qb.innerJoinAndSelect('a.books', 'b', {}, ['invalid']);
+    });
+  });
+
   describe('getResult and getSingleResult return types', () => {
     test('getResult should return Loaded with Fields', async () => {
       const qb = orm.em.createQueryBuilder(Author2, 'a').select(['a.id', 'a.email']);

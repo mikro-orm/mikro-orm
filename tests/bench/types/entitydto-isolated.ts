@@ -43,15 +43,15 @@ function useDTO<T>(_dto: EntityDTO<T>): void {}
 
 bench('EntityDTO<SimpleEntity> - no relations', () => {
   useDTO<SimpleEntity>({} as EntityDTO<SimpleEntity>);
-}).types([891, 'instantiations']);
+}).types([916, 'instantiations']);
 
 bench('EntityDTO<EntityWithRef> - with Ref', () => {
   useDTO<EntityWithRef>({} as EntityDTO<EntityWithRef>);
-}).types([832, 'instantiations']);
+}).types([854, 'instantiations']);
 
 bench('EntityDTO<EntityWithCollection> - with Collection', () => {
   useDTO<EntityWithCollection>({} as EntityDTO<EntityWithCollection>);
-}).types([770, 'instantiations']);
+}).types([789, 'instantiations']);
 
 // ============================================
 // EntityDTO on Loaded entities
@@ -59,23 +59,23 @@ bench('EntityDTO<EntityWithCollection> - with Collection', () => {
 
 bench('EntityDTO<Loaded<SimpleEntity>> - loaded no relations', () => {
   useDTO<Loaded<SimpleEntity>>({} as EntityDTO<Loaded<SimpleEntity>>);
-}).types([2143, 'instantiations']);
+}).types([2168, 'instantiations']);
 
 bench('EntityDTO<Loaded<EntityWithRef>> - loaded with Ref', () => {
   useDTO<Loaded<EntityWithRef>>({} as EntityDTO<Loaded<EntityWithRef>>);
-}).types([1934, 'instantiations']);
+}).types([1956, 'instantiations']);
 
 bench('EntityDTO<Loaded<EntityWithRef, "parent">> - loaded with populated Ref', () => {
   useDTO<Loaded<EntityWithRef, 'parent'>>({} as EntityDTO<Loaded<EntityWithRef, 'parent'>>);
-}).types([2415, 'instantiations']);
+}).types([2437, 'instantiations']);
 
 bench('EntityDTO<Loaded<EntityWithCollection>> - loaded with Collection', () => {
   useDTO<Loaded<EntityWithCollection>>({} as EntityDTO<Loaded<EntityWithCollection>>);
-}).types([1748, 'instantiations']);
+}).types([1767, 'instantiations']);
 
 bench('EntityDTO<Loaded<EntityWithCollection, "items">> - loaded with populated Collection', () => {
   useDTO<Loaded<EntityWithCollection, 'items'>>({} as EntityDTO<Loaded<EntityWithCollection, 'items'>>);
-}).types([2376, 'instantiations']);
+}).types([2395, 'instantiations']);
 
 // ============================================
 // Comparison: EntityDTO vs direct Loaded

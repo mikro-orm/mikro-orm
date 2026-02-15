@@ -78,7 +78,7 @@ test('should populate with joinAndSelect', async () => {
       undefined,
       JoinType.innerJoin,
       undefined,
-      ['id', 'address'],
+      ['address'],
     )
     .where({ email: 'foo' })
     .getSingleResult();

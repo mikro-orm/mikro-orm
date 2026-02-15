@@ -92,19 +92,19 @@ bench('em.create() return type', () => {
   type R = ReturnType<typeof em.create<Author>>;
   const x = {} as R;
   void x;
-}).types([2401, 'instantiations']);
+}).types([2444, 'instantiations']);
 
 bench('RequiredEntityData - Author', () => {
   type R = RequiredEntityData<Author>;
   const x = {} as R;
   void x;
-}).types([1462, 'instantiations']);
+}).types([1505, 'instantiations']);
 
 bench('RequiredEntityData - Book', () => {
   type R = RequiredEntityData<Book>;
   const x = {} as R;
   void x;
-}).types([1275, 'instantiations']);
+}).types([1310, 'instantiations']);
 
 // New<T> type (used as create return type)
 bench('New<Author>', () => {
@@ -137,25 +137,25 @@ bench('EntityDTO<Author>', () => {
   type R = EntityDTO<Author>;
   const x = {} as R;
   void x;
-}).types([1078, 'instantiations']);
+}).types([1112, 'instantiations']);
 
 bench('EntityDTO<Book>', () => {
   type R = EntityDTO<Book>;
   const x = {} as R;
   void x;
-}).types([954, 'instantiations']);
+}).types([982, 'instantiations']);
 
 bench('EntityDTO<Loaded<Author, "books">>', () => {
   type R = EntityDTO<Loaded<Author, 'books'>>;
   const x = {} as R;
   void x;
-}).types([3613, 'instantiations']);
+}).types([3647, 'instantiations']);
 
 bench('EntityDTO<Loaded<Author, "books.publisher">>', () => {
   type R = EntityDTO<Loaded<Author, 'books.publisher'>>;
   const x = {} as R;
   void x;
-}).types([3613, 'instantiations']);
+}).types([3647, 'instantiations']);
 
 // ============================================
 // FilterQuery - used in where clauses
@@ -206,13 +206,13 @@ bench('wrap(author).toObject() return type', () => {
   type R = ToObjectReturn<Author>;
   const x = {} as R;
   void x;
-}).types([1079, 'instantiations']);
+}).types([1113, 'instantiations']);
 
 bench('wrap(loadedAuthor).toObject() return type', () => {
   type R = ToObjectReturn<Loaded<Author, 'books'>>;
   const x = {} as R;
   void x;
-}).types([3615, 'instantiations']);
+}).types([3649, 'instantiations']);
 
 // ============================================
 // Complex scenarios
@@ -224,4 +224,4 @@ bench('find result then EntityDTO', () => {
   type DTOResult = EntityDTO<FindResult>;
   const x = {} as DTOResult;
   void x;
-}).types([3613, 'instantiations']);
+}).types([3647, 'instantiations']);

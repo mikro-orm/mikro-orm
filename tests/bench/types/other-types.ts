@@ -112,11 +112,11 @@ function useRequiredData<T>(_data: RequiredEntityData<T>): void {}
 
 bench('RequiredEntityData<Author> - simple', () => {
   useRequiredData<Author>({ name: 'test', email: 'test@test.com' });
-}).types([2102, 'instantiations']);
+}).types([2149, 'instantiations']);
 
 bench('RequiredEntityData<Book> - with required relations', () => {
   useRequiredData<Book>({ title: 'test', price: 10, author: {} as Author });
-}).types([3442, 'instantiations']);
+}).types([3521, 'instantiations']);
 
 // ============================================
 // Primary type benchmarks
@@ -142,8 +142,8 @@ function useDTO<T>(_dto: EntityDTO<T>): void {}
 
 bench('EntityDTO<Author> - simple', () => {
   useDTO<Author>({} as EntityDTO<Author>);
-}).types([1141, 'instantiations']);
+}).types([1178, 'instantiations']);
 
 bench('EntityDTO<Loaded<Author, "books">> - with loaded hint', () => {
   useDTO<Loaded<Author, 'books'>>({} as EntityDTO<Loaded<Author, 'books'>>);
-}).types([3881, 'instantiations']);
+}).types([3918, 'instantiations']);
