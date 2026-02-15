@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.6.7](https://github.com/mikro-orm/mikro-orm/compare/v6.6.6...v6.6.7) (2026-02-15)
+
+**Note:** Version bump only for package @mikro-orm/seeder
+
+
+
+
+
 ## [6.6.6](https://github.com/mikro-orm/mikro-orm/compare/v6.6.5...v6.6.6) (2026-01-30)
 
 **Note:** Version bump only for package @mikro-orm/seeder

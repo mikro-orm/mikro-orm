@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.6.7](https://github.com/mikro-orm/mikro-orm/compare/v6.6.6...v6.6.7) (2026-02-15)
+
+
+### Bug Fixes
+
+* **core:** ignore empty conditions produced by filters ([1ebbfb0](https://github.com/mikro-orm/mikro-orm/commit/1ebbfb0229b1ef3dfab918b1926c0e9e6034b1c2))
+* **schema:** do not ignore changes to entity level comments ([b421c9d](https://github.com/mikro-orm/mikro-orm/commit/b421c9d87e1b1486cd1583a2674f8f6646e88c3a)), closes [#7187](https://github.com/mikro-orm/mikro-orm/issues/7187)
+* **sql:** always alias virtual properties in where query ([2f7492d](https://github.com/mikro-orm/mikro-orm/commit/2f7492d0eb6a4274047d262b9363c0842bb7c09c)), closes [#7196](https://github.com/mikro-orm/mikro-orm/issues/7196)
+* **sql:** skip pagination subquery and force balanced strategy for virtual entities ([260a2e0](https://github.com/mikro-orm/mikro-orm/commit/260a2e02755cbfa2fdae2ed3ad50bf377abd66f9)), closes [#7195](https://github.com/mikro-orm/mikro-orm/issues/7195)
+
+
+### Features
+
+* **core:** add WHERE clause support to upsert via `onConflictWhere` option ([#7181](https://github.com/mikro-orm/mikro-orm/issues/7181)) ([9ed5ef5](https://github.com/mikro-orm/mikro-orm/commit/9ed5ef517d9efb914c6d29a623fe9408592626e9))
+
+
+
+
+
 ## [6.6.6](https://github.com/mikro-orm/mikro-orm/compare/v6.6.5...v6.6.6) (2026-01-30)
 
 

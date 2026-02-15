@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.6.7](https://github.com/mikro-orm/mikro-orm/compare/v6.6.6...v6.6.7) (2026-02-15)
+
+
+### Bug Fixes
+
+* **migrations:** support emitting multiline queries ([fcf360a](https://github.com/mikro-orm/mikro-orm/commit/fcf360aa7e4f6e453444d0a1d076d0d8139d57e6)), closes [#7185](https://github.com/mikro-orm/mikro-orm/issues/7185)
+
+
+
+
+
 ## [6.6.6](https://github.com/mikro-orm/mikro-orm/compare/v6.6.5...v6.6.6) (2026-01-30)
 
 **Note:** Version bump only for package @mikro-orm/migrations

@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.6.7](https://github.com/mikro-orm/mikro-orm/compare/v6.6.6...v6.6.7) (2026-02-15)
+
+
+### Bug Fixes
+
+* **core:** do not propagate cursor related options to populate queries ([e6b9a6a](https://github.com/mikro-orm/mikro-orm/commit/e6b9a6a22efc860f8cb123713ca67b8c0ab8a180)), closes [#7148](https://github.com/mikro-orm/mikro-orm/issues/7148)
+* guard prototype.toJSON against being called on prototype itself ([#7152](https://github.com/mikro-orm/mikro-orm/issues/7152)) ([fa5290e](https://github.com/mikro-orm/mikro-orm/commit/fa5290ed121b19b4c8e13d651e40b5aa5fba40bf)), closes [#7151](https://github.com/mikro-orm/mikro-orm/issues/7151)
+
+
+### Features
+
+* **core:** add WHERE clause support to upsert via `onConflictWhere` option ([#7181](https://github.com/mikro-orm/mikro-orm/issues/7181)) ([9ed5ef5](https://github.com/mikro-orm/mikro-orm/commit/9ed5ef517d9efb914c6d29a623fe9408592626e9))
+
+
+
+
+
 ## [6.6.6](https://github.com/mikro-orm/mikro-orm/compare/v6.6.5...v6.6.6) (2026-01-30)
 
 
