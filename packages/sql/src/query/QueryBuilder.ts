@@ -1522,7 +1522,7 @@ export class QueryBuilder<
       undefined,
       undefined,
       false,
-    ).process(this as IQueryBuilder<Entity>);
+    ).process(this as IQueryBuilder<Entity>, { type: 'having' });
 
     if (!this._having || !operator) {
       this._having = processed as FilterQuery<Entity>;

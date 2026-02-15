@@ -118,7 +118,7 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
       const operator = Utils.isOperator(field);
       const isRawField = RawQueryFragment.isKnownFragmentSymbol(field);
       // we need to keep the prefixing for formulas otherwise we would lose aliasing context when nesting inside group operators
-      const virtual = childNode.prop?.persist === false && !childNode.prop?.formula;
+      const virtual = childNode.prop?.persist === false && !childNode.prop?.formula && !!options?.type;
       // if key is missing, we are inside group operator and we need to prefix with alias
       const primaryKey = this.key && this.metadata.find(this.entityName)?.primaryKeys.includes(field as EntityKey);
       const isToOne = childNode.prop && [ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(childNode.prop.kind);

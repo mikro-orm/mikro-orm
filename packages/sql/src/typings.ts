@@ -232,7 +232,7 @@ export interface ICriteriaNodeProcessOptions {
   matchPopulateJoins?: boolean;
   ignoreBranching?: boolean;
   preferNoBranch?: boolean;
-  type?: 'orderBy'; // no type means it's a regular where query
+  type?: 'orderBy' | 'having'; // no type means it's a regular where query
   filter?: boolean; // use an inner join for given node
   parentPath?: string;
 }
