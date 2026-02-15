@@ -1616,7 +1616,7 @@ export class QueryBuilder<
       this.flags.add(QueryFlag.PAGINATE);
     }
 
-    if (meta && this.flags.has(QueryFlag.PAGINATE) && (this._limit! > 0 || this._offset! > 0)) {
+    if (meta && !meta.virtual && this.flags.has(QueryFlag.PAGINATE) && (this._limit! > 0 || this._offset! > 0)) {
       this.wrapPaginateSubQuery(meta);
     }
 

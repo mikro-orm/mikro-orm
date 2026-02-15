@@ -235,14 +235,14 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     return res as EntityData<T>[];
   }
 
-  protected async wrapVirtualExpressionInSubquery<T extends object>(meta: EntityMetadata<T>, expression: string, where: FilterQuery<T>, options: FindOptions<T, any>, type: QueryType): Promise<T[] | number> {
+  protected async wrapVirtualExpressionInSubquery<T extends object>(meta: EntityMetadata<T>, expression: string, where: FilterQuery<T>, options: FindOptions<T, any, any, any>, type: QueryType): Promise<T[] | number> {
     const qb = this.createQueryBuilder(meta.className, options?.ctx, options.connectionType, options.convertCustomTypes, options.logging)
       .indexHint(options.indexHint!)
       .comment(options.comments!)
       .hintComment(options.hintComments!);
 
     qb.where(where);
-
+    options = this.forceBalancedStrategy(options);
     const { first, last, before, after } = options as FindByCursorOptions<T>;
     const isCursorPagination = [first, last, before, after].some(v => v != null);
 
@@ -279,6 +279,28 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     }
 
     return res.map(row => this.mapResult(row, meta) as T);
+  }
+
+  /**
+   * Virtual entities have no PKs, so to-many populate joins can't be deduplicated.
+   * Force balanced strategy to load to-many relations via separate queries.
+   */
+  private forceBalancedStrategy<T extends object>(options: FindOptions<T, any, any, any>): FindOptions<T, any, any, any> {
+    const clearStrategy = (hints: PopulateOptions<any>[]): PopulateOptions<any>[] => {
+      return hints.map(hint => ({
+        ...hint,
+        strategy: undefined,
+        children: hint.children ? clearStrategy(hint.children) : undefined,
+      }));
+    };
+
+    const opts = { ...options, strategy: 'balanced' as const };
+
+    if (Array.isArray(opts.populate)) {
+      opts.populate = clearStrategy(opts.populate as PopulateOptions<any>[]) as any;
+    }
+
+    return opts;
   }
 
   override mapResult<T extends object>(result: EntityData<T>, meta: EntityMetadata<T>, populate: PopulateOptions<T>[] = [], qb?: QueryBuilder<T, any, any, any>, map: Dictionary = {}): EntityData<T> | null {
