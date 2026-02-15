@@ -341,7 +341,7 @@ export abstract class AbstractSqlDriver<
     options: FindOptions<T, any>,
     type: QueryType,
   ): Promise<T[] | number> {
-    const qb = await this.createQueryBuilderFromOptions(meta, where, options);
+    const qb = await this.createQueryBuilderFromOptions(meta, where, this.forceBalancedStrategy(options));
     qb.setFlag(QueryFlag.DISABLE_PAGINATE);
     const isCursorPagination = [options.first, options.last, options.before, options.after].some(v => v != null);
     const native = qb.getNativeQuery(false);
@@ -372,7 +372,7 @@ export abstract class AbstractSqlDriver<
     options: FindOptions<T, any, any, any>,
     type: QueryType.SELECT,
   ): AsyncIterableIterator<T> {
-    const qb = await this.createQueryBuilderFromOptions(meta, where, options);
+    const qb = await this.createQueryBuilderFromOptions(meta, where, this.forceBalancedStrategy(options));
     qb.unsetFlag(QueryFlag.DISABLE_PAGINATE);
     const native = qb.getNativeQuery(false);
     native.from(raw(`(${expression}) as ${this.platform.quoteIdentifier(qb.alias)}`));
@@ -384,6 +384,28 @@ export abstract class AbstractSqlDriver<
     for await (const row of res) {
       yield this.mapResult(row, meta) as T;
     }
+  }
+
+  /**
+   * Virtual entities have no PKs, so to-many populate joins can't be deduplicated.
+   * Force balanced strategy to load to-many relations via separate queries.
+   */
+  private forceBalancedStrategy<T extends object>(options: FindOptions<T, any, any, any>): FindOptions<T, any, any, any> {
+    const clearStrategy = (hints: PopulateOptions<any>[]): PopulateOptions<any>[] => {
+      return hints.map(hint => ({
+        ...hint,
+        strategy: undefined,
+        children: hint.children ? clearStrategy(hint.children) : undefined,
+      }));
+    };
+
+    const opts = { ...options, strategy: 'balanced' as const };
+
+    if (Array.isArray(opts.populate)) {
+      opts.populate = clearStrategy(opts.populate as PopulateOptions<any>[]) as any;
+    }
+
+    return opts;
   }
 
   override mapResult<T extends object>(
