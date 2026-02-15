@@ -635,7 +635,7 @@ export class QueryBuilder<
       cond = { [raw(`(${cond})`, params)]: [] };
     }
 
-    cond = CriteriaNodeFactory.createNode<Entity>(this.metadata, this.mainAlias.entityName, cond).process(this);
+    cond = CriteriaNodeFactory.createNode<Entity>(this.metadata, this.mainAlias.entityName, cond).process(this, { type: 'having' });
 
     if (!this._having || !operator) {
       this._having = cond as QBFilterQuery<Entity>;
