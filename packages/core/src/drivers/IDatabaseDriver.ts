@@ -1,6 +1,7 @@
 import type {
   ConnectionType, EntityData, EntityMetadata, EntityProperty, FilterQuery, Primary, Dictionary,
   IPrimaryKey, PopulateOptions, EntityDictionary, AutoPath, ObjectQuery, FilterObject, Populate, EntityName,
+  PopulateHintOptions, Prefixes,
 } from '../typings.js';
 import type { Connection, QueryResult, Transaction } from '../connections/Connection.js';
 import type { FlushMode, LockMode, QueryOrderMap, QueryFlag, LoadStrategy, PopulateHint, PopulatePath } from '../enums.js';
@@ -155,6 +156,9 @@ export interface FindOptions<
 
   /** Used for ordering of the populate queries. If not specified, the value of `options.orderBy` is used. */
   populateOrderBy?: OrderDefinition<Entity>;
+
+  /** Per-relation overrides for populate loading behavior. Keys are populate paths (same as used in `populate`). */
+  populateHints?: [Hint] extends [never] ? never : { [K in Prefixes<Hint>]?: PopulateHintOptions };
 
   /** Ordering of the results.Can be an object or array of objects, keys are property names, values are ordering (asc/desc) */
   orderBy?: OrderDefinition<Entity>;

@@ -58,6 +58,7 @@ import type {
   MergeLoaded,
   MergeSelected,
   ObjectQuery,
+  PopulateHintOptions,
   PopulateOptions,
   Primary,
   Ref,
@@ -83,7 +84,7 @@ import { TransactionEventBroadcaster } from './events/TransactionEventBroadcaste
 import type { EntityComparator } from './utils/EntityComparator.js';
 import { OptimisticLockError, ValidationError } from './errors.js';
 import type { CacheAdapter } from './cache/CacheAdapter.js';
-import { getLoadingStrategy } from './entity/utils.js';
+import { applyPopulateHints, getLoadingStrategy } from './entity/utils.js';
 import { TransactionManager } from './utils/TransactionManager.js';
 
 /**
@@ -2165,7 +2166,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
   }
 
   /** @internal */
-  async preparePopulate<Entity extends object>(entityName: EntityName<Entity>, options: Pick<FindOptions<Entity, any, any, any>, 'populate' | 'strategy' | 'fields' | 'flags' | 'filters' | 'exclude'>, validate = true): Promise<PopulateOptions<Entity>[]> {
+  async preparePopulate<Entity extends object>(entityName: EntityName<Entity>, options: Pick<FindOptions<Entity, any, any, any>, 'populate' | 'strategy' | 'fields' | 'flags' | 'filters' | 'exclude' | 'populateHints'>, validate = true): Promise<PopulateOptions<Entity>[]> {
     if (options.populate === false) {
       return [];
     }
@@ -2257,13 +2258,17 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
 
     await this.autoJoinRefsForFilters(meta, { ...options, populate });
 
-    return populate.map(field => {
+    for (const field of populate) {
       // force select-in strategy when populating all relations as otherwise we could cause infinite loops when self-referencing
       const all = field.all ?? (Array.isArray(options.populate) && options.populate.includes('*'));
       field.strategy = all ? LoadStrategy.SELECT_IN : (options.strategy ?? field.strategy) as LoadStrategy;
+    }
 
-      return field;
-    });
+    if (options.populateHints) {
+      applyPopulateHints(populate, options.populateHints as Record<string, PopulateHintOptions>);
+    }
+
+    return populate;
   }
 
   /**

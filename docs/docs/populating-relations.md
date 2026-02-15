@@ -122,6 +122,18 @@ A value provided on a specific query overrides whatever default is specified glo
 
 The way that MikroORM fetches the data based on populate hint is also configurable. By default, MikroORM uses a "select in" strategy which runs one separate query for each level of a populate. If you're using an SQL database you can also ask MikroORM to use a join for all tables involved in the populate and run it as a single query. This is again configurable globally or per query.
 
+You can also use `populateHints` to override the strategy or join type for individual relations:
+
+```ts
+const tags = await em.find(BookTag, {}, {
+  populate: ['books.author'],
+  strategy: 'joined',
+  populateHints: {
+    'books.author': { strategy: 'select-in' },
+  },
+});
+```
+
 For more information see the [Loading Strategies section](./loading-strategies.md).
 
 ## Populating already loaded entities
