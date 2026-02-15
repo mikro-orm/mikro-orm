@@ -1,4 +1,4 @@
-import type { EntityKey, EntityMetadata, EntityProperty, PopulateOptions } from '../typings.js';
+import type { EntityKey, EntityMetadata, EntityProperty, PopulateHintOptions, PopulateOptions } from '../typings.js';
 import { LoadStrategy, PopulatePath, ReferenceKind } from '../enums.js';
 import { Utils } from '../utils/Utils.js';
 
@@ -76,4 +76,50 @@ export function getLoadingStrategy(strategy: LoadStrategy | `${LoadStrategy}`, k
   }
 
   return strategy as LoadStrategy.SELECT_IN | LoadStrategy.JOINED;
+}
+
+/**
+ * Applies per-relation overrides from `populateHints` to the normalized populate tree.
+ * @internal
+ */
+export function applyPopulateHints<Entity>(
+  populate: PopulateOptions<Entity>[],
+  hints: Record<string, PopulateHintOptions>,
+): void {
+  for (const [path, hint] of Object.entries(hints)) {
+    const entry = findPopulateEntry(populate, path.split('.'));
+
+    if (!entry) {
+      continue;
+    }
+
+    if (hint.strategy != null) {
+      entry.strategy = hint.strategy as LoadStrategy;
+    }
+
+    if (hint.joinType != null) {
+      entry.joinType = hint.joinType;
+    }
+  }
+}
+
+function findPopulateEntry<Entity>(populate: PopulateOptions<Entity>[], parts: string[]): PopulateOptions<Entity> | undefined {
+  let current = populate;
+
+  for (let i = 0; i < parts.length; i++) {
+    const entry = current.find(p => (p.field as string).split(':')[0] === parts[i]);
+
+    if (!entry) {
+      return undefined;
+    }
+
+    if (i === parts.length - 1) {
+      return entry;
+    }
+
+    current = (entry.children ?? []) as PopulateOptions<Entity>[];
+  }
+
+  /* v8 ignore next */
+  return undefined;
 }

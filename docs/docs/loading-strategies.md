@@ -112,6 +112,50 @@ MikroORM.init({
 
 This value will be used as the default, specifying the loading strategy on property level has precedence, as well as specifying it in the `FindOptions`.
 
+## Per-relation populate overrides
+
+While the `strategy` option applies to all populated relations, you can use `populateHints` to override the loading strategy or join type for individual relations. The keys are the same dot-separated paths used in the `populate` option, and they support autocomplete.
+
+```ts
+const author = await orm.em.findOne(Author, 1, {
+  populate: ['books.inspiredBy'],
+  strategy: 'joined',
+  populateHints: {
+    'books.inspiredBy': { strategy: 'select-in' },
+  },
+});
+```
+
+This will load books via a join, but use a separate `select-in` query for the `inspiredBy` relation.
+
+You can also override the join type. For example, a non-nullable `ManyToOne` relation defaults to `inner join` with the `joined` strategy. You can force a `left join` instead:
+
+```ts
+const books = await orm.em.find(Book, {}, {
+  populate: ['author'],
+  strategy: 'joined',
+  populateHints: {
+    author: { joinType: 'left join' },
+  },
+});
+```
+
+Both `strategy` and `joinType` can be combined in a single hint, and you can provide hints for multiple relations at once:
+
+```ts
+const author = await orm.em.findOne(Author, 1, {
+  populate: ['books.inspiredBy', 'favouriteBook'],
+  strategy: 'joined',
+  populateHints: {
+    books: { joinType: 'inner join' },
+    'books.inspiredBy': { strategy: 'select-in' },
+    favouriteBook: { joinType: 'left join' },
+  },
+});
+```
+
+Hints for paths that don't match any populate entry are silently ignored.
+
 ## Population `where` condition
 
 The where condition is by default applied only to the root entity. This can be controlled via `populateWhere` option. It accepts one of `all` (default), `infer` (use same condition as the `where` query) or an explicit filter query.

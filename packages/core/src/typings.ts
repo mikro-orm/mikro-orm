@@ -199,7 +199,7 @@ declare const __loadHint: unique symbol;
  * This reflects that loading 'a.b.c' means 'a' and 'a.b' are also loaded.
  * Special case: '*' returns string to ensure Loaded<T, '*'> is assignable to any Loaded<T, Hint>.
  */
-type Prefixes<S extends string> = S extends '*'
+export type Prefixes<S extends string> = S extends '*'
   ? string
   : S extends `${infer H}.${infer T}`
     ? H | `${H}.${Prefixes<T>}`
@@ -1380,6 +1380,11 @@ export type PopulateOptions<T> = {
   children?: PopulateOptions<T[keyof T]>[];
   /** When true, ignores `mapToPk` on the property and returns full entity data instead of just PKs. */
   dataOnly?: boolean;
+};
+
+export type PopulateHintOptions = {
+  strategy?: LoadStrategy.JOINED | LoadStrategy.SELECT_IN | 'joined' | 'select-in';
+  joinType?: 'inner join' | 'left join';
 };
 
 type ExtractType<T> =

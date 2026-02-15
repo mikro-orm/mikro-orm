@@ -21,6 +21,7 @@ import type {
   FilterValue,
   Loaded,
   OperatorMap,
+  Prefixes,
   Primary,
   PrimaryKeyProp,
   ExpandQuery,
@@ -1233,6 +1234,45 @@ describe('check typings', () => {
     if (false as boolean) {
       // Should not error - discriminated union with `data: unknown` in base
       em.create(messageSchema, msg);
+    }
+  });
+
+  test('Prefixes type expands dot paths to all prefixes', async () => {
+    assert<IsExact<Prefixes<'a.b.c'>, 'a' | 'a.b' | 'a.b.c'>>(true);
+    assert<IsExact<Prefixes<'a'>, 'a'>>(true);
+    assert<IsExact<Prefixes<'*'>, string>>(true);
+  });
+
+  test('populateHints keys are constrained to populate paths', async () => {
+    const em = {} as EntityManager;
+    if (false as boolean) {
+      // Valid: keys match populate paths and their prefixes
+      await em.find({} as Constructor<Author2>, {}, {
+        populate: ['books.tags', 'favouriteBook'],
+        populateHints: {
+          books: { joinType: 'left join' },
+          'books.tags': { strategy: 'select-in' },
+          favouriteBook: { joinType: 'inner join' },
+        },
+      });
+
+      // Valid: intermediate prefix path
+      await em.find({} as Constructor<Author2>, {}, {
+        populate: ['books.tags'],
+        populateHints: {
+          books: { strategy: 'joined' },
+        },
+      });
+
+      const invalidHints = { nonexistent: { joinType: 'left join' as const } };
+      // @ts-expect-error - 'nonexistent' is not a valid populate path
+      await em.find({} as Constructor<Author2>, {}, { populate: ['books'], populateHints: invalidHints });
+
+      // @ts-expect-error - populateHints not allowed without populate
+      await em.find({} as Constructor<Author2>, {}, { populateHints: { books: { joinType: 'left join' } } });
+
+      // @ts-expect-error - populateHints not allowed with empty populate
+      await em.find({} as Constructor<Author2>, {}, { populate: [], populateHints: { books: { joinType: 'left join' } } });
     }
   });
 });
