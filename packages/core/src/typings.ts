@@ -1382,7 +1382,6 @@ export type PopulateOptions<T> = {
   dataOnly?: boolean;
 };
 
-type Loadable<T extends object> = Collection<T, any> | Reference<T> | Ref<T> | readonly T[]; // we need to support raw arrays in embeddables too to allow population
 type ExtractType<T> =
   T extends CollectionShape<infer U> ? U :
   T extends ReferenceShape<infer U> ? U :
@@ -1402,17 +1401,6 @@ type GetStringKey<T, K extends StringKeys<T, string>, E extends string> = K exte
 
 // limit depth of the recursion to 5 (inspired by https://www.angularfix.com/2022/01/why-am-i-getting-instantiation-is.html)
 type Prev = [never, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
-
-// for pivot joining via populate hint, e.g. `tags:ref`
-type CollectionKeys<T> = T extends object
-  ? {
-    [K in keyof T]-?: T[K] extends CollectionShape
-      ? IsAny<T[K]> extends true
-        ? never
-        : K & string
-      : never
-  }[keyof T] & {}
-  : never;
 
 // all relation keys (collections + to-one) - uses CleanKeys with scalar exclusion for efficiency
 type RelationKeys<T> = T extends object
