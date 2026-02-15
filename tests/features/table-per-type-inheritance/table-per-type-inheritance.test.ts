@@ -421,7 +421,7 @@ describe('TPT (Table-Per-Type) Inheritance', () => {
       });
 
       expect(loaded.integration?.unwrap()).toBeInstanceOf(FooIntegration);
-      expect((loaded.integration?.unwrap() as FooIntegration).fooData).toBe('data');
+      expect((loaded.integration?.unwrap() as FooIntegration)?.fooData).toBe('data');
     });
 
     test('collection of TPT entities', async () => {
@@ -1253,11 +1253,11 @@ describe('TPT loading strategies', () => {
 
     expect(people[0].name).toBe('Alice');
     expect(people[0].pet?.unwrap()).toBeInstanceOf(Dog);
-    expect((people[0].pet?.unwrap() as Dog).breed).toBe('Labrador');
+    expect((people[0].pet?.unwrap() as Dog)?.breed).toBe('Labrador');
 
     expect(people[1].name).toBe('Bob');
     expect(people[1].pet?.unwrap()).toBeInstanceOf(Cat);
-    expect((people[1].pet?.unwrap() as Cat).color).toBe('Orange');
+    expect((people[1].pet?.unwrap() as Cat)?.color).toBe('Orange');
 
     // Should use a single SELECT with JOINs
     expect(mock.mock.calls.filter(c => c[0].includes('select'))).toHaveLength(1);
@@ -1333,9 +1333,9 @@ describe('TPT loading strategies', () => {
 
     expect(people).toHaveLength(2);
     expect(people[0].pet?.unwrap()).toBeInstanceOf(Dog);
-    expect((people[0].pet?.unwrap() as Dog).breed).toBe('Poodle');
+    expect((people[0].pet?.unwrap() as Dog)?.breed).toBe('Poodle');
     expect(people[1].pet?.unwrap()).toBeInstanceOf(Cat);
-    expect((people[1].pet?.unwrap() as Cat).color).toBe('Black');
+    expect((people[1].pet?.unwrap() as Cat)?.color).toBe('Black');
 
     // SELECT_IN uses multiple queries
     expect(mock.mock.calls.filter(c => c[0].includes('select')).length).toBeGreaterThan(1);
