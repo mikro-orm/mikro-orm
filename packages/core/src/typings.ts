@@ -354,7 +354,7 @@ export interface IWrappedEntity<Entity extends object> {
     Naked extends FromEntityType<Entity> = FromEntityType<Entity>,
     Hint extends string = never,
     Exclude extends string = never,
-  >(options?: SerializeOptions<Naked, Hint, Exclude>): EntityDTO<Loaded<Naked, Hint>>;
+  >(options?: SerializeOptions<Naked, Hint, Exclude>): SerializeDTO<Naked, Hint, Exclude>;
   setSerializationContext<
     Hint extends string = never,
     Fields extends string = '*',
@@ -551,26 +551,28 @@ type PrimaryOrObject<T, U, C extends TypeConfig> =
     ? { [K in PrimaryProperty<U> & keyof U]: U[K] }
     : Primary<U>;
 
-export type EntityDTOProp<E, T, C extends TypeConfig = never> = T extends Scalar
+type DTOWrapper<T, C extends TypeConfig, Flat extends boolean> = Flat extends true ? EntityDTOFlat<T, C> : EntityDTO<T, C>;
+
+export type EntityDTOProp<E, T, C extends TypeConfig = never, Flat extends boolean = false> = T extends Scalar
   ? T
   : T extends ScalarReference<infer U>
     ? U
     : T extends { __serialized?: infer U }
       ? (IsUnknown<U> extends false ? U : T)
       : T extends LoadedReferenceShape<infer U>
-        ? EntityDTO<U, C>
+        ? DTOWrapper<U, C, Flat>
         : T extends ReferenceShape<infer U>
           ? PrimaryOrObject<E, U, C>
           : T extends LoadedCollectionShape<infer U>
-            ? EntityDTO<U & object, C>[]
+            ? DTOWrapper<U & object, C, Flat>[]
             : T extends CollectionShape<infer U>
               ? PrimaryOrObject<E, U & object, C>[]
               : T extends readonly (infer U)[]
                 ? U extends Scalar
                   ? T
-                  : EntityDTOProp<E, U, C>[]
+                  : EntityDTOProp<E, U, C, Flat>[]
                 : T extends Relation<T>
-                  ? EntityDTO<T, C>
+                  ? DTOWrapper<T, C, Flat>
                   : T;
 
 // ideally this should also mark not populated collections as optional, but that would be breaking
@@ -592,6 +594,37 @@ export type EntityDTO<T, C extends TypeConfig = never> = {
 } & {
   [K in keyof T as DTOOptionalKeys<T, K>]?: EntityDTOProp<T, T[K], C> | AddOptional<T[K]>
 };
+
+/**
+ * @internal
+ * 1-pass variant of EntityDTO — ~2x cheaper to resolve but all keys are required
+ * (optional keys use `| undefined` in value type instead of `?` modifier).
+ * Use only for internal type computations (output types), never as a user-facing
+ * function parameter type where generic assignability checks are needed.
+ */
+export type EntityDTOFlat<T, C extends TypeConfig = never> = {
+  [K in keyof T as ExcludeHidden<T, K> & CleanKeys<T, K>]: EntityDTOProp<T, T[K], C, true> | AddOptional<T[K]>
+};
+
+/**
+ * @internal
+ * Single-pass fused type that combines Loaded + EntityDTO into one mapped type.
+ * ~40x faster than `EntityDTO<Loaded<T, H>>` for populated entities.
+ */
+type SerializeTopHints<H extends string> = H extends `${infer Top}.${string}` ? Top : H;
+type SerializeSubHints<K extends string, H extends string> = H extends `${K}.${infer Rest}` ? Rest : never;
+type SerializePropValue<T, K extends keyof T, H extends string, C extends TypeConfig = never> =
+  (K & string) extends SerializeTopHints<H>
+    ? NonNullable<T[K]> extends CollectionShape<infer U>
+      ? SerializeDTO<U & object, SerializeSubHints<K & string, H>, never, C>[]
+      : SerializeDTO<ExpandProperty<T[K]>, SerializeSubHints<K & string, H>, never, C>
+        | Extract<T[K], null | undefined>
+    : EntityDTOProp<T, T[K], C>;
+
+export type SerializeDTO<T, H extends string = never, E extends string = never, C extends TypeConfig = never> =
+  string extends H
+    ? EntityDTOFlat<T, C>
+    : { [K in keyof T as ExcludeHidden<T, K> & CleanKeys<T, K> & (IsNever<E> extends true ? K : Exclude<K, E>)]: SerializePropValue<T, K, H, C> | Extract<T[K], null | undefined> };
 
 type TargetKeys<T> = T extends EntityClass<infer P> ? keyof P : keyof T;
 type PropertyName<T> = IsUnknown<T> extends false ? TargetKeys<T> : string;
@@ -1536,9 +1569,8 @@ export type AddEager<T> = ExtractEagerProps<T> & string;
 export type ExpandHint<T, L extends string> = L | AddEager<T>;
 
 export type Selected<T, L extends string = never, F extends string = '*'> = {
-  [K in keyof T as IsPrefixed<T, K, L | F | AddEager<T>>]: LoadedProp<NonNullable<T[K]>, Suffix<K, L, true>, Suffix<K, F, true>> | AddOptional<T[K]>;
-} & {
-  [K in keyof T as FunctionKeys<T, K>]: T[K];
+  [K in keyof T as IsPrefixed<T, K, L | F | AddEager<T>> | FunctionKeys<T, K>]:
+    T[K] extends Function ? T[K] : LoadedProp<NonNullable<T[K]>, Suffix<K, L, true>, Suffix<K, F, true>> | AddOptional<T[K]>;
 } & { [__selectedType]?: T };
 
 type LoadedEntityType<T> = { [__loadedType]?: T } | { [__selectedType]?: T };

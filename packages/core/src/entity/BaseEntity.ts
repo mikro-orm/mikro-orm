@@ -1,5 +1,5 @@
 import { Reference, type Ref } from './Reference.js';
-import type { AutoPath, EntityData, EntityDTO, Loaded, LoadedReference, AddEager, EntityKey, FromEntityType, IsSubset, MergeSelected } from '../typings.js';
+import type { AutoPath, EntityData, EntityDTO, Loaded, LoadedReference, AddEager, EntityKey, FromEntityType, IsSubset, MergeSelected, SerializeDTO } from '../typings.js';
 import { EntityAssigner, type AssignOptions } from './EntityAssigner.js';
 import type { EntityLoaderOptions } from './EntityLoader.js';
 import { EntitySerializer, type SerializeOptions } from '../serialization/EntitySerializer.js';
@@ -102,7 +102,7 @@ export abstract class BaseEntity {
     Naked extends FromEntityType<Entity> = FromEntityType<Entity>,
     Hint extends string = never,
     Exclude extends string = never,
-  >(options?: SerializeOptions<Naked, Hint, Exclude>): EntityDTO<Loaded<Naked, Hint>> {
+  >(options?: SerializeOptions<Naked, Hint, Exclude>): SerializeDTO<Naked, Hint, Exclude> {
     return EntitySerializer.serialize(this as unknown as Naked, options);
   }
 

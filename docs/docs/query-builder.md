@@ -84,6 +84,29 @@ const rows = await em.createQueryBuilder(Author, 'a')
 // Returns flat array with duplicated author data per book
 ```
 
+### Typed Raw Results
+
+The return type of `execute()` is based on `EntityDTO` — plain objects with Collections unwrapped to arrays and References unwrapped to their target types. When you use `select()` or `joinAndSelect()`, the return type automatically reflects which fields and relations were selected:
+
+```ts
+// Without joins: Pick<EntityDTO<Author>, 'id' | 'email'>[]
+const result1 = await em.createQueryBuilder(Author, 'a')
+  .select(['a.id', 'a.email'])
+  .execute();
+
+// With joins: EntityDTO<Loaded<Author, 'books', 'id' | 'email' | 'books.title'>>[]
+const result2 = await em.createQueryBuilder(Author, 'a')
+  .select(['a.id', 'a.email'])
+  .leftJoinAndSelect('a.books', 'b', {}, ['title'])
+  .execute();
+```
+
+If you need to opt out of the inferred type (e.g. when using `mapResults: false` which returns raw column names instead of property names), you can provide an explicit type parameter:
+
+```ts
+const result = await qb.execute<Dictionary[]>('all', false);
+```
+
 ### Getting Entity Instances
 
 To get fully hydrated entity instances (tracked by the identity map), use `getResult()` or `getSingleResult()`:

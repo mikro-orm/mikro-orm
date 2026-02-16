@@ -6,7 +6,7 @@ export { EntityMetadata, PrimaryKeyProp, EntityRepositoryType, OptionalProps, Ea
 export type {
   CompiledFunctions, Constructor, ConnectionType, Dictionary, Primary, IPrimaryKey, ObjectQuery, FilterQuery, IWrappedEntity, InferEntityName, EntityData, Highlighter, MaybePromise,
   AnyEntity, EntityClass, EntityProperty, PopulateOptions, Populate, Loaded, New, LoadedReference, LoadedCollection, IMigrator, IMigrationGenerator, MigratorEvent,
-  GetRepository, MigrationObject, DeepPartial, PrimaryProperty, Cast, IsUnknown, EntityDictionary, EntityDTO, MigrationDiff, GenerateOptions, FilterObject,
+  GetRepository, MigrationObject, DeepPartial, PrimaryProperty, Cast, IsUnknown, EntityDictionary, EntityDTO, EntityDTOFlat, EntityDTOProp, SerializeDTO, MigrationDiff, GenerateOptions, FilterObject,
   IEntityGenerator, ISeedManager, RequiredEntityData, CheckCallback, IndexCallback, FormulaCallback, FormulaTable, SchemaTable, SchemaColumns, SimpleColumnMeta, Rel, Ref, ScalarRef, EntityRef, ISchemaGenerator,
   UmzugMigration, MigrateOptions, MigrationResult, MigrationRow, EntityKey, EntityValue, EntityDataValue, FilterKey, EntityType, FromEntityType, Selected, IsSubset,
   EntityProps, ExpandProperty, ExpandScalar, FilterItemValue, ExpandQuery, Scalar, ExpandHint, FilterValue, MergeLoaded, MergeSelected, TypeConfig, AnyString,
