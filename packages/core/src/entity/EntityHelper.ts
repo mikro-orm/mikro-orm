@@ -6,6 +6,7 @@ import {
   type EntityKey,
   type EntityMetadata,
   type EntityProperty,
+  EntityName,
   EntityRepositoryType,
   type EntityValue,
   HiddenProps,
@@ -162,7 +163,7 @@ export class EntityHelper {
       }
 
       // ensure we dont have internal symbols in the POJO
-      [OptionalProps, EntityRepositoryType, PrimaryKeyProp, EagerProps, HiddenProps].forEach(sym => delete object[sym]);
+      [OptionalProps, EntityRepositoryType, PrimaryKeyProp, EagerProps, HiddenProps, EntityName].forEach(sym => delete object[sym]);
       meta.props
         .filter(prop => object[prop.name] === undefined)
         .forEach(prop => delete object[prop.name]);

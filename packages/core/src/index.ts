@@ -2,9 +2,9 @@
  * @packageDocumentation
  * @module core
  */
-export { EntityMetadata, PrimaryKeyProp, EntityRepositoryType, OptionalProps, EagerProps, HiddenProps, Config } from './typings.js';
+export { EntityMetadata, PrimaryKeyProp, EntityRepositoryType, OptionalProps, EagerProps, HiddenProps, Config, EntityName } from './typings.js';
 export type {
-  CompiledFunctions, Constructor, ConnectionType, Dictionary, Primary, IPrimaryKey, ObjectQuery, FilterQuery, IWrappedEntity, EntityName, EntityData, Highlighter, MaybePromise,
+  CompiledFunctions, Constructor, ConnectionType, Dictionary, Primary, IPrimaryKey, ObjectQuery, FilterQuery, IWrappedEntity, InferEntityName, EntityData, Highlighter, MaybePromise,
   AnyEntity, EntityClass, EntityProperty, PopulateOptions, Populate, Loaded, New, LoadedReference, LoadedCollection, IMigrator, IMigrationGenerator, MigratorEvent,
   GetRepository, MigrationObject, DeepPartial, PrimaryProperty, Cast, IsUnknown, EntityDictionary, EntityDTO, MigrationDiff, GenerateOptions, FilterObject,
   IEntityGenerator, ISeedManager, RequiredEntityData, CheckCallback, IndexCallback, FormulaCallback, FormulaTable, SchemaTable, SchemaColumns, SimpleColumnMeta, Rel, Ref, ScalarRef, EntityRef, ISchemaGenerator,

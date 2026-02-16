@@ -17,7 +17,7 @@ import type { NativeQueryBuilder } from './query/NativeQueryBuilder.js';
 import type { QueryBuilder } from './query/QueryBuilder.js';
 import type { SqlEntityRepository } from './SqlEntityRepository.js';
 import type { Kysely } from 'kysely';
-import type { InferKyselyDB } from './typings.js';
+import type { InferClassEntityDB, InferKyselyDB } from './typings.js';
 import { MikroKyselyPlugin, type MikroKyselyPluginOptions } from './plugin/index.js';
 
 export interface GetKyselyOptions extends MikroKyselyPluginOptions {
@@ -50,7 +50,7 @@ export class SqlEntityManager<Driver extends AbstractSqlDriver = AbstractSqlDriv
   getKysely<
     TDB = undefined,
     TOptions extends GetKyselyOptions = GetKyselyOptions,
-  >(options: TOptions = {} as TOptions): Kysely<TDB extends undefined ? InferKyselyDB<EntitiesFromManager<this>, TOptions> : TDB> {
+  >(options: TOptions = {} as TOptions): Kysely<TDB extends undefined ? InferKyselyDB<EntitiesFromManager<this>, TOptions> & InferClassEntityDB<AllEntitiesFromManager<this>, TOptions> : TDB> {
     let kysely = this.getConnection(options.type).getClient();
     if (options.columnNamingStrategy != null
          || options.tableNamingStrategy != null
@@ -87,4 +87,9 @@ export class SqlEntityManager<Driver extends AbstractSqlDriver = AbstractSqlDriv
 type EntitiesFromManager<TEntityManager extends EntityManager<any>> =
   NonNullable<TEntityManager['~entities']> extends any[]
     ? (Extract<NonNullable<TEntityManager['~entities']>[number], EntitySchemaWithMeta>)
+    : never;
+
+type AllEntitiesFromManager<TEntityManager extends EntityManager<any>> =
+  NonNullable<TEntityManager['~entities']> extends any[]
+    ? NonNullable<TEntityManager['~entities']>[number]
     : never;

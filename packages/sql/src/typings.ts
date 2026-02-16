@@ -9,12 +9,14 @@ import type {
   FilterQuery,
   GroupOperator,
   IndexColumnOptions,
+  InferEntityName,
   Opt,
   Primary,
   PrimaryProperty,
   QueryFlag,
   QueryOrderMap,
   RawQueryFragment,
+  Scalar,
   Type,
 } from '@mikro-orm/core';
 import type { JoinType, QueryType } from './query/enums.js';
@@ -367,3 +369,27 @@ type MaybeNever<TValue, TOptions> = TOptions extends { persist: false } | { kind
 type ExcludeNever<TMap extends Record<string, any>> = {
   [K in keyof TMap as TMap[K] extends never ? never : K]: TMap[K];
 };
+
+export type InferClassEntityDB<TEntities, TOptions extends MikroKyselyPluginOptions = {}> =
+  ClassEntityDBMap<TEntities, TOptions> extends infer R
+    ? [keyof R] extends [never] ? unknown : R
+    : never;
+
+type ClassEntityDBMap<TEntities, TOptions extends MikroKyselyPluginOptions = {}> = {
+  [T in TEntities as ClassEntityTableName<T, TOptions>]: ClassEntityColumns<T>;
+};
+
+type ClassEntityTableName<T, TOptions extends MikroKyselyPluginOptions = {}> =
+  T extends abstract new (...args: any[]) => infer Instance
+    ? TransformName<InferEntityName<Instance>, TOptions['tableNamingStrategy'] extends 'entity' ? 'entity' : 'underscore'>
+    : never;
+
+type ClassEntityColumns<T> = T extends abstract new (...args: any[]) => infer Instance
+  ? { [K in keyof Instance as IsClassEntityColumn<K, Instance[K]>]: Instance[K] }
+  : never;
+
+type IsClassEntityColumn<K, V> = K extends symbol
+  ? never
+  : NonNullable<V> extends Scalar
+    ? K
+    : never;
