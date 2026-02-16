@@ -1516,8 +1516,9 @@ export type IsPrefixed<T, K extends keyof T, L extends string, E extends string 
         ? (T[K] & {} extends LoadableShape ? K : never)
         : IsNever<StringLiteral<L>> extends true
           ? never
-          // Fast path: '*' means all keys, skip the expensive Prefix computation
-          : L extends '*'
+          // Non-distributing fast path: if '*' is anywhere in the L union,
+          // all keys are included — skip the expensive Prefix/PrimaryProperty checks
+          : '*' extends L
             ? K
             : K extends Prefix<T, L>
               ? K
@@ -1570,7 +1571,9 @@ export type ExpandHint<T, L extends string> = L | AddEager<T>;
 
 export type Selected<T, L extends string = never, F extends string = '*'> = {
   [K in keyof T as IsPrefixed<T, K, L | F | AddEager<T>> | FunctionKeys<T, K>]:
-    T[K] extends Function ? T[K] : LoadedProp<NonNullable<T[K]>, Suffix<K, L, true>, Suffix<K, F, true>> | AddOptional<T[K]>;
+    T[K] extends Function ? T[K]
+      : NonNullable<T[K]> extends Scalar ? T[K]
+      : LoadedProp<NonNullable<T[K]>, Suffix<K, L, true>, Suffix<K, F, true>> | AddOptional<T[K]>;
 } & { [__selectedType]?: T };
 
 type LoadedEntityType<T> = { [__loadedType]?: T } | { [__selectedType]?: T };
