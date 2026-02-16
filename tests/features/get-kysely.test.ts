@@ -1,6 +1,5 @@
-import { defineEntity, p, PrimaryKeyProp } from '@mikro-orm/core';
-import { InferDBFromKysely, InferKyselyDB, InferKyselyTable, MikroKyselyPluginOptions } from '@mikro-orm/sql';
-import { MikroORM } from '@mikro-orm/sqlite';
+import { defineEntity, p, PrimaryKeyProp, EntityName, Collection, Opt, MikroORM, InferClassEntityDB, InferDBFromKysely, InferKyselyDB, InferKyselyTable, MikroKyselyPluginOptions } from '@mikro-orm/sqlite';
+import { Entity, PrimaryKey, Property, ManyToOne, OneToMany, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 describe('InferKyselyDB', () => {
   test('infer table and column', async () => {
@@ -525,6 +524,160 @@ describe('InferKyselyDB', () => {
     expectTypeOf<ManualDB['comment']>().toEqualTypeOf<ManualCommentTable>();
 
     expectTypeOf<AutoInferredDB>().toEqualTypeOf<ManualDatabase>();
+  });
+});
+
+describe('InferClassEntityDB', () => {
+  @Entity()
+  class Author {
+
+    [EntityName]?: 'Author';
+
+    @PrimaryKey()
+    id!: number;
+
+    @Property()
+    firstName!: string;
+
+    @Property()
+    email!: string;
+
+    @OneToMany(() => Post, post => post.author)
+    posts = new Collection<Post>(this);
+
+  }
+
+  @Entity()
+  class Post {
+
+    [EntityName]?: 'Post';
+
+    @PrimaryKey()
+    id!: number;
+
+    @Property()
+    title!: string;
+
+    @Property()
+    createdAt: Date & Opt = new Date();
+
+    @ManyToOne(() => Author)
+    author!: Author;
+
+  }
+
+  test('infer decorator entity types via getKysely', async () => {
+    const orm = await MikroORM.init({
+      entities: [Author, Post],
+      dbName: ':memory:',
+      metadataProvider: ReflectMetadataProvider,
+    });
+
+    await orm.schema.create();
+
+    const kysely = orm.em.getKysely({
+      columnNamingStrategy: 'property',
+    });
+    type DB = InferDBFromKysely<typeof kysely>;
+
+    // table names are snake_cased from entity names
+    expectTypeOf<DB>().toHaveProperty('author');
+    expectTypeOf<DB>().toHaveProperty('post');
+
+    // author columns: id, firstName, email (collection excluded)
+    expectTypeOf<DB['author']>().toHaveProperty('id');
+    expectTypeOf<DB['author']>().toHaveProperty('firstName');
+    expectTypeOf<DB['author']>().toHaveProperty('email');
+    expectTypeOf<DB['author']['id']>().toEqualTypeOf<number>();
+    expectTypeOf<DB['author']['firstName']>().toEqualTypeOf<string>();
+
+    // post columns: id, title, createdAt (entity reference and collection excluded)
+    expectTypeOf<DB['post']>().toHaveProperty('id');
+    expectTypeOf<DB['post']>().toHaveProperty('title');
+    expectTypeOf<DB['post']>().toHaveProperty('createdAt');
+
+    // runtime: insert and select using property names
+    await kysely
+      .insertInto('author')
+      .values({ id: 1, firstName: 'John', email: 'john@example.com' })
+      .execute();
+
+    const authors = await kysely
+      .selectFrom('author')
+      .select(['id', 'firstName', 'email'])
+      .execute();
+
+    expect(authors).toEqual([{ id: 1, firstName: 'John', email: 'john@example.com' }]);
+
+    await orm.close();
+  });
+
+  test('infer decorator entity with tableNamingStrategy: entity', async () => {
+    const orm = await MikroORM.init({
+      entities: [Author, Post],
+      dbName: ':memory:',
+      metadataProvider: ReflectMetadataProvider,
+    });
+
+    await orm.schema.create();
+
+    const kysely = orm.em.getKysely({
+      tableNamingStrategy: 'entity',
+      columnNamingStrategy: 'property',
+    });
+    type DB = InferDBFromKysely<typeof kysely>;
+
+    // with entity naming strategy, table names match entity names
+    expectTypeOf<DB>().toHaveProperty('Author');
+    expectTypeOf<DB>().toHaveProperty('Post');
+
+    // runtime: insert and select using entity/property names
+    await kysely
+      .insertInto('Author')
+      .values({ id: 1, firstName: 'Jane', email: 'jane@example.com' })
+      .execute();
+
+    const authors = await kysely
+      .selectFrom('Author')
+      .select(['firstName', 'email'])
+      .execute();
+
+    expect(authors).toEqual([{ firstName: 'Jane', email: 'jane@example.com' }]);
+
+    await orm.close();
+  });
+
+  test('InferClassEntityDB type utility', () => {
+    type DB = InferClassEntityDB<typeof Author | typeof Post>;
+
+    expectTypeOf<DB>().toHaveProperty('author');
+    expectTypeOf<DB>().toHaveProperty('post');
+    expectTypeOf<DB['author']['id']>().toEqualTypeOf<number>();
+    expectTypeOf<DB['author']['firstName']>().toEqualTypeOf<string>();
+    expectTypeOf<DB['post']['title']>().toEqualTypeOf<string>();
+
+    // collections and entity references are excluded
+    type AuthorKeys = keyof DB['author'];
+    expectTypeOf<'posts'>().not.toMatchTypeOf<AuthorKeys>();
+    type PostKeys = keyof DB['post'];
+    expectTypeOf<'author'>().not.toMatchTypeOf<PostKeys>();
+
+    // entity naming strategy
+    type DBEntity = InferClassEntityDB<typeof Author | typeof Post, { tableNamingStrategy: 'entity' }>;
+    expectTypeOf<DBEntity>().toHaveProperty('Author');
+    expectTypeOf<DBEntity>().toHaveProperty('Post');
+  });
+
+  test('entities without EntityName are excluded from inference', () => {
+    class NoName {
+
+      @PrimaryKey()
+      id!: number;
+
+    }
+
+    type DB = InferClassEntityDB<typeof NoName>;
+    expectTypeOf<DB>().toEqualTypeOf<unknown>();
   });
 });
 

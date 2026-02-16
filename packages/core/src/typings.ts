@@ -137,6 +137,12 @@ export const OptionalProps = Symbol('OptionalProps');
 export const EagerProps = Symbol('EagerProps');
 export const HiddenProps = Symbol('HiddenProps');
 export const Config = Symbol('Config');
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const EntityName = Symbol('EntityName');
+
+export type InferEntityName<T> = T extends { [EntityName]?: infer Name }
+  ? Name extends string ? Name : never
+  : never;
 
 export type Opt<T = unknown> = T & Opt.Brand;
 // eslint-disable-next-line @typescript-eslint/no-redeclare
