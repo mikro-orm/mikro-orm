@@ -82,7 +82,7 @@ bench('em.find() return type - with populate and fields', () => {
   type R = ReturnType<typeof em.find<Author, 'books', 'name' | 'email'>>;
   const x = {} as R;
   void x;
-}).types([703, 'instantiations']);
+}).types([699, 'instantiations']);
 
 // ============================================
 // em.create() - input and return type computation

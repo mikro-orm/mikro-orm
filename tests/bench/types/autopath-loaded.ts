@@ -215,7 +215,7 @@ bench('Loaded - with eager props', () => {
 bench('Loaded - with fields selection', () => {
   const entity = {} as Loaded<Author, 'books', 'name' | 'email'>;
   void entity;
-}).types([929, 'instantiations']);
+}).types([808, 'instantiations']);
 
 bench('Loaded - with exclude', () => {
   const entity = {} as Loaded<Author, 'books', '*', 'age'>;

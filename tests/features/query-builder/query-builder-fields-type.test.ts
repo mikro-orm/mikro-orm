@@ -1,5 +1,5 @@
-import { MikroORM, Loaded } from '@mikro-orm/mysql';
-import { Author2, Book2 } from '../../entities-sql/index.js';
+import { MikroORM, Loaded, type EntityDTO, type EntityDTOFlat, type SerializeDTO, type Dictionary } from '@mikro-orm/mysql';
+import { Author2, Book2, Publisher2 } from '../../entities-sql/index.js';
 import { initORMMySql } from '../../bootstrap.js';
 import { expectTypeOf } from 'vitest';
 import type { ModifyFields } from '@mikro-orm/sql';
@@ -259,6 +259,99 @@ describe('QueryBuilder Fields type tracking', () => {
       const cloned = qb.clone();
       const result = await cloned.getResultList();
       expectTypeOf(result).toEqualTypeOf<Loaded<Author2, never, 'id' | 'name'>[]>();
+    });
+  });
+
+  describe('execute() return types', () => {
+    test('execute() should return EntityDTO with Fields', async () => {
+      const qb = orm.em.createQueryBuilder(Author2, 'a').select(['a.id', 'a.email']);
+
+      const result = await qb.execute();
+      expectTypeOf(result).toEqualTypeOf<Pick<EntityDTO<Author2>, 'id' | 'email'>[]>();
+    });
+
+    test('execute("all") should return EntityDTO array with Fields', async () => {
+      const qb = orm.em.createQueryBuilder(Author2, 'a').select(['a.id', 'a.email']);
+
+      const result = await qb.execute('all');
+      expectTypeOf(result).toEqualTypeOf<Pick<EntityDTO<Author2>, 'id' | 'email'>[]>();
+    });
+
+    test('execute("get") should return single EntityDTO with Fields', async () => {
+      const qb = orm.em.createQueryBuilder(Author2, 'a').select(['a.id', 'a.email']);
+
+      const result = await qb.execute('get');
+      expectTypeOf(result).toEqualTypeOf<Pick<EntityDTO<Author2>, 'id' | 'email'>>();
+    });
+
+    test('execute() with wildcard should return EntityDTO', async () => {
+      const qb = orm.em.createQueryBuilder(Author2, 'a').select('*');
+
+      const result = await qb.execute();
+      expectTypeOf(result).toEqualTypeOf<EntityDTOFlat<Author2>[]>();
+    });
+
+    test('execute() with wildcard joinAndSelect should expand relation', async () => {
+      const qb = orm.em.createQueryBuilder(Author2, 'a').select('*').leftJoinAndSelect('a.books', 'b');
+
+      const result = await qb.execute();
+      // Wildcard + single-level join: Omit + override populated relations
+      type ResultElement = (typeof result)[number];
+      expectTypeOf<ResultElement['books']>().toEqualTypeOf<EntityDTOFlat<Book2>[]>();
+      expectTypeOf<ResultElement['name']>().toEqualTypeOf<string>();
+    });
+
+    test('execute() with joinAndSelect and fields should include Hint', async () => {
+      const qb = orm.em.createQueryBuilder(Author2, 'a').select('a.id').leftJoinAndSelect('a.books', 'b', {}, ['title', 'price']);
+
+      const result = await qb.execute();
+      // DirectDTO: root has selected fields + PK, joined entity has sub-fields + PK
+      type ResultElement = (typeof result)[number];
+      expectTypeOf<ResultElement['id']>().toEqualTypeOf<number>();
+      expectTypeOf<ResultElement['books']>().toBeArray();
+      expectTypeOf<ResultElement['books'][number]>().toHaveProperty('title');
+      expectTypeOf<ResultElement['books'][number]>().toHaveProperty('price');
+      expectTypeOf<ResultElement['books'][number]>().toHaveProperty('uuid');
+    });
+
+    test('execute() with 2-level nested joins and wildcard', async () => {
+      const qb = orm.em.createQueryBuilder(Author2, 'a')
+        .select('*')
+        .leftJoinAndSelect('a.books', 'b')
+        .leftJoinAndSelect('b.publisher', 'p');
+
+      const result = await qb.execute();
+      // Nested hints → uses SerializeDTO for wildcard case
+      expectTypeOf(result).toEqualTypeOf<SerializeDTO<Author2, 'books' | 'books.publisher'>[]>();
+    });
+
+    test('execute() with 3-level nested joins and wildcard', async () => {
+      const qb = orm.em.createQueryBuilder(Author2, 'a')
+        .select('*')
+        .leftJoinAndSelect('a.books', 'b')
+        .leftJoinAndSelect('b.publisher', 'p')
+        .leftJoinAndSelect('p.books', 'pb');
+
+      const result = await qb.execute();
+      expectTypeOf(result).toEqualTypeOf<SerializeDTO<Author2, 'books' | 'books.publisher' | 'books.publisher.books'>[]>();
+    });
+
+    test('execute() with 3-level nested joins and selected fields', async () => {
+      const qb = orm.em.createQueryBuilder(Author2, 'a')
+        .select('a.id')
+        .leftJoinAndSelect('a.books', 'b', {}, ['title'])
+        .leftJoinAndSelect('b.publisher', 'p', {}, ['name'])
+        .leftJoinAndSelect('p.books', 'pb', {}, ['title']);
+
+      const result = await qb.execute();
+      expectTypeOf(result).toEqualTypeOf<EntityDTOFlat<Loaded<Author2, 'books' | 'books.publisher' | 'books.publisher.books', 'id' | 'books.title' | 'books.publisher.name' | 'books.publisher.books.title'>>[]>();
+    });
+
+    test('execute() with explicit type param should override default', async () => {
+      const qb = orm.em.createQueryBuilder(Author2, 'a').select(['a.id', 'a.email']);
+
+      const result = await qb.execute<Dictionary[]>();
+      expectTypeOf(result).toEqualTypeOf<Dictionary[]>();
     });
   });
 });

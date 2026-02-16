@@ -103,7 +103,7 @@ bench('MergeSelected - Loaded entity', () => {
   type R = MergeSelected<Loaded<Author, 'books'>, Author, 'name'>;
   const x = {} as R;
   void x;
-}).types([1958, 'instantiations']);
+}).types([1941, 'instantiations']);
 
 // ============================================
 // Full assign signature simulation
@@ -122,7 +122,7 @@ bench('assign return type - Loaded entity', () => {
   type R = AssignReturnType<Loaded<Author, 'books'>, { name: string }>;
   const x = {} as R;
   void x;
-}).types([1977, 'instantiations']);
+}).types([1960, 'instantiations']);
 
 // ============================================
 // Data parameter type computation

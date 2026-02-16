@@ -88,7 +88,7 @@ bench('Loaded<Author, "books", "*"> - default fields', () => {
 
 bench('Loaded<Author, "books", "name" | "email"> - specific fields', () => {
   useLoaded<Author, 'books', 'name' | 'email'>({} as Loaded<Author, 'books', 'name' | 'email'>);
-}).types([985, 'instantiations']);
+}).types([862, 'instantiations']);
 
 // ============================================
 // Helper type benchmarks

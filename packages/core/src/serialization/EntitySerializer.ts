@@ -6,6 +6,7 @@ import type {
   Dictionary,
   EntityDTO,
   EntityDTOProp,
+  SerializeDTO,
   EntityKey,
   EntityMetadata,
   EntityProperty,
@@ -59,7 +60,7 @@ function isPopulated(propName: string, options: SerializeOptions<any, any, any>)
 
 export class EntitySerializer {
 
-  static serialize<T extends object, P extends string = never, E extends string = never>(entity: T, options: SerializeOptions<T, P, E> = {}): EntityDTO<Loaded<T, P>> {
+  static serialize<T extends object, P extends string = never, E extends string = never>(entity: T, options: SerializeOptions<T, P, E> = {}): SerializeDTO<T, P, E> {
     const wrapped = helper(entity);
     const meta = wrapped.__meta;
     let contextCreated = false;
@@ -140,7 +141,7 @@ export class EntitySerializer {
     }
 
     if (!wrapped.isInitialized()) {
-      return ret as EntityDTO<Loaded<T, P>>;
+      return ret as SerializeDTO<T, P, E>;
     }
 
     for (const prop of meta.getterProps) {
@@ -161,7 +162,7 @@ export class EntitySerializer {
       }
     }
 
-    return ret as EntityDTO<Loaded<T, P>>;
+    return ret as SerializeDTO<T, P, E>;
   }
 
   private static propertyName<T>(meta: EntityMetadata<T>, prop: EntityKey<T>): EntityKey<T> {
@@ -353,7 +354,7 @@ export function serialize<
   Populate extends string = never,
   Exclude extends string = never,
   Config extends TypeConfig = never,
->(entity: Entity, options?: Config & SerializeOptions<UnboxArray<Entity>, Populate, Exclude>): Naked extends object[] ? EntityDTO<Loaded<ArrayElement<Naked>, Populate>, CleanTypeConfig<Config>>[] : EntityDTO<Loaded<Naked, Populate>, CleanTypeConfig<Config>>;
+>(entity: Entity, options?: Config & SerializeOptions<UnboxArray<Entity>, Populate, Exclude>): Naked extends object[] ? SerializeDTO<ArrayElement<Naked>, Populate, Exclude, CleanTypeConfig<Config>>[] : SerializeDTO<Naked, Populate, Exclude, CleanTypeConfig<Config>>;
 
 /**
  * Converts entity instance to POJO, converting the `Collection`s to arrays and unwrapping the `Reference` wrapper, while respecting the serialization options.
@@ -373,7 +374,7 @@ export function serialize<
   Populate extends string = never,
   Exclude extends string = never,
   Config extends TypeConfig = never,
->(entities: Entity | Entity[], options?: SerializeOptions<Entity, Populate, Exclude>): EntityDTO<Loaded<Naked, Populate>, CleanTypeConfig<Config>> | EntityDTO<Loaded<Naked, Populate>, CleanTypeConfig<Config>>[] {
+>(entities: Entity | Entity[], options?: SerializeOptions<Entity, Populate, Exclude>): SerializeDTO<Naked, Populate, Exclude, CleanTypeConfig<Config>> | SerializeDTO<Naked, Populate, Exclude, CleanTypeConfig<Config>>[] {
   if (Array.isArray(entities)) {
     return entities.map(e => EntitySerializer.serialize(e, options)) as any;
   }
