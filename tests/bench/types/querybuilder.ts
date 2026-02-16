@@ -255,7 +255,7 @@ bench('execute() return - 3-level nested with fields', () => {
   const r = {} as EntityDTOFlat<Loaded<Author, 'books' | 'books.publisher' | 'books.publisher.books', 'id' | 'books.title' | 'books.publisher.name' | 'books.publisher.books.title'>>;
   const _: number = r.id;
   void _;
-}).types([2648, 'instantiations']);
+}).types([2041, 'instantiations']);
 
 // ============================================
 // EntityDTOFlat vs EntityDTO comparison (wide entities)
@@ -319,22 +319,22 @@ bench('EntityDTO<Loaded<WideAuthor, "books">> - 2-pass recursive', () => {
   const r = {} as EntityDTO<Loaded<WideAuthor, 'books'>>;
   const _: string = r.name;
   void _;
-}).types([5677, 'instantiations']);
+}).types([5649, 'instantiations']);
 
 bench('EntityDTOFlat<Loaded<WideAuthor, "books">> - 1-pass recursive', () => {
   const r = {} as EntityDTOFlat<Loaded<WideAuthor, 'books'>>;
   const _: string = r.name;
   void _;
-}).types([4668, 'instantiations']);
+}).types([4640, 'instantiations']);
 
 bench('EntityDTO<Loaded<WideAuthor, "books.publisher">> - 2-pass recursive 2-level', () => {
   const r = {} as EntityDTO<Loaded<WideAuthor, 'books' | 'books.publisher'>>;
   const _: string = r.name;
   void _;
-}).types([5737, 'instantiations']);
+}).types([5681, 'instantiations']);
 
 bench('EntityDTOFlat<Loaded<WideAuthor, "books.publisher">> - 1-pass recursive 2-level', () => {
   const r = {} as EntityDTOFlat<Loaded<WideAuthor, 'books' | 'books.publisher'>>;
   const _: string = r.name;
   void _;
-}).types([4728, 'instantiations']);
+}).types([4672, 'instantiations']);

@@ -73,19 +73,19 @@ function useLoaded<T, L extends string = never>(_entity: Loaded<T, L>): void {}
 
 bench('Loaded LINEAR - no populate', () => {
   useLoaded<Person>({} as Person);
-}).types([533, 'instantiations']);
+}).types([505, 'instantiations']);
 
 bench('Loaded LINEAR - 1 level (Ref)', () => {
   useLoaded<Person, 'address'>({} as Loaded<Person, 'address'>);
-}).types([929, 'instantiations']);
+}).types([901, 'instantiations']);
 
 bench('Loaded LINEAR - 2 levels (Ref)', () => {
   useLoaded<Person, 'address.city'>({} as Loaded<Person, 'address.city'>);
-}).types([929, 'instantiations']);
+}).types([901, 'instantiations']);
 
 bench('Loaded LINEAR - 3 levels (Ref)', () => {
   useLoaded<Person, 'address.city.country'>({} as Loaded<Person, 'address.city.country'>);
-}).types([929, 'instantiations']);
+}).types([901, 'instantiations']);
 
 // ============================================
 // SELF-REFERENCING entity (single type circular)
@@ -113,15 +113,15 @@ bench('AutoPath SELF-REF - children (Collection)', () => {
 
 bench('Loaded SELF-REF - 1 level (Ref)', () => {
   useLoaded<TreeNode, 'parent'>({} as Loaded<TreeNode, 'parent'>);
-}).types([951, 'instantiations']);
+}).types([923, 'instantiations']);
 
 bench('Loaded SELF-REF - 2 levels (Ref)', () => {
   useLoaded<TreeNode, 'parent.parent'>({} as Loaded<TreeNode, 'parent.parent'>);
-}).types([951, 'instantiations']);
+}).types([923, 'instantiations']);
 
 bench('Loaded SELF-REF - children (Collection)', () => {
   useLoaded<TreeNode, 'children'>({} as Loaded<TreeNode, 'children'>);
-}).types([923, 'instantiations']);
+}).types([895, 'instantiations']);
 
 // ============================================
 // TWO-WAY circular reference (A <-> B)
@@ -156,23 +156,23 @@ bench('AutoPath CIRCULAR - 3 levels', () => {
 
 bench('Loaded CIRCULAR - simple (Ref)', () => {
   useLoaded<Employee, 'department'>({} as Loaded<Employee, 'department'>);
-}).types([929, 'instantiations']);
+}).types([901, 'instantiations']);
 
 bench('Loaded CIRCULAR - 2 levels (Ref)', () => {
   useLoaded<Employee, 'department.manager'>({} as Loaded<Employee, 'department.manager'>);
-}).types([929, 'instantiations']);
+}).types([901, 'instantiations']);
 
 bench('Loaded CIRCULAR - back to start (Ref)', () => {
   useLoaded<Employee, 'department.manager.department'>({} as Loaded<Employee, 'department.manager.department'>);
-}).types([929, 'instantiations']);
+}).types([901, 'instantiations']);
 
 bench('Loaded CIRCULAR - collection', () => {
   useLoaded<Department, 'employees'>({} as Loaded<Department, 'employees'>);
-}).types([923, 'instantiations']);
+}).types([895, 'instantiations']);
 
 bench('Loaded CIRCULAR - collection nested', () => {
   useLoaded<Department, 'employees.department'>({} as Loaded<Department, 'employees.department'>);
-}).types([923, 'instantiations']);
+}).types([895, 'instantiations']);
 
 // ============================================
 // Entity with many properties (width test)
@@ -228,12 +228,12 @@ bench('AutoPath WIDE - 5 refs', () => {
 
 bench('Loaded WIDE - 20 scalar props', () => {
   useLoaded<WideSimple>({} as WideSimple);
-}).types([893, 'instantiations']);
+}).types([865, 'instantiations']);
 
 bench('Loaded WIDE - 5 refs no populate', () => {
   useLoaded<WideWithRefs>({} as WideWithRefs);
-}).types([693, 'instantiations']);
+}).types([665, 'instantiations']);
 
 bench('Loaded WIDE - 5 refs all populated', () => {
   useLoaded<WideWithRefs, 'r1' | 'r2' | 'r3' | 'r4' | 'r5'>({} as Loaded<WideWithRefs, 'r1' | 'r2' | 'r3' | 'r4' | 'r5'>);
-}).types([1961, 'instantiations']);
+}).types([1554, 'instantiations']);

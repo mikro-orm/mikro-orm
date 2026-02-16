@@ -142,8 +142,8 @@ function useDTO<T>(_dto: EntityDTO<T>): void {}
 
 bench('EntityDTO<Author> - simple', () => {
   useDTO<Author>({} as EntityDTO<Author>);
-}).types([1178, 'instantiations']);
+}).types([1180, 'instantiations']);
 
 bench('EntityDTO<Loaded<Author, "books">> - with loaded hint', () => {
   useDTO<Loaded<Author, 'books'>>({} as EntityDTO<Loaded<Author, 'books'>>);
-}).types([3918, 'instantiations']);
+}).types([3892, 'instantiations']);

@@ -81,27 +81,27 @@ function useLoaded<T, L extends string = never>(_entity: Loaded<T, L>): void {}
 
 bench('Loaded - no populate', () => {
   useLoaded<Author>({} as Author);
-}).types([613, 'instantiations']);
+}).types([585, 'instantiations']);
 
 bench('Loaded - single relation', () => {
   useLoaded<Author, 'books'>({} as Loaded<Author, 'books'>);
-}).types([989, 'instantiations']);
+}).types([961, 'instantiations']);
 
 bench('Loaded - nested relation (2 levels)', () => {
   useLoaded<Author, 'books.publisher'>({} as Loaded<Author, 'books.publisher'>);
-}).types([989, 'instantiations']);
+}).types([961, 'instantiations']);
 
 bench('Loaded - nested relation (3 levels)', () => {
   useLoaded<Author, 'books.publisher.books'>({} as Loaded<Author, 'books.publisher.books'>);
-}).types([989, 'instantiations']);
+}).types([961, 'instantiations']);
 
 bench('Loaded - multiple relations', () => {
   useLoaded<Author, 'books' | 'friends' | 'favouriteBook'>({} as Loaded<Author, 'books' | 'friends' | 'favouriteBook'>);
-}).types([1397, 'instantiations']);
+}).types([1242, 'instantiations']);
 
 bench('Loaded - complex nested paths', () => {
   useLoaded<Author, 'books.tags' | 'books.publisher' | 'friends.books'>({} as Loaded<Author, 'books.tags' | 'books.publisher' | 'friends.books'>);
-}).types([1276, 'instantiations']);
+}).types([1119, 'instantiations']);
 
 // ============================================
 // Deep hierarchy tests
@@ -157,7 +157,7 @@ bench('AutoPath - deep hierarchy (6 levels)', () => {
 
 bench('Loaded - deep hierarchy (6 levels)', () => {
   useLoaded<DeepRoot, 'level1.level2.level3.level4.level5'>({} as Loaded<DeepRoot, 'level1.level2.level3.level4.level5'>);
-}).types([951, 'instantiations']);
+}).types([923, 'instantiations']);
 
 // ============================================
 // Wide entity (many properties) tests
@@ -189,7 +189,7 @@ bench('AutoPath - wide entity (15 properties)', () => {
 
 bench('Loaded - wide entity (15 properties)', () => {
   useLoaded<WideEntity, 'rel1' | 'rel2' | 'rel3'>({} as Loaded<WideEntity, 'rel1' | 'rel2' | 'rel3'>);
-}).types([1698, 'instantiations']);
+}).types([1390, 'instantiations']);
 
 // ============================================
 // Eager props tests
@@ -206,7 +206,7 @@ interface EntityWithEager {
 
 bench('Loaded - with eager props', () => {
   useLoaded<EntityWithEager, 'normalRel'>({} as Loaded<EntityWithEager, 'normalRel'>);
-}).types([1069, 'instantiations']);
+}).types([1001, 'instantiations']);
 
 // ============================================
 // Fields selection tests
@@ -215,9 +215,9 @@ bench('Loaded - with eager props', () => {
 bench('Loaded - with fields selection', () => {
   const entity = {} as Loaded<Author, 'books', 'name' | 'email'>;
   void entity;
-}).types([808, 'instantiations']);
+}).types([625, 'instantiations']);
 
 bench('Loaded - with exclude', () => {
   const entity = {} as Loaded<Author, 'books', '*', 'age'>;
   void entity;
-}).types([619, 'instantiations']);
+}).types([591, 'instantiations']);
