@@ -26,8 +26,27 @@ import {
   p,
   ScalarRef,
 } from '@mikro-orm/core';
+import type { PropertyChain, UniversalPropertyOptionsBuilder } from '../packages/core/src/entity/defineEntity';
 import { IsExact, assert } from 'conditional-type-checks';
 import { ObjectId } from 'bson';
+
+// Compile-time assertion: PropertyChain method parameters must match
+// UniversalPropertyOptionsBuilder. Catches signature drift between the lightweight
+// interface and the implementation class. Return types are intentionally different.
+type _BuilderKeys = keyof PropertyChain<any, any>;
+type _TestPC = PropertyChain<unknown, { kind: 'm:1' }>;
+type _TestUB = UniversalPropertyOptionsBuilder<unknown, { kind: 'm:1' }, _BuilderKeys>;
+type _ParamsMatch<K extends keyof _TestPC> =
+  K extends keyof _TestUB
+    ? _TestPC[K] extends (...args: infer CP) => any
+      ? _TestUB[K] extends (...args: infer BP) => any
+        ? [CP, BP] extends [BP, CP] ? true : false
+        : true
+      : true
+    : true;
+// If any method params drift, this union includes `false`, making it `boolean` not `true`.
+type _AssertParamsInSync = _ParamsMatch<keyof _TestPC> extends true ? true : never;
+const _paramsInSync: _AssertParamsInSync = true as any;
 
 describe('defineEntity', () => {
   it('should define entity', () => {
@@ -374,7 +393,7 @@ describe('defineEntity', () => {
       };
     }
 
-    const profile = p.json<IProfile>().lazy();
+    const profile = p.json<IProfile>().lazy().ref();
     const Foo = defineEntity({
       name: 'Foo',
       properties: ({
@@ -382,7 +401,7 @@ describe('defineEntity', () => {
         name: p.string().ref(),
         profileLazy: profile,
         profileNullable: profile.nullable(),
-        profile: profile.ref(false),
+        profile: p.json<IProfile>().lazy(),
       }),
     });
 
@@ -401,7 +420,7 @@ describe('defineEntity', () => {
       properties: {
         id: { type: types.integer, primary: true },
         name: { type: types.string, ref: true },
-        profile: { type: types.json, lazy: true, ref: false },
+        profile: { type: types.json, lazy: true },
         profileLazy: { type: types.json, lazy: true, ref: true },
         profileNullable: { type: types.json, lazy: true, ref: true, nullable: true },
       },
@@ -1063,7 +1082,7 @@ describe('PropertyOptionsBuilder', () => {
         createdAt: p.datetime().generated('(now())'),
         updatedAt: p.datetime().lazy().ref(),
         settings: p.json<{ theme: string }>().ref().nullable(),
-        bio: p.text().ref(false),
+        bio: p.text(),
         status: p.enum(['active', 'inactive']).array().default(['active']),
         type: p.type(types.smallint),
       }),
@@ -1094,7 +1113,7 @@ describe('PropertyOptionsBuilder', () => {
         createdAt: { type: types.datetime, generated: '(now())' },
         updatedAt: { type: types.datetime, lazy: true, ref: true },
         settings: { type: types.json, ref: true, nullable: true },
-        bio: { type: types.text, ref: false },
+        bio: { type: types.text },
         status: { enum: true, items: ['active', 'inactive'], array: true, default: ['active'] },
         type: { type: types.smallint },
       },
