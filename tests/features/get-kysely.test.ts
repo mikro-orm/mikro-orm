@@ -18,7 +18,7 @@ describe('InferKyselyDB', () => {
     const UserProfile = defineEntity({
       name: 'UserProfile',
       properties: {
-        user: () => p.oneToOne(User).owner(true).primary(),
+        user: () => p.oneToOne(User).owner().primary(),
         bio: p.string().nullable(),
         avatar: p.string().nullable(),
         location: p.string().nullable(),
@@ -117,7 +117,7 @@ describe('InferKyselyDB', () => {
       name: 'UserProfile',
       tableName: 'user_profiles',
       properties: {
-        user: () => p.oneToOne(User).owner(true).primary(),
+        user: () => p.oneToOne(User).owner().primary(),
         bio: p.string().nullable(),
         avatar: p.string().nullable(),
         location: p.string().nullable(),
@@ -156,7 +156,7 @@ describe('InferKyselyDB', () => {
       name: 'UserProfile',
       tableName: 'user_profiles',
       properties: {
-        user: () => p.oneToOne(User).owner(true).primary(),
+        user: () => p.oneToOne(User).owner().primary(),
         bio: p.string().nullable(),
         avatar: p.string().nullable(),
         location: p.string().nullable(),
@@ -359,7 +359,7 @@ describe('InferKyselyDB', () => {
       className: 'UserProfile',
       tableName: 'user_profiles',
       properties: {
-        user: () => p.oneToOne(User).owner(true).primary(),
+        user: () => p.oneToOne(User).owner().primary(),
         bio: p.string().nullable(),
         avatar: p.string().nullable(),
         location: p.string().nullable(),

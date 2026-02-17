@@ -939,10 +939,8 @@ export class SourceFile {
       if (!prop.primary || !this.platform.isNumericColumn(mappedColumnType) || this.meta.getPrimaryProps().length !== 1) {
         options.autoincrement = true;
       }
-    } else {
-      if (prop.primary && this.platform.isNumericColumn(mappedColumnType) && this.meta.getPrimaryProps().length === 1) {
-        options.autoincrement = false;
-      }
+    } else if (prop.primary && this.platform.isNumericColumn(mappedColumnType) && this.meta.getPrimaryProps().length === 1) {
+      options.autoincrement = false;
     }
 
     if (prop.generated) {

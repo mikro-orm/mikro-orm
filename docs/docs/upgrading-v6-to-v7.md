@@ -617,6 +617,37 @@ const UserSchema2 = new EntitySchema<User>({
 });
 ```
 
+## Property builder boolean methods no longer accept `true`
+
+The `defineEntity` property builder methods like `nullable()`, `ref()`, `owner()`, `primary()`, `hidden()`, `array()`, `version()`, `lazy()`, and `mapToPk()` no longer accept an explicit `true` argument. Call them without arguments instead — the behavior is identical.
+
+```diff
+-name: p.string().nullable(true),
++name: p.string().nullable(),
+
+-tags: () => p.manyToMany(BookTag).owner(true),
++tags: () => p.manyToMany(BookTag).owner(),
+
+-id: p.integer().primary(true).autoincrement(true),
++id: p.integer().primary().autoincrement(),
+```
+
+The `persist()` and `autoincrement()` methods still accept `false` as an argument via overloads:
+
+```ts
+// This still works:
+id: p.number().autoincrement(false),
+token: p.string().persist(false),
+```
+
+The `lazy()` method no longer implies `ref()`. If you want a lazy scalar property wrapped in `ScalarReference`, chain `.ref()` explicitly:
+
+```diff
+-bio: p.text().lazy(),        // previously wrapped in ScalarReference
++bio: p.text().lazy(),        // now plain lazy scalar
++bio: p.text().lazy().ref(),  // use this for ScalarReference wrapper
+```
+
 ## Self-referencing M:N pivot table column naming
 
 When you have a self-referencing many-to-many relation with an **explicit `tableName`** that differs from the class name, the pivot table column names now use the `tableName` instead of `className`.
