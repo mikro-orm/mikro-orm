@@ -1,4 +1,5 @@
 import { existsSync, globSync as nodeGlobSync, mkdirSync, readFileSync, realpathSync, statSync } from 'node:fs';
+import { writeFile as nodeWriteFile } from 'node:fs/promises';
 import { isAbsolute, join, normalize, relative } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { Utils } from './Utils.js';
@@ -225,6 +226,10 @@ export const fs = {
     }
 
     return this.normalizePath(path);
+  },
+
+  async writeFile(path: string, data: string, options?: Record<string, any>): Promise<void> {
+    await nodeWriteFile(path, data, options);
   },
 
   async dynamicImport<T = any>(id: string): Promise<T> {

@@ -5,8 +5,6 @@ import {
   type NamingStrategy,
 } from '@mikro-orm/core';
 import type { MongoDriver } from '@mikro-orm/mongodb';
-import { fs } from '@mikro-orm/core/fs-utils';
-import { writeFile } from 'node:fs/promises';
 
 export abstract class MigrationGenerator implements IMigrationGenerator {
 
@@ -18,6 +16,7 @@ export abstract class MigrationGenerator implements IMigrationGenerator {
    * @inheritDoc
    */
   async generate(diff: { up: string[]; down: string[] }, path?: string, name?: string): Promise<[string, string]> {
+    const { fs } = await import('@mikro-orm/core/fs-utils');
     /* v8 ignore next */
     const defaultPath = this.options.emit === 'ts' && this.options.pathTs ? this.options.pathTs : this.options.path!;
     path = fs.normalizePath(this.driver.config.get('baseDir'), path ?? defaultPath);
@@ -26,7 +25,7 @@ export abstract class MigrationGenerator implements IMigrationGenerator {
     const className = this.namingStrategy.classToMigrationName(timestamp, name);
     const fileName = `${this.options.fileName!(timestamp, name)}.${this.options.emit}`;
     const ret = await this.generateMigrationFile(className, diff);
-    await writeFile(path + '/' + fileName, ret, { flush: true });
+    await fs.writeFile(path + '/' + fileName, ret, { flush: true });
 
     return [ret, fileName];
   }

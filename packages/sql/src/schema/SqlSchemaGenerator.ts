@@ -1,5 +1,4 @@
 import {
-  AbstractSchemaGenerator,
   CommitOrderCalculator,
   type ClearDatabaseOptions,
   type CreateSchemaOptions,
@@ -13,6 +12,7 @@ import {
   type UpdateSchemaOptions,
   Utils,
 } from '@mikro-orm/core';
+import { AbstractSchemaGenerator } from '@mikro-orm/core/schema';
 import type { DatabaseView, SchemaDifference, TableDifference } from '../typings.js';
 import { DatabaseSchema } from './DatabaseSchema.js';
 import type { AbstractSqlDriver } from '../AbstractSqlDriver.js';

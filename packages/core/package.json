@@ -13,7 +13,10 @@
     "./fs-utils": {
       "node": "./src/utils/fs-utils.ts",
       "browser": "./src/not-supported.ts"
-    }
+    },
+    "./migrations": "./src/utils/AbstractMigrator.ts",
+    "./schema": "./src/utils/AbstractSchemaGenerator.ts",
+    "./dataloader": "./src/utils/DataloaderUtils.ts"
   },
   "repository": {
     "type": "git",

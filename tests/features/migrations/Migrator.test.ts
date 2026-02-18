@@ -1,6 +1,5 @@
 process.env.FORCE_COLOR = '0';
-import { Umzug } from 'umzug';
-import { MetadataStorage, MikroORM, raw, SimpleLogger, UmzugMigration } from '@mikro-orm/core';
+import { MetadataStorage, MigrationInfo, MikroORM, raw, SimpleLogger } from '@mikro-orm/core';
 import { Migration, MigrationStorage, Migrator } from '@mikro-orm/migrations';
 import { DatabaseTable, MySqlDriver, DatabaseSchema, SchemaGenerator } from '@mikro-orm/mysql';
 import { rm } from 'node:fs/promises';
@@ -95,10 +94,8 @@ describe('Migrator', () => {
     const migrator = orm.migrator;
     const migration = await migrator.create();
     expect(migration).toMatchSnapshot('migration-dump');
-    const upMock = vi.spyOn(Umzug.prototype, 'up');
-    upMock.mockImplementation(() => void 0 as any);
-    const downMock = vi.spyOn(Umzug.prototype, 'down');
-    downMock.mockImplementation(() => void 0 as any);
+    const executeMock = vi.spyOn(Migrator.prototype as any, 'executeMigrations');
+    executeMock.mockResolvedValue([]);
     await migrator.up();
     await migrator.down(migration.fileName.replace('.ts', ''));
     await migrator.up();
@@ -107,8 +104,7 @@ describe('Migrator', () => {
     await migrator.down(migration.fileName.replace('migration-', '').replace('.ts', ''));
     orm.config.set('migrations', migrationsSettings); // Revert migration config changes
     await rm(process.cwd() + '/temp/migrations-123/' + migration.fileName);
-    upMock.mockRestore();
-    downMock.mockRestore();
+    executeMock.mockRestore();
   });
 
   test('snapshot should not be updated when custom migration fileName function throws', async () => {
@@ -232,7 +228,7 @@ describe('Migrator', () => {
 
     await orm.schema.dropTableIfExists(orm.config.get('migrations').tableName!);
     const migration2 = await migrator.createInitial(undefined);
-    expect(logMigrationMock).toHaveBeenCalledWith({ name: 'Migration20191013214813.ts', context: null });
+    expect(logMigrationMock).toHaveBeenCalledWith({ name: 'Migration20191013214813.ts' });
     expect(migration2).toMatchSnapshot('initial-migration-dump');
     await rm(process.cwd() + '/temp/migrations-123/' + migration2.fileName);
   });
@@ -252,20 +248,16 @@ describe('Migrator', () => {
   });
 
   test('run schema migration', async () => {
-    const upMock = vi.spyOn(Umzug.prototype, 'up');
-    const downMock = vi.spyOn(Umzug.prototype, 'down');
-    upMock.mockImplementationOnce(() => void 0 as any);
-    downMock.mockImplementationOnce(() => void 0 as any);
+    const executeMock = vi.spyOn(Migrator.prototype as any, 'executeMigrations');
+    executeMock.mockResolvedValue([]);
     const migrator = new Migrator(orm.em);
     await migrator.up();
-    expect(upMock).toHaveBeenCalledTimes(1);
-    expect(downMock).toHaveBeenCalledTimes(0);
+    expect(executeMock).toHaveBeenCalledTimes(1);
     await orm.em.begin();
     await migrator.down({ transaction: orm.em.getTransactionContext() });
     await orm.em.commit();
-    expect(upMock).toHaveBeenCalledTimes(1);
-    expect(downMock).toHaveBeenCalledTimes(1);
-    upMock.mockRestore();
+    expect(executeMock).toHaveBeenCalledTimes(2);
+    executeMock.mockRestore();
   });
 
   test('run schema migration without existing migrations folder (GH #907)', async () => {
@@ -277,16 +269,15 @@ describe('Migrator', () => {
   test('ensureTable and list executed migrations', async () => {
     await orm.schema.dropTableIfExists(orm.config.get('migrations').tableName!);
     const migrator = new Migrator(orm.em);
-    // @ts-ignore
-    const storage = migrator.storage;
+    const storage = migrator.getStorage();
 
     await storage.ensureTable(); // creates the table
-    await storage.logMigration({ name: 'test.ts', context: null }); // can have extension
+    await storage.logMigration({ name: 'test.ts' }); // can have extension
     await expect(storage.getExecutedMigrations()).resolves.toMatchObject([{ name: 'test' }]);
     await expect(storage.executed()).resolves.toEqual(['test']);
 
     await storage.ensureTable(); // table exists, no-op
-    await storage.unlogMigration({ name: 'test', context: null });
+    await storage.unlogMigration({ name: 'test' });
     await expect(storage.executed()).resolves.toEqual([]);
 
     await expect(migrator.getPending()).resolves.toEqual([]);
@@ -295,16 +286,15 @@ describe('Migrator', () => {
   test('remove extension only', async () => {
     await orm.schema.dropTableIfExists(orm.config.get('migrations').tableName!);
     const migrator = new Migrator(orm.em);
-    // @ts-ignore
-    const storage = migrator.storage;
+    const storage = migrator.getStorage();
 
     await storage.ensureTable(); // creates the table
-    await storage.logMigration({ name: 'test.migration.ts', context: null }); // can have extension
+    await storage.logMigration({ name: 'test.migration.ts' }); // can have extension
     await expect(storage.getExecutedMigrations()).resolves.toMatchObject([{ name: 'test.migration' }]);
     await expect(storage.executed()).resolves.toEqual(['test.migration']);
 
     await storage.ensureTable(); // table exists, no-op
-    await storage.unlogMigration({ name: 'test.migration', context: null });
+    await storage.unlogMigration({ name: 'test.migration' });
     await expect(storage.executed()).resolves.toEqual([]);
 
     await expect(migrator.getPending()).resolves.toEqual([]);
@@ -313,16 +303,15 @@ describe('Migrator', () => {
   test('unlogging migrations work even if they have extension', async () => {
     await orm.schema.dropTableIfExists(orm.config.get('migrations').tableName!);
     const migrator = new Migrator(orm.em);
-    // @ts-ignore
-    const storage = migrator.storage;
+    const storage = migrator.getStorage();
 
     await storage.ensureTable(); // creates the table
-    await storage.logMigration({ name: 'test.migration.ts', context: null }); // can have extension
+    await storage.logMigration({ name: 'test.migration.ts' }); // can have extension
     await expect(storage.getExecutedMigrations()).resolves.toMatchObject([{ name: 'test.migration' }]);
     await orm.em.execute(`update ${orm.config.get('migrations').tableName!} set name = 'test.migration.ts'`);
     await expect(storage.executed()).resolves.toEqual(['test.migration']);
 
-    await storage.unlogMigration({ name: 'test.migration', context: null });
+    await storage.unlogMigration({ name: 'test.migration' });
     await expect(storage.executed()).resolves.toEqual([]);
 
     await expect(migrator.getPending()).resolves.toEqual([]);
@@ -386,7 +375,7 @@ describe('Migrator', () => {
     const mock = mockLogger(orm, ['query']);
 
     const migrated: unknown[] = [];
-    const migratedHandler = (e: UmzugMigration) => { migrated.push(e); };
+    const migratedHandler = (e: MigrationInfo) => { migrated.push(e); };
     migrator.on('migrated', migratedHandler);
 
     await migrator.up(migration.fileName);
@@ -397,7 +386,8 @@ describe('Migrator', () => {
     await migrator.up({ to: migration.fileName });
     await migrator.up({ from: migration.fileName } as any);
     await migrator.down();
-    expect(migrated).toHaveLength(1);
+    // steps 1 and 3 fire 'migrated' (step 2 fires 'reverted', step 4 fires 'reverted')
+    expect(migrated).toHaveLength(2);
 
     await rm(path + '/' + migration.fileName);
     const calls = mock.mock.calls.map(call => {
@@ -528,6 +518,74 @@ describe('Migrator - with explicit migrations', () => {
         .replace(/ `trx\d+/, 'trx_xx');
     });
     expect(calls).toMatchSnapshot('migrator-migrations-list');
+  });
+
+});
+
+describe('Migrator - filter up/down options', () => {
+
+  let orm: MikroORM<MySqlDriver>;
+
+  beforeAll(async () => {
+    orm = await initORMMySql(undefined, {
+      dbName: 'mikro_orm_test_migrations',
+      migrations: {
+        migrationsList: [
+          { name: 'Migration1.ts', class: MigrationTest1 },
+          { name: 'Migration2.ts', class: MigrationTest1 },
+          { name: 'Migration3.ts', class: MigrationTest1 },
+        ],
+      },
+    }, true);
+  });
+  afterAll(async () => {
+    await orm.schema.dropDatabase();
+    await orm.close(true);
+  });
+
+  test('getPending returns pending migrations', async () => {
+    await orm.schema.dropTableIfExists(orm.config.get('migrations').tableName!);
+    const migrator = new Migrator(orm.em);
+    await migrator.getStorage().ensureTable();
+    await migrator.getStorage().logMigration({ name: 'Migration1' });
+
+    const pending = await migrator.getPending();
+    expect(pending).toEqual([
+      { name: 'Migration2', path: undefined },
+      { name: 'Migration3', path: undefined },
+    ]);
+  });
+
+  test('up with from option', async () => {
+    await orm.schema.dropTableIfExists(orm.config.get('migrations').tableName!);
+    const migrator = new Migrator(orm.em);
+    await migrator.getStorage().ensureTable();
+
+    await migrator.up({ migrations: ['Migration1'] });
+    await migrator.up({ migrations: ['Migration2'] });
+
+    // up from Migration1: only pending items after Migration1 index should run
+    const result = await migrator.up({ from: 'Migration1' } as any);
+    expect(result).toHaveLength(1);
+    expect(result[0].name).toBe('Migration3');
+  });
+
+  test('down with named to option', async () => {
+    await orm.schema.dropTableIfExists(orm.config.get('migrations').tableName!);
+    const migrator = new Migrator(orm.em);
+    await migrator.getStorage().ensureTable();
+    const migratorMock = vi.spyOn(Migration.prototype, 'down');
+    migratorMock.mockImplementation(async () => void 0);
+
+    await migrator.up();
+
+    // down to Migration1: should revert Migration3 and Migration2, but not Migration1
+    const result = await migrator.down({ to: 'Migration1' });
+    expect(result).toHaveLength(2);
+    expect(result[0].name).toBe('Migration3');
+    expect(result[1].name).toBe('Migration2');
+
+    migratorMock.mockRestore();
   });
 
 });

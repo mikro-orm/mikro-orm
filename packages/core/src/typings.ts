@@ -1280,10 +1280,19 @@ export interface IEntityGenerator {
   generate(options?: GenerateOptions): Promise<string[]>;
 }
 
-export type UmzugMigration = { name: string; path?: string };
+export type MigrationInfo = { name: string; path?: string };
 export type MigrateOptions = { from?: string | number; to?: string | number; migrations?: string[]; transaction?: Transaction };
 export type MigrationResult = { fileName: string; code: string; diff: MigrationDiff };
 export type MigrationRow = { id: number; name: string; executed_at: Date };
+
+/**
+ * @internal
+ */
+export interface IMigrationRunner {
+  run(migration: Migration, method: 'up' | 'down'): Promise<void>;
+  setMasterMigration(trx: Transaction): void;
+  unsetMasterMigration(): void;
+}
 
 /**
  * @internal
@@ -1327,27 +1336,27 @@ export interface IMigrator {
   /**
    * Returns list of pending (not yet executed) migrations found in the migration directory.
    */
-  getPending(): Promise<UmzugMigration[]>;
+  getPending(): Promise<MigrationInfo[]>;
 
   /**
    * Executes specified migrations. Without parameter it will migrate up to the latest version.
    */
-  up(options?: string | string[] | MigrateOptions): Promise<UmzugMigration[]>;
+  up(options?: string | string[] | MigrateOptions): Promise<MigrationInfo[]>;
 
   /**
    * Executes down migrations to the given point. Without parameter it will migrate one version down.
    */
-  down(options?: string | string[] | MigrateOptions): Promise<UmzugMigration[]>;
+  down(options?: string | string[] | Omit<MigrateOptions, 'from'>): Promise<MigrationInfo[]>;
 
   /**
    * Registers event handler.
    */
-  on(event: MigratorEvent, listener: (event: UmzugMigration) => MaybePromise<void>): IMigrator;
+  on(event: MigratorEvent, listener: (event: MigrationInfo) => MaybePromise<void>): IMigrator;
 
   /**
    * Removes event handler.
    */
-  off(event: MigratorEvent, listener: (event: UmzugMigration) => MaybePromise<void>): IMigrator;
+  off(event: MigratorEvent, listener: (event: MigrationInfo) => MaybePromise<void>): IMigrator;
 
   /**
    * @internal
@@ -1382,6 +1391,10 @@ export interface IMigrationGenerator {
 export interface Migration {
   up(): Promise<void> | void;
   down(): Promise<void> | void;
+  isTransactional(): boolean;
+  reset(): void;
+  setTransactionContext(ctx: Transaction): void;
+  getQueries?(): any[];
 }
 
 export interface MigrationObject {

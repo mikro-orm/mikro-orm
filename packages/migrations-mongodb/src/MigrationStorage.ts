@@ -1,10 +1,8 @@
 import { defineEntity, type Dictionary, type EntitySchema, type MigrationsOptions, p, type Transaction } from '@mikro-orm/core';
 import type { MongoDriver } from '@mikro-orm/mongodb';
-import type { MigrationParams, UmzugStorage } from 'umzug';
-import { parse } from 'node:path';
 import type { MigrationRow } from './typings.js';
 
-export class MigrationStorage implements UmzugStorage {
+export class MigrationStorage {
 
   private masterTransaction?: Transaction;
 
@@ -16,13 +14,13 @@ export class MigrationStorage implements UmzugStorage {
     return migrations.map(({ name }) => `${this.getMigrationName(name)}`);
   }
 
-  async logMigration(params: MigrationParams<any>): Promise<void> {
+  async logMigration(params: { name: string }): Promise<void> {
     const name = this.getMigrationName(params.name);
     const entity = this.getEntityDefinition();
     await this.driver.nativeInsert(entity, { name, executed_at: new Date() }, { ctx: this.masterTransaction });
   }
 
-  async unlogMigration(params: MigrationParams<any>): Promise<void> {
+  async unlogMigration(params: { name: string }): Promise<void> {
     const withoutExt = this.getMigrationName(params.name);
     const entity = this.getEntityDefinition();
     await this.driver.nativeDelete(entity, { name: { $in: [params.name, withoutExt] } }, { ctx: this.masterTransaction });
@@ -45,14 +43,7 @@ export class MigrationStorage implements UmzugStorage {
    * @internal
    */
   getMigrationName(name: string) {
-    const parsedName = parse(name);
-
-    if (['.js', '.ts'].includes(parsedName.ext)) {
-      // strip extension
-      return parsedName.name;
-    }
-
-    return name;
+    return name.replace(/\.[jt]s$/, '');
   }
 
   /**
