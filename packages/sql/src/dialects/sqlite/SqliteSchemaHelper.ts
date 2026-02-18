@@ -364,7 +364,7 @@ export class SqliteSchemaHelper extends SchemaHelper {
       return {
         name: col.name,
         type: col.type,
-        default: col.dflt_value,
+        default: this.wrapExpressionDefault(col.dflt_value),
         nullable: !col.notnull,
         primary: !!col.pk,
         mappedType,
@@ -373,6 +373,30 @@ export class SqliteSchemaHelper extends SchemaHelper {
         generated,
       };
     });
+  }
+
+  /**
+   * SQLite strips outer parentheses from expression defaults (`DEFAULT (expr)` → `expr` in pragma).
+   * We need to add them back so they match what we generate in DDL.
+   */
+  private wrapExpressionDefault(value: string | null): string | null {
+    if (value == null) {
+      return null;
+    }
+
+    // simple values that are returned as-is from pragma (no wrapping needed)
+    if (/^-?\d/.test(value) || /^[xX]'/.test(value) || value[0] === "'" || value[0] === '"' || value[0] === '(') {
+      return value;
+    }
+
+    const lower = value.toLowerCase();
+
+    if (['null', 'true', 'false', 'current_timestamp', 'current_date', 'current_time'].includes(lower)) {
+      return value;
+    }
+
+    // everything else is an expression that had its outer parens stripped
+    return `(${value})`;
   }
 
   private async getEnumDefinitions(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<Dictionary<string[]>> {

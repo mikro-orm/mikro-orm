@@ -1,13 +1,12 @@
 import type { Configuration, Constructor } from '@mikro-orm/core';
-import { AbstractSqlDriver } from '@mikro-orm/sql';
+import { AbstractSqlDriver, SqlitePlatform } from '@mikro-orm/sql';
 import { LibSqlConnection } from './LibSqlConnection.js';
-import { LibSqlPlatform } from './LibSqlPlatform.js';
 import { LibSqlMikroORM } from './LibSqlMikroORM.js';
 
 export class LibSqlDriver extends AbstractSqlDriver<LibSqlConnection> {
 
   constructor(config: Configuration) {
-    super(config, new LibSqlPlatform(), LibSqlConnection, ['kysely', 'libsql']);
+    super(config, new SqlitePlatform(), LibSqlConnection, ['kysely', 'libsql']);
   }
 
   /** @inheritDoc */

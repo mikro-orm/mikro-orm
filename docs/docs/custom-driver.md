@@ -201,6 +201,10 @@ export class MyDriver extends DatabaseDriver<MyConnection> {
 
 See the [MongoDB driver source](https://github.com/mikro-orm/mikro-orm/tree/master/packages/mongodb/src) for a complete real-world example of a non-SQL driver.
 
+## Custom SQLite driver
+
+For SQLite-based databases, the `@mikro-orm/sql` package provides a generic `SqliteDriver` that works with any SQLite library via Kysely dialects. See the [SQLite guide](./usage-with-sqlite.md#custom-sqlite-dialect) for details.
+
 ## Reference Implementations
 
 The best way to understand the full picture is to look at the existing driver packages:

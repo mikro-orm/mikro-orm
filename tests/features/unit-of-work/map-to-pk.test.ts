@@ -124,7 +124,7 @@ describe('mapToPk', () => {
     expect(mock.mock.calls[5][0]).toMatch('commit');
     expect(mock.mock.calls[6][0]).toMatch("select `t0`.* from `team` as `t0` where `t0`.`id` = 'team1' limit 1");
     expect(mock.mock.calls[7][0]).toMatch('begin');
-    expect(mock.mock.calls[8][0]).toMatch("update `team` set `current_order_id` = NULL where `id` = 'team1'");
+    expect(mock.mock.calls[8][0]).toMatch("update `team` set `current_order_id` = null where `id` = 'team1'");
     expect(mock.mock.calls[9][0]).toMatch('commit');
 
     mock.mockReset();

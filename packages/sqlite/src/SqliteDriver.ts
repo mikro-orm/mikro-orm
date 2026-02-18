@@ -1,7 +1,6 @@
 import type { Configuration, Constructor } from '@mikro-orm/core';
-import { AbstractSqlDriver } from '@mikro-orm/sql';
+import { AbstractSqlDriver, SqlitePlatform } from '@mikro-orm/sql';
 import { SqliteConnection } from './SqliteConnection.js';
-import { SqlitePlatform } from './SqlitePlatform.js';
 import { SqliteMikroORM } from './SqliteMikroORM.js';
 
 export class SqliteDriver extends AbstractSqlDriver<SqliteConnection> {

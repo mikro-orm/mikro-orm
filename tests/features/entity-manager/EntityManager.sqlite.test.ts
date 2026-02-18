@@ -16,9 +16,11 @@ import {
   UniqueConstraintViolationException,
   ValidationError,
   wrap,
+  MikroORM as BaseMikroORM,
 } from '@mikro-orm/core';
 import { MikroORM as SqliteMikroORM } from '@mikro-orm/sqlite';
 import { MikroORM as LibSqlMikroORM } from '@mikro-orm/libsql';
+import { SqliteDriver as GenericSqliteDriver, BaseSqliteConnection } from '@mikro-orm/sql';
 import { initORMSqlite, mockLogger } from '../../bootstrap.js';
 import {
   Author4,
@@ -32,16 +34,16 @@ import {
 } from '../../entities-schema/index.js';
 import { Author4Schema } from '../../entities-schema/Author4.js';
 
-describe.each(['sqlite', 'libsql'] as const)('EntityManager (%s)', driver => {
+describe.each(['sqlite', 'libsql', 'node-sqlite'] as const)('EntityManager (%s)', driver => {
 
-  let orm: SqliteMikroORM | LibSqlMikroORM;
+  let orm: SqliteMikroORM;
 
   beforeAll(async () => orm = await initORMSqlite<any>(driver));
   beforeEach(async () => orm.schema.clear());
   afterAll(async () => orm.close(true));
 
   test('isConnected()', async () => {
-    const MikroORM = driver === 'sqlite' ? SqliteMikroORM : LibSqlMikroORM;
+    const MikroORM = driver === 'sqlite' ? SqliteMikroORM : driver === 'libsql' ? LibSqlMikroORM : BaseMikroORM;
     expect(orm.driver.getORMClass()).toBe(MikroORM);
     expect(await orm.isConnected()).toBe(true);
     expect(await orm.checkConnection()).toEqual({
@@ -1619,6 +1621,13 @@ describe.each(['sqlite', 'libsql'] as const)('EntityManager (%s)', driver => {
     expect(BaseEntity4.afterDestroyCalled).toBe(4);
   });
 
+  test('platform.escape() with Date value', async () => {
+    const platform = orm.em.getPlatform();
+    const date = new Date('2024-01-15T12:00:00Z');
+    expect(platform.escape(date)).toBe('' + +date);
+    expect(platform.escape(date)).toBe('1705320000000');
+  });
+
   test('fts5 table', async () => {
     await orm.schema.execute('create virtual table book5 using fts5(id, title, created_at)');
     const Book5 = defineEntity({
@@ -1641,4 +1650,8 @@ describe.each(['sqlite', 'libsql'] as const)('EntityManager (%s)', driver => {
     expect(res).toHaveLength(3);
   });
 
+});
+
+test('BaseSqliteConnection.createKyselyDialect throws without driverOptions', () => {
+  expect(() => BaseSqliteConnection.prototype.createKyselyDialect({})).toThrow('No SQLite dialect configured');
 });

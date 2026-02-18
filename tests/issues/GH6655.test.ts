@@ -80,7 +80,7 @@ test('can re-assign to non-owning side of OneToOne relationship', async () => {
   await orm.em.flush();
   expect(mock.mock.calls).toEqual([
     ['[query] begin'],
-    ["[query] update `pet` set `owner_id` = NULL where `id` = 'pet-0'"],
+    ["[query] update `pet` set `owner_id` = null where `id` = 'pet-0'"],
     ["[query] insert into `pet` (`id`, `owner_id`) values ('pet-1', 'user-0')"],
     ['[query] commit'],
   ]);

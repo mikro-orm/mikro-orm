@@ -1,9 +1,9 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
 exports[`SchemaGenerator [sqlite] > alter enum [sqlite] > sqlite-update-empty-schema-dump 1`] = `
-"create table \`book_tag4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` text not null, \`version\` datetime not null default current_timestamp);
+"create table \`book_tag4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` text not null, \`version\` datetime not null default (strftime('%s', 'now') * 1000));
 
-create table \`foo_baz4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` text not null, \`version\` datetime not null default current_timestamp);
+create table \`foo_baz4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` text not null, \`version\` datetime not null default (strftime('%s', 'now') * 1000));
 
 create table \`foo_bar4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` text not null default 'asd', \`baz_id\` integer null, \`foo_bar_id\` integer null, \`version\` integer not null default 1, \`blob\` blob null, \`blob2\` blob null, \`array\` text null, \`object\` json null, constraint \`foo_bar4_baz_id_foreign\` foreign key (\`baz_id\`) references \`foo_baz4\` (\`id\`) on delete set null, constraint \`foo_bar4_foo_bar_id_foreign\` foreign key (\`foo_bar_id\`) references \`foo_bar4\` (\`id\`) on delete set null);
 create unique index \`foo_bar4_baz_id_unique\` on \`foo_bar4\` (\`baz_id\`);
@@ -36,9 +36,9 @@ create index \`publisher4_tests_test4_id_index\` on \`publisher4_tests\` (\`test
 `;
 
 exports[`SchemaGenerator [sqlite] > generate schema from metadata [sqlite] > sqlite-create-schema-dump 1`] = `
-"create table \`book_tag4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` text not null, \`version\` datetime not null default current_timestamp);
+"create table \`book_tag4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` text not null, \`version\` datetime not null default (strftime('%s', 'now') * 1000));
 
-create table \`foo_baz4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` text not null, \`version\` datetime not null default current_timestamp);
+create table \`foo_baz4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` text not null, \`version\` datetime not null default (strftime('%s', 'now') * 1000));
 
 create table \`foo_bar4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` text not null default 'asd', \`baz_id\` integer null, \`foo_bar_id\` integer null, \`version\` integer not null default 1, \`blob\` blob null, \`blob2\` blob null, \`array\` text null, \`object\` json null, constraint \`foo_bar4_baz_id_foreign\` foreign key (\`baz_id\`) references \`foo_baz4\` (\`id\`) on delete set null, constraint \`foo_bar4_foo_bar_id_foreign\` foreign key (\`foo_bar_id\`) references \`foo_bar4\` (\`id\`) on delete set null);
 create unique index \`foo_bar4_baz_id_unique\` on \`foo_bar4\` (\`baz_id\`);
@@ -102,9 +102,9 @@ drop table if exists \`book_tag4\`;
 exports[`SchemaGenerator [sqlite] > generate schema from metadata [sqlite] > sqlite-update-schema-dump 1`] = `""`;
 
 exports[`SchemaGenerator [sqlite] > update empty schema from metadata [sqlite] > sqlite-update-empty-schema-dump 1`] = `
-"create table \`book_tag4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` text not null, \`version\` datetime not null default current_timestamp);
+"create table \`book_tag4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` text not null, \`version\` datetime not null default (strftime('%s', 'now') * 1000));
 
-create table \`foo_baz4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` text not null, \`version\` datetime not null default current_timestamp);
+create table \`foo_baz4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` text not null, \`version\` datetime not null default (strftime('%s', 'now') * 1000));
 
 create table \`foo_bar4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` text not null default 'asd', \`baz_id\` integer null, \`foo_bar_id\` integer null, \`version\` integer not null default 1, \`blob\` blob null, \`blob2\` blob null, \`array\` text null, \`object\` json null, constraint \`foo_bar4_baz_id_foreign\` foreign key (\`baz_id\`) references \`foo_baz4\` (\`id\`) on delete set null, constraint \`foo_bar4_foo_bar_id_foreign\` foreign key (\`foo_bar_id\`) references \`foo_bar4\` (\`id\`) on delete set null);
 create unique index \`foo_bar4_baz_id_unique\` on \`foo_bar4\` (\`baz_id\`);

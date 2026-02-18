@@ -1,5 +1,5 @@
 import type {
-  ConnectionType, EntityData, EntityMetadata, EntityProperty, FilterQuery, Primary, Dictionary,
+  ConnectionType, Constructor, EntityData, EntityMetadata, EntityProperty, FilterQuery, Primary, Dictionary,
   IPrimaryKey, PopulateOptions, EntityDictionary, AutoPath, ObjectQuery, FilterObject, Populate, EntityName,
   PopulateHintOptions, Prefixes,
 } from '../typings.js';
@@ -11,6 +11,7 @@ import type { Collection } from '../entity/Collection.js';
 import type { EntityManager } from '../EntityManager.js';
 import type { DriverException } from '../exceptions.js';
 import type { Configuration } from '../utils/Configuration.js';
+import type { MikroORM } from '../MikroORM.js';
 import type { LoggingOptions, LogContext } from '../logging/Logger.js';
 import type { Raw } from '../utils/RawQueryFragment.js';
 
@@ -91,6 +92,11 @@ export interface IDatabaseDriver<C extends Connection = Connection> {
    * @internal
    */
   getSchemaName(meta?: EntityMetadata, options?: { schema?: string; parentSchema?: string }): string | undefined;
+
+  /**
+   * @internal
+   */
+  getORMClass(): Constructor<MikroORM>;
 
 }
 

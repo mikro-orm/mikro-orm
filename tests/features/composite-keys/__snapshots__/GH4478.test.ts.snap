@@ -24,7 +24,7 @@ exports[`GH issue 4478 2`] = `
     "[query] insert into \`class\` (\`school_code\`, \`academic_year\`, \`class_code\`) values ('abc', '2023', 'cls')",
   ],
   [
-    "[query] insert into \`student_allocation\` (\`student_id\`, \`academic_year\`, \`school_code\`, \`class_code\`) values ('1', '2023', 'abc', NULL), ('2', '2023', 'abc', 'cls')",
+    "[query] insert into \`student_allocation\` (\`student_id\`, \`academic_year\`, \`school_code\`, \`class_code\`) values ('1', '2023', 'abc', null), ('2', '2023', 'abc', 'cls')",
   ],
   [
     "[query] commit",

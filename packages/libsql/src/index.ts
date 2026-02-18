@@ -1,7 +1,6 @@
 export * from '@mikro-orm/sql';
 export * from './LibSqlConnection.js';
 export * from './LibSqlDriver.js';
-export * from './LibSqlPlatform.js';
 export {
   LibSqlMikroORM as MikroORM,
   type LibSqlOptions as Options,
