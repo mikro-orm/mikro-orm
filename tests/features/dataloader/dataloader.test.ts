@@ -1,4 +1,5 @@
-import { Collection, DataloaderType, DataloaderUtils, helper, MikroORM, Primary, PrimaryKeyProp, QueryOrder, Ref, ref, serialize, SimpleLogger } from '@mikro-orm/sqlite';
+import { Collection, DataloaderType, helper, MikroORM, Primary, PrimaryKeyProp, QueryOrder, Ref, ref, serialize, SimpleLogger } from '@mikro-orm/sqlite';
+import { DataloaderUtils } from '@mikro-orm/core/dataloader';
 import { Entity, Enum, Filter, ManyToMany, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../../helpers.js';
 

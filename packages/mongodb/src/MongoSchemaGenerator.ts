@@ -1,6 +1,5 @@
 import type { Collection } from 'mongodb';
 import {
-  AbstractSchemaGenerator,
   type CreateSchemaOptions,
   type Dictionary,
   type EntityKey,
@@ -10,6 +9,7 @@ import {
   Utils,
   inspect,
 } from '@mikro-orm/core';
+import { AbstractSchemaGenerator } from '@mikro-orm/core/schema';
 import type { MongoDriver } from './MongoDriver.js';
 import type { MongoEntityManager } from './MongoEntityManager.js';
 

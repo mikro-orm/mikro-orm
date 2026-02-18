@@ -1,4 +1,5 @@
-import { AbstractSchemaGenerator, Configuration } from '@mikro-orm/core';
+import { Configuration } from '@mikro-orm/core';
+import { AbstractSchemaGenerator } from '@mikro-orm/core/schema';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 
 class MySchemaGenerator extends AbstractSchemaGenerator<any> { }

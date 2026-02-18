@@ -768,3 +768,47 @@ The `MongoConnection.find()`, `MongoConnection.stream()`, and `MongoConnection.c
 ```
 
 The `MongoDriver.count()` method no longer accepts a separate `ctx` parameter — use `options.ctx` instead.
+
+## `umzug` dependency removed
+
+The `umzug` package is no longer used internally by `@mikro-orm/migrations` or `@mikro-orm/migrations-mongodb`. The migration execution engine is now built into MikroORM directly.
+
+### `UmzugMigration` type renamed to `MigrationInfo`
+
+If you import the `UmzugMigration` type, update your imports:
+
+```diff
+-import type { UmzugMigration } from '@mikro-orm/core';
++import type { MigrationInfo } from '@mikro-orm/core';
+```
+
+### Custom `MigrationStorage` no longer implements `UmzugStorage`
+
+If you extended `MigrationStorage`, the `logMigration` and `unlogMigration` methods now accept `{ name: string }` instead of `MigrationParams<any>` from umzug:
+
+```diff
+-async logMigration(params: MigrationParams<any>): Promise<void> {
++async logMigration(params: { name: string }): Promise<void> {
+```
+
+### Source folder detection is deferred
+
+The migration path auto-detection (e.g. `./src/migrations`) now runs lazily on the first async call (like `up()`, `down()`, `getPending()`) instead of in the constructor. If you relied on inspecting `config.get('migrations').path` immediately after constructing the migrator, you need to call an async method first.
+
+## `AbstractSchemaGenerator` import path changed
+
+`AbstractSchemaGenerator` is no longer exported from the `@mikro-orm/core` barrel export. Import it from the new subpath:
+
+```diff
+-import { AbstractSchemaGenerator } from '@mikro-orm/core';
++import { AbstractSchemaGenerator } from '@mikro-orm/core/schema';
+```
+
+## `DataloaderUtils` import path changed
+
+`DataloaderUtils` is no longer exported from the `@mikro-orm/core` barrel export. Import it from the new subpath:
+
+```diff
+-import { DataloaderUtils } from '@mikro-orm/core';
++import { DataloaderUtils } from '@mikro-orm/core/dataloader';
+```

@@ -1,6 +1,5 @@
 process.env.FORCE_COLOR = '0';
-import { Umzug } from 'umzug';
-import type { MikroORM, UmzugMigration } from '@mikro-orm/core';
+import type { MigrationInfo, MikroORM } from '@mikro-orm/core';
 import { Migration, Migrator } from '@mikro-orm/migrations-mongodb';
 import { MongoDriver } from '@mikro-orm/mongodb';
 import { rm } from 'node:fs/promises';
@@ -64,10 +63,8 @@ describe('Migrator (mongo)', () => {
     const migrator = orm.migrator;
     const migration = await migrator.create();
     expect(migration).toMatchSnapshot('migration-dump');
-    const upMock = vi.spyOn(Umzug.prototype, 'up');
-    upMock.mockImplementation(() => void 0 as any);
-    const downMock = vi.spyOn(Umzug.prototype, 'down');
-    downMock.mockImplementation(() => void 0 as any);
+    const executeMock = vi.spyOn(Migrator.prototype as any, 'executeMigrations');
+    executeMock.mockResolvedValue([]);
     await migrator.up();
     await migrator.down(migration.fileName.replace('.ts', ''));
     await migrator.up();
@@ -76,8 +73,7 @@ describe('Migrator (mongo)', () => {
     await migrator.down(migration.fileName.replace('migration-', '').replace('.ts', ''));
     orm.config.set('migrations', migrationsSettings); // Revert migration config changes
     await rm(process.cwd() + '/temp/migrations-mongo/' + migration.fileName);
-    upMock.mockRestore();
-    downMock.mockRestore();
+    executeMock.mockRestore();
   });
 
   test('generate migration with custom name with name option', async () => {
@@ -89,10 +85,8 @@ describe('Migrator (mongo)', () => {
     const migration = await migrator.create(undefined, false, false, 'custom_name');
     expect(migration).toMatchSnapshot('migration-dump');
     expect(migration.fileName).toEqual('migration20191013214813_custom_name.ts');
-    const upMock = vi.spyOn(Umzug.prototype, 'up');
-    upMock.mockImplementation(() => void 0 as any);
-    const downMock = vi.spyOn(Umzug.prototype, 'down');
-    downMock.mockImplementation(() => void 0 as any);
+    const executeMock = vi.spyOn(Migrator.prototype as any, 'executeMigrations');
+    executeMock.mockResolvedValue([]);
     await migrator.up();
     await migrator.down(migration.fileName.replace('.ts', ''));
     await migrator.up();
@@ -100,8 +94,7 @@ describe('Migrator (mongo)', () => {
     await migrator.up();
     orm.config.set('migrations', migrationsSettings); // Revert migration config changes
     await rm(process.cwd() + '/temp/migrations-mongo/' + migration.fileName);
-    upMock.mockRestore();
-    downMock.mockRestore();
+    executeMock.mockRestore();
   });
 
   test('generate blank migration', async () => {
@@ -123,20 +116,16 @@ describe('Migrator (mongo)', () => {
   });
 
   test('run migration', async () => {
-    const upMock = vi.spyOn(Umzug.prototype, 'up');
-    const downMock = vi.spyOn(Umzug.prototype, 'down');
-    upMock.mockImplementationOnce(() => void 0 as any);
-    downMock.mockImplementationOnce(() => void 0 as any);
+    const executeMock = vi.spyOn(Migrator.prototype as any, 'executeMigrations');
+    executeMock.mockResolvedValue([]);
     const migrator = orm.migrator;
     await migrator.up();
-    expect(upMock).toHaveBeenCalledTimes(1);
-    expect(downMock).toHaveBeenCalledTimes(0);
+    expect(executeMock).toHaveBeenCalledTimes(1);
     await orm.em.begin();
     await migrator.down({ transaction: orm.em.getTransactionContext() });
     await orm.em.commit();
-    expect(upMock).toHaveBeenCalledTimes(1);
-    expect(downMock).toHaveBeenCalledTimes(1);
-    upMock.mockRestore();
+    expect(executeMock).toHaveBeenCalledTimes(2);
+    executeMock.mockRestore();
   });
 
   test('run schema migration without existing migrations folder (GH #907)', async () => {
@@ -149,11 +138,11 @@ describe('Migrator (mongo)', () => {
     const migrator = orm.migrator;
     const storage = migrator.getStorage();
 
-    await storage.logMigration({ name: 'test', context: null });
+    await storage.logMigration({ name: 'test' });
     await expect(storage.getExecutedMigrations()).resolves.toMatchObject([{ name: 'test' }]);
     await expect(storage.executed()).resolves.toEqual(['test']);
 
-    await storage.unlogMigration({ name: 'test', context: null });
+    await storage.unlogMigration({ name: 'test' });
     await expect(storage.executed()).resolves.toEqual([]);
 
     await expect(migrator.getPending()).resolves.toEqual([]);
@@ -199,7 +188,7 @@ describe('Migrator (mongo)', () => {
     const mock = mockLogger(orm, ['query']);
 
     const migrated: unknown[] = [];
-    const migratedHandler = (e: UmzugMigration) => { migrated.push(e); };
+    const migratedHandler = (e: MigrationInfo) => { migrated.push(e); };
     migrator.on('migrated', migratedHandler);
 
     await migrator.up(migration.fileName);
@@ -288,6 +277,73 @@ describe('Migrator (mongo)', () => {
         .replace(/ trx\d+/, 'trx_xx');
     });
     expect(calls).toMatchSnapshot('all-or-nothing-disabled');
+  });
+
+});
+
+describe('Migrator (mongo) - filter up/down options', () => {
+
+  let orm: MikroORM<MongoDriver>;
+
+  beforeAll(async () => {
+    orm = await initORMMongo(true, {
+      migrations: {
+        migrationsList: [
+          { name: 'Migration1.ts', class: MigrationTest1 },
+          { name: 'Migration2.ts', class: MigrationTest1 },
+          { name: 'Migration3.ts', class: MigrationTest1 },
+        ],
+      },
+    });
+  });
+  afterAll(async () => {
+    await orm.close();
+  });
+
+  test('getPending returns pending migrations', async () => {
+    const storage = orm.migrator.getStorage();
+    await storage.logMigration({ name: 'Migration1' });
+
+    const pending = await orm.migrator.getPending();
+    expect(pending).toEqual([
+      { name: 'Migration2', path: undefined },
+      { name: 'Migration3', path: undefined },
+    ]);
+
+    await storage.unlogMigration({ name: 'Migration1' });
+  });
+
+  test('up with from option', async () => {
+    await orm.migrator.up({ migrations: ['Migration1'] });
+    await orm.migrator.up({ migrations: ['Migration2'] });
+
+    // up from Migration1: only pending items after Migration1 index should run
+    const result = await orm.migrator.up({ from: 'Migration1' } as any);
+    expect(result).toHaveLength(1);
+    expect(result[0].name).toBe('Migration3');
+
+    // clean up: revert all
+    const migratorMock = vi.spyOn(Migration.prototype, 'down');
+    migratorMock.mockImplementation(async () => void 0);
+    await orm.migrator.down({ to: 0 } as any);
+    migratorMock.mockRestore();
+  });
+
+  test('down with named to option', async () => {
+    const migratorMock = vi.spyOn(Migration.prototype, 'down');
+    migratorMock.mockImplementation(async () => void 0);
+
+    await orm.migrator.up();
+
+    // down to Migration1: should revert Migration3 and Migration2, but not Migration1
+    const result = await orm.migrator.down({ to: 'Migration1' });
+    expect(result).toHaveLength(2);
+    expect(result[0].name).toBe('Migration3');
+    expect(result[1].name).toBe('Migration2');
+
+    // clean up
+    await orm.migrator.down({ to: 0 } as any);
+    migratorMock.mockRestore();
   });
 
 });

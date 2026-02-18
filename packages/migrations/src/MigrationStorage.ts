@@ -7,11 +7,9 @@ import {
   type SchemaHelper,
   DatabaseTable,
 } from '@mikro-orm/sql';
-import type { MigrationParams, UmzugStorage } from 'umzug';
-import { parse } from 'node:path';
 import type { MigrationRow } from './typings.js';
 
-export class MigrationStorage implements UmzugStorage {
+export class MigrationStorage {
 
   private readonly connection: AbstractSqlConnection;
   private readonly helper: SchemaHelper;
@@ -32,13 +30,13 @@ export class MigrationStorage implements UmzugStorage {
     return migrations.map(({ name }) => `${this.getMigrationName(name)}`);
   }
 
-  async logMigration(params: MigrationParams<any>): Promise<void> {
+  async logMigration(params: { name: string }): Promise<void> {
     const { entity } = this.getTableName();
     const name = this.getMigrationName(params.name);
     await this.driver.nativeInsert(entity, { name }, { ctx: this.masterTransaction });
   }
 
-  async unlogMigration(params: MigrationParams<any>): Promise<void> {
+  async unlogMigration(params: { name: string }): Promise<void> {
     const { entity } = this.getTableName();
     const withoutExt = this.getMigrationName(params.name);
     const names = [withoutExt, withoutExt + '.js', withoutExt + '.ts'];
@@ -113,14 +111,7 @@ export class MigrationStorage implements UmzugStorage {
    * @internal
    */
   getMigrationName(name: string) {
-    const parsedName = parse(name);
-
-    if (['.js', '.ts'].includes(parsedName.ext)) {
-      // strip extension
-      return parsedName.name;
-    }
-
-    return name;
+    return name.replace(/\.[jt]s$/, '');
   }
 
   /**

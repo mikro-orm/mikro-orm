@@ -1,6 +1,5 @@
 export * from './Configuration.js';
 export * from './Cursor.js';
-export * from './DataloaderUtils.js';
 export * from './Utils.js';
 export * from './RequestContext.js';
 export * from './TransactionContext.js';
@@ -8,7 +7,6 @@ export * from './TransactionManager.js';
 export * from './QueryHelper.js';
 export * from './NullHighlighter.js';
 export * from './EntityComparator.js';
-export * from './AbstractSchemaGenerator.js';
 export * from './RawQueryFragment.js';
 export * from './env-vars.js';
 export * from './upsert-utils.js';

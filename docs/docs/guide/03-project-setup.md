@@ -461,7 +461,7 @@ Working with `SchemaGenerator` can be handy when prototyping the initial app, or
 
 > To use migrations you first need to install `@mikro-orm/migrations` package for SQL drivers (or `@mikro-orm/migrations-mongodb` for MongoDB), and register the `Migrator` extension in your ORM config.
 
-MikroORM has integrated support for migrations via [umzug](https://github.com/sequelize/umzug). It allows you to generate migrations with current schema differences, as well as manage their execution. By default, each migration will be executed inside a transaction, and all of them will be wrapped in one master transaction, so if one of them fails, everything will be rolled back.
+MikroORM has integrated support for migrations. It allows you to generate migrations with current schema differences, as well as manage their execution. By default, each migration will be executed inside a transaction, and all of them will be wrapped in one master transaction, so if one of them fails, everything will be rolled back.
 
 Let's install the migrations package and try to create your first migration:
 

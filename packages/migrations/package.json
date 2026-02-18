@@ -50,8 +50,7 @@
     "access": "public"
   },
   "dependencies": {
-    "@mikro-orm/sql": "6.6.4",
-    "umzug": "3.8.2"
+    "@mikro-orm/sql": "6.6.4"
   },
   "devDependencies": {
     "@mikro-orm/core": "^6.6.4"

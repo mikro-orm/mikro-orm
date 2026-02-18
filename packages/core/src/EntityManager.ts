@@ -2,7 +2,6 @@ import { type Configuration } from './utils/Configuration.js';
 import { getOnConflictReturningFields, getWhereCondition } from './utils/upsert-utils.js';
 import { Utils } from './utils/Utils.js';
 import { Cursor } from './utils/Cursor.js';
-import { DataloaderUtils } from './utils/DataloaderUtils.js';
 import { QueryHelper } from './utils/QueryHelper.js';
 import { TransactionContext } from './utils/TransactionContext.js';
 import { isRaw, Raw } from './utils/RawQueryFragment.js';
@@ -2427,6 +2426,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       return em.loaders[type];
     }
 
+    const { DataloaderUtils } = await import('@mikro-orm/core/dataloader');
     const DataLoader = await DataloaderUtils.getDataLoader();
 
     switch (type) {

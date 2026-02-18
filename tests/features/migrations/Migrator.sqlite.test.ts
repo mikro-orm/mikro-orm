@@ -1,5 +1,4 @@
 process.env.FORCE_COLOR = '0';
-import { Umzug } from 'umzug';
 import { MetadataStorage, MikroORM, raw } from '@mikro-orm/core';
 import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { Migration, MigrationStorage, Migrator } from '@mikro-orm/migrations';
@@ -63,10 +62,8 @@ describe('Migrator (sqlite)', () => {
     orm.config.set('migrations', { ...migrationsSettings, fileName: time => `migration-${time}` });
     const migration = await orm.migrator.create();
     expect(migration).toMatchSnapshot('migration-dump');
-    const upMock = vi.spyOn(Umzug.prototype, 'up');
-    upMock.mockImplementation(() => void 0 as any);
-    const downMock = vi.spyOn(Umzug.prototype, 'down');
-    downMock.mockImplementation(() => void 0 as any);
+    const executeMock = vi.spyOn(Migrator.prototype as any, 'executeMigrations');
+    executeMock.mockResolvedValue([]);
     await orm.migrator.up();
     await orm.migrator.down(migration.fileName.replace('.ts', ''));
     await orm.migrator.up();
@@ -74,8 +71,7 @@ describe('Migrator (sqlite)', () => {
     await orm.migrator.up();
     await orm.migrator.down(migration.fileName.replace('migration-', '').replace('.ts', ''));
     orm.config.set('migrations', migrationsSettings); // Revert migration config changes
-    upMock.mockRestore();
-    downMock.mockRestore();
+    executeMock.mockRestore();
   });
 
   test('generate schema migration', async () => {
@@ -140,8 +136,9 @@ describe('Migrator (sqlite)', () => {
     await rm(process.cwd() + '/temp/migrations-3/' + migration1.fileName);
 
     await orm.schema.dropTableIfExists(orm.config.get('migrations').tableName!);
-    const migration2 = await migrator.createInitial(undefined);
-    expect(logMigrationMock).toHaveBeenCalledWith({ name: 'Migration20191013214813.ts', context: null });
+    const migrator2 = new Migrator(orm.em);
+    const migration2 = await migrator2.createInitial(undefined);
+    expect(logMigrationMock).toHaveBeenCalledWith({ name: 'Migration20191013214813.ts' });
     expect(migration2).toMatchSnapshot('initial-migration-dump');
     await rm(process.cwd() + '/temp/migrations-3/' + migration2.fileName);
   });
@@ -160,19 +157,14 @@ describe('Migrator (sqlite)', () => {
   });
 
   test('run schema migration', async () => {
-    const upMock = vi.spyOn(Umzug.prototype, 'up');
-    const downMock = vi.spyOn(Umzug.prototype, 'down');
-    upMock.mockImplementationOnce(() => void 0 as any);
-    downMock.mockImplementationOnce(() => void 0 as any);
+    const executeMock = vi.spyOn(Migrator.prototype as any, 'executeMigrations');
+    executeMock.mockResolvedValue([]);
     const migrator = new Migrator(orm.em);
     await migrator.up();
-    expect(upMock).toHaveBeenCalledTimes(1);
-    expect(downMock).toHaveBeenCalledTimes(0);
+    expect(executeMock).toHaveBeenCalledTimes(1);
     await migrator.down();
-    expect(upMock).toHaveBeenCalledTimes(1);
-    expect(downMock).toHaveBeenCalledTimes(1);
-    upMock.mockRestore();
-    downMock.mockRestore();
+    expect(executeMock).toHaveBeenCalledTimes(2);
+    executeMock.mockRestore();
   });
 
   test('run schema migration without existing migrations folder (GH #907)', async () => {
@@ -184,18 +176,17 @@ describe('Migrator (sqlite)', () => {
   test('ensureTable and list executed migrations', async () => {
     await orm.schema.dropTableIfExists(orm.config.get('migrations').tableName!);
     const migrator = new Migrator(orm.em);
-    // @ts-ignore
-    const storage = migrator.storage;
+    const storage = migrator.getStorage();
 
     await storage.ensureTable(); // creates the table
-    await storage.logMigration({ name: 'test', context: null });
+    await storage.logMigration({ name: 'test' });
     const executed = await storage.getExecutedMigrations();
     expect(executed).toMatchObject([{ name: 'test' }]);
     expect(executed[0].executed_at).toBeInstanceOf(Date);
     await expect(storage.executed()).resolves.toEqual(['test']);
 
     await storage.ensureTable(); // table exists, no-op
-    await storage.unlogMigration({ name: 'test', context: null });
+    await storage.unlogMigration({ name: 'test' });
     await expect(storage.executed()).resolves.toEqual([]);
 
     await expect(migrator.getPending()).resolves.toEqual([]);

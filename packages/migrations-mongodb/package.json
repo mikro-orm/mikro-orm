@@ -51,8 +51,7 @@
   },
   "dependencies": {
     "@mikro-orm/mongodb": "6.6.4",
-    "mongodb": "7.1.0",
-    "umzug": "3.8.2"
+    "mongodb": "7.1.0"
   },
   "devDependencies": {
     "@mikro-orm/core": "^6.6.4"

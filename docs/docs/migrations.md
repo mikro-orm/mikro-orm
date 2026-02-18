@@ -2,7 +2,7 @@
 title: Migrations
 ---
 
-MikroORM has integrated support for migrations via [umzug](https://github.com/sequelize/umzug). It allows you to generate migrations based on the current schema difference.
+MikroORM has integrated support for migrations. It allows you to generate migrations based on the current schema difference.
 
 :::info
 
