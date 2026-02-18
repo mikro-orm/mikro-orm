@@ -1689,6 +1689,11 @@ export interface Seeder<T extends Dictionary = Dictionary> {
   run(em: EntityManager, context?: T): void | Promise<void>;
 }
 
+export interface SeederObject {
+  name: string;
+  class: Constructor<Seeder>;
+}
+
 export type ConnectionType = 'read' | 'write';
 
 export type MetadataProcessor = (metadata: EntityMetadata[], platform: Platform) => MaybePromise<void>;

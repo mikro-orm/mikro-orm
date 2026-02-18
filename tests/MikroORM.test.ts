@@ -47,6 +47,7 @@ describe('MikroORM', () => {
     expect(orm1.seeder).toBeInstanceOf(SeedManager);
     // source folder detection is deferred to the first async call
     await (orm1.migrator as any).init();
+    await (orm1.seeder as any).init();
     expect(orm1.config.get('migrations')).toMatchObject({
       path: './src/migrations',
       pathTs: './src/migrations',
@@ -67,6 +68,7 @@ describe('MikroORM', () => {
     expect(orm2.migrator).toBeInstanceOf(Migrator);
     expect(orm2.seeder).toBeInstanceOf(SeedManager);
     await (orm2.migrator as any).init();
+    await (orm2.seeder as any).init();
     expect(orm2.config.get('migrations')).toMatchObject({
       path: './dist/migrations',
       pathTs: './src/migrations',
@@ -89,6 +91,7 @@ describe('MikroORM', () => {
     expect(orm3.migrator).toBeInstanceOf(MongoMigrator);
     expect(orm3.seeder).toBeInstanceOf(SeedManager);
     await (orm3.migrator as any).init();
+    await (orm3.seeder as any).init();
     expect(orm3.config.get('migrations')).toMatchObject({
       path: './build/migrations',
       pathTs: './src/migrations',

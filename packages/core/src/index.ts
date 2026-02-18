@@ -7,7 +7,7 @@ export type {
   CompiledFunctions, Constructor, ConnectionType, Dictionary, Primary, IPrimaryKey, ObjectQuery, FilterQuery, IWrappedEntity, InferEntityName, EntityData, Highlighter, MaybePromise,
   AnyEntity, EntityClass, EntityProperty, PopulateOptions, Populate, Loaded, New, LoadedReference, LoadedCollection, IMigrator, IMigrationGenerator, MigratorEvent,
   GetRepository, MigrationObject, DeepPartial, PrimaryProperty, Cast, IsUnknown, EntityDictionary, EntityDTO, EntityDTOFlat, EntityDTOProp, SerializeDTO, MigrationDiff, GenerateOptions, FilterObject, IMigrationRunner,
-  IEntityGenerator, ISeedManager, IMigratorStorage, RequiredEntityData, CheckCallback, IndexCallback, FormulaCallback, FormulaTable, SchemaTable, SchemaColumns, SimpleColumnMeta, Rel, Ref, ScalarRef, EntityRef, ISchemaGenerator,
+  IEntityGenerator, ISeedManager, SeederObject, IMigratorStorage, RequiredEntityData, CheckCallback, IndexCallback, FormulaCallback, FormulaTable, SchemaTable, SchemaColumns, SimpleColumnMeta, Rel, Ref, ScalarRef, EntityRef, ISchemaGenerator,
   MigrationInfo, MigrateOptions, MigrationResult, MigrationRow, EntityKey, EntityValue, EntityDataValue, FilterKey, EntityType, FromEntityType, Selected, IsSubset,
   EntityProps, ExpandProperty, ExpandScalar, FilterItemValue, ExpandQuery, Scalar, ExpandHint, FilterValue, MergeLoaded, MergeSelected, TypeConfig, AnyString,
   ClearDatabaseOptions, CreateSchemaOptions, EnsureDatabaseOptions, UpdateSchemaOptions, DropSchemaOptions, RefreshDatabaseOptions, AutoPath, UnboxArray, MetadataProcessor, ImportsResolver,

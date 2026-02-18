@@ -20,6 +20,8 @@ import type {
   MaybePromise,
   Migration,
   MigrationObject,
+  Seeder,
+  SeederObject,
 } from '../typings.js';
 import { ObjectHydrator } from '../hydration/ObjectHydrator.js';
 import { NullHighlighter } from '../utils/NullHighlighter.js';
@@ -633,6 +635,8 @@ export interface SeederOptions {
    * @default (className) => className
    */
   fileName?: (className: string) => string;
+  /** List of seeder classes or objects to use instead of file-based discovery. */
+  seedersList?: (SeederObject | Constructor<Seeder>)[];
 }
 
 /**

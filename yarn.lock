@@ -1657,7 +1657,6 @@ __metadata:
   resolution: "@mikro-orm/seeder@workspace:packages/seeder"
   dependencies:
     "@mikro-orm/core": "npm:^6.6.4"
-    tinyglobby: "npm:0.2.15"
   peerDependencies:
     "@mikro-orm/core": ^6.0.0
   languageName: unknown
@@ -9817,7 +9816,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tinyglobby@npm:0.2.15, tinyglobby@npm:^0.2.12, tinyglobby@npm:^0.2.14, tinyglobby@npm:^0.2.15":
+"tinyglobby@npm:^0.2.12, tinyglobby@npm:^0.2.14, tinyglobby@npm:^0.2.15":
   version: 0.2.15
   resolution: "tinyglobby@npm:0.2.15"
   dependencies:
