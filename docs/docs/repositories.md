@@ -2,6 +2,9 @@
 title: Entity Repository
 ---
 
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
 Entity Repositories are thin layers on top of `EntityManager`. They act as an extension point, so you can add custom methods, or even alter the existing ones. The default `EntityRepository` implementation just forwards the calls to underlying `EntityManager` instance.
 
 > `EntityRepository` class carries the entity type, so you do not have to pass it to every `find` or `findOne` calls.
@@ -28,7 +31,7 @@ You need to make sure you are working with correctly typed `EntityRepository` to
 
 :::
 
-To use custom repository, just extend `EntityRepository<T>` class:
+To use a custom repository, extend `EntityRepository<T>` class:
 
 ```ts
 import { EntityRepository } from '@mikro-orm/mysql'; // or any other driver package
@@ -36,14 +39,40 @@ import { EntityRepository } from '@mikro-orm/mysql'; // or any other driver pack
 export class CustomAuthorRepository extends EntityRepository<Author> {
 
   // custom methods...
-  public findAndUpdate(...) {
+  findAndUpdate(...) {
     // ...
   }
 
 }
 ```
 
-And register the repository via `@Entity` decorator:
+And register the repository via the entity definition:
+
+<Tabs
+groupId="entity-def"
+defaultValue="define-entity"
+values={[
+{label: 'defineEntity', value: 'define-entity'},
+{label: 'reflect-metadata', value: 'reflect-metadata'},
+{label: 'ts-morph', value: 'ts-morph'},
+{label: 'EntitySchema', value: 'entity-schema'},
+]
+}>
+<TabItem value="define-entity">
+
+```ts
+export const Author = defineEntity({
+  name: 'Author',
+  repository: () => CustomAuthorRepository,
+  properties: {
+    id: p.integer().primary(),
+    // ...
+  },
+});
+```
+
+</TabItem>
+<TabItem value="reflect-metadata">
 
 ```ts
 @Entity({ repository: () => CustomAuthorRepository })
@@ -52,7 +81,34 @@ export class Author {
 }
 ```
 
-> Use `@Entity({ repository: () => MyRepository })` to register a custom repository.
+</TabItem>
+<TabItem value="ts-morph">
+
+```ts
+@Entity({ repository: () => CustomAuthorRepository })
+export class Author {
+  // ...
+}
+```
+
+</TabItem>
+<TabItem value="entity-schema">
+
+```ts
+export class Author {}
+
+export const AuthorSchema = new EntitySchema({
+  class: Author,
+  repository: () => CustomAuthorRepository,
+  properties: {
+    id: { type: 'number', primary: true },
+    // ...
+  },
+});
+```
+
+</TabItem>
+</Tabs>
 
 Note that you need to pass that repository reference inside a callback so you will not run into circular dependency issues when using entity references inside that repository.
 
@@ -60,7 +116,37 @@ Now you can access your custom repository via `em.getRepository()` method.
 
 ### Inferring custom repository type
 
-To have the `em.getRepository()` method return correctly typed custom repository instead of the generic `EntityRepository<T>`, you can use `EntityRepositoryType` symbol:
+To have the `em.getRepository()` method return correctly typed custom repository instead of the generic `EntityRepository<T>`, use the `EntityRepositoryType` symbol:
+
+<Tabs
+groupId="entity-def"
+defaultValue="define-entity"
+values={[
+{label: 'defineEntity', value: 'define-entity'},
+{label: 'reflect-metadata', value: 'reflect-metadata'},
+{label: 'ts-morph', value: 'ts-morph'},
+{label: 'EntitySchema', value: 'entity-schema'},
+]
+}>
+<TabItem value="define-entity">
+
+```ts
+export const Author = defineEntity({
+  name: 'Author',
+  repository: () => AuthorRepository,
+  properties: {
+    id: p.integer().primary(),
+    // ...
+  },
+});
+
+const repo = em.getRepository(Author); // repo has type AuthorRepository
+```
+
+With `defineEntity`, the `EntityRepositoryType` is inferred automatically from the `repository` option — no extra symbol needed.
+
+</TabItem>
+<TabItem value="reflect-metadata">
 
 ```ts
 @Entity({ repository: () => AuthorRepository })
@@ -73,7 +159,265 @@ export class Author {
 const repo = em.getRepository(Author); // repo has type AuthorRepository
 ```
 
-> You can also register custom base repository (for all entities where you do not specify `repository`) globally, via `MikroORM.init({ entityRepository: CustomBaseRepository })`.
+</TabItem>
+<TabItem value="ts-morph">
+
+```ts
+@Entity({ repository: () => AuthorRepository })
+export class Author {
+
+  [EntityRepositoryType]?: AuthorRepository;
+
+}
+
+const repo = em.getRepository(Author); // repo has type AuthorRepository
+```
+
+</TabItem>
+<TabItem value="entity-schema">
+
+```ts
+export class Author {
+  [EntityRepositoryType]?: AuthorRepository;
+}
+
+export const AuthorSchema = new EntitySchema({
+  class: Author,
+  repository: () => AuthorRepository,
+  properties: {
+    id: { type: 'number', primary: true },
+    // ...
+  },
+});
+
+const repo = em.getRepository(Author); // repo has type AuthorRepository
+```
+
+</TabItem>
+</Tabs>
+
+> You can also register a custom base repository (for all entities where you do not specify `repository`) globally, via `MikroORM.init({ entityRepository: () => CustomBaseRepository })`.
+
+## Generic Custom Repository
+
+When you want all your repositories to share custom methods, you can create a generic base repository. Getting the type parameters right can be tricky — here's the pattern:
+
+```ts
+import { EntityRepository, EntityManager } from '@mikro-orm/mysql'; // or any other driver package
+
+export class BaseRepository<Entity extends object> extends EntityRepository<Entity> {
+
+  // All custom methods use the same `Entity` type parameter.
+  // `this.em` and `this.entityName` are available from the parent class.
+
+  async exists(where: FilterQuery<Entity>): Promise<boolean> {
+    const count = await this.count(where);
+    return count > 0;
+  }
+
+  async findOrCreate(where: FilterQuery<Entity>, data: RequiredEntityData<Entity>): Promise<Entity> {
+    let entity = await this.findOne(where);
+
+    if (!entity) {
+      entity = this.create(data);
+      await this.em.flush();
+    }
+
+    return entity;
+  }
+
+}
+```
+
+Register it globally so all entities use it by default:
+
+```ts
+MikroORM.init({
+  entityRepository: () => BaseRepository,
+});
+```
+
+### Entity-specific repositories extending the generic base
+
+You can then create entity-specific repositories that extend your generic base and add methods specific to that entity:
+
+```ts
+export class AuthorRepository extends BaseRepository<Author> {
+
+  async findActive(): Promise<Author[]> {
+    return this.find({ active: true });
+  }
+
+}
+```
+
+Register it the same way as any custom repository, via the entity definition:
+
+<Tabs
+groupId="entity-def"
+defaultValue="define-entity"
+values={[
+{label: 'defineEntity', value: 'define-entity'},
+{label: 'reflect-metadata', value: 'reflect-metadata'},
+{label: 'ts-morph', value: 'ts-morph'},
+{label: 'EntitySchema', value: 'entity-schema'},
+]
+}>
+<TabItem value="define-entity">
+
+```ts
+export const Author = defineEntity({
+  name: 'Author',
+  repository: () => AuthorRepository,
+  properties: {
+    id: p.integer().primary(),
+    // ...
+  },
+});
+
+// em.getRepository(Author) now returns AuthorRepository,
+// which has both BaseRepository methods and AuthorRepository methods.
+```
+
+With `defineEntity`, the `EntityRepositoryType` is inferred automatically.
+
+</TabItem>
+<TabItem value="reflect-metadata">
+
+```ts
+@Entity({ repository: () => AuthorRepository })
+export class Author {
+
+  [EntityRepositoryType]?: AuthorRepository;
+
+}
+
+// em.getRepository(Author) now returns AuthorRepository,
+// which has both BaseRepository methods and AuthorRepository methods.
+```
+
+</TabItem>
+<TabItem value="ts-morph">
+
+```ts
+@Entity({ repository: () => AuthorRepository })
+export class Author {
+
+  [EntityRepositoryType]?: AuthorRepository;
+
+}
+
+// em.getRepository(Author) now returns AuthorRepository,
+// which has both BaseRepository methods and AuthorRepository methods.
+```
+
+</TabItem>
+<TabItem value="entity-schema">
+
+```ts
+export class Author {
+  [EntityRepositoryType]?: AuthorRepository;
+}
+
+export const AuthorSchema = new EntitySchema({
+  class: Author,
+  repository: () => AuthorRepository,
+  properties: {
+    id: { type: 'number', primary: true },
+    // ...
+  },
+});
+
+// em.getRepository(Author) now returns AuthorRepository,
+// which has both BaseRepository methods and AuthorRepository methods.
+```
+
+</TabItem>
+</Tabs>
+
+Entities without a specific repository will still use the `BaseRepository` with its generic methods.
+
+### Using `EntityRepositoryType` with a base entity
+
+If you use a common base entity, you can set the `EntityRepositoryType` there so all inheriting entities get the correct type by default:
+
+<Tabs
+groupId="entity-def"
+defaultValue="define-entity"
+values={[
+{label: 'defineEntity', value: 'define-entity'},
+{label: 'reflect-metadata', value: 'reflect-metadata'},
+{label: 'ts-morph', value: 'ts-morph'},
+{label: 'EntitySchema', value: 'entity-schema'},
+]
+}>
+<TabItem value="define-entity">
+
+```ts
+export const BaseEntity = defineEntity({
+  name: 'BaseEntity',
+  abstract: true,
+  properties: {
+    id: p.integer().primary(),
+  },
+});
+```
+
+With `defineEntity`, when you set `repository` globally via the ORM config, the repository type is resolved automatically for all entities — no `EntityRepositoryType` symbol needed.
+
+</TabItem>
+<TabItem value="reflect-metadata">
+
+```ts
+import { EntityRepositoryType, PrimaryKey } from '@mikro-orm/core';
+
+export abstract class BaseEntity {
+
+  [EntityRepositoryType]?: BaseRepository<this>;
+
+  @PrimaryKey()
+  id!: number;
+
+}
+```
+
+</TabItem>
+<TabItem value="ts-morph">
+
+```ts
+import { EntityRepositoryType, PrimaryKey } from '@mikro-orm/core';
+
+export abstract class BaseEntity {
+
+  [EntityRepositoryType]?: BaseRepository<this>;
+
+  @PrimaryKey()
+  id!: number;
+
+}
+```
+
+</TabItem>
+<TabItem value="entity-schema">
+
+```ts
+export abstract class BaseEntity {
+  [EntityRepositoryType]?: BaseRepository<this>;
+}
+
+export const BaseEntitySchema = new EntitySchema({
+  class: BaseEntity,
+  abstract: true,
+  properties: {
+    id: { type: 'number', primary: true },
+  },
+});
+```
+
+</TabItem>
+</Tabs>
+
+Now `em.getRepository(AnyEntityExtendingBaseEntity)` returns `BaseRepository<T>` without needing to redeclare the symbol on every entity. Entities with entity-specific repositories can still override it.
 
 ## Removed methods from `EntityRepository` interface
 
@@ -89,26 +433,26 @@ They were confusing as they gave a false sense of working with a scoped context 
 
 > Alternatively, you can use the `repository.getEntityManager()` method to access those methods directly on the `EntityManager`.
 
-If you want to keep those methods on repository level, you can define custom base repository and use it globally:
+If you want to keep those methods on repository level, you can define a custom base repository and use it globally:
 
 ```ts
-import { EntityManager, EntityRepository, AnyEntity } from '@mikro-orm/mysql';
+import { EntityManager, EntityRepository } from '@mikro-orm/mysql';
 
 export class ExtendedEntityRepository<T extends object> extends EntityRepository<T> {
 
-  persist(entity: AnyEntity | AnyEntity[]): EntityManager {
+  persist(entity: object | object[]): EntityManager {
     return this.em.persist(entity);
   }
 
-  async persistAndFlush(entity: AnyEntity | AnyEntity[]): Promise<void> {
+  async persistAndFlush(entity: object | object[]): Promise<void> {
     await this.em.persistAndFlush(entity);
   }
 
-  remove(entity: AnyEntity): EntityManager {
+  remove(entity: object): EntityManager {
     return this.em.remove(entity);
   }
 
-  async removeAndFlush(entity: AnyEntity): Promise<void> {
+  async removeAndFlush(entity: object): Promise<void> {
     await this.em.removeAndFlush(entity);
   }
 
@@ -123,8 +467,8 @@ And specify it in the ORM config:
 
 ```ts
 MikroORM.init({
-   entityRepository: ExtendedEntityRepository,
-})
+  entityRepository: () => ExtendedEntityRepository,
+});
 ```
 
-You might as well want to use the `EntityRepositoryType` symbol, possibly in a custom base entity.
+You might as well want to use the `EntityRepositoryType` symbol, possibly in a custom base entity (as shown above).

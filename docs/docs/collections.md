@@ -2,91 +2,212 @@
 title: Collections
 ---
 
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
 `OneToMany` and `ManyToMany` properties are stored in a `Collection` wrapper.
 
 ## Working with collections
 
-The `Collection` class implements iterator, so you can use `for of` loop to iterate through it.
-
-Another way to access collection items is to use bracket syntax like when you access array items. Keep in mind that this approach will not check if the collection is initialized, while using `get` method will throw error in this case.
-
-> Note that array access in `Collection` is available only for reading already loaded items, you cannot add new items to `Collection` this way.
-
-To get all entities stored in a `Collection`, you can use `getItems()` method. It will throw in case the `Collection` is not initialized. If you want to disable this validation, you can use `getItems(false)`. This will give you the entity instances managed by the identity map.
-
-Alternatively you can use `toArray()` which will serialize the `Collection` to an array of DTOs. Modifying those will have no effect on the actual entity instances.
+The `Collection` class implements the iterator protocol, so you can use `for of` loops to iterate through it. You can also access items by index (e.g. `author.books[0]`), but this is read-only and won't check if the collection is initialized.
 
 ```ts
-const author = em.findOne(Author, '...', { populate: ['books'] }); // populating books collection
-
-// Or we could lazy load books collection later via `load()` method.
-// Unlike `init()` it will check the state and do nothing if the collection is already initialized.
-// await author.books.load();
+const author = await em.findOne(Author, '...', { populate: ['books'] });
 
 for (const book of author.books) {
-  console.log(book.title); // initialized
-  console.log(book.author.isInitialized()); // true
-  console.log(book.author.id);
-  console.log(book.author.name); // Jon Snow
-  console.log(book.publisher); // just reference
-  console.log(book.publisher.isInitialized()); // false
-  console.log(book.publisher.id);
-  console.log(book.publisher.name); // undefined
+  console.log(book.title);
 }
 
-// collection needs to be initialized before we can work with it
-author.books.add(book);
-console.log(author.books.contains(book)); // true
-console.log(author.books.exists(item => item === book)); // true
-console.log(author.books.find(item => item === book)); // book
-console.log(author.books.map(item => item.title)); // array of book titles
-console.log(author.books.filter(item => item.title.startsWith('Foo'))); // array of books matching the callback
-author.books.remove(book);
-console.log(author.books.contains(book)); // false
-author.books.add(book);
-console.log(author.books.count()); // 1
-console.log(author.books.slice(0, 1)); // Book[]
-console.log(author.books.slice()); // Book[]
-console.log(author.books.slice().length); // 1
-author.books.removeAll();
-console.log(author.books.isEmpty()); // true
-console.log(author.books.contains(book)); // false
-console.log(author.books.count()); // 0
-console.log(author.books.getItems()); // Book[]
-console.log(author.books.getIdentifiers()); // array of string | number
-console.log(author.books.getIdentifiers('_id')); // array of ObjectId
+// array access works too (read-only)
+console.log(author.books[0]); // Book
+```
 
-// array access works as well
-console.log(author.books[1]); // Book
-console.log(author.books[12345]); // undefined, even if the collection is not initialized
+### Type-safe `$` access
 
-// getting array of the items
-console.log(author.books.getItems()); // Book[]
+When a collection is populated, MikroORM types it as `LoadedCollection`, which exposes a `$` accessor (and its alias `get()`). This gives you type-safe access to the collection that TypeScript knows is initialized:
 
-// serializing the collection
-console.log(author.books.toArray()); // EntityDTO<Book>[]
+```ts
+const author = await em.findOne(Author, '...', { populate: ['books'] });
 
-const author = em.findOne(Author, '...'); // books collection has not been populated
-const count = await author.books.loadCount(); // gets the count of collection items from database instead of counting loaded items
-console.log(author.books.getItems()); // throws because the collection has not been initialized
-// initialize collection if not already loaded and return its items as array
-console.log(await author.books.loadItems()); // Book[]
+// `author.books.$` is typed as `Collection<Book>` — TypeScript knows it's loaded
+for (const book of author.books.$) {
+  console.log(book.title);
+}
+```
+
+Without the populate hint, accessing `$` is a compile error, preventing you from accidentally working with an uninitialized collection:
+
+```ts
+const author = await em.findOne(Author, '...');
+
+// TS Error: Property '$' does not exist on type 'Collection<Book>'
+for (const book of author.books.$) { ... }
+```
+
+You can also use the `Loaded` type in function signatures to require a populated collection:
+
+```ts
+function listBookTitles(author: Loaded<Author, 'books'>): string[] {
+  // Type-safe — books is guaranteed to be loaded
+  return author.books.$.map(book => book.title);
+}
+```
+
+See the [Type-Safe Relations](./type-safe-relations.md) guide for full documentation on `Loaded`, `Ref`, and the `$` accessor.
+
+### Loading collections
+
+A collection must be initialized before you can work with its items. There are several ways to load a collection:
+
+```ts
+// 1. populate when querying
+const author = await em.findOne(Author, '...', { populate: ['books'] });
+
+// 2. load() — initializes the collection if not already loaded (no-op if already initialized)
+await author.books.load();
+
+// 3. loadItems() — same as load(), but returns the items directly as an array
+const books = await author.books.loadItems(); // Book[]
+
+// 4. init() — always reloads from the database, even if already initialized
+await author.books.init();
+```
+
+### Getting the count without loading
+
+Use `loadCount()` to get the number of items from the database without loading the entities. The result is cached — pass `{ refresh: true }` to force a reload, or pass a `where` clause to count a subset (uncached):
+
+```ts
+const author = await em.findOne(Author, '...');
+const count = await author.books.loadCount(); // SELECT COUNT(*) ...
+const count2 = await author.books.loadCount(); // cached, no query
+const count3 = await author.books.loadCount({ refresh: true }); // forced reload
+const activeCount = await author.books.loadCount({ where: { active: true } }); // filtered count, not cached
+```
+
+### Adding and removing items
+
+Use `add()` to add items and `remove()` to remove them. Both return the number of items actually added/removed (duplicates are ignored):
+
+```ts
+const added = author.books.add(book1, book2); // returns 2
+const added2 = author.books.add(book1); // returns 0 (already in collection)
+
+const removed = author.books.remove(book1); // returns 1
+```
+
+`remove()` also accepts a predicate callback to remove items matching a condition:
+
+```ts
+// remove all books with a specific title prefix
+const removed = author.books.remove(book => book.title.startsWith('Draft:'));
+```
+
+Use `set()` to replace the entire collection contents, and `removeAll()` to clear it:
+
+```ts
+author.books.set([book1, book2]); // replaces all items
+author.books.removeAll(); // removes all items
 ```
 
 ### Removing items from collection
 
-Removing items from a collection does not necessarily imply deleting the target entity, it means you are disconnecting the relation - removing items from collection, not removing entities from database - `Collection.remove()` is not the same as `em.remove()`. When you use `em.assign()` to update entities you can also remove/disconnect entities from a collection, they do not get automatically removed from the database. If you want to delete the entity by removing it from collection, you need to enable `orphanRemoval: true`, which tells the ORM you don't want orphaned entities to exist, so those should be removed. Also check the documentation on [Orphan Removal](./cascading.md#orphan-removal)
+Removing items from a collection does not necessarily imply deleting the target entity, it means you are disconnecting the relation — removing items from collection, not removing entities from database — `Collection.remove()` is not the same as `em.remove()`. When you use `em.assign()` to update entities you can also remove/disconnect entities from a collection, they do not get automatically removed from the database. If you want to delete the entity by removing it from collection, you need to enable `orphanRemoval: true`, which tells the ORM you don't want orphaned entities to exist, so those should be removed. Also check the documentation on [Orphan Removal](./cascading.md#orphan-removal).
+
+### Checking collection state
+
+```ts
+author.books.contains(book); // true if the item is in the collection
+author.books.count(); // number of items (same as author.books.length)
+author.books.isEmpty(); // true if no items
+author.books.isInitialized(); // true if the collection has been loaded
+author.books.isDirty(); // true if the collection was modified since last flush
+```
+
+### Getting items out
+
+```ts
+author.books.getItems(); // T[] — throws if not initialized
+author.books.getItems(false); // T[] — returns items without checking initialization
+author.books.toArray(); // EntityDTO<T>[] — serialized DTOs, modifications won't affect entities
+author.books.getIdentifiers(); // Primary<T>[] — array of primary keys
+author.books.slice(0, 5); // T[] — slice of items (like Array.slice)
+```
 
 ## OneToMany Collections
 
-`OneToMany` collections are inverse side of `ManyToOne` references, to which they need to point via `fk` attribute:
+`OneToMany` collections are inverse side of `ManyToOne` references, to which they need to point via `mappedBy` attribute:
+
+<Tabs
+groupId="entity-def"
+defaultValue="define-entity"
+values={[
+{label: 'defineEntity', value: 'define-entity'},
+{label: 'reflect-metadata', value: 'reflect-metadata'},
+{label: 'ts-morph', value: 'ts-morph'},
+{label: 'EntitySchema', value: 'entity-schema'},
+]
+}>
+<TabItem value="define-entity">
+
+```ts
+export const Book = defineEntity({
+  name: 'Book',
+  properties: {
+    id: p.integer().primary(),
+    author: () => p.manyToOne(Author),
+  },
+});
+
+export const Author = defineEntity({
+  name: 'Author',
+  properties: {
+    id: p.integer().primary(),
+    books: () => p.oneToMany(Book).mappedBy('author'),
+  },
+});
+```
+
+</TabItem>
+<TabItem value="reflect-metadata">
 
 ```ts
 @Entity()
 export class Book {
 
   @PrimaryKey()
-  _id!: ObjectId;
+  id!: number;
+
+  @ManyToOne(() => Author)
+  author!: Author;
+
+}
+
+@Entity()
+export class Author {
+
+  @PrimaryKey()
+  id!: number;
+
+  @OneToMany(() => Book, book => book.author)
+  books = new Collection<Book>(this);
+
+  // or via options object
+  @OneToMany({ entity: () => Book, mappedBy: 'author' })
+  books2 = new Collection<Book>(this);
+
+}
+```
+
+</TabItem>
+<TabItem value="ts-morph">
+
+```ts
+@Entity()
+export class Book {
+
+  @PrimaryKey()
+  id!: number;
 
   @ManyToOne()
   author!: Author;
@@ -97,17 +218,37 @@ export class Book {
 export class Author {
 
   @PrimaryKey()
-  _id!: ObjectId;
+  id!: number;
 
   @OneToMany(() => Book, book => book.author)
-  books1 = new Collection<Book>(this);
-
-  // or via options object
-  @OneToMany({ entity: () => Book, mappedBy: 'author' })
-  books2 = new Collection<Book>(this);
+  books = new Collection<Book>(this);
 
 }
 ```
+
+</TabItem>
+<TabItem value="entity-schema">
+
+```ts
+export const Book = new EntitySchema<IBook>({
+  name: 'Book',
+  properties: {
+    id: { type: Number, primary: true },
+    author: { kind: 'm:1', entity: () => Author },
+  },
+});
+
+export const Author = new EntitySchema<IAuthor>({
+  name: 'Author',
+  properties: {
+    id: { type: Number, primary: true },
+    books: { kind: '1:m', entity: () => Book, mappedBy: book => book.author },
+  },
+});
+```
+
+</TabItem>
+</Tabs>
 
 ## ManyToMany Collections
 
@@ -119,31 +260,109 @@ As opposed to them, with MongoDB you do not need to have join tables for `ManyTo
 
 Unidirectional `ManyToMany` relations are defined only on one side, if you define only `entity` attribute, then it will be considered the owning side:
 
+<Tabs
+groupId="entity-def"
+defaultValue="define-entity"
+values={[
+{label: 'defineEntity', value: 'define-entity'},
+{label: 'reflect-metadata', value: 'reflect-metadata'},
+{label: 'ts-morph', value: 'ts-morph'},
+{label: 'EntitySchema', value: 'entity-schema'},
+]
+}>
+<TabItem value="define-entity">
+
+```ts
+export const Author = defineEntity({
+  name: 'Author',
+  properties: {
+    id: p.integer().primary(),
+    books: () => p.manyToMany(Book),
+  },
+});
+```
+
+</TabItem>
+<TabItem value="reflect-metadata">
+
 ```ts
 @ManyToMany(() => Book)
-books1 = new Collection<Book>(this);
+books = new Collection<Book>(this);
 
 // or mark it as owner explicitly via options object
 @ManyToMany({ entity: () => Book, owner: true })
 books2 = new Collection<Book>(this);
 ```
 
-### Bidirectional
-
-Bidirectional `ManyToMany` relations are defined on both sides, while one is owning side (where references are store), marked by `inversedBy` attribute pointing to the inverse side:
+</TabItem>
+<TabItem value="ts-morph">
 
 ```ts
+@ManyToMany()
+books = new Collection<Book>(this);
+```
+
+</TabItem>
+<TabItem value="entity-schema">
+
+```ts
+properties: {
+  books: { kind: 'm:n', entity: () => Book },
+},
+```
+
+</TabItem>
+</Tabs>
+
+### Bidirectional
+
+Bidirectional `ManyToMany` relations are defined on both sides, while one is owning side (where references are stored), marked by `inversedBy` attribute pointing to the inverse side:
+
+<Tabs
+groupId="entity-def"
+defaultValue="define-entity"
+values={[
+{label: 'defineEntity', value: 'define-entity'},
+{label: 'reflect-metadata', value: 'reflect-metadata'},
+{label: 'ts-morph', value: 'ts-morph'},
+{label: 'EntitySchema', value: 'entity-schema'},
+]
+}>
+<TabItem value="define-entity">
+
+```ts
+// owning side
+export const Book = defineEntity({
+  name: 'Book',
+  properties: {
+    id: p.integer().primary(),
+    tags: () => p.manyToMany(BookTag).inversedBy('books'),
+  },
+});
+
+// inverse side
+export const BookTag = defineEntity({
+  name: 'BookTag',
+  properties: {
+    id: p.integer().primary(),
+    books: () => p.manyToMany(Book).mappedBy('tags'),
+  },
+});
+```
+
+</TabItem>
+<TabItem value="reflect-metadata">
+
+```ts
+// owning side
 @ManyToMany(() => BookTag, tag => tag.books, { owner: true })
 tags = new Collection<BookTag>(this);
 
 // or via options object
 @ManyToMany({ entity: () => BookTag, inversedBy: 'books' })
 tags = new Collection<BookTag>(this);
-```
 
-And on the inversed side we define it with `mappedBy` attribute pointing back to the owner:
-
-```ts
+// inverse side
 @ManyToMany(() => Book, book => book.tags)
 books = new Collection<Book>(this);
 
@@ -152,37 +371,108 @@ books = new Collection<Book>(this);
 books = new Collection<Book>(this);
 ```
 
+</TabItem>
+<TabItem value="ts-morph">
+
+```ts
+// owning side
+@ManyToMany({ inversedBy: 'books' })
+tags = new Collection<BookTag>(this);
+
+// inverse side
+@ManyToMany({ mappedBy: 'tags' })
+books = new Collection<Book>(this);
+```
+
+</TabItem>
+<TabItem value="entity-schema">
+
+```ts
+// owning side
+properties: {
+  tags: { kind: 'm:n', entity: () => BookTag, inversedBy: 'books' },
+},
+
+// inverse side
+properties: {
+  books: { kind: 'm:n', entity: () => Book, mappedBy: 'tags' },
+},
+```
+
+</TabItem>
+</Tabs>
+
 ### Custom pivot table entity
 
 By default, a generated pivot table entity is used under the hood to represent the pivot table. You can provide your own implementation via `pivotEntity` option.
 
 The pivot table entity needs to have exactly two many-to-one properties, where first one needs to point to the owning entity and the second to the target entity of the many-to-many relation.
 
+<Tabs
+groupId="entity-def"
+defaultValue="define-entity"
+values={[
+{label: 'defineEntity', value: 'define-entity'},
+{label: 'reflect-metadata', value: 'reflect-metadata'},
+{label: 'ts-morph', value: 'ts-morph'},
+{label: 'EntitySchema', value: 'entity-schema'},
+]
+}>
+<TabItem value="define-entity">
+
+```ts
+export const Order = defineEntity({
+  name: 'Order',
+  properties: {
+    id: p.integer().primary(),
+    products: () => p.manyToMany(Product).pivotEntity(() => OrderItem),
+  },
+});
+
+export const Product = defineEntity({
+  name: 'Product',
+  properties: {
+    id: p.integer().primary(),
+    orders: () => p.manyToMany(Order).mappedBy('products'),
+  },
+});
+
+export const OrderItem = defineEntity({
+  name: 'OrderItem',
+  properties: {
+    order: () => p.manyToOne(Order).primary(),
+    product: () => p.manyToOne(Product).primary(),
+    amount: p.integer().default(1),
+  },
+});
+```
+
+</TabItem>
+<TabItem value="reflect-metadata">
+
 ```ts
 @Entity()
 export class Order {
+
+  @PrimaryKey()
+  id!: number;
 
   @ManyToMany({ entity: () => Product, pivotEntity: () => OrderItem })
   products = new Collection<Product>(this);
 
 }
-```
 
-For bidirectional M:N relations, it is enough to specify the `pivotEntity` option only on the owning side. You still need to link the sides via `inversedBy` or `mappedBy` option.
-
-```ts
 @Entity()
 export class Product {
+
+  @PrimaryKey()
+  id!: number;
 
   @ManyToMany({ entity: () => Order, mappedBy: o => o.products })
   orders = new Collection<Order>(this);
 
 }
-```
 
-If you want to add new items to such M:N collection, you need to have all non-FK properties to define a database level default value.
-
-```ts
 @Entity()
 export class OrderItem {
 
@@ -198,6 +488,84 @@ export class OrderItem {
 }
 ```
 
+</TabItem>
+<TabItem value="ts-morph">
+
+```ts
+@Entity()
+export class Order {
+
+  @PrimaryKey()
+  id!: number;
+
+  @ManyToMany({ pivotEntity: () => OrderItem })
+  products = new Collection<Product>(this);
+
+}
+
+@Entity()
+export class Product {
+
+  @PrimaryKey()
+  id!: number;
+
+  @ManyToMany({ mappedBy: 'products' })
+  orders = new Collection<Order>(this);
+
+}
+
+@Entity()
+export class OrderItem {
+
+  @ManyToOne({ primary: true })
+  order: Order;
+
+  @ManyToOne({ primary: true })
+  product: Product;
+
+  @Property({ default: 1 })
+  amount!: number;
+
+}
+```
+
+</TabItem>
+<TabItem value="entity-schema">
+
+```ts
+export const Order = new EntitySchema<IOrder>({
+  name: 'Order',
+  properties: {
+    id: { type: Number, primary: true },
+    products: { kind: 'm:n', entity: () => Product, pivotEntity: () => OrderItem },
+  },
+});
+
+export const Product = new EntitySchema<IProduct>({
+  name: 'Product',
+  properties: {
+    id: { type: Number, primary: true },
+    orders: { kind: 'm:n', entity: () => Order, mappedBy: 'products' },
+  },
+});
+
+export const OrderItem = new EntitySchema<IOrderItem>({
+  name: 'OrderItem',
+  properties: {
+    order: { kind: 'm:1', entity: () => Order, primary: true },
+    product: { kind: 'm:1', entity: () => Product, primary: true },
+    amount: { type: Number, default: 1 },
+  },
+});
+```
+
+</TabItem>
+</Tabs>
+
+For bidirectional M:N relations, it is enough to specify the `pivotEntity` option only on the owning side. You still need to link the sides via `inversedBy` or `mappedBy` option.
+
+If you want to add new items to such M:N collection, you need to have all non-FK properties to define a database level default value.
+
 Alternatively, you can work with the pivot entity directly:
 
 ```ts
@@ -210,7 +578,7 @@ const item = em.create(OrderItem, {
 await em.persist(item).flush();
 
 // or remove an item via delete query
-const em.nativeDelete(OrderItem, { order: 123, product: 321 });
+await em.nativeDelete(OrderItem, { order: 123, product: 321 });
 ```
 
 You can as well define the 1:m properties targeting the pivot entity as in the previous example, and use that for modifying the collection, while using the M:N property for easier reading and filtering purposes.
@@ -295,6 +663,32 @@ See [Default Entity Ordering](./defining-entities.md#default-entity-ordering) fo
 
 Collections can also represent only a subset of the target entities:
 
+<Tabs
+groupId="entity-def"
+defaultValue="define-entity"
+values={[
+{label: 'defineEntity', value: 'define-entity'},
+{label: 'reflect-metadata', value: 'reflect-metadata'},
+{label: 'ts-morph', value: 'ts-morph'},
+{label: 'EntitySchema', value: 'entity-schema'},
+]
+}>
+<TabItem value="define-entity">
+
+```ts
+export const Author = defineEntity({
+  name: 'Author',
+  properties: {
+    id: p.integer().primary(),
+    books: () => p.oneToMany(Book).mappedBy('author'),
+    favoriteBooks: () => p.oneToMany(Book).mappedBy('author').where({ favorite: true }),
+  },
+});
+```
+
+</TabItem>
+<TabItem value="reflect-metadata">
+
 ```ts
 @Entity()
 class Author {
@@ -308,7 +702,66 @@ class Author {
 }
 ```
 
+</TabItem>
+<TabItem value="ts-morph">
+
+```ts
+@Entity()
+class Author {
+
+  @OneToMany(() => Book, b => b.author)
+  books = new Collection<Book>(this);
+
+  @OneToMany(() => Book, b => b.author, { where: { favorite: true } })
+  favoriteBooks = new Collection<Book>(this);
+
+}
+```
+
+</TabItem>
+<TabItem value="entity-schema">
+
+```ts
+export const Author = new EntitySchema<IAuthor>({
+  name: 'Author',
+  properties: {
+    id: { type: Number, primary: true },
+    books: { kind: '1:m', entity: () => Book, mappedBy: 'author' },
+    favoriteBooks: { kind: '1:m', entity: () => Book, mappedBy: 'author', where: { favorite: true } },
+  },
+});
+```
+
+</TabItem>
+</Tabs>
+
 This works also for M:N relations. Note that if you want to declare more relations mapping to the same pivot table, you need to explicitly specify its name (or use the same pivot entity):
+
+<Tabs
+groupId="entity-def"
+defaultValue="define-entity"
+values={[
+{label: 'defineEntity', value: 'define-entity'},
+{label: 'reflect-metadata', value: 'reflect-metadata'},
+{label: 'ts-morph', value: 'ts-morph'},
+{label: 'EntitySchema', value: 'entity-schema'},
+]
+}>
+<TabItem value="define-entity">
+
+```ts
+export const Book = defineEntity({
+  name: 'Book',
+  properties: {
+    id: p.integer().primary(),
+    tags: () => p.manyToMany(BookTag),
+    popularTags: () => p.manyToMany(BookTag).pivotTable('book_tags').where({ popular: true }),
+  },
+});
+```
+
+</TabItem>
+<TabItem value="reflect-metadata">
 
 ```ts
 @Entity()
@@ -318,7 +771,7 @@ class Book {
   tags = new Collection<BookTag>(this);
 
   @ManyToMany({
-    entity: () => BookTag, 
+    entity: () => BookTag,
     pivotTable: 'book_tags',
     where: { popular: true },
   })
@@ -326,6 +779,43 @@ class Book {
 
 }
 ```
+
+</TabItem>
+<TabItem value="ts-morph">
+
+```ts
+@Entity()
+class Book {
+
+  @ManyToMany()
+  tags = new Collection<BookTag>(this);
+
+  @ManyToMany({
+    entity: () => BookTag,
+    pivotTable: 'book_tags',
+    where: { popular: true },
+  })
+  popularTags = new Collection<BookTag>(this);
+
+}
+```
+
+</TabItem>
+<TabItem value="entity-schema">
+
+```ts
+export const Book = new EntitySchema<IBook>({
+  name: 'Book',
+  properties: {
+    id: { type: Number, primary: true },
+    tags: { kind: 'm:n', entity: () => BookTag },
+    popularTags: { kind: 'm:n', entity: () => BookTag, pivotTable: 'book_tags', where: { popular: true } },
+  },
+});
+```
+
+</TabItem>
+</Tabs>
 
 ## Filtering Collections
 
@@ -351,25 +841,63 @@ console.log(books[0].tags.isInitialized()); // true
 console.log(books[0].tags.getItems()); // [BookTag, BookTag, BookTag]
 ```
 
-## Mapping Collection items
+## Collection helper methods
 
-The `Collection` class offers several handy helper methods to filter, map, or convert the collection items.
+The `Collection` class provides array-like helper methods that work on the loaded items. All of these require the collection to be initialized — they will throw otherwise.
 
-[//]: # (TODO: document `map`, `filter`, `reduce` and other helpers)
+### `map`
+
+Maps each item through a callback, same as `Array.map()`:
+
+```ts
+const titles = author.books.map(book => book.title); // string[]
+```
+
+### `filter`
+
+Returns items matching a predicate, same as `Array.filter()`. Supports type guards:
+
+```ts
+const longBooks = author.books.filter(book => book.pageCount > 300); // Book[]
+```
+
+### `find`
+
+Returns the first item matching a predicate, same as `Array.find()`. Supports type guards:
+
+```ts
+const firstLongBook = author.books.find(book => book.pageCount > 300); // Book | undefined
+```
+
+### `exists`
+
+Returns `true` if any item matches the predicate:
+
+```ts
+const hasLongBook = author.books.exists(book => book.pageCount > 300); // boolean
+```
+
+### `reduce`
+
+Reduces the collection to a single value, same as `Array.reduce()`:
+
+```ts
+const totalPages = author.books.reduce((sum, book) => sum + book.pageCount, 0); // number
+```
 
 ### `indexBy`
 
-When you want to convert the collection to a simple key-value dictionary, use the `indexBy()` method:
+Converts the collection to a key-value dictionary, indexed by the given property:
 
 ```ts
 // given `user.settings` is `Collection<Option>`
 const settingsDictionary = user.settings.indexBy('key');
-// `settingsDictionary` is `Record<string, Option>`
+// Record<string, Option>
 ```
 
 The second argument lets you map to property values instead of the target entity:
 
 ```ts
 const settingsDictionary = user.settings.indexBy('key', 'value');
-// `settingsDictionary` is `Record<string, string>`
+// Record<string, string>
 ```
