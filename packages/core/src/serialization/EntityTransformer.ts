@@ -92,11 +92,14 @@ export class EntityTransformer {
       }
 
       const populated = root.isMarkedAsPopulated(meta.class, prop);
-      const partiallyLoaded = root.isPartiallyLoaded(meta.class, prop);
-      const isPrimary = includePrimaryKeys && meta.properties[prop].primary;
 
-      if (!partiallyLoaded && !populated && !isPrimary) {
-        continue;
+      if (!raw) {
+        const partiallyLoaded = root.isPartiallyLoaded(meta.class, prop);
+        const isPrimary = includePrimaryKeys && meta.properties[prop].primary;
+
+        if (!partiallyLoaded && !populated && !isPrimary) {
+          continue;
+        }
       }
 
       const cycle = root.visit(meta.class, prop);
