@@ -7,26 +7,36 @@ import {
   type SeederOptions,
   Utils,
 } from '@mikro-orm/core';
-import { fs } from '@mikro-orm/core/fs-utils';
-import { writeFile } from 'node:fs/promises';
-import { glob } from 'tinyglobby';
 import type { Seeder } from './Seeder.js';
 
 export class SeedManager implements ISeedManager {
 
   private readonly config: Configuration;
   private readonly options: SeederOptions;
-  private readonly absolutePath: string;
+  private absolutePath!: string;
+  private initialized = false;
 
   constructor(private readonly em: EntityManager) {
     this.config = this.em.config;
     this.options = this.config.get('seeder');
     this.em = this.em.fork();
     this.config.set('persistOnCreate', true);
-    this.detectSourceFolder();
-    /* v8 ignore next */
-    const key = (this.config.get('preferTs', Utils.detectTypeScriptSupport()) && this.options.pathTs) ? 'pathTs' : 'path';
-    this.absolutePath = fs.absolutePath(this.options[key]!, this.config.get('baseDir'));
+  }
+
+  private async init(): Promise<void> {
+    if (this.initialized) {
+      return;
+    }
+
+    this.initialized = true;
+
+    if (!this.options.seedersList) {
+      const { fs } = await import('@mikro-orm/core/fs-utils');
+      this.detectSourceFolder(fs);
+      /* v8 ignore next */
+      const key = (this.config.get('preferTs', Utils.detectTypeScriptSupport()) && this.options.pathTs) ? 'pathTs' : 'path';
+      this.absolutePath = fs.absolutePath(this.options[key]!, this.config.get('baseDir'));
+    }
   }
 
   static register(orm: MikroORM): void {
@@ -41,7 +51,7 @@ export class SeedManager implements ISeedManager {
    * If the default folder exists (e.g. `/migrations`), the config will respect that, so this auto-detection should not
    * break existing projects, only help with the new ones.
    */
-  private detectSourceFolder(): void {
+  private detectSourceFolder(fs: { pathExists(path: string): boolean }): void {
     const baseDir = this.config.get('baseDir');
     const defaultPath = './seeders';
 
@@ -76,12 +86,38 @@ export class SeedManager implements ISeedManager {
    * @internal
    */
   async seedString(...classNames: string[]): Promise<void> {
-    const path = `${this.absolutePath}/${this.options.glob}`;
-    const files = await glob(path);
+    if (this.options.seedersList) {
+      const classMap = new Map<string, Constructor<Seeder>>();
+
+      for (const entry of this.options.seedersList) {
+        if (typeof entry === 'function') {
+          classMap.set(entry.name, entry as Constructor<Seeder>);
+        } else {
+          classMap.set(entry.name, entry.class as Constructor<Seeder>);
+        }
+      }
+
+      for (const className of classNames) {
+        const seederClass = classMap.get(className);
+
+        if (!seederClass) {
+          throw new Error(`Seeder class ${className} not found in seedersList`);
+        }
+
+        await this.seed(seederClass);
+      }
+
+      return;
+    }
+
+    await this.init();
+    const { fs } = await import('@mikro-orm/core/fs-utils');
+    const path = fs.normalizePath(this.absolutePath, this.options.glob!);
+    const files = fs.glob(path).sort();
     const classMap = new Map<string, Constructor<Seeder>>();
 
-    for (const path of files) {
-      const exports = await fs.dynamicImport(path);
+    for (const filePath of files) {
+      const exports = await fs.dynamicImport(filePath);
 
       for (const name of Object.keys(exports)) {
         classMap.set(name, exports[name]);
@@ -100,11 +136,13 @@ export class SeedManager implements ISeedManager {
   }
 
   async create(className: string): Promise<string> {
+    await this.init();
+    const { fs } = await import('@mikro-orm/core/fs-utils');
     fs.ensureDir(this.absolutePath);
-    return this.generate(className);
+    return this.generate(fs, className);
   }
 
-  private async generate(className: string): Promise<string> {
+  private async generate(fs: { writeFile(path: string, data: string, options?: Record<string, any>): Promise<void> }, className: string): Promise<string> {
     const fileName = `${this.options.fileName!(className)}.${this.options.emit}`;
     const filePath = `${this.absolutePath}/${fileName}`;
     let ret = '';
@@ -125,7 +163,7 @@ export class SeedManager implements ISeedManager {
       ret += `exports.${className} = ${className};\n`;
     }
 
-    await writeFile(filePath, ret, { flush: true });
+    await fs.writeFile(filePath, ret, { flush: true });
 
     return filePath;
   }

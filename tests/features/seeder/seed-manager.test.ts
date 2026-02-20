@@ -57,6 +57,30 @@ describe('Seeder', () => {
     await expect(orm.seeder.seedString('Unknown')).rejects.toThrow(re);
   });
 
+  test('seedString with seedersList', async () => {
+    const options = orm.config.get('seeder');
+    options.seedersList = [Book3Seeder, { name: 'Author3Seeder', class: Author3Seeder }];
+    orm.config.set('seeder', options);
+
+    const bookRunMock = vi.spyOn(Book3Seeder.prototype, 'run');
+    bookRunMock.mockImplementation(async () => void 0);
+    const authorRunMock = vi.spyOn(Author3Seeder.prototype, 'run');
+    authorRunMock.mockImplementation(async () => void 0);
+
+    const seedMock = vi.spyOn(SeedManager.prototype, 'seed');
+
+    await orm.seeder.seedString('Book3Seeder');
+    expect(seedMock).toHaveBeenCalledTimes(1);
+
+    await orm.seeder.seedString('Book3Seeder', 'Author3Seeder');
+    expect(seedMock).toHaveBeenCalledTimes(3);
+
+    await expect(orm.seeder.seedString('Unknown')).rejects.toThrow('Seeder class Unknown not found in seedersList');
+
+    delete options.seedersList;
+    orm.config.set('seeder', options);
+  });
+
   test('createSeeder (TS)', async () => {
     const options = orm.config.get('seeder');
     options.path = fs.normalizePath(process.cwd()) + '/temp/seeders';

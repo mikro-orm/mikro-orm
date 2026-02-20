@@ -50,9 +50,6 @@
   "publishConfig": {
     "access": "public"
   },
-  "dependencies": {
-    "tinyglobby": "0.2.15"
-  },
   "devDependencies": {
     "@mikro-orm/core": "^6.6.4"
   },
