@@ -169,9 +169,9 @@ export class WrappedEntity<Entity extends object> {
     return this.__em.findOne(this.entity.constructor, this.entity, { ...options, refresh: true, schema: this.__schema });
   }
 
-  async populate<Hint extends string = never>(
+  async populate<Hint extends string = never, Fields extends string = never>(
     populate: AutoPath<Entity, Hint, PopulatePath.ALL>[] | false,
-    options: EntityLoaderOptions<Entity> = {},
+    options: EntityLoaderOptions<Entity, Fields> = {},
   ): Promise<Loaded<Entity, Hint>> {
     if (!this.__em) {
       throw ValidationError.entityNotManaged(this.entity);

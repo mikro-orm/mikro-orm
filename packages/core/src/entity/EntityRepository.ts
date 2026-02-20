@@ -270,7 +270,7 @@ export class EntityRepository<Entity extends object> {
     Ent extends Entity | Entity[],
     Hint extends string = never,
     Naked extends FromEntityType<Entity> = FromEntityType<Entity>,
-    Fields extends string = '*',
+    Fields extends string = never,
     Excludes extends string = never,
   >(entities: Ent, populate: AutoPath<Naked, Hint, PopulatePath.ALL>[] | false, options?: EntityLoaderOptions<Naked, Fields, Excludes>): Promise<Ent extends object[] ? MergeLoaded<ArrayElement<Ent>, Naked, Hint, Fields, Excludes>[] : MergeLoaded<Ent, Naked, Hint, Fields, Excludes>> {
     this.validateRepositoryType(entities, 'populate');

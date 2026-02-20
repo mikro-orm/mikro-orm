@@ -1929,7 +1929,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     Entity extends object,
     Naked extends FromEntityType<UnboxArray<Entity>> = FromEntityType<UnboxArray<Entity>>,
     Hint extends string = never,
-    Fields extends string = '*',
+    Fields extends string = never,
     Excludes extends string = never,
   >(entities: Entity, populate: readonly AutoPath<Naked, Hint, PopulatePath.ALL>[] | false, options: EntityLoaderOptions<Naked, Fields, Excludes> = {}): Promise<Entity extends object[] ? MergeLoaded<ArrayElement<Entity>, Naked, Hint, Fields, Excludes>[] : MergeLoaded<Entity, Naked, Hint, Fields, Excludes>> {
     const arr = Utils.asArray(entities);
@@ -1942,7 +1942,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     em.prepareOptions(options);
     const entityName = arr[0].constructor;
     const preparedPopulate = await em.preparePopulate<Entity>(entityName, { populate: populate as any, filters: options.filters }, options.validate);
-    await em.entityLoader.populate(entityName, arr, preparedPopulate, options as EntityLoaderOptions<Entity>);
+    await em.entityLoader.populate(entityName, arr, preparedPopulate, options as any);
 
     return entities as any;
   }

@@ -16,9 +16,9 @@ export abstract class BaseEntity {
     helper(this).populated(populated);
   }
 
-  async populate<Entity extends this = this, Hint extends string = never>(
+  async populate<Entity extends this = this, Hint extends string = never, Fields extends string = never>(
     populate: AutoPath<Entity, Hint, PopulatePath.ALL>[] | false,
-    options: EntityLoaderOptions<Entity> = {},
+    options: EntityLoaderOptions<Entity, Fields> = {},
   ): Promise<Loaded<Entity, Hint>> {
     return helper(this as Entity).populate(populate, options);
   }

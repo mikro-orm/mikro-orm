@@ -338,7 +338,7 @@ export interface IWrappedEntity<Entity extends object> {
   isInitialized(): boolean;
   isManaged(): boolean;
   populated(populated?: boolean): void;
-  populate<Hint extends string = never>(populate: readonly AutoPath<Entity, Hint, PopulatePath.ALL>[] | false, options?: EntityLoaderOptions<Entity>): Promise<Loaded<Entity, Hint>>;
+  populate<Hint extends string = never, Fields extends string = never>(populate: readonly AutoPath<Entity, Hint, PopulatePath.ALL>[] | false, options?: EntityLoaderOptions<Entity, Fields>): Promise<Loaded<Entity, Hint>>;
   init<
     Hint extends string = never,
     Fields extends string = '*',

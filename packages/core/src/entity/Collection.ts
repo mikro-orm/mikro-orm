@@ -16,14 +16,13 @@ import type {
 } from '../typings.js';
 import { Utils } from '../utils/Utils.js';
 import { MetadataError, ValidationError } from '../errors.js';
-import { DataloaderType, type QueryOrderMap, ReferenceKind } from '../enums.js';
+import { DataloaderType, ReferenceKind } from '../enums.js';
 import { Reference } from './Reference.js';
 import type { Transaction } from '../connections/Connection.js';
 import type { CountOptions, FindOptions, LoadHint } from '../drivers/IDatabaseDriver.js';
 import { helper, wrap } from './wrap.js';
 import type { EntityLoaderOptions } from './EntityLoader.js';
 import { QueryHelper } from '../utils/QueryHelper.js';
-import { Raw } from '../utils/RawQueryFragment.js';
 import { inspect } from '../logging/inspect.js';
 
 export interface MatchingOptions<T extends object, P extends string = never> extends FindOptions<T, P> {

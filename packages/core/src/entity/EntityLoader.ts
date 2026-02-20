@@ -1,5 +1,6 @@
 import type {
   AnyEntity,
+  AutoPath,
   ConnectionType,
   Dictionary,
   EntityKey,
@@ -34,11 +35,11 @@ import type { LoggingOptions } from '../logging/Logger.js';
 import { expandDotPaths } from './utils.js';
 import { Raw } from '../utils/RawQueryFragment.js';
 
-export type EntityLoaderOptions<Entity, Fields extends string = PopulatePath.ALL, Excludes extends string = never> = {
+export interface EntityLoaderOptions<Entity, Fields extends string = PopulatePath.ALL, Excludes extends string = never> {
+  fields?: readonly AutoPath<Entity, Fields, `${PopulatePath.ALL}`>[];
+  exclude?: readonly AutoPath<Entity, Excludes>[];
   where?: FilterQuery<Entity>;
   populateWhere?: PopulateHint | `${PopulateHint}`;
-  fields?: readonly EntityField<Entity, Fields>[];
-  exclude?: readonly EntityField<Entity, Excludes>[];
   orderBy?: QueryOrderMap<Entity> | QueryOrderMap<Entity>[];
   refresh?: boolean;
   validate?: boolean;
@@ -51,7 +52,7 @@ export type EntityLoaderOptions<Entity, Fields extends string = PopulatePath.ALL
   schema?: string;
   connectionType?: ConnectionType;
   logging?: LoggingOptions;
-};
+}
 
 export class EntityLoader {
 
@@ -92,7 +93,7 @@ export class EntityLoader {
       await this.populateScalar(meta, references, { ...options, populateWhere: undefined } as any);
     }
 
-    populate = this.normalizePopulate<Entity>(entityName, populate as true, options.strategy as LoadStrategy | undefined, options.lookup, options.exclude as string[]);
+    populate = this.normalizePopulate<Entity>(entityName, populate as true, options.strategy as LoadStrategy | undefined, options.lookup, options.exclude as unknown as string[]);
     const invalid = populate.find(({ field }) => !this.em.canPopulate(entityName, field));
 
     /* v8 ignore next */
@@ -194,7 +195,7 @@ export class EntityLoader {
       const filtered = entities.filter(e => !(e[prop.name] as Collection<any>)?.isInitialized());
 
       if (filtered.length > 0) {
-        await this.populateScalar(meta, filtered, { ...options, fields: [prop.name] });
+        await this.populateScalar(meta, filtered, { ...options, fields: [prop.name] as any });
       }
     }
 
@@ -205,7 +206,7 @@ export class EntityLoader {
         return entities as AnyEntity[];
       }
 
-      await this.populateScalar(meta, filtered, { ...options, fields: [prop.name] });
+      await this.populateScalar(meta, filtered, { ...options, fields: [prop.name] as any });
 
       return entities as AnyEntity[];
     }
@@ -283,7 +284,7 @@ export class EntityLoader {
     if (needsFkLoad.length > 0) {
       await this.populateScalar(ownerMeta, needsFkLoad, {
         ...options,
-        fields: [...ownerMeta.primaryKeys, prop.name],
+        fields: [...ownerMeta.primaryKeys, prop.name] as any,
       });
 
       // After loading FKs, add to toPopulate if not using :ref hint
@@ -316,7 +317,7 @@ export class EntityLoader {
 
     await Promise.all([...groups].map(async ([discriminator, children]) => {
       const targetMeta = this.metadata.find(prop.discriminatorMap![discriminator])!;
-      await this.populateScalar(targetMeta, children as any[], options);
+      await this.populateScalar(targetMeta, children as any[], options as any);
       allItems.push(...children);
     }));
 
@@ -577,7 +578,7 @@ export class EntityLoader {
       return;
     }
 
-    const fields = this.buildFields(options.fields, prop);
+    const fields = this.buildFields(options.fields as any, prop) as typeof options.fields;
     const innerOrderBy = Utils.asArray(options.orderBy)
       .filter(orderBy => Utils.isObject(orderBy[prop.name]))
       .map(orderBy => orderBy[prop.name]);
@@ -640,7 +641,7 @@ export class EntityLoader {
     const ids = (filtered as AnyEntity[]).map(e => e.__helper!.__primaryKeys);
     const refresh = options.refresh;
     let where = await this.extractChildCondition(options, prop, true);
-    const fields = this.buildFields(options.fields, prop);
+    const fields = this.buildFields(options.fields as any, prop) as typeof options.fields;
     const exclude = Array.isArray(options.exclude) ? Utils.extractChildElements(options.exclude, prop.name) : options.exclude;
     const populateFilter = (options as Dictionary).populateFilter?.[prop.name];
     const options2 = { ...options, fields, exclude, populateFilter } as unknown as FindOptions<Entity, any, any, any>;
@@ -837,7 +838,7 @@ export class EntityLoader {
         .map(e => Reference.unwrapReference(e[field] as AnyEntity) as Entity)
         .filter(target => {
           const wrapped = helper(target);
-          const childFields = (options.fields as string[])
+          const childFields = (options.fields as unknown as string[])
             .filter(f => f.startsWith(`${field}.`))
             .map(f => f.substring(field.length + 1));
 
