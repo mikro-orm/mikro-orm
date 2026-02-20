@@ -1,7 +1,15 @@
-import { CompiledQuery } from 'kysely';
+import { CompiledQuery, type Dialect } from 'kysely';
+import type { Dictionary } from '@mikro-orm/core';
 import { AbstractSqlConnection } from '../../AbstractSqlConnection.js';
 
-export abstract class BaseSqliteConnection extends AbstractSqlConnection {
+export class BaseSqliteConnection extends AbstractSqlConnection {
+
+  override createKyselyDialect(options: Dictionary): Dialect {
+    throw new Error(
+      'No SQLite dialect configured. Pass a Kysely dialect via the `driverOptions` config option, '
+      + 'e.g. `new NodeSqliteDialect(...)` for node:sqlite or a custom dialect for other libraries.',
+    );
+  }
 
   override async connect(options?: { skipOnConnect?: boolean }): Promise<void> {
     await super.connect(options);

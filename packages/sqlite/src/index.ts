@@ -1,7 +1,6 @@
 export * from '@mikro-orm/sql';
 export * from './SqliteConnection.js';
-export * from './SqliteDriver.js';
-export * from './SqlitePlatform.js';
+export { SqliteDriver } from './SqliteDriver.js';
 export {
   SqliteMikroORM as MikroORM,
   type SqliteOptions as Options,

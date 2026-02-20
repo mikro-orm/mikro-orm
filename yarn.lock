@@ -1492,7 +1492,6 @@ __metadata:
     "@mikro-orm/sql": "npm:6.6.4"
     kysely: "npm:0.28.11"
     libsql: "npm:0.5.22"
-    sqlstring-sqlite: "npm:0.1.1"
   peerDependencies:
     "@mikro-orm/core": ^6.0.0
   languageName: unknown
@@ -1692,7 +1691,6 @@ __metadata:
     "@mikro-orm/sql": "npm:6.6.4"
     better-sqlite3: "npm:12.6.2"
     kysely: "npm:0.28.11"
-    sqlstring-sqlite: "npm:0.1.1"
   peerDependencies:
     "@mikro-orm/core": ^6.0.0
   languageName: unknown
@@ -9460,13 +9458,6 @@ __metadata:
   version: 1.3.3
   resolution: "sql-escaper@npm:1.3.3"
   checksum: 10/bc53ff84eba322ba76bd10f95c2a180b477e13453236583dbed3bed48d6ade3ca73922eaa860372c2b3a9427e3345fd1a19d1e3b8d0e36fa1d79c450f113b962
-  languageName: node
-  linkType: hard
-
-"sqlstring-sqlite@npm:0.1.1":
-  version: 0.1.1
-  resolution: "sqlstring-sqlite@npm:0.1.1"
-  checksum: 10/df99a60ee61586d4d9a21c4923e6ac824aef1850839311ffd16bb53b90a4ffdb3e12e454648328f4c5e4d67728c71d92c7b757c103b81a1a979ff30869ff5f2e
   languageName: node
   linkType: hard
 

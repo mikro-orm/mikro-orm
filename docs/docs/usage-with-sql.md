@@ -1,14 +1,11 @@
 ---
-title: Usage with MySQL, MariaDB, PostgreSQL or SQLite
+title: Usage with SQL Drivers
 sidebar_label: Usage with SQL Drivers
 ---
 
-To use `mikro-orm` with MySQL database, install the `@mikro-orm/mysql` dependency and set the type option to `mysql` when initializing ORM. The `mysql2` package is included as a dependency, no need to install it manually.
+MikroORM supports several SQL databases. Install the driver package for your database:
 
 ```bash npm2yarn
-# for mongodb
-npm install @mikro-orm/core @mikro-orm/mongodb
-
 # for mysql (works with mariadb too)
 npm install @mikro-orm/core @mikro-orm/mysql
 
@@ -27,6 +24,8 @@ npm install @mikro-orm/core @mikro-orm/libsql
 # for mssql
 npm install @mikro-orm/core @mikro-orm/mssql
 ```
+
+For SQLite-specific setup (extensions, Turso, D1, custom drivers), see the dedicated [SQLite guide](./usage-with-sqlite.md).
 
 Then call `MikroORM.init` as part of bootstrapping your app:
 
@@ -196,100 +195,6 @@ qb.select('*').where({ id: { $in: [...] } });
 const res = await em.getDriver().execute(qb);
 console.log(res); // unprocessed result of underlying database driver
 ```
-
-## Using SQLite extensions
-
-SQLite extensions like [sqlean](https://github.com/nalgeon/sqlean) can add many useful features that are notably missing by default (e.g. regexp).
-
-Once you've downloaded the binaries for the extensions you wish to use, they can be added by providing a `pool.afterCreate` handler in the SQLite initialization options. The handler should call `loadExtension` on the underlying database connection, passing the path to the extension binary:
-
-```ts
-const orm = await MikroORM.init({
-  // ...
-  pool: {
-    afterCreate: (conn: any, done: any) => {
-      conn.loadExtension('/.../sqlean-macos-arm64/sqlean');
-      done(null, conn);
-    },
-  },
-});
-```
-
-## Using Turso database
-
-To be able to connect to a remote [Turso](https://docs.turso.tech/introduction) database, you need to use the `@mikro-orm/libsql` driver. Use the `password` option to set the `authToken`.
-
-```ts
-import { defineConfig } from '@mikro-orm/libsql';
-
-export default defineConfig({
-  dbName: process.env.LIBSQL_URL,
-  password: process.env.LIBSQL_AUTH_TOKEN,
-});
-```
-
-To set the additional options like `syncUrl` or `syncPeriod`, use the `driverOptions`:
-
-```ts
-import { defineConfig } from '@mikro-orm/libsql';
-
-export default defineConfig({
-  dbName: 'local.db',
-  password: process.env.LIBSQL_AUTH_TOKEN,
-  driverOptions: {
-    syncUrl: process.env.LIBSQL_URL,
-    syncPeriod: 0.5, // 500ms
-  },
-});
-```
-
-## Using Cloudflare D1 database
-
-> **Experimental:** D1 support is experimental and has significant limitations. Use with caution.
-
-[Cloudflare D1](https://developers.cloudflare.com/d1/) is a serverless SQLite database. You can use MikroORM with D1 by passing a Kysely D1 dialect via `driverOptions`:
-
-```ts
-import { MikroORM } from '@mikro-orm/sqlite';
-import { D1Dialect } from 'kysely-d1';
-
-export default {
-  async fetch(request: Request, env: Env) {
-    const orm = await MikroORM.init({
-      entities: [...],
-      // the `dbName` is not used when a dialect is provided, but it's still required
-      dbName: 'd1',
-      driverOptions: new D1Dialect({ database: env.DB }),
-      // required: D1 does not support explicit transactions
-      implicitTransactions: false,
-    });
-
-    // ...
-  },
-};
-```
-
-You can also pass a factory function if you need to create the dialect lazily:
-
-```ts
-MikroORM.init({
-  entities: [...],
-  dbName: 'd1',
-  driverOptions: () => new D1Dialect({ database: env.DB }),
-  implicitTransactions: false,
-});
-```
-
-### D1 Limitations
-
-D1 has significant limitations compared to regular SQLite:
-
-- **No transaction support:** D1 does not support explicit transaction statements (`BEGIN TRANSACTION`). You must set `implicitTransactions: false` for `em.flush()` to work. This means changes are not applied atomically - if an error occurs mid-flush, some changes may be persisted while others are not.
-- **`em.transactional()` will not work:** Since there's no transaction support, wrapping code in `em.transactional()` provides no atomicity guarantees.
-- **No query streaming:** Large result sets cannot be streamed and must be fetched entirely into memory.
-- **Limited `ALTER TABLE`:** No support for `ALTER COLUMN` or `ADD CONSTRAINT`, which affects schema migrations.
-
-See the [D1 SQL documentation](https://developers.cloudflare.com/d1/sql-api/sql-statements/) for more details on supported SQL statements.
 
 ## MS SQL Server limitations
 

@@ -1818,7 +1818,7 @@ export class MetadataDiscovery {
 
     /* v8 ignore next */
     if (prop.default != null) {
-      return '' + this.platform.quoteVersionValue(prop.default as number, prop);
+      return '' + this.platform.convertVersionValue(prop.default as number, prop);
     }
 
     this.initCustomType(meta, prop, true);

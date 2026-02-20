@@ -186,7 +186,7 @@ export abstract class Platform {
     return operator === '$not';
   }
 
-  quoteVersionValue(value: Date | number, prop: EntityProperty): Date | string | number {
+  convertVersionValue(value: Date | number, prop: EntityProperty): Date | string | number | { $in: (string | number)[] } {
     return value;
   }
 

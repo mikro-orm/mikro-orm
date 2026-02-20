@@ -4,6 +4,7 @@ import { LoadStrategy, MikroORM, Options, SimpleLogger, Utils } from '@mikro-orm
 import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { AbstractSqlDriver, SqlEntityRepository } from '@mikro-orm/sql';
 import { SqliteDriver } from '@mikro-orm/sqlite';
+import { SqliteDriver as NodeSqliteDriver, NodeSqliteDialect } from '@mikro-orm/sql';
 import { MongoDriver } from '@mikro-orm/mongodb';
 import { Migrator } from '@mikro-orm/migrations';
 import { Migrator as MongoMigrator } from '@mikro-orm/migrations-mongodb';
@@ -49,6 +50,7 @@ export const PLATFORMS = {
   postgresql: PostgreSqlDriver,
   sqlite: SqliteDriver,
   libsql: LibSqlDriver,
+  'node-sqlite': NodeSqliteDriver,
 };
 
 let ensureIndexes = true; // ensuring indexes is slow, and it is enough to make it once
@@ -191,7 +193,7 @@ export async function initORMMsSql(additionalOptions: Partial<Options<MsSqlDrive
   return orm;
 }
 
-export async function initORMSqlite<D extends AbstractSqlDriver>(type: 'sqlite' | 'libsql' = 'sqlite') {
+export async function initORMSqlite<D extends AbstractSqlDriver>(type: 'sqlite' | 'libsql' | 'node-sqlite' = 'sqlite') {
   const orm = await MikroORM.init<D>({
     entities: ['entities-schema', '!**/User4.ts'],
     dbName: ':memory:',
@@ -204,6 +206,7 @@ export async function initORMSqlite<D extends AbstractSqlDriver>(type: 'sqlite' 
     loggerFactory: SimpleLogger.create,
     migrations: { path: BASE_DIR + '/../temp/migrations-3', snapshot: false },
     extensions: [Migrator, SeedManager, EntityGenerator],
+    ...type === 'node-sqlite' ? { driverOptions: new NodeSqliteDialect(':memory:') } : {},
   });
   const buf = await readFile(import.meta.dirname + '/sqlite-schema.sql');
   await orm.em.getConnection().executeDump(buf.toString());

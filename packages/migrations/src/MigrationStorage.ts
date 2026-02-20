@@ -51,7 +51,7 @@ export class MigrationStorage {
       .execute('all', false);
 
     return res.map(row => {
-      if (typeof row.executed_at === 'string') {
+      if (typeof row.executed_at === 'string' || typeof row.executed_at === 'number') {
         row.executed_at = new Date(row.executed_at);
       }
 

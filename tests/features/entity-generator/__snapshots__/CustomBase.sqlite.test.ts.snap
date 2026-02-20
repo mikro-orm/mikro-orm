@@ -71,7 +71,7 @@ export class BookTag4 {
   @MikroORM_Property({ type: 'text' })
   name!: string;
 
-  @MikroORM_Property({ type: 'datetime', defaultRaw: \`current_timestamp\` })
+  @MikroORM_Property({ type: 'datetime', defaultRaw: \`(strftime('%s', 'now') * 1000)\` })
   version!: Date & MikroORM_Opt;
 
   @MikroORM_ManyToMany({ entity: () => Book4, mappedBy: 'tagsUnordered' })
@@ -195,7 +195,7 @@ export class FooBaz4 {
   @MikroORM_Property({ type: 'text' })
   name!: string;
 
-  @MikroORM_Property({ type: 'datetime', defaultRaw: \`current_timestamp\` })
+  @MikroORM_Property({ type: 'datetime', defaultRaw: \`(strftime('%s', 'now') * 1000)\` })
   version!: Date & MikroORM_Opt;
 
   @MikroORM_OneToOne({ entity: () => FooBar4, ref: true, mappedBy: 'baz' })
@@ -392,7 +392,7 @@ export const BookTag4Schema = new MikroORM_EntitySchema({
     createdAt: { type: 'datetime', nullable: true },
     updatedAt: { type: 'datetime', nullable: true },
     name: { type: 'text' },
-    version: { type: 'datetime', defaultRaw: \`current_timestamp\` },
+    version: { type: 'datetime', defaultRaw: \`(strftime('%s', 'now') * 1000)\` },
     tagsUnorderedInverse: {
       kind: 'm:n',
       entity: () => Book4,
@@ -536,7 +536,7 @@ export const FooBaz4Schema = new MikroORM_EntitySchema({
     createdAt: { type: 'datetime', nullable: true },
     updatedAt: { type: 'datetime', nullable: true },
     name: { type: 'text' },
-    version: { type: 'datetime', defaultRaw: \`current_timestamp\` },
+    version: { type: 'datetime', defaultRaw: \`(strftime('%s', 'now') * 1000)\` },
     fooBar4: { kind: '1:1', entity: () => FooBar4, ref: true, mappedBy: 'baz' },
   },
 });
@@ -737,7 +737,7 @@ export class BookTag4 extends BaseEntity {
   @MikroORM_Property({ type: 'text' })
   name!: string;
 
-  @MikroORM_Property({ type: 'datetime', defaultRaw: \`current_timestamp\` })
+  @MikroORM_Property({ type: 'datetime', defaultRaw: \`(strftime('%s', 'now') * 1000)\` })
   version!: Date & MikroORM_Opt;
 
   @MikroORM_ManyToMany({ entity: () => Book4, mappedBy: 'tagsUnordered' })
@@ -864,7 +864,7 @@ export class FooBaz4 extends BaseEntity {
   @MikroORM_Property({ type: 'text' })
   name!: string;
 
-  @MikroORM_Property({ type: 'datetime', defaultRaw: \`current_timestamp\` })
+  @MikroORM_Property({ type: 'datetime', defaultRaw: \`(strftime('%s', 'now') * 1000)\` })
   version!: Date & MikroORM_Opt;
 
   @MikroORM_OneToOne({ entity: () => FooBar4, ref: true, mappedBy: 'baz' })
@@ -1076,7 +1076,7 @@ export const BookTag4Schema = new MikroORM_EntitySchema({
     createdAt: { type: 'datetime', nullable: true },
     updatedAt: { type: 'datetime', nullable: true },
     name: { type: 'text' },
-    version: { type: 'datetime', defaultRaw: \`current_timestamp\` },
+    version: { type: 'datetime', defaultRaw: \`(strftime('%s', 'now') * 1000)\` },
     tagsUnorderedInverse: {
       kind: 'm:n',
       entity: () => Book4,
@@ -1223,7 +1223,7 @@ export const FooBaz4Schema = new MikroORM_EntitySchema({
     createdAt: { type: 'datetime', nullable: true },
     updatedAt: { type: 'datetime', nullable: true },
     name: { type: 'text' },
-    version: { type: 'datetime', defaultRaw: \`current_timestamp\` },
+    version: { type: 'datetime', defaultRaw: \`(strftime('%s', 'now') * 1000)\` },
     fooBar4: { kind: '1:1', entity: () => FooBar4, ref: true, mappedBy: 'baz' },
   },
 });
@@ -1440,7 +1440,7 @@ export class BookTag4 extends BaseEntity2 {
   @MikroORM_Property({ type: 'text' })
   name!: string;
 
-  @MikroORM_Property({ type: 'datetime', defaultRaw: \`current_timestamp\` })
+  @MikroORM_Property({ type: 'datetime', defaultRaw: \`(strftime('%s', 'now') * 1000)\` })
   version!: Date & MikroORM_Opt;
 
   @MikroORM_ManyToMany({ entity: () => Book4, mappedBy: 'tagsUnordered' })
@@ -1567,7 +1567,7 @@ export class FooBaz4 extends BaseEntity2 {
   @MikroORM_Property({ type: 'text' })
   name!: string;
 
-  @MikroORM_Property({ type: 'datetime', defaultRaw: \`current_timestamp\` })
+  @MikroORM_Property({ type: 'datetime', defaultRaw: \`(strftime('%s', 'now') * 1000)\` })
   version!: Date & MikroORM_Opt;
 
   @MikroORM_OneToOne({ entity: () => FooBar4, ref: true, mappedBy: 'baz' })
@@ -1774,7 +1774,7 @@ export const BookTag4Schema = new MikroORM_EntitySchema({
     createdAt: { type: 'datetime', nullable: true },
     updatedAt: { type: 'datetime', nullable: true },
     name: { type: 'text' },
-    version: { type: 'datetime', defaultRaw: \`current_timestamp\` },
+    version: { type: 'datetime', defaultRaw: \`(strftime('%s', 'now') * 1000)\` },
     tagsUnorderedInverse: {
       kind: 'm:n',
       entity: () => Book4,
@@ -1921,7 +1921,7 @@ export const FooBaz4Schema = new MikroORM_EntitySchema({
     createdAt: { type: 'datetime', nullable: true },
     updatedAt: { type: 'datetime', nullable: true },
     name: { type: 'text' },
-    version: { type: 'datetime', defaultRaw: \`current_timestamp\` },
+    version: { type: 'datetime', defaultRaw: \`(strftime('%s', 'now') * 1000)\` },
     fooBar4: { kind: '1:1', entity: () => FooBar4, ref: true, mappedBy: 'baz' },
   },
 });
@@ -2126,7 +2126,7 @@ export class BookTag4 extends CustomBase {
   @MikroORM_Property({ type: 'text' })
   name!: string;
 
-  @MikroORM_Property({ type: 'datetime', defaultRaw: \`current_timestamp\` })
+  @MikroORM_Property({ type: 'datetime', defaultRaw: \`(strftime('%s', 'now') * 1000)\` })
   version!: Date & MikroORM_Opt;
 
   @MikroORM_ManyToMany({ entity: () => Book4, mappedBy: 'tagsUnordered' })
@@ -2253,7 +2253,7 @@ export class FooBaz4 extends CustomBase {
   @MikroORM_Property({ type: 'text' })
   name!: string;
 
-  @MikroORM_Property({ type: 'datetime', defaultRaw: \`current_timestamp\` })
+  @MikroORM_Property({ type: 'datetime', defaultRaw: \`(strftime('%s', 'now') * 1000)\` })
   version!: Date & MikroORM_Opt;
 
   @MikroORM_OneToOne({ entity: () => FooBar4, ref: true, mappedBy: 'baz' })
@@ -2465,7 +2465,7 @@ export const BookTag4Schema = new MikroORM_EntitySchema({
     createdAt: { type: 'datetime', nullable: true },
     updatedAt: { type: 'datetime', nullable: true },
     name: { type: 'text' },
-    version: { type: 'datetime', defaultRaw: \`current_timestamp\` },
+    version: { type: 'datetime', defaultRaw: \`(strftime('%s', 'now') * 1000)\` },
     tagsUnorderedInverse: {
       kind: 'm:n',
       entity: () => Book4,
@@ -2612,7 +2612,7 @@ export const FooBaz4Schema = new MikroORM_EntitySchema({
     createdAt: { type: 'datetime', nullable: true },
     updatedAt: { type: 'datetime', nullable: true },
     name: { type: 'text' },
-    version: { type: 'datetime', defaultRaw: \`current_timestamp\` },
+    version: { type: 'datetime', defaultRaw: \`(strftime('%s', 'now') * 1000)\` },
     fooBar4: { kind: '1:1', entity: () => FooBar4, ref: true, mappedBy: 'baz' },
   },
 });
@@ -2827,7 +2827,7 @@ export class BookTag4 extends MikroORM_BaseEntity {
   @MikroORM_Property({ type: 'text' })
   name!: string;
 
-  @MikroORM_Property({ type: 'datetime', defaultRaw: \`current_timestamp\` })
+  @MikroORM_Property({ type: 'datetime', defaultRaw: \`(strftime('%s', 'now') * 1000)\` })
   version!: Date & MikroORM_Opt;
 
   @MikroORM_ManyToMany({ entity: () => Book4, mappedBy: 'tagsUnordered' })
@@ -2951,7 +2951,7 @@ export class FooBaz4 extends MikroORM_BaseEntity {
   @MikroORM_Property({ type: 'text' })
   name!: string;
 
-  @MikroORM_Property({ type: 'datetime', defaultRaw: \`current_timestamp\` })
+  @MikroORM_Property({ type: 'datetime', defaultRaw: \`(strftime('%s', 'now') * 1000)\` })
   version!: Date & MikroORM_Opt;
 
   @MikroORM_OneToOne({ entity: () => FooBar4, ref: true, mappedBy: 'baz' })
@@ -3149,7 +3149,7 @@ export const BookTag4Schema = new MikroORM_EntitySchema({
     createdAt: { type: 'datetime', nullable: true },
     updatedAt: { type: 'datetime', nullable: true },
     name: { type: 'text' },
-    version: { type: 'datetime', defaultRaw: \`current_timestamp\` },
+    version: { type: 'datetime', defaultRaw: \`(strftime('%s', 'now') * 1000)\` },
     tagsUnorderedInverse: {
       kind: 'm:n',
       entity: () => Book4,
@@ -3293,7 +3293,7 @@ export const FooBaz4Schema = new MikroORM_EntitySchema({
     createdAt: { type: 'datetime', nullable: true },
     updatedAt: { type: 'datetime', nullable: true },
     name: { type: 'text' },
-    version: { type: 'datetime', defaultRaw: \`current_timestamp\` },
+    version: { type: 'datetime', defaultRaw: \`(strftime('%s', 'now') * 1000)\` },
     fooBar4: { kind: '1:1', entity: () => FooBar4, ref: true, mappedBy: 'baz' },
   },
 });
@@ -3494,7 +3494,7 @@ export class BookTag4 extends BaseEntity {
   @MikroORM_Property({ type: 'text' })
   name!: string;
 
-  @MikroORM_Property({ type: 'datetime', defaultRaw: \`current_timestamp\` })
+  @MikroORM_Property({ type: 'datetime', defaultRaw: \`(strftime('%s', 'now') * 1000)\` })
   version!: Date & MikroORM_Opt;
 
   @MikroORM_ManyToMany({ entity: () => Book4, mappedBy: 'tagsUnordered' })
@@ -3621,7 +3621,7 @@ export class FooBaz4 extends BaseEntity {
   @MikroORM_Property({ type: 'text' })
   name!: string;
 
-  @MikroORM_Property({ type: 'datetime', defaultRaw: \`current_timestamp\` })
+  @MikroORM_Property({ type: 'datetime', defaultRaw: \`(strftime('%s', 'now') * 1000)\` })
   version!: Date & MikroORM_Opt;
 
   @MikroORM_OneToOne({ entity: () => FooBar4, ref: true, mappedBy: 'baz' })
@@ -3833,7 +3833,7 @@ export const BookTag4Schema = new MikroORM_EntitySchema({
     createdAt: { type: 'datetime', nullable: true },
     updatedAt: { type: 'datetime', nullable: true },
     name: { type: 'text' },
-    version: { type: 'datetime', defaultRaw: \`current_timestamp\` },
+    version: { type: 'datetime', defaultRaw: \`(strftime('%s', 'now') * 1000)\` },
     tagsUnorderedInverse: {
       kind: 'm:n',
       entity: () => Book4,
@@ -3980,7 +3980,7 @@ export const FooBaz4Schema = new MikroORM_EntitySchema({
     createdAt: { type: 'datetime', nullable: true },
     updatedAt: { type: 'datetime', nullable: true },
     name: { type: 'text' },
-    version: { type: 'datetime', defaultRaw: \`current_timestamp\` },
+    version: { type: 'datetime', defaultRaw: \`(strftime('%s', 'now') * 1000)\` },
     fooBar4: { kind: '1:1', entity: () => FooBar4, ref: true, mappedBy: 'baz' },
   },
 });
@@ -4197,7 +4197,7 @@ export class BookTag4 extends BaseEntity2 {
   @MikroORM_Property({ type: 'text' })
   name!: string;
 
-  @MikroORM_Property({ type: 'datetime', defaultRaw: \`current_timestamp\` })
+  @MikroORM_Property({ type: 'datetime', defaultRaw: \`(strftime('%s', 'now') * 1000)\` })
   version!: Date & MikroORM_Opt;
 
   @MikroORM_ManyToMany({ entity: () => Book4, mappedBy: 'tagsUnordered' })
@@ -4324,7 +4324,7 @@ export class FooBaz4 extends BaseEntity2 {
   @MikroORM_Property({ type: 'text' })
   name!: string;
 
-  @MikroORM_Property({ type: 'datetime', defaultRaw: \`current_timestamp\` })
+  @MikroORM_Property({ type: 'datetime', defaultRaw: \`(strftime('%s', 'now') * 1000)\` })
   version!: Date & MikroORM_Opt;
 
   @MikroORM_OneToOne({ entity: () => FooBar4, ref: true, mappedBy: 'baz' })
@@ -4531,7 +4531,7 @@ export const BookTag4Schema = new MikroORM_EntitySchema({
     createdAt: { type: 'datetime', nullable: true },
     updatedAt: { type: 'datetime', nullable: true },
     name: { type: 'text' },
-    version: { type: 'datetime', defaultRaw: \`current_timestamp\` },
+    version: { type: 'datetime', defaultRaw: \`(strftime('%s', 'now') * 1000)\` },
     tagsUnorderedInverse: {
       kind: 'm:n',
       entity: () => Book4,
@@ -4678,7 +4678,7 @@ export const FooBaz4Schema = new MikroORM_EntitySchema({
     createdAt: { type: 'datetime', nullable: true },
     updatedAt: { type: 'datetime', nullable: true },
     name: { type: 'text' },
-    version: { type: 'datetime', defaultRaw: \`current_timestamp\` },
+    version: { type: 'datetime', defaultRaw: \`(strftime('%s', 'now') * 1000)\` },
     fooBar4: { kind: '1:1', entity: () => FooBar4, ref: true, mappedBy: 'baz' },
   },
 });
@@ -4883,7 +4883,7 @@ export class BookTag4 extends CustomBase {
   @MikroORM_Property({ type: 'text' })
   name!: string;
 
-  @MikroORM_Property({ type: 'datetime', defaultRaw: \`current_timestamp\` })
+  @MikroORM_Property({ type: 'datetime', defaultRaw: \`(strftime('%s', 'now') * 1000)\` })
   version!: Date & MikroORM_Opt;
 
   @MikroORM_ManyToMany({ entity: () => Book4, mappedBy: 'tagsUnordered' })
@@ -5010,7 +5010,7 @@ export class FooBaz4 extends CustomBase {
   @MikroORM_Property({ type: 'text' })
   name!: string;
 
-  @MikroORM_Property({ type: 'datetime', defaultRaw: \`current_timestamp\` })
+  @MikroORM_Property({ type: 'datetime', defaultRaw: \`(strftime('%s', 'now') * 1000)\` })
   version!: Date & MikroORM_Opt;
 
   @MikroORM_OneToOne({ entity: () => FooBar4, ref: true, mappedBy: 'baz' })
@@ -5222,7 +5222,7 @@ export const BookTag4Schema = new MikroORM_EntitySchema({
     createdAt: { type: 'datetime', nullable: true },
     updatedAt: { type: 'datetime', nullable: true },
     name: { type: 'text' },
-    version: { type: 'datetime', defaultRaw: \`current_timestamp\` },
+    version: { type: 'datetime', defaultRaw: \`(strftime('%s', 'now') * 1000)\` },
     tagsUnorderedInverse: {
       kind: 'm:n',
       entity: () => Book4,
@@ -5369,7 +5369,7 @@ export const FooBaz4Schema = new MikroORM_EntitySchema({
     createdAt: { type: 'datetime', nullable: true },
     updatedAt: { type: 'datetime', nullable: true },
     name: { type: 'text' },
-    version: { type: 'datetime', defaultRaw: \`current_timestamp\` },
+    version: { type: 'datetime', defaultRaw: \`(strftime('%s', 'now') * 1000)\` },
     fooBar4: { kind: '1:1', entity: () => FooBar4, ref: true, mappedBy: 'baz' },
   },
 });
@@ -5584,7 +5584,7 @@ export class BookTag4 {
   @MikroORM_Property({ type: 'text' })
   name!: string;
 
-  @MikroORM_Property({ type: 'datetime', defaultRaw: \`current_timestamp\` })
+  @MikroORM_Property({ type: 'datetime', defaultRaw: \`(strftime('%s', 'now') * 1000)\` })
   version!: Date & MikroORM_Opt;
 
   @MikroORM_ManyToMany({ entity: () => Book4, mappedBy: 'tagsUnordered' })
@@ -5708,7 +5708,7 @@ export class FooBaz4 {
   @MikroORM_Property({ type: 'text' })
   name!: string;
 
-  @MikroORM_Property({ type: 'datetime', defaultRaw: \`current_timestamp\` })
+  @MikroORM_Property({ type: 'datetime', defaultRaw: \`(strftime('%s', 'now') * 1000)\` })
   version!: Date & MikroORM_Opt;
 
   @MikroORM_OneToOne({ entity: () => FooBar4, ref: true, mappedBy: 'baz' })
@@ -5907,7 +5907,7 @@ export const BookTag4Schema = new MikroORM_EntitySchema({
     createdAt: { type: 'datetime', nullable: true },
     updatedAt: { type: 'datetime', nullable: true },
     name: { type: 'text' },
-    version: { type: 'datetime', defaultRaw: \`current_timestamp\` },
+    version: { type: 'datetime', defaultRaw: \`(strftime('%s', 'now') * 1000)\` },
     tagsUnorderedInverse: {
       kind: 'm:n',
       entity: () => Book4,
@@ -6054,7 +6054,7 @@ export const FooBaz4Schema = new MikroORM_EntitySchema({
     createdAt: { type: 'datetime', nullable: true },
     updatedAt: { type: 'datetime', nullable: true },
     name: { type: 'text' },
-    version: { type: 'datetime', defaultRaw: \`current_timestamp\` },
+    version: { type: 'datetime', defaultRaw: \`(strftime('%s', 'now') * 1000)\` },
     fooBar4: { kind: '1:1', entity: () => FooBar4, ref: true, mappedBy: 'baz' },
   },
 });
@@ -6260,7 +6260,7 @@ export class BookTag4 extends BaseEntity {
   @MikroORM_Property({ type: 'text' })
   name!: string;
 
-  @MikroORM_Property({ type: 'datetime', defaultRaw: \`current_timestamp\` })
+  @MikroORM_Property({ type: 'datetime', defaultRaw: \`(strftime('%s', 'now') * 1000)\` })
   version!: Date & MikroORM_Opt;
 
   @MikroORM_ManyToMany({ entity: () => Book4, mappedBy: 'tagsUnordered' })
@@ -6387,7 +6387,7 @@ export class FooBaz4 extends BaseEntity {
   @MikroORM_Property({ type: 'text' })
   name!: string;
 
-  @MikroORM_Property({ type: 'datetime', defaultRaw: \`current_timestamp\` })
+  @MikroORM_Property({ type: 'datetime', defaultRaw: \`(strftime('%s', 'now') * 1000)\` })
   version!: Date & MikroORM_Opt;
 
   @MikroORM_OneToOne({ entity: () => FooBar4, ref: true, mappedBy: 'baz' })
@@ -6599,7 +6599,7 @@ export const BookTag4Schema = new MikroORM_EntitySchema({
     createdAt: { type: 'datetime', nullable: true },
     updatedAt: { type: 'datetime', nullable: true },
     name: { type: 'text' },
-    version: { type: 'datetime', defaultRaw: \`current_timestamp\` },
+    version: { type: 'datetime', defaultRaw: \`(strftime('%s', 'now') * 1000)\` },
     tagsUnorderedInverse: {
       kind: 'm:n',
       entity: () => Book4,
@@ -6746,7 +6746,7 @@ export const FooBaz4Schema = new MikroORM_EntitySchema({
     createdAt: { type: 'datetime', nullable: true },
     updatedAt: { type: 'datetime', nullable: true },
     name: { type: 'text' },
-    version: { type: 'datetime', defaultRaw: \`current_timestamp\` },
+    version: { type: 'datetime', defaultRaw: \`(strftime('%s', 'now') * 1000)\` },
     fooBar4: { kind: '1:1', entity: () => FooBar4, ref: true, mappedBy: 'baz' },
   },
 });
@@ -6964,7 +6964,7 @@ export class BookTag4 extends BaseEntity2 {
   @MikroORM_Property({ type: 'text' })
   name!: string;
 
-  @MikroORM_Property({ type: 'datetime', defaultRaw: \`current_timestamp\` })
+  @MikroORM_Property({ type: 'datetime', defaultRaw: \`(strftime('%s', 'now') * 1000)\` })
   version!: Date & MikroORM_Opt;
 
   @MikroORM_ManyToMany({ entity: () => Book4, mappedBy: 'tagsUnordered' })
@@ -7091,7 +7091,7 @@ export class FooBaz4 extends BaseEntity2 {
   @MikroORM_Property({ type: 'text' })
   name!: string;
 
-  @MikroORM_Property({ type: 'datetime', defaultRaw: \`current_timestamp\` })
+  @MikroORM_Property({ type: 'datetime', defaultRaw: \`(strftime('%s', 'now') * 1000)\` })
   version!: Date & MikroORM_Opt;
 
   @MikroORM_OneToOne({ entity: () => FooBar4, ref: true, mappedBy: 'baz' })
@@ -7298,7 +7298,7 @@ export const BookTag4Schema = new MikroORM_EntitySchema({
     createdAt: { type: 'datetime', nullable: true },
     updatedAt: { type: 'datetime', nullable: true },
     name: { type: 'text' },
-    version: { type: 'datetime', defaultRaw: \`current_timestamp\` },
+    version: { type: 'datetime', defaultRaw: \`(strftime('%s', 'now') * 1000)\` },
     tagsUnorderedInverse: {
       kind: 'm:n',
       entity: () => Book4,
@@ -7445,7 +7445,7 @@ export const FooBaz4Schema = new MikroORM_EntitySchema({
     createdAt: { type: 'datetime', nullable: true },
     updatedAt: { type: 'datetime', nullable: true },
     name: { type: 'text' },
-    version: { type: 'datetime', defaultRaw: \`current_timestamp\` },
+    version: { type: 'datetime', defaultRaw: \`(strftime('%s', 'now') * 1000)\` },
     fooBar4: { kind: '1:1', entity: () => FooBar4, ref: true, mappedBy: 'baz' },
   },
 });
@@ -7651,7 +7651,7 @@ export class BookTag4 extends CustomBase {
   @MikroORM_Property({ type: 'text' })
   name!: string;
 
-  @MikroORM_Property({ type: 'datetime', defaultRaw: \`current_timestamp\` })
+  @MikroORM_Property({ type: 'datetime', defaultRaw: \`(strftime('%s', 'now') * 1000)\` })
   version!: Date & MikroORM_Opt;
 
   @MikroORM_ManyToMany({ entity: () => Book4, mappedBy: 'tagsUnordered' })
@@ -7778,7 +7778,7 @@ export class FooBaz4 extends CustomBase {
   @MikroORM_Property({ type: 'text' })
   name!: string;
 
-  @MikroORM_Property({ type: 'datetime', defaultRaw: \`current_timestamp\` })
+  @MikroORM_Property({ type: 'datetime', defaultRaw: \`(strftime('%s', 'now') * 1000)\` })
   version!: Date & MikroORM_Opt;
 
   @MikroORM_OneToOne({ entity: () => FooBar4, ref: true, mappedBy: 'baz' })
@@ -7990,7 +7990,7 @@ export const BookTag4Schema = new MikroORM_EntitySchema({
     createdAt: { type: 'datetime', nullable: true },
     updatedAt: { type: 'datetime', nullable: true },
     name: { type: 'text' },
-    version: { type: 'datetime', defaultRaw: \`current_timestamp\` },
+    version: { type: 'datetime', defaultRaw: \`(strftime('%s', 'now') * 1000)\` },
     tagsUnorderedInverse: {
       kind: 'm:n',
       entity: () => Book4,
@@ -8137,7 +8137,7 @@ export const FooBaz4Schema = new MikroORM_EntitySchema({
     createdAt: { type: 'datetime', nullable: true },
     updatedAt: { type: 'datetime', nullable: true },
     name: { type: 'text' },
-    version: { type: 'datetime', defaultRaw: \`current_timestamp\` },
+    version: { type: 'datetime', defaultRaw: \`(strftime('%s', 'now') * 1000)\` },
     fooBar4: { kind: '1:1', entity: () => FooBar4, ref: true, mappedBy: 'baz' },
   },
 });
@@ -8353,7 +8353,7 @@ export class BookTag4 extends MikroORM_BaseEntity {
   @MikroORM_Property({ type: 'text' })
   name!: string;
 
-  @MikroORM_Property({ type: 'datetime', defaultRaw: \`current_timestamp\` })
+  @MikroORM_Property({ type: 'datetime', defaultRaw: \`(strftime('%s', 'now') * 1000)\` })
   version!: Date & MikroORM_Opt;
 
   @MikroORM_ManyToMany({ entity: () => Book4, mappedBy: 'tagsUnordered' })
@@ -8477,7 +8477,7 @@ export class FooBaz4 extends MikroORM_BaseEntity {
   @MikroORM_Property({ type: 'text' })
   name!: string;
 
-  @MikroORM_Property({ type: 'datetime', defaultRaw: \`current_timestamp\` })
+  @MikroORM_Property({ type: 'datetime', defaultRaw: \`(strftime('%s', 'now') * 1000)\` })
   version!: Date & MikroORM_Opt;
 
   @MikroORM_OneToOne({ entity: () => FooBar4, ref: true, mappedBy: 'baz' })
@@ -8677,7 +8677,7 @@ export const BookTag4Schema = new MikroORM_EntitySchema({
     createdAt: { type: 'datetime', nullable: true },
     updatedAt: { type: 'datetime', nullable: true },
     name: { type: 'text' },
-    version: { type: 'datetime', defaultRaw: \`current_timestamp\` },
+    version: { type: 'datetime', defaultRaw: \`(strftime('%s', 'now') * 1000)\` },
     tagsUnorderedInverse: {
       kind: 'm:n',
       entity: () => Book4,
@@ -8824,7 +8824,7 @@ export const FooBaz4Schema = new MikroORM_EntitySchema({
     createdAt: { type: 'datetime', nullable: true },
     updatedAt: { type: 'datetime', nullable: true },
     name: { type: 'text' },
-    version: { type: 'datetime', defaultRaw: \`current_timestamp\` },
+    version: { type: 'datetime', defaultRaw: \`(strftime('%s', 'now') * 1000)\` },
     fooBar4: { kind: '1:1', entity: () => FooBar4, ref: true, mappedBy: 'baz' },
   },
 });
@@ -9030,7 +9030,7 @@ export class BookTag4 extends BaseEntity {
   @MikroORM_Property({ type: 'text' })
   name!: string;
 
-  @MikroORM_Property({ type: 'datetime', defaultRaw: \`current_timestamp\` })
+  @MikroORM_Property({ type: 'datetime', defaultRaw: \`(strftime('%s', 'now') * 1000)\` })
   version!: Date & MikroORM_Opt;
 
   @MikroORM_ManyToMany({ entity: () => Book4, mappedBy: 'tagsUnordered' })
@@ -9157,7 +9157,7 @@ export class FooBaz4 extends BaseEntity {
   @MikroORM_Property({ type: 'text' })
   name!: string;
 
-  @MikroORM_Property({ type: 'datetime', defaultRaw: \`current_timestamp\` })
+  @MikroORM_Property({ type: 'datetime', defaultRaw: \`(strftime('%s', 'now') * 1000)\` })
   version!: Date & MikroORM_Opt;
 
   @MikroORM_OneToOne({ entity: () => FooBar4, ref: true, mappedBy: 'baz' })
@@ -9369,7 +9369,7 @@ export const BookTag4Schema = new MikroORM_EntitySchema({
     createdAt: { type: 'datetime', nullable: true },
     updatedAt: { type: 'datetime', nullable: true },
     name: { type: 'text' },
-    version: { type: 'datetime', defaultRaw: \`current_timestamp\` },
+    version: { type: 'datetime', defaultRaw: \`(strftime('%s', 'now') * 1000)\` },
     tagsUnorderedInverse: {
       kind: 'm:n',
       entity: () => Book4,
@@ -9516,7 +9516,7 @@ export const FooBaz4Schema = new MikroORM_EntitySchema({
     createdAt: { type: 'datetime', nullable: true },
     updatedAt: { type: 'datetime', nullable: true },
     name: { type: 'text' },
-    version: { type: 'datetime', defaultRaw: \`current_timestamp\` },
+    version: { type: 'datetime', defaultRaw: \`(strftime('%s', 'now') * 1000)\` },
     fooBar4: { kind: '1:1', entity: () => FooBar4, ref: true, mappedBy: 'baz' },
   },
 });
@@ -9734,7 +9734,7 @@ export class BookTag4 extends BaseEntity2 {
   @MikroORM_Property({ type: 'text' })
   name!: string;
 
-  @MikroORM_Property({ type: 'datetime', defaultRaw: \`current_timestamp\` })
+  @MikroORM_Property({ type: 'datetime', defaultRaw: \`(strftime('%s', 'now') * 1000)\` })
   version!: Date & MikroORM_Opt;
 
   @MikroORM_ManyToMany({ entity: () => Book4, mappedBy: 'tagsUnordered' })
@@ -9861,7 +9861,7 @@ export class FooBaz4 extends BaseEntity2 {
   @MikroORM_Property({ type: 'text' })
   name!: string;
 
-  @MikroORM_Property({ type: 'datetime', defaultRaw: \`current_timestamp\` })
+  @MikroORM_Property({ type: 'datetime', defaultRaw: \`(strftime('%s', 'now') * 1000)\` })
   version!: Date & MikroORM_Opt;
 
   @MikroORM_OneToOne({ entity: () => FooBar4, ref: true, mappedBy: 'baz' })
@@ -10068,7 +10068,7 @@ export const BookTag4Schema = new MikroORM_EntitySchema({
     createdAt: { type: 'datetime', nullable: true },
     updatedAt: { type: 'datetime', nullable: true },
     name: { type: 'text' },
-    version: { type: 'datetime', defaultRaw: \`current_timestamp\` },
+    version: { type: 'datetime', defaultRaw: \`(strftime('%s', 'now') * 1000)\` },
     tagsUnorderedInverse: {
       kind: 'm:n',
       entity: () => Book4,
@@ -10215,7 +10215,7 @@ export const FooBaz4Schema = new MikroORM_EntitySchema({
     createdAt: { type: 'datetime', nullable: true },
     updatedAt: { type: 'datetime', nullable: true },
     name: { type: 'text' },
-    version: { type: 'datetime', defaultRaw: \`current_timestamp\` },
+    version: { type: 'datetime', defaultRaw: \`(strftime('%s', 'now') * 1000)\` },
     fooBar4: { kind: '1:1', entity: () => FooBar4, ref: true, mappedBy: 'baz' },
   },
 });
@@ -10421,7 +10421,7 @@ export class BookTag4 extends CustomBase {
   @MikroORM_Property({ type: 'text' })
   name!: string;
 
-  @MikroORM_Property({ type: 'datetime', defaultRaw: \`current_timestamp\` })
+  @MikroORM_Property({ type: 'datetime', defaultRaw: \`(strftime('%s', 'now') * 1000)\` })
   version!: Date & MikroORM_Opt;
 
   @MikroORM_ManyToMany({ entity: () => Book4, mappedBy: 'tagsUnordered' })
@@ -10548,7 +10548,7 @@ export class FooBaz4 extends CustomBase {
   @MikroORM_Property({ type: 'text' })
   name!: string;
 
-  @MikroORM_Property({ type: 'datetime', defaultRaw: \`current_timestamp\` })
+  @MikroORM_Property({ type: 'datetime', defaultRaw: \`(strftime('%s', 'now') * 1000)\` })
   version!: Date & MikroORM_Opt;
 
   @MikroORM_OneToOne({ entity: () => FooBar4, ref: true, mappedBy: 'baz' })
@@ -10760,7 +10760,7 @@ export const BookTag4Schema = new MikroORM_EntitySchema({
     createdAt: { type: 'datetime', nullable: true },
     updatedAt: { type: 'datetime', nullable: true },
     name: { type: 'text' },
-    version: { type: 'datetime', defaultRaw: \`current_timestamp\` },
+    version: { type: 'datetime', defaultRaw: \`(strftime('%s', 'now') * 1000)\` },
     tagsUnorderedInverse: {
       kind: 'm:n',
       entity: () => Book4,
@@ -10907,7 +10907,7 @@ export const FooBaz4Schema = new MikroORM_EntitySchema({
     createdAt: { type: 'datetime', nullable: true },
     updatedAt: { type: 'datetime', nullable: true },
     name: { type: 'text' },
-    version: { type: 'datetime', defaultRaw: \`current_timestamp\` },
+    version: { type: 'datetime', defaultRaw: \`(strftime('%s', 'now') * 1000)\` },
     fooBar4: { kind: '1:1', entity: () => FooBar4, ref: true, mappedBy: 'baz' },
   },
 });

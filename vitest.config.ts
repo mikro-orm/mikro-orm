@@ -22,7 +22,7 @@ export default defineConfig({
         test: {
           name: 'legacy',
           include: ['tests/**/*.test.ts'],
-          exclude: ['tests/features/decorators/es'],
+          exclude: ['tests/features/decorators/es', 'tests/deno/**'],
         },
       },
       {

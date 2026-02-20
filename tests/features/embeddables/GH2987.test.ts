@@ -187,7 +187,7 @@ test('2987', async () => {
 
   await orm.em.flush();
   expect(mock.mock.calls[0][0]).toMatch('begin');
-  expect(mock.mock.calls[1][0]).toMatch(`insert into \`user\` (\`id\`, \`email1\`, \`email2_type\`, \`email2_sent_emails_due_date\`, \`email2_sent_emails_sender_email\`, \`email2_sent_emails_sent_date\`) values (1, '{"type":"DUE_DATE","sent_emails":{"dueDate":"2024-07-01T20:20:00.000Z","sender_email":"foo1"}}', 'DUE_DATE', 1719865200000, 'foo2', NULL), (2, '{"type":"EMAIL","sent_emails":{"sent_date":"2024-07-02T20:20:00.000Z","sender_email":"foo3"}}', 'EMAIL', NULL, 'foo4', 1719951600000)`);
+  expect(mock.mock.calls[1][0]).toMatch(`insert into \`user\` (\`id\`, \`email1\`, \`email2_type\`, \`email2_sent_emails_due_date\`, \`email2_sent_emails_sender_email\`, \`email2_sent_emails_sent_date\`) values (1, '{"type":"DUE_DATE","sent_emails":{"dueDate":"2024-07-01T20:20:00.000Z","sender_email":"foo1"}}', 'DUE_DATE', 1719865200000, 'foo2', null), (2, '{"type":"EMAIL","sent_emails":{"sent_date":"2024-07-02T20:20:00.000Z","sender_email":"foo3"}}', 'EMAIL', null, 'foo4', 1719951600000)`);
   expect(mock.mock.calls[2][0]).toMatch('commit');
   expect(mock.mock.calls[3][0]).toMatch('select `u0`.* from `user` as `u0` order by `u0`.`id` asc');
   expect(mock.mock.calls[4][0]).toMatch('begin');

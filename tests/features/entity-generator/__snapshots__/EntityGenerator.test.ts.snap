@@ -61,7 +61,7 @@ export const BookTag4Schema = defineEntity({
     createdAt: p.datetime().nullable(),
     updatedAt: p.datetime().nullable(),
     name: p.text(),
-    version: p.datetime().defaultRaw(\`current_timestamp\`),
+    version: p.datetime().defaultRaw(\`(strftime('%s', 'now') * 1000)\`),
     tagsUnorderedInverse: () => p.manyToMany(Book4).mappedBy('tagsUnordered'),
     tagsOrderedCollection: () => p.oneToMany(TagsOrdered).mappedBy('bookTag4'),
   },
@@ -159,7 +159,7 @@ export const FooBaz4Schema = defineEntity({
     createdAt: p.datetime().nullable(),
     updatedAt: p.datetime().nullable(),
     name: p.text(),
-    version: p.datetime().defaultRaw(\`current_timestamp\`),
+    version: p.datetime().defaultRaw(\`(strftime('%s', 'now') * 1000)\`),
     fooBar4: () => p.oneToOne(FooBar4).ref().mappedBy('baz'),
   },
 });

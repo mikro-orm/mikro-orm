@@ -325,6 +325,45 @@ jobs:
       - name: Test (SQLite only)
         run: yarn test:sqlite
 
+  test-deno:
+    name: Tests (deno)
+    if: ${{ !contains(github.event.head_commit.message, '[skip ci]') }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Source code
+        uses: actions/checkout@v6
+
+      - name: Use Node.js 24
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          package-manager-cache: false
+
+      - name: Enable corepack
+        run: |
+          corepack enable
+          corepack prepare yarn@stable --activate
+
+      # Yarn dependencies cannot be cached until yarn is installed
+      # WORKAROUND: https://github.com/actions/setup-node/issues/531
+      - name: Extract cached dependencies
+        uses: actions/setup-node@v6
+        with:
+          cache: yarn
+
+      - name: Install & build
+        run: |
+          yarn
+          yarn build
+
+      - name: Setup Deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      - name: Test (Deno + node:sqlite)
+        run: deno run --allow-read --allow-write --allow-env --allow-ffi --node-modules-dir=manual tests/deno/sqlite.test.ts
+
   release:
     name: Release
     if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/v7') && github.repository_owner == 'mikro-orm'

@@ -497,6 +497,29 @@ The following methods were renamed:
 
 Previously, we used `md5` hash algorithm in various places, mainly to compute a stable hash for a string value, e.g. for long index names. This was made configurable and sha256 was also allowed via `hashAlgorithm` option. The algorithm is now replaced with FNV-1a 64-bit, so we don't have to depend on `node:crypto`. The option `hashAlgorithm` is removed.
 
+## SQLite version dates stored as timestamps
+
+SQLite version properties with `Date` type previously used `current_timestamp` as the database default, which stored values as date strings (e.g. `2024-01-15 12:30:00`). In v7, version dates are stored as millisecond timestamps (using `strftime('%s', 'now') * 1000`), consistent with how all other `Date` properties are stored in SQLite.
+
+Existing data is handled automatically — optimistic locking queries match both the old string format and the new timestamp format, so no data migration is needed.
+
+## `BaseSqlitePlatform` renamed to `SqlitePlatform`
+
+The `BaseSqlitePlatform` class in `@mikro-orm/sql` has been renamed to `SqlitePlatform`. Both `@mikro-orm/sqlite` and `@mikro-orm/libsql` now use this class directly instead of empty subclasses.
+
+If you imported `BaseSqlitePlatform`, update your import:
+
+```diff
+-import { BaseSqlitePlatform } from '@mikro-orm/sql';
++import { SqlitePlatform } from '@mikro-orm/sql';
+```
+
+The `LibSqlPlatform` class has been removed. If you referenced it, use `SqlitePlatform` instead.
+
+## `quoteVersionValue` renamed to `convertVersionValue`
+
+The `Platform.quoteVersionValue()` method has been renamed to `convertVersionValue()`. If you override this method in a custom platform, update the method name.
+
 ## `forceUtcTimezone` enabled by default
 
 The `forceUtcTimezone` option is now enabled by default for all SQL drivers. This means datetime columns without timezone (`datetime` in MySQL/MSSQL, `timestamp` in PostgreSQL) will store and retrieve values in UTC.

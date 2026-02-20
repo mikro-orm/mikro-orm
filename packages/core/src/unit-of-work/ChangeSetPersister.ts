@@ -352,7 +352,7 @@ export class ChangeSetPersister {
     }
 
     if (meta.versionProperty) {
-      cond[meta.versionProperty] = this.platform.quoteVersionValue(changeSet.entity[meta.versionProperty] as unknown as Date, meta.properties[meta.versionProperty]);
+      cond[meta.versionProperty] = this.platform.convertVersionValue(changeSet.entity[meta.versionProperty] as unknown as Date, meta.properties[meta.versionProperty]);
     }
 
     this.checkConcurrencyKeys(meta, changeSet, cond);
@@ -373,7 +373,7 @@ export class ChangeSetPersister {
 
       if (meta.versionProperty) {
         // @ts-ignore
-        cond[meta.versionProperty] = this.platform.quoteVersionValue(cs.entity[meta.versionProperty] as unknown as Date, meta.properties[meta.versionProperty]);
+        cond[meta.versionProperty] = this.platform.convertVersionValue(cs.entity[meta.versionProperty] as unknown as Date, meta.properties[meta.versionProperty]);
       }
 
       return cond;

@@ -4,7 +4,7 @@ import { SqliteNativeQueryBuilder } from './SqliteNativeQueryBuilder.js';
 import { SqliteSchemaHelper } from './SqliteSchemaHelper.js';
 import { SqliteExceptionConverter } from './SqliteExceptionConverter.js';
 
-export abstract class BaseSqlitePlatform extends AbstractSqlPlatform {
+export class SqlitePlatform extends AbstractSqlPlatform {
 
   protected override readonly schemaHelper: SqliteSchemaHelper = new SqliteSchemaHelper(this);
   protected override readonly exceptionConverter = new SqliteExceptionConverter();
@@ -27,7 +27,7 @@ export abstract class BaseSqlitePlatform extends AbstractSqlPlatform {
   }
 
   override getCurrentTimestampSQL(length: number): string {
-    return super.getCurrentTimestampSQL(0);
+    return `(strftime('%s', 'now') * 1000)`;
   }
 
   override getDateTimeTypeDeclarationSQL(column: { length: number }): string {
@@ -133,12 +133,42 @@ export abstract class BaseSqlitePlatform extends AbstractSqlPlatform {
     return `:column: match :query`;
   }
 
-  override quoteVersionValue(value: Date | number, prop: EntityProperty): Date | string | number {
-    if (prop.runtimeType === 'Date') {
-      return this.escape(value).replace(/^'|\.\d{3}'$/g, '');
+  override escape(value: any): string {
+    if (value == null) {
+      return 'null';
     }
 
-    return value;
+    if (typeof value === 'boolean') {
+      return value ? 'true' : 'false';
+    }
+
+    if (typeof value === 'number' || typeof value === 'bigint') {
+      return '' + value;
+    }
+
+    if (value instanceof Date) {
+      return '' + +value;
+    }
+
+    if (Array.isArray(value)) {
+      return value.map(v => this.escape(v)).join(', ');
+    }
+
+    if (Buffer.isBuffer(value)) {
+      return `X'${value.toString('hex')}'`;
+    }
+
+    return `'${String(value).replace(/'/g, "''")}'`;
+  }
+
+  override convertVersionValue(value: Date | number, prop: EntityProperty): number | { $in: (string | number)[] } {
+    if (prop.runtimeType === 'Date') {
+      const ts = +value;
+      const str = new Date(ts).toISOString().replace('T', ' ').replace(/\.\d{3}Z$/, '');
+      return { $in: [ts, str] };
+    }
+
+    return value as number;
   }
 
   override quoteValue(value: any): string {
