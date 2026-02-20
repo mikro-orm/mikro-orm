@@ -199,7 +199,10 @@ export class EntityFactory {
       .forEach(key => diff2[key] = data[key]);
 
     // rehydrated with the new values, skip those changed by user
-    this.hydrate(entity, meta, diff2, options);
+    // use full hydration if the entity is already initialized, even if the caller used `initialized: false`
+    // (e.g. from createReference), otherwise scalar properties in diff2 won't be applied
+    const initialized = options.initialized || helper(entity).__initialized;
+    this.hydrate(entity, meta, diff2, initialized ? { ...options, initialized } : options);
 
     // we need to update the entity data only with keys that were not present before
     const nullVal = this.config.get('forceUndefined') ? undefined : null;
