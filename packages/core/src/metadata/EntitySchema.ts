@@ -490,9 +490,9 @@ export class EntitySchema<Entity = any, Base = never, Class extends EntityCtor =
    * });
    * ```
    */
-  addHook<Event extends EventType | `${EventType}`>(
+  addHook<Event extends EventType | `${EventType}`, T extends Entity = Entity>(
     event: Event,
-    handler: NonNullable<EventSubscriber<Entity>[Event]>,
+    handler: NonNullable<EventSubscriber<T>[Event]>,
   ): this {
     this._meta.hooks[event as EventType] ??= [];
     this._meta.hooks[event as EventType]!.push(handler as any);

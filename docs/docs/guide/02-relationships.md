@@ -581,20 +581,20 @@ Read more about [Cascading](../cascading.md) in the documentation.
 
 # Events and life cycle hooks
 
-Time to improve the password hashing. Let's use the `argon2` package, which provides `hash` and `verify` functions. They are both async, so you cannot use `.onCreate()` directly. Instead, you need to use the lifecycle hooks via the `hooks` option in `defineEntity`.
+Time to improve the password hashing. Let's use the `argon2` package, which provides `hash` and `verify` functions. They are both async, so you cannot use `.onCreate()` directly. Instead, you need to use the lifecycle hooks via the `addHook()` method on the schema.
 
 > Don't forget to install the `argon2` package via `npm install argon2`.
 
 The plan is following:
 
 - the password will remain in plaintext when assigned via `em.create()`
-- `hashPassword` function will become an event handler via the `hooks` option
+- `hashPassword` function will become an event handler via `addHook()`
 - you register it for both `beforeCreate` and `beforeUpdate` events
 - the handler receives `EventArgs` which includes `changeSet` with the computed difference
 - you check `changeSet.payload.password` to only hash when the password changed
 
 ```ts title='user.entity.ts'
-import { defineEntity, type InferEntity, EventArgs, p } from '@mikro-orm/core';
+import { defineEntity, type EventArgs, p } from '@mikro-orm/core';
 import { BaseSchema } from '../common/base.entity.js';
 import { ArticleSchema } from '../article/article.entity.js';
 import { hash, verify } from 'argon2';
@@ -618,10 +618,6 @@ export const UserSchema = defineEntity({
     bio: p.text().default(''),
     articles: () => p.oneToMany(ArticleSchema).mappedBy('author'),
   },
-  hooks: {
-    beforeCreate: [hashPassword],
-    beforeUpdate: [hashPassword],
-  },
 });
 
 // Extend the schema's auto-generated class to add custom methods
@@ -632,9 +628,13 @@ export class User extends UserSchema.class {
 }
 
 UserSchema.setClass(User);
+UserSchema.addHook('beforeCreate', hashPassword);
+UserSchema.addHook('beforeUpdate', hashPassword);
 ```
 
 Notice how we use `setClass()` to extend the schema's auto-generated class. This avoids redeclaring all properties in the class - they are inferred from the schema automatically. The `User` class only adds the `verifyPassword` method. After calling `setClass()`, MikroORM will use the custom `User` class for all entity instances, so `em.create(User, {...})` and `em.find(User, {})` both work.
+
+> While `defineEntity` also accepts a `hooks` option, prefer using `addHook()` instead. The `hooks` option types its handlers as `EventArgs<any>`, losing type safety. With `addHook()`, the handler type is inferred from the argument, so you get proper type checking for `args.entity` and `args.changeSet`.
 
 ## ⛳ Checkpoint 2
 
