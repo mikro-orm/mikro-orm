@@ -2,6 +2,7 @@ import {
   Cascade,
   Collection,
   defineEntity,
+  EventArgs,
   EntityData,
   EntityDTO,
   EntityMetadata,
@@ -961,6 +962,45 @@ describe('defineEntity', () => {
 
     expect(Article.meta.hooks.beforeCreate).toHaveLength(1);
     expect(Article.meta.hooks.beforeUpdate).toHaveLength(1);
+  });
+
+  it('supports addHook with a handler typed for a subclass', () => {
+    const UserSchema = defineEntity({
+      name: 'User0',
+      properties: {
+        id: p.integer().primary(),
+        fullName: p.string(),
+        password: p.string().hidden().lazy().ref(),
+      },
+    });
+
+    async function hashPassword(args: EventArgs<User>) {
+      const password = args.changeSet?.payload.password;
+
+      if (typeof password === 'string') {
+        args.entity.fullName = password;
+      }
+    }
+
+    class User extends UserSchema.class {
+
+      verifyPassword(_password: string) {
+        return true;
+      }
+
+    }
+
+    UserSchema.setClass(User);
+    UserSchema.addHook('beforeCreate', hashPassword);
+    UserSchema.addHook('beforeUpdate', hashPassword);
+
+    // also works with inline handler using the subclass
+    UserSchema.addHook('beforeCreate', async (args: EventArgs<User>) => {
+      args.entity.fullName = 'test';
+    });
+
+    expect(UserSchema.meta.hooks.beforeCreate).toHaveLength(2);
+    expect(UserSchema.meta.hooks.beforeUpdate).toHaveLength(1);
   });
 });
 

@@ -15,7 +15,7 @@ import {
 import type { EntityRepository } from '../entity/EntityRepository.js';
 import { BaseEntity } from '../entity/BaseEntity.js';
 import { type EventType, Cascade, ReferenceKind } from '../enums.js';
-import type { EventSubscriber } from '../events/EventSubscriber.js';
+import type { EventArgs } from '../events/EventSubscriber.js';
 import { Type } from '../types/Type.js';
 import { Utils } from '../utils/Utils.js';
 import { EnumArrayType } from '../types/EnumArrayType.js';
@@ -490,9 +490,9 @@ export class EntitySchema<Entity = any, Base = never, Class extends EntityCtor =
    * });
    * ```
    */
-  addHook<Event extends EventType | `${EventType}`, T extends Entity = Entity>(
-    event: Event,
-    handler: NonNullable<EventSubscriber<T>[Event]>,
+  addHook<T extends Entity = Entity>(
+    event: EventType | `${EventType}`,
+    handler: (args: EventArgs<T>) => void | Promise<void>,
   ): this {
     this._meta.hooks[event as EventType] ??= [];
     this._meta.hooks[event as EventType]!.push(handler as any);
