@@ -61,7 +61,7 @@ export class Migrator extends AbstractMigrator<AbstractSqlDriver> {
       /* v8 ignore next */
       const snapshotPath = this.options.emit === 'ts' && this.options.pathTs ? this.options.pathTs : this.options.path!;
       const absoluteSnapshotPath = fs.absolutePath(snapshotPath, this.config.get('baseDir'));
-      const dbName = this.config.get('dbName')!.replace(/\\/g, '/').split('/').pop()!;
+      const dbName = this.config.get('dbName')!.replace(/\\/g, '/').split('/').pop()!.replace(/:/g, '');
       const snapshotName = this.options.snapshotName ?? `.snapshot-${dbName}`;
       this.snapshotPath = fs.normalizePath(absoluteSnapshotPath, `${snapshotName}.json`);
     }

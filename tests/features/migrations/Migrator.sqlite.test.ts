@@ -114,7 +114,7 @@ describe('Migrator (sqlite)', () => {
     const migration1 = await migrator.create(path, true);
     expect(migration1.diff).toEqual({ up: ['select 1'], down: ['select 1'] });
 
-    const snapshotPath = path + '/.snapshot-:memory:.json';
+    const snapshotPath = path + '/.snapshot-memory.json';
     const snapshotAfterCreate = readFileSync(snapshotPath, 'utf8');
 
     // creating again should produce empty diff (snapshot matches target)
