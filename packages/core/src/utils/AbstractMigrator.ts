@@ -384,7 +384,7 @@ export abstract class AbstractMigrator<D extends IDatabaseDriver> implements IMi
     return result;
   }
 
-  private async runMigrations(method: 'up' | 'down', options?: string | string[] | MigrateOptions) {
+  protected async runMigrations(method: 'up' | 'down', options?: string | string[] | MigrateOptions) {
     await this.init();
 
     if (!this.options.transactional || !this.options.allOrNothing) {

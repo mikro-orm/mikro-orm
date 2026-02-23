@@ -168,6 +168,55 @@ describe('Migrator (postgres)', () => {
     migrations.snapshot = false;
   });
 
+  test('migration:down should update the snapshot to reflect current DB state', async () => {
+    const migrations = orm.config.get('migrations');
+    migrations.snapshot = true;
+
+    const { readFileSync } = await import('node:fs');
+    const dateMock = vi.spyOn(Date.prototype, 'toISOString');
+    dateMock.mockReturnValue('2019-10-13T21:48:13.382Z');
+    const path = process.cwd() + '/temp/migrations-456';
+    const snapshotPath = path + '/.snapshot-mikro_orm_test_migrations.json';
+
+    // remove any leftover snapshot from previous tests
+    await rm(snapshotPath, { force: true });
+
+    // create a real migration — the DB has schema diffs from entities
+    const migration1 = await orm.migrator.create();
+    expect(migration1.diff.up.length).toBeGreaterThan(0);
+
+    // snapshot now contains the target schema (entities)
+    const snapshotAfterCreate = readFileSync(snapshotPath, 'utf8');
+
+    // creating again should produce empty diff (snapshot matches target)
+    const migration2 = await orm.migrator.create();
+    expect(migration2.diff).toEqual({ down: [], up: [] });
+
+    // mock executeMigrations to avoid any real DB changes
+    const executeMock = vi.spyOn(Migrator.prototype as any, 'executeMigrations');
+    executeMock.mockResolvedValueOnce([{ name: migration1.fileName }]); // up
+    executeMock.mockResolvedValueOnce([{ name: migration1.fileName }]); // down
+
+    try {
+      await orm.migrator.up(migration1.fileName);
+      await orm.migrator.down(migration1.fileName);
+
+      // after down, snapshot should be updated to reflect current DB state
+      const snapshotAfterDown = readFileSync(snapshotPath, 'utf8');
+      expect(snapshotAfterDown).not.toEqual(snapshotAfterCreate);
+
+      // since the snapshot now reflects the DB (not the target), create finds diffs again
+      const migration3 = await orm.migrator.create();
+      expect(migration3.diff.up.length).toBeGreaterThan(0);
+      await rm(path + '/' + migration3.fileName);
+    } finally {
+      await rm(path + '/' + migration1.fileName, { force: true });
+      await rm(snapshotPath, { force: true });
+      executeMock.mockRestore();
+      migrations.snapshot = false;
+    }
+  });
+
   test('generate initial migration', async () => {
     await orm.schema.dropTableIfExists(orm.config.get('migrations').tableName!, 'custom');
     const getExecutedMigrationsMock = vi.spyOn(Migrator.prototype, 'getExecuted');

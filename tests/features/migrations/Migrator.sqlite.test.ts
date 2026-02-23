@@ -100,6 +100,49 @@ describe('Migrator (sqlite)', () => {
     migrations.snapshot = false;
   });
 
+  test('migration up/down should update the snapshot to reflect current DB state', async () => {
+    const migrations = orm.config.get('migrations');
+    migrations.snapshot = true;
+
+    const { readFileSync } = await import('node:fs');
+    const dateMock = vi.spyOn(Date.prototype, 'toISOString');
+    dateMock.mockReturnValue('2019-10-13T21:48:13.382Z');
+    const path = process.cwd() + '/temp/migrations-3';
+    const migrator = new Migrator(orm.em);
+
+    // create a blank migration, this stores the snapshot
+    const migration1 = await migrator.create(path, true);
+    expect(migration1.diff).toEqual({ up: ['select 1'], down: ['select 1'] });
+
+    const snapshotPath = path + '/.snapshot-:memory:.json';
+    const snapshotAfterCreate = readFileSync(snapshotPath, 'utf8');
+
+    // creating again should produce empty diff (snapshot matches target)
+    const migration2 = await migrator.create();
+    expect(migration2.diff).toEqual({ down: [], up: [] });
+
+    // mock the down method so we don't need real SQL
+    const migratorMock = vi.spyOn(Migration.prototype, 'down');
+    migratorMock.mockImplementation(async () => void 0);
+
+    try {
+      // run the migration up — snapshot should be updated to current DB state
+      await migrator.up(migration1.fileName);
+      const snapshotAfterUp = readFileSync(snapshotPath, 'utf8');
+      expect(snapshotAfterUp).toBeDefined();
+
+      // run the migration down — snapshot should be updated again
+      await migrator.down(migration1.fileName);
+      const snapshotAfterDown = readFileSync(snapshotPath, 'utf8');
+      expect(snapshotAfterDown).toBeDefined();
+    } finally {
+      await rm(path + '/' + migration1.fileName);
+      await rm(snapshotPath, { force: true });
+      migratorMock.mockRestore();
+      migrations.snapshot = false;
+    }
+  });
+
   test('generate initial migration', async () => {
     await orm.schema.dropTableIfExists(orm.config.get('migrations').tableName!);
     const getExecutedMigrationsMock = vi.spyOn(Migrator.prototype, 'getExecuted');

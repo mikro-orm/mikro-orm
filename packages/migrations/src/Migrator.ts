@@ -3,6 +3,8 @@ import {
   type IMigrationGenerator,
   type IMigrationRunner,
   type IMigratorStorage,
+  type MigrateOptions,
+  type MigrationInfo,
   type MikroORM,
   t,
   Type,
@@ -136,6 +138,17 @@ export class Migrator extends AbstractMigrator<AbstractSqlDriver> {
     };
   }
 
+  protected override async runMigrations(method: 'up' | 'down', options?: string | string[] | MigrateOptions): Promise<MigrationInfo[]> {
+    const result = await super.runMigrations(method, options);
+
+    if (result.length > 0 && this.options.snapshot) {
+      const schema = await DatabaseSchema.create(this.em.getConnection(), this.em.getPlatform(), this.config);
+      await this.storeCurrentSchema(schema);
+    }
+
+    return result;
+  }
+
   override getStorage(): MigrationStorage {
     return this.storage as MigrationStorage;
   }
@@ -220,13 +233,13 @@ export class Migrator extends AbstractMigrator<AbstractSqlDriver> {
     return schema;
   }
 
-  protected async storeCurrentSchema(): Promise<void> {
+  protected async storeCurrentSchema(schema?: DatabaseSchema): Promise<void> {
     if (!this.options.snapshot) {
       return;
     }
 
     const snapshotPath = await this.getSnapshotPath();
-    const schema = this.schemaGenerator.getTargetSchema();
+    schema ??= this.schemaGenerator.getTargetSchema();
     const { fs } = await import('@mikro-orm/core/fs-utils');
     await fs.writeFile(snapshotPath, JSON.stringify(schema, null, 2));
   }
