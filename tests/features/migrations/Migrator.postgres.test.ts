@@ -115,9 +115,9 @@ describe('Migrator (postgres)', () => {
     const migration = await migrator.createMigration();
     expect(migration).toMatchSnapshot('migration-dump');
     const upMock = jest.spyOn(Umzug.prototype, 'up');
-    upMock.mockImplementation(() => void 0 as any);
+    upMock.mockImplementation(() => [] as any);
     const downMock = jest.spyOn(Umzug.prototype, 'down');
-    downMock.mockImplementation(() => void 0 as any);
+    downMock.mockImplementation(() => [] as any);
     await migrator.up();
     await migrator.down(migration.fileName.replace('.ts', ''));
     await migrator.up();
@@ -140,9 +140,9 @@ describe('Migrator (postgres)', () => {
     expect(migration).toMatchSnapshot('migration-dump');
     expect(migration.fileName).toEqual('migration20191013214813_custom_name.ts');
     const upMock = jest.spyOn(Umzug.prototype, 'up');
-    upMock.mockImplementation(() => void 0 as any);
+    upMock.mockImplementation(() => [] as any);
     const downMock = jest.spyOn(Umzug.prototype, 'down');
-    downMock.mockImplementation(() => void 0 as any);
+    downMock.mockImplementation(() => [] as any);
     await migrator.up();
     await migrator.down(migration.fileName.replace('.ts', ''));
     await migrator.up();
@@ -180,6 +180,57 @@ describe('Migrator (postgres)', () => {
     expect(migration2).toMatchSnapshot('migration-snapshot-dump-2');
 
     migrations.snapshot = false;
+  });
+
+  test('migration:down should update the snapshot to reflect current DB state', async () => {
+    const migrations = orm.config.get('migrations');
+    migrations.snapshot = true;
+
+    const { readFileSync } = await import('node:fs');
+    const dateMock = jest.spyOn(Date.prototype, 'toISOString');
+    dateMock.mockReturnValue('2019-10-13T21:48:13.382Z');
+    const path = process.cwd() + '/temp/migrations-456';
+    const snapshotPath = path + '/.snapshot-mikro_orm_test_migrations.json';
+
+    // remove any leftover snapshot from previous tests
+    await remove(snapshotPath);
+
+    // create a real migration — the DB has schema diffs from entities
+    const migration1 = await orm.migrator.createMigration();
+    expect(migration1.diff.up.length).toBeGreaterThan(0);
+
+    // snapshot now contains the target schema (entities)
+    const snapshotAfterCreate = readFileSync(snapshotPath, 'utf8');
+
+    // creating again should produce empty diff (snapshot matches target)
+    const migration2 = await orm.migrator.createMigration();
+    expect(migration2.diff).toEqual({ down: [], up: [] });
+
+    // mock the umzug execution so we don't actually run SQL
+    const umzugMock = jest.spyOn(Umzug.prototype, 'up');
+    const umzugDownMock = jest.spyOn(Umzug.prototype, 'down');
+    umzugMock.mockResolvedValueOnce([{ name: migration1.fileName }] as any);
+    umzugDownMock.mockResolvedValueOnce([{ name: migration1.fileName }] as any);
+
+    try {
+      await orm.migrator.up(migration1.fileName);
+      await orm.migrator.down(migration1.fileName);
+
+      // after down, snapshot should be updated to reflect current DB state
+      const snapshotAfterDown = readFileSync(snapshotPath, 'utf8');
+      expect(snapshotAfterDown).not.toEqual(snapshotAfterCreate);
+
+      // since the snapshot now reflects the DB (not the target), create finds diffs again
+      const migration3 = await orm.migrator.createMigration();
+      expect(migration3.diff.up.length).toBeGreaterThan(0);
+      await remove(path + '/' + migration3.fileName);
+    } finally {
+      await remove(path + '/' + migration1.fileName);
+      await remove(snapshotPath);
+      umzugMock.mockRestore();
+      umzugDownMock.mockRestore();
+      migrations.snapshot = false;
+    }
   });
 
   test('generate initial migration', async () => {
@@ -255,8 +306,8 @@ describe('Migrator (postgres)', () => {
   test('run schema migration', async () => {
     const upMock = jest.spyOn(Umzug.prototype, 'up');
     const downMock = jest.spyOn(Umzug.prototype, 'down');
-    upMock.mockImplementationOnce(() => void 0 as any);
-    downMock.mockImplementationOnce(() => void 0 as any);
+    upMock.mockImplementationOnce(() => [] as any);
+    downMock.mockImplementationOnce(() => [] as any);
     const migrator = orm.migrator;
     await migrator.up();
     expect(upMock).toHaveBeenCalledTimes(1);

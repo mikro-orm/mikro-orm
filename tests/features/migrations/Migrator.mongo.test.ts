@@ -64,9 +64,9 @@ describe('Migrator (mongo)', () => {
     const migration = await migrator.createMigration();
     expect(migration).toMatchSnapshot('migration-dump');
     const upMock = jest.spyOn(Umzug.prototype, 'up');
-    upMock.mockImplementation(() => void 0 as any);
+    upMock.mockImplementation(() => [] as any);
     const downMock = jest.spyOn(Umzug.prototype, 'down');
-    downMock.mockImplementation(() => void 0 as any);
+    downMock.mockImplementation(() => [] as any);
     await migrator.up();
     await migrator.down(migration.fileName.replace('.ts', ''));
     await migrator.up();
@@ -89,9 +89,9 @@ describe('Migrator (mongo)', () => {
     expect(migration).toMatchSnapshot('migration-dump');
     expect(migration.fileName).toEqual('migration20191013214813_custom_name.ts');
     const upMock = jest.spyOn(Umzug.prototype, 'up');
-    upMock.mockImplementation(() => void 0 as any);
+    upMock.mockImplementation(() => [] as any);
     const downMock = jest.spyOn(Umzug.prototype, 'down');
-    downMock.mockImplementation(() => void 0 as any);
+    downMock.mockImplementation(() => [] as any);
     await migrator.up();
     await migrator.down(migration.fileName.replace('.ts', ''));
     await migrator.up();
@@ -124,8 +124,8 @@ describe('Migrator (mongo)', () => {
   test('run migration', async () => {
     const upMock = jest.spyOn(Umzug.prototype, 'up');
     const downMock = jest.spyOn(Umzug.prototype, 'down');
-    upMock.mockImplementationOnce(() => void 0 as any);
-    downMock.mockImplementationOnce(() => void 0 as any);
+    upMock.mockImplementationOnce(() => [] as any);
+    downMock.mockImplementationOnce(() => [] as any);
     const migrator = orm.migrator;
     await migrator.up();
     expect(upMock).toHaveBeenCalledTimes(1);

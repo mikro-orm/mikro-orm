@@ -64,9 +64,9 @@ describe('Migrator (sqlite)', () => {
     const migration = await migrator.createMigration();
     expect(migration).toMatchSnapshot('migration-dump');
     const upMock = jest.spyOn(Umzug.prototype, 'up');
-    upMock.mockImplementation(() => void 0 as any);
+    upMock.mockImplementation(() => [] as any);
     const downMock = jest.spyOn(Umzug.prototype, 'down');
-    downMock.mockImplementation(() => void 0 as any);
+    downMock.mockImplementation(() => [] as any);
     await migrator.up();
     await migrator.down(migration.fileName.replace('.ts', ''));
     await migrator.up();
@@ -105,6 +105,49 @@ describe('Migrator (sqlite)', () => {
     expect(migration2).toMatchSnapshot('migration-snapshot-dump-2');
 
     migrations.snapshot = false;
+  });
+
+  test('migration up/down should update the snapshot to reflect current DB state', async () => {
+    const migrations = orm.config.get('migrations');
+    migrations.snapshot = true;
+
+    const { readFileSync } = await import('node:fs');
+    const dateMock = jest.spyOn(Date.prototype, 'toISOString');
+    dateMock.mockReturnValue('2019-10-13T21:48:13.382Z');
+    const path = process.cwd() + '/temp/migrations-3';
+    const migrator = new Migrator(orm.em);
+
+    // create a blank migration, this stores the snapshot
+    const migration1 = await migrator.createMigration(path, true);
+    expect(migration1.diff).toEqual({ up: ['select 1'], down: ['select 1'] });
+
+    const snapshotPath = path + '/.snapshot-:memory:.json';
+    const snapshotAfterCreate = readFileSync(snapshotPath, 'utf8');
+
+    // creating again should produce empty diff (snapshot matches target)
+    const migration2 = await migrator.createMigration();
+    expect(migration2.diff).toEqual({ down: [], up: [] });
+
+    // mock the down method so we don't need real SQL
+    const migratorMock = jest.spyOn(Migration.prototype, 'down');
+    migratorMock.mockImplementation(async () => void 0);
+
+    try {
+      // run the migration up — snapshot should be updated to current DB state
+      await migrator.up(migration1.fileName);
+      const snapshotAfterUp = readFileSync(snapshotPath, 'utf8');
+      expect(snapshotAfterUp).toBeDefined();
+
+      // run the migration down — snapshot should be updated again
+      await migrator.down(migration1.fileName);
+      const snapshotAfterDown = readFileSync(snapshotPath, 'utf8');
+      expect(snapshotAfterDown).toBeDefined();
+    } finally {
+      await remove(path + '/' + migration1.fileName);
+      await remove(snapshotPath);
+      migratorMock.mockRestore();
+      migrations.snapshot = false;
+    }
   });
 
   test('generate initial migration', async () => {
@@ -165,8 +208,8 @@ describe('Migrator (sqlite)', () => {
   test('run schema migration', async () => {
     const upMock = jest.spyOn(Umzug.prototype, 'up');
     const downMock = jest.spyOn(Umzug.prototype, 'down');
-    upMock.mockImplementationOnce(() => void 0 as any);
-    downMock.mockImplementationOnce(() => void 0 as any);
+    upMock.mockImplementationOnce(() => [] as any);
+    downMock.mockImplementationOnce(() => [] as any);
     const migrator = new Migrator(orm.em);
     await migrator.up();
     expect(upMock).toHaveBeenCalledTimes(1);
@@ -309,6 +352,8 @@ describe('Migrator (sqlite)', () => {
   });
 
   test('snapshots with absolute path to database', async () => {
+    const snapshotPath = TEMP_DIR + '/migrations/.snapshot-test.db.json';
+    await remove(snapshotPath);
     const orm = await MikroORM.init({
       driver: SqliteDriver,
       entities: [FooBar4, FooBaz4, BaseEntity5],
@@ -316,7 +361,9 @@ describe('Migrator (sqlite)', () => {
       baseDir: TEMP_DIR,
       extensions: [Migrator],
     });
-    await expect(orm.migrator.createMigration()).resolves.not.toThrow();
+    const migration = await orm.migrator.createMigration();
+    await remove(TEMP_DIR + '/migrations/' + migration.fileName);
+    await remove(snapshotPath);
     await orm.close();
   });
 

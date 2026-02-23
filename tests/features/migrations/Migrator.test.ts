@@ -92,9 +92,9 @@ describe('Migrator', () => {
     const migration = await migrator.createMigration();
     expect(migration).toMatchSnapshot('migration-dump');
     const upMock = jest.spyOn(Umzug.prototype, 'up');
-    upMock.mockImplementation(() => void 0 as any);
+    upMock.mockImplementation(() => [] as any);
     const downMock = jest.spyOn(Umzug.prototype, 'down');
-    downMock.mockImplementation(() => void 0 as any);
+    downMock.mockImplementation(() => [] as any);
     await migrator.up();
     await migrator.down(migration.fileName.replace('.ts', ''));
     await migrator.up();
@@ -250,8 +250,8 @@ describe('Migrator', () => {
   test('run schema migration', async () => {
     const upMock = jest.spyOn(Umzug.prototype, 'up');
     const downMock = jest.spyOn(Umzug.prototype, 'down');
-    upMock.mockImplementationOnce(() => void 0 as any);
-    downMock.mockImplementationOnce(() => void 0 as any);
+    upMock.mockImplementationOnce(() => [] as any);
+    downMock.mockImplementationOnce(() => [] as any);
     const migrator = new Migrator(orm.em);
     await migrator.up();
     expect(upMock).toHaveBeenCalledTimes(1);
