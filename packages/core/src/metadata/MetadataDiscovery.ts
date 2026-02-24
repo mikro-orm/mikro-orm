@@ -126,6 +126,7 @@ export class MetadataDiscovery {
       const desc = Object.getOwnPropertyDescriptor(meta.prototype, prop.name);
 
       if (desc?.get || desc?.set) {
+        this.initRelation(prop);
         this.initFieldName(prop);
         const accessor = prop.name;
         prop.name = typeof prop.accessor === 'string' ? prop.accessor : prop.name;
@@ -141,7 +142,12 @@ export class MetadataDiscovery {
         Utils.renameKey(meta.properties, accessor, prop.name);
       } else {
         const name = prop.name;
-        prop.name = prop.accessor;
+
+        if (prop.kind === ReferenceKind.SCALAR || prop.kind === ReferenceKind.EMBEDDED) {
+          prop.name = prop.accessor;
+        }
+
+        this.initRelation(prop);
         this.initFieldName(prop);
         prop.serializedName ??= prop.accessor;
         prop.name = name;
