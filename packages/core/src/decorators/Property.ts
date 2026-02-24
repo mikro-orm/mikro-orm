@@ -288,7 +288,7 @@ export interface PropertyOptions<Owner> {
    * }
    * ```
    */
-  accessor?: keyof Owner | boolean;
+  accessor?: keyof Owner | AnyString | boolean;
   /**
    * Set to define serialized primary key for MongoDB. (virtual)
    * Alias for `@SerializedPrimaryKey()` decorator.
