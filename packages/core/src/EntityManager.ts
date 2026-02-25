@@ -233,6 +233,15 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     (options as Dictionary)._populateWhere = options.populateWhere ?? this.config.get('populateWhere');
     options.populateWhere = this.createPopulateWhere({ ...where } as ObjectQuery<Entity>, options);
     options.populateFilter = await this.getJoinedFilters(meta, options);
+
+    if (options.unionWhere?.length) {
+      options.unionWhere = await Promise.all(
+        options.unionWhere.map(branch =>
+          em.processWhere(entityName, branch as FilterQuery<NoInfer<Entity>>, options, 'read'),
+        ),
+      ) as ObjectQuery<Entity>[];
+    }
+
     const results = await em.driver.find(entityName, where, { ctx: em.transactionContext, em, ...options });
 
     if (results.length === 0) {
@@ -1791,6 +1800,14 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     options.populateFilter = await this.getJoinedFilters(meta, options as FindOptions<Entity>);
     validateParams(where);
     delete (options as FindOptions<Entity>).orderBy;
+
+    if (options.unionWhere?.length) {
+      options.unionWhere = await Promise.all(
+        options.unionWhere.map(branch =>
+          em.processWhere(entityName, branch as FilterQuery<NoInfer<Entity>>, options as FindOptions<Entity, Hint>, 'read'),
+        ),
+      ) as ObjectQuery<Entity>[];
+    }
 
     const cacheKey = em.cacheKey(entityName, options, 'em.count', where);
     const cached = await em.tryCache(entityName, options.cache, cacheKey);

@@ -322,4 +322,62 @@ describe('QueryBuilder - Subqueries', () => {
     expect(r.sql).toBe('select `e0`.`name`, `e0`.`age` from `author2` as `e0` where `e0`.`id` = ?');
     expect(r.params).toStrictEqual([1]);
   });
+
+  test('unionAll combines queries with UNION ALL', () => {
+    const qb1 = orm.em.createQueryBuilder(Author2, 'a').select('a.id').where({ name: 'foo' });
+    const qb2 = orm.em.createQueryBuilder(Author2, 'a').select('a.id').where({ name: 'bar' });
+    const result = qb1.unionAll(qb2);
+
+    expect(result.sql).toBe(
+      '(select `a`.`id` from `author2` as `a` where `a`.`name` = ?) union all (select `a`.`id` from `author2` as `a` where `a`.`name` = ?)',
+    );
+    expect(result.params).toEqual(['foo', 'bar']);
+  });
+
+  test('union combines queries with UNION (dedup)', () => {
+    const qb1 = orm.em.createQueryBuilder(Author2, 'a').select('a.id').where({ name: 'foo' });
+    const qb2 = orm.em.createQueryBuilder(Author2, 'a').select('a.id').where({ name: 'bar' });
+    const result = qb1.union(qb2);
+
+    expect(result.sql).toBe(
+      '(select `a`.`id` from `author2` as `a` where `a`.`name` = ?) union (select `a`.`id` from `author2` as `a` where `a`.`name` = ?)',
+    );
+    expect(result.params).toEqual(['foo', 'bar']);
+  });
+
+  test('unionAll with multiple branches', () => {
+    const qb1 = orm.em.createQueryBuilder(Author2, 'a').select('a.id').where({ name: 'a' });
+    const qb2 = orm.em.createQueryBuilder(Author2, 'a').select('a.id').where({ name: 'b' });
+    const qb3 = orm.em.createQueryBuilder(Author2, 'a').select('a.id').where({ name: 'c' });
+    const result = qb1.unionAll(qb2, qb3);
+
+    expect(result.sql).toBe(
+      '(select `a`.`id` from `author2` as `a` where `a`.`name` = ?)'
+      + ' union all (select `a`.`id` from `author2` as `a` where `a`.`name` = ?)'
+      + ' union all (select `a`.`id` from `author2` as `a` where `a`.`name` = ?)',
+    );
+    expect(result.params).toEqual(['a', 'b', 'c']);
+  });
+
+  test('unionAll result can be used with $in', () => {
+    const qb1 = orm.em.createQueryBuilder(Book2, 'b').select('b.author').where({ price: { $gt: 100 } });
+    const qb2 = orm.em.createQueryBuilder(Book2, 'b').select('b.author').where({ title: 'foo' });
+    const subquery = qb1.unionAll(qb2);
+
+    const qb3 = orm.em.createQueryBuilder(Author2, 'a').select('*').where({ id: { $in: subquery } });
+    expect(qb3.getQuery()).toBe(
+      'select `a`.* from `author2` as `a` where `a`.`id` in '
+      + '((select `b`.`author_id` from `book2` as `b` where `b`.`price` > ?) union all (select `b`.`author_id` from `book2` as `b` where `b`.`title` = ?))',
+    );
+    expect(qb3.getParams()).toEqual([100, 'foo']);
+  });
+
+  test('unionAll with joined relations in branches', () => {
+    const qb1 = orm.em.createQueryBuilder(Book2, 'b').select('b.uuid').where({ title: 'foo' });
+    const qb2 = orm.em.createQueryBuilder(Book2, 'b').select('b.uuid').where({ author: { name: 'bar' } });
+    const subquery = qb1.unionAll(qb2);
+
+    expect(subquery.sql).toMatch(/union all/);
+    expect(subquery.params).toEqual(['foo', 'bar']);
+  });
 });

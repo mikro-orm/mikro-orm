@@ -192,6 +192,11 @@ export abstract class AbstractSqlDriver<
       return this.findVirtual<T>(entityName, where, options);
     }
 
+    if (options.unionWhere?.length) {
+      where = await this.applyUnionWhere(meta, where, options);
+      delete options.unionWhere;
+    }
+
     const qb = await this.createQueryBuilderFromOptions(meta, where, options);
     const result = await this.rethrow(qb.execute('all'));
 
@@ -737,6 +742,11 @@ export abstract class AbstractSqlDriver<
 
     if (meta.virtual) {
       return this.countVirtual<T>(entityName, where, options);
+    }
+
+    if (options.unionWhere?.length) {
+      where = await this.applyUnionWhere(meta, where, options);
+      delete options.unionWhere;
     }
 
     options = { populate: [], ...options };
@@ -2204,6 +2214,56 @@ export abstract class AbstractSqlDriver<
 
     /* v8 ignore next */
     return { $and: [options.populateWhere, where] } as unknown as ObjectQuery<T>;
+  }
+
+  /**
+   * Builds a UNION ALL (or UNION) subquery from `unionWhere` branches and merges it
+   * into the main WHERE as `pk IN (branch_1 UNION ALL branch_2 ...)`.
+   * Each branch is planned independently by the database, enabling per-table index usage.
+   */
+  protected async applyUnionWhere<T extends object>(
+    meta: EntityMetadata<T>,
+    where: ObjectQuery<T>,
+    options: FindOptions<T, any, any, any> | CountOptions<T>,
+  ): Promise<ObjectQuery<T>> {
+    const unionWhere = (options as FindOptions<T>).unionWhere!;
+    const strategy = (options as FindOptions<T>).unionWhereStrategy ?? 'union-all';
+    const separator = strategy === 'union' ? ' union ' : ' union all ';
+    const schema = this.getSchemaName(meta, options);
+    const connectionType = this.resolveConnectionType({
+      ctx: options.ctx,
+      connectionType: (options as FindOptions<T>).connectionType,
+    });
+
+    const branches: { sql: string; params: readonly unknown[] }[] = [];
+
+    for (const branch of unionWhere) {
+      const qb = this.createQueryBuilder<T>(
+        meta.class, options.ctx, connectionType, false,
+        (options as FindOptions<T>).logging,
+      ).withSchema(schema);
+
+      const pkFields = meta.primaryKeys.map(pk => {
+        const prop = meta.properties[pk];
+        return `${qb.alias}.${prop.fieldNames[0]}`;
+      });
+
+      qb.select(pkFields as any).where(branch as any);
+
+      if (options.em) {
+        await qb.applyJoinedFilters(options.em, options.filters);
+      }
+
+      branches.push(qb.toQuery());
+    }
+
+    const unionSql = branches.map(b => `(${b.sql})`).join(separator);
+    const allParams = branches.flatMap(b => [...b.params]);
+    const pkHash = Utils.getPrimaryKeyHash(meta.primaryKeys);
+
+    return {
+      $and: [where, { [pkHash]: { $in: raw(unionSql, allParams) } }],
+    } as ObjectQuery<T>;
   }
 
   protected buildOrderBy<T extends object>(
