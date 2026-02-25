@@ -1574,7 +1574,7 @@ __metadata:
     "@mikro-orm/core": "npm:^6.6.4"
     "@mikro-orm/sql": "npm:6.6.4"
     kysely: "npm:0.28.11"
-    mysql2: "npm:3.18.0"
+    mysql2: "npm:3.18.1"
     sqlstring: "npm:2.3.3"
   peerDependencies:
     "@mikro-orm/core": ^6.0.0
@@ -1588,8 +1588,8 @@ __metadata:
     "@mikro-orm/core": "npm:^6.6.4"
     "@mikro-orm/sql": "npm:6.6.4"
     kysely: "npm:0.28.11"
-    pg: "npm:8.18.0"
-    pg-cursor: "npm:2.17.0"
+    pg: "npm:8.19.0"
+    pg-cursor: "npm:2.18.0"
     postgres-array: "npm:3.0.4"
     postgres-date: "npm:2.1.0"
     postgres-interval: "npm:4.0.2"
@@ -7369,9 +7369,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mysql2@npm:3.18.0":
-  version: 3.18.0
-  resolution: "mysql2@npm:3.18.0"
+"mysql2@npm:3.18.1":
+  version: 3.18.1
+  resolution: "mysql2@npm:3.18.1"
   dependencies:
     aws-ssl-profiles: "npm:^1.1.2"
     denque: "npm:^2.1.0"
@@ -7383,7 +7383,7 @@ __metadata:
     sql-escaper: "npm:^1.3.3"
   peerDependencies:
     "@types/node": ">= 8"
-  checksum: 10/35b4e66f889a79ea7c43629a3d090a5a7ffb545029dc0247f38799d77da9debc4b08fe2317e29b398efb2d32dcd74189d5c71b54f6bfe89e7a7007222ed4781e
+  checksum: 10/63ec0c7805d57d8f11217642cf8073f517cba20ee3a32f8c353280235eeab58b081a541fed5777648bb1c8a31aa066b3b231d33e4693b7f8cca92c1805fe6c17
   languageName: node
   linkType: hard
 
@@ -8371,12 +8371,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pg-cursor@npm:2.17.0":
-  version: 2.17.0
-  resolution: "pg-cursor@npm:2.17.0"
+"pg-cursor@npm:2.18.0":
+  version: 2.18.0
+  resolution: "pg-cursor@npm:2.18.0"
   peerDependencies:
     pg: ^8
-  checksum: 10/85ba0623526b769c73b81d9b4bbd70d1a17208a810b1fc931e064179b9b7aa8925107112497f08a3bd5b54fc1df786ba8f6d21097be48d9b2ccd51f2ba795b21
+  checksum: 10/1ed1cad92c4d3969a3bbe18a77299dcc82d2a4e4ff36eae5e1cb82d7119240c2a106dfbce7e2c7fb199d990c167c9aad89138f26e3d9530a58bc848f124f0927
   languageName: node
   linkType: hard
 
@@ -8387,19 +8387,26 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pg-pool@npm:^3.11.0":
-  version: 3.11.0
-  resolution: "pg-pool@npm:3.11.0"
+"pg-pool@npm:^3.12.0":
+  version: 3.12.0
+  resolution: "pg-pool@npm:3.12.0"
   peerDependencies:
     pg: ">=8.0"
-  checksum: 10/51c77d99f17cf791333467352df8326e0f70f9c517eada65a5e7819b2422f6e655e52319f5406eb578504442ae5f399b6e1d023e41d0c199aaf82879a890db6d
+  checksum: 10/81a4220b89ba28034c51db0a7e231a8c1555ddb3cf8bacde0acd092fb26473763a335629ffcf5153059dd8f406d39610e384fd9176d34359a3d1498b4c5b95cd
   languageName: node
   linkType: hard
 
-"pg-protocol@npm:*, pg-protocol@npm:^1.11.0":
+"pg-protocol@npm:*":
   version: 1.11.0
   resolution: "pg-protocol@npm:1.11.0"
   checksum: 10/a70b1b4a3fc5b1be80dfdd65c829a149b8bd9df7488f9c47e0b51c9413aec5eb6da0a9ae9812891d74cd9f2ee90c0e391984a41b64603e7375fcbb9e07070b08
+  languageName: node
+  linkType: hard
+
+"pg-protocol@npm:^1.12.0":
+  version: 1.12.0
+  resolution: "pg-protocol@npm:1.12.0"
+  checksum: 10/0f5d8a5dbef39ef4d06686910ad61599b8d26c4505e76af2f6da3a1a1028c312f61678fae5e5012d477fe318b5ebc8507a828c087973b22e5fd4ec1e7394101a
   languageName: node
   linkType: hard
 
@@ -8416,14 +8423,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pg@npm:8.18.0":
-  version: 8.18.0
-  resolution: "pg@npm:8.18.0"
+"pg@npm:8.19.0":
+  version: 8.19.0
+  resolution: "pg@npm:8.19.0"
   dependencies:
     pg-cloudflare: "npm:^1.3.0"
     pg-connection-string: "npm:^2.11.0"
-    pg-pool: "npm:^3.11.0"
-    pg-protocol: "npm:^1.11.0"
+    pg-pool: "npm:^3.12.0"
+    pg-protocol: "npm:^1.12.0"
     pg-types: "npm:2.2.0"
     pgpass: "npm:1.0.5"
   peerDependencies:
@@ -8434,7 +8441,7 @@ __metadata:
   peerDependenciesMeta:
     pg-native:
       optional: true
-  checksum: 10/91c622f179f60df08ab7aa9b05a890567ea47f2d7984377b64e88e1eba1c42787324b7fc5ff00e109a757f3329dc4b57c73502603ae2765d1827b2082abbdcfa
+  checksum: 10/0d552512b6c65c20b4054a203632f8ad51f6c5e60b8aaf65f5dc9f07a698da1e8974ca3918964999ea783c370bda9d230e662d2bab333b3968a28086923934e0
   languageName: node
   linkType: hard
 
