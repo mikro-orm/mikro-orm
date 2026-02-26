@@ -1574,7 +1574,7 @@ __metadata:
     "@mikro-orm/core": "npm:^6.6.4"
     "@mikro-orm/sql": "npm:6.6.4"
     kysely: "npm:0.28.11"
-    mysql2: "npm:3.18.1"
+    mysql2: "npm:3.18.2"
     sqlstring: "npm:2.3.3"
   peerDependencies:
     "@mikro-orm/core": ^6.0.0
@@ -1621,7 +1621,7 @@ __metadata:
     "@swc-node/register": "npm:1.11.1"
     "@swc/core": "npm:1.15.13"
     "@types/better-sqlite3": "npm:7.6.13"
-    "@types/node": "npm:24.10.14"
+    "@types/node": "npm:24.10.15"
     "@types/pg": "npm:8.16.0"
     "@types/pg-cursor": "npm:2.7.2"
     "@types/picomatch": "npm:4.0.2"
@@ -3079,12 +3079,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:24.10.14":
-  version: 24.10.14
-  resolution: "@types/node@npm:24.10.14"
+"@types/node@npm:24.10.15":
+  version: 24.10.15
+  resolution: "@types/node@npm:24.10.15"
   dependencies:
     undici-types: "npm:~7.16.0"
-  checksum: 10/0d74bf72bef839c385fdac2cf835d30a7642ed4f8b4ce85c40cb1d7598dbebed6926dc55a42594e62c199ebf8e86544aaeeb2d1cea982c44eef27a4fe06e85ea
+  checksum: 10/e6be2220f59a8776f4c8facb3f809bcc6ddb4051752bf86e935178eca58ba7841ce51871442616fcf1c419bf03b1a091dab4c9888ea5c063c9569a34382a5263
   languageName: node
   linkType: hard
 
@@ -7369,9 +7369,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mysql2@npm:3.18.1":
-  version: 3.18.1
-  resolution: "mysql2@npm:3.18.1"
+"mysql2@npm:3.18.2":
+  version: 3.18.2
+  resolution: "mysql2@npm:3.18.2"
   dependencies:
     aws-ssl-profiles: "npm:^1.1.2"
     denque: "npm:^2.1.0"
@@ -7383,7 +7383,7 @@ __metadata:
     sql-escaper: "npm:^1.3.3"
   peerDependencies:
     "@types/node": ">= 8"
-  checksum: 10/63ec0c7805d57d8f11217642cf8073f517cba20ee3a32f8c353280235eeab58b081a541fed5777648bb1c8a31aa066b3b231d33e4693b7f8cca92c1805fe6c17
+  checksum: 10/0ea2867ed26d26f01f431e4e8fa65ee6e612f1aa1f129911a1c9c848fd20a7aac78bc65b61b4923476f776aaa96c95c78796a6ce256f7dc43ff4572ee3bc8474
   languageName: node
   linkType: hard
 
