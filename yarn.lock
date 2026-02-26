@@ -1621,7 +1621,7 @@ __metadata:
     "@swc-node/register": "npm:1.11.1"
     "@swc/core": "npm:1.15.13"
     "@types/better-sqlite3": "npm:7.6.13"
-    "@types/node": "npm:24.10.13"
+    "@types/node": "npm:24.10.14"
     "@types/pg": "npm:8.16.0"
     "@types/pg-cursor": "npm:2.7.2"
     "@types/picomatch": "npm:4.0.2"
@@ -3079,12 +3079,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:24.10.13":
-  version: 24.10.13
-  resolution: "@types/node@npm:24.10.13"
+"@types/node@npm:24.10.14":
+  version: 24.10.14
+  resolution: "@types/node@npm:24.10.14"
   dependencies:
     undici-types: "npm:~7.16.0"
-  checksum: 10/c779d14cf17758a9d603e0c0978c8045bd070e259617ec16f4ddac419ec11aac0e0cf2bb013dab008fdbd2f46c39f82397884662bbdfabeb19bef0079679ea48
+  checksum: 10/0d74bf72bef839c385fdac2cf835d30a7642ed4f8b4ce85c40cb1d7598dbebed6926dc55a42594e62c199ebf8e86544aaeeb2d1cea982c44eef27a4fe06e85ea
   languageName: node
   linkType: hard
 
