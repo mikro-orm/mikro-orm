@@ -159,4 +159,82 @@ describe('check constraint [postgres]', () => {
     await orm.close();
   });
 
+  test('duplicate check constraint names across tables do not cause drift [postgres]', async () => {
+    const orm = await initORMPostgreSql();
+    const meta = orm.getMetadata();
+    await orm.schema.update();
+
+    // Two tables that each have a check constraint with the same name.
+    // This is a partial regression test to ensure that the SQL join in getChecksSQL does not produce duplicate rows via
+    // a cross-join, causing drift on subsequent getUpdateSchemaSQL call.
+    const tableAMeta = new EntitySchema({
+      properties: {
+        id: { primary: true, name: 'id', type: 'number', fieldName: 'id', columnType: 'int' },
+        value: { type: 'number', name: 'value', fieldName: 'value', columnType: 'int' },
+      },
+      name: 'DupCheckTableA',
+      tableName: 'dup_check_table_a',
+      checks: [{ name: 'chk_positive', expression: 'value >= 0' }],
+    }).init().meta;
+    meta.set(tableAMeta.class, tableAMeta);
+
+    const tableBMeta = new EntitySchema({
+      properties: {
+        id: { primary: true, name: 'id', type: 'number', fieldName: 'id', columnType: 'int' },
+        amount: { type: 'number', name: 'amount', fieldName: 'amount', columnType: 'int' },
+      },
+      name: 'DupCheckTableB',
+      tableName: 'dup_check_table_b',
+      checks: [{ name: 'chk_positive', expression: 'amount >= 0' }],
+    }).init().meta;
+    meta.set(tableBMeta.class, tableBMeta);
+
+    // Create both tables with their constraints
+    let diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
+    await orm.schema.execute(diff);
+
+    // After creation the diff must be empty — no phantom constraint changes
+    // caused by cross-join duplication of rows with the same constraint name
+    diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
+    expect(diff).toBe('');
+
+    await orm.schema.dropDatabase();
+    await orm.close();
+  });
+
+  test('check constraint with multiline expression does not cause drift [postgres]', async () => {
+    const orm = await initORMPostgreSql();
+    const meta = orm.getMetadata();
+    await orm.schema.update();
+
+    // PostgreSQL pretty-prints CASE expressions with embedded newlines when returning them via pg_get_constraintdef().
+    // This test acts as a regression check to ensure that getAllChecks() can match "\n" correctly and no longer
+    //  continue to see check constraints change on every diff
+    const newTableMeta = new EntitySchema({
+      properties: {
+        id: { primary: true, name: 'id', type: 'number', fieldName: 'id', columnType: 'int' },
+        status: { type: 'string', name: 'status', fieldName: 'status', columnType: 'varchar(20)' },
+      },
+      name: 'MultilineCheckTable',
+      tableName: 'multiline_check_table',
+      checks: [
+        {
+          name: 'chk_status_valid',
+          expression: "CASE WHEN status = 'active' THEN 1 WHEN status = 'inactive' THEN 1 ELSE 0 END = 1",
+        },
+      ],
+    }).init().meta;
+    meta.set(newTableMeta.class, newTableMeta);
+
+    let diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
+    await orm.schema.execute(diff);
+
+    // After creation the diff must be empty — the multiline pretty-printed
+    // CASE expression must be parsed correctly and not appear as changed
+    diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
+    expect(diff).toBe('');
+
+    await orm.schema.dropDatabase();
+    await orm.close();
+  });
 });
