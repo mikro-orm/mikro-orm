@@ -2207,6 +2207,55 @@ export class QueryBuilder<
     return qb;
   }
 
+  /**
+   * Combines the current query with one or more other queries using `UNION ALL`.
+   * All queries must select the same columns. Returns a `RawQueryFragment` that
+   * can be used with `$in`, passed to `qb.from()`, or converted to a string via `.sql`.
+   *
+   * ```ts
+   * const qb1 = em.createQueryBuilder(Employee).select('id').where(condition1);
+   * const qb2 = em.createQueryBuilder(Employee).select('id').where(condition2);
+   * const qb3 = em.createQueryBuilder(Employee).select('id').where(condition3);
+   * const subquery = qb1.unionAll(qb2, qb3);
+   *
+   * const results = await em.find(Employee, { id: { $in: subquery } });
+   * ```
+   */
+  unionAll(...others: (QueryBuilder<any> | NativeQueryBuilder)[]): RawQueryFragment {
+    return this.buildUnionQuery('union all', others);
+  }
+
+  /**
+   * Combines the current query with one or more other queries using `UNION` (with deduplication).
+   * All queries must select the same columns. Returns a `RawQueryFragment` that
+   * can be used with `$in`, passed to `qb.from()`, or converted to a string via `.sql`.
+   *
+   * ```ts
+   * const qb1 = em.createQueryBuilder(Employee).select('id').where(condition1);
+   * const qb2 = em.createQueryBuilder(Employee).select('id').where(condition2);
+   * const subquery = qb1.union(qb2);
+   *
+   * const results = await em.find(Employee, { id: { $in: subquery } });
+   * ```
+   */
+  union(...others: (QueryBuilder<any> | NativeQueryBuilder)[]): RawQueryFragment {
+    return this.buildUnionQuery('union', others);
+  }
+
+  private buildUnionQuery(separator: 'union' | 'union all', others: (QueryBuilder<any> | NativeQueryBuilder)[]): RawQueryFragment {
+    const all = [this as QueryBuilder<any>, ...others];
+    const parts: string[] = [];
+    const params: unknown[] = [];
+
+    for (const qb of all) {
+      const compiled = qb instanceof QueryBuilder ? qb.toQuery() : qb.compile();
+      parts.push(`(${compiled.sql})`);
+      params.push(...compiled.params);
+    }
+
+    return raw(parts.join(` ${separator} `), params);
+  }
+
   clone(reset?: boolean | string[], preserve?: string[]): QueryBuilder<Entity, RootAlias, Hint, Context, RawAliases, Fields> {
     const qb = new QueryBuilder<Entity, RootAlias, Hint, Context, RawAliases, Fields>(
       this.mainAlias.entityName,
