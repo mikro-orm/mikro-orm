@@ -534,7 +534,7 @@ export class Utils {
       return true;
     }
     if (Utils.isObject(key)) {
-      if (key.constructor && key.constructor.name.toLowerCase() === 'objectid') {
+      if (key.constructor?.name.toLowerCase() === 'objectid') {
         return true;
       }
 
@@ -781,7 +781,7 @@ export class Utils {
    * Checks whether the argument is ObjectId instance
    */
   static isObjectID(key: any) {
-    return Utils.isObject(key) && key.constructor && key.constructor.name.toLowerCase() === 'objectid';
+    return Utils.isObject(key) && key.constructor?.name.toLowerCase() === 'objectid';
   }
 
   /**

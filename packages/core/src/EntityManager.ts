@@ -1530,7 +1530,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     Object.keys(data).forEach(k => {
       const prop = meta.properties[k];
 
-      if (prop && prop.kind === ReferenceKind.SCALAR && SCALAR_TYPES.includes(prop.runtimeType) && !prop.customType && (prop.setter || !prop.getter)) {
+      if (prop?.kind === ReferenceKind.SCALAR && SCALAR_TYPES.includes(prop.runtimeType) && !prop.customType && (prop.setter || !prop.getter)) {
         data[k] = this.validator.validateProperty(prop, data[k], data);
       }
     });

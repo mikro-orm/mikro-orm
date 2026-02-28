@@ -20,7 +20,7 @@ export class UserId {
   }
 
   equals(other: UserId): boolean {
-    return other && this._value === other._value;
+    return this._value === other?._value;
   }
 
 }
