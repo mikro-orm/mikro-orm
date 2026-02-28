@@ -1,5 +1,6 @@
+import { pathToFileURL } from 'node:url';
 import { Options, Configuration, MikroORM, Utils } from '@mikro-orm/sqlite';
-import { type PrimaryProperty, EntityMetadata } from '@mikro-orm/core';
+import { type PrimaryProperty, EntityMetadata, MetadataStorage } from '@mikro-orm/core';
 import { Collection as Collection_, Reference as Reference_, ReferenceKind, EnumArrayType } from '@mikro-orm/core';
 import { TsMorphMetadataProvider } from '@mikro-orm/reflection';
 import { Author, Book, Publisher, BaseEntity, BaseEntity3, BookTagSchema, Test, FooBaz } from './entities/index.js';
@@ -114,6 +115,41 @@ describe('TsMorphMetadataProvider', () => {
     expect(initProperties).toHaveBeenCalledTimes(0);
     provider.loadEntityMetadata({} as any);
     expect(initProperties).toHaveBeenCalledTimes(0);
+  });
+
+  test('should handle file:/// URLs in metadata paths (GH #7220)', async () => {
+    // Simulate ES module behavior where decorator stack traces produce file:// URLs.
+    // On Windows, ts-morph cannot handle file:// URLs directly, so initSourceFiles
+    // must normalize them to regular paths first.
+    const globalMetadata = MetadataStorage.getMetadata() as Record<string, EntityMetadata>;
+    const originalPaths = new Map<string, string>();
+
+    for (const [key, meta] of Object.entries(globalMetadata)) {
+      if (meta.path && !meta.path.startsWith('file:')) {
+        originalPaths.set(key, meta.path);
+        meta.path = pathToFileURL(meta.path).href;
+      }
+    }
+
+    try {
+      const orm = await MikroORM.init({
+        entities: [Author, Book, Publisher, BaseEntity, BaseEntity3, BookTagSchema, Test, FooBaz, FooBar],
+        baseDir: import.meta.dirname,
+        clientUrl: 'mongodb://localhost:27017/mikro-orm-test',
+        metadataCache: { enabled: false },
+        metadataProvider: TsMorphMetadataProvider,
+      });
+
+      expect([...orm.getMetadata().getAll().keys()].map(e => Utils.className(e)).sort()).toEqual([
+        'Author', 'Book', 'BookTag', 'FooBar', 'FooBaz', 'Publisher', 'Test', 'author_friends', 'book_tags', 'publisher_tests',
+      ]);
+      await orm.close();
+    } finally {
+      // Restore original paths to avoid affecting other tests
+      for (const [key, path] of originalPaths) {
+        globalMetadata[key].path = path;
+      }
+    }
   });
 
   test('should throw when source file not found', async () => {

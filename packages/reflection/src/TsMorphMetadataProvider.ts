@@ -273,10 +273,11 @@ export class TsMorphMetadataProvider extends MetadataProvider {
     // will be already `.ts`, so no change is needed. `.js` files will get renamed to `.d.ts` files as they will be used as a source for
     // the ts-morph reflection.
     for (const meta of Utils.values(MetadataStorage.getMetadata())) {
+      const metaPath = fs.normalizePath(meta.path);
       /* v8 ignore next */
-      const path = meta.path.match(/\.[jt]s$/)
-        ? meta.path.replace(/\.js$/, '.d.ts')
-        : `${meta.path}.d.ts`; // when entities are bundled, their paths are just their names
+      const path = metaPath.match(/\.[jt]s$/)
+        ? metaPath.replace(/\.js$/, '.d.ts')
+        : `${metaPath}.d.ts`; // when entities are bundled, their paths are just their names
       const sourceFile = this.project.addSourceFileAtPathIfExists(path);
 
       if (sourceFile) {
