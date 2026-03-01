@@ -286,10 +286,6 @@ export class TsMorphMetadataProvider extends MetadataProvider {
     }
   }
 
-  override loadFromCache(meta: EntityMetadata, cache: EntityMetadata): void {
-    super.loadFromCache(meta, cache);
-  }
-
   override saveToCache(meta: EntityMetadata): void {
     if (!this.useCache()) {
       return;

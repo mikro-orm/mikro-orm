@@ -1,4 +1,4 @@
-import type { EntityClass, EntityMetadata } from '../typings.js';
+import type { EntityClass, EntityMetadata, IndexCallback } from '../typings.js';
 import type { Logger } from '../logging/Logger.js';
 import { Utils } from '../utils/Utils.js';
 import type { SyncCacheAdapter } from '../cache/CacheAdapter.js';
@@ -43,11 +43,13 @@ export class MetadataProvider {
     });
 
     // Preserve function expressions from indexes/uniques — they can't survive JSON cache serialization
-    const expressionMap = new Map<string, Function>();
+    const expressionMap = new Map<string, IndexCallback<any>>();
 
-    for (const idx of [...(meta.indexes ?? []), ...(meta.uniques ?? [])]) {
-      if (typeof idx.expression === 'function' && idx.name) {
-        expressionMap.set(idx.name, idx.expression);
+    for (const arr of [meta.indexes, meta.uniques]) {
+      for (const idx of arr ?? []) {
+        if (typeof idx.expression === 'function' && idx.name) {
+          expressionMap.set(idx.name, idx.expression);
+        }
       }
     }
 
@@ -55,11 +57,13 @@ export class MetadataProvider {
 
     // Restore function expressions that were lost during JSON serialization
     if (expressionMap.size > 0) {
-      for (const idx of [...(meta.indexes ?? []), ...(meta.uniques ?? [])]) {
-        const fn = idx.name && expressionMap.get(idx.name);
+      for (const arr of [meta.indexes, meta.uniques]) {
+        for (const idx of arr ?? []) {
+          const fn = idx.name && expressionMap.get(idx.name);
 
-        if (fn && typeof idx.expression !== 'function') {
-          idx.expression = fn as any;
+          if (fn && typeof idx.expression !== 'function') {
+            idx.expression = fn;
+          }
         }
       }
     }
