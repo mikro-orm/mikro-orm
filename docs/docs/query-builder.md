@@ -657,11 +657,11 @@ const qb2 = em.createQueryBuilder(Employee).select('id').where({ salary: { $gt: 
 
 // UNION ALL (keeps duplicates)
 const subquery = qb1.unionAll(qb2);
-const results = await em.find(Employee, { id: { $in: subquery } });
+const qb = em.createQueryBuilder(Employee).select('*').where({ id: { $in: subquery } });
 
 // UNION (deduplicates)
 const subquery2 = qb1.union(qb2);
-const results2 = await em.find(Employee, { id: { $in: subquery2 } });
+const qb2b = em.createQueryBuilder(Employee).select('*').where({ id: { $in: subquery2 } });
 ```
 
 You can also chain more than two queries:
