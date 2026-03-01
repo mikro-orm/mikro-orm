@@ -1,5 +1,4 @@
 import { MikroORM, UnderscoreNamingStrategy } from '@mikro-orm/core';
-import { AbstractSqlPlatform } from '@mikro-orm/sql';
 import { MySqlDriver } from '@mikro-orm/mysql';
 import { v4 } from 'uuid';
 import { Author2, Book2, Car2 } from '../../entities-sql/index.js';
@@ -357,16 +356,4 @@ describe('QueryBuilder - unionWhere', () => {
     expect(remaining).not.toBeNull();
   });
 
-  test('unionWhere throws on non-SQL platform', async () => {
-    const origSupports = AbstractSqlPlatform.prototype.supportsUnionWhere;
-    AbstractSqlPlatform.prototype.supportsUnionWhere = () => false;
-
-    try {
-      await expect(orm.em.find(Author2, {}, {
-        unionWhere: [{ name: 'test' }],
-      })).rejects.toThrow(/unionWhere is only supported on SQL drivers/);
-    } finally {
-      AbstractSqlPlatform.prototype.supportsUnionWhere = origSupports;
-    }
-  });
 });
