@@ -234,13 +234,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     options.populateWhere = this.createPopulateWhere({ ...where } as ObjectQuery<Entity>, options);
     options.populateFilter = await this.getJoinedFilters(meta, options);
 
-    if (options.unionWhere?.length) {
-      options.unionWhere = await Promise.all(
-        options.unionWhere.map(branch =>
-          em.processWhere(entityName, branch as FilterQuery<NoInfer<Entity>>, options, 'read'),
-        ),
-      ) as ObjectQuery<Entity>[];
-    }
+    await em.processUnionWhere(entityName, options, 'read');
 
     const results = await em.driver.find(entityName, where, { ctx: em.transactionContext, em, ...options });
 
@@ -439,6 +433,19 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     where = this.applyDiscriminatorCondition(entityName, where);
 
     return where;
+  }
+
+  protected async processUnionWhere<
+    Entity extends object,
+    Hint extends string = never,
+  >(entityName: EntityName<Entity>, options: FindOptions<Entity, Hint, any, any> | CountOptions<Entity, Hint>, type: 'read' | 'update' | 'delete'): Promise<void> {
+    if (options.unionWhere?.length) {
+      options.unionWhere = await Promise.all(
+        options.unionWhere.map(branch =>
+          this.processWhere(entityName, branch as FilterQuery<NoInfer<Entity>>, options as FindOptions<Entity, Hint>, type),
+        ),
+      ) as ObjectQuery<Entity>[];
+    }
   }
 
   // this method only handles the problem for mongo driver, SQL drivers have their implementation inside QueryBuilder
@@ -887,6 +894,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     (options as Dictionary)._populateWhere = options.populateWhere ?? this.config.get('populateWhere');
     options.populateWhere = this.createPopulateWhere({ ...where } as ObjectQuery<Entity>, options);
     options.populateFilter = await this.getJoinedFilters(meta, options);
+    await em.processUnionWhere(entityName, options, 'read');
     const data = await em.driver.findOne(entityName, where, {
       ctx: em.transactionContext,
       em,
@@ -1801,13 +1809,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     validateParams(where);
     delete (options as FindOptions<Entity>).orderBy;
 
-    if (options.unionWhere?.length) {
-      options.unionWhere = await Promise.all(
-        options.unionWhere.map(branch =>
-          em.processWhere(entityName, branch as FilterQuery<NoInfer<Entity>>, options as FindOptions<Entity, Hint>, 'read'),
-        ),
-      ) as ObjectQuery<Entity>[];
-    }
+    await em.processUnionWhere(entityName, options as FindOptions<Entity, Hint>, 'read');
 
     const cacheKey = em.cacheKey(entityName, options, 'em.count', where);
     const cached = await em.tryCache(entityName, options.cache, cacheKey);

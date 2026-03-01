@@ -168,6 +168,49 @@ describe('QueryBuilder - unionWhere', () => {
     expect(findSql).not.toMatch(/union/);
   });
 
+  test('findOne with unionWhere', async () => {
+    const email = uniqueEmail();
+    await orm.em.insert(Author2, { name: 'uw-findone', email });
+    orm.em.clear();
+
+    const mock = mockLogger(orm, ['query']);
+
+    const result = await orm.em.findOne(Author2, { name: 'uw-findone' }, {
+      unionWhere: [
+        { name: 'uw-findone' },
+        { email },
+      ],
+    });
+
+    expect(result).not.toBeNull();
+    expect(result!.name).toBe('uw-findone');
+
+    const findSql = mock.mock.calls[0][0] as string;
+    expect(findSql).toMatch(/`e0`\.`id` in/);
+    expect(findSql).toMatch(/union all/);
+  });
+
+  test('unionWhere with relation branch produces join inside union subquery', async () => {
+    const email = uniqueEmail();
+    const author = await orm.em.insert(Author2, { name: 'uw-join-check', email });
+    await orm.em.insert(Book2, { uuid: v4(), title: 'uw-join-book', author, price: 50 });
+    orm.em.clear();
+
+    const mock = mockLogger(orm, ['query']);
+
+    await orm.em.find(Author2, {}, {
+      unionWhere: [
+        { name: 'uw-join-check' },
+        { books: { title: 'uw-join-book' } },
+      ],
+    });
+
+    const findSql = mock.mock.calls[0][0] as string;
+    // The relation branch should contain a join to the books table inside the union subquery
+    expect(findSql).toMatch(/union all \(select `e0`\.`id` from `author2` as `e0`/);
+    expect(findSql).toMatch(/join `book2`/);
+  });
+
   test('unionWhere preserves main where conditions', async () => {
     await orm.em.insert(Author2, { name: 'uw-keep-included', email: uniqueEmail(), termsAccepted: true });
     await orm.em.insert(Author2, { name: 'uw-keep-excluded', email: uniqueEmail(), termsAccepted: false });
