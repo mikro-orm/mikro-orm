@@ -397,9 +397,17 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     const sql = this.getChecksSQL(tablesBySchemas);
     const allChecks = await connection.execute<{ name: string; column_name: string; schema_name: string; table_name: string; expression: string }[]>(sql);
     const ret = {} as Dictionary;
+    const seen = new Set<string>();
 
     for (const check of allChecks) {
       const key = this.getTableKey(check);
+      const dedupeKey = `${key}:${check.name}`;
+
+      if (seen.has(dedupeKey)) {
+        continue;
+      }
+
+      seen.add(dedupeKey);
       ret[key] ??= [];
       const m = check.expression.match(/^check \(\((.*)\)\)$/is);
       const def = m?.[1].replace(/\((.*?)\)::\w+/g, '$1');

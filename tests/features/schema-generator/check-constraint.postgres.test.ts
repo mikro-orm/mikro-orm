@@ -202,6 +202,41 @@ describe('check constraint [postgres]', () => {
     await orm.close();
   });
 
+  test('multi-column check constraint does not cause drift [postgres]', async () => {
+    const orm = await initORMPostgreSql();
+    const meta = orm.getMetadata();
+    await orm.schema.update();
+
+    // A check constraint referencing multiple columns causes constraint_column_usage
+    // to return one row per column, which without deduplication in getAllChecks()
+    // would produce duplicate CheckDef entries and phantom diffs on every migration.
+    const newTableMeta = new EntitySchema({
+      properties: {
+        id: { primary: true, name: 'id', type: 'number', fieldName: 'id', columnType: 'int' },
+        min_price: { type: 'number', name: 'min_price', fieldName: 'min_price', columnType: 'int' },
+        max_price: { type: 'number', name: 'max_price', fieldName: 'max_price', columnType: 'int' },
+      },
+      name: 'MultiColCheckTable',
+      tableName: 'multi_col_check_table',
+      checks: [
+        { name: 'chk_price_range', expression: 'min_price >= 0 and max_price >= min_price' },
+      ],
+    }).init().meta;
+    meta.set(newTableMeta.class, newTableMeta);
+
+    let diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
+    expect(diff).not.toBe('');
+    await orm.schema.execute(diff);
+
+    // After creation the diff must be empty — the multi-column constraint
+    // must not produce duplicate entries that trigger phantom diffs
+    diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
+    expect(diff).toBe('');
+
+    await orm.schema.dropDatabase();
+    await orm.close();
+  });
+
   test('check constraint with multiline expression does not cause drift [postgres]', async () => {
     const orm = await initORMPostgreSql();
     const meta = orm.getMetadata();
