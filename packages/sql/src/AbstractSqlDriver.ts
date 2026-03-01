@@ -194,7 +194,6 @@ export abstract class AbstractSqlDriver<
 
     if (options.unionWhere?.length) {
       where = await this.applyUnionWhere(meta, where, options);
-      delete options.unionWhere;
     }
 
     const qb = await this.createQueryBuilderFromOptions(meta, where, options);
@@ -746,7 +745,6 @@ export abstract class AbstractSqlDriver<
 
     if (options.unionWhere?.length) {
       where = await this.applyUnionWhere(meta, where, options);
-      delete options.unionWhere;
     }
 
     options = { populate: [], ...options };
@@ -1009,6 +1007,10 @@ export abstract class AbstractSqlDriver<
       where = { [meta.primaryKeys[0] ?? pks[0]]: where } as FilterQuery<T>;
     }
 
+    if (!options.upsert && options.unionWhere?.length) {
+      where = await this.applyUnionWhere(meta, where as ObjectQuery<T>, options, true) as FilterQuery<T>;
+    }
+
     if (Utils.hasObjectKeys(data)) {
       const qb = this.createQueryBuilder<T>(entityName, options.ctx, 'write', options.convertCustomTypes, options.loggerContext).withSchema(
         this.getSchemaName(meta, options),
@@ -1239,6 +1241,10 @@ export abstract class AbstractSqlDriver<
 
     if (Utils.isPrimaryKey(where) && pks.length === 1) {
       where = { [pks[0]]: where };
+    }
+
+    if (options.unionWhere?.length) {
+      where = await this.applyUnionWhere(meta, where as ObjectQuery<T>, options, true);
     }
 
     const qb = this.createQueryBuilder(entityName, options.ctx, 'write', false, options.loggerContext)
@@ -2224,7 +2230,8 @@ export abstract class AbstractSqlDriver<
   protected async applyUnionWhere<T extends object>(
     meta: EntityMetadata<T>,
     where: ObjectQuery<T>,
-    options: FindOptions<T, any, any, any> | CountOptions<T>,
+    options: FindOptions<T, any, any, any> | CountOptions<T> | NativeInsertUpdateOptions<T> | DeleteOptions<T>,
+    forDml = false,
   ): Promise<ObjectQuery<T>> {
     const unionWhere = (options as FindOptions<T>).unionWhere!;
     const strategy = (options as FindOptions<T>).unionWhereStrategy ?? 'union-all';
@@ -2257,9 +2264,15 @@ export abstract class AbstractSqlDriver<
       branches.push(qb.toQuery());
     }
 
-    const unionSql = branches.map(b => `(${b.sql})`).join(separator);
+    let unionSql = branches.map(b => `(${b.sql})`).join(separator);
     const allParams = branches.flatMap(b => [...b.params]);
     const pkHash = Utils.getPrimaryKeyHash(meta.primaryKeys);
+
+    // MySQL does not allow referencing the target table in a subquery
+    // for UPDATE/DELETE, so we wrap the union in a derived table.
+    if (forDml) {
+      unionSql = `select * from (${unionSql}) as __u`;
+    }
 
     return {
       $and: [where, { [pkHash]: { $in: raw(unionSql, allParams) } }],

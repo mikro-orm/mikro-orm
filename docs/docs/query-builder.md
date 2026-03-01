@@ -645,6 +645,32 @@ console.log(qb4.getQuery());
 // select `a`.* from `author2` as `a` where (select count(distinct `b`.`uuid_pk`) as `count` from `book2` as `b` where `b`.`author_id` = `a`.`id`) = ?
 ```
 
+## Using UNION queries
+
+You can combine multiple queries using `qb.union()` and `qb.unionAll()`. Both methods return a `RawQueryFragment` that can be used with `$in`, passed to `qb.from()`, or converted to a string via `.sql`.
+
+`unionAll` keeps all rows (including duplicates), while `union` deduplicates:
+
+```ts
+const qb1 = em.createQueryBuilder(Employee).select('id').where({ department: 'engineering' });
+const qb2 = em.createQueryBuilder(Employee).select('id').where({ salary: { $gt: 100_000 } });
+
+// UNION ALL (keeps duplicates)
+const subquery = qb1.unionAll(qb2);
+const results = await em.find(Employee, { id: { $in: subquery } });
+
+// UNION (deduplicates)
+const subquery2 = qb1.union(qb2);
+const results2 = await em.find(Employee, { id: { $in: subquery2 } });
+```
+
+You can also chain more than two queries:
+
+```ts
+const qb3 = em.createQueryBuilder(Employee).select('id').where({ title: 'Manager' });
+const combined = qb1.unionAll(qb2, qb3);
+```
+
 ## Referring to column in update queries
 
 You can use static `raw()` helper to insert raw SQL snippets like this:

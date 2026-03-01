@@ -1,7 +1,8 @@
 import { MikroORM, UnderscoreNamingStrategy } from '@mikro-orm/core';
+import { AbstractSqlPlatform } from '@mikro-orm/sql';
 import { MySqlDriver } from '@mikro-orm/mysql';
 import { v4 } from 'uuid';
-import { Author2, Book2 } from '../../entities-sql/index.js';
+import { Author2, Book2, Car2 } from '../../entities-sql/index.js';
 import { initORMMySql } from '../../bootstrap.js';
 import { mockLogger } from '../../helpers.js';
 
@@ -225,5 +226,147 @@ describe('QueryBuilder - unionWhere', () => {
 
     expect(results).toHaveLength(1);
     expect(results[0].name).toBe('uw-keep-included');
+  });
+
+  test('unionWhere with composite PK selects all PK columns', async () => {
+    await orm.em.insert(Car2, { name: 'uw-car-a', year: 2020, price: 10000 });
+    await orm.em.insert(Car2, { name: 'uw-car-b', year: 2021, price: 20000 });
+    await orm.em.insert(Car2, { name: 'uw-car-c', year: 2022, price: 30000 });
+    orm.em.clear();
+
+    const mock = mockLogger(orm, ['query']);
+
+    const results = await orm.em.find(Car2, {}, {
+      unionWhere: [
+        { name: 'uw-car-a' },
+        { year: 2021 },
+      ],
+    });
+
+    expect(results).toHaveLength(2);
+
+    const findSql = mock.mock.calls[0][0] as string;
+    expect(findSql).toMatch(/union all/);
+    // composite PK: both name and year should be selected in the union subquery
+    expect(findSql).toMatch(/`e0`\.`name`/);
+    expect(findSql).toMatch(/`e0`\.`year`/);
+  });
+
+  test('unionWhere applies default filters inside union branches', async () => {
+    const email = uniqueEmail();
+    const author = await orm.em.insert(Author2, { name: 'uw-filter-test', email });
+    await orm.em.insert(Book2, { uuid: v4(), title: 'uw-filter-book-a', author, price: 50 });
+    await orm.em.insert(Book2, { uuid: v4(), title: 'uw-filter-book-b', author, price: 60 });
+    orm.em.clear();
+
+    const mock = mockLogger(orm, ['query']);
+
+    // Book2 has a default `hasAuthor` filter (author != null)
+    const results = await orm.em.find(Book2, {}, {
+      unionWhere: [
+        { title: 'uw-filter-book-a' },
+        { title: 'uw-filter-book-b' },
+      ],
+    });
+
+    expect(results).toHaveLength(2);
+
+    const findSql = mock.mock.calls[0][0] as string;
+    expect(findSql).toMatch(/union all/);
+    // The hasAuthor filter should be applied inside the union subquery
+    expect(findSql).toMatch(/`author_id` is not null/);
+  });
+
+  test('findOneOrFail with unionWhere', async () => {
+    const email = uniqueEmail();
+    await orm.em.insert(Author2, { name: 'uw-foof', email });
+    orm.em.clear();
+
+    const result = await orm.em.findOneOrFail(Author2, { name: 'uw-foof' }, {
+      unionWhere: [
+        { name: 'uw-foof' },
+        { email },
+      ],
+    });
+
+    expect(result.name).toBe('uw-foof');
+
+    // should throw when no match
+    await expect(orm.em.findOneOrFail(Author2, { name: 'uw-nonexistent' }, {
+      unionWhere: [
+        { name: 'uw-nonexistent' },
+      ],
+    })).rejects.toThrow(/Author2 not found/);
+  });
+
+  test('nativeUpdate with unionWhere', async () => {
+    const email1 = uniqueEmail();
+    const email2 = uniqueEmail();
+    await orm.em.insert(Author2, { name: 'uw-upd-1', email: email1 });
+    await orm.em.insert(Author2, { name: 'uw-upd-2', email: email2 });
+    await orm.em.insert(Author2, { name: 'uw-upd-3', email: uniqueEmail() });
+    orm.em.clear();
+
+    const mock = mockLogger(orm, ['query']);
+
+    const affected = await orm.em.nativeUpdate(Author2, {}, { name: 'uw-updated' }, {
+      unionWhere: [
+        { name: 'uw-upd-1' },
+        { email: email2 },
+      ],
+    });
+
+    expect(affected).toBe(2);
+
+    const updateSql = mock.mock.calls[0][0] as string;
+    expect(updateSql).toMatch(/update/i);
+    expect(updateSql).toMatch(/`id` in/);
+    expect(updateSql).toMatch(/union all/);
+
+    // uw-upd-3 should not be updated
+    const remaining = await orm.em.findOne(Author2, { name: 'uw-upd-3' });
+    expect(remaining).not.toBeNull();
+  });
+
+  test('nativeDelete with unionWhere', async () => {
+    const email1 = uniqueEmail();
+    const email2 = uniqueEmail();
+    await orm.em.insert(Author2, { name: 'uw-del-1', email: email1 });
+    await orm.em.insert(Author2, { name: 'uw-del-2', email: email2 });
+    await orm.em.insert(Author2, { name: 'uw-del-3', email: uniqueEmail() });
+    orm.em.clear();
+
+    const mock = mockLogger(orm, ['query']);
+
+    const affected = await orm.em.nativeDelete(Author2, {}, {
+      unionWhere: [
+        { name: 'uw-del-1' },
+        { email: email2 },
+      ],
+    });
+
+    expect(affected).toBe(2);
+
+    const deleteSql = mock.mock.calls[0][0] as string;
+    expect(deleteSql).toMatch(/delete/i);
+    expect(deleteSql).toMatch(/`id` in/);
+    expect(deleteSql).toMatch(/union all/);
+
+    // uw-del-3 should still exist
+    const remaining = await orm.em.findOne(Author2, { name: 'uw-del-3' });
+    expect(remaining).not.toBeNull();
+  });
+
+  test('unionWhere throws on non-SQL platform', async () => {
+    const origSupports = AbstractSqlPlatform.prototype.supportsUnionWhere;
+    AbstractSqlPlatform.prototype.supportsUnionWhere = () => false;
+
+    try {
+      await expect(orm.em.find(Author2, {}, {
+        unionWhere: [{ name: 'test' }],
+      })).rejects.toThrow(/unionWhere is only supported on SQL drivers/);
+    } finally {
+      AbstractSqlPlatform.prototype.supportsUnionWhere = origSupports;
+    }
   });
 });

@@ -337,6 +337,10 @@ export abstract class Platform {
     return this.config.get('multipleStatements');
   }
 
+  supportsUnionWhere(): boolean {
+    return false;
+  }
+
   getArrayDeclarationSQL(): string {
     return 'text';
   }

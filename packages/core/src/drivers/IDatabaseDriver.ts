@@ -276,6 +276,13 @@ export interface NativeInsertUpdateOptions<T> {
   /** `nativeUpdate()` only option */
   upsert?: boolean;
   loggerContext?: LogContext;
+  /** sql only */
+  unionWhere?: ObjectQuery<T>[];
+  /** sql only */
+  unionWhereStrategy?: 'union-all' | 'union';
+  filters?: FilterOptions;
+  /** @internal */
+  em?: EntityManager;
 }
 
 export interface NativeInsertUpdateManyOptions<T> extends NativeInsertUpdateOptions<T> {
@@ -331,14 +338,30 @@ export interface UpdateOptions<T> {
   filters?: FilterOptions;
   schema?: string;
   ctx?: Transaction;
+  /** sql only */
+  unionWhere?: ObjectQuery<T>[];
+  /** sql only */
+  unionWhereStrategy?: 'union-all' | 'union';
 }
 
 export interface DeleteOptions<T> extends DriverMethodOptions {
   filters?: FilterOptions;
+  /** sql only */
+  unionWhere?: ObjectQuery<T>[];
+  /** sql only */
+  unionWhereStrategy?: 'union-all' | 'union';
+  /** @internal */
+  em?: EntityManager;
 }
 
 export interface NativeDeleteOptions<T> extends DriverMethodOptions {
   filters?: FilterOptions;
+  /** sql only */
+  unionWhere?: ObjectQuery<T>[];
+  /** sql only */
+  unionWhereStrategy?: 'union-all' | 'union';
+  /** @internal */
+  em?: EntityManager;
 }
 
 export interface LockOptions extends DriverMethodOptions {

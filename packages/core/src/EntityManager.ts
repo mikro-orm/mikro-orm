@@ -27,6 +27,7 @@ import type {
   GetReferenceOptions,
   IDatabaseDriver,
   LockOptions,
+  NativeDeleteOptions,
   NativeInsertUpdateOptions,
   StreamOptions,
   UpdateOptions,
@@ -438,8 +439,12 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
   protected async processUnionWhere<
     Entity extends object,
     Hint extends string = never,
-  >(entityName: EntityName<Entity>, options: FindOptions<Entity, Hint, any, any> | CountOptions<Entity, Hint>, type: 'read' | 'update' | 'delete'): Promise<void> {
+  >(entityName: EntityName<Entity>, options: FindOptions<Entity, Hint, any, any> | CountOptions<Entity, Hint> | UpdateOptions<Entity> | DeleteOptions<Entity>, type: 'read' | 'update' | 'delete'): Promise<void> {
     if (options.unionWhere?.length) {
+      if (!this.driver.getPlatform().supportsUnionWhere()) {
+        throw new Error(`unionWhere is only supported on SQL drivers`);
+      }
+
       options.unionWhere = await Promise.all(
         options.unionWhere.map(branch =>
           this.processWhere(entityName, branch as FilterQuery<NoInfer<Entity>>, options as FindOptions<Entity, Hint>, type),
@@ -1544,12 +1549,13 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
   async nativeUpdate<Entity extends object>(entityName: EntityName<Entity>, where: FilterQuery<NoInfer<Entity>>, data: EntityData<Entity>, options: UpdateOptions<Entity> = {}): Promise<number> {
     const em = this.getContext(false);
     em.prepareOptions(options);
+    await em.processUnionWhere(entityName, options, 'update');
 
     data = QueryHelper.processObjectParams(data);
-    where = await em.processWhere(entityName, where, { ...options, convertCustomTypes: false }, 'update');
+    where = await em.processWhere(entityName, where, { ...options, convertCustomTypes: false } as FindOptions<Entity>, 'update');
     validateParams(data, 'update data');
     validateParams(where, 'update condition');
-    const res = await em.driver.nativeUpdate(entityName, where, data, { ctx: em.transactionContext, ...options });
+    const res = await em.driver.nativeUpdate(entityName, where, data, { ctx: em.transactionContext, em, ...options } as NativeInsertUpdateOptions<Entity>);
 
     return res.affectedRows;
   }
@@ -1560,10 +1566,11 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
   async nativeDelete<Entity extends object>(entityName: EntityName<Entity>, where: FilterQuery<NoInfer<Entity>>, options: DeleteOptions<Entity> = {}): Promise<number> {
     const em = this.getContext(false);
     em.prepareOptions(options);
+    await em.processUnionWhere(entityName, options, 'delete');
 
-    where = await em.processWhere(entityName, where, options, 'delete');
+    where = await em.processWhere(entityName, where as FilterQuery<Entity>, options as FindOptions<Entity>, 'delete') as typeof where;
     validateParams(where, 'delete condition');
-    const res = await em.driver.nativeDelete(entityName, where, { ctx: em.transactionContext, ...options });
+    const res = await em.driver.nativeDelete(entityName, where, { ctx: em.transactionContext, em, ...options } as NativeDeleteOptions<Entity>);
 
     return res.affectedRows;
   }

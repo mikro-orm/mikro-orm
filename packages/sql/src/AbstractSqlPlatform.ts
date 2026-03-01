@@ -121,6 +121,10 @@ export abstract class AbstractSqlPlatform extends Platform {
       });
   }
 
+  override supportsUnionWhere(): boolean {
+    return true;
+  }
+
   supportsSchemas(): boolean {
     return false;
   }

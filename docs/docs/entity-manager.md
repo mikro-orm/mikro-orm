@@ -514,6 +514,67 @@ const users = await em.find(User, {}, {
 });
 ```
 
+#### Union Where (SQL only)
+
+The `unionWhere` option provides an index-friendly alternative to `$or`. Instead of a single query with `OR` conditions (which can prevent index usage), it generates a `UNION ALL` subquery where each branch can independently use its own index.
+
+```ts
+// Instead of: { $or: [{ name: 'Alice' }, { email: 'bob@test.com' }] }
+// Use unionWhere for better index utilization:
+const users = await em.find(User, {}, {
+  unionWhere: [
+    { name: 'Alice' },
+    { email: 'bob@test.com' },
+  ],
+});
+```
+
+This generates SQL like:
+
+```sql
+SELECT ... FROM `user` WHERE `id` IN (
+  (SELECT `id` FROM `user` WHERE `name` = 'Alice')
+  UNION ALL
+  (SELECT `id` FROM `user` WHERE `email` = 'bob@test.com')
+)
+```
+
+You can use `unionWhereStrategy: 'union'` to deduplicate rows between branches at the database level. This adds a sort+dedup step, so it's only worth it when branch overlap is very high and the total row count is large:
+
+```ts
+const users = await em.find(User, {}, {
+  unionWhere: [
+    { name: 'Alice' },
+    { email: 'bob@test.com' },
+  ],
+  unionWhereStrategy: 'union',
+});
+```
+
+`unionWhere` also works with `nativeUpdate` and `nativeDelete`:
+
+```ts
+// Update only users matching union branches
+await em.nativeUpdate(User, {}, { active: false }, {
+  unionWhere: [
+    { lastLogin: { $lt: oneYearAgo } },
+    { banned: true },
+  ],
+});
+
+// Delete only users matching union branches
+await em.nativeDelete(User, {}, {
+  unionWhere: [
+    { expired: true },
+    { email: { $like: '%@spam.com' } },
+  ],
+});
+```
+
+Each branch in `unionWhere` is processed independently, so relation conditions and entity filters are applied within each branch's subquery.
+
+> `unionWhere` is only supported on SQL drivers and will throw an error if used with MongoDB.
+
 ## Updating references (not loaded entities)
 
 You can update references via Unit of Work, just like if it was a loaded entity. This way it is possible to issue update queries without loading the entity.
