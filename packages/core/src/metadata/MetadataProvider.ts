@@ -23,7 +23,27 @@ export abstract class MetadataProvider {
       }
     });
 
+    // Preserve function expressions from indexes/uniques — they can't survive JSON cache serialization
+    const expressionMap = new Map<string, Function>();
+
+    for (const idx of [...(meta.indexes ?? []), ...(meta.uniques ?? [])]) {
+      if (typeof idx.expression === 'function' && idx.name) {
+        expressionMap.set(idx.name, idx.expression);
+      }
+    }
+
     Utils.mergeConfig(meta, cache);
+
+    // Restore function expressions that were lost during JSON serialization
+    if (expressionMap.size > 0) {
+      for (const idx of [...(meta.indexes ?? []), ...(meta.uniques ?? [])]) {
+        const fn = idx.name && expressionMap.get(idx.name);
+
+        if (fn && typeof idx.expression !== 'function') {
+          idx.expression = fn as any;
+        }
+      }
+    }
   }
 
   useCache(): boolean {
