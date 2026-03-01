@@ -227,11 +227,19 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     const sql = this.getChecksSQL(tablesBySchemas);
     const allChecks = await connection.execute<{ name: string; column_name: string; schema_name: string; table_name: string; expression: string }[]>(sql);
     const ret = {} as Dictionary;
+    const seen = new Set<string>();
 
     for (const check of allChecks) {
       const key = this.getTableKey(check);
+      const dedupeKey = `${key}:${check.name}`;
+
+      if (seen.has(dedupeKey)) {
+        continue;
+      }
+
+      seen.add(dedupeKey);
       ret[key] ??= [];
-      const m = check.expression.match(/^check \(\((.*)\)\)$/i);
+      const m = check.expression.match(/^check \(\((.*)\)\)$/is);
       const def = m?.[1].replace(/\((.*?)\)::\w+/g, '$1');
       ret[key].push({
         name: check.name,
@@ -660,7 +668,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       from pg_constraint pgc
       join pg_namespace nsp on nsp.oid = pgc.connamespace
       join pg_class cls on pgc.conrelid = cls.oid
-      join information_schema.constraint_column_usage ccu on pgc.conname = ccu.constraint_name and nsp.nspname = ccu.constraint_schema
+      join information_schema.constraint_column_usage ccu on pgc.conname = ccu.constraint_name and nsp.nspname = ccu.constraint_schema and cls.relname = ccu.table_name
       where contype = 'c' and (${[...tablesBySchemas.entries()].map(([schema, tables]) => `ccu.table_name in (${tables.map(t => this.platform.quoteValue(t.table_name)).join(',')}) and ccu.table_schema = ${this.platform.quoteValue(schema ?? this.platform.getDefaultSchemaName() ?? '')}`).join(' or ')})
       order by pgc.conname`;
   }
