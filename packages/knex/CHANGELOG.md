@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.6.8](https://github.com/mikro-orm/mikro-orm/compare/v6.6.7...v6.6.8) (2026-03-01)
+
+
+### Bug Fixes
+
+* **knex:** handle $not operator inside relation filters ([#7227](https://github.com/mikro-orm/mikro-orm/issues/7227)) ([d0dac2f](https://github.com/mikro-orm/mikro-orm/commit/d0dac2f1093ce0e87975ba7c67135299215ad6d6)), closes [#7226](https://github.com/mikro-orm/mikro-orm/issues/7226)
+
+
+
+
+
 ## [6.6.7](https://github.com/mikro-orm/mikro-orm/compare/v6.6.6...v6.6.7) (2026-02-15)
 
 

@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.6.8](https://github.com/mikro-orm/mikro-orm/compare/v6.6.7...v6.6.8) (2026-03-01)
+
+
+### Bug Fixes
+
+* **core:** allow using property accessor on to-one relations ([06978c9](https://github.com/mikro-orm/mikro-orm/commit/06978c929879bfad1ccfc4b13583cd73cb62a197)), closes [#7211](https://github.com/mikro-orm/mikro-orm/issues/7211)
+* **core:** fix double processing of JSON properties when reloading an entity ([514ed87](https://github.com/mikro-orm/mikro-orm/commit/514ed878247d50919ec4a9bb0d6fbb6ccbb624f1))
+* **core:** preserve embeddable properties in `toPOJO` regardless of partial loading hints ([c27dbae](https://github.com/mikro-orm/mikro-orm/commit/c27dbae46310660f75107fbcbdd5547b395f5ac0))
+* **core:** preserve function expression indexes through metadata cache round-trip ([#7229](https://github.com/mikro-orm/mikro-orm/issues/7229)) ([9ae8d20](https://github.com/mikro-orm/mikro-orm/commit/9ae8d203896c28aec008b9937d5515dc4cbd903b)), closes [#7238](https://github.com/mikro-orm/mikro-orm/issues/7238)
+* **core:** use full hydration in `mergeData` for initialized entities ([5529308](https://github.com/mikro-orm/mikro-orm/commit/55293084872bdfd8e5241dedeeb0750b6f4d9394)), closes [#7205](https://github.com/mikro-orm/mikro-orm/issues/7205)
+* **knex:** handle $not operator inside relation filters ([#7227](https://github.com/mikro-orm/mikro-orm/issues/7227)) ([d0dac2f](https://github.com/mikro-orm/mikro-orm/commit/d0dac2f1093ce0e87975ba7c67135299215ad6d6)), closes [#7226](https://github.com/mikro-orm/mikro-orm/issues/7226)
+* **migrations:** delete snapshot file after `migration:down` ([dfcc8c6](https://github.com/mikro-orm/mikro-orm/commit/dfcc8c6177a21d292f48a1f4405b01336c2f6a92)), closes [#7210](https://github.com/mikro-orm/mikro-orm/issues/7210)
+* **postgres:** fix phantom diffs for check constraints ([#7224](https://github.com/mikro-orm/mikro-orm/issues/7224)) ([103346c](https://github.com/mikro-orm/mikro-orm/commit/103346c4e14455509f26239031f2bd11682599cb))
+
+
+
+
+
 ## [6.6.7](https://github.com/mikro-orm/mikro-orm/compare/v6.6.6...v6.6.7) (2026-02-15)
 
 
