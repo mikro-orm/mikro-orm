@@ -538,6 +538,7 @@ export class QueryBuilder<
   protected _tptAlias: Dictionary<string> = {}; // maps entity className to alias for TPT parent tables
   protected _helper?: QueryBuilderHelper;
   protected _query?: { sql?: string; params?: readonly unknown[]; qb: NativeQueryBuilder };
+  protected _unionQuery?: { sql: string; params: readonly unknown[] };
   protected readonly platform: AbstractSqlPlatform;
   private tptJoinsApplied = false;
   private readonly autoJoinedPaths: string[] = [];
@@ -1778,6 +1779,18 @@ export class QueryBuilder<
   }
 
   getNativeQuery(processVirtualEntity = true): NativeQueryBuilder {
+    if (this._unionQuery) {
+      if (!this._query?.qb) {
+        this._query = {} as any;
+        const nqb = this.platform.createNativeQueryBuilder();
+        nqb.select('*');
+        nqb.from(raw(`(${this._unionQuery.sql})`, [...this._unionQuery.params]));
+        this._query!.qb = nqb;
+      }
+
+      return this._query!.qb;
+    }
+
     if (this._query?.qb) {
       return this._query.qb;
     }
@@ -1831,6 +1844,10 @@ export class QueryBuilder<
   }
 
   toQuery(): { sql: string; params: readonly unknown[] } {
+    if (this._unionQuery) {
+      return this._unionQuery;
+    }
+
     if (this._query?.sql) {
       return { sql: this._query.sql, params: this._query.params! };
     }
@@ -2209,8 +2226,9 @@ export class QueryBuilder<
 
   /**
    * Combines the current query with one or more other queries using `UNION ALL`.
-   * All queries must select the same columns. Returns a `RawQueryFragment` that
-   * can be used with `$in`, passed to `qb.from()`, or converted to a string via `.sql`.
+   * All queries must select the same columns. Returns a `QueryBuilder` that
+   * can be used with `$in`, passed to `qb.from()`, or converted via `.getQuery()`,
+   * `.getParams()`, `.toQuery()`, `.toRaw()`, etc.
    *
    * ```ts
    * const qb1 = em.createQueryBuilder(Employee).select('id').where(condition1);
@@ -2221,14 +2239,15 @@ export class QueryBuilder<
    * const results = await em.find(Employee, { id: { $in: subquery } });
    * ```
    */
-  unionAll(...others: (QueryBuilder<any> | NativeQueryBuilder)[]): RawQueryFragment {
+  unionAll(...others: (QueryBuilder<any> | NativeQueryBuilder)[]): QueryBuilder<Entity, RootAlias, Hint, Context, RawAliases, Fields> {
     return this.buildUnionQuery('union all', others);
   }
 
   /**
    * Combines the current query with one or more other queries using `UNION` (with deduplication).
-   * All queries must select the same columns. Returns a `RawQueryFragment` that
-   * can be used with `$in`, passed to `qb.from()`, or converted to a string via `.sql`.
+   * All queries must select the same columns. Returns a `QueryBuilder` that
+   * can be used with `$in`, passed to `qb.from()`, or converted via `.getQuery()`,
+   * `.getParams()`, `.toQuery()`, `.toRaw()`, etc.
    *
    * ```ts
    * const qb1 = em.createQueryBuilder(Employee).select('id').where(condition1);
@@ -2238,11 +2257,11 @@ export class QueryBuilder<
    * const results = await em.find(Employee, { id: { $in: subquery } });
    * ```
    */
-  union(...others: (QueryBuilder<any> | NativeQueryBuilder)[]): RawQueryFragment {
+  union(...others: (QueryBuilder<any> | NativeQueryBuilder)[]): QueryBuilder<Entity, RootAlias, Hint, Context, RawAliases, Fields> {
     return this.buildUnionQuery('union', others);
   }
 
-  private buildUnionQuery(separator: 'union' | 'union all', others: (QueryBuilder<any> | NativeQueryBuilder)[]): RawQueryFragment {
+  private buildUnionQuery(separator: 'union' | 'union all', others: (QueryBuilder<any> | NativeQueryBuilder)[]): QueryBuilder<Entity, RootAlias, Hint, Context, RawAliases, Fields> {
     const all = [this as QueryBuilder<any>, ...others];
     const parts: string[] = [];
     const params: unknown[] = [];
@@ -2253,7 +2272,9 @@ export class QueryBuilder<
       params.push(...compiled.params);
     }
 
-    return raw(parts.join(` ${separator} `), params);
+    const result = this.clone(true);
+    result._unionQuery = { sql: parts.join(` ${separator} `), params };
+    return result;
   }
 
   clone(reset?: boolean | string[], preserve?: string[]): QueryBuilder<Entity, RootAlias, Hint, Context, RawAliases, Fields> {
@@ -2272,7 +2293,7 @@ export class QueryBuilder<
     const properties = [
       'flags', '_populate', '_populateWhere', '_populateFilter', '__populateWhere', '_populateMap', '_joins', '_joinedProps', '_cond', '_data', '_orderBy',
       '_schema', '_indexHint', '_collation', '_cache', 'subQueries', 'lockMode', 'lockTables', '_groupBy', '_having', '_returning',
-      '_comments', '_hintComments', 'aliasCounter',
+      '_comments', '_hintComments', 'aliasCounter', '_unionQuery',
     ];
 
     for (const prop of Object.keys(this)) {
@@ -2682,7 +2703,11 @@ export class QueryBuilder<
     const requiresAlias = this.finalized && (this._explicitAlias || this.helper.isTableNameAliasRequired(this.type));
     const alias = requiresAlias ? aliasName : undefined;
     const schema = this.getSchema(this.mainAlias);
-    const tableName = subQuery ? subQuery.as(aliasName) : this.helper.getTableName(entityName);
+    const tableName = subQuery instanceof NativeQueryBuilder
+      ? subQuery.as(aliasName)
+      : subQuery
+        ? raw(`(${(subQuery as RawQueryFragment).sql}) as ${this.platform.quoteIdentifier(aliasName)}`, (subQuery as RawQueryFragment).params)
+        : this.helper.getTableName(entityName);
     const joinSchema = this._schema ?? this.em?.schema ?? schema;
 
     if (meta.virtual && processVirtualEntity) {
@@ -3327,23 +3352,23 @@ export class QueryBuilder<
   }
 
   /** @internal */
-  createAlias<U = unknown>(entityName: EntityName<U>, aliasName: string, subQuery?: NativeQueryBuilder): Alias<U> {
+  createAlias<U = unknown>(entityName: EntityName<U>, aliasName: string, subQuery?: NativeQueryBuilder | RawQueryFragment): Alias<U> {
     const meta = this.metadata.find(entityName)!;
     const alias = { aliasName, entityName, meta, subQuery } satisfies Alias<U>;
     this._aliases[aliasName] = alias;
     return alias;
   }
 
-  private createMainAlias(entityName: EntityName<Entity>, aliasName: string, subQuery?: NativeQueryBuilder): Alias<Entity> {
+  private createMainAlias(entityName: EntityName<Entity>, aliasName: string, subQuery?: NativeQueryBuilder | RawQueryFragment): Alias<Entity> {
     this._mainAlias = this.createAlias(entityName, aliasName, subQuery);
     this._helper = this.createQueryBuilderHelper();
     return this._mainAlias;
   }
 
   private fromSubQuery(target: QueryBuilder<Entity>, aliasName?: string): void {
-    const subQuery = target.getNativeQuery();
     const { entityName } = target.mainAlias;
     aliasName ??= this.getNextAlias(entityName);
+    const subQuery = target._unionQuery ? target.toRaw() : target.getNativeQuery();
 
     this.createMainAlias(entityName, aliasName, subQuery);
   }

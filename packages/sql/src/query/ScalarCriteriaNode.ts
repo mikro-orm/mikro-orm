@@ -28,7 +28,7 @@ export class ScalarCriteriaNode<T extends object> extends CriteriaNode<T> {
     }
 
     if (this.payload instanceof QueryBuilder) {
-      return this.payload.getNativeQuery().toRaw();
+      return this.payload.toRaw();
     }
 
     if (this.payload && typeof this.payload === 'object') {

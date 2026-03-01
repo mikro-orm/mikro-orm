@@ -21,6 +21,7 @@ import {
   QueryOrderNumeric,
   raw,
   Raw,
+  type RawQueryFragment,
   type RawQueryFragmentSymbol,
   QueryHelper,
   ReferenceKind,
@@ -31,7 +32,7 @@ import { JoinType, QueryType } from './enums.js';
 import type { InternalField, JoinOptions } from '../typings.js';
 import type { AbstractSqlDriver } from '../AbstractSqlDriver.js';
 import type { AbstractSqlPlatform } from '../AbstractSqlPlatform.js';
-import { NativeQueryBuilder } from './NativeQueryBuilder.js';
+import type { NativeQueryBuilder } from './NativeQueryBuilder.js';
 
 /**
  * @internal
@@ -673,8 +674,8 @@ export class QueryBuilderHelper {
       params.push(...params2);
     } else if (['$in', '$nin'].includes(op) && Array.isArray(value[op]) && value[op].length === 0) {
       parts.push(`1 = ${op === '$in' ? 0 : 1}`);
-    } else if (value[op] instanceof Raw || value[op] instanceof NativeQueryBuilder) {
-      const query = value[op] instanceof NativeQueryBuilder ? value[op].toRaw() : value[op];
+    } else if (value[op] instanceof Raw || (typeof value[op]?.toRaw === 'function')) {
+      const query = value[op] instanceof Raw ? value[op] : value[op].toRaw();
       const mappedKey = this.mapper(key, type, query, null);
 
       let sql = query.sql;
@@ -1088,7 +1089,7 @@ export interface Alias<T> {
   aliasName: string;
   entityName: EntityName<T>;
   meta: EntityMetadata<T>;
-  subQuery?: NativeQueryBuilder;
+  subQuery?: NativeQueryBuilder | RawQueryFragment;
 }
 
 export interface OnConflictClause<T> {

@@ -2235,14 +2235,13 @@ export abstract class AbstractSqlDriver<
   ): Promise<ObjectQuery<T>> {
     const unionWhere = (options as FindOptions<T>).unionWhere!;
     const strategy = (options as FindOptions<T>).unionWhereStrategy ?? 'union-all';
-    const separator = strategy === 'union' ? ' union ' : ' union all ';
     const schema = this.getSchemaName(meta, options);
     const connectionType = this.resolveConnectionType({
       ctx: options.ctx,
       connectionType: (options as FindOptions<T>).connectionType,
     });
 
-    const branches: { sql: string; params: readonly unknown[] }[] = [];
+    const branchQbs: QueryBuilder<any>[] = [];
 
     for (const branch of unionWhere) {
       const qb = this.createQueryBuilder<T>(
@@ -2261,21 +2260,24 @@ export abstract class AbstractSqlDriver<
         await qb.applyJoinedFilters(options.em, options.filters);
       }
 
-      branches.push(qb.toQuery());
+      branchQbs.push(qb);
     }
 
-    let unionSql = branches.map(b => `(${b.sql})`).join(separator);
-    const allParams = branches.flatMap(b => [...b.params]);
+    const [first, ...rest] = branchQbs;
+    const unionQb = strategy === 'union' ? first.union(...rest) : first.unionAll(...rest);
     const pkHash = Utils.getPrimaryKeyHash(meta.primaryKeys);
 
     // MySQL does not allow referencing the target table in a subquery
     // for UPDATE/DELETE, so we wrap the union in a derived table.
     if (forDml) {
-      unionSql = `select * from (${unionSql}) as __u`;
+      const { sql, params } = unionQb.toQuery();
+      return {
+        $and: [where, { [pkHash]: { $in: raw(`select * from (${sql}) as __u`, params) } }],
+      } as ObjectQuery<T>;
     }
 
     return {
-      $and: [where, { [pkHash]: { $in: raw(unionSql, allParams) } }],
+      $and: [where, { [pkHash]: { $in: unionQb.toRaw() } }],
     } as ObjectQuery<T>;
   }
 

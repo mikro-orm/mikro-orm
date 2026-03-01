@@ -647,7 +647,7 @@ console.log(qb4.getQuery());
 
 ## Using UNION queries
 
-You can combine multiple queries using `qb.union()` and `qb.unionAll()`. Both methods return a `RawQueryFragment` that can be used with `$in`, passed to `qb.from()`, or converted to a string via `.sql`.
+You can combine multiple queries using `qb.union()` and `qb.unionAll()`. Both methods return a `QueryBuilder` that can be used with `$in`, passed to `qb.from()`, or converted via `.getQuery()`, `.getParams()`, `.toQuery()`, `.toRaw()`, etc.
 
 `unionAll` keeps all rows (including duplicates), while `union` deduplicates:
 
