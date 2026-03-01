@@ -191,6 +191,7 @@ describe('check constraint [postgres]', () => {
 
     // Create both tables with their constraints
     let diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
+    expect(diff).not.toBe('');
     await orm.schema.execute(diff);
 
     // After creation the diff must be empty — no phantom constraint changes
@@ -262,6 +263,7 @@ describe('check constraint [postgres]', () => {
     meta.set(newTableMeta.class, newTableMeta);
 
     let diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
+    expect(diff).not.toBe('');
     await orm.schema.execute(diff);
 
     // After creation the diff must be empty — the multiline pretty-printed
