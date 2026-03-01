@@ -167,7 +167,14 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
   override shouldInline(payload: any): boolean {
     const customExpression = RawQueryFragment.isKnownFragment(this.key!);
     const scalar = Utils.isPrimaryKey(payload) || payload as unknown instanceof RegExp || payload as unknown instanceof Date || customExpression;
-    const operator = Utils.isObject(payload) && Object.keys(payload).every(k => Utils.isOperator(k, false));
+    const operator = Utils.isObject(payload) && Object.keys(payload).every(k => {
+      if (k === '$not' && Utils.isPlainObject(payload[k])) {
+        // $not wrapping non-operator conditions (entity props) should be inlined
+        return Object.keys(payload[k]).every(ik => Utils.isOperator(ik, false));
+      }
+
+      return Utils.isOperator(k, false);
+    });
 
     return !!this.prop && this.prop.kind !== ReferenceKind.SCALAR && !scalar && !operator;
   }
@@ -195,7 +202,10 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
     const prop = this.metadata.find<T>(this.entityName)!.properties[field];
 
     for (const k of Object.keys(payload)) {
-      if (Utils.isOperator(k, false)) {
+      if (k === '$not' && Utils.isPlainObject(payload[k]) && Object.keys(payload[k]).some(ik => !Utils.isOperator(ik, false))) {
+        // $not wraps entity conditions (from auto-join), inline at current level
+        this.inlineCondition(k, o, payload[k]);
+      } else if (Utils.isOperator(k, false)) {
         const tmp = payload[k];
         delete payload[k];
         o[this.aliased(field, alias)] = { [k]: tmp, ...o[this.aliased(field, alias)] };
@@ -248,7 +258,19 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
     const meta = this.metadata.find(this.entityName)!;
     const embeddable = this.prop.kind === ReferenceKind.EMBEDDED;
     const knownKey = [ReferenceKind.SCALAR, ReferenceKind.MANY_TO_ONE, ReferenceKind.EMBEDDED].includes(this.prop.kind) || (this.prop.kind === ReferenceKind.ONE_TO_ONE && this.prop.owner);
-    const operatorKeys = knownKey && keys.every(key => Utils.isOperator(key, false));
+    const operatorKeys = knownKey && keys.every(key => {
+      if (key === '$not') {
+        // $not wraps conditions like $and/$or, check if it wraps entity property conditions (needs auto-join)
+        // vs simple operator conditions on the FK (doesn't need auto-join)
+        const childPayload = (this.payload[key] as CriteriaNode<T>).payload;
+
+        if (Utils.isPlainObject(childPayload)) {
+          return Object.keys(childPayload).every(k => Utils.isOperator(k, false));
+        }
+      }
+
+      return Utils.isOperator(key, false);
+    });
     const primaryKeys = knownKey && keys.every(key => {
       if (!meta.primaryKeys.includes(key)) {
         return false;
