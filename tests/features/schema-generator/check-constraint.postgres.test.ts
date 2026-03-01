@@ -160,4 +160,104 @@ describe('check constraint [postgres]', () => {
     await orm.close();
   });
 
+  test('duplicate check constraint names across tables do not cause drift [postgres]', async () => {
+    const orm = await initORMPostgreSql();
+    const meta = orm.getMetadata();
+    await orm.schema.updateSchema();
+
+    const tableAMeta = new EntitySchema({
+      properties: {
+        id: { primary: true, name: 'id', type: 'number', fieldName: 'id', columnType: 'int' },
+        value: { type: 'number', name: 'value', fieldName: 'value', columnType: 'int' },
+      },
+      name: 'DupCheckTableA',
+      tableName: 'dup_check_table_a',
+      checks: [{ name: 'chk_positive', expression: 'value >= 0' }],
+    }).init().meta;
+    meta.set('DupCheckTableA', tableAMeta);
+
+    const tableBMeta = new EntitySchema({
+      properties: {
+        id: { primary: true, name: 'id', type: 'number', fieldName: 'id', columnType: 'int' },
+        amount: { type: 'number', name: 'amount', fieldName: 'amount', columnType: 'int' },
+      },
+      name: 'DupCheckTableB',
+      tableName: 'dup_check_table_b',
+      checks: [{ name: 'chk_positive', expression: 'amount >= 0' }],
+    }).init().meta;
+    meta.set('DupCheckTableB', tableBMeta);
+
+    let diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
+    expect(diff).not.toBe('');
+    await orm.schema.execute(diff);
+
+    diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
+    expect(diff).toBe('');
+
+    await orm.schema.dropDatabase();
+    await orm.close();
+  });
+
+  test('multi-column check constraint does not cause drift [postgres]', async () => {
+    const orm = await initORMPostgreSql();
+    const meta = orm.getMetadata();
+    await orm.schema.updateSchema();
+
+    const newTableMeta = new EntitySchema({
+      properties: {
+        id: { primary: true, name: 'id', type: 'number', fieldName: 'id', columnType: 'int' },
+        min_price: { type: 'number', name: 'min_price', fieldName: 'min_price', columnType: 'int' },
+        max_price: { type: 'number', name: 'max_price', fieldName: 'max_price', columnType: 'int' },
+      },
+      name: 'MultiColCheckTable',
+      tableName: 'multi_col_check_table',
+      checks: [
+        { name: 'chk_price_range', expression: 'min_price >= 0 and max_price >= min_price' },
+      ],
+    }).init().meta;
+    meta.set('MultiColCheckTable', newTableMeta);
+
+    let diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
+    expect(diff).not.toBe('');
+    await orm.schema.execute(diff);
+
+    diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
+    expect(diff).toBe('');
+
+    await orm.schema.dropDatabase();
+    await orm.close();
+  });
+
+  test('check constraint with multiline expression does not cause drift [postgres]', async () => {
+    const orm = await initORMPostgreSql();
+    const meta = orm.getMetadata();
+    await orm.schema.updateSchema();
+
+    const newTableMeta = new EntitySchema({
+      properties: {
+        id: { primary: true, name: 'id', type: 'number', fieldName: 'id', columnType: 'int' },
+        status: { type: 'string', name: 'status', fieldName: 'status', columnType: 'varchar(20)' },
+      },
+      name: 'MultilineCheckTable',
+      tableName: 'multiline_check_table',
+      checks: [
+        {
+          name: 'chk_status_valid',
+          expression: "CASE WHEN status = 'active' THEN 1 WHEN status = 'inactive' THEN 1 ELSE 0 END = 1",
+        },
+      ],
+    }).init().meta;
+    meta.set('MultilineCheckTable', newTableMeta);
+
+    let diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
+    expect(diff).not.toBe('');
+    await orm.schema.execute(diff);
+
+    diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
+    expect(diff).toBe('');
+
+    await orm.schema.dropDatabase();
+    await orm.close();
+  });
+
 });
