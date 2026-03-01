@@ -393,8 +393,8 @@ describe('QueryBuilder - Subqueries', () => {
   });
 
   test('union result can be executed directly via from()', async () => {
-    const qb1 = orm.em.createQueryBuilder(Author2).where({ name: 'a' });
-    const qb2 = orm.em.createQueryBuilder(Author2).where({ name: 'non-existent' });
+    const qb1 = orm.em.createQueryBuilder(Author2, 'a').select('a.id').where({ name: 'a' });
+    const qb2 = orm.em.createQueryBuilder(Author2, 'a').select('a.id').where({ name: 'non-existent' });
     const unionQb = qb1.union(qb2);
 
     const qb3 = orm.em.createQueryBuilder(Author2).from(unionQb).select('*');

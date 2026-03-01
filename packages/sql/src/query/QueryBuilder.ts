@@ -2239,7 +2239,7 @@ export class QueryBuilder<
    * const results = await em.find(Employee, { id: { $in: subquery } });
    * ```
    */
-  unionAll(...others: (QueryBuilder<any> | NativeQueryBuilder)[]): QueryBuilder<Entity, RootAlias, Hint, Context, RawAliases, Fields> {
+  unionAll(...others: (QueryBuilder<any> | NativeQueryBuilder)[]): QueryBuilder<Entity> {
     return this.buildUnionQuery('union all', others);
   }
 
@@ -2257,11 +2257,11 @@ export class QueryBuilder<
    * const results = await em.find(Employee, { id: { $in: subquery } });
    * ```
    */
-  union(...others: (QueryBuilder<any> | NativeQueryBuilder)[]): QueryBuilder<Entity, RootAlias, Hint, Context, RawAliases, Fields> {
+  union(...others: (QueryBuilder<any> | NativeQueryBuilder)[]): QueryBuilder<Entity> {
     return this.buildUnionQuery('union', others);
   }
 
-  private buildUnionQuery(separator: 'union' | 'union all', others: (QueryBuilder<any> | NativeQueryBuilder)[]): QueryBuilder<Entity, RootAlias, Hint, Context, RawAliases, Fields> {
+  private buildUnionQuery(separator: 'union' | 'union all', others: (QueryBuilder<any> | NativeQueryBuilder)[]): QueryBuilder<Entity> {
     const all = [this as QueryBuilder<any>, ...others];
     const parts: string[] = [];
     const params: unknown[] = [];
@@ -2272,7 +2272,7 @@ export class QueryBuilder<
       params.push(...compiled.params);
     }
 
-    const result = this.clone(true);
+    const result = this.clone(true) as QueryBuilder<Entity>;
     result._unionQuery = { sql: parts.join(` ${separator} `), params };
     return result;
   }
