@@ -22,13 +22,50 @@ Suppose you want to create a database of cars and use the model-name and year of
 
 <Tabs
 groupId="entity-def"
-defaultValue="reflect-metadata"
+defaultValue="define-entity-class"
 values={[
-{label: 'reflect-metadata', value: 'reflect-metadata'},
-{label: 'ts-morph', value: 'ts-morph'},
+
+{label: 'defineEntity + class', value: 'define-entity-class'},
+
 {label: 'defineEntity', value: 'define-entity'},
-{label: 'EntitySchema', value: 'entity-schema'},
-]}>
+
+{label: 'reflect-metadata', value: 'reflect-metadata'},
+
+{label: 'ts-morph', value: 'ts-morph'},
+]}
+>
+  <TabItem value="define-entity-class">
+
+```ts
+const CarSchema = defineEntity({
+  name: 'Car',
+  properties: {
+    name: p.string(),
+    year: p.integer(),
+  },
+  primaryKeys: ['name', 'year'],
+});
+
+export class Car extends CarSchema.class {}
+CarSchema.setClass(Car);
+```
+
+  </TabItem>
+
+<TabItem value="define-entity">
+
+```ts
+export const Car = defineEntity({
+  name: 'Car',
+  properties: {
+    name: p.string(),
+    year: p.integer(),
+  },
+  primaryKeys: ['name', 'year'],
+});
+```
+
+</TabItem>
 <TabItem value="reflect-metadata">
 
 ```ts
@@ -77,39 +114,6 @@ export class Car {
 ```
 
 </TabItem>
-<TabItem value="define-entity">
-
-```ts
-export const Car = defineEntity({
-  name: 'Car',
-  properties: {
-    name: p.string(),
-    year: p.integer(),
-  },
-  primaryKeys: ['name', 'year'],
-});
-```
-
-</TabItem>
-<TabItem value="entity-schema">
-
-```ts
-export interface ICar {
-  name: string;
-  year: number;
-  [PrimaryKeyProp]?: ['name', 'year']; // this is needed for proper type checks in `FilterQuery`
-}
-
-export const Car = new EntitySchema<ICar>({
-  name: 'Car',
-  properties: {
-    name: { type: 'string', primary: true },
-    year: { type: 'number', primary: true },
-  },
-});
-```
-
-</TabItem>
 </Tabs>
 
 Now you can use this entity:
@@ -153,13 +157,70 @@ We keep up the example of an Article with arbitrary attributes, the mapping look
 
 <Tabs
 groupId="entity-def"
-defaultValue="reflect-metadata"
+defaultValue="define-entity-class"
 values={[
-{label: 'reflect-metadata', value: 'reflect-metadata'},
-{label: 'ts-morph', value: 'ts-morph'},
+
+{label: 'defineEntity + class', value: 'define-entity-class'},
+
 {label: 'defineEntity', value: 'define-entity'},
-{label: 'EntitySchema', value: 'entity-schema'},
-]}>
+
+{label: 'reflect-metadata', value: 'reflect-metadata'},
+
+{label: 'ts-morph', value: 'ts-morph'},
+]}
+>
+  <TabItem value="define-entity-class">
+
+```ts
+const ArticleSchema = defineEntity({
+  name: 'Article',
+  properties: {
+    id: p.integer().primary().autoincrement(),
+    title: p.string(),
+    attributes: () => p.oneToMany(ArticleAttribute).mappedBy('article').cascade(Cascade.ALL),
+  },
+});
+
+export const ArticleAttribute = defineEntity({
+  name: 'ArticleAttribute',
+  properties: {
+    article: () => p.manyToOne(Article).primary(),
+    attribute: p.string().primary(),
+    value: p.string(),
+  },
+  primaryKeys: ['article', 'attribute'],
+});
+
+export class Article extends ArticleSchema.class {}
+ArticleSchema.setClass(Article);
+```
+
+  </TabItem>
+
+<TabItem value="define-entity">
+
+```ts
+export const Article = defineEntity({
+  name: 'Article',
+  properties: {
+    id: p.integer().primary().autoincrement(),
+    title: p.string(),
+    attributes: () => p.oneToMany(ArticleAttribute).mappedBy('article').cascade(Cascade.ALL),
+  },
+});
+
+export const ArticleAttribute = defineEntity({
+  name: 'ArticleAttribute',
+  properties: {
+    article: () => p.manyToOne(Article).primary(),
+    attribute: p.string().primary(),
+    value: p.string(),
+  },
+  primaryKeys: ['article', 'attribute'],
+});
+```
+
+</TabItem>
 <TabItem value="reflect-metadata">
 
 ```ts
@@ -242,66 +303,6 @@ export class ArticleAttribute {
 ```
 
 </TabItem>
-<TabItem value="define-entity">
-
-```ts
-export const Article = defineEntity({
-  name: 'Article',
-  properties: {
-    id: p.integer().primary().autoincrement(),
-    title: p.string(),
-    attributes: () => p.oneToMany(ArticleAttribute).mappedBy('article').cascade(Cascade.ALL),
-  },
-});
-
-export const ArticleAttribute = defineEntity({
-  name: 'ArticleAttribute',
-  properties: {
-    article: () => p.manyToOne(Article).primary(),
-    attribute: p.string().primary(),
-    value: p.string(),
-  },
-  primaryKeys: ['article', 'attribute'],
-});
-```
-
-</TabItem>
-<TabItem value="entity-schema">
-
-```ts
-export interface IArticle {
-  id: number;
-  title: string;
-  attributes: Collection<ArticleAttribute>;
-}
-
-export interface IArticleAttribute {
-  article: Article;
-  attribute: string;
-  value: string;
-  [PrimaryKeyProp]?: ['article', 'attribute']; // this is needed for proper type checks in `FilterQuery`
-}
-
-export const Article = new EntitySchema<IArticle>({
-  name: 'Article',
-  properties: {
-    id: { type: 'number', primary: true },
-    title: { type: 'string' },
-    attributes: { kind: '1:m', entity: () => ArticleAttribute, mappedBy: attr => attr.article, cascade: [Cascade.ALL] },
-  },
-});
-
-export const ArticleAttribute = new EntitySchema<IArticleAttribute>({
-  name: 'ArticleAttribute',
-  properties: {
-    article: { kind: 'm:1', entity: () => Article, primary: true },
-    attribute: { type: 'string', primary: true },
-    value: { type: 'string' },
-  },
-});
-```
-
-</TabItem>
 </Tabs>
 
 ## Use-Case 2: Simple Derived Identity
@@ -310,13 +311,64 @@ Sometimes you have the requirement that two objects are related by a `@OneToOne`
 
 <Tabs
 groupId="entity-def"
-defaultValue="reflect-metadata"
+defaultValue="define-entity-class"
 values={[
-{label: 'reflect-metadata', value: 'reflect-metadata'},
-{label: 'ts-morph', value: 'ts-morph'},
+
+{label: 'defineEntity + class', value: 'define-entity-class'},
+
 {label: 'defineEntity', value: 'define-entity'},
-{label: 'EntitySchema', value: 'entity-schema'},
-]}>
+
+{label: 'reflect-metadata', value: 'reflect-metadata'},
+
+{label: 'ts-morph', value: 'ts-morph'},
+]}
+>
+  <TabItem value="define-entity-class">
+
+```ts
+const UserSchema = defineEntity({
+  name: 'User',
+  properties: {
+    id: p.integer().primary().autoincrement(),
+    address: () => p.oneToOne(Address).inversedBy('user').cascade(Cascade.ALL),
+  },
+});
+
+export const Address = defineEntity({
+  name: 'Address',
+  properties: {
+    user: () => p.oneToOne(User).primary(),
+  },
+  primaryKeys: ['user'],
+});
+
+export class User extends UserSchema.class {}
+UserSchema.setClass(User);
+```
+
+  </TabItem>
+
+<TabItem value="define-entity">
+
+```ts
+export const User = defineEntity({
+  name: 'User',
+  properties: {
+    id: p.integer().primary().autoincrement(),
+    address: () => p.oneToOne(Address).inversedBy('user').cascade(Cascade.ALL),
+  },
+});
+
+export const Address = defineEntity({
+  name: 'Address',
+  properties: {
+    user: () => p.oneToOne(User).primary(),
+  },
+  primaryKeys: ['user'],
+});
+```
+
+</TabItem>
 <TabItem value="reflect-metadata">
 
 ```ts
@@ -369,57 +421,6 @@ export class Address {
 ```
 
 </TabItem>
-<TabItem value="define-entity">
-
-```ts
-export const User = defineEntity({
-  name: 'User',
-  properties: {
-    id: p.integer().primary().autoincrement(),
-    address: () => p.oneToOne(Address).inversedBy('user').cascade(Cascade.ALL),
-  },
-});
-
-export const Address = defineEntity({
-  name: 'Address',
-  properties: {
-    user: () => p.oneToOne(User).primary(),
-  },
-  primaryKeys: ['user'],
-});
-```
-
-</TabItem>
-<TabItem value="entity-schema">
-
-```ts
-export interface IUser {
-  id: number;
-  address?: Address;
-}
-
-export interface IAddress {
-  user: User;
-  [PrimaryKeyProp]?: 'user'; // this is needed for proper type checks in `FilterQuery`
-}
-
-export const User = new EntitySchema<IUser>({
-  name: 'User',
-  properties: {
-    id: { type: 'number', primary: true },
-    address: { kind: '1:1', entity: () => Address, inversedBy: 'user', cascade: [Cascade.ALL] },
-  },
-});
-
-export const Address = new EntitySchema<IAddress>({
-  name: 'Address',
-  properties: {
-    user: { kind: '1:1', entity: () => User, primary: true },
-  },
-});
-```
-
-</TabItem>
 </Tabs>
 
 ## Use-Case 3: Join-Table with Metadata
@@ -428,13 +429,96 @@ In the classic order product shop example there is the concept of the order item
 
 <Tabs
 groupId="entity-def"
-defaultValue="reflect-metadata"
+defaultValue="define-entity-class"
 values={[
-{label: 'reflect-metadata', value: 'reflect-metadata'},
-{label: 'ts-morph', value: 'ts-morph'},
+
+{label: 'defineEntity + class', value: 'define-entity-class'},
+
 {label: 'defineEntity', value: 'define-entity'},
-{label: 'EntitySchema', value: 'entity-schema'},
-]}>
+
+{label: 'reflect-metadata', value: 'reflect-metadata'},
+
+{label: 'ts-morph', value: 'ts-morph'},
+]}
+>
+  <TabItem value="define-entity-class">
+
+```ts
+const OrderSchema = defineEntity({
+  name: 'Order',
+  properties: {
+    id: p.integer().primary().autoincrement(),
+    customer: () => p.manyToOne(Customer),
+    items: () => p.oneToMany(OrderItem).mappedBy('order'),
+    paid: p.boolean().default(false),
+    shipped: p.boolean().default(false),
+    created: p.datetime().onCreate(() => new Date()),
+  },
+});
+
+export const Product = defineEntity({
+  name: 'Product',
+  properties: {
+    id: p.integer().primary().autoincrement(),
+    name: p.string(),
+    currentPrice: p.float(),
+  },
+});
+
+export const OrderItem = defineEntity({
+  name: 'OrderItem',
+  properties: {
+    order: () => p.manyToOne(Order).primary(),
+    product: () => p.manyToOne(Product).primary(),
+    amount: p.integer().default(1),
+    offeredPrice: p.float(),
+  },
+  primaryKeys: ['order', 'product'],
+});
+
+export class Order extends OrderSchema.class {}
+OrderSchema.setClass(Order);
+```
+
+  </TabItem>
+
+<TabItem value="define-entity">
+
+```ts
+export const Order = defineEntity({
+  name: 'Order',
+  properties: {
+    id: p.integer().primary().autoincrement(),
+    customer: () => p.manyToOne(Customer),
+    items: () => p.oneToMany(OrderItem).mappedBy('order'),
+    paid: p.boolean().default(false),
+    shipped: p.boolean().default(false),
+    created: p.datetime().onCreate(() => new Date()),
+  },
+});
+
+export const Product = defineEntity({
+  name: 'Product',
+  properties: {
+    id: p.integer().primary().autoincrement(),
+    name: p.string(),
+    currentPrice: p.float(),
+  },
+});
+
+export const OrderItem = defineEntity({
+  name: 'OrderItem',
+  properties: {
+    order: () => p.manyToOne(Order).primary(),
+    product: () => p.manyToOne(Product).primary(),
+    amount: p.integer().default(1),
+    offeredPrice: p.float(),
+  },
+  primaryKeys: ['order', 'product'],
+});
+```
+
+</TabItem>
 <TabItem value="reflect-metadata">
 
 ```ts
@@ -574,102 +658,6 @@ export class OrderItem {
   }
 
 }
-```
-
-</TabItem>
-<TabItem value="define-entity">
-
-```ts
-export const Order = defineEntity({
-  name: 'Order',
-  properties: {
-    id: p.integer().primary().autoincrement(),
-    customer: () => p.manyToOne(Customer),
-    items: () => p.oneToMany(OrderItem).mappedBy('order'),
-    paid: p.boolean().default(false),
-    shipped: p.boolean().default(false),
-    created: p.datetime().onCreate(() => new Date()),
-  },
-});
-
-export const Product = defineEntity({
-  name: 'Product',
-  properties: {
-    id: p.integer().primary().autoincrement(),
-    name: p.string(),
-    currentPrice: p.float(),
-  },
-});
-
-export const OrderItem = defineEntity({
-  name: 'OrderItem',
-  properties: {
-    order: () => p.manyToOne(Order).primary(),
-    product: () => p.manyToOne(Product).primary(),
-    amount: p.integer().default(1),
-    offeredPrice: p.float(),
-  },
-  primaryKeys: ['order', 'product'],
-});
-```
-
-</TabItem>
-<TabItem value="entity-schema">
-
-```ts
-export interface IOrder {
-  id: number;
-  customer: Customer;
-  items: Collection<OrderItem>;
-  paid: boolean;
-  shipped: boolean;
-  created: Date;
-}
-
-export interface IProduct {
-  id: number;
-  name: string;
-  currentPrice: number;
-}
-
-export interface IOrderItem {
-  order: Order;
-  product: Product;
-  amount: number;
-  offeredPrice: number;
-  [PrimaryKeyProp]?: ['order', 'product']; // this is needed for proper type checks in `FilterQuery`
-}
-
-export const Order = new EntitySchema<IOrder>({
-  name: 'Order',
-  properties: {
-    id: { type: 'number', primary: true },
-    customer: { kind: 'm:1', entity: () => Customer },
-    items: { kind: '1:m', entity: () => OrderItem, mappedBy: item => item.order },
-    paid: { type: 'boolean', default: false },
-    shipped: { type: 'boolean', default: false },
-    created: { type: Date },
-  },
-});
-
-export const Product = new EntitySchema<IProduct>({
-  name: 'Product',
-  properties: {
-    id: { type: 'number', primary: true },
-    name: { type: 'string' },
-    currentPrice: { type: 'number' },
-  },
-});
-
-export const OrderItem = new EntitySchema<IOrderItem>({
-  name: 'OrderItem',
-  properties: {
-    order: { kind: 'm:1', entity: () => Order, primary: true },
-    product: { kind: 'm:1', entity: () => Product, primary: true },
-    amount: { type: 'number', default: 1 },
-    offeredPrice: { type: 'number' },
-  },
-});
 ```
 
 </TabItem>

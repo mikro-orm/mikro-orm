@@ -116,13 +116,36 @@ Now you can start defining your entities. MikroORM supports multiple approaches:
 
 <Tabs
   groupId="entity-def"
-  defaultValue="define-entity"
+  defaultValue="define-entity-class"
   values={[
+    {label: 'defineEntity + class', value: 'define-entity-class'},
     {label: 'defineEntity', value: 'define-entity'},
     {label: 'decorators', value: 'decorators'},
-    {label: 'EntitySchema', value: 'entity-schema'},
-  ]
-}>
+]
+}
+>
+  <TabItem value="define-entity-class">
+
+The `defineEntity` helper with a class extension gives you clean named types and a natural place for custom methods:
+
+```ts title="./entities/Book.ts"
+import { defineEntity, p } from '@mikro-orm/core';
+
+const BookSchema = defineEntity({
+  name: 'Book',
+  properties: {
+    id: p.bigint().primary(),
+    title: p.string(),
+    author: () => p.manyToOne(Author),
+    tags: () => p.manyToMany(BookTag),
+  },
+});
+
+export class Book extends BookSchema.class {}
+BookSchema.setClass(Book);
+```
+
+  </TabItem>
   <TabItem value="define-entity">
 
 The `defineEntity` helper provides full type inference without decorators:
@@ -142,8 +165,6 @@ export const Book = defineEntity({
 
 export type Book = InferEntity<typeof Book>;
 ```
-
-To add custom methods, extend `Book.class` and register it with `Book.setClass(CustomBook)`. See the [EntitySchema docs](./entity-schema.md#adding-custom-methods) for details.
 
   </TabItem>
   <TabItem value="decorators">
@@ -169,32 +190,6 @@ export class Book {
   tags = new Collection<BookTag>(this);
 
 }
-```
-
-  </TabItem>
-  <TabItem value="entity-schema">
-
-`EntitySchema` allows programmatic definition without decorators:
-
-```ts title="./entities/Book.ts"
-import { EntitySchema, Collection } from '@mikro-orm/core';
-
-export interface IBook {
-  id: bigint;
-  title: string;
-  author: Author;
-  tags: Collection<BookTag>;
-}
-
-export const Book = new EntitySchema<IBook>({
-  name: 'Book',
-  properties: {
-    id: { type: 'bigint', primary: true },
-    title: { type: 'string' },
-    author: { kind: 'm:1', entity: () => Author },
-    tags: { kind: 'm:n', entity: () => BookTag },
-  },
-});
 ```
 
   </TabItem>

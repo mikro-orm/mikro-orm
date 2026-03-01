@@ -140,14 +140,40 @@ author.books.slice(0, 5); // T[] — slice of items (like Array.slice)
 
 <Tabs
 groupId="entity-def"
-defaultValue="define-entity"
+defaultValue="define-entity-class"
 values={[
+{label: 'defineEntity + class', value: 'define-entity-class'},
 {label: 'defineEntity', value: 'define-entity'},
 {label: 'reflect-metadata', value: 'reflect-metadata'},
 {label: 'ts-morph', value: 'ts-morph'},
-{label: 'EntitySchema', value: 'entity-schema'},
 ]
-}>
+}
+>
+  <TabItem value="define-entity-class">
+
+```ts
+const BookSchema = defineEntity({
+  name: 'Book',
+  properties: {
+    id: p.integer().primary(),
+    author: () => p.manyToOne(Author),
+  },
+});
+
+export const Author = defineEntity({
+  name: 'Author',
+  properties: {
+    id: p.integer().primary(),
+    books: () => p.oneToMany(Book).mappedBy('author'),
+  },
+});
+
+export class Book extends BookSchema.class {}
+BookSchema.setClass(Book);
+```
+
+  </TabItem>
+
 <TabItem value="define-entity">
 
 ```ts
@@ -227,27 +253,6 @@ export class Author {
 ```
 
 </TabItem>
-<TabItem value="entity-schema">
-
-```ts
-export const Book = new EntitySchema<IBook>({
-  name: 'Book',
-  properties: {
-    id: { type: Number, primary: true },
-    author: { kind: 'm:1', entity: () => Author },
-  },
-});
-
-export const Author = new EntitySchema<IAuthor>({
-  name: 'Author',
-  properties: {
-    id: { type: Number, primary: true },
-    books: { kind: '1:m', entity: () => Book, mappedBy: book => book.author },
-  },
-});
-```
-
-</TabItem>
 </Tabs>
 
 ## ManyToMany Collections
@@ -262,14 +267,32 @@ Unidirectional `ManyToMany` relations are defined only on one side, if you defin
 
 <Tabs
 groupId="entity-def"
-defaultValue="define-entity"
+defaultValue="define-entity-class"
 values={[
+{label: 'defineEntity + class', value: 'define-entity-class'},
 {label: 'defineEntity', value: 'define-entity'},
 {label: 'reflect-metadata', value: 'reflect-metadata'},
 {label: 'ts-morph', value: 'ts-morph'},
-{label: 'EntitySchema', value: 'entity-schema'},
 ]
-}>
+}
+>
+  <TabItem value="define-entity-class">
+
+```ts
+const AuthorSchema = defineEntity({
+  name: 'Author',
+  properties: {
+    id: p.integer().primary(),
+    books: () => p.manyToMany(Book),
+  },
+});
+
+export class Author extends AuthorSchema.class {}
+AuthorSchema.setClass(Author);
+```
+
+  </TabItem>
+
 <TabItem value="define-entity">
 
 ```ts
@@ -303,15 +326,6 @@ books = new Collection<Book>(this);
 ```
 
 </TabItem>
-<TabItem value="entity-schema">
-
-```ts
-properties: {
-  books: { kind: 'm:n', entity: () => Book },
-},
-```
-
-</TabItem>
 </Tabs>
 
 ### Bidirectional
@@ -320,14 +334,42 @@ Bidirectional `ManyToMany` relations are defined on both sides, while one is own
 
 <Tabs
 groupId="entity-def"
-defaultValue="define-entity"
+defaultValue="define-entity-class"
 values={[
+{label: 'defineEntity + class', value: 'define-entity-class'},
 {label: 'defineEntity', value: 'define-entity'},
 {label: 'reflect-metadata', value: 'reflect-metadata'},
 {label: 'ts-morph', value: 'ts-morph'},
-{label: 'EntitySchema', value: 'entity-schema'},
 ]
-}>
+}
+>
+  <TabItem value="define-entity-class">
+
+```ts
+// owning side
+const BookSchema = defineEntity({
+  name: 'Book',
+  properties: {
+    id: p.integer().primary(),
+    tags: () => p.manyToMany(BookTag).inversedBy('books'),
+  },
+});
+
+// inverse side
+export const BookTag = defineEntity({
+  name: 'BookTag',
+  properties: {
+    id: p.integer().primary(),
+    books: () => p.manyToMany(Book).mappedBy('tags'),
+  },
+});
+
+export class Book extends BookSchema.class {}
+BookSchema.setClass(Book);
+```
+
+  </TabItem>
+
 <TabItem value="define-entity">
 
 ```ts
@@ -385,21 +427,6 @@ books = new Collection<Book>(this);
 ```
 
 </TabItem>
-<TabItem value="entity-schema">
-
-```ts
-// owning side
-properties: {
-  tags: { kind: 'm:n', entity: () => BookTag, inversedBy: 'books' },
-},
-
-// inverse side
-properties: {
-  books: { kind: 'm:n', entity: () => Book, mappedBy: 'tags' },
-},
-```
-
-</TabItem>
 </Tabs>
 
 ### Custom pivot table entity
@@ -410,14 +437,49 @@ The pivot table entity needs to have exactly two many-to-one properties, where f
 
 <Tabs
 groupId="entity-def"
-defaultValue="define-entity"
+defaultValue="define-entity-class"
 values={[
+{label: 'defineEntity + class', value: 'define-entity-class'},
 {label: 'defineEntity', value: 'define-entity'},
 {label: 'reflect-metadata', value: 'reflect-metadata'},
 {label: 'ts-morph', value: 'ts-morph'},
-{label: 'EntitySchema', value: 'entity-schema'},
 ]
-}>
+}
+>
+  <TabItem value="define-entity-class">
+
+```ts
+const OrderSchema = defineEntity({
+  name: 'Order',
+  properties: {
+    id: p.integer().primary(),
+    products: () => p.manyToMany(Product).pivotEntity(() => OrderItem),
+  },
+});
+
+export const Product = defineEntity({
+  name: 'Product',
+  properties: {
+    id: p.integer().primary(),
+    orders: () => p.manyToMany(Order).mappedBy('products'),
+  },
+});
+
+export const OrderItem = defineEntity({
+  name: 'OrderItem',
+  properties: {
+    order: () => p.manyToOne(Order).primary(),
+    product: () => p.manyToOne(Product).primary(),
+    amount: p.integer().default(1),
+  },
+});
+
+export class Order extends OrderSchema.class {}
+OrderSchema.setClass(Order);
+```
+
+  </TabItem>
+
 <TabItem value="define-entity">
 
 ```ts
@@ -530,36 +592,6 @@ export class OrderItem {
 ```
 
 </TabItem>
-<TabItem value="entity-schema">
-
-```ts
-export const Order = new EntitySchema<IOrder>({
-  name: 'Order',
-  properties: {
-    id: { type: Number, primary: true },
-    products: { kind: 'm:n', entity: () => Product, pivotEntity: () => OrderItem },
-  },
-});
-
-export const Product = new EntitySchema<IProduct>({
-  name: 'Product',
-  properties: {
-    id: { type: Number, primary: true },
-    orders: { kind: 'm:n', entity: () => Order, mappedBy: 'products' },
-  },
-});
-
-export const OrderItem = new EntitySchema<IOrderItem>({
-  name: 'OrderItem',
-  properties: {
-    order: { kind: 'm:1', entity: () => Order, primary: true },
-    product: { kind: 'm:1', entity: () => Product, primary: true },
-    amount: { type: Number, default: 1 },
-  },
-});
-```
-
-</TabItem>
 </Tabs>
 
 For bidirectional M:N relations, it is enough to specify the `pivotEntity` option only on the owning side. You still need to link the sides via `inversedBy` or `mappedBy` option.
@@ -665,14 +697,33 @@ Collections can also represent only a subset of the target entities:
 
 <Tabs
 groupId="entity-def"
-defaultValue="define-entity"
+defaultValue="define-entity-class"
 values={[
+{label: 'defineEntity + class', value: 'define-entity-class'},
 {label: 'defineEntity', value: 'define-entity'},
 {label: 'reflect-metadata', value: 'reflect-metadata'},
 {label: 'ts-morph', value: 'ts-morph'},
-{label: 'EntitySchema', value: 'entity-schema'},
 ]
-}>
+}
+>
+  <TabItem value="define-entity-class">
+
+```ts
+const AuthorSchema = defineEntity({
+  name: 'Author',
+  properties: {
+    id: p.integer().primary(),
+    books: () => p.oneToMany(Book).mappedBy('author'),
+    favoriteBooks: () => p.oneToMany(Book).mappedBy('author').where({ favorite: true }),
+  },
+});
+
+export class Author extends AuthorSchema.class {}
+AuthorSchema.setClass(Author);
+```
+
+  </TabItem>
+
 <TabItem value="define-entity">
 
 ```ts
@@ -719,34 +770,39 @@ class Author {
 ```
 
 </TabItem>
-<TabItem value="entity-schema">
-
-```ts
-export const Author = new EntitySchema<IAuthor>({
-  name: 'Author',
-  properties: {
-    id: { type: Number, primary: true },
-    books: { kind: '1:m', entity: () => Book, mappedBy: 'author' },
-    favoriteBooks: { kind: '1:m', entity: () => Book, mappedBy: 'author', where: { favorite: true } },
-  },
-});
-```
-
-</TabItem>
 </Tabs>
 
 This works also for M:N relations. Note that if you want to declare more relations mapping to the same pivot table, you need to explicitly specify its name (or use the same pivot entity):
 
 <Tabs
 groupId="entity-def"
-defaultValue="define-entity"
+defaultValue="define-entity-class"
 values={[
+{label: 'defineEntity + class', value: 'define-entity-class'},
 {label: 'defineEntity', value: 'define-entity'},
 {label: 'reflect-metadata', value: 'reflect-metadata'},
 {label: 'ts-morph', value: 'ts-morph'},
-{label: 'EntitySchema', value: 'entity-schema'},
 ]
-}>
+}
+>
+  <TabItem value="define-entity-class">
+
+```ts
+const BookSchema = defineEntity({
+  name: 'Book',
+  properties: {
+    id: p.integer().primary(),
+    tags: () => p.manyToMany(BookTag),
+    popularTags: () => p.manyToMany(BookTag).pivotTable('book_tags').where({ popular: true }),
+  },
+});
+
+export class Book extends BookSchema.class {}
+BookSchema.setClass(Book);
+```
+
+  </TabItem>
+
 <TabItem value="define-entity">
 
 ```ts
@@ -798,20 +854,6 @@ class Book {
   popularTags = new Collection<BookTag>(this);
 
 }
-```
-
-</TabItem>
-<TabItem value="entity-schema">
-
-```ts
-export const Book = new EntitySchema<IBook>({
-  name: 'Book',
-  properties: {
-    id: { type: Number, primary: true },
-    tags: { kind: 'm:n', entity: () => BookTag },
-    popularTags: { kind: 'm:n', entity: () => BookTag, pivotTable: 'book_tags', where: { popular: true } },
-  },
-});
 ```
 
 </TabItem>

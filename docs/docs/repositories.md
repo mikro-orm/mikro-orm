@@ -50,14 +50,33 @@ And register the repository via the entity definition:
 
 <Tabs
 groupId="entity-def"
-defaultValue="define-entity"
+defaultValue="define-entity-class"
 values={[
+{label: 'defineEntity + class', value: 'define-entity-class'},
 {label: 'defineEntity', value: 'define-entity'},
 {label: 'reflect-metadata', value: 'reflect-metadata'},
 {label: 'ts-morph', value: 'ts-morph'},
-{label: 'EntitySchema', value: 'entity-schema'},
 ]
-}>
+}
+>
+  <TabItem value="define-entity-class">
+
+```ts
+const AuthorSchema = defineEntity({
+  name: 'Author',
+  repository: () => CustomAuthorRepository,
+  properties: {
+    id: p.integer().primary(),
+    // ...
+  },
+});
+
+export class Author extends AuthorSchema.class {}
+AuthorSchema.setClass(Author);
+```
+
+  </TabItem>
+
 <TabItem value="define-entity">
 
 ```ts
@@ -92,22 +111,6 @@ export class Author {
 ```
 
 </TabItem>
-<TabItem value="entity-schema">
-
-```ts
-export class Author {}
-
-export const AuthorSchema = new EntitySchema({
-  class: Author,
-  repository: () => CustomAuthorRepository,
-  properties: {
-    id: { type: 'number', primary: true },
-    // ...
-  },
-});
-```
-
-</TabItem>
 </Tabs>
 
 Note that you need to pass that repository reference inside a callback so you will not run into circular dependency issues when using entity references inside that repository.
@@ -120,14 +123,31 @@ To have the `em.getRepository()` method return correctly typed custom repository
 
 <Tabs
 groupId="entity-def"
-defaultValue="define-entity"
+defaultValue="define-entity-class"
 values={[
+{label: 'defineEntity + class', value: 'define-entity-class'},
 {label: 'defineEntity', value: 'define-entity'},
 {label: 'reflect-metadata', value: 'reflect-metadata'},
 {label: 'ts-morph', value: 'ts-morph'},
-{label: 'EntitySchema', value: 'entity-schema'},
 ]
-}>
+}
+>
+  <TabItem value="define-entity-class">
+
+```ts
+const AuthorSchema = defineEntity({
+  name: 'Author',
+  repository: () => AuthorRepository,
+  properties: {
+    id: p.integer().primary(),
+    // ...
+  },
+});
+
+const repo = em.getRepository(Author); // repo has type AuthorRepository```
+
+  </TabItem>
+
 <TabItem value="define-entity">
 
 ```ts
@@ -169,26 +189,6 @@ export class Author {
   [EntityRepositoryType]?: AuthorRepository;
 
 }
-
-const repo = em.getRepository(Author); // repo has type AuthorRepository
-```
-
-</TabItem>
-<TabItem value="entity-schema">
-
-```ts
-export class Author {
-  [EntityRepositoryType]?: AuthorRepository;
-}
-
-export const AuthorSchema = new EntitySchema({
-  class: Author,
-  repository: () => AuthorRepository,
-  properties: {
-    id: { type: 'number', primary: true },
-    // ...
-  },
-});
 
 const repo = em.getRepository(Author); // repo has type AuthorRepository
 ```
@@ -255,14 +255,32 @@ Register it the same way as any custom repository, via the entity definition:
 
 <Tabs
 groupId="entity-def"
-defaultValue="define-entity"
+defaultValue="define-entity-class"
 values={[
+{label: 'defineEntity + class', value: 'define-entity-class'},
 {label: 'defineEntity', value: 'define-entity'},
 {label: 'reflect-metadata', value: 'reflect-metadata'},
 {label: 'ts-morph', value: 'ts-morph'},
-{label: 'EntitySchema', value: 'entity-schema'},
 ]
-}>
+}
+>
+  <TabItem value="define-entity-class">
+
+```ts
+const AuthorSchema = defineEntity({
+  name: 'Author',
+  repository: () => AuthorRepository,
+  properties: {
+    id: p.integer().primary(),
+    // ...
+  },
+});
+
+// em.getRepository(Author) now returns AuthorRepository,
+// which has both BaseRepository methods and AuthorRepository methods.```
+
+  </TabItem>
+
 <TabItem value="define-entity">
 
 ```ts
@@ -312,27 +330,6 @@ export class Author {
 ```
 
 </TabItem>
-<TabItem value="entity-schema">
-
-```ts
-export class Author {
-  [EntityRepositoryType]?: AuthorRepository;
-}
-
-export const AuthorSchema = new EntitySchema({
-  class: Author,
-  repository: () => AuthorRepository,
-  properties: {
-    id: { type: 'number', primary: true },
-    // ...
-  },
-});
-
-// em.getRepository(Author) now returns AuthorRepository,
-// which has both BaseRepository methods and AuthorRepository methods.
-```
-
-</TabItem>
 </Tabs>
 
 Entities without a specific repository will still use the `BaseRepository` with its generic methods.
@@ -343,14 +340,32 @@ If you use a common base entity, you can set the `EntityRepositoryType` there so
 
 <Tabs
 groupId="entity-def"
-defaultValue="define-entity"
+defaultValue="define-entity-class"
 values={[
+{label: 'defineEntity + class', value: 'define-entity-class'},
 {label: 'defineEntity', value: 'define-entity'},
 {label: 'reflect-metadata', value: 'reflect-metadata'},
 {label: 'ts-morph', value: 'ts-morph'},
-{label: 'EntitySchema', value: 'entity-schema'},
 ]
-}>
+}
+>
+  <TabItem value="define-entity-class">
+
+```ts
+const BaseEntitySchema = defineEntity({
+  name: 'BaseEntity',
+  abstract: true,
+  properties: {
+    id: p.integer().primary(),
+  },
+});
+
+export class BaseEntity extends BaseEntitySchema.class {}
+BaseEntitySchema.setClass(BaseEntity);
+```
+
+  </TabItem>
+
 <TabItem value="define-entity">
 
 ```ts
@@ -395,23 +410,6 @@ export abstract class BaseEntity {
   id!: number;
 
 }
-```
-
-</TabItem>
-<TabItem value="entity-schema">
-
-```ts
-export abstract class BaseEntity {
-  [EntityRepositoryType]?: BaseRepository<this>;
-}
-
-export const BaseEntitySchema = new EntitySchema({
-  class: BaseEntity,
-  abstract: true,
-  properties: {
-    id: { type: 'number', primary: true },
-  },
-});
 ```
 
 </TabItem>

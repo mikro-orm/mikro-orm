@@ -43,14 +43,34 @@ Use the `Ref<T>` type and `ref: true` option to define a reference property:
 
 <Tabs
 groupId="entity-def"
-defaultValue="define-entity"
+defaultValue="define-entity-class"
 values={[
+{label: 'defineEntity + class', value: 'define-entity-class'},
 {label: 'defineEntity', value: 'define-entity'},
 {label: 'reflect-metadata', value: 'reflect-metadata'},
 {label: 'ts-morph', value: 'ts-morph'},
-{label: 'EntitySchema', value: 'entity-schema'},
 ]
-}>
+}
+>
+  <TabItem value="define-entity-class">
+
+```ts title="./entities/Book.ts"
+import { defineEntity, p } from '@mikro-orm/core';
+
+const BookSchema = defineEntity({
+  name: 'Book',
+  properties: {
+    id: p.integer().primary(),
+    author: p.manyToOne(() => Author).ref(),
+  },
+});
+
+export class Book extends BookSchema.class {}
+BookSchema.setClass(Book);
+```
+
+  </TabItem>
+
 <TabItem value="define-entity">
 
 ```ts title="./entities/Book.ts"
@@ -107,26 +127,6 @@ export class Book {
   }
 
 }
-```
-
-</TabItem>
-<TabItem value="entity-schema">
-
-```ts title="./entities/Book.ts"
-import { EntitySchema, Ref } from '@mikro-orm/core';
-
-export interface IBook {
-  id: number;
-  author: Ref<IAuthor>;
-}
-
-export const Book = new EntitySchema<IBook>({
-  name: 'Book',
-  properties: {
-    id: { type: Number, primary: true },
-    author: { entity: () => Author, ref: true },
-  },
-});
 ```
 
 </TabItem>
@@ -206,14 +206,35 @@ Given the following `User` entity:
 
 <Tabs
 groupId="entity-def"
-defaultValue="define-entity"
+defaultValue="define-entity-class"
 values={[
+{label: 'defineEntity + class', value: 'define-entity-class'},
 {label: 'defineEntity', value: 'define-entity'},
 {label: 'reflect-metadata', value: 'reflect-metadata'},
 {label: 'ts-morph', value: 'ts-morph'},
-{label: 'EntitySchema', value: 'entity-schema'},
 ]
-}>
+}
+>
+  <TabItem value="define-entity-class">
+
+```ts title="./entities/User.ts"
+import { defineEntity, p } from '@mikro-orm/core';
+
+const UserSchema = defineEntity({
+  name: 'User',
+  properties: {
+    id: p.integer().primary(),
+    identity: p.manyToOne(() => Identity).ref(),
+    friends: p.manyToMany(() => User),
+  },
+});
+
+export class User extends UserSchema.class {}
+UserSchema.setClass(User);
+```
+
+  </TabItem>
+
 <TabItem value="define-entity">
 
 ```ts title="./entities/User.ts"
@@ -277,28 +298,6 @@ export class User {
   }
 
 }
-```
-
-</TabItem>
-<TabItem value="entity-schema">
-
-```ts title="./entities/User.ts"
-import { EntitySchema, Collection, Ref } from '@mikro-orm/core';
-
-export interface IUser {
-  id: number;
-  identity: Ref<IIdentity>;
-  friends: Collection<IUser>;
-}
-
-export const User = new EntitySchema<IUser>({
-  name: 'User',
-  properties: {
-    id: { type: Number, primary: true },
-    identity: { entity: () => Identity, ref: true },
-    friends: { entity: () => User, kind: 'm:n' },
-  },
-});
 ```
 
 </TabItem>
@@ -391,14 +390,37 @@ You can create references inside entity constructors using `rel()`:
 
 <Tabs
 groupId="entity-def"
-defaultValue="define-entity"
+defaultValue="define-entity-class"
 values={[
+{label: 'defineEntity + class', value: 'define-entity-class'},
 {label: 'defineEntity', value: 'define-entity'},
 {label: 'reflect-metadata', value: 'reflect-metadata'},
 {label: 'ts-morph', value: 'ts-morph'},
-{label: 'EntitySchema', value: 'entity-schema'},
 ]
-}>
+}
+>
+  <TabItem value="define-entity-class">
+
+```ts title="./entities/Book.ts"
+import { defineEntity, p, rel } from '@mikro-orm/core';
+
+const BookSchema = defineEntity({
+  name: 'Book',
+  properties: {
+    id: p.integer().primary(),
+    author: p.manyToOne(() => Author).ref(),
+  },
+});
+
+// Usage: create book with author reference
+const book = em.create(Book, { author: rel(Author, authorId) });
+
+export class Book extends BookSchema.class {}
+BookSchema.setClass(Book);
+```
+
+  </TabItem>
+
 <TabItem value="define-entity">
 
 ```ts title="./entities/Book.ts"
@@ -461,29 +483,6 @@ export class Book {
 ```
 
 </TabItem>
-<TabItem value="entity-schema">
-
-```ts title="./entities/Book.ts"
-import { EntitySchema, Ref, rel } from '@mikro-orm/core';
-
-export interface IBook {
-  id: number;
-  author: Ref<IAuthor>;
-}
-
-export const Book = new EntitySchema<IBook>({
-  name: 'Book',
-  properties: {
-    id: { type: Number, primary: true },
-    author: { entity: () => Author, ref: true },
-  },
-});
-
-// Usage: create book with author reference
-const book = em.create(Book, { author: rel(Author, authorId) });
-```
-
-</TabItem>
 </Tabs>
 
 Another way is to use `toReference()` method available as part of the [`wrap()` helper](./wrap-helper.md):
@@ -506,14 +505,31 @@ MikroORM detects the PK property by checking for `_id`, `uuid`, or `id` in that 
 
 <Tabs
 groupId="entity-def"
-defaultValue="define-entity"
+defaultValue="define-entity-class"
 values={[
+{label: 'defineEntity + class', value: 'define-entity-class'},
 {label: 'defineEntity', value: 'define-entity'},
 {label: 'reflect-metadata', value: 'reflect-metadata'},
 {label: 'ts-morph', value: 'ts-morph'},
-{label: 'EntitySchema', value: 'entity-schema'},
 ]
-}>
+}
+>
+  <TabItem value="define-entity-class">
+
+```ts title="./entities/Author.ts"
+import { defineEntity, p, PrimaryKeyProp } from '@mikro-orm/core';
+
+const AuthorSchema = defineEntity({
+  name: 'Author',
+  properties: {
+    myPrimaryKey: p.integer().primary(),
+  },
+});
+
+// PrimaryKeyProp is inferred automatically with defineEntity```
+
+  </TabItem>
+
 <TabItem value="define-entity">
 
 ```ts title="./entities/Author.ts"
@@ -564,25 +580,6 @@ export class Author {
 ```
 
 </TabItem>
-<TabItem value="entity-schema">
-
-```ts title="./entities/Author.ts"
-import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
-
-export interface IAuthor {
-  myPrimaryKey: number;
-  [PrimaryKeyProp]?: 'myPrimaryKey';
-}
-
-export const Author = new EntitySchema<IAuthor>({
-  name: 'Author',
-  properties: {
-    myPrimaryKey: { type: Number, primary: true },
-  },
-});
-```
-
-</TabItem>
 </Tabs>
 
 ```ts
@@ -595,14 +592,35 @@ For MongoDB, both `id` (string) and `_id` (ObjectId) are available:
 
 <Tabs
 groupId="entity-def"
-defaultValue="define-entity"
+defaultValue="define-entity-class"
 values={[
+{label: 'defineEntity + class', value: 'define-entity-class'},
 {label: 'defineEntity', value: 'define-entity'},
 {label: 'reflect-metadata', value: 'reflect-metadata'},
 {label: 'ts-morph', value: 'ts-morph'},
-{label: 'EntitySchema', value: 'entity-schema'},
 ]
-}>
+}
+>
+  <TabItem value="define-entity-class">
+
+```ts title="./entities/Book.ts"
+import { defineEntity, p } from '@mikro-orm/core';
+
+const BookSchema = defineEntity({
+  name: 'Book',
+  properties: {
+    _id: p.type(ObjectId).primary(),
+    id: p.string().serializedPrimaryKey(),
+    author: p.manyToOne(() => Author).ref(),
+  },
+});
+
+export class Book extends BookSchema.class {}
+BookSchema.setClass(Book);
+```
+
+  </TabItem>
+
 <TabItem value="define-entity">
 
 ```ts title="./entities/Book.ts"
@@ -658,28 +676,6 @@ export class Book {
   author!: Ref<Author>;
 
 }
-```
-
-</TabItem>
-<TabItem value="entity-schema">
-
-```ts title="./entities/Book.ts"
-import { EntitySchema, Ref } from '@mikro-orm/core';
-
-export interface IBook {
-  _id: ObjectId;
-  id: string;
-  author: Ref<IAuthor>;
-}
-
-export const Book = new EntitySchema<IBook>({
-  name: 'Book',
-  properties: {
-    _id: { type: 'ObjectId', primary: true },
-    id: { type: String, serializedPrimaryKey: true },
-    author: { entity: () => Author, ref: true },
-  },
-});
 ```
 
 </TabItem>

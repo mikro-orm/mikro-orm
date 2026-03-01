@@ -130,14 +130,46 @@ Reference attached databases using the `schema` option:
 
 <Tabs
   groupId="entity-def"
-  defaultValue="reflect-metadata"
+  defaultValue="define-entity-class"
   values={[
+    {label: 'defineEntity + class', value: 'define-entity-class'},
     {label: 'defineEntity', value: 'define-entity'},
     {label: 'reflect-metadata', value: 'reflect-metadata'},
     {label: 'ts-morph', value: 'ts-morph'},
-    {label: 'EntitySchema', value: 'entity-schema'},
-  ]
-  }>
+]
+  }
+>
+  <TabItem value="define-entity-class">
+
+```ts
+import { defineEntity, p } from '@mikro-orm/core';
+
+// Entity in the main database (schema is optional for main)
+const AuthorSchema = defineEntity({
+  name: 'Author',
+  schema: 'main',
+  properties: {
+    id: p.number().primary(),
+    name: p.string(),
+  },
+});
+
+// Entity in an attached database
+export const UserProfile = defineEntity({
+  name: 'UserProfile',
+  schema: 'users_db',
+  properties: {
+    id: p.number().primary(),
+    username: p.string(),
+  },
+});
+
+export class Author extends AuthorSchema.class {}
+AuthorSchema.setClass(Author);
+```
+
+  </TabItem>
+
   <TabItem value="define-entity">
 
 ```ts
@@ -220,41 +252,6 @@ class UserProfile {
   username!: string;
 
 }
-```
-
-  </TabItem>
-  <TabItem value="entity-schema">
-
-```ts
-export interface IAuthor {
-  id: number;
-  name: string;
-}
-
-export interface IUserProfile {
-  id: number;
-  username: string;
-}
-
-// Entity in the main database (schema is optional for main)
-export const Author = new EntitySchema<IAuthor>({
-  name: 'Author',
-  schema: 'main',
-  properties: {
-    id: { type: 'number', primary: true },
-    name: { type: 'string' },
-  },
-});
-
-// Entity in an attached database
-export const UserProfile = new EntitySchema<IUserProfile>({
-  name: 'UserProfile',
-  schema: 'users_db',
-  properties: {
-    id: { type: 'number', primary: true },
-    username: { type: 'string' },
-  },
-});
 ```
 
   </TabItem>

@@ -17,13 +17,92 @@ Mapped superclasses, just as regular, non-mapped classes, can appear in the midd
 
 <Tabs
   groupId="entity-def"
-  defaultValue="define-entity"
+  defaultValue="define-entity-class"
   values={[
+    {label: 'defineEntity + class', value: 'define-entity-class'},
     {label: 'defineEntity', value: 'define-entity'},
     {label: 'decorators', value: 'decorators'},
-    {label: 'EntitySchema', value: 'entity-schema'},
-  ]
-}>
+]
+}
+>
+  <TabItem value="define-entity-class">
+
+```ts
+const p = defineEntity.properties;
+
+// mapped superclass (abstract entity that won't have its own table)
+const PersonSchema = defineEntity({
+  name: 'Person',
+  abstract: true,
+  properties: {
+    mapped1: p.number(),
+    mapped2: p.string(),
+    toothbrush: () => p.oneToOne(Toothbrush),
+  },
+});
+
+export const Employee = defineEntity({
+  name: 'Employee',
+  extends: Person,
+  properties: {
+    id: p.number().primary(),
+    name: p.string(),
+  },
+});
+
+export const Toothbrush = defineEntity({
+  name: 'Toothbrush',
+  properties: {
+    id: p.number().primary(),
+    // ... more fields
+  },
+});
+
+export class Person extends PersonSchema.class {}
+PersonSchema.setClass(Person);
+```
+
+  </TabItem>
+
+  <TabItem value="define-entity">
+
+```ts
+const p = defineEntity.properties;
+
+// mapped superclass (abstract entity that won't have its own table)
+export const Person = defineEntity({
+  name: 'Person',
+  abstract: true,
+  properties: {
+    mapped1: p.number(),
+    mapped2: p.string(),
+    toothbrush: () => p.oneToOne(Toothbrush),
+  },
+});
+
+export const Employee = defineEntity({
+  name: 'Employee',
+  extends: Person,
+  properties: {
+    id: p.number().primary(),
+    name: p.string(),
+  },
+});
+
+export const Toothbrush = defineEntity({
+  name: 'Toothbrush',
+  properties: {
+    id: p.number().primary(),
+    // ... more fields
+  },
+});
+
+export type Person = InferEntity<typeof Person>;
+export type Employee = InferEntity<typeof Employee>;
+export type Toothbrush = InferEntity<typeof Toothbrush>;
+```
+
+  </TabItem>
   <TabItem value="decorators">
 
 ```ts
@@ -68,78 +147,6 @@ export class Toothbrush {
 ```
 
   </TabItem>
-  <TabItem value="define-entity">
-
-```ts
-const p = defineEntity.properties;
-
-// mapped superclass (abstract entity that won't have its own table)
-export const Person = defineEntity({
-  name: 'Person',
-  abstract: true,
-  properties: {
-    mapped1: p.number(),
-    mapped2: p.string(),
-    toothbrush: () => p.oneToOne(Toothbrush),
-  },
-});
-
-export const Employee = defineEntity({
-  name: 'Employee',
-  extends: Person,
-  properties: {
-    id: p.number().primary(),
-    name: p.string(),
-  },
-});
-
-export const Toothbrush = defineEntity({
-  name: 'Toothbrush',
-  properties: {
-    id: p.number().primary(),
-    // ... more fields
-  },
-});
-
-export type Person = InferEntity<typeof Person>;
-export type Employee = InferEntity<typeof Employee>;
-export type Toothbrush = InferEntity<typeof Toothbrush>;
-```
-
-  </TabItem>
-  <TabItem value="entity-schema">
-
-```ts
-// mapped superclass (abstract entity that won't have its own table)
-export const Person = new EntitySchema({
-  name: 'Person',
-  abstract: true,
-  properties: {
-    mapped1: { type: 'number' },
-    mapped2: { type: 'string' },
-    toothbrush: { kind: '1:1', entity: () => Toothbrush },
-  },
-});
-
-export const Employee = new EntitySchema({
-  name: 'Employee',
-  extends: Person,
-  properties: {
-    id: { type: 'number', primary: true },
-    name: { type: 'string' },
-  },
-});
-
-export const Toothbrush = new EntitySchema({
-  name: 'Toothbrush',
-  properties: {
-    id: { type: 'number', primary: true },
-    // ... more fields
-  },
-});
-```
-
-  </TabItem>
 </Tabs>
 
 The DDL for the corresponding database schema would look something like this (this is for SQLite):
@@ -163,31 +170,40 @@ As you can see from this DDL snippet, there is only a single table for the entit
 
 <Tabs
   groupId="entity-def"
-  defaultValue="define-entity"
+  defaultValue="define-entity-class"
   values={[
+    {label: 'defineEntity + class', value: 'define-entity-class'},
     {label: 'defineEntity', value: 'define-entity'},
     {label: 'decorators', value: 'decorators'},
-    {label: 'EntitySchema', value: 'entity-schema'},
-  ]
-}>
-  <TabItem value="decorators">
+]
+}
+>
+  <TabItem value="define-entity-class">
 
 ```ts
-@Entity({
+const PersonSchema = defineEntity({
+  name: 'Person',
   discriminatorColumn: 'discr',
   discriminatorMap: { person: 'Person', employee: 'Employee' },
-})
-export class Person {
-  // ...
-}
+  properties: {
+    // ...
+  },
+});
 
-@Entity()
-export class Employee extends Person {
-  // ...
-}
+export const Employee = defineEntity({
+  name: 'Employee',
+  extends: Person,
+  properties: {
+    // ...
+  },
+});
+
+export class Person extends PersonSchema.class {}
+PersonSchema.setClass(Person);
 ```
 
   </TabItem>
+
   <TabItem value="define-entity">
 
 ```ts
@@ -210,25 +226,21 @@ export const Employee = defineEntity({
 ```
 
   </TabItem>
-  <TabItem value="entity-schema">
+  <TabItem value="decorators">
 
 ```ts
-export const Person = new EntitySchema({
-  name: 'Person',
+@Entity({
   discriminatorColumn: 'discr',
   discriminatorMap: { person: 'Person', employee: 'Employee' },
-  properties: {
-    // ...
-  },
-});
+})
+export class Person {
+  // ...
+}
 
-export const Employee = new EntitySchema({
-  name: 'Employee',
-  extends: Person,
-  properties: {
-    // ...
-  },
-});
+@Entity()
+export class Employee extends Person {
+  // ...
+}
 ```
 
   </TabItem>
@@ -248,33 +260,41 @@ As noted above, the discriminator map can be auto-generated. In that case, you m
 
 <Tabs
   groupId="entity-def"
-  defaultValue="define-entity"
+  defaultValue="define-entity-class"
   values={[
+    {label: 'defineEntity + class', value: 'define-entity-class'},
     {label: 'defineEntity', value: 'define-entity'},
     {label: 'decorators', value: 'decorators'},
-    {label: 'EntitySchema', value: 'entity-schema'},
-  ]
-}>
-  <TabItem value="decorators">
+]
+}
+>
+  <TabItem value="define-entity-class">
 
 ```ts
-@Entity({
+const PersonSchema = defineEntity({
+  name: 'Person',
   discriminatorColumn: 'discr',
   discriminatorValue: 'person',
-})
-export class Person {
-  // ...
-}
+  properties: {
+    // ...
+  },
+});
 
-@Entity({
+export const Employee = defineEntity({
+  name: 'Employee',
+  extends: Person,
   discriminatorValue: 'employee',
-})
-export class Employee extends Person {
-  // ...
-}
+  properties: {
+    // ...
+  },
+});
+
+export class Person extends PersonSchema.class {}
+PersonSchema.setClass(Person);
 ```
 
   </TabItem>
+
   <TabItem value="define-entity">
 
 ```ts
@@ -298,26 +318,23 @@ export const Employee = defineEntity({
 ```
 
   </TabItem>
-  <TabItem value="entity-schema">
+  <TabItem value="decorators">
 
 ```ts
-export const Person = new EntitySchema({
-  name: 'Person',
+@Entity({
   discriminatorColumn: 'discr',
   discriminatorValue: 'person',
-  properties: {
-    // ...
-  },
-});
+})
+export class Person {
+  // ...
+}
 
-export const Employee = new EntitySchema({
-  name: 'Employee',
-  extends: Person,
+@Entity({
   discriminatorValue: 'employee',
-  properties: {
-    // ...
-  },
-});
+})
+export class Employee extends Person {
+  // ...
+}
 ```
 
   </TabItem>
@@ -336,39 +353,49 @@ Following example shows how you can define the discriminator explicitly, as well
 
 <Tabs
   groupId="entity-def"
-  defaultValue="define-entity"
+  defaultValue="define-entity-class"
   values={[
+    {label: 'defineEntity + class', value: 'define-entity-class'},
     {label: 'defineEntity', value: 'define-entity'},
     {label: 'decorators', value: 'decorators'},
-    {label: 'EntitySchema', value: 'entity-schema'},
-  ]
-}>
-  <TabItem value="decorators">
+]
+}
+>
+  <TabItem value="define-entity-class">
 
 ```ts
-@Entity({
+const BasePersonSchema = defineEntity({
+  name: 'BasePerson',
+  abstract: true,
   discriminatorColumn: 'type',
   discriminatorMap: { person: 'Person', employee: 'Employee' },
-})
-export abstract class BasePerson {
+  properties: {
+    type: p.enum(['person', 'employee'] as const),
+  },
+});
 
-  @Enum()
-  type!: 'person' | 'employee';
+export const Person = defineEntity({
+  name: 'Person',
+  extends: BasePerson,
+  properties: {
+    // ...
+  },
+});
 
-}
+export const Employee = defineEntity({
+  name: 'Employee',
+  extends: Person,
+  properties: {
+    // ...
+  },
+});
 
-@Entity()
-export class Person extends BasePerson {
-  // ...
-}
-
-@Entity()
-export class Employee extends Person {
-  // ...
-}
+export class BasePerson extends BasePersonSchema.class {}
+BasePersonSchema.setClass(BasePerson);
 ```
 
   </TabItem>
+
   <TabItem value="define-entity">
 
 ```ts
@@ -400,34 +427,29 @@ export const Employee = defineEntity({
 ```
 
   </TabItem>
-  <TabItem value="entity-schema">
+  <TabItem value="decorators">
 
 ```ts
-export const BasePerson = new EntitySchema({
-  name: 'BasePerson',
-  abstract: true,
+@Entity({
   discriminatorColumn: 'type',
   discriminatorMap: { person: 'Person', employee: 'Employee' },
-  properties: {
-    type: { enum: true, items: ['person', 'employee'] },
-  },
-});
+})
+export abstract class BasePerson {
 
-export const Person = new EntitySchema({
-  name: 'Person',
-  extends: BasePerson,
-  properties: {
-    // ...
-  },
-});
+  @Enum()
+  type!: 'person' | 'employee';
 
-export const Employee = new EntitySchema({
-  name: 'Employee',
-  extends: Person,
-  properties: {
-    // ...
-  },
-});
+}
+
+@Entity()
+export class Person extends BasePerson {
+  // ...
+}
+
+@Entity()
+export class Employee extends Person {
+  // ...
+}
 ```
 
   </TabItem>
@@ -437,13 +459,82 @@ If you want to use `discriminatorValue` with abstract entities, you need to mark
 
 <Tabs
   groupId="entity-def"
-  defaultValue="define-entity"
+  defaultValue="define-entity-class"
   values={[
+    {label: 'defineEntity + class', value: 'define-entity-class'},
     {label: 'defineEntity', value: 'define-entity'},
     {label: 'decorators', value: 'decorators'},
-    {label: 'EntitySchema', value: 'entity-schema'},
-  ]
-}>
+]
+}
+>
+  <TabItem value="define-entity-class">
+
+```ts
+const BasePersonSchema = defineEntity({
+  name: 'BasePerson',
+  abstract: true,
+  discriminatorColumn: 'type',
+  properties: {
+    type: p.enum(['person', 'employee'] as const),
+  },
+});
+
+export const Person = defineEntity({
+  name: 'Person',
+  extends: BasePerson,
+  discriminatorValue: 'person',
+  properties: {
+    // ...
+  },
+});
+
+export const Employee = defineEntity({
+  name: 'Employee',
+  extends: Person,
+  discriminatorValue: 'employee',
+  properties: {
+    // ...
+  },
+});
+
+export class BasePerson extends BasePersonSchema.class {}
+BasePersonSchema.setClass(BasePerson);
+```
+
+  </TabItem>
+
+  <TabItem value="define-entity">
+
+```ts
+export const BasePerson = defineEntity({
+  name: 'BasePerson',
+  abstract: true,
+  discriminatorColumn: 'type',
+  properties: {
+    type: p.enum(['person', 'employee'] as const),
+  },
+});
+
+export const Person = defineEntity({
+  name: 'Person',
+  extends: BasePerson,
+  discriminatorValue: 'person',
+  properties: {
+    // ...
+  },
+});
+
+export const Employee = defineEntity({
+  name: 'Employee',
+  extends: Person,
+  discriminatorValue: 'employee',
+  properties: {
+    // ...
+  },
+});
+```
+
+  </TabItem>
   <TabItem value="decorators">
 
 ```ts
@@ -467,70 +558,6 @@ export class Person extends BasePerson {
 export class Employee extends Person {
   // ...
 }
-```
-
-  </TabItem>
-  <TabItem value="define-entity">
-
-```ts
-export const BasePerson = defineEntity({
-  name: 'BasePerson',
-  abstract: true,
-  discriminatorColumn: 'type',
-  properties: {
-    type: p.enum(['person', 'employee'] as const),
-  },
-});
-
-export const Person = defineEntity({
-  name: 'Person',
-  extends: BasePerson,
-  discriminatorValue: 'person',
-  properties: {
-    // ...
-  },
-});
-
-export const Employee = defineEntity({
-  name: 'Employee',
-  extends: Person,
-  discriminatorValue: 'employee',
-  properties: {
-    // ...
-  },
-});
-```
-
-  </TabItem>
-  <TabItem value="entity-schema">
-
-```ts
-export const BasePerson = new EntitySchema({
-  name: 'BasePerson',
-  abstract: true,
-  discriminatorColumn: 'type',
-  properties: {
-    type: { enum: true, items: ['person', 'employee'] },
-  },
-});
-
-export const Person = new EntitySchema({
-  name: 'Person',
-  extends: BasePerson,
-  discriminatorValue: 'person',
-  properties: {
-    // ...
-  },
-});
-
-export const Employee = new EntitySchema({
-  name: 'Employee',
-  extends: Person,
-  discriminatorValue: 'employee',
-  properties: {
-    // ...
-  },
-});
 ```
 
   </TabItem>
@@ -576,45 +603,49 @@ Use `inheritance: 'tpt'` on the root entity of the hierarchy:
 
 <Tabs
   groupId="entity-def"
-  defaultValue="define-entity"
+  defaultValue="define-entity-class"
   values={[
+    {label: 'defineEntity + class', value: 'define-entity-class'},
     {label: 'defineEntity', value: 'define-entity'},
     {label: 'decorators', value: 'decorators'},
-    {label: 'EntitySchema', value: 'entity-schema'},
-  ]
-}>
-  <TabItem value="decorators">
+]
+}
+>
+  <TabItem value="define-entity-class">
 
 ```ts
-@Entity({ inheritance: 'tpt' })
-export abstract class Person {
+const PersonSchema = defineEntity({
+  name: 'Person',
+  abstract: true,
+  inheritance: 'tpt',
+  properties: {
+    id: p.number().primary(),
+    name: p.string(),
+  },
+});
 
-  @PrimaryKey()
-  id!: number;
+export const Employee = defineEntity({
+  name: 'Employee',
+  extends: Person,
+  properties: {
+    department: p.string(),
+  },
+});
 
-  @Property()
-  name!: string;
+export const Customer = defineEntity({
+  name: 'Customer',
+  extends: Person,
+  properties: {
+    loyaltyPoints: p.number(),
+  },
+});
 
-}
-
-@Entity()
-export class Employee extends Person {
-
-  @Property()
-  department!: string;
-
-}
-
-@Entity()
-export class Customer extends Person {
-
-  @Property()
-  loyaltyPoints!: number;
-
-}
+export class Person extends PersonSchema.class {}
+PersonSchema.setClass(Person);
 ```
 
   </TabItem>
+
   <TabItem value="define-entity">
 
 ```ts
@@ -646,34 +677,35 @@ export const Customer = defineEntity({
 ```
 
   </TabItem>
-  <TabItem value="entity-schema">
+  <TabItem value="decorators">
 
 ```ts
-export const Person = new EntitySchema({
-  name: 'Person',
-  abstract: true,
-  inheritance: 'tpt',
-  properties: {
-    id: { type: 'number', primary: true },
-    name: { type: 'string' },
-  },
-});
+@Entity({ inheritance: 'tpt' })
+export abstract class Person {
 
-export const Employee = new EntitySchema({
-  name: 'Employee',
-  extends: Person,
-  properties: {
-    department: { type: 'string' },
-  },
-});
+  @PrimaryKey()
+  id!: number;
 
-export const Customer = new EntitySchema({
-  name: 'Customer',
-  extends: Person,
-  properties: {
-    loyaltyPoints: { type: 'number' },
-  },
-});
+  @Property()
+  name!: string;
+
+}
+
+@Entity()
+export class Employee extends Person {
+
+  @Property()
+  department!: string;
+
+}
+
+@Entity()
+export class Customer extends Person {
+
+  @Property()
+  loyaltyPoints!: number;
+
+}
 ```
 
   </TabItem>
@@ -761,39 +793,49 @@ TPT supports deep inheritance hierarchies. Each level adds another table and joi
 
 <Tabs
   groupId="entity-def"
-  defaultValue="define-entity"
+  defaultValue="define-entity-class"
   values={[
+    {label: 'defineEntity + class', value: 'define-entity-class'},
     {label: 'defineEntity', value: 'define-entity'},
     {label: 'decorators', value: 'decorators'},
-    {label: 'EntitySchema', value: 'entity-schema'},
-  ]
-}>
-  <TabItem value="decorators">
+]
+}
+>
+  <TabItem value="define-entity-class">
 
 ```ts
-@Entity({ inheritance: 'tpt' })
-export abstract class Person {
-  @PrimaryKey()
-  id!: number;
+const PersonSchema = defineEntity({
+  name: 'Person',
+  abstract: true,
+  inheritance: 'tpt',
+  properties: {
+    id: p.number().primary(),
+    name: p.string(),
+  },
+});
 
-  @Property()
-  name!: string;
-}
+export const Employee = defineEntity({
+  name: 'Employee',
+  extends: Person,
+  properties: {
+    department: p.string(),
+  },
+});
 
-@Entity()
-export class Employee extends Person {
-  @Property()
-  department!: string;
-}
+export const Manager = defineEntity({
+  name: 'Manager',
+  extends: Employee,
+  properties: {
+    teamSize: p.number(),
+  },
+});
 
-@Entity()
-export class Manager extends Employee {
-  @Property()
-  teamSize!: number;
-}
+export class Person extends PersonSchema.class {}
+PersonSchema.setClass(Person);
 ```
 
   </TabItem>
+
   <TabItem value="define-entity">
 
 ```ts
@@ -825,34 +867,29 @@ export const Manager = defineEntity({
 ```
 
   </TabItem>
-  <TabItem value="entity-schema">
+  <TabItem value="decorators">
 
 ```ts
-export const Person = new EntitySchema({
-  name: 'Person',
-  abstract: true,
-  inheritance: 'tpt',
-  properties: {
-    id: { type: 'number', primary: true },
-    name: { type: 'string' },
-  },
-});
+@Entity({ inheritance: 'tpt' })
+export abstract class Person {
+  @PrimaryKey()
+  id!: number;
 
-export const Employee = new EntitySchema({
-  name: 'Employee',
-  extends: Person,
-  properties: {
-    department: { type: 'string' },
-  },
-});
+  @Property()
+  name!: string;
+}
 
-export const Manager = new EntitySchema({
-  name: 'Manager',
-  extends: Employee,
-  properties: {
-    teamSize: { type: 'number' },
-  },
-});
+@Entity()
+export class Employee extends Person {
+  @Property()
+  department!: string;
+}
+
+@Entity()
+export class Manager extends Employee {
+  @Property()
+  teamSize!: number;
+}
 ```
 
   </TabItem>

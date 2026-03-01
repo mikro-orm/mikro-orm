@@ -17,18 +17,22 @@ To define a virtual entity, provide an `expression`, either as a string (SQL que
 
 <Tabs
   groupId="entity-def"
-  defaultValue="reflect-metadata"
+  defaultValue="define-entity-class"
   values={[
+    {label: 'defineEntity + class', value: 'define-entity-class'},
+    {label: 'defineEntity', value: 'define-entity'},
     {label: 'reflect-metadata', value: 'reflect-metadata'},
     {label: 'ts-morph', value: 'ts-morph'},
-    {label: 'defineEntity', value: 'define-entity'},
-    {label: 'EntitySchema', value: 'entity-schema'},
-  ]
-  }>
-  <TabItem value="reflect-metadata">
+]
+  }
+>
+  <TabItem value="define-entity-class">
 
 ```ts title="./entities/BookWithAuthor.ts"
-@Entity({
+import { defineEntity, p } from '@mikro-orm/core';
+
+const BookWithAuthorSchema = defineEntity({
+  name: 'BookWithAuthor',
   expression: `
     select b.title, a.name as author_name,
     (
@@ -41,56 +45,20 @@ To define a virtual entity, provide an `expression`, either as a string (SQL que
     ) as tags
     from author a
     group by a.id
-  `
-})
-export class BookWithAuthor {
+  `,
+  properties: {
+    title: p.string(),
+    authorName: p.string(),
+    tags: p.type('string[]').$type<string[]>(),
+  },
+});
 
-  @Property()
-  title!: string;
-
-  @Property()
-  authorName!: string;
-
-  @Property()
-  tags!: string[];
-
-}
+export class BookWithAuthor extends BookWithAuthorSchema.class {}
+BookWithAuthorSchema.setClass(BookWithAuthor);
 ```
 
   </TabItem>
-  <TabItem value="ts-morph">
 
-```ts title="./entities/BookWithAuthor.ts"
-@Entity({
-  expression: `
-    select b.title, a.name as author_name,
-    (
-      select group_concat(distinct t.name)
-      from book b 
-      join tags_ordered bt on bt.book_id = b.id
-      join book_tag t on t.id = bt.book_tag_id
-      where b.author_id = a.id
-      group by b.author_id
-    ) as tags
-    from author a
-    group by a.id
-  `
-})
-export class BookWithAuthor {
-
-  @Property()
-  title!: string;
-
-  @Property()
-  authorName!: string;
-
-  @Property()
-  tags!: string[];
-
-}
-```
-
-  </TabItem>
   <TabItem value="define-entity">
 
 ```ts title="./entities/BookWithAuthor.ts"
@@ -122,17 +90,10 @@ export type IBookWithAuthor = InferEntity<typeof BookWithAuthor>;
 ```
 
   </TabItem>
-  <TabItem value="entity-schema">
+  <TabItem value="reflect-metadata">
 
 ```ts title="./entities/BookWithAuthor.ts"
-export interface IBookWithAuthor{
-  title: string;
-  authorName: string;
-  tags: string[];
-}
-
-export const BookWithAuthor = new EntitySchema<IBookWithAuthor>({
-  name: 'BookWithAuthor',
+@Entity({
   expression: `
     select b.title, a.name as author_name,
     (
@@ -145,13 +106,53 @@ export const BookWithAuthor = new EntitySchema<IBookWithAuthor>({
     ) as tags
     from author a
     group by a.id
-  `,
-  properties: {
-    title: { type: 'string' },
-    authorName: { type: 'string' },
-    tags: { type: 'string[]' },
-  },
-});
+  `
+})
+export class BookWithAuthor {
+
+  @Property()
+  title!: string;
+
+  @Property()
+  authorName!: string;
+
+  @Property()
+  tags!: string[];
+
+}
+```
+
+  </TabItem>
+  <TabItem value="ts-morph">
+
+```ts title="./entities/BookWithAuthor.ts"
+@Entity({
+  expression: `
+    select b.title, a.name as author_name,
+    (
+      select group_concat(distinct t.name)
+      from book b 
+      join tags_ordered bt on bt.book_id = b.id
+      join book_tag t on t.id = bt.book_tag_id
+      where b.author_id = a.id
+      group by b.author_id
+    ) as tags
+    from author a
+    group by a.id
+  `
+})
+export class BookWithAuthor {
+
+  @Property()
+  title!: string;
+
+  @Property()
+  authorName!: string;
+
+  @Property()
+  tags!: string[];
+
+}
 ```
 
   </TabItem>
@@ -161,14 +162,61 @@ Or as a callback:
 
 <Tabs
   groupId="entity-def"
-  defaultValue="reflect-metadata"
+  defaultValue="define-entity-class"
   values={[
+    {label: 'defineEntity + class', value: 'define-entity-class'},
+    {label: 'defineEntity', value: 'define-entity'},
     {label: 'reflect-metadata', value: 'reflect-metadata'},
     {label: 'ts-morph', value: 'ts-morph'},
-    {label: 'defineEntity', value: 'define-entity'},
-    {label: 'EntitySchema', value: 'entity-schema'},
-  ]
-  }>
+]
+  }
+>
+  <TabItem value="define-entity-class">
+
+```ts title="./entities/BookWithAuthor.ts"
+const BookWithAuthorSchema = defineEntity({
+  name: 'BookWithAuthor',
+  expression: (em: EntityManager) => {
+    return em.createQueryBuilder(Book, 'b')
+      .select(['b.title', 'a.name as author_name', 'group_concat(t.name) as tags'])
+      .join('b.author', 'a')
+      .join('b.tags', 't')
+      .groupBy('b.id');
+  },
+  properties: {
+    title: p.string(),
+    authorName: p.string(),
+    tags: p.type('string[]').$type<string[]>(),
+  },
+});
+
+export class BookWithAuthor extends BookWithAuthorSchema.class {}
+BookWithAuthorSchema.setClass(BookWithAuthor);
+```
+
+  </TabItem>
+
+  <TabItem value="define-entity">
+
+```ts title="./entities/BookWithAuthor.ts"
+export const BookWithAuthor = defineEntity({
+  name: 'BookWithAuthor',
+  expression: (em: EntityManager) => {
+    return em.createQueryBuilder(Book, 'b')
+      .select(['b.title', 'a.name as author_name', 'group_concat(t.name) as tags'])
+      .join('b.author', 'a')
+      .join('b.tags', 't')
+      .groupBy('b.id');
+  },
+  properties: {
+    title: p.string(),
+    authorName: p.string(),
+    tags: p.type('string[]').$type<string[]>(),
+  },
+});
+```
+
+  </TabItem>
   <TabItem value="reflect-metadata">
 
 ```ts title="./entities/BookWithAuthor.ts"
@@ -220,54 +268,6 @@ export class BookWithAuthor {
   tags!: string[];
 
 }
-```
-
-  </TabItem>
-  <TabItem value="define-entity">
-
-```ts title="./entities/BookWithAuthor.ts"
-export const BookWithAuthor = defineEntity({
-  name: 'BookWithAuthor',
-  expression: (em: EntityManager) => {
-    return em.createQueryBuilder(Book, 'b')
-      .select(['b.title', 'a.name as author_name', 'group_concat(t.name) as tags'])
-      .join('b.author', 'a')
-      .join('b.tags', 't')
-      .groupBy('b.id');
-  },
-  properties: {
-    title: p.string(),
-    authorName: p.string(),
-    tags: p.type('string[]').$type<string[]>(),
-  },
-});
-```
-
-  </TabItem>
-  <TabItem value="entity-schema">
-
-```ts title="./entities/BookWithAuthor.ts"
-export interface IBookWithAuthor{
-  title: string;
-  authorName: string;
-  tags: string[];
-}
-
-export const BookWithAuthor = new EntitySchema<IBookWithAuthor>({
-  name: 'BookWithAuthor',
-  expression: (em: EntityManager) => {
-    return em.createQueryBuilder(Book, 'b')
-      .select(['b.title', 'a.name as author_name', 'group_concat(t.name) as tags'])
-      .join('b.author', 'a')
-      .join('b.tags', 't')
-      .groupBy('b.id');
-  },
-  properties: {
-    title: { type: 'string' },
-    authorName: { type: 'string' },
-    tags: { type: 'string[]' },
-  },
-});
 ```
 
   </TabItem>

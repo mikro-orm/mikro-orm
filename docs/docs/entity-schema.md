@@ -5,180 +5,102 @@ title: Defining Entities via EntitySchema
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-With `EntitySchema` helper you define the schema programmatically.
-
-```ts title="./entities/Book.ts"
-export interface Book extends CustomBaseEntity {
-  title: string;
-  author: Author;
-  publisher: Publisher;
-  tags: Collection<BookTag>;
-}
-
-// The second type argument is optional, and should be used only with custom
-// base entities, not with the `BaseEntity` class exported from `@mikro-orm/core`.
-export const BookSchema = new EntitySchema<Book, CustomBaseEntity>({
-  // name should be used only with interfaces
-  name: 'Book',
-  // if we use actual class, we need this instead:
-  // class: Book,
-  extends: CustomBaseEntitySchema, // only if we extend custom base entity
-  properties: {
-    title: { type: 'string' },
-    author: { kind: 'm:1', entity: () => Author, inversedBy: 'books' },
-    publisher: { kind: 'm:1', entity: () => Publisher, inversedBy: 'books' },
-    tags: { kind: 'm:n', entity: () => BookTag, inversedBy: 'books', fixedOrder: true },
-  },
-});
-```
-
-When creating new entity instances, you will need to use `em.create()` method that will create instance of internally created class.
-
-```ts
-// instance of internal Book class
-const book = em.create(BookSchema, {});
-await em.flush();
-```
-
-Alternatively, you can use `EntitySchema.new` method, which will call the internal class constructor directly.
-
-```ts
-// instance of internal Book class
-const book = BookSchema.new();
-await em.persist(book).flush(); // `em.persist()` required as opposed to em.create()
-```
-
-> Using this approach, metadata caching is automatically disabled as it is unnecessary.
-
-## Using custom entity classes
-
-You can optionally use custom class for entity instances.
-
-```ts title="./entities/Author.ts"
-export class Author extends CustomBaseEntity {
-  name: string;
-  email: string;
-  age?: number;
-  termsAccepted?: boolean;
-  identities?: string[];
-  born?: string;
-  books = new Collection<Book>(this);
-  favouriteBook?: Book;
-  version?: number;
-
-  constructor(name: string, email: string) {
-    super();
-    this.name = name;
-    this.email = email;
-  }
-}
-
-export const AuthorSchema = new EntitySchema({
-  class: Author,
-  extends: CustomBaseEntitySchema,
-  properties: {
-    name: { type: 'string' },
-    email: { type: 'string', unique: true },
-    age: { type: 'number', nullable: true },
-    termsAccepted: { type: 'boolean', default: 0, onCreate: () => false },
-    identities: { type: 'string[]', nullable: true },
-    born: { type: DateType, nullable: true, length: 3 },
-    books: { kind: '1:m', entity: () => 'Book', mappedBy: book => book.author },
-    favouriteBook: { kind: 'm:1', type: 'Book' },
-    version: { type: 'number', persist: false },
-  },
-});
-```
-
-Then you can use the entity class as usual:
-
-```ts
-const author = new Author('name', 'email');
-await em.persist(author).flush();
-```
-
-## Using custom base entity
-
-Do not forget that base entities needs to be discovered just like normal entities.
-
-```ts title="./entities/BaseEntity.ts"
-export interface CustomBaseEntity {
-  id: number;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-export const schema = new EntitySchema<CustomBaseEntity>({
-  name: 'CustomBaseEntity',
-  abstract: true,
-  properties: {
-    id: { type: 'number', primary: true },
-    createdAt: { type: 'Date', onCreate: () => new Date(), nullable: true },
-    updatedAt: { type: 'Date', onCreate: () => new Date(), onUpdate: () => new Date(), nullable: true },
-  },
-});
-```
-
-## Configuration Reference
-
-The parameter of `EntitySchema` requires to provide either `name` or `class` parameters. When using `class`, `extends` will be automatically inferred. You can optionally pass these additional parameters:
-
-```ts
-name: string;
-class: Constructor<T>;
-extends: string;
-tableName: string; // alias for `collection: string`
-properties: { [K in keyof T & string]: EntityProperty<T[K]> };
-indexes: { properties: string | string[]; name?: string; type?: string }[];
-uniques: { properties: string | string[]; name?: string }[];
-repository: () => Constructor<EntityRepository<T>>;
-hooks: Partial<Record<keyof typeof EventType, ((string & keyof T) | NonNullable<EventSubscriber[keyof EventSubscriber]>)[]>>;
-abstract: boolean;
-orderBy: QueryOrderMap<T> | QueryOrderMap<T>[]; // default ordering for the entity
-```
-
-Every property then needs to contain a type specification - one of `type` or `entity` options. Here are some examples of various property types:
-
-```ts
-export enum MyEnum {
-  LOCAL = 'local',
-  GLOBAL = 'global',
-}
-
-export const schema = new EntitySchema<FooBar>({
-  name: 'FooBar',
-  tableName: 'tbl_foo_bar',
-  indexes: [{ name: 'idx1', properties: 'name' }],
-  uniques: [{ name: 'unq1', properties: ['name', 'email'] }],
-  repository: () => FooBarRepository,
-  properties: {
-    id: { type: 'number', primary: true },
-    name: { type: 'string' },
-    baz: { kind: '1:1', entity: () => FooBaz, orphanRemoval: true, nullable: true },
-    fooBar: { kind: '1:1', entity: () => FooBar, nullable: true },
-    publisher: { kind: 'm:1', entity: () => Publisher, inversedBy: 'books' },
-    books: { kind: '1:m', entity: () => 'Book', mappedBy: book => book.author },
-    tags: { kind: 'm:n', entity: () => BookTag, inversedBy: 'books', fixedOrder: true },
-    version: { type: 'Date', version: true, length: 0 },
-    type: { enum: true, items: () => MyEnum, default: MyEnum.LOCAL },
-  },
-});
-```
-
-> As a value for `type` you can also use one of `String`/`Number`/`Boolean`/`Date`.
+The `defineEntity` helper is the recommended way to define entities programmatically without decorators. It is built on top of `EntitySchema`, leveraging TypeScript's type inference to generate entity types automatically.
 
 ## `defineEntity`
 
-`defineEntity` is built on top of `EntitySchema`, leveraging TypeScript's type inference capabilities to generate entity types. This reduces the amount of code while providing robust type safety and null safety.
+Use `defineEntity` to declare your entities. It returns an `EntitySchema` instance with full type information.
+
+```ts
+import { defineEntity, p } from '@mikro-orm/core';
+
+const BookSchema = defineEntity({
+  name: 'Book',
+  properties: {
+    id: p.integer().primary(),
+    title: p.string(),
+    author: () => p.manyToOne(Author).inversedBy('books'),
+    tags: () => p.manyToMany(BookTag).inversedBy('books').fixedOrder(),
+  },
+});
+
+export class Book extends BookSchema.class {}
+BookSchema.setClass(Book);
+```
+
+The `p` shortcut is also available as `defineEntity.properties`.
+
+### The `defineEntity + class` pattern (recommended)
+
+When you extend the auto-generated class and register it via `setClass()`, you get several benefits:
+
+- **Clean hover types**: Hovering over a `Book` variable shows `Book` — not a complex intersection type with generics and symbols
+- **Better performance**: A real named class is more efficient than the dynamically generated anonymous class used by the pure approach
+- **Custom methods**: Add domain logic directly on entity instances without any workarounds
+- **No property duplication**: Properties are defined once in the schema and automatically inherited by the class
+
+```ts
+const AuthorSchema = defineEntity({
+  name: 'Author',
+  properties: {
+    id: p.integer().primary(),
+    firstName: p.string(),
+    lastName: p.string(),
+    books: () => p.oneToMany(Book).mappedBy('author'),
+  },
+});
+
+class Author extends AuthorSchema.class {
+  fullName() {
+    return `${this.firstName} ${this.lastName}`;
+  }
+}
+
+AuthorSchema.setClass(Author);
+
+// Usage:
+const author = em.create(Author, { firstName: 'John', lastName: 'Doe' });
+console.log(author.fullName()); // "John Doe"
+```
+
+> **Important:** `setClass()` must be called before the ORM discovery process runs (i.e., before `MikroORM.init()`). Make sure to call it at module load time, right after defining the extended class.
+
+### Pure `defineEntity` (without a class)
+
+You can also use `defineEntity` without extending a class. This is more compact for simple entities but produces complex computed types on hover.
 
 ```ts
 import { type InferEntity, defineEntity, p } from '@mikro-orm/core';
 
-// We use `p` as a shortcut for `defineEntity.properties`
+export const Book = defineEntity({
+  name: 'Book',
+  properties: {
+    id: p.integer().primary(),
+    title: p.string(),
+    author: () => p.manyToOne(Author).inversedBy('books'),
+    tags: () => p.manyToMany(BookTag).inversedBy('books').fixedOrder(),
+  },
+});
+
+// Use InferEntity to extract the entity type
+export type IBook = InferEntity<typeof Book>;
+```
+
+When creating new entity instances without a class, use `em.create()` which will create an instance of the internally generated class:
+
+```ts
+const book = em.create(Book, { title: 'My Book', author });
+await em.flush();
+```
+
+### Reusing base properties via composition
+
+With `defineEntity`, use composition (shared property objects) instead of class inheritance for base properties:
+
+```ts
 const p = defineEntity.properties;
 
-// It is recommended to use composition over inheritance when using `defineEntity`
-export const baseProperties = {
+const baseProperties = {
   id: p.integer().primary(),
   createdAt: p.datetime().onCreate(() => new Date()),
   updatedAt: p.datetime()
@@ -186,27 +108,24 @@ export const baseProperties = {
     .onUpdate(() => new Date()),
 };
 
-// Book is an instance of `EntitySchema`
-export const Book = defineEntity({
+const BookSchema = defineEntity({
   name: 'Book',
   properties: {
     ...baseProperties,
     title: p.string(),
-    author: () => p.manyToOne(Author).inversedBy('books'),
-    publisher: () => p.oneToOne(Publisher).inversedBy('book'),
-    tags: () => p.manyToMany(BookTag).inversedBy('books').fixedOrder(),
+    author: () => p.manyToOne(Author),
   },
 });
 
-// We can use `InferEntity` to infer the type of an entity
-export type IBook = InferEntity<typeof Book>;
+export class Book extends BookSchema.class {}
+BookSchema.setClass(Book);
 ```
 
-`defineEntity.properties` provides all [MikroORM built-in types](./custom-types#types-provided-by-mikroorm). To use [custom types](./custom-types), you can also use `p.type()`.
+### Property types
+
+`defineEntity.properties` (aliased as `p`) provides all [MikroORM built-in types](./custom-types#types-provided-by-mikroorm). To use [custom types](./custom-types), use `p.type()`:
 
 ```ts
-const p = defineEntity.properties;
-
 const properties = {
   string: p.string(),
   float: p.float(),
@@ -218,59 +137,35 @@ const properties = {
 };
 ```
 
-### Adding custom methods
-
-When using `defineEntity` without a class, an internal entity class is auto-generated. You can extend this class to add custom methods without having to redeclare all properties:
-
-```ts
-import { defineEntity, p } from '@mikro-orm/core';
-
-// Define the schema - this auto-generates an internal class
-const UserSchema = defineEntity({
-  name: 'User',
-  tableName: 'users',
-  properties: {
-    id: p.integer().primary(),
-    firstName: p.string(),
-    lastName: p.string(),
-  },
-});
-
-// Extend the auto-generated class to add methods
-class User extends UserSchema.class {
-  fullName() {
-    return `${this.firstName} ${this.lastName}`;
-  }
-}
-
-// Register the custom class with the schema
-UserSchema.setClass(User);
-```
-
-> **Important:** `setClass()` must be called before the ORM discovery process runs (i.e., before `MikroORM.init()`). Make sure to call it at module load time, right after defining the extended class.
-
-After calling `setClass()`, the custom class is registered and will be used for all entity instances. This approach provides the best of both worlds:
-
-- **No property duplication**: Properties are defined once in the schema
-- **Full type inference**: The extended class inherits all property types
-- **Custom methods**: Add domain logic directly on entity instances
-
-You can then use the entity normally:
-
-```ts
-const user = em.create(User, { firstName: 'John', lastName: 'Doe' });
-console.log(user.fullName()); // "John Doe"
-```
-
 ## MongoDB example
 
 <Tabs
   groupId="entity-schema-def"
-  defaultValue="define-entity"
+  defaultValue="define-entity-class"
   values={[
+    {label: 'defineEntity + class', value: 'define-entity-class'},
     {label: 'defineEntity', value: 'define-entity'},
-    {label: 'EntitySchema', value: 'entity-schema'},
-  ]} >
+  ]}
+>
+  <TabItem value="define-entity-class">
+
+```ts
+const BookTagSchema = defineEntity({
+  name: 'BookTag',
+  properties: {
+    _id: p.type(ObjectId).primary(),
+    id: p.string().serializedPrimaryKey(),
+    name: p.string(),
+    books: () => p.manyToMany(Book).mappedBy('tags'),
+  },
+});
+
+export class BookTag extends BookTagSchema.class {}
+BookTagSchema.setClass(BookTag);
+```
+
+  </TabItem>
+
   <TabItem value="define-entity">
 
 ```ts
@@ -288,32 +183,6 @@ export type IBookTag = InferEntity<typeof BookTag>;
 ```
 
   </TabItem>
-  <TabItem value="entity-schema">
-
-```ts
-export class BookTag {
-  _id!: ObjectId;
-  id!: string;
-  name: string;
-  books = new Collection<Book>(this);
-
-  constructor(name: string) {
-    this.name = name;
-  }
-}
-
-export const schema = new EntitySchema<BookTag>({
-  class: BookTag,
-  properties: {
-    _id: { type: 'ObjectId', primary: true },
-    id: { type: 'string', serializedPrimaryKey: true },
-    name: { type: 'string' },
-    books: { kind: 'm:n', entity: () => Book, mappedBy: book => book.tags },
-  },
-});
-```
-
-  </TabItem>
 </Tabs>
 
 ## Hooks example
@@ -322,11 +191,37 @@ Entity hooks can be defined either as a property name, or as a function. When de
 
 <Tabs
   groupId="entity-schema-hooks"
-  defaultValue="define-entity"
+  defaultValue="define-entity-class"
   values={[
+    {label: 'defineEntity + class', value: 'define-entity-class'},
     {label: 'defineEntity', value: 'define-entity'},
-    {label: 'EntitySchema', value: 'entity-schema'},
-  ]} >
+  ]}
+>
+  <TabItem value="define-entity-class">
+
+```ts
+// Defined outside, this available via args.
+const beforeUpdate = (args: EventArgs) => args.entity.version++;
+
+const BookTagSchema = defineEntity({
+  name: 'BookTag',
+  properties: {
+    _id: p.type(ObjectId).primary(),
+    id: p.string().serializedPrimaryKey(),
+    name: p.string(),
+    books: () => p.manyToMany(Book).mappedBy('tags'),
+  },
+  hooks: {
+    beforeUpdate: [beforeUpdate],
+  },
+});
+
+export class BookTag extends BookTagSchema.class {}
+BookTagSchema.setClass(BookTag);
+```
+
+  </TabItem>
+
   <TabItem value="define-entity">
 
 ```ts
@@ -350,51 +245,74 @@ export type IBookTag = InferEntity<typeof BookTag>;
 ```
 
   </TabItem>
-  <TabItem value="entity-schema">
+</Tabs>
 
-```ts
-export class BookTag {
-  _id!: ObjectId;
-  id!: string;
-  name: string;
-  books = new Collection<Book>(this);
+## `EntitySchema` (low-level API)
 
-  constructor(name: string) {
-    this.name = name;
-  }
+`defineEntity` returns an `EntitySchema` instance — the same class you can instantiate directly. Using `EntitySchema` directly is generally not necessary, as `defineEntity` provides a more ergonomic API with full type inference. However, it's available for advanced use cases or vanilla JavaScript projects.
 
-  // Defined on an entity class.
-  beforeCreate() {
-    this.version = 1;
-  }
-
-  beforeUpdate() {
-    this.version++;
-  }
+```ts title="./entities/Book.ts"
+export interface IBook {
+  title: string;
+  author: Author;
+  publisher: Publisher;
+  tags: Collection<BookTag>;
 }
 
-// Defined outside of entity class - this bound to entity instance
-function beforeUpdate() {
-  this.version++;
-}
-
-// Defined outside, this available via args.
-const beforeUpdate2 = (args: EventArgs) => args.entity.version++;
-
-export const schema = new EntitySchema({
-  class: BookTag,
-  hooks: {
-    beforeCreate: ['beforeCreate'], // Instance method
-    beforeUpdate: ['beforeUpdate', beforeUpdate, beforeUpdate2] // Instance method, normal function, arrow function
-  },
+export const BookSchema = new EntitySchema<IBook>({
+  name: 'Book',
+  extends: CustomBaseEntitySchema,
   properties: {
-    _id: { type: 'ObjectId', primary: true },
-    id: { type: 'string', serializedPrimaryKey: true },
-    name: { type: 'string' },
-    books: { kind: 'm:n', entity: () => Book, mappedBy: book => book.tags },
+    title: { type: 'string' },
+    author: { kind: 'm:1', entity: () => Author, inversedBy: 'books' },
+    publisher: { kind: 'm:1', entity: () => Publisher, inversedBy: 'books' },
+    tags: { kind: 'm:n', entity: () => BookTag, inversedBy: 'books', fixedOrder: true },
   },
 });
 ```
 
-  </TabItem>
-</Tabs>
+### Using a class with `EntitySchema`
+
+You can pass a `class` option instead of `name`:
+
+```ts title="./entities/Author.ts"
+export class Author extends CustomBaseEntity {
+  name: string;
+  email: string;
+
+  constructor(name: string, email: string) {
+    super();
+    this.name = name;
+    this.email = email;
+  }
+}
+
+export const AuthorSchema = new EntitySchema({
+  class: Author,
+  extends: CustomBaseEntitySchema,
+  properties: {
+    name: { type: 'string' },
+    email: { type: 'string', unique: true },
+  },
+});
+```
+
+### Configuration Reference
+
+The parameter of `EntitySchema` requires either `name` or `class`. When using `class`, `extends` will be automatically inferred. Additional parameters:
+
+```ts
+name: string;
+class: Constructor<T>;
+extends: string;
+tableName: string; // alias for `collection: string`
+properties: { [K in keyof T & string]: EntityProperty<T[K]> };
+indexes: { properties: string | string[]; name?: string; type?: string }[];
+uniques: { properties: string | string[]; name?: string }[];
+repository: () => Constructor<EntityRepository<T>>;
+hooks: Partial<Record<keyof typeof EventType, ((string & keyof T) | NonNullable<EventSubscriber[keyof EventSubscriber]>)[]>>;
+abstract: boolean;
+orderBy: QueryOrderMap<T> | QueryOrderMap<T>[]; // default ordering for the entity
+```
+
+> As a value for `type` you can also use one of `String`/`Number`/`Boolean`/`Date`.

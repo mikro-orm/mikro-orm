@@ -34,14 +34,34 @@ There are two ways to access these helper methods:
 
 <Tabs
 groupId="entity-def"
-defaultValue="define-entity"
+defaultValue="define-entity-class"
 values={[
+{label: 'defineEntity + class', value: 'define-entity-class'},
 {label: 'defineEntity', value: 'define-entity'},
 {label: 'reflect-metadata', value: 'reflect-metadata'},
 {label: 'ts-morph', value: 'ts-morph'},
-{label: 'EntitySchema', value: 'entity-schema'},
 ]
-}>
+}
+>
+  <TabItem value="define-entity-class">
+
+```ts title="./entities/Book.ts"
+import { defineEntity, p } from '@mikro-orm/core';
+
+const BookSchema = defineEntity({
+  name: 'Book',
+  properties: {
+    id: p.integer().primary(),
+    title: p.string(),
+  },
+});
+
+export class Book extends BookSchema.class {}
+BookSchema.setClass(Book);
+```
+
+  </TabItem>
+
 <TabItem value="define-entity">
 
 ```ts title="./entities/Book.ts"
@@ -108,45 +128,41 @@ wrap(book).assign({ title: 'New Title' });
 ```
 
 </TabItem>
-<TabItem value="entity-schema">
-
-```ts title="./entities/Book.ts"
-import { EntitySchema } from '@mikro-orm/core';
-
-export interface IBook {
-  id: number;
-  title: string;
-}
-
-export const Book = new EntitySchema<IBook>({
-  name: 'Book',
-  properties: {
-    id: { type: Number, primary: true },
-    title: { type: String },
-  },
-});
-```
-
-```ts
-// Access helpers via wrap()
-wrap(book).assign({ title: 'New Title' });
-```
-
-</TabItem>
 </Tabs>
 
 **2. Extending `BaseEntity`** - methods available directly on the entity:
 
 <Tabs
 groupId="entity-def"
-defaultValue="define-entity"
+defaultValue="define-entity-class"
 values={[
+{label: 'defineEntity + class', value: 'define-entity-class'},
 {label: 'defineEntity', value: 'define-entity'},
 {label: 'reflect-metadata', value: 'reflect-metadata'},
 {label: 'ts-morph', value: 'ts-morph'},
-{label: 'EntitySchema', value: 'entity-schema'},
 ]
-}>
+}
+>
+  <TabItem value="define-entity-class">
+
+```ts title="./entities/Book.ts"
+import { defineEntity, p, BaseEntity } from '@mikro-orm/core';
+
+const BookSchema = defineEntity({
+  name: 'Book',
+  extends: BaseEntity,
+  properties: {
+    id: p.integer().primary(),
+    title: p.string(),
+  },
+});
+
+export class Book extends BookSchema.class {}
+BookSchema.setClass(Book);
+```
+
+  </TabItem>
+
 <TabItem value="define-entity">
 
 ```ts title="./entities/Book.ts"
@@ -206,32 +222,6 @@ export class Book extends BaseEntity {
   title!: string;
 
 }
-```
-
-```ts
-// Access helpers directly
-book.assign({ title: 'New Title' });
-```
-
-</TabItem>
-<TabItem value="entity-schema">
-
-```ts title="./entities/Book.ts"
-import { EntitySchema, BaseEntity } from '@mikro-orm/core';
-
-export interface IBook {
-  id: number;
-  title: string;
-}
-
-export const Book = new EntitySchema<IBook>({
-  name: 'Book',
-  extends: BaseEntity,
-  properties: {
-    id: { type: Number, primary: true },
-    title: { type: String },
-  },
-});
 ```
 
 ```ts

@@ -13,14 +13,46 @@ To create a materialized view entity, use `view: { materialized: true }` in your
 
 <Tabs
   groupId="entity-def"
-  defaultValue="define-entity"
+  defaultValue="define-entity-class"
   values={[
+    {label: 'defineEntity + class', value: 'define-entity-class'},
     {label: 'defineEntity', value: 'define-entity'},
     {label: 'reflect-metadata', value: 'reflect-metadata'},
     {label: 'ts-morph', value: 'ts-morph'},
-    {label: 'EntitySchema', value: 'entity-schema'},
-  ]
-  }>
+]
+  }
+>
+  <TabItem value="define-entity-class">
+
+```ts title="./entities/AuthorStats.ts"
+import { defineEntity, p } from '@mikro-orm/postgresql';
+
+const AuthorStatsSchema = defineEntity({
+  name: 'AuthorStats',
+  tableName: 'author_stats_matview',
+  view: { materialized: true },
+  expression: `
+    select
+      a.id,
+      a.name,
+      count(b.id)::int as book_count
+    from author a
+    left join book b on b.author_id = a.id
+    group by a.id
+  `,
+  properties: {
+    id: p.integer().primary(),
+    name: p.string(),
+    bookCount: p.integer(),
+  },
+});
+
+export class AuthorStats extends AuthorStatsSchema.class {}
+AuthorStatsSchema.setClass(AuthorStats);
+```
+
+  </TabItem>
+
   <TabItem value="define-entity">
 
 ```ts title="./entities/AuthorStats.ts"
@@ -111,39 +143,6 @@ export class AuthorStats {
   bookCount!: number;
 
 }
-```
-
-  </TabItem>
-  <TabItem value="entity-schema">
-
-```ts title="./entities/AuthorStats.ts"
-import { EntitySchema } from '@mikro-orm/postgresql';
-
-export interface IAuthorStats {
-  id: number;
-  name: string;
-  bookCount: number;
-}
-
-export const AuthorStats = new EntitySchema<IAuthorStats>({
-  name: 'AuthorStats',
-  tableName: 'author_stats_matview',
-  view: { materialized: true },
-  expression: `
-    select
-      a.id,
-      a.name,
-      count(b.id)::int as book_count
-    from author a
-    left join book b on b.author_id = a.id
-    group by a.id
-  `,
-  properties: {
-    id: { type: 'number', primary: true },
-    name: { type: 'string' },
-    bookCount: { type: 'number' },
-  },
-});
 ```
 
   </TabItem>

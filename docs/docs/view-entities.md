@@ -26,14 +26,42 @@ To define a view entity, set both `view: true` and provide an `expression`. The 
 
 <Tabs
   groupId="entity-def"
-  defaultValue="define-entity"
+  defaultValue="define-entity-class"
   values={[
+    {label: 'defineEntity + class', value: 'define-entity-class'},
     {label: 'defineEntity', value: 'define-entity'},
     {label: 'reflect-metadata', value: 'reflect-metadata'},
     {label: 'ts-morph', value: 'ts-morph'},
-    {label: 'EntitySchema', value: 'entity-schema'},
-  ]
-  }>
+]
+  }
+>
+  <TabItem value="define-entity-class">
+
+```ts title="./entities/AuthorStats.ts"
+import { defineEntity, p } from '@mikro-orm/core';
+
+const AuthorStatsSchema = defineEntity({
+  name: 'AuthorStats',
+  tableName: 'author_stats_view',
+  view: true,
+  expression: `
+    select a.name, count(b.id) as book_count
+    from author a
+    left join book b on b.author_id = a.id
+    group by a.id, a.name
+  `,
+  properties: {
+    name: p.string().primary(),
+    bookCount: p.integer(),
+  },
+});
+
+export class AuthorStats extends AuthorStatsSchema.class {}
+AuthorStatsSchema.setClass(AuthorStats);
+```
+
+  </TabItem>
+
   <TabItem value="define-entity">
 
 ```ts title="./entities/AuthorStats.ts"
@@ -107,32 +135,6 @@ export class AuthorStats {
 ```
 
   </TabItem>
-  <TabItem value="entity-schema">
-
-```ts title="./entities/AuthorStats.ts"
-export interface IAuthorStats {
-  name: string;
-  bookCount: number;
-}
-
-export const AuthorStats = new EntitySchema<IAuthorStats>({
-  name: 'AuthorStats',
-  tableName: 'author_stats_view',
-  view: true,
-  expression: `
-    select a.name, count(b.id) as book_count
-    from author a
-    left join book b on b.author_id = a.id
-    group by a.id, a.name
-  `,
-  properties: {
-    name: { type: 'string', primary: true },
-    bookCount: { type: 'number' },
-  },
-});
-```
-
-  </TabItem>
 </Tabs>
 
 ### Using QueryBuilder Expression
@@ -141,14 +143,41 @@ You can also use a callback that returns a QueryBuilder for type-safe view defin
 
 <Tabs
   groupId="entity-def"
-  defaultValue="define-entity"
+  defaultValue="define-entity-class"
   values={[
+    {label: 'defineEntity + class', value: 'define-entity-class'},
     {label: 'defineEntity', value: 'define-entity'},
     {label: 'reflect-metadata', value: 'reflect-metadata'},
     {label: 'ts-morph', value: 'ts-morph'},
-    {label: 'EntitySchema', value: 'entity-schema'},
-  ]
-  }>
+]
+  }
+>
+  <TabItem value="define-entity-class">
+
+```ts title="./entities/BookSummary.ts"
+import { defineEntity, p } from '@mikro-orm/core';
+
+const BookSummarySchema = defineEntity({
+  name: 'BookSummary',
+  tableName: 'book_summary_view',
+  view: true,
+  expression: (em: EntityManager) => {
+    return em.createQueryBuilder(Book, 'b')
+      .select(['b.title', 'a.name as author_name'])
+      .join('b.author', 'a');
+  },
+  properties: {
+    title: p.string().primary(),
+    authorName: p.string(),
+  },
+});
+
+export class BookSummary extends BookSummarySchema.class {}
+BookSummarySchema.setClass(BookSummary);
+```
+
+  </TabItem>
+
   <TabItem value="define-entity">
 
 ```ts title="./entities/BookSummary.ts"
@@ -216,31 +245,6 @@ export class BookSummary {
   authorName!: string;
 
 }
-```
-
-  </TabItem>
-  <TabItem value="entity-schema">
-
-```ts title="./entities/BookSummary.ts"
-export interface IBookSummary {
-  title: string;
-  authorName: string;
-}
-
-export const BookSummary = new EntitySchema<IBookSummary>({
-  name: 'BookSummary',
-  tableName: 'book_summary_view',
-  view: true,
-  expression: (em: EntityManager) => {
-    return em.createQueryBuilder(Book, 'b')
-      .select(['b.title', 'a.name as author_name'])
-      .join('b.author', 'a');
-  },
-  properties: {
-    title: { type: 'string', primary: true },
-    authorName: { type: 'string' },
-  },
-});
 ```
 
   </TabItem>

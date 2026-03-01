@@ -17,10 +17,10 @@ defaultValue="reflect-metadata"
 values={[
 {label: 'reflect-metadata', value: 'reflect-metadata'},
 {label: 'ts-morph', value: 'ts-morph'},
-{label: 'EntitySchema', value: 'entity-schema'},
 ]
-}>
-<TabItem value="reflect-metadata">
+}
+>
+  <TabItem value="reflect-metadata">
 
 ```ts title="./entities/Author.ts"
 @Entity()
@@ -76,28 +76,6 @@ export class Author {
 ```
 
 </TabItem>
-<TabItem value="entity-schema">
-
-```ts title="./entities/Author.ts"
-export const AuthorSchema = new EntitySchema<Author>({
-  class: Author,
-  indexes: [
-    { properties: ['name', 'age'] },
-    { name: 'custom_idx_name', properties: ['name'] },
-  ],
-  uniques: [
-    { properties: ['name', 'email'] },
-  ],
-  properties: {
-    id: { type: Number, primary: true },
-    name: { type: String, index: true },
-    email: { type: String, unique: true },
-    age: { type: Number, nullable: true, index: 'age_idx' },
-  },
-});
-```
-
-</TabItem>
 </Tabs>
 
 ## Custom Index Expressions
@@ -109,10 +87,10 @@ groupId="entity-def"
 defaultValue="reflect-metadata"
 values={[
 {label: 'reflect-metadata', value: 'reflect-metadata'},
-{label: 'EntitySchema', value: 'entity-schema'},
 ]
-}>
-<TabItem value="reflect-metadata">
+}
+>
+  <TabItem value="reflect-metadata">
 
 ```ts title="./entities/Author.ts"
 @Entity()
@@ -136,30 +114,6 @@ export class Author {
   country!: string;
 
 }
-```
-
-</TabItem>
-<TabItem value="entity-schema">
-
-```ts title="./entities/Author.ts"
-export const AuthorSchema = new EntitySchema({
-  class: Author,
-  indexes: [
-    {
-      name: 'custom_index_expr',
-      expression: 'alter table `author` add index `custom_index_expr`(`title`)'
-    },
-    {
-      name: 'custom_index_country',
-      expression: (table, columns, indexName) =>
-        `create index \`${indexName}\` on \`${table.name}\` (\`${columns.country}\`)`
-    },
-  ],
-  properties: {
-    title: { type: String },
-    country: { type: String },
-  },
-});
 ```
 
 </TabItem>
