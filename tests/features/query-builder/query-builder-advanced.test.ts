@@ -407,6 +407,57 @@ describe('QueryBuilder - Advanced', () => {
     );
   });
 
+  test('select with auto-joining and $not inside relation (GH slack report)', async () => {
+    const qb1 = orm.em.createQueryBuilder(Book2, 'a');
+    qb1.select('*').where({
+      author: {
+        $not: {
+          email: 'test',
+        },
+      },
+    });
+    expect(qb1.getQuery()).toEqual(
+      'select `a`.*, `a`.`price` * 1.19 as `price_taxed` ' +
+        'from `book2` as `a` ' +
+        'inner join `author2` as `e1` on `a`.`author_id` = `e1`.`id` ' +
+        'where not (`e1`.`email` = ?)',
+    );
+
+    // $not with multiple conditions inside relation
+    const qb2 = orm.em.createQueryBuilder(Book2, 'a');
+    qb2.select('*').where({
+      author: {
+        $not: {
+          name: 'foo',
+          email: 'bar',
+        },
+      },
+    });
+    expect(qb2.getQuery()).toEqual(
+      'select `a`.*, `a`.`price` * 1.19 as `price_taxed` ' +
+        'from `book2` as `a` ' +
+        'inner join `author2` as `e1` on `a`.`author_id` = `e1`.`id` ' +
+        'where not (`e1`.`name` = ? and `e1`.`email` = ?)',
+    );
+
+    // $not combined with regular conditions inside relation
+    const qb3 = orm.em.createQueryBuilder(Book2, 'a');
+    qb3.select('*').where({
+      author: {
+        name: 'test',
+        $not: {
+          email: 'bar',
+        },
+      },
+    });
+    expect(qb3.getQuery()).toEqual(
+      'select `a`.*, `a`.`price` * 1.19 as `price_taxed` ' +
+        'from `book2` as `a` ' +
+        'inner join `author2` as `e1` on `a`.`author_id` = `e1`.`id` ' +
+        'where `e1`.`name` = ? and not (`e1`.`email` = ?)',
+    );
+  });
+
   test('select with auto-joining and alias replacement via expr()', async () => {
     const qb1 = orm.em.createQueryBuilder(Book2, 'a');
     qb1.select('*').where({
