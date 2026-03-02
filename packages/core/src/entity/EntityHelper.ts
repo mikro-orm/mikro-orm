@@ -53,15 +53,20 @@ export class EntityHelper {
     const prototype = meta.prototype as Dictionary;
 
     if (!prototype.toJSON) { // toJSON can be overridden
-      prototype.toJSON = function (this: T, ...args: any[]) {
-        // Guard against being called on the prototype itself (e.g. by serializers
-        // walking the object graph and calling toJSON on prototype objects)
-        if (this === prototype) {
-          return {};
-        }
+      Object.defineProperty(prototype, 'toJSON', {
+        value(this: T, ...args: any[]) {
+          // Guard against being called on the prototype itself (e.g. by serializers
+          // walking the object graph and calling toJSON on prototype objects)
+          if (this === prototype) {
+            return {};
+          }
 
-        return EntityTransformer.toObject<T>(this, ...args.slice(meta.toJsonParams.length));
-      };
+          return EntityTransformer.toObject<T>(this, ...args.slice(meta.toJsonParams.length));
+        },
+        writable: true,
+        configurable: true,
+        enumerable: false,
+      });
     }
   }
 
