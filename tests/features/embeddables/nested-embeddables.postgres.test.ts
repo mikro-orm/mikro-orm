@@ -432,6 +432,31 @@ describe('embedded entities in postgres', () => {
     expect(mock.mock.calls[3][0]).toMatch(`select "u0"."id", "u0"."profile2" from "user" as "u0" where "u0"."profile2"->'identity'->'links'->>'url' = ? limit ?`);
   });
 
+  test('upsert with class instances and nested embedded arrays (GH #7233)', async () => {
+    const mock = mockLogger(orm);
+
+    // upsert with class instances - toJSON should not leak as a data field
+    const user = await orm.em.upsert(User, {
+      name: 'Uwe',
+      profile1: new Profile('u1', new Identity('e1', new IdentityMeta('f1', 'b1'))),
+      profile2: new Profile('u2', new Identity('e2', new IdentityMeta('f2', 'b2'))),
+    });
+
+    const upsertQuery = mock.mock.calls[0][0];
+    expect(upsertQuery).not.toMatch('toJSON');
+    expect(upsertQuery).not.toMatch(`\\"metas\\":\\"[`);
+
+    // mutate: push links with nested metas, then flush (triggers update via UoW)
+    user.profile1.identity.links.push(new IdentityLink('l1'));
+    user.profile2.identity.links.push(new IdentityLink('l2'));
+    mock.mock.calls.length = 0;
+    await orm.em.flush();
+
+    const updateQuery = mock.mock.calls[1][0];
+    expect(updateQuery).not.toMatch('toJSON');
+    expect(updateQuery).not.toMatch(`\\"metas\\":\\"[`);
+  });
+
   test('upsert and flush update with nested embedded arrays (GH #7233)', async () => {
     const mock = mockLogger(orm);
 
