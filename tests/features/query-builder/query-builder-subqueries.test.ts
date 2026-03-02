@@ -401,4 +401,15 @@ describe('QueryBuilder - Subqueries', () => {
     const result = await qb3.execute();
     expect(result.length).toBeGreaterThan(0);
   });
+
+  test('union result getNativeQuery returns a working NativeQueryBuilder', () => {
+    const qb1 = orm.em.createQueryBuilder(Author2, 'a').select('a.id').where({ name: 'foo' });
+    const qb2 = orm.em.createQueryBuilder(Author2, 'a').select('a.id').where({ name: 'bar' });
+    const unionQb = qb1.unionAll(qb2);
+
+    const nqb = unionQb.getNativeQuery();
+    const { sql, params } = nqb.compile();
+    expect(sql).toMatch(/union all/);
+    expect(params).toEqual(['foo', 'bar']);
+  });
 });
