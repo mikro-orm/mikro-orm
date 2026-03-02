@@ -542,7 +542,7 @@ export class QueryBuilder<
   protected _unionQuery?: { sql: string; params: readonly unknown[] };
   protected _ctes: (CteOptions & {
     name: string;
-    query: QueryBuilder<any> | NativeQueryBuilder | RawQueryFragment;
+    query: NativeQueryBuilder | RawQueryFragment;
     recursive?: boolean;
   })[] = [];
   protected readonly platform: AbstractSqlPlatform;
@@ -1775,15 +1775,10 @@ export class QueryBuilder<
    * Specifies a CTE name as the FROM source, with full type safety.
    * The entity type is inferred from the CTE definition passed to `.with()`.
    */
-  from<Name extends string & keyof CTEs>(
+  from<Name extends string & keyof CTEs, Alias extends string = Name>(
     target: Name,
-    aliasName?: string,
-  ): SelectQueryBuilder<CTEs[Name] & object, string, never, never, never, '*', CTEs>;
-  /**
-   * Specifies a raw table name (e.g. a CTE name) as the FROM source.
-   * Use this after `.with()` / `.withRecursive()` to query from a CTE.
-   */
-  from(target: string, aliasName?: string): SelectQueryBuilder<Entity, RootAlias, Hint, Context, RawAliases, Fields, CTEs>;
+    aliasName?: Alias,
+  ): SelectQueryBuilder<CTEs[Name], Alias, never, never, never, '*', CTEs>;
   from(
     target: EntityName<any> | QueryBuilder<any> | string,
     aliasName?: string,
@@ -1827,7 +1822,7 @@ export class QueryBuilder<
     const qb = this.getQueryBase(processVirtualEntity);
 
     for (const cte of this._ctes) {
-      const query = cte.query instanceof QueryBuilder ? cte.query.toRaw() : cte.query;
+      const query = cte.query;
       const opts: CteOptions = { columns: cte.columns, materialized: cte.materialized };
 
       if (cte.recursive) {
@@ -2326,15 +2321,19 @@ export class QueryBuilder<
    * const qb = em.createQueryBuilder(Author, 'a')
    *   .with('recent_books', recentBooks)
    *   .select('*')
-   *   .leftJoin(raw('recent_books'), 'rb', { author_id: sql.ref('a.id') });
+   *   .from('recent_books', 'rb'); // entity type inferred as Book
    * ```
    */
   with<Name extends string, Q extends QueryBuilder<any>>(
     name: Name,
     query: Q,
     options?: CteOptions,
-  ): QueryBuilder<Entity, RootAlias, Hint, Context, RawAliases, Fields, CTEs & Record<Name, Q extends QueryBuilder<infer T> ? T & object : object>>;
-  with(name: string, query: NativeQueryBuilder | RawQueryFragment, options?: CteOptions): this;
+  ): QueryBuilder<Entity, RootAlias, Hint, Context, RawAliases, Fields, CTEs & Record<Name, Q extends QueryBuilder<infer T> ? T : object>>;
+  /**
+   * Adds a Common Table Expression (CTE) to the query using a `NativeQueryBuilder` or raw SQL fragment.
+   * The CTE name is tracked but without entity type inference — use `from()` to query from it.
+   */
+  with<Name extends string>(name: Name, query: NativeQueryBuilder | RawQueryFragment, options?: CteOptions): QueryBuilder<Entity, RootAlias, Hint, Context, RawAliases, Fields, CTEs & Record<Name, object>>;
   with(name: string, query: QueryBuilder<any> | NativeQueryBuilder | RawQueryFragment, options?: CteOptions): any {
     return this.addCte(name, query, options);
   }
@@ -2347,18 +2346,23 @@ export class QueryBuilder<
    * ```ts
    * const base = em.createQueryBuilder(Category).select('*').where({ parent: null });
    * const rec = em.createQueryBuilder(Category, 'c').select('c.*')
-   *   .join(raw('category_tree'), 'ct', { id: sql.ref('c.parentId') });
+   *   .leftJoin('c.parent', 'ct', { id: sql.ref('c.parentId') });
    * const qb = em.createQueryBuilder(Category)
    *   .withRecursive('category_tree', base.unionAll(rec))
-   *   .select('*').from('category_tree', 'ct');
+   *   .select('*')
+   *   .from('category_tree', 'ct'); // entity type inferred as Category
    * ```
    */
   withRecursive<Name extends string, Q extends QueryBuilder<any>>(
     name: Name,
     query: Q,
     options?: CteOptions,
-  ): QueryBuilder<Entity, RootAlias, Hint, Context, RawAliases, Fields, CTEs & Record<Name, Q extends QueryBuilder<infer T> ? T & object : object>>;
-  withRecursive(name: string, query: NativeQueryBuilder | RawQueryFragment, options?: CteOptions): this;
+  ): QueryBuilder<Entity, RootAlias, Hint, Context, RawAliases, Fields, CTEs & Record<Name, Q extends QueryBuilder<infer T> ? T : object>>;
+  /**
+   * Adds a recursive Common Table Expression (CTE) to the query using a `NativeQueryBuilder` or raw SQL fragment.
+   * The CTE name is tracked but without entity type inference — use `from()` to query from it.
+   */
+  withRecursive<Name extends string>(name: Name, query: NativeQueryBuilder | RawQueryFragment, options?: CteOptions): QueryBuilder<Entity, RootAlias, Hint, Context, RawAliases, Fields, CTEs & Record<Name, object>>;
   withRecursive(name: string, query: QueryBuilder<any> | NativeQueryBuilder | RawQueryFragment, options?: CteOptions): any {
     return this.addCte(name, query, options, true);
   }
@@ -2370,9 +2374,11 @@ export class QueryBuilder<
       throw new Error(`CTE with name '${name}' already exists`);
     }
 
+    // Eagerly compile QueryBuilder to RawQueryFragment — later mutations to the sub-query won't be reflected
+    const compiled = query instanceof QueryBuilder ? query.toRaw() : query;
     this._ctes.push({
       name,
-      query,
+      query: compiled,
       recursive,
       columns: options?.columns,
       materialized: options?.materialized,
@@ -2413,10 +2419,7 @@ export class QueryBuilder<
     }
 
     if (this._ctes.length && reset !== true && !reset.includes('_ctes')) {
-      qb._ctes = this._ctes.map(cte => ({
-        ...cte,
-        query: cte.query instanceof QueryBuilder ? cte.query.clone() : cte.query,
-      }));
+      qb._ctes = this._ctes.map(cte => ({ ...cte }));
     }
 
     qb._aliases = { ...this._aliases };
@@ -2826,7 +2829,7 @@ export class QueryBuilder<
       qb.from(raw(this.fromVirtual(meta)), { indexHint: this._indexHint });
     } else {
       qb.from(tableName, {
-        schema,
+        schema: rawTableName ? undefined : schema,
         alias,
         indexHint: this._indexHint,
       });
@@ -3630,6 +3633,9 @@ type ExecuteDTO<T, H extends string, F extends string> =
         ? EntityDTOFlat<Loaded<T, H, F>>
         : DirectDTO<T, (RootFields<F, H> | PrimaryProperty<T>) & keyof T> &
           { [K in H & keyof T]: JoinDTO<T, K, F> };
+
+/** Shorthand for `QueryBuilder` with all generic parameters set to `any`. */
+export type AnyQueryBuilder<T extends object = AnyEntity> = QueryBuilder<T, any, any, any, any, any, any>;
 
 export interface SelectQueryBuilder<
   Entity extends object = AnyEntity,

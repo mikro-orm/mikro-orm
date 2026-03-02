@@ -347,7 +347,7 @@ bench('EntityDTOFlat<Loaded<WideAuthor, "books.publisher">> - 1-pass recursive 2
 // eslint-disable-next-line no-empty-function
 function withCte<N extends string, Q extends QueryBuilder<any>>(qb: QueryBuilder<Author, 'a'>, name: N, sub: Q) { return qb.with(name, sub); }
 // eslint-disable-next-line no-empty-function
-function fromCte<C extends Record<string, object>, N extends string & keyof C>(qb: QueryBuilder<Author, 'a', never, never, never, '*', C>, name: N) { return qb.from(name); }
+function fromCte<C extends Record<string, object>, N extends string & keyof C, A extends string = N>(qb: QueryBuilder<Author, 'a', never, never, never, '*', C>, name: N, alias?: A) { return qb.from(name, alias); }
 
 // Measure the cost of .with() accumulating one CTE into the CTEs generic
 bench('with() - single CTE type accumulation', () => {
@@ -371,7 +371,7 @@ bench('from() - CTE name resolution', () => {
   const qb = {} as QueryBuilder<Author, 'a', never, never, never, '*', { books_cte: Book }>;
   const r = fromCte(qb, 'books_cte');
   void r;
-}).types([10, 'instantiations']);
+}).types([12, 'instantiations']);
 
 // Measure the full with().from() chain type inference
 bench('with().from() - full CTE chain', () => {
@@ -379,4 +379,21 @@ bench('with().from() - full CTE chain', () => {
   const sub = {} as QueryBuilder<Book>;
   const r = qb.with('cte', sub).from('cte');
   void r;
-}).types([71, 'instantiations']);
+}).types([84, 'instantiations']);
+
+// Verify from() preserves the alias as a literal type
+bench('from() - CTE alias preserved as literal', () => {
+  const qb = {} as QueryBuilder<Author, 'a', never, never, never, '*', { books_cte: Book }>;
+  const r = fromCte(qb, 'books_cte', 'bc');
+  void r;
+}).types([13, 'instantiations']);
+
+// Verify the full chain: with().from() then select() produces type-safe fields
+bench('with().from() then select() - type-safe field access', () => {
+  const qb = {} as QueryBuilder<Author, 'a'>;
+  const sub = {} as QueryBuilder<Book>;
+  const fromQb = qb.with('cte', sub).from('cte', 'c');
+  // After from(), select should accept 'c.title' as a valid field for Book
+  fromQb.select('c.title');
+  void fromQb;
+}).types([2354, 'instantiations']);

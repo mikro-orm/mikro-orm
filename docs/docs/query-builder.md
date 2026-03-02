@@ -671,6 +671,111 @@ const qb3 = em.createQueryBuilder(Employee).select('id').where({ title: 'Manager
 const combined = qb1.unionAll(qb2, qb3);
 ```
 
+## Common Table Expressions (CTEs)
+
+You can use Common Table Expressions (CTEs) via the `with()` and `withRecursive()` methods. CTEs let you define named temporary result sets that exist for the duration of a single query.
+
+When you pass a `QueryBuilder` to `.with()`, the entity type is tracked in the `CTEs` generic parameter. Calling `.from()` with the CTE name then infers the entity type automatically — `execute()`, `getResultList()`, and field references are all fully typed without any explicit type annotations.
+
+### Basic CTE
+
+```ts
+const sub = em.createQueryBuilder(Author, 'a')
+  .select(['a.id', 'a.name'])
+  .where({ age: { $gte: 40 } });
+
+// .from() infers entity type from the CTE — result is typed as EntityDTOFlat<Author>[]
+const rows = await em.createQueryBuilder(Author)
+  .with('older_authors', sub)
+  .select('*')
+  .from('older_authors', 'oa')
+  .execute();
+
+rows[0].name; // string — fully typed, no explicit type parameter needed
+```
+
+```sql
+with "older_authors" as (
+  select "a"."id", "a"."name" from "author" as "a" where "a"."age" >= 40
+)
+select * from "older_authors" as "oa"
+```
+
+The sub-query is compiled eagerly at `.with()` call time — later mutations to the sub-query builder will not be reflected in the CTE.
+
+### Type-safe `from()` and field access
+
+When the CTE body is a typed `QueryBuilder`, `.from()` resolves the CTE name to the correct entity type. This means field autocomplete, `where()`, `select()`, and `orderBy()` all work against the CTE's entity:
+
+```ts
+const booksSub = em.createQueryBuilder(Book, 'b').select('*');
+
+const results = await em.createQueryBuilder(Author, 'a')
+  .with('recent_books', booksSub)
+  .select(['rb.title', 'rb.id'])       // type-checked against Book
+  .from('recent_books', 'rb')          // entity type inferred as Book, alias as 'rb'
+  .execute();
+
+results[0].title; // string — inferred from Book entity
+```
+
+With multiple CTEs, `.from()` resolves to the correct entity for each CTE name:
+
+```ts
+const authorsCte = em.createQueryBuilder(Author, 'a').select('*');
+const booksCte = em.createQueryBuilder(Book, 'b').select('*');
+
+const qb = em.createQueryBuilder(Author)
+  .with('authors_cte', authorsCte)
+  .with('books_cte', booksCte);
+
+// from('authors_cte') → entity type is Author
+const authors = await qb.select('*').from('authors_cte', 'ac').execute();
+
+// from('books_cte') → entity type is Book
+const books = await qb.select('*').from('books_cte', 'bc').execute();
+```
+
+Duplicate CTE names will throw an error.
+
+### Recursive CTEs
+
+Use `withRecursive()` for recursive queries (e.g. tree traversal). On MSSQL, this emits a plain `WITH` since MSSQL CTEs are implicitly recursive.
+
+When using `raw()` for the CTE body (common with recursive CTEs), type inference is not available — use an explicit type parameter on `execute()` in that case:
+
+```ts
+const qb = em.createQueryBuilder(Author)
+  .withRecursive('seq', raw('select 1 as n union all select n + 1 from seq where n < ?', [5]))
+  .select('*')
+  .from('seq', 's');
+
+const rows = await qb.execute<{ n: number }[]>();
+// [{ n: 1 }, { n: 2 }, { n: 3 }, { n: 4 }, { n: 5 }]
+```
+
+### CTE options
+
+The optional third argument supports `columns` and `materialized` options:
+
+```ts
+// Column list
+const qb1 = em.createQueryBuilder(Author)
+  .with('cte', sub, { columns: ['id', 'name'] })
+  .select('*').from('cte');
+
+// MATERIALIZED hint (PostgreSQL only)
+const qb2 = em.createQueryBuilder(Author)
+  .with('cte', sub, { materialized: true })
+  .select('*').from('cte');
+
+// NOT MATERIALIZED hint (PostgreSQL only)
+const qb3 = em.createQueryBuilder(Author)
+  .with('cte', sub, { materialized: false })
+  .select('*').from('cte');
+```
+
+
 ## Referring to column in update queries
 
 You can use static `raw()` helper to insert raw SQL snippets like this:
