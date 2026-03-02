@@ -110,6 +110,16 @@ test('CTE - multiple CTEs', () => {
   });
 });
 
+test('CTE - duplicate name throws', () => {
+  const platform = orm.em.getPlatform();
+  const sub = new NativeQueryBuilder(platform);
+  sub.select('*').from('users');
+
+  const qb = new NativeQueryBuilder(platform);
+  qb.with('cte', sub);
+  expect(() => qb.with('cte', sub)).toThrow("CTE with name 'cte' already exists");
+});
+
 test('CTE - mixed recursive/non-recursive uses "with recursive" keyword', () => {
   const platform = orm.em.getPlatform();
   const sub1 = new NativeQueryBuilder(platform);
