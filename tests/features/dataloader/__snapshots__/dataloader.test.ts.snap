@@ -9,6 +9,15 @@ exports[`Dataloader > Collection dataloader can be disabled per-query 1`] = `
     "[query] select \`a0\`.\`author_2_id\`, \`a0\`.\`author_1_id\`, \`a1\`.\`id\` as \`a1__id\`, \`a1\`.\`name\` as \`a1__name\`, \`a1\`.\`age\` as \`a1__age\`, \`a1\`.\`email\` as \`a1__email\` from \`author_buddies\` as \`a0\` inner join \`author\` as \`a1\` on \`a0\`.\`author_2_id\` = \`a1\`.\`id\` where \`a0\`.\`author_1_id\` in (2) and \`a1\`.\`age\` < 80",
   ],
   [
+    "[query] select \`c0\`.*, \`r1\`.\`id\` as \`r1__id\`, \`o2\`.\`id\` as \`o2__id\` from \`chat\` as \`c0\` inner join \`author\` as \`r1\` on \`c0\`.\`recipient_id\` = \`r1\`.\`id\` and \`r1\`.\`age\` < 80 inner join \`author\` as \`o2\` on \`c0\`.\`owner_id\` = \`o2\`.\`id\` and \`o2\`.\`age\` < 80 where \`c0\`.\`owner_id\` in (1)",
+  ],
+  [
+    "[query] select \`c0\`.*, \`r1\`.\`id\` as \`r1__id\`, \`o2\`.\`id\` as \`o2__id\` from \`chat\` as \`c0\` inner join \`author\` as \`r1\` on \`c0\`.\`recipient_id\` = \`r1\`.\`id\` and \`r1\`.\`age\` < 80 inner join \`author\` as \`o2\` on \`c0\`.\`owner_id\` = \`o2\`.\`id\` and \`o2\`.\`age\` < 80 where \`c0\`.\`owner_id\` in (2)",
+  ],
+  [
+    "[query] select \`c0\`.*, \`r1\`.\`id\` as \`r1__id\`, \`o2\`.\`id\` as \`o2__id\` from \`chat\` as \`c0\` inner join \`author\` as \`r1\` on \`c0\`.\`recipient_id\` = \`r1\`.\`id\` and \`r1\`.\`age\` < 80 inner join \`author\` as \`o2\` on \`c0\`.\`owner_id\` = \`o2\`.\`id\` and \`o2\`.\`age\` < 80 where \`c0\`.\`owner_id\` in (3)",
+  ],
+  [
     "[query] select \`a0\`.\`author_2_id\`, \`a0\`.\`author_1_id\`, \`a1\`.\`id\` as \`a1__id\`, \`a1\`.\`name\` as \`a1__name\`, \`a1\`.\`age\` as \`a1__age\`, \`a1\`.\`email\` as \`a1__email\` from \`author_buddies\` as \`a0\` inner join \`author\` as \`a1\` on \`a0\`.\`author_2_id\` = \`a1\`.\`id\` where \`a0\`.\`author_1_id\` in (3) and \`a1\`.\`age\` < 80",
   ],
   [
@@ -31,15 +40,6 @@ exports[`Dataloader > Collection dataloader can be disabled per-query 1`] = `
   ],
   [
     "[query] select \`b0\`.*, \`a1\`.\`id\` as \`a1__id\` from \`book\` as \`b0\` inner join \`author\` as \`a1\` on \`b0\`.\`author_id\` = \`a1\`.\`id\` and \`a1\`.\`age\` < 80 where \`b0\`.\`publisher_id\` in (2)",
-  ],
-  [
-    "[query] select \`c0\`.*, \`r1\`.\`id\` as \`r1__id\`, \`o2\`.\`id\` as \`o2__id\` from \`chat\` as \`c0\` inner join \`author\` as \`r1\` on \`c0\`.\`recipient_id\` = \`r1\`.\`id\` and \`r1\`.\`age\` < 80 inner join \`author\` as \`o2\` on \`c0\`.\`owner_id\` = \`o2\`.\`id\` and \`o2\`.\`age\` < 80 where \`c0\`.\`owner_id\` in (1)",
-  ],
-  [
-    "[query] select \`c0\`.*, \`r1\`.\`id\` as \`r1__id\`, \`o2\`.\`id\` as \`o2__id\` from \`chat\` as \`c0\` inner join \`author\` as \`r1\` on \`c0\`.\`recipient_id\` = \`r1\`.\`id\` and \`r1\`.\`age\` < 80 inner join \`author\` as \`o2\` on \`c0\`.\`owner_id\` = \`o2\`.\`id\` and \`o2\`.\`age\` < 80 where \`c0\`.\`owner_id\` in (2)",
-  ],
-  [
-    "[query] select \`c0\`.*, \`r1\`.\`id\` as \`r1__id\`, \`o2\`.\`id\` as \`o2__id\` from \`chat\` as \`c0\` inner join \`author\` as \`r1\` on \`c0\`.\`recipient_id\` = \`r1\`.\`id\` and \`r1\`.\`age\` < 80 inner join \`author\` as \`o2\` on \`c0\`.\`owner_id\` = \`o2\`.\`id\` and \`o2\`.\`age\` < 80 where \`c0\`.\`owner_id\` in (3)",
   ],
 ]
 `;
@@ -169,6 +169,15 @@ exports[`Dataloader > Dataloader should not be globally enabled for Collections 
     "[query] select \`a0\`.\`author_2_id\`, \`a0\`.\`author_1_id\`, \`a1\`.\`id\` as \`a1__id\`, \`a1\`.\`name\` as \`a1__name\`, \`a1\`.\`age\` as \`a1__age\`, \`a1\`.\`email\` as \`a1__email\` from \`author_buddies\` as \`a0\` inner join \`author\` as \`a1\` on \`a0\`.\`author_2_id\` = \`a1\`.\`id\` where \`a0\`.\`author_1_id\` in (2) and \`a1\`.\`age\` < 80",
   ],
   [
+    "[query] select \`c0\`.*, \`r1\`.\`id\` as \`r1__id\`, \`o2\`.\`id\` as \`o2__id\` from \`chat\` as \`c0\` inner join \`author\` as \`r1\` on \`c0\`.\`recipient_id\` = \`r1\`.\`id\` and \`r1\`.\`age\` < 80 inner join \`author\` as \`o2\` on \`c0\`.\`owner_id\` = \`o2\`.\`id\` and \`o2\`.\`age\` < 80 where \`c0\`.\`owner_id\` in (1)",
+  ],
+  [
+    "[query] select \`c0\`.*, \`r1\`.\`id\` as \`r1__id\`, \`o2\`.\`id\` as \`o2__id\` from \`chat\` as \`c0\` inner join \`author\` as \`r1\` on \`c0\`.\`recipient_id\` = \`r1\`.\`id\` and \`r1\`.\`age\` < 80 inner join \`author\` as \`o2\` on \`c0\`.\`owner_id\` = \`o2\`.\`id\` and \`o2\`.\`age\` < 80 where \`c0\`.\`owner_id\` in (2)",
+  ],
+  [
+    "[query] select \`c0\`.*, \`r1\`.\`id\` as \`r1__id\`, \`o2\`.\`id\` as \`o2__id\` from \`chat\` as \`c0\` inner join \`author\` as \`r1\` on \`c0\`.\`recipient_id\` = \`r1\`.\`id\` and \`r1\`.\`age\` < 80 inner join \`author\` as \`o2\` on \`c0\`.\`owner_id\` = \`o2\`.\`id\` and \`o2\`.\`age\` < 80 where \`c0\`.\`owner_id\` in (3)",
+  ],
+  [
     "[query] select \`a0\`.\`author_2_id\`, \`a0\`.\`author_1_id\`, \`a1\`.\`id\` as \`a1__id\`, \`a1\`.\`name\` as \`a1__name\`, \`a1\`.\`age\` as \`a1__age\`, \`a1\`.\`email\` as \`a1__email\` from \`author_buddies\` as \`a0\` inner join \`author\` as \`a1\` on \`a0\`.\`author_2_id\` = \`a1\`.\`id\` where \`a0\`.\`author_1_id\` in (3) and \`a1\`.\`age\` < 80",
   ],
   [
@@ -191,15 +200,6 @@ exports[`Dataloader > Dataloader should not be globally enabled for Collections 
   ],
   [
     "[query] select \`b0\`.*, \`a1\`.\`id\` as \`a1__id\` from \`book\` as \`b0\` inner join \`author\` as \`a1\` on \`b0\`.\`author_id\` = \`a1\`.\`id\` and \`a1\`.\`age\` < 80 where \`b0\`.\`publisher_id\` in (2)",
-  ],
-  [
-    "[query] select \`c0\`.*, \`r1\`.\`id\` as \`r1__id\`, \`o2\`.\`id\` as \`o2__id\` from \`chat\` as \`c0\` inner join \`author\` as \`r1\` on \`c0\`.\`recipient_id\` = \`r1\`.\`id\` and \`r1\`.\`age\` < 80 inner join \`author\` as \`o2\` on \`c0\`.\`owner_id\` = \`o2\`.\`id\` and \`o2\`.\`age\` < 80 where \`c0\`.\`owner_id\` in (1)",
-  ],
-  [
-    "[query] select \`c0\`.*, \`r1\`.\`id\` as \`r1__id\`, \`o2\`.\`id\` as \`o2__id\` from \`chat\` as \`c0\` inner join \`author\` as \`r1\` on \`c0\`.\`recipient_id\` = \`r1\`.\`id\` and \`r1\`.\`age\` < 80 inner join \`author\` as \`o2\` on \`c0\`.\`owner_id\` = \`o2\`.\`id\` and \`o2\`.\`age\` < 80 where \`c0\`.\`owner_id\` in (2)",
-  ],
-  [
-    "[query] select \`c0\`.*, \`r1\`.\`id\` as \`r1__id\`, \`o2\`.\`id\` as \`o2__id\` from \`chat\` as \`c0\` inner join \`author\` as \`r1\` on \`c0\`.\`recipient_id\` = \`r1\`.\`id\` and \`r1\`.\`age\` < 80 inner join \`author\` as \`o2\` on \`c0\`.\`owner_id\` = \`o2\`.\`id\` and \`o2\`.\`age\` < 80 where \`c0\`.\`owner_id\` in (3)",
   ],
 ]
 `;

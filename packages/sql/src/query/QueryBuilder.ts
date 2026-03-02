@@ -1784,7 +1784,7 @@ export class QueryBuilder<
         this._query = {} as any;
         const nqb = this.platform.createNativeQueryBuilder();
         nqb.select('*');
-        nqb.from(raw(`(${this._unionQuery.sql})`, [...this._unionQuery.params]));
+        nqb.from(raw(`(${this._unionQuery.sql})`, this._unionQuery.params));
         this._query!.qb = nqb;
       }
 
