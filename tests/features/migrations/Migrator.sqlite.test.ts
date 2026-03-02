@@ -107,7 +107,7 @@ describe('Migrator (sqlite)', () => {
     migrations.snapshot = false;
   });
 
-  test('migration up/down should update the snapshot to reflect current DB state', async () => {
+  test('migration up should not write the snapshot (GH #7232)', async () => {
     const migrations = orm.config.get('migrations');
     migrations.snapshot = true;
 
@@ -128,23 +128,30 @@ describe('Migrator (sqlite)', () => {
     const migration2 = await migrator.createMigration();
     expect(migration2.diff).toEqual({ down: [], up: [] });
 
+    // spy on storeCurrentSchema to verify up does not call it
+    const storeSchemaSpy = jest.spyOn(migrator as any, 'storeCurrentSchema');
+
     // mock the down method so we don't need real SQL
     const migratorMock = jest.spyOn(Migration.prototype, 'down');
     migratorMock.mockImplementation(async () => void 0);
 
     try {
-      // run the migration up — snapshot should be updated to current DB state
+      // run the migration up — snapshot should NOT be written (read-only FS safe)
       await migrator.up(migration1.fileName);
+      expect(storeSchemaSpy).not.toHaveBeenCalled();
+      // snapshot file should still exist unchanged from create
       const snapshotAfterUp = readFileSync(snapshotPath, 'utf8');
-      expect(snapshotAfterUp).toBeDefined();
+      expect(snapshotAfterUp).toBe(snapshotAfterCreate);
 
-      // run the migration down — snapshot should be updated again
+      // run the migration down — snapshot SHOULD be updated
       await migrator.down(migration1.fileName);
+      expect(storeSchemaSpy).toHaveBeenCalledTimes(1);
       const snapshotAfterDown = readFileSync(snapshotPath, 'utf8');
       expect(snapshotAfterDown).toBeDefined();
     } finally {
       await remove(path + '/' + migration1.fileName);
       await remove(snapshotPath);
+      storeSchemaSpy.mockRestore();
       migratorMock.mockRestore();
       migrations.snapshot = false;
     }
