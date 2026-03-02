@@ -10,7 +10,7 @@ import {
   type EntityDTOProp,
   type EntityKey,
   type EntityManager,
-  type EntityMetadata,
+  EntityMetadata,
   type EntityName,
   type EntityProperty,
   type ExpandProperty,
@@ -60,7 +60,7 @@ import type { SqlEntityManager } from '../SqlEntityManager.js';
 import { CriteriaNodeFactory } from './CriteriaNodeFactory.js';
 import type { ICriteriaNodeProcessOptions, InternalField, IQueryBuilder, JoinOptions } from '../typings.js';
 import type { AbstractSqlPlatform } from '../AbstractSqlPlatform.js';
-import { NativeQueryBuilder } from './NativeQueryBuilder.js';
+import { type CteOptions, NativeQueryBuilder } from './NativeQueryBuilder.js';
 import type { AbstractSqlConnection } from '../AbstractSqlConnection.js';
 
 export interface ExecuteOptions {
@@ -539,6 +539,11 @@ export class QueryBuilder<
   protected _helper?: QueryBuilderHelper;
   protected _query?: { sql?: string; params?: readonly unknown[]; qb: NativeQueryBuilder };
   protected _unionQuery?: { sql: string; params: readonly unknown[] };
+  protected _ctes: (CteOptions & {
+    name: string;
+    query: QueryBuilder<any> | NativeQueryBuilder | RawQueryFragment;
+    recursive?: boolean;
+  })[] = [];
   protected readonly platform: AbstractSqlPlatform;
   private tptJoinsApplied = false;
   private readonly autoJoinedPaths: string[] = [];
@@ -1759,14 +1764,29 @@ export class QueryBuilder<
    * Allows setting a main string alias of the selection data.
    */
   from<Entity extends object>(target: EntityName<Entity>): SelectQueryBuilder<Entity, RootAlias, Hint, Context, RawAliases, Fields>;
+  /**
+   * Specifies a raw table name (e.g. a CTE name) as the FROM source.
+   * Use this after `.with()` / `.withRecursive()` to query from a CTE.
+   *
+   * Note: if the string matches a known entity name, it will be treated as an entity reference
+   * rather than a raw table name. Avoid naming CTEs the same as entity class names.
+   *
+   * @example
+   * ```ts
+   * qb.with('cte', subQb).select('*').from('cte', 'c');
+   * ```
+   */
+  from(target: string, aliasName?: string): SelectQueryBuilder<Entity, RootAlias, Hint, Context, RawAliases, Fields>;
   from<Entity extends object>(
-    target: EntityName<Entity> | QueryBuilder<Entity>,
+    target: EntityName<Entity> | QueryBuilder<Entity> | string,
     aliasName?: string,
   ): SelectQueryBuilder<Entity, RootAlias, Hint, Context, RawAliases, Fields> {
     this.ensureNotFinalized();
 
     if (target instanceof QueryBuilder) {
       this.fromSubQuery(target as any, aliasName);
+    } else if (typeof target === 'string' && !this.metadata.find(target as any)) {
+      this.fromRawTable(target, aliasName);
     } else {
       if (aliasName && this._mainAlias && Utils.className(target) !== this._mainAlias.aliasName) {
         throw new Error(`Cannot override the alias to '${aliasName}' since a query already contains references to '${this._mainAlias.aliasName}'`);
@@ -1798,6 +1818,18 @@ export class QueryBuilder<
     this._query = {} as any;
     this.finalize();
     const qb = this.getQueryBase(processVirtualEntity);
+
+    for (const cte of this._ctes) {
+      const query = cte.query instanceof QueryBuilder ? cte.query.toRaw() : cte.query;
+      const opts: CteOptions = { columns: cte.columns, materialized: cte.materialized };
+
+      if (cte.recursive) {
+        qb.withRecursive(cte.name, query, opts);
+      } else {
+        qb.with(cte.name, query, opts);
+      }
+    }
+
     const schema = this.getSchema(this.mainAlias);
     const isNotEmptyObject = (obj: Dictionary) => Utils.hasObjectKeys(obj) || RawQueryFragment.hasObjectFragments(obj);
 
@@ -2277,6 +2309,56 @@ export class QueryBuilder<
     return result;
   }
 
+  /**
+   * Adds a Common Table Expression (CTE) to the query.
+   *
+   * @example
+   * ```ts
+   * const recentBooks = em.createQueryBuilder(Book, 'b').select('*').where({ ... });
+   * const qb = em.createQueryBuilder(Author, 'a')
+   *   .with('recent_books', recentBooks)
+   *   .select('*')
+   *   .leftJoin(raw('recent_books'), 'rb', { author_id: sql.ref('a.id') });
+   * ```
+   */
+  with(name: string, query: QueryBuilder<any> | NativeQueryBuilder | RawQueryFragment, options?: CteOptions): this {
+    return this.addCte(name, query, options);
+  }
+
+  /**
+   * Adds a recursive Common Table Expression (CTE) to the query.
+   *
+   * @example
+   * ```ts
+   * const base = em.createQueryBuilder(Category).select('*').where({ parent: null });
+   * const rec = em.createQueryBuilder(Category, 'c').select('c.*')
+   *   .join(raw('category_tree'), 'ct', { id: sql.ref('c.parentId') });
+   * const qb = em.createQueryBuilder(Category)
+   *   .withRecursive('category_tree', base.unionAll(rec))
+   *   .select('*').from('category_tree', 'ct');
+   * ```
+   */
+  withRecursive(name: string, query: QueryBuilder<any> | NativeQueryBuilder | RawQueryFragment, options?: CteOptions): this {
+    return this.addCte(name, query, options, true);
+  }
+
+  private addCte(name: string, query: QueryBuilder<any> | NativeQueryBuilder | RawQueryFragment, options?: CteOptions, recursive?: boolean): this {
+    this.ensureNotFinalized();
+
+    if (this._ctes.some(cte => cte.name === name)) {
+      throw new Error(`CTE with name '${name}' already exists`);
+    }
+
+    this._ctes.push({
+      name,
+      query,
+      recursive,
+      columns: options?.columns,
+      materialized: options?.materialized,
+    });
+    return this;
+  }
+
   clone(reset?: boolean | string[], preserve?: string[]): QueryBuilder<Entity, RootAlias, Hint, Context, RawAliases, Fields> {
     const qb = new QueryBuilder<Entity, RootAlias, Hint, Context, RawAliases, Fields>(
       this.mainAlias.entityName,
@@ -2307,6 +2389,13 @@ export class QueryBuilder<
     /* v8 ignore next */
     if (this._fields && reset !== true && !reset.includes('_fields')) {
       qb._fields = [...this._fields];
+    }
+
+    if (this._ctes.length && reset !== true && !reset.includes('_ctes')) {
+      qb._ctes = this._ctes.map(cte => ({
+        ...cte,
+        query: cte.query instanceof QueryBuilder ? cte.query.clone() : cte.query,
+      }));
     }
 
     qb._aliases = { ...this._aliases };
@@ -2699,15 +2788,17 @@ export class QueryBuilder<
 
   private getQueryBase(processVirtualEntity: boolean): NativeQueryBuilder {
     const qb = this.platform.createNativeQueryBuilder().setFlags(this.flags);
-    const { subQuery, aliasName, entityName, meta } = this.mainAlias;
+    const { subQuery, aliasName, entityName, meta, rawTableName } = this.mainAlias;
     const requiresAlias = this.finalized && (this._explicitAlias || this.helper.isTableNameAliasRequired(this.type));
     const alias = requiresAlias ? aliasName : undefined;
     const schema = this.getSchema(this.mainAlias);
-    const tableName = subQuery instanceof NativeQueryBuilder
-      ? subQuery.as(aliasName)
-      : subQuery
-        ? raw(`(${(subQuery as RawQueryFragment).sql}) as ${this.platform.quoteIdentifier(aliasName)}`, (subQuery as RawQueryFragment).params)
-        : this.helper.getTableName(entityName);
+    const tableName = rawTableName
+      ? rawTableName
+      : subQuery instanceof NativeQueryBuilder
+        ? subQuery.as(aliasName)
+        : subQuery
+          ? raw(`(${(subQuery as RawQueryFragment).sql}) as ${this.platform.quoteIdentifier(aliasName)}`, (subQuery as RawQueryFragment).params)
+          : this.helper.getTableName(entityName);
     const joinSchema = this._schema ?? this.em?.schema ?? schema;
 
     if (meta.virtual && processVirtualEntity) {
@@ -3376,6 +3467,23 @@ export class QueryBuilder<
   private fromEntityName(entityName: EntityName<Entity>, aliasName?: string): void {
     aliasName ??= this._mainAlias?.aliasName ?? this.getNextAlias(entityName);
     this.createMainAlias(entityName, aliasName);
+  }
+
+  private fromRawTable(tableName: string, aliasName?: string): void {
+    aliasName ??= this._mainAlias?.aliasName ?? this.getNextAlias(tableName);
+    const meta = new EntityMetadata<Entity>({
+      className: tableName,
+      collection: tableName,
+    });
+    meta.root = meta;
+    this._mainAlias = {
+      aliasName,
+      entityName: tableName as unknown as EntityName<Entity>,
+      meta,
+      rawTableName: tableName,
+    };
+    this._aliases[aliasName] = this._mainAlias;
+    this._helper = this.createQueryBuilderHelper();
   }
 
   private createQueryBuilderHelper(): QueryBuilderHelper {

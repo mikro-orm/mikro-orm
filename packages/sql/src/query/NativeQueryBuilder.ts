@@ -2,6 +2,19 @@ import { type Dictionary, LockMode, type QueryFlag, raw, RawQueryFragment, type 
 import { QueryType } from './enums.js';
 import type { AbstractSqlPlatform } from '../AbstractSqlPlatform.js';
 
+export interface CteOptions {
+  columns?: string[];
+  /** PostgreSQL: MATERIALIZED / NOT MATERIALIZED */
+  materialized?: boolean;
+}
+
+interface CteClause extends CteOptions {
+  name: string;
+  sql: string;
+  params: unknown[];
+  recursive?: boolean;
+}
+
 interface Options {
   tableName?: string | RawQueryFragment;
   indexHint?: string;
@@ -24,6 +37,7 @@ interface Options {
   hintComment?: string[];
   flags?: Set<QueryFlag>;
   wrap?: [prefix: string, suffix: string];
+  ctes?: CteClause[];
 }
 
 interface TableOptions {
@@ -113,6 +127,41 @@ export class NativeQueryBuilder implements Subquery {
     return this;
   }
 
+  /**
+   * The sub-query is compiled eagerly at call time — later mutations to the
+   * sub-query builder will not be reflected in this CTE.
+   */
+  with(name: string, query: NativeQueryBuilder | RawQueryFragment, options?: CteOptions) {
+    return this.addCte(name, query, options);
+  }
+
+  /**
+   * Adds a recursive CTE (`WITH RECURSIVE` on PostgreSQL/MySQL/SQLite, plain `WITH` on MSSQL).
+   * The sub-query is compiled eagerly — later mutations will not be reflected.
+   */
+  withRecursive(name: string, query: NativeQueryBuilder | RawQueryFragment, options?: CteOptions) {
+    return this.addCte(name, query, options, true);
+  }
+
+  private addCte(name: string, query: NativeQueryBuilder | RawQueryFragment, options?: CteOptions, recursive?: boolean) {
+    this.options.ctes ??= [];
+
+    if (this.options.ctes.some(cte => cte.name === name)) {
+      throw new Error(`CTE with name '${name}' already exists`);
+    }
+
+    const { sql, params } = query instanceof NativeQueryBuilder ? query.compile() : { sql: query.sql, params: [...query.params] };
+    this.options.ctes.push({
+      name,
+      sql,
+      params,
+      recursive,
+      columns: options?.columns,
+      materialized: options?.materialized,
+    });
+    return this;
+  }
+
   toString(): string {
     const { sql, params } = this.compile();
     return this.platform.formatQuery(sql, params);
@@ -129,6 +178,8 @@ export class NativeQueryBuilder implements Subquery {
     if (this.options.comment) {
       this.parts.push(...this.options.comment.map(comment => `/* ${comment} */`));
     }
+
+    this.compileCtes();
 
     switch (this.type) {
       case QueryType.SELECT:
@@ -504,6 +555,44 @@ export class NativeQueryBuilder implements Subquery {
     if (this.options.hintComment) {
       this.parts.push(`/*+ ${this.options.hintComment.join(' ')} */`);
     }
+  }
+
+  protected compileCtes() {
+    const ctes = this.options.ctes;
+
+    if (!ctes || ctes.length === 0) {
+      return;
+    }
+
+    const hasRecursive = ctes.some(cte => cte.recursive);
+    const keyword = this.getCteKeyword(hasRecursive);
+    const cteParts: string[] = [];
+
+    for (const cte of ctes) {
+      let part = this.quote(cte.name);
+
+      if (cte.columns?.length) {
+        part += ` (${cte.columns.map(c => this.quote(c)).join(', ')})`;
+      }
+
+      part += ' as';
+
+      if (cte.materialized === true) {
+        part += ' materialized';
+      } else if (cte.materialized === false) {
+        part += ' not materialized';
+      }
+
+      part += ` (${cte.sql})`;
+      this.params.push(...cte.params);
+      cteParts.push(part);
+    }
+
+    this.parts.push(`${keyword} ${cteParts.join(', ')}`);
+  }
+
+  protected getCteKeyword(hasRecursive: boolean): string {
+    return hasRecursive ? 'with recursive' : 'with';
   }
 
   protected getTableName(): string {

@@ -23,7 +23,7 @@ import type { JoinType, QueryType } from './query/enums.js';
 import type { DatabaseSchema } from './schema/DatabaseSchema.js';
 import type { DatabaseTable } from './schema/DatabaseTable.js';
 import type { QueryBuilder } from './query/QueryBuilder.js';
-import type { NativeQueryBuilder } from './query/NativeQueryBuilder.js';
+import type { CteOptions, NativeQueryBuilder } from './query/NativeQueryBuilder.js';
 import type { MikroKyselyPluginOptions } from './plugin/index.js';
 
 export interface Table {
@@ -225,6 +225,8 @@ export interface IQueryBuilder<T> {
   setFlag(flag: QueryFlag): this;
   unsetFlag(flag: QueryFlag): this;
   hasFlag(flag: QueryFlag): boolean;
+  with(name: string, query: QueryBuilder<any> | NativeQueryBuilder | RawQueryFragment, options?: CteOptions): this;
+  withRecursive(name: string, query: QueryBuilder<any> | NativeQueryBuilder | RawQueryFragment, options?: CteOptions): this;
   scheduleFilterCheck(path: string): void;
   withSchema(schema: string): this;
 }
