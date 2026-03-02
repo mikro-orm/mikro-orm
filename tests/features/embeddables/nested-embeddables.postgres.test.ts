@@ -421,6 +421,116 @@ describe('embedded entities in postgres', () => {
     expect(mock.mock.calls[3][0]).toMatch(`select "u0"."id", "u0"."profile2" from "user" as "u0" where "u0"."profile2"->'identity'->'links'->>'url' = $1 limit $2`);
   });
 
+  test('upsert and flush update with nested embedded arrays (GH #7233)', async () => {
+    const mock = mockLogger(orm);
+
+    // upsert to create - mimics the reported reproduction pattern
+    const user = await orm.em.upsert(User, {
+      name: 'Uwe',
+      profile1: {
+        username: 'u1',
+        identity: {
+          email: 'e1',
+          meta: { foo: 'f1', bar: 'b1' },
+          links: [],
+        },
+      },
+      profile2: {
+        username: 'u2',
+        identity: {
+          email: 'e2',
+          meta: { foo: 'f2', bar: 'b2' },
+          links: [],
+        },
+      },
+    } as any);
+
+    // the upsert should have properly nested JSON (no double-encoding)
+    const upsertQuery = mock.mock.calls[0][0];
+    expect(upsertQuery).not.toMatch(`\\"metas\\":\\"[`);
+
+    // now mutate: push links with nested metas, then flush (triggers update via UoW)
+    user.profile1.identity.links.push(new IdentityLink('l1'));
+    user.profile2.identity.links.push(new IdentityLink('l2'));
+    mock.mock.calls.length = 0;
+    await orm.em.flush();
+
+    // the update query should have properly nested JSON, not double-encoded `metas`
+    const updateQuery = mock.mock.calls[1][0];
+    // profile1 uses column-per-field: links column must contain metas as nested array
+    expect(updateQuery).toMatch(`"metas":[{"foo":"f2","bar":"b2"},{"foo":"f3","bar":"b3"},{"foo":"f4","bar":"b4"}]`);
+    // profile2 uses object mode: the whole JSON must have metas as nested array
+    expect(updateQuery).toMatch(`"metas":[{"foo":"f2","bar":"b2"},{"foo":"f3","bar":"b3"},{"foo":"f4","bar":"b4"}]`);
+    // ensure metas is NOT double-encoded as a string within the JSON
+    expect(updateQuery).not.toMatch(`\\"metas\\":\\"[`);
+
+    // now test upsert as update with nested embedded arrays
+    mock.mock.calls.length = 0;
+    orm.em.clear();
+
+    await orm.em.upsert(User, {
+      id: user.id,
+      name: 'Uwe',
+      profile1: {
+        username: 'u1',
+        identity: {
+          email: 'e1',
+          meta: { foo: 'f1', bar: 'b1' },
+          links: [
+            { url: 'l1', meta: { foo: 'f1', bar: 'b1' }, metas: [{ foo: 'f2', bar: 'b2' }] },
+          ],
+        },
+      },
+      profile2: {
+        username: 'u2',
+        identity: {
+          email: 'e2',
+          meta: { foo: 'f2', bar: 'b2' },
+          links: [
+            { url: 'l2', meta: { foo: 'f1', bar: 'b1' }, metas: [{ foo: 'f3', bar: 'b3' }] },
+          ],
+        },
+      },
+    } as any);
+
+    const upsertUpdateQuery = mock.mock.calls[0][0];
+    // ensure metas is NOT double-encoded as a string within the JSON
+    expect(upsertUpdateQuery).not.toMatch(`\\"metas\\":\\"[`);
+  });
+
+  test('em.insert with nested embedded arrays (GH #7233)', async () => {
+    const mock = mockLogger(orm);
+
+    await orm.em.insert(User, {
+      name: 'native',
+      profile1: {
+        username: 'u1',
+        identity: {
+          email: 'e1',
+          links: [
+            { url: 'l1', meta: { foo: 'f1', bar: 'b1' }, metas: [{ foo: 'f2', bar: 'b2' }] },
+          ],
+        },
+      },
+      profile2: {
+        username: 'u2',
+        identity: {
+          email: 'e2',
+          links: [
+            { url: 'l3', meta: { foo: 'f3', bar: 'b3' }, metas: [{ foo: 'f4', bar: 'b4' }] },
+          ],
+        },
+      },
+    });
+
+    // the `links` column should contain properly nested JSON, not double-encoded `metas`
+    const insertQuery = mock.mock.calls[0][0];
+    expect(insertQuery).toMatch(`'[{"url":"l1","meta":{"foo":"f1","bar":"b1"},"metas":[{"foo":"f2","bar":"b2"}]}]'`);
+    expect(insertQuery).toMatch(`'{"username":"u2","identity":{"email":"e2","links":[{"url":"l3","meta":{"foo":"f3","bar":"b3"},"metas":[{"foo":"f4","bar":"b4"}]}]}}'`);
+    // ensure metas is NOT double-encoded as a string within the JSON
+    expect(insertQuery).not.toMatch(`\\"metas\\":\\"[`);
+  });
+
   test('unique constraints', async () => {
     const user1 = new User();
     user1.name = 'Uwe';

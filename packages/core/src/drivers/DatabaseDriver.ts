@@ -322,7 +322,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
           data[prop.fieldNames[0]] = this.mapDataToFieldNames(copy, stringifyJsonArrays, prop.embeddedProps, convertCustomTypes, true);
         }
 
-        if (stringifyJsonArrays && prop.array) {
+        if (stringifyJsonArrays && prop.array && !object) {
           data[prop.fieldNames[0]] = this.platform.convertJsonToDatabaseValue(data[prop.fieldNames[0]]);
         }
 
