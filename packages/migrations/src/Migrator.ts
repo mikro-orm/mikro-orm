@@ -141,7 +141,11 @@ export class Migrator extends AbstractMigrator<AbstractSqlDriver> {
   protected override async runMigrations(method: 'up' | 'down', options?: string | string[] | MigrateOptions): Promise<MigrationInfo[]> {
     const result = await super.runMigrations(method, options);
 
-    if (result.length > 0 && this.options.snapshot) {
+    // Only update the snapshot after `down` — after reverting, the DB state
+    // diverges from what was stored during `create`, so we need to refresh it.
+    // For `up`, the snapshot is already up to date (written during `create`),
+    // and writing it would break read-only production environments (GH #7232).
+    if (method === 'down' && result.length > 0 && this.options.snapshot) {
       const schema = await DatabaseSchema.create(this.em.getConnection(), this.em.getPlatform(), this.config);
       await this.storeCurrentSchema(schema);
     }
