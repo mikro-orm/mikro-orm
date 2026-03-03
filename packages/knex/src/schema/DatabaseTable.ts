@@ -108,14 +108,15 @@ export class DatabaseTable {
         }
       }
 
-      const primary = !meta.compositePK && !!prop.primary && prop.kind === ReferenceKind.SCALAR && this.platform.isNumericColumn(mappedType);
+      const primary = !!prop.primary;
+      const autoincrement = !meta.compositePK && primary && prop.kind === ReferenceKind.SCALAR && this.platform.isNumericColumn(mappedType);
       this.columns[field] = {
         name: prop.fieldNames[idx],
         type: prop.columnTypes[idx],
         generated: prop.generated as string,
         mappedType,
         unsigned: prop.unsigned && this.platform.isNumericColumn(mappedType),
-        autoincrement: prop.autoincrement ?? primary,
+        autoincrement: prop.autoincrement ?? autoincrement,
         primary,
         nullable: this.columns[field]?.nullable ?? !!prop.nullable,
         nativeEnumName: prop.nativeEnumName,
@@ -990,9 +991,41 @@ export class DatabaseTable {
   toJSON(): Dictionary {
     const { platform, columns, ...rest } = this;
     const columnsMapped = Utils.keys(columns).reduce((o, col) => {
-      const { mappedType, ...restCol } = columns[col];
-      o[col] = restCol;
-      o[col].mappedType = Utils.keys(t).find(k => t[k] === mappedType.constructor);
+      const c = columns[col];
+      const normalized: Dictionary = {
+        name: c.name,
+        type: c.type,
+        unsigned: !!c.unsigned,
+        autoincrement: !!c.autoincrement,
+        primary: !!c.primary,
+        nullable: !!c.nullable,
+        unique: !!c.unique,
+        length: c.length ?? null,
+        precision: c.precision ?? null,
+        scale: c.scale ?? null,
+        default: c.default ?? null,
+        comment: c.comment ?? null,
+        enumItems: c.enumItems ?? [],
+        mappedType: Utils.keys(t).find(k => t[k] === c.mappedType.constructor),
+      };
+
+      if (c.generated) {
+        normalized.generated = c.generated;
+      }
+
+      if (c.nativeEnumName) {
+        normalized.nativeEnumName = c.nativeEnumName;
+      }
+
+      if (c.extra) {
+        normalized.extra = c.extra;
+      }
+
+      if (c.ignoreSchemaChanges) {
+        normalized.ignoreSchemaChanges = c.ignoreSchemaChanges;
+      }
+
+      o[col] = normalized;
 
       return o;
     }, {} as Dictionary);

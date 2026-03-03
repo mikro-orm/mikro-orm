@@ -439,13 +439,14 @@ export class Migrator implements IMigrator {
       result = await this.driver.getConnection().transactional(trx => this.runInTransaction(trx, method, options));
     }
 
-    // Only update the snapshot after `down` — after reverting, the DB state
-    // diverges from what was stored during `create`, so we need to refresh it.
-    // For `up`, the snapshot is already up to date (written during `create`),
-    // and writing it would break read-only production environments (GH #7232).
-    if (method === 'down' && result.length > 0 && this.options.snapshot) {
+    if (result.length > 0 && this.options.snapshot) {
       const schema = await DatabaseSchema.create(this.em.getConnection(), this.em.getPlatform(), this.config);
-      await this.storeCurrentSchema(schema);
+
+      try {
+        await this.storeCurrentSchema(schema);
+      } catch {
+        // Silently ignore for read-only filesystems (production).
+      }
     }
 
     return result;

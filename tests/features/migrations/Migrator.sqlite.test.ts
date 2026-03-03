@@ -2,8 +2,7 @@
 import { Umzug } from 'umzug';
 import { MetadataStorage, MikroORM } from '@mikro-orm/core';
 import { Migration, MigrationStorage, Migrator } from '@mikro-orm/migrations';
-import type { DatabaseTable } from '@mikro-orm/sqlite';
-import { DatabaseSchema, SqliteDriver } from '@mikro-orm/sqlite';
+import { DatabaseSchema, DatabaseTable, SqliteDriver } from '@mikro-orm/sqlite';
 import { remove } from 'fs-extra';
 import { initORMSqlite2, mockLogger, TEMP_DIR } from '../../bootstrap';
 import { BaseEntity5, FooBar4, FooBaz4 } from '../../entities-schema';
@@ -107,7 +106,7 @@ describe('Migrator (sqlite)', () => {
     migrations.snapshot = false;
   });
 
-  test('migration up should not write the snapshot (GH #7232)', async () => {
+  test('migration up and down both write the snapshot', async () => {
     const migrations = orm.config.get('migrations');
     migrations.snapshot = true;
 
@@ -128,7 +127,7 @@ describe('Migrator (sqlite)', () => {
     const migration2 = await migrator.createMigration();
     expect(migration2.diff).toEqual({ down: [], up: [] });
 
-    // spy on storeCurrentSchema to verify up does not call it
+    // spy on storeCurrentSchema to verify both up and down call it
     const storeSchemaSpy = jest.spyOn(migrator as any, 'storeCurrentSchema');
 
     // mock the down method so we don't need real SQL
@@ -136,22 +135,116 @@ describe('Migrator (sqlite)', () => {
     migratorMock.mockImplementation(async () => void 0);
 
     try {
-      // run the migration up — snapshot should NOT be written (read-only FS safe)
+      // run the migration up — snapshot SHOULD be written
       await migrator.up(migration1.fileName);
-      expect(storeSchemaSpy).not.toHaveBeenCalled();
-      // snapshot file should still exist unchanged from create
-      const snapshotAfterUp = readFileSync(snapshotPath, 'utf8');
-      expect(snapshotAfterUp).toBe(snapshotAfterCreate);
-
-      // run the migration down — snapshot SHOULD be updated
-      await migrator.down(migration1.fileName);
       expect(storeSchemaSpy).toHaveBeenCalledTimes(1);
+      const snapshotAfterUp = readFileSync(snapshotPath, 'utf8');
+      expect(snapshotAfterUp).toBeDefined();
+
+      // run the migration down — snapshot SHOULD also be updated
+      await migrator.down(migration1.fileName);
+      expect(storeSchemaSpy).toHaveBeenCalledTimes(2);
       const snapshotAfterDown = readFileSync(snapshotPath, 'utf8');
       expect(snapshotAfterDown).toBeDefined();
     } finally {
       await remove(path + '/' + migration1.fileName);
       await remove(snapshotPath);
       storeSchemaSpy.mockRestore();
+      migratorMock.mockRestore();
+      migrations.snapshot = false;
+    }
+  });
+
+  test('migration up/down succeed on read-only filesystem', async () => {
+    const migrations = orm.config.get('migrations');
+    migrations.snapshot = true;
+
+    const dateMock = jest.spyOn(Date.prototype, 'toISOString');
+    dateMock.mockReturnValue('2019-10-13T21:48:13.382Z');
+    const path = process.cwd() + '/temp/migrations-3';
+    const migrator = new Migrator(orm.em);
+
+    // create a blank migration, this stores the snapshot
+    const migration1 = await migrator.createMigration(path, true);
+    expect(migration1.diff).toEqual({ up: ['select 1'], down: ['select 1'] });
+
+    // mock storeCurrentSchema to throw (simulating read-only FS)
+    const storeSchemaSpy = jest.spyOn(migrator as any, 'storeCurrentSchema');
+    storeSchemaSpy.mockRejectedValue(new Error('EROFS: read-only file system'));
+
+    // mock the down method so we don't need real SQL
+    const migratorMock = jest.spyOn(Migration.prototype, 'down');
+    migratorMock.mockImplementation(async () => void 0);
+
+    try {
+      // up should succeed despite storeCurrentSchema throwing
+      await expect(migrator.up(migration1.fileName)).resolves.not.toThrow();
+      // down should also succeed
+      await expect(migrator.down(migration1.fileName)).resolves.not.toThrow();
+    } finally {
+      const snapshotPath = path + '/.snapshot-:memory:.json';
+      await remove(path + '/' + migration1.fileName);
+      await remove(snapshotPath);
+      storeSchemaSpy.mockRestore();
+      migratorMock.mockRestore();
+      migrations.snapshot = false;
+    }
+  });
+
+  test('snapshot from create and up have identical column fields and consistent primary flag (GH #7234)', async () => {
+    const migrations = orm.config.get('migrations');
+    migrations.snapshot = true;
+
+    const { readFileSync } = await import('node:fs');
+    const dateMock = jest.spyOn(Date.prototype, 'toISOString');
+    dateMock.mockReturnValue('2019-10-13T21:48:13.382Z');
+    const path = process.cwd() + '/temp/migrations-3';
+    const migrator = new Migrator(orm.em);
+
+    // create a blank migration — snapshot is written from metadata (getTargetSchema)
+    const migration1 = await migrator.createMigration(path, true);
+    const snapshotPath = path + '/.snapshot-:memory:.json';
+    const snapshotAfterCreate = JSON.parse(readFileSync(snapshotPath, 'utf8'));
+
+    // mock the down method so we don't need real SQL
+    const migratorMock = jest.spyOn(Migration.prototype, 'down');
+    migratorMock.mockImplementation(async () => void 0);
+
+    try {
+      // run up — snapshot is now written from DB introspection (DatabaseSchema.create)
+      await migrator.up(migration1.fileName);
+      const snapshotAfterUp = JSON.parse(readFileSync(snapshotPath, 'utf8'));
+
+      // both snapshots should have the same tables
+      expect(snapshotAfterUp.tables.length).toBe(snapshotAfterCreate.tables.length);
+
+      for (const createTable of snapshotAfterCreate.tables) {
+        const upTable = snapshotAfterUp.tables.find((t: any) => t.name === createTable.name);
+        expect(upTable).toBeDefined();
+
+        for (const [colName, createCol] of Object.entries<any>(createTable.columns)) {
+          const upCol = upTable.columns[colName];
+          expect(upCol).toBeDefined();
+
+          // both paths must produce the same set of fields (structural consistency)
+          expect(Object.keys(upCol).sort()).toEqual(Object.keys(createCol).sort());
+
+          // boolean fields must be proper booleans, not 0/1/undefined
+          for (const boolField of ['primary', 'nullable', 'unsigned', 'autoincrement', 'unique']) {
+            expect(typeof createCol[boolField]).toBe('boolean');
+            expect(typeof upCol[boolField]).toBe('boolean');
+          }
+
+          // PK columns must have primary: true in both paths
+          if (createCol.primary || upCol.primary) {
+            expect(createCol.primary).toBe(true);
+            expect(upCol.primary).toBe(true);
+          }
+        }
+      }
+    } finally {
+      await remove(path + '/' + migration1.fileName);
+      await remove(snapshotPath);
       migratorMock.mockRestore();
       migrations.snapshot = false;
     }
@@ -372,6 +465,47 @@ describe('Migrator (sqlite)', () => {
     await remove(TEMP_DIR + '/migrations/' + migration.fileName);
     await remove(snapshotPath);
     await orm.close();
+  });
+
+  test('toJSON serializes optional column fields (generated, nativeEnumName, extra, ignoreSchemaChanges)', () => {
+    const platform = orm.em.getPlatform();
+    const table = new DatabaseTable(platform, 'test_json');
+
+    table.addColumn({
+      name: 'gen_col',
+      type: 'text',
+      generated: '(col1 || col2) stored',
+      mappedType: platform.getMappedType('text'),
+    });
+    table.addColumn({
+      name: 'enum_col',
+      type: 'user_status',
+      nativeEnumName: 'user_status',
+      mappedType: platform.getMappedType('string'),
+    });
+    table.addColumn({
+      name: 'extra_col',
+      type: 'timestamp',
+      extra: 'on update current_timestamp',
+      mappedType: platform.getMappedType('datetime'),
+    });
+    table.addColumn({
+      name: 'ignore_col',
+      type: 'text',
+      ignoreSchemaChanges: ['type', 'extra'],
+      mappedType: platform.getMappedType('text'),
+    });
+
+    const json = table.toJSON();
+    expect(json.columns.gen_col.generated).toBe('(col1 || col2) stored');
+    expect(json.columns.enum_col.nativeEnumName).toBe('user_status');
+    expect(json.columns.extra_col.extra).toBe('on update current_timestamp');
+    expect(json.columns.ignore_col.ignoreSchemaChanges).toEqual(['type', 'extra']);
+
+    // fields should not appear when not set
+    expect(json.columns.gen_col).not.toHaveProperty('nativeEnumName');
+    expect(json.columns.gen_col).not.toHaveProperty('extra');
+    expect(json.columns.gen_col).not.toHaveProperty('ignoreSchemaChanges');
   });
 
 });
