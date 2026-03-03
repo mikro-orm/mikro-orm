@@ -167,6 +167,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver, EM exten
 
   private readonly options: RequiredOptions<D, EM>;
   private readonly logger: Logger;
+  private readonly slowQueryLogger: Logger;
   private readonly driver!: D;
   private readonly platform!: ReturnType<D['getPlatform']>;
   private readonly cache = new Map<string, any>();
@@ -191,6 +192,16 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver, EM exten
       highlighter: this.options.highlighter,
       writer: this.options.logger,
     });
+
+    const slowQueryLoggerFactory = this.options.slowQueryLogger;
+    this.slowQueryLogger = slowQueryLoggerFactory
+      ? slowQueryLoggerFactory({
+        debugMode: this.options.debug,
+        ignoreDeprecations: this.options.ignoreDeprecations,
+        usesReplicas: (this.options.replicas?.length ?? 0) > 0,
+        highlighter: this.options.highlighter,
+        writer: this.options.logger,
+      }) : this.logger;
 
     const cf = this.options.compiledFunctions as Record<string, unknown> | undefined;
 
@@ -248,6 +259,22 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver, EM exten
    */
   getLogger(): Logger {
     return this.logger;
+  }
+
+  /**
+   * Gets the logger instance for slow queries.
+   * Falls back to the main logger if no custom slow query logger is configured.
+   */
+  getSlowQueryLogger(): Logger {
+    return this.slowQueryLogger;
+  }
+
+  /**
+   * Gets the slow query threshold in milliseconds.
+   * Returns undefined if not configured.
+   */
+  getSlowQueryThreshold(): number | undefined {
+    return this.options.slowQueryThreshold;
   }
 
   getDataloaderType(): DataloaderType {
@@ -1027,6 +1054,18 @@ export interface Options<
    * @default console.log
    */
   logger?: (message: string) => void;
+  /**
+   * Threshold in milliseconds for logging slow queries.
+   * Queries taking longer than this value will be logged via the 'slow-query' namespace at warning level.
+   * @default undefined (slow query logging disabled)
+   */
+  slowQueryThreshold?: number;
+  /**
+   * Factory function to create a custom logger instance for slow queries.
+   * When not provided, the main logger instance is used.
+   * @default undefined (falls back to main logger)
+   */
+  slowQueryLogger?: (options: LoggerOptions) => Logger;
   /**
    * Enable colored output in logs.
    * @default true

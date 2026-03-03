@@ -13,12 +13,14 @@ export abstract class Connection {
   protected platform!: Platform;
   protected readonly options: ConnectionOptions;
   protected readonly logger: Logger;
+  protected readonly slowQueryLogger: Logger;
   protected connected = false;
 
   constructor(protected readonly config: Configuration,
               options?: ConnectionOptions,
               protected readonly type: ConnectionType = 'write') {
     this.logger = this.config.getLogger();
+    this.slowQueryLogger = this.config.getSlowQueryLogger();
     this.platform = this.config.getPlatform();
 
     if (options) {
@@ -150,12 +152,27 @@ export abstract class Connection {
 
     try {
       const res = await cb();
+      const took = Date.now() - now;
+      const threshold = this.config.getSlowQueryThreshold();
+      
       this.logQuery(query, {
         ...context,
-        took: Date.now() - now,
+        took,
         results: Array.isArray(res) ? res.length : undefined,
         affected: Utils.isPlainObject<QueryResult>(res) ? res.affectedRows : undefined,
       });
+
+      if (threshold && took >= threshold) {
+        this.slowQueryLogger.warn('slow-query', `${query} [took ${took} ms]`, {
+          ...context,
+          took,
+          connection: {
+            type: this.type,
+            name: this.options.name || this.config.get('name') || this.options.host,
+          },
+          query,
+        });
+      }
 
       return res;
     } catch (e) {

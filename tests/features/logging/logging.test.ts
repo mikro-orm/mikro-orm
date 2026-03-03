@@ -152,4 +152,60 @@ describe('logging', () => {
     expect(logSpy.mock.calls[1][2]).toMatchObject({ id: em.id, label: 'foo', bar: 123 });
   });
 
+  describe('slow query logging', () => {
+    let slowOrm: MikroORM;
+    let slowLoggerMock: Mock;
+  
+    beforeAll(async () => {
+      slowLoggerMock = vi.fn();
+  
+      slowOrm = await MikroORM.init({
+        metadataProvider: ReflectMetadataProvider,
+        entities: [Example],
+        dbName: ':memory:',
+        loggerFactory: opts => new DefaultLogger(opts),
+        slowQueryThreshold: 1, // enable slow query logging
+        slowQueryLogger: opts => new DefaultLogger({
+          ...opts,
+          writer: slowLoggerMock,
+        }),
+      });
+  
+      await slowOrm.schema.create();
+    });
+  
+    afterAll(async () => {
+      await slowOrm.close(true);
+    });
+  
+    beforeEach(async () => {
+      await slowOrm.schema.clear();
+      const example = new Example();
+      example.id = 1;
+      await slowOrm.em.persist(example).flush();
+      slowOrm.em.clear();
+      vi.clearAllMocks();
+    });
+  
+    it('logs slow queries via slow-query namespace when threshold is exceeded', async () => {
+      const nowSpy = vi.spyOn(Date, 'now');
+      nowSpy
+        .mockImplementationOnce(() => 0)
+        .mockImplementationOnce(() => 5);
+
+      const em = slowOrm.em.fork();
+  
+      await em.findOneOrFail(Example, { id: 1 });
+  
+      expect(slowLoggerMock).toHaveBeenCalled();
+  
+      expect(slowLoggerMock.mock.calls).toHaveLength(1);
+      const firstCallMsg = slowLoggerMock.mock.calls[0][0] as string;
+      expect(firstCallMsg).toContain('[slow-query]');
+      expect(firstCallMsg).toContain('[took 5 ms]');
+
+      nowSpy.mockRestore();
+    });
+  
+  });
 });

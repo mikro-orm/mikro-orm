@@ -67,6 +67,7 @@ export class DefaultLogger implements Logger {
 
   isEnabled(namespace: LoggerNamespace, context?: LogContext) {
     if (context?.enabled !== undefined) { return context.enabled; }
+    if (namespace === 'slow-query') { return true; }
     const debugMode = context?.debugMode ?? this.debugMode;
 
     if (namespace === 'deprecated') {
