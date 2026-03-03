@@ -4,7 +4,10 @@ import { v4 as uuidv4 } from 'uuid';
 const Firm = defineEntity({
   name: 'Firm',
   properties: {
-    id: p.uuid().primary().onCreate(() => uuidv4()),
+    id: p
+      .uuid()
+      .primary()
+      .onCreate(() => uuidv4()),
     head: () => p.manyToOne(Employee).deleteRule('cascade').updateRule('no action'),
   },
 });
@@ -12,7 +15,10 @@ const Firm = defineEntity({
 const Employee = defineEntity({
   name: 'Employee',
   properties: {
-    id: p.uuid().primary().onCreate(() => uuidv4()),
+    id: p
+      .uuid()
+      .primary()
+      .onCreate(() => uuidv4()),
     surname: p.string(),
     name: p.string(),
     label: p.string().formula(cols => `${cols.surname} ||' '|| ${cols.name}`),

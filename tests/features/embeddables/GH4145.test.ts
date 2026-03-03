@@ -11,7 +11,6 @@ import { MikroORM } from '@mikro-orm/sqlite';
 
 @Embeddable()
 class Time {
-
   @Property()
   hour: number;
 
@@ -22,29 +21,24 @@ class Time {
     this.hour = hour;
     this.minute = minute;
   }
-
 }
 
 @Embeddable()
 class TimeInterval {
-
   @Embedded(() => Time)
   start!: Time;
 
   @Embedded(() => Time)
   end!: Time;
-
 }
 
 @Entity()
 class Example {
-
   @PrimaryKey()
   name!: string;
 
   @Embedded(() => TimeInterval)
   timeInterval!: TimeInterval;
-
 }
 
 describe('embedded entities without other properties', () => {

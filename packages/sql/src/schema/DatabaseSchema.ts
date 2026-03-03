@@ -15,14 +15,15 @@ import type { AbstractSqlPlatform } from '../AbstractSqlPlatform.js';
  * @internal
  */
 export class DatabaseSchema {
-
   private tables: DatabaseTable[] = [];
   private views: DatabaseView[] = [];
   private namespaces = new Set<string>();
   private nativeEnums: Dictionary<{ name: string; schema?: string; items: string[] }> = {}; // for postgres
 
-  constructor(private readonly platform: AbstractSqlPlatform,
-              readonly name: string) { }
+  constructor(
+    private readonly platform: AbstractSqlPlatform,
+    readonly name: string,
+  ) {}
 
   addTable(name: string, schema: string | undefined | null, comment?: string): DatabaseTable {
     const namespaceName = schema ?? this.name;
@@ -50,7 +51,13 @@ export class DatabaseSchema {
     return !!this.getTable(name);
   }
 
-  addView(name: string, schema: string | undefined | null, definition: string, materialized?: boolean, withData?: boolean): DatabaseView {
+  addView(
+    name: string,
+    schema: string | undefined | null,
+    definition: string,
+    materialized?: boolean,
+    withData?: boolean,
+  ): DatabaseView {
     const namespaceName = schema ?? this.name;
     const view: DatabaseView = { name, schema: namespaceName, definition, materialized, withData };
     this.views.push(view);
@@ -104,14 +111,29 @@ export class DatabaseSchema {
     return [...this.namespaces];
   }
 
-  static async create(connection: AbstractSqlConnection, platform: AbstractSqlPlatform, config: Configuration, schemaName?: string, schemas?: string[], takeTables?: (string | RegExp)[], skipTables?: (string | RegExp)[], skipViews?: (string | RegExp)[]): Promise<DatabaseSchema> {
+  static async create(
+    connection: AbstractSqlConnection,
+    platform: AbstractSqlPlatform,
+    config: Configuration,
+    schemaName?: string,
+    schemas?: string[],
+    takeTables?: (string | RegExp)[],
+    skipTables?: (string | RegExp)[],
+    skipViews?: (string | RegExp)[],
+  ): Promise<DatabaseSchema> {
     const schema = new DatabaseSchema(platform, schemaName ?? config.get('schema') ?? platform.getDefaultSchemaName());
     const allTables = await platform.getSchemaHelper()!.getAllTables(connection, schemas);
     const parts = config.get('migrations').tableName!.split('.');
     const migrationsTableName = parts[1] ?? parts[0];
     const migrationsSchemaName = parts.length > 1 ? parts[0] : config.get('schema', platform.getDefaultSchemaName());
-    const tables = allTables.filter(t => this.isTableNameAllowed(t.table_name, takeTables, skipTables) && (t.table_name !== migrationsTableName || (t.schema_name && t.schema_name !== migrationsSchemaName)));
-    await platform.getSchemaHelper()!.loadInformationSchema(schema, connection, tables, schemas && schemas.length > 0 ? schemas : undefined);
+    const tables = allTables.filter(
+      t =>
+        this.isTableNameAllowed(t.table_name, takeTables, skipTables) &&
+        (t.table_name !== migrationsTableName || (t.schema_name && t.schema_name !== migrationsSchemaName)),
+    );
+    await platform
+      .getSchemaHelper()!
+      .loadInformationSchema(schema, connection, tables, schemas && schemas.length > 0 ? schemas : undefined);
 
     // Load views from database
     await platform.getSchemaHelper()!.loadViews(schema, connection);
@@ -129,7 +151,13 @@ export class DatabaseSchema {
     return schema;
   }
 
-  static fromMetadata(metadata: EntityMetadata[], platform: AbstractSqlPlatform, config: Configuration, schemaName?: string, em?: any): DatabaseSchema {
+  static fromMetadata(
+    metadata: EntityMetadata[],
+    platform: AbstractSqlPlatform,
+    config: Configuration,
+    schemaName?: string,
+    em?: any,
+  ): DatabaseSchema {
     const schema = new DatabaseSchema(platform, schemaName ?? config.get('schema'));
     const nativeEnums: Dictionary<{ name: string; schema?: string; items: string[] }> = {};
     const skipColumns = config.get('schemaGenerator').skipColumns || {};
@@ -173,7 +201,13 @@ export class DatabaseSchema {
       if (meta.view) {
         const viewDefinition = this.getViewDefinition(meta, em, platform);
         if (viewDefinition) {
-          schema.addView(meta.collection, this.getSchemaName(meta, config, schemaName), viewDefinition, meta.materialized, meta.withData);
+          schema.addView(
+            meta.collection,
+            this.getSchemaName(meta, config, schemaName),
+            viewDefinition,
+            meta.materialized,
+            meta.withData,
+          );
         }
         continue;
       }
@@ -183,9 +217,8 @@ export class DatabaseSchema {
 
       // For TPT child entities, only use ownProps (properties defined in this entity only)
       // For all other entities (including TPT root), use all props
-      const propsToProcess = meta.inheritanceType === 'tpt' && meta.tptParent && meta.ownProps
-        ? meta.ownProps
-        : meta.props;
+      const propsToProcess =
+        meta.inheritanceType === 'tpt' && meta.tptParent && meta.ownProps ? meta.ownProps : meta.props;
 
       for (const prop of propsToProcess) {
         if (!this.shouldHaveColumn(meta, prop, skipColumns)) {
@@ -222,14 +255,17 @@ export class DatabaseSchema {
       meta.uniques.forEach(index => table.addIndex(meta, index, 'unique'));
 
       // For TPT child entities, the PK is also defined here
-      const pkPropsForIndex = meta.inheritanceType === 'tpt' && meta.tptParent
-        ? meta.primaryKeys.map(pk => meta.properties[pk])
-        : meta.props.filter(prop => prop.primary);
+      const pkPropsForIndex =
+        meta.inheritanceType === 'tpt' && meta.tptParent
+          ? meta.primaryKeys.map(pk => meta.properties[pk])
+          : meta.props.filter(prop => prop.primary);
       table.addIndex(meta, { properties: pkPropsForIndex.map(prop => prop.name) }, 'primary');
 
       for (const check of meta.checks) {
         const columnName = check.property ? meta.properties[check.property].fieldNames[0] : undefined;
-        const expression = isRaw(check.expression) ? platform.formatQuery(check.expression.sql, check.expression.params) : check.expression as string;
+        const expression = isRaw(check.expression)
+          ? platform.formatQuery(check.expression.sql, check.expression.params)
+          : (check.expression as string);
 
         table.addCheck({
           name: check.name!,
@@ -258,7 +294,9 @@ export class DatabaseSchema {
 
     // Async expressions are not supported for view entities
     if (result && typeof result.then === 'function') {
-      throw new Error(`View entity ${meta.className} expression returned a Promise. Async expressions are not supported for view entities.`);
+      throw new Error(
+        `View entity ${meta.className} expression returned a Promise. Async expressions are not supported for view entities.`,
+      );
     }
 
     /* v8 ignore next */
@@ -288,13 +326,19 @@ export class DatabaseSchema {
    * Add a foreign key from a TPT child entity's PK to its parent entity's PK.
    * This FK uses ON DELETE CASCADE to ensure child rows are deleted when parent is deleted.
    */
-  private static addTPTForeignKey(table: DatabaseTable, meta: EntityMetadata, config: Configuration, platform: AbstractSqlPlatform): void {
+  private static addTPTForeignKey(
+    table: DatabaseTable,
+    meta: EntityMetadata,
+    config: Configuration,
+    platform: AbstractSqlPlatform,
+  ): void {
     const parent = meta.tptParent!;
     const pkColumnNames = meta.primaryKeys.flatMap(pk => meta.properties[pk].fieldNames);
     const parentPkColumnNames = parent.primaryKeys.flatMap(pk => parent.properties[pk].fieldNames);
 
     // Determine the parent table name with schema
-    const parentSchema = parent.schema === '*' ? undefined : parent.schema ?? config.get('schema', platform.getDefaultSchemaName());
+    const parentSchema =
+      parent.schema === '*' ? undefined : (parent.schema ?? config.get('schema', platform.getDefaultSchemaName()));
     const parentTableName = parentSchema ? `${parentSchema}.${parent.tableName}` : parent.tableName;
 
     // Create FK constraint name
@@ -323,14 +367,22 @@ export class DatabaseSchema {
     return !(skipNames?.some(pattern => this.matchName(name, pattern)) ?? false);
   }
 
-  private static isTableNameAllowed(tableName: string, takeTables?: (string | RegExp)[], skipTables?: (string | RegExp)[]) {
+  private static isTableNameAllowed(
+    tableName: string,
+    takeTables?: (string | RegExp)[],
+    skipTables?: (string | RegExp)[],
+  ) {
     return (
       (takeTables?.some(tableNameToMatch => this.matchName(tableName, tableNameToMatch)) ?? true) &&
       this.isNameAllowed(tableName, skipTables)
     );
   }
 
-  private static shouldHaveColumn(meta: EntityMetadata, prop: EntityProperty, skipColumns?: Dictionary<(string | RegExp)[]>): boolean {
+  private static shouldHaveColumn(
+    meta: EntityMetadata,
+    prop: EntityProperty,
+    skipColumns?: Dictionary<(string | RegExp)[]>,
+  ): boolean {
     if (prop.persist === false || (prop.columnTypes?.length ?? 0) === 0) {
       return false;
     }
@@ -356,14 +408,18 @@ export class DatabaseSchema {
       return true;
     }
 
-    const getRootProperty: (prop: EntityProperty) => EntityProperty = (prop: EntityProperty) => prop.embedded ? getRootProperty(meta.properties[prop.embedded[0]]) : prop;
+    const getRootProperty: (prop: EntityProperty) => EntityProperty = (prop: EntityProperty) =>
+      prop.embedded ? getRootProperty(meta.properties[prop.embedded[0]]) : prop;
     const rootProp = getRootProperty(prop);
 
     if (rootProp.kind === ReferenceKind.EMBEDDED) {
       return prop === rootProp || !rootProp.object;
     }
 
-    return [ReferenceKind.SCALAR, ReferenceKind.MANY_TO_ONE].includes(prop.kind) || (prop.kind === ReferenceKind.ONE_TO_ONE && prop.owner);
+    return (
+      [ReferenceKind.SCALAR, ReferenceKind.MANY_TO_ONE].includes(prop.kind) ||
+      (prop.kind === ReferenceKind.ONE_TO_ONE && prop.owner)
+    );
   }
 
   toJSON(): Dictionary {
@@ -374,24 +430,31 @@ export class DatabaseSchema {
   prune(schema: string | undefined, wildcardSchemaTables: string[]): void {
     const hasWildcardSchema = wildcardSchemaTables.length > 0;
     this.tables = this.tables.filter(table => {
-      return (!schema && !hasWildcardSchema)                        // no schema specified and we don't have any multi-schema entity
-        || table.schema === schema                                  // specified schema matches the table's one
-        || (!schema && !wildcardSchemaTables.includes(table.name)); // no schema specified and the table has fixed one provided
+      return (
+        (!schema && !hasWildcardSchema) || // no schema specified and we don't have any multi-schema entity
+        table.schema === schema || // specified schema matches the table's one
+        (!schema && !wildcardSchemaTables.includes(table.name))
+      ); // no schema specified and the table has fixed one provided
     });
 
     this.views = this.views.filter(view => {
       /* v8 ignore next */
-      return (!schema && !hasWildcardSchema)
-        || view.schema === schema
-        || (!schema && !wildcardSchemaTables.includes(view.name));
+      return (
+        (!schema && !hasWildcardSchema) ||
+        view.schema === schema ||
+        (!schema && !wildcardSchemaTables.includes(view.name))
+      );
     });
 
     // remove namespaces of ignored tables and views
     for (const ns of this.namespaces) {
-      if (!this.tables.some(t => t.schema === ns) && !this.views.some(v => v.schema === ns) && !Object.values(this.nativeEnums).some(e => e.schema === ns)) {
+      if (
+        !this.tables.some(t => t.schema === ns) &&
+        !this.views.some(v => v.schema === ns) &&
+        !Object.values(this.nativeEnums).some(e => e.schema === ns)
+      ) {
         this.namespaces.delete(ns);
       }
     }
   }
-
 }

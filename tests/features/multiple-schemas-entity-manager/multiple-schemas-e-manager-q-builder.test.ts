@@ -1,11 +1,18 @@
 import { Collection, LoadStrategy, MikroORM } from '@mikro-orm/core';
-import { Entity, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  OneToOne,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { mockLogger } from '../../helpers.js';
 
 @Entity({ schema: 'n2' })
 class Domain {
-
   @PrimaryKey()
   id!: number;
 
@@ -14,11 +21,9 @@ class Domain {
 
   @OneToMany(() => SubDomain, e => e.domain)
   subDomain = new Collection<SubDomain>(this);
-
 }
 @Entity({ schema: '*' })
 class SubDomain {
-
   @PrimaryKey()
   id!: number;
 
@@ -27,13 +32,10 @@ class SubDomain {
 
   @ManyToOne(() => Domain, { nullable: true })
   domain?: Domain;
-
 }
-
 
 @Entity({ schema: '*' })
 class Topic {
-
   @PrimaryKey()
   id!: number;
 
@@ -45,18 +47,15 @@ class Topic {
 
   @OneToOne(() => Domain, { nullable: true })
   domain?: Domain;
-
 }
 
 @Entity({ schema: '*' })
 class Category {
-
   @PrimaryKey()
   id!: number;
 
   @ManyToOne(() => Topic, { nullable: true })
   topic?: Topic;
-
 }
 
 describe('multiple connected schemas in postgres', () => {
@@ -119,21 +118,29 @@ describe('multiple connected schemas in postgres', () => {
       .leftJoinAndSelect('topic.domain', 'domain')
       .execute();
 
-    await fork.findOne(Domain, {
-      id: 1,
-    }, {
-      populate: ['subDomain'],
-      strategy: LoadStrategy.JOINED,
-      disableIdentityMap: true,
-    });
+    await fork.findOne(
+      Domain,
+      {
+        id: 1,
+      },
+      {
+        populate: ['subDomain'],
+        strategy: LoadStrategy.JOINED,
+        disableIdentityMap: true,
+      },
+    );
 
-    await fork.findOne(Topic, {
-      id: 1,
-    }, {
-      populate: ['domain'],
-      strategy: LoadStrategy.JOINED,
-      disableIdentityMap: true,
-    });
+    await fork.findOne(
+      Topic,
+      {
+        id: 1,
+      },
+      {
+        populate: ['domain'],
+        strategy: LoadStrategy.JOINED,
+        disableIdentityMap: true,
+      },
+    );
 
     /**
      * All * entities should use schema set in EntityManager (n5)
@@ -228,7 +235,8 @@ describe('multiple connected schemas in postgres', () => {
     const mock = mockLogger(orm);
     mock.mockReset();
 
-    await orm.em.fork({ schema: 'n5' })
+    await orm.em
+      .fork({ schema: 'n5' })
       .getRepository(Domain)
       .createQueryBuilder('domain')
       .leftJoinAndSelect('domain.subDomain', 'subDomain')

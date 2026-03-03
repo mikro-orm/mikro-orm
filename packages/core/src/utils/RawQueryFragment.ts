@@ -8,13 +8,15 @@ export type RawQueryFragmentSymbol = symbol & {
 };
 
 export class RawQueryFragment<Alias extends string = string> {
-
   static #rawQueryReferences = new WeakMap<RawQueryFragmentSymbol, RawQueryFragment>();
   #key?: RawQueryFragmentSymbol;
   /** @internal Type-level only - used to track the alias for type inference */
-  private declare readonly __alias?: Alias;
+  declare private readonly __alias?: Alias;
 
-  constructor(readonly sql: string, readonly params: unknown[] = []) {}
+  constructor(
+    readonly sql: string,
+    readonly params: unknown[] = [],
+  ) {}
 
   get key(): RawQueryFragmentSymbol {
     if (!this.#key) {
@@ -57,7 +59,10 @@ export class RawQueryFragment<Alias extends string = string> {
   }
 
   static hasObjectFragments(object: unknown): boolean {
-    return Utils.isPlainObject(object) && Object.getOwnPropertySymbols(object).some(symbol => this.isKnownFragmentSymbol(symbol));
+    return (
+      Utils.isPlainObject(object) &&
+      Object.getOwnPropertySymbols(object).some(symbol => this.isKnownFragmentSymbol(symbol))
+    );
   }
 
   static isKnownFragment(key: unknown): key is RawQueryFragment | symbol {
@@ -89,7 +94,6 @@ export class RawQueryFragment<Alias extends string = string> {
 
     return { sql: this.sql };
   }
-
 }
 
 export { RawQueryFragment as Raw };
@@ -163,7 +167,10 @@ export const ALIAS_REPLACEMENT_RE = '\\[::alias::\\]';
  * export class Author { ... }
  * ```
  */
-export function raw<R = RawQueryFragment & symbol, T extends object = any>(sql: EntityKey<T> | EntityKey<T>[] | AnyString | ((alias: string) => string) | RawQueryFragment, params?: readonly unknown[] | Dictionary<unknown>): R {
+export function raw<R = RawQueryFragment & symbol, T extends object = any>(
+  sql: EntityKey<T> | EntityKey<T>[] | AnyString | ((alias: string) => string) | RawQueryFragment,
+  params?: readonly unknown[] | Dictionary<unknown>,
+): R {
   if (sql instanceof RawQueryFragment) {
     return sql as R;
   }
@@ -218,18 +225,23 @@ export function sql<R = RawQueryFragment & symbol>(sql: readonly string[], ...va
   return raw<R>(sql.join('?'), values);
 }
 
-export function createSqlFunction<R = RawQueryFragment & symbol, T extends object = any>(func: string, key: string | ((alias: string) => string)): R {
+export function createSqlFunction<R = RawQueryFragment & symbol, T extends object = any>(
+  func: string,
+  key: string | ((alias: string) => string),
+): R {
   if (typeof key === 'string') {
     return raw<R, T>(`${func}(${key})`);
   }
 
-  return raw<R, T>(a => `${func}(${(key(a))})`);
+  return raw<R, T>(a => `${func}(${key(a)})`);
 }
 
 sql.ref = <T extends object = any>(...keys: string[]) => raw<RawQueryFragment & symbol, T>('??', [keys.join('.')]);
 sql.now = (length?: number) => raw('current_timestamp' + (length == null ? '' : `(${length})`));
-sql.lower = <R = RawQueryFragment & symbol, T extends object = any>(key: string | ((alias: string) => string)) => createSqlFunction<R, T>('lower', key);
-sql.upper = <R = RawQueryFragment & symbol, T extends object = any>(key: string | ((alias: string) => string)) => createSqlFunction<R, T>('upper', key);
+sql.lower = <R = RawQueryFragment & symbol, T extends object = any>(key: string | ((alias: string) => string)) =>
+  createSqlFunction<R, T>('lower', key);
+sql.upper = <R = RawQueryFragment & symbol, T extends object = any>(key: string | ((alias: string) => string)) =>
+  createSqlFunction<R, T>('upper', key);
 
 /**
  * Tag function providing quoting of db identifiers (table name, columns names, index names, ...).

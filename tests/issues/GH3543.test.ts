@@ -11,7 +11,6 @@ import { v4 } from 'uuid';
 
 @Entity()
 class Order {
-
   [OptionalProps]?: 'orderId';
 
   @PrimaryKey()
@@ -25,12 +24,10 @@ class Order {
 
   @OneToMany(() => OrderEvent, orderEvent => orderEvent.order, { orphanRemoval: true })
   events = new Collection<OrderEvent>(this);
-
 }
 
 @Entity()
 class OrderEvent {
-
   [OptionalProps]?: 'orderEventId' | 'order';
 
   @PrimaryKey()
@@ -41,7 +38,6 @@ class OrderEvent {
 
   @ManyToOne(() => Order, { primary: true })
   order!: Order;
-
 }
 
 let orm: MikroORM;
@@ -73,21 +69,29 @@ test('GH issue 3543', async () => {
   await orm.em.persist(order).flush();
   orm.em.clear();
 
-  order = await orm.em.findOneOrFail(Order, {
-    customerId: '456',
-    companyId: '789',
-    orderId: order.orderId,
-  }, { populate: ['*'] });
+  order = await orm.em.findOneOrFail(
+    Order,
+    {
+      customerId: '456',
+      companyId: '789',
+      orderId: order.orderId,
+    },
+    { populate: ['*'] },
+  );
 
   order.events.removeAll();
   await orm.em.flush();
   orm.em.clear();
 
-  order = await orm.em.findOneOrFail(Order, {
-    customerId: '456',
-    companyId: '789',
-    orderId: order.orderId,
-  }, { populate: ['*'] });
+  order = await orm.em.findOneOrFail(
+    Order,
+    {
+      customerId: '456',
+      companyId: '789',
+      orderId: order.orderId,
+    },
+    { populate: ['*'] },
+  );
 
   expect(order.events).toHaveLength(0);
 });
@@ -105,17 +109,21 @@ test('GH issue 3543 without orphan removal builds correct query', async () => {
   await orm.em.persist(order).flush();
   orm.em.clear();
 
-  order = await orm.em.findOneOrFail(Order, {
-    customerId: '456',
-    companyId: '789',
-    orderId: order.orderId,
-  }, { populate: ['*'] });
+  order = await orm.em.findOneOrFail(
+    Order,
+    {
+      customerId: '456',
+      companyId: '789',
+      orderId: order.orderId,
+    },
+    { populate: ['*'] },
+  );
 
   // disconnecting the relation without orphan removal throws, as it means nulling it on the owning side, which would fail as it is a non-null PK column
   expect(() => order.events.removeAll()).toThrow(
     'Removing items from collection Order.events without `orphanRemoval: true` would break non-null constraint on the owning side. You have several options: \n' +
-    ' - add `orphanRemoval: true` to the collection options\n' +
-    ' - add `deleteRule: \'cascade\'` to the owning side options\n' +
-    ' - add `nullable: true` to the owning side options',
+      ' - add `orphanRemoval: true` to the collection options\n' +
+      " - add `deleteRule: 'cascade'` to the owning side options\n" +
+      ' - add `nullable: true` to the owning side options',
   );
 });

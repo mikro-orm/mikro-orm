@@ -11,7 +11,6 @@ import {
 
 @Entity({ tableName: 'customers' })
 class Customer {
-
   @PrimaryKey()
   id!: number;
 
@@ -20,12 +19,10 @@ class Customer {
 
   @OneToMany(() => Order, order => order.customer)
   orders = new Collection<Order>(this);
-
 }
 
 @Entity({ tableName: 'orders' })
 class Order {
-
   @PrimaryKey()
   id!: number;
 
@@ -34,11 +31,9 @@ class Order {
 
   @ManyToOne(() => Customer)
   customer!: Customer;
-
 }
 
 class OrdersSubscriber implements EventSubscriber<Order> {
-
   getSubscribedEntities() {
     return [Order];
   }
@@ -52,7 +47,6 @@ class OrdersSubscriber implements EventSubscriber<Order> {
       }
     }
   }
-
 }
 
 let orm: MikroORM;

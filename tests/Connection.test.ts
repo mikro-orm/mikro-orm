@@ -4,7 +4,6 @@ import { MongoDriver } from '@mikro-orm/mongodb';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 class CustomConnection extends Connection {
-
   protected client: any;
 
   override async close(force?: boolean): Promise<void> {
@@ -26,14 +25,14 @@ class CustomConnection extends Connection {
   async checkConnection(): Promise<{ ok: true } | { ok: false; reason: string; error?: Error }> {
     return { ok: false, reason: 'foo' };
   }
-
 }
 
 describe('Connection', () => {
-
   test('by default it throws when trying to use transactions', async () => {
     const conn = new CustomConnection(new Configuration({ driver: MongoDriver }, false));
-    await expect(conn.transactional(async () => void 0)).rejects.toThrow('Transactions are not supported by current driver');
+    await expect(conn.transactional(async () => void 0)).rejects.toThrow(
+      'Transactions are not supported by current driver',
+    );
     await expect(conn.begin()).rejects.toThrow('Transactions are not supported by current driver');
     await expect(conn.commit({} as any)).rejects.toThrow('Transactions are not supported by current driver');
     await expect(conn.rollback({} as any)).rejects.toThrow('Transactions are not supported by current driver');
@@ -53,7 +52,10 @@ describe('Connection', () => {
   });
 
   test('additional query parameters (#5608)', async () => {
-    const options = { driver: PostgreSqlDriver, clientUrl: 'postgresql://user%40:passw%40rd@host:1234/db%40name?host=/cloudsql/PROJECT:REGION:INSTANCE' } as const;
+    const options = {
+      driver: PostgreSqlDriver,
+      clientUrl: 'postgresql://user%40:passw%40rd@host:1234/db%40name?host=/cloudsql/PROJECT:REGION:INSTANCE',
+    } as const;
     const conn = new CustomConnection(new Configuration(options, false));
     expect(conn.getConnectionOptions()).toMatchObject({
       host: 'host',
@@ -63,5 +65,4 @@ describe('Connection', () => {
       database: 'db@name',
     });
   });
-
 });

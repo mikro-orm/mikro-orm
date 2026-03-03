@@ -4,7 +4,6 @@ import { MikroORM } from '@mikro-orm/sqlite';
 
 @Entity()
 class Author {
-
   @PrimaryKey()
   id!: number;
 
@@ -16,12 +15,10 @@ class Author {
 
   @Property()
   email!: string;
-
 }
 
 @Entity()
 class Book {
-
   @PrimaryKey()
   id!: number;
 
@@ -33,7 +30,6 @@ class Book {
 
   @ManyToOne({ entity: () => Author })
   author!: Author;
-
 }
 
 async function initORM() {

@@ -2,7 +2,6 @@ import type { EntityManager } from '../EntityManager.js';
 import { createAsyncContext } from './AsyncContext.js';
 
 export class TransactionContext {
-
   private static storage = createAsyncContext<TransactionContext>();
   readonly id: number;
 
@@ -32,5 +31,4 @@ export class TransactionContext {
     const context = TransactionContext.currentTransactionContext();
     return context?.em.name === name ? context.em : undefined;
   }
-
 }

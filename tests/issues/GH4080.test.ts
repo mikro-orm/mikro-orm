@@ -1,9 +1,7 @@
 import { EntitySchema, MikroORM, SimpleLogger } from '@mikro-orm/sqlite';
 
 abstract class BaseClass {
-
   id?: number;
-
 }
 
 interface BaseInterface {
@@ -11,16 +9,12 @@ interface BaseInterface {
 }
 
 class DerivedClass extends BaseClass {
-
   name?: string;
-
 }
 
 class ImplementingClass implements BaseInterface {
-
   id?: number;
   name?: string;
-
 }
 
 const BaseClassSchema = new EntitySchema({
@@ -59,12 +53,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
-    entities: [
-      BaseClassSchema,
-      DerivedClassSchema,
-      BaseInterfaceSchema,
-      ImplementingClassSchema,
-    ],
+    entities: [BaseClassSchema, DerivedClassSchema, BaseInterfaceSchema, ImplementingClassSchema],
     dbName: ':memory:',
     loggerFactory: SimpleLogger.create,
   });

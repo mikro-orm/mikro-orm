@@ -8,7 +8,6 @@ enum UserType {
 
 @Entity({ tableName: 'user' })
 class User0 {
-
   @PrimaryKey()
   id!: number;
 
@@ -17,12 +16,10 @@ class User0 {
 
   @Enum({ items: () => UserType })
   type2!: UserType;
-
 }
 
 @Entity({ tableName: 'user' })
 class User1 {
-
   @PrimaryKey()
   id!: number;
 
@@ -31,7 +28,6 @@ class User1 {
 
   @Enum({ items: () => UserType, nativeEnumName: 'user_type' })
   type2!: UserType;
-
 }
 
 enum UserType1 {
@@ -44,7 +40,6 @@ enum UserType1 {
 
 @Entity({ tableName: 'user' })
 class User2 {
-
   @PrimaryKey()
   id!: number;
 
@@ -56,7 +51,6 @@ class User2 {
 
   @Enum({ items: () => UserType1, nativeEnumName: 'user_type' })
   type3!: UserType1;
-
 }
 
 enum UserType2 {
@@ -67,7 +61,6 @@ enum UserType2 {
 
 @Entity({ tableName: 'user' })
 class User3 {
-
   @PrimaryKey()
   id!: number;
 
@@ -79,7 +72,6 @@ class User3 {
 
   @Enum({ items: () => UserType2, nativeEnumName: 'user_type' })
   type3!: UserType2;
-
 }
 
 let orm: MikroORM;

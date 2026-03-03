@@ -2,38 +2,31 @@ import { MikroORM, Ref } from '@mikro-orm/sqlite';
 
 import { Entity, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 abstract class Common {
-
   @PrimaryKey()
   orgId!: number;
 
   @PrimaryKey()
   id!: number;
-
 }
 
 @Entity()
 class Form extends Common {
-
   @Property({ nullable: false })
   name!: string;
-
 }
 
 @Entity()
 class FormSubmission extends Common {
-
   @ManyToOne({
     entity: () => Form,
     ref: true,
     nullable: true,
   })
   form?: Ref<Form>;
-
 }
 
 @Entity()
 class FormSubmissionField extends Common {
-
   @ManyToOne({
     entity: () => FormSubmission,
     ref: true,
@@ -42,7 +35,6 @@ class FormSubmissionField extends Common {
 
   @Property({ nullable: false })
   value!: string;
-
 }
 
 let orm: MikroORM;
@@ -96,27 +88,20 @@ test('Query through nested relationship', async () => {
   expect(submissionField.submission.$.form?.$.name).toBe('Form 1');
   orm.em.clear();
 
-  const submissionFields = await orm.em.find(
-    FormSubmissionField,
-    {
-      submission: {
-        form: {
-          orgId: 1,
-          id: 10,
-        },
+  const submissionFields = await orm.em.find(FormSubmissionField, {
+    submission: {
+      form: {
+        orgId: 1,
+        id: 10,
       },
     },
-  );
+  });
 
   expect(submissionFields).toHaveLength(1);
 });
 
 test('Setting relationship to null should clear both fields of composite foreign key', async () => {
-  const submission = await orm.em.findOneOrFail(
-    FormSubmission,
-    { orgId: 1, id: 20 },
-    { populate: ['form'] },
-  );
+  const submission = await orm.em.findOneOrFail(FormSubmission, { orgId: 1, id: 20 }, { populate: ['form'] });
 
   expect(submission.form).not.toBeNull();
 
@@ -125,16 +110,11 @@ test('Setting relationship to null should clear both fields of composite foreign
   await orm.em.flush();
   orm.em.clear();
 
-  const submissionAfter = await orm.em.findOneOrFail(
-    FormSubmission,
-    { orgId: 1, id: 20 },
-    { populate: ['form'] },
-  );
+  const submissionAfter = await orm.em.findOneOrFail(FormSubmission, { orgId: 1, id: 20 }, { populate: ['form'] });
 
   expect(submissionAfter.form).toBeNull();
 
-  const qb = orm.em.createQueryBuilder(FormSubmission)
-    .where({ orgId: 1, id: 20 });
+  const qb = orm.em.createQueryBuilder(FormSubmission).where({ orgId: 1, id: 20 });
 
   const results = await qb.execute('all', { mapResults: false });
   const result = results[0];

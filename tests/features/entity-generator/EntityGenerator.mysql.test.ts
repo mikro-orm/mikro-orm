@@ -11,60 +11,70 @@ describe('EntityGenerator [mysql]', () => {
   let orm: MikroORM;
 
   beforeAll(async () => {
-    orm = await initORMMySql('mysql', {
-      dbName: 'entity-generator-tests',
-      serialization: { forceObject: true },
-    }, true);
+    orm = await initORMMySql(
+      'mysql',
+      {
+        dbName: 'entity-generator-tests',
+        serialization: { forceObject: true },
+      },
+      true,
+    );
   });
 
   afterAll(() => orm.close(true));
 
   describe.each(['ts-enum', 'union-type', 'dictionary'] as const)('enumMode=%s', enumMode => {
-    describe.each(['entitySchema', 'defineEntity', 'defineEntity+types', 'decorators'] as const)('%s', entityDefinition => {
-      const genOptions = {
-        enumMode,
-        entityDefinition: (entityDefinition === 'defineEntity+types' ? 'defineEntity' : entityDefinition) as 'entitySchema' | 'defineEntity' | 'decorators',
-        inferEntityType: entityDefinition === 'defineEntity+types',
-        identifiedReferences: true,
-        bidirectionalRelations: true,
-      };
+    describe.each(['entitySchema', 'defineEntity', 'defineEntity+types', 'decorators'] as const)(
+      '%s',
+      entityDefinition => {
+        const genOptions = {
+          enumMode,
+          entityDefinition: (entityDefinition === 'defineEntity+types' ? 'defineEntity' : entityDefinition) as
+            | 'entitySchema'
+            | 'defineEntity'
+            | 'decorators',
+          inferEntityType: entityDefinition === 'defineEntity+types',
+          identifiedReferences: true,
+          bidirectionalRelations: true,
+        };
 
-      test('generate entities from schema', async () => {
-        const path = `./tests/temp/entities-${entityDefinition}-${enumMode}-mysql`;
-        const dump = await orm.entityGenerator.generate({
-          ...genOptions,
-          save: true,
-          path,
-        });
-        expect(dump).toMatchSnapshot(`mysql-${entityDefinition}-${enumMode}-dump`);
+        test('generate entities from schema', async () => {
+          const path = `./tests/temp/entities-${entityDefinition}-${enumMode}-mysql`;
+          const dump = await orm.entityGenerator.generate({
+            ...genOptions,
+            save: true,
+            path,
+          });
+          expect(dump).toMatchSnapshot(`mysql-${entityDefinition}-${enumMode}-dump`);
 
-        // try to discover the entities to verify they are valid
-        await MikroORM.init({
-          metadataProvider: ReflectMetadataProvider,
-          driver: SqliteDriver,
-          entities: [path],
-          dbName: ':memory:',
+          // try to discover the entities to verify they are valid
+          await MikroORM.init({
+            metadataProvider: ReflectMetadataProvider,
+            driver: SqliteDriver,
+            entities: [path],
+            dbName: ':memory:',
+          });
+          await rm(path, { recursive: true, force: true });
         });
-        await rm(path, { recursive: true, force: true });
-      });
 
-      test('generate entities from schema with forceUndefined = false', async () => {
-        const dump = await orm.entityGenerator.generate({
-          ...genOptions,
-          forceUndefined: false,
+        test('generate entities from schema with forceUndefined = false', async () => {
+          const dump = await orm.entityGenerator.generate({
+            ...genOptions,
+            forceUndefined: false,
+          });
+          expect(dump).toMatchSnapshot(`mysql-${entityDefinition}-${enumMode}-dump`);
         });
-        expect(dump).toMatchSnapshot(`mysql-${entityDefinition}-${enumMode}-dump`);
-      });
 
-      test('generate entities from schema with forceUndefined = false and undefinedDefaults = true', async () => {
-        const dump = await orm.entityGenerator.generate({
-          ...genOptions,
-          forceUndefined: false,
-          undefinedDefaults: true,
+        test('generate entities from schema with forceUndefined = false and undefinedDefaults = true', async () => {
+          const dump = await orm.entityGenerator.generate({
+            ...genOptions,
+            forceUndefined: false,
+            undefinedDefaults: true,
+          });
+          expect(dump).toMatchSnapshot(`mysql-${entityDefinition}-${enumMode}-dump`);
         });
-        expect(dump).toMatchSnapshot(`mysql-${entityDefinition}-${enumMode}-dump`);
-      });
-    });
+      },
+    );
   });
 });
 
@@ -133,7 +143,8 @@ test('enum with default value [mysql]', async () => {
     discovery: { warnWhenNoEntities: false },
     extensions: [EntityGenerator],
   });
-  const schema = "create table if not exists `publisher2` (`id` int(10) unsigned not null auto_increment primary key, `test` varchar(100) null default '123', `type` enum('local', 'global') not null default 'local', `type2` enum('LOCAL', 'GLOBAL') default 'LOCAL') default character set utf8mb4 engine = InnoDB;";
+  const schema =
+    "create table if not exists `publisher2` (`id` int(10) unsigned not null auto_increment primary key, `test` varchar(100) null default '123', `type` enum('local', 'global') not null default 'local', `type2` enum('LOCAL', 'GLOBAL') default 'LOCAL') default character set utf8mb4 engine = InnoDB;";
   await orm.schema.execute(schema);
   const dump = await orm.entityGenerator.generate();
   expect(dump).toMatchSnapshot('mysql-entity-dump-enum-default-value');
@@ -149,7 +160,8 @@ test('generate OptionalProps and include properties for columns that are not nul
     discovery: { warnWhenNoEntities: false },
     extensions: [EntityGenerator],
   });
-  const schema = "create table if not exists `account` (`id` bigint(20) unsigned NOT NULL AUTO_INCREMENT, `active` tinyint(1) NOT NULL DEFAULT '0', `receive_email_notifications` tinyint(1) NOT NULL DEFAULT '1', PRIMARY KEY (`id`)) default character set utf8mb4 engine = InnoDB;";
+  const schema =
+    "create table if not exists `account` (`id` bigint(20) unsigned NOT NULL AUTO_INCREMENT, `active` tinyint(1) NOT NULL DEFAULT '0', `receive_email_notifications` tinyint(1) NOT NULL DEFAULT '1', PRIMARY KEY (`id`)) default character set utf8mb4 engine = InnoDB;";
   await orm.schema.execute(schema);
   const dump = await orm.entityGenerator.generate();
   expect(dump).toMatchSnapshot('generate-OptionalProps');

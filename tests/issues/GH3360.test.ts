@@ -11,7 +11,6 @@ import { mockLogger } from '../helpers.js';
 
 @Entity()
 export class Author {
-
   @PrimaryKey()
   id!: number;
 
@@ -25,12 +24,10 @@ export class Author {
     orphanRemoval: true,
   })
   books = new Collection<Book>(this);
-
 }
 
 @Entity()
 export class Book {
-
   @PrimaryKey()
   id!: number;
 
@@ -43,7 +40,6 @@ export class Book {
   constructor(title: string) {
     this.title = title;
   }
-
 }
 
 async function createEntities(orm: MikroORM) {

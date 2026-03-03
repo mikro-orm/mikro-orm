@@ -10,7 +10,6 @@ import {
 
 @Entity()
 class Category {
-
   @PrimaryKey()
   id!: bigint;
 
@@ -27,11 +26,9 @@ class Category {
     this.name = name;
     this.parent = parent;
   }
-
 }
 
 describe('GH issue 2059', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -70,11 +67,7 @@ describe('GH issue 2059', () => {
      */
 
     // Load root categories and populate children and children of children
-    const categories = await orm.em.find(
-      Category,
-      { parent: null },
-      { populate: ['children.children'] },
-    );
+    const categories = await orm.em.find(Category, { parent: null }, { populate: ['children.children'] });
 
     expect(categories[0].children[0].children[0].name).toBe('A11');
     await categories[0].children[0].children[0].children.init();
@@ -82,11 +75,7 @@ describe('GH issue 2059', () => {
     expect(wrap(categories[0]).toObject().children[0].children[0].children).toEqual(['4']);
     expect(wrap(categories[0]).toObject()).toMatchObject({
       name: 'A',
-      children: [
-        { name: 'A1', children: [{ name: 'A11' }] },
-        { name: 'A2' },
-      ],
+      children: [{ name: 'A1', children: [{ name: 'A11' }] }, { name: 'A2' }],
     });
   });
-
 });

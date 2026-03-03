@@ -12,19 +12,16 @@ import { MikroORM } from '@mikro-orm/sqlite';
 
 @Entity()
 class Author {
-
   @PrimaryKey()
   id!: number;
 
   @OneToMany(() => Book, book => book.author, { orphanRemoval: true })
   books = new Collection<Book>(this);
-
 }
 
 @Unique({ properties: ['type', 'title'] })
 @Entity()
 class Book {
-
   @PrimaryKey()
   id!: number;
 
@@ -39,7 +36,6 @@ class Book {
 
   @Property()
   color!: string;
-
 }
 
 let orm: MikroORM;
@@ -66,9 +62,13 @@ beforeAll(async () => {
 afterAll(() => orm.close(true));
 
 test('#4305', async () => {
-  const author = await orm.em.findOne(Author, { id: 1 }, {
-    populate: ['books'],
-  });
+  const author = await orm.em.findOne(
+    Author,
+    { id: 1 },
+    {
+      populate: ['books'],
+    },
+  );
 
   const newBook = new Book();
   newBook.title = 'book1';

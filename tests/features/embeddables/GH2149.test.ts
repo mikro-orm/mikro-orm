@@ -11,36 +11,29 @@ import { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Embeddable()
 export class LoopOptions {
-
   @Property()
   enabled: boolean = false;
 
   @Property()
   type: string = 'a';
-
 }
 
 @Embeddable()
 export class Options {
-
   @Embedded(() => LoopOptions, { object: true })
   loop = new LoopOptions();
-
 }
 
 @Entity()
 export class PlayerEntity {
-
   @PrimaryKey()
   id!: number;
 
   @Embedded(() => Options, { object: true })
   options = new Options();
-
 }
 
 describe('GH issue 2149', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -72,5 +65,4 @@ describe('GH issue 2149', () => {
     expect(e.options.loop.enabled).toBe(false);
     expect(e.options.loop.type).toBe('a');
   });
-
 });

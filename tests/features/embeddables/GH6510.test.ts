@@ -17,19 +17,16 @@ enum ChangeType {
 
 @Embeddable({ abstract: true, discriminatorColumn: 'type' })
 abstract class AbstractChangeType {
-
   @Enum(() => ChangeType)
   type: ChangeType;
 
   constructor(type: ChangeType) {
     this.type = type;
   }
-
 }
 
 @Embeddable({ discriminatorValue: ChangeType.BOOLEAN })
 class ChangeBooleanValue extends AbstractChangeType {
-
   @Property({ type: 'boolean', nullable: true })
   oldValue: boolean | null;
 
@@ -41,12 +38,10 @@ class ChangeBooleanValue extends AbstractChangeType {
     this.oldValue = args.oldValue;
     this.newValue = args.newValue;
   }
-
 }
 
 @Embeddable({ discriminatorValue: ChangeType.STRING })
 class ChangeStringValue extends AbstractChangeType {
-
   @Property({ type: 'string', nullable: true })
   oldValue: string | null;
 
@@ -58,12 +53,10 @@ class ChangeStringValue extends AbstractChangeType {
     this.oldValue = args.oldValue;
     this.newValue = args.newValue;
   }
-
 }
 
 @Entity()
 class Change {
-
   @PrimaryKey()
   id: number;
 
@@ -73,16 +66,11 @@ class Change {
   @Embedded(() => [ChangeBooleanValue, ChangeStringValue], { object: true })
   value: ChangeBooleanValue | ChangeStringValue;
 
-  constructor(
-    id: number,
-    name: string,
-    value: ChangeBooleanValue | ChangeStringValue,
-  ) {
+  constructor(id: number, name: string, value: ChangeBooleanValue | ChangeStringValue) {
     this.id = id;
     this.name = name;
     this.value = value;
   }
-
 }
 
 let orm: MikroORM;
@@ -143,7 +131,9 @@ test('GH #6510', async () => {
   });
   expect(mock.mock.calls).toEqual([
     ['[query] begin'],
-    ['[query] insert into `change` (`id`, `name`, `value`) values (0, \'fullName\', \'{"type":"STRING","old_value":"John","new_value":"John Doe"}\')'],
+    [
+      '[query] insert into `change` (`id`, `name`, `value`) values (0, \'fullName\', \'{"type":"STRING","old_value":"John","new_value":"John Doe"}\')',
+    ],
     ['[query] commit'],
     ['[query] select `c0`.* from `change` as `c0` where `c0`.`id` = 0 limit 1'],
     ['[query] begin'],

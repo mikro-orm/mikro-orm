@@ -7,16 +7,13 @@ import { initORMMongo, mockLogger } from '../../bootstrap.js';
 import { Book } from '../../entities/Book.js';
 
 class MigrationTest1 extends Migration {
-
   async up(): Promise<void> {
     await this.getCollection('book').updateMany({}, { $set: { updatedAt: new Date() } });
     await this.getDb().collection('book').deleteMany({ foo: true }, { session: this.ctx });
   }
-
 }
 
 class MigrationTest2 extends Migration {
-
   async up(): Promise<void> {
     await this.getCollection('book').updateMany({}, { $unset: { title: 1 } }, { session: this.ctx });
     await this.driver.nativeDelete<any>(Book, { foo: false }, { ctx: this.ctx });
@@ -25,11 +22,9 @@ class MigrationTest2 extends Migration {
   override isTransactional(): boolean {
     return false;
   }
-
 }
 
 describe('Migrator (mongo)', () => {
-
   let orm: MikroORM<MongoDriver>;
   let originalMigrationsSettings: any;
 
@@ -114,7 +109,7 @@ describe('Migrator (mongo)', () => {
   test('generate initial migration', async () => {
     const migrator = orm.migrator;
     const spy = vi.spyOn(Migrator.prototype, 'create');
-    spy.mockImplementation(async () => ({} as any));
+    spy.mockImplementation(async () => ({}) as any);
     await migrator.createInitial('abc');
     expect(spy).toHaveBeenCalledWith('abc');
     spy.mockRestore();
@@ -193,7 +188,9 @@ describe('Migrator (mongo)', () => {
     const mock = mockLogger(orm, ['query']);
 
     const migrated: unknown[] = [];
-    const migratedHandler = (e: MigrationInfo) => { migrated.push(e); };
+    const migratedHandler = (e: MigrationInfo) => {
+      migrated.push(e);
+    };
     migrator.on('migrated', migratedHandler);
 
     await migrator.up(migration.fileName);
@@ -283,11 +280,9 @@ describe('Migrator (mongo)', () => {
     });
     expect(calls).toMatchSnapshot('all-or-nothing-disabled');
   });
-
 });
 
 describe('Migrator (mongo) - filter up/down options', () => {
-
   let orm: MikroORM<MongoDriver>;
 
   beforeAll(async () => {
@@ -350,17 +345,13 @@ describe('Migrator (mongo) - filter up/down options', () => {
     await orm.migrator.down({ to: 0 } as any);
     migratorMock.mockRestore();
   });
-
 });
 
 describe('Migrator (mongo) - with explicit migrations class only (#6099)', () => {
-
   test('runner', async () => {
     const orm = await initORMMongo(true, {
       migrations: {
-        migrationsList: [
-          MigrationTest1,
-        ],
+        migrationsList: [MigrationTest1],
       },
     });
 

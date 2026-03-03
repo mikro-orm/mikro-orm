@@ -10,7 +10,6 @@ import {
 import type { Seeder } from './Seeder.js';
 
 export class SeedManager implements ISeedManager {
-
   private readonly config: Configuration;
   private readonly options: SeederOptions;
   private absolutePath!: string;
@@ -34,7 +33,8 @@ export class SeedManager implements ISeedManager {
       const { fs } = await import('@mikro-orm/core/fs-utils');
       this.detectSourceFolder(fs);
       /* v8 ignore next */
-      const key = (this.config.get('preferTs', Utils.detectTypeScriptSupport()) && this.options.pathTs) ? 'pathTs' : 'path';
+      const key =
+        this.config.get('preferTs', Utils.detectTypeScriptSupport()) && this.options.pathTs ? 'pathTs' : 'path';
       this.absolutePath = fs.absolutePath(this.options[key]!, this.config.get('baseDir'));
     }
   }
@@ -64,7 +64,7 @@ export class SeedManager implements ISeedManager {
     const distDir = fs.pathExists(baseDir + '/dist');
     const buildDir = fs.pathExists(baseDir + '/build');
     // if neither `dist` nor `build` exist, we use the `src` folder as it might be a JS project without building, but with `src` folder
-    const path = distDir ? './dist' : (buildDir ? './build' : './src');
+    const path = distDir ? './dist' : buildDir ? './build' : './src';
 
     // only if the user did not provide any values and if the default path does not exist
     if (!this.options.path && !this.options.pathTs && !exists) {
@@ -142,7 +142,10 @@ export class SeedManager implements ISeedManager {
     return this.generate(fs, className);
   }
 
-  private async generate(fs: { writeFile(path: string, data: string, options?: Record<string, any>): Promise<void> }, className: string): Promise<string> {
+  private async generate(
+    fs: { writeFile(path: string, data: string, options?: Record<string, any>): Promise<void> },
+    className: string,
+  ): Promise<string> {
     const fileName = `${this.options.fileName!(className)}.${this.options.emit}`;
     const filePath = `${this.absolutePath}/${fileName}`;
     let ret = '';
@@ -167,5 +170,4 @@ export class SeedManager implements ISeedManager {
 
     return filePath;
   }
-
 }

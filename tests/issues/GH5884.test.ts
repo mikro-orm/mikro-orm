@@ -1,9 +1,15 @@
 import { Collection, MikroORM } from '@mikro-orm/sqlite';
-import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class Author {
-
   @PrimaryKey()
   id!: number;
 
@@ -16,12 +22,10 @@ class Author {
     orphanRemoval: true,
   })
   books = new Collection<Book>(this);
-
 }
 
 @Entity()
 class Book {
-
   @PrimaryKey()
   id!: number;
 
@@ -32,7 +36,6 @@ class Book {
     entity: () => Author,
   })
   author!: Author;
-
 }
 
 let orm: MikroORM;
@@ -50,10 +53,7 @@ beforeEach(async () => {
   await orm.schema.clear();
   orm.em.create(Author, {
     name: 'Foo',
-    books: [
-      { name: 'Foo' },
-      { name: 'Bar' },
-    ],
+    books: [{ name: 'Foo' }, { name: 'Bar' }],
   });
   await orm.em.flush();
   orm.em.clear();
@@ -64,10 +64,14 @@ afterAll(async () => {
 });
 
 test('orphan removal, relation reconstruction (joined strategy)', async () => {
-  const author = await orm.em.findOneOrFail(Author, { name: 'Foo' }, {
-    populate: ['books'],
-    strategy: 'joined',
-  });
+  const author = await orm.em.findOneOrFail(
+    Author,
+    { name: 'Foo' },
+    {
+      populate: ['books'],
+      strategy: 'joined',
+    },
+  );
   const books = author.books.getItems();
   orm.em.assign(author, { books: [] });
 
@@ -81,10 +85,14 @@ test('orphan removal, relation reconstruction (joined strategy)', async () => {
 });
 
 test('orphan removal, relation reconstruction (balanced strategy)', async () => {
-  const author = await orm.em.findOneOrFail(Author, { name: 'Foo' }, {
-    populate: ['books'],
-    strategy: 'balanced',
-  });
+  const author = await orm.em.findOneOrFail(
+    Author,
+    { name: 'Foo' },
+    {
+      populate: ['books'],
+      strategy: 'balanced',
+    },
+  );
   const books = author.books.getItems();
   orm.em.assign(author, { books: [] });
 

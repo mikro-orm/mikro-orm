@@ -10,7 +10,6 @@ import {
 
 @Entity()
 class Assignee {
-
   @PrimaryKey({ type: t.bigint })
   readonly id!: string;
 
@@ -19,12 +18,10 @@ class Assignee {
 
   @Property()
   email!: string;
-
 }
 
 @Entity()
 class Slot {
-
   @PrimaryKey({ type: t.bigint })
   readonly id!: string;
 
@@ -36,18 +33,15 @@ class Slot {
 
   @Property()
   name!: string;
-
 }
 
 @Entity()
 class Registration {
-
   @PrimaryKey({ type: t.bigint })
   readonly id!: string;
 
   @ManyToOne(() => Slot, { ref: true })
   slot!: Ref<Slot>;
-
 }
 
 let orm: MikroORM;
@@ -97,7 +91,11 @@ test('reschedule registration from slot1 to slot2 (lazy loading assignees)', asy
 });
 
 test('reschedule registration from slot1 to slot2 (eager loading assignees)', async () => {
-  const registration = await orm.em.findOneOrFail(Registration, { slot: { name: 'slot1' } }, { populate: ['slot.assignees'] });
+  const registration = await orm.em.findOneOrFail(
+    Registration,
+    { slot: { name: 'slot1' } },
+    { populate: ['slot.assignees'] },
+  );
   const slot2 = await orm.em.findOneOrFail(Slot, { name: 'slot2' }, { populate: ['registrations', 'assignees'] });
 
   const slot1 = registration.slot.$;

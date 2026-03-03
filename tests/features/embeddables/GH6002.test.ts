@@ -1,9 +1,15 @@
 import { MikroORM, QueryOrder } from '@mikro-orm/mongodb';
-import { Embeddable, Embedded, Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Embeddable,
+  Embedded,
+  Entity,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Embeddable()
 class RideDetailsDateModel {
-
   @Property()
   arrival: Date;
 
@@ -14,26 +20,21 @@ class RideDetailsDateModel {
     this.arrival = arrival;
     this.departure = departure;
   }
-
 }
 
 @Embeddable()
 class RideDetailsModel {
-
   @Embedded({ object: true })
   date!: RideDetailsDateModel;
-
 }
 
 @Entity({ collection: 'rides' })
 class RideModel {
-
   @PrimaryKey()
   _id!: number;
 
   @Embedded({ object: true })
   details!: RideDetailsModel;
-
 }
 
 let orm: MikroORM;

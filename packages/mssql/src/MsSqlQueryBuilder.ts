@@ -7,8 +7,9 @@ export class MsSqlQueryBuilder<
   Hint extends string = never,
   Context extends object = never,
 > extends QueryBuilder<Entity, RootAlias, Hint, Context> {
-
-  override insert(data: RequiredEntityData<Entity> | RequiredEntityData<Entity>[]): InsertQueryBuilder<Entity, RootAlias, Context> {
+  override insert(
+    data: RequiredEntityData<Entity> | RequiredEntityData<Entity>[],
+  ): InsertQueryBuilder<Entity, RootAlias, Context> {
     this.checkIdentityInsert(data);
 
     if (!this.flags.has(QueryFlag.IDENTITY_INSERT) && this.metadata.has(this.mainAlias.entityName)) {
@@ -31,5 +32,4 @@ export class MsSqlQueryBuilder<
       this.setFlag(QueryFlag.IDENTITY_INSERT);
     }
   }
-
 }

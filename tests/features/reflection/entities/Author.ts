@@ -6,7 +6,6 @@ import { Collection } from '../TsMorphMetadataProvider.sqlite.test.js';
 
 @Entity()
 export class Author extends BaseEntity {
-
   @Property()
   name: string;
 
@@ -57,5 +56,4 @@ export class Author extends BaseEntity {
   getCode() {
     return `${this.email} - ${this.name}`;
   }
-
 }

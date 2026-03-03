@@ -12,26 +12,21 @@ import {
 
 @Embeddable()
 class LoopOptions {
-
   @Property()
   'enabled-prop': boolean = false;
 
   @Property()
   'type-prop': string = 'a';
-
 }
 
 @Embeddable()
 class Options {
-
   @Embedded(() => LoopOptions, { object: true })
   'loop-prop' = new LoopOptions();
-
 }
 
 @Entity()
 class PlayerEntity {
-
   @PrimaryKey()
   id!: number;
 
@@ -43,22 +38,18 @@ class PlayerEntity {
 
   @OneToOne({ entity: () => ParentEntity, nullable: true })
   'parent-case-property'?: Rel<ParentEntity>;
-
 }
 
 @Entity()
 class ParentEntity {
-
   @PrimaryKey()
   id!: number;
 
   @OneToOne({ entity: () => PlayerEntity, nullable: true, mappedBy: 'parent-case-property' })
   'kebab-case-property': PlayerEntity;
-
 }
 
 describe('GH issue 1958', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -91,5 +82,4 @@ describe('GH issue 1958', () => {
     expect(e1['options-prop']['loop-prop']['type-prop']).toBe('a');
     expect(e1['parent-case-property']).toBeInstanceOf(ParentEntity);
   });
-
 });

@@ -1,27 +1,21 @@
 import { Collection, EntitySchema, MikroORM } from '@mikro-orm/sqlite';
 
 class BaseEntity {
-
   id!: number;
   name!: string;
   type!: string;
   parent?: ParentEntity;
   mids = new Collection<MidEntity>(this);
-
 }
 
 class MidEntity extends BaseEntity {
-
   items = new Collection<BaseEntity>(this);
   parentMid?: MidEntity;
   childMids = new Collection<MidEntity>(this);
-
 }
 
 class ParentEntity extends MidEntity {
-
   elements = new Collection<BaseEntity>(this);
-
 }
 
 const BaseSchema = new EntitySchema<BaseEntity>({

@@ -7,13 +7,20 @@ import {
 } from '@mikro-orm/core';
 import { validateSingleDecorator, getMetadataFromDecorator } from '../utils.js';
 
-function createDecorator<T extends object>(options: PrimaryKeyOptions<T> | SerializedPrimaryKeyOptions<T>, serialized: boolean) {
+function createDecorator<T extends object>(
+  options: PrimaryKeyOptions<T> | SerializedPrimaryKeyOptions<T>,
+  serialized: boolean,
+) {
   return function (target: T, propertyName: string) {
     const meta = getMetadataFromDecorator(target.constructor as T);
     validateSingleDecorator(meta, propertyName, ReferenceKind.SCALAR);
-    const k = serialized ? 'serializedPrimaryKey' as const : 'primary' as const;
+    const k = serialized ? ('serializedPrimaryKey' as const) : ('primary' as const);
     options[k] = true;
-    meta.properties[propertyName as EntityKey<T>] = { name: propertyName, kind: ReferenceKind.SCALAR, ...options } as EntityProperty<T>;
+    meta.properties[propertyName as EntityKey<T>] = {
+      name: propertyName,
+      kind: ReferenceKind.SCALAR,
+      ...options,
+    } as EntityProperty<T>;
   };
 }
 

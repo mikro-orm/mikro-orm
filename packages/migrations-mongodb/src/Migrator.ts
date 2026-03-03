@@ -1,9 +1,4 @@
-import {
-  type IMigrationGenerator,
-  type IMigrationRunner,
-  type IMigratorStorage,
-  type MikroORM,
-} from '@mikro-orm/core';
+import { type IMigrationGenerator, type IMigrationRunner, type IMigratorStorage, type MikroORM } from '@mikro-orm/core';
 import { AbstractMigrator } from '@mikro-orm/core/migrations';
 import type { EntityManager, MongoDriver } from '@mikro-orm/mongodb';
 import { MigrationRunner } from './MigrationRunner.js';
@@ -13,7 +8,6 @@ import { TSMigrationGenerator } from './TSMigrationGenerator.js';
 import { JSMigrationGenerator } from './JSMigrationGenerator.js';
 
 export class Migrator extends AbstractMigrator<MongoDriver> {
-
   static register(orm: MikroORM): void {
     orm.config.registerExtension('@mikro-orm/migrator', () => new Migrator(orm.em as EntityManager));
   }
@@ -66,5 +60,4 @@ export class Migrator extends AbstractMigrator<MongoDriver> {
   override getStorage(): MigrationStorage {
     return this.storage as MigrationStorage;
   }
-
 }

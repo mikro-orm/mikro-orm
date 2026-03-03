@@ -4,7 +4,6 @@ import { mockLogger } from '../helpers.js';
 
 @Entity()
 class Blog {
-
   @PrimaryKey()
   id!: number;
 
@@ -14,12 +13,10 @@ class Blog {
   // Note the OneToOne relationship with inverse
   @OneToOne(() => User)
   author!: Rel<User>;
-
 }
 
 @Entity()
 class User {
-
   [OptionalProps]?: 'name' | 'balance';
 
   @PrimaryKey()
@@ -34,7 +31,6 @@ class User {
   // Note the OneToOne relationship with inverse
   @OneToOne(() => Blog, e => e.author)
   blog?: Blog;
-
 }
 
 let orm: MikroORM;

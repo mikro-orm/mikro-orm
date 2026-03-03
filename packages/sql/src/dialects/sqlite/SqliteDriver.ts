@@ -10,9 +10,7 @@ import { SqlitePlatform } from './SqlitePlatform.js';
  * For the default better-sqlite3 experience, use `@mikro-orm/sqlite` instead.
  */
 export class SqliteDriver extends AbstractSqlDriver<BaseSqliteConnection> {
-
   constructor(config: Configuration) {
     super(config, new SqlitePlatform(), BaseSqliteConnection, ['kysely']);
   }
-
 }

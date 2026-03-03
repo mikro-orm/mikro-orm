@@ -9,7 +9,6 @@ import { SchemaCommandFactory } from '../../../packages/cli/src/commands/SchemaC
 import { initORMSqlite } from '../../bootstrap.js';
 
 describe('CreateSchemaCommand', () => {
-
   let orm: MikroORM<SqliteDriver>;
 
   beforeAll(async () => {
@@ -73,5 +72,4 @@ describe('CreateSchemaCommand', () => {
     expect(seed).toHaveBeenCalledWith('UsersSeeder');
     expect(closeSpy).toHaveBeenCalledTimes(4);
   });
-
 });

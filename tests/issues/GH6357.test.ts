@@ -21,7 +21,6 @@ enum SchoolGrade {
 
 @Entity({ tableName: 'subtests' })
 class SubTestEntity {
-
   @PrimaryKey()
   id!: number;
 
@@ -33,12 +32,10 @@ class SubTestEntity {
 
   @OneToMany(() => ExerciseEntity, exercise => exercise.subtest)
   exercises = new Collection<ExerciseEntity>(this);
-
 }
 
 @Entity({ tableName: 'exercises' })
 class ExerciseEntity extends BaseEntity {
-
   @PrimaryKey()
   id!: number;
 
@@ -47,7 +44,6 @@ class ExerciseEntity extends BaseEntity {
 
   @ManyToOne(() => SubTestEntity)
   subtest!: SubTestEntity;
-
 }
 
 let orm: MikroORM;
@@ -81,7 +77,9 @@ test('$contains operator on relation property', async () => {
 
   await orm.em.fork().persist(subtest).flush();
 
-  const res1 = await orm.em.fork().find(SubTestEntity, {
+  const res1 = await orm.em.fork().find(
+    SubTestEntity,
+    {
       grades: { $contains: [SchoolGrade.GradeFour] },
     },
     {
@@ -93,11 +91,14 @@ test('$contains operator on relation property', async () => {
           },
         },
       },
-    });
+    },
+  );
 
   expect(res1).toHaveLength(1);
 
-  const res2 = await orm.em.fork().find(SubTestEntity, {
+  const res2 = await orm.em.fork().find(
+    SubTestEntity,
+    {
       grades: { $contains: [SchoolGrade.GradeFour] },
     },
     {
@@ -110,7 +111,8 @@ test('$contains operator on relation property', async () => {
           },
         },
       },
-    });
+    },
+  );
 
   expect(res2).toHaveLength(1);
 });

@@ -1,11 +1,18 @@
 import { Collection, MikroORM, SimpleLogger, Utils, IDatabaseDriver } from '@mikro-orm/core';
-import { Entity, ManyToMany, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToMany,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../../helpers.js';
 import { PLATFORMS } from '../../bootstrap.js';
 
 @Entity()
 class Author {
-
   @PrimaryKey()
   id!: number;
 
@@ -21,12 +28,10 @@ class Author {
   constructor(name: string) {
     this.name = name;
   }
-
 }
 
 @Entity()
 class Book {
-
   @PrimaryKey()
   id!: number;
 
@@ -47,12 +52,10 @@ class Book {
     this.title = title;
     this.tags.set(tags);
   }
-
 }
 
 @Entity()
 class BookTag {
-
   @PrimaryKey()
   id!: number;
 
@@ -65,7 +68,6 @@ class BookTag {
   constructor(name: string) {
     this.name = name;
   }
-
 }
 
 const options = {
@@ -108,20 +110,14 @@ describe.each(Utils.keys(options))('collection operators [%s]', type => {
     const t4 = new BookTag('t4');
     const t5 = new BookTag('t5');
 
-    author2.books.add(
-      new Book(author2, 'Foo', [t1, t5]),
-      new Book(author2, 'Foo', [t1, t3]),
-    );
+    author2.books.add(new Book(author2, 'Foo', [t1, t5]), new Book(author2, 'Foo', [t1, t3]));
     author3.books.add(
       new Book(author3, 'Foo', [t2]),
       new Book(author3, 'Foo', [t2]),
       new Book(author3, 'Bar', [t2]),
       new Book(author3, 'Bar', [t2]),
     );
-    author4.books.add(
-      new Book(author4, 'Foo Bar', [t1, t2]),
-      new Book(author4, 'Foo Bar', [t1, t2, t4]),
-    );
+    author4.books.add(new Book(author4, 'Foo Bar', [t1, t2]), new Book(author4, 'Foo Bar', [t1, t2, t4]));
     author5.books.add(new Book(author5, 'Foo', [t4, t5]));
 
     await orm.em.fork().persist([author1, author2, author3, author4, author5]).flush();
@@ -130,35 +126,55 @@ describe.each(Utils.keys(options))('collection operators [%s]', type => {
   test('1:m sub-query operators $some, $none and $every', async () => {
     const mock = mockLogger(orm);
 
-    let results = await orm.em.fork().find(Author, {
-      books: { $some: { title: 'Foo' } },
-    }, { orderBy: { id: 1 } });
+    let results = await orm.em.fork().find(
+      Author,
+      {
+        books: { $some: { title: 'Foo' } },
+      },
+      { orderBy: { id: 1 } },
+    );
     expect(results.map(res => res.name)).toEqual(['Author 2', 'Author 3', 'Author 5']);
     expect(mock.mock.calls[0][0]).toMatchSnapshot();
 
-    results = await orm.em.fork().find(Author, {
-      books: { $none: { title: 'Foo' } },
-    }, { orderBy: { id: 1 } });
+    results = await orm.em.fork().find(
+      Author,
+      {
+        books: { $none: { title: 'Foo' } },
+      },
+      { orderBy: { id: 1 } },
+    );
     expect(results.map(res => res.name)).toEqual(['Author 1', 'Author 4']);
     expect(mock.mock.calls[1][0]).toMatchSnapshot();
 
-    results = await orm.em.fork().find(Author, {
-      books: { $every: { title: 'Foo' } },
-      id: [1, 2, 5],
-    }, { orderBy: { id: 1 } });
+    results = await orm.em.fork().find(
+      Author,
+      {
+        books: { $every: { title: 'Foo' } },
+        id: [1, 2, 5],
+      },
+      { orderBy: { id: 1 } },
+    );
     expect(results.map(res => res.name)).toEqual(['Author 1', 'Author 2', 'Author 5']);
     expect(mock.mock.calls[2][0]).toMatchSnapshot();
 
-    results = await orm.em.fork().find(Author, {
-      books: { $some: {} },
-    }, { orderBy: { id: 1 } });
+    results = await orm.em.fork().find(
+      Author,
+      {
+        books: { $some: {} },
+      },
+      { orderBy: { id: 1 } },
+    );
     expect(results.map(res => res.name)).toEqual(['Author 2', 'Author 3', 'Author 4', 'Author 5']);
     expect(mock.mock.calls[3][0]).toMatchSnapshot();
 
-    results = await orm.em.fork().find(Author, {
-      books: { $none: {} },
-      books2: { $none: {} },
-    }, { orderBy: { id: 1 } });
+    results = await orm.em.fork().find(
+      Author,
+      {
+        books: { $none: {} },
+        books2: { $none: {} },
+      },
+      { orderBy: { id: 1 } },
+    );
     expect(results.map(res => res.name)).toEqual(['Author 1']);
     expect(mock.mock.calls[4][0]).toMatchSnapshot();
   });
@@ -167,9 +183,13 @@ describe.each(Utils.keys(options))('collection operators [%s]', type => {
     orm.config.set('loadStrategy', 'select-in');
     const mock = mockLogger(orm);
 
-    let results = await orm.em.fork().find(Book, {
-      tags: { $some: { name: ['t1', 't2'] } },
-    }, { populate: ['tags'], orderBy: { id: 1 } });
+    let results = await orm.em.fork().find(
+      Book,
+      {
+        tags: { $some: { name: ['t1', 't2'] } },
+      },
+      { populate: ['tags'], orderBy: { id: 1 } },
+    );
     expect(results.map(res => res.tags.getIdentifiers('name').sort())).toEqual([
       ['t1', 't5'],
       ['t1', 't3'],
@@ -182,17 +202,23 @@ describe.each(Utils.keys(options))('collection operators [%s]', type => {
     ]);
     expect(mock.mock.calls[0][0]).toMatchSnapshot();
 
-    results = await orm.em.fork().find(Book, {
-      tags: { $none: { name: ['t1', 't2'] } },
-    }, { populate: ['tags'], orderBy: { id: 1 } });
-    expect(results.map(res => res.tags.getIdentifiers('name').sort())).toEqual([
-      ['t4', 't5'],
-    ]);
+    results = await orm.em.fork().find(
+      Book,
+      {
+        tags: { $none: { name: ['t1', 't2'] } },
+      },
+      { populate: ['tags'], orderBy: { id: 1 } },
+    );
+    expect(results.map(res => res.tags.getIdentifiers('name').sort())).toEqual([['t4', 't5']]);
     expect(mock.mock.calls[2][0]).toMatchSnapshot();
 
-    results = await orm.em.fork().find(Book, {
-      tags: { $every: { name: ['t1', 't2'] } },
-    }, { populate: ['tags'], orderBy: { id: 1 } });
+    results = await orm.em.fork().find(
+      Book,
+      {
+        tags: { $every: { name: ['t1', 't2'] } },
+      },
+      { populate: ['tags'], orderBy: { id: 1 } },
+    );
     expect(results.map(res => res.tags.getIdentifiers('name').sort())).toEqual([
       ['t1', 't2'],
       ['t2'],
@@ -202,9 +228,13 @@ describe.each(Utils.keys(options))('collection operators [%s]', type => {
     ]);
     expect(mock.mock.calls[4][0]).toMatchSnapshot();
 
-    results = await orm.em.fork().find(Book, {
-      tags: { $some: {} },
-    }, { populate: ['tags'], orderBy: { id: 1 } });
+    results = await orm.em.fork().find(
+      Book,
+      {
+        tags: { $some: {} },
+      },
+      { populate: ['tags'], orderBy: { id: 1 } },
+    );
     expect(results.map(res => res.tags.getIdentifiers('name').sort())).toEqual([
       ['t1', 't5'],
       ['t1', 't3'],
@@ -218,9 +248,13 @@ describe.each(Utils.keys(options))('collection operators [%s]', type => {
     ]);
     expect(mock.mock.calls[6][0]).toMatchSnapshot();
 
-    results = await orm.em.fork().find(Book, {
-      tags: { $none: {} },
-    }, { populate: ['tags'], orderBy: { id: 1 } });
+    results = await orm.em.fork().find(
+      Book,
+      {
+        tags: { $none: {} },
+      },
+      { populate: ['tags'], orderBy: { id: 1 } },
+    );
     expect(results.map(res => res.tags.getIdentifiers('name').sort())).toEqual([]);
     expect(mock.mock.calls[8][0]).toMatchSnapshot();
   });
@@ -229,9 +263,13 @@ describe.each(Utils.keys(options))('collection operators [%s]', type => {
     orm.config.set('loadStrategy', 'joined');
     const mock = mockLogger(orm);
 
-    let results = await orm.em.fork().find(Book, {
-      tags: { $some: { name: ['t1', 't2'] } },
-    }, { populate: ['tags'], orderBy: { id: 1 } });
+    let results = await orm.em.fork().find(
+      Book,
+      {
+        tags: { $some: { name: ['t1', 't2'] } },
+      },
+      { populate: ['tags'], orderBy: { id: 1 } },
+    );
     expect(results.map(res => res.tags.getIdentifiers('name').sort())).toEqual([
       ['t1', 't5'],
       ['t1', 't3'],
@@ -244,17 +282,23 @@ describe.each(Utils.keys(options))('collection operators [%s]', type => {
     ]);
     expect(mock.mock.calls[0][0]).toMatchSnapshot();
 
-    results = await orm.em.fork().find(Book, {
-      tags: { $none: { name: ['t1', 't2'] } },
-    }, { populate: ['tags'], orderBy: { id: 1 } });
-    expect(results.map(res => res.tags.getIdentifiers('name').sort())).toEqual([
-      ['t4', 't5'],
-    ]);
+    results = await orm.em.fork().find(
+      Book,
+      {
+        tags: { $none: { name: ['t1', 't2'] } },
+      },
+      { populate: ['tags'], orderBy: { id: 1 } },
+    );
+    expect(results.map(res => res.tags.getIdentifiers('name').sort())).toEqual([['t4', 't5']]);
     expect(mock.mock.calls[1][0]).toMatchSnapshot();
 
-    results = await orm.em.fork().find(Book, {
-      tags: { $every: { name: ['t1', 't2'] } },
-    }, { populate: ['tags'], orderBy: { id: 1 } });
+    results = await orm.em.fork().find(
+      Book,
+      {
+        tags: { $every: { name: ['t1', 't2'] } },
+      },
+      { populate: ['tags'], orderBy: { id: 1 } },
+    );
     expect(results.map(res => res.tags.getIdentifiers('name').sort())).toEqual([
       ['t1', 't2'],
       ['t2'],
@@ -264,9 +308,13 @@ describe.each(Utils.keys(options))('collection operators [%s]', type => {
     ]);
     expect(mock.mock.calls[2][0]).toMatchSnapshot();
 
-    results = await orm.em.fork().find(Book, {
-      tags: { $some: {} },
-    }, { populate: ['tags'], orderBy: { id: 1 } });
+    results = await orm.em.fork().find(
+      Book,
+      {
+        tags: { $some: {} },
+      },
+      { populate: ['tags'], orderBy: { id: 1 } },
+    );
     expect(results.map(res => res.tags.getIdentifiers('name').sort())).toEqual([
       ['t1', 't5'],
       ['t1', 't3'],
@@ -280,53 +328,71 @@ describe.each(Utils.keys(options))('collection operators [%s]', type => {
     ]);
     expect(mock.mock.calls[3][0]).toMatchSnapshot();
 
-    results = await orm.em.fork().find(Book, {
-      tags: { $none: {} },
-    }, { populate: ['tags'], orderBy: { id: 1 } });
+    results = await orm.em.fork().find(
+      Book,
+      {
+        tags: { $none: {} },
+      },
+      { populate: ['tags'], orderBy: { id: 1 } },
+    );
     expect(results.map(res => res.tags.getIdentifiers('name').sort())).toEqual([]);
     expect(mock.mock.calls[4][0]).toMatchSnapshot();
   });
 
   test('allows only one of $some, $none and $every on the given level', async () => {
     const mock = mockLogger(orm);
-    let results = await orm.em.fork().find(Author, {
-      books: {
-        $some: { title: 'Foo' },
-        $none: { title: 'Foo' },
+    let results = await orm.em.fork().find(
+      Author,
+      {
+        books: {
+          $some: { title: 'Foo' },
+          $none: { title: 'Foo' },
+        },
       },
-    }, { orderBy: { id: 1 } });
+      { orderBy: { id: 1 } },
+    );
     expect(mock.mock.calls[0][0]).toMatchSnapshot();
     expect(results).toHaveLength(0);
 
-    results = await orm.em.fork().find(Author, {
-      books: {
-        $some: { title: 'Foo' },
-        $none: { title: 'Foo 123' },
+    results = await orm.em.fork().find(
+      Author,
+      {
+        books: {
+          $some: { title: 'Foo' },
+          $none: { title: 'Foo 123' },
+        },
       },
-    }, { orderBy: { id: 1 } });
+      { orderBy: { id: 1 } },
+    );
     expect(mock.mock.calls[1][0]).toMatchSnapshot();
-    expect(results.map(res => res.name)).toEqual([
-      'Author 2',
-      'Author 3',
-      'Author 5',
-    ]);
+    expect(results.map(res => res.name)).toEqual(['Author 2', 'Author 3', 'Author 5']);
   });
 
   test('update query with $none', async () => {
     // MySQL doesn't support subqueries referencing the target table in UPDATE
     if (type === 'mysql') {
-      await expect(orm.em.nativeUpdate(Author, {
-        books: { $none: { title: 'Foo' } },
-      }, { name: 'foobar' })).rejects.toThrow(/You can't specify target table/);
+      await expect(
+        orm.em.nativeUpdate(
+          Author,
+          {
+            books: { $none: { title: 'Foo' } },
+          },
+          { name: 'foobar' },
+        ),
+      ).rejects.toThrow(/You can't specify target table/);
       return;
     }
 
     const mock = mockLogger(orm);
-    await orm.em.nativeUpdate(Author, {
-      books: {
-        $none: { title: 'Foo' },
+    await orm.em.nativeUpdate(
+      Author,
+      {
+        books: {
+          $none: { title: 'Foo' },
+        },
       },
-    }, { name: 'foobar' });
+      { name: 'foobar' },
+    );
     expect(mock.mock.calls[0][0]).toMatchSnapshot();
   });
 
@@ -334,69 +400,96 @@ describe.each(Utils.keys(options))('collection operators [%s]', type => {
     const mock = mockLogger(orm);
     // separate branches work
     await orm.em.fork().find(Author, {
-      $and: [
-        { books: { $none: { title: 'Foo' } } },
-        { books: { title: 'bar' } },
-      ],
+      $and: [{ books: { $none: { title: 'Foo' } } }, { books: { title: 'bar' } }],
     });
     // mixing throws
-    await expect(orm.em.fork().find(Author, {
-      books: {
-        $none: { title: 'Foo' },
-        title: 'bar',
-      },
-    })).rejects.toThrow('Mixing collection operators with other filters is not allowed.');
+    await expect(
+      orm.em.fork().find(Author, {
+        books: {
+          $none: { title: 'Foo' },
+          title: 'bar',
+        },
+      }),
+    ).rejects.toThrow('Mixing collection operators with other filters is not allowed.');
   });
 
   test('1:m $size operator', async () => {
     const mock = mockLogger(orm);
 
     // $size: 0 - authors with no books
-    let results = await orm.em.fork().find(Author, {
-      books: { $size: 0 },
-    }, { orderBy: { id: 1 } });
+    let results = await orm.em.fork().find(
+      Author,
+      {
+        books: { $size: 0 },
+      },
+      { orderBy: { id: 1 } },
+    );
     expect(results.map(res => res.id)).toEqual([1]);
     expect(mock.mock.calls[0][0]).toMatchSnapshot();
 
     // $size: 1 - authors with exactly 1 book
-    results = await orm.em.fork().find(Author, {
-      books: { $size: 1 },
-    }, { orderBy: { id: 1 } });
+    results = await orm.em.fork().find(
+      Author,
+      {
+        books: { $size: 1 },
+      },
+      { orderBy: { id: 1 } },
+    );
     expect(results.map(res => res.id)).toEqual([5]);
     expect(mock.mock.calls[1][0]).toMatchSnapshot();
 
     // $size: 2 - authors with exactly 2 books
-    results = await orm.em.fork().find(Author, {
-      books: { $size: 2 },
-    }, { orderBy: { id: 1 } });
+    results = await orm.em.fork().find(
+      Author,
+      {
+        books: { $size: 2 },
+      },
+      { orderBy: { id: 1 } },
+    );
     expect(results.map(res => res.id)).toEqual([2, 4]);
     expect(mock.mock.calls[2][0]).toMatchSnapshot();
 
     // $size: 4 - authors with exactly 4 books
-    results = await orm.em.fork().find(Author, {
-      books: { $size: 4 },
-    }, { orderBy: { id: 1 } });
+    results = await orm.em.fork().find(
+      Author,
+      {
+        books: { $size: 4 },
+      },
+      { orderBy: { id: 1 } },
+    );
     expect(results.map(res => res.id)).toEqual([3]);
     expect(mock.mock.calls[3][0]).toMatchSnapshot();
 
     // $size with $gte - authors with at least 2 books
-    results = await orm.em.fork().find(Author, {
-      books: { $size: { $gte: 2 } },
-    }, { orderBy: { id: 1 } });
+    results = await orm.em.fork().find(
+      Author,
+      {
+        books: { $size: { $gte: 2 } },
+      },
+      { orderBy: { id: 1 } },
+    );
     expect(results.map(res => res.id)).toEqual([2, 3, 4]);
     expect(mock.mock.calls[4][0]).toMatchSnapshot();
 
     // $size with $gt and $lte - authors with between 1 and 2 books (exclusive lower, inclusive upper)
-    results = await orm.em.fork().find(Author, {
-      books: { $size: { $gt: 0, $lte: 2 } },
-    }, { orderBy: { id: 1 } });
+    results = await orm.em.fork().find(
+      Author,
+      {
+        books: { $size: { $gt: 0, $lte: 2 } },
+      },
+      { orderBy: { id: 1 } },
+    );
     expect(results.map(res => res.id)).toEqual([2, 4, 5]);
     expect(mock.mock.calls[5][0]).toMatchSnapshot();
 
     // $size with $ne - authors that don't have exactly 2 books (now includes author 1 with 0 books)
-    results = await orm.em.fork().find(Author, {
-      books: { $size: { $ne: 2 } },
-    }, { orderBy: { id: 1 } });
+    results = await orm.em.fork().find(
+      Author,
+      {
+        books: { $size: { $ne: 2 } },
+      },
+      { orderBy: { id: 1 } },
+    );
     expect(results.map(res => res.id)).toEqual([1, 3, 5]);
     expect(mock.mock.calls[6][0]).toMatchSnapshot();
   });
@@ -405,16 +498,24 @@ describe.each(Utils.keys(options))('collection operators [%s]', type => {
     const mock = mockLogger(orm);
 
     // Books with exactly 2 tags
-    let results = await orm.em.fork().find(Book, {
-      tags: { $size: 2 },
-    }, { orderBy: { id: 1 } });
+    let results = await orm.em.fork().find(
+      Book,
+      {
+        tags: { $size: 2 },
+      },
+      { orderBy: { id: 1 } },
+    );
     expect(results.map(res => res.title)).toEqual(['Foo', 'Foo', 'Foo Bar', 'Foo']);
     expect(mock.mock.calls[0][0]).toMatchSnapshot();
 
     // Books with at least 3 tags
-    results = await orm.em.fork().find(Book, {
-      tags: { $size: { $gte: 3 } },
-    }, { orderBy: { id: 1 } });
+    results = await orm.em.fork().find(
+      Book,
+      {
+        tags: { $size: { $gte: 3 } },
+      },
+      { orderBy: { id: 1 } },
+    );
     expect(results.map(res => res.title)).toEqual(['Foo Bar']);
     expect(mock.mock.calls[1][0]).toMatchSnapshot();
   });

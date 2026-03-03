@@ -1,5 +1,13 @@
 import { Collection, MikroORM, Cascade, Rel } from '@mikro-orm/sqlite';
-import { Entity, Filter, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  Filter,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Entity()
 @Filter({
@@ -8,7 +16,6 @@ import { Entity, Filter, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMeta
   cond: ({ userId }) => ({ memberships: { $some: { user: { id: userId } } } }),
 })
 class Newsletter {
-
   @PrimaryKey()
   id!: number;
 
@@ -27,7 +34,6 @@ class Newsletter {
   constructor(name: string) {
     this.name = name;
   }
-
 }
 
 @Entity()
@@ -39,7 +45,6 @@ class Newsletter {
   }),
 })
 class NewsletterIssue {
-
   @PrimaryKey()
   id!: number;
 
@@ -48,12 +53,10 @@ class NewsletterIssue {
 
   @ManyToOne(() => Newsletter)
   newsletter!: Newsletter;
-
 }
 
 @Entity()
 class NewsletterMembership {
-
   @PrimaryKey()
   id!: number;
 
@@ -62,12 +65,10 @@ class NewsletterMembership {
 
   @ManyToOne(() => Newsletter)
   newsletter!: Newsletter;
-
 }
 
 @Entity()
 class User {
-
   @PrimaryKey()
   id!: number;
 
@@ -88,7 +89,6 @@ class User {
     this.name = name;
     this.email = email;
   }
-
 }
 
 let orm: MikroORM;

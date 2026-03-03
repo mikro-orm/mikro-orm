@@ -4,7 +4,6 @@ import { SqliteConnection } from './SqliteConnection.js';
 import { SqliteMikroORM } from './SqliteMikroORM.js';
 
 export class SqliteDriver extends AbstractSqlDriver<SqliteConnection> {
-
   constructor(config: Configuration) {
     super(config, new SqlitePlatform(), SqliteConnection, ['kysely', 'better-sqlite3']);
   }
@@ -13,5 +12,4 @@ export class SqliteDriver extends AbstractSqlDriver<SqliteConnection> {
   override getORMClass(): Constructor<SqliteMikroORM> {
     return SqliteMikroORM;
   }
-
 }

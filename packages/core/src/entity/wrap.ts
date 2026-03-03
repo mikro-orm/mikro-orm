@@ -14,7 +14,10 @@ export function wrap<T extends object>(entity: T, preferHelper?: false): IWrappe
  * wraps entity type with WrappedEntity internal properties and helpers like init/isInitialized/populated/toJSON
  * use `preferHelper = true` to have access to the internal `__` properties like `__meta` or `__em`
  */
-export function wrap<T extends object>(entity: T & Dictionary, preferHelper = false): IWrappedEntity<T> | IWrappedEntityInternal<T> {
+export function wrap<T extends object>(
+  entity: T & Dictionary,
+  preferHelper = false,
+): IWrappedEntity<T> | IWrappedEntityInternal<T> {
   if (!entity) {
     return entity;
   }

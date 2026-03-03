@@ -25,14 +25,21 @@ import { Reference } from '../entity/Reference.js';
 import { SerializationContext } from './SerializationContext.js';
 import { isRaw } from '../utils/RawQueryFragment.js';
 
-function isVisible<T extends object>(meta: EntityMetadata<T>, propName: EntityKey<T>, options: SerializeOptions<T, any, any>): boolean {
+function isVisible<T extends object>(
+  meta: EntityMetadata<T>,
+  propName: EntityKey<T>,
+  options: SerializeOptions<T, any, any>,
+): boolean {
   const prop = meta.properties[propName];
 
   if (options.groups && prop?.groups) {
     return prop.groups.some(g => options.groups!.includes(g));
   }
 
-  if (Array.isArray(options.populate) && options.populate?.find(item => item === propName || item.startsWith(propName + '.') || item === '*')) {
+  if (
+    Array.isArray(options.populate) &&
+    options.populate?.find(item => item === propName || item.startsWith(propName + '.') || item === '*')
+  ) {
     return true;
   }
 
@@ -47,7 +54,10 @@ function isVisible<T extends object>(meta: EntityMetadata<T>, propName: EntityKe
 }
 
 function isPopulated(propName: string, options: SerializeOptions<any, any, any>): boolean {
-  if (typeof options.populate !== 'boolean' && (options.populate as string[])?.find(item => item === propName || item.startsWith(propName + '.') || item === '*')) {
+  if (
+    typeof options.populate !== 'boolean' &&
+    (options.populate as string[])?.find(item => item === propName || item.startsWith(propName + '.') || item === '*')
+  ) {
     return true;
   }
 
@@ -59,15 +69,21 @@ function isPopulated(propName: string, options: SerializeOptions<any, any, any>)
 }
 
 export class EntitySerializer {
-
-  static serialize<T extends object, P extends string = never, E extends string = never>(entity: T, options: SerializeOptions<T, P, E> = {}): SerializeDTO<T, P, E> {
+  static serialize<T extends object, P extends string = never, E extends string = never>(
+    entity: T,
+    options: SerializeOptions<T, P, E> = {},
+  ): SerializeDTO<T, P, E> {
     const wrapped = helper(entity);
     const meta = wrapped.__meta;
     let contextCreated = false;
 
     if (!wrapped.__serializationContext.root) {
       const root = new SerializationContext<T>(wrapped.__config);
-      SerializationContext.propagate(root, entity, (meta, prop) => meta.properties[prop]?.kind !== ReferenceKind.SCALAR);
+      SerializationContext.propagate(
+        root,
+        entity,
+        (meta, prop) => meta.properties[prop]?.kind !== ReferenceKind.SCALAR,
+      );
       options.populate = (options.populate ? Utils.asArray(options.populate) : options.populate) as any;
       contextCreated = true;
     }
@@ -147,7 +163,7 @@ export class EntitySerializer {
     for (const prop of meta.getterProps) {
       // decorated get methods
       if (prop.getterName != null) {
-        const visible = entity[prop.getterName] as unknown instanceof Function && isVisible(meta, prop.name, options);
+        const visible = (entity[prop.getterName] as unknown) instanceof Function && isVisible(meta, prop.name, options);
 
         if (visible) {
           ret[this.propertyName(meta, prop.name)] = this.processProperty(prop.getterName as EntityKey, entity, options);
@@ -178,7 +194,11 @@ export class EntitySerializer {
     return prop;
   }
 
-  private static processProperty<T extends object>(prop: EntityKey<T>, entity: T, options: SerializeOptions<T, any, any>): EntityValue<T> | undefined {
+  private static processProperty<T extends object>(
+    prop: EntityKey<T>,
+    entity: T,
+    options: SerializeOptions<T, any, any>,
+  ): EntityValue<T> | undefined {
     const parts = prop.split('.');
     prop = parts[0] as EntityKey<T>;
     const wrapped = helper(entity);
@@ -187,7 +207,7 @@ export class EntitySerializer {
     const value = entity[prop];
 
     // getter method
-    if (entity[prop] as unknown instanceof Function) {
+    if ((entity[prop] as unknown) instanceof Function) {
       const returnValue = (entity[prop] as unknown as () => T[keyof T & string])();
       if (!options.ignoreSerializers && serializer) {
         return serializer(returnValue, this.extractChildOptions(options, prop));
@@ -231,7 +251,12 @@ export class EntitySerializer {
     return wrapped.__platform.normalizePrimaryKey(value as unknown as IPrimaryKey) as unknown as EntityValue<T>;
   }
 
-  private static processCustomType<T, V>(value: V, prop: EntityProperty<T>, platform: Platform, convertCustomTypes?: boolean): V {
+  private static processCustomType<T, V>(
+    value: V,
+    prop: EntityProperty<T>,
+    platform: Platform,
+    convertCustomTypes?: boolean,
+  ): V {
     if (!prop.customType) {
       return value;
     }
@@ -243,15 +268,25 @@ export class EntitySerializer {
     return prop.customType.toJSON(value, platform);
   }
 
-  private static extractChildOptions<T extends object, U extends object>(options: SerializeOptions<T, any, any>, prop: EntityKey<T>): SerializeOptions<U> {
+  private static extractChildOptions<T extends object, U extends object>(
+    options: SerializeOptions<T, any, any>,
+    prop: EntityKey<T>,
+  ): SerializeOptions<U> {
     return {
       ...options,
-      populate: Array.isArray(options.populate) ? Utils.extractChildElements(options.populate, prop, '*') : options.populate,
+      populate: Array.isArray(options.populate)
+        ? Utils.extractChildElements(options.populate, prop, '*')
+        : options.populate,
       exclude: Array.isArray(options.exclude) ? Utils.extractChildElements(options.exclude, prop) : options.exclude,
     } as SerializeOptions<U>;
   }
 
-  private static processEntity<T extends object>(prop: EntityProperty<T>, entity: T, platform: Platform, options: SerializeOptions<T, any, any>): EntityValue<T> | undefined {
+  private static processEntity<T extends object>(
+    prop: EntityProperty<T>,
+    entity: T,
+    platform: Platform,
+    options: SerializeOptions<T, any, any>,
+  ): EntityValue<T> | undefined {
     const child = Reference.unwrapReference(entity[prop.name] as T);
     const wrapped = helper(child);
     const populated = isPopulated(prop.name, options) && wrapped.isInitialized();
@@ -283,7 +318,11 @@ export class EntitySerializer {
     return platform.normalizePrimaryKey(pk as IPrimaryKey) as EntityValue<T>;
   }
 
-  private static processCollection<T extends object>(prop: EntityProperty<T>, entity: T, options: SerializeOptions<T, any, any>): EntityValue<T> | undefined {
+  private static processCollection<T extends object>(
+    prop: EntityProperty<T>,
+    entity: T,
+    options: SerializeOptions<T, any, any>,
+  ): EntityValue<T> | undefined {
     const col = entity[prop.name] as Collection<T>;
 
     if (!col.isInitialized()) {
@@ -307,7 +346,6 @@ export class EntitySerializer {
       return pk;
     }) as unknown as EntityValue<T>;
   }
-
 }
 
 export interface SerializeOptions<T, P extends string = never, E extends string = never> {
@@ -354,7 +392,12 @@ export function serialize<
   Populate extends string = never,
   Exclude extends string = never,
   Config extends TypeConfig = never,
->(entity: Entity, options?: Config & SerializeOptions<UnboxArray<Entity>, Populate, Exclude>): Naked extends object[] ? SerializeDTO<ArrayElement<Naked>, Populate, Exclude, CleanTypeConfig<Config>>[] : SerializeDTO<Naked, Populate, Exclude, CleanTypeConfig<Config>>;
+>(
+  entity: Entity,
+  options?: Config & SerializeOptions<UnboxArray<Entity>, Populate, Exclude>,
+): Naked extends object[]
+  ? SerializeDTO<ArrayElement<Naked>, Populate, Exclude, CleanTypeConfig<Config>>[]
+  : SerializeDTO<Naked, Populate, Exclude, CleanTypeConfig<Config>>;
 
 /**
  * Converts entity instance to POJO, converting the `Collection`s to arrays and unwrapping the `Reference` wrapper, while respecting the serialization options.
@@ -374,7 +417,12 @@ export function serialize<
   Populate extends string = never,
   Exclude extends string = never,
   Config extends TypeConfig = never,
->(entities: Entity | Entity[], options?: SerializeOptions<Entity, Populate, Exclude>): SerializeDTO<Naked, Populate, Exclude, CleanTypeConfig<Config>> | SerializeDTO<Naked, Populate, Exclude, CleanTypeConfig<Config>>[] {
+>(
+  entities: Entity | Entity[],
+  options?: SerializeOptions<Entity, Populate, Exclude>,
+):
+  | SerializeDTO<Naked, Populate, Exclude, CleanTypeConfig<Config>>
+  | SerializeDTO<Naked, Populate, Exclude, CleanTypeConfig<Config>>[] {
   if (Array.isArray(entities)) {
     return entities.map(e => EntitySerializer.serialize(e, options)) as any;
   }

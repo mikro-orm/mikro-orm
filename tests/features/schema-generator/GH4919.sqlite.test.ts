@@ -3,18 +3,15 @@ import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-or
 
 @Entity({ tableName: 'user' })
 class User0 {
-
   @PrimaryKey()
   id!: number;
 
   @Property()
   deliveredAt!: Date;
-
 }
 
 @Entity({ tableName: 'user' })
 class User1 {
-
   @PrimaryKey()
   id!: number;
 
@@ -26,7 +23,6 @@ class User1 {
 
   @Property()
   arrivedAt!: Date;
-
 }
 
 let orm: MikroORM;

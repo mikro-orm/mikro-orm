@@ -22,7 +22,6 @@ const DANGEROUS_PROPERTY_NAMES = ['__proto__', 'constructor', 'prototype'] as co
  * @internal
  */
 export class MetadataValidator {
-
   validateEntityDefinition<T>(metadata: MetadataStorage, name: EntityName<T>, options: MetadataDiscoveryOptions): void {
     const meta = metadata.get(name);
 
@@ -37,12 +36,20 @@ export class MetadataValidator {
     // Note: meta.virtual is set later in sync(), so we check for expression && !view here
     if (meta.virtual || (meta.expression && !meta.view)) {
       for (const prop of Utils.values(meta.properties)) {
-        if (![ReferenceKind.SCALAR, ReferenceKind.EMBEDDED, ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind)) {
-          throw new MetadataError(`Only scalars, embedded properties and to-many relations are allowed inside virtual entity. Found '${prop.kind}' in ${meta.className}.${prop.name}`);
+        if (
+          ![ReferenceKind.SCALAR, ReferenceKind.EMBEDDED, ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(
+            prop.kind,
+          )
+        ) {
+          throw new MetadataError(
+            `Only scalars, embedded properties and to-many relations are allowed inside virtual entity. Found '${prop.kind}' in ${meta.className}.${prop.name}`,
+          );
         }
 
         if (prop.primary) {
-          throw new MetadataError(`Virtual entity ${meta.className} cannot have primary key ${meta.className}.${prop.name}`);
+          throw new MetadataError(
+            `Virtual entity ${meta.className} cannot have primary key ${meta.className}.${prop.name}`,
+          );
         }
       }
 
@@ -78,11 +85,20 @@ export class MetadataValidator {
     // Validate no mixing of STI and TPT in the same hierarchy
     this.validateInheritanceStrategies(discovered);
 
-    const tableNames = discovered.filter(meta => !meta.abstract && !meta.embeddable && meta === meta.root && (meta.tableName || meta.collection) && meta.schema !== '*');
-    const duplicateTableNames = Utils.findDuplicates(tableNames.map(meta => {
-      const tableName = meta.tableName || meta.collection;
-      return (meta.schema ? '.' + meta.schema : '') + tableName;
-    }));
+    const tableNames = discovered.filter(
+      meta =>
+        !meta.abstract &&
+        !meta.embeddable &&
+        meta === meta.root &&
+        (meta.tableName || meta.collection) &&
+        meta.schema !== '*',
+    );
+    const duplicateTableNames = Utils.findDuplicates(
+      tableNames.map(meta => {
+        const tableName = meta.tableName || meta.collection;
+        return (meta.schema ? '.' + meta.schema : '') + tableName;
+      }),
+    );
 
     if (duplicateTableNames.length > 0 && options.checkDuplicateTableNames) {
       throw MetadataError.duplicateEntityDiscovered(duplicateTableNames);
@@ -93,12 +109,13 @@ export class MetadataValidator {
       throw MetadataError.onlyAbstractEntitiesDiscovered();
     }
 
-    const unwrap = (type: string) => type
-      .replace(/Array<(.*)>/, '$1') // unwrap array
-      .replace(/\[]$/, '')          // remove array suffix
-      .replace(/\((.*)\)/, '$1');   // unwrap union types
+    const unwrap = (type: string) =>
+      type
+        .replace(/Array<(.*)>/, '$1') // unwrap array
+        .replace(/\[]$/, '') // remove array suffix
+        .replace(/\((.*)\)/, '$1'); // unwrap union types
 
-    const name = <T> (p: EntityName<T> | (() => EntityName<T>)): string => {
+    const name = <T>(p: EntityName<T> | (() => EntityName<T>)): string => {
       if (typeof p === 'function' && !p.prototype) {
         return Utils.className((p as () => EntityName<T>)());
       }
@@ -109,22 +126,34 @@ export class MetadataValidator {
     const pivotProps = new Map<string, { prop: EntityProperty; meta: EntityMetadata }[]>();
 
     // check for not discovered entities
-    discovered.forEach(meta => Object.values(meta.properties).forEach(prop => {
-      if (prop.kind !== ReferenceKind.SCALAR && !unwrap(prop.type).split(/ ?\| ?/).every(type => discovered.find(m => m.className === type))) {
-        throw MetadataError.fromUnknownEntity(prop.type, `${meta.className}.${prop.name}`);
-      }
+    discovered.forEach(meta =>
+      Object.values(meta.properties).forEach(prop => {
+        if (
+          prop.kind !== ReferenceKind.SCALAR &&
+          !unwrap(prop.type)
+            .split(/ ?\| ?/)
+            .every(type => discovered.find(m => m.className === type))
+        ) {
+          throw MetadataError.fromUnknownEntity(prop.type, `${meta.className}.${prop.name}`);
+        }
 
-      if (prop.pivotEntity) {
-        const props = pivotProps.get(name(prop.pivotEntity)) ?? [];
-        props.push({ meta, prop });
-        pivotProps.set(name(prop.pivotEntity), props);
-      }
-    }));
+        if (prop.pivotEntity) {
+          const props = pivotProps.get(name(prop.pivotEntity)) ?? [];
+          props.push({ meta, prop });
+          pivotProps.set(name(prop.pivotEntity), props);
+        }
+      }),
+    );
 
     pivotProps.forEach(props => {
       // if the pivot entity is used in more than one property, check if they are linked
       if (props.length > 1 && props.every(p => !p.prop.mappedBy && !p.prop.inversedBy)) {
-        throw MetadataError.invalidManyToManyWithPivotEntity(props[0].meta, props[0].prop, props[1].meta, props[1].prop);
+        throw MetadataError.invalidManyToManyWithPivotEntity(
+          props[0].meta,
+          props[0].prop,
+          props[1].meta,
+          props[1].prop,
+        );
       }
     });
   }
@@ -152,7 +181,12 @@ export class MetadataValidator {
       throw MetadataError.targetIsAbstract(meta, prop);
     }
 
-    if ([ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind) && prop.persist === false && targetMeta.compositePK && options.checkNonPersistentCompositeProps) {
+    if (
+      [ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind) &&
+      prop.persist === false &&
+      targetMeta.compositePK &&
+      options.checkNonPersistentCompositeProps
+    ) {
       throw MetadataError.nonPersistentCompositeProp(meta, prop);
     }
 
@@ -224,7 +258,13 @@ export class MetadataValidator {
       const targetPKs = target.getPrimaryProps();
 
       if (targetPKs.length !== firstPKs.length) {
-        throw MetadataError.incompatiblePolymorphicTargets(meta, prop, targets[0], target, 'different number of primary keys');
+        throw MetadataError.incompatiblePolymorphicTargets(
+          meta,
+          prop,
+          targets[0],
+          target,
+          'different number of primary keys',
+        );
       }
 
       for (let j = 0; j < firstPKs.length; j++) {
@@ -232,7 +272,13 @@ export class MetadataValidator {
         const targetPK = targetPKs[j];
 
         if (firstPK.runtimeType !== targetPK.runtimeType) {
-          throw MetadataError.incompatiblePolymorphicTargets(meta, prop, targets[0], target, `incompatible primary key types: ${firstPK.name} (${firstPK.runtimeType}) vs ${targetPK.name} (${targetPK.runtimeType})`);
+          throw MetadataError.incompatiblePolymorphicTargets(
+            meta,
+            prop,
+            targets[0],
+            target,
+            `incompatible primary key types: ${firstPK.name} (${firstPK.runtimeType}) vs ${targetPK.name} (${targetPK.runtimeType})`,
+          );
         }
       }
     }
@@ -305,8 +351,13 @@ export class MetadataValidator {
 
     // has correct `mappedBy` reference type
     // For polymorphic relations, check if this entity is one of the polymorphic targets
-    const isValidPolymorphicInverse = owner.polymorphic && owner.polymorphTargets?.some(target => target.class === meta.root.class);
-    if (!isValidPolymorphicInverse && owner.type !== meta.className && owner.targetMeta?.root.class !== meta.root.class) {
+    const isValidPolymorphicInverse =
+      owner.polymorphic && owner.polymorphTargets?.some(target => target.class === meta.root.class);
+    if (
+      !isValidPolymorphicInverse &&
+      owner.type !== meta.className &&
+      owner.targetMeta?.root.class !== meta.root.class
+    ) {
       throw MetadataError.fromWrongReference(meta, prop, 'mappedBy', owner);
     }
 
@@ -331,7 +382,11 @@ export class MetadataValidator {
     }
   }
 
-  private validateIndexes(meta: EntityMetadata, indexes: { properties?: string | string[] }[], type: 'index' | 'unique'): void {
+  private validateIndexes(
+    meta: EntityMetadata,
+    indexes: { properties?: string | string[] }[],
+    type: 'index' | 'unique',
+  ): void {
     for (const index of indexes) {
       for (const propName of Utils.asArray(index.properties)) {
         const prop = meta.root.properties[propName];
@@ -345,7 +400,13 @@ export class MetadataValidator {
 
   private validateDuplicateFieldNames(meta: EntityMetadata, options: MetadataDiscoveryOptions): void {
     const candidates = Object.values(meta.properties)
-      .filter(prop => prop.persist !== false && !prop.inherited && prop.fieldNames?.length === 1 && (prop.kind !== ReferenceKind.EMBEDDED || prop.object))
+      .filter(
+        prop =>
+          prop.persist !== false &&
+          !prop.inherited &&
+          prop.fieldNames?.length === 1 &&
+          (prop.kind !== ReferenceKind.EMBEDDED || prop.object),
+      )
       .map(prop => prop.fieldNames[0]);
     const duplicates = Utils.findDuplicates(candidates);
 
@@ -370,7 +431,10 @@ export class MetadataValidator {
     const props = Object.values(meta.properties).filter(p => p.version);
 
     if (props.length > 1) {
-      throw MetadataError.multipleVersionFields(meta, props.map(p => p.name));
+      throw MetadataError.multipleVersionFields(
+        meta,
+        props.map(p => p.name),
+      );
     }
 
     const prop = meta.properties[meta.versionProperty];
@@ -447,5 +511,4 @@ export class MetadataValidator {
       }
     }
   }
-
 }

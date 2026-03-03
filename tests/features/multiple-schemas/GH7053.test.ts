@@ -1,9 +1,15 @@
 import { Collection, MikroORM } from '@mikro-orm/postgresql';
-import { Entity, ManyToOne, ReflectMetadataProvider, OneToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  ReflectMetadataProvider,
+  OneToMany,
+  PrimaryKey,
+  Property,
+} from '@mikro-orm/decorators/legacy';
 
 @Entity({ schema: '*' })
 class User {
-
   @PrimaryKey()
   id!: number;
 
@@ -20,12 +26,10 @@ class User {
     this.name = name;
     this.email = email;
   }
-
 }
 
 @Entity({ schema: '*' })
 class Post {
-
   @PrimaryKey()
   id!: number;
 
@@ -34,7 +38,6 @@ class Post {
 
   @ManyToOne(() => User)
   author!: User;
-
 }
 
 let orm: MikroORM;
@@ -58,10 +61,7 @@ test('GH #7053', async () => {
   em.create(User, {
     name: 'user',
     email: 'email',
-    posts: [
-      { title: 'Hello World' },
-      { title: 'Hello World 2' },
-    ],
+    posts: [{ title: 'Hello World' }, { title: 'Hello World 2' }],
   });
   await em.flush();
   em.clear();

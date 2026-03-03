@@ -4,7 +4,6 @@ import { MikroORM } from '@mikro-orm/sqlite';
 
 @Entity()
 class TimeSeriesAccessorGetterEntityTest {
-
   @PrimaryKey()
   id!: string;
 
@@ -19,16 +18,14 @@ class TimeSeriesAccessorGetterEntityTest {
   get stats() {
     return {
       average: this.data.reduce((sum, curr) => sum + curr, 0) / this.data.length,
-      max: this.data.reduce((max, curr) => max > curr ? max : curr, 0),
+      max: this.data.reduce((max, curr) => (max > curr ? max : curr), 0),
       totalItems: this.data.length,
     };
   }
-
 }
 
 @Entity()
 class TimeSeriesMethodGetterEntityTest {
-
   @PrimaryKey()
   id!: string;
 
@@ -42,11 +39,10 @@ class TimeSeriesMethodGetterEntityTest {
   stats() {
     return {
       average: this.data.reduce((sum, curr) => sum + curr, 0) / this.data.length,
-      max: this.data.reduce((max, curr) => max > curr ? max : curr, 0),
+      max: this.data.reduce((max, curr) => (max > curr ? max : curr), 0),
       totalItems: this.data.length,
     };
   }
-
 }
 
 let orm: MikroORM;
@@ -69,7 +65,6 @@ const testScenarios: [string, (entity: any) => EntityDTO<any>][] = [
 
 testScenarios.forEach(([testName, testFn]) => {
   describe(testName, () => {
-
     test('custom serializer should be called in accessor getter', async () => {
       const timeSeries = new TimeSeriesAccessorGetterEntityTest();
       timeSeries.id = 'weather';

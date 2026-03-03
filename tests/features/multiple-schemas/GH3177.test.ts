@@ -1,11 +1,17 @@
 import { Collection } from '@mikro-orm/core';
-import { Entity, ManyToMany, ManyToOne, OneToMany, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToMany,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../../helpers.js';
 import { MikroORM } from '@mikro-orm/postgresql';
 
 @Entity({ schema: '*' })
 class UserAccessProfile {
-
   @PrimaryKey()
   id!: number;
 
@@ -14,40 +20,33 @@ class UserAccessProfile {
 
   @ManyToMany({ entity: () => Permission, pivotEntity: () => AccessProfilePermission })
   permissions = new Collection<Permission>(this);
-
 }
 
 @Entity({ schema: '*' })
 class User {
-
   @PrimaryKey()
   id!: number;
 
   @ManyToOne(() => UserAccessProfile)
   accessProfile!: UserAccessProfile;
-
 }
 
 @Entity({ schema: 'public' })
 class Permission {
-
   @PrimaryKey()
   id!: number;
 
   @ManyToMany({ entity: () => UserAccessProfile, mappedBy: p => p.permissions })
   accessProfiles = new Collection<UserAccessProfile>(this);
-
 }
 
 @Entity({ schema: '*' })
 class AccessProfilePermission {
-
   @ManyToOne(() => UserAccessProfile, { primary: true })
   accessProfile!: UserAccessProfile;
 
   @ManyToOne(() => Permission, { primary: true })
   permission!: Permission;
-
 }
 
 let orm: MikroORM;
@@ -89,12 +88,24 @@ test(`GH issue 3177`, async () => {
 
   expect(mock).toHaveBeenCalledTimes(9);
   expect(mock.mock.calls[0][0]).toMatch(`begin`);
-  expect(mock.mock.calls[1][0]).toMatch(`insert into "tenant_01"."user_access_profile" ("id") values (default) returning "id"`);
+  expect(mock.mock.calls[1][0]).toMatch(
+    `insert into "tenant_01"."user_access_profile" ("id") values (default) returning "id"`,
+  );
   expect(mock.mock.calls[2][0]).toMatch(`insert into "tenant_01"."user" ("id", "access_profile_id") values (1, 1)`);
-  expect(mock.mock.calls[3][0]).toMatch(`insert into "permission" ("id") values (default), (default), (default) returning "id"`);
-  expect(mock.mock.calls[4][0]).toMatch(`insert into "tenant_01"."access_profile_permission" ("permission_id", "access_profile_id") values (1, 1), (2, 1), (3, 1)`);
+  expect(mock.mock.calls[3][0]).toMatch(
+    `insert into "permission" ("id") values (default), (default), (default) returning "id"`,
+  );
+  expect(mock.mock.calls[4][0]).toMatch(
+    `insert into "tenant_01"."access_profile_permission" ("permission_id", "access_profile_id") values (1, 1), (2, 1), (3, 1)`,
+  );
   expect(mock.mock.calls[5][0]).toMatch(`commit`);
-  expect(mock.mock.calls[6][0]).toMatch(`select "a0"."permission_id", "a0"."access_profile_id", "p1"."id" as "p1__id" from "tenant_01"."access_profile_permission" as "a0" inner join "permission" as "p1" on "a0"."permission_id" = "p1"."id" where "a0"."access_profile_id" in (1)`);
-  expect(mock.mock.calls[7][0]).toMatch(`select "u0".*, "a1"."id" as "a1__id" from "tenant_01"."user" as "u0" inner join "tenant_01"."user_access_profile" as "a1" on "u0"."access_profile_id" = "a1"."id" where "u0"."id" = 1`);
-  expect(mock.mock.calls[8][0]).toMatch(`select "a0"."permission_id", "a0"."access_profile_id", "p1"."id" as "p1__id" from "tenant_01"."access_profile_permission" as "a0" inner join "permission" as "p1" on "a0"."permission_id" = "p1"."id" where "a0"."access_profile_id" in (1)`);
+  expect(mock.mock.calls[6][0]).toMatch(
+    `select "a0"."permission_id", "a0"."access_profile_id", "p1"."id" as "p1__id" from "tenant_01"."access_profile_permission" as "a0" inner join "permission" as "p1" on "a0"."permission_id" = "p1"."id" where "a0"."access_profile_id" in (1)`,
+  );
+  expect(mock.mock.calls[7][0]).toMatch(
+    `select "u0".*, "a1"."id" as "a1__id" from "tenant_01"."user" as "u0" inner join "tenant_01"."user_access_profile" as "a1" on "u0"."access_profile_id" = "a1"."id" where "u0"."id" = 1`,
+  );
+  expect(mock.mock.calls[8][0]).toMatch(
+    `select "a0"."permission_id", "a0"."access_profile_id", "p1"."id" as "p1__id" from "tenant_01"."access_profile_permission" as "a0" inner join "permission" as "p1" on "a0"."permission_id" = "p1"."id" where "a0"."access_profile_id" in (1)`,
+  );
 });

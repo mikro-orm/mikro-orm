@@ -3,10 +3,8 @@ import { MikroORM, serialize, wrap } from '@mikro-orm/sqlite';
 import { Entity, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { Ref, Type } from '@mikro-orm/core';
 
-
 /** String in TS, Integer in DB **/
 export class IDStoredAsInteger extends Type<string, number> {
-
   convertToDatabaseValue(value: string): number {
     return parseInt(value);
   }
@@ -18,13 +16,10 @@ export class IDStoredAsInteger extends Type<string, number> {
   getColumnType() {
     return `integer`;
   }
-
 }
-
 
 @Entity()
 class User {
-
   @PrimaryKey({ type: IDStoredAsInteger })
   id!: string;
 
@@ -33,7 +28,6 @@ class User {
 
   @ManyToOne(() => User, { nullable: true })
   bestFriend?: Ref<User>;
-
 }
 
 let orm: MikroORM;

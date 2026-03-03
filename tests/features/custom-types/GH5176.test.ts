@@ -7,7 +7,6 @@ interface GeoJSONPolygon {
 }
 
 class GeoJSONPolygonType extends JsonType {
-
   convertToJSValueSQL(key: string) {
     return `ST_AsGeoJSON(${key},15)`;
   }
@@ -19,18 +18,15 @@ class GeoJSONPolygonType extends JsonType {
   getColumnType(): string {
     return 'GEOGRAPHY(POLYGON,4326)';
   }
-
 }
 
 @Entity()
 class DeliveryZone {
-
   @PrimaryKey()
   id!: number;
 
   @Property({ type: GeoJSONPolygonType })
   polygon!: GeoJSONPolygon;
-
 }
 
 export const polygonOne: GeoJSONPolygon = {
@@ -47,7 +43,7 @@ export const polygonTwo: GeoJSONPolygon = {
   type: 'Polygon',
   coordinates: [
     [
-      [44.27, 46.30],
+      [44.27, 46.3],
       [44.27, 46.29],
     ],
   ],

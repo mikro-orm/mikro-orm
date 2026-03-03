@@ -6,7 +6,6 @@ import type { EntityProperty } from '../typings.js';
  * Type that maps an SQL DOUBLE to a JS string or number.
  */
 export class DoubleType extends Type<number | string, string> {
-
   /* v8 ignore next */
   override convertToJSValue(value: string): number | string {
     if (this.prop?.runtimeType === 'number') {
@@ -23,5 +22,4 @@ export class DoubleType extends Type<number | string, string> {
   override compareAsType(): string {
     return this.prop?.runtimeType ?? 'number';
   }
-
 }

@@ -6,7 +6,6 @@ class DogMetadataType extends Type {}
 
 @Entity({ discriminatorColumn: 'type', abstract: true })
 class Pet {
-
   [OptionalProps]?: 'id' | 'type';
 
   @PrimaryKey()
@@ -14,23 +13,18 @@ class Pet {
 
   @Property()
   type!: string;
-
 }
 
 @Entity({ discriminatorValue: 'cat' })
 class Cat extends Pet {
-
   @Property({ type: CatMetadataType })
   metadata!: { purrsPerHour?: number };
-
 }
 
 @Entity({ discriminatorValue: 'dog' })
 class Dog extends Pet {
-
   @Property({ type: DogMetadataType })
   metadata!: { enjoysPlayingFetch?: true };
-
 }
 
 let orm: MikroORM;

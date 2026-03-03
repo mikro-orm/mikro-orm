@@ -15,12 +15,12 @@ describe('CustomBase', () => {
         properties: {},
       });
       baseEntity2.addProperty({
-          name: 'serverTime',
-          runtimeType: 'Date',
-          type: 'datetime',
-          columnTypes: ['DATETIME'],
-          fieldNames: ['server_time'],
-          formula: () => 'SELECT NOW()',
+        name: 'serverTime',
+        runtimeType: 'Date',
+        type: 'datetime',
+        columnTypes: ['DATETIME'],
+        fieldNames: ['server_time'],
+        formula: () => 'SELECT NOW()',
       });
       metadata.push(baseEntity2);
     };
@@ -40,16 +40,19 @@ describe('CustomBase', () => {
         orm.config.get('entityGenerator').useCoreBaseEntity = useCoreBaseEntity;
       });
 
-      describe.each(['', 'CustomBase', 'BaseEntity2', 'BaseEntity'])('customBaseEntityName=%s', (customBaseEntityName: string) => {
-        beforeEach(() => {
-          orm.config.get('entityGenerator').customBaseEntityName = customBaseEntityName;
-        });
+      describe.each(['', 'CustomBase', 'BaseEntity2', 'BaseEntity'])(
+        'customBaseEntityName=%s',
+        (customBaseEntityName: string) => {
+          beforeEach(() => {
+            orm.config.get('entityGenerator').customBaseEntityName = customBaseEntityName;
+          });
 
-        test.each(['decorators', 'entitySchema'] as const)('%s', async entityDefinition => {
-          const dump = await orm.entityGenerator.generate({ entityDefinition });
-          expect(dump).toMatchSnapshot('dump');
-        });
-      });
+          test.each(['decorators', 'entitySchema'] as const)('%s', async entityDefinition => {
+            const dump = await orm.entityGenerator.generate({ entityDefinition });
+            expect(dump).toMatchSnapshot('dump');
+          });
+        },
+      );
     });
   });
 });

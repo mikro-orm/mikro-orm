@@ -1,7 +1,6 @@
 import { AbstractNamingStrategy } from './AbstractNamingStrategy.js';
 
 export class MongoNamingStrategy extends AbstractNamingStrategy {
-
   classToTableName(entityName: string, tableName?: string): string {
     return tableName ?? entityName.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
   }
@@ -10,7 +9,12 @@ export class MongoNamingStrategy extends AbstractNamingStrategy {
     return propertyName;
   }
 
-  joinKeyColumnName(entityName: string, referencedColumnName?: string, composite?: boolean, tableName?: string): string {
+  joinKeyColumnName(
+    entityName: string,
+    referencedColumnName?: string,
+    composite?: boolean,
+    tableName?: string,
+  ): string {
     return tableName ?? entityName;
   }
 
@@ -25,5 +29,4 @@ export class MongoNamingStrategy extends AbstractNamingStrategy {
   referenceColumnName(): string {
     return '_id';
   }
-
 }

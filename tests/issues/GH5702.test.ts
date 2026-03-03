@@ -1,9 +1,15 @@
 import { Collection, MikroORM, sql } from '@mikro-orm/sqlite';
-import { BeforeUpsert, Entity, ManyToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  BeforeUpsert,
+  Entity,
+  ManyToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class Fruit {
-
   @PrimaryKey()
   id!: bigint;
 
@@ -30,12 +36,10 @@ class Fruit {
   private beforeUpsert() {
     this.updatedAt = new Date();
   }
-
 }
 
 @Entity()
 class Bowl {
-
   @PrimaryKey()
   id!: bigint;
 
@@ -62,7 +66,6 @@ class Bowl {
   private beforeUpsert() {
     this.updatedAt = new Date();
   }
-
 }
 
 let orm: MikroORM;
@@ -103,10 +106,12 @@ test('5702', async () => {
     description: 'Healthy',
   });
 
-  const [fruit3] = await orm.em.upsertMany(Fruit, [{
-    name: `Fruit 0.0`,
-    description: 'Healthy',
-  }]);
+  const [fruit3] = await orm.em.upsertMany(Fruit, [
+    {
+      name: `Fruit 0.0`,
+      description: 'Healthy',
+    },
+  ]);
 
   expect(fruit1).toBe(fruit2);
   expect(fruit1).toBe(fruit3);

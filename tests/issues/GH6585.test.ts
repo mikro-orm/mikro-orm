@@ -3,17 +3,14 @@ import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-or
 
 @Entity()
 class TestCase {
-
   @PrimaryKey()
   id!: number;
 
   @Property()
   name!: string;
-
 }
 
 class ResultCacheAdapterNull implements CacheAdapter {
-
   get(key: string): any {
     return null;
   }
@@ -29,36 +26,27 @@ class ResultCacheAdapterNull implements CacheAdapter {
   clear(): void | Promise<void> {
     // no-op
   }
-
 }
 
 class ResultCacheAdapterUndefined extends ResultCacheAdapterNull {
-
   get(key: string): any {
     return undefined;
   }
-
 }
 
-
 class ResultCacheAdapterZero extends ResultCacheAdapterNull {
-
   get(key: string): any {
     return 0;
   }
-
 }
 
 class ResultCacheAdapterEmptyString extends ResultCacheAdapterNull {
-
   get(key: string): any {
     return '';
   }
-
 }
 
 class ResultCacheAdapterMock implements CacheAdapter {
-
   private cache: Map<string, any> = new Map();
 
   get(key: string): any {
@@ -76,7 +64,6 @@ class ResultCacheAdapterMock implements CacheAdapter {
   clear(): void {
     this.cache.clear();
   }
-
 }
 
 let orm: MikroORM;
@@ -102,9 +89,7 @@ test('query builder "get" with null cache adapter skips database query', async (
   await setupORMWithResultCache(ResultCacheAdapterNull);
 
   const connectionExecute = vi.spyOn(orm.em.getDriver().getConnection(), 'execute');
-  const result = await orm.em.createQueryBuilder(TestCase)
-    .where({ name: '404' })
-    .execute('get');
+  const result = await orm.em.createQueryBuilder(TestCase).where({ name: '404' }).execute('get');
 
   expect(result).toBeNull();
   expect(connectionExecute).not.toHaveBeenCalled();
@@ -165,11 +150,8 @@ test('query builder with empty string cache adapter skips database query', async
   await setupORMWithResultCache(ResultCacheAdapterEmptyString);
 
   const connectionExecute = vi.spyOn(orm.em.getDriver().getConnection(), 'execute');
-  const result = await orm.em.createQueryBuilder(TestCase)
-    .where({ name: '404' })
-    .execute('get');
+  const result = await orm.em.createQueryBuilder(TestCase).where({ name: '404' }).execute('get');
 
   expect(result).toBe('');
   expect(connectionExecute).not.toHaveBeenCalled();
 });
-

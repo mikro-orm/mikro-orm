@@ -6,7 +6,6 @@ import { AuthorAddress } from './AuthorAddress.js';
 
 @Entity()
 export class Author extends BaseEntity {
-
   @Property()
   name: string;
 
@@ -27,5 +26,4 @@ export class Author extends BaseEntity {
     this.name = name;
     this.address = address;
   }
-
 }

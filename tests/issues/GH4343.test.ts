@@ -5,7 +5,6 @@ import { v4 } from 'uuid';
 
 @Entity()
 class LocalizedString {
-
   @PrimaryKey({ type: 'uuid' })
   id = v4();
 
@@ -18,12 +17,10 @@ class LocalizedString {
   constructor(de: string) {
     this.de_DE = de;
   }
-
 }
 
 @Entity()
 class Book {
-
   @PrimaryKey({ type: 'uuid' })
   id = v4();
 
@@ -37,7 +34,6 @@ class Book {
     this.title = ref(new LocalizedString(title));
     this.description = ref(new LocalizedString(description));
   }
-
 }
 
 let orm: MikroORM;
@@ -58,9 +54,13 @@ afterAll(async () => {
 
 it('GH #4343', async () => {
   async function request(id: number) {
-    const books = await orm.em.find(Book, {}, {
-      populate: ['description', 'title'],
-    });
+    const books = await orm.em.find(
+      Book,
+      {},
+      {
+        populate: ['description', 'title'],
+      },
+    );
     expect(books[0].title.isInitialized()).toBe(true);
     expect(books[0].description?.isInitialized()).toBe(true);
   }

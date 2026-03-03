@@ -14,7 +14,6 @@ import FooBar from './FooBar.js';
 
 @Entity()
 export class FooBaz {
-
   [EagerProps]?: 'bar' | 'book';
 
   @PrimaryKey()
@@ -39,5 +38,4 @@ export class FooBaz {
 
     return baz;
   }
-
 }

@@ -3,7 +3,6 @@ import { Entity, ManyToMany, PrimaryKey, ReflectMetadataProvider } from '@mikro-
 
 @Entity()
 class A {
-
   @PrimaryKey()
   id!: number;
 
@@ -16,11 +15,9 @@ class A {
 
   @ManyToMany(() => A, 'as')
   bs = new Collection<A>(this);
-
 }
 
 describe('GH issue 1429', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {

@@ -11,7 +11,6 @@ import {
 
 @Entity()
 class User {
-
   @PrimaryKey()
   id!: number;
 
@@ -21,29 +20,24 @@ class User {
   constructor(name: string) {
     this.name = name;
   }
-
 }
 
 @Embeddable()
 class FamilyMember {
-
   @Property()
   relation: string = 'brother';
 
   @ManyToOne(() => User, { eager: true })
   user!: User;
-
 }
 
 @Entity()
 class Family {
-
   @PrimaryKey()
   id!: number;
 
   @Embedded(() => FamilyMember, { array: true })
   members: FamilyMember[] = [];
-
 }
 
 let orm: MikroORM;

@@ -40,7 +40,6 @@ import type { Platform } from '../platforms/Platform.js';
 const insideFlush = createAsyncContext<boolean>();
 
 export class UnitOfWork {
-
   /** map of references to managed entities */
   private readonly identityMap: IdentityMap;
 
@@ -49,7 +48,15 @@ export class UnitOfWork {
   private readonly orphanRemoveStack = new Set<AnyEntity>();
   private readonly changeSets = new Map<AnyEntity, ChangeSet<any>>();
   private readonly collectionUpdates = new Set<Collection<AnyEntity>>();
-  private readonly extraUpdates = new Set<[AnyEntity, string | string[], AnyEntity | AnyEntity[] | Reference<any> | Collection<any>, ChangeSet<any> | undefined, ChangeSetType]>();
+  private readonly extraUpdates = new Set<
+    [
+      AnyEntity,
+      string | string[],
+      AnyEntity | AnyEntity[] | Reference<any> | Collection<any>,
+      ChangeSet<any> | undefined,
+      ChangeSetType,
+    ]
+  >();
   private readonly metadata: MetadataStorage;
   private readonly platform: Platform;
   private readonly eventManager: EventManager;
@@ -111,7 +118,10 @@ export class UnitOfWork {
         continue;
       }
 
-      if ([ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind) && Utils.isPlainObject(data[prop.name])) {
+      if (
+        [ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind) &&
+        Utils.isPlainObject(data[prop.name])
+      ) {
         // Skip polymorphic relations - they use PolymorphicRef wrapper
         if (!prop.polymorphic) {
           data[prop.name] = Utils.getPrimaryKeyValues(data[prop.name], prop.targetMeta!, true);
@@ -120,14 +130,18 @@ export class UnitOfWork {
         for (const p of prop.targetMeta!.props) {
           /* v8 ignore next */
           const prefix = prop.prefix === false ? '' : prop.prefix === true ? prop.name + '_' : prop.prefix;
-          data[prefix + p.name as EntityKey] = data[prop.name as EntityKey][p.name];
+          data[(prefix + p.name) as EntityKey] = data[prop.name as EntityKey][p.name];
         }
 
         data[prop.name] = Utils.getPrimaryKeyValues(data[prop.name], prop.targetMeta!, true);
       }
 
       if (prop.hydrate === false && prop.customType?.ensureComparable(meta, prop)) {
-        const converted = prop.customType.convertToJSValue(data[key], this.platform, { key, mode: 'hydration', force: true });
+        const converted = prop.customType.convertToJSValue(data[key], this.platform, {
+          key,
+          mode: 'hydration',
+          force: true,
+        });
         data[key] = prop.customType.convertToDatabaseValue(converted, this.platform, { key, mode: 'hydration' });
       }
 
@@ -194,7 +208,12 @@ export class UnitOfWork {
   /**
    * Returns entity from the identity map. For composite keys, you need to pass an array of PKs in the same order as they are defined in `meta.primaryKeys`.
    */
-  getById<T extends object>(entityName: EntityName<T>, id: Primary<T> | Primary<T>[], schema?: string, convertCustomTypes?: boolean): T | undefined {
+  getById<T extends object>(
+    entityName: EntityName<T>,
+    id: Primary<T> | Primary<T>[],
+    schema?: string,
+    convertCustomTypes?: boolean,
+  ): T | undefined {
     if (id == null || (Array.isArray(id) && id.length === 0)) {
       return undefined;
     }
@@ -233,7 +252,13 @@ export class UnitOfWork {
    * @param convertCustomTypes - If true, the value is in database format and will be converted to JS format for lookup.
    *                             If false (default), the value is assumed to be in JS format already.
    */
-  getByKey<T extends object>(entityName: EntityName<T>, key: string, value: unknown, schema?: string, convertCustomTypes?: boolean): T | undefined {
+  getByKey<T extends object>(
+    entityName: EntityName<T>,
+    key: string,
+    value: unknown,
+    schema?: string,
+    convertCustomTypes?: boolean,
+  ): T | undefined {
     const meta = this.metadata.find(entityName)!.root;
     schema ??= meta.schema ?? this.em.config.getSchema();
     const prop = meta.properties[key as EntityKey<T>];
@@ -253,7 +278,13 @@ export class UnitOfWork {
    * @param convertCustomTypes - If true, the value is in database format and will be converted to JS format.
    *                             If false (default), the value is assumed to be in JS format already.
    */
-  storeByKey<T extends object>(entity: T, key: string, value: unknown, schema?: string, convertCustomTypes?: boolean): void {
+  storeByKey<T extends object>(
+    entity: T,
+    key: string,
+    value: unknown,
+    schema?: string,
+    convertCustomTypes?: boolean,
+  ): void {
     const meta = (entity as AnyEntity).__meta!.root;
     schema ??= meta.schema ?? this.em.config.getSchema();
     const prop = meta.properties[key as EntityKey<T>];
@@ -269,7 +300,12 @@ export class UnitOfWork {
     this.identityMap.storeByKey(entity, key, '' + value, schema);
   }
 
-  tryGetById<T extends object>(entityName: EntityName<T>, where: FilterQuery<T>, schema?: string, strict = true): T | null {
+  tryGetById<T extends object>(
+    entityName: EntityName<T>,
+    where: FilterQuery<T>,
+    schema?: string,
+    strict = true,
+  ): T | null {
     const pk = Utils.extractPK(where, this.metadata.find<T>(entityName)!, strict);
 
     if (!pk) {
@@ -309,7 +345,15 @@ export class UnitOfWork {
     return [...this.collectionUpdates];
   }
 
-  getExtraUpdates(): Set<[AnyEntity, string | string[], (AnyEntity | AnyEntity[] | Reference<any> | Collection<any>), ChangeSet<any> | undefined, ChangeSetType]> {
+  getExtraUpdates(): Set<
+    [
+      AnyEntity,
+      string | string[],
+      AnyEntity | AnyEntity[] | Reference<any> | Collection<any>,
+      ChangeSet<any> | undefined,
+      ChangeSetType,
+    ]
+  > {
     return this.extraUpdates;
   }
 
@@ -373,7 +417,11 @@ export class UnitOfWork {
     }
   }
 
-  persist<T extends object>(entity: T, visited?: Set<AnyEntity>, options: { checkRemoveStack?: boolean; cascade?: boolean } = {}): void {
+  persist<T extends object>(
+    entity: T,
+    visited?: Set<AnyEntity>,
+    options: { checkRemoveStack?: boolean; cascade?: boolean } = {},
+  ): void {
     EntityHelper.ensurePropagation(entity);
 
     if (options.checkRemoveStack && this.removeStack.has(entity)) {
@@ -418,7 +466,7 @@ export class UnitOfWork {
         continue;
       }
 
-      const target = relation && relation[inverseProp as keyof typeof relation] as unknown;
+      const target = relation && (relation[inverseProp as keyof typeof relation] as unknown);
 
       if (relation && Utils.isCollection(target)) {
         target.removeWithoutPropagation(entity);
@@ -480,7 +528,8 @@ export class UnitOfWork {
 
       const groups = this.getChangeSetGroups();
       const platform = this.em.getPlatform();
-      const runInTransaction = !this.em.isInTransaction() && platform.supportsTransactions() && this.em.config.get('implicitTransactions');
+      const runInTransaction =
+        !this.em.isInTransaction() && platform.supportsTransactions() && this.em.config.get('implicitTransactions');
 
       if (runInTransaction) {
         const loggerContext = Utils.merge(
@@ -539,7 +588,12 @@ export class UnitOfWork {
 
         if (Utils.isCollection(rel)) {
           rel.removeWithoutPropagation(entity);
-        } else if (rel && (prop.mapToPk ? helper(this.em.getReference(prop.targetMeta!.class, rel)).getSerializedPrimaryKey() === serializedPK : rel === entity)) {
+        } else if (
+          rel &&
+          (prop.mapToPk
+            ? helper(this.em.getReference(prop.targetMeta!.class, rel)).getSerializedPrimaryKey() === serializedPK
+            : rel === entity)
+        ) {
           if (prop.formula) {
             delete referrer[prop.name];
           } else {
@@ -614,7 +668,12 @@ export class UnitOfWork {
       let type = ChangeSetType.DELETE;
 
       for (const cs of inserts[wrapped.__meta.uniqueName] ?? []) {
-        if (deletePkHash.some(hash => hash === cs.getSerializedPrimaryKey() || this.expandUniqueProps(cs.entity).find(child => hash === child))) {
+        if (
+          deletePkHash.some(
+            hash =>
+              hash === cs.getSerializedPrimaryKey() || this.expandUniqueProps(cs.entity).find(child => hash === child),
+          )
+        ) {
           type = ChangeSetType.DELETE_EARLY;
         }
       }
@@ -651,7 +710,13 @@ export class UnitOfWork {
       return;
     }
 
-    this.extraUpdates.add([changeSet.entity, props.map(p => p.name), props.map(p => changeSet.entity[p.name]), changeSet, type]);
+    this.extraUpdates.add([
+      changeSet.entity,
+      props.map(p => p.name),
+      props.map(p => changeSet.entity[p.name]),
+      changeSet,
+      type,
+    ]);
 
     for (const p of props) {
       delete changeSet.entity[p.name];
@@ -682,7 +747,12 @@ export class UnitOfWork {
     return this.changeSetPersister;
   }
 
-  private findNewEntities<T extends object>(entity: T, visited: Set<AnyEntity>, idx = 0, processed = new Set<AnyEntity>()): void {
+  private findNewEntities<T extends object>(
+    entity: T,
+    visited: Set<AnyEntity>,
+    idx = 0,
+    processed = new Set<AnyEntity>(),
+  ): void {
     if (visited.has(entity)) {
       return;
     }
@@ -756,7 +826,12 @@ export class UnitOfWork {
         continue;
       }
 
-      const cs = new ChangeSet(entity, originalChangeSet.type, payload as EntityDictionary<T>, current as EntityMetadata<T>);
+      const cs = new ChangeSet(
+        entity,
+        originalChangeSet.type,
+        payload as EntityDictionary<T>,
+        current as EntityMetadata<T>,
+      );
 
       if (current === meta) {
         cs.originalEntity = originalChangeSet.originalEntity;
@@ -795,7 +870,7 @@ export class UnitOfWork {
     // when changing a unique nullable property (or a 1:1 relation), we can't do it in a single
     // query as it would cause unique constraint violations
     const uniqueProps = changeSet.meta.uniqueProps.filter(prop => {
-      return (prop.nullable || changeSet.type !== ChangeSetType.CREATE);
+      return prop.nullable || changeSet.type !== ChangeSetType.CREATE;
     });
     this.scheduleExtraUpdate(changeSet, uniqueProps);
 
@@ -809,30 +884,40 @@ export class UnitOfWork {
       return [];
     }
 
-    const simpleUniqueHashes = wrapped.__meta.uniqueProps.map(prop => {
-      if (entity[prop.name] != null) {
-        return prop.kind === ReferenceKind.SCALAR || prop.mapToPk ? entity[prop.name] : helper(entity[prop.name]!).getSerializedPrimaryKey();
-      }
+    const simpleUniqueHashes = wrapped.__meta.uniqueProps
+      .map(prop => {
+        if (entity[prop.name] != null) {
+          return prop.kind === ReferenceKind.SCALAR || prop.mapToPk
+            ? entity[prop.name]
+            : helper(entity[prop.name]!).getSerializedPrimaryKey();
+        }
 
-      if (wrapped.__originalEntityData?.[prop.name] != null) {
-        return Utils.getPrimaryKeyHash(Utils.asArray(wrapped.__originalEntityData![prop.name] as string));
-      }
+        if (wrapped.__originalEntityData?.[prop.name] != null) {
+          return Utils.getPrimaryKeyHash(Utils.asArray(wrapped.__originalEntityData![prop.name] as string));
+        }
 
-      return undefined;
-    }).filter(i => i) as string[];
+        return undefined;
+      })
+      .filter(i => i) as string[];
 
-    const compoundUniqueHashes = wrapped.__meta.uniques.map(unique => {
-      const props = Utils.asArray<EntityKey<T>>(unique.properties);
+    const compoundUniqueHashes = wrapped.__meta.uniques
+      .map(unique => {
+        const props = Utils.asArray<EntityKey<T>>(unique.properties);
 
-      if (props.every(prop => entity[prop] != null)) {
-        return Utils.getPrimaryKeyHash(props.map(p => {
-          const prop = wrapped.__meta.properties[p];
-          return prop.kind === ReferenceKind.SCALAR || prop.mapToPk ? entity[prop.name] : helper(entity[prop.name as EntityKey]!).getSerializedPrimaryKey();
-        }) as any);
-      }
+        if (props.every(prop => entity[prop] != null)) {
+          return Utils.getPrimaryKeyHash(
+            props.map(p => {
+              const prop = wrapped.__meta.properties[p];
+              return prop.kind === ReferenceKind.SCALAR || prop.mapToPk
+                ? entity[prop.name]
+                : helper(entity[prop.name as EntityKey]!).getSerializedPrimaryKey();
+            }) as any,
+          );
+        }
 
-      return undefined;
-    }).filter(i => i) as string[];
+        return undefined;
+      })
+      .filter(i => i) as string[];
 
     return simpleUniqueHashes.concat(compoundUniqueHashes);
   }
@@ -863,7 +948,14 @@ export class UnitOfWork {
     }
   }
 
-  private processReference<T extends object>(parent: T, prop: EntityProperty<T>, kind: any, visited: Set<AnyEntity>, processed: Set<AnyEntity>, idx: number): void {
+  private processReference<T extends object>(
+    parent: T,
+    prop: EntityProperty<T>,
+    kind: any,
+    visited: Set<AnyEntity>,
+    processed: Set<AnyEntity>,
+    idx: number,
+  ): void {
     const isToOne = prop.kind === ReferenceKind.MANY_TO_ONE || prop.kind === ReferenceKind.ONE_TO_ONE;
 
     if (isToOne && Utils.isEntity(kind)) {
@@ -871,7 +963,8 @@ export class UnitOfWork {
     }
 
     if (Utils.isCollection<any>(kind)) {
-      kind.getItems(false)
+      kind
+        .getItems(false)
         .filter(item => !item.__helper!.__originalEntityData)
         .forEach(item => {
           // propagate schema from parent
@@ -890,7 +983,13 @@ export class UnitOfWork {
     }
   }
 
-  private processToManyReference<T extends object>(collection: Collection<AnyEntity>, visited: Set<AnyEntity>, processed: Set<AnyEntity>, parent: T, prop: EntityProperty<T>): void {
+  private processToManyReference<T extends object>(
+    collection: Collection<AnyEntity>,
+    visited: Set<AnyEntity>,
+    processed: Set<AnyEntity>,
+    parent: T,
+    prop: EntityProperty<T>,
+  ): void {
     if (this.isCollectionSelfReferenced(collection, processed)) {
       this.extraUpdates.add([parent, prop.name, collection, undefined, ChangeSetType.UPDATE]);
       const coll = new Collection<AnyEntity, T>(parent);
@@ -900,7 +999,8 @@ export class UnitOfWork {
       return;
     }
 
-    collection.getItems(false)
+    collection
+      .getItems(false)
       .filter(item => !item.__helper!.__originalEntityData)
       .forEach(item => this.findNewEntities(item, visited, 0, processed));
   }
@@ -955,7 +1055,12 @@ export class UnitOfWork {
     this.working = false;
   }
 
-  private cascade<T extends object>(entity: T, type: Cascade, visited = new Set<AnyEntity>(), options: { checkRemoveStack?: boolean; cascade?: boolean } = {}): void {
+  private cascade<T extends object>(
+    entity: T,
+    type: Cascade,
+    visited = new Set<AnyEntity>(),
+    options: { checkRemoveStack?: boolean; cascade?: boolean } = {},
+  ): void {
     if (visited.has(entity)) {
       return;
     }
@@ -963,11 +1068,21 @@ export class UnitOfWork {
     visited.add(entity);
 
     switch (type) {
-      case Cascade.PERSIST: this.persist(entity, visited, options); break;
-      case Cascade.MERGE: this.merge(entity, visited); break;
-      case Cascade.REMOVE: this.remove(entity, visited, options); break;
-      case Cascade.SCHEDULE_ORPHAN_REMOVAL: this.scheduleOrphanRemoval(entity, visited); break;
-      case Cascade.CANCEL_ORPHAN_REMOVAL: this.cancelOrphanRemoval(entity, visited); break;
+      case Cascade.PERSIST:
+        this.persist(entity, visited, options);
+        break;
+      case Cascade.MERGE:
+        this.merge(entity, visited);
+        break;
+      case Cascade.REMOVE:
+        this.remove(entity, visited, options);
+        break;
+      case Cascade.SCHEDULE_ORPHAN_REMOVAL:
+        this.scheduleOrphanRemoval(entity, visited);
+        break;
+      case Cascade.CANCEL_ORPHAN_REMOVAL:
+        this.cancelOrphanRemoval(entity, visited);
+        break;
     }
 
     for (const prop of helper(entity).__meta.relations) {
@@ -975,7 +1090,13 @@ export class UnitOfWork {
     }
   }
 
-  private cascadeReference<T extends object>(entity: T, prop: EntityProperty<T>, type: Cascade, visited: Set<AnyEntity>, options: { checkRemoveStack?: boolean }): void {
+  private cascadeReference<T extends object>(
+    entity: T,
+    prop: EntityProperty<T>,
+    type: Cascade,
+    visited: Set<AnyEntity>,
+    options: { checkRemoveStack?: boolean },
+  ): void {
     this.fixMissingReference(entity, prop);
 
     if (!this.shouldCascade(prop, type)) {
@@ -1003,7 +1124,10 @@ export class UnitOfWork {
   }
 
   private shouldCascade(prop: EntityProperty, type: Cascade): boolean {
-    if ([Cascade.REMOVE, Cascade.SCHEDULE_ORPHAN_REMOVAL, Cascade.CANCEL_ORPHAN_REMOVAL, Cascade.ALL].includes(type) && prop.orphanRemoval) {
+    if (
+      [Cascade.REMOVE, Cascade.SCHEDULE_ORPHAN_REMOVAL, Cascade.CANCEL_ORPHAN_REMOVAL, Cascade.ALL].includes(type) &&
+      prop.orphanRemoval
+    ) {
       return true;
     }
 
@@ -1023,7 +1147,11 @@ export class UnitOfWork {
     await this.em.getDriver().lockPessimistic(entity, { ctx: this.em.getTransactionContext(), ...options });
   }
 
-  private async lockOptimistic<T extends object>(entity: T, meta: EntityMetadata<T>, version: number | Date): Promise<void> {
+  private async lockOptimistic<T extends object>(
+    entity: T,
+    meta: EntityMetadata<T>,
+    version: number | Date,
+  ): Promise<void> {
     if (!meta.versionProperty) {
       throw OptimisticLockError.notVersioned(meta);
     }
@@ -1051,7 +1179,9 @@ export class UnitOfWork {
 
     if ([ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind) && target && !prop.mapToPk) {
       if (!Utils.isEntity(target)) {
-        entity[prop.name] = this.em.getReference(prop.targetMeta!.class, target, { wrapped: !!prop.ref }) as EntityValue<T>;
+        entity[prop.name] = this.em.getReference(prop.targetMeta!.class, target, {
+          wrapped: !!prop.ref,
+        }) as EntityValue<T>;
       } else if (!helper(target).__initialized && !helper(target).__em) {
         const pk = helper(target).getPrimaryKey();
         entity[prop.name] = this.em.getReference(prop.targetMeta!.class, pk, { wrapped: !!prop.ref }) as EntityValue<T>;
@@ -1073,7 +1203,10 @@ export class UnitOfWork {
     }
   }
 
-  private async persistToDatabase(groups: { [K in ChangeSetType]: Map<EntityMetadata, ChangeSet<any>[]> }, ctx?: Transaction): Promise<void> {
+  private async persistToDatabase(
+    groups: { [K in ChangeSetType]: Map<EntityMetadata, ChangeSet<any>[]> },
+    ctx?: Transaction,
+  ): Promise<void> {
     if (ctx) {
       this.em.setTransactionContext(ctx);
     }
@@ -1129,9 +1262,11 @@ export class UnitOfWork {
     }
 
     const props = changeSets[0].meta.root.relations.filter(prop => {
-      return (prop.kind === ReferenceKind.ONE_TO_ONE && prop.owner)
-        || prop.kind === ReferenceKind.MANY_TO_ONE
-        || (prop.kind === ReferenceKind.MANY_TO_MANY && prop.owner && !this.platform.usesPivotTable());
+      return (
+        (prop.kind === ReferenceKind.ONE_TO_ONE && prop.owner) ||
+        prop.kind === ReferenceKind.MANY_TO_ONE ||
+        (prop.kind === ReferenceKind.MANY_TO_MANY && prop.owner && !this.platform.usesPivotTable())
+      );
     });
 
     for (const changeSet of changeSets) {
@@ -1213,7 +1348,11 @@ export class UnitOfWork {
     }
   }
 
-  private async commitUpdateChangeSets<T extends object>(changeSets: ChangeSet<T>[], ctx?: Transaction, batched = true): Promise<void> {
+  private async commitUpdateChangeSets<T extends object>(
+    changeSets: ChangeSet<T>[],
+    ctx?: Transaction,
+    batched = true,
+  ): Promise<void> {
     if (changeSets.length === 0) {
       return;
     }
@@ -1230,8 +1369,16 @@ export class UnitOfWork {
 
       if (!wrapped.__initialized) {
         for (const prop of changeSet.meta.relations) {
-          if ([ReferenceKind.MANY_TO_MANY, ReferenceKind.ONE_TO_MANY].includes(prop.kind) && changeSet.entity[prop.name] == null) {
-            changeSet.entity[prop.name] = Collection.create(changeSet.entity, prop.name, undefined, wrapped.isInitialized()) as EntityValue<T>;
+          if (
+            [ReferenceKind.MANY_TO_MANY, ReferenceKind.ONE_TO_MANY].includes(prop.kind) &&
+            changeSet.entity[prop.name] == null
+          ) {
+            changeSet.entity[prop.name] = Collection.create(
+              changeSet.entity,
+              prop.name,
+              undefined,
+              wrapped.isInitialized(),
+            ) as EntityValue<T>;
           }
         }
 
@@ -1259,7 +1406,10 @@ export class UnitOfWork {
     }
   }
 
-  private async commitExtraUpdates(type: ChangeSetType.UPDATE | ChangeSetType.UPDATE_EARLY, ctx?: Transaction): Promise<void> {
+  private async commitExtraUpdates(
+    type: ChangeSetType.UPDATE | ChangeSetType.UPDATE_EARLY,
+    ctx?: Transaction,
+  ): Promise<void> {
     const extraUpdates: [ChangeSet<any>, ChangeSet<any> | undefined][] = [];
 
     for (const extraUpdate of this.extraUpdates) {
@@ -1268,7 +1418,7 @@ export class UnitOfWork {
       }
 
       if (Array.isArray(extraUpdate[1])) {
-        extraUpdate[1].forEach((p, i) => extraUpdate[0][p] = (extraUpdate[2] as unknown[])[i]);
+        extraUpdate[1].forEach((p, i) => (extraUpdate[0][p] = (extraUpdate[2] as unknown[])[i]));
       } else {
         extraUpdate[0][extraUpdate[1]] = extraUpdate[2];
       }
@@ -1280,7 +1430,11 @@ export class UnitOfWork {
       }
     }
 
-    await this.commitUpdateChangeSets(extraUpdates.map(u => u[0]), ctx, false);
+    await this.commitUpdateChangeSets(
+      extraUpdates.map(u => u[0]),
+      ctx,
+      false,
+    );
 
     // propagate the new values to the original changeset
     for (const extraUpdate of extraUpdates) {
@@ -1341,7 +1495,10 @@ export class UnitOfWork {
 
     const addToGroup = (cs: ChangeSet<any>) => {
       // Skip stub TPT changesets with empty payload (e.g. leaf with no own-property changes on UPDATE)
-      if ((cs.type === ChangeSetType.UPDATE || cs.type === ChangeSetType.UPDATE_EARLY) && !Utils.hasObjectKeys(cs.payload)) {
+      if (
+        (cs.type === ChangeSetType.UPDATE || cs.type === ChangeSetType.UPDATE_EARLY) &&
+        !Utils.hasObjectKeys(cs.payload)
+      ) {
         return;
       }
 
@@ -1434,7 +1591,6 @@ export class UnitOfWork {
       }
     });
   }
-
 }
 
 export interface RegisterOptions {

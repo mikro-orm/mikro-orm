@@ -1,10 +1,16 @@
 import { Collection, Ref, MikroORM, Reference, SimpleLogger } from '@mikro-orm/postgresql';
-import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../../helpers.js';
 
 @Entity()
 class Customer {
-
   @PrimaryKey()
   id!: number;
 
@@ -13,12 +19,10 @@ class Customer {
 
   @OneToMany({ entity: () => License, mappedBy: 'customer' })
   licenses = new Collection<License>(this);
-
 }
 
 @Entity()
 class License {
-
   @PrimaryKey()
   id!: number;
 
@@ -28,7 +32,6 @@ class License {
   constructor(customer: Customer | Ref<Customer>) {
     this.customer = Reference.create(customer);
   }
-
 }
 
 let orm: MikroORM;
@@ -67,9 +70,13 @@ test('6405', async () => {
   ]);
   mock.mockReset();
   await orm.schema.drop();
-  expect(mock).toHaveBeenCalledWith('[query] drop table if exists "myschema"."license" cascade;drop table if exists "myschema"."customer" cascade;');
+  expect(mock).toHaveBeenCalledWith(
+    '[query] drop table if exists "myschema"."license" cascade;drop table if exists "myschema"."customer" cascade;',
+  );
   mock.mockReset();
   await orm.schema.drop({ schema: 'myschema' });
-  expect(mock).toHaveBeenCalledWith('[query] drop table if exists "myschema"."license" cascade;drop table if exists "myschema"."customer" cascade;');
+  expect(mock).toHaveBeenCalledWith(
+    '[query] drop table if exists "myschema"."license" cascade;drop table if exists "myschema"."customer" cascade;',
+  );
   mock.mockReset();
 });

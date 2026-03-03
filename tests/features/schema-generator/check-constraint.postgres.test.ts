@@ -4,18 +4,15 @@ import { initORMPostgreSql } from '../../bootstrap.js';
 
 @Check({ expression: columns => `${columns.price} >= 0` })
 abstract class Base {
-
   @PrimaryKey()
   id!: number;
 
   @Property()
   price!: number;
-
 }
 
 @Entity()
 class FooEntity extends Base {
-
   @Property()
   @Check({ expression: columns => `${columns.price2} >= 0` })
   price2!: number;
@@ -25,11 +22,9 @@ class FooEntity extends Base {
 
   @Property({ check: 'email = lower(email)' })
   email!: string;
-
 }
 
 describe('check constraint [postgres]', () => {
-
   test('check constraint is generated for decorator [postgres]', async () => {
     const orm = await MikroORM.init({
       metadataProvider: ReflectMetadataProvider,
@@ -120,9 +115,7 @@ describe('check constraint [postgres]', () => {
       },
       name: 'NewTable',
       tableName: 'new_table',
-      checks: [
-        { name: 'foo', expression: 'price >= 0' },
-      ],
+      checks: [{ name: 'foo', expression: 'price >= 0' }],
     }).init().meta;
     meta.set(newTableMeta.class, newTableMeta);
 
@@ -219,9 +212,7 @@ describe('check constraint [postgres]', () => {
       },
       name: 'MultiColCheckTable',
       tableName: 'multi_col_check_table',
-      checks: [
-        { name: 'chk_price_range', expression: 'min_price >= 0 and max_price >= min_price' },
-      ],
+      checks: [{ name: 'chk_price_range', expression: 'min_price >= 0 and max_price >= min_price' }],
     }).init().meta;
     meta.set(newTableMeta.class, newTableMeta);
 

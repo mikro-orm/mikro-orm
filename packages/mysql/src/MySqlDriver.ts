@@ -17,7 +17,6 @@ import { MySqlMikroORM } from './MySqlMikroORM.js';
 import { MySqlPlatform } from './MySqlPlatform.js';
 
 export class MySqlDriver extends AbstractSqlDriver<MySqlConnection, MySqlPlatform> {
-
   protected autoIncrementIncrement?: number;
 
   constructor(config: Configuration) {
@@ -41,20 +40,32 @@ export class MySqlDriver extends AbstractSqlDriver<MySqlConnection, MySqlPlatfor
     return this.autoIncrementIncrement;
   }
 
-  override async nativeInsertMany<T extends object>(entityName: EntityName<T>, data: EntityDictionary<T>[], options: NativeInsertUpdateManyOptions<T> = {}): Promise<QueryResult<T>> {
+  override async nativeInsertMany<T extends object>(
+    entityName: EntityName<T>,
+    data: EntityDictionary<T>[],
+    options: NativeInsertUpdateManyOptions<T> = {},
+  ): Promise<QueryResult<T>> {
     options.processCollections ??= true;
     const res = await super.nativeInsertMany(entityName, data, options);
     const meta = this.metadata.get(entityName);
     const pks = this.getPrimaryKeyFields(meta);
     const ctx = options.ctx;
     const autoIncrementIncrement = await this.getAutoIncrementIncrement(ctx);
-    data.forEach((item, idx) => res.rows![idx] = { [pks[0]]: item[pks[0]] ?? res.insertId as number + (idx * autoIncrementIncrement) });
+    data.forEach(
+      (item, idx) =>
+        (res.rows![idx] = { [pks[0]]: item[pks[0]] ?? (res.insertId as number) + idx * autoIncrementIncrement }),
+    );
     res.row = res.rows![0];
 
     return res;
   }
 
-  override async nativeUpdateMany<T extends object>(entityName: EntityName<T>, where: FilterQuery<T>[], data: EntityDictionary<T>[], options: NativeInsertUpdateManyOptions<T> & UpsertManyOptions<T> = {}): Promise<QueryResult<T>> {
+  override async nativeUpdateMany<T extends object>(
+    entityName: EntityName<T>,
+    where: FilterQuery<T>[],
+    data: EntityDictionary<T>[],
+    options: NativeInsertUpdateManyOptions<T> & UpsertManyOptions<T> = {},
+  ): Promise<QueryResult<T>> {
     const res = await super.nativeUpdateMany(entityName, where, data, options);
     const meta = this.metadata.get(entityName);
     const pks = this.getPrimaryKeyFields(meta);
@@ -64,7 +75,7 @@ export class MySqlDriver extends AbstractSqlDriver<MySqlConnection, MySqlPlatfor
 
     const rows = where.map(cond => {
       if (res.insertId != null && Utils.isEmpty(cond)) {
-        return { [pks[0]]: res.insertId as number + (i++ * autoIncrementIncrement) };
+        return { [pks[0]]: (res.insertId as number) + i++ * autoIncrementIncrement };
       }
 
       if (cond[pks[0] as EntityKey] == null) {
@@ -87,5 +98,4 @@ export class MySqlDriver extends AbstractSqlDriver<MySqlConnection, MySqlPlatfor
   override getORMClass(): Constructor<MySqlMikroORM> {
     return MySqlMikroORM;
   }
-
 }

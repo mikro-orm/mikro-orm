@@ -3,28 +3,23 @@ import { Entity, ManyToOne, OneToMany, PrimaryKey, ReflectMetadataProvider } fro
 
 @Entity({ forceConstructor: true })
 class Parent {
-
   @PrimaryKey()
   id!: number;
 
   @OneToMany(() => Child, 'parent')
   children = new Collection<Child>(this);
-
 }
 
 @Entity({ forceConstructor: true })
 class Child {
-
   @PrimaryKey()
   id!: number;
 
   @ManyToOne({ entity: () => Parent, ref: true })
   parent!: Ref<Parent>;
-
 }
 
 describe('GH issue 2406', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -67,5 +62,4 @@ describe('GH issue 2406', () => {
     expect(refreshed.children.isInitialized()).toBe(true);
     expect(refreshed.children).toHaveLength(2);
   });
-
 });

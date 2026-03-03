@@ -5,7 +5,6 @@ import { User } from './user.entity.js';
 
 @Entity()
 export class Project {
-
   [OptionalProps]?: 'createdAt';
 
   @PrimaryKey()
@@ -29,5 +28,4 @@ export class Project {
   constructor(name: string) {
     this.name = name;
   }
-
 }

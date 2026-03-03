@@ -3,7 +3,6 @@ import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-or
 
 @Entity()
 class Foo {
-
   @PrimaryKey()
   textField: string;
 
@@ -14,7 +13,6 @@ class Foo {
     this.textField = textField;
     this.bigIntField = bigIntField;
   }
-
 }
 
 let orm: MikroORM;

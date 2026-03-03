@@ -4,13 +4,11 @@ import { MikroORM } from '@mikro-orm/sqlite';
 
 @Entity()
 class Something {
-
   @PrimaryKey()
   id!: number;
 
   @Property({ type: BlobType })
   fileContent!: Buffer;
-
 }
 
 let orm: MikroORM;

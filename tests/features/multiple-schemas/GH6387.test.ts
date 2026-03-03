@@ -1,9 +1,15 @@
 import { Collection, MikroORM } from '@mikro-orm/postgresql';
-import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Entity({ schema: '*' })
 class Author {
-
   @PrimaryKey()
   id!: number;
 
@@ -12,12 +18,10 @@ class Author {
 
   @OneToMany(() => Book, item => item.author, { orphanRemoval: true })
   books = new Collection<Book>(this);
-
 }
 
 @Entity({ schema: '*' })
 class Book {
-
   @PrimaryKey()
   id!: number;
 
@@ -26,7 +30,6 @@ class Book {
 
   @ManyToOne({ entity: () => Author, deleteRule: 'cascade' })
   author!: Author;
-
 }
 
 let orm: MikroORM;
@@ -46,13 +49,14 @@ afterAll(async () => {
 });
 
 test('GH #6387', async () => {
-  orm.em.create(Author, {
-    name: 'Author1',
-    books: [
-      { title: 'Book1' },
-      { title: 'Book2' },
-    ],
-  }, { schema: 'my_schema' });
+  orm.em.create(
+    Author,
+    {
+      name: 'Author1',
+      books: [{ title: 'Book1' }, { title: 'Book2' }],
+    },
+    { schema: 'my_schema' },
+  );
   await orm.em.flush();
 
   const em = orm.em.fork({ schema: 'my_schema' });

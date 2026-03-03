@@ -20,31 +20,24 @@ enum CType {
 
 @Entity({ discriminatorColumn: 'discriminator', abstract: true })
 class A extends BaseEntity {
-
   @PrimaryKey()
   readonly id!: number;
 
   @Enum(() => Discriminator)
   discriminator!: Opt<Discriminator>;
-
 }
 
 @Entity({ discriminatorValue: Discriminator.B })
 class B extends A {
-
   @Enum(() => BType)
   type!: BType;
-
 }
 
 @Entity({ discriminatorValue: Discriminator.C })
 class C extends A {
-
   @Enum(() => CType)
   type!: CType;
-
 }
-
 
 let orm: MikroORM;
 
@@ -63,7 +56,7 @@ afterAll(async () => {
 test('correctly build migration for enum type', async () => {
   const diff = await orm.schema.getCreateSchemaSQL({ wrap: false });
   expect(diff.trim()).toEqual(
-    'create table `a` (`id` integer not null primary key autoincrement, `discriminator` text check (`discriminator` in (\'b\', \'c\')) not null, `type` text check (`type` in (\'type-1\', \'type-2\', \'type-3\', \'type-4\')) null);\n' +
-    'create index `a_discriminator_index` on `a` (`discriminator`);',
+    "create table `a` (`id` integer not null primary key autoincrement, `discriminator` text check (`discriminator` in ('b', 'c')) not null, `type` text check (`type` in ('type-1', 'type-2', 'type-3', 'type-4')) null);\n" +
+      'create index `a_discriminator_index` on `a` (`discriminator`);',
   );
 });

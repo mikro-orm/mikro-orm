@@ -1,19 +1,24 @@
 import { Collection, MikroORM } from '@mikro-orm/postgresql';
 
-import { Entity, Filter, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  Filter,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 class BaseClass {
-
   @PrimaryKey({ type: 'bigint' })
   id!: string;
 
   @Property()
   name!: string;
-
 }
 
 @Entity()
-class Application extends BaseClass {
-}
+class Application extends BaseClass {}
 
 @Filter({
   name: 'contact',
@@ -29,13 +34,11 @@ class Application extends BaseClass {
 })
 @Entity()
 class Customer extends BaseClass {
-
   @ManyToOne(() => Application)
   application!: Application;
 
   @OneToMany({ entity: () => Contact, mappedBy: contact => contact.customer })
   contacts = new Collection<Contact>(this);
-
 }
 
 @Filter({
@@ -52,10 +55,8 @@ class Customer extends BaseClass {
 })
 @Entity()
 class Contact extends BaseClass {
-
   @ManyToOne(() => Customer)
   customer!: Customer;
-
 }
 
 let orm: MikroORM;

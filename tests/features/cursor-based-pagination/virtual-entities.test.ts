@@ -3,7 +3,6 @@ import { Entity, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider } from
 
 @Entity()
 class User {
-
   @PrimaryKey()
   id!: number;
 
@@ -12,12 +11,10 @@ class User {
 
   @Property()
   age!: number;
-
 }
 
 @Entity()
 class Book {
-
   @PrimaryKey()
   id!: number;
 
@@ -26,7 +23,6 @@ class Book {
 
   @ManyToOne(() => User)
   owner!: User;
-
 }
 
 @Entity({
@@ -38,7 +34,6 @@ class Book {
   `,
 })
 class UserBookSummary {
-
   @Property()
   id!: number;
 
@@ -50,7 +45,6 @@ class UserBookSummary {
 
   @Property()
   bookCount!: number;
-
 }
 
 let orm: MikroORM;
@@ -87,6 +81,10 @@ test('should correctly paginate virtual entities using cursors', async () => {
   const firstResult = await orm.em.findByCursor(UserBookSummary, { orderBy: { id: QueryOrder.ASC }, first: 3 });
   expect(firstResult.endCursor).not.toBeNull();
   const cursor = firstResult.endCursor!;
-  const finalResult = await orm.em.findByCursor(UserBookSummary, { after: cursor, orderBy: { id: QueryOrder.ASC }, first: 2 });
+  const finalResult = await orm.em.findByCursor(UserBookSummary, {
+    after: cursor,
+    orderBy: { id: QueryOrder.ASC },
+    first: 2,
+  });
   expect(finalResult.items.map(item => item.id)).toEqual([4, 5]);
 });

@@ -1,7 +1,6 @@
 import { MikroORM, EntitySchema, Type, Platform } from '@mikro-orm/sqlite';
 
 export class UserId {
-
   static create(value: number): UserId {
     return new UserId(value);
   }
@@ -22,11 +21,9 @@ export class UserId {
   equals(other: UserId): boolean {
     return this._value === other?._value;
   }
-
 }
 
 class User {
-
   private _id!: UserId;
 
   private _name: string;
@@ -61,22 +58,14 @@ class User {
       email: this.email,
     };
   }
-
 }
 
 class UserIdType extends Type<UserId | undefined, number | undefined> {
-
-  convertToDatabaseValue(
-    value: UserId | undefined,
-    platform: Platform,
-  ): number | undefined {
+  convertToDatabaseValue(value: UserId | undefined, platform: Platform): number | undefined {
     return value instanceof UserId ? value.value : value;
   }
 
-  convertToJSValue(
-    value: number | undefined,
-    platform: Platform,
-  ): UserId | undefined {
+  convertToJSValue(value: number | undefined, platform: Platform): UserId | undefined {
     return typeof value === 'number' ? UserId.create(value) : value;
   }
 
@@ -87,7 +76,6 @@ class UserIdType extends Type<UserId | undefined, number | undefined> {
   compareAsType(): string {
     return 'number';
   }
-
 }
 
 const userSchema = new EntitySchema<User>({

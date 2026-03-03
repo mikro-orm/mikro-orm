@@ -2,7 +2,6 @@ import { NullCacheAdapter } from '@mikro-orm/core';
 import { TEMP_DIR } from '../../helpers.js';
 
 describe('NullCacheAdapter', () => {
-
   test('should ignore old cache', async () => {
     const origin = TEMP_DIR + '/.origin';
     const cache = new NullCacheAdapter();
@@ -12,5 +11,4 @@ describe('NullCacheAdapter', () => {
     expect(cache.get('cache-test-handle')).toBeNull();
     cache.clear();
   });
-
 });

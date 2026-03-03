@@ -4,7 +4,6 @@ import { PLATFORMS } from '../../bootstrap.js';
 
 @Entity()
 class Commission {
-
   @PrimaryKey({ name: '_id' })
   id!: number;
 
@@ -28,7 +27,6 @@ class Commission {
 
   @Property({ type: 'bigint', default: 0 })
   withdrawnMoney?: string;
-
 }
 
 describe.each(['libsql', 'sqlite', 'mysql', 'mssql', 'postgresql'] as const)('raw bigint (%s)', type => {

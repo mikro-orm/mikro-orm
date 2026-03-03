@@ -4,7 +4,6 @@ import { MikroORM } from '@mikro-orm/sqlite';
 
 @Entity()
 class Node {
-
   @PrimaryKey()
   id!: number;
 
@@ -13,17 +12,14 @@ class Node {
 
   @ManyToOne(() => Node, { nullable: true, ref: true })
   parent?: Ref<Node>;
-
 }
 
 class AfterFlushSubscriber implements EventSubscriber {
-
   static readonly changeSets: ChangeSet<any>[] = [];
 
   afterFlush(args: FlushEventArgs) {
     AfterFlushSubscriber.changeSets.push(...args.uow.getChangeSets());
   }
-
 }
 
 let orm: MikroORM;

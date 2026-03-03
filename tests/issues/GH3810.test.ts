@@ -4,7 +4,6 @@ import { mockLogger } from '../helpers.js';
 
 @Entity()
 class User {
-
   [OptionalProps]?: 'options';
 
   @PrimaryKey()
@@ -12,7 +11,6 @@ class User {
 
   @Property({ type: 'string[]', default: ['foo'] })
   options = ['foo'];
-
 }
 
 let orm: MikroORM;
@@ -47,14 +45,14 @@ test('3810', async () => {
 
   expect(mock.mock.calls).toEqual([
     ['[query] begin'],
-    ["[query] insert into \"user\" (\"options\") values ('{\"foo,\"}') returning \"id\""],
+    ['[query] insert into "user" ("options") values (\'{"foo,"}\') returning "id"'],
     ['[query] commit'],
     ['[query] begin'],
-    ["[query] update \"user\" set \"options\" = '{\"foo,\",\"asd,\",bar,\",baz\"}' where \"id\" = 1"],
+    ['[query] update "user" set "options" = \'{"foo,","asd,",bar,",baz"}\' where "id" = 1'],
     ['[query] commit'],
     ['[query] select "u0".* from "user" as "u0" where "u0"."id" = 1 limit 1'],
     ['[query] begin'],
-    ["[query] update \"user\" set \"options\" = '{\"foo,\",\"asd,\",bar,\",baz\",\"qux,\"}' where \"id\" = 1"],
+    ['[query] update "user" set "options" = \'{"foo,","asd,",bar,",baz","qux,"}\' where "id" = 1'],
     ['[query] commit'],
   ]);
 });

@@ -1,23 +1,28 @@
 import { Collection, MikroORM, Rel } from '@mikro-orm/sqlite';
 
-import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider, Unique } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+  Unique,
+} from '@mikro-orm/decorators/legacy';
 let i = 0;
 
 @Entity()
 class RepoModel {
-
   @PrimaryKey()
   id: number = i++;
 
   @OneToMany(() => CommitModel, c => c.repo, { orphanRemoval: true })
   commits = new Collection<CommitModel>(this);
-
 }
 
 @Entity()
 @Unique({ properties: ['repo', 'sha'] })
 class CommitModel {
-
   @PrimaryKey()
   id: number = i++;
 
@@ -42,13 +47,11 @@ class CommitModel {
       this.tree = x.tree;
     }
   }
-
 }
 
 @Entity()
 @Unique({ properties: ['repo', 'sha'] })
 class TreeModel {
-
   @PrimaryKey()
   id: number = i++;
 
@@ -73,7 +76,6 @@ class TreeModel {
       this.commit = x.commit;
     }
   }
-
 }
 
 let orm: MikroORM;

@@ -1,26 +1,28 @@
 import { EntityManager, MikroORM } from '@mikro-orm/sqlite';
-import { CreateRequestContext, Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  CreateRequestContext,
+  Entity,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class A {
-
   @PrimaryKey()
   id!: number;
 
   @Property()
   prop!: string;
-
 }
 
 class Foo {
-
   constructor(private em: EntityManager) {}
 
   @CreateRequestContext()
   async bar() {
     return this.em.id;
   }
-
 }
 
 let orm: MikroORM;

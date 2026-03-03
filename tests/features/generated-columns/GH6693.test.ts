@@ -3,7 +3,6 @@ import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-or
 
 @Entity()
 class UserNumber {
-
   @PrimaryKey({ generated: 'identity' })
   id!: number;
 
@@ -12,18 +11,15 @@ class UserNumber {
 
   @Property({ unique: true })
   email!: string;
-
 }
 
 @Entity()
 class UserBigInt {
-
   @PrimaryKey({ generated: 'identity' })
   id!: bigint;
 
   @Property()
   name!: string;
-
 }
 
 let orm: MikroORM;
@@ -43,6 +39,10 @@ afterAll(async () => {
 test('id as number/bigint primary key with generated identity', async () => {
   const schemaDump = await orm.schema.getCreateSchemaSQL();
 
-  expect(schemaDump).toContain('create table "user_number" ("id" int generated always as identity not null primary key');
-  expect(schemaDump).toContain('create table "user_big_int" ("id" bigint generated always as identity not null primary key');
+  expect(schemaDump).toContain(
+    'create table "user_number" ("id" int generated always as identity not null primary key',
+  );
+  expect(schemaDump).toContain(
+    'create table "user_big_int" ("id" bigint generated always as identity not null primary key',
+  );
 });

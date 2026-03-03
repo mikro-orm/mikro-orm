@@ -7,13 +7,11 @@ interface BookData {
 
 @Entity()
 class Book {
-
   @PrimaryKey()
   id!: string;
 
   @Property({ type: 'object' })
   data!: BookData;
-
 }
 
 test(`GH issue 3221`, async () => {

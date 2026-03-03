@@ -4,18 +4,15 @@ import { MikroORM } from '@mikro-orm/sqlite';
 
 @Entity()
 export class User {
-
   @PrimaryKey()
   id!: string;
 
   @OneToMany(() => Post, post => post.user)
   posts = new Collection<Post>(this);
-
 }
 
 @Entity()
 export class Post {
-
   @PrimaryKey()
   id!: string;
 
@@ -24,18 +21,15 @@ export class Post {
 
   @ManyToOne()
   user!: User;
-
 }
 
 @Entity()
 class Comment {
-
   @PrimaryKey()
   id!: string;
 
   @ManyToOne()
   post!: Post;
-
 }
 
 let orm: MikroORM;
@@ -57,7 +51,8 @@ beforeEach(() => orm.em.clear());
 afterAll(() => orm.close(true));
 
 test('it should select comments', async () => {
-  const users2 = await orm.em.qb(User)
+  const users2 = await orm.em
+    .qb(User)
     .select('*')
     .joinAndSelect('posts', 'p')
     .leftJoinAndSelect('p.comments', 'c')
@@ -67,7 +62,8 @@ test('it should select comments', async () => {
 
 test('it should select comments even if posts have already been selected', async () => {
   await orm.em.qb(Post).select('*').getResult();
-  const users1 = await orm.em.qb(User)
+  const users1 = await orm.em
+    .qb(User)
     .select('*')
     .joinAndSelect('posts', 'p')
     .leftJoinAndSelect('p.comments', 'c')

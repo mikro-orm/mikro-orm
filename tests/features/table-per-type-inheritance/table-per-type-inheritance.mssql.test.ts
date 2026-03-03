@@ -4,7 +4,6 @@ import { mockLogger } from '../../bootstrap.js';
 
 @Entity({ tableName: 'tpt_base', inheritance: 'tpt' })
 abstract class TptBase {
-
   @PrimaryKey()
   id!: number;
 
@@ -13,19 +12,15 @@ abstract class TptBase {
 
   @Property({ defaultRaw: 'getdate()' })
   createdAt!: Opt<Date>;
-
 }
 
 @Entity({ tableName: 'tpt_child' })
 class TptChild extends TptBase {
-
   @Property()
   childValue!: string;
-
 }
 
 describe('TPT (Table-Per-Type) Inheritance [mssql]', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -75,5 +70,4 @@ describe('TPT (Table-Per-Type) Inheritance [mssql]', () => {
     expect(childInsertCall![0]).toMatch('insert into [tpt_child]');
     expect(childInsertCall![0]).not.toMatch('inserted.[created_at]');
   });
-
 });

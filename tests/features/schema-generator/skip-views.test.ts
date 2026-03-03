@@ -4,13 +4,11 @@ import { Migrator } from '@mikro-orm/migrations';
 
 @Entity()
 class TestEntity {
-
   @PrimaryKey()
   id!: number;
 
   @Property()
   name!: string;
-
 }
 
 let orm: MikroORM;
@@ -29,7 +27,6 @@ beforeAll(async () => {
 afterAll(() => orm?.close(true));
 
 describe('SchemaGenerator skipViews', () => {
-
   test('should automatically skip PostGIS system views', async () => {
     // Create the PostGIS extension which creates geometry_columns and geography_columns views
     await orm.schema.execute('create extension if not exists postgis');
@@ -150,5 +147,4 @@ describe('SchemaGenerator skipViews', () => {
     await orm.schema.execute('drop view if exists multiline_test_view');
     await orm.schema.drop();
   });
-
 });

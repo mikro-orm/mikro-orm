@@ -4,13 +4,11 @@ import { MikroORM } from '@mikro-orm/sqlite';
 
 @Entity()
 class A {
-
   @PrimaryKey()
   id!: number;
 
   @Property({ type: JsonType })
   array!: B[];
-
 }
 
 interface B {

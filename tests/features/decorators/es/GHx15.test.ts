@@ -3,24 +3,20 @@ import { CreateRequestContext, Entity, PrimaryKey, Property } from '@mikro-orm/d
 
 @Entity()
 class A {
-
   @PrimaryKey({ type: 'integer' })
   id!: number;
 
   @Property({ type: 'string' })
   prop!: string;
-
 }
 
 class Foo {
-
   constructor(private em: EntityManager) {}
 
   @CreateRequestContext()
   async bar() {
     return this.em.id;
   }
-
 }
 
 let orm: MikroORM;

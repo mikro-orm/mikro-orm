@@ -9,15 +9,16 @@ import type { Configuration } from '../utils/Configuration.js';
  * are defined in populate hint). If not, we proceed and call `leave` afterwards.
  */
 export class SerializationContext<T extends object> {
-
   readonly path: [EntityName, string][] = [];
   readonly visited = new Set<AnyEntity>();
   private entities = new Set<AnyEntity>();
 
-  constructor(private readonly config: Configuration,
-              private readonly populate: PopulateOptions<T>[] = [],
-              private readonly fields?: Set<string>,
-              private readonly exclude?: string[]) {}
+  constructor(
+    private readonly config: Configuration,
+    private readonly populate: PopulateOptions<T>[] = [],
+    private readonly fields?: Set<string>,
+    private readonly exclude?: string[],
+  ) {}
 
   /**
    * Returns true when there is a cycle detected.
@@ -55,7 +56,11 @@ export class SerializationContext<T extends object> {
   /**
    * When initializing new context, we need to propagate it to the whole entity graph recursively.
    */
-  static propagate(root: SerializationContext<any>, entity: AnyEntity, isVisible: (meta: EntityMetadata, prop: string) => boolean): void {
+  static propagate(
+    root: SerializationContext<any>,
+    entity: AnyEntity,
+    isVisible: (meta: EntityMetadata, prop: string) => boolean,
+  ): void {
     root.register(entity);
     const meta = helper(entity).__meta;
 
@@ -100,7 +105,7 @@ export class SerializationContext<T extends object> {
           }
 
           if (hint.children) {
-            childHints.push(...hint.children as PopulateOptions<T>[]);
+            childHints.push(...(hint.children as PopulateOptions<T>[]));
           }
         }
 
@@ -126,7 +131,7 @@ export class SerializationContext<T extends object> {
 
       fields = fields
         .filter(field => field.startsWith(`${segment[1]}.`) || field === '*')
-        .map(field => field === '*' ? field : field.substring(segment[1].length + 1));
+        .map(field => (field === '*' ? field : field.substring(segment[1].length + 1)));
     }
 
     return fields.some(p => p === prop || p === '*');
@@ -136,5 +141,4 @@ export class SerializationContext<T extends object> {
     helper(entity as T).__serializationContext.root = this;
     this.entities.add(entity);
   }
-
 }

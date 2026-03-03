@@ -4,7 +4,6 @@ import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 @Entity()
 export class Versioned {
-
   @PrimaryKey()
   id!: number;
 
@@ -13,11 +12,9 @@ export class Versioned {
 
   @Property({ version: true })
   version: number = 0;
-
 }
 
 describe('GH issue 2401', () => {
-
   let orm: MikroORM<PostgreSqlDriver>;
 
   beforeAll(async () => {
@@ -42,5 +39,4 @@ describe('GH issue 2401', () => {
 
     await orm.em.flush();
   });
-
 });

@@ -1,9 +1,16 @@
 import { MikroORM, ObjectId, UnderscoreNamingStrategy } from '@mikro-orm/mongodb';
-import { Embeddable, Embedded, Entity, PrimaryKey, Property, SerializedPrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Embeddable,
+  Embedded,
+  Entity,
+  PrimaryKey,
+  Property,
+  SerializedPrimaryKey,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Embeddable()
 class Address {
-
   @Property()
   street!: string;
 
@@ -12,12 +19,10 @@ class Address {
 
   @Property()
   isPrimary: boolean = false;
-
 }
 
 @Entity()
 class User {
-
   @PrimaryKey()
   _id!: ObjectId;
 
@@ -32,7 +37,6 @@ class User {
 
   @Embedded({ entity: () => Address, object: true, nullable: true })
   currentAddress?: Address;
-
 }
 
 let orm: MikroORM;
@@ -52,7 +56,11 @@ afterAll(async () => {
 });
 
 test('basic CRUD example', async () => {
-  orm.em.create(User, { name: 'Foo', email: 'foo', currentAddress: { city: 'some', street: '123 Main St', isPrimary: true } });
+  orm.em.create(User, {
+    name: 'Foo',
+    email: 'foo',
+    currentAddress: { city: 'some', street: '123 Main St', isPrimary: true },
+  });
   await orm.em.flush();
   orm.em.clear();
 

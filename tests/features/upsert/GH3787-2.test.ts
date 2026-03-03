@@ -5,24 +5,20 @@ import { mockLogger } from '../../helpers.js';
 
 @Entity()
 class MyEntity1 {
-
   @PrimaryKey({ type: 'number' })
   id!: number;
 
   @Property({ type: 'json' })
   field!: object;
-
 }
 
 @Entity()
 class MyEntity2 {
-
   @PrimaryKey({ type: 'number' })
   id!: number;
 
   @Property({ type: 'json', columnType: 'json' })
   field!: object;
-
 }
 
 let orm: MikroORM;
@@ -59,8 +55,12 @@ test('JSON serialization with upsert', async () => {
   });
   await orm.em.upsert(entity2);
   expect(mock.mock.calls).toEqual([
-    ['[query] insert into `my_entity1` (`id`, `field`) values (1, \'{"firstName":"John","lastName":"Doe"}\') on conflict (`id`) do update set `field` = excluded.`field`'],
-    ['[query] insert into `my_entity2` (`id`, `field`) values (1, \'{"firstName":"Albert","lastName":"Doe"}\') on conflict (`id`) do update set `field` = excluded.`field`'],
+    [
+      '[query] insert into `my_entity1` (`id`, `field`) values (1, \'{"firstName":"John","lastName":"Doe"}\') on conflict (`id`) do update set `field` = excluded.`field`',
+    ],
+    [
+      '[query] insert into `my_entity2` (`id`, `field`) values (1, \'{"firstName":"Albert","lastName":"Doe"}\') on conflict (`id`) do update set `field` = excluded.`field`',
+    ],
   ]);
 });
 
@@ -83,8 +83,12 @@ test('JSON serialization with upsertMany', async () => {
   });
   await orm.em.upsertMany([entity2]);
   expect(mock.mock.calls).toEqual([
-    ['[query] insert into `my_entity1` (`id`, `field`) values (1, \'{"firstName":"John","lastName":"Doe"}\') on conflict (`id`) do update set `field` = excluded.`field` returning `id`'],
-    ['[query] insert into `my_entity2` (`id`, `field`) values (1, \'{"firstName":"Albert","lastName":"Doe"}\') on conflict (`id`) do update set `field` = excluded.`field` returning `id`'],
+    [
+      '[query] insert into `my_entity1` (`id`, `field`) values (1, \'{"firstName":"John","lastName":"Doe"}\') on conflict (`id`) do update set `field` = excluded.`field` returning `id`',
+    ],
+    [
+      '[query] insert into `my_entity2` (`id`, `field`) values (1, \'{"firstName":"Albert","lastName":"Doe"}\') on conflict (`id`) do update set `field` = excluded.`field` returning `id`',
+    ],
   ]);
 });
 
@@ -105,6 +109,8 @@ test('upsertMany with managed entity calls assign', async () => {
     ['[query] begin'],
     [`[query] insert into \`my_entity1\` (\`id\`, \`field\`) values (1, '{"firstName":"John","lastName":"Doe"}')`],
     ['[query] commit'],
-    ['[query] insert into `my_entity1` (`id`, `field`) values (1, \'{"firstName":"123","lastName":"Doe"}\') on conflict (`id`) do update set `field` = excluded.`field` returning `id`'],
+    [
+      '[query] insert into `my_entity1` (`id`, `field`) values (1, \'{"firstName":"123","lastName":"Doe"}\') on conflict (`id`) do update set `field` = excluded.`field` returning `id`',
+    ],
   ]);
 });

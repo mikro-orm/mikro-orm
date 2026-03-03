@@ -3,17 +3,14 @@ import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-or
 
 @Entity()
 class A {
-
   @PrimaryKey()
   id!: string;
 
   @Property()
   prop?: string;
-
 }
 
 describe('GH issue 472', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -32,5 +29,4 @@ describe('GH issue 472', () => {
     await expect(orm.schema.update()).resolves.toBeUndefined();
     await orm.schema.dropDatabase(orm.config.get('dbName'));
   });
-
 });

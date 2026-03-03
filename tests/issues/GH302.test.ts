@@ -10,7 +10,6 @@ import {
 
 @Entity()
 class A {
-
   @PrimaryKey({ type: 'number' })
   id: number;
 
@@ -24,12 +23,10 @@ class A {
     this.id = id;
     this.name = name;
   }
-
 }
 
 @Entity()
 class B {
-
   @PrimaryKey({ type: 'number' })
   id!: number;
 
@@ -38,11 +35,9 @@ class B {
 
   @OneToMany({ entity: () => A, mappedBy: 'b', nullable: true })
   a = new Collection<A>(this);
-
 }
 
 describe('GH issue 302', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -75,5 +70,4 @@ describe('GH issue 302', () => {
     expect(bb.a[1].name).toBe('a2');
     expect(bb.a[2].name).toBe('a3');
   });
-
 });

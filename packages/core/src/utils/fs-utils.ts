@@ -120,10 +120,7 @@ export const fs = {
 
   getORMPackages(): Set<string> {
     const pkg = this.getPackageConfig();
-    return new Set([
-      ...Object.keys(pkg.dependencies ?? {}),
-      ...Object.keys(pkg.devDependencies ?? {}),
-    ]);
+    return new Set([...Object.keys(pkg.dependencies ?? {}), ...Object.keys(pkg.devDependencies ?? {})]);
   },
 
   getORMPackageVersion(name: string): string | undefined {
@@ -146,7 +143,9 @@ export const fs = {
 
     const deps = this.getORMPackages();
     const exceptions = new Set(['nestjs', 'sql-highlighter', 'mongo-highlighter']);
-    const ormPackages = [...deps].filter(d => d.startsWith('@mikro-orm/') && d !== '@mikro-orm/core' && !exceptions.has(d.substring('@mikro-orm/'.length)));
+    const ormPackages = [...deps].filter(
+      d => d.startsWith('@mikro-orm/') && d !== '@mikro-orm/core' && !exceptions.has(d.substring('@mikro-orm/'.length)),
+    );
 
     for (const ormPackage of ormPackages) {
       const version = this.getORMPackageVersion(ormPackage);
@@ -154,9 +153,9 @@ export const fs = {
       if (version != null && version !== coreVersion) {
         throw new Error(
           `Bad ${colors.cyan(ormPackage)} version ${colors.yellow('' + version)}.\n` +
-          `All official @mikro-orm/* packages need to have the exact same version as @mikro-orm/core (${colors.green(coreVersion)}).\n` +
-          `Only exceptions are packages that don't live in the 'mikro-orm' repository: ${[...exceptions].join(', ')}.\n` +
-          `Maybe you want to check, or regenerate your yarn.lock or package-lock.json file?`,
+            `All official @mikro-orm/* packages need to have the exact same version as @mikro-orm/core (${colors.green(coreVersion)}).\n` +
+            `Only exceptions are packages that don't live in the 'mikro-orm' repository: ${[...exceptions].join(', ')}.\n` +
+            `Maybe you want to check, or regenerate your yarn.lock or package-lock.json file?`,
         );
       }
     }
@@ -189,7 +188,7 @@ export const fs = {
     let path = parts.join('/').replace(/\\/g, '/').replace(/\/$/, '');
     path = normalize(path).replace(/\\/g, '/');
 
-    return (path.match(/^[/.]|[a-zA-Z]:/) || path.startsWith('!')) ? path : './' + path;
+    return path.match(/^[/.]|[a-zA-Z]:/) || path.startsWith('!') ? path : './' + path;
   },
 
   /**

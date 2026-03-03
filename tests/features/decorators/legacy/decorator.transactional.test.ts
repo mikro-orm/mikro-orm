@@ -14,7 +14,6 @@ import { mockLogger } from '../../../bootstrap.js';
 
 @Entity()
 class Author {
-
   @PrimaryKey()
   id!: number;
 
@@ -28,19 +27,16 @@ class Author {
     this.name = name;
     this.email = email;
   }
-
 }
 
 type EntityType = Author;
 
 class TransactionalManager {
-
   constructor(
     private readonly orm?: MikroORM,
     private readonly em?: EntityManager,
     private readonly di?: EntityRepository<any>,
-  ) {
-  }
+  ) {}
 
   @Transactional()
   async empty() {
@@ -91,7 +87,11 @@ class TransactionalManager {
     Hint extends string = never,
     Fields extends string = '*',
     Excludes extends string = never,
-  >(entityName: EntityName<Entity>, where: FilterQuery<NoInfer<Entity>>, options?: FindOneOptions<Entity, Hint, Fields, Excludes>) {
+  >(
+    entityName: EntityName<Entity>,
+    where: FilterQuery<NoInfer<Entity>>,
+    options?: FindOneOptions<Entity, Hint, Fields, Excludes>,
+  ) {
     return this.getEntityManager()!.findOne(entityName, where, options);
   }
 
@@ -136,7 +136,6 @@ class TransactionalManager {
   private getEntityManager() {
     return this.em || this.orm?.em || this.di?.getEntityManager();
   }
-
 }
 
 let orm: MikroORM;
@@ -254,12 +253,10 @@ describe('Transactional', () => {
 
     try {
       class Dummy {
-
         @Transactional()
         dummy() {
           //
         }
-
       }
     } catch (e: any) {
       expect(e.message).toBe('@Transactional() should be use with async functions');
@@ -267,5 +264,4 @@ describe('Transactional', () => {
 
     await expect(manager.empty()).rejects.toThrow(/@Transactional\(\) decorator can only be applied/);
   });
-
 });

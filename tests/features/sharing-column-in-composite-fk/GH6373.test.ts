@@ -3,21 +3,17 @@ import { Entity, ManyToOne, PrimaryKey, ReflectMetadataProvider } from '@mikro-o
 
 @Entity()
 class User {
-
   @PrimaryKey()
   id!: number;
-
 }
 
 @Entity({ schema: 'books' })
 class Book {
-
   @PrimaryKey()
   id!: number;
 
   @ManyToOne(() => User)
   author!: User;
-
 }
 
 describe.each(['public', undefined] as string[])('mixing custom and default schema in relations', schema => {
@@ -45,24 +41,15 @@ describe.each(['public', undefined] as string[])('mixing custom and default sche
     let book = new Book();
     book.author = new User();
     await orm.em.persist(book).flush();
-    expect(orm.em.getUnitOfWork().getIdentityMap().keys()).toEqual([
-      'User-public:1',
-      'Book-books:1',
-    ]);
+    expect(orm.em.getUnitOfWork().getIdentityMap().keys()).toEqual(['User-public:1', 'Book-books:1']);
 
     orm.em.clear();
     book = await orm.em.findOneOrFail(Book, book, { populate: ['author'], strategy: 'joined' });
-    expect(orm.em.getUnitOfWork().getIdentityMap().keys()).toEqual([
-      'Book-books:1',
-      'User-public:1',
-    ]);
+    expect(orm.em.getUnitOfWork().getIdentityMap().keys()).toEqual(['Book-books:1', 'User-public:1']);
 
     orm.em.clear();
     book = await orm.em.findOneOrFail(Book, book, { populate: ['author'], strategy: 'select-in' });
 
-    expect(orm.em.getUnitOfWork().getIdentityMap().keys()).toEqual([
-      'Book-books:1',
-      'User-public:1',
-    ]);
+    expect(orm.em.getUnitOfWork().getIdentityMap().keys()).toEqual(['Book-books:1', 'User-public:1']);
   });
 });

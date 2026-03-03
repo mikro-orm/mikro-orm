@@ -2,7 +2,6 @@ import { Filter, FilterValue, Project, Risk } from './entities.js';
 import { Factory } from '@mikro-orm/seeder';
 
 export class ProjectFactory extends Factory<Project> {
-
   model = Project;
 
   definition(): Partial<Project> {
@@ -10,11 +9,9 @@ export class ProjectFactory extends Factory<Project> {
       name: 'foo',
     };
   }
-
 }
 
 export class RiskFactory extends Factory<Risk> {
-
   model = Risk;
 
   definition(): Partial<Risk> {
@@ -22,11 +19,9 @@ export class RiskFactory extends Factory<Risk> {
       title: 'bar',
     };
   }
-
 }
 
 export class FilterFactory extends Factory<Filter> {
-
   model = Filter;
 
   definition(): Partial<Filter> {
@@ -34,11 +29,9 @@ export class FilterFactory extends Factory<Filter> {
       name: 'baz',
     };
   }
-
 }
 
 export class FilterValueFactory extends Factory<FilterValue> {
-
   model = FilterValue;
 
   definition(): Partial<FilterValue> {
@@ -46,7 +39,4 @@ export class FilterValueFactory extends Factory<FilterValue> {
       value: 'lol',
     };
   }
-
 }
-
-

@@ -1,9 +1,15 @@
 import { Collection, Ref, LoadStrategy, MikroORM, OptionalProps, QueryOrder, raw } from '@mikro-orm/sqlite';
-import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Entity()
 export class D {
-
   [OptionalProps]?: 'c';
 
   @PrimaryKey()
@@ -18,12 +24,10 @@ export class D {
     nullable: true,
   })
   c?: Ref<C>;
-
 }
 
 @Entity()
 export class C {
-
   @PrimaryKey()
   id!: number;
 
@@ -40,21 +44,15 @@ export class C {
   })
   b?: Ref<B>;
 
-  @OneToMany(
-    () => D,
-    optionOption => optionOption.c,
-    {
-      eager: true,
-      orderBy: { order: QueryOrder.ASC, id: QueryOrder.ASC },
-    },
-  )
+  @OneToMany(() => D, optionOption => optionOption.c, {
+    eager: true,
+    orderBy: { order: QueryOrder.ASC, id: QueryOrder.ASC },
+  })
   ds = new Collection<D>(this);
-
 }
 
 @Entity()
 export class B {
-
   @PrimaryKey()
   id!: number;
 
@@ -68,44 +66,32 @@ export class B {
   })
   a?: Ref<A>;
 
-  @OneToMany(
-    () => C,
-    option => option.b,
-    {
-      eager: true,
-      orderBy: [
-        {
-          order: QueryOrder.ASC,
-          id: QueryOrder.ASC,
-        },
-        { [raw(a => `length(${a}.text)`)]: 'asc' },
-      ],
-    },
-  )
+  @OneToMany(() => C, option => option.b, {
+    eager: true,
+    orderBy: [
+      {
+        order: QueryOrder.ASC,
+        id: QueryOrder.ASC,
+      },
+      { [raw(a => `length(${a}.text)`)]: 'asc' },
+    ],
+  })
   cs = new Collection<C>(this);
-
 }
 
 @Entity()
 export class A {
-
   @PrimaryKey()
   id!: number;
 
-  @OneToMany(
-    () => B,
-    radio => radio.a,
-    {
-      eager: true,
-      orderBy: { order: QueryOrder.ASC, id: QueryOrder.ASC },
-    },
-  )
+  @OneToMany(() => B, radio => radio.a, {
+    eager: true,
+    orderBy: { order: QueryOrder.ASC, id: QueryOrder.ASC },
+  })
   bs = new Collection<B>(this);
-
 }
 
 describe('GH issue 1331', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -176,5 +162,4 @@ describe('GH issue 1331', () => {
     await orm.em.fork().findOneOrFail(A, 1, { strategy: 'select-in' });
     await orm.em.fork().findOneOrFail(A, 1, { strategy: 'select-in' });
   });
-
 });

@@ -3,17 +3,14 @@ import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-or
 
 @Entity()
 export class TestEntity {
-
   @PrimaryKey()
   id!: number;
 
   @Property({ type: t.json })
   jsonField: { name: string }[] = [{ name: 'hello' }];
-
 }
 
 describe('GH issue 2293', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -45,5 +42,4 @@ describe('GH issue 2293', () => {
       [{ name: 'hello' }],
     ]);
   });
-
 });

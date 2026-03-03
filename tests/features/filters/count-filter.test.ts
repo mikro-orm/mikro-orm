@@ -4,7 +4,6 @@ import { Entity, Filter, ManyToOne, PrimaryKey, Property, ReflectMetadataProvide
 @Entity()
 @Filter({ name: 'soft-delete', default: true, cond: { deletedAt: null } })
 class User {
-
   @PrimaryKey()
   id!: number;
 
@@ -16,12 +15,10 @@ class User {
 
   @Property({ nullable: true })
   deletedAt?: Date;
-
 }
 
 @Entity()
 class Submission {
-
   @PrimaryKey()
   id!: number;
 
@@ -30,7 +27,6 @@ class Submission {
 
   @ManyToOne(() => User, { ref: true })
   user!: Ref<User>;
-
 }
 
 let orm: MikroORM;

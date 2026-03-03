@@ -4,7 +4,6 @@ import { mockLogger } from '../helpers.js';
 
 @Entity()
 export class Test {
-
   @PrimaryKey()
   id!: number;
 
@@ -13,7 +12,6 @@ export class Test {
 
   @Property()
   born!: Date;
-
 }
 
 let orm: MikroORM;

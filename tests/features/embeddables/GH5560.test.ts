@@ -1,22 +1,28 @@
 import { MikroORM, Collection } from '@mikro-orm/sqlite';
-import { Embeddable, Embedded, Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Embeddable,
+  Embedded,
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../../helpers.js';
 
 @Embeddable()
 class AuthorEmbeddable {
-
   @Property()
   age: number;
 
   constructor(age: number) {
     this.age = age;
   }
-
 }
 
 @Entity()
 class Author {
-
   @PrimaryKey()
   id!: number;
 
@@ -33,12 +39,10 @@ class Author {
     this.name = name;
     this.embeddable = embeddable;
   }
-
 }
 
 @Entity()
 class Book {
-
   @PrimaryKey()
   id!: number;
 
@@ -52,7 +56,6 @@ class Book {
     this.title = title;
     this.author = author;
   }
-
 }
 
 let orm: MikroORM;
@@ -70,18 +73,14 @@ afterAll(() => orm.close(true));
 
 test('5560', async () => {
   const mock = mockLogger(orm);
-  await orm.em.fork().find(
-    Author,
-    {},
-    { orderBy: [{ embeddable: { age: 'ASC' } }] },
+  await orm.em.fork().find(Author, {}, { orderBy: [{ embeddable: { age: 'ASC' } }] });
+  expect(mock.mock.calls[0][0]).toMatch(
+    "select `a0`.* from `author` as `a0` order by json_extract(`a0`.`embeddable`, '$.age') asc",
   );
-  expect(mock.mock.calls[0][0]).toMatch('select `a0`.* from `author` as `a0` order by json_extract(`a0`.`embeddable`, \'$.age\') asc');
 
   // This throws "column b0.embeddable_age does not exist"
-  await orm.em.fork().find(
-    Book,
-    {},
-    { orderBy: [{ author: { embeddable: { age: 'ASC' } } }] },
+  await orm.em.fork().find(Book, {}, { orderBy: [{ author: { embeddable: { age: 'ASC' } } }] });
+  expect(mock.mock.calls[1][0]).toMatch(
+    "select `b0`.* from `book` as `b0` inner join `author` as `a1` on `b0`.`author_id` = `a1`.`id` order by json_extract(`a1`.`embeddable`, '$.age') asc",
   );
-  expect(mock.mock.calls[1][0]).toMatch('select `b0`.* from `book` as `b0` inner join `author` as `a1` on `b0`.`author_id` = `a1`.`id` order by json_extract(`a1`.`embeddable`, \'$.age\') asc');
 });

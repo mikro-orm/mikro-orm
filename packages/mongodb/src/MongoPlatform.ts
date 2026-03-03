@@ -24,7 +24,6 @@ import { MongoEntityRepository } from './MongoEntityRepository.js';
 import { MongoSchemaGenerator } from './MongoSchemaGenerator.js';
 
 export class MongoPlatform extends Platform {
-
   protected override readonly exceptionConverter = new MongoExceptionConverter();
 
   override setConfig(config: Configuration) {
@@ -34,7 +33,7 @@ export class MongoPlatform extends Platform {
     super.setConfig(config);
   }
 
-  override getNamingStrategy(): { new(): NamingStrategy } {
+  override getNamingStrategy(): { new (): NamingStrategy } {
     return MongoNamingStrategy;
   }
 
@@ -63,10 +62,12 @@ export class MongoPlatform extends Platform {
 
   /* v8 ignore next: kept for type inference only */
   override getSchemaGenerator(driver: IDatabaseDriver, em?: EntityManager): MongoSchemaGenerator {
-    return new MongoSchemaGenerator(em ?? driver as any);
+    return new MongoSchemaGenerator(em ?? (driver as any));
   }
 
-  override normalizePrimaryKey<T extends number | string = number | string>(data: Primary<T> | IPrimaryKey | ObjectId): T {
+  override normalizePrimaryKey<T extends number | string = number | string>(
+    data: Primary<T> | IPrimaryKey | ObjectId,
+  ): T {
     if (Utils.isObject<ObjectId>(data) && data.constructor?.name === 'ObjectId') {
       return data.toHexString() as T;
     }
@@ -132,5 +133,4 @@ export class MongoPlatform extends Platform {
   override getDefaultClientUrl(): string {
     return 'mongodb://127.0.0.1:27017';
   }
-
 }

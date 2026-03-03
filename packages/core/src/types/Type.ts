@@ -16,7 +16,6 @@ export type IType<Runtime, Raw, Serialized = Raw> = Runtime & {
 };
 
 export abstract class Type<JSType = string, DBType = JSType> {
-
   private static readonly types = new Map();
 
   platform?: Platform;
@@ -109,7 +108,11 @@ export abstract class Type<JSType = string, DBType = JSType> {
    */
   getDefaultLength?(platform: Platform): number;
 
-  static getType<JSType, DBType = JSType, TypeClass extends Constructor<Type<JSType, DBType>> = Constructor<Type<JSType, DBType>>>(cls: TypeClass): InstanceType<TypeClass> {
+  static getType<
+    JSType,
+    DBType = JSType,
+    TypeClass extends Constructor<Type<JSType, DBType>> = Constructor<Type<JSType, DBType>>,
+  >(cls: TypeClass): InstanceType<TypeClass> {
     const key = cls.name;
 
     if (!Type.types.has(key)) {
@@ -137,7 +140,6 @@ export abstract class Type<JSType = string, DBType = JSType> {
     /* v8 ignore next */
     return ret === '[Object]' ? `[${name}]` : name + ' ' + ret;
   }
-
 }
 
 Object.defineProperties(Type.prototype, {

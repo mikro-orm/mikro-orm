@@ -3,7 +3,6 @@ import { Entity, ManyToMany, PrimaryKey, Property, ReflectMetadataProvider } fro
 
 @Entity({ tableName: 'name' })
 class Name {
-
   @PrimaryKey()
   id!: number;
 
@@ -16,22 +15,18 @@ class Name {
   constructor(name: string) {
     this.name = name;
   }
-
 }
 
 @Entity({ tableName: 'user' })
 class User {
-
   @PrimaryKey()
   id!: number;
 
   @ManyToMany({ entity: () => Name, pivotTable: 'userNames', joinColumn: 'name', inverseJoinColumn: 'user' })
   names = new Collection<Name>(this);
-
 }
 
 describe('GH issue 1346', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -60,5 +55,4 @@ describe('GH issue 1346', () => {
     const entity = await orm.em.findOneOrFail(User, user, { populate: ['names'] });
     expect(entity.names[0].name).toEqual('this is my name');
   });
-
 });

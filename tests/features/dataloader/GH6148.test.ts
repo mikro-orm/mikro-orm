@@ -10,7 +10,6 @@ import {
 
 @Entity()
 class Video {
-
   @PrimaryKey()
   id!: number;
 
@@ -22,12 +21,10 @@ class Video {
 
   @OneToMany(() => Image, image => image.video)
   images = new Collection<Image>(this);
-
 }
 
 @Entity()
 class Category {
-
   @PrimaryKey()
   id!: number;
 
@@ -39,12 +36,10 @@ class Category {
 
   @OneToMany(() => Image, image => image.category)
   images = new Collection<Image>(this);
-
 }
 
 @Entity()
 class Image {
-
   @PrimaryKey()
   id!: number;
 
@@ -56,7 +51,6 @@ class Image {
 
   @ManyToOne(() => Category, { nullable: true, ref: true })
   category?: Ref<Category>;
-
 }
 
 let orm: MikroORM;
@@ -81,10 +75,7 @@ test('load with relation from different entities', async () => {
 
   const v1 = await orm.em.findOneOrFail(Video, video.id);
   const c1 = await orm.em.findOneOrFail(Category, category.id);
-  await Promise.all([
-    v1.images.load(),
-    c1.images.load(),
-  ]);
+  await Promise.all([v1.images.load(), c1.images.load()]);
   expect(v1.images).toHaveLength(1);
   expect(v1.images[0].url).toEqual('/image1');
   expect(c1.images).toHaveLength(1);

@@ -8,7 +8,6 @@ import { rm } from 'node:fs/promises';
  * but uses reflect-metadata for type resolution (simpler test setup).
  */
 class CachingReflectMetadataProvider extends ReflectMetadataProvider {
-
   static override useCache(): boolean {
     return true;
   }
@@ -21,25 +20,31 @@ class CachingReflectMetadataProvider extends ReflectMetadataProvider {
     Reflect.deleteProperty(meta, 'root');
     const copy = Utils.copy(meta, false);
 
-    ([
-      'prototype', 'props', 'referencingProperties', 'propertyOrder', 'relations',
-      'concurrencyCheckKeys', 'checks',
-    ] as const).forEach(key => delete copy[key]);
+    (
+      [
+        'prototype',
+        'props',
+        'referencingProperties',
+        'propertyOrder',
+        'relations',
+        'concurrencyCheckKeys',
+        'checks',
+      ] as const
+    ).forEach(key => delete copy[key]);
 
     if (meta.path) {
       this.config.getMetadataCacheAdapter().set(this.getCacheKey(meta), copy, meta.path);
     }
   }
-
 }
 
 @Entity({ tableName: 'organizations' })
 @Index({
   name: 'organizations_name_ui',
-  expression: (columns, table, indexName) => quote`create unique index ${indexName} on ${table}(${columns.name}) where ${columns.deletedAt} is null`,
+  expression: (columns, table, indexName) =>
+    quote`create unique index ${indexName} on ${table}(${columns.name}) where ${columns.deletedAt} is null`,
 })
 class Organization {
-
   @PrimaryKey()
   id!: number;
 
@@ -48,16 +53,15 @@ class Organization {
 
   @Property({ nullable: true })
   deletedAt?: Date;
-
 }
 
 @Entity({ tableName: 'users' })
 @Index({
   name: 'users_organization_id_ui',
-  expression: (columns, table, indexName) => quote`create unique index ${indexName} on ${table}(${columns.organization}) where ${columns.deletedAt} is null`,
+  expression: (columns, table, indexName) =>
+    quote`create unique index ${indexName} on ${table}(${columns.organization}) where ${columns.deletedAt} is null`,
 })
 class User {
-
   @PrimaryKey()
   id!: number;
 
@@ -69,14 +73,12 @@ class User {
 
   @Property({ nullable: true })
   deletedAt?: Date;
-
 }
 
 const migrationsPath = process.cwd() + '/temp/migrations-gh7238';
 const cachePath = process.cwd() + '/temp/cache-gh7238';
 
 describe('expression-based index diffing (GH #7238)', () => {
-
   afterAll(async () => {
     await rm(migrationsPath, { recursive: true, force: true });
     await rm(cachePath, { recursive: true, force: true });
@@ -171,5 +173,4 @@ describe('expression-based index diffing (GH #7238)', () => {
     await rm(cachePath, { recursive: true, force: true });
     await rm(migrationsPath, { recursive: true, force: true });
   });
-
 });

@@ -3,7 +3,6 @@ import { Entity, OneToOne, PrimaryKey, ReflectMetadataProvider } from '@mikro-or
 
 @Entity()
 class Position {
-
   @PrimaryKey()
   id!: number;
 
@@ -12,12 +11,10 @@ class Position {
 
   @OneToOne(() => Leg, (leg: Leg) => leg.salePosition, { owner: true, nullable: true })
   sale?: any;
-
 }
 
 @Entity()
 class Leg {
-
   @PrimaryKey()
   id!: number;
 
@@ -26,11 +23,9 @@ class Leg {
 
   @OneToOne(() => Position, (position: Position) => position.sale, { nullable: true })
   salePosition?: Position;
-
 }
 
 describe('GH issue 2821', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -68,5 +63,4 @@ describe('GH issue 2821', () => {
     expect(leg2.salePosition).toBeFalsy();
     expect(leg2.purchasePosition).toBeTruthy();
   });
-
 });

@@ -1,9 +1,17 @@
 import { MikroORM, Collection, LoadStrategy, OptionalProps, PrimaryKeyProp } from '@mikro-orm/sqlite';
-import { Entity, Filter, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider, Unique } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  Filter,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+  Unique,
+} from '@mikro-orm/decorators/legacy';
 
 @Entity({ tableName: 'users' })
 class UserEntity {
-
   @PrimaryKey({ type: 'number' })
   id!: number;
 
@@ -16,12 +24,10 @@ class UserEntity {
 
   @OneToMany(() => UserTenantEntity, item => item.user)
   items = new Collection<UserTenantEntity>(this);
-
 }
 
 @Entity({ tableName: 'tenants' })
 class TenantEntity {
-
   [OptionalProps]?: 'isEnabled';
 
   @PrimaryKey({ type: 'number' })
@@ -39,14 +45,12 @@ class TenantEntity {
 
   @OneToMany(() => UserTenantEntity, item => item.tenant)
   items = new Collection<UserTenantEntity>(this);
-
 }
 
 @Entity({ tableName: 'user_tenant' })
 @Filter({ name: 'byUser', cond: args => ({ user: { id: args.id } }) })
 @Filter({ name: 'byTenant', cond: args => ({ tenant: { id: args.id } }) })
 class UserTenantEntity {
-
   @ManyToOne({ primary: true, entity: () => UserEntity, fieldName: 'userId', cascade: [] })
   user!: UserEntity;
 
@@ -58,11 +62,9 @@ class UserTenantEntity {
 
   @Property({ type: 'boolean', fieldName: 'isActive' })
   isActive: boolean = true;
-
 }
 
 describe('GH issue 1902', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -101,13 +103,12 @@ describe('GH issue 1902', () => {
       populate: ['tenant'] as const,
     };
     const f1 = await repoUserTenant.findAll(findOpts);
-    expect(f1.length).toBe(2);	// succeeds
+    expect(f1.length).toBe(2); // succeeds
     orm.em.clear();
 
     const f2 = await repoUserTenant.findAll({ ...findOpts, strategy: LoadStrategy.JOINED });
-    expect(f2.length).toBe(2);	// fails
+    expect(f2.length).toBe(2); // fails
 
     return;
   });
-
 });

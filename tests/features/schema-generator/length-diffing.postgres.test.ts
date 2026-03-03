@@ -3,7 +3,6 @@ import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-or
 
 @Entity({ tableName: 'book' })
 class Book0 {
-
   @PrimaryKey()
   id!: number;
 
@@ -18,12 +17,10 @@ class Book0 {
 
   @Property({ length: 2 })
   createdAt!: Date;
-
 }
 
 @Entity({ tableName: 'book' })
 class Book1 {
-
   @PrimaryKey({ type: t.bigint })
   id!: string;
 
@@ -38,12 +35,10 @@ class Book1 {
 
   @Property({ length: 3 })
   createdAt!: Date;
-
 }
 
 @Entity({ tableName: 'book' })
 class Book2 {
-
   @PrimaryKey({ type: t.bigint })
   id!: string;
 
@@ -58,12 +53,10 @@ class Book2 {
 
   @Property({ length: 3 })
   createdAt!: Date;
-
 }
 
 @Entity({ tableName: 'book' })
 class Book3 {
-
   @PrimaryKey({ type: t.bigint })
   id!: string;
 
@@ -78,12 +71,10 @@ class Book3 {
 
   @Property({ length: 3 })
   createdAt!: Date;
-
 }
 
 @Entity({ tableName: 'book' })
 class Book4 {
-
   @PrimaryKey({ type: t.bigint })
   id!: string;
 
@@ -98,11 +89,9 @@ class Book4 {
 
   @Property({ length: 3 })
   createdAt!: Date;
-
 }
 
 describe('length diffing in postgres', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -141,5 +130,4 @@ describe('length diffing in postgres', () => {
       up: '',
     });
   });
-
 });

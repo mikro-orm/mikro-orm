@@ -6,7 +6,6 @@ import { CLIHelper } from '../CLIHelper.js';
 type DatabaseSeedArgs = BaseArgs & { class?: string };
 
 export class DatabaseSeedCommand implements BaseCommand<DatabaseSeedArgs> {
-
   command = 'seeder:run';
   describe = 'Seed the database using the seeder class';
   builder = (args: Argv<BaseArgs>) => {
@@ -28,5 +27,4 @@ export class DatabaseSeedCommand implements BaseCommand<DatabaseSeedArgs> {
     CLIHelper.dump(colors.green(`Seeder ${className} successfully executed`));
     await orm.close(true);
   }
-
 }

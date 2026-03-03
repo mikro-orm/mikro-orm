@@ -2,7 +2,6 @@ import type { Dictionary, MetadataDiscoveryOptions } from '@mikro-orm/core';
 import { ReferenceKind, MetadataStorage, MetadataValidator, EntitySchema } from '@mikro-orm/core';
 
 describe('MetadataValidator', () => {
-
   const validator = new MetadataValidator();
   const options = {
     warnWhenNoEntities: true,
@@ -16,112 +15,250 @@ describe('MetadataValidator', () => {
     class Author {}
     const meta = { Author: { name: 'Author', className: 'Author', class: Author, properties: {} } } as any;
     meta.Author.root = meta.Author;
-    expect(() => validator.validateEntityDefinition(new MetadataStorage(meta), Author, options)).toThrow('Author entity is missing @PrimaryKey()');
+    expect(() => validator.validateEntityDefinition(new MetadataStorage(meta), Author, options)).toThrow(
+      'Author entity is missing @PrimaryKey()',
+    );
 
     // many to one
     meta.Author.primaryKeys = ['_id'];
     meta.Author.properties.test = { name: 'test', kind: ReferenceKind.MANY_TO_ONE };
-    expect(() => validator.validateEntityDefinition(new MetadataStorage(meta), Author, options)).toThrow('Author.test is missing type definition');
+    expect(() => validator.validateEntityDefinition(new MetadataStorage(meta), Author, options)).toThrow(
+      'Author.test is missing type definition',
+    );
 
     meta.Author.properties.test.type = 'Test';
-    expect(() => validator.validateEntityDefinition(new MetadataStorage(meta), Author, options)).toThrow('Author.test has unknown type: Test');
+    expect(() => validator.validateEntityDefinition(new MetadataStorage(meta), Author, options)).toThrow(
+      'Author.test has unknown type: Test',
+    );
 
     // one to many
     class Test {}
     meta.Test = { name: 'Test', className: 'Test', class: Test, properties: {} };
     meta.Test.root = meta.Test;
     meta.Author.properties.test.targetMeta = meta.Test;
-    meta.Author.properties.tests = { name: 'tests', kind: ReferenceKind.ONE_TO_MANY, targetMeta: meta.Test, type: 'Test' };
-    expect(() => validator.validateEntityDefinition(new MetadataStorage(meta), Author, options)).toThrow(`Author.tests is missing 'mappedBy' option`);
+    meta.Author.properties.tests = {
+      name: 'tests',
+      kind: ReferenceKind.ONE_TO_MANY,
+      targetMeta: meta.Test,
+      type: 'Test',
+    };
+    expect(() => validator.validateEntityDefinition(new MetadataStorage(meta), Author, options)).toThrow(
+      `Author.tests is missing 'mappedBy' option`,
+    );
     meta.Author.properties.tests.mappedBy = 'foo';
-    expect(() => validator.validateEntityDefinition(new MetadataStorage(meta), Author, options)).toThrow(`Author.tests has unknown 'mappedBy' reference: Test.foo`);
+    expect(() => validator.validateEntityDefinition(new MetadataStorage(meta), Author, options)).toThrow(
+      `Author.tests has unknown 'mappedBy' reference: Test.foo`,
+    );
 
     meta.Test.properties.foo = { name: 'foo', kind: ReferenceKind.ONE_TO_ONE, type: 'Author' };
-    expect(() => validator.validateEntityDefinition(new MetadataStorage(meta), Author, options)).toThrow(`Author.tests is of type 1:m which is incompatible with its owning side Test.foo of type 1:1`);
+    expect(() => validator.validateEntityDefinition(new MetadataStorage(meta), Author, options)).toThrow(
+      `Author.tests is of type 1:m which is incompatible with its owning side Test.foo of type 1:1`,
+    );
 
     meta.Test.properties.foo = { name: 'foo', kind: ReferenceKind.MANY_TO_ONE, type: 'Author', inversedBy: 'tests' };
     meta.Author.properties.tests.kind = ReferenceKind.MANY_TO_MANY;
-    expect(() => validator.validateEntityDefinition(new MetadataStorage(meta), Author, options)).toThrow(`Author.tests is of type m:n which is incompatible with its owning side Test.foo of type m:1`);
+    expect(() => validator.validateEntityDefinition(new MetadataStorage(meta), Author, options)).toThrow(
+      `Author.tests is of type m:n which is incompatible with its owning side Test.foo of type m:1`,
+    );
 
     meta.Author.properties.tests.kind = ReferenceKind.ONE_TO_MANY;
     meta.Test.properties.foo = { name: 'foo', kind: ReferenceKind.MANY_TO_ONE, type: 'Wrong', mappedBy: 'foo' };
-    expect(() => validator.validateEntityDefinition(new MetadataStorage(meta), Author, options)).toThrow(`Author.tests has wrong 'mappedBy' reference type: Wrong instead of Author`);
+    expect(() => validator.validateEntityDefinition(new MetadataStorage(meta), Author, options)).toThrow(
+      `Author.tests has wrong 'mappedBy' reference type: Wrong instead of Author`,
+    );
 
     meta.Test.properties.foo.type = 'Author';
-    expect(() => validator.validateEntityDefinition(new MetadataStorage(meta), Author, options)).toThrow(`Both Author.tests and Test.foo are defined as inverse sides, use 'inversedBy' on one of them`);
+    expect(() => validator.validateEntityDefinition(new MetadataStorage(meta), Author, options)).toThrow(
+      `Both Author.tests and Test.foo are defined as inverse sides, use 'inversedBy' on one of them`,
+    );
     delete meta.Test.properties.foo.mappedBy;
     meta.Test.properties.foo.inversedBy = 'tests';
 
     // many to many
     meta.Author.properties.books = { name: 'books', kind: ReferenceKind.MANY_TO_MANY, type: 'Book' };
-    expect(() => validator.validateEntityDefinition(new MetadataStorage(meta), Author, options)).toThrow('Author.books has unknown type: Book');
+    expect(() => validator.validateEntityDefinition(new MetadataStorage(meta), Author, options)).toThrow(
+      'Author.books has unknown type: Book',
+    );
 
     // many to many inversedBy
     class Book {}
     meta.Book = { name: 'Book', className: 'Book', class: Book, properties: {} };
     meta.Book.root = meta.Book;
-    meta.Author.properties.books = { name: 'books', kind: ReferenceKind.MANY_TO_MANY, type: 'Book', targetMeta: meta.Book, inversedBy: 'bar' };
-    expect(() => validator.validateEntityDefinition(new MetadataStorage(meta), Author, options)).toThrow(`Author.books has unknown 'inversedBy' reference: Book.bar`);
+    meta.Author.properties.books = {
+      name: 'books',
+      kind: ReferenceKind.MANY_TO_MANY,
+      type: 'Book',
+      targetMeta: meta.Book,
+      inversedBy: 'bar',
+    };
+    expect(() => validator.validateEntityDefinition(new MetadataStorage(meta), Author, options)).toThrow(
+      `Author.books has unknown 'inversedBy' reference: Book.bar`,
+    );
 
     class Foo {}
     meta.Foo = { name: 'Foo', className: 'Foo', class: Foo, properties: {}, primaryKeys: ['_id'] };
     meta.Foo.root = meta.Foo;
 
     meta.Author.properties.books.inversedBy = 'authors';
-    meta.Book.properties.authors = { name: 'authors', kind: ReferenceKind.MANY_TO_MANY, type: 'Foo', targetMeta: meta.Foo, inversedBy: 'bar' };
-    expect(() => validator.validateEntityDefinition(new MetadataStorage(meta), Author, options)).toThrow(`Author.books has wrong 'inversedBy' reference type: Foo instead of Author`);
+    meta.Book.properties.authors = {
+      name: 'authors',
+      kind: ReferenceKind.MANY_TO_MANY,
+      type: 'Foo',
+      targetMeta: meta.Foo,
+      inversedBy: 'bar',
+    };
+    expect(() => validator.validateEntityDefinition(new MetadataStorage(meta), Author, options)).toThrow(
+      `Author.books has wrong 'inversedBy' reference type: Foo instead of Author`,
+    );
 
-    meta.Book.properties.authors = { name: 'authors', kind: ReferenceKind.MANY_TO_MANY, type: 'Author', targetMeta: meta.Author, inversedBy: 'books' };
-    expect(() => validator.validateEntityDefinition(new MetadataStorage(meta), Author, options)).toThrow(`Both Author.books and Book.authors are defined as owning sides, use 'mappedBy' on one of them`);
-    meta.Author.properties.books = { name: 'books', kind: ReferenceKind.MANY_TO_MANY, type: 'Book', targetMeta: meta.Book, mappedBy: 'bar' };
+    meta.Book.properties.authors = {
+      name: 'authors',
+      kind: ReferenceKind.MANY_TO_MANY,
+      type: 'Author',
+      targetMeta: meta.Author,
+      inversedBy: 'books',
+    };
+    expect(() => validator.validateEntityDefinition(new MetadataStorage(meta), Author, options)).toThrow(
+      `Both Author.books and Book.authors are defined as owning sides, use 'mappedBy' on one of them`,
+    );
+    meta.Author.properties.books = {
+      name: 'books',
+      kind: ReferenceKind.MANY_TO_MANY,
+      type: 'Book',
+      targetMeta: meta.Book,
+      mappedBy: 'bar',
+    };
 
     // many to many mappedBy
     meta.Book.properties = {};
-    expect(() => validator.validateEntityDefinition(new MetadataStorage(meta), Author, options)).toThrow(`Author.books has unknown 'mappedBy' reference: Book.bar`);
+    expect(() => validator.validateEntityDefinition(new MetadataStorage(meta), Author, options)).toThrow(
+      `Author.books has unknown 'mappedBy' reference: Book.bar`,
+    );
 
     meta.Author.properties.books.mappedBy = 'authors';
-    meta.Book.properties.authors = { name: 'authors', kind: ReferenceKind.MANY_TO_MANY, type: 'Foo', targetMeta: meta.Foo, mappedBy: 'bar' };
-    expect(() => validator.validateEntityDefinition(new MetadataStorage(meta), Author, options)).toThrow(`Author.books has wrong 'mappedBy' reference type: Foo instead of Author`);
+    meta.Book.properties.authors = {
+      name: 'authors',
+      kind: ReferenceKind.MANY_TO_MANY,
+      type: 'Foo',
+      targetMeta: meta.Foo,
+      mappedBy: 'bar',
+    };
+    expect(() => validator.validateEntityDefinition(new MetadataStorage(meta), Author, options)).toThrow(
+      `Author.books has wrong 'mappedBy' reference type: Foo instead of Author`,
+    );
 
-    meta.Book.properties.authors = { name: 'authors', kind: ReferenceKind.MANY_TO_MANY, type: 'Author', targetMeta: meta.Author, mappedBy: 'books' };
-    expect(() => validator.validateEntityDefinition(new MetadataStorage(meta), Author, options)).toThrow(`Both Author.books and Book.authors are defined as inverse sides, use 'inversedBy' on one of them`);
-    meta.Book.properties.authors = { name: 'authors', kind: ReferenceKind.MANY_TO_MANY, type: 'Author', targetMeta: meta.Author, inversedBy: 'books' };
+    meta.Book.properties.authors = {
+      name: 'authors',
+      kind: ReferenceKind.MANY_TO_MANY,
+      type: 'Author',
+      targetMeta: meta.Author,
+      mappedBy: 'books',
+    };
+    expect(() => validator.validateEntityDefinition(new MetadataStorage(meta), Author, options)).toThrow(
+      `Both Author.books and Book.authors are defined as inverse sides, use 'inversedBy' on one of them`,
+    );
+    meta.Book.properties.authors = {
+      name: 'authors',
+      kind: ReferenceKind.MANY_TO_MANY,
+      type: 'Author',
+      targetMeta: meta.Author,
+      inversedBy: 'books',
+    };
 
     // one to one
     meta.Foo.properties.bar = { name: 'bar', kind: ReferenceKind.ONE_TO_ONE, type: 'Bar' };
-    expect(() => validator.validateEntityDefinition(new MetadataStorage(meta), Foo, options)).toThrow('Foo.bar has unknown type: Bar');
+    expect(() => validator.validateEntityDefinition(new MetadataStorage(meta), Foo, options)).toThrow(
+      'Foo.bar has unknown type: Bar',
+    );
 
     // one to one inversedBy
     class Bar {}
     meta.Bar = { name: 'Bar', className: 'Bar', class: Bar, properties: {} };
     meta.Bar.root = meta.Bar;
-    meta.Foo.properties.bar = { name: 'bar', kind: ReferenceKind.ONE_TO_ONE, type: 'Bar', targetMeta: meta.Bar, inversedBy: 'bar' };
-    expect(() => validator.validateEntityDefinition(new MetadataStorage(meta), Foo, options)).toThrow(`Foo.bar has unknown 'inversedBy' reference: Bar.bar`);
+    meta.Foo.properties.bar = {
+      name: 'bar',
+      kind: ReferenceKind.ONE_TO_ONE,
+      type: 'Bar',
+      targetMeta: meta.Bar,
+      inversedBy: 'bar',
+    };
+    expect(() => validator.validateEntityDefinition(new MetadataStorage(meta), Foo, options)).toThrow(
+      `Foo.bar has unknown 'inversedBy' reference: Bar.bar`,
+    );
 
     class FooBar {}
     meta.FooBar = { name: 'FooBar', className: 'FooBar', class: FooBar, properties: {} };
     meta.FooBar.root = meta.FooBar;
     meta.Foo.properties.bar.inversedBy = 'foo';
-    meta.Bar.properties.foo = { name: 'foo', kind: ReferenceKind.ONE_TO_ONE, type: 'FooBar', targetMeta: meta.FooBar, inversedBy: 'bar' };
-    expect(() => validator.validateEntityDefinition(new MetadataStorage(meta), Foo, options)).toThrow(`Foo.bar has wrong 'inversedBy' reference type: FooBar instead of Foo`);
+    meta.Bar.properties.foo = {
+      name: 'foo',
+      kind: ReferenceKind.ONE_TO_ONE,
+      type: 'FooBar',
+      targetMeta: meta.FooBar,
+      inversedBy: 'bar',
+    };
+    expect(() => validator.validateEntityDefinition(new MetadataStorage(meta), Foo, options)).toThrow(
+      `Foo.bar has wrong 'inversedBy' reference type: FooBar instead of Foo`,
+    );
 
-    meta.Bar.properties.foo = { name: 'foo', kind: ReferenceKind.ONE_TO_ONE, type: 'Foo', targetMeta: meta.Foo, inversedBy: 'bar' };
-    expect(() => validator.validateEntityDefinition(new MetadataStorage(meta), Foo, options)).toThrow(`Both Foo.bar and Bar.foo are defined as owning sides, use 'mappedBy' on one of them`);
+    meta.Bar.properties.foo = {
+      name: 'foo',
+      kind: ReferenceKind.ONE_TO_ONE,
+      type: 'Foo',
+      targetMeta: meta.Foo,
+      inversedBy: 'bar',
+    };
+    expect(() => validator.validateEntityDefinition(new MetadataStorage(meta), Foo, options)).toThrow(
+      `Both Foo.bar and Bar.foo are defined as owning sides, use 'mappedBy' on one of them`,
+    );
 
-    meta.Bar.properties.foo = { name: 'foo', kind: ReferenceKind.ONE_TO_ONE, type: 'Foo', targetMeta: meta.Foo, mappedBy: 'bar', owner: true };
-    expect(() => validator.validateEntityDefinition(new MetadataStorage(meta), Foo, options)).toThrow(`Both Foo.bar and Bar.foo are defined as owning sides, use 'mappedBy' on one of them`);
+    meta.Bar.properties.foo = {
+      name: 'foo',
+      kind: ReferenceKind.ONE_TO_ONE,
+      type: 'Foo',
+      targetMeta: meta.Foo,
+      mappedBy: 'bar',
+      owner: true,
+    };
+    expect(() => validator.validateEntityDefinition(new MetadataStorage(meta), Foo, options)).toThrow(
+      `Both Foo.bar and Bar.foo are defined as owning sides, use 'mappedBy' on one of them`,
+    );
 
     // one to one mappedBy
     meta.Bar = { name: 'Bar', className: 'Bar', class: Bar, properties: {} };
-    meta.Foo.properties.bar = { name: 'bar', kind: ReferenceKind.ONE_TO_ONE, type: 'Bar', targetMeta: meta.Bar, mappedBy: 'bar' };
-    expect(() => validator.validateEntityDefinition(new MetadataStorage(meta), Foo, options)).toThrow(`Foo.bar has unknown 'mappedBy' reference: Bar.bar`);
+    meta.Foo.properties.bar = {
+      name: 'bar',
+      kind: ReferenceKind.ONE_TO_ONE,
+      type: 'Bar',
+      targetMeta: meta.Bar,
+      mappedBy: 'bar',
+    };
+    expect(() => validator.validateEntityDefinition(new MetadataStorage(meta), Foo, options)).toThrow(
+      `Foo.bar has unknown 'mappedBy' reference: Bar.bar`,
+    );
 
     meta.Foo.properties.bar.mappedBy = 'foo';
-    meta.Bar.properties.foo = { name: 'foo', kind: ReferenceKind.ONE_TO_ONE, type: 'FooBar', targetMeta: meta.FooBar, mappedBy: 'bar' };
-    expect(() => validator.validateEntityDefinition(new MetadataStorage(meta), Foo, options)).toThrow(`Foo.bar has wrong 'mappedBy' reference type: FooBar instead of Foo`);
+    meta.Bar.properties.foo = {
+      name: 'foo',
+      kind: ReferenceKind.ONE_TO_ONE,
+      type: 'FooBar',
+      targetMeta: meta.FooBar,
+      mappedBy: 'bar',
+    };
+    expect(() => validator.validateEntityDefinition(new MetadataStorage(meta), Foo, options)).toThrow(
+      `Foo.bar has wrong 'mappedBy' reference type: FooBar instead of Foo`,
+    );
 
-    meta.Bar.properties.foo = { name: 'foo', kind: ReferenceKind.ONE_TO_ONE, type: 'Foo', targetMeta: meta.Foo, mappedBy: 'bar' };
-    expect(() => validator.validateEntityDefinition(new MetadataStorage(meta), Foo, options)).toThrow(`Both Foo.bar and Bar.foo are defined as inverse sides, use 'inversedBy' on one of them`);
+    meta.Bar.properties.foo = {
+      name: 'foo',
+      kind: ReferenceKind.ONE_TO_ONE,
+      type: 'Foo',
+      targetMeta: meta.Foo,
+      mappedBy: 'bar',
+    };
+    expect(() => validator.validateEntityDefinition(new MetadataStorage(meta), Foo, options)).toThrow(
+      `Both Foo.bar and Bar.foo are defined as inverse sides, use 'inversedBy' on one of them`,
+    );
 
     // disallow non persistent composite relations
     meta.Foo.properties.bar.inversedBy = 'foo';
@@ -130,14 +267,18 @@ describe('MetadataValidator', () => {
     delete meta.Bar.properties.foo.owner;
     meta.Bar.compositePK = true;
     delete meta.FooBar;
-    expect(() => validator.validateEntityDefinition(new MetadataStorage(meta), Foo, options)).toThrow(`Foo.bar is non-persistent relation which targets composite primary key. This is not supported and will cause issues, 'persist: false' should be added to the properties representing single columns instead.`);
+    expect(() => validator.validateEntityDefinition(new MetadataStorage(meta), Foo, options)).toThrow(
+      `Foo.bar is non-persistent relation which targets composite primary key. This is not supported and will cause issues, 'persist: false' should be added to the properties representing single columns instead.`,
+    );
     meta.Bar.compositePK = false;
     delete meta.Foo.properties.bar.persist;
 
     // version field
     meta.Author.properties.version = { name: 'version', kind: ReferenceKind.SCALAR, type: 'Test', version: true };
     meta.Author.versionProperty = 'version';
-    expect(() => validator.validateEntityDefinition(new MetadataStorage(meta), Author, options)).toThrow(`Version property Author.version has unsupported type 'Test'. Only 'number' and 'Date' are allowed.`);
+    expect(() => validator.validateEntityDefinition(new MetadataStorage(meta), Author, options)).toThrow(
+      `Version property Author.version has unsupported type 'Test'. Only 'number' and 'Date' are allowed.`,
+    );
     meta.Author.properties.version.type = 'number';
     expect(() => validator.validateEntityDefinition(new MetadataStorage(meta), Author, options)).not.toThrow();
     meta.Author.properties.version.type = 'Date';
@@ -147,7 +288,9 @@ describe('MetadataValidator', () => {
     meta.Author.properties.version.type = 'datetime(3)';
     expect(() => validator.validateEntityDefinition(new MetadataStorage(meta), Author, options)).not.toThrow();
     meta.Author.properties.version2 = { name: 'version2', kind: ReferenceKind.SCALAR, type: 'number', version: true };
-    expect(() => validator.validateEntityDefinition(new MetadataStorage(meta), Author, options)).toThrow(`Entity Author has multiple version properties defined: 'version', 'version2'. Only one version property is allowed per entity.`);
+    expect(() => validator.validateEntityDefinition(new MetadataStorage(meta), Author, options)).toThrow(
+      `Entity Author has multiple version properties defined: 'version', 'version2'. Only one version property is allowed per entity.`,
+    );
     delete meta.Author.properties.version2;
     expect(() => validator.validateEntityDefinition(new MetadataStorage(meta), Author, options)).not.toThrow();
   });
@@ -176,7 +319,9 @@ describe('MetadataValidator', () => {
       configurable: true,
       writable: true,
     });
-    expect(() => validator.validateEntityDefinition(storage, Malicious, options)).toThrow(`Malicious.__proto__ uses a dangerous property name '__proto__' which could lead to prototype pollution. Please use a different property name.`);
+    expect(() => validator.validateEntityDefinition(storage, Malicious, options)).toThrow(
+      `Malicious.__proto__ uses a dangerous property name '__proto__' which could lead to prototype pollution. Please use a different property name.`,
+    );
 
     // Test constructor
     class Malicious2 {}
@@ -192,7 +337,9 @@ describe('MetadataValidator', () => {
     meta2.Malicious2.root = meta2.Malicious2;
     meta2.Malicious2.properties.id = { name: 'id', kind: ReferenceKind.SCALAR, type: 'number', primary: true };
     meta2.Malicious2.properties.constructor = { name: 'constructor', kind: ReferenceKind.SCALAR, type: 'string' };
-    expect(() => validator.validateEntityDefinition(new MetadataStorage(meta2), Malicious2, options)).toThrow(`Malicious2.constructor uses a dangerous property name 'constructor' which could lead to prototype pollution. Please use a different property name.`);
+    expect(() => validator.validateEntityDefinition(new MetadataStorage(meta2), Malicious2, options)).toThrow(
+      `Malicious2.constructor uses a dangerous property name 'constructor' which could lead to prototype pollution. Please use a different property name.`,
+    );
 
     // Test prototype
     class Malicious3 {}
@@ -208,7 +355,9 @@ describe('MetadataValidator', () => {
     meta3.Malicious3.root = meta3.Malicious3;
     meta3.Malicious3.properties.id = { name: 'id', kind: ReferenceKind.SCALAR, type: 'number', primary: true };
     meta3.Malicious3.properties.prototype = { name: 'prototype', kind: ReferenceKind.SCALAR, type: 'string' };
-    expect(() => validator.validateEntityDefinition(new MetadataStorage(meta3), Malicious3, options)).toThrow(`Malicious3.prototype uses a dangerous property name 'prototype' which could lead to prototype pollution. Please use a different property name.`);
+    expect(() => validator.validateEntityDefinition(new MetadataStorage(meta3), Malicious3, options)).toThrow(
+      `Malicious3.prototype uses a dangerous property name 'prototype' which could lead to prototype pollution. Please use a different property name.`,
+    );
 
     // Test safe property name
     class Safe {}
@@ -237,11 +386,23 @@ describe('MetadataValidator', () => {
       invalid1: { kind: '1:m', name: 'invalid1', type: 'Foo' },
     };
     class AuthorProfile {}
-    const meta = { AuthorProfile: { expression: '...', name: 'AuthorProfile', className: 'AuthorProfile', class: AuthorProfile, properties } } as any;
+    const meta = {
+      AuthorProfile: {
+        expression: '...',
+        name: 'AuthorProfile',
+        className: 'AuthorProfile',
+        class: AuthorProfile,
+        properties,
+      },
+    } as any;
     meta.AuthorProfile.root = meta.AuthorProfile;
-    expect(() => validator.validateEntityDefinition(new MetadataStorage(meta), AuthorProfile, options)).toThrow(`Virtual entity AuthorProfile cannot have primary key AuthorProfile.id`);
+    expect(() => validator.validateEntityDefinition(new MetadataStorage(meta), AuthorProfile, options)).toThrow(
+      `Virtual entity AuthorProfile cannot have primary key AuthorProfile.id`,
+    );
     delete properties.id.primary;
-    expect(() => validator.validateEntityDefinition(new MetadataStorage(meta), AuthorProfile, options)).toThrow(`Only scalars, embedded properties and to-many relations are allowed inside virtual entity. Found '1:m' in AuthorProfile.invalid1`);
+    expect(() => validator.validateEntityDefinition(new MetadataStorage(meta), AuthorProfile, options)).toThrow(
+      `Only scalars, embedded properties and to-many relations are allowed inside virtual entity. Found '1:m' in AuthorProfile.invalid1`,
+    );
     delete properties.invalid1;
     expect(() => validator.validateEntityDefinition(new MetadataStorage(meta), AuthorProfile, options)).not.toThrow();
   });
@@ -263,9 +424,21 @@ describe('MetadataValidator', () => {
       tableName: 'foo',
       properties,
     } as any);
-    expect(() => validator.validateDiscovered([schema1.meta, schema2.meta], { ...options, warnWhenNoEntities: true, checkDuplicateTableNames: true })).not.toThrow();
+    expect(() =>
+      validator.validateDiscovered([schema1.meta, schema2.meta], {
+        ...options,
+        warnWhenNoEntities: true,
+        checkDuplicateTableNames: true,
+      }),
+    ).not.toThrow();
     schema2.meta.schema = '';
-    expect(() => validator.validateDiscovered([schema1.meta, schema2.meta], { ...options, warnWhenNoEntities: true, checkDuplicateTableNames: true })).toThrow(`Duplicate table names are not allowed: foo`);
+    expect(() =>
+      validator.validateDiscovered([schema1.meta, schema2.meta], {
+        ...options,
+        warnWhenNoEntities: true,
+        checkDuplicateTableNames: true,
+      }),
+    ).toThrow(`Duplicate table names are not allowed: foo`);
   });
 
   test('validates duplicities in fieldName', async () => {
@@ -278,7 +451,9 @@ describe('MetadataValidator', () => {
         age: { kind: 'scalar', name: 'age', fieldNames: ['name'], type: 'string' },
       },
     } as any).init();
-    expect(() => validator.validateEntityDefinition(new MetadataStorage({ Foo1: schema1.meta }), schema1, options)).toThrow("Duplicate fieldNames are not allowed: Foo1.name (fieldName: 'name'), Foo1.age (fieldName: 'name')");
+    expect(() =>
+      validator.validateEntityDefinition(new MetadataStorage({ Foo1: schema1.meta }), schema1, options),
+    ).toThrow("Duplicate fieldNames are not allowed: Foo1.name (fieldName: 'name'), Foo1.age (fieldName: 'name')");
     schema1.meta.properties.age.fieldNames[0] = 'age';
     expect(() => validator.validateDiscovered([schema1.meta], options)).not.toThrow();
   });
@@ -324,8 +499,9 @@ describe('MetadataValidator', () => {
       meta.Book.root = meta.Book;
       meta.Author.properties.books.targetMeta = meta.Book;
 
-      expect(() => validator.validateEntityDefinition(new MetadataStorage(meta), Author, options))
-        .toThrow(`Author.books uses 'targetKey' option which is not supported for ManyToMany relations`);
+      expect(() => validator.validateEntityDefinition(new MetadataStorage(meta), Author, options)).toThrow(
+        `Author.books uses 'targetKey' option which is not supported for ManyToMany relations`,
+      );
     });
 
     test('throws when targetKey references non-existent property', async () => {
@@ -361,8 +537,9 @@ describe('MetadataValidator', () => {
       meta.Book.root = meta.Book;
       meta.Book.properties.author.targetMeta = meta.Author;
 
-      expect(() => validator.validateEntityDefinition(new MetadataStorage(meta), Book, options))
-        .toThrow(`Book.author has 'targetKey' set to 'nonExistent', but Author.nonExistent does not exist`);
+      expect(() => validator.validateEntityDefinition(new MetadataStorage(meta), Book, options)).toThrow(
+        `Book.author has 'targetKey' set to 'nonExistent', but Author.nonExistent does not exist`,
+      );
     });
 
     test('throws when targetKey references non-unique property', async () => {
@@ -399,8 +576,9 @@ describe('MetadataValidator', () => {
       meta.Book.root = meta.Book;
       meta.Book.properties.author.targetMeta = meta.Author;
 
-      expect(() => validator.validateEntityDefinition(new MetadataStorage(meta), Book, options))
-        .toThrow(`Book.author has 'targetKey' set to 'name', but Author.name is not marked as unique`);
+      expect(() => validator.validateEntityDefinition(new MetadataStorage(meta), Book, options)).toThrow(
+        `Book.author has 'targetKey' set to 'name', but Author.name is not marked as unique`,
+      );
     });
 
     test('does not throw when targetKey references unique property', async () => {
@@ -553,8 +731,9 @@ describe('MetadataValidator', () => {
       meta.Book.properties.author.targetMeta = meta.Author;
 
       // Composite unique is not sufficient - the property must have unique: true directly
-      expect(() => validator.validateEntityDefinition(new MetadataStorage(meta), Book, options))
-        .toThrow(`Book.author has 'targetKey' set to 'email', but Author.email is not marked as unique`);
+      expect(() => validator.validateEntityDefinition(new MetadataStorage(meta), Book, options)).toThrow(
+        `Book.author has 'targetKey' set to 'email', but Author.email is not marked as unique`,
+      );
     });
   });
 
@@ -578,7 +757,12 @@ describe('MetadataValidator', () => {
       } as any);
 
       // Act
-      const validateDiscoveryCommand = () => validator.validateDiscovered([schema1.meta, schema2.meta], { ...options, warnWhenNoEntities: true, checkDuplicateTableNames: true });
+      const validateDiscoveryCommand = () =>
+        validator.validateDiscovered([schema1.meta, schema2.meta], {
+          ...options,
+          warnWhenNoEntities: true,
+          checkDuplicateTableNames: true,
+        });
 
       // Assert
       expect(validateDiscoveryCommand).not.toThrow();
@@ -603,7 +787,12 @@ describe('MetadataValidator', () => {
       } as any);
 
       // Act
-      const validateDiscoveryCommand = () => validator.validateDiscovered([schema1.meta, schema2.meta], { ...options, warnWhenNoEntities: true, checkDuplicateTableNames: true });
+      const validateDiscoveryCommand = () =>
+        validator.validateDiscovered([schema1.meta, schema2.meta], {
+          ...options,
+          warnWhenNoEntities: true,
+          checkDuplicateTableNames: true,
+        });
 
       // Assert
       expect(validateDiscoveryCommand).not.toThrow();
@@ -740,8 +929,9 @@ describe('MetadataValidator', () => {
 
       const meta = { Post: postMeta, Like: likeMeta, Other: otherMeta };
 
-      expect(() => validator.validateEntityDefinition(new MetadataStorage(meta), Like, options))
-        .toThrow(/wrong 'inversedBy' reference/i);
+      expect(() => validator.validateEntityDefinition(new MetadataStorage(meta), Like, options)).toThrow(
+        /wrong 'inversedBy' reference/i,
+      );
     });
 
     test('validates polymorphic relation where inverse is incorrectly marked as owner', async () => {
@@ -798,9 +988,9 @@ describe('MetadataValidator', () => {
 
       const meta = { Post: postMeta, Like: likeMeta };
 
-      expect(() => validator.validateEntityDefinition(new MetadataStorage(meta), Like, options))
-        .toThrow(/both .* are defined as owning sides/i);
+      expect(() => validator.validateEntityDefinition(new MetadataStorage(meta), Like, options)).toThrow(
+        /both .* are defined as owning sides/i,
+      );
     });
-
   });
 });

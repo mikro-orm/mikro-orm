@@ -1,9 +1,15 @@
 import { Collection, MikroORM } from '@mikro-orm/sqlite';
-import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class Author {
-
   @PrimaryKey()
   id!: number;
 
@@ -12,12 +18,10 @@ class Author {
 
   @OneToMany(() => Book, b => b.author)
   books = new Collection<Book>(this);
-
 }
 
 @Entity()
 class Book {
-
   @PrimaryKey()
   id!: number;
 
@@ -38,18 +42,15 @@ class Book {
 
   @OneToMany({ entity: () => Foo, mappedBy: foo => foo.book })
   foos = new Collection<Foo>(this);
-
 }
 
 @Entity()
 class Foo {
-
   @PrimaryKey()
   id!: number;
 
   @ManyToOne({ entity: () => Book })
   book = new Collection<Book>(this);
-
 }
 
 let orm: MikroORM;

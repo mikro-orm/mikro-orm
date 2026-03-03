@@ -4,7 +4,6 @@ import { mockLogger } from '../helpers.js';
 
 @Entity()
 class Test {
-
   @PrimaryKey()
   id!: number;
 
@@ -23,7 +22,6 @@ class Test {
       this.name = props.name;
     }
   }
-
 }
 
 let orm: MikroORM;

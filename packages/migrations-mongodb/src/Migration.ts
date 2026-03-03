@@ -3,11 +3,12 @@ import type { MongoDriver } from '@mikro-orm/mongodb';
 import type { Collection, ClientSession, Document, Db } from 'mongodb';
 
 export abstract class Migration {
-
   protected ctx?: Transaction<ClientSession>;
 
-  constructor(protected readonly driver: MongoDriver,
-              protected readonly config: Configuration) { }
+  constructor(
+    protected readonly driver: MongoDriver,
+    protected readonly config: Configuration,
+  ) {}
 
   abstract up(): Promise<void>;
 
@@ -34,5 +35,4 @@ export abstract class Migration {
   getDb(): Db {
     return this.driver.getConnection().getDb();
   }
-
 }

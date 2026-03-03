@@ -1,11 +1,22 @@
 import {
-  DeadlockException, LockWaitTimeoutException, TableExistsException, TableNotFoundException,
-  ForeignKeyConstraintViolationException, UniqueConstraintViolationException, InvalidFieldNameException, NonUniqueFieldNameException,
-  SyntaxErrorException, ConnectionException, NotNullConstraintViolationException, ExceptionConverter, CheckConstraintViolationException, type Dictionary, type DriverException,
+  DeadlockException,
+  LockWaitTimeoutException,
+  TableExistsException,
+  TableNotFoundException,
+  ForeignKeyConstraintViolationException,
+  UniqueConstraintViolationException,
+  InvalidFieldNameException,
+  NonUniqueFieldNameException,
+  SyntaxErrorException,
+  ConnectionException,
+  NotNullConstraintViolationException,
+  ExceptionConverter,
+  CheckConstraintViolationException,
+  type Dictionary,
+  type DriverException,
 } from '@mikro-orm/core';
 
 export class MySqlExceptionConverter extends ExceptionConverter {
-
   /**
    * @see http://dev.mysql.com/doc/refman/5.7/en/error-messages-client.html
    * @see http://dev.mysql.com/doc/refman/5.7/en/error-messages-server.html
@@ -84,5 +95,4 @@ export class MySqlExceptionConverter extends ExceptionConverter {
 
     return super.convertException(exception);
   }
-
 }

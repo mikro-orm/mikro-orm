@@ -5,7 +5,6 @@ import { MySqlDriver } from '@mikro-orm/mysql';
 
 @Entity()
 class A {
-
   @PrimaryKey()
   id!: number;
 
@@ -20,11 +19,9 @@ class A {
 
   @Property({ version: true })
   version!: number;
-
 }
 
 describe('default values in mysql', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -61,5 +58,4 @@ describe('default values in mysql', () => {
     expect(a.foo3).toBe(50);
     expect(a.version).toBe(1);
   });
-
 });

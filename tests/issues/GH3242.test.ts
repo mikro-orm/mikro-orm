@@ -1,5 +1,12 @@
 import { Collection, JsonType, MikroORM } from '@mikro-orm/core';
-import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { MySqlDriver } from '@mikro-orm/mysql';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { SqliteDriver } from '@mikro-orm/sqlite';
@@ -7,7 +14,6 @@ import { mockLogger } from '../helpers.js';
 
 @Entity()
 export class Author {
-
   @PrimaryKey()
   id!: string;
 
@@ -16,12 +22,10 @@ export class Author {
     mappedBy: 'author',
   })
   books = new Collection<Book>(this);
-
 }
 
 @Entity()
 export class Book {
-
   @PrimaryKey()
   id!: string;
 
@@ -30,11 +34,9 @@ export class Book {
 
   @ManyToOne(() => Author)
   author!: Author;
-
 }
 
 describe('aliasing of nested JSON queries (GH 3242)', () => {
-
   test('sqlite', async () => {
     const orm = await MikroORM.init({
       metadataProvider: ReflectMetadataProvider,
@@ -49,9 +51,15 @@ describe('aliasing of nested JSON queries (GH 3242)', () => {
     await orm.em.find(Author, { books: { id: 'test' } });
     await orm.em.find(Book, { data: { title: 'test' } });
 
-    expect(mock.mock.calls[0][0]).toMatch("select `a0`.* from `author` as `a0` left join `book` as `b1` on `a0`.`id` = `b1`.`author_id` where json_extract(`b1`.`data`, '$.title') = 'test'");
-    expect(mock.mock.calls[1][0]).toMatch("select `a0`.* from `author` as `a0` left join `book` as `b1` on `a0`.`id` = `b1`.`author_id` where `b1`.`id` = 'test'");
-    expect(mock.mock.calls[2][0]).toMatch("select `b0`.* from `book` as `b0` where json_extract(`b0`.`data`, '$.title') = 'test'");
+    expect(mock.mock.calls[0][0]).toMatch(
+      "select `a0`.* from `author` as `a0` left join `book` as `b1` on `a0`.`id` = `b1`.`author_id` where json_extract(`b1`.`data`, '$.title') = 'test'",
+    );
+    expect(mock.mock.calls[1][0]).toMatch(
+      "select `a0`.* from `author` as `a0` left join `book` as `b1` on `a0`.`id` = `b1`.`author_id` where `b1`.`id` = 'test'",
+    );
+    expect(mock.mock.calls[2][0]).toMatch(
+      "select `b0`.* from `book` as `b0` where json_extract(`b0`.`data`, '$.title') = 'test'",
+    );
 
     await orm.close(true);
   });
@@ -71,9 +79,15 @@ describe('aliasing of nested JSON queries (GH 3242)', () => {
     await orm.em.find(Author, { books: { id: 'test' } });
     await orm.em.find(Book, { data: { title: 'test' } });
 
-    expect(mock.mock.calls[0][0]).toMatch("select `a0`.* from `author` as `a0` left join `book` as `b1` on `a0`.`id` = `b1`.`author_id` where json_extract(`b1`.`data`, '$.title') = 'test'");
-    expect(mock.mock.calls[1][0]).toMatch("select `a0`.* from `author` as `a0` left join `book` as `b1` on `a0`.`id` = `b1`.`author_id` where `b1`.`id` = 'test'");
-    expect(mock.mock.calls[2][0]).toMatch("select `b0`.* from `book` as `b0` where json_extract(`b0`.`data`, '$.title') = 'test'");
+    expect(mock.mock.calls[0][0]).toMatch(
+      "select `a0`.* from `author` as `a0` left join `book` as `b1` on `a0`.`id` = `b1`.`author_id` where json_extract(`b1`.`data`, '$.title') = 'test'",
+    );
+    expect(mock.mock.calls[1][0]).toMatch(
+      "select `a0`.* from `author` as `a0` left join `book` as `b1` on `a0`.`id` = `b1`.`author_id` where `b1`.`id` = 'test'",
+    );
+    expect(mock.mock.calls[2][0]).toMatch(
+      "select `b0`.* from `book` as `b0` where json_extract(`b0`.`data`, '$.title') = 'test'",
+    );
 
     await orm.close(true);
   });
@@ -92,11 +106,14 @@ describe('aliasing of nested JSON queries (GH 3242)', () => {
     await orm.em.find(Author, { books: { id: 'test' } });
     await orm.em.find(Book, { data: { title: 'test' } });
 
-    expect(mock.mock.calls[0][0]).toMatch(`select "a0".* from "author" as "a0" left join "book" as "b1" on "a0"."id" = "b1"."author_id" where "b1"."data"->>'title' = 'test'`);
-    expect(mock.mock.calls[1][0]).toMatch(`select "a0".* from "author" as "a0" left join "book" as "b1" on "a0"."id" = "b1"."author_id" where "b1"."id" = 'test'`);
+    expect(mock.mock.calls[0][0]).toMatch(
+      `select "a0".* from "author" as "a0" left join "book" as "b1" on "a0"."id" = "b1"."author_id" where "b1"."data"->>'title' = 'test'`,
+    );
+    expect(mock.mock.calls[1][0]).toMatch(
+      `select "a0".* from "author" as "a0" left join "book" as "b1" on "a0"."id" = "b1"."author_id" where "b1"."id" = 'test'`,
+    );
     expect(mock.mock.calls[2][0]).toMatch(`select "b0".* from "book" as "b0" where "b0"."data"->>'title' = 'test'`);
 
     await orm.close(true);
   });
-
 });

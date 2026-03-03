@@ -4,7 +4,6 @@ import { PLATFORMS } from '../../bootstrap.js';
 
 @Entity()
 class Author {
-
   @PrimaryKey()
   id!: number;
 
@@ -13,12 +12,10 @@ class Author {
 
   @Property({ nullable: true, type: 'integer' })
   rating?: number | null;
-
 }
 
 @Entity()
 class Book {
-
   @PrimaryKey()
   id!: number;
 
@@ -27,11 +24,9 @@ class Book {
 
   @ManyToOne(() => Author, { ref: true, nullable: true })
   author?: Ref<Author> | null;
-
 }
 
 describe('cursor pagination with nested null values', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -143,5 +138,4 @@ describe('cursor pagination with nested null values', () => {
     // Should throw because author is not populated
     expect(() => cursor.from(book)).toThrow(`Cannot create cursor, value for 'Book.author' is missing.`);
   });
-
 });

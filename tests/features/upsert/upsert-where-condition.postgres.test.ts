@@ -4,7 +4,6 @@ import { mockLogger } from '../../helpers.js';
 
 @Entity()
 class Document {
-
   @PrimaryKey()
   id!: number;
 
@@ -16,7 +15,6 @@ class Document {
 
   @Property()
   content!: string;
-
 }
 
 let orm: MikroORM;
@@ -46,42 +44,54 @@ describe('upsert with where condition', () => {
     await orm.em.insert(Document, { name: 'doc1', version: 1, content: 'initial' });
 
     // Try to upsert with version 2 - should update
-    await orm.em.upsert(Document, {
-      name: 'doc1',
-      version: 2,
-      content: 'updated to v2',
-    }, {
-      onConflictFields: ['name'],
-      onConflictWhere: { version: { $lt: 2 } },
-    });
+    await orm.em.upsert(
+      Document,
+      {
+        name: 'doc1',
+        version: 2,
+        content: 'updated to v2',
+      },
+      {
+        onConflictFields: ['name'],
+        onConflictWhere: { version: { $lt: 2 } },
+      },
+    );
 
     let doc = await orm.em.findOneOrFail(Document, { name: 'doc1' });
     expect(doc.version).toBe(2);
     expect(doc.content).toBe('updated to v2');
 
     // Try to upsert with version 1 - should NOT update because version is not less than 1
-    await orm.em.fork().upsert(Document, {
-      name: 'doc1',
-      version: 1,
-      content: 'attempt to downgrade',
-    }, {
-      onConflictFields: ['name'],
-      onConflictWhere: { version: { $lt: 1 } },
-    });
+    await orm.em.fork().upsert(
+      Document,
+      {
+        name: 'doc1',
+        version: 1,
+        content: 'attempt to downgrade',
+      },
+      {
+        onConflictFields: ['name'],
+        onConflictWhere: { version: { $lt: 1 } },
+      },
+    );
 
     doc = await orm.em.findOneOrFail(Document, { name: 'doc1' });
     expect(doc.version).toBe(2);
     expect(doc.content).toBe('updated to v2');
 
     // Try to upsert with version 3 - should update
-    await orm.em.fork().upsert(Document, {
-      name: 'doc1',
-      version: 3,
-      content: 'updated to v3',
-    }, {
-      onConflictFields: ['name'],
-      onConflictWhere: { version: { $lt: 3 } },
-    });
+    await orm.em.fork().upsert(
+      Document,
+      {
+        name: 'doc1',
+        version: 3,
+        content: 'updated to v3',
+      },
+      {
+        onConflictFields: ['name'],
+        onConflictWhere: { version: { $lt: 3 } },
+      },
+    );
 
     doc = await orm.em.findOneOrFail(Document, { name: 'doc1' });
     expect(doc.version).toBe(3);
@@ -95,14 +105,18 @@ describe('upsert with where condition', () => {
 
   test('upsert should insert when entity does not exist, regardless of where condition', async () => {
     // Upsert a document that doesn't exist yet
-    await orm.em.upsert(Document, {
-      name: 'doc2',
-      version: 5,
-      content: 'new document',
-    }, {
-      onConflictFields: ['name'],
-      onConflictWhere: { version: { $lt: 5 } },
-    });
+    await orm.em.upsert(
+      Document,
+      {
+        name: 'doc2',
+        version: 5,
+        content: 'new document',
+      },
+      {
+        onConflictFields: ['name'],
+        onConflictWhere: { version: { $lt: 5 } },
+      },
+    );
 
     const doc = await orm.em.findOneOrFail(Document, { name: 'doc2' });
     expect(doc.version).toBe(5);
@@ -117,14 +131,18 @@ describe('upsert with where condition', () => {
     ]);
 
     // Upsert multiple documents with version check
-    await orm.em.fork().upsertMany(Document, [
-      { name: 'doc3', version: 2, content: 'updated 3' },
-      { name: 'doc4', version: 3, content: 'updated 4' },
-      { name: 'doc5', version: 1, content: 'new 5' },
-    ], {
-      onConflictFields: ['name'],
-      onConflictWhere: { version: { $lt: 10 } },
-    });
+    await orm.em.fork().upsertMany(
+      Document,
+      [
+        { name: 'doc3', version: 2, content: 'updated 3' },
+        { name: 'doc4', version: 3, content: 'updated 4' },
+        { name: 'doc5', version: 1, content: 'new 5' },
+      ],
+      {
+        onConflictFields: ['name'],
+        onConflictWhere: { version: { $lt: 10 } },
+      },
+    );
 
     const doc3 = await orm.em.findOneOrFail(Document, { name: 'doc3' });
     expect(doc3.version).toBe(2);

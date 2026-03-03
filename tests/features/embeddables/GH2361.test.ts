@@ -1,24 +1,27 @@
 import { MikroORM, SimpleLogger } from '@mikro-orm/sqlite';
-import { Embeddable, Embedded, Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Embeddable,
+  Embedded,
+  Entity,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../../helpers.js';
 
 @Embeddable()
 class Nested {
-
   @Property({ fieldName: 'foobar' })
   child!: string;
-
 }
 
 @Entity()
 class MyModel {
-
   @PrimaryKey()
   id!: number;
 
   @Embedded(() => Nested, { prefix: 'nested_' })
   nested!: Nested;
-
 }
 
 let orm: MikroORM;

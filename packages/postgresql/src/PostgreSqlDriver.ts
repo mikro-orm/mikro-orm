@@ -6,7 +6,6 @@ import { PostgreSqlMikroORM } from './PostgreSqlMikroORM.js';
 import { PostgreSqlEntityManager } from './PostgreSqlEntityManager.js';
 
 export class PostgreSqlDriver extends AbstractSqlDriver<PostgreSqlConnection> {
-
   override [EntityManagerType]!: PostgreSqlEntityManager<this>;
 
   constructor(config: Configuration) {
@@ -22,5 +21,4 @@ export class PostgreSqlDriver extends AbstractSqlDriver<PostgreSqlConnection> {
   override getORMClass(): Constructor<PostgreSqlMikroORM> {
     return PostgreSqlMikroORM;
   }
-
 }

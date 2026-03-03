@@ -10,18 +10,15 @@ import {
 
 @Entity()
 export class NodeEntity {
-
   @PrimaryKey()
   id!: number;
 
   @ManyToOne({ entity: () => NodeEntity, deleteRule: 'cascade', updateRule: 'cascade', nullable: true })
   parent?: NodeEntity | null;
-
 }
 
 @Entity()
 export class ElementEntity {
-
   [PrimaryKeyProp]?: 'node';
 
   @OneToOne({ entity: () => NodeEntity, primary: true, deleteRule: 'cascade', updateRule: 'cascade' })
@@ -29,22 +26,18 @@ export class ElementEntity {
 
   @OneToMany({ entity: () => DependentEntity, mappedBy: 'element', cascade: [Cascade.ALL] })
   dependents = new Collection<DependentEntity>(this);
-
 }
 
 @Entity()
 export class DependentEntity {
-
   @PrimaryKey()
   id!: number;
 
   @ManyToOne(() => ElementEntity, { deleteRule: 'cascade' })
   element!: ElementEntity;
-
 }
 
 describe('GH issue 2810', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -85,5 +78,4 @@ describe('GH issue 2810', () => {
 
     await orm.em.persist(element).flush();
   });
-
 });

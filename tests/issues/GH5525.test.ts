@@ -1,9 +1,15 @@
 import { Collection, MikroORM } from '@mikro-orm/sqlite';
-import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class User {
-
   @PrimaryKey()
   id!: number;
 
@@ -20,12 +26,10 @@ class User {
     this.name = name;
     this.email = email;
   }
-
 }
 
 @Entity()
 class Book {
-
   @PrimaryKey()
   id!: number;
 
@@ -38,7 +42,6 @@ class Book {
   constructor(name: string) {
     this.name = name;
   }
-
 }
 
 let orm: MikroORM;
@@ -74,11 +77,7 @@ test('basic CRUD example - no populate - user debuggable in VSCode', async () =>
 });
 
 test('basic CRUD example - populate books - user should not be debuggable in VSCode', async () => {
-  const user = await orm.em.fork().findOneOrFail(
-    User,
-    { email: 'foo' },
-    { populate: ['books'] },
-  );
+  const user = await orm.em.fork().findOneOrFail(User, { email: 'foo' }, { populate: ['books'] });
   const s = (user as any)[Symbol.for('nodejs.util.inspect.custom')]();
   expect(s).toBe(`User {
   id: 1,
@@ -93,4 +92,3 @@ test('basic CRUD example - populate books - user should not be debuggable in VSC
 }`);
   expect(user.name).toBe('Foo');
 });
-

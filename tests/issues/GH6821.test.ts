@@ -6,8 +6,15 @@ const User = defineEntity({
   properties: {
     _id: p.type(ObjectId).primary(),
     id: p.string().index(),
-    createdAt: p.datetime().nullable().onCreate(() => new Date()),
-    updatedAt: p.datetime().nullable().onCreate(() => new Date()).onUpdate(() => new Date()),
+    createdAt: p
+      .datetime()
+      .nullable()
+      .onCreate(() => new Date()),
+    updatedAt: p
+      .datetime()
+      .nullable()
+      .onCreate(() => new Date())
+      .onUpdate(() => new Date()),
     firstName: p.string(),
   },
 });

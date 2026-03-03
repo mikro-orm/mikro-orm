@@ -109,11 +109,7 @@ const document = defineEntity({
   name: 'Document',
   tableName: 'documents',
   properties: {
-    data: () => p.embedded([
-      documentDataAwEdCard,
-      documentDataCoCheckMig,
-      documentDataMvDiCard,
-    ]).object(),
+    data: () => p.embedded([documentDataAwEdCard, documentDataCoCheckMig, documentDataMvDiCard]).object(),
   },
 });
 
@@ -139,22 +135,20 @@ beforeAll(async () => {
   });
   await orm.schema.create();
 
-  await orm.em.insert(document,
-    {
-      data: {
-        discriminator: 'AW.ED-CARD',
-        in: {
-          airline: 'Aruba Airlines',
-          flightNumber: 'AW123',
-        },
-        iso: 'AW',
-        out: {
-          city: 'Oranjestad',
-        },
-        type: 'ED-CARD',
+  await orm.em.insert(document, {
+    data: {
+      discriminator: 'AW.ED-CARD',
+      in: {
+        airline: 'Aruba Airlines',
+        flightNumber: 'AW123',
       },
+      iso: 'AW',
+      out: {
+        city: 'Oranjestad',
+      },
+      type: 'ED-CARD',
     },
-  );
+  });
   await orm.em.insert(document, {
     data: {
       discriminator: 'CO.CHECK-MIG',
@@ -196,20 +190,19 @@ test('poly embeddables with overridden props', async () => {
   const mvDocument = documents.find(document => document.data.iso === 'MV');
 
   expect(awDocument).toMatchObject({
-      data: {
-        discriminator: 'AW.ED-CARD',
-        in: {
-          airline: 'Aruba Airlines',
-          flightNumber: 'AW123',
-        },
-        iso: 'AW',
-        out: {
-          city: 'Oranjestad',
-        },
-        type: 'ED-CARD',
+    data: {
+      discriminator: 'AW.ED-CARD',
+      in: {
+        airline: 'Aruba Airlines',
+        flightNumber: 'AW123',
       },
+      iso: 'AW',
+      out: {
+        city: 'Oranjestad',
+      },
+      type: 'ED-CARD',
     },
-  );
+  });
   expect(coDocument).toMatchObject({
     data: {
       discriminator: 'CO.CHECK-MIG',

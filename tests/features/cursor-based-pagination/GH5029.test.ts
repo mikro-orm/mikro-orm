@@ -1,18 +1,22 @@
 import { MikroORM } from '@mikro-orm/sqlite';
-import { Embeddable, Embedded, Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Embeddable,
+  Embedded,
+  Entity,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../../helpers.js';
 
 @Embeddable()
 class Address {
-
   @Property()
   country!: string;
-
 }
 
 @Entity()
 class User {
-
   @PrimaryKey()
   id!: number;
 
@@ -21,7 +25,6 @@ class User {
 
   @Embedded(() => Address)
   address!: Address;
-
 }
 
 let orm: MikroORM;
@@ -47,6 +50,10 @@ test('cursor pagination', async () => {
   await orm.em.find(User, {}, { limit: 100, orderBy: { address: { country: 'ASC' } } });
   expect(mock.mock.calls[0][0]).toMatch('select `u0`.* from `user` as `u0` order by `u0`.`email` asc limit 100');
   expect(mock.mock.calls[1][0]).toMatch('select `u0`.* from `user` as `u0` order by `u0`.`email` asc limit 100');
-  expect(mock.mock.calls[2][0]).toMatch('select `u0`.* from `user` as `u0` order by `u0`.`address_country` asc limit 100');
-  expect(mock.mock.calls[3][0]).toMatch('select `u0`.* from `user` as `u0` order by `u0`.`address_country` asc limit 100');
+  expect(mock.mock.calls[2][0]).toMatch(
+    'select `u0`.* from `user` as `u0` order by `u0`.`address_country` asc limit 100',
+  );
+  expect(mock.mock.calls[3][0]).toMatch(
+    'select `u0`.* from `user` as `u0` order by `u0`.`address_country` asc limit 100',
+  );
 });

@@ -1,9 +1,16 @@
 import { MikroORM } from '@mikro-orm/postgresql';
-import { Embeddable, Embedded, Entity, Filter, ReflectMetadataProvider, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
+import {
+  Embeddable,
+  Embedded,
+  Entity,
+  Filter,
+  ReflectMetadataProvider,
+  PrimaryKey,
+  Property,
+} from '@mikro-orm/decorators/legacy';
 
 @Embeddable()
 class ValidRange {
-
   @Property({ columnType: 'timestamptz' })
   validBegin: Date;
 
@@ -14,7 +21,6 @@ class ValidRange {
     this.validBegin = validBegin;
     this.validEnd = validEnd;
   }
-
 }
 
 @Filter({
@@ -24,16 +30,12 @@ class ValidRange {
       validRange: {
         validBegin: { $lte: timestamp },
       },
-      $or: [
-        { validRange: { validEnd: { $exists: false } } },
-        { validRange: { validEnd: { $gt: timestamp } } },
-      ],
+      $or: [{ validRange: { validEnd: { $exists: false } } }, { validRange: { validEnd: { $gt: timestamp } } }],
     };
   },
 })
 @Entity()
 class User {
-
   @PrimaryKey()
   id!: number;
 
@@ -46,16 +48,11 @@ class User {
   @Embedded(() => ValidRange)
   validRange: ValidRange;
 
-  constructor(
-    name: string,
-    email: string,
-    validRange: { validBegin: Date; validEnd: Date | null },
-  ) {
+  constructor(name: string, email: string, validRange: { validBegin: Date; validEnd: Date | null }) {
     this.name = name;
     this.email = email;
     this.validRange = validRange;
   }
-
 }
 
 let orm: MikroORM;
@@ -89,11 +86,7 @@ test('Lookup by id and filter - invalid results', async () => {
   const validDate = new Date('2026-01-15T00:00:00Z');
 
   // returns nothing as filter does not match
-  const userFoo1 = await orm.em.findOne(
-    User,
-    { id: user.id },
-    { filters: { validAt: { timestamp: invalidDate } } },
-  );
+  const userFoo1 = await orm.em.findOne(User, { id: user.id }, { filters: { validAt: { timestamp: invalidDate } } });
   expect(userFoo1).toBeNull();
 
   // returns something as filter matches
@@ -107,10 +100,6 @@ test('Lookup by id and filter - invalid results', async () => {
   expect(userFoo2).not.toBeNull();
 
   // FAILS - should return nothing as filter does not match
-  const userFoo3 = await orm.em.findOne(
-    User,
-    { id: user.id },
-    { filters: { validAt: { timestamp: invalidDate } } },
-  );
+  const userFoo3 = await orm.em.findOne(User, { id: user.id }, { filters: { validAt: { timestamp: invalidDate } } });
   expect(userFoo3).toBeNull();
 });

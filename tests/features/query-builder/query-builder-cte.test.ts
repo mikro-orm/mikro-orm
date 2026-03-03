@@ -5,7 +5,6 @@ import { PLATFORMS } from '../../bootstrap.js';
 
 @Entity()
 class Author {
-
   @PrimaryKey()
   id!: number;
 
@@ -14,12 +13,10 @@ class Author {
 
   @Property({ nullable: true })
   age?: number;
-
 }
 
 @Entity()
 class Book {
-
   @PrimaryKey()
   id!: number;
 
@@ -28,7 +25,6 @@ class Book {
 
   @ManyToOne(() => Author)
   author!: Ref<Author>;
-
 }
 
 const options = {
@@ -64,11 +60,11 @@ describe.each(Utils.keys(options))('CTE [%s]', type => {
   afterAll(() => orm.close());
 
   test('CTE select', async () => {
-    const sub = orm.em.createQueryBuilder(Author, 'a').select(['a.id', 'a.name']).where({ age: { $gte: 50 } });
-    const qb = orm.em.createQueryBuilder(Author)
-      .with('older', sub)
-      .select('*')
-      .from('older', 'o');
+    const sub = orm.em
+      .createQueryBuilder(Author, 'a')
+      .select(['a.id', 'a.name'])
+      .where({ age: { $gte: 50 } });
+    const qb = orm.em.createQueryBuilder(Author).with('older', sub).select('*').from('older', 'o');
 
     const rows = await qb.execute<{ id: number; name: string }[]>();
     expect(rows).toHaveLength(1);
@@ -76,11 +72,11 @@ describe.each(Utils.keys(options))('CTE [%s]', type => {
   });
 
   test('CTE with FROM string overload', async () => {
-    const sub = orm.em.createQueryBuilder(Author, 'a').select(['a.name', 'a.age']).where({ age: { $gte: 45 } });
-    const qb = orm.em.createQueryBuilder(Author)
-      .with('older_authors', sub)
-      .select('*')
-      .from('older_authors', 'oa');
+    const sub = orm.em
+      .createQueryBuilder(Author, 'a')
+      .select(['a.name', 'a.age'])
+      .where({ age: { $gte: 45 } });
+    const qb = orm.em.createQueryBuilder(Author).with('older_authors', sub).select('*').from('older_authors', 'oa');
 
     const rows = await qb.execute<{ name: string; age: number }[]>();
     expect(rows).toHaveLength(2);
@@ -88,7 +84,8 @@ describe.each(Utils.keys(options))('CTE [%s]', type => {
   });
 
   test('recursive CTE', async () => {
-    const qb = orm.em.createQueryBuilder(Author)
+    const qb = orm.em
+      .createQueryBuilder(Author)
       .withRecursive('seq', raw('select 1 as n union all select n + 1 from seq where n < ?', [5]))
       .select('*')
       .from('seq', 's');
@@ -99,11 +96,11 @@ describe.each(Utils.keys(options))('CTE [%s]', type => {
   });
 
   test('CTE with getCount()', async () => {
-    const sub = orm.em.createQueryBuilder(Author, 'a').select('*').where({ age: { $gte: 45 } });
-    const qb = orm.em.createQueryBuilder(Author)
-      .with('old_authors', sub)
+    const sub = orm.em
+      .createQueryBuilder(Author, 'a')
       .select('*')
-      .from('old_authors', 'oa');
+      .where({ age: { $gte: 45 } });
+    const qb = orm.em.createQueryBuilder(Author).with('old_authors', sub).select('*').from('old_authors', 'oa');
 
     const count = await qb.getCount();
     expect(count).toBe(2);
@@ -113,7 +110,8 @@ describe.each(Utils.keys(options))('CTE [%s]', type => {
     const authorsCte = orm.em.createQueryBuilder(Author, 'a').select(['a.id', 'a.name']).where({ name: 'Bob' });
     const booksCte = orm.em.createQueryBuilder(Book, 'b').select(['b.id', 'b.title']).where({ title: 'Bob Book' });
 
-    const qb = orm.em.createQueryBuilder(Author, 'a2')
+    const qb = orm.em
+      .createQueryBuilder(Author, 'a2')
       .with('a_cte', authorsCte)
       .with('b_cte', booksCte)
       .select('*')
@@ -125,11 +123,11 @@ describe.each(Utils.keys(options))('CTE [%s]', type => {
   });
 
   test('CTE with entity QB body used in FROM', async () => {
-    const sub = orm.em.createQueryBuilder(Author, 'a').select('*').where({ age: { $gte: 50 } });
-    const qb = orm.em.createQueryBuilder(Author)
-      .with('seniors', sub)
+    const sub = orm.em
+      .createQueryBuilder(Author, 'a')
       .select('*')
-      .from('seniors', 's');
+      .where({ age: { $gte: 50 } });
+    const qb = orm.em.createQueryBuilder(Author).with('seniors', sub).select('*').from('seniors', 's');
 
     const rows = await qb.execute<{ name: string }[]>();
     expect(rows).toHaveLength(1);
@@ -139,15 +137,14 @@ describe.each(Utils.keys(options))('CTE [%s]', type => {
   test('duplicate CTE name throws', () => {
     const sub = orm.em.createQueryBuilder(Author, 'a').select('*');
     expect(() => {
-      orm.em.createQueryBuilder(Author, 'a2')
-        .with('cte', sub)
-        .with('cte', sub);
+      orm.em.createQueryBuilder(Author, 'a2').with('cte', sub).with('cte', sub);
     }).toThrow(`CTE with name 'cte' already exists`);
   });
 
   test('CTE FROM does not schema-qualify the CTE name', () => {
     const sub = orm.em.createQueryBuilder(Author, 'a').select('*');
-    const qb = orm.em.createQueryBuilder(Author)
+    const qb = orm.em
+      .createQueryBuilder(Author)
       .withSchema('custom_schema')
       .with('my_cte', sub)
       .select('*')
@@ -160,10 +157,7 @@ describe.each(Utils.keys(options))('CTE [%s]', type => {
 
   test('CTE type-safe from() infers entity type', async () => {
     const sub = orm.em.createQueryBuilder(Author, 'a').select(['a.id', 'a.name']).where({ name: 'Alice' });
-    const qb = orm.em.createQueryBuilder(Author)
-      .with('typed_cte', sub)
-      .select('*')
-      .from('typed_cte', 'tc');
+    const qb = orm.em.createQueryBuilder(Author).with('typed_cte', sub).select('*').from('typed_cte', 'tc');
 
     // The query should execute and return results from the CTE
     const rows = await qb.execute();
@@ -175,8 +169,7 @@ describe.each(Utils.keys(options))('CTE [%s]', type => {
     const booksSub = orm.em.createQueryBuilder(Book, 'b').select('*');
 
     // with() tracks the CTE entity type
-    const withCte = orm.em.createQueryBuilder(Author, 'a')
-      .with('recent_books', booksSub);
+    const withCte = orm.em.createQueryBuilder(Author, 'a').with('recent_books', booksSub);
 
     // from() with CTE name infers the entity type and preserves the alias literal
     const fromCte = withCte.select('*').from('recent_books', 'rb');
@@ -196,9 +189,7 @@ describe.each(Utils.keys(options))('CTE [%s]', type => {
 
     // Chaining multiple CTEs preserves all CTE types
     const authorsSub = orm.em.createQueryBuilder(Author, 'a2').select('*');
-    const multiCte = orm.em.createQueryBuilder(Author, 'a')
-      .with('books_cte', booksSub)
-      .with('authors_cte', authorsSub);
+    const multiCte = orm.em.createQueryBuilder(Author, 'a').with('books_cte', booksSub).with('authors_cte', authorsSub);
 
     // from() on first CTE gives Book
     const fromBooks = multiCte.select('*').from('books_cte', 'bc');
@@ -215,14 +206,9 @@ describe.each(Utils.keys(options))('CTE [%s]', type => {
   if (type === 'postgresql') {
     test('CTE name matching entity name', async () => {
       // Name the CTE "author" — same as the entity table name
-      const sub = orm.em.createQueryBuilder(Author, 'a')
-        .select(['a.id', 'a.name'])
-        .where({ name: 'Alice' });
+      const sub = orm.em.createQueryBuilder(Author, 'a').select(['a.id', 'a.name']).where({ name: 'Alice' });
 
-      const qb = orm.em.createQueryBuilder(Author)
-        .with('author', sub)
-        .select('*')
-        .from('author', 'a2');
+      const qb = orm.em.createQueryBuilder(Author).with('author', sub).select('*').from('author', 'a2');
 
       const rows = await qb.execute<{ id: number; name: string }[]>();
       expect(rows).toHaveLength(1);
@@ -231,7 +217,8 @@ describe.each(Utils.keys(options))('CTE [%s]', type => {
 
     test('MATERIALIZED hint executes', async () => {
       const sub = orm.em.createQueryBuilder(Author, 'a').select('*').where({ name: 'Bob' });
-      const qb = orm.em.createQueryBuilder(Author, 'a2')
+      const qb = orm.em
+        .createQueryBuilder(Author, 'a2')
         .with('cte', sub, { materialized: true })
         .select('*')
         .where({ name: 'Bob' });
@@ -243,7 +230,8 @@ describe.each(Utils.keys(options))('CTE [%s]', type => {
 
     test('NOT MATERIALIZED hint executes', async () => {
       const sub = orm.em.createQueryBuilder(Author, 'a').select('*').where({ name: 'Charlie' });
-      const qb = orm.em.createQueryBuilder(Author, 'a2')
+      const qb = orm.em
+        .createQueryBuilder(Author, 'a2')
         .with('cte', sub, { materialized: false })
         .select('*')
         .where({ name: 'Charlie' });

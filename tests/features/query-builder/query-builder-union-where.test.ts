@@ -42,12 +42,13 @@ describe('QueryBuilder - unionWhere', () => {
 
     const mock = mockLogger(orm, ['query']);
 
-    const results = await orm.em.find(Author2, {}, {
-      unionWhere: [
-        { name: 'uw-test-1' },
-        { email },
-      ],
-    });
+    const results = await orm.em.find(
+      Author2,
+      {},
+      {
+        unionWhere: [{ name: 'uw-test-1' }, { email }],
+      },
+    );
 
     expect(results).toHaveLength(1);
     expect(results[0].name).toBe('uw-test-1');
@@ -65,12 +66,13 @@ describe('QueryBuilder - unionWhere', () => {
 
     const mock = mockLogger(orm, ['query']);
 
-    const results = await orm.em.find(Author2, {}, {
-      unionWhere: [
-        { name: 'uw-rel-test' },
-        { books: { title: 'uw-target-book' } },
-      ],
-    });
+    const results = await orm.em.find(
+      Author2,
+      {},
+      {
+        unionWhere: [{ name: 'uw-rel-test' }, { books: { title: 'uw-target-book' } }],
+      },
+    );
 
     expect(results).toHaveLength(1);
 
@@ -86,13 +88,14 @@ describe('QueryBuilder - unionWhere', () => {
 
     const mock = mockLogger(orm, ['query']);
 
-    await orm.em.find(Author2, {}, {
-      unionWhere: [
-        { name: 'uw-union-strat' },
-        { email },
-      ],
-      unionWhereStrategy: 'union',
-    });
+    await orm.em.find(
+      Author2,
+      {},
+      {
+        unionWhere: [{ name: 'uw-union-strat' }, { email }],
+        unionWhereStrategy: 'union',
+      },
+    );
 
     const findSql = mock.mock.calls[0][0] as string;
     expect(findSql).toMatch(/ union \(/);
@@ -107,15 +110,16 @@ describe('QueryBuilder - unionWhere', () => {
 
     const mock = mockLogger(orm, ['query']);
 
-    const results = await orm.em.find(Author2, {}, {
-      unionWhere: [
-        { name: { $like: 'uw-page-%' } },
-        { name: { $like: 'uw-page-0%' } },
-      ],
-      orderBy: { name: 'ASC' },
-      limit: 2,
-      offset: 1,
-    });
+    const results = await orm.em.find(
+      Author2,
+      {},
+      {
+        unionWhere: [{ name: { $like: 'uw-page-%' } }, { name: { $like: 'uw-page-0%' } }],
+        orderBy: { name: 'ASC' },
+        limit: 2,
+        offset: 1,
+      },
+    );
 
     expect(results).toHaveLength(2);
     expect(results[0].name).toBe('uw-page-01');
@@ -136,12 +140,13 @@ describe('QueryBuilder - unionWhere', () => {
 
     const mock = mockLogger(orm, ['query']);
 
-    const [results, count] = await orm.em.findAndCount(Author2, {}, {
-      unionWhere: [
-        { name: { $like: 'uw-fac-%' } },
-        { name: { $like: 'uw-fac-0' } },
-      ],
-    });
+    const [results, count] = await orm.em.findAndCount(
+      Author2,
+      {},
+      {
+        unionWhere: [{ name: { $like: 'uw-fac-%' } }, { name: { $like: 'uw-fac-0' } }],
+      },
+    );
 
     expect(results).toHaveLength(3);
     expect(count).toBe(3);
@@ -160,9 +165,13 @@ describe('QueryBuilder - unionWhere', () => {
 
     const mock = mockLogger(orm, ['query']);
 
-    await orm.em.find(Author2, { name: 'uw-noop' }, {
-      unionWhere: [],
-    });
+    await orm.em.find(
+      Author2,
+      { name: 'uw-noop' },
+      {
+        unionWhere: [],
+      },
+    );
 
     const findSql = mock.mock.calls[0][0] as string;
     expect(findSql).not.toMatch(/union/);
@@ -175,12 +184,13 @@ describe('QueryBuilder - unionWhere', () => {
 
     const mock = mockLogger(orm, ['query']);
 
-    const result = await orm.em.findOne(Author2, { name: 'uw-findone' }, {
-      unionWhere: [
-        { name: 'uw-findone' },
-        { email },
-      ],
-    });
+    const result = await orm.em.findOne(
+      Author2,
+      { name: 'uw-findone' },
+      {
+        unionWhere: [{ name: 'uw-findone' }, { email }],
+      },
+    );
 
     expect(result).not.toBeNull();
     expect(result!.name).toBe('uw-findone');
@@ -198,12 +208,13 @@ describe('QueryBuilder - unionWhere', () => {
 
     const mock = mockLogger(orm, ['query']);
 
-    await orm.em.find(Author2, {}, {
-      unionWhere: [
-        { name: 'uw-join-check' },
-        { books: { title: 'uw-join-book' } },
-      ],
-    });
+    await orm.em.find(
+      Author2,
+      {},
+      {
+        unionWhere: [{ name: 'uw-join-check' }, { books: { title: 'uw-join-book' } }],
+      },
+    );
 
     const findSql = mock.mock.calls[0][0] as string;
     // The relation branch should contain a join to the books table inside the union subquery
@@ -216,12 +227,13 @@ describe('QueryBuilder - unionWhere', () => {
     await orm.em.insert(Author2, { name: 'uw-keep-excluded', email: uniqueEmail(), termsAccepted: false });
     orm.em.clear();
 
-    const results = await orm.em.find(Author2, { termsAccepted: true }, {
-      unionWhere: [
-        { name: 'uw-keep-included' },
-        { name: 'uw-keep-excluded' },
-      ],
-    });
+    const results = await orm.em.find(
+      Author2,
+      { termsAccepted: true },
+      {
+        unionWhere: [{ name: 'uw-keep-included' }, { name: 'uw-keep-excluded' }],
+      },
+    );
 
     expect(results).toHaveLength(1);
     expect(results[0].name).toBe('uw-keep-included');
@@ -235,12 +247,13 @@ describe('QueryBuilder - unionWhere', () => {
 
     const mock = mockLogger(orm, ['query']);
 
-    const results = await orm.em.find(Car2, {}, {
-      unionWhere: [
-        { name: 'uw-car-a' },
-        { year: 2021 },
-      ],
-    });
+    const results = await orm.em.find(
+      Car2,
+      {},
+      {
+        unionWhere: [{ name: 'uw-car-a' }, { year: 2021 }],
+      },
+    );
 
     expect(results).toHaveLength(2);
 
@@ -261,12 +274,13 @@ describe('QueryBuilder - unionWhere', () => {
     const mock = mockLogger(orm, ['query']);
 
     // Book2 has a default `hasAuthor` filter (author != null)
-    const results = await orm.em.find(Book2, {}, {
-      unionWhere: [
-        { title: 'uw-filter-book-a' },
-        { title: 'uw-filter-book-b' },
-      ],
-    });
+    const results = await orm.em.find(
+      Book2,
+      {},
+      {
+        unionWhere: [{ title: 'uw-filter-book-a' }, { title: 'uw-filter-book-b' }],
+      },
+    );
 
     expect(results).toHaveLength(2);
 
@@ -281,21 +295,26 @@ describe('QueryBuilder - unionWhere', () => {
     await orm.em.insert(Author2, { name: 'uw-foof', email });
     orm.em.clear();
 
-    const result = await orm.em.findOneOrFail(Author2, { name: 'uw-foof' }, {
-      unionWhere: [
-        { name: 'uw-foof' },
-        { email },
-      ],
-    });
+    const result = await orm.em.findOneOrFail(
+      Author2,
+      { name: 'uw-foof' },
+      {
+        unionWhere: [{ name: 'uw-foof' }, { email }],
+      },
+    );
 
     expect(result.name).toBe('uw-foof');
 
     // should throw when no match
-    await expect(orm.em.findOneOrFail(Author2, { name: 'uw-nonexistent' }, {
-      unionWhere: [
+    await expect(
+      orm.em.findOneOrFail(
+        Author2,
         { name: 'uw-nonexistent' },
-      ],
-    })).rejects.toThrow(/Author2 not found/);
+        {
+          unionWhere: [{ name: 'uw-nonexistent' }],
+        },
+      ),
+    ).rejects.toThrow(/Author2 not found/);
   });
 
   test('nativeUpdate with unionWhere', async () => {
@@ -308,12 +327,14 @@ describe('QueryBuilder - unionWhere', () => {
 
     const mock = mockLogger(orm, ['query']);
 
-    const affected = await orm.em.nativeUpdate(Author2, {}, { name: 'uw-updated' }, {
-      unionWhere: [
-        { name: 'uw-upd-1' },
-        { email: email2 },
-      ],
-    });
+    const affected = await orm.em.nativeUpdate(
+      Author2,
+      {},
+      { name: 'uw-updated' },
+      {
+        unionWhere: [{ name: 'uw-upd-1' }, { email: email2 }],
+      },
+    );
 
     expect(affected).toBe(2);
 
@@ -337,12 +358,13 @@ describe('QueryBuilder - unionWhere', () => {
 
     const mock = mockLogger(orm, ['query']);
 
-    const affected = await orm.em.nativeDelete(Author2, {}, {
-      unionWhere: [
-        { name: 'uw-del-1' },
-        { email: email2 },
-      ],
-    });
+    const affected = await orm.em.nativeDelete(
+      Author2,
+      {},
+      {
+        unionWhere: [{ name: 'uw-del-1' }, { email: email2 }],
+      },
+    );
 
     expect(affected).toBe(2);
 
@@ -355,5 +377,4 @@ describe('QueryBuilder - unionWhere', () => {
     const remaining = await orm.em.findOne(Author2, { name: 'uw-del-3' });
     expect(remaining).not.toBeNull();
   });
-
 });

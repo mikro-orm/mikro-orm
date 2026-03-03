@@ -1,4 +1,11 @@
-import { MikroORM, Loaded, type EntityDTO, type EntityDTOFlat, type SerializeDTO, type Dictionary } from '@mikro-orm/mysql';
+import {
+  MikroORM,
+  Loaded,
+  type EntityDTO,
+  type EntityDTOFlat,
+  type SerializeDTO,
+  type Dictionary,
+} from '@mikro-orm/mysql';
 import { Author2, Book2, Publisher2 } from '../../entities-sql/index.js';
 import { initORMMySql } from '../../bootstrap.js';
 import { expectTypeOf } from 'vitest';
@@ -19,7 +26,11 @@ type ExtractAliasNames<Context> = Context[keyof Context] extends infer Join
   : never;
 
 // Strip root alias prefix from a field path
-type StripRootAlias<F extends string, RootAlias extends string, Context = never> = F extends `${RootAlias}.${infer Field}`
+type StripRootAlias<
+  F extends string,
+  RootAlias extends string,
+  Context = never,
+> = F extends `${RootAlias}.${infer Field}`
   ? Field
   : F extends `${infer Alias}.${string}`
     ? Alias extends ExtractAliasNames<Context>
@@ -176,7 +187,10 @@ describe('QueryBuilder Fields type tracking', () => {
 
   describe('joinAndSelect() method return type', () => {
     test('should track join fields when specified', async () => {
-      const qb = orm.em.createQueryBuilder(Author2, 'a').select('a.id').leftJoinAndSelect('a.books', 'b', {}, ['title', 'price']);
+      const qb = orm.em
+        .createQueryBuilder(Author2, 'a')
+        .select('a.id')
+        .leftJoinAndSelect('a.books', 'b', {}, ['title', 'price']);
 
       const result = await qb.getResultList();
       // Should include root fields + prefixed join fields
@@ -205,13 +219,19 @@ describe('QueryBuilder Fields type tracking', () => {
     });
 
     test('should accept valid field names without alias prefix', async () => {
-      const qb = orm.em.createQueryBuilder(Author2, 'a').select('*').leftJoinAndSelect('a.books', 'b', {}, ['title', 'price']);
+      const qb = orm.em
+        .createQueryBuilder(Author2, 'a')
+        .select('*')
+        .leftJoinAndSelect('a.books', 'b', {}, ['title', 'price']);
       const result = await qb.getResultList();
       expectTypeOf(result).toEqualTypeOf<Loaded<Author2, 'books', '*' | 'books.title' | 'books.price'>[]>();
     });
 
     test('should accept valid field names with alias prefix', async () => {
-      const qb = orm.em.createQueryBuilder(Author2, 'a').select('*').leftJoinAndSelect('a.books', 'b', {}, ['b.title', 'b.price']);
+      const qb = orm.em
+        .createQueryBuilder(Author2, 'a')
+        .select('*')
+        .leftJoinAndSelect('a.books', 'b', {}, ['b.title', 'b.price']);
       const result = await qb.getResultList();
       expectTypeOf(result).toEqualTypeOf<Loaded<Author2, 'books', '*' | 'books.title' | 'books.price'>[]>();
     });
@@ -302,7 +322,10 @@ describe('QueryBuilder Fields type tracking', () => {
     });
 
     test('execute() with joinAndSelect and fields should include Hint', async () => {
-      const qb = orm.em.createQueryBuilder(Author2, 'a').select('a.id').leftJoinAndSelect('a.books', 'b', {}, ['title', 'price']);
+      const qb = orm.em
+        .createQueryBuilder(Author2, 'a')
+        .select('a.id')
+        .leftJoinAndSelect('a.books', 'b', {}, ['title', 'price']);
 
       const result = await qb.execute();
       // DirectDTO: root has selected fields + PK, joined entity has sub-fields + PK
@@ -315,7 +338,8 @@ describe('QueryBuilder Fields type tracking', () => {
     });
 
     test('execute() with 2-level nested joins and wildcard', async () => {
-      const qb = orm.em.createQueryBuilder(Author2, 'a')
+      const qb = orm.em
+        .createQueryBuilder(Author2, 'a')
         .select('*')
         .leftJoinAndSelect('a.books', 'b')
         .leftJoinAndSelect('b.publisher', 'p');
@@ -326,25 +350,37 @@ describe('QueryBuilder Fields type tracking', () => {
     });
 
     test('execute() with 3-level nested joins and wildcard', async () => {
-      const qb = orm.em.createQueryBuilder(Author2, 'a')
+      const qb = orm.em
+        .createQueryBuilder(Author2, 'a')
         .select('*')
         .leftJoinAndSelect('a.books', 'b')
         .leftJoinAndSelect('b.publisher', 'p')
         .leftJoinAndSelect('p.books', 'pb');
 
       const result = await qb.execute();
-      expectTypeOf(result).toEqualTypeOf<SerializeDTO<Author2, 'books' | 'books.publisher' | 'books.publisher.books'>[]>();
+      expectTypeOf(result).toEqualTypeOf<
+        SerializeDTO<Author2, 'books' | 'books.publisher' | 'books.publisher.books'>[]
+      >();
     });
 
     test('execute() with 3-level nested joins and selected fields', async () => {
-      const qb = orm.em.createQueryBuilder(Author2, 'a')
+      const qb = orm.em
+        .createQueryBuilder(Author2, 'a')
         .select('a.id')
         .leftJoinAndSelect('a.books', 'b', {}, ['title'])
         .leftJoinAndSelect('b.publisher', 'p', {}, ['name'])
         .leftJoinAndSelect('p.books', 'pb', {}, ['title']);
 
       const result = await qb.execute();
-      expectTypeOf(result).toEqualTypeOf<EntityDTOFlat<Loaded<Author2, 'books' | 'books.publisher' | 'books.publisher.books', 'id' | 'books.title' | 'books.publisher.name' | 'books.publisher.books.title'>>[]>();
+      expectTypeOf(result).toEqualTypeOf<
+        EntityDTOFlat<
+          Loaded<
+            Author2,
+            'books' | 'books.publisher' | 'books.publisher.books',
+            'id' | 'books.title' | 'books.publisher.name' | 'books.publisher.books.title'
+          >
+        >[]
+      >();
     });
 
     test('execute() with explicit type param should override default', async () => {

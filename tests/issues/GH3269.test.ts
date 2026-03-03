@@ -3,7 +3,6 @@ import { Entity, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider } from
 
 @Entity()
 class Main {
-
   @Property({ primary: true })
   pk_one!: string;
 
@@ -12,12 +11,10 @@ class Main {
 
   @Property()
   type!: string;
-
 }
 
 @Entity()
 class Dependent {
-
   @ManyToOne(() => Main, { primary: true })
   main!: Main;
 
@@ -26,12 +23,10 @@ class Dependent {
 
   @Property()
   bar!: string;
-
 }
 
 @Entity()
 class LogEntry {
-
   @PrimaryKey()
   id!: number;
 
@@ -40,7 +35,6 @@ class LogEntry {
 
   @Property()
   foo!: string;
-
 }
 
 let orm: MikroORM;

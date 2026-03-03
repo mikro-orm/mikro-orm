@@ -5,57 +5,44 @@ import { MikroORM } from '@mikro-orm/mysql';
 
 @Entity({ tableName: 'user' })
 class User0 {
-
   @PrimaryKey({ type: t.string })
   id!: string;
-
 }
 
 @Entity({ tableName: 'user' })
 class User1 {
-
   @PrimaryKey({ type: t.integer, autoincrement: false })
   id!: number;
-
 }
 
 @Entity({ tableName: 'user' })
 class User2 {
-
   @PrimaryKey({ type: t.integer })
   id!: number;
 
   @PrimaryKey({ type: t.integer })
   id2!: number;
-
 }
 
 @Entity({ tableName: 'user' })
 class User3 {
-
   @PrimaryKey({ type: t.integer, autoincrement: false })
   id!: number;
-
 }
 
 @Entity({ tableName: 'user' })
 class User4 {
-
   @PrimaryKey({ type: t.integer })
   id!: number;
-
 }
 
 @Entity({ tableName: 'user' })
 class User5 {
-
   @PrimaryKey({ type: t.uuid })
   id!: string;
-
 }
 
 describe('changing PK column type [mysql] (GH 1480)', () => {
-
   let orm: MikroORM;
   beforeAll(async () => {
     orm = await MikroORM.init({
@@ -97,5 +84,4 @@ describe('changing PK column type [mysql] (GH 1480)', () => {
       await orm.schema.execute(sql);
     }
   });
-
 });

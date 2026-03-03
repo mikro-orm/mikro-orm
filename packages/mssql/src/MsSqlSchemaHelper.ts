@@ -20,10 +20,9 @@ import {
 import { UnicodeStringType } from './UnicodeStringType.js';
 
 export class MsSqlSchemaHelper extends SchemaHelper {
-
   static readonly DEFAULT_VALUES = {
-    'true': ['1'],
-    'false': ['0'],
+    true: ['1'],
+    false: ['0'],
     'getdate()': ['current_timestamp'],
   };
 
@@ -59,7 +58,9 @@ export class MsSqlSchemaHelper extends SchemaHelper {
   }
 
   override async loadViews(schema: DatabaseSchema, connection: AbstractSqlConnection): Promise<void> {
-    const views = await connection.execute<{ view_name: string; schema_name: string; view_definition: string }[]>(this.getListViewsSQL());
+    const views = await connection.execute<{ view_name: string; schema_name: string; view_definition: string }[]>(
+      this.getListViewsSQL(),
+    );
 
     for (const view of views) {
       // Extract SELECT statement from CREATE VIEW ... AS SELECT ...
@@ -79,7 +80,12 @@ export class MsSqlSchemaHelper extends SchemaHelper {
     return res.map(row => row.schema_name);
   }
 
-  override normalizeDefaultValue(defaultValue: string, length: number, defaultValues: Dictionary<string[]> = {}, stripQuotes = false) {
+  override normalizeDefaultValue(
+    defaultValue: string,
+    length: number,
+    defaultValues: Dictionary<string[]> = {},
+    stripQuotes = false,
+  ) {
     let match = defaultValue?.match(/^\((.*)\)$/);
 
     if (match) {
@@ -101,7 +107,10 @@ export class MsSqlSchemaHelper extends SchemaHelper {
     return super.normalizeDefaultValue(defaultValue, length, MsSqlSchemaHelper.DEFAULT_VALUES);
   }
 
-  async getAllColumns(connection: AbstractSqlConnection, tablesBySchemas: Map<string | undefined, Table[]>): Promise<Dictionary<Column[]>> {
+  async getAllColumns(
+    connection: AbstractSqlConnection,
+    tablesBySchemas: Map<string | undefined, Table[]>,
+  ): Promise<Dictionary<Column[]>> {
     const sql = `select table_name as table_name,
       table_schema as schema_name,
       column_name as column_name,
@@ -125,7 +134,7 @@ export class MsSqlSchemaHelper extends SchemaHelper {
       where (${[...tablesBySchemas.entries()].map(([schema, tables]) => `(ic.table_name in (${tables.map(t => this.platform.quoteValue(t.table_name)).join(',')}) and ic.table_schema = '${schema}')`).join(' OR ')})
       order by ordinal_position`;
     const allColumns = await connection.execute<any[]>(sql);
-    const str = (val?: string | number) => val != null ? '' + val : val;
+    const str = (val?: string | number) => (val != null ? '' + val : val);
     const ret = {} as Dictionary;
 
     for (const col of allColumns) {
@@ -134,7 +143,9 @@ export class MsSqlSchemaHelper extends SchemaHelper {
       const increments = col.is_identity === 1 && connection.getPlatform().isNumericColumn(mappedType);
       const key = this.getTableKey(col);
       /* v8 ignore next */
-      const generated = col.generation_expression ? `${col.generation_expression}${col.is_persisted ? ' persisted' : ''}` : undefined;
+      const generated = col.generation_expression
+        ? `${col.generation_expression}${col.is_persisted ? ' persisted' : ''}`
+        : undefined;
       let type = col.data_type;
 
       if (['varchar', 'nvarchar', 'char', 'nchar', 'varbinary'].includes(col.data_type)) {
@@ -160,7 +171,9 @@ export class MsSqlSchemaHelper extends SchemaHelper {
       ret[key] ??= [];
       ret[key].push({
         name: col.column_name,
-        type: this.platform.isNumericColumn(mappedType) ? col.data_type.replace(/ unsigned$/, '').replace(/\(\d+\)$/, '') : type,
+        type: this.platform.isNumericColumn(mappedType)
+          ? col.data_type.replace(/ unsigned$/, '').replace(/\(\d+\)$/, '')
+          : type,
         mappedType,
         unsigned: col.data_type.endsWith(' unsigned'),
         length: col.length,
@@ -178,7 +191,10 @@ export class MsSqlSchemaHelper extends SchemaHelper {
     return ret;
   }
 
-  async getAllIndexes(connection: AbstractSqlConnection, tablesBySchemas: Map<string | undefined, Table[]>): Promise<Dictionary<IndexDef[]>> {
+  async getAllIndexes(
+    connection: AbstractSqlConnection,
+    tablesBySchemas: Map<string | undefined, Table[]>,
+  ): Promise<Dictionary<IndexDef[]>> {
     const sql = `select t.name as table_name,
       ind.name as index_name,
       is_unique as is_unique,
@@ -265,7 +281,10 @@ export class MsSqlSchemaHelper extends SchemaHelper {
     return ret;
   }
 
-  async getAllForeignKeys(connection: AbstractSqlConnection, tablesBySchemas: Map<string | undefined, Table[]>): Promise<Dictionary<Dictionary<ForeignKey>>> {
+  async getAllForeignKeys(
+    connection: AbstractSqlConnection,
+    tablesBySchemas: Map<string | undefined, Table[]>,
+  ): Promise<Dictionary<Dictionary<ForeignKey>>> {
     const sql = `select ccu.constraint_name, ccu.table_name, ccu.table_schema schema_name, ccu.column_name,
       kcu.constraint_schema referenced_schema_name,
       kcu.column_name referenced_column_name,
@@ -295,25 +314,36 @@ export class MsSqlSchemaHelper extends SchemaHelper {
   }
 
   private getEnumDefinitions(checks: CheckDef[]): Dictionary<string[]> {
-    return checks.reduce((o, item, index) => {
-      // check constraints are defined as
-      // `([type]='owner' OR [type]='manager' OR [type]='employee')`
-      const m1 = item.definition?.match(/^check \((.*)\)/);
-      let items = m1?.[1].split(' OR ');
+    return checks.reduce(
+      (o, item, index) => {
+        // check constraints are defined as
+        // `([type]='owner' OR [type]='manager' OR [type]='employee')`
+        const m1 = item.definition?.match(/^check \((.*)\)/);
+        let items = m1?.[1].split(' OR ');
 
-      /* v8 ignore next */
-      const hasItems = (items?.length ?? 0) > 0;
+        /* v8 ignore next */
+        const hasItems = (items?.length ?? 0) > 0;
 
-      if (item.columnName && hasItems) {
-        items = items!.map(val => val.trim().replace(`[${item.columnName}]=`, '').match(/^\(?'(.*)'/)?.[1]).filter(Boolean) as string[];
+        if (item.columnName && hasItems) {
+          items = items!
+            .map(
+              val =>
+                val
+                  .trim()
+                  .replace(`[${item.columnName}]=`, '')
+                  .match(/^\(?'(.*)'/)?.[1],
+            )
+            .filter(Boolean) as string[];
 
-        if (items.length > 0) {
-          o[item.columnName] = items.reverse();
+          if (items.length > 0) {
+            o[item.columnName] = items.reverse();
+          }
         }
-      }
 
-      return o;
-    }, {} as Dictionary<string[]>);
+        return o;
+      },
+      {} as Dictionary<string[]>,
+    );
   }
 
   private getChecksSQL(tablesBySchemas: Map<string | undefined, Table[]>): string {
@@ -329,9 +359,15 @@ export class MsSqlSchemaHelper extends SchemaHelper {
       order by con.name`;
   }
 
-  async getAllChecks(connection: AbstractSqlConnection, tablesBySchemas: Map<string | undefined, Table[]>): Promise<Dictionary<CheckDef[]>> {
+  async getAllChecks(
+    connection: AbstractSqlConnection,
+    tablesBySchemas: Map<string | undefined, Table[]>,
+  ): Promise<Dictionary<CheckDef[]>> {
     const sql = this.getChecksSQL(tablesBySchemas);
-    const allChecks = await connection.execute<{ name: string; column_name: string; schema_name: string; table_name: string; expression: string }[]>(sql);
+    const allChecks =
+      await connection.execute<
+        { name: string; column_name: string; schema_name: string; table_name: string; expression: string }[]
+      >(sql);
     const ret = {} as Dictionary;
 
     for (const check of allChecks) {
@@ -349,7 +385,11 @@ export class MsSqlSchemaHelper extends SchemaHelper {
     return ret;
   }
 
-  override async loadInformationSchema(schema: DatabaseSchema, connection: AbstractSqlConnection, tables: Table[]): Promise<void> {
+  override async loadInformationSchema(
+    schema: DatabaseSchema,
+    connection: AbstractSqlConnection,
+    tables: Table[],
+  ): Promise<void> {
     if (tables.length === 0) {
       return;
     }
@@ -376,7 +416,8 @@ export class MsSqlSchemaHelper extends SchemaHelper {
     const tableName = parts.pop()!;
     const schemaName = parts.pop();
     /* v8 ignore next */
-    const name = (schemaName && schemaName !== this.platform.getDefaultSchemaName() ? schemaName + '.' : '') + tableName;
+    const name =
+      (schemaName && schemaName !== this.platform.getDefaultSchemaName() ? schemaName + '.' : '') + tableName;
     const quotedName = this.quote(name);
 
     // indexes need to be first dropped to be able to change a column type
@@ -392,7 +433,7 @@ export class MsSqlSchemaHelper extends SchemaHelper {
       // convert to string first if it's not already a string or has a smaller length
       const type = this.platform.extractSimpleType(col.fromColumn.type);
 
-      if (!['varchar', 'nvarchar', 'varbinary'].includes(type) || (col.fromColumn.length! < col.column.length!)) {
+      if (!['varchar', 'nvarchar', 'varbinary'].includes(type) || col.fromColumn.length! < col.column.length!) {
         ret.push(`alter table ${quotedName} alter column [${col.oldColumnName}] nvarchar(max)`);
       }
     }
@@ -407,7 +448,8 @@ export class MsSqlSchemaHelper extends SchemaHelper {
     const tableName = parts.pop()!;
     const schemaName = parts.pop();
     /* v8 ignore next */
-    const name = (schemaName && schemaName !== this.platform.getDefaultSchemaName() ? schemaName + '.' : '') + tableName;
+    const name =
+      (schemaName && schemaName !== this.platform.getDefaultSchemaName() ? schemaName + '.' : '') + tableName;
 
     // indexes need to be first dropped to be able to change a column type
     const changedTypes = Object.values(tableDiff.changedColumns).filter(col => col.changedProperties.has('type'));
@@ -445,7 +487,9 @@ export class MsSqlSchemaHelper extends SchemaHelper {
 
   override getDropColumnsSQL(tableName: string, columns: Column[], schemaName?: string): string {
     /* v8 ignore next */
-    const tableNameRaw = this.quote((schemaName && schemaName !== this.platform.getDefaultSchemaName() ? schemaName + '.' : '') + tableName);
+    const tableNameRaw = this.quote(
+      (schemaName && schemaName !== this.platform.getDefaultSchemaName() ? schemaName + '.' : '') + tableName,
+    );
     const drops: string[] = [];
     const constraints = this.getDropDefaultsSQL(tableName, columns, schemaName);
 
@@ -458,7 +502,9 @@ export class MsSqlSchemaHelper extends SchemaHelper {
 
   private getDropDefaultsSQL(tableName: string, columns: Column[], schemaName?: string): string[] {
     /* v8 ignore next */
-    const tableNameRaw = this.quote((schemaName && schemaName !== this.platform.getDefaultSchemaName() ? schemaName + '.' : '') + tableName);
+    const tableNameRaw = this.quote(
+      (schemaName && schemaName !== this.platform.getDefaultSchemaName() ? schemaName + '.' : '') + tableName,
+    );
     const constraints: string[] = [];
     schemaName ??= this.platform.getDefaultSchemaName();
 
@@ -471,12 +517,14 @@ export class MsSqlSchemaHelper extends SchemaHelper {
       const i = (globalThis as Dictionary).idx;
       (globalThis as Dictionary).idx++;
 
-      constraints.push(`declare @constraint${i} varchar(100) = (select default_constraints.name from sys.all_columns`
-        + ' join sys.tables on all_columns.object_id = tables.object_id'
-        + ' join sys.schemas on tables.schema_id = schemas.schema_id'
-        + ' join sys.default_constraints on all_columns.default_object_id = default_constraints.object_id'
-        + ` where schemas.name = '${schemaName}' and tables.name = '${tableName}' and all_columns.name = '${column.name}')`
-        + ` if @constraint${i} is not null exec('alter table ${tableNameRaw} drop constraint ' + @constraint${i})`);
+      constraints.push(
+        `declare @constraint${i} varchar(100) = (select default_constraints.name from sys.all_columns` +
+          ' join sys.tables on all_columns.object_id = tables.object_id' +
+          ' join sys.schemas on tables.schema_id = schemas.schema_id' +
+          ' join sys.default_constraints on all_columns.default_object_id = default_constraints.object_id' +
+          ` where schemas.name = '${schemaName}' and tables.name = '${tableName}' and all_columns.name = '${column.name}')` +
+          ` if @constraint${i} is not null exec('alter table ${tableNameRaw} drop constraint ' + @constraint${i})`,
+      );
     }
 
     return constraints;
@@ -484,19 +532,32 @@ export class MsSqlSchemaHelper extends SchemaHelper {
 
   override getRenameColumnSQL(tableName: string, oldColumnName: string, to: Column, schemaName?: string): string {
     /* v8 ignore next */
-    const oldName = (schemaName && schemaName !== this.platform.getDefaultSchemaName() ? schemaName + '.' : '') + tableName + '.' + oldColumnName;
+    const oldName =
+      (schemaName && schemaName !== this.platform.getDefaultSchemaName() ? schemaName + '.' : '') +
+      tableName +
+      '.' +
+      oldColumnName;
     const columnName = this.platform.quoteValue(to.name);
 
     return `exec sp_rename ${this.platform.quoteValue(oldName)}, ${columnName}, 'COLUMN'`;
   }
 
-  override createTableColumn(column: Column, table: DatabaseTable, changedProperties?: Set<string>): string | undefined {
+  override createTableColumn(
+    column: Column,
+    table: DatabaseTable,
+    changedProperties?: Set<string>,
+  ): string | undefined {
     const compositePK = table.getPrimaryKey()?.composite;
     const primaryKey = !changedProperties && !this.hasNonDefaultPrimaryKeyName(table);
     const columnType = column.generated ? `as ${column.generated}` : column.type;
     const col = [this.quote(column.name)];
 
-    if (column.autoincrement && !column.generated && !compositePK && (!changedProperties || changedProperties.has('autoincrement') || changedProperties.has('type'))) {
+    if (
+      column.autoincrement &&
+      !column.generated &&
+      !compositePK &&
+      (!changedProperties || changedProperties.has('autoincrement') || changedProperties.has('type'))
+    ) {
       col.push(column.mappedType.getColumnType({ autoincrement: true } as EntityProperty, this.platform));
     } else {
       col.push(columnType);
@@ -506,11 +567,18 @@ export class MsSqlSchemaHelper extends SchemaHelper {
     Utils.runIfNotEmpty(() => col.push('null'), column.nullable);
     Utils.runIfNotEmpty(() => col.push('not null'), !column.nullable && !column.generated);
 
-    if (column.autoincrement && !column.generated && !compositePK && (!changedProperties || changedProperties.has('autoincrement') || changedProperties.has('type'))) {
+    if (
+      column.autoincrement &&
+      !column.generated &&
+      !compositePK &&
+      (!changedProperties || changedProperties.has('autoincrement') || changedProperties.has('type'))
+    ) {
       Utils.runIfNotEmpty(() => col.push('primary key'), primaryKey && column.primary);
     }
 
-    const useDefault = changedProperties ? false : column.default != null && column.default !== 'null' && !column.autoincrement;
+    const useDefault = changedProperties
+      ? false
+      : column.default != null && column.default !== 'null' && !column.autoincrement;
     const defaultName = this.platform.getConfig().getNamingStrategy().indexName(table.name, [column.name], 'default');
     Utils.runIfNotEmpty(() => col.push(`constraint ${this.quote(defaultName)} default ${column.default}`), useDefault);
 
@@ -532,7 +600,9 @@ export class MsSqlSchemaHelper extends SchemaHelper {
 
     if (changedProperties.has('default') && column.default != null) {
       const defaultName = this.platform.getConfig().getNamingStrategy().indexName(table.name, [column.name], 'default');
-      parts.push(`alter table ${table.getQuotedName()} add constraint ${this.quote(defaultName)} default ${column.default} for ${this.quote(column.name)}`);
+      parts.push(
+        `alter table ${table.getQuotedName()} add constraint ${this.quote(defaultName)} default ${column.default} for ${this.quote(column.name)}`,
+      );
     }
 
     return parts;
@@ -581,16 +651,18 @@ export class MsSqlSchemaHelper extends SchemaHelper {
    */
   protected override getIndexColumns(index: IndexDef): string {
     if (index.columns?.length) {
-      return index.columns.map(col => {
-        let colDef = this.quote(col.name);
+      return index.columns
+        .map(col => {
+          let colDef = this.quote(col.name);
 
-        // MSSQL supports sort order
-        if (col.sort) {
-          colDef += ` ${col.sort}`;
-        }
+          // MSSQL supports sort order
+          if (col.sort) {
+            colDef += ` ${col.sort}`;
+          }
 
-        return colDef;
-      }).join(', ');
+          return colDef;
+        })
+        .join(', ');
     }
 
     return index.columnNames.map(c => this.quote(c)).join(', ');
@@ -622,8 +694,7 @@ export class MsSqlSchemaHelper extends SchemaHelper {
       return index.expression;
     }
 
-    const needsWhereClause = index.unique
-      && index.columnNames.some(column => table.getColumn(column)?.nullable);
+    const needsWhereClause = index.unique && index.columnNames.some(column => table.getColumn(column)?.nullable);
 
     if (!needsWhereClause) {
       return this.getCreateIndexSQL(table.getShortestName(), index);
@@ -658,9 +729,11 @@ export class MsSqlSchemaHelper extends SchemaHelper {
   }
 
   override getAddColumnsSQL(table: DatabaseTable, columns: Column[]): string[] {
-    const adds = columns.map(column => {
-      return `${this.createTableColumn(column, table)!}`;
-    }).join(', ');
+    const adds = columns
+      .map(column => {
+        return `${this.createTableColumn(column, table)!}`;
+      })
+      .join(', ');
 
     return [`alter table ${table.getQuotedName()} add ${adds}`];
   }
@@ -707,8 +780,11 @@ else
   }
 
   protected wrap(val: string | undefined, type: Type<unknown>): string | undefined {
-    const stringType = type instanceof StringType || type instanceof TextType || type instanceof EnumType || type instanceof UnicodeStringType;
+    const stringType =
+      type instanceof StringType ||
+      type instanceof TextType ||
+      type instanceof EnumType ||
+      type instanceof UnicodeStringType;
     return typeof val === 'string' && val.length > 0 && stringType ? this.platform.quoteValue(val) : val;
   }
-
 }

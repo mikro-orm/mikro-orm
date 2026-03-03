@@ -22,12 +22,15 @@ export function Transactional<T extends object>(options: TransactionalOptions<T>
     descriptor.value = async function (this: T, ...args: any) {
       const { context, contextName, ...txOptions } = options;
       txOptions.propagation ??= TransactionPropagation.REQUIRED;
-      const em = (await resolveContextProvider(this, context))
-        || TransactionContext.getEntityManager(contextName)
-        || RequestContext.getEntityManager(contextName);
+      const em =
+        (await resolveContextProvider(this, context)) ||
+        TransactionContext.getEntityManager(contextName) ||
+        RequestContext.getEntityManager(contextName);
 
       if (!em) {
-        throw new Error(`@Transactional() decorator can only be applied to methods of classes with \`orm: MikroORM\` property, \`em: EntityManager\` property, or with a callback parameter like \`@Transactional(() => orm)\` that returns one of those types. The parameter will contain a reference to current \`this\`. Returning an EntityRepository from it is also supported.`);
+        throw new Error(
+          `@Transactional() decorator can only be applied to methods of classes with \`orm: MikroORM\` property, \`em: EntityManager\` property, or with a callback parameter like \`@Transactional(() => orm)\` that returns one of those types. The parameter will contain a reference to current \`this\`. Returning an EntityRepository from it is also supported.`,
+        );
       }
 
       return em.transactional(() => originalMethod.apply(this, args), txOptions);

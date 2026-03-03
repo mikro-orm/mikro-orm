@@ -8,7 +8,6 @@ import { Utils } from './Utils.js';
 type BatchLoadFn<K, V> = (keys: readonly K[]) => PromiseLike<ArrayLike<V | Error>>;
 
 export class DataloaderUtils {
-
   private static DataLoader?: Constructor<{ load: (...args: unknown[]) => Promise<unknown> }>;
 
   /**
@@ -48,17 +47,19 @@ export class DataloaderUtils {
    * Returns the reference dataloader batchLoadFn, which aggregates references by entity,
    * makes one query per entity and maps each input reference to the corresponding result.
    */
-  static getRefBatchLoadFn(em: EntityManager): BatchLoadFn<[Ref<any>, Omit<LoadReferenceOptions<any, any>, 'dataloader'>?], any> {
-    return async (refsWithOpts: readonly [Ref<any>, Omit<LoadReferenceOptions<any, any>, 'dataloader'>?][]): Promise<ArrayLike<any | Error>> => {
+  static getRefBatchLoadFn(
+    em: EntityManager,
+  ): BatchLoadFn<[Ref<any>, Omit<LoadReferenceOptions<any, any>, 'dataloader'>?], any> {
+    return async (
+      refsWithOpts: readonly [Ref<any>, Omit<LoadReferenceOptions<any, any>, 'dataloader'>?][],
+    ): Promise<ArrayLike<any | Error>> => {
       const groupedIdsMap = DataloaderUtils.groupPrimaryKeysByEntityAndOpts(refsWithOpts);
-      const promises = Array.from(groupedIdsMap).map(
-        ([key, idsSet]) => {
-          const uniqueName = key.substring(0, key.indexOf('|'));
-          const opts = JSON.parse(key.substring(key.indexOf('|') + 1));
-          const meta = em.getMetadata().getByUniqueName(uniqueName);
-          return em.find(meta.class, Array.from(idsSet), opts);
-        },
-      );
+      const promises = Array.from(groupedIdsMap).map(([key, idsSet]) => {
+        const uniqueName = key.substring(0, key.indexOf('|'));
+        const opts = JSON.parse(key.substring(key.indexOf('|') + 1));
+        const meta = em.getMetadata().getByUniqueName(uniqueName);
+        return em.find(meta.class, Array.from(idsSet), opts);
+      });
       await Promise.all(promises);
       /* Instead of assigning each find result to the original reference we use a shortcut
         which takes advantage of the already existing Mikro-ORM caching mechanism:
@@ -122,33 +123,35 @@ export class DataloaderUtils {
       const meta = em.getMetadata().getByUniqueName(uniqueName);
       const res = await em.find(
         meta.class,
-        opts?.where != null && Object.keys(opts.where).length > 0 ?
-          {
-            $and: [
-              {
-                $or: Array.from(filterMap.entries()).map(([prop, pks]) => {
-                  return ({ [prop]: Array.from(pks) });
-                }),
-              },
-              opts.where,
-            ],
-          } : {
-            // The entries of the filter Map will be used as the values of the $or operator
-            $or: Array.from(filterMap.entries()).map(([prop, pks]) => {
-              return ({ [prop]: Array.from(pks) });
-            }),
-          },
+        opts?.where != null && Object.keys(opts.where).length > 0
+          ? {
+              $and: [
+                {
+                  $or: Array.from(filterMap.entries()).map(([prop, pks]) => {
+                    return { [prop]: Array.from(pks) };
+                  }),
+                },
+                opts.where,
+              ],
+            }
+          : {
+              // The entries of the filter Map will be used as the values of the $or operator
+              $or: Array.from(filterMap.entries()).map(([prop, pks]) => {
+                return { [prop]: Array.from(pks) };
+              }),
+            },
         {
           ...opts,
           // We need to populate the inverse side of the relationship in order to be able to later retrieve the PK(s) from its item(s)
           populate: [
-            ...(opts.populate === false ? [] : opts.populate ?? []),
+            ...(opts.populate === false ? [] : (opts.populate ?? [])),
             ...Array.from(filterMap.keys()).filter(
               // We need to do so only if the inverse side is a collection, because we can already retrieve the PK from a reference without having to load it
               prop => meta.properties[prop]?.ref !== true,
             ),
           ],
-        } as any);
+        } as any,
+      );
       return [key, res];
     });
   }
@@ -184,8 +187,12 @@ export class DataloaderUtils {
    * Returns the 1:M collection dataloader batchLoadFn, which aggregates collections by entity,
    * makes one query per entity and maps each input collection to the corresponding result.
    */
-  static getColBatchLoadFn(em: EntityManager): BatchLoadFn<[Collection<any>, Omit<InitCollectionOptions<any, any>, 'dataloader'>?], any> {
-    return async (collsWithOpts: readonly [Collection<any>, Omit<InitCollectionOptions<any, any>, 'dataloader'>?][]) => {
+  static getColBatchLoadFn(
+    em: EntityManager,
+  ): BatchLoadFn<[Collection<any>, Omit<InitCollectionOptions<any, any>, 'dataloader'>?], any> {
+    return async (
+      collsWithOpts: readonly [Collection<any>, Omit<InitCollectionOptions<any, any>, 'dataloader'>?][],
+    ) => {
       const entitiesAndOptsMap = DataloaderUtils.groupInversedOrMappedKeysByEntityAndOpts(collsWithOpts);
       const promises = DataloaderUtils.entitiesAndOptsMapToQueries(entitiesAndOptsMap, em);
       const resultsMap = new Map(await Promise.all(promises));
@@ -208,8 +215,12 @@ export class DataloaderUtils {
    * Returns the M:N collection dataloader batchLoadFn, which aggregates collections by entity,
    * makes one query per entity and maps each input collection to the corresponding result.
    */
-  static getManyToManyColBatchLoadFn(em: EntityManager): BatchLoadFn<[Collection<any>, Omit<InitCollectionOptions<any, any>, 'dataloader'>?], any> {
-    return async (collsWithOpts: readonly [Collection<any>, Omit<InitCollectionOptions<any, any>, 'dataloader'>?][]) => {
+  static getManyToManyColBatchLoadFn(
+    em: EntityManager,
+  ): BatchLoadFn<[Collection<any>, Omit<InitCollectionOptions<any, any>, 'dataloader'>?], any> {
+    return async (
+      collsWithOpts: readonly [Collection<any>, Omit<InitCollectionOptions<any, any>, 'dataloader'>?][],
+    ) => {
       const groups = new Map<string, [Collection<any>, Omit<InitCollectionOptions<any, any>, 'dataloader'>?][]>();
 
       for (const [col, opts] of collsWithOpts) {
@@ -241,7 +252,9 @@ export class DataloaderUtils {
 
         options.where = wrap({ $or });
 
-        const r = await em.getEntityLoader().findChildrenFromPivotTable(owners, prop, options as any, orderBy as any, populate as any, group[0][1]?.ref);
+        const r = await em
+          .getEntityLoader()
+          .findChildrenFromPivotTable(owners, prop, options as any, orderBy as any, populate as any, group[0][1]?.ref);
         ret.push(...r);
       }
 
@@ -261,8 +274,9 @@ export class DataloaderUtils {
       return (this.DataLoader ??= DataLoader);
     } catch {
       /* v8 ignore next */
-      throw new Error('DataLoader is not found, make sure `dataloader` package is installed in your project\'s dependencies.');
+      throw new Error(
+        "DataLoader is not found, make sure `dataloader` package is installed in your project's dependencies.",
+      );
     }
   }
-
 }

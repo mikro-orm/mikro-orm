@@ -4,10 +4,15 @@ import { Author2 } from './Author2.js';
 
 @Entity({ comment: 'This is address table' })
 export class Address2 {
-
   [PrimaryKeyProp]?: 'author';
 
-  @OneToOne({ entity: () => Author2, primary: true, joinColumn: 'author_id', unique: 'address2_author_id_unique', eager: true })
+  @OneToOne({
+    entity: () => Author2,
+    primary: true,
+    joinColumn: 'author_id',
+    unique: 'address2_author_id_unique',
+    eager: true,
+  })
   author: Author2;
 
   @Property({ comment: 'This is address property' })
@@ -17,5 +22,4 @@ export class Address2 {
     this.author = author;
     this.value = value;
   }
-
 }

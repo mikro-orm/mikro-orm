@@ -4,7 +4,6 @@ import { mockLogger } from '../../helpers.js';
 
 @Entity()
 export class A {
-
   @PrimaryKey()
   id!: number;
 
@@ -13,7 +12,6 @@ export class A {
 
   @Property()
   name!: string;
-
 }
 
 describe('GH issue 4412', () => {

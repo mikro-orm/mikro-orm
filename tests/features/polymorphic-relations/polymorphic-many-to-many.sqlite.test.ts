@@ -1,15 +1,8 @@
 import { Collection, MikroORM } from '@mikro-orm/sqlite';
-import {
-  Entity,
-  ManyToMany,
-  PrimaryKey,
-  Property,
-  ReflectMetadataProvider,
-} from '@mikro-orm/decorators/legacy';
+import { Entity, ManyToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class Tag {
-
   @PrimaryKey()
   id!: number;
 
@@ -26,12 +19,10 @@ class Tag {
   constructor(name: string) {
     this.name = name;
   }
-
 }
 
 @Entity()
 class Post {
-
   @PrimaryKey()
   id!: number;
 
@@ -41,7 +32,7 @@ class Post {
   // Owner side - polymorphic M:N to Tag via shared pivot table
   @ManyToMany(() => Tag, tag => tag.posts, {
     pivotTable: 'taggables',
-    discriminator: 'taggable',  // Column in pivot table storing 'post' or 'video'
+    discriminator: 'taggable', // Column in pivot table storing 'post' or 'video'
     owner: true,
   })
   tags = new Collection<Tag>(this);
@@ -49,12 +40,10 @@ class Post {
   constructor(title: string) {
     this.title = title;
   }
-
 }
 
 @Entity()
 class Video {
-
   @PrimaryKey()
   id!: number;
 
@@ -64,7 +53,7 @@ class Video {
   // Owner side - polymorphic M:N to Tag via same shared pivot table
   @ManyToMany(() => Tag, tag => tag.videos, {
     pivotTable: 'taggables',
-    discriminator: 'taggable',  // Same discriminator column
+    discriminator: 'taggable', // Same discriminator column
     owner: true,
   })
   tags = new Collection<Tag>(this);
@@ -72,11 +61,9 @@ class Video {
   constructor(url: string) {
     this.url = url;
   }
-
 }
 
 describe('polymorphic many-to-many relations', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -150,7 +137,12 @@ describe('polymorphic many-to-many relations', () => {
 
     const loadedPost = await orm.em.findOneOrFail(Post, { id: post.id }, { populate: ['tags'] });
     expect(loadedPost.tags).toHaveLength(2);
-    expect(loadedPost.tags.getItems().map(t => t.name).sort()).toEqual(['Testing', 'TypeScript']);
+    expect(
+      loadedPost.tags
+        .getItems()
+        .map(t => t.name)
+        .sort(),
+    ).toEqual(['Testing', 'TypeScript']);
 
     orm.em.clear();
 
@@ -176,7 +168,12 @@ describe('polymorphic many-to-many relations', () => {
 
     expect(loadedTag.posts).toHaveLength(2);
     expect(loadedTag.videos).toHaveLength(1);
-    expect(loadedTag.posts.getItems().map(p => p.title).sort()).toEqual(['Post 1', 'Post 2']);
+    expect(
+      loadedTag.posts
+        .getItems()
+        .map(p => p.title)
+        .sort(),
+    ).toEqual(['Post 1', 'Post 2']);
     expect(loadedTag.videos.getItems()[0].url).toBe('https://example.com/video.mp4');
   });
 
@@ -212,7 +209,10 @@ describe('polymorphic many-to-many relations', () => {
     const loadedPost = await orm.em.findOneOrFail(Post, { id: post.id }, { populate: ['tags'] });
     expect(loadedPost.tags).toHaveLength(0);
 
-    const pivotData = await orm.em.execute('SELECT * FROM taggables WHERE taggable_type = ? AND taggable_id = ?', ['post', post.id]);
+    const pivotData = await orm.em.execute('SELECT * FROM taggables WHERE taggable_type = ? AND taggable_id = ?', [
+      'post',
+      post.id,
+    ]);
     expect(pivotData).toHaveLength(0);
   });
 
@@ -347,10 +347,14 @@ describe('polymorphic many-to-many relations', () => {
     await orm.em.persist([post1, post2]).flush();
     orm.em.clear();
 
-    const posts = await orm.em.find(Post, {}, {
-      populate: ['tags'],
-      populateFilter: { tags: { name: 'Common' } },
-    });
+    const posts = await orm.em.find(
+      Post,
+      {},
+      {
+        populate: ['tags'],
+        populateFilter: { tags: { name: 'Common' } },
+      },
+    );
 
     expect(posts).toHaveLength(2);
     for (const p of posts) {
@@ -379,13 +383,11 @@ describe('polymorphic many-to-many relations', () => {
     expect(loadedTag.posts).toHaveLength(1);
     expect(loadedTag.posts[0].title).toBe('Post Alpha');
   });
-
 });
 
 // Test for custom discriminator map in polymorphic M:N
 @Entity()
 class Category {
-
   @PrimaryKey()
   id!: number;
 
@@ -401,12 +403,10 @@ class Category {
   constructor(name: string) {
     this.name = name;
   }
-
 }
 
 @Entity()
 class Article {
-
   @PrimaryKey()
   id!: number;
 
@@ -427,12 +427,10 @@ class Article {
   constructor(title: string) {
     this.title = title;
   }
-
 }
 
 @Entity()
 class Product {
-
   @PrimaryKey()
   id!: number;
 
@@ -453,11 +451,9 @@ class Product {
   constructor(sku: string) {
     this.sku = sku;
   }
-
 }
 
 describe('polymorphic M:N with custom discriminator map', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -508,7 +504,9 @@ describe('polymorphic M:N with custom discriminator map', () => {
 
     await orm.em.persist([article, product]).flush();
 
-    const pivotData = await orm.em.execute('SELECT * FROM categorizables ORDER BY categorizable_type, categorizable_id');
+    const pivotData = await orm.em.execute(
+      'SELECT * FROM categorizables ORDER BY categorizable_type, categorizable_id',
+    );
 
     expect(pivotData).toHaveLength(2);
     expect(pivotData[0].categorizable_type).toBe('art');
@@ -583,7 +581,6 @@ describe('polymorphic M:N with custom discriminator map', () => {
   test('throws error for invalid class name in discriminatorMap', async () => {
     @Entity()
     class MyTag {
-
       @PrimaryKey()
       id!: number;
 
@@ -592,12 +589,10 @@ describe('polymorphic M:N with custom discriminator map', () => {
 
       @ManyToMany(() => MyPost, post => post.tags)
       posts = new Collection<MyPost>(this);
-
     }
 
     @Entity()
     class MyPost {
-
       @PrimaryKey()
       id!: number;
 
@@ -611,14 +606,14 @@ describe('polymorphic M:N with custom discriminator map', () => {
         owner: true,
       })
       tags = new Collection<MyTag>(this);
-
     }
 
-    await expect(MikroORM.init({
-      entities: [MyTag, MyPost],
-      dbName: ':memory:',
-      metadataProvider: ReflectMetadataProvider,
-    })).rejects.toThrow(/NonExistentEntity.*was not discovered.*MyPost\.tags discriminatorMap/);
+    await expect(
+      MikroORM.init({
+        entities: [MyTag, MyPost],
+        dbName: ':memory:',
+        metadataProvider: ReflectMetadataProvider,
+      }),
+    ).rejects.toThrow(/NonExistentEntity.*was not discovered.*MyPost\.tags discriminatorMap/);
   });
-
 });

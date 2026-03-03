@@ -2,7 +2,6 @@ import type { EntityMetadata, GenerateOptions, NamingStrategy, Platform } from '
 import { identifierRegex, SourceFile } from './SourceFile.js';
 
 export class NativeEnumSourceFile extends SourceFile {
-
   constructor(
     meta: EntityMetadata,
     namingStrategy: NamingStrategy,
@@ -33,7 +32,12 @@ export class NativeEnumSourceFile extends SourceFile {
     }
 
     for (const enumValue of enumValues) {
-      const enumName = this.namingStrategy.enumValueToEnumProperty(enumValue, this.nativeEnum.name, '', this.nativeEnum.schema);
+      const enumName = this.namingStrategy.enumValueToEnumProperty(
+        enumValue,
+        this.nativeEnum.name,
+        '',
+        this.nativeEnum.schema,
+      );
 
       if (enumMode === 'dictionary') {
         ret += `${padding}${identifierRegex.test(enumName) ? enumName : this.quote(enumName)}: ${this.quote(enumValue)},\n`;
@@ -58,5 +62,4 @@ export class NativeEnumSourceFile extends SourceFile {
   override getBaseName(extension = '.ts') {
     return `${this.options.fileName!(this.nativeEnum.name)}${extension}`;
   }
-
 }

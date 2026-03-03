@@ -11,7 +11,6 @@ type FullTextWeight = 'A' | 'B' | 'C' | 'D';
 export type WeightedFullTextValue = { [K in FullTextWeight]?: string | null };
 
 export class FullTextType extends Type<string | WeightedFullTextValue, string | null | RawQueryFragment> {
-
   constructor(public regconfig = 'simple') {
     super();
   }
@@ -27,7 +26,11 @@ export class FullTextType extends Type<string | WeightedFullTextValue, string | 
   // Use convertToDatabaseValue to prepare insert queries as this method has
   // access to the raw JS value. Return Knex#raw to prevent QueryBuilderHelper#mapData
   // from sanitizing the returned chaing of SQL functions.
-  override convertToDatabaseValue(value: string | WeightedFullTextValue, platform: BasePostgreSqlPlatform, context?: TransformContext | boolean): string | null | RawQueryFragment {
+  override convertToDatabaseValue(
+    value: string | WeightedFullTextValue,
+    platform: BasePostgreSqlPlatform,
+    context?: TransformContext | boolean,
+  ): string | null | RawQueryFragment {
     // Don't convert to values from select queries to the to_tsvector notation
     // these should be compared as string using a special oparator or function
     // this behaviour is defined in Platform#getFullTextWhereClause.
@@ -76,5 +79,4 @@ export class FullTextType extends Type<string | WeightedFullTextValue, string | 
     // if it's not an object, it is expected to be string which does not have to be wrapped in setweight.
     return raw('to_tsvector(?, ?)', [this.regconfig, value]);
   }
-
 }

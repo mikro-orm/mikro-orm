@@ -23,7 +23,11 @@ const Student = defineEntity({
   properties: {
     id: p.integer().primary(),
     name: p.string(),
-    courses: () => p.manyToMany(Course).inversedBy('students').pivotEntity(() => Enrollment),
+    courses: () =>
+      p
+        .manyToMany(Course)
+        .inversedBy('students')
+        .pivotEntity(() => Enrollment),
   },
 });
 
@@ -32,7 +36,11 @@ const Course = defineEntity({
   properties: {
     id: p.integer().primary(),
     title: p.string(),
-    students: () => p.manyToMany(Student).mappedBy('courses').pivotEntity(() => Enrollment),
+    students: () =>
+      p
+        .manyToMany(Student)
+        .mappedBy('courses')
+        .pivotEntity(() => Enrollment),
   },
 });
 
@@ -43,9 +51,11 @@ const Enrollment = defineEntity({
     course: p.manyToOne(Course).primary(),
     enrolledAt: p.datetime().nullable(),
   },
-  uniques: [{
-    properties: ['student', 'course'],
-  }],
+  uniques: [
+    {
+      properties: ['student', 'course'],
+    },
+  ],
 });
 
 describe('pivot table with uninitialized collection (GH issue)', () => {
@@ -374,5 +384,4 @@ describe('pivot table with uninitialized collection (GH issue)', () => {
     const enrollments = await orm.em.execute('select * from enrollment');
     expect(enrollments).toHaveLength(3);
   });
-
 });

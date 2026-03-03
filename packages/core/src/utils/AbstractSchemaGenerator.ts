@@ -15,7 +15,6 @@ import type { Configuration } from './Configuration.js';
 import { EntityManager } from '../EntityManager.js';
 
 export abstract class AbstractSchemaGenerator<D extends IDatabaseDriver> implements ISchemaGenerator {
-
   protected readonly em?: D[typeof EntityManagerType];
   protected readonly driver: D;
   protected readonly config: Configuration;
@@ -25,7 +24,7 @@ export abstract class AbstractSchemaGenerator<D extends IDatabaseDriver> impleme
 
   constructor(em: D | D[typeof EntityManagerType]) {
     this.em = em instanceof EntityManager ? em : undefined;
-    this.driver = em instanceof EntityManager ? em.getDriver() as D : em;
+    this.driver = em instanceof EntityManager ? (em.getDriver() as D) : em;
     this.config = this.driver.config;
     this.metadata = this.driver.getMetadata();
     this.platform = this.driver.getPlatform() as ReturnType<D['getPlatform']>;
@@ -153,7 +152,8 @@ export abstract class AbstractSchemaGenerator<D extends IDatabaseDriver> impleme
       meta = metadata.pop();
     }
 
-    return calc.sort()
+    return calc
+      .sort()
       .map(cls => this.metadata.getById(cls))
       .filter(meta => {
         const targetSchema = meta.schema ?? this.config.get('schema', this.platform.getDefaultSchemaName());
@@ -164,5 +164,4 @@ export abstract class AbstractSchemaGenerator<D extends IDatabaseDriver> impleme
   protected notImplemented(): never {
     throw new Error(`This method is not supported by ${this.driver.constructor.name} driver`);
   }
-
 }

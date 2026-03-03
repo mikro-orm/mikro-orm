@@ -1,73 +1,68 @@
 import { MikroORM } from '@mikro-orm/sqlite';
-import { Embeddable, Embedded, Entity, Enum, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Embeddable,
+  Embedded,
+  Entity,
+  Enum,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 enum IpVersion {
   V4 = 'v4',
-  V6 = 'v6'
+  V6 = 'v6',
 }
 
 @Embeddable({ abstract: true, discriminatorColumn: 'type' })
 abstract class IpBase<T extends IpVersion> {
-
   @Enum(() => IpVersion)
   type!: T;
 
   @Property()
   ip!: string;
-
 }
 
 @Embeddable({ discriminatorValue: IpVersion.V4 })
 class IpV4 extends IpBase<IpVersion.V4> {
-
   @Property()
   range!: number;
-
 }
 
 @Embeddable({ discriminatorValue: IpVersion.V6 })
 class IpV6 extends IpBase<IpVersion.V6> {
-
   @Property()
   convert!: boolean;
-
 }
 
 enum NetworkType {
   AUTO = 'auto',
-  MANUAL = 'manual'
+  MANUAL = 'manual',
 }
 
 @Embeddable({ abstract: true, discriminatorColumn: 'type' })
 abstract class NetworkBase<T extends NetworkType> {
-
   @Enum(() => NetworkType)
   type!: T;
-
 }
 
 @Embeddable({ discriminatorValue: NetworkType.AUTO })
 class NetworkAuto extends NetworkBase<NetworkType.AUTO> {
-
   @Property()
   refresh!: number;
-
 }
 
 @Embeddable({ discriminatorValue: NetworkType.MANUAL })
 class NetworkManual extends NetworkBase<NetworkType.MANUAL> {
-
   @Property()
   dns!: string;
 
   @Embedded(() => [IpV4, IpV6])
   ip!: IpV4 | IpV6;
-
 }
 
 @Entity()
 class Host {
-
   @PrimaryKey()
   _id!: number;
 
@@ -76,7 +71,6 @@ class Host {
 
   @Embedded(() => [NetworkAuto, NetworkManual])
   network!: NetworkAuto | NetworkManual;
-
 }
 
 let orm: MikroORM;

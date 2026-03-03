@@ -3,18 +3,15 @@ import { Entity, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider } from
 
 @Entity()
 class Owner {
-
   @PrimaryKey()
   id!: number;
 
   @Property()
   name!: string;
-
 }
 
 @Entity()
 class Folder {
-
   @PrimaryKey()
   id!: number;
 
@@ -26,12 +23,10 @@ class Folder {
 
   @ManyToOne(() => Owner, { ref: true })
   owner!: Ref<Owner>;
-
 }
 
 @Entity()
 class Questions {
-
   @PrimaryKey()
   id!: number;
 
@@ -49,7 +44,6 @@ class Questions {
 
   @ManyToOne(() => Folder, { nullable: true, ref: true })
   folder?: Ref<Folder>;
-
 }
 
 let orm: MikroORM;
@@ -75,11 +69,15 @@ test('column name should be prefixed with alias (GH7196)', async () => {
   em.create(Questions, { text: 'Question 2', answer: 'Answer 2', owner, folder });
   await em.flush();
 
-  const result = await em.fork().find(Questions, {
-    ownerId: owner.id,
-  }, {
-    populate: ['owner', 'folder'],
-  });
+  const result = await em.fork().find(
+    Questions,
+    {
+      ownerId: owner.id,
+    },
+    {
+      populate: ['owner', 'folder'],
+    },
+  );
 
   expect(result).toHaveLength(2);
 });

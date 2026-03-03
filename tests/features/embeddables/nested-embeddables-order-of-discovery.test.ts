@@ -1,5 +1,13 @@
 import { ArrayType, MikroORM } from '@mikro-orm/core';
-import { Embeddable, Embedded, Entity, Enum, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Embeddable,
+  Embedded,
+  Entity,
+  Enum,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 
 export enum RestrictionMode {
@@ -9,18 +17,15 @@ export enum RestrictionMode {
 
 @Embeddable()
 export class RestrictionItem {
-
   @Enum(() => RestrictionMode)
   mode!: RestrictionMode;
 
   @Property({ type: ArrayType })
   value: string[] = [];
-
 }
 
 @Embeddable()
 export class Restriction {
-
   @Property()
   permissions!: bigint;
 
@@ -29,12 +34,10 @@ export class Restriction {
 
   @Embedded(() => RestrictionItem)
   channel!: RestrictionItem;
-
 }
 
 @Entity({ abstract: true })
 export class PluginSettings {
-
   @PrimaryKey()
   id!: bigint;
 
@@ -43,14 +46,12 @@ export class PluginSettings {
 
   @Property({ nullable: true })
   enabled?: boolean;
-
 }
 
 @Entity()
 export class PluginTestSettings extends PluginSettings {}
 
 describe('GH issue 2242', () => {
-
   test(`order: [PluginTestSettings, PluginSettings, Restriction, RestrictionItem]`, async () => {
     const orm = await MikroORM.init({
       metadataProvider: ReflectMetadataProvider,
@@ -250,5 +251,4 @@ describe('GH issue 2242', () => {
     expect(item.enabled).toBe(true);
     await orm.close();
   });
-
 });

@@ -5,15 +5,12 @@ import { mockLogger } from '../../helpers.js';
 
 @Entity()
 class Author {
-
   @PrimaryKey()
   id!: bigint;
-
 }
 
 @Entity()
 class Post {
-
   @PrimaryKey()
   id!: number;
 
@@ -23,7 +20,6 @@ class Post {
   constructor(author: Author) {
     this.author = author;
   }
-
 }
 
 let orm: MikroORM;

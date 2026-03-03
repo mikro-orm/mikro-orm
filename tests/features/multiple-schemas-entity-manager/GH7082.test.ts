@@ -3,7 +3,6 @@ import { Entity, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from 
 
 @Entity({ schema: '*' })
 class Person {
-
   @PrimaryKey()
   id!: number;
 
@@ -12,12 +11,10 @@ class Person {
 
   @OneToOne({ entity: () => User, nullable: true })
   representsUser?: any;
-
 }
 
 @Entity({ schema: 'shared' })
 class User {
-
   @PrimaryKey()
   id!: number;
 
@@ -29,7 +26,6 @@ class User {
 
   @OneToOne(() => Person, 'representsUser', { lazy: true })
   person?: Person;
-
 }
 
 let orm: MikroORM;

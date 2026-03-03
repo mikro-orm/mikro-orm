@@ -2,27 +2,22 @@ import { Ref, MikroORM, Collection } from '@mikro-orm/sqlite';
 import { Entity, ManyToOne, OneToMany, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 @Entity()
-class City  {
-
+class City {
   @PrimaryKey()
   id!: number;
 
   @OneToMany(() => School, s => s.city)
   schools = new Collection<School>(this);
-
 }
 
 @Entity()
 class School {
-
   @PrimaryKey()
   id!: number;
 
   @ManyToOne(() => City, { ref: true })
   city!: Ref<City>;
-
 }
-
 
 let orm: MikroORM;
 

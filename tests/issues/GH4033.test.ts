@@ -4,17 +4,14 @@ import { MikroORM } from '@mikro-orm/sqlite';
 import { mockLogger } from '../helpers.js';
 
 class Id {
-
   readonly value: string;
 
   constructor(value: string) {
     this.value = value;
   }
-
 }
 
 class IdType extends Type<Id, string> {
-
   override convertToDatabaseValue(value: any) {
     if (value instanceof Id) {
       return value.value;
@@ -42,11 +39,9 @@ class IdType extends Type<Id, string> {
   override getColumnType() {
     return 'text';
   }
-
 }
 @Entity()
 class ParentEntity {
-
   @PrimaryKey({ type: IdType, autoincrement: false })
   id!: Id;
 
@@ -56,18 +51,15 @@ class ParentEntity {
     orphanRemoval: true,
   })
   children = new Collection<ChildEntity>(this);
-
 }
 
 @Entity()
 class ChildEntity {
-
   @PrimaryKey({ type: IdType, autoincrement: false })
   id!: Id;
 
   @ManyToOne(() => ParentEntity)
   parent!: ParentEntity;
-
 }
 
 let orm: MikroORM;
@@ -97,7 +89,8 @@ afterAll(async () => {
 });
 
 test('should remove child entities', async () => {
-  const parent = await orm.em.createQueryBuilder(ParentEntity, 'p')
+  const parent = await orm.em
+    .createQueryBuilder(ParentEntity, 'p')
     .leftJoinAndSelect('p.children', 'c')
     .where({ id: new Id('1') })
     .getSingleResult();

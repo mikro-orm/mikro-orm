@@ -4,24 +4,20 @@ import { MikroORM } from '@mikro-orm/sqlite';
 
 @Entity()
 class User {
-
   @PrimaryKey()
   id!: number;
 
   @ManyToMany(() => Car)
   cars = new Collection<Car>(this);
-
 }
 
 @Entity()
 class Car {
-
   @PrimaryKey()
   id!: number;
 
   @ManyToMany(() => User, u => u.cars)
   users = new Collection<User>(this);
-
 }
 
 let orm: MikroORM;
@@ -55,12 +51,6 @@ test('loading M:N via em.populate from inverse side with joined strategy', async
   const cars = await orm.em.find(Car, {});
   await orm.em.populate(cars, ['users']);
 
-  expect(cars[0].users.toArray()).toEqual([
-    { id: 1 },
-    { id: 2 },
-  ]);
-  expect(cars[1].users.toArray()).toEqual([
-    { id: 1 },
-    { id: 2 },
-  ]);
+  expect(cars[0].users.toArray()).toEqual([{ id: 1 }, { id: 2 }]);
+  expect(cars[1].users.toArray()).toEqual([{ id: 1 }, { id: 2 }]);
 });

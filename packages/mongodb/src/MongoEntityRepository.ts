@@ -3,9 +3,10 @@ import type { Collection } from 'mongodb';
 import type { MongoEntityManager } from './MongoEntityManager.js';
 
 export class MongoEntityRepository<T extends object> extends EntityRepository<T> {
-
-  constructor(protected override readonly em: MongoEntityManager,
-              entityName: EntityName<T>) {
+  constructor(
+    protected override readonly em: MongoEntityManager,
+    entityName: EntityName<T>,
+  ) {
     super(em, entityName);
   }
 
@@ -26,5 +27,4 @@ export class MongoEntityRepository<T extends object> extends EntityRepository<T>
   override getEntityManager(): MongoEntityManager {
     return this.em;
   }
-
 }

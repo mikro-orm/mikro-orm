@@ -3,7 +3,6 @@ import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-or
 
 @Entity()
 class User {
-
   @PrimaryKey()
   id!: number;
 
@@ -18,12 +17,10 @@ class User {
 
   @Property({ columnType: `text generated always as (first_name || ' ' || last_name) virtual` })
   fullName2!: string & Opt;
-
 }
 
 @Entity({ tableName: 'user' })
 class User1 {
-
   @PrimaryKey()
   id!: number;
 
@@ -38,12 +35,10 @@ class User1 {
 
   @Property({ columnType: `text generated always as (first_name || ' ' || last_name) virtual` })
   fullName2!: string & Opt;
-
 }
 
 @Entity()
 class Foo {
-
   @PrimaryKey()
   id!: number;
 
@@ -67,12 +62,10 @@ class Foo {
     type: 'text',
   })
   generated2?: string;
-
 }
 
 @Entity({ tableName: 'foo' })
 class Foo1 {
-
   @PrimaryKey()
   id!: number;
 
@@ -96,7 +89,6 @@ class Foo1 {
     type: 'text',
   })
   generated2?: string;
-
 }
 
 let orm: MikroORM;

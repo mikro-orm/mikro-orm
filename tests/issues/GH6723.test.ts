@@ -4,7 +4,6 @@ import { mockLogger } from '../helpers.js';
 
 @Entity()
 class User {
-
   @PrimaryKey()
   id!: number;
 
@@ -23,7 +22,6 @@ class User {
   get childEmails2(): string[] | undefined {
     return this.children?.map(c => c.email.toLowerCase()).filter(e => !!e);
   }
-
 }
 
 let orm: MikroORM;
@@ -38,9 +36,11 @@ beforeAll(async () => {
 
   orm.em.create(User, {
     email: 'test@example.com',
-    children: [{
-      email: 'test@example.com',
-    }],
+    children: [
+      {
+        email: 'test@example.com',
+      },
+    ],
   });
   await orm.em.flush();
   orm.em.clear();
@@ -60,7 +60,9 @@ test('should not try to persist persisted getter if its value has not changed 1'
   r[0].children?.push({ email: 'test2' });
   await orm.em.flush();
   // child_emails is hydrated, and its value didn't change
-  expect(mock.mock.calls[1][0]).toMatch('update "user" set "children" = \'[{"email":"test@example.com"},{"email":"test2"}]\', "child_emails2" = \'{test@example.com,test2}\' where "id" = 1');
+  expect(mock.mock.calls[1][0]).toMatch(
+    'update "user" set "children" = \'[{"email":"test@example.com"},{"email":"test2"}]\', "child_emails2" = \'{test@example.com,test2}\' where "id" = 1',
+  );
 });
 
 test('should not try to persist persisted getter if its value has not changed 2', async () => {

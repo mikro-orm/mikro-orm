@@ -5,7 +5,6 @@ import { Book } from './Book.js';
 
 @Entity()
 export class FooBaz {
-
   @PrimaryKey()
   _id!: ObjectId;
 
@@ -20,5 +19,4 @@ export class FooBaz {
 
   @ManyToOne(() => Book, { eager: true })
   book!: Book;
-
 }

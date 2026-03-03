@@ -5,7 +5,6 @@ import { Author2, Book2, BookTag2, Publisher2 } from '../../entities-sql/index.j
 import { initORMPostgreSql, mockLogger } from '../../bootstrap.js';
 
 describe('result cache (postgres)', () => {
-
   let orm: MikroORM<PostgreSqlDriver>;
 
   async function createBooksWithTags() {
@@ -29,7 +28,7 @@ describe('result cache (postgres)', () => {
     orm.em.clear();
   }
 
-  beforeAll(async () => orm = await initORMPostgreSql());
+  beforeAll(async () => (orm = await initORMPostgreSql()));
   beforeEach(async () => orm.schema.clear());
   afterAll(async () => {
     await orm.schema.dropDatabase();
@@ -42,27 +41,43 @@ describe('result cache (postgres)', () => {
     const mock = mockLogger(orm, ['query']);
     vi.useFakeTimers();
 
-    const res1 = await orm.em.find(Book2, { author: { name: 'Jon Snow' } }, { populate: ['author', 'tags', 'publisher'], cache: 100, strategy: LoadStrategy.JOINED });
+    const res1 = await orm.em.find(
+      Book2,
+      { author: { name: 'Jon Snow' } },
+      { populate: ['author', 'tags', 'publisher'], cache: 100, strategy: LoadStrategy.JOINED },
+    );
     expect(mock.mock.calls).toHaveLength(1);
     orm.em.clear();
 
     vi.advanceTimersByTime(50);
 
-    const res2 = await orm.em.find(Book2, { author: { name: 'Jon Snow' } }, { populate: ['author', 'tags', 'publisher'], cache: 100, strategy: LoadStrategy.JOINED });
+    const res2 = await orm.em.find(
+      Book2,
+      { author: { name: 'Jon Snow' } },
+      { populate: ['author', 'tags', 'publisher'], cache: 100, strategy: LoadStrategy.JOINED },
+    );
     expect(mock.mock.calls).toHaveLength(1); // cache hit, no new query fired
     expect(res1.map(e => wrap(e).toObject())).toEqual(res2.map(e => wrap(e).toObject()));
     orm.em.clear();
 
     vi.advanceTimersByTime(50);
 
-    const res3 = await orm.em.find(Book2, { author: { name: 'Jon Snow' } }, { populate: ['author', 'tags', 'publisher'], cache: 100, strategy: LoadStrategy.JOINED });
+    const res3 = await orm.em.find(
+      Book2,
+      { author: { name: 'Jon Snow' } },
+      { populate: ['author', 'tags', 'publisher'], cache: 100, strategy: LoadStrategy.JOINED },
+    );
     expect(mock.mock.calls).toHaveLength(1); // cache hit, no new query fired
     expect(res1.map(e => wrap(e).toObject())).toEqual(res3.map(e => wrap(e).toObject()));
     orm.em.clear();
 
     vi.advanceTimersByTime(1); // wait for cache to expire
 
-    const res4 = await orm.em.find(Book2, { author: { name: 'Jon Snow' } }, { populate: ['author', 'tags', 'publisher'], cache: 100, strategy: LoadStrategy.JOINED });
+    const res4 = await orm.em.find(
+      Book2,
+      { author: { name: 'Jon Snow' } },
+      { populate: ['author', 'tags', 'publisher'], cache: 100, strategy: LoadStrategy.JOINED },
+    );
     expect(mock.mock.calls).toHaveLength(2); // cache miss, new query fired
     expect(res1.map(e => wrap(e).toObject())).toEqual(res4.map(e => wrap(e).toObject()));
 
@@ -76,27 +91,43 @@ describe('result cache (postgres)', () => {
     orm.config.get('resultCache').global = 100;
     vi.useFakeTimers();
 
-    const res1 = await orm.em.find(Book2, { author: { name: 'Jon Snow' } }, { populate: ['author', 'tags', 'publisher'], strategy: LoadStrategy.JOINED });
+    const res1 = await orm.em.find(
+      Book2,
+      { author: { name: 'Jon Snow' } },
+      { populate: ['author', 'tags', 'publisher'], strategy: LoadStrategy.JOINED },
+    );
     expect(mock.mock.calls).toHaveLength(1);
     orm.em.clear();
 
     vi.advanceTimersByTime(50);
 
-    const res2 = await orm.em.find(Book2, { author: { name: 'Jon Snow' } }, { populate: ['author', 'tags', 'publisher'], strategy: LoadStrategy.JOINED });
+    const res2 = await orm.em.find(
+      Book2,
+      { author: { name: 'Jon Snow' } },
+      { populate: ['author', 'tags', 'publisher'], strategy: LoadStrategy.JOINED },
+    );
     expect(mock.mock.calls).toHaveLength(1); // cache hit, no new query fired
     expect(res1.map(e => wrap(e).toObject())).toEqual(res2.map(e => wrap(e).toObject()));
     orm.em.clear();
 
     vi.advanceTimersByTime(50);
 
-    const res3 = await orm.em.find(Book2, { author: { name: 'Jon Snow' } }, { populate: ['author', 'tags', 'publisher'], strategy: LoadStrategy.JOINED });
+    const res3 = await orm.em.find(
+      Book2,
+      { author: { name: 'Jon Snow' } },
+      { populate: ['author', 'tags', 'publisher'], strategy: LoadStrategy.JOINED },
+    );
     expect(mock.mock.calls).toHaveLength(1); // cache hit, no new query fired
     expect(res1.map(e => wrap(e).toObject())).toEqual(res3.map(e => wrap(e).toObject()));
     orm.em.clear();
 
     vi.advanceTimersByTime(1); // wait for cache to expire
 
-    const res4 = await orm.em.find(Book2, { author: { name: 'Jon Snow' } }, { populate: ['author', 'tags', 'publisher'], strategy: LoadStrategy.JOINED });
+    const res4 = await orm.em.find(
+      Book2,
+      { author: { name: 'Jon Snow' } },
+      { populate: ['author', 'tags', 'publisher'], strategy: LoadStrategy.JOINED },
+    );
     expect(mock.mock.calls).toHaveLength(2); // cache miss, new query fired
     expect(res1.map(e => wrap(e).toObject())).toEqual(res4.map(e => wrap(e).toObject()));
 
@@ -109,13 +140,18 @@ describe('result cache (postgres)', () => {
     await createBooksWithTags();
 
     const mock = mockLogger(orm, ['query']);
-    const call = () => orm.em.findOneOrFail(Book2, {
-      author: { name: 'Jon Snow' },
-    }, {
-      populate: ['author', 'tags'],
-      cache: ['abc', 100],
-      strategy: LoadStrategy.JOINED,
-    });
+    const call = () =>
+      orm.em.findOneOrFail(
+        Book2,
+        {
+          author: { name: 'Jon Snow' },
+        },
+        {
+          populate: ['author', 'tags'],
+          cache: ['abc', 100],
+          strategy: LoadStrategy.JOINED,
+        },
+      );
     vi.useFakeTimers();
 
     const res1 = await call();
@@ -199,31 +235,46 @@ describe('result cache (postgres)', () => {
     const mock = mockLogger(orm, ['query']);
     vi.useFakeTimers();
 
-    const res1 = await orm.em.createQueryBuilder(Book2).where({ author: { name: 'Jon Snow' } }).cache(100).getResultList();
+    const res1 = await orm.em
+      .createQueryBuilder(Book2)
+      .where({ author: { name: 'Jon Snow' } })
+      .cache(100)
+      .getResultList();
     expect(mock.mock.calls).toHaveLength(1);
     orm.em.clear();
 
     vi.advanceTimersByTime(50);
 
-    const res2 = await orm.em.createQueryBuilder(Book2).where({ author: { name: 'Jon Snow' } }).cache(100).getResultList();
+    const res2 = await orm.em
+      .createQueryBuilder(Book2)
+      .where({ author: { name: 'Jon Snow' } })
+      .cache(100)
+      .getResultList();
     expect(mock.mock.calls).toHaveLength(1); // cache hit, no new query fired
     expect(serialize(res1)).toEqual(serialize(res2));
     orm.em.clear();
 
     vi.advanceTimersByTime(50);
 
-    const res3 = await orm.em.createQueryBuilder(Book2).where({ author: { name: 'Jon Snow' } }).cache(100).getResultList();
+    const res3 = await orm.em
+      .createQueryBuilder(Book2)
+      .where({ author: { name: 'Jon Snow' } })
+      .cache(100)
+      .getResultList();
     expect(mock.mock.calls).toHaveLength(1); // cache hit, no new query fired
     expect(serialize(res1)).toEqual(serialize(res3));
     orm.em.clear();
 
     vi.advanceTimersByTime(1); // wait for cache to expire
 
-    const res4 = await orm.em.createQueryBuilder(Book2).where({ author: { name: 'Jon Snow' } }).cache().getResultList();
+    const res4 = await orm.em
+      .createQueryBuilder(Book2)
+      .where({ author: { name: 'Jon Snow' } })
+      .cache()
+      .getResultList();
     expect(mock.mock.calls).toHaveLength(2); // cache miss, new query fired
     expect(serialize(res1)).toEqual(serialize(res4));
 
     vi.useRealTimers();
   });
-
 });

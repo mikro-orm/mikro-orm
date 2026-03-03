@@ -3,7 +3,6 @@ import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-or
 
 @Entity()
 export class Asset1 {
-
   [OptionalProps]?: 'field';
 
   @PrimaryKey({ type: t.string })
@@ -11,7 +10,6 @@ export class Asset1 {
 
   @Property({ type: t.json })
   field!: { value: string };
-
 }
 
 test('upsert and insert both correctly serialize json', async () => {

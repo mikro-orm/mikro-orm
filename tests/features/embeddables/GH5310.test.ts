@@ -1,9 +1,17 @@
 import { MikroORM } from '@mikro-orm/sqlite';
-import { Embeddable, Embedded, Entity, Filter, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Embeddable,
+  Embedded,
+  Entity,
+  Filter,
+  ManyToOne,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class Instance {
-
   @PrimaryKey()
   id!: number;
 
@@ -13,24 +21,20 @@ class Instance {
   constructor(slug: string) {
     this.slug = slug;
   }
-
 }
 
 @Filter({ name: 'instance', cond: args => ({ instance: { slug: args.slug } }), default: true })
 class CommonEntity {
-
   @ManyToOne(() => Instance)
   instance: Instance;
 
   constructor(instance: Instance) {
     this.instance = instance;
   }
-
 }
 
 @Entity()
 class Item extends CommonEntity {
-
   @PrimaryKey()
   id!: number;
 
@@ -41,12 +45,10 @@ class Item extends CommonEntity {
     super(instance);
     this.name = name;
   }
-
 }
 
 @Embeddable()
 class CartItem {
-
   @ManyToOne(() => Item)
   item: Item;
 
@@ -57,12 +59,10 @@ class CartItem {
     this.item = item;
     this.quantity = quantity;
   }
-
 }
 
 @Entity()
 class Cart extends CommonEntity {
-
   @PrimaryKey()
   id!: number;
 
@@ -73,7 +73,6 @@ class Cart extends CommonEntity {
     super(instance);
     this.items = items;
   }
-
 }
 
 let orm: MikroORM;

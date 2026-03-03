@@ -5,7 +5,6 @@ type Devices = { mouse: string; keyboard: string };
 
 @Entity()
 class User {
-
   @PrimaryKey()
   _id!: ObjectId;
 
@@ -14,7 +13,6 @@ class User {
 
   @Property({ type: 'json' })
   devices?: Devices;
-
 }
 
 let orm: MikroORM;

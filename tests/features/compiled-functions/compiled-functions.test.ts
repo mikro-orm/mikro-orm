@@ -1,6 +1,13 @@
 import { MikroORM, ObjectHydrator, Utils } from '@mikro-orm/sqlite';
 import { CompileCommand } from '../../../packages/cli/src/commands/CompileCommand.js';
-import { Embeddable, Embedded, Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Embeddable,
+  Embedded,
+  Entity,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Embeddable()
 class Address {

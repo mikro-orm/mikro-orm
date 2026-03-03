@@ -3,17 +3,14 @@ import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-or
 
 @Entity()
 class User {
-
   @PrimaryKey()
   id!: number;
 
   @Property()
   name!: string;
-
 }
 
 describe('truncate [mssql]', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -33,19 +30,19 @@ describe('truncate [mssql]', () => {
   afterAll(() => orm.close(true));
 
   test('truncates table and resets identity value', async () => {
-    await orm.em.persist([
-      orm.em.create(User, { name: 'u1' }),
-      orm.em.create(User, { name: 'u2' }),
-      orm.em.create(User, { name: 'u3' }),
-    ]).flush();
+    await orm.em
+      .persist([
+        orm.em.create(User, { name: 'u1' }),
+        orm.em.create(User, { name: 'u2' }),
+        orm.em.create(User, { name: 'u3' }),
+      ])
+      .flush();
 
-    const [{ identity: identityBefore }] = await orm.em
-      .execute(`SELECT IDENT_CURRENT('user') AS [identity]`);
+    const [{ identity: identityBefore }] = await orm.em.execute(`SELECT IDENT_CURRENT('user') AS [identity]`);
 
     await orm.em.createQueryBuilder(User).truncate().execute();
 
-    const [{ identity: identityAfter }] = await orm.em
-      .execute(`SELECT IDENT_CURRENT('user') AS [identity]`);
+    const [{ identity: identityAfter }] = await orm.em.execute(`SELECT IDENT_CURRENT('user') AS [identity]`);
 
     const users = await orm.em.find(User, {});
 
@@ -53,5 +50,4 @@ describe('truncate [mssql]', () => {
     expect(identityBefore).toBe(3);
     expect(identityAfter).toBe(0);
   });
-
 });

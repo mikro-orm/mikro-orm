@@ -38,7 +38,6 @@ function typeTest(user: UserEntity) {
 }
 
 describe('GH issue 7222', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -76,5 +75,4 @@ describe('GH issue 7222', () => {
     // which doesn't include `name` or `email` properties.
     // wrap(found).toObject() correctly returns EntityDTO<UserEntity>.
   });
-
 });

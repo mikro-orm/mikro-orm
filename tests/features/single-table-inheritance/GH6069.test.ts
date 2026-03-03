@@ -17,13 +17,11 @@ enum VenueType {
 
 @Entity({ tableName: 'appointment-sti' })
 class AppointmentStiEntity {
-
   @PrimaryKey()
   id: string = uuid();
 
   @OneToMany(() => VenueStiEntity, venue => venue.appointment)
   venues = new Collection<VenueStiEntity>(this);
-
 }
 
 @Entity({
@@ -32,7 +30,6 @@ class AppointmentStiEntity {
   discriminatorValue: 'Venue',
 })
 class VenueStiEntity {
-
   @PrimaryKey()
   id: string = uuid();
 
@@ -44,29 +41,24 @@ class VenueStiEntity {
 
   @ManyToOne(() => AppointmentStiEntity)
   appointment!: AppointmentStiEntity;
-
 }
 
 @Entity({ discriminatorValue: VenueType.Physical })
 class PhysicalVenueStiEntity extends VenueStiEntity {
-
   @Property()
   street!: string;
 
   @Property()
   block!: string;
-
 }
 
 @Entity({ discriminatorValue: VenueType.Virtual })
 class VirtualVenueStiEntity extends VenueStiEntity {
-
   @Property()
   meetingLink!: string;
 
   @Property()
   passcode!: string;
-
 }
 
 let orm: MikroORM;
@@ -75,12 +67,7 @@ beforeAll(async () => {
   orm = await MikroORM.init({
     metadataProvider: ReflectMetadataProvider,
     dbName: ':memory:',
-    entities: [
-      AppointmentStiEntity,
-      VenueStiEntity,
-      PhysicalVenueStiEntity,
-      VirtualVenueStiEntity,
-    ],
+    entities: [AppointmentStiEntity, VenueStiEntity, PhysicalVenueStiEntity, VirtualVenueStiEntity],
   });
   await orm.schema.refresh();
 });

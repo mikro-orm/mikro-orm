@@ -4,7 +4,6 @@ import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-or
 
 @Entity()
 class Entity401 {
-
   @PrimaryKey()
   _id!: ObjectId;
 
@@ -17,11 +16,9 @@ class Entity401 {
   constructor(data = {}) {
     this.data = data;
   }
-
 }
 
 describe('GH issue 401', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -55,5 +52,4 @@ describe('GH issue 401', () => {
     expect(getA2!.data.foo).not.toBeInstanceOf(ObjectId);
     expect(getA2!.bar).not.toBeInstanceOf(ObjectId);
   });
-
 });

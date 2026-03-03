@@ -1,4 +1,12 @@
-import { type Dictionary, LockMode, type QueryFlag, raw, RawQueryFragment, type Subquery, Utils } from '@mikro-orm/core';
+import {
+  type Dictionary,
+  LockMode,
+  type QueryFlag,
+  raw,
+  RawQueryFragment,
+  type Subquery,
+  Utils,
+} from '@mikro-orm/core';
 import { QueryType } from './enums.js';
 import type { AbstractSqlPlatform } from '../AbstractSqlPlatform.js';
 
@@ -55,16 +63,13 @@ interface OnConflictClause {
 
 /** @internal */
 export class NativeQueryBuilder implements Subquery {
-
   declare readonly __subquery: true;
   protected type?: QueryType;
   protected parts: string[] = [];
   protected params: unknown[] = [];
   protected options: Options = {};
 
-  constructor(
-    protected readonly platform: AbstractSqlPlatform,
-  ) {}
+  constructor(protected readonly platform: AbstractSqlPlatform) {}
 
   select(fields: string | RawQueryFragment | (string | RawQueryFragment)[]) {
     this.type = QueryType.SELECT;
@@ -91,7 +96,8 @@ export class NativeQueryBuilder implements Subquery {
 
     if (typeof tableName === 'string') {
       const alias = options?.alias ? ` as ${this.platform.quoteIdentifier(options.alias)}` : '';
-      const schema = options?.schema && options.schema !== this.platform.getDefaultSchemaName() ? `${options.schema}.` : '';
+      const schema =
+        options?.schema && options.schema !== this.platform.getDefaultSchemaName() ? `${options.schema}.` : '';
       tableName = this.quote(schema + tableName) + alias;
     }
 
@@ -143,14 +149,20 @@ export class NativeQueryBuilder implements Subquery {
     return this.addCte(name, query, options, true);
   }
 
-  private addCte(name: string, query: NativeQueryBuilder | RawQueryFragment, options?: CteOptions, recursive?: boolean) {
+  private addCte(
+    name: string,
+    query: NativeQueryBuilder | RawQueryFragment,
+    options?: CteOptions,
+    recursive?: boolean,
+  ) {
     this.options.ctes ??= [];
 
     if (this.options.ctes.some(cte => cte.name === name)) {
       throw new Error(`CTE with name '${name}' already exists`);
     }
 
-    const { sql, params } = query instanceof NativeQueryBuilder ? query.compile() : { sql: query.sql, params: [...query.params] };
+    const { sql, params } =
+      query instanceof NativeQueryBuilder ? query.compile() : { sql: query.sql, params: [...query.params] };
     this.options.ctes.push({
       name,
       sql,
@@ -183,11 +195,21 @@ export class NativeQueryBuilder implements Subquery {
 
     switch (this.type) {
       case QueryType.SELECT:
-      case QueryType.COUNT: this.compileSelect(); break;
-      case QueryType.INSERT: this.compileInsert(); break;
-      case QueryType.UPDATE: this.compileUpdate(); break;
-      case QueryType.DELETE: this.compileDelete(); break;
-      case QueryType.TRUNCATE: this.compileTruncate(); break;
+      case QueryType.COUNT:
+        this.compileSelect();
+        break;
+      case QueryType.INSERT:
+        this.compileInsert();
+        break;
+      case QueryType.UPDATE:
+        this.compileUpdate();
+        break;
+      case QueryType.DELETE:
+        this.compileDelete();
+        break;
+      case QueryType.TRUNCATE:
+        this.compileTruncate();
+        break;
     }
 
     this.addOnConflictClause();
@@ -207,11 +229,19 @@ export class NativeQueryBuilder implements Subquery {
       return;
     }
 
-    if ([LockMode.PESSIMISTIC_READ, LockMode.PESSIMISTIC_PARTIAL_READ, LockMode.PESSIMISTIC_READ_OR_FAIL].includes(this.options.lockMode)) {
+    if (
+      [LockMode.PESSIMISTIC_READ, LockMode.PESSIMISTIC_PARTIAL_READ, LockMode.PESSIMISTIC_READ_OR_FAIL].includes(
+        this.options.lockMode,
+      )
+    ) {
       this.parts.push('for share');
     }
 
-    if ([LockMode.PESSIMISTIC_WRITE, LockMode.PESSIMISTIC_PARTIAL_WRITE, LockMode.PESSIMISTIC_WRITE_OR_FAIL].includes(this.options.lockMode)) {
+    if (
+      [LockMode.PESSIMISTIC_WRITE, LockMode.PESSIMISTIC_PARTIAL_WRITE, LockMode.PESSIMISTIC_WRITE_OR_FAIL].includes(
+        this.options.lockMode,
+      )
+    ) {
       this.parts.push('for update');
     }
 
@@ -639,5 +669,4 @@ export class NativeQueryBuilder implements Subquery {
 
     return this.platform.quoteIdentifier(id);
   }
-
 }

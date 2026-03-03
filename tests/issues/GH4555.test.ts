@@ -4,18 +4,16 @@ import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-or
 
 enum GreatEnum {
   EnumValue = 'enumValue',
-  AnotherEnumValue = 'anotherEnumValue'
+  AnotherEnumValue = 'anotherEnumValue',
 }
 
 @Entity()
 class MyEntity {
-
   @PrimaryKey()
   id!: number;
 
   @Property({ type: 'json', default: '[]' })
   greatProp: GreatEnum[] = [];
-
 }
 
 let orm: MikroORM;

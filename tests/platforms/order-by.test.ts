@@ -6,13 +6,11 @@ import { PLATFORMS } from '../bootstrap.js';
 
 @Entity()
 class Test {
-
   @PrimaryKey()
   id!: number;
 
   @Property({ length: 255, nullable: true })
   value?: string | null;
-
 }
 
 const options = {
@@ -88,35 +86,67 @@ describe.each(Utils.keys(options))('Order by [%s]', type => {
       case 'libsql':
         expect(mock.mock.calls[0][0]).toMatch('[query] select `t0`.* from `test` as `t0` order by `t0`.`value` asc');
         expect(mock.mock.calls[1][0]).toMatch('[query] select `t0`.* from `test` as `t0` order by `t0`.`value` desc');
-        expect(mock.mock.calls[2][0]).toMatch('[query] select `t0`.* from `test` as `t0` order by `t0`.`value` asc nulls first');
-        expect(mock.mock.calls[3][0]).toMatch('[query] select `t0`.* from `test` as `t0` order by `t0`.`value` asc nulls last');
-        expect(mock.mock.calls[4][0]).toMatch('[query] select `t0`.* from `test` as `t0` order by `t0`.`value` desc nulls first');
-        expect(mock.mock.calls[5][0]).toMatch('[query] select `t0`.* from `test` as `t0` order by `t0`.`value` desc nulls last');
+        expect(mock.mock.calls[2][0]).toMatch(
+          '[query] select `t0`.* from `test` as `t0` order by `t0`.`value` asc nulls first',
+        );
+        expect(mock.mock.calls[3][0]).toMatch(
+          '[query] select `t0`.* from `test` as `t0` order by `t0`.`value` asc nulls last',
+        );
+        expect(mock.mock.calls[4][0]).toMatch(
+          '[query] select `t0`.* from `test` as `t0` order by `t0`.`value` desc nulls first',
+        );
+        expect(mock.mock.calls[5][0]).toMatch(
+          '[query] select `t0`.* from `test` as `t0` order by `t0`.`value` desc nulls last',
+        );
         break;
       case 'mysql':
       case 'mariadb':
         expect(mock.mock.calls[0][0]).toMatch('[query] select `t0`.* from `test` as `t0`');
         expect(mock.mock.calls[1][0]).toMatch('[query] select `t0`.* from `test` as `t0` order by `t0`.`value` desc');
-        expect(mock.mock.calls[2][0]).toMatch('[query] select `t0`.* from `test` as `t0` order by `t0`.`value` is not null, `t0`.`value` asc');
-        expect(mock.mock.calls[3][0]).toMatch('[query] select `t0`.* from `test` as `t0` order by `t0`.`value` is null, `t0`.`value` asc');
-        expect(mock.mock.calls[4][0]).toMatch('[query] select `t0`.* from `test` as `t0` order by `t0`.`value` is not null, `t0`.`value` desc');
-        expect(mock.mock.calls[5][0]).toMatch('[query] select `t0`.* from `test` as `t0` order by `t0`.`value` is null, `t0`.`value` desc');
+        expect(mock.mock.calls[2][0]).toMatch(
+          '[query] select `t0`.* from `test` as `t0` order by `t0`.`value` is not null, `t0`.`value` asc',
+        );
+        expect(mock.mock.calls[3][0]).toMatch(
+          '[query] select `t0`.* from `test` as `t0` order by `t0`.`value` is null, `t0`.`value` asc',
+        );
+        expect(mock.mock.calls[4][0]).toMatch(
+          '[query] select `t0`.* from `test` as `t0` order by `t0`.`value` is not null, `t0`.`value` desc',
+        );
+        expect(mock.mock.calls[5][0]).toMatch(
+          '[query] select `t0`.* from `test` as `t0` order by `t0`.`value` is null, `t0`.`value` desc',
+        );
         break;
       case 'mssql':
         expect(mock.mock.calls[0][0]).toMatch('[query] select [t0].* from [test] as [t0]');
         expect(mock.mock.calls[1][0]).toMatch('[query] select [t0].* from [test] as [t0] order by [t0].[value] desc');
-        expect(mock.mock.calls[2][0]).toMatch('[query] select [t0].* from [test] as [t0] order by case when [t0].[value] is null then 0 else 1 end, [t0].[value] asc');
-        expect(mock.mock.calls[3][0]).toMatch('[query] select [t0].* from [test] as [t0] order by case when [t0].[value] is null then 1 else 0 end, [t0].[value] asc');
-        expect(mock.mock.calls[4][0]).toMatch('[query] select [t0].* from [test] as [t0] order by case when [t0].[value] is null then 0 else 1 end, [t0].[value] desc');
-        expect(mock.mock.calls[5][0]).toMatch('[query] select [t0].* from [test] as [t0] order by case when [t0].[value] is null then 1 else 0 end, [t0].[value] desc');
+        expect(mock.mock.calls[2][0]).toMatch(
+          '[query] select [t0].* from [test] as [t0] order by case when [t0].[value] is null then 0 else 1 end, [t0].[value] asc',
+        );
+        expect(mock.mock.calls[3][0]).toMatch(
+          '[query] select [t0].* from [test] as [t0] order by case when [t0].[value] is null then 1 else 0 end, [t0].[value] asc',
+        );
+        expect(mock.mock.calls[4][0]).toMatch(
+          '[query] select [t0].* from [test] as [t0] order by case when [t0].[value] is null then 0 else 1 end, [t0].[value] desc',
+        );
+        expect(mock.mock.calls[5][0]).toMatch(
+          '[query] select [t0].* from [test] as [t0] order by case when [t0].[value] is null then 1 else 0 end, [t0].[value] desc',
+        );
         break;
       case 'postgresql':
         expect(mock.mock.calls[0][0]).toMatch('[query] select "t0".* from "test" as "t0" order by "t0"."value" asc');
         expect(mock.mock.calls[1][0]).toMatch('[query] select "t0".* from "test" as "t0" order by "t0"."value" desc');
-        expect(mock.mock.calls[2][0]).toMatch('[query] select "t0".* from "test" as "t0" order by "t0"."value" asc nulls first');
-        expect(mock.mock.calls[3][0]).toMatch('[query] select "t0".* from "test" as "t0" order by "t0"."value" asc nulls last');
-        expect(mock.mock.calls[4][0]).toMatch('[query] select "t0".* from "test" as "t0" order by "t0"."value" desc nulls first');
-        expect(mock.mock.calls[5][0]).toMatch('[query] select "t0".* from "test" as "t0" order by "t0"."value" desc nulls last');
+        expect(mock.mock.calls[2][0]).toMatch(
+          '[query] select "t0".* from "test" as "t0" order by "t0"."value" asc nulls first',
+        );
+        expect(mock.mock.calls[3][0]).toMatch(
+          '[query] select "t0".* from "test" as "t0" order by "t0"."value" asc nulls last',
+        );
+        expect(mock.mock.calls[4][0]).toMatch(
+          '[query] select "t0".* from "test" as "t0" order by "t0"."value" desc nulls first',
+        );
+        expect(mock.mock.calls[5][0]).toMatch(
+          '[query] select "t0".* from "test" as "t0" order by "t0"."value" desc nulls last',
+        );
         break;
     }
   });

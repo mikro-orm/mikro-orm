@@ -11,7 +11,6 @@ import {
 import { type AbstractSqlDriver } from './AbstractSqlDriver.js';
 
 class InsertStatement<Entity> {
-
   constructor(
     private readonly keys: string[],
     private readonly data: EntityData<Entity>,
@@ -24,14 +23,12 @@ class InsertStatement<Entity> {
 
   getData(): EntityData<Entity> {
     const data = {} as Dictionary;
-    this.keys.forEach((key, idx) => data[key] = (this.data as Dictionary)[idx]);
+    this.keys.forEach((key, idx) => (data[key] = (this.data as Dictionary)[idx]));
     return data as EntityData<Entity>;
   }
-
 }
 
 class DeleteStatement<Entity> {
-
   constructor(
     private readonly keys: EntityKey<Entity>[],
     private readonly cond: FilterQuery<Entity>,
@@ -43,14 +40,12 @@ class DeleteStatement<Entity> {
 
   getCondition(): FilterQuery<Entity> {
     const cond = {} as Dictionary;
-    this.keys.forEach((key, idx) => cond[key] = (this.cond as Dictionary)[idx]);
+    this.keys.forEach((key, idx) => (cond[key] = (this.cond as Dictionary)[idx]));
     return cond as FilterQuery<Entity>;
   }
-
 }
 
 export class PivotCollectionPersister<Entity extends object> {
-
   private readonly inserts = new Map<string, InsertStatement<Entity>>();
   private readonly upserts = new Map<string, InsertStatement<Entity>>();
   private readonly deletes = new Map<string, DeleteStatement<Entity>>();
@@ -222,5 +217,4 @@ export class PivotCollectionPersister<Entity extends object> {
       }
     }
   }
-
 }

@@ -22,7 +22,6 @@ export enum NumLevelType {
 
 @Entity()
 class Job {
-
   @PrimaryKey()
   id!: bigint;
 
@@ -31,12 +30,10 @@ class Job {
 
   @OneToMany(() => Level, 'job', { orphanRemoval: true })
   levels = new Collection<Level>(this);
-
 }
 
 @Entity()
 class Level {
-
   @Enum({ items: () => LevelType, primary: true })
   type: LevelType;
 
@@ -52,11 +49,9 @@ class Level {
   constructor(type: LevelType) {
     this.type = type;
   }
-
 }
 
 describe('GH issue 482', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -161,5 +156,4 @@ describe('GH issue 482', () => {
     a2.numTypes = [NumLevelType.B, 3];
     await expect(orm.em.flush()).rejects.toThrow(`Invalid enum array items provided in Level.numTypes: [ 3 ]`);
   });
-
 });

@@ -3,7 +3,6 @@ import { Entity, PrimaryKey, Property, SerializedPrimaryKey } from '@mikro-orm/d
 
 @Entity()
 export class Test {
-
   [HiddenProps]?: 'hiddenField';
 
   @PrimaryKey({ type: 'ObjectId' })
@@ -36,5 +35,4 @@ export class Test {
 
     return t;
   }
-
 }

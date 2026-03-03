@@ -1,12 +1,10 @@
 import { DeferMode, defineEntity, MikroORM, p, type Options } from '@mikro-orm/postgresql';
 
 class TestEntity {
-
   id!: number;
   name!: string;
   email!: string;
   createdAt!: Date;
-
 }
 
 const TestEntity1 = defineEntity({
@@ -91,10 +89,8 @@ const TestEntity2 = defineEntity({
 });
 
 class DeferredEntity {
-
   id!: number;
   email!: string;
-
 }
 
 const DeferredEntitySchema = defineEntity({
@@ -113,11 +109,9 @@ const DeferredEntitySchema = defineEntity({
 });
 
 class ColumnNameTestEntity {
-
   id!: number;
   name!: string;
   email!: string;
-
 }
 
 const ColumnNameTest1 = defineEntity({
@@ -161,10 +155,8 @@ const ColumnNameTest2 = defineEntity({
 });
 
 class CollationTestEntity {
-
   id!: number;
   name!: string;
-
 }
 
 const CollationTest1 = defineEntity({
@@ -200,10 +192,8 @@ const CollationTest2 = defineEntity({
 });
 
 class LengthTestEntity {
-
   id!: number;
   name!: string;
-
 }
 
 const LengthTest1 = defineEntity({
@@ -239,12 +229,10 @@ const LengthTest2 = defineEntity({
 });
 
 class IncludeTestEntity {
-
   id!: number;
   name!: string;
   email!: string;
   createdAt!: Date;
-
 }
 
 const IncludeTest1 = defineEntity({
@@ -284,10 +272,8 @@ const IncludeTest2 = defineEntity({
 });
 
 class NullsTestEntity {
-
   id!: number;
   createdAt!: Date;
-
 }
 
 const NullsTest1 = defineEntity({
@@ -323,10 +309,8 @@ const NullsTest2 = defineEntity({
 });
 
 class InvalidFillFactorEntity {
-
   id!: number;
   name!: string;
-
 }
 
 const InvalidFillFactorSchema = defineEntity({
@@ -346,10 +330,8 @@ const InvalidFillFactorSchema = defineEntity({
 });
 
 class NullsDefaultEntity {
-
   id!: number;
   createdAt!: Date;
-
 }
 
 // DESC + NULLS FIRST is the default for DESC, so it should not generate a diff
@@ -370,11 +352,9 @@ const NullsDefaultSchema = defineEntity({
 });
 
 class ColumnsOnlyEntity {
-
   id!: number;
   name!: string;
   email!: string;
-
 }
 
 // Test: columns specified without properties should auto-derive properties
@@ -395,10 +375,8 @@ const ColumnsOnlySchema = defineEntity({
 });
 
 class ColumnsMismatchEntity {
-
   id!: number;
   name!: string;
-
 }
 
 // Test: columns referencing a field not in properties should throw
@@ -419,7 +397,6 @@ const ColumnsMismatchSchema = defineEntity({
 });
 
 describe('advanced index features in postgres', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -617,21 +594,24 @@ describe('advanced index features in postgres', () => {
       connect: false,
     } as Options);
 
-    await expect(orm2.schema.getCreateSchemaSQL()).rejects.toThrow(/column option references field.*which is not in the index properties/);
+    await expect(orm2.schema.getCreateSchemaSQL()).rejects.toThrow(
+      /column option references field.*which is not in the index properties/,
+    );
 
     await orm2.close();
   });
 
   test('throws on invalid fillFactor in getCreateIndexSQL', async () => {
     const helper = orm.em.getPlatform().getSchemaHelper()!;
-    expect(() => helper.getCreateIndexSQL('test_table', {
-      keyName: 'test_idx',
-      columnNames: ['name'],
-      unique: false,
-      primary: false,
-      constraint: false,
-      fillFactor: 200,
-    })).toThrow('fillFactor must be between 0 and 100, got 200');
+    expect(() =>
+      helper.getCreateIndexSQL('test_table', {
+        keyName: 'test_idx',
+        columnNames: ['name'],
+        unique: false,
+        primary: false,
+        constraint: false,
+        fillFactor: 200,
+      }),
+    ).toThrow('fillFactor must be between 0 and 100, got 200');
   });
-
 });

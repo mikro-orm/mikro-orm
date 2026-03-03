@@ -4,18 +4,15 @@ import type { Ref } from '@mikro-orm/sqlite';
 
 @Entity()
 class Parent extends BaseEntity {
-
   @PrimaryKey()
   id!: string;
 
   @OneToMany({ entity: () => Child, mappedBy: 'parent' })
   children = new Collection<Child>(this);
-
 }
 
 @Entity()
 class Child extends BaseEntity {
-
   @PrimaryKey()
   id!: string;
 
@@ -26,11 +23,9 @@ class Child extends BaseEntity {
     deleteRule: 'cascade',
   })
   parent!: Ref<Parent>;
-
 }
 
 describe('GH issue 1003', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -71,12 +66,8 @@ describe('GH issue 1003', () => {
       id: 'newChildId',
       parent: {
         id: 'parentId',
-        children: [
-          { id: 'childId2', parent: { id: 'parentId' } },
-          { id: 'newChildId' },
-        ],
+        children: [{ id: 'childId2', parent: { id: 'parentId' } }, { id: 'newChildId' }],
       },
     });
   });
-
 });

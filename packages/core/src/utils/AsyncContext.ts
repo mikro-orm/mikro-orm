@@ -23,7 +23,7 @@ function createFallbackAsyncContext<T>(): AsyncContext<T> {
 
   return {
     getStore: () => store,
-    enterWith: value => store = value,
+    enterWith: value => (store = value),
     run: (value, cb) => {
       const prev = store;
       store = value;

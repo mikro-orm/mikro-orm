@@ -1,16 +1,7 @@
-import {
-  MikroORM,
-  defineEntity,
-  p,
-  Type,
-  EntityProperty,
-  ValidationError,
-  wrap,
-} from '@mikro-orm/postgresql';
+import { MikroORM, defineEntity, p, Type, EntityProperty, ValidationError, wrap } from '@mikro-orm/postgresql';
 
 // Custom type that stores numbers as strings in the database
 class DecimalType extends Type<number | null, string | null> {
-
   convertToDatabaseValue(value: number | null): string | null {
     if (value == null) {
       return null;
@@ -41,7 +32,6 @@ class DecimalType extends Type<number | null, string | null> {
     }
     return 'numeric';
   }
-
 }
 
 const Publisher = defineEntity({
@@ -105,7 +95,7 @@ describe('em.refresh() with custom types', () => {
     expect(loadedBook.price).toBe(29.99);
     expect(typeof loadedBook.price).toBe('number');
 
-    wrap(loadedBook).assign({ price: 16.50 });
+    wrap(loadedBook).assign({ price: 16.5 });
     await orm.em.flush();
 
     // refresh should now properly convert through custom type
@@ -131,7 +121,7 @@ describe('em.refresh() with custom types', () => {
     expect(loadedBook.price).toBe(29.99);
     expect(typeof loadedBook.price).toBe('number');
 
-    wrap(loadedBook).assign({ price: 16.50 });
+    wrap(loadedBook).assign({ price: 16.5 });
     await orm.em.flush();
     orm.em.clear();
 

@@ -1,9 +1,15 @@
 import { MikroORM, Opt, Ref } from '@mikro-orm/sqlite';
-import { Entity, Formula, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  Formula,
+  ManyToOne,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class User {
-
   @PrimaryKey()
   id!: number;
 
@@ -15,12 +21,10 @@ class User {
 
   @Formula(cols => `(CONCAT(${cols.firstName}, ' ',${cols.lastName}))`)
   name!: Opt<string>;
-
 }
 
 @Entity()
 class Pet {
-
   @PrimaryKey()
   id!: number;
 
@@ -29,7 +33,6 @@ class Pet {
 
   @ManyToOne(() => User, { nullable: true, ref: true })
   owner!: Opt<Ref<User>> | null;
-
 }
 
 let orm: MikroORM;

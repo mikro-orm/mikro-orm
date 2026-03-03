@@ -3,7 +3,6 @@ import { Entity, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorato
 
 @Entity()
 export class Example {
-
   @PrimaryKey()
   id!: number;
 
@@ -16,11 +15,9 @@ export class Example {
   verify(isAwesome: boolean) {
     return this.#myPrivateProp === isAwesome;
   }
-
 }
 
 describe('GH issue 1226', () => {
-
   let orm1: MikroORM;
   let orm2: MikroORM;
   let orm3: MikroORM;
@@ -90,5 +87,4 @@ describe('GH issue 1226', () => {
     fetchedEntry.setup(false);
     expect(fetchedEntry.verify(false)).toBe(true);
   });
-
 });

@@ -10,11 +10,7 @@ type PointDTO = {
   longitude: number;
 };
 
-class PointType extends Type<
-  PointDTO | undefined,
-  string | undefined
-> {
-
+class PointType extends Type<PointDTO | undefined, string | undefined> {
   convertToDatabaseValue(value?: PointDTO): string | undefined {
     if (!value) {
       return undefined;
@@ -44,12 +40,10 @@ class PointType extends Type<
   getColumnType(): string {
     return 'geometry';
   }
-
 }
 
 @Entity()
 class CalendarEvent {
-
   @PrimaryKey({ type: 'uuid', defaultRaw: 'gen_random_uuid()' })
   id!: string;
 
@@ -61,12 +55,10 @@ class CalendarEvent {
 
   @ManyToMany(() => Station)
   stations = new Collection<Station>(this);
-
 }
 
 @Entity()
 class Station {
-
   @PrimaryKey({ type: 'text' })
   name!: string;
 
@@ -80,18 +72,15 @@ class Station {
   events = new Collection<CalendarEvent>(this);
 
   [PrimaryKeyProp]?: 'name';
-
 }
 
 @Entity()
 class Keyword {
-
   @PrimaryKey({ type: 'text' })
   id!: string;
 
   @ManyToMany(() => CalendarEvent, event => event.keywords)
   events = new Collection<CalendarEvent>(this);
-
 }
 
 beforeAll(async () => {
@@ -136,10 +125,13 @@ beforeEach(async () => {
   orm.em.clear();
 });
 
-
 // I'm using raw data here to make the test more readable later
 const station1Dto = { name: 'First Station', position: { latitude: 1, longitude: 1 }, testProperty: 'Test Property 1' };
-const station2Dto = { name: 'Second Station', position: { latitude: 2, longitude: 2 }, testProperty: 'Test Property 2' };
+const station2Dto = {
+  name: 'Second Station',
+  position: { latitude: 2, longitude: 2 },
+  testProperty: 'Test Property 2',
+};
 const station3Dto = { name: 'Third Station', position: { latitude: 3, longitude: 3 }, testProperty: 'Test Property 3' };
 
 const populateOptions = ['keywords', 'stations'] as const;
@@ -230,10 +222,14 @@ test('test disconnecting the identity map', async () => {
     expect(event.stations.length).toBe(1);
     expect(event.name).toBe('another event name');
 
-    const updatedEvent = await orm.em.findOneOrFail(CalendarEvent, { id: eventID }, {
-      populate: populateOptions,
-      disableIdentityMap: true,
-    });
+    const updatedEvent = await orm.em.findOneOrFail(
+      CalendarEvent,
+      { id: eventID },
+      {
+        populate: populateOptions,
+        disableIdentityMap: true,
+      },
+    );
     expect(updatedEvent.stations[0].position).toEqual(station3Dto.position);
   });
 });

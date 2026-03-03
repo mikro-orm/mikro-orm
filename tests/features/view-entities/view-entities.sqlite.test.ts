@@ -1,14 +1,23 @@
 import { defineEntity, p, sql } from '@mikro-orm/core';
 import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { EntityManager, MikroORM } from '@mikro-orm/sqlite';
-import { Author4, BaseEntity4, BaseEntity5, Book4, BookTag4, FooBar4, FooBaz4, Publisher4, Test4, IdentitySchema } from '../../entities-schema/index.js';
+import {
+  Author4,
+  BaseEntity4,
+  BaseEntity5,
+  Book4,
+  BookTag4,
+  FooBar4,
+  FooBaz4,
+  Publisher4,
+  Test4,
+  IdentitySchema,
+} from '../../entities-schema/index.js';
 
 // View entity with string expression
 class AuthorStats {
-
   name!: string;
   bookCount!: number;
-
 }
 
 const authorStatsSQL = `select name, (select count(*) from book4 b where b.author_id = a.id) as book_count from author4 a`;
@@ -30,7 +39,8 @@ const BookSummary = defineEntity({
   tableName: 'book_summary_view',
   view: true,
   expression: (em: EntityManager) => {
-    return em.createQueryBuilder(Book4, 'b')
+    return em
+      .createQueryBuilder(Book4, 'b')
       .join('b.author', 'a')
       .select(['b.title', sql.ref('a', 'name').as('author_name')]);
   },
@@ -54,12 +64,25 @@ const ProlificAuthors = defineEntity({
 });
 
 describe('View entities (sqlite)', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
-      entities: [Author4, Book4, BookTag4, Publisher4, Test4, FooBar4, FooBaz4, BaseEntity4, BaseEntity5, IdentitySchema, AuthorStatsSchema, BookSummary, ProlificAuthors],
+      entities: [
+        Author4,
+        Book4,
+        BookTag4,
+        Publisher4,
+        Test4,
+        FooBar4,
+        FooBaz4,
+        BaseEntity4,
+        BaseEntity5,
+        IdentitySchema,
+        AuthorStatsSchema,
+        BookSummary,
+        ProlificAuthors,
+      ],
       dbName: ':memory:',
       metadataProvider: ReflectMetadataProvider,
     });
@@ -153,5 +176,4 @@ describe('View entities (sqlite)', () => {
     expect(prolificAuthors[0].name).toBe('Jon Snow');
     expect(prolificAuthors[0].bookCount).toBe(2);
   });
-
 });

@@ -3,7 +3,6 @@ import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-or
 import { parse, stringify, v4 as uuid } from 'uuid';
 
 class UUID extends Type<string, Buffer> {
-
   override convertToJSValue(value: Buffer) {
     return stringify(value);
   }
@@ -15,23 +14,18 @@ class UUID extends Type<string, Buffer> {
   override getColumnType() {
     return 'binary(16)';
   }
-
 }
 
 @Entity()
 class User {
-
   @PrimaryKey({ type: UUID })
   id = uuid();
 
   @Property({ nullable: true })
   name?: string;
-
 }
 
-
 describe('GH issue 1263', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -81,5 +75,4 @@ describe('GH issue 1263', () => {
       expect(userCount).toBe(1);
     }
   });
-
 });

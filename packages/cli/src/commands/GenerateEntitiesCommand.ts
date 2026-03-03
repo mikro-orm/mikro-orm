@@ -5,7 +5,6 @@ import { CLIHelper } from '../CLIHelper.js';
 export type GenerateEntitiesArgs = BaseArgs & { dump?: boolean; save?: boolean; path?: string; schema?: string };
 
 export class GenerateEntitiesCommand implements BaseCommand<GenerateEntitiesArgs> {
-
   command = 'generate-entities';
   describe = 'Generate entities based on current database schema';
 
@@ -57,5 +56,4 @@ export class GenerateEntitiesCommand implements BaseCommand<GenerateEntitiesArgs
 
     await orm.close(true);
   }
-
 }

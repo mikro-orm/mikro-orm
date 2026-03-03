@@ -1,11 +1,18 @@
 import { BaseEntity, Collection, MikroORM, Rel } from '@mikro-orm/sqlite';
-import { Entity, Filter, ManyToOne, OneToMany, PrimaryKey, Property, ManyToMany, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  Filter,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ManyToMany,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 abstract class BE extends BaseEntity {
-
   @PrimaryKey({ autoincrement: true })
   readonly id!: string;
-
 }
 
 @Entity()
@@ -14,13 +21,11 @@ abstract class BE extends BaseEntity {
   cond: ({ locations }) => ({ locations }),
 })
 class Company extends BE {
-
   @Property()
   name!: string;
 
   @OneToMany(() => Location, location => location.company)
   locations = new Collection<Location>(this);
-
 }
 
 @Entity()
@@ -29,13 +34,11 @@ class Company extends BE {
   cond: ({ locations }) => ({ id: locations }),
 })
 class Location extends BE {
-
   @Property()
   name!: string;
 
   @ManyToOne(() => Company)
   company!: Rel<Company>;
-
 }
 
 @Entity()
@@ -44,7 +47,6 @@ class Location extends BE {
   cond: ({ locations }) => ({ location: locations }),
 })
 class User extends BE {
-
   @Property()
   name!: string;
 
@@ -53,21 +55,16 @@ class User extends BE {
 
   @OneToMany(() => UserRoleBinding, userRoleBinding => userRoleBinding.user)
   userRoleBindings = new Collection<UserRoleBinding>(this);
-
 }
 
 @Entity()
 @Filter({
   name: 'test',
   cond: ({ locations }) => ({
-    $or: [
-      { company: { locations } },
-      { locations },
-    ],
+    $or: [{ company: { locations } }, { locations }],
   }),
 })
 class UserRoleBinding extends BE {
-
   @Property()
   role!: string;
 
@@ -79,7 +76,6 @@ class UserRoleBinding extends BE {
 
   @ManyToMany(() => Location)
   locations = new Collection<Location>(this);
-
 }
 
 let orm: MikroORM;

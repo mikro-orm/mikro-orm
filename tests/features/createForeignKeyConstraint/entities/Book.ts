@@ -7,7 +7,6 @@ import { Author } from './Author.js';
 
 @Entity()
 export class Book extends BaseEntity {
-
   @Property()
   title: string;
 
@@ -26,5 +25,4 @@ export class Book extends BaseEntity {
     this.author = author;
     this.publisher = publisher;
   }
-
 }

@@ -3,7 +3,6 @@ import { Entity, ManyToOne, OneToMany, PrimaryKey, ReflectMetadataProvider } fro
 
 @Entity()
 class User {
-
   @PrimaryKey()
   id!: number;
 
@@ -15,18 +14,15 @@ class User {
   constructor(props?: { comments: Comment[] }) {
     this.toForceHandleCommentsProp = props?.comments ? props.comments : [];
   }
-
 }
 
 @Entity()
 export class Comment {
-
   @PrimaryKey()
   id!: bigint;
 
   @ManyToOne()
   user!: User;
-
 }
 
 let orm: MikroORM;

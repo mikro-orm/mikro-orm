@@ -3,7 +3,6 @@ import { Entity, ManyToMany, ManyToOne, OneToMany, PrimaryKey, Property } from '
 
 @Entity()
 export class Project {
-
   @PrimaryKey()
   id!: number;
 
@@ -15,12 +14,10 @@ export class Project {
 
   @OneToMany(() => Risk, e => e.project)
   risks = new Collection<Risk>(this);
-
 }
 
 @Entity()
 export class Risk {
-
   @PrimaryKey()
   id!: number;
 
@@ -31,18 +28,16 @@ export class Risk {
   project!: Ref<Project>;
 
   @ManyToMany({
-      entity: () => FilterValue,
+    entity: () => FilterValue,
     pivotTable: 'risk_filter_values',
     joinColumn: 'risk_id',
     inverseJoinColumn: 'filter_value_id',
   })
   filterValues = new Collection<FilterValue>(this);
-
 }
 
 @Entity()
 export class Filter {
-
   @PrimaryKey()
   id!: number;
 
@@ -58,12 +53,10 @@ export class Filter {
     deleteRule: 'cascade',
   })
   project!: Ref<Project>;
-
 }
 
 @Entity()
 export class FilterValue {
-
   @PrimaryKey()
   id!: number;
 
@@ -82,5 +75,4 @@ export class FilterValue {
     owner: false,
   })
   risks = new Collection<Risk>(this);
-
 }

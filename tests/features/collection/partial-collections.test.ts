@@ -1,10 +1,17 @@
 import { Collection, MikroORM, SimpleLogger, serialize } from '@mikro-orm/sqlite';
-import { Entity, ManyToMany, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToMany,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../../helpers.js';
 
 @Entity()
 class Author {
-
   @PrimaryKey()
   id!: number;
 
@@ -20,12 +27,10 @@ class Author {
   constructor(name: string) {
     this.name = name;
   }
-
 }
 
 @Entity()
 class Book {
-
   @PrimaryKey()
   id!: number;
 
@@ -50,12 +55,10 @@ class Book {
     this.favorite = favorite;
     this.tags.set(tags);
   }
-
 }
 
 @Entity()
 class BookTag {
-
   @PrimaryKey()
   id!: number;
 
@@ -72,7 +75,6 @@ class BookTag {
     this.name = name;
     this.popular = popular;
   }
-
 }
 
 let orm: MikroORM;
@@ -105,20 +107,14 @@ async function createEntities() {
   const t4 = new BookTag('t4');
   const t5 = new BookTag('t5', true);
 
-  author2.books.add(
-    new Book(author2, 'Foo 1', [t1, t5], true),
-    new Book(author2, 'Foo 2', [t1, t3]),
-  );
+  author2.books.add(new Book(author2, 'Foo 1', [t1, t5], true), new Book(author2, 'Foo 2', [t1, t3]));
   author3.books.add(
     new Book(author3, 'Foo 3', [t2]),
     new Book(author3, 'Foo 4', [t4], true),
     new Book(author3, 'Bar 1', [t2], true),
     new Book(author3, 'Bar 2', [t2], true),
   );
-  author4.books.add(
-    new Book(author4, 'Foo Bar 1', [t1, t2], true),
-    new Book(author4, 'Foo Bar 2', [t1, t2, t4]),
-  );
+  author4.books.add(new Book(author4, 'Foo Bar 1', [t1, t2], true), new Book(author4, 'Foo Bar 2', [t1, t2, t4]));
   author5.books.add(new Book(author5, 'Foo', [t4, t5]));
 
   await orm.em.fork().persist([author1, author2, author3, author4, author5]).flush();
@@ -159,18 +155,14 @@ const expected = [
         author: { id: 3, name: 'Author 3' },
         favorite: true,
         id: 8,
-        popularTags: [
-          { id: 4, name: 't2', popular: true },
-        ],
+        popularTags: [{ id: 4, name: 't2', popular: true }],
         title: 'Bar 1',
       },
       {
         author: { id: 3, name: 'Author 3' },
         favorite: true,
         id: 9,
-        popularTags: [
-          { id: 4, name: 't2', popular: true },
-        ],
+        popularTags: [{ id: 4, name: 't2', popular: true }],
         title: 'Bar 2',
       },
     ],
@@ -208,12 +200,14 @@ test('declarative partial loading of 1:m and m:n', async () => {
     orderBy: { id: 'asc' },
   });
   expect(mock.mock.calls).toHaveLength(1);
-  expect(mock.mock.calls[0][0]).toBe('[query] ' +
-    'select `a0`.*, `f1`.`id` as `f1__id`, `f1`.`title` as `f1__title`, `f1`.`favorite` as `f1__favorite`, `f1`.`author_id` as `f1__author_id`, `p2`.`id` as `p2__id`, `p2`.`name` as `p2__name`, `p2`.`popular` as `p2__popular` ' +
-    'from `author` as `a0` ' +
-    'left join `book` as `f1` on `a0`.`id` = `f1`.`author_id` and `f1`.`favorite` = true and `f1`.`favorite` = true ' +
-    'left join (`book_tags` as `b3` inner join `book_tag` as `p2` on `b3`.`book_tag_id` = `p2`.`id` and `p2`.`popular` = true) on `f1`.`id` = `b3`.`book_id` ' +
-    'order by `a0`.`id` asc');
+  expect(mock.mock.calls[0][0]).toBe(
+    '[query] ' +
+      'select `a0`.*, `f1`.`id` as `f1__id`, `f1`.`title` as `f1__title`, `f1`.`favorite` as `f1__favorite`, `f1`.`author_id` as `f1__author_id`, `p2`.`id` as `p2__id`, `p2`.`name` as `p2__name`, `p2`.`popular` as `p2__popular` ' +
+      'from `author` as `a0` ' +
+      'left join `book` as `f1` on `a0`.`id` = `f1`.`author_id` and `f1`.`favorite` = true and `f1`.`favorite` = true ' +
+      'left join (`book_tags` as `b3` inner join `book_tag` as `p2` on `b3`.`book_tag_id` = `p2`.`id` and `p2`.`popular` = true) on `f1`.`id` = `b3`.`book_id` ' +
+      'order by `a0`.`id` asc',
+  );
   expect(serialize(r1, { populate: ['*'] })).toEqual(expected);
 
   mock.mockReset();
@@ -224,7 +218,11 @@ test('declarative partial loading of 1:m and m:n', async () => {
   });
   expect(mock.mock.calls).toHaveLength(3);
   expect(mock.mock.calls[0][0]).toBe('[query] select `a0`.* from `author` as `a0` order by `a0`.`id` asc');
-  expect(mock.mock.calls[1][0]).toBe('[query] select `b0`.* from `book` as `b0` where `b0`.`author_id` in (1, 2, 3, 4, 5) and `b0`.`favorite` = true');
-  expect(mock.mock.calls[2][0]).toBe('[query] select `b0`.`book_tag_id`, `b0`.`book_id`, `b1`.`id` as `b1__id`, `b1`.`name` as `b1__name`, `b1`.`popular` as `b1__popular` from `book_tags` as `b0` inner join `book_tag` as `b1` on `b0`.`book_tag_id` = `b1`.`id` where `b0`.`book_id` in (1, 6, 8, 9, 3) and `b1`.`popular` = true');
+  expect(mock.mock.calls[1][0]).toBe(
+    '[query] select `b0`.* from `book` as `b0` where `b0`.`author_id` in (1, 2, 3, 4, 5) and `b0`.`favorite` = true',
+  );
+  expect(mock.mock.calls[2][0]).toBe(
+    '[query] select `b0`.`book_tag_id`, `b0`.`book_id`, `b1`.`id` as `b1__id`, `b1`.`name` as `b1__name`, `b1`.`popular` as `b1__popular` from `book_tags` as `b0` inner join `book_tag` as `b1` on `b0`.`book_tag_id` = `b1`.`id` where `b0`.`book_id` in (1, 6, 8, 9, 3) and `b1`.`popular` = true',
+  );
   expect(serialize(r2, { populate: ['*'] })).toEqual(expected);
 });

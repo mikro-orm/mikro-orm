@@ -5,7 +5,6 @@ import { mockLogger } from '../helpers.js';
 
 @Entity()
 export class Book {
-
   [OptionalProps]?: 'version';
 
   @PrimaryKey()
@@ -22,7 +21,6 @@ export class Book {
 
   @Property()
   title!: string;
-
 }
 
 let orm: MikroORM;
@@ -61,7 +59,9 @@ test('extra updates (4121)', async () => {
   await orm.em.flush();
   expect(mock.mock.calls).toEqual([
     ['[query] begin'],
-    ["[query] update `book` set `title` = 'updatedBook1', `version` = `version` + 1 where `id` = 'book1' and `version` = 1 returning `version`"],
+    [
+      "[query] update `book` set `title` = 'updatedBook1', `version` = `version` + 1 where `id` = 'book1' and `version` = 1 returning `version`",
+    ],
     ['[query] commit'],
   ]);
 });

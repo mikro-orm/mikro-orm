@@ -1,13 +1,11 @@
 import { defineEntity, MikroORM, p } from '@mikro-orm/mariadb';
 
 class TestEntity {
-
   id!: number;
   name!: string;
   email!: string;
   content!: string;
   createdAt!: Date;
-
 }
 
 const TestEntity1 = defineEntity({
@@ -63,10 +61,8 @@ const TestEntity2 = defineEntity({
 });
 
 class AriaEntity {
-
   id!: number;
   sortKey!: number;
-
 }
 
 const AriaEntitySchema = defineEntity({
@@ -87,7 +83,6 @@ const AriaEntitySchema = defineEntity({
 });
 
 describe('advanced index features in mariadb', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -133,10 +128,8 @@ describe('advanced index features in mariadb', () => {
 
   test('schema generator uses IGNORED keyword instead of INVISIBLE', async () => {
     class IgnoredEntity {
-
       id!: number;
       name!: string;
-
     }
 
     const IgnoredEntitySchema = defineEntity({
@@ -169,5 +162,4 @@ describe('advanced index features in mariadb', () => {
 
     await orm2.close();
   });
-
 });

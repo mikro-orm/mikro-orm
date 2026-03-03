@@ -12,7 +12,6 @@ import { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()
 export class Order {
-
   @PrimaryKey()
   id!: number;
 
@@ -30,12 +29,10 @@ export class Order {
 
   @Property()
   created: Date = new Date();
-
 }
 
 @Entity()
 export class Product {
-
   @PrimaryKey()
   id!: number;
 
@@ -49,12 +46,10 @@ export class Product {
     this.name = name;
     this.currentPrice = currentPrice;
   }
-
 }
 
 @Entity()
 export class OrderItem {
-
   @ManyToOne({ primary: true })
   order: Order;
 
@@ -74,11 +69,9 @@ export class OrderItem {
     this.product = product;
     this.offeredPrice = product.currentPrice;
   }
-
 }
 
 describe('custom pivot entity for m:n with additional properties (unidirectional)', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -166,7 +159,6 @@ describe('custom pivot entity for m:n with additional properties (unidirectional
     order = (await orm.em.findOne(Order, order.id, { populate: ['products'] as const }))!;
     expect(order.products.count()).toBe(3);
 
-
     // slice
     expect(order.products.slice().length).toBe(3);
     expect(order.products.slice(0, 3).length).toBe(3);
@@ -196,5 +188,4 @@ describe('custom pivot entity for m:n with additional properties (unidirectional
     const count = await res[0].products.loadCount();
     expect(count).toBe(2);
   });
-
 });

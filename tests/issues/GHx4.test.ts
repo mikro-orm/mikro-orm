@@ -4,7 +4,6 @@ import { MikroORM } from '@mikro-orm/sqlite';
 
 @Entity()
 class Parent {
-
   @PrimaryKey()
   id!: string;
 
@@ -13,29 +12,24 @@ class Parent {
 
   @OneToMany({ entity: () => Child2, mappedBy: 'parent' })
   children2 = new Collection<Child>(this);
-
 }
 
 @Entity()
 class Child {
-
   @PrimaryKey()
   id!: string;
 
   @ManyToOne({ entity: () => Parent })
   parent!: Parent;
-
 }
 
 @Entity()
 class Child2 {
-
   @PrimaryKey()
   id!: string;
 
   @ManyToOne({ entity: () => Parent, nullable: true })
   parent!: Parent;
-
 }
 
 let orm: MikroORM;

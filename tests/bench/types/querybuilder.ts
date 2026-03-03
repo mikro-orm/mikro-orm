@@ -5,8 +5,28 @@
  */
 
 import { bench } from '@ark/attest';
-import type { Collection, EntityDTO, EntityDTOFlat, EntityDTOProp, Loaded, PrimaryProperty, Ref, PrimaryKeyProp, SerializeDTO } from '@mikro-orm/core';
-import type { Field, ContextOrderByMap, QBFilterQuery, ModifyHint, ModifyContext, ModifyFields, JoinSelectField, QueryBuilder, SelectQueryBuilder } from '@mikro-orm/sql';
+import type {
+  Collection,
+  EntityDTO,
+  EntityDTOFlat,
+  EntityDTOProp,
+  Loaded,
+  PrimaryProperty,
+  Ref,
+  PrimaryKeyProp,
+  SerializeDTO,
+} from '@mikro-orm/core';
+import type {
+  Field,
+  ContextOrderByMap,
+  QBFilterQuery,
+  ModifyHint,
+  ModifyContext,
+  ModifyFields,
+  JoinSelectField,
+  QueryBuilder,
+  SelectQueryBuilder,
+} from '@mikro-orm/sql';
 
 // ============================================
 // Test Entity Definitions
@@ -252,7 +272,13 @@ bench('execute() return - 3-level nested wildcard', () => {
 }).types([593, 'instantiations']);
 
 bench('execute() return - 3-level nested with fields', () => {
-  const r = {} as EntityDTOFlat<Loaded<Author, 'books' | 'books.publisher' | 'books.publisher.books', 'id' | 'books.title' | 'books.publisher.name' | 'books.publisher.books.title'>>;
+  const r = {} as EntityDTOFlat<
+    Loaded<
+      Author,
+      'books' | 'books.publisher' | 'books.publisher.books',
+      'id' | 'books.title' | 'books.publisher.name' | 'books.publisher.books.title'
+    >
+  >;
   const _: number = r.id;
   void _;
 }).types([1583, 'instantiations']);
@@ -345,9 +371,17 @@ bench('EntityDTOFlat<Loaded<WideAuthor, "books.publisher">> - 1-pass recursive 2
 
 // Helper to force type resolution through .with() and .from() calls
 // eslint-disable-next-line no-empty-function
-function withCte<N extends string, Q extends QueryBuilder<any>>(qb: QueryBuilder<Author, 'a'>, name: N, sub: Q) { return qb.with(name, sub); }
+function withCte<N extends string, Q extends QueryBuilder<any>>(qb: QueryBuilder<Author, 'a'>, name: N, sub: Q) {
+  return qb.with(name, sub);
+}
 // eslint-disable-next-line no-empty-function
-function fromCte<C extends Record<string, object>, N extends string & keyof C, A extends string = N>(qb: QueryBuilder<Author, 'a', never, never, never, '*', C>, name: N, alias?: A) { return qb.from(name, alias); }
+function fromCte<C extends Record<string, object>, N extends string & keyof C, A extends string = N>(
+  qb: QueryBuilder<Author, 'a', never, never, never, '*', C>,
+  name: N,
+  alias?: A,
+) {
+  return qb.from(name, alias);
+}
 
 // Measure the cost of .with() accumulating one CTE into the CTEs generic
 bench('with() - single CTE type accumulation', () => {

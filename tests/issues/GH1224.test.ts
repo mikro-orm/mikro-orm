@@ -12,27 +12,21 @@ import { mockLogger } from '../helpers.js';
 
 @Entity()
 class Node {
-
   @PrimaryKey()
   id!: number;
-
 }
 
 @Entity()
 class B {
-
   @PrimaryKey()
   id!: number;
 
   @OneToMany(() => A, 'b', { eager: true })
   as = new Collection<A>(this);
-
 }
-
 
 @Entity()
 class A {
-
   [PrimaryKeyProp]?: 'node';
   @OneToOne({ entity: () => Node, ref: true, primary: true, deleteRule: 'cascade', updateRule: 'cascade' })
   node!: Ref<Node>;
@@ -42,11 +36,9 @@ class A {
 
   @ManyToOne({ entity: () => B })
   b!: B;
-
 }
 
 describe('GH issue 1224', () => {
-
   let orm: MikroORM;
   const log = vi.fn();
 
@@ -60,7 +52,6 @@ describe('GH issue 1224', () => {
     mockLogger(orm, ['query', 'query-params'], log);
     await orm.schema.ensureDatabase();
   });
-
 
   beforeEach(async () => {
     await orm.schema.refresh();
@@ -87,5 +78,4 @@ describe('GH issue 1224', () => {
 
     expect(ids).toStrictEqual([a1.node.id]);
   });
-
 });

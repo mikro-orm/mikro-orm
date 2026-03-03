@@ -4,13 +4,11 @@ import { TsMorphMetadataProvider } from '@mikro-orm/reflection';
 
 @Entity()
 class A {
-
   @PrimaryKey()
   id!: number;
 
   @Property()
   types!: string[];
-
 }
 
 type ValueOf<T> = T[keyof T];
@@ -26,7 +24,6 @@ type Props = {
 
 @Entity()
 class User {
-
   constructor(props: Props) {
     this.type = props.type;
   }
@@ -36,7 +33,6 @@ class User {
 
   @Property()
   type: ValueOf<typeof UserType>;
-
 }
 
 let orm: MikroORM;

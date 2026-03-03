@@ -53,17 +53,25 @@ test('GH #6900', async () => {
     },
   );
 
-  expect(mock.mock.calls[0][0]).toMatch(`db.getCollection('user').updateMany({ 'meta_data.workspaceId': 'wkId1' }, { '$set': { firstName: 'updated firstName', lastName: 'lastname', email: 'foo1@bar.fr', meta_data: { workspaceId: 'wkId1' } } }, { upsert: true });`);
-  expect(mock.mock.calls[1][0]).toMatch(`db.getCollection('user').find({}, { projection: { _id: 1 } }).limit(1).toArray();`);
+  expect(mock.mock.calls[0][0]).toMatch(
+    `db.getCollection('user').updateMany({ 'meta_data.workspaceId': 'wkId1' }, { '$set': { firstName: 'updated firstName', lastName: 'lastname', email: 'foo1@bar.fr', meta_data: { workspaceId: 'wkId1' } } }, { upsert: true });`,
+  );
+  expect(mock.mock.calls[1][0]).toMatch(
+    `db.getCollection('user').find({}, { projection: { _id: 1 } }).limit(1).toArray();`,
+  );
   await orm.em.fork().upsertMany(
     User,
-    [{
-      ...firstUser,
-      firstName: 'updated firstName',
-    }],
+    [
+      {
+        ...firstUser,
+        firstName: 'updated firstName',
+      },
+    ],
     {
       onConflictFields: ['metaData.workspaceId' as EntityKey],
     },
   );
-  expect(mock.mock.calls[2][0]).toMatch(`bulk = db.getCollection('user').initializeUnorderedBulkOp({ upsert: true });bulk.find({ 'meta_data.workspaceId': 'wkId1' }).upsert().update({ '$set': { firstName: 'updated firstName', lastName: 'lastname', email: 'foo1@bar.fr', meta_data: { workspaceId: 'wkId1' } } });bulk.execute()`);
+  expect(mock.mock.calls[2][0]).toMatch(
+    `bulk = db.getCollection('user').initializeUnorderedBulkOp({ upsert: true });bulk.find({ 'meta_data.workspaceId': 'wkId1' }).upsert().update({ '$set': { firstName: 'updated firstName', lastName: 'lastname', email: 'foo1@bar.fr', meta_data: { workspaceId: 'wkId1' } } });bulk.execute()`,
+  );
 });

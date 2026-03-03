@@ -80,10 +80,10 @@ const initialMetadataProcessor: MetadataProcessor = (metadata, platform) => {
           propOptions.runtimeType = 'Email';
           // force index definition via legacy
           if (typeof propOptions.index === 'string') {
-            entity.indexes.push({ name: propOptions.index, properties: [ propOptions.name ] });
+            entity.indexes.push({ name: propOptions.index, properties: [propOptions.name] });
           }
           if (typeof propOptions.unique === 'string') {
-            entity.uniques.push({ name: propOptions.unique, properties: [ propOptions.name ] });
+            entity.uniques.push({ name: propOptions.unique, properties: [propOptions.name] });
           }
         }
         if (propName === 'termsAccepted') {
@@ -112,11 +112,13 @@ const initialMetadataProcessor: MetadataProcessor = (metadata, platform) => {
       // the expression's callback present.
       entity.indexes.push({
         name: 'author2_custom_idx_on_email',
-        expression: (columns, table) => `create index "author2_custom_idx_on_email" on "${table.schema}"."${table.name}" ("${columns.email}")`,
+        expression: (columns, table) =>
+          `create index "author2_custom_idx_on_email" on "${table.schema}"."${table.name}" ("${columns.email}")`,
       } as IndexOptions<Author2>);
       entity.uniques.push({
         name: 'author2_custom_unique_on_email',
-        expression: (columns, table) => `alter table ${table} add constraint "author2_custom_unique_on_email" unique ("${columns.email}")`,
+        expression: (columns, table) =>
+          `alter table ${table} add constraint "author2_custom_unique_on_email" unique ("${columns.email}")`,
       } as UniqueOptions<Author2>);
     }
   });
@@ -171,24 +173,20 @@ const initialMetadataProcessor: MetadataProcessor = (metadata, platform) => {
     collection: platform.getConfig().getNamingStrategy().classToTableName('IdentitiesContainer'),
     embeddable: true,
   });
-  embeddableEntityMeta.addProperty(
-    {
-      name: 'github',
-      runtimeType: 'string',
-      fieldNames: ['github'],
-      type: 'string',
-      columnTypes: ['varchar(255)'],
-    },
-  );
-  embeddableEntityMeta.addProperty(
-    {
-      name: 'local',
-      fieldNames: ['local'],
-      columnTypes: ['int'],
-      type: 'integer',
-      runtimeType: 'number',
-    },
-  );
+  embeddableEntityMeta.addProperty({
+    name: 'github',
+    runtimeType: 'string',
+    fieldNames: ['github'],
+    type: 'string',
+    columnTypes: ['varchar(255)'],
+  });
+  embeddableEntityMeta.addProperty({
+    name: 'local',
+    fieldNames: ['local'],
+    columnTypes: ['int'],
+    type: 'integer',
+    runtimeType: 'number',
+  });
   metadata.push(embeddableEntityMeta);
 
   const employee2def = new EntityMetadata({
@@ -223,7 +221,11 @@ const initialMetadataProcessor: MetadataProcessor = (metadata, platform) => {
 
 const processedMetadataProcessor: GenerateOptions['onProcessedMetadata'] = (metadata, platform) => {
   metadata.forEach(entity => {
-    if (['AuthorPartialView', 'AuthorPartialView2', 'CustomBase2', 'Employee2', 'Manager2', 'CompanyOwner2'].includes(entity.className)) {
+    if (
+      ['AuthorPartialView', 'AuthorPartialView2', 'CustomBase2', 'Employee2', 'Manager2', 'CompanyOwner2'].includes(
+        entity.className,
+      )
+    ) {
       expect(entity.virtual).toBe(true);
     } else if (entity.className === 'IdentitiesContainer') {
       expect(entity.embeddable).toBe(true);
@@ -287,21 +289,16 @@ const processedMetadataProcessor: GenerateOptions['onProcessedMetadata'] = (meta
       updatedAtProp.runtimeType = 'MyExtendedDataClass';
       updatedAtProp.serializer = v => v.toString();
       updatedAtProp.groups = ['test'];
-      updatedAtProp.customType = new class extends Type<Date, string> {
-
+      updatedAtProp.customType = new (class extends Type<Date, string> {
         get runtimeType(): string {
           return 'string';
         }
-
-      };
+      })();
     }
 
     if (entity.className === 'BookTag2') {
       entity.props.forEach(prop => {
-        if (
-          prop.name === 'bookToTagUnorderedInverse' ||
-          prop.name === 'book2TagsCollection'
-        ) {
+        if (prop.name === 'bookToTagUnorderedInverse' || prop.name === 'book2TagsCollection') {
           prop.orderBy = { name: 'asc' };
         }
       });
@@ -310,7 +307,6 @@ const processedMetadataProcessor: GenerateOptions['onProcessedMetadata'] = (meta
 };
 
 class JsonObjectType extends JsonType {
-
   override convertToDatabaseValue(value: unknown, platform: Platform, context?: TransformContext): string | null {
     return super.convertToDatabaseValue(value, platform, context);
   }
@@ -318,11 +314,9 @@ class JsonObjectType extends JsonType {
   get runtimeType(): string {
     return 'object';
   }
-
 }
 
 class Email {
-
   private readonly parts: [string, string];
 
   constructor(email: string) {
@@ -336,11 +330,9 @@ class Email {
   getLocal() {
     return this.parts[0];
   }
-
 }
 
 class EmailType extends Type<Email, string> {
-
   convertToJSValue(value: string, platform: Platform): Email {
     return new Email(value);
   }
@@ -348,11 +340,9 @@ class EmailType extends Type<Email, string> {
   convertToDatabaseValue(value: Email, platform: Platform, context?: TransformContext): string {
     return `${value.getLocal()}@${value.getDomain()}`;
   }
-
 }
 
 class UrlType extends Type<URL, string> {
-
   convertToJSValue(value: string, platform: Platform): URL {
     return new URL(value);
   }
@@ -360,11 +350,10 @@ class UrlType extends Type<URL, string> {
   convertToDatabaseValue(value: URL, platform: Platform, context?: TransformContext): string {
     return value.toString();
   }
-
 }
 
 const customImportResolver = (name: string, basePath: string, extension: string) => {
-  return ({
+  return {
     Book2: { path: `${basePath}/${name}${extension}`, name: 'Book2' },
     CustomBooleanType: { path: `${basePath}/../types/MyBoolean`, name: 'MyBoolean' },
     UrlTypeLike: { path: `${basePath}/../types/UrlTypeLike`, name: 'UrlTypeLike' },
@@ -373,7 +362,7 @@ const customImportResolver = (name: string, basePath: string, extension: string)
     JSONObject: { path: `${basePath}/../runtimeTypes/JSONObject`, name: 'JSONObject' },
     Email: { path: `${basePath}/../runtimeTypes/Email`, name: 'default' },
     URL: { path: '', name: '' },
-  })[name];
+  }[name];
 };
 
 const getMappedTypeOverride = (type: string, platform: Platform) => {
@@ -414,7 +403,6 @@ const generateOptions = {
 };
 
 describe('MetadataHooks [mysql]', () => {
-
   beforeAll(async () => {
     orm = await initORMMySql('mysql', {
       discovery: {
@@ -429,9 +417,7 @@ describe('MetadataHooks [mysql]', () => {
   });
 
   describe.each([false, true])('forceUndefined=%s', forceUndefined => {
-
     describe.each([false, true])('identifiedReferences=%s', identifiedReferences => {
-
       test('metadata hooks with legacy', async () => {
         const dump = await orm.entityGenerator.generate({
           ...generateOptions,

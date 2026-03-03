@@ -4,10 +4,9 @@ import { initORMMongo, mockLogger } from '../../bootstrap.js';
 import { Author, Book } from '../../entities/index.js';
 
 describe('lazy scalar properties (mongo)', () => {
-
   let orm: MikroORM<MongoDriver>;
 
-  beforeAll(async () => orm = await initORMMongo());
+  beforeAll(async () => (orm = await initORMMongo()));
   beforeEach(async () => orm.schema.clear());
 
   test('lazy scalar properties', async () => {
@@ -22,7 +21,9 @@ describe('lazy scalar properties (mongo)', () => {
     expect(r1[0].books[0].perex).not.toBe('123');
     expect(mock.mock.calls).toHaveLength(2);
     expect(mock.mock.calls[0][0]).toMatch(`db.getCollection('author').find({}, {}).toArray()`);
-    expect(mock.mock.calls[1][0]).toMatch(/db\.getCollection\('books-table'\)\.find\({ .* }, { projection: { _id: 1, createdAt: 1, title: 1, author: 1, publisher: 1, tags: 1, metaObject: 1, metaArray: 1, metaArrayOfStrings: 1, point: 1, tenant: 1 } }\)/);
+    expect(mock.mock.calls[1][0]).toMatch(
+      /db\.getCollection\('books-table'\)\.find\({ .* }, { projection: { _id: 1, createdAt: 1, title: 1, author: 1, publisher: 1, tags: 1, metaObject: 1, metaArray: 1, metaArrayOfStrings: 1, point: 1, tenant: 1 } }\)/,
+    );
 
     orm.em.clear();
     mock.mock.calls.length = 0;
@@ -38,7 +39,9 @@ describe('lazy scalar properties (mongo)', () => {
     expect(r3!.books[0].perex).not.toBe('123');
     expect(mock.mock.calls).toHaveLength(2);
     expect(mock.mock.calls[0][0]).toMatch(/db\.getCollection\('author'\)\.find\({ .* }, {}\)/);
-    expect(mock.mock.calls[1][0]).toMatch(/db\.getCollection\('books-table'\)\.find\({ .* }, { projection: { _id: 1, createdAt: 1, title: 1, author: 1, publisher: 1, tags: 1, metaObject: 1, metaArray: 1, metaArrayOfStrings: 1, point: 1, tenant: 1 } }\)/);
+    expect(mock.mock.calls[1][0]).toMatch(
+      /db\.getCollection\('books-table'\)\.find\({ .* }, { projection: { _id: 1, createdAt: 1, title: 1, author: 1, publisher: 1, tags: 1, metaObject: 1, metaArray: 1, metaArrayOfStrings: 1, point: 1, tenant: 1 } }\)/,
+    );
 
     orm.em.clear();
     mock.mock.calls.length = 0;
@@ -67,10 +70,13 @@ describe('lazy scalar properties (mongo)', () => {
 
     expect(mock.mock.calls).toHaveLength(3);
     expect(mock.mock.calls[0][0]).toMatch(`db.getCollection('author').find({}, {}).toArray();`);
-    expect(mock.mock.calls[1][0]).toMatch(`db.getCollection('books-table').find({ author: { '$in': [ ObjectId('61a2438bdd2b18c64de57d04') ] } }, { projection: { _id: 1, createdAt: 1, title: 1, author: 1, publisher: 1, tags: 1, metaObject: 1, metaArray: 1, metaArrayOfStrings: 1, point: 1, tenant: 1 } }).sort([ [ 'title', 1 ] ]).toArray();`);
-    expect(mock.mock.calls[2][0]).toMatch(`db.getCollection('books-table').find({ _id: { '$in': [ ObjectId('61a24373938899ec672b4ee4') ] } }, { projection: { _id: 1, perex: 1 } }).toArray();`);
+    expect(mock.mock.calls[1][0]).toMatch(
+      `db.getCollection('books-table').find({ author: { '$in': [ ObjectId('61a2438bdd2b18c64de57d04') ] } }, { projection: { _id: 1, createdAt: 1, title: 1, author: 1, publisher: 1, tags: 1, metaObject: 1, metaArray: 1, metaArrayOfStrings: 1, point: 1, tenant: 1 } }).sort([ [ 'title', 1 ] ]).toArray();`,
+    );
+    expect(mock.mock.calls[2][0]).toMatch(
+      `db.getCollection('books-table').find({ _id: { '$in': [ ObjectId('61a24373938899ec672b4ee4') ] } }, { projection: { _id: 1, perex: 1 } }).toArray();`,
+    );
   });
 
   afterAll(async () => orm.close(true));
-
 });

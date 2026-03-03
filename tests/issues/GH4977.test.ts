@@ -1,9 +1,15 @@
 import { MikroORM, SimpleLogger, Collection, Ref, ref } from '@mikro-orm/sqlite';
-import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class Author {
-
   @PrimaryKey()
   id!: number;
 
@@ -19,12 +25,10 @@ class Author {
     }
     this.name = name;
   }
-
 }
 
 @Entity()
 class Book {
-
   @PrimaryKey()
   id!: number;
 
@@ -44,12 +48,10 @@ class Book {
     this.title = title;
     this.author = ref(author);
   }
-
 }
 
 @Entity()
 class Publisher {
-
   @PrimaryKey()
   id!: number;
 
@@ -65,7 +67,6 @@ class Publisher {
     }
     this.name = name;
   }
-
 }
 
 let orm: MikroORM;
@@ -87,10 +88,7 @@ beforeAll(async () => {
   ];
   orm.em.persist(authors);
 
-  const publishers = [
-    new Publisher({ id: 1, name: 'AAA' }),
-    new Publisher({ id: 2, name: 'BBB' }),
-  ];
+  const publishers = [new Publisher({ id: 1, name: 'AAA' }), new Publisher({ id: 2, name: 'BBB' })];
   orm.em.persist(publishers);
 
   const books = [

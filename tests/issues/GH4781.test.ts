@@ -12,7 +12,6 @@ import { v4 } from 'uuid';
 
 @Entity()
 class Author {
-
   @PrimaryKey()
   id: string = v4();
 
@@ -48,12 +47,10 @@ class Author {
     this.books.add(myFirstBook);
     this.firstBook = ref(myFirstBook);
   }
-
 }
 
 @Entity()
 class Book {
-
   @PrimaryKey()
   id = v4();
 
@@ -75,7 +72,6 @@ class Book {
     this.name = name;
     this.author = ref(author);
   }
-
 }
 
 let orm: MikroORM;

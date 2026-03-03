@@ -4,7 +4,6 @@ import { Book2 } from './Book2.js';
 
 @Entity()
 export class BookTag2 {
-
   @PrimaryKey()
   id!: bigint;
 
@@ -20,5 +19,4 @@ export class BookTag2 {
   constructor(name: string) {
     this.name = name;
   }
-
 }

@@ -1,7 +1,6 @@
 import { MemoryCacheAdapter } from '@mikro-orm/core';
 
 describe('MemoryCacheAdapter', () => {
-
   test('should ignore old cache', async () => {
     vi.useFakeTimers();
 
@@ -18,5 +17,4 @@ describe('MemoryCacheAdapter', () => {
 
     vi.useRealTimers();
   });
-
 });

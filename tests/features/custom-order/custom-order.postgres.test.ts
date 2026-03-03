@@ -17,19 +17,18 @@ type Rating = 'bad' | 'ok' | 'good';
 enum Priority {
   Low = 'low',
   Medium = 'medium',
-  High = 'high'
+  High = 'high',
 }
 
 // Out of order on purpose
 enum Difficulty {
   Easy = 2,
   Hard = 1,
-  Medium = 0
+  Medium = 0,
 }
 
 @Entity()
 class User {
-
   @PrimaryKey()
   id!: number;
 
@@ -38,12 +37,10 @@ class User {
 
   @OneToMany(() => Task, ({ owner }) => owner)
   tasks = new Collection<Task>(this);
-
 }
 
 @Entity()
 class Task {
-
   @PrimaryKey()
   id!: number;
 
@@ -69,7 +66,6 @@ class Task {
     nullable: true,
   })
   difficulty?: Difficulty;
-
 }
 
 const createWithPriority = (label: string, priority?: Priority) => {
@@ -94,7 +90,6 @@ const createWithDifficulty = (label: string, difficulty?: Difficulty) => {
 };
 
 describe('custom order [postgres]', () => {
-
   let orm: MikroORM<AbstractSqlDriver>;
 
   beforeAll(async () => {
@@ -117,97 +112,121 @@ describe('custom order [postgres]', () => {
   test('query string enum ASC', async () => {
     const mock = mockLogger(orm);
 
-    await orm.em.persist([
-      createWithPriority('a', Priority.Medium),
-      createWithPriority('b', Priority.High),
-      createWithPriority('c', Priority.Low),
-      createWithPriority('d'),
-    ]).flush();
+    await orm.em
+      .persist([
+        createWithPriority('a', Priority.Medium),
+        createWithPriority('b', Priority.High),
+        createWithPriority('c', Priority.Low),
+        createWithPriority('d'),
+      ])
+      .flush();
     orm.em.clear();
 
     const tasks = await orm.em.find(Task, {}, { orderBy: { priority: QueryOrder.ASC } });
     expect(tasks.map(({ label }) => label)).toEqual(['c', 'a', 'b', 'd']);
-    expect(mock.mock.calls[3][0]).toMatch(`select "t0".* from "task" as "t0" order by (case when "t0"."priority" = 'low' then 0 when "t0"."priority" = 'medium' then 1 when "t0"."priority" = 'high' then 2 else null end)`);
+    expect(mock.mock.calls[3][0]).toMatch(
+      `select "t0".* from "task" as "t0" order by (case when "t0"."priority" = 'low' then 0 when "t0"."priority" = 'medium' then 1 when "t0"."priority" = 'high' then 2 else null end)`,
+    );
   });
 
   test('query string enum DESC', async () => {
     const mock = mockLogger(orm);
 
-    await orm.em.persist([
-      createWithPriority('a', Priority.Medium),
-      createWithPriority('b', Priority.High),
-      createWithPriority('c', Priority.Low),
-      createWithPriority('d'),
-    ]).flush();
+    await orm.em
+      .persist([
+        createWithPriority('a', Priority.Medium),
+        createWithPriority('b', Priority.High),
+        createWithPriority('c', Priority.Low),
+        createWithPriority('d'),
+      ])
+      .flush();
     orm.em.clear();
 
     const tasks = await orm.em.find(Task, {}, { orderBy: { priority: QueryOrder.DESC } });
     expect(tasks.map(({ label }) => label)).toEqual(['d', 'b', 'a', 'c']);
-    expect(mock.mock.calls[3][0]).toMatch(`select "t0".* from "task" as "t0" order by (case when "t0"."priority" = 'low' then 0 when "t0"."priority" = 'medium' then 1 when "t0"."priority" = 'high' then 2 else null end)`);
+    expect(mock.mock.calls[3][0]).toMatch(
+      `select "t0".* from "task" as "t0" order by (case when "t0"."priority" = 'low' then 0 when "t0"."priority" = 'medium' then 1 when "t0"."priority" = 'high' then 2 else null end)`,
+    );
   });
 
   test('query raw string ASC', async () => {
     const mock = mockLogger(orm);
 
-    await orm.em.persist([
-      createWithRating('a', 'good'),
-      createWithRating('b', 'bad'),
-      createWithRating('c', 'ok'),
-      createWithRating('d'),
-    ]).flush();
+    await orm.em
+      .persist([
+        createWithRating('a', 'good'),
+        createWithRating('b', 'bad'),
+        createWithRating('c', 'ok'),
+        createWithRating('d'),
+      ])
+      .flush();
     orm.em.clear();
 
     const tasks = await orm.em.find(Task, {}, { orderBy: { rating: QueryOrder.ASC } });
     expect(tasks.map(({ label }) => label)).toEqual(['b', 'c', 'a', 'd']);
-    expect(mock.mock.calls[3][0]).toMatch(`select "t0".* from "task" as "t0" order by (case when "t0"."rating" = 'bad' then 0 when "t0"."rating" = 'ok' then 1 when "t0"."rating" = 'good' then 2 else null end)`);
+    expect(mock.mock.calls[3][0]).toMatch(
+      `select "t0".* from "task" as "t0" order by (case when "t0"."rating" = 'bad' then 0 when "t0"."rating" = 'ok' then 1 when "t0"."rating" = 'good' then 2 else null end)`,
+    );
   });
 
   test('query raw string DESC', async () => {
     const mock = mockLogger(orm);
 
-    await orm.em.persist([
-      createWithRating('a', 'good'),
-      createWithRating('b', 'bad'),
-      createWithRating('c', 'ok'),
-      createWithRating('d'),
-    ]).flush();
+    await orm.em
+      .persist([
+        createWithRating('a', 'good'),
+        createWithRating('b', 'bad'),
+        createWithRating('c', 'ok'),
+        createWithRating('d'),
+      ])
+      .flush();
     orm.em.clear();
 
     const tasks = await orm.em.find(Task, {}, { orderBy: { rating: QueryOrder.DESC } });
     expect(tasks.map(({ label }) => label)).toEqual(['d', 'a', 'c', 'b']);
-    expect(mock.mock.calls[3][0]).toMatch(`select "t0".* from "task" as "t0" order by (case when "t0"."rating" = 'bad' then 0 when "t0"."rating" = 'ok' then 1 when "t0"."rating" = 'good' then 2 else null end) desc`);
+    expect(mock.mock.calls[3][0]).toMatch(
+      `select "t0".* from "task" as "t0" order by (case when "t0"."rating" = 'bad' then 0 when "t0"."rating" = 'ok' then 1 when "t0"."rating" = 'good' then 2 else null end) desc`,
+    );
   });
 
   test('query numeric enum ASC', async () => {
     const mock = mockLogger(orm);
 
-    await orm.em.persist([
-      createWithDifficulty('a', Difficulty.Hard),
-      createWithDifficulty('b'),
-      createWithDifficulty('c', Difficulty.Medium),
-      createWithDifficulty('d', Difficulty.Easy),
-    ]).flush();
+    await orm.em
+      .persist([
+        createWithDifficulty('a', Difficulty.Hard),
+        createWithDifficulty('b'),
+        createWithDifficulty('c', Difficulty.Medium),
+        createWithDifficulty('d', Difficulty.Easy),
+      ])
+      .flush();
     orm.em.clear();
 
     const tasks = await orm.em.find(Task, {}, { orderBy: { difficulty: QueryOrder.ASC } });
     expect(tasks.map(({ label }) => label)).toEqual(['d', 'c', 'a', 'b']);
-    expect(mock.mock.calls[3][0]).toMatch(`select "t0".* from "task" as "t0" order by (case when "t0"."difficulty" = 2 then 0 when "t0"."difficulty" = 0 then 1 when "t0"."difficulty" = 1 then 2 else null end)`);
+    expect(mock.mock.calls[3][0]).toMatch(
+      `select "t0".* from "task" as "t0" order by (case when "t0"."difficulty" = 2 then 0 when "t0"."difficulty" = 0 then 1 when "t0"."difficulty" = 1 then 2 else null end)`,
+    );
   });
 
   test('query numeric enum DESC', async () => {
     const mock = mockLogger(orm);
 
-    await orm.em.persist([
-      createWithDifficulty('a', Difficulty.Hard),
-      createWithDifficulty('b'),
-      createWithDifficulty('c', Difficulty.Medium),
-      createWithDifficulty('d', Difficulty.Easy),
-    ]).flush();
+    await orm.em
+      .persist([
+        createWithDifficulty('a', Difficulty.Hard),
+        createWithDifficulty('b'),
+        createWithDifficulty('c', Difficulty.Medium),
+        createWithDifficulty('d', Difficulty.Easy),
+      ])
+      .flush();
     orm.em.clear();
 
     const tasks = await orm.em.find(Task, {}, { orderBy: { difficulty: QueryOrder.DESC } });
     expect(tasks.map(({ label }) => label)).toEqual(['b', 'a', 'c', 'd']);
-    expect(mock.mock.calls[3][0]).toMatch(`select "t0".* from "task" as "t0" order by (case when "t0"."difficulty" = 2 then 0 when "t0"."difficulty" = 0 then 1 when "t0"."difficulty" = 1 then 2 else null end) desc`);
+    expect(mock.mock.calls[3][0]).toMatch(
+      `select "t0".* from "task" as "t0" order by (case when "t0"."difficulty" = 2 then 0 when "t0"."difficulty" = 0 then 1 when "t0"."difficulty" = 1 then 2 else null end) desc`,
+    );
   });
 
   test('multiple order', async () => {
@@ -215,19 +234,23 @@ describe('custom order [postgres]', () => {
 
     const { em } = orm;
 
-    await em.persist([
-      em.create(Task, { label: 'a', priority: Priority.High, difficulty: Difficulty.Easy }),
-      em.create(Task, { label: 'b', priority: Priority.High, difficulty: Difficulty.Hard }),
-      em.create(Task, { label: 'c', priority: Priority.Low, difficulty: Difficulty.Hard }),
-      em.create(Task, { label: 'd', priority: Priority.Medium, difficulty: Difficulty.Medium }),
-      em.create(Task, { label: 'e', priority: Priority.Low, difficulty: Difficulty.Easy }),
-      em.create(Task, { label: 'f', priority: Priority.High, difficulty: Difficulty.Medium }),
-    ]).flush();
+    await em
+      .persist([
+        em.create(Task, { label: 'a', priority: Priority.High, difficulty: Difficulty.Easy }),
+        em.create(Task, { label: 'b', priority: Priority.High, difficulty: Difficulty.Hard }),
+        em.create(Task, { label: 'c', priority: Priority.Low, difficulty: Difficulty.Hard }),
+        em.create(Task, { label: 'd', priority: Priority.Medium, difficulty: Difficulty.Medium }),
+        em.create(Task, { label: 'e', priority: Priority.Low, difficulty: Difficulty.Easy }),
+        em.create(Task, { label: 'f', priority: Priority.High, difficulty: Difficulty.Medium }),
+      ])
+      .flush();
     em.clear();
 
     const tasks = await em.find(Task, {}, { orderBy: { priority: QueryOrder.ASC, difficulty: QueryOrder.DESC } });
     expect(tasks.map(({ label }) => label)).toEqual(['c', 'e', 'd', 'b', 'f', 'a']);
-    expect(mock.mock.calls[3][0]).toMatch(`select "t0".* from "task" as "t0" order by (case when "t0"."priority" = 'low' then 0 when "t0"."priority" = 'medium' then 1 when "t0"."priority" = 'high' then 2 else null end) asc, (case when "t0"."difficulty" = 2 then 0 when "t0"."difficulty" = 0 then 1 when "t0"."difficulty" = 1 then 2 else null end) desc`);
+    expect(mock.mock.calls[3][0]).toMatch(
+      `select "t0".* from "task" as "t0" order by (case when "t0"."priority" = 'low' then 0 when "t0"."priority" = 'medium' then 1 when "t0"."priority" = 'high' then 2 else null end) asc, (case when "t0"."difficulty" = 2 then 0 when "t0"."difficulty" = 0 then 1 when "t0"."difficulty" = 1 then 2 else null end) desc`,
+    );
   });
 
   test('as a relation', async () => {
@@ -249,35 +272,49 @@ describe('custom order [postgres]', () => {
     await em.persist([user1, user2]).flush();
     em.clear();
 
-    const users1 = await em.find(User, {}, {
-      strategy: 'select-in',
-      populate: ['tasks'],
-      orderBy: {
-        name: QueryOrder.ASC,
-        tasks: {
-          priority: QueryOrder.ASC,
+    const users1 = await em.find(
+      User,
+      {},
+      {
+        strategy: 'select-in',
+        populate: ['tasks'],
+        orderBy: {
+          name: QueryOrder.ASC,
+          tasks: {
+            priority: QueryOrder.ASC,
+          },
         },
       },
-    });
+    );
 
     const ret1 = users1.flatMap(u => u.tasks.getItems()).map(({ owner, label }) => `${owner?.name}-${label}`);
     expect(ret1).toEqual(['u1-1c', 'u1-1b', 'u1-1a', 'u2-2b', 'u2-2a', 'u2-2c']);
-    expect(mock.mock.calls[4][0]).toMatch(`select "u0".* from "user" as "u0" left join "task" as "t1" on "u0"."id" = "t1"."owner_id" order by "u0"."name" asc, (case when "t1"."priority" = 'low' then 0 when "t1"."priority" = 'medium' then 1 when "t1"."priority" = 'high' then 2 else null end) asc`);
-    expect(mock.mock.calls[5][0]).toMatch(`select "t0".* from "task" as "t0" where "t0"."owner_id" in (1, 2) order by (case when "t0"."priority" = 'low' then 0 when "t0"."priority" = 'medium' then 1 when "t0"."priority" = 'high' then 2 else null end) asc`);
+    expect(mock.mock.calls[4][0]).toMatch(
+      `select "u0".* from "user" as "u0" left join "task" as "t1" on "u0"."id" = "t1"."owner_id" order by "u0"."name" asc, (case when "t1"."priority" = 'low' then 0 when "t1"."priority" = 'medium' then 1 when "t1"."priority" = 'high' then 2 else null end) asc`,
+    );
+    expect(mock.mock.calls[5][0]).toMatch(
+      `select "t0".* from "task" as "t0" where "t0"."owner_id" in (1, 2) order by (case when "t0"."priority" = 'low' then 0 when "t0"."priority" = 'medium' then 1 when "t0"."priority" = 'high' then 2 else null end) asc`,
+    );
 
-    const users2 = await em.find(User, {}, {
-      populate: ['tasks'],
-      strategy: 'joined',
-      orderBy: {
-        name: QueryOrder.ASC,
-        tasks: {
-          priority: QueryOrder.ASC,
+    const users2 = await em.find(
+      User,
+      {},
+      {
+        populate: ['tasks'],
+        strategy: 'joined',
+        orderBy: {
+          name: QueryOrder.ASC,
+          tasks: {
+            priority: QueryOrder.ASC,
+          },
         },
       },
-    });
+    );
 
     const ret2 = users2.flatMap(u => u.tasks.getItems()).map(({ owner, label }) => `${owner?.name}-${label}`);
     expect(ret2).toEqual(['u1-1c', 'u1-1b', 'u1-1a', 'u2-2b', 'u2-2a', 'u2-2c']);
-    expect(mock.mock.calls[6][0]).toMatch(`select "u0".*, "t1"."id" as "t1__id", "t1"."label" as "t1__label", "t1"."owner_id" as "t1__owner_id", "t1"."priority" as "t1__priority", "t1"."rating" as "t1__rating", "t1"."difficulty" as "t1__difficulty" from "user" as "u0" left join "task" as "t1" on "u0"."id" = "t1"."owner_id" order by "u0"."name" asc, (case when "t1"."priority" = 'low' then 0 when "t1"."priority" = 'medium' then 1 when "t1"."priority" = 'high' then 2 else null end) asc`);
+    expect(mock.mock.calls[6][0]).toMatch(
+      `select "u0".*, "t1"."id" as "t1__id", "t1"."label" as "t1__label", "t1"."owner_id" as "t1__owner_id", "t1"."priority" as "t1__priority", "t1"."rating" as "t1__rating", "t1"."difficulty" as "t1__difficulty" from "user" as "u0" left join "task" as "t1" on "u0"."id" = "t1"."owner_id" order by "u0"."name" asc, (case when "t1"."priority" = 'low' then 0 when "t1"."priority" = 'medium' then 1 when "t1"."priority" = 'high' then 2 else null end) asc`,
+    );
   });
 });

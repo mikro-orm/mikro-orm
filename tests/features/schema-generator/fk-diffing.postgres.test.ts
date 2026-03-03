@@ -1,31 +1,33 @@
 import { DeferMode, MikroORM } from '@mikro-orm/postgresql';
-import { Entity, ManyToOne, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToOne,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Entity({ tableName: 'author' })
 class Author0 {
-
   @PrimaryKey()
   id!: number;
 
   @Property()
   name!: string;
-
 }
 
 @Entity({ tableName: 'author' })
 class Author1 {
-
   @PrimaryKey()
   pk!: number;
 
   @Property()
   name!: string;
-
 }
 
 @Entity({ tableName: 'book' })
 class Book0 {
-
   @PrimaryKey()
   id!: number;
 
@@ -37,23 +39,19 @@ class Book0 {
 
   @ManyToOne(() => Book0, { nullable: true })
   basedOn?: Book0;
-
 }
 
 @Entity({ tableName: 'book' })
 class Book11 {
-
   @PrimaryKey()
   id!: number;
 
   @ManyToOne(() => Author0)
   author1!: Author0;
-
 }
 
 @Entity({ tableName: 'book' })
 class Book1 {
-
   @PrimaryKey()
   id!: number;
 
@@ -65,12 +63,10 @@ class Book1 {
 
   @ManyToOne(() => Book1, { nullable: true })
   basedOn?: Book1;
-
 }
 
 @Entity({ tableName: 'book' })
 class Book2 {
-
   @PrimaryKey()
   id!: number;
 
@@ -82,23 +78,19 @@ class Book2 {
 
   @ManyToOne(() => Book2, { nullable: true })
   basedOn?: Book2;
-
 }
 
 @Entity({ tableName: 'book' })
 class Book3 {
-
   @PrimaryKey()
   id!: number;
 
   @ManyToOne(() => Author1)
   author1!: Author1;
-
 }
 
 @Entity({ tableName: 'book' })
 class Book4 {
-
   @PrimaryKey()
   id!: number;
 
@@ -107,12 +99,10 @@ class Book4 {
 
   @OneToOne(() => Author1, { foreignKeyName: 'book_author2_id_custom_foreign_name' })
   author2!: Author1;
-
 }
 
 @Entity({ tableName: 'book' })
 class Book41 {
-
   @PrimaryKey()
   id!: number;
 
@@ -121,12 +111,10 @@ class Book41 {
 
   @OneToOne(() => Author1, { deferMode: DeferMode.INITIALLY_DEFERRED })
   author2!: Author1;
-
 }
 
 @Entity({ tableName: 'book' })
 class Book42 {
-
   @PrimaryKey()
   id!: number;
 
@@ -135,11 +123,9 @@ class Book42 {
 
   @OneToOne(() => Author1, { deferMode: DeferMode.INITIALLY_IMMEDIATE })
   author2!: Author1;
-
 }
 
 describe('dropping tables with FKs in postgres', () => {
-
   test('schema generator removes stale FKs on target table dropping 1', async () => {
     const orm = await MikroORM.init({
       metadataProvider: ReflectMetadataProvider,
@@ -188,11 +174,9 @@ describe('dropping tables with FKs in postgres', () => {
 
     await orm.close(true);
   });
-
 });
 
 describe('updating tables with FKs in postgres', () => {
-
   test('schema generator updates foreign keys on deferrable change', async () => {
     const orm = await MikroORM.init({
       metadataProvider: ReflectMetadataProvider,
@@ -224,5 +208,4 @@ describe('updating tables with FKs in postgres', () => {
 
     await orm.close(true);
   });
-
 });

@@ -11,15 +11,12 @@ import {
 
 @Embeddable()
 export class Lock {
-
   @Property()
   createdAt: Date = new Date();
-
 }
 
 @Entity()
 export class File {
-
   @PrimaryKey()
   id!: number;
 
@@ -28,11 +25,9 @@ export class File {
     object: true, // error only throws with object mode
   })
   lock?: Lock;
-
 }
 
 describe('GH issue 2233', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -52,5 +47,4 @@ describe('GH issue 2233', () => {
     const mapped = orm.em.map(File, { id: 1, lock: null });
     expect(mapped).toEqual({ id: 1, lock: null });
   });
-
 });

@@ -4,7 +4,6 @@ import { mockLogger } from '../../helpers.js';
 
 @Entity()
 class Product {
-
   @PrimaryKey()
   id!: number;
 
@@ -13,12 +12,10 @@ class Product {
 
   @ManyToMany(() => Category, 'products')
   categories = new Collection<Category>(this);
-
 }
 
 @Entity()
 class Category {
-
   @PrimaryKey()
   id!: number;
 
@@ -27,7 +24,6 @@ class Category {
 
   @ManyToMany(() => Product)
   products = new Collection<Product>(this);
-
 }
 
 let orm: MikroORM;
@@ -66,14 +62,18 @@ test('dataloader generated queries', async () => {
     const p1 = await orm.em.findOneOrFail(Product, { name: 'Product 1' });
     const mock = mockLogger(orm);
     await p1.categories.init({ dataloader: false });
-    expect(mock.mock.calls[0][0]).toMatch('select `c0`.`category_id`, `c0`.`product_id`, `c1`.`id` as `c1__id`, `c1`.`name` as `c1__name` from `category_products` as `c0` inner join `category` as `c1` on `c0`.`category_id` = `c1`.`id` where `c0`.`product_id` in (1)');
+    expect(mock.mock.calls[0][0]).toMatch(
+      'select `c0`.`category_id`, `c0`.`product_id`, `c1`.`id` as `c1__id`, `c1`.`name` as `c1__name` from `category_products` as `c0` inner join `category` as `c1` on `c0`.`category_id` = `c1`.`id` where `c0`.`product_id` in (1)',
+    );
   }
 
   {
     const p1 = await orm.em.findOneOrFail(Product, { name: 'Product 1' });
     const mock = mockLogger(orm);
     await p1.categories.init({ dataloader: true });
-    expect(mock.mock.calls[0][0]).toMatch('select `c0`.`category_id`, `c0`.`product_id`, `c1`.`id` as `c1__id`, `c1`.`name` as `c1__name` from `category_products` as `c0` inner join `category` as `c1` on `c0`.`category_id` = `c1`.`id` where `c0`.`product_id` in (1) and `c0`.`product_id` = 1');
+    expect(mock.mock.calls[0][0]).toMatch(
+      'select `c0`.`category_id`, `c0`.`product_id`, `c1`.`id` as `c1__id`, `c1`.`name` as `c1__name` from `category_products` as `c0` inner join `category` as `c1` on `c0`.`category_id` = `c1`.`id` where `c0`.`product_id` in (1) and `c0`.`product_id` = 1',
+    );
   }
 });
 

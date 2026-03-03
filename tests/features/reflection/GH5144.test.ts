@@ -10,7 +10,6 @@ enum AccountType {
 
 @Entity()
 class Account {
-
   @PrimaryKey()
   id!: number;
 
@@ -34,12 +33,10 @@ class Account {
     this.balance = startBalance;
     this.type = type;
   }
-
 }
 
 @Entity()
 class User {
-
   @OneToOne({ primary: true })
   account!: Ref<Account>;
 
@@ -59,12 +56,10 @@ class User {
     this.username = username;
     this.password = password;
   }
-
 }
 
 @Entity()
 class Organization {
-
   @OneToOne({ primary: true })
   account!: Ref<Account>;
 
@@ -77,7 +72,6 @@ class Organization {
     this.account = ref(account);
     this.owner = ref(owner);
   }
-
 }
 
 let orm: MikroORM;

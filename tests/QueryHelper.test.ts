@@ -3,7 +3,6 @@ import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { Author2, Book2, FooBar2, FooBaz2, Test2, FooParam2 } from './entities-sql/index.js';
 
 describe('QueryHelper', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -19,7 +18,14 @@ describe('QueryHelper', () => {
   });
 
   test('processWhere returns empty object for undefined condition', async () => {
-    expect(QueryHelper.processWhere({ where: undefined as any, entityName: Author2, metadata: orm.getMetadata(), platform: orm.em.getDriver().getPlatform() })).toEqual({});
+    expect(
+      QueryHelper.processWhere({
+        where: undefined as any,
+        entityName: Author2,
+        metadata: orm.getMetadata(),
+        platform: orm.em.getDriver().getPlatform(),
+      }),
+    ).toEqual({});
   });
 
   test('test entity conversion to PK', async () => {
@@ -50,10 +56,38 @@ describe('QueryHelper', () => {
     const book1 = new Book2('b1', author);
     const book2 = new Book2('b2', author);
     const book3 = new Book2('b3', author);
-    expect(QueryHelper.processWhere({ where: ['1', '2', '3'], entityName: Book2, metadata: orm.getMetadata(), platform: orm.em.getDriver().getPlatform() })).toEqual({ uuid: { $in: ['1', '2', '3'] } });
-    expect(QueryHelper.processWhere({ where: [book1, book2, book3], entityName: Book2, metadata: orm.getMetadata(), platform: orm.em.getDriver().getPlatform() })).toEqual({ uuid: { $in: [book1.uuid, book2.uuid, book3.uuid] } });
-    expect(QueryHelper.processWhere({ where: { favouriteBook: ['1', '2', '3'] }, entityName: Author2, metadata: orm.getMetadata(), platform: orm.em.getDriver().getPlatform() })).toEqual({ favouriteBook: { $in: ['1', '2', '3'] } });
-    expect(QueryHelper.processWhere({ where: { $or: [{ author: [1, 2, 3] }, { author: [7, 8, 9] }] }, entityName: Book2, metadata: orm.getMetadata(), platform: orm.em.getDriver().getPlatform() })).toEqual({
+    expect(
+      QueryHelper.processWhere({
+        where: ['1', '2', '3'],
+        entityName: Book2,
+        metadata: orm.getMetadata(),
+        platform: orm.em.getDriver().getPlatform(),
+      }),
+    ).toEqual({ uuid: { $in: ['1', '2', '3'] } });
+    expect(
+      QueryHelper.processWhere({
+        where: [book1, book2, book3],
+        entityName: Book2,
+        metadata: orm.getMetadata(),
+        platform: orm.em.getDriver().getPlatform(),
+      }),
+    ).toEqual({ uuid: { $in: [book1.uuid, book2.uuid, book3.uuid] } });
+    expect(
+      QueryHelper.processWhere({
+        where: { favouriteBook: ['1', '2', '3'] },
+        entityName: Author2,
+        metadata: orm.getMetadata(),
+        platform: orm.em.getDriver().getPlatform(),
+      }),
+    ).toEqual({ favouriteBook: { $in: ['1', '2', '3'] } });
+    expect(
+      QueryHelper.processWhere({
+        where: { $or: [{ author: [1, 2, 3] }, { author: [7, 8, 9] }] },
+        entityName: Book2,
+        metadata: orm.getMetadata(),
+        platform: orm.em.getDriver().getPlatform(),
+      }),
+    ).toEqual({
       $or: [{ author: { $in: [1, 2, 3] } }, { author: { $in: [7, 8, 9] } }],
     });
   });
@@ -64,9 +98,16 @@ describe('QueryHelper', () => {
     expect(QueryHelper.mergePropertyFilters(['foo'], ['bar'])).toEqual({ foo: true, bar: true });
     expect(QueryHelper.mergePropertyFilters(['bar'], { bar: false })).toEqual({ bar: false });
     expect(QueryHelper.mergePropertyFilters(['foo'], { bar: false })).toEqual({ foo: true, bar: false });
-    expect(QueryHelper.mergePropertyFilters(['foo'], { bar: { active: true } })).toEqual({ foo: true, bar: { active: true } });
-    expect(QueryHelper.mergePropertyFilters({ bar: { active: true } }, ['foo'])).toEqual({ foo: true, bar: { active: true } });
-    expect(QueryHelper.mergePropertyFilters({ bar: { active: true } }, { bar: { active: false } })).toEqual({ bar: { active: false } });
+    expect(QueryHelper.mergePropertyFilters(['foo'], { bar: { active: true } })).toEqual({
+      foo: true,
+      bar: { active: true },
+    });
+    expect(QueryHelper.mergePropertyFilters({ bar: { active: true } }, ['foo'])).toEqual({
+      foo: true,
+      bar: { active: true },
+    });
+    expect(QueryHelper.mergePropertyFilters({ bar: { active: true } }, { bar: { active: false } })).toEqual({
+      bar: { active: false },
+    });
   });
-
 });

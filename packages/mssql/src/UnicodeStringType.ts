@@ -1,10 +1,7 @@
 import { type Platform, Type } from '@mikro-orm/core';
 
 export class UnicodeString {
-
-  constructor(
-    readonly value: string,
-  ) {}
+  constructor(readonly value: string) {}
 
   valueOf(): string {
     return this.value;
@@ -21,11 +18,9 @@ export class UnicodeString {
   [Symbol.toPrimitive]() {
     return this.value;
   }
-
 }
 
 export class UnicodeStringType extends Type<string | null, string | null> {
-
   override getColumnType(prop: { length?: number }, platform: Platform) {
     const length = prop.length === -1 ? 'max' : (prop.length ?? this.getDefaultLength(platform));
     return `nvarchar(${length})`;
@@ -59,5 +54,4 @@ export class UnicodeStringType extends Type<string | null, string | null> {
   override getDefaultLength(platform: Platform): number {
     return platform.getDefaultVarcharLength();
   }
-
 }

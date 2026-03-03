@@ -1,19 +1,23 @@
 import { Opt, Ref } from '@mikro-orm/core';
-import { Entity, ManyToOne, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToOne,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { MikroORM } from '@mikro-orm/sqlite';
 import { v4 } from 'uuid';
 
 @Entity()
 class Organization {
-
   @PrimaryKey({ columnType: 'uuid' })
   id = v4();
-
 }
 
 @Entity()
 class Project {
-
   @PrimaryKey({ columnType: 'uuid' })
   id = v4();
 
@@ -29,12 +33,10 @@ class Project {
     ref: true,
   })
   projectUpdate!: Ref<ProjectUpdate> & Opt;
-
 }
 
 @Entity()
 class ProjectUpdate {
-
   @PrimaryKey({ columnType: 'uuid' })
   id = v4();
 
@@ -47,7 +49,6 @@ class ProjectUpdate {
     joinColumns: ['project_id', 'organization_id'],
   })
   project!: Ref<Project>;
-
 }
 
 let orm: MikroORM;
@@ -84,19 +85,27 @@ afterAll(async () => {
 beforeEach(() => orm.em.clear());
 
 test('extra updates with 1:1 relations (select-in)', async () => {
-  const result = await orm.em.findOneOrFail(Project, { id: project.id, organization: org.id }, {
-    populate: ['projectUpdate'],
-    strategy: 'select-in',
-  });
+  const result = await orm.em.findOneOrFail(
+    Project,
+    { id: project.id, organization: org.id },
+    {
+      populate: ['projectUpdate'],
+      strategy: 'select-in',
+    },
+  );
 
   expect(orm.em.getUnitOfWork().getChangeSets()).toHaveLength(0);
 });
 
 test('extra updates with 1:1 relations (joined)', async () => {
-  const result = await orm.em.findOneOrFail(Project, { id: project.id, organization: org.id }, {
-    populate: ['projectUpdate'],
-    strategy: 'joined',
-  });
+  const result = await orm.em.findOneOrFail(
+    Project,
+    { id: project.id, organization: org.id },
+    {
+      populate: ['projectUpdate'],
+      strategy: 'joined',
+    },
+  );
 
   orm.em.getUnitOfWork().computeChangeSets();
   expect(orm.em.getUnitOfWork().getChangeSets()).toHaveLength(0);

@@ -6,7 +6,6 @@ import { FooBar2 } from './FooBar2.js';
 
 @Entity()
 export class Test2 {
-
   [OptionalProps]?: 'version';
 
   @PrimaryKey()
@@ -45,5 +44,4 @@ export class Test2 {
   getConfiguration() {
     return this.config.indexBy('property', 'value');
   }
-
 }

@@ -3,9 +3,7 @@ import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../../helpers.js';
 
 class Org {
-
   id!: number;
-
 }
 
 const OrgSchema = new EntitySchema({
@@ -17,11 +15,9 @@ const OrgSchema = new EntitySchema({
 });
 
 class UserGroup {
-
   id!: number;
   org!: Org;
   name!: string;
-
 }
 
 const UserGroupSchema = new EntitySchema({
@@ -39,12 +35,10 @@ const UserGroupSchema = new EntitySchema({
 });
 
 class Draft {
-
   id!: number;
   org!: Org;
   user_group?: UserGroup;
   name!: string;
-
 }
 
 const DraftSchema = new EntitySchema({
@@ -64,14 +58,12 @@ const DraftSchema = new EntitySchema({
 });
 
 class TestModel {
-
   id!: number;
   external_id?: string;
   name!: string;
   org!: Org;
   user_group?: UserGroup;
   draft!: Draft;
-
 }
 
 const TestModelSchema = new EntitySchema({
@@ -146,18 +138,14 @@ afterAll(() => orm.close(true));
 test('Query', async () => {
   const mock = mockLogger(orm);
 
-  await orm.em.fork().find(
-    TestModel,
-    { org: 1, user_group: null },
-    { fields: ['external_id'] },
-  );
+  await orm.em.fork().find(TestModel, { org: 1, user_group: null }, { fields: ['external_id'] });
 
-  await orm.em.fork().find(
-    TestModel,
-    { org: 1, user_group: 2 },
-    { fields: ['external_id'] },
-  );
+  await orm.em.fork().find(TestModel, { org: 1, user_group: 2 }, { fields: ['external_id'] });
 
-  expect(mock.mock.calls[0][0]).toMatch('select "t0"."id", "t0"."external_id" from "test_model" as "t0" where "t0"."org_id" = 1 and "t0"."user_group_id" is null');
-  expect(mock.mock.calls[1][0]).toMatch('select "t0"."id", "t0"."external_id" from "test_model" as "t0" where "t0"."org_id" = 1 and "t0"."user_group_id" = 2');
+  expect(mock.mock.calls[0][0]).toMatch(
+    'select "t0"."id", "t0"."external_id" from "test_model" as "t0" where "t0"."org_id" = 1 and "t0"."user_group_id" is null',
+  );
+  expect(mock.mock.calls[1][0]).toMatch(
+    'select "t0"."id", "t0"."external_id" from "test_model" as "t0" where "t0"."org_id" = 1 and "t0"."user_group_id" = 2',
+  );
 });

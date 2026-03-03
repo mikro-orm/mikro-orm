@@ -1,20 +1,25 @@
 import { Collection, PrimaryKeyProp, Ref } from '@mikro-orm/core';
-import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider, Unique } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+  Unique,
+} from '@mikro-orm/decorators/legacy';
 import { MikroORM } from '@mikro-orm/sqlite';
 import { v4 } from 'uuid';
 import { mockLogger } from '../helpers.js';
 
 @Entity()
 class Organization {
-
   @PrimaryKey({ columnType: 'uuid' })
   id = v4();
-
 }
 
 @Entity()
 class File {
-
   @PrimaryKey({ columnType: 'uuid' })
   id = v4();
 
@@ -27,12 +32,10 @@ class File {
     joinColumns: ['document_id', 'organization_id'],
   })
   document!: Ref<Document>;
-
 }
 
 @Entity()
 class Document {
-
   [PrimaryKeyProp]?: ['id', 'organization'];
 
   @Unique({ name: 'document_id_unique' })
@@ -64,12 +67,10 @@ class Document {
     orphanRemoval: true,
   })
   files = new Collection<File>(this);
-
 }
 
 @Entity()
 class Project {
-
   [PrimaryKeyProp]?: ['id', 'organization'];
 
   @PrimaryKey({ columnType: 'uuid' })
@@ -94,12 +95,10 @@ class Project {
     orphanRemoval: true,
   })
   projectUpdates = new Collection<ProjectUpdate>(this);
-
 }
 
 @Entity()
 class ProjectUpdate {
-
   [PrimaryKeyProp]?: ['id', 'organization'];
 
   @PrimaryKey({ columnType: 'uuid' })
@@ -121,7 +120,6 @@ class ProjectUpdate {
     orphanRemoval: true,
   })
   documents = new Collection<Document>(this);
-
 }
 
 let orm: MikroORM;
@@ -150,9 +148,11 @@ beforeEach(async () => {
   project = orm.em.create(Project, {
     organization: org,
     name: 'init',
-    documents: [{
-      organization: org,
-    }],
+    documents: [
+      {
+        organization: org,
+      },
+    ],
   });
   oldDocument = project.documents[0];
   await orm.em.flush();
@@ -195,12 +195,20 @@ test('orphan removal with complex FKs sharing a column (with loaded entity)', as
 
   expect(mock.mock.calls).toHaveLength(8);
   expect(mock.mock.calls[0][0]).toMatch('begin');
-  expect(mock.mock.calls[1][0]).toMatch('insert into `project_update` (`id`, `organization_id`, `project_id`) values (?, ?, ?)');
-  expect(mock.mock.calls[2][0]).toMatch('insert into `document` (`id`, `organization_id`, `project_id`, `project_update_id`) values (?, ?, ?, ?)');
+  expect(mock.mock.calls[1][0]).toMatch(
+    'insert into `project_update` (`id`, `organization_id`, `project_id`) values (?, ?, ?)',
+  );
+  expect(mock.mock.calls[2][0]).toMatch(
+    'insert into `document` (`id`, `organization_id`, `project_id`, `project_update_id`) values (?, ?, ?, ?)',
+  );
   expect(mock.mock.calls[3][0]).toMatch('insert into `file` (`id`, `organization_id`, `document_id`) values (?, ?, ?)');
   expect(mock.mock.calls[4][0]).toMatch('update `project` set `name` = ? where `id` = ? and `organization_id` = ?');
-  expect(mock.mock.calls[5][0]).toMatch('delete from `document` where (`project_id`, `organization_id`) = (?, ?) and (`id`, `organization_id`) not in ((?, ?))');
-  expect(mock.mock.calls[6][0]).toMatch('delete from `project_update` where (`project_id`, `organization_id`) = (?, ?) and (`id`, `organization_id`) not in ((?, ?))');
+  expect(mock.mock.calls[5][0]).toMatch(
+    'delete from `document` where (`project_id`, `organization_id`) = (?, ?) and (`id`, `organization_id`) not in ((?, ?))',
+  );
+  expect(mock.mock.calls[6][0]).toMatch(
+    'delete from `project_update` where (`project_id`, `organization_id`) = (?, ?) and (`id`, `organization_id`) not in ((?, ?))',
+  );
   expect(mock.mock.calls[7][0]).toMatch('commit');
 
   const exists = await orm.em.count(Document, oldDocument);
@@ -243,12 +251,20 @@ test('orphan removal with complex FKs sharing a column (with reference)', async 
 
   expect(mock.mock.calls).toHaveLength(8);
   expect(mock.mock.calls[0][0]).toMatch('begin');
-  expect(mock.mock.calls[1][0]).toMatch('insert into `project_update` (`id`, `organization_id`, `project_id`) values (?, ?, ?)');
-  expect(mock.mock.calls[2][0]).toMatch('insert into `document` (`id`, `organization_id`, `project_id`, `project_update_id`) values (?, ?, ?, ?)');
+  expect(mock.mock.calls[1][0]).toMatch(
+    'insert into `project_update` (`id`, `organization_id`, `project_id`) values (?, ?, ?)',
+  );
+  expect(mock.mock.calls[2][0]).toMatch(
+    'insert into `document` (`id`, `organization_id`, `project_id`, `project_update_id`) values (?, ?, ?, ?)',
+  );
   expect(mock.mock.calls[3][0]).toMatch('insert into `file` (`id`, `organization_id`, `document_id`) values (?, ?, ?)');
   expect(mock.mock.calls[4][0]).toMatch('update `project` set `name` = ? where `id` = ? and `organization_id` = ?');
-  expect(mock.mock.calls[5][0]).toMatch('delete from `document` where (`project_id`, `organization_id`) = (?, ?) and (`id`, `organization_id`) not in ((?, ?))');
-  expect(mock.mock.calls[6][0]).toMatch('delete from `project_update` where (`project_id`, `organization_id`) = (?, ?) and (`id`, `organization_id`) not in ((?, ?))');
+  expect(mock.mock.calls[5][0]).toMatch(
+    'delete from `document` where (`project_id`, `organization_id`) = (?, ?) and (`id`, `organization_id`) not in ((?, ?))',
+  );
+  expect(mock.mock.calls[6][0]).toMatch(
+    'delete from `project_update` where (`project_id`, `organization_id`) = (?, ?) and (`id`, `organization_id`) not in ((?, ?))',
+  );
   expect(mock.mock.calls[7][0]).toMatch('commit');
 
   const exists = await orm.em.count(Document, oldDocument);
@@ -259,10 +275,14 @@ test('orphan removal with complex FKs sharing a column (with reference)', async 
 
 test('orphan removal with complex FKs sharing a column (with populated relation via joined strategy)', async () => {
   // Loading the project does make orphanremoval work
-  const pr = await orm.em.findOneOrFail(Project, { organization: org.id }, {
-    populate: ['documents', 'projectUpdates', 'projectUpdates.documents'],
-    strategy: 'joined',
-  });
+  const pr = await orm.em.findOneOrFail(
+    Project,
+    { organization: org.id },
+    {
+      populate: ['documents', 'projectUpdates', 'projectUpdates.documents'],
+      strategy: 'joined',
+    },
+  );
 
   const projectUpdate = new ProjectUpdate();
   orm.em.assign(projectUpdate, {
@@ -296,8 +316,12 @@ test('orphan removal with complex FKs sharing a column (with populated relation 
 
   expect(mock.mock.calls).toHaveLength(7);
   expect(mock.mock.calls[0][0]).toMatch('begin');
-  expect(mock.mock.calls[1][0]).toMatch('insert into `project_update` (`id`, `organization_id`, `project_id`) values (?, ?, ?)');
-  expect(mock.mock.calls[2][0]).toMatch('insert into `document` (`id`, `organization_id`, `project_id`, `project_update_id`) values (?, ?, ?, ?)');
+  expect(mock.mock.calls[1][0]).toMatch(
+    'insert into `project_update` (`id`, `organization_id`, `project_id`) values (?, ?, ?)',
+  );
+  expect(mock.mock.calls[2][0]).toMatch(
+    'insert into `document` (`id`, `organization_id`, `project_id`, `project_update_id`) values (?, ?, ?, ?)',
+  );
   expect(mock.mock.calls[3][0]).toMatch('insert into `file` (`id`, `organization_id`, `document_id`) values (?, ?, ?)');
   expect(mock.mock.calls[4][0]).toMatch('update `project` set `name` = ? where `id` = ? and `organization_id` = ?');
   expect(mock.mock.calls[5][0]).toMatch('delete from `document` where (`id`, `organization_id`) in ((?, ?))');

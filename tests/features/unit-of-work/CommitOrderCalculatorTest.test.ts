@@ -1,7 +1,6 @@
 import { CommitOrderCalculator } from '@mikro-orm/core';
 
 describe('CommitOrderCalculator', () => {
-
   const calc = new CommitOrderCalculator();
 
   test('Commit ordering 1', async () => {
@@ -75,5 +74,4 @@ describe('CommitOrderCalculator', () => {
     const correctOrder = [2, 3, 1, 4, 5];
     expect(sorted).toEqual(correctOrder);
   });
-
 });

@@ -1,11 +1,31 @@
-import { MikroORM, SimpleLogger, Ref, ref, EventSubscriber, EventArgs, Collection, OptionalProps, sql } from '@mikro-orm/mssql';
-import { AfterUpsert, BeforeUpsert, Embeddable, Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider, Unique } from '@mikro-orm/decorators/legacy';
+import {
+  MikroORM,
+  SimpleLogger,
+  Ref,
+  ref,
+  EventSubscriber,
+  EventArgs,
+  Collection,
+  OptionalProps,
+  sql,
+} from '@mikro-orm/mssql';
+import {
+  AfterUpsert,
+  BeforeUpsert,
+  Embeddable,
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+  Unique,
+} from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../../helpers.js';
 import { Mock } from 'vitest';
 
 @Entity()
 class Author {
-
   [OptionalProps]?: 'foo';
 
   static hooks = [] as string[];
@@ -42,12 +62,10 @@ class Author {
   afterUpsert() {
     Author.hooks.push('afterUpsert');
   }
-
 }
 
 @Entity()
 class Book {
-
   @PrimaryKey({ name: '_id', type: 'uuid', default: sql`newid()` })
   id!: string;
 
@@ -61,13 +79,11 @@ class Book {
     this.name = name;
     this.author = ref(author);
   }
-
 }
 
 @Entity()
 @Unique({ properties: ['author', 'name'] })
 class FooBar {
-
   @PrimaryKey({ name: '_id', type: 'uuid', default: sql`newid()` })
   id!: string;
 
@@ -84,19 +100,15 @@ class FooBar {
     this.name = name;
     this.author = ref(author);
   }
-
 }
 
 @Embeddable()
 class FooBarEmbeddable {
-
   @Property({ nullable: true })
   name?: string;
-
 }
 
 class Subscriber implements EventSubscriber {
-
   static log: any[] = [];
 
   beforeUpsert(args: EventArgs<any>): void | Promise<void> {
@@ -110,7 +122,6 @@ class Subscriber implements EventSubscriber {
   onInit(args: EventArgs<any>) {
     Subscriber.log.push(['onInit', args]);
   }
-
 }
 
 let orm: MikroORM;
@@ -308,7 +319,8 @@ test('em.upsertMany(Type, [data1, data2, data3]) with batching', async () => {
   }
 
   const entities = await orm.em.upsertMany(Author, data, { batchSize: 100 });
-  const usesReturningStatement = orm.em.getPlatform().usesReturningStatement() || orm.em.getPlatform().usesOutputStatement();
+  const usesReturningStatement =
+    orm.em.getPlatform().usesReturningStatement() || orm.em.getPlatform().usesOutputStatement();
   expect(mock).toHaveBeenCalledTimes(usesReturningStatement ? 10 : 20);
   expect(entities).toHaveLength(1000);
 });
@@ -485,7 +497,8 @@ test('em.upsert(Type, entity, options) with advanced options', async () => {
   }); // exists, update age only
 
   // merge with object
-  const res = await orm.em.qb(Author)
+  const res = await orm.em
+    .qb(Author)
     .insert({ email: 'a2', age: 42, foo: true })
     .onConflict('email')
     .merge({ age: 12345 })

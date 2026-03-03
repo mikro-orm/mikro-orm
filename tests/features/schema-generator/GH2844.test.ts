@@ -1,32 +1,35 @@
 import { MikroORM } from '@mikro-orm/mariadb';
-import { Entity, Index, ManyToOne, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  Index,
+  ManyToOne,
+  OneToOne,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class UserAction {
-
   @PrimaryKey()
   idUserAction!: string;
 
   @Property()
   name!: string;
-
 }
 
 @Entity()
 @Index({ properties: ['id', 'userAction'] })
 class Step {
-
   @PrimaryKey()
   id!: number;
 
   @ManyToOne({ primary: true, deleteRule: 'cascade' })
   userAction!: UserAction;
-
 }
 
 @Entity()
 class Component {
-
   @PrimaryKey()
   idComponent!: string;
 
@@ -40,11 +43,9 @@ class Component {
     entity: () => Component,
   })
   resultComponent?: Component;
-
 }
 
 describe('complex FKs in mariadb (GH 2844)', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -65,5 +66,4 @@ describe('complex FKs in mariadb (GH 2844)', () => {
     expect(sql).toMatchSnapshot();
     await orm.schema.execute(sql);
   });
-
 });

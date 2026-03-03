@@ -4,24 +4,20 @@ import { Rel } from '@mikro-orm/core';
 
 @Entity()
 class Two {
-
   @PrimaryKey()
   id!: string;
 
   @ManyToOne(() => One, { deleteRule: 'cascade' })
   one!: Rel<One>;
-
 }
 
 @Entity({ schema: 'test' })
 class One {
-
   @PrimaryKey()
   id!: string;
 
   @ManyToOne(() => Two, { deleteRule: 'cascade' })
   two!: Two;
-
 }
 
 let orm: MikroORM;

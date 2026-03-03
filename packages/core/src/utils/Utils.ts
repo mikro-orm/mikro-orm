@@ -47,7 +47,7 @@ export function compareObjects(a: any, b: any) {
     return a.sql === b.sql && compareArrays(a.params, b.params);
   }
 
-  if ((a instanceof Date && b instanceof Date)) {
+  if (a instanceof Date && b instanceof Date) {
     const timeA = a.getTime();
     const timeB = b.getTime();
     if (isNaN(timeA) || isNaN(timeB)) {
@@ -73,13 +73,13 @@ export function compareObjects(a: any, b: any) {
     return false;
   }
 
-  for (let i = length; i-- !== 0;) {
+  for (let i = length; i-- !== 0; ) {
     if (!Object.hasOwn(b, keys[i])) {
       return false;
     }
   }
 
-  for (let i = length; i-- !== 0;) {
+  for (let i = length; i-- !== 0; ) {
     const key = keys[i];
 
     // eslint-disable-next-line @typescript-eslint/no-use-before-define
@@ -98,7 +98,7 @@ export function compareArrays(a: any[] | string, b: any[] | string) {
     return false;
   }
 
-  for (let i = length; i-- !== 0;) {
+  for (let i = length; i-- !== 0; ) {
     // eslint-disable-next-line @typescript-eslint/no-use-before-define
     if (!equals(a[i], b[i])) {
       return false;
@@ -122,7 +122,7 @@ export function compareBuffers(a: Uint8Array, b: Uint8Array): boolean {
     return false;
   }
 
-  for (let i = length; i-- !== 0;) {
+  for (let i = length; i-- !== 0; ) {
     if ((a as unknown as unknown[])[i] !== (b as unknown as unknown[])[i]) {
       return false;
     }
@@ -171,7 +171,6 @@ export function parseJsonSafe<T = unknown>(value: unknown): T {
 }
 
 export class Utils {
-
   static readonly PK_SEPARATOR = '~~~';
   static readonly #ORM_VERSION = '[[MIKRO_ORM_VERSION]]';
 
@@ -350,7 +349,7 @@ export class Utils {
       for (const key of Object.keys(payload)) {
         const value = payload[key];
         delete payload[key];
-        payload[from === key ? to : key as keyof T] = value;
+        payload[from === key ? to : (key as keyof T)] = value;
       }
     }
   }
@@ -395,7 +394,7 @@ export class Utils {
       .split(',')
       .map(s => s.trim().replace(/=.*$/, '').trim())
       .filter(Boolean)
-      .map(raw => raw.startsWith('{') && raw.endsWith('}') ? '' : raw);
+      .map(raw => (raw.startsWith('{') && raw.endsWith('}') ? '' : raw));
   }
 
   /**
@@ -479,7 +478,13 @@ export class Utils {
     }) as Primary<T>;
   }
 
-  static getCompositeKeyHash<T>(data: EntityData<T>, meta: EntityMetadata<T>, convertCustomTypes = false, platform?: Platform, flat = false): string {
+  static getCompositeKeyHash<T>(
+    data: EntityData<T>,
+    meta: EntityMetadata<T>,
+    convertCustomTypes = false,
+    platform?: Platform,
+    flat = false,
+  ): string {
     let pks = this.getCompositeKeyValue(data, meta, convertCustomTypes, platform);
 
     if (flat) {
@@ -490,17 +495,19 @@ export class Utils {
   }
 
   static getPrimaryKeyHash(pks: (string | Buffer | Date)[]): string {
-    return pks.map(pk => {
-      if (Buffer.isBuffer(pk)) {
-        return pk.toString('hex');
-      }
+    return pks
+      .map(pk => {
+        if (Buffer.isBuffer(pk)) {
+          return pk.toString('hex');
+        }
 
-      if (pk instanceof Date) {
-        return pk.toISOString();
-      }
+        if (pk instanceof Date) {
+          return pk.toISOString();
+        }
 
-      return pk;
-    }).join(this.PK_SEPARATOR);
+        return pk;
+      })
+      .join(this.PK_SEPARATOR);
   }
 
   static splitPrimaryKeys<T extends object>(key: string): EntityKey<T>[] {
@@ -545,7 +552,7 @@ export class Utils {
 
     if (allowScalar) {
       if (Utils.isPlainObject(pk)) {
-        return pk[(meta.primaryKeys)[0]];
+        return pk[meta.primaryKeys[0]];
       }
 
       return pk;
@@ -570,7 +577,12 @@ export class Utils {
   /**
    * Maps nested FKs from `[1, 2, 3]` to `[1, [2, 3]]`.
    */
-  static mapFlatCompositePrimaryKey(fk: Primary<any>[], prop: EntityProperty, fieldNames = prop.fieldNames, idx = 0): Primary<any> | Primary<any>[] {
+  static mapFlatCompositePrimaryKey(
+    fk: Primary<any>[],
+    prop: EntityProperty,
+    fieldNames = prop.fieldNames,
+    idx = 0,
+  ): Primary<any> | Primary<any>[] {
     if (!prop.targetMeta) {
       return fk[idx++];
     }
@@ -589,7 +601,10 @@ export class Utils {
     return parts;
   }
 
-  static getPrimaryKeyCondFromArray<T extends object>(pks: Primary<T>[], meta: EntityMetadata<T>): Record<string, Primary<T>> {
+  static getPrimaryKeyCondFromArray<T extends object>(
+    pks: Primary<T>[],
+    meta: EntityMetadata<T>,
+  ): Record<string, Primary<T>> {
     return meta.getPrimaryProps().reduce((o, pk, idx) => {
       if (Array.isArray(pks[idx]) && pk.targetMeta) {
         o[pk.name] = pks[idx];
@@ -601,7 +616,13 @@ export class Utils {
     }, {} as any);
   }
 
-  static getOrderedPrimaryKeys<T>(id: Primary<T> | Record<string, Primary<T>>, meta: EntityMetadata<T>, platform?: Platform, convertCustomTypes = false, allowScalar = false): Primary<T>[] {
+  static getOrderedPrimaryKeys<T>(
+    id: Primary<T> | Record<string, Primary<T>>,
+    meta: EntityMetadata<T>,
+    platform?: Platform,
+    convertCustomTypes = false,
+    allowScalar = false,
+  ): Primary<T>[] {
     const data = (Utils.isPrimaryKey(id) ? { [meta.primaryKeys[0]]: id } : id) as Record<string, Primary<T>>;
     const pks = meta.primaryKeys.map((pk, idx) => {
       const prop = meta.properties[pk];
@@ -680,7 +701,7 @@ export class Utils {
   static extractChildElements(items: string[], prefix: string, allSymbol?: string) {
     return items
       .filter(field => field === allSymbol || field.startsWith(`${prefix}.`))
-      .map(field => field === allSymbol ? allSymbol : field.substring(prefix.length + 1));
+      .map(field => (field === allSymbol ? allSymbol : field.substring(prefix.length + 1)));
   }
 
   /**
@@ -691,17 +712,21 @@ export class Utils {
     const process = globalThis.process ?? {};
 
     /* v8 ignore next */
-    return process.argv?.[0]?.endsWith('ts-node') // running via ts-node directly
-      || !!process.env?.MIKRO_ORM_CLI_ALWAYS_ALLOW_TS // forced explicitly or enabled via `registerTypeScriptSupport()`
-      || !!process.env?.TS_JEST // check if ts-jest is used
-      || !!process.env?.VITEST // check if vitest is used
-      || !!process.versions?.bun // check if bun is used
-      || process.argv?.slice(1).some(arg => arg.match(/\.([mc]?ts|tsx)$/)) // executing `.ts` file
-      || process.execArgv?.some(arg => {
-        return arg.includes('ts-node') // check for ts-node loader
-          || arg.includes('@swc-node/register') // check for swc-node/register loader
-          || arg.includes('node_modules/tsx/'); // check for tsx loader
-      });
+    return (
+      process.argv?.[0]?.endsWith('ts-node') || // running via ts-node directly
+      !!process.env?.MIKRO_ORM_CLI_ALWAYS_ALLOW_TS || // forced explicitly or enabled via `registerTypeScriptSupport()`
+      !!process.env?.TS_JEST || // check if ts-jest is used
+      !!process.env?.VITEST || // check if vitest is used
+      !!process.versions?.bun || // check if bun is used
+      process.argv?.slice(1).some(arg => arg.match(/\.([mc]?ts|tsx)$/)) || // executing `.ts` file
+      process.execArgv?.some(arg => {
+        return (
+          arg.includes('ts-node') || // check for ts-node loader
+          arg.includes('@swc-node/register') || // check for swc-node/register loader
+          arg.includes('node_modules/tsx/')
+        ); // check for tsx loader
+      })
+    );
   }
 
   /**
@@ -729,13 +754,14 @@ export class Utils {
    */
   static isPlainObject<T extends Dictionary>(value: any): value is T {
     return (
-      value !== null
-      && typeof value === 'object'
-      && typeof value.constructor === 'function'
-      && (Object.hasOwn(value.constructor.prototype, 'isPrototypeOf') || Object.getPrototypeOf(value.constructor.prototype) === null)
-    )
-      || (value && Object.getPrototypeOf(value) === null)
-      || value instanceof PlainObject;
+      (value !== null &&
+        typeof value === 'object' &&
+        typeof value.constructor === 'function' &&
+        (Object.hasOwn(value.constructor.prototype, 'isPrototypeOf') ||
+          Object.getPrototypeOf(value.constructor.prototype) === null)) ||
+      (value && Object.getPrototypeOf(value) === null) ||
+      value instanceof PlainObject
+    );
   }
 
   /**
@@ -813,10 +839,17 @@ export class Utils {
     const keys = Object.keys(target);
     const values = Object.values<string | number>(target);
     const numeric = !!values.find(v => typeof v === 'number');
-    const constEnum = values.length % 2 === 0 // const enum will have even number of items
-      && values.slice(0, values.length / 2).every(v => typeof v === 'string') // first half are strings
-      && values.slice(values.length / 2).every(v => typeof v === 'number') // second half are numbers
-      && this.equals(keys, values.slice(values.length / 2).concat(values.slice(0, values.length / 2)).map(v => '' + v)); // and when swapped, it will match the keys
+    const constEnum =
+      values.length % 2 === 0 && // const enum will have even number of items
+      values.slice(0, values.length / 2).every(v => typeof v === 'string') && // first half are strings
+      values.slice(values.length / 2).every(v => typeof v === 'number') && // second half are numbers
+      this.equals(
+        keys,
+        values
+          .slice(values.length / 2)
+          .concat(values.slice(0, values.length / 2))
+          .map(v => '' + v),
+      ); // and when swapped, it will match the keys
 
     if (numeric || constEnum) {
       return values.filter(val => !keys.includes(val as string));
@@ -826,7 +859,7 @@ export class Utils {
   }
 
   static flatten<T>(arrays: T[][], deep?: boolean): T[] {
-    return arrays.flatMap(v => deep && Array.isArray(v) ? this.flatten(v as unknown as T[][], true) : v) as T[];
+    return arrays.flatMap(v => (deep && Array.isArray(v) ? this.flatten(v as unknown as T[][], true) : v)) as T[];
   }
 
   static isOperator(key: PropertyKey, includeGroupOperators = true): boolean {
@@ -901,7 +934,12 @@ export class Utils {
     }
   }
 
-  static unwrapProperty<T>(entity: T, meta: EntityMetadata<T>, prop: EntityProperty<T>, payload = false): [unknown, number[]][] {
+  static unwrapProperty<T>(
+    entity: T,
+    meta: EntityMetadata<T>,
+    prop: EntityProperty<T>,
+    payload = false,
+  ): [unknown, number[]][] {
     let p = prop;
     const path: string[] = [];
 
@@ -950,7 +988,13 @@ export class Utils {
     return ret;
   }
 
-  static setPayloadProperty<T>(entity: EntityDictionary<T>, meta: EntityMetadata<T>, prop: EntityProperty<T>, value: unknown, idx: number[]): void {
+  static setPayloadProperty<T>(
+    entity: EntityDictionary<T>,
+    meta: EntityMetadata<T>,
+    prop: EntityProperty<T>,
+    value: unknown,
+    idx: number[],
+  ): void {
     if (!prop.object && !prop.array && !prop.embedded) {
       entity[prop.name] = value as T[keyof T & string];
       return;
@@ -992,7 +1036,13 @@ export class Utils {
     }
   }
 
-  static async tryImport<T extends Dictionary = any>({ module, warning }: { module: string; warning?: string }): Promise<T | undefined> {
+  static async tryImport<T extends Dictionary = any>({
+    module,
+    warning,
+  }: {
+    module: string;
+    warning?: string;
+  }): Promise<T | undefined> {
     try {
       return await import(module);
     } catch (err: any) {
@@ -1026,7 +1076,8 @@ export class Utils {
   }
 
   static primaryKeyToObject<T>(meta: EntityMetadata<T>, primaryKey: Primary<T> | T, visible?: (keyof T)[]) {
-    const pks = meta.compositePK && Utils.isPlainObject(primaryKey) ? Object.values(primaryKey) : Utils.asArray(primaryKey);
+    const pks =
+      meta.compositePK && Utils.isPlainObject(primaryKey) ? Object.values(primaryKey) : Utils.asArray(primaryKey);
     const pkProps = meta.getPrimaryProps();
 
     return meta.primaryKeys.reduce((o, pk, idx) => {
@@ -1055,5 +1106,4 @@ export class Utils {
       return typeof key === 'string' || Raw.isKnownFragmentSymbol(key);
     }) as (K | RawQueryFragmentSymbol)[];
   }
-
 }

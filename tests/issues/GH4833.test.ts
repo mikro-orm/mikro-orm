@@ -3,7 +3,6 @@ import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-or
 
 @Entity()
 class Foo {
-
   @PrimaryKey()
   id!: number;
 
@@ -12,7 +11,6 @@ class Foo {
 
   @Property({ columnType: 'timestamp(3)', nullable: true })
   createdAt: Date | null = null;
-
 }
 
 let orm: MikroORM;

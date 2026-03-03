@@ -8,7 +8,6 @@ enum AdminPermission {
 
 @Entity()
 class Admin {
-
   @PrimaryKey()
   id!: number;
 
@@ -18,7 +17,6 @@ class Admin {
     default: [],
   })
   permissions: AdminPermission[] = [];
-
 }
 
 test('enum array diffing', async () => {

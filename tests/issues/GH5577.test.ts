@@ -1,11 +1,17 @@
 import { Collection, IDatabaseDriver, MikroORM } from '@mikro-orm/core';
-import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { MySqlDriver } from '@mikro-orm/mysql';
 import { MsSqlDriver } from '@mikro-orm/mssql';
 
 @Entity()
 class Recipe {
-
   @PrimaryKey()
   id!: number;
 
@@ -24,12 +30,10 @@ class Recipe {
   constructor(title: string) {
     this.title = title;
   }
-
 }
 
 @Entity()
 class Ingredient {
-
   @PrimaryKey()
   id!: number;
 
@@ -52,7 +56,6 @@ class Ingredient {
     this.name = name;
     this.quantity = quantity;
   }
-
 }
 
 const options = {
@@ -62,7 +65,7 @@ const options = {
   },
   mssql: {
     driver: MsSqlDriver,
-    password:  'Root.Root',
+    password: 'Root.Root',
   },
 } as const;
 
@@ -90,22 +93,15 @@ describe.each(['mysql', 'mssql'] as const)('%s', type => {
     orm.em.persist(r);
     await orm.em.flush();
 
-    const recipe = await orm.em.fork().findOneOrFail(
-      Recipe,
-      { title: 'My first recipe' },
-      { populate: ['ingredients'] },
-    );
+    const recipe = await orm.em
+      .fork()
+      .findOneOrFail(Recipe, { title: 'My first recipe' }, { populate: ['ingredients'] });
 
-    const withPopulate = recipe.ingredients
-      .getItems()
-      .find(x => x.name === 'Flour');
+    const withPopulate = recipe.ingredients.getItems().find(x => x.name === 'Flour');
 
-    const ingredients = await orm.em.fork().find(
-      Ingredient,
-      {
-        recipe: { id: recipe.id },
-      },
-    );
+    const ingredients = await orm.em.fork().find(Ingredient, {
+      recipe: { id: recipe.id },
+    });
 
     const withoutPopulate = ingredients.find(x => x.name === 'Flour');
     expect(withPopulate?.createdAt).toEqual(withoutPopulate?.createdAt);

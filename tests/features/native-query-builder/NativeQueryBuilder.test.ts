@@ -3,7 +3,6 @@ import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-or
 
 @Entity()
 class User {
-
   @PrimaryKey()
   id!: number;
 
@@ -12,7 +11,6 @@ class User {
 
   @Property({ nullable: true })
   name?: string;
-
 }
 
 let orm: MikroORM;
@@ -143,7 +141,9 @@ test('CTE - column list', () => {
   sub.select(['id', 'name']).from('user');
 
   const qb = new NativeQueryBuilder(platform);
-  qb.with('cte', sub, { columns: ['id', 'name'] }).select('*').from('cte');
+  qb.with('cte', sub, { columns: ['id', 'name'] })
+    .select('*')
+    .from('cte');
 
   expect(qb.compile()).toEqual({
     sql: 'with "cte" ("id", "name") as (select "id", "name" from "user") select * from "cte"',
@@ -185,9 +185,7 @@ test('CTE - with INSERT', () => {
   sub.select('*').from('source').where('"active" = ?', [true]);
 
   const qb = new NativeQueryBuilder(platform);
-  qb.with('active_source', sub)
-    .insert({ name: 'test' })
-    .into('target');
+  qb.with('active_source', sub).insert({ name: 'test' }).into('target');
 
   expect(qb.compile()).toEqual({
     sql: 'with "active_source" as (select * from "source" where "active" = ?) insert into "target" ("name") values (?)',
@@ -218,10 +216,7 @@ test('CTE - with DELETE', () => {
   sub.select('id').from('source').where('"active" = ?', [false]);
 
   const qb = new NativeQueryBuilder(platform);
-  qb.with('inactive_source', sub)
-    .delete()
-    .from('target')
-    .where('"id" in (select "id" from "inactive_source")', []);
+  qb.with('inactive_source', sub).delete().from('target').where('"id" in (select "id" from "inactive_source")', []);
 
   expect(qb.compile()).toEqual({
     sql: 'with "inactive_source" as (select "id" from "source" where "active" = ?) delete from "target" where "id" in (select "id" from "inactive_source")',
@@ -235,11 +230,7 @@ test('CTE - parameter ordering', () => {
   sub.select('*').from('user').where('"age" > ?', [18]);
 
   const qb = new NativeQueryBuilder(platform);
-  qb.with('adults', sub)
-    .select('*')
-    .from('adults')
-    .where('"name" like ?', ['%John%'])
-    .limit(10);
+  qb.with('adults', sub).select('*').from('adults').where('"name" like ?', ['%John%']).limit(10);
 
   const result = qb.compile();
   expect(result.params).toEqual([18, '%John%', 10]);
@@ -249,7 +240,8 @@ test('CTE - withRecursive with raw()', () => {
   const platform = orm.em.getPlatform();
   const qb = new NativeQueryBuilder(platform);
   qb.withRecursive('cte', raw('select 1 as "id" union all select "id" + 1 from "cte" where "id" < ?', [10]))
-    .select('*').from('cte');
+    .select('*')
+    .from('cte');
 
   expect(qb.compile()).toEqual({
     sql: 'with recursive "cte" as (select 1 as "id" union all select "id" + 1 from "cte" where "id" < ?) select * from "cte"',
@@ -263,7 +255,9 @@ test('CTE - withRecursive with columns option', () => {
   sub.select('*').from('category').where('"parent_id" is null', []);
 
   const qb = new NativeQueryBuilder(platform);
-  qb.withRecursive('category_tree', sub, { columns: ['id', 'name', 'parent_id'] }).select('*').from('category_tree');
+  qb.withRecursive('category_tree', sub, { columns: ['id', 'name', 'parent_id'] })
+    .select('*')
+    .from('category_tree');
 
   expect(qb.compile()).toEqual({
     sql: 'with recursive "category_tree" ("id", "name", "parent_id") as (select * from "category" where "parent_id" is null) select * from "category_tree"',
@@ -282,13 +276,18 @@ test('CTE - withRecursive with materialized option', () => {
 
   const qb2 = new NativeQueryBuilder(platform);
   qb2.withRecursive('cte', sub, { materialized: false }).select('*').from('cte');
-  expect(qb2.compile().sql).toBe('with recursive "cte" as not materialized (select * from "category") select * from "cte"');
+  expect(qb2.compile().sql).toBe(
+    'with recursive "cte" as not materialized (select * from "category") select * from "cte"',
+  );
 });
 
 test('CTE - with raw() that has params', () => {
   const platform = orm.em.getPlatform();
   const qb = new NativeQueryBuilder(platform);
-  qb.with('cte', raw('select * from "user" where "age" > ?', [18])).select('*').from('cte').where('"name" like ?', ['%John%']);
+  qb.with('cte', raw('select * from "user" where "age" > ?', [18]))
+    .select('*')
+    .from('cte')
+    .where('"name" like ?', ['%John%']);
 
   expect(qb.compile()).toEqual({
     sql: 'with "cte" as (select * from "user" where "age" > ?) select * from "cte" where "name" like ?',

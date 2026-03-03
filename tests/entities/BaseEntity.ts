@@ -1,20 +1,10 @@
 import { ObjectId } from 'bson';
-import {
-  BaseEntity as MikroBaseEntity,
-  OptionalProps,
-  PrimaryKeyProp,
-} from '@mikro-orm/core';
-import {
-  BeforeCreate,
-  PrimaryKey,
-  Property,
-  SerializedPrimaryKey,
-} from '@mikro-orm/decorators/legacy';
+import { BaseEntity as MikroBaseEntity, OptionalProps, PrimaryKeyProp } from '@mikro-orm/core';
+import { BeforeCreate, PrimaryKey, Property, SerializedPrimaryKey } from '@mikro-orm/decorators/legacy';
 
 export type BaseEntityOptional = 'updatedAt' | 'hookTest';
 
 export abstract class BaseEntity<T extends object, Optional extends keyof T = never> extends MikroBaseEntity {
-
   [OptionalProps]?: BaseEntityOptional | Optional;
   [PrimaryKeyProp]?: 'id' | '_id';
 
@@ -40,5 +30,4 @@ export abstract class BaseEntity<T extends object, Optional extends keyof T = ne
   baseBeforeCreate() {
     this.hookTest = true;
   }
-
 }

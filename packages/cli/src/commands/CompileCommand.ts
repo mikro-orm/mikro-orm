@@ -1,7 +1,15 @@
 import { writeFileSync, mkdirSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
 import type { ArgumentsCamelCase, Argv } from 'yargs';
-import { MetadataDiscovery, MetadataStorage, Utils, EntityComparator, ObjectHydrator, colors, type Configuration } from '@mikro-orm/core';
+import {
+  MetadataDiscovery,
+  MetadataStorage,
+  Utils,
+  EntityComparator,
+  ObjectHydrator,
+  colors,
+  type Configuration,
+} from '@mikro-orm/core';
 import { fs } from '@mikro-orm/core/fs-utils';
 import type { BaseArgs, BaseCommand } from '../CLIConfigurator.js';
 import { CLIHelper } from '../CLIHelper.js';
@@ -27,7 +35,11 @@ export class CompileCommand implements BaseCommand<CompileArgs> {
     const config = await CLIHelper.getConfiguration(args.contextName, args.config);
     const settings = CLIHelper.getSettings();
     config.set('debug', !!settings.verbose);
-    const metadata = await new MetadataDiscovery(new MetadataStorage(), config.getDriver().getPlatform(), config).discover(false);
+    const metadata = await new MetadataDiscovery(
+      new MetadataStorage(),
+      config.getDriver().getPlatform(),
+      config,
+    ).discover(false);
 
     // Default output path to next to the ORM config file
     if (!args.out) {
@@ -68,7 +80,9 @@ export class CompileCommand implements BaseCommand<CompileArgs> {
     CLIHelper.dump(colors.green(`Compiled functions generated to ${outPath} (${captured.length} functions)`));
     CLIHelper.dump(`\nExample usage in your ORM config:\n`);
     const importPath = esm ? './compiled-functions.js' : './compiled-functions';
-    CLIHelper.dump(`  ${esm ? 'import' : 'const'} compiledFunctions ${esm ? 'from ' : '= require('}${colors.cyan(`'${importPath}'`)}${esm ? '' : ')'};`);
+    CLIHelper.dump(
+      `  ${esm ? 'import' : 'const'} compiledFunctions ${esm ? 'from ' : '= require('}${colors.cyan(`'${importPath}'`)}${esm ? '' : ')'};`,
+    );
     CLIHelper.dump('');
     CLIHelper.dump(`  export default defineConfig({ compiledFunctions });\n`);
   }

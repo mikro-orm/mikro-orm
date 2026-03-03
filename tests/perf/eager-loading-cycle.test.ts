@@ -1,10 +1,16 @@
 import { MikroORM } from '@mikro-orm/sqlite';
-import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { Collection, Ref, ref, LoadStrategy } from '@mikro-orm/core';
 
 @Entity()
 class Author {
-
   @PrimaryKey()
   id!: number;
 
@@ -31,12 +37,10 @@ class Author {
     this.name = name;
     this.email = email;
   }
-
 }
 
 @Entity()
 class Book {
-
   @PrimaryKey()
   id!: number;
 
@@ -49,21 +53,15 @@ class Book {
   @ManyToOne(() => Publisher, { ref: true, nullable: true })
   publisher?: Ref<Publisher>;
 
-  constructor({ author, publisher, title }: {
-    author: Author;
-    publisher: Publisher;
-    title: string;
-  }) {
+  constructor({ author, publisher, title }: { author: Author; publisher: Publisher; title: string }) {
     this.author = ref(author);
     this.publisher = ref(publisher);
     this.title = title;
   }
-
 }
 
 @Entity()
 class Publisher {
-
   @PrimaryKey()
   id!: number;
 
@@ -87,7 +85,6 @@ class Publisher {
     this.name = name;
     this.bestSellingAuthor = ref(bestSellingAuthor);
   }
-
 }
 
 async function seed(orm: MikroORM) {

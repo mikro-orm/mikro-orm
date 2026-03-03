@@ -5,7 +5,6 @@ import type { BaseArgs, BaseCommand } from '../CLIConfigurator.js';
 import { CLIHelper } from '../CLIHelper.js';
 
 export class DebugCommand implements BaseCommand {
-
   command = 'debug';
   describe = 'Debug CLI configuration';
 
@@ -22,7 +21,7 @@ export class DebugCommand implements BaseCommand {
       CLIHelper.dump(' - TypeScript support ' + colors.green(`enabled (${loader})`));
     }
 
-    const configPaths = args.config ?? await CLIHelper.getConfigPaths();
+    const configPaths = args.config ?? (await CLIHelper.getConfigPaths());
     CLIHelper.dump(' - searched config paths:');
     await DebugCommand.checkPaths(configPaths, 'yellow');
     CLIHelper.dump(` - searched for config name: ${colors.green(args.contextName)}`);
@@ -49,7 +48,9 @@ export class DebugCommand implements BaseCommand {
 
       if ([true, false].includes(preferTs as boolean)) {
         const warning = preferTs ? ' (this value should be set to `false` when running compiled code!)' : '';
-        CLIHelper.dump(` - \`preferTs\` flag explicitly set to ${preferTs}, will use \`entities${preferTs ? 'Ts' : ''}\` array${warning}`);
+        CLIHelper.dump(
+          ` - \`preferTs\` flag explicitly set to ${preferTs}, will use \`entities${preferTs ? 'Ts' : ''}\` array${warning}`,
+        );
       }
 
       const entities = config.get('entities', []);
@@ -58,7 +59,9 @@ export class DebugCommand implements BaseCommand {
         const refs = entities.filter(p => typeof p !== 'string');
         const paths = entities.filter(p => typeof p === 'string');
         const will = !config.get('preferTs') ? 'will' : 'could';
-        CLIHelper.dump(` - ${will} use \`entities\` array (contains ${refs.length} references and ${paths.length} paths)`);
+        CLIHelper.dump(
+          ` - ${will} use \`entities\` array (contains ${refs.length} references and ${paths.length} paths)`,
+        );
 
         if (paths.length > 0) {
           await DebugCommand.checkPaths(paths, 'red', config.get('baseDir'));
@@ -72,7 +75,9 @@ export class DebugCommand implements BaseCommand {
         const paths = entitiesTs.filter(p => typeof p === 'string');
         /* v8 ignore next */
         const will = config.get('preferTs') ? 'will' : 'could';
-        CLIHelper.dump(` - ${will} use \`entitiesTs\` array (contains ${refs.length} references and ${paths.length} paths)`);
+        CLIHelper.dump(
+          ` - ${will} use \`entitiesTs\` array (contains ${refs.length} references and ${paths.length} paths)`,
+        );
 
         if (paths.length > 0) {
           await DebugCommand.checkPaths(paths, 'red', config.get('baseDir'));
@@ -95,5 +100,4 @@ export class DebugCommand implements BaseCommand {
       }
     }
   }
-
 }

@@ -4,13 +4,11 @@ import { mockLogger } from '../helpers.js';
 
 @Entity()
 export class Foo {
-
   @PrimaryKey()
   id!: number;
 
   @Property({ type: ArrayType, nullable: true })
   names!: string[];
-
 }
 
 let orm: MikroORM;
@@ -51,16 +49,16 @@ test('GH issue 3540', async () => {
 
   expect(mock.mock.calls).toEqual([
     ['[query] begin'],
-    ['[query] insert into `foo` (`id`, `names`) values (1, \'\')'],
+    ["[query] insert into `foo` (`id`, `names`) values (1, '')"],
     ['[query] commit'],
     ['[query] begin'],
-    ['[query] update `foo` set `names` = \'1\' where `id` = 1'],
+    ["[query] update `foo` set `names` = '1' where `id` = 1"],
     ['[query] commit'],
     ['[query] begin'],
-    ['[query] update `foo` set `names` = \'1,2,3\' where `id` = 1'],
+    ["[query] update `foo` set `names` = '1,2,3' where `id` = 1"],
     ['[query] commit'],
     ['[query] begin'],
-    ['[query] update `foo` set `names` = \'\' where `id` = 1'],
+    ["[query] update `foo` set `names` = '' where `id` = 1"],
     ['[query] commit'],
   ]);
 });
@@ -89,16 +87,22 @@ test('GH issue 3540 batch update', async () => {
 
   expect(mock.mock.calls).toEqual([
     ['[query] begin'],
-    ['[query] insert into `foo` (`id`, `names`) values (1, \'\'), (2, \'\')'],
+    ["[query] insert into `foo` (`id`, `names`) values (1, ''), (2, '')"],
     ['[query] commit'],
     ['[query] begin'],
-    ['[query] update `foo` set `names` = case when (`id` = 1) then \'1\' when (`id` = 2) then \'1\' else `names` end where `id` in (1, 2)'],
+    [
+      "[query] update `foo` set `names` = case when (`id` = 1) then '1' when (`id` = 2) then '1' else `names` end where `id` in (1, 2)",
+    ],
     ['[query] commit'],
     ['[query] begin'],
-    ['[query] update `foo` set `names` = case when (`id` = 1) then \'1,2,3\' when (`id` = 2) then \'1,2,3\' else `names` end where `id` in (1, 2)'],
+    [
+      "[query] update `foo` set `names` = case when (`id` = 1) then '1,2,3' when (`id` = 2) then '1,2,3' else `names` end where `id` in (1, 2)",
+    ],
     ['[query] commit'],
     ['[query] begin'],
-    ['[query] update `foo` set `names` = case when (`id` = 1) then \'\' when (`id` = 2) then \'\' else `names` end where `id` in (1, 2)'],
+    [
+      "[query] update `foo` set `names` = case when (`id` = 1) then '' when (`id` = 2) then '' else `names` end where `id` in (1, 2)",
+    ],
     ['[query] commit'],
   ]);
 });

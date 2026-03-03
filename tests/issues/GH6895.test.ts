@@ -3,7 +3,6 @@ import { Entity, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider } from
 
 @Entity()
 class User {
-
   @PrimaryKey()
   id!: number;
 
@@ -22,12 +21,10 @@ class User {
     this.lastName = lastName;
     this.firstName = firstName;
   }
-
 }
 
 @Entity()
 class Notification {
-
   @PrimaryKey()
   id!: number;
 
@@ -41,7 +38,6 @@ class Notification {
     this.recipient = user;
     this.type = type;
   }
-
 }
 
 let orm: MikroORM;
@@ -86,9 +82,12 @@ describe('transactional', () => {
 
   test('success, because of clear:true option', async () => {
     await orm.em.findOneOrFail(Notification, { id: notification.id });
-    await orm.em.transactional(async () => {
-      //
-    }, { clear: true });
+    await orm.em.transactional(
+      async () => {
+        //
+      },
+      { clear: true },
+    );
   });
 
   test('success, because em.clear() before', async () => {
@@ -107,8 +106,11 @@ describe('transactional', () => {
   });
 
   test('fail, with fetch in inner context', async () => {
-    await orm.em.transactional(async em => {
-      await em.findOneOrFail(Notification, { id: notification.id });
-    }, { clear: true });
+    await orm.em.transactional(
+      async em => {
+        await em.findOneOrFail(Notification, { id: notification.id });
+      },
+      { clear: true },
+    );
   });
 });

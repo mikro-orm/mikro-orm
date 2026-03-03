@@ -3,7 +3,6 @@ import { Entity, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider } from
 
 @Entity()
 class Company {
-
   @PrimaryKey()
   id!: number;
 
@@ -12,18 +11,15 @@ class Company {
 
   @Property({ version: true })
   version!: number;
-
 }
 
 @Entity()
 class User {
-
   @PrimaryKey()
   id!: number;
 
   @ManyToOne(() => Company)
   company!: Company;
-
 }
 
 let orm: MikroORM;

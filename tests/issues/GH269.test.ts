@@ -3,7 +3,6 @@ import { Entity, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from 
 
 @Entity()
 export class A {
-
   @PrimaryKey({ type: 'number' })
   id!: number;
 
@@ -12,12 +11,10 @@ export class A {
 
   @Property()
   name!: string;
-
 }
 
 @Entity()
 export class B {
-
   @PrimaryKey({ type: 'number' })
   id!: number;
 
@@ -26,11 +23,9 @@ export class B {
 
   @Property()
   name!: string;
-
 }
 
 describe('GH issue 269', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -122,5 +117,4 @@ describe('GH issue 269', () => {
     expect(aa.b!.unwrap().a).toBeInstanceOf(Reference);
     expect(aa.b!.unwrap().a!.isInitialized()).toBe(true);
   });
-
 });

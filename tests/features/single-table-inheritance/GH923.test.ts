@@ -3,41 +3,32 @@ import { MikroORM } from '@mikro-orm/sqlite';
 
 @Entity({ discriminatorColumn: 'type', abstract: true })
 abstract class Person {
-
   @PrimaryKey()
   id!: string;
 
   @Enum()
   type!: 'gardener' | 'teacher' | 'chef';
-
 }
 
 @Entity({ discriminatorValue: 'chef' })
 class Chef extends Person {
-
   @Property()
   kitchen?: string;
-
 }
 
 @Entity({ discriminatorValue: 'gardener' })
 class Gardener extends Person {
-
   @Property()
   plant?: string;
-
 }
 
 @Entity({ discriminatorValue: 'teacher' })
 class Teacher extends Person {
-
   @Property()
   subject?: string;
-
 }
 
 describe('GH issue 923', () => {
-
   test(`discovery with STI is not dependent on order of entities 1`, async () => {
     const orm = await MikroORM.init({
       metadataProvider: ReflectMetadataProvider,
@@ -77,5 +68,4 @@ describe('GH issue 923', () => {
     const meta = orm.getMetadata(Person);
     expect(meta.discriminatorMap).toEqual({ chef: Chef, teacher: Teacher, gardener: Gardener });
   });
-
 });

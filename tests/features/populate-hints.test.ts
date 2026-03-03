@@ -1,21 +1,25 @@
 import { Collection, LoadStrategy, MikroORM, ref, Ref } from '@mikro-orm/sqlite';
-import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../bootstrap.js';
 
 @Entity()
 class Country {
-
   @PrimaryKey()
   id!: number;
 
   @Property()
   name!: string;
-
 }
 
 @Entity()
 class Author {
-
   @PrimaryKey()
   id!: number;
 
@@ -27,12 +31,10 @@ class Author {
 
   @OneToMany(() => Book, b => b.author)
   books = new Collection<Book>(this);
-
 }
 
 @Entity()
 class Book {
-
   @PrimaryKey()
   id!: number;
 
@@ -41,7 +43,6 @@ class Book {
 
   @ManyToOne(() => Author)
   author!: Author;
-
 }
 
 describe('populateHints', () => {
@@ -67,26 +68,34 @@ describe('populateHints', () => {
 
   test('joinType override on non-nullable m:1 with joined strategy', async () => {
     const mock = mockLogger(orm, ['query']);
-    await orm.em.fork().find(Book, {}, {
-      populate: ['author'],
-      strategy: LoadStrategy.JOINED,
-      populateHints: {
-        author: { joinType: 'left join' },
+    await orm.em.fork().find(
+      Book,
+      {},
+      {
+        populate: ['author'],
+        strategy: LoadStrategy.JOINED,
+        populateHints: {
+          author: { joinType: 'left join' },
+        },
       },
-    });
+    );
     // Non-nullable m:1 would normally use inner join, but we override to left join
     expect(mock.mock.calls[0][0]).toMatch(/left join `author`/);
   });
 
   test('strategy override from joined to select-in', async () => {
     const mock = mockLogger(orm, ['query']);
-    await orm.em.fork().find(Book, {}, {
-      populate: ['author'],
-      strategy: LoadStrategy.JOINED,
-      populateHints: {
-        author: { strategy: LoadStrategy.SELECT_IN },
+    await orm.em.fork().find(
+      Book,
+      {},
+      {
+        populate: ['author'],
+        strategy: LoadStrategy.JOINED,
+        populateHints: {
+          author: { strategy: LoadStrategy.SELECT_IN },
+        },
       },
-    });
+    );
     // Should produce two separate queries instead of a join
     expect(mock.mock.calls.length).toBe(2);
     expect(mock.mock.calls[0][0]).not.toMatch(/join `author`/);
@@ -94,13 +103,17 @@ describe('populateHints', () => {
 
   test('nested path hint applies to correct level', async () => {
     const mock = mockLogger(orm, ['query']);
-    await orm.em.fork().find(Author, {}, {
-      populate: ['books.author.country'],
-      strategy: LoadStrategy.JOINED,
-      populateHints: {
-        'books.author': { joinType: 'left join' },
+    await orm.em.fork().find(
+      Author,
+      {},
+      {
+        populate: ['books.author.country'],
+        strategy: LoadStrategy.JOINED,
+        populateHints: {
+          'books.author': { joinType: 'left join' },
+        },
       },
-    });
+    );
     // The nested `author` join within `books` should be left join
     // SQL uses grouped join: left join (`author` as `a2` inner join `country` ...) on ...
     const sql = mock.mock.calls[0][0];
@@ -110,13 +123,17 @@ describe('populateHints', () => {
 
   test('strategy override on nested path', async () => {
     const mock = mockLogger(orm, ['query']);
-    await orm.em.fork().find(Book, {}, {
-      populate: ['author.country'],
-      strategy: LoadStrategy.JOINED,
-      populateHints: {
-        'author.country': { strategy: LoadStrategy.SELECT_IN },
+    await orm.em.fork().find(
+      Book,
+      {},
+      {
+        populate: ['author.country'],
+        strategy: LoadStrategy.JOINED,
+        populateHints: {
+          'author.country': { strategy: LoadStrategy.SELECT_IN },
+        },
       },
-    });
+    );
     // author should still be joined, but country should be a separate query
     const firstQuery = mock.mock.calls[0][0];
     expect(firstQuery).toMatch(/join `author`/);
@@ -127,13 +144,17 @@ describe('populateHints', () => {
 
   test('hints for non-existent paths are silently ignored', async () => {
     const mock = mockLogger(orm, ['query']);
-    await orm.em.fork().find(Book, {}, {
-      populate: ['author'],
-      strategy: LoadStrategy.JOINED,
-      populateHints: {
-        nonexistent: { joinType: 'left join' },
-      } as any,
-    });
+    await orm.em.fork().find(
+      Book,
+      {},
+      {
+        populate: ['author'],
+        strategy: LoadStrategy.JOINED,
+        populateHints: {
+          nonexistent: { joinType: 'left join' },
+        } as any,
+      },
+    );
     // Should still work normally without errors
     expect(mock.mock.calls.length).toBe(1);
     expect(mock.mock.calls[0][0]).toMatch(/join `author`/);
@@ -141,14 +162,18 @@ describe('populateHints', () => {
 
   test('multiple hints for different relations', async () => {
     const mock = mockLogger(orm, ['query']);
-    await orm.em.fork().find(Author, {}, {
-      populate: ['books', 'country'],
-      strategy: LoadStrategy.JOINED,
-      populateHints: {
-        books: { joinType: 'inner join' },
-        country: { joinType: 'left join' },
+    await orm.em.fork().find(
+      Author,
+      {},
+      {
+        populate: ['books', 'country'],
+        strategy: LoadStrategy.JOINED,
+        populateHints: {
+          books: { joinType: 'inner join' },
+          country: { joinType: 'left join' },
+        },
       },
-    });
+    );
     const sql = mock.mock.calls[0][0];
     expect(sql).toMatch(/inner join `book`/);
     expect(sql).toMatch(/left join `country`/);

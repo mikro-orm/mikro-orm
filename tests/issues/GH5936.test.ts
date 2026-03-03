@@ -3,7 +3,6 @@ import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-or
 
 @Entity()
 class TestJsonEntity {
-
   @PrimaryKey()
   id!: number;
 
@@ -20,7 +19,6 @@ class TestJsonEntity {
     columnType: 'json',
   })
   jsonObj!: { foo: number; bar: string } & Opt;
-
 }
 
 let orm: MikroORM;
@@ -44,11 +42,11 @@ test('test json field parse', async () => {
   orm.em.clear();
 
   const testEntityInstances = await orm.em.findAll(TestJsonEntity);
-  expect(testEntityInstances).toEqual(
-    [{
+  expect(testEntityInstances).toEqual([
+    {
       id: 1,
       jsonArray: ['foo', 'bar'],
       jsonObj: { bar: 'abc', foo: 2 },
-    }],
-  );
+    },
+  ]);
 });

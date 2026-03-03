@@ -1,10 +1,17 @@
 import { Opt } from '@mikro-orm/core';
-import { Embeddable, Embedded, Entity, PrimaryKey, Property, ReflectMetadataProvider, SerializedPrimaryKey } from '@mikro-orm/decorators/legacy';
+import {
+  Embeddable,
+  Embedded,
+  Entity,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+  SerializedPrimaryKey,
+} from '@mikro-orm/decorators/legacy';
 import { ObjectId, MikroORM, wrap } from '@mikro-orm/mongodb';
 
 @Embeddable()
 class StripeSubscription {
-
   @Property()
   id!: string;
 
@@ -16,12 +23,10 @@ class StripeSubscription {
 
   @Property({ type: 'string' })
   status!: string;
-
 }
 
 @Embeddable()
 class StripeSubscription2 {
-
   @Property()
   stripeId!: string;
 
@@ -33,12 +38,10 @@ class StripeSubscription2 {
 
   @Property({ type: 'string' })
   status!: string;
-
 }
 
 @Entity()
 class User {
-
   @PrimaryKey()
   _id!: ObjectId;
 
@@ -61,7 +64,6 @@ class User {
     this.name = name;
     this.email = email;
   }
-
 }
 let orm: MikroORM;
 
