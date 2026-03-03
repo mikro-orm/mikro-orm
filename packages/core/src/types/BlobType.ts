@@ -3,9 +3,8 @@ import type { Platform } from '../platforms/Platform.js';
 import type { EntityProperty } from '../typings.js';
 
 export class BlobType extends Uint8ArrayType {
-
   override convertToJSValue(value: Buffer): Buffer | null {
-    if (value as unknown instanceof Buffer || !value) {
+    if ((value as unknown) instanceof Buffer || !value) {
       return value;
     }
 
@@ -23,5 +22,4 @@ export class BlobType extends Uint8ArrayType {
   override getColumnType(prop: EntityProperty, platform: Platform): string {
     return platform.getBlobDeclarationSQL();
   }
-
 }

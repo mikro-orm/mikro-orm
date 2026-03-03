@@ -4,7 +4,6 @@ import { AbstractNamingStrategy } from './AbstractNamingStrategy.js';
  * This strategy keeps original entity/property names for table/column.
  */
 export class EntityCaseNamingStrategy extends AbstractNamingStrategy {
-
   classToTableName(entityName: string, tableName?: string): string {
     return tableName ?? entityName;
   }
@@ -13,7 +12,12 @@ export class EntityCaseNamingStrategy extends AbstractNamingStrategy {
     return propertyName;
   }
 
-  joinKeyColumnName(entityName: string, referencedColumnName?: string, composite?: boolean, tableName?: string): string {
+  joinKeyColumnName(
+    entityName: string,
+    referencedColumnName?: string,
+    composite?: boolean,
+    tableName?: string,
+  ): string {
     entityName = this.classToTableName(entityName, tableName);
     const name = entityName.substr(0, 1).toLowerCase() + entityName.substr(1);
 
@@ -35,5 +39,4 @@ export class EntityCaseNamingStrategy extends AbstractNamingStrategy {
   referenceColumnName(): string {
     return 'id';
   }
-
 }

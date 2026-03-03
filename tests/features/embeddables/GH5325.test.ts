@@ -1,6 +1,17 @@
 import { v4 } from 'uuid';
 import { MikroORM, SimpleLogger, Collection, Rel, wrap } from '@mikro-orm/sqlite';
-import { Embeddable, Embedded, Entity, Enum, Filter, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Embeddable,
+  Embedded,
+  Entity,
+  Enum,
+  Filter,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../../helpers.js';
 
 enum EntityState {
@@ -14,37 +25,30 @@ enum EntityState {
   default: true,
 })
 abstract class BaseEntity {
-
   @PrimaryKey()
   id: string = v4();
 
   @Enum({ items: () => EntityState, nullable: true })
   entityState?: EntityState = EntityState.AVAILABLE;
-
 }
 
 @Entity()
 class Clinic extends BaseEntity {
-
   @OneToMany(() => Drug, d => d.clinic)
   drugs = new Collection<Drug>(this);
-
 }
 
 @Embeddable()
 class DrugInfoIngredient {
-
   @Property({ type: 'number', columnType: 'numeric(10,2)' })
   quantity!: number;
 
   @ManyToOne(() => Ingredient)
   ingredient!: Rel<Ingredient>;
-
 }
 
 @Entity()
 class DrugInfo extends BaseEntity {
-
   @PrimaryKey()
   id: string = v4();
 
@@ -56,12 +60,10 @@ class DrugInfo extends BaseEntity {
 
   @ManyToOne(() => Clinic, { nullable: true })
   clinic?: Clinic;
-
 }
 
 @Entity()
 class Drug extends BaseEntity {
-
   @PrimaryKey()
   id: string = v4();
 
@@ -70,12 +72,10 @@ class Drug extends BaseEntity {
 
   @ManyToOne(() => Clinic)
   clinic!: Rel<Clinic>;
-
 }
 
 @Entity()
 class Ingredient extends BaseEntity {
-
   @PrimaryKey()
   id: string = v4();
 
@@ -84,7 +84,6 @@ class Ingredient extends BaseEntity {
 
   @ManyToOne(() => Clinic, { nullable: true })
   clinic?: Clinic;
-
 }
 
 let orm: MikroORM;
@@ -114,8 +113,14 @@ test('5325', async () => {
       entityState: EntityState.AVAILABLE,
       clinic: { id: 'c1' },
       drugInfoIngredients: [
-        { quantity: 1, ingredient: { id: '11', clinic: { id: 'c1' }, entityState: EntityState.AVAILABLE, name: 'i11' } },
-        { quantity: 5, ingredient: { id: '22', clinic: { id: 'c1' }, entityState: EntityState.AVAILABLE, name: 'i22' } },
+        {
+          quantity: 1,
+          ingredient: { id: '11', clinic: { id: 'c1' }, entityState: EntityState.AVAILABLE, name: 'i11' },
+        },
+        {
+          quantity: 5,
+          ingredient: { id: '22', clinic: { id: 'c1' }, entityState: EntityState.AVAILABLE, name: 'i22' },
+        },
       ],
     },
   });
@@ -157,14 +162,24 @@ test('5325', async () => {
   expect(mock.mock.calls).toEqual([
     ['[query] begin'],
     ["[query] insert into `clinic` (`id`, `entity_state`) values ('c1', 'Available')"],
-    ["[query] insert into `ingredient` (`id`, `entity_state`, `name`, `clinic_id`) values ('11', 'Available', 'i11', 'c1'), ('22', 'Available', 'i22', 'c1')"],
-    ["[query] insert into `drug_info` (`id`, `entity_state`, `drug_info_ingredients`, `clinic_id`) values ('di1', 'Available', '[{\"quantity\":1,\"ingredient_id\":\"11\"},{\"quantity\":5,\"ingredient_id\":\"22\"}]', 'c1')"],
-    ["[query] insert into `drug` (`id`, `entity_state`, `drug_info_id`, `clinic_id`) values ('d1', 'Available', 'di1', 'c1')"],
+    [
+      "[query] insert into `ingredient` (`id`, `entity_state`, `name`, `clinic_id`) values ('11', 'Available', 'i11', 'c1'), ('22', 'Available', 'i22', 'c1')",
+    ],
+    [
+      '[query] insert into `drug_info` (`id`, `entity_state`, `drug_info_ingredients`, `clinic_id`) values (\'di1\', \'Available\', \'[{"quantity":1,"ingredient_id":"11"},{"quantity":5,"ingredient_id":"22"}]\', \'c1\')',
+    ],
+    [
+      "[query] insert into `drug` (`id`, `entity_state`, `drug_info_id`, `clinic_id`) values ('d1', 'Available', 'di1', 'c1')",
+    ],
     ['[query] commit'],
-    ['[query] select `d0`.*, `d1`.`id` as `d1__id`, `d1`.`entity_state` as `d1__entity_state`, `d1`.`drug_info_ingredients` as `d1__drug_info_ingredients`, `d1`.`clinic_id` as `d1__clinic_id` ' +
-    'from `drug` as `d0` ' +
-    "inner join `drug_info` as `d1` on `d0`.`drug_info_id` = `d1`.`id` and `d1`.`entity_state` = 'Available' " +
-    'where `d0`.`entity_state` = \'Available\''],
-    ["[query] select `i0`.* from `ingredient` as `i0` where `i0`.`entity_state` = 'Available' and `i0`.`id` in ('11', '22')"],
+    [
+      '[query] select `d0`.*, `d1`.`id` as `d1__id`, `d1`.`entity_state` as `d1__entity_state`, `d1`.`drug_info_ingredients` as `d1__drug_info_ingredients`, `d1`.`clinic_id` as `d1__clinic_id` ' +
+        'from `drug` as `d0` ' +
+        "inner join `drug_info` as `d1` on `d0`.`drug_info_id` = `d1`.`id` and `d1`.`entity_state` = 'Available' " +
+        "where `d0`.`entity_state` = 'Available'",
+    ],
+    [
+      "[query] select `i0`.* from `ingredient` as `i0` where `i0`.`entity_state` = 'Available' and `i0`.`id` in ('11', '22')",
+    ],
   ]);
 });

@@ -1,21 +1,25 @@
 import { serialize } from '@mikro-orm/core';
-import { Embeddable, Embedded, Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Embeddable,
+  Embedded,
+  Entity,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { MikroORM } from '@mikro-orm/sqlite';
 
 @Embeddable()
 export class DetailsEntity {
-
   @Property()
   code!: number;
 
   @Property({ nullable: true })
   details?: string;
-
 }
 
 @Entity()
 export class ListEntity2Test {
-
   @PrimaryKey()
   id!: string;
 
@@ -24,7 +28,6 @@ export class ListEntity2Test {
 
   @Embedded(() => DetailsEntity)
   details!: DetailsEntity;
-
 }
 
 let orm: MikroORM;

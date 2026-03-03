@@ -226,7 +226,11 @@ export interface IQueryBuilder<T> {
   unsetFlag(flag: QueryFlag): this;
   hasFlag(flag: QueryFlag): boolean;
   with(name: string, query: AnyQueryBuilder | NativeQueryBuilder | RawQueryFragment, options?: CteOptions): this;
-  withRecursive(name: string, query: AnyQueryBuilder | NativeQueryBuilder | RawQueryFragment, options?: CteOptions): this;
+  withRecursive(
+    name: string,
+    query: AnyQueryBuilder | NativeQueryBuilder | RawQueryFragment,
+    options?: CteOptions,
+  ): this;
   scheduleFilterCheck(path: string): void;
   withSchema(schema: string): this;
 }
@@ -260,12 +264,13 @@ export interface ICriteriaNode<T extends object> {
 
 export type MaybeReturnType<T> = T extends (...args: any[]) => infer R ? R : T;
 
-export type InferEntityProperties<Schema> = Schema extends EntitySchemaWithMeta<any, any, any, any, infer Properties> ? Properties : never;
+export type InferEntityProperties<Schema> =
+  Schema extends EntitySchemaWithMeta<any, any, any, any, infer Properties> ? Properties : never;
 
-export type InferKyselyDB<TEntities extends { name: string }, TOptions extends MikroKyselyPluginOptions = {}> = MapValueAsTable<
-  MapTableName<TEntities, TOptions>,
-  TOptions
->;
+export type InferKyselyDB<
+  TEntities extends { name: string },
+  TOptions extends MikroKyselyPluginOptions = {},
+> = MapValueAsTable<MapTableName<TEntities, TOptions>, TOptions>;
 
 export type InferDBFromKysely<TKysely extends Kysely<any>> = TKysely extends Kysely<infer TDB> ? TDB : never;
 
@@ -277,20 +282,34 @@ type PreferStringLiteral<TCandidate, TFallback> = [TCandidate] extends [never]
       ? TCandidate
       : TFallback;
 
-export type MapTableName<T extends { name: string; tableName?: string }, TOptions extends MikroKyselyPluginOptions = {}> = {
-  [P in T as TOptions['tableNamingStrategy'] extends 'entity' ? P['name'] : PreferStringLiteral<NonNullable<P['tableName']>, P['name']>]: P;
+export type MapTableName<
+  T extends { name: string; tableName?: string },
+  TOptions extends MikroKyselyPluginOptions = {},
+> = {
+  [P in T as TOptions['tableNamingStrategy'] extends 'entity'
+    ? P['name']
+    : PreferStringLiteral<NonNullable<P['tableName']>, P['name']>]: P;
 };
 
 export type MapValueAsTable<TMap extends Record<string, any>, TOptions extends MikroKyselyPluginOptions = {}> = {
-  [K in keyof TMap as TransformName<K, TOptions['tableNamingStrategy'] extends 'entity' ? 'entity' : 'underscore'>]: InferKyselyTable<TMap[K], TOptions>;
+  [K in keyof TMap as TransformName<
+    K,
+    TOptions['tableNamingStrategy'] extends 'entity' ? 'entity' : 'underscore'
+  >]: InferKyselyTable<TMap[K], TOptions>;
 };
 
-export type InferKyselyTable<TSchema extends EntitySchemaWithMeta, TOptions extends MikroKyselyPluginOptions = {}> = ExcludeNever<{
+export type InferKyselyTable<
+  TSchema extends EntitySchemaWithMeta,
+  TOptions extends MikroKyselyPluginOptions = {},
+> = ExcludeNever<{
   -readonly [K in keyof InferEntityProperties<TSchema> as TransformColumnName<
     K,
     TOptions['columnNamingStrategy'] extends 'property' ? 'property' : 'underscore',
     MaybeReturnType<InferEntityProperties<TSchema>[K]>
-  >]: InferColumnValue<MaybeReturnType<InferEntityProperties<TSchema>[K]>, TOptions['processOnCreateHooks'] extends true ? true : false>;
+  >]: InferColumnValue<
+    MaybeReturnType<InferEntityProperties<TSchema>[K]>,
+    TOptions['processOnCreateHooks'] extends true ? true : false
+  >;
 }>;
 
 type TransformName<TName, TNamingStrategy extends 'underscore' | 'entity'> = TNamingStrategy extends 'underscore'
@@ -299,7 +318,11 @@ type TransformName<TName, TNamingStrategy extends 'underscore' | 'entity'> = TNa
     : TName
   : TName;
 
-type TransformColumnName<TName, TNamingStrategy extends 'underscore' | 'property', TBuilder> = TNamingStrategy extends 'property'
+type TransformColumnName<
+  TName,
+  TNamingStrategy extends 'underscore' | 'property',
+  TBuilder,
+> = TNamingStrategy extends 'property'
   ? TName
   : TBuilder extends { '~options': { fieldName: string } }
     ? TBuilder['~options']['fieldName']
@@ -373,25 +396,20 @@ type ExcludeNever<TMap extends Record<string, any>> = {
 };
 
 export type InferClassEntityDB<TEntities, TOptions extends MikroKyselyPluginOptions = {}> =
-  ClassEntityDBMap<TEntities, TOptions> extends infer R
-    ? [keyof R] extends [never] ? unknown : R
-    : never;
+  ClassEntityDBMap<TEntities, TOptions> extends infer R ? ([keyof R] extends [never] ? unknown : R) : never;
 
 type ClassEntityDBMap<TEntities, TOptions extends MikroKyselyPluginOptions = {}> = {
   [T in TEntities as ClassEntityTableName<T, TOptions>]: ClassEntityColumns<T>;
 };
 
-type ClassEntityTableName<T, TOptions extends MikroKyselyPluginOptions = {}> =
-  T extends abstract new (...args: any[]) => infer Instance
-    ? TransformName<InferEntityName<Instance>, TOptions['tableNamingStrategy'] extends 'entity' ? 'entity' : 'underscore'>
-    : never;
+type ClassEntityTableName<T, TOptions extends MikroKyselyPluginOptions = {}> = T extends abstract new (
+  ...args: any[]
+) => infer Instance
+  ? TransformName<InferEntityName<Instance>, TOptions['tableNamingStrategy'] extends 'entity' ? 'entity' : 'underscore'>
+  : never;
 
 type ClassEntityColumns<T> = T extends abstract new (...args: any[]) => infer Instance
   ? { [K in keyof Instance as IsClassEntityColumn<K, Instance[K]>]: Instance[K] }
   : never;
 
-type IsClassEntityColumn<K, V> = K extends symbol
-  ? never
-  : NonNullable<V> extends Scalar
-    ? K
-    : never;
+type IsClassEntityColumn<K, V> = K extends symbol ? never : NonNullable<V> extends Scalar ? K : never;

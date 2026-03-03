@@ -1,10 +1,9 @@
 import { Type } from '@mikro-orm/core';
 import { MongoPlatform } from '@mikro-orm/mongodb';
 
-class TestType extends Type<any> { }
+class TestType extends Type<any> {}
 
 describe('Type', () => {
-
   const type = new TestType();
   const platform = new MongoPlatform();
 
@@ -23,5 +22,4 @@ describe('Type', () => {
   test('getColumnType', () => {
     expect(type.getColumnType({ columnTypes: ['asd'] } as any, platform)).toBe('asd');
   });
-
 });

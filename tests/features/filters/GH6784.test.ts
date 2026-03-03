@@ -1,9 +1,15 @@
 import { MikroORM, Collection, Rel, LoadStrategy } from '@mikro-orm/sqlite';
-import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class Forum {
-
   @PrimaryKey()
   id!: number;
 
@@ -12,12 +18,10 @@ class Forum {
 
   @Property()
   tenant!: string;
-
 }
 
 @Entity()
 class Post {
-
   @PrimaryKey()
   id!: number;
 
@@ -26,18 +30,15 @@ class Post {
 
   @ManyToOne(() => User, { nullable: true })
   user?: Rel<User>;
-
 }
 
 @Entity()
 class User {
-
   @PrimaryKey()
   id!: number;
 
   @OneToMany(() => Post, p => p.user)
   posts = new Collection<Post>(this);
-
 }
 
 let orm: MikroORM;
@@ -63,66 +64,78 @@ afterAll(async () => {
   await orm.close(true);
 });
 
-test.each(Object.values(LoadStrategy))('filters without populating relations when using "%s" strategy (strict)', async strategy => {
-  orm.em.addFilter({ name: 'tenant', cond: { tenant: 'A' }, entity: Forum, strict: true });
+test.each(Object.values(LoadStrategy))(
+  'filters without populating relations when using "%s" strategy (strict)',
+  async strategy => {
+    orm.em.addFilter({ name: 'tenant', cond: { tenant: 'A' }, entity: Forum, strict: true });
 
-  const posts = await orm.em.fork().findAll(Post);
-  expect(posts.length).toBe(1);
-  expect(posts[0].forum).not.toBeNull();
+    const posts = await orm.em.fork().findAll(Post);
+    expect(posts.length).toBe(1);
+    expect(posts[0].forum).not.toBeNull();
 
-  const user = await orm.em.fork().findOneOrFail(User, 1, {
-    populate: ['posts'],
-    strategy,
-  });
-  expect(user.posts.length).toBe(1);
-  expect(user.posts[0].forum).not.toBeNull();
-});
+    const user = await orm.em.fork().findOneOrFail(User, 1, {
+      populate: ['posts'],
+      strategy,
+    });
+    expect(user.posts.length).toBe(1);
+    expect(user.posts[0].forum).not.toBeNull();
+  },
+);
 
-test.each(Object.values(LoadStrategy))('filters on populated relations when using "%s" strategy (strict)', async strategy => {
-  orm.em.addFilter({ name: 'tenant', cond: { tenant: 'A' }, entity: Forum, strict: true });
+test.each(Object.values(LoadStrategy))(
+  'filters on populated relations when using "%s" strategy (strict)',
+  async strategy => {
+    orm.em.addFilter({ name: 'tenant', cond: { tenant: 'A' }, entity: Forum, strict: true });
 
-  const posts = await orm.em.fork().findAll(Post, { populate: ['forum'], strategy });
-  expect(posts.length).toBe(1);
-  expect(posts[0].forum?.tenant).toBe('A');
+    const posts = await orm.em.fork().findAll(Post, { populate: ['forum'], strategy });
+    expect(posts.length).toBe(1);
+    expect(posts[0].forum?.tenant).toBe('A');
 
-  const user = await orm.em.fork().findOneOrFail(User, 1, {
-    populate: ['posts.forum'],
-    strategy,
-  });
-  expect(user.posts.length).toBe(1);
-  expect(user.posts[0].forum?.tenant).toBe('A');
-});
+    const user = await orm.em.fork().findOneOrFail(User, 1, {
+      populate: ['posts.forum'],
+      strategy,
+    });
+    expect(user.posts.length).toBe(1);
+    expect(user.posts[0].forum?.tenant).toBe('A');
+  },
+);
 
-test.each(Object.values(LoadStrategy))('filters without populated relations when using "%s" strategy (non-strict)', async strategy => {
-  orm.em.addFilter({ name: 'tenant', cond: { tenant: 'A' }, entity: Forum, strict: false });
+test.each(Object.values(LoadStrategy))(
+  'filters without populated relations when using "%s" strategy (non-strict)',
+  async strategy => {
+    orm.em.addFilter({ name: 'tenant', cond: { tenant: 'A' }, entity: Forum, strict: false });
 
-  const posts = await orm.em.fork().findAll(Post);
-  expect(posts.length).toBe(2);
-  expect(posts[0].forum).not.toBeNull();
-  expect(posts[1].forum).toBeNull();
+    const posts = await orm.em.fork().findAll(Post);
+    expect(posts.length).toBe(2);
+    expect(posts[0].forum).not.toBeNull();
+    expect(posts[1].forum).toBeNull();
 
-  const user = await orm.em.fork().findOneOrFail(User, 1, {
-    populate: ['posts'],
-    strategy,
-  });
-  expect(user.posts.length).toBe(2);
-  expect(user.posts[0].forum).not.toBeNull();
-  expect(user.posts[1].forum).toBeNull();
-});
+    const user = await orm.em.fork().findOneOrFail(User, 1, {
+      populate: ['posts'],
+      strategy,
+    });
+    expect(user.posts.length).toBe(2);
+    expect(user.posts[0].forum).not.toBeNull();
+    expect(user.posts[1].forum).toBeNull();
+  },
+);
 
-test.each(Object.values(LoadStrategy))('filters on populated relations when using "%s" strategy (non-strict)', async strategy => {
-  orm.em.addFilter({ name: 'tenant', cond: { tenant: 'A' }, entity: Forum, strict: false });
+test.each(Object.values(LoadStrategy))(
+  'filters on populated relations when using "%s" strategy (non-strict)',
+  async strategy => {
+    orm.em.addFilter({ name: 'tenant', cond: { tenant: 'A' }, entity: Forum, strict: false });
 
-  const posts = await orm.em.fork().findAll(Post, { populate: ['forum'], strategy });
-  expect(posts.length).toBe(2);
-  expect(posts[0].forum?.tenant).toBe('A');
-  expect(posts[1].forum).toBeNull();
+    const posts = await orm.em.fork().findAll(Post, { populate: ['forum'], strategy });
+    expect(posts.length).toBe(2);
+    expect(posts[0].forum?.tenant).toBe('A');
+    expect(posts[1].forum).toBeNull();
 
-  const user = await orm.em.fork().findOneOrFail(User, 1, {
-    populate: ['posts.forum'],
-    strategy,
-  });
-  expect(user.posts.length).toBe(2);
-  expect(user.posts[0].forum?.tenant).toBe('A');
-  expect(user.posts[1].forum).toBeNull();
-});
+    const user = await orm.em.fork().findOneOrFail(User, 1, {
+      populate: ['posts.forum'],
+      strategy,
+    });
+    expect(user.posts.length).toBe(2);
+    expect(user.posts[0].forum?.tenant).toBe('A');
+    expect(user.posts[1].forum).toBeNull();
+  },
+);

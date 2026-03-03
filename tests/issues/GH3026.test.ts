@@ -11,7 +11,6 @@ import { mockLogger } from '../helpers.js';
 
 @Entity()
 class Ingredient {
-
   @PrimaryKey()
   id!: number;
 
@@ -20,12 +19,10 @@ class Ingredient {
 
   @OneToMany(() => RecipeIngredient, 'ingredient')
   recipeIngredients = new Collection<RecipeIngredient>(this);
-
 }
 
 @Entity()
 class Recipe {
-
   @PrimaryKey()
   id!: number;
 
@@ -34,12 +31,10 @@ class Recipe {
 
   @OneToMany(() => RecipeIngredient, 'recipe', { eager: true, orphanRemoval: true })
   ingredients = new Collection<RecipeIngredient>(this);
-
 }
 
 @Entity()
 class RecipeIngredient {
-
   @PrimaryKey()
   id!: number;
 
@@ -51,7 +46,6 @@ class RecipeIngredient {
 
   @ManyToOne(() => Recipe)
   recipe!: Recipe;
-
 }
 
 let orm: MikroORM;
@@ -115,7 +109,9 @@ test(`GH issue 3026`, async () => {
   const mock = mockLogger(orm);
   await orm.em.flush();
   expect(mock).toHaveBeenCalledTimes(3);
-  expect(mock.mock.calls[1][0]).toMatch('update `recipe_ingredient` set `quantity` = 2, `ingredient_id` = 2 where `id` = 1');
+  expect(mock.mock.calls[1][0]).toMatch(
+    'update `recipe_ingredient` set `quantity` = 2, `ingredient_id` = 2 where `id` = 1',
+  );
 
   const reloadedRecipe = await orm.em.fork().findOneOrFail(Recipe, 1);
   const finalRecipe = wrap(reloadedRecipe).toObject();

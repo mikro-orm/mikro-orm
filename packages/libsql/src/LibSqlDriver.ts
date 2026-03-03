@@ -4,7 +4,6 @@ import { LibSqlConnection } from './LibSqlConnection.js';
 import { LibSqlMikroORM } from './LibSqlMikroORM.js';
 
 export class LibSqlDriver extends AbstractSqlDriver<LibSqlConnection> {
-
   constructor(config: Configuration) {
     super(config, new SqlitePlatform(), LibSqlConnection, ['kysely', 'libsql']);
   }
@@ -13,5 +12,4 @@ export class LibSqlDriver extends AbstractSqlDriver<LibSqlConnection> {
   override getORMClass(): Constructor<LibSqlMikroORM> {
     return LibSqlMikroORM;
   }
-
 }

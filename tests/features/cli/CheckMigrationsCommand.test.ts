@@ -17,7 +17,6 @@ const dumpMock = vi.spyOn(CLIHelper, 'dump');
 dumpMock.mockImplementation(() => void 0);
 
 describe('CheckMigrationCommand', () => {
-
   let orm: MikroORM<SqliteDriver>;
 
   beforeAll(async () => {
@@ -40,7 +39,9 @@ describe('CheckMigrationCommand', () => {
   test('handler', async () => {
     const cmd = MigrationCommandFactory.create('check');
 
-    const mockExit = vi.spyOn(process, 'exit').mockImplementationOnce(() => { throw new Error('Mock'); });
+    const mockExit = vi.spyOn(process, 'exit').mockImplementationOnce(() => {
+      throw new Error('Mock');
+    });
 
     await expect(cmd.handler({} as any)).rejects.toThrow('Mock');
     expect(checkMigrationMock.mock.calls.length).toBe(1);

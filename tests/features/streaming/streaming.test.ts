@@ -25,7 +25,10 @@ const Author = defineEntity({
   properties: p => ({
     id: p.integer().primary(),
     createdAt: p.datetime().default(sql.now()),
-    updatedAt: p.datetime().default(sql.now()).onUpdate(() => new Date()),
+    updatedAt: p
+      .datetime()
+      .default(sql.now())
+      .onUpdate(() => new Date()),
     name: p.string(),
     email: p.string().unique(),
     termsAccepted: p.boolean().default(false),
@@ -55,7 +58,8 @@ const BookTag = defineEntity({
 const BookWithAuthor = defineEntity({
   name: 'BookWithAuthor',
   expression: (em: EntityManager) => {
-    return em.createQueryBuilder(Book, 'b')
+    return em
+      .createQueryBuilder(Book, 'b')
       .select([sql`min(b.title)`.as('title'), sql`min(a.name)`.as('author_name')])
       .join('b.author', 'a')
       .groupBy('b.id');
@@ -138,28 +142,17 @@ describe.each(Utils.keys(options))('streaming [%s]', type => {
       books: [
         {
           author: 6,
-          tags: [
-            { name: 'sick' },
-            { name: 'silly' },
-          ],
+          tags: [{ name: 'sick' }, { name: 'silly' }],
           title: 'My Life on The Wall, part 1',
         },
         {
           author: 6,
-          tags: [
-            { name: 'funny' },
-            { name: 'sexy' },
-            { name: 'silly' },
-          ],
+          tags: [{ name: 'funny' }, { name: 'sexy' }, { name: 'silly' }],
           title: 'My Life on The Wall, part 2',
         },
         {
           author: 6,
-          tags: [
-            { name: 'funny' },
-            { name: 'sexy' },
-            { name: 'strange' },
-          ],
+          tags: [{ name: 'funny' }, { name: 'sexy' }, { name: 'strange' }],
           title: 'My Life on The Wall, part 3',
         },
       ],
@@ -203,9 +196,7 @@ describe.each(Utils.keys(options))('streaming [%s]', type => {
       books: [
         {
           author: 6,
-          tags: [
-            { name: 'sick' },
-          ],
+          tags: [{ name: 'sick' }],
           title: 'My Life on The Wall, part 1',
         },
       ],
@@ -216,9 +207,7 @@ describe.each(Utils.keys(options))('streaming [%s]', type => {
       books: [
         {
           author: 6,
-          tags: [
-            { name: 'silly' },
-          ],
+          tags: [{ name: 'silly' }],
           title: 'My Life on The Wall, part 1',
         },
       ],
@@ -229,9 +218,7 @@ describe.each(Utils.keys(options))('streaming [%s]', type => {
       books: [
         {
           author: 6,
-          tags: [
-            { name: 'funny' },
-          ],
+          tags: [{ name: 'funny' }],
           title: 'My Life on The Wall, part 2',
         },
       ],
@@ -242,9 +229,7 @@ describe.each(Utils.keys(options))('streaming [%s]', type => {
       books: [
         {
           author: 6,
-          tags: [
-            { name: 'sexy' },
-          ],
+          tags: [{ name: 'sexy' }],
           title: 'My Life on The Wall, part 2',
         },
       ],
@@ -255,9 +240,7 @@ describe.each(Utils.keys(options))('streaming [%s]', type => {
       books: [
         {
           author: 6,
-          tags: [
-            { name: 'silly' },
-          ],
+          tags: [{ name: 'silly' }],
           title: 'My Life on The Wall, part 2',
         },
       ],
@@ -273,7 +256,8 @@ describe.each(Utils.keys(options))('streaming [%s]', type => {
   });
 
   test('streaming POJOs via QB', async () => {
-    const stream = orm.em.qb(Author, 'a')
+    const stream = orm.em
+      .qb(Author, 'a')
       .leftJoinAndSelect('books', 'b')
       .leftJoinAndSelect('b.tags', 't')
       .orderBy({ id: 'desc', books: { title: 'asc', tags: { name: 'asc' } } })
@@ -291,9 +275,7 @@ describe.each(Utils.keys(options))('streaming [%s]', type => {
       books: [
         {
           author: 6,
-          tags: [
-            { name: 'sick' },
-          ],
+          tags: [{ name: 'sick' }],
           title: 'My Life on The Wall, part 1',
         },
       ],
@@ -304,9 +286,7 @@ describe.each(Utils.keys(options))('streaming [%s]', type => {
       books: [
         {
           author: 6,
-          tags: [
-            { name: 'silly' },
-          ],
+          tags: [{ name: 'silly' }],
           title: 'My Life on The Wall, part 1',
         },
       ],
@@ -317,9 +297,7 @@ describe.each(Utils.keys(options))('streaming [%s]', type => {
       books: [
         {
           author: 6,
-          tags: [
-            { name: 'funny' },
-          ],
+          tags: [{ name: 'funny' }],
           title: 'My Life on The Wall, part 2',
         },
       ],
@@ -330,9 +308,7 @@ describe.each(Utils.keys(options))('streaming [%s]', type => {
       books: [
         {
           author: 6,
-          tags: [
-            { name: 'sexy' },
-          ],
+          tags: [{ name: 'sexy' }],
           title: 'My Life on The Wall, part 2',
         },
       ],
@@ -343,9 +319,7 @@ describe.each(Utils.keys(options))('streaming [%s]', type => {
       books: [
         {
           author: 6,
-          tags: [
-            { name: 'silly' },
-          ],
+          tags: [{ name: 'silly' }],
           title: 'My Life on The Wall, part 2',
         },
       ],
@@ -360,7 +334,8 @@ describe.each(Utils.keys(options))('streaming [%s]', type => {
   });
 
   test('streaming raw results via QB', async () => {
-    const stream = orm.em.qb(Author, 'a')
+    const stream = orm.em
+      .qb(Author, 'a')
       .leftJoinAndSelect('books', 'b')
       .orderBy({ id: 'desc', books: { title: 'asc', tags: { name: 'asc' } } })
       .stream({ rawResults: true });
@@ -387,7 +362,8 @@ describe.each(Utils.keys(options))('streaming [%s]', type => {
     await orm.schema.drop();
 
     await expect(async () => {
-      for await (const item of stream) {}
+      for await (const item of stream) {
+      }
     }).rejects.toThrow(TableNotFoundException);
   });
 });

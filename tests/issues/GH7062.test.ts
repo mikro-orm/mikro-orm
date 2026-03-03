@@ -3,7 +3,6 @@ import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-or
 
 @Entity()
 export class User {
-
   // For object-type hidden props, use HiddenProps symbol
   [HiddenProps]?: 'secretData' | 'hiddenDate';
 
@@ -32,7 +31,6 @@ export class User {
   // Hidden Date property - uses HiddenProps symbol above
   @Property({ hidden: true })
   hiddenDate!: Date;
-
 }
 
 let orm: MikroORM;

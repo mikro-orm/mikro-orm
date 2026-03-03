@@ -29,10 +29,14 @@ type NormalizedMigrateOptions = {
   migrations?: string[];
 };
 
-type MigrateOptions = { from?: string | number; to?: string | number; migrations?: string[]; transaction?: Transaction };
+type MigrateOptions = {
+  from?: string | number;
+  to?: string | number;
+  migrations?: string[];
+  transaction?: Transaction;
+};
 
 export abstract class AbstractMigrator<D extends IDatabaseDriver> implements IMigrator {
-
   protected runner!: IMigrationRunner;
   protected storage!: IMigratorStorage;
   protected generator!: IMigrationGenerator;
@@ -54,9 +58,18 @@ export abstract class AbstractMigrator<D extends IDatabaseDriver> implements IMi
   protected abstract createRunner(): IMigrationRunner;
   protected abstract createStorage(): IMigratorStorage;
   protected abstract getDefaultGenerator(): IMigrationGenerator;
-  abstract create(path?: string, blank?: boolean, initial?: boolean, name?: string): Promise<{ fileName: string; code: string; diff: { up: string[]; down: string[] } }>;
+  abstract create(
+    path?: string,
+    blank?: boolean,
+    initial?: boolean,
+    name?: string,
+  ): Promise<{ fileName: string; code: string; diff: { up: string[]; down: string[] } }>;
   abstract checkSchema(): Promise<boolean>;
-  abstract createInitial(path?: string, name?: string, blank?: boolean): Promise<{ fileName: string; code: string; diff: { up: string[]; down: string[] } }>;
+  abstract createInitial(
+    path?: string,
+    name?: string,
+    blank?: boolean,
+  ): Promise<{ fileName: string; code: string; diff: { up: string[]; down: string[] } }>;
 
   /**
    * @inheritDoc
@@ -95,9 +108,7 @@ export abstract class AbstractMigrator<D extends IDatabaseDriver> implements IMi
     const all = await this.discoverMigrations();
     const executed = new Set(await this.storage.executed());
 
-    return all
-      .filter(m => !executed.has(m.name))
-      .map(m => ({ name: m.name, path: m.path }));
+    return all.filter(m => !executed.has(m.name)).map(m => ({ name: m.name, path: m.path }));
   }
 
   /**
@@ -128,7 +139,8 @@ export abstract class AbstractMigrator<D extends IDatabaseDriver> implements IMi
       this.detectSourceFolder(fs);
 
       /* v8 ignore next */
-      const key = (this.config.get('preferTs', Utils.detectTypeScriptSupport()) && this.options.pathTs) ? 'pathTs' : 'path';
+      const key =
+        this.config.get('preferTs', Utils.detectTypeScriptSupport()) && this.options.pathTs ? 'pathTs' : 'path';
       this.absolutePath = fs.absolutePath(this.options[key]!, this.config.get('baseDir'));
       fs.ensureDir(this.absolutePath);
     }
@@ -149,7 +161,9 @@ export abstract class AbstractMigrator<D extends IDatabaseDriver> implements IMi
     const createMigrationHandler = async (method: 'up' | 'down') => {
       const { fs } = await import('@mikro-orm/core/fs-utils');
       const migration = await fs.dynamicImport(params.path);
-      const MigrationClass = Object.values(migration).find(cls => typeof cls === 'function' && typeof cls.constructor === 'function') as Constructor<Migration>;
+      const MigrationClass = Object.values(migration).find(
+        cls => typeof cls === 'function' && typeof cls.constructor === 'function',
+      ) as Constructor<Migration>;
       const instance = new MigrationClass(this.driver, this.config);
 
       await this.runner.run(instance, method);
@@ -195,7 +209,7 @@ export abstract class AbstractMigrator<D extends IDatabaseDriver> implements IMi
     const buildDir = fs.pathExists(baseDir + '/build');
     // if neither `dist` nor `build` exist, we use the `src` folder as it might be a JS project without building, but with `src` folder
     /* v8 ignore next */
-    const path = distDir ? './dist' : (buildDir ? './build' : './src');
+    const path = distDir ? './dist' : buildDir ? './build' : './src';
 
     // only if the user did not provide any values and if the default path does not exist
     if (!this.options.path && !this.options.pathTs && !exists) {
@@ -236,10 +250,12 @@ export abstract class AbstractMigrator<D extends IDatabaseDriver> implements IMi
     const pattern = fs.normalizePath(this.absolutePath, this.options.glob!);
     const files: string[] = fs.glob(pattern).sort();
 
-    return files.map(filePath => this.resolve({
-      name: filePath.replace(/\\/g, '/').split('/').pop()!,
-      path: filePath,
-    }));
+    return files.map(filePath =>
+      this.resolve({
+        name: filePath.replace(/\\/g, '/').split('/').pop()!,
+        path: filePath,
+      }),
+    );
   }
 
   private async executeMigrations(
@@ -279,7 +295,11 @@ export abstract class AbstractMigrator<D extends IDatabaseDriver> implements IMi
     return result;
   }
 
-  private filterUp(all: RunnableMigration[], executed: Set<string>, options: NormalizedMigrateOptions): RunnableMigration[] {
+  private filterUp(
+    all: RunnableMigration[],
+    executed: Set<string>,
+    options: NormalizedMigrateOptions,
+  ): RunnableMigration[] {
     let pending = all.filter(m => !executed.has(m.name));
 
     if (options.migrations) {
@@ -308,7 +328,11 @@ export abstract class AbstractMigrator<D extends IDatabaseDriver> implements IMi
     return pending;
   }
 
-  private filterDown(all: RunnableMigration[], executed: string[], options: NormalizedMigrateOptions): RunnableMigration[] {
+  private filterDown(
+    all: RunnableMigration[],
+    executed: string[],
+    options: NormalizedMigrateOptions,
+  ): RunnableMigration[] {
     const migrationMap = new Map(all.map(m => [m.name, m]));
     const executedReversed = [...executed].reverse();
 
@@ -356,7 +380,12 @@ export abstract class AbstractMigrator<D extends IDatabaseDriver> implements IMi
     return name.match(/^\d{14}$/) ? this.options.fileName!(name) : name;
   }
 
-  private prefix<T extends string | string[] | { from?: string | number; to?: string | number; migrations?: string[]; transaction?: Transaction }>(options?: T): NormalizedMigrateOptions {
+  private prefix<
+    T extends
+      | string
+      | string[]
+      | { from?: string | number; to?: string | number; migrations?: string[]; transaction?: Transaction },
+  >(options?: T): NormalizedMigrateOptions {
     if (typeof options === 'string' || Array.isArray(options)) {
       return { migrations: Utils.asArray(options).map(name => this.getMigrationFilename(name)) };
     }
@@ -398,7 +427,11 @@ export abstract class AbstractMigrator<D extends IDatabaseDriver> implements IMi
     return this.driver.getConnection().transactional(trx => this.runInTransaction(trx, method, options));
   }
 
-  private async runInTransaction(trx: Transaction, method: 'up' | 'down', options: string | string[] | undefined | MigrateOptions) {
+  private async runInTransaction(
+    trx: Transaction,
+    method: 'up' | 'down',
+    options: string | string[] | undefined | MigrateOptions,
+  ) {
     this.runner.setMasterMigration(trx);
     this.storage.setMasterMigration(trx);
 
@@ -409,5 +442,4 @@ export abstract class AbstractMigrator<D extends IDatabaseDriver> implements IMi
       this.storage.unsetMasterMigration();
     }
   }
-
 }

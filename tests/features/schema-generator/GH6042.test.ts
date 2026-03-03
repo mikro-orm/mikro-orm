@@ -3,24 +3,19 @@ import { Entity, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider, Uniqu
 
 @Entity()
 class Guild {
-
   @PrimaryKey()
   id!: number;
-
 }
 
 @Entity()
 class Vendor {
-
   @PrimaryKey()
   id!: number;
-
 }
 
 @Unique({ properties: ['vendor', 'guild', 'timestamp', 'timeframe'] })
 @Entity()
 class GuildVendorTally {
-
   @PrimaryKey()
   id!: number;
 
@@ -42,7 +37,6 @@ class GuildVendorTally {
     this.guild = guild;
     this.vendor = vendor;
   }
-
 }
 
 let orm: MikroORM;
@@ -62,7 +56,9 @@ afterAll(async () => {
 
 test('GH #6042', async () => {
   const sql = await orm.schema.getCreateSchemaSQL();
-  expect(sql).toMatch('alter table "guild_vendor_tally" add constraint "guild_vendor_tally_vendor_id_guild_id_timestamp_t_53fd4_unique" unique ("vendor_id", "guild_id", "timestamp", "timeframe");');
+  expect(sql).toMatch(
+    'alter table "guild_vendor_tally" add constraint "guild_vendor_tally_vendor_id_guild_id_timestamp_t_53fd4_unique" unique ("vendor_id", "guild_id", "timestamp", "timeframe");',
+  );
   const diff = await orm.schema.getUpdateSchemaSQL();
   expect(diff).toBe('');
 });

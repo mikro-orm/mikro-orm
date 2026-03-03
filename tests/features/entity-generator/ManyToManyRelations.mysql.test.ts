@@ -190,7 +190,6 @@ beforeAll(async () => {
   if (await orm.schema.ensureDatabase({ create: true })) {
     await orm.schema.execute(schema);
   }
-
 });
 
 afterAll(async () => {

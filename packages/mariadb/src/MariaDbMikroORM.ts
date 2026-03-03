@@ -14,12 +14,20 @@ import { MariaDbDriver } from './MariaDbDriver.js';
 
 export type MariaDbOptions<
   EM extends SqlEntityManager<MariaDbDriver> = SqlEntityManager<MariaDbDriver>,
-  Entities extends (string | EntityClass<AnyEntity> | EntitySchema)[] = (string | EntityClass<AnyEntity> | EntitySchema)[],
+  Entities extends (string | EntityClass<AnyEntity> | EntitySchema)[] = (
+    | string
+    | EntityClass<AnyEntity>
+    | EntitySchema
+  )[],
 > = Options<MariaDbDriver, EM, Entities>;
 
 export function defineMariaDbConfig<
   EM extends SqlEntityManager<MariaDbDriver> = SqlEntityManager<MariaDbDriver>,
-  Entities extends (string | EntityClass<AnyEntity> | EntitySchema)[] = (string | EntityClass<AnyEntity> | EntitySchema)[],
+  Entities extends (string | EntityClass<AnyEntity> | EntitySchema)[] = (
+    | string
+    | EntityClass<AnyEntity>
+    | EntitySchema
+  )[],
 >(options: Options<MariaDbDriver, EM, Entities>) {
   return defineConfig({ driver: MariaDbDriver, ...options });
 }
@@ -29,16 +37,23 @@ export function defineMariaDbConfig<
  */
 export class MariaDbMikroORM<
   EM extends SqlEntityManager<MariaDbDriver> = SqlEntityManager<MariaDbDriver>,
-  Entities extends (string | EntityClass<AnyEntity> | EntitySchema)[] = (string | EntityClass<AnyEntity> | EntitySchema)[],
+  Entities extends (string | EntityClass<AnyEntity> | EntitySchema)[] = (
+    | string
+    | EntityClass<AnyEntity>
+    | EntitySchema
+  )[],
 > extends MikroORM<MariaDbDriver, EM, Entities> {
-
   /**
    * @inheritDoc
    */
   static override async init<
     D extends IDatabaseDriver = MariaDbDriver,
     EM extends EntityManager<D> = D[typeof EntityManagerType] & EntityManager<D>,
-    Entities extends (string | EntityClass<AnyEntity> | EntitySchema)[] = (string | EntityClass<AnyEntity> | EntitySchema)[],
+    Entities extends (string | EntityClass<AnyEntity> | EntitySchema)[] = (
+      | string
+      | EntityClass<AnyEntity>
+      | EntitySchema
+    )[],
   >(options: Options<D, EM, Entities>): Promise<MikroORM<D, EM, Entities>> {
     return super.init(defineMariaDbConfig(options as any) as any);
   }
@@ -49,5 +64,4 @@ export class MariaDbMikroORM<
   constructor(options: Options<MariaDbDriver, EM, Entities>) {
     super(defineMariaDbConfig(options));
   }
-
 }

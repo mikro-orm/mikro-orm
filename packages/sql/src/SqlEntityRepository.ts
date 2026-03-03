@@ -3,7 +3,6 @@ import type { SqlEntityManager } from './SqlEntityManager.js';
 import type { QueryBuilder } from './query/QueryBuilder.js';
 
 export class SqlEntityRepository<Entity extends object> extends EntityRepository<Entity> {
-
   constructor(
     protected override readonly em: SqlEntityManager,
     entityName: EntityName<Entity>,
@@ -31,5 +30,4 @@ export class SqlEntityRepository<Entity extends object> extends EntityRepository
   override getEntityManager(): SqlEntityManager {
     return this.em;
   }
-
 }

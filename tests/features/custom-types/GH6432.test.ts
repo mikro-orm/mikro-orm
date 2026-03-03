@@ -1,31 +1,33 @@
 import { Collection, helper, MikroORM, Ref } from '@mikro-orm/postgresql';
-import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class User {
-
   @PrimaryKey()
   id!: number;
 
   @OneToMany(() => UserContact, userContact => userContact.user)
   contacts = new Collection<UserContact>(this);
-
 }
 
 @Entity()
 class UserContact {
-
   @ManyToOne(() => User, { primary: true, ref: true })
   user!: Ref<User>;
 
   @ManyToOne(() => Contact, { primary: true, ref: true })
   contact!: Ref<Contact>;
-
 }
 
 @Entity()
 class Contact {
-
   @PrimaryKey()
   id!: number;
 
@@ -34,7 +36,6 @@ class Contact {
 
   @OneToMany(() => UserContact, userContact => userContact.contact)
   users = new Collection<UserContact>(this);
-
 }
 
 let orm: MikroORM;

@@ -1,9 +1,17 @@
 import { Collection, MikroORM } from '@mikro-orm/postgresql';
-import { Embeddable, Embedded, Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Embeddable,
+  Embedded,
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Embeddable()
 class StudentInfo {
-
   @Property()
   firstName: string;
 
@@ -14,12 +22,10 @@ class StudentInfo {
     this.firstName = firstName;
     this.lastName = lastName;
   }
-
 }
 
 @Entity()
 class Course {
-
   @PrimaryKey()
   id: number;
 
@@ -33,12 +39,10 @@ class Course {
     this.id = id;
     this.name = name;
   }
-
 }
 
 @Entity()
 class Student {
-
   @PrimaryKey()
   id: number;
 
@@ -56,7 +60,6 @@ class Student {
     this.name = name;
     this.course = course;
   }
-
 }
 
 let orm: MikroORM;

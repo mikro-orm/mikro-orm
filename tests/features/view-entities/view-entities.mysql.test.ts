@@ -2,7 +2,17 @@ import { defineEntity, p, sql, type EntityManager as EM } from '@mikro-orm/core'
 import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { MikroORM as MySqlORM, EntityManager as MySqlEM } from '@mikro-orm/mysql';
 import { MikroORM as MariaDbORM, EntityManager as MariaDbEM } from '@mikro-orm/mariadb';
-import { Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, Test2, Address2, Configuration2 } from '../../entities-sql/index.js';
+import {
+  Author2,
+  Book2,
+  BookTag2,
+  FooBar2,
+  FooBaz2,
+  Publisher2,
+  Test2,
+  Address2,
+  Configuration2,
+} from '../../entities-sql/index.js';
 
 // View entity with string expression
 const authorStatsSQL = `select min(name) as name, (select count(*) from book2 b where b.author_id = a.id) as book_count from author2 a group by a.id`;
@@ -24,7 +34,8 @@ const BookSummary = defineEntity({
   tableName: 'book_summary_view',
   view: true,
   expression: (em: EM) => {
-    return (em as MySqlEM | MariaDbEM).createQueryBuilder(Book2, 'b')
+    return (em as MySqlEM | MariaDbEM)
+      .createQueryBuilder(Book2, 'b')
       .join('b.author', 'a')
       .select(['b.title', sql.ref('a', 'name').as('author_name')]);
   },
@@ -52,13 +63,25 @@ const drivers = [
 ] as const;
 
 describe.each(drivers)('View entities ($name)', ({ name, ORM, port }) => {
-
   let orm: MySqlORM | MariaDbORM;
 
   beforeAll(async () => {
     orm = await ORM.init({
       metadataProvider: ReflectMetadataProvider,
-      entities: [Author2, Book2, BookTag2, Publisher2, Test2, FooBar2, FooBaz2, Address2, Configuration2, AuthorStats, BookSummary, ProlificAuthors],
+      entities: [
+        Author2,
+        Book2,
+        BookTag2,
+        Publisher2,
+        Test2,
+        FooBar2,
+        FooBaz2,
+        Address2,
+        Configuration2,
+        AuthorStats,
+        BookSummary,
+        ProlificAuthors,
+      ],
       dbName: 'mikro_orm_test_views',
       port,
     });
@@ -140,5 +163,4 @@ describe.each(drivers)('View entities ($name)', ({ name, ORM, port }) => {
     const sql = await orm.schema.getUpdateSchemaSQL();
     expect(sql).toBe('');
   });
-
 });

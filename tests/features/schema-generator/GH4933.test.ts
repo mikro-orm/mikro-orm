@@ -3,13 +3,11 @@ import { Entity, Enum, ManyToOne, PrimaryKey, ReflectMetadataProvider } from '@m
 
 @Entity({ tableName: 'users', schema: 'example', discriminatorColumn: 'type', abstract: true })
 class Base {
-
   @PrimaryKey()
   id!: string;
 
   @Enum({ items: ['one', 'two'] })
   type!: 'one' | 'two';
-
 }
 
 @Entity({ discriminatorValue: 'one' })
@@ -20,13 +18,11 @@ class Two extends Base {}
 
 @Entity({ tableName: 'relations' })
 class Relation {
-
   @PrimaryKey()
   id!: string;
 
   @ManyToOne(() => Two, { deleteRule: 'set null' })
   appliedBy?: Rel<Two>;
-
 }
 
 let orm: MikroORM;

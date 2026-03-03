@@ -1,10 +1,18 @@
 import { Collection, MikroORM, Opt, OptionalProps, quote, Ref } from '@mikro-orm/postgresql';
-import { Check, Entity, Formula, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Check,
+  Entity,
+  Formula,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { vi } from 'vitest';
 
 @Entity({ schema: '*' })
 class User {
-
   @PrimaryKey()
   id!: number;
 
@@ -14,24 +22,18 @@ class User {
   @Property({ unique: true })
   email!: string;
 
-  @Formula(
-    (_cols, table) => `(select ${table.schema}.user.id from ${table.schema}.user where ${table.alias}.id = 1)`,
-    { lazy: true },
-  )
+  @Formula((_cols, table) => `(select ${table.schema}.user.id from ${table.schema}.user where ${table.alias}.id = 1)`, {
+    lazy: true,
+  })
   baz?: string;
 
-  @Formula(
-    (cols, table) => quote`(select ${cols.id} from ${table.qualifiedName} where ${cols.id} = 1)`,
-    { lazy: true },
-  )
+  @Formula((cols, table) => quote`(select ${cols.id} from ${table.qualifiedName} where ${cols.id} = 1)`, { lazy: true })
   baz2?: string;
-
 }
 
 // Entities for testing formula with quote in joins
 @Entity()
 class Author7102 {
-
   @PrimaryKey()
   id!: number;
 
@@ -40,12 +42,10 @@ class Author7102 {
 
   @OneToMany(() => Book7102, book => book.author)
   books = new Collection<Book7102>(this);
-
 }
 
 @Entity()
 class Book7102 {
-
   [OptionalProps]?: 'priceTaxed';
 
   @PrimaryKey()
@@ -67,7 +67,6 @@ class Book7102 {
 
   @ManyToOne(() => Author7102, { ref: true })
   author!: Ref<Author7102>;
-
 }
 
 // Entities for testing generated column with quote helper
@@ -75,7 +74,6 @@ class Book7102 {
 @Entity()
 @Check({ expression: (cols, table) => `${cols.firstName} is not null /* ${table} */` })
 class Product7102 {
-
   @PrimaryKey()
   id!: number;
 
@@ -91,7 +89,6 @@ class Product7102 {
     generated: (cols, table) => quote`(${cols.firstName} || ' ' || ${cols.lastName} || ' from ' || '${table}') stored`,
   })
   fullName!: Opt<string>;
-
 }
 
 let orm: MikroORM;
@@ -127,9 +124,7 @@ test('formula should support a schema parameter', async () => {
 });
 
 test('formula with quote helper should work with joins', async () => {
-  const qb = orm2.em.createQueryBuilder(Author7102)
-    .select('*')
-    .leftJoinAndSelect('books', 'b');
+  const qb = orm2.em.createQueryBuilder(Author7102).select('*').leftJoinAndSelect('books', 'b');
   const sql = qb.getFormattedQuery();
 
   // Formula should be properly quoted (priceTaxed formula)

@@ -4,19 +4,16 @@ import { Entity, Index, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider
 @Entity()
 @Index({ properties: ['age'] })
 class User {
-
   @PrimaryKey()
   id!: number;
 
   @Property()
   age!: number;
-
 }
 
 @Entity()
 @Index({ properties: ['user'] })
 class Apartment {
-
   @PrimaryKey()
   id!: number;
 
@@ -25,7 +22,6 @@ class Apartment {
     ref: true,
   })
   user!: Ref<User>;
-
 }
 
 let orm: MikroORM;

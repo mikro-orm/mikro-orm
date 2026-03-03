@@ -10,7 +10,6 @@ import {
 
 @Entity()
 class Part {
-
   @PrimaryKey()
   id!: number;
 
@@ -35,12 +34,10 @@ class Part {
     eager: true,
   })
   parts = new Collection<Part>(this);
-
 }
 
 @Entity()
 class Car {
-
   @PrimaryKey()
   id!: number;
 
@@ -52,7 +49,6 @@ class Car {
     orphanRemoval: true,
   })
   parts = new Collection<Part>(this);
-
 }
 
 let orm: MikroORM;
@@ -77,9 +73,11 @@ describe(`GH issue 3564`, () => {
       parts: [
         {
           value: 'Battery',
-          parts: [{
-            value: 'Electrode',
-          }],
+          parts: [
+            {
+              value: 'Electrode',
+            },
+          ],
         },
         {
           value: 'Electrolyte',
@@ -126,17 +124,22 @@ describe(`GH issue 3564`, () => {
     const electrolyte = car.parts[1];
 
     orm.em.assign(car, {
-      parts: [{
-        id: battery.id,
-        value: battery.value,
-        parts: [{
-          id: electrode.id,
-          value: electrode.value,
-        }, {
-          id: electrolyte.id,
-          value: electrolyte.value,
-        }],
-      }],
+      parts: [
+        {
+          id: battery.id,
+          value: battery.value,
+          parts: [
+            {
+              id: electrode.id,
+              value: electrode.value,
+            },
+            {
+              id: electrolyte.id,
+              value: electrolyte.value,
+            },
+          ],
+        },
+      ],
     });
     await orm.em.flush();
     await orm.em.refresh(car, { populate: ['*'] });

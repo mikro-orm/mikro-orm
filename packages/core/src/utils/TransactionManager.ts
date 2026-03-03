@@ -13,16 +13,12 @@ import type { Dictionary } from '../typings.js';
  * Manages transaction lifecycle and propagation for EntityManager.
  */
 export class TransactionManager {
-
   constructor(private readonly em: EntityManager) {}
 
   /**
    * Main entry point for handling transactional operations with propagation support.
    */
-  async handle<T>(
-    cb: (em: EntityManager) => T | Promise<T>,
-    options: TransactionOptions = {},
-  ): Promise<T> {
+  async handle<T>(cb: (em: EntityManager) => T | Promise<T>, options: TransactionOptions = {}): Promise<T> {
     const em = this.em.getContext(false);
     options.propagation ??= TransactionPropagation.NESTED;
     options.ctx ??= em.getTransactionContext();
@@ -82,7 +78,6 @@ export class TransactionManager {
         throw TransactionStateError.invalidPropagation(propagation);
     }
   }
-
 
   /**
    * Suspends the current transaction and returns the suspended resources.
@@ -231,7 +226,7 @@ export class TransactionManager {
       } else {
         parentUoW.merge(entity, new Set([entity]));
       }
-   }
+    }
   }
 
   /**
@@ -240,7 +235,8 @@ export class TransactionManager {
   private registerDeletionHandler(fork: EntityManager, parent: EntityManager): void {
     fork.getEventManager().registerSubscriber({
       afterFlush: (args: FlushEventArgs) => {
-        const deletionChangeSets = args.uow.getChangeSets()
+        const deletionChangeSets = args.uow
+          .getChangeSets()
           .filter(cs => cs.type === ChangeSetType.DELETE || cs.type === ChangeSetType.DELETE_EARLY);
 
         for (const cs of deletionChangeSets) {
@@ -260,16 +256,16 @@ export class TransactionManager {
     options: TransactionOptions,
   ): Promise<T> {
     const propagateToUpperContext = this.shouldPropagateToUpperContext(em);
-    const eventBroadcaster = new TransactionEventBroadcaster(
-      fork,
-      undefined,
-    );
+    const eventBroadcaster = new TransactionEventBroadcaster(fork, undefined);
 
     return TransactionContext.create(fork, () =>
-      fork.getConnection().transactional(async (trx: Transaction) => {
-        fork.setTransactionContext(trx);
-        return this.executeTransactionFlow(fork, cb, propagateToUpperContext, em);
-      }, { ...options, eventBroadcaster }),
+      fork.getConnection().transactional(
+        async (trx: Transaction) => {
+          fork.setTransactionContext(trx);
+          return this.executeTransactionFlow(fork, cb, propagateToUpperContext, em);
+        },
+        { ...options, eventBroadcaster },
+      ),
     );
   }
 
@@ -300,5 +296,4 @@ export class TransactionManager {
 
     return ret;
   }
-
 }

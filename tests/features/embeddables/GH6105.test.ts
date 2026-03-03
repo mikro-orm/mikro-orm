@@ -1,10 +1,18 @@
 import { MikroORM } from '@mikro-orm/sqlite';
-import { Embeddable, Embedded, Entity, Enum, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Embeddable,
+  Embedded,
+  Entity,
+  Enum,
+  ManyToOne,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { BaseEntity, Config, DefineConfig, EntityDTO, EntityRef, Opt } from '@mikro-orm/core';
 
 @Embeddable()
 class Name {
-
   @Property()
   first!: string;
 
@@ -15,42 +23,34 @@ class Name {
   get display(): Opt<string> {
     return `${this.first} ${this.last}`;
   }
-
 }
 
 @Entity()
 class Person extends BaseEntity {
-
   @PrimaryKey()
   id!: number;
 
   @Embedded(() => Name)
   name!: Name;
-
 }
 
 @Entity()
 class Group {
-
   @PrimaryKey()
   id!: number;
 
   @Property()
   name!: string;
-
 }
 
 @Embeddable({ abstract: true, discriminatorColumn: 'type' })
 abstract class Role<T extends string> {
-
   @Enum({ items: ['admin', 'visitor'] })
   type!: T;
-
 }
 
 @Embeddable({ discriminatorValue: 'visitor' })
 class RoleVisitor extends Role<'visitor'> {
-
   @Property()
   comment!: string;
 
@@ -58,12 +58,10 @@ class RoleVisitor extends Role<'visitor'> {
   get short(): Opt<string> {
     return this.comment.split(' ')[0];
   }
-
 }
 
 @Embeddable({ discriminatorValue: 'admin' })
 class RoleAdmin extends Role<'admin'> {
-
   [Config]?: DefineConfig<{ forceObject: true }>;
 
   @ManyToOne(() => Group, { ref: true })
@@ -73,18 +71,15 @@ class RoleAdmin extends Role<'admin'> {
   get fkGroup(): Opt<number> {
     return this.group.id;
   }
-
 }
 
 @Entity()
 class User extends BaseEntity {
-
   @PrimaryKey()
   id!: number;
 
   @Embedded(() => [RoleAdmin, RoleVisitor])
   role!: RoleAdmin | RoleVisitor;
-
 }
 
 describe('GH #6105', () => {

@@ -4,18 +4,15 @@ import { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()
 class Author {
-
   @PrimaryKey({ type: 'string' })
   id!: string;
 
   @Property({ type: 'string' })
   name!: string;
-
 }
 
 @Entity()
 class Book {
-
   @PrimaryKey({ type: 'string' })
   id!: string;
 
@@ -24,7 +21,6 @@ class Book {
 
   @ManyToOne(() => Author, { ref: true })
   author!: Ref<Author>;
-
 }
 
 async function createEntities(em: EntityManager) {
@@ -42,7 +38,6 @@ async function createEntities(em: EntityManager) {
 }
 
 describe('sqlite driver', () => {
-
   let orm: MikroORM<SqliteDriver>;
 
   beforeAll(async () => {

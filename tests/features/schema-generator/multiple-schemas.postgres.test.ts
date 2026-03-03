@@ -1,9 +1,15 @@
 import { MikroORM } from '@mikro-orm/postgresql';
-import { Entity, ManyToOne, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToOne,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Entity({ tableName: 'author', schema: 'n1' })
 class Author0 {
-
   @PrimaryKey()
   id!: number;
 
@@ -12,12 +18,10 @@ class Author0 {
 
   @OneToOne(() => Author0, undefined, { nullable: true })
   mentor?: Author0;
-
 }
 
 @Entity({ tableName: 'book', schema: 'n2' })
 class Book0 {
-
   @PrimaryKey()
   id!: number;
 
@@ -26,12 +30,10 @@ class Book0 {
 
   @ManyToOne(() => Book0, { nullable: true })
   basedOn?: Book0;
-
 }
 
 @Entity({ tableName: 'book', schema: 'n2' })
 class Book1 {
-
   @PrimaryKey()
   id!: number;
 
@@ -40,11 +42,9 @@ class Book1 {
 
   @ManyToOne(() => Book1)
   basedOn!: Book1;
-
 }
 
 describe('multiple connected schemas in postgres', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -75,5 +75,4 @@ describe('multiple connected schemas in postgres', () => {
     const diff2 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff2).toBe('');
   });
-
 });

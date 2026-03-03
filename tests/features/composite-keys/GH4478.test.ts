@@ -5,15 +5,12 @@ import { mockLogger } from '../../helpers.js';
 
 @Entity()
 class School {
-
   @PrimaryKey()
   schoolCode!: string;
-
 }
 
 @Entity()
 class Class {
-
   [PrimaryKeyProp]?: ['school', 'academicYear', 'classCode'];
 
   @ManyToOne(() => School, { name: 'school_code', primary: true })
@@ -24,12 +21,10 @@ class Class {
 
   @PrimaryKey()
   classCode!: string;
-
 }
 
 @Entity()
 class StudentAllocation {
-
   [PrimaryKeyProp]?: ['studentId', 'academicYear'];
 
   @PrimaryKey()
@@ -43,7 +38,6 @@ class StudentAllocation {
 
   @ManyToOne(() => Class, { fieldNames: ['school_code', 'academic_year', 'class_code'], nullable: true })
   class?: Class;
-
 }
 
 let orm: MikroORM;

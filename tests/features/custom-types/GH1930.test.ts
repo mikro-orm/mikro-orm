@@ -12,7 +12,6 @@ import { MikroORM } from '@mikro-orm/mysql';
 import { mockLogger } from '../../helpers.js';
 
 export class UuidBinaryType extends Type<string, Buffer> {
-
   override convertToDatabaseValue(value: string): Buffer {
     return Buffer.from(parse(value));
   }
@@ -24,12 +23,10 @@ export class UuidBinaryType extends Type<string, Buffer> {
   override getColumnType(): string {
     return 'binary(16)';
   }
-
 }
 
 @Entity()
 class B {
-
   @PrimaryKey({ type: UuidBinaryType, name: 'uuid' })
   id: string = v4();
 
@@ -39,12 +36,10 @@ class B {
   constructor(name: string) {
     this.name = name;
   }
-
 }
 
 @Entity()
 class A {
-
   @PrimaryKey({ type: UuidBinaryType, name: 'uuid' })
   id: string = v4();
 
@@ -61,11 +56,9 @@ class A {
     this.name = name;
     this.b = ref(B, b);
   }
-
 }
 
 describe('GH issue 1930', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -112,5 +105,4 @@ describe('GH issue 1930', () => {
     expect(mock.mock.calls[3][0]).toMatch(/insert into `a_fields` .* 3 rows affected/); // added 3 new items
     expect(mock.mock.calls[4][0]).toMatch('commit');
   });
-
 });

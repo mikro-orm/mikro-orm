@@ -18,7 +18,6 @@ import { SqliteDialect } from 'kysely';
  * ```
  */
 export class NodeSqliteDialect extends SqliteDialect {
-
   constructor(dbName: string) {
     const { DatabaseSync } = globalThis.process.getBuiltinModule('node:sqlite') as any;
 
@@ -36,10 +35,11 @@ export class NodeSqliteDialect extends SqliteDialect {
               get: (params: unknown[]) => stmt.get(...params),
             };
           },
-          close() { db.close(); },
+          close() {
+            db.close();
+          },
         } as any;
       },
     });
   }
-
 }

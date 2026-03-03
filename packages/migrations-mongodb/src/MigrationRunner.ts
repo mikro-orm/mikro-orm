@@ -3,12 +3,13 @@ import type { MongoDriver, MongoConnection } from '@mikro-orm/mongodb';
 import type { Migration } from './Migration.js';
 
 export class MigrationRunner {
-
   private readonly connection: MongoConnection;
   private masterTransaction?: Transaction;
 
-  constructor(protected readonly driver: MongoDriver,
-              protected readonly options: MigrationsOptions) {
+  constructor(
+    protected readonly driver: MongoDriver,
+    protected readonly options: MigrationsOptions,
+  ) {
     this.connection = this.driver.getConnection();
   }
 
@@ -21,10 +22,13 @@ export class MigrationRunner {
       migration.setTransactionContext(this.masterTransaction);
       await migration[method]();
     } else {
-      await this.connection.transactional(async tx => {
-        migration.setTransactionContext(tx);
-        await migration[method]();
-      }, { ctx: this.masterTransaction });
+      await this.connection.transactional(
+        async tx => {
+          migration.setTransactionContext(tx);
+          await migration[method]();
+        },
+        { ctx: this.masterTransaction },
+      );
     }
   }
 
@@ -35,5 +39,4 @@ export class MigrationRunner {
   unsetMasterMigration() {
     delete this.masterTransaction;
   }
-
 }

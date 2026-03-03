@@ -1,10 +1,17 @@
 import { FullTextType, MikroORM, Collection } from '@mikro-orm/postgresql';
-import { Entity, Index, ManyToMany, PrimaryKey, Property, ReflectMetadataProvider, Unique } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  Index,
+  ManyToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+  Unique,
+} from '@mikro-orm/decorators/legacy';
 
 @Entity()
 @Unique({ properties: ['name'] })
 class Artist {
-
   @PrimaryKey()
   id!: number;
 
@@ -20,12 +27,10 @@ class Artist {
     this.name = artist.name;
     this.searchableName = artist.name;
   }
-
 }
 
 @Entity()
 class Song {
-
   @PrimaryKey()
   id!: number;
 
@@ -44,7 +49,6 @@ class Song {
     this.title = song.title;
     this.searchableTitle = song.title;
   }
-
 }
 
 let orm: MikroORM;
@@ -75,10 +79,14 @@ test('GH issue 3696', async () => {
   await orm.em.flush();
   orm.em.clear();
 
-  const results = await orm.em.find(Song, {
-    searchableTitle: { $fulltext: 'anti' },
-    artists: { searchableName: { $fulltext: 'taylor' } },
-  }, { populate: ['artists'] });
+  const results = await orm.em.find(
+    Song,
+    {
+      searchableTitle: { $fulltext: 'anti' },
+      artists: { searchableName: { $fulltext: 'taylor' } },
+    },
+    { populate: ['artists'] },
+  );
   expect(results).toHaveLength(1);
   expect(results[0]).toMatchObject({
     title: 'Anti-Hero',

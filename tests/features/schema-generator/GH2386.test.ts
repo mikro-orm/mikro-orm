@@ -3,7 +3,6 @@ import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-or
 
 @Entity({ tableName: 'book' })
 class Book1 {
-
   @PrimaryKey()
   id!: number;
 
@@ -12,12 +11,10 @@ class Book1 {
 
   @Property({ columnType: 'timestamp', defaultRaw: `current_timestamp`, extra: `on update current_timestamp` })
   updatedAt!: Date;
-
 }
 
 @Entity({ tableName: 'book' })
 class Book2 {
-
   @PrimaryKey()
   id!: number;
 
@@ -26,12 +23,10 @@ class Book2 {
 
   @Property({ columnType: 'timestamp', defaultRaw: `current_timestamp` })
   updatedAt!: Date;
-
 }
 
 @Entity({ tableName: 'book' })
 class Book3 {
-
   @PrimaryKey()
   id!: number;
 
@@ -40,11 +35,9 @@ class Book3 {
 
   @Property({ columnType: 'timestamp', defaultRaw: `current_timestamp`, extra: `on update current_timestamp` })
   updatedAt!: Date;
-
 }
 
 describe('changing column in mysql (GH 2386)', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -69,8 +62,9 @@ describe('changing column in mysql (GH 2386)', () => {
 
     orm.discoverEntity(Book3, Book2);
     const diff3 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
-    expect(diff3).toBe('alter table `book` modify `updated_at` timestamp not null default current_timestamp on update current_timestamp;\n');
+    expect(diff3).toBe(
+      'alter table `book` modify `updated_at` timestamp not null default current_timestamp on update current_timestamp;\n',
+    );
     await orm.schema.execute(diff3);
   });
-
 });

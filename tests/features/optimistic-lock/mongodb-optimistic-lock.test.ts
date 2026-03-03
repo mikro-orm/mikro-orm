@@ -9,7 +9,6 @@ import {
 
 @Entity()
 class User {
-
   @PrimaryKey()
   _id!: ObjectId;
 
@@ -35,12 +34,10 @@ class User {
       this.phoneNumber = data.phoneNumber;
     }
   }
-
 }
 
 @Entity()
 class Post {
-
   @PrimaryKey()
   _id!: ObjectId;
 
@@ -58,12 +55,10 @@ class Post {
       this.title = data.title;
     }
   }
-
 }
 
 @Entity()
 class ItemWithCustomVersion {
-
   @PrimaryKey()
   _id!: ObjectId;
 
@@ -81,12 +76,10 @@ class ItemWithCustomVersion {
       this.name = data.name;
     }
   }
-
 }
 
 @Entity()
 class NoVersionEntity {
-
   @PrimaryKey()
   _id!: ObjectId;
 
@@ -95,7 +88,6 @@ class NoVersionEntity {
 
   @Property()
   name!: string;
-
 }
 
 describe('MongoDB optimistic locking', () => {
@@ -278,7 +270,9 @@ describe('MongoDB optimistic locking', () => {
     await orm.em.persist(users).flush();
     orm.em.clear();
 
-    const savedUsers = await orm.em.find(User, { email: { $in: ['bulk1@example.com', 'bulk2@example.com', 'bulk3@example.com'] } });
+    const savedUsers = await orm.em.find(User, {
+      email: { $in: ['bulk1@example.com', 'bulk2@example.com', 'bulk3@example.com'] },
+    });
     expect(savedUsers).toHaveLength(3);
 
     savedUsers.forEach(user => {
@@ -440,13 +434,13 @@ describe('MongoDB optimistic locking', () => {
     await orm.em.persist(users).flush();
     orm.em.clear();
 
-    const result = await orm.em.getDriver().nativeUpdateMany(User, [
-      { _id: users[0]._id },
-      { _id: users[1]._id },
-    ], [
-      { email: 'bulk-fallback-updated1@example.com' },
-      { email: 'bulk-fallback-updated2@example.com' },
-    ]);
+    const result = await orm.em
+      .getDriver()
+      .nativeUpdateMany(
+        User,
+        [{ _id: users[0]._id }, { _id: users[1]._id }],
+        [{ email: 'bulk-fallback-updated1@example.com' }, { email: 'bulk-fallback-updated2@example.com' }],
+      );
     expect(result.affectedRows).toBe(2);
 
     const updatedUsers = await orm.em.find(User, [users[0]._id, users[1]._id]);
@@ -470,10 +464,7 @@ describe('MongoDB optimistic locking', () => {
       { _id: users[0]._id, version: 1 },
       { _id: users[1]._id, version: 1 },
     ];
-    const updateData = [
-      { email: 'bulk-updated1@example.com' },
-      { email: 'bulk-updated2@example.com' },
-    ];
+    const updateData = [{ email: 'bulk-updated1@example.com' }, { email: 'bulk-updated2@example.com' }];
 
     // This directly tests the handleVersionForUpdateMany method with numeric versions
     const result = await orm.em.getDriver().nativeUpdateMany(User, filter, updateData);

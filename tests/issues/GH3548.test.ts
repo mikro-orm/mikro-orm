@@ -3,7 +3,6 @@ import { Entity, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from 
 
 @Entity()
 class Author {
-
   @PrimaryKey()
   _id!: ObjectId;
 
@@ -12,12 +11,10 @@ class Author {
 
   @OneToOne(() => AuthorDetail, 'author', { owner: true })
   authorDetail!: any;
-
 }
 
 @Entity()
 class AuthorDetail {
-
   @PrimaryKey()
   _id!: ObjectId;
 
@@ -30,7 +27,6 @@ class AuthorDetail {
   constructor(name: string) {
     this.name = name;
   }
-
 }
 
 let orm: MikroORM;

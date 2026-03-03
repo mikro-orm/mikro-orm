@@ -11,7 +11,6 @@ import {
 
 @Embeddable()
 class Inner {
-
   @Property({ hidden: true, lazy: true })
   secret: string;
 
@@ -22,12 +21,10 @@ class Inner {
     this.secret = 'secret shh';
     this.public = 'public';
   }
-
 }
 
 @Embeddable()
 class NextLevel {
-
   @Property()
   aa: string;
 
@@ -38,12 +35,10 @@ class NextLevel {
     this.inner = inner;
     this.aa = 'aa';
   }
-
 }
 
 @Entity()
 class TopLevel {
-
   @PrimaryKey()
   _id!: ObjectId;
 
@@ -56,18 +51,19 @@ class TopLevel {
   constructor(nextLevel: NextLevel) {
     this.nextLevel = nextLevel;
   }
-
 }
 
 let orm: MikroORM;
 let id: string;
 
 beforeAll(async () => {
-  orm = await MikroORM.init(defineConfig({
-    metadataProvider: ReflectMetadataProvider,
-    dbName: '6994',
-    entities: [TopLevel, Inner, NextLevel],
-  }));
+  orm = await MikroORM.init(
+    defineConfig({
+      metadataProvider: ReflectMetadataProvider,
+      dbName: '6994',
+      entities: [TopLevel, Inner, NextLevel],
+    }),
+  );
 
   const item = orm.em.create(TopLevel, new TopLevel(new NextLevel(new Inner())));
   await orm.em.persist(item).flush();

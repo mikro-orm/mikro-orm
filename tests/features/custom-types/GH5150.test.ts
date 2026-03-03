@@ -2,7 +2,6 @@ import { MikroORM, Type } from '@mikro-orm/sqlite';
 import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 class EncryptedStringType extends Type<string> {
-
   convertToDatabaseValue(value: string): string {
     if (value !== 'decrypted') {
       throw new Error();
@@ -18,12 +17,10 @@ class EncryptedStringType extends Type<string> {
 
     return 'decrypted';
   }
-
 }
 
 @Entity()
 class Test {
-
   @PrimaryKey()
   id!: number;
 
@@ -33,7 +30,6 @@ class Test {
   constructor(value: string) {
     this.value = value;
   }
-
 }
 
 let orm: MikroORM;

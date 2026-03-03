@@ -3,7 +3,6 @@ import { Check, Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@m
 
 @Entity({ tableName: 'user' })
 class User0 {
-
   @PrimaryKey()
   id!: number;
 
@@ -13,12 +12,10 @@ class User0 {
     expression: c => quote`char_length(${c.name}) <= 123`,
   })
   name!: string;
-
 }
 
 @Entity({ tableName: 'user' })
 class User1 {
-
   @PrimaryKey()
   id!: number;
 
@@ -28,7 +25,6 @@ class User1 {
     expression: c => quote`char_length(${c.name}) <= 123`,
   })
   name!: string;
-
 }
 
 let orm: MikroORM;

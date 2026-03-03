@@ -60,7 +60,15 @@ type QueryBuilderLike = { toQuery(): { sql: string; params: readonly unknown[] }
  * ```
  */
 export function rawKnex<R = RawQueryFragment & symbol, T extends object = any>(
-  sql: QueryBuilderLike | Knex.QueryBuilder | Knex.Raw | EntityKey<T> | EntityKey<T>[] | AnyString | ((alias: string) => string) | RawQueryFragment,
+  sql:
+    | QueryBuilderLike
+    | Knex.QueryBuilder
+    | Knex.Raw
+    | EntityKey<T>
+    | EntityKey<T>[]
+    | AnyString
+    | ((alias: string) => string)
+    | RawQueryFragment,
   params?: readonly unknown[] | Dictionary<unknown>,
 ): R {
   if (Utils.isObject<Knex.QueryBuilder | Knex.Raw>(sql) && 'toSQL' in sql) {

@@ -1,10 +1,16 @@
 import { MikroORM, Rel } from '@mikro-orm/sqlite';
-import { Entity, ManyToOne, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToOne,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../../helpers.js';
 
 @Entity()
 class ClassName {
-
   @PrimaryKey()
   id!: number;
 
@@ -13,29 +19,24 @@ class ClassName {
 
   @ManyToOne(() => Product, { nullable: true })
   anotherProduct?: Rel<Product>;
-
 }
 
 @Entity()
 class Product {
-
   @PrimaryKey()
   id!: number;
 
   @ManyToOne({ entity: () => ClassName, nullable: true })
   className?: ClassName;
-
 }
 
 @Entity()
 class SubProduct {
-
   @PrimaryKey()
   id!: number;
 
   @OneToOne({ entity: () => Product, nullable: true })
   product?: Product;
-
 }
 
 function getRandomBetween1And10(): number {
@@ -103,10 +104,7 @@ test('5889', async () => {
   mock.mockReset();
   const entities1 = await orm.em.fork().findAll(SubProduct, {
     populate: ['product.className.anotherProduct.className'],
-    fields: [
-      'product.className.foo',
-      'product.className.anotherProduct.className.foo',
-    ],
+    fields: ['product.className.foo', 'product.className.anotherProduct.className.foo'],
     limit: 10,
     offset: 20,
     orderBy: { id: 'ASC' },

@@ -4,7 +4,6 @@ import { PLATFORMS } from '../../bootstrap.js';
 
 @Entity()
 class User {
-
   @PrimaryKey()
   foo!: number;
 
@@ -13,7 +12,6 @@ class User {
 
   @Property({ defaultRaw: `CURRENT_TIMESTAMP` })
   createdAt?: Date;
-
 }
 
 const options = {
@@ -23,7 +21,7 @@ const options = {
   postgresql: { dbName: 'mikro_orm_upsert_4923' },
 };
 
-describe.each(Utils.keys(options))('GH #4923 [%s]',  type => {
+describe.each(Utils.keys(options))('GH #4923 [%s]', type => {
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -49,10 +47,7 @@ describe.each(Utils.keys(options))('GH #4923 [%s]',  type => {
   });
 
   test('GH #4923 em.upsertMany()', async () => {
-    const result = await orm.em.upsertMany(User, [
-      { foo: 1, bar: 2 },
-    ]);
+    const result = await orm.em.upsertMany(User, [{ foo: 1, bar: 2 }]);
     expect(result).toHaveLength(1);
   });
-
 });

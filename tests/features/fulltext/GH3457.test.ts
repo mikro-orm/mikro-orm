@@ -5,7 +5,6 @@ import { randomUUID } from 'node:crypto';
 
 @Entity()
 export class Test {
-
   @PrimaryKey({ autoincrement: true })
   id!: number;
 
@@ -23,17 +22,13 @@ export class Test {
     type: FullTextType,
     nullable: true,
     onUpdate: (e: Test) =>
-      `${e.clientFirstName || ''} ${e.clientMiddleName || ''} ${e.clientLastName || ''}`
-        .replace(/\s+/g, ' ')
-        .trim(),
+      `${e.clientFirstName || ''} ${e.clientMiddleName || ''} ${e.clientLastName || ''}`.replace(/\s+/g, ' ').trim(),
   })
   clientNameFull?: string;
-
 }
 
 @Entity()
 export class TestHistory {
-
   @PrimaryKey()
   id!: string;
 
@@ -49,11 +44,9 @@ export class TestHistory {
   @Index({ type: 'fulltext' })
   @Property({ type: FullTextType, nullable: true })
   clientNameFull?: string;
-
 }
 
 export class CaseHistorySubscriber implements EventSubscriber<Test> {
-
   async onFlush(args: FlushEventArgs): Promise<void> {
     const changeSets = args.uow.getChangeSets();
 
@@ -67,7 +60,6 @@ export class CaseHistorySubscriber implements EventSubscriber<Test> {
       }
     }
   }
-
 }
 
 let orm: MikroORM<PostgreSqlDriver>;

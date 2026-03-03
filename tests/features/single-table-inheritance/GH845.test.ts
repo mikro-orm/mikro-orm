@@ -1,13 +1,18 @@
 import { MikroORM, Collection, QueryOrder } from '@mikro-orm/core';
-import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 import { mockLogger } from '../../helpers.js';
 
 abstract class Base {
-
   @PrimaryKey()
   id!: number;
-
 }
 
 @Entity({
@@ -18,44 +23,35 @@ abstract class Base {
   },
 })
 class Parent extends Base {
-
   @Property()
   type!: string;
 
   @OneToMany(() => Relation1, 'parent')
   qaInfo = new Collection<Relation1>(this);
-
 }
 
 @Entity()
 class Relation1 extends Base {
-
   @ManyToOne(() => Parent)
   parent!: Parent;
-
 }
 
 @Entity()
 class Child1 extends Parent {
-
   @OneToMany(() => Child1Specific, 'child1')
   rel = new Collection<Child1Specific>(this);
-
 }
 
 @Entity()
 class Child1Specific extends Base {
-
   @ManyToOne()
   child1!: Child1;
-
 }
 
 @Entity()
 class Child2 extends Parent {}
 
 describe('GH issue 845', () => {
-
   let orm: MikroORM<SqliteDriver>;
 
   beforeAll(async () => {
@@ -93,10 +89,14 @@ describe('GH issue 845', () => {
     expect(mock.mock.calls[3][0]).toMatch('insert into `child1specific` (`child1_id`) values (?), (?), (?)');
     expect(mock.mock.calls[4][0]).toMatch('commit');
 
-    const parents = await orm.em.find(Parent, {}, {
-      populate: ['qaInfo.parent', 'rel'] as never,
-      orderBy: { type: QueryOrder.ASC },
-    });
+    const parents = await orm.em.find(
+      Parent,
+      {},
+      {
+        populate: ['qaInfo.parent', 'rel'] as never,
+        orderBy: { type: QueryOrder.ASC },
+      },
+    );
     expect(parents[0]).toBeInstanceOf(Child1);
     expect(parents[0].type).toBe('Child1');
     expect(parents[0].qaInfo.length).toBe(0);
@@ -118,5 +118,4 @@ describe('GH issue 845', () => {
     expect(parents[1].qaInfo[2].parent).toBeInstanceOf(Child2);
     expect((parents[1] as Child1).rel).toBeUndefined();
   });
-
 });

@@ -1,11 +1,18 @@
 import { Collection, PrimaryKeyProp, ref, Ref, Rel, SimpleLogger } from '@mikro-orm/core';
-import { Entity, ManyToMany, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToMany,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { MikroORM } from '@mikro-orm/postgresql';
 import { mockLogger } from '../../helpers.js';
 
 @Entity()
 class Order {
-
   @PrimaryKey({ type: 'uuid' })
   id!: string;
 
@@ -26,12 +33,10 @@ class Order {
 
   @Property()
   number!: number;
-
 }
 
 @Entity()
 class OrderItem {
-
   @ManyToOne({ entity: () => Order, primary: true, joinColumns: ['order_id', 'organization_id'] })
   order!: Rel<Order>;
 
@@ -47,23 +52,19 @@ class OrderItem {
     primary: true,
   })
   organization!: Ref<Organization>;
-
 }
 
 @Entity()
 class Organization {
-
   @PrimaryKey({ type: 'uuid' })
   id!: string;
 
   @Property({ length: 255 })
   name!: string;
-
 }
 
 @Entity()
 class Product {
-
   @PrimaryKey({ type: 'uuid' })
   id!: string;
 
@@ -82,12 +83,10 @@ class Product {
     mappedBy: 'product',
   })
   infos = new Collection<ProductInfo>(this);
-
 }
 
 @Entity()
 class ProductInfo {
-
   [PrimaryKeyProp]?: ['id', 'organization'];
 
   @PrimaryKey({ type: 'uuid' })
@@ -109,7 +108,6 @@ class ProductInfo {
     joinColumns: ['product_id', 'organization_id'],
   })
   product!: Ref<Product>;
-
 }
 
 let orm: MikroORM;
@@ -156,8 +154,12 @@ test('shared column as composite PK and FK in M:1', async () => {
   expect(mock.mock.calls).toEqual([
     ['[query] begin'],
     [`[query] insert into "organization" ("id", "name") values ('a900a4da-c464-4bd4-88a3-e41e1d33dc2e', 'Tenant 1')`],
-    [`[query] insert into "product" ("id", "organization_id") values ('d09f1159-c5b0-4336-bfed-2543b5422ba7', 'a900a4da-c464-4bd4-88a3-e41e1d33dc2e')`],
-    [`[query] insert into "product_info" ("id", "organization_id", "description", "product_id") values ('bb9efb3e-7c23-421c-9ae2-9d989630159a', 'a900a4da-c464-4bd4-88a3-e41e1d33dc2e', 'test', 'd09f1159-c5b0-4336-bfed-2543b5422ba7')`],
+    [
+      `[query] insert into "product" ("id", "organization_id") values ('d09f1159-c5b0-4336-bfed-2543b5422ba7', 'a900a4da-c464-4bd4-88a3-e41e1d33dc2e')`,
+    ],
+    [
+      `[query] insert into "product_info" ("id", "organization_id", "description", "product_id") values ('bb9efb3e-7c23-421c-9ae2-9d989630159a', 'a900a4da-c464-4bd4-88a3-e41e1d33dc2e', 'test', 'd09f1159-c5b0-4336-bfed-2543b5422ba7')`,
+    ],
     ['[query] commit'],
   ]);
 
@@ -172,9 +174,13 @@ test('shared column as composite PK and FK in M:1', async () => {
   await orm.em.flush();
 
   expect(mock.mock.calls).toEqual([
-    [`[query] select "p0".* from "product_info" as "p0" where "p0"."id" = 'bb9efb3e-7c23-421c-9ae2-9d989630159a' and "p0"."organization_id" = 'a900a4da-c464-4bd4-88a3-e41e1d33dc2e' limit 1`],
+    [
+      `[query] select "p0".* from "product_info" as "p0" where "p0"."id" = 'bb9efb3e-7c23-421c-9ae2-9d989630159a' and "p0"."organization_id" = 'a900a4da-c464-4bd4-88a3-e41e1d33dc2e' limit 1`,
+    ],
     ['[query] begin'],
-    [`[query] update "product_info" set "description" = 'new 123' where "id" = 'bb9efb3e-7c23-421c-9ae2-9d989630159a' and "organization_id" = 'a900a4da-c464-4bd4-88a3-e41e1d33dc2e'`],
+    [
+      `[query] update "product_info" set "description" = 'new 123' where "id" = 'bb9efb3e-7c23-421c-9ae2-9d989630159a' and "organization_id" = 'a900a4da-c464-4bd4-88a3-e41e1d33dc2e'`,
+    ],
     ['[query] commit'],
   ]);
 });
@@ -202,18 +208,28 @@ test('shared column as composite PK and FK in M:N', async () => {
   expect(mock.mock.calls).toEqual([
     ['[query] begin'],
     [`[query] insert into "organization" ("id", "name") values ('a900a4da-c464-4bd4-88a3-e41e1d33dc2e', 'Tenant 1')`],
-    [`[query] insert into "order" ("id", "organization_id", "number") values ('d09f1159-c5b0-4336-bfed-2543b5422ba7', 'a900a4da-c464-4bd4-88a3-e41e1d33dc2e', 123)`],
-    [`[query] insert into "product" ("id", "organization_id") values ('bb9efb3e-7c23-421c-9ae2-9d989630159a', 'a900a4da-c464-4bd4-88a3-e41e1d33dc2e')`],
-    [`[query] insert into "order_item" ("product_id", "organization_id", "order_id") values ('bb9efb3e-7c23-421c-9ae2-9d989630159a', 'a900a4da-c464-4bd4-88a3-e41e1d33dc2e', 'd09f1159-c5b0-4336-bfed-2543b5422ba7') returning "amount"`],
+    [
+      `[query] insert into "order" ("id", "organization_id", "number") values ('d09f1159-c5b0-4336-bfed-2543b5422ba7', 'a900a4da-c464-4bd4-88a3-e41e1d33dc2e', 123)`,
+    ],
+    [
+      `[query] insert into "product" ("id", "organization_id") values ('bb9efb3e-7c23-421c-9ae2-9d989630159a', 'a900a4da-c464-4bd4-88a3-e41e1d33dc2e')`,
+    ],
+    [
+      `[query] insert into "order_item" ("product_id", "organization_id", "order_id") values ('bb9efb3e-7c23-421c-9ae2-9d989630159a', 'a900a4da-c464-4bd4-88a3-e41e1d33dc2e', 'd09f1159-c5b0-4336-bfed-2543b5422ba7') returning "amount"`,
+    ],
     ['[query] commit'],
   ]);
 
   orm.em.clear();
   mock.mockReset();
 
-  const order = await orm.em.findOneOrFail(Order, { id: 'd09f1159-c5b0-4336-bfed-2543b5422ba7' }, {
-    populate: ['products'],
-  });
+  const order = await orm.em.findOneOrFail(
+    Order,
+    { id: 'd09f1159-c5b0-4336-bfed-2543b5422ba7' },
+    {
+      populate: ['products'],
+    },
+  );
   const p = new Product();
   p.id = 'ffffffff-7c23-421c-9ae2-9d989630159a';
   p.organization = ref(organization);
@@ -223,11 +239,19 @@ test('shared column as composite PK and FK in M:N', async () => {
 
   expect(mock.mock.calls).toEqual([
     [`[query] select "o0".* from "order" as "o0" where "o0"."id" = 'd09f1159-c5b0-4336-bfed-2543b5422ba7' limit 1`],
-    [`[query] select "o0"."organization_id", "o0"."product_id", "o0"."order_id", "p1"."id" as "p1__id", "p1"."organization_id" as "p1__organization_id" from "order_item" as "o0" inner join "product" as "p1" on "o0"."product_id" = "p1"."id" and "o0"."organization_id" = "p1"."organization_id" where ("o0"."order_id", "o0"."organization_id") in (('d09f1159-c5b0-4336-bfed-2543b5422ba7', 'a900a4da-c464-4bd4-88a3-e41e1d33dc2e'))`],
+    [
+      `[query] select "o0"."organization_id", "o0"."product_id", "o0"."order_id", "p1"."id" as "p1__id", "p1"."organization_id" as "p1__organization_id" from "order_item" as "o0" inner join "product" as "p1" on "o0"."product_id" = "p1"."id" and "o0"."organization_id" = "p1"."organization_id" where ("o0"."order_id", "o0"."organization_id") in (('d09f1159-c5b0-4336-bfed-2543b5422ba7', 'a900a4da-c464-4bd4-88a3-e41e1d33dc2e'))`,
+    ],
     ['[query] begin'],
-    [`[query] insert into "product" ("id", "organization_id") values ('ffffffff-7c23-421c-9ae2-9d989630159a', 'a900a4da-c464-4bd4-88a3-e41e1d33dc2e')`],
-    [`[query] update "order" set "number" = 321 where "id" = 'd09f1159-c5b0-4336-bfed-2543b5422ba7' and "organization_id" = 'a900a4da-c464-4bd4-88a3-e41e1d33dc2e'`],
-    [`[query] insert into "order_item" ("product_id", "organization_id", "order_id") values ('ffffffff-7c23-421c-9ae2-9d989630159a', 'a900a4da-c464-4bd4-88a3-e41e1d33dc2e', 'd09f1159-c5b0-4336-bfed-2543b5422ba7') returning "amount"`],
+    [
+      `[query] insert into "product" ("id", "organization_id") values ('ffffffff-7c23-421c-9ae2-9d989630159a', 'a900a4da-c464-4bd4-88a3-e41e1d33dc2e')`,
+    ],
+    [
+      `[query] update "order" set "number" = 321 where "id" = 'd09f1159-c5b0-4336-bfed-2543b5422ba7' and "organization_id" = 'a900a4da-c464-4bd4-88a3-e41e1d33dc2e'`,
+    ],
+    [
+      `[query] insert into "order_item" ("product_id", "organization_id", "order_id") values ('ffffffff-7c23-421c-9ae2-9d989630159a', 'a900a4da-c464-4bd4-88a3-e41e1d33dc2e', 'd09f1159-c5b0-4336-bfed-2543b5422ba7') returning "amount"`,
+    ],
     ['[query] commit'],
   ]);
 });

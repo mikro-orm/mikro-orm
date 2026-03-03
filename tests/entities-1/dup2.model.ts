@@ -4,7 +4,6 @@ import { Dup1 } from './dup1.model.js';
 
 @Entity()
 export class Dup2 {
-
   @PrimaryKey({ type: 'ObjectId' })
   _id!: ObjectId;
 
@@ -13,5 +12,4 @@ export class Dup2 {
 
   @OneToOne({ type: 'Dup1', owner: true })
   dup11?: Dup1;
-
 }

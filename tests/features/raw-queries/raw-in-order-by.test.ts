@@ -3,7 +3,6 @@ import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-or
 
 @Entity()
 class User {
-
   @PrimaryKey()
   id!: number;
 
@@ -17,7 +16,6 @@ class User {
     this.name = name;
     this.email = email;
   }
-
 }
 
 let orm: MikroORM;
@@ -36,10 +34,9 @@ afterAll(async () => {
 });
 
 test('#5129', async () => {
-  const lengthOfTruncatedNameQuery = raw<string>(
-    alias => `length(substr(${alias}.name, 0, :maxLength))`,
-    { maxLength: 3 },
-  );
+  const lengthOfTruncatedNameQuery = raw<string>(alias => `length(substr(${alias}.name, 0, :maxLength))`, {
+    maxLength: 3,
+  });
 
   await orm.em.find(
     User,
@@ -51,21 +48,27 @@ test('#5129', async () => {
 
   const e = new User('n', 'e');
   e.name = lengthOfTruncatedNameQuery;
-  expect(() => wrap(e).toObject()).toThrow(`Trying to serialize raw SQL fragment: 'length(substr([::alias::].name, 0, ?))'`);
-  expect(() => JSON.stringify(e)).toThrow(`Trying to serialize raw SQL fragment: 'length(substr([::alias::].name, 0, ?))'`);
+  expect(() => wrap(e).toObject()).toThrow(
+    `Trying to serialize raw SQL fragment: 'length(substr([::alias::].name, 0, ?))'`,
+  );
+  expect(() => JSON.stringify(e)).toThrow(
+    `Trying to serialize raw SQL fragment: 'length(substr([::alias::].name, 0, ?))'`,
+  );
   expect(() => serialize(e)).toThrow(`Trying to serialize raw SQL fragment: 'length(substr([::alias::].name, 0, ?))'`);
 });
 
 test('validation or mixed order by', async () => {
   const key = raw(`length(substr(name, 0, 3))`);
-  await expect(orm.em.findAll(User, { orderBy: { [key]: 'ASC', name: 'ASC' } })).rejects.toThrow(`Invalid "orderBy": You are mixing field-based keys and raw SQL fragments inside a single object.
+  await expect(orm.em.findAll(User, { orderBy: { [key]: 'ASC', name: 'ASC' } })).rejects
+    .toThrow(`Invalid "orderBy": You are mixing field-based keys and raw SQL fragments inside a single object.
 This is not allowed because object key order cannot reliably preserve evaluation order.
 To fix this, split them into separate objects inside an array:
 
 orderBy: [ { name: 'ASC' }, { [raw('length(substr(name, 0, 3))')]: 'ASC' } ]`);
   await expect(orm.em.findAll(User, { orderBy: [{ [key]: 'ASC' }, { name: 'ASC' }] })).resolves.not.toThrow();
 
-  expect(() => orm.em.qb(User).orderBy({ [key]: 'ASC', name: 'ASC' })).toThrow(`Invalid "orderBy": You are mixing field-based keys and raw SQL fragments inside a single object.
+  expect(() => orm.em.qb(User).orderBy({ [key]: 'ASC', name: 'ASC' }))
+    .toThrow(`Invalid "orderBy": You are mixing field-based keys and raw SQL fragments inside a single object.
 This is not allowed because object key order cannot reliably preserve evaluation order.
 To fix this, split them into separate objects inside an array:
 

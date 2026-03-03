@@ -26,7 +26,6 @@ export enum Enum2 {
 
 @Entity()
 export class Publisher2 extends BaseEntity2 {
-
   [OptionalProps]?: 'type' | 'type2';
 
   @Property({ fieldName: 'name' })
@@ -64,5 +63,4 @@ export class Publisher2 extends BaseEntity2 {
     this.name = name;
     this.type = type;
   }
-
 }

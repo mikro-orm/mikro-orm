@@ -4,7 +4,6 @@ import { Utils } from '../utils/Utils.js';
 import { EventType, EventTypeMap, type TransactionEventType } from '../enums.js';
 
 export class EventManager {
-
   private readonly listeners: { [K in EventType]?: Set<EventSubscriber> } = {};
   private readonly entities = new Map<EventSubscriber, Set<string>>();
   private readonly cache = new Map<number, boolean>();
@@ -36,21 +35,39 @@ export class EventManager {
     return this.subscribers;
   }
 
-  dispatchEvent<T extends object>(event: TransactionEventType, args: TransactionEventArgs, meta?: EntityMetadata<T>): unknown;
-  dispatchEvent<T extends object>(event: EventType.onInit, args: Partial<EventArgs<T>>, meta?: EntityMetadata<T>): unknown;
-  dispatchEvent<T extends object>(event: EventType, args: Partial<EventArgs<T> | FlushEventArgs>, meta?: EntityMetadata<T>): Promise<unknown>;
-  dispatchEvent<T extends object>(event: EventType, args: Partial<AnyEventArgs<T>>, meta?: EntityMetadata<T>): Promise<unknown> | unknown {
+  dispatchEvent<T extends object>(
+    event: TransactionEventType,
+    args: TransactionEventArgs,
+    meta?: EntityMetadata<T>,
+  ): unknown;
+  dispatchEvent<T extends object>(
+    event: EventType.onInit,
+    args: Partial<EventArgs<T>>,
+    meta?: EntityMetadata<T>,
+  ): unknown;
+  dispatchEvent<T extends object>(
+    event: EventType,
+    args: Partial<EventArgs<T> | FlushEventArgs>,
+    meta?: EntityMetadata<T>,
+  ): Promise<unknown>;
+  dispatchEvent<T extends object>(
+    event: EventType,
+    args: Partial<AnyEventArgs<T>>,
+    meta?: EntityMetadata<T>,
+  ): Promise<unknown> | unknown {
     const listeners: AsyncFunction[] = [];
     const entity = (args as EventArgs<T>).entity;
 
     // execute lifecycle hooks first
     meta ??= (entity as AnyEntity)?.__meta;
     const hooks = (meta?.hooks[event] || []) as AsyncFunction[];
-    listeners.push(...hooks.map(hook => {
-      const prototypeHook = meta?.prototype[hook as unknown as EntityKey<T>];
-      const handler = typeof hook === 'function' ? hook : entity[hook!] ?? prototypeHook as AsyncFunction;
-      return handler!.bind(entity);
-    }));
+    listeners.push(
+      ...hooks.map(hook => {
+        const prototypeHook = meta?.prototype[hook as unknown as EntityKey<T>];
+        const handler = typeof hook === 'function' ? hook : (entity[hook!] ?? (prototypeHook as AsyncFunction));
+        return handler!.bind(entity);
+      }),
+    );
 
     for (const listener of this.listeners[event] ?? new Set()) {
       const entities = this.entities.get(listener)!;
@@ -105,7 +122,6 @@ export class EventManager {
 
     return new Set(listener.getSubscribedEntities().map(name => Utils.className(name)));
   }
-
 }
 
 type AnyEventArgs<T extends object> = EventArgs<T> | FlushEventArgs | TransactionEventArgs;

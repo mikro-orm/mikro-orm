@@ -1,10 +1,17 @@
 import { LoadStrategy, OptionalProps, Ref } from '@mikro-orm/core';
-import { Entity, ManyToOne, OneToOne, PrimaryKey, Property, ReflectMetadataProvider, Unique } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToOne,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+  Unique,
+} from '@mikro-orm/decorators/legacy';
 import { MikroORM } from '@mikro-orm/sqlite';
 
 @Entity()
 export class User {
-
   @PrimaryKey()
   id!: number;
 
@@ -16,12 +23,10 @@ export class User {
   profile!: Ref<Profile> | null;
 
   [OptionalProps]?: 'profile';
-
 }
 
 @Entity()
 export class Profile {
-
   @PrimaryKey()
   id!: number;
 
@@ -30,12 +35,10 @@ export class Profile {
 
   @Property()
   name!: string;
-
 }
 
 @Entity()
 export class Session {
-
   @PrimaryKey()
   id!: number;
 
@@ -44,7 +47,6 @@ export class Session {
 
   @ManyToOne({ entity: () => User })
   user!: User;
-
 }
 
 let orm: MikroORM;
@@ -60,18 +62,26 @@ test('GH #4675', async () => {
   const user = await orm.em.insert(User, { username: 'username' });
   await orm.em.insert(Session, { token: 'abc123', user });
 
-  const session1 = await orm.em.findOneOrFail(Session, { token: 'abc123' }, {
-    populate: ['user', 'user.profile'],
-    strategy: LoadStrategy.SELECT_IN,
-    disableIdentityMap: true,
-  });
+  const session1 = await orm.em.findOneOrFail(
+    Session,
+    { token: 'abc123' },
+    {
+      populate: ['user', 'user.profile'],
+      strategy: LoadStrategy.SELECT_IN,
+      disableIdentityMap: true,
+    },
+  );
   expect(session1.user.profile).toBeNull();
 
-  const session2 = await orm.em.findOneOrFail(Session, { token: 'abc123' }, {
-    populate: ['user', 'user.profile'],
-    strategy: LoadStrategy.JOINED,
-    disableIdentityMap: true,
-  });
+  const session2 = await orm.em.findOneOrFail(
+    Session,
+    { token: 'abc123' },
+    {
+      populate: ['user', 'user.profile'],
+      strategy: LoadStrategy.JOINED,
+      disableIdentityMap: true,
+    },
+  );
   expect(session2.user.profile).toBeNull();
 
   await orm.close();
@@ -89,18 +99,26 @@ test('GH #4675 (forceUndefined: true)', async () => {
   const user = await orm.em.insert(User, { username: 'username' });
   await orm.em.insert(Session, { token: 'abc123', user });
 
-  const session1 = await orm.em.findOneOrFail(Session, { token: 'abc123' }, {
-    populate: ['user', 'user.profile'],
-    strategy: LoadStrategy.SELECT_IN,
-    disableIdentityMap: true,
-  });
+  const session1 = await orm.em.findOneOrFail(
+    Session,
+    { token: 'abc123' },
+    {
+      populate: ['user', 'user.profile'],
+      strategy: LoadStrategy.SELECT_IN,
+      disableIdentityMap: true,
+    },
+  );
   expect(session1.user.profile).toBeUndefined();
 
-  const session2 = await orm.em.findOneOrFail(Session, { token: 'abc123' }, {
-    populate: ['user', 'user.profile'],
-    strategy: LoadStrategy.JOINED,
-    disableIdentityMap: true,
-  });
+  const session2 = await orm.em.findOneOrFail(
+    Session,
+    { token: 'abc123' },
+    {
+      populate: ['user', 'user.profile'],
+      strategy: LoadStrategy.JOINED,
+      disableIdentityMap: true,
+    },
+  );
   expect(session2.user.profile).toBeUndefined();
 
   await orm.close();

@@ -3,24 +3,20 @@ import { Entity, ManyToMany, PrimaryKey, Property, ReflectMetadataProvider } fro
 
 @Entity()
 class Manager {
-
   @PrimaryKey()
   _id!: ObjectId;
 
   @ManyToMany({ entity: () => Task, lazy: true })
   tasks = new Collection<Task>(this);
-
 }
 
 @Entity()
 class Task {
-
   @PrimaryKey()
   _id!: ObjectId;
 
   @Property()
   name!: string;
-
 }
 
 let orm: MikroORM;

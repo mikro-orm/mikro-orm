@@ -5,7 +5,6 @@ import { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()
 class A {
-
   @PrimaryKey()
   id!: number;
 
@@ -20,11 +19,9 @@ class A {
 
   @Property({ version: true })
   version!: number;
-
 }
 
 describe('default values in sqlite', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -56,5 +53,4 @@ describe('default values in sqlite', () => {
     expect(a.foo3).toBe(50);
     expect(a.version).toBe(1);
   });
-
 });

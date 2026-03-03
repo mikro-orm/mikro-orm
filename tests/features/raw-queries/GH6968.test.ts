@@ -3,7 +3,6 @@ import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-or
 
 @Entity()
 class RawIssue {
-
   @PrimaryKey({ fieldName: 'ID', type: 'integer' })
   id!: number;
 
@@ -18,7 +17,6 @@ class RawIssue {
     nullable: true,
   })
   uuid36?: string;
-
 }
 
 let orm: MikroORM;

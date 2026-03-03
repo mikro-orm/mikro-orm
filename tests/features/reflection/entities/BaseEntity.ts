@@ -2,7 +2,6 @@ import { PrimaryKey, Property, SerializedPrimaryKey } from '@mikro-orm/decorator
 import { ObjectId } from 'bson';
 
 export abstract class BaseEntity {
-
   @PrimaryKey()
   _id!: ObjectId;
 
@@ -20,5 +19,4 @@ export abstract class BaseEntity {
 
   @Property({ persist: false })
   hookTest = false;
-
 }

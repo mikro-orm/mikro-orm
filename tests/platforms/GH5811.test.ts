@@ -3,7 +3,6 @@ import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-or
 
 @Entity()
 class Comment {
-
   @PrimaryKey()
   id!: number;
 
@@ -13,7 +12,6 @@ class Comment {
   constructor(content: string) {
     this.content = content;
   }
-
 }
 
 let orm: MikroORM;

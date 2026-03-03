@@ -4,7 +4,6 @@ import { QueryType } from '../../query/enums.js';
 
 /** @internal */
 export class MsSqlNativeQueryBuilder extends NativeQueryBuilder {
-
   override compile(): { sql: string; params: unknown[] } {
     if (!this.type) {
       throw new Error('No query type provided');
@@ -34,11 +33,21 @@ export class MsSqlNativeQueryBuilder extends NativeQueryBuilder {
     } else {
       switch (this.type) {
         case QueryType.SELECT:
-        case QueryType.COUNT: this.compileSelect(); break;
-        case QueryType.INSERT: this.compileInsert(); break;
-        case QueryType.UPDATE: this.compileUpdate(); break;
-        case QueryType.DELETE: this.compileDelete(); break;
-        case QueryType.TRUNCATE: this.compileTruncate(); break;
+        case QueryType.COUNT:
+          this.compileSelect();
+          break;
+        case QueryType.INSERT:
+          this.compileInsert();
+          break;
+        case QueryType.UPDATE:
+          this.compileUpdate();
+          break;
+        case QueryType.DELETE:
+          this.compileDelete();
+          break;
+        case QueryType.TRUNCATE:
+          this.compileTruncate();
+          break;
       }
 
       if (suffix) {
@@ -86,9 +95,7 @@ export class MsSqlNativeQueryBuilder extends NativeQueryBuilder {
     }
 
     const returningFields = this.options.returning!;
-    const selections = returningFields
-      .map(field => `[t].${this.platform.quoteIdentifier(field)}`)
-      .join(',');
+    const selections = returningFields.map(field => `[t].${this.platform.quoteIdentifier(field)}`).join(',');
 
     return {
       prefix: `select top(0) ${selections} into #out from ${this.getTableName()} as t left join ${this.getTableName()} on 0 = 1;`,
@@ -213,7 +220,10 @@ export class MsSqlNativeQueryBuilder extends NativeQueryBuilder {
   }
 
   protected override addLockClause() {
-    if (!this.options.lockMode || ![LockMode.PESSIMISTIC_READ, LockMode.PESSIMISTIC_WRITE].includes(this.options.lockMode)) {
+    if (
+      !this.options.lockMode ||
+      ![LockMode.PESSIMISTIC_READ, LockMode.PESSIMISTIC_WRITE].includes(this.options.lockMode)
+    ) {
       return;
     }
 
@@ -237,5 +247,4 @@ export class MsSqlNativeQueryBuilder extends NativeQueryBuilder {
   protected override getCteKeyword(_hasRecursive: boolean): string {
     return 'with';
   }
-
 }

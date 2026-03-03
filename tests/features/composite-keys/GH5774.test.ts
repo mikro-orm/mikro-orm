@@ -13,7 +13,6 @@ import {
   tableName: 'accounts_users',
 })
 class AccountUser {
-
   @ManyToOne({ entity: () => Account, primary: true })
   account: Rel<Account>;
 
@@ -32,12 +31,10 @@ class AccountUser {
     this.account = account;
     this.user = user;
   }
-
 }
 
 @Entity()
 class Account {
-
   @PrimaryKey()
   id!: number;
 
@@ -49,14 +46,12 @@ class Account {
 
   @OneToMany(() => Project, project => project.account)
   projects = new Collection<Project>(this);
-
 }
 
 @Entity({
   tableName: 'documents',
 })
 class Document {
-
   @PrimaryKey()
   id!: number;
 
@@ -68,14 +63,12 @@ class Document {
 
   @ManyToOne(() => AccountUser, { nullable: true })
   assignee!: AccountUser;
-
 }
 
 @Entity({
   tableName: 'projects',
 })
 class Project {
-
   @PrimaryKey()
   id!: number;
 
@@ -90,12 +83,10 @@ class Project {
 
   @ManyToMany(() => AccountUser, 'assignedProjects', { owner: true })
   assignedUsers = new Collection<AccountUser>(this);
-
 }
 
 @Entity()
 class User {
-
   @PrimaryKey()
   id!: number;
 
@@ -104,7 +95,6 @@ class User {
 
   @ManyToMany({ entity: () => Account, mappedBy: o => o.users })
   accounts = new Collection<Account>(this);
-
 }
 
 let orm: MikroORM;

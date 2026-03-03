@@ -1,16 +1,9 @@
 import { Collection, t, PrimaryKeyProp } from '@mikro-orm/core';
-import {
-  Entity,
-  Index,
-  ManyToMany,
-  PrimaryKey,
-  Property,
-} from '@mikro-orm/decorators/legacy';
+import { Entity, Index, ManyToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { User2 } from './User2.js';
 
 @Entity()
 export class Car2 {
-
   @Index({ name: 'car2_name_index' })
   @PrimaryKey({ length: 100 })
   name: string;
@@ -32,5 +25,4 @@ export class Car2 {
     this.year = year;
     this.price = price;
   }
-
 }

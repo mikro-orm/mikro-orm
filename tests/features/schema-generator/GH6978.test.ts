@@ -6,7 +6,6 @@ import { mockLogger } from '../../helpers.js';
 @Index({ properties: ['name'] })
 @Unique({ properties: ['email'] })
 class User {
-
   @PrimaryKey()
   _id!: ObjectId;
 
@@ -15,7 +14,6 @@ class User {
 
   @Property({ fieldName: 'Email' })
   email!: string;
-
 }
 
 let orm: MikroORM;

@@ -1,10 +1,16 @@
 import { Collection, LoadStrategy, MikroORM } from '@mikro-orm/sqlite';
-import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../helpers.js';
 
 @Entity()
 export class Book {
-
   @PrimaryKey()
   id!: number;
 
@@ -17,22 +23,18 @@ export class Book {
     strategy: LoadStrategy.JOINED,
   })
   tags = new Collection<Tag>(this);
-
 }
 
 @Entity()
 export class Tag {
-
   @PrimaryKey()
   id!: number;
 
   @ManyToOne(() => Book)
   book!: Book;
-
 }
 
 describe('GH issue 2803', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -60,5 +62,4 @@ describe('GH issue 2803', () => {
     expect(ret[0].tags).toHaveLength(3);
     expect(mock).toHaveBeenCalledTimes(1);
   });
-
 });

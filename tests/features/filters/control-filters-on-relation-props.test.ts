@@ -5,13 +5,17 @@ const BenefitDetail = defineEntity({
   properties: {
     id: p.integer().primary(),
     description: p.string(),
-    benefit: () => p.manyToOne(Benefit).ref().filters({ status: { status: 'A' } }),
+    benefit: () =>
+      p
+        .manyToOne(Benefit)
+        .ref()
+        .filters({ status: { status: 'A' } }),
     active: p.boolean().onCreate(() => false),
   },
   filters: {
     isActive: {
       name: 'isActive',
-      cond: args => args?.active ? { active: true } : { active: false },
+      cond: args => (args?.active ? { active: true } : { active: false }),
       args: false,
       default: false,
     },
@@ -30,7 +34,7 @@ const BaseBenefit = defineEntity({
   filters: {
     status: {
       name: 'status',
-      cond: args => args ? { benefitStatus: args.status } : undefined,
+      cond: args => (args ? { benefitStatus: args.status } : undefined),
       args: false,
       default: false,
     },
@@ -42,7 +46,11 @@ const Benefit = defineEntity({
   extends: BaseBenefit,
   properties: {
     name: p.string(),
-    details: () => p.oneToMany(BenefitDetail).mappedBy('benefit').filters({ isActive: { active: true } }),
+    details: () =>
+      p
+        .oneToMany(BenefitDetail)
+        .mappedBy('benefit')
+        .filters({ isActive: { active: true } }),
   },
 });
 
@@ -56,7 +64,6 @@ const Employee = defineEntity({
 });
 
 describe('control filters on relation props [sqlite]', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -211,5 +218,4 @@ describe('control filters on relation props [sqlite]', () => {
     expect(e1.activeBenefits).toHaveLength(1);
     expect(e1.activeBenefits[0].benefitStatus).toBe('IA');
   });
-
 });

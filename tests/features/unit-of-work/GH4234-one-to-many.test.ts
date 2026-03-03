@@ -4,7 +4,6 @@ import { MikroORM } from '@mikro-orm/sqlite';
 
 @Entity()
 class Group {
-
   @PrimaryKey()
   id!: number;
 
@@ -19,12 +18,10 @@ class Group {
   constructor(params: RequiredEntityData<Group>) {
     Object.assign(this, params);
   }
-
 }
 
 @Entity()
 class GroupMember {
-
   @ManyToOne({
     entity: () => Member,
     primary: true,
@@ -42,12 +39,10 @@ class GroupMember {
   constructor(params: RequiredEntityData<GroupMember>) {
     Object.assign(this, params);
   }
-
 }
 
 @Entity()
 class Member {
-
   @PrimaryKey()
   id!: number;
 
@@ -62,7 +57,6 @@ class Member {
   constructor(params: RequiredEntityData<Member>) {
     Object.assign(this, params);
   }
-
 }
 
 let orm: MikroORM;

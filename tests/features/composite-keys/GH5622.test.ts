@@ -4,15 +4,12 @@ import { MikroORM } from '@mikro-orm/sqlite';
 
 @Entity()
 class Tenant extends BaseEntity {
-
   @PrimaryKey()
   id!: string;
-
 }
 
 @Entity()
 class Something extends BaseEntity {
-
   [PrimaryKeyProp]?: ['tenant', 'id'];
 
   @ManyToOne(() => Tenant, { fieldName: 'tenant_id', primary: true })
@@ -20,12 +17,10 @@ class Something extends BaseEntity {
 
   @PrimaryKey()
   id!: string;
-
 }
 
 @Entity()
 class SomethingThatBelongsToSomething extends BaseEntity {
-
   [PrimaryKeyProp]?: ['tenant', 'something', 'id'];
 
   @ManyToOne(() => Tenant, { fieldName: 'tenant_id', primary: true })
@@ -41,12 +36,10 @@ class SomethingThatBelongsToSomething extends BaseEntity {
 
   @PrimaryKey()
   id!: string;
-
 }
 
 @Entity()
 class SomethingThatBelongsToSomethingThatBelongsToSomething extends BaseEntity {
-
   [PrimaryKeyProp]?: ['tenant', 'something', 'somethingThatBelongsToSomething'];
 
   @ManyToOne(() => Tenant, { fieldName: 'tenant_id', primary: true })
@@ -67,7 +60,6 @@ class SomethingThatBelongsToSomethingThatBelongsToSomething extends BaseEntity {
     primary: true,
   })
   somethingThatBelongsToSomething!: SomethingThatBelongsToSomething;
-
 }
 
 let orm: MikroORM;
@@ -89,9 +81,16 @@ test(`GH issue 5622`, async () => {
 
   const tenant = orm.em.create(Tenant, { id: '1' });
   const something = orm.em.create(Something, { tenant, id: '2' });
-  const somethingThatBelongsToSomething = orm.em.create(SomethingThatBelongsToSomething, { tenant, something, id: '3' });
-  orm.em.create(SomethingThatBelongsToSomethingThatBelongsToSomething, { tenant, something, somethingThatBelongsToSomething });
-
+  const somethingThatBelongsToSomething = orm.em.create(SomethingThatBelongsToSomething, {
+    tenant,
+    something,
+    id: '3',
+  });
+  orm.em.create(SomethingThatBelongsToSomethingThatBelongsToSomething, {
+    tenant,
+    something,
+    somethingThatBelongsToSomething,
+  });
 
   await expect(orm.em.flush()).resolves.not.toThrow();
 });

@@ -1,20 +1,24 @@
 import { Collection, MikroORM, OptionalProps } from '@mikro-orm/sqlite';
-import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class TestRunEntity {
-
   @PrimaryKey()
   id!: number;
 
   @OneToMany(() => TestCaseEntity, e => e.testRun)
   cases = new Collection<TestCaseEntity>(this);
-
 }
 
 @Entity()
 class TestCaseEntity {
-
   [OptionalProps]?: 'testRun';
 
   @PrimaryKey()
@@ -25,7 +29,6 @@ class TestCaseEntity {
 
   @ManyToOne(() => TestRunEntity)
   testRun!: TestRunEntity;
-
 }
 
 let orm: MikroORM;
@@ -46,9 +49,11 @@ afterAll(() => orm.close(true));
 test('perf: create large 1:m collection', async () => {
   console.time('perf: create large 1:m collection (10k entities)');
   const entity = orm.em.create(TestRunEntity, {
-    cases: Array(10_000).fill(undefined).map((_, index) => ({
-      title: `Test Case #${index}`,
-    })),
+    cases: Array(10_000)
+      .fill(undefined)
+      .map((_, index) => ({
+        title: `Test Case #${index}`,
+      })),
   });
   console.timeEnd('perf: create large 1:m collection (10k entities)');
 });

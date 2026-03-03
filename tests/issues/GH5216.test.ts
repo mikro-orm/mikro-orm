@@ -11,7 +11,6 @@ import {
 
 @Embeddable()
 class Profile {
-
   @Property()
   username: string;
 
@@ -21,18 +20,15 @@ class Profile {
   constructor(username: string) {
     this.username = username;
   }
-
 }
 
 @Entity()
 class User {
-
   @PrimaryKey()
   id!: number;
 
   @Embedded(() => Profile, { object: true })
   profile1!: Profile;
-
 }
 
 let orm: MikroORM;
@@ -61,7 +57,7 @@ async function createUser() {
 }
 
 test('persist and load', async () => {
-  const  user = await createUser();
+  const user = await createUser();
   const u = await orm.em.findOneOrFail(User, user.id);
   expect(u.profile1.createdAt).toEqual(user.profile1.createdAt);
 });

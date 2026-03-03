@@ -3,7 +3,6 @@ import type { Platform } from '../platforms/Platform.js';
 import type { EntityProperty } from '../typings.js';
 
 export class DateType extends Type<string | null | undefined, string | null | undefined> {
-
   override compareAsType(): string {
     return 'string';
   }
@@ -23,5 +22,4 @@ export class DateType extends Type<string | null | undefined, string | null | un
   override getDefaultLength(platform: Platform): number {
     return 0;
   }
-
 }

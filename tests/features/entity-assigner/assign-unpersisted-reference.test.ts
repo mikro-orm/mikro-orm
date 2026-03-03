@@ -1,9 +1,4 @@
-import {
-  MikroORM,
-  defineEntity,
-  p,
-  wrap,
-} from '@mikro-orm/sqlite';
+import { MikroORM, defineEntity, p, wrap } from '@mikro-orm/sqlite';
 
 const Publisher = defineEntity({
   name: 'Publisher',

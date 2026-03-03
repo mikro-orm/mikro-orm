@@ -5,10 +5,9 @@ import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { BASE_DIR, initORMMongo, mockLogger } from '../../bootstrap.js';
 
 describe('filters [mongo]', () => {
-
   let orm: MikroORM;
 
-  beforeAll(async () => orm = await initORMMongo());
+  beforeAll(async () => (orm = await initORMMongo()));
   beforeEach(async () => orm.schema.clear());
   afterAll(async () => orm.close(true));
 
@@ -17,7 +16,12 @@ describe('filters [mongo]', () => {
     em.addFilter({ name: 'writtenBy', cond: async args => ({ author: args.author }), entity: Book, default: false });
     em.addFilter({ name: 'tenant', cond: async args => ({ tenant: args.tenant }), entity: [Author, Book, FooBar] });
     em.addFilter({ name: 'withoutParams2', cond: async () => ({}) });
-    em.addFilter({ name: 'fresh', cond: { createdAt: { $gte: new Date('2020-01-01') } }, entity: [Author, Book], default: false });
+    em.addFilter({
+      name: 'fresh',
+      cond: { createdAt: { $gte: new Date('2020-01-01') } },
+      entity: [Author, Book],
+      default: false,
+    });
 
     const author1 = new Author('n1', 'e1');
     author1.createdAt = new Date('2019-02-01');
@@ -48,25 +52,34 @@ describe('filters [mongo]', () => {
     await em.find(Author, {}, { populate: ['books.perex'] });
     expect(mock.mock.calls).toHaveLength(2);
     expect(mock.mock.calls[0][0]).toMatch(`db.getCollection('author').find({ tenant: 123 }, {}).toArray()`);
-    expect(mock.mock.calls[1][0]).toMatch(/db\.getCollection\('books-table'\)\.find\({ '\$and': \[ { tenant: 123 }, { author: { '\$in': \[ ObjectId\('.*'\) ] } } ] }, {}\)/);
+    expect(mock.mock.calls[1][0]).toMatch(
+      /db\.getCollection\('books-table'\)\.find\({ '\$and': \[ { tenant: 123 }, { author: { '\$in': \[ ObjectId\('.*'\) ] } } ] }, {}\)/,
+    );
 
     await em.find(Book, {}, { populate: ['perex'] });
     expect(mock.mock.calls[2][0]).toMatch(/db\.getCollection\('books-table'\)\.find\({ tenant: 123 }, {}\)/);
     await em.find(Book, {}, { filters: ['writtenBy'], populate: ['perex'] });
-    expect(mock.mock.calls[3][0]).toMatch(/db\.getCollection\('books-table'\)\.find\({ '\$and': \[ { author: ObjectId\('.*'\) }, { tenant: 123 } ] }, {}\)/);
+    expect(mock.mock.calls[3][0]).toMatch(
+      /db\.getCollection\('books-table'\)\.find\({ '\$and': \[ { author: ObjectId\('.*'\) }, { tenant: 123 } ] }, {}\)/,
+    );
     await em.find(Book, {}, { filters: { writtenBy: { author: '123' }, tenant: false }, populate: ['perex'] });
     expect(mock.mock.calls[4][0]).toMatch(/db\.getCollection\('books-table'\)\.find\({ author: '123' }, {}\)/);
     await em.find(Book, {}, { filters: false, populate: ['perex'] });
     expect(mock.mock.calls[5][0]).toMatch(/db\.getCollection\('books-table'\)\.find\({}, {}\)/);
 
     await em.find(FooBar, {}, { filters: { allowedFooBars: { allowed: [1, 2, 3] } } });
-    expect(mock.mock.calls[6][0]).toMatch(/db\.getCollection\('foo-bar'\)\.find\({ '\$and': \[ { _id: { '\$in': \[ 1, 2, 3 ] } }, { tenant: 123 } ] }, {}\)/);
+    expect(mock.mock.calls[6][0]).toMatch(
+      /db\.getCollection\('foo-bar'\)\.find\({ '\$and': \[ { _id: { '\$in': \[ 1, 2, 3 ] } }, { tenant: 123 } ] }, {}\)/,
+    );
   });
 
   test('that filters in the config are enabled by default', async () => {
     const orm = await MikroORM.init({
       metadataProvider: ReflectMetadataProvider,
-      dbName: 'test', baseDir: BASE_DIR, entities: ['entities'], filters: {
+      dbName: 'test',
+      baseDir: BASE_DIR,
+      entities: ['entities'],
+      filters: {
         needsTermsAccepted: {
           cond: () => ({ termsAccepted: true }),
           entity: ['Author'],
@@ -89,5 +102,4 @@ describe('filters [mongo]', () => {
     expect(orm.config.get('filters').hasBirthday.default).toEqual(false);
     await orm.close();
   });
-
 });

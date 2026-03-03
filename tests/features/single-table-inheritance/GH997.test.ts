@@ -1,12 +1,17 @@
 import { MikroORM, Collection, QueryOrder } from '@mikro-orm/core';
-import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 
 abstract class Base {
-
   @PrimaryKey()
   id!: number;
-
 }
 
 @Entity({
@@ -15,45 +20,35 @@ abstract class Base {
   tableName: 'parent_table',
 })
 class Parent extends Base {
-
   @Property()
   type!: string;
 
   @OneToMany(() => Relation1, e => e.parent)
   qaInfo = new Collection<Relation1>(this);
-
 }
 
 @Entity()
 class Relation1 extends Base {
-
   @ManyToOne()
   parent!: Parent;
-
 }
 
 @Entity({ discriminatorValue: 'Child1' })
 class Child1 extends Parent {
-
   @OneToMany(() => Child1Specific, e => e.child1)
   rel = new Collection<Child1Specific>(this);
-
 }
 
 @Entity()
 class Child1Specific extends Base {
-
   @ManyToOne()
   child1!: Child1;
-
 }
 
 @Entity({ discriminatorValue: 'Child2' })
-class Child2 extends Parent {
-}
+class Child2 extends Parent {}
 
 describe('GH issue 997', () => {
-
   let orm: MikroORM<SqliteDriver>;
 
   beforeAll(async () => {
@@ -79,10 +74,14 @@ describe('GH issue 997', () => {
     await orm.em.persist([c1, c2]).flush();
     orm.em.clear();
 
-    const [ci1, ci2]: [Child1, Child2] = await orm.em.find(Parent, {}, {
-      populate: ['qaInfo.parent', 'rel'] as never,
-      orderBy: { type: QueryOrder.ASC },
-    }) as any;
+    const [ci1, ci2]: [Child1, Child2] = (await orm.em.find(
+      Parent,
+      {},
+      {
+        populate: ['qaInfo.parent', 'rel'] as never,
+        orderBy: { type: QueryOrder.ASC },
+      },
+    )) as any;
 
     ci1.rel.add(new Child1Specific());
     ci1.rel.add(new Child1Specific());
@@ -94,7 +93,8 @@ describe('GH issue 997', () => {
     await orm.em.persist([ci1, ci2]).flush();
     orm.em.clear();
 
-    const results = await orm.em.createQueryBuilder(Parent)
+    const results = await orm.em
+      .createQueryBuilder(Parent)
       .offset(0)
       .limit(10)
       .orderBy({ type: QueryOrder.ASC })
@@ -129,5 +129,4 @@ describe('GH issue 997', () => {
   test(`GH issue 2356`, async () => {
     await expect(orm.schema.getCreateSchemaSQL({ wrap: false })).resolves.toMatchSnapshot();
   });
-
 });

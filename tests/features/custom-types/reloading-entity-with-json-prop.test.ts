@@ -7,7 +7,6 @@ interface MyEvent {
 }
 
 class EventType extends JsonType {
-
   convertToJSValue(rawValue: MyEvent, platform: Platform): MyEvent {
     const value = super.convertToJSValue(rawValue, platform) as MyEvent;
 
@@ -20,7 +19,6 @@ class EventType extends JsonType {
       date: new Date(value.date),
     };
   }
-
 }
 
 @Entity()

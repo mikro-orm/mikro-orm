@@ -1,9 +1,16 @@
 import { Collection, MikroORM, Ref } from '@mikro-orm/sqlite';
-import { Entity, Filter, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  Filter,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class Author {
-
   @PrimaryKey()
   id!: number;
 
@@ -19,12 +26,10 @@ class Author {
   constructor(name: string) {
     this.name = name;
   }
-
 }
 
 @Entity()
 class Fan {
-
   @PrimaryKey()
   id!: number;
 
@@ -37,7 +42,6 @@ class Fan {
   constructor(name: string) {
     this.name = name;
   }
-
 }
 
 @Entity()
@@ -47,7 +51,6 @@ class Fan {
   default: true,
 })
 class Book {
-
   @PrimaryKey()
   id!: number;
 
@@ -63,7 +66,6 @@ class Book {
   constructor(title: string) {
     this.title = title;
   }
-
 }
 
 let orm: MikroORM;

@@ -5,7 +5,6 @@ import { v4 as uuid } from 'uuid';
 
 @Entity({ tableName: 'users' })
 class User {
-
   @PrimaryKey()
   id!: number;
 
@@ -15,7 +14,6 @@ class User {
   constructor(username: string) {
     this.username = username;
   }
-
 }
 
 async function getOrmInstance(): Promise<MikroORM> {
@@ -73,9 +71,7 @@ describe('GH issue 1176', () => {
         const user = new User(username);
         em.persist(user);
 
-        await expect(em.flush()).rejects.toThrow(
-          /duplicate key value/,
-        );
+        await expect(em.flush()).rejects.toThrow(/duplicate key value/);
       });
     });
 
@@ -156,9 +152,7 @@ describe('GH issue 1176', () => {
         const user = new User(username);
         em.persist(user);
 
-        await expect(em.flush()).rejects.toThrow(
-          /^duplicate key value/,
-        );
+        await expect(em.flush()).rejects.toThrow(/^duplicate key value/);
       });
     });
 

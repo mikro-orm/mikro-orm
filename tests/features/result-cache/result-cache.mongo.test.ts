@@ -5,7 +5,6 @@ import { Author, Book, BookTag, Publisher } from '../../entities/index.js';
 import { initORMMongo, mockLogger } from '../../bootstrap.js';
 
 describe('result cache (mongo)', () => {
-
   let orm: MikroORM<MongoDriver>;
 
   async function createBooksWithTags() {
@@ -31,7 +30,7 @@ describe('result cache (mongo)', () => {
     return author;
   }
 
-  beforeAll(async () => orm = await initORMMongo());
+  beforeAll(async () => (orm = await initORMMongo()));
   beforeEach(async () => orm.schema.clear());
   afterAll(async () => orm.close(true));
 
@@ -74,12 +73,17 @@ describe('result cache (mongo)', () => {
     const mock = mockLogger(orm, ['query']);
     vi.useFakeTimers();
 
-    const call = () => orm.em.findOneOrFail(Book, {
-      author: a.id,
-    }, {
-      populate: ['author', 'tags'],
-      cache: ['abc', 50],
-    });
+    const call = () =>
+      orm.em.findOneOrFail(
+        Book,
+        {
+          author: a.id,
+        },
+        {
+          populate: ['author', 'tags'],
+          cache: ['abc', 50],
+        },
+      );
 
     const res1 = await call();
     expect(mock.mock.calls).toHaveLength(3);
@@ -158,5 +162,4 @@ describe('result cache (mongo)', () => {
 
     vi.useRealTimers();
   });
-
 });

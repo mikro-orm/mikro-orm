@@ -10,7 +10,6 @@ import {
 import type { MigrationRow } from './typings.js';
 
 export class MigrationStorage {
-
   private readonly connection: AbstractSqlConnection;
   private readonly helper: SchemaHelper;
   private masterTransaction?: Transaction;
@@ -45,7 +44,8 @@ export class MigrationStorage {
 
   async getExecutedMigrations(): Promise<MigrationRow[]> {
     const { entity, schemaName } = this.getTableName();
-    const res = await this.driver.createQueryBuilder<MigrationRow>(entity, this.masterTransaction)
+    const res = await this.driver
+      .createQueryBuilder<MigrationRow>(entity, this.masterTransaction)
       .withSchema(schemaName)
       .orderBy({ id: 'asc' })
       .execute('all', false);
@@ -60,7 +60,12 @@ export class MigrationStorage {
   }
 
   async ensureTable(): Promise<void> {
-    const tables = await this.connection.execute<Table[]>(this.helper.getListTablesSQL(), [], 'all', this.masterTransaction);
+    const tables = await this.connection.execute<Table[]>(
+      this.helper.getListTablesSQL(),
+      [],
+      'all',
+      this.masterTransaction,
+    );
     const { tableName, schemaName } = this.getTableName();
 
     if (tables.find(t => t.table_name === tableName && (!t.schema_name || t.schema_name === schemaName))) {
@@ -120,7 +125,8 @@ export class MigrationStorage {
   getTableName(): { tableName: string; schemaName: string; entity: EntitySchema } {
     const parts = this.options.tableName!.split('.');
     const tableName = parts.length > 1 ? parts[1] : parts[0];
-    const schemaName = parts.length > 1 ? parts[0] : this.driver.config.get('schema', this.driver.getPlatform().getDefaultSchemaName());
+    const schemaName =
+      parts.length > 1 ? parts[0] : this.driver.config.get('schema', this.driver.getPlatform().getDefaultSchemaName());
 
     const entity = defineEntity({
       name: 'Migration',
@@ -136,5 +142,4 @@ export class MigrationStorage {
 
     return { tableName, schemaName, entity };
   }
-
 }

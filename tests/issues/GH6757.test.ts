@@ -3,18 +3,15 @@ import { Entity, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider } from
 
 @Entity()
 class Manufacturer {
-
   @PrimaryKey()
   id!: number;
 
   @Property()
   name!: string;
-
 }
 
 @Entity()
 class Model {
-
   @PrimaryKey()
   id!: number;
 
@@ -23,12 +20,10 @@ class Model {
 
   @ManyToOne({ entity: () => Manufacturer })
   manufacturer!: Manufacturer;
-
 }
 
 @Entity()
 class Equipment {
-
   @PrimaryKey()
   id!: number;
 
@@ -37,7 +32,6 @@ class Equipment {
 
   @ManyToOne({ entity: () => Model })
   model!: Model;
-
 }
 
 let orm: MikroORM;
@@ -62,30 +56,40 @@ test('GH #6757', async () => {
   await orm.em.flush();
   orm.em.clear();
 
-  await expect(
-    orm.em.find(Equipment, {}),
-  ).resolves.toHaveLength(1);
+  await expect(orm.em.find(Equipment, {})).resolves.toHaveLength(1);
 
   // This works as expected
   await expect(
-    orm.em.find(Equipment, {}, {
-      orderBy: { model: { manufacturer: { name: QueryOrder.ASC } } },
-    }),
+    orm.em.find(
+      Equipment,
+      {},
+      {
+        orderBy: { model: { manufacturer: { name: QueryOrder.ASC } } },
+      },
+    ),
   ).resolves.toHaveLength(1);
 
   // This also works as expected
   await expect(
-    orm.em.find(Equipment, {}, {
-      populate: ['model.manufacturer'],
-      orderBy: { model: { manufacturer: { name: QueryOrder.ASC } } },
-    }),
+    orm.em.find(
+      Equipment,
+      {},
+      {
+        populate: ['model.manufacturer'],
+        orderBy: { model: { manufacturer: { name: QueryOrder.ASC } } },
+      },
+    ),
   ).resolves.toHaveLength(1);
 
   // This fails with a "no such column" error
   await expect(
-    orm.em.find(Equipment, {}, {
-      populate: ['model'],
-      orderBy: { model: { manufacturer: { name: QueryOrder.ASC } } },
-    }),
+    orm.em.find(
+      Equipment,
+      {},
+      {
+        populate: ['model'],
+        orderBy: { model: { manufacturer: { name: QueryOrder.ASC } } },
+      },
+    ),
   ).resolves.toHaveLength(1);
 });

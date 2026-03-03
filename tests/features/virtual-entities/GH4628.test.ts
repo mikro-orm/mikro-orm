@@ -5,21 +5,17 @@ import { mockLogger } from '../../bootstrap.js';
 
 @Entity()
 class Book {
-
   @PrimaryKey()
   id!: number;
 
   @Property()
   title!: string;
-
 }
 
 @Entity({ expression: 'select title from book' })
 class BookSimple {
-
   @Property()
   title!: string;
-
 }
 
 let orm: MikroORM;

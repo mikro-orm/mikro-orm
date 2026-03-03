@@ -1,4 +1,13 @@
-import { BeforeCreate, Entity, Enum, ManyToMany, OneToMany, PrimaryKey, Property, SerializedPrimaryKey } from '@mikro-orm/decorators/legacy';
+import {
+  BeforeCreate,
+  Entity,
+  Enum,
+  ManyToMany,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  SerializedPrimaryKey,
+} from '@mikro-orm/decorators/legacy';
 import { ObjectId } from 'bson';
 import type { Book } from './Book.js';
 import type { Test } from './Test.js';
@@ -12,7 +21,6 @@ export enum PublisherType2 {
 
 @Entity()
 export class Publisher {
-
   @PrimaryKey()
   _id!: ObjectId;
 
@@ -46,5 +54,4 @@ export class Publisher {
   beforeCreate() {
     // do sth
   }
-
 }

@@ -1,11 +1,17 @@
 import { Collection, LoadStrategy, Ref, Rel } from '@mikro-orm/core';
-import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { MikroORM } from '@mikro-orm/sqlite';
 import { v4 } from 'uuid';
 
 @Entity()
 class Shipment {
-
   @PrimaryKey({ type: 'uuid' })
   id: string = v4();
 
@@ -20,12 +26,10 @@ class Shipment {
 
   @ManyToOne(() => Order, { hidden: true })
   order!: Rel<Order>;
-
 }
 
 @Entity()
 class Order {
-
   @PrimaryKey()
   id!: number;
 
@@ -43,12 +47,10 @@ class Order {
 
   @OneToMany(() => Shipment, s => s.order)
   shipments = new Collection<Shipment>(this);
-
 }
 
 @Entity()
 class LineItem {
-
   @PrimaryKey()
   id!: string;
 
@@ -69,7 +71,6 @@ class LineItem {
 
   @ManyToOne(() => Shipment, { ref: true, hidden: true })
   shipment!: Ref<Shipment>;
-
 }
 
 let orm: MikroORM;

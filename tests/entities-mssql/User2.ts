@@ -5,7 +5,6 @@ import { Sandwich } from './sandwich.js';
 
 @Entity()
 export class User2 {
-
   @PrimaryKey({ length: 100 })
   firstName: string;
 
@@ -28,5 +27,4 @@ export class User2 {
     this.firstName = firstName;
     this.lastName = lastName;
   }
-
 }

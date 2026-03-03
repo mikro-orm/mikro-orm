@@ -1,4 +1,10 @@
-import { type EntityKey, type EntityName, type EntityProperty, type OneToManyOptions, ReferenceKind } from '@mikro-orm/core';
+import {
+  type EntityKey,
+  type EntityName,
+  type EntityProperty,
+  type OneToManyOptions,
+  ReferenceKind,
+} from '@mikro-orm/core';
 import { processDecoratorParameters, validateSingleDecorator, getMetadataFromDecorator } from '../utils.js';
 
 export function OneToMany<Target extends object, Owner extends object>(
@@ -19,6 +25,10 @@ export function OneToMany<Target extends object, Owner extends object>(
     const meta = getMetadataFromDecorator(target.constructor as Target);
     validateSingleDecorator(meta, propertyName, ReferenceKind.ONE_TO_MANY);
     const property = { name: propertyName, kind: ReferenceKind.ONE_TO_MANY } as EntityProperty<Target>;
-    meta.properties[propertyName as EntityKey<Target>] = Object.assign(meta.properties[propertyName as EntityKey<Target>] ?? {}, property, options);
+    meta.properties[propertyName as EntityKey<Target>] = Object.assign(
+      meta.properties[propertyName as EntityKey<Target>] ?? {},
+      property,
+      options,
+    );
   };
 }

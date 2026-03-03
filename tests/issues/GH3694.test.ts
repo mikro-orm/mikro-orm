@@ -8,7 +8,6 @@ enum Enum1 {
 
 @Entity()
 class User {
-
   @PrimaryKey()
   id: number;
 
@@ -22,12 +21,10 @@ class User {
     this.id = init.id;
     this.enum1 = init.enum1 ?? [];
   }
-
 }
 
 @Entity()
 class UserAccount {
-
   @PrimaryKey()
   id: number;
 
@@ -38,7 +35,6 @@ class UserAccount {
     this.id = init.id;
     this.user = init.user;
   }
-
 }
 
 let orm: MikroORM;

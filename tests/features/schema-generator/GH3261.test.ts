@@ -3,13 +3,11 @@ import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-or
 
 @Entity()
 class User {
-
   @PrimaryKey()
   _id!: number;
 
   @Property()
   email!: string;
-
 }
 let orm: MikroORM;
 
@@ -33,8 +31,12 @@ test('retry limit to 3 when ensureIndex() fails', async () => {
   });
   await orm.em.flush();
   const userMeta = orm.em.getMetadata(User);
-  userMeta.uniques = [{
-    properties: 'email',
-  }];
-  await expect(orm.schema.ensureIndexes()).rejects.toThrow(/Failed to create indexes on the following collections: user\n.*E11000 duplicate key error collection/);
+  userMeta.uniques = [
+    {
+      properties: 'email',
+    },
+  ];
+  await expect(orm.schema.ensureIndexes()).rejects.toThrow(
+    /Failed to create indexes on the following collections: user\n.*E11000 duplicate key error collection/,
+  );
 });

@@ -8,23 +8,35 @@ import type { TransactionEventBroadcaster } from '../events/TransactionEventBroa
 import type { IsolationLevel } from '../enums.js';
 
 export abstract class Connection {
-
   protected metadata!: MetadataStorage;
   protected platform!: Platform;
   protected readonly options: ConnectionOptions;
   protected readonly logger: Logger;
   protected connected = false;
 
-  constructor(protected readonly config: Configuration,
-              options?: ConnectionOptions,
-              protected readonly type: ConnectionType = 'write') {
+  constructor(
+    protected readonly config: Configuration,
+    options?: ConnectionOptions,
+    protected readonly type: ConnectionType = 'write',
+  ) {
     this.logger = this.config.getLogger();
     this.platform = this.config.getPlatform();
 
     if (options) {
       this.options = Utils.copy(options);
     } else {
-      const props = ['dbName', 'clientUrl', 'host', 'port', 'user', 'password', 'multipleStatements', 'pool', 'schema', 'driverOptions'] as const;
+      const props = [
+        'dbName',
+        'clientUrl',
+        'host',
+        'port',
+        'user',
+        'password',
+        'multipleStatements',
+        'pool',
+        'schema',
+        'driverOptions',
+      ] as const;
       this.options = props.reduce((o, i) => {
         (o[i] as any) = this.config.get(i);
         return o;
@@ -88,23 +100,51 @@ export abstract class Connection {
     }
   }
 
-  async transactional<T>(cb: (trx: Transaction) => Promise<T>, options?: { isolationLevel?: IsolationLevel | `${IsolationLevel}`; readOnly?: boolean; ctx?: Transaction; eventBroadcaster?: TransactionEventBroadcaster; loggerContext?: LogContext }): Promise<T> {
+  async transactional<T>(
+    cb: (trx: Transaction) => Promise<T>,
+    options?: {
+      isolationLevel?: IsolationLevel | `${IsolationLevel}`;
+      readOnly?: boolean;
+      ctx?: Transaction;
+      eventBroadcaster?: TransactionEventBroadcaster;
+      loggerContext?: LogContext;
+    },
+  ): Promise<T> {
     throw new Error(`Transactions are not supported by current driver`);
   }
 
-  async begin(options?: { isolationLevel?: IsolationLevel | `${IsolationLevel}`; readOnly?: boolean; ctx?: Transaction; eventBroadcaster?: TransactionEventBroadcaster; loggerContext?: LogContext }): Promise<Transaction> {
+  async begin(options?: {
+    isolationLevel?: IsolationLevel | `${IsolationLevel}`;
+    readOnly?: boolean;
+    ctx?: Transaction;
+    eventBroadcaster?: TransactionEventBroadcaster;
+    loggerContext?: LogContext;
+  }): Promise<Transaction> {
     throw new Error(`Transactions are not supported by current driver`);
   }
 
-  async commit(ctx: Transaction, eventBroadcaster?: TransactionEventBroadcaster, loggerContext?: LogContext): Promise<void> {
+  async commit(
+    ctx: Transaction,
+    eventBroadcaster?: TransactionEventBroadcaster,
+    loggerContext?: LogContext,
+  ): Promise<void> {
     throw new Error(`Transactions are not supported by current driver`);
   }
 
-  async rollback(ctx: Transaction, eventBroadcaster?: TransactionEventBroadcaster, loggerContext?: LogContext): Promise<void> {
+  async rollback(
+    ctx: Transaction,
+    eventBroadcaster?: TransactionEventBroadcaster,
+    loggerContext?: LogContext,
+  ): Promise<void> {
     throw new Error(`Transactions are not supported by current driver`);
   }
 
-  abstract execute<T>(query: string, params?: any[], method?: 'all' | 'get' | 'run', ctx?: Transaction): Promise<QueryResult<T> | any | any[]>;
+  abstract execute<T>(
+    query: string,
+    params?: any[],
+    method?: 'all' | 'get' | 'run',
+    ctx?: Transaction,
+  ): Promise<QueryResult<T> | any | any[]>;
 
   getConnectionOptions(): ConnectionConfig {
     const ret: ConnectionConfig = {};
@@ -126,8 +166,10 @@ export abstract class Connection {
       this.options.host = ret.host = this.options.host ?? this.config.get('host', decodeURIComponent(url.hostname));
       this.options.port = ret.port = this.options.port ?? this.config.get('port', +url.port);
       this.options.user = ret.user = this.options.user ?? this.config.get('user', decodeURIComponent(url.username));
-      this.options.password = ret.password = this.options.password ?? this.config.get('password', decodeURIComponent(url.password));
-      this.options.dbName = ret.database = this.options.dbName ?? this.config.get('dbName', decodeURIComponent(url.pathname).replace(/^\//, ''));
+      this.options.password = ret.password =
+        this.options.password ?? this.config.get('password', decodeURIComponent(url.password));
+      this.options.dbName = ret.database =
+        this.options.dbName ?? this.config.get('dbName', decodeURIComponent(url.pathname).replace(/^\//, ''));
     }
 
     return ret;
@@ -175,7 +217,6 @@ export abstract class Connection {
       query,
     });
   }
-
 }
 
 export interface QueryResult<T = { id: number }> {

@@ -3,17 +3,14 @@ import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-or
 
 @Entity()
 class A {
-
   @PrimaryKey()
   id!: number;
 
   @Property()
   name!: string;
-
 }
 
 describe('GH issue 1910', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -63,5 +60,4 @@ describe('GH issue 1910', () => {
     await expect(em.fork().findOne(A, id3)).resolves.toBeNull();
     await expect(em.fork().findOne(A, id4)).resolves.not.toBeNull();
   });
-
 });

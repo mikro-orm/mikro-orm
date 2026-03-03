@@ -11,7 +11,6 @@ import { MikroORM } from '@mikro-orm/mysql';
 
 @Entity()
 class Category {
-
   @PrimaryKey()
   id!: number;
 
@@ -29,7 +28,6 @@ class Category {
     eager: true,
   })
   children = new Collection<Category>(this);
-
 }
 
 let orm: MikroORM;

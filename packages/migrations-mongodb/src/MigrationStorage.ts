@@ -1,13 +1,21 @@
-import { defineEntity, type Dictionary, type EntitySchema, type MigrationsOptions, p, type Transaction } from '@mikro-orm/core';
+import {
+  defineEntity,
+  type Dictionary,
+  type EntitySchema,
+  type MigrationsOptions,
+  p,
+  type Transaction,
+} from '@mikro-orm/core';
 import type { MongoDriver } from '@mikro-orm/mongodb';
 import type { MigrationRow } from './typings.js';
 
 export class MigrationStorage {
-
   private masterTransaction?: Transaction;
 
-  constructor(protected readonly driver: MongoDriver,
-              protected readonly options: MigrationsOptions) { }
+  constructor(
+    protected readonly driver: MongoDriver,
+    protected readonly options: MigrationsOptions,
+  ) {}
 
   async executed(): Promise<string[]> {
     const migrations = await this.getExecutedMigrations();
@@ -23,12 +31,20 @@ export class MigrationStorage {
   async unlogMigration(params: { name: string }): Promise<void> {
     const withoutExt = this.getMigrationName(params.name);
     const entity = this.getEntityDefinition();
-    await this.driver.nativeDelete(entity, { name: { $in: [params.name, withoutExt] } }, { ctx: this.masterTransaction });
+    await this.driver.nativeDelete(
+      entity,
+      { name: { $in: [params.name, withoutExt] } },
+      { ctx: this.masterTransaction },
+    );
   }
 
   async getExecutedMigrations(): Promise<MigrationRow[]> {
     const entity = this.getEntityDefinition();
-    return this.driver.find(entity, {}, { ctx: this.masterTransaction, orderBy: { _id: 'asc' } as Dictionary }) as Promise<MigrationRow[]>;
+    return this.driver.find(
+      entity,
+      {},
+      { ctx: this.masterTransaction, orderBy: { _id: 'asc' } as Dictionary },
+    ) as Promise<MigrationRow[]>;
   }
 
   setMasterMigration(trx: Transaction) {
@@ -63,5 +79,4 @@ export class MigrationStorage {
 
     return entity;
   }
-
 }

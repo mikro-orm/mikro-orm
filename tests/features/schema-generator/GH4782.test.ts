@@ -3,18 +3,15 @@ import { Entity, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider } from
 
 @Entity({ tableName: 'user' })
 class User0 {
-
   @PrimaryKey()
   id!: number;
 
   @ManyToOne(() => User0, { nullable: true, createForeignKeyConstraint: false })
   parent?: User0;
-
 }
 
 @Entity({ tableName: 'user' })
 class User1 {
-
   @PrimaryKey()
   id!: number;
 
@@ -23,12 +20,10 @@ class User1 {
 
   @ManyToOne(() => User1, { nullable: true })
   parent?: User1;
-
 }
 
 @Entity({ tableName: 'user' })
 class User2 {
-
   @PrimaryKey()
   id!: number;
 
@@ -37,12 +32,10 @@ class User2 {
 
   @ManyToOne(() => User2, { nullable: true })
   parent?: User2;
-
 }
 
 @Entity({ tableName: 'user' })
 class User3 {
-
   @PrimaryKey()
   id!: number;
 
@@ -51,18 +44,15 @@ class User3 {
 
   @ManyToOne(() => User3, { nullable: true, createForeignKeyConstraint: false })
   parent?: User3;
-
 }
 
 @Entity({ tableName: 'user' })
 class User4 {
-
   @PrimaryKey()
   id!: number;
 
   @ManyToOne(() => User4, { nullable: true, createForeignKeyConstraint: false })
   parent?: User4;
-
 }
 
 let orm: MikroORM;

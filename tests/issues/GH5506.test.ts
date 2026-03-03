@@ -3,13 +3,11 @@ import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-or
 
 @Entity()
 class EntityWithScalarReferenceProperty {
-
   @PrimaryKey()
   readonly id!: bigint;
 
   @Property({ ref: true, onCreate: () => ref('Some default string') })
   someScalarRefProperty!: Opt<Ref<string>>;
-
 }
 
 let orm: MikroORM;
@@ -39,5 +37,7 @@ test('create entity without providing a value and relying to onCreate method', a
   expect(entity.someScalarRefProperty.unwrap()).toEqual('Some default string');
   expect(entity.someScalarRefProperty.isInitialized()).toEqual(true);
 
-  await expect(new ScalarReference().load()).rejects.toThrow('Cannot load scalar reference that is not bound to an entity property.');
+  await expect(new ScalarReference().load()).rejects.toThrow(
+    'Cannot load scalar reference that is not bound to an entity property.',
+  );
 });

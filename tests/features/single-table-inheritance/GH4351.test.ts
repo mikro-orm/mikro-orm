@@ -13,7 +13,6 @@ import { Collection, Rel } from '@mikro-orm/core';
 
 @Entity()
 class User {
-
   @PrimaryKey()
   id!: number;
 
@@ -25,7 +24,6 @@ class User {
 
   @ManyToMany(() => Post)
   posts2 = new Collection<Post>(this);
-
 }
 
 @Entity({
@@ -33,7 +31,6 @@ class User {
   abstract: true,
 })
 abstract class BaseEntity {
-
   @PrimaryKey()
   id!: number;
 
@@ -47,23 +44,18 @@ abstract class BaseEntity {
     ref: true,
   })
   user?: Rel<User>;
-
 }
 
 @Entity({ discriminatorValue: 'post' })
 class Post extends BaseEntity {
-
   @Property({ nullable: true })
   postField?: string;
-
 }
 
 @Entity({ discriminatorValue: 'comment' })
 class Comment extends BaseEntity {
-
   @Property({ nullable: true })
   commentField?: string;
-
 }
 
 let orm: MikroORM;
@@ -93,7 +85,9 @@ test('it should add discriminator to the query', async () => {
 
   const qb1 = orm.em.qb(User, 'u').join('u.posts', 'p');
   const res1 = await qb1.getResult();
-  expect(qb1.getFormattedQuery()).toMatch("select `u`.* from `user` as `u` inner join `base_entity` as `p` on `u`.`id` = `p`.`userId` and `p`.`type` = 'post'");
+  expect(qb1.getFormattedQuery()).toMatch(
+    "select `u`.* from `user` as `u` inner join `base_entity` as `p` on `u`.`id` = `p`.`userId` and `p`.`type` = 'post'",
+  );
   expect(res1).toHaveLength(1);
 
   const qb2 = orm.em.qb(Post, 'p');
@@ -103,6 +97,8 @@ test('it should add discriminator to the query', async () => {
 
   const qb3 = orm.em.qb(User, 'u').join('u.posts2', 'p');
   const res3 = await qb3.getResult();
-  expect(qb3.getFormattedQuery()).toMatch("select `u`.* from `user` as `u` inner join `user_posts2` as `u1` on `u`.`id` = `u1`.`user_id` inner join `base_entity` as `p` on `u1`.`base_entity_id` = `p`.`id` and `p`.`type` = 'post'");
+  expect(qb3.getFormattedQuery()).toMatch(
+    "select `u`.* from `user` as `u` inner join `user_posts2` as `u1` on `u`.`id` = `u1`.`user_id` inner join `base_entity` as `p` on `u1`.`base_entity_id` = `p`.`id` and `p`.`type` = 'post'",
+  );
   expect(res3).toHaveLength(1);
 });

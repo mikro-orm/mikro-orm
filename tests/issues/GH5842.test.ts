@@ -3,7 +3,6 @@ import { Entity, Index, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider
 
 @Entity()
 class User {
-
   @PrimaryKey()
   id!: number;
 
@@ -13,12 +12,10 @@ class User {
   constructor(name: string) {
     this.name = name;
   }
-
 }
 
 @Entity()
 class Record {
-
   @PrimaryKey()
   createdAt: Date;
 
@@ -32,18 +29,12 @@ class Record {
   @ManyToOne(() => User, { nullable: true })
   unlockedByUser: User | null;
 
-  constructor(
-    createdAt: Date,
-    createdByUser: User,
-    unlockedAt: Date | null,
-    unlockedByUser: User | null,
-  ) {
+  constructor(createdAt: Date, createdByUser: User, unlockedAt: Date | null, unlockedByUser: User | null) {
     this.createdAt = createdAt;
     this.createdByUser = createdByUser;
     this.unlockedAt = unlockedAt;
     this.unlockedByUser = unlockedByUser;
   }
-
 }
 
 let orm: MikroORM;
@@ -86,12 +77,7 @@ test('basic CRUD example', async () => {
     Record,
     {},
     {
-      fields: [
-        'createdAt',
-        'createdByUser.name',
-        'unlockedAt',
-        'unlockedByUser.name',
-      ],
+      fields: ['createdAt', 'createdByUser.name', 'unlockedAt', 'unlockedByUser.name'],
       orderBy: [{ createdAt: -1 }],
     },
   );

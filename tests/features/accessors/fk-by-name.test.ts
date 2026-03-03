@@ -3,18 +3,15 @@ import { Entity, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider } from
 
 @Entity()
 class Author {
-
   @PrimaryKey()
   id!: number;
 
   @Property()
   name!: string;
-
 }
 
 @Entity()
 class Article {
-
   @PrimaryKey()
   id!: number;
 
@@ -31,7 +28,6 @@ class Article {
   set authorId(val: number) {
     this.author = rel(Author, val);
   }
-
 }
 
 let orm: MikroORM;

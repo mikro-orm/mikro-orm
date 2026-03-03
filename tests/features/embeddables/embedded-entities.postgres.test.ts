@@ -1,11 +1,18 @@
 import { raw, LoadStrategy, MikroORM, ReferenceKind, Rel, t } from '@mikro-orm/core';
-import { Embeddable, Embedded, Entity, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Embeddable,
+  Embedded,
+  Entity,
+  ManyToOne,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { mockLogger } from '../../helpers.js';
 
 @Embeddable()
 class Address1 {
-
   @Property({ nullable: true })
   street?: string;
 
@@ -31,12 +38,10 @@ class Address1 {
     this.city = city;
     this.country = country;
   }
-
 }
 
 @Embeddable()
 class Address2 {
-
   @Property()
   street!: string;
 
@@ -55,23 +60,19 @@ class Address2 {
     this.country = country;
     this.postalCode = postalCode;
   }
-
 }
 
 @Entity()
 class Foo {
-
   @PrimaryKey()
   id!: number;
 
   @ManyToOne(() => User)
   user!: Rel<User>;
-
 }
 
 @Entity()
 class User {
-
   @PrimaryKey()
   id!: number;
 
@@ -95,11 +96,9 @@ class User {
 
   @Property({ nullable: true })
   after?: number; // property after embeddables to verify order props in resulting schema
-
 }
 
 describe('embedded entities in postgresql', () => {
-
   let orm: MikroORM<PostgreSqlDriver>;
 
   beforeAll(async () => {
@@ -214,7 +213,9 @@ describe('embedded entities in postgresql', () => {
     await orm.em.persist(user).flush();
     orm.em.clear();
     expect(mock.mock.calls[0][0]).toMatch('begin');
-    expect(mock.mock.calls[1][0]).toMatch('insert into "user" ("email", "address1_street", "address1_number", "address1_postal_code", "address1_city", "address1_country", "addr_street", "addr_city", "addr_country", "street", "number", "postal_code", "city", "country", "address4", "addresses") values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) returning "id"');
+    expect(mock.mock.calls[1][0]).toMatch(
+      'insert into "user" ("email", "address1_street", "address1_number", "address1_postal_code", "address1_city", "address1_country", "addr_street", "addr_city", "addr_country", "street", "number", "postal_code", "city", "country", "address4", "addresses") values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) returning "id"',
+    );
     expect(mock.mock.calls[2][0]).toMatch('commit');
 
     const u = await orm.em.findOneOrFail(User, user.id);
@@ -262,28 +263,43 @@ describe('embedded entities in postgresql', () => {
     orm.em.clear();
 
     const u1 = await orm.em.findOneOrFail(User, { address1: { city: 'London 1', postalCode: '123' } });
-    expect(mock.mock.calls[7][0]).toMatch('select "u0".* from "user" as "u0" where "u0"."address1_city" = ? and "u0"."address1_postal_code" = ? limit ?');
+    expect(mock.mock.calls[7][0]).toMatch(
+      'select "u0".* from "user" as "u0" where "u0"."address1_city" = ? and "u0"."address1_postal_code" = ? limit ?',
+    );
     expect(u1.address1.city).toBe('London 1');
     expect(u1.address1.postalCode).toBe('123');
     const u2 = await orm.em.findOneOrFail(User, { address1: { city: /^London/ } });
-    expect(mock.mock.calls[8][0]).toMatch('select "u0".* from "user" as "u0" where "u0"."address1_city" like ? limit ?');
+    expect(mock.mock.calls[8][0]).toMatch(
+      'select "u0".* from "user" as "u0" where "u0"."address1_city" like ? limit ?',
+    );
     expect(u2.address1.city).toBe('London 1');
     expect(u2.address1.postalCode).toBe('123');
     expect(u2).toBe(u1);
-    const u3 = await orm.em.findOneOrFail(User, { $or: [{ address1: { city: 'London 1' } }, { address1: { city: 'Berlin' } }] });
-    expect(mock.mock.calls[9][0]).toMatch('select "u0".* from "user" as "u0" where ("u0"."address1_city" = ? or "u0"."address1_city" = ?) limit ?');
+    const u3 = await orm.em.findOneOrFail(User, {
+      $or: [{ address1: { city: 'London 1' } }, { address1: { city: 'Berlin' } }],
+    });
+    expect(mock.mock.calls[9][0]).toMatch(
+      'select "u0".* from "user" as "u0" where ("u0"."address1_city" = ? or "u0"."address1_city" = ?) limit ?',
+    );
     expect(u3.address1.city).toBe('London 1');
     expect(u3.address1.postalCode).toBe('123');
     expect(u3).toBe(u1);
-    const err = 'Using operators inside embeddables is not allowed, move the operator above. (property: User.address1, payload: { address1: { \'$or\': [ [Object], [Object] ] } })';
-    await expect(orm.em.findOneOrFail(User, { address1: { $or: [{ city: 'London 1' }, { city: 'Berlin' }] } })).rejects.toThrow(err);
+    const err =
+      "Using operators inside embeddables is not allowed, move the operator above. (property: User.address1, payload: { address1: { '$or': [ [Object], [Object] ] } })";
+    await expect(
+      orm.em.findOneOrFail(User, { address1: { $or: [{ city: 'London 1' }, { city: 'Berlin' }] } }),
+    ).rejects.toThrow(err);
     const u4 = await orm.em.findOneOrFail(User, { address4: { postalCode: '999' } });
     expect(u4).toBe(u1);
-    expect(mock.mock.calls[10][0]).toMatch('select "u0".* from "user" as "u0" where "u0"."address4"->>\'postal_code\' = ? limit ?');
+    expect(mock.mock.calls[10][0]).toMatch(
+      'select "u0".* from "user" as "u0" where "u0"."address4"->>\'postal_code\' = ? limit ?',
+    );
 
     const u5 = await orm.em.findOneOrFail(User, { address4: { number: { $gt: 2 } } });
     expect(u5).toBe(u1);
-    expect(mock.mock.calls[11][0]).toMatch('select "u0".* from "user" as "u0" where ("u0"."address4"->>\'number\')::float8 > ? limit ?');
+    expect(mock.mock.calls[11][0]).toMatch(
+      'select "u0".* from "user" as "u0" where ("u0"."address4"->>\'number\')::float8 > ? limit ?',
+    );
   });
 
   test('findAndCount with embedded query', async () => {
@@ -291,7 +307,13 @@ describe('embedded entities in postgresql', () => {
     await orm.em.persist(user).flush();
     orm.em.clear();
 
-    const address1 = orm.em.create(Address1, { street: 'Downing street 10', number: 10, postalCode: '123', city: 'London 1', country: 'UK 1' });
+    const address1 = orm.em.create(Address1, {
+      street: 'Downing street 10',
+      number: 10,
+      postalCode: '123',
+      city: 'London 1',
+      country: 'UK 1',
+    });
     const [r, t] = await orm.em.fork().findAndCount(User, { address1 });
     expect(r).toHaveLength(1);
     expect(t).toBe(1);
@@ -308,7 +330,9 @@ describe('embedded entities in postgresql', () => {
     await orm.em.fork().find(User, {}, { fields: [{ address2: ['street', 'city'] }] });
     await orm.em.fork().find(User, {}, { fields: ['address2.street', 'address2.city'] });
     await orm.em.fork().find(User, {}, { fields: ['addresses'] });
-    expect(mock.mock.calls[0][0]).toMatch('select "u0"."id", "u0"."addr_street", "u0"."addr_postal_code", "u0"."addr_city", "u0"."addr_country" from "user" as "u0"');
+    expect(mock.mock.calls[0][0]).toMatch(
+      'select "u0"."id", "u0"."addr_street", "u0"."addr_postal_code", "u0"."addr_city", "u0"."addr_country" from "user" as "u0"',
+    );
     expect(mock.mock.calls[1][0]).toMatch('select "u0"."id", "u0"."addr_street", "u0"."addr_city" from "user" as "u0"');
     expect(mock.mock.calls[2][0]).toMatch('select "u0"."id", "u0"."addr_street", "u0"."addr_city" from "user" as "u0"');
     expect(mock.mock.calls[3][0]).toMatch('select "u0"."id", "u0"."addresses" from "user" as "u0"');
@@ -325,7 +349,9 @@ describe('embedded entities in postgresql', () => {
     await orm.em.fork().find(User, {}, { fields: [{ address2: ['street', 'city'] }], strategy: LoadStrategy.JOINED });
     await orm.em.fork().find(User, {}, { fields: ['address2.street', 'address2.city'], strategy: LoadStrategy.JOINED });
     await orm.em.fork().find(User, {}, { fields: ['addresses'], strategy: LoadStrategy.JOINED });
-    expect(mock.mock.calls[0][0]).toMatch('select "u0"."id", "u0"."addr_street", "u0"."addr_postal_code", "u0"."addr_city", "u0"."addr_country" from "user" as "u0"');
+    expect(mock.mock.calls[0][0]).toMatch(
+      'select "u0"."id", "u0"."addr_street", "u0"."addr_postal_code", "u0"."addr_city", "u0"."addr_country" from "user" as "u0"',
+    );
     expect(mock.mock.calls[1][0]).toMatch('select "u0"."id", "u0"."addr_street", "u0"."addr_city" from "user" as "u0"');
     expect(mock.mock.calls[2][0]).toMatch('select "u0"."id", "u0"."addr_street", "u0"."addr_city" from "user" as "u0"');
     expect(mock.mock.calls[3][0]).toMatch('select "u0"."id", "u0"."addresses" from "user" as "u0"');
@@ -334,59 +360,119 @@ describe('embedded entities in postgresql', () => {
   test('partial loading 2', async () => {
     const mock = mockLogger(orm, ['query']);
 
-    await orm.em.fork().qb(User).select('address1.city').where({ address1: { city: 'London 1' } }).execute();
-    expect(mock.mock.calls[0][0]).toMatch('select "u0"."address1_city" from "user" as "u0" where "u0"."address1_city" = ?');
+    await orm.em
+      .fork()
+      .qb(User)
+      .select('address1.city')
+      .where({ address1: { city: 'London 1' } })
+      .execute();
+    expect(mock.mock.calls[0][0]).toMatch(
+      'select "u0"."address1_city" from "user" as "u0" where "u0"."address1_city" = ?',
+    );
 
     await orm.em.fork().findOne(User, { address1: { city: 'London 1' } }, { fields: ['address1.city'] });
-    expect(mock.mock.calls[1][0]).toMatch('select "u0"."id", "u0"."address1_city" from "user" as "u0" where "u0"."address1_city" = ? limit ?');
+    expect(mock.mock.calls[1][0]).toMatch(
+      'select "u0"."id", "u0"."address1_city" from "user" as "u0" where "u0"."address1_city" = ? limit ?',
+    );
 
-    await orm.em.fork().qb(User).select('address1').where({ address1: { city: 'London 1' } }).execute();
-    expect(mock.mock.calls[2][0]).toMatch('select "u0"."address1_street", "u0"."address1_number", "u0"."address1_rank", "u0"."address1_postal_code", "u0"."address1_city", "u0"."address1_country" from "user" as "u0" where "u0"."address1_city" = ?');
+    await orm.em
+      .fork()
+      .qb(User)
+      .select('address1')
+      .where({ address1: { city: 'London 1' } })
+      .execute();
+    expect(mock.mock.calls[2][0]).toMatch(
+      'select "u0"."address1_street", "u0"."address1_number", "u0"."address1_rank", "u0"."address1_postal_code", "u0"."address1_city", "u0"."address1_country" from "user" as "u0" where "u0"."address1_city" = ?',
+    );
 
     await orm.em.fork().findOne(User, { address1: { city: 'London 1' } }, { fields: ['address1'] });
-    expect(mock.mock.calls[3][0]).toMatch('select "u0"."id", "u0"."address1_street", "u0"."address1_number", "u0"."address1_rank", "u0"."address1_postal_code", "u0"."address1_city", "u0"."address1_country" from "user" as "u0" where "u0"."address1_city" = ? limit ?');
+    expect(mock.mock.calls[3][0]).toMatch(
+      'select "u0"."id", "u0"."address1_street", "u0"."address1_number", "u0"."address1_rank", "u0"."address1_postal_code", "u0"."address1_city", "u0"."address1_country" from "user" as "u0" where "u0"."address1_city" = ? limit ?',
+    );
 
     mock.mockReset();
 
-    await orm.em.fork().qb(User).select('address4.city').where({ address4: { city: 'London 1' } }).execute(); // object embedded prop does not support nested partial loading
-    expect(mock.mock.calls[0][0]).toMatch(`select "u0"."address4" from "user" as "u0" where "u0"."address4"->>'city' = ?`);
+    await orm.em
+      .fork()
+      .qb(User)
+      .select('address4.city')
+      .where({ address4: { city: 'London 1' } })
+      .execute(); // object embedded prop does not support nested partial loading
+    expect(mock.mock.calls[0][0]).toMatch(
+      `select "u0"."address4" from "user" as "u0" where "u0"."address4"->>'city' = ?`,
+    );
 
     await orm.em.fork().findOne(User, { address4: { city: 'London 1' } }, { fields: ['address4.city'] }); // object embedded prop does not support nested partial loading
-    expect(mock.mock.calls[1][0]).toMatch(`select "u0"."id", "u0"."address4" from "user" as "u0" where "u0"."address4"->>'city' = ? limit ?`);
+    expect(mock.mock.calls[1][0]).toMatch(
+      `select "u0"."id", "u0"."address4" from "user" as "u0" where "u0"."address4"->>'city' = ? limit ?`,
+    );
 
-    await orm.em.fork().qb(User).select('address4').where({ address4: { city: 'London 1' } }).execute();
-    expect(mock.mock.calls[2][0]).toMatch(`select "u0"."address4" from "user" as "u0" where "u0"."address4"->>'city' = ?`);
+    await orm.em
+      .fork()
+      .qb(User)
+      .select('address4')
+      .where({ address4: { city: 'London 1' } })
+      .execute();
+    expect(mock.mock.calls[2][0]).toMatch(
+      `select "u0"."address4" from "user" as "u0" where "u0"."address4"->>'city' = ?`,
+    );
 
     await orm.em.fork().findOne(User, { address4: { city: 'London 1' } }, { fields: ['address4'] });
-    expect(mock.mock.calls[3][0]).toMatch(`select "u0"."id", "u0"."address4" from "user" as "u0" where "u0"."address4"->>'city' = ? limit ?`);
+    expect(mock.mock.calls[3][0]).toMatch(
+      `select "u0"."id", "u0"."address4" from "user" as "u0" where "u0"."address4"->>'city' = ? limit ?`,
+    );
 
     mock.mockReset();
 
-    await orm.em.fork().qb(User).select('addresses.city').where({ addresses: { city: 'London 1' } }).execute(); // object embedded prop does not support nested partial loading
-    expect(mock.mock.calls[0][0]).toMatch(`select "u0"."addresses" from "user" as "u0" where "u0"."addresses"->>'city' = ?`);
+    await orm.em
+      .fork()
+      .qb(User)
+      .select('addresses.city')
+      .where({ addresses: { city: 'London 1' } })
+      .execute(); // object embedded prop does not support nested partial loading
+    expect(mock.mock.calls[0][0]).toMatch(
+      `select "u0"."addresses" from "user" as "u0" where "u0"."addresses"->>'city' = ?`,
+    );
 
     await orm.em.fork().findOne(User, { addresses: { city: 'London 1' } }, { fields: ['addresses.city'] }); // object embedded prop does not support nested partial loading
-    expect(mock.mock.calls[1][0]).toMatch(`select "u0"."id", "u0"."addresses" from "user" as "u0" where "u0"."addresses"->>'city' = ? limit ?`);
+    expect(mock.mock.calls[1][0]).toMatch(
+      `select "u0"."id", "u0"."addresses" from "user" as "u0" where "u0"."addresses"->>'city' = ? limit ?`,
+    );
 
-    await orm.em.fork().qb(User).select('addresses').where({ addresses: { city: 'London 1' } }).execute();
-    expect(mock.mock.calls[2][0]).toMatch(`select "u0"."addresses" from "user" as "u0" where "u0"."addresses"->>'city' = ?`);
+    await orm.em
+      .fork()
+      .qb(User)
+      .select('addresses')
+      .where({ addresses: { city: 'London 1' } })
+      .execute();
+    expect(mock.mock.calls[2][0]).toMatch(
+      `select "u0"."addresses" from "user" as "u0" where "u0"."addresses"->>'city' = ?`,
+    );
 
     await orm.em.fork().findOne(User, { addresses: { city: 'London 1' } }, { fields: ['addresses'] });
-    expect(mock.mock.calls[3][0]).toMatch(`select "u0"."id", "u0"."addresses" from "user" as "u0" where "u0"."addresses"->>'city' = ? limit ?`);
+    expect(mock.mock.calls[3][0]).toMatch(
+      `select "u0"."id", "u0"."addresses" from "user" as "u0" where "u0"."addresses"->>'city' = ? limit ?`,
+    );
 
     const user = createUser();
     await orm.em.fork().qb(User).insert(user).onConflict(['email']).merge(['email', 'address1.city']).execute();
-    expect(mock.mock.calls[4][0]).toMatch(`insert into "user" ("email", "address1_street", "address1_number", "address1_postal_code", "address1_city", "address1_country", "addr_street", "addr_city", "addr_country", "street", "number", "postal_code", "city", "country", "address4", "addresses") values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) on conflict ("email") do update set "email" = excluded."email", "address1_city" = excluded."address1_city" returning "id"`);
+    expect(mock.mock.calls[4][0]).toMatch(
+      `insert into "user" ("email", "address1_street", "address1_number", "address1_postal_code", "address1_city", "address1_country", "addr_street", "addr_city", "addr_country", "street", "number", "postal_code", "city", "country", "address4", "addresses") values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) on conflict ("email") do update set "email" = excluded."email", "address1_city" = excluded."address1_city" returning "id"`,
+    );
   });
 
   test('assign', async () => {
     const user = new User();
     user.email = `test-${Math.random()}`;
-    orm.em.assign(user, {
-      address1: { street: 'Downing street 10', postalCode: '123', city: 'London 1', country: 'UK 1' },
-      address2: { street: 'Downing street 11', city: 'London 2', country: 'UK 2' },
-      address3: { street: 'Downing street 12', postalCode: '789', city: 'London 3', country: 'UK 3' },
-    }, { em: orm.em });
+    orm.em.assign(
+      user,
+      {
+        address1: { street: 'Downing street 10', postalCode: '123', city: 'London 1', country: 'UK 1' },
+        address2: { street: 'Downing street 11', city: 'London 2', country: 'UK 2' },
+        address3: { street: 'Downing street 12', postalCode: '789', city: 'London 3', country: 'UK 3' },
+      },
+      { em: orm.em },
+    );
     orm.em.assign(user, { address4: { city: '41', country: '42', postalCode: '43', street: '44' } });
     expect(user.address4).toMatchObject({ city: '41', country: '42', postalCode: '43', street: '44' });
 
@@ -414,25 +500,33 @@ describe('embedded entities in postgresql', () => {
 
   test('native update entity', async () => {
     const user = new User();
-    orm.em.assign(user, {
-      email: 'test',
-      address1: { street: 'Downing street 10', number: 3, postalCode: '123', city: 'London 1', country: 'UK 1' },
-      address2: { street: 'Downing street 11', city: 'London 2', country: 'UK 2' },
-      address3: { street: 'Downing street 12', number: 3, postalCode: '789', city: 'London 3', country: 'UK 3' },
-      address4: { street: 'Downing street 10', number: 3, postalCode: '123', city: 'London 1', country: 'UK 1' },
-    }, { em: orm.em });
+    orm.em.assign(
+      user,
+      {
+        email: 'test',
+        address1: { street: 'Downing street 10', number: 3, postalCode: '123', city: 'London 1', country: 'UK 1' },
+        address2: { street: 'Downing street 11', city: 'London 2', country: 'UK 2' },
+        address3: { street: 'Downing street 12', number: 3, postalCode: '789', city: 'London 3', country: 'UK 3' },
+        address4: { street: 'Downing street 10', number: 3, postalCode: '123', city: 'London 1', country: 'UK 1' },
+      },
+      { em: orm.em },
+    );
 
     await orm.em.persist(user).flush();
 
-    await orm.em.nativeUpdate(User, {
-      address4: {
-        number: {
-          $gt: 2,
+    await orm.em.nativeUpdate(
+      User,
+      {
+        address4: {
+          number: {
+            $gt: 2,
+          },
         },
       },
-    }, {
-      after: 2,
-    });
+      {
+        after: 2,
+      },
+    );
     orm.em.clear();
 
     const userAfterUpdate = await orm.em.findOne(User, user.id);
@@ -449,10 +543,10 @@ describe('embedded entities in postgresql', () => {
     foo.user = user;
     await orm.em.fork().persist(foo).flush();
 
-    const query = orm.em.qb(Foo, 'f')
-      .leftJoin('f.user', 'u')
-      .select(['f.*', 'u.address3.street']);
-    expect(query.getQuery()).toBe('select "f".*, "u"."street" from "foo" as "f" left join "user" as "u" on "f"."user_id" = "u"."id"');
+    const query = orm.em.qb(Foo, 'f').leftJoin('f.user', 'u').select(['f.*', 'u.address3.street']);
+    expect(query.getQuery()).toBe(
+      'select "f".*, "u"."street" from "foo" as "f" left join "user" as "u" on "f"."user_id" = "u"."id"',
+    );
     await expect(query.getResult()).resolves.toEqual([
       {
         id: 1,
@@ -473,8 +567,8 @@ describe('embedded entities in postgresql', () => {
     const mock = mockLogger(orm);
 
     const r = await orm.em.find(User, {
-      [raw('(address4->>\'street\')::text != \'\'')]: [],
-      [raw('lower((address4->>\'city\')::text) = ?', ['prague'])]: [],
+      [raw("(address4->>'street')::text != ''")]: [],
+      [raw("lower((address4->>'city')::text) = ?", ['prague'])]: [],
       [raw('(address4->>?)::text = ?', ['city', 'Prague'])]: [],
       [raw('(address4->>?)::text', ['postal_code'])]: '12000',
     });
@@ -482,20 +576,27 @@ describe('embedded entities in postgresql', () => {
     expect(r[0].address4).toBeInstanceOf(Address1);
     expect(r[0].address4.city).toBe('Prague');
     expect(r[0].address4.postalCode).toBe('12000');
-    expect(mock.mock.calls[0][0]).toMatch('select "u0".* ' +
-      'from "user" as "u0" ' +
-      'where (address4->>\'street\')::text != \'\' and ' +
-      'lower((address4->>\'city\')::text) = \'prague\' and ' +
-      '(address4->>\'city\')::text = \'Prague\' and ' +
-      '(address4->>\'postal_code\')::text = \'12000\'');
+    expect(mock.mock.calls[0][0]).toMatch(
+      'select "u0".* ' +
+        'from "user" as "u0" ' +
+        "where (address4->>'street')::text != '' and " +
+        "lower((address4->>'city')::text) = 'prague' and " +
+        "(address4->>'city')::text = 'Prague' and " +
+        "(address4->>'postal_code')::text = '12000'",
+    );
   });
 
   test('array operators', async () => {
     createUser();
-    const qb = orm.em.createQueryBuilder(User).select('*').where({
-      addresses: { $contains: [{ street: 'Downing street 13A' }] },
-    });
-    expect(qb.getFormattedQuery()).toBe(`select "u0".* from "user" as "u0" where "u0"."addresses" @> '[{"street":"Downing street 13A"}]'`);
+    const qb = orm.em
+      .createQueryBuilder(User)
+      .select('*')
+      .where({
+        addresses: { $contains: [{ street: 'Downing street 13A' }] },
+      });
+    expect(qb.getFormattedQuery()).toBe(
+      `select "u0".* from "user" as "u0" where "u0"."addresses" @> '[{"street":"Downing street 13A"}]'`,
+    );
     const res = await qb.getResult();
     expect(res[0].addresses).toEqual([
       {
@@ -523,5 +624,4 @@ describe('embedded entities in postgresql', () => {
     expect(user1.addresses).toBeNull();
     expect(user2.addresses).toHaveLength(2);
   });
-
 });

@@ -1,10 +1,16 @@
 import { Collection, MikroORM, PrimaryKeyProp } from '@mikro-orm/sqlite';
-import { Entity, ManyToMany, ManyToOne, OneToMany, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToMany,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { v4 } from 'uuid';
 
 @Entity()
 class Bar {
-
   @PrimaryKey({
     unique: true,
   })
@@ -15,12 +21,10 @@ class Bar {
     mappedBy: o => o.bars,
   })
   foos = new Collection<Foo>(this);
-
 }
 
 @Entity()
 class Foo {
-
   @PrimaryKey({
     unique: true,
   })
@@ -32,12 +36,10 @@ class Foo {
     type: Bar,
   })
   bars = new Collection<Bar>(this);
-
 }
 
 @Entity()
 class FooBar {
-
   @ManyToOne({
     entity: () => Foo,
     primary: true,
@@ -54,12 +56,10 @@ class FooBar {
   bazes = new Collection<Baz>(this);
 
   [PrimaryKeyProp]?: ['foo', 'bar'];
-
 }
 
 @Entity()
 class Baz {
-
   @PrimaryKey({
     unique: true,
   })
@@ -67,7 +67,6 @@ class Baz {
 
   @ManyToOne(() => FooBar)
   foobar!: FooBar;
-
 }
 
 let orm: MikroORM;

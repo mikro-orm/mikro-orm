@@ -1,7 +1,6 @@
 import type { AnyString, Dictionary, Highlighter } from '../typings.js';
 
 export interface Logger {
-
   /**
    * Logs a message inside given namespace.
    */
@@ -28,7 +27,6 @@ export interface Logger {
   setDebugMode(debugMode: boolean | LoggerNamespace[]): void;
 
   isEnabled(namespace: LoggerNamespace, context?: LogContext): boolean;
-
 }
 
 export type LoggerNamespace = 'query' | 'query-params' | 'schema' | 'discovery' | 'info' | 'deprecated';

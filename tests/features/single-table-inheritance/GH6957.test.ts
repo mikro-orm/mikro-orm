@@ -3,21 +3,17 @@ import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-or
 
 @Entity({ discriminatorColumn: 'type', abstract: true })
 class Being {
-
   @PrimaryKey()
   id!: number;
 
   @Property({ type: JsonType, nullable: true })
   data: any;
-
 }
 
 @Entity({ discriminatorValue: 'AKUMA' })
 class Akuma extends Being {
-
   @Property({ type: JsonType, nullable: true })
   declare data: { assigment: number };
-
 }
 
 @Entity({ discriminatorValue: 'ONI' })

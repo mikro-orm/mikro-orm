@@ -1,12 +1,10 @@
 import { defineEntity, MikroORM, p } from '@mikro-orm/sqlite';
 
 class TestEntity {
-
   id!: number;
   name!: string;
   email!: string;
   createdAt!: Date;
-
 }
 
 const TestEntity1 = defineEntity({
@@ -60,7 +58,6 @@ const TestEntity2 = defineEntity({
 });
 
 describe('advanced index features in sqlite', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -90,5 +87,4 @@ describe('advanced index features in sqlite', () => {
     expect(diff).toMatch(/drop index/i);
     expect(diff).toMatch(/create.*index/i);
   });
-
 });

@@ -10,32 +10,26 @@ import {
 
 @Embeddable()
 class NestedTime {
-
   @Property({ default: sql.now() })
   timestamp!: Date;
-
 }
 
 @Embeddable()
 class Time {
-
   @Property({ default: sql.now() })
   timestamp!: Date;
 
   @Embedded(() => NestedTime)
   nested!: NestedTime;
-
 }
 
 @Entity()
 class Test {
-
   @PrimaryKey()
   id!: number;
 
   @Embedded(() => Time)
   time!: Time;
-
 }
 
 let orm: MikroORM;

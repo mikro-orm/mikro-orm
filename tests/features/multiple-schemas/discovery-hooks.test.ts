@@ -4,21 +4,24 @@ import { MikroORM } from '@mikro-orm/sqlite';
 
 @Entity({ schema: 'staff', tableName: 'person' })
 class Person {
-
   @PrimaryKey()
   id!: number;
 
   @Property()
   name!: string;
 
-  @ManyToMany({ entity: () => Phone, owner: true, pivotTable: 'tic.person_phone', joinColumn: 'person_id', inverseJoinColumn: 'phone_id' })
+  @ManyToMany({
+    entity: () => Phone,
+    owner: true,
+    pivotTable: 'tic.person_phone',
+    joinColumn: 'person_id',
+    inverseJoinColumn: 'phone_id',
+  })
   phones = new Collection<Phone>(this);
-
 }
 
 @Entity({ schema: 'tic', tableName: 'phone' })
 class Phone {
-
   @PrimaryKey()
   id!: number;
 
@@ -27,15 +30,12 @@ class Phone {
 
   @ManyToMany({ entity: () => Person, mappedBy: (e: Person) => e.phones })
   people: Collection<Person> = new Collection<Person>(this);
-
 }
 
 @Entity()
 class FooBar {
-
   @PrimaryKey()
   id!: number;
-
 }
 
 let orm: MikroORM;

@@ -3,7 +3,6 @@ import { Entity, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider } from
 
 @Entity()
 class Org {
-
   @PrimaryKey()
   id!: number;
 
@@ -13,12 +12,10 @@ class Org {
   constructor(name: string) {
     this.name = name;
   }
-
 }
 
 @Entity()
 class User {
-
   @PrimaryKey()
   id!: number;
 
@@ -32,12 +29,10 @@ class User {
     this.name = name;
     this.email = email;
   }
-
 }
 
 @Entity()
 class OrgMembership {
-
   @PrimaryKey()
   id!: number;
 
@@ -51,7 +46,6 @@ class OrgMembership {
     this.user = ref(user);
     this.org = ref(org);
   }
-
 }
 
 let orm: MikroORM;
@@ -96,20 +90,14 @@ test('validate missing populate hint', async () => {
 test('cursor from multiple order by clauses', async () => {
   const cursor1 = await orm.em.findByCursor(OrgMembership, {
     populate: ['user'],
-    orderBy: [
-      { user: { name: QueryOrder.ASC } },
-      { user: 'asc' },
-    ],
+    orderBy: [{ user: { name: QueryOrder.ASC } }, { user: 'asc' }],
     first: 1,
   });
   expect(cursor1.items[0].user.$.email).toBe('foo');
 
   const cursor2 = await orm.em.findByCursor(OrgMembership, {
     populate: ['user'],
-    orderBy: [
-      { user: { name: QueryOrder.ASC } },
-      { user: 'asc' },
-    ],
+    orderBy: [{ user: { name: QueryOrder.ASC } }, { user: 'asc' }],
     first: 1,
     after: cursor1,
   });
@@ -117,10 +105,7 @@ test('cursor from multiple order by clauses', async () => {
 
   const cursor3 = await orm.em.findByCursor(OrgMembership, {
     populate: ['user'],
-    orderBy: [
-      { user: { name: QueryOrder.ASC } },
-      { user: 'asc' },
-    ],
+    orderBy: [{ user: { name: QueryOrder.ASC } }, { user: 'asc' }],
     first: 1,
     after: cursor2,
   });

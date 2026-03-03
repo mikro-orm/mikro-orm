@@ -1,7 +1,6 @@
 import { AbstractNamingStrategy } from './AbstractNamingStrategy.js';
 
 export class UnderscoreNamingStrategy extends AbstractNamingStrategy {
-
   classToTableName(entityName: string, tableName?: string): string {
     return tableName ?? this.underscore(entityName);
   }
@@ -10,7 +9,12 @@ export class UnderscoreNamingStrategy extends AbstractNamingStrategy {
     return this.underscore(propertyName) + '_' + this.referenceColumnName();
   }
 
-  joinKeyColumnName(entityName: string, referencedColumnName?: string, composite?: boolean, tableName?: string): string {
+  joinKeyColumnName(
+    entityName: string,
+    referencedColumnName?: string,
+    composite?: boolean,
+    tableName?: string,
+  ): string {
     return this.classToTableName(entityName, tableName) + '_' + (referencedColumnName || this.referenceColumnName());
   }
 
@@ -29,5 +33,4 @@ export class UnderscoreNamingStrategy extends AbstractNamingStrategy {
   private underscore(name: string): string {
     return name.replace(/([a-z])([A-Z])/g, '$1_$2').toLowerCase();
   }
-
 }

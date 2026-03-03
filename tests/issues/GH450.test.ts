@@ -10,7 +10,6 @@ import {
 
 @Entity({ tableName: 'auth.users' })
 class TaskAssignee {
-
   @Property()
   avatar: string;
 
@@ -28,12 +27,10 @@ class TaskAssignee {
     this.firstName = firstName;
     this.lastName = lastName;
   }
-
 }
 
 @Entity({ tableName: 'operations.tasks' })
 class Task {
-
   @ManyToMany({ entity: () => TaskAssignee, pivotTable: 'operations.task_assignees' })
   assignees = new Collection<TaskAssignee>(this);
 
@@ -42,11 +39,9 @@ class Task {
 
   @PrimaryKey()
   id!: number;
-
 }
 
 describe('GH issue 450', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -90,5 +85,4 @@ describe('GH issue 450', () => {
     expect(t2.assignee).toBeInstanceOf(TaskAssignee);
     expect(wrap(t2.assignee!).isInitialized()).toBe(true);
   });
-
 });

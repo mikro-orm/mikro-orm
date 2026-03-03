@@ -3,17 +3,14 @@ import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-or
 
 @Entity()
 class User {
-
   @PrimaryKey()
   id!: number;
 
   @Property()
   name!: string;
-
 }
 
 describe('truncate [sqlite]', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -32,11 +29,13 @@ describe('truncate [sqlite]', () => {
   afterAll(() => orm.close(true));
 
   test('truncates table', async () => {
-    await orm.em.persist([
-      orm.em.create(User, { name: 'u1' }),
-      orm.em.create(User, { name: 'u2' }),
-      orm.em.create(User, { name: 'u3' }),
-    ]).flush();
+    await orm.em
+      .persist([
+        orm.em.create(User, { name: 'u1' }),
+        orm.em.create(User, { name: 'u2' }),
+        orm.em.create(User, { name: 'u3' }),
+      ])
+      .flush();
 
     await orm.em.createQueryBuilder(User).truncate().execute();
 
@@ -44,5 +43,4 @@ describe('truncate [sqlite]', () => {
 
     expect(users.length).toBe(0);
   });
-
 });

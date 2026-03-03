@@ -4,7 +4,6 @@ import { MikroORM } from '@mikro-orm/sqlite';
 
 @Entity()
 class GamePoolEntity {
-
   @PrimaryKey()
   contract_address!: string;
 
@@ -33,12 +32,10 @@ class GamePoolEntity {
     onUpdate: () => new Date(),
   })
   updated_at: Date = new Date();
-
 }
 
 @Entity()
 class GamePoolScannerEntity {
-
   @OneToOne(() => GamePoolEntity, e => e.scanner, {
     primary: true,
     owner: true,
@@ -63,7 +60,6 @@ class GamePoolScannerEntity {
     onUpdate: () => new Date(),
   })
   updated_at: Date = new Date();
-
 }
 
 let orm: MikroORM;

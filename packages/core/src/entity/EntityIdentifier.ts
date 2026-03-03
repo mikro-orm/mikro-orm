@@ -4,8 +4,7 @@ import type { IPrimaryKey } from '../typings.js';
  * @internal
  */
 export class EntityIdentifier {
-
-  constructor(private value?: IPrimaryKey) { }
+  constructor(private value?: IPrimaryKey) {}
 
   setValue(value: IPrimaryKey): void {
     this.value = value;
@@ -14,5 +13,4 @@ export class EntityIdentifier {
   getValue<T extends IPrimaryKey = IPrimaryKey>(): T {
     return this.value as T;
   }
-
 }

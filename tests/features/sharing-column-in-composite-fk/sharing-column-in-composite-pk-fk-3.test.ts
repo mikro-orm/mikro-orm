@@ -1,22 +1,27 @@
 import { Collection, MikroORM, PrimaryKeyProp, type Ref } from '@mikro-orm/sqlite';
-import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider, Unique } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+  Unique,
+} from '@mikro-orm/decorators/legacy';
 import { v4 } from 'uuid';
 
 @Entity({ tableName: 'organization' })
 class OrganizationMikroModel {
-
   @PrimaryKey({ columnType: 'uuid' })
   id!: string;
 
   @Unique({ name: 'organization_name_unique' })
   @Property({ columnType: 'text', length: 255 })
   name!: string;
-
 }
 
 @Entity({ tableName: 'task_assignee' })
 class TaskAssigneeMikroModel {
-
   [PrimaryKeyProp]?: ['task', 'organization'];
 
   @ManyToOne({
@@ -30,12 +35,10 @@ class TaskAssigneeMikroModel {
 
   @ManyToOne({ entity: () => OrganizationMikroModel, ref: true, primary: true })
   organization!: Ref<OrganizationMikroModel>;
-
 }
 
 @Entity({ tableName: 'task' })
 class TaskMikroModel {
-
   [PrimaryKeyProp]?: ['id', 'organization'];
 
   @PrimaryKey({ type: 'uuid' })
@@ -46,7 +49,6 @@ class TaskMikroModel {
 
   @OneToMany({ entity: () => TaskAssigneeMikroModel, mappedBy: 'task', orphanRemoval: true })
   internalTaskTeam = new Collection<TaskAssigneeMikroModel>(this);
-
 }
 
 let orm: MikroORM;

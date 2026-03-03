@@ -97,7 +97,6 @@ beforeAll(async () => {
   if (await orm.schema.ensureDatabase({ create: true })) {
     await orm.schema.execute(schema);
   }
-
 });
 
 afterAll(async () => {
@@ -118,7 +117,10 @@ describe(schemaName, () => {
           const usersMeta = metadata.find(meta => meta.className === 'Users')!;
           Object.entries(usersMeta.properties).forEach(([propName, propOptions]) => {
             if (typeof propOptions.generated === 'string') {
-              propOptions.generated = Utils.createFunction(new Map(), `return () => ${JSON.stringify(propOptions.generated)}`);
+              propOptions.generated = Utils.createFunction(
+                new Map(),
+                `return () => ${JSON.stringify(propOptions.generated)}`,
+              );
             }
           });
         },

@@ -1,9 +1,16 @@
 import { MikroORM, Ref, Collection, DateTimeType, Opt, wrap } from '@mikro-orm/postgresql';
-import { Entity, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  OneToOne,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class User {
-
   @PrimaryKey()
   readonly id!: bigint;
 
@@ -20,19 +27,16 @@ class User {
               where rating.user_id = ${tableAlias}.id
               order by rating.created_at desc
               limit 1)`;
-
     },
   })
   currentRating?: Ref<Rating>;
 
   @Property({ type: DateTimeType })
   createdAt: Opt<Date> = new Date();
-
 }
 
 @Entity()
 class Rating {
-
   @PrimaryKey()
   readonly id!: bigint;
 
@@ -41,7 +45,6 @@ class Rating {
 
   @Property({ type: DateTimeType })
   createdAt: Opt<Date> = new Date();
-
 }
 
 let orm: MikroORM;
@@ -70,8 +73,7 @@ test('escape table name in formula correctly', async () => {
   await orm.em.flush();
   orm.em.clear();
 
-  const query = orm.em.createQueryBuilder(User, 'someUser')
-    .leftJoin('currentRating', 'someUserRating');
+  const query = orm.em.createQueryBuilder(User, 'someUser').leftJoin('currentRating', 'someUserRating');
 
   await expect(query.getResult()).resolves.not.toThrow();
 });

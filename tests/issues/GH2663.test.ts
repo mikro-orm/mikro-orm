@@ -1,38 +1,39 @@
 import { LoadStrategy, MikroORM } from '@mikro-orm/sqlite';
 
-import { Embeddable, Embedded, Entity, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Embeddable,
+  Embedded,
+  Entity,
+  ManyToOne,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 @Embeddable()
 export class Z {
-
   @Property()
   name!: string;
-
 }
 
 @Entity()
 export class A {
-
   @PrimaryKey()
   id!: number;
 
   @Embedded({ entity: () => Z, object: true })
   z!: Z;
-
 }
 
 @Entity()
 export class B {
-
   @PrimaryKey()
   id!: number;
 
   @ManyToOne({ entity: () => A, deleteRule: 'cascade' })
   a!: A;
-
 }
 
 describe('GH issue 2663', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {

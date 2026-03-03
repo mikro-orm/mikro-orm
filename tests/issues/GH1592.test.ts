@@ -14,7 +14,12 @@ const Radio = defineEntity({
   name: 'Radio',
   properties: {
     id: p.integer().primary(),
-    question: p.string().onCreate(() => Math.random().toString(36).replace(/[^a-z]+/g, '').substring(0, 10)),
+    question: p.string().onCreate(() =>
+      Math.random()
+        .toString(36)
+        .replace(/[^a-z]+/g, '')
+        .substring(0, 10),
+    ),
     option: () => p.oneToOne(RadioOption).ref().eager(),
   },
 });

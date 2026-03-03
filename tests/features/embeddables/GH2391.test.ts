@@ -1,11 +1,17 @@
 import { MikroORM, OptionalProps } from '@mikro-orm/core';
-import { Embeddable, Embedded, Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Embeddable,
+  Embedded,
+  Entity,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 import { mockLogger } from '../../helpers.js';
 
 @Embeddable()
 export class NestedAudit {
-
   @Property({ nullable: true })
   archived?: Date;
 
@@ -14,12 +20,10 @@ export class NestedAudit {
 
   @Property({ onCreate: () => new Date() })
   created!: Date;
-
 }
 
 @Embeddable()
 export class Audit {
-
   @Property({ nullable: true })
   archived?: Date;
 
@@ -31,12 +35,10 @@ export class Audit {
 
   @Embedded(() => NestedAudit)
   nestedAudit1 = new NestedAudit();
-
 }
 
 @Entity()
 export class MyEntity {
-
   [OptionalProps]?: 'audit1' | 'audit2';
 
   @PrimaryKey()
@@ -47,11 +49,9 @@ export class MyEntity {
 
   @Embedded(() => Audit, { object: true })
   audit2 = new Audit();
-
 }
 
 describe('onCreate and onUpdate in embeddables (GH 2283 and 2391)', () => {
-
   let orm: MikroORM<SqliteDriver>;
 
   beforeAll(async () => {
@@ -96,26 +96,32 @@ describe('onCreate and onUpdate in embeddables (GH 2283 and 2391)', () => {
 
     vi.advanceTimersByTime(25);
 
-    const tmp1 = line.audit1.archived = new Date();
+    const tmp1 = (line.audit1.archived = new Date());
     await orm.em.flush();
     expect(mock).toHaveBeenCalledTimes(3);
-    expect(mock.mock.calls[1][0]).toMatch('update `my_entity` set `audit1_archived` = ?, `audit1_updated` = ?, `audit1_nested_audit1_updated` = ?, `audit2` = ? where `id` = ?');
+    expect(mock.mock.calls[1][0]).toMatch(
+      'update `my_entity` set `audit1_archived` = ?, `audit1_updated` = ?, `audit1_nested_audit1_updated` = ?, `audit2` = ? where `id` = ?',
+    );
     mock.mockReset();
 
     vi.advanceTimersByTime(25);
 
-    const tmp2 = line.audit2.archived = new Date();
+    const tmp2 = (line.audit2.archived = new Date());
     await orm.em.flush();
     expect(mock).toHaveBeenCalledTimes(3);
-    expect(mock.mock.calls[1][0]).toMatch('update `my_entity` set `audit1_updated` = ?, `audit1_nested_audit1_updated` = ?, `audit2` = ? where `id` = ?');
+    expect(mock.mock.calls[1][0]).toMatch(
+      'update `my_entity` set `audit1_updated` = ?, `audit1_nested_audit1_updated` = ?, `audit2` = ? where `id` = ?',
+    );
     mock.mockReset();
 
     vi.advanceTimersByTime(25);
 
-    const tmp3 = line.audit2.nestedAudit1.archived = new Date();
+    const tmp3 = (line.audit2.nestedAudit1.archived = new Date());
     await orm.em.flush();
     expect(mock).toHaveBeenCalledTimes(3);
-    expect(mock.mock.calls[1][0]).toMatch('update `my_entity` set `audit1_updated` = ?, `audit1_nested_audit1_updated` = ?, `audit2` = ? where `id` = ?');
+    expect(mock.mock.calls[1][0]).toMatch(
+      'update `my_entity` set `audit1_updated` = ?, `audit1_nested_audit1_updated` = ?, `audit2` = ? where `id` = ?',
+    );
     mock.mockRestore();
 
     vi.advanceTimersByTime(25);
@@ -127,5 +133,4 @@ describe('onCreate and onUpdate in embeddables (GH 2283 and 2391)', () => {
 
     vi.useRealTimers();
   });
-
 });

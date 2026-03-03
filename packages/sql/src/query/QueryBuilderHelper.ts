@@ -38,7 +38,6 @@ import type { NativeQueryBuilder } from './NativeQueryBuilder.js';
  * @internal
  */
 export class QueryBuilderHelper {
-
   private readonly platform: AbstractSqlPlatform;
   private readonly metadata: MetadataStorage;
 
@@ -88,8 +87,20 @@ export class QueryBuilderHelper {
   }
 
   mapper(field: string | Raw | RawQueryFragmentSymbol, type?: QueryType): string;
-  mapper(field: string | Raw | RawQueryFragmentSymbol, type?: QueryType, value?: any, alias?: string | null, schema?: string): string;
-  mapper(field: string | Raw | RawQueryFragmentSymbol, type = QueryType.SELECT, value?: any, alias?: string | null, schema?: string): string | Raw {
+  mapper(
+    field: string | Raw | RawQueryFragmentSymbol,
+    type?: QueryType,
+    value?: any,
+    alias?: string | null,
+    schema?: string,
+  ): string;
+  mapper(
+    field: string | Raw | RawQueryFragmentSymbol,
+    type = QueryType.SELECT,
+    value?: any,
+    alias?: string | null,
+    schema?: string,
+  ): string | Raw {
     if (isRaw(field)) {
       return raw(field.sql, field.params);
     }
@@ -115,7 +126,14 @@ export class QueryBuilderHelper {
         const fkIdx2 = prop?.fieldNames.findIndex(name => name === f) ?? -1;
 
         if (fkIdx2 !== -1) {
-          parts.push(this.mapper(a !== this.alias ? `${a}.${prop!.fieldNames[fkIdx2]}` : prop!.fieldNames[fkIdx2], type, value, alias));
+          parts.push(
+            this.mapper(
+              a !== this.alias ? `${a}.${prop!.fieldNames[fkIdx2]}` : prop!.fieldNames[fkIdx2],
+              type,
+              value,
+              alias,
+            ),
+          );
         } else if (prop) {
           parts.push(...prop.fieldNames.map(f => this.mapper(a !== this.alias ? `${a}.${f}` : f, type, value, alias)));
         } else {
@@ -166,10 +184,7 @@ export class QueryBuilderHelper {
       const as = aliasName === null ? '' : ` as ${this.platform.quoteIdentifier(aliasName)}`;
       const meta = this.aliasMap[a]?.meta ?? this.metadata.get(this.entityName);
       const table = this.createFormulaTable(alias2, meta, schema);
-      const columns = meta.createColumnMappingObject(
-        p => this.getTPTAliasForProperty(p.name, a),
-        alias2,
-      );
+      const columns = meta.createColumnMappingObject(p => this.getTPTAliasForProperty(p.name, a), alias2);
       let value = this.driver.evaluateFormula(prop.formula, columns, table);
 
       if (!this.isTableNameAliasRequired(type)) {
@@ -186,7 +201,7 @@ export class QueryBuilderHelper {
         const fk = prop.targetMeta!.getPrimaryProps()[fkIdx];
         const prefixed = this.prefix(field, isTableNameAliasRequired, true, fkIdx);
         valueSQL = fk.customType!.convertToJSValueSQL!(prefixed, this.platform);
-      } else  {
+      } else {
         const prefixed = this.prefix(field, isTableNameAliasRequired, true);
         valueSQL = prop.customType!.convertToJSValueSQL!(prefixed, this.platform);
       }
@@ -228,7 +243,14 @@ export class QueryBuilderHelper {
     return data;
   }
 
-  joinOneToReference(prop: EntityProperty, ownerAlias: string, alias: string, type: JoinType, cond: Dictionary = {}, schema?: string): JoinOptions {
+  joinOneToReference(
+    prop: EntityProperty,
+    ownerAlias: string,
+    alias: string,
+    type: JoinType,
+    cond: Dictionary = {},
+    schema?: string,
+  ): JoinOptions {
     const prop2 = prop.targetMeta!.properties[prop.mappedBy || prop.inversedBy];
     const table = this.getTableName(prop.targetMeta!.class);
     const joinColumns = prop.owner ? prop.referencedColumnNames : prop2.joinColumns;
@@ -247,14 +269,33 @@ export class QueryBuilderHelper {
     }
 
     return {
-      prop, type, cond, ownerAlias, alias, table, schema,
-      joinColumns, inverseJoinColumns, primaryKeys,
+      prop,
+      type,
+      cond,
+      ownerAlias,
+      alias,
+      table,
+      schema,
+      joinColumns,
+      inverseJoinColumns,
+      primaryKeys,
     };
   }
 
-  joinManyToOneReference(prop: EntityProperty, ownerAlias: string, alias: string, type: JoinType, cond: Dictionary = {}, schema?: string): JoinOptions {
+  joinManyToOneReference(
+    prop: EntityProperty,
+    ownerAlias: string,
+    alias: string,
+    type: JoinType,
+    cond: Dictionary = {},
+    schema?: string,
+  ): JoinOptions {
     return {
-      prop, type, cond, ownerAlias, alias,
+      prop,
+      type,
+      cond,
+      ownerAlias,
+      alias,
       table: this.getTableName(prop.targetMeta!.class),
       schema: prop.targetMeta?.schema === '*' ? '*' : this.driver.getSchemaName(prop.targetMeta, { schema }),
       joinColumns: prop.referencedColumnNames,
@@ -264,11 +305,22 @@ export class QueryBuilderHelper {
     };
   }
 
-  joinManyToManyReference(prop: EntityProperty, ownerAlias: string, alias: string, pivotAlias: string, type: JoinType, cond: Dictionary, path: string, schema?: string): Dictionary<JoinOptions> {
+  joinManyToManyReference(
+    prop: EntityProperty,
+    ownerAlias: string,
+    alias: string,
+    pivotAlias: string,
+    type: JoinType,
+    cond: Dictionary,
+    path: string,
+    schema?: string,
+  ): Dictionary<JoinOptions> {
     const pivotMeta = this.metadata.find(prop.pivotEntity)!;
     const ret = {
       [`${ownerAlias}.${prop.name}#${pivotAlias}`]: {
-        prop, type, ownerAlias,
+        prop,
+        type,
+        ownerAlias,
         alias: pivotAlias,
         inverseAlias: alias,
         joinColumns: prop.joinColumns,
@@ -286,7 +338,14 @@ export class QueryBuilderHelper {
     }
 
     const prop2 = pivotMeta.relations[prop.owner ? 1 : 0];
-    ret[`${pivotAlias}.${prop2.name}#${alias}`] = this.joinManyToOneReference(prop2, pivotAlias, alias, type, cond, schema);
+    ret[`${pivotAlias}.${prop2.name}#${alias}`] = this.joinManyToOneReference(
+      prop2,
+      pivotAlias,
+      alias,
+      type,
+      cond,
+      schema,
+    );
     ret[`${pivotAlias}.${prop2.name}#${alias}`].path = path;
     const tmp = prop2.referencedTableName.split('.');
     ret[`${pivotAlias}.${prop2.name}#${alias}`].schema ??= tmp.length > 1 ? tmp[0] : undefined;
@@ -307,11 +366,12 @@ export class QueryBuilderHelper {
 
   createJoinExpression(join: JoinOptions, joins: Dictionary<JoinOptions>, schema?: string) {
     let table = join.table;
-    const method = {
-      [JoinType.nestedInnerJoin as string]: 'inner join',
-      [JoinType.nestedLeftJoin as string]: 'left join',
-      [JoinType.pivotJoin]: 'left join',
-    }[join.type] ?? join.type;
+    const method =
+      {
+        [JoinType.nestedInnerJoin as string]: 'inner join',
+        [JoinType.nestedLeftJoin as string]: 'left join',
+        [JoinType.pivotJoin]: 'left join',
+      }[join.type] ?? join.type;
     const conditions: string[] = [];
     const params: unknown[] = [];
     schema = join.schema && join.schema !== '*' ? join.schema : schema;
@@ -337,15 +397,20 @@ export class QueryBuilderHelper {
           return;
         }
 
-        const left = join.prop.object && join.prop.fieldNameRaw
-          ? join.prop.fieldNameRaw.replaceAll(ALIAS_REPLACEMENT, join.ownerAlias)
-          : this.platform.quoteIdentifier(`${join.ownerAlias}.${primaryKey}`);
+        const left =
+          join.prop.object && join.prop.fieldNameRaw
+            ? join.prop.fieldNameRaw.replaceAll(ALIAS_REPLACEMENT, join.ownerAlias)
+            : this.platform.quoteIdentifier(`${join.ownerAlias}.${primaryKey}`);
 
         conditions.push(`${left} = ${this.platform.quoteIdentifier(right)}`);
       });
     }
 
-    if (join.prop.targetMeta?.root.inheritanceType === 'sti' && join.prop.targetMeta?.discriminatorValue && !join.path?.endsWith('[pivot]')) {
+    if (
+      join.prop.targetMeta?.root.inheritanceType === 'sti' &&
+      join.prop.targetMeta?.discriminatorValue &&
+      !join.path?.endsWith('[pivot]')
+    ) {
       const typeProperty = join.prop.targetMeta.root.discriminatorColumn;
       const alias = join.inverseAlias ?? join.alias;
       join.cond[`${alias}.${typeProperty}`] = join.prop.targetMeta.discriminatorValue;
@@ -353,7 +418,10 @@ export class QueryBuilderHelper {
 
     // For polymorphic relations, add discriminator condition to filter by target entity type
     if (join.prop.polymorphic && join.prop.discriminatorColumn && join.prop.discriminatorMap) {
-      const discriminatorValue = QueryHelper.findDiscriminatorValue(join.prop.discriminatorMap, join.prop.targetMeta!.class);
+      const discriminatorValue = QueryHelper.findDiscriminatorValue(
+        join.prop.discriminatorMap,
+        join.prop.targetMeta!.class,
+      );
       if (discriminatorValue) {
         const discriminatorCol = this.platform.quoteIdentifier(`${join.ownerAlias}.${join.prop.discriminatorColumn}`);
         conditions.push(`${discriminatorCol} = ?`);
@@ -441,10 +509,10 @@ export class QueryBuilderHelper {
   getRegExpParam(re: RegExp): string {
     const value = re.source
       .replace(/\.\*/g, '%') // .* -> %
-      .replace(/\./g, '_')   // .  -> _
-      .replace(/\\_/g, '.')  // \. -> .
-      .replace(/^\^/g, '')   // remove ^ from start
-      .replace(/\$$/g, '');  // remove $ from end
+      .replace(/\./g, '_') // .  -> _
+      .replace(/\\_/g, '.') // \. -> .
+      .replace(/^\^/g, '') // remove ^ from start
+      .replace(/\$$/g, ''); // remove $ from end
 
     if (re.source.startsWith('^') && re.source.endsWith('$')) {
       return value;
@@ -490,7 +558,13 @@ export class QueryBuilderHelper {
     });
   }
 
-  appendQueryCondition(type: QueryType, cond: any, qb: NativeQueryBuilder, operator?: '$and' | '$or', method: 'where' | 'having' = 'where'): void {
+  appendQueryCondition(
+    type: QueryType,
+    cond: any,
+    qb: NativeQueryBuilder,
+    operator?: '$and' | '$or',
+    method: 'where' | 'having' = 'where',
+  ): void {
     const { sql, params } = this._appendQueryCondition(type, cond, operator);
     qb[method](sql, params);
   }
@@ -523,7 +597,12 @@ export class QueryBuilderHelper {
     return { sql: parts.join(' and '), params };
   }
 
-  private append(cb: () => { sql: string; params: unknown[] }, parts: string[], params: unknown[], operator?: '$and' | '$or'): void {
+  private append(
+    cb: () => { sql: string; params: unknown[] },
+    parts: string[],
+    params: unknown[],
+    operator?: '$and' | '$or',
+  ): void {
     const res = cb();
 
     if (['', '()'].includes(res.sql)) {
@@ -534,7 +613,11 @@ export class QueryBuilderHelper {
     res.params.forEach(p => params.push(p));
   }
 
-  private appendQuerySubCondition(type: QueryType, cond: any, key: string | RawQueryFragmentSymbol): { sql: string; params: unknown[] } {
+  private appendQuerySubCondition(
+    type: QueryType,
+    cond: any,
+    key: string | RawQueryFragmentSymbol,
+  ): { sql: string; params: unknown[] } {
     const parts: string[] = [];
     const params: unknown[] = [];
 
@@ -581,7 +664,11 @@ export class QueryBuilderHelper {
     return { sql: parts.join(' and '), params };
   }
 
-  private processObjectSubCondition(cond: any, key: string | RawQueryFragmentSymbol, type: QueryType): { sql: string; params: unknown[] } {
+  private processObjectSubCondition(
+    cond: any,
+    key: string | RawQueryFragmentSymbol,
+    type: QueryType,
+  ): { sql: string; params: unknown[] } {
     const parts: string[] = [];
     const params: unknown[] = [];
     let value = cond[key];
@@ -594,7 +681,7 @@ export class QueryBuilderHelper {
     // grouped condition for one field, e.g. `{ age: { $gte: 10, $lt: 50 } }`
     if (size > 1) {
       const subCondition = Object.entries(value).map(([subKey, subValue]) => {
-        return ({ [key]: { [subKey]: subValue } });
+        return { [key]: { [subKey]: subValue } };
       });
 
       for (const sub of subCondition) {
@@ -641,7 +728,8 @@ export class QueryBuilderHelper {
       }
 
       if (singleTuple) {
-        const tmp = value[op].length === 1 && Utils.isPlainObject(value[op][0]) ? fields.map(f => value[op][0][f]) : value[op];
+        const tmp =
+          value[op].length === 1 && Utils.isPlainObject(value[op][0]) ? fields.map(f => value[op][0][f]) : value[op];
         const sql = `(${fields.map(() => '?').join(', ')})`;
         value[op] = raw(sql, tmp);
       }
@@ -674,7 +762,7 @@ export class QueryBuilderHelper {
       params.push(...params2);
     } else if (['$in', '$nin'].includes(op) && Array.isArray(value[op]) && value[op].length === 0) {
       parts.push(`1 = ${op === '$in' ? 0 : 1}`);
-    } else if (value[op] instanceof Raw || (typeof value[op]?.toRaw === 'function')) {
+    } else if (value[op] instanceof Raw || typeof value[op]?.toRaw === 'function') {
       const query = value[op] instanceof Raw ? value[op] : value[op].toRaw();
       const mappedKey = this.mapper(key, type, query, null);
 
@@ -696,7 +784,13 @@ export class QueryBuilderHelper {
     return { sql: parts.join(' and '), params };
   }
 
-  private getValueReplacement(fields: string[], value: unknown, params: unknown[], key?: string, prop?: EntityProperty): string {
+  private getValueReplacement(
+    fields: string[],
+    value: unknown,
+    params: unknown[],
+    key?: string,
+    prop?: EntityProperty,
+  ): string {
     if (Array.isArray(value)) {
       if (fields.length > 1) {
         const tmp = [];
@@ -710,7 +804,11 @@ export class QueryBuilderHelper {
       }
 
       if (prop?.customType instanceof ArrayType) {
-        const item = prop.customType.convertToDatabaseValue(value, this.platform, { fromQuery: true, key, mode: 'query' });
+        const item = prop.customType.convertToDatabaseValue(value, this.platform, {
+          fromQuery: true,
+          key,
+          mode: 'query',
+        });
         params.push(item);
       } else {
         value.forEach(p => params.push(p));
@@ -771,16 +869,23 @@ export class QueryBuilderHelper {
         ...rawKeys.map(rawKey => ({ [`raw('${rawKey.sql}')`]: orderBy[rawKey as never] })),
       ];
 
-      throw new Error([
-        `Invalid "orderBy": You are mixing field-based keys and raw SQL fragments inside a single object.`,
-        `This is not allowed because object key order cannot reliably preserve evaluation order.`,
-        `To fix this, split them into separate objects inside an array:\n`,
-        `orderBy: ${inspect(example, { depth: 5 }).replace(/"raw\('(.*)'\)"/g, `[raw('$1')]`)}`,
-      ].join('\n'));
+      throw new Error(
+        [
+          `Invalid "orderBy": You are mixing field-based keys and raw SQL fragments inside a single object.`,
+          `This is not allowed because object key order cannot reliably preserve evaluation order.`,
+          `To fix this, split them into separate objects inside an array:\n`,
+          `orderBy: ${inspect(example, { depth: 5 }).replace(/"raw\('(.*)'\)"/g, `[raw('$1')]`)}`,
+        ].join('\n'),
+      );
     }
   }
 
-  getQueryOrder(type: QueryType, orderBy: FlatQueryOrderMap | FlatQueryOrderMap[], populate: Dictionary<string>, collation?: string): string[] {
+  getQueryOrder(
+    type: QueryType,
+    orderBy: FlatQueryOrderMap | FlatQueryOrderMap[],
+    populate: Dictionary<string>,
+    collation?: string,
+  ): string[] {
     if (Array.isArray(orderBy)) {
       return orderBy.flatMap(o => this.getQueryOrder(type, o, populate, collation));
     }
@@ -788,7 +893,12 @@ export class QueryBuilderHelper {
     return this.getQueryOrderFromObject(type, orderBy, populate, collation);
   }
 
-  getQueryOrderFromObject(type: QueryType, orderBy: FlatQueryOrderMap, populate: Dictionary<string>, collation?: string): string[] {
+  getQueryOrderFromObject(
+    type: QueryType,
+    orderBy: FlatQueryOrderMap,
+    populate: Dictionary<string>,
+    collation?: string,
+  ): string[] {
     const ret: string[] = [];
 
     for (const key of Utils.getObjectQueryKeys(orderBy)) {
@@ -797,7 +907,9 @@ export class QueryBuilderHelper {
 
       if (Raw.isKnownFragmentSymbol(key)) {
         const raw = Raw.getKnownFragment(key)!;
-        ret.push(...this.platform.getOrderByExpression(this.platform.formatQuery(raw.sql, raw.params), order, collation));
+        ret.push(
+          ...this.platform.getOrderByExpression(this.platform.formatQuery(raw.sql, raw.params), order, collation),
+        );
         continue;
       }
 
@@ -810,12 +922,16 @@ export class QueryBuilderHelper {
         const noPrefix = (prop?.persist === false && !prop.formula && !prop.embedded) || Raw.isKnownFragment(f);
         const column = this.mapper(noPrefix ? field : `${alias}.${field}`, type, undefined, null);
         /* v8 ignore next */
-        const rawColumn = typeof column === 'string' ? column.split('.').map(e => this.platform.quoteIdentifier(e)).join('.') : column;
+        const rawColumn =
+          typeof column === 'string'
+            ? column
+                .split('.')
+                .map(e => this.platform.quoteIdentifier(e))
+                .join('.')
+            : column;
         const customOrder = prop?.customOrder;
 
-        let colPart = customOrder
-          ? this.platform.generateCustomOrder(rawColumn, customOrder)
-          : rawColumn;
+        let colPart = customOrder ? this.platform.generateCustomOrder(rawColumn, customOrder) : rawColumn;
 
         if (isRaw(colPart)) {
           colPart = this.platform.formatQuery(colPart.sql, colPart.params);
@@ -832,7 +948,13 @@ export class QueryBuilderHelper {
     return ret;
   }
 
-  finalize(type: QueryType, qb: NativeQueryBuilder, meta?: EntityMetadata, data?: Dictionary, returning?: InternalField<any>[]): void {
+  finalize(
+    type: QueryType,
+    qb: NativeQueryBuilder,
+    meta?: EntityMetadata,
+    data?: Dictionary,
+    returning?: InternalField<any>[],
+  ): void {
     const usesReturningStatement = this.platform.usesReturningStatement() || this.platform.usesOutputStatement();
 
     if (!meta || !data || !usesReturningStatement) {
@@ -848,7 +970,10 @@ export class QueryBuilderHelper {
 
     if (type === QueryType.INSERT) {
       const returningProps = meta.hydrateProps
-        .filter(prop => prop.returning || (prop.persist !== false && ((prop.primary && prop.autoincrement) || prop.defaultRaw)))
+        .filter(
+          prop =>
+            prop.returning || (prop.persist !== false && ((prop.primary && prop.autoincrement) || prop.defaultRaw)),
+        )
         .filter(prop => !(prop.name in data));
 
       if (returningProps.length > 0) {
@@ -865,7 +990,10 @@ export class QueryBuilderHelper {
         const fields = returningProps.flatMap((prop): (string | Raw)[] => {
           if (prop.hasConvertToJSValueSQL) {
             const aliased = this.platform.quoteIdentifier(prop.fieldNames[0]);
-            const sql = prop.customType!.convertToJSValueSQL!(aliased, this.platform) + ' as ' + this.platform.quoteIdentifier(prop.fieldNames[0]);
+            const sql =
+              prop.customType!.convertToJSValueSQL!(aliased, this.platform) +
+              ' as ' +
+              this.platform.quoteIdentifier(prop.fieldNames[0]);
             return [raw(sql)];
           }
           return prop.fieldNames;
@@ -899,7 +1027,12 @@ export class QueryBuilderHelper {
     return [fromAlias, fromField, ref];
   }
 
-  getLockSQL(qb: NativeQueryBuilder, lockMode: LockMode, lockTables: string[] = [], joinsMap?: Dictionary<JoinOptions>): void {
+  getLockSQL(
+    qb: NativeQueryBuilder,
+    lockMode: LockMode,
+    lockTables: string[] = [],
+    joinsMap?: Dictionary<JoinOptions>,
+  ): void {
     const meta = this.metadata.find(this.entityName);
 
     if (lockMode === LockMode.OPTIMISTIC && meta && !meta.versionProperty) {
@@ -908,7 +1041,9 @@ export class QueryBuilderHelper {
 
     if (lockMode !== LockMode.OPTIMISTIC && lockTables.length === 0 && joinsMap) {
       const joins = Object.values(joinsMap);
-      const innerJoins = joins.filter(join => [JoinType.innerJoin, JoinType.innerJoinLateral, JoinType.nestedInnerJoin].includes(join.type));
+      const innerJoins = joins.filter(join =>
+        [JoinType.innerJoin, JoinType.innerJoinLateral, JoinType.nestedInnerJoin].includes(join.type),
+      );
 
       if (joins.length > innerJoins.length) {
         lockTables.push(this.alias, ...innerJoins.map(join => join.alias));
@@ -973,7 +1108,11 @@ export class QueryBuilderHelper {
     return ret;
   }
 
-  private appendGroupCondition(type: QueryType, operator: '$and' | '$or', subCondition: any[]): { sql: string; params: unknown[] } {
+  private appendGroupCondition(
+    type: QueryType,
+    operator: '$and' | '$or',
+    subCondition: any[],
+  ): { sql: string; params: unknown[] } {
     const parts: string[] = [];
     const params: unknown[] = [];
 
@@ -990,7 +1129,10 @@ export class QueryBuilderHelper {
       // skip nesting parens if the value is simple = scalar or object without operators or with only single key, being the operator
       const keys = Utils.getObjectQueryKeys(sub);
       const val = sub[keys[0]];
-      const simple = !Utils.isPlainObject(val) || Utils.getObjectKeysSize(val) === 1 || Object.keys(val).every(k => !Utils.isOperator(k));
+      const simple =
+        !Utils.isPlainObject(val) ||
+        Utils.getObjectKeysSize(val) === 1 ||
+        Object.keys(val).every(k => !Utils.isOperator(k));
 
       if (keys.length === 1 && simple) {
         this.append(() => this._appendQueryCondition(type, sub, operator), parts, params);
@@ -1016,9 +1158,11 @@ export class QueryBuilderHelper {
 
     if (prop.fieldNameRaw) {
       if (!always) {
-        return raw(prop.fieldNameRaw
-          .replace(new RegExp(ALIAS_REPLACEMENT_RE + '\\.?', 'g'), '')
-          .replace(this.platform.quoteIdentifier('') + '.', ''));
+        return raw(
+          prop.fieldNameRaw
+            .replace(new RegExp(ALIAS_REPLACEMENT_RE + '\\.?', 'g'), '')
+            .replace(this.platform.quoteIdentifier('') + '.', ''),
+        );
       }
 
       if (alias) {
@@ -1048,7 +1192,8 @@ export class QueryBuilderHelper {
 
       if (prop?.kind === ReferenceKind.EMBEDDED) {
         const parts = field.split('.');
-        const nest = (p: EntityProperty): EntityProperty => parts.length > 0 ? nest(p.embeddedProps[parts.shift()!]) : p;
+        const nest = (p: EntityProperty): EntityProperty =>
+          parts.length > 0 ? nest(p.embeddedProps[parts.shift()!]) : p;
         return nest(prop);
       }
     }
@@ -1087,7 +1232,6 @@ export class QueryBuilderHelper {
       toString: () => alias,
     };
   }
-
 }
 
 export interface Alias<T> {

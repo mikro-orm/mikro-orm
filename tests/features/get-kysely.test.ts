@@ -1,5 +1,25 @@
-import { defineEntity, p, PrimaryKeyProp, EntityName, Collection, Opt, MikroORM, InferClassEntityDB, InferDBFromKysely, InferKyselyDB, InferKyselyTable, MikroKyselyPluginOptions } from '@mikro-orm/sqlite';
-import { Entity, PrimaryKey, Property, ManyToOne, OneToMany, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  defineEntity,
+  p,
+  PrimaryKeyProp,
+  EntityName,
+  Collection,
+  Opt,
+  MikroORM,
+  InferClassEntityDB,
+  InferDBFromKysely,
+  InferKyselyDB,
+  InferKyselyTable,
+  MikroKyselyPluginOptions,
+} from '@mikro-orm/sqlite';
+import {
+  Entity,
+  PrimaryKey,
+  Property,
+  ManyToOne,
+  OneToMany,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 describe('InferKyselyDB', () => {
   test('infer table and column', async () => {
@@ -530,7 +550,6 @@ describe('InferKyselyDB', () => {
 describe('InferClassEntityDB', () => {
   @Entity()
   class Author {
-
     [EntityName]?: 'Author';
 
     @PrimaryKey()
@@ -544,12 +563,10 @@ describe('InferClassEntityDB', () => {
 
     @OneToMany(() => Post, post => post.author)
     posts = new Collection<Post>(this);
-
   }
 
   @Entity()
   class Post {
-
     [EntityName]?: 'Post';
 
     @PrimaryKey()
@@ -563,7 +580,6 @@ describe('InferClassEntityDB', () => {
 
     @ManyToOne(() => Author)
     author!: Author;
-
   }
 
   test('infer decorator entity types via getKysely', async () => {
@@ -597,15 +613,9 @@ describe('InferClassEntityDB', () => {
     expectTypeOf<DB['post']>().toHaveProperty('createdAt');
 
     // runtime: insert and select using property names
-    await kysely
-      .insertInto('author')
-      .values({ id: 1, firstName: 'John', email: 'john@example.com' })
-      .execute();
+    await kysely.insertInto('author').values({ id: 1, firstName: 'John', email: 'john@example.com' }).execute();
 
-    const authors = await kysely
-      .selectFrom('author')
-      .select(['id', 'firstName', 'email'])
-      .execute();
+    const authors = await kysely.selectFrom('author').select(['id', 'firstName', 'email']).execute();
 
     expect(authors).toEqual([{ id: 1, firstName: 'John', email: 'john@example.com' }]);
 
@@ -632,15 +642,9 @@ describe('InferClassEntityDB', () => {
     expectTypeOf<DB>().toHaveProperty('Post');
 
     // runtime: insert and select using entity/property names
-    await kysely
-      .insertInto('Author')
-      .values({ id: 1, firstName: 'Jane', email: 'jane@example.com' })
-      .execute();
+    await kysely.insertInto('Author').values({ id: 1, firstName: 'Jane', email: 'jane@example.com' }).execute();
 
-    const authors = await kysely
-      .selectFrom('Author')
-      .select(['firstName', 'email'])
-      .execute();
+    const authors = await kysely.selectFrom('Author').select(['firstName', 'email']).execute();
 
     expect(authors).toEqual([{ firstName: 'Jane', email: 'jane@example.com' }]);
 
@@ -670,10 +674,8 @@ describe('InferClassEntityDB', () => {
 
   test('entities without EntityName are excluded from inference', () => {
     class NoName {
-
       @PrimaryKey()
       id!: number;
-
     }
 
     type DB = InferClassEntityDB<typeof NoName>;

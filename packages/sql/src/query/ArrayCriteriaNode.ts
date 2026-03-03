@@ -5,7 +5,6 @@ import type { IQueryBuilder, ICriteriaNodeProcessOptions } from '../typings.js';
  * @internal
  */
 export class ArrayCriteriaNode<T extends object> extends CriteriaNode<T> {
-
   override process(qb: IQueryBuilder<T>, options?: ICriteriaNodeProcessOptions): any {
     return this.payload.map((node: CriteriaNode<T>) => {
       return node.process(qb, options);
@@ -27,5 +26,4 @@ export class ArrayCriteriaNode<T extends object> extends CriteriaNode<T> {
   override isStrict(): boolean {
     return this.strict || this.payload.some((node: CriteriaNode<any>) => node.isStrict());
   }
-
 }

@@ -4,7 +4,6 @@ import { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()
 export class Cat {
-
   [PrimaryKeyProp]?: ['name', 'user'];
 
   @PrimaryKey()
@@ -12,22 +11,18 @@ export class Cat {
 
   @ManyToOne(() => User, { primary: true, deleteRule: 'CASCADE', ref: true })
   user!: EntityRef<User>;
-
 }
 
 @Entity()
 export class User {
-
   @PrimaryKey()
   id!: string;
 
   @OneToMany(() => Cat, c => c.user, { eager: true, orphanRemoval: true })
   cats = new Collection<Cat>(this);
-
 }
 
 describe('GH 2723', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -55,5 +50,4 @@ describe('GH 2723', () => {
     const cats = await orm.em.count(User, {});
     expect(users + cats).toBe(0);
   });
-
 });

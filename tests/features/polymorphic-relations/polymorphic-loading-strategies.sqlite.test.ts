@@ -1,9 +1,15 @@
 import { Collection, helper, LoadStrategy, MikroORM, Ref, ref, wrap } from '@mikro-orm/sqlite';
-import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class Author {
-
   @PrimaryKey()
   id!: number;
 
@@ -12,12 +18,10 @@ class Author {
 
   @OneToMany(() => Article, a => a.author)
   articles = new Collection<Article>(this);
-
 }
 
 @Entity()
 class Article {
-
   @PrimaryKey()
   id!: number;
 
@@ -29,12 +33,10 @@ class Article {
 
   @OneToMany(() => Reaction, r => r.target)
   reactions = new Collection<Reaction>(this);
-
 }
 
 @Entity()
 class Video {
-
   @PrimaryKey()
   id!: number;
 
@@ -46,12 +48,10 @@ class Video {
 
   @OneToMany(() => Reaction, r => r.target)
   reactions = new Collection<Reaction>(this);
-
 }
 
 @Entity()
 class Reaction {
-
   @PrimaryKey()
   id!: number;
 
@@ -63,7 +63,6 @@ class Reaction {
 
   @ManyToOne(() => Author)
   reactor!: Author;
-
 }
 
 let orm: MikroORM;
@@ -97,14 +96,17 @@ beforeAll(async () => {
 afterAll(() => orm.close(true));
 
 describe.each(Object.values(LoadStrategy))('polymorphic relations with %s strategy', strategy => {
-
   beforeEach(() => orm.em.clear());
 
   test('loads polymorphic relation', async () => {
-    const reactions = await orm.em.find(Reaction, {}, {
-      populate: ['target'],
-      strategy,
-    });
+    const reactions = await orm.em.find(
+      Reaction,
+      {},
+      {
+        populate: ['target'],
+        strategy,
+      },
+    );
 
     expect(reactions).toHaveLength(5);
     const articleReactions = reactions.filter(r => r.target instanceof Article);
@@ -114,10 +116,14 @@ describe.each(Object.values(LoadStrategy))('polymorphic relations with %s strate
   });
 
   test('loads polymorphic relation alongside regular relation', async () => {
-    const reactions = await orm.em.find(Reaction, {}, {
-      populate: ['target', 'reactor'],
-      strategy,
-    });
+    const reactions = await orm.em.find(
+      Reaction,
+      {},
+      {
+        populate: ['target', 'reactor'],
+        strategy,
+      },
+    );
 
     expect(reactions).toHaveLength(5);
     for (const reaction of reactions) {
@@ -128,10 +134,14 @@ describe.each(Object.values(LoadStrategy))('polymorphic relations with %s strate
   });
 
   test('loads nested relation through polymorphic relation', async () => {
-    const reactions = await orm.em.find(Reaction, {}, {
-      populate: ['target.author'],
-      strategy,
-    });
+    const reactions = await orm.em.find(
+      Reaction,
+      {},
+      {
+        populate: ['target.author'],
+        strategy,
+      },
+    );
 
     expect(reactions).toHaveLength(5);
     for (const reaction of reactions) {
@@ -143,18 +153,20 @@ describe.each(Object.values(LoadStrategy))('polymorphic relations with %s strate
       }
     }
   });
-
 });
 
 describe.each(Object.values(LoadStrategy))('polymorphic inverse side with %s strategy', strategy => {
-
   beforeEach(() => orm.em.clear());
 
   test('loads inverse side of polymorphic relation', async () => {
-    const articles = await orm.em.find(Article, {}, {
-      populate: ['reactions'],
-      strategy,
-    });
+    const articles = await orm.em.find(
+      Article,
+      {},
+      {
+        populate: ['reactions'],
+        strategy,
+      },
+    );
 
     expect(articles).toHaveLength(2);
     expect(articles.find(a => a.title === 'Article 1')!.reactions).toHaveLength(2);
@@ -162,10 +174,14 @@ describe.each(Object.values(LoadStrategy))('polymorphic inverse side with %s str
   });
 
   test('loads inverse side with nested populate', async () => {
-    const articles = await orm.em.find(Article, {}, {
-      populate: ['reactions.reactor'],
-      strategy,
-    });
+    const articles = await orm.em.find(
+      Article,
+      {},
+      {
+        populate: ['reactions.reactor'],
+        strategy,
+      },
+    );
 
     expect(articles).toHaveLength(2);
     for (const article of articles) {
@@ -176,10 +192,14 @@ describe.each(Object.values(LoadStrategy))('polymorphic inverse side with %s str
   });
 
   test('loads complex graph: author -> articles -> reactions -> reactor', async () => {
-    const authors = await orm.em.find(Author, { name: 'Alice' }, {
-      populate: ['articles.reactions.reactor'],
-      strategy,
-    });
+    const authors = await orm.em.find(
+      Author,
+      { name: 'Alice' },
+      {
+        populate: ['articles.reactions.reactor'],
+        strategy,
+      },
+    );
 
     expect(authors).toHaveLength(1);
     const alice = authors[0];
@@ -191,37 +211,30 @@ describe.each(Object.values(LoadStrategy))('polymorphic inverse side with %s str
       expect(reaction.reactor.name).toBe('Bob');
     }
   });
-
 });
 
 // Test Ref wrapper on polymorphic relations
 describe('polymorphic relations with Ref wrapper', () => {
-
   @Entity()
   class Post {
-
     @PrimaryKey()
     id!: number;
 
     @Property()
     title!: string;
-
   }
 
   @Entity()
   class Image {
-
     @PrimaryKey()
     id!: number;
 
     @Property()
     url!: string;
-
   }
 
   @Entity()
   class Comment {
-
     @PrimaryKey()
     id!: number;
 
@@ -230,7 +243,6 @@ describe('polymorphic relations with Ref wrapper', () => {
 
     @ManyToOne(() => [Post, Image], { ref: true })
     target!: Ref<Post> | Ref<Image>;
-
   }
 
   let orm: MikroORM;
@@ -291,10 +303,14 @@ describe('polymorphic relations with Ref wrapper', () => {
     await orm.em.flush();
     orm.em.clear();
 
-    const comment = await orm.em.findOneOrFail(Comment, { text: 'Test comment' }, {
-      populate: ['target'],
-      strategy,
-    });
+    const comment = await orm.em.findOneOrFail(
+      Comment,
+      { text: 'Test comment' },
+      {
+        populate: ['target'],
+        strategy,
+      },
+    );
 
     expect(comment.target.isInitialized()).toBe(true);
     expect(comment.target.unwrap()).toBeInstanceOf(Image);
@@ -312,11 +328,9 @@ describe('polymorphic relations with Ref wrapper', () => {
     expect(loaded.target.unwrap()).toBeInstanceOf(Post);
     expect((loaded.target.unwrap() as Post).title).toBe('Direct assign post');
   });
-
 });
 
 describe('lazy loading polymorphic relations', () => {
-
   beforeEach(() => orm.em.clear());
 
   test('polymorphic relation is a reference when not populated', async () => {
@@ -350,9 +364,13 @@ describe('lazy loading polymorphic relations', () => {
 
   test('skips already-initialized polymorphic relation without refresh', async () => {
     // Load reaction with populated target
-    const reaction = await orm.em.findOneOrFail(Reaction, { emoji: '👍' }, {
-      populate: ['target'],
-    });
+    const reaction = await orm.em.findOneOrFail(
+      Reaction,
+      { emoji: '👍' },
+      {
+        populate: ['target'],
+      },
+    );
 
     // Target should be initialized
     expect(wrap(reaction.target).isInitialized()).toBe(true);
@@ -417,29 +435,24 @@ describe('lazy loading polymorphic relations', () => {
   test('lazy loads Ref-wrapped polymorphic relation via ref.load()', async () => {
     @Entity()
     class LazyPost {
-
       @PrimaryKey()
       id!: number;
 
       @Property()
       title!: string;
-
     }
 
     @Entity()
     class LazyImage {
-
       @PrimaryKey()
       id!: number;
 
       @Property()
       url!: string;
-
     }
 
     @Entity()
     class LazyComment {
-
       @PrimaryKey()
       id!: number;
 
@@ -448,7 +461,6 @@ describe('lazy loading polymorphic relations', () => {
 
       @ManyToOne(() => [LazyPost, LazyImage], { ref: true })
       target!: Ref<LazyPost> | Ref<LazyImage>;
-
     }
 
     const localOrm = await MikroORM.init({
@@ -486,7 +498,12 @@ describe('lazy loading polymorphic relations', () => {
 
     expect(article.reactions.isInitialized()).toBe(true);
     expect(article.reactions).toHaveLength(2);
-    expect(article.reactions.getItems().map(r => r.emoji).sort()).toEqual(['❤️', '👍']);
+    expect(
+      article.reactions
+        .getItems()
+        .map(r => r.emoji)
+        .sort(),
+    ).toEqual(['❤️', '👍']);
   });
 
   test('lazy loads nested relations through polymorphic relation via em.populate', async () => {
@@ -508,19 +525,21 @@ describe('lazy loading polymorphic relations', () => {
     expect(wrap(article.author).isInitialized()).toBe(true);
     expect(article.author.name).toBe('Alice');
   });
-
 });
 
 describe(':ref populate hints for polymorphic relations', () => {
-
   beforeEach(() => orm.em.clear());
 
   test('polymorphic to-one with :ref hint is a no-op (already has FK and discriminator)', async () => {
     // For polymorphic to-one relations, :ref should be a no-op since we already
     // have the FK and discriminator columns in the row - no additional query needed
-    const reaction = await orm.em.findOneOrFail(Reaction, { emoji: '👍' }, {
-      populate: ['target:ref'],
-    });
+    const reaction = await orm.em.findOneOrFail(
+      Reaction,
+      { emoji: '👍' },
+      {
+        populate: ['target:ref'],
+      },
+    );
 
     expect(reaction.target).toBeInstanceOf(Article);
     // :ref should NOT load the entity - we already have a reference from the FK columns
@@ -544,9 +563,13 @@ describe(':ref populate hints for polymorphic relations', () => {
   test('inverse polymorphic collection with :ref hint populates with references', async () => {
     // For to-many inverse side, :ref should populate the collection with entity references
     // that have PKs but are not fully loaded
-    const article = await orm.em.findOneOrFail(Article, { title: 'Article 1' }, {
-      populate: ['reactions:ref'],
-    });
+    const article = await orm.em.findOneOrFail(
+      Article,
+      { title: 'Article 1' },
+      {
+        populate: ['reactions:ref'],
+      },
+    );
 
     // Collection should be initialized (we know which items belong to it)
     expect(article.reactions.isInitialized()).toBe(true);
@@ -561,9 +584,13 @@ describe(':ref populate hints for polymorphic relations', () => {
   });
 
   test('inverse polymorphic collection :ref can be fully loaded afterward', async () => {
-    const article = await orm.em.findOneOrFail(Article, { title: 'Article 1' }, {
-      populate: ['reactions:ref'],
-    });
+    const article = await orm.em.findOneOrFail(
+      Article,
+      { title: 'Article 1' },
+      {
+        populate: ['reactions:ref'],
+      },
+    );
 
     // Collection has references
     expect(article.reactions.isInitialized()).toBe(true);
@@ -578,14 +605,23 @@ describe(':ref populate hints for polymorphic relations', () => {
       expect(wrap(reaction).isInitialized()).toBe(true);
       expect(reaction.emoji).toBeDefined();
     }
-    expect(article.reactions.getItems().map(r => r.emoji).sort()).toEqual(['❤️', '👍']);
+    expect(
+      article.reactions
+        .getItems()
+        .map(r => r.emoji)
+        .sort(),
+    ).toEqual(['❤️', '👍']);
   });
 
   test('polymorphic to-one with :ref and partial loading (FK excluded) loads only FK', async () => {
     // Load reaction without the polymorphic FK columns (partial loading)
-    const reaction = await orm.em.findOneOrFail(Reaction, { emoji: '👍' }, {
-      fields: ['id', 'emoji'], // Exclude target FK columns
-    });
+    const reaction = await orm.em.findOneOrFail(
+      Reaction,
+      { emoji: '👍' },
+      {
+        fields: ['id', 'emoji'], // Exclude target FK columns
+      },
+    );
 
     // Target should be undefined since FK was not loaded
     expect((reaction as Reaction).target).toBeUndefined();
@@ -603,9 +639,13 @@ describe(':ref populate hints for polymorphic relations', () => {
 
   test('polymorphic to-one without :ref and partial loading loads full target', async () => {
     // Load reaction without the polymorphic FK columns (partial loading)
-    const reaction = await orm.em.findOneOrFail(Reaction, { emoji: '❤️' }, {
-      fields: ['id', 'emoji'], // Exclude target FK columns
-    });
+    const reaction = await orm.em.findOneOrFail(
+      Reaction,
+      { emoji: '❤️' },
+      {
+        fields: ['id', 'emoji'], // Exclude target FK columns
+      },
+    );
 
     // Target should be undefined since FK was not loaded
     expect((reaction as Reaction).target).toBeUndefined();
@@ -618,7 +658,6 @@ describe(':ref populate hints for polymorphic relations', () => {
     expect(wrap((reaction as Reaction).target).isInitialized()).toBe(true);
     expect(((reaction as Reaction).target as Article).title).toBe('Article 1');
   });
-
 });
 
 // Test for nullable polymorphic relation in nested joined loading
@@ -626,29 +665,24 @@ describe(':ref populate hints for polymorphic relations', () => {
 describe('nullable polymorphic relation in nested joined loading', () => {
   @Entity()
   class TargetA {
-
     @PrimaryKey()
     id!: number;
 
     @Property()
     name!: string;
-
   }
 
   @Entity()
   class TargetB {
-
     @PrimaryKey()
     id!: number;
 
     @Property()
     label!: string;
-
   }
 
   @Entity()
   class ChildEntity {
-
     @PrimaryKey()
     id!: number;
 
@@ -657,12 +691,10 @@ describe('nullable polymorphic relation in nested joined loading', () => {
 
     @ManyToOne(() => [TargetA, TargetB], { nullable: true })
     ref!: TargetA | TargetB | null;
-
   }
 
   @Entity()
   class ParentEntity {
-
     @PrimaryKey()
     id!: number;
 
@@ -671,7 +703,6 @@ describe('nullable polymorphic relation in nested joined loading', () => {
 
     @ManyToOne(() => ChildEntity)
     child!: ChildEntity;
-
   }
 
   let orm2: MikroORM;
@@ -697,11 +728,15 @@ describe('nullable polymorphic relation in nested joined loading', () => {
   afterAll(() => orm2.close(true));
 
   test('joined loading with null polymorphic relation in nested entity', async () => {
-    const parents = await orm2.em.find(ParentEntity, {}, {
-      populate: ['child'],
-      strategy: LoadStrategy.JOINED,
-      orderBy: { id: 'ASC' },
-    });
+    const parents = await orm2.em.find(
+      ParentEntity,
+      {},
+      {
+        populate: ['child'],
+        strategy: LoadStrategy.JOINED,
+        orderBy: { id: 'ASC' },
+      },
+    );
 
     expect(parents).toHaveLength(2);
     expect(parents[0].child.title).toBe('Child with ref');
@@ -709,5 +744,4 @@ describe('nullable polymorphic relation in nested joined loading', () => {
     expect(parents[1].child.title).toBe('Child without ref');
     expect(parents[1].child.ref).toBeNull();
   });
-
 });

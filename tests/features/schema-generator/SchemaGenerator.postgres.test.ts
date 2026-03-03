@@ -2,12 +2,21 @@ import { EntitySchema, ReferenceKind, Utils, MikroORM, Type, EnumType } from '@m
 import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { FullTextType, PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { BASE_DIR, initORMPostgreSql } from '../../bootstrap.js';
-import { Address2, Author2, Book2, BookTag2, Configuration2, FooBar2, FooBaz2, Publisher2, Test2 } from '../../entities-sql/index.js';
+import {
+  Address2,
+  Author2,
+  Book2,
+  BookTag2,
+  Configuration2,
+  FooBar2,
+  FooBaz2,
+  Publisher2,
+  Test2,
+} from '../../entities-sql/index.js';
 import { BaseEntity22 } from '../../entities-sql/BaseEntity22.js';
 import { BaseEntity2 } from '../../entities-sql/BaseEntity2.js';
 
 describe('SchemaGenerator [postgres]', () => {
-
   test('update schema - entity in different namespace [postgres] (GH #1215)', async () => {
     const orm = await initORMPostgreSql();
     const meta = orm.getMetadata();
@@ -81,7 +90,10 @@ describe('SchemaGenerator [postgres]', () => {
     newTableMeta.properties.enumTest.items = ['a', 'b'];
     newTableMeta.properties.enumTest.enum = true;
     newTableMeta.properties.enumTest.type = 'object';
-    newTableMeta.properties.enumTest.columnTypes[0] = Type.getType(EnumType).getColumnType(newTableMeta.properties.enumTest, orm.em.getPlatform());
+    newTableMeta.properties.enumTest.columnTypes[0] = Type.getType(EnumType).getColumnType(
+      newTableMeta.properties.enumTest,
+      orm.em.getPlatform(),
+    );
     newTableMeta.sync(false, orm.config);
     diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff).toMatchSnapshot('postgres-update-schema-enums-2');
@@ -90,7 +102,10 @@ describe('SchemaGenerator [postgres]', () => {
     // change enum items
     newTableMeta.properties.enumTest.items = ['a', 'b', 'c'];
     delete newTableMeta.properties.enumTest.columnTypes[0];
-    newTableMeta.properties.enumTest.columnTypes[0] = Type.getType(EnumType).getColumnType(newTableMeta.properties.enumTest, orm.em.getPlatform());
+    newTableMeta.properties.enumTest.columnTypes[0] = Type.getType(EnumType).getColumnType(
+      newTableMeta.properties.enumTest,
+      orm.em.getPlatform(),
+    );
     newTableMeta.sync(false, orm.config);
     diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff).toMatchSnapshot('postgres-update-schema-enums-3');
@@ -117,7 +132,19 @@ describe('SchemaGenerator [postgres]', () => {
     const dbName = `mikro_orm_test_${Date.now()}`;
     const orm = await MikroORM.init({
       metadataProvider: ReflectMetadataProvider,
-      entities: [FooBar2, FooBaz2, Test2, Book2, Author2, Configuration2, Publisher2, BookTag2, Address2, BaseEntity2, BaseEntity22],
+      entities: [
+        FooBar2,
+        FooBaz2,
+        Test2,
+        Book2,
+        Author2,
+        Configuration2,
+        Publisher2,
+        BookTag2,
+        Address2,
+        BaseEntity2,
+        BaseEntity22,
+      ],
       dbName,
       baseDir: BASE_DIR,
       driver: PostgreSqlDriver,
@@ -132,7 +159,19 @@ describe('SchemaGenerator [postgres]', () => {
     const dbName = `mikro_orm_test_${Date.now()}`;
     const orm = await MikroORM.init({
       metadataProvider: ReflectMetadataProvider,
-      entities: [FooBar2, FooBaz2, Test2, Book2, Author2, Configuration2, Publisher2, BookTag2, Address2, BaseEntity2, BaseEntity22],
+      entities: [
+        FooBar2,
+        FooBaz2,
+        Test2,
+        Book2,
+        Author2,
+        Configuration2,
+        Publisher2,
+        BookTag2,
+        Address2,
+        BaseEntity2,
+        BaseEntity22,
+      ],
       dbName,
       baseDir: BASE_DIR,
       driver: PostgreSqlDriver,
@@ -351,5 +390,4 @@ describe('SchemaGenerator [postgres]', () => {
 
     await orm.close(true);
   });
-
 });

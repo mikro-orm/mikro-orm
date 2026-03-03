@@ -5,9 +5,10 @@ type Result = Record<string, ReturnType<typeof analyze>>;
 function analyze(samples: number[]) {
   const sorted = [...samples].sort((a, b) => a - b);
   const mean = sorted.reduce((sum, v) => sum + v, 0) / sorted.length;
-  const median = sorted.length % 2 === 0
-    ? (sorted[sorted.length / 2 - 1] + sorted[sorted.length / 2]) / 2
-    : sorted[Math.floor(sorted.length / 2)];
+  const median =
+    sorted.length % 2 === 0
+      ? (sorted[sorted.length / 2 - 1] + sorted[sorted.length / 2]) / 2
+      : sorted[Math.floor(sorted.length / 2)];
   const percentile = (p: number) => sorted[Math.ceil((p / 100) * sorted.length) - 1];
   const round = (v: number) => Math.round(v * 1000) / 1000;
 
@@ -22,7 +23,13 @@ function analyze(samples: number[]) {
   };
 }
 
-async function bench(orm: MikroORM, result: Result, title: string, cb: (args: Record<string, any>) => Promise<any>, setup?: (em: any) => Promise<any>) {
+async function bench(
+  orm: MikroORM,
+  result: Result,
+  title: string,
+  cb: (args: Record<string, any>) => Promise<any>,
+  setup?: (em: any) => Promise<any>,
+) {
   // eslint-disable-next-line no-console
   console.log(`running benchmark: ${title}`);
 

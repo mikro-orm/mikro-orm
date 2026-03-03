@@ -5,7 +5,6 @@ import { Test2 } from './Test2.js';
 
 @Entity({ tableName: 'public.label2' })
 export class Label2 {
-
   @PrimaryKey({ type: 'uuid', serializedName: 'id', serializer: value => `uuid is ${value}` })
   uuid = v4();
 
@@ -18,5 +17,4 @@ export class Label2 {
   constructor(name: string) {
     this.name = name;
   }
-
 }

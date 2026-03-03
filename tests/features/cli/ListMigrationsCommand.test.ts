@@ -16,7 +16,6 @@ dumpMock.mockImplementation(() => void 0);
 vi.spyOn(CLIHelper, 'dumpTable').mockImplementation(() => void 0);
 
 describe('ListMigrationsCommand', () => {
-
   let orm: MikroORM<SqliteDriver>;
 
   beforeAll(async () => {
@@ -40,5 +39,4 @@ describe('ListMigrationsCommand', () => {
     expect(getExecutedMigrations.mock.calls.length).toBe(1);
     expect(closeSpy).toHaveBeenCalledTimes(1);
   });
-
 });

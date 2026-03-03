@@ -11,15 +11,12 @@ import { mockLogger } from '../helpers.js';
 
 @Embeddable()
 class StepEntity {
-
   @Property()
   camelCasePropertyName!: number;
-
 }
 
 @Entity({ tableName: 'test_case' })
 class TestCaseEntity {
-
   [PrimaryKeyProp]?: 'sid';
 
   @PrimaryKey({ autoincrement: true })
@@ -30,7 +27,6 @@ class TestCaseEntity {
 
   @Embedded(() => StepEntity, { array: true })
   steps: StepEntity[] & Opt = [];
-
 }
 
 let orm: MikroORM;

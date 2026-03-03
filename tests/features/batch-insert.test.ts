@@ -4,15 +4,12 @@ import { PLATFORMS } from '../bootstrap.js';
 
 @Entity()
 class Author {
-
   @PrimaryKey({ name: 'author_id' })
   id!: number;
-
 }
 
 @Entity()
 class Book {
-
   @PrimaryKey({ name: 'book_id' })
   id!: number;
 
@@ -21,7 +18,6 @@ class Book {
 
   @Property({ default: 1 })
   value?: number;
-
 }
 
 const options = {
@@ -31,7 +27,7 @@ const options = {
   postgresql: { dbName: 'batch-insert' },
 };
 
-describe.each(Utils.keys(options))('batch insert [%s]',  type => {
+describe.each(Utils.keys(options))('batch insert [%s]', type => {
   let orm: MikroORM<AbstractSqlDriver>;
 
   beforeAll(async () => {
@@ -54,7 +50,7 @@ describe.each(Utils.keys(options))('batch insert [%s]',  type => {
     const authors = [new Author(), new Author(), new Author()];
     const books = [new Book(), new Book(), new Book()];
     books[1].value = 2;
-    books.forEach((b, idx) => b.author = authors[idx]);
+    books.forEach((b, idx) => (b.author = authors[idx]));
     await orm.em.persist(books).flush();
     expect(authors.map(a => a.id)).toEqual([1, 2, 3]);
     expect(books.map(b => b.id)).toEqual([1, 2, 3]);

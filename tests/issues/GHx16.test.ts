@@ -1,32 +1,35 @@
 import { Collection, MikroORM } from '@mikro-orm/sqlite';
 
-import { Entity, Filter, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  Filter,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 @Filter({ name: 'softDelete', cond: { removedAt: null }, default: true })
 @Entity()
 class MicroCloud {
-
   @PrimaryKey()
   id!: number;
 
   @Property({ length: 6, nullable: true })
   removedAt?: Date;
-
 }
 
 @Entity()
 class DatacenterTask {
-
   @PrimaryKey()
   id!: number;
 
   @OneToMany(() => DatacenterTaskDevice, x => x.datacenterTask)
   datacenterTaskDevices = new Collection<DatacenterTaskDevice>(this);
-
 }
 
 @Entity()
 class DatacenterTaskDevice {
-
   @PrimaryKey()
   id!: number;
 
@@ -35,7 +38,6 @@ class DatacenterTaskDevice {
 
   @ManyToOne(() => MicroCloud, { nullable: true })
   microCloud?: MicroCloud;
-
 }
 
 let orm: MikroORM;

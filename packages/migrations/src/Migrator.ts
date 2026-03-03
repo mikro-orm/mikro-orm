@@ -25,7 +25,6 @@ import { TSMigrationGenerator } from './TSMigrationGenerator.js';
 import { JSMigrationGenerator } from './JSMigrationGenerator.js';
 
 export class Migrator extends AbstractMigrator<AbstractSqlDriver> {
-
   private readonly schemaGenerator: SqlSchemaGenerator;
   private snapshotPath?: string;
 
@@ -138,7 +137,10 @@ export class Migrator extends AbstractMigrator<AbstractSqlDriver> {
     };
   }
 
-  protected override async runMigrations(method: 'up' | 'down', options?: string | string[] | MigrateOptions): Promise<MigrationInfo[]> {
+  protected override async runMigrations(
+    method: 'up' | 'down',
+    options?: string | string[] | MigrateOptions,
+  ): Promise<MigrationInfo[]> {
     const result = await super.runMigrations(method, options);
 
     if (result.length > 0 && this.options.snapshot) {
@@ -199,7 +201,9 @@ export class Migrator extends AbstractMigrator<AbstractSqlDriver> {
     }
 
     if (exists.size > 0 && expected.size !== exists.size) {
-      throw new Error(`Some tables already exist in your schema, remove them first to create the initial migration: ${[...exists].join(', ')}`);
+      throw new Error(
+        `Some tables already exist in your schema, remove them first to create the initial migration: ${[...exists].join(', ')}`,
+      );
     }
 
     return expected.size === exists.size;
@@ -227,7 +231,7 @@ export class Migrator extends AbstractMigrator<AbstractSqlDriver> {
       Object.keys(columns).forEach(col => {
         const column = { ...columns[col] };
         /* v8 ignore next */
-        column.mappedType = Type.getType(t[columns[col].mappedType as keyof typeof t] as any ?? UnknownType);
+        column.mappedType = Type.getType((t[columns[col].mappedType as keyof typeof t] as any) ?? UnknownType);
         table.addColumn(column);
       });
 
@@ -318,5 +322,4 @@ export class Migrator extends AbstractMigrator<AbstractSqlDriver> {
 
     return { up, down };
   }
-
 }

@@ -4,7 +4,6 @@ import { mockLogger } from '../helpers.js';
 
 @Entity()
 export class A {
-
   @PrimaryKey({ name: 'ID' })
   id!: number;
 
@@ -14,11 +13,9 @@ export class A {
   constructor(name: string) {
     this.name = name;
   }
-
 }
 
 describe('GH issue 1595', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -46,10 +43,12 @@ describe('GH issue 1595', () => {
     expect(mock.mock.calls[1][0]).toMatch('insert into "a" ("NAME") values (?), (?), (?), (?), (?) returning "ID"');
     expect(mock.mock.calls[2][0]).toMatch('commit');
 
-    items.forEach(item => item.name += ' changed');
+    items.forEach(item => (item.name += ' changed'));
     await orm.em.flush();
     expect(mock.mock.calls[3][0]).toMatch('begin');
-    expect(mock.mock.calls[4][0]).toMatch('update "a" set "NAME" = case when ("ID" = ?) then ? when ("ID" = ?) then ? when ("ID" = ?) then ? when ("ID" = ?) then ? when ("ID" = ?) then ? else "NAME" end where "ID" in (?, ?, ?, ?, ?)');
+    expect(mock.mock.calls[4][0]).toMatch(
+      'update "a" set "NAME" = case when ("ID" = ?) then ? when ("ID" = ?) then ? when ("ID" = ?) then ? when ("ID" = ?) then ? when ("ID" = ?) then ? else "NAME" end where "ID" in (?, ?, ?, ?, ?)',
+    );
     expect(mock.mock.calls[5][0]).toMatch('commit');
 
     items.forEach(item => orm.em.remove(item));
@@ -58,5 +57,4 @@ describe('GH issue 1595', () => {
     expect(mock.mock.calls[7][0]).toMatch('delete from "a" where "ID" in (?, ?, ?, ?, ?)');
     expect(mock.mock.calls[8][0]).toMatch('commit');
   });
-
 });

@@ -7,7 +7,6 @@ import { CLIHelper } from '../CLIHelper.js';
 type ImportArgs = BaseArgs & { file: string };
 
 export class ImportCommand implements BaseCommand<ImportArgs> {
-
   command = 'database:import <file>';
   describe = 'Imports the SQL file to the database';
 
@@ -21,5 +20,4 @@ export class ImportCommand implements BaseCommand<ImportArgs> {
     CLIHelper.dump(colors.green(`File ${args.file} successfully imported`));
     await orm.close(true);
   }
-
 }

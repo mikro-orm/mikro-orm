@@ -1,9 +1,16 @@
 import { MikroORM, Opt } from '@mikro-orm/sqlite';
-import { Embeddable, Embedded, Entity, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Embeddable,
+  Embedded,
+  Entity,
+  ManyToOne,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Embeddable()
 class Contact {
-
   @Property()
   firstName!: string;
 
@@ -14,29 +21,24 @@ class Contact {
   get fullName(): string & Opt {
     return `${this.firstName} ${this.secondName}`;
   }
-
 }
 
 @Entity()
 class User {
-
   @PrimaryKey()
   id!: number;
 
   @Embedded(() => Contact)
   contact!: Contact;
-
 }
 
 @Entity()
 class Company {
-
   @PrimaryKey()
   id!: number;
 
   @ManyToOne(() => User)
   admin!: User;
-
 }
 
 let orm: MikroORM;

@@ -19,34 +19,27 @@ enum AnimalType {
 
 @Embeddable({ abstract: true, discriminatorColumn: 'type' })
 abstract class Animal {
-
   @Enum(() => AnimalType)
   type!: AnimalType;
 
   @Property()
   name!: string;
-
 }
 
 @Embeddable()
 class CatFood {
-
   @Property()
   mice = 2;
-
 }
 
 @Embeddable()
 class DogFood {
-
   @Property()
   cats = 10;
-
 }
 
 @Embeddable({ discriminatorValue: AnimalType.CAT })
 class Cat extends Animal {
-
   @Property({ nullable: true })
   canMeow?: boolean = true;
 
@@ -58,12 +51,10 @@ class Cat extends Animal {
     this.type = AnimalType.CAT;
     this.name = name;
   }
-
 }
 
 @Embeddable({ discriminatorValue: AnimalType.DOG })
 class Dog extends Animal {
-
   @Property({ nullable: true })
   canBark?: boolean = true;
 
@@ -75,12 +66,10 @@ class Dog extends Animal {
     this.type = AnimalType.DOG;
     this.name = name;
   }
-
 }
 
 @Entity()
 class Owner {
-
   @PrimaryKey()
   _id!: ObjectId;
 
@@ -95,11 +84,9 @@ class Owner {
 
   @Embedded(() => [Cat, Dog], { object: true })
   pet2!: Cat | Dog;
-
 }
 
 describe('polymorphic embeddables in mongo', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -154,7 +141,9 @@ describe('polymorphic embeddables in mongo', () => {
 
     const mock = mockLogger(orm, ['query']);
     await orm.em.persist([ent1, ent2, ent3]).flush();
-    expect(mock.mock.calls[0][0]).toMatch(`db.getCollection('owner').insertMany([ { _id: ObjectId('600000000000000000000002'), name: 'o2', pet_type: 0, pet_name: 'c1', pet_canMeow: true, pet_food_mice: 2, pet2: { canBark: true, type: 1, name: 'd4', food: { cats: 10 } } }, { _id: ObjectId('600000000000000000000003'), name: 'o3', pet_canBark: true, pet_type: 1, pet_name: 'd2', pet_food_cats: 10, pet2: { type: 0, name: 'c4', canMeow: true, food: { mice: 2 } } }, { _id: ObjectId('600000000000000000000001'), name: 'o1', pet_canBark: true, pet_type: 1, pet_name: 'd1', pet_food_cats: 10, pet2: { type: 0, name: 'c3', canMeow: true, food: { mice: 2 } } } ], {});`);
+    expect(mock.mock.calls[0][0]).toMatch(
+      `db.getCollection('owner').insertMany([ { _id: ObjectId('600000000000000000000002'), name: 'o2', pet_type: 0, pet_name: 'c1', pet_canMeow: true, pet_food_mice: 2, pet2: { canBark: true, type: 1, name: 'd4', food: { cats: 10 } } }, { _id: ObjectId('600000000000000000000003'), name: 'o3', pet_canBark: true, pet_type: 1, pet_name: 'd2', pet_food_cats: 10, pet2: { type: 0, name: 'c4', canMeow: true, food: { mice: 2 } } }, { _id: ObjectId('600000000000000000000001'), name: 'o1', pet_canBark: true, pet_type: 1, pet_name: 'd1', pet_food_cats: 10, pet2: { type: 0, name: 'c3', canMeow: true, food: { mice: 2 } } } ], {});`,
+    );
     orm.em.clear();
 
     const owners = await orm.em.find(Owner, {}, { orderBy: { name: 1 } });
@@ -184,7 +173,9 @@ describe('polymorphic embeddables in mongo', () => {
     mock.mock.calls.length = 0;
     await orm.em.flush();
     expect(mock.mock.calls).toHaveLength(1);
-    expect(mock.mock.calls[0][0]).toMatch(`bulk = db.getCollection('owner').initializeUnorderedBulkOp({});bulk.find({ _id: ObjectId('600000000000000000000001') }).update({ '$set': { pet_type: 0, pet_name: 'c2', pet_canMeow: true, pet_food_mice: 2 }, '$unset': { pet_canBark: '', pet_food_cats: '' } });bulk.find({ _id: ObjectId('600000000000000000000002') }).update({ '$set': { pet_canBark: true, pet_food_cats: 10, pet_type: 1, pet_name: 'd3' }, '$unset': { pet_canMeow: '', pet_food_mice: '' } });bulk.find({ _id: ObjectId('600000000000000000000003') }).update({ '$set': { pet_name: 'old dog' } });bulk.execute()`);
+    expect(mock.mock.calls[0][0]).toMatch(
+      `bulk = db.getCollection('owner').initializeUnorderedBulkOp({});bulk.find({ _id: ObjectId('600000000000000000000001') }).update({ '$set': { pet_type: 0, pet_name: 'c2', pet_canMeow: true, pet_food_mice: 2 }, '$unset': { pet_canBark: '', pet_food_cats: '' } });bulk.find({ _id: ObjectId('600000000000000000000002') }).update({ '$set': { pet_canBark: true, pet_food_cats: 10, pet_type: 1, pet_name: 'd3' }, '$unset': { pet_canMeow: '', pet_food_mice: '' } });bulk.find({ _id: ObjectId('600000000000000000000003') }).update({ '$set': { pet_name: 'old dog' } });bulk.execute()`,
+    );
     orm.em.clear();
 
     const owners2 = await orm.em.find(Owner, {}, { orderBy: { name: 1 } });
@@ -213,10 +204,11 @@ describe('polymorphic embeddables in mongo', () => {
     mock.mock.calls.length = 0;
     const dogOwners = await orm.em.find(Owner, { pet: { name: ['d3', 'old dog'] } }, { orderBy: { name: 1 } });
     const dogOwners2 = await orm.em.find(Owner, { pet2: { name: ['d4', 'c4'] } }, { orderBy: { name: 1 } });
-    const dogOwners3 = await orm.em.find(Owner, { $or: [
-      { pet: { name: ['d3', 'old dog'] } },
-      { pet2: { name: ['d4', 'c4'] } },
-    ] }, { orderBy: { name: 1 } });
+    const dogOwners3 = await orm.em.find(
+      Owner,
+      { $or: [{ pet: { name: ['d3', 'old dog'] } }, { pet2: { name: ['d4', 'c4'] } }] },
+      { orderBy: { name: 1 } },
+    );
 
     const check = (items: Owner[]) => {
       expect(items).toHaveLength(2);
@@ -233,9 +225,15 @@ describe('polymorphic embeddables in mongo', () => {
     check(dogOwners2);
     check(dogOwners3);
 
-    expect(mock.mock.calls[0][0]).toMatch(`db.getCollection('owner').find({ pet_name: { '$in': [ 'd3', 'old dog' ] } }, {}).sort([ [ 'name', 1 ] ]).toArray();`);
-    expect(mock.mock.calls[1][0]).toMatch(`db.getCollection('owner').find({ 'pet2.name': { '$in': [ 'd4', 'c4' ] } }, {}).sort([ [ 'name', 1 ] ]).toArray();`);
-    expect(mock.mock.calls[2][0]).toMatch(`db.getCollection('owner').find({ '$or': [ { pet_name: { '$in': [ 'd3', 'old dog' ] } }, { 'pet2.name': { '$in': [ 'd4', 'c4' ] } } ] }, {}).sort([ [ 'name', 1 ] ]).toArray();`);
+    expect(mock.mock.calls[0][0]).toMatch(
+      `db.getCollection('owner').find({ pet_name: { '$in': [ 'd3', 'old dog' ] } }, {}).sort([ [ 'name', 1 ] ]).toArray();`,
+    );
+    expect(mock.mock.calls[1][0]).toMatch(
+      `db.getCollection('owner').find({ 'pet2.name': { '$in': [ 'd4', 'c4' ] } }, {}).sort([ [ 'name', 1 ] ]).toArray();`,
+    );
+    expect(mock.mock.calls[2][0]).toMatch(
+      `db.getCollection('owner').find({ '$or': [ { pet_name: { '$in': [ 'd3', 'old dog' ] } }, { 'pet2.name': { '$in': [ 'd4', 'c4' ] } } ] }, {}).sort([ [ 'name', 1 ] ]).toArray();`,
+    );
   });
 
   test('assign and serialization', async () => {
@@ -253,14 +251,18 @@ describe('polymorphic embeddables in mongo', () => {
 
     const mock = mockLogger(orm, ['query']);
     await orm.em.persist(owner).flush();
-    expect(mock.mock.calls[0][0]).toMatch(`db.getCollection('owner').insertMany([ { _id: ObjectId('600000000000000000000004'), name: 'o1', pet_type: 0, pet_name: 'cat', pet_canMeow: true, pet_food_mice: 2, pet2: { canBark: true, type: 1, name: 'dog', food: { cats: 10 } } } ], {});`);
+    expect(mock.mock.calls[0][0]).toMatch(
+      `db.getCollection('owner').insertMany([ { _id: ObjectId('600000000000000000000004'), name: 'o1', pet_type: 0, pet_name: 'cat', pet_canMeow: true, pet_food_mice: 2, pet2: { canBark: true, type: 1, name: 'dog', food: { cats: 10 } } } ], {});`,
+    );
 
     orm.em.assign(owner, {
       pet: { name: 'cat name' },
       pet2: { name: 'dog name' },
     });
     await orm.em.persist(owner).flush();
-    expect(mock.mock.calls[1][0]).toMatch(`db.getCollection('owner').updateMany({ _id: ObjectId('600000000000000000000004') }, { '$set': { pet_name: 'cat name', pet2: { canBark: true, type: 1, name: 'dog name', food: { cats: 10 } } } }, {});`);
+    expect(mock.mock.calls[1][0]).toMatch(
+      `db.getCollection('owner').updateMany({ _id: ObjectId('600000000000000000000004') }, { '$set': { pet_name: 'cat name', pet2: { canBark: true, type: 1, name: 'dog name', food: { cats: 10 } } } }, {});`,
+    );
 
     expect(wrap(owner).toObject()).toEqual({
       id: owner.id,
@@ -279,5 +281,4 @@ describe('polymorphic embeddables in mongo', () => {
       },
     });
   });
-
 });

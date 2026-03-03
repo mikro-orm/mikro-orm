@@ -73,12 +73,7 @@ test('GH #7205 - fields from different relation paths should not clobber each ot
     User7205,
     {},
     {
-      fields: [
-        'direct.name',
-        'direct.lostAttribute',
-        'step.name',
-        'step.target.name',
-      ],
+      fields: ['direct.name', 'direct.lostAttribute', 'step.name', 'step.target.name'],
       orderBy: [{ name: 'desc' }],
     },
   );

@@ -11,18 +11,15 @@ import { mockLogger } from '../helpers.js';
 
 @Entity()
 class A {
-
   @PrimaryKey()
   id!: number;
 
   @OneToMany(() => B, b => b.a)
   bItems = new Collection<B>(this);
-
 }
 
 @Entity()
 class B {
-
   @PrimaryKey()
   id!: number;
 
@@ -31,11 +28,9 @@ class B {
 
   @Property()
   foo = 'bar';
-
 }
 
 describe('GH issue 369', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -66,5 +61,4 @@ describe('GH issue 369', () => {
     expect(mock.mock.calls[6][0]).toMatch('commit');
     expect(mock.mock.calls).toHaveLength(7);
   });
-
 });

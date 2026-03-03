@@ -40,7 +40,14 @@ import type {
 import type { Raw } from '../utils/RawQueryFragment.js';
 import type { ScalarReference } from './Reference.js';
 import type { SerializeOptions } from '../serialization/EntitySerializer.js';
-import type { Cascade, DeferMode, EmbeddedPrefixMode, LoadStrategy, QueryOrderKeysFlat, QueryOrderMap } from '../enums.js';
+import type {
+  Cascade,
+  DeferMode,
+  EmbeddedPrefixMode,
+  LoadStrategy,
+  QueryOrderKeysFlat,
+  QueryOrderMap,
+} from '../enums.js';
 import type { EventSubscriber } from '../events/EventSubscriber.js';
 import type { IType, Type } from '../types/Type.js';
 import { types } from '../types/index.js';
@@ -73,7 +80,11 @@ type IncludeKeysForManyToManyOptions = Exclude<keyof ManyToManyOptions<any, any>
 // Helper for restricting PropertyChain methods by kind via conditional return types.
 // Uses Options['kind'] (already present) to avoid a 3rd type parameter (which causes measurable instantiation overhead).
 // Returns true only when Options has a matching kind; returns false when kind is absent or mismatched.
-type HasKind<Options, K extends string> = Options extends { kind: infer X extends string } ? X extends K ? true : false : false;
+type HasKind<Options, K extends string> = Options extends { kind: infer X extends string }
+  ? X extends K
+    ? true
+    : false
+  : false;
 
 /** Lightweight chain result type for property builders - reduces type instantiation cost by avoiding full class resolution. */
 export interface PropertyChain<Value, Options> {
@@ -97,8 +108,12 @@ export interface PropertyChain<Value, Options> {
   lazy(): PropertyChain<Value, Options>;
   name<T extends string>(name: T): PropertyChain<Value, Omit<Options, 'fieldName'> & { fieldName: T }>;
   fieldName<T extends string>(fieldName: T): PropertyChain<Value, Omit<Options, 'fieldName'> & { fieldName: T }>;
-  onCreate(onCreate: (entity: any, em: EntityManager) => Value): PropertyChain<Value, Options & { onCreate: (...args: any[]) => any }>;
-  default(defaultValue: string | string[] | number | number[] | boolean | null | Date | Raw): PropertyChain<Value, Omit<Options, 'default'> & { default: any }>;
+  onCreate(
+    onCreate: (entity: any, em: EntityManager) => Value,
+  ): PropertyChain<Value, Options & { onCreate: (...args: any[]) => any }>;
+  default(
+    defaultValue: string | string[] | number | number[] | boolean | null | Date | Raw,
+  ): PropertyChain<Value, Omit<Options, 'default'> & { default: any }>;
   defaultRaw(defaultRaw: string): PropertyChain<Value, Options & { defaultRaw: string }>;
   formula(formula: string | FormulaCallback<any>): PropertyChain<Value, Omit<Options, 'formula'> & { formula: any }>;
   onUpdate(onUpdate: (entity: any, em: EntityManager) => Value): PropertyChain<Value, Options>;
@@ -123,7 +138,7 @@ export interface PropertyChain<Value, Options> {
   serializer(serializer: (value: Value, options?: SerializeOptions<any>) => any): PropertyChain<Value, Options>;
   serializedName(serializedName: string): PropertyChain<Value, Options>;
   groups(...groups: string[]): PropertyChain<Value, Options>;
-  customOrder(...customOrder: (string[] | number[] | boolean[])): PropertyChain<Value, Options>;
+  customOrder(...customOrder: string[] | number[] | boolean[]): PropertyChain<Value, Options>;
   extra(extra: string): PropertyChain<Value, Options>;
   ignoreSchemaChanges(...ignoreSchemaChanges: ('type' | 'extra' | 'default')[]): PropertyChain<Value, Options>;
   index(index?: boolean | string): PropertyChain<Value, Options>;
@@ -135,49 +150,109 @@ export interface PropertyChain<Value, Options> {
   // Uses Options['kind'] (already present), avoiding a 3rd type parameter.
 
   // Relation-only methods (not available on embedded/enum/scalar properties)
-  eager(eager?: boolean): HasKind<Options, 'm:1' | '1:m' | '1:1' | 'm:n'> extends true ? PropertyChain<Value, Options> : never;
-  cascade(...cascade: Cascade[]): HasKind<Options, 'm:1' | '1:m' | '1:1' | 'm:n'> extends true ? PropertyChain<Value, Options> : never;
-  strategy(strategy: LoadStrategy | `${LoadStrategy}`): HasKind<Options, 'm:1' | '1:m' | '1:1' | 'm:n'> extends true ? PropertyChain<Value, Options> : never;
-  filters(filters: FilterOptions): HasKind<Options, 'm:1' | '1:m' | '1:1' | 'm:n'> extends true ? PropertyChain<Value, Options> : never;
-  mappedBy(mappedBy: (keyof Value & string) | ((e: Value) => any)): HasKind<Options, '1:m' | '1:1' | 'm:n'> extends true ? PropertyChain<Value, Options> : never;
-  inversedBy(inversedBy: (keyof Value & string) | ((e: Value) => any)): HasKind<Options, 'm:1' | '1:1' | 'm:n'> extends true ? PropertyChain<Value, Options> : never;
-  owner(): HasKind<Options, '1:1' | 'm:n'> extends true ? PropertyChain<Value, Omit<Options, 'owner'> & { owner: true }> : never;
-  mapToPk(): HasKind<Options, 'm:1' | '1:1'> extends true ? PropertyChain<Value, Omit<Options, 'mapToPk'> & { mapToPk: true }> : never;
-  orphanRemoval(orphanRemoval?: boolean): HasKind<Options, '1:m' | '1:1'> extends true ? PropertyChain<Value, Options> : never;
-  discriminator(discriminator: string): HasKind<Options, 'm:1' | '1:1' | 'm:n'> extends true ? PropertyChain<Value, Options> : never;
-  discriminatorMap(discriminatorMap: Dictionary<string>): HasKind<Options, 'm:1' | '1:1' | 'm:n'> extends true ? PropertyChain<Value, Options> : never;
+  eager(
+    eager?: boolean,
+  ): HasKind<Options, 'm:1' | '1:m' | '1:1' | 'm:n'> extends true ? PropertyChain<Value, Options> : never;
+  cascade(
+    ...cascade: Cascade[]
+  ): HasKind<Options, 'm:1' | '1:m' | '1:1' | 'm:n'> extends true ? PropertyChain<Value, Options> : never;
+  strategy(
+    strategy: LoadStrategy | `${LoadStrategy}`,
+  ): HasKind<Options, 'm:1' | '1:m' | '1:1' | 'm:n'> extends true ? PropertyChain<Value, Options> : never;
+  filters(
+    filters: FilterOptions,
+  ): HasKind<Options, 'm:1' | '1:m' | '1:1' | 'm:n'> extends true ? PropertyChain<Value, Options> : never;
+  mappedBy(
+    mappedBy: (keyof Value & string) | ((e: Value) => any),
+  ): HasKind<Options, '1:m' | '1:1' | 'm:n'> extends true ? PropertyChain<Value, Options> : never;
+  inversedBy(
+    inversedBy: (keyof Value & string) | ((e: Value) => any),
+  ): HasKind<Options, 'm:1' | '1:1' | 'm:n'> extends true ? PropertyChain<Value, Options> : never;
+  owner(): HasKind<Options, '1:1' | 'm:n'> extends true
+    ? PropertyChain<Value, Omit<Options, 'owner'> & { owner: true }>
+    : never;
+  mapToPk(): HasKind<Options, 'm:1' | '1:1'> extends true
+    ? PropertyChain<Value, Omit<Options, 'mapToPk'> & { mapToPk: true }>
+    : never;
+  orphanRemoval(
+    orphanRemoval?: boolean,
+  ): HasKind<Options, '1:m' | '1:1'> extends true ? PropertyChain<Value, Options> : never;
+  discriminator(
+    discriminator: string,
+  ): HasKind<Options, 'm:1' | '1:1' | 'm:n'> extends true ? PropertyChain<Value, Options> : never;
+  discriminatorMap(
+    discriminatorMap: Dictionary<string>,
+  ): HasKind<Options, 'm:1' | '1:1' | 'm:n'> extends true ? PropertyChain<Value, Options> : never;
 
   // M:N-only methods (not available on other relation kinds, embedded, or scalars)
   pivotTable(pivotTable: string): HasKind<Options, 'm:n'> extends true ? PropertyChain<Value, Options> : never;
-  pivotEntity(pivotEntity: () => EntityName): HasKind<Options, 'm:n'> extends true ? PropertyChain<Value, Options> : never;
+  pivotEntity(
+    pivotEntity: () => EntityName,
+  ): HasKind<Options, 'm:n'> extends true ? PropertyChain<Value, Options> : never;
   fixedOrder(fixedOrder?: boolean): HasKind<Options, 'm:n'> extends true ? PropertyChain<Value, Options> : never;
-  fixedOrderColumn(fixedOrderColumn: string): HasKind<Options, 'm:n'> extends true ? PropertyChain<Value, Options> : never;
+  fixedOrderColumn(
+    fixedOrderColumn: string,
+  ): HasKind<Options, 'm:n'> extends true ? PropertyChain<Value, Options> : never;
 
   // Embedded-only methods
-  array(): HasKind<Options, 'embedded' | 'enum'> extends true ? PropertyChain<Value, Omit<Options, 'array'> & { array: true }> : never;
+  array(): HasKind<Options, 'embedded' | 'enum'> extends true
+    ? PropertyChain<Value, Omit<Options, 'array'> & { array: true }>
+    : never;
   prefix(prefix: string | boolean): HasKind<Options, 'embedded'> extends true ? PropertyChain<Value, Options> : never;
-  prefixMode(prefixMode: EmbeddedPrefixMode): HasKind<Options, 'embedded'> extends true ? PropertyChain<Value, Options> : never;
+  prefixMode(
+    prefixMode: EmbeddedPrefixMode,
+  ): HasKind<Options, 'embedded'> extends true ? PropertyChain<Value, Options> : never;
   object(object?: boolean): HasKind<Options, 'embedded'> extends true ? PropertyChain<Value, Options> : never;
 
   // Enum-only methods
   nativeEnumName(nativeEnumName: string): HasKind<Options, 'enum'> extends true ? PropertyChain<Value, Options> : never;
 
   // Relation-only methods — gated to prevent misuse on scalar/enum/embedded properties
-  orderBy(...orderBy: QueryOrderMap<object>[]): HasKind<Options, 'm:1' | '1:m' | '1:1' | 'm:n'> extends true ? PropertyChain<Value, Options> : never;
-  where(...where: FilterQuery<object>[]): HasKind<Options, 'm:1' | '1:m' | '1:1' | 'm:n'> extends true ? PropertyChain<Value, Options> : never;
-  joinColumn(joinColumn: string): HasKind<Options, 'm:1' | '1:m' | '1:1' | 'm:n'> extends true ? PropertyChain<Value, Options> : never;
-  joinColumns(...joinColumns: string[]): HasKind<Options, 'm:1' | '1:m' | '1:1' | 'm:n'> extends true ? PropertyChain<Value, Options> : never;
-  inverseJoinColumn(inverseJoinColumn: string): HasKind<Options, 'm:1' | '1:m' | '1:1' | 'm:n'> extends true ? PropertyChain<Value, Options> : never;
-  inverseJoinColumns(...inverseJoinColumns: string[]): HasKind<Options, 'm:1' | '1:m' | '1:1' | 'm:n'> extends true ? PropertyChain<Value, Options> : never;
-  referenceColumnName(referenceColumnName: string): HasKind<Options, 'm:1' | '1:m' | '1:1' | 'm:n'> extends true ? PropertyChain<Value, Options> : never;
-  referencedColumnNames(...referencedColumnNames: string[]): HasKind<Options, 'm:1' | '1:m' | '1:1' | 'm:n'> extends true ? PropertyChain<Value, Options> : never;
-  ownColumns(...ownColumns: string[]): HasKind<Options, 'm:1' | '1:m' | '1:1' | 'm:n'> extends true ? PropertyChain<Value, Options> : never;
-  targetKey(targetKey: keyof Value & string): HasKind<Options, 'm:1' | '1:m' | '1:1' | 'm:n'> extends true ? PropertyChain<Value, Options> : never;
-  deleteRule(deleteRule: 'cascade' | 'no action' | 'set null' | 'set default' | AnyString): HasKind<Options, 'm:1' | '1:m' | '1:1' | 'm:n'> extends true ? PropertyChain<Value, Options> : never;
-  updateRule(updateRule: 'cascade' | 'no action' | 'set null' | 'set default' | AnyString): HasKind<Options, 'm:1' | '1:m' | '1:1' | 'm:n'> extends true ? PropertyChain<Value, Options> : never;
-  deferMode(deferMode: DeferMode | `${DeferMode}`): HasKind<Options, 'm:1' | '1:m' | '1:1' | 'm:n'> extends true ? PropertyChain<Value, Options> : never;
-  createForeignKeyConstraint(createForeignKeyConstraint?: boolean): HasKind<Options, 'm:1' | '1:m' | '1:1' | 'm:n'> extends true ? PropertyChain<Value, Options> : never;
-  foreignKeyName(foreignKeyName: string): HasKind<Options, 'm:1' | '1:m' | '1:1' | 'm:n'> extends true ? PropertyChain<Value, Options> : never;
+  orderBy(
+    ...orderBy: QueryOrderMap<object>[]
+  ): HasKind<Options, 'm:1' | '1:m' | '1:1' | 'm:n'> extends true ? PropertyChain<Value, Options> : never;
+  where(
+    ...where: FilterQuery<object>[]
+  ): HasKind<Options, 'm:1' | '1:m' | '1:1' | 'm:n'> extends true ? PropertyChain<Value, Options> : never;
+  joinColumn(
+    joinColumn: string,
+  ): HasKind<Options, 'm:1' | '1:m' | '1:1' | 'm:n'> extends true ? PropertyChain<Value, Options> : never;
+  joinColumns(
+    ...joinColumns: string[]
+  ): HasKind<Options, 'm:1' | '1:m' | '1:1' | 'm:n'> extends true ? PropertyChain<Value, Options> : never;
+  inverseJoinColumn(
+    inverseJoinColumn: string,
+  ): HasKind<Options, 'm:1' | '1:m' | '1:1' | 'm:n'> extends true ? PropertyChain<Value, Options> : never;
+  inverseJoinColumns(
+    ...inverseJoinColumns: string[]
+  ): HasKind<Options, 'm:1' | '1:m' | '1:1' | 'm:n'> extends true ? PropertyChain<Value, Options> : never;
+  referenceColumnName(
+    referenceColumnName: string,
+  ): HasKind<Options, 'm:1' | '1:m' | '1:1' | 'm:n'> extends true ? PropertyChain<Value, Options> : never;
+  referencedColumnNames(
+    ...referencedColumnNames: string[]
+  ): HasKind<Options, 'm:1' | '1:m' | '1:1' | 'm:n'> extends true ? PropertyChain<Value, Options> : never;
+  ownColumns(
+    ...ownColumns: string[]
+  ): HasKind<Options, 'm:1' | '1:m' | '1:1' | 'm:n'> extends true ? PropertyChain<Value, Options> : never;
+  targetKey(
+    targetKey: keyof Value & string,
+  ): HasKind<Options, 'm:1' | '1:m' | '1:1' | 'm:n'> extends true ? PropertyChain<Value, Options> : never;
+  deleteRule(
+    deleteRule: 'cascade' | 'no action' | 'set null' | 'set default' | AnyString,
+  ): HasKind<Options, 'm:1' | '1:m' | '1:1' | 'm:n'> extends true ? PropertyChain<Value, Options> : never;
+  updateRule(
+    updateRule: 'cascade' | 'no action' | 'set null' | 'set default' | AnyString,
+  ): HasKind<Options, 'm:1' | '1:m' | '1:1' | 'm:n'> extends true ? PropertyChain<Value, Options> : never;
+  deferMode(
+    deferMode: DeferMode | `${DeferMode}`,
+  ): HasKind<Options, 'm:1' | '1:m' | '1:1' | 'm:n'> extends true ? PropertyChain<Value, Options> : never;
+  createForeignKeyConstraint(
+    createForeignKeyConstraint?: boolean,
+  ): HasKind<Options, 'm:1' | '1:m' | '1:1' | 'm:n'> extends true ? PropertyChain<Value, Options> : never;
+  foreignKeyName(
+    foreignKeyName: string,
+  ): HasKind<Options, 'm:1' | '1:m' | '1:1' | 'm:n'> extends true ? PropertyChain<Value, Options> : never;
 }
 
 // Compile-time assertions: PropertyChain must cover exactly all builder keys.
@@ -185,13 +260,17 @@ export interface PropertyChain<Value, Options> {
 type AssertTrue<_ extends true> = never;
 type _AssertPropertyChainComplete = AssertTrue<BuilderKeys extends keyof PropertyChain<any, any> ? true : false>;
 // Reverse: PropertyChain has no extra keys beyond BuilderKeys
-type _AssertPropertyChainNoExtras = AssertTrue<Exclude<keyof PropertyChain<any, any>, BuilderKeys> extends never ? true : false>;
+type _AssertPropertyChainNoExtras = AssertTrue<
+  Exclude<keyof PropertyChain<any, any>, BuilderKeys> extends never ? true : false
+>;
 // Parameter-level sync assertion lives in tests/defineEntity.test.ts to avoid
 // instantiating the full builder class in production builds (~680 instantiations).
 
 /** @internal */
-export class UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys extends BuilderKeys> implements Record<Exclude<UniversalPropertyKeys, ExcludeKeys>, any> {
-
+export class UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys extends BuilderKeys> implements Record<
+  Exclude<UniversalPropertyKeys, ExcludeKeys>,
+  any
+> {
   '~options': Options;
 
   '~type'?: {
@@ -221,8 +300,11 @@ export class UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys extends
    * @template Serialized - The type when serialized (defaults to Raw)
    * @returns PropertyOptionsBuilder with IType wrapper for type safety
    */
-  $type<Runtime, Raw, Serialized = Raw>(): UniversalPropertyOptionsBuilder<IType<Runtime, Raw, Serialized>, Options, IncludeKeys>;
-
+  $type<Runtime, Raw, Serialized = Raw>(): UniversalPropertyOptionsBuilder<
+    IType<Runtime, Raw, Serialized>,
+    Options,
+    IncludeKeys
+  >;
 
   $type(): UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys> {
     return this.assignOptions({});
@@ -231,7 +313,12 @@ export class UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys extends
   /**
    * Alias for `fieldName`.
    */
-  name<T extends string>(name: T): Pick<UniversalPropertyOptionsBuilder<Value, Omit<Options, 'fieldName'> & { fieldName: T }, IncludeKeys>, IncludeKeys> {
+  name<T extends string>(
+    name: T,
+  ): Pick<
+    UniversalPropertyOptionsBuilder<Value, Omit<Options, 'fieldName'> & { fieldName: T }, IncludeKeys>,
+    IncludeKeys
+  > {
     return this.assignOptions({ name });
   }
 
@@ -240,7 +327,12 @@ export class UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys extends
    *
    * @see https://mikro-orm.io/docs/naming-strategy
    */
-  fieldName<T extends string>(fieldName: T): Pick<UniversalPropertyOptionsBuilder<Value, Omit<Options, 'fieldName'> & { fieldName: T }, IncludeKeys>, IncludeKeys> {
+  fieldName<T extends string>(
+    fieldName: T,
+  ): Pick<
+    UniversalPropertyOptionsBuilder<Value, Omit<Options, 'fieldName'> & { fieldName: T }, IncludeKeys>,
+    IncludeKeys
+  > {
     return this.assignOptions({ fieldName });
   }
 
@@ -257,14 +349,18 @@ export class UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys extends
   /**
    * Specify an exact database column type for {@link https://mikro-orm.io/docs/schema-generator Schema Generator}. This option is only for simple properties represented by a single column. (SQL only)
    */
-  columnType(columnType: ColumnType | AnyString): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
+  columnType(
+    columnType: ColumnType | AnyString,
+  ): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
     return this.assignOptions({ columnType });
   }
 
   /**
    * Specify an exact database column type for {@link https://mikro-orm.io/docs/schema-generator Schema Generator}. This option is suitable for composite keys, where one property is represented by multiple columns. (SQL only)
    */
-  columnTypes(...columnTypes: (ColumnType | AnyString)[]): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
+  columnTypes(
+    ...columnTypes: (ColumnType | AnyString)[]
+  ): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
     return this.assignOptions({ columnTypes });
   }
 
@@ -274,7 +370,9 @@ export class UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys extends
    * @see https://mikro-orm.io/docs/metadata-providers
    * @see https://mikro-orm.io/docs/custom-types
    */
-  type<TType extends PropertyValueType>(type: TType): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
+  type<TType extends PropertyValueType>(
+    type: TType,
+  ): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
     return this.assignOptions({ type });
   }
 
@@ -310,9 +408,19 @@ export class UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys extends
   /**
    * Explicitly specify the auto increment of the primary key.
    */
-  autoincrement(): Pick<UniversalPropertyOptionsBuilder<Value, Omit<Options, 'autoincrement'> & { autoincrement: true }, IncludeKeys>, IncludeKeys>;
-  autoincrement(autoincrement: false): Pick<UniversalPropertyOptionsBuilder<Value, Omit<Options, 'autoincrement'> & { autoincrement: false }, IncludeKeys>, IncludeKeys>;
-  autoincrement(autoincrement = true): Pick<UniversalPropertyOptionsBuilder<Value, Omit<Options, 'autoincrement'>, IncludeKeys>, IncludeKeys> {
+  autoincrement(): Pick<
+    UniversalPropertyOptionsBuilder<Value, Omit<Options, 'autoincrement'> & { autoincrement: true }, IncludeKeys>,
+    IncludeKeys
+  >;
+  autoincrement(
+    autoincrement: false,
+  ): Pick<
+    UniversalPropertyOptionsBuilder<Value, Omit<Options, 'autoincrement'> & { autoincrement: false }, IncludeKeys>,
+    IncludeKeys
+  >;
+  autoincrement(
+    autoincrement = true,
+  ): Pick<UniversalPropertyOptionsBuilder<Value, Omit<Options, 'autoincrement'>, IncludeKeys>, IncludeKeys> {
     return this.assignOptions({ autoincrement }) as any;
   }
 
@@ -326,14 +434,21 @@ export class UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys extends
   /**
    * Automatically set the property value when entity gets created, executed during flush operation.
    */
-  onCreate(onCreate: (entity: any, em: EntityManager) => Value): Pick<UniversalPropertyOptionsBuilder<Value, Options & { onCreate: (...args: any[]) => any }, IncludeKeys>, IncludeKeys> {
+  onCreate(
+    onCreate: (entity: any, em: EntityManager) => Value,
+  ): Pick<
+    UniversalPropertyOptionsBuilder<Value, Options & { onCreate: (...args: any[]) => any }, IncludeKeys>,
+    IncludeKeys
+  > {
     return this.assignOptions({ onCreate }) as any;
   }
 
   /**
    * Automatically update the property value every time entity gets updated, executed during flush operation.
    */
-  onUpdate(onUpdate: (entity: any, em: EntityManager) => Value): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
+  onUpdate(
+    onUpdate: (entity: any, em: EntityManager) => Value,
+  ): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
     return this.assignOptions({ onUpdate }) as any;
   }
 
@@ -341,7 +456,9 @@ export class UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys extends
    * Specify default column value for {@link https://mikro-orm.io/docs/schema-generator Schema Generator}.
    * This is a runtime value, assignable to the entity property. (SQL only)
    */
-  default<T extends string | string[] | number | number[] | boolean | null | Date | Raw>(defaultValue: T): Pick<UniversalPropertyOptionsBuilder<Value, Omit<Options, 'default'> & { default: T }, IncludeKeys>, IncludeKeys> {
+  default<T extends string | string[] | number | number[] | boolean | null | Date | Raw>(
+    defaultValue: T,
+  ): Pick<UniversalPropertyOptionsBuilder<Value, Omit<Options, 'default'> & { default: T }, IncludeKeys>, IncludeKeys> {
     return this.assignOptions({ default: defaultValue }) as any;
   }
 
@@ -349,7 +466,9 @@ export class UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys extends
    * Specify SQL functions for {@link https://mikro-orm.io/docs/schema-generator Schema Generator}. (SQL only)
    * Since v4 you should use defaultRaw for SQL functions. e.g. now()
    */
-  defaultRaw(defaultRaw: string): Pick<UniversalPropertyOptionsBuilder<Value, Options & { defaultRaw: string }, IncludeKeys>, IncludeKeys> {
+  defaultRaw(
+    defaultRaw: string,
+  ): Pick<UniversalPropertyOptionsBuilder<Value, Options & { defaultRaw: string }, IncludeKeys>, IncludeKeys> {
     return this.assignOptions({ defaultRaw }) as any;
   }
 
@@ -365,21 +484,28 @@ export class UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys extends
    *
    * @see https://mikro-orm.io/docs/defining-entities#formulas Formulas
    */
-  formula<T extends string | FormulaCallback<any>>(formula: T): Pick<UniversalPropertyOptionsBuilder<Value, Omit<Options, 'formula'> & { formula: T }, IncludeKeys>, IncludeKeys> {
+  formula<T extends string | FormulaCallback<any>>(
+    formula: T,
+  ): Pick<UniversalPropertyOptionsBuilder<Value, Omit<Options, 'formula'> & { formula: T }, IncludeKeys>, IncludeKeys> {
     return this.assignOptions({ formula }) as any;
   }
 
   /**
    * For generated columns. This will be appended to the column type after the `generated always` clause.
    */
-  generated(generated: string | GeneratedColumnCallback<any>): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
+  generated(
+    generated: string | GeneratedColumnCallback<any>,
+  ): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
     return this.assignOptions({ generated });
   }
 
   /**
    * Set column as nullable for {@link https://mikro-orm.io/docs/schema-generator Schema Generator}.
    */
-  nullable(): Pick<UniversalPropertyOptionsBuilder<Value, Omit<Options, 'nullable'> & { nullable: true }, IncludeKeys>, IncludeKeys> {
+  nullable(): Pick<
+    UniversalPropertyOptionsBuilder<Value, Omit<Options, 'nullable'> & { nullable: true }, IncludeKeys>,
+    IncludeKeys
+  > {
     return this.assignOptions({ nullable: true }) as any;
   }
 
@@ -393,9 +519,19 @@ export class UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys extends
   /**
    * Set false to define {@link https://mikro-orm.io/docs/serializing#shadow-properties Shadow Property}.
    */
-  persist(): Pick<UniversalPropertyOptionsBuilder<Value, Omit<Options, 'persist'> & { persist: true }, IncludeKeys>, IncludeKeys>;
-  persist(persist: false): Pick<UniversalPropertyOptionsBuilder<Value, Omit<Options, 'persist'> & { persist: false }, IncludeKeys>, IncludeKeys>;
-  persist(persist = true): Pick<UniversalPropertyOptionsBuilder<Value, Omit<Options, 'persist'>, IncludeKeys>, IncludeKeys> {
+  persist(): Pick<
+    UniversalPropertyOptionsBuilder<Value, Omit<Options, 'persist'> & { persist: true }, IncludeKeys>,
+    IncludeKeys
+  >;
+  persist(
+    persist: false,
+  ): Pick<
+    UniversalPropertyOptionsBuilder<Value, Omit<Options, 'persist'> & { persist: false }, IncludeKeys>,
+    IncludeKeys
+  >;
+  persist(
+    persist = true,
+  ): Pick<UniversalPropertyOptionsBuilder<Value, Omit<Options, 'persist'>, IncludeKeys>, IncludeKeys> {
     return this.assignOptions({ persist }) as any;
   }
 
@@ -416,35 +552,47 @@ export class UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys extends
   /**
    * Set to true to omit the property when {@link https://mikro-orm.io/docs/serializing Serializing}.
    */
-  hidden(): Pick<UniversalPropertyOptionsBuilder<Value, Omit<Options, 'hidden'> & { hidden: true }, IncludeKeys>, IncludeKeys> {
+  hidden(): Pick<
+    UniversalPropertyOptionsBuilder<Value, Omit<Options, 'hidden'> & { hidden: true }, IncludeKeys>,
+    IncludeKeys
+  > {
     return this.assignOptions({ hidden: true }) as any;
   }
 
   /**
    * Set to true to enable {@link https://mikro-orm.io/docs/transactions#optimistic-locking Optimistic Locking} via version field. (SQL only)
    */
-  version(): Pick<UniversalPropertyOptionsBuilder<Value, Omit<Options, 'version'> & { version: true }, IncludeKeys>, IncludeKeys> {
+  version(): Pick<
+    UniversalPropertyOptionsBuilder<Value, Omit<Options, 'version'> & { version: true }, IncludeKeys>,
+    IncludeKeys
+  > {
     return this.assignOptions({ version: true }) as any;
   }
 
   /**
    * Set to true to enable {@link https://mikro-orm.io/docs/transactions#optimistic-locking Optimistic Locking} via concurrency fields.
    */
-  concurrencyCheck(concurrencyCheck = true): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
+  concurrencyCheck(
+    concurrencyCheck = true,
+  ): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
     return this.assignOptions({ concurrencyCheck });
   }
 
   /**
    * Explicitly specify index on a property.
    */
-  index(index: boolean | string = true): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
+  index(
+    index: boolean | string = true,
+  ): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
     return this.assignOptions({ index });
   }
 
   /**
    * Set column as unique for {@link https://mikro-orm.io/docs/schema-generator Schema Generator}. (SQL only)
    */
-  unique(unique: boolean | string = true): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
+  unique(
+    unique: boolean | string = true,
+  ): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
     return this.assignOptions({ unique });
   }
 
@@ -453,7 +601,9 @@ export class UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys extends
    *
    * @see https://mikro-orm.io/docs/defining-entities#check-constraints
    */
-  check(check: string | CheckCallback<any>): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
+  check(
+    check: string | CheckCallback<any>,
+  ): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
     return this.assignOptions({ check });
   }
 
@@ -471,7 +621,10 @@ export class UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys extends
    *
    * @see https://mikro-orm.io/docs/decorators#primarykey
    */
-  primary(): Pick<UniversalPropertyOptionsBuilder<Value, Omit<Options, 'primary'> & { primary: true }, IncludeKeys>, IncludeKeys> {
+  primary(): Pick<
+    UniversalPropertyOptionsBuilder<Value, Omit<Options, 'primary'> & { primary: true }, IncludeKeys>,
+    IncludeKeys
+  > {
     return this.assignOptions({ primary: true }) as any;
   }
 
@@ -527,7 +680,9 @@ export class UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys extends
    *
    * @see https://mikro-orm.io/docs/decorators#serializedprimarykey
    */
-  serializedPrimaryKey(serializedPrimaryKey = true): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
+  serializedPrimaryKey(
+    serializedPrimaryKey = true,
+  ): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
     return this.assignOptions({ serializedPrimaryKey });
   }
 
@@ -536,14 +691,18 @@ export class UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys extends
    *
    * @see https://mikro-orm.io/docs/serializing#property-serializers
    */
-  serializer(serializer: (value: Value, options?: SerializeOptions<any>) => any): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
+  serializer(
+    serializer: (value: Value, options?: SerializeOptions<any>) => any,
+  ): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
     return this.assignOptions({ serializer });
   }
 
   /**
    * Specify name of key for the serialized value.
    */
-  serializedName(serializedName: string): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
+  serializedName(
+    serializedName: string,
+  ): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
     return this.assignOptions({ serializedName });
   }
 
@@ -558,7 +717,9 @@ export class UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys extends
   /**
    * Specify a custom order based on the values. (SQL only)
    */
-  customOrder(...customOrder: (string[] | number[] | boolean[])): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
+  customOrder(
+    ...customOrder: string[] | number[] | boolean[]
+  ): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
     return this.assignOptions({ customOrder });
   }
 
@@ -579,16 +740,23 @@ export class UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys extends
    *
    * @see https://mikro-orm.io/docs/defining-entities#sql-generated-columns
    */
-  ignoreSchemaChanges(...ignoreSchemaChanges: ('type' | 'extra' | 'default')[]): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
+  ignoreSchemaChanges(
+    ...ignoreSchemaChanges: ('type' | 'extra' | 'default')[]
+  ): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
     return this.assignOptions({ ignoreSchemaChanges });
   }
 
-  array(): Pick<UniversalPropertyOptionsBuilder<Value, Omit<Options, 'array'> & { array: true }, IncludeKeys>, IncludeKeys> {
+  array(): Pick<
+    UniversalPropertyOptionsBuilder<Value, Omit<Options, 'array'> & { array: true }, IncludeKeys>,
+    IncludeKeys
+  > {
     return this.assignOptions({ array: true });
   }
 
   /** for postgres, by default it uses text column with check constraint */
-  nativeEnumName(nativeEnumName: string): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
+  nativeEnumName(
+    nativeEnumName: string,
+  ): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
     return this.assignOptions({ nativeEnumName });
   }
 
@@ -596,7 +764,9 @@ export class UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys extends
     return this.assignOptions({ prefix });
   }
 
-  prefixMode(prefixMode: EmbeddedPrefixMode): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
+  prefixMode(
+    prefixMode: EmbeddedPrefixMode,
+  ): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
     return this.assignOptions({ prefixMode });
   }
 
@@ -615,42 +785,59 @@ export class UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys extends
   }
 
   /** Override the default loading strategy for this property. This option has precedence over the global `loadStrategy`, but can be overridden by `FindOptions.strategy`. */
-  strategy(strategy: LoadStrategy | `${LoadStrategy}`): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
+  strategy(
+    strategy: LoadStrategy | `${LoadStrategy}`,
+  ): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
     return this.assignOptions({ strategy });
   }
 
   /** Set this side as owning. Owning side is where the foreign key is defined. This option is not required if you use `inversedBy` or `mappedBy` to distinguish owning and inverse side. */
-  owner(): Pick<UniversalPropertyOptionsBuilder<Value, Omit<Options, 'owner'> & { owner: true }, IncludeKeys>, IncludeKeys> {
+  owner(): Pick<
+    UniversalPropertyOptionsBuilder<Value, Omit<Options, 'owner'> & { owner: true }, IncludeKeys>,
+    IncludeKeys
+  > {
     return this.assignOptions({ owner: true });
   }
 
   /** For polymorphic relations. Specifies the property name that stores the entity type discriminator. Defaults to the property name. */
-  discriminator(discriminator: string): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
+  discriminator(
+    discriminator: string,
+  ): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
     return this.assignOptions({ discriminator });
   }
 
   /** For polymorphic relations. Custom mapping of discriminator values to entity class names. */
-  discriminatorMap(discriminatorMap: Dictionary<string>): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
+  discriminatorMap(
+    discriminatorMap: Dictionary<string>,
+  ): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
     return this.assignOptions({ discriminatorMap });
   }
 
   /** Point to the inverse side property name. */
-  inversedBy(inversedBy: keyof Value | ((e: Value) => any)): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
+  inversedBy(
+    inversedBy: keyof Value | ((e: Value) => any),
+  ): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
     return this.assignOptions({ inversedBy });
   }
 
   /** Point to the owning side property name. */
-  mappedBy(mappedBy: keyof Value | ((e: Value) => any)): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
+  mappedBy(
+    mappedBy: keyof Value | ((e: Value) => any),
+  ): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
     return this.assignOptions({ mappedBy });
   }
 
   /** Condition for {@doclink collections#declarative-partial-loading | Declarative partial loading}. */
-  where(...where: FilterQuery<object>[]): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
+  where(
+    ...where: FilterQuery<object>[]
+  ): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
     return this.assignOptions({ where });
   }
 
   /** Set default ordering. */
-  orderBy(...orderBy: QueryOrderMap<object>[]): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
+  orderBy(
+    ...orderBy: QueryOrderMap<object>[]
+  ): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
     return this.assignOptions({ orderBy });
   }
 
@@ -660,7 +847,9 @@ export class UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys extends
   }
 
   /** Override default order column name (`id`) for fixed ordering. */
-  fixedOrderColumn(fixedOrderColumn: string): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
+  fixedOrderColumn(
+    fixedOrderColumn: string,
+  ): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
     return this.assignOptions({ fixedOrderColumn });
   }
 
@@ -670,7 +859,9 @@ export class UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys extends
   }
 
   /** Set pivot entity for this relation (see {@doclink collections#custom-pivot-table-entity | Custom pivot table entity}). */
-  pivotEntity(pivotEntity: () => EntityName): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
+  pivotEntity(
+    pivotEntity: () => EntityName,
+  ): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
     return this.assignOptions({ pivotEntity });
   }
 
@@ -680,27 +871,37 @@ export class UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys extends
   }
 
   /** Override the default database column name on the owning side (see {@doclink naming-strategy | Naming Strategy}). This option is suitable for composite keys, where one property is represented by multiple columns. */
-  joinColumns(...joinColumns: string[]): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
+  joinColumns(
+    ...joinColumns: string[]
+  ): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
     return this.assignOptions({ joinColumns });
   }
 
   /** Override the default database column name on the inverse side (see {@doclink naming-strategy | Naming Strategy}). This option is only for simple properties represented by a single column. */
-  inverseJoinColumn(inverseJoinColumn: string): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
+  inverseJoinColumn(
+    inverseJoinColumn: string,
+  ): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
     return this.assignOptions({ inverseJoinColumn });
   }
 
   /** Override the default database column name on the inverse side (see {@doclink naming-strategy | Naming Strategy}). This option is suitable for composite keys, where one property is represented by multiple columns. */
-  inverseJoinColumns(...inverseJoinColumns: string[]): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
+  inverseJoinColumns(
+    ...inverseJoinColumns: string[]
+  ): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
     return this.assignOptions({ inverseJoinColumns });
   }
 
   /** Override the default database column name on the target entity (see {@doclink naming-strategy | Naming Strategy}). This option is only for simple properties represented by a single column. */
-  referenceColumnName(referenceColumnName: string): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
+  referenceColumnName(
+    referenceColumnName: string,
+  ): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
     return this.assignOptions({ referenceColumnName });
   }
 
   /** Override the default database column name on the target entity (see {@doclink naming-strategy | Naming Strategy}). This option is suitable for composite keys, where one property is represented by multiple columns. */
-  referencedColumnNames(...referencedColumnNames: string[]): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
+  referencedColumnNames(
+    ...referencedColumnNames: string[]
+  ): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
     return this.assignOptions({ referencedColumnNames });
   }
 
@@ -710,22 +911,31 @@ export class UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys extends
   }
 
   /** What to do when the target entity gets deleted. */
-  deleteRule(deleteRule: 'cascade' | 'no action' | 'set null' | 'set default' | AnyString): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
+  deleteRule(
+    deleteRule: 'cascade' | 'no action' | 'set null' | 'set default' | AnyString,
+  ): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
     return this.assignOptions({ deleteRule });
   }
 
   /** What to do when the reference to the target entity gets updated. */
-  updateRule(updateRule: 'cascade' | 'no action' | 'set null' | 'set default' | AnyString): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
+  updateRule(
+    updateRule: 'cascade' | 'no action' | 'set null' | 'set default' | AnyString,
+  ): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
     return this.assignOptions({ updateRule });
   }
 
   /** Map this relation to the primary key value instead of an entity. */
-  mapToPk(): Pick<UniversalPropertyOptionsBuilder<Value, Omit<Options, 'mapToPk'> & { mapToPk: true }, IncludeKeys>, IncludeKeys> {
+  mapToPk(): Pick<
+    UniversalPropertyOptionsBuilder<Value, Omit<Options, 'mapToPk'> & { mapToPk: true }, IncludeKeys>,
+    IncludeKeys
+  > {
     return this.assignOptions({ mapToPk: true }) as any;
   }
 
   /** Set the constraint type. Immediate constraints are checked for each statement, while deferred ones are only checked at the end of the transaction. Only for postgres unique constraints. */
-  deferMode(deferMode: DeferMode | `${DeferMode}`): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
+  deferMode(
+    deferMode: DeferMode | `${DeferMode}`,
+  ): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
     return this.assignOptions({ deferMode });
   }
 
@@ -735,12 +945,16 @@ export class UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys extends
   }
 
   /** Enable/disable foreign key constraint creation on this relation */
-  createForeignKeyConstraint(createForeignKeyConstraint = true): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
+  createForeignKeyConstraint(
+    createForeignKeyConstraint = true,
+  ): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
     return this.assignOptions({ createForeignKeyConstraint });
   }
 
   /** Set a custom foreign key constraint name, overriding NamingStrategy.indexName(). */
-  foreignKeyName(foreignKeyName: string): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
+  foreignKeyName(
+    foreignKeyName: string,
+  ): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
     return this.assignOptions({ foreignKeyName });
   }
 
@@ -749,30 +963,40 @@ export class UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys extends
     return this.assignOptions({ orphanRemoval });
   }
 
-  accessor(accessor: string | boolean = true): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
+  accessor(
+    accessor: string | boolean = true,
+  ): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
     return this.assignOptions({ accessor });
   }
-
 }
 
 export interface EmptyOptions extends Partial<Record<UniversalPropertyKeys, unknown>> {}
 
-
 /** @internal */
-export class OneToManyOptionsBuilderOnlyMappedBy<Value extends object> extends UniversalPropertyOptionsBuilder<Value, EmptyOptions & { kind: '1:m' }, IncludeKeysForOneToManyOptions> {
-
+export class OneToManyOptionsBuilderOnlyMappedBy<Value extends object> extends UniversalPropertyOptionsBuilder<
+  Value,
+  EmptyOptions & { kind: '1:m' },
+  IncludeKeysForOneToManyOptions
+> {
   /** Point to the owning side property name. */
-  override mappedBy(mappedBy: (keyof Value) | ((e: Value) => any)): Pick<UniversalPropertyOptionsBuilder<Value, EmptyOptions & { kind: '1:m' }, IncludeKeysForOneToManyOptions>, IncludeKeysForOneToManyOptions> {
+  override mappedBy(
+    mappedBy: keyof Value | ((e: Value) => any),
+  ): Pick<
+    UniversalPropertyOptionsBuilder<Value, EmptyOptions & { kind: '1:m' }, IncludeKeysForOneToManyOptions>,
+    IncludeKeysForOneToManyOptions
+  > {
     return new UniversalPropertyOptionsBuilder({ ...this['~options'], mappedBy });
   }
-
 }
-
 
 function createPropertyBuilders<Types extends Record<string, any>>(
   options: Types,
 ): {
-  [K in keyof Types]: () => UniversalPropertyOptionsBuilder<InferPropertyValueType<Types[K]>, EmptyOptions, IncludeKeysForProperty>;
+  [K in keyof Types]: () => UniversalPropertyOptionsBuilder<
+    InferPropertyValueType<Types[K]>,
+    EmptyOptions,
+    IncludeKeysForProperty
+  >;
 } {
   return Object.fromEntries(
     Object.entries(options).map(([key, value]) => [key, () => new UniversalPropertyOptionsBuilder({ type: value })]),
@@ -786,58 +1010,110 @@ const propertyBuilders = {
   ...createPropertyBuilders(types),
 
   bigint: <Mode extends 'bigint' | 'number' | 'string' = 'bigint'>(mode?: Mode) =>
-    new UniversalPropertyOptionsBuilder<InferPropertyValueType<typeof types.bigint<Mode>>, EmptyOptions, IncludeKeysForProperty>({ type: new types.bigint(mode) }),
+    new UniversalPropertyOptionsBuilder<
+      InferPropertyValueType<typeof types.bigint<Mode>>,
+      EmptyOptions,
+      IncludeKeysForProperty
+    >({ type: new types.bigint(mode) }),
 
   array: <T = string>(toJsValue: (i: string) => T = i => i as T, toDbValue: (i: T) => string = i => i as string) =>
-    new UniversalPropertyOptionsBuilder<InferPropertyValueType<typeof types.array<T>>, EmptyOptions, IncludeKeysForProperty>({ type: new types.array(toJsValue, toDbValue) }),
+    new UniversalPropertyOptionsBuilder<
+      InferPropertyValueType<typeof types.array<T>>,
+      EmptyOptions,
+      IncludeKeysForProperty
+    >({ type: new types.array(toJsValue, toDbValue) }),
 
   decimal: <Mode extends 'number' | 'string' = 'string'>(mode?: Mode) =>
-    new UniversalPropertyOptionsBuilder<InferPropertyValueType<typeof types.decimal<Mode>>, EmptyOptions, IncludeKeysForProperty>({ type: new types.decimal(mode) }),
+    new UniversalPropertyOptionsBuilder<
+      InferPropertyValueType<typeof types.decimal<Mode>>,
+      EmptyOptions,
+      IncludeKeysForProperty
+    >({ type: new types.decimal(mode) }),
 
   json: <T>() => new UniversalPropertyOptionsBuilder<T, EmptyOptions, IncludeKeysForProperty>({ type: types.json }),
 
   formula: <T>(formula: string | FormulaCallback<any>) =>
     new UniversalPropertyOptionsBuilder<T, EmptyOptions, IncludeKeysForProperty>({ formula }),
 
-  datetime: (length?: number) => new UniversalPropertyOptionsBuilder<InferPropertyValueType<typeof types.datetime>, EmptyOptions, IncludeKeysForProperty>({ type: types.datetime, length }),
+  datetime: (length?: number) =>
+    new UniversalPropertyOptionsBuilder<
+      InferPropertyValueType<typeof types.datetime>,
+      EmptyOptions,
+      IncludeKeysForProperty
+    >({ type: types.datetime, length }),
 
-  time: (length?: number) => new UniversalPropertyOptionsBuilder<InferPropertyValueType<typeof types.time>, EmptyOptions, IncludeKeysForProperty>({ type: types.time, length }),
+  time: (length?: number) =>
+    new UniversalPropertyOptionsBuilder<
+      InferPropertyValueType<typeof types.time>,
+      EmptyOptions,
+      IncludeKeysForProperty
+    >({ type: types.time, length }),
 
   type: <T extends PropertyValueType>(type: T) =>
     new UniversalPropertyOptionsBuilder<InferPropertyValueType<T>, EmptyOptions, IncludeKeysForProperty>({ type }),
 
   enum: <const T extends (number | string)[] | (() => Dictionary)>(items?: T) =>
-    new UniversalPropertyOptionsBuilder<T extends () => Dictionary ? ValueOf<ReturnType<T>> : T extends (infer Value)[] ? Value : T, EmptyOptions, IncludeKeysForEnumOptions>({
+    new UniversalPropertyOptionsBuilder<
+      T extends () => Dictionary ? ValueOf<ReturnType<T>> : T extends (infer Value)[] ? Value : T,
+      EmptyOptions,
+      IncludeKeysForEnumOptions
+    >({
       enum: true,
       items,
     }),
 
-  embedded: <Target extends EntityTarget | EntityTarget[]>(target: Target): PropertyChain<InferEntity<Target extends (infer T)[] ? T : Target>, EmptyOptions & { kind: 'embedded' }> =>
-    new UniversalPropertyOptionsBuilder<InferEntity<Target extends (infer T)[] ? T : Target>, EmptyOptions & { kind: 'embedded' }, IncludeKeysForEmbeddedOptions>({
+  embedded: <Target extends EntityTarget | EntityTarget[]>(
+    target: Target,
+  ): PropertyChain<InferEntity<Target extends (infer T)[] ? T : Target>, EmptyOptions & { kind: 'embedded' }> =>
+    new UniversalPropertyOptionsBuilder<
+      InferEntity<Target extends (infer T)[] ? T : Target>,
+      EmptyOptions & { kind: 'embedded' },
+      IncludeKeysForEmbeddedOptions
+    >({
       entity: () => target as any,
       kind: 'embedded',
     }) as any,
 
-  manyToMany: <Target extends EntityTarget>(target: Target): PropertyChain<InferEntity<Target>, EmptyOptions & { kind: 'm:n' }> =>
-    new UniversalPropertyOptionsBuilder<InferEntity<Target>, EmptyOptions & { kind: 'm:n' }, IncludeKeysForManyToManyOptions>({
+  manyToMany: <Target extends EntityTarget>(
+    target: Target,
+  ): PropertyChain<InferEntity<Target>, EmptyOptions & { kind: 'm:n' }> =>
+    new UniversalPropertyOptionsBuilder<
+      InferEntity<Target>,
+      EmptyOptions & { kind: 'm:n' },
+      IncludeKeysForManyToManyOptions
+    >({
       entity: () => target as any,
       kind: 'm:n',
     }) as any,
 
-  manyToOne: <Target extends EntityTarget | EntityTarget[]>(target: Target): PropertyChain<InferEntity<Target extends (infer T)[] ? T : Target>, EmptyOptions & { kind: 'm:1' }> =>
-    new UniversalPropertyOptionsBuilder<InferEntity<Target extends (infer T)[] ? T : Target>, EmptyOptions & { kind: 'm:1' }, IncludeKeysForManyToOneOptions>({
+  manyToOne: <Target extends EntityTarget | EntityTarget[]>(
+    target: Target,
+  ): PropertyChain<InferEntity<Target extends (infer T)[] ? T : Target>, EmptyOptions & { kind: 'm:1' }> =>
+    new UniversalPropertyOptionsBuilder<
+      InferEntity<Target extends (infer T)[] ? T : Target>,
+      EmptyOptions & { kind: 'm:1' },
+      IncludeKeysForManyToOneOptions
+    >({
       entity: () => target as any,
       kind: 'm:1',
     }) as any,
 
-  oneToMany: <Target extends EntityTarget>(target: Target): PropertyChain<InferEntity<Target>, EmptyOptions & { kind: '1:m' }> =>
+  oneToMany: <Target extends EntityTarget>(
+    target: Target,
+  ): PropertyChain<InferEntity<Target>, EmptyOptions & { kind: '1:m' }> =>
     new OneToManyOptionsBuilderOnlyMappedBy<InferEntity<Target>>({
       entity: () => target as any,
       kind: '1:m',
     }) as any,
 
-  oneToOne: <Target extends EntityTarget | EntityTarget[]>(target: Target): PropertyChain<InferEntity<Target extends (infer T)[] ? T : Target>, EmptyOptions & { kind: '1:1' }> =>
-    new UniversalPropertyOptionsBuilder<InferEntity<Target extends (infer T)[] ? T : Target>, EmptyOptions & { kind: '1:1' }, IncludeKeysForOneToOneOptions>({
+  oneToOne: <Target extends EntityTarget | EntityTarget[]>(
+    target: Target,
+  ): PropertyChain<InferEntity<Target extends (infer T)[] ? T : Target>, EmptyOptions & { kind: '1:1' }> =>
+    new UniversalPropertyOptionsBuilder<
+      InferEntity<Target extends (infer T)[] ? T : Target>,
+      EmptyOptions & { kind: '1:1' },
+      IncludeKeysForOneToOneOptions
+    >({
       entity: () => target as any,
       kind: '1:1',
     }) as any,
@@ -858,7 +1134,21 @@ export interface EntityMetadataWithProperties<
   TBase = never,
   TRepository = never,
   TForceObject extends boolean = false,
-> extends Omit<Partial<EntityMetadata<InferEntityFromProperties<TProperties, TPK, TBase, TRepository>>>, 'properties' | 'extends' | 'primaryKeys' | 'hooks' | 'discriminatorColumn' | 'versionProperty' | 'concurrencyCheckKeys' | 'serializedPrimaryKey' | 'indexes' | 'uniques' | 'repository' | 'orderBy' > {
+> extends Omit<
+  Partial<EntityMetadata<InferEntityFromProperties<TProperties, TPK, TBase, TRepository>>>,
+  | 'properties'
+  | 'extends'
+  | 'primaryKeys'
+  | 'hooks'
+  | 'discriminatorColumn'
+  | 'versionProperty'
+  | 'concurrencyCheckKeys'
+  | 'serializedPrimaryKey'
+  | 'indexes'
+  | 'uniques'
+  | 'repository'
+  | 'orderBy'
+> {
   name: TName;
   tableName?: TTableName;
   // Uses ~entity marker for fast type inference (avoids expensive EntitySchema matching)
@@ -875,7 +1165,9 @@ export interface EntityMetadataWithProperties<
   inheritance?: 'tpt';
 
   // use keyof TProperties (+ keyof TBase when present) instead of EntityKey<T> to avoid circular type inference
-  orderBy?: { [K in Extract<AllKeys<TProperties, TBase>, string>]?: QueryOrderKeysFlat } | { [K in Extract<AllKeys<TProperties, TBase>, string>]?: QueryOrderKeysFlat }[];
+  orderBy?:
+    | { [K in Extract<AllKeys<TProperties, TBase>, string>]?: QueryOrderKeysFlat }
+    | { [K in Extract<AllKeys<TProperties, TBase>, string>]?: QueryOrderKeysFlat }[];
   discriminatorColumn?: string;
   versionProperty?: AllKeys<TProperties, TBase>;
   concurrencyCheckKeys?: Set<AllKeys<TProperties, TBase>>;
@@ -906,9 +1198,22 @@ export function defineEntity<
   const TForceObject extends boolean = false,
 >(
   meta: EntityMetadataWithProperties<TName, TTableName, TProperties, TPK, TBase, TRepository, TForceObject>,
-): EntitySchemaWithMeta<TName, TTableName, InferEntityFromProperties<TProperties, TPK, TBase, TRepository, TForceObject>, TBase, TProperties>;
+): EntitySchemaWithMeta<
+  TName,
+  TTableName,
+  InferEntityFromProperties<TProperties, TPK, TBase, TRepository, TForceObject>,
+  TBase,
+  TProperties
+>;
 
-export function defineEntity<const TEntity = any, const TProperties extends Record<string, any> = Record<string, any>, const TClassName extends string = string, const TTableName extends string = string, const TBase = never, const TClass extends EntityCtor = EntityCtor<TEntity>>(
+export function defineEntity<
+  const TEntity = any,
+  const TProperties extends Record<string, any> = Record<string, any>,
+  const TClassName extends string = string,
+  const TTableName extends string = string,
+  const TBase = never,
+  const TClass extends EntityCtor = EntityCtor<TEntity>,
+>(
   meta: Omit<Partial<EntityMetadata<TEntity>>, 'properties' | 'extends' | 'className' | 'tableName' | 'hooks'> & {
     class: TClass;
     className?: TClassName;
@@ -920,13 +1225,16 @@ export function defineEntity<const TEntity = any, const TProperties extends Reco
 ): EntitySchemaWithMeta<TClassName, TTableName, TEntity, TBase, TProperties, TClass>;
 
 export function defineEntity(
-  meta: Omit<Partial<EntityMetadata>, 'properties' | 'extends'> & {
-    extends?: EntityName;
-    properties: Record<string, any> | ((properties: typeof propertyBuilders) => Record<string, any>);
-  } | EntityMetadataWithProperties<any, any, any, any, any, any, any>,
+  meta:
+    | (Omit<Partial<EntityMetadata>, 'properties' | 'extends'> & {
+        extends?: EntityName;
+        properties: Record<string, any> | ((properties: typeof propertyBuilders) => Record<string, any>);
+      })
+    | EntityMetadataWithProperties<any, any, any, any, any, any, any>,
 ): EntitySchemaWithMeta<any, any, any, any, any, any> {
   const { properties: propertiesOrGetter, ...options } = meta;
-  const propertyOptions = typeof propertiesOrGetter === 'function' ? propertiesOrGetter(propertyBuilders) : propertiesOrGetter;
+  const propertyOptions =
+    typeof propertiesOrGetter === 'function' ? propertiesOrGetter(propertyBuilders) : propertiesOrGetter;
   const properties = {};
   const values = new Map<string, any>();
   for (const [key, builder] of Object.entries(propertyOptions)) {
@@ -980,35 +1288,81 @@ type MapToArray<T extends Record<string, any>> = {
 
 type PropertyValueType = PropertyOptions<any>['type'];
 
-type InferPropertyValueType<T extends PropertyValueType> =
-  T extends string ? InferTypeByString<T> :
-  T extends NumberConstructor ? number :
-  T extends StringConstructor ? string :
-  T extends BooleanConstructor ? boolean :
-  T extends DateConstructor ? Date :
-  T extends ArrayConstructor ? string[] :
-  T extends Constructor<infer TType> ?
-  TType extends Type<infer TValue, any> ? NonNullable<TValue> : TType :
-  T extends Type<infer TValue, any> ? NonNullable<TValue> :
-  any;
+type InferPropertyValueType<T extends PropertyValueType> = T extends string
+  ? InferTypeByString<T>
+  : T extends NumberConstructor
+    ? number
+    : T extends StringConstructor
+      ? string
+      : T extends BooleanConstructor
+        ? boolean
+        : T extends DateConstructor
+          ? Date
+          : T extends ArrayConstructor
+            ? string[]
+            : T extends Constructor<infer TType>
+              ? TType extends Type<infer TValue, any>
+                ? NonNullable<TValue>
+                : TType
+              : T extends Type<infer TValue, any>
+                ? NonNullable<TValue>
+                : any;
 
-type InferTypeByString<T extends string> =
-  T extends keyof typeof types ? InferJSType<typeof types[T]> :
-  InferColumnType<T>;
+type InferTypeByString<T extends string> = T extends keyof typeof types
+  ? InferJSType<(typeof types)[T]>
+  : InferColumnType<T>;
 
 type InferJSType<T> = T extends typeof Type<infer TValue, any> ? NonNullable<TValue> : never;
 
-type InferColumnType<T extends string> =
-  T extends 'int' | 'int4' | 'integer' | 'bigint' | 'int8' | 'int2' | 'tinyint' | 'smallint' | 'mediumint' ? number :
-  T extends 'double' | 'double precision' | 'real' | 'float8' | 'decimal' | 'numeric' | 'float' | 'float4' ? number :
-  T extends 'datetime' | 'time' | 'time with time zone' | 'timestamp' | 'timestamp with time zone' | 'timetz' | 'timestamptz' | 'date' | 'interval' ? Date :
-  T extends 'ObjectId' | 'objectId' | 'character varying' | 'varchar' | 'char' | 'character' | 'uuid' | 'text' | 'tinytext' | 'mediumtext' | 'longtext' | 'enum' ? string :
-  T extends 'boolean' | 'bool' | 'bit' ? boolean :
-  T extends 'blob' | 'tinyblob' | 'mediumblob' | 'longblob' | 'bytea' ? Buffer :
-  T extends 'point' | 'line' | 'lseg' | 'box' | 'circle' | 'path' | 'polygon' | 'geometry' ? number[] :
-  T extends 'tsvector' | 'tsquery' ? string[] :
-  T extends 'json' | 'jsonb' ? any :
-  any;
+type InferColumnType<T extends string> = T extends
+  | 'int'
+  | 'int4'
+  | 'integer'
+  | 'bigint'
+  | 'int8'
+  | 'int2'
+  | 'tinyint'
+  | 'smallint'
+  | 'mediumint'
+  ? number
+  : T extends 'double' | 'double precision' | 'real' | 'float8' | 'decimal' | 'numeric' | 'float' | 'float4'
+    ? number
+    : T extends
+          | 'datetime'
+          | 'time'
+          | 'time with time zone'
+          | 'timestamp'
+          | 'timestamp with time zone'
+          | 'timetz'
+          | 'timestamptz'
+          | 'date'
+          | 'interval'
+      ? Date
+      : T extends
+            | 'ObjectId'
+            | 'objectId'
+            | 'character varying'
+            | 'varchar'
+            | 'char'
+            | 'character'
+            | 'uuid'
+            | 'text'
+            | 'tinytext'
+            | 'mediumtext'
+            | 'longtext'
+            | 'enum'
+        ? string
+        : T extends 'boolean' | 'bool' | 'bit'
+          ? boolean
+          : T extends 'blob' | 'tinyblob' | 'mediumblob' | 'longblob' | 'bytea'
+            ? Buffer
+            : T extends 'point' | 'line' | 'lseg' | 'box' | 'circle' | 'path' | 'polygon' | 'geometry'
+              ? number[]
+              : T extends 'tsvector' | 'tsquery'
+                ? string[]
+                : T extends 'json' | 'jsonb'
+                  ? any
+                  : any;
 
 // Methods using `<Entity extends this>` in BaseEntity resolve `this` to BaseEntity
 // in intersection types, losing the entity's own properties. We fix this by prepending
@@ -1016,46 +1370,71 @@ type InferColumnType<T extends string> =
 // before the Base in the intersection — TypeScript picks earlier overloads first.
 type BaseEntityMethodKeys = 'toObject' | 'toPOJO' | 'serialize' | 'assign' | 'populate' | 'init' | 'toReference';
 
-export type InferEntityFromProperties<Properties extends Record<string, any>, PK extends (keyof Properties)[] | undefined = undefined, Base = never, Repository = never, ForceObject extends boolean = false> =
-  (IsNever<Base> extends true ? {} :
-    Base extends { toObject(...args: any[]): any }
-      ? Pick<IWrappedEntity<{
-          -readonly [K in keyof Properties]: InferBuilderValue<MaybeReturnType<Properties[K]>>;
-        } & {
-          [PrimaryKeyProp]?: InferCombinedPrimaryKey<Properties, PK, Base>;
-        } & (IsNever<Repository> extends true ? {} : { [EntityRepositoryType]?: Repository extends Constructor<infer R> ? R : Repository })
-        & Omit<Base, typeof PrimaryKeyProp>>, BaseEntityMethodKeys>
-      : {})
-  & {
+export type InferEntityFromProperties<
+  Properties extends Record<string, any>,
+  PK extends (keyof Properties)[] | undefined = undefined,
+  Base = never,
+  Repository = never,
+  ForceObject extends boolean = false,
+> = (IsNever<Base> extends true
+  ? {}
+  : Base extends { toObject(...args: any[]): any }
+    ? Pick<
+        IWrappedEntity<
+          {
+            -readonly [K in keyof Properties]: InferBuilderValue<MaybeReturnType<Properties[K]>>;
+          } & {
+            [PrimaryKeyProp]?: InferCombinedPrimaryKey<Properties, PK, Base>;
+          } & (IsNever<Repository> extends true
+              ? {}
+              : { [EntityRepositoryType]?: Repository extends Constructor<infer R> ? R : Repository }) &
+            Omit<Base, typeof PrimaryKeyProp>
+        >,
+        BaseEntityMethodKeys
+      >
+    : {}) & {
   -readonly [K in keyof Properties]: InferBuilderValue<MaybeReturnType<Properties[K]>>;
 } & {
   [PrimaryKeyProp]?: InferCombinedPrimaryKey<Properties, PK, Base>;
-} & (IsNever<Repository> extends true ? {} : { [EntityRepositoryType]?: Repository extends Constructor<infer R> ? R : Repository })
-& (IsNever<Base> extends true ? {} : Omit<Base, typeof PrimaryKeyProp>)
-& (ForceObject extends true ? { [Config]?: DefineConfig<{ forceObject: true }> } : {});
+} & (IsNever<Repository> extends true
+    ? {}
+    : { [EntityRepositoryType]?: Repository extends Constructor<infer R> ? R : Repository }) &
+  (IsNever<Base> extends true ? {} : Omit<Base, typeof PrimaryKeyProp>) &
+  (ForceObject extends true ? { [Config]?: DefineConfig<{ forceObject: true }> } : {});
 
 // Combines primary keys from child properties and base entity
-type InferCombinedPrimaryKey<Properties extends Record<string, any>, PK, Base> =
-  PK extends undefined
-    ? CombinePrimaryKeys<InferPrimaryKey<Properties>, ExtractBasePrimaryKey<Base>>
-    : PK;
+type InferCombinedPrimaryKey<Properties extends Record<string, any>, PK, Base> = PK extends undefined
+  ? CombinePrimaryKeys<InferPrimaryKey<Properties>, ExtractBasePrimaryKey<Base>>
+  : PK;
 
 // Extract primary key from base entity type
 type ExtractBasePrimaryKey<Base> = Base extends { [PrimaryKeyProp]?: infer BasePK } ? BasePK : never;
 
 // Combine child and base primary keys into a union
-type CombinePrimaryKeys<ChildPK, BasePK> =
-  [ChildPK] extends [never]
-    ? BasePK
-    : [BasePK] extends [never]
-      ? IsUnion<ChildPK> extends true ? ChildPK[] : ChildPK
-      : ChildPK | BasePK;
+type CombinePrimaryKeys<ChildPK, BasePK> = [ChildPK] extends [never]
+  ? BasePK
+  : [BasePK] extends [never]
+    ? IsUnion<ChildPK> extends true
+      ? ChildPK[]
+      : ChildPK
+    : ChildPK | BasePK;
 
 export type InferPrimaryKey<Properties extends Record<string, any>> = {
   [K in keyof Properties]: MaybeReturnType<Properties[K]> extends { '~options': { primary: true } } ? K : never;
 }[keyof Properties];
 
-type InferBuilderValue<Builder> = Builder extends { '~type'?: { value: infer Value }; '~options'?: infer Options } ? MaybeHidden<MaybeOpt<MaybeScalarRef<MaybeNullable<MaybeRelationRef<MaybeMapToPk<MaybeArray<Value, Options>, Options>, Options>, Options>, Options>, Options>, Options> : never;
+type InferBuilderValue<Builder> = Builder extends { '~type'?: { value: infer Value }; '~options'?: infer Options }
+  ? MaybeHidden<
+      MaybeOpt<
+        MaybeScalarRef<
+          MaybeNullable<MaybeRelationRef<MaybeMapToPk<MaybeArray<Value, Options>, Options>, Options>, Options>,
+          Options
+        >,
+        Options
+      >,
+      Options
+    >
+  : never;
 
 type MaybeArray<Value, Options> = Options extends { array: true } ? Value[] : Value;
 
@@ -1063,31 +1442,46 @@ type MaybeMapToPk<Value, Options> = Options extends { mapToPk: true } ? Primary<
 
 type MaybeNullable<Value, Options> = Options extends { nullable: true } ? Value | null | undefined : Value;
 
-type MaybeRelationRef<Value, Options> =
-  Options extends { mapToPk: true } ? Value :
-  Options extends { ref: true; kind: '1:1' } ? Value extends object ? Ref<Value> : never :
-  Options extends { ref: true; kind: 'm:1' } ? Value extends object ? Ref<Value> : never :
-  Options extends { kind: '1:m' } ? Value extends object ? Collection<Value> : never :
-  Options extends { kind: 'm:n' } ? Value extends object ? Collection<Value> : never :
-    Value;
+type MaybeRelationRef<Value, Options> = Options extends { mapToPk: true }
+  ? Value
+  : Options extends { ref: true; kind: '1:1' }
+    ? Value extends object
+      ? Ref<Value>
+      : never
+    : Options extends { ref: true; kind: 'm:1' }
+      ? Value extends object
+        ? Ref<Value>
+        : never
+      : Options extends { kind: '1:m' }
+        ? Value extends object
+          ? Collection<Value>
+          : never
+        : Options extends { kind: 'm:n' }
+          ? Value extends object
+            ? Collection<Value>
+            : never
+          : Value;
 
-type MaybeScalarRef<Value, Options> =
-  Options extends { kind: '1:1' | 'm:1' | '1:m' | 'm:n' } ? Value :
-  Options extends { ref: true } ? ScalarReference<Value> :
-    Value;
+type MaybeScalarRef<Value, Options> = Options extends { kind: '1:1' | 'm:1' | '1:m' | 'm:n' }
+  ? Value
+  : Options extends { ref: true }
+    ? ScalarReference<Value>
+    : Value;
 
-type MaybeOpt<Value, Options> =
-  Options extends { mapToPk: true } ? Value extends Opt<infer OriginalValue> ? OriginalValue : Value :
-  Options extends
-    | { autoincrement: true }
-    | { onCreate: Function }
-    | { default: string | string[] | number | number[] | boolean | null | Date | Raw }
-    | { defaultRaw: string }
-    | { persist: false }
-    | { version: true }
-    | { formula: string | ((...args: any[]) => any) }
-    ? Opt<Value> :
-    Value;
+type MaybeOpt<Value, Options> = Options extends { mapToPk: true }
+  ? Value extends Opt<infer OriginalValue>
+    ? OriginalValue
+    : Value
+  : Options extends
+        | { autoincrement: true }
+        | { onCreate: Function }
+        | { default: string | string[] | number | number[] | boolean | null | Date | Raw }
+        | { defaultRaw: string }
+        | { persist: false }
+        | { version: true }
+        | { formula: string | ((...args: any[]) => any) }
+    ? Opt<Value>
+    : Value;
 
 type MaybeHidden<Value, Options> = Options extends { hidden: true } ? Hidden<Value> : Value;
 

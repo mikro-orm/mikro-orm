@@ -18,7 +18,6 @@ import { mockLogger } from '../../helpers.js';
   default: true,
 })
 class BenefitDetail {
-
   @PrimaryKey()
   id!: number;
 
@@ -30,7 +29,6 @@ class BenefitDetail {
 
   @Property()
   active: boolean = false;
-
 }
 
 @Filter({
@@ -39,35 +37,29 @@ class BenefitDetail {
   default: true,
 })
 class BaseBenefit {
-
   @PrimaryKey()
   id!: number;
 
   @Property()
   benefitStatus!: string;
-
 }
 
 @Entity()
 class Benefit extends BaseBenefit {
-
   @Property({ nullable: true })
   name?: string;
 
   @OneToMany(() => BenefitDetail, d => d.benefit, { filters: false })
   details = new Collection<BenefitDetail>(this);
-
 }
 
 @Entity()
 class Employee {
-
   @PrimaryKey()
   id!: number;
 
   @ManyToMany({ entity: () => Benefit, filters: false })
   benefits = new Collection<Benefit>(this);
-
 }
 
 @Entity()
@@ -77,7 +69,6 @@ class Employee {
   default: true,
 })
 class User {
-
   @PrimaryKey()
   id!: number;
 
@@ -89,7 +80,6 @@ class User {
 
   @Property()
   age!: number;
-
 }
 
 @Entity()
@@ -100,7 +90,6 @@ class User {
   args: false,
 })
 class Membership {
-
   @PrimaryKey()
   id!: number;
 
@@ -109,11 +98,9 @@ class Membership {
 
   @Property()
   role!: string;
-
 }
 
 describe('disable filters on relations [postgres]', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -165,9 +152,15 @@ describe('disable filters on relations [postgres]', () => {
     const { employee } = await createEntities();
     expect(mock.mock.calls[0][0]).toMatch(`begin`);
     expect(mock.mock.calls[1][0]).toMatch(`insert into "employee" ("id") values (default) returning "id"`);
-    expect(mock.mock.calls[2][0]).toMatch(`insert into "benefit" ("benefit_status", "name") values (?, ?), (?, ?) returning "id"`);
-    expect(mock.mock.calls[3][0]).toMatch(`insert into "benefit_detail" ("description", "benefit_id", "active") values (?, ?, ?), (?, ?, ?), (?, ?, ?), (?, ?, ?), (?, ?, ?), (?, ?, ?) returning "id"`);
-    expect(mock.mock.calls[4][0]).toMatch(`insert into "employee_benefits" ("benefit_id", "employee_id") values (?, ?), (?, ?)`);
+    expect(mock.mock.calls[2][0]).toMatch(
+      `insert into "benefit" ("benefit_status", "name") values (?, ?), (?, ?) returning "id"`,
+    );
+    expect(mock.mock.calls[3][0]).toMatch(
+      `insert into "benefit_detail" ("description", "benefit_id", "active") values (?, ?, ?), (?, ?, ?), (?, ?, ?), (?, ?, ?), (?, ?, ?), (?, ?, ?) returning "id"`,
+    );
+    expect(mock.mock.calls[4][0]).toMatch(
+      `insert into "employee_benefits" ("benefit_id", "employee_id") values (?, ?), (?, ?)`,
+    );
     expect(mock.mock.calls[5][0]).toMatch(`commit`);
     orm.em.clear();
     mock.mockReset();
@@ -180,23 +173,35 @@ describe('disable filters on relations [postgres]', () => {
     orm.em.clear();
     mock.mockReset();
 
-    const e1 = await orm.em.findOneOrFail(Employee, employee.id, { populate: ['benefits.details'], strategy: 'select-in' });
+    const e1 = await orm.em.findOneOrFail(Employee, employee.id, {
+      populate: ['benefits.details'],
+      strategy: 'select-in',
+    });
     expect(mock.mock.calls[0][0]).toMatch(`select "e0".* from "employee" as "e0" where "e0"."id" = ? limit ?`);
-    expect(mock.mock.calls[1][0]).toMatch(`select "e0"."benefit_id", "e0"."employee_id", "b1"."id" as "b1__id", "b1"."benefit_status" as "b1__benefit_status", "b1"."name" as "b1__name" from "employee_benefits" as "e0" inner join "benefit" as "b1" on "e0"."benefit_id" = "b1"."id" where "e0"."employee_id" in (?)`);
-    expect(mock.mock.calls[2][0]).toMatch(`select "b0".* from "benefit_detail" as "b0" where "b0"."benefit_id" in (?, ?)`);
+    expect(mock.mock.calls[1][0]).toMatch(
+      `select "e0"."benefit_id", "e0"."employee_id", "b1"."id" as "b1__id", "b1"."benefit_status" as "b1__benefit_status", "b1"."name" as "b1__name" from "employee_benefits" as "e0" inner join "benefit" as "b1" on "e0"."benefit_id" = "b1"."id" where "e0"."employee_id" in (?)`,
+    );
+    expect(mock.mock.calls[2][0]).toMatch(
+      `select "b0".* from "benefit_detail" as "b0" where "b0"."benefit_id" in (?, ?)`,
+    );
     expect(e1.benefits).toHaveLength(2);
     expect(e1.benefits[0].details).toHaveLength(3);
 
     orm.em.clear();
     mock.mockReset();
 
-    const e2 = await orm.em.findOneOrFail(Employee, employee.id, { populate: ['benefits.details'], strategy: 'joined' });
-    expect(mock.mock.calls[0][0]).toMatch('select "e0".*, "b1"."id" as "b1__id", "b1"."benefit_status" as "b1__benefit_status", "b1"."name" as "b1__name", "d3"."id" as "d3__id", "d3"."description" as "d3__description", "d3"."benefit_id" as "d3__benefit_id", "d3"."active" as "d3__active" ' +
-      'from "employee" as "e0" ' +
-      'left join "employee_benefits" as "e2" on "e0"."id" = "e2"."employee_id" ' +
-      'left join "benefit" as "b1" on "e2"."benefit_id" = "b1"."id" ' +
-      'left join "benefit_detail" as "d3" on "b1"."id" = "d3"."benefit_id" ' +
-      'where "e0"."id" = ?');
+    const e2 = await orm.em.findOneOrFail(Employee, employee.id, {
+      populate: ['benefits.details'],
+      strategy: 'joined',
+    });
+    expect(mock.mock.calls[0][0]).toMatch(
+      'select "e0".*, "b1"."id" as "b1__id", "b1"."benefit_status" as "b1__benefit_status", "b1"."name" as "b1__name", "d3"."id" as "d3__id", "d3"."description" as "d3__description", "d3"."benefit_id" as "d3__benefit_id", "d3"."active" as "d3__active" ' +
+        'from "employee" as "e0" ' +
+        'left join "employee_benefits" as "e2" on "e0"."id" = "e2"."employee_id" ' +
+        'left join "benefit" as "b1" on "e2"."benefit_id" = "b1"."id" ' +
+        'left join "benefit_detail" as "d3" on "b1"."id" = "d3"."benefit_id" ' +
+        'where "e0"."id" = ?',
+    );
     expect(e2.benefits).toHaveLength(2);
     expect(e2.benefits[0].details).toHaveLength(3);
   });
@@ -206,22 +211,26 @@ describe('disable filters on relations [postgres]', () => {
 
     await orm.em.find(User, { $or: [{ firstName: 'name' }, { lastName: 'name' }] });
     await orm.em.find(Membership, { $or: [{ role: 'admin' }, { role: 'moderator' }] });
-    await orm.em.find(Membership, {
-      $or: [
-        { role: 'admin' },
-        { role: 'moderator' },
-      ],
-      user: {
-        $or: [
-          { firstName: 'John' },
-          { lastName: 'Doe' },
-        ],
+    await orm.em.find(
+      Membership,
+      {
+        $or: [{ role: 'admin' }, { role: 'moderator' }],
+        user: {
+          $or: [{ firstName: 'John' }, { lastName: 'Doe' }],
+        },
       },
-    }, { filters: false });
+      { filters: false },
+    );
 
-    expect(mock.mock.calls[0][0]).toMatch(`select "u0".* from "user" as "u0" where ("u0"."age" = ? or "u0"."age" = ?) and ("u0"."first_name" = ? or "u0"."last_name" = ?)`);
-    expect(mock.mock.calls[1][0]).toMatch(`select "m0".* from "membership" as "m0" inner join "user" as "u1" on "m0"."user_id" = "u1"."id" where ("u1"."first_name" = ? or "u1"."last_name" = ? or "u1"."age" = ?) and ("m0"."role" = ? or "m0"."role" = ?)`);
-    expect(mock.mock.calls[2][0]).toMatch(`select "m0".* from "membership" as "m0" inner join "user" as "u1" on "m0"."user_id" = "u1"."id" where ("m0"."role" = ? or "m0"."role" = ?) and ("u1"."first_name" = ? or "u1"."last_name" = ?)`);
+    expect(mock.mock.calls[0][0]).toMatch(
+      `select "u0".* from "user" as "u0" where ("u0"."age" = ? or "u0"."age" = ?) and ("u0"."first_name" = ? or "u0"."last_name" = ?)`,
+    );
+    expect(mock.mock.calls[1][0]).toMatch(
+      `select "m0".* from "membership" as "m0" inner join "user" as "u1" on "m0"."user_id" = "u1"."id" where ("u1"."first_name" = ? or "u1"."last_name" = ? or "u1"."age" = ?) and ("m0"."role" = ? or "m0"."role" = ?)`,
+    );
+    expect(mock.mock.calls[2][0]).toMatch(
+      `select "m0".* from "membership" as "m0" inner join "user" as "u1" on "m0"."user_id" = "u1"."id" where ("m0"."role" = ? or "m0"."role" = ?) and ("u1"."first_name" = ? or "u1"."last_name" = ?)`,
+    );
   });
 
   test('Ref.load() allows controlling filters', async () => {
@@ -286,12 +295,15 @@ describe('disable filters on relations [postgres]', () => {
       where: { details: { active: false } },
     });
     expect(benefits).toHaveLength(2);
-    expect(mock.mock.calls[0][0]).toMatch(`select "b0".* from "benefit" as "b0" left join "benefit_detail" as "b1" on "b0"."id" = "b1"."benefit_id" where "b1"."active" = ?`);
+    expect(mock.mock.calls[0][0]).toMatch(
+      `select "b0".* from "benefit" as "b0" left join "benefit_detail" as "b1" on "b0"."id" = "b1"."benefit_id" where "b1"."active" = ?`,
+    );
     expect(benefits[0].details.isInitialized()).toBe(false);
     await expect(benefits[0].details.loadItems({ filters: true })).resolves.toHaveLength(0);
-    expect(mock.mock.calls[1][0]).toMatch(`select "b0".*, "b1"."id" as "b1__id" from "benefit_detail" as "b0" inner join "benefit" as "b1" on "b0"."benefit_id" = "b1"."id" and "b1"."benefit_status" = ? where "b0"."active" = ? and "b0"."benefit_id" in (?)`);
+    expect(mock.mock.calls[1][0]).toMatch(
+      `select "b0".*, "b1"."id" as "b1__id" from "benefit_detail" as "b0" inner join "benefit" as "b1" on "b0"."benefit_id" = "b1"."id" and "b1"."benefit_status" = ? where "b0"."active" = ? and "b0"."benefit_id" in (?)`,
+    );
     await expect(benefits[0].details.loadItems({ refresh: true })).resolves.toHaveLength(3);
     expect(mock.mock.calls[2][0]).toMatch(`select "b0".* from "benefit_detail" as "b0" where "b0"."benefit_id" in (?)`);
   });
-
 });

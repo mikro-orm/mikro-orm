@@ -116,7 +116,10 @@ describe('CompileCommand', () => {
 
   test('handler generates CJS output', async () => {
     vi.spyOn(CLIHelper, 'getConfiguration').mockResolvedValue(
-      new Configuration({ driver: MySqlDriver, metadataCache: { enabled: true }, getDriver: () => ({ getPlatform: vi.fn() }) } as any, false),
+      new Configuration(
+        { driver: MySqlDriver, metadataCache: { enabled: true }, getDriver: () => ({ getPlatform: vi.fn() }) } as any,
+        false,
+      ),
     );
     const discoverMock = vi.spyOn(MetadataDiscovery.prototype, 'discover').mockResolvedValue(createSimpleMetadata());
     const dumpMock = vi.spyOn(CLIHelper, 'dump').mockImplementation(i => i);
@@ -145,7 +148,10 @@ describe('CompileCommand', () => {
 
   test('handler generates ESM output when project uses type=module', async () => {
     vi.spyOn(CLIHelper, 'getConfiguration').mockResolvedValue(
-      new Configuration({ driver: MySqlDriver, metadataCache: { enabled: true }, getDriver: () => ({ getPlatform: vi.fn() }) } as any, false),
+      new Configuration(
+        { driver: MySqlDriver, metadataCache: { enabled: true }, getDriver: () => ({ getPlatform: vi.fn() }) } as any,
+        false,
+      ),
     );
     vi.spyOn(MetadataDiscovery.prototype, 'discover').mockResolvedValue(createSimpleMetadata());
     vi.spyOn(CLIHelper, 'dump').mockImplementation(i => i);
@@ -165,7 +171,10 @@ describe('CompileCommand', () => {
 
   test('handler outputs next to ORM config file by default', async () => {
     vi.spyOn(CLIHelper, 'getConfiguration').mockResolvedValue(
-      new Configuration({ driver: MySqlDriver, metadataCache: { enabled: true }, getDriver: () => ({ getPlatform: vi.fn() }) } as any, false),
+      new Configuration(
+        { driver: MySqlDriver, metadataCache: { enabled: true }, getDriver: () => ({ getPlatform: vi.fn() }) } as any,
+        false,
+      ),
     );
     vi.spyOn(MetadataDiscovery.prototype, 'discover').mockResolvedValue(createSimpleMetadata());
     vi.spyOn(CLIHelper, 'dump').mockImplementation(i => i);
@@ -181,7 +190,10 @@ describe('CompileCommand', () => {
 
   test('handler falls back to cwd when no config file is found', async () => {
     vi.spyOn(CLIHelper, 'getConfiguration').mockResolvedValue(
-      new Configuration({ driver: MySqlDriver, metadataCache: { enabled: true }, getDriver: () => ({ getPlatform: vi.fn() }) } as any, false),
+      new Configuration(
+        { driver: MySqlDriver, metadataCache: { enabled: true }, getDriver: () => ({ getPlatform: vi.fn() }) } as any,
+        false,
+      ),
     );
     vi.spyOn(MetadataDiscovery.prototype, 'discover').mockResolvedValue(createSimpleMetadata());
     vi.spyOn(CLIHelper, 'dump').mockImplementation(i => i);

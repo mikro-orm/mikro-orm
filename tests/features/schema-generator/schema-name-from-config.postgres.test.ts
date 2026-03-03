@@ -2,29 +2,22 @@ import { MikroORM, Collection } from '@mikro-orm/core';
 import { Entity, ManyToMany, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
-
 @Entity()
 class Profile {
-
   @PrimaryKey()
   id!: string;
-
 }
-
 
 @Entity()
 class User {
-
   @PrimaryKey()
   id!: string;
 
   @ManyToMany(() => Profile)
   profile = new Collection<Profile>(this);
-
 }
 
 describe('adding FK column', () => {
-
   let orm: MikroORM<PostgreSqlDriver>;
 
   beforeAll(async () => {
@@ -58,5 +51,4 @@ describe('adding FK column', () => {
 
     await orm.schema.execute(diff3); // drop
   });
-
 });

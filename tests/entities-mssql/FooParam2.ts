@@ -5,7 +5,6 @@ import { FooBaz2 } from './FooBaz2.js';
 
 @Entity()
 export class FooParam2 {
-
   @ManyToOne(() => FooBar2, { primary: true })
   bar!: FooBar2;
 
@@ -22,5 +21,4 @@ export class FooParam2 {
     this.baz = baz;
     this.value = value;
   }
-
 }

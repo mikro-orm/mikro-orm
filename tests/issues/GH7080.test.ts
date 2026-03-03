@@ -3,7 +3,6 @@ import { Entity, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from 
 
 @Entity()
 class A {
-
   @PrimaryKey()
   id!: number;
 
@@ -17,12 +16,10 @@ class A {
     orphanRemoval: true,
   })
   b: Ref<B> | null = null;
-
 }
 
 @Entity()
 class B {
-
   @OneToOne(() => A, {
     inversedBy: 'b',
     primary: true,
@@ -34,11 +31,9 @@ class B {
 
   @Property({ nullable: true })
   value: string | null = null;
-
 }
 
 describe('em.assign with null on 1:1 relation with orphanRemoval and primary FK', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -120,5 +115,4 @@ describe('em.assign with null on 1:1 relation with orphanRemoval and primary FK'
     expect(reloaded.b).toBeNull();
     expect(await em.count(B, {})).toBe(0);
   });
-
 });

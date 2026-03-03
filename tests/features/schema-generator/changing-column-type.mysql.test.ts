@@ -3,7 +3,6 @@ import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-or
 
 @Entity({ tableName: 'book' })
 class Book1 {
-
   @PrimaryKey()
   id!: number;
 
@@ -12,12 +11,10 @@ class Book1 {
 
   @Property({ columnType: `SET('one','two')` })
   mySetCol!: string;
-
 }
 
 @Entity({ tableName: 'book' })
 class Book2 {
-
   @PrimaryKey()
   id!: number;
 
@@ -26,12 +23,10 @@ class Book2 {
 
   @Property({ columnType: `SET('one','two')` })
   mySetCol!: string;
-
 }
 
 @Entity({ tableName: 'book' })
 class Book3 {
-
   @PrimaryKey()
   id!: number;
 
@@ -40,12 +35,10 @@ class Book3 {
 
   @Property({ columnType: `SET('one','two')` })
   mySetCol!: string;
-
 }
 
 @Entity({ tableName: 'book' })
 class Book4 {
-
   @PrimaryKey()
   id!: number;
 
@@ -54,12 +47,10 @@ class Book4 {
 
   @Property({ columnType: `SET('one','two')` })
   mySetCol!: string;
-
 }
 
 @Entity({ tableName: 'book' })
 class Book5 {
-
   @PrimaryKey()
   id!: number;
 
@@ -68,11 +59,9 @@ class Book5 {
 
   @Property({ columnType: `SET('one','two')` })
   mySetCol!: string;
-
 }
 
 describe('changing column in mysql (GH 2407)', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -90,7 +79,9 @@ describe('changing column in mysql (GH 2407)', () => {
   test('schema generator respect indexes on FKs on column update', async () => {
     orm.discoverEntity(Book2, Book1);
     const diff1 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
-    expect(diff1).toBe('alter table `book` modify `my_column` tinyint(1) not null default 1 comment \'this is a comment\';\n');
+    expect(diff1).toBe(
+      "alter table `book` modify `my_column` tinyint(1) not null default 1 comment 'this is a comment';\n",
+    );
     await orm.schema.execute(diff1);
 
     orm.discoverEntity(Book3, Book2);
@@ -100,13 +91,12 @@ describe('changing column in mysql (GH 2407)', () => {
 
     orm.discoverEntity(Book4, Book3);
     const diff4 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
-    expect(diff4).toBe('alter table `book` modify `my_column` tinyint(1) null default 123 comment \'lalala\';\n');
+    expect(diff4).toBe("alter table `book` modify `my_column` tinyint(1) null default 123 comment 'lalala';\n");
     await orm.schema.execute(diff4);
 
     orm.discoverEntity(Book5, Book4);
     const diff5 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
-    expect(diff5).toBe('alter table `book` modify `my_column` tinyint(1) null default 123 comment \'lololo\';\n');
+    expect(diff5).toBe("alter table `book` modify `my_column` tinyint(1) null default 123 comment 'lololo';\n");
     await orm.schema.execute(diff5);
   });
-
 });

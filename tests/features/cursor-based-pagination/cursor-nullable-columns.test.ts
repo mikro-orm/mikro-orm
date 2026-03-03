@@ -4,7 +4,6 @@ import { PLATFORMS } from '../../bootstrap.js';
 
 @Entity()
 class User {
-
   @PrimaryKey({ name: '_id' })
   id!: number;
 
@@ -13,122 +12,121 @@ class User {
 
   @Property({ nullable: true, type: 'integer' })
   age?: number | null;
-
 }
 
-describe.each(['sqlite', 'mysql', 'postgresql', 'mssql', 'mongo'] as const)('cursor pagination with nullable columns (%s)', type => {
+describe.each(['sqlite', 'mysql', 'postgresql', 'mssql', 'mongo'] as const)(
+  'cursor pagination with nullable columns (%s)',
+  type => {
+    let orm: MikroORM;
 
-  let orm: MikroORM;
+    beforeAll(async () => {
+      const options: Options = {};
 
-  beforeAll(async () => {
-    const options: Options = {};
+      if (type === 'mysql') {
+        options.port = 3308;
+      }
 
-    if (type === 'mysql') {
-      options.port = 3308;
-    }
+      if (type === 'mssql') {
+        options.password = 'Root.Root';
+      }
 
-    if (type === 'mssql') {
-      options.password = 'Root.Root';
-    }
+      orm = await MikroORM.init({
+        metadataProvider: ReflectMetadataProvider,
+        entities: [User],
+        dbName: type.includes('sqlite') ? ':memory:' : 'mikro_orm_cursor_5362',
+        driver: PLATFORMS[type],
+        loggerFactory: SimpleLogger.create,
+        ...options,
+      });
+      await orm.schema.refresh();
 
-    orm = await MikroORM.init({
-      metadataProvider: ReflectMetadataProvider,
-      entities: [User],
-      dbName: type.includes('sqlite') ? ':memory:' : 'mikro_orm_cursor_5362',
-      driver: PLATFORMS[type],
-      loggerFactory: SimpleLogger.create,
-      ...options,
-    });
-    await orm.schema.refresh();
+      orm.em.create(User, { id: 1, name: 'User 1', age: 10 });
+      orm.em.create(User, { id: 2, name: 'User 2', age: 20 });
+      orm.em.create(User, { id: 3, name: 'User 3', age: null });
 
-    orm.em.create(User, { id: 1, name: 'User 1', age: 10 });
-    orm.em.create(User, { id: 2, name: 'User 2', age: 20 });
-    orm.em.create(User, { id: 3, name: 'User 3', age: null });
-
-    await orm.em.flush();
-    orm.em.clear();
-  });
-
-  afterAll(() => orm.close(true));
-
-  test('cursor can be created from entity with null value', async () => {
-    const user = await orm.em.findOneOrFail(User, { id: 3 });
-    expect(user.age).toBeNull();
-
-    // This should not throw - the main fix for GH#5362
-    const cursor = await orm.em.findByCursor(User, {
-      first: 3,
-      orderBy: { age: 'asc', id: 'asc' },
+      await orm.em.flush();
+      orm.em.clear();
     });
 
-    // The cursor should be able to encode a null value
-    const encoded = cursor.from(user);
-    expect(encoded).toBeDefined();
+    afterAll(() => orm.close(true));
 
-    // Decoding should work too
-    const decoded = Cursor.decode(encoded);
-    expect(decoded).toEqual([null, 3]);
-  });
+    test('cursor can be created from entity with null value', async () => {
+      const user = await orm.em.findOneOrFail(User, { id: 3 });
+      expect(user.age).toBeNull();
 
-  test('can paginate through data that includes nulls (ordered by non-nullable column)', async () => {
-    // First page
-    const cursor1 = await orm.em.findByCursor(User, {
-      first: 2,
-      orderBy: { id: 'asc' },
+      // This should not throw - the main fix for GH#5362
+      const cursor = await orm.em.findByCursor(User, {
+        first: 3,
+        orderBy: { age: 'asc', id: 'asc' },
+      });
+
+      // The cursor should be able to encode a null value
+      const encoded = cursor.from(user);
+      expect(encoded).toBeDefined();
+
+      // Decoding should work too
+      const decoded = Cursor.decode(encoded);
+      expect(decoded).toEqual([null, 3]);
     });
 
-    expect(cursor1.items).toHaveLength(2);
-    expect(cursor1.items).toMatchObject([
-      { id: 1, name: 'User 1' },
-      { id: 2, name: 'User 2' },
-    ]);
-    expect(cursor1.hasNextPage).toBe(true);
-    orm.em.clear();
+    test('can paginate through data that includes nulls (ordered by non-nullable column)', async () => {
+      // First page
+      const cursor1 = await orm.em.findByCursor(User, {
+        first: 2,
+        orderBy: { id: 'asc' },
+      });
 
-    // Second page
-    const cursor2 = await orm.em.findByCursor(User, {
-      first: 2,
-      after: cursor1,
-      orderBy: { id: 'asc' },
+      expect(cursor1.items).toHaveLength(2);
+      expect(cursor1.items).toMatchObject([
+        { id: 1, name: 'User 1' },
+        { id: 2, name: 'User 2' },
+      ]);
+      expect(cursor1.hasNextPage).toBe(true);
+      orm.em.clear();
+
+      // Second page
+      const cursor2 = await orm.em.findByCursor(User, {
+        first: 2,
+        after: cursor1,
+        orderBy: { id: 'asc' },
+      });
+
+      expect(cursor2.items).toHaveLength(1);
+      expect(cursor2.hasNextPage).toBe(false);
+      // The item should include the null age user
+      expect(cursor2.items[0]).toMatchObject({ id: 3, age: null });
     });
 
-    expect(cursor2.items).toHaveLength(1);
-    expect(cursor2.hasNextPage).toBe(false);
-    // The item should include the null age user
-    expect(cursor2.items[0]).toMatchObject({ id: 3, age: null });
-  });
+    test('can paginate backward through data that includes nulls', async () => {
+      // Last page
+      const cursor1 = await orm.em.findByCursor(User, {
+        last: 2,
+        orderBy: { id: 'asc' },
+      });
 
-  test('can paginate backward through data that includes nulls', async () => {
-    // Last page
-    const cursor1 = await orm.em.findByCursor(User, {
-      last: 2,
-      orderBy: { id: 'asc' },
+      expect(cursor1.items).toHaveLength(2);
+      expect(cursor1.items).toMatchObject([
+        { id: 2, name: 'User 2' },
+        { id: 3, name: 'User 3', age: null },
+      ]);
+      expect(cursor1.hasPrevPage).toBe(true);
+      orm.em.clear();
+
+      // Previous page
+      const cursor2 = await orm.em.findByCursor(User, {
+        last: 2,
+        before: cursor1,
+        orderBy: { id: 'asc' },
+      });
+
+      expect(cursor2.items).toHaveLength(1);
+      expect(cursor2.hasPrevPage).toBe(false);
+      expect(cursor2.items[0]).toMatchObject({ id: 1, name: 'User 1' });
     });
-
-    expect(cursor1.items).toHaveLength(2);
-    expect(cursor1.items).toMatchObject([
-      { id: 2, name: 'User 2' },
-      { id: 3, name: 'User 3', age: null },
-    ]);
-    expect(cursor1.hasPrevPage).toBe(true);
-    orm.em.clear();
-
-    // Previous page
-    const cursor2 = await orm.em.findByCursor(User, {
-      last: 2,
-      before: cursor1,
-      orderBy: { id: 'asc' },
-    });
-
-    expect(cursor2.items).toHaveLength(1);
-    expect(cursor2.hasPrevPage).toBe(false);
-    expect(cursor2.items[0]).toMatchObject({ id: 1, name: 'User 1' });
-  });
-
-});
+  },
+);
 
 describe('cursor pagination with forceUndefined', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -200,11 +198,9 @@ describe('cursor pagination with forceUndefined', () => {
     expect(cursor2.items[0]).toMatchObject({ id: 3, name: 'User 3' });
     expect(cursor2.items[0].age).toBeUndefined();
   });
-
 });
 
 describe('cursor pagination - ordering by nullable column', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -307,14 +303,13 @@ describe('cursor pagination - ordering by nullable column', () => {
     expect(validCursor).toBeDefined();
 
     // Should throw for undefined (missing value)
-    expect(() => Cursor.for(meta, { id: 1 } as any, { age: 'asc', id: 'asc' }))
-      .toThrow("Invalid cursor condition, value for 'User.age' is missing");
+    expect(() => Cursor.for(meta, { id: 1 } as any, { age: 'asc', id: 'asc' })).toThrow(
+      "Invalid cursor condition, value for 'User.age' is missing",
+    );
   });
-
 });
 
 describe('cursor pagination - null cursor condition branches', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -466,5 +461,4 @@ describe('cursor pagination - null cursor condition branches', () => {
     // Result count depends on database NULLS ordering support
     expect(result.items.length).toBeGreaterThanOrEqual(0);
   });
-
 });

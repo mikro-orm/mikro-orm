@@ -3,7 +3,6 @@ import { Project } from './project.entity.js';
 
 @Entity()
 export class House {
-
   @PrimaryKey()
   id!: number;
 
@@ -18,5 +17,4 @@ export class House {
 
   @Property()
   createdAt: Date = new Date();
-
 }

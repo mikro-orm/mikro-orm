@@ -1,9 +1,15 @@
 import { Collection, MikroORM } from '@mikro-orm/sqlite';
-import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class User {
-
   @PrimaryKey()
   id!: number;
 
@@ -12,12 +18,10 @@ class User {
 
   @OneToMany(() => Group, v => v.user)
   groups = new Collection<Group>(this);
-
 }
 
 @Entity()
 class Group {
-
   @PrimaryKey()
   id!: number;
 
@@ -29,12 +33,10 @@ class Group {
 
   @OneToMany(() => Permission, v => v.group)
   permissions = new Collection<Permission>(this);
-
 }
 
 @Entity()
 class Permission {
-
   @PrimaryKey()
   id!: number;
 
@@ -43,7 +45,6 @@ class Permission {
 
   @ManyToOne(() => Group)
   group!: Group;
-
 }
 
 let orm: MikroORM;

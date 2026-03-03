@@ -4,7 +4,6 @@ import { MikroORM } from '@mikro-orm/postgresql';
 import { v4 } from 'uuid';
 
 abstract class CustomBaseEntity<Optional = never> {
-
   [OptionalProps]?: Optional | 'createdAt' | 'updatedAt' | 'version';
 
   @PrimaryKey()
@@ -18,29 +17,24 @@ abstract class CustomBaseEntity<Optional = never> {
 
   @Property({ version: true })
   version!: number;
-
 }
 
 @Entity()
 class CarEntity extends CustomBaseEntity {
-
   @Property()
   brand!: string;
 
   @OneToOne({ nullable: true, entity: () => DriverEntity })
   driver?: Rel<DriverEntity>;
-
 }
 
 @Entity()
 class DriverEntity extends CustomBaseEntity {
-
   @OneToOne(() => CarEntity, car => car.driver, { orphanRemoval: true })
   car!: CarEntity;
 
   @Property()
   name!: string;
-
 }
 
 let orm: MikroORM;

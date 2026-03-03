@@ -8,15 +8,12 @@ import { initORMSqlite, mockLogger, TEMP_DIR } from '../../bootstrap.js';
 import { BaseEntity5, FooBar4, FooBaz4 } from '../../entities-schema/index.js';
 
 class MigrationTest1 extends Migration {
-
   async up(): Promise<void> {
     this.addSql('select 1 + 1');
   }
-
 }
 
 class MigrationTest2 extends Migration {
-
   async up(): Promise<void> {
     this.addSql('select 1 + 1');
     this.addSql(raw('select 1 + 1'));
@@ -28,11 +25,9 @@ class MigrationTest2 extends Migration {
   override isTransactional(): boolean {
     return false;
   }
-
 }
 
 describe('Migrator (sqlite)', () => {
-
   let orm: MikroORM<SqliteDriver>;
   let originalMigrationsSettings: any;
 
@@ -507,5 +502,4 @@ describe('Migrator (sqlite)', () => {
     expect(json.columns.gen_col).not.toHaveProperty('ignoreSchemaChanges');
     expect(json.columns.gen_col).not.toHaveProperty('defaultConstraint');
   });
-
 });

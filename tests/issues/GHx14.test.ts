@@ -1,31 +1,33 @@
 import { Collection, MikroORM } from '@mikro-orm/sqlite';
-import { Entity, ManyToMany, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToMany,
+  ManyToOne,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class Author {
-
   @PrimaryKey()
   id!: number;
 
   @Property()
   name!: string;
-
 }
 
 @Entity()
 class Genre {
-
   @PrimaryKey()
   id!: number;
 
   @Property()
   name!: string;
-
 }
 
 @Entity()
 class Movie {
-
   @PrimaryKey()
   id!: number;
 
@@ -37,12 +39,10 @@ class Movie {
 
   @ManyToOne(() => Author)
   author!: Author;
-
 }
 
 @Entity()
 class Person {
-
   @PrimaryKey()
   id!: number;
 
@@ -54,7 +54,6 @@ class Person {
 
   @ManyToOne(() => Movie)
   favoriteMovie!: Movie;
-
 }
 
 let orm: MikroORM;
@@ -103,10 +102,7 @@ test('Populate referencing the same entity more than once', async () => {
   const person = await em.findOneOrFail(Person, { id: 1 });
   expect(person.favoriteMovie.name).toBeUndefined();
 
-  await em.populate(person, [
-    'friends.favoriteMovie.author',
-    'favoriteMovie.genre',
-  ]);
+  await em.populate(person, ['friends.favoriteMovie.author', 'favoriteMovie.genre']);
 
   expect(person.favoriteMovie.genre.name).not.toBeUndefined();
 });

@@ -3,35 +3,29 @@ import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-or
 
 @Entity()
 export class Asset1 {
-
   @PrimaryKey({ columnType: 'bigint' })
   id!: bigint;
 
   @Property()
   name!: string;
-
 }
 
 @Entity()
 export class Asset2 {
-
   @PrimaryKey({ type: 'bigint' })
   id!: bigint;
 
   @Property()
   name!: string;
-
 }
 
 @Entity()
 export class Asset3 {
-
   @PrimaryKey({ type: t.bigint })
   id!: bigint;
 
   @Property()
   name!: string;
-
 }
 
 test('bigint in mysql 1/3', async () => {

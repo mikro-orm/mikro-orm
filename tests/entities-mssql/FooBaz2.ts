@@ -3,7 +3,6 @@ import { FooBar2 } from './FooBar2.js';
 
 @Entity()
 export class FooBaz2 {
-
   @PrimaryKey()
   id!: number;
 
@@ -23,5 +22,4 @@ export class FooBaz2 {
     this.name = name;
     this.code = name;
   }
-
 }

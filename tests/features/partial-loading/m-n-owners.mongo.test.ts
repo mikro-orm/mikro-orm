@@ -3,7 +3,6 @@ import { Entity, ManyToMany, PrimaryKey, Property, ReflectMetadataProvider } fro
 
 @Entity()
 class Author {
-
   @PrimaryKey()
   _id!: ObjectId;
 
@@ -12,12 +11,10 @@ class Author {
 
   @ManyToMany(() => Book)
   books = new Collection<Book, Author>(this);
-
 }
 
 @Entity()
 class Book {
-
   @PrimaryKey()
   _id!: ObjectId;
 
@@ -26,7 +23,6 @@ class Book {
 
   @ManyToMany(() => Author, 'books')
   authors = new Collection<Author, Book>(this);
-
 }
 
 let orm: MikroORM;
@@ -41,11 +37,7 @@ beforeAll(async () => {
 
   orm.em.create(Author, {
     name: 'Arthur C. Clark',
-    books: [
-      { title: "Childhood's End" },
-      { title: '2001: A Space Odyssey' },
-      { title: 'Rendezvous with Rama' },
-    ],
+    books: [{ title: "Childhood's End" }, { title: '2001: A Space Odyssey' }, { title: 'Rendezvous with Rama' }],
   });
 
   await orm.em.flush();

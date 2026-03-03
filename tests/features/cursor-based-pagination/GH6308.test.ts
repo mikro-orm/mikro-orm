@@ -1,43 +1,43 @@
 import { MikroORM } from '@mikro-orm/sqlite';
-import { Entity, ManyToOne, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToOne,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class Metadata {
-
   @PrimaryKey()
   id!: number;
 
   @Property()
   createdAt!: Date;
-
 }
 
 @Entity()
 class Book {
-
   @PrimaryKey()
   id!: number;
 
   @ManyToOne(() => Metadata)
   metadata!: Metadata;
-
 }
 
 // Entities for 3-level nesting test
 @Entity()
 class Profile {
-
   @PrimaryKey()
   id!: number;
 
   @Property()
   rating!: number;
-
 }
 
 @Entity()
 class Author {
-
   @PrimaryKey()
   id!: number;
 
@@ -46,12 +46,10 @@ class Author {
 
   @OneToOne(() => Profile)
   profile!: Profile;
-
 }
 
 @Entity()
 class Article {
-
   @PrimaryKey()
   id!: number;
 
@@ -60,7 +58,6 @@ class Article {
 
   @ManyToOne(() => Author)
   author!: Author;
-
 }
 
 let orm: MikroORM;
@@ -92,38 +89,38 @@ afterAll(async () => {
 });
 
 test('cursor pagination when some properties are missing', async () => {
-  await expect(orm.em.findByCursor(Book, {
-    first: 5,
-    after: {
-      id: 16,
-    },
-    orderBy: {
-      metadata: {
-        createdAt: 'desc',
-      },
-    },
-    populate: [
-      'metadata',
-    ],
-  })).rejects.toThrow(`Invalid cursor condition, value for 'Book.metadata' is missing.`);
-
-  await expect(orm.em.findByCursor(Book, {
-    first: 5,
-    after: {
-      metadata: {
+  await expect(
+    orm.em.findByCursor(Book, {
+      first: 5,
+      after: {
         id: 16,
       },
-      id: 16,
-    },
-    orderBy: {
-      metadata: {
-        createdAt: 'desc',
+      orderBy: {
+        metadata: {
+          createdAt: 'desc',
+        },
       },
-    },
-    populate: [
-      'metadata',
-    ],
-  })).rejects.toThrow(`Invalid cursor condition, value for 'Book.metadata.createdAt' is missing.`);
+      populate: ['metadata'],
+    }),
+  ).rejects.toThrow(`Invalid cursor condition, value for 'Book.metadata' is missing.`);
+
+  await expect(
+    orm.em.findByCursor(Book, {
+      first: 5,
+      after: {
+        metadata: {
+          id: 16,
+        },
+        id: 16,
+      },
+      orderBy: {
+        metadata: {
+          createdAt: 'desc',
+        },
+      },
+      populate: ['metadata'],
+    }),
+  ).rejects.toThrow(`Invalid cursor condition, value for 'Book.metadata.createdAt' is missing.`);
 });
 
 test('cursor pagination with relations', async () => {
@@ -141,31 +138,31 @@ test('cursor pagination with relations', async () => {
       },
       id: 'desc',
     },
-    populate: [
-      'metadata',
-    ],
+    populate: ['metadata'],
   });
   expect(cursor).toHaveLength(5);
 });
 
 test('cursor pagination with deeply nested missing property (3 levels)', async () => {
   // The cursor has 'author' but author.profile is missing
-  await expect(orm.em.findByCursor(Article, {
-    first: 5,
-    after: {
-      author: {
-        name: 'John', // profile is missing
-      },
-      id: 1,
-    },
-    orderBy: {
-      author: {
-        profile: {
-          rating: 'desc',
+  await expect(
+    orm.em.findByCursor(Article, {
+      first: 5,
+      after: {
+        author: {
+          name: 'John', // profile is missing
         },
+        id: 1,
       },
-      id: 'asc',
-    },
-    populate: ['author.profile'],
-  })).rejects.toThrow(`Invalid cursor condition, value for 'Article.author.profile' is missing.`);
+      orderBy: {
+        author: {
+          profile: {
+            rating: 'desc',
+          },
+        },
+        id: 'asc',
+      },
+      populate: ['author.profile'],
+    }),
+  ).rejects.toThrow(`Invalid cursor condition, value for 'Article.author.profile' is missing.`);
 });

@@ -1,11 +1,17 @@
 import { Collection, LoadStrategy, SimpleLogger } from '@mikro-orm/core';
-import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { MikroORM } from '@mikro-orm/sqlite';
 import { mockLogger } from '../../helpers.js';
 
 @Entity()
 class Channel {
-
   @PrimaryKey()
   id!: number;
 
@@ -14,12 +20,10 @@ class Channel {
 
   @OneToMany(() => DeviceChannel, item => item.channel, { orphanRemoval: true })
   links = new Collection<DeviceChannel>(this);
-
 }
 
 @Entity()
 class Device {
-
   @PrimaryKey()
   id!: number;
 
@@ -28,12 +32,10 @@ class Device {
 
   @OneToMany(() => DeviceChannel, item => item.device, { orphanRemoval: true })
   links = new Collection<DeviceChannel>(this);
-
 }
 
 @Entity()
 class DeviceChannel {
-
   @ManyToOne({ entity: () => Device, primary: true })
   device!: Device;
 
@@ -42,7 +44,6 @@ class DeviceChannel {
 
   @Property()
   lastTime!: Date;
-
 }
 
 let orm: MikroORM;
@@ -83,11 +84,17 @@ test('GH 4129 (1/3)', async () => {
 
   const mock = mockLogger(orm);
   await orm.em.flush();
-  expect(mock.mock.calls[1][0]).toBe('[query] update `device_channel` set `last_time` = 1678803173316 where `device_id` = 2 and `channel_id` = 1');
+  expect(mock.mock.calls[1][0]).toBe(
+    '[query] update `device_channel` set `last_time` = 1678803173316 where `device_id` = 2 and `channel_id` = 1',
+  );
 });
 
 test('GH 4129 (2/3)', async () => {
-  const channel = await orm.em.findOneOrFail(Channel, { name: 'ChannelOne' }, { populate: ['links.device', 'links.channel'] });
+  const channel = await orm.em.findOneOrFail(
+    Channel,
+    { name: 'ChannelOne' },
+    { populate: ['links.device', 'links.channel'] },
+  );
 
   for (const link of channel.links) {
     link.lastTime = new Date(1678803173316);
@@ -95,7 +102,9 @@ test('GH 4129 (2/3)', async () => {
 
   const mock = mockLogger(orm);
   await orm.em.flush();
-  expect(mock.mock.calls[1][0]).toBe('[query] update `device_channel` set `last_time` = 1678803173316 where `device_id` = 2 and `channel_id` = 1');
+  expect(mock.mock.calls[1][0]).toBe(
+    '[query] update `device_channel` set `last_time` = 1678803173316 where `device_id` = 2 and `channel_id` = 1',
+  );
 });
 
 test('GH 4129 (3/3)', async () => {
@@ -107,5 +116,7 @@ test('GH 4129 (3/3)', async () => {
 
   const mock = mockLogger(orm);
   await orm.em.flush();
-  expect(mock.mock.calls[1][0]).toBe('[query] update `device_channel` set `last_time` = 1678803173316 where `device_id` = 2 and `channel_id` = 1');
+  expect(mock.mock.calls[1][0]).toBe(
+    '[query] update `device_channel` set `last_time` = 1678803173316 where `device_id` = 2 and `channel_id` = 1',
+  );
 });

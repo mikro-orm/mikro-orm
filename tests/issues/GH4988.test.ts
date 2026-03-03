@@ -2,18 +2,15 @@ import { BigIntType, Collection, EntitySchema, Ref, sql } from '@mikro-orm/core'
 import { MikroORM } from '@mikro-orm/postgresql';
 
 class ProductEntity {
-
   readonly id!: number;
   readonly name!: string;
 
   constructor(props: { name: string; id?: number }) {
     Object.assign(this, props);
   }
-
 }
 
 class Company {
-
   readonly id!: number;
   readonly name!: string;
   readonly products = new Collection<ProductEntity>(this);
@@ -21,17 +18,14 @@ class Company {
   constructor(props: { name: string; id?: number }) {
     Object.assign(this, props);
   }
-
 }
 
 class CompanyProduct {
-
   readonly id!: number;
   readonly product!: Ref<ProductEntity>;
   readonly company!: Ref<Company>;
   readonly createdAt!: Date;
   readonly updatedAt!: Date;
-
 }
 
 const productSchema = new EntitySchema({
@@ -70,9 +64,7 @@ const companySchema = new EntitySchema({
 
 const companyProductsSchema = new EntitySchema({
   class: CompanyProduct,
-  uniques: [
-    { name: 'uniqueCompanyProduct', properties: ['company', 'product'] },
-  ],
+  uniques: [{ name: 'uniqueCompanyProduct', properties: ['company', 'product'] }],
   properties: {
     id: {
       type: BigIntType,

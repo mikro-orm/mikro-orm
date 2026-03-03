@@ -1,20 +1,25 @@
 import { Ref, MikroORM } from '@mikro-orm/mysql';
-import { Entity, Index, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider, Unique } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  Index,
+  ManyToOne,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+  Unique,
+} from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class Author {
-
   @PrimaryKey()
   id!: number;
 
   @Property()
   name!: string;
-
 }
 
 @Entity({ tableName: 'book' })
 class Book1 {
-
   @PrimaryKey()
   id!: number;
 
@@ -41,7 +46,6 @@ class Book1 {
 
   @Property({ type: 'json' })
   metaData: any;
-
 }
 
 @Entity({ tableName: 'book' })
@@ -51,7 +55,6 @@ class Book1 {
 @Index({ properties: ['author3', 'metaData.fooBar.email'], options: { returning: 'char(200)' } })
 @Unique({ properties: 'metaData.fooBar.email' })
 class Book2 {
-
   @PrimaryKey()
   id!: number;
 
@@ -81,7 +84,6 @@ class Book2 {
 
   @Property({ type: 'json' })
   metaData: any;
-
 }
 
 @Entity({ tableName: 'book' })
@@ -92,7 +94,6 @@ class Book2 {
 @Index({ properties: ['metaData.fooBar.email', 'author3'], options: { returning: 'char(200)' } })
 @Unique({ properties: ['metaData.fooBar.bazBaz', 'metaData.fooBar.lol123'] })
 class Book3 {
-
   @PrimaryKey()
   id!: number;
 
@@ -123,7 +124,6 @@ class Book3 {
 
   @Property({ type: 'json' })
   metaData: any;
-
 }
 
 @Entity({ tableName: 'book' })
@@ -131,7 +131,6 @@ class Book3 {
 @Index({ properties: 'author3', name: 'lol32' })
 @Index({ properties: 'author3', name: 'lol42' })
 class Book4 {
-
   @PrimaryKey()
   id!: number;
 
@@ -162,11 +161,9 @@ class Book4 {
 
   @Property({ type: 'json' })
   metaData: any;
-
 }
 
 describe('indexes on FKs in mysql (GH 1518)', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -203,5 +200,4 @@ describe('indexes on FKs in mysql (GH 1518)', () => {
     expect(diff4).toMatchSnapshot();
     await orm.schema.execute(diff4);
   });
-
 });

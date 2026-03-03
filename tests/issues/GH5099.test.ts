@@ -11,7 +11,6 @@ import {
 
 @Entity()
 class Author {
-
   @PrimaryKey()
   id!: number;
 
@@ -24,12 +23,10 @@ class Author {
   constructor(name: string) {
     this.name = name;
   }
-
 }
 
 @Entity()
 class Book {
-
   @PrimaryKey()
   id!: number;
 
@@ -43,12 +40,10 @@ class Book {
     this.title = title;
     this.author = author;
   }
-
 }
 
 @Entity()
 class Publisher {
-
   @PrimaryKey()
   id!: number;
 
@@ -62,7 +57,6 @@ class Publisher {
     this.name = name;
     this.owner = owner;
   }
-
 }
 
 let orm: MikroORM;
@@ -91,15 +85,7 @@ test('$some on nested relation', async () => {
   const publisher1 = new Publisher('Publisher 1', author1);
   const publisher2 = new Publisher('Publisher 2', author2);
 
-  await orm.em.fork().persist([
-    publisher1,
-    publisher2,
-    author1,
-    author2,
-    book1,
-    book2,
-    book3,
-  ]).flush();
+  await orm.em.fork().persist([publisher1, publisher2, author1, author2, book1, book2, book3]).flush();
 
   const res = await orm.em.find(Publisher, {
     owner: {

@@ -1,8 +1,4 @@
-import {
-  MikroORM,
-  defineEntity,
-  p, Opt,
-} from '@mikro-orm/sqlite';
+import { MikroORM, defineEntity, p, Opt } from '@mikro-orm/sqlite';
 
 // Define schemas without classes - auto-generated classes will be created
 const AuthorSchema = defineEntity({
@@ -26,7 +22,6 @@ const BookSchema = defineEntity({
 
 // Extend the auto-generated classes to add custom methods
 class Author extends AuthorSchema.class {
-
   fullName() {
     return `${this.firstName} ${this.lastName}`;
   }
@@ -34,15 +29,12 @@ class Author extends AuthorSchema.class {
   get initials(): Opt & string {
     return `${this.firstName[0]}.${this.lastName[0]}.`;
   }
-
 }
 
 class Book extends BookSchema.class {
-
   get summary(): Opt & string {
     return `"${this.title}" by ${this.author.fullName()}`;
   }
-
 }
 
 // Register the custom classes - this must happen before MikroORM.init()

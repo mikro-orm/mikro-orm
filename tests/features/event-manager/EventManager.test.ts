@@ -3,10 +3,8 @@ import { MikroORM } from '@mikro-orm/sqlite';
 
 @Entity()
 class User {
-
   @PrimaryKey({ type: 'number' })
   id!: number;
-
 }
 
 class UserSubscriber {}

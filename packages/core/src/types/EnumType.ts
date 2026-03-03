@@ -3,7 +3,6 @@ import type { Platform } from '../platforms/Platform.js';
 import type { EntityProperty } from '../typings.js';
 
 export class EnumType extends Type<string | null | undefined> {
-
   override getColumnType(prop: EntityProperty, platform: Platform) {
     if (prop.nativeEnumName) {
       return prop.nativeEnumName;
@@ -19,5 +18,4 @@ export class EnumType extends Type<string | null | undefined> {
   override ensureComparable(): boolean {
     return false;
   }
-
 }

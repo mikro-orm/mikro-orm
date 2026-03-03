@@ -4,15 +4,12 @@ import { MikroORM } from '@mikro-orm/sqlite';
 
 @Entity()
 class Tenant extends BaseEntity {
-
   @PrimaryKey()
   id!: string;
-
 }
 
 @Entity()
 class Something extends BaseEntity {
-
   [PrimaryKeyProp]?: ['tenant', 'id'];
 
   @ManyToOne(() => Tenant, { fieldName: 'tenant_id', primary: true })
@@ -20,12 +17,10 @@ class Something extends BaseEntity {
 
   @PrimaryKey()
   id!: string;
-
 }
 
 @Entity()
 class SomethingThatBelongsToSomething extends BaseEntity {
-
   [PrimaryKeyProp]?: ['tenant', 'something', 'id'];
 
   @ManyToOne(() => Tenant, { fieldName: 'tenant_id', primary: true })
@@ -40,12 +35,10 @@ class SomethingThatBelongsToSomething extends BaseEntity {
 
   @PrimaryKey()
   id!: string;
-
 }
 
 @Entity()
 class SomethingThatBelongsX2 extends BaseEntity {
-
   [PrimaryKeyProp]?: ['tenant', 'something', 'x1', 'id'];
 
   @ManyToOne(() => Tenant, { fieldName: 'tenant_id', primary: true })
@@ -67,12 +60,10 @@ class SomethingThatBelongsX2 extends BaseEntity {
 
   @PrimaryKey()
   id!: string;
-
 }
 
 @Entity()
 class SomethingThatBelongsX3 extends BaseEntity {
-
   [PrimaryKeyProp]?: ['tenant', 'something', 'x1', 'x2', 'id'];
 
   @ManyToOne(() => Tenant, { fieldName: 'tenant_id', primary: true })
@@ -101,12 +92,10 @@ class SomethingThatBelongsX3 extends BaseEntity {
 
   @PrimaryKey()
   id!: string;
-
 }
 
 @Entity()
 class SomethingThatBelongsX4 extends BaseEntity {
-
   [PrimaryKeyProp]?: ['tenant', 'something', 'x1', 'x2', 'x3'];
 
   @ManyToOne(() => Tenant, { fieldName: 'tenant_id', primary: true })
@@ -139,7 +128,6 @@ class SomethingThatBelongsX4 extends BaseEntity {
     primary: true,
   })
   x3!: SomethingThatBelongsX3;
-
 }
 
 let orm: MikroORM;
@@ -184,7 +172,6 @@ test(`GH issue 5629`, async () => {
     x3,
   });
 });
-
 
 test('GH issue 5629, createCompositeKeyArray', async () => {
   const metadata = orm.getMetadata().get(SomethingThatBelongsX4);

@@ -5,7 +5,15 @@
  */
 
 import { bench } from '@ark/attest';
-import { type FilterQuery, type FilterObject, type ExpandQuery, type EntityKey, type Ref, type Collection, PrimaryKeyProp } from '@mikro-orm/core';
+import {
+  type FilterQuery,
+  type FilterObject,
+  type ExpandQuery,
+  type EntityKey,
+  type Ref,
+  type Collection,
+  PrimaryKeyProp,
+} from '@mikro-orm/core';
 
 // ============================================
 // Test Entity Definitions

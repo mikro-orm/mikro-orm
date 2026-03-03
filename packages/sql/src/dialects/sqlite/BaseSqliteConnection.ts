@@ -3,11 +3,10 @@ import type { Dictionary } from '@mikro-orm/core';
 import { AbstractSqlConnection } from '../../AbstractSqlConnection.js';
 
 export class BaseSqliteConnection extends AbstractSqlConnection {
-
   override createKyselyDialect(options: Dictionary): Dialect {
     throw new Error(
-      'No SQLite dialect configured. Pass a Kysely dialect via the `driverOptions` config option, '
-      + 'e.g. `new NodeSqliteDialect(...)` for node:sqlite or a custom dialect for other libraries.',
+      'No SQLite dialect configured. Pass a Kysely dialect via the `driverOptions` config option, ' +
+        'e.g. `new NodeSqliteDialect(...)` for node:sqlite or a custom dialect for other libraries.',
     );
   }
 
@@ -32,5 +31,4 @@ export class BaseSqliteConnection extends AbstractSqlConnection {
       await this.execute(`attach database '${path}' as ${this.platform.quoteIdentifier(db.name)}`);
     }
   }
-
 }

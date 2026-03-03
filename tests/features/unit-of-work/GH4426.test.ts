@@ -4,7 +4,6 @@ import { mockLogger } from '../../helpers.js';
 
 @Entity()
 class Book {
-
   @PrimaryKey()
   id!: number;
 
@@ -14,7 +13,6 @@ class Book {
   constructor(title: string) {
     this.title = title;
   }
-
 }
 
 let orm: MikroORM;

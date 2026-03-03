@@ -1,9 +1,16 @@
 import { MikroORM, Ref, ref, Collection, Type, Platform, EntityProperty } from '@mikro-orm/sqlite';
-import { Entity, PrimaryKey, Property, ManyToOne, OneToMany, Unique, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  PrimaryKey,
+  Property,
+  ManyToOne,
+  OneToMany,
+  Unique,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 // Custom type that prefixes values with 'custom:' when storing to DB
 class PrefixedStringType extends Type<string, string> {
-
   convertToDatabaseValue(value: string, platform: Platform): string {
     return value ? `custom:${value}` : value;
   }
@@ -15,12 +22,10 @@ class PrefixedStringType extends Type<string, string> {
   getColumnType(prop: EntityProperty, platform: Platform): string {
     return 'varchar(255)';
   }
-
 }
 
 @Entity()
 class Author {
-
   @PrimaryKey()
   id!: number;
 
@@ -33,12 +38,10 @@ class Author {
 
   @OneToMany(() => Book, book => book.author)
   books = new Collection<Book>(this);
-
 }
 
 @Entity()
 class Book {
-
   @PrimaryKey()
   id!: number;
 
@@ -48,11 +51,9 @@ class Book {
   // This relation references Author by uuid instead of id (PK)
   @ManyToOne(() => Author, { ref: true, targetKey: 'uuid' })
   author!: Ref<Author>;
-
 }
 
 describe('non-PK relation target (targetKey)', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -154,10 +155,14 @@ describe('non-PK relation target (targetKey)', () => {
 
   test('populate author with joined strategy', async () => {
     // Load the book with author populated using joined strategy
-    const book = await orm.em.findOneOrFail(Book, { title: 'My Book' }, {
-      populate: ['author'],
-      strategy: 'joined',
-    });
+    const book = await orm.em.findOneOrFail(
+      Book,
+      { title: 'My Book' },
+      {
+        populate: ['author'],
+        strategy: 'joined',
+      },
+    );
 
     expect(book.author.isInitialized()).toBe(true);
     expect(book.author.unwrap().uuid).toBe('uuid-123');
@@ -175,10 +180,14 @@ describe('non-PK relation target (targetKey)', () => {
     orm.em.clear();
 
     // Load both books with authors populated
-    const books = await orm.em.find(Book, {}, {
-      populate: ['author'],
-      orderBy: { title: 'asc' },
-    });
+    const books = await orm.em.find(
+      Book,
+      {},
+      {
+        populate: ['author'],
+        orderBy: { title: 'asc' },
+      },
+    );
 
     expect(books).toHaveLength(2);
     // Both books should reference the same author instance
@@ -205,9 +214,13 @@ describe('non-PK relation target (targetKey)', () => {
     orm.em.clear();
 
     // Load and verify the relationship
-    const loadedBook = await orm.em.findOneOrFail(Book, { title: 'New Book' }, {
-      populate: ['author'],
-    });
+    const loadedBook = await orm.em.findOneOrFail(
+      Book,
+      { title: 'New Book' },
+      {
+        populate: ['author'],
+      },
+    );
     expect(loadedBook.author.unwrap().uuid).toBe('uuid-new');
     expect(loadedBook.author.unwrap().name).toBe('New Author');
   });
@@ -257,13 +270,11 @@ describe('non-PK relation target (targetKey)', () => {
     const found = await orm.em.findOne(Author, { uuid: 'uuid-to-delete' });
     expect(found).toBeNull();
   });
-
 });
 
 // Test with custom type on the target key property
 @Entity()
 class Publisher {
-
   @PrimaryKey()
   id!: number;
 
@@ -275,12 +286,10 @@ class Publisher {
 
   @OneToMany(() => Magazine, m => m.publisher)
   magazines = new Collection<Magazine>(this);
-
 }
 
 @Entity()
 class Magazine {
-
   @PrimaryKey()
   id!: number;
 
@@ -289,11 +298,9 @@ class Magazine {
 
   @ManyToOne(() => Publisher, { ref: true, targetKey: 'code' })
   publisher!: Ref<Publisher>;
-
 }
 
 describe('non-PK relation target with custom type', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -328,9 +335,13 @@ describe('non-PK relation target with custom type', () => {
     orm.em.clear();
 
     // Load the magazine and verify the publisher reference works
-    const loadedMagazine = await orm.em.findOneOrFail(Magazine, { title: 'Test Magazine' }, {
-      populate: ['publisher'],
-    });
+    const loadedMagazine = await orm.em.findOneOrFail(
+      Magazine,
+      { title: 'Test Magazine' },
+      {
+        populate: ['publisher'],
+      },
+    );
     expect(loadedMagazine.publisher.unwrap().code).toBe('PUB001');
     expect(loadedMagazine.publisher.unwrap().name).toBe('Test Publisher');
   });
@@ -363,7 +374,6 @@ describe('non-PK relation target with custom type', () => {
     expect(magazine.publisher.isInitialized()).toBe(true);
     expect(magazine.publisher.unwrap().name).toBe('Test Publisher');
   });
-
 });
 
 // Test with defineEntity helper
@@ -389,7 +399,6 @@ const DefAuthor = defineEntity({
 });
 
 describe('non-PK relation target with defineEntity', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -415,103 +424,101 @@ describe('non-PK relation target with defineEntity', () => {
     orm.em.clear();
 
     // Load and verify
-    const loadedBook = await orm.em.findOneOrFail(DefBook, { title: 'Defined Book' }, {
-      populate: ['author'],
-    });
+    const loadedBook = await orm.em.findOneOrFail(
+      DefBook,
+      { title: 'Defined Book' },
+      {
+        populate: ['author'],
+      },
+    );
     expect(loadedBook.author.uuid).toBe('def-uuid-123');
     expect(loadedBook.author.name).toBe('Defined Author');
   });
-
 });
 
 // Test metadata validation for targetKey
 import { ManyToMany } from '@mikro-orm/decorators/legacy';
 
 describe('targetKey metadata validation', () => {
-
   test('throws error when targetKey is used with ManyToMany', async () => {
     @Entity()
     class TagWithTargetKey {
-
       @PrimaryKey()
       id!: number;
 
       @Property()
       @Unique()
       code!: string;
-
     }
 
     @Entity()
     class ArticleWithM2MTargetKey {
-
       @PrimaryKey()
       id!: number;
 
       @ManyToMany(() => TagWithTargetKey, undefined, { targetKey: 'code' } as any)
       tags = new Collection<TagWithTargetKey>(this);
-
     }
 
-    await expect(MikroORM.init({
-      metadataProvider: ReflectMetadataProvider,
-      entities: [TagWithTargetKey, ArticleWithM2MTargetKey],
-      dbName: ':memory:',
-    })).rejects.toThrow(`ArticleWithM2MTargetKey.tags uses 'targetKey' option which is not supported for ManyToMany relations`);
+    await expect(
+      MikroORM.init({
+        metadataProvider: ReflectMetadataProvider,
+        entities: [TagWithTargetKey, ArticleWithM2MTargetKey],
+        dbName: ':memory:',
+      }),
+    ).rejects.toThrow(
+      `ArticleWithM2MTargetKey.tags uses 'targetKey' option which is not supported for ManyToMany relations`,
+    );
   });
 
   test('throws error when targetKey points to non-unique property', async () => {
     @Entity()
     class AuthorWithNonUniqueCode {
-
       @PrimaryKey()
       id!: number;
 
       @Property() // NOT unique
       code!: string;
-
     }
 
     @Entity()
     class BookWithNonUniqueTargetKey {
-
       @PrimaryKey()
       id!: number;
 
       @ManyToOne(() => AuthorWithNonUniqueCode, { targetKey: 'code' })
       author!: AuthorWithNonUniqueCode;
-
     }
 
-    await expect(MikroORM.init({
-      metadataProvider: ReflectMetadataProvider,
-      entities: [AuthorWithNonUniqueCode, BookWithNonUniqueTargetKey],
-      dbName: ':memory:',
-    })).rejects.toThrow(`BookWithNonUniqueTargetKey.author has 'targetKey' set to 'code', but AuthorWithNonUniqueCode.code is not marked as unique`);
+    await expect(
+      MikroORM.init({
+        metadataProvider: ReflectMetadataProvider,
+        entities: [AuthorWithNonUniqueCode, BookWithNonUniqueTargetKey],
+        dbName: ':memory:',
+      }),
+    ).rejects.toThrow(
+      `BookWithNonUniqueTargetKey.author has 'targetKey' set to 'code', but AuthorWithNonUniqueCode.code is not marked as unique`,
+    );
   });
 
   test('accepts targetKey pointing to property with unique constraint via @Unique decorator', async () => {
     @Entity()
     class AuthorWithUniqueCode {
-
       @PrimaryKey()
       id!: number;
 
       @Property()
       @Unique()
       code!: string;
-
     }
 
     @Entity()
     class BookWithUniqueTargetKey {
-
       @PrimaryKey()
       id!: number;
 
       @ManyToOne(() => AuthorWithUniqueCode, { targetKey: 'code' })
       author!: AuthorWithUniqueCode;
-
     }
 
     const orm = await MikroORM.init({
@@ -524,5 +531,4 @@ describe('targetKey metadata validation', () => {
     expect(orm).toBeDefined();
     await orm.close(true);
   });
-
 });

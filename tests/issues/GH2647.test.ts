@@ -3,31 +3,26 @@ import { Entity, ManyToOne, PrimaryKey, ReflectMetadataProvider } from '@mikro-o
 
 @Entity()
 export class Provider {
-
   @PrimaryKey()
   id: number;
 
   constructor(id: number) {
     this.id = id;
   }
-
 }
 
 @Entity()
 export class User {
-
   @PrimaryKey()
   id: number;
 
   constructor(id: number) {
     this.id = id;
   }
-
 }
 
 @Entity()
 export class Member {
-
   [PrimaryKeyProp]?: ['provider', 'user'];
 
   @ManyToOne(() => Provider, { eager: true, primary: true })
@@ -40,12 +35,10 @@ export class Member {
     this.provider = a;
     this.user = b;
   }
-
 }
 
 @Entity()
 export class Session {
-
   @PrimaryKey()
   id: number;
 
@@ -59,12 +52,10 @@ export class Session {
     this.id = id;
     this.owner = owner;
   }
-
 }
 
 @Entity()
 export class Participant {
-
   [PrimaryKeyProp]?: ['session', 'member'];
 
   @ManyToOne(() => Session, { eager: true, primary: true })
@@ -77,11 +68,9 @@ export class Participant {
     this.session = session;
     this.member = member;
   }
-
 }
 
 describe('GH #2647, #2742', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -170,15 +159,18 @@ describe('GH #2647, #2742', () => {
   });
 
   test('creating entity instance from POJO', async () => {
-    const participant = orm.em.getEntityFactory().create(Participant, {
-      session: {
-        id: 3,
-        owner: { provider: { id: 1 }, user: { id: 2 } },
-        lastActionBy: [3, [1, 2]],
+    const participant = orm.em.getEntityFactory().create(
+      Participant,
+      {
+        session: {
+          id: 3,
+          owner: { provider: { id: 1 }, user: { id: 2 } },
+          lastActionBy: [3, [1, 2]],
+        },
+        member: { provider: { id: 1 }, user: { id: 2 } },
       },
-      member: { provider: { id: 1 }, user: { id: 2 } },
-    }, { merge: true, newEntity: false });
+      { merge: true, newEntity: false },
+    );
     expect(participant).toBe(participant.session.lastActionBy);
   });
-
 });

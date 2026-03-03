@@ -10,16 +10,22 @@ import {
 } from '@mikro-orm/core';
 
 export class ReflectMetadataProvider extends MetadataProvider {
-
   override loadEntityMetadata(meta: EntityMetadata): void {
     // load types and column names
     for (const prop of meta.props) {
       /* v8 ignore next */
       if (typeof prop.entity === 'string') {
-        throw new Error(`Relation target needs to be an entity class or EntitySchema instance, '${prop.entity}' given instead for ${meta.className}.${prop.name}.`);
+        throw new Error(
+          `Relation target needs to be an entity class or EntitySchema instance, '${prop.entity}' given instead for ${meta.className}.${prop.name}.`,
+        );
       } else if (prop.entity) {
         const tmp = prop.entity() as EntityClass;
-        prop.type = Array.isArray(tmp) ? tmp.map(t => Utils.className(t)).sort().join(' | ') : Utils.className(tmp);
+        prop.type = Array.isArray(tmp)
+          ? tmp
+              .map(t => Utils.className(t))
+              .sort()
+              .join(' | ')
+          : Utils.className(tmp);
         prop.target = tmp instanceof EntitySchema ? tmp.meta.class : tmp;
       } else {
         this.initPropertyType(meta, prop);
@@ -30,8 +36,14 @@ export class ReflectMetadataProvider extends MetadataProvider {
   protected initPropertyType(meta: EntityMetadata, prop: EntityProperty) {
     const type = Reflect.getMetadata('design:type', meta.prototype, prop.name);
 
-    if (!prop.type && (!type || (type === Object && prop.kind !== ReferenceKind.SCALAR)) && !(prop.enum && (prop.items?.length ?? 0) > 0)) {
-      throw new Error(`Please provide either 'type' or 'entity' attribute in ${meta.className}.${prop.name}. Make sure you have 'emitDecoratorMetadata' enabled in your tsconfig.json.`);
+    if (
+      !prop.type &&
+      (!type || (type === Object && prop.kind !== ReferenceKind.SCALAR)) &&
+      !(prop.enum && (prop.items?.length ?? 0) > 0)
+    ) {
+      throw new Error(
+        `Please provide either 'type' or 'entity' attribute in ${meta.className}.${prop.name}. Make sure you have 'emitDecoratorMetadata' enabled in your tsconfig.json.`,
+      );
     }
 
     // Force mapping to UnknownType which is a string when we see just `Object`, as that often means failed inference.
@@ -53,5 +65,4 @@ export class ReflectMetadataProvider extends MetadataProvider {
     prop.runtimeType ??= typeName;
     prop.target = type;
   }
-
 }

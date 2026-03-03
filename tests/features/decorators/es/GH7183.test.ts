@@ -3,7 +3,6 @@ import { Entity, PrimaryKey, Property } from '@mikro-orm/decorators/es';
 
 @Entity()
 class FooEntity {
-
   @PrimaryKey({ type: 'integer' })
   id!: number;
 
@@ -25,7 +24,6 @@ class FooEntity {
 
   @Property({ type: 'string', persist: false })
   accessor displayName: string & Opt = '';
-
 }
 
 let orm: MikroORM;

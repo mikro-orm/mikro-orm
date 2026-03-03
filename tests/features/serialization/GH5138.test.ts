@@ -1,20 +1,24 @@
 import { Collection, MikroORM, wrap } from '@mikro-orm/sqlite';
-import { Entity, ManyToMany, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToMany,
+  ManyToOne,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class School {
-
   @PrimaryKey()
   id!: number;
 
   @Property()
   name!: string;
-
 }
 
 @Entity()
 class User {
-
   @PrimaryKey()
   id!: number;
 
@@ -29,29 +33,24 @@ class User {
 
   @ManyToOne(() => School, { nullable: true })
   school?: School;
-
 }
 
 @Entity()
 class Role {
-
   @PrimaryKey()
   id!: number;
 
   @ManyToMany(() => User, u => u.roles)
   users = new Collection<User>(this);
-
 }
 
 @Entity()
 class UserRole {
-
   @ManyToOne(() => User, { primary: true, deleteRule: 'cascade' })
   user!: User;
 
   @ManyToOne(() => Role, { primary: true, deleteRule: 'cascade' })
   role!: Role;
-
 }
 
 let orm: MikroORM;

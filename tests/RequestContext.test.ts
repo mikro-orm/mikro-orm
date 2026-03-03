@@ -15,10 +15,9 @@ import { initORMMongo } from './bootstrap.js';
 import { Author, Book } from './entities/index.js';
 
 describe('RequestContext', () => {
-
   let orm: MikroORM;
 
-  beforeAll(async () => orm = await initORMMongo());
+  beforeAll(async () => (orm = await initORMMongo()));
   beforeEach(async () => orm.schema.clear());
 
   test('create new context', async () => {
@@ -87,11 +86,9 @@ describe('RequestContext', () => {
   });
 
   afterAll(async () => orm.close(true));
-
 });
 
 describe('MultiRequestContext', () => {
-
   let orm1: MikroORM<SqliteDriver>;
   let orm2: MikroORM<SqliteDriver>;
 
@@ -161,5 +158,4 @@ describe('MultiRequestContext', () => {
     await orm1.close(true);
     await orm2.close(true);
   });
-
 });

@@ -1,22 +1,5 @@
-import {
-  EntityDTO,
-  Ref,
-  Dictionary,
-  Collection,
-  Cascade,
-  wrap,
-  OptionalProps,
-  EntityKey,
-} from '@mikro-orm/core';
-import {
-  Entity,
-  Index,
-  ManyToMany,
-  ManyToOne,
-  Property,
-  Unique,
-  Filter,
-} from '@mikro-orm/decorators/legacy';
+import { EntityDTO, Ref, Dictionary, Collection, Cascade, wrap, OptionalProps, EntityKey } from '@mikro-orm/core';
+import { Entity, Index, ManyToMany, ManyToOne, Property, Unique, Filter } from '@mikro-orm/decorators/legacy';
 import { Publisher } from './Publisher.js';
 import { Author } from './Author.js';
 import { BookTag } from './book-tag.js';
@@ -29,7 +12,6 @@ import { BookRepository } from '../repositories/BookRepository.js';
 @Index({ options: { point: '2dsphere', title: -1 } })
 @Filter({ name: 'writtenBy', cond: args => ({ author: args.author }) })
 export class Book extends BaseEntity3 {
-
   [OptionalProps]?: 'createdAt';
 
   @Property()
@@ -73,12 +55,14 @@ export class Book extends BaseEntity3 {
     this.author = author!;
   }
 
-  toJSON<Ignored extends EntityKey<this>>(strict = true, strip: Ignored[] = ['metaObject', 'metaArray', 'metaArrayOfStrings'] as Ignored[]): Omit<EntityDTO<this>, Ignored> | EntityDTO<this> {
+  toJSON<Ignored extends EntityKey<this>>(
+    strict = true,
+    strip: Ignored[] = ['metaObject', 'metaArray', 'metaArrayOfStrings'] as Ignored[],
+  ): Omit<EntityDTO<this>, Ignored> | EntityDTO<this> {
     if (strict) {
       return wrap(this).toObject(strip);
     }
 
     return wrap(this).toObject();
   }
-
 }

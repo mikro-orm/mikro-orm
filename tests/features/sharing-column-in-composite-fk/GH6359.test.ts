@@ -3,9 +3,7 @@ import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../../helpers.js';
 
 class Org {
-
   id!: number;
-
 }
 
 const OrgSchema = new EntitySchema({
@@ -17,12 +15,10 @@ const OrgSchema = new EntitySchema({
 });
 
 class ActivityNote {
-
   id!: number;
   auth_user!: AuthUser;
   org!: Org;
   content!: string;
-
 }
 
 const ActivityNoteSchema = new EntitySchema({
@@ -47,11 +43,9 @@ const ActivityNoteSchema = new EntitySchema({
 });
 
 class AuthUser {
-
   org!: Org;
   id!: number;
   activityNoteCollection = new Collection<ActivityNote>(this);
-
 }
 
 const UserSchema = new EntitySchema({
@@ -117,28 +111,32 @@ test('Query 1', async () => {
 
   const notes = ['1', '2', '3'];
 
-  user.activityNoteCollection.add(notes.map(n => {
-    const note = new ActivityNote();
-    note.content = n;
-    note.org = org;
+  user.activityNoteCollection.add(
+    notes.map(n => {
+      const note = new ActivityNote();
+      note.content = n;
+      note.org = org;
 
-    return note;
-  }));
+      return note;
+    }),
+  );
 
   const mock = mockLogger(orm);
   await orm.em.persist(user).flush();
   expect(mock.mock.calls).toHaveLength(4);
   expect(mock.mock.calls[1][0]).toMatch(`insert into "auth_user" ("org_id") values (1) returning "id"`);
-  expect(mock.mock.calls[2][0]).toMatch(`insert into "activity_note" ("content", "user_id", "org_id") values ('1', 1, 1), ('2', 1, 1), ('3', 1, 1) returning "id"`);
+  expect(mock.mock.calls[2][0]).toMatch(
+    `insert into "activity_note" ("content", "user_id", "org_id") values ('1', 1, 1), ('2', 1, 1), ('3', 1, 1) returning "id"`,
+  );
 });
 
 test('Query 2', async () => {
-  const qb = orm.em.createQueryBuilder(ActivityNote)
-    .select('*')
-    .where({
-      org: 1,
-      auth_user: 1,
-    });
-  expect(qb.getFormattedQuery()).toBe('select "a0".* from "activity_note" as "a0" where "a0"."org_id" = 1 and "a0"."user_id" = 1');
+  const qb = orm.em.createQueryBuilder(ActivityNote).select('*').where({
+    org: 1,
+    auth_user: 1,
+  });
+  expect(qb.getFormattedQuery()).toBe(
+    'select "a0".* from "activity_note" as "a0" where "a0"."org_id" = 1 and "a0"."user_id" = 1',
+  );
   await qb.getResult();
 });

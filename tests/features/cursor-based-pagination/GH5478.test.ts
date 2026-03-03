@@ -3,7 +3,6 @@ import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-or
 
 @Entity()
 class EntityForFindByCursorTest {
-
   @PrimaryKey()
   _id!: ObjectId;
 
@@ -17,7 +16,6 @@ class EntityForFindByCursorTest {
     this.myDate = myDate;
     this.bar = 'bar';
   }
-
 }
 
 let orm: MikroORM;
@@ -61,5 +59,4 @@ test('empty result with findByCursor and orderBy with Date', async () => {
   });
 
   expect(curTwo.length).toBe(2);
-
 });

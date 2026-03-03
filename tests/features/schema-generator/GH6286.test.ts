@@ -11,7 +11,6 @@ table
 comment`,
 })
 class TestEntity {
-
   @PrimaryKey({
     comment: `This
 is
@@ -20,7 +19,6 @@ column
 comment`,
   })
   id!: bigint;
-
 }
 
 const options = {

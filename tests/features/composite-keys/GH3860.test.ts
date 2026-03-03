@@ -1,32 +1,34 @@
 import { MikroORM, Collection, PrimaryKeyProp } from '@mikro-orm/core';
-import { Entity, ManyToMany, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToMany,
+  ManyToOne,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()
 export class Order {
-
   @PrimaryKey()
   id!: number;
 
   @ManyToMany({ entity: () => Product, pivotEntity: () => OrderItem })
   products = new Collection<Product>(this);
-
 }
 
 @Entity()
 export class Product {
-
   @PrimaryKey()
   id!: number;
 
   @ManyToMany({ entity: () => Order, pivotEntity: () => OrderItem })
   orders = new Collection<Order>(this);
-
 }
 
 @Entity()
 export class OrderItem {
-
   @ManyToOne({ primary: true })
   order: Order;
 
@@ -42,15 +44,16 @@ export class OrderItem {
     this.order = order;
     this.product = product;
   }
-
 }
 
 test(`validation of bidirectional M:N with pivotEntity`, async () => {
   const err = `Product.orders and Order.products use the same 'pivotEntity', but don't form a bidirectional relation. Specify 'inversedBy' or 'mappedBy' to link them.`;
-  await expect(MikroORM.init({
-    metadataProvider: ReflectMetadataProvider,
-    entities: [Product, OrderItem, Order],
-    dbName: ':memory:',
-    driver: SqliteDriver,
-  })).rejects.toThrow(err);
+  await expect(
+    MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
+      entities: [Product, OrderItem, Order],
+      dbName: ':memory:',
+      driver: SqliteDriver,
+    }),
+  ).rejects.toThrow(err);
 });

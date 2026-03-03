@@ -3,7 +3,6 @@ import { MikroORM, Type } from '@mikro-orm/sqlite';
 import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 class MyType extends Type<string, number> {
-
   override convertToDatabaseValue(jsValue: string): number {
     return Number.parseInt(jsValue);
   }
@@ -15,22 +14,18 @@ class MyType extends Type<string, number> {
   override getColumnType() {
     return 'integer';
   }
-
 }
 
 @Entity()
 class A {
-
   @PrimaryKey()
   id!: number;
 
   @Property({ type: MyType })
   prop!: string;
-
 }
 
 describe('GH issue 435', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -66,5 +61,4 @@ describe('GH issue 435', () => {
     expect(convertToDatabaseValueSpy.mock.calls[0][0]).toBe('123');
     expect(convertToJSValueSpy.mock.calls[0][0]).toBe(123);
   });
-
 });

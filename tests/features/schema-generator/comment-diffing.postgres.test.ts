@@ -3,46 +3,38 @@ import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-or
 
 @Entity({ tableName: 'book' })
 class Book0 {
-
   @PrimaryKey()
   id!: number;
 
   @Property()
   name!: string;
-
 }
 
-@Entity({ tableName: 'book', comment: 'this is book\'s table' })
+@Entity({ tableName: 'book', comment: "this is book's table" })
 class Book1 {
-
-  @PrimaryKey({ comment: 'this is primary\'s key' })
+  @PrimaryKey({ comment: "this is primary's key" })
   id!: number;
 
   @Property({ comment: 'this is name of book' })
   name!: string;
-
 }
 
 @Entity({ tableName: 'book', comment: 'table comment' })
 class Book2 {
-
   @PrimaryKey({ comment: 'new comment' })
   id!: number;
 
   @Property({ comment: '' })
   name!: string;
-
 }
 
 @Entity({ tableName: 'book' })
 class Book3 {
-
   @PrimaryKey()
   id!: number;
 
   @Property()
   name!: string;
-
 }
 
 let orm: MikroORM;

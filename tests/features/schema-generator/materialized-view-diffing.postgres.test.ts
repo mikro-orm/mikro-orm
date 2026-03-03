@@ -85,7 +85,6 @@ const AuthorStatsWithData = defineEntity({
 });
 
 describe('materialized view diffing in postgres', () => {
-
   test('schema generator adds new materialized view', async () => {
     const orm = await MikroORM.init({
       metadataProvider: ReflectMetadataProvider,
@@ -230,5 +229,4 @@ describe('materialized view diffing in postgres', () => {
 
     await orm.close(true);
   });
-
 });

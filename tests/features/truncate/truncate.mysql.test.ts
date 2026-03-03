@@ -3,13 +3,11 @@ import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-or
 
 @Entity()
 class User {
-
   @PrimaryKey()
   id!: number;
 
   @Property()
   name!: string;
-
 }
 
 describe('truncate [mysql]', () => {
@@ -32,11 +30,13 @@ describe('truncate [mysql]', () => {
   afterAll(() => orm.close(true));
 
   test('truncates table and resets identity value', async () => {
-    await orm.em.persist([
-      orm.em.create(User, { name: 'u1' }),
-      orm.em.create(User, { name: 'u2' }),
-      orm.em.create(User, { name: 'u3' }),
-    ]).flush();
+    await orm.em
+      .persist([
+        orm.em.create(User, { name: 'u1' }),
+        orm.em.create(User, { name: 'u2' }),
+        orm.em.create(User, { name: 'u3' }),
+      ])
+      .flush();
 
     const usersBefore = await orm.em.find(User, {});
 
@@ -51,5 +51,4 @@ describe('truncate [mysql]', () => {
     expect(usersAfter.length).toBe(0);
     expect(newUser.id).toBe(1);
   });
-
 });

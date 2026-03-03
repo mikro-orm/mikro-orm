@@ -1,12 +1,6 @@
-import type {
-  RequiredEntityData,
-  EntityData,
-  EntityManager,
-  Constructor,
-} from '@mikro-orm/core';
+import type { RequiredEntityData, EntityData, EntityManager, Constructor } from '@mikro-orm/core';
 
 export abstract class Factory<TEntity extends object, TInput = EntityData<TEntity>> {
-
   abstract readonly model: Constructor<TEntity>;
   private eachFunction?: (entity: TEntity, index: number) => void;
 
@@ -26,11 +20,7 @@ export abstract class Factory<TEntity extends object, TInput = EntityData<TEntit
             ...input,
           }
         : this.definition(input);
-    const entity = this.em.create(
-      this.model,
-      data as unknown as RequiredEntityData<TEntity>,
-      { persist: false },
-    );
+    const entity = this.em.create(this.model, data as unknown as RequiredEntityData<TEntity>, { persist: false });
 
     this.eachFunction?.(entity, index);
 
@@ -90,5 +80,4 @@ export abstract class Factory<TEntity extends object, TInput = EntityData<TEntit
     this.eachFunction = eachFunction;
     return this;
   }
-
 }

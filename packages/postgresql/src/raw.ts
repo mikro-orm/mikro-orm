@@ -1,4 +1,11 @@
-import { type AnyString, type Dictionary, type EntityKey, type RawQueryFragment, raw as raw_, Utils } from '@mikro-orm/sql';
+import {
+  type AnyString,
+  type Dictionary,
+  type EntityKey,
+  type RawQueryFragment,
+  raw as raw_,
+  Utils,
+} from '@mikro-orm/sql';
 import type { SelectQueryBuilder as KyselySelectQueryBuilder } from 'kysely';
 
 /** @internal Type for QueryBuilder instances passed to raw() - uses toRaw to distinguish from Kysely QueryBuilder */
@@ -60,7 +67,14 @@ type QueryBuilderLike = { toQuery(): { sql: string; params: readonly unknown[] }
  * ```
  */
 export function raw<R = RawQueryFragment & symbol, T extends object = any>(
-  sql: QueryBuilderLike | KyselySelectQueryBuilder<any, any, any> | EntityKey<T> | EntityKey<T>[] | AnyString | ((alias: string) => string) | RawQueryFragment,
+  sql:
+    | QueryBuilderLike
+    | KyselySelectQueryBuilder<any, any, any>
+    | EntityKey<T>
+    | EntityKey<T>[]
+    | AnyString
+    | ((alias: string) => string)
+    | RawQueryFragment,
   params?: readonly unknown[] | Dictionary<unknown>,
 ): R {
   if (Utils.isObject<KyselySelectQueryBuilder<any, any, any>>(sql) && 'compile' in sql) {

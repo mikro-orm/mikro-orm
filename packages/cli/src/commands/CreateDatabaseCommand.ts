@@ -3,7 +3,6 @@ import type { BaseArgs, BaseCommand } from '../CLIConfigurator.js';
 import { CLIHelper } from '../CLIHelper.js';
 
 export class CreateDatabaseCommand implements BaseCommand {
-
   command = 'database:create';
   describe = 'Create your database if it does not exist';
 
@@ -15,5 +14,4 @@ export class CreateDatabaseCommand implements BaseCommand {
     await orm.schema.ensureDatabase();
     await orm.close(true);
   }
-
 }

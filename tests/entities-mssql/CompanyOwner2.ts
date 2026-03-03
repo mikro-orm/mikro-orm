@@ -4,7 +4,6 @@ import { Employee2 } from './Employee2.js';
 
 @Entity()
 export class CompanyOwner2 extends Manager2 {
-
   @Property()
   ownerProp!: string;
 
@@ -25,5 +24,4 @@ export class CompanyOwner2 extends Manager2 {
   afterUpdate2() {
     this.state = 'updated';
   }
-
 }

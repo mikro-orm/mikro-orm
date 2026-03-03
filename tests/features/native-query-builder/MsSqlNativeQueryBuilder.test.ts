@@ -3,7 +3,6 @@ import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-or
 
 @Entity()
 class User {
-
   @PrimaryKey()
   id!: number;
 
@@ -12,7 +11,6 @@ class User {
 
   @Property({ nullable: true })
   name?: string;
-
 }
 
 let orm: MikroORM;
@@ -70,14 +68,17 @@ test('MsSqlNativeQueryBuilder', async () => {
 
   const qb8 = new MsSqlNativeQueryBuilder(orm.em.getPlatform());
   const date = new Date();
-  qb8.insert({ foo: 'bar' }).into('baz').onConflict({
-    fields: ['field1', 'field2'],
-    merge: {
-      name: 'John Doe',
-      updatedAt: date,
-    },
-    where: { sql: '? = ?', params: [1, 1] },
-  });
+  qb8
+    .insert({ foo: 'bar' })
+    .into('baz')
+    .onConflict({
+      fields: ['field1', 'field2'],
+      merge: {
+        name: 'John Doe',
+        updatedAt: date,
+      },
+      where: { sql: '? = ?', params: [1, 1] },
+    });
   qb8.where('foo1', ['bar1']);
   expect(qb8.compile()).toEqual({
     sql: 'merge into [baz] using (values (?)) as tsource([foo]) on [baz].[field1] = tsource.[field1] and [baz].[field2] = tsource.[field2] when not matched then insert ([foo]) values (tsource.[foo]) when matched and ? = ? then update set [baz].[name] = ?, [baz].[updatedAt] = ?;',
@@ -130,7 +131,9 @@ test('MsSqlNativeQueryBuilder - CTE with INSERT', () => {
   qb.with('active_source', sub).insert({ name: 'test' }).into('target');
 
   const result = qb.compile();
-  expect(result.sql).toBe('with [active_source] as (select * from [source] where [active] = ?) insert into [target] ([name]) values (?); select @@rowcount;');
+  expect(result.sql).toBe(
+    'with [active_source] as (select * from [source] where [active] = ?) insert into [target] ([name]) values (?); select @@rowcount;',
+  );
   expect(result.params).toEqual([true, 'test']);
 });
 
@@ -143,7 +146,9 @@ test('MsSqlNativeQueryBuilder - CTE with UPDATE', () => {
   qb.with('active_source', sub).update({ status: 'done' }).from('target');
 
   const result = qb.compile();
-  expect(result.sql).toBe('with [active_source] as (select [id] from [source] where [active] = ?) update [target] set [status] = ?; select @@rowcount;');
+  expect(result.sql).toBe(
+    'with [active_source] as (select [id] from [source] where [active] = ?) update [target] set [status] = ?; select @@rowcount;',
+  );
   expect(result.params).toEqual([true, 'done']);
 });
 
@@ -156,7 +161,9 @@ test('MsSqlNativeQueryBuilder - CTE with DELETE', () => {
   qb.with('inactive_source', sub).delete().from('target').where('[id] in (select [id] from [inactive_source])', []);
 
   const result = qb.compile();
-  expect(result.sql).toBe('with [inactive_source] as (select [id] from [source] where [active] = ?) delete from [target] where [id] in (select [id] from [inactive_source]); select @@rowcount;');
+  expect(result.sql).toBe(
+    'with [inactive_source] as (select [id] from [source] where [active] = ?) delete from [target] where [id] in (select [id] from [inactive_source]); select @@rowcount;',
+  );
   expect(result.params).toEqual([false]);
 });
 

@@ -25,9 +25,33 @@ import { UnknownType } from './UnknownType.js';
 import { UuidType } from './UuidType.js';
 
 export {
-  Type, DateType, TimeType, DateTimeType, BigIntType, BlobType, Uint8ArrayType, ArrayType, EnumArrayType, EnumType,
-  JsonType, IntegerType, SmallIntType, TinyIntType, MediumIntType, FloatType, DoubleType, BooleanType, DecimalType,
-  StringType, UuidType, TextType, UnknownType, TransformContext, IntervalType, IType, CharacterType,
+  Type,
+  DateType,
+  TimeType,
+  DateTimeType,
+  BigIntType,
+  BlobType,
+  Uint8ArrayType,
+  ArrayType,
+  EnumArrayType,
+  EnumType,
+  JsonType,
+  IntegerType,
+  SmallIntType,
+  TinyIntType,
+  MediumIntType,
+  FloatType,
+  DoubleType,
+  BooleanType,
+  DecimalType,
+  StringType,
+  UuidType,
+  TextType,
+  UnknownType,
+  TransformContext,
+  IntervalType,
+  IType,
+  CharacterType,
 };
 
 export const types = {

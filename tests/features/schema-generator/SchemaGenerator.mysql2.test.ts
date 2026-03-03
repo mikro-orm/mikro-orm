@@ -17,11 +17,22 @@ import { BaseEntity2 } from '../../entities-sql/BaseEntity2.js';
 import { MySqlDriver } from '@mikro-orm/mysql';
 
 describe('SchemaGenerator (no FKs)', () => {
-
   test('create/drop database [mysql]', async () => {
     const orm = await MikroORM.init({
       metadataProvider: ReflectMetadataProvider,
-      entities: [FooBar2, FooBaz2, Test2, Book2, Author2, Configuration2, Publisher2, BookTag2, Address2, BaseEntity2, BaseEntity22],
+      entities: [
+        FooBar2,
+        FooBaz2,
+        Test2,
+        Book2,
+        Author2,
+        Configuration2,
+        Publisher2,
+        BookTag2,
+        Address2,
+        BaseEntity2,
+        BaseEntity22,
+      ],
       dbName: `mikro_orm_test_nofk_${Utils.randomInt(1, 10000)}`,
       port: 3308,
       baseDir: BASE_DIR,
@@ -39,7 +50,19 @@ describe('SchemaGenerator (no FKs)', () => {
     const dbName = `mikro_orm_test_nofk_${Utils.randomInt(1, 10000)}`;
     const orm = await MikroORM.init({
       metadataProvider: ReflectMetadataProvider,
-      entities: [FooBar2, FooBaz2, Test2, Book2, Author2, Configuration2, Publisher2, BookTag2, Address2, BaseEntity2, BaseEntity22],
+      entities: [
+        FooBar2,
+        FooBaz2,
+        Test2,
+        Book2,
+        Author2,
+        Configuration2,
+        Publisher2,
+        BookTag2,
+        Address2,
+        BaseEntity2,
+        BaseEntity22,
+      ],
       dbName,
       port: 3308,
       baseDir: BASE_DIR,
@@ -57,7 +80,12 @@ describe('SchemaGenerator (no FKs)', () => {
   });
 
   test('generate schema from metadata [mysql]', async () => {
-    const orm = await initORMMySql('mysql', { schemaGenerator: { createForeignKeyConstraints: false, disableForeignKeys: false } }, true, false);
+    const orm = await initORMMySql(
+      'mysql',
+      { schemaGenerator: { createForeignKeyConstraints: false, disableForeignKeys: false } },
+      true,
+      false,
+    );
     await orm.schema.ensureDatabase();
 
     const dropDump = await orm.schema.getDropSchemaSQL();
@@ -71,5 +99,4 @@ describe('SchemaGenerator (no FKs)', () => {
 
     await orm.close(true);
   });
-
 });

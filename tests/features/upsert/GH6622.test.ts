@@ -4,7 +4,6 @@ import { randomUUID } from 'node:crypto';
 
 @Entity({ schema: '*' })
 class User {
-
   @PrimaryKey()
   id!: number;
 
@@ -13,12 +12,10 @@ class User {
 
   @Property({ unique: true })
   email!: string;
-
 }
 
 @Entity({ schema: '*' })
 class Attribute {
-
   @PrimaryKey()
   id!: number;
 
@@ -27,12 +24,10 @@ class Attribute {
 
   @Property()
   value!: string;
-
 }
 
 @Entity({ schema: '*' })
 class Log {
-
   @ManyToOne(() => User, { primary: true })
   user!: User;
 
@@ -41,7 +36,6 @@ class Log {
 
   @Property({ onCreate: () => new Date() })
   createdAt = new Date();
-
 }
 
 let orm: MikroORM;
@@ -75,23 +69,37 @@ test('setting schema via entity manager property', async () => {
   const user = await orm.em.findOneOrFail(User, { id: 1 });
   const attribute = await orm.em.findOneOrFail(Attribute, { id: 1 });
 
-  await orm.em.upsert(Log, {
-    user, attribute, createdAt: new Date(),
-  }, {
-    onConflictAction: 'ignore',
-    onConflictFields: ['attribute', 'user'],
-  });
+  await orm.em.upsert(
+    Log,
+    {
+      user,
+      attribute,
+      createdAt: new Date(),
+    },
+    {
+      onConflictAction: 'ignore',
+      onConflictFields: ['attribute', 'user'],
+    },
+  );
 });
 
 test('setting schema via upsert options property', async () => {
   const user = await orm.em.findOneOrFail(User, { id: 1 });
   const attribute = await orm.em.findOneOrFail(Attribute, { id: 1 });
 
-  await orm.em.upsertMany(Log, [{
-    user, attribute, createdAt: new Date(),
-  }], {
-    onConflictAction: 'ignore',
-    onConflictFields: ['attribute', 'user'],
-    schema: SCHEMA_NAME,
-  });
+  await orm.em.upsertMany(
+    Log,
+    [
+      {
+        user,
+        attribute,
+        createdAt: new Date(),
+      },
+    ],
+    {
+      onConflictAction: 'ignore',
+      onConflictFields: ['attribute', 'user'],
+      schema: SCHEMA_NAME,
+    },
+  );
 });

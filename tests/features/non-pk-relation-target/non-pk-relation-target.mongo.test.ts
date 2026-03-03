@@ -1,10 +1,18 @@
 import { MikroORM, Ref, Collection } from '@mikro-orm/mongodb';
-import { Entity, PrimaryKey, Property, ManyToOne, OneToMany, Unique, SerializedPrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  PrimaryKey,
+  Property,
+  ManyToOne,
+  OneToMany,
+  Unique,
+  SerializedPrimaryKey,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { ObjectId } from 'bson';
 
 @Entity()
 class Author {
-
   @PrimaryKey()
   _id!: ObjectId;
 
@@ -20,12 +28,10 @@ class Author {
 
   @OneToMany(() => Book, book => book.author)
   books = new Collection<Book>(this);
-
 }
 
 @Entity()
 class Book {
-
   @PrimaryKey()
   _id!: ObjectId;
 
@@ -38,11 +44,9 @@ class Book {
   // This relation references Author by uuid instead of id (PK)
   @ManyToOne(() => Author, { ref: true, targetKey: 'uuid' })
   author!: Ref<Author>;
-
 }
 
 describe('non-PK relation target with MongoDB', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -109,7 +113,9 @@ describe('non-PK relation target with MongoDB', () => {
     const bookId = orphanBook._id;
 
     // Delete the author directly via MongoDB (no FK constraints)
-    await orm.em.getDriver().nativeDelete(Author, { uuid: 'uuid-orphan-mongo' }, { ctx: orm.em.getTransactionContext() });
+    await orm.em
+      .getDriver()
+      .nativeDelete(Author, { uuid: 'uuid-orphan-mongo' }, { ctx: orm.em.getTransactionContext() });
     orm.em.clear();
 
     // Load the book with populate - the author should remain as an uninitialized reference
@@ -122,5 +128,4 @@ describe('non-PK relation target with MongoDB', () => {
     // But it won't be fully initialized since the entity doesn't exist
     expect(loadedBook.author.isInitialized()).toBe(false);
   });
-
 });

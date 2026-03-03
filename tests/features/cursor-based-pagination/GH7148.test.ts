@@ -3,7 +3,6 @@ import { Entity, ManyToMany, PrimaryKey, Property, ReflectMetadataProvider } fro
 
 @Entity()
 class Tag {
-
   @PrimaryKey()
   id!: number;
 
@@ -12,12 +11,10 @@ class Tag {
 
   @ManyToMany(() => Post, p => p.tags)
   posts = new Collection<Post>(this);
-
 }
 
 @Entity()
 class Post {
-
   @PrimaryKey()
   id!: number;
 
@@ -26,7 +23,6 @@ class Post {
 
   @ManyToMany(() => Tag)
   tags = new Collection<Tag>(this);
-
 }
 
 let orm: MikroORM;
@@ -76,12 +72,22 @@ test('cursor pagination with many-to-many populate should not limit related item
   // Post 1 should have all 3 tags, not just 2
   expect(cursor.items[0].tags.isInitialized()).toBe(true);
   expect(cursor.items[0].tags.getItems()).toHaveLength(3);
-  expect(cursor.items[0].tags.getItems().map(t => t.name).sort()).toEqual(['Tag 1', 'Tag 2', 'Tag 3']);
+  expect(
+    cursor.items[0].tags
+      .getItems()
+      .map(t => t.name)
+      .sort(),
+  ).toEqual(['Tag 1', 'Tag 2', 'Tag 3']);
 
   // Post 2 should have all 2 tags
   expect(cursor.items[1].tags.isInitialized()).toBe(true);
   expect(cursor.items[1].tags.getItems()).toHaveLength(2);
-  expect(cursor.items[1].tags.getItems().map(t => t.name).sort()).toEqual(['Tag 3', 'Tag 4']);
+  expect(
+    cursor.items[1].tags
+      .getItems()
+      .map(t => t.name)
+      .sort(),
+  ).toEqual(['Tag 3', 'Tag 4']);
 });
 
 test('cursor pagination with many-to-many populate and overfetch should not limit related items', async () => {
@@ -118,5 +124,10 @@ test('cursor pagination using last instead of first should not limit related ite
 
   // Post 3 should have all 4 tags
   expect(cursor.items[1].tags.getItems()).toHaveLength(4);
-  expect(cursor.items[1].tags.getItems().map(t => t.name).sort()).toEqual(['Tag 1', 'Tag 2', 'Tag 4', 'Tag 5']);
+  expect(
+    cursor.items[1].tags
+      .getItems()
+      .map(t => t.name)
+      .sort(),
+  ).toEqual(['Tag 1', 'Tag 2', 'Tag 4', 'Tag 5']);
 });

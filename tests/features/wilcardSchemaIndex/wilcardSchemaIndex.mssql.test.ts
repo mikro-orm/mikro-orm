@@ -9,11 +9,26 @@ const schema1 = `library1`;
 const schema2 = `library2`;
 
 @Entity({ tableName: 'author', schema: '*' })
-@Index({ name: 'custom_idx_on_name', expression: (columns, table) => `create index custom_idx_on_name on [${table.schema}].[${table.name}] ([${columns.name}])` })
-@Index({ name: 'custom_idx_on_country', expression: (columns, table) => quote`create index ${'custom_idx_on_country'} on ${table} (${columns.country})` })
-@Unique({ name: 'custom_unique_on_email', expression: (columns, table) => raw(`create unique index ?? on ?? (??) where ?? is not null`, ['custom_unique_on_email', table, columns.email, columns.email]) })
+@Index({
+  name: 'custom_idx_on_name',
+  expression: (columns, table) =>
+    `create index custom_idx_on_name on [${table.schema}].[${table.name}] ([${columns.name}])`,
+})
+@Index({
+  name: 'custom_idx_on_country',
+  expression: (columns, table) => quote`create index ${'custom_idx_on_country'} on ${table} (${columns.country})`,
+})
+@Unique({
+  name: 'custom_unique_on_email',
+  expression: (columns, table) =>
+    raw(`create unique index ?? on ?? (??) where ?? is not null`, [
+      'custom_unique_on_email',
+      table,
+      columns.email,
+      columns.email,
+    ]),
+})
 export class Author {
-
   @PrimaryKey()
   id!: number;
 
@@ -31,13 +46,14 @@ export class Author {
     this.email = email;
     this.country = country;
   }
-
 }
 
 @Entity({ tableName: 'author2' })
-@Index({ name: 'custom_idx_on_name', expression: (columns, table) => `create index custom_idx_on_name on [${table}] ([${columns.name}])` })
+@Index({
+  name: 'custom_idx_on_name',
+  expression: (columns, table) => `create index custom_idx_on_name on [${table}] ([${columns.name}])`,
+})
 export class Author2 {
-
   @PrimaryKey()
   id!: number;
 
@@ -47,11 +63,9 @@ export class Author2 {
   constructor(name: string) {
     this.name = name;
   }
-
 }
 
 describe('wilcardSchemaIndex', () => {
-
   beforeAll(async () => {
     orm = await MikroORM.init({
       metadataProvider: ReflectMetadataProvider,
@@ -71,7 +85,6 @@ describe('wilcardSchemaIndex', () => {
   });
 
   test('create SQL schema', async () => {
-
     let createDump = await orm.schema.getCreateSchemaSQL({ schema: schema1 });
     expect(createDump).toMatchSnapshot('createSchemaSQL-dump');
 
@@ -80,7 +93,5 @@ describe('wilcardSchemaIndex', () => {
 
     createDump = await orm.schema.getCreateSchemaSQL();
     expect(createDump).toMatchSnapshot('createSchemaSQL-dump');
-
   });
-
 });

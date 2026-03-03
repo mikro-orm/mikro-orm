@@ -4,7 +4,6 @@ import { mockLogger } from '../helpers.js';
 
 @Entity()
 class App {
-
   @PrimaryKey()
   id!: number;
 
@@ -13,12 +12,10 @@ class App {
 
   @ManyToMany(() => User, 'apps')
   users = new Collection<User>(this);
-
 }
 
 @Entity()
 class User {
-
   @PrimaryKey()
   id!: number;
 
@@ -27,11 +24,9 @@ class User {
 
   @ManyToMany(() => App, a => a.users, { owner: true })
   apps = new Collection<App>(this);
-
 }
 
 describe('GH issue 1041, 1043', () => {
-
   let orm: MikroORM;
   const log = vi.fn();
 
@@ -60,7 +55,11 @@ describe('GH issue 1041, 1043', () => {
   afterAll(() => orm.close(true));
 
   test('select-in strategy: populate with apps and remove one app', async () => {
-    const user = await orm.em.findOneOrFail(User, { id: 123 }, { populate: ['apps'], strategy: LoadStrategy.SELECT_IN });
+    const user = await orm.em.findOneOrFail(
+      User,
+      { id: 123 },
+      { populate: ['apps'], strategy: LoadStrategy.SELECT_IN },
+    );
     const app = user.apps.getItems().find(i => i.id === 2);
 
     user.apps.remove(app!);
@@ -88,40 +87,73 @@ describe('GH issue 1041, 1043', () => {
   test('select-in strategy: find by many-to-many relation ID', async () => {
     const findPromise = orm.em.findOne(User, { apps: 1 }, { populate: ['apps'], strategy: LoadStrategy.SELECT_IN });
     await expect(findPromise).resolves.toBeInstanceOf(User);
-    expect(log.mock.calls[0][0]).toMatch('select `u0`.* from `user` as `u0` left join `user_apps` as `u1` on `u0`.`id` = `u1`.`user_id` where `u1`.`app_id` = 1 limit 1');
-    expect(log.mock.calls[1][0]).toMatch('select `u0`.`app_id`, `u0`.`user_id`, `a1`.`id` as `a1__id`, `a1`.`name` as `a1__name` from `user_apps` as `u0` inner join `app` as `a1` on `u0`.`app_id` = `a1`.`id` where `u0`.`user_id` in (123)');
+    expect(log.mock.calls[0][0]).toMatch(
+      'select `u0`.* from `user` as `u0` left join `user_apps` as `u1` on `u0`.`id` = `u1`.`user_id` where `u1`.`app_id` = 1 limit 1',
+    );
+    expect(log.mock.calls[1][0]).toMatch(
+      'select `u0`.`app_id`, `u0`.`user_id`, `a1`.`id` as `a1__id`, `a1`.`name` as `a1__name` from `user_apps` as `u0` inner join `app` as `a1` on `u0`.`app_id` = `a1`.`id` where `u0`.`user_id` in (123)',
+    );
   });
 
   test('joined strategy: find by many-to-many relation ID', async () => {
     const findPromise = orm.em.findOne(User, { apps: 1 }, { populate: ['apps'], strategy: LoadStrategy.JOINED });
     await expect(findPromise).resolves.toBeInstanceOf(User);
-    expect(log.mock.calls[0][0]).toMatch('select `u0`.*, `a1`.`id` as `a1__id`, `a1`.`name` as `a1__name` from `user` as `u0` left join `user_apps` as `u2` on `u0`.`id` = `u2`.`user_id` left join `app` as `a1` on `u2`.`app_id` = `a1`.`id` left join `user_apps` as `u3` on `u0`.`id` = `u3`.`user_id` where `u3`.`app_id` = 1');
+    expect(log.mock.calls[0][0]).toMatch(
+      'select `u0`.*, `a1`.`id` as `a1__id`, `a1`.`name` as `a1__name` from `user` as `u0` left join `user_apps` as `u2` on `u0`.`id` = `u2`.`user_id` left join `app` as `a1` on `u2`.`app_id` = `a1`.`id` left join `user_apps` as `u3` on `u0`.`id` = `u3`.`user_id` where `u3`.`app_id` = 1',
+    );
   });
 
   test('select-in strategy: find by many-to-many relation IDs (PopulateHint.INFER)', async () => {
-    const findPromise = orm.em.findOne(User, { apps: [1, 2, 3] }, { populate: ['apps'], strategy: LoadStrategy.SELECT_IN, populateWhere: PopulateHint.INFER });
+    const findPromise = orm.em.findOne(
+      User,
+      { apps: [1, 2, 3] },
+      { populate: ['apps'], strategy: LoadStrategy.SELECT_IN, populateWhere: PopulateHint.INFER },
+    );
     await expect(findPromise).resolves.toBeInstanceOf(User);
-    expect(log.mock.calls[0][0]).toMatch('select `u0`.* from `user` as `u0` left join `user_apps` as `u1` on `u0`.`id` = `u1`.`user_id` where `u1`.`app_id` in (1, 2, 3) limit 1');
-    expect(log.mock.calls[1][0]).toMatch('select `u0`.`app_id`, `u0`.`user_id`, `a1`.`id` as `a1__id`, `a1`.`name` as `a1__name` from `user_apps` as `u0` inner join `app` as `a1` on `u0`.`app_id` = `a1`.`id` where `u0`.`user_id` in (123) and `a1`.`id` in (1, 2, 3)');
+    expect(log.mock.calls[0][0]).toMatch(
+      'select `u0`.* from `user` as `u0` left join `user_apps` as `u1` on `u0`.`id` = `u1`.`user_id` where `u1`.`app_id` in (1, 2, 3) limit 1',
+    );
+    expect(log.mock.calls[1][0]).toMatch(
+      'select `u0`.`app_id`, `u0`.`user_id`, `a1`.`id` as `a1__id`, `a1`.`name` as `a1__name` from `user_apps` as `u0` inner join `app` as `a1` on `u0`.`app_id` = `a1`.`id` where `u0`.`user_id` in (123) and `a1`.`id` in (1, 2, 3)',
+    );
   });
 
   test('joined strategy: find by many-to-many relation IDs (PopulateHint.INFER)', async () => {
-    const findPromise = orm.em.findOne(User, { apps: [1, 2, 3] }, { populate: ['apps'], strategy: LoadStrategy.JOINED, populateWhere: PopulateHint.INFER });
+    const findPromise = orm.em.findOne(
+      User,
+      { apps: [1, 2, 3] },
+      { populate: ['apps'], strategy: LoadStrategy.JOINED, populateWhere: PopulateHint.INFER },
+    );
     await expect(findPromise).resolves.toBeInstanceOf(User);
-    expect(log.mock.calls[0][0]).toMatch('select `u0`.*, `a1`.`id` as `a1__id`, `a1`.`name` as `a1__name` from `user` as `u0` left join `user_apps` as `u2` on `u0`.`id` = `u2`.`user_id` and `u2`.`app_id` in (1, 2, 3) left join `app` as `a1` on `u2`.`app_id` = `a1`.`id` where `u2`.`app_id` in (1, 2, 3)');
+    expect(log.mock.calls[0][0]).toMatch(
+      'select `u0`.*, `a1`.`id` as `a1__id`, `a1`.`name` as `a1__name` from `user` as `u0` left join `user_apps` as `u2` on `u0`.`id` = `u2`.`user_id` and `u2`.`app_id` in (1, 2, 3) left join `app` as `a1` on `u2`.`app_id` = `a1`.`id` where `u2`.`app_id` in (1, 2, 3)',
+    );
   });
 
   test('select-in strategy: find by many-to-many relation IDs', async () => {
-    const findPromise = orm.em.findOne(User, { apps: [1, 2, 3] }, { populate: ['apps'], strategy: LoadStrategy.SELECT_IN });
+    const findPromise = orm.em.findOne(
+      User,
+      { apps: [1, 2, 3] },
+      { populate: ['apps'], strategy: LoadStrategy.SELECT_IN },
+    );
     await expect(findPromise).resolves.toBeInstanceOf(User);
-    expect(log.mock.calls[0][0]).toMatch('select `u0`.* from `user` as `u0` left join `user_apps` as `u1` on `u0`.`id` = `u1`.`user_id` where `u1`.`app_id` in (1, 2, 3) limit 1');
-    expect(log.mock.calls[1][0]).toMatch('select `u0`.`app_id`, `u0`.`user_id`, `a1`.`id` as `a1__id`, `a1`.`name` as `a1__name` from `user_apps` as `u0` inner join `app` as `a1` on `u0`.`app_id` = `a1`.`id` where `u0`.`user_id` in (123)');
+    expect(log.mock.calls[0][0]).toMatch(
+      'select `u0`.* from `user` as `u0` left join `user_apps` as `u1` on `u0`.`id` = `u1`.`user_id` where `u1`.`app_id` in (1, 2, 3) limit 1',
+    );
+    expect(log.mock.calls[1][0]).toMatch(
+      'select `u0`.`app_id`, `u0`.`user_id`, `a1`.`id` as `a1__id`, `a1`.`name` as `a1__name` from `user_apps` as `u0` inner join `app` as `a1` on `u0`.`app_id` = `a1`.`id` where `u0`.`user_id` in (123)',
+    );
   });
 
   test('joined strategy: find by many-to-many relation IDs', async () => {
-    const findPromise = orm.em.findOne(User, { apps: [1, 2, 3] }, { populate: ['apps'], strategy: LoadStrategy.JOINED });
+    const findPromise = orm.em.findOne(
+      User,
+      { apps: [1, 2, 3] },
+      { populate: ['apps'], strategy: LoadStrategy.JOINED },
+    );
     await expect(findPromise).resolves.toBeInstanceOf(User);
-    expect(log.mock.calls[0][0]).toMatch('select `u0`.*, `a1`.`id` as `a1__id`, `a1`.`name` as `a1__name` from `user` as `u0` left join `user_apps` as `u2` on `u0`.`id` = `u2`.`user_id` left join `app` as `a1` on `u2`.`app_id` = `a1`.`id` left join `user_apps` as `u3` on `u0`.`id` = `u3`.`user_id` where `u3`.`app_id` in (1, 2, 3)');
+    expect(log.mock.calls[0][0]).toMatch(
+      'select `u0`.*, `a1`.`id` as `a1__id`, `a1`.`name` as `a1__name` from `user` as `u0` left join `user_apps` as `u2` on `u0`.`id` = `u2`.`user_id` left join `app` as `a1` on `u2`.`app_id` = `a1`.`id` left join `user_apps` as `u3` on `u0`.`id` = `u3`.`user_id` where `u3`.`app_id` in (1, 2, 3)',
+    );
   });
-
 });

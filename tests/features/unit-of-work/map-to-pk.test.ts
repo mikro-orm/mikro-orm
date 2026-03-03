@@ -1,11 +1,18 @@
 import { Collection, LoadStrategy, MikroORM, Primary, PrimaryKeyProp, StringType } from '@mikro-orm/core';
-import { Entity, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  OneToOne,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 import { mockLogger } from '../../helpers.js';
 
 @Entity()
 export class User {
-
   @PrimaryKey({ length: 100 })
   firstName!: string;
 
@@ -16,12 +23,10 @@ export class User {
   managedTeams = new Collection<Team>(this);
 
   [PrimaryKeyProp]?: ['firstName', 'lastName'];
-
 }
 
 @Entity()
 export class Order {
-
   @PrimaryKey({ type: StringType })
   id!: string;
 
@@ -35,12 +40,10 @@ export class Order {
     nullable: true,
   })
   owningTeam?: string;
-
 }
 
 @Entity()
 export class Team {
-
   @PrimaryKey({ type: StringType })
   id!: string;
 
@@ -61,11 +64,9 @@ export class Team {
 
   @Property()
   status!: string;
-
 }
 
 describe('mapToPk', () => {
-
   let orm: MikroORM<SqliteDriver>;
 
   beforeAll(async () => {
@@ -120,7 +121,9 @@ describe('mapToPk', () => {
     expect(mock.mock.calls[1][0]).toMatch("insert into `order` (`id`, `status`) values ('order1', 'confirmed')");
     expect(mock.mock.calls[2][0]).toMatch('commit');
     expect(mock.mock.calls[3][0]).toMatch('begin');
-    expect(mock.mock.calls[4][0]).toMatch("insert into `team` (`id`, `current_order_id`, `status`) values ('team1', 'order1', 'status1')");
+    expect(mock.mock.calls[4][0]).toMatch(
+      "insert into `team` (`id`, `current_order_id`, `status`) values ('team1', 'order1', 'status1')",
+    );
     expect(mock.mock.calls[5][0]).toMatch('commit');
     expect(mock.mock.calls[6][0]).toMatch("select `t0`.* from `team` as `t0` where `t0`.`id` = 'team1' limit 1");
     expect(mock.mock.calls[7][0]).toMatch('begin');
@@ -130,76 +133,71 @@ describe('mapToPk', () => {
     mock.mockReset();
   });
 
-  test.each(Object.values(LoadStrategy))('mapToPk works with populate using "%s" strategy (simplePK)', async strategy => {
-    const o1 = orm.em.create(Order, {
-      id: 'order1',
-      status: 'confirmed',
-    });
+  test.each(Object.values(LoadStrategy))(
+    'mapToPk works with populate using "%s" strategy (simplePK)',
+    async strategy => {
+      const o1 = orm.em.create(Order, {
+        id: 'order1',
+        status: 'confirmed',
+      });
 
-    await orm.em.persist(o1).flush();
+      await orm.em.persist(o1).flush();
 
-    const t3 = orm.em.create(Team, {
-      id: 'team1',
-      status: 'status1',
-      currentOrder: o1.id,
-    });
+      const t3 = orm.em.create(Team, {
+        id: 'team1',
+        status: 'status1',
+        currentOrder: o1.id,
+      });
 
-    expect(t3.currentOrder).toBe(o1.id);
-    // id is not propagated to the inversed side
-    // expect(o1.owningTeam).toBe(t3.id);
-    await orm.em.persist(t3).flush();
-    orm.em.clear();
+      expect(t3.currentOrder).toBe(o1.id);
+      // id is not propagated to the inversed side
+      // expect(o1.owningTeam).toBe(t3.id);
+      await orm.em.persist(t3).flush();
+      orm.em.clear();
 
-    const mock = mockLogger(orm, ['query', 'query-params']);
-    // owning side
-    const team = await orm.em.findOneOrFail(
-      Team,
-      { id: 'team1' },
-      { populate: ['currentOrder'], strategy },
-    );
+      const mock = mockLogger(orm, ['query', 'query-params']);
+      // owning side
+      const team = await orm.em.findOneOrFail(Team, { id: 'team1' }, { populate: ['currentOrder'], strategy });
 
-    expect(team.currentOrder).toBe(o1.id);
-    orm.em.clear();
+      expect(team.currentOrder).toBe(o1.id);
+      orm.em.clear();
 
-    // inverse side
-    const order = await orm.em.findOneOrFail(
-      Order,
-      { id: 'order1' },
-      { populate: ['owningTeam'], strategy },
-    );
+      // inverse side
+      const order = await orm.em.findOneOrFail(Order, { id: 'order1' }, { populate: ['owningTeam'], strategy });
 
-    expect(order.owningTeam).toBe(t3.id);
-    expect(mock.mock.calls).toHaveLength(2);
-    expect(mock.mock.calls[0][0]).toMatch("select `t0`.* from `team` as `t0` where `t0`.`id` = 'team1' limit 1");
-    expect(mock.mock.calls[1][0]).toMatch("select `o0`.*, `o1`.`id` as `o1__id` from `order` as `o0` left join `team` as `o1` on `o0`.`id` = `o1`.`current_order_id` where `o0`.`id` = 'order1' limit 1");
-    mock.mockReset();
-  });
+      expect(order.owningTeam).toBe(t3.id);
+      expect(mock.mock.calls).toHaveLength(2);
+      expect(mock.mock.calls[0][0]).toMatch("select `t0`.* from `team` as `t0` where `t0`.`id` = 'team1' limit 1");
+      expect(mock.mock.calls[1][0]).toMatch(
+        "select `o0`.*, `o1`.`id` as `o1__id` from `order` as `o0` left join `team` as `o1` on `o0`.`id` = `o1`.`current_order_id` where `o0`.`id` = 'order1' limit 1",
+      );
+      mock.mockReset();
+    },
+  );
 
-  test.each(Object.values(LoadStrategy))('mapToPk works with populate using "%s" strategy (compositePK)', async strategy => {
-    const u = orm.em.create(User, {
-      firstName: 'f',
-      lastName: 'l',
-    });
+  test.each(Object.values(LoadStrategy))(
+    'mapToPk works with populate using "%s" strategy (compositePK)',
+    async strategy => {
+      const u = orm.em.create(User, {
+        firstName: 'f',
+        lastName: 'l',
+      });
 
-    const t = orm.em.create(Team, {
-      id: 'team1',
-      status: 'status1',
-      manager: [u.firstName, u.lastName],
-    });
+      const t = orm.em.create(Team, {
+        id: 'team1',
+        status: 'status1',
+        manager: [u.firstName, u.lastName],
+      });
 
-    await orm.em.flush();
+      await orm.em.flush();
 
-    expect(t.manager).toEqual(['f', 'l']);
+      expect(t.manager).toEqual(['f', 'l']);
 
-    orm.em.clear();
+      orm.em.clear();
 
-    const team = await orm.em.findOneOrFail(
-      Team,
-      { id: 'team1' },
-      { populate: ['manager'], strategy },
-    );
+      const team = await orm.em.findOneOrFail(Team, { id: 'team1' }, { populate: ['manager'], strategy });
 
-    expect(team.manager).toEqual(t.manager);
-  });
-
+      expect(team.manager).toEqual(t.manager);
+    },
+  );
 });

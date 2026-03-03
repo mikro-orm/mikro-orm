@@ -3,7 +3,6 @@ import { Entity, ManyToMany, PrimaryKey, Property, ReflectMetadataProvider } fro
 
 @Entity()
 class A {
-
   @PrimaryKey()
   id!: number;
 
@@ -12,12 +11,10 @@ class A {
 
   @ManyToMany({ entity: () => B, mappedBy: 'a' })
   b = new Collection<B>(this);
-
 }
 
 @Entity()
 class B {
-
   @PrimaryKey()
   id!: number;
 
@@ -29,7 +26,6 @@ class B {
 
   @ManyToMany({ entity: () => A, inversedBy: 'b' })
   a = new Collection<A>(this);
-
 }
 
 let orm: MikroORM;
@@ -46,9 +42,7 @@ beforeAll(async () => {
 afterAll(() => orm.close());
 
 test('loadItems with fields (#4464)', async () => {
-  const a = orm.em.create(A, { test1: 'yxcv', b: [
-    { test2: 'qwer', test3: 'asdf' },
-  ] });
+  const a = orm.em.create(A, { test1: 'yxcv', b: [{ test2: 'qwer', test3: 'asdf' }] });
 
   await orm.em.flush();
   orm.em.clear();

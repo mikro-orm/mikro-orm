@@ -3,7 +3,6 @@ import { AfterUpsert, BeforeUpsert, Entity, ManyToMany, PrimaryKey, Property } f
 
 @Entity()
 class Fruit {
-
   @PrimaryKey({ type: 'bigint' })
   id!: bigint;
 
@@ -30,12 +29,10 @@ class Fruit {
   private beforeUpsert() {
     this.updatedAt = new Date();
   }
-
 }
 
 @Entity()
 class Bowl {
-
   @PrimaryKey({ type: 'bigint' })
   id!: bigint;
 
@@ -67,7 +64,6 @@ class Bowl {
   private afterUpsert() {
     //
   }
-
 }
 
 let orm: MikroORM;
@@ -107,10 +103,12 @@ test('5702', async () => {
     description: 'Healthy',
   });
 
-  const [fruit3] = await orm.em.upsertMany(Fruit, [{
-    name: `Fruit 0.0`,
-    description: 'Healthy',
-  }]);
+  const [fruit3] = await orm.em.upsertMany(Fruit, [
+    {
+      name: `Fruit 0.0`,
+      description: 'Healthy',
+    },
+  ]);
 
   expect(fruit1).toBe(fruit2);
   expect(fruit1).toBe(fruit3);

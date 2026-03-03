@@ -3,18 +3,15 @@ import { Entity, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider } from
 
 @Entity()
 class Organization {
-
   @PrimaryKey({ type: 'uuid' })
   id!: string;
 
   @Property()
   name!: string;
-
 }
 
 @Entity()
 class Sample {
-
   @ManyToOne(() => Organization, { primary: true })
   organization!: Ref<Organization>;
 
@@ -22,12 +19,10 @@ class Sample {
   id!: string;
 
   [PrimaryKeyProp]?: ['organization', 'id'];
-
 }
 
 @Entity({ tableName: 'sample-stick-well' })
 class SampleStickWell {
-
   @ManyToOne(() => Sample, { primary: true })
   sample!: Ref<Sample>;
 
@@ -41,7 +36,6 @@ class SampleStickWell {
 
   @Property()
   stickWellId!: string;
-
 }
 
 let orm: MikroORM;
@@ -80,12 +74,14 @@ test('upsert with DTO with FK as composite PK', async () => {
 });
 
 test('upsertMany with DTO with FK as composite PK', async () => {
-  const [e] = await orm.em.upsertMany(SampleStickWell, [{
-    sample: ref(Sample, [oid, sid]),
-    stickWellId: 'value',
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  }]);
+  const [e] = await orm.em.upsertMany(SampleStickWell, [
+    {
+      sample: ref(Sample, [oid, sid]),
+      stickWellId: 'value',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+  ]);
   orm.em.remove(e);
   await orm.em.flush();
 });

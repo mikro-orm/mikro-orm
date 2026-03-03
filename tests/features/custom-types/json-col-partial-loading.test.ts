@@ -3,13 +3,11 @@ import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-or
 
 @Entity()
 class Shape {
-
   @PrimaryKey()
   id!: number;
 
   @Property({ type: JsonType })
   geometry!: any;
-
 }
 
 let orm: MikroORM;

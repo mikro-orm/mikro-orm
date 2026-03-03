@@ -1,58 +1,54 @@
 import { Ref, JsonType, MikroORM } from '@mikro-orm/sqlite';
-import { Entity, ManyToOne, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToOne,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Entity()
 export class A {
-
   @PrimaryKey()
   id!: number;
 
   @Property({ type: 'string' })
   test!: string;
-
 }
 
 @Entity()
 export class B1 {
-
   @ManyToOne({ entity: () => A, primary: true, ref: true })
   a!: Ref<A>;
-
 }
 
 @Entity()
 export class B2 {
-
   @PrimaryKey()
   id!: number;
 
   @OneToOne({ entity: () => A, primary: true, ref: true })
   a!: Ref<A>;
-
 }
 
 @Entity()
 export class B3 {
-
   @OneToOne({ entity: () => A, primary: true, ref: true })
   a!: Ref<A>;
-
 }
 
 @Entity()
 export class B4 {
-
   @PrimaryKey()
   id!: number;
 
   @OneToOne({ entity: () => A, primary: true, ref: true })
   a!: Ref<A>;
-
 }
 
 @Entity()
 export class C {
-
   @PrimaryKey({ type: Number })
   id!: number;
 
@@ -67,7 +63,6 @@ export class C {
 
   @ManyToOne({ entity: () => B4, ref: true })
   b4!: Ref<B4>;
-
 }
 
 interface Test {
@@ -77,14 +72,11 @@ interface Test {
 
 @Entity()
 export class D {
-
   @PrimaryKey({ type: JsonType })
   id!: Test;
-
 }
 
 describe('GH issue 2648', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -122,5 +114,4 @@ describe('GH issue 2648', () => {
     const r = await orm.em.findOne(C, { b4: { a: { test: 'test' } } });
     expect(r).toBeNull();
   });
-
 });

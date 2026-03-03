@@ -40,7 +40,6 @@ import { BaseEntity } from './BaseEntity.js';
   default: true,
 })
 export class Author extends BaseEntity<Author, 'termsAccepted' | 'code2' | 'version' | 'versionAsString'> {
-
   [EntityRepositoryType]?: AuthorRepository;
 
   static beforeDestroyCalled = 0;
@@ -158,5 +157,4 @@ export class Author extends BaseEntity<Author, 'termsAccepted' | 'code2' | 'vers
 
     return o;
   }
-
 }

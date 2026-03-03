@@ -7,7 +7,6 @@ import { Entity, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider, Uniqu
   deferMode: 'deferred',
 })
 class ProductCategory {
-
   @PrimaryKey()
   id!: number;
 
@@ -25,7 +24,6 @@ class ProductCategory {
   constructor(rank: number) {
     this.rank = rank;
   }
-
 }
 
 let orm: MikroORM;

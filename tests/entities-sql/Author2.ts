@@ -37,7 +37,6 @@ import { Address2 } from './Address2.js';
 
 @Embeddable()
 export class Identity {
-
   @Property({ hidden: true })
   foo: string & Hidden;
 
@@ -53,7 +52,6 @@ export class Identity {
   get fooBar() {
     return this.foo + ' ' + this.bar;
   }
-
 }
 
 @Entity()
@@ -61,7 +59,6 @@ export class Identity {
 @Index({ name: 'custom_idx_name_123', properties: ['name'] })
 @Unique({ properties: ['name', 'email'] })
 export class Author2 extends BaseEntity2 {
-
   // just for testing the types, this is not needed
   [OptionalProps]?: 'id';
 
@@ -103,10 +100,21 @@ export class Author2 extends BaseEntity2 {
   @OneToMany({ entity: () => Book2, mappedBy: 'author', orderBy: { title: QueryOrder.ASC }, groups: ['personal'] })
   books = new Collection<Book2>(this);
 
-  @OneToMany({ entity: () => Book2, mappedBy: 'author', strategy: LoadStrategy.JOINED, orderBy: { title: QueryOrder.ASC }, groups: ['personal'] })
+  @OneToMany({
+    entity: () => Book2,
+    mappedBy: 'author',
+    strategy: LoadStrategy.JOINED,
+    orderBy: { title: QueryOrder.ASC },
+    groups: ['personal'],
+  })
   books2 = new Collection<Book2>(this);
 
-  @OneToOne({ entity: () => Address2, mappedBy: address => address.author, cascade: [Cascade.ALL], groups: ['personal', 'admin'] })
+  @OneToOne({
+    entity: () => Address2,
+    mappedBy: address => address.author,
+    cascade: [Cascade.ALL],
+    groups: ['personal', 'admin'],
+  })
   address?: Address2;
 
   @ManyToMany({ entity: () => Author2, pivotTable: 'author_to_friend', groups: ['personal'] })
@@ -202,5 +210,4 @@ export class Author2 extends BaseEntity2 {
   get code2(): string & Opt {
     return `${this.email} - ${this.name}`;
   }
-
 }

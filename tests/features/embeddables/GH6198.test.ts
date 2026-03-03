@@ -1,9 +1,15 @@
 import { MikroORM } from '@mikro-orm/sqlite';
-import { Embeddable, Embedded, Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Embeddable,
+  Embedded,
+  Entity,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Embeddable()
 class Tag {
-
   @Property()
   key: string;
 
@@ -14,12 +20,10 @@ class Tag {
     this.key = key;
     this.value = value;
   }
-
 }
 
 @Entity()
 class User {
-
   @PrimaryKey()
   id!: number;
 
@@ -37,7 +41,6 @@ class User {
     this.email = email;
     this.tags = tags;
   }
-
 }
 
 let orm: MikroORM;

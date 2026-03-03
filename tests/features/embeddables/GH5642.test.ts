@@ -1,9 +1,10 @@
 import { EntitySchema, MikroORM } from '@mikro-orm/sqlite';
 
 class PersonName {
-
-  constructor(readonly givenName: string, readonly surname: string) {}
-
+  constructor(
+    readonly givenName: string,
+    readonly surname: string,
+  ) {}
 }
 
 export const PersonNameSchema = new EntitySchema<PersonName>({
@@ -16,9 +17,10 @@ export const PersonNameSchema = new EntitySchema<PersonName>({
 });
 
 class EmergencyContact {
-
-  constructor(readonly name: PersonName, readonly relationship: string) {}
-
+  constructor(
+    readonly name: PersonName,
+    readonly relationship: string,
+  ) {}
 }
 
 export const EmergencyContactSchema = new EntitySchema({
@@ -35,13 +37,11 @@ export const EmergencyContactSchema = new EntitySchema({
 });
 
 class Patient {
-
   constructor(
     readonly id: string,
     readonly name: PersonName,
     readonly emergencyContact: EmergencyContact,
   ) {}
-
 }
 
 export const PatientSchema = new EntitySchema({

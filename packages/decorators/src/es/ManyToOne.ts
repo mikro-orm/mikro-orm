@@ -17,6 +17,10 @@ export function ManyToOne<Target extends object, Owner extends object>(
     const meta = prepareMetadataContext(context, ReferenceKind.MANY_TO_ONE);
     options = processDecoratorParameters<ManyToOneOptions<Owner, Target>>({ entity, options });
     const property = { name: context.name, kind: ReferenceKind.MANY_TO_ONE } as EntityProperty<Target>;
-    meta.properties[context.name as EntityKey<Owner>] = Utils.mergeConfig(meta.properties[context.name as EntityKey<Owner>] ?? {}, property, options);
+    meta.properties[context.name as EntityKey<Owner>] = Utils.mergeConfig(
+      meta.properties[context.name as EntityKey<Owner>] ?? {},
+      property,
+      options,
+    );
   };
 }

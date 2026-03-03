@@ -10,7 +10,6 @@ import {
 
 @Entity()
 export class A {
-
   @PrimaryKey()
   id!: number;
 
@@ -26,11 +25,9 @@ export class A {
   async beforeDelete() {
     await wrap(this, true).__em!.flush();
   }
-
 }
 
 describe('GH issue 493', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {

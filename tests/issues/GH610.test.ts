@@ -4,7 +4,6 @@ import { mockLogger } from '../helpers.js';
 
 @Entity()
 class Test {
-
   @PrimaryKey()
   id!: number;
 
@@ -17,11 +16,9 @@ class Test {
   constructor({ name }: Partial<Test> = {}) {
     this.name = name!;
   }
-
 }
 
 describe('GH issue 610', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -54,5 +51,4 @@ describe('GH issue 610', () => {
     const t1 = orm.em.create(Test, { name: 't1' });
     expect(t1.name).toBe('t1');
   });
-
 });

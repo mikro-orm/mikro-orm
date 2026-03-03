@@ -11,7 +11,6 @@ enum MyEnum {
 
 @Entity()
 class EnumEntity {
-
   @PrimaryKey()
   id!: number;
 
@@ -20,7 +19,6 @@ class EnumEntity {
 
   @Enum({ items: () => MyEnum, nativeEnumName: 'my_enum', array: true })
   types: MyEnum[] = [];
-
 }
 
 let orm: MikroORM;
@@ -42,8 +40,12 @@ afterAll(() => orm.close());
 test('GH #5322', async () => {
   const sql = await orm.schema.getCreateSchemaSQL();
   const freshUpdate = await orm.schema.getUpdateSchemaSQL();
-  expect(sql).toMatch(`create type "my_enum" as enum ('local', 'global', '1 & 2 / 3 : 4 * 5 " 6', '');\ncreate table "enum_entity" ("id" serial primary key, "type" "my_enum" not null default 'local', "types" "my_enum"[] not null);`);
-  expect(freshUpdate).toMatch(`create type "my_enum" as enum ('local', 'global', '1 & 2 / 3 : 4 * 5 " 6', '');\ncreate table "enum_entity" ("id" serial primary key, "type" "my_enum" not null default 'local', "types" "my_enum"[] not null);`);
+  expect(sql).toMatch(
+    `create type "my_enum" as enum ('local', 'global', '1 & 2 / 3 : 4 * 5 " 6', '');\ncreate table "enum_entity" ("id" serial primary key, "type" "my_enum" not null default 'local', "types" "my_enum"[] not null);`,
+  );
+  expect(freshUpdate).toMatch(
+    `create type "my_enum" as enum ('local', 'global', '1 & 2 / 3 : 4 * 5 " 6', '');\ncreate table "enum_entity" ("id" serial primary key, "type" "my_enum" not null default 'local', "types" "my_enum"[] not null);`,
+  );
   await orm.schema.execute(sql);
 
   const foo1 = orm.em.create(EnumEntity, { types: [MyEnum.GLOBAL, MyEnum.WTF, MyEnum.EMPTY] });
@@ -78,7 +80,9 @@ test('GH #5322', async () => {
   expect(foo3.types).toEqual([MyEnum.GLOBAL, MyEnum.LOCAL]);
 
   expect(mock.mock.calls[0][0]).toMatch(`begin`);
-  expect(mock.mock.calls[1][0]).toMatch(`insert into "enum_entity" ("type", "types") values ('local', '{global}') returning "id"`);
+  expect(mock.mock.calls[1][0]).toMatch(
+    `insert into "enum_entity" ("type", "types") values ('local', '{global}') returning "id"`,
+  );
   expect(mock.mock.calls[2][0]).toMatch(`commit`);
   expect(mock.mock.calls[3][0]).toMatch(`select "e0".* from "enum_entity" as "e0" where "e0"."id" = 2 limit 1`);
   expect(mock.mock.calls[4][0]).toMatch(`begin`);

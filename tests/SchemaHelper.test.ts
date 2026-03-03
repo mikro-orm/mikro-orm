@@ -5,15 +5,17 @@ import { ColumnDifference, PostgreSqlPlatform, PostgreSqlSchemaHelper, TableDiff
 import { Dictionary } from '@mikro-orm/core';
 
 class SchemaHelperTest extends SchemaHelper {
-
-  async loadInformationSchema(schema: DatabaseSchema, connection: AbstractSqlConnection, tables: Table[], schemas?: string[]): Promise<void> {
+  async loadInformationSchema(
+    schema: DatabaseSchema,
+    connection: AbstractSqlConnection,
+    tables: Table[],
+    schemas?: string[],
+  ): Promise<void> {
     //
   }
-
 }
 
 describe('SchemaHelper', () => {
-
   test('default schema helpers', async () => {
     const helper = new SchemaHelperTest(new MySqlPlatform());
     expect(helper.getSchemaBeginning('utf8')).toBe('');
@@ -60,7 +62,9 @@ describe('SchemaHelper', () => {
         { name: 'col2', collation: 'C', sort: 'ASC' },
       ],
     });
-    expect(indexWithColumns).toBe('create unique index `advanced_index` on `my_table` (`col1` DESC nulls LAST, `col2` collate C ASC)');
+    expect(indexWithColumns).toBe(
+      'create unique index `advanced_index` on `my_table` (`col1` DESC nulls LAST, `col2` collate C ASC)',
+    );
 
     // Test fallback to columnNames when no columns array
     const simpleIndex = helper.getCreateIndexSQL('my_table', {
@@ -91,7 +95,9 @@ describe('SchemaHelper', () => {
       primary: false,
       constraint: false,
     });
-    expect(jsonIndex).toBe("create index `json_index` on `my_table` ((json_value(`data`, '$.nested_field' returning char(255))))");
+    expect(jsonIndex).toBe(
+      "create index `json_index` on `my_table` ((json_value(`data`, '$.nested_field' returning char(255))))",
+    );
 
     // Test unique JSON column index (uses CREATE INDEX, not ADD CONSTRAINT, as JSON can't have constraints)
     const uniqueJsonIndex = helper.getCreateIndexSQL('my_table', {
@@ -101,40 +107,63 @@ describe('SchemaHelper', () => {
       primary: false,
       constraint: true, // ignored for JSON columns
     });
-    expect(uniqueJsonIndex).toBe("create unique index `unique_json_index` on `my_table` ((json_value(`data`, '$.field' returning char(255))))");
+    expect(uniqueJsonIndex).toBe(
+      "create unique index `unique_json_index` on `my_table` ((json_value(`data`, '$.field' returning char(255))))",
+    );
   });
 
   test('base mapIndexes merges columns array', async () => {
     const helper = new SchemaHelperTest(new MySqlPlatform());
 
     const indexes = await (helper as any).mapIndexes([
-      { keyName: 'multi_col_idx', columnNames: ['col1'], unique: false, primary: false, columns: [{ name: 'col1', sort: 'DESC' }] },
-      { keyName: 'multi_col_idx', columnNames: ['col2'], unique: false, primary: false, columns: [{ name: 'col2', sort: 'ASC' }] },
+      {
+        keyName: 'multi_col_idx',
+        columnNames: ['col1'],
+        unique: false,
+        primary: false,
+        columns: [{ name: 'col1', sort: 'DESC' }],
+      },
+      {
+        keyName: 'multi_col_idx',
+        columnNames: ['col2'],
+        unique: false,
+        primary: false,
+        columns: [{ name: 'col2', sort: 'ASC' }],
+      },
     ]);
 
     expect(indexes).toHaveLength(1);
     expect(indexes[0].keyName).toBe('multi_col_idx');
     expect(indexes[0].columnNames).toEqual(['col1', 'col2']);
-    expect(indexes[0].columns).toEqual([{ name: 'col1', sort: 'DESC' }, { name: 'col2', sort: 'ASC' }]);
+    expect(indexes[0].columns).toEqual([
+      { name: 'col1', sort: 'DESC' },
+      { name: 'col2', sort: 'ASC' },
+    ]);
   });
 
   test('mysql schema helper', async () => {
     const helper = new MySqlPlatform().getSchemaHelper()!;
     const from = 'test1';
     const to = { name: 'test_123', nullable: false, type: 'int' } as Column;
-    expect(helper.getRenameColumnSQL('table', from, to)).toBe('alter table `table` change `test1` `test_123` int not null');
+    expect(helper.getRenameColumnSQL('table', from, to)).toBe(
+      'alter table `table` change `test1` `test_123` int not null',
+    );
 
     const mock = {
       engine: vi.fn(),
       charset: vi.fn(),
       collate: vi.fn(),
     } as any;
-    expect(helper.finalizeTable(mock, 'charset', 'collate')).toBe(' default character set charset collate collate engine = InnoDB');
+    expect(helper.finalizeTable(mock, 'charset', 'collate')).toBe(
+      ' default character set charset collate collate engine = InnoDB',
+    );
   });
 
   test('sqlite schema helper', async () => {
     const helper = new SqlitePlatform().getSchemaHelper()!;
-    expect(helper.getRenameColumnSQL('table', 'test1', { name: 'test_123' } as Column)).toBe('alter table `table` rename column `test1` to `test_123`');
+    expect(helper.getRenameColumnSQL('table', 'test1', { name: 'test_123' } as Column)).toBe(
+      'alter table `table` rename column `test1` to `test_123`',
+    );
   });
 
   test('sqlite schema helper excludes SpatiaLite system views', () => {
@@ -250,14 +279,18 @@ describe('SchemaHelper', () => {
         changedColumns,
       } as TableDifference;
 
-      expect(helper.getPreAlterTable(tableDifference, true)).toEqual([`alter table "test" alter column "test_uuid" type text using ("test_uuid"::text)`]);
+      expect(helper.getPreAlterTable(tableDifference, true)).toEqual([
+        `alter table "test" alter column "test_uuid" type text using ("test_uuid"::text)`,
+      ]);
 
       const schemaTableDifference: TableDifference = {
         name: 'my_schema.test',
         changedColumns,
       } as TableDifference;
 
-      expect(helper.getPreAlterTable(schemaTableDifference, true)).toEqual([`alter table "my_schema"."test" alter column "test_uuid" type text using ("test_uuid"::text)`]);
+      expect(helper.getPreAlterTable(schemaTableDifference, true)).toEqual([
+        `alter table "my_schema"."test" alter column "test_uuid" type text using ("test_uuid"::text)`,
+      ]);
     });
   });
 });

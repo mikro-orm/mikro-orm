@@ -3,7 +3,6 @@ import type { Platform } from '../platforms/Platform.js';
 import type { EntityProperty } from '../typings.js';
 
 export class BooleanType extends Type<boolean | null | undefined, boolean | null | undefined> {
-
   override getColumnType(prop: EntityProperty, platform: Platform) {
     return platform.getBooleanTypeDeclarationSQL();
   }
@@ -19,5 +18,4 @@ export class BooleanType extends Type<boolean | null | undefined, boolean | null
   override ensureComparable(): boolean {
     return false;
   }
-
 }

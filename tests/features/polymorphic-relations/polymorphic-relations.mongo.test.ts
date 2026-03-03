@@ -12,7 +12,6 @@ import { MikroORM, ObjectId } from '@mikro-orm/mongodb';
 
 @Entity()
 class Post {
-
   @PrimaryKey()
   _id!: ObjectId;
 
@@ -24,12 +23,10 @@ class Post {
 
   @OneToMany(() => UserLike, like => like.likeable)
   likes = new Collection<UserLike>(this);
-
 }
 
 @Entity()
 class Comment {
-
   @PrimaryKey()
   _id!: ObjectId;
 
@@ -41,12 +38,10 @@ class Comment {
 
   @OneToMany(() => UserLike, like => like.likeable)
   likes = new Collection<UserLike>(this);
-
 }
 
 @Entity()
 class UserLike {
-
   @PrimaryKey()
   _id!: ObjectId;
 
@@ -55,11 +50,9 @@ class UserLike {
 
   @ManyToOne(() => [Post, Comment], { nullable: true })
   likeable!: Post | Comment | null;
-
 }
 
 describe('polymorphic relations in mongodb', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -79,7 +72,6 @@ describe('polymorphic relations in mongodb', () => {
     await orm.schema.drop();
     await orm.close(true);
   });
-
 
   test('can persist and load polymorphic relation to Post', async () => {
     const post = orm.em.create(Post, { title: 'Test Post' });
@@ -181,7 +173,4 @@ describe('polymorphic relations in mongodb', () => {
     expect(updated.likeable).toBeInstanceOf(Comment);
     expect((updated.likeable as Comment).text).toBe('New target');
   });
-
 });
-
-

@@ -1,9 +1,15 @@
 import { MikroORM } from '@mikro-orm/sqlite';
-import { Embeddable, Embedded, Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Embeddable,
+  Embedded,
+  Entity,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class User {
-
   @PrimaryKey()
   id!: number;
 
@@ -20,19 +26,16 @@ class User {
     this.name = name;
     this.email = email;
   }
-
 }
 
 @Embeddable()
 class Role {
-
   @Property()
   name: string;
 
   constructor(name: string) {
     this.name = name;
   }
-
 }
 
 let orm: MikroORM;
@@ -55,9 +58,7 @@ test('5715', async () => {
   await orm.em.flush();
   orm.em.clear();
 
-  const user = await orm.em.upsert(User,
-    { name: 'Bar', email: 'foo0', roles: null },
-  );
+  const user = await orm.em.upsert(User, { name: 'Bar', email: 'foo0', roles: null });
   expect(user.name).toBe('Bar');
 });
 

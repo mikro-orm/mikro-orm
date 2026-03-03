@@ -1,27 +1,30 @@
 import { MikroORM } from '@mikro-orm/sqlite';
-import { Embeddable, Embedded, Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Embeddable,
+  Embedded,
+  Entity,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../helpers.js';
 
 @Embeddable()
 class RunScheduleEntity {
-
   @Property()
   start_at!: Date;
 
   @Property({ nullable: true })
   end_at?: Date;
-
 }
 
 @Entity()
 class AEntity {
-
   @PrimaryKey()
   id!: number;
 
   @Embedded({ entity: () => RunScheduleEntity, prefix: false })
   schedule!: RunScheduleEntity;
-
 }
 
 let orm: MikroORM;

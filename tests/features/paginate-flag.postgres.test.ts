@@ -1,11 +1,21 @@
 import { Collection, LoadStrategy, MikroORM, PopulateHint } from '@mikro-orm/core';
-import { Entity, Enum, Filter, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  Enum,
+  Filter,
+  ManyToMany,
+  ManyToOne,
+  OneToMany,
+  OneToOne,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { v4 } from 'uuid';
 
 @Entity()
 export class Group {
-
   @PrimaryKey()
   id: string;
 
@@ -16,12 +26,10 @@ export class Group {
     this.id = id;
     this.name = name;
   }
-
 }
 
 @Entity()
 export class User {
-
   @PrimaryKey()
   id: string;
 
@@ -36,18 +44,16 @@ export class User {
     this.name = name;
     this.groups.add(groups);
   }
-
 }
 
 enum Status {
   LIVE = 'LIVE',
   DRAFT = 'DRAFT',
-  CLOSED = 'CLOSED'
+  CLOSED = 'CLOSED',
 }
 
 @Entity()
 export class C {
-
   @PrimaryKey()
   id!: number;
 
@@ -59,7 +65,6 @@ export class C {
 
   @OneToMany(() => B, b => b.sub, { nullable: true })
   bs? = new Collection<B>(this);
-
 }
 
 @Filter({
@@ -84,7 +89,6 @@ export class C {
 })
 @Entity()
 export class T {
-
   @PrimaryKey({ type: 'uuid' })
   id: string = v4();
 
@@ -99,13 +103,10 @@ export class T {
 
   @OneToMany(() => TC, b => b.t)
   tc = new Collection<TC>(this);
-
 }
-
 
 @Entity()
 export class TC {
-
   @PrimaryKey({ type: 'uuid' })
   id: string = v4();
 
@@ -120,12 +121,10 @@ export class TC {
 
   @OneToMany(() => A, a => a.tc, { eager: true })
   as? = new Collection<A>(this);
-
 }
 
 @Entity()
 export class A {
-
   @PrimaryKey()
   id!: number;
 
@@ -142,13 +141,10 @@ export class A {
     eager: true,
   })
   b?: any;
-
 }
-
 
 @Entity()
 export class B {
-
   @PrimaryKey()
   id!: number;
 
@@ -157,12 +153,10 @@ export class B {
 
   @OneToOne(() => A, a => a.b, { nullable: true, deleteRule: 'set null' })
   a?: A;
-
 }
 
 // paginate flag is enabled automatically so no need to provide it in the find options
 describe('GH issue 2095', () => {
-
   let orm: MikroORM<PostgreSqlDriver>;
 
   beforeAll(async () => {
@@ -233,20 +227,28 @@ describe('GH issue 2095', () => {
 
     orm.em.setFilterParams('vis', { u: { c: { id: c.id } } });
 
-    const firstResults = await orm.em.find(T, {}, {
-      limit: 20,
-      orderBy: { end: 'ASC' },
-      populate: ['tc.c'],
-    });
+    const firstResults = await orm.em.find(
+      T,
+      {},
+      {
+        limit: 20,
+        orderBy: { end: 'ASC' },
+        populate: ['tc.c'],
+      },
+    );
 
     orm.em.clear();
 
-    const secondResults = await orm.em.find(T, {}, {
-      limit: 20,
-      offset: 20,
-      orderBy: { end: 'ASC' },
-      populate: ['tc.c'],
-    });
+    const secondResults = await orm.em.find(
+      T,
+      {},
+      {
+        limit: 20,
+        offset: 20,
+        orderBy: { end: 'ASC' },
+        populate: ['tc.c'],
+      },
+    );
 
     const firstMaxDate = new Date(Math.max(...firstResults.map(e => e.end.getTime())));
     const secondMinDate = new Date(Math.min(...secondResults.map(e => e.end.getTime())));
@@ -418,5 +420,4 @@ describe('GH issue 2095', () => {
     expect(total).toBe(3);
     expect(users[0].id).toBe('id-user-01');
   });
-
 });

@@ -5,7 +5,6 @@ import { Configuration2 } from './Configuration2.js';
 
 @Entity()
 export class Test2 {
-
   @PrimaryKey()
   id!: number;
 
@@ -32,5 +31,4 @@ export class Test2 {
 
     return t;
   }
-
 }

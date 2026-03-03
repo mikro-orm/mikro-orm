@@ -7,7 +7,6 @@ import { SchemaCommandFactory } from '../../../packages/cli/src/commands/SchemaC
 import { initORMSqlite } from '../../bootstrap.js';
 
 describe('UpdateSchemaCommand', () => {
-
   let orm: MikroORM<SqliteDriver>;
 
   beforeAll(async () => {
@@ -46,5 +45,4 @@ describe('UpdateSchemaCommand', () => {
     expect(getUpdateSchemaSQL.mock.calls.length).toBe(1);
     expect(closeSpy).toHaveBeenCalledTimes(2);
   });
-
 });

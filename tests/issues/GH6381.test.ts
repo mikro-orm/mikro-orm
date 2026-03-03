@@ -1,7 +1,6 @@
 import { EntitySchema, MikroORM } from '@mikro-orm/postgresql';
 
 class Invoice {
-
   id!: number;
   invoiceNumber: string;
   amount: number;
@@ -10,7 +9,6 @@ class Invoice {
     this.invoiceNumber = invoiceNumber;
     this.amount = amount;
   }
-
 }
 
 const invoiceEntitySchema = new EntitySchema({

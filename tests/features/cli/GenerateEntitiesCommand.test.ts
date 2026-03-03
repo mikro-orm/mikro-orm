@@ -6,7 +6,6 @@ import { GenerateEntitiesCommand } from '../../../packages/cli/src/commands/Gene
 import { initORMSqlite } from '../../bootstrap.js';
 
 describe('GenerateEntitiesCommand', () => {
-
   let orm: MikroORM<SqliteDriver>;
 
   beforeAll(async () => {
@@ -56,5 +55,4 @@ describe('GenerateEntitiesCommand', () => {
     expect(generate.mock.calls.length).toBe(2);
     expect(closeSpy).toHaveBeenCalledTimes(2);
   });
-
 });

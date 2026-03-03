@@ -3,14 +3,15 @@ import type { AbstractSqlConnection, AbstractSqlDriver, SchemaHelper } from '@mi
 import type { Migration } from './Migration.js';
 
 export class MigrationRunner {
-
   private readonly connection: AbstractSqlConnection;
   private readonly helper: SchemaHelper;
   private masterTransaction?: Transaction;
 
-  constructor(protected readonly driver: AbstractSqlDriver,
-              protected readonly options: MigrationsOptions,
-              protected readonly config: Configuration) {
+  constructor(
+    protected readonly driver: AbstractSqlDriver,
+    protected readonly options: MigrationsOptions,
+    protected readonly config: Configuration,
+  ) {
     this.connection = this.driver.getConnection();
     this.helper = this.driver.getPlatform().getSchemaHelper()!;
   }
@@ -22,11 +23,14 @@ export class MigrationRunner {
       const queries = await this.getQueries(migration, method);
       await Utils.runSerial(queries, sql => this.driver.execute(sql));
     } else {
-      await this.connection.transactional(async tx => {
-        migration.setTransactionContext(tx);
-        const queries = await this.getQueries(migration, method);
-        await Utils.runSerial(queries, sql => this.driver.execute(sql, undefined, 'all', tx));
-      }, { ctx: this.masterTransaction });
+      await this.connection.transactional(
+        async tx => {
+          migration.setTransactionContext(tx);
+          const queries = await this.getQueries(migration, method);
+          await Utils.runSerial(queries, sql => this.driver.execute(sql, undefined, 'all', tx));
+        },
+        { ctx: this.masterTransaction },
+      );
     }
   }
 
@@ -48,5 +52,4 @@ export class MigrationRunner {
 
     return queries;
   }
-
 }

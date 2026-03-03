@@ -10,7 +10,6 @@ enum PermissionName {
 
 @Entity()
 class Permission {
-
   [PrimaryKeyProp]?: 'name';
 
   @Enum({ items: () => PermissionName, nativeEnumName: 'permission_name', primary: true })
@@ -19,18 +18,15 @@ class Permission {
   constructor(name: PermissionName) {
     this.name = name;
   }
-
 }
 
 @Entity()
 class User {
-
   @PrimaryKey()
   id!: number;
 
   @ManyToOne(() => Permission, { nullable: true })
   requiredPermission: Ref<Permission> | null = null;
-
 }
 
 let orm: MikroORM;

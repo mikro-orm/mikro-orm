@@ -4,7 +4,6 @@ import type { FooBaz } from './FooBaz.js';
 
 @Entity()
 export default class FooBar {
-
   @PrimaryKey()
   _id!: ObjectId;
 
@@ -19,5 +18,4 @@ export default class FooBar {
 
   @OneToOne()
   fooBar!: FooBar;
-
 }

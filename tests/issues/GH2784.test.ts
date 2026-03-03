@@ -3,7 +3,6 @@ import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-or
 
 @Entity()
 class Address {
-
   @PrimaryKey()
   id!: number;
 
@@ -29,11 +28,9 @@ class Address {
     this.createdAt = new Date();
     this.updatedAt = new Date();
   }
-
 }
 
 describe('GH issue 2784', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -59,5 +56,4 @@ describe('GH issue 2784', () => {
     expect(updatedAt).not.toEqual(address.updatedAt);
     expect(updatedBy).not.toEqual(address.updatedBy);
   });
-
 });

@@ -3,7 +3,6 @@ import { Collection, defineEntity, p } from '@mikro-orm/core';
 import { Book } from './Book.js';
 
 export class BookTag {
-
   _id!: ObjectId;
   id!: string;
   name: string;
@@ -12,7 +11,6 @@ export class BookTag {
   constructor(name: string) {
     this.name = name;
   }
-
 }
 
 export const schema = defineEntity({

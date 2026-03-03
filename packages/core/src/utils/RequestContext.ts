@@ -6,12 +6,11 @@ import { createAsyncContext } from './AsyncContext.js';
  * Uses `AsyncLocalStorage` to create async context that holds the current EM fork.
  */
 export class RequestContext {
-
   private static storage = createAsyncContext<RequestContext>();
   private static counter = 1;
   readonly id = RequestContext.counter++;
 
-  constructor(readonly map: Map<string, EntityManager>) { }
+  constructor(readonly map: Map<string, EntityManager>) {}
 
   /**
    * Returns default EntityManager.
@@ -25,7 +24,11 @@ export class RequestContext {
    * If the handler is async, the return value needs to be awaited.
    * Uses `AsyncLocalStorage.run()`, suitable for regular express style middlewares with a `next` callback.
    */
-  static create<T>(em: EntityManager | EntityManager[], next: (...args: any[]) => T, options: CreateContextOptions = {}): T {
+  static create<T>(
+    em: EntityManager | EntityManager[],
+    next: (...args: any[]) => T,
+    options: CreateContextOptions = {},
+  ): T {
     const ctx = this.createContext(em, options);
     return this.storage.run(ctx, next);
   }
@@ -55,7 +58,10 @@ export class RequestContext {
     return context ? context.map.get(name) : undefined;
   }
 
-  private static createContext(em: EntityManager | EntityManager[], options: CreateContextOptions = {}): RequestContext {
+  private static createContext(
+    em: EntityManager | EntityManager[],
+    options: CreateContextOptions = {},
+  ): RequestContext {
     const forks = new Map<string, EntityManager>();
 
     if (Array.isArray(em)) {
@@ -66,7 +72,6 @@ export class RequestContext {
 
     return new RequestContext(forks);
   }
-
 }
 
 export interface CreateContextOptions {

@@ -4,13 +4,11 @@ import { ObjectId } from 'bson';
 
 @Entity()
 class User {
-
   @PrimaryKey()
   _id!: ObjectId;
 
   @Property({ type: JsonType })
   methods: { method1?: string; method2?: string } = {};
-
 }
 
 let orm: MikroORM;

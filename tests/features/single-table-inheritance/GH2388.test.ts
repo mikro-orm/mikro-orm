@@ -3,10 +3,8 @@ import { Entity, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider } from
 import { MikroORM } from '@mikro-orm/sqlite';
 
 abstract class BaseMikro {
-
   @PrimaryKey()
   id!: number;
-
 }
 
 @Entity({ tableName: 'member' })
@@ -18,7 +16,6 @@ class Member extends BaseMikro {}
   abstract: true,
 })
 abstract class MemberRelationship extends BaseMikro {
-
   [OptionalProps]?: 'type';
 
   @Property()
@@ -26,29 +23,24 @@ abstract class MemberRelationship extends BaseMikro {
 
   @Property()
   data!: string;
-
 }
 
 @Entity({ discriminatorValue: 'one' })
 class MemberRelationshipOne extends MemberRelationship {
-
   @ManyToOne(() => Member, { fieldName: 'activeId', ref: true })
   activeOne!: Ref<Member>;
 
   @ManyToOne(() => Member, { fieldName: 'passiveId', ref: true })
   passive!: Ref<Member>;
-
 }
 
 @Entity({ discriminatorValue: 'two' })
 class MemberRelationshipTwo extends MemberRelationship {
-
   @ManyToOne(() => Member, { fieldName: 'activeId', ref: true })
   activeTwo!: Ref<Member>;
 
   @ManyToOne(() => Member, { fieldName: 'passiveId', ref: true })
   passive!: Ref<Member>;
-
 }
 
 let orm: MikroORM;
@@ -56,13 +48,7 @@ let orm: MikroORM;
 beforeAll(async () => {
   orm = await MikroORM.init({
     metadataProvider: ReflectMetadataProvider,
-    entities: [
-      BaseMikro,
-      Member,
-      MemberRelationship,
-      MemberRelationshipOne,
-      MemberRelationshipTwo,
-    ],
+    entities: [BaseMikro, Member, MemberRelationship, MemberRelationshipOne, MemberRelationshipTwo],
     dbName: ':memory:',
   });
 

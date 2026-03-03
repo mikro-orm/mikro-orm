@@ -11,7 +11,6 @@ import { mockLogger } from '../helpers.js';
 
 @Entity()
 class ParentEntity {
-
   @PrimaryKey()
   id!: number;
 
@@ -20,12 +19,10 @@ class ParentEntity {
 
   @OneToMany(() => TestEntity, test => test.parent, { eager: true })
   children = new Collection<TestEntity>(this);
-
 }
 
 @Entity()
 class TestEntity {
-
   @PrimaryKey()
   id!: number;
 
@@ -37,7 +34,6 @@ class TestEntity {
 
   @ManyToOne(() => ParentEntity)
   parent!: ParentEntity;
-
 }
 
 let orm: MikroORM;

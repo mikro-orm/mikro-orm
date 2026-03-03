@@ -3,7 +3,6 @@ import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-or
 
 @Entity()
 class A {
-
   @PrimaryKey()
   id!: number;
 
@@ -15,7 +14,6 @@ class A {
 
   @Property()
   z!: string;
-
 }
 
 let orm: MikroORM;
@@ -50,17 +48,15 @@ test('5668', async () => {
     },
   );
 
-  await orm.em.fork().upsertMany(
-    A,
-    [{ y: 'y1', z: 'z1' }],
-    {
-      onConflictFields: sql`(z, y) where x is null`,
-      onConflictAction: 'ignore',
-      onConflictMergeFields: ['z'],
-    },
-  );
+  await orm.em.fork().upsertMany(A, [{ y: 'y1', z: 'z1' }], {
+    onConflictFields: sql`(z, y) where x is null`,
+    onConflictAction: 'ignore',
+    onConflictMergeFields: ['z'],
+  });
 
-  await orm.em.fork().qb(A)
+  await orm.em
+    .fork()
+    .qb(A)
     .insert({ y: 'y1', z: 'z1' })
     .onConflict(sql`(z, y) where x is null`)
     .merge()

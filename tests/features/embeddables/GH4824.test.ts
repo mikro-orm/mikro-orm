@@ -1,10 +1,16 @@
 import { Type } from '@mikro-orm/core';
-import { Embeddable, Embedded, Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Embeddable,
+  Embedded,
+  Entity,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { MikroORM } from '@mikro-orm/sqlite';
 import { mockLogger } from '../../helpers.js';
 
 class Point {
-
   latitude!: number;
   longitude!: number;
 
@@ -12,11 +18,9 @@ class Point {
     this.latitude = latitude;
     this.longitude = longitude;
   }
-
 }
 
 class PointType extends Type<Point | undefined, string | undefined> {
-
   convertToDatabaseValue(value: Point | undefined): string | undefined {
     if (!value) {
       return value;
@@ -46,29 +50,24 @@ class PointType extends Type<Point | undefined, string | undefined> {
   getColumnType(): string {
     return 'geometry';
   }
-
 }
 
 @Embeddable()
 class Address {
-
   @Property()
   postalCode!: string;
 
   @Property({ type: PointType, nullable: true })
   geolocation?: Point;
-
 }
 
 @Entity()
 class User {
-
   @PrimaryKey()
   id!: number;
 
   @Embedded(() => Address, { array: true })
   addresses: Address[] = [];
-
 }
 
 let orm: MikroORM;

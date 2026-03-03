@@ -1,7 +1,6 @@
 import { initORMSqlite } from '../../bootstrap.js';
 
 describe('SchemaGenerator [sqlite]', () => {
-
   test('generate schema from metadata [sqlite]', async () => {
     const orm = await initORMSqlite();
 
@@ -45,5 +44,4 @@ describe('SchemaGenerator [sqlite]', () => {
 
     await orm.close(true);
   });
-
 });

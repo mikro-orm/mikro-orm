@@ -3,7 +3,6 @@ import { type Dialect, SqliteDialect } from 'kysely';
 import Database from 'better-sqlite3';
 
 export class SqliteConnection extends BaseSqliteConnection {
-
   private database!: Database.Database;
 
   override createKyselyDialect(options: Dictionary): Dialect {
@@ -20,5 +19,4 @@ export class SqliteConnection extends BaseSqliteConnection {
     await this.ensureConnection();
     this.database.exec(dump);
   }
-
 }

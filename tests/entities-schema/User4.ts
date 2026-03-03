@@ -1,7 +1,6 @@
 import { defineEntity, p } from '@mikro-orm/core';
 
 export class User4 {
-
   id: string;
   email: string;
   agreedToTerms?: Date;
@@ -20,7 +19,6 @@ export class User4 {
   agreeToTerms(): void {
     this.agreedToTerms = new Date();
   }
-
 }
 
 export const UserSchema = defineEntity({

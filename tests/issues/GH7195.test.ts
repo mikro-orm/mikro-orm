@@ -1,20 +1,24 @@
 import { Collection, LoadStrategy, MikroORM, Ref } from '@mikro-orm/postgresql';
-import { Entity, ManyToMany, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToMany,
+  OneToOne,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class Tag {
-
   @PrimaryKey()
   id!: number;
 
   @Property()
   name!: string;
-
 }
 
 @Entity()
 class Question {
-
   @PrimaryKey()
   id!: number;
 
@@ -31,12 +35,10 @@ class Question {
     inverseJoinColumn: 'tag_id',
   })
   tags = new Collection<Tag>(this);
-
 }
 
 @Entity()
 class ReferenceMaterial {
-
   @PrimaryKey()
   id!: number;
 
@@ -50,7 +52,6 @@ class ReferenceMaterial {
     inverseJoinColumn: 'tag_id',
   })
   tags = new Collection<Tag>(this);
-
 }
 
 @Entity({
@@ -67,7 +68,6 @@ class ReferenceMaterial {
     FROM reference_material`,
 })
 class SearchResult {
-
   @Property({ type: 'text' })
   id!: string;
 
@@ -76,7 +76,6 @@ class SearchResult {
 
   @OneToOne({ entity: () => ReferenceMaterial, joinColumn: 'reference_material_id', nullable: true, ref: true })
   referenceMaterial?: Ref<ReferenceMaterial>;
-
 }
 
 let orm: MikroORM;
@@ -118,10 +117,7 @@ test('GH #7195 - virtual entity with limit and nested ManyToMany filter', async 
   const [results1, count1] = await em.fork().findAndCount(
     SearchResult,
     {
-      $or: [
-        { question: { tags: { name: 'geography' } } },
-        { referenceMaterial: { tags: { name: 'geography' } } },
-      ],
+      $or: [{ question: { tags: { name: 'geography' } } }, { referenceMaterial: { tags: { name: 'geography' } } }],
     },
     {
       populate: ['question', 'referenceMaterial', 'question.tags', 'referenceMaterial.tags'],
@@ -135,10 +131,7 @@ test('GH #7195 - virtual entity with limit and nested ManyToMany filter', async 
   const [results2, count2] = await em.fork().findAndCount(
     SearchResult,
     {
-      $or: [
-        { question: { tags: { name: 'geography' } } },
-        { referenceMaterial: { tags: { name: 'geography' } } },
-      ],
+      $or: [{ question: { tags: { name: 'geography' } } }, { referenceMaterial: { tags: { name: 'geography' } } }],
     },
     {
       limit: 10,
@@ -153,10 +146,7 @@ test('GH #7195 - virtual entity with limit and nested ManyToMany filter', async 
   const [results3, count3] = await em.fork().findAndCount(
     SearchResult,
     {
-      $or: [
-        { question: { tags: { name: 'geography' } } },
-        { referenceMaterial: { tags: { name: 'geography' } } },
-      ],
+      $or: [{ question: { tags: { name: 'geography' } } }, { referenceMaterial: { tags: { name: 'geography' } } }],
     },
     {
       limit: 10,
@@ -172,10 +162,7 @@ test('GH #7195 - virtual entity with limit and nested ManyToMany filter', async 
   const [results4, count4] = await em.fork().findAndCount(
     SearchResult,
     {
-      $or: [
-        { question: { tags: { name: 'geography' } } },
-        { referenceMaterial: { tags: { name: 'geography' } } },
-      ],
+      $or: [{ question: { tags: { name: 'geography' } } }, { referenceMaterial: { tags: { name: 'geography' } } }],
     },
     {
       limit: 1,
@@ -192,10 +179,7 @@ test('GH #7195 - virtual entity with limit and nested ManyToMany filter', async 
   const results5 = await em.fork().find(
     SearchResult,
     {
-      $or: [
-        { question: { tags: { name: 'geography' } } },
-        { referenceMaterial: { tags: { name: 'geography' } } },
-      ],
+      $or: [{ question: { tags: { name: 'geography' } } }, { referenceMaterial: { tags: { name: 'geography' } } }],
     },
     {
       limit: 10,

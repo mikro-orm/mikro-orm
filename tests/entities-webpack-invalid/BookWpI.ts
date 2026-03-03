@@ -3,7 +3,6 @@ import { AuthorWpI } from './index.js';
 
 @Entity()
 export class BookWpI {
-
   @PrimaryKey({ type: 'number' })
   id!: number;
 
@@ -12,5 +11,4 @@ export class BookWpI {
 
   @ManyToOne({ entity: () => AuthorWpI, inversedBy: a => a.books })
   author!: AuthorWpI;
-
 }

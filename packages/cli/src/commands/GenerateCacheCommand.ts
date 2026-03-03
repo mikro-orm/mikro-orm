@@ -6,7 +6,6 @@ import { CLIHelper } from '../CLIHelper.js';
 
 type CacheArgs = BaseArgs & { ts?: boolean; combined?: string };
 export class GenerateCacheCommand implements BaseCommand<CacheArgs> {
-
   command = 'cache:generate';
   describe = 'Generate metadata cache';
   builder = (args: Argv<BaseArgs>) => {
@@ -37,7 +36,10 @@ export class GenerateCacheCommand implements BaseCommand<CacheArgs> {
     await discovery.discover(args.ts ?? false);
 
     const combined = args.combined && config.get('metadataCache').combined;
-    CLIHelper.dump(colors.green(`${combined ? 'Combined ' : ''}${args.ts ? 'TS' : 'JS'} metadata cache was successfully generated${combined ? ' to ' + combined : ''}`));
+    CLIHelper.dump(
+      colors.green(
+        `${combined ? 'Combined ' : ''}${args.ts ? 'TS' : 'JS'} metadata cache was successfully generated${combined ? ' to ' + combined : ''}`,
+      ),
+    );
   }
-
 }

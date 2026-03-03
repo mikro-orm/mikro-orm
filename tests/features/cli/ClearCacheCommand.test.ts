@@ -7,14 +7,22 @@ import { ClearCacheCommand } from '../../../packages/cli/src/commands/ClearCache
 import { beforeEach, MockInstance } from 'vitest';
 
 describe('ClearCacheCommand', () => {
-
   let clearMock: MockInstance<FileCacheAdapter['clear']>;
   let getConfigurationMock: MockInstance<any>;
 
   beforeEach(() => {
     vi.spyOn(CLIHelper, 'dump').mockImplementation(i => i);
     getConfigurationMock = vi.spyOn(CLIHelper, 'getConfiguration');
-    getConfigurationMock.mockResolvedValue(new Configuration({ driver: MySqlDriver, metadataCache: { enabled: true, adapter: FileCacheAdapter }, getDriver: () => ({ getPlatform: vi.fn() }) } as any, false));
+    getConfigurationMock.mockResolvedValue(
+      new Configuration(
+        {
+          driver: MySqlDriver,
+          metadataCache: { enabled: true, adapter: FileCacheAdapter },
+          getDriver: () => ({ getPlatform: vi.fn() }),
+        } as any,
+        false,
+      ),
+    );
     clearMock = vi.spyOn(FileCacheAdapter.prototype, 'clear');
   });
 
@@ -29,7 +37,12 @@ describe('ClearCacheCommand', () => {
   test('handler warns when cache is disabled', async () => {
     clearMock.mockClear();
     getConfigurationMock.mockClear();
-    getConfigurationMock.mockResolvedValue(new Configuration({ driver: MySqlDriver, metadataCache: { enabled: false }, getDriver: () => ({ getPlatform: vi.fn() }) } as any, false));
+    getConfigurationMock.mockResolvedValue(
+      new Configuration(
+        { driver: MySqlDriver, metadataCache: { enabled: false }, getDriver: () => ({ getPlatform: vi.fn() }) } as any,
+        false,
+      ),
+    );
 
     const cmd = new ClearCacheCommand();
 
@@ -37,5 +50,4 @@ describe('ClearCacheCommand', () => {
     await expect(cmd.handler({} as any)).resolves.toBeUndefined();
     expect(clearMock.mock.calls.length).toBe(0);
   });
-
 });

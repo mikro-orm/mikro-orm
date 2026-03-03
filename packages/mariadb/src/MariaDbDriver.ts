@@ -14,7 +14,6 @@ import { MariaDbQueryBuilder } from './MariaDbQueryBuilder.js';
 import { MariaDbMikroORM } from './MariaDbMikroORM.js';
 
 export class MariaDbDriver extends MySqlDriver {
-
   declare readonly platform: MariaDbPlatform;
 
   constructor(config: Configuration) {
@@ -22,10 +21,29 @@ export class MariaDbDriver extends MySqlDriver {
     this.platform = new MariaDbPlatform();
   }
 
-  override createQueryBuilder<T extends AnyEntity<T>>(entityName: EntityName<T>, ctx?: Transaction, preferredConnectionType?: ConnectionType, convertCustomTypes?: boolean, loggerContext?: LoggingOptions, alias?: string, em?: SqlEntityManager): MariaDbQueryBuilder<T, any, any, any> {
+  override createQueryBuilder<T extends AnyEntity<T>>(
+    entityName: EntityName<T>,
+    ctx?: Transaction,
+    preferredConnectionType?: ConnectionType,
+    convertCustomTypes?: boolean,
+    loggerContext?: LoggingOptions,
+    alias?: string,
+    em?: SqlEntityManager,
+  ): MariaDbQueryBuilder<T, any, any, any> {
     // do not compute the connectionType if EM is provided as it will be computed from it in the QB later on
-    const connectionType = em ? preferredConnectionType : this.resolveConnectionType({ ctx, connectionType: preferredConnectionType });
-    const qb = new MariaDbQueryBuilder<T, any, any, any>(entityName, this.metadata, this, ctx, alias, connectionType, em, loggerContext);
+    const connectionType = em
+      ? preferredConnectionType
+      : this.resolveConnectionType({ ctx, connectionType: preferredConnectionType });
+    const qb = new MariaDbQueryBuilder<T, any, any, any>(
+      entityName,
+      this.metadata,
+      this,
+      ctx,
+      alias,
+      connectionType,
+      em,
+      loggerContext,
+    );
 
     if (!convertCustomTypes) {
       qb.unsetFlag(QueryFlag.CONVERT_CUSTOM_TYPES);
@@ -38,5 +56,4 @@ export class MariaDbDriver extends MySqlDriver {
   override getORMClass(): Constructor<MariaDbMikroORM> {
     return MariaDbMikroORM;
   }
-
 }

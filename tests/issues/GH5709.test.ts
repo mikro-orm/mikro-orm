@@ -1,8 +1,14 @@
 import { MikroORM, Type, Ref, Collection, QueryOrder } from '@mikro-orm/postgresql';
 
-import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 class IntervalType extends Type<number, number | null | undefined> {
-
   getColumnType() {
     return `interval`;
   }
@@ -22,23 +28,19 @@ class IntervalType extends Type<number, number | null | undefined> {
   convertToDatabaseValueSQL(key: string) {
     return `(${key} || 'milliseconds')::interval`;
   }
-
 }
 
 @Entity()
 class User {
-
   @PrimaryKey()
   readonly id!: bigint;
 
   @OneToMany(() => Note, m => m.user)
   notes = new Collection<Note>(this);
-
 }
 
 @Entity()
 class Note {
-
   @PrimaryKey()
   readonly id!: bigint;
 
@@ -47,7 +49,6 @@ class Note {
 
   @ManyToOne(() => User, { ref: true })
   user!: Ref<User>;
-
 }
 
 let orm: MikroORM;
@@ -72,7 +73,8 @@ afterAll(async () => {
 });
 
 test('correctly build where condition with custom type', async () => {
-  const query = orm.em.createQueryBuilder(User, 'user')
+  const query = orm.em
+    .createQueryBuilder(User, 'user')
     .leftJoinAndSelect('notes', 'uNotes')
     .where({ 'user.id': 1n })
     .orderBy({ 'uNotes.start': QueryOrder.ASC });

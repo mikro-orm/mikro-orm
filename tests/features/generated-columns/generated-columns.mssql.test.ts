@@ -3,7 +3,6 @@ import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-or
 
 @Entity()
 class User {
-
   @PrimaryKey()
   id!: number;
 
@@ -18,12 +17,10 @@ class User {
 
   @Property({ columnType: `as (concat([first_name],' ',[last_name])) persisted` })
   fullName2!: string & Opt;
-
 }
 
 @Entity({ tableName: 'user' })
 class User1 {
-
   @PrimaryKey()
   id!: number;
 
@@ -38,12 +35,10 @@ class User1 {
 
   @Property({ columnType: `as (concat([first_name],' ',[last_name])) persisted` })
   fullName2!: string & Opt;
-
 }
 
 @Entity()
 class Foo {
-
   @PrimaryKey()
   id!: number;
 
@@ -65,12 +60,10 @@ class Foo {
     generated: `(CONCAT([col1], ' ', [col2])) PERSISTED`,
   })
   generated2?: string;
-
 }
 
 @Entity({ tableName: 'foo' })
 class Foo1 {
-
   @PrimaryKey()
   id!: number;
 
@@ -92,7 +85,6 @@ class Foo1 {
     generated: `(CONCAT([col1], ' ', [col2])) PERSISTED`,
   })
   generated2?: string;
-
 }
 
 let orm: MikroORM;

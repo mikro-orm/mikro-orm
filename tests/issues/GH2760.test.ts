@@ -3,7 +3,6 @@ import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-or
 
 @Entity()
 export class User {
-
   @PrimaryKey()
   id!: number;
 
@@ -19,11 +18,9 @@ export class User {
   get upperName(): string {
     return this.name.toUpperCase();
   }
-
 }
 
 describe('GH issue 2760', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -46,5 +43,4 @@ describe('GH issue 2760', () => {
     expect(user.lowerName).toBe('abc');
     expect(user.upperName).toBe('ABC');
   });
-
 });

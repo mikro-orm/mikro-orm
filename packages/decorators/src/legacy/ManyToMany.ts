@@ -12,10 +12,7 @@ export function ManyToMany<Target extends object, Owner extends object>(
   mappedBy?: (string & keyof Target) | ((e: Target) => any),
   options?: Partial<ManyToManyOptions<Owner, Target>>,
 ): (target: Owner, propertyName: keyof Owner) => void;
-export function ManyToMany<Target extends object, Owner extends object>(
-  entity: string,
-  options?: any,
-): never;
+export function ManyToMany<Target extends object, Owner extends object>(entity: string, options?: any): never;
 export function ManyToMany<Target extends object, Owner extends object>(
   options?: ManyToManyOptions<Owner, Target>,
 ): (target: Owner, propertyName: keyof Owner) => void;
@@ -29,6 +26,10 @@ export function ManyToMany<Target extends object, Owner extends object>(
     const meta = getMetadataFromDecorator(target.constructor as Owner);
     validateSingleDecorator(meta, propertyName as string, ReferenceKind.MANY_TO_MANY);
     const property = { name: propertyName, kind: ReferenceKind.MANY_TO_MANY } as EntityProperty<Owner, Target>;
-    meta.properties[propertyName as EntityKey<Owner>] = Object.assign(meta.properties[propertyName as EntityKey<Owner>] ?? {}, property, options);
+    meta.properties[propertyName as EntityKey<Owner>] = Object.assign(
+      meta.properties[propertyName as EntityKey<Owner>] ?? {},
+      property,
+      options,
+    );
   };
 }

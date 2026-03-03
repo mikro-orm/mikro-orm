@@ -1,13 +1,11 @@
 import { defineEntity, MikroORM, MySqlSchemaHelper, p, type IndexDef } from '@mikro-orm/mysql';
 
 class TestEntity {
-
   id!: number;
   name!: string;
   email!: string;
   content!: string;
   createdAt!: Date;
-
 }
 
 const TestEntity1 = defineEntity({
@@ -78,7 +76,6 @@ const TestEntity2 = defineEntity({
 });
 
 describe('advanced index features in mysql', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -115,12 +112,14 @@ describe('advanced index features in mysql', () => {
     const index: IndexDef = {
       keyName: 'test_idx',
       columnNames: ['content'],
-      columns: [{
-        name: 'content',
-        collation: 'utf8mb4_unicode_ci',
-        length: 50,
-        sort: 'DESC',
-      }],
+      columns: [
+        {
+          name: 'content',
+          collation: 'utf8mb4_unicode_ci',
+          length: 50,
+          sort: 'DESC',
+        },
+      ],
       unique: false,
       primary: false,
       constraint: false,
@@ -147,10 +146,8 @@ describe('advanced index features in mysql', () => {
 
   test('schema comparator detects invisible flag change only', async () => {
     class InvisibleTestEntity {
-
       id!: number;
       name!: string;
-
     }
 
     const InvisibleTest1 = defineEntity({
@@ -190,5 +187,4 @@ describe('advanced index features in mysql', () => {
     await orm2.schema.drop();
     await orm2.close();
   });
-
 });

@@ -1,7 +1,6 @@
 import { GeneratedCacheAdapter } from '@mikro-orm/core';
 
 describe('GeneratedCacheAdapter', () => {
-
   test('should ignore old cache', async () => {
     const cache = new GeneratedCacheAdapter({ data: {} });
     cache.set('cache-test-handle-1', 123, '');
@@ -12,5 +11,4 @@ describe('GeneratedCacheAdapter', () => {
     cache.clear();
     expect(cache.get('cache-test-handle-1')).toEqual(undefined);
   });
-
 });

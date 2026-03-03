@@ -1,26 +1,29 @@
 import { MikroORM } from '@mikro-orm/sqlite';
-import { Embeddable, Embedded, Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Embeddable,
+  Embedded,
+  Entity,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Embeddable()
 class A {
-
   @Property()
   foo!: string;
 
   @Property()
   bar!: number;
-
 }
 
 @Entity()
 class B {
-
   @PrimaryKey()
   id!: number;
 
   @Embedded({ entity: () => A, object: false, nullable: true })
-  a!: A  | null;
-
+  a!: A | null;
 }
 
 let orm: MikroORM;

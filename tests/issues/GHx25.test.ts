@@ -3,29 +3,24 @@ import { Entity, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider } from
 
 @Entity()
 class Location {
-
   @PrimaryKey()
   id!: number;
 
   @ManyToOne({ entity: () => Country, ref: true })
   country!: Ref<Country>;
-
 }
 
 @Entity()
 class Country {
-
   @PrimaryKey()
   id!: number;
 
   @ManyToOne({ entity: () => Continent, ref: true })
   continent!: Ref<Continent>;
-
 }
 
 @Entity()
 class Continent {
-
   @PrimaryKey()
   id!: number;
 
@@ -34,15 +29,12 @@ class Continent {
 
   @Property()
   slug!: string;
-
 }
 
 @Entity()
 class Region {
-
   @PrimaryKey()
   id!: number;
-
 }
 
 let orm: MikroORM;

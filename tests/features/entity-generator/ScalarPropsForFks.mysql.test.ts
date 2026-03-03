@@ -3,7 +3,6 @@ import { rm } from 'node:fs/promises';
 import { initORMMySql } from '../../bootstrap.js';
 
 describe('ScalarPropsForFks', () => {
-
   test('generate entities with columns for all foreign key properties [mysql]', async () => {
     const orm = await initORMMySql('mysql', { entityGenerator: { scalarPropertiesForRelations: 'always' } }, true);
     const dump = await orm.entityGenerator.generate({ save: true, path: './temp/entities-scalars-for-pks' });

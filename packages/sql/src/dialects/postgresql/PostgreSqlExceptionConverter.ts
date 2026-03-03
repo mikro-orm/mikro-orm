@@ -1,11 +1,20 @@
 import {
-  DeadlockException, ExceptionConverter, ForeignKeyConstraintViolationException, InvalidFieldNameException,
-  NonUniqueFieldNameException, NotNullConstraintViolationException, SyntaxErrorException, TableExistsException,
-  TableNotFoundException, UniqueConstraintViolationException, CheckConstraintViolationException, type Dictionary, type DriverException,
+  DeadlockException,
+  ExceptionConverter,
+  ForeignKeyConstraintViolationException,
+  InvalidFieldNameException,
+  NonUniqueFieldNameException,
+  NotNullConstraintViolationException,
+  SyntaxErrorException,
+  TableExistsException,
+  TableNotFoundException,
+  UniqueConstraintViolationException,
+  CheckConstraintViolationException,
+  type Dictionary,
+  type DriverException,
 } from '@mikro-orm/core';
 
 export class PostgreSqlExceptionConverter extends ExceptionConverter {
-
   /**
    * @see http://www.postgresql.org/docs/9.4/static/errcodes-appendix.html
    * @see https://github.com/doctrine/dbal/blob/master/src/Driver/AbstractPostgreSQLDriver.php
@@ -54,5 +63,4 @@ export class PostgreSqlExceptionConverter extends ExceptionConverter {
 
     return super.convertException(exception);
   }
-
 }

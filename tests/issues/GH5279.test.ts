@@ -3,10 +3,8 @@ import { Entity, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorato
 
 @Entity()
 class Product {
-
   @PrimaryKey()
   id!: string;
-
 }
 
 test('should create an entity using a single connection', async () => {

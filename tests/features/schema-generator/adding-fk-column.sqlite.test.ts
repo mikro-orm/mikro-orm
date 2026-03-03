@@ -5,29 +5,23 @@ import { LibSqlDriver } from '@mikro-orm/libsql';
 
 @Entity()
 class Profile {
-
   @PrimaryKey()
   id!: string;
-
 }
 
 @Entity()
 class User {
-
   @PrimaryKey()
   id!: string;
-
 }
 
 @Entity({ tableName: 'user' })
 class User2 {
-
   @PrimaryKey()
   id!: string;
 
   @OneToOne(() => Profile, undefined, { nullable: true })
   profile!: Profile;
-
 }
 
 const drivers = {
@@ -36,7 +30,6 @@ const drivers = {
 };
 
 describe.each(['sqlite', 'libsql'] as const)('adding FK column (GH 942, %s)', driver => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -61,5 +54,4 @@ describe.each(['sqlite', 'libsql'] as const)('adding FK column (GH 942, %s)', dr
     const diff2 = await orm.schema.getUpdateSchemaMigrationSQL();
     expect(diff2.down).toBe('');
   });
-
 });

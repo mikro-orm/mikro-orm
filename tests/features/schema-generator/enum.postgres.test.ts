@@ -9,12 +9,13 @@ enum Food {
 }
 
 enum Num {
-  A, B, C,
+  A,
+  B,
+  C,
 }
 
 @Entity()
 class Something {
-
   @PrimaryKey()
   id!: number;
 
@@ -29,7 +30,6 @@ class Something {
 
   @Enum({ items: () => Num, columnType: 'integer', nullable: true })
   num3?: Num;
-
 }
 
 enum ChatLimitInterval {
@@ -48,7 +48,6 @@ enum ChatLimitInterval {
   properties: ['interval', 'id', 'someVeryVeryVeryVeryVeryVeryVeryLongPropertyName'],
 })
 class MessageThread {
-
   @PrimaryKey()
   id!: number;
 
@@ -57,7 +56,6 @@ class MessageThread {
 
   @Property()
   someVeryVeryVeryVeryVeryVeryVeryLongPropertyName!: string;
-
 }
 
 test('enum diffing with case sensitive column names (GH issue #2938)', async () => {

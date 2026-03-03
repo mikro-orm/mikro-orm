@@ -55,4 +55,3 @@ test('6865', async () => {
   expect(hydrator.getEntityHydrator(orm.getMetadata().get(User), 'full').toString()).toMatchSnapshot();
   expect(orm.em.getComparator().getSnapshotGenerator(User).toString()).toMatchSnapshot();
 });
-

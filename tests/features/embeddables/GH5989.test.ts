@@ -1,9 +1,15 @@
 import { Collection, MikroORM, PrimaryKeyProp, Ref } from '@mikro-orm/sqlite';
-import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class Document {
-
   @PrimaryKey()
   id!: number;
 
@@ -12,12 +18,10 @@ class Document {
 
   @OneToMany(() => DocumentVersion, version => version.document)
   versions = new Collection<DocumentVersion>(this);
-
 }
 
 @Entity()
 class DocumentVersion {
-
   [PrimaryKeyProp]?: ['document', 'versionNumber'];
 
   @ManyToOne(() => Document, { primary: true })
@@ -28,12 +32,10 @@ class DocumentVersion {
 
   @OneToMany(() => DocumentVersionReview, review => review.documentVersion)
   reviews = new Collection<DocumentVersionReview>(this);
-
 }
 
 @Entity()
 class DocumentVersionReview {
-
   @PrimaryKey()
   id!: number;
 
@@ -42,7 +44,6 @@ class DocumentVersionReview {
 
   @Property()
   approved!: boolean;
-
 }
 
 let orm: MikroORM;
@@ -51,25 +52,23 @@ beforeAll(async () => {
   orm = await MikroORM.init({
     metadataProvider: ReflectMetadataProvider,
     dbName: ':memory:',
-    entities: [
-      Document,
-      DocumentVersion,
-      DocumentVersionReview,
-    ],
+    entities: [Document, DocumentVersion, DocumentVersionReview],
   });
   await orm.schema.refresh();
 
   orm.em.create(Document, {
     id: 1,
     rawName: 'Training Document',
-    versions: [{
-      versionNumber: 1,
-      reviews: [
-        { id: 1, approved: true },
-        { id: 2, approved: false },
-        { id: 3, approved: true },
-      ],
-    }],
+    versions: [
+      {
+        versionNumber: 1,
+        reviews: [
+          { id: 1, approved: true },
+          { id: 2, approved: false },
+          { id: 3, approved: true },
+        ],
+      },
+    ],
   });
   await orm.em.flush();
   orm.em.clear();

@@ -6,12 +6,12 @@ import { CLIHelper } from '../CLIHelper.js';
 type CreateSeederCommandArgs = BaseArgs & { seeder: string };
 
 export class CreateSeederCommand implements BaseCommand<CreateSeederCommandArgs> {
-
   command = 'seeder:create <seeder>';
   describe = 'Create a new seeder class';
   builder = (args: Argv<BaseArgs>) => {
     args.positional('seeder', {
-      describe: 'Name for the seeder class. (e.g. "test" will generate "TestSeeder" or "TestSeeder" will generate "TestSeeder")',
+      describe:
+        'Name for the seeder class. (e.g. "test" will generate "TestSeeder" or "TestSeeder" will generate "TestSeeder")',
       demandOption: true,
     });
     return args as Argv<CreateSeederCommandArgs>;
@@ -37,5 +37,4 @@ export class CreateSeederCommand implements BaseCommand<CreateSeederCommandArgs>
 
     return parts.map(name => name.charAt(0).toUpperCase() + name.slice(1)).join('') + 'Seeder';
   }
-
 }

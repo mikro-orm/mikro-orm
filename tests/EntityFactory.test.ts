@@ -5,7 +5,6 @@ import { AuthorRepository } from './repositories/AuthorRepository.js';
 import { BookRepository } from './repositories/BookRepository.js';
 
 describe('EntityFactory', () => {
-
   let orm: MikroORM;
   let factory: EntityFactory;
 
@@ -46,7 +45,12 @@ describe('EntityFactory', () => {
   });
 
   test('should return entity', async () => {
-    const entity = factory.create(Author, { id: '5b0d19b28b21c648c2c8a600', name: 'test', email: 'mail@test.com', books: { title: 'asd' } });
+    const entity = factory.create(Author, {
+      id: '5b0d19b28b21c648c2c8a600',
+      name: 'test',
+      email: 'mail@test.com',
+      books: { title: 'asd' },
+    });
     expect(entity).toBeInstanceOf(Author);
     expect(entity.id).toBe('5b0d19b28b21c648c2c8a600');
     expect(entity.name).toBe('test');
@@ -86,7 +90,11 @@ describe('EntityFactory', () => {
   });
 
   test('should return entity without id', async () => {
-    const author = factory.create(Author, { name: 'test', favouriteBook: '5b0d19b28b21c648c2c8a600', email: 'mail@test.com' });
+    const author = factory.create(Author, {
+      name: 'test',
+      favouriteBook: '5b0d19b28b21c648c2c8a600',
+      email: 'mail@test.com',
+    });
     expect(author).toBeInstanceOf(Author);
     expect(author.id).toBeNull();
     expect(author.name).toBe('test');
@@ -193,9 +201,13 @@ describe('EntityFactory', () => {
 
   test('create entity from nested object', async () => {
     const repo = orm.em.getRepository(Author);
-    const a1 = repo.create({ name: 'Jon', email: 'jon@snow.com', books: [
-      { title: 'B1', publisher: '5b0d19b28b21c648c2c8a600', tags: [{ name: 't1' }, '5b0d19b28b21c648c2c8a601'] },
-    ] });
+    const a1 = repo.create({
+      name: 'Jon',
+      email: 'jon@snow.com',
+      books: [
+        { title: 'B1', publisher: '5b0d19b28b21c648c2c8a600', tags: [{ name: 't1' }, '5b0d19b28b21c648c2c8a601'] },
+      ],
+    });
 
     expect(a1.name).toBe('Jon');
     expect(a1.email).toBe('jon@snow.com');
@@ -217,16 +229,22 @@ describe('EntityFactory', () => {
 
     expect(mock.mock.calls).toHaveLength(3);
     expect(mock.mock.calls[0][0]).toMatch(/db\.getCollection\('book-tag'\)\.insertMany\(\[ { name: 't1' } ], {}\);/);
-    expect(mock.mock.calls[1][0]).toMatch(/db\.getCollection\('author'\)\.insertMany\(\[ { createdAt: ISODate\('.*'\), updatedAt: ISODate\('.*'\), foo: 'bar', name: 'Jon', email: 'jon@snow\.com', termsAccepted: false, friends: \[] } ], {}\);/);
-    expect(mock.mock.calls[2][0]).toMatch(/db\.getCollection\('books-table'\)\.insertMany\(\[ { createdAt: ISODate\('.*'\), title: 'B1', author: ObjectId\('.*'\), publisher: ObjectId\('5b0d19b28b21c648c2c8a600'\), tags: \[ ObjectId\('.*'\), ObjectId\('5b0d19b28b21c648c2c8a601'\) ] } ], {}\);/);
+    expect(mock.mock.calls[1][0]).toMatch(
+      /db\.getCollection\('author'\)\.insertMany\(\[ { createdAt: ISODate\('.*'\), updatedAt: ISODate\('.*'\), foo: 'bar', name: 'Jon', email: 'jon@snow\.com', termsAccepted: false, friends: \[] } ], {}\);/,
+    );
+    expect(mock.mock.calls[2][0]).toMatch(
+      /db\.getCollection\('books-table'\)\.insertMany\(\[ { createdAt: ISODate\('.*'\), title: 'B1', author: ObjectId\('.*'\), publisher: ObjectId\('5b0d19b28b21c648c2c8a600'\), tags: \[ ObjectId\('.*'\), ObjectId\('5b0d19b28b21c648c2c8a601'\) ] } ], {}\);/,
+    );
 
     orm.em.clear();
     mock.mock.calls.length = 0;
 
     const a2 = repo.create({ name: 'Jon', email: 'jon2@snow.com' });
-    repo.assign(a2, { books: [
-      { title: 'B1', publisher: '5b0d19b28b21c648c2c8a600', tags: [{ name: 't1' }, '5b0d19b28b21c648c2c8a601'] },
-    ] });
+    repo.assign(a2, {
+      books: [
+        { title: 'B1', publisher: '5b0d19b28b21c648c2c8a600', tags: [{ name: 't1' }, '5b0d19b28b21c648c2c8a601'] },
+      ],
+    });
 
     expect(a2.name).toBe('Jon');
     expect(a2.email).toBe('jon2@snow.com');
@@ -246,8 +264,12 @@ describe('EntityFactory', () => {
 
     expect(mock.mock.calls.length).toBe(3);
     expect(mock.mock.calls[0][0]).toMatch(/db\.getCollection\('book-tag'\)\.insertMany\(\[ { name: 't1' } ], {}\);/);
-    expect(mock.mock.calls[1][0]).toMatch(/db\.getCollection\('author'\)\.insertMany\(\[ { createdAt: ISODate\('.*'\), updatedAt: ISODate\('.*'\), foo: 'bar', name: 'Jon', email: 'jon2@snow\.com', termsAccepted: false, friends: \[] } ], {}\);/);
-    expect(mock.mock.calls[2][0]).toMatch(/db\.getCollection\('books-table'\)\.insertMany\(\[ { createdAt: ISODate\('.*'\), title: 'B1', author: ObjectId\('.*'\), publisher: ObjectId\('5b0d19b28b21c648c2c8a600'\), tags: \[ ObjectId\('.*'\), ObjectId\('5b0d19b28b21c648c2c8a601'\) ] } ], {}\);/);
+    expect(mock.mock.calls[1][0]).toMatch(
+      /db\.getCollection\('author'\)\.insertMany\(\[ { createdAt: ISODate\('.*'\), updatedAt: ISODate\('.*'\), foo: 'bar', name: 'Jon', email: 'jon2@snow\.com', termsAccepted: false, friends: \[] } ], {}\);/,
+    );
+    expect(mock.mock.calls[2][0]).toMatch(
+      /db\.getCollection\('books-table'\)\.insertMany\(\[ { createdAt: ISODate\('.*'\), title: 'B1', author: ObjectId\('.*'\), publisher: ObjectId\('5b0d19b28b21c648c2c8a600'\), tags: \[ ObjectId\('.*'\), ObjectId\('5b0d19b28b21c648c2c8a601'\) ] } ], {}\);/,
+    );
   });
 
   test('em.create() should not mutate the input object (GH issue 1294)', async () => {
@@ -263,5 +285,4 @@ describe('EntityFactory', () => {
     expect(entity.name).toEqual('this is my name');
     expect(entity.age).toEqual(21);
   });
-
 });

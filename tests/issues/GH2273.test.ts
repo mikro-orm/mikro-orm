@@ -3,7 +3,6 @@ import { Entity, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from 
 
 @Entity()
 class Checkout {
-
   @PrimaryKey()
   id!: number;
 
@@ -11,12 +10,10 @@ class Checkout {
     nullable: true,
   })
   discount?: any;
-
 }
 
 @Entity()
 class Discount {
-
   @PrimaryKey()
   id!: number;
 
@@ -32,12 +29,10 @@ class Discount {
   constructor(amount: number) {
     this.amount = amount;
   }
-
 }
 
 @Entity()
 class Checkout2 {
-
   @PrimaryKey()
   id!: number;
 
@@ -46,12 +41,10 @@ class Checkout2 {
     orphanRemoval: true,
   })
   discount?: any;
-
 }
 
 @Entity()
 class Discount2 {
-
   @PrimaryKey()
   id!: number;
 
@@ -64,7 +57,6 @@ class Discount2 {
   constructor(amount: number) {
     this.amount = amount;
   }
-
 }
 
 describe('Remove entity issue (GH 2273)', () => {
@@ -155,5 +147,4 @@ describe('Remove entity issue (GH 2273)', () => {
       expect(discounts).toHaveLength(0);
     }
   });
-
 });

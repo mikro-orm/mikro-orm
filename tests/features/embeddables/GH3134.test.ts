@@ -10,7 +10,6 @@ import {
 
 @Embeddable()
 class Nested {
-
   @Property()
   field1: string;
 
@@ -25,12 +24,10 @@ class Nested {
     this.field2 = field2;
     this.field3 = field3;
   }
-
 }
 
 @Entity()
 class Parent {
-
   @PrimaryKey({ autoincrement: false })
   id: number;
 
@@ -41,7 +38,6 @@ class Parent {
     this.id = id;
     this.nested = nested;
   }
-
 }
 
 let orm: MikroORM;
@@ -81,4 +77,3 @@ test('load embedded entity twice (GH #3134)', async () => {
     field3: 'C',
   });
 });
-

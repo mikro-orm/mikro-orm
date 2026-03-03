@@ -4,7 +4,6 @@ import { User2 } from './User2.js';
 
 @Entity()
 export class Car2 {
-
   @Index({ name: 'car2_name_index' })
   @PrimaryKey({ length: 100 })
   name: string;
@@ -26,5 +25,4 @@ export class Car2 {
     this.year = year;
     this.price = price;
   }
-
 }
