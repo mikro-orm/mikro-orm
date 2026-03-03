@@ -92,6 +92,30 @@ export function getLoadingStrategy(
   return strategy as LoadStrategy.SELECT_IN | LoadStrategy.JOINED;
 }
 
+function findPopulateEntry<Entity>(
+  populate: PopulateOptions<Entity>[],
+  parts: string[],
+): PopulateOptions<Entity> | undefined {
+  let current = populate;
+
+  for (let i = 0; i < parts.length; i++) {
+    const entry = current.find(p => (p.field as string).split(':')[0] === parts[i]);
+
+    if (!entry) {
+      return undefined;
+    }
+
+    if (i === parts.length - 1) {
+      return entry;
+    }
+
+    current = (entry.children ?? []) as PopulateOptions<Entity>[];
+  }
+
+  /* v8 ignore next */
+  return undefined;
+}
+
 /**
  * Applies per-relation overrides from `populateHints` to the normalized populate tree.
  * @internal
@@ -115,28 +139,4 @@ export function applyPopulateHints<Entity>(
       entry.joinType = hint.joinType;
     }
   }
-}
-
-function findPopulateEntry<Entity>(
-  populate: PopulateOptions<Entity>[],
-  parts: string[],
-): PopulateOptions<Entity> | undefined {
-  let current = populate;
-
-  for (let i = 0; i < parts.length; i++) {
-    const entry = current.find(p => (p.field as string).split(':')[0] === parts[i]);
-
-    if (!entry) {
-      return undefined;
-    }
-
-    if (i === parts.length - 1) {
-      return entry;
-    }
-
-    current = (entry.children ?? []) as PopulateOptions<Entity>[];
-  }
-
-  /* v8 ignore next */
-  return undefined;
 }

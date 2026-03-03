@@ -1277,10 +1277,10 @@ describe('check typings', () => {
       // @ts-expect-error - populateHints not allowed without populate
       await em.find({} as Constructor<Author2>, {}, { populateHints: { books: { joinType: 'left join' } } });
 
-      // @ts-expect-error - populateHints not allowed with empty populate
       await em.find(
         {} as Constructor<Author2>,
         {},
+        // @ts-expect-error - populateHints not allowed with empty populate
         { populate: [], populateHints: { books: { joinType: 'left join' } } },
       );
     }

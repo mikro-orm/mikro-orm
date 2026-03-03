@@ -597,7 +597,7 @@ export abstract class AbstractSqlDriver<
 
           if (hasPK && !matched) {
             matched = true;
-            let relationPojo: EntityData<T> = {};
+            const relationPojo: EntityData<T> = {};
             const tz = this.platform.getTimezone();
 
             for (const p of targetProps) {

@@ -460,8 +460,8 @@ export class ObjectHydrator extends Hydrator {
                 embedded: childProp.embedded,
                 embeddedProps: childProp.embeddedProps,
               };
-              // eslint-disable-next-line @typescript-eslint/no-use-before-define
               ret.push(
+                // eslint-disable-next-line @typescript-eslint/no-use-before-define, no-use-before-define
                 ...hydrateProperty(prop3, childProp.object, [...path, childProp.embedded![1]], childDataKey).map(
                   l => '    ' + l,
                 ),
@@ -483,8 +483,8 @@ export class ObjectHydrator extends Hydrator {
           .filter(p => p.embedded?.[0] === prop.name)
           .forEach(childProp => {
             const childDataKey = prop.object ? dataKey + this.wrap(childProp.embedded![1]) : this.wrap(childProp.name);
-            // eslint-disable-next-line @typescript-eslint/no-use-before-define
             ret.push(
+              // eslint-disable-next-line @typescript-eslint/no-use-before-define, no-use-before-define
               ...hydrateProperty(childProp, prop.object, [...path, childProp.embedded![1]], childDataKey).map(
                 l => '  ' + l,
               ),
