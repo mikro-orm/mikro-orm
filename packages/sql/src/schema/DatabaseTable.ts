@@ -1067,9 +1067,45 @@ export class DatabaseTable {
   toJSON(): Dictionary {
     const { platform, columns, ...rest } = this;
     const columnsMapped = Utils.keys(columns).reduce((o, col) => {
-      const { mappedType, ...restCol } = columns[col];
-      o[col] = restCol;
-      o[col].mappedType = Utils.keys(t).find(k => t[k] === mappedType.constructor);
+      const c = columns[col];
+      const normalized: Dictionary = {
+        name: c.name,
+        type: c.type,
+        unsigned: !!c.unsigned,
+        autoincrement: !!c.autoincrement,
+        primary: !!c.primary,
+        nullable: !!c.nullable,
+        unique: !!c.unique,
+        length: c.length ?? null,
+        precision: c.precision ?? null,
+        scale: c.scale ?? null,
+        default: c.default ?? null,
+        comment: c.comment ?? null,
+        enumItems: c.enumItems ?? [],
+        mappedType: Utils.keys(t).find(k => t[k] === c.mappedType.constructor),
+      };
+
+      if (c.generated) {
+        normalized.generated = c.generated;
+      }
+
+      if (c.nativeEnumName) {
+        normalized.nativeEnumName = c.nativeEnumName;
+      }
+
+      if (c.extra) {
+        normalized.extra = c.extra;
+      }
+
+      if (c.ignoreSchemaChanges) {
+        normalized.ignoreSchemaChanges = c.ignoreSchemaChanges;
+      }
+
+      if (c.defaultConstraint) {
+        normalized.defaultConstraint = c.defaultConstraint;
+      }
+
+      o[col] = normalized;
 
       return o;
     }, {} as Dictionary);
