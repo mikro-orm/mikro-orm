@@ -173,7 +173,7 @@ describe('Migrator (postgres)', () => {
     migrations.snapshot = false;
   });
 
-  test('migration:down should update the snapshot to reflect current DB state', async () => {
+  test('migration:up and migration:down both update the snapshot to reflect current DB state', async () => {
     const migrations = orm.config.get('migrations');
     migrations.snapshot = true;
 
@@ -204,9 +204,14 @@ describe('Migrator (postgres)', () => {
 
     try {
       await orm.migrator.up(migration1.fileName);
+
+      // after up, snapshot should be updated via DB introspection
+      const snapshotAfterUp = readFileSync(snapshotPath, 'utf8');
+      expect(snapshotAfterUp).not.toEqual(snapshotAfterCreate);
+
       await orm.migrator.down(migration1.fileName);
 
-      // after down, snapshot should be updated to reflect current DB state
+      // after down, snapshot should also be updated to reflect current DB state
       const snapshotAfterDown = readFileSync(snapshotPath, 'utf8');
       expect(snapshotAfterDown).not.toEqual(snapshotAfterCreate);
 

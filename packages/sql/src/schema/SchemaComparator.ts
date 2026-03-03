@@ -550,7 +550,7 @@ export class SchemaComparator {
       }
     }
 
-    if (fromColumn.nullable !== toColumn.nullable && !fromColumn.generated && !toColumn.generated) {
+    if (!!fromColumn.nullable !== !!toColumn.nullable && !fromColumn.generated && !toColumn.generated) {
       log(`'nullable' changed for column ${fromTable.name}.${fromColumn.name}`, { fromColumn, toColumn });
       changedProperties.add('nullable');
     }
@@ -565,7 +565,7 @@ export class SchemaComparator {
       changedProperties.add('autoincrement');
     }
 
-    if (fromColumn.unsigned !== toColumn.unsigned && this.platform.supportsUnsigned()) {
+    if (!!fromColumn.unsigned !== !!toColumn.unsigned && this.platform.supportsUnsigned()) {
       log(`'unsigned' changed for column ${fromTable.name}.${fromColumn.name}`, { fromColumn, toColumn });
       changedProperties.add('unsigned');
     }
