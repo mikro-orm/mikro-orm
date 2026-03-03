@@ -62,7 +62,7 @@ import {
 } from '@mikro-orm/core';
 import type { AbstractSqlConnection } from './AbstractSqlConnection.js';
 import type { AbstractSqlPlatform } from './AbstractSqlPlatform.js';
-import { QueryBuilder } from './query/QueryBuilder.js';
+import { type AnyQueryBuilder, QueryBuilder } from './query/QueryBuilder.js';
 import { type NativeQueryBuilder } from './query/NativeQueryBuilder.js';
 import { JoinType, QueryType } from './query/enums.js';
 import { SqlEntityManager } from './SqlEntityManager.js';
@@ -127,7 +127,7 @@ export abstract class AbstractSqlDriver<
     meta: EntityMetadata<T>,
     where: FilterQuery<T>,
     options: FindOptions<T, any, any, any> = {},
-  ): Promise<QueryBuilder<T, any, any, any>> {
+  ): Promise<AnyQueryBuilder<T>> {
     const connectionType = this.resolveConnectionType({ ctx: options.ctx, connectionType: options.connectionType });
     const populate = this.autoJoinOneToOneOwner(meta, options.populate as unknown as PopulateOptions<T>[], options.fields);
     const joinedProps = this.joinedProps(meta, populate, options);
@@ -416,7 +416,7 @@ export abstract class AbstractSqlDriver<
     result: EntityData<T>,
     meta: EntityMetadata<T>,
     populate: PopulateOptions<T>[] = [],
-    qb?: QueryBuilder<T, any, any, any>,
+    qb?: AnyQueryBuilder<T>,
     map: Dictionary = {},
   ): EntityData<T> | null {
     // For TPT inheritance, map aliased parent table columns back to their field names
@@ -450,7 +450,7 @@ export abstract class AbstractSqlDriver<
    * TPT parent columns are selected with aliases like `parent_alias__column_name`,
    * and need to be renamed back to `column_name` for the result mapper to work.
    */
-  private mapTPTColumns<T extends object>(result: EntityData<T>, meta: EntityMetadata<T>, qb: QueryBuilder<T, any, any, any>): void {
+  private mapTPTColumns<T extends object>(result: EntityData<T>, meta: EntityMetadata<T>, qb: AnyQueryBuilder<T>): void {
     const tptAliases = (qb as any)._tptAlias as Dictionary<string>;
 
     // Walk up the TPT hierarchy
@@ -482,7 +482,7 @@ export abstract class AbstractSqlDriver<
     result: EntityData<T>,
     meta: EntityMetadata<T>,
     populate: PopulateOptions<T>[],
-    qb: QueryBuilder<T, any, any, any>,
+    qb: AnyQueryBuilder<T>,
     root: EntityData<T>,
     map: Dictionary,
     parentJoinPath?: string,
@@ -1779,7 +1779,7 @@ export abstract class AbstractSqlDriver<
   }
 
   protected getFieldsForJoinedLoad<T extends object>(
-    qb: QueryBuilder<T, any, any, any>,
+    qb: AnyQueryBuilder<T>,
     meta: EntityMetadata<T>,
     options: FieldsForJoinedLoadOptions<T>,
   ): InternalField<T>[] {
@@ -1919,7 +1919,7 @@ export abstract class AbstractSqlDriver<
    * @internal
    */
   protected addTPTPolymorphicJoinsForRelation<T extends object>(
-    qb: QueryBuilder<T, any, any, any>,
+    qb: AnyQueryBuilder<T>,
     meta: EntityMetadata<T>,
     baseAlias: string,
     fields: InternalField<T>[],
@@ -1956,7 +1956,7 @@ export abstract class AbstractSqlDriver<
    * Find the alias for a TPT child table in the query builder.
    * @internal
    */
-  protected findTPTChildAlias<T extends object>(qb: QueryBuilder<T, any, any, any>, childMeta: EntityMetadata): string | undefined {
+  protected findTPTChildAlias<T extends object>(qb: AnyQueryBuilder<T>, childMeta: EntityMetadata): string | undefined {
     const joins = (qb as any)._joins as Dictionary;
     for (const key of Object.keys(joins)) {
       if (joins[key].table === childMeta.tableName && key.includes('[tpt]')) {
@@ -1995,7 +1995,7 @@ export abstract class AbstractSqlDriver<
     relationPojo: EntityData<T>,
     meta: EntityMetadata<T>,
     relationAlias: string,
-    qb: QueryBuilder<T, any, any, any>,
+    qb: AnyQueryBuilder<T>,
     root: EntityData<T>,
   ): void {
     // Check if this is a TPT base with polymorphic children
@@ -2054,7 +2054,7 @@ export abstract class AbstractSqlDriver<
    * @internal
    */
   mapPropToFieldNames<T extends object>(
-    qb: QueryBuilder<T, any, any, any, any, any>,
+    qb: AnyQueryBuilder<T>,
     prop: EntityProperty<T>,
     tableAlias: string,
     meta: EntityMetadata<T>,
@@ -2107,17 +2107,17 @@ export abstract class AbstractSqlDriver<
 
   /** @internal */
   createQueryBuilder<T extends object>(
-    entityName: EntityName<T> | QueryBuilder<T, any, any, any>,
+    entityName: EntityName<T> | AnyQueryBuilder<T>,
     ctx?: Transaction,
     preferredConnectionType?: ConnectionType,
     convertCustomTypes?: boolean,
     loggerContext?: LoggingOptions,
     alias?: string,
     em?: SqlEntityManager,
-  ): QueryBuilder<T, any, any, any> {
+  ): AnyQueryBuilder<T> {
     // do not compute the connectionType if EM is provided as it will be computed from it in the QB later on
     const connectionType = em ? preferredConnectionType : this.resolveConnectionType({ ctx, connectionType: preferredConnectionType });
-    const qb = new QueryBuilder<T, any, any, any>(entityName, this.metadata, this, ctx, alias, connectionType, em, loggerContext);
+    const qb = new QueryBuilder<T>(entityName, this.metadata, this, ctx, alias, connectionType, em, loggerContext) as AnyQueryBuilder<T>;
 
     if (!convertCustomTypes) {
       qb.unsetFlag(QueryFlag.CONVERT_CUSTOM_TYPES);
@@ -2282,7 +2282,7 @@ export abstract class AbstractSqlDriver<
   }
 
   protected buildOrderBy<T extends object>(
-    qb: QueryBuilder<T, any, any, any>,
+    qb: AnyQueryBuilder<T>,
     meta: EntityMetadata<T>,
     populate: PopulateOptions<T>[],
     options: Pick<FindOptions<any>, 'strategy' | 'orderBy' | 'populateOrderBy'>,
@@ -2306,7 +2306,7 @@ export abstract class AbstractSqlDriver<
   }
 
   protected buildPopulateOrderBy<T extends object>(
-    qb: QueryBuilder<T, any, any, any>,
+    qb: AnyQueryBuilder<T>,
     meta: EntityMetadata<T>,
     populateOrderBy: QueryOrderMap<T>[],
     parentPath: string,
@@ -2384,7 +2384,7 @@ export abstract class AbstractSqlDriver<
   }
 
   protected buildJoinedPropsOrderBy<T extends object>(
-    qb: QueryBuilder<T, any, any, any>,
+    qb: AnyQueryBuilder<T>,
     meta: EntityMetadata<T>,
     populate: PopulateOptions<T>[],
     options?: Pick<FindOptions<any>, 'strategy' | 'orderBy' | 'populateOrderBy'>,
@@ -2415,7 +2415,7 @@ export abstract class AbstractSqlDriver<
   }
 
   private buildToManyOrderBy<T extends object>(
-    qb: QueryBuilder<T, any, any, any, any, any>,
+    qb: AnyQueryBuilder<T>,
     prop: EntityProperty<T>,
     path: string,
     ref: string | undefined,
@@ -2501,7 +2501,7 @@ export abstract class AbstractSqlDriver<
     meta: EntityMetadata<T>,
     populate: PopulateOptions<T>[],
     joinedProps: PopulateOptions<T>[],
-    qb: QueryBuilder<T, any, any, any>,
+    qb: AnyQueryBuilder<T>,
     alias: string,
     options: Pick<FindOptions<T, any, any, any>, 'strategy' | 'fields' | 'exclude'>,
     schema?: string,

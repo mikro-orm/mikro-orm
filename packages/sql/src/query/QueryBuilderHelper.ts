@@ -1035,7 +1035,12 @@ export class QueryBuilderHelper {
 
   getProperty(field: string, alias?: string): EntityProperty | undefined {
     const entityName = this.aliasMap[alias!]?.entityName || this.entityName;
-    const meta = this.metadata.get(entityName);
+    const meta = this.metadata.find(entityName);
+
+    // raw table name (e.g. CTE) — no metadata available
+    if (!meta) {
+      return undefined;
+    }
 
     // check if `alias` is not matching an embedded property name instead of alias, e.g. `address.city`
     if (alias) {
@@ -1090,6 +1095,7 @@ export interface Alias<T> {
   entityName: EntityName<T>;
   meta: EntityMetadata<T>;
   subQuery?: NativeQueryBuilder | RawQueryFragment;
+  rawTableName?: string;
 }
 
 export interface OnConflictClause<T> {

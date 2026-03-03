@@ -27,6 +27,8 @@ export class MsSqlNativeQueryBuilder extends NativeQueryBuilder {
       this.parts.push(...this.options.comment.map(comment => `/* ${comment} */`));
     }
 
+    this.compileCtes();
+
     if (this.options.onConflict && !Utils.isEmpty(Utils.asArray(this.options.data)[0])) {
       this.compileUpsert();
     } else {
@@ -229,6 +231,11 @@ export class MsSqlNativeQueryBuilder extends NativeQueryBuilder {
     const tableName = this.getTableName();
     const sql = `delete from ${tableName}; declare @count int = case @@rowcount when 0 then 1 else 0 end; dbcc checkident ('${tableName.replace(/[[\]]/g, '')}', reseed, @count)`;
     this.parts.push(sql);
+  }
+
+  /** MSSQL has no RECURSIVE keyword — CTEs are implicitly recursive. */
+  protected override getCteKeyword(_hasRecursive: boolean): string {
+    return 'with';
   }
 
 }
