@@ -350,14 +350,12 @@ describe('QueryBuilder - Deep', () => {
     expect(qb1.getParams()).toEqual(['Jon Snow 1', true, 'Jon Snow 2']);
 
     const qb2 = orm.em.createQueryBuilder(Book2);
-    qb2
-      .select('*')
-      .where({
-        $or: [
-          { author: { $or: [{ name: 'Jon Snow 1' }, { email: /^snow@/ }] } },
-          { publisher: { name: 'My Publisher' } },
-        ],
-      });
+    qb2.select('*').where({
+      $or: [
+        { author: { $or: [{ name: 'Jon Snow 1' }, { email: /^snow@/ }] } },
+        { publisher: { name: 'My Publisher' } },
+      ],
+    });
     expect(qb2.getQuery()).toEqual(
       'select `e0`.*, `e0`.`price` * 1.19 as `price_taxed` from `book2` as `e0` ' +
         'inner join `author2` as `e1` on `e0`.`author_id` = `e1`.`id` ' +
@@ -367,14 +365,12 @@ describe('QueryBuilder - Deep', () => {
     expect(qb2.getParams()).toEqual(['Jon Snow 1', 'snow@%', 'My Publisher']);
 
     const qb3 = orm.em.createQueryBuilder(Book2);
-    qb3
-      .select('*')
-      .where({
-        $or: [
-          { author: { $or: [{ name: { $in: ['Jon Snow 1', 'Jon Snow 2'] } }, { email: /^snow@/ }] } },
-          { publisher: { name: 'My Publisher' } },
-        ],
-      });
+    qb3.select('*').where({
+      $or: [
+        { author: { $or: [{ name: { $in: ['Jon Snow 1', 'Jon Snow 2'] } }, { email: /^snow@/ }] } },
+        { publisher: { name: 'My Publisher' } },
+      ],
+    });
     expect(qb3.getQuery()).toEqual(
       'select `e0`.*, `e0`.`price` * 1.19 as `price_taxed` from `book2` as `e0` ' +
         'inner join `author2` as `e1` on `e0`.`author_id` = `e1`.`id` ' +
@@ -384,14 +380,12 @@ describe('QueryBuilder - Deep', () => {
     expect(qb3.getParams()).toEqual(['Jon Snow 1', 'Jon Snow 2', 'snow@%', 'My Publisher']);
 
     const qb4 = orm.em.createQueryBuilder(Book2);
-    qb4
-      .select('*')
-      .where({
-        $or: [
-          { author: { $or: [{ $not: { name: 'Jon Snow 1' } }, { email: /^snow@/ }] } },
-          { publisher: { name: 'My Publisher' } },
-        ],
-      });
+    qb4.select('*').where({
+      $or: [
+        { author: { $or: [{ $not: { name: 'Jon Snow 1' } }, { email: /^snow@/ }] } },
+        { publisher: { name: 'My Publisher' } },
+      ],
+    });
     expect(qb4.getQuery()).toEqual(
       'select `e0`.*, `e0`.`price` * 1.19 as `price_taxed` from `book2` as `e0` ' +
         'inner join `author2` as `e1` on `e0`.`author_id` = `e1`.`id` ' +
