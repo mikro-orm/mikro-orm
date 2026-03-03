@@ -78,14 +78,8 @@ export class EntityHelper {
    * property on the entity instance, so shadowing the prototype setter.
    */
   private static defineBaseProperties<T extends object>(meta: EntityMetadata<T>, prototype: T, em: EntityManager) {
-    const helperParams =
-      meta.embeddable || meta.virtual
-        ? []
-        : [
-            em.getComparator().getPkGetter(meta),
-            em.getComparator().getPkSerializer(meta),
-            em.getComparator().getPkGetterConverted(meta),
-          ];
+    // oxfmt-ignore
+    const helperParams = meta.embeddable || meta.virtual ? [] : [em.getComparator().getPkGetter(meta), em.getComparator().getPkSerializer(meta), em.getComparator().getPkGetterConverted(meta)];
     Object.defineProperties(prototype, {
       __entity: { value: !meta.embeddable, configurable: true },
       __meta: { value: meta, configurable: true },
@@ -118,10 +112,8 @@ export class EntityHelper {
   private static defineProperties<T extends object>(meta: EntityMetadata<T>, em: EntityManager): void {
     Object.values<EntityProperty<T>>(meta.properties).forEach(prop => {
       const isCollection = [ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(prop.kind);
-      const isReference =
-        [ReferenceKind.ONE_TO_ONE, ReferenceKind.MANY_TO_ONE].includes(prop.kind) &&
-        (prop.inversedBy || prop.mappedBy) &&
-        !prop.mapToPk;
+      // oxfmt-ignore
+      const isReference = [ReferenceKind.ONE_TO_ONE, ReferenceKind.MANY_TO_ONE].includes(prop.kind) && (prop.inversedBy || prop.mappedBy) && !prop.mapToPk;
 
       if (isReference) {
         Object.defineProperty(meta.prototype, prop.name, {
@@ -217,13 +209,8 @@ export class EntityHelper {
         const entity = Reference.unwrapReference(val ?? wrapped.__data[prop.name]);
         const old = Reference.unwrapReference(wrapped.__data[prop.name]);
 
-        if (
-          old &&
-          old !== entity &&
-          prop.kind === ReferenceKind.MANY_TO_ONE &&
-          prop.inversedBy &&
-          old[prop.inversedBy]
-        ) {
+        // oxfmt-ignore
+        if (old && old !== entity && prop.kind === ReferenceKind.MANY_TO_ONE && prop.inversedBy && old[prop.inversedBy]) {
           old[prop.inversedBy].removeWithoutPropagation(this);
         }
 
@@ -271,11 +258,8 @@ export class EntityHelper {
         continue;
       }
 
-      if (
-        prop2.targetMeta!.abstract
-          ? prop2.targetMeta!.root.class !== meta.root.class
-          : prop2.targetMeta!.class !== meta.class
-      ) {
+      // oxfmt-ignore
+      if (prop2.targetMeta!.abstract ? prop2.targetMeta!.root.class !== meta.root.class : prop2.targetMeta!.class !== meta.class) {
         continue;
       }
 

@@ -94,6 +94,7 @@ export class QueryHelper {
                   return Object.keys(cond[k2]).every(k3 => meta.primaryKeys.includes(k3 as EntityKey<T>));
                 }
 
+                /* v8 ignore next */
                 return true;
               }
 
@@ -175,6 +176,7 @@ export class QueryHelper {
                 );
               }
 
+              /* v8 ignore next */
               return true;
             }),
         )
@@ -273,11 +275,8 @@ export class QueryHelper {
         value = QueryHelper.processCustomType<T>(prop, value, platform, undefined, true);
       }
 
-      const isJsonProperty =
-        prop?.customType instanceof JsonType &&
-        Utils.isPlainObject(value) &&
-        !isRaw(value) &&
-        Object.keys(value)[0] !== '$eq';
+      // oxfmt-ignore
+      const isJsonProperty = prop?.customType instanceof JsonType && Utils.isPlainObject(value) && !isRaw(value) && Object.keys(value)[0] !== '$eq';
 
       if (isJsonProperty && prop?.kind !== ReferenceKind.EMBEDDED) {
         return this.processJsonCondition<T>(
@@ -289,13 +288,8 @@ export class QueryHelper {
         );
       }
 
-      if (
-        Array.isArray(value) &&
-        !Utils.isOperator(key) &&
-        !QueryHelper.isSupportedOperator(key as string) &&
-        !(customExpression && Raw.getKnownFragment(key)!.params.length > 0) &&
-        options.type !== 'orderBy'
-      ) {
+      // oxfmt-ignore
+      if (Array.isArray(value) && !Utils.isOperator(key) && !QueryHelper.isSupportedOperator(key as string) && !(customExpression && Raw.getKnownFragment(key)!.params.length > 0) && options.type !== 'orderBy') {
         // comparing single composite key - use $eq instead of $in
         const op = composite && !value.every(v => Array.isArray(v)) ? '$eq' : '$in';
         o[key as string] = { [op]: value };

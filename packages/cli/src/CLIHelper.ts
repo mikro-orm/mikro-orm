@@ -43,12 +43,9 @@ export class CLIHelper {
     const env = await this.loadEnvironmentVars();
     await loadOptionalDependencies(options);
 
+    // oxfmt-ignore
     const configFinder = (cfg: unknown) => {
-      return (
-        typeof cfg === 'object' &&
-        cfg !== null &&
-        ('contextName' in cfg ? cfg.contextName === contextName : contextName === 'default')
-      );
+      return typeof cfg === 'object' && cfg !== null && ('contextName' in cfg ? cfg.contextName === contextName : contextName === 'default');
     };
 
     const isValidConfigFactoryResult = (cfg: unknown) => {

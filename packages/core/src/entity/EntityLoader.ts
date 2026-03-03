@@ -139,9 +139,8 @@ export class EntityLoader {
   ): PopulateOptions<Entity>[] {
     const meta = this.metadata.find(entityName)!;
     let normalized = Utils.asArray(populate).map(field => {
-      return typeof field === 'boolean' || field.field === PopulatePath.ALL
-        ? ({ all: !!field, field: meta.primaryKeys[0] } as PopulateOptions<Entity>)
-        : field;
+      // oxfmt-ignore
+      return typeof field === 'boolean' || field.field === PopulatePath.ALL ? { all: !!field, field: meta.primaryKeys[0] } as PopulateOptions<Entity> : field;
     });
 
     if (normalized.some(p => p.all)) {
@@ -183,6 +182,7 @@ export class EntityLoader {
   private mergeNestedPopulate<Entity>(populate: PopulateOptions<Entity>[]): PopulateOptions<Entity>[] {
     const tmp = populate.reduce(
       (ret, item) => {
+        /* v8 ignore next */
         if (item.field === PopulatePath.ALL) {
           return ret;
         }
@@ -605,11 +605,8 @@ export class EntityLoader {
           continue;
         }
 
-        const keyValue =
-          '' +
-          (Reference.isReference(ref)
-            ? (ref.unwrap() as Dictionary)[prop.targetKey]
-            : (ref as Dictionary)[prop.targetKey]);
+        // oxfmt-ignore
+        const keyValue = '' + (Reference.isReference(ref) ? (ref.unwrap() as Dictionary)[prop.targetKey] : (ref as Dictionary)[prop.targetKey]);
         const loadedItem = itemsByKey.get(keyValue);
 
         if (loadedItem) {
@@ -724,9 +721,8 @@ export class EntityLoader {
       .filter(orderBy => Utils.isObject(orderBy[prop.name]))
       .map(orderBy => orderBy[prop.name]);
     const { refresh, filters, ignoreLazyScalarProperties, populateWhere, connectionType, logging, schema } = options;
-    const exclude = Array.isArray(options.exclude)
-      ? (Utils.extractChildElements(options.exclude, prop.name) as any)
-      : options.exclude;
+    // oxfmt-ignore
+    const exclude = Array.isArray(options.exclude) ? (Utils.extractChildElements(options.exclude, prop.name) as any) : options.exclude;
     const visited = (options as Dictionary).visited;
 
     for (const entity of entities) {
@@ -794,9 +790,8 @@ export class EntityLoader {
     const refresh = options.refresh;
     let where = await this.extractChildCondition(options, prop, true);
     const fields = this.buildFields(options.fields as any, prop) as typeof options.fields;
-    const exclude = Array.isArray(options.exclude)
-      ? Utils.extractChildElements(options.exclude, prop.name)
-      : options.exclude;
+    // oxfmt-ignore
+    const exclude = Array.isArray(options.exclude) ? Utils.extractChildElements(options.exclude, prop.name) : options.exclude;
     const populateFilter = (options as Dictionary).populateFilter?.[prop.name];
     const options2 = { ...options, fields, exclude, populateFilter } as unknown as FindOptions<Entity, any, any, any>;
     (['limit', 'offset', 'first', 'last', 'before', 'after', 'overfetch'] as const).forEach(

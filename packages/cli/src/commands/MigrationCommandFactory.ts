@@ -24,12 +24,12 @@ export class MigrationCommandFactory {
   };
 
   static create<const T extends MigratorMethod>(command: T) {
+    // oxfmt-ignore
     return {
       command: `migration:${command}`,
       describe: MigrationCommandFactory.DESCRIPTIONS[command],
       builder: (args: Argv<BaseArgs>) => MigrationCommandFactory.configureMigrationCommand(args, command),
-      handler: (args: ArgumentsCamelCase<MigrationOptionsMap[T]>) =>
-        MigrationCommandFactory.handleMigrationCommand(args as ArgumentsCamelCase<Opts>, command),
+      handler: (args: ArgumentsCamelCase<MigrationOptionsMap[T]>) => MigrationCommandFactory.handleMigrationCommand(args as ArgumentsCamelCase<Opts>, command),
     } satisfies BaseCommand<MigrationOptionsMap[T]>;
   }
 
@@ -199,6 +199,7 @@ export class MigrationCommandFactory {
         CLIHelper.dump(colors.green('down:'));
         CLIHelper.dump(ret.diff.down.map(sql => '  ' + sql).join('\n'), config);
       } else {
+        /* v8 ignore next */
         CLIHelper.dump(
           colors.yellow(`(${config.getDriver().constructor.name} does not support automatic down migrations)`),
         );

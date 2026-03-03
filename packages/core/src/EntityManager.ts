@@ -691,9 +691,8 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
 
       if (filter.cond instanceof Function) {
         // @ts-ignore
-        const args = Utils.isPlainObject(options?.[filter.name])
-          ? options[filter.name]
-          : this.getContext().filterParams[filter.name];
+        // oxfmt-ignore
+        const args = Utils.isPlainObject(options?.[filter.name]) ? options[filter.name] : this.getContext().filterParams[filter.name];
 
         if (!args && filter.cond.length > 0 && filter.args !== false) {
           throw new Error(`No arguments provided for filter '${filter.name}'`);
@@ -1388,11 +1387,8 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     });
 
     // skip if we got the PKs via returning statement (`rows`)
-    const uniqueFields =
-      options.onConflictFields ??
-      ((Utils.isPlainObject(allWhere![0])
-        ? Object.keys(allWhere![0]).flatMap(key => Utils.splitPrimaryKeys(key))
-        : meta!.primaryKeys) as (keyof Entity)[]);
+    // oxfmt-ignore
+    const uniqueFields = options.onConflictFields ?? ((Utils.isPlainObject(allWhere![0]) ? Object.keys(allWhere![0]).flatMap(key => Utils.splitPrimaryKeys(key)) : meta!.primaryKeys) as (keyof Entity)[]);
     const returning = getOnConflictReturningFields(meta, data[0], uniqueFields, options) as string[];
     const reloadFields = returning.length > 0 && !(this.getPlatform().usesReturningStatement() && res.rows?.length);
 

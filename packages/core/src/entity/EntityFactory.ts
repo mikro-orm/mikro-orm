@@ -237,9 +237,8 @@ export class EntityFactory {
         [ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind) &&
         Utils.isPlainObject(data[prop.name])
       ) {
-        diff2[key] = entity[prop.name]
-          ? (helper(entity[prop.name]!).getPrimaryKey(options.convertCustomTypes) as EntityDataValue<T>)
-          : null;
+        // oxfmt-ignore
+        diff2[key] = entity[prop.name] ? helper(entity[prop.name]!).getPrimaryKey(options.convertCustomTypes) as EntityDataValue<T> : null;
       }
 
       if (
