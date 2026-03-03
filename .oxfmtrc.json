@@ -1,6 +1,6 @@
 {
   "$schema": "https://raw.githubusercontent.com/nicolo-ribaudo/oxfmt/refs/heads/main/npm/oxfmt/schema.json",
-  "printWidth": 160,
+  "printWidth": 120,
   "tabWidth": 2,
   "useTabs": false,
   "semi": true,
