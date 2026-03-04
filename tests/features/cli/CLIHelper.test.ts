@@ -300,7 +300,7 @@ Maybe you want to check, or regenerate your yarn.lock or package-lock.json file?
     expect(conf2.get('entities')).toEqual(['tests/foo']);
 
     await expect(async () => {
-      return await CLIHelper.getConfiguration('boom');
+      return CLIHelper.getConfiguration('boom');
     }).rejects.toThrowError(/^MikroORM config 'boom' was not what the function exported from/);
 
     delete pkg['mikro-orm'].configPaths;
@@ -323,7 +323,7 @@ Maybe you want to check, or regenerate your yarn.lock or package-lock.json file?
     expect(conf2.get('entities')).toEqual(['tests/foo']);
 
     await expect(async () => {
-      return await CLIHelper.getConfiguration('unknown');
+      return CLIHelper.getConfiguration('unknown');
     }).rejects.toThrowError(/^MikroORM config 'unknown' was not found within the config file/);
 
     delete pkg['mikro-orm'].configPaths;
@@ -334,7 +334,7 @@ Maybe you want to check, or regenerate your yarn.lock or package-lock.json file?
     pkg['mikro-orm'].configPaths = [`${fs.normalizePath(process.cwd())}/mikro-orm-array-invalid.config.js`];
 
     await expect(async () => {
-      return await CLIHelper.getConfiguration();
+      return CLIHelper.getConfiguration();
     }).rejects.toThrowError(/^MikroORM config 'default' is not unique within the array exported/);
 
     delete pkg['mikro-orm'].configPaths;
@@ -363,7 +363,7 @@ Maybe you want to check, or regenerate your yarn.lock or package-lock.json file?
     expect(conf3.get('entities')).toEqual(['tests/foo']);
 
     await expect(async () => {
-      return await CLIHelper.getConfiguration('unknown');
+      return CLIHelper.getConfiguration('unknown');
     }).rejects.toThrowError(/^MikroORM config 'unknown' was not found within the config file/);
 
     delete pkg['mikro-orm'].configPaths;
@@ -374,7 +374,7 @@ Maybe you want to check, or regenerate your yarn.lock or package-lock.json file?
     pkg['mikro-orm'].configPaths = [`${fs.normalizePath(process.cwd())}/mikro-orm-invalid.config.js`];
 
     await expect(async () => {
-      return await CLIHelper.getConfiguration();
+      return CLIHelper.getConfiguration();
     }).rejects.toThrowError(/^MikroORM config 'default' was not what the default export from/);
 
     delete pkg['mikro-orm'].configPaths;

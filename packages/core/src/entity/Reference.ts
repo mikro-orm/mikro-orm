@@ -44,7 +44,7 @@ export class Reference<T extends object> {
   }
 
   static create<T extends object>(entity: T | Ref<T>): Ref<T> {
-    const unwrapped = Reference.unwrapReference(entity) as T;
+    const unwrapped = Reference.unwrapReference(entity);
     const ref = helper(entity).toReference() as Reference<T>;
 
     if (unwrapped !== ref.unwrap()) {
@@ -104,7 +104,7 @@ export class Reference<T extends object> {
     prop: EntityProperty<O, T>,
   ): Reference<T> | T {
     if (entity && prop.ref && !Reference.isReference(entity)) {
-      const ref = Reference.create(entity as T) as Reference<T>;
+      const ref = Reference.create(entity) as Reference<T>;
       ref.property = prop;
 
       return ref;
@@ -117,7 +117,7 @@ export class Reference<T extends object> {
    * Returns wrapped entity.
    */
   static unwrapReference<T extends object>(ref: T | Reference<T> | ScalarReference<T> | Ref<T>): T {
-    return Reference.isReference<T>(ref) ? (ref as Reference<T>).unwrap() : (ref as T);
+    return Reference.isReference<T>(ref) ? ref.unwrap() : (ref as T);
   }
 
   /**
@@ -169,7 +169,7 @@ export class Reference<T extends object> {
       options.failHandler ??= wrapped.__em!.config.get('findOneOrFailHandler');
       const entityName = this.entity.constructor.name;
       const where = wrapped.getPrimaryKey() as any;
-      throw options.failHandler!(entityName, where);
+      throw options.failHandler(entityName, where);
     }
 
     return ret;
@@ -215,7 +215,7 @@ export class Reference<T extends object> {
   }
 
   toJSON(...args: any[]): Dictionary {
-    return wrap(this.entity as object).toJSON!(...args);
+    return wrap(this.entity as object).toJSON(...args);
   }
 
   /** @ignore */

@@ -103,7 +103,7 @@ test(`GH issue 3026`, async () => {
     ],
   };
 
-  const e1 = await orm.em.findOneOrFail(Recipe, updatedRecipe.id!);
+  const e1 = await orm.em.findOneOrFail(Recipe, updatedRecipe.id);
   wrap(e1).assign(updatedRecipe);
 
   const mock = mockLogger(orm);

@@ -69,7 +69,7 @@ export function getOnConflictFields<T>(
       }
 
       return f;
-    }) as (keyof T)[];
+    });
   }
 
   const keys = Object.keys(data).flatMap(f => {
@@ -84,11 +84,11 @@ export function getOnConflictFields<T>(
     }
 
     return [f as keyof T];
-  }) as (keyof T)[];
+  });
 
   if (options.onConflictExcludeFields) {
     const onConflictExcludeFields = expandFields(meta, options.onConflictExcludeFields);
-    return keys.filter(f => !onConflictExcludeFields!.includes(f));
+    return keys.filter(f => !onConflictExcludeFields.includes(f));
   }
 
   return keys;
@@ -130,7 +130,7 @@ export function getOnConflictReturningFields<T, P extends string>(
 
   if (options.onConflictMergeFields) {
     const onConflictMergeFields = expandFields(meta, options.onConflictMergeFields as (keyof T)[]);
-    return keys.filter(key => !onConflictMergeFields!.includes(key as never));
+    return keys.filter(key => !onConflictMergeFields.includes(key as never));
   }
 
   if (options.onConflictExcludeFields) {
@@ -142,7 +142,7 @@ export function getOnConflictReturningFields<T, P extends string>(
 }
 
 function getPropertyValue(obj: Dictionary, key: string) {
-  if (key.indexOf('.') === -1) {
+  if (!key.includes('.')) {
     return obj[key];
   }
 
@@ -184,9 +184,9 @@ export function getWhereCondition<T extends object>(
       where = { [key]: getPropertyValue(data as Dictionary, unique[propIndex]) } as FilterQuery<T>;
     } else if (meta.uniques.length > 0) {
       for (const u of meta.uniques) {
-        if (Utils.asArray<EntityKey<T>>(u.properties).every(p => data![p] != null)) {
+        if (Utils.asArray<EntityKey<T>>(u.properties).every(p => data[p] != null)) {
           where = Utils.asArray<EntityKey<T>>(u.properties).reduce((o, key) => {
-            o[key] = data![key];
+            o[key] = data[key];
             return o;
           }, {} as any);
           break;

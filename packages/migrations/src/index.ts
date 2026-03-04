@@ -9,4 +9,4 @@ export * from './MigrationGenerator.js';
 export * from './JSMigrationGenerator.js';
 export * from './TSMigrationGenerator.js';
 export * from './MigrationStorage.js';
-export * from './typings.js';
+export type * from './typings.js';

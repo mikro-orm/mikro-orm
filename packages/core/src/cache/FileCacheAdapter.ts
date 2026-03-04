@@ -49,7 +49,7 @@ export class FileCacheAdapter implements SyncCacheAdapter {
     const path = this.path(name);
     const hash = this.getHash(origin);
     writeFileSync(
-      path!,
+      path,
       JSON.stringify({ data, origin, hash, version: this.VERSION }, null, this.pretty ? 2 : undefined),
     );
   }

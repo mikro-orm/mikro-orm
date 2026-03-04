@@ -1,18 +1,17 @@
 {
   "extends": "./tsconfig.build.json",
   "compilerOptions": {
-    "baseUrl": ".",
     "module": "preserve",
     "sourceMap": true,
     "paths": {
-      "@mikro-orm/*": ["packages/*/src"],
-      "@mikro-orm/core/fs-utils": ["packages/core/src/utils/fs-utils.ts"],
-      "@mikro-orm/core/migrations": ["packages/core/src/utils/AbstractMigrator.ts"],
-      "@mikro-orm/core/schema": ["packages/core/src/utils/AbstractSchemaGenerator.ts"],
-      "@mikro-orm/core/dataloader": ["packages/core/src/utils/DataloaderUtils.ts"],
-      "@mikro-orm/decorators/es": ["packages/decorators/src/es/index.ts"],
-      "@mikro-orm/decorators/legacy": ["packages/decorators/src/legacy/index.ts"],
-      "@mikro-orm/core/file-discovery": ["packages/core/src/metadata/discover-entities.ts"]
+      "@mikro-orm/*": ["./packages/*/src"],
+      "@mikro-orm/core/fs-utils": ["./packages/core/src/utils/fs-utils.ts"],
+      "@mikro-orm/core/migrations": ["./packages/core/src/utils/AbstractMigrator.ts"],
+      "@mikro-orm/core/schema": ["./packages/core/src/utils/AbstractSchemaGenerator.ts"],
+      "@mikro-orm/core/dataloader": ["./packages/core/src/utils/DataloaderUtils.ts"],
+      "@mikro-orm/decorators/es": ["./packages/decorators/src/es/index.ts"],
+      "@mikro-orm/decorators/legacy": ["./packages/decorators/src/legacy/index.ts"],
+      "@mikro-orm/core/file-discovery": ["./packages/core/src/metadata/discover-entities.ts"]
     }
   }
 }

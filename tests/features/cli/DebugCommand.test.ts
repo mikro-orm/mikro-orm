@@ -17,7 +17,7 @@ describe('DebugCommand', () => {
     const getConfigPaths = vi.spyOn(CLIHelper, 'getConfigPaths');
     const getConfiguration = vi.spyOn(CLIHelper, 'getConfiguration');
     const dumpDependencies = vi.spyOn(CLIHelper, 'dumpDependencies');
-    dumpDependencies.mockImplementation(async () => void 0);
+    dumpDependencies.mockImplementation(() => void 0);
 
     const cmd = new DebugCommand();
 

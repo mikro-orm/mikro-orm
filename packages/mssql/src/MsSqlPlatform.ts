@@ -155,7 +155,7 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
 
   override getDefaultMappedType(type: string): Type<unknown> {
     if (type.startsWith('float')) {
-      const len = type.match(/float\((\d+)\)/)?.[1] ?? 24;
+      const len = /float\((\d+)\)/.exec(type)?.[1] ?? 24;
       return +len > 24 ? Type.getType(DoubleType) : Type.getType(FloatType);
     }
 
@@ -218,7 +218,7 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
       boolean: 'bit',
     } as Dictionary;
     const cast = (key: string) => raw(type in types ? `cast(${key} as ${types[type]})` : key);
-    const quoteKey = (key: string) => (key.match(/^[a-z]\w*$/i) ? key : `"${key}"`);
+    const quoteKey = (key: string) => (/^[a-z]\w*$/i.exec(key) ? key : `"${key}"`);
 
     /* v8 ignore next */
     if (path.length === 0) {

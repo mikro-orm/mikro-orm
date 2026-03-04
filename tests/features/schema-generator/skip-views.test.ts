@@ -139,7 +139,7 @@ describe('SchemaGenerator skipViews', () => {
       const statements = diff.up.split(/;\n/).filter(s => s.includes('multiline_test_view'));
       // Each statement should be complete (contain either 'create' or 'drop')
       for (const stmt of statements) {
-        expect(stmt.match(/\b(create|drop)\b/i)).toBeTruthy();
+        expect(/\b(create|drop)\b/i.exec(stmt)).toBeTruthy();
       }
     }
 

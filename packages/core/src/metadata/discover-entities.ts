@@ -48,7 +48,7 @@ export async function discoverEntities(
   for (const filepath of files) {
     const filename = basename(filepath);
 
-    if (!filename.match(/\.[cm]?[jt]s$/) || filename.match(/\.d\.[cm]?ts/)) {
+    if (!/\.[cm]?[jt]s$/.exec(filename) || /\.d\.[cm]?ts/.exec(filename)) {
       continue;
     }
 

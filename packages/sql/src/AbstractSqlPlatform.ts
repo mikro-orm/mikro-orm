@@ -104,7 +104,7 @@ export abstract class AbstractSqlPlatform extends Platform {
     value?: unknown,
   ): string | RawQueryFragment {
     const [a, ...b] = path;
-    const quoteKey = (key: string) => (key.match(/^[a-z]\w*$/i) ? key : `"${key}"`);
+    const quoteKey = (key: string) => (/^[a-z]\w*$/i.exec(key) ? key : `"${key}"`);
 
     if (aliased) {
       return raw(alias => `json_extract(${this.quoteIdentifier(`${alias}.${a}`)}, '$.${b.map(quoteKey).join('.')}')`);

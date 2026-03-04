@@ -53,7 +53,7 @@ beforeAll(async () => {
   orm.em.clear();
 });
 
-afterAll(async () => await orm.close(true));
+afterAll(async () => orm.close(true));
 beforeEach(async () => orm.em.clear());
 
 test('SELECT_IN - .findOne()  - returns populated related property', async () => {

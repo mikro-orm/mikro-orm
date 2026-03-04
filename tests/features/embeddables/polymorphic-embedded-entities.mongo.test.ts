@@ -115,9 +115,9 @@ describe('polymorphic embeddables in mongo', () => {
     ent1.pet = new Dog('d1');
     ent1.pet2 = new Cat('c3');
     expect(ent1.pet).toBeInstanceOf(Dog);
-    expect((ent1.pet as Dog).canBark).toBe(true);
+    expect(ent1.pet.canBark).toBe(true);
     expect(ent1.pet2).toBeInstanceOf(Cat);
-    expect((ent1.pet2 as Cat).canMeow).toBe(true);
+    expect(ent1.pet2.canMeow).toBe(true);
     const ent2 = orm.em.create(Owner, {
       id: '600000000000000000000002',
       name: 'o2',

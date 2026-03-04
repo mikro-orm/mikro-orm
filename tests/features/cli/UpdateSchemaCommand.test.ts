@@ -13,7 +13,7 @@ describe('UpdateSchemaCommand', () => {
     orm = await initORMSqlite();
   });
 
-  afterAll(async () => await orm.close(true));
+  afterAll(async () => orm.close(true));
 
   test('handler', async () => {
     const getORMMock = vi.spyOn(CLIHelper, 'getORM');

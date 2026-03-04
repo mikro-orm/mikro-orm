@@ -1215,7 +1215,7 @@ describe('MikroKyselyPlugin', () => {
       // updatedAt should be updated to a time after beforeUpdate
       if (result[0].updatedAt != null) {
         expect(result[0].updatedAt).toBeInstanceOf(Date);
-        expect(result[0].updatedAt!.getTime()).toBeGreaterThanOrEqual(beforeUpdate.getTime());
+        expect(result[0].updatedAt.getTime()).toBeGreaterThanOrEqual(beforeUpdate.getTime());
       }
     });
 

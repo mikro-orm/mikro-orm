@@ -338,7 +338,7 @@ export class EntitySchema<Entity = any, Base = never, Class extends EntityCtor =
   }
 
   get class(): Class {
-    return this._meta.class as Class;
+    return this._meta.class;
   }
 
   get properties(): Record<string, any> {

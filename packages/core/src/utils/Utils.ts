@@ -184,7 +184,7 @@ export class Utils {
   /**
    * Removes `undefined` properties (recursively) so they are not saved as nulls
    */
-  static dropUndefinedProperties(o: any, value?: undefined | null, visited = new Set()): void {
+  static dropUndefinedProperties(o: any, value?: null, visited = new Set()): void {
     if (Array.isArray(o)) {
       for (const item of o) {
         Utils.dropUndefinedProperties(item, value, visited);
@@ -547,7 +547,7 @@ export class Utils {
     }
 
     if (meta.primaryKeys.length > 1) {
-      return toArray(pk!);
+      return toArray(pk);
     }
 
     if (allowScalar) {
@@ -718,7 +718,7 @@ export class Utils {
       !!process.env?.TS_JEST || // check if ts-jest is used
       !!process.env?.VITEST || // check if vitest is used
       !!process.versions?.bun || // check if bun is used
-      process.argv?.slice(1).some(arg => arg.match(/\.([mc]?ts|tsx)$/)) || // executing `.ts` file
+      process.argv?.slice(1).some(arg => /\.([mc]?ts|tsx)$/.exec(arg)) || // executing `.ts` file
       process.execArgv?.some(arg => {
         return (
           arg.includes('ts-node') || // check for ts-node loader
@@ -740,7 +740,7 @@ export class Utils {
     }
 
     const objectType = Object.prototype.toString.call(value);
-    const type = objectType.match(/^\[object (.+)]$/)![1];
+    const type = /^\[object (.+)]$/.exec(objectType)![1];
 
     if (type === 'Uint8Array') {
       return 'Buffer';
@@ -811,7 +811,7 @@ export class Utils {
 
   static findDuplicates<T>(items: T[]): T[] {
     return items.reduce((acc, v, i, arr) => {
-      return arr.indexOf(v) !== i && acc.indexOf(v) === -1 ? acc.concat(v) : acc;
+      return arr.indexOf(v) !== i && !acc.includes(v) ? acc.concat(v) : acc;
     }, [] as T[]);
   }
 
@@ -859,7 +859,7 @@ export class Utils {
   }
 
   static flatten<T>(arrays: T[][], deep?: boolean): T[] {
-    return arrays.flatMap(v => (deep && Array.isArray(v) ? this.flatten(v as unknown as T[][], true) : v)) as T[];
+    return arrays.flatMap(v => (deep && Array.isArray(v) ? this.flatten(v as unknown as T[][], true) : v));
   }
 
   static isOperator(key: PropertyKey, includeGroupOperators = true): boolean {
@@ -896,6 +896,7 @@ export class Utils {
     }
 
     try {
+      // eslint-disable-next-line @typescript-eslint/no-implied-eval
       return new Function(...context.keys(), `'use strict';\n` + code)(...context.values());
       /* v8 ignore next */
     } catch (e) {
@@ -1008,7 +1009,7 @@ export class Utils {
       path.shift();
       path.unshift(p.embedded[0], p.embedded[1]);
       const prev = p;
-      p = meta!.properties[p.embedded[0]];
+      p = meta.properties[p.embedded[0]];
 
       if (!p.object) {
         path.shift();
@@ -1092,7 +1093,7 @@ export class Utils {
         return o;
       }
 
-      o[pk] = pks[idx] as any;
+      o[pk] = pks[idx];
       return o;
     }, {} as T);
   }

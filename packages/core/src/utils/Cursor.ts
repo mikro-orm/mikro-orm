@@ -126,7 +126,7 @@ export class Cursor<
         }
 
         return Utils.keys(direction).reduce((o, key) => {
-          Object.assign(o, processEntity(unwrapped, key as EntityKey<T>, direction[key] as QueryOrderKeys<T>, true));
+          Object.assign(o, processEntity(unwrapped, key, direction[key] as QueryOrderKeys<T>, true));
           return o;
         }, {} as Dictionary);
       }
@@ -193,7 +193,7 @@ export class Cursor<
 
   static decode(value: string): unknown[] {
     return JSON.parse(Buffer.from(value, 'base64url').toString('utf8')).map((value: unknown) => {
-      if (typeof value === 'string' && value.match(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}/)) {
+      if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}/.exec(value)) {
         return new Date(value);
       }
 

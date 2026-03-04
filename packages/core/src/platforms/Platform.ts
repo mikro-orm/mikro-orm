@@ -283,7 +283,7 @@ export abstract class Platform {
   }
 
   extractSimpleType(type: string): string {
-    return type.toLowerCase().match(/[^(), ]+/)![0];
+    return /[^(), ]+/.exec(type.toLowerCase())![0];
   }
 
   /**
@@ -385,7 +385,7 @@ export abstract class Platform {
       return [];
     }
 
-    return value.split(',') as string[];
+    return value.split(',');
   }
 
   getBlobDeclarationSQL(): string {
@@ -536,7 +536,7 @@ export abstract class Platform {
     let pos = 0;
     let ret = '';
 
-    if (sql[0] === '?') {
+    if (sql.startsWith('?')) {
       if (sql[1] === '?') {
         ret += this.quoteIdentifier(params[j++]);
         pos = 2;

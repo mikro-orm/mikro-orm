@@ -12,7 +12,7 @@ export function Enum<Owner extends object>(options: EnumOptions<AnyEntity> | (()
   return function (target: unknown, context: ClassFieldDecoratorContext<Owner>) {
     const meta = prepareMetadataContext(context);
     options = options instanceof Function ? { items: options } : options;
-    meta.properties![context.name as EntityKey<Owner>] = {
+    meta.properties[context.name as EntityKey<Owner>] = {
       name: context.name,
       kind: ReferenceKind.SCALAR,
       enum: true,

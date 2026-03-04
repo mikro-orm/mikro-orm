@@ -79,13 +79,13 @@ export function raw<R = RawQueryFragment & symbol, T extends object = any>(
 ): R {
   if (Utils.isObject<KyselySelectQueryBuilder<any, any, any>>(sql) && 'compile' in sql) {
     const query = sql.compile();
-    return raw_(query.sql, query.parameters) as R;
+    return raw_(query.sql, query.parameters);
   }
 
   if (Utils.isObject<QueryBuilderLike>(sql) && 'toQuery' in sql) {
     const query = sql.toQuery();
-    return raw_(query.sql, query.params) as R;
+    return raw_(query.sql, query.params);
   }
 
-  return raw_(sql as Exclude<typeof sql, QueryBuilderLike>, params) as R;
+  return raw_(sql as Exclude<typeof sql, QueryBuilderLike>, params);
 }

@@ -1,4 +1,4 @@
-export * from './NamingStrategy.js';
+export type * from './NamingStrategy.js';
 export * from './AbstractNamingStrategy.js';
 export * from './MongoNamingStrategy.js';
 export * from './UnderscoreNamingStrategy.js';

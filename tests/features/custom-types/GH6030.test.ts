@@ -46,7 +46,7 @@ describe.each(['libsql', 'sqlite', 'mysql', 'mssql', 'postgresql'] as const)('ra
     orm = await MikroORM.init({
       metadataProvider: ReflectMetadataProvider,
       entities: [Commission],
-      dbName: type.match(/sqlite|libsql/) ? ':memory:' : 'raw_bigint',
+      dbName: /sqlite|libsql/.exec(type) ? ':memory:' : 'raw_bigint',
       driver: PLATFORMS[type],
       ...options,
     });

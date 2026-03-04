@@ -49,6 +49,6 @@ export function Property<T extends object>(options: PropertyOptions<T> = {}) {
       meta.checks.push({ property: prop.name, expression: check });
     }
 
-    meta.properties![prop.name] = prop;
+    meta.properties[prop.name] = prop;
   };
 }

@@ -304,7 +304,7 @@ export class SqliteSchemaHelper extends SchemaHelper {
     const constraints: string[] = [];
 
     // extract all columns definitions
-    let columnsDef = sql.replaceAll('\n', '').match(new RegExp(`create table [\`"']?.*?[\`"']? \\((.*)\\)`, 'i'))?.[1];
+    let columnsDef = new RegExp(`create table [\`"']?.*?[\`"']? \\((.*)\\)`, 'i').exec(sql.replaceAll('\n', ''))?.[1];
 
     /* v8 ignore next */
     if (columnsDef) {
@@ -316,7 +316,7 @@ export class SqliteSchemaHelper extends SchemaHelper {
       for (let i = cols.length - 1; i >= 0; i--) {
         const col = cols[i];
         const re = ` *, *[\`"']?${col.name}[\`"']? (.*)`;
-        const columnDef = columnsDef.match(new RegExp(re, 'i'));
+        const columnDef = new RegExp(re, 'i').exec(columnsDef);
 
         if (columnDef) {
           columns[col.name] = { name: col.name, definition: columnDef[1] };
@@ -351,7 +351,7 @@ export class SqliteSchemaHelper extends SchemaHelper {
    * Extracts the SELECT part from a CREATE VIEW statement.
    */
   private extractViewDefinition(viewDefinition: string): string {
-    const match = viewDefinition?.match(/create\s+view\s+[`"']?\w+[`"']?\s+as\s+(.*)/i);
+    const match = /create\s+view\s+[`"']?\w+[`"']?\s+as\s+(.*)/i.exec(viewDefinition);
     /* v8 ignore next - fallback for non-standard view definitions */
     return match ? match[1] : viewDefinition;
   }
@@ -405,7 +405,13 @@ export class SqliteSchemaHelper extends SchemaHelper {
     }
 
     // simple values that are returned as-is from pragma (no wrapping needed)
-    if (/^-?\d/.test(value) || /^[xX]'/.test(value) || value[0] === "'" || value[0] === '"' || value[0] === '(') {
+    if (
+      /^-?\d/.test(value) ||
+      /^[xX]'/.test(value) ||
+      value.startsWith("'") ||
+      value.startsWith('"') ||
+      value.startsWith('(')
+    ) {
       return value;
     }
 
@@ -433,11 +439,11 @@ export class SqliteSchemaHelper extends SchemaHelper {
       (o, item) => {
         // check constraints are defined as (note that last closing paren is missing):
         // `type` text check (`type` in ('local', 'global')
-        const match = item.match(/[`["']([^`\]"']+)[`\]"'] text check \(.* \((.*)\)/i);
+        const match = /[`["']([^`\]"']+)[`\]"'] text check \(.* \((.*)\)/i.exec(item);
 
         /* v8 ignore next */
         if (match) {
-          o[match[1]] = match[2].split(',').map((item: string) => item.trim().match(/^\(?'(.*)'/)![1]);
+          o[match[1]] = match[2].split(',').map((item: string) => /^\(?'(.*)'/.exec(item.trim())![1]);
         }
 
         return o;
@@ -506,7 +512,7 @@ export class SqliteSchemaHelper extends SchemaHelper {
 
     for (const key of Object.keys(columns)) {
       const column = columns[key];
-      const expression = column.definition.match(/ (check \((.*)\))/i);
+      const expression = / (check \((.*)\))/i.exec(column.definition);
 
       if (expression) {
         checks.push({
@@ -519,7 +525,7 @@ export class SqliteSchemaHelper extends SchemaHelper {
     }
 
     for (const constraint of constraints) {
-      const expression = constraint.match(/constraint *[`"']?(.*?)[`"']? * (check \((.*)\))/i);
+      const expression = /constraint *[`"']?(.*?)[`"']? * (check \((.*)\))/i.exec(constraint);
 
       if (expression) {
         checks.push({

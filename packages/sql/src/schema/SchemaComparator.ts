@@ -862,11 +862,11 @@ export class SchemaComparator {
       from.default.toString().toLowerCase() === 'null' ||
       from.default.toString().startsWith('nextval(')
     ) {
-      return to.default == null || to.default!.toLowerCase() === 'null';
+      return to.default == null || to.default.toLowerCase() === 'null';
     }
 
     if (to.mappedType instanceof BooleanType) {
-      const defaultValueFrom = !['0', 'false', 'f', 'n', 'no', 'off'].includes('' + from.default!);
+      const defaultValueFrom = !['0', 'false', 'f', 'n', 'no', 'off'].includes('' + from.default);
       const defaultValueTo = !['0', 'false', 'f', 'n', 'no', 'off'].includes('' + to.default!);
 
       return defaultValueFrom === defaultValueTo;
@@ -900,8 +900,8 @@ export class SchemaComparator {
   }
 
   private mapColumnToProperty(column: Column): EntityProperty {
-    const length = column.type.match(/\w+\((\d+)\)/);
-    const match = column.type.match(/\w+\((\d+), ?(\d+)\)/);
+    const length = /\w+\((\d+)\)/.exec(column.type);
+    const match = /\w+\((\d+), ?(\d+)\)/.exec(column.type);
 
     return {
       fieldNames: [column.name],

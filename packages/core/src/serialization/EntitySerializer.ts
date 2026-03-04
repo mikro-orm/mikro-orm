@@ -148,7 +148,7 @@ export class EntitySerializer {
       const visible = typeof val !== 'undefined' && !(val === null && options.skipNull);
 
       if (visible) {
-        ret[this.propertyName(meta, prop!)] = val as EntityDTOProp<T, EntityValue<T>>;
+        ret[this.propertyName(meta, prop)] = val as EntityDTOProp<T, EntityValue<T>>;
       }
     }
 
@@ -240,7 +240,7 @@ export class EntitySerializer {
       }
 
       if (Utils.isObject(value)) {
-        return helper(value!).toJSON() as EntityValue<T>;
+        return helper(value).toJSON() as EntityValue<T>;
       }
     }
 

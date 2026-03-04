@@ -311,9 +311,9 @@ export class EntityHelper {
       !prop.primary &&
       !prop2.mapToPk &&
       value?.[prop2.name as never] != null &&
-      Reference.unwrapReference(value[prop2.name as never]!) !== entity
+      Reference.unwrapReference(value[prop2.name as never]) !== entity
     ) {
-      const other = Reference.unwrapReference(value![prop2.name as never]!);
+      const other = Reference.unwrapReference(value[prop2.name as never]);
       delete helper(other).__data[prop.name];
 
       if (prop2.orphanRemoval) {

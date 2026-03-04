@@ -24,7 +24,7 @@ export abstract class Migration {
   }
 
   addSql(sql: Query): void {
-    this.queries.push(sql as Query);
+    this.queries.push(sql);
   }
 
   reset(): void {
@@ -50,7 +50,7 @@ export abstract class Migration {
    */
   getEntityManager(): EntityManager {
     if (!this.em) {
-      this.em = this.driver.createEntityManager() as EntityManager;
+      this.em = this.driver.createEntityManager();
       this.em.setTransactionContext(this.ctx);
     }
 

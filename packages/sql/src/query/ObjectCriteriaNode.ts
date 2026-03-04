@@ -23,7 +23,7 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
   override process(qb: IQueryBuilder<T>, options?: ICriteriaNodeProcessOptions): any {
     const matchPopulateJoins =
       options?.matchPopulateJoins ||
-      (this.prop && [ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(this.prop!.kind));
+      (this.prop && [ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(this.prop.kind));
     const nestedAlias = qb.getAliasForJoinPath(this.getPath(options), { ...options, matchPopulateJoins });
     const ownerAlias = options?.alias || qb.alias;
     const keys = Utils.getObjectQueryKeys(this.payload);
@@ -54,7 +54,7 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
           (this.prop!.kind === ReferenceKind.ONE_TO_ONE && this.prop!.owner);
         const parentMeta = this.metadata.find(this.parent!.entityName)!;
         const primaryKeys = parentMeta.primaryKeys.map(pk => {
-          return [QueryType.SELECT, QueryType.COUNT].includes(qb.type!) ? `${knownKey ? alias : ownerAlias}.${pk}` : pk;
+          return [QueryType.SELECT, QueryType.COUNT].includes(qb.type) ? `${knownKey ? alias : ownerAlias}.${pk}` : pk;
         });
 
         for (const key of keys) {
@@ -105,19 +105,19 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
     }
 
     if (this.prop && nestedAlias) {
-      const toOneProperty = [ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(this.prop!.kind);
+      const toOneProperty = [ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(this.prop.kind);
 
       // if the property is nullable and the filter is strict, we need to use left join, so we mimic the inner join behaviour
       // with an exclusive condition on the join columns:
       // - if the owning column is null, the row is missing, we don't apply the filter
       // - if the target column is not null, the row is matched, we apply the filter
-      if (toOneProperty && this.prop!.nullable && this.isStrict()) {
-        const key = this.prop!.owner ? this.prop!.name : this.prop!.referencedPKs;
+      if (toOneProperty && this.prop.nullable && this.isStrict()) {
+        const key = this.prop.owner ? this.prop.name : this.prop.referencedPKs;
 
         qb.andWhere({
           $or: [
             { [ownerAlias + '.' + key]: null },
-            { [nestedAlias + '.' + Utils.getPrimaryKeyHash(this.prop!.referencedPKs)]: { $ne: null } },
+            { [nestedAlias + '.' + Utils.getPrimaryKeyHash(this.prop.referencedPKs)]: { $ne: null } },
           ],
         });
       }
@@ -221,7 +221,7 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
   }
 
   private getChildKey(k: EntityKey, prop: EntityProperty, childAlias?: string, alias?: string): string {
-    const idx = prop.referencedPKs.indexOf(k as EntityKey);
+    const idx = prop.referencedPKs.indexOf(k);
     return idx !== -1 && !childAlias && ![ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(prop.kind)
       ? this.aliased(prop.joinColumns[idx], alias)
       : k;
@@ -314,7 +314,7 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
       return false;
     }
 
-    if (keys.some(k => COLLECTION_OPERATORS.includes(k as string))) {
+    if (keys.some(k => COLLECTION_OPERATORS.includes(k))) {
       return true;
     }
 
@@ -396,6 +396,6 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
   }
 
   private isPrefixed(field: string): boolean {
-    return !!field.match(/\w+\./);
+    return !!/\w+\./.exec(field);
   }
 }

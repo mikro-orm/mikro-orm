@@ -1343,7 +1343,7 @@ describe('EntityManagerMsSql', () => {
       );
     expect(res[0].created_at).toBe('2000-01-01T00:00:00');
     const a = await orm.em.findOneOrFail(Author2, author.id);
-    expect(+a.createdAt!).toBe(+author.createdAt);
+    expect(+a.createdAt).toBe(+author.createdAt);
   });
 
   test('simple derived entity', async () => {

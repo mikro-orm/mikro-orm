@@ -118,6 +118,50 @@
     "typescript/no-unsafe-declaration-merging": "off",
     "typescript/no-unnecessary-parameter-property-assignment": "off",
 
+    "typescript/no-misused-promises": "error",
+    "typescript/no-for-in-array": "error",
+    "typescript/no-implied-eval": "error",
+    "typescript/no-misused-spread": "off",
+    "typescript/no-mixed-enums": "error",
+    "typescript/no-array-delete": "error",
+    "typescript/no-unsafe-unary-minus": "error",
+    "typescript/no-unsafe-enum-comparison": "off",
+    "typescript/unbound-method": "off",
+    "typescript/return-await": "error",
+    "typescript/only-throw-error": "error",
+    "typescript/related-getter-setter-pairs": "error",
+    "typescript/switch-exhaustiveness-check": "off",
+    "typescript/no-unnecessary-type-assertion": "off",
+    "typescript/no-unnecessary-template-expression": "error",
+    "typescript/no-unnecessary-boolean-literal-compare": "error",
+    "typescript/no-duplicate-type-constituents": "error",
+    "typescript/no-redundant-type-constituents": "off",
+    "typescript/consistent-type-exports": "error",
+    "typescript/prefer-find": "error",
+    "typescript/prefer-includes": "error",
+    "typescript/prefer-string-starts-ends-with": "error",
+    "typescript/prefer-regexp-exec": "error",
+    "typescript/restrict-plus-operands": "off",
+    "typescript/no-base-to-string": "off",
+    "typescript/no-deprecated": "warn",
+
+    "typescript/no-unsafe-argument": "off",
+    "typescript/no-unsafe-assignment": "off",
+    "typescript/no-unsafe-call": "off",
+    "typescript/no-unsafe-member-access": "off",
+    "typescript/no-unsafe-return": "off",
+    "typescript/no-unsafe-type-assertion": "off",
+    "typescript/strict-boolean-expressions": "off",
+    "typescript/prefer-readonly-parameter-types": "off",
+    "typescript/promise-function-async": "off",
+    "typescript/require-await": "off",
+    "typescript/strict-void-return": "off",
+    "typescript/no-unnecessary-condition": "off",
+    "typescript/no-confusing-void-expression": "off",
+    "typescript/use-unknown-in-catch-callback-variable": "off",
+    "typescript/require-array-sort-compare": "off",
+    "typescript/restrict-template-expressions": "off",
+
     "import/no-duplicates": "error",
 
     "unicorn/prefer-node-protocol": "error",
@@ -136,7 +180,19 @@
         "no-console": "off",
         "no-control-regex": "off",
         "no-empty": "off",
-        "import/no-duplicates": "off"
+        "import/no-duplicates": "off",
+        "typescript/only-throw-error": "off",
+        "typescript/no-base-to-string": "off",
+        "typescript/no-deprecated": "off",
+        "typescript/no-array-delete": "off",
+        "typescript/no-mixed-enums": "off",
+        "typescript/no-implied-eval": "off"
+      }
+    },
+    {
+      "files": ["packages/core/src/utils/Utils.ts"],
+      "rules": {
+        "typescript/no-implied-eval": "off"
       }
     }
   ]

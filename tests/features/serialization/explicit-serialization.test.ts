@@ -45,7 +45,7 @@ test('explicit serialization with ORM BaseEntity', async () => {
 
 test('explicit serialization with groups', async () => {
   const { god, author, publisher, book1, book2, book3 } = await createEntities();
-  const jon = await orm.em.findOneOrFail(Author2, author, { populate: ['*'] })!;
+  const jon = await orm.em.findOneOrFail(Author2, author, { populate: ['*'] });
   jon.age = 34;
 
   const o1 = wrap(jon).serialize({ groups: [] });
@@ -97,7 +97,7 @@ test('explicit serialization with groups', async () => {
 
 test('explicit serialization', async () => {
   const { god, author, publisher, book1, book2, book3 } = await createEntities();
-  const jon = await orm.em.findOneOrFail(Author2, author, { populate: ['*'] })!;
+  const jon = await orm.em.findOneOrFail(Author2, author, { populate: ['*'] });
 
   const o1 = wrap(jon).serialize();
   expect(o1).toMatchObject({
@@ -336,7 +336,7 @@ test('explicit serialization with not initialized properties', async () => {
 
 test('explicit serialization with convertCustomTypes option', async () => {
   const { author } = await createEntities();
-  const jon = await orm.em.findOneOrFail(Author2, author, { populate: ['*'] })!;
+  const jon = await orm.em.findOneOrFail(Author2, author, { populate: ['*'] });
   jon.age = 34;
 
   // Test that the option is passed through to serialization

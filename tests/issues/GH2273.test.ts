@@ -87,7 +87,7 @@ describe('Remove entity issue (GH 2273)', () => {
     checkout = await orm.em.findOneOrFail(Checkout, checkout.id, { populate: ['discount'] });
     expect(checkout.discount?.amount).toBe(1000);
 
-    orm.em.remove(checkout.discount!);
+    orm.em.remove(checkout.discount);
     await orm.em.flush();
 
     checkout = await orm.em.fork().findOneOrFail(Checkout, checkout.id, { populate: ['discount'] });
@@ -103,7 +103,7 @@ describe('Remove entity issue (GH 2273)', () => {
     checkout = await orm.em.findOneOrFail(Checkout, checkout.id, { populate: ['discount'] });
     expect(checkout.discount?.amount).toBe(1000);
 
-    orm.em.remove(checkout.discount!);
+    orm.em.remove(checkout.discount);
     checkout.discount = new Discount(2000);
     await orm.em.flush();
 

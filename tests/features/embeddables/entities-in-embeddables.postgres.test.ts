@@ -329,12 +329,12 @@ describe('embedded entities in postgres', () => {
     await orm.em.flush();
     expect(mock.mock.calls.length).toBe(6);
 
-    u1.profile1!.identity.email = 'e123';
-    u1.profile1!.identity.meta!.foo = 'foooooooo';
-    u1.profile2!.identity.meta!.bar = 'bababar';
-    u1.profile2!.identity.links.push(new IdentityLink('l5'));
-    u2.profile1!.identity.links = [new IdentityLink('l6'), new IdentityLink('l7')];
-    u2.profile2!.identity.links.push(new IdentityLink('l8'));
+    u1.profile1.identity.email = 'e123';
+    u1.profile1.identity.meta!.foo = 'foooooooo';
+    u1.profile2.identity.meta!.bar = 'bababar';
+    u1.profile2.identity.links.push(new IdentityLink('l5'));
+    u2.profile1.identity.links = [new IdentityLink('l6'), new IdentityLink('l7')];
+    u2.profile2.identity.links.push(new IdentityLink('l8'));
     await orm.em.flush();
     expect(mock.mock.calls[7][0]).toMatch(
       `update "user" set "profile1_identity_email" = case when ("id" = 1) then 'e123' else "profile1_identity_email" end, "profile1_identity_meta_foo" = case when ("id" = 1) then 'foooooooo' else "profile1_identity_meta_foo" end, "profile2" = case when ("id" = 1) then '{"username":"u2","source_id":4,"identity":{"email":"e2","source_id":5,"meta":{"foo":"f2","bar":"bababar","source_id":6},"links":[{"url":"l5","meta":{"foo":"f1","bar":"b1"},"metas":[{"foo":"f2","bar":"b2"},{"foo":"f3","bar":"b3"},{"foo":"f4","bar":"b4"}]}]}}' when ("id" = 2) then '{"username":"u4","source_id":17,"identity":{"email":"e4","source_id":18,"meta":{"foo":"f4"},"links":[{"url":"l3","source_id":19,"meta":{"foo":"f1","bar":"b1"},"metas":[{"foo":"f2","bar":"b2"},{"foo":"f3","bar":"b3"},{"foo":"f4","bar":"b4"}]},{"url":"l4","source_id":20,"meta":{"foo":"f1","bar":"b1"},"metas":[{"foo":"f2","bar":"b2"},{"foo":"f3","bar":"b3"},{"foo":"f4","bar":"b4"}]},{"url":"l8","meta":{"foo":"f1","bar":"b1"},"metas":[{"foo":"f2","bar":"b2"},{"foo":"f3","bar":"b3"},{"foo":"f4","bar":"b4"}]}]}}' else "profile2" end, "profile1_identity_links" = case when ("id" = 2) then '[{"url":"l6","meta":{"foo":"f1","bar":"b1"},"metas":[{"foo":"f2","bar":"b2"},{"foo":"f3","bar":"b3"},{"foo":"f4","bar":"b4"}]},{"url":"l7","meta":{"foo":"f1","bar":"b1"},"metas":[{"foo":"f2","bar":"b2"},{"foo":"f3","bar":"b3"},{"foo":"f4","bar":"b4"}]}]' else "profile1_identity_links" end where "id" in (1, 2)`,

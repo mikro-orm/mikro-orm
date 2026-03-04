@@ -185,7 +185,7 @@ export class ChangeSetComputer {
     const targets = Utils.unwrapProperty(changeSet.entity, changeSet.meta, prop) as [AnyEntity, number[]][];
 
     targets.forEach(([rawTarget, idx]) => {
-      const target = Reference.unwrapReference(rawTarget) as AnyEntity;
+      const target = Reference.unwrapReference(rawTarget);
       const needsProcessing = target != null && (prop.targetKey != null || !target.__helper!.hasPrimaryKey());
 
       if (needsProcessing) {

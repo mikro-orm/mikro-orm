@@ -44,7 +44,7 @@ describe('MikroORM', () => {
   test('source folder detection', async () => {
     const pathExistsMock = vi.spyOn(fs, 'pathExists');
 
-    pathExistsMock.mockImplementation(path => !!path.match(/src$/));
+    pathExistsMock.mockImplementation(path => !!/src$/.exec(path));
     const orm1 = await MongoMikroORM.init({
       metadataProvider: ReflectMetadataProvider,
       dbName: 'test',
@@ -68,7 +68,7 @@ describe('MikroORM', () => {
       pathTs: './src/seeders',
     });
 
-    pathExistsMock.mockImplementation(path => !!path.match(/src|dist$/));
+    pathExistsMock.mockImplementation(path => !!/src|dist$/.exec(path));
     const orm2 = await MikroORM.init({
       metadataProvider: ReflectMetadataProvider,
       driver: SqliteDriver,
@@ -89,7 +89,7 @@ describe('MikroORM', () => {
       pathTs: './src/seeders',
     });
 
-    pathExistsMock.mockImplementation(path => !!path.match(/src|build$/));
+    pathExistsMock.mockImplementation(path => !!/src|build$/.exec(path));
     const orm3 = await MikroORM.init({
       metadataProvider: ReflectMetadataProvider,
       driver: MongoDriver,

@@ -150,7 +150,7 @@ describe('polymorphic relations in mongodb', () => {
     orm.em.clear();
 
     const likes = await orm.em.find(UserLike, {}, { populate: ['likeable'] });
-    const like = likes.find(l => l.likeable && (l.likeable as Post).title === 'Tuple test');
+    const like = likes.find(l => (l.likeable as Post).title === 'Tuple test');
     expect(like).toBeDefined();
     expect(like!.likeable).toBeInstanceOf(Post);
   });

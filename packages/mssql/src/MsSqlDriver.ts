@@ -59,7 +59,7 @@ export class MsSqlDriver extends AbstractSqlDriver<MsSqlConnection> {
       if (pks.length === 1) {
         res.row ??= {};
         res.rows ??= [];
-        res.insertId = res.insertId || res.row![pks[0]];
+        res.insertId = res.insertId || res.row[pks[0]];
       }
 
       return res;

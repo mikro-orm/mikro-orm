@@ -64,7 +64,7 @@ export class MsSqlSchemaHelper extends SchemaHelper {
 
     for (const view of views) {
       // Extract SELECT statement from CREATE VIEW ... AS SELECT ...
-      const match = view.view_definition?.match(/\bAS\s+(.+)$/is);
+      const match = /\bAS\s+(.+)$/is.exec(view.view_definition);
       const definition = match?.[1]?.trim();
 
       if (definition) {
@@ -86,19 +86,19 @@ export class MsSqlSchemaHelper extends SchemaHelper {
     defaultValues: Dictionary<string[]> = {},
     stripQuotes = false,
   ) {
-    let match = defaultValue?.match(/^\((.*)\)$/);
+    let match = /^\((.*)\)$/.exec(defaultValue);
 
     if (match) {
       defaultValue = match[1];
     }
 
-    match = defaultValue?.match(/^\((.*)\)$/);
+    match = /^\((.*)\)$/.exec(defaultValue);
 
     if (match) {
       defaultValue = match[1];
     }
 
-    match = defaultValue?.match(/^'(.*)'$/);
+    match = /^'(.*)'$/.exec(defaultValue);
 
     if (stripQuotes && match) {
       defaultValue = match[1];
@@ -254,7 +254,7 @@ export class MsSqlSchemaHelper extends SchemaHelper {
         indexDef.fillFactor = index.fill_factor;
       }
 
-      if (!index.column_name || index.column_name.match(/[(): ,"'`]/) || index.expression?.match(/where /i)) {
+      if (index.column_name?.match(/[(): ,"'`]/) || index.expression?.match(/where /i)) {
         indexDef.expression = index.expression; // required for the `getCreateIndexSQL()` call
         indexDef.expression = this.getCreateIndexSQL(index.table_name, indexDef, !!index.expression);
       }
@@ -326,13 +326,7 @@ export class MsSqlSchemaHelper extends SchemaHelper {
 
         if (item.columnName && hasItems) {
           items = items!
-            .map(
-              val =>
-                val
-                  .trim()
-                  .replace(`[${item.columnName}]=`, '')
-                  .match(/^\(?'(.*)'/)?.[1],
-            )
+            .map(val => /^\(?'(.*)'/.exec(val.trim().replace(`[${item.columnName}]=`, ''))?.[1])
             .filter(Boolean) as string[];
 
           if (items.length > 0) {
@@ -731,7 +725,7 @@ export class MsSqlSchemaHelper extends SchemaHelper {
   override getAddColumnsSQL(table: DatabaseTable, columns: Column[]): string[] {
     const adds = columns
       .map(column => {
-        return `${this.createTableColumn(column, table)!}`;
+        return this.createTableColumn(column, table)!;
       })
       .join(', ');
 
@@ -766,7 +760,7 @@ else
   }
 
   override inferLengthFromColumnType(type: string): number | undefined {
-    const match = type.match(/^(\w+)\s*\(\s*(-?\d+|max)\s*\)/);
+    const match = /^(\w+)\s*\(\s*(-?\d+|max)\s*\)/.exec(type);
 
     if (!match) {
       return;

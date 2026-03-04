@@ -90,9 +90,9 @@ describe('GH issue 349', () => {
     orm.em.clear();
 
     const getA = await orm.em.findOneOrFail<A>(A, a._id);
-    expect(getA!._id).not.toBeInstanceOf(ObjectId);
-    expect(getA!._id).toBe(uuid);
-    expect(getA!.id).toBe(uuid);
+    expect(getA._id).not.toBeInstanceOf(ObjectId);
+    expect(getA._id).toBe(uuid);
+    expect(getA.id).toBe(uuid);
   });
 
   test(`should fetch all documents with uuid _id type`, async () => {

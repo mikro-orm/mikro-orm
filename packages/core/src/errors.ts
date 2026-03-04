@@ -63,10 +63,7 @@ export class ValidationError<T extends AnyEntity = AnyEntity> extends Error {
   }
 
   static notEntity(owner: AnyEntity, prop: EntityProperty, data: any): ValidationError {
-    const type = Object.prototype.toString
-      .call(data)
-      .match(/\[object (\w+)]/)![1]
-      .toLowerCase();
+    const type = /\[object (\w+)]/.exec(Object.prototype.toString.call(data))![1].toLowerCase();
     return new ValidationError(
       `Entity of type ${prop.type} expected for property ${owner.constructor.name}.${prop.name}, ${inspect(data)} of type ${type} given. If you are using Object.assign(entity, data), use em.assign(entity, data) instead.`,
     );
@@ -74,12 +71,7 @@ export class ValidationError<T extends AnyEntity = AnyEntity> extends Error {
 
   static notDiscoveredEntity(data: any, meta?: EntityMetadata, action = 'persist'): ValidationError {
     /* v8 ignore next */
-    const type =
-      meta?.className ??
-      Object.prototype.toString
-        .call(data)
-        .match(/\[object (\w+)]/)![1]
-        .toLowerCase();
+    const type = meta?.className ?? /\[object (\w+)]/.exec(Object.prototype.toString.call(data))![1].toLowerCase();
     let err = `Trying to ${action} not discovered entity of type ${type}.`;
 
     if (meta) {
@@ -104,10 +96,7 @@ export class ValidationError<T extends AnyEntity = AnyEntity> extends Error {
   }
 
   static invalidType(type: Constructor<any>, value: any, mode: string): ValidationError {
-    const valueType = Object.prototype.toString
-      .call(value)
-      .match(/\[object (\w+)]/)![1]
-      .toLowerCase();
+    const valueType = /\[object (\w+)]/.exec(Object.prototype.toString.call(value))![1].toLowerCase();
 
     if (value instanceof Date) {
       value = value.toISOString();

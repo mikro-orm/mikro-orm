@@ -33,7 +33,7 @@ export class LibSqlConnection extends BaseSqliteConnection {
       return;
     }
     const dbName = this.config.get('dbName') as string;
-    if (dbName?.match(/^(https?|libsql):\/\//)) {
+    if (/^(https?|libsql):\/\//.exec(dbName)) {
       throw new Error(
         'ATTACH DATABASE is not supported for remote libSQL connections. ' + 'Use local file-based databases only.',
       );

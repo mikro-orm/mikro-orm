@@ -51,7 +51,7 @@ describe('QueryBuilder Fields type tracking', () => {
   let orm: MikroORM;
 
   beforeAll(async () => (orm = await initORMMySql('mysql')));
-  afterAll(async () => await orm.close(true));
+  afterAll(async () => orm.close(true));
 
   describe('StripRootAlias helper type', () => {
     test('should strip root alias from simple field', () => {

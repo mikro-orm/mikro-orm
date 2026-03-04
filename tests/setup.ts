@@ -30,7 +30,7 @@ function getCallSite(): string | null {
       continue;
     }
 
-    const match = callerLine.match(/\((.*):(\d+):(\d+)\)/) || callerLine.match(/at (.*):(\d+):(\d+)/);
+    const match = /\((.*):(\d+):(\d+)\)/.exec(callerLine) || /at (.*):(\d+):(\d+)/.exec(callerLine);
 
     if (!match) {
       continue;

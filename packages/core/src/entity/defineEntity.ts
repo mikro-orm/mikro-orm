@@ -421,7 +421,7 @@ export class UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys extends
   autoincrement(
     autoincrement = true,
   ): Pick<UniversalPropertyOptionsBuilder<Value, Omit<Options, 'autoincrement'>, IncludeKeys>, IncludeKeys> {
-    return this.assignOptions({ autoincrement }) as any;
+    return this.assignOptions({ autoincrement });
   }
 
   /**
@@ -440,7 +440,7 @@ export class UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys extends
     UniversalPropertyOptionsBuilder<Value, Options & { onCreate: (...args: any[]) => any }, IncludeKeys>,
     IncludeKeys
   > {
-    return this.assignOptions({ onCreate }) as any;
+    return this.assignOptions({ onCreate });
   }
 
   /**
@@ -449,7 +449,7 @@ export class UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys extends
   onUpdate(
     onUpdate: (entity: any, em: EntityManager) => Value,
   ): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
-    return this.assignOptions({ onUpdate }) as any;
+    return this.assignOptions({ onUpdate });
   }
 
   /**
@@ -459,7 +459,7 @@ export class UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys extends
   default<T extends string | string[] | number | number[] | boolean | null | Date | Raw>(
     defaultValue: T,
   ): Pick<UniversalPropertyOptionsBuilder<Value, Omit<Options, 'default'> & { default: T }, IncludeKeys>, IncludeKeys> {
-    return this.assignOptions({ default: defaultValue }) as any;
+    return this.assignOptions({ default: defaultValue });
   }
 
   /**
@@ -469,14 +469,14 @@ export class UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys extends
   defaultRaw(
     defaultRaw: string,
   ): Pick<UniversalPropertyOptionsBuilder<Value, Options & { defaultRaw: string }, IncludeKeys>, IncludeKeys> {
-    return this.assignOptions({ defaultRaw }) as any;
+    return this.assignOptions({ defaultRaw });
   }
 
   /**
    * Allow controlling `filters` option. This will be overridden with `em.fork` or `FindOptions` if provided.
    */
   filters(filters: FilterOptions): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
-    return this.assignOptions({ filters }) as any;
+    return this.assignOptions({ filters });
   }
 
   /**
@@ -487,7 +487,7 @@ export class UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys extends
   formula<T extends string | FormulaCallback<any>>(
     formula: T,
   ): Pick<UniversalPropertyOptionsBuilder<Value, Omit<Options, 'formula'> & { formula: T }, IncludeKeys>, IncludeKeys> {
-    return this.assignOptions({ formula }) as any;
+    return this.assignOptions({ formula });
   }
 
   /**
@@ -506,7 +506,7 @@ export class UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys extends
     UniversalPropertyOptionsBuilder<Value, Omit<Options, 'nullable'> & { nullable: true }, IncludeKeys>,
     IncludeKeys
   > {
-    return this.assignOptions({ nullable: true }) as any;
+    return this.assignOptions({ nullable: true });
   }
 
   /**
@@ -532,7 +532,7 @@ export class UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys extends
   persist(
     persist = true,
   ): Pick<UniversalPropertyOptionsBuilder<Value, Omit<Options, 'persist'>, IncludeKeys>, IncludeKeys> {
-    return this.assignOptions({ persist }) as any;
+    return this.assignOptions({ persist });
   }
 
   /**
@@ -546,7 +546,7 @@ export class UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys extends
    * Enable `ScalarReference` wrapper for lazy values. Use this in combination with `lazy: true` to have a type-safe accessor object in place of the value.
    */
   ref(): UniversalPropertyOptionsBuilder<Value, Omit<Options, 'ref'> & { ref: true }, IncludeKeys> {
-    return this.assignOptions({ ref: true }) as any;
+    return this.assignOptions({ ref: true });
   }
 
   /**
@@ -556,7 +556,7 @@ export class UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys extends
     UniversalPropertyOptionsBuilder<Value, Omit<Options, 'hidden'> & { hidden: true }, IncludeKeys>,
     IncludeKeys
   > {
-    return this.assignOptions({ hidden: true }) as any;
+    return this.assignOptions({ hidden: true });
   }
 
   /**
@@ -566,7 +566,7 @@ export class UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys extends
     UniversalPropertyOptionsBuilder<Value, Omit<Options, 'version'> & { version: true }, IncludeKeys>,
     IncludeKeys
   > {
-    return this.assignOptions({ version: true }) as any;
+    return this.assignOptions({ version: true });
   }
 
   /**
@@ -613,7 +613,7 @@ export class UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys extends
    * @see https://mikro-orm.io/docs/defining-entities#lazy-scalar-properties
    */
   lazy(): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
-    return this.assignOptions({ lazy: true }) as any;
+    return this.assignOptions({ lazy: true });
   }
 
   /**
@@ -625,7 +625,7 @@ export class UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys extends
     UniversalPropertyOptionsBuilder<Value, Omit<Options, 'primary'> & { primary: true }, IncludeKeys>,
     IncludeKeys
   > {
-    return this.assignOptions({ primary: true }) as any;
+    return this.assignOptions({ primary: true });
   }
 
   /**
@@ -929,7 +929,7 @@ export class UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys extends
     UniversalPropertyOptionsBuilder<Value, Omit<Options, 'mapToPk'> & { mapToPk: true }, IncludeKeys>,
     IncludeKeys
   > {
-    return this.assignOptions({ mapToPk: true }) as any;
+    return this.assignOptions({ mapToPk: true });
   }
 
   /** Set the constraint type. Immediate constraints are checked for each statement, while deferred ones are only checked at the end of the transaction. Only for postgres unique constraints. */

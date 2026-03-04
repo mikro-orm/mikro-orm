@@ -16,7 +16,7 @@ describe('FreshSchemaCommand', () => {
     getORMMock.mockResolvedValue(orm);
   });
 
-  afterAll(async () => await orm.close(true));
+  afterAll(async () => orm.close(true));
 
   test('handler', async () => {
     const closeSpy = vi.spyOn(MikroORM.prototype, 'close');

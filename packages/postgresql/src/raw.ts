@@ -80,8 +80,8 @@ export function raw<R = RawQueryFragment & symbol, T extends object = any>(
   if (Utils.isObject<KyselySelectQueryBuilder<any, any, any>>(sql) && 'compile' in sql) {
     const query = sql.compile();
     const processed = query.sql.replaceAll(/\$\d+/g, '?');
-    return raw_(processed, query.parameters) as R;
+    return raw_(processed, query.parameters);
   }
 
-  return raw_(sql, params) as R;
+  return raw_(sql, params);
 }

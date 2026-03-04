@@ -252,7 +252,7 @@ export class EntityFactory {
       }
 
       originalEntityData[key] = diff2[key] === null ? nullVal : diff2[key];
-      helper(entity).__loadedProperties.add(key as string);
+      helper(entity).__loadedProperties.add(key);
     });
 
     // in case of joined loading strategy, we need to cascade the merging to possibly loaded relations manually
@@ -456,8 +456,8 @@ export class EntityFactory {
     }
 
     Utils.keys(data).forEach(key => {
-      helper(entity)?.__loadedProperties.add(key as string);
-      helper(entity)?.__serializationContext.fields?.add(key as string);
+      helper(entity)?.__loadedProperties.add(key);
+      helper(entity)?.__serializationContext.fields?.add(key);
     });
 
     const processOnCreateHooksEarly = options.processOnCreateHooksEarly ?? this.config.get('processOnCreateHooksEarly');
@@ -562,7 +562,7 @@ export class EntityFactory {
         const nakedPk = Utils.extractPK(value, prop.targetMeta, true);
 
         if (Utils.isObject(value) && !nakedPk) {
-          return this.create(prop.targetMeta!.class, value!, options);
+          return this.create(prop.targetMeta!.class, value, options);
         }
 
         const { newEntity, initialized, ...rest } = options;
@@ -577,7 +577,7 @@ export class EntityFactory {
           return value;
         }
 
-        return this.createEmbeddable(prop.targetMeta!.class, value!, options);
+        return this.createEmbeddable(prop.targetMeta!.class, value, options);
       }
 
       if (!prop) {
@@ -598,7 +598,7 @@ export class EntityFactory {
               prop,
             );
           } else if (prop.kind === ReferenceKind.SCALAR) {
-            tmp[prop.name] = prop.customType.convertToJSValue(tmp[prop.name], this.platform) as any;
+            tmp[prop.name] = prop.customType.convertToJSValue(tmp[prop.name], this.platform);
           }
         }
 
@@ -606,7 +606,7 @@ export class EntityFactory {
       }
 
       if (options.convertCustomTypes && prop.customType && value != null) {
-        return prop.customType!.convertToJSValue(value, this.platform);
+        return prop.customType.convertToJSValue(value, this.platform);
       }
 
       return value;

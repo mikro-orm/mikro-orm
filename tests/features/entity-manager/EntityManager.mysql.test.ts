@@ -245,7 +245,7 @@ describe('EntityManagerMySql', () => {
       author_id: 123,
       publisher_id: 321,
       tags: [1n, 2n, 3n],
-    })!;
+    });
     expect(book.uuid).toBe('123-dsa');
     expect(book.title).toBe('name');
     expect(book.createdAt).toBeInstanceOf(Date);
@@ -597,7 +597,7 @@ describe('EntityManagerMySql', () => {
     await expect(orm.em.populate([] as Author2[], ['books', 'favouriteBook'])).resolves.toEqual([]);
 
     // full text search test
-    const fullTextBooks = (await booksRepository.find({ title: { $fulltext: 'life wall' } }))!;
+    const fullTextBooks = await booksRepository.find({ title: { $fulltext: 'life wall' } });
     expect(fullTextBooks.length).toBe(3);
 
     // count test
@@ -2590,12 +2590,12 @@ describe('EntityManagerMySql', () => {
       );
     expect(res[0].created_at).toBe('2000-01-01 00:00:00.000000');
     const a = await orm.em.findOneOrFail(Author2, author.id);
-    expect(+a.createdAt!).toBe(+author.createdAt);
+    expect(+a.createdAt).toBe(+author.createdAt);
     const a1 = await orm.em.findOneOrFail(Author2, { createdAt: { $eq: a.createdAt } });
-    expect(+a1.createdAt!).toBe(+author.createdAt);
+    expect(+a1.createdAt).toBe(+author.createdAt);
     expect(orm.em.merge(a1)).toBe(a1);
     const a2 = await orm.em.findOneOrFail(Author2, { updatedAt: { $eq: a.updatedAt } });
-    expect(+a2.updatedAt!).toBe(+author.updatedAt);
+    expect(+a2.updatedAt).toBe(+author.updatedAt);
   });
 
   test('setting optional boolean to false', async () => {

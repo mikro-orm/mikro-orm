@@ -79,10 +79,10 @@ describe('full text search tsvector in postgres', () => {
     await orm.em.persist(book1).flush();
     expect(mock).not.toHaveBeenCalled();
 
-    const fullTextBooks = (await repo.find({ searchableTitle: { $fulltext: 'life wall' } }))!;
+    const fullTextBooks = await repo.find({ searchableTitle: { $fulltext: 'life wall' } });
     expect(fullTextBooks.length).toBe(1);
 
-    const fullTextBooks2 = (await repo.find({ searchableTitleNoType: { $fulltext: 'life wall' } }))!;
+    const fullTextBooks2 = await repo.find({ searchableTitleNoType: { $fulltext: 'life wall' } });
     expect(fullTextBooks2).toHaveLength(1);
   });
 
@@ -99,7 +99,7 @@ describe('full text search tsvector in postgres', () => {
     orm.em.persist([book1, book2, book3, book4, book5, book6]);
     await orm.em.flush();
 
-    const fullTextBooks = (await repo.find({ searchableTitle: { $fulltext: 'life wall' } }))!;
+    const fullTextBooks = await repo.find({ searchableTitle: { $fulltext: 'life wall' } });
     expect(fullTextBooks).toHaveLength(3);
   });
 
@@ -206,21 +206,21 @@ describe('full text search tsvector in postgres', () => {
 
     const mock = mockLogger(orm);
 
-    const fullTextBooks = (await repo.find({ searchableTitle: { $fulltext: 'life wall' } }))!;
+    const fullTextBooks = await repo.find({ searchableTitle: { $fulltext: 'life wall' } });
     expect(mock.mock.calls[0][0]).toMatch(
       `select "b0".* from "book" as "b0" where "b0"."searchable_title" @@ plainto_tsquery('simple', 'life wall')`,
     );
     expect(fullTextBooks).toHaveLength(1);
     mock.mockReset();
 
-    const fullTextBooks2 = (await repo.find({ searchableTitleEnglish: { $fulltext: 'life wall' } }))!;
+    const fullTextBooks2 = await repo.find({ searchableTitleEnglish: { $fulltext: 'life wall' } });
     expect(mock.mock.calls[0][0]).toMatch(
       `select "b0".* from "book" as "b0" where "b0"."searchable_title_english" @@ plainto_tsquery('english', 'life wall')`,
     );
     expect(fullTextBooks2).toHaveLength(1);
     mock.mockReset();
 
-    const fullTextBooks3 = (await repo.find({ searchableTitleWeighted: { $fulltext: 'life wall' } }))!;
+    const fullTextBooks3 = await repo.find({ searchableTitleWeighted: { $fulltext: 'life wall' } });
     expect(mock.mock.calls[0][0]).toMatch(
       `select "b0".* from "book" as "b0" where "b0"."searchable_title_weighted" @@ plainto_tsquery('simple', 'life wall')`,
     );

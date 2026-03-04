@@ -3,11 +3,11 @@ import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-or
 import { mockLogger } from '../../helpers.js';
 
 class SpecialTextType extends TextType {
-  convertToDatabaseValue(value?: string | undefined): string | undefined {
+  convertToDatabaseValue(value?: string): string | undefined {
     return `${value}-${Math.random()}`;
   }
 
-  convertToJSValue(value?: string | undefined): string | undefined {
+  convertToJSValue(value?: string): string | undefined {
     return value?.split('-')[0];
   }
 

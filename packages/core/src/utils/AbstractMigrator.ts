@@ -239,10 +239,10 @@ export abstract class AbstractMigrator<D extends IDatabaseDriver> implements IMi
     if (this.options.migrationsList) {
       return this.options.migrationsList.map(migration => {
         if (typeof migration === 'function') {
-          return this.initialize(migration as Constructor<Migration>, migration.name);
+          return this.initialize(migration, migration.name);
         }
 
-        return this.initialize(migration.class as Constructor<Migration>, migration.name);
+        return this.initialize(migration.class, migration.name);
       });
     }
 
@@ -377,7 +377,7 @@ export abstract class AbstractMigrator<D extends IDatabaseDriver> implements IMi
 
   private getMigrationFilename(name: string): string {
     name = name.replace(/\.[jt]s$/, '');
-    return name.match(/^\d{14}$/) ? this.options.fileName!(name) : name;
+    return /^\d{14}$/.exec(name) ? this.options.fileName!(name) : name;
   }
 
   private prefix<

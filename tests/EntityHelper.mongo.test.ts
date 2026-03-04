@@ -73,7 +73,7 @@ describe('EntityHelperMongo', () => {
     expect(json.name).toBeUndefined();
     expect(json.termsAccepted).toBe(false);
     expect(json.favouriteAuthor).toBe(god.id); // self reference will be ignored even when explicitly populated
-    expect(json.books![0]).toMatchObject({
+    expect(json.books[0]).toMatchObject({
       author: { name: bible.author.name },
       publisher: { name: (await bible.publisher.loadOrFail()).name },
     });
@@ -111,7 +111,7 @@ describe('EntityHelperMongo', () => {
     await orm.em.persist(author).flush();
     orm.em.clear();
 
-    const jon = orm.em.getReference(Author, author.id!);
+    const jon = orm.em.getReference(Author, author.id);
     expect(wrap(jon).isInitialized()).toBe(false);
     await wrap(jon).init();
     expect(wrap(jon).isInitialized()).toBe(true);

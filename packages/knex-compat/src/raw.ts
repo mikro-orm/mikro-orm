@@ -73,8 +73,8 @@ export function rawKnex<R = RawQueryFragment & symbol, T extends object = any>(
 ): R {
   if (Utils.isObject<Knex.QueryBuilder | Knex.Raw>(sql) && 'toSQL' in sql) {
     const query = sql.toSQL();
-    return raw(query.sql, query.bindings) as R;
+    return raw(query.sql, query.bindings);
   }
 
-  return raw(sql, params) as R;
+  return raw(sql, params);
 }

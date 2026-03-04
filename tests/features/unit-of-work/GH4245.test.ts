@@ -51,9 +51,9 @@ test('4245', async () => {
   await orm.em.flush();
 
   const meta = orm.getMetadata(Node);
-  const nestedNodeChangeSet = AfterFlushSubscriber.changeSets.filter(
+  const nestedNodeChangeSet = AfterFlushSubscriber.changeSets.find(
     changeSet => changeSet.meta === meta && changeSet.payload.value === secondNode.value,
-  )[0];
+  )!;
 
   // Check entity values
   expect(nestedNodeChangeSet.entity.value).toBe(secondNode.value);

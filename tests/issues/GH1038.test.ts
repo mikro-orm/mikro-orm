@@ -59,7 +59,7 @@ describe('GH issue 1038', () => {
     await orm.schema.create();
   });
 
-  afterAll(async () => await orm.close(true));
+  afterAll(async () => orm.close(true));
 
   test('If the PrimaryKey is BigIntType, user and Position will be updated unnecessarily', async () => {
     const user1 = new User('user1');

@@ -15,7 +15,7 @@ export class MsSqlQueryBuilder<
     if (!this.flags.has(QueryFlag.IDENTITY_INSERT) && this.metadata.has(this.mainAlias.entityName)) {
       const meta = this.mainAlias.meta;
 
-      if (meta!.hasTriggers) {
+      if (meta.hasTriggers) {
         this.setFlag(QueryFlag.OUTPUT_TABLE);
       }
     }
@@ -25,7 +25,7 @@ export class MsSqlQueryBuilder<
 
   private checkIdentityInsert(data: RequiredEntityData<Entity> | RequiredEntityData<Entity>[]) {
     const meta = this.mainAlias.meta;
-    const dataKeys = Utils.unique(Utils.asArray(data).flatMap(Utils.keys));
+    const dataKeys = Utils.unique(Utils.asArray(data).flatMap(d => Utils.keys(d)));
     const hasAutoincrement = dataKeys.some(x => meta.properties[x]?.autoincrement);
 
     if (hasAutoincrement) {

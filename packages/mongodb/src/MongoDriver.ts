@@ -192,7 +192,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
       }),
     );
 
-    return this.mapResult<T>(res[0], this.metadata.find(entityName)!);
+    return this.mapResult<T>(res[0], this.metadata.find(entityName));
   }
 
   override async findVirtual<T extends object>(
@@ -508,7 +508,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     Utils.keys(copiedData).forEach(k => {
       if (Utils.isOperator(k)) {
         if (Array.isArray(copiedData[k])) {
-          copiedData[k] = (copiedData[k] as any[]).map(v => this.renameFields(entityName, v, dotPaths, object, false));
+          copiedData[k] = copiedData[k].map(v => this.renameFields(entityName, v, dotPaths, object, false));
         } else {
           copiedData[k] = this.renameFields(entityName, copiedData[k], dotPaths, object, false);
         }
@@ -588,7 +588,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
       return data;
     }
 
-    if (typeof data === 'string' && data.match(/^[0-9a-f]{24}$/i)) {
+    if (typeof data === 'string' && /^[0-9a-f]{24}$/i.exec(data)) {
       return new ObjectId(data) as T;
     }
 

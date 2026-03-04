@@ -241,7 +241,7 @@ export class MetadataDiscovery {
     const processed: (EntitySchema | EntityClass)[] = [];
     const paths: string[] = [];
 
-    for (const entity of targets!) {
+    for (const entity of targets) {
       if (typeof entity === 'string') {
         paths.push(entity);
       } else {
@@ -275,7 +275,7 @@ export class MetadataDiscovery {
               : pivotEntity;
 
           if (!this.discovered.find(m => m.className === Utils.className(target))) {
-            missing.push(target as EntityClass);
+            missing.push(target);
           }
         }
 
@@ -625,7 +625,7 @@ export class MetadataDiscovery {
         this.namingStrategy.joinKeyColumnName(
           prop.discriminator!,
           referencedColumnName,
-          prop.referencedColumnNames!.length > 1,
+          prop.referencedColumnNames.length > 1,
         ),
       );
     } else {
@@ -827,7 +827,7 @@ export class MetadataDiscovery {
   private definePivotTableEntity(meta: EntityMetadata, prop: EntityProperty): EntityMetadata {
     const pivotMeta = prop.pivotEntity
       ? this.metadata.find(prop.pivotEntity)
-      : this.metadata.getByClassName(prop.pivotTable!, false);
+      : this.metadata.getByClassName(prop.pivotTable, false);
 
     // ensure inverse side exists so we can join it when populating via pivot tables
     if (!prop.inversedBy && prop.targetMeta) {
@@ -847,7 +847,7 @@ export class MetadataDiscovery {
       } as unknown as EntityProperty;
       this.applyNamingStrategy(prop.targetMeta, inverseProp);
       this.initCustomType(prop.targetMeta, inverseProp);
-      prop.targetMeta!.properties[inverseName] = inverseProp;
+      prop.targetMeta.properties[inverseName] = inverseProp;
     }
 
     if (pivotMeta) {
@@ -1266,7 +1266,7 @@ export class MetadataDiscovery {
     }
 
     Utils.keys(base.hooks).forEach(type => {
-      meta.hooks[type] = Utils.unique([...base.hooks[type as EventType]!, ...(meta.hooks[type] || [])]);
+      meta.hooks[type] = Utils.unique([...base.hooks[type]!, ...(meta.hooks[type] || [])]);
     });
 
     if ((meta.constructorParams?.length ?? 0) === 0 && (base.constructorParams?.length ?? 0) > 0) {
@@ -1487,7 +1487,7 @@ export class MetadataDiscovery {
         let tmp = embeddedProp;
 
         while (tmp.embedded && tmp.object) {
-          path.unshift(tmp.embedded![1]);
+          path.unshift(tmp.embedded[1]);
           tmp = meta.properties[tmp.embedded[0]];
         }
 
@@ -1564,11 +1564,11 @@ export class MetadataDiscovery {
 
       for (const m of children) {
         const name = m.discriminatorValue ?? this.namingStrategy.classToTableName(m.className);
-        meta.root.discriminatorMap![name] = m.class;
+        meta.root.discriminatorMap[name] = m.class;
       }
     }
 
-    meta.discriminatorValue = QueryHelper.findDiscriminatorValue(meta.root.discriminatorMap!, meta.class);
+    meta.discriminatorValue = QueryHelper.findDiscriminatorValue(meta.root.discriminatorMap, meta.class);
 
     if (!meta.root.properties[meta.root.discriminatorColumn]) {
       this.createDiscriminatorProperty(meta.root);
@@ -1629,7 +1629,7 @@ export class MetadataDiscovery {
       }
 
       if (prop.enum && prop.items && rootProp?.items) {
-        newProp.items = Utils.unique([...rootProp.items!, ...prop.items]);
+        newProp.items = Utils.unique([...rootProp.items, ...prop.items]);
       }
 
       newProp.nullable = true;
@@ -1914,7 +1914,7 @@ export class MetadataDiscovery {
 
   private initGeneratedColumn(meta: EntityMetadata, prop: EntityProperty): void {
     if (!prop.generated && prop.columnTypes) {
-      const match = prop.columnTypes[0]?.match(/(.*) generated always as (.*)/i);
+      const match = /(.*) generated always as (.*)/i.exec(prop.columnTypes[0]);
 
       if (match) {
         prop.columnTypes[0] = match[1];
@@ -1923,7 +1923,7 @@ export class MetadataDiscovery {
         return;
       }
 
-      const match2 = prop.columnTypes[0]?.trim().match(/^as (.*)/i);
+      const match2 = /^as (.*)/i.exec(prop.columnTypes[0]?.trim());
 
       if (match2) {
         prop.generated = match2[1];
@@ -2186,7 +2186,7 @@ export class MetadataDiscovery {
             !!pk.customType.convertToDatabaseValueSQL &&
             pk.customType.convertToDatabaseValueSQL('', this.platform) !== '';
         } else {
-          prop.customTypes.push(undefined!);
+          prop.customTypes.push(undefined);
         }
       }
     }
@@ -2278,7 +2278,7 @@ export class MetadataDiscovery {
         // it could be a runtime type from reflect-metadata
         !SCALAR_TYPES.includes(prop.type) &&
         // or it might be inferred via ts-morph to some generic type alias
-        !prop.type.match(/[<>:"';{}]/)
+        !/[<>:"';{}]/.exec(prop.type)
       ) {
         const type =
           prop.length != null && !prop.type.endsWith(`(${prop.length})`) ? `${prop.type}(${prop.length})` : prop.type;

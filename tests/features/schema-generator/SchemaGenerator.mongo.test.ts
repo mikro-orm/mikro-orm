@@ -9,7 +9,7 @@ describe('SchemaGenerator', () => {
   let orm: MikroORM<MongoDriver>;
 
   beforeAll(async () => (orm = await initORMMongo()));
-  afterAll(async () => await orm.close(true));
+  afterAll(async () => orm.close(true));
   beforeEach(async () => orm.schema.clear());
 
   test('create/drop collection', async () => {

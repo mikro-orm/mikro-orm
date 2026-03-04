@@ -1371,11 +1371,11 @@ describe('TPT nested relations', () => {
     expect(techContent.filter(c => c instanceof Video)).toHaveLength(1);
 
     // Verify article body is loaded
-    const articles = techContent.filter(c => c instanceof Article) as Article[];
+    const articles = techContent.filter(c => c instanceof Article);
     expect(articles[0].body).toBeDefined();
 
     // Verify video duration is loaded
-    const videos = techContent.filter(c => c instanceof Video) as Video[];
+    const videos = techContent.filter(c => c instanceof Video);
     expect(videos[0].duration).toBe(3600);
 
     await orm.close();
@@ -1459,7 +1459,7 @@ describe('TPT nested relations', () => {
     const engManager = engMembers.find(e => e instanceof TeamManager) as TeamManager;
     expect(engManager.budget).toBe(500000);
 
-    const developers = engMembers.filter(e => e instanceof TeamDeveloper) as TeamDeveloper[];
+    const developers = engMembers.filter(e => e instanceof TeamDeveloper);
     expect(developers.map(d => d.programmingLanguage).sort()).toEqual(['Python', 'TypeScript']);
 
     // HR has 1 manager

@@ -140,7 +140,7 @@ export class ObjectHydrator extends Hydrator {
       const entityKey = path.map(k => this.wrap(k)).join('');
       const tz = this.platform.getTimezone();
       const convertorKey = path
-        .filter(k => !k.match(/\[idx_\d+]/))
+        .filter(k => !/\[idx_\d+]/.exec(k))
         .map(k => this.safeKey(k))
         .join('_');
       const ret: string[] = [];
@@ -366,7 +366,7 @@ export class ObjectHydrator extends Hydrator {
 
     const registerEmbeddedPrototype = (prop: EntityProperty, path: string[]): void => {
       const convertorKey = path
-        .filter(k => !k.match(/\[idx_\d+]/))
+        .filter(k => !/\[idx_\d+]/.exec(k))
         .map(k => this.safeKey(k))
         .join('_');
 
@@ -427,7 +427,7 @@ export class ObjectHydrator extends Hydrator {
         ret.push(`    const embeddedData = {`);
 
         for (const childProp of Object.values(prop.embeddedProps)) {
-          const key = childProp.embedded![1].match(/^\w+$/) ? childProp.embedded![1] : `'${childProp.embedded![1]}'`;
+          const key = /^\w+$/.exec(childProp.embedded![1]) ? childProp.embedded![1] : `'${childProp.embedded![1]}'`;
           ret.push(`      ${key}: data${this.wrap(childProp.name)},`);
         }
 
@@ -435,7 +435,7 @@ export class ObjectHydrator extends Hydrator {
       }
 
       if (prop.targetMeta?.polymorphs) {
-        prop.targetMeta.polymorphs!.forEach(childMeta => {
+        prop.targetMeta.polymorphs.forEach(childMeta => {
           const childProp = prop.embeddedProps[prop.targetMeta!.discriminatorColumn!];
           const childDataKey = prop.object ? dataKey + this.wrap(childProp.embedded![1]) : this.wrap(childProp.name);
           context.set(childMeta.className, childMeta.class);
@@ -607,11 +607,11 @@ export class ObjectHydrator extends Hydrator {
   }
 
   private wrap(key: string): string {
-    if (key.match(/^\[.*]$/)) {
+    if (/^\[.*]$/.exec(key)) {
       return key;
     }
 
-    return key.match(/^\w+$/) ? `.${key}` : `['${key}']`;
+    return /^\w+$/.exec(key) ? `.${key}` : `['${key}']`;
   }
 
   private safeKey(key: string): string {

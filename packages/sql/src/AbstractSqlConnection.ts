@@ -33,7 +33,7 @@ export abstract class AbstractSqlConnection extends Connection {
   }
 
   createKysely(): void {
-    let driverOptions = this.options.driverOptions ?? this.config.get('driverOptions')!;
+    let driverOptions = this.options.driverOptions ?? this.config.get('driverOptions');
 
     if (typeof driverOptions === 'function') {
       driverOptions = driverOptions();

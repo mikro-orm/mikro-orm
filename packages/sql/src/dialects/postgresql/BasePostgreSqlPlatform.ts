@@ -252,7 +252,7 @@ export class BasePostgreSqlPlatform extends AbstractSqlPlatform {
   }
 
   override marshallArray(values: string[]): string {
-    const quote = (v: string) => (v === '' || v.match(/["{},\\]/) ? JSON.stringify(v) : v);
+    const quote = (v: string) => (v === '' || /["{},\\]/.exec(v) ? JSON.stringify(v) : v);
     return `{${values.map(v => quote('' + v)).join(',')}}`;
   }
 
@@ -270,7 +270,7 @@ export class BasePostgreSqlPlatform extends AbstractSqlPlatform {
           return '';
         }
 
-        if (v.match(/"(.*)"/)) {
+        if (/"(.*)"/.exec(v)) {
           return v.substring(1, v.length - 1).replaceAll('\\"', '"');
         }
 
@@ -319,13 +319,13 @@ export class BasePostgreSqlPlatform extends AbstractSqlPlatform {
       bigint: 'int8',
       boolean: 'bool',
     } as Dictionary;
-    const cast = (key: string) => raw((type as string) in types ? `(${key})::${types[type as string]}` : key);
+    const cast = (key: string) => raw(type in types ? `(${key})::${types[type]}` : key);
     let lastOperator = '->>';
 
     // force `->` for operator payloads with array values
     if (
       Utils.isPlainObject(value) &&
-      Object.keys(value).every(key => ARRAY_OPERATORS.includes(key as string) && Array.isArray(value[key]))
+      Object.keys(value).every(key => ARRAY_OPERATORS.includes(key) && Array.isArray(value[key]))
     ) {
       lastOperator = '->';
     }

@@ -27,7 +27,7 @@ export class EventManager {
       .filter(event => event in subscriber)
       .forEach(event => {
         this.listeners[event] ??= new Set();
-        this.listeners[event]!.add(subscriber);
+        this.listeners[event].add(subscriber);
       });
   }
 
@@ -64,8 +64,8 @@ export class EventManager {
     listeners.push(
       ...hooks.map(hook => {
         const prototypeHook = meta?.prototype[hook as unknown as EntityKey<T>];
-        const handler = typeof hook === 'function' ? hook : (entity[hook!] ?? (prototypeHook as AsyncFunction));
-        return handler!.bind(entity);
+        const handler = typeof hook === 'function' ? hook : (entity[hook] ?? (prototypeHook as AsyncFunction));
+        return handler.bind(entity);
       }),
     );
 
@@ -78,7 +78,11 @@ export class EventManager {
     }
 
     if (event === EventType.onInit) {
-      return listeners.forEach(listener => listener(args));
+      for (const listener of listeners) {
+        void listener(args);
+      }
+
+      return;
     }
 
     return Utils.runSerial(listeners, listener => listener(args));
