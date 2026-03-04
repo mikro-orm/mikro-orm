@@ -13,7 +13,7 @@ export function Formula<Owner extends object>(
 ) {
   return function (value: unknown, context: ClassFieldDecoratorContext<Owner>) {
     const meta = prepareMetadataContext(context);
-    meta.properties![context.name as EntityKey<Owner>] = {
+    meta.properties[context.name as EntityKey<Owner>] = {
       name: context.name,
       kind: ReferenceKind.SCALAR,
       formula,

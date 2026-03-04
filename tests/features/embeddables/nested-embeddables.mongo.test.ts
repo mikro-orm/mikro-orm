@@ -226,9 +226,9 @@ describe('embedded entities in mongo', () => {
     await orm.em.flush();
     expect(mock.mock.calls.length).toBe(3);
 
-    u1.profile1!.identity.email = 'e123';
-    u1.profile1!.identity.meta!.foo = 'foooooooo';
-    u1.profile2!.identity.meta!.bar = 'bababar';
+    u1.profile1.identity.email = 'e123';
+    u1.profile1.identity.meta!.foo = 'foooooooo';
+    u1.profile2.identity.meta!.bar = 'bababar';
     await orm.em.flush();
     expect(mock.mock.calls[3][0]).toMatch(
       /db\.getCollection\('user'\)\.updateMany\({ _id: .* }, { '\$set': { profile1_identity_email: 'e123', profile1_identity_meta_foo: 'foooooooo', profile2: { username: 'u2', identity: { email: 'e2', meta: { foo: 'f2', bar: 'bababar' } } } } }, {}\);/,

@@ -49,8 +49,8 @@ describe('GH issue 2810', () => {
     await orm.schema.create();
   });
 
-  beforeEach(async () => await orm.schema.clear());
-  afterAll(async () => await orm.close(true));
+  beforeEach(async () => orm.schema.clear());
+  afterAll(async () => orm.close(true));
 
   test('create without existing parent', async () => {
     const element = orm.em.create(ElementEntity, {});

@@ -152,7 +152,7 @@ describe('Transactional', () => {
     await orm.schema.refresh();
   });
   beforeEach(async () => orm.schema.clear());
-  afterAll(async () => await orm.close(true));
+  afterAll(async () => orm.close(true));
 
   test('disable nested transactions', async () => {
     const mock = mockLogger(orm);

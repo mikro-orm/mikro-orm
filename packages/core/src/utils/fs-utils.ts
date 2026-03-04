@@ -188,7 +188,7 @@ export const fs = {
     let path = parts.join('/').replace(/\\/g, '/').replace(/\/$/, '');
     path = normalize(path).replace(/\\/g, '/');
 
-    return path.match(/^[/.]|[a-zA-Z]:/) || path.startsWith('!') ? path : './' + path;
+    return /^[/.]|[a-zA-Z]:/.exec(path) || path.startsWith('!') ? path : './' + path;
   },
 
   /**

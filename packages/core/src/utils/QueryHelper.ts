@@ -300,7 +300,7 @@ export class QueryHelper {
       if (Utils.isPlainObject(value)) {
         o[key as string] = QueryHelper.processWhere({
           ...options,
-          where: value as FilterQuery<T>,
+          where: value,
           entityName: prop?.targetMeta?.class ?? entityName,
           root: false,
         });

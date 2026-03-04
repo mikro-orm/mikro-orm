@@ -93,7 +93,7 @@ export class SerializationContext<T extends object> {
     let populate: PopulateOptions<T>[] = this.populate ?? [];
 
     for (const segment of this.path) {
-      const hints = populate.filter(p => p.field === segment[1]) as PopulateOptions<T>[];
+      const hints = populate.filter(p => p.field === segment[1]);
 
       if (hints.length > 0) {
         const childHints: PopulateOptions<T>[] = [];

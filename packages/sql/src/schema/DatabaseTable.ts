@@ -102,7 +102,7 @@ export class DatabaseTable {
       const mappedType = this.platform.getMappedType(type);
 
       if (mappedType instanceof DecimalType) {
-        const match = prop.columnTypes[idx].match(/\w+\((\d+), ?(\d+)\)/);
+        const match = /\w+\((\d+), ?(\d+)\)/.exec(prop.columnTypes[idx]);
 
         /* v8 ignore next */
         if (match) {
@@ -300,8 +300,8 @@ export class DatabaseTable {
         if (fkForIndex && !fkForIndex.fk.columnNames.some(col => !index.columnNames.includes(col))) {
           ret.properties = [this.getPropertyName(namingStrategy, fkForIndex.baseName, fkForIndex.fk) as never];
           const map = index.unique ? compositeFkUniques : compositeFkIndexes;
-          if (typeof map[ret.properties![0]] === 'undefined') {
-            map[ret.properties![0]] = index;
+          if (typeof map[ret.properties[0]] === 'undefined') {
+            map[ret.properties[0]] = index;
             continue;
           }
         }
@@ -1022,7 +1022,7 @@ export class DatabaseTable {
     }
 
     // unquote string defaults if `raw = false`
-    const match = ('' + val).match(/^'(.*)'$/);
+    const match = /^'(.*)'$/.exec('' + val);
 
     if (!raw && match) {
       return match[1];
@@ -1093,7 +1093,7 @@ export class DatabaseTable {
 
           if (meta.properties[prop]) {
             if (meta.properties[prop].embeddedPath) {
-              return [meta.properties[prop].embeddedPath!.join('.')];
+              return [meta.properties[prop].embeddedPath.join('.')];
             }
 
             return meta.properties[prop].fieldNames;

@@ -379,7 +379,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       return { where, populateWhere: options.populateWhere as 'infer' };
     }
 
-    return { where: options.populateWhere as ObjectQuery<Entity> };
+    return { where: options.populateWhere };
   }
 
   /**
@@ -856,7 +856,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       options.failHandler ??= this.config.get('findOneOrFailHandler');
       const wrapped = helper(entity);
       const where = wrapped.getPrimaryKey();
-      throw options.failHandler!(wrapped.__meta.className, where);
+      throw options.failHandler(wrapped.__meta.className, where);
     }
 
     return ret as any;
@@ -1017,7 +1017,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
 
     await em.lockAndPopulate(meta, entity, where, options);
     await em.unitOfWork.dispatchOnLoadEvent();
-    await em.storeCache(options.cache, cached!, () => helper(entity!).toPOJO());
+    await em.storeCache(options.cache, cached!, () => helper(entity).toPOJO());
 
     return entity as Loaded<Entity, Hint, Fields, Excludes>;
   }
@@ -1060,10 +1060,10 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       const name = Utils.className(entityName);
       /* v8 ignore next */
       where = Utils.isEntity(where) ? (helper(where).getPrimaryKey() as any) : where;
-      throw options.failHandler!(name, where);
+      throw options.failHandler(name, where);
     }
 
-    return entity as Loaded<Entity, Hint, Fields, Excludes>;
+    return entity;
   }
 
   /**
@@ -1167,7 +1167,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
 
     const uniqueFields =
       options.onConflictFields ??
-      ((Utils.isPlainObject(where) ? Object.keys(where) : meta!.primaryKeys) as (keyof Entity)[]);
+      ((Utils.isPlainObject(where) ? Object.keys(where) : meta.primaryKeys) as (keyof Entity)[]);
     const returning = getOnConflictReturningFields(meta, data, uniqueFields, options) as string[];
 
     if (
@@ -1179,15 +1179,15 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
 
       if (Array.isArray(uniqueFields)) {
         for (const prop of uniqueFields) {
-          if (data![prop as EntityKey] != null) {
-            where[prop as EntityKey] = data![prop as EntityKey];
+          if (data[prop as EntityKey] != null) {
+            where[prop as EntityKey] = data[prop as EntityKey];
           } else if (meta.primaryKeys.includes(prop as EntityKey) && ret.insertId != null) {
             where[prop as EntityKey] = ret.insertId as never;
           }
         }
       } else {
-        Object.keys(data!).forEach(prop => {
-          where[prop as EntityKey] = data![prop as EntityKey];
+        Object.keys(data).forEach(prop => {
+          where[prop as EntityKey] = data[prop as EntityKey];
         });
 
         if (meta.simplePK && ret.insertId != null) {
@@ -1364,14 +1364,14 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       em.unitOfWork
         .getChangeSetPersister()
         .mapReturnedValues(
-          Utils.isEntity(data![i]) ? (data![i] as Entity) : null,
-          Utils.isEntity(data![i]) ? {} : data![i],
+          Utils.isEntity(data[i]) ? (data[i] as Entity) : null,
+          Utils.isEntity(data[i]) ? {} : data[i],
           res.rows?.[i],
           meta,
           true,
         );
-      const entity = Utils.isEntity(data![i])
-        ? (data![i] as Entity)
+      const entity = Utils.isEntity(data[i])
+        ? (data[i] as Entity)
         : em.entityFactory.create(entityName, row, {
             refresh: true,
             initialized: true,
@@ -1388,7 +1388,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
 
     // skip if we got the PKs via returning statement (`rows`)
     // oxfmt-ignore
-    const uniqueFields = options.onConflictFields ?? ((Utils.isPlainObject(allWhere![0]) ? Object.keys(allWhere![0]).flatMap(key => Utils.splitPrimaryKeys(key)) : meta!.primaryKeys) as (keyof Entity)[]);
+    const uniqueFields = options.onConflictFields ?? ((Utils.isPlainObject(allWhere[0]) ? Object.keys(allWhere[0]).flatMap(key => Utils.splitPrimaryKeys(key)) : meta.primaryKeys) as (keyof Entity)[]);
     const returning = getOnConflictReturningFields(meta, data[0], uniqueFields, options) as string[];
     const reloadFields = returning.length > 0 && !(this.getPlatform().usesReturningStatement() && res.rows?.length);
 
@@ -1845,7 +1845,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     const visited = options.cascade ? undefined : new Set([entity]);
     em.unitOfWork.merge(entity, visited);
 
-    return entity!;
+    return entity;
   }
 
   /**
@@ -2460,7 +2460,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     return fields.reduce((ret, f) => {
       if (Utils.isPlainObject(f)) {
         Utils.keys(f).forEach(ff =>
-          ret.push(...this.buildFields(f[ff]!).map(field => `${ff as string}.${field}` as never)),
+          ret.push(...this.buildFields(f[ff]).map(field => `${ff as string}.${field}` as never)),
         );
       } else {
         ret.push(f as never);
@@ -2692,7 +2692,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
 
     const em = this.getContext();
     const cacheKey = Array.isArray(config) ? config[0] : JSON.stringify(key);
-    const cached = await em.resultCache.get(cacheKey!);
+    const cached = await em.resultCache.get(cacheKey);
 
     if (!cached) {
       return { key: cacheKey, data: cached };

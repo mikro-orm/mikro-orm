@@ -97,8 +97,8 @@ describe('optimistic locking - concurrency check (mongo)', () => {
 
     const test2 = await orm.em.findOneOrFail(ConcurrencyCheckUser, test);
     await orm.em.nativeUpdate(ConcurrencyCheckUser, test, { age: 123 }); // simulate concurrent update
-    test2!.age = 50;
-    test2!.other = 'WHATT???';
+    test2.age = 50;
+    test2.other = 'WHATT???';
 
     try {
       await orm.em.flush();

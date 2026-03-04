@@ -32,7 +32,7 @@ beforeAll(async () => {
   await orm.schema.create();
 });
 
-afterAll(async () => await orm.close());
+afterAll(async () => orm.close());
 
 test('assign relation on not managed entity', async () => {
   const user = new User();

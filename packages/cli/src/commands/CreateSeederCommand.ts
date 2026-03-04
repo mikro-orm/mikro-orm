@@ -32,7 +32,7 @@ export class CreateSeederCommand implements BaseCommand<CreateSeederCommandArgs>
    * Will return a seeder name that is formatted like this EntitySeeder
    */
   private static getSeederClassName(name: string): string {
-    name = name.match(/(.+)seeder/i)?.[1] ?? name;
+    name = /(.+)seeder/i.exec(name)?.[1] ?? name;
     const parts = name.split('-');
 
     return parts.map(name => name.charAt(0).toUpperCase() + name.slice(1)).join('') + 'Seeder';

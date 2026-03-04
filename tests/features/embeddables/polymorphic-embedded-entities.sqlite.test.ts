@@ -126,9 +126,9 @@ describe('polymorphic embeddables in sqlite', () => {
     ent1.pet2 = new Cat('c3');
     ent1.pets.push(ent1.pet, ent1.pet2);
     expect(ent1.pet).toBeInstanceOf(Dog);
-    expect((ent1.pet as Dog).canBark).toBe(true);
+    expect(ent1.pet.canBark).toBe(true);
     expect(ent1.pet2).toBeInstanceOf(Cat);
-    expect((ent1.pet2 as Cat).canMeow).toBe(true);
+    expect(ent1.pet2.canMeow).toBe(true);
     const ent2 = orm.em.create(Owner, {
       name: 'o2',
       pet: { type: AnimalType.CAT, name: 'c1' },

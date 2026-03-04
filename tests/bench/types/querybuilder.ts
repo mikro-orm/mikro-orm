@@ -111,7 +111,7 @@ function useHint<H extends string>(_hint: H): void {}
 
 bench('ModifyHint - simple', () => {
   type Result = ModifyHint<'a', never, 'Loaded<Author>', 'books', false>;
-  const check: Result = 'Loaded<Author>' as Result;
+  const check: Result = 'Loaded<Author>';
   useHint<Result>(check);
 }).types([9, 'instantiations']);
 

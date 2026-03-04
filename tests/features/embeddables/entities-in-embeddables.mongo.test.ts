@@ -366,12 +366,12 @@ describe('embedded entities in mongo', () => {
     await orm.em.flush();
     expect(mock.mock.calls.length).toBe(0);
 
-    u1.profile1!.identity.email = 'e123';
-    u1.profile1!.identity.meta!.foo = 'foooooooo';
-    u1.profile2!.identity.meta!.bar = 'bababar';
-    u1.profile2!.identity.links.push(new IdentityLink('l5'));
-    u2.profile1!.identity.links = [new IdentityLink('l6'), new IdentityLink('l7')];
-    u2.profile2!.identity.links.push(new IdentityLink('l8'));
+    u1.profile1.identity.email = 'e123';
+    u1.profile1.identity.meta!.foo = 'foooooooo';
+    u1.profile2.identity.meta!.bar = 'bababar';
+    u1.profile2.identity.links.push(new IdentityLink('l5'));
+    u2.profile1.identity.links = [new IdentityLink('l6'), new IdentityLink('l7')];
+    u2.profile2.identity.links.push(new IdentityLink('l8'));
     await orm.em.flush();
     expect(mock.mock.calls[0][0]).toMatch(
       `bulk = db.getCollection('user').initializeUnorderedBulkOp({});bulk.find({ _id: ObjectId('600000000000000000000001') }).update({ '$set': { profile1_identity_email: 'e123', profile1_identity_meta_foo: 'foooooooo', profile2: { username: 'u2', identity: { email: 'e2', meta: { foo: 'f2', bar: 'bababar', source: ObjectId('600000000000000000000005') }, links: [ { url: 'l5', meta: [Object], metas: [Array] } ], source: ObjectId('600000000000000000000006') }, source: ObjectId('600000000000000000000007') } } });bulk.find({ _id: ObjectId('600000000000000000000011') }).update({ '$set': { profile1_identity_links: [ { url: 'l6', meta: { foo: 'f1', bar: 'b1' }, metas: [ { foo: 'f2', bar: 'b2' }, { foo: 'f3', bar: 'b3' }, { foo: 'f4', bar: 'b4' } ] }, { url: 'l7', meta: { foo: 'f1', bar: 'b1' }, metas: [ { foo: 'f2', bar: 'b2' }, { foo: 'f3', bar: 'b3' }, { foo: 'f4', bar: 'b4' } ] } ], profile2: { username: 'u4', identity: { email: 'e4', meta: { foo: 'f4' }, links: [ { url: 'l3', meta: [Object], metas: [Array], source: ObjectId('60000000000000000000001e') }, { url: 'l4', meta: [Object], metas: [Array], source: ObjectId('60000000000000000000001f') }, { url: 'l8', meta: [Object], metas: [Array] } ], source: ObjectId('60000000000000000000001d') }, source: ObjectId('60000000000000000000001c') } } });bulk.execute()`,

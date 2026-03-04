@@ -44,12 +44,12 @@ describe('GH issue 401', () => {
     orm.em.clear();
 
     const getA = await orm.em.findOneOrFail(Entity401, a._id);
-    expect(getA!.data.foo).not.toBeInstanceOf(ObjectId);
-    expect(getA!.bar).not.toBeInstanceOf(ObjectId);
+    expect(getA.data.foo).not.toBeInstanceOf(ObjectId);
+    expect(getA.bar).not.toBeInstanceOf(ObjectId);
     orm.em.clear();
 
     const getA2 = await orm.em.findOneOrFail(Entity401, { bar: id });
-    expect(getA2!.data.foo).not.toBeInstanceOf(ObjectId);
-    expect(getA2!.bar).not.toBeInstanceOf(ObjectId);
+    expect(getA2.data.foo).not.toBeInstanceOf(ObjectId);
+    expect(getA2.bar).not.toBeInstanceOf(ObjectId);
   });
 });

@@ -211,12 +211,12 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
 
   getConnection(type: ConnectionType = 'write'): C {
     if (type === 'write' || this.replicas.length === 0) {
-      return this.connection as C;
+      return this.connection;
     }
 
     const rand = Utils.randomInt(0, this.replicas.length - 1);
 
-    return this.replicas[rand] as C;
+    return this.replicas[rand];
   }
 
   async close(force?: boolean): Promise<void> {
@@ -350,7 +350,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
         const value = Utils.keys(direction).reduce((o, key) => {
           Object.assign(
             o,
-            createCondition(key as string, direction[key] as QueryOrderKeys<T>, offset?.[key], eq, `${path}.${key}`),
+            createCondition(key, direction[key] as QueryOrderKeys<T>, offset?.[key], eq, `${path}.${key}`),
           );
           return o;
         }, {});

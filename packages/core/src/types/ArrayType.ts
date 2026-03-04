@@ -13,7 +13,7 @@ export class ArrayType<T = string> extends Type<T[] | null, string | null> {
 
   override convertToDatabaseValue(value: T[] | null, platform: Platform, context?: TransformContext): string | null {
     if (!value) {
-      return value as null;
+      return value;
     }
 
     if (Array.isArray(value)) {
@@ -30,7 +30,7 @@ export class ArrayType<T = string> extends Type<T[] | null, string | null> {
 
   override convertToJSValue(value: T[] | string | null, platform: Platform): T[] | null {
     if (value == null) {
-      return value as null;
+      return value;
     }
 
     if (typeof value === 'string') {

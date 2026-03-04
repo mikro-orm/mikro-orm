@@ -16,7 +16,7 @@ export class MariaDbQueryBuilder<
     const subQuery = this.clone(['_orderBy', '_fields'])
       .select(pks as any)
       .groupBy(pks as any)
-      .limit(this._limit!);
+      .limit(this._limit);
     // revert the on conditions added via populateWhere, we want to apply those only once
     // @ts-ignore
     Object.values(subQuery._joins).forEach(join => (join.cond = join.cond_ ?? {}));

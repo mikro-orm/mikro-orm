@@ -17,7 +17,7 @@ describe('CreateSeederCommand', () => {
     vi.spyOn(CLIHelper, 'dump').mockImplementation(i => i);
   });
 
-  afterAll(async () => await orm.close(true));
+  afterAll(async () => orm.close(true));
 
   test('handler', async () => {
     const closeSpy = vi.spyOn(MikroORM.prototype, 'close');

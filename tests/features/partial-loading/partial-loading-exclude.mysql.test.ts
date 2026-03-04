@@ -9,7 +9,7 @@ describe('partial loading via `exclude` (mysql)', () => {
 
   beforeAll(async () => (orm = await initORMMySql('mysql', { dbName: 'partial_loading2' }, true)));
   beforeEach(async () => orm.schema.clear());
-  afterAll(async () => await orm.close(true));
+  afterAll(async () => orm.close(true));
 
   async function createEntities() {
     const god = new Author2(`God `, `hello@heaven.god`);

@@ -177,7 +177,7 @@ export class MikroTransformer extends OperationNodeTransformer {
     try {
       let entityMeta: EntityMetadata | undefined;
       if (node.table && TableNode.is(node.table)) {
-        const tableName = this.getTableName(node.table as TableNode);
+        const tableName = this.getTableName(node.table);
         if (tableName) {
           const meta = this.findEntityMetadata(tableName);
           if (meta) {
@@ -221,7 +221,7 @@ export class MikroTransformer extends OperationNodeTransformer {
       if (froms && froms.length > 0) {
         const firstFrom = froms[0];
         if (TableNode.is(firstFrom)) {
-          const tableName = this.getTableName(firstFrom as TableNode);
+          const tableName = this.getTableName(firstFrom);
           if (tableName) {
             const meta = this.findEntityMetadata(tableName);
             if (meta) {
@@ -304,7 +304,7 @@ export class MikroTransformer extends OperationNodeTransformer {
    */
   findOwnerEntityInContext(): EntityMetadata | undefined {
     // Check if current column has a table reference (e.g., u.firstName)
-    const reference = this.nodeStack.find(it => ReferenceNode.is(it)) as ReferenceNode | undefined;
+    const reference = this.nodeStack.find(it => ReferenceNode.is(it));
 
     if (reference?.table && TableNode.is(reference.table)) {
       const tableName = this.getTableName(reference.table);
@@ -829,7 +829,7 @@ export class MikroTransformer extends OperationNodeTransformer {
     if (TableNode.is(node) && SchemableIdentifierNode.is(node.table)) {
       const identifier = node.table.identifier;
       if (typeof identifier === 'object' && 'name' in identifier) {
-        return (identifier as IdentifierNode).name;
+        return identifier.name;
       }
     }
 
@@ -1049,7 +1049,7 @@ export class MikroTransformer extends OperationNodeTransformer {
         typeof value === 'number' ||
         (typeof value === 'string' && (value.includes('+') || value.lastIndexOf('-') > 10 || value.endsWith('Z')))
       ) {
-        return this.platform.parseDate(value as string | number);
+        return this.platform.parseDate(value);
       }
 
       // Append timezone if not present (only for string values)

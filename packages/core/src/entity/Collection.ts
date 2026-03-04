@@ -125,7 +125,7 @@ export class Collection<T extends object, O extends object = object> {
     const { refresh, where, ...countOptions } = options;
 
     if (!refresh && !where && this._count != null) {
-      return this._count!;
+      return this._count;
     }
 
     const em = this.getEntityManager()!;
@@ -484,7 +484,7 @@ export class Collection<T extends object, O extends object = object> {
     }
 
     for (const item of items) {
-      em!.getUnitOfWork().cancelOrphanRemoval(item);
+      em.getUnitOfWork().cancelOrphanRemoval(item);
     }
   }
 
@@ -542,7 +542,7 @@ export class Collection<T extends object, O extends object = object> {
 
     const cb = (i: T, f: keyof T) => {
       if (Utils.isEntity(i[f], true)) {
-        return wrap(i[f]!, true).getPrimaryKey();
+        return wrap(i[f], true).getPrimaryKey();
       }
 
       return i[f] as U;

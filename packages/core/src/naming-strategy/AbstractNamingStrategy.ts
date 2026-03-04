@@ -52,7 +52,7 @@ export abstract class AbstractNamingStrategy implements NamingStrategy {
    * @inheritDoc
    */
   getEntityName(tableName: string, schemaName?: string): string {
-    const name = tableName.match(/^[^$_\p{ID_Start}]/u) ? `E_${tableName}` : tableName;
+    const name = /^[^$_\p{ID_Start}]/u.exec(tableName) ? `E_${tableName}` : tableName;
     return this.getClassName(
       name.replaceAll(/[^\u200C\u200D\p{ID_Continue}]+/gu, r =>
         r

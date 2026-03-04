@@ -153,7 +153,7 @@ describe('EntityManagerMariaDb', () => {
     expect(await authorRepository.findOne({ email: 'not existing' })).toBeNull();
 
     // full text search test
-    const fullTextBooks = (await booksRepository.find({ title: { $fulltext: 'life wall' } }))!;
+    const fullTextBooks = await booksRepository.find({ title: { $fulltext: 'life wall' } });
     expect(fullTextBooks.length).toBe(3);
 
     // count test

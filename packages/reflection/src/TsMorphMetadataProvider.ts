@@ -48,7 +48,7 @@ export class TsMorphMetadataProvider extends MetadataProvider {
       return this.getExistingSourceFile(path, '.d.ts', false) || this.getExistingSourceFile(path, '.ts');
     }
 
-    const tsPath = path.match(/.*\/[^/]+$/)![0].replace(/\.js$/, ext);
+    const tsPath = /.*\/[^/]+$/.exec(path)![0].replace(/\.js$/, ext);
 
     return this.getSourceFile(tsPath, validate)!;
   }
@@ -115,7 +115,7 @@ export class TsMorphMetadataProvider extends MetadataProvider {
     this.processWrapper(prop, 'Collection');
     prop.runtimeType ??= prop.type;
 
-    if (prop.type.replace(/import\(.*\)\./g, '').match(/^(Dictionary|Record)<.*>$/)) {
+    if (/^(Dictionary|Record)<.*>$/.exec(prop.type.replace(/import\(.*\)\./g, ''))) {
       prop.type = 'json';
     }
   }
@@ -186,7 +186,7 @@ export class TsMorphMetadataProvider extends MetadataProvider {
       property.hasQuestionToken?.() || union.includes('null') || union.includes('undefined') || tsType.isNullable();
     type = union.filter(t => !['null', 'undefined'].includes(t)).join(' | ');
 
-    prop.array ??= type.endsWith('[]') || !!type.match(/Array<(.*)>/);
+    prop.array ??= type.endsWith('[]') || !!/Array<(.*)>/.exec(type);
     type = type
       .replace(/Array<(.*)>/, '$1') // unwrap array
       .replace(/\[]$/, '') // remove array suffix
@@ -238,7 +238,7 @@ export class TsMorphMetadataProvider extends MetadataProvider {
     // `{ node?: ({ id?: number | undefined; } & import("...").Reference<import("...").Entity>) | undefined; } & import("...").Reference<Entity>`
     // the regexp is looking for the `wrapper`, possible prefixed with `.` or wrapped in parens.
     const type = prop.type.replace(/import\(.*\)\./g, '').replace(/\{ .* } & ([\w &]+)/g, '$1');
-    const m = type.match(new RegExp(`(?:^|[.( ])${wrapper}<(\\w+),?.*>(?:$|[) ])`));
+    const m = new RegExp(`(?:^|[.( ])${wrapper}<(\\w+),?.*>(?:$|[) ])`).exec(type);
 
     if (!m) {
       return;
@@ -286,7 +286,7 @@ export class TsMorphMetadataProvider extends MetadataProvider {
     for (const meta of Utils.values(MetadataStorage.getMetadata())) {
       const metaPath = fs.normalizePath(meta.path);
       /* v8 ignore next */
-      const path = metaPath.match(/\.[jt]s$/) ? metaPath.replace(/\.js$/, '.d.ts') : `${metaPath}.d.ts`; // when entities are bundled, their paths are just their names
+      const path = /\.[jt]s$/.exec(metaPath) ? metaPath.replace(/\.js$/, '.d.ts') : `${metaPath}.d.ts`; // when entities are bundled, their paths are just their names
       const sourceFile = this.project.addSourceFileAtPathIfExists(path);
 
       if (sourceFile) {

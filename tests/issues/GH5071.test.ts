@@ -21,7 +21,7 @@ beforeAll(async () => {
     forceUtcTimezone: true,
   });
 });
-afterAll(async () => await orm.close(true));
+afterAll(async () => orm.close(true));
 
 test('postgres timestamp is correctly parsed', async () => {
   const createdAt = new Date('0022-01-01T00:00:00Z');
@@ -30,6 +30,6 @@ test('postgres timestamp is correctly parsed', async () => {
 
   const res = await orm.em.fork().find(TimestampTest, something.id);
 
-  expect(isNaN(res[0]!.createdAtTimestamp.getTime())).toBe(false);
-  expect(res[0]!.createdAtTimestamp.getTime()).toEqual(createdAt.getTime());
+  expect(isNaN(res[0].createdAtTimestamp.getTime())).toBe(false);
+  expect(res[0].createdAtTimestamp.getTime()).toEqual(createdAt.getTime());
 });

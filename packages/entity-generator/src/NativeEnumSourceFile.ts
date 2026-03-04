@@ -17,7 +17,7 @@ export class NativeEnumSourceFile extends SourceFile {
     const enumTypeName = this.namingStrategy.getEnumTypeName(this.nativeEnum.name, undefined, this.nativeEnum.schema);
     const padding = '  ';
     const enumMode = this.options.enumMode;
-    const enumValues = this.nativeEnum.items as string[];
+    const enumValues = this.nativeEnum.items;
 
     if (enumMode === 'union-type') {
       return `export type ${enumTypeName} = ${enumValues.map(item => this.quote(item)).join(' | ')};\n`;

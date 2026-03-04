@@ -226,7 +226,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
         indexDef.deferMode = index.condeferred ? DeferMode.INITIALLY_DEFERRED : DeferMode.INITIALLY_IMMEDIATE;
       }
 
-      if (index.index_def.some((col: string) => col.match(/[(): ,"'`]/)) || index.expression?.match(/ where /i)) {
+      if (index.index_def.some((col: string) => /[(): ,"'`]/.exec(col)) || index.expression?.match(/ where /i)) {
         indexDef.expression = index.expression;
       }
 
@@ -275,9 +275,9 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     // Extract just the column list from the expression (between first parens after USING)
     // Pattern: ... USING method (...columns...) [INCLUDE (...)] [WHERE ...]
     // Note: pg_get_indexdef always returns a valid expression with USING clause
-    const usingMatch = expression.match(/using\s+\w+\s*\(/i)!;
-    const startIdx = usingMatch.index! + usingMatch[0].length - 1; // Position of opening (
-    const columnsStr = this.extractParenthesizedContent(expression, startIdx)!;
+    const usingMatch = /using\s+\w+\s*\(/i.exec(expression)!;
+    const startIdx = usingMatch.index + usingMatch[0].length - 1; // Position of opening (
+    const columnsStr = this.extractParenthesizedContent(expression, startIdx);
 
     // Use the column names from columnDefs and find their modifiers in the expression
     return columnDefs.map(colDef => {
@@ -299,13 +299,13 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
         }
 
         // Extract NULLS ordering
-        const nullsMatch = modifiers.match(/nulls\s+(first|last)/i);
+        const nullsMatch = /nulls\s+(first|last)/i.exec(modifiers);
         if (nullsMatch) {
           result.nulls = nullsMatch[1].toUpperCase() as 'FIRST' | 'LAST';
         }
 
         // Extract collation
-        const collateMatch = modifiers.match(/collate\s+"?([^"\s,)]+)"?/i);
+        const collateMatch = /collate\s+"?([^"\s,)]+)"?/i.exec(modifiers);
         if (collateMatch) {
           result.collation = collateMatch[1];
         }
@@ -458,7 +458,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
 
       seen.add(dedupeKey);
       ret[key] ??= [];
-      const m = check.expression.match(/^check \(\((.*)\)\)$/is);
+      const m = /^check \(\((.*)\)\)$/is.exec(check.expression);
       const def = m?.[1].replace(/\((.*?)\)::\w+/g, '$1');
       ret[key].push({
         name: check.name,
@@ -494,7 +494,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     const ret = {} as Dictionary;
 
     function mapReferentialIntegrity(value: string, def: string) {
-      const match = ['n', 'd'].includes(value) && def.match(/ON DELETE (SET (NULL|DEFAULT) \(.*?\))/);
+      const match = ['n', 'd'].includes(value) && /ON DELETE (SET (NULL|DEFAULT) \(.*?\))/.exec(def);
 
       if (match) {
         return match[1];
@@ -607,7 +607,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       const position = items.indexOf(value);
 
       if (position > 0) {
-        suffix = ` after ${this.platform.quoteValue(items[position! - 1])}`;
+        suffix = ` after ${this.platform.quoteValue(items[position - 1])}`;
       } else if (items.length > 1 && oldItems.length > 0) {
         suffix = ` before ${this.platform.quoteValue(oldItems[0])}`;
       }
@@ -635,9 +635,9 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
 
           /* v8 ignore next */
           if (m3) {
-            items = m3.map((item: string) => item.trim().match(/^\(?'(.*)'/)?.[1]);
+            items = m3.map((item: string) => /^\(?'(.*)'/.exec(item.trim())?.[1]);
           } else {
-            items = m2[1].split(',').map((item: string) => item.trim().match(/^\(?'(.*)'/)?.[1]);
+            items = m2[1].split(',').map((item: string) => /^\(?'(.*)'/.exec(item.trim())?.[1]);
           }
 
           items = items.filter(item => item !== undefined);
@@ -831,7 +831,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       return super.normalizeDefaultValue(defaultValue, length, PostgreSqlSchemaHelper.DEFAULT_VALUES);
     }
 
-    const match = defaultValue.match(/^'(.*)'::(.*)$/);
+    const match = /^'(.*)'::(.*)$/.exec(defaultValue);
 
     if (match) {
       if (match[2] === 'integer') {
@@ -980,7 +980,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
   }
 
   override inferLengthFromColumnType(type: string): number | undefined {
-    const match = type.match(/^(\w+(?:\s+\w+)*)\s*(?:\(\s*(\d+)\s*\)|$)/);
+    const match = /^(\w+(?:\s+\w+)*)\s*(?:\(\s*(\d+)\s*\)|$)/.exec(type);
 
     if (!match) {
       return;

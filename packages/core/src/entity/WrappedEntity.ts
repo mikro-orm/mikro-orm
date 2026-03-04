@@ -256,7 +256,7 @@ export class WrappedEntity<Entity extends object> {
   }
 
   setPrimaryKey(id: Primary<Entity> | null) {
-    this.entity[this.__meta!.primaryKeys[0]] = id as EntityValue<Entity>;
+    this.entity[this.__meta.primaryKeys[0]] = id as EntityValue<Entity>;
     this.__pk = id!;
   }
 
@@ -265,11 +265,11 @@ export class WrappedEntity<Entity extends object> {
   }
 
   get __meta(): EntityMetadata<Entity> {
-    return (this.entity as IWrappedEntityInternal<Entity>).__meta!;
+    return (this.entity as IWrappedEntityInternal<Entity>).__meta;
   }
 
   get __platform() {
-    return (this.entity as IWrappedEntityInternal<Entity>).__platform!;
+    return (this.entity as IWrappedEntityInternal<Entity>).__platform;
   }
 
   get __config() {
@@ -277,11 +277,11 @@ export class WrappedEntity<Entity extends object> {
   }
 
   get __primaryKeys(): Primary<Entity>[] {
-    return Utils.getPrimaryKeyValues(this.entity, this.__meta!) as Primary<Entity>[];
+    return Utils.getPrimaryKeyValues(this.entity, this.__meta) as Primary<Entity>[];
   }
 
   /** @ignore */
   [Symbol.for('nodejs.util.inspect.custom')]() {
-    return `[WrappedEntity<${this.__meta!.className}>]`;
+    return `[WrappedEntity<${this.__meta.className}>]`;
   }
 }

@@ -62,7 +62,7 @@ describe('GH issue 302', () => {
 
     const bb = await em.findOneOrFail(B, b.id, { populate: ['a'] });
     expect(bb.name).toBe('my name is b');
-    expect(bb.a!.isInitialized(true)).toBe(true);
+    expect(bb.a.isInitialized(true)).toBe(true);
     expect(bb.a.count()).toBe(3);
     expect(bb.a[0].b).toBeInstanceOf(Reference);
     expect(bb.a[0].b!.unwrap()).toBeInstanceOf(B);

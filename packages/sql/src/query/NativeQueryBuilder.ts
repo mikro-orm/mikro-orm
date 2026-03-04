@@ -101,7 +101,7 @@ export class NativeQueryBuilder implements Subquery {
       tableName = this.quote(schema + tableName) + alias;
     }
 
-    this.options.tableName = tableName as string | RawQueryFragment;
+    this.options.tableName = tableName;
     this.options.indexHint = options?.indexHint;
 
     return this;
@@ -124,7 +124,7 @@ export class NativeQueryBuilder implements Subquery {
 
   join(sql: string, params: unknown[]) {
     this.options.joins ??= [];
-    this.options.joins!.push({ sql, params });
+    this.options.joins.push({ sql, params });
     return this;
   }
 
@@ -550,7 +550,7 @@ export class NativeQueryBuilder implements Subquery {
 
       for (const key of Object.keys(this.options.data)) {
         parts.push(`${this.quote(key)} = ?`);
-        this.params.push(this.options.data![key]);
+        this.params.push(this.options.data[key]);
       }
 
       this.parts.push(parts.join(', '));

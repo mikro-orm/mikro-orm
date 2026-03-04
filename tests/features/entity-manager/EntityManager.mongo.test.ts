@@ -86,10 +86,10 @@ describe('EntityManagerMongo', () => {
     expect(await authorRepository.findOne({ email: 'not existing' })).toBeNull();
 
     // full text search test
-    const fullTextBooks2 = (await booksRepository.find({ author: god.id, $fulltext: 'life wall' }))!;
+    const fullTextBooks2 = await booksRepository.find({ author: god.id, $fulltext: 'life wall' });
     expect(fullTextBooks2.length).toBe(1);
 
-    const fullTextBooks = (await booksRepository.find({ $fulltext: 'life wall' }))!;
+    const fullTextBooks = await booksRepository.find({ $fulltext: 'life wall' });
     expect(fullTextBooks.length).toBe(4);
 
     await expect(booksRepository.find({ title: { $fulltext: 'life wall' } })).rejects.toThrow(
@@ -2013,8 +2013,8 @@ describe('EntityManagerMongo', () => {
     expect(a).not.toBe(author);
     a.name = 'test 1';
     a.favouriteBook!.title = 'test 2';
-    const a1 = orm.em.getReference(Author, a.id)!;
-    const b1 = orm.em.getReference(Book, a.favouriteBook!.id)!;
+    const a1 = orm.em.getReference(Author, a.id);
+    const b1 = orm.em.getReference(Book, a.favouriteBook!.id);
     expect(a.name).toBe('test 1');
     expect(a.favouriteBook!.title).toBe('test 2');
     expect(a1.name).toBe('test 1');

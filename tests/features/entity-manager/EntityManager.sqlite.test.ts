@@ -652,7 +652,7 @@ describe.each(['sqlite', 'libsql', 'node-sqlite'] as const)('EntityManager (%s)'
     const publisher = await orm.em.findOneOrFail(Publisher4, pub.id, { populate: ['books'] });
     await wrap(newGod).init();
 
-    const json = wrap(publisher).toJSON().books!;
+    const json = wrap(publisher).toJSON().books;
 
     for (const book of publisher.books) {
       expect(json.find((b: any) => b.id === book.id)).toMatchObject({
@@ -1126,7 +1126,7 @@ describe.each(['sqlite', 'libsql', 'node-sqlite'] as const)('EntityManager (%s)'
       .execute<{ created_at: number }[]>(`select created_at as created_at from author4 where id = ${author.id}`);
     expect(res[0].created_at).toBe(+author.createdAt);
     const a = await orm.em.findOneOrFail(Author4, author.id);
-    expect(+a.createdAt!).toBe(+author.createdAt);
+    expect(+a.createdAt).toBe(+author.createdAt);
   });
 
   test('merging results from QB to existing entity', async () => {
@@ -1687,12 +1687,12 @@ describe.each(['sqlite', 'libsql', 'node-sqlite'] as const)('EntityManager (%s)'
     expect(res[0].created_at).toBe(+author.createdAt);
     expect(res[0].updated_at).toBe(+author.updatedAt);
     const a = await orm.em.findOneOrFail(Author4, author.id);
-    expect(+a.createdAt!).toBe(+author.createdAt);
+    expect(+a.createdAt).toBe(+author.createdAt);
     const a1 = await orm.em.findOneOrFail(Author4, { createdAt: { $eq: a.createdAt } });
-    expect(+a1.createdAt!).toBe(+author.createdAt);
+    expect(+a1.createdAt).toBe(+author.createdAt);
     expect(orm.em.merge(a1)).toBe(a1);
     const a2 = await orm.em.findOneOrFail(Author4, { updatedAt: { $eq: a.updatedAt } });
-    expect(+a2.updatedAt!).toBe(+author.updatedAt);
+    expect(+a2.updatedAt).toBe(+author.updatedAt);
   });
 
   test('exceptions', async () => {

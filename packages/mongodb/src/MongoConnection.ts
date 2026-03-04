@@ -148,7 +148,7 @@ export class MongoConnection extends Connection {
 
   mapOptions(overrides: MongoClientOptions): MongoClientOptions {
     const ret: MongoClientOptions = {};
-    const pool = this.config.get('pool')!;
+    const pool = this.config.get('pool');
     const username = this.config.get('user');
     const password = this.config.get('password') as string;
 
@@ -522,7 +522,7 @@ export class MongoConnection extends Connection {
         });
 
         query += log(() => `bulk.execute()`);
-        res = await this.rethrow(bulk.execute()!, query);
+        res = await this.rethrow(bulk.execute(), query);
         break;
       }
       case 'deleteMany':
@@ -554,10 +554,10 @@ export class MongoConnection extends Connection {
     this.logQuery(query!, { took: Date.now() - now, ...loggerContext });
 
     if (method === 'countDocuments') {
-      return res! as unknown as U;
+      return res as unknown as U;
     }
 
-    return this.transformResult<T>(res!) as U;
+    return this.transformResult<T>(res) as U;
   }
 
   private rethrow<T>(promise: Promise<T>, query: string): Promise<T> {

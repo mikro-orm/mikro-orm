@@ -1,4 +1,4 @@
-export * from './types.js';
+export type * from './types.js';
 export * from './EntitySchema.js';
 export * from './MetadataDiscovery.js';
 export * from './MetadataStorage.js';

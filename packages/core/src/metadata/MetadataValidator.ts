@@ -301,7 +301,7 @@ export class MetadataValidator {
       // For polymorphic relations, validate inversedBy against each target
       // The inverse property should exist on the target entities and reference back to this property
       for (const targetMeta of prop.polymorphTargets) {
-        const inverse = targetMeta.properties[prop.inversedBy!];
+        const inverse = targetMeta.properties[prop.inversedBy];
 
         // The inverse property is optional - some targets may not have it
         if (!inverse) {

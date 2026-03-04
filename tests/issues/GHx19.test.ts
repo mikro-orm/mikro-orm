@@ -60,7 +60,7 @@ afterAll(async () => {
 test('pagination and "for update" lock', async () => {
   const mock = mockLogger(orm);
   const res = await orm.em.transactional(async () => {
-    return await orm.em.find(
+    return orm.em.find(
       Client,
       {
         id: 123,

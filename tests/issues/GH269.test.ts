@@ -67,8 +67,8 @@ describe('GH issue 269', () => {
     b2.name = 'b2';
     b2.a = Reference.create(a2);
     b.a = b2.a;
-    expect(b.a!.unwrap().b!.unwrap()).toBe(b);
-    expect(b.a!.unwrap().b).toBe(wrap(b).toReference());
+    expect(b.a.unwrap().b!.unwrap()).toBe(b);
+    expect(b.a.unwrap().b).toBe(wrap(b).toReference());
   });
 
   test('1:1 populates owner even with autoJoinOneToOneOwner: false and when already loaded', async () => {

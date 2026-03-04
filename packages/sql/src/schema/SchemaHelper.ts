@@ -55,7 +55,7 @@ export abstract class SchemaHelper {
   }
 
   inferLengthFromColumnType(type: string): number | undefined {
-    const match = type.match(/^\w+\s*(?:\(\s*(\d+)\s*\)|$)/);
+    const match = /^\w+\s*(?:\(\s*(\d+)\s*\)|$)/.exec(type);
     if (!match) {
       return;
     }

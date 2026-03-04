@@ -235,7 +235,7 @@ export class CLIHelper {
     paths.push('./mikro-orm.config.js');
 
     /* v8 ignore next */
-    return Utils.unique(paths).filter(p => !p.match(/\.[mc]?ts$/) || typeScriptSupport);
+    return Utils.unique(paths).filter(p => !/\.[mc]?ts$/.exec(p) || typeScriptSupport);
   }
 
   private static async getConfigFile(paths: string[]): Promise<[string, unknown] | []> {

@@ -206,7 +206,7 @@ export class Configuration<
     }
 
     if (this.options.driver) {
-      this.driver = new this.options.driver!(this);
+      this.driver = new this.options.driver(this);
       this.platform = this.driver.getPlatform() as ReturnType<D['getPlatform']>;
       this.platform.setConfig(this);
       this.init(validate);
@@ -405,7 +405,7 @@ export class Configuration<
         this.options.dbName = this.get('dbName', decodeURIComponent(url.pathname).substring(1));
       }
     } catch {
-      const url = this.options.clientUrl.match(/:\/\/.*\/([^?]+)/);
+      const url = /:\/\/.*\/([^?]+)/.exec(this.options.clientUrl);
 
       if (url) {
         this.options.dbName = this.get('dbName', decodeURIComponent(url[1]));

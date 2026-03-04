@@ -47,7 +47,7 @@ describe('GH issue 940, 1117', () => {
     await orm.schema.create();
   });
 
-  afterAll(async () => await orm.close(true));
+  afterAll(async () => orm.close(true));
 
   test('A boolean in the nested where conditions is kept even if the primary key is BigIntType', async () => {
     const user1 = new User();

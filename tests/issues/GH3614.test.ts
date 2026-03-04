@@ -115,7 +115,7 @@ test('change a 1:1 relation twice with a new entity and delete the old one 1', a
   const oldOwner2 = await orm.em.refresh(oldOwner.unwrap());
   expect(oldOwner2).toBeNull();
 
-  const oldOwner3 = project.owner!;
+  const oldOwner3 = project.owner;
   const newOwner2 = orm.em.create(User, { name: 'Hank' });
   project.owner = wrap(newOwner2).toReference();
   expect(oldOwner3.unwrap().project1).toBeNull();

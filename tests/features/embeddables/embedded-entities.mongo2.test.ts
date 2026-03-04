@@ -298,7 +298,7 @@ describe('embedded entities in mongo (underscore naming strategy)', () => {
     });
 
     u.address2!.postalCode = '111';
-    u.address4!.postalCode = '999';
+    u.address4.postalCode = '999';
     await orm.em.flush();
     expect(mock.mock.calls[2][0]).toMatch(
       /db\.getCollection\('user'\)\.updateMany\({ _id: .* }, { '\$set': { addr_postal_code: '111', address4: { street: 'Downing street 13', postal_code: '999', city: 'London 4', country: 'UK 4' } } }, {}\);/,

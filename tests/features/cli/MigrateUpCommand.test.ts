@@ -16,7 +16,7 @@ describe('MigrateUpCommand', () => {
     getORMMock.mockResolvedValue(orm);
   });
 
-  afterAll(async () => await orm.close(true));
+  afterAll(async () => orm.close(true));
 
   test('builder', async () => {
     const cmd = MigrationCommandFactory.create('up');

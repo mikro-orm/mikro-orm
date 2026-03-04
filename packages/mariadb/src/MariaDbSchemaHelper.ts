@@ -180,7 +180,7 @@ export class MariaDbSchemaHelper extends MySqlSchemaHelper {
 
     for (const check of allChecks) {
       const key = this.getTableKey(check);
-      const match = check.expression.match(/^json_valid\(`(.*)`\)$/i);
+      const match = /^json_valid\(`(.*)`\)$/i.exec(check.expression);
       const col = columns?.[key]?.find(col => col.name === match?.[1]);
 
       if (col && match) {

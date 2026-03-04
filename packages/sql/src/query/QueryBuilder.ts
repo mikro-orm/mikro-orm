@@ -728,7 +728,7 @@ export class QueryBuilder<
         return f;
       }
 
-      const asMatch = f.match(FIELD_ALIAS_RE);
+      const asMatch = FIELD_ALIAS_RE.exec(f);
 
       if (asMatch) {
         return `${this.resolveNestedPath(asMatch[1].trim())} as ${asMatch[2]}`;
@@ -874,7 +874,7 @@ export class QueryBuilder<
     if (field) {
       this._fields = Utils.asArray(field as string);
     } else if (distinct || this.hasToManyJoins()) {
-      this._fields = this.mainAlias.meta!.primaryKeys;
+      this._fields = this.mainAlias.meta.primaryKeys;
     } else {
       this._fields = [raw('*')];
     }
@@ -1468,7 +1468,7 @@ export class QueryBuilder<
     ) {
       // use sub-query to support joining
       this.setFlag(this.type === QueryType.UPDATE ? QueryFlag.UPDATE_SUB_QUERY : QueryFlag.DELETE_SUB_QUERY);
-      this.select(this.mainAlias.meta!.primaryKeys, true);
+      this.select(this.mainAlias.meta.primaryKeys, true);
     }
 
     if (topLevel) {
@@ -1642,7 +1642,7 @@ export class QueryBuilder<
         aliased: [QueryType.SELECT, QueryType.COUNT].includes(this.type),
         convertCustomTypes: false,
         type: 'orderBy',
-      })!;
+      });
       this._orderBy.push(
         CriteriaNodeFactory.createNode<Entity>(this.metadata, this.mainAlias.entityName, processed).process(
           this as IQueryBuilder<Entity>,
@@ -1663,7 +1663,7 @@ export class QueryBuilder<
 
     for (const field of this._fields ?? []) {
       if (typeof field === 'string') {
-        const m = field.match(FIELD_ALIAS_RE);
+        const m = FIELD_ALIAS_RE.exec(field);
 
         if (m) {
           aliases.add(m[2]);
@@ -1773,14 +1773,14 @@ export class QueryBuilder<
     cond?: QBFilterQuery<Entity, RootAlias, Context, RawAliases> | string,
     params?: any[],
   ): SelectQueryBuilder<Entity, RootAlias, Hint, Context, RawAliases, Fields, CTEs> {
-    return this.having(cond!, params, '$and');
+    return this.having(cond, params, '$and');
   }
 
   orHaving(
     cond?: QBFilterQuery<Entity, RootAlias, Context, RawAliases> | string,
     params?: any[],
   ): SelectQueryBuilder<Entity, RootAlias, Hint, Context, RawAliases, Fields, CTEs> {
-    return this.having(cond!, params, '$or');
+    return this.having(cond, params, '$or');
   }
 
   onConflict<F extends Field<Entity, RootAlias, Context>>(
@@ -2283,7 +2283,7 @@ export class QueryBuilder<
       mapped = res.map(r => this.driver.mapResult<Entity>(r as Entity, meta, this._populate, this as any, map)!);
 
       if (options.mergeResults && joinedProps.length > 0) {
-        mapped = this.driver.mergeJoinedResult(mapped, this.mainAlias.meta!, joinedProps);
+        mapped = this.driver.mergeJoinedResult(mapped, this.mainAlias.meta, joinedProps);
       }
     } else {
       mapped = [this.driver.mapResult<Entity>(res, meta, joinedProps, this as any)!];
@@ -2351,10 +2351,10 @@ export class QueryBuilder<
       }
 
       if (stack.length > 0 && hash(stack[stack.length - 1]) !== hash(mapped)) {
-        const res = this.driver.mergeJoinedResult(stack, this.mainAlias.meta!, joinedProps);
+        const res = this.driver.mergeJoinedResult(stack, this.mainAlias.meta, joinedProps);
 
         for (const row of res) {
-          yield this.mapResult(row as EntityData<Entity>, options.mapResults);
+          yield this.mapResult(row, options.mapResults);
         }
 
         stack.length = 0;
@@ -2364,8 +2364,8 @@ export class QueryBuilder<
     }
 
     if (stack.length > 0) {
-      const merged = this.driver.mergeJoinedResult(stack, this.mainAlias.meta!, joinedProps);
-      yield this.mapResult(merged[0] as EntityData<Entity>, options.mapResults);
+      const merged = this.driver.mergeJoinedResult(stack, this.mainAlias.meta, joinedProps);
+      yield this.mapResult(merged[0], options.mapResults);
     }
   }
 
@@ -2428,7 +2428,7 @@ export class QueryBuilder<
       }
     }
 
-    return Utils.unique(entities) as Loaded<Entity, Hint, Fields>[];
+    return Utils.unique(entities);
   }
 
   /**
@@ -2949,7 +2949,7 @@ export class QueryBuilder<
       // Strip 'as alias' suffix if present — the alias is passed to mapper at the end
       let field = originalField;
       let customAlias: string | undefined;
-      const asMatch = originalField.match(FIELD_ALIAS_RE);
+      const asMatch = FIELD_ALIAS_RE.exec(originalField);
 
       if (asMatch) {
         field = asMatch[1].trim();
@@ -3183,10 +3183,7 @@ export class QueryBuilder<
       : subQuery instanceof NativeQueryBuilder
         ? subQuery.as(aliasName)
         : subQuery
-          ? raw(
-              `(${(subQuery as RawQueryFragment).sql}) as ${this.platform.quoteIdentifier(aliasName)}`,
-              (subQuery as RawQueryFragment).params,
-            )
+          ? raw(`(${subQuery.sql}) as ${this.platform.quoteIdentifier(aliasName)}`, subQuery.params)
           : this.helper.getTableName(entityName);
     const joinSchema = this._schema ?? this.em?.schema ?? schema;
 
@@ -3392,7 +3389,7 @@ export class QueryBuilder<
     // Add computed discriminator (CASE WHEN to determine concrete type)
     // descendants is pre-sorted by depth (deepest first) during discovery
     if (meta.tptDiscriminatorColumn) {
-      this._fields!.push(
+      this._fields.push(
         this.driver.buildTPTDiscriminatorExpression(meta, descendants, this._tptAlias, this.mainAlias.aliasName),
       );
     }
@@ -3505,7 +3502,7 @@ export class QueryBuilder<
       }
 
       if (meta && this.helper.isOneToOneInverse(fromField)) {
-        const prop = meta.properties[fromField as EntityKey<Entity>];
+        const prop = meta.properties[fromField];
         const alias = this.getNextAlias(prop.pivotEntity ?? prop.targetMeta!.class);
         const aliasedName = `${fromAlias}.${prop.name}#${alias}`;
         this._joins[aliasedName] = this.helper.joinOneToReference(
@@ -3570,7 +3567,7 @@ export class QueryBuilder<
 
         // https://stackoverflow.com/a/56815807/3665878
         if (parentJoin && !filter) {
-          const nested = (parentJoin!.nested ??= new Set());
+          const nested = (parentJoin.nested ??= new Set());
           join.type =
             join.type === JoinType.innerJoin ||
             [ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(parentJoin.prop.kind)
@@ -3612,12 +3609,12 @@ export class QueryBuilder<
 
         // https://stackoverflow.com/a/56815807/3665878
         if (join.parent?.type === JoinType.leftJoin || join.parent?.type === JoinType.nestedLeftJoin) {
-          const nested = (join.parent!.nested ??= new Set());
+          const nested = (join.parent.nested ??= new Set());
           join.type = join.type === JoinType.innerJoin ? JoinType.nestedInnerJoin : JoinType.nestedLeftJoin;
           nested.add(join);
         } else if (join.parent?.type === JoinType.nestedInnerJoin) {
           const group = lookupParentGroup(join.parent);
-          const nested = group ?? (join.parent!.nested ??= new Set());
+          const nested = group ?? (join.parent.nested ??= new Set());
           join.type = join.type === JoinType.innerJoin ? JoinType.nestedInnerJoin : JoinType.nestedLeftJoin;
           nested.add(join);
         }
@@ -3637,7 +3634,7 @@ export class QueryBuilder<
     const subQuery = this.clone(['_orderBy', '_fields', 'lockMode', 'lockTableAliases'])
       .select(pks as any)
       .groupBy(pks as any)
-      .limit(this._limit!);
+      .limit(this._limit);
 
     // revert the on conditions added via populateWhere, we want to apply those only once
     for (const join of Object.values(subQuery._joins)) {

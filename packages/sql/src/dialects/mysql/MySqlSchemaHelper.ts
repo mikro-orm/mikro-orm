@@ -74,7 +74,7 @@ export class MySqlSchemaHelper extends SchemaHelper {
         );
         if (createView[0]?.['Create View']) {
           // Extract SELECT statement from CREATE VIEW ... AS SELECT ...
-          const match = createView[0]['Create View'].match(/\bAS\s+(.+)$/is);
+          const match = /\bAS\s+(.+)$/is.exec(createView[0]['Create View']);
           definition = match?.[1]?.trim();
         }
       }
@@ -442,7 +442,7 @@ export class MySqlSchemaHelper extends SchemaHelper {
         o[item.table_name][item.column_name] = item.column_type
           .match(/enum\((.*)\)/)[1]
           .split(',')
-          .map((item: string) => item.match(/'(.*)'/)![1]);
+          .map((item: string) => /'(.*)'/.exec(item)![1]);
         return o;
       },
       {} as Dictionary<string[]>,

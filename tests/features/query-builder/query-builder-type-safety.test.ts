@@ -6,7 +6,7 @@ describe('QueryBuilder type safety', () => {
   let orm: MikroORM;
 
   beforeAll(async () => (orm = await initORMMySql('mysql')));
-  afterAll(async () => await orm.close(true));
+  afterAll(async () => orm.close(true));
 
   describe('context-aware field validation in where()', () => {
     test('should reject invalid property names after join alias', async () => {

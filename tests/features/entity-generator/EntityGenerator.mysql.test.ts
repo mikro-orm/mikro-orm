@@ -29,10 +29,7 @@ describe('EntityGenerator [mysql]', () => {
       entityDefinition => {
         const genOptions = {
           enumMode,
-          entityDefinition: (entityDefinition === 'defineEntity+types' ? 'defineEntity' : entityDefinition) as
-            | 'entitySchema'
-            | 'defineEntity'
-            | 'decorators',
+          entityDefinition: entityDefinition === 'defineEntity+types' ? 'defineEntity' : entityDefinition,
           inferEntityType: entityDefinition === 'defineEntity+types',
           identifiedReferences: true,
           bidirectionalRelations: true,

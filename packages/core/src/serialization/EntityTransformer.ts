@@ -129,7 +129,7 @@ export class EntityTransformer {
         continue;
       }
 
-      ret[this.propertyName(meta, prop!, raw) as any] = val;
+      ret[this.propertyName(meta, prop, raw) as any] = val;
     }
 
     if (!wrapped.isInitialized() && wrapped.hasPrimaryKey()) {
@@ -239,7 +239,7 @@ export class EntityTransformer {
         }) as EntityValue<Entity>;
       }
 
-      const wrapped = value && helper(value!);
+      const wrapped = value && helper(value);
       return wrapped ? (wrapped.toJSON() as EntityValue<Entity>) : value;
     }
 

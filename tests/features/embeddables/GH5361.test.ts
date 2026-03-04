@@ -128,7 +128,7 @@ beforeAll(async () => {
   });
 });
 
-afterAll(async () => await orm.close(true));
+afterAll(async () => orm.close(true));
 
 test('Should create the right db schema', async () => {
   const sqlCreate = await orm.schema.getCreateSchemaSQL();

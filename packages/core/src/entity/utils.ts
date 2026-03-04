@@ -99,7 +99,7 @@ function findPopulateEntry<Entity>(
   let current = populate;
 
   for (let i = 0; i < parts.length; i++) {
-    const entry = current.find(p => (p.field as string).split(':')[0] === parts[i]);
+    const entry = current.find(p => p.field.split(':')[0] === parts[i]);
 
     if (!entry) {
       return undefined;

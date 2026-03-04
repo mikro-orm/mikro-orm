@@ -195,7 +195,7 @@ export class EntityLoader {
         if (!ret[item.field].children && item.children) {
           ret[item.field].children = item.children;
         } else if (ret[item.field].children && item.children) {
-          ret[item.field].children!.push(...item.children!);
+          ret[item.field].children!.push(...item.children);
         }
 
         return ret;
@@ -280,7 +280,7 @@ export class EntityLoader {
       {
         ...options,
         where,
-        orderBy: innerOrderBy!,
+        orderBy: innerOrderBy,
       },
       !!(ref || prop.mapToPk),
     );
@@ -520,7 +520,7 @@ export class EntityLoader {
     if (polymorphicOwnerProp && Array.isArray(fk)) {
       const conditions = ids.map(id => {
         const pkValues = Object.values(id as Record<string, unknown>);
-        return Object.fromEntries((fk as string[]).map((col, idx) => [col, pkValues[idx]]));
+        return Object.fromEntries(fk.map((col, idx) => [col, pkValues[idx]]));
       });
       where = (conditions.length === 1 ? conditions[0] : { $or: conditions }) as FilterQuery<Entity>;
     } else {
@@ -773,7 +773,7 @@ export class EntityLoader {
         }),
       );
     } else {
-      await populateChildren(prop.targetMeta!, unique);
+      await populateChildren(prop.targetMeta, unique);
     }
   }
 

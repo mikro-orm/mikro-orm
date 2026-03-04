@@ -90,7 +90,7 @@ describe('UnitOfWork', () => {
           args.uow.recomputeSingleChangeSet(cs.entity);
         }
 
-        const toRemove = changeSets.find(cs => cs.entity instanceof FooBar && cs.entity.name === 'remove me');
+        const toRemove = changeSets.find(cs => cs.entity?.name === 'remove me');
 
         if (toRemove) {
           args.uow.computeChangeSet(toRemove.entity, ChangeSetType.DELETE);

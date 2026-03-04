@@ -306,7 +306,7 @@ export class UnitOfWork {
     schema?: string,
     strict = true,
   ): T | null {
-    const pk = Utils.extractPK(where, this.metadata.find<T>(entityName)!, strict);
+    const pk = Utils.extractPK(where, this.metadata.find<T>(entityName), strict);
 
     if (!pk) {
       return null;
@@ -326,7 +326,7 @@ export class UnitOfWork {
    * Returns stored snapshot of entity state that is used for change set computation.
    */
   getOriginalEntityData<T extends object>(entity: T): EntityData<T> | undefined {
-    return helper(entity as T).__originalEntityData;
+    return helper(entity).__originalEntityData;
   }
 
   getPersistStack(): Set<AnyEntity> {
@@ -466,7 +466,7 @@ export class UnitOfWork {
         continue;
       }
 
-      const target = relation && (relation[inverseProp as keyof typeof relation] as unknown);
+      const target = relation?.[inverseProp as keyof typeof relation] as unknown;
 
       if (relation && Utils.isCollection(target)) {
         target.removeWithoutPropagation(entity);
@@ -845,7 +845,7 @@ export class UnitOfWork {
 
     // When only parent properties changed (UPDATE), leaf payload is empty—create a stub anchor
     if (!leafCs && parentChangeSets.length > 0) {
-      leafCs = new ChangeSet(entity, originalChangeSet.type, {} as EntityDictionary<T>, meta as EntityMetadata<T>);
+      leafCs = new ChangeSet(entity, originalChangeSet.type, {} as EntityDictionary<T>, meta);
       leafCs.originalEntity = originalChangeSet.originalEntity;
     }
 
@@ -893,7 +893,7 @@ export class UnitOfWork {
         }
 
         if (wrapped.__originalEntityData?.[prop.name] != null) {
-          return Utils.getPrimaryKeyHash(Utils.asArray(wrapped.__originalEntityData![prop.name] as string));
+          return Utils.getPrimaryKeyHash(Utils.asArray(wrapped.__originalEntityData[prop.name] as string));
         }
 
         return undefined;
@@ -910,7 +910,7 @@ export class UnitOfWork {
               const prop = wrapped.__meta.properties[p];
               return prop.kind === ReferenceKind.SCALAR || prop.mapToPk
                 ? entity[prop.name]
-                : helper(entity[prop.name as EntityKey]!).getSerializedPrimaryKey();
+                : helper(entity[prop.name as EntityKey]).getSerializedPrimaryKey();
             }) as any,
           );
         }

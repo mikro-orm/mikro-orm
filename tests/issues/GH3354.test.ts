@@ -72,7 +72,7 @@ test(`GH issue 3354`, async () => {
   orm.em.clear();
 
   const g = await orm.em.findOneOrFail(Group, group);
-  const output = g!.toPOJO();
+  const output = g.toPOJO();
   expect(JSON.stringify(output, null, 2)).toBe(
     '{\n' +
       '  "id": 1,\n' +

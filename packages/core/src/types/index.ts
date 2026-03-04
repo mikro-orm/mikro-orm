@@ -24,6 +24,7 @@ import { Uint8ArrayType } from './Uint8ArrayType.js';
 import { UnknownType } from './UnknownType.js';
 import { UuidType } from './UuidType.js';
 
+export type { TransformContext, IType };
 export {
   Type,
   DateType,
@@ -48,9 +49,7 @@ export {
   UuidType,
   TextType,
   UnknownType,
-  TransformContext,
   IntervalType,
-  IType,
   CharacterType,
 };
 

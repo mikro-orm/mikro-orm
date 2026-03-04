@@ -255,7 +255,7 @@ describe('embedded entities in postgresql', () => {
     });
 
     u.address2!.postalCode = '111';
-    u.address4!.postalCode = '999';
+    u.address4.postalCode = '999';
     await orm.em.flush();
     expect(mock.mock.calls[4][0]).toMatch('begin');
     expect(mock.mock.calls[5][0]).toMatch('update "user" set "addr_postal_code" = ?, "address4" = ? where "id" = ?');

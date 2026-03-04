@@ -137,7 +137,7 @@ export function lookupPathFromDecorator(name: string, stack?: string[]): string 
   // __decorate(), replacing it with the constructor name. To support these cases we look for
   // Reflect.decorate() as well. Also when babel is used, we need to check
   // the `_applyDecoratedDescriptor` method instead.
-  let line = stack.findIndex(line => line.match(/__decorate|Reflect\.decorate|_applyDecoratedDescriptor/));
+  let line = stack.findIndex(line => /__decorate|Reflect\.decorate|_applyDecoratedDescriptor/.exec(line));
 
   // bun does not have those lines at all, only the DecorateProperty/DecorateConstructor,
   // but those are also present in node, so we need to check this only if they weren't found.
@@ -164,7 +164,7 @@ export function lookupPathFromDecorator(name: string, stack?: string[]): string 
   }
 
   try {
-    const re = stack[line].match(/\(.+\)/i) ? /\((.*):\d+:\d+\)/ : /at\s*(.*):\d+:\d+$/;
+    const re = /\(.+\)/i.exec(stack[line]) ? /\((.*):\d+:\d+\)/ : /at\s*(.*):\d+:\d+$/;
     return stack[line].match(re)![1];
   } catch {
     return name;

@@ -739,7 +739,7 @@ describe.each(Utils.keys(options))('em.upsert [%s]', type => {
     expect(author2).toMatchObject({ id: 2, age: 32, foo: false }); // merge only `age`
     expect(author3).toMatchObject({ id: 3, age: 33, foo: false }); // merge without `id`, different PK should be ignored
 
-    await assert(author2 as Author, mock);
+    await assert(author2, mock);
   });
 
   test('em.upsertMany(Type, [data], options) with advanced options (onConflictMergeFields)', async () => {
@@ -759,7 +759,7 @@ describe.each(Utils.keys(options))('em.upsert [%s]', type => {
     expect(author2).toMatchObject({ id: 2, age: 42, foo: false });
     expect(author3).toMatchObject({ id: 3, age: 43, foo: false });
 
-    await assert(author2 as Author, mock);
+    await assert(author2, mock);
   });
 
   test('em.upsertMany(Type, [data], options) with advanced options (onConflictExcludeFields)', async () => {
@@ -780,7 +780,7 @@ describe.each(Utils.keys(options))('em.upsert [%s]', type => {
     expect(author2).toMatchObject({ id: 2, age: 42, foo: true });
     expect(author3).toMatchObject({ id: 3, age: 43, foo: true });
 
-    await assert(author2 as Author, mock);
+    await assert(author2, mock);
   });
 
   test('em.upsert(Type, data) with disableIdentityMap', async () => {

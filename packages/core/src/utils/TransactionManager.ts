@@ -93,7 +93,7 @@ export class TransactionManager {
    */
   private resumeTransaction(em: EntityManager, suspended: unknown): void {
     if (suspended != null) {
-      em.setTransactionContext(suspended!);
+      em.setTransactionContext(suspended);
     }
   }
 
@@ -181,7 +181,7 @@ export class TransactionManager {
       cloneEventManager: true,
       disableTransactions: options.ignoreNestedTransactions,
       loggerContext: options.loggerContext,
-    }) as EntityManager;
+    });
   }
 
   /**
@@ -220,7 +220,7 @@ export class TransactionManager {
 
         for (const prop of meta.hydrateProps) {
           if (prop.kind === ReferenceKind.SCALAR) {
-            (parentEntity as Dictionary)[prop.name] = entity[prop.name] as any;
+            (parentEntity as Dictionary)[prop.name] = entity[prop.name];
           }
         }
       } else {

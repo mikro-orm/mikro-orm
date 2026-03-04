@@ -109,7 +109,7 @@ export class EntitySchemaSourceFile extends SourceFile {
       classBody += `${' '.repeat(2)}[${this.referenceCoreImport('EagerProps')}]?: ${eagerPropertyNames.join(' | ')};\n`;
     }
 
-    classBody += `${props.join('')}`;
+    classBody += props.join('');
 
     return this.getEntityClass(classBody);
   }

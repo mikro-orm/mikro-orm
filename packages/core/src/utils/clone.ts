@@ -19,7 +19,7 @@ function getPropertyDescriptor<T>(obj: T, prop: keyof T): PropertyDescriptor | n
 
   const proto = Object.getPrototypeOf(obj);
   if (proto) {
-    return getPropertyDescriptor(proto, prop as keyof typeof proto);
+    return getPropertyDescriptor(proto, prop);
   }
 
   return null;

@@ -976,7 +976,7 @@ describe('MetadataValidator', () => {
       postMeta.properties.likes.targetMeta = { root: likeMeta };
 
       // Add likeable property to likeMeta after postMeta is defined
-      (likeMeta as any).properties.likeable = {
+      likeMeta.properties.likeable = {
         name: 'likeable',
         kind: ReferenceKind.MANY_TO_ONE,
         type: 'Post',

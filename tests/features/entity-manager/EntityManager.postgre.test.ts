@@ -543,7 +543,7 @@ describe('EntityManagerPostgre', () => {
     await expect(authorRepository.findOne({ email: 'not existing' })).resolves.toBeNull();
 
     // full text search test
-    const fullTextBooks = (await booksRepository.find({ title: { $fulltext: 'life wall' } }))!;
+    const fullTextBooks = await booksRepository.find({ title: { $fulltext: 'life wall' } });
     expect(fullTextBooks.length).toBe(3);
 
     // count test
@@ -2345,12 +2345,12 @@ describe('EntityManagerPostgre', () => {
     );
     expect(res[0].created_at).toBe('2000-01-01 00:00:00.000000');
     const a = await orm.em.findOneOrFail(Author2, author.id);
-    expect(+a.createdAt!).toBe(+author.createdAt);
+    expect(+a.createdAt).toBe(+author.createdAt);
     const a1 = await orm.em.findOneOrFail(Author2, { createdAt: { $eq: a.createdAt } });
-    expect(+a1.createdAt!).toBe(+author.createdAt);
+    expect(+a1.createdAt).toBe(+author.createdAt);
     expect(orm.em.merge(a1)).toBe(a1);
     const a2 = await orm.em.findOneOrFail(Author2, { updatedAt: { $eq: a.updatedAt } });
-    expect(+a2.updatedAt!).toBe(+author.updatedAt);
+    expect(+a2.updatedAt).toBe(+author.updatedAt);
   });
 
   test('simple derived entity', async () => {

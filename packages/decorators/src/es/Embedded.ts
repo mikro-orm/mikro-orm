@@ -16,7 +16,7 @@ export function Embedded<Owner extends object, Target>(
     const meta = prepareMetadataContext(context, ReferenceKind.EMBEDDED);
     options = type instanceof Function ? { entity: type, ...options } : { ...type, ...options };
     Utils.defaultValue(options, 'prefix', true);
-    meta.properties![context.name as EntityKey<Owner>] = {
+    meta.properties[context.name as EntityKey<Owner>] = {
       name: context.name,
       kind: ReferenceKind.EMBEDDED,
       ...options,

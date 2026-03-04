@@ -49,7 +49,7 @@ describe('sqlite driver', () => {
     });
     await orm.schema.create();
   });
-  afterAll(async () => await orm.close(true));
+  afterAll(async () => orm.close(true));
 
   test('delete operation should throw ForeignKeyConstraintViolationException, when we have corresponding constraint in db', async () => {
     const entity = await createEntities(orm.em);

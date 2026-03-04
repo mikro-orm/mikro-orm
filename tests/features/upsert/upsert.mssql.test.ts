@@ -594,5 +594,5 @@ test('em.upsertMany(Type, [data], options) with advanced options (onConflictExcl
   expect(author2).toMatchObject({ age: 42, foo: true });
   expect(author3).toMatchObject({ age: 43, foo: true });
 
-  await assert(author2 as Author, mock);
+  await assert(author2, mock);
 });

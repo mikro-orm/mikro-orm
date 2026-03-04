@@ -15,7 +15,7 @@ function createDecorator<T extends object>(
     const meta = prepareMetadataContext(context, ReferenceKind.SCALAR);
     const key = serialized ? 'serializedPrimaryKey' : 'primary';
     options[key] = true;
-    meta.properties![context.name as EntityKey<T>] = {
+    meta.properties[context.name as EntityKey<T>] = {
       name: context.name,
       kind: ReferenceKind.SCALAR,
       ...options,

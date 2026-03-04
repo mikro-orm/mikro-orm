@@ -114,10 +114,10 @@ test('should expand embeddable on 1:m', async () => {
     { fields: ['name', 'details.address'], populate: ['details'], populateWhere: { details: userDetailsQ } },
   );
 
-  expect(user!.name).toBe('Foo');
-  expect(user!.details.count()).toEqual(1);
+  expect(user.name).toBe('Foo');
+  expect(user.details.count()).toEqual(1);
 
-  const userDetails = user!.details.getItems();
+  const userDetails = user.details.getItems();
   expect(userDetails[0].address).toBeDefined();
   expect(userDetails[0].address).toEqual({ name: 'FooBar', addressNo: 5 });
 });
@@ -133,10 +133,10 @@ test('should partially expand embeddable on 1:m', async () => {
     { fields: ['name', 'details.address.name'], populate: ['details'], populateWhere: { details: userDetailsQ } },
   );
 
-  expect(user!.name).toBe('Foo');
-  expect(user!.details.count()).toEqual(1);
+  expect(user.name).toBe('Foo');
+  expect(user.details.count()).toEqual(1);
 
-  const userDetails = user!.details.getItems();
+  const userDetails = user.details.getItems();
   expect(userDetails[0].address).toBeDefined();
   expect(userDetails[0].address).toEqual({ name: 'FooBar' });
 });
@@ -149,10 +149,10 @@ test('should expand object embeddable on 1:m', async () => {
     { fields: ['name', 'details.socials'], populate: ['details'], populateWhere: { details: userDetailsQ } },
   );
 
-  expect(user!.name).toBe('Foo');
-  expect(user!.details.count()).toEqual(1);
+  expect(user.name).toBe('Foo');
+  expect(user.details.count()).toEqual(1);
 
-  const userDetails = user!.details.getItems();
+  const userDetails = user.details.getItems();
   expect(userDetails[0].socials).toBeDefined();
   expect(userDetails[0].socials).toEqual({ instagram: 'foobar_insta', twitter: 'foobar_twitter' });
 });
@@ -164,10 +164,10 @@ test('should expand embeddable on 1:m without populateWhere', async () => {
     { fields: ['name', 'details.socials', 'details.address.name'], populate: ['details'] },
   );
 
-  expect(user!.name).toBe('Foo');
-  expect(user!.details.count()).toEqual(3);
+  expect(user.name).toBe('Foo');
+  expect(user.details.count()).toEqual(3);
 
-  const userDetails = user!.details.getItems();
+  const userDetails = user.details.getItems();
 
   expect(userDetails[0].address).toBeDefined();
   expect(userDetails[0].address).toEqual({ name: 'Bar' });
@@ -184,10 +184,10 @@ test('should expand embeddable on 1:m without populateWhere', async () => {
 test('should expand embeddable with projection & population all on 1:m', async () => {
   const user = await orm.em.findOneOrFail(User, { email: 'foo' }, { fields: ['*'], populate: ['*'] });
 
-  expect(user!.name).toBe('Foo');
-  expect(user!.details.count()).toEqual(3);
+  expect(user.name).toBe('Foo');
+  expect(user.details.count()).toEqual(3);
 
-  const userDetails = user!.details.getItems();
+  const userDetails = user.details.getItems();
 
   expect(userDetails[0].address).toBeDefined();
   expect(userDetails[0].address).toEqual({ name: 'Bar', addressNo: 1 });

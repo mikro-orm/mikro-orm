@@ -503,7 +503,7 @@ export class QueryBuilderHelper {
     }
 
     // when including the opening bracket/paren we consider it complex
-    return !re.source.match(/[{[(]/);
+    return !/[{[(]/.exec(re.source);
   }
 
   getRegExpParam(re: RegExp): string {
@@ -1077,7 +1077,7 @@ export class QueryBuilderHelper {
       // For TPT inheritance, resolve the correct alias for this property
       const tptAlias = this.getTPTAliasForProperty(field, this.alias);
       const alias = always ? (quote ? tptAlias : this.platform.quoteIdentifier(tptAlias)) + '.' : '';
-      const fieldName = this.fieldName(field, tptAlias, always, idx) as string | Raw;
+      const fieldName = this.fieldName(field, tptAlias, always, idx);
 
       if (fieldName instanceof Raw) {
         return fieldName.sql;
@@ -1092,7 +1092,7 @@ export class QueryBuilderHelper {
       // not when it's an embedded property name like 'profile1.identity.links'
       const isTableAlias = !!this.aliasMap[a];
       const resolvedAlias = isTableAlias ? this.getTPTAliasForProperty(f, a) : a;
-      const fieldName = this.fieldName(f, resolvedAlias, always, idx) as string | Raw;
+      const fieldName = this.fieldName(f, resolvedAlias, always, idx);
 
       if (fieldName instanceof Raw) {
         return fieldName.sql;
@@ -1146,7 +1146,7 @@ export class QueryBuilderHelper {
   }
 
   private isPrefixed(field: string): boolean {
-    return !!field.match(/[\w`"[\]]+\./);
+    return !!/[\w`"[\]]+\./.exec(field);
   }
 
   private fieldName(field: string, alias?: string, always?: boolean, idx = 0): string | Raw {

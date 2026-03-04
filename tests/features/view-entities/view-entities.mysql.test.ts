@@ -34,7 +34,7 @@ const BookSummary = defineEntity({
   tableName: 'book_summary_view',
   view: true,
   expression: (em: EM) => {
-    return (em as MySqlEM | MariaDbEM)
+    return (em as MySqlEM)
       .createQueryBuilder(Book2, 'b')
       .join('b.author', 'a')
       .select(['b.title', sql.ref('a', 'name').as('author_name')]);

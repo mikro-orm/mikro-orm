@@ -158,7 +158,7 @@ export class EntityAssigner {
             }
           }
 
-          return EntityAssigner.assignReference<T, C>(entity, value, prop, options.em!, options);
+          return EntityAssigner.assignReference<T, C>(entity, value, prop, options.em, options);
         }
 
         if (wrapped.__managed && wrap(unwrappedEntity).isInitialized()) {
@@ -206,7 +206,7 @@ export class EntityAssigner {
     const prop2 = meta2.properties[prop.inversedBy || prop.mappedBy];
 
     /* v8 ignore next */
-    if (prop2 && !ref![prop2.name]) {
+    if (prop2 && !ref[prop2.name]) {
       if (Reference.isReference<T>(ref)) {
         ref.unwrap()[prop2.name] = Reference.wrapReference(entity, prop2) as EntityValue<T>;
       } else {
@@ -347,7 +347,7 @@ export class EntityAssigner {
 
     const create = () =>
       EntityAssigner.validateEM(em) &&
-      em!.getEntityFactory().createEmbeddable<T>(prop.targetMeta!.class, value, {
+      em.getEntityFactory().createEmbeddable<T>(prop.targetMeta!.class, value, {
         convertCustomTypes: options.convertCustomTypes,
         newEntity: options.mergeEmbeddedProperties ? !('propName' in entity) : true,
       });
@@ -378,11 +378,7 @@ export class EntityAssigner {
     }
 
     if (Utils.isPlainObject(item) && EntityAssigner.validateEM(em)) {
-      return em.create<T, C>(
-        prop.targetMeta!.class,
-        item as RequiredEntityData<T, never, C>,
-        options as AssignOptions<C>,
-      );
+      return em.create<T, C>(prop.targetMeta!.class, item as RequiredEntityData<T, never, C>, options);
     }
 
     invalid.push(item);

@@ -691,7 +691,7 @@ export class SourceFile {
       decoratorArgs.push(prop.formula.toString());
     }
     if (Utils.hasObjectKeys(options)) {
-      decoratorArgs.push(`${this.serializeObject(options)}`);
+      decoratorArgs.push(this.serializeObject(options));
     }
 
     return `${decorator}(${decoratorArgs.join(', ')})\n`;
@@ -1077,13 +1077,13 @@ export class SourceFile {
     if (prop.joinColumns.length === 1) {
       options.joinColumn = this.quote(prop.joinColumns[0]);
     } else {
-      options.joinColumns = `[${prop.joinColumns.map(this.quote).join(', ')}]`;
+      options.joinColumns = `[${prop.joinColumns.map(c => this.quote(c)).join(', ')}]`;
     }
 
     if (prop.inverseJoinColumns.length === 1) {
       options.inverseJoinColumn = this.quote(prop.inverseJoinColumns[0]);
     } else {
-      options.inverseJoinColumns = `[${prop.inverseJoinColumns.map(this.quote).join(', ')}]`;
+      options.inverseJoinColumns = `[${prop.inverseJoinColumns.map(c => this.quote(c)).join(', ')}]`;
     }
 
     if (prop.fixedOrder) {

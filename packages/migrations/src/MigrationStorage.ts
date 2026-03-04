@@ -26,7 +26,7 @@ export class MigrationStorage {
 
   async executed(): Promise<string[]> {
     const migrations = await this.getExecutedMigrations();
-    return migrations.map(({ name }) => `${this.getMigrationName(name)}`);
+    return migrations.map(({ name }) => this.getMigrationName(name));
   }
 
   async logMigration(params: { name: string }): Promise<void> {

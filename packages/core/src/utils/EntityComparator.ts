@@ -367,7 +367,7 @@ export class EntityComparator {
       return this.formatCompositeKeyPart(part[0]);
     }
 
-    const formatted = part.map(this.formatCompositeKeyPart).join(', ');
+    const formatted = part.map(p => this.formatCompositeKeyPart(p)).join(', ');
     return `[${formatted}]`;
   }
 
@@ -547,7 +547,7 @@ export class EntityComparator {
 
     return parts
       .map(k => {
-        if (k.match(/^\[idx_\d+]$/)) {
+        if (/^\[idx_\d+]$/.exec(k)) {
           tail += k;
           return '';
         }
@@ -623,7 +623,7 @@ export class EntityComparator {
   ): string {
     const padding = ' '.repeat(level * 2);
     const nullCond = `entity${path.map(k => this.wrap(k)).join('')} === null`;
-    let ret = `${level === 1 ? '' : '\n'}`;
+    let ret = level === 1 ? '' : '\n';
 
     if (object) {
       ret += `${padding}if (${nullCond}) ret${dataKey} = null;\n`;
@@ -1000,11 +1000,11 @@ export class EntityComparator {
   }
 
   private wrap(key: string): string {
-    if (key.match(/^\[.*]$/)) {
+    if (/^\[.*]$/.exec(key)) {
       return key;
     }
 
-    return key.match(/^\w+$/) ? `.${key}` : `['${key}']`;
+    return /^\w+$/.exec(key) ? `.${key}` : `['${key}']`;
   }
 
   private safeKey(key: string): string {
