@@ -6,10 +6,10 @@ TypeScript ORM for Node.js based on Data Mapper, [Unit of Work](https://mikro-or
 
 > Heavily inspired by [Doctrine](https://www.doctrine-project.org/) and [Hibernate](https://hibernate.org/).
 
-[![NPM version](https://img.shields.io/npm/v/@mikro-orm/core.svg)](https://www.npmjs.com/package/@mikro-orm/core)
-[![NPM dev version](https://img.shields.io/npm/v/@mikro-orm/core/next.svg)](https://www.npmjs.com/package/@mikro-orm/core)
+[![NPM version](https://img.shields.io/npm/v/@mikro-orm/core.svg)](https://npmx.dev/package/@mikro-orm/core)
+[![NPM dev version](https://img.shields.io/npm/v/@mikro-orm/core/next.svg)](https://npmx.dev/package/@mikro-orm/core)
 [![Chat on discord](https://img.shields.io/discord/1214904142443839538?label=discord&color=blue)](https://discord.gg/w8bjxFHS7X)
-[![Downloads](https://img.shields.io/npm/dm/@mikro-orm/core.svg)](https://www.npmjs.com/package/@mikro-orm/core)
+[![Downloads](https://img.shields.io/npm/dm/@mikro-orm/core.svg)](https://npmx.dev/package/@mikro-orm/core)
 [![Coverage Status](https://img.shields.io/coveralls/mikro-orm/mikro-orm.svg)](https://coveralls.io/r/mikro-orm/mikro-orm?branch=master)
 [![Build Status](https://github.com/mikro-orm/mikro-orm/workflows/tests/badge.svg?branch=master)](https://github.com/mikro-orm/mikro-orm/actions?workflow=tests)
 
