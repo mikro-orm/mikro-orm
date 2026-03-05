@@ -58,7 +58,7 @@
     "access": "public"
   },
   "dependencies": {
-    "@mikro-orm/knex": "^6.6.9",
+    "@mikro-orm/knex": "6.6.9",
     "tedious": "19.2.1",
     "tsqlstring": "1.0.1"
   },
