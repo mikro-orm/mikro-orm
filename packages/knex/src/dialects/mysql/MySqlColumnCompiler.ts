@@ -11,7 +11,7 @@ export class MySqlColumnCompiler extends BaseMySqlColumnCompiler {
 
   /* istanbul ignore next */
   bigincrements(options: MySqlIncrementOptions) {
-    return this.generateDDL(options);
+    return this.generateDDL({ type: 'bigint', ...options });
   }
 
   private generateDDL(this: any, options: MySqlIncrementOptions = {}) {
