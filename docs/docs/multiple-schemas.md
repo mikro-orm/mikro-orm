@@ -154,8 +154,11 @@ const AuthorSchema = defineEntity({
   },
 });
 
+export class Author extends AuthorSchema.class {}
+AuthorSchema.setClass(Author);
+
 // Entity in an attached database
-export const UserProfile = defineEntity({
+const UserProfileSchema = defineEntity({
   name: 'UserProfile',
   schema: 'users_db',
   properties: {
@@ -164,8 +167,8 @@ export const UserProfile = defineEntity({
   },
 });
 
-export class Author extends AuthorSchema.class {}
-AuthorSchema.setClass(Author);
+export class UserProfile extends UserProfileSchema.class {}
+UserProfileSchema.setClass(UserProfile);
 ```
 
   </TabItem>

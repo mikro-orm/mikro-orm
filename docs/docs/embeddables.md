@@ -41,7 +41,7 @@ const UserSchema = defineEntity({
 });
 
 
-export const Address = defineEntity({
+const AddressSchema = defineEntity({
   name: 'Address',
   embeddable: true,
   properties: {
@@ -51,6 +51,9 @@ export const Address = defineEntity({
     country: p.string(),
   },
 });
+
+export class Address extends AddressSchema.class {}
+AddressSchema.setClass(Address);
 
 export class User extends UserSchema.class {}
 UserSchema.setClass(User);
@@ -337,7 +340,7 @@ const ContactSchema = defineEntity({
 });
 
 
-export const User = defineEntity({
+const UserSchema = defineEntity({
   name: 'User',
   properties: {
     id: p.integer().primary(),
@@ -347,6 +350,9 @@ export const User = defineEntity({
 
 export class Contact extends ContactSchema.class {}
 ContactSchema.setClass(Contact);
+
+export class User extends UserSchema.class {}
+UserSchema.setClass(User);
 ```
 
   </TabItem>
@@ -658,7 +664,7 @@ const UserSchema = defineEntity({
 });
 
 
-export const Profile = defineEntity({
+const ProfileSchema = defineEntity({
   name: 'Profile',
   embeddable: true,
   properties: {
@@ -667,14 +673,19 @@ export const Profile = defineEntity({
   },
 });
 
+export class Profile extends ProfileSchema.class {}
+ProfileSchema.setClass(Profile);
 
-export const Identity = defineEntity({
+const IdentitySchema = defineEntity({
   name: 'Identity',
   embeddable: true,
   properties: {
     email: p.string(),
   },
 });
+
+export class Identity extends IdentitySchema.class {}
+IdentitySchema.setClass(Identity);
 
 export class User extends UserSchema.class {}
 UserSchema.setClass(User);
@@ -837,7 +848,7 @@ It is also possible to use polymorphic embeddables. This means you can define mu
   <TabItem value="define-entity-class">
 
 ```ts
-import { defineEntity, p, type InferEntity } from '@mikro-orm/core';
+import { defineEntity, p } from '@mikro-orm/core';
 
 export enum AnimalType {
   CAT,
@@ -855,7 +866,10 @@ const AnimalSchema = defineEntity({
   },
 });
 
-export const Cat = defineEntity({
+export class Animal extends AnimalSchema.class {}
+AnimalSchema.setClass(Animal);
+
+const CatSchema = defineEntity({
   name: 'Cat',
   embeddable: true,
   extends: Animal,
@@ -865,7 +879,10 @@ export const Cat = defineEntity({
   },
 });
 
-export const Dog = defineEntity({
+export class Cat extends CatSchema.class {}
+CatSchema.setClass(Cat);
+
+const DogSchema = defineEntity({
   name: 'Dog',
   embeddable: true,
   extends: Animal,
@@ -875,7 +892,10 @@ export const Dog = defineEntity({
   },
 });
 
-export const Owner = defineEntity({
+export class Dog extends DogSchema.class {}
+DogSchema.setClass(Dog);
+
+const OwnerSchema = defineEntity({
   name: 'Owner',
   properties: {
     id: p.integer().primary(),
@@ -884,8 +904,8 @@ export const Owner = defineEntity({
   },
 });
 
-export class Animal extends AnimalSchema.class {}
-AnimalSchema.setClass(Animal);
+export class Owner extends OwnerSchema.class {}
+OwnerSchema.setClass(Owner);
 ```
 
   </TabItem>

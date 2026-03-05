@@ -181,7 +181,10 @@ const ArticleSchema = defineEntity({
   },
 });
 
-export const ArticleAttribute = defineEntity({
+export class Article extends ArticleSchema.class {}
+ArticleSchema.setClass(Article);
+
+const ArticleAttributeSchema = defineEntity({
   name: 'ArticleAttribute',
   properties: {
     article: () => p.manyToOne(Article).primary(),
@@ -191,8 +194,8 @@ export const ArticleAttribute = defineEntity({
   primaryKeys: ['article', 'attribute'],
 });
 
-export class Article extends ArticleSchema.class {}
-ArticleSchema.setClass(Article);
+export class ArticleAttribute extends ArticleAttributeSchema.class {}
+ArticleAttributeSchema.setClass(ArticleAttribute);
 ```
 
   </TabItem>
@@ -334,7 +337,10 @@ const UserSchema = defineEntity({
   },
 });
 
-export const Address = defineEntity({
+export class User extends UserSchema.class {}
+UserSchema.setClass(User);
+
+const AddressSchema = defineEntity({
   name: 'Address',
   properties: {
     user: () => p.oneToOne(User).primary(),
@@ -342,8 +348,8 @@ export const Address = defineEntity({
   primaryKeys: ['user'],
 });
 
-export class User extends UserSchema.class {}
-UserSchema.setClass(User);
+export class Address extends AddressSchema.class {}
+AddressSchema.setClass(Address);
 ```
 
   </TabItem>
@@ -456,7 +462,10 @@ const OrderSchema = defineEntity({
   },
 });
 
-export const Product = defineEntity({
+export class Order extends OrderSchema.class {}
+OrderSchema.setClass(Order);
+
+const ProductSchema = defineEntity({
   name: 'Product',
   properties: {
     id: p.integer().primary().autoincrement(),
@@ -465,7 +474,10 @@ export const Product = defineEntity({
   },
 });
 
-export const OrderItem = defineEntity({
+export class Product extends ProductSchema.class {}
+ProductSchema.setClass(Product);
+
+const OrderItemSchema = defineEntity({
   name: 'OrderItem',
   properties: {
     order: () => p.manyToOne(Order).primary(),
@@ -476,8 +488,8 @@ export const OrderItem = defineEntity({
   primaryKeys: ['order', 'product'],
 });
 
-export class Order extends OrderSchema.class {}
-OrderSchema.setClass(Order);
+export class OrderItem extends OrderItemSchema.class {}
+OrderItemSchema.setClass(OrderItem);
 ```
 
   </TabItem>

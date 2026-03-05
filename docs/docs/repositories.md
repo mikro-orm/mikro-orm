@@ -144,7 +144,11 @@ const AuthorSchema = defineEntity({
   },
 });
 
-const repo = em.getRepository(Author); // repo has type AuthorRepository```
+export class Author extends AuthorSchema.class {}
+AuthorSchema.setClass(Author);
+
+const repo = em.getRepository(Author); // repo has type AuthorRepository
+```
 
   </TabItem>
 
@@ -276,8 +280,12 @@ const AuthorSchema = defineEntity({
   },
 });
 
+export class Author extends AuthorSchema.class {}
+AuthorSchema.setClass(Author);
+
 // em.getRepository(Author) now returns AuthorRepository,
-// which has both BaseRepository methods and AuthorRepository methods.```
+// which has both BaseRepository methods and AuthorRepository methods.
+```
 
   </TabItem>
 

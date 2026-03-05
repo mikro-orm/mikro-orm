@@ -517,7 +517,7 @@ values={[
   <TabItem value="define-entity-class">
 
 ```ts title="./entities/Author.ts"
-import { defineEntity, p, PrimaryKeyProp } from '@mikro-orm/core';
+import { defineEntity, p } from '@mikro-orm/core';
 
 const AuthorSchema = defineEntity({
   name: 'Author',
@@ -526,7 +526,11 @@ const AuthorSchema = defineEntity({
   },
 });
 
-// PrimaryKeyProp is inferred automatically with defineEntity```
+export class Author extends AuthorSchema.class {}
+AuthorSchema.setClass(Author);
+
+// PrimaryKeyProp is inferred automatically with defineEntity
+```
 
   </TabItem>
 

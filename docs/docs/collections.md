@@ -160,7 +160,10 @@ const BookSchema = defineEntity({
   },
 });
 
-export const Author = defineEntity({
+export class Book extends BookSchema.class {}
+BookSchema.setClass(Book);
+
+const AuthorSchema = defineEntity({
   name: 'Author',
   properties: {
     id: p.integer().primary(),
@@ -168,8 +171,8 @@ export const Author = defineEntity({
   },
 });
 
-export class Book extends BookSchema.class {}
-BookSchema.setClass(Book);
+export class Author extends AuthorSchema.class {}
+AuthorSchema.setClass(Author);
 ```
 
   </TabItem>
@@ -355,8 +358,11 @@ const BookSchema = defineEntity({
   },
 });
 
+export class Book extends BookSchema.class {}
+BookSchema.setClass(Book);
+
 // inverse side
-export const BookTag = defineEntity({
+const BookTagSchema = defineEntity({
   name: 'BookTag',
   properties: {
     id: p.integer().primary(),
@@ -364,8 +370,8 @@ export const BookTag = defineEntity({
   },
 });
 
-export class Book extends BookSchema.class {}
-BookSchema.setClass(Book);
+export class BookTag extends BookTagSchema.class {}
+BookTagSchema.setClass(BookTag);
 ```
 
   </TabItem>
@@ -457,7 +463,10 @@ const OrderSchema = defineEntity({
   },
 });
 
-export const Product = defineEntity({
+export class Order extends OrderSchema.class {}
+OrderSchema.setClass(Order);
+
+const ProductSchema = defineEntity({
   name: 'Product',
   properties: {
     id: p.integer().primary(),
@@ -465,7 +474,10 @@ export const Product = defineEntity({
   },
 });
 
-export const OrderItem = defineEntity({
+export class Product extends ProductSchema.class {}
+ProductSchema.setClass(Product);
+
+const OrderItemSchema = defineEntity({
   name: 'OrderItem',
   properties: {
     order: () => p.manyToOne(Order).primary(),
@@ -474,8 +486,8 @@ export const OrderItem = defineEntity({
   },
 });
 
-export class Order extends OrderSchema.class {}
-OrderSchema.setClass(Order);
+export class OrderItem extends OrderItemSchema.class {}
+OrderItemSchema.setClass(OrderItem);
 ```
 
   </TabItem>
