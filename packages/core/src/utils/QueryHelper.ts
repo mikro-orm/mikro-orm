@@ -159,6 +159,10 @@ export class QueryHelper {
       QueryHelper.inlinePrimaryKeyObjects(where as Dictionary, meta, metadata);
     }
 
+    if (meta && root) {
+      QueryHelper.convertCompositeEntityRefs(where as Dictionary, meta);
+    }
+
     if (options.platform.getConfig().get('ignoreUndefinedInQuery') && where && typeof where === 'object') {
       Utils.dropUndefinedProperties(where);
     }
@@ -377,6 +381,86 @@ export class QueryHelper {
     const meta = entityName ? options.metadata.find<T>(entityName) : undefined;
 
     return meta?.properties[propName];
+  }
+
+  /**
+   * Converts entity references for composite FK properties into flat arrays
+   * of correctly-ordered join column values, before processParams flattens them
+   * incorrectly due to shared FK columns.
+   */
+  private static convertCompositeEntityRefs<T extends object>(where: Dictionary, meta: EntityMetadata<T>): void {
+    if (!Utils.isPlainObject(where)) {
+      return;
+    }
+
+    for (const k of Object.keys(where)) {
+      if (k in GroupOperator) {
+        if (Array.isArray(where[k])) {
+          where[k].forEach((sub: Dictionary) => this.convertCompositeEntityRefs(sub, meta));
+        }
+
+        continue;
+      }
+
+      if (k === '$not') {
+        this.convertCompositeEntityRefs(where[k], meta);
+        continue;
+      }
+
+      const prop = meta.properties[k as EntityKey<T>];
+
+      if (!prop?.joinColumns || prop.joinColumns.length <= 1) {
+        continue;
+      }
+
+      const w = where[k];
+
+      if (Utils.isEntity(w)) {
+        where[k] = this.extractJoinColumnValues(w, prop);
+      } else if (Utils.isPlainObject(w)) {
+        for (const op of Object.keys(w)) {
+          if (Utils.isOperator(op, false) && Array.isArray(w[op])) {
+            w[op] = w[op].map((item: unknown) =>
+              Utils.isEntity(item) ? this.extractJoinColumnValues(item, prop) : item,
+            );
+          }
+        }
+      }
+    }
+  }
+
+  /**
+   * Extracts values for a FK's join columns from an entity by traversing the FK chain.
+   * Handles shared FK columns (e.g., tenant_id referenced by multiple FKs) correctly.
+   */
+  private static extractJoinColumnValues(entity: any, prop: EntityProperty): any[] {
+    return prop.referencedColumnNames.map(refCol => {
+      return this.extractColumnValue(entity, prop.targetMeta!, refCol);
+    });
+  }
+
+  /**
+   * Extracts the value for a specific column from an entity by finding which PK property
+   * owns that column and recursively traversing FK references.
+   */
+  private static extractColumnValue(entity: any, meta: EntityMetadata, columnName: string): any {
+    for (const pk of meta.primaryKeys) {
+      const pkProp = meta.properties[pk];
+      const colIdx = pkProp.fieldNames.indexOf(columnName);
+
+      if (colIdx !== -1) {
+        const value = entity[pk];
+
+        if (pkProp.targetMeta && Utils.isEntity(value, true)) {
+          const refCol = pkProp.referencedColumnNames[colIdx];
+          return this.extractColumnValue(value, pkProp.targetMeta, refCol);
+        }
+
+        return value;
+      }
+    }
+
+    return null;
   }
 
 }
