@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.6.9](https://github.com/mikro-orm/mikro-orm/compare/v6.6.8...v6.6.9) (2026-03-05)
+
+
+### Bug Fixes
+
+* **migrations:** normalize snapshots and write on both up/down ([#7236](https://github.com/mikro-orm/mikro-orm/issues/7236)) ([a07aca6](https://github.com/mikro-orm/mikro-orm/commit/a07aca6d4183262b5fe3bfe124063c4c73c05a90)), closes [#7234](https://github.com/mikro-orm/mikro-orm/issues/7234)
+* **migrations:** skip snapshot write on `migration:up` to support read-only filesystems ([c8584e8](https://github.com/mikro-orm/mikro-orm/commit/c8584e866caca17d2e1fb5b5eec8494463b5f611)), closes [#7232](https://github.com/mikro-orm/mikro-orm/issues/7232)
+
+
+
+
+
 ## [6.6.8](https://github.com/mikro-orm/mikro-orm/compare/v6.6.7...v6.6.8) (2026-03-01)
 
 
