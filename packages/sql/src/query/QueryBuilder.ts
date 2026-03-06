@@ -549,40 +549,40 @@ export class QueryBuilder<
   /** @internal */
   _populateMap: Dictionary<string> = {};
 
-  protected aliasCounter = 0;
+  private aliasCounter = 0;
   protected flags: Set<QueryFlag> = new Set([QueryFlag.CONVERT_CUSTOM_TYPES]);
   protected finalized = false;
-  protected populateHintFinalized = false;
-  protected _joins: Dictionary<JoinOptions> = {};
-  protected _explicitAlias = false;
-  protected _schema?: string;
+  private populateHintFinalized = false;
+  private _joins: Dictionary<JoinOptions> = {};
+  private _explicitAlias = false;
+  private _schema?: string;
   protected _cond: Dictionary = {};
-  protected _data!: Dictionary;
+  private _data!: Dictionary;
   protected _orderBy: QueryOrderMap<Entity>[] = [];
-  protected _groupBy: InternalField<Entity>[] = [];
-  protected _having: Dictionary = {};
-  protected _returning?: InternalField<Entity>[];
-  protected _onConflict?: OnConflictClause<Entity>[];
+  private _groupBy: InternalField<Entity>[] = [];
+  private _having: Dictionary = {};
+  private _returning?: InternalField<Entity>[];
+  private _onConflict?: OnConflictClause<Entity>[];
   protected _limit?: number;
   protected _offset?: number;
-  protected _distinctOn?: string[];
-  protected _joinedProps = new Map<string, PopulateOptions<any>>();
-  protected _cache?: boolean | number | [string, number];
-  protected _indexHint?: string;
-  protected _collation?: string;
-  protected _comments: string[] = [];
-  protected _hintComments: string[] = [];
-  protected flushMode?: FlushMode;
-  protected lockMode?: LockMode;
-  protected lockTables?: string[];
-  protected subQueries: Dictionary<string> = {};
-  protected _mainAlias?: Alias<Entity>;
+  private _distinctOn?: string[];
+  private _joinedProps = new Map<string, PopulateOptions<any>>();
+  private _cache?: boolean | number | [string, number];
+  private _indexHint?: string;
+  private _collation?: string;
+  private _comments: string[] = [];
+  private _hintComments: string[] = [];
+  private flushMode?: FlushMode;
+  private lockMode?: LockMode;
+  private lockTables?: string[];
+  private subQueries: Dictionary<string> = {};
+  private _mainAlias?: Alias<Entity>;
   protected _aliases: Dictionary<Alias<any>> = {};
-  protected _tptAlias: Dictionary<string> = {}; // maps entity className to alias for TPT parent tables
-  protected _helper?: QueryBuilderHelper;
-  protected _query?: { sql?: string; params?: readonly unknown[]; qb: NativeQueryBuilder };
-  protected _unionQuery?: { sql: string; params: readonly unknown[] };
-  protected _ctes: (CteOptions & {
+  private _tptAlias: Dictionary<string> = {}; // maps entity className to alias for TPT parent tables
+  private _helper?: QueryBuilderHelper;
+  private _query?: { sql?: string; params?: readonly unknown[]; qb: NativeQueryBuilder };
+  private _unionQuery?: { sql: string; params: readonly unknown[] };
+  private _ctes: (CteOptions & {
     name: string;
     query: NativeQueryBuilder | RawQueryFragment;
     recursive?: boolean;

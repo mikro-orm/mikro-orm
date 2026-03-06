@@ -42,7 +42,6 @@ import { CursorError, ValidationError } from '../errors.js';
 import { DriverException } from '../exceptions.js';
 import { helper } from '../entity/wrap.js';
 import { PolymorphicRef } from '../entity/PolymorphicRef.js';
-import type { Logger } from '../logging/Logger.js';
 import { JsonType } from '../types/JsonType.js';
 import { MikroORM } from '../MikroORM.js';
 
@@ -52,16 +51,13 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
   protected readonly connection!: C;
   protected readonly replicas: C[] = [];
   protected readonly platform!: Platform;
-  protected readonly logger: Logger;
   protected comparator!: EntityComparator;
   protected metadata!: MetadataStorage;
 
   protected constructor(
     readonly config: Configuration,
     protected readonly dependencies: string[],
-  ) {
-    this.logger = this.config.getLogger();
-  }
+  ) {}
 
   abstract find<T extends object, P extends string = never, F extends string = '*', E extends string = never>(
     entityName: EntityName<T>,

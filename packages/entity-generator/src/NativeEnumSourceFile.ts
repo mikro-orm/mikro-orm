@@ -7,7 +7,7 @@ export class NativeEnumSourceFile extends SourceFile {
     namingStrategy: NamingStrategy,
     platform: Platform,
     options: GenerateOptions,
-    protected readonly nativeEnum: { name: string; schema?: string; items: string[] },
+    private readonly nativeEnum: { name: string; schema?: string; items: string[] },
   ) {
     super(meta, namingStrategy, platform, options);
   }
