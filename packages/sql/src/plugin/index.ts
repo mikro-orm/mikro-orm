@@ -79,7 +79,9 @@ export class MikroKyselyPlugin implements KyselyPlugin {
       UpdateQueryNodeClass.is(args.node) ||
       DeleteQueryNodeClass.is(args.node)
     ) {
-      MikroKyselyPlugin.queryNodeCache.set(args.queryId, { entityMap: this.transformer.getOutputEntityMap() });
+      // clone the entityMap because the transformer's internal map will be cleared and reused by the next query
+      const entityMap = new Map(this.transformer.getOutputEntityMap());
+      MikroKyselyPlugin.queryNodeCache.set(args.queryId, { entityMap });
     }
 
     return result;
