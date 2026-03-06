@@ -167,6 +167,13 @@ export class DatabaseTable {
         schema = undefined;
       }
 
+      // For cross-schema FKs on MySQL/MariaDB (where schema = database), when the referenced
+      // table has no explicit schema but the current table does, qualify with dbName so the
+      // FK can resolve the referenced table in the correct database
+      if (!schema && this.schema && !this.platform.getDefaultSchemaName()) {
+        schema = config.get('dbName');
+      }
+
       if (prop.createForeignKeyConstraint) {
         this.foreignKeys[constraintName] = {
           constraintName,
