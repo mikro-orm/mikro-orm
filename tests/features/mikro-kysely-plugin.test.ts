@@ -868,6 +868,94 @@ describe('MikroKyselyPlugin', () => {
       expect(result[0]).toMatchObject({ firstName: 'Jane' });
       expect(result[1]).toMatchObject({ firstName: 'John' });
     });
+
+    test('concurrent queries should not interfere with each other', async () => {
+      // This test reproduces the race condition where concurrent queries
+      // share the same transformer instance and entityMap gets corrupted.
+
+      // Run multiple concurrent queries across different entities
+      const iterations = 10;
+      const promises: Promise<void>[] = [];
+
+      for (let i = 0; i < iterations; i++) {
+        // Alternate between Person and Pet queries
+        if (i % 2 === 0) {
+          promises.push(
+            (async () => {
+              const result = await kysely
+                .selectFrom('person')
+                .select(['id', 'firstName', 'lastName', 'createdAt'])
+                .where('firstName', 'in', ['John', 'Jane'])
+                .execute();
+
+              // Verify Person results have camelCase property names
+              expect(result).toHaveLength(2);
+              result.forEach(row => {
+                expect(row).toHaveProperty('firstName');
+                expect(row).toHaveProperty('lastName');
+                expect(row).toHaveProperty('createdAt');
+                expect(row).not.toHaveProperty('first_name');
+                expect(row).not.toHaveProperty('last_name');
+                expect(row).not.toHaveProperty('created_at');
+              });
+            })(),
+          );
+        } else {
+          promises.push(
+            (async () => {
+              const result = await kysely
+                .selectFrom('pet')
+                .select(['id', 'name', 'species', 'owner', 'createdAt'])
+                .execute();
+
+              // Verify Pet results have camelCase property names
+              expect(result).toHaveLength(2);
+              result.forEach(row => {
+                expect(row).toHaveProperty('name');
+                expect(row).toHaveProperty('species');
+                expect(row).toHaveProperty('owner'); // relation property, not owner_id
+                expect(row).toHaveProperty('createdAt');
+                expect(row).not.toHaveProperty('owner_id');
+                expect(row).not.toHaveProperty('created_at');
+              });
+            })(),
+          );
+        }
+      }
+
+      // All queries should complete without errors and with correct property names
+      await Promise.all(promises);
+    });
+
+    test('concurrent queries with JOIN should preserve entity mapping', async () => {
+      // Test concurrent JOIN queries to ensure entityMap doesn't get corrupted
+      const iterations = 5;
+      const promises: Promise<void>[] = [];
+
+      for (let i = 0; i < iterations; i++) {
+        promises.push(
+          (async () => {
+            const result = await kysely
+              .selectFrom('toy as t')
+              .innerJoin('pet as p', 't.pet', 'p.id')
+              .leftJoin('person as per', 'p.owner', 'per.id')
+              .select(['t.name as toyName', 'p.name as petName', 'per.firstName', 'per.lastName'])
+              .execute();
+
+            expect(result).toHaveLength(2);
+            result.forEach(row => {
+              // All property names should be camelCase
+              expect(row).toHaveProperty('toyName');
+              expect(row).toHaveProperty('petName');
+              expect(row).toHaveProperty('firstName');
+              expect(row).toHaveProperty('lastName');
+            });
+          })(),
+        );
+      }
+
+      await Promise.all(promises);
+    });
   });
 
   describe('processOnCreateHooks', () => {
