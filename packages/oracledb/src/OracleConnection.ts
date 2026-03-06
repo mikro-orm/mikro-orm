@@ -69,7 +69,10 @@ export class OracleConnection extends AbstractSqlConnection {
       },
     };
 
-    return new OracleDialect({ pool, executeOptions });
+    return new OracleDialect({
+      pool,
+      executeOptions: executeOptions as Record<string, unknown>,
+    });
   }
 
   mapOptions(overrides: PoolAttributes): PoolAttributes {

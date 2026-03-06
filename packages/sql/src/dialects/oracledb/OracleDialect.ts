@@ -18,7 +18,39 @@ import {
   RawNode,
   type TransactionSettings,
 } from 'kysely';
-import oracledb, { type Connection, type ExecuteOptions, type Pool } from 'oracledb';
+
+/**
+ * Subset of oracledb's Pool interface used by the dialect.
+ * We define our own interface to avoid importing the `oracledb` package directly.
+ */
+export interface OraclePool {
+  getConnection(): Promise<OraclePoolConnection>;
+  close(drainTime?: number): Promise<void>;
+}
+
+/**
+ * Subset of oracledb's Connection interface used by the dialect.
+ */
+export interface OraclePoolConnection {
+  execute<R>(
+    sql: string,
+    params: unknown[],
+    options?: Record<string, unknown>,
+  ): Promise<{
+    rows?: R[];
+    rowsAffected?: number;
+    resultSet?: OracleResultSet<R>;
+    outBinds?: unknown;
+  }>;
+  commit(): Promise<void>;
+  rollback(): Promise<void>;
+  close(): Promise<void>;
+}
+
+interface OracleResultSet<R> {
+  getRow(): Promise<R>;
+  close(): Promise<void>;
+}
 
 function parseSavepointCommand(command: string, savepointName: string) {
   return RawNode.createWithChildren([
@@ -64,14 +96,16 @@ class OracleAdapter extends DialectAdapterBase {
   }
 }
 
+const OUT_FORMAT_OBJECT = 4002;
+
 let i = 0;
 
 class OracleConnection implements DatabaseConnection {
   readonly id = i++;
-  #executeOptions: ExecuteOptions;
-  #connection: Connection;
+  #executeOptions: Record<string, unknown>;
+  #connection: OraclePoolConnection;
 
-  constructor(connection: Connection, executeOptions?: ExecuteOptions) {
+  constructor(connection: OraclePoolConnection, executeOptions?: Record<string, unknown>) {
     this.#executeOptions = executeOptions ?? {};
     this.#connection = connection;
   }
@@ -80,7 +114,7 @@ class OracleConnection implements DatabaseConnection {
     const { sql, bindParams } = this.formatQuery(compiledQuery);
     const result = await this.#connection.execute<R>(sql, bindParams, {
       autoCommit: (compiledQuery as any).autoCommit,
-      outFormat: oracledb.OUT_FORMAT_OBJECT,
+      outFormat: OUT_FORMAT_OBJECT,
       ...this.#executeOptions,
     });
 
@@ -104,7 +138,7 @@ class OracleConnection implements DatabaseConnection {
     const result = await this.#connection.execute<R>(sql, bindParams, {
       resultSet: true,
       autoCommit: (compiledQuery as any).autoCommit,
-      outFormat: oracledb.OUT_FORMAT_OBJECT,
+      outFormat: OUT_FORMAT_OBJECT,
       ...this.#executeOptions,
     });
     const rs = result.resultSet!;
@@ -118,7 +152,7 @@ class OracleConnection implements DatabaseConnection {
     }
   }
 
-  get connection(): Connection {
+  get connection(): OraclePoolConnection {
     return this.#connection;
   }
 }
@@ -136,10 +170,7 @@ class OracleDriver implements Driver {
   }
 
   async acquireConnection(): Promise<OracleConnection> {
-    const connection = new OracleConnection(
-      (await this.#config.pool?.getConnection()) as Connection,
-      this.#config.executeOptions,
-    );
+    const connection = new OracleConnection(await this.#config.pool.getConnection(), this.#config.executeOptions);
     this.#connections.add(connection);
     return connection;
   }
@@ -207,9 +238,9 @@ class OracleDriver implements Driver {
   }
 }
 
-interface OracleDialectConfig {
-  pool: Pool;
-  executeOptions?: ExecuteOptions;
+export interface OracleDialectConfig {
+  pool: OraclePool;
+  executeOptions?: Record<string, unknown>;
 }
 
 export class OracleDialect implements Dialect {
