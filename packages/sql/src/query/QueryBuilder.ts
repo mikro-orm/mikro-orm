@@ -3241,6 +3241,7 @@ export class QueryBuilder<
           ? raw(`(${subQuery.sql}) as ${this.platform.quoteIdentifier(aliasName)}`, subQuery.params)
           : this.helper.getTableName(entityName);
     const joinSchema = this._schema ?? this.em?.schema ?? schema;
+    const schemaOverride = this._schema ?? this.em?.schema;
 
     if (meta.virtual && processVirtualEntity) {
       qb.from(raw(this.fromVirtual(meta)), { indexHint: this._indexHint });
@@ -3262,12 +3263,12 @@ export class QueryBuilder<
           qb.distinct();
         }
 
-        this.helper.processJoins(qb, this._joins, joinSchema);
+        this.helper.processJoins(qb, this._joins, joinSchema, schemaOverride);
         break;
       case QueryType.COUNT: {
         const fields = this._fields!.map(f => this.helper.mapper(f as string, this.type, undefined, undefined, schema));
         qb.count(fields, this.flags.has(QueryFlag.DISTINCT));
-        this.helper.processJoins(qb, this._joins, joinSchema);
+        this.helper.processJoins(qb, this._joins, joinSchema, schemaOverride);
         break;
       }
       case QueryType.INSERT:
@@ -3275,7 +3276,7 @@ export class QueryBuilder<
         break;
       case QueryType.UPDATE:
         qb.update(this._data);
-        this.helper.processJoins(qb, this._joins, joinSchema);
+        this.helper.processJoins(qb, this._joins, joinSchema, schemaOverride);
         this.helper.updateVersionProperty(qb, this._data);
         break;
       case QueryType.DELETE:
