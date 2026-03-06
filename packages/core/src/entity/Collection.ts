@@ -34,13 +34,13 @@ export interface MatchingOptions<T extends object, P extends string = never> ext
 export class Collection<T extends object, O extends object = object> {
   [k: number]: T;
 
-  protected readonly items = new Set<T>();
-  protected initialized = true;
-  protected dirty = false;
-  protected partial = false; // mark partially loaded collections, propagation is disabled for those
-  protected snapshot: T[] | undefined = []; // used to create a diff of the collection at commit time, undefined marks overridden values so we need to wipe when flushing
+  private readonly items = new Set<T>();
+  private initialized = true;
+  private dirty = false;
+  private partial = false; // mark partially loaded collections, propagation is disabled for those
+  private snapshot: T[] | undefined = []; // used to create a diff of the collection at commit time, undefined marks overridden values so we need to wipe when flushing
   private readonly?: boolean;
-  protected _count?: number;
+  private _count?: number;
   private _property?: EntityProperty;
   private _populated?: boolean;
 
@@ -948,7 +948,7 @@ export class Collection<T extends object, O extends object = object> {
     }
   }
 
-  protected incrementCount(value: number) {
+  private incrementCount(value: number) {
     if (typeof this._count === 'number' && this.initialized) {
       this._count += value;
     }

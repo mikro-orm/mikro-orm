@@ -17,7 +17,7 @@ import { MySqlMikroORM } from './MySqlMikroORM.js';
 import { MySqlPlatform } from './MySqlPlatform.js';
 
 export class MySqlDriver extends AbstractSqlDriver<MySqlConnection, MySqlPlatform> {
-  protected autoIncrementIncrement?: number;
+  private autoIncrementIncrement?: number;
 
   constructor(config: Configuration) {
     super(config, new MySqlPlatform(), MySqlConnection, ['kysely', 'mysql2']);

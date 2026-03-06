@@ -39,26 +39,26 @@ export class MikroTransformer extends OperationNodeTransformer {
    * Each level of query scope has its own Map of table aliases/names to EntityMetadata
    * Top of stack (highest index) is the current scope
    */
-  protected readonly contextStack: Map<string, EntityMetadata | undefined>[] = [];
+  private readonly contextStack: Map<string, EntityMetadata | undefined>[] = [];
 
   /**
    * Subquery alias map: maps subquery/CTE alias to its source table metadata
    * Used to resolve columns from subqueries/CTEs to their original table definitions
    */
-  protected readonly subqueryAliasMap: Map<string, EntityMetadata | undefined> = new Map();
+  private readonly subqueryAliasMap: Map<string, EntityMetadata | undefined> = new Map();
 
-  protected readonly metadata: MetadataStorage;
-  protected readonly platform: AbstractSqlPlatform;
+  private readonly metadata: MetadataStorage;
+  private readonly platform: AbstractSqlPlatform;
 
   /**
    * Global map of all entities involved in the query.
    * Populated during AST transformation and used for result transformation.
    */
-  protected readonly entityMap = new Map<string, EntityMetadata>();
+  private readonly entityMap = new Map<string, EntityMetadata>();
 
   constructor(
-    protected readonly em: SqlEntityManager,
-    protected readonly options: MikroKyselyPluginOptions = {},
+    private readonly em: SqlEntityManager,
+    private readonly options: MikroKyselyPluginOptions = {},
   ) {
     super();
     this.metadata = em.getMetadata();

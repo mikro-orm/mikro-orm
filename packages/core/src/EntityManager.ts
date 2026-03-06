@@ -104,7 +104,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     {};
   private readonly repositoryMap = new Map<EntityMetadata, EntityRepository<any>>();
   private readonly entityLoader: EntityLoader;
-  protected readonly comparator: EntityComparator;
+  private readonly comparator: EntityComparator;
   private readonly entityFactory: EntityFactory;
   private readonly unitOfWork: UnitOfWork;
   private readonly resultCache: CacheAdapter;
@@ -123,7 +123,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     readonly config: Configuration,
     protected readonly driver: Driver,
     protected readonly metadata: MetadataStorage,
-    protected readonly useContext = true,
+    private readonly useContext = true,
     protected readonly eventManager = new EventManager(config.get('subscribers')),
   ) {
     this.entityLoader = new EntityLoader(this);

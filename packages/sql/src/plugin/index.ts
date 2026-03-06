@@ -56,13 +56,13 @@ export interface MikroKyselyPluginOptions {
 }
 
 export class MikroKyselyPlugin implements KyselyPlugin {
-  protected static queryNodeCache = new WeakMap<any, QueryTransformCache>();
+  private static queryNodeCache = new WeakMap<any, QueryTransformCache>();
 
-  protected readonly transformer: MikroTransformer;
+  private readonly transformer: MikroTransformer;
 
   constructor(
-    protected readonly em: SqlEntityManager,
-    protected readonly options: MikroKyselyPluginOptions = {},
+    em: SqlEntityManager,
+    private readonly options: MikroKyselyPluginOptions = {},
   ) {
     this.transformer = new MikroTransformer(em, options);
   }
