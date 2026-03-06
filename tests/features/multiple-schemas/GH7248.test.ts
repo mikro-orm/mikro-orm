@@ -31,6 +31,8 @@ beforeAll(async () => {
   });
   await orm.schema.ensureDatabase();
   await orm.em.execute('create database if not exists `hub`');
+  // MariaDB doesn't support cross-database FK constraints, so we
+  // create the tables manually to avoid the FK resolution error
   await orm.em.execute('drop table if exists `hub`.`entity_in_another_schema`');
   await orm.em.execute('drop table if exists `user`');
   await orm.em.execute(
