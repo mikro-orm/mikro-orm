@@ -31,21 +31,12 @@ beforeAll(async () => {
   });
   await orm.schema.ensureDatabase();
   await orm.em.execute('create database if not exists `hub`');
-  // MariaDB doesn't support cross-database FK constraints, so we
-  // create the tables manually to avoid the FK resolution error
-  await orm.em.execute('drop table if exists `hub`.`entity_in_another_schema`');
-  await orm.em.execute('drop table if exists `user`');
-  await orm.em.execute(
-    'create table `user` (`id` int unsigned not null auto_increment primary key, `name` varchar(255) not null) default character set utf8mb4 engine = InnoDB',
-  );
-  await orm.em.execute(
-    'create table `hub`.`entity_in_another_schema` (`id` int unsigned not null auto_increment primary key, `user_id` int unsigned not null) default character set utf8mb4 engine = InnoDB',
-  );
+  await orm.schema.refresh();
+  await orm.schema.refresh({ schema: 'hub' });
 });
 
 afterAll(async () => {
-  await orm.em.execute('drop table if exists `hub`.`entity_in_another_schema`');
-  await orm.em.execute('drop table if exists `user`');
+  await orm.schema.drop({ schema: 'hub' });
   await orm.em.execute('drop database if exists `hub`');
   await orm.close(true);
 });
