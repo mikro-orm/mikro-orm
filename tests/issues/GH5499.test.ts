@@ -25,6 +25,11 @@ const options = {
   mysql: { dbName: '5499', port: 3308 },
   mariadb: { dbName: '5499', port: 3309 },
   postgresql: { dbName: '5499' },
+  oracledb: {
+    dbName: 'gh5499',
+    password: 'oracle123',
+    schemaGenerator: { managementDbName: 'system', tableSpace: 'mikro_orm' },
+  },
 };
 
 describe.each(Utils.keys(options))('GH #5499 [%s]', type => {

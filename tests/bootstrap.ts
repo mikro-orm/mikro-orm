@@ -15,6 +15,7 @@ import { MariaDbDriver } from '@mikro-orm/mariadb';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { LibSqlDriver } from '@mikro-orm/libsql';
 import { MsSqlDriver } from '@mikro-orm/mssql';
+import { OracleDriver } from '@mikro-orm/oracledb';
 
 import {
   Address2,
@@ -51,6 +52,7 @@ export const PLATFORMS = {
   sqlite: SqliteDriver,
   libsql: LibSqlDriver,
   'node-sqlite': NodeSqliteDriver,
+  oracledb: OracleDriver,
 };
 
 let ensureIndexes = true; // ensuring indexes is slow, and it is enough to make it once
@@ -226,6 +228,44 @@ export async function initORMMsSql(additionalOptions: Partial<Options<MsSqlDrive
   }
 
   Author2Subscriber.log.length = 0;
+  EverythingSubscriber.log.length = 0;
+  FlushSubscriber.log.length = 0;
+
+  return orm;
+}
+
+export async function initORMOracleDb(
+  dbName = 'mikro_orm_test_sg',
+  options?: { schema?: 'refresh' | 'update' | 'none' },
+) {
+  const orm = await MikroORM.init({
+    entities: [Author2, Address2, Book2, BookTag2, Publisher2, Test2, FooBar2, FooBaz2, FooParam2, Configuration2],
+    dbName,
+    baseDir: BASE_DIR,
+    driver: OracleDriver,
+    password: 'oracle123',
+    schemaGenerator: { managementDbName: 'system', tableSpace: 'mikro_orm' },
+    debug: ['query', 'query-params'],
+    autoJoinOneToOneOwner: false,
+    logger: i => i,
+    metadataProvider: ReflectMetadataProvider,
+    migrations: { path: BASE_DIR + '/../temp/migrations', snapshot: false },
+    forceEntityConstructor: [FooBar2],
+    subscribers: [Test2Subscriber],
+    extensions: [Migrator, SeedManager, EntityGenerator],
+  });
+
+  const schemaMode = options?.schema ?? 'refresh';
+
+  if (schemaMode === 'refresh') {
+    await orm.schema.refresh();
+  } else if (schemaMode === 'update') {
+    await orm.schema.update();
+    await orm.schema.clear();
+  }
+
+  Author2Subscriber.log.length = 0;
+  Test2Subscriber.log.length = 0;
   EverythingSubscriber.log.length = 0;
   FlushSubscriber.log.length = 0;
 

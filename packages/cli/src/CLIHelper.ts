@@ -278,6 +278,9 @@ export class CLIHelper {
       case 'libsql':
         ret.driver ??= await import('@mikro-orm/libsql').then(m => m.LibSqlDriver);
         break;
+      case 'oracledb':
+        ret.driver ??= await import('@mikro-orm/oracledb').then(m => m.OracleDriver);
+        break;
     }
 
     return ret as Options<D>;

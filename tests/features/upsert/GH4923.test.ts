@@ -19,6 +19,11 @@ const options = {
   mysql: { dbName: 'mikro_orm_upsert_4923', port: 3308 },
   mariadb: { dbName: 'mikro_orm_upsert_4923', port: 3309 },
   postgresql: { dbName: 'mikro_orm_upsert_4923' },
+  oracledb: {
+    dbName: 'mikro_orm_upsert_4923',
+    password: 'oracle123',
+    schemaGenerator: { managementDbName: 'system', tableSpace: 'mikro_orm' },
+  },
 };
 
 describe.each(Utils.keys(options))('GH #4923 [%s]', type => {

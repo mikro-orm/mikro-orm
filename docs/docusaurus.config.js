@@ -24,6 +24,7 @@ const packages = [
   'sqlite',
   'libsql',
   'mssql',
+  'oracledb',
   'mongodb',
 ].map(d => ({ path: `packages/${d}` }));
 

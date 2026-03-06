@@ -2083,9 +2083,64 @@ export class QueryBuilder<
       this.helper.getLockSQL(qb, this.lockMode, this.lockTables, this._joins);
     }
 
-    this.helper.finalize(this.type, qb, this.mainAlias.meta, this._data, this._returning);
+    this.processReturningStatement(qb, this.mainAlias.meta, this._data, this._returning);
 
     return (this._query!.qb = qb);
+  }
+
+  protected processReturningStatement(
+    qb: NativeQueryBuilder,
+    meta?: EntityMetadata,
+    data?: Dictionary,
+    returning?: Field<any>[],
+  ): void {
+    const usesReturningStatement = this.platform.usesReturningStatement() || this.platform.usesOutputStatement();
+
+    if (!meta || !data || !usesReturningStatement) {
+      return;
+    }
+
+    // always respect explicit returning hint
+    if (returning && returning.length > 0) {
+      qb.returning(returning.map(field => this.helper.mapper(field as string, this.type)));
+
+      return;
+    }
+
+    if (this.type === QueryType.INSERT) {
+      const returningProps = meta.hydrateProps
+        .filter(
+          prop =>
+            prop.returning || (prop.persist !== false && ((prop.primary && prop.autoincrement) || prop.defaultRaw)),
+        )
+        .filter(prop => !(prop.name in data));
+
+      if (returningProps.length > 0) {
+        qb.returning(Utils.flatten(returningProps.map(prop => prop.fieldNames)));
+      }
+
+      return;
+    }
+
+    if (this.type === QueryType.UPDATE) {
+      const returningProps = meta.hydrateProps.filter(prop => prop.fieldNames && isRaw(data[prop.fieldNames[0]]));
+
+      if (returningProps.length > 0) {
+        qb.returning(
+          returningProps.flatMap((prop): (string | Raw)[] => {
+            if (prop.hasConvertToJSValueSQL) {
+              const aliased = this.platform.quoteIdentifier(prop.fieldNames[0]);
+              const sql =
+                prop.customType!.convertToJSValueSQL!(aliased, this.platform) +
+                ' as ' +
+                this.platform.quoteIdentifier(prop.fieldNames[0]);
+              return [raw(sql)];
+            }
+            return prop.fieldNames;
+          }) as any,
+        );
+      }
+    }
   }
 
   /**
@@ -3143,7 +3198,7 @@ export class QueryBuilder<
     return field;
   }
 
-  private init(type: QueryType, data?: any, cond?: any): this {
+  protected init(type: QueryType, data?: any, cond?: any): this {
     this.ensureNotFinalized();
     this._type = type;
 

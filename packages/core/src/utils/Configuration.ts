@@ -1173,6 +1173,7 @@ export interface Options<
      * When not set, no rule is emitted and the database uses its native default (NO ACTION/RESTRICT).
      */
     defaultDeleteRule?: 'cascade' | 'no action' | 'set null' | 'set default' | 'restrict';
+    tableSpace?: string;
   };
   /**
    * Embeddable entity configuration options.

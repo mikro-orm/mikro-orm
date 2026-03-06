@@ -8,10 +8,26 @@ export class UuidType extends Type<string | null | undefined> {
   }
 
   override compareAsType(): string {
-    return 'string';
+    return this.platform?.compareUuids() ?? 'string';
+  }
+
+  override convertToDatabaseValue(value: string | null | undefined, platform: Platform): string | null {
+    if (value == null) {
+      return value as null;
+    }
+
+    return platform.convertUuidToDatabaseValue(value) as string;
+  }
+
+  override convertToJSValue(value: string | null | undefined, platform: Platform): string | null | undefined {
+    if (value == null) {
+      return value;
+    }
+
+    return platform.convertUuidToJSValue(value) as string;
   }
 
   override ensureComparable(): boolean {
-    return false;
+    return this.platform?.compareUuids() !== 'string';
   }
 }

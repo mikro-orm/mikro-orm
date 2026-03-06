@@ -23,6 +23,7 @@ const options = {
   mariadb: { port: 3309 },
   mssql: { password: 'Root.Root' },
   postgresql: {},
+  oracledb: { password: 'oracle123', schemaGenerator: { managementDbName: 'system', tableSpace: 'mikro_orm' } },
 };
 
 describe.each(Utils.keys(options))('String escape [%s]', type => {

@@ -5,7 +5,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Overview
 
 MikroORM is a TypeScript ORM for Node.js based on Data Mapper, Unit of Work, and Identity Map patterns. Supports
-MongoDB, MySQL, MariaDB, PostgreSQL, SQLite, libSQL, and MSSQL databases.
+MongoDB, MySQL, MariaDB, PostgreSQL, SQLite, libSQL, MSSQL, and Oracle databases.
 
 ## Essential Commands
 
@@ -38,6 +38,8 @@ cd packages/[name] && yarn build
 ```
 
 ### Running Specific Tests
+
+Tests run on TypeScript directly (no build needed). You only need to build before committing, not before running tests.
 
 ```bash
 yarn test sqlite

@@ -55,6 +55,7 @@ Full list of currently available drivers:
 - `@mikro-orm/sqlite`
 - `@mikro-orm/libsql`
 - `@mikro-orm/mssql`
+- `@mikro-orm/oracledb`
 - `@mikro-orm/mongodb`
 
 :::

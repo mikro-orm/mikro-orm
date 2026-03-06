@@ -40,7 +40,7 @@ interface Options {
   onConflict?: OnConflictClause;
   lockMode?: LockMode;
   lockTables?: string[];
-  returning?: (string | RawQueryFragment)[];
+  returning?: (string | RawQueryFragment | [name: string, type: unknown])[];
   comment?: string[];
   hintComment?: string[];
   flags?: Set<QueryFlag>;
@@ -48,7 +48,7 @@ interface Options {
   ctes?: CteClause[];
 }
 
-interface TableOptions {
+export interface TableOptions {
   schema?: string;
   indexHint?: string;
   alias?: string;
@@ -95,7 +95,8 @@ export class NativeQueryBuilder implements Subquery {
     }
 
     if (typeof tableName === 'string') {
-      const alias = options?.alias ? ` as ${this.platform.quoteIdentifier(options.alias)}` : '';
+      const asKeyword = this.platform.usesAsKeyword() ? ' as ' : ' ';
+      const alias = options?.alias ? `${asKeyword}${this.platform.quoteIdentifier(options.alias)}` : '';
       const schema =
         options?.schema && options.schema !== this.platform.getDefaultSchemaName() ? `${options.schema}.` : '';
       tableName = this.quote(schema + tableName) + alias;
@@ -215,7 +216,7 @@ export class NativeQueryBuilder implements Subquery {
     this.addOnConflictClause();
 
     if (this.options.returning && this.platform.usesReturningStatement()) {
-      const fields = this.options.returning.map(field => this.quote(field));
+      const fields = this.options.returning.map(field => this.quote(field as string));
       this.parts.push(`returning ${fields.join(', ')}`);
     }
 
@@ -367,7 +368,7 @@ export class NativeQueryBuilder implements Subquery {
     return options;
   }
 
-  returning(fields: (string | RawQueryFragment)[]) {
+  returning(fields: (string | RawQueryFragment | [name: string, type: unknown])[]) {
     this.options.returning = fields;
     return this;
   }
@@ -498,7 +499,7 @@ export class NativeQueryBuilder implements Subquery {
 
   protected addOutputClause(type: 'inserted' | 'deleted') {
     if (this.options.returning && this.platform.usesOutputStatement()) {
-      const fields = this.options.returning.map(field => `${type}.${this.quote(field)}`);
+      const fields = this.options.returning.map(field => `${type}.${this.quote(field as string)}`);
       this.parts.push(`output ${fields.join(', ')}`);
     }
   }
@@ -660,7 +661,8 @@ export class NativeQueryBuilder implements Subquery {
       const a = this.platform.quoteIdentifier(parts[0]);
       const b = this.platform.quoteIdentifier(parts[1]);
 
-      return `${a} as ${b}`;
+      const asKeyword = this.platform.usesAsKeyword() ? ' as ' : ' ';
+      return `${a}${asKeyword}${b}`;
     }
 
     if (id === '*') {

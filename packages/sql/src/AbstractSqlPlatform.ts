@@ -167,4 +167,13 @@ export abstract class AbstractSqlPlatform extends Platform {
       throw new Error(`Invalid collation name: '${collation}'. Collation names must contain only word characters.`);
     }
   }
+
+  /**
+   * Maps a runtime type name (e.g. 'string', 'number') to a driver-specific bind type constant.
+   * Used by NativeQueryBuilder for output bindings.
+   * @internal
+   */
+  mapToBindType(type: string): unknown {
+    return type;
+  }
 }

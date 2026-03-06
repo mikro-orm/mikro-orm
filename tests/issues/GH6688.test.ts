@@ -43,6 +43,11 @@ const options = {
   mariadb: { dbName: 'default_array_values', port: 3309 },
   postgresql: { dbName: 'default_array_values' },
   mssql: { dbName: 'default_array_values', password: 'Root.Root' },
+  oracledb: {
+    dbName: 'default_array_vals',
+    password: 'oracle123',
+    schemaGenerator: { managementDbName: 'system', tableSpace: 'mikro_orm' },
+  },
 };
 
 describe.each(Utils.keys(options))('default array values [%s]', type => {

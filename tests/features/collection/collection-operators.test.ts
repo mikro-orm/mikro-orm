@@ -75,6 +75,11 @@ const options = {
   mysql: { dbName: 'mikro_orm_collection_ops', port: 3308 },
   mariadb: { dbName: 'mikro_orm_collection_ops', port: 3309 },
   postgresql: { dbName: 'mikro_orm_collection_ops' },
+  oracledb: {
+    dbName: 'mikro_orm_coll_ops',
+    password: 'oracle123',
+    schemaGenerator: { managementDbName: 'system', tableSpace: 'mikro_orm' },
+  },
 };
 
 describe.each(Utils.keys(options))('collection operators [%s]', type => {

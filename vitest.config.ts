@@ -51,26 +51,25 @@ export default defineConfig({
     globals: true,
     coverage: {
       reporter: ['clover', 'json', 'lcov', 'text'],
-      include: [
-        'packages/*/src/**/*.ts',
-      ],
-      exclude: [
-        'packages/cli/src/cli.ts',
-        'packages/mikro-orm/src/index.ts',
-      ],
+      include: ['packages/*/src/**/*.ts'],
+      exclude: ['packages/cli/src/cli.ts', 'packages/mikro-orm/src/index.ts'],
     },
-    setupFiles: [
-      './tests/setup.ts',
-    ],
+    setupFiles: ['./tests/setup.ts'],
     globalSetup: './tests/globalSetup.ts',
     disableConsoleIntercept: true,
     clearMocks: true,
     isolate: false,
     testTimeout: 60_000,
-    hookTimeout: 60_000,
+    hookTimeout: 120_000,
     alias: [
-      { find: '@mikro-orm/mongo-highlighter', replacement: new URL('/node_modules/@mikro-orm/mongo-highlighter', import.meta.url).pathname },
-      { find: '@mikro-orm/sql-highlighter', replacement: new URL('/node_modules/@mikro-orm/sql-highlighter', import.meta.url).pathname },
+      {
+        find: '@mikro-orm/mongo-highlighter',
+        replacement: new URL('/node_modules/@mikro-orm/mongo-highlighter', import.meta.url).pathname,
+      },
+      {
+        find: '@mikro-orm/sql-highlighter',
+        replacement: new URL('/node_modules/@mikro-orm/sql-highlighter', import.meta.url).pathname,
+      },
       { find: 'mikro-orm', replacement: `${root}/mikro-orm/src` },
       { find: '@mikro-orm/core/file-discovery', replacement: `${root}/core/src/metadata/discover-entities.ts` },
       { find: '@mikro-orm/core/fs-utils', replacement: `${root}/core/src/utils/fs-utils.ts` },
@@ -81,6 +80,6 @@ export default defineConfig({
       { find: '@mikro-orm/decorators/legacy', replacement: `${root}/decorators/src/legacy/index.ts` },
       { find: /^@mikro-orm\/(.*)$/, replacement: `${root}/$1/src` },
     ],
-    retry: process.env.RETRY_TESTS ? 3 : 0,
+    retry: process.env.RETRY_TESTS ? 1 : 0,
   },
 });

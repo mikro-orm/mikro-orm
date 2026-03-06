@@ -34,6 +34,9 @@ npm install @mikro-orm/core @mikro-orm/libsql
 
 # for mssql
 npm install @mikro-orm/core @mikro-orm/mssql
+
+# for oracle
+npm install @mikro-orm/core @mikro-orm/oracledb
 ```
 
 Then call `MikroORM.init` as part of bootstrapping your app:
