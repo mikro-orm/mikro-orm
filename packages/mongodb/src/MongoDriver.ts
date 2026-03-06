@@ -36,8 +36,8 @@ import { MongoMikroORM } from './MongoMikroORM.js';
 export class MongoDriver extends DatabaseDriver<MongoConnection> {
   override [EntityManagerType]!: MongoEntityManager<this>;
 
-  protected override readonly connection = new MongoConnection(this.config);
-  protected override readonly platform = new MongoPlatform();
+  protected override readonly connection: MongoConnection = new MongoConnection(this.config);
+  protected override readonly platform: MongoPlatform = new MongoPlatform();
 
   constructor(config: Configuration) {
     super(config, ['mongodb']);

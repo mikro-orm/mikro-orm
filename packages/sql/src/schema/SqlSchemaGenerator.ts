@@ -8,6 +8,7 @@ import {
   type EntityMetadata,
   type ISchemaGenerator,
   type MikroORM,
+  type Options,
   type Transaction,
   type UpdateSchemaOptions,
   Utils,
@@ -17,11 +18,12 @@ import type { DatabaseView, SchemaDifference, TableDifference } from '../typings
 import { DatabaseSchema } from './DatabaseSchema.js';
 import type { AbstractSqlDriver } from '../AbstractSqlDriver.js';
 import { SchemaComparator } from './SchemaComparator.js';
+import type { SchemaHelper } from './SchemaHelper.js';
 import type { SqlEntityManager } from '../SqlEntityManager.js';
 
 export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDriver> implements ISchemaGenerator {
-  protected readonly helper = this.platform.getSchemaHelper()!;
-  protected readonly options = this.config.get('schemaGenerator');
+  protected readonly helper: SchemaHelper = this.platform.getSchemaHelper()!;
+  protected readonly options: NonNullable<Options['schemaGenerator']> = this.config.get('schemaGenerator');
   protected lastEnsuredDatabase?: string;
 
   static register(orm: MikroORM): void {

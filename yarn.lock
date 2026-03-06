@@ -1633,6 +1633,7 @@ __metadata:
     dataloader: "npm:2.2.3"
     husky: "npm:9.1.7"
     jiti: "npm:2.6.1"
+    jsr: "npm:^0.14.3"
     knex: "npm:3.1.0"
     lerna: "npm:9.0.5"
     lint-staged: "npm:16.3.2"
@@ -6502,6 +6503,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"jsr@npm:^0.14.3":
+  version: 0.14.3
+  resolution: "jsr@npm:0.14.3"
+  dependencies:
+    node-stream-zip: "npm:^1.15.0"
+    semiver: "npm:^1.1.0"
+  bin:
+    jsr: dist/bin.js
+  checksum: 10/e4022877fc06f5afac27eea1fc35ae9254b21f5f4d580573a6707c7b6d35facf066ac35edb1998c7314321d6a5de78f6d7449b4fc54a20ea764ed5dce6ed6ecb
+  languageName: node
+  linkType: hard
+
 "just-diff-apply@npm:^5.2.0":
   version: 5.5.0
   resolution: "just-diff-apply@npm:5.5.0"
@@ -7608,6 +7621,13 @@ __metadata:
   version: 1.1.12
   resolution: "node-machine-id@npm:1.1.12"
   checksum: 10/46bf3d4fab8d0e63b24c42bcec2b6975c7ec5bc16e53d7a589d095668d0fdf0bfcbcdc28246dd1ef74cf95a37fbd774cd4b17b41f518d79dfad7fdc99f995903
+  languageName: node
+  linkType: hard
+
+"node-stream-zip@npm:^1.15.0":
+  version: 1.15.0
+  resolution: "node-stream-zip@npm:1.15.0"
+  checksum: 10/3fb56144d23456e1b42fe9d24656999e4ef6aeccce3cae43fc97ba6c341ee448aeceb4dc8fb57ee78eab1a6da49dd46c9650fdb2f16b137630a335df9560c647
   languageName: node
   linkType: hard
 
@@ -9325,6 +9345,13 @@ __metadata:
   version: 2.1.2
   resolution: "safer-buffer@npm:2.1.2"
   checksum: 10/7eaf7a0cf37cc27b42fb3ef6a9b1df6e93a1c6d98c6c6702b02fe262d5fcbd89db63320793b99b21cb5348097d0a53de81bd5f4e8b86e20cc9412e3f1cfb4e83
+  languageName: node
+  linkType: hard
+
+"semiver@npm:^1.1.0":
+  version: 1.1.0
+  resolution: "semiver@npm:1.1.0"
+  checksum: 10/87e78c4fca6e082fed8905266341524b952a6d917397ca7e4feba469459e4165015fb25c0cd5b214f30ac4588e227e7c5b56ce91fd053893738d8a44a761ddb3
   languageName: node
   linkType: hard
 

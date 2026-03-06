@@ -1,8 +1,10 @@
 import { type CheckConstraint, type Dictionary, type EntityClass } from '@mikro-orm/core';
 import { getMetadataFromDecorator } from '../utils.js';
 
-export function Check<T>(options: CheckConstraint<T>) {
-  return function (target: T, propertyName?: T extends EntityClass<unknown> ? undefined : keyof T) {
+export function Check<T>(
+  options: CheckConstraint<T>,
+): (target: T, propertyName?: T extends EntityClass<unknown> ? undefined : keyof T) => any {
+  return function (target: T, propertyName?: T extends EntityClass<unknown> ? undefined : keyof T): any {
     const meta = getMetadataFromDecorator<T>(
       (propertyName ? (target as EntityClass<T>).constructor : target) as T & Dictionary,
     );

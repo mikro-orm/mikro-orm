@@ -79,7 +79,7 @@ export class EntityHelper {
    */
   private static defineBaseProperties<T extends object>(meta: EntityMetadata<T>, prototype: T, em: EntityManager) {
     // oxfmt-ignore
-    const helperParams = meta.embeddable || meta.virtual ? [] : [em.getComparator().getPkGetter(meta), em.getComparator().getPkSerializer(meta), em.getComparator().getPkGetterConverted(meta)];
+    const helperParams: any[] = meta.embeddable || meta.virtual ? [] : [em.getComparator().getPkGetter(meta), em.getComparator().getPkSerializer(meta), em.getComparator().getPkGetterConverted(meta)];
     Object.defineProperties(prototype, {
       __entity: { value: !meta.embeddable, configurable: true },
       __meta: { value: meta, configurable: true },

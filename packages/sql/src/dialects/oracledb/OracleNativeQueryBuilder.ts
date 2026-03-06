@@ -150,7 +150,7 @@ export class OracleNativeQueryBuilder extends NativeQueryBuilder {
     this.parts.push('drop all storage cascade');
   }
 
-  protected override combineParts() {
+  protected override combineParts(): { sql: string; params: unknown[] } {
     let sql = this.parts.join(' ');
     const last = this.params[this.params.length - 1];
 

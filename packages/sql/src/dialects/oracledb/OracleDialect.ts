@@ -126,7 +126,7 @@ class OracleConnection implements DatabaseConnection {
     };
   }
 
-  formatQuery(query: CompiledQuery) {
+  formatQuery(query: CompiledQuery): { sql: string; bindParams: unknown[] } {
     return {
       sql: query.sql.replace(/\$(\d+)/g, (_match, p1) => `:${parseInt(p1, 10) - 1}`), // Format bind params in Oracle syntax :0, :1, etc.
       bindParams: query.parameters as unknown[],

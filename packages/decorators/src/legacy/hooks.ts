@@ -9,48 +9,48 @@ function hook(type: EventType) {
   };
 }
 
-export function BeforeCreate() {
+export function BeforeCreate(): (target: any, method: string) => void {
   return hook(EventType.beforeCreate);
 }
 
-export function AfterCreate() {
+export function AfterCreate(): (target: any, method: string) => void {
   return hook(EventType.afterCreate);
 }
 
-export function BeforeUpdate() {
+export function BeforeUpdate(): (target: any, method: string) => void {
   return hook(EventType.beforeUpdate);
 }
 
-export function AfterUpdate() {
+export function AfterUpdate(): (target: any, method: string) => void {
   return hook(EventType.afterUpdate);
 }
 
-export function BeforeUpsert() {
+export function BeforeUpsert(): (target: any, method: string) => void {
   return hook(EventType.beforeUpsert);
 }
 
-export function AfterUpsert() {
+export function AfterUpsert(): (target: any, method: string) => void {
   return hook(EventType.afterUpsert);
 }
 
-export function OnInit() {
+export function OnInit(): (target: any, method: string) => void {
   return hook(EventType.onInit);
 }
 
-export function OnLoad() {
+export function OnLoad(): (target: any, method: string) => void {
   return hook(EventType.onLoad);
 }
 
 /**
  * Called before deleting entity, but only when providing initialized entity to EM#remove()
  */
-export function BeforeDelete() {
+export function BeforeDelete(): (target: any, method: string) => void {
   return hook(EventType.beforeDelete);
 }
 
 /**
  * Called after deleting entity, but only when providing initialized entity to EM#remove()
  */
-export function AfterDelete() {
+export function AfterDelete(): (target: any, method: string) => void {
   return hook(EventType.afterDelete);
 }

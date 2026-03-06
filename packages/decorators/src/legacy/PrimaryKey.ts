@@ -24,10 +24,14 @@ function createDecorator<T extends object>(
   };
 }
 
-export function PrimaryKey<T extends object>(options: PrimaryKeyOptions<T> = {}) {
+export function PrimaryKey<T extends object>(
+  options: PrimaryKeyOptions<T> = {},
+): (target: T, propertyName: string) => void {
   return createDecorator(options, false);
 }
 
-export function SerializedPrimaryKey<T extends object>(options: SerializedPrimaryKeyOptions<T> = {}) {
+export function SerializedPrimaryKey<T extends object>(
+  options: SerializedPrimaryKeyOptions<T> = {},
+): (target: T, propertyName: string) => void {
   return createDecorator(options, true);
 }

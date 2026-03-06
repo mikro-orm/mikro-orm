@@ -11,8 +11,8 @@ import { prepareMetadataContext } from '../utils.js';
 export function Embedded<Owner extends object, Target>(
   type: EmbeddedOptions<Owner, Target> | (() => EntityName<Target> | EntityName[]) = {},
   options: EmbeddedOptions<Owner, Target> = {},
-) {
-  return function (value: unknown, context: ClassFieldDecoratorContext<Owner>) {
+): (value: unknown, context: ClassFieldDecoratorContext<Owner>) => void {
+  return function (value: unknown, context: ClassFieldDecoratorContext<Owner>): void {
     const meta = prepareMetadataContext(context, ReferenceKind.EMBEDDED);
     options = type instanceof Function ? { entity: type, ...options } : { ...type, ...options };
     Utils.defaultValue(options, 'prefix', true);

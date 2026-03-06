@@ -4034,7 +4034,7 @@ export class QueryBuilder<
 
   /** @ignore */
   /* v8 ignore next */
-  [Symbol.for('nodejs.util.inspect.custom')](depth = 2) {
+  [Symbol.for('nodejs.util.inspect.custom')](depth = 2): string {
     const object = { ...this } as Dictionary;
     const hidden = ['metadata', 'driver', 'context', 'platform', 'type'];
     Object.keys(object)

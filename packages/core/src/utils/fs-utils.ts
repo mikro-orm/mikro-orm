@@ -13,7 +13,25 @@ let globSync: GlobFn = (patterns, options) => {
   return files.filter(f => f.isFile()).map(f => join(f.parentPath, f.name));
 };
 
-export const fs = {
+export interface FsUtils {
+  init(): Promise<void>;
+  pathExists(path: string): boolean;
+  ensureDir(path: string): void;
+  readJSONSync<T = Dictionary>(path: string): T;
+  glob(input: string | string[], cwd?: string): string[];
+  resolveGlob(input: string | string[], cwd?: string): string[];
+  getPackageConfig<T extends Dictionary>(basePath?: string): T;
+  getORMPackages(): Set<string>;
+  getORMPackageVersion(name: string): string | undefined;
+  checkPackageVersion(): void;
+  normalizePath(...parts: string[]): string;
+  relativePath(path: string, relativeTo: string): string;
+  absolutePath(path: string, baseDir?: string): string;
+  writeFile(path: string, data: string, options?: Record<string, any>): Promise<void>;
+  dynamicImport<T = any>(id: string): Promise<T>;
+}
+
+export const fs: FsUtils = {
   async init(): Promise<void> {
     const tinyGlobby = await import('tinyglobby').catch(() => null);
 

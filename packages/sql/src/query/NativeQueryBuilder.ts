@@ -71,25 +71,25 @@ export class NativeQueryBuilder implements Subquery {
 
   constructor(protected readonly platform: AbstractSqlPlatform) {}
 
-  select(fields: string | RawQueryFragment | (string | RawQueryFragment)[]) {
+  select(fields: string | RawQueryFragment | (string | RawQueryFragment)[]): this {
     this.type = QueryType.SELECT;
     this.options.select ??= [];
     this.options.select.push(...Utils.asArray(fields));
     return this;
   }
 
-  count(fields: string | RawQueryFragment | (string | RawQueryFragment)[] = '*', distinct?: boolean) {
+  count(fields: string | RawQueryFragment | (string | RawQueryFragment)[] = '*', distinct?: boolean): this {
     this.type = QueryType.COUNT;
     this.options.select = Utils.asArray(fields);
     this.options.distinct = distinct;
     return this;
   }
 
-  into(tableName: string | RawQueryFragment | NativeQueryBuilder, options?: TableOptions) {
+  into(tableName: string | RawQueryFragment | NativeQueryBuilder, options?: TableOptions): this {
     return this.from(tableName, options);
   }
 
-  from(tableName: string | RawQueryFragment | NativeQueryBuilder, options?: TableOptions) {
+  from(tableName: string | RawQueryFragment | NativeQueryBuilder, options?: TableOptions): this {
     if (tableName instanceof NativeQueryBuilder) {
       tableName = tableName.toRaw();
     }
@@ -108,28 +108,28 @@ export class NativeQueryBuilder implements Subquery {
     return this;
   }
 
-  where(sql: string, params: unknown[]) {
+  where(sql: string, params: unknown[]): this {
     this.options.where = { sql, params };
     return this;
   }
 
-  having(sql: string, params: unknown[]) {
+  having(sql: string, params: unknown[]): this {
     this.options.having = { sql, params };
     return this;
   }
 
-  groupBy(groupBy: (string | RawQueryFragment)[]) {
+  groupBy(groupBy: (string | RawQueryFragment)[]): this {
     this.options.groupBy = groupBy;
     return this;
   }
 
-  join(sql: string, params: unknown[]) {
+  join(sql: string, params: unknown[]): this {
     this.options.joins ??= [];
     this.options.joins.push({ sql, params });
     return this;
   }
 
-  orderBy(orderBy: string) {
+  orderBy(orderBy: string): this {
     this.options.orderBy = orderBy;
     return this;
   }
@@ -138,7 +138,7 @@ export class NativeQueryBuilder implements Subquery {
    * The sub-query is compiled eagerly at call time — later mutations to the
    * sub-query builder will not be reflected in this CTE.
    */
-  with(name: string, query: NativeQueryBuilder | RawQueryFragment, options?: CteOptions) {
+  with(name: string, query: NativeQueryBuilder | RawQueryFragment, options?: CteOptions): this {
     return this.addCte(name, query, options);
   }
 
@@ -146,7 +146,7 @@ export class NativeQueryBuilder implements Subquery {
    * Adds a recursive CTE (`WITH RECURSIVE` on PostgreSQL/MySQL/SQLite, plain `WITH` on MSSQL).
    * The sub-query is compiled eagerly — later mutations will not be reflected.
    */
-  withRecursive(name: string, query: NativeQueryBuilder | RawQueryFragment, options?: CteOptions) {
+  withRecursive(name: string, query: NativeQueryBuilder | RawQueryFragment, options?: CteOptions): this {
     return this.addCte(name, query, options, true);
   }
 
@@ -308,7 +308,7 @@ export class NativeQueryBuilder implements Subquery {
     }
   }
 
-  protected combineParts() {
+  protected combineParts(): { sql: string; params: unknown[] } {
     let sql = this.parts.join(' ');
 
     if (this.options.wrap) {
@@ -319,23 +319,23 @@ export class NativeQueryBuilder implements Subquery {
     return { sql, params: this.params };
   }
 
-  limit(limit: number) {
+  limit(limit: number): this {
     this.options.limit = limit;
     return this;
   }
 
-  offset(offset: number) {
+  offset(offset: number): this {
     this.options.offset = offset;
     return this;
   }
 
-  insert(data: Dictionary) {
+  insert(data: Dictionary): this {
     this.type = QueryType.INSERT;
     this.options.data = data;
     return this;
   }
 
-  update(data: Dictionary) {
+  update(data: Dictionary): this {
     this.type = QueryType.UPDATE;
     this.options.data ??= {};
     Object.assign(this.options.data, data);
@@ -343,70 +343,70 @@ export class NativeQueryBuilder implements Subquery {
     return this;
   }
 
-  delete() {
+  delete(): this {
     this.type = QueryType.DELETE;
     return this;
   }
 
-  truncate() {
+  truncate(): this {
     this.type = QueryType.TRUNCATE;
     return this;
   }
 
-  distinct() {
+  distinct(): this {
     this.options.distinct = true;
     return this;
   }
 
-  distinctOn(fields: string[]) {
+  distinctOn(fields: string[]): this {
     this.options.distinctOn = fields;
     return this;
   }
 
-  onConflict(options: OnConflictClause) {
+  onConflict(options: OnConflictClause): OnConflictClause {
     this.options.onConflict = options;
     return options;
   }
 
-  returning(fields: (string | RawQueryFragment | [name: string, type: unknown])[]) {
+  returning(fields: (string | RawQueryFragment | [name: string, type: unknown])[]): this {
     this.options.returning = fields;
     return this;
   }
 
-  lockMode(lockMode: LockMode, lockTables?: string[]) {
+  lockMode(lockMode: LockMode, lockTables?: string[]): this {
     this.options.lockMode = lockMode;
     this.options.lockTables = lockTables;
     return this;
   }
 
-  comment(comment: string | string[]) {
+  comment(comment: string | string[]): this {
     this.options.comment ??= [];
     this.options.comment.push(...Utils.asArray(comment));
     return this;
   }
 
-  hintComment(comment: string | string[]) {
+  hintComment(comment: string | string[]): this {
     this.options.hintComment ??= [];
     this.options.hintComment.push(...Utils.asArray(comment));
     return this;
   }
 
-  setFlags(flags: Set<QueryFlag>) {
+  setFlags(flags: Set<QueryFlag>): this {
     this.options.flags = flags;
     return this;
   }
 
-  clear(clause: keyof Options) {
+  clear(clause: keyof Options): this {
     delete this.options[clause];
     return this;
   }
 
-  wrap(prefix: string, suffix: string) {
+  wrap(prefix: string, suffix: string): this {
     this.options.wrap = [prefix, suffix];
     return this;
   }
 
-  as(alias: string) {
+  as(alias: string): this {
     this.wrap('(', `) as ${this.platform.quoteIdentifier(alias)}`);
     return this;
   }
@@ -458,7 +458,7 @@ export class NativeQueryBuilder implements Subquery {
     }
   }
 
-  protected getFields() {
+  protected getFields(): string {
     if (!this.options.select || this.options.select.length === 0) {
       throw new Error('No fields selected');
     }
@@ -504,7 +504,7 @@ export class NativeQueryBuilder implements Subquery {
     }
   }
 
-  protected processInsertData() {
+  protected processInsertData(): string[] {
     const dataAsArray = Utils.asArray(this.options.data);
     const keys = Object.keys(dataAsArray[0]);
     const values = keys.map(() => '?');

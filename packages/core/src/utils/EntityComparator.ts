@@ -90,7 +90,7 @@ export class EntityComparator {
   /**
    * @internal Highly performance-sensitive method.
    */
-  getPkGetter<T>(meta: EntityMetadata<T>) {
+  getPkGetter<T>(meta: EntityMetadata<T>): any {
     const exists = this.#pkGetters.get(meta);
 
     /* v8 ignore next */
@@ -155,7 +155,7 @@ export class EntityComparator {
   /**
    * @internal Highly performance-sensitive method.
    */
-  getPkGetterConverted<T>(meta: EntityMetadata<T>) {
+  getPkGetterConverted<T>(meta: EntityMetadata<T>): any {
     const exists = this.#pkGettersConverted.get(meta);
 
     /* v8 ignore next */
@@ -215,7 +215,7 @@ export class EntityComparator {
   /**
    * @internal Highly performance-sensitive method.
    */
-  getPkSerializer<T>(meta: EntityMetadata<T>) {
+  getPkSerializer<T>(meta: EntityMetadata<T>): any {
     const exists = this.#pkSerializers.get(meta);
 
     /* v8 ignore next */
@@ -322,7 +322,7 @@ export class EntityComparator {
   /**
    * @internal
    */
-  propName(name: string, parent = 'result') {
+  propName(name: string, parent = 'result'): string {
     return parent + this.wrap(name);
   }
 
@@ -1036,7 +1036,7 @@ export class EntityComparator {
   /**
    * perf: used to generate list of comparable properties during discovery, so we speed up the runtime comparison
    */
-  static isComparable<T>(prop: EntityProperty<T>, root: EntityMetadata) {
+  static isComparable<T>(prop: EntityProperty<T>, root: EntityMetadata): boolean {
     const virtual = prop.persist === false || (prop.generated && !prop.primary);
     const inverse = prop.kind === ReferenceKind.ONE_TO_ONE && !prop.owner;
     const discriminator = prop.name === root.discriminatorColumn;

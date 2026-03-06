@@ -143,7 +143,7 @@ export class LibSqlDialect extends SqliteDialect {
     this.#config = config;
   }
 
-  override createDriver() {
+  override createDriver(): SqliteDriver {
     return new LibSqlKyselyDriver(this.#config);
   }
 }

@@ -13,8 +13,13 @@ type TransactionalOptions<T> = TransactionOptions & { context?: ContextProvider<
 export function Transactional<
   Owner extends object,
   Value extends (this: Owner, ...args: any) => any = (this: Owner, ...args: any) => any,
->(options: TransactionalOptions<Owner> = {}) {
-  return function (value: Value, context: ClassMethodDecoratorContext<Owner, Value>) {
+>(
+  options: TransactionalOptions<Owner> = {},
+): (value: Value, context: ClassMethodDecoratorContext<Owner, Value>) => (this: Owner, ...args: any) => Promise<any> {
+  return function (
+    value: Value,
+    context: ClassMethodDecoratorContext<Owner, Value>,
+  ): (this: Owner, ...args: any) => Promise<any> {
     if (value.constructor.name !== 'AsyncFunction') {
       throw new Error('@Transactional() should be use with async functions');
     }

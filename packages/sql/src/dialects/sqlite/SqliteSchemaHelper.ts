@@ -250,7 +250,7 @@ export class SqliteSchemaHelper extends SchemaHelper {
     });
   }
 
-  override dropForeignKey(tableName: string, constraintName: string) {
+  override dropForeignKey(tableName: string, constraintName: string): string {
     return '';
   }
 
@@ -603,7 +603,7 @@ export class SqliteSchemaHelper extends SchemaHelper {
     return name.startsWith('sqlite_');
   }
 
-  override dropIndex(table: string, index: IndexDef, oldIndexName = index.keyName) {
+  override dropIndex(table: string, index: IndexDef, oldIndexName = index.keyName): string {
     return `drop index ${this.quote(oldIndexName)}`;
   }
 

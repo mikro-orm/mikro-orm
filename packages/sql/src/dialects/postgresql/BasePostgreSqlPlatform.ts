@@ -19,7 +19,7 @@ import { FullTextType } from './FullTextType.js';
 
 export class BasePostgreSqlPlatform extends AbstractSqlPlatform {
   protected override readonly schemaHelper: PostgreSqlSchemaHelper = new PostgreSqlSchemaHelper(this);
-  protected override readonly exceptionConverter = new PostgreSqlExceptionConverter();
+  protected override readonly exceptionConverter: PostgreSqlExceptionConverter = new PostgreSqlExceptionConverter();
 
   override createNativeQueryBuilder(): PostgreSqlNativeQueryBuilder {
     return new PostgreSqlNativeQueryBuilder(this);
@@ -404,7 +404,7 @@ export class BasePostgreSqlPlatform extends AbstractSqlPlatform {
     return ret;
   }
 
-  override indexForeignKeys() {
+  override indexForeignKeys(): boolean {
     return false;
   }
 

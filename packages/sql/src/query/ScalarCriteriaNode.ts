@@ -49,7 +49,7 @@ export class ScalarCriteriaNode<T extends object> extends CriteriaNode<T> {
     return this.payload;
   }
 
-  override willAutoJoin(qb: IQueryBuilder<T>, alias?: string, options?: ICriteriaNodeProcessOptions) {
+  override willAutoJoin(qb: IQueryBuilder<T>, alias?: string, options?: ICriteriaNodeProcessOptions): boolean {
     return this.shouldJoin(qb, alias);
   }
 

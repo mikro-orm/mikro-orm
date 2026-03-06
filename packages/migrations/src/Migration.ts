@@ -1,4 +1,10 @@
-import { type Configuration, type RawQueryFragment, type Transaction } from '@mikro-orm/core';
+import {
+  type AnyEntity,
+  type Configuration,
+  type EntityData,
+  type RawQueryFragment,
+  type Transaction,
+} from '@mikro-orm/core';
 import type { AbstractSqlDriver, EntityManager, NativeQueryBuilder } from '@mikro-orm/sql';
 
 export type Query = string | NativeQueryBuilder | RawQueryFragment;
@@ -40,7 +46,7 @@ export abstract class Migration {
    * Executes a raw SQL query. Accepts a string SQL, `raw()` SQL fragment, or a native query builder instance.
    * The `params` parameter is respected only if you use string SQL in the first parameter.
    */
-  async execute(sql: Query, params?: unknown[]) {
+  async execute(sql: Query, params?: unknown[]): Promise<EntityData<AnyEntity>[]> {
     return this.driver.execute(sql, params, 'all', this.ctx);
   }
 

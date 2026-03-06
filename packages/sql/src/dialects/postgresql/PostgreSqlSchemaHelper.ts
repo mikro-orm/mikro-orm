@@ -758,7 +758,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     return ` using (${this.quote(name)}::${type})`;
   }
 
-  override dropForeignKey(tableName: string, constraintName: string) {
+  override dropForeignKey(tableName: string, constraintName: string): string {
     return `alter table ${this.quote(tableName)} drop constraint ${this.quote(constraintName)}`;
   }
 
@@ -826,7 +826,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     return `comment on table ${table.getQuotedName()} is ${this.platform.quoteValue(comment ?? '')}`;
   }
 
-  override normalizeDefaultValue(defaultValue: string, length: number) {
+  override normalizeDefaultValue(defaultValue: string, length: number): string | number {
     if (!defaultValue || (typeof defaultValue as unknown) !== 'string') {
       return super.normalizeDefaultValue(defaultValue, length, PostgreSqlSchemaHelper.DEFAULT_VALUES);
     }
@@ -889,7 +889,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     return [`alter index ${oldIndexName} rename to ${keyName}`];
   }
 
-  override dropIndex(table: string, index: IndexDef, oldIndexName = index.keyName) {
+  override dropIndex(table: string, index: IndexDef, oldIndexName = index.keyName): string {
     if (index.primary || (index.unique && index.constraint)) {
       return `alter table ${this.quote(table)} drop constraint ${this.quote(oldIndexName)}`;
     }

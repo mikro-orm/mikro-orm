@@ -118,7 +118,7 @@ export class OracleSchemaHelper extends SchemaHelper {
     length: number,
     defaultValues: Dictionary<string[]> = {},
     stripQuotes = false,
-  ) {
+  ): string | number {
     if (defaultValue == null) {
       return defaultValue;
     }
@@ -536,7 +536,7 @@ export class OracleSchemaHelper extends SchemaHelper {
     return `drop index ${this.quote(index.keyName)}`;
   }
 
-  override dropIndex(table: string, index: IndexDef, oldIndexName = index.keyName) {
+  override dropIndex(table: string, index: IndexDef, oldIndexName = index.keyName): string {
     if (index.primary) {
       return `alter table ${this.quote(table)} drop constraint ${this.quote(oldIndexName)}`;
     }
@@ -661,7 +661,7 @@ export class OracleSchemaHelper extends SchemaHelper {
     return super.getCreateIndexSQL(tableName, index);
   }
 
-  override createIndex(index: IndexDef, table: DatabaseTable, createPrimary = false) {
+  override createIndex(index: IndexDef, table: DatabaseTable, createPrimary = false): string {
     if (index.primary) {
       return '';
     }
@@ -701,7 +701,7 @@ export class OracleSchemaHelper extends SchemaHelper {
     return super.createIndex(index, table);
   }
 
-  override dropForeignKey(tableName: string, constraintName: string) {
+  override dropForeignKey(tableName: string, constraintName: string): string {
     return `alter table ${this.quote(tableName)} drop constraint ${this.quote(constraintName)}`;
   }
 

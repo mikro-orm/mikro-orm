@@ -28,7 +28,7 @@ export function defineMariaDbConfig<
     | EntityClass<AnyEntity>
     | EntitySchema
   )[],
->(options: Options<MariaDbDriver, EM, Entities>) {
+>(options: Options<MariaDbDriver, EM, Entities>): Options<MariaDbDriver, EM, Entities> {
   return defineConfig({ driver: MariaDbDriver, ...options });
 }
 

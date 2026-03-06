@@ -28,7 +28,7 @@ export function defineOracleConfig<
     | EntityClass<AnyEntity>
     | EntitySchema
   )[],
->(options: Options<OracleDriver, EM, Entities>) {
+>(options: Options<OracleDriver, EM, Entities>): OracleOptions<EM, Entities> {
   return defineConfig({ driver: OracleDriver, ...options });
 }
 

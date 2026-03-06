@@ -788,35 +788,35 @@ export class DatabaseTable {
     return `${this.schema}.${this.name}`;
   }
 
-  getForeignKeys() {
+  getForeignKeys(): Dictionary<ForeignKey> {
     return this.#foreignKeys;
   }
 
-  hasColumn(columnName: string) {
+  hasColumn(columnName: string): boolean {
     return columnName in this.#columns;
   }
 
-  getIndex(indexName: string) {
+  getIndex(indexName: string): IndexDef | undefined {
     return this.#indexes.find(i => i.keyName === indexName);
   }
 
-  hasIndex(indexName: string) {
+  hasIndex(indexName: string): boolean {
     return !!this.getIndex(indexName);
   }
 
-  getCheck(checkName: string) {
+  getCheck(checkName: string): CheckDef | undefined {
     return this.#checks.find(i => i.name === checkName);
   }
 
-  hasCheck(checkName: string) {
+  hasCheck(checkName: string): boolean {
     return !!this.getCheck(checkName);
   }
 
-  getPrimaryKey() {
+  getPrimaryKey(): IndexDef | undefined {
     return this.#indexes.find(i => i.primary);
   }
 
-  hasPrimaryKey() {
+  hasPrimaryKey(): boolean {
     return !!this.getPrimaryKey();
   }
 

@@ -314,7 +314,7 @@ export class Configuration<
   /**
    * Gets instance of Comparator. (cached)
    */
-  getComparator(metadata: MetadataStorage) {
+  getComparator(metadata: MetadataStorage): EntityComparator {
     return this.getCachedService(EntityComparator, metadata, this.#platform, this);
   }
 
@@ -485,7 +485,7 @@ export function defineConfig<
     | EntityClass<AnyEntity>
     | EntitySchema
   )[],
->(options: Options<D, EM, Entities>) {
+>(options: Options<D, EM, Entities>): Options<D, EM, Entities> {
   return options;
 }
 
@@ -1275,6 +1275,64 @@ type MarkRequired<T, D> = {
   [K in keyof T as Exclude<K, keyof D>]?: T[K];
 };
 
+type DefaultKeys = Record<
+  | 'pool'
+  | 'entities'
+  | 'entitiesTs'
+  | 'extensions'
+  | 'subscribers'
+  | 'filters'
+  | 'discovery'
+  | 'validateRequired'
+  | 'context'
+  | 'contextName'
+  | 'allowGlobalContext'
+  | 'logger'
+  | 'colors'
+  | 'findOneOrFailHandler'
+  | 'findExactlyOneOrFailHandler'
+  | 'baseDir'
+  | 'hydrator'
+  | 'flushMode'
+  | 'loadStrategy'
+  | 'dataloader'
+  | 'populateWhere'
+  | 'ignoreUndefinedInQuery'
+  | 'onQuery'
+  | 'autoJoinOneToOneOwner'
+  | 'autoJoinRefsForFilters'
+  | 'filtersOnRelations'
+  | 'propagationOnPrototype'
+  | 'populateAfterFlush'
+  | 'serialization'
+  | 'assign'
+  | 'persistOnCreate'
+  | 'upsertManaged'
+  | 'forceEntityConstructor'
+  | 'forceUndefined'
+  | 'forceUtcTimezone'
+  | 'processOnCreateHooksEarly'
+  | 'ensureDatabase'
+  | 'ensureIndexes'
+  | 'batchSize'
+  | 'debug'
+  | 'ignoreDeprecations'
+  | 'verbose'
+  | 'driverOptions'
+  | 'migrations'
+  | 'schemaGenerator'
+  | 'embeddables'
+  | 'entityGenerator'
+  | 'metadataCache'
+  | 'resultCache'
+  | 'metadataProvider'
+  | 'highlighter'
+  | 'seeder'
+  | 'preferReadReplicas'
+  | 'dynamicImportProvider',
+  unknown
+>;
+
 export type RequiredOptions<
   D extends IDatabaseDriver = IDatabaseDriver,
   EM extends EntityManager<D> = EntityManager<D>,
@@ -1283,4 +1341,4 @@ export type RequiredOptions<
     | EntityClass<AnyEntity>
     | EntitySchema
   )[],
-> = MarkRequired<Options<D, EM, Entities>, typeof DEFAULTS>;
+> = MarkRequired<Options<D, EM, Entities>, DefaultKeys>;

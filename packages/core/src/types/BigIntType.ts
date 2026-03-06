@@ -47,7 +47,7 @@ export class BigIntType<Mode extends 'bigint' | 'number' | 'string' = 'bigint'> 
     return this.convertToDatabaseValue(value) as JSTypeByMode<Mode> | null | undefined;
   }
 
-  override getColumnType(prop: EntityProperty, platform: Platform) {
+  override getColumnType(prop: EntityProperty, platform: Platform): string {
     return platform.getBigIntTypeDeclarationSQL(prop);
   }
 

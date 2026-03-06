@@ -28,7 +28,7 @@ export function defineMySqlConfig<
     | EntityClass<AnyEntity>
     | EntitySchema
   )[],
->(options: Options<MySqlDriver, EM, Entities>) {
+>(options: Options<MySqlDriver, EM, Entities>): Options<MySqlDriver, EM, Entities> {
   return defineConfig({ driver: MySqlDriver, ...options });
 }
 

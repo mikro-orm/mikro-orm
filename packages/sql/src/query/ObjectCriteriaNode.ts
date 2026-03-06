@@ -180,7 +180,7 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
     }, {} as Dictionary);
   }
 
-  override willAutoJoin(qb: IQueryBuilder<T>, alias?: string, options?: ICriteriaNodeProcessOptions) {
+  override willAutoJoin(qb: IQueryBuilder<T>, alias?: string, options?: ICriteriaNodeProcessOptions): boolean {
     const nestedAlias = qb.getAliasForJoinPath(this.getPath(options), options);
     const ownerAlias = alias || qb.alias;
     const keys = Utils.getObjectQueryKeys(this.payload);

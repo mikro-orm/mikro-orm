@@ -23,10 +23,14 @@ function createDecorator<T extends object>(
   };
 }
 
-export function PrimaryKey<T extends object>(options: PrimaryKeyOptions<T> = {}) {
+export function PrimaryKey<T extends object>(
+  options: PrimaryKeyOptions<T> = {},
+): (value: unknown, context: ClassFieldDecoratorContext<T>) => void {
   return createDecorator(options, false);
 }
 
-export function SerializedPrimaryKey<T extends object>(options: SerializedPrimaryKeyOptions<T> = {}) {
+export function SerializedPrimaryKey<T extends object>(
+  options: SerializedPrimaryKeyOptions<T> = {},
+): (value: unknown, context: ClassFieldDecoratorContext<T>) => void {
   return createDecorator(options, true);
 }

@@ -20,7 +20,7 @@ export class TimeType extends Type {
     return false;
   }
 
-  override getColumnType(prop: EntityProperty, platform: Platform) {
+  override getColumnType(prop: EntityProperty, platform: Platform): string {
     return platform.getTimeTypeDeclarationSQL(prop.length);
   }
 

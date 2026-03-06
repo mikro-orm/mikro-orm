@@ -25,7 +25,7 @@ export abstract class AbstractSqlPlatform extends Platform {
     return true;
   }
 
-  override indexForeignKeys() {
+  override indexForeignKeys(): boolean {
     return true;
   }
 
@@ -61,23 +61,23 @@ export abstract class AbstractSqlPlatform extends Platform {
     return ['begin'];
   }
 
-  getCommitTransactionSQL() {
+  getCommitTransactionSQL(): string {
     return 'commit';
   }
 
-  getRollbackTransactionSQL() {
+  getRollbackTransactionSQL(): string {
     return 'rollback';
   }
 
-  getSavepointSQL(savepointName: string) {
+  getSavepointSQL(savepointName: string): string {
     return `savepoint ${this.quoteIdentifier(savepointName)}`;
   }
 
-  getRollbackToSavepointSQL(savepointName: string) {
+  getRollbackToSavepointSQL(savepointName: string): string {
     return `rollback to savepoint ${this.quoteIdentifier(savepointName)}`;
   }
 
-  getReleaseSavepointSQL(savepointName: string) {
+  getReleaseSavepointSQL(savepointName: string): string {
     return `release savepoint ${this.quoteIdentifier(savepointName)}`;
   }
 

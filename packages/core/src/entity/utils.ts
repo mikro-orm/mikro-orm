@@ -30,7 +30,7 @@ export function expandDotPaths<Entity>(
   meta: EntityMetadata<Entity>,
   populate?: readonly (string | PopulateOptions<Entity>)[],
   normalized = false,
-) {
+): PopulateOptions<Entity>[] {
   const ret = normalized
     ? (populate as PopulateOptions<Entity>[])
     : Utils.asArray(populate).map(field => {

@@ -5,7 +5,7 @@ import * as Tedious from 'tedious';
 import * as Tarn from 'tarn';
 
 export class MsSqlConnection extends AbstractSqlConnection {
-  override createKyselyDialect(overrides: ConnectionConfiguration) {
+  override createKyselyDialect(overrides: ConnectionConfiguration): MssqlDialect {
     const options = this.mapOptions(overrides);
     const poolOptions = Utils.mergeConfig(
       {

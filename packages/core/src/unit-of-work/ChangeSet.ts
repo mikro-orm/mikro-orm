@@ -51,7 +51,7 @@ export class ChangeSet<T extends object> {
   }
 
   /** @ignore */
-  [Symbol.for('nodejs.util.inspect.custom')](depth = 2) {
+  [Symbol.for('nodejs.util.inspect.custom')](depth = 2): string {
     const object = { ...this } as Dictionary;
     const hidden = ['meta', 'serializedPrimaryKey'];
     hidden.forEach(k => delete object[k]);

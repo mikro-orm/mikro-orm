@@ -28,7 +28,7 @@ export function defineLibSqlConfig<
     | EntityClass<AnyEntity>
     | EntitySchema
   )[],
->(options: LibSqlOptions<EM, Entities>) {
+>(options: LibSqlOptions<EM, Entities>): LibSqlOptions<EM, Entities> {
   return defineConfig({ driver: LibSqlDriver, ...options });
 }
 

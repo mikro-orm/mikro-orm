@@ -33,7 +33,7 @@ export class DecimalType<Mode extends 'number' | 'string' = 'string'> extends Ty
     return Math.round((+val + Number.EPSILON) * base) / base;
   }
 
-  override getColumnType(prop: EntityProperty, platform: Platform) {
+  override getColumnType(prop: EntityProperty, platform: Platform): string {
     return platform.getDecimalTypeDeclarationSQL(prop);
   }
 

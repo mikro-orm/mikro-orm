@@ -1,8 +1,10 @@
 import { Utils, ReferenceKind, type EntityProperty, type EntityKey, type PropertyOptions } from '@mikro-orm/core';
 import { validateSingleDecorator, getMetadataFromDecorator } from '../utils.js';
 
-export function Property<T extends object>(options: PropertyOptions<T> = {}) {
-  return function (target: T, propertyName: string) {
+export function Property<T extends object>(
+  options: PropertyOptions<T> = {},
+): (target: T, propertyName: string) => void {
+  return function (target: T, propertyName: string): void {
     const meta = getMetadataFromDecorator(target.constructor as T);
     const desc = Object.getOwnPropertyDescriptor(target, propertyName) || {};
     validateSingleDecorator(meta, propertyName, ReferenceKind.SCALAR);

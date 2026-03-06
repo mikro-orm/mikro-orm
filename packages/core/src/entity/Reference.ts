@@ -219,7 +219,7 @@ export class Reference<T extends object> {
   }
 
   /** @ignore */
-  [Symbol.for('nodejs.util.inspect.custom')](depth = 2) {
+  [Symbol.for('nodejs.util.inspect.custom')](depth = 2): string {
     const object = { ...this };
     const hidden = ['meta', 'property'];
     hidden.forEach(k => delete object[k as keyof this]);
@@ -307,7 +307,7 @@ export class ScalarReference<Value> {
 
   /** @ignore */
   /* v8 ignore next */
-  [Symbol.for('nodejs.util.inspect.custom')]() {
+  [Symbol.for('nodejs.util.inspect.custom')](): string {
     return this.#initialized ? `Ref<${inspect(this.value)}>` : `Ref<?>`;
   }
 }

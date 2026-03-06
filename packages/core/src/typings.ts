@@ -867,8 +867,8 @@ export interface EntityProperty<Owner = any, Target = any> {
 
 export class EntityMetadata<Entity = any, Class extends EntityCtor<Entity> = EntityCtor<Entity>> {
   private static counter = 0;
-  readonly _id = 1000 * EntityMetadata.counter++; // keep the id >= 1000 to allow computing cache keys by simple addition
-  readonly propertyOrder = new Map<string, number>();
+  readonly _id: number = 1000 * EntityMetadata.counter++; // keep the id >= 1000 to allow computing cache keys by simple addition
+  readonly propertyOrder: Map<string, number> = new Map();
 
   constructor(meta: Partial<EntityMetadata> = {}) {
     this.properties = {} as any;
@@ -1170,12 +1170,12 @@ export class EntityMetadata<Entity = any, Class extends EntityCtor<Entity> = Ent
   }
 
   /** @internal */
-  clone() {
+  clone(): this {
     return this;
   }
 
   /** @ignore */
-  [Symbol.for('nodejs.util.inspect.custom')]() {
+  [Symbol.for('nodejs.util.inspect.custom')](): string {
     return `[${this.constructor.name}<${this.className}>]`;
   }
 }

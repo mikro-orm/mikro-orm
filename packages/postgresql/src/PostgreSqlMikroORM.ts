@@ -28,7 +28,7 @@ export function definePostgreSqlConfig<
     | EntityClass<AnyEntity>
     | EntitySchema
   )[],
->(options: Options<PostgreSqlDriver, EM, Entities>) {
+>(options: Options<PostgreSqlDriver, EM, Entities>): Options<PostgreSqlDriver, EM, Entities> {
   return defineConfig({ driver: PostgreSqlDriver, ...options });
 }
 

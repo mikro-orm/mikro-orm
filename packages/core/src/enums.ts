@@ -103,7 +103,7 @@ export enum QueryFlag {
   OUTPUT_TABLE = 'OUTPUT_TABLE', // mssql only
 }
 
-export const SCALAR_TYPES = new Set([
+export const SCALAR_TYPES: Set<string> = new Set([
   'string',
   'number',
   'boolean',
@@ -189,7 +189,7 @@ export enum EventType {
   afterTransactionRollback = 'afterTransactionRollback',
 }
 
-export const EventTypeMap = Object.keys(EventType).reduce(
+export const EventTypeMap: Record<EventType, number> = Object.keys(EventType).reduce(
   (a, b, i) => {
     a[b as EventType] = i;
     return a;

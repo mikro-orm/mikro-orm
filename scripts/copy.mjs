@@ -141,6 +141,21 @@ if (options['pin-versions']) {
   writeFileSync(pkgPath, `${JSON.stringify(pkgJson, null, 2)}\n`, { flush: true });
 }
 
+// Sync jsr.json version from package.json
+const jsrJsonPath = resolve(process.cwd(), 'jsr.json');
+
+try {
+  const jsrJson = JSON.parse(readFileSync(jsrJsonPath, 'utf8'));
+  const pkgJson = JSON.parse(readFileSync(pkgPath, 'utf8'));
+
+  if (jsrJson.version !== pkgJson.version) {
+    jsrJson.version = pkgJson.version;
+    writeFileSync(jsrJsonPath, JSON.stringify(jsrJson, null, 2) + '\n', { flush: true });
+  }
+} catch {
+  // no jsr.json for this package
+}
+
 copy('README.md', root, target);
 copy('LICENSE',  root, target);
 copy('package.json', process.cwd(), target);

@@ -24,7 +24,7 @@ import { MongoEntityRepository } from './MongoEntityRepository.js';
 import { MongoSchemaGenerator } from './MongoSchemaGenerator.js';
 
 export class MongoPlatform extends Platform {
-  protected override readonly exceptionConverter = new MongoExceptionConverter();
+  protected override readonly exceptionConverter: MongoExceptionConverter = new MongoExceptionConverter();
 
   override setConfig(config: Configuration) {
     config.set('autoJoinOneToOneOwner', false);

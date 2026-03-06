@@ -376,7 +376,12 @@ export class QueryBuilderHelper {
     });
   }
 
-  createJoinExpression(join: JoinOptions, joins: Dictionary<JoinOptions>, schema?: string, schemaOverride?: string) {
+  createJoinExpression(
+    join: JoinOptions,
+    joins: Dictionary<JoinOptions>,
+    schema?: string,
+    schemaOverride?: string,
+  ): { sql: string; params: unknown[] } {
     let table = join.table;
     const method =
       {

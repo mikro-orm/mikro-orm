@@ -9,7 +9,7 @@ import { helper } from '../entity/wrap.js';
  */
 export class SerializationContext<T extends object> {
   readonly path: [EntityName, string][] = [];
-  readonly visited = new Set<AnyEntity>();
+  readonly visited: Set<AnyEntity> = new Set();
   #entities = new Set<AnyEntity>();
   readonly #populate: PopulateOptions<T>[];
   readonly #fields?: Set<string>;

@@ -419,7 +419,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
     properties?: Record<string, EntityProperty>,
     convertCustomTypes?: boolean,
     object?: boolean,
-  ) {
+  ): Dictionary {
     if (!properties || data == null) {
       return data;
     }

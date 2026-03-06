@@ -119,7 +119,7 @@ export class MigrationStorage {
   /**
    * @internal
    */
-  getMigrationName(name: string) {
+  getMigrationName(name: string): string {
     return name.replace(/\.[jt]s$/, '');
   }
 

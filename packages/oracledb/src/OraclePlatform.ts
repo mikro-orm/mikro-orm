@@ -35,7 +35,7 @@ const ORACLE_TYPE_MAP: Record<string, unknown> = {
 
 export class OraclePlatform extends AbstractSqlPlatform {
   protected override readonly schemaHelper: OracleSchemaHelper = new OracleSchemaHelper(this);
-  protected override readonly exceptionConverter = new OracleExceptionConverter();
+  protected override readonly exceptionConverter: OracleExceptionConverter = new OracleExceptionConverter();
 
   /** @inheritDoc */
   override lookupExtensions(orm: MikroORM): void {
@@ -113,7 +113,7 @@ export class OraclePlatform extends AbstractSqlPlatform {
     return true;
   }
 
-  override indexForeignKeys() {
+  override indexForeignKeys(): boolean {
     return false;
   }
 
@@ -317,7 +317,7 @@ export class OraclePlatform extends AbstractSqlPlatform {
     value: EntityValue<T>,
     path: EntityKey<T>[],
     alias: boolean,
-  ) {
+  ): FilterQuery<T> {
     if (Utils.isPlainObject<Dictionary>(value) && !Object.keys(value).some(k => Utils.isOperator(k))) {
       Utils.keys(value).forEach(k => {
         this.processJsonCondition<T>(o, value[k as EntityKey] as EntityValue<T>, [...path, k as EntityKey<T>], alias);
@@ -391,7 +391,7 @@ export class OraclePlatform extends AbstractSqlPlatform {
     return new OracleSchemaGenerator(em ?? (driver as any));
   }
 
-  override allowsComparingTuples() {
+  override allowsComparingTuples(): boolean {
     return false;
   }
 

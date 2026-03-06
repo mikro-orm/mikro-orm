@@ -9,48 +9,48 @@ function hook<Owner extends object>(type: EventType) {
   };
 }
 
-export function BeforeCreate() {
+export function BeforeCreate(): (value: (...args: any[]) => unknown, context: ClassMethodDecoratorContext) => void {
   return hook(EventType.beforeCreate);
 }
 
-export function AfterCreate() {
+export function AfterCreate(): (value: (...args: any[]) => unknown, context: ClassMethodDecoratorContext) => void {
   return hook(EventType.afterCreate);
 }
 
-export function BeforeUpdate() {
+export function BeforeUpdate(): (value: (...args: any[]) => unknown, context: ClassMethodDecoratorContext) => void {
   return hook(EventType.beforeUpdate);
 }
 
-export function AfterUpdate() {
+export function AfterUpdate(): (value: (...args: any[]) => unknown, context: ClassMethodDecoratorContext) => void {
   return hook(EventType.afterUpdate);
 }
 
-export function BeforeUpsert() {
+export function BeforeUpsert(): (value: (...args: any[]) => unknown, context: ClassMethodDecoratorContext) => void {
   return hook(EventType.beforeUpsert);
 }
 
-export function AfterUpsert() {
+export function AfterUpsert(): (value: (...args: any[]) => unknown, context: ClassMethodDecoratorContext) => void {
   return hook(EventType.afterUpsert);
 }
 
-export function OnInit() {
+export function OnInit(): (value: (...args: any[]) => unknown, context: ClassMethodDecoratorContext) => void {
   return hook(EventType.onInit);
 }
 
-export function OnLoad() {
+export function OnLoad(): (value: (...args: any[]) => unknown, context: ClassMethodDecoratorContext) => void {
   return hook(EventType.onLoad);
 }
 
 /**
  * Called before deleting entity, but only when providing initialized entity to EM#remove()
  */
-export function BeforeDelete() {
+export function BeforeDelete(): (value: (...args: any[]) => unknown, context: ClassMethodDecoratorContext) => void {
   return hook(EventType.beforeDelete);
 }
 
 /**
  * Called after deleting entity, but only when providing initialized entity to EM#remove()
  */
-export function AfterDelete() {
+export function AfterDelete(): (value: (...args: any[]) => unknown, context: ClassMethodDecoratorContext) => void {
   return hook(EventType.afterDelete);
 }

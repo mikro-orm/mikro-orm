@@ -209,7 +209,7 @@ export class Migrator extends AbstractMigrator<AbstractSqlDriver> {
     return expected.size === exists.size;
   }
 
-  protected async getSchemaFromSnapshot() {
+  protected async getSchemaFromSnapshot(): Promise<DatabaseSchema | undefined> {
     if (!this.options.snapshot) {
       return undefined;
     }

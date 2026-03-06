@@ -16,7 +16,7 @@ import { CompiledQuery } from 'kysely';
 import oracledb, { type ExecuteOptions, type PoolAttributes } from 'oracledb';
 
 export class OracleConnection extends AbstractSqlConnection {
-  override async createKyselyDialect(overrides: PoolAttributes) {
+  override async createKyselyDialect(overrides: PoolAttributes): Promise<OracleDialect> {
     const options = this.mapOptions(overrides);
     const password = options.password as ConnectionConfig['password'];
     const onCreateConnection = this.options.onCreateConnection ?? this.config.get('onCreateConnection');

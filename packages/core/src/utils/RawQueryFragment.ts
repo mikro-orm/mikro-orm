@@ -73,7 +73,7 @@ export class RawQueryFragment<Alias extends string = string> {
     return this.isKnownFragmentSymbol(key);
   }
 
-  static getKnownFragment(key: unknown) {
+  static getKnownFragment(key: unknown): RawQueryFragment | undefined {
     if (key instanceof RawQueryFragment) {
       return key;
     }
@@ -87,7 +87,7 @@ export class RawQueryFragment<Alias extends string = string> {
 
   /** @ignore */
   /* v8 ignore next */
-  [Symbol.for('nodejs.util.inspect.custom')]() {
+  [Symbol.for('nodejs.util.inspect.custom')](): { sql: string; params?: unknown[] } {
     if (this.params) {
       return { sql: this.sql, params: this.params };
     }
@@ -236,11 +236,13 @@ export function createSqlFunction<R = RawQueryFragment & symbol, T extends objec
   return raw<R, T>(a => `${func}(${key(a)})`);
 }
 
-sql.ref = <T extends object = any>(...keys: string[]) => raw<RawQueryFragment & symbol, T>('??', [keys.join('.')]);
-sql.now = (length?: number) => raw('current_timestamp' + (length == null ? '' : `(${length})`));
-sql.lower = <R = RawQueryFragment & symbol, T extends object = any>(key: string | ((alias: string) => string)) =>
+sql.ref = <T extends object = any>(...keys: string[]): RawQueryFragment & symbol =>
+  raw<RawQueryFragment & symbol, T>('??', [keys.join('.')]);
+sql.now = (length?: number): RawQueryFragment & symbol =>
+  raw('current_timestamp' + (length == null ? '' : `(${length})`));
+sql.lower = <R = RawQueryFragment & symbol, T extends object = any>(key: string | ((alias: string) => string)): R =>
   createSqlFunction<R, T>('lower', key);
-sql.upper = <R = RawQueryFragment & symbol, T extends object = any>(key: string | ((alias: string) => string)) =>
+sql.upper = <R = RawQueryFragment & symbol, T extends object = any>(key: string | ((alias: string) => string)): R =>
   createSqlFunction<R, T>('upper', key);
 
 /**
@@ -256,6 +258,9 @@ sql.upper = <R = RawQueryFragment & symbol, T extends object = any>(key: string 
  * export class Author { ... }
  * ```
  */
-export function quote(expParts: readonly string[], ...values: (string | { toString(): string })[]) {
+export function quote(
+  expParts: readonly string[],
+  ...values: (string | { toString(): string })[]
+): RawQueryFragment & symbol {
   return raw(expParts.join('??'), values);
 }

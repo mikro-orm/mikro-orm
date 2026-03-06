@@ -43,6 +43,9 @@ jobs:
       - name: Build
         run: yarn build
 
+      - name: Check JSR publishing
+        run: yarn publish:jsr:dry
+
   typecheck:
     name: Typecheck
     if: ${{ !contains(github.event.head_commit.message, '[skip ci]') }}

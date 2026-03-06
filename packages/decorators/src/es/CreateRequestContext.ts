@@ -4,8 +4,14 @@ import { type ContextProvider, resolveContextProvider } from '../utils.js';
 export function CreateRequestContext<T extends object>(
   contextProvider?: ContextProvider<T>,
   respectExistingContext = false,
-) {
-  return function (value: (this: T, ...args: any) => any, context: ClassMethodDecoratorContext<T>) {
+): (
+  value: (this: T, ...args: any) => any,
+  context: ClassMethodDecoratorContext<T>,
+) => (this: T, ...args: any[]) => Promise<any> {
+  return function (
+    value: (this: T, ...args: any) => any,
+    context: ClassMethodDecoratorContext<T>,
+  ): (this: T, ...args: any[]) => Promise<any> {
     const name = respectExistingContext ? 'EnsureRequestContext' : 'CreateRequestContext';
 
     if (value.constructor.name !== 'AsyncFunction') {
@@ -37,6 +43,11 @@ export function CreateRequestContext<T extends object>(
   };
 }
 
-export function EnsureRequestContext<T extends object>(context?: ContextProvider<T>) {
+export function EnsureRequestContext<T extends object>(
+  context?: ContextProvider<T>,
+): (
+  value: (this: T, ...args: any) => any,
+  context: ClassMethodDecoratorContext<T>,
+) => (this: T, ...args: any[]) => Promise<any> {
   return CreateRequestContext(context, true);
 }

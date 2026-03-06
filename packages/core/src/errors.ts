@@ -339,7 +339,7 @@ export class MetadataError<T extends AnyEntity = AnyEntity> extends ValidationEr
     return new MetadataError(`Metadata for entity ${entity} not found`);
   }
 
-  static invalidPrimaryKey(meta: EntityMetadata, prop: EntityProperty, requiredName: string) {
+  static invalidPrimaryKey(meta: EntityMetadata, prop: EntityProperty, requiredName: string): MetadataError {
     return this.fromMessage(meta, prop, `has wrong field name, '${requiredName}' is required in current driver`);
   }
 
@@ -348,7 +348,7 @@ export class MetadataError<T extends AnyEntity = AnyEntity> extends ValidationEr
     prop1: EntityProperty,
     meta2: EntityMetadata,
     prop2: EntityProperty,
-  ) {
+  ): MetadataError {
     const p1 = `${meta1.className}.${prop1.name}`;
     const p2 = `${meta2.className}.${prop2.name}`;
     return new MetadataError(
@@ -356,7 +356,7 @@ export class MetadataError<T extends AnyEntity = AnyEntity> extends ValidationEr
     );
   }
 
-  static targetIsAbstract(meta: EntityMetadata, prop: EntityProperty) {
+  static targetIsAbstract(meta: EntityMetadata, prop: EntityProperty): MetadataError {
     return this.fromMessage(
       meta,
       prop,
@@ -364,7 +364,7 @@ export class MetadataError<T extends AnyEntity = AnyEntity> extends ValidationEr
     );
   }
 
-  static nonPersistentCompositeProp(meta: EntityMetadata, prop: EntityProperty) {
+  static nonPersistentCompositeProp(meta: EntityMetadata, prop: EntityProperty): MetadataError {
     return this.fromMessage(
       meta,
       prop,
@@ -372,7 +372,7 @@ export class MetadataError<T extends AnyEntity = AnyEntity> extends ValidationEr
     );
   }
 
-  static propertyTargetsEntityType(meta: EntityMetadata, prop: EntityProperty, target: EntityMetadata) {
+  static propertyTargetsEntityType(meta: EntityMetadata, prop: EntityProperty, target: EntityMetadata): MetadataError {
     /* v8 ignore next */
     const suggestion = target.embeddable ? 'Embedded' : 'ManyToOne';
     return this.fromMessage(
@@ -382,15 +382,15 @@ export class MetadataError<T extends AnyEntity = AnyEntity> extends ValidationEr
     );
   }
 
-  static fromMissingOption(meta: EntityMetadata, prop: EntityProperty, option: string) {
+  static fromMissingOption(meta: EntityMetadata, prop: EntityProperty, option: string): MetadataError {
     return this.fromMessage(meta, prop, `is missing '${option}' option`);
   }
 
-  static targetKeyOnManyToMany(meta: EntityMetadata, prop: EntityProperty) {
+  static targetKeyOnManyToMany(meta: EntityMetadata, prop: EntityProperty): MetadataError {
     return this.fromMessage(meta, prop, `uses 'targetKey' option which is not supported for ManyToMany relations`);
   }
 
-  static targetKeyNotUnique(meta: EntityMetadata, prop: EntityProperty, target?: EntityMetadata) {
+  static targetKeyNotUnique(meta: EntityMetadata, prop: EntityProperty, target?: EntityMetadata): MetadataError {
     const targetName = target?.className ?? prop.type;
     return this.fromMessage(
       meta,
@@ -399,7 +399,7 @@ export class MetadataError<T extends AnyEntity = AnyEntity> extends ValidationEr
     );
   }
 
-  static targetKeyNotFound(meta: EntityMetadata, prop: EntityProperty, target?: EntityMetadata) {
+  static targetKeyNotFound(meta: EntityMetadata, prop: EntityProperty, target?: EntityMetadata): MetadataError {
     const targetName = target?.className ?? prop.type;
     return this.fromMessage(
       meta,
@@ -414,7 +414,7 @@ export class MetadataError<T extends AnyEntity = AnyEntity> extends ValidationEr
     target1: EntityMetadata,
     target2: EntityMetadata,
     reason: string,
-  ) {
+  ): MetadataError {
     return this.fromMessage(
       meta,
       prop,
@@ -422,7 +422,7 @@ export class MetadataError<T extends AnyEntity = AnyEntity> extends ValidationEr
     );
   }
 
-  static dangerousPropertyName(meta: EntityMetadata, prop: EntityProperty) {
+  static dangerousPropertyName(meta: EntityMetadata, prop: EntityProperty): MetadataError {
     return this.fromMessage(
       meta,
       prop,

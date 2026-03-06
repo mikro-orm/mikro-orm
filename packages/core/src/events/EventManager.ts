@@ -115,7 +115,7 @@ export class EventManager {
     return false;
   }
 
-  clone() {
+  clone(): EventManager {
     return new EventManager(this.#subscribers);
   }
 

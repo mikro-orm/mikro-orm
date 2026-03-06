@@ -2035,7 +2035,7 @@ export abstract class AbstractSqlDriver<
     populate: readonly PopulateOptions<U>[],
     fields?: readonly InternalField<U>[],
     exclude?: readonly InternalField<U>[],
-  ) {
+  ): boolean {
     if (!this.platform.shouldHaveColumn(prop, populate, exclude as string[])) {
       return false;
     }
@@ -2469,7 +2469,7 @@ export abstract class AbstractSqlDriver<
     return qb;
   }
 
-  protected resolveConnectionType(args: { ctx?: Transaction; connectionType?: ConnectionType }) {
+  protected resolveConnectionType(args: { ctx?: Transaction; connectionType?: ConnectionType }): ConnectionType {
     if (args.ctx) {
       return 'write';
     }

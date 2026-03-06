@@ -15,7 +15,7 @@ export class DoubleType extends Type<number | string, string> {
     return String(value);
   }
 
-  override getColumnType(prop: EntityProperty, platform: Platform) {
+  override getColumnType(prop: EntityProperty, platform: Platform): string {
     return platform.getDoubleDeclarationSQL();
   }
 

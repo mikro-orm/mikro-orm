@@ -29,7 +29,7 @@ export function defineMongoConfig<
     | EntityClass<AnyEntity>
     | EntitySchema
   )[],
->(options: MongoOptions<EM, Entities>) {
+>(options: MongoOptions<EM, Entities>): MongoOptions<EM, Entities> {
   return defineConfig({ driver: MongoDriver, ...options });
 }
 

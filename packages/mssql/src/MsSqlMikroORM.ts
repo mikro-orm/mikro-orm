@@ -28,7 +28,7 @@ export function defineMsSqlConfig<
     | EntityClass<AnyEntity>
     | EntitySchema
   )[],
->(options: Options<MsSqlDriver, EM, Entities>) {
+>(options: Options<MsSqlDriver, EM, Entities>): Options<MsSqlDriver, EM, Entities> {
   return defineConfig({ driver: MsSqlDriver, ...options });
 }
 

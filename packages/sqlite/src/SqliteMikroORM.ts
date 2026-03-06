@@ -28,7 +28,7 @@ export function defineSqliteConfig<
     | EntityClass<AnyEntity>
     | EntitySchema
   )[],
->(options: Options<SqliteDriver, EM, Entities>) {
+>(options: Options<SqliteDriver, EM, Entities>): Options<SqliteDriver, EM, Entities> {
   return defineConfig({ driver: SqliteDriver, ...options });
 }
 
