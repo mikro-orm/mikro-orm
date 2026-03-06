@@ -353,18 +353,18 @@ export class QueryBuilderHelper {
     return ret;
   }
 
-  processJoins(qb: NativeQueryBuilder, joins: Dictionary<JoinOptions>, schema?: string): void {
+  processJoins(qb: NativeQueryBuilder, joins: Dictionary<JoinOptions>, schema?: string, schemaOverride?: string): void {
     Object.values(joins).forEach(join => {
       if ([JoinType.nestedInnerJoin, JoinType.nestedLeftJoin].includes(join.type)) {
         return;
       }
 
-      const { sql, params } = this.createJoinExpression(join, joins, schema);
+      const { sql, params } = this.createJoinExpression(join, joins, schema, schemaOverride);
       qb.join(sql, params);
     });
   }
 
-  createJoinExpression(join: JoinOptions, joins: Dictionary<JoinOptions>, schema?: string) {
+  createJoinExpression(join: JoinOptions, joins: Dictionary<JoinOptions>, schema?: string, schemaOverride?: string) {
     let table = join.table;
     const method =
       {
@@ -374,7 +374,7 @@ export class QueryBuilderHelper {
       }[join.type] ?? join.type;
     const conditions: string[] = [];
     const params: unknown[] = [];
-    schema = join.schema && join.schema !== '*' ? join.schema : schema;
+    schema = join.schema === '*' ? schema : (join.schema ?? schemaOverride);
 
     if (schema && schema !== this.platform.getDefaultSchemaName()) {
       table = `${schema}.${table}`;
@@ -436,7 +436,12 @@ export class QueryBuilderHelper {
       sql += `(${this.platform.quoteIdentifier(table)}${asKeyword}${this.platform.quoteIdentifier(join.alias)}`;
 
       for (const nested of join.nested) {
-        const { sql: nestedSql, params: nestedParams } = this.createJoinExpression(nested, joins, schema);
+        const { sql: nestedSql, params: nestedParams } = this.createJoinExpression(
+          nested,
+          joins,
+          schema,
+          schemaOverride,
+        );
         sql += ' ' + nestedSql;
         params.push(...nestedParams);
       }
