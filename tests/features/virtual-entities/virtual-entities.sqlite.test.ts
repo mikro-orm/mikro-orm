@@ -188,7 +188,7 @@ describe('virtual entities (sqlite)', () => {
     await createEntities(3);
 
     const mock = mockLogger(orm);
-    const [profiles, total] = await orm.em.findAndCount(AuthorProfile, {}, { cache: 50 });
+    const [profiles, total] = await orm.em.findAndCount(AuthorProfile, {}, { cache: 5000 });
     const stream = orm.em.stream(AuthorProfile, { orderBy: { name: 1, usedTags: 1 } });
     const items = [];
     for await (const item of stream) {
@@ -213,7 +213,7 @@ describe('virtual entities (sqlite)', () => {
     });
 
     expect(mock.mock.calls).toHaveLength(4);
-    const res2 = await orm.em.findAndCount(AuthorProfile, {}, { cache: 50 });
+    const res2 = await orm.em.findAndCount(AuthorProfile, {}, { cache: 5000 });
     expect(res2).toEqual([profiles, total]);
     expect(mock.mock.calls).toHaveLength(4);
 

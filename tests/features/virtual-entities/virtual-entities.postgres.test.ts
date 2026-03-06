@@ -119,7 +119,7 @@ describe('virtual entities (sqlite)', () => {
     const [profiles, total] = await orm.em.findAndCount(
       AuthorProfile,
       {},
-      { cache: 50, orderBy: { name: 1, usedTags: 1 } },
+      { cache: 5000, orderBy: { name: 1, usedTags: 1 } },
     );
 
     const stream = orm.em.stream(AuthorProfile, { orderBy: { name: 1, usedTags: 1 } });
@@ -140,7 +140,7 @@ describe('virtual entities (sqlite)', () => {
     });
 
     expect(mock.mock.calls).toHaveLength(3);
-    const res2 = await orm.em.findAndCount(AuthorProfile, {}, { cache: 50, orderBy: { name: 1, usedTags: 1 } });
+    const res2 = await orm.em.findAndCount(AuthorProfile, {}, { cache: 5000, orderBy: { name: 1, usedTags: 1 } });
     expect(res2).toEqual([profiles, total]);
     expect(mock.mock.calls).toHaveLength(3); // from cache, no additional queries
 
