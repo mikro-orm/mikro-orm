@@ -32,12 +32,10 @@ beforeAll(async () => {
   await orm.schema.ensureDatabase();
   await orm.em.execute('create database if not exists `hub`');
   await orm.schema.refresh();
-  await orm.schema.refresh({ schema: 'hub' });
 });
 
 afterAll(async () => {
-  await orm.schema.drop({ schema: 'hub' });
-  await orm.em.execute('drop database if exists `hub`');
+  await orm.schema.dropDatabase('hub');
   await orm.close(true);
 });
 
