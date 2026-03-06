@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.6.9](https://github.com/mikro-orm/mikro-orm/compare/v6.6.8...v6.6.9) (2026-03-05)
+
+
+### Bug Fixes
+
+* **core:** fix findOne with entity refs for composite PKs with shared FK columns ([6f95f72](https://github.com/mikro-orm/mikro-orm/commit/6f95f7255aa1b620372cff036e29cc39df078ca0)), closes [#5629](https://github.com/mikro-orm/mikro-orm/issues/5629)
+* **core:** make entity prototype `toJSON` non-enumerable to prevent data leaks ([c895808](https://github.com/mikro-orm/mikro-orm/commit/c89580864e94c64a6e68b81f9900e0a6f2d57760))
+* **core:** prevent double JSON-encoding of nested embeddable arrays ([309b278](https://github.com/mikro-orm/mikro-orm/commit/309b27853d69a3ecc3d4722842b6fc40381b886d)), closes [#7233](https://github.com/mikro-orm/mikro-orm/issues/7233)
+* **migrations:** normalize snapshots and write on both up/down ([#7236](https://github.com/mikro-orm/mikro-orm/issues/7236)) ([a07aca6](https://github.com/mikro-orm/mikro-orm/commit/a07aca6d4183262b5fe3bfe124063c4c73c05a90)), closes [#7234](https://github.com/mikro-orm/mikro-orm/issues/7234)
+* **migrations:** skip snapshot write on `migration:up` to support read-only filesystems ([c8584e8](https://github.com/mikro-orm/mikro-orm/commit/c8584e866caca17d2e1fb5b5eec8494463b5f611)), closes [#7232](https://github.com/mikro-orm/mikro-orm/issues/7232)
+* **mysql:** fix `table.bigincrements()` producing `int` instead of `bigint` ([5660607](https://github.com/mikro-orm/mikro-orm/commit/5660607e4a751386ba1debe95cafdf8d886e5b37)), closes [#7246](https://github.com/mikro-orm/mikro-orm/issues/7246)
+
+
+
+
+
 ## [6.6.8](https://github.com/mikro-orm/mikro-orm/compare/v6.6.7...v6.6.8) (2026-03-01)
 
 
