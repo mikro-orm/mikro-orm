@@ -634,7 +634,14 @@ export class SourceFile {
 
   protected getEmbeddableDeclOptions() {
     const options: EmbeddableOptions<unknown> = {};
-    return this.getCollectionDecl(options);
+    const result = this.getCollectionDecl(options);
+
+    if (result.discriminatorColumn) {
+      result.discriminator = result.discriminatorColumn;
+      delete result.discriminatorColumn;
+    }
+
+    return result;
   }
 
   private getCollectionDecl<T extends EntityOptions<unknown> | EmbeddableOptions<unknown>>(options: T) {

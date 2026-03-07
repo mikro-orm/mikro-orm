@@ -19,7 +19,7 @@ export class EntityCaseNamingStrategy extends AbstractNamingStrategy {
     tableName?: string,
   ): string {
     entityName = this.classToTableName(entityName, tableName);
-    const name = entityName.substr(0, 1).toLowerCase() + entityName.substr(1);
+    const name = entityName.substring(0, 1).toLowerCase() + entityName.substring(1);
 
     if (composite && referencedColumnName) {
       return name + '_' + referencedColumnName;

@@ -48,7 +48,6 @@ export class EntityTransformer {
 
     if (!wrapped.__serializationContext.root) {
       const root = new SerializationContext<Entity>(
-        wrapped.__config,
         wrapped.__serializationContext.populate,
         wrapped.__serializationContext.fields,
         wrapped.__serializationContext.exclude,
@@ -105,6 +104,10 @@ export class EntityTransformer {
         const isPrimary = includePrimaryKeys && meta.properties[prop].primary;
 
         if (!partiallyLoaded && !populated && !isPrimary) {
+          continue;
+        }
+
+        if (root.isExcluded(meta.class, prop) && !populated) {
           continue;
         }
       }

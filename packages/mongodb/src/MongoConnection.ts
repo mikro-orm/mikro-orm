@@ -85,6 +85,10 @@ export class MongoConnection extends Connection {
         this.config.get('clientUrl'),
         this.mapOptions(driverOptions as MongoClientOptions),
       );
+      this.#client.appendMetadata({
+        name: 'MikroORM',
+        version: Utils.getORMVersion(),
+      });
       const onCreateConnection = this.options.onCreateConnection ?? this.config.get('onCreateConnection');
       /* v8 ignore next */
       this.#client.on('connectionCreated', () => {
@@ -163,11 +167,6 @@ export class MongoConnection extends Connection {
     ret.minPoolSize = pool.min;
     ret.maxPoolSize = pool.max;
     ret.waitQueueTimeoutMS = pool.idleTimeoutMillis;
-    ret.driverInfo = {
-      name: 'MikroORM',
-      version: Utils.getORMVersion(),
-    };
-
     return Utils.mergeConfig(ret, overrides);
   }
 

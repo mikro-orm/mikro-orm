@@ -78,7 +78,7 @@ export class EntitySerializer {
     let contextCreated = false;
 
     if (!wrapped.__serializationContext.root) {
-      const root = new SerializationContext<T>(wrapped.__config);
+      const root = new SerializationContext<T>();
       SerializationContext.propagate(
         root,
         entity,
