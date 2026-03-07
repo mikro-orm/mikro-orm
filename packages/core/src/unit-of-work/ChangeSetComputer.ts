@@ -48,7 +48,7 @@ export class ChangeSetComputer {
     if (type === ChangeSetType.CREATE) {
       // run update hooks only after we know there are other changes
       for (const prop of meta.hydrateProps) {
-        this.#processPropertyInitializers(entity, prop, type, map);
+        this.processPropertyInitializers(entity, prop, type, map);
       }
     }
 
@@ -60,11 +60,11 @@ export class ChangeSetComputer {
       }
     }
 
-    const changeSet = new ChangeSet(entity, type, this.#computePayload(entity), meta);
+    const changeSet = new ChangeSet(entity, type, this.computePayload(entity), meta);
     changeSet.originalEntity = wrapped.__originalEntityData;
 
     for (const prop of meta.relations.filter(prop => prop.persist !== false || prop.userDefined === false)) {
-      this.#processProperty(changeSet, prop);
+      this.processProperty(changeSet, prop);
     }
 
     if (changeSet.type === ChangeSetType.UPDATE && !Utils.hasObjectKeys(changeSet.payload)) {
@@ -77,7 +77,7 @@ export class ChangeSetComputer {
     // to the `map` as we want to apply those only if something else changed.
     if (type === ChangeSetType.UPDATE) {
       for (const prop of meta.hydrateProps) {
-        this.#processPropertyInitializers(entity, prop, type, map);
+        this.processPropertyInitializers(entity, prop, type, map);
       }
     }
 
@@ -89,7 +89,7 @@ export class ChangeSetComputer {
       }
 
       // Recompute the changeset, we need to merge this as here we ignore relations.
-      const diff = this.#computePayload(entity, true);
+      const diff = this.computePayload(entity, true);
       Utils.merge(changeSet.payload, diff);
     }
 
@@ -99,7 +99,7 @@ export class ChangeSetComputer {
   /**
    * Traverses entity graph and executes `onCreate` and `onUpdate` methods, assigning the values to given properties.
    */
-  #processPropertyInitializers<T>(
+  private processPropertyInitializers<T>(
     entity: T,
     prop: EntityProperty<T>,
     type: ChangeSetType,
@@ -123,12 +123,12 @@ export class ChangeSetComputer {
 
     if (prop.kind === ReferenceKind.EMBEDDED && entity[prop.name]) {
       for (const embeddedProp of prop.targetMeta!.hydrateProps) {
-        this.#processPropertyInitializers(entity[prop.name] as T, embeddedProp, type, map, nested || prop.object);
+        this.processPropertyInitializers(entity[prop.name] as T, embeddedProp, type, map, nested || prop.object);
       }
     }
   }
 
-  #computePayload<T extends object>(entity: T, ignoreUndefined = false): EntityData<T> {
+  private computePayload<T extends object>(entity: T, ignoreUndefined = false): EntityData<T> {
     const data = this.#comparator.prepareEntity(entity);
     const wrapped = helper(entity);
     const entityName = wrapped.__meta.class;
@@ -158,25 +158,25 @@ export class ChangeSetComputer {
     return data;
   }
 
-  #processProperty<T extends object>(changeSet: ChangeSet<T>, prop: EntityProperty<T>, target?: unknown): void {
+  private processProperty<T extends object>(changeSet: ChangeSet<T>, prop: EntityProperty<T>, target?: unknown): void {
     if (!target) {
       const targets = Utils.unwrapProperty(changeSet.entity, changeSet.meta, prop);
-      targets.forEach(([t]) => this.#processProperty(changeSet, prop, t));
+      targets.forEach(([t]) => this.processProperty(changeSet, prop, t));
 
       return;
     }
 
     if (Utils.isCollection(target)) {
       // m:n or 1:m
-      this.#processToMany(prop, changeSet);
+      this.processToMany(prop, changeSet);
     }
 
     if ([ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind)) {
-      this.#processToOne(prop, changeSet);
+      this.processToOne(prop, changeSet);
     }
   }
 
-  #processToOne<T extends object>(prop: EntityProperty<T>, changeSet: ChangeSet<T>): void {
+  private processToOne<T extends object>(prop: EntityProperty<T>, changeSet: ChangeSet<T>): void {
     const isToOneOwner =
       prop.kind === ReferenceKind.MANY_TO_ONE || (prop.kind === ReferenceKind.ONE_TO_ONE && prop.owner);
 
@@ -218,7 +218,7 @@ export class ChangeSetComputer {
     });
   }
 
-  #processToMany<T extends object>(prop: EntityProperty<T>, changeSet: ChangeSet<T>): void {
+  private processToMany<T extends object>(prop: EntityProperty<T>, changeSet: ChangeSet<T>): void {
     const target = changeSet.entity[prop.name] as Collection<any>;
 
     if (!target.isDirty() && changeSet.type !== ChangeSetType.CREATE) {

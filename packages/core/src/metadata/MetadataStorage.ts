@@ -140,17 +140,17 @@ export class MetadataStorage {
     className: string,
     validate = true as V,
   ): V extends true ? EntityMetadata<T> : EntityMetadata<T> | undefined {
-    return this.#validate(this.#classNameMap[className], className, validate);
+    return this.validate(this.#classNameMap[className], className, validate);
   }
 
   getByUniqueName<T = any, V extends boolean = true>(
     uniqueName: string,
     validate = true as V,
   ): V extends true ? EntityMetadata<T> : EntityMetadata<T> | undefined {
-    return this.#validate(this.#uniqueNameMap[uniqueName], uniqueName, validate);
+    return this.validate(this.#uniqueNameMap[uniqueName], uniqueName, validate);
   }
 
-  #validate<T = any, V extends boolean = true>(
+  private validate<T = any, V extends boolean = true>(
     meta: EntityMetadata | undefined,
     id: string,
     validate: boolean,

@@ -7,6 +7,7 @@ import {
   SchemaGenerator,
   SchemaComparator,
   DatabaseSchema,
+  type DatabaseTable,
   type EnsureDatabaseOptions,
   type ClearDatabaseOptions,
 } from '@mikro-orm/sql';
@@ -18,7 +19,7 @@ export class OracleSchemaGenerator extends SchemaGenerator {
   declare protected connection: OracleConnection;
 
   /** Tracks whether the main user has been granted DBA (or equivalent) privileges. */
-  #hasDbaGrant = false;
+  private hasDbaGrant = false;
 
   static override register(orm: MikroORM): void {
     orm.config.registerExtension(
@@ -148,7 +149,7 @@ export class OracleSchemaGenerator extends SchemaGenerator {
     return false;
   }
 
-  #getOriginalUser(): string {
+  private getOriginalUser(): string {
     return this.config.get('user') ?? this.config.get('dbName')!;
   }
 
@@ -156,8 +157,8 @@ export class OracleSchemaGenerator extends SchemaGenerator {
    * Connects as the management (system) user if not already connected as admin.
    * Returns the original user to restore later, or undefined if no reconnect was needed.
    */
-  async #connectAsAdmin(): Promise<string | undefined> {
-    if (this.#hasDbaGrant) {
+  private async connectAsAdmin(): Promise<string | undefined> {
+    if (this.hasDbaGrant) {
       return undefined;
     }
 
@@ -167,11 +168,11 @@ export class OracleSchemaGenerator extends SchemaGenerator {
     );
 
     if (res.length > 0) {
-      this.#hasDbaGrant = true;
+      this.hasDbaGrant = true;
       return undefined;
     }
 
-    const originalUser = this.#getOriginalUser();
+    const originalUser = this.getOriginalUser();
     this.config.set('user', this.helper.getManagementDbName());
     await this.driver.reconnect();
 
@@ -181,7 +182,7 @@ export class OracleSchemaGenerator extends SchemaGenerator {
   /**
    * Restores the connection to the original user after admin operations.
    */
-  async #restoreConnection(originalUser: string | undefined): Promise<void> {
+  private async restoreConnection(originalUser: string | undefined): Promise<void> {
     if (originalUser == null) {
       return;
     }
@@ -194,8 +195,8 @@ export class OracleSchemaGenerator extends SchemaGenerator {
    * Grants DBA (or fallback individual privileges) to the main user.
    * Only executed once — subsequent calls are no-ops.
    */
-  async #ensureDbaGrant(originalUser: string): Promise<void> {
-    if (this.#hasDbaGrant) {
+  private async ensureDbaGrant(originalUser: string): Promise<void> {
+    if (this.hasDbaGrant) {
       return;
     }
 
@@ -209,12 +210,12 @@ export class OracleSchemaGenerator extends SchemaGenerator {
       await this.execute(`grant drop any index to ${this.platform.quoteIdentifier(originalUser)}`);
     }
 
-    this.#hasDbaGrant = true;
+    this.hasDbaGrant = true;
   }
 
   override async createNamespace(name: string): Promise<void> {
-    const originalUser = this.#getOriginalUser();
-    const reconnectUser = await this.#connectAsAdmin();
+    const originalUser = this.getOriginalUser();
+    const reconnectUser = await this.connectAsAdmin();
 
     try {
       await this.execute(this.helper.getCreateNamespaceSQL(name));
@@ -226,14 +227,14 @@ export class OracleSchemaGenerator extends SchemaGenerator {
     }
 
     await this.execute(`grant connect, resource to ${this.platform.quoteIdentifier(name)}`);
-    await this.#ensureDbaGrant(originalUser);
-    await this.#grantReferencesForSchema(name);
+    await this.ensureDbaGrant(originalUser);
+    await this.grantReferencesForSchema(name);
 
-    await this.#restoreConnection(reconnectUser);
+    await this.restoreConnection(reconnectUser);
   }
 
   override async dropNamespace(name: string): Promise<void> {
-    const reconnectUser = await this.#connectAsAdmin();
+    const reconnectUser = await this.connectAsAdmin();
 
     // Try drop first; only kill sessions if the user is currently connected
     try {
@@ -272,7 +273,7 @@ export class OracleSchemaGenerator extends SchemaGenerator {
       }
     }
 
-    await this.#restoreConnection(reconnectUser);
+    await this.restoreConnection(reconnectUser);
   }
 
   override async update(options: UpdateSchemaOptions<DatabaseSchema> = {}): Promise<void> {
@@ -307,8 +308,8 @@ export class OracleSchemaGenerator extends SchemaGenerator {
     // unqualified object names (e.g. indexes) are created in the correct schema.
     /* v8 ignore start: requires multi-schema Oracle setup */
     if (diff.newNamespaces.size > 0) {
-      const originalUser = this.#getOriginalUser();
-      const reconnectUser = await this.#connectAsAdmin();
+      const originalUser = this.getOriginalUser();
+      const reconnectUser = await this.connectAsAdmin();
 
       for (const ns of diff.newNamespaces) {
         try {
@@ -322,13 +323,13 @@ export class OracleSchemaGenerator extends SchemaGenerator {
         await this.execute(`grant connect, resource to ${this.platform.quoteIdentifier(ns)}`);
       }
 
-      await this.#ensureDbaGrant(originalUser);
+      await this.ensureDbaGrant(originalUser);
 
       for (const ns of diff.newNamespaces) {
-        await this.#grantReferencesForSchema(ns);
+        await this.grantReferencesForSchema(ns);
       }
 
-      await this.#restoreConnection(reconnectUser);
+      await this.restoreConnection(reconnectUser);
     }
     /* v8 ignore stop */
 
@@ -356,17 +357,22 @@ export class OracleSchemaGenerator extends SchemaGenerator {
 
     tableOnlyDiff.changedTables = strippedChangedTables;
 
-    // Strip FKs from newTables so diffToSQL won't generate FK constraints in Phase 2
+    // Temporarily override getForeignKeys on new tables to suppress FK constraints in Phase 2
     // (Oracle requires REFERENCES grants before FK creation, handled in Phase 2.5 / Phase 3)
-    const strippedNewTables: Dictionary = {};
-    for (const [key, table] of Object.entries(diff.newTables)) {
-      const proxy = Object.create(table);
-      proxy.getForeignKeys = () => ({});
-      strippedNewTables[key] = proxy;
+    const originalGetForeignKeys = new Map<DatabaseTable, () => Dictionary>();
+
+    for (const table of Object.values(diff.newTables)) {
+      originalGetForeignKeys.set(table, table.getForeignKeys.bind(table));
+      table.getForeignKeys = () => ({});
     }
 
-    tableOnlyDiff.newTables = strippedNewTables;
+    tableOnlyDiff.newTables = diff.newTables;
     const tableSQL = this.diffToSQL(tableOnlyDiff, options);
+
+    // Restore original getForeignKeys
+    for (const [table, origFn] of originalGetForeignKeys) {
+      table.getForeignKeys = origFn;
+    }
 
     if (tableSQL) {
       await this.execute(tableSQL);
@@ -472,7 +478,7 @@ export class OracleSchemaGenerator extends SchemaGenerator {
     this.clearIdentityMap();
   }
 
-  async #grantReferencesForSchema(schemaName: string): Promise<void> {
+  private async grantReferencesForSchema(schemaName: string): Promise<void> {
     const defaultSchema = this.platform.getDefaultSchemaName();
     const allSchemas = [...this.getTargetSchema().getNamespaces()];
 

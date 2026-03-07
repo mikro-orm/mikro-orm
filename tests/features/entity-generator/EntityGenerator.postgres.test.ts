@@ -21,29 +21,22 @@ describe('EntityGenerator', () => {
     expect(dump).toMatchSnapshot('postgres-entity-dump');
 
     const table = new DatabaseTable(orm.em.getPlatform(), 'test_entity', 'public');
-    Object.assign(table, {
-      indexes: [],
-      columns: {
-        name: {
-          name: 'name',
-          type: 'varchar(45)',
-          mappedType: orm.em.getPlatform().getMappedType('varchar(45)'),
-          maxLength: 45,
-          nullable: true,
-          default: 'null::character varying',
-          indexes: [],
-        },
-        test: {
-          name: 'test',
-          type: 'varchar(50)',
-          mappedType: orm.em.getPlatform().getMappedType('varchar(50)'),
-          maxLength: 50,
-          nullable: true,
-          default: `'foo'`,
-          indexes: [],
-        },
-      },
-    });
+    table.addColumn({
+      name: 'name',
+      type: 'varchar(45)',
+      mappedType: orm.em.getPlatform().getMappedType('varchar(45)'),
+      maxLength: 45,
+      nullable: true,
+      default: 'null::character varying',
+    } as any);
+    table.addColumn({
+      name: 'test',
+      type: 'varchar(50)',
+      mappedType: orm.em.getPlatform().getMappedType('varchar(50)'),
+      maxLength: 50,
+      nullable: true,
+      default: `'foo'`,
+    } as any);
 
     const helper = orm.em.getDriver().getPlatform().getSchemaHelper()!;
     const meta = table.getEntityDeclaration(

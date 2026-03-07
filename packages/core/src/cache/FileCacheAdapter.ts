@@ -23,14 +23,14 @@ export class FileCacheAdapter implements SyncCacheAdapter {
    * @inheritDoc
    */
   get(name: string): any {
-    const path = this.#path(name);
+    const path = this.path(name);
 
     if (!existsSync(path)) {
       return null;
     }
 
     const payload = fs.readJSONSync(path);
-    const hash = this.#getHash(payload.origin);
+    const hash = this.getHash(payload.origin);
 
     if (!hash || payload.hash !== hash) {
       return null;
@@ -48,8 +48,8 @@ export class FileCacheAdapter implements SyncCacheAdapter {
       return;
     }
 
-    const path = this.#path(name);
-    const hash = this.#getHash(origin);
+    const path = this.path(name);
+    const hash = this.getHash(origin);
     writeFileSync(
       path,
       JSON.stringify({ data, origin, hash, version: this.#VERSION }, null, this.#pretty ? 2 : undefined),
@@ -60,7 +60,7 @@ export class FileCacheAdapter implements SyncCacheAdapter {
    * @inheritDoc
    */
   remove(name: string): void {
-    const path = this.#path(name);
+    const path = this.path(name);
     unlinkSync(path);
   }
 
@@ -68,7 +68,7 @@ export class FileCacheAdapter implements SyncCacheAdapter {
    * @inheritDoc
    */
   clear(): void {
-    const path = this.#path('*');
+    const path = this.path('*');
     const files = fs.glob(path);
 
     for (const file of files) {
@@ -96,12 +96,12 @@ export class FileCacheAdapter implements SyncCacheAdapter {
     return path;
   }
 
-  #path(name: string): string {
+  private path(name: string): string {
     fs.ensureDir(this.#options.cacheDir);
     return `${this.#options.cacheDir}/${name}.json`;
   }
 
-  #getHash(origin: string): string | null {
+  private getHash(origin: string): string | null {
     origin = fs.absolutePath(origin, this.#baseDir);
 
     if (!existsSync(origin)) {

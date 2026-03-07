@@ -78,9 +78,9 @@ export class EntitySchema<Entity = any, Base = never, Class extends EntityCtor =
   /** @internal Type-level marker for fast entity type inference */
   declare readonly '~entity': Entity;
 
-  readonly #_meta: EntityMetadata<Entity, Class>;
-  #internal = false;
-  #initialized = false;
+  private readonly _meta: EntityMetadata<Entity, Class>;
+  private internal = false;
+  private initialized = false;
 
   constructor(meta: EntitySchemaMetadata<Entity, Base, Class>) {
     meta.name = meta.class ? meta.class.name : meta.name;
@@ -89,11 +89,11 @@ export class EntitySchema<Entity = any, Base = never, Class extends EntityCtor =
       meta.abstract ??= false;
     }
 
-    this.#_meta = new EntityMetadata<Entity, Class>({
+    this._meta = new EntityMetadata<Entity, Class>({
       className: meta.name,
       ...(meta as Partial<EntityMetadata<Entity>>),
     });
-    this.#_meta.root ??= this.#_meta;
+    this._meta.root ??= this._meta;
 
     if (meta.class && !(meta as Dictionary).internal) {
       EntitySchema.REGISTRY.set(meta.class, this);
@@ -104,7 +104,7 @@ export class EntitySchema<Entity = any, Base = never, Class extends EntityCtor =
     meta: EntityMetadata<T> | DeepPartial<EntityMetadata<T>>,
   ): EntitySchema<T, U> {
     const schema = new EntitySchema<T, U>({ ...meta, internal: true } as unknown as EntitySchemaMetadata<T, U>);
-    schema.#internal = true;
+    schema.internal = true;
 
     return schema;
   }
@@ -135,7 +135,7 @@ export class EntitySchema<Entity = any, Base = never, Class extends EntityCtor =
       prop.persist ??= false;
     }
 
-    this.#_meta.properties[name] = prop;
+    this._meta.properties[name] = prop;
   }
 
   addEnum(name: EntityKey<Entity>, type?: TypeType, options: EnumOptions<Entity> = {}): void {
@@ -145,7 +145,7 @@ export class EntitySchema<Entity = any, Base = never, Class extends EntityCtor =
 
     // enum arrays are simple numeric/string arrays, the constraint is enforced in the custom type only
     if (options.array && !options.type) {
-      options.type = new EnumArrayType(`${this.#_meta.className}.${name}`, options.items);
+      options.type = new EnumArrayType(`${this._meta.className}.${name}`, options.items);
       (options as EntityProperty).enum = false;
     }
 
@@ -160,7 +160,7 @@ export class EntitySchema<Entity = any, Base = never, Class extends EntityCtor =
       prop.items = prop.items.map(val => '' + val);
     }
 
-    this.addProperty(name, this.#internal ? type : type || 'enum', prop);
+    this.addProperty(name, this.internal ? type : type || 'enum', prop);
   }
 
   addVersion(name: EntityKey<Entity>, type: TypeType, options: PropertyOptions<Entity> = {}): void {
@@ -176,7 +176,7 @@ export class EntitySchema<Entity = any, Base = never, Class extends EntityCtor =
     type: TypeType,
     options: SerializedPrimaryKeyOptions<Entity> = {},
   ): void {
-    this.#_meta.serializedPrimaryKey = name;
+    this._meta.serializedPrimaryKey = name;
     this.addProperty(name, type, { serializedPrimaryKey: true, ...options });
   }
 
@@ -188,7 +188,7 @@ export class EntitySchema<Entity = any, Base = never, Class extends EntityCtor =
       options.object = true; // force object mode for arrays
     }
 
-    this.#_meta.properties[name] = {
+    this._meta.properties[name] = {
       name,
       kind: ReferenceKind.EMBEDDED,
       ...this.normalizeType(options),
@@ -279,33 +279,33 @@ export class EntitySchema<Entity = any, Base = never, Class extends EntityCtor =
   }
 
   addIndex<Key extends string>(options: IndexOptions<Entity, Key>): void {
-    this.#_meta.indexes.push(options as any);
+    this._meta.indexes.push(options as any);
   }
 
   addUnique<Key extends string>(options: UniqueOptions<Entity, Key>): void {
-    this.#_meta.uniques.push(options as any);
+    this._meta.uniques.push(options as any);
   }
 
   setCustomRepository(repository: () => Constructor): void {
-    this.#_meta.repository = repository as () => Constructor<EntityRepository<any>>;
+    this._meta.repository = repository as () => Constructor<EntityRepository<any>>;
   }
 
   setExtends(base: EntityName): void {
-    this.#_meta.extends = base;
+    this._meta.extends = base;
   }
 
   setClass(cls: Class) {
-    const oldClass = this.#_meta.class;
-    const sameClass = this.#_meta.class === cls;
-    this.#_meta.class = cls;
-    this.#_meta.prototype = cls.prototype;
-    this.#_meta.className = this.#_meta.name ?? cls.name;
+    const oldClass = this._meta.class;
+    const sameClass = this._meta.class === cls;
+    this._meta.class = cls;
+    this._meta.prototype = cls.prototype;
+    this._meta.className = this._meta.name ?? cls.name;
 
-    if (!sameClass || !this.#_meta.constructorParams) {
-      this.#_meta.constructorParams = Utils.getConstructorParams(cls) as EntityKey<Entity>[];
+    if (!sameClass || !this._meta.constructorParams) {
+      this._meta.constructorParams = Utils.getConstructorParams(cls) as EntityKey<Entity>[];
     }
 
-    if (!this.#internal) {
+    if (!this.internal) {
       // Remove old class from registry if it's being replaced with a different class
       if (oldClass && oldClass !== cls && EntitySchema.REGISTRY.get(oldClass) === this) {
         EntitySchema.REGISTRY.delete(oldClass);
@@ -320,67 +320,67 @@ export class EntitySchema<Entity = any, Base = never, Class extends EntityCtor =
     // When the user extends the auto-generated class (from defineEntity without a class option)
     // and registers their custom class via setClass, we don't want to discover the
     // auto-generated class as a separate parent entity.
-    if (base !== BaseEntity && base.name !== this.#_meta.className) {
-      this.#_meta.extends ??= base.name ? base : undefined;
+    if (base !== BaseEntity && base.name !== this._meta.className) {
+      this._meta.extends ??= base.name ? base : undefined;
     }
   }
 
   get meta() {
-    return this.#_meta;
+    return this._meta;
   }
 
   get name(): string | EntityName<Entity> {
-    return this.#_meta.className;
+    return this._meta.className;
   }
 
   get tableName(): string {
-    return this.#_meta.tableName;
+    return this._meta.tableName;
   }
 
   get class(): Class {
-    return this.#_meta.class;
+    return this._meta.class;
   }
 
   get properties(): Record<string, any> {
-    return this.#_meta.properties;
+    return this._meta.properties;
   }
 
   new(...params: ConstructorParameters<Class>): Entity {
-    return new (this.#_meta.class as any)(...params);
+    return new (this._meta.class as any)(...params);
   }
 
   /**
    * @internal
    */
   init() {
-    if (this.#initialized) {
+    if (this.initialized) {
       return this;
     }
 
-    this.setClass(this.#_meta.class);
+    this.setClass(this._meta.class);
 
     // Abstract TPT entities keep their name because they have their own table
-    const isTPT = (this.#_meta as any).inheritance === 'tpt' || this.isPartOfTPTHierarchy();
+    const isTPT = (this._meta as any).inheritance === 'tpt' || this.isPartOfTPTHierarchy();
 
-    if (this.#_meta.abstract && !this.#_meta.discriminatorColumn && !isTPT) {
-      delete this.#_meta.name;
+    if (this._meta.abstract && !this._meta.discriminatorColumn && !isTPT) {
+      delete this._meta.name;
     }
 
-    const tableName = this.#_meta.collection ?? this.#_meta.tableName;
+    const tableName = this._meta.collection ?? this._meta.tableName;
 
-    if (tableName?.includes('.') && !this.#_meta.schema) {
-      this.#_meta.schema = tableName.substring(0, tableName.indexOf('.'));
-      this.#_meta.tableName = tableName.substring(tableName.indexOf('.') + 1);
+    if (tableName?.includes('.') && !this._meta.schema) {
+      this._meta.schema = tableName.substring(0, tableName.indexOf('.'));
+      this._meta.tableName = tableName.substring(tableName.indexOf('.') + 1);
     }
 
     this.initProperties();
     this.initPrimaryKeys();
-    this.#_meta.props = Object.values(this.#_meta.properties);
-    this.#_meta.relations = this.#_meta.props.filter(
+    this._meta.props = Object.values(this._meta.properties);
+    this._meta.relations = this._meta.props.filter(
       prop =>
         typeof prop.kind !== 'undefined' && prop.kind !== ReferenceKind.SCALAR && prop.kind !== ReferenceKind.EMBEDDED,
     );
-    this.#initialized = true;
+    this.initialized = true;
 
     return this;
   }
@@ -390,7 +390,7 @@ export class EntitySchema<Entity = any, Base = never, Class extends EntityCtor =
    * This handles mid-level abstract entities (e.g., Animal -> Mammal -> Dog where Mammal is abstract).
    */
   private isPartOfTPTHierarchy(): boolean {
-    let parent = this.#_meta.extends;
+    let parent = this._meta.extends;
 
     while (parent) {
       const parentSchema = parent instanceof EntitySchema ? parent : EntitySchema.REGISTRY.get(parent as any);
@@ -399,18 +399,18 @@ export class EntitySchema<Entity = any, Base = never, Class extends EntityCtor =
         break;
       }
 
-      if ((parentSchema.#_meta as any).inheritance === 'tpt') {
+      if ((parentSchema._meta as any).inheritance === 'tpt') {
         return true;
       }
 
-      parent = parentSchema.#_meta.extends;
+      parent = parentSchema._meta.extends;
     }
 
     return false;
   }
 
   private initProperties(): void {
-    Utils.entries(this.#_meta.properties).forEach(([name, options]) => {
+    Utils.entries(this._meta.properties).forEach(([name, options]) => {
       if (Type.isMappedType(options.type)) {
         options.type ??= (options.type as Dictionary).constructor.name;
       }
@@ -448,24 +448,24 @@ export class EntitySchema<Entity = any, Base = never, Class extends EntityCtor =
   }
 
   private initPrimaryKeys(): void {
-    const pks = Object.values<EntityProperty<Entity>>(this.#_meta.properties).filter(prop => prop.primary);
+    const pks = Object.values<EntityProperty<Entity>>(this._meta.properties).filter(prop => prop.primary);
 
     if (pks.length > 0) {
-      this.#_meta.primaryKeys = pks.map(prop => prop.name);
-      this.#_meta.compositePK = pks.length > 1;
-      this.#_meta.simplePK = !this.#_meta.compositePK && pks[0].kind === ReferenceKind.SCALAR && !pks[0].customType;
+      this._meta.primaryKeys = pks.map(prop => prop.name);
+      this._meta.compositePK = pks.length > 1;
+      this._meta.simplePK = !this._meta.compositePK && pks[0].kind === ReferenceKind.SCALAR && !pks[0].customType;
     }
 
     if (pks.length === 1 && ['number', 'bigint'].includes(pks[0].type)) {
       pks[0].autoincrement ??= true;
     }
 
-    const serializedPrimaryKey = Object.values<EntityProperty<Entity>>(this.#_meta.properties).find(
+    const serializedPrimaryKey = Object.values<EntityProperty<Entity>>(this._meta.properties).find(
       prop => prop.serializedPrimaryKey,
     );
 
     if (serializedPrimaryKey) {
-      this.#_meta.serializedPrimaryKey = serializedPrimaryKey.name;
+      this._meta.serializedPrimaryKey = serializedPrimaryKey.name;
     }
   }
 
@@ -477,7 +477,7 @@ export class EntitySchema<Entity = any, Base = never, Class extends EntityCtor =
       /* v8 ignore next */
       if (typeof options.entity === 'string') {
         throw new Error(
-          `Relation target needs to be an entity class or EntitySchema instance, string '${options.entity}' given instead for ${this.#_meta.className}.${options.name}.`,
+          `Relation target needs to be an entity class or EntitySchema instance, string '${options.entity}' given instead for ${this._meta.className}.${options.name}.`,
         );
       } else if (options.entity) {
         const tmp = options.entity();
@@ -558,8 +558,8 @@ export class EntitySchema<Entity = any, Base = never, Class extends EntityCtor =
     event: EventType | `${EventType}`,
     handler: (args: EventArgs<T>) => void | Promise<void>,
   ): this {
-    this.#_meta.hooks[event as EventType] ??= [];
-    this.#_meta.hooks[event as EventType]!.push(handler as any);
+    this._meta.hooks[event as EventType] ??= [];
+    this._meta.hooks[event as EventType]!.push(handler as any);
     return this;
   }
 }

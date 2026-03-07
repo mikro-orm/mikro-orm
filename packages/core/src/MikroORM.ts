@@ -136,7 +136,7 @@ export class MikroORM<
     const orm = new this<D, EM, Entities>(options);
     const preferTs = orm.config.get('preferTs', Utils.detectTypeScriptSupport());
     orm.#metadata = await orm.#discovery.discover(preferTs);
-    orm.#createEntityManager();
+    orm.createEntityManager();
 
     return orm;
   }
@@ -164,7 +164,7 @@ export class MikroORM<
 
     if (!discovery.skipSyncDiscovery) {
       this.#metadata = this.#discovery.discoverSync();
-      this.#createEntityManager();
+      this.createEntityManager();
     }
   }
 
@@ -232,7 +232,7 @@ export class MikroORM<
     return this.#metadata;
   }
 
-  #createEntityManager(): void {
+  private createEntityManager(): void {
     this.driver.setMetadata(this.#metadata);
     this.em = this.driver.createEntityManager() as EM & { '~entities': Entities };
     (this.em as { global: boolean }).global = true;

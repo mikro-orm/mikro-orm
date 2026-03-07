@@ -219,7 +219,7 @@ export class Collection<T extends object, O extends object = object> {
       const entity = Reference.unwrapReference(item) as T;
 
       if (!this.contains(entity, false)) {
-        this.#incrementCount(1);
+        this.incrementCount(1);
         this[this.#items.size] = entity;
         this.#items.add(entity);
         added++;
@@ -274,7 +274,7 @@ export class Collection<T extends object, O extends object = object> {
       const entity = Reference.unwrapReference(item) as T;
 
       if (this.#items.delete(entity)) {
-        this.#incrementCount(-1);
+        this.incrementCount(-1);
         delete this[this.#items.size]; // remove last item
         this.propagate(entity, 'remove');
         removed++;
@@ -562,7 +562,7 @@ export class Collection<T extends object, O extends object = object> {
    */
   addWithoutPropagation(entity: T): void {
     if (!this.contains(entity, false)) {
-      this.#incrementCount(1);
+      this.incrementCount(1);
       this[this.#items.size] = entity;
       this.#items.add(entity);
       this.#dirty = true;
@@ -639,7 +639,7 @@ export class Collection<T extends object, O extends object = object> {
       return;
     }
 
-    this.#incrementCount(-1);
+    this.incrementCount(-1);
     delete this[this.#items.size];
     Object.assign(this, [...this.#items]);
     this.#dirty = true;
@@ -948,7 +948,7 @@ export class Collection<T extends object, O extends object = object> {
     }
   }
 
-  #incrementCount(value: number) {
+  protected incrementCount(value: number) {
     if (typeof this.#count === 'number' && this.#initialized) {
       this.#count += value;
     }

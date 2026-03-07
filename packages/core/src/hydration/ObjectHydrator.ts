@@ -137,11 +137,11 @@ export class ObjectHydrator extends Hydrator {
     };
 
     const hydrateScalar = (prop: EntityProperty<T>, path: string[], dataKey: string): string[] => {
-      const entityKey = path.map(k => this.#wrap(k)).join('');
+      const entityKey = path.map(k => this.wrap(k)).join('');
       const tz = this.platform.getTimezone();
       const convertorKey = path
         .filter(k => !/\[idx_\d+]/.exec(k))
-        .map(k => this.#safeKey(k))
+        .map(k => this.safeKey(k))
         .join('_');
       const ret: string[] = [];
       const idx = this.#tmpIndex++;
@@ -246,7 +246,7 @@ export class ObjectHydrator extends Hydrator {
 
       if (prop.polymorphic) {
         // For polymorphic: target class from discriminator map, PK from data.id
-        const discriminatorMapKey = this.#safeKey(`discriminatorMap_${prop.name}_${this.#tmpIndex++}`);
+        const discriminatorMapKey = this.safeKey(`discriminatorMap_${prop.name}_${this.#tmpIndex++}`);
         context.set(discriminatorMapKey, prop.discriminatorMap);
         ret.push(`      const targetClass = ${discriminatorMapKey}[data${dataKey}.discriminator];`);
         ret.push(
@@ -263,7 +263,7 @@ export class ObjectHydrator extends Hydrator {
         }
       } else {
         // For regular: fixed target class, PK is the data itself
-        const targetKey = this.#safeKey(`${prop.targetMeta!.tableName}_${this.#tmpIndex++}`);
+        const targetKey = this.safeKey(`${prop.targetMeta!.tableName}_${this.#tmpIndex++}`);
         context.set(targetKey, prop.targetMeta!.class);
         if (prop.ref) {
           ret.push(
@@ -283,7 +283,7 @@ export class ObjectHydrator extends Hydrator {
       if (prop.polymorphic) {
         hydrateTargetExpr = `data${dataKey}.constructor`;
       } else {
-        const targetKey = this.#safeKey(`${prop.targetMeta!.tableName}_${this.#tmpIndex++}`);
+        const targetKey = this.safeKey(`${prop.targetMeta!.tableName}_${this.#tmpIndex++}`);
         context.set(targetKey, prop.targetMeta!.class);
         hydrateTargetExpr = targetKey;
       }
@@ -306,20 +306,20 @@ export class ObjectHydrator extends Hydrator {
         const prop2 = meta2.properties[prop.inversedBy || prop.mappedBy];
 
         if (prop2 && !prop2.mapToPk) {
-          ret.push(`  if (data${dataKey} && entity${entityKey} && !entity${entityKey}.${this.#safeKey(prop2.name)}) {`);
+          ret.push(`  if (data${dataKey} && entity${entityKey} && !entity${entityKey}.${this.safeKey(prop2.name)}) {`);
           ret.push(
-            `    entity${entityKey}.${prop.ref ? 'unwrap().' : ''}${this.#safeKey(prop2.name)} = ${prop2.ref ? 'Reference.create(entity)' : 'entity'};`,
+            `    entity${entityKey}.${prop.ref ? 'unwrap().' : ''}${this.safeKey(prop2.name)} = ${prop2.ref ? 'Reference.create(entity)' : 'entity'};`,
           );
           ret.push(`  }`);
         }
       }
 
       if (prop.customType?.ensureComparable(meta, prop)) {
-        registerCustomType(prop, this.#safeKey(prop.name), 'convertToDatabaseValue', context);
+        registerCustomType(prop, this.safeKey(prop.name), 'convertToDatabaseValue', context);
 
         ret.push(`  if (data${dataKey} != null && typeof data${dataKey} !== 'object' && convertCustomTypes) {`);
         ret.push(
-          `    data${dataKey} = convertToDatabaseValue_${this.#safeKey(prop.name)}(entity${entityKey}.__helper.getPrimaryKey());`,
+          `    data${dataKey} = convertToDatabaseValue_${this.safeKey(prop.name)}(entity${entityKey}.__helper.getPrimaryKey());`,
         );
         ret.push(`  }`);
       }
@@ -330,13 +330,13 @@ export class ObjectHydrator extends Hydrator {
     const hydrateToMany = (prop: EntityProperty, dataKey: string, entityKey: string) => {
       const ret: string[] = [];
 
-      ret.push(...this.#createCollectionItemMapper(prop, context));
+      ret.push(...this.createCollectionItemMapper(prop, context));
       ret.push(`  if (data${dataKey} && !Array.isArray(data${dataKey}) && typeof data${dataKey} === 'object') {`);
       ret.push(`    data${dataKey} = [data${dataKey}];`);
       ret.push(`  }`);
       ret.push(`  if (Array.isArray(data${dataKey})) {`);
       ret.push(
-        `    const items = data${dataKey}.map(value => createCollectionItem_${this.#safeKey(prop.name)}(value, entity));`,
+        `    const items = data${dataKey}.map(value => createCollectionItem_${this.safeKey(prop.name)}(value, entity));`,
       );
       ret.push(`    const coll = Collection.create(entity, '${prop.name}', items, newEntity);`);
       ret.push(`    if (newEntity) {`);
@@ -367,7 +367,7 @@ export class ObjectHydrator extends Hydrator {
     const registerEmbeddedPrototype = (prop: EntityProperty, path: string[]): void => {
       const convertorKey = path
         .filter(k => !/\[idx_\d+]/.exec(k))
-        .map(k => this.#safeKey(k))
+        .map(k => this.safeKey(k))
         .join('_');
 
       if (prop.targetMeta?.polymorphs) {
@@ -401,11 +401,11 @@ export class ObjectHydrator extends Hydrator {
           .filter(p => p.embedded?.[0] === prop.name)
           .forEach(p => {
             if (p.kind === ReferenceKind.EMBEDDED && !p.object && !p.array) {
-              conds.push(...createCond(p, dataKey + this.#wrap(p.embedded![1]), cond));
+              conds.push(...createCond(p, dataKey + this.wrap(p.embedded![1]), cond));
               return;
             }
 
-            conds.push(`data${this.#wrap(p.name)} ${notNull}`);
+            conds.push(`data${this.wrap(p.name)} ${notNull}`);
           });
       }
 
@@ -413,7 +413,7 @@ export class ObjectHydrator extends Hydrator {
     };
 
     const hydrateEmbedded = (prop: EntityProperty, path: string[], dataKey: string): string[] => {
-      const entityKey = path.map(k => this.#wrap(k)).join('');
+      const entityKey = path.map(k => this.wrap(k)).join('');
       const ret: string[] = [];
 
       registerEmbeddedPrototype(prop, path);
@@ -428,7 +428,7 @@ export class ObjectHydrator extends Hydrator {
 
         for (const childProp of Object.values(prop.embeddedProps)) {
           const key = /^\w+$/.exec(childProp.embedded![1]) ? childProp.embedded![1] : `'${childProp.embedded![1]}'`;
-          ret.push(`      ${key}: data${this.#wrap(childProp.name)},`);
+          ret.push(`      ${key}: data${this.wrap(childProp.name)},`);
         }
 
         ret.push(`    };`);
@@ -437,7 +437,7 @@ export class ObjectHydrator extends Hydrator {
       if (prop.targetMeta?.polymorphs) {
         prop.targetMeta.polymorphs.forEach(childMeta => {
           const childProp = prop.embeddedProps[prop.targetMeta!.discriminatorColumn!];
-          const childDataKey = prop.object ? dataKey + this.#wrap(childProp.embedded![1]) : this.#wrap(childProp.name);
+          const childDataKey = prop.object ? dataKey + this.wrap(childProp.embedded![1]) : this.wrap(childProp.name);
           context.set(childMeta.className, childMeta.class);
           // weak comparison as we can have numbers that might have been converted to strings due to being object keys
           ret.push(`    if (data${childDataKey} == '${childMeta.discriminatorValue}') {`);
@@ -451,8 +451,8 @@ export class ObjectHydrator extends Hydrator {
             .filter(p => p.embedded?.[0] === prop.name)
             .forEach(childProp => {
               const childDataKey = prop.object
-                ? dataKey + this.#wrap(childProp.embedded![1])
-                : this.#wrap(childProp.name);
+                ? dataKey + this.wrap(childProp.embedded![1])
+                : this.wrap(childProp.name);
               const prop2 = childMeta.properties[childProp.embedded![1]];
               const prop3 = {
                 ...prop2,
@@ -471,7 +471,7 @@ export class ObjectHydrator extends Hydrator {
           ret.push(`    }`);
         });
       } else {
-        const targetKey = this.#safeKey(`${prop.targetMeta!.tableName}_${this.#tmpIndex++}`);
+        const targetKey = this.safeKey(`${prop.targetMeta!.tableName}_${this.#tmpIndex++}`);
         context.set(targetKey, prop.targetMeta!.class);
         ret.push(`    if (entity${entityKey} == null) {`);
         ret.push(
@@ -482,9 +482,7 @@ export class ObjectHydrator extends Hydrator {
         meta.props
           .filter(p => p.embedded?.[0] === prop.name)
           .forEach(childProp => {
-            const childDataKey = prop.object
-              ? dataKey + this.#wrap(childProp.embedded![1])
-              : this.#wrap(childProp.name);
+            const childDataKey = prop.object ? dataKey + this.wrap(childProp.embedded![1]) : this.wrap(childProp.name);
             ret.push(
               // eslint-disable-next-line @typescript-eslint/no-use-before-define, no-use-before-define
               ...hydrateProperty(childProp, prop.object, [...path, childProp.embedded![1]], childDataKey).map(
@@ -510,7 +508,7 @@ export class ObjectHydrator extends Hydrator {
     };
 
     const hydrateEmbeddedArray = (prop: EntityProperty, path: string[], dataKey: string): string[] => {
-      const entityKey = path.map(k => this.#wrap(k)).join('');
+      const entityKey = path.map(k => this.wrap(k)).join('');
       const ret: string[] = [];
       const idx = this.#tmpIndex++;
       registerEmbeddedPrototype(prop, path);
@@ -532,9 +530,9 @@ export class ObjectHydrator extends Hydrator {
       path: string[] = [prop.name],
       dataKey?: string,
     ): string[] => {
-      const entityKey = path.map(k => this.#wrap(k)).join('');
+      const entityKey = path.map(k => this.wrap(k)).join('');
       dataKey =
-        dataKey ?? (object ? entityKey : this.#wrap(normalizeAccessors ? (prop.accessor ?? prop.name) : prop.name));
+        dataKey ?? (object ? entityKey : this.wrap(normalizeAccessors ? (prop.accessor ?? prop.name) : prop.name));
       const ret: string[] = [];
 
       if ([ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind) && !prop.mapToPk) {
@@ -578,11 +576,11 @@ export class ObjectHydrator extends Hydrator {
     return hydrator;
   }
 
-  #createCollectionItemMapper(prop: EntityProperty, context: Map<string, any>): string[] {
+  private createCollectionItemMapper(prop: EntityProperty, context: Map<string, any>): string[] {
     const meta = this.metadata.get(prop.targetMeta!.class);
     const lines: string[] = [];
 
-    lines.push(`  const createCollectionItem_${this.#safeKey(prop.name)} = (value, entity) => {`);
+    lines.push(`  const createCollectionItem_${this.safeKey(prop.name)} = (value, entity) => {`);
     const prop2 = prop.targetMeta!.properties[prop.mappedBy];
 
     if (prop.kind === ReferenceKind.ONE_TO_MANY && prop2.primary) {
@@ -593,7 +591,7 @@ export class ObjectHydrator extends Hydrator {
       lines.push(`    }`);
     }
 
-    const targetKey = this.#safeKey(`${prop.targetMeta!.tableName}_${this.#tmpIndex++}`);
+    const targetKey = this.safeKey(`${prop.targetMeta!.tableName}_${this.#tmpIndex++}`);
     context.set(targetKey, prop.targetMeta!.class);
     lines.push(
       `    if (isPrimaryKey(value, ${meta.compositePK})) return factory.createReference(${targetKey}, value, { convertCustomTypes, schema, normalizeAccessors, merge: true });`,
@@ -608,7 +606,7 @@ export class ObjectHydrator extends Hydrator {
     return lines;
   }
 
-  #wrap(key: string): string {
+  private wrap(key: string): string {
     if (/^\[.*]$/.exec(key)) {
       return key;
     }
@@ -616,7 +614,7 @@ export class ObjectHydrator extends Hydrator {
     return /^\w+$/.exec(key) ? `.${key}` : `['${key}']`;
   }
 
-  #safeKey(key: string): string {
+  private safeKey(key: string): string {
     return key.replace(/\W/g, '_');
   }
 }

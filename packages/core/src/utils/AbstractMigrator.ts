@@ -52,7 +52,7 @@ export abstract class AbstractMigrator<D extends IDatabaseDriver> implements IMi
     this.config = this.em.config;
     this.options = this.config.get('migrations');
     this.initServices();
-    this.#registerDefaultListeners();
+    this.registerDefaultListeners();
   }
 
   protected abstract createRunner(): IMigrationRunner;
@@ -105,7 +105,7 @@ export abstract class AbstractMigrator<D extends IDatabaseDriver> implements IMi
    */
   async getPending(): Promise<MigrationInfo[]> {
     await this.init();
-    const all = await this.#discoverMigrations();
+    const all = await this.discoverMigrations();
     const executed = new Set(await this.storage.executed());
 
     return all.filter(m => !executed.has(m.name)).map(m => ({ name: m.name, path: m.path }));
@@ -136,7 +136,7 @@ export abstract class AbstractMigrator<D extends IDatabaseDriver> implements IMi
 
     if (!this.options.migrationsList) {
       const { fs } = await import('@mikro-orm/core/fs-utils');
-      this.#detectSourceFolder(fs);
+      this.detectSourceFolder(fs);
 
       /* v8 ignore next */
       const key =
@@ -195,7 +195,7 @@ export abstract class AbstractMigrator<D extends IDatabaseDriver> implements IMi
    * If the default folder exists (e.g. `/migrations`), the config will respect that, so this auto-detection should not
    * break existing projects, only help with the new ones.
    */
-  #detectSourceFolder(fs: { pathExists(path: string): boolean }): void {
+  private detectSourceFolder(fs: { pathExists(path: string): boolean }): void {
     const baseDir = this.config.get('baseDir');
     const defaultPath = './migrations';
 
@@ -218,7 +218,7 @@ export abstract class AbstractMigrator<D extends IDatabaseDriver> implements IMi
     }
   }
 
-  #registerDefaultListeners(): void {
+  private registerDefaultListeners(): void {
     /* v8 ignore else */
     if (!this.options.silent) {
       const logger = this.config.getLogger();
@@ -229,13 +229,13 @@ export abstract class AbstractMigrator<D extends IDatabaseDriver> implements IMi
     }
   }
 
-  async #emit(event: string, data: MigrationInfo): Promise<void> {
+  private async emit(event: string, data: MigrationInfo): Promise<void> {
     for (const listener of this.#listeners.get(event) ?? []) {
       await listener(data);
     }
   }
 
-  async #discoverMigrations(): Promise<RunnableMigration[]> {
+  private async discoverMigrations(): Promise<RunnableMigration[]> {
     if (this.options.migrationsList) {
       return this.options.migrationsList.map(migration => {
         if (typeof migration === 'function') {
@@ -258,16 +258,19 @@ export abstract class AbstractMigrator<D extends IDatabaseDriver> implements IMi
     );
   }
 
-  async #executeMigrations(method: 'up' | 'down', options: NormalizedMigrateOptions = {}): Promise<MigrationInfo[]> {
-    const all = await this.#discoverMigrations();
+  private async executeMigrations(
+    method: 'up' | 'down',
+    options: NormalizedMigrateOptions = {},
+  ): Promise<MigrationInfo[]> {
+    const all = await this.discoverMigrations();
     const executed = await this.storage.executed();
     const executedSet = new Set(executed);
     let toRun: RunnableMigration[];
 
     if (method === 'up') {
-      toRun = this.#filterUp(all, executedSet, options);
+      toRun = this.filterUp(all, executedSet, options);
     } else {
-      toRun = this.#filterDown(all, executed, options);
+      toRun = this.filterDown(all, executed, options);
     }
 
     const result: MigrationInfo[] = [];
@@ -276,7 +279,7 @@ export abstract class AbstractMigrator<D extends IDatabaseDriver> implements IMi
 
     for (const migration of toRun) {
       const event: MigrationInfo = { name: migration.name, path: migration.path };
-      await this.#emit(eventBefore, event);
+      await this.emit(eventBefore, event);
       await migration[method]();
 
       if (method === 'up') {
@@ -285,14 +288,18 @@ export abstract class AbstractMigrator<D extends IDatabaseDriver> implements IMi
         await this.storage.unlogMigration({ name: migration.name });
       }
 
-      await this.#emit(eventAfter, event);
+      await this.emit(eventAfter, event);
       result.push(event);
     }
 
     return result;
   }
 
-  #filterUp(all: RunnableMigration[], executed: Set<string>, options: NormalizedMigrateOptions): RunnableMigration[] {
+  private filterUp(
+    all: RunnableMigration[],
+    executed: Set<string>,
+    options: NormalizedMigrateOptions,
+  ): RunnableMigration[] {
     let pending = all.filter(m => !executed.has(m.name));
 
     if (options.migrations) {
@@ -321,7 +328,11 @@ export abstract class AbstractMigrator<D extends IDatabaseDriver> implements IMi
     return pending;
   }
 
-  #filterDown(all: RunnableMigration[], executed: string[], options: NormalizedMigrateOptions): RunnableMigration[] {
+  private filterDown(
+    all: RunnableMigration[],
+    executed: string[],
+    options: NormalizedMigrateOptions,
+  ): RunnableMigration[] {
     const migrationMap = new Map(all.map(m => [m.name, m]));
     const executedReversed = [...executed].reverse();
 
@@ -364,19 +375,19 @@ export abstract class AbstractMigrator<D extends IDatabaseDriver> implements IMi
     return [];
   }
 
-  #getMigrationFilename(name: string): string {
+  private getMigrationFilename(name: string): string {
     name = name.replace(/\.[jt]s$/, '');
     return /^\d{14}$/.exec(name) ? this.options.fileName!(name) : name;
   }
 
-  #prefix<
+  private prefix<
     T extends
       | string
       | string[]
       | { from?: string | number; to?: string | number; migrations?: string[]; transaction?: Transaction },
   >(options?: T): NormalizedMigrateOptions {
     if (typeof options === 'string' || Array.isArray(options)) {
-      return { migrations: Utils.asArray(options).map(name => this.#getMigrationFilename(name)) };
+      return { migrations: Utils.asArray(options).map(name => this.getMigrationFilename(name)) };
     }
 
     if (!options) {
@@ -386,15 +397,15 @@ export abstract class AbstractMigrator<D extends IDatabaseDriver> implements IMi
     const result: NormalizedMigrateOptions = {};
 
     if (options.migrations) {
-      result.migrations = options.migrations.map(name => this.#getMigrationFilename(name));
+      result.migrations = options.migrations.map(name => this.getMigrationFilename(name));
     }
 
     if (options.from) {
-      result.from = this.#getMigrationFilename(String(options.from));
+      result.from = this.getMigrationFilename(String(options.from));
     }
 
     if (options.to && options.to !== 0) {
-      result.to = this.#getMigrationFilename(String(options.to));
+      result.to = this.getMigrationFilename(String(options.to));
     } else if (options.to === 0) {
       result.to = 0;
     }
@@ -406,17 +417,17 @@ export abstract class AbstractMigrator<D extends IDatabaseDriver> implements IMi
     await this.init();
 
     if (!this.options.transactional || !this.options.allOrNothing) {
-      return this.#executeMigrations(method, this.#prefix(options as string[]));
+      return this.executeMigrations(method, this.prefix(options as string[]));
     }
 
     if (Utils.isObject<MigrateOptions>(options) && options.transaction) {
-      return this.#runInTransaction(options.transaction, method, options);
+      return this.runInTransaction(options.transaction, method, options);
     }
 
-    return this.driver.getConnection().transactional(trx => this.#runInTransaction(trx, method, options));
+    return this.driver.getConnection().transactional(trx => this.runInTransaction(trx, method, options));
   }
 
-  async #runInTransaction(
+  private async runInTransaction(
     trx: Transaction,
     method: 'up' | 'down',
     options: string | string[] | undefined | MigrateOptions,
@@ -425,7 +436,7 @@ export abstract class AbstractMigrator<D extends IDatabaseDriver> implements IMi
     this.storage.setMasterMigration(trx);
 
     try {
-      return await this.#executeMigrations(method, this.#prefix(options));
+      return await this.executeMigrations(method, this.prefix(options));
     } finally {
       this.runner.unsetMasterMigration();
       this.storage.unsetMasterMigration();

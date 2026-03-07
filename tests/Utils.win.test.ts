@@ -180,12 +180,18 @@ describe('Utils', () => {
       test('should copy Uint8Array', () => {
         const a = new Uint8Array([1, 2, 3]);
         const b = Utils.copy(a);
+        expect(b).not.toBe(a);
         expect(b.toString()).toBe(a.toString());
+        b[0] = 99;
+        expect(a[0]).toBe(1);
       });
       test('should copy Int8Array', () => {
-        const a = new Uint8Array([-1, 1]);
+        const a = new Int8Array([-1, 1]);
         const b = Utils.copy(a);
+        expect(b).not.toBe(a);
         expect(b.toString()).toBe(a.toString());
+        b[0] = 99;
+        expect(a[0]).toBe(-1);
       });
     });
   });

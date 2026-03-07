@@ -21,7 +21,7 @@ export class EventManager {
     }
 
     this.#subscribers.add(subscriber);
-    this.#entities.set(subscriber, this.#getSubscribedEntities(subscriber));
+    this.#entities.set(subscriber, this.getSubscribedEntities(subscriber));
     this.#cache.clear();
     Utils.keys(EventType)
       .filter(event => event in subscriber)
@@ -119,7 +119,7 @@ export class EventManager {
     return new EventManager(this.#subscribers);
   }
 
-  #getSubscribedEntities(listener: EventSubscriber): Set<string> {
+  private getSubscribedEntities(listener: EventSubscriber): Set<string> {
     if (!listener.getSubscribedEntities) {
       return new Set();
     }

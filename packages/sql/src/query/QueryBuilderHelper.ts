@@ -187,7 +187,7 @@ export class QueryBuilderHelper {
     const noPrefix = prop?.persist === false;
 
     if (prop?.fieldNameRaw) {
-      return raw(this.#prefix(field, isTableNameAliasRequired));
+      return raw(this.prefix(field, isTableNameAliasRequired));
     }
 
     if (prop?.formula) {
@@ -211,10 +211,10 @@ export class QueryBuilderHelper {
 
       if (prop.fieldNames.length > 1 && fkIdx !== -1) {
         const fk = prop.targetMeta!.getPrimaryProps()[fkIdx];
-        const prefixed = this.#prefix(field, isTableNameAliasRequired, true, fkIdx);
+        const prefixed = this.prefix(field, isTableNameAliasRequired, true, fkIdx);
         valueSQL = fk.customType!.convertToJSValueSQL!(prefixed, this.#platform);
       } else {
-        const prefixed = this.#prefix(field, isTableNameAliasRequired, true);
+        const prefixed = this.prefix(field, isTableNameAliasRequired, true);
         valueSQL = prop.customType!.convertToJSValueSQL!(prefixed, this.#platform);
       }
 
@@ -225,13 +225,13 @@ export class QueryBuilderHelper {
       return raw(`${valueSQL} as ${this.#platform.quoteIdentifier(alias ?? prop.fieldNames[fkIdx])}`);
     }
 
-    let ret = this.#prefix(field, false, false, fkIdx);
+    let ret = this.prefix(field, false, false, fkIdx);
 
     if (alias) {
       ret += ' as ' + alias;
     }
 
-    if (!isTableNameAliasRequired || this.#isPrefixed(ret) || noPrefix) {
+    if (!isTableNameAliasRequired || this.isPrefixed(ret) || noPrefix) {
       return ret;
     }
 
@@ -598,11 +598,11 @@ export class QueryBuilderHelper {
     for (const k of Utils.getObjectQueryKeys(cond)) {
       if (k === '$and' || k === '$or') {
         if (operator) {
-          this.#append(() => this.#appendGroupCondition(type, k, cond[k]), parts, params, operator);
+          this.append(() => this.appendGroupCondition(type, k, cond[k]), parts, params, operator);
           continue;
         }
 
-        this.#append(() => this.#appendGroupCondition(type, k, cond[k]), parts, params);
+        this.append(() => this.appendGroupCondition(type, k, cond[k]), parts, params);
         continue;
       }
 
@@ -613,13 +613,13 @@ export class QueryBuilderHelper {
         continue;
       }
 
-      this.#append(() => this.#appendQuerySubCondition(type, cond, k), parts, params);
+      this.append(() => this.appendQuerySubCondition(type, cond, k), parts, params);
     }
 
     return { sql: parts.join(' and '), params };
   }
 
-  #append(
+  private append(
     cb: () => { sql: string; params: unknown[] },
     parts: string[],
     params: unknown[],
@@ -635,7 +635,7 @@ export class QueryBuilderHelper {
     res.params.forEach(p => params.push(p));
   }
 
-  #appendQuerySubCondition(
+  private appendQuerySubCondition(
     type: QueryType,
     cond: any,
     key: string | RawQueryFragmentSymbol,
@@ -650,7 +650,7 @@ export class QueryBuilderHelper {
     }
 
     if (Utils.isPlainObject(cond[key]) || cond[key] instanceof RegExp) {
-      return this.#processObjectSubCondition(cond, key, type);
+      return this.processObjectSubCondition(cond, key, type);
     }
 
     const op = cond[key] === null ? 'is' : '=';
@@ -663,7 +663,7 @@ export class QueryBuilderHelper {
 
       if (value.length > 0) {
         const k = key as unknown as string;
-        const val = this.#getValueReplacement([k], value[0], params, k);
+        const val = this.getValueReplacement([k], value[0], params, k);
         parts.push(`${sql} ${op} ${val}`);
         return { sql: parts.join(' and '), params };
       }
@@ -675,18 +675,18 @@ export class QueryBuilderHelper {
     const fields = Utils.splitPrimaryKeys(key);
 
     if (this.#subQueries[key]) {
-      const val = this.#getValueReplacement(fields, cond[key], params, key);
+      const val = this.getValueReplacement(fields, cond[key], params, key);
       parts.push(`(${this.#subQueries[key]}) ${op} ${val}`);
       return { sql: parts.join(' and '), params };
     }
 
-    const val = this.#getValueReplacement(fields, cond[key], params, key);
+    const val = this.getValueReplacement(fields, cond[key], params, key);
     parts.push(`${this.#platform.quoteIdentifier(this.mapper(key, type, cond[key], null))} ${op} ${val}`);
 
     return { sql: parts.join(' and '), params };
   }
 
-  #processObjectSubCondition(
+  private processObjectSubCondition(
     cond: any,
     key: string | RawQueryFragmentSymbol,
     type: QueryType,
@@ -707,7 +707,7 @@ export class QueryBuilderHelper {
       });
 
       for (const sub of subCondition) {
-        this.#append(() => this._appendQueryCondition(type, sub, '$and'), parts, params);
+        this.append(() => this._appendQueryCondition(type, sub, '$and'), parts, params);
       }
 
       return { sql: parts.join(' and '), params };
@@ -725,7 +725,7 @@ export class QueryBuilderHelper {
       throw ValidationError.invalidQueryCondition(cond);
     }
 
-    const replacement = this.#getOperatorReplacement(op, value);
+    const replacement = this.getOperatorReplacement(op, value);
     const rawField = Raw.isKnownFragmentSymbol(key);
     const fields = rawField ? [key as unknown as string] : Utils.splitPrimaryKeys(key);
 
@@ -758,7 +758,7 @@ export class QueryBuilderHelper {
     }
 
     if (this.#subQueries[key as string]) {
-      const val = this.#getValueReplacement(fields, value[op], params, op);
+      const val = this.getValueReplacement(fields, value[op], params, op);
       parts.push(`(${this.#subQueries[key as string]}) ${replacement} ${val}`);
       return { sql: parts.join(' and '), params };
     }
@@ -803,7 +803,7 @@ export class QueryBuilderHelper {
       params.push(...query.params);
     } else {
       const mappedKey = this.mapper(key, type, value[op], null);
-      const val = this.#getValueReplacement(fields, value[op], params, op, prop);
+      const val = this.getValueReplacement(fields, value[op], params, op, prop);
 
       parts.push(`${this.#platform.quoteIdentifier(mappedKey)} ${replacement} ${val}`);
     }
@@ -811,7 +811,7 @@ export class QueryBuilderHelper {
     return { sql: parts.join(' and '), params };
   }
 
-  #getValueReplacement(
+  private getValueReplacement(
     fields: string[],
     value: unknown,
     params: unknown[],
@@ -853,7 +853,7 @@ export class QueryBuilderHelper {
     return '?';
   }
 
-  #getOperatorReplacement(op: string, value: Dictionary): string {
+  private getOperatorReplacement(op: string, value: Dictionary): string {
     let replacement: string = QueryOperator[op as keyof typeof QueryOperator];
 
     if (op === '$exists') {
@@ -1042,14 +1042,14 @@ export class QueryBuilderHelper {
     qb.update({ [versionProperty.fieldNames[0]]: raw(sql) });
   }
 
-  #prefix(field: string, always = false, quote = false, idx?: number): string {
+  private prefix(field: string, always = false, quote = false, idx?: number): string {
     let ret: string;
 
-    if (!this.#isPrefixed(field)) {
+    if (!this.isPrefixed(field)) {
       // For TPT inheritance, resolve the correct alias for this property
       const tptAlias = this.getTPTAliasForProperty(field, this.#alias);
       const alias = always ? (quote ? tptAlias : this.#platform.quoteIdentifier(tptAlias)) + '.' : '';
-      const fieldName = this.#fieldName(field, tptAlias, always, idx);
+      const fieldName = this.fieldName(field, tptAlias, always, idx);
 
       if (fieldName instanceof Raw) {
         return fieldName.sql;
@@ -1064,7 +1064,7 @@ export class QueryBuilderHelper {
       // not when it's an embedded property name like 'profile1.identity.links'
       const isTableAlias = !!this.#aliasMap[a];
       const resolvedAlias = isTableAlias ? this.getTPTAliasForProperty(f, a) : a;
-      const fieldName = this.#fieldName(f, resolvedAlias, always, idx);
+      const fieldName = this.fieldName(f, resolvedAlias, always, idx);
 
       if (fieldName instanceof Raw) {
         return fieldName.sql;
@@ -1080,7 +1080,7 @@ export class QueryBuilderHelper {
     return ret;
   }
 
-  #appendGroupCondition(
+  private appendGroupCondition(
     type: QueryType,
     operator: '$and' | '$or',
     subCondition: any[],
@@ -1091,7 +1091,7 @@ export class QueryBuilderHelper {
     // single sub-condition can be ignored to reduce nesting of parens
     if (subCondition.length === 1 || operator === '$and') {
       for (const sub of subCondition) {
-        this.#append(() => this._appendQueryCondition(type, sub), parts, params);
+        this.append(() => this._appendQueryCondition(type, sub), parts, params);
       }
 
       return { sql: parts.join(' and '), params };
@@ -1107,21 +1107,21 @@ export class QueryBuilderHelper {
         Object.keys(val).every(k => !Utils.isOperator(k));
 
       if (keys.length === 1 && simple) {
-        this.#append(() => this._appendQueryCondition(type, sub, operator), parts, params);
+        this.append(() => this._appendQueryCondition(type, sub, operator), parts, params);
         continue;
       }
 
-      this.#append(() => this._appendQueryCondition(type, sub), parts, params, operator);
+      this.append(() => this._appendQueryCondition(type, sub), parts, params, operator);
     }
 
     return { sql: `(${parts.join(' or ')})`, params };
   }
 
-  #isPrefixed(field: string): boolean {
+  private isPrefixed(field: string): boolean {
     return !!/[\w`"[\]]+\./.exec(field);
   }
 
-  #fieldName(field: string, alias?: string, always?: boolean, idx = 0): string | Raw {
+  private fieldName(field: string, alias?: string, always?: boolean, idx = 0): string | Raw {
     const prop = this.getProperty(field, alias);
 
     if (!prop) {

@@ -184,7 +184,7 @@ export class Configuration<
     this.#options = Utils.mergeConfig({} as RequiredOptions<D, EM>, DEFAULTS, options);
 
     if (validate) {
-      this.#validateOptions();
+      this.validateOptions();
     }
 
     this.#options.loggerFactory ??= DefaultLogger.create;
@@ -209,7 +209,7 @@ export class Configuration<
       this.#driver = new this.#options.driver(this);
       this.#platform = this.#driver.getPlatform() as ReturnType<D['getPlatform']>;
       this.#platform.setConfig(this);
-      this.#init(validate);
+      this.init(validate);
     }
   }
 
@@ -237,7 +237,7 @@ export class Configuration<
    */
   set<T extends keyof Options<D, EM>, U extends RequiredOptions<D, EM>[T]>(key: T, value: U): void {
     this.#options[key] = value;
-    this.#sync();
+    this.sync();
   }
 
   /**
@@ -380,7 +380,7 @@ export class Configuration<
     this.#cache.clear();
   }
 
-  #init(validate: boolean): void {
+  private init(validate: boolean): void {
     const useCache = this.getMetadataProvider().useCache();
     const metadataCache = this.#options.metadataCache;
 
@@ -431,19 +431,19 @@ export class Configuration<
       return subscriber.constructor.name === 'Function' ? new (subscriber as Constructor)() : subscriber;
     }) as EventSubscriber[];
 
-    this.#sync();
+    this.sync();
 
     if (!colors.enabled()) {
       this.#options.highlighter = new NullHighlighter();
     }
   }
 
-  #sync(): void {
+  private sync(): void {
     setEnv('MIKRO_ORM_COLORS', this.#options.colors);
     this.#logger.setDebugMode(this.#options.debug);
   }
 
-  #validateOptions(): void {
+  private validateOptions(): void {
     /* v8 ignore next */
     if ('type' in this.#options) {
       throw new Error(

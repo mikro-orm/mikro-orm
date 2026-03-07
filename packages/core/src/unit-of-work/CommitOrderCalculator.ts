@@ -89,7 +89,7 @@ export class CommitOrderCalculator {
         continue;
       }
 
-      this.#visit(vertex);
+      this.visit(vertex);
     }
 
     const sortedList = this.#sortedNodeList.reverse();
@@ -104,7 +104,7 @@ export class CommitOrderCalculator {
    *
    * @internal Highly performance-sensitive method.
    */
-  #visit(node: Node): void {
+  private visit(node: Node): void {
     node.state = NodeState.IN_PROGRESS;
 
     for (const edge of node.dependencies.values()) {
@@ -114,10 +114,10 @@ export class CommitOrderCalculator {
         case NodeState.VISITED:
           break; // Do nothing, since node was already visited
         case NodeState.IN_PROGRESS:
-          this.#visitOpenNode(node, target, edge);
+          this.visitOpenNode(node, target, edge);
           break;
         case NodeState.NOT_VISITED:
-          this.#visit(target);
+          this.visit(target);
       }
     }
 
@@ -130,7 +130,7 @@ export class CommitOrderCalculator {
   /**
    * Visits all target's dependencies if in cycle with given node
    */
-  #visitOpenNode(node: Node, target: Node, edge: Edge): void {
+  private visitOpenNode(node: Node, target: Node, edge: Edge): void {
     if (!target.dependencies.has(node.hash) || target.dependencies.get(node.hash)!.weight >= edge.weight) {
       return;
     }
@@ -139,7 +139,7 @@ export class CommitOrderCalculator {
       const targetNode = this.#nodes.get(edge.to)!;
 
       if (targetNode.state === NodeState.NOT_VISITED) {
-        this.#visit(targetNode);
+        this.visit(targetNode);
       }
     }
 

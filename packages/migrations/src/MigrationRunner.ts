@@ -20,13 +20,13 @@ export class MigrationRunner {
     migration.reset();
 
     if (!this.options.transactional || !migration.isTransactional()) {
-      const queries = await this.#getQueries(migration, method);
+      const queries = await this.getQueries(migration, method);
       await Utils.runSerial(queries, sql => this.driver.execute(sql));
     } else {
       await this.#connection.transactional(
         async tx => {
           migration.setTransactionContext(tx);
-          const queries = await this.#getQueries(migration, method);
+          const queries = await this.getQueries(migration, method);
           await Utils.runSerial(queries, sql => this.driver.execute(sql, undefined, 'all', tx));
         },
         { ctx: this.#masterTransaction },
@@ -42,7 +42,7 @@ export class MigrationRunner {
     this.#masterTransaction = undefined;
   }
 
-  async #getQueries(migration: Migration, method: 'up' | 'down') {
+  private async getQueries(migration: Migration, method: 'up' | 'down') {
     await migration[method]();
     const charset = this.config.get('charset')!;
     let queries = migration.getQueries();

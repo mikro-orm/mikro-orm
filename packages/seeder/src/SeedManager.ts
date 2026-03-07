@@ -24,7 +24,7 @@ export class SeedManager implements ISeedManager {
     this.#config.set('persistOnCreate', true);
   }
 
-  async #init(): Promise<void> {
+  private async init(): Promise<void> {
     if (this.#initialized) {
       return;
     }
@@ -33,7 +33,7 @@ export class SeedManager implements ISeedManager {
 
     if (!this.#options.seedersList) {
       const { fs } = await import('@mikro-orm/core/fs-utils');
-      this.#detectSourceFolder(fs);
+      this.detectSourceFolder(fs);
       /* v8 ignore next */
       const key =
         this.#config.get('preferTs', Utils.detectTypeScriptSupport()) && this.#options.pathTs ? 'pathTs' : 'path';
@@ -53,7 +53,7 @@ export class SeedManager implements ISeedManager {
    * If the default folder exists (e.g. `/migrations`), the config will respect that, so this auto-detection should not
    * break existing projects, only help with the new ones.
    */
-  #detectSourceFolder(fs: { pathExists(path: string): boolean }): void {
+  private detectSourceFolder(fs: { pathExists(path: string): boolean }): void {
     const baseDir = this.#config.get('baseDir');
     const defaultPath = './seeders';
 
@@ -112,7 +112,7 @@ export class SeedManager implements ISeedManager {
       return;
     }
 
-    await this.#init();
+    await this.init();
     const { fs } = await import('@mikro-orm/core/fs-utils');
     const path = fs.normalizePath(this.#absolutePath, this.#options.glob!);
     const files = fs.glob(path).sort();
@@ -138,13 +138,13 @@ export class SeedManager implements ISeedManager {
   }
 
   async create(className: string): Promise<string> {
-    await this.#init();
+    await this.init();
     const { fs } = await import('@mikro-orm/core/fs-utils');
     fs.ensureDir(this.#absolutePath);
-    return this.#generate(fs, className);
+    return this.generate(fs, className);
   }
 
-  async #generate(
+  private async generate(
     fs: { writeFile(path: string, data: string, options?: Record<string, any>): Promise<void> },
     className: string,
   ): Promise<string> {

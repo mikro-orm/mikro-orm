@@ -65,7 +65,7 @@ export class SerializationContext<T extends object> {
     entity: AnyEntity,
     isVisible: (meta: EntityMetadata, prop: string) => boolean,
   ): void {
-    root.#register(entity);
+    root.register(entity);
     const meta = helper(entity).__meta;
 
     for (const key of Object.keys(entity)) {
@@ -141,7 +141,7 @@ export class SerializationContext<T extends object> {
     return fields.some(p => p === prop || p === '*');
   }
 
-  #register(entity: AnyEntity) {
+  private register(entity: AnyEntity) {
     helper(entity as T).__serializationContext.root = this;
     this.#entities.add(entity);
   }

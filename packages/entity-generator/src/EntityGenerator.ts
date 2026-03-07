@@ -62,7 +62,7 @@ export class EntityGenerator {
       options.takeTables,
       options.skipTables,
     );
-    const metadata = await this.#getEntityMetadata(schema, options);
+    const metadata = await this.getEntityMetadata(schema, options);
     const defaultPath = `${this.#config.get('baseDir')}/generated-entities`;
     const baseDir = fs.normalizePath(options.path ?? defaultPath);
     this.#sources.length = 0;
@@ -116,7 +116,7 @@ export class EntityGenerator {
     return files.map(([, data]) => data);
   }
 
-  async #getEntityMetadata(schema: DatabaseSchema, options: GenerateOptions) {
+  private async getEntityMetadata(schema: DatabaseSchema, options: GenerateOptions) {
     const metadata = schema
       .getTables()
       .filter(table => !options.schema || table.schema === options.schema)
@@ -126,7 +126,7 @@ export class EntityGenerator {
 
         if (skipColumns) {
           for (const col of table.getColumns()) {
-            if (skipColumns.some(matchColumnName => this.#matchName(col.name, matchColumnName))) {
+            if (skipColumns.some(matchColumnName => this.matchName(col.name, matchColumnName))) {
               table.removeColumn(col.name);
             }
           }
@@ -191,28 +191,28 @@ export class EntityGenerator {
       }
     }
 
-    this.#detectManyToManyRelations(
+    this.detectManyToManyRelations(
       metadata,
       options.onlyPurePivotTables!,
       options.readOnlyPivotTables!,
       options.outputPurePivotTables!,
     );
-    this.#cleanUpReferentialIntegrityRules(metadata);
+    this.cleanUpReferentialIntegrityRules(metadata);
 
     if (options.bidirectionalRelations) {
-      this.#generateBidirectionalRelations(metadata, options.outputPurePivotTables!);
+      this.generateBidirectionalRelations(metadata, options.outputPurePivotTables!);
     }
 
     if (options.identifiedReferences) {
-      this.#generateIdentifiedReferences(metadata);
+      this.generateIdentifiedReferences(metadata);
     }
 
     if (options.customBaseEntityName) {
-      this.#generateAndAttachCustomBaseEntity(metadata, options.customBaseEntityName);
+      this.generateAndAttachCustomBaseEntity(metadata, options.customBaseEntityName);
     }
 
     if (options.undefinedDefaults) {
-      this.#castNullDefaultsToUndefined(metadata);
+      this.castNullDefaultsToUndefined(metadata);
     }
 
     await options.onProcessedMetadata?.(metadata, this.#platform);
@@ -220,7 +220,7 @@ export class EntityGenerator {
     return metadata;
   }
 
-  #cleanUpReferentialIntegrityRules<Entity>(metadata: EntityMetadata<Entity>[]) {
+  private cleanUpReferentialIntegrityRules<Entity>(metadata: EntityMetadata<Entity>[]) {
     // Clear FK rules that match defaults for:
     // 1. FK-as-PK entities (all PKs are FKs) - cascade for both update and delete
     // 2. Fixed-order pivot tables (autoincrement id + 2 FK relations only) - cascade for both
@@ -280,13 +280,13 @@ export class EntityGenerator {
     }
   }
 
-  #matchName(name: string, nameToMatch: string | RegExp) {
+  private matchName(name: string, nameToMatch: string | RegExp) {
     return typeof nameToMatch === 'string'
       ? name.toLocaleLowerCase() === nameToMatch.toLocaleLowerCase()
       : nameToMatch.test(name);
   }
 
-  #detectManyToManyRelations(
+  private detectManyToManyRelations(
     metadata: EntityMetadata[],
     onlyPurePivotTables: boolean,
     readOnlyPivotTables: boolean,
@@ -427,7 +427,10 @@ export class EntityGenerator {
     }
   }
 
-  #generateBidirectionalRelations(metadata: EntityMetadata[], includeUnreferencedPurePivotTables: boolean): void {
+  private generateBidirectionalRelations(
+    metadata: EntityMetadata[],
+    includeUnreferencedPurePivotTables: boolean,
+  ): void {
     const filteredMetadata = includeUnreferencedPurePivotTables
       ? metadata
       : metadata.filter(m => !m.pivotTable || this.#referencedEntities.has(m));
@@ -473,7 +476,7 @@ export class EntityGenerator {
     }
   }
 
-  #generateIdentifiedReferences(metadata: EntityMetadata[]): void {
+  private generateIdentifiedReferences(metadata: EntityMetadata[]): void {
     for (const meta of metadata.filter(m => !m.pivotTable || this.#referencedEntities.has(m))) {
       for (const prop of Object.values(meta.properties)) {
         if ([ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind) || prop.lazy) {
@@ -483,7 +486,7 @@ export class EntityGenerator {
     }
   }
 
-  #generateAndAttachCustomBaseEntity(metadata: EntityMetadata[], customBaseEntityName: string) {
+  private generateAndAttachCustomBaseEntity(metadata: EntityMetadata[], customBaseEntityName: string) {
     let base = metadata.find(meta => meta.className === customBaseEntityName);
 
     if (!base) {
@@ -499,7 +502,7 @@ export class EntityGenerator {
     }
   }
 
-  #castNullDefaultsToUndefined(metadata: EntityMetadata[]) {
+  private castNullDefaultsToUndefined(metadata: EntityMetadata[]) {
     for (const meta of metadata) {
       for (const prop of Object.values(meta.properties)) {
         if (prop.nullable && !prop.optional && prop.default === null && typeof prop.defaultRaw === 'undefined') {

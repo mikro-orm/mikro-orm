@@ -53,7 +53,7 @@ export class Migrator extends AbstractMigrator<AbstractSqlDriver> {
     return new TSMigrationGenerator(this.driver, this.config.getNamingStrategy(), this.options);
   }
 
-  async #getSnapshotPath(): Promise<string> {
+  private async getSnapshotPath(): Promise<string> {
     if (!this.#snapshotPath) {
       const { fs } = await import('@mikro-orm/core/fs-utils');
       // for snapshots, we always want to use the path based on `emit` option, regardless of whether we run in TS context
@@ -94,7 +94,7 @@ export class Migrator extends AbstractMigrator<AbstractSqlDriver> {
       return this.createInitial(path, name, blank);
     }
 
-    const diff = await this.#getSchemaDiff(blank, initial);
+    const diff = await this.getSchemaDiff(blank, initial);
 
     if (diff.up.length === 0) {
       return { fileName: '', code: '', diff };
@@ -112,7 +112,7 @@ export class Migrator extends AbstractMigrator<AbstractSqlDriver> {
 
   async checkSchema(): Promise<boolean> {
     await this.init();
-    const diff = await this.#getSchemaDiff(false, false);
+    const diff = await this.getSchemaDiff(false, false);
     return diff.up.length > 0;
   }
 
@@ -121,8 +121,8 @@ export class Migrator extends AbstractMigrator<AbstractSqlDriver> {
    */
   async createInitial(path?: string, name?: string, blank = false): Promise<MigrationResult> {
     await this.init();
-    const schemaExists = await this.#validateInitialMigration(blank);
-    const diff = await this.#getSchemaDiff(blank, true);
+    const schemaExists = await this.validateInitialMigration(blank);
+    const diff = await this.getSchemaDiff(blank, true);
     const migration = await this.generator.generate(diff, path, name);
     await this.storeCurrentSchema();
 
@@ -168,7 +168,7 @@ export class Migrator extends AbstractMigrator<AbstractSqlDriver> {
    * If existing schema contains all of the tables already, we return true, based on that we mark the migration as already executed.
    * If only some of the tables are present, exception is thrown.
    */
-  async #validateInitialMigration(blank: boolean): Promise<boolean> {
+  private async validateInitialMigration(blank: boolean): Promise<boolean> {
     const executed = await this.getExecuted();
     const pending = await this.getPending();
 
@@ -214,7 +214,7 @@ export class Migrator extends AbstractMigrator<AbstractSqlDriver> {
       return undefined;
     }
 
-    const snapshotPath = await this.#getSnapshotPath();
+    const snapshotPath = await this.getSnapshotPath();
     const { fs } = await import('@mikro-orm/core/fs-utils');
 
     if (!fs.pathExists(snapshotPath)) {
@@ -225,19 +225,42 @@ export class Migrator extends AbstractMigrator<AbstractSqlDriver> {
     const schema = new DatabaseSchema(this.driver.getPlatform(), this.config.get('schema'));
     const { tables, namespaces, ...rest } = data;
     const tableInstances = tables.map((tbl: Dictionary) => {
-      const table = new DatabaseTable(this.driver.getPlatform(), tbl.name);
-      const { columns, ...restTable } = tbl;
-      Object.assign(table, restTable);
-      Object.keys(columns).forEach(col => {
-        const column = { ...columns[col] };
+      const table = new DatabaseTable(this.driver.getPlatform(), tbl.name, tbl.schema);
+      table.nativeEnums = tbl.nativeEnums ?? {};
+      table.comment = tbl.comment;
+
+      if (tbl.indexes) {
+        table.setIndexes(tbl.indexes);
+      }
+
+      if (tbl.checks) {
+        table.setChecks(tbl.checks);
+      }
+
+      if (tbl.foreignKeys) {
+        table.setForeignKeys(tbl.foreignKeys);
+      }
+
+      const cols = tbl.columns;
+      Object.keys(cols).forEach(col => {
+        const column = { ...cols[col] };
         /* v8 ignore next */
-        column.mappedType = Type.getType((t[columns[col].mappedType as keyof typeof t] as any) ?? UnknownType);
+        column.mappedType = Type.getType((t[cols[col].mappedType as keyof typeof t] as any) ?? UnknownType);
         table.addColumn(column);
       });
 
       return table;
     });
-    Object.assign(schema, { tables: tableInstances, namespaces: new Set(namespaces), ...rest });
+    schema.setTables(tableInstances);
+    schema.setNamespaces(new Set(namespaces));
+
+    if (rest.nativeEnums) {
+      schema.setNativeEnums(rest.nativeEnums);
+    }
+
+    if (rest.views) {
+      schema.setViews(rest.views);
+    }
 
     return schema;
   }
@@ -247,13 +270,13 @@ export class Migrator extends AbstractMigrator<AbstractSqlDriver> {
       return;
     }
 
-    const snapshotPath = await this.#getSnapshotPath();
+    const snapshotPath = await this.getSnapshotPath();
     schema ??= this.#schemaGenerator.getTargetSchema();
     const { fs } = await import('@mikro-orm/core/fs-utils');
     await fs.writeFile(snapshotPath, JSON.stringify(schema, null, 2));
   }
 
-  async #getSchemaDiff(blank: boolean, initial: boolean): Promise<{ up: string[]; down: string[] }> {
+  private async getSchemaDiff(blank: boolean, initial: boolean): Promise<{ up: string[]; down: string[] }> {
     const up: string[] = [];
     const down: string[] = [];
 

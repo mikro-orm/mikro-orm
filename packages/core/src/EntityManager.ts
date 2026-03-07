@@ -97,6 +97,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
   declare readonly '~entities'?: unknown;
 
   static #counter = 1;
+  /** @internal */
   readonly _id = EntityManager.#counter++;
   readonly global = false;
   readonly name: string;

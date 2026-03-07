@@ -112,16 +112,12 @@ describe('MultiRequestContext', () => {
       const em1 = orm1.em.getContext();
       expect(em1).not.toBe(orm1.em);
       expect(em1.name).toBe(orm1.em.name);
-      // access UoW via property so we do not get the one from request context automatically
-      // @ts-ignore
       expect(em1.getUnitOfWork(false).getIdentityMap()).not.toBe(orm1.em.getUnitOfWork(false).getIdentityMap());
 
       const em2 = orm2.em.getContext();
       expect(em2).not.toBe(orm2.em);
       expect(em2.name).toBe(orm2.em.name);
       expect(em1).not.toBe(em2);
-      // access UoW via property so we do not get the one from request context automatically
-      // @ts-ignore
       expect(em2.getUnitOfWork(false).getIdentityMap()).not.toBe(orm2.em.getUnitOfWork(false).getIdentityMap());
 
       expect(RequestContext.currentRequestContext()).not.toBeUndefined();
@@ -135,16 +131,12 @@ describe('MultiRequestContext', () => {
     await RequestContext.create([orm1.em, orm2.em], async () => {
       const em1 = orm1.em.getContext();
       expect(em1).not.toBe(orm1.em);
-      // access UoW via property so we do not get the one from request context automatically
-      // @ts-ignore
       expect(em1.getUnitOfWork(false).getIdentityMap()).not.toBe(orm1.em.getUnitOfWork(false).getIdentityMap());
 
       const em2 = orm2.em.getContext();
       expect(em2).not.toBe(orm2.em);
       expect(em2.name).toBe(orm2.em.name);
       expect(em1).not.toBe(em2);
-      // access UoW via property, so we do not get the one from request context automatically
-      // @ts-ignore
       expect(em2.getUnitOfWork(false).getIdentityMap()).not.toBe(orm2.em.getUnitOfWork(false).getIdentityMap());
 
       expect(RequestContext.currentRequestContext()).not.toBeUndefined();

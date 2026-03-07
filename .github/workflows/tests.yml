@@ -150,6 +150,9 @@ jobs:
       - name: Install
         run: yarn
 
+      - name: Format check
+        run: yarn oxfmt packages tests --check
+
       - name: Lint
         run: yarn lint
 

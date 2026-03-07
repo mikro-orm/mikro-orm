@@ -46,6 +46,16 @@ export class DatabaseSchema {
     return this.#tables;
   }
 
+  /** @internal */
+  setTables(tables: DatabaseTable[]): void {
+    this.#tables = tables;
+  }
+
+  /** @internal */
+  setNamespaces(namespaces: Set<string>): void {
+    this.#namespaces = namespaces;
+  }
+
   getTable(name: string): DatabaseTable | undefined {
     return this.#tables.find(t => t.name === name || `${t.schema}.${t.name}` === name);
   }
@@ -74,6 +84,11 @@ export class DatabaseSchema {
 
   getViews(): DatabaseView[] {
     return this.#views;
+  }
+
+  /** @internal */
+  setViews(views: DatabaseView[]): void {
+    this.#views = views;
   }
 
   getView(name: string): DatabaseView | undefined {
@@ -131,7 +146,7 @@ export class DatabaseSchema {
     const migrationsSchemaName = parts.length > 1 ? parts[0] : config.get('schema', platform.getDefaultSchemaName());
     const tables = allTables.filter(
       t =>
-        this.#isTableNameAllowed(t.table_name, takeTables, skipTables) &&
+        this.isTableNameAllowed(t.table_name, takeTables, skipTables) &&
         (t.table_name !== migrationsTableName || (t.schema_name && t.schema_name !== migrationsSchemaName)),
     );
     await platform
@@ -148,7 +163,7 @@ export class DatabaseSchema {
 
     // Filter out skipped views
     if (skipViews && skipViews.length > 0) {
-      schema.#views = schema.#views.filter(v => this.#isNameAllowed(v.name, skipViews));
+      schema.#views = schema.#views.filter(v => this.isNameAllowed(v.name, skipViews));
     }
 
     return schema;
@@ -202,11 +217,11 @@ export class DatabaseSchema {
     for (const meta of metadata) {
       // Handle view entities separately
       if (meta.view) {
-        const viewDefinition = this.#getViewDefinition(meta, em, platform);
+        const viewDefinition = this.getViewDefinition(meta, em, platform);
         if (viewDefinition) {
           schema.addView(
             meta.collection,
-            this.#getSchemaName(meta, config, schemaName),
+            this.getSchemaName(meta, config, schemaName),
             viewDefinition,
             meta.materialized,
             meta.withData,
@@ -215,7 +230,7 @@ export class DatabaseSchema {
         continue;
       }
 
-      const table = schema.addTable(meta.collection, this.#getSchemaName(meta, config, schemaName));
+      const table = schema.addTable(meta.collection, this.getSchemaName(meta, config, schemaName));
       table.comment = meta.comment;
 
       // For TPT child entities, only use ownProps (properties defined in this entity only)
@@ -224,7 +239,7 @@ export class DatabaseSchema {
         meta.inheritanceType === 'tpt' && meta.tptParent && meta.ownProps ? meta.ownProps : meta.props;
 
       for (const prop of propsToProcess) {
-        if (!this.#shouldHaveColumn(meta, prop, skipColumns)) {
+        if (!this.shouldHaveColumn(meta, prop, skipColumns)) {
           continue;
         }
 
@@ -251,7 +266,7 @@ export class DatabaseSchema {
         }
 
         // Add FK from child PK to parent PK with ON DELETE CASCADE
-        this.#addTPTForeignKey(table, meta, config, platform);
+        this.addTPTForeignKey(table, meta, config, platform);
       }
 
       meta.indexes.forEach(index => table.addIndex(meta, index, 'index'));
@@ -282,7 +297,7 @@ export class DatabaseSchema {
     return schema;
   }
 
-  static #getViewDefinition(meta: EntityMetadata, em: any, platform: AbstractSqlPlatform): string | undefined {
+  private static getViewDefinition(meta: EntityMetadata, em: any, platform: AbstractSqlPlatform): string | undefined {
     if (typeof meta.expression === 'string') {
       return meta.expression;
     }
@@ -321,7 +336,7 @@ export class DatabaseSchema {
     return undefined;
   }
 
-  static #getSchemaName(meta: EntityMetadata, config: Configuration, schema?: string): string | undefined {
+  private static getSchemaName(meta: EntityMetadata, config: Configuration, schema?: string): string | undefined {
     return (meta.schema === '*' ? schema : meta.schema) ?? config.get('schema');
   }
 
@@ -329,7 +344,7 @@ export class DatabaseSchema {
    * Add a foreign key from a TPT child entity's PK to its parent entity's PK.
    * This FK uses ON DELETE CASCADE to ensure child rows are deleted when parent is deleted.
    */
-  static #addTPTForeignKey(
+  private static addTPTForeignKey(
     table: DatabaseTable,
     meta: EntityMetadata,
     config: Configuration,
@@ -360,24 +375,28 @@ export class DatabaseSchema {
     };
   }
 
-  static #matchName(name: string, nameToMatch: string | RegExp) {
+  private static matchName(name: string, nameToMatch: string | RegExp) {
     return typeof nameToMatch === 'string'
       ? name.toLocaleLowerCase() === nameToMatch.toLocaleLowerCase()
       : nameToMatch.test(name);
   }
 
-  static #isNameAllowed(name: string, skipNames?: (string | RegExp)[]) {
-    return !(skipNames?.some(pattern => this.#matchName(name, pattern)) ?? false);
+  private static isNameAllowed(name: string, skipNames?: (string | RegExp)[]) {
+    return !(skipNames?.some(pattern => this.matchName(name, pattern)) ?? false);
   }
 
-  static #isTableNameAllowed(tableName: string, takeTables?: (string | RegExp)[], skipTables?: (string | RegExp)[]) {
+  private static isTableNameAllowed(
+    tableName: string,
+    takeTables?: (string | RegExp)[],
+    skipTables?: (string | RegExp)[],
+  ) {
     return (
-      (takeTables?.some(tableNameToMatch => this.#matchName(tableName, tableNameToMatch)) ?? true) &&
-      this.#isNameAllowed(tableName, skipTables)
+      (takeTables?.some(tableNameToMatch => this.matchName(tableName, tableNameToMatch)) ?? true) &&
+      this.isNameAllowed(tableName, skipTables)
     );
   }
 
-  static #shouldHaveColumn(
+  private static shouldHaveColumn(
     meta: EntityMetadata,
     prop: EntityProperty,
     skipColumns?: Dictionary<(string | RegExp)[]>,
@@ -396,7 +415,7 @@ export class DatabaseSchema {
       const columnsToSkip = skipColumns[tableName] || skipColumns[fullTableName];
       if (columnsToSkip) {
         for (const fieldName of prop.fieldNames) {
-          if (columnsToSkip.some(pattern => this.#matchName(fieldName, pattern))) {
+          if (columnsToSkip.some(pattern => this.matchName(fieldName, pattern))) {
             return false;
           }
         }

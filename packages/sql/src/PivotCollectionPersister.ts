@@ -90,20 +90,20 @@ export class PivotCollectionPersister<Entity extends object> {
   ) {
     if (insertDiff.length) {
       if (isInitialized) {
-        this.#enqueueInsert(prop, insertDiff, pks);
+        this.enqueueInsert(prop, insertDiff, pks);
       } else {
-        this.#enqueueUpsert(prop, insertDiff, pks);
+        this.enqueueUpsert(prop, insertDiff, pks);
       }
     }
 
     if (deleteDiff === true || (Array.isArray(deleteDiff) && deleteDiff.length)) {
-      this.#enqueueDelete(prop, deleteDiff, pks);
+      this.enqueueDelete(prop, deleteDiff, pks);
     }
   }
 
-  #enqueueInsert(prop: EntityProperty<Entity>, insertDiff: Primary<Entity>[][], pks: Primary<Entity>[]) {
+  private enqueueInsert(prop: EntityProperty<Entity>, insertDiff: Primary<Entity>[][], pks: Primary<Entity>[]) {
     for (const fks of insertDiff) {
-      const statement = this.#createInsertStatement(prop, fks, pks);
+      const statement = this.createInsertStatement(prop, fks, pks);
       const hash = statement.getHash();
 
       if (prop.owner || !this.#inserts.has(hash)) {
@@ -112,9 +112,9 @@ export class PivotCollectionPersister<Entity extends object> {
     }
   }
 
-  #enqueueUpsert(prop: EntityProperty<Entity>, insertDiff: Primary<Entity>[][], pks: Primary<Entity>[]) {
+  private enqueueUpsert(prop: EntityProperty<Entity>, insertDiff: Primary<Entity>[][], pks: Primary<Entity>[]) {
     for (const fks of insertDiff) {
-      const statement = this.#createInsertStatement(prop, fks, pks);
+      const statement = this.createInsertStatement(prop, fks, pks);
       const hash = statement.getHash();
 
       if (prop.owner || !this.#upserts.has(hash)) {
@@ -123,21 +123,21 @@ export class PivotCollectionPersister<Entity extends object> {
     }
   }
 
-  #createInsertStatement(prop: EntityProperty<Entity>, fks: Primary<Entity>[], pks: Primary<Entity>[]) {
-    const { data, keys } = this.#buildPivotKeysAndData(prop, fks, pks);
+  private createInsertStatement(prop: EntityProperty<Entity>, fks: Primary<Entity>[], pks: Primary<Entity>[]) {
+    const { data, keys } = this.buildPivotKeysAndData(prop, fks, pks);
     return new InsertStatement(keys, data, this.#order++);
   }
 
-  #enqueueDelete(prop: EntityProperty<Entity>, deleteDiff: Primary<Entity>[][] | true, pks: Primary<Entity>[]) {
+  private enqueueDelete(prop: EntityProperty<Entity>, deleteDiff: Primary<Entity>[][] | true, pks: Primary<Entity>[]) {
     if (deleteDiff === true) {
-      const { data, keys } = this.#buildPivotKeysAndData(prop, [], pks, true);
+      const { data, keys } = this.buildPivotKeysAndData(prop, [], pks, true);
       const statement = new DeleteStatement(keys as EntityKey<Entity>[], data as FilterQuery<Entity>);
       this.#deletes.set(statement.getHash(), statement);
       return;
     }
 
     for (const fks of deleteDiff) {
-      const { data, keys } = this.#buildPivotKeysAndData(prop, fks, pks);
+      const { data, keys } = this.buildPivotKeysAndData(prop, fks, pks);
       const statement = new DeleteStatement(keys as EntityKey<Entity>[], data as FilterQuery<Entity>);
       this.#deletes.set(statement.getHash(), statement);
     }
@@ -147,7 +147,7 @@ export class PivotCollectionPersister<Entity extends object> {
    * Build the keys and data arrays for pivot table operations.
    * Handles polymorphic M:N by prepending the discriminator column/value.
    */
-  #buildPivotKeysAndData(
+  private buildPivotKeysAndData(
     prop: EntityProperty<Entity>,
     fks: Primary<Entity>[],
     pks: Primary<Entity>[],
@@ -174,7 +174,7 @@ export class PivotCollectionPersister<Entity extends object> {
     return { data, keys };
   }
 
-  #collectStatements(statements: Map<string, InsertStatement<Entity>>): EntityData<Entity>[] {
+  private collectStatements(statements: Map<string, InsertStatement<Entity>>): EntityData<Entity>[] {
     const items: EntityData<Entity>[] = [];
 
     for (const statement of statements.values()) {
@@ -205,7 +205,7 @@ export class PivotCollectionPersister<Entity extends object> {
     }
 
     if (this.#inserts.size > 0) {
-      const filtered = this.#collectStatements(this.#inserts);
+      const filtered = this.collectStatements(this.#inserts);
 
       for (let i = 0; i < filtered.length; i += this.#batchSize) {
         const chunk = filtered.slice(i, i + this.#batchSize);
@@ -220,7 +220,7 @@ export class PivotCollectionPersister<Entity extends object> {
     }
 
     if (this.#upserts.size > 0) {
-      const filtered = this.#collectStatements(this.#upserts);
+      const filtered = this.collectStatements(this.#upserts);
 
       for (let i = 0; i < filtered.length; i += this.#batchSize) {
         const chunk = filtered.slice(i, i + this.#batchSize);

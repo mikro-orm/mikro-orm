@@ -103,7 +103,7 @@ export class UnitOfWork {
       wrapped.__originalEntityData = this.#comparator.prepareEntity(entity);
     }
 
-    this.#cascade(entity, Cascade.MERGE, visited ?? new Set<AnyEntity>());
+    this.cascade(entity, Cascade.MERGE, visited ?? new Set<AnyEntity>());
   }
 
   /**
@@ -397,7 +397,7 @@ export class UnitOfWork {
 
     const cs = this.#changeSetComputer.computeChangeSet(entity);
 
-    if (!cs || this.#checkUniqueProps(cs)) {
+    if (!cs || this.checkUniqueProps(cs)) {
       return;
     }
 
@@ -406,7 +406,7 @@ export class UnitOfWork {
       cs.type = type;
     }
 
-    this.#initIdentifier(entity);
+    this.initIdentifier(entity);
     this.#changeSets.set(entity, cs);
     this.#persistStack.delete(entity);
     wrapped.__originalEntityData = this.#comparator.prepareEntity(entity);
@@ -421,7 +421,7 @@ export class UnitOfWork {
 
     const cs = this.#changeSetComputer.computeChangeSet(entity);
 
-    if (cs && !this.#checkUniqueProps(cs)) {
+    if (cs && !this.checkUniqueProps(cs)) {
       Object.assign(changeSet.payload, cs.payload);
       helper(entity).__originalEntityData = this.#comparator.prepareEntity(entity);
     }
@@ -448,7 +448,7 @@ export class UnitOfWork {
     }
 
     if (options.cascade ?? true) {
-      this.#cascade(entity, Cascade.PERSIST, visited, options);
+      this.cascade(entity, Cascade.PERSIST, visited, options);
     }
   }
 
@@ -484,7 +484,7 @@ export class UnitOfWork {
     }
 
     if (options.cascade ?? true) {
-      this.#cascade(entity, Cascade.REMOVE, visited);
+      this.cascade(entity, Cascade.REMOVE, visited);
     }
   }
 
@@ -497,7 +497,7 @@ export class UnitOfWork {
       return new Promise<void>((resolve, reject) => {
         this.#flushQueue.push(() => {
           return insideFlush.run(true, () => {
-            return this.#doCommit().then(resolve, reject);
+            return this.doCommit().then(resolve, reject);
           });
         });
       });
@@ -505,18 +505,18 @@ export class UnitOfWork {
 
     try {
       this.#working = true;
-      await insideFlush.run(true, () => this.#doCommit());
+      await insideFlush.run(true, () => this.doCommit());
 
       while (this.#flushQueue.length) {
         await this.#flushQueue.shift()!();
       }
     } finally {
-      this.#postCommitCleanup();
+      this.postCommitCleanup();
       this.#working = false;
     }
   }
 
-  async #doCommit(): Promise<void> {
+  private async doCommit(): Promise<void> {
     const oldTx = this.#em.getTransactionContext();
 
     try {
@@ -528,7 +528,7 @@ export class UnitOfWork {
       }
 
       await this.#eventManager.dispatchEvent(EventType.onFlush, { em: this.#em, uow: this });
-      this.#filterCollectionUpdates();
+      this.filterCollectionUpdates();
 
       // nothing to do, do not start transaction
       if (this.#changeSets.size === 0 && this.#collectionUpdates.size === 0 && this.#extraUpdates.size === 0) {
@@ -536,7 +536,7 @@ export class UnitOfWork {
         return;
       }
 
-      const groups = this.#getChangeSetGroups();
+      const groups = this.getChangeSetGroups();
       const platform = this.#em.getPlatform();
       const runInTransaction =
         !this.#em.isInTransaction() && platform.supportsTransactions() && this.#em.config.get('implicitTransactions');
@@ -546,15 +546,15 @@ export class UnitOfWork {
           { id: this.#em._id },
           this.#em.getLoggerContext({ disableContextResolution: true }),
         );
-        await this.#em.getConnection('write').transactional(trx => this.#persistToDatabase(groups, trx), {
+        await this.#em.getConnection('write').transactional(trx => this.persistToDatabase(groups, trx), {
           ctx: oldTx,
           eventBroadcaster: new TransactionEventBroadcaster(this.#em),
           loggerContext,
         });
       } else {
-        await this.#persistToDatabase(groups, this.#em.getTransactionContext());
+        await this.persistToDatabase(groups, this.#em.getTransactionContext());
       }
-      this.#resetTransaction(oldTx);
+      this.resetTransaction(oldTx);
 
       for (const cs of this.#changeSets.values()) {
         cs.entity.__helper.__processing = false;
@@ -562,7 +562,7 @@ export class UnitOfWork {
 
       await this.#eventManager.dispatchEvent(EventType.afterFlush, { em: this.#em, uow: this });
     } finally {
-      this.#resetTransaction(oldTx);
+      this.resetTransaction(oldTx);
     }
   }
 
@@ -574,16 +574,16 @@ export class UnitOfWork {
     const meta = this.#metadata.find<T>((entity as Dictionary).constructor)!;
 
     if (options.lockMode === LockMode.OPTIMISTIC) {
-      await this.#lockOptimistic(entity, meta, options.lockVersion!);
+      await this.lockOptimistic(entity, meta, options.lockVersion!);
     } else if (options.lockMode != null) {
-      await this.#lockPessimistic(entity, options);
+      await this.lockPessimistic(entity, options);
     }
   }
 
   clear(): void {
     this.#identityMap.clear();
     this.#loadedEntities.clear();
-    this.#postCommitCleanup();
+    this.postCommitCleanup();
   }
 
   unsetIdentity(entity: AnyEntity): void {
@@ -623,25 +623,25 @@ export class UnitOfWork {
     const visited = new Set<AnyEntity>();
 
     for (const entity of this.#removeStack) {
-      this.#cascade(entity, Cascade.REMOVE, visited);
+      this.cascade(entity, Cascade.REMOVE, visited);
     }
 
     visited.clear();
 
     for (const entity of this.#identityMap) {
       if (!this.#removeStack.has(entity) && !this.#persistStack.has(entity) && !this.#orphanRemoveStack.has(entity)) {
-        this.#cascade(entity, Cascade.PERSIST, visited, { checkRemoveStack: true });
+        this.cascade(entity, Cascade.PERSIST, visited, { checkRemoveStack: true });
       }
     }
 
     for (const entity of this.#persistStack) {
-      this.#cascade(entity, Cascade.PERSIST, visited, { checkRemoveStack: true });
+      this.cascade(entity, Cascade.PERSIST, visited, { checkRemoveStack: true });
     }
 
     visited.clear();
 
     for (const entity of this.#persistStack) {
-      this.#findNewEntities(entity, visited);
+      this.findNewEntities(entity, visited);
     }
 
     for (const entity of this.#orphanRemoveStack) {
@@ -662,7 +662,7 @@ export class UnitOfWork {
 
     for (const cs of this.#changeSets.values()) {
       if (cs.type === ChangeSetType.UPDATE) {
-        this.#findEarlyUpdates(cs, inserts[cs.meta.uniqueName]);
+        this.findEarlyUpdates(cs, inserts[cs.meta.uniqueName]);
       }
     }
 
@@ -674,14 +674,14 @@ export class UnitOfWork {
         continue;
       }
 
-      const deletePkHash = [wrapped.getSerializedPrimaryKey(), ...this.#expandUniqueProps(entity)];
+      const deletePkHash = [wrapped.getSerializedPrimaryKey(), ...this.expandUniqueProps(entity)];
       let type = ChangeSetType.DELETE;
 
       for (const cs of inserts[wrapped.__meta.uniqueName] ?? []) {
         if (
           deletePkHash.some(
             hash =>
-              hash === cs.getSerializedPrimaryKey() || this.#expandUniqueProps(cs.entity).find(child => hash === child),
+              hash === cs.getSerializedPrimaryKey() || this.expandUniqueProps(cs.entity).find(child => hash === child),
           )
         ) {
           type = ChangeSetType.DELETE_EARLY;
@@ -740,13 +740,13 @@ export class UnitOfWork {
       wrapped.__em = this.#em;
       this.#orphanRemoveStack.add(entity);
       this.#queuedActions.add(wrapped.__meta.class);
-      this.#cascade(entity, Cascade.SCHEDULE_ORPHAN_REMOVAL, visited);
+      this.cascade(entity, Cascade.SCHEDULE_ORPHAN_REMOVAL, visited);
     }
   }
 
   cancelOrphanRemoval(entity: AnyEntity, visited?: Set<AnyEntity>): void {
     this.#orphanRemoveStack.delete(entity);
-    this.#cascade(entity, Cascade.CANCEL_ORPHAN_REMOVAL, visited);
+    this.cascade(entity, Cascade.CANCEL_ORPHAN_REMOVAL, visited);
   }
 
   getOrphanRemoveStack(): Set<AnyEntity> {
@@ -757,7 +757,7 @@ export class UnitOfWork {
     return this.#changeSetPersister;
   }
 
-  #findNewEntities<T extends object>(
+  private findNewEntities<T extends object>(
     entity: T,
     visited: Set<AnyEntity>,
     idx = 0,
@@ -777,22 +777,22 @@ export class UnitOfWork {
 
     // Set entityManager default schema
     wrapped.__schema ??= this.#em.schema;
-    this.#initIdentifier(entity);
+    this.initIdentifier(entity);
 
     for (const prop of wrapped.__meta.relations) {
       const targets = Utils.unwrapProperty(entity, wrapped.__meta, prop);
       for (const [target] of targets) {
         const kind = Reference.unwrapReference(target as object);
-        this.#processReference(entity, prop, kind, visited, processed, idx);
+        this.processReference(entity, prop, kind, visited, processed, idx);
       }
     }
 
     const changeSet = this.#changeSetComputer.computeChangeSet(entity);
 
-    if (changeSet && !this.#checkUniqueProps(changeSet)) {
+    if (changeSet && !this.checkUniqueProps(changeSet)) {
       // For TPT child entities, create changesets for each table in hierarchy
       if (wrapped.__meta.inheritanceType === 'tpt' && wrapped.__meta.tptParent) {
-        this.#createTPTChangeSets(entity, changeSet);
+        this.createTPTChangeSets(entity, changeSet);
       } else {
         this.#changeSets.set(entity, changeSet);
       }
@@ -803,7 +803,7 @@ export class UnitOfWork {
    * For TPT inheritance, creates separate changesets for each table in the hierarchy.
    * Uses the same entity instance for all changesets - only the metadata and payload differ.
    */
-  #createTPTChangeSets<T extends object>(entity: T, originalChangeSet: ChangeSet<T>): void {
+  private createTPTChangeSets<T extends object>(entity: T, originalChangeSet: ChangeSet<T>): void {
     const meta = helper(entity).__meta;
     const isCreate = originalChangeSet.type === ChangeSetType.CREATE;
     let current: EntityMetadata | undefined = meta;
@@ -872,7 +872,7 @@ export class UnitOfWork {
   /**
    * Returns `true` when the change set should be skipped as it will be empty after the extra update.
    */
-  #checkUniqueProps<T extends object>(changeSet: ChangeSet<T>): boolean {
+  private checkUniqueProps<T extends object>(changeSet: ChangeSet<T>): boolean {
     if (changeSet.type !== ChangeSetType.UPDATE) {
       return false;
     }
@@ -887,7 +887,7 @@ export class UnitOfWork {
     return changeSet.type === ChangeSetType.UPDATE && !Utils.hasObjectKeys(changeSet.payload);
   }
 
-  #expandUniqueProps<T extends object>(entity: T): string[] {
+  private expandUniqueProps<T extends object>(entity: T): string[] {
     const wrapped = helper(entity);
 
     if (!wrapped.__meta.hasUniqueProps) {
@@ -932,7 +932,7 @@ export class UnitOfWork {
     return simpleUniqueHashes.concat(compoundUniqueHashes);
   }
 
-  #initIdentifier<T extends object>(entity: T): void {
+  private initIdentifier<T extends object>(entity: T): void {
     const wrapped = entity && helper(entity);
 
     if (!wrapped || wrapped.__identifier || wrapped.hasPrimaryKey()) {
@@ -946,7 +946,7 @@ export class UnitOfWork {
       if (pk.kind === ReferenceKind.SCALAR) {
         idents.push(new EntityIdentifier(entity[pk.name] as IPrimaryKeyValue));
       } else if (entity[pk.name]) {
-        this.#initIdentifier(entity[pk.name] as object);
+        this.initIdentifier(entity[pk.name] as object);
         idents.push(helper(entity[pk.name] as AnyEntity)?.__identifier as EntityIdentifier);
       }
     }
@@ -958,7 +958,7 @@ export class UnitOfWork {
     }
   }
 
-  #processReference<T extends object>(
+  private processReference<T extends object>(
     parent: T,
     prop: EntityProperty<T>,
     kind: any,
@@ -969,7 +969,7 @@ export class UnitOfWork {
     const isToOne = prop.kind === ReferenceKind.MANY_TO_ONE || prop.kind === ReferenceKind.ONE_TO_ONE;
 
     if (isToOne && Utils.isEntity(kind)) {
-      return this.#processToOneReference(kind, visited, processed, idx);
+      return this.processToOneReference(kind, visited, processed, idx);
     }
 
     if (Utils.isCollection<any>(kind)) {
@@ -982,25 +982,25 @@ export class UnitOfWork {
         });
 
       if (prop.kind === ReferenceKind.MANY_TO_MANY && kind.isDirty()) {
-        this.#processToManyReference(kind, visited, processed, parent, prop);
+        this.processToManyReference(kind, visited, processed, parent, prop);
       }
     }
   }
 
-  #processToOneReference(kind: any, visited: Set<AnyEntity>, processed: Set<AnyEntity>, idx: number): void {
+  private processToOneReference(kind: any, visited: Set<AnyEntity>, processed: Set<AnyEntity>, idx: number): void {
     if (!kind.__helper!.__managed) {
-      this.#findNewEntities(kind, visited, idx, processed);
+      this.findNewEntities(kind, visited, idx, processed);
     }
   }
 
-  #processToManyReference<T extends object>(
+  private processToManyReference<T extends object>(
     collection: Collection<AnyEntity>,
     visited: Set<AnyEntity>,
     processed: Set<AnyEntity>,
     parent: T,
     prop: EntityProperty<T>,
   ): void {
-    if (this.#isCollectionSelfReferenced(collection, processed)) {
+    if (this.isCollectionSelfReferenced(collection, processed)) {
       this.#extraUpdates.add([parent, prop.name, collection, undefined, ChangeSetType.UPDATE]);
       const coll = new Collection<AnyEntity, T>(parent);
       coll.property = prop as EntityProperty;
@@ -1012,10 +1012,10 @@ export class UnitOfWork {
     collection
       .getItems(false)
       .filter(item => !item.__helper!.__originalEntityData)
-      .forEach(item => this.#findNewEntities(item, visited, 0, processed));
+      .forEach(item => this.findNewEntities(item, visited, 0, processed));
   }
 
-  async #runHooks<T extends object>(type: EventType, changeSet: ChangeSet<T>, sync = false): Promise<void> {
+  private async runHooks<T extends object>(type: EventType, changeSet: ChangeSet<T>, sync = false): Promise<void> {
     const meta = changeSet.meta;
 
     if (!this.#eventManager.hasListeners(type, meta)) {
@@ -1048,7 +1048,7 @@ export class UnitOfWork {
     }
   }
 
-  #postCommitCleanup(): void {
+  private postCommitCleanup(): void {
     for (const cs of this.#changeSets.values()) {
       const wrapped = helper(cs.entity);
       wrapped.__processing = false;
@@ -1065,7 +1065,7 @@ export class UnitOfWork {
     this.#working = false;
   }
 
-  #cascade<T extends object>(
+  private cascade<T extends object>(
     entity: T,
     type: Cascade,
     visited = new Set<AnyEntity>(),
@@ -1096,44 +1096,44 @@ export class UnitOfWork {
     }
 
     for (const prop of helper(entity).__meta.relations) {
-      this.#cascadeReference<T>(entity, prop, type, visited, options);
+      this.cascadeReference<T>(entity, prop, type, visited, options);
     }
   }
 
-  #cascadeReference<T extends object>(
+  private cascadeReference<T extends object>(
     entity: T,
     prop: EntityProperty<T>,
     type: Cascade,
     visited: Set<AnyEntity>,
     options: { checkRemoveStack?: boolean },
   ): void {
-    this.#fixMissingReference(entity, prop);
+    this.fixMissingReference(entity, prop);
 
-    if (!this.#shouldCascade(prop, type)) {
+    if (!this.shouldCascade(prop, type)) {
       return;
     }
 
     const kind = Reference.unwrapReference(entity[prop.name] as object) as T | Collection<AnyEntity>;
 
     if ([ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind) && Utils.isEntity(kind)) {
-      return this.#cascade(kind as T, type, visited, options);
+      return this.cascade(kind as T, type, visited, options);
     }
 
     const collection = kind as Collection<AnyEntity>;
 
     if ([ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(prop.kind) && collection) {
       for (const item of collection.getItems(false)) {
-        this.#cascade(item, type, visited, options);
+        this.cascade(item, type, visited, options);
       }
     }
   }
 
-  #isCollectionSelfReferenced(collection: Collection<AnyEntity>, processed: Set<AnyEntity>): boolean {
+  private isCollectionSelfReferenced(collection: Collection<AnyEntity>, processed: Set<AnyEntity>): boolean {
     const filtered = collection.getItems(false).filter(item => !helper(item).__originalEntityData);
     return filtered.some(items => processed.has(items));
   }
 
-  #shouldCascade(prop: EntityProperty, type: Cascade): boolean {
+  private shouldCascade(prop: EntityProperty, type: Cascade): boolean {
     if (
       [Cascade.REMOVE, Cascade.SCHEDULE_ORPHAN_REMOVAL, Cascade.CANCEL_ORPHAN_REMOVAL, Cascade.ALL].includes(type) &&
       prop.orphanRemoval
@@ -1149,7 +1149,7 @@ export class UnitOfWork {
     return prop.cascade && (prop.cascade.includes(type) || prop.cascade.includes(Cascade.ALL));
   }
 
-  async #lockPessimistic<T extends object>(entity: T, options: LockOptions): Promise<void> {
+  private async lockPessimistic<T extends object>(entity: T, options: LockOptions): Promise<void> {
     if (!this.#em.isInTransaction()) {
       throw ValidationError.transactionRequired();
     }
@@ -1157,7 +1157,11 @@ export class UnitOfWork {
     await this.#em.getDriver().lockPessimistic(entity, { ctx: this.#em.getTransactionContext(), ...options });
   }
 
-  async #lockOptimistic<T extends object>(entity: T, meta: EntityMetadata<T>, version: number | Date): Promise<void> {
+  private async lockOptimistic<T extends object>(
+    entity: T,
+    meta: EntityMetadata<T>,
+    version: number | Date,
+  ): Promise<void> {
     if (!meta.versionProperty) {
       throw OptimisticLockError.notVersioned(meta);
     }
@@ -1179,7 +1183,7 @@ export class UnitOfWork {
     }
   }
 
-  #fixMissingReference<T extends object>(entity: T, prop: EntityProperty<T>): void {
+  private fixMissingReference<T extends object>(entity: T, prop: EntityProperty<T>): void {
     const reference = entity[prop.name] as object;
     const target = Reference.unwrapReference(reference);
 
@@ -1211,7 +1215,7 @@ export class UnitOfWork {
     }
   }
 
-  async #persistToDatabase(
+  private async persistToDatabase(
     groups: { [K in ChangeSetType]: Map<EntityMetadata, ChangeSet<any>[]> },
     ctx?: Transaction,
   ): Promise<void> {
@@ -1219,52 +1223,52 @@ export class UnitOfWork {
       this.#em.setTransactionContext(ctx);
     }
 
-    const commitOrder = this.#getCommitOrder();
+    const commitOrder = this.getCommitOrder();
     const commitOrderReversed = [...commitOrder].reverse();
 
     // early delete - when we recreate entity in the same UoW, we need to issue those delete queries before inserts
     for (const meta of commitOrderReversed) {
-      await this.#commitDeleteChangeSets(groups[ChangeSetType.DELETE_EARLY].get(meta) ?? [], ctx);
+      await this.commitDeleteChangeSets(groups[ChangeSetType.DELETE_EARLY].get(meta) ?? [], ctx);
     }
 
     // early update - when we recreate entity in the same UoW, we need to issue those delete queries before inserts
     for (const meta of commitOrder) {
-      await this.#commitUpdateChangeSets(groups[ChangeSetType.UPDATE_EARLY].get(meta) ?? [], ctx);
+      await this.commitUpdateChangeSets(groups[ChangeSetType.UPDATE_EARLY].get(meta) ?? [], ctx);
     }
 
     // extra updates
-    await this.#commitExtraUpdates(ChangeSetType.UPDATE_EARLY, ctx);
+    await this.commitExtraUpdates(ChangeSetType.UPDATE_EARLY, ctx);
 
     // create
     for (const meta of commitOrder) {
-      await this.#commitCreateChangeSets(groups[ChangeSetType.CREATE].get(meta) ?? [], ctx);
+      await this.commitCreateChangeSets(groups[ChangeSetType.CREATE].get(meta) ?? [], ctx);
     }
 
     // update
     for (const meta of commitOrder) {
-      await this.#commitUpdateChangeSets(groups[ChangeSetType.UPDATE].get(meta) ?? [], ctx);
+      await this.commitUpdateChangeSets(groups[ChangeSetType.UPDATE].get(meta) ?? [], ctx);
     }
 
     // extra updates
-    await this.#commitExtraUpdates(ChangeSetType.UPDATE, ctx);
+    await this.commitExtraUpdates(ChangeSetType.UPDATE, ctx);
 
     // collection updates
-    await this.#commitCollectionUpdates(ctx);
+    await this.commitCollectionUpdates(ctx);
 
     // delete - entity deletions need to be in reverse commit order
     for (const meta of commitOrderReversed) {
-      await this.#commitDeleteChangeSets(groups[ChangeSetType.DELETE].get(meta) ?? [], ctx);
+      await this.commitDeleteChangeSets(groups[ChangeSetType.DELETE].get(meta) ?? [], ctx);
     }
 
     // take snapshots of all persisted collections
     const visited = new Set<object>();
 
     for (const changeSet of this.#changeSets.values()) {
-      this.#takeCollectionSnapshots(changeSet.entity, visited);
+      this.takeCollectionSnapshots(changeSet.entity, visited);
     }
   }
 
-  async #commitCreateChangeSets<T extends object>(changeSets: ChangeSet<T>[], ctx?: Transaction): Promise<void> {
+  private async commitCreateChangeSets<T extends object>(changeSets: ChangeSet<T>[], ctx?: Transaction): Promise<void> {
     if (changeSets.length === 0) {
       return;
     }
@@ -1278,19 +1282,19 @@ export class UnitOfWork {
     });
 
     for (const changeSet of changeSets) {
-      this.#findExtraUpdates(changeSet, props);
-      await this.#runHooks(EventType.beforeCreate, changeSet, true);
+      this.findExtraUpdates(changeSet, props);
+      await this.runHooks(EventType.beforeCreate, changeSet, true);
     }
 
     await this.#changeSetPersister.executeInserts(changeSets, { ctx });
 
     for (const changeSet of changeSets) {
       this.register<T>(changeSet.entity, changeSet.payload, { refresh: true });
-      await this.#runHooks(EventType.afterCreate, changeSet);
+      await this.runHooks(EventType.afterCreate, changeSet);
     }
   }
 
-  #findExtraUpdates<T extends object>(changeSet: ChangeSet<T>, props: EntityProperty<T>[]): void {
+  private findExtraUpdates<T extends object>(changeSet: ChangeSet<T>, props: EntityProperty<T>[]): void {
     for (const prop of props) {
       const ref = changeSet.entity[prop.name];
 
@@ -1337,7 +1341,7 @@ export class UnitOfWork {
     }
   }
 
-  #findEarlyUpdates<T extends object>(changeSet: ChangeSet<T>, inserts: ChangeSet<T>[] = []): void {
+  private findEarlyUpdates<T extends object>(changeSet: ChangeSet<T>, inserts: ChangeSet<T>[] = []): void {
     const props = changeSet.meta.uniqueProps;
 
     for (const prop of props) {
@@ -1356,7 +1360,7 @@ export class UnitOfWork {
     }
   }
 
-  async #commitUpdateChangeSets<T extends object>(
+  private async commitUpdateChangeSets<T extends object>(
     changeSets: ChangeSet<T>[],
     ctx?: Transaction,
     batched = true,
@@ -1366,7 +1370,7 @@ export class UnitOfWork {
     }
 
     for (const changeSet of changeSets) {
-      await this.#runHooks(EventType.beforeUpdate, changeSet, true);
+      await this.runHooks(EventType.beforeUpdate, changeSet, true);
     }
 
     await this.#changeSetPersister.executeUpdates(changeSets, batched, { ctx });
@@ -1393,28 +1397,31 @@ export class UnitOfWork {
         wrapped.__initialized = true;
       }
 
-      await this.#runHooks(EventType.afterUpdate, changeSet);
+      await this.runHooks(EventType.afterUpdate, changeSet);
     }
   }
 
-  async #commitDeleteChangeSets<T extends object>(changeSets: ChangeSet<T>[], ctx?: Transaction): Promise<void> {
+  private async commitDeleteChangeSets<T extends object>(changeSets: ChangeSet<T>[], ctx?: Transaction): Promise<void> {
     if (changeSets.length === 0) {
       return;
     }
 
     for (const changeSet of changeSets) {
-      await this.#runHooks(EventType.beforeDelete, changeSet, true);
+      await this.runHooks(EventType.beforeDelete, changeSet, true);
     }
 
     await this.#changeSetPersister.executeDeletes(changeSets, { ctx });
 
     for (const changeSet of changeSets) {
       this.unsetIdentity(changeSet.entity);
-      await this.#runHooks(EventType.afterDelete, changeSet);
+      await this.runHooks(EventType.afterDelete, changeSet);
     }
   }
 
-  async #commitExtraUpdates(type: ChangeSetType.UPDATE | ChangeSetType.UPDATE_EARLY, ctx?: Transaction): Promise<void> {
+  private async commitExtraUpdates(
+    type: ChangeSetType.UPDATE | ChangeSetType.UPDATE_EARLY,
+    ctx?: Transaction,
+  ): Promise<void> {
     const extraUpdates: [ChangeSet<any>, ChangeSet<any> | undefined][] = [];
 
     for (const extraUpdate of this.#extraUpdates) {
@@ -1435,7 +1442,7 @@ export class UnitOfWork {
       }
     }
 
-    await this.#commitUpdateChangeSets(
+    await this.commitUpdateChangeSets(
       extraUpdates.map(u => u[0]),
       ctx,
       false,
@@ -1449,8 +1456,8 @@ export class UnitOfWork {
     }
   }
 
-  async #commitCollectionUpdates(ctx?: Transaction): Promise<void> {
-    this.#filterCollectionUpdates();
+  private async commitCollectionUpdates(ctx?: Transaction): Promise<void> {
+    this.filterCollectionUpdates();
     const loggerContext = Utils.merge(
       { id: this.#em._id },
       this.#em.getLoggerContext({ disableContextResolution: true }),
@@ -1466,7 +1473,7 @@ export class UnitOfWork {
     }
   }
 
-  #filterCollectionUpdates(): void {
+  private filterCollectionUpdates(): void {
     for (const coll of this.#collectionUpdates) {
       let skip = true;
 
@@ -1489,7 +1496,7 @@ export class UnitOfWork {
   /**
    * Orders change sets so FK constrains are maintained, ensures stable order (needed for node < 11)
    */
-  #getChangeSetGroups(): { [K in ChangeSetType]: Map<EntityMetadata, ChangeSet<any>[]> } {
+  private getChangeSetGroups(): { [K in ChangeSetType]: Map<EntityMetadata, ChangeSet<any>[]> } {
     const groups = {
       [ChangeSetType.CREATE]: new Map<EntityMetadata, ChangeSet<any>[]>(),
       [ChangeSetType.UPDATE]: new Map<EntityMetadata, ChangeSet<any>[]>(),
@@ -1528,7 +1535,7 @@ export class UnitOfWork {
     return groups;
   }
 
-  #getCommitOrder(): EntityMetadata[] {
+  private getCommitOrder(): EntityMetadata[] {
     const calc = new CommitOrderCalculator();
     const set = new Set<EntityMetadata>();
 
@@ -1566,7 +1573,7 @@ export class UnitOfWork {
     return calc.sort().map(id => this.#metadata.getById(id));
   }
 
-  #resetTransaction(oldTx?: Transaction): void {
+  private resetTransaction(oldTx?: Transaction): void {
     if (oldTx) {
       this.#em.setTransactionContext(oldTx);
     } else {
@@ -1577,7 +1584,7 @@ export class UnitOfWork {
   /**
    * Takes snapshots of all processed collections
    */
-  #takeCollectionSnapshots<T extends object>(entity: T, visited: Set<unknown>) {
+  private takeCollectionSnapshots<T extends object>(entity: T, visited: Set<unknown>) {
     if (visited.has(entity)) {
       return;
     }
@@ -1592,7 +1599,7 @@ export class UnitOfWork {
 
       // cascade to m:1 relations as we need to snapshot the 1:m inverse side (for `removeAll()` with orphan removal)
       if (prop.kind === ReferenceKind.MANY_TO_ONE && value) {
-        this.#takeCollectionSnapshots(Reference.unwrapReference(value), visited);
+        this.takeCollectionSnapshots(Reference.unwrapReference(value), visited);
       }
     });
   }

@@ -2,17 +2,16 @@ import type { AnyEntity, EntityCtor, EntityMetadata } from '../typings.js';
 
 export class IdentityMap {
   readonly #defaultSchema?: string;
+  readonly #registry = new Map<EntityCtor, Map<string, AnyEntity>>();
+  /** Tracks alternate key hashes for each entity so we can clean them up on delete */
+  readonly #alternateKeys = new WeakMap<AnyEntity, Set<string>>();
 
   constructor(defaultSchema?: string) {
     this.#defaultSchema = defaultSchema;
   }
 
-  readonly #registry = new Map<EntityCtor, Map<string, AnyEntity>>();
-  /** Tracks alternate key hashes for each entity so we can clean them up on delete */
-  readonly #alternateKeys = new WeakMap<AnyEntity, Set<string>>();
-
   store<T>(item: T) {
-    this.getStore((item as AnyEntity).__meta!.root).set(this.#getPkHash(item), item);
+    this.getStore((item as AnyEntity).__meta!.root).set(this.getPkHash(item), item);
   }
 
   /**
@@ -36,7 +35,7 @@ export class IdentityMap {
   delete<T>(item: T) {
     const meta = (item as AnyEntity).__meta!.root;
     const store = this.getStore(meta);
-    store.delete(this.#getPkHash(item));
+    store.delete(this.getPkHash(item));
 
     // Also delete any alternate key entries for this entity
     const altKeys = this.#alternateKeys.get(item as AnyEntity);
@@ -115,7 +114,7 @@ export class IdentityMap {
     return store.has(id) ? store.get(id) : undefined;
   }
 
-  #getPkHash<T>(item: T): string {
+  private getPkHash<T>(item: T): string {
     const wrapped = (item as AnyEntity).__helper;
     const meta = wrapped.__meta as EntityMetadata<T>;
     const hash = wrapped.getSerializedPrimaryKey();
