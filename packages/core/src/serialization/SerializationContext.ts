@@ -1,7 +1,6 @@
 import type { AnyEntity, EntityMetadata, EntityName, PopulateOptions } from '../typings.js';
 import { Utils } from '../utils/Utils.js';
 import { helper } from '../entity/wrap.js';
-import type { Configuration } from '../utils/Configuration.js';
 
 /**
  * Helper that allows to keep track of where we are currently at when serializing complex entity graph with cycles.
@@ -12,13 +11,11 @@ export class SerializationContext<T extends object> {
   readonly path: [EntityName, string][] = [];
   readonly visited = new Set<AnyEntity>();
   #entities = new Set<AnyEntity>();
-  readonly #config: Configuration;
   readonly #populate: PopulateOptions<T>[];
   readonly #fields?: Set<string>;
-  readonly #exclude?: string[];
+  readonly #exclude?: readonly string[];
 
-  constructor(config: Configuration, populate: PopulateOptions<T>[] = [], fields?: Set<string>, exclude?: string[]) {
-    this.#config = config;
+  constructor(populate: PopulateOptions<T>[] = [], fields?: Set<string>, exclude?: readonly string[]) {
     this.#populate = populate;
     this.#fields = fields;
     this.#exclude = exclude;
@@ -118,6 +115,16 @@ export class SerializationContext<T extends object> {
     }
 
     return !!populate?.some(p => p.field === prop);
+  }
+
+  isExcluded(entityName: EntityName, prop: string): boolean {
+    if (!this.#exclude || this.#exclude.length === 0) {
+      return false;
+    }
+
+    const fullPath = this.path.map(segment => segment[1] + '.').join('') + prop;
+
+    return this.#exclude.includes(fullPath);
   }
 
   isPartiallyLoaded(entityName: EntityName, prop: string): boolean {
