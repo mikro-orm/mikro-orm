@@ -25,6 +25,8 @@ function getPropertyDescriptor<T>(obj: T, prop: keyof T): PropertyDescriptor | n
   return null;
 }
 
+const TypedArray = Object.getPrototypeOf(Uint8Array);
+
 export function clone<T>(parent: T, respectCustomCloneMethod = true): T {
   const allParents: unknown[] = [];
   const allChildren: unknown[] = [];
@@ -81,6 +83,9 @@ export function clone<T>(parent: T, respectCustomCloneMethod = true): T {
     } else if (Buffer.isBuffer(parent)) {
       child = Buffer.allocUnsafe(parent.length);
       parent.copy(child as Buffer);
+      return child;
+    } else if (parent instanceof TypedArray) {
+      child = parent.copyWithin(0);
       return child;
     } else if (parent instanceof Error) {
       child = new (parent as any).constructor(parent.message);

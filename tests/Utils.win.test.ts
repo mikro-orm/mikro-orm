@@ -175,6 +175,19 @@ describe('Utils', () => {
       expect(copied).toBeInstanceOf(Child);
       expect(copied.name).toBe(expected);
     });
+
+    describe('should copy TypedArray', () => {
+      test('should copy Uint8Array', () => {
+        const a = new Uint8Array([1, 2, 3]);
+        const b = Utils.copy(a);
+        expect(b.toString()).toBe(a.toString());
+      });
+      test('should copy Int8Array', () => {
+        const a = new Uint8Array([-1, 1]);
+        const b = Utils.copy(a);
+        expect(b.toString()).toBe(a.toString());
+      });
+    });
   });
 
   test('getConstructorParams', () => {

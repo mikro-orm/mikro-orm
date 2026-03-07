@@ -351,10 +351,15 @@ jobs:
         with:
           cache: yarn
 
-      - name: Install & build
+      - name: Install & build & pull docker images
         run: |
+          docker compose pull mongo &
           yarn
           yarn build
+          wait
+
+      - name: Init docker
+        run: docker compose up -d mongo --wait
 
       - name: Setup Deno
         uses: denoland/setup-deno@v2
@@ -363,6 +368,9 @@ jobs:
 
       - name: Test (Deno + node:sqlite)
         run: deno run --allow-read --allow-write --allow-env --allow-ffi --node-modules-dir=manual tests/deno/sqlite.test.ts
+
+      - name: Test (Deno + mongodb)
+        run: deno run --allow-read --allow-write --allow-env --allow-net --allow-sys --node-modules-dir=manual tests/deno/mongodb.test.ts
 
   release:
     name: Release
