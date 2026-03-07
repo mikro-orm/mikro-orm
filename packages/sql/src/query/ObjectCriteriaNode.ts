@@ -63,7 +63,7 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
           }
 
           const payload = (this.payload[key] as CriteriaNode<T>).unwrap();
-          const qb2 = qb.clone(true, ['_schema']);
+          const qb2 = qb.clone(true, ['schema']);
           const joinAlias = qb2.getNextAlias(this.prop!.targetMeta!.class);
           const sub = qb2
             .from(parentMeta.class)
@@ -378,13 +378,13 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
     if (this.prop!.kind === ReferenceKind.MANY_TO_MANY && (scalar || operator)) {
       qb.join(field, nestedAlias, undefined, JoinType.pivotJoin, path);
     } else {
-      const prev = qb._fields?.slice();
+      const prev = qb.state.fields?.slice();
       const toOneProperty = [ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(this.prop!.kind);
       const joinType = toOneProperty && !this.prop!.nullable ? JoinType.innerJoin : JoinType.leftJoin;
       qb[method](field, nestedAlias, undefined, joinType, path);
 
       if (!qb.hasFlag(QueryFlag.INFER_POPULATE)) {
-        qb._fields = prev;
+        qb.state.fields = prev;
       }
     }
 

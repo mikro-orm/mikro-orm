@@ -39,45 +39,57 @@ export class MikroTransformer extends OperationNodeTransformer {
    * Each level of query scope has its own Map of table aliases/names to EntityMetadata
    * Top of stack (highest index) is the current scope
    */
-  private readonly contextStack: Map<string, EntityMetadata | undefined>[] = [];
+  readonly #contextStack: Map<string, EntityMetadata | undefined>[] = [];
 
   /**
    * Subquery alias map: maps subquery/CTE alias to its source table metadata
    * Used to resolve columns from subqueries/CTEs to their original table definitions
    */
-  private readonly subqueryAliasMap: Map<string, EntityMetadata | undefined> = new Map();
+  readonly #subqueryAliasMap: Map<string, EntityMetadata | undefined> = new Map();
 
-  private readonly metadata: MetadataStorage;
-  private readonly platform: AbstractSqlPlatform;
+  readonly #metadata: MetadataStorage;
+  readonly #platform: AbstractSqlPlatform;
 
   /**
    * Global map of all entities involved in the query.
    * Populated during AST transformation and used for result transformation.
    */
-  private readonly entityMap = new Map<string, EntityMetadata>();
+  readonly #entityMap = new Map<string, EntityMetadata>();
 
-  constructor(
-    private readonly em: SqlEntityManager,
-    private readonly options: MikroKyselyPluginOptions = {},
-  ) {
+  readonly #em: SqlEntityManager;
+  readonly #options: MikroKyselyPluginOptions;
+
+  constructor(em: SqlEntityManager, options: MikroKyselyPluginOptions = {}) {
     super();
-    this.metadata = em.getMetadata();
-    this.platform = em.getDriver().getPlatform();
+    this.#em = em;
+    this.#options = options;
+    this.#metadata = em.getMetadata();
+    this.#platform = em.getDriver().getPlatform();
   }
 
   reset(): void {
-    this.subqueryAliasMap.clear();
-    this.entityMap.clear();
+    this.#subqueryAliasMap.clear();
+    this.#entityMap.clear();
   }
 
   getOutputEntityMap(): Map<string, EntityMetadata> {
-    return this.entityMap;
+    return this.#entityMap;
+  }
+
+  /** @internal */
+  getContextStack(): Map<string, EntityMetadata | undefined>[] {
+    return this.#contextStack;
+  }
+
+  /** @internal */
+  getSubqueryAliasMap(): Map<string, EntityMetadata | undefined> {
+    return this.#subqueryAliasMap;
   }
 
   override transformSelectQuery(node: SelectQueryNode, queryId: QueryId): SelectQueryNode {
     // Push a new context for this query scope (starts with inherited parent context)
     const currentContext = new Map<string, EntityMetadata | undefined>();
-    this.contextStack.push(currentContext);
+    this.#contextStack.push(currentContext);
 
     try {
       // Process WITH clause (CTEs) first - they define names available in this scope
@@ -102,13 +114,13 @@ export class MikroTransformer extends OperationNodeTransformer {
       return super.transformSelectQuery(node, queryId);
     } finally {
       // Pop the context when exiting this query scope
-      this.contextStack.pop();
+      this.#contextStack.pop();
     }
   }
 
   override transformInsertQuery(node: InsertQueryNode, queryId?: QueryId): InsertQueryNode {
     const currentContext = new Map<string, EntityMetadata | undefined>();
-    this.contextStack.push(currentContext);
+    this.#contextStack.push(currentContext);
 
     try {
       let entityMeta: EntityMetadata | undefined;
@@ -119,14 +131,14 @@ export class MikroTransformer extends OperationNodeTransformer {
           if (meta) {
             entityMeta = meta;
             currentContext.set(meta.tableName, meta);
-            this.entityMap.set(meta.tableName, meta);
+            this.#entityMap.set(meta.tableName, meta);
           }
         }
       }
       const nodeWithHooks =
-        this.options.processOnCreateHooks && entityMeta ? this.processOnCreateHooks(node, entityMeta) : node;
+        this.#options.processOnCreateHooks && entityMeta ? this.processOnCreateHooks(node, entityMeta) : node;
       const nodeWithConvertedValues =
-        this.options.convertValues && entityMeta ? this.processInsertValues(nodeWithHooks, entityMeta) : nodeWithHooks;
+        this.#options.convertValues && entityMeta ? this.processInsertValues(nodeWithHooks, entityMeta) : nodeWithHooks;
       // Handle ON CONFLICT clause
       let finalNode = nodeWithConvertedValues;
 
@@ -139,7 +151,7 @@ export class MikroTransformer extends OperationNodeTransformer {
           updates: node.onConflict.updates,
         };
 
-        const updatesWithHooks = this.options.processOnUpdateHooks
+        const updatesWithHooks = this.#options.processOnUpdateHooks
           ? this.processOnUpdateHooks(tempUpdateNode, entityMeta).updates
           : node.onConflict.updates;
 
@@ -148,7 +160,7 @@ export class MikroTransformer extends OperationNodeTransformer {
           updates: updatesWithHooks,
         };
 
-        const updatesWithConvertedValues = this.options.convertValues
+        const updatesWithConvertedValues = this.#options.convertValues
           ? this.processUpdateValues(tempUpdateNodeWithHooks, entityMeta).updates
           : updatesWithHooks;
 
@@ -166,13 +178,13 @@ export class MikroTransformer extends OperationNodeTransformer {
 
       return super.transformInsertQuery(finalNode, queryId);
     } finally {
-      this.contextStack.pop();
+      this.#contextStack.pop();
     }
   }
 
   override transformUpdateQuery(node: UpdateQueryNode, queryId?: QueryId): UpdateQueryNode {
     const currentContext = new Map<string, EntityMetadata | undefined>();
-    this.contextStack.push(currentContext);
+    this.#contextStack.push(currentContext);
 
     try {
       let entityMeta: EntityMetadata | undefined;
@@ -183,7 +195,7 @@ export class MikroTransformer extends OperationNodeTransformer {
           if (meta) {
             entityMeta = meta;
             currentContext.set(meta.tableName, meta);
-            this.entityMap.set(meta.tableName, meta);
+            this.#entityMap.set(meta.tableName, meta);
           }
         }
       }
@@ -203,18 +215,18 @@ export class MikroTransformer extends OperationNodeTransformer {
       }
 
       const nodeWithHooks =
-        this.options.processOnUpdateHooks && entityMeta ? this.processOnUpdateHooks(node, entityMeta) : node;
+        this.#options.processOnUpdateHooks && entityMeta ? this.processOnUpdateHooks(node, entityMeta) : node;
       const nodeWithConvertedValues =
-        this.options.convertValues && entityMeta ? this.processUpdateValues(nodeWithHooks, entityMeta) : nodeWithHooks;
+        this.#options.convertValues && entityMeta ? this.processUpdateValues(nodeWithHooks, entityMeta) : nodeWithHooks;
       return super.transformUpdateQuery(nodeWithConvertedValues, queryId);
     } finally {
-      this.contextStack.pop();
+      this.#contextStack.pop();
     }
   }
 
   override transformDeleteQuery(node: DeleteQueryNode, queryId?: QueryId): DeleteQueryNode {
     const currentContext = new Map<string, EntityMetadata | undefined>();
-    this.contextStack.push(currentContext);
+    this.#contextStack.push(currentContext);
 
     try {
       const froms = node.from?.froms;
@@ -226,7 +238,7 @@ export class MikroTransformer extends OperationNodeTransformer {
             const meta = this.findEntityMetadata(tableName);
             if (meta) {
               currentContext.set(meta.tableName, meta);
-              this.entityMap.set(meta.tableName, meta);
+              this.#entityMap.set(meta.tableName, meta);
             }
           }
         }
@@ -241,18 +253,18 @@ export class MikroTransformer extends OperationNodeTransformer {
 
       return super.transformDeleteQuery(node, queryId);
     } finally {
-      this.contextStack.pop();
+      this.#contextStack.pop();
     }
   }
 
   override transformMergeQuery(node: MergeQueryNode, queryId?: QueryId): MergeQueryNode {
     const currentContext = new Map<string, EntityMetadata | undefined>();
-    this.contextStack.push(currentContext);
+    this.#contextStack.push(currentContext);
 
     try {
       return super.transformMergeQuery(node, queryId);
     } finally {
-      this.contextStack.pop();
+      this.#contextStack.pop();
     }
   }
 
@@ -262,7 +274,7 @@ export class MikroTransformer extends OperationNodeTransformer {
     const parent = this.nodeStack[this.nodeStack.length - 2];
 
     // Transform table names when tableNamingStrategy is 'entity'
-    if (this.options.tableNamingStrategy === 'entity' && parent && SchemableIdentifierNode.is(parent)) {
+    if (this.#options.tableNamingStrategy === 'entity' && parent && SchemableIdentifierNode.is(parent)) {
       const meta = this.findEntityMetadata(node.name);
       if (meta) {
         return {
@@ -275,7 +287,7 @@ export class MikroTransformer extends OperationNodeTransformer {
     // Transform column names when columnNamingStrategy is 'property'
     // Support ColumnNode, ColumnUpdateNode, and ReferenceNode (for JOIN conditions)
     if (
-      this.options.columnNamingStrategy === 'property' &&
+      this.#options.columnNamingStrategy === 'property' &&
       parent &&
       (ColumnNode.is(parent) || ColumnUpdateNode.is(parent) || ReferenceNode.is(parent))
     ) {
@@ -310,8 +322,8 @@ export class MikroTransformer extends OperationNodeTransformer {
       const tableName = this.getTableName(reference.table);
       if (tableName) {
         // First, check in subquery alias map (for CTE/subquery columns)
-        if (this.subqueryAliasMap.has(tableName)) {
-          return this.subqueryAliasMap.get(tableName);
+        if (this.#subqueryAliasMap.has(tableName)) {
+          return this.#subqueryAliasMap.get(tableName);
         }
 
         // Find entity metadata to get the actual table name
@@ -339,16 +351,16 @@ export class MikroTransformer extends OperationNodeTransformer {
     }
 
     // If no explicit table reference, use the first entity in current context
-    if (this.contextStack.length > 0) {
-      const currentContext = this.contextStack[this.contextStack.length - 1];
+    if (this.#contextStack.length > 0) {
+      const currentContext = this.#contextStack[this.#contextStack.length - 1];
       for (const [alias, meta] of currentContext.entries()) {
         if (meta) {
           return meta;
         }
         // If the context value is undefined but the alias is in subqueryAliasMap,
         // use the mapped metadata (for CTE/subquery cases)
-        if (!meta && this.subqueryAliasMap.has(alias)) {
-          const mappedMeta = this.subqueryAliasMap.get(alias);
+        if (!meta && this.#subqueryAliasMap.has(alias)) {
+          const mappedMeta = this.#subqueryAliasMap.get(alias);
           if (mappedMeta) {
             return mappedMeta;
           }
@@ -385,7 +397,7 @@ export class MikroTransformer extends OperationNodeTransformer {
 
     const newRows = node.values.values.map(row => {
       const valuesToAdd = missingProps.map(prop => {
-        const val = prop.onCreate!(undefined, this.em);
+        const val = prop.onCreate!(undefined, this.#em);
         return val;
       });
 
@@ -432,7 +444,7 @@ export class MikroTransformer extends OperationNodeTransformer {
 
     const newUpdates = [...node.updates];
     for (const prop of missingProps) {
-      const val = prop.onUpdate!(undefined, this.em);
+      const val = prop.onUpdate!(undefined, this.#em);
       newUpdates.push(ColumnUpdateNode.create(ColumnNode.create(prop.name), ValueNode.create(val)));
     }
 
@@ -578,7 +590,7 @@ export class MikroTransformer extends OperationNodeTransformer {
   }
 
   shouldConvertValues(): boolean {
-    return !!this.options.convertValues;
+    return !!this.#options.convertValues;
   }
 
   prepareInputValue(prop: EntityProperty | undefined, value: unknown, enabled: boolean): unknown {
@@ -597,7 +609,7 @@ export class MikroTransformer extends OperationNodeTransformer {
     }
 
     if (prop.customType && !isRaw(value)) {
-      return prop.customType.convertToDatabaseValue(value, this.platform, {
+      return prop.customType.convertToDatabaseValue(value, this.#platform, {
         fromQuery: true,
         key: prop.name,
         mode: 'query-data',
@@ -605,7 +617,7 @@ export class MikroTransformer extends OperationNodeTransformer {
     }
 
     if (value instanceof Date) {
-      return this.platform.processDateProperty(value);
+      return this.#platform.processDateProperty(value);
     }
 
     return value;
@@ -618,8 +630,8 @@ export class MikroTransformer extends OperationNodeTransformer {
    */
   lookupInContextStack(tableNameOrAlias: string): EntityMetadata | undefined {
     // Search from top of stack (current scope) to bottom (parent scopes)
-    for (let i = this.contextStack.length - 1; i >= 0; i--) {
-      const context = this.contextStack[i];
+    for (let i = this.#contextStack.length - 1; i >= 0; i--) {
+      const context = this.#contextStack[i];
       if (context.has(tableNameOrAlias)) {
         return context.get(tableNameOrAlias);
       }
@@ -643,10 +655,10 @@ export class MikroTransformer extends OperationNodeTransformer {
         if (cte.expression?.kind === 'SelectQueryNode') {
           const sourceMeta = this.extractSourceTableFromSelectQuery(cte.expression as SelectQueryNode);
           if (sourceMeta) {
-            this.subqueryAliasMap.set(cteName, sourceMeta);
+            this.#subqueryAliasMap.set(cteName, sourceMeta);
             // Add CTE to entityMap so it can be used for result transformation if needed
             // (though CTEs usually don't appear in result rows directly, but their columns might)
-            this.entityMap.set(cteName, sourceMeta);
+            this.#entityMap.set(cteName, sourceMeta);
           }
         }
       }
@@ -680,11 +692,11 @@ export class MikroTransformer extends OperationNodeTransformer {
           if (aliasName) {
             context.set(aliasName, meta);
             if (meta) {
-              this.entityMap.set(aliasName, meta);
+              this.#entityMap.set(aliasName, meta);
             }
             // Also map the alias in subqueryAliasMap if the table name is a CTE
-            if (this.subqueryAliasMap.has(tableName)) {
-              this.subqueryAliasMap.set(aliasName, this.subqueryAliasMap.get(tableName));
+            if (this.#subqueryAliasMap.has(tableName)) {
+              this.#subqueryAliasMap.set(aliasName, this.#subqueryAliasMap.get(tableName));
             }
           }
         }
@@ -696,7 +708,7 @@ export class MikroTransformer extends OperationNodeTransformer {
           // Try to extract the source table from the subquery
           const sourceMeta = this.extractSourceTableFromSelectQuery(from.node as SelectQueryNode);
           if (sourceMeta) {
-            this.subqueryAliasMap.set(aliasName, sourceMeta);
+            this.#subqueryAliasMap.set(aliasName, sourceMeta);
           }
         }
       } else {
@@ -713,7 +725,7 @@ export class MikroTransformer extends OperationNodeTransformer {
         const meta = this.findEntityMetadata(tableName);
         context.set(tableName, meta);
         if (meta) {
-          this.entityMap.set(tableName, meta);
+          this.#entityMap.set(tableName, meta);
         }
       }
     }
@@ -735,11 +747,11 @@ export class MikroTransformer extends OperationNodeTransformer {
           if (aliasName) {
             context.set(aliasName, meta);
             if (meta) {
-              this.entityMap.set(aliasName, meta);
+              this.#entityMap.set(aliasName, meta);
             }
             // Also map the alias in subqueryAliasMap if the table name is a CTE
-            if (this.subqueryAliasMap.has(tableName)) {
-              this.subqueryAliasMap.set(aliasName, this.subqueryAliasMap.get(tableName));
+            if (this.#subqueryAliasMap.has(tableName)) {
+              this.#subqueryAliasMap.set(aliasName, this.#subqueryAliasMap.get(tableName));
             }
           }
         }
@@ -751,7 +763,7 @@ export class MikroTransformer extends OperationNodeTransformer {
           // Try to extract the source table from the subquery
           const sourceMeta = this.extractSourceTableFromSelectQuery(joinTable.node as SelectQueryNode);
           if (sourceMeta) {
-            this.subqueryAliasMap.set(aliasName, sourceMeta);
+            this.#subqueryAliasMap.set(aliasName, sourceMeta);
           }
         }
       } else {
@@ -769,7 +781,7 @@ export class MikroTransformer extends OperationNodeTransformer {
         // Use table name (meta.tableName) as key to match transformUpdateQuery behavior
         if (meta) {
           context.set(meta.tableName, meta);
-          this.entityMap.set(meta.tableName, meta);
+          this.#entityMap.set(meta.tableName, meta);
           // Also set with entity name for backward compatibility
           context.set(tableName, meta);
         } else {
@@ -840,11 +852,11 @@ export class MikroTransformer extends OperationNodeTransformer {
    * Find entity metadata by table name or entity name
    */
   findEntityMetadata(name: string): EntityMetadata | undefined {
-    const byEntity = this.metadata.getByClassName(name, false);
+    const byEntity = this.#metadata.getByClassName(name, false);
     if (byEntity) {
       return byEntity;
     }
-    const allMetadata = Array.from(this.metadata);
+    const allMetadata = Array.from(this.#metadata);
     const byTable = allMetadata.find(m => m.tableName === name);
     if (byTable) {
       return byTable;
@@ -862,7 +874,7 @@ export class MikroTransformer extends OperationNodeTransformer {
   ): Record<string, any>[] | undefined {
     // Only transform if columnNamingStrategy is 'property' or convertValues is true, and we have data
     if (
-      (this.options.columnNamingStrategy !== 'property' && !this.options.convertValues) ||
+      (this.#options.columnNamingStrategy !== 'property' && !this.#options.convertValues) ||
       !rows ||
       rows.length === 0
     ) {
@@ -984,7 +996,7 @@ export class MikroTransformer extends OperationNodeTransformer {
 
       const converted = this.prepareOutputValue(prop, transformed[fieldName]);
 
-      if (this.options.columnNamingStrategy === 'property' && prop.name !== fieldName) {
+      if (this.#options.columnNamingStrategy === 'property' && prop.name !== fieldName) {
         if (!(prop.name in transformed)) {
           transformed[prop.name] = converted;
         } else {
@@ -995,14 +1007,14 @@ export class MikroTransformer extends OperationNodeTransformer {
         continue;
       }
 
-      if (this.options.convertValues) {
+      if (this.#options.convertValues) {
         transformed[fieldName] = converted;
       }
     }
 
     // Second pass: handle relation fields
     // Only run if columnNamingStrategy is 'property', as we don't want to rename FKs otherwise
-    if (this.options.columnNamingStrategy === 'property') {
+    if (this.#options.columnNamingStrategy === 'property') {
       for (const [fieldName, relationPropertyName] of Object.entries(relationFieldMap)) {
         if (fieldName in transformed && !(relationPropertyName in transformed)) {
           // Move the foreign key value to the relation property name
@@ -1016,12 +1028,12 @@ export class MikroTransformer extends OperationNodeTransformer {
   }
 
   prepareOutputValue(prop: EntityProperty | undefined, value: unknown): unknown {
-    if (!this.options.convertValues || !prop || value == null) {
+    if (!this.#options.convertValues || !prop || value == null) {
       return value;
     }
 
     if (prop.customType) {
-      return prop.customType.convertToJSValue(value, this.platform);
+      return prop.customType.convertToJSValue(value, this.#platform);
     }
 
     // Aligned with EntityComparator.getResultMapper logic
@@ -1030,7 +1042,7 @@ export class MikroTransformer extends OperationNodeTransformer {
       return value == null ? value : !!value;
     }
 
-    if (prop.runtimeType === 'Date' && !this.platform.isNumericProperty(prop)) {
+    if (prop.runtimeType === 'Date' && !this.#platform.isNumericProperty(prop)) {
       // Aligned with EntityComparator: exclude numeric timestamp properties
       // If already Date instance or null, return as is
       if (value == null || value instanceof Date) {
@@ -1038,9 +1050,9 @@ export class MikroTransformer extends OperationNodeTransformer {
       }
 
       // Handle timezone like EntityComparator.parseDate
-      const tz = this.platform.getTimezone();
+      const tz = this.#platform.getTimezone();
       if (!tz || tz === 'local') {
-        return this.platform.parseDate(value as string | number);
+        return this.#platform.parseDate(value as string | number);
       }
 
       // For non-local timezone, check if value already has timezone info
@@ -1049,11 +1061,11 @@ export class MikroTransformer extends OperationNodeTransformer {
         typeof value === 'number' ||
         (typeof value === 'string' && (value.includes('+') || value.lastIndexOf('-') > 10 || value.endsWith('Z')))
       ) {
-        return this.platform.parseDate(value);
+        return this.#platform.parseDate(value);
       }
 
       // Append timezone if not present (only for string values)
-      return this.platform.parseDate((value as string) + tz);
+      return this.#platform.parseDate((value as string) + tz);
     }
 
     // For all other runtimeTypes (number, string, bigint, Buffer, object, any, etc.)

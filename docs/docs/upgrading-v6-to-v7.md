@@ -835,3 +835,14 @@ The migration path auto-detection (e.g. `./src/migrations`) now runs lazily on t
 -import { DataloaderUtils } from '@mikro-orm/core';
 +import { DataloaderUtils } from '@mikro-orm/core/dataloader';
 ```
+
+## Internal fields converted to native `#private`
+
+Several core classes now use native ECMAScript `#private` fields instead of TypeScript's `private`/`protected` keywords. This provides true runtime encapsulation but is a breaking change if you relied on accessing these internals via `as any` casts or by subclassing.
+
+### Affected classes
+
+- **`EntityManager`** — all previously `private`/`protected` fields (e.g., `unitOfWork`, `entityFactory`, `comparator`, `entityLoader`, `transactionContext`, `filters`, `filterParams`, `resultCache`, `_schema`, `flushMode`, `disableTransactions`) are now `#private`. Use the existing public API methods instead (e.g., `em.getUnitOfWork()`, `em.getEntityFactory()`, `em.getComparator()`, `em.getTransactionContext()`, `em.schema`).
+- **`Collection`** — all previously `protected` fields (e.g., `items`, `initialized`, `dirty`, `partial`, `snapshot`, `_count`, `_property`, `_populated`, `readonly`) and the `incrementCount` method are now `#private`. Use the existing public API methods instead (e.g., `isInitialized()`, `isDirty()`, `isPartial()`, `getSnapshot()`, `shouldPopulate()`, `populated()`).
+- **`QueryBuilder`** — all mutable query state is now consolidated into a single `#private` object, exposed via a public `@internal` `state` getter (typed as `QBState<Entity>`). Previously `protected` fields (e.g., `_joins`, `_data`, `_schema`, `aliasCounter`, `subQueries`, `lockMode`, `_groupBy`, `_having`, `_returning`, `_onConflict`, `_distinctOn`, `_cache`, `_mainAlias`, `_helper`, `_tptAlias`) are no longer directly accessible. Subclasses can use `this.state` to read and mutate query state. If you subclass `QueryBuilder`, review your overrides.
+- **`DatabaseDriver`** — the `protected logger` property was removed. Use `this.config.getLogger()` directly in custom drivers.

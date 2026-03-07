@@ -45,11 +45,11 @@ describe('Transaction Propagation - SQLite', () => {
     let innerTrx: any;
 
     await em.transactional(async em1 => {
-      outerTrx = (em1 as any).transactionContext;
+      outerTrx = em1.getTransactionContext();
 
       await em1.transactional(
         async em2 => {
-          innerTrx = (em2 as any).transactionContext;
+          innerTrx = em2.getTransactionContext();
           const entity = em2.create(TestEntity, { name: 'test' });
           await em2.persist(entity).flush();
         },
@@ -97,7 +97,7 @@ describe('Transaction Propagation - SQLite', () => {
 
     await em.transactional(
       async em1 => {
-        trx = (em1 as any).transactionContext;
+        trx = em1.getTransactionContext();
         const entity = em1.create(TestEntity, { name: 'test' });
         await em1.persist(entity).flush();
       },
@@ -140,13 +140,13 @@ describe('Transaction Propagation - SQLite', () => {
     const contexts: any[] = [];
 
     await em.transactional(async em1 => {
-      contexts.push((em1 as any).transactionContext);
+      contexts.push(em1.getTransactionContext());
       const entity1 = em1.create(TestEntity, { name: 'first' });
       await em1.persist(entity1).flush();
 
       await em1.transactional(
         async em2 => {
-          contexts.push((em2 as any).transactionContext);
+          contexts.push(em2.getTransactionContext());
           const entity2 = em2.create(TestEntity, { name: 'second' });
           await em2.persist(entity2).flush();
         },
@@ -155,7 +155,7 @@ describe('Transaction Propagation - SQLite', () => {
 
       await em1.transactional(
         async em3 => {
-          contexts.push((em3 as any).transactionContext);
+          contexts.push(em3.getTransactionContext());
           const entity3 = em3.create(TestEntity, { name: 'third' });
           await em3.persist(entity3).flush();
         },
@@ -529,11 +529,11 @@ describe('Transaction Propagation - SQLite', () => {
     let innerTrx: any;
 
     await em.transactional(async em1 => {
-      outerTrx = (em1 as any).transactionContext;
+      outerTrx = em1.getTransactionContext();
 
       await em1.transactional(
         async em2 => {
-          innerTrx = (em2 as any).transactionContext;
+          innerTrx = em2.getTransactionContext();
           const entity = em2.create(TestEntity, { name: 'supports-with-tx' });
           await em2.persist(entity).flush();
         },
@@ -554,7 +554,7 @@ describe('Transaction Propagation - SQLite', () => {
 
     await em.transactional(
       async em1 => {
-        trx = (em1 as any).transactionContext;
+        trx = em1.getTransactionContext();
         const entity = em1.create(TestEntity, { name: 'supports-no-tx' });
         await em1.persist(entity).flush();
       },
@@ -575,13 +575,13 @@ describe('Transaction Propagation - SQLite', () => {
     let innerTrx: any;
 
     await em.transactional(async em1 => {
-      outerTrx = (em1 as any).transactionContext;
+      outerTrx = em1.getTransactionContext();
       const entity1 = em1.create(TestEntity, { name: 'outer' });
       await em1.persist(entity1).flush();
 
       await em1.transactional(
         async em2 => {
-          innerTrx = (em2 as any).transactionContext;
+          innerTrx = em2.getTransactionContext();
           const entity2 = em2.create(TestEntity, { name: 'mandatory-with-tx' });
           await em2.persist(entity2).flush();
         },
@@ -621,7 +621,7 @@ describe('Transaction Propagation - SQLite', () => {
 
     await em.transactional(
       async em1 => {
-        trx = (em1 as any).transactionContext;
+        trx = em1.getTransactionContext();
         const entity = em1.create(TestEntity, { name: 'never-no-tx' });
         await em1.persist(entity).flush();
       },

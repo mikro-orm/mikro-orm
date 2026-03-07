@@ -12,7 +12,7 @@ export class MsSqlQueryBuilder<
   ): InsertQueryBuilder<Entity, RootAlias, Context> {
     this.checkIdentityInsert(data);
 
-    if (!this.flags.has(QueryFlag.IDENTITY_INSERT) && this.metadata.has(this.mainAlias.entityName)) {
+    if (!this.hasFlag(QueryFlag.IDENTITY_INSERT) && this.metadata.has(this.mainAlias.entityName)) {
       const meta = this.mainAlias.meta;
 
       if (meta.hasTriggers) {

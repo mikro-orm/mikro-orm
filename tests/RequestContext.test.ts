@@ -28,8 +28,7 @@ describe('RequestContext', () => {
       expect(em).not.toBe(orm.em);
       expect(orm.em.id).not.toBe(1);
       expect(orm.em.id).toBe(em.id);
-      // @ts-expect-error access UoW via property so we do not get the one from request context automatically
-      expect(em.unitOfWork.getIdentityMap()).not.toBe(orm.em.unitOfWork.getIdentityMap());
+      expect(em.getUnitOfWork(false).getIdentityMap()).not.toBe(orm.em.getUnitOfWork(false).getIdentityMap());
       expect(RequestContext.currentRequestContext()).not.toBeUndefined();
       expect(RequestContext.currentRequestContext()!.em).toBe(em);
     });
@@ -41,8 +40,7 @@ describe('RequestContext', () => {
     const ret = await RequestContext.create(orm.em, async () => {
       const em = RequestContext.getEntityManager()!;
       expect(em).not.toBe(orm.em);
-      // @ts-expect-error access UoW via property so we do not get the one from request context automatically
-      expect(em.unitOfWork.getIdentityMap()).not.toBe(orm.em.unitOfWork.getIdentityMap());
+      expect(em.getUnitOfWork(false).getIdentityMap()).not.toBe(orm.em.getUnitOfWork(false).getIdentityMap());
       expect(RequestContext.currentRequestContext()).not.toBeUndefined();
 
       return 123;
@@ -116,7 +114,7 @@ describe('MultiRequestContext', () => {
       expect(em1.name).toBe(orm1.em.name);
       // access UoW via property so we do not get the one from request context automatically
       // @ts-ignore
-      expect(em1.unitOfWork.getIdentityMap()).not.toBe(orm1.em.unitOfWork.getIdentityMap());
+      expect(em1.getUnitOfWork(false).getIdentityMap()).not.toBe(orm1.em.getUnitOfWork(false).getIdentityMap());
 
       const em2 = orm2.em.getContext();
       expect(em2).not.toBe(orm2.em);
@@ -124,7 +122,7 @@ describe('MultiRequestContext', () => {
       expect(em1).not.toBe(em2);
       // access UoW via property so we do not get the one from request context automatically
       // @ts-ignore
-      expect(em2.unitOfWork.getIdentityMap()).not.toBe(orm2.em.unitOfWork.getIdentityMap());
+      expect(em2.getUnitOfWork(false).getIdentityMap()).not.toBe(orm2.em.getUnitOfWork(false).getIdentityMap());
 
       expect(RequestContext.currentRequestContext()).not.toBeUndefined();
     });
@@ -139,7 +137,7 @@ describe('MultiRequestContext', () => {
       expect(em1).not.toBe(orm1.em);
       // access UoW via property so we do not get the one from request context automatically
       // @ts-ignore
-      expect(em1.unitOfWork.getIdentityMap()).not.toBe(orm1.em.unitOfWork.getIdentityMap());
+      expect(em1.getUnitOfWork(false).getIdentityMap()).not.toBe(orm1.em.getUnitOfWork(false).getIdentityMap());
 
       const em2 = orm2.em.getContext();
       expect(em2).not.toBe(orm2.em);
@@ -147,7 +145,7 @@ describe('MultiRequestContext', () => {
       expect(em1).not.toBe(em2);
       // access UoW via property, so we do not get the one from request context automatically
       // @ts-ignore
-      expect(em2.unitOfWork.getIdentityMap()).not.toBe(orm2.em.unitOfWork.getIdentityMap());
+      expect(em2.getUnitOfWork(false).getIdentityMap()).not.toBe(orm2.em.getUnitOfWork(false).getIdentityMap());
 
       expect(RequestContext.currentRequestContext()).not.toBeUndefined();
     });

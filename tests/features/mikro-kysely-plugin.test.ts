@@ -1954,6 +1954,22 @@ describe('MikroKyselyPlugin', () => {
       expect(row.createdAt).toBeInstanceOf(Date);
     });
 
+    test('date conversion with local timezone', () => {
+      const platform = orm.em.getDriver().getPlatform();
+      const parseSpy = vi.spyOn(platform, 'parseDate');
+      vi.spyOn(platform, 'getTimezone').mockReturnValue('local');
+
+      const transformer = new MikroTransformer(orm.em, { convertValues: true });
+      const meta = orm.getMetadata().find(TypeEntity)!;
+      const entityMap = new Map<string, typeof meta>();
+      entityMap.set(meta.tableName, meta);
+
+      const rows = transformer.transformResult([{ created_at: '2024-01-01 10:00:00' }] as any, entityMap);
+
+      expect(parseSpy).toHaveBeenCalledWith('2024-01-01 10:00:00');
+      expect(rows?.[0]?.created_at).toBeInstanceOf(Date);
+    });
+
     test('timezone conversion when value has no timezone information', () => {
       const platform = orm.em.getDriver().getPlatform();
       const parseSpy = vi.spyOn(platform, 'parseDate');
@@ -2200,9 +2216,9 @@ describe('MikroTransformer', () => {
     test('findOwnerEntityInContext returns undefined when context has only undefined aliases', () => {
       const ctx = new Map<string, any>();
       ctx.set('a', undefined);
-      (transformer as any).contextStack.push(ctx);
+      transformer.getContextStack().push(ctx);
       expect(transformer.findOwnerEntityInContext()).toBeUndefined();
-      (transformer as any).contextStack.pop();
+      transformer.getContextStack().pop();
     });
 
     test('processFromItem with subquery alias and unknown alias types', () => {
@@ -2237,7 +2253,7 @@ describe('MikroTransformer', () => {
 
       expect(context.has('sq')).toBe(true); // should be set to undefined
       expect(context.has('u')).toBe(true);
-      expect((transformer as any).subqueryAliasMap.get('sq')).toBeDefined();
+      expect(transformer.getSubqueryAliasMap().get('sq')).toBeDefined();
     });
 
     test('processJoinNode with non-table alias and table without metadata', () => {
