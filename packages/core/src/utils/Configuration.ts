@@ -169,160 +169,160 @@ export class Configuration<
   D extends IDatabaseDriver = IDatabaseDriver,
   EM extends EntityManager<D> = D[typeof EntityManagerType] & EntityManager<D>,
 > {
-  private readonly options: RequiredOptions<D, EM>;
-  private readonly logger: Logger;
-  private readonly driver!: D;
-  private readonly platform!: ReturnType<D['getPlatform']>;
-  private readonly cache = new Map<string, any>();
-  private readonly extensions = new Map<string, () => unknown>();
+  readonly #options: RequiredOptions<D, EM>;
+  readonly #logger: Logger;
+  readonly #driver!: D;
+  readonly #platform!: ReturnType<D['getPlatform']>;
+  readonly #cache = new Map<string, any>();
+  readonly #extensions = new Map<string, () => unknown>();
 
   constructor(options: Options, validate = true) {
     if (options.dynamicImportProvider) {
       (globalThis as any).dynamicImportProvider = options.dynamicImportProvider;
     }
 
-    this.options = Utils.mergeConfig({} as RequiredOptions<D, EM>, DEFAULTS, options);
+    this.#options = Utils.mergeConfig({} as RequiredOptions<D, EM>, DEFAULTS, options);
 
     if (validate) {
-      this.validateOptions();
+      this.#validateOptions();
     }
 
-    this.options.loggerFactory ??= DefaultLogger.create;
-    this.logger = this.options.loggerFactory({
-      debugMode: this.options.debug,
-      ignoreDeprecations: this.options.ignoreDeprecations,
-      usesReplicas: (this.options.replicas?.length ?? 0) > 0,
-      highlighter: this.options.highlighter,
-      writer: this.options.logger,
+    this.#options.loggerFactory ??= DefaultLogger.create;
+    this.#logger = this.#options.loggerFactory({
+      debugMode: this.#options.debug,
+      ignoreDeprecations: this.#options.ignoreDeprecations,
+      usesReplicas: (this.#options.replicas?.length ?? 0) > 0,
+      highlighter: this.#options.highlighter,
+      writer: this.#options.logger,
     });
 
-    const cf = this.options.compiledFunctions as Record<string, unknown> | undefined;
+    const cf = this.#options.compiledFunctions as Record<string, unknown> | undefined;
 
     if (cf && cf.__version !== Utils.getORMVersion()) {
-      this.logger.warn(
+      this.#logger.warn(
         'discovery',
         `Compiled functions were generated with MikroORM v${cf.__version ?? 'unknown'}, but the current version is v${Utils.getORMVersion()}. Please regenerate with \`npx mikro-orm compile\`.`,
       );
     }
 
-    if (this.options.driver) {
-      this.driver = new this.options.driver(this);
-      this.platform = this.driver.getPlatform() as ReturnType<D['getPlatform']>;
-      this.platform.setConfig(this);
-      this.init(validate);
+    if (this.#options.driver) {
+      this.#driver = new this.#options.driver(this);
+      this.#platform = this.#driver.getPlatform() as ReturnType<D['getPlatform']>;
+      this.#platform.setConfig(this);
+      this.#init(validate);
     }
   }
 
   getPlatform(): ReturnType<D['getPlatform']> {
-    return this.platform;
+    return this.#platform;
   }
 
   /**
    * Gets specific configuration option. Falls back to specified `defaultValue` if provided.
    */
   get<T extends keyof Options<D, EM>, U extends RequiredOptions<D, EM>[T]>(key: T, defaultValue?: U): U {
-    if (typeof this.options[key] !== 'undefined') {
-      return this.options[key] as U;
+    if (typeof this.#options[key] !== 'undefined') {
+      return this.#options[key] as U;
     }
 
     return defaultValue as U;
   }
 
   getAll(): RequiredOptions<D, EM> {
-    return this.options;
+    return this.#options;
   }
 
   /**
    * Overrides specified configuration value.
    */
   set<T extends keyof Options<D, EM>, U extends RequiredOptions<D, EM>[T]>(key: T, value: U): void {
-    this.options[key] = value;
-    this.sync();
+    this.#options[key] = value;
+    this.#sync();
   }
 
   /**
    * Resets the configuration to its default value
    */
   reset<T extends keyof RequiredOptions<D, EM>>(key: T): void {
-    this.options[key] = DEFAULTS[key as keyof typeof DEFAULTS] as RequiredOptions<D, EM>[T];
+    this.#options[key] = DEFAULTS[key as keyof typeof DEFAULTS] as RequiredOptions<D, EM>[T];
   }
 
   /**
    * Gets Logger instance.
    */
   getLogger(): Logger {
-    return this.logger;
+    return this.#logger;
   }
 
   getDataloaderType(): DataloaderType {
-    if (typeof this.options.dataloader === 'boolean') {
-      return this.options.dataloader ? DataloaderType.ALL : DataloaderType.NONE;
+    if (typeof this.#options.dataloader === 'boolean') {
+      return this.#options.dataloader ? DataloaderType.ALL : DataloaderType.NONE;
     }
 
-    return this.options.dataloader;
+    return this.#options.dataloader;
   }
 
   getSchema(skipDefaultSchema = false): string | undefined {
-    if (skipDefaultSchema && this.options.schema === this.platform.getDefaultSchemaName()) {
+    if (skipDefaultSchema && this.#options.schema === this.#platform.getDefaultSchemaName()) {
       return undefined;
     }
 
-    return this.options.schema;
+    return this.#options.schema;
   }
 
   /**
    * Gets current database driver instance.
    */
   getDriver(): D {
-    return this.driver;
+    return this.#driver;
   }
 
   registerExtension(name: string, cb: () => unknown): void {
-    this.extensions.set(name, cb);
+    this.#extensions.set(name, cb);
   }
 
   getExtension<T>(name: string): T | undefined {
-    if (this.cache.has(name)) {
-      return this.cache.get(name);
+    if (this.#cache.has(name)) {
+      return this.#cache.get(name);
     }
 
-    const ext = this.extensions.get(name);
+    const ext = this.#extensions.get(name);
 
     /* v8 ignore next */
     if (!ext) {
       return undefined;
     }
 
-    this.cache.set(name, ext());
-    return this.cache.get(name);
+    this.#cache.set(name, ext());
+    return this.#cache.get(name);
   }
 
   /**
    * Gets instance of NamingStrategy. (cached)
    */
   getNamingStrategy(): NamingStrategy {
-    return this.getCachedService(this.options.namingStrategy || this.platform.getNamingStrategy());
+    return this.getCachedService(this.#options.namingStrategy || this.#platform.getNamingStrategy());
   }
 
   /**
    * Gets instance of Hydrator. (cached)
    */
   getHydrator(metadata: MetadataStorage): IHydrator {
-    return this.getCachedService(this.options.hydrator, metadata, this.platform, this);
+    return this.getCachedService(this.#options.hydrator, metadata, this.#platform, this);
   }
 
   /**
    * Gets instance of Comparator. (cached)
    */
   getComparator(metadata: MetadataStorage) {
-    return this.getCachedService(EntityComparator, metadata, this.platform, this);
+    return this.getCachedService(EntityComparator, metadata, this.#platform, this);
   }
 
   /**
    * Gets instance of MetadataProvider. (cached)
    */
   getMetadataProvider(): MetadataProvider {
-    return this.getCachedService(this.options.metadataProvider, this);
+    return this.getCachedService(this.#options.metadataProvider, this);
   }
 
   /**
@@ -330,10 +330,10 @@ export class Configuration<
    */
   getMetadataCacheAdapter(): SyncCacheAdapter {
     return this.getCachedService(
-      this.options.metadataCache.adapter!,
-      this.options.metadataCache.options,
-      this.options.baseDir,
-      this.options.metadataCache.pretty,
+      this.#options.metadataCache.adapter!,
+      this.#options.metadataCache.options,
+      this.#options.baseDir,
+      this.#options.metadataCache.pretty,
     );
   }
 
@@ -341,9 +341,9 @@ export class Configuration<
    * Gets instance of CacheAdapter for result cache. (cached)
    */
   getResultCacheAdapter(): CacheAdapter {
-    return this.getCachedService(this.options.resultCache.adapter!, {
-      expiration: this.options.resultCache.expiration,
-      ...this.options.resultCache.options,
+    return this.getCachedService(this.#options.resultCache.adapter!, {
+      expiration: this.#options.resultCache.expiration,
+      ...this.#options.resultCache.options,
     });
   }
 
@@ -355,11 +355,11 @@ export class Configuration<
       return repository();
     }
 
-    if (this.options.entityRepository) {
-      return this.options.entityRepository;
+    if (this.#options.entityRepository) {
+      return this.#options.entityRepository;
     }
 
-    return this.platform.getRepositoryClass();
+    return this.#platform.getRepositoryClass();
   }
 
   /**
@@ -369,28 +369,28 @@ export class Configuration<
     cls: T,
     ...args: ConstructorParameters<T>
   ): InstanceType<T> {
-    if (!this.cache.has(cls.name)) {
-      this.cache.set(cls.name, new cls(...args));
+    if (!this.#cache.has(cls.name)) {
+      this.#cache.set(cls.name, new cls(...args));
     }
 
-    return this.cache.get(cls.name);
+    return this.#cache.get(cls.name);
   }
 
   resetServiceCache(): void {
-    this.cache.clear();
+    this.#cache.clear();
   }
 
-  private init(validate: boolean): void {
+  #init(validate: boolean): void {
     const useCache = this.getMetadataProvider().useCache();
-    const metadataCache = this.options.metadataCache;
+    const metadataCache = this.#options.metadataCache;
 
     if (!useCache) {
       metadataCache.adapter = NullCacheAdapter;
     }
 
     metadataCache.enabled ??= useCache;
-    this.options.clientUrl ??= this.platform.getDefaultClientUrl();
-    this.options.implicitTransactions ??= this.platform.usesImplicitTransactions();
+    this.#options.clientUrl ??= this.#platform.getDefaultClientUrl();
+    this.#options.implicitTransactions ??= this.#platform.usesImplicitTransactions();
 
     if (validate && metadataCache.enabled && !metadataCache.adapter) {
       throw new Error(
@@ -399,75 +399,75 @@ export class Configuration<
     }
 
     try {
-      const url = new URL(this.options.clientUrl);
+      const url = new URL(this.#options.clientUrl);
 
       if (url.pathname) {
-        this.options.dbName = this.get('dbName', decodeURIComponent(url.pathname).substring(1));
+        this.#options.dbName = this.get('dbName', decodeURIComponent(url.pathname).substring(1));
       }
     } catch {
-      const url = /:\/\/.*\/([^?]+)/.exec(this.options.clientUrl);
+      const url = /:\/\/.*\/([^?]+)/.exec(this.#options.clientUrl);
 
       if (url) {
-        this.options.dbName = this.get('dbName', decodeURIComponent(url[1]));
+        this.#options.dbName = this.get('dbName', decodeURIComponent(url[1]));
       }
     }
 
-    if (validate && !this.options.dbName && this.options.clientUrl) {
+    if (validate && !this.#options.dbName && this.#options.clientUrl) {
       throw new Error("No database specified, `clientUrl` option provided but it's missing the pathname.");
     }
 
-    this.options.schema ??= this.platform.getDefaultSchemaName();
-    this.options.charset ??= this.platform.getDefaultCharset();
+    this.#options.schema ??= this.#platform.getDefaultSchemaName();
+    this.#options.charset ??= this.#platform.getDefaultCharset();
 
-    Object.keys(this.options.filters).forEach(key => {
-      this.options.filters[key].default ??= true;
+    Object.keys(this.#options.filters).forEach(key => {
+      this.#options.filters[key].default ??= true;
     });
 
-    if (!this.options.filtersOnRelations) {
-      this.options.autoJoinRefsForFilters ??= false;
+    if (!this.#options.filtersOnRelations) {
+      this.#options.autoJoinRefsForFilters ??= false;
     }
 
-    this.options.subscribers = [...this.options.subscribers].map(subscriber => {
+    this.#options.subscribers = [...this.#options.subscribers].map(subscriber => {
       return subscriber.constructor.name === 'Function' ? new (subscriber as Constructor)() : subscriber;
     }) as EventSubscriber[];
 
-    this.sync();
+    this.#sync();
 
     if (!colors.enabled()) {
-      this.options.highlighter = new NullHighlighter();
+      this.#options.highlighter = new NullHighlighter();
     }
   }
 
-  private sync(): void {
-    setEnv('MIKRO_ORM_COLORS', this.options.colors);
-    this.logger.setDebugMode(this.options.debug);
+  #sync(): void {
+    setEnv('MIKRO_ORM_COLORS', this.#options.colors);
+    this.#logger.setDebugMode(this.#options.debug);
   }
 
-  private validateOptions(): void {
+  #validateOptions(): void {
     /* v8 ignore next */
-    if ('type' in this.options) {
+    if ('type' in this.#options) {
       throw new Error(
         "The `type` option has been removed in v6, please fill in the `driver` option instead or use `defineConfig` helper (to define your ORM config) or `MikroORM` class (to call the `init` method) exported from the driver package (e.g. `import { defineConfig } from '@mikro-orm/mysql'; export default defineConfig({ ... })`).",
       );
     }
 
-    if (!this.options.driver) {
+    if (!this.#options.driver) {
       throw new Error(
         "No driver specified, please fill in the `driver` option or use `defineConfig` helper (to define your ORM config) or `MikroORM` class (to call the `init` method) exported from the driver package (e.g. `import { defineConfig } from '@mikro-orm/mysql'; export defineConfig({ ... })`).",
       );
     }
 
-    if (!this.options.dbName && !this.options.clientUrl) {
+    if (!this.#options.dbName && !this.#options.clientUrl) {
       throw new Error('No database specified, please fill in `dbName` or `clientUrl` option');
     }
 
-    if (this.options.entities.length === 0 && this.options.discovery.warnWhenNoEntities) {
+    if (this.#options.entities.length === 0 && this.#options.discovery.warnWhenNoEntities) {
       throw new Error('No entities found, please use `entities` option');
     }
 
     if (
-      typeof this.options.driverOptions === 'function' &&
-      this.options.driverOptions.constructor.name === 'AsyncFunction'
+      typeof this.#options.driverOptions === 'function' &&
+      this.#options.driverOptions.constructor.name === 'AsyncFunction'
     ) {
       throw new Error('`driverOptions` callback cannot be async');
     }

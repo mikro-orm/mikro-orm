@@ -11,55 +11,74 @@ import {
 import { type AbstractSqlDriver } from './AbstractSqlDriver.js';
 
 class InsertStatement<Entity> {
+  readonly #keys: string[];
+  readonly #data: EntityData<Entity>;
+
   constructor(
-    private readonly keys: string[],
-    private readonly data: EntityData<Entity>,
+    keys: string[],
+    data: EntityData<Entity>,
     readonly order: number,
-  ) {}
+  ) {
+    this.#keys = keys;
+    this.#data = data;
+  }
 
   getHash(): string {
-    return JSON.stringify(this.data);
+    return JSON.stringify(this.#data);
   }
 
   getData(): EntityData<Entity> {
     const data = {} as Dictionary;
-    this.keys.forEach((key, idx) => (data[key] = (this.data as Dictionary)[idx]));
+    this.#keys.forEach((key, idx) => (data[key] = (this.#data as Dictionary)[idx]));
     return data as EntityData<Entity>;
   }
 }
 
 class DeleteStatement<Entity> {
-  constructor(
-    private readonly keys: EntityKey<Entity>[],
-    private readonly cond: FilterQuery<Entity>,
-  ) {}
+  readonly #keys: EntityKey<Entity>[];
+  readonly #cond: FilterQuery<Entity>;
+
+  constructor(keys: EntityKey<Entity>[], cond: FilterQuery<Entity>) {
+    this.#keys = keys;
+    this.#cond = cond;
+  }
 
   getHash(): string {
-    return JSON.stringify(this.cond);
+    return JSON.stringify(this.#cond);
   }
 
   getCondition(): FilterQuery<Entity> {
     const cond = {} as Dictionary;
-    this.keys.forEach((key, idx) => (cond[key] = (this.cond as Dictionary)[idx]));
+    this.#keys.forEach((key, idx) => (cond[key] = (this.#cond as Dictionary)[idx]));
     return cond as FilterQuery<Entity>;
   }
 }
 
 export class PivotCollectionPersister<Entity extends object> {
-  private readonly inserts = new Map<string, InsertStatement<Entity>>();
-  private readonly upserts = new Map<string, InsertStatement<Entity>>();
-  private readonly deletes = new Map<string, DeleteStatement<Entity>>();
-  private readonly batchSize: number;
-  private order = 0;
+  readonly #inserts = new Map<string, InsertStatement<Entity>>();
+  readonly #upserts = new Map<string, InsertStatement<Entity>>();
+  readonly #deletes = new Map<string, DeleteStatement<Entity>>();
+  readonly #batchSize: number;
+  #order = 0;
+  readonly #meta: EntityMetadata<Entity>;
+  readonly #driver: AbstractSqlDriver;
+  readonly #ctx?: Transaction;
+  readonly #schema?: string;
+  readonly #loggerContext?: Dictionary;
 
   constructor(
-    private readonly meta: EntityMetadata<Entity>,
-    private readonly driver: AbstractSqlDriver,
-    private readonly ctx?: Transaction,
-    private readonly schema?: string,
-    private readonly loggerContext?: Dictionary,
+    meta: EntityMetadata<Entity>,
+    driver: AbstractSqlDriver,
+    ctx?: Transaction,
+    schema?: string,
+    loggerContext?: Dictionary,
   ) {
-    this.batchSize = this.driver.config.get('batchSize');
+    this.#meta = meta;
+    this.#driver = driver;
+    this.#ctx = ctx;
+    this.#schema = schema;
+    this.#loggerContext = loggerContext;
+    this.#batchSize = this.#driver.config.get('batchSize');
   }
 
   enqueueUpdate(
@@ -71,56 +90,56 @@ export class PivotCollectionPersister<Entity extends object> {
   ) {
     if (insertDiff.length) {
       if (isInitialized) {
-        this.enqueueInsert(prop, insertDiff, pks);
+        this.#enqueueInsert(prop, insertDiff, pks);
       } else {
-        this.enqueueUpsert(prop, insertDiff, pks);
+        this.#enqueueUpsert(prop, insertDiff, pks);
       }
     }
 
     if (deleteDiff === true || (Array.isArray(deleteDiff) && deleteDiff.length)) {
-      this.enqueueDelete(prop, deleteDiff, pks);
+      this.#enqueueDelete(prop, deleteDiff, pks);
     }
   }
 
-  private enqueueInsert(prop: EntityProperty<Entity>, insertDiff: Primary<Entity>[][], pks: Primary<Entity>[]) {
+  #enqueueInsert(prop: EntityProperty<Entity>, insertDiff: Primary<Entity>[][], pks: Primary<Entity>[]) {
     for (const fks of insertDiff) {
-      const statement = this.createInsertStatement(prop, fks, pks);
+      const statement = this.#createInsertStatement(prop, fks, pks);
       const hash = statement.getHash();
 
-      if (prop.owner || !this.inserts.has(hash)) {
-        this.inserts.set(hash, statement);
+      if (prop.owner || !this.#inserts.has(hash)) {
+        this.#inserts.set(hash, statement);
       }
     }
   }
 
-  private enqueueUpsert(prop: EntityProperty<Entity>, insertDiff: Primary<Entity>[][], pks: Primary<Entity>[]) {
+  #enqueueUpsert(prop: EntityProperty<Entity>, insertDiff: Primary<Entity>[][], pks: Primary<Entity>[]) {
     for (const fks of insertDiff) {
-      const statement = this.createInsertStatement(prop, fks, pks);
+      const statement = this.#createInsertStatement(prop, fks, pks);
       const hash = statement.getHash();
 
-      if (prop.owner || !this.upserts.has(hash)) {
-        this.upserts.set(hash, statement);
+      if (prop.owner || !this.#upserts.has(hash)) {
+        this.#upserts.set(hash, statement);
       }
     }
   }
 
-  private createInsertStatement(prop: EntityProperty<Entity>, fks: Primary<Entity>[], pks: Primary<Entity>[]) {
-    const { data, keys } = this.buildPivotKeysAndData(prop, fks, pks);
-    return new InsertStatement(keys, data, this.order++);
+  #createInsertStatement(prop: EntityProperty<Entity>, fks: Primary<Entity>[], pks: Primary<Entity>[]) {
+    const { data, keys } = this.#buildPivotKeysAndData(prop, fks, pks);
+    return new InsertStatement(keys, data, this.#order++);
   }
 
-  private enqueueDelete(prop: EntityProperty<Entity>, deleteDiff: Primary<Entity>[][] | true, pks: Primary<Entity>[]) {
+  #enqueueDelete(prop: EntityProperty<Entity>, deleteDiff: Primary<Entity>[][] | true, pks: Primary<Entity>[]) {
     if (deleteDiff === true) {
-      const { data, keys } = this.buildPivotKeysAndData(prop, [], pks, true);
+      const { data, keys } = this.#buildPivotKeysAndData(prop, [], pks, true);
       const statement = new DeleteStatement(keys as EntityKey<Entity>[], data as FilterQuery<Entity>);
-      this.deletes.set(statement.getHash(), statement);
+      this.#deletes.set(statement.getHash(), statement);
       return;
     }
 
     for (const fks of deleteDiff) {
-      const { data, keys } = this.buildPivotKeysAndData(prop, fks, pks);
+      const { data, keys } = this.#buildPivotKeysAndData(prop, fks, pks);
       const statement = new DeleteStatement(keys as EntityKey<Entity>[], data as FilterQuery<Entity>);
-      this.deletes.set(statement.getHash(), statement);
+      this.#deletes.set(statement.getHash(), statement);
     }
   }
 
@@ -128,7 +147,7 @@ export class PivotCollectionPersister<Entity extends object> {
    * Build the keys and data arrays for pivot table operations.
    * Handles polymorphic M:N by prepending the discriminator column/value.
    */
-  private buildPivotKeysAndData(
+  #buildPivotKeysAndData(
     prop: EntityProperty<Entity>,
     fks: Primary<Entity>[],
     pks: Primary<Entity>[],
@@ -155,7 +174,7 @@ export class PivotCollectionPersister<Entity extends object> {
     return { data, keys };
   }
 
-  private collectStatements(statements: Map<string, InsertStatement<Entity>>): EntityData<Entity>[] {
+  #collectStatements(statements: Map<string, InsertStatement<Entity>>): EntityData<Entity>[] {
     const items: EntityData<Entity>[] = [];
 
     for (const statement of statements.values()) {
@@ -166,53 +185,53 @@ export class PivotCollectionPersister<Entity extends object> {
   }
 
   async execute(): Promise<void> {
-    if (this.deletes.size > 0) {
-      const deletes = [...this.deletes.values()];
+    if (this.#deletes.size > 0) {
+      const deletes = [...this.#deletes.values()];
 
-      for (let i = 0; i < deletes.length; i += this.batchSize) {
-        const chunk = deletes.slice(i, i + this.batchSize);
+      for (let i = 0; i < deletes.length; i += this.#batchSize) {
+        const chunk = deletes.slice(i, i + this.#batchSize);
         const cond = { $or: [] } as Dictionary;
 
         for (const item of chunk) {
           cond.$or.push(item.getCondition());
         }
 
-        await this.driver.nativeDelete(this.meta.class, cond, {
-          ctx: this.ctx,
-          schema: this.schema,
-          loggerContext: this.loggerContext,
+        await this.#driver.nativeDelete(this.#meta.class, cond, {
+          ctx: this.#ctx,
+          schema: this.#schema,
+          loggerContext: this.#loggerContext,
         });
       }
     }
 
-    if (this.inserts.size > 0) {
-      const filtered = this.collectStatements(this.inserts);
+    if (this.#inserts.size > 0) {
+      const filtered = this.#collectStatements(this.#inserts);
 
-      for (let i = 0; i < filtered.length; i += this.batchSize) {
-        const chunk = filtered.slice(i, i + this.batchSize);
-        await this.driver.nativeInsertMany<Entity>(this.meta.class, chunk, {
-          ctx: this.ctx,
-          schema: this.schema,
+      for (let i = 0; i < filtered.length; i += this.#batchSize) {
+        const chunk = filtered.slice(i, i + this.#batchSize);
+        await this.#driver.nativeInsertMany<Entity>(this.#meta.class, chunk, {
+          ctx: this.#ctx,
+          schema: this.#schema,
           convertCustomTypes: false,
           processCollections: false,
-          loggerContext: this.loggerContext,
+          loggerContext: this.#loggerContext,
         });
       }
     }
 
-    if (this.upserts.size > 0) {
-      const filtered = this.collectStatements(this.upserts);
+    if (this.#upserts.size > 0) {
+      const filtered = this.#collectStatements(this.#upserts);
 
-      for (let i = 0; i < filtered.length; i += this.batchSize) {
-        const chunk = filtered.slice(i, i + this.batchSize);
-        await this.driver.nativeUpdateMany<Entity>(this.meta.class, [], chunk, {
-          ctx: this.ctx,
-          schema: this.schema,
+      for (let i = 0; i < filtered.length; i += this.#batchSize) {
+        const chunk = filtered.slice(i, i + this.#batchSize);
+        await this.#driver.nativeUpdateMany<Entity>(this.#meta.class, [], chunk, {
+          ctx: this.#ctx,
+          schema: this.#schema,
           convertCustomTypes: false,
           processCollections: false,
           upsert: true,
           onConflictAction: 'ignore',
-          loggerContext: this.loggerContext,
+          loggerContext: this.#loggerContext,
         });
       }
     }

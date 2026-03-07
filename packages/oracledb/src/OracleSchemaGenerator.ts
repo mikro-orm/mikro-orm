@@ -18,7 +18,7 @@ export class OracleSchemaGenerator extends SchemaGenerator {
   declare protected connection: OracleConnection;
 
   /** Tracks whether the main user has been granted DBA (or equivalent) privileges. */
-  private hasDbaGrant = false;
+  #hasDbaGrant = false;
 
   static override register(orm: MikroORM): void {
     orm.config.registerExtension(
@@ -148,7 +148,7 @@ export class OracleSchemaGenerator extends SchemaGenerator {
     return false;
   }
 
-  private getOriginalUser(): string {
+  #getOriginalUser(): string {
     return this.config.get('user') ?? this.config.get('dbName')!;
   }
 
@@ -156,8 +156,8 @@ export class OracleSchemaGenerator extends SchemaGenerator {
    * Connects as the management (system) user if not already connected as admin.
    * Returns the original user to restore later, or undefined if no reconnect was needed.
    */
-  private async connectAsAdmin(): Promise<string | undefined> {
-    if (this.hasDbaGrant) {
+  async #connectAsAdmin(): Promise<string | undefined> {
+    if (this.#hasDbaGrant) {
       return undefined;
     }
 
@@ -167,11 +167,11 @@ export class OracleSchemaGenerator extends SchemaGenerator {
     );
 
     if (res.length > 0) {
-      this.hasDbaGrant = true;
+      this.#hasDbaGrant = true;
       return undefined;
     }
 
-    const originalUser = this.getOriginalUser();
+    const originalUser = this.#getOriginalUser();
     this.config.set('user', this.helper.getManagementDbName());
     await this.driver.reconnect();
 
@@ -181,7 +181,7 @@ export class OracleSchemaGenerator extends SchemaGenerator {
   /**
    * Restores the connection to the original user after admin operations.
    */
-  private async restoreConnection(originalUser: string | undefined): Promise<void> {
+  async #restoreConnection(originalUser: string | undefined): Promise<void> {
     if (originalUser == null) {
       return;
     }
@@ -194,8 +194,8 @@ export class OracleSchemaGenerator extends SchemaGenerator {
    * Grants DBA (or fallback individual privileges) to the main user.
    * Only executed once — subsequent calls are no-ops.
    */
-  private async ensureDbaGrant(originalUser: string): Promise<void> {
-    if (this.hasDbaGrant) {
+  async #ensureDbaGrant(originalUser: string): Promise<void> {
+    if (this.#hasDbaGrant) {
       return;
     }
 
@@ -209,12 +209,12 @@ export class OracleSchemaGenerator extends SchemaGenerator {
       await this.execute(`grant drop any index to ${this.platform.quoteIdentifier(originalUser)}`);
     }
 
-    this.hasDbaGrant = true;
+    this.#hasDbaGrant = true;
   }
 
   override async createNamespace(name: string): Promise<void> {
-    const originalUser = this.getOriginalUser();
-    const reconnectUser = await this.connectAsAdmin();
+    const originalUser = this.#getOriginalUser();
+    const reconnectUser = await this.#connectAsAdmin();
 
     try {
       await this.execute(this.helper.getCreateNamespaceSQL(name));
@@ -226,14 +226,14 @@ export class OracleSchemaGenerator extends SchemaGenerator {
     }
 
     await this.execute(`grant connect, resource to ${this.platform.quoteIdentifier(name)}`);
-    await this.ensureDbaGrant(originalUser);
-    await this.grantReferencesForSchema(name);
+    await this.#ensureDbaGrant(originalUser);
+    await this.#grantReferencesForSchema(name);
 
-    await this.restoreConnection(reconnectUser);
+    await this.#restoreConnection(reconnectUser);
   }
 
   override async dropNamespace(name: string): Promise<void> {
-    const reconnectUser = await this.connectAsAdmin();
+    const reconnectUser = await this.#connectAsAdmin();
 
     // Try drop first; only kill sessions if the user is currently connected
     try {
@@ -272,7 +272,7 @@ export class OracleSchemaGenerator extends SchemaGenerator {
       }
     }
 
-    await this.restoreConnection(reconnectUser);
+    await this.#restoreConnection(reconnectUser);
   }
 
   override async update(options: UpdateSchemaOptions<DatabaseSchema> = {}): Promise<void> {
@@ -307,8 +307,8 @@ export class OracleSchemaGenerator extends SchemaGenerator {
     // unqualified object names (e.g. indexes) are created in the correct schema.
     /* v8 ignore start: requires multi-schema Oracle setup */
     if (diff.newNamespaces.size > 0) {
-      const originalUser = this.getOriginalUser();
-      const reconnectUser = await this.connectAsAdmin();
+      const originalUser = this.#getOriginalUser();
+      const reconnectUser = await this.#connectAsAdmin();
 
       for (const ns of diff.newNamespaces) {
         try {
@@ -322,13 +322,13 @@ export class OracleSchemaGenerator extends SchemaGenerator {
         await this.execute(`grant connect, resource to ${this.platform.quoteIdentifier(ns)}`);
       }
 
-      await this.ensureDbaGrant(originalUser);
+      await this.#ensureDbaGrant(originalUser);
 
       for (const ns of diff.newNamespaces) {
-        await this.grantReferencesForSchema(ns);
+        await this.#grantReferencesForSchema(ns);
       }
 
-      await this.restoreConnection(reconnectUser);
+      await this.#restoreConnection(reconnectUser);
     }
     /* v8 ignore stop */
 
@@ -472,7 +472,7 @@ export class OracleSchemaGenerator extends SchemaGenerator {
     this.clearIdentityMap();
   }
 
-  private async grantReferencesForSchema(schemaName: string): Promise<void> {
+  async #grantReferencesForSchema(schemaName: string): Promise<void> {
     const defaultSchema = this.platform.getDefaultSchemaName();
     const allSchemas = [...this.getTargetSchema().getNamespaces()];
 

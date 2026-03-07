@@ -87,7 +87,7 @@ export class SourceFile {
     const primaryProps: EntityProperty[] = [];
     let classBody = '';
     Object.values(this.meta.properties).forEach(prop => {
-      const decorator = this.getPropertyDecorator(prop, 2);
+      const decorator = this.#getPropertyDecorator(prop, 2);
       const definition = this.getPropertyDefinition(prop, 2);
 
       classBody += decorator;
@@ -138,9 +138,7 @@ export class SourceFile {
   /**
    * Convert index column options to quoted output format.
    */
-  private getColumnOptions(
-    columns: EntityMetadata['indexes'][number]['columns'],
-  ): Record<string, unknown>[] | undefined {
+  #getColumnOptions(columns: EntityMetadata['indexes'][number]['columns']): Record<string, unknown>[] | undefined {
     if (!columns?.length) {
       return undefined;
     }
@@ -186,7 +184,7 @@ export class SourceFile {
     }
 
     // Advanced index options
-    const columns = this.getColumnOptions(index.columns);
+    const columns = this.#getColumnOptions(index.columns);
     if (columns) {
       indexOpt.columns = columns as never[];
     }
@@ -236,7 +234,7 @@ export class SourceFile {
         `${this.referenceCoreImport('DeferMode')}.INITIALLY_${index.deferMode.toUpperCase()}` as DeferMode;
     }
 
-    const columns = this.getColumnOptions(index.columns);
+    const columns = this.#getColumnOptions(index.columns);
 
     if (columns) {
       uniqueOpt.columns = columns as never[];
@@ -388,7 +386,7 @@ export class SourceFile {
     }
 
     const isScalar = typeof prop.kind === 'undefined' || prop.kind === ReferenceKind.SCALAR;
-    let breakdownOfIType: ReturnType<SourceFile['breakdownOfIType']>;
+    let breakdownOfIType: [string, string] | [string, string, string] | undefined;
 
     const propType = prop.mapToPk
       ? (() => {
@@ -409,7 +407,7 @@ export class SourceFile {
               return this.namingStrategy[method](prop.fieldNames[0], this.meta.collection, this.meta.schema);
             }
 
-            breakdownOfIType = this.breakdownOfIType(prop);
+            breakdownOfIType = this.#breakdownOfIType(prop);
 
             if (typeof breakdownOfIType !== 'undefined') {
               if (breakdownOfIType.length >= 3) {
@@ -629,15 +627,15 @@ export class SourceFile {
       options.virtual = this.meta.virtual;
     }
 
-    return this.getCollectionDecl(options);
+    return this.#getCollectionDecl(options);
   }
 
   protected getEmbeddableDeclOptions() {
     const options: EmbeddableOptions<unknown> = {};
-    return this.getCollectionDecl(options);
+    return this.#getCollectionDecl(options);
   }
 
-  private getCollectionDecl<T extends EntityOptions<unknown> | EmbeddableOptions<unknown>>(options: T) {
+  #getCollectionDecl<T extends EntityOptions<unknown> | EmbeddableOptions<unknown>>(options: T) {
     if (this.meta.abstract) {
       options.abstract = true;
     }
@@ -665,7 +663,7 @@ export class SourceFile {
     return options;
   }
 
-  private getPropertyDecorator(prop: EntityProperty, padLeft: number): string {
+  #getPropertyDecorator(prop: EntityProperty, padLeft: number): string {
     const padding = ' '.repeat(padLeft);
     const options = {} as Dictionary;
     let decorator = `@${this.referenceDecoratorImport(this.getDecoratorType(prop))}`;
@@ -807,7 +805,7 @@ export class SourceFile {
         (prop.ref ||
           (!prop.enum &&
             (typeof prop.kind === 'undefined' || prop.kind === ReferenceKind.SCALAR) &&
-            (prop.type === 'unknown' || typeof this.breakdownOfIType(prop) !== 'undefined')))
+            (prop.type === 'unknown' || typeof this.#breakdownOfIType(prop) !== 'undefined')))
       ) {
         options.default = typeof prop.default === 'string' ? this.quote(prop.default) : prop.default;
       }
@@ -827,11 +825,11 @@ export class SourceFile {
     }
   }
 
-  private propTypeBreakdowns = new WeakMap<EntityProperty, ReturnType<SourceFile['breakdownOfIType']>>();
+  #propTypeBreakdowns = new WeakMap<EntityProperty, [string, string] | [string, string, string] | undefined>();
 
-  private breakdownOfIType(prop: EntityProperty): [string, string] | [string, string, string] | undefined {
-    if (this.propTypeBreakdowns.has(prop)) {
-      return this.propTypeBreakdowns.get(prop);
+  #breakdownOfIType(prop: EntityProperty): [string, string] | [string, string, string] | undefined {
+    if (this.#propTypeBreakdowns.has(prop)) {
+      return this.#propTypeBreakdowns.get(prop);
     }
 
     const mappedDeclaredType = this.platform.getMappedType(prop.type);
@@ -878,7 +876,7 @@ export class SourceFile {
             r[2] = `(${r[2]}) & ${this.referenceCoreImport('Hidden')}`;
           }
         }
-        this.propTypeBreakdowns.set(prop, r);
+        this.#propTypeBreakdowns.set(prop, r);
         return r;
       }
 
@@ -890,11 +888,11 @@ export class SourceFile {
           }
         }
       }
-      this.propTypeBreakdowns.set(prop, r);
+      this.#propTypeBreakdowns.set(prop, r);
       return r;
     }
     const r = undefined;
-    this.propTypeBreakdowns.set(prop, r);
+    this.#propTypeBreakdowns.set(prop, r);
     return r;
   }
 

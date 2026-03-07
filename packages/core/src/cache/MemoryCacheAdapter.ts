@@ -1,19 +1,22 @@
 import type { CacheAdapter } from './CacheAdapter.js';
 
 export class MemoryCacheAdapter implements CacheAdapter {
-  private readonly data = new Map<string, { data: any; expiration: number }>();
+  readonly #data = new Map<string, { data: any; expiration: number }>();
+  readonly #options: { expiration: number };
 
-  constructor(private readonly options: { expiration: number }) {}
+  constructor(options: { expiration: number }) {
+    this.#options = options;
+  }
 
   /**
    * @inheritDoc
    */
   get<T = any>(name: string): T | undefined {
-    const data = this.data.get(name);
+    const data = this.#data.get(name);
 
     if (data) {
       if (data.expiration < Date.now()) {
-        this.data.delete(name);
+        this.#data.delete(name);
       } else {
         return data.data;
       }
@@ -26,20 +29,20 @@ export class MemoryCacheAdapter implements CacheAdapter {
    * @inheritDoc
    */
   set(name: string, data: any, origin: string, expiration?: number): void {
-    this.data.set(name, { data, expiration: Date.now() + (expiration ?? this.options.expiration) });
+    this.#data.set(name, { data, expiration: Date.now() + (expiration ?? this.#options.expiration) });
   }
 
   /**
    * @inheritDoc
    */
   remove(name: string): void {
-    this.data.delete(name);
+    this.#data.delete(name);
   }
 
   /**
    * @inheritDoc
    */
   clear(): void {
-    this.data.clear();
+    this.#data.clear();
   }
 }

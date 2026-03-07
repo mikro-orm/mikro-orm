@@ -6,29 +6,31 @@ import { Utils } from '../utils/Utils.js';
 import type { Dictionary } from '../typings.js';
 
 export class FileCacheAdapter implements SyncCacheAdapter {
-  private readonly VERSION = Utils.getORMVersion();
-  private cache: Dictionary = {};
+  readonly #VERSION = Utils.getORMVersion();
+  #cache: Dictionary = {};
+  readonly #options: { cacheDir: string; combined?: boolean | string };
+  readonly #baseDir: string;
+  readonly #pretty: boolean;
 
-  constructor(
-    private readonly options: { cacheDir: string; combined?: boolean | string } = {} as any,
-    private readonly baseDir: string,
-    private readonly pretty = false,
-  ) {
-    this.options.cacheDir ??= process.cwd() + '/temp';
+  constructor(options: { cacheDir: string; combined?: boolean | string } = {} as any, baseDir: string, pretty = false) {
+    this.#options = options;
+    this.#baseDir = baseDir;
+    this.#pretty = pretty;
+    this.#options.cacheDir ??= process.cwd() + '/temp';
   }
 
   /**
    * @inheritDoc
    */
   get(name: string): any {
-    const path = this.path(name);
+    const path = this.#path(name);
 
     if (!existsSync(path)) {
       return null;
     }
 
     const payload = fs.readJSONSync(path);
-    const hash = this.getHash(payload.origin);
+    const hash = this.#getHash(payload.origin);
 
     if (!hash || payload.hash !== hash) {
       return null;
@@ -41,16 +43,16 @@ export class FileCacheAdapter implements SyncCacheAdapter {
    * @inheritDoc
    */
   set(name: string, data: any, origin: string): void {
-    if (this.options.combined) {
-      this.cache[name.replace(/\.[jt]s$/, '')] = data;
+    if (this.#options.combined) {
+      this.#cache[name.replace(/\.[jt]s$/, '')] = data;
       return;
     }
 
-    const path = this.path(name);
-    const hash = this.getHash(origin);
+    const path = this.#path(name);
+    const hash = this.#getHash(origin);
     writeFileSync(
       path,
-      JSON.stringify({ data, origin, hash, version: this.VERSION }, null, this.pretty ? 2 : undefined),
+      JSON.stringify({ data, origin, hash, version: this.#VERSION }, null, this.#pretty ? 2 : undefined),
     );
   }
 
@@ -58,7 +60,7 @@ export class FileCacheAdapter implements SyncCacheAdapter {
    * @inheritDoc
    */
   remove(name: string): void {
-    const path = this.path(name);
+    const path = this.#path(name);
     unlinkSync(path);
   }
 
@@ -66,7 +68,7 @@ export class FileCacheAdapter implements SyncCacheAdapter {
    * @inheritDoc
    */
   clear(): void {
-    const path = this.path('*');
+    const path = this.#path('*');
     const files = fs.glob(path);
 
     for (const file of files) {
@@ -78,29 +80,29 @@ export class FileCacheAdapter implements SyncCacheAdapter {
       }
     }
 
-    this.cache = {};
+    this.#cache = {};
   }
 
   combine(): string | void {
-    if (!this.options.combined) {
+    if (!this.#options.combined) {
       return;
     }
 
-    let path = typeof this.options.combined === 'string' ? this.options.combined : './metadata.json';
-    path = fs.normalizePath(this.options.cacheDir, path);
-    this.options.combined = path; // override in the options, so we can log it from the CLI in `cache:generate` command
-    writeFileSync(path, JSON.stringify(this.cache, null, this.pretty ? 2 : undefined));
+    let path = typeof this.#options.combined === 'string' ? this.#options.combined : './metadata.json';
+    path = fs.normalizePath(this.#options.cacheDir, path);
+    this.#options.combined = path; // override in the options, so we can log it from the CLI in `cache:generate` command
+    writeFileSync(path, JSON.stringify(this.#cache, null, this.#pretty ? 2 : undefined));
 
     return path;
   }
 
-  private path(name: string): string {
-    fs.ensureDir(this.options.cacheDir);
-    return `${this.options.cacheDir}/${name}.json`;
+  #path(name: string): string {
+    fs.ensureDir(this.#options.cacheDir);
+    return `${this.#options.cacheDir}/${name}.json`;
   }
 
-  private getHash(origin: string): string | null {
-    origin = fs.absolutePath(origin, this.baseDir);
+  #getHash(origin: string): string | null {
+    origin = fs.absolutePath(origin, this.#baseDir);
 
     if (!existsSync(origin)) {
       return null;
@@ -108,6 +110,6 @@ export class FileCacheAdapter implements SyncCacheAdapter {
 
     const contents = readFileSync(origin);
 
-    return Utils.hash(contents.toString() + this.VERSION);
+    return Utils.hash(contents.toString() + this.#VERSION);
   }
 }

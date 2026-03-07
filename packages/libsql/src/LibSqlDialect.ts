@@ -34,18 +34,21 @@ class ConnectionMutex {
 }
 
 class LibSqlConnection implements DatabaseConnection {
-  private readonly created = Date.now();
+  readonly #created = Date.now();
   declare memory: boolean;
+  readonly #db: SqliteDatabase;
 
-  constructor(private readonly db: SqliteDatabase) {}
+  constructor(db: SqliteDatabase) {
+    this.#db = db;
+  }
 
   isValid(): boolean {
-    return this.memory || this.created > Date.now() - CONNECTION_TIMEOUT;
+    return this.memory || this.#created > Date.now() - CONNECTION_TIMEOUT;
   }
 
   async executeQuery<R>(compiledQuery: any): Promise<QueryResult<R>> {
     const { sql, parameters } = compiledQuery;
-    const stmt = this.db.prepare(sql);
+    const stmt = this.#db.prepare(sql);
 
     if (stmt.reader) {
       return {
@@ -75,7 +78,7 @@ class LibSqlConnection implements DatabaseConnection {
 
   async *streamQuery<R>(compiledQuery: any): AsyncIterableIterator<QueryResult<R>> {
     const { sql, parameters } = compiledQuery;
-    const stmt = this.db.prepare(sql);
+    const stmt = this.#db.prepare(sql);
 
     /* v8 ignore next */
     if (!sql.toLowerCase().startsWith('select')) {
@@ -91,51 +94,56 @@ class LibSqlConnection implements DatabaseConnection {
 }
 
 class LibSqlKyselyDriver extends SqliteDriver {
-  private db!: SqliteDatabase;
-  private connection!: LibSqlConnection;
-  private connectionMutex = new ConnectionMutex();
+  #db!: SqliteDatabase;
+  #connection!: LibSqlConnection;
+  #connectionMutex = new ConnectionMutex();
+  readonly #config: SqliteDialectConfig;
 
-  constructor(private readonly config: SqliteDialectConfig) {
+  constructor(config: SqliteDialectConfig) {
     super(config);
+    this.#config = config;
   }
 
   override async init() {
-    this.db = await (this.config.database as () => Promise<SqliteDatabase>)();
-    this.connection = new LibSqlConnection(this.db);
+    this.#db = await (this.#config.database as () => Promise<SqliteDatabase>)();
+    this.#connection = new LibSqlConnection(this.#db);
 
     /* v8 ignore next */
-    if (this.config.onCreateConnection) {
-      await this.config.onCreateConnection(this.connection);
+    if (this.#config.onCreateConnection) {
+      await this.#config.onCreateConnection(this.#connection);
     }
   }
 
   override async acquireConnection() {
-    await this.connectionMutex.lock();
+    await this.#connectionMutex.lock();
 
     /* v8 ignore next */
-    if (!this.connection.isValid()) {
+    if (!this.#connection.isValid()) {
       await this.destroy();
       await this.init();
     }
 
-    return this.connection;
+    return this.#connection;
   }
 
   override async releaseConnection() {
-    this.connectionMutex.unlock();
+    this.#connectionMutex.unlock();
   }
 
   override async destroy() {
-    this.db.close();
+    this.#db.close();
   }
 }
 
 export class LibSqlDialect extends SqliteDialect {
-  constructor(private readonly config: SqliteDialectConfig) {
+  readonly #config: SqliteDialectConfig;
+
+  constructor(config: SqliteDialectConfig) {
     super(config);
+    this.#config = config;
   }
 
   override createDriver() {
-    return new LibSqlKyselyDriver(this.config);
+    return new LibSqlKyselyDriver(this.#config);
   }
 }

@@ -27,22 +27,24 @@ import { NativeEnumSourceFile } from './NativeEnumSourceFile.js';
 import { SourceFile } from './SourceFile.js';
 
 export class EntityGenerator {
-  private readonly config: Configuration;
-  private readonly driver: AbstractSqlDriver;
-  private readonly platform: AbstractSqlPlatform;
-  private readonly helper: SchemaHelper;
-  private readonly connection: AbstractSqlConnection;
-  private readonly namingStrategy: NamingStrategy;
-  private readonly sources: (SourceFile | NativeEnumSourceFile)[] = [];
-  private readonly referencedEntities = new WeakSet<EntityMetadata>();
+  readonly #config: Configuration;
+  readonly #driver: AbstractSqlDriver;
+  readonly #platform: AbstractSqlPlatform;
+  readonly #helper: SchemaHelper;
+  readonly #connection: AbstractSqlConnection;
+  readonly #namingStrategy: NamingStrategy;
+  readonly #sources: (SourceFile | NativeEnumSourceFile)[] = [];
+  readonly #referencedEntities = new WeakSet<EntityMetadata>();
+  readonly #em: EntityManager;
 
-  constructor(private readonly em: EntityManager) {
-    this.config = this.em.config;
-    this.driver = this.em.getDriver();
-    this.platform = this.driver.getPlatform();
-    this.helper = this.platform.getSchemaHelper()!;
-    this.connection = this.driver.getConnection();
-    this.namingStrategy = this.config.getNamingStrategy();
+  constructor(em: EntityManager) {
+    this.#em = em;
+    this.#config = this.#em.config;
+    this.#driver = this.#em.getDriver();
+    this.#platform = this.#driver.getPlatform();
+    this.#helper = this.#platform.getSchemaHelper()!;
+    this.#connection = this.#driver.getConnection();
+    this.#namingStrategy = this.#config.getNamingStrategy();
   }
 
   static register(orm: MikroORM): void {
@@ -50,20 +52,20 @@ export class EntityGenerator {
   }
 
   async generate(options: GenerateOptions = {}): Promise<string[]> {
-    options = Utils.mergeConfig({}, this.config.get('entityGenerator'), options);
+    options = Utils.mergeConfig({}, this.#config.get('entityGenerator'), options);
     const schema = await DatabaseSchema.create(
-      this.connection,
-      this.platform,
-      this.config,
+      this.#connection,
+      this.#platform,
+      this.#config,
       undefined,
       undefined,
       options.takeTables,
       options.skipTables,
     );
-    const metadata = await this.getEntityMetadata(schema, options);
-    const defaultPath = `${this.config.get('baseDir')}/generated-entities`;
+    const metadata = await this.#getEntityMetadata(schema, options);
+    const defaultPath = `${this.#config.get('baseDir')}/generated-entities`;
     const baseDir = fs.normalizePath(options.path ?? defaultPath);
-    this.sources.length = 0;
+    this.#sources.length = 0;
 
     const map = {
       defineEntity: DefineEntitySourceFile,
@@ -76,18 +78,20 @@ export class EntityGenerator {
     }
 
     for (const meta of metadata) {
-      if (meta.pivotTable && !options.outputPurePivotTables && !this.referencedEntities.has(meta)) {
+      if (meta.pivotTable && !options.outputPurePivotTables && !this.#referencedEntities.has(meta)) {
         continue;
       }
 
-      this.sources.push(new map[options.entityDefinition!](meta, this.namingStrategy, this.platform, options));
+      this.#sources.push(new map[options.entityDefinition!](meta, this.#namingStrategy, this.#platform, options));
     }
 
     for (const nativeEnum of Object.values(schema.getNativeEnums())) {
-      this.sources.push(new NativeEnumSourceFile({} as any, this.namingStrategy, this.platform, options, nativeEnum));
+      this.#sources.push(
+        new NativeEnumSourceFile({} as any, this.#namingStrategy, this.#platform, options, nativeEnum),
+      );
     }
 
-    const files = this.sources.map(file => [file.getBaseName(), file.generate()]);
+    const files = this.#sources.map(file => [file.getBaseName(), file.generate()]);
 
     if (options.save) {
       fs.ensureDir(baseDir);
@@ -112,7 +116,7 @@ export class EntityGenerator {
     return files.map(([, data]) => data);
   }
 
-  private async getEntityMetadata(schema: DatabaseSchema, options: GenerateOptions) {
+  async #getEntityMetadata(schema: DatabaseSchema, options: GenerateOptions) {
     const metadata = schema
       .getTables()
       .filter(table => !options.schema || table.schema === options.schema)
@@ -122,13 +126,13 @@ export class EntityGenerator {
 
         if (skipColumns) {
           for (const col of table.getColumns()) {
-            if (skipColumns.some(matchColumnName => this.matchName(col.name, matchColumnName))) {
+            if (skipColumns.some(matchColumnName => this.#matchName(col.name, matchColumnName))) {
               table.removeColumn(col.name);
             }
           }
         }
 
-        return table.getEntityDeclaration(this.namingStrategy, this.helper, options.scalarPropertiesForRelations!);
+        return table.getEntityDeclaration(this.#namingStrategy, this.#helper, options.scalarPropertiesForRelations!);
       });
 
     for (const meta of metadata) {
@@ -141,7 +145,7 @@ export class EntityGenerator {
           )
         ) {
           prop.kind = ReferenceKind.SCALAR;
-          const mappedTypes = prop.columnTypes.map((t, i) => this.platform.getMappedType(t));
+          const mappedTypes = prop.columnTypes.map((t, i) => this.#platform.getMappedType(t));
           const runtimeTypes = mappedTypes.map(t => t.runtimeType);
           prop.runtimeType = (
             runtimeTypes.length === 1 ? runtimeTypes[0] : `[${runtimeTypes.join(', ')}]`
@@ -164,14 +168,14 @@ export class EntityGenerator {
       }
     }
 
-    await options.onInitialMetadata?.(metadata, this.platform);
+    await options.onInitialMetadata?.(metadata, this.#platform);
 
     // enforce schema usage in class names only on duplicates
     const duplicates = Utils.findDuplicates(metadata.map(meta => meta.className));
 
     for (const duplicate of duplicates) {
       for (const meta of metadata.filter(meta => meta.className === duplicate)) {
-        meta.className = this.namingStrategy.getEntityName(`${meta.schema ?? schema.name}_${meta.className}`);
+        meta.className = this.#namingStrategy.getEntityName(`${meta.schema ?? schema.name}_${meta.className}`);
 
         for (const relMeta of metadata) {
           for (const prop of relMeta.relations) {
@@ -187,36 +191,36 @@ export class EntityGenerator {
       }
     }
 
-    this.detectManyToManyRelations(
+    this.#detectManyToManyRelations(
       metadata,
       options.onlyPurePivotTables!,
       options.readOnlyPivotTables!,
       options.outputPurePivotTables!,
     );
-    this.cleanUpReferentialIntegrityRules(metadata);
+    this.#cleanUpReferentialIntegrityRules(metadata);
 
     if (options.bidirectionalRelations) {
-      this.generateBidirectionalRelations(metadata, options.outputPurePivotTables!);
+      this.#generateBidirectionalRelations(metadata, options.outputPurePivotTables!);
     }
 
     if (options.identifiedReferences) {
-      this.generateIdentifiedReferences(metadata);
+      this.#generateIdentifiedReferences(metadata);
     }
 
     if (options.customBaseEntityName) {
-      this.generateAndAttachCustomBaseEntity(metadata, options.customBaseEntityName);
+      this.#generateAndAttachCustomBaseEntity(metadata, options.customBaseEntityName);
     }
 
     if (options.undefinedDefaults) {
-      this.castNullDefaultsToUndefined(metadata);
+      this.#castNullDefaultsToUndefined(metadata);
     }
 
-    await options.onProcessedMetadata?.(metadata, this.platform);
+    await options.onProcessedMetadata?.(metadata, this.#platform);
 
     return metadata;
   }
 
-  private cleanUpReferentialIntegrityRules<Entity>(metadata: EntityMetadata<Entity>[]) {
+  #cleanUpReferentialIntegrityRules<Entity>(metadata: EntityMetadata<Entity>[]) {
     // Clear FK rules that match defaults for:
     // 1. FK-as-PK entities (all PKs are FKs) - cascade for both update and delete
     // 2. Fixed-order pivot tables (autoincrement id + 2 FK relations only) - cascade for both
@@ -276,13 +280,13 @@ export class EntityGenerator {
     }
   }
 
-  private matchName(name: string, nameToMatch: string | RegExp) {
+  #matchName(name: string, nameToMatch: string | RegExp) {
     return typeof nameToMatch === 'string'
       ? name.toLocaleLowerCase() === nameToMatch.toLocaleLowerCase()
       : nameToMatch.test(name);
   }
 
-  private detectManyToManyRelations(
+  #detectManyToManyRelations(
     metadata: EntityMetadata[],
     onlyPurePivotTables: boolean,
     readOnlyPivotTables: boolean,
@@ -302,7 +306,7 @@ export class EntityGenerator {
       });
 
       if (isReferenced) {
-        this.referencedEntities.add(meta);
+        this.#referencedEntities.add(meta);
       }
 
       // Entities with non-composite PKs are never pivot tables. Skip.
@@ -369,7 +373,7 @@ export class EntityGenerator {
         // If this now proven pivot entity has persistent props other than the fixed order column,
         // output it, by considering it as a referenced one.
         if (otherProps.length > 0) {
-          this.referencedEntities.add(meta);
+          this.#referencedEntities.add(meta);
         }
       }
 
@@ -390,7 +394,7 @@ export class EntityGenerator {
       const owner = metadata.find(m => m.className === meta.relations[0].type)!;
       const target = metadata.find(m => m.className === meta.relations[1].type)!;
 
-      const name = this.namingStrategy.manyToManyPropertyName(
+      const name = this.#namingStrategy.manyToManyPropertyName(
         owner.className,
         target.className,
         meta.tableName,
@@ -406,7 +410,7 @@ export class EntityGenerator {
         inverseJoinColumns: meta.relations[1].fieldNames,
       } as EntityProperty;
 
-      if (outputPurePivotTables || this.referencedEntities.has(meta)) {
+      if (outputPurePivotTables || this.#referencedEntities.has(meta)) {
         ownerProp.pivotEntity = meta.class;
       }
 
@@ -423,13 +427,10 @@ export class EntityGenerator {
     }
   }
 
-  private generateBidirectionalRelations(
-    metadata: EntityMetadata[],
-    includeUnreferencedPurePivotTables: boolean,
-  ): void {
+  #generateBidirectionalRelations(metadata: EntityMetadata[], includeUnreferencedPurePivotTables: boolean): void {
     const filteredMetadata = includeUnreferencedPurePivotTables
       ? metadata
-      : metadata.filter(m => !m.pivotTable || this.referencedEntities.has(m));
+      : metadata.filter(m => !m.pivotTable || this.#referencedEntities.has(m));
     for (const meta of filteredMetadata) {
       for (const prop of meta.relations) {
         const targetMeta = metadata.find(m => m.className === prop.type);
@@ -461,7 +462,7 @@ export class EntityGenerator {
         }
 
         let i = 1;
-        const name = (newProp.name = this.namingStrategy.inverseSideName(meta.className, prop.name, newProp.kind));
+        const name = (newProp.name = this.#namingStrategy.inverseSideName(meta.className, prop.name, newProp.kind));
 
         while (targetMeta.properties[newProp.name]) {
           newProp.name = name + i++;
@@ -472,8 +473,8 @@ export class EntityGenerator {
     }
   }
 
-  private generateIdentifiedReferences(metadata: EntityMetadata[]): void {
-    for (const meta of metadata.filter(m => !m.pivotTable || this.referencedEntities.has(m))) {
+  #generateIdentifiedReferences(metadata: EntityMetadata[]): void {
+    for (const meta of metadata.filter(m => !m.pivotTable || this.#referencedEntities.has(m))) {
       for (const prop of Object.values(meta.properties)) {
         if ([ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind) || prop.lazy) {
           prop.ref = true;
@@ -482,7 +483,7 @@ export class EntityGenerator {
     }
   }
 
-  private generateAndAttachCustomBaseEntity(metadata: EntityMetadata[], customBaseEntityName: string) {
+  #generateAndAttachCustomBaseEntity(metadata: EntityMetadata[], customBaseEntityName: string) {
     let base = metadata.find(meta => meta.className === customBaseEntityName);
 
     if (!base) {
@@ -498,7 +499,7 @@ export class EntityGenerator {
     }
   }
 
-  private castNullDefaultsToUndefined(metadata: EntityMetadata[]) {
+  #castNullDefaultsToUndefined(metadata: EntityMetadata[]) {
     for (const meta of metadata) {
       for (const prop of Object.values(meta.properties)) {
         if (prop.nullable && !prop.optional && prop.default === null && typeof prop.defaultRaw === 'undefined') {

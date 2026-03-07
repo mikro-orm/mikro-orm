@@ -10,18 +10,18 @@ import {
 import type { MigrationRow } from './typings.js';
 
 export class MigrationStorage {
-  private readonly connection: AbstractSqlConnection;
-  private readonly helper: SchemaHelper;
-  private masterTransaction?: Transaction;
-  private readonly platform: AbstractSqlPlatform;
+  readonly #connection: AbstractSqlConnection;
+  readonly #helper: SchemaHelper;
+  #masterTransaction?: Transaction;
+  readonly #platform: AbstractSqlPlatform;
 
   constructor(
     protected readonly driver: AbstractSqlDriver,
     protected readonly options: MigrationsOptions,
   ) {
-    this.connection = this.driver.getConnection();
-    this.platform = this.driver.getPlatform();
-    this.helper = this.platform.getSchemaHelper()!;
+    this.#connection = this.driver.getConnection();
+    this.#platform = this.driver.getPlatform();
+    this.#helper = this.#platform.getSchemaHelper()!;
   }
 
   async executed(): Promise<string[]> {
@@ -32,20 +32,24 @@ export class MigrationStorage {
   async logMigration(params: { name: string }): Promise<void> {
     const { entity } = this.getTableName();
     const name = this.getMigrationName(params.name);
-    await this.driver.nativeInsert(entity, { name }, { ctx: this.masterTransaction });
+    await this.driver.nativeInsert(entity, { name }, { ctx: this.#masterTransaction });
   }
 
   async unlogMigration(params: { name: string }): Promise<void> {
     const { entity } = this.getTableName();
     const withoutExt = this.getMigrationName(params.name);
     const names = [withoutExt, withoutExt + '.js', withoutExt + '.ts'];
-    await this.driver.nativeDelete(entity, { name: { $in: [params.name, ...names] } }, { ctx: this.masterTransaction });
+    await this.driver.nativeDelete(
+      entity,
+      { name: { $in: [params.name, ...names] } },
+      { ctx: this.#masterTransaction },
+    );
   }
 
   async getExecutedMigrations(): Promise<MigrationRow[]> {
     const { entity, schemaName } = this.getTableName();
     const res = await this.driver
-      .createQueryBuilder<MigrationRow>(entity, this.masterTransaction)
+      .createQueryBuilder<MigrationRow>(entity, this.#masterTransaction)
       .withSchema(schemaName)
       .orderBy({ id: 'asc' })
       .execute('all', false);
@@ -60,11 +64,11 @@ export class MigrationStorage {
   }
 
   async ensureTable(): Promise<void> {
-    const tables = await this.connection.execute<Table[]>(
-      this.helper.getListTablesSQL(),
+    const tables = await this.#connection.execute<Table[]>(
+      this.#helper.getListTablesSQL(),
       [],
       'all',
-      this.masterTransaction,
+      this.#masterTransaction,
     );
     const { tableName, schemaName } = this.getTableName();
 
@@ -72,44 +76,44 @@ export class MigrationStorage {
       return;
     }
 
-    const schemas = await this.helper.getNamespaces(this.connection);
+    const schemas = await this.#helper.getNamespaces(this.#connection);
 
     if (schemaName && !schemas.includes(schemaName)) {
-      const sql = this.helper.getCreateNamespaceSQL(schemaName);
-      await this.connection.execute(sql);
+      const sql = this.#helper.getCreateNamespaceSQL(schemaName);
+      await this.#connection.execute(sql);
     }
 
-    const table = new DatabaseTable(this.platform, tableName, schemaName);
+    const table = new DatabaseTable(this.#platform, tableName, schemaName);
     table.addColumn({
       name: 'id',
-      type: this.platform.getIntegerTypeDeclarationSQL({ autoincrement: true, unsigned: true }),
-      mappedType: this.platform.getMappedType('number'),
+      type: this.#platform.getIntegerTypeDeclarationSQL({ autoincrement: true, unsigned: true }),
+      mappedType: this.#platform.getMappedType('number'),
       primary: true,
       autoincrement: true,
     });
     table.addColumn({
       name: 'name',
-      type: this.platform.getVarcharTypeDeclarationSQL({}),
-      mappedType: this.platform.getMappedType('string'),
+      type: this.#platform.getVarcharTypeDeclarationSQL({}),
+      mappedType: this.#platform.getMappedType('string'),
     });
-    const length = this.platform.getDefaultDateTimeLength();
+    const length = this.#platform.getDefaultDateTimeLength();
     table.addColumn({
       name: 'executed_at',
-      type: this.platform.getDateTimeTypeDeclarationSQL({ length }),
-      mappedType: this.platform.getMappedType('datetime'),
-      default: this.platform.getCurrentTimestampSQL(length),
+      type: this.#platform.getDateTimeTypeDeclarationSQL({ length }),
+      mappedType: this.#platform.getMappedType('datetime'),
+      default: this.#platform.getCurrentTimestampSQL(length),
       length,
     });
-    const sql = this.helper.createTable(table);
-    await this.connection.execute(sql.join(';\n'), [], 'run', this.masterTransaction);
+    const sql = this.#helper.createTable(table);
+    await this.#connection.execute(sql.join(';\n'), [], 'run', this.#masterTransaction);
   }
 
   setMasterMigration(trx: Transaction) {
-    this.masterTransaction = trx;
+    this.#masterTransaction = trx;
   }
 
   unsetMasterMigration() {
-    delete this.masterTransaction;
+    this.#masterTransaction = undefined;
   }
 
   /**

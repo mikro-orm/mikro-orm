@@ -15,23 +15,25 @@ import { ReferenceKind } from '../enums.js';
 import type { EntityManager } from '../EntityManager.js';
 
 export class ChangeSetComputer {
-  private readonly comparator: EntityComparator;
-  private readonly metadata: MetadataStorage;
-  private readonly platform: Platform;
-  private readonly config: Configuration;
+  readonly #comparator: EntityComparator;
+  readonly #metadata: MetadataStorage;
+  readonly #platform: Platform;
+  readonly #config: Configuration;
 
-  constructor(
-    private readonly em: EntityManager,
-    private readonly collectionUpdates: Set<Collection<AnyEntity>>,
-  ) {
-    this.config = this.em.config;
-    this.metadata = this.em.getMetadata();
-    this.platform = this.em.getPlatform();
-    this.comparator = this.config.getComparator(this.metadata);
+  readonly #em: EntityManager;
+  readonly #collectionUpdates: Set<Collection<AnyEntity>>;
+
+  constructor(em: EntityManager, collectionUpdates: Set<Collection<AnyEntity>>) {
+    this.#em = em;
+    this.#collectionUpdates = collectionUpdates;
+    this.#config = this.#em.config;
+    this.#metadata = this.#em.getMetadata();
+    this.#platform = this.#em.getPlatform();
+    this.#comparator = this.#config.getComparator(this.#metadata);
   }
 
   computeChangeSet<T extends object>(entity: T): ChangeSet<T> | null {
-    const meta = this.metadata.get((entity as AnyEntity).constructor);
+    const meta = this.#metadata.get((entity as AnyEntity).constructor);
 
     if (meta.readonly) {
       return null;
@@ -46,23 +48,23 @@ export class ChangeSetComputer {
     if (type === ChangeSetType.CREATE) {
       // run update hooks only after we know there are other changes
       for (const prop of meta.hydrateProps) {
-        this.processPropertyInitializers(entity, prop, type, map);
+        this.#processPropertyInitializers(entity, prop, type, map);
       }
     }
 
     if (type === ChangeSetType.UPDATE && !wrapped.__initialized) {
-      const data = this.comparator.prepareEntity(entity);
+      const data = this.#comparator.prepareEntity(entity);
 
       if (Utils.equals(data, wrapped.__originalEntityData)) {
         return null;
       }
     }
 
-    const changeSet = new ChangeSet(entity, type, this.computePayload(entity), meta);
+    const changeSet = new ChangeSet(entity, type, this.#computePayload(entity), meta);
     changeSet.originalEntity = wrapped.__originalEntityData;
 
     for (const prop of meta.relations.filter(prop => prop.persist !== false || prop.userDefined === false)) {
-      this.processProperty(changeSet, prop);
+      this.#processProperty(changeSet, prop);
     }
 
     if (changeSet.type === ChangeSetType.UPDATE && !Utils.hasObjectKeys(changeSet.payload)) {
@@ -75,7 +77,7 @@ export class ChangeSetComputer {
     // to the `map` as we want to apply those only if something else changed.
     if (type === ChangeSetType.UPDATE) {
       for (const prop of meta.hydrateProps) {
-        this.processPropertyInitializers(entity, prop, type, map);
+        this.#processPropertyInitializers(entity, prop, type, map);
       }
     }
 
@@ -87,7 +89,7 @@ export class ChangeSetComputer {
       }
 
       // Recompute the changeset, we need to merge this as here we ignore relations.
-      const diff = this.computePayload(entity, true);
+      const diff = this.#computePayload(entity, true);
       Utils.merge(changeSet.payload, diff);
     }
 
@@ -97,7 +99,7 @@ export class ChangeSetComputer {
   /**
    * Traverses entity graph and executes `onCreate` and `onUpdate` methods, assigning the values to given properties.
    */
-  private processPropertyInitializers<T>(
+  #processPropertyInitializers<T>(
     entity: T,
     prop: EntityProperty<T>,
     type: ChangeSetType,
@@ -110,24 +112,24 @@ export class ChangeSetComputer {
       (entity[prop.name] == null ||
         (Utils.isScalarReference(entity[prop.name]) && (entity[prop.name] as Reference<any>).unwrap() == null))
     ) {
-      entity[prop.name] = prop.onCreate(entity, this.em);
+      entity[prop.name] = prop.onCreate(entity, this.#em);
     }
 
     if (prop.onUpdate && type === ChangeSetType.UPDATE) {
       const pairs = map.get(entity) ?? [];
-      pairs.push([prop.name, prop.onUpdate(entity, this.em)]);
+      pairs.push([prop.name, prop.onUpdate(entity, this.#em)]);
       map.set(entity, pairs);
     }
 
     if (prop.kind === ReferenceKind.EMBEDDED && entity[prop.name]) {
       for (const embeddedProp of prop.targetMeta!.hydrateProps) {
-        this.processPropertyInitializers(entity[prop.name] as T, embeddedProp, type, map, nested || prop.object);
+        this.#processPropertyInitializers(entity[prop.name] as T, embeddedProp, type, map, nested || prop.object);
       }
     }
   }
 
-  private computePayload<T extends object>(entity: T, ignoreUndefined = false): EntityData<T> {
-    const data = this.comparator.prepareEntity(entity);
+  #computePayload<T extends object>(entity: T, ignoreUndefined = false): EntityData<T> {
+    const data = this.#comparator.prepareEntity(entity);
     const wrapped = helper(entity);
     const entityName = wrapped.__meta.class;
     const originalEntityData = wrapped.__originalEntityData;
@@ -141,7 +143,7 @@ export class ChangeSetComputer {
     }
 
     if (originalEntityData) {
-      const comparator = this.comparator.getEntityComparator(entityName);
+      const comparator = this.#comparator.getEntityComparator(entityName);
       const diff = comparator(originalEntityData as T, data as T);
 
       if (ignoreUndefined) {
@@ -156,25 +158,25 @@ export class ChangeSetComputer {
     return data;
   }
 
-  private processProperty<T extends object>(changeSet: ChangeSet<T>, prop: EntityProperty<T>, target?: unknown): void {
+  #processProperty<T extends object>(changeSet: ChangeSet<T>, prop: EntityProperty<T>, target?: unknown): void {
     if (!target) {
       const targets = Utils.unwrapProperty(changeSet.entity, changeSet.meta, prop);
-      targets.forEach(([t]) => this.processProperty(changeSet, prop, t));
+      targets.forEach(([t]) => this.#processProperty(changeSet, prop, t));
 
       return;
     }
 
     if (Utils.isCollection(target)) {
       // m:n or 1:m
-      this.processToMany(prop, changeSet);
+      this.#processToMany(prop, changeSet);
     }
 
     if ([ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind)) {
-      this.processToOne(prop, changeSet);
+      this.#processToOne(prop, changeSet);
     }
   }
 
-  private processToOne<T extends object>(prop: EntityProperty<T>, changeSet: ChangeSet<T>): void {
+  #processToOne<T extends object>(prop: EntityProperty<T>, changeSet: ChangeSet<T>): void {
     const isToOneOwner =
       prop.kind === ReferenceKind.MANY_TO_ONE || (prop.kind === ReferenceKind.ONE_TO_ONE && prop.owner);
 
@@ -196,7 +198,7 @@ export class ChangeSetComputer {
           const targetProp = prop.targetMeta.properties[prop.targetKey];
 
           if (targetProp?.customType) {
-            value = targetProp.customType.convertToDatabaseValue(value, this.platform, { mode: 'serialization' });
+            value = targetProp.customType.convertToDatabaseValue(value, this.#platform, { mode: 'serialization' });
           }
         }
 
@@ -216,7 +218,7 @@ export class ChangeSetComputer {
     });
   }
 
-  private processToMany<T extends object>(prop: EntityProperty<T>, changeSet: ChangeSet<T>): void {
+  #processToMany<T extends object>(prop: EntityProperty<T>, changeSet: ChangeSet<T>): void {
     const target = changeSet.entity[prop.name] as Collection<any>;
 
     if (!target.isDirty() && changeSet.type !== ChangeSetType.CREATE) {
@@ -224,10 +226,10 @@ export class ChangeSetComputer {
     }
 
     if (target.isDirty()) {
-      this.collectionUpdates.add(target);
+      this.#collectionUpdates.add(target);
     }
 
-    if (prop.owner && !this.platform.usesPivotTable()) {
+    if (prop.owner && !this.#platform.usesPivotTable()) {
       changeSet.payload[prop.name] = target.getItems(false).map((item: AnyEntity) => {
         return item.__helper!.__identifier ?? item.__helper!.getPrimaryKey();
       });

@@ -236,12 +236,15 @@ export class Reference<T extends object> {
 
 export class ScalarReference<Value> {
   private entity?: object;
-  private property?: string;
+  #property?: string;
+  #initialized: boolean;
 
   constructor(
     private value?: Value,
-    private initialized = value != null,
-  ) {}
+    initialized = value != null,
+  ) {
+    this.#initialized = initialized;
+  }
 
   /**
    * Ensures the underlying entity is loaded first (without reloading it if it already is loaded).
@@ -253,12 +256,12 @@ export class ScalarReference<Value> {
     const opts: Dictionary =
       typeof options === 'object' ? options : ({ prop: options } as LoadReferenceOptions<any, any>);
 
-    if (!this.initialized || opts.refresh) {
-      if (this.entity == null || this.property == null) {
+    if (!this.#initialized || opts.refresh) {
+      if (this.entity == null || this.#property == null) {
         throw new Error('Cannot load scalar reference that is not bound to an entity property.');
       }
 
-      await helper(this.entity).populate<any>([this.property], opts);
+      await helper(this.entity).populate<any>([this.#property], opts);
     }
 
     return this.value;
@@ -277,7 +280,7 @@ export class ScalarReference<Value> {
       const wrapped = helper(this.entity!);
       options.failHandler ??= wrapped.__em!.config.get('findOneOrFailHandler');
       const entityName = this.entity!.constructor.name;
-      throw NotFoundError.failedToLoadProperty(entityName, this.property!, wrapped.getPrimaryKey());
+      throw NotFoundError.failedToLoadProperty(entityName, this.#property!, wrapped.getPrimaryKey());
     }
 
     return ret;
@@ -285,12 +288,12 @@ export class ScalarReference<Value> {
 
   set(value: Value): void {
     this.value = value;
-    this.initialized = true;
+    this.#initialized = true;
   }
 
   bind<Entity extends object>(entity: Entity, property: EntityKey<Entity>): void {
     this.entity = entity;
-    this.property = property;
+    this.#property = property;
     Object.defineProperty(this, 'entity', { enumerable: false, value: entity });
   }
 
@@ -299,13 +302,13 @@ export class ScalarReference<Value> {
   }
 
   isInitialized(): boolean {
-    return this.initialized;
+    return this.#initialized;
   }
 
   /** @ignore */
   /* v8 ignore next */
   [Symbol.for('nodejs.util.inspect.custom')]() {
-    return this.initialized ? `Ref<${inspect(this.value)}>` : `Ref<?>`;
+    return this.#initialized ? `Ref<${inspect(this.value)}>` : `Ref<?>`;
   }
 }
 

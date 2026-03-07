@@ -35,19 +35,22 @@ type PkSerializer<T> = (entity: T) => string;
 type CompositeKeyPart = string | CompositeKeyPart[];
 
 export class EntityComparator {
-  private readonly comparators = new Map<EntityMetadata, Comparator<any>>();
-  private readonly mappers = new Map<EntityMetadata, ResultMapper<any>>();
-  private readonly snapshotGenerators = new Map<EntityMetadata, SnapshotGenerator<any>>();
-  private readonly pkGetters = new Map<EntityMetadata, PkGetter<any>>();
-  private readonly pkGettersConverted = new Map<EntityMetadata, PkGetter<any>>();
-  private readonly pkSerializers = new Map<EntityMetadata, PkSerializer<any>>();
-  private tmpIndex = 0;
+  readonly #comparators = new Map<EntityMetadata, Comparator<any>>();
+  readonly #mappers = new Map<EntityMetadata, ResultMapper<any>>();
+  readonly #snapshotGenerators = new Map<EntityMetadata, SnapshotGenerator<any>>();
+  readonly #pkGetters = new Map<EntityMetadata, PkGetter<any>>();
+  readonly #pkGettersConverted = new Map<EntityMetadata, PkGetter<any>>();
+  readonly #pkSerializers = new Map<EntityMetadata, PkSerializer<any>>();
+  #tmpIndex = 0;
+  readonly #metadata: IMetadataStorage;
+  readonly #platform: Platform;
+  readonly #config?: Configuration;
 
-  constructor(
-    private readonly metadata: IMetadataStorage,
-    private readonly platform: Platform,
-    private readonly config?: Configuration,
-  ) {}
+  constructor(metadata: IMetadataStorage, platform: Platform, config?: Configuration) {
+    this.#metadata = metadata;
+    this.#platform = platform;
+    this.#config = config;
+  }
 
   /**
    * Computes difference between two entities.
@@ -88,7 +91,7 @@ export class EntityComparator {
    * @internal Highly performance-sensitive method.
    */
   getPkGetter<T>(meta: EntityMetadata<T>) {
-    const exists = this.pkGetters.get(meta);
+    const exists = this.#pkGetters.get(meta);
 
     /* v8 ignore next */
     if (exists) {
@@ -143,8 +146,8 @@ export class EntityComparator {
     const code =
       `// compiled pk getter for entity ${meta.className}\n` + `return function(entity) {\n${lines.join('\n')}\n}`;
     const fnKey = `pkGetter-${meta.uniqueName}`;
-    const pkSerializer = Utils.createFunction(context, code, this.config?.get('compiledFunctions'), fnKey);
-    this.pkGetters.set(meta, pkSerializer);
+    const pkSerializer = Utils.createFunction(context, code, this.#config?.get('compiledFunctions'), fnKey);
+    this.#pkGetters.set(meta, pkSerializer);
 
     return pkSerializer;
   }
@@ -153,7 +156,7 @@ export class EntityComparator {
    * @internal Highly performance-sensitive method.
    */
   getPkGetterConverted<T>(meta: EntityMetadata<T>) {
-    const exists = this.pkGettersConverted.get(meta);
+    const exists = this.#pkGettersConverted.get(meta);
 
     /* v8 ignore next */
     if (exists) {
@@ -203,8 +206,8 @@ export class EntityComparator {
       `// compiled pk getter (with converted custom types) for entity ${meta.className}\n` +
       `return function(entity) {\n${lines.join('\n')}\n}`;
     const fnKey = `pkGetterConverted-${meta.uniqueName}`;
-    const pkSerializer = Utils.createFunction(context, code, this.config?.get('compiledFunctions'), fnKey);
-    this.pkGettersConverted.set(meta, pkSerializer);
+    const pkSerializer = Utils.createFunction(context, code, this.#config?.get('compiledFunctions'), fnKey);
+    this.#pkGettersConverted.set(meta, pkSerializer);
 
     return pkSerializer;
   }
@@ -213,7 +216,7 @@ export class EntityComparator {
    * @internal Highly performance-sensitive method.
    */
   getPkSerializer<T>(meta: EntityMetadata<T>) {
-    const exists = this.pkSerializers.get(meta);
+    const exists = this.#pkSerializers.get(meta);
 
     /* v8 ignore next */
     if (exists) {
@@ -223,7 +226,7 @@ export class EntityComparator {
     const lines: string[] = [];
     const context = new Map<string, any>();
     context.set('getCompositeKeyValue', (val: any) =>
-      Utils.flatten(Utils.getCompositeKeyValue(val, meta, 'convertToDatabaseValue', this.platform) as unknown[][]),
+      Utils.flatten(Utils.getCompositeKeyValue(val, meta, 'convertToDatabaseValue', this.#platform) as unknown[][]),
     );
     context.set('getPrimaryKeyHash', (val: any) => Utils.getPrimaryKeyHash(Utils.asArray(val)));
 
@@ -256,7 +259,7 @@ export class EntityComparator {
         lines.push(`  return '' + entity.${serializedPrimaryKey.name};`);
       } else if (prop.customType) {
         const convertorKey = this.registerCustomType(meta.properties[pk], context);
-        const idx = this.tmpIndex++;
+        const idx = this.#tmpIndex++;
         lines.push(`  const val_${idx} = convertToDatabaseValue_${convertorKey}(entity${this.wrap(pk)});`);
         lines.push(`  return getPrimaryKeyHash(val_${idx});`);
       } else {
@@ -267,8 +270,8 @@ export class EntityComparator {
     const code =
       `// compiled pk serializer for entity ${meta.className}\n` + `return function(entity) {\n${lines.join('\n')}\n}`;
     const fnKey = `pkSerializer-${meta.uniqueName}`;
-    const pkSerializer = Utils.createFunction(context, code, this.config?.get('compiledFunctions'), fnKey);
-    this.pkSerializers.set(meta, pkSerializer);
+    const pkSerializer = Utils.createFunction(context, code, this.#config?.get('compiledFunctions'), fnKey);
+    this.#pkSerializers.set(meta, pkSerializer);
 
     return pkSerializer;
   }
@@ -277,8 +280,8 @@ export class EntityComparator {
    * @internal Highly performance-sensitive method.
    */
   getSnapshotGenerator<T>(entityName: EntityName<T>): SnapshotGenerator<T> {
-    const meta = this.metadata.find<T>(entityName)!;
-    const exists = this.snapshotGenerators.get(meta);
+    const meta = this.#metadata.find<T>(entityName)!;
+    const exists = this.#snapshotGenerators.get(meta);
 
     if (exists) {
       return exists;
@@ -287,7 +290,7 @@ export class EntityComparator {
     const lines: string[] = [];
     const context = new Map<string, any>();
     context.set('clone', clone);
-    context.set('cloneEmbeddable', (o: any) => this.platform.cloneEmbeddable(o)); // do not clone prototypes
+    context.set('cloneEmbeddable', (o: any) => this.#platform.cloneEmbeddable(o)); // do not clone prototypes
 
     if (meta.root.inheritanceType === 'sti' && meta.discriminatorValue) {
       lines.push(`  ret${this.wrap(meta.root.discriminatorColumn!)} = '${meta.discriminatorValue}'`);
@@ -310,8 +313,8 @@ export class EntityComparator {
 
     const code = `return function(entity) {\n  const ret = {};\n${lines.join('\n')}\n  return ret;\n}`;
     const fnKey = `snapshotGenerator-${meta.uniqueName}`;
-    const snapshotGenerator = Utils.createFunction(context, code, this.config?.get('compiledFunctions'), fnKey);
-    this.snapshotGenerators.set(meta, snapshotGenerator);
+    const snapshotGenerator = Utils.createFunction(context, code, this.#config?.get('compiledFunctions'), fnKey);
+    this.#snapshotGenerators.set(meta, snapshotGenerator);
 
     return snapshotGenerator;
   }
@@ -375,7 +378,7 @@ export class EntityComparator {
    * @internal Highly performance-sensitive method.
    */
   getResultMapper<T>(meta: EntityMetadata<T>): ResultMapper<T> {
-    const exists = this.mappers.get(meta);
+    const exists = this.#mappers.get(meta);
 
     if (exists) {
       return exists;
@@ -385,7 +388,7 @@ export class EntityComparator {
     const context = new Map<string, any>();
     context.set('PolymorphicRef', PolymorphicRef);
 
-    const tz = this.platform.getTimezone();
+    const tz = this.#platform.getTimezone();
     const parseDate = (key: string, value: string, padding = '') => {
       lines.push(`${padding}    if (${value} == null || ${value} instanceof Date) {`);
       lines.push(`${padding}      ${key} = ${value};`);
@@ -473,14 +476,14 @@ export class EntityComparator {
           );
           lines.push(`${padding}    ${this.propName(prop.fieldNames[0], 'mapped')} = true;`);
           lines.push(`${padding}  }`);
-        } else if (prop.runtimeType === 'Date' && !this.platform.isNumericProperty(prop)) {
+        } else if (prop.runtimeType === 'Date' && !this.#platform.isNumericProperty(prop)) {
           lines.push(`${padding}  if (typeof ${this.propName(prop.fieldNames[0])} !== 'undefined') {`);
-          context.set('parseDate', (value: string | number) => this.platform.parseDate(value as string));
+          context.set('parseDate', (value: string | number) => this.#platform.parseDate(value as string));
           parseDate('ret' + this.wrap(prop.name), this.propName(prop.fieldNames[0]), padding);
           lines.push(`${padding}    ${this.propName(prop.fieldNames[0], 'mapped')} = true;`);
           lines.push(`${padding}  }`);
         } else if (prop.kind === ReferenceKind.EMBEDDED && (prop.object || meta.embeddable)) {
-          const idx = this.tmpIndex++;
+          const idx = this.#tmpIndex++;
           context.set(`mapEmbeddedResult_${idx}`, (data: Dictionary) => {
             const item = parseJsonSafe(data);
 
@@ -530,8 +533,8 @@ export class EntityComparator {
       `// compiled mapper for entity ${meta.className}\n` +
       `return function(result) {\n  const ret = {};\n${lines.join('\n')}\n  return ret;\n}`;
     const fnKey = `resultMapper-${meta.uniqueName}`;
-    const resultMapper = Utils.createFunction(context, code, this.config?.get('compiledFunctions'), fnKey);
-    this.mappers.set(meta, resultMapper);
+    const resultMapper = Utils.createFunction(context, code, this.#config?.get('compiledFunctions'), fnKey);
+    this.#mappers.set(meta, resultMapper);
 
     return resultMapper;
   }
@@ -572,7 +575,7 @@ export class EntityComparator {
     const entityKey = path.map(k => this.wrap(k)).join('');
     const ret: string[] = [];
     const padding = ' '.repeat(level * 2);
-    const idx = this.tmpIndex++;
+    const idx = this.#tmpIndex++;
 
     ret.push(`${padding}if (Array.isArray(entity${entityKey})) {`);
     ret.push(`${padding}  ret${dataKey} = [];`);
@@ -739,7 +742,7 @@ export class EntityComparator {
         return val;
       }
 
-      return prop.customType!.convertToDatabaseValue(val, this.platform, { mode: 'serialization' });
+      return prop.customType!.convertToDatabaseValue(val, this.#platform, { mode: 'serialization' });
     });
 
     return convertorKey;
@@ -846,7 +849,7 @@ export class EntityComparator {
     }
 
     if (prop.runtimeType === 'Date') {
-      context.set('processDateProperty', this.platform.processDateProperty.bind(this.platform));
+      context.set('processDateProperty', this.#platform.processDateProperty.bind(this.#platform));
       return ret + `    ret${dataKey} = clone(processDateProperty(entity${entityKey}${unwrap}));\n  }\n`;
     }
 
@@ -857,8 +860,8 @@ export class EntityComparator {
    * @internal Highly performance-sensitive method.
    */
   getEntityComparator<T extends object>(entityName: EntityName<T>): Comparator<T> {
-    const meta = this.metadata.find<T>(entityName)!;
-    const exists = this.comparators.get(meta);
+    const meta = this.#metadata.find<T>(entityName)!;
+    const exists = this.#comparators.get(meta);
 
     if (exists) {
       return exists;
@@ -891,8 +894,8 @@ export class EntityComparator {
       `// compiled comparator for entity ${meta.className}\n` +
       `return function(last, current, options) {\n  const diff = {};\n${lines.join('\n')}\n  return diff;\n}`;
     const fnKey = `comparator-${meta.uniqueName}`;
-    const comparator = Utils.createFunction(context, code, this.config?.get('compiledFunctions'), fnKey);
-    this.comparators.set(meta, comparator);
+    const comparator = Utils.createFunction(context, code, this.#config?.get('compiledFunctions'), fnKey);
+    this.#comparators.set(meta, comparator);
 
     return comparator;
   }
@@ -929,7 +932,7 @@ export class EntityComparator {
 
     if (prop.customType) {
       if (prop.customType.compareValues) {
-        const idx = this.tmpIndex++;
+        const idx = this.#tmpIndex++;
         context.set(`compareValues_${idx}`, (a: unknown, b: unknown) => {
           if (Raw.isKnownFragment(a) || Raw.isKnownFragment(b)) {
             return Raw.getKnownFragment(a) === Raw.getKnownFragment(b);

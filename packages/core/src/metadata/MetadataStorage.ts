@@ -15,21 +15,21 @@ function getGlobalStorage(namespace: string): Dictionary {
 export class MetadataStorage {
   static readonly PATH_SYMBOL = Symbol.for('@mikro-orm/core/MetadataStorage.PATH_SYMBOL');
 
-  private static readonly metadata: Dictionary<EntityMetadata> = getGlobalStorage('metadata');
-  private readonly metadata = new Map<EntityName, EntityMetadata>();
-  private readonly idMap: Record<number, EntityMetadata>;
-  private readonly classNameMap: Record<string, EntityMetadata>;
-  private readonly uniqueNameMap: Record<string, EntityMetadata>;
+  static readonly #metadata: Dictionary<EntityMetadata> = getGlobalStorage('metadata');
+  readonly #metadataMap = new Map<EntityName, EntityMetadata>();
+  readonly #idMap: Record<number, EntityMetadata>;
+  readonly #classNameMap: Record<string, EntityMetadata>;
+  readonly #uniqueNameMap: Record<string, EntityMetadata>;
 
   constructor(metadata: Dictionary<EntityMetadata> = {}) {
-    this.idMap = {};
-    this.uniqueNameMap = {};
-    this.classNameMap = Utils.copy(metadata, false);
+    this.#idMap = {};
+    this.#uniqueNameMap = {};
+    this.#classNameMap = Utils.copy(metadata, false);
 
-    for (const meta of Object.values(this.classNameMap)) {
-      this.idMap[meta._id] = meta;
-      this.uniqueNameMap[meta.uniqueName] = meta;
-      this.metadata.set(meta.class, meta);
+    for (const meta of Object.values(this.#classNameMap)) {
+      this.#idMap[meta._id] = meta;
+      this.#uniqueNameMap[meta.uniqueName] = meta;
+      this.#metadataMap.set(meta.class, meta);
     }
   }
 
@@ -38,27 +38,27 @@ export class MetadataStorage {
   static getMetadata<T = any>(entity?: string, path?: string): Dictionary<EntityMetadata> | EntityMetadata<T> {
     const key = entity && path ? entity + '-' + Utils.hash(path) : null;
 
-    if (key && !MetadataStorage.metadata[key]) {
-      MetadataStorage.metadata[key] = new EntityMetadata({ className: entity, path });
+    if (key && !MetadataStorage.#metadata[key]) {
+      MetadataStorage.#metadata[key] = new EntityMetadata({ className: entity, path });
     }
 
     if (key) {
-      return MetadataStorage.metadata[key];
+      return MetadataStorage.#metadata[key];
     }
 
-    return MetadataStorage.metadata;
+    return MetadataStorage.#metadata;
   }
 
   static isKnownEntity(name: string): boolean {
-    return !!Object.values(this.metadata).find(meta => meta.className === name);
+    return !!Object.values(this.#metadata).find(meta => meta.className === name);
   }
 
   static clear(): void {
-    Object.keys(this.metadata).forEach(k => delete this.metadata[k]);
+    Object.keys(this.#metadata).forEach(k => delete this.#metadata[k]);
   }
 
   getAll(): Map<EntityName, EntityMetadata> {
-    return this.metadata;
+    return this.#metadataMap;
   }
 
   get<T = any>(entityName: EntityName<T>, init = false): EntityMetadata<T> {
@@ -85,28 +85,28 @@ export class MetadataStorage {
       return;
     }
 
-    const meta = this.metadata.get(entityName);
+    const meta = this.#metadataMap.get(entityName);
 
     if (meta) {
       return meta;
     }
 
     if (entityName instanceof EntitySchema) {
-      return this.metadata.get(entityName.meta.class) ?? entityName.meta;
+      return this.#metadataMap.get(entityName.meta.class) ?? entityName.meta;
     }
 
-    return this.classNameMap[Utils.className(entityName)];
+    return this.#classNameMap[Utils.className(entityName)];
   }
 
   has<T>(entityName: EntityName<T>): boolean {
-    return this.metadata.has(entityName);
+    return this.#metadataMap.has(entityName);
   }
 
   set<T>(entityName: EntityName<T>, meta: EntityMetadata): EntityMetadata {
-    this.metadata.set(entityName, meta);
-    this.idMap[meta._id] = meta;
-    this.uniqueNameMap[meta.uniqueName] = meta;
-    this.classNameMap[Utils.className(entityName)] = meta;
+    this.#metadataMap.set(entityName, meta);
+    this.#idMap[meta._id] = meta;
+    this.#uniqueNameMap[meta.uniqueName] = meta;
+    this.#classNameMap[Utils.className(entityName)] = meta;
 
     return meta;
   }
@@ -115,42 +115,42 @@ export class MetadataStorage {
     const meta = this.find(entityName);
 
     if (meta) {
-      this.metadata.delete(meta.class);
-      delete this.idMap[meta._id];
-      delete this.uniqueNameMap[meta.uniqueName];
-      delete this.classNameMap[meta.className];
+      this.#metadataMap.delete(meta.class);
+      delete this.#idMap[meta._id];
+      delete this.#uniqueNameMap[meta.uniqueName];
+      delete this.#classNameMap[meta.className];
     }
   }
 
   decorate(em: EntityManager): void {
-    [...this.metadata.values()].filter(meta => meta.prototype).forEach(meta => EntityHelper.decorate(meta, em));
+    [...this.#metadataMap.values()].filter(meta => meta.prototype).forEach(meta => EntityHelper.decorate(meta, em));
   }
 
   *[Symbol.iterator](): IterableIterator<EntityMetadata> {
-    for (const meta of this.metadata.values()) {
+    for (const meta of this.#metadataMap.values()) {
       yield meta;
     }
   }
 
   getById<T>(id: number): EntityMetadata<T> {
-    return this.idMap[id];
+    return this.#idMap[id];
   }
 
   getByClassName<T = any, V extends boolean = true>(
     className: string,
     validate = true as V,
   ): V extends true ? EntityMetadata<T> : EntityMetadata<T> | undefined {
-    return this.validate(this.classNameMap[className], className, validate);
+    return this.#validate(this.#classNameMap[className], className, validate);
   }
 
   getByUniqueName<T = any, V extends boolean = true>(
     uniqueName: string,
     validate = true as V,
   ): V extends true ? EntityMetadata<T> : EntityMetadata<T> | undefined {
-    return this.validate(this.uniqueNameMap[uniqueName], uniqueName, validate);
+    return this.#validate(this.#uniqueNameMap[uniqueName], uniqueName, validate);
   }
 
-  private validate<T = any, V extends boolean = true>(
+  #validate<T = any, V extends boolean = true>(
     meta: EntityMetadata | undefined,
     id: string,
     validate: boolean,

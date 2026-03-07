@@ -4,10 +4,10 @@ import { Utils } from '../utils/Utils.js';
 import { EventType, EventTypeMap, type TransactionEventType } from '../enums.js';
 
 export class EventManager {
-  private readonly listeners: { [K in EventType]?: Set<EventSubscriber> } = {};
-  private readonly entities = new Map<EventSubscriber, Set<string>>();
-  private readonly cache = new Map<number, boolean>();
-  private readonly subscribers = new Set<EventSubscriber>();
+  readonly #listeners: { [K in EventType]?: Set<EventSubscriber> } = {};
+  readonly #entities = new Map<EventSubscriber, Set<string>>();
+  readonly #cache = new Map<number, boolean>();
+  readonly #subscribers = new Set<EventSubscriber>();
 
   constructor(subscribers: Iterable<EventSubscriber>) {
     for (const subscriber of subscribers) {
@@ -16,23 +16,23 @@ export class EventManager {
   }
 
   registerSubscriber(subscriber: EventSubscriber): void {
-    if (this.subscribers.has(subscriber)) {
+    if (this.#subscribers.has(subscriber)) {
       return;
     }
 
-    this.subscribers.add(subscriber);
-    this.entities.set(subscriber, this.getSubscribedEntities(subscriber));
-    this.cache.clear();
+    this.#subscribers.add(subscriber);
+    this.#entities.set(subscriber, this.#getSubscribedEntities(subscriber));
+    this.#cache.clear();
     Utils.keys(EventType)
       .filter(event => event in subscriber)
       .forEach(event => {
-        this.listeners[event] ??= new Set();
-        this.listeners[event].add(subscriber);
+        this.#listeners[event] ??= new Set();
+        this.#listeners[event].add(subscriber);
       });
   }
 
   getSubscribers(): Set<EventSubscriber> {
-    return this.subscribers;
+    return this.#subscribers;
   }
 
   dispatchEvent<T extends object>(
@@ -69,8 +69,8 @@ export class EventManager {
       }),
     );
 
-    for (const listener of this.listeners[event] ?? new Set()) {
-      const entities = this.entities.get(listener)!;
+    for (const listener of this.#listeners[event] ?? new Set()) {
+      const entities = this.#entities.get(listener)!;
 
       if (entities.size === 0 || !entity || entities.has(entity.constructor.name)) {
         listeners.push(listener[event]!.bind(listener) as AsyncFunction);
@@ -91,35 +91,35 @@ export class EventManager {
   hasListeners<T>(event: EventType, meta: EntityMetadata<T>): boolean {
     const cacheKey = meta._id + EventTypeMap[event];
 
-    if (this.cache.has(cacheKey)) {
-      return this.cache.get(cacheKey)!;
+    if (this.#cache.has(cacheKey)) {
+      return this.#cache.get(cacheKey)!;
     }
 
     const hasHooks = meta.hooks[event]?.length;
 
     if (hasHooks) {
-      this.cache.set(cacheKey, true);
+      this.#cache.set(cacheKey, true);
       return true;
     }
 
-    for (const listener of this.listeners[event] ?? new Set()) {
-      const entities = this.entities.get(listener)!;
+    for (const listener of this.#listeners[event] ?? new Set()) {
+      const entities = this.#entities.get(listener)!;
 
       if (entities.size === 0 || entities.has(meta.className)) {
-        this.cache.set(cacheKey, true);
+        this.#cache.set(cacheKey, true);
         return true;
       }
     }
 
-    this.cache.set(cacheKey, false);
+    this.#cache.set(cacheKey, false);
     return false;
   }
 
   clone() {
-    return new EventManager(this.subscribers);
+    return new EventManager(this.#subscribers);
   }
 
-  private getSubscribedEntities(listener: EventSubscriber): Set<string> {
+  #getSubscribedEntities(listener: EventSubscriber): Set<string> {
     if (!listener.getSubscribedEntities) {
       return new Set();
     }

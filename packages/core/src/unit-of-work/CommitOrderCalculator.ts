@@ -33,30 +33,30 @@ export interface Edge {
  */
 export class CommitOrderCalculator {
   /** Matrix of nodes, keys are provided hashes and values are the node definition objects. */
-  private nodes = new Map<Hash, Node>();
+  #nodes = new Map<Hash, Node>();
 
   /** Volatile variable holding calculated nodes during sorting process. */
-  private sortedNodeList: Hash[] = [];
+  #sortedNodeList: Hash[] = [];
 
   /**
    * Checks for node existence in graph.
    */
   hasNode(hash: Hash): boolean {
-    return this.nodes.has(hash);
+    return this.#nodes.has(hash);
   }
 
   /**
    * Adds a new node to the graph, assigning its hash.
    */
   addNode(hash: Hash): void {
-    this.nodes.set(hash, { hash, state: NodeState.NOT_VISITED, dependencies: new Map() });
+    this.#nodes.set(hash, { hash, state: NodeState.NOT_VISITED, dependencies: new Map() });
   }
 
   /**
    * Adds a new dependency (edge) to the graph using their hashes.
    */
   addDependency(from: Hash, to: Hash, weight: number): void {
-    this.nodes.get(from)!.dependencies.set(to, { from, to, weight });
+    this.#nodes.get(from)!.dependencies.set(to, { from, to, weight });
   }
 
   discoverProperty(prop: EntityProperty, entityName: Hash): void {
@@ -84,17 +84,17 @@ export class CommitOrderCalculator {
    * @internal Highly performance-sensitive method.
    */
   sort(): Hash[] {
-    for (const vertex of this.nodes.values()) {
+    for (const vertex of this.#nodes.values()) {
       if (vertex.state !== NodeState.NOT_VISITED) {
         continue;
       }
 
-      this.visit(vertex);
+      this.#visit(vertex);
     }
 
-    const sortedList = this.sortedNodeList.reverse();
-    this.nodes = new Map();
-    this.sortedNodeList = [];
+    const sortedList = this.#sortedNodeList.reverse();
+    this.#nodes = new Map();
+    this.#sortedNodeList = [];
 
     return sortedList;
   }
@@ -104,46 +104,46 @@ export class CommitOrderCalculator {
    *
    * @internal Highly performance-sensitive method.
    */
-  private visit(node: Node): void {
+  #visit(node: Node): void {
     node.state = NodeState.IN_PROGRESS;
 
     for (const edge of node.dependencies.values()) {
-      const target = this.nodes.get(edge.to)!;
+      const target = this.#nodes.get(edge.to)!;
 
       switch (target.state) {
         case NodeState.VISITED:
           break; // Do nothing, since node was already visited
         case NodeState.IN_PROGRESS:
-          this.visitOpenNode(node, target, edge);
+          this.#visitOpenNode(node, target, edge);
           break;
         case NodeState.NOT_VISITED:
-          this.visit(target);
+          this.#visit(target);
       }
     }
 
     if ((node.state as unknown) !== NodeState.VISITED) {
       node.state = NodeState.VISITED;
-      this.sortedNodeList.push(node.hash);
+      this.#sortedNodeList.push(node.hash);
     }
   }
 
   /**
    * Visits all target's dependencies if in cycle with given node
    */
-  private visitOpenNode(node: Node, target: Node, edge: Edge): void {
+  #visitOpenNode(node: Node, target: Node, edge: Edge): void {
     if (!target.dependencies.has(node.hash) || target.dependencies.get(node.hash)!.weight >= edge.weight) {
       return;
     }
 
     for (const edge of target.dependencies.values()) {
-      const targetNode = this.nodes.get(edge.to)!;
+      const targetNode = this.#nodes.get(edge.to)!;
 
       if (targetNode.state === NodeState.NOT_VISITED) {
-        this.visit(targetNode);
+        this.#visit(targetNode);
       }
     }
 
     target.state = NodeState.VISITED;
-    this.sortedNodeList.push(target.hash);
+    this.#sortedNodeList.push(target.hash);
   }
 }

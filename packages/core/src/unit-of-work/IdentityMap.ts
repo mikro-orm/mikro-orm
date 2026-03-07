@@ -1,14 +1,18 @@
 import type { AnyEntity, EntityCtor, EntityMetadata } from '../typings.js';
 
 export class IdentityMap {
-  constructor(private readonly defaultSchema?: string) {}
+  readonly #defaultSchema?: string;
 
-  private readonly registry = new Map<EntityCtor, Map<string, AnyEntity>>();
+  constructor(defaultSchema?: string) {
+    this.#defaultSchema = defaultSchema;
+  }
+
+  readonly #registry = new Map<EntityCtor, Map<string, AnyEntity>>();
   /** Tracks alternate key hashes for each entity so we can clean them up on delete */
-  private readonly alternateKeys = new WeakMap<AnyEntity, Set<string>>();
+  readonly #alternateKeys = new WeakMap<AnyEntity, Set<string>>();
 
   store<T>(item: T) {
-    this.getStore((item as AnyEntity).__meta!.root).set(this.getPkHash(item), item);
+    this.getStore((item as AnyEntity).__meta!.root).set(this.#getPkHash(item), item);
   }
 
   /**
@@ -19,11 +23,11 @@ export class IdentityMap {
     const hash = this.getKeyHash(key, value, schema);
     this.getStore((item as AnyEntity).__meta!.root).set(hash, item);
     // Track this alternate key so we can clean it up when the entity is deleted
-    let keys = this.alternateKeys.get(item as AnyEntity);
+    let keys = this.#alternateKeys.get(item as AnyEntity);
 
     if (!keys) {
       keys = new Set();
-      this.alternateKeys.set(item as AnyEntity, keys);
+      this.#alternateKeys.set(item as AnyEntity, keys);
     }
 
     keys.add(hash);
@@ -32,17 +36,17 @@ export class IdentityMap {
   delete<T>(item: T) {
     const meta = (item as AnyEntity).__meta!.root;
     const store = this.getStore(meta);
-    store.delete(this.getPkHash(item));
+    store.delete(this.#getPkHash(item));
 
     // Also delete any alternate key entries for this entity
-    const altKeys = this.alternateKeys.get(item as AnyEntity);
+    const altKeys = this.#alternateKeys.get(item as AnyEntity);
 
     if (altKeys) {
       for (const hash of altKeys) {
         store.delete(hash);
       }
 
-      this.alternateKeys.delete(item as AnyEntity);
+      this.#alternateKeys.delete(item as AnyEntity);
     }
   }
 
@@ -52,26 +56,26 @@ export class IdentityMap {
   }
 
   getStore<T>(meta: EntityMetadata<T>): Map<string, T> {
-    const store = this.registry.get(meta.class) as Map<string, T>;
+    const store = this.#registry.get(meta.class) as Map<string, T>;
 
     if (store) {
       return store;
     }
 
     const newStore = new Map();
-    this.registry.set(meta.class, newStore);
+    this.#registry.set(meta.class, newStore);
 
     return newStore;
   }
 
   clear() {
-    this.registry.clear();
+    this.#registry.clear();
   }
 
   values(): AnyEntity[] {
     const ret: AnyEntity[] = [];
 
-    for (const store of this.registry.values()) {
+    for (const store of this.#registry.values()) {
       ret.push(...store.values());
     }
 
@@ -79,7 +83,7 @@ export class IdentityMap {
   }
 
   *[Symbol.iterator](): IterableIterator<AnyEntity> {
-    for (const store of this.registry.values()) {
+    for (const store of this.#registry.values()) {
       for (const item of store.values()) {
         yield item;
       }
@@ -89,7 +93,7 @@ export class IdentityMap {
   keys(): string[] {
     const ret: string[] = [];
 
-    for (const [cls, store] of this.registry) {
+    for (const [cls, store] of this.#registry) {
       ret.push(...[...store.keys()].map(hash => `${cls.name}-${hash}`));
     }
 
@@ -101,21 +105,21 @@ export class IdentityMap {
    */
   get<T>(hash: string): T | undefined {
     const [name, id] = hash.split('-', 2);
-    const cls = [...this.registry.keys()].find(k => k.name === name);
+    const cls = [...this.#registry.keys()].find(k => k.name === name);
 
     if (!cls) {
       return undefined;
     }
 
-    const store = this.registry.get(cls) as Map<string, T>;
+    const store = this.#registry.get(cls) as Map<string, T>;
     return store.has(id) ? store.get(id) : undefined;
   }
 
-  private getPkHash<T>(item: T): string {
+  #getPkHash<T>(item: T): string {
     const wrapped = (item as AnyEntity).__helper;
     const meta = wrapped.__meta as EntityMetadata<T>;
     const hash = wrapped.getSerializedPrimaryKey();
-    const schema = wrapped.__schema ?? meta.root.schema ?? this.defaultSchema;
+    const schema = wrapped.__schema ?? meta.root.schema ?? this.#defaultSchema;
 
     if (schema) {
       return schema + ':' + hash;

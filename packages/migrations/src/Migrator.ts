@@ -25,12 +25,12 @@ import { TSMigrationGenerator } from './TSMigrationGenerator.js';
 import { JSMigrationGenerator } from './JSMigrationGenerator.js';
 
 export class Migrator extends AbstractMigrator<AbstractSqlDriver> {
-  private readonly schemaGenerator: SqlSchemaGenerator;
-  private snapshotPath?: string;
+  readonly #schemaGenerator: SqlSchemaGenerator;
+  #snapshotPath?: string;
 
   constructor(em: EntityManager) {
     super(em);
-    this.schemaGenerator = this.config.getExtension('@mikro-orm/schema-generator')!;
+    this.#schemaGenerator = this.config.getExtension('@mikro-orm/schema-generator')!;
   }
 
   static register(orm: MikroORM): void {
@@ -53,8 +53,8 @@ export class Migrator extends AbstractMigrator<AbstractSqlDriver> {
     return new TSMigrationGenerator(this.driver, this.config.getNamingStrategy(), this.options);
   }
 
-  private async getSnapshotPath(): Promise<string> {
-    if (!this.snapshotPath) {
+  async #getSnapshotPath(): Promise<string> {
+    if (!this.#snapshotPath) {
       const { fs } = await import('@mikro-orm/core/fs-utils');
       // for snapshots, we always want to use the path based on `emit` option, regardless of whether we run in TS context
       /* v8 ignore next */
@@ -62,10 +62,10 @@ export class Migrator extends AbstractMigrator<AbstractSqlDriver> {
       const absoluteSnapshotPath = fs.absolutePath(snapshotPath, this.config.get('baseDir'));
       const dbName = this.config.get('dbName')!.replace(/\\/g, '/').split('/').pop()!.replace(/:/g, '');
       const snapshotName = this.options.snapshotName ?? `.snapshot-${dbName}`;
-      this.snapshotPath = fs.normalizePath(absoluteSnapshotPath, `${snapshotName}.json`);
+      this.#snapshotPath = fs.normalizePath(absoluteSnapshotPath, `${snapshotName}.json`);
     }
 
-    return this.snapshotPath;
+    return this.#snapshotPath;
   }
 
   protected override async init(): Promise<void> {
@@ -74,7 +74,7 @@ export class Migrator extends AbstractMigrator<AbstractSqlDriver> {
     }
 
     await super.init();
-    const created = await this.schemaGenerator.ensureDatabase();
+    const created = await this.#schemaGenerator.ensureDatabase();
 
     /* v8 ignore next */
     if (created) {
@@ -94,7 +94,7 @@ export class Migrator extends AbstractMigrator<AbstractSqlDriver> {
       return this.createInitial(path, name, blank);
     }
 
-    const diff = await this.getSchemaDiff(blank, initial);
+    const diff = await this.#getSchemaDiff(blank, initial);
 
     if (diff.up.length === 0) {
       return { fileName: '', code: '', diff };
@@ -112,7 +112,7 @@ export class Migrator extends AbstractMigrator<AbstractSqlDriver> {
 
   async checkSchema(): Promise<boolean> {
     await this.init();
-    const diff = await this.getSchemaDiff(false, false);
+    const diff = await this.#getSchemaDiff(false, false);
     return diff.up.length > 0;
   }
 
@@ -121,8 +121,8 @@ export class Migrator extends AbstractMigrator<AbstractSqlDriver> {
    */
   async createInitial(path?: string, name?: string, blank = false): Promise<MigrationResult> {
     await this.init();
-    const schemaExists = await this.validateInitialMigration(blank);
-    const diff = await this.getSchemaDiff(blank, true);
+    const schemaExists = await this.#validateInitialMigration(blank);
+    const diff = await this.#getSchemaDiff(blank, true);
     const migration = await this.generator.generate(diff, path, name);
     await this.storeCurrentSchema();
 
@@ -168,7 +168,7 @@ export class Migrator extends AbstractMigrator<AbstractSqlDriver> {
    * If existing schema contains all of the tables already, we return true, based on that we mark the migration as already executed.
    * If only some of the tables are present, exception is thrown.
    */
-  private async validateInitialMigration(blank: boolean): Promise<boolean> {
+  async #validateInitialMigration(blank: boolean): Promise<boolean> {
     const executed = await this.getExecuted();
     const pending = await this.getPending();
 
@@ -214,7 +214,7 @@ export class Migrator extends AbstractMigrator<AbstractSqlDriver> {
       return undefined;
     }
 
-    const snapshotPath = await this.getSnapshotPath();
+    const snapshotPath = await this.#getSnapshotPath();
     const { fs } = await import('@mikro-orm/core/fs-utils');
 
     if (!fs.pathExists(snapshotPath)) {
@@ -247,13 +247,13 @@ export class Migrator extends AbstractMigrator<AbstractSqlDriver> {
       return;
     }
 
-    const snapshotPath = await this.getSnapshotPath();
-    schema ??= this.schemaGenerator.getTargetSchema();
+    const snapshotPath = await this.#getSnapshotPath();
+    schema ??= this.#schemaGenerator.getTargetSchema();
     const { fs } = await import('@mikro-orm/core/fs-utils');
     await fs.writeFile(snapshotPath, JSON.stringify(schema, null, 2));
   }
 
-  private async getSchemaDiff(blank: boolean, initial: boolean): Promise<{ up: string[]; down: string[] }> {
+  async #getSchemaDiff(blank: boolean, initial: boolean): Promise<{ up: string[]; down: string[] }> {
     const up: string[] = [];
     const down: string[] = [];
 
@@ -294,10 +294,10 @@ export class Migrator extends AbstractMigrator<AbstractSqlDriver> {
       up.push('select 1');
       down.push('select 1');
     } else if (initial) {
-      const dump = await this.schemaGenerator.getCreateSchemaSQL({ wrap: false });
+      const dump = await this.#schemaGenerator.getCreateSchemaSQL({ wrap: false });
       up.push(...splitStatements(dump));
     } else {
-      const diff = await this.schemaGenerator.getUpdateSchemaMigrationSQL({
+      const diff = await this.#schemaGenerator.getUpdateSchemaMigrationSQL({
         wrap: false,
         safe: this.options.safe,
         dropTables: this.options.dropTables,

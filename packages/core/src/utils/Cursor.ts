@@ -65,7 +65,7 @@ export class Cursor<
   readonly hasPrevPage: boolean;
   readonly hasNextPage: boolean;
 
-  private readonly definition: (readonly [EntityKey<Entity>, QueryOrder])[];
+  readonly #definition: (readonly [EntityKey<Entity>, QueryOrder])[];
 
   constructor(
     readonly items: Loaded<Entity, Hint, Fields, Excludes>[],
@@ -88,7 +88,7 @@ export class Cursor<
       }
     }
 
-    this.definition = Cursor.getDefinition(meta, orderBy!);
+    this.#definition = Cursor.getDefinition(meta, orderBy!);
   }
 
   get startCursor(): string | null {
@@ -153,7 +153,7 @@ export class Cursor<
 
       return value;
     };
-    const value = this.definition.map(([key, direction]) => processEntity(entity as Entity, key, direction));
+    const value = this.#definition.map(([key, direction]) => processEntity(entity as Entity, key, direction));
     return Cursor.encode(value);
   }
 
