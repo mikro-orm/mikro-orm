@@ -835,3 +835,23 @@ The migration path auto-detection (e.g. `./src/migrations`) now runs lazily on t
 -import { DataloaderUtils } from '@mikro-orm/core';
 +import { DataloaderUtils } from '@mikro-orm/core/dataloader';
 ```
+
+## Internal properties converted to native `#private`
+
+Several core classes now use native ECMAScript `#private` fields for **properties** instead of TypeScript's `private`/`protected` keywords. This provides true runtime encapsulation but is a breaking change if you relied on accessing these internals via `as any` casts. Private and protected **methods** retain their TypeScript visibility keywords and remain overridable in subclasses.
+
+### Affected classes
+
+- **`EntityManager`** — all previously `private`/`protected` properties (e.g., `unitOfWork`, `entityFactory`, `comparator`, `entityLoader`, `transactionContext`, `filters`, `filterParams`, `resultCache`, `_schema`, `flushMode`, `disableTransactions`) are now `#private`. Use the existing public API methods instead (e.g., `em.getUnitOfWork()`, `em.getEntityFactory()`, `em.getComparator()`, `em.getTransactionContext()`, `em.schema`).
+- **`Collection`** — all previously `protected` properties (e.g., `items`, `initialized`, `dirty`, `partial`, `snapshot`, `_count`, `_property`, `_populated`, `readonly`) are now `#private`. Use the existing public API methods instead (e.g., `isInitialized()`, `isDirty()`, `isPartial()`, `getSnapshot()`, `shouldPopulate()`, `populated()`).
+- **`QueryBuilder`** — all mutable query state is now consolidated into a single `#private` object, exposed via a public `@internal` `state` getter (typed as `QBState<Entity>`). Previously `protected` properties (e.g., `_joins`, `_data`, `_schema`, `aliasCounter`, `subQueries`, `lockMode`, `_groupBy`, `_having`, `_returning`, `_onConflict`, `_distinctOn`, `_cache`, `_mainAlias`, `_helper`, `_tptAlias`) are no longer directly accessible. Subclasses can use `this.state` to read and mutate query state. If you subclass `QueryBuilder`, review your overrides. The `clone()` method's `reset` and `preserve` parameters now accept `keyof QBState<Entity>` instead of raw strings — property names no longer have the `_` prefix (e.g., `const qb2 = qb.clone(true, ['schema'])` instead of `qb.clone(true, ['_schema'])`).
+- **`UnitOfWork`** — all previously `private` properties (e.g., `identityMap`, `persistStack`, `removeStack`, `orphanRemoveStack`, `changeSets`, `collectionUpdates`, `extraUpdates`) are now `#private`. Use the existing public API methods instead (e.g., `getIdentityMap()`, `getPersistStack()`, `getRemoveStack()`, `getOrphanRemoveStack()`, `getChangeSets()`).
+- **`QueryBuilderHelper`** — all constructor parameters (e.g., `entityName`, `alias`, `aliasMap`, `subQueries`, `driver`, `tptAliasMap`) are now `#private`. This class is `@internal` and not intended for direct use.
+- **`IdentityMap`** — all previously `private` properties (`registry`, `alternateKeys`, `defaultSchema`) are now `#private`. Use the existing public API methods instead (e.g., `store()`, `delete()`, `getByHash()`, `getStore()`, `keys()`, `values()`).
+- **`Configuration`**, **`MetadataDiscovery`**, **`MetadataStorage`**, **`EntityFactory`**, **`EntityComparator`**, **`EntityLoader`**, **`ObjectHydrator`**, **`EventManager`**, **`MikroORM`** — internal properties converted to `#private`. Use the existing public API methods.
+- **`DatabaseTable`**, **`DatabaseSchema`**, **`SchemaComparator`**, **`PivotCollectionPersister`** — internal properties converted to `#private`.
+- **`ChangeSetComputer`**, **`ChangeSetPersister`**, **`CommitOrderCalculator`**, **`TransactionManager`** — internal properties converted to `#private`.
+- **`Migrator`**, **`MigrationRunner`**, **`MigrationStorage`**, **`Migration`**, **`AbstractMigrator`**, **`SeedManager`** — internal properties converted to `#private`.
+- **`EntityGenerator`**, **`SourceFile`** — internal properties converted to `#private`.
+- **`MikroTransformer`** — internal properties converted to `#private`.
+- **`DatabaseDriver`** — the `protected logger` property was removed. Use `this.config.getLogger()` directly in custom drivers.

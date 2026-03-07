@@ -1,6 +1,6 @@
 import { Author } from '../../entities/index.js';
-import type { ChangeSet, ChangeSetComputer, EventSubscriber, FlushEventArgs, MikroORM } from '@mikro-orm/core';
-import { ChangeSetType, IdentityMap, UnitOfWork } from '@mikro-orm/core';
+import type { ChangeSet, EventSubscriber, FlushEventArgs, MikroORM } from '@mikro-orm/core';
+import { ChangeSetComputer, ChangeSetType, IdentityMap, UnitOfWork } from '@mikro-orm/core';
 import { initORMMongo, mockLogger } from '../../bootstrap.js';
 import FooBar from '../../entities/FooBar.js';
 import { FooBaz } from '../../entities/FooBaz.js';
@@ -14,8 +14,7 @@ describe('UnitOfWork', () => {
   beforeAll(async () => {
     orm = await initORMMongo();
     uow = new UnitOfWork(orm.em);
-    // @ts-ignore
-    computer = uow.changeSetComputer;
+    computer = new ChangeSetComputer(orm.em, new Set());
   });
   beforeEach(async () => orm.schema.clear());
 

@@ -388,7 +388,7 @@ export class SourceFile {
     }
 
     const isScalar = typeof prop.kind === 'undefined' || prop.kind === ReferenceKind.SCALAR;
-    let breakdownOfIType: ReturnType<SourceFile['breakdownOfIType']>;
+    let breakdownOfIType: [string, string] | [string, string, string] | undefined;
 
     const propType = prop.mapToPk
       ? (() => {
@@ -827,11 +827,11 @@ export class SourceFile {
     }
   }
 
-  private propTypeBreakdowns = new WeakMap<EntityProperty, ReturnType<SourceFile['breakdownOfIType']>>();
+  #propTypeBreakdowns = new WeakMap<EntityProperty, [string, string] | [string, string, string] | undefined>();
 
   private breakdownOfIType(prop: EntityProperty): [string, string] | [string, string, string] | undefined {
-    if (this.propTypeBreakdowns.has(prop)) {
-      return this.propTypeBreakdowns.get(prop);
+    if (this.#propTypeBreakdowns.has(prop)) {
+      return this.#propTypeBreakdowns.get(prop);
     }
 
     const mappedDeclaredType = this.platform.getMappedType(prop.type);
@@ -878,7 +878,7 @@ export class SourceFile {
             r[2] = `(${r[2]}) & ${this.referenceCoreImport('Hidden')}`;
           }
         }
-        this.propTypeBreakdowns.set(prop, r);
+        this.#propTypeBreakdowns.set(prop, r);
         return r;
       }
 
@@ -890,11 +890,11 @@ export class SourceFile {
           }
         }
       }
-      this.propTypeBreakdowns.set(prop, r);
+      this.#propTypeBreakdowns.set(prop, r);
       return r;
     }
     const r = undefined;
-    this.propTypeBreakdowns.set(prop, r);
+    this.#propTypeBreakdowns.set(prop, r);
     return r;
   }
 

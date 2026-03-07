@@ -94,10 +94,10 @@ test('expected behaviour', async () => {
       },
     });
     expect(users[0].groups[0].permissions[0].write).toBe(true);
-    expect((users[0].groups[0].permissions as any)._populated).toBe(undefined); // this is the problem / it should be true
+    expect(users[0].groups[0].permissions.shouldPopulate()).toBe(false); // this is the problem / it should be true
 
     // fixing the problem:
-    (users[0].groups[0].permissions as any)._populated = true;
+    users[0].groups[0].permissions.populated(true);
     const fail = (users[0] as any).toJSON();
 
     expect(fail.groups[0].permissions[0].write).toBe(true); // this won't fail but in the next test it will fail
@@ -128,7 +128,7 @@ test('reproduce bug', async () => {
       },
     });
     expect(users[0].groups[0].permissions[0].write).toBe(true);
-    expect((users[0].groups[0].permissions as any)._populated).toBe(undefined); // this is the problem / it should be true
+    expect(users[0].groups[0].permissions.shouldPopulate()).toBe(false); // this is the problem / it should be true
 
     const fail = (users[0] as any).toJSON();
 

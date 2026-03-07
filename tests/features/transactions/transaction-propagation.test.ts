@@ -63,11 +63,11 @@ describe.each(Utils.keys(options))('Transaction Propagation [%s]', type => {
     let innerTrx: any;
 
     await em.transactional(async em1 => {
-      outerTrx = (em1 as any).transactionContext;
+      outerTrx = em1.getTransactionContext();
 
       await em1.transactional(
         async em2 => {
-          innerTrx = (em2 as any).transactionContext;
+          innerTrx = em2.getTransactionContext();
           const entity = em2.create(TestEntity, { name: 'test' });
           await em2.persist(entity).flush();
         },
@@ -115,7 +115,7 @@ describe.each(Utils.keys(options))('Transaction Propagation [%s]', type => {
 
     await em.transactional(
       async em1 => {
-        trx = (em1 as any).transactionContext;
+        trx = em1.getTransactionContext();
         const entity = em1.create(TestEntity, { name: 'test' });
         await em1.persist(entity).flush();
       },
@@ -158,13 +158,13 @@ describe.each(Utils.keys(options))('Transaction Propagation [%s]', type => {
     const contexts: any[] = [];
 
     await em.transactional(async em1 => {
-      contexts.push((em1 as any).transactionContext);
+      contexts.push(em1.getTransactionContext());
       const entity1 = em1.create(TestEntity, { name: 'first' });
       await em1.persist(entity1).flush();
 
       await em1.transactional(
         async em2 => {
-          contexts.push((em2 as any).transactionContext);
+          contexts.push(em2.getTransactionContext());
           const entity2 = em2.create(TestEntity, { name: 'second' });
           await em2.persist(entity2).flush();
         },
@@ -173,7 +173,7 @@ describe.each(Utils.keys(options))('Transaction Propagation [%s]', type => {
 
       await em1.transactional(
         async em3 => {
-          contexts.push((em3 as any).transactionContext);
+          contexts.push(em3.getTransactionContext());
           const entity3 = em3.create(TestEntity, { name: 'third' });
           await em3.persist(entity3).flush();
         },
@@ -195,13 +195,13 @@ describe.each(Utils.keys(options))('Transaction Propagation [%s]', type => {
     let innerTrx: any;
 
     await em.transactional(async em1 => {
-      outerTrx = (em1 as any).transactionContext;
+      outerTrx = em1.getTransactionContext();
       const entity1 = em1.create(TestEntity, { name: 'outer' });
       await em1.persist(entity1).flush();
 
       await em1.transactional(
         async em2 => {
-          innerTrx = (em2 as any).transactionContext;
+          innerTrx = em2.getTransactionContext();
           const entity2 = em2.create(TestEntity, { name: 'inner' });
           await em2.persist(entity2).flush();
         },
@@ -283,12 +283,12 @@ describe.each(Utils.keys(options))('Transaction Propagation [%s]', type => {
     const contexts: any[] = [];
 
     await em.transactional(async em1 => {
-      contexts.push((em1 as any).transactionContext);
+      contexts.push(em1.getTransactionContext());
 
       for (let i = 0; i < 3; i++) {
         await em1.transactional(
           async em2 => {
-            contexts.push((em2 as any).transactionContext);
+            contexts.push(em2.getTransactionContext());
             const entity = em2.create(TestEntity, { name: `entity-${i}` });
             await em2.persist(entity).flush();
           },
@@ -702,11 +702,11 @@ describe.each(Utils.keys(options))('Transaction Propagation [%s]', type => {
     let innerTrx: any;
 
     await em.transactional(async em1 => {
-      outerTrx = (em1 as any).transactionContext;
+      outerTrx = em1.getTransactionContext();
 
       await em1.transactional(
         async em2 => {
-          innerTrx = (em2 as any).transactionContext;
+          innerTrx = em2.getTransactionContext();
           const entity = em2.create(TestEntity, { name: 'supports-with-tx' });
           await em2.persist(entity).flush();
         },
@@ -727,7 +727,7 @@ describe.each(Utils.keys(options))('Transaction Propagation [%s]', type => {
 
     await em.transactional(
       async em1 => {
-        trx = (em1 as any).transactionContext;
+        trx = em1.getTransactionContext();
         const entity = em1.create(TestEntity, { name: 'supports-no-tx' });
         await em1.persist(entity).flush();
       },
@@ -748,13 +748,13 @@ describe.each(Utils.keys(options))('Transaction Propagation [%s]', type => {
     let innerTrx: any;
 
     await em.transactional(async em1 => {
-      outerTrx = (em1 as any).transactionContext;
+      outerTrx = em1.getTransactionContext();
       const entity1 = em1.create(TestEntity, { name: 'outer' });
       await em1.persist(entity1).flush();
 
       await em1.transactional(
         async em2 => {
-          innerTrx = (em2 as any).transactionContext;
+          innerTrx = em2.getTransactionContext();
           const entity2 = em2.create(TestEntity, { name: 'mandatory-with-tx' });
           await em2.persist(entity2).flush();
         },
@@ -794,7 +794,7 @@ describe.each(Utils.keys(options))('Transaction Propagation [%s]', type => {
 
     await em.transactional(
       async em1 => {
-        trx = (em1 as any).transactionContext;
+        trx = em1.getTransactionContext();
         const entity = em1.create(TestEntity, { name: 'never-no-tx' });
         await em1.persist(entity).flush();
       },
@@ -869,12 +869,12 @@ describe.each(Utils.keys(options))('Transaction Propagation [%s]', type => {
     const contexts: any[] = [];
 
     await em.transactional(async em1 => {
-      contexts.push({ level: 1, context: (em1 as any).transactionContext });
+      contexts.push({ level: 1, context: em1.getTransactionContext() });
 
       // REQUIRED should share context
       await em1.transactional(
         async em2 => {
-          contexts.push({ level: 2, type: 'REQUIRED', context: (em2 as any).transactionContext });
+          contexts.push({ level: 2, type: 'REQUIRED', context: em2.getTransactionContext() });
         },
         { propagation: TransactionPropagation.REQUIRED },
       );
@@ -882,7 +882,7 @@ describe.each(Utils.keys(options))('Transaction Propagation [%s]', type => {
       // REQUIRES_NEW should have new context
       await em1.transactional(
         async em2 => {
-          contexts.push({ level: 2, type: 'REQUIRES_NEW', context: (em2 as any).transactionContext });
+          contexts.push({ level: 2, type: 'REQUIRES_NEW', context: em2.getTransactionContext() });
         },
         { propagation: TransactionPropagation.REQUIRES_NEW },
       );
@@ -890,7 +890,7 @@ describe.each(Utils.keys(options))('Transaction Propagation [%s]', type => {
       // NESTED should share context but with savepoint
       await em1.transactional(
         async em2 => {
-          contexts.push({ level: 2, type: 'NESTED', context: (em2 as any).transactionContext });
+          contexts.push({ level: 2, type: 'NESTED', context: em2.getTransactionContext() });
         },
         { propagation: TransactionPropagation.NESTED },
       );
@@ -998,19 +998,19 @@ describe.each(Utils.keys(options))('Transaction Propagation [%s]', type => {
 
     await em.transactional(
       async em1 => {
-        contexts.push((em1 as any).transactionContext);
+        contexts.push(em1.getTransactionContext());
         const entity1 = em1.create(TestEntity, { name: 'required' });
         await em1.persist(entity1).flush();
 
         await em1.transactional(
           async em2 => {
-            contexts.push((em2 as any).transactionContext);
+            contexts.push(em2.getTransactionContext());
             const entity2 = em2.create(TestEntity, { name: 'nested' });
             await em2.persist(entity2).flush();
 
             await em2.transactional(
               async em3 => {
-                contexts.push((em3 as any).transactionContext);
+                contexts.push(em3.getTransactionContext());
                 const entity3 = em3.create(TestEntity, { name: 'requires-new' });
                 await em3.persist(entity3).flush();
               },

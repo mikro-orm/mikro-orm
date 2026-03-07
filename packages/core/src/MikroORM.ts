@@ -107,9 +107,9 @@ export class MikroORM<
   em!: EM & { '~entities'?: Entities };
   readonly driver: Driver;
   readonly config: Configuration<Driver>;
-  private metadata!: MetadataStorage;
-  private readonly logger: Logger;
-  private readonly discovery: MetadataDiscovery;
+  #metadata!: MetadataStorage;
+  readonly #logger: Logger;
+  readonly #discovery: MetadataDiscovery;
 
   /**
    * Initialize the ORM, load entity metadata, create EntityManager and connect to the database.
@@ -135,7 +135,7 @@ export class MikroORM<
     await loadOptionalDependencies(options);
     const orm = new this<D, EM, Entities>(options);
     const preferTs = orm.config.get('preferTs', Utils.detectTypeScriptSupport());
-    orm.metadata = await orm.discovery.discover(preferTs);
+    orm.#metadata = await orm.#discovery.discover(preferTs);
     orm.createEntityManager();
 
     return orm;
@@ -153,9 +153,9 @@ export class MikroORM<
     this.config = new Configuration(options);
     const discovery = this.config.get('discovery');
     this.driver = this.config.getDriver();
-    this.logger = this.config.getLogger();
-    this.logger.log('info', `MikroORM version: ${colors.green(Utils.getORMVersion())}`);
-    this.discovery = new MetadataDiscovery(new MetadataStorage(), this.driver.getPlatform(), this.config);
+    this.#logger = this.config.getLogger();
+    this.#logger.log('info', `MikroORM version: ${colors.green(Utils.getORMVersion())}`);
+    this.#discovery = new MetadataDiscovery(new MetadataStorage(), this.driver.getPlatform(), this.config);
     this.driver.getPlatform().init(this);
 
     for (const extension of this.config.get('extensions')) {
@@ -163,7 +163,7 @@ export class MikroORM<
     }
 
     if (!discovery.skipSyncDiscovery) {
-      this.metadata = this.discovery.discoverSync();
+      this.#metadata = this.#discovery.discoverSync();
       this.createEntityManager();
     }
   }
@@ -226,18 +226,18 @@ export class MikroORM<
    */
   getMetadata<Entity extends object>(entityName?: EntityName<Entity>): EntityMetadata<Entity> | MetadataStorage {
     if (entityName) {
-      return this.metadata.get(entityName);
+      return this.#metadata.get(entityName);
     }
 
-    return this.metadata;
+    return this.#metadata;
   }
 
   private createEntityManager(): void {
-    this.driver.setMetadata(this.metadata);
+    this.driver.setMetadata(this.#metadata);
     this.em = this.driver.createEntityManager() as EM & { '~entities': Entities };
     (this.em as { global: boolean }).global = true;
-    this.metadata.decorate(this.em);
-    this.driver.setMetadata(this.metadata);
+    this.#metadata.decorate(this.em);
+    this.driver.setMetadata(this.#metadata);
   }
 
   /**
@@ -245,19 +245,19 @@ export class MikroORM<
    */
   discoverEntity<T extends Constructor | EntitySchema>(entities: T | T[], reset?: EntityName | EntityName[]): void {
     for (const className of Utils.asArray(reset)) {
-      this.metadata.reset(className);
-      this.discovery.reset(className);
+      this.#metadata.reset(className);
+      this.#discovery.reset(className);
     }
 
-    const tmp = this.discovery.discoverReferences(Utils.asArray(entities));
-    const metadata = this.discovery.processDiscoveredEntities(tmp);
+    const tmp = this.#discovery.discoverReferences(Utils.asArray(entities));
+    const metadata = this.#discovery.processDiscoveredEntities(tmp);
 
     for (const meta of metadata) {
-      this.metadata.set(meta.class, meta);
-      meta.root = this.metadata.get(meta.root.class);
+      this.#metadata.set(meta.class, meta);
+      meta.root = this.#metadata.get(meta.root.class);
     }
 
-    this.metadata.decorate(this.em);
+    this.#metadata.decorate(this.em);
   }
 
   /**

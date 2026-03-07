@@ -13,24 +13,23 @@ export class MariaDbQueryBuilder<
   protected override wrapPaginateSubQuery(meta: EntityMetadata): void {
     const pks = this.prepareFields(meta.primaryKeys, 'sub-query') as string[];
     const quotedPKs = pks.map(pk => this.platform.quoteIdentifier(pk));
-    const subQuery = this.clone(['_orderBy', '_fields'])
+    const subQuery = this.clone(['orderBy', 'fields'])
       .select(pks as any)
       .groupBy(pks as any)
-      .limit(this._limit);
+      .limit(this.state.limit);
     // revert the on conditions added via populateWhere, we want to apply those only once
-    // @ts-ignore
-    Object.values(subQuery._joins).forEach(join => (join.cond = join.cond_ ?? {}));
+    Object.values(subQuery.state.joins).forEach(join => (join.cond = join.cond_ ?? {}));
 
-    if (this._offset) {
-      subQuery.offset(this._offset);
+    if (this.state.offset) {
+      subQuery.offset(this.state.offset);
     }
 
     const addToSelect = [];
 
-    if (this._orderBy.length > 0) {
+    if (this.state.orderBy.length > 0) {
       const orderBy = [];
 
-      for (const orderMap of this._orderBy) {
+      for (const orderMap of this.state.orderBy) {
         for (const field of Utils.getObjectQueryKeys(orderMap)) {
           const direction = orderMap[field as EntityKey<Entity>];
 
@@ -56,14 +55,13 @@ export class MariaDbQueryBuilder<
       subQuery.orderBy(orderBy);
     }
 
-    // @ts-ignore
-    subQuery.finalized = true;
+    subQuery.state.finalized = true;
     const innerQuery = subQuery.as(this.mainAlias.aliasName).clear('select').select(pks);
 
     /* v8 ignore next */
     if (addToSelect.length > 0) {
       addToSelect.forEach(prop => {
-        const field = this._fields!.find(field => {
+        const field = this.state.fields!.find(field => {
           if (typeof field === 'object' && field && '__as' in field) {
             return field.__as === prop;
           }
@@ -88,11 +86,11 @@ export class MariaDbQueryBuilder<
     // https://stackoverflow.com/questions/17892762/mysql-this-version-of-mysql-doesnt-yet-support-limit-in-all-any-some-subqu
     const subSubQuery = this.platform.createNativeQueryBuilder();
     subSubQuery.select(raw(`json_arrayagg(${quotedPKs.join(', ')})`)).from(innerQuery);
-    this._limit = undefined;
-    this._offset = undefined;
+    this.state.limit = undefined;
+    this.state.offset = undefined;
 
     // Save the original WHERE conditions before pruning joins
-    const originalCond = this._cond;
+    const originalCond = this.state.cond;
     const populatePaths = this.getPopulatePaths();
 
     // Remove joins that are not used for population or ordering
@@ -107,7 +105,7 @@ export class MariaDbQueryBuilder<
         ? `concat('"', ${quotedPKs.join(', ')}, '"')`
         : quotedPKs.join(', ');
     const sql = `json_contains((${subquerySql}), ${key})`;
-    this._cond = {};
-    this.select(this._fields as any).where(sql);
+    this.state.cond = {};
+    this.select(this.state.fields as any).where(sql);
   }
 }

@@ -20,12 +20,14 @@ import type { SchemaHelper } from './SchemaHelper.js';
  * Compares two Schemas and return an instance of SchemaDifference.
  */
 export class SchemaComparator {
-  private readonly helper: SchemaHelper;
-  private readonly logger: Logger;
+  readonly #helper: SchemaHelper;
+  readonly #logger: Logger;
+  readonly #platform: AbstractSqlPlatform;
 
-  constructor(private readonly platform: AbstractSqlPlatform) {
-    this.helper = this.platform.getSchemaHelper()!;
-    this.logger = this.platform.getConfig().getLogger();
+  constructor(platform: AbstractSqlPlatform) {
+    this.#platform = platform;
+    this.#helper = this.#platform.getSchemaHelper()!;
+    this.#logger = this.#platform.getConfig().getLogger();
   }
 
   /**
@@ -53,7 +55,7 @@ export class SchemaComparator {
     const foreignKeysToTable: Dictionary<ForeignKey[]> = {};
 
     for (const namespace of toSchema.getNamespaces()) {
-      if (fromSchema.hasNamespace(namespace) || namespace === this.platform.getDefaultSchemaName()) {
+      if (fromSchema.hasNamespace(namespace) || namespace === this.#platform.getDefaultSchemaName()) {
         continue;
       }
 
@@ -61,7 +63,7 @@ export class SchemaComparator {
     }
 
     for (const namespace of fromSchema.getNamespaces()) {
-      if (toSchema.hasNamespace(namespace) || namespace === this.platform.getDefaultSchemaName()) {
+      if (toSchema.hasNamespace(namespace) || namespace === this.#platform.getDefaultSchemaName()) {
         continue;
       }
 
@@ -530,7 +532,7 @@ export class SchemaComparator {
       return true;
     }
 
-    if (key1.localTableName === key1.referencedTableName && !this.platform.supportsMultipleCascadePaths()) {
+    if (key1.localTableName === key1.referencedTableName && !this.#platform.supportsMultipleCascadePaths()) {
       return false;
     }
 
@@ -545,7 +547,7 @@ export class SchemaComparator {
     const compare = (method: 'updateRule' | 'deleteRule') => rule(key1, method) === rule(key2, method);
 
     // Skip updateRule comparison for platforms that don't support ON UPDATE (e.g., Oracle)
-    const updateRuleDiffers = this.platform.supportsOnUpdate() && !compare('updateRule');
+    const updateRuleDiffers = this.#platform.supportsOnUpdate() && !compare('updateRule');
 
     return updateRuleDiffers || !compare('deleteRule');
   }
@@ -557,15 +559,15 @@ export class SchemaComparator {
     const changedProperties = new Set<string>();
     const fromProp = this.mapColumnToProperty({ ...fromColumn, autoincrement: false });
     const toProp = this.mapColumnToProperty({ ...toColumn, autoincrement: false });
-    const fromColumnType = this.platform.normalizeColumnType(
-      fromColumn.mappedType.getColumnType(fromProp, this.platform).toLowerCase(),
+    const fromColumnType = this.#platform.normalizeColumnType(
+      fromColumn.mappedType.getColumnType(fromProp, this.#platform).toLowerCase(),
       fromProp,
     );
     const fromNativeEnum =
       fromTable.nativeEnums[fromColumnType] ??
       Object.values(fromTable.nativeEnums).find(e => e.name === fromColumnType && e.schema !== '*');
-    let toColumnType = this.platform.normalizeColumnType(
-      toColumn.mappedType.getColumnType(toProp, this.platform).toLowerCase(),
+    let toColumnType = this.#platform.normalizeColumnType(
+      toColumn.mappedType.getColumnType(toProp, this.#platform).toLowerCase(),
       toProp,
     );
 
@@ -587,7 +589,7 @@ export class SchemaComparator {
       if (
         !toColumnType.includes('.') &&
         fromTable.schema &&
-        fromTable.schema !== this.platform.getDefaultSchemaName()
+        fromTable.schema !== this.#platform.getDefaultSchemaName()
       ) {
         toColumnType = `${fromTable.schema}.${toColumnType}`;
       }
@@ -613,7 +615,7 @@ export class SchemaComparator {
       changedProperties.add('autoincrement');
     }
 
-    if (!!fromColumn.unsigned !== !!toColumn.unsigned && this.platform.supportsUnsigned()) {
+    if (!!fromColumn.unsigned !== !!toColumn.unsigned && this.#platform.supportsUnsigned()) {
       log(`'unsigned' changed for column ${fromTable.name}.${fromColumn.name}`, { fromColumn, toColumn });
       changedProperties.add('unsigned');
     }
@@ -738,7 +740,7 @@ export class SchemaComparator {
       return true;
     }
 
-    if (this.platform.supportsDeferredUniqueConstraints() && index1.deferMode !== index2.deferMode) {
+    if (this.#platform.supportsDeferredUniqueConstraints() && index1.deferMode !== index2.deferMode) {
       return false;
     }
 
@@ -894,8 +896,8 @@ export class SchemaComparator {
       return from.default.toString().toLowerCase() === to.default.toString().toLowerCase();
     }
 
-    if (['', this.helper.getDefaultEmptyString()].includes(to.default!) && from.default != null) {
-      return ['', this.helper.getDefaultEmptyString()].includes(from.default.toString());
+    if (['', this.#helper.getDefaultEmptyString()].includes(to.default!) && from.default != null) {
+      return ['', this.#helper.getDefaultEmptyString()].includes(from.default.toString());
     }
 
     // eslint-disable-next-line eqeqeq
@@ -922,6 +924,6 @@ export class SchemaComparator {
       message += ' ' + inspect(params);
     }
 
-    this.logger.log('schema', message);
+    this.#logger.log('schema', message);
   }
 }

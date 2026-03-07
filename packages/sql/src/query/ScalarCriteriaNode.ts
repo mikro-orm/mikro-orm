@@ -23,7 +23,11 @@ export class ScalarCriteriaNode<T extends object> extends CriteriaNode<T> {
       qb.join(field, nestedAlias, undefined, type, path);
 
       // select the owner as virtual property when joining from 1:1 inverse side, but only if the parent is root entity
-      if (this.prop!.kind === ReferenceKind.ONE_TO_ONE && !parentPath.includes('.') && !qb._fields?.includes(field)) {
+      if (
+        this.prop!.kind === ReferenceKind.ONE_TO_ONE &&
+        !parentPath.includes('.') &&
+        !qb.state.fields?.includes(field)
+      ) {
         qb.addSelect(field);
       }
     }

@@ -7,6 +7,7 @@ import {
   SchemaGenerator,
   SchemaComparator,
   DatabaseSchema,
+  type DatabaseTable,
   type EnsureDatabaseOptions,
   type ClearDatabaseOptions,
 } from '@mikro-orm/sql';
@@ -356,17 +357,22 @@ export class OracleSchemaGenerator extends SchemaGenerator {
 
     tableOnlyDiff.changedTables = strippedChangedTables;
 
-    // Strip FKs from newTables so diffToSQL won't generate FK constraints in Phase 2
+    // Temporarily override getForeignKeys on new tables to suppress FK constraints in Phase 2
     // (Oracle requires REFERENCES grants before FK creation, handled in Phase 2.5 / Phase 3)
-    const strippedNewTables: Dictionary = {};
-    for (const [key, table] of Object.entries(diff.newTables)) {
-      const proxy = Object.create(table);
-      proxy.getForeignKeys = () => ({});
-      strippedNewTables[key] = proxy;
+    const originalGetForeignKeys = new Map<DatabaseTable, () => Dictionary>();
+
+    for (const table of Object.values(diff.newTables)) {
+      originalGetForeignKeys.set(table, table.getForeignKeys.bind(table));
+      table.getForeignKeys = () => ({});
     }
 
-    tableOnlyDiff.newTables = strippedNewTables;
+    tableOnlyDiff.newTables = diff.newTables;
     const tableSQL = this.diffToSQL(tableOnlyDiff, options);
+
+    // Restore original getForeignKeys
+    for (const [table, origFn] of originalGetForeignKeys) {
+      table.getForeignKeys = origFn;
+    }
 
     if (tableSQL) {
       await this.execute(tableSQL);

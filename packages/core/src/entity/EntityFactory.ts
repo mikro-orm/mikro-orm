@@ -49,22 +49,24 @@ export interface FactoryOptions {
 }
 
 export class EntityFactory {
-  private readonly driver: IDatabaseDriver;
-  private readonly platform: Platform;
-  private readonly config: Configuration;
-  private readonly metadata: MetadataStorage;
-  private readonly hydrator: IHydrator;
-  private readonly eventManager: EventManager;
-  private readonly comparator: EntityComparator;
+  readonly #driver: IDatabaseDriver;
+  readonly #platform: Platform;
+  readonly #config: Configuration;
+  readonly #metadata: MetadataStorage;
+  readonly #hydrator: IHydrator;
+  readonly #eventManager: EventManager;
+  readonly #comparator: EntityComparator;
+  readonly #em: EntityManager;
 
-  constructor(private readonly em: EntityManager) {
-    this.driver = this.em.getDriver();
-    this.platform = this.driver.getPlatform();
-    this.config = this.em.config;
-    this.metadata = this.em.getMetadata();
-    this.hydrator = this.config.getHydrator(this.metadata);
-    this.eventManager = this.em.getEventManager();
-    this.comparator = this.em.getComparator();
+  constructor(em: EntityManager) {
+    this.#em = em;
+    this.#driver = this.#em.getDriver();
+    this.#platform = this.#driver.getPlatform();
+    this.#config = this.#em.config;
+    this.#metadata = this.#em.getMetadata();
+    this.#hydrator = this.#config.getHydrator(this.#metadata);
+    this.#eventManager = this.#em.getEventManager();
+    this.#comparator = this.#em.getComparator();
   }
 
   create<T extends object, P extends string = string>(
@@ -79,7 +81,7 @@ export class EntityFactory {
       return data as New<T, P>;
     }
 
-    const meta = this.metadata.get<T>(entityName);
+    const meta = this.#metadata.get<T>(entityName);
 
     if (meta.virtual) {
       data = { ...data };
@@ -136,8 +138,8 @@ export class EntityFactory {
               data[prop.name] = Utils.getPrimaryKeyValues(data[prop.name], prop.targetMeta!, true);
             }
 
-            if (prop.customType instanceof JsonType && this.platform.convertsJsonAutomatically()) {
-              data[prop.name] = prop.customType.convertToDatabaseValue(data[prop.name], this.platform, {
+            if (prop.customType instanceof JsonType && this.#platform.convertsJsonAutomatically()) {
+              data[prop.name] = prop.customType.convertToDatabaseValue(data[prop.name], this.#platform, {
                 key: prop.name,
                 mode: 'hydration',
               }) as any;
@@ -163,12 +165,12 @@ export class EntityFactory {
       });
 
       if (options.recomputeSnapshot) {
-        wrapped.__originalEntityData = this.comparator.prepareEntity(entity);
+        wrapped.__originalEntityData = this.#comparator.prepareEntity(entity);
       }
     }
 
-    if (this.eventManager.hasListeners(EventType.onInit, meta2)) {
-      this.eventManager.dispatchEvent(EventType.onInit, { entity, meta: meta2, em: this.em });
+    if (this.#eventManager.hasListeners(EventType.onInit, meta2)) {
+      this.#eventManager.dispatchEvent(EventType.onInit, { entity, meta: meta2, em: this.#em });
     }
 
     wrapped.__processing = false;
@@ -184,9 +186,9 @@ export class EntityFactory {
   ): void {
     // merge unchanged properties automatically
     data = QueryHelper.processParams(data);
-    const existsData = this.comparator.prepareEntity(entity);
+    const existsData = this.#comparator.prepareEntity(entity);
     const originalEntityData = helper(entity).__originalEntityData ?? ({} as EntityData<T>);
-    const diff = this.comparator.diffEntities(meta.class, originalEntityData, existsData);
+    const diff = this.#comparator.diffEntities(meta.class, originalEntityData, existsData);
 
     // version properties are not part of entity snapshots
     if (
@@ -197,7 +199,7 @@ export class EntityFactory {
       diff[meta.versionProperty] = data[meta.versionProperty];
     }
 
-    const diff2 = this.comparator.diffEntities(meta.class, existsData, data, { includeInverseSides: true });
+    const diff2 = this.#comparator.diffEntities(meta.class, existsData, data, { includeInverseSides: true });
 
     // do not override values changed by user
     Utils.keys(diff).forEach(key => delete diff2[key]);
@@ -229,7 +231,7 @@ export class EntityFactory {
     this.hydrate(entity, meta, diff2, initialized ? { ...options, initialized } : options);
 
     // we need to update the entity data only with keys that were not present before
-    const nullVal = this.config.get('forceUndefined') ? undefined : null;
+    const nullVal = this.#config.get('forceUndefined') ? undefined : null;
     Utils.keys(diff2).forEach(key => {
       const prop = meta.properties[key];
 
@@ -247,8 +249,8 @@ export class EntityFactory {
         prop.customType?.ensureComparable(meta, prop) &&
         diff2[key] != null
       ) {
-        const converted = prop.customType.convertToJSValue(diff2[key], this.platform, { force: true });
-        diff2[key] = prop.customType.convertToDatabaseValue(converted, this.platform, { fromQuery: true });
+        const converted = prop.customType.convertToJSValue(diff2[key], this.#platform, { force: true });
+        diff2[key] = prop.customType.convertToDatabaseValue(converted, this.#platform, { fromQuery: true });
       }
 
       originalEntityData[key] = diff2[key] === null ? nullVal : diff2[key];
@@ -289,8 +291,8 @@ export class EntityFactory {
     options: Pick<FactoryOptions, 'merge' | 'convertCustomTypes' | 'schema' | 'key'> = {},
   ): T {
     options.convertCustomTypes ??= true;
-    const meta = this.metadata.get<T>(entityName);
-    const schema = this.driver.getSchemaName(meta, options);
+    const meta = this.#metadata.get<T>(entityName);
+    const schema = this.#driver.getSchemaName(meta, options);
 
     // Handle alternate key lookup
     if (options.key) {
@@ -324,7 +326,7 @@ export class EntityFactory {
       id = Utils.getPrimaryKeyCondFromArray(id, meta);
     }
 
-    const pks = Utils.getOrderedPrimaryKeys<T>(id, meta, this.platform);
+    const pks = Utils.getOrderedPrimaryKeys<T>(id, meta, this.#platform);
     const exists = this.unitOfWork.getById<T>(entityName, pks as Primary<T>, schema, options.convertCustomTypes);
 
     if (exists) {
@@ -344,18 +346,18 @@ export class EntityFactory {
     options: Pick<FactoryOptions, 'newEntity' | 'convertCustomTypes'> = {},
   ): T {
     data = { ...data };
-    const meta = this.metadata.get(entityName);
+    const meta = this.#metadata.get(entityName);
     const meta2 = this.processDiscriminatorColumn<T>(meta, data);
 
     return this.createEntity(data, meta2, options);
   }
 
   getComparator(): EntityComparator {
-    return this.comparator;
+    return this.#comparator;
   }
 
   private createEntity<T extends object>(data: EntityData<T>, meta: EntityMetadata<T>, options: FactoryOptions): T {
-    const schema = this.driver.getSchemaName(meta, options);
+    const schema = this.#driver.getSchemaName(meta, options);
 
     if (options.newEntity || meta.forceConstructor || meta.virtual) {
       if (meta.polymorphs) {
@@ -370,7 +372,7 @@ export class EntityFactory {
 
       // creating managed entity instance when `forceEntityConstructor` is enabled,
       // we need to wipe all the values as they would cause update queries on next flush
-      if (!options.newEntity && (meta.forceConstructor || this.config.get('forceEntityConstructor'))) {
+      if (!options.newEntity && (meta.forceConstructor || this.#config.get('forceEntityConstructor'))) {
         meta.props
           .filter(prop => prop.persist !== false && !prop.primary && data[prop.name] === undefined)
           .forEach(prop => delete entity[prop.name]);
@@ -396,7 +398,7 @@ export class EntityFactory {
     helper(entity).__schema = schema;
 
     if (options.merge && !options.newEntity) {
-      this.hydrator.hydrateReference(
+      this.#hydrator.hydrateReference(
         entity,
         meta,
         data,
@@ -418,7 +420,7 @@ export class EntityFactory {
   private assignDefaultValues<T extends object>(entity: T, meta: EntityMetadata<T>): void {
     for (const prop of meta.props) {
       if (prop.onCreate) {
-        entity[prop.name] ??= prop.onCreate(entity, this.em);
+        entity[prop.name] ??= prop.onCreate(entity, this.#em);
       }
     }
   }
@@ -430,7 +432,7 @@ export class EntityFactory {
     options: FactoryOptions,
   ): void {
     if (options.initialized) {
-      this.hydrator.hydrate(
+      this.#hydrator.hydrate(
         entity,
         meta,
         data,
@@ -439,18 +441,18 @@ export class EntityFactory {
         options.newEntity,
         options.convertCustomTypes,
         options.schema,
-        this.driver.getSchemaName(meta, options),
+        this.#driver.getSchemaName(meta, options),
         options.normalizeAccessors,
       );
     } else {
-      this.hydrator.hydrateReference(
+      this.#hydrator.hydrateReference(
         entity,
         meta,
         data,
         this,
         options.convertCustomTypes,
         options.schema,
-        this.driver.getSchemaName(meta, options),
+        this.#driver.getSchemaName(meta, options),
         options.normalizeAccessors,
       );
     }
@@ -460,7 +462,8 @@ export class EntityFactory {
       helper(entity)?.__serializationContext.fields?.add(key);
     });
 
-    const processOnCreateHooksEarly = options.processOnCreateHooksEarly ?? this.config.get('processOnCreateHooksEarly');
+    const processOnCreateHooksEarly =
+      options.processOnCreateHooksEarly ?? this.#config.get('processOnCreateHooksEarly');
 
     if (options.newEntity && processOnCreateHooksEarly) {
       this.assignDefaultValues(entity, meta);
@@ -472,7 +475,7 @@ export class EntityFactory {
     meta: EntityMetadata<T>,
     options: FactoryOptions,
   ): T | undefined {
-    const schema = this.driver.getSchemaName(meta, options);
+    const schema = this.#driver.getSchemaName(meta, options);
 
     if (meta.simplePK) {
       return this.unitOfWork.getById<T>(meta.class, data[meta.primaryKeys[0]] as Primary<T>, schema);
@@ -482,7 +485,7 @@ export class EntityFactory {
       return undefined;
     }
 
-    const pks = Utils.getOrderedPrimaryKeys<T>(data as Dictionary, meta, this.platform, options.convertCustomTypes);
+    const pks = Utils.getOrderedPrimaryKeys<T>(data as Dictionary, meta, this.#platform, options.convertCustomTypes);
 
     return this.unitOfWork.getById<T>(meta.class, pks, schema);
   }
@@ -496,7 +499,7 @@ export class EntityFactory {
       const prop = meta.properties[meta.root.discriminatorColumn as EntityKey<T>];
       const value = data[prop.name] as string;
       const type = meta.root.discriminatorMap![value];
-      meta = type ? this.metadata.get(type) : meta;
+      meta = type ? this.#metadata.get(type) : meta;
       return meta;
     }
 
@@ -505,7 +508,7 @@ export class EntityFactory {
       const value = data[meta.root.tptDiscriminatorColumn as EntityKey<T>] as string;
       if (value) {
         const type = meta.root.discriminatorMap[value];
-        meta = type ? this.metadata.get(type) : meta;
+        meta = type ? this.#metadata.get(type) : meta;
       }
     }
 
@@ -524,7 +527,7 @@ export class EntityFactory {
     }
 
     if (pk.type === 'ObjectId' && (data[pk.name] != null || data[spk.name] != null)) {
-      data[pk.name] = this.platform.denormalizePrimaryKey(
+      data[pk.name] = this.#platform.denormalizePrimaryKey(
         (data[spk.name] || data[pk.name]) as string,
       ) as EntityDataValue<T>;
       delete data[spk.name];
@@ -598,7 +601,7 @@ export class EntityFactory {
               prop,
             );
           } else if (prop.kind === ReferenceKind.SCALAR) {
-            tmp[prop.name] = prop.customType.convertToJSValue(tmp[prop.name], this.platform);
+            tmp[prop.name] = prop.customType.convertToJSValue(tmp[prop.name], this.#platform);
           }
         }
 
@@ -606,7 +609,7 @@ export class EntityFactory {
       }
 
       if (options.convertCustomTypes && prop.customType && value != null) {
-        return prop.customType.convertToJSValue(value, this.platform);
+        return prop.customType.convertToJSValue(value, this.#platform);
       }
 
       return value;
@@ -614,6 +617,6 @@ export class EntityFactory {
   }
 
   private get unitOfWork() {
-    return this.em.getUnitOfWork(false);
+    return this.#em.getUnitOfWork(false);
   }
 }

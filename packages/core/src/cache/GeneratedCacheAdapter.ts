@@ -2,10 +2,10 @@ import type { CacheAdapter } from './CacheAdapter.js';
 import type { Dictionary } from '../typings.js';
 
 export class GeneratedCacheAdapter implements CacheAdapter {
-  private readonly data = new Map<string, { data: Dictionary }>();
+  readonly #data: Map<string, { data: Dictionary }>;
 
   constructor(options: { data: Dictionary }) {
-    this.data = new Map(Object.entries(options.data));
+    this.#data = new Map(Object.entries(options.data));
   }
 
   /**
@@ -13,7 +13,7 @@ export class GeneratedCacheAdapter implements CacheAdapter {
    */
   get<T = any>(name: string): T | undefined {
     const key = name.replace(/\.[jt]s$/, '');
-    const data = this.data.get(key);
+    const data = this.#data.get(key);
 
     return data as T;
   }
@@ -22,20 +22,20 @@ export class GeneratedCacheAdapter implements CacheAdapter {
    * @inheritDoc
    */
   set(name: string, data: any, origin: string): void {
-    this.data.set(name, { data });
+    this.#data.set(name, { data });
   }
 
   /**
    * @inheritDoc
    */
   remove(name: string): void {
-    this.data.delete(name);
+    this.#data.delete(name);
   }
 
   /**
    * @inheritDoc
    */
   clear(): void {
-    this.data.clear();
+    this.#data.clear();
   }
 }

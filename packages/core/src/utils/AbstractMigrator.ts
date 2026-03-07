@@ -45,7 +45,7 @@ export abstract class AbstractMigrator<D extends IDatabaseDriver> implements IMi
   protected readonly options: MigrationsOptions;
   protected absolutePath!: string;
   protected initialized = false;
-  private readonly listeners = new Map<string, Set<(event: MigrationInfo) => MaybePromise<void>>>();
+  readonly #listeners = new Map<string, Set<(event: MigrationInfo) => MaybePromise<void>>>();
 
   constructor(protected readonly em: D[typeof EntityManagerType]) {
     this.driver = this.em.getDriver() as D;
@@ -75,11 +75,11 @@ export abstract class AbstractMigrator<D extends IDatabaseDriver> implements IMi
    * @inheritDoc
    */
   on(eventName: MigratorEvent, listener: (event: MigrationInfo) => MaybePromise<void>): this {
-    if (!this.listeners.has(eventName)) {
-      this.listeners.set(eventName, new Set());
+    if (!this.#listeners.has(eventName)) {
+      this.#listeners.set(eventName, new Set());
     }
 
-    this.listeners.get(eventName)!.add(listener);
+    this.#listeners.get(eventName)!.add(listener);
 
     return this;
   }
@@ -88,7 +88,7 @@ export abstract class AbstractMigrator<D extends IDatabaseDriver> implements IMi
    * @inheritDoc
    */
   off(eventName: MigratorEvent, listener: (event: MigrationInfo) => MaybePromise<void>): this {
-    this.listeners.get(eventName)?.delete(listener);
+    this.#listeners.get(eventName)?.delete(listener);
     return this;
   }
 
@@ -230,7 +230,7 @@ export abstract class AbstractMigrator<D extends IDatabaseDriver> implements IMi
   }
 
   private async emit(event: string, data: MigrationInfo): Promise<void> {
-    for (const listener of this.listeners.get(event) ?? []) {
+    for (const listener of this.#listeners.get(event) ?? []) {
       await listener(data);
     }
   }

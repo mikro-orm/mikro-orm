@@ -15,23 +15,25 @@ import { ReferenceKind } from '../enums.js';
 import type { EntityManager } from '../EntityManager.js';
 
 export class ChangeSetComputer {
-  private readonly comparator: EntityComparator;
-  private readonly metadata: MetadataStorage;
-  private readonly platform: Platform;
-  private readonly config: Configuration;
+  readonly #comparator: EntityComparator;
+  readonly #metadata: MetadataStorage;
+  readonly #platform: Platform;
+  readonly #config: Configuration;
 
-  constructor(
-    private readonly em: EntityManager,
-    private readonly collectionUpdates: Set<Collection<AnyEntity>>,
-  ) {
-    this.config = this.em.config;
-    this.metadata = this.em.getMetadata();
-    this.platform = this.em.getPlatform();
-    this.comparator = this.config.getComparator(this.metadata);
+  readonly #em: EntityManager;
+  readonly #collectionUpdates: Set<Collection<AnyEntity>>;
+
+  constructor(em: EntityManager, collectionUpdates: Set<Collection<AnyEntity>>) {
+    this.#em = em;
+    this.#collectionUpdates = collectionUpdates;
+    this.#config = this.#em.config;
+    this.#metadata = this.#em.getMetadata();
+    this.#platform = this.#em.getPlatform();
+    this.#comparator = this.#config.getComparator(this.#metadata);
   }
 
   computeChangeSet<T extends object>(entity: T): ChangeSet<T> | null {
-    const meta = this.metadata.get((entity as AnyEntity).constructor);
+    const meta = this.#metadata.get((entity as AnyEntity).constructor);
 
     if (meta.readonly) {
       return null;
@@ -51,7 +53,7 @@ export class ChangeSetComputer {
     }
 
     if (type === ChangeSetType.UPDATE && !wrapped.__initialized) {
-      const data = this.comparator.prepareEntity(entity);
+      const data = this.#comparator.prepareEntity(entity);
 
       if (Utils.equals(data, wrapped.__originalEntityData)) {
         return null;
@@ -110,12 +112,12 @@ export class ChangeSetComputer {
       (entity[prop.name] == null ||
         (Utils.isScalarReference(entity[prop.name]) && (entity[prop.name] as Reference<any>).unwrap() == null))
     ) {
-      entity[prop.name] = prop.onCreate(entity, this.em);
+      entity[prop.name] = prop.onCreate(entity, this.#em);
     }
 
     if (prop.onUpdate && type === ChangeSetType.UPDATE) {
       const pairs = map.get(entity) ?? [];
-      pairs.push([prop.name, prop.onUpdate(entity, this.em)]);
+      pairs.push([prop.name, prop.onUpdate(entity, this.#em)]);
       map.set(entity, pairs);
     }
 
@@ -127,7 +129,7 @@ export class ChangeSetComputer {
   }
 
   private computePayload<T extends object>(entity: T, ignoreUndefined = false): EntityData<T> {
-    const data = this.comparator.prepareEntity(entity);
+    const data = this.#comparator.prepareEntity(entity);
     const wrapped = helper(entity);
     const entityName = wrapped.__meta.class;
     const originalEntityData = wrapped.__originalEntityData;
@@ -141,7 +143,7 @@ export class ChangeSetComputer {
     }
 
     if (originalEntityData) {
-      const comparator = this.comparator.getEntityComparator(entityName);
+      const comparator = this.#comparator.getEntityComparator(entityName);
       const diff = comparator(originalEntityData as T, data as T);
 
       if (ignoreUndefined) {
@@ -196,7 +198,7 @@ export class ChangeSetComputer {
           const targetProp = prop.targetMeta.properties[prop.targetKey];
 
           if (targetProp?.customType) {
-            value = targetProp.customType.convertToDatabaseValue(value, this.platform, { mode: 'serialization' });
+            value = targetProp.customType.convertToDatabaseValue(value, this.#platform, { mode: 'serialization' });
           }
         }
 
@@ -224,10 +226,10 @@ export class ChangeSetComputer {
     }
 
     if (target.isDirty()) {
-      this.collectionUpdates.add(target);
+      this.#collectionUpdates.add(target);
     }
 
-    if (prop.owner && !this.platform.usesPivotTable()) {
+    if (prop.owner && !this.#platform.usesPivotTable()) {
       changeSet.payload[prop.name] = target.getItems(false).map((item: AnyEntity) => {
         return item.__helper!.__identifier ?? item.__helper!.getPrimaryKey();
       });

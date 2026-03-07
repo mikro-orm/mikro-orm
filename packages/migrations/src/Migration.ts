@@ -4,9 +4,9 @@ import type { AbstractSqlDriver, EntityManager, NativeQueryBuilder } from '@mikr
 export type Query = string | NativeQueryBuilder | RawQueryFragment;
 
 export abstract class Migration {
-  private readonly queries: Query[] = [];
+  readonly #queries: Query[] = [];
   protected ctx?: Transaction;
-  private em?: EntityManager;
+  #em?: EntityManager;
 
   constructor(
     protected readonly driver: AbstractSqlDriver,
@@ -24,11 +24,11 @@ export abstract class Migration {
   }
 
   addSql(sql: Query): void {
-    this.queries.push(sql);
+    this.#queries.push(sql);
   }
 
   reset(): void {
-    this.queries.length = 0;
+    this.#queries.length = 0;
     this.ctx = undefined;
   }
 
@@ -49,15 +49,15 @@ export abstract class Migration {
    * the current transaction context.
    */
   getEntityManager(): EntityManager {
-    if (!this.em) {
-      this.em = this.driver.createEntityManager();
-      this.em.setTransactionContext(this.ctx);
+    if (!this.#em) {
+      this.#em = this.driver.createEntityManager();
+      this.#em.setTransactionContext(this.ctx);
     }
 
-    return this.em;
+    return this.#em;
   }
 
   getQueries(): Query[] {
-    return this.queries;
+    return this.#queries;
   }
 }

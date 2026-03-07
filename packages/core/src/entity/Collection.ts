@@ -34,15 +34,15 @@ export interface MatchingOptions<T extends object, P extends string = never> ext
 export class Collection<T extends object, O extends object = object> {
   [k: number]: T;
 
-  private readonly items = new Set<T>();
-  private initialized = true;
-  private dirty = false;
-  private partial = false; // mark partially loaded collections, propagation is disabled for those
-  private snapshot: T[] | undefined = []; // used to create a diff of the collection at commit time, undefined marks overridden values so we need to wipe when flushing
-  private readonly?: boolean;
-  private _count?: number;
-  private _property?: EntityProperty;
-  private _populated?: boolean;
+  readonly #items = new Set<T>();
+  #initialized = true;
+  #dirty = false;
+  #partial = false; // mark partially loaded collections, propagation is disabled for those
+  #snapshot: T[] | undefined = []; // used to create a diff of the collection at commit time, undefined marks overridden values so we need to wipe when flushing
+  #readonly?: boolean;
+  #count?: number;
+  #property?: EntityProperty;
+  #populated?: boolean;
 
   constructor(
     readonly owner: O,
@@ -52,11 +52,11 @@ export class Collection<T extends object, O extends object = object> {
     /* v8 ignore next */
     if (items) {
       let i = 0;
-      this.items = new Set(items);
-      this.items.forEach(item => (this[i++] = item));
+      this.#items = new Set(items);
+      this.#items.forEach(item => (this[i++] = item));
     }
 
-    this.initialized = !!items || initialized;
+    this.#initialized = !!items || initialized;
   }
 
   /**
@@ -87,9 +87,9 @@ export class Collection<T extends object, O extends object = object> {
     options: InitCollectionOptions<TT, P> = {},
   ): Promise<LoadedCollection<Loaded<TT, P>>> {
     if (this.isInitialized(true) && !options.refresh) {
-      const em = this.getEntityManager(this.items, false);
+      const em = this.getEntityManager(this.#items, false);
       options = { ...options, filters: QueryHelper.mergePropertyFilters(this.property.filters, options.filters)! };
-      await em?.populate(this.items, options.populate as any, options as any);
+      await em?.populate(this.#items, options.populate as any, options as any);
       this.setSerializationContext(options);
     } else {
       await this.init({ refresh: false, ...options });
@@ -124,8 +124,8 @@ export class Collection<T extends object, O extends object = object> {
     options = typeof options === 'boolean' ? { refresh: options } : options;
     const { refresh, where, ...countOptions } = options;
 
-    if (!refresh && !where && this._count != null) {
-      return this._count;
+    if (!refresh && !where && this.#count != null) {
+      return this.#count;
     }
 
     const em = this.getEntityManager()!;
@@ -135,14 +135,14 @@ export class Collection<T extends object, O extends object = object> {
       this.property.kind === ReferenceKind.MANY_TO_MANY &&
       this.property.owner
     ) {
-      return (this._count = this.length);
+      return (this.#count = this.length);
     }
 
     const cond = this.createLoadCountCondition(where ?? ({} as FilterQuery<T>));
     const count = await em.count(this.property.targetMeta!.class, cond, countOptions as any);
 
     if (!where) {
-      this._count = count;
+      this.#count = count;
     }
 
     return count;
@@ -180,7 +180,7 @@ export class Collection<T extends object, O extends object = object> {
       this.hydrate(items, true);
       this.setSerializationContext(options);
       this.populated();
-      this.readonly = true;
+      this.#readonly = true;
     }
 
     return items;
@@ -194,7 +194,7 @@ export class Collection<T extends object, O extends object = object> {
       this.checkInitialized();
     }
 
-    return [...this.items];
+    return [...this.#items];
   }
 
   toJSON<TT extends T>(): EntityDTO<TT>[] {
@@ -220,10 +220,10 @@ export class Collection<T extends object, O extends object = object> {
 
       if (!this.contains(entity, false)) {
         this.incrementCount(1);
-        this[this.items.size] = entity;
-        this.items.add(entity);
+        this[this.#items.size] = entity;
+        this.#items.add(entity);
         added++;
-        this.dirty = true;
+        this.#dirty = true;
         this.propagate(entity, 'add');
       }
     }
@@ -250,7 +250,7 @@ export class Collection<T extends object, O extends object = object> {
     if (entity instanceof Function) {
       let removed = 0;
 
-      for (const item of this.items) {
+      for (const item of this.#items) {
         if (entity(item as TT)) {
           removed += this.remove(item);
         }
@@ -273,12 +273,12 @@ export class Collection<T extends object, O extends object = object> {
 
       const entity = Reference.unwrapReference(item) as T;
 
-      if (this.items.delete(entity)) {
+      if (this.#items.delete(entity)) {
         this.incrementCount(-1);
-        delete this[this.items.size]; // remove last item
+        delete this[this.#items.size]; // remove last item
         this.propagate(entity, 'remove');
         removed++;
-        this.dirty = true;
+        this.#dirty = true;
       }
 
       if (this.property.orphanRemoval && em) {
@@ -291,7 +291,7 @@ export class Collection<T extends object, O extends object = object> {
     }
 
     if (removed > 0) {
-      Object.assign(this, [...this.items]); // reassign array access
+      Object.assign(this, [...this.#items]); // reassign array access
     }
 
     return removed;
@@ -303,12 +303,12 @@ export class Collection<T extends object, O extends object = object> {
     }
 
     const entity = Reference.unwrapReference(item) as T;
-    return this.items.has(entity);
+    return this.#items.has(entity);
   }
 
   count(): number {
     this.checkInitialized();
-    return this.items.size;
+    return this.#items.size;
   }
 
   isEmpty(): boolean {
@@ -321,23 +321,23 @@ export class Collection<T extends object, O extends object = object> {
       return false;
     }
 
-    if (this._populated != null) {
-      return this._populated;
+    if (this.#populated != null) {
+      return this.#populated;
     }
 
     return !!populated;
   }
 
   populated(populated: boolean | undefined = true): void {
-    this._populated = populated;
+    this.#populated = populated;
   }
 
   async init<TT extends T, P extends string = never>(
     options: InitCollectionOptions<TT, P> = {},
   ): Promise<LoadedCollection<Loaded<TT, P>>> {
-    if (this.dirty) {
-      const items = [...this.items];
-      this.dirty = false;
+    if (this.#dirty) {
+      const items = [...this.#items];
+      this.#dirty = false;
       await this.init(options);
       items.forEach(i => this.add(i));
 
@@ -348,7 +348,7 @@ export class Collection<T extends object, O extends object = object> {
     options = { ...options, filters: QueryHelper.mergePropertyFilters(this.property.filters, options.filters)! };
 
     if (options.dataloader ?? [DataloaderType.ALL, DataloaderType.COLLECTION].includes(em.config.getDataloaderType())) {
-      const order = [...this.items]; // copy order of references
+      const order = [...this.#items]; // copy order of references
       const orderBy = QueryHelper.mergeOrderBy(
         options.orderBy,
         this.property.orderBy,
@@ -360,8 +360,8 @@ export class Collection<T extends object, O extends object = object> {
       const items: TT[] = await loader.load([this, { ...options, orderBy }]);
 
       if (this.property.kind === ReferenceKind.MANY_TO_MANY) {
-        this.initialized = true;
-        this.dirty = false;
+        this.#initialized = true;
+        this.#dirty = false;
 
         if (!customOrder) {
           this.reorderItems(items, order);
@@ -370,16 +370,16 @@ export class Collection<T extends object, O extends object = object> {
         return this as unknown as LoadedCollection<Loaded<TT, P>>;
       }
 
-      this.items.clear();
+      this.#items.clear();
       let i = 0;
 
       for (const item of items) {
-        this.items.add(item);
+        this.#items.add(item);
         this[i++] = item;
       }
 
-      this.initialized = true;
-      this.dirty = false;
+      this.#initialized = true;
+      this.#dirty = false;
 
       return this as unknown as LoadedCollection<Loaded<TT, P>>;
     }
@@ -438,7 +438,7 @@ export class Collection<T extends object, O extends object = object> {
       // we know there is at least one item as it was checked in load method
       const pk = this.property.targetMeta!.primaryKeys[0];
       dict[pk] = { $in: [] };
-      this.items.forEach(item => dict[pk].$in.push(helper(item).getPrimaryKey()));
+      this.#items.forEach(item => dict[pk].$in.push(helper(item).getPrimaryKey()));
     } else {
       dict[this.property.mappedBy] = helper(this.owner).getPrimaryKey();
     }
@@ -489,7 +489,7 @@ export class Collection<T extends object, O extends object = object> {
   }
 
   private validateModification(items: T[]): void {
-    if (this.readonly) {
+    if (this.#readonly) {
       throw ValidationError.cannotModifyReadonlyCollection(this.owner, this.property);
     }
 
@@ -521,7 +521,7 @@ export class Collection<T extends object, O extends object = object> {
   }
 
   toArray<TT extends T>(): EntityDTO<TT>[] {
-    if (this.items.size === 0) {
+    if (this.#items.size === 0) {
       return [];
     }
 
@@ -563,34 +563,34 @@ export class Collection<T extends object, O extends object = object> {
   addWithoutPropagation(entity: T): void {
     if (!this.contains(entity, false)) {
       this.incrementCount(1);
-      this[this.items.size] = entity;
-      this.items.add(entity);
-      this.dirty = true;
+      this[this.#items.size] = entity;
+      this.#items.add(entity);
+      this.#dirty = true;
     }
   }
 
   set(items: Iterable<T | Reference<T>>): void {
-    if (!this.initialized) {
-      this.initialized = true;
-      this.snapshot = undefined;
+    if (!this.#initialized) {
+      this.#initialized = true;
+      this.#snapshot = undefined;
     }
 
     if (this.compare(Utils.asArray(items).map(item => Reference.unwrapReference(item)))) {
       return;
     }
 
-    this.remove(this.items);
+    this.remove(this.#items);
     this.add(items);
   }
 
   private compare(items: T[]): boolean {
-    if (items.length !== this.items.size) {
+    if (items.length !== this.#items.size) {
       return false;
     }
 
     let idx = 0;
 
-    for (const item of this.items) {
+    for (const item of this.#items) {
       if (item !== items[idx++]) {
         return false;
       }
@@ -603,14 +603,14 @@ export class Collection<T extends object, O extends object = object> {
    * @internal
    */
   hydrate(items: T[], forcePropagate?: boolean, partial?: boolean): void {
-    for (let i = 0; i < this.items.size; i++) {
+    for (let i = 0; i < this.#items.size; i++) {
       delete this[i];
     }
 
-    this.initialized = true;
-    this.partial = !!partial;
-    this.items.clear();
-    this._count = 0;
+    this.#initialized = true;
+    this.#partial = !!partial;
+    this.#items.clear();
+    this.#count = 0;
     this.add(items);
     this.takeSnapshot(forcePropagate);
   }
@@ -622,27 +622,27 @@ export class Collection<T extends object, O extends object = object> {
    * which tells the ORM we don't want orphaned entities to exist, so we know those should be removed.
    */
   removeAll(): void {
-    if (!this.initialized) {
-      this.initialized = true;
-      this.snapshot = undefined;
+    if (!this.#initialized) {
+      this.#initialized = true;
+      this.#snapshot = undefined;
     }
 
-    this.remove(this.items);
-    this.dirty = true;
+    this.remove(this.#items);
+    this.#dirty = true;
   }
 
   /**
    * @internal
    */
   removeWithoutPropagation(entity: T): void {
-    if (!this.items.delete(entity)) {
+    if (!this.#items.delete(entity)) {
       return;
     }
 
     this.incrementCount(-1);
-    delete this[this.items.size];
-    Object.assign(this, [...this.items]);
-    this.dirty = true;
+    delete this[this.#items.size];
+    Object.assign(this, [...this.#items]);
+    this.#dirty = true;
   }
 
   /**
@@ -652,10 +652,10 @@ export class Collection<T extends object, O extends object = object> {
   slice(start = 0, end?: number): T[] {
     this.checkInitialized();
     let index = 0;
-    end ??= this.items.size;
+    end ??= this.#items.size;
     const items: T[] = [];
 
-    for (const item of this.items) {
+    for (const item of this.#items) {
       if (index === end) {
         break;
       }
@@ -676,7 +676,7 @@ export class Collection<T extends object, O extends object = object> {
   exists(cb: (item: T) => boolean): boolean {
     this.checkInitialized();
 
-    for (const item of this.items) {
+    for (const item of this.#items) {
       if (cb(item)) {
         return true;
       }
@@ -702,7 +702,7 @@ export class Collection<T extends object, O extends object = object> {
     this.checkInitialized();
     let index = 0;
 
-    for (const item of this.items) {
+    for (const item of this.#items) {
       if (cb(item, index++)) {
         return item;
       }
@@ -729,7 +729,7 @@ export class Collection<T extends object, O extends object = object> {
     const items: T[] = [];
     let index = 0;
 
-    for (const item of this.items) {
+    for (const item of this.#items) {
       if (cb(item, index++)) {
         items.push(item);
       }
@@ -746,7 +746,7 @@ export class Collection<T extends object, O extends object = object> {
     const items: R[] = [];
     let index = 0;
 
-    for (const item of this.items) {
+    for (const item of this.#items) {
       items.push(mapper(item, index++));
     }
 
@@ -760,7 +760,7 @@ export class Collection<T extends object, O extends object = object> {
     this.checkInitialized();
     let index = 0;
 
-    for (const item of this.items) {
+    for (const item of this.#items) {
       initial = cb(initial, item, index++);
     }
 
@@ -794,11 +794,11 @@ export class Collection<T extends object, O extends object = object> {
   }
 
   isInitialized(fully = false): boolean {
-    if (!this.initialized || !fully) {
-      return this.initialized;
+    if (!this.#initialized || !fully) {
+      return this.#initialized;
     }
 
-    for (const item of this.items) {
+    for (const item of this.#items) {
       if (!helper(item).__initialized) {
         return false;
       }
@@ -808,15 +808,15 @@ export class Collection<T extends object, O extends object = object> {
   }
 
   isDirty(): boolean {
-    return this.dirty;
+    return this.#dirty;
   }
 
   isPartial(): boolean {
-    return this.partial;
+    return this.#partial;
   }
 
   setDirty(dirty = true): void {
-    this.dirty = dirty;
+    this.#dirty = dirty;
   }
 
   get length(): number {
@@ -833,11 +833,11 @@ export class Collection<T extends object, O extends object = object> {
    * @internal
    */
   takeSnapshot(forcePropagate?: boolean): void {
-    this.snapshot = [...this.items];
-    this.dirty = false;
+    this.#snapshot = [...this.#items];
+    this.#dirty = false;
 
     if (this.property.owner || forcePropagate) {
-      this.items.forEach(item => {
+      this.#items.forEach(item => {
         this.propagate(item, 'takeSnapshot');
       });
     }
@@ -847,7 +847,7 @@ export class Collection<T extends object, O extends object = object> {
    * @internal
    */
   getSnapshot() {
-    return this.snapshot;
+    return this.#snapshot;
   }
 
   /**
@@ -855,7 +855,7 @@ export class Collection<T extends object, O extends object = object> {
    */
   get property(): EntityProperty {
     // cannot be typed to `EntityProperty<O, T>` as it causes issues in assignability of `Loaded` type
-    if (!this._property) {
+    if (!this.#property) {
       const meta = wrap(this.owner, true).__meta;
 
       /* v8 ignore next */
@@ -866,10 +866,10 @@ export class Collection<T extends object, O extends object = object> {
         );
       }
 
-      this._property = meta.relations.find(prop => this.owner[prop.name] === this)!;
+      this.#property = meta.relations.find(prop => this.owner[prop.name] === this)!;
     }
 
-    return this._property;
+    return this.#property;
   }
 
   /**
@@ -877,7 +877,7 @@ export class Collection<T extends object, O extends object = object> {
    */
   set property(prop: EntityProperty) {
     // cannot be typed to `EntityProperty<O, T>` as it causes issues in assignability of `Loaded` type
-    this._property = prop;
+    this.#property = prop;
   }
 
   protected propagate(item: T, method: 'add' | 'remove' | 'takeSnapshot'): void {
@@ -948,28 +948,18 @@ export class Collection<T extends object, O extends object = object> {
     }
   }
 
-  private incrementCount(value: number) {
-    if (typeof this._count === 'number' && this.initialized) {
-      this._count += value;
+  protected incrementCount(value: number) {
+    if (typeof this.#count === 'number' && this.#initialized) {
+      this.#count += value;
     }
   }
 
   /** @ignore */
   [Symbol.for('nodejs.util.inspect.custom')](depth = 2) {
     const object = { ...this } as Dictionary;
-    const hidden = [
-      'items',
-      'owner',
-      '_property',
-      '_count',
-      'snapshot',
-      '_populated',
-      '_lazyInitialized',
-      '_em',
-      'readonly',
-      'partial',
-    ];
-    hidden.forEach(k => delete object[k]);
+    delete object.owner;
+    object.initialized = this.#initialized;
+    object.dirty = this.#dirty;
     const ret = inspect(object, { depth });
     const name = `${this.constructor.name}<${this.property?.type ?? 'unknown'}>`;
 

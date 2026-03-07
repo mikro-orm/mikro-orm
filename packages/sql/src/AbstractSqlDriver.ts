@@ -167,7 +167,7 @@ export abstract class AbstractSqlDriver<
 
     const { first, last, before, after } = options as FindByCursorOptions<T>;
     const isCursorPagination = [first, last, before, after].some(v => v != null);
-    qb.__populateWhere = (options as Dictionary)._populateWhere;
+    qb.state.resolvedPopulateWhere = (options as Dictionary)._populateWhere;
     qb.select(fields as any)
       // only add populateWhere if we are populate-joining, as this will be used to add `on` conditions
       .populate(
@@ -528,7 +528,7 @@ export abstract class AbstractSqlDriver<
     meta: EntityMetadata<T>,
     qb: AnyQueryBuilder<T>,
   ): void {
-    const tptAliases = (qb as any)._tptAlias as Dictionary<string>;
+    const tptAliases = qb.state.tptAlias;
 
     // Walk up the TPT hierarchy
     let parentMeta: EntityMetadata | undefined = meta.tptParent;
@@ -862,7 +862,7 @@ export abstract class AbstractSqlDriver<
 
     this.validateSqlOptions(options);
 
-    qb.__populateWhere = (options as Dictionary)._populateWhere;
+    qb.state.resolvedPopulateWhere = (options as Dictionary)._populateWhere;
     qb.indexHint(options.indexHint as string)
       .collation(options.collation as string)
       .comment(options.comments)
@@ -2275,7 +2275,7 @@ export abstract class AbstractSqlDriver<
    * @internal
    */
   protected findTPTChildAlias<T extends object>(qb: AnyQueryBuilder<T>, childMeta: EntityMetadata): string | undefined {
-    const joins = (qb as any)._joins as Dictionary;
+    const joins = qb.state.joins as Dictionary;
     for (const key of Object.keys(joins)) {
       if (joins[key].table === childMeta.tableName && key.includes('[tpt]')) {
         return joins[key].alias;

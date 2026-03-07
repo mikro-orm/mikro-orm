@@ -85,7 +85,7 @@ export function clone<T>(parent: T, respectCustomCloneMethod = true): T {
       parent.copy(child as Buffer);
       return child;
     } else if (parent instanceof TypedArray) {
-      child = parent.copyWithin(0);
+      child = parent.slice();
       return child;
     } else if (parent instanceof Error) {
       child = new (parent as any).constructor(parent.message);

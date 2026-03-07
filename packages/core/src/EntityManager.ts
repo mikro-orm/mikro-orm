@@ -96,25 +96,26 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
   /** @internal */
   declare readonly '~entities'?: unknown;
 
-  private static counter = 1;
-  readonly _id = EntityManager.counter++;
+  static #counter = 1;
+  /** @internal */
+  readonly _id = EntityManager.#counter++;
   readonly global = false;
   readonly name: string;
-  private readonly loaders: Partial<Record<'ref' | '1:m' | 'm:n', { load: (...args: unknown[]) => Promise<unknown> }>> =
-    {};
-  private readonly repositoryMap = new Map<EntityMetadata, EntityRepository<any>>();
-  private readonly entityLoader: EntityLoader;
-  private readonly comparator: EntityComparator;
-  private readonly entityFactory: EntityFactory;
-  private readonly unitOfWork: UnitOfWork;
-  private readonly resultCache: CacheAdapter;
-  private filters: Dictionary<FilterDef> = {};
-  private filterParams: Dictionary<Dictionary> = {};
+  readonly #loaders: Partial<Record<'ref' | '1:m' | 'm:n', { load: (...args: unknown[]) => Promise<unknown> }>> = {};
+  readonly #repositoryMap = new Map<EntityMetadata, EntityRepository<any>>();
+  readonly #entityLoader: EntityLoader;
+  readonly #comparator: EntityComparator;
+  readonly #entityFactory: EntityFactory;
+  readonly #unitOfWork: UnitOfWork;
+  readonly #resultCache: CacheAdapter;
+  #filters: Dictionary<FilterDef> = {};
+  #filterParams: Dictionary<Dictionary> = {};
   protected loggerContext?: Dictionary;
-  private transactionContext?: Transaction;
-  private disableTransactions: boolean;
-  private flushMode?: FlushMode;
-  private _schema?: string;
+  #transactionContext?: Transaction;
+  #disableTransactions: boolean;
+  #flushMode?: FlushMode;
+  #schema?: string;
+  readonly #useContext: boolean;
 
   /**
    * @internal
@@ -123,16 +124,17 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     readonly config: Configuration,
     protected readonly driver: Driver,
     protected readonly metadata: MetadataStorage,
-    private readonly useContext = true,
+    useContext = true,
     protected readonly eventManager = new EventManager(config.get('subscribers')),
   ) {
-    this.entityLoader = new EntityLoader(this);
+    this.#useContext = useContext;
+    this.#entityLoader = new EntityLoader(this);
     this.name = this.config.get('contextName');
-    this.comparator = this.config.getComparator(this.metadata);
-    this.resultCache = this.config.getResultCacheAdapter();
-    this.disableTransactions = this.config.get('disableTransactions');
-    this.entityFactory = new EntityFactory(this);
-    this.unitOfWork = new UnitOfWork(this);
+    this.#comparator = this.config.getComparator(this.metadata);
+    this.#resultCache = this.config.getResultCacheAdapter();
+    this.#disableTransactions = this.config.get('disableTransactions');
+    this.#entityFactory = new EntityFactory(this);
+    this.#unitOfWork = new UnitOfWork(this);
   }
 
   /**
@@ -165,12 +167,12 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
   ): GetRepository<Entity, Repository> {
     const meta = this.metadata.get(entityName);
 
-    if (!this.repositoryMap.has(meta)) {
+    if (!this.#repositoryMap.has(meta)) {
       const RepositoryClass = this.config.getRepositoryClass(meta.repository) as Constructor<EntityRepository<any>>;
-      this.repositoryMap.set(meta, new RepositoryClass(this, entityName));
+      this.#repositoryMap.set(meta, new RepositoryClass(this, entityName));
     }
 
-    return this.repositoryMap.get(meta) as GetRepository<Entity, Repository>;
+    return this.#repositoryMap.get(meta) as GetRepository<Entity, Repository>;
   }
 
   /**
@@ -227,7 +229,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     );
 
     if (cached?.data) {
-      await em.entityLoader.populate<Entity>(entityName, cached.data as Entity[], populate, {
+      await em.#entityLoader.populate<Entity>(entityName, cached.data as Entity[], populate, {
         ...(options as Dictionary),
         ...em.getPopulateWhere(where as ObjectQuery<Entity>, options),
         ignoreLazyScalarProperties: true,
@@ -245,7 +247,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
 
     await em.processUnionWhere(entityName, options, 'read');
 
-    const results = await em.driver.find(entityName, where, { ctx: em.transactionContext, em, ...options });
+    const results = await em.driver.find(entityName, where, { ctx: em.#transactionContext, em, ...options });
 
     if (results.length === 0) {
       await em.storeCache(options.cache, cached!, []);
@@ -255,7 +257,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     const ret: Loaded<Entity, Hint, Fields, Excludes>[] = [];
 
     for (const data of results) {
-      const entity = em.entityFactory.create(entityName, data as EntityData<Entity>, {
+      const entity = em.#entityFactory.create(entityName, data as EntityData<Entity>, {
         merge: true,
         refresh: options.refresh,
         schema: options.schema,
@@ -266,13 +268,13 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     const unique = Utils.unique(ret);
-    await em.entityLoader.populate<Entity, Fields>(entityName, unique as Entity[], populate, {
+    await em.#entityLoader.populate<Entity, Fields>(entityName, unique as Entity[], populate, {
       ...(options as Dictionary),
       ...em.getPopulateWhere(where as ObjectQuery<Entity>, options),
       ignoreLazyScalarProperties: true,
       lookup: false,
     });
-    await em.unitOfWork.dispatchOnLoadEvent();
+    await em.#unitOfWork.dispatchOnLoadEvent();
 
     if (meta.virtual) {
       await em.storeCache(options.cache, cached!, () => ret);
@@ -324,14 +326,14 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     options.populateWhere = this.createPopulateWhere({ ...where } as ObjectQuery<Entity>, options);
     options.populateFilter = await this.getJoinedFilters(meta, options);
     const stream = em.driver.stream(entityName, where, {
-      ctx: em.transactionContext,
+      ctx: em.#transactionContext,
       mapResults: false,
       ...options,
     } as FindOptions<Entity>);
 
     for await (const data of stream) {
       const fork = em.fork();
-      const entity = fork.entityFactory.create(entityName, data as EntityData<Entity>, {
+      const entity = fork.#entityFactory.create(entityName, data as EntityData<Entity>, {
         refresh: options.refresh,
         schema: options.schema,
         convertCustomTypes: true,
@@ -341,7 +343,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
         fields: options.fields,
         exclude: options.exclude,
       } as any);
-      await fork.unitOfWork.dispatchOnLoadEvent();
+      await fork.#unitOfWork.dispatchOnLoadEvent();
       fork.clear();
       yield entity;
     }
@@ -391,7 +393,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     options.default ??= true;
-    this.getContext(false).filters[options.name] = options as any;
+    this.getContext(false).#filters[options.name] = options as any;
   }
 
   /**
@@ -399,14 +401,14 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
    * If you want to set shared value for all contexts, be sure to use the root entity manager.
    */
   setFilterParams(name: string, args: Dictionary): void {
-    this.getContext().filterParams[name] = args;
+    this.getContext().#filterParams[name] = args;
   }
 
   /**
    * Returns filter parameters for given filter set in this context.
    */
   getFilterParams<T extends Dictionary = Dictionary>(name: string): T {
-    return this.getContext().filterParams[name] as T;
+    return this.getContext().#filterParams[name] as T;
   }
 
   /**
@@ -427,7 +429,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
   }
 
   setFlushMode(flushMode?: FlushMode | `${FlushMode}`): void {
-    this.getContext(false).flushMode = flushMode as FlushMode;
+    this.getContext(false).#flushMode = flushMode as FlushMode;
   }
 
   protected async processWhere<
@@ -679,7 +681,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       activeFilters.forEach(f => active.add(f.name));
     };
     push(this.config.get('filters'));
-    push(this.filters);
+    push(this.#filters);
     push(meta.filters);
 
     if (filters.length === 0) {
@@ -692,7 +694,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       if (filter.cond instanceof Function) {
         // @ts-ignore
         // oxfmt-ignore
-        const args = Utils.isPlainObject(options?.[filter.name]) ? options[filter.name] : this.getContext().filterParams[filter.name];
+        const args = Utils.isPlainObject(options?.[filter.name]) ? options[filter.name] : this.getContext().#filterParams[filter.name];
 
         if (!args && filter.cond.length > 0 && filter.args !== false) {
           throw new Error(`No arguments provided for filter '${filter.name}'`);
@@ -888,19 +890,19 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     const em = this.getContext();
 
     if (!reloaded) {
-      em.unitOfWork.unsetIdentity(entity);
+      em.#unitOfWork.unsetIdentity(entity);
       return null;
     }
 
     let found = false;
 
-    for (const e of fork.unitOfWork.getIdentityMap()) {
+    for (const e of fork.#unitOfWork.getIdentityMap()) {
       const ref = em.getReference(e.constructor, helper(e).getPrimaryKey());
       const data = helper(e).serialize({ ignoreSerializers: true, includeHidden: true, convertCustomTypes: false });
       em.config
         .getHydrator(this.metadata)
-        .hydrate(ref, helper(ref).__meta, data, em.entityFactory, 'full', false, false);
-      Utils.merge(helper(ref).__originalEntityData, this.comparator.prepareEntity(e as Entity));
+        .hydrate(ref, helper(ref).__meta, data, em.#entityFactory, 'full', false, false);
+      Utils.merge(helper(ref).__originalEntityData, this.#comparator.prepareEntity(e as Entity));
       found ||= ref === entity;
     }
 
@@ -910,8 +912,10 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
         includeHidden: true,
         convertCustomTypes: true,
       }) as object;
-      em.config.getHydrator(this.metadata).hydrate(entity, wrapped.__meta, data, em.entityFactory, 'full', false, true);
-      Utils.merge(wrapped.__originalEntityData, this.comparator.prepareEntity(reloaded as Entity));
+      em.config
+        .getHydrator(this.metadata)
+        .hydrate(entity, wrapped.__meta, data, em.#entityFactory, 'full', false, true);
+      Utils.merge(wrapped.__originalEntityData, this.#comparator.prepareEntity(reloaded as Entity));
     }
 
     return entity as any;
@@ -941,7 +945,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
 
     const em = this.getContext();
     em.prepareOptions(options);
-    let entity = em.unitOfWork.tryGetById(entityName, where, options.schema);
+    let entity = em.#unitOfWork.tryGetById(entityName, where, options.schema);
 
     // query for a not managed entity which is already in the identity map as it
     // was provided with a PK this entity does not exist in the db, there can't
@@ -974,7 +978,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
 
     if (cached?.data !== undefined) {
       if (cached.data) {
-        await em.entityLoader.populate<Entity, Fields>(
+        await em.#entityLoader.populate<Entity, Fields>(
           entityName,
           [cached.data as Entity],
           options.populate as unknown as PopulateOptions<Entity>[],
@@ -998,7 +1002,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     await em.processUnionWhere(entityName, options, 'read');
 
     const data = await em.driver.findOne(entityName, where, {
-      ctx: em.transactionContext,
+      ctx: em.#transactionContext,
       em,
       ...options,
     });
@@ -1008,7 +1012,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       return null;
     }
 
-    entity = em.entityFactory.create<Entity>(entityName, data as EntityData<Entity>, {
+    entity = em.#entityFactory.create<Entity>(entityName, data as EntityData<Entity>, {
       merge: true,
       refresh: options.refresh,
       schema: options.schema,
@@ -1016,7 +1020,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     });
 
     await em.lockAndPopulate(meta, entity, where, options);
-    await em.unitOfWork.dispatchOnLoadEvent();
+    await em.#unitOfWork.dispatchOnLoadEvent();
     await em.storeCache(options.cache, cached!, () => helper(entity).toPOJO());
 
     return entity as Loaded<Entity, Hint, Fields, Excludes>;
@@ -1123,18 +1127,18 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       entity = data as Entity;
 
       if (helper(entity).__managed && helper(entity).__em === em && !this.config.get('upsertManaged')) {
-        em.entityFactory.mergeData(meta, entity, data, { initialized: true });
+        em.#entityFactory.mergeData(meta, entity, data, { initialized: true });
         return entity;
       }
 
       where = helper(entity).getPrimaryKey() as FilterQuery<Entity>;
-      data = em.comparator.prepareEntity(entity);
+      data = em.#comparator.prepareEntity(entity);
     } else {
       data = Utils.copy(QueryHelper.processParams(data));
       where = Utils.extractPK(data, meta) as FilterQuery<Entity>;
 
       if (where && !this.config.get('upsertManaged')) {
-        const exists = em.unitOfWork.getById<Entity>(entityName, where as Primary<Entity>, options.schema);
+        const exists = em.#unitOfWork.getById<Entity>(entityName, where as Primary<Entity>, options.schema);
 
         if (exists) {
           return em.assign(exists, data as any) as any;
@@ -1151,15 +1155,15 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     const ret = await em.driver.nativeUpdate(entityName, where, data, {
-      ctx: em.transactionContext,
+      ctx: em.#transactionContext,
       upsert: true,
       convertCustomTypes,
       ...options,
     });
 
-    em.unitOfWork.getChangeSetPersister().mapReturnedValues(entity, data, ret.row, meta, true);
+    em.#unitOfWork.getChangeSetPersister().mapReturnedValues(entity, data, ret.row, meta, true);
 
-    entity ??= em.entityFactory.create(entityName, data, {
+    entity ??= em.#entityFactory.create(entityName, data, {
       refresh: true,
       initialized: true,
       schema: options.schema,
@@ -1197,17 +1201,17 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
 
       const data2 = await this.driver.findOne(meta.class, where, {
         fields: returning as any[],
-        ctx: em.transactionContext,
+        ctx: em.#transactionContext,
         convertCustomTypes: true,
         connectionType: 'write',
         schema: options.schema,
       });
-      em.getHydrator().hydrate(entity, meta, data2!, em.entityFactory, 'full', false, true);
+      em.getHydrator().hydrate(entity, meta, data2!, em.#entityFactory, 'full', false, true);
     }
 
     // recompute the data as there might be some values missing (e.g. those with db column defaults)
-    const snapshot = this.comparator.prepareEntity(entity);
-    em.unitOfWork.register(entity, snapshot, { refresh: true });
+    const snapshot = this.#comparator.prepareEntity(entity);
+    em.#unitOfWork.register(entity, snapshot, { refresh: true });
 
     if (em.eventManager.hasListeners(EventType.afterUpsert, meta)) {
       await em.eventManager.dispatchEvent(EventType.afterUpsert, { entity, em, meta }, meta);
@@ -1296,20 +1300,20 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
         const entity = row as Entity;
 
         if (helper(entity).__managed && helper(entity).__em === em && !this.config.get('upsertManaged')) {
-          em.entityFactory.mergeData(meta, entity, row, { initialized: true });
+          em.#entityFactory.mergeData(meta, entity, row, { initialized: true });
           entities.set(entity, row);
           entitiesByData.set(row, entity);
           continue;
         }
 
         where = helper(entity).getPrimaryKey() as FilterQuery<Entity>;
-        row = em.comparator.prepareEntity(entity);
+        row = em.#comparator.prepareEntity(entity);
       } else {
         row = data[i] = Utils.copy(QueryHelper.processParams(row));
         where = Utils.extractPK(row, meta) as FilterQuery<Entity>;
 
         if (where && !this.config.get('upsertManaged')) {
-          const exists = em.unitOfWork.getById<Entity>(entityName, where as Primary<Entity>, options.schema);
+          const exists = em.#unitOfWork.getById<Entity>(entityName, where as Primary<Entity>, options.schema);
 
           if (exists) {
             em.assign(exists, row as any);
@@ -1350,7 +1354,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     const res = await em.driver.nativeUpdateMany(entityName, allWhere, allData, {
-      ctx: em.transactionContext,
+      ctx: em.#transactionContext,
       upsert: true,
       convertCustomTypes,
       ...options,
@@ -1361,7 +1365,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     const loadPK = new Map<Entity, FilterQuery<Entity>>();
 
     allData.forEach((row, i) => {
-      em.unitOfWork
+      em.#unitOfWork
         .getChangeSetPersister()
         .mapReturnedValues(
           Utils.isEntity(data[i]) ? (data[i] as Entity) : null,
@@ -1372,7 +1376,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
         );
       const entity = Utils.isEntity(data[i])
         ? (data[i] as Entity)
-        : em.entityFactory.create(entityName, row, {
+        : em.#entityFactory.create(entityName, row, {
             refresh: true,
             initialized: true,
             schema: options.schema,
@@ -1418,7 +1422,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
         fields: returning
           .concat(...add)
           .concat(...((Array.isArray(uniqueFields) ? uniqueFields : []) as string[])) as any,
-        ctx: em.transactionContext,
+        ctx: em.#transactionContext,
         convertCustomTypes: true,
         connectionType: 'write',
         schema: options.schema,
@@ -1432,7 +1436,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
               tmp[k] = row[k];
             }
           });
-          return this.comparator.matching<any>(entityName, cond as EntityKey, tmp);
+          return this.#comparator.matching<any>(entityName, cond as EntityKey, tmp);
         });
 
         /* v8 ignore next */
@@ -1440,7 +1444,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
           throw new Error(`Cannot find matching entity for condition ${JSON.stringify(cond)}`);
         }
 
-        em.getHydrator().hydrate(entity, meta, row, em.entityFactory, 'full', false, true);
+        em.getHydrator().hydrate(entity, meta, row, em.#entityFactory, 'full', false, true);
       }
 
       if (loadPK.size !== data2.length && Array.isArray(uniqueFields)) {
@@ -1458,7 +1462,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
               a[b] = item[b];
               return a;
             }, {});
-            return this.comparator.matching(entityName, cond, pk);
+            return this.#comparator.matching(entityName, cond, pk);
           });
 
           /* v8 ignore next */
@@ -1466,15 +1470,15 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
             throw new Error(`Cannot find matching entity for condition ${JSON.stringify(cond)}`);
           }
 
-          em.getHydrator().hydrate(entity, meta, row, em.entityFactory, 'full');
+          em.getHydrator().hydrate(entity, meta, row, em.#entityFactory, 'full');
         }
       }
     }
 
     for (const [entity] of entities) {
       // recompute the data as there might be some values missing (e.g. those with db column defaults)
-      const snapshot = this.comparator.prepareEntity(entity);
-      em.unitOfWork.register(entity, snapshot, { refresh: true });
+      const snapshot = this.#comparator.prepareEntity(entity);
+      em.#unitOfWork.register(entity, snapshot, { refresh: true });
     }
 
     if (em.eventManager.hasListeners(EventType.afterUpsert, meta)) {
@@ -1515,7 +1519,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
   async transactional<T>(cb: (em: this) => T | Promise<T>, options: TransactionOptions = {}): Promise<T> {
     const em = this.getContext(false);
 
-    if (this.disableTransactions || em.disableTransactions) {
+    if (this.#disableTransactions || em.#disableTransactions) {
       return cb(em);
     }
 
@@ -1527,12 +1531,12 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
    * Starts new transaction bound to this EntityManager. Use `ctx` parameter to provide the parent when nesting transactions.
    */
   async begin(options: Omit<TransactionOptions, 'ignoreNestedTransactions'> = {}): Promise<void> {
-    if (this.disableTransactions) {
+    if (this.#disableTransactions) {
       return;
     }
 
     const em = this.getContext(false);
-    em.transactionContext = await em.getConnection('write').begin({
+    em.#transactionContext = await em.getConnection('write').begin({
       ...options,
       eventBroadcaster: new TransactionEventBroadcaster(em, { topLevelTransaction: !options.ctx }),
     });
@@ -1544,37 +1548,37 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
   async commit(): Promise<void> {
     const em = this.getContext(false);
 
-    if (this.disableTransactions) {
+    if (this.#disableTransactions) {
       await em.flush();
       return;
     }
 
-    if (!em.transactionContext) {
+    if (!em.#transactionContext) {
       throw ValidationError.transactionRequired();
     }
 
     await em.flush();
-    await em.getConnection('write').commit(em.transactionContext, new TransactionEventBroadcaster(em));
-    delete em.transactionContext;
+    await em.getConnection('write').commit(em.#transactionContext, new TransactionEventBroadcaster(em));
+    em.#transactionContext = undefined;
   }
 
   /**
    * Rollbacks the transaction bound to this EntityManager.
    */
   async rollback(): Promise<void> {
-    if (this.disableTransactions) {
+    if (this.#disableTransactions) {
       return;
     }
 
     const em = this.getContext(false);
 
-    if (!em.transactionContext) {
+    if (!em.#transactionContext) {
       throw ValidationError.transactionRequired();
     }
 
-    await em.getConnection('write').rollback(em.transactionContext, new TransactionEventBroadcaster(em));
-    delete em.transactionContext;
-    em.unitOfWork.clearActionsQueue();
+    await em.getConnection('write').rollback(em.#transactionContext, new TransactionEventBroadcaster(em));
+    em.#transactionContext = undefined;
+    em.#unitOfWork.clearActionsQueue();
   }
 
   /**
@@ -1616,15 +1620,15 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
 
       if (!helper(data).__managed) {
         // the entity might have been created via `em.create()`, which adds it to the persist stack automatically
-        em.unitOfWork.getPersistStack().delete(data);
+        em.#unitOfWork.getPersistStack().delete(data);
         // it can be also in the identity map if it had a PK value already
-        em.unitOfWork.unsetIdentity(data);
+        em.#unitOfWork.unsetIdentity(data);
       }
 
       const meta = helper(data).__meta;
-      const payload = em.comparator.prepareEntity(data);
+      const payload = em.#comparator.prepareEntity(data);
       const cs = new ChangeSet(data, ChangeSetType.CREATE, payload, meta);
-      await em.unitOfWork.getChangeSetPersister().executeInserts([cs], { ctx: em.transactionContext, ...options });
+      await em.#unitOfWork.getChangeSetPersister().executeInserts([cs], { ctx: em.#transactionContext, ...options });
 
       return cs.getPrimaryKey()!;
     }
@@ -1632,7 +1636,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     data = QueryHelper.processObjectParams(data);
     validateParams(data, 'insert data');
     const res = await em.driver.nativeInsert<Entity>(entityName, data as EntityData<Entity>, {
-      ctx: em.transactionContext,
+      ctx: em.#transactionContext,
       ...options,
     });
 
@@ -1672,16 +1676,16 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
 
         if (!helper(row).__managed) {
           // the entity might have been created via `em.create()`, which adds it to the persist stack automatically
-          em.unitOfWork.getPersistStack().delete(row);
+          em.#unitOfWork.getPersistStack().delete(row);
 
           // it can be also in the identity map if it had a PK value already
-          em.unitOfWork.unsetIdentity(row);
+          em.#unitOfWork.unsetIdentity(row);
         }
 
-        const payload = em.comparator.prepareEntity(row) as EntityData<Entity>;
+        const payload = em.#comparator.prepareEntity(row) as EntityData<Entity>;
         return new ChangeSet<Entity>(row as Entity, ChangeSetType.CREATE, payload, meta);
       });
-      await em.unitOfWork.getChangeSetPersister().executeInserts(css, { ctx: em.transactionContext, ...options });
+      await em.#unitOfWork.getChangeSetPersister().executeInserts(css, { ctx: em.#transactionContext, ...options });
 
       return css.map(cs => cs.getPrimaryKey()!);
     }
@@ -1689,7 +1693,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     data = data.map(row => QueryHelper.processObjectParams(row));
     data.forEach(row => validateParams(row, 'insert data'));
     const res = await em.driver.nativeInsertMany<Entity>(entityName, data as EntityData<Entity>[], {
-      ctx: em.transactionContext,
+      ctx: em.#transactionContext,
       ...options,
     });
 
@@ -1724,7 +1728,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     validateParams(data, 'update data');
     validateParams(where, 'update condition');
     const res = await em.driver.nativeUpdate(entityName, where, data, {
-      ctx: em.transactionContext,
+      ctx: em.#transactionContext,
       em,
       ...options,
     } as NativeInsertUpdateOptions<Entity>);
@@ -1753,7 +1757,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     )) as typeof where;
     validateParams(where, 'delete condition');
     const res = await em.driver.nativeDelete(entityName, where, {
-      ctx: em.transactionContext,
+      ctx: em.#transactionContext,
       em,
       ...options,
     } as NativeDeleteOptions<Entity>);
@@ -1827,12 +1831,12 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     const em = options.disableContextResolution ? this : this.getContext();
-    options.schema ??= em._schema;
+    options.schema ??= em.#schema;
     options.validate ??= true;
     options.cascade ??= true;
     validatePrimaryKey(data as EntityData<Entity>, em.metadata.get(entityName));
 
-    let entity = em.unitOfWork.tryGetById<Entity>(entityName, data as FilterQuery<Entity>, options.schema, false);
+    let entity = em.#unitOfWork.tryGetById<Entity>(entityName, data as FilterQuery<Entity>, options.schema, false);
 
     if (entity && helper(entity).__managed && helper(entity).__initialized && !options.refresh) {
       return entity;
@@ -1841,9 +1845,9 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     const dataIsEntity = Utils.isEntity<Entity>(data);
     entity = dataIsEntity
       ? data
-      : em.entityFactory.create<Entity>(entityName, data as EntityData<Entity>, { merge: true, ...options });
+      : em.#entityFactory.create<Entity>(entityName, data as EntityData<Entity>, { merge: true, ...options });
     const visited = options.cascade ? undefined : new Set([entity]);
-    em.unitOfWork.merge(entity, visited);
+    em.#unitOfWork.merge(entity, visited);
 
     return entity;
   }
@@ -1919,8 +1923,8 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     options: CreateOptions<Convert> = {},
   ): Entity {
     const em = this.getContext();
-    options.schema ??= em._schema;
-    const entity = em.entityFactory.create(entityName, data as EntityData<Entity>, {
+    options.schema ??= em.#schema;
+    const entity = em.#entityFactory.create(entityName, data as EntityData<Entity>, {
       ...options,
       newEntity: !options.managed,
       merge: options.managed,
@@ -2069,7 +2073,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       return cached.data as number;
     }
 
-    const count = await em.driver.count(entityName, where, { ctx: em.transactionContext, em, ...options });
+    const count = await em.driver.count(entityName, where, { ctx: em.#transactionContext, em, ...options });
     await em.storeCache(options.cache, cached!, () => +count);
 
     return +count;
@@ -2084,7 +2088,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
 
     if (Utils.isEntity(entity)) {
       // do not cascade just yet, cascading of entities in persist stack is done when flushing
-      em.unitOfWork.persist(entity, undefined, { cascade: false });
+      em.#unitOfWork.persist(entity, undefined, { cascade: false });
       return em;
     }
 
@@ -2098,7 +2102,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       }
 
       // do not cascade just yet, cascading of entities in persist stack is done when flushing
-      em.unitOfWork.persist(Reference.unwrapReference(ent), undefined, { cascade: false });
+      em.#unitOfWork.persist(Reference.unwrapReference(ent), undefined, { cascade: false });
     }
 
     return this;
@@ -2115,7 +2119,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
 
     if (Utils.isEntity<Entity>(entity)) {
       // do not cascade just yet, cascading of entities in persist stack is done when flushing
-      em.unitOfWork.remove(entity, undefined, { cascade: false });
+      em.#unitOfWork.remove(entity, undefined, { cascade: false });
       return em;
     }
 
@@ -2129,7 +2133,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       }
 
       // do not cascade just yet, cascading of entities in remove stack is done when flushing
-      em.unitOfWork.remove(Reference.unwrapReference(ent), undefined, { cascade: false });
+      em.#unitOfWork.remove(Reference.unwrapReference(ent), undefined, { cascade: false });
     }
 
     return em;
@@ -2151,7 +2155,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     options: { flushMode?: FlushMode | AnyString },
   ): Promise<void> {
     const em = this.getContext();
-    const flushMode = options.flushMode ?? em.flushMode ?? em.config.get('flushMode');
+    const flushMode = options.flushMode ?? em.#flushMode ?? em.config.get('flushMode');
     const meta = em.metadata.get(entityName);
 
     if (flushMode === FlushMode.COMMIT) {
@@ -2167,7 +2171,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
    * Clears the EntityManager. All entities that are currently managed by this EntityManager become detached.
    */
   clear(): void {
-    this.getContext().unitOfWork.clear();
+    this.getContext().#unitOfWork.clear();
   }
 
   /**
@@ -2229,7 +2233,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       { populate: populate as any, filters: options.filters },
       options.validate,
     );
-    await em.entityLoader.populate(entityName, arr, preparedPopulate, options as any);
+    await em.#entityLoader.populate(entityName, arr, preparedPopulate, options as any);
 
     return entities as any;
   }
@@ -2260,31 +2264,31 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       options.useContext,
       eventManager,
     );
-    fork.setFlushMode(options.flushMode ?? em.flushMode);
-    fork.disableTransactions =
-      options.disableTransactions ?? this.disableTransactions ?? this.config.get('disableTransactions');
+    fork.setFlushMode(options.flushMode ?? em.#flushMode);
+    fork.#disableTransactions =
+      options.disableTransactions ?? this.#disableTransactions ?? this.config.get('disableTransactions');
     em.config.set('allowGlobalContext', allowGlobalContext);
 
     if (options.keepTransactionContext) {
-      fork.transactionContext = em.transactionContext;
+      fork.#transactionContext = em.#transactionContext;
     }
 
-    fork.filters = { ...em.filters };
-    fork.filterParams = Utils.copy(em.filterParams);
+    fork.#filters = { ...em.#filters };
+    fork.#filterParams = Utils.copy(em.#filterParams);
     fork.loggerContext = Utils.merge({}, em.loggerContext, options.loggerContext);
-    fork._schema = options.schema ?? em._schema;
+    fork.#schema = options.schema ?? em.#schema;
 
     if (!options.clear) {
-      for (const entity of em.unitOfWork.getIdentityMap()) {
-        fork.unitOfWork.register(entity);
+      for (const entity of em.#unitOfWork.getIdentityMap()) {
+        fork.#unitOfWork.register(entity);
       }
 
-      for (const entity of em.unitOfWork.getPersistStack()) {
-        fork.unitOfWork.persist(entity);
+      for (const entity of em.#unitOfWork.getPersistStack()) {
+        fork.#unitOfWork.persist(entity);
       }
 
-      for (const entity of em.unitOfWork.getOrphanRemoveStack()) {
-        fork.unitOfWork.getOrphanRemoveStack().add(entity);
+      for (const entity of em.#unitOfWork.getOrphanRemoveStack()) {
+        fork.#unitOfWork.getOrphanRemoveStack().add(entity);
       }
     }
 
@@ -2296,24 +2300,24 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
    */
   getUnitOfWork(useContext = true): UnitOfWork {
     if (!useContext) {
-      return this.unitOfWork;
+      return this.#unitOfWork;
     }
 
-    return this.getContext().unitOfWork;
+    return this.getContext().#unitOfWork;
   }
 
   /**
    * Gets the EntityFactory used by the EntityManager.
    */
   getEntityFactory(): EntityFactory {
-    return this.getContext().entityFactory;
+    return this.getContext().#entityFactory;
   }
 
   /**
    * @internal use `em.populate()` as the user facing API, this is exposed only for internal usage
    */
   getEntityLoader(): EntityLoader {
-    return this.getContext().entityLoader;
+    return this.getContext().#entityLoader;
   }
 
   /**
@@ -2328,7 +2332,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
    * @internal
    */
   getContext(validate = true): this {
-    if (!this.useContext) {
+    if (!this.#useContext) {
       return this;
     }
 
@@ -2356,14 +2360,14 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
    * Checks whether this EntityManager is currently operating inside a database transaction.
    */
   isInTransaction(): boolean {
-    return !!this.getContext(false).transactionContext;
+    return !!this.getContext(false).#transactionContext;
   }
 
   /**
    * Gets the transaction context (driver dependent object used to make sure queries are executed on same connection).
    */
   getTransactionContext<T extends Transaction = Transaction>(): T | undefined {
-    return this.getContext(false).transactionContext as T;
+    return this.getContext(false).#transactionContext as T;
   }
 
   /**
@@ -2373,7 +2377,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     if (!ctx) {
       this.resetTransactionContext();
     } else {
-      this.getContext(false).transactionContext = ctx;
+      this.getContext(false).#transactionContext = ctx;
     }
   }
 
@@ -2381,7 +2385,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
    * Resets the transaction context.
    */
   resetTransactionContext(): void {
-    delete this.getContext(false).transactionContext;
+    this.getContext(false).#transactionContext = undefined;
   }
 
   /**
@@ -2409,7 +2413,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
    * Gets the EntityComparator.
    */
   getComparator(): EntityComparator {
-    return this.comparator;
+    return this.#comparator;
   }
 
   private checkLockRequirements(mode: LockMode | undefined, meta: EntityMetadata): void {
@@ -2445,7 +2449,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     const preparedPopulate = await this.preparePopulate<T>(meta.class, options);
-    await this.entityLoader.populate(meta.class, [entity], preparedPopulate, {
+    await this.#entityLoader.populate(meta.class, [entity], preparedPopulate, {
       ...(options as Dictionary),
       ...this.getPopulateWhere<T>(where as ObjectQuery<T>, options),
       orderBy: options.populateOrderBy ?? options.orderBy,
@@ -2539,7 +2543,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     if (!options.populate) {
-      const populate = this.entityLoader.normalizePopulate<Entity>(
+      const populate = this.#entityLoader.normalizePopulate<Entity>(
         entityName,
         [],
         options.strategy as LoadStrategy,
@@ -2576,7 +2580,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
         .flat() as any;
     }
 
-    const populate: PopulateOptions<Entity>[] = this.entityLoader.normalizePopulate<Entity>(
+    const populate: PopulateOptions<Entity>[] = this.#entityLoader.normalizePopulate<Entity>(
       entityName,
       options.populate as true,
       options.strategy as LoadStrategy,
@@ -2646,7 +2650,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       throw new ValidationError(`Cannot combine 'fields' and 'exclude' option.`);
     }
 
-    options.schema ??= this._schema;
+    options.schema ??= this.#schema;
     options.logging = options.loggerContext = Utils.merge(
       { id: this.id },
       this.loggerContext,
@@ -2692,7 +2696,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
 
     const em = this.getContext();
     const cacheKey = Array.isArray(config) ? config[0] : JSON.stringify(key);
-    const cached = await em.resultCache.get(cacheKey);
+    const cached = await em.#resultCache.get(cacheKey);
 
     if (!cached) {
       return { key: cacheKey, data: cached };
@@ -2707,14 +2711,14 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     };
 
     if (Array.isArray(cached) && merge) {
-      data = cached.map(item => em.entityFactory.create<T>(entityName, item, createOptions)) as unknown as R;
+      data = cached.map(item => em.#entityFactory.create<T>(entityName, item, createOptions)) as unknown as R;
     } else if (Utils.isObject<EntityData<T>>(cached) && merge) {
-      data = em.entityFactory.create<T>(entityName, cached, createOptions) as unknown as R;
+      data = em.#entityFactory.create<T>(entityName, cached, createOptions) as unknown as R;
     } else {
       data = cached;
     }
 
-    await em.unitOfWork.dispatchOnLoadEvent();
+    await em.#unitOfWork.dispatchOnLoadEvent();
 
     return { key: cacheKey, data };
   }
@@ -2732,7 +2736,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     if (config) {
       const em = this.getContext();
       const expiration = Array.isArray(config) ? config[1] : typeof config === 'number' ? config : undefined;
-      await em.resultCache.set(key.key, data instanceof Function ? data() : data, '', expiration);
+      await em.#resultCache.set(key.key, data instanceof Function ? data() : data, '', expiration);
     }
   }
 
@@ -2749,7 +2753,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
    * ```
    */
   async clearCache(cacheKey: string) {
-    await this.getContext().resultCache.remove(cacheKey);
+    await this.getContext().#resultCache.remove(cacheKey);
   }
 
   /**
@@ -2757,7 +2761,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
    * if executed inside request context handler.
    */
   get schema(): string | undefined {
-    return this.getContext(false)._schema;
+    return this.getContext(false).#schema;
   }
 
   /**
@@ -2765,15 +2769,15 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
    * if executed inside request context handler.
    */
   set schema(schema: string | null | undefined) {
-    this.getContext(false)._schema = schema ?? undefined;
+    this.getContext(false).#schema = schema ?? undefined;
   }
 
   /** @internal */
   async getDataLoader(type: 'ref' | '1:m' | 'm:n'): Promise<any> {
     const em = this.getContext();
 
-    if (em.loaders[type]) {
-      return em.loaders[type];
+    if (em.#loaders[type]) {
+      return em.#loaders[type];
     }
 
     const { DataloaderUtils } = await import('@mikro-orm/core/dataloader');
@@ -2781,11 +2785,11 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
 
     switch (type) {
       case 'ref':
-        return (em.loaders[type] ??= new DataLoader(DataloaderUtils.getRefBatchLoadFn(em)));
+        return (em.#loaders[type] ??= new DataLoader(DataloaderUtils.getRefBatchLoadFn(em)));
       case '1:m':
-        return (em.loaders[type] ??= new DataLoader(DataloaderUtils.getColBatchLoadFn(em)));
+        return (em.#loaders[type] ??= new DataLoader(DataloaderUtils.getColBatchLoadFn(em)));
       case 'm:n':
-        return (em.loaders[type] ??= new DataLoader(DataloaderUtils.getManyToManyColBatchLoadFn(em)));
+        return (em.#loaders[type] ??= new DataLoader(DataloaderUtils.getManyToManyColBatchLoadFn(em)));
     }
   }
 

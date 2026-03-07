@@ -21,14 +21,14 @@ type EntityHydrator<T extends object> = (
 ) => void;
 
 export class ObjectHydrator extends Hydrator {
-  private readonly hydrators = {
+  readonly #hydrators = {
     'full~true': new Map<EntityName, EntityHydrator<any>>(),
     'full~false': new Map<EntityName, EntityHydrator<any>>(),
     'reference~true': new Map<EntityName, EntityHydrator<any>>(),
     'reference~false': new Map<EntityName, EntityHydrator<any>>(),
   };
 
-  private tmpIndex = 0;
+  #tmpIndex = 0;
 
   /**
    * @inheritDoc
@@ -103,7 +103,7 @@ export class ObjectHydrator extends Hydrator {
     normalizeAccessors = false,
   ): EntityHydrator<T> {
     const key = `${type}~${normalizeAccessors}` as const;
-    const exists = this.hydrators[key].get(meta.class);
+    const exists = this.#hydrators[key].get(meta.class);
 
     if (exists) {
       return exists;
@@ -144,7 +144,7 @@ export class ObjectHydrator extends Hydrator {
         .map(k => this.safeKey(k))
         .join('_');
       const ret: string[] = [];
-      const idx = this.tmpIndex++;
+      const idx = this.#tmpIndex++;
       const nullVal = this.config.get('forceUndefined') ? 'undefined' : 'null';
 
       if (prop.getter && !prop.setter && prop.persist === false) {
@@ -246,7 +246,7 @@ export class ObjectHydrator extends Hydrator {
 
       if (prop.polymorphic) {
         // For polymorphic: target class from discriminator map, PK from data.id
-        const discriminatorMapKey = this.safeKey(`discriminatorMap_${prop.name}_${this.tmpIndex++}`);
+        const discriminatorMapKey = this.safeKey(`discriminatorMap_${prop.name}_${this.#tmpIndex++}`);
         context.set(discriminatorMapKey, prop.discriminatorMap);
         ret.push(`      const targetClass = ${discriminatorMapKey}[data${dataKey}.discriminator];`);
         ret.push(
@@ -263,7 +263,7 @@ export class ObjectHydrator extends Hydrator {
         }
       } else {
         // For regular: fixed target class, PK is the data itself
-        const targetKey = this.safeKey(`${prop.targetMeta!.tableName}_${this.tmpIndex++}`);
+        const targetKey = this.safeKey(`${prop.targetMeta!.tableName}_${this.#tmpIndex++}`);
         context.set(targetKey, prop.targetMeta!.class);
         if (prop.ref) {
           ret.push(
@@ -283,7 +283,7 @@ export class ObjectHydrator extends Hydrator {
       if (prop.polymorphic) {
         hydrateTargetExpr = `data${dataKey}.constructor`;
       } else {
-        const targetKey = this.safeKey(`${prop.targetMeta!.tableName}_${this.tmpIndex++}`);
+        const targetKey = this.safeKey(`${prop.targetMeta!.tableName}_${this.#tmpIndex++}`);
         context.set(targetKey, prop.targetMeta!.class);
         hydrateTargetExpr = targetKey;
       }
@@ -471,7 +471,7 @@ export class ObjectHydrator extends Hydrator {
           ret.push(`    }`);
         });
       } else {
-        const targetKey = this.safeKey(`${prop.targetMeta!.tableName}_${this.tmpIndex++}`);
+        const targetKey = this.safeKey(`${prop.targetMeta!.tableName}_${this.#tmpIndex++}`);
         context.set(targetKey, prop.targetMeta!.class);
         ret.push(`    if (entity${entityKey} == null) {`);
         ret.push(
@@ -510,7 +510,7 @@ export class ObjectHydrator extends Hydrator {
     const hydrateEmbeddedArray = (prop: EntityProperty, path: string[], dataKey: string): string[] => {
       const entityKey = path.map(k => this.wrap(k)).join('');
       const ret: string[] = [];
-      const idx = this.tmpIndex++;
+      const idx = this.#tmpIndex++;
       registerEmbeddedPrototype(prop, path);
       parseObjectEmbeddable(prop, dataKey, ret);
 
@@ -571,7 +571,7 @@ export class ObjectHydrator extends Hydrator {
       `${lines.join('\n')}\n}`;
     const fnKey = `hydrator-${meta.uniqueName}-${type}-${normalizeAccessors}`;
     const hydrator = Utils.createFunction(context, code, this.config.get('compiledFunctions'), fnKey);
-    this.hydrators[key].set(meta.class, hydrator);
+    this.#hydrators[key].set(meta.class, hydrator);
 
     return hydrator;
   }
@@ -591,7 +591,7 @@ export class ObjectHydrator extends Hydrator {
       lines.push(`    }`);
     }
 
-    const targetKey = this.safeKey(`${prop.targetMeta!.tableName}_${this.tmpIndex++}`);
+    const targetKey = this.safeKey(`${prop.targetMeta!.tableName}_${this.#tmpIndex++}`);
     context.set(targetKey, prop.targetMeta!.class);
     lines.push(
       `    if (isPrimaryKey(value, ${meta.compositePK})) return factory.createReference(${targetKey}, value, { convertCustomTypes, schema, normalizeAccessors, merge: true });`,

@@ -6,7 +6,7 @@ import type { DatabaseSchema } from '../../schema/DatabaseSchema.js';
 import type { DatabaseTable } from '../../schema/DatabaseTable.js';
 
 export class MySqlSchemaHelper extends SchemaHelper {
-  private readonly _cache: Dictionary = {};
+  readonly #cache: Dictionary = {};
 
   static readonly DEFAULT_VALUES = {
     'now()': ['now()', 'current_timestamp'],
@@ -450,14 +450,14 @@ export class MySqlSchemaHelper extends SchemaHelper {
   }
 
   private async supportsCheckConstraints(connection: AbstractSqlConnection): Promise<boolean> {
-    if (this._cache.supportsCheckConstraints != null) {
-      return this._cache.supportsCheckConstraints;
+    if (this.#cache.supportsCheckConstraints != null) {
+      return this.#cache.supportsCheckConstraints;
     }
 
     const sql = `select 1 from information_schema.tables where table_name = 'CHECK_CONSTRAINTS' and table_schema = 'information_schema'`;
     const res = await connection.execute(sql);
 
-    return (this._cache.supportsCheckConstraints = res.length > 0);
+    return (this.#cache.supportsCheckConstraints = res.length > 0);
   }
 
   protected getChecksSQL(tables: Table[]): string {

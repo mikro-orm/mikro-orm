@@ -190,7 +190,7 @@ export interface IQueryBuilder<T> {
   readonly alias: string;
   readonly type: QueryType;
   /** @internal */
-  _fields?: InternalField<T>[];
+  state: { fields?: InternalField<T>[]; [key: string]: any };
   /** @internal */
   helper: any;
   select(fields: string | RawQueryFragment | (string | RawQueryFragment)[], distinct?: boolean): this;

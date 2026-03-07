@@ -56,21 +56,20 @@ export interface MikroKyselyPluginOptions {
 }
 
 export class MikroKyselyPlugin implements KyselyPlugin {
-  private static queryNodeCache = new WeakMap<any, QueryTransformCache>();
+  static #queryNodeCache = new WeakMap<any, QueryTransformCache>();
 
-  private readonly transformer: MikroTransformer;
+  readonly #transformer: MikroTransformer;
+  readonly #options: MikroKyselyPluginOptions;
 
-  constructor(
-    em: SqlEntityManager,
-    private readonly options: MikroKyselyPluginOptions = {},
-  ) {
-    this.transformer = new MikroTransformer(em, options);
+  constructor(em: SqlEntityManager, options: MikroKyselyPluginOptions = {}) {
+    this.#options = options;
+    this.#transformer = new MikroTransformer(em, options);
   }
 
   transformQuery(args: PluginTransformQueryArgs): RootOperationNode {
-    this.transformer.reset();
+    this.#transformer.reset();
 
-    const result = this.transformer.transformNode(args.node, args.queryId);
+    const result = this.#transformer.transformNode(args.node, args.queryId);
 
     // Cache the entity map if it is one we can process (for use in transformResult)
     if (
@@ -80,8 +79,8 @@ export class MikroKyselyPlugin implements KyselyPlugin {
       DeleteQueryNodeClass.is(args.node)
     ) {
       // clone the entityMap because the transformer's internal map will be cleared and reused by the next query
-      const entityMap = new Map(this.transformer.getOutputEntityMap());
-      MikroKyselyPlugin.queryNodeCache.set(args.queryId, { entityMap });
+      const entityMap = new Map(this.#transformer.getOutputEntityMap());
+      MikroKyselyPlugin.#queryNodeCache.set(args.queryId, { entityMap });
     }
 
     return result;
@@ -89,18 +88,18 @@ export class MikroKyselyPlugin implements KyselyPlugin {
 
   async transformResult(args: PluginTransformResultArgs): Promise<QueryResult<UnknownRow>> {
     // Only transform results if columnNamingStrategy is 'property' or convertValues is true
-    if (this.options.columnNamingStrategy !== 'property' && !this.options.convertValues) {
+    if (this.#options.columnNamingStrategy !== 'property' && !this.#options.convertValues) {
       return args.result;
     }
 
     // Retrieve the cached query node and metadata
-    const cache = MikroKyselyPlugin.queryNodeCache.get(args.queryId);
+    const cache = MikroKyselyPlugin.#queryNodeCache.get(args.queryId);
     if (!cache) {
       return args.result;
     }
 
     // Transform the result rows using the transformer
-    const transformedRows = this.transformer.transformResult((args.result.rows as any) ?? [], cache.entityMap);
+    const transformedRows = this.#transformer.transformResult((args.result.rows as any) ?? [], cache.entityMap);
 
     return {
       ...args.result,

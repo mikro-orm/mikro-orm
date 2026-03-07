@@ -15,36 +15,49 @@ import type { AbstractSqlPlatform } from '../AbstractSqlPlatform.js';
  * @internal
  */
 export class DatabaseSchema {
-  private tables: DatabaseTable[] = [];
-  private views: DatabaseView[] = [];
-  private namespaces = new Set<string>();
-  private nativeEnums: Dictionary<{ name: string; schema?: string; items: string[] }> = {}; // for postgres
+  #tables: DatabaseTable[] = [];
+  #views: DatabaseView[] = [];
+  #namespaces = new Set<string>();
+  #nativeEnums: Dictionary<{ name: string; schema?: string; items: string[] }> = {}; // for postgres
+  readonly #platform: AbstractSqlPlatform;
 
   constructor(
-    private readonly platform: AbstractSqlPlatform,
+    platform: AbstractSqlPlatform,
     readonly name: string,
-  ) {}
+  ) {
+    this.#platform = platform;
+  }
 
   addTable(name: string, schema: string | undefined | null, comment?: string): DatabaseTable {
     const namespaceName = schema ?? this.name;
-    const table = new DatabaseTable(this.platform, name, namespaceName);
-    table.nativeEnums = this.nativeEnums;
+    const table = new DatabaseTable(this.#platform, name, namespaceName);
+    table.nativeEnums = this.#nativeEnums;
     table.comment = comment;
-    this.tables.push(table);
+    this.#tables.push(table);
 
     if (namespaceName != null) {
-      this.namespaces.add(namespaceName);
+      this.#namespaces.add(namespaceName);
     }
 
     return table;
   }
 
   getTables(): DatabaseTable[] {
-    return this.tables;
+    return this.#tables;
+  }
+
+  /** @internal */
+  setTables(tables: DatabaseTable[]): void {
+    this.#tables = tables;
+  }
+
+  /** @internal */
+  setNamespaces(namespaces: Set<string>): void {
+    this.#namespaces = namespaces;
   }
 
   getTable(name: string): DatabaseTable | undefined {
-    return this.tables.find(t => t.name === name || `${t.schema}.${t.name}` === name);
+    return this.#tables.find(t => t.name === name || `${t.schema}.${t.name}` === name);
   }
 
   hasTable(name: string) {
@@ -60,21 +73,26 @@ export class DatabaseSchema {
   ): DatabaseView {
     const namespaceName = schema ?? this.name;
     const view: DatabaseView = { name, schema: namespaceName, definition, materialized, withData };
-    this.views.push(view);
+    this.#views.push(view);
 
     if (namespaceName != null) {
-      this.namespaces.add(namespaceName);
+      this.#namespaces.add(namespaceName);
     }
 
     return view;
   }
 
   getViews(): DatabaseView[] {
-    return this.views;
+    return this.#views;
+  }
+
+  /** @internal */
+  setViews(views: DatabaseView[]): void {
+    this.#views = views;
   }
 
   getView(name: string): DatabaseView | undefined {
-    return this.views.find(v => v.name === name || `${v.schema}.${v.name}` === name);
+    return this.#views.find(v => v.name === name || `${v.schema}.${v.name}` === name);
   }
 
   hasView(name: string) {
@@ -82,33 +100,33 @@ export class DatabaseSchema {
   }
 
   setNativeEnums(nativeEnums: Dictionary<{ name: string; schema?: string; items: string[] }>): void {
-    this.nativeEnums = nativeEnums;
+    this.#nativeEnums = nativeEnums;
 
     for (const nativeEnum of Object.values(nativeEnums)) {
       if (nativeEnum.schema && nativeEnum.schema !== '*') {
-        this.namespaces.add(nativeEnum.schema);
+        this.#namespaces.add(nativeEnum.schema);
       }
     }
   }
 
   getNativeEnums(): Dictionary<{ name: string; schema?: string; items: string[] }> {
-    return this.nativeEnums;
+    return this.#nativeEnums;
   }
 
   getNativeEnum(name: string): { name: string; schema?: string; items: string[] } {
-    return this.nativeEnums[name];
+    return this.#nativeEnums[name];
   }
 
   hasNamespace(namespace: string) {
-    return this.namespaces.has(namespace);
+    return this.#namespaces.has(namespace);
   }
 
   hasNativeEnum(name: string) {
-    return name in this.nativeEnums;
+    return name in this.#nativeEnums;
   }
 
   getNamespaces(): string[] {
-    return [...this.namespaces];
+    return [...this.#namespaces];
   }
 
   static async create(
@@ -145,7 +163,7 @@ export class DatabaseSchema {
 
     // Filter out skipped views
     if (skipViews && skipViews.length > 0) {
-      schema.views = schema.views.filter(v => this.isNameAllowed(v.name, skipViews));
+      schema.#views = schema.#views.filter(v => this.isNameAllowed(v.name, skipViews));
     }
 
     return schema;
@@ -423,13 +441,18 @@ export class DatabaseSchema {
   }
 
   toJSON(): Dictionary {
-    const { platform, namespaces, ...rest } = this;
-    return { namespaces: [...namespaces], ...rest };
+    return {
+      name: this.name,
+      namespaces: [...this.#namespaces],
+      tables: this.#tables,
+      views: this.#views,
+      nativeEnums: this.#nativeEnums,
+    };
   }
 
   prune(schema: string | undefined, wildcardSchemaTables: string[]): void {
     const hasWildcardSchema = wildcardSchemaTables.length > 0;
-    this.tables = this.tables.filter(table => {
+    this.#tables = this.#tables.filter(table => {
       return (
         (!schema && !hasWildcardSchema) || // no schema specified and we don't have any multi-schema entity
         table.schema === schema || // specified schema matches the table's one
@@ -437,7 +460,7 @@ export class DatabaseSchema {
       ); // no schema specified and the table has fixed one provided
     });
 
-    this.views = this.views.filter(view => {
+    this.#views = this.#views.filter(view => {
       /* v8 ignore next */
       return (
         (!schema && !hasWildcardSchema) ||
@@ -447,13 +470,13 @@ export class DatabaseSchema {
     });
 
     // remove namespaces of ignored tables and views
-    for (const ns of this.namespaces) {
+    for (const ns of this.#namespaces) {
       if (
-        !this.tables.some(t => t.schema === ns) &&
-        !this.views.some(v => v.schema === ns) &&
-        !Object.values(this.nativeEnums).some(e => e.schema === ns)
+        !this.#tables.some(t => t.schema === ns) &&
+        !this.#views.some(v => v.schema === ns) &&
+        !Object.values(this.#nativeEnums).some(e => e.schema === ns)
       ) {
-        this.namespaces.delete(ns);
+        this.#namespaces.delete(ns);
       }
     }
   }

@@ -11,14 +11,18 @@ import type { Configuration } from '../utils/Configuration.js';
 export class SerializationContext<T extends object> {
   readonly path: [EntityName, string][] = [];
   readonly visited = new Set<AnyEntity>();
-  private entities = new Set<AnyEntity>();
+  #entities = new Set<AnyEntity>();
+  readonly #config: Configuration;
+  readonly #populate: PopulateOptions<T>[];
+  readonly #fields?: Set<string>;
+  readonly #exclude?: string[];
 
-  constructor(
-    private readonly config: Configuration,
-    private readonly populate: PopulateOptions<T>[] = [],
-    private readonly fields?: Set<string>,
-    private readonly exclude?: string[],
-  ) {}
+  constructor(config: Configuration, populate: PopulateOptions<T>[] = [], fields?: Set<string>, exclude?: string[]) {
+    this.#config = config;
+    this.#populate = populate;
+    this.#fields = fields;
+    this.#exclude = exclude;
+  }
 
   /**
    * Returns true when there is a cycle detected.
@@ -48,7 +52,7 @@ export class SerializationContext<T extends object> {
   }
 
   close() {
-    for (const entity of this.entities) {
+    for (const entity of this.#entities) {
       delete helper(entity).__serializationContext.root;
     }
   }
@@ -90,7 +94,7 @@ export class SerializationContext<T extends object> {
   }
 
   isMarkedAsPopulated(entityName: EntityName, prop: string): boolean {
-    let populate: PopulateOptions<T>[] = this.populate ?? [];
+    let populate: PopulateOptions<T>[] = this.#populate ?? [];
 
     for (const segment of this.path) {
       const hints = populate.filter(p => p.field === segment[1]);
@@ -117,11 +121,11 @@ export class SerializationContext<T extends object> {
   }
 
   isPartiallyLoaded(entityName: EntityName, prop: string): boolean {
-    if (!this.fields) {
+    if (!this.#fields) {
       return true;
     }
 
-    let fields: string[] = [...this.fields];
+    let fields: string[] = [...this.#fields];
 
     for (const segment of this.path) {
       /* v8 ignore next */
@@ -139,6 +143,6 @@ export class SerializationContext<T extends object> {
 
   private register(entity: AnyEntity) {
     helper(entity as T).__serializationContext.root = this;
-    this.entities.add(entity);
+    this.#entities.add(entity);
   }
 }

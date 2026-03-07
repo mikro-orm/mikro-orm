@@ -59,12 +59,14 @@ export interface EntityLoaderOptions<
 }
 
 export class EntityLoader {
-  private readonly metadata: MetadataStorage;
-  private readonly driver: IDatabaseDriver;
+  readonly #metadata: MetadataStorage;
+  readonly #driver: IDatabaseDriver;
+  readonly #em: EntityManager;
 
-  constructor(private readonly em: EntityManager) {
-    this.metadata = this.em.getMetadata();
-    this.driver = this.em.getDriver();
+  constructor(em: EntityManager) {
+    this.#em = em;
+    this.#metadata = this.#em.getMetadata();
+    this.#driver = this.#em.getDriver();
   }
 
   /**
@@ -81,7 +83,7 @@ export class EntityLoader {
       return this.setSerializationContext(entities, populate, options);
     }
 
-    const meta = this.metadata.find(entityName)!;
+    const meta = this.#metadata.find(entityName)!;
 
     if ((entities as AnyEntity[]).some(e => !e.__helper)) {
       const entity = entities.find(e => !Utils.isEntity(e));
@@ -108,7 +110,7 @@ export class EntityLoader {
       options.lookup,
       options.exclude as unknown as string[],
     );
-    const invalid = populate.find(({ field }) => !this.em.canPopulate(entityName, field));
+    const invalid = populate.find(({ field }) => !this.#em.canPopulate(entityName, field));
 
     /* v8 ignore next */
     if (options.validate && invalid) {
@@ -137,7 +139,7 @@ export class EntityLoader {
     lookup = true,
     exclude?: string[],
   ): PopulateOptions<Entity>[] {
-    const meta = this.metadata.find(entityName)!;
+    const meta = this.#metadata.find(entityName)!;
     let normalized = Utils.asArray(populate).map(field => {
       // oxfmt-ignore
       return typeof field === 'boolean' || field.field === PopulatePath.ALL ? { all: !!field, field: meta.primaryKeys[0] } as PopulateOptions<Entity> : field;
@@ -222,10 +224,10 @@ export class EntityLoader {
     options: Required<EntityLoaderOptions<Entity>>,
   ): Promise<AnyEntity[]> {
     const [field, ref] = populate.field.split(':', 2) as [EntityKey<Entity>, string | undefined];
-    const meta = this.metadata.find<Entity>(entityName)!;
+    const meta = this.#metadata.find<Entity>(entityName)!;
     const prop = meta.properties[field];
 
-    if (prop.kind === ReferenceKind.MANY_TO_MANY && prop.owner && !this.driver.getPlatform().usesPivotTable()) {
+    if (prop.kind === ReferenceKind.MANY_TO_MANY && prop.owner && !this.#driver.getPlatform().usesPivotTable()) {
       const filtered = entities.filter(e => !(e[prop.name] as Collection<any>)?.isInitialized());
 
       if (filtered.length > 0) {
@@ -263,7 +265,7 @@ export class EntityLoader {
       .flatMap(orderBy => orderBy[prop.name]);
     const where = await this.extractChildCondition(options, prop);
 
-    if (prop.kind === ReferenceKind.MANY_TO_MANY && this.driver.getPlatform().usesPivotTable()) {
+    if (prop.kind === ReferenceKind.MANY_TO_MANY && this.#driver.getPlatform().usesPivotTable()) {
       const pivotOrderBy = QueryHelper.mergeOrderBy<Entity>(innerOrderBy, prop.orderBy, prop.targetMeta?.orderBy);
       const res = await this.findChildrenFromPivotTable<Entity>(filtered, prop, options, pivotOrderBy, populate, !!ref);
       return Utils.flatten(res);
@@ -302,12 +304,12 @@ export class EntityLoader {
       pk,
       options,
       meta,
-      this.metadata,
-      this.driver.getPlatform(),
+      this.#metadata,
+      this.#driver.getPlatform(),
     );
     const { filters, convertCustomTypes, lockMode, strategy, populateWhere, connectionType, logging, fields } = options;
 
-    await this.em.find(meta.class, where as any, {
+    await this.#em.find(meta.class, where as any, {
       filters,
       convertCustomTypes,
       lockMode,
@@ -326,7 +328,7 @@ export class EntityLoader {
     options: Required<EntityLoaderOptions<Entity>>,
     ref: boolean,
   ): Promise<AnyEntity[]> {
-    const ownerMeta = this.metadata.get(entities[0].constructor);
+    const ownerMeta = this.#metadata.get(entities[0].constructor);
 
     // Separate entities: those with loaded refs vs those needing FK load
     const toPopulate: Entity[] = [];
@@ -387,7 +389,7 @@ export class EntityLoader {
 
     await Promise.all(
       [...groups].map(async ([discriminator, children]) => {
-        const targetMeta = this.metadata.find(prop.discriminatorMap![discriminator])!;
+        const targetMeta = this.#metadata.find(prop.discriminatorMap![discriminator])!;
         await this.populateScalar(targetMeta, children as any[], options as any);
         allItems.push(...children);
       }),
@@ -408,7 +410,7 @@ export class EntityLoader {
       this.initializeOneToMany<Entity>(filtered, children, prop, field, partial);
     }
 
-    if (prop.kind === ReferenceKind.MANY_TO_MANY && !this.driver.getPlatform().usesPivotTable()) {
+    if (prop.kind === ReferenceKind.MANY_TO_MANY && !this.#driver.getPlatform().usesPivotTable()) {
       this.initializeManyToMany<Entity>(filtered, children, prop, field, customOrder, partial);
     }
   }
@@ -432,7 +434,7 @@ export class EntityLoader {
       const pk = child.__helper.__data[prop.mappedBy] ?? child[prop.mappedBy];
 
       if (pk) {
-        const key = helper(mapToPk ? this.em.getReference(prop.targetMeta!.class, pk) : pk).getSerializedPrimaryKey();
+        const key = helper(mapToPk ? this.#em.getReference(prop.targetMeta!.class, pk) : pk).getSerializedPrimaryKey();
         map[key]?.push(child as Entity);
       }
     }
@@ -529,13 +531,13 @@ export class EntityLoader {
         fk as FilterKey<Entity>,
         options,
         meta,
-        this.metadata,
-        this.driver.getPlatform(),
+        this.#metadata,
+        this.#driver.getPlatform(),
       );
     }
 
     if (polymorphicOwnerProp) {
-      const parentMeta = this.metadata.find(entities[0].constructor)!;
+      const parentMeta = this.#metadata.find(entities[0].constructor)!;
       const discriminatorValue =
         QueryHelper.findDiscriminatorValue(polymorphicOwnerProp.discriminatorMap!, parentMeta.class) ??
         parentMeta.tableName;
@@ -568,7 +570,7 @@ export class EntityLoader {
 
     const orderBy = QueryHelper.mergeOrderBy(options.orderBy, prop.orderBy);
 
-    const items = await this.em.find(meta.class, where, {
+    const items = await this.#em.find(meta.class, where, {
       filters,
       convertCustomTypes,
       lockMode,
@@ -618,7 +620,7 @@ export class EntityLoader {
     }
 
     if ([ReferenceKind.ONE_TO_ONE, ReferenceKind.MANY_TO_ONE].includes(prop.kind) && items.length !== children.length) {
-      const nullVal = this.em.config.get('forceUndefined') ? undefined : null;
+      const nullVal = this.#em.config.get('forceUndefined') ? undefined : null;
       const itemsMap = new Set<string>();
       const childrenMap = new Set<string>();
       // Use targetKey value if set, otherwise use serialized PK
@@ -647,8 +649,7 @@ export class EntityLoader {
     for (const item of items) {
       if (ref && !helper(item).__onLoadFired) {
         helper(item).__initialized = false;
-        // eslint-disable-next-line dot-notation
-        this.em.getUnitOfWork()['loadedEntities'].delete(item);
+        this.#em.getUnitOfWork().unmarkAsLoaded(item);
       }
     }
 
@@ -683,7 +684,7 @@ export class EntityLoader {
     options: Required<EntityLoaderOptions<Entity>>,
   ): Promise<void> {
     const field = populate.field.split(':')[0] as EntityKey<Entity>;
-    const prop = this.metadata.find(entityName)!.properties[field] as EntityProperty<Entity>;
+    const prop = this.#metadata.find(entityName)!.properties[field] as EntityProperty<Entity>;
 
     if (prop.kind === ReferenceKind.SCALAR && !prop.lazy) {
       return;
@@ -803,12 +804,12 @@ export class EntityLoader {
       where = { $and: [where, prop.where] } as FilterQuery<Entity>;
     }
 
-    const map = await this.driver.loadFromPivotTable<any, any>(
+    const map = await this.#driver.loadFromPivotTable<any, any>(
       prop,
       ids,
       where,
       orderBy,
-      this.em.getTransactionContext(),
+      this.#em.getTransactionContext(),
       options2,
       pivotJoin,
     );
@@ -818,19 +819,19 @@ export class EntityLoader {
       const entity = filtered[i] as AnyEntity;
       const items = map[Utils.getPrimaryKeyHash(ids[i] as string[])].map(item => {
         if (pivotJoin) {
-          return this.em.getReference(prop.targetMeta!.class, item, {
+          return this.#em.getReference(prop.targetMeta!.class, item, {
             convertCustomTypes: true,
-            schema: options.schema ?? this.em.config.get('schema'),
+            schema: options.schema ?? this.#em.config.get('schema'),
           });
         }
 
-        const entity = this.em.getEntityFactory().create(prop.targetMeta!.class, item, {
+        const entity = this.#em.getEntityFactory().create(prop.targetMeta!.class, item, {
           refresh,
           merge: true,
           convertCustomTypes: true,
-          schema: options.schema ?? this.em.config.get('schema'),
+          schema: options.schema ?? this.#em.config.get('schema'),
         });
-        return this.em.getUnitOfWork().register(entity as AnyEntity, item, { refresh, loaded: true });
+        return this.#em.getUnitOfWork().register(entity as AnyEntity, item, { refresh, loaded: true });
       });
       (entity[prop.name] as unknown as Collection<AnyEntity>).hydrate(items, true);
       children.push(items);
@@ -883,7 +884,7 @@ export class EntityLoader {
     }
 
     if (filters) {
-      return this.em.applyFilters(meta2.class, subCond, options.filters, 'read', options);
+      return this.#em.applyFilters(meta2.class, subCond, options.filters, 'read', options);
     }
 
     return subCond;
@@ -1054,7 +1055,7 @@ export class EntityLoader {
 
   private lookupAllRelationships<Entity>(entityName: EntityName<Entity>): PopulateOptions<Entity>[] {
     const ret: PopulateOptions<Entity>[] = [];
-    const meta = this.metadata.find<Entity>(entityName)!;
+    const meta = this.#metadata.find<Entity>(entityName)!;
 
     meta.relations.forEach(prop => {
       ret.push({
@@ -1085,7 +1086,7 @@ export class EntityLoader {
     visited: EntityMetadata[] = [],
     exclude?: string[],
   ): PopulateOptions<Entity>[] {
-    const meta = this.metadata.find<Entity>(entityName);
+    const meta = this.#metadata.find<Entity>(entityName);
 
     if (!meta && !prefix) {
       return populate;
