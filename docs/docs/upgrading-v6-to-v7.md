@@ -404,9 +404,16 @@ MikroORM.init({
 
 When neither is set, the database uses its native default (NO ACTION for PostgreSQL, SQLite, MSSQL, Oracle; RESTRICT for MySQL/MariaDB).
 
-## `MikroORMOptions` type removed
+## `Options` type now has required keys
 
-Previously, `MikroORMOptions` defined keys with defaults as mandatory, and we inferred the `Options` type out of it. This is now swapped, the `Options` type is defined as interface with optional keys, and a new `RequiredOptions` type is introduced that defines all keys with default value as mandatory.
+Previously, there were two types: `MikroORMOptions` (with keys that have defaults marked as required) and `Options` (all optional). In v7, this is simplified: `Options` now marks keys with defaults as required, and `Partial<Options>` is the user-facing type. The `MikroORMOptions` and `RequiredOptions` types are removed. If you referenced `Options` as a type annotation for a partial config object, use `Partial<Options>` instead.
+
+```diff
+-import type { Options } from '@mikro-orm/core';
+-const config: Options = { dbName: 'test' };
++import type { Options } from '@mikro-orm/core';
++const config: Partial<Options> = { dbName: 'test' };
+```
 
 ## Changes in serialized primary keys (MongoDB)
 

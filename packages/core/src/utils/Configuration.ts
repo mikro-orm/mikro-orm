@@ -169,19 +169,19 @@ export class Configuration<
   D extends IDatabaseDriver = IDatabaseDriver,
   EM extends EntityManager<D> = D[typeof EntityManagerType] & EntityManager<D>,
 > {
-  readonly #options: RequiredOptions<D, EM>;
+  readonly #options: Options<D, EM>;
   readonly #logger: Logger;
   readonly #driver!: D;
   readonly #platform!: ReturnType<D['getPlatform']>;
   readonly #cache = new Map<string, any>();
   readonly #extensions = new Map<string, () => unknown>();
 
-  constructor(options: Options, validate = true) {
+  constructor(options: Partial<Options>, validate = true) {
     if (options.dynamicImportProvider) {
       (globalThis as any).dynamicImportProvider = options.dynamicImportProvider;
     }
 
-    this.#options = Utils.mergeConfig({} as RequiredOptions<D, EM>, DEFAULTS, options);
+    this.#options = Utils.mergeConfig({} as Options<D, EM>, DEFAULTS, options);
 
     if (validate) {
       this.validateOptions();
@@ -220,7 +220,7 @@ export class Configuration<
   /**
    * Gets specific configuration option. Falls back to specified `defaultValue` if provided.
    */
-  get<T extends keyof Options<D, EM>, U extends RequiredOptions<D, EM>[T]>(key: T, defaultValue?: U): U {
+  get<T extends keyof Options<D, EM>, U extends Options<D, EM>[T]>(key: T, defaultValue?: U): U {
     if (typeof this.#options[key] !== 'undefined') {
       return this.#options[key] as U;
     }
@@ -228,14 +228,14 @@ export class Configuration<
     return defaultValue as U;
   }
 
-  getAll(): RequiredOptions<D, EM> {
+  getAll(): Options<D, EM> {
     return this.#options;
   }
 
   /**
    * Overrides specified configuration value.
    */
-  set<T extends keyof Options<D, EM>, U extends RequiredOptions<D, EM>[T]>(key: T, value: U): void {
+  set<T extends keyof Options<D, EM>, U extends Options<D, EM>[T]>(key: T, value: U): void {
     this.#options[key] = value;
     this.sync();
   }
@@ -243,8 +243,8 @@ export class Configuration<
   /**
    * Resets the configuration to its default value
    */
-  reset<T extends keyof RequiredOptions<D, EM>>(key: T): void {
-    this.#options[key] = DEFAULTS[key as keyof typeof DEFAULTS] as RequiredOptions<D, EM>[T];
+  reset<T extends keyof Options<D, EM>>(key: T): void {
+    this.#options[key] = DEFAULTS[key as keyof typeof DEFAULTS] as Options<D, EM>[T];
   }
 
   /**
@@ -485,7 +485,7 @@ export function defineConfig<
     | EntityClass<AnyEntity>
     | EntitySchema
   )[],
->(options: Options<D, EM, Entities>): Options<D, EM, Entities> {
+>(options: Partial<Options<D, EM, Entities>>): Partial<Options<D, EM, Entities>> {
   return options;
 }
 
@@ -753,6 +753,13 @@ export interface Options<
     | EntitySchema
   )[],
 > extends ConnectionOptions {
+  /** Connection pool configuration. */
+  pool: PoolConfig;
+  /**
+   * Additional driver-specific options.
+   * The object will be deeply merged with internal driver options.
+   */
+  driverOptions: Dictionary;
   /**
    * Array of entity classes or paths to entity modules.
    * Paths support glob patterns for automatic discovery.
@@ -760,7 +767,7 @@ export interface Options<
    * entities: [Author, Book, Publisher] // class references
    * entities: ['./dist/entities'] // folder paths
    */
-  entities?: Entities;
+  entities: Entities;
   /**
    * Array of TypeScript entity source paths.
    * Used when running in TypeScript mode (e.g., via `tsx` or `swc`).
@@ -768,30 +775,30 @@ export interface Options<
    * @example
    * entitiesTs: ['./src/entities']
    */
-  entitiesTs?: Entities;
+  entitiesTs: Entities;
   /**
    * ORM extensions to register (e.g., Migrator, EntityGenerator, SeedManager).
    * Extensions registered here are available via shortcuts like `orm.migrator`.
    * @example
    * extensions: [Migrator, EntityGenerator, SeedManager]
    */
-  extensions?: { register: (orm: MikroORM) => void }[];
+  extensions: { register: (orm: MikroORM) => void }[];
   /**
    * Event subscribers to register.
    * Can be class references or instances.
    */
-  subscribers?: Iterable<EventSubscriber | Constructor<EventSubscriber>>;
+  subscribers: Iterable<EventSubscriber | Constructor<EventSubscriber>>;
   /**
    * Global entity filters to apply.
    * Filters are applied by default unless explicitly disabled.
    * @see https://mikro-orm.io/docs/filters
    */
-  filters?: Dictionary<{ name?: string } & Omit<FilterDef, 'name'>>;
+  filters: Dictionary<{ name?: string } & Omit<FilterDef, 'name'>>;
   /**
    * Metadata discovery configuration options.
    * Controls how entities are discovered and validated.
    */
-  discovery?: MetadataDiscoveryOptions;
+  discovery: MetadataDiscoveryOptions;
   /**
    * Database driver class to use.
    * Should be imported from the specific driver package (e.g. `@mikro-orm/mysql`, `@mikro-orm/postgresql`).
@@ -827,7 +834,7 @@ export interface Options<
    * Enable verbose logging of internal operations.
    * @default false
    */
-  verbose?: boolean;
+  verbose: boolean;
   /**
    * Ignore `undefined` values in find queries instead of treating them as `null`.
    * @default false
@@ -835,7 +842,7 @@ export interface Options<
    * // With ignoreUndefinedInQuery: true
    * em.find(User, { email: undefined }) // resolves to em.find(User, {})
    */
-  ignoreUndefinedInQuery?: boolean;
+  ignoreUndefinedInQuery: boolean;
   /**
    * Hook to modify SQL queries before execution.
    * Useful for adding observability hints or query modifications.
@@ -843,38 +850,38 @@ export interface Options<
    * @param params - Query parameters
    * @returns Modified SQL query
    */
-  onQuery?: (sql: string, params: readonly unknown[]) => string;
+  onQuery: (sql: string, params: readonly unknown[]) => string;
   /**
    * Automatically join the owning side of 1:1 relations when querying the inverse side.
    * @default true
    */
-  autoJoinOneToOneOwner?: boolean;
+  autoJoinOneToOneOwner: boolean;
   /**
    * Automatically join M:1 and 1:1 relations when filters are defined on them.
    * Important for implementing soft deletes via filters.
    * @default true
    */
-  autoJoinRefsForFilters?: boolean;
+  autoJoinRefsForFilters: boolean;
   /**
    * Apply filters to relations in queries.
    * @default true
    */
-  filtersOnRelations?: boolean;
+  filtersOnRelations: boolean;
   /**
    * Enable propagation of changes on entity prototypes.
    * @default true
    */
-  propagationOnPrototype?: boolean;
+  propagationOnPrototype: boolean;
   /**
    * Mark all relations as populated after flush for new entities.
    * This aligns serialized output of loaded entities and just-inserted ones.
    * @default true
    */
-  populateAfterFlush?: boolean;
+  populateAfterFlush: boolean;
   /**
    * Serialization options for `toJSON()` and `serialize()` methods.
    */
-  serialization?: {
+  serialization: {
     /**
      * Include primary keys in serialized output.
      * @default true
@@ -891,42 +898,42 @@ export interface Options<
    * Default options for entity assignment via `em.assign()`.
    * @see https://mikro-orm.io/docs/entity-helper
    */
-  assign?: AssignOptions<boolean>;
+  assign: AssignOptions<boolean>;
   /**
    * Automatically call `em.persist()` on entities created via `em.create()`.
    * @default true
    */
-  persistOnCreate?: boolean;
+  persistOnCreate: boolean;
   /**
    * When upsert creates a new entity, mark it as managed in the identity map.
    * @default true
    */
-  upsertManaged?: boolean;
+  upsertManaged: boolean;
   /**
    * Force use of entity constructors when creating entity instances.
    * Required when using native private properties inside entities.
    * Can be `true` for all entities or an array of specific entity classes/names.
    * @default false
    */
-  forceEntityConstructor?: boolean | (Constructor<AnyEntity> | string)[];
+  forceEntityConstructor: boolean | (Constructor<AnyEntity> | string)[];
   /**
    * Convert `null` values from database to `undefined` when hydrating entities.
    * @default false
    */
-  forceUndefined?: boolean;
+  forceUndefined: boolean;
   /**
    * Property `onCreate` hooks are normally executed during `flush` operation.
    * With this option, they will be processed early inside `em.create()` method.
    * @default true
    */
-  processOnCreateHooksEarly?: boolean;
+  processOnCreateHooksEarly: boolean;
   /**
    * Force `Date` values to be stored in UTC for datetime columns without timezone.
    * Works for MySQL (`datetime` type), PostgreSQL (`timestamp` type), and MSSQL (`datetime`/`datetime2` types).
    * SQLite does this by default.
    * @default true
    */
-  forceUtcTimezone?: boolean;
+  forceUtcTimezone: boolean;
   /**
    * Timezone to use for date operations.
    * @example '+02:00'
@@ -937,13 +944,13 @@ export interface Options<
    * When `true`, will create the database if it doesn't exist.
    * @default true
    */
-  ensureDatabase?: boolean | EnsureDatabaseOptions;
+  ensureDatabase: boolean | EnsureDatabaseOptions;
   /**
    * Ensure database indexes exist on startup. This option works only with the MongoDB driver.
    * When enabled, indexes will be created based on entity metadata.
    * @default false
    */
-  ensureIndexes?: boolean;
+  ensureIndexes: boolean;
   /**
    * Use batch insert queries for better performance.
    * @default true
@@ -958,12 +965,12 @@ export interface Options<
    * Number of entities to process in each batch for batch inserts/updates.
    * @default 300
    */
-  batchSize?: number;
+  batchSize: number;
   /**
    * Custom hydrator class for assigning database values to entities.
    * @default ObjectHydrator
    */
-  hydrator?: HydratorConstructor;
+  hydrator: HydratorConstructor;
   /**
    * Pre-generated compiled functions for hydration and comparison.
    * Use the `compile` CLI command to create these functions.
@@ -977,7 +984,7 @@ export interface Options<
    * - `'balanced'`: Decides based on relation type and context.
    * @default 'balanced'
    */
-  loadStrategy?: LoadStrategy | `${LoadStrategy}`;
+  loadStrategy: LoadStrategy | `${LoadStrategy}`;
   /**
    * Enable dataloader for batching reference loading.
    * - `true` or `DataloaderType.ALL`: Enable for all relation types
@@ -986,14 +993,14 @@ export interface Options<
    * - `DataloaderType.COLLECTION`: Enable only for collections
    * @default DataloaderType.NONE
    */
-  dataloader?: DataloaderType | boolean;
+  dataloader: DataloaderType | boolean;
   /**
    * Determines how where conditions are applied during population.
    * - `'all'`: Populate all matching relations (default in v5+)
    * - `'infer'`: Infer conditions from the original query (v4 behavior)
    * @default 'all'
    */
-  populateWhere?: PopulateHint | `${PopulateHint}`;
+  populateWhere: PopulateHint | `${PopulateHint}`;
   /**
    * Default flush mode for the entity manager.
    * - `'commit'`: Flush only on explicit commit
@@ -1001,7 +1008,7 @@ export interface Options<
    * - `'always'`: Always flush before queries
    * @default 'auto'
    */
-  flushMode?: FlushMode | `${FlushMode}`;
+  flushMode: FlushMode | `${FlushMode}`;
   /**
    * Custom base repository class for all entities.
    * Entity-specific repositories can still be defined and will take precedence.
@@ -1022,25 +1029,25 @@ export interface Options<
    * Validate that required properties are set on new entities before insert.
    * @default true
    */
-  validateRequired?: boolean;
+  validateRequired: boolean;
   /**
    * Callback to get the current request context's EntityManager.
    * Used for automatic context propagation in web frameworks.
    * @default RequestContext.getEntityManager
    */
-  context?: (name: string) => EntityManager | undefined;
+  context: (name: string) => EntityManager | undefined;
   /**
    * Name of the context for multi-ORM setups.
    * @default 'default'
    */
-  contextName?: string;
+  contextName: string;
   /**
    * Allow using the global EntityManager without a request context.
    * Not recommended for production - each request should have its own context.
    * Can also be set via `MIKRO_ORM_ALLOW_GLOBAL_CONTEXT` environment variable.
    * @default false
    */
-  allowGlobalContext?: boolean;
+  allowGlobalContext: boolean;
   /**
    * When enabled, environment variables take precedence over explicitly provided config options.
    * By default, explicit options win over env vars.
@@ -1058,12 +1065,12 @@ export interface Options<
    * Custom logger function for ORM output.
    * @default console.log
    */
-  logger?: (message: string) => void;
+  logger: (message: string) => void;
   /**
    * Enable colored output in logs.
    * @default true
    */
-  colors?: boolean;
+  colors: boolean;
   /**
    * Factory function to create a custom logger instance.
    * @default DefaultLogger.create
@@ -1075,7 +1082,7 @@ export interface Options<
    * @param where - Query conditions
    * @returns Error instance to throw
    */
-  findOneOrFailHandler?: (entityName: string, where: Dictionary | IPrimaryKey) => Error;
+  findOneOrFailHandler: (entityName: string, where: Dictionary | IPrimaryKey) => Error;
   /**
    * Custom error handler for `em.findExactlyOneOrFail()` when entity count is not exactly one.
    * Used when strict mode is enabled.
@@ -1083,7 +1090,7 @@ export interface Options<
    * @param where - Query conditions
    * @returns Error instance to throw
    */
-  findExactlyOneOrFailHandler?: (entityName: string, where: Dictionary | IPrimaryKey) => Error;
+  findExactlyOneOrFailHandler: (entityName: string, where: Dictionary | IPrimaryKey) => Error;
   /**
    * Enable debug logging.
    * Can be `true` for all namespaces or an array of specific namespaces.
@@ -1091,19 +1098,19 @@ export interface Options<
    * @default false
    * @see https://mikro-orm.io/docs/logging
    */
-  debug?: boolean | LoggerNamespace[];
+  debug: boolean | LoggerNamespace[];
   /**
    * Ignore deprecation warnings.
    * Can be `true` to ignore all or an array of specific deprecation labels.
    * @default false
    * @see https://mikro-orm.io/docs/logging#deprecation-warnings
    */
-  ignoreDeprecations?: boolean | string[];
+  ignoreDeprecations: boolean | string[];
   /**
    * Syntax highlighter for SQL queries in logs.
    * @default NullHighlighter
    */
-  highlighter?: Highlighter;
+  highlighter: Highlighter;
   /**
    * Force the ORM to use TypeScript options regardless of detection.
    * Uses `entitiesTs` for discovery and `pathTs` for migrations/seeders.
@@ -1115,16 +1122,16 @@ export interface Options<
    * Base directory for resolving relative paths.
    * @default process.cwd()
    */
-  baseDir?: string;
+  baseDir: string;
   /**
    * Migration configuration options.
    * @see https://mikro-orm.io/docs/migrations
    */
-  migrations?: MigrationsOptions;
+  migrations: MigrationsOptions;
   /**
    * Schema generator configuration options.
    */
-  schemaGenerator?: {
+  schemaGenerator: {
     /**
      * Try to disable foreign key checks during schema operations.
      * @default false
@@ -1178,7 +1185,7 @@ export interface Options<
   /**
    * Embeddable entity configuration options.
    */
-  embeddables?: {
+  embeddables: {
     /**
      * Mode for generating column prefixes for embedded properties.
      * @default 'relative'
@@ -1189,12 +1196,12 @@ export interface Options<
    * Entity generator (code generation) configuration options.
    * @see https://mikro-orm.io/docs/entity-generator
    */
-  entityGenerator?: GenerateOptions;
+  entityGenerator: GenerateOptions;
   /**
    * Metadata cache configuration for improved startup performance.
    * @see https://mikro-orm.io/docs/metadata-cache
    */
-  metadataCache?: {
+  metadataCache: {
     /**
      * Enable metadata caching.
      * Defaults based on the metadata provider's `useCache()` method.
@@ -1223,7 +1230,7 @@ export interface Options<
   /**
    * Result cache configuration for query result caching.
    */
-  resultCache?: {
+  resultCache: {
     /**
      * Default cache expiration time in milliseconds.
      * @default 1000
@@ -1251,94 +1258,20 @@ export interface Options<
    * @default ReflectMetadataProvider
    * @see https://mikro-orm.io/docs/metadata-providers
    */
-  metadataProvider?: { new (config: Configuration): MetadataProvider; useCache?: MetadataProvider['useCache'] };
+  metadataProvider: { new (config: Configuration): MetadataProvider; useCache?: MetadataProvider['useCache'] };
   /**
    * Seeder configuration options.
    * @see https://mikro-orm.io/docs/seeding
    */
-  seeder?: SeederOptions;
+  seeder: SeederOptions;
   /**
    * Prefer read replicas for read operations when available.
    * @default true
    */
-  preferReadReplicas?: boolean;
+  preferReadReplicas: boolean;
   /**
    * Custom dynamic import provider for loading modules.
    * @default (id) => import(id)
    */
-  dynamicImportProvider?: (id: string) => Promise<unknown>;
+  dynamicImportProvider: (id: string) => Promise<unknown>;
 }
-
-type MarkRequired<T, D> = {
-  [K in keyof T as Extract<K, keyof D>]-?: T[K];
-} & {
-  [K in keyof T as Exclude<K, keyof D>]?: T[K];
-};
-
-type DefaultKeys = Record<
-  | 'pool'
-  | 'entities'
-  | 'entitiesTs'
-  | 'extensions'
-  | 'subscribers'
-  | 'filters'
-  | 'discovery'
-  | 'validateRequired'
-  | 'context'
-  | 'contextName'
-  | 'allowGlobalContext'
-  | 'logger'
-  | 'colors'
-  | 'findOneOrFailHandler'
-  | 'findExactlyOneOrFailHandler'
-  | 'baseDir'
-  | 'hydrator'
-  | 'flushMode'
-  | 'loadStrategy'
-  | 'dataloader'
-  | 'populateWhere'
-  | 'ignoreUndefinedInQuery'
-  | 'onQuery'
-  | 'autoJoinOneToOneOwner'
-  | 'autoJoinRefsForFilters'
-  | 'filtersOnRelations'
-  | 'propagationOnPrototype'
-  | 'populateAfterFlush'
-  | 'serialization'
-  | 'assign'
-  | 'persistOnCreate'
-  | 'upsertManaged'
-  | 'forceEntityConstructor'
-  | 'forceUndefined'
-  | 'forceUtcTimezone'
-  | 'processOnCreateHooksEarly'
-  | 'ensureDatabase'
-  | 'ensureIndexes'
-  | 'batchSize'
-  | 'debug'
-  | 'ignoreDeprecations'
-  | 'verbose'
-  | 'driverOptions'
-  | 'migrations'
-  | 'schemaGenerator'
-  | 'embeddables'
-  | 'entityGenerator'
-  | 'metadataCache'
-  | 'resultCache'
-  | 'metadataProvider'
-  | 'highlighter'
-  | 'seeder'
-  | 'preferReadReplicas'
-  | 'dynamicImportProvider',
-  unknown
->;
-
-export type RequiredOptions<
-  D extends IDatabaseDriver = IDatabaseDriver,
-  EM extends EntityManager<D> = EntityManager<D>,
-  Entities extends (string | EntityClass<AnyEntity> | EntitySchema)[] = (
-    | string
-    | EntityClass<AnyEntity>
-    | EntitySchema
-  )[],
-> = MarkRequired<Options<D, EM, Entities>, DefaultKeys>;

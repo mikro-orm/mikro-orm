@@ -90,7 +90,7 @@ export class EntityComparator {
   /**
    * @internal Highly performance-sensitive method.
    */
-  getPkGetter<T>(meta: EntityMetadata<T>): any {
+  getPkGetter<T>(meta: EntityMetadata<T>): PkGetter<T> {
     const exists = this.#pkGetters.get(meta);
 
     /* v8 ignore next */
@@ -155,7 +155,7 @@ export class EntityComparator {
   /**
    * @internal Highly performance-sensitive method.
    */
-  getPkGetterConverted<T>(meta: EntityMetadata<T>): any {
+  getPkGetterConverted<T>(meta: EntityMetadata<T>): PkGetter<T> {
     const exists = this.#pkGettersConverted.get(meta);
 
     /* v8 ignore next */
@@ -215,7 +215,7 @@ export class EntityComparator {
   /**
    * @internal Highly performance-sensitive method.
    */
-  getPkSerializer<T>(meta: EntityMetadata<T>): any {
+  getPkSerializer<T>(meta: EntityMetadata<T>): PkSerializer<T> {
     const exists = this.#pkSerializers.get(meta);
 
     /* v8 ignore next */

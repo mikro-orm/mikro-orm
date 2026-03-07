@@ -19,7 +19,7 @@ export type MsSqlOptions<
     | EntityClass<AnyEntity>
     | EntitySchema
   )[],
-> = Options<MsSqlDriver, EM, Entities>;
+> = Partial<Options<MsSqlDriver, EM, Entities>>;
 
 export function defineMsSqlConfig<
   EM extends SqlEntityManager<MsSqlDriver> = SqlEntityManager<MsSqlDriver>,
@@ -28,7 +28,7 @@ export function defineMsSqlConfig<
     | EntityClass<AnyEntity>
     | EntitySchema
   )[],
->(options: Options<MsSqlDriver, EM, Entities>): Options<MsSqlDriver, EM, Entities> {
+>(options: Partial<Options<MsSqlDriver, EM, Entities>>): Partial<Options<MsSqlDriver, EM, Entities>> {
   return defineConfig({ driver: MsSqlDriver, ...options });
 }
 
@@ -54,14 +54,14 @@ export class MsSqlMikroORM<
       | EntityClass<AnyEntity>
       | EntitySchema
     )[],
-  >(options: Options<D, EM, Entities>): Promise<MikroORM<D, EM, Entities>> {
+  >(options: Partial<Options<D, EM, Entities>>): Promise<MikroORM<D, EM, Entities>> {
     return super.init(defineMsSqlConfig(options as any) as any);
   }
 
   /**
    * @inheritDoc
    */
-  constructor(options: Options<MsSqlDriver, EM, Entities>) {
+  constructor(options: Partial<Options<MsSqlDriver, EM, Entities>>) {
     super(defineMsSqlConfig(options));
   }
 }

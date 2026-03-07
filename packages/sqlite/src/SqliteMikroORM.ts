@@ -19,7 +19,7 @@ export type SqliteOptions<
     | EntityClass<AnyEntity>
     | EntitySchema
   )[],
-> = Options<SqliteDriver, EM, Entities>;
+> = Partial<Options<SqliteDriver, EM, Entities>>;
 
 export function defineSqliteConfig<
   EM extends SqlEntityManager<SqliteDriver> = SqlEntityManager<SqliteDriver>,
@@ -28,7 +28,7 @@ export function defineSqliteConfig<
     | EntityClass<AnyEntity>
     | EntitySchema
   )[],
->(options: Options<SqliteDriver, EM, Entities>): Options<SqliteDriver, EM, Entities> {
+>(options: Partial<Options<SqliteDriver, EM, Entities>>): Partial<Options<SqliteDriver, EM, Entities>> {
   return defineConfig({ driver: SqliteDriver, ...options });
 }
 
@@ -54,14 +54,14 @@ export class SqliteMikroORM<
       | EntityClass<AnyEntity>
       | EntitySchema
     )[],
-  >(options: Options<D, EM, Entities>): Promise<MikroORM<D, EM, Entities>> {
+  >(options: Partial<Options<D, EM, Entities>>): Promise<MikroORM<D, EM, Entities>> {
     return super.init(defineSqliteConfig(options as any) as any);
   }
 
   /**
    * @inheritDoc
    */
-  constructor(options: Options<SqliteDriver, EM, Entities>) {
+  constructor(options: Partial<Options<SqliteDriver, EM, Entities>>) {
     super(defineSqliteConfig(options));
   }
 }

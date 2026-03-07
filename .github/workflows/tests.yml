@@ -44,7 +44,7 @@ jobs:
         run: yarn build
 
       - name: Check JSR publishing
-        run: yarn publish:jsr:dry
+        run: yarn publish:jsr --dry-run
 
   typecheck:
     name: Typecheck

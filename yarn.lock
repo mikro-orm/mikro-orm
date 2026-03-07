@@ -1633,7 +1633,7 @@ __metadata:
     dataloader: "npm:2.2.3"
     husky: "npm:9.1.7"
     jiti: "npm:2.6.1"
-    jsr: "npm:^0.14.3"
+    jsr: "npm:0.14.3"
     knex: "npm:3.1.0"
     lerna: "npm:9.0.5"
     lint-staged: "npm:16.3.2"
@@ -6503,7 +6503,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jsr@npm:^0.14.3":
+"jsr@npm:0.14.3":
   version: 0.14.3
   resolution: "jsr@npm:0.14.3"
   dependencies:

@@ -27,7 +27,7 @@ describe.each(['sqlite', 'mysql', 'postgresql', 'mongo'] as const)(
     let orm: MikroORM;
 
     beforeAll(async () => {
-      const options: Options = {};
+      const options: Partial<Options> = {};
 
       if (type === 'mysql') {
         options.port = 3308;

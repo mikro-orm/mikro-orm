@@ -19,7 +19,7 @@ export type PostgreSqlOptions<
     | EntityClass<AnyEntity>
     | EntitySchema
   )[],
-> = Options<PostgreSqlDriver, EM, Entities>;
+> = Partial<Options<PostgreSqlDriver, EM, Entities>>;
 
 export function definePostgreSqlConfig<
   EM extends PostgreSqlEntityManager = PostgreSqlEntityManager,
@@ -28,7 +28,7 @@ export function definePostgreSqlConfig<
     | EntityClass<AnyEntity>
     | EntitySchema
   )[],
->(options: Options<PostgreSqlDriver, EM, Entities>): Options<PostgreSqlDriver, EM, Entities> {
+>(options: Partial<Options<PostgreSqlDriver, EM, Entities>>): Partial<Options<PostgreSqlDriver, EM, Entities>> {
   return defineConfig({ driver: PostgreSqlDriver, ...options });
 }
 
@@ -54,14 +54,14 @@ export class PostgreSqlMikroORM<
       | EntityClass<AnyEntity>
       | EntitySchema
     )[],
-  >(options: Options<D, EM, Entities>): Promise<MikroORM<D, EM, Entities>> {
+  >(options: Partial<Options<D, EM, Entities>>): Promise<MikroORM<D, EM, Entities>> {
     return super.init(definePostgreSqlConfig(options as any) as any);
   }
 
   /**
    * @inheritDoc
    */
-  constructor(options: Options<PostgreSqlDriver, EM, Entities>) {
+  constructor(options: Partial<Options<PostgreSqlDriver, EM, Entities>>) {
     super(definePostgreSqlConfig(options));
   }
 }

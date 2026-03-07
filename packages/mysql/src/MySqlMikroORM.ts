@@ -19,7 +19,7 @@ export type MySqlOptions<
     | EntityClass<AnyEntity>
     | EntitySchema
   )[],
-> = Options<MySqlDriver, EM, Entities>;
+> = Partial<Options<MySqlDriver, EM, Entities>>;
 
 export function defineMySqlConfig<
   EM extends SqlEntityManager<MySqlDriver> = SqlEntityManager<MySqlDriver>,
@@ -28,7 +28,7 @@ export function defineMySqlConfig<
     | EntityClass<AnyEntity>
     | EntitySchema
   )[],
->(options: Options<MySqlDriver, EM, Entities>): Options<MySqlDriver, EM, Entities> {
+>(options: Partial<Options<MySqlDriver, EM, Entities>>): Partial<Options<MySqlDriver, EM, Entities>> {
   return defineConfig({ driver: MySqlDriver, ...options });
 }
 
@@ -54,14 +54,14 @@ export class MySqlMikroORM<
       | EntityClass<AnyEntity>
       | EntitySchema
     )[],
-  >(options: Options<D, EM, Entities>): Promise<MikroORM<D, EM, Entities>> {
+  >(options: Partial<Options<D, EM, Entities>>): Promise<MikroORM<D, EM, Entities>> {
     return super.init(defineMySqlConfig(options as any) as any);
   }
 
   /**
    * @inheritDoc
    */
-  constructor(options: Options<MySqlDriver, EM, Entities>) {
+  constructor(options: Partial<Options<MySqlDriver, EM, Entities>>) {
     super(defineMySqlConfig(options));
   }
 }
