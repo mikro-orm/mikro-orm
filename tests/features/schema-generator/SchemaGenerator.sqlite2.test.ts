@@ -22,4 +22,13 @@ describe.each(['sqlite', 'libsql'] as const)('SchemaGenerator (%s)', driver => {
 
     await orm.close(true);
   });
+
+  test('schema.clear() ignores missing tables after reconnect to in-memory DB', async () => {
+    const orm = await initORMSqlite(driver);
+    await orm.close(true);
+    await orm.connect();
+    // the in-memory DB is now empty (all tables lost), clear() should not throw
+    await orm.schema.clear();
+    await orm.close(true);
+  });
 });

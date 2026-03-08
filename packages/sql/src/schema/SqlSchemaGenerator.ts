@@ -197,7 +197,7 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
           .truncate()
           .execute();
       } catch (e) {
-        if (e instanceof TableNotFoundException) {
+        if (this.platform.getExceptionConverter().convertException(e as Error) instanceof TableNotFoundException) {
           continue;
         }
 
