@@ -35,6 +35,8 @@ import type { SerializationContext } from '../serialization/SerializationContext
 import { EntitySerializer, type SerializeOptions } from '../serialization/EntitySerializer.js';
 import type { FindOneOptions, LoadHint } from '../drivers/IDatabaseDriver.js';
 import { expandDotPaths } from './utils.js';
+import type { Platform } from '../platforms/Platform.js';
+import type { Configuration } from '../utils/Configuration.js';
 
 export class WrappedEntity<Entity extends object> {
   declare __initialized: boolean;
@@ -268,11 +270,11 @@ export class WrappedEntity<Entity extends object> {
     return (this.entity as IWrappedEntityInternal<Entity>).__meta;
   }
 
-  get __platform() {
+  get __platform(): Platform {
     return (this.entity as IWrappedEntityInternal<Entity>).__platform;
   }
 
-  get __config() {
+  get __config(): Configuration {
     return this.__em?.config ?? (this.entity as IWrappedEntityInternal<Entity>).__config;
   }
 
@@ -281,7 +283,7 @@ export class WrappedEntity<Entity extends object> {
   }
 
   /** @ignore */
-  [Symbol.for('nodejs.util.inspect.custom')]() {
+  [Symbol.for('nodejs.util.inspect.custom')](): string {
     return `[WrappedEntity<${this.__meta.className}>]`;
   }
 }

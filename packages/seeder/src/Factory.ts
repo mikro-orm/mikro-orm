@@ -76,7 +76,7 @@ export abstract class Factory<TEntity extends object, TInput = EntityData<TEntit
    * In case of `createOne` or `create` it is applied before the entity is persisted
    * @param eachFunction The function that is applied on every entity
    */
-  each(eachFunction: (entity: TEntity, index: number) => void) {
+  each(eachFunction: (entity: TEntity, index: number) => void): this {
     this.eachFunction = eachFunction;
     return this;
   }

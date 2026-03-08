@@ -15,13 +15,13 @@ export class UnicodeString {
     return this.value;
   }
 
-  [Symbol.toPrimitive]() {
+  [Symbol.toPrimitive](): string {
     return this.value;
   }
 }
 
 export class UnicodeStringType extends Type<string | null, string | null> {
-  override getColumnType(prop: { length?: number }, platform: Platform) {
+  override getColumnType(prop: { length?: number }, platform: Platform): string {
     const length = prop.length === -1 ? 'max' : (prop.length ?? this.getDefaultLength(platform));
     return `nvarchar(${length})`;
   }

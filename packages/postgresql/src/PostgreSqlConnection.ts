@@ -5,7 +5,7 @@ import array from 'postgres-array';
 import { AbstractSqlConnection, Utils } from '@mikro-orm/sql';
 
 export class PostgreSqlConnection extends AbstractSqlConnection {
-  override createKyselyDialect(overrides: PoolConfig) {
+  override createKyselyDialect(overrides: PoolConfig): PostgresDialect {
     const options = this.mapOptions(overrides);
     return new PostgresDialect({
       pool: new Pool(options),

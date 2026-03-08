@@ -73,7 +73,7 @@ export class EntitySchema<Entity = any, Base = never, Class extends EntityCtor =
    * When schema links the entity class via `class` option, this registry allows the lookup from opposite side,
    * so we can use the class in `entities` option just like the EntitySchema instance.
    */
-  static REGISTRY = new Map<AnyEntity, EntitySchema>();
+  static REGISTRY: Map<AnyEntity, EntitySchema> = new Map();
 
   /** @internal Type-level marker for fast entity type inference */
   declare readonly '~entity': Entity;
@@ -325,7 +325,7 @@ export class EntitySchema<Entity = any, Base = never, Class extends EntityCtor =
     }
   }
 
-  get meta() {
+  get meta(): EntityMetadata<Entity, Class> {
     return this._meta;
   }
 
@@ -352,7 +352,7 @@ export class EntitySchema<Entity = any, Base = never, Class extends EntityCtor =
   /**
    * @internal
    */
-  init() {
+  init(): this {
     if (this.initialized) {
       return this;
     }

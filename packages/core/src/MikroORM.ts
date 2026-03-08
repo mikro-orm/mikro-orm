@@ -33,7 +33,7 @@ async function tryRegisterExtension(name: string, pkg: string, extensions: Optio
 }
 
 /** @internal */
-export async function loadOptionalDependencies(options: Options): Promise<void> {
+export async function loadOptionalDependencies(options: Partial<Options>): Promise<void> {
   await import('@mikro-orm/core/fs-utils').then(m => m.fs.init()).catch(() => null);
   const extensions = options.extensions ?? [];
   const exists = (name: string) => extensions.some(ext => (ext as any).name === name);
@@ -123,7 +123,7 @@ export class MikroORM<
       | EntityClass<AnyEntity>
       | EntitySchema
     )[],
-  >(options: Options<D, EM, Entities>): Promise<MikroORM<D, EM, Entities>> {
+  >(options: Partial<Options<D, EM, Entities>>): Promise<MikroORM<D, EM, Entities>> {
     /* v8 ignore next */
     if (!options) {
       throw new Error(`options parameter is required`);
@@ -147,7 +147,7 @@ export class MikroORM<
    * - ORM extensions are not autoloaded
    * - when metadata cache is enabled, `FileCacheAdapter` needs to be explicitly set in the config
    */
-  constructor(options: Options<Driver, EM, Entities>) {
+  constructor(options: Partial<Options<Driver, EM, Entities>>) {
     const env = loadEnvironmentVars();
     options = options.preferEnvVars ? Utils.merge(options, env) : Utils.merge(env, options);
     this.config = new Configuration(options);

@@ -1,0 +1,15 @@
+{
+  "name": "@mikro-orm/core",
+  "version": "6.6.9",
+  "exports": {
+    ".": "./src/index.ts",
+    "./file-discovery": "./src/metadata/discover-entities.ts",
+    "./fs-utils": "./src/utils/fs-utils.ts",
+    "./migrations": "./src/utils/AbstractMigrator.ts",
+    "./schema": "./src/utils/AbstractSchemaGenerator.ts",
+    "./dataloader": "./src/utils/DataloaderUtils.ts"
+  },
+  "publish": {
+    "exclude": ["dist/", "node_modules/", "tests/"]
+  }
+}

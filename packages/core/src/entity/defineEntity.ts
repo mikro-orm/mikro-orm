@@ -1006,7 +1006,7 @@ function createPropertyBuilders<Types extends Record<string, any>>(
 // Simplified constraint for relation targets - avoids expensive structural check against 6-parameter generic
 type EntityTarget = { '~entity': any } | EntityClass;
 
-const propertyBuilders = {
+const propertyBuilders: PropertyBuilders = {
   ...createPropertyBuilders(types),
 
   bigint: <Mode extends 'bigint' | 'number' | 'string' = 'bigint'>(mode?: Mode) =>
@@ -1062,61 +1062,107 @@ const propertyBuilders = {
       items,
     }),
 
-  embedded: <Target extends EntityTarget | EntityTarget[]>(
-    target: Target,
-  ): PropertyChain<InferEntity<Target extends (infer T)[] ? T : Target>, EmptyOptions & { kind: 'embedded' }> =>
-    new UniversalPropertyOptionsBuilder<
-      InferEntity<Target extends (infer T)[] ? T : Target>,
-      EmptyOptions & { kind: 'embedded' },
-      IncludeKeysForEmbeddedOptions
-    >({
-      entity: () => target as any,
+  embedded: (target: any) =>
+    new UniversalPropertyOptionsBuilder({
+      entity: () => target,
       kind: 'embedded',
     }) as any,
 
-  manyToMany: <Target extends EntityTarget>(
-    target: Target,
-  ): PropertyChain<InferEntity<Target>, EmptyOptions & { kind: 'm:n' }> =>
-    new UniversalPropertyOptionsBuilder<
-      InferEntity<Target>,
-      EmptyOptions & { kind: 'm:n' },
-      IncludeKeysForManyToManyOptions
-    >({
-      entity: () => target as any,
+  manyToMany: (target: any) =>
+    new UniversalPropertyOptionsBuilder({
+      entity: () => target,
       kind: 'm:n',
     }) as any,
 
-  manyToOne: <Target extends EntityTarget | EntityTarget[]>(
-    target: Target,
-  ): PropertyChain<InferEntity<Target extends (infer T)[] ? T : Target>, EmptyOptions & { kind: 'm:1' }> =>
-    new UniversalPropertyOptionsBuilder<
-      InferEntity<Target extends (infer T)[] ? T : Target>,
-      EmptyOptions & { kind: 'm:1' },
-      IncludeKeysForManyToOneOptions
-    >({
-      entity: () => target as any,
+  manyToOne: (target: any) =>
+    new UniversalPropertyOptionsBuilder({
+      entity: () => target,
       kind: 'm:1',
     }) as any,
 
-  oneToMany: <Target extends EntityTarget>(
-    target: Target,
-  ): PropertyChain<InferEntity<Target>, EmptyOptions & { kind: '1:m' }> =>
-    new OneToManyOptionsBuilderOnlyMappedBy<InferEntity<Target>>({
-      entity: () => target as any,
+  oneToMany: (target: any) =>
+    new OneToManyOptionsBuilderOnlyMappedBy({
+      entity: () => target,
       kind: '1:m',
     }) as any,
 
-  oneToOne: <Target extends EntityTarget | EntityTarget[]>(
-    target: Target,
-  ): PropertyChain<InferEntity<Target extends (infer T)[] ? T : Target>, EmptyOptions & { kind: '1:1' }> =>
-    new UniversalPropertyOptionsBuilder<
-      InferEntity<Target extends (infer T)[] ? T : Target>,
-      EmptyOptions & { kind: '1:1' },
-      IncludeKeysForOneToOneOptions
-    >({
-      entity: () => target as any,
+  oneToOne: (target: any) =>
+    new UniversalPropertyOptionsBuilder({
+      entity: () => target,
       kind: '1:1',
     }) as any,
+} as PropertyBuilders;
+
+type PropertyBuildersOverrideKeys = 'bigint' | 'array' | 'decimal' | 'json' | 'datetime' | 'time' | 'enum';
+
+export type PropertyBuilders = {
+  [K in Exclude<keyof typeof types, PropertyBuildersOverrideKeys>]: () => UniversalPropertyOptionsBuilder<
+    InferPropertyValueType<(typeof types)[K]>,
+    EmptyOptions,
+    IncludeKeysForProperty
+  >;
+} & {
+  bigint: <Mode extends 'bigint' | 'number' | 'string' = 'bigint'>(
+    mode?: Mode,
+  ) => UniversalPropertyOptionsBuilder<
+    InferPropertyValueType<typeof types.bigint<Mode>>,
+    EmptyOptions,
+    IncludeKeysForProperty
+  >;
+  array: <T = string>(
+    toJsValue?: (i: string) => T,
+    toDbValue?: (i: T) => string,
+  ) => UniversalPropertyOptionsBuilder<
+    InferPropertyValueType<typeof types.array<T>>,
+    EmptyOptions,
+    IncludeKeysForProperty
+  >;
+  decimal: <Mode extends 'number' | 'string' = 'string'>(
+    mode?: Mode,
+  ) => UniversalPropertyOptionsBuilder<
+    InferPropertyValueType<typeof types.decimal<Mode>>,
+    EmptyOptions,
+    IncludeKeysForProperty
+  >;
+  json: <T>() => UniversalPropertyOptionsBuilder<T, EmptyOptions, IncludeKeysForProperty>;
+  formula: <T>(
+    formula: string | FormulaCallback<any>,
+  ) => UniversalPropertyOptionsBuilder<T, EmptyOptions, IncludeKeysForProperty>;
+  datetime: (
+    length?: number,
+  ) => UniversalPropertyOptionsBuilder<
+    InferPropertyValueType<typeof types.datetime>,
+    EmptyOptions,
+    IncludeKeysForProperty
+  >;
+  time: (
+    length?: number,
+  ) => UniversalPropertyOptionsBuilder<InferPropertyValueType<typeof types.time>, EmptyOptions, IncludeKeysForProperty>;
+  type: <T extends PropertyValueType>(
+    type: T,
+  ) => UniversalPropertyOptionsBuilder<InferPropertyValueType<T>, EmptyOptions, IncludeKeysForProperty>;
+  enum: <const T extends (number | string)[] | (() => Dictionary)>(
+    items?: T,
+  ) => UniversalPropertyOptionsBuilder<
+    T extends () => Dictionary ? ValueOf<ReturnType<T>> : T extends (infer Value)[] ? Value : T,
+    EmptyOptions,
+    IncludeKeysForEnumOptions
+  >;
+  embedded: <Target extends EntityTarget | EntityTarget[]>(
+    target: Target,
+  ) => PropertyChain<InferEntity<Target extends (infer T)[] ? T : Target>, EmptyOptions & { kind: 'embedded' }>;
+  manyToMany: <Target extends EntityTarget>(
+    target: Target,
+  ) => PropertyChain<InferEntity<Target>, EmptyOptions & { kind: 'm:n' }>;
+  manyToOne: <Target extends EntityTarget | EntityTarget[]>(
+    target: Target,
+  ) => PropertyChain<InferEntity<Target extends (infer T)[] ? T : Target>, EmptyOptions & { kind: 'm:1' }>;
+  oneToMany: <Target extends EntityTarget>(
+    target: Target,
+  ) => PropertyChain<InferEntity<Target>, EmptyOptions & { kind: '1:m' }>;
+  oneToOne: <Target extends EntityTarget | EntityTarget[]>(
+    target: Target,
+  ) => PropertyChain<InferEntity<Target extends (infer T)[] ? T : Target>, EmptyOptions & { kind: '1:1' }>;
 };
 
 function getBuilderOptions(builder: any) {
@@ -1154,7 +1200,7 @@ export interface EntityMetadataWithProperties<
   // Uses ~entity marker for fast type inference (avoids expensive EntitySchema matching)
   // Also accepts entity constructors for compatibility with class-based entities
   extends?: { '~entity': TBase } | EntityCtor<TBase>;
-  properties: TProperties | ((properties: typeof propertyBuilders) => TProperties);
+  properties: TProperties | ((properties: PropertyBuilders) => TProperties);
   primaryKeys?: TPK & InferPrimaryKey<TProperties>[];
   hooks?: DefineEntityHooks;
   // Capture the repository type for InferEntity to include EntityRepositoryType
@@ -1219,7 +1265,7 @@ export function defineEntity<
     className?: TClassName;
     tableName?: TTableName;
     extends?: TBase;
-    properties: TProperties | ((properties: typeof propertyBuilders) => TProperties);
+    properties: TProperties | ((properties: PropertyBuilders) => TProperties);
     hooks?: DefineEntityHooks<TEntity>;
   },
 ): EntitySchemaWithMeta<TClassName, TTableName, TEntity, TBase, TProperties, TClass>;
@@ -1228,7 +1274,7 @@ export function defineEntity(
   meta:
     | (Omit<Partial<EntityMetadata>, 'properties' | 'extends'> & {
         extends?: EntityName;
-        properties: Record<string, any> | ((properties: typeof propertyBuilders) => Record<string, any>);
+        properties: Record<string, any> | ((properties: PropertyBuilders) => Record<string, any>);
       })
     | EntityMetadataWithProperties<any, any, any, any, any, any, any>,
 ): EntitySchemaWithMeta<any, any, any, any, any, any> {

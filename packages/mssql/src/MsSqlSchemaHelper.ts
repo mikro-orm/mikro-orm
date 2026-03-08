@@ -30,11 +30,11 @@ export class MsSqlSchemaHelper extends SchemaHelper {
     return 'master';
   }
 
-  override disableForeignKeysSQL() {
+  override disableForeignKeysSQL(): string {
     return `exec sp_MSforeachtable 'alter table ? nocheck constraint all';`;
   }
 
-  override enableForeignKeysSQL() {
+  override enableForeignKeysSQL(): string {
     return `exec sp_MSforeachtable 'alter table ? check constraint all';`;
   }
 
@@ -85,7 +85,7 @@ export class MsSqlSchemaHelper extends SchemaHelper {
     length: number,
     defaultValues: Dictionary<string[]> = {},
     stripQuotes = false,
-  ) {
+  ): string | number {
     let match = /^\((.*)\)$/.exec(defaultValue);
 
     if (match) {
@@ -471,7 +471,7 @@ export class MsSqlSchemaHelper extends SchemaHelper {
     return `drop index ${this.quote(index.keyName)} on ${this.quote(tableName)}`;
   }
 
-  override dropIndex(table: string, index: IndexDef, oldIndexName = index.keyName) {
+  override dropIndex(table: string, index: IndexDef, oldIndexName = index.keyName): string {
     if (index.primary) {
       return `alter table ${this.quote(table)} drop constraint ${this.quote(oldIndexName)}`;
     }
@@ -679,7 +679,7 @@ export class MsSqlSchemaHelper extends SchemaHelper {
     return '';
   }
 
-  override createIndex(index: IndexDef, table: DatabaseTable, createPrimary = false) {
+  override createIndex(index: IndexDef, table: DatabaseTable, createPrimary = false): string {
     if (index.primary) {
       return '';
     }
@@ -705,7 +705,7 @@ export class MsSqlSchemaHelper extends SchemaHelper {
     return sql;
   }
 
-  override dropForeignKey(tableName: string, constraintName: string) {
+  override dropForeignKey(tableName: string, constraintName: string): string {
     return `alter table ${this.quote(tableName)} drop constraint ${this.quote(constraintName)}`;
   }
 

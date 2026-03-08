@@ -6,7 +6,7 @@ import { SqliteExceptionConverter } from './SqliteExceptionConverter.js';
 
 export class SqlitePlatform extends AbstractSqlPlatform {
   protected override readonly schemaHelper: SqliteSchemaHelper = new SqliteSchemaHelper(this);
-  protected override readonly exceptionConverter = new SqliteExceptionConverter();
+  protected override readonly exceptionConverter: SqliteExceptionConverter = new SqliteExceptionConverter();
 
   /** @internal */
   override createNativeQueryBuilder(): SqliteNativeQueryBuilder {

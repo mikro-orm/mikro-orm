@@ -27,7 +27,7 @@ import type { MsSqlDriver } from './MsSqlDriver.js';
 
 export class MsSqlPlatform extends AbstractSqlPlatform {
   protected override readonly schemaHelper: MsSqlSchemaHelper = new MsSqlSchemaHelper(this);
-  protected override readonly exceptionConverter = new MsSqlExceptionConverter();
+  protected override readonly exceptionConverter: MsSqlExceptionConverter = new MsSqlExceptionConverter();
 
   /** @inheritDoc */
   override lookupExtensions(orm: MikroORM<MsSqlDriver>): void {
@@ -71,7 +71,7 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
     return false;
   }
 
-  override indexForeignKeys() {
+  override indexForeignKeys(): boolean {
     return false;
   }
 
@@ -280,7 +280,7 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
     return new MsSqlSchemaGenerator(em ?? (driver as any));
   }
 
-  override allowsComparingTuples() {
+  override allowsComparingTuples(): boolean {
     return false;
   }
 

@@ -33,7 +33,7 @@ function compareConstructors(a: any, b: any) {
   return false;
 }
 
-export function compareObjects(a: any, b: any) {
+export function compareObjects(a: any, b: any): boolean {
   if (a === b || (a == null && b == null)) {
     return true;
   }
@@ -91,7 +91,7 @@ export function compareObjects(a: any, b: any) {
   return true;
 }
 
-export function compareArrays(a: any[] | string, b: any[] | string) {
+export function compareArrays(a: any[] | string, b: any[] | string): boolean {
   const length = a.length;
 
   if (length !== b.length) {
@@ -184,7 +184,7 @@ export class Utils {
   /**
    * Removes `undefined` properties (recursively) so they are not saved as nulls
    */
-  static dropUndefinedProperties(o: any, value?: null, visited = new Set()): void {
+  static dropUndefinedProperties(o: any, value?: null, visited: Set<unknown> = new Set()): void {
     if (Array.isArray(o)) {
       for (const item of o) {
         Utils.dropUndefinedProperties(item, value, visited);
@@ -514,7 +514,12 @@ export class Utils {
     return key.split(this.PK_SEPARATOR) as EntityKey<T>[];
   }
 
-  static getPrimaryKeyValues<T>(entity: T, meta: EntityMetadata<T>, allowScalar = false, convertCustomTypes = false) {
+  static getPrimaryKeyValues<T>(
+    entity: T,
+    meta: EntityMetadata<T>,
+    allowScalar = false,
+    convertCustomTypes = false,
+  ): any {
     /* v8 ignore next */
     if (entity == null) {
       return entity;
@@ -698,7 +703,7 @@ export class Utils {
     return classOrName.name as string;
   }
 
-  static extractChildElements(items: string[], prefix: string, allSymbol?: string) {
+  static extractChildElements(items: string[], prefix: string, allSymbol?: string): string[] {
     return items
       .filter(field => field === allSymbol || field.startsWith(`${prefix}.`))
       .map(field => (field === allSymbol ? allSymbol : field.substring(prefix.length + 1)));
@@ -890,7 +895,12 @@ export class Utils {
     return this.#ORM_VERSION;
   }
 
-  static createFunction(context: Map<string, any>, code: string, compiledFunctions?: CompiledFunctions, key?: string) {
+  static createFunction(
+    context: Map<string, any>,
+    code: string,
+    compiledFunctions?: CompiledFunctions,
+    key?: string,
+  ): any {
     if (key && compiledFunctions?.[key]) {
       return compiledFunctions[key](...context.values());
     }
@@ -906,7 +916,7 @@ export class Utils {
     }
   }
 
-  static callCompiledFunction<T extends unknown[], R>(fn: (...args: T) => R, ...args: T) {
+  static callCompiledFunction<T extends unknown[], R>(fn: (...args: T) => R, ...args: T): R {
     try {
       return fn(...args);
     } catch (e: any) {
@@ -1064,19 +1074,19 @@ export class Utils {
     return (a || b) && !(a && b);
   }
 
-  static keys<T extends object>(obj: T) {
+  static keys<T extends object>(obj: T): (keyof T)[] {
     return Object.keys(obj) as (keyof T)[];
   }
 
-  static values<T extends object>(obj: T) {
+  static values<T extends object>(obj: T): T[keyof T][] {
     return Object.values(obj) as T[keyof T][];
   }
 
-  static entries<T extends object>(obj: T) {
+  static entries<T extends object>(obj: T): [keyof T, T[keyof T]][] {
     return Object.entries(obj) as [keyof T, T[keyof T]][];
   }
 
-  static primaryKeyToObject<T>(meta: EntityMetadata<T>, primaryKey: Primary<T> | T, visible?: (keyof T)[]) {
+  static primaryKeyToObject<T>(meta: EntityMetadata<T>, primaryKey: Primary<T> | T, visible?: (keyof T)[]): T {
     const pks =
       meta.compositePK && Utils.isPlainObject(primaryKey) ? Object.values(primaryKey) : Utils.asArray(primaryKey);
     const pkProps = meta.getPrimaryProps();
@@ -1098,7 +1108,9 @@ export class Utils {
     }, {} as T);
   }
 
-  static getObjectQueryKeys<T extends Dictionary, K extends string = Extract<keyof T, string>>(obj: T) {
+  static getObjectQueryKeys<T extends Dictionary, K extends string = Extract<keyof T, string>>(
+    obj: T,
+  ): (K | RawQueryFragmentSymbol)[] {
     return Reflect.ownKeys(obj).filter(key => {
       if (!Object.prototype.propertyIsEnumerable.call(obj, key)) {
         return false;

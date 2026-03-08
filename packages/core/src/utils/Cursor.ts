@@ -110,7 +110,7 @@ export class Cursor<
   /**
    * Computes the cursor value for a given entity.
    */
-  from(entity: Entity | Loaded<Entity, Hint, Fields, Excludes>) {
+  from(entity: Entity | Loaded<Entity, Hint, Fields, Excludes>): string {
     const processEntity = <T extends object>(
       entity: T,
       prop: EntityKey<T>,
@@ -174,7 +174,7 @@ export class Cursor<
     meta: EntityMetadata<Entity>,
     entity: FilterObject<Entity>,
     orderBy: OrderDefinition<Entity>,
-  ) {
+  ): string {
     const definition = this.getDefinition(meta, orderBy);
     return Cursor.encode(
       definition.map(([key]) => {
@@ -201,7 +201,10 @@ export class Cursor<
     });
   }
 
-  static getDefinition<Entity extends object>(meta: EntityMetadata<Entity>, orderBy: OrderDefinition<Entity>) {
+  static getDefinition<Entity extends object>(
+    meta: EntityMetadata<Entity>,
+    orderBy: OrderDefinition<Entity>,
+  ): [EntityKey, QueryOrder][] {
     return Utils.asArray(orderBy).flatMap(order => {
       const ret: [EntityKey, QueryOrder][] = [];
 
@@ -233,7 +236,7 @@ export class Cursor<
 
   /** @ignore */
   /* v8 ignore next */
-  [Symbol.for('nodejs.util.inspect.custom')]() {
+  [Symbol.for('nodejs.util.inspect.custom')](): string {
     const type = this.items[0]?.constructor.name;
     const { items, startCursor, endCursor, hasPrevPage, hasNextPage, totalCount, length } = this;
     const options = inspect(

@@ -121,7 +121,7 @@ export class CriteriaNodeFactory {
     key: EntityKey<T> | RawQueryFragmentSymbol,
     meta?: EntityMetadata<T>,
     validate = true,
-  ) {
+  ): ICriteriaNode<T> {
     const rawField = RawQueryFragment.isKnownFragmentSymbol(key);
     const prop = rawField ? null : meta?.properties[key];
     const childEntity = prop && prop.kind !== ReferenceKind.SCALAR ? prop.targetMeta!.class : entityName;

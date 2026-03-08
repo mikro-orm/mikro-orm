@@ -31,7 +31,7 @@ describe('Webpack', () => {
       metadataProvider: ReflectMetadataProvider,
       driver: MySqlDriver,
       entities: [AuthorWpI, BookWpI],
-    } as Options;
+    } as Partial<Options>;
     const err = `Please provide either 'type' or 'entity' attribute in AuthorWpI.books. Make sure you have 'emitDecoratorMetadata' enabled in your tsconfig.json.`;
     await expect(MikroORM.init(options)).rejects.toThrow(err);
   });
@@ -42,7 +42,7 @@ describe('Webpack', () => {
       metadataProvider: ReflectMetadataProvider,
       driver: MySqlDriver,
       entities: ['not/existing'],
-    } as Options;
+    } as Partial<Options>;
     const err = 'Folder based discovery requires the async `MikroORM.init()` method.';
     expect(() => new MikroORM(options)).toThrow(err);
     await expect(MikroORM.init(options)).rejects.toThrow('No entities were discovered');

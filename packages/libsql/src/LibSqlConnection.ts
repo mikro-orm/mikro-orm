@@ -10,7 +10,7 @@ export class LibSqlConnection extends BaseSqliteConnection {
     await super.connect(options);
   }
 
-  override createKyselyDialect(options: Dictionary & Options) {
+  override createKyselyDialect(options: Dictionary & Options): LibSqlDialect {
     const dbName = options.url ?? this.config.get('dbName');
     options.authToken ??= this.config.get('password');
     return new LibSqlDialect({

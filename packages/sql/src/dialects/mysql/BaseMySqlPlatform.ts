@@ -17,7 +17,7 @@ import { MySqlNativeQueryBuilder } from './MySqlNativeQueryBuilder.js';
 
 export class BaseMySqlPlatform extends AbstractSqlPlatform {
   protected override readonly schemaHelper: MySqlSchemaHelper = new MySqlSchemaHelper(this);
-  protected override readonly exceptionConverter = new MySqlExceptionConverter();
+  protected override readonly exceptionConverter: MySqlExceptionConverter = new MySqlExceptionConverter();
 
   protected readonly ORDER_BY_NULLS_TRANSLATE = {
     [QueryOrder.asc_nulls_first]: 'is not null',

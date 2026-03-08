@@ -10,8 +10,8 @@ import { prepareMetadataContext } from '../utils.js';
 export function Formula<Owner extends object>(
   formula: string | FormulaCallback<Owner>,
   options: PropertyOptions<Owner> = {},
-) {
-  return function (value: unknown, context: ClassFieldDecoratorContext<Owner>) {
+): (value: unknown, context: ClassFieldDecoratorContext<Owner>) => void {
+  return function (value: unknown, context: ClassFieldDecoratorContext<Owner>): void {
     const meta = prepareMetadataContext(context);
     meta.properties[context.name as EntityKey<Owner>] = {
       name: context.name,

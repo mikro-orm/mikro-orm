@@ -19,7 +19,7 @@ export type OracleOptions<
     | EntityClass<AnyEntity>
     | EntitySchema
   )[],
-> = Options<OracleDriver, EM, Entities>;
+> = Partial<Options<OracleDriver, EM, Entities>>;
 
 export function defineOracleConfig<
   EM extends SqlEntityManager<OracleDriver> = SqlEntityManager<OracleDriver>,
@@ -28,7 +28,7 @@ export function defineOracleConfig<
     | EntityClass<AnyEntity>
     | EntitySchema
   )[],
->(options: Options<OracleDriver, EM, Entities>) {
+>(options: Partial<Options<OracleDriver, EM, Entities>>): OracleOptions<EM, Entities> {
   return defineConfig({ driver: OracleDriver, ...options });
 }
 
@@ -54,14 +54,14 @@ export class OracleMikroORM<
       | EntityClass<AnyEntity>
       | EntitySchema
     )[],
-  >(options: Options<D, EM, Entities>): Promise<MikroORM<D, EM, Entities>> {
+  >(options: Partial<Options<D, EM, Entities>>): Promise<MikroORM<D, EM, Entities>> {
     return super.init(defineOracleConfig(options as any) as any);
   }
 
   /**
    * @inheritDoc
    */
-  constructor(options: Options<OracleDriver, EM, Entities>) {
+  constructor(options: Partial<Options<OracleDriver, EM, Entities>>) {
     super(defineOracleConfig(options));
   }
 }

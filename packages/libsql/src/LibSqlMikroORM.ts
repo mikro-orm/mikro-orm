@@ -19,7 +19,7 @@ export type LibSqlOptions<
     | EntityClass<AnyEntity>
     | EntitySchema
   )[],
-> = Options<LibSqlDriver, EM, Entities>;
+> = Partial<Options<LibSqlDriver, EM, Entities>>;
 
 export function defineLibSqlConfig<
   EM extends SqlEntityManager<LibSqlDriver> = SqlEntityManager<LibSqlDriver>,
@@ -28,7 +28,7 @@ export function defineLibSqlConfig<
     | EntityClass<AnyEntity>
     | EntitySchema
   )[],
->(options: LibSqlOptions<EM, Entities>) {
+>(options: LibSqlOptions<EM, Entities>): LibSqlOptions<EM, Entities> {
   return defineConfig({ driver: LibSqlDriver, ...options });
 }
 
@@ -54,14 +54,14 @@ export class LibSqlMikroORM<
       | EntityClass<AnyEntity>
       | EntitySchema
     )[],
-  >(options: Options<D, EM, Entities>): Promise<MikroORM<D, EM, Entities>> {
+  >(options: Partial<Options<D, EM, Entities>>): Promise<MikroORM<D, EM, Entities>> {
     return super.init(defineLibSqlConfig(options as any) as any);
   }
 
   /**
    * @inheritDoc
    */
-  constructor(options: Options<LibSqlDriver, EM, Entities>) {
+  constructor(options: Partial<Options<LibSqlDriver, EM, Entities>>) {
     super(defineLibSqlConfig(options));
   }
 }

@@ -1,8 +1,10 @@
 import { type Constructor, type EntityOptions, type EntityClass, Utils } from '@mikro-orm/core';
 import { getMetadataFromDecorator } from '../utils.js';
 
-export function Entity<Owner extends EntityClass<unknown> & Constructor>(options: EntityOptions<Owner> = {}) {
-  return function (target: Owner, context: ClassDecoratorContext<Owner>) {
+export function Entity<Owner extends EntityClass<unknown> & Constructor>(
+  options: EntityOptions<Owner> = {},
+): (target: Owner, context: ClassDecoratorContext<Owner>) => void {
+  return function (target: Owner, context: ClassDecoratorContext<Owner>): void {
     const meta = getMetadataFromDecorator(target);
     const metadata = { ...context.metadata };
     Utils.mergeConfig(meta, metadata, options);

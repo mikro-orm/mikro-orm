@@ -471,7 +471,7 @@ export class MySqlSchemaHelper extends SchemaHelper {
       order by tc.constraint_name`;
   }
 
-  override normalizeDefaultValue(defaultValue: string, length: number) {
+  override normalizeDefaultValue(defaultValue: string, length: number): string | number {
     return super.normalizeDefaultValue(defaultValue, length, MySqlSchemaHelper.DEFAULT_VALUES);
   }
 

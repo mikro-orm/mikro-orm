@@ -95,6 +95,9 @@ jobs:
       - name: Publish to npm
         run: yarn publish:prod --yes
 
+      - name: Publish to JSR
+        run: yarn publish:jsr
+
   canary-release:
     if: inputs.dist-tag == 'next' || inputs.dist-tag == 'rc'
     name: Release ${{ inputs.dist-tag == 'rc' && 'RC' || 'canary' }}

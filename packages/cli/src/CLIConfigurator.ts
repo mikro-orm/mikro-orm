@@ -1,6 +1,6 @@
 import { Utils } from '@mikro-orm/core';
 import { fs } from '@mikro-orm/core/fs-utils';
-import yargs, { type CommandModule } from 'yargs';
+import yargs, { type Argv, type CommandModule } from 'yargs';
 import { ClearCacheCommand } from './commands/ClearCacheCommand.js';
 import { CreateDatabaseCommand } from './commands/CreateDatabaseCommand.js';
 import { CreateSeederCommand } from './commands/CreateSeederCommand.js';
@@ -24,7 +24,7 @@ export type BaseArgs = Awaited<ReturnType<typeof createBasicConfig>['argv']>;
  */
 export interface BaseCommand<CommandArgs extends BaseArgs = BaseArgs> extends CommandModule<BaseArgs, CommandArgs> {}
 
-function createBasicConfig() {
+function createBasicConfig(): Argv<{ config: string[] | undefined; contextName: string }> {
   return yargs()
     .scriptName('mikro-orm')
     .usage('Usage: $0 <command> [options]')
@@ -49,7 +49,7 @@ function createBasicConfig() {
     .strict();
 }
 
-export async function configure() {
+export async function configure(): Promise<Argv<{ config: string[] | undefined; contextName: string }>> {
   fs.checkPackageVersion();
   const settings = CLIHelper.getSettings();
   const version = Utils.getORMVersion();

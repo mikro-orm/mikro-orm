@@ -846,7 +846,7 @@ export class Collection<T extends object, O extends object = object> {
   /**
    * @internal
    */
-  getSnapshot() {
+  getSnapshot(): T[] | undefined {
     return this.#snapshot;
   }
 
@@ -955,7 +955,7 @@ export class Collection<T extends object, O extends object = object> {
   }
 
   /** @ignore */
-  [Symbol.for('nodejs.util.inspect.custom')](depth = 2) {
+  [Symbol.for('nodejs.util.inspect.custom')](depth = 2): string {
     const object = { ...this } as Dictionary;
     delete object.owner;
     object.initialized = this.#initialized;

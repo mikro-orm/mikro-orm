@@ -3,7 +3,7 @@ import type { Platform } from '../platforms/Platform.js';
 import { Type } from './Type.js';
 
 export class UnknownType extends Type<unknown | null | undefined, unknown | null | undefined> {
-  override getColumnType(prop: EntityProperty, platform: Platform) {
+  override getColumnType(prop: EntityProperty, platform: Platform): string {
     return prop.columnTypes?.[0] ?? platform.getVarcharTypeDeclarationSQL(prop);
   }
 

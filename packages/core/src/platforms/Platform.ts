@@ -55,7 +55,7 @@ import { Raw } from '../utils/RawQueryFragment.js';
 export const JsonProperty = Symbol('JsonProperty');
 
 export abstract class Platform {
-  protected readonly exceptionConverter = new ExceptionConverter();
+  protected readonly exceptionConverter: ExceptionConverter = new ExceptionConverter();
   protected config!: Configuration;
   protected namingStrategy!: NamingStrategy;
   protected timezone?: string;
@@ -106,7 +106,7 @@ export abstract class Platform {
     return undefined;
   }
 
-  indexForeignKeys() {
+  indexForeignKeys(): boolean {
     return false;
   }
 
@@ -207,7 +207,7 @@ export abstract class Platform {
     return 3;
   }
 
-  allowsComparingTuples() {
+  allowsComparingTuples(): boolean {
     return true;
   }
 
@@ -428,7 +428,7 @@ export abstract class Platform {
     value: EntityValue<T>,
     path: EntityKey<T>[],
     alias: boolean,
-  ) {
+  ): FilterQuery<T> {
     if (Utils.isPlainObject<T>(value) && !Object.keys(value).some(k => Utils.isOperator(k))) {
       Utils.keys(value).forEach(k => {
         this.processJsonCondition<T>(o, value[k] as EntityValue<T>, [...path, k as EntityKey<T>], alias);
@@ -669,7 +669,7 @@ export abstract class Platform {
     return this.config;
   }
 
-  getTimezone() {
+  getTimezone(): string | undefined {
     return this.timezone;
   }
 
@@ -794,13 +794,13 @@ export abstract class Platform {
   /**
    * @internal
    */
-  clone() {
+  clone(): this {
     return this;
   }
 
   /** @ignore */
   /* v8 ignore next */
-  [Symbol.for('nodejs.util.inspect.custom')]() {
+  [Symbol.for('nodejs.util.inspect.custom')](): string {
     return `[${this.constructor.name}]`;
   }
 }

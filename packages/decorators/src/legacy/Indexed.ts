@@ -16,10 +16,14 @@ function createDecorator<T extends object>(options: IndexOptions<T> | UniqueOpti
   };
 }
 
-export function Index<T extends object, H extends string>(options: IndexOptions<T, H> = {}) {
+export function Index<T extends object, H extends string>(
+  options: IndexOptions<T, H> = {},
+): (target: T, propertyName?: T extends EntityClass<unknown> ? undefined : keyof T) => any {
   return createDecorator(options, false);
 }
 
-export function Unique<T extends object, H extends string>(options: UniqueOptions<T, H> = {}) {
+export function Unique<T extends object, H extends string>(
+  options: UniqueOptions<T, H> = {},
+): (target: T, propertyName?: T extends EntityClass<unknown> ? undefined : keyof T) => any {
   return createDecorator(options, true);
 }

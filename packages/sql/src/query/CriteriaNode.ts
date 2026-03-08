@@ -66,7 +66,7 @@ export class CriteriaNode<T extends object> implements ICriteriaNode<T> {
     return false;
   }
 
-  willAutoJoin(qb: IQueryBuilder<T>, alias?: string, options?: ICriteriaNodeProcessOptions) {
+  willAutoJoin(qb: IQueryBuilder<T>, alias?: string, options?: ICriteriaNodeProcessOptions): boolean {
     return false;
   }
 
@@ -167,7 +167,7 @@ export class CriteriaNode<T extends object> implements ICriteriaNode<T> {
     return `${path}[pivot]`;
   }
 
-  aliased(field: string, alias?: string) {
+  aliased(field: string, alias?: string): string {
     return alias ? `${alias}.${field}` : field;
   }
 
@@ -177,7 +177,7 @@ export class CriteriaNode<T extends object> implements ICriteriaNode<T> {
 
   /** @ignore */
   /* v8 ignore next */
-  [Symbol.for('nodejs.util.inspect.custom')]() {
+  [Symbol.for('nodejs.util.inspect.custom')](): string {
     const o: Dictionary = {};
     (['entityName', 'key', 'index', 'payload'] as const)
       .filter(k => this[k] !== undefined)

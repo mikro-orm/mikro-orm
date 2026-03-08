@@ -33,7 +33,7 @@ describe.each(['libsql', 'sqlite', 'mysql', 'mssql', 'postgresql'] as const)('ra
   let orm: MikroORM;
 
   beforeAll(async () => {
-    const options: Options = {};
+    const options: Partial<Options> = {};
 
     if (type === 'mysql') {
       options.port = 3308;

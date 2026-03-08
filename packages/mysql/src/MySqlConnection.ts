@@ -3,7 +3,7 @@ import { createPool, type PoolOptions } from 'mysql2';
 import { type ConnectionConfig, Utils, AbstractSqlConnection, type TransactionEventBroadcaster } from '@mikro-orm/sql';
 
 export class MySqlConnection extends AbstractSqlConnection {
-  override createKyselyDialect(overrides: PoolOptions) {
+  override createKyselyDialect(overrides: PoolOptions): MysqlDialect {
     const options = this.mapOptions(overrides);
     const password = options.password as ConnectionConfig['password'];
 

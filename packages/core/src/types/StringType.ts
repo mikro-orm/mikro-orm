@@ -3,7 +3,7 @@ import type { Platform } from '../platforms/Platform.js';
 import type { EntityProperty } from '../typings.js';
 
 export class StringType extends Type<string | null | undefined, string | null | undefined> {
-  override getColumnType(prop: EntityProperty, platform: Platform) {
+  override getColumnType(prop: EntityProperty, platform: Platform): string {
     return platform.getVarcharTypeDeclarationSQL(prop);
   }
 

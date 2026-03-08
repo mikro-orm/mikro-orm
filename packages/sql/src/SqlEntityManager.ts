@@ -57,7 +57,7 @@ export class SqlEntityManager<Driver extends AbstractSqlDriver = AbstractSqlDriv
     alias?: RootAlias,
     type?: ConnectionType,
     loggerContext?: LoggingOptions,
-  ) {
+  ): QueryBuilder<Entity, RootAlias> {
     return this.createQueryBuilder(entityName, alias, type, loggerContext);
   }
 

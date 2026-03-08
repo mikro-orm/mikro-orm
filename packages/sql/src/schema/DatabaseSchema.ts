@@ -60,7 +60,7 @@ export class DatabaseSchema {
     return this.#tables.find(t => t.name === name || `${t.schema}.${t.name}` === name);
   }
 
-  hasTable(name: string) {
+  hasTable(name: string): boolean {
     return !!this.getTable(name);
   }
 
@@ -95,7 +95,7 @@ export class DatabaseSchema {
     return this.#views.find(v => v.name === name || `${v.schema}.${v.name}` === name);
   }
 
-  hasView(name: string) {
+  hasView(name: string): boolean {
     return !!this.getView(name);
   }
 
@@ -117,11 +117,11 @@ export class DatabaseSchema {
     return this.#nativeEnums[name];
   }
 
-  hasNamespace(namespace: string) {
+  hasNamespace(namespace: string): boolean {
     return this.#namespaces.has(namespace);
   }
 
-  hasNativeEnum(name: string) {
+  hasNativeEnum(name: string): boolean {
     return name in this.#nativeEnums;
   }
 

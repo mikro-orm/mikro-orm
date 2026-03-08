@@ -12,8 +12,8 @@ import { validateSingleDecorator, getMetadataFromDecorator } from '../utils.js';
 export function Embedded<Owner extends object, Target>(
   type: EmbeddedOptions<Owner, Target> | (() => EntityName<Target> | EntityName[]) = {},
   options: EmbeddedOptions<Owner, Target> = {},
-) {
-  return function (target: AnyEntity, propertyName: string) {
+): (target: AnyEntity, propertyName: string) => void {
+  return function (target: AnyEntity, propertyName: string): void {
     const meta = getMetadataFromDecorator(target.constructor as Owner);
     validateSingleDecorator(meta, propertyName, ReferenceKind.EMBEDDED);
     options = type instanceof Function ? { entity: type, ...options } : { ...type, ...options };

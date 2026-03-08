@@ -62,7 +62,7 @@ export class DefaultLogger implements Logger {
     this.debugMode = debugMode;
   }
 
-  isEnabled(namespace: LoggerNamespace, context?: LogContext) {
+  isEnabled(namespace: LoggerNamespace, context?: LogContext): boolean {
     if (context?.enabled !== undefined) {
       return context.enabled;
     }
@@ -111,7 +111,7 @@ export class DefaultLogger implements Logger {
     return this.log('query', msg, context);
   }
 
-  static create(this: void, options: LoggerOptions) {
+  static create(this: void, options: LoggerOptions): DefaultLogger {
     return new DefaultLogger(options);
   }
 }

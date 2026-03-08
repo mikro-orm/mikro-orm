@@ -1,4 +1,4 @@
-import { type Connection, type Dictionary, RawQueryFragment, Utils } from '@mikro-orm/core';
+import { type Connection, type Dictionary, type Options, RawQueryFragment, Utils } from '@mikro-orm/core';
 import type { AbstractSqlConnection } from '../AbstractSqlConnection.js';
 import type { AbstractSqlPlatform } from '../AbstractSqlPlatform.js';
 import type { CheckDef, Column, ForeignKey, IndexDef, Table, TableDifference } from '../typings.js';
@@ -16,11 +16,11 @@ export abstract class SchemaHelper {
     return '';
   }
 
-  disableForeignKeysSQL() {
+  disableForeignKeysSQL(): string {
     return '';
   }
 
-  enableForeignKeysSQL() {
+  enableForeignKeysSQL(): string {
     return '';
   }
 
@@ -63,7 +63,7 @@ export abstract class SchemaHelper {
     return +match[1];
   }
 
-  protected getTableKey(t: Table) {
+  protected getTableKey(t: Table): string {
     const unquote = (str: string) => str.replace(/['"`]/g, '');
     const parts = t.table_name.split('.');
 
@@ -737,7 +737,7 @@ export abstract class SchemaHelper {
     return [schemaName, tableName];
   }
 
-  getReferencedTableName(referencedTableName: string, schema?: string) {
+  getReferencedTableName(referencedTableName: string, schema?: string): string {
     const [schemaName, tableName] = this.splitTableName(referencedTableName);
     schema = schemaName ?? schema ?? this.platform.getConfig().get('schema');
 
@@ -749,7 +749,7 @@ export abstract class SchemaHelper {
     return this.getTableName(tableName, schema);
   }
 
-  createIndex(index: IndexDef, table: DatabaseTable, createPrimary = false) {
+  createIndex(index: IndexDef, table: DatabaseTable, createPrimary = false): string {
     if (index.primary && !createPrimary) {
       return '';
     }
@@ -777,7 +777,7 @@ export abstract class SchemaHelper {
     return this.getCreateIndexSQL(table.getShortestName(), index);
   }
 
-  createCheck(table: DatabaseTable, check: CheckDef) {
+  createCheck(table: DatabaseTable, check: CheckDef): string {
     return `alter table ${table.getQuotedName()} add constraint ${this.quote(check.name)} check (${check.expression})`;
   }
 
@@ -801,11 +801,11 @@ export abstract class SchemaHelper {
     }, new Map<string | undefined, Table[]>());
   }
 
-  get options() {
+  get options(): NonNullable<Options['schemaGenerator']> {
     return this.platform.getConfig().get('schemaGenerator');
   }
 
-  protected processComment(comment: string) {
+  protected processComment(comment: string): string {
     return comment;
   }
 
@@ -813,11 +813,11 @@ export abstract class SchemaHelper {
     return this.platform.quoteIdentifier(keys.filter(Boolean).join('.'));
   }
 
-  dropForeignKey(tableName: string, constraintName: string) {
+  dropForeignKey(tableName: string, constraintName: string): string {
     return `alter table ${this.quote(tableName)} drop foreign key ${this.quote(constraintName)}`;
   }
 
-  dropIndex(table: string, index: IndexDef, oldIndexName = index.keyName) {
+  dropIndex(table: string, index: IndexDef, oldIndexName = index.keyName): string {
     if (index.primary) {
       return `alter table ${this.quote(table)} drop primary key`;
     }
@@ -825,7 +825,7 @@ export abstract class SchemaHelper {
     return `alter table ${this.quote(table)} drop index ${this.quote(oldIndexName)}`;
   }
 
-  dropConstraint(table: string, name: string) {
+  dropConstraint(table: string, name: string): string {
     return `alter table ${this.quote(table)} drop constraint ${this.quote(name)}`;
   }
 

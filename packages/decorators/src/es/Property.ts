@@ -1,7 +1,17 @@
 import { type EntityKey, type EntityProperty, type PropertyOptions, ReferenceKind, Utils } from '@mikro-orm/core';
 import { prepareMetadataContext } from '../utils.js';
 
-export function Property<T extends object>(options: PropertyOptions<T> = {}) {
+export function Property<T extends object>(
+  options: PropertyOptions<T> = {},
+): (
+  value: unknown,
+  context:
+    | ClassFieldDecoratorContext<T>
+    | ClassGetterDecoratorContext<T>
+    | ClassSetterDecoratorContext<T>
+    | ClassAccessorDecoratorContext<T>
+    | ClassMethodDecoratorContext<T>,
+) => void {
   return function (
     value: unknown,
     context:

@@ -8,7 +8,7 @@ import { createAsyncContext } from './AsyncContext.js';
 export class RequestContext {
   private static storage = createAsyncContext<RequestContext>();
   private static counter = 1;
-  readonly id = RequestContext.counter++;
+  readonly id: number = RequestContext.counter++;
 
   constructor(readonly map: Map<string, EntityManager>) {}
 

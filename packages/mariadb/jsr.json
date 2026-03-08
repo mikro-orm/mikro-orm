@@ -1,0 +1,10 @@
+{
+  "name": "@mikro-orm/mariadb",
+  "version": "6.6.9",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "publish": {
+    "exclude": ["dist/", "node_modules/", "tests/"]
+  }
+}

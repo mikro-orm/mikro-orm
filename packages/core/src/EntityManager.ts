@@ -98,7 +98,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
 
   static #counter = 1;
   /** @internal */
-  readonly _id = EntityManager.#counter++;
+  readonly _id: number = EntityManager.#counter++;
   readonly global = false;
   readonly name: string;
   readonly #loaders: Partial<Record<'ref' | '1:m' | 'm:n', { load: (...args: unknown[]) => Promise<unknown> }>> = {};
@@ -125,7 +125,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     protected readonly driver: Driver,
     protected readonly metadata: MetadataStorage,
     useContext = true,
-    protected readonly eventManager = new EventManager(config.get('subscribers')),
+    protected readonly eventManager: EventManager = new EventManager(config.get('subscribers')),
   ) {
     this.#useContext = useContext;
     this.#entityLoader = new EntityLoader(this);
@@ -2616,7 +2616,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     meta: EntityMetadata<T>,
     entity: T,
     options: FindOneOptions<T, P, F, E>,
-  ) {
+  ): boolean {
     if (!helper(entity).__initialized || options.refresh) {
       return true;
     }
@@ -2802,7 +2802,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
   }
 
   /** @ignore */
-  [Symbol.for('nodejs.util.inspect.custom')]() {
+  [Symbol.for('nodejs.util.inspect.custom')](): string {
     return `[EntityManager<${this.id}>]`;
   }
 }
