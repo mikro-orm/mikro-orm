@@ -225,13 +225,13 @@ The schema generator handles materialized views automatically:
 
 ```typescript
 // Create schema (includes CREATE MATERIALIZED VIEW statements)
-await orm.schema.createSchema();
+await orm.schema.create();
 
 // Drop schema (includes DROP MATERIALIZED VIEW statements)
-await orm.schema.dropSchema();
+await orm.schema.drop();
 
 // Update schema (detects changes to materialized views)
-await orm.schema.updateSchema();
+await orm.schema.update();
 ```
 
 ### Generated SQL

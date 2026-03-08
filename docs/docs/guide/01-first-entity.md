@@ -461,11 +461,11 @@ Running `npm start` again, you get past the global context validation error, but
 TableNotFoundException: insert into `user` (`bio`, `email`, `full_name`, `password`) values ('', 'foo@bar.com', 'Foo Bar', '123456') - no such table: user
 ```
 
-We forgot to create the database schema. Fortunately, we have all the tools we need at hand. You can use the [`SchemaGenerator`](/api/knex/class/SqlSchemaGenerator) provided by MikroORM to create the schema, as well as to keep it in sync when you change your entities. For the initial testing, let's use the `refreshDatabase()` method, which is handy for testing - it will first drop the schema if it already exists and create it from scratch based on entity definition (metadata).
+We forgot to create the database schema. Fortunately, we have all the tools we need at hand. You can use the [`SchemaGenerator`](/api/knex/class/SqlSchemaGenerator) provided by MikroORM to create the schema, as well as to keep it in sync when you change your entities. For the initial testing, let's use the `refresh()` method, which is handy for testing - it will first drop the schema if it already exists and create it from scratch based on entity definition (metadata).
 
 ```ts title='server.ts'
 // recreate the database schema
-await orm.schema.refreshDatabase();
+await orm.schema.refresh();
 ```
 
 Finally, `npm start` should succeed, and if you enabled the debug mode in your config, you will see the SQL queries in the logs, as well as the `user.id` value at the very end.

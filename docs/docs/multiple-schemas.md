@@ -93,7 +93,7 @@ export class Book {
 }
 ```
 
-Entities like this will be by default ignored when using `SchemaGenerator`, as you need to specify which schema to use. For that you need to use the `schema` option of the `createSchema/updateSchema/dropSchema` methods or the `--schema` CLI parameter.
+Entities like this will be by default ignored when using `SchemaGenerator`, as you need to specify which schema to use. For that you need to use the `schema` option of the `create/update/drop` methods or the `--schema` CLI parameter.
 
 On runtime, the wildcard schema will be replaced with either `FindOptions.schema`, `EntityManager.schema` or with the `schema` option from the ORM config.
 
@@ -273,7 +273,7 @@ The schema generator fully supports attached databases. It will:
 await orm.schema.create();
 
 // Updates schema across all databases
-await orm.schema.updateSchema();
+await orm.schema.update();
 ```
 
 ### Limitations

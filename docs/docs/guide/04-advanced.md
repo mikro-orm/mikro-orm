@@ -106,7 +106,7 @@ And use this repository in the `defineEntity` options. The `repository` option l
 
 ```ts title='user.entity.ts'
 import { defineEntity, type InferEntity, p } from '@mikro-orm/core';
-import { BaseEntity } from '../common/base.entity.js';
+import { BaseSchema } from '../common/base.entity.js';
 import { UserRepository } from './user.repository.js';
 
 export const UserSchema = defineEntity({
@@ -134,8 +134,8 @@ export interface Services {
   em: EntityManager;
 - user: EntityRepository<User>;
 + user: UserRepository;
-  article: EntityRepository<Article>;
-  tag: EntityRepository<Tag>;
+  article: EntityRepository<IArticle>;
+  tag: EntityRepository<ITag>;
 }
 ```
 
@@ -521,7 +521,7 @@ const user = db.em.create(User, {   // `User` is the class from setClass
   password: body.password,
   bio: body.bio ?? '',
   // highlight-next-line
-  social: body.social as Social,
+  social: body.social as ISocial,
 });
 await db.em.flush();
 ```
@@ -660,7 +660,7 @@ app.patch('/:id', async request => {
   const params = request.params as { id: string };
   const article = await db.article.findOneOrFail(+params.id);
   verifyArticlePermissions(user, article);
-  wrap(article).assign(request.body as EntityData<Article>);
+  wrap(article).assign(request.body as EntityData<IArticle>);
   await db.em.flush();
 
   return article;
@@ -670,7 +670,7 @@ app.patch('/:id', async request => {
 Also validate that only the author of the article can change it:
 
 ```ts title='modules/common/utils.ts'
-export function verifyArticlePermissions(user: User, article: Article): void {
+export function verifyArticlePermissions(user: User, article: IArticle): void {
   if (article.author.id !== user.id) {
     throw new Error('You are not the author of this article!');
   }
@@ -683,9 +683,9 @@ Alternatively, you could use `em.upsert()` instead to create or update the entit
 
 ```diff
 -const article = await db.article.findOneOrFail(+params.id);
--wrap(article).assign(request.body as EntityData<Article>);
+-wrap(article).assign(request.body as EntityData<IArticle>);
 -await db.em.flush();
-+const article = await db.article.upsert(request.body as Article);
++const article = await db.article.upsert(request.body as IArticle);
 ```
 
 To upsert many entities in a batch, you can use `em.upsertMany()`, which will handle everything within a single query.
@@ -838,18 +838,18 @@ Now create a custom repository for the `Article` entity too, and put two methods
 
 ```ts title='modules/article/article.repository.ts'
 import { FindOptions, sql, EntityRepository } from '@mikro-orm/sqlite';
-import { type Article, ArticleSchema } from './article.entity.js';
-import { type ArticleListing, ArticleListingSchema } from './article-listing.entity.js';
+import { type IArticle, ArticleSchema } from './article.entity.js';
+import { type IArticleListing, ArticleListingSchema } from './article-listing.entity.js';
 
 // extending the EntityRepository exported from driver package, so we can access things like the QB factory
-export class ArticleRepository extends EntityRepository<Article> {
+export class ArticleRepository extends EntityRepository<IArticle> {
 
   listArticlesQuery() {
     // just a placeholder for now
     return this.createQueryBuilder('a');
   }
 
-  async listArticles(options: FindOptions<ArticleListing>) {
+  async listArticles(options: FindOptions<IArticleListing>) {
     const [items, total] = await this.em.findAndCount(ArticleListingSchema, {}, options);
     return { items, total };
   }
@@ -899,11 +899,11 @@ And now the sub-queries - we will need two of them, both will use the same `sql.
 
 ```ts title='modules/article/article.repository.ts'
 import { FindOptions, sql, EntityRepository } from '@mikro-orm/sqlite';
-import { type Article, ArticleSchema } from './article.entity.js';
-import { type ArticleListing, ArticleListingSchema } from './article-listing.entity.js';
+import { type IArticle, ArticleSchema } from './article.entity.js';
+import { type IArticleListing, ArticleListingSchema } from './article-listing.entity.js';
 import { CommentSchema } from './comment.entity.js';
 
-export class ArticleRepository extends EntityRepository<Article> {
+export class ArticleRepository extends EntityRepository<IArticle> {
 
   // ...
 
@@ -1222,7 +1222,7 @@ For one-off scripts, you have two options. The simplest is to fork the `EntityMa
 ```ts title='scripts/cleanup.ts'
 import { initORM } from '../src/db.js';
 
-const db = await initORM();
+const db = initORM();
 const em = db.em.fork();
 
 // work with the forked EntityManager
@@ -1238,7 +1238,7 @@ await db.orm.close();
 Alternatively, if you want to use the global `EntityManager` directly (acceptable for scripts where there's no concurrent access), you can enable it in the config:
 
 ```ts
-const db = await initORM({ allowGlobalContext: true });
+const db = initORM({ allowGlobalContext: true });
 
 // now you can use db.em directly
 const users = await db.em.find(User, {});
@@ -1259,7 +1259,7 @@ import { RequestContext } from '@mikro-orm/core';
 import { initORM } from './db.js';
 
 export async function setupCronJobs() {
-  const db = await initORM();
+  const db = initORM();
 
   // run every hour
   setInterval(async () => {

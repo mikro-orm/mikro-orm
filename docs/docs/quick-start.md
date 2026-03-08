@@ -398,12 +398,12 @@ export default defineConfig({
 
 Using `defineConfig` also automatically infers the driver option for you if you import the helper from the driver package. This means you don't have to provide the `driver` option explicitly.
 
-Alternatively, you can use the `Options` type:
+Alternatively, you can use the `Partial<Options>` type:
 
 ```ts title="./src/mikro-orm.config.ts"
 import { Options } from '@mikro-orm/sqlite';
 
-const config: Options = {
+const config: Partial<Options> = {
   entities: [Author, Book, BookTag],
   dbName: 'my-db-name',
   driver: SqliteDriver,
