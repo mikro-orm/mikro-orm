@@ -170,6 +170,7 @@ module.exports = {
       items: [
         'entity-constructors',
         'schema-first-guide',
+        'transactional-outbox',
         'using-bigint-pks',
         'custom-driver',
       ],
