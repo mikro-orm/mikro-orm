@@ -1,6 +1,7 @@
 import {
   CommitOrderCalculator,
   type ClearDatabaseOptions,
+  TableNotFoundException,
   type CreateSchemaOptions,
   type Dictionary,
   type DropSchemaOptions,
@@ -189,11 +190,19 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
     const schema = options?.schema ?? this.config.get('schema', this.platform.getDefaultSchemaName());
 
     for (const meta of this.getOrderedMetadata(schema).reverse()) {
-      await this.driver
-        .createQueryBuilder(meta.class, this.em?.getTransactionContext(), 'write', false)
-        .withSchema(schema)
-        .truncate()
-        .execute();
+      try {
+        await this.driver
+          .createQueryBuilder(meta.class, this.em?.getTransactionContext(), 'write', false)
+          .withSchema(schema)
+          .truncate()
+          .execute();
+      } catch (e) {
+        if (e instanceof TableNotFoundException) {
+          continue;
+        }
+
+        throw e;
+      }
     }
 
     if (this.options.disableForeignKeysForClear) {
