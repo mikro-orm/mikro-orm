@@ -154,8 +154,8 @@ export class OutboxSubscriber implements EventSubscriber {
         continue; // don't create outbox events for outbox events
       }
 
-      // skip internal early-phase change sets
-      if (cs.type === ChangeSetType.UPDATE_EARLY || cs.type === ChangeSetType.DELETE_EARLY) {
+      // skip internal early update change sets (used for self-referencing relations)
+      if (cs.type === ChangeSetType.UPDATE_EARLY) {
         continue;
       }
 
