@@ -139,34 +139,34 @@ if (options['pin-versions']) {
   console.info(`pin-versions: version ${version}`, pkgJson.dependencies);
 
   writeFileSync(pkgPath, `${JSON.stringify(pkgJson, null, 2)}\n`, { flush: true });
-}
 
-// Sync jsr.json version and cross-package dependencies from package.json
-const jsrJsonPath = resolve(process.cwd(), 'jsr.json');
+  // Sync jsr.json version and cross-package dependencies from package.json
+  const jsrJsonPath = resolve(process.cwd(), 'jsr.json');
 
-try {
-  const jsrJson = JSON.parse(readFileSync(jsrJsonPath, 'utf8'));
-  const pkgJson = JSON.parse(readFileSync(pkgPath, 'utf8'));
+  try {
+    const jsrJson = JSON.parse(readFileSync(jsrJsonPath, 'utf8'));
+    const pkgJson = JSON.parse(readFileSync(pkgPath, 'utf8'));
 
-  jsrJson.version = pkgJson.version;
+    jsrJson.version = pkgJson.version;
 
-  // Map dependencies to JSR/npm specifiers
-  const imports = {};
+    // Map dependencies to JSR/npm specifiers
+    const imports = {};
 
-  for (const [dep, version] of Object.entries(pkgJson.dependencies ?? {})) {
-    const prefix = dep.startsWith('@mikro-orm/') ? 'jsr' : 'npm';
-    imports[dep] = `${prefix}:${dep}@${version}`;
+    for (const [dep, version] of Object.entries(pkgJson.dependencies ?? {})) {
+      const prefix = dep.startsWith('@mikro-orm/') ? 'jsr' : 'npm';
+      imports[dep] = `${prefix}:${dep}@${version}`;
+    }
+
+    if (Object.keys(imports).length > 0) {
+      jsrJson.imports = imports;
+    } else {
+      delete jsrJson.imports;
+    }
+
+    writeFileSync(jsrJsonPath, JSON.stringify(jsrJson, null, 2) + '\n', { flush: true });
+  } catch {
+    // no jsr.json for this package
   }
-
-  if (Object.keys(imports).length > 0) {
-    jsrJson.imports = imports;
-  } else {
-    delete jsrJson.imports;
-  }
-
-  writeFileSync(jsrJsonPath, JSON.stringify(jsrJson, null, 2) + '\n', { flush: true });
-} catch {
-  // no jsr.json for this package
 }
 
 copy('README.md', root, target);
