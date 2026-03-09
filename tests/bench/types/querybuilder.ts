@@ -136,8 +136,7 @@ bench('ModifyContext - add second join', () => {
 // ContextOrderByMap benchmarks
 // ============================================
 
-// eslint-disable-next-line no-empty-function
-function useOrderBy<E, R extends string, C>(_order: ContextOrderByMap<E, R, C>): void {}
+function useOrderBy<E, R extends string, C>(_order: ContextOrderByMap<E, R, C>): void {} // eslint-disable-line no-empty-function
 
 bench('ContextOrderByMap<Author, "a", never> - no context', () => {
   useOrderBy<Author, 'a', never>({ name: 'asc' });
@@ -151,12 +150,11 @@ bench('ContextOrderByMap<Author, "a", SimpleContext> - with join', () => {
 // QBFilterQuery benchmarks
 // ============================================
 
-// eslint-disable-next-line no-empty-function
-function useFilter<E, R extends string, C>(_filter: QBFilterQuery<E, R, C>): void {}
+function useFilter<E, R extends string, C>(_filter: QBFilterQuery<E, R, C>): void {} // eslint-disable-line no-empty-function
 
 bench('QBFilterQuery<Author, "a", never> - no context', () => {
   useFilter<Author, 'a', never>({ name: 'test' });
-}).types([267, 'instantiations']);
+}).types([281, 'instantiations']);
 
 bench('QBFilterQuery<Author, "a", SimpleContext> - with join', () => {
   useFilter<Author, 'a', SimpleContext>({ 'b.title': 'test' });
@@ -166,7 +164,7 @@ bench('QBFilterQuery<Author, "a", SimpleContext> - with $and', () => {
   useFilter<Author, 'a', SimpleContext>({
     $and: [{ 'b.title': 'test' }, { name: 'foo' }],
   });
-}).types([357, 'instantiations']);
+}).types([371, 'instantiations']);
 
 // ============================================
 // ModifyFields benchmarks (Fields tracking)
@@ -199,8 +197,7 @@ bench('ModifyFields - nested context', () => {
 // JoinSelectField benchmarks
 // ============================================
 
-// eslint-disable-next-line no-empty-function
-function useJoinField<E, A extends string>(_field: JoinSelectField<E, A>): void {}
+function useJoinField<E, A extends string>(_field: JoinSelectField<E, A>): void {} // eslint-disable-line no-empty-function
 
 bench('JoinSelectField<Book, "b"> - plain key', () => {
   useJoinField<Book, 'b'>('title');
@@ -248,13 +245,17 @@ bench('execute("get") return - selected fields (single)', () => {
 }).types([21, 'instantiations']);
 
 bench('execute() return - with join hint', () => {
-  const r = {} as DirectDTO<Author, 'id'> & { books: DirectDTO<Book, 'title' | PrimaryProperty<Book>>[] };
+  const r = {} as DirectDTO<Author, 'id'> & {
+    books: DirectDTO<Book, 'title' | PrimaryProperty<Book>>[];
+  };
   const _: number = r.id;
   void _;
 }).types([42, 'instantiations']);
 
 bench('execute() return - with join hint and wildcard', () => {
-  const r = {} as Omit<EntityDTOFlat<Author>, 'books'> & { books: EntityDTOFlat<Book>[] };
+  const r = {} as Omit<EntityDTOFlat<Author>, 'books'> & {
+    books: EntityDTOFlat<Book>[];
+  };
   const _: string = r.name;
   void _;
 }).types([647, 'instantiations']);
@@ -413,7 +414,7 @@ bench('with().from() - full CTE chain', () => {
   const sub = {} as QueryBuilder<Book>;
   const r = qb.with('cte', sub).from('cte');
   void r;
-}).types([84, 'instantiations']);
+}).types([85, 'instantiations']);
 
 // Verify from() preserves the alias as a literal type
 bench('from() - CTE alias preserved as literal', () => {
