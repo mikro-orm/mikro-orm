@@ -21,8 +21,8 @@ export class BasePostgreSqlPlatform extends AbstractSqlPlatform {
   protected override readonly schemaHelper: PostgreSqlSchemaHelper = new PostgreSqlSchemaHelper(this);
   protected override readonly exceptionConverter: PostgreSqlExceptionConverter = new PostgreSqlExceptionConverter();
 
-  /** Maps JS runtime type names to PostgreSQL cast types for JSON property access. */
-  protected readonly jsonTypeCasts: Record<string, string> = { number: 'float8', bigint: 'int8', boolean: 'bool' };
+  /** Maps JS runtime type names to PostgreSQL cast types for JSON property access. @internal */
+  private readonly jsonTypeCasts: Record<string, string> = { number: 'float8', bigint: 'int8', boolean: 'bool' };
 
   override createNativeQueryBuilder(): PostgreSqlNativeQueryBuilder {
     return new PostgreSqlNativeQueryBuilder(this);

@@ -663,11 +663,19 @@ const users = await em.find(User, {
   addresses: { $or: [{ city: 'London' }, { city: 'Paris' }] },
 });
 
-// $not finds rows where NO element matches the condition
+// $not finds rows where NO element matches the condition (NOT EXISTS)
 const users = await em.find(User, {
   addresses: { $not: { city: 'London' } },
 });
+
+// combine $not with positive conditions:
+// at least one element in Paris AND no element in London
+const users = await em.find(User, {
+  addresses: { $not: { city: 'London' }, city: 'Paris' },
+});
 ```
+
+> **Note:** Top-level `$not` uses `NOT EXISTS` semantics (no array element matches). Inside `$or`/`$and`, `$not` applies element-level negation instead (the current element does not match).
 
 Array-level operators like `$contains`, `$contained`, and `$overlap` continue to work as before, operating on the array column as a whole.
 

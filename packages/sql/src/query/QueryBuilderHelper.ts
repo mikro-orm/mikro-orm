@@ -1219,18 +1219,24 @@ export class QueryBuilderHelper {
       const jeAlias = `__je${this.#jsonAliasCounter++}`;
       const referencedProps = new Map<string, { name: string; type: string }>();
       const { sql: whereSql, params } = this.buildEmbeddedArrayWhere(rest, prop, jeAlias, referencedProps);
-      const from = this.#platform.getJsonArrayFromSQL(column, jeAlias, [...referencedProps.values()]);
-      parts.push(this.#platform.getJsonArrayExistsSQL(from, whereSql));
-      allParams.push(...params);
+
+      if (whereSql) {
+        const from = this.#platform.getJsonArrayFromSQL(column, jeAlias, [...referencedProps.values()]);
+        parts.push(this.#platform.getJsonArrayExistsSQL(from, whereSql));
+        allParams.push(...params);
+      }
     }
 
     if ($not != null) {
       const jeAlias = `__je${this.#jsonAliasCounter++}`;
       const referencedProps = new Map<string, { name: string; type: string }>();
       const { sql: whereSql, params } = this.buildEmbeddedArrayWhere($not, prop, jeAlias, referencedProps);
-      const from = this.#platform.getJsonArrayFromSQL(column, jeAlias, [...referencedProps.values()]);
-      parts.push(`not ${this.#platform.getJsonArrayExistsSQL(from, whereSql)}`);
-      allParams.push(...params);
+
+      if (whereSql) {
+        const from = this.#platform.getJsonArrayFromSQL(column, jeAlias, [...referencedProps.values()]);
+        parts.push(`not ${this.#platform.getJsonArrayExistsSQL(from, whereSql)}`);
+        allParams.push(...params);
+      }
     }
 
     if (parts.length === 0) {

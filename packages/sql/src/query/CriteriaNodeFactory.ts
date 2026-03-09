@@ -150,10 +150,11 @@ export class CriteriaNodeFactory {
       return this.createNode(metadata, entityName, map, node, key, validate);
     }
 
-    // For array embeddeds stored as real columns (not within object embeds),
-    // route property-level queries as scalar nodes so QueryBuilderHelper can
-    // generate EXISTS subqueries with JSON array iteration.
-    // Properties within object embeds use `~` in their key and need JSON path access instead.
+    // For array embeddeds stored as real columns, route property-level queries
+    // as scalar nodes so QueryBuilderHelper generates EXISTS subqueries with
+    // JSON array iteration.  Keys containing `~` indicate the property lives
+    // inside a parent's object-mode JSON column (MetadataDiscovery uses `~` as
+    // the glue for object embeds), where JSON path access is used instead.
     if (prop.array && !String(key).includes('~')) {
       const keys = Object.keys(val);
       const hasOnlyArrayOps = keys.every(k => EMBEDDABLE_ARRAY_OPS.includes(k));
