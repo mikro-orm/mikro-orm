@@ -51,6 +51,7 @@ export enum QueryOperator {
   $hasKey = '?', // postgres only, json
   $hasKeys = '?&', // postgres only, json
   $hasSomeKeys = '?|', // postgres only, json
+  $elemMatch = 'elemMatch', // json array element matching, sql only
 }
 
 export const ARRAY_OPERATORS = ['$eq', '$gt', '$gte', '$lt', '$lte', '$ne', '$overlap', '$contains', '$contained'];

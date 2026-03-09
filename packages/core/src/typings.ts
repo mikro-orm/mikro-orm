@@ -320,6 +320,7 @@ export type OperatorMap<T> = {
   $hasKey?: string;
   $hasKeys?: readonly string[];
   $hasSomeKeys?: readonly string[];
+  $elemMatch?: Record<string, any>;
 };
 
 export type FilterItemValue<T> = T | ExpandScalar<T> | Primary<T> | Raw;
