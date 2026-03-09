@@ -431,12 +431,12 @@ describe('embedded entities in postgresql', () => {
       .where({ addresses: { city: 'London 1' } })
       .execute(); // object embedded prop does not support nested partial loading
     expect(mock.mock.calls[0][0]).toMatch(
-      `select "u0"."addresses" from "user" as "u0" where "u0"."addresses"->>'city' = ?`,
+      `select "u0"."addresses" from "user" as "u0" where exists (select 1 from jsonb_array_elements("u0"."addresses") as "__je0" where "__je0"->>'city' = ?)`,
     );
 
     await orm.em.fork().findOne(User, { addresses: { city: 'London 1' } }, { fields: ['addresses.city'] }); // object embedded prop does not support nested partial loading
     expect(mock.mock.calls[1][0]).toMatch(
-      `select "u0"."id", "u0"."addresses" from "user" as "u0" where "u0"."addresses"->>'city' = ? limit ?`,
+      `select "u0"."id", "u0"."addresses" from "user" as "u0" where exists (select 1 from jsonb_array_elements("u0"."addresses") as "__je0" where "__je0"->>'city' = ?) limit ?`,
     );
 
     await orm.em
@@ -446,12 +446,12 @@ describe('embedded entities in postgresql', () => {
       .where({ addresses: { city: 'London 1' } })
       .execute();
     expect(mock.mock.calls[2][0]).toMatch(
-      `select "u0"."addresses" from "user" as "u0" where "u0"."addresses"->>'city' = ?`,
+      `select "u0"."addresses" from "user" as "u0" where exists (select 1 from jsonb_array_elements("u0"."addresses") as "__je0" where "__je0"->>'city' = ?)`,
     );
 
     await orm.em.fork().findOne(User, { addresses: { city: 'London 1' } }, { fields: ['addresses'] });
     expect(mock.mock.calls[3][0]).toMatch(
-      `select "u0"."id", "u0"."addresses" from "user" as "u0" where "u0"."addresses"->>'city' = ? limit ?`,
+      `select "u0"."id", "u0"."addresses" from "user" as "u0" where exists (select 1 from jsonb_array_elements("u0"."addresses") as "__je0" where "__je0"->>'city' = ?) limit ?`,
     );
 
     const user = createUser();
@@ -623,5 +623,78 @@ describe('embedded entities in postgresql', () => {
     await orm.em.flush();
     expect(user1.addresses).toBeNull();
     expect(user2.addresses).toHaveLength(2);
+  });
+
+  test('querying embedded array properties (GH #1887)', async () => {
+    const user = createUser();
+    await orm.em.persist(user).flush();
+    orm.em.clear();
+    const mock = mockLogger(orm, ['query']);
+
+    // basic equality
+    const r1 = await orm.em.find(User, { addresses: { city: 'London 4A' } });
+    expect(r1).toHaveLength(1);
+    expect(mock.mock.calls[0][0]).toMatch(
+      `select "u0".* from "user" as "u0" where exists (select 1 from jsonb_array_elements("u0"."addresses") as "__je0" where "__je0"->>'city' = ?)`,
+    );
+
+    // operator condition with type casting
+    const r2 = await orm.em.fork().find(User, { addresses: { number: { $gt: 5 } } });
+    expect(r2).toHaveLength(1);
+    expect(mock.mock.calls[1][0]).toMatch(
+      `select "u0".* from "user" as "u0" where exists (select 1 from jsonb_array_elements("u0"."addresses") as "__je0" where ("__je0"->>'number')::float8 > ?)`,
+    );
+
+    // $in operator
+    mock.mockReset();
+    const r3 = await orm.em.fork().find(User, { addresses: { city: { $in: ['London 4A', 'London 4B'] } } });
+    expect(r3).toHaveLength(1);
+    expect(mock.mock.calls[0][0]).toMatch(
+      `select "u0".* from "user" as "u0" where exists (select 1 from jsonb_array_elements("u0"."addresses") as "__je0" where "__je0"->>'city' in (?, ?))`,
+    );
+
+    // multiple conditions on the same element
+    const r4 = await orm.em.fork().find(User, { addresses: { city: 'London 4A', country: 'UK 4A' } });
+    expect(r4).toHaveLength(1);
+    expect(mock.mock.calls[1][0]).toMatch(
+      `select "u0".* from "user" as "u0" where exists (select 1 from jsonb_array_elements("u0"."addresses") as "__je0" where "__je0"->>'city' = ? and "__je0"->>'country' = ?)`,
+    );
+
+    // $or within embedded array
+    mock.mockReset();
+    const r5 = await orm.em.fork().find(User, { addresses: { $or: [{ city: 'London 4A' }, { city: 'London 4B' }] } });
+    expect(r5).toHaveLength(1);
+    expect(mock.mock.calls[0][0]).toMatch(
+      `select "u0".* from "user" as "u0" where exists (select 1 from jsonb_array_elements("u0"."addresses") as "__je0" where ("__je0"->>'city' = ? or "__je0"->>'city' = ?))`,
+    );
+
+    // $not within embedded array
+    const r6 = await orm.em.fork().find(User, { addresses: { $not: { city: 'London 4A' } } });
+    expect(mock.mock.calls[1][0]).toMatch(
+      `select "u0".* from "user" as "u0" where exists (select 1 from jsonb_array_elements("u0"."addresses") as "__je0" where not ("__je0"->>'city' = ?))`,
+    );
+
+    // combined with regular conditions
+    mock.mockReset();
+    const r7 = await orm.em.fork().find(User, { email: user.email, addresses: { city: 'London 4A' } });
+    expect(r7).toHaveLength(1);
+    expect(mock.mock.calls[0][0]).toMatch(
+      `select "u0".* from "user" as "u0" where "u0"."email" = ? and exists (select 1 from jsonb_array_elements("u0"."addresses") as "__je0" where "__je0"->>'city' = ?)`,
+    );
+
+    // $contains still works unchanged
+    mock.mockReset();
+    const r8 = await orm.em.fork().find(User, { addresses: { $contains: [{ street: 'Downing street 13A' }] } });
+    expect(r8).toHaveLength(1);
+    expect(mock.mock.calls[0][0]).toMatch(`select "u0".* from "user" as "u0" where "u0"."addresses" @> ?`);
+
+    // no match returns empty
+    mock.mockReset();
+    const r9 = await orm.em.fork().find(User, { addresses: { city: 'Nonexistent' } });
+    expect(r9).toHaveLength(0);
+
+    // multiple conditions must match the same element
+    const r10 = await orm.em.fork().find(User, { addresses: { city: 'London 4A', country: 'UK 4B' } });
+    expect(r10).toHaveLength(0); // city=London 4A + country=UK 4B don't exist in the same element
   });
 });

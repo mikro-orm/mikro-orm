@@ -171,6 +171,19 @@ export class BaseMySqlPlatform extends AbstractSqlPlatform {
     return ret;
   }
 
+  override getJsonArrayFromSQL(column: string, alias: string, properties: { name: string; type: string }[]): string {
+    const typeMap: Record<string, string> = { string: 'text', number: 'double', bigint: 'bigint', boolean: 'unsigned' };
+    const columns = properties
+      .map(p => `${this.quoteIdentifier(p.name)} ${typeMap[p.type] ?? 'text'} path '$.${p.name}'`)
+      .join(', ');
+
+    return `json_table(${column}, '$[*]' columns (${columns})) as ${this.quoteIdentifier(alias)}`;
+  }
+
+  override getJsonArrayElementPropertySQL(alias: string, property: string): string {
+    return `${this.quoteIdentifier(alias)}.${this.quoteIdentifier(property)}`;
+  }
+
   override getDefaultClientUrl(): string {
     return 'mysql://root@127.0.0.1:3306';
   }

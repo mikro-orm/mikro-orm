@@ -18,6 +18,8 @@ import { ArrayCriteriaNode } from './ArrayCriteriaNode.js';
 import { ScalarCriteriaNode } from './ScalarCriteriaNode.js';
 import type { ICriteriaNode } from '../typings.js';
 
+const EMBEDDABLE_ARRAY_OPS = ['$contains', '$contained', '$overlap'];
+
 /**
  * @internal
  */
@@ -149,9 +151,21 @@ export class CriteriaNodeFactory {
       return this.createNode(metadata, entityName, map, node, key, validate);
     }
 
+    // For array embeddeds stored as real columns (not within object embeds),
+    // route property-level queries as scalar nodes so QueryBuilderHelper can
+    // generate EXISTS subqueries with JSON array iteration.
+    // Properties within object embeds use `~` in their key and need JSON path access instead.
+    if (prop.array && !String(key).includes('~')) {
+      const keys = Object.keys(val);
+      const hasOnlyArrayOps = keys.every(k => EMBEDDABLE_ARRAY_OPS.includes(k));
+
+      if (!hasOnlyArrayOps) {
+        return this.createScalarNode(metadata, entityName, val, node, key, validate);
+      }
+    }
+
     // array operators can be used on embedded properties
-    const allowedOperators = ['$contains', '$contained', '$overlap'];
-    const operator = Object.keys(val).some(f => Utils.isOperator(f) && !allowedOperators.includes(f));
+    const operator = Object.keys(val).some(f => Utils.isOperator(f) && !EMBEDDABLE_ARRAY_OPS.includes(f));
 
     if (operator) {
       throw ValidationError.cannotUseOperatorsInsideEmbeddables(entityName, prop.name, payload);
@@ -160,7 +174,7 @@ export class CriteriaNodeFactory {
     const map = Object.keys(val).reduce((oo, k) => {
       const embeddedProp = prop.embeddedProps[k] ?? Object.values(prop.embeddedProps).find(p => p.name === k);
 
-      if (!embeddedProp && !allowedOperators.includes(k)) {
+      if (!embeddedProp && !EMBEDDABLE_ARRAY_OPS.includes(k)) {
         throw ValidationError.invalidEmbeddableQuery(entityName, k, prop.type);
       }
 

@@ -34,6 +34,8 @@ import type { AbstractSqlDriver } from '../AbstractSqlDriver.js';
 import type { AbstractSqlPlatform } from '../AbstractSqlPlatform.js';
 import type { NativeQueryBuilder } from './NativeQueryBuilder.js';
 
+const EMBEDDABLE_ARRAY_OPS = ['$contains', '$contained', '$overlap'];
+
 /**
  * @internal
  */
@@ -46,6 +48,7 @@ export class QueryBuilderHelper {
   readonly #subQueries: Dictionary<string>;
   readonly #driver: AbstractSqlDriver;
   readonly #tptAliasMap: Dictionary<string>;
+  #jsonAliasCounter = 0;
 
   constructor(
     entityName: EntityName,
@@ -654,6 +657,20 @@ export class QueryBuilderHelper {
       return { sql: parts.join(' and '), params };
     }
 
+    if (Utils.isPlainObject(cond[key]) && !Raw.isKnownFragmentSymbol(key)) {
+      const [a, f] = this.splitField(key as EntityKey);
+      const prop = this.getProperty(f, a);
+
+      if (prop?.kind === ReferenceKind.EMBEDDED && prop.array) {
+        const keys = Object.keys(cond[key]);
+        const hasOnlyArrayOps = keys.every((k: string) => EMBEDDABLE_ARRAY_OPS.includes(k));
+
+        if (!hasOnlyArrayOps) {
+          return this.processEmbeddedArrayCondition(cond[key], prop, a);
+        }
+      }
+    }
+
     if (Utils.isPlainObject(cond[key]) || cond[key] instanceof RegExp) {
       return this.processObjectSubCondition(cond, key, type);
     }
@@ -1184,6 +1201,110 @@ export class QueryBuilderHelper {
 
   isTableNameAliasRequired(type: QueryType): boolean {
     return [QueryType.SELECT, QueryType.COUNT].includes(type);
+  }
+
+  private processEmbeddedArrayCondition(
+    cond: Dictionary,
+    prop: EntityProperty,
+    alias: string,
+  ): { sql: string; params: unknown[] } {
+    const fieldName = prop.fieldNames[0];
+    const column = this.#platform.quoteIdentifier(`${alias}.${fieldName}`);
+    const jeAlias = `__je${this.#jsonAliasCounter++}`;
+    const referencedProps = new Map<string, { name: string; type: string }>();
+    const { sql: whereSql, params } = this.buildEmbeddedArrayWhere(cond, prop, jeAlias, referencedProps);
+    const from = this.#platform.getJsonArrayFromSQL(column, jeAlias, [...referencedProps.values()]);
+
+    return { sql: `exists (select 1 from ${from} where ${whereSql})`, params };
+  }
+
+  private resolveEmbeddedProp(prop: EntityProperty, key: string): { embProp: EntityProperty; jsonPropName: string } {
+    const embProp = prop.embeddedProps[key] ?? Object.values(prop.embeddedProps).find(p => p.name === key);
+
+    if (!embProp) {
+      throw ValidationError.invalidEmbeddableQuery(this.#entityName, key, prop.type);
+    }
+
+    const jsonPropName = embProp.fieldNames[0].replace(`${prop.fieldNames[0]}~`, '');
+
+    return { embProp, jsonPropName };
+  }
+
+  private buildEmbeddedArrayWhere(
+    cond: Dictionary,
+    prop: EntityProperty,
+    jeAlias: string,
+    referencedProps: Map<string, { name: string; type: string }>,
+  ): { sql: string; params: unknown[] } {
+    const parts: string[] = [];
+    const params: unknown[] = [];
+
+    for (const k of Object.keys(cond)) {
+      if (k === '$and' || k === '$or') {
+        const items = cond[k] as Dictionary[];
+        const subParts: string[] = [];
+
+        for (const item of items) {
+          const sub = this.buildEmbeddedArrayWhere(item, prop, jeAlias, referencedProps);
+          subParts.push(sub.sql);
+          params.push(...sub.params);
+        }
+
+        const joiner = k === '$or' ? ' or ' : ' and ';
+        parts.push(`(${subParts.join(joiner)})`);
+        continue;
+      }
+
+      if (k === '$not') {
+        const sub = this.buildEmbeddedArrayWhere(cond[k], prop, jeAlias, referencedProps);
+        parts.push(`not (${sub.sql})`);
+        params.push(...sub.params);
+        continue;
+      }
+
+      const { embProp, jsonPropName } = this.resolveEmbeddedProp(prop, k);
+      referencedProps.set(k, { name: jsonPropName, type: embProp.runtimeType ?? 'string' });
+
+      const lhs = this.#platform.getJsonArrayElementPropertySQL(jeAlias, jsonPropName, embProp.runtimeType ?? 'string');
+      const value = cond[k];
+
+      if (Utils.isPlainObject(value)) {
+        const sub = this.buildEmbeddedArrayOperatorCondition(lhs, value as Dictionary, params);
+        parts.push(sub);
+      } else if (value === null) {
+        parts.push(`${lhs} is null`);
+      } else {
+        parts.push(`${lhs} = ?`);
+        params.push(value);
+      }
+    }
+
+    return { sql: parts.join(' and '), params };
+  }
+
+  private buildEmbeddedArrayOperatorCondition(lhs: string, value: Dictionary, params: unknown[]): string {
+    const parts: string[] = [];
+
+    for (const op of Object.keys(value)) {
+      const replacement = this.getOperatorReplacement(op, value);
+      const val = value[op];
+
+      if (['$in', '$nin'].includes(op)) {
+        if (Array.isArray(val) && val.length === 0) {
+          parts.push(`1 = ${op === '$in' ? 0 : 1}`);
+        } else if (Array.isArray(val)) {
+          val.forEach((v: unknown) => params.push(v));
+          parts.push(`${lhs} ${replacement} (${val.map(() => '?').join(', ')})`);
+        }
+      } else if (op === '$exists') {
+        parts.push(`${lhs} ${replacement} null`);
+      } else {
+        parts.push(`${lhs} ${replacement} ?`);
+        params.push(val);
+      }
+    }
+
+    return parts.join(' and ');
   }
 
   processOnConflictCondition(cond: FilterQuery<any>, schema?: string): FilterQuery<any> {
