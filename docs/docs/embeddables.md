@@ -658,13 +658,16 @@ const users = await em.find(User, {
   addresses: { number: { $gt: 5 } },
 });
 
-// $or/$and/$not within the array element scope
+// $or/$and within the array element scope
 const users = await em.find(User, {
   addresses: { $or: [{ city: 'London' }, { city: 'Paris' }] },
 });
-```
 
-> Note: `$not` negates the condition inside the element match — it finds rows where **some element does not match**, not rows where **no element matches**. For the latter, use `$none`.
+// $not finds rows where NO element matches the condition
+const users = await em.find(User, {
+  addresses: { $not: { city: 'London' } },
+});
+```
 
 Array-level operators like `$contains`, `$contained`, and `$overlap` continue to work as before, operating on the array column as a whole.
 

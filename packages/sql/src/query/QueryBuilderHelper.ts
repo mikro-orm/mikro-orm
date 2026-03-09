@@ -46,6 +46,7 @@ export class QueryBuilderHelper {
   readonly #subQueries: Dictionary<string>;
   readonly #driver: AbstractSqlDriver;
   readonly #tptAliasMap: Dictionary<string>;
+  /** Monotonically increasing counter for unique JSON array iteration aliases within a single query. */
   #jsonAliasCounter = 0;
 
   constructor(
@@ -1208,12 +1209,35 @@ export class QueryBuilderHelper {
   ): { sql: string; params: unknown[] } {
     const fieldName = prop.fieldNames[0];
     const column = this.#platform.quoteIdentifier(`${alias}.${fieldName}`);
-    const jeAlias = `__je${this.#jsonAliasCounter++}`;
-    const referencedProps = new Map<string, { name: string; type: string }>();
-    const { sql: whereSql, params } = this.buildEmbeddedArrayWhere(cond, prop, jeAlias, referencedProps);
-    const from = this.#platform.getJsonArrayFromSQL(column, jeAlias, [...referencedProps.values()]);
+    const parts: string[] = [];
+    const allParams: unknown[] = [];
 
-    return { sql: this.#platform.getJsonArrayExistsSQL(from, whereSql), params };
+    // Top-level $not generates NOT EXISTS (no element matches the inner condition).
+    const { $not, ...rest } = cond;
+
+    if (Object.keys(rest).length > 0) {
+      const jeAlias = `__je${this.#jsonAliasCounter++}`;
+      const referencedProps = new Map<string, { name: string; type: string }>();
+      const { sql: whereSql, params } = this.buildEmbeddedArrayWhere(rest, prop, jeAlias, referencedProps);
+      const from = this.#platform.getJsonArrayFromSQL(column, jeAlias, [...referencedProps.values()]);
+      parts.push(this.#platform.getJsonArrayExistsSQL(from, whereSql));
+      allParams.push(...params);
+    }
+
+    if ($not != null) {
+      const jeAlias = `__je${this.#jsonAliasCounter++}`;
+      const referencedProps = new Map<string, { name: string; type: string }>();
+      const { sql: whereSql, params } = this.buildEmbeddedArrayWhere($not, prop, jeAlias, referencedProps);
+      const from = this.#platform.getJsonArrayFromSQL(column, jeAlias, [...referencedProps.values()]);
+      parts.push(`not ${this.#platform.getJsonArrayExistsSQL(from, whereSql)}`);
+      allParams.push(...params);
+    }
+
+    if (parts.length === 0) {
+      return { sql: '1 = 1', params: [] };
+    }
+
+    return { sql: parts.join(' and '), params: allParams };
   }
 
   private resolveEmbeddedProp(prop: EntityProperty, key: string): { embProp: EntityProperty; jsonPropName: string } {
@@ -1240,6 +1264,11 @@ export class QueryBuilderHelper {
     for (const k of Object.keys(cond)) {
       if (k === '$and' || k === '$or') {
         const items = cond[k] as Dictionary[];
+
+        if (items.length === 0) {
+          continue;
+        }
+
         const subParts: string[] = [];
 
         for (const item of items) {
@@ -1253,8 +1282,8 @@ export class QueryBuilderHelper {
         continue;
       }
 
-      // Note: $not negates the condition inside EXISTS, meaning "exists an element where NOT (condition)".
-      // For "no element matches", users should use $none instead of $not.
+      // Within $or/$and scope, $not provides element-level negation:
+      // "this element does not match the condition".
       if (k === '$not') {
         const sub = this.buildEmbeddedArrayWhere(cond[k], prop, jeAlias, referencedProps);
         parts.push(`not (${sub.sql})`);
@@ -1269,6 +1298,13 @@ export class QueryBuilderHelper {
       const value = cond[k];
 
       if (Utils.isPlainObject(value)) {
+        // Validate that all keys are operators — nested embeddables within array elements are not supported.
+        const valueKeys = Object.keys(value as Dictionary);
+
+        if (valueKeys.some(vk => !Utils.isOperator(vk))) {
+          throw ValidationError.invalidEmbeddableQuery(this.#entityName, k, prop.type);
+        }
+
         const sub = this.buildEmbeddedArrayOperatorCondition(lhs, value as Dictionary, params);
         parts.push(sub);
       } else if (value === null) {

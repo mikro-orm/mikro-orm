@@ -242,7 +242,7 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
     return `openjson(${column}) with (${columns}) as ${this.quoteIdentifier(alias)}`;
   }
 
-  override getJsonArrayElementPropertySQL(alias: string, property: string): string {
+  override getJsonArrayElementPropertySQL(alias: string, property: string, _type: string): string {
     return `${this.quoteIdentifier(alias)}.${this.quoteIdentifier(property)}`;
   }
 

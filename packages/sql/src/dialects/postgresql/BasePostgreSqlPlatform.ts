@@ -486,7 +486,7 @@ export class BasePostgreSqlPlatform extends AbstractSqlPlatform {
     }
   }
 
-  override getJsonArrayFromSQL(column: string, alias: string): string {
+  override getJsonArrayFromSQL(column: string, alias: string, _properties: { name: string; type: string }[]): string {
     return `jsonb_array_elements(${column}) as ${this.quoteIdentifier(alias)}`;
   }
 

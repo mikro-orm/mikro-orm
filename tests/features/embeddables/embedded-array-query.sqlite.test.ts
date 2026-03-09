@@ -97,6 +97,22 @@ describe('embedded array query in sqlite', () => {
     const r4 = await orm.em.fork().find(User, { addresses: { $or: [{ city: 'London 4A' }, { city: 'London 4B' }] } });
     expect(r4).toHaveLength(1);
 
+    // $not generates NOT EXISTS (no element matches)
+    mock.mockReset();
+    const r4b = await orm.em.fork().find(User, { addresses: { $not: { city: 'Nonexistent' } } });
+    expect(r4b).toHaveLength(1);
+    expect(mock.mock.calls[0][0]).toMatch(
+      "select `u0`.* from `user` as `u0` where not exists (select 1 from json_each(`u0`.`addresses`) as `__je0` where json_extract(`__je0`.value, '$.city') = ?)",
+    );
+
+    // $in operator
+    mock.mockReset();
+    const r4c = await orm.em.fork().find(User, { addresses: { city: { $in: ['London 4A', 'London 4B'] } } });
+    expect(r4c).toHaveLength(1);
+    expect(mock.mock.calls[0][0]).toMatch(
+      "select `u0`.* from `user` as `u0` where exists (select 1 from json_each(`u0`.`addresses`) as `__je0` where json_extract(`__je0`.value, '$.city') in (?, ?))",
+    );
+
     // no match returns empty
     mock.mockReset();
     const r5 = await orm.em.fork().find(User, { addresses: { city: 'Nonexistent' } });

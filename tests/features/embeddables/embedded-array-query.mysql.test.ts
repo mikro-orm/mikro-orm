@@ -99,6 +99,22 @@ describe.each(['mysql', 'mariadb'])('embedded array query [%s]', type => {
     const r4 = await orm.em.fork().find(User, { addresses: { $or: [{ city: 'London 4A' }, { city: 'London 4B' }] } });
     expect(r4).toHaveLength(1);
 
+    // $not generates NOT EXISTS (no element matches)
+    mock.mockReset();
+    const r4b = await orm.em.fork().find(User, { addresses: { $not: { city: 'Nonexistent' } } });
+    expect(r4b).toHaveLength(1);
+    expect(mock.mock.calls[0][0]).toMatch(
+      "select `u0`.* from `user` as `u0` where not (select 1 from json_table(`u0`.`addresses`, '$[*]' columns (`city` text path '$.city')) as `__je0` where `__je0`.`city` = ? limit 1) is not null",
+    );
+
+    // $in operator
+    mock.mockReset();
+    const r4c = await orm.em.fork().find(User, { addresses: { city: { $in: ['London 4A', 'London 4B'] } } });
+    expect(r4c).toHaveLength(1);
+    expect(mock.mock.calls[0][0]).toMatch(
+      "select `u0`.* from `user` as `u0` where (select 1 from json_table(`u0`.`addresses`, '$[*]' columns (`city` text path '$.city')) as `__je0` where `__je0`.`city` in (?, ?) limit 1) is not null",
+    );
+
     // no match returns empty
     mock.mockReset();
     const r5 = await orm.em.fork().find(User, { addresses: { city: 'Nonexistent' } });

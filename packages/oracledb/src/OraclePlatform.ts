@@ -352,7 +352,7 @@ export class OraclePlatform extends AbstractSqlPlatform {
     return `json_table(${column}, '$[*]' columns (${columns})) ${this.quoteIdentifier(alias)}`;
   }
 
-  override getJsonArrayElementPropertySQL(alias: string, property: string): string {
+  override getJsonArrayElementPropertySQL(alias: string, property: string, _type: string): string {
     return `${this.quoteIdentifier(alias)}.${this.quoteIdentifier(property)}`;
   }
 
