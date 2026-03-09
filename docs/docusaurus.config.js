@@ -189,7 +189,6 @@ module.exports = {
         },
         { to: 'docs/quick-start', label: 'Docs', position: 'left' },
         { to: 'api', label: 'API', position: 'left', activeBaseRegex: 'api/(?!core/changelog)' },
-        { to: 'docs/faq', label: 'FAQ', position: 'left' },
         { to: 'blog', label: 'Blog', position: 'left' },
         { to: 'api/core/changelog', label: 'Changelog', position: 'left', className: 'changelog' },
         {

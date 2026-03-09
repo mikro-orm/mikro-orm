@@ -451,7 +451,8 @@ export class ExtendedEntityRepository<T extends object> extends EntityRepository
   }
 
   async persistAndFlush(entity: object | object[]): Promise<void> {
-    await this.em.persistAndFlush(entity);
+    this.em.persist(entity);
+    await this.em.flush();
   }
 
   remove(entity: object): EntityManager {
@@ -459,7 +460,8 @@ export class ExtendedEntityRepository<T extends object> extends EntityRepository
   }
 
   async removeAndFlush(entity: object): Promise<void> {
-    await this.em.removeAndFlush(entity);
+    this.em.remove(entity);
+    await this.em.flush();
   }
 
   async flush(): Promise<void> {

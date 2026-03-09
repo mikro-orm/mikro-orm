@@ -112,21 +112,21 @@ Before getting to testing the first endpoint, let's refactor a bit to make the s
 ```ts title='db.ts'
 import { EntityManager, EntityRepository, MikroORM, Options } from '@mikro-orm/sqlite';
 import { UserSchema, type User } from './modules/user/user.entity.js';
-import { ArticleSchema, type Article } from './modules/article/article.entity.js';
-import { TagSchema, type Tag } from './modules/article/tag.entity.js';
+import { ArticleSchema, type IArticle } from './modules/article/article.entity.js';
+import { TagSchema, type ITag } from './modules/article/tag.entity.js';
 import config from './mikro-orm.config.js';
 
 export interface Services {
   orm: MikroORM;
   em: EntityManager;
-  article: EntityRepository<Article>;
+  article: EntityRepository<IArticle>;
   user: EntityRepository<User>;
-  tag: EntityRepository<Tag>;
+  tag: EntityRepository<ITag>;
 }
 
 let cache: Services;
 
-export function initORM(options?: Options): Services {
+export function initORM(options?: Partial<Options>): Services {
   if (cache) {
     return cache;
   }
@@ -233,7 +233,7 @@ export async function initTestApp(port: number) {
   });
 
   // create the schema so the database can be used
-  await orm.schema.createSchema();
+  await orm.schema.create();
 
   const { app } = await bootstrap(port);
 
@@ -390,10 +390,10 @@ export class TestSeeder extends Seeder {
 }
 ```
 
-Then you need to run the `TestSeeder`, let's do that in your `initTestApp` helper, right after calling `orm.schema.createSchema()`:
+Then you need to run the `TestSeeder`, let's do that in your `initTestApp` helper, right after calling `orm.schema.create()`:
 
 ```ts title='utils.ts'
-await orm.schema.createSchema();
+await orm.schema.create();
 await orm.seeder.seed(TestSeeder);
 ```
 
@@ -428,10 +428,10 @@ const diff = await orm.schema.getUpdateSchemaSQL();
 console.log(diff);
 
 // or to run the queries
-await orm.schema.updateSchema();
+await orm.schema.update();
 ```
 
-> With the `orm.schema.updateSchema()` you could easily set up the same behavior as TypeORM has via `synchronize: true`, just put that into your app right after the ORM gets initialized (or into some app bootstrap code). Keep in mind this approach can be destructive and is discouraged - you should always verify what queries the `SchemaGenerator` produced before you run them!
+> With the `orm.schema.update()` you could easily set up the same behavior as TypeORM has via `synchronize: true`, just put that into your app right after the ORM gets initialized (or into some app bootstrap code). Keep in mind this approach can be destructive and is discouraged - you should always verify what queries the `SchemaGenerator` produced before you run them!
 
 Or via CLI:
 
@@ -573,13 +573,13 @@ export interface Services {
   orm: MikroORM;
   em: EntityManager;
   user: UserRepository;
-  article: EntityRepository<Article>;
+  article: EntityRepository<IArticle>;
   // highlight-next-line
-  comment: EntityRepository<Comment>;
-  tag: EntityRepository<Tag>;
+  comment: EntityRepository<IComment>;
+  tag: EntityRepository<ITag>;
 }
 
-export function initORM(options?: Options): Promise<Services> {
+export function initORM(options?: Partial<Options>): Services {
   // ...
 
   return cache = {
@@ -684,7 +684,7 @@ You need to do this conditionally, as you want to run the migrations only for th
 export async function initTestApp(port: number) {
   const { orm } = initORM({ ... });
 
-  await orm.schema.createSchema();
+  await orm.schema.create();
   await orm.seeder.seed(TestSeeder);
 
   const { app } = await bootstrap(port, false); // <-- here

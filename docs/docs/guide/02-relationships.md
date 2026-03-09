@@ -330,26 +330,19 @@ This would produce two separate queries instead of one joined query.
 
 ### Serialization
 
-What about the password? Seeing the logger `Article` entity with populated `author`, there is something you need to fix. You can see the user's password, in plain text! You will need to hash it and ensure it never leaks to the API response by adding `.hidden()` serialization flag. Moreover, you can mark it as `.lazy()`, just like you did with the `Article.text`, as you rarely want to select it.
-
-For now, let's use `sha256` algorithm which can be created synchronously, and hash the value using `.onCreate()`:
+What about the password? Seeing the logger `Article` entity with populated `author`, there is something you need to fix. You can see the user's password, in plain text! You will need to ensure it never leaks to the API response by adding `.hidden()` serialization flag. Moreover, you can mark it as `.lazy()`, just like you did with the `Article.text`, as you rarely want to select it.
 
 ```ts title='user.entity.ts'
-import crypto from 'node:crypto';
 import { defineEntity, type InferEntity, p } from '@mikro-orm/core';
-import { BaseEntity } from '../common/base.entity.js';
-
-function hashPassword(password: string) {
-  return crypto.createHmac('sha256', password).digest('hex');
-}
+import { BaseSchema } from '../common/base.entity.js';
 
 export const UserSchema = defineEntity({
   name: 'User',
-  extends: BaseEntity,
+  extends: BaseSchema,
   properties: {
     fullName: p.string(),
     email: p.string(),
-    password: p.string().hidden().lazy().onCreate(user => hashPassword(user.password)),
+    password: p.string().hidden().lazy(),
     bio: p.text().default(''),
   },
 });
@@ -357,21 +350,21 @@ export const UserSchema = defineEntity({
 export type IUser = InferEntity<typeof UserSchema>;
 ```
 
-After running `npm start`, you can see that the password is hashed, and later when you load the `Article.author`, the password is no longer selected:
+After running `npm start`, when you load the `Article.author`, the password is no longer selected (thanks to `.lazy()`) and won't be serialized in API responses (thanks to `.hidden()`):
 
 ```
-User {
-  id: 1,
-  createdAt: 2022-09-11T17:22:31.619Z,
-  updatedAt: 2022-09-11T17:22:31.619Z,
-  fullName: 'Foo Bar',
-  email: 'foo@bar.com',
-  password: 'b946ccc987465afcda7e45b1715219711a13518d1f1663b8c53b848cb0143441',
-  bio: ''
+Article {
+  ...
+  author: User {
+    id: 1,
+    fullName: 'Foo Bar',
+    email: 'foo@bar.com',
+    bio: ''
+  }
 }
 ```
 
-That should be good enough for the time being. Don't worry, you will improve on this later, using `argon2` via lifecycle hooks!
+The password is still stored in plain text in the database - don't worry, you will fix this shortly using `argon2` via lifecycle hooks!
 
 ## Collections: OneToMany and ManyToMany
 

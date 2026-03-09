@@ -194,7 +194,7 @@ export interface Services {
 
 let cache: Services;
 
-export async function initORM(options?: Options): Promise<Services> {
+export async function initORM(options?: Partial<Options>): Promise<Services> {
   if (cache) {
     return cache;
   }

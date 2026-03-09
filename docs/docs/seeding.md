@@ -217,7 +217,7 @@ const authors = new AuthorFactory(orm.em).make(5, {
 
 ### Persisting entities
 
-The `create` method instantiates entities and persists them to the database using the `persistAndFlush` method of the EntityManager.
+The `create` method instantiates entities and persists them to the database using `persist` and `flush` on the EntityManager.
 
 ```ts
 // Make and persist a single author
@@ -337,7 +337,7 @@ beforeAll(async () => {
   orm = await MikroORM.init({ ... });
   
   // Refresh the database to start clean
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 
   // And run the seeder afterwards
   await orm.seeder.seed(DatabaseSeeder);

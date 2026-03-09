@@ -515,7 +515,7 @@ export interface Services {
 
 let cache: Services;
 
-export async function initORM(options?: Options): Promise<Services> {
+export async function initORM(options?: Partial<Options>): Promise<Services> {
   if (cache) {
     return cache;
   }
@@ -1731,7 +1731,8 @@ afterAll(async () => {
   const db = initORM();
   try {
     const fork = db.em.fork();
-    await fork.removeAndFlush(await fork.findOneOrFail(User, { email: 'foo@bar.com' }));
+    fork.remove(await fork.findOneOrFail(User, { email: 'foo@bar.com' }));
+    await fork.flush();
   } catch (e: unknown) {
     console.error(e);
   }

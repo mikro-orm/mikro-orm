@@ -74,7 +74,7 @@ MongoDB driver supports transactions. To use transactions, there are several thi
   - use `implicitTransactions: true` to enable them globally
   - or use explicit transaction demarcation via `em.transactional()`
 - you need to explicitly create all collections before working with them
-  - use `orm.schema.createSchema()` method to do so
+  - use `orm.schema.create()` method to do so
 
 ```sh
 # first create replica set
@@ -91,7 +91,7 @@ const orm = await MikroORM.init({
   implicitTransactions: true, // defaults to false
 });
 
-await orm.schema.createSchema();
+await orm.schema.create();
 ```
 
 ## Indexes
