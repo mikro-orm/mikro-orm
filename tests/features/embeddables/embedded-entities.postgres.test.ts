@@ -696,5 +696,39 @@ describe('embedded entities in postgresql', () => {
     // multiple conditions must match the same element
     const r10 = await orm.em.fork().find(User, { addresses: { city: 'London 4A', country: 'UK 4B' } });
     expect(r10).toHaveLength(0); // city=London 4A + country=UK 4B don't exist in the same element
+
+    // $nin operator
+    mock.mockReset();
+    const r11 = await orm.em.fork().find(User, { addresses: { city: { $nin: ['Nonexistent'] } } });
+    expect(r11).toHaveLength(1);
+    expect(mock.mock.calls[0][0]).toMatch(
+      `select "u0".* from "user" as "u0" where exists (select 1 from jsonb_array_elements("u0"."addresses") as "__je0" where "__je0"->>'city' not in (?))`,
+    );
+
+    // explicit $and within embedded array
+    mock.mockReset();
+    const r12 = await orm.em.fork().find(User, { addresses: { $and: [{ city: 'London 4A' }, { country: 'UK 4A' }] } });
+    expect(r12).toHaveLength(1);
+    expect(mock.mock.calls[0][0]).toMatch(
+      `select "u0".* from "user" as "u0" where exists (select 1 from jsonb_array_elements("u0"."addresses") as "__je0" where ("__je0"->>'city' = ? and "__je0"->>'country' = ?))`,
+    );
+
+    // $not combined with $or
+    mock.mockReset();
+    const r13 = await orm.em
+      .fork()
+      .find(User, { addresses: { $not: { $or: [{ city: 'London 4A' }, { city: 'London 4B' }] } } });
+    expect(r13).toHaveLength(0); // user has both cities, so NOT EXISTS (city=4A OR city=4B) is false
+    expect(mock.mock.calls[0][0]).toMatch(
+      `select "u0".* from "user" as "u0" where not exists (select 1 from jsonb_array_elements("u0"."addresses") as "__je0" where ("__je0"->>'city' = ? or "__je0"->>'city' = ?))`,
+    );
+
+    // $exists on element property
+    mock.mockReset();
+    const r14 = await orm.em.fork().find(User, { addresses: { postalCode: { $exists: true } } });
+    expect(r14).toHaveLength(1);
+    expect(mock.mock.calls[0][0]).toMatch(
+      `select "u0".* from "user" as "u0" where exists (select 1 from jsonb_array_elements("u0"."addresses") as "__je0" where "__je0"->>'postal_code' is not null)`,
+    );
   });
 });

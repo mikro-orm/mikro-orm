@@ -121,5 +121,65 @@ describe('embedded array query in sqlite', () => {
     // multiple conditions must match the same element
     const r6 = await orm.em.fork().find(User, { addresses: { city: 'London 4A', country: 'UK 4B' } });
     expect(r6).toHaveLength(0);
+
+    // $nin operator
+    mock.mockReset();
+    const r7 = await orm.em.fork().find(User, { addresses: { city: { $nin: ['Nonexistent'] } } });
+    expect(r7).toHaveLength(1);
+    expect(mock.mock.calls[0][0]).toMatch(
+      "select `u0`.* from `user` as `u0` where exists (select 1 from json_each(`u0`.`addresses`) as `__je0` where json_extract(`__je0`.value, '$.city') not in (?))",
+    );
+
+    // explicit $and within embedded array
+    mock.mockReset();
+    const r8 = await orm.em.fork().find(User, { addresses: { $and: [{ city: 'London 4A' }, { country: 'UK 4A' }] } });
+    expect(r8).toHaveLength(1);
+    expect(mock.mock.calls[0][0]).toMatch(
+      "select `u0`.* from `user` as `u0` where exists (select 1 from json_each(`u0`.`addresses`) as `__je0` where (json_extract(`__je0`.value, '$.city') = ? and json_extract(`__je0`.value, '$.country') = ?))",
+    );
+
+    // $not combined with $or
+    mock.mockReset();
+    const r9 = await orm.em
+      .fork()
+      .find(User, { addresses: { $not: { $or: [{ city: 'London 4A' }, { city: 'London 4B' }] } } });
+    expect(r9).toHaveLength(0);
+    expect(mock.mock.calls[0][0]).toMatch(
+      "select `u0`.* from `user` as `u0` where not exists (select 1 from json_each(`u0`.`addresses`) as `__je0` where (json_extract(`__je0`.value, '$.city') = ? or json_extract(`__je0`.value, '$.city') = ?))",
+    );
+
+    // empty $or produces 1 = 1 (no restriction)
+    mock.mockReset();
+    const r10 = await orm.em.fork().find(User, { addresses: { $or: [] } } as any);
+    expect(r10).toHaveLength(1);
+    expect(mock.mock.calls[0][0]).toMatch('select `u0`.* from `user` as `u0` where 1 = 1');
+
+    // empty $and produces 1 = 1 (no restriction)
+    mock.mockReset();
+    const r11 = await orm.em.fork().find(User, { addresses: { $and: [] } } as any);
+    expect(r11).toHaveLength(1);
+    expect(mock.mock.calls[0][0]).toMatch('select `u0`.* from `user` as `u0` where 1 = 1');
+
+    // $or with empty object items is handled gracefully
+    mock.mockReset();
+    const r12 = await orm.em.fork().find(User, { addresses: { $or: [{}] } } as any);
+    expect(r12).toHaveLength(1);
+    expect(mock.mock.calls[0][0]).toMatch('select `u0`.* from `user` as `u0` where 1 = 1');
+
+    // $not with empty object is handled gracefully
+    mock.mockReset();
+    const r12b = await orm.em.fork().find(User, { addresses: { $not: {} } } as any);
+    expect(r12b).toHaveLength(1);
+    expect(mock.mock.calls[0][0]).toMatch('select `u0`.* from `user` as `u0` where 1 = 1');
+
+    // $in with non-array value throws
+    await expect(orm.em.fork().find(User, { addresses: { city: { $in: null as any } } })).rejects.toThrow(
+      'Invalid query: $in operator expects an array value',
+    );
+
+    // $nin with non-array value throws
+    await expect(orm.em.fork().find(User, { addresses: { city: { $nin: 'London' as any } } })).rejects.toThrow(
+      'Invalid query: $nin operator expects an array value',
+    );
   });
 });

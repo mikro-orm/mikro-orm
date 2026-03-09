@@ -1279,12 +1279,18 @@ export class QueryBuilderHelper {
 
         for (const item of items) {
           const sub = this.buildEmbeddedArrayWhere(item, prop, jeAlias, referencedProps);
-          subParts.push(sub.sql);
-          params.push(...sub.params);
+
+          if (sub.sql) {
+            subParts.push(sub.sql);
+            params.push(...sub.params);
+          }
         }
 
-        const joiner = k === '$or' ? ' or ' : ' and ';
-        parts.push(`(${subParts.join(joiner)})`);
+        if (subParts.length > 0) {
+          const joiner = k === '$or' ? ' or ' : ' and ';
+          parts.push(`(${subParts.join(joiner)})`);
+        }
+
         continue;
       }
 
@@ -1292,8 +1298,12 @@ export class QueryBuilderHelper {
       // "this element does not match the condition".
       if (k === '$not') {
         const sub = this.buildEmbeddedArrayWhere(cond[k], prop, jeAlias, referencedProps);
-        parts.push(`not (${sub.sql})`);
-        params.push(...sub.params);
+
+        if (sub.sql) {
+          parts.push(`not (${sub.sql})`);
+          params.push(...sub.params);
+        }
+
         continue;
       }
 
@@ -1334,9 +1344,11 @@ export class QueryBuilderHelper {
       const val = value[op];
 
       if (['$in', '$nin'].includes(op)) {
-        if (Array.isArray(val) && val.length === 0) {
+        if (!Array.isArray(val)) {
+          throw new ValidationError(`Invalid query: ${op} operator expects an array value`);
+        } else if (val.length === 0) {
           parts.push(`1 = ${op === '$in' ? 0 : 1}`);
-        } else if (Array.isArray(val)) {
+        } else {
           val.forEach((v: unknown) => params.push(v));
           parts.push(`${lhs} ${replacement} (${val.map(() => '?').join(', ')})`);
         }

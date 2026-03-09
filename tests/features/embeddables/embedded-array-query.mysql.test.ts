@@ -123,5 +123,31 @@ describe.each(['mysql', 'mariadb'])('embedded array query [%s]', type => {
     // multiple conditions must match the same element
     const r6 = await orm.em.fork().find(User, { addresses: { city: 'London 4A', country: 'UK 4B' } });
     expect(r6).toHaveLength(0);
+
+    // $nin operator
+    mock.mockReset();
+    const r7 = await orm.em.fork().find(User, { addresses: { city: { $nin: ['Nonexistent'] } } });
+    expect(r7).toHaveLength(1);
+    expect(mock.mock.calls[0][0]).toMatch(
+      "select `u0`.* from `user` as `u0` where (select 1 from json_table(`u0`.`addresses`, '$[*]' columns (`city` text path '$.city')) as `__je0` where `__je0`.`city` not in (?) limit 1) is not null",
+    );
+
+    // explicit $and within embedded array
+    mock.mockReset();
+    const r8 = await orm.em.fork().find(User, { addresses: { $and: [{ city: 'London 4A' }, { country: 'UK 4A' }] } });
+    expect(r8).toHaveLength(1);
+    expect(mock.mock.calls[0][0]).toMatch(
+      "select `u0`.* from `user` as `u0` where (select 1 from json_table(`u0`.`addresses`, '$[*]' columns (`city` text path '$.city', `country` text path '$.country')) as `__je0` where (`__je0`.`city` = ? and `__je0`.`country` = ?) limit 1) is not null",
+    );
+
+    // $not combined with $or
+    mock.mockReset();
+    const r9 = await orm.em
+      .fork()
+      .find(User, { addresses: { $not: { $or: [{ city: 'London 4A' }, { city: 'London 4B' }] } } });
+    expect(r9).toHaveLength(0);
+    expect(mock.mock.calls[0][0]).toMatch(
+      "select `u0`.* from `user` as `u0` where not (select 1 from json_table(`u0`.`addresses`, '$[*]' columns (`city` text path '$.city')) as `__je0` where (`__je0`.`city` = ? or `__je0`.`city` = ?) limit 1) is not null",
+    );
   });
 });
