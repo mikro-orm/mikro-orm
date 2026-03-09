@@ -148,29 +148,27 @@ import { MikroORM } from '@mikro-orm/core';
     dbName: 'your-db-name',
     // ...
   });
-  const generator = orm.schema;
-
-  const dropDump = await generator.getDropSchemaSQL();
+  const dropDump = await orm.schema.getDropSchemaSQL();
   console.log(dropDump);
 
-  const createDump = await generator.getCreateSchemaSQL();
+  const createDump = await orm.schema.getCreateSchemaSQL();
   console.log(createDump);
 
-  const updateDump = await generator.getUpdateSchemaSQL();
+  const updateDump = await orm.schema.getUpdateSchemaSQL();
   console.log(updateDump);
 
   // there is also `generate()` method that returns drop + create queries
-  const dropAndCreateDump = await generator.generate();
+  const dropAndCreateDump = await orm.schema.generate();
   console.log(dropAndCreateDump);
 
   // or you can run those queries directly, but be sure to check them first!
-  await generator.drop();
-  await generator.create();
-  await generator.update();
+  await orm.schema.drop();
+  await orm.schema.create();
+  await orm.schema.update();
 
   // in tests it can be handy to use those:
-  await generator.refresh(); // ensure db exists and is fresh
-  await generator.clear(); // removes all data
+  await orm.schema.refresh(); // ensure db exists and is fresh
+  await orm.schema.clear(); // removes all data
 
   await orm.close(true);
 })();
