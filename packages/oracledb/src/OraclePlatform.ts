@@ -338,6 +338,24 @@ export class OraclePlatform extends AbstractSqlPlatform {
     return o;
   }
 
+  override getJsonArrayFromSQL(column: string, alias: string, properties: { name: string; type: string }[]): string {
+    const typeMap: Record<string, string> = {
+      string: 'varchar2(4000)',
+      number: 'number',
+      bigint: 'number',
+      boolean: 'number',
+    };
+    const columns = properties
+      .map(p => `${this.quoteIdentifier(p.name)} ${typeMap[p.type] ?? 'varchar2(4000)'} path '$.${p.name}'`)
+      .join(', ');
+
+    return `json_table(${column}, '$[*]' columns (${columns})) ${this.quoteIdentifier(alias)}`;
+  }
+
+  override getJsonArrayElementPropertySQL(alias: string, property: string): string {
+    return `${this.quoteIdentifier(alias)}.${this.quoteIdentifier(property)}`;
+  }
+
   override usesEnumCheckConstraints(): boolean {
     return true;
   }

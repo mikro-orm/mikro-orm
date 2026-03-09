@@ -187,6 +187,15 @@ export abstract class AbstractSqlPlatform extends Platform {
   }
 
   /**
+   * Wraps JSON array FROM clause and WHERE condition into a full EXISTS condition.
+   * MySQL overrides this because `json_table` doesn't support correlated subqueries.
+   * @internal
+   */
+  getJsonArrayExistsSQL(from: string, where: string): string {
+    return `exists (select 1 from ${from} where ${where})`;
+  }
+
+  /**
    * Maps a runtime type name (e.g. 'string', 'number') to a driver-specific bind type constant.
    * Used by NativeQueryBuilder for output bindings.
    * @internal

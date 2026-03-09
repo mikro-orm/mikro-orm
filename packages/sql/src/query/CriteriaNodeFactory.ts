@@ -17,8 +17,7 @@ import { ObjectCriteriaNode } from './ObjectCriteriaNode.js';
 import { ArrayCriteriaNode } from './ArrayCriteriaNode.js';
 import { ScalarCriteriaNode } from './ScalarCriteriaNode.js';
 import type { ICriteriaNode } from '../typings.js';
-
-const EMBEDDABLE_ARRAY_OPS = ['$contains', '$contained', '$overlap'];
+import { EMBEDDABLE_ARRAY_OPS } from './enums.js';
 
 /**
  * @internal

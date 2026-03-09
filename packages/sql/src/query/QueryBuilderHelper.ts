@@ -28,13 +28,11 @@ import {
   Utils,
   ValidationError,
 } from '@mikro-orm/core';
-import { JoinType, QueryType } from './enums.js';
+import { EMBEDDABLE_ARRAY_OPS, JoinType, QueryType } from './enums.js';
 import type { InternalField, JoinOptions } from '../typings.js';
 import type { AbstractSqlDriver } from '../AbstractSqlDriver.js';
 import type { AbstractSqlPlatform } from '../AbstractSqlPlatform.js';
 import type { NativeQueryBuilder } from './NativeQueryBuilder.js';
-
-const EMBEDDABLE_ARRAY_OPS = ['$contains', '$contained', '$overlap'];
 
 /**
  * @internal
@@ -1215,7 +1213,7 @@ export class QueryBuilderHelper {
     const { sql: whereSql, params } = this.buildEmbeddedArrayWhere(cond, prop, jeAlias, referencedProps);
     const from = this.#platform.getJsonArrayFromSQL(column, jeAlias, [...referencedProps.values()]);
 
-    return { sql: `exists (select 1 from ${from} where ${whereSql})`, params };
+    return { sql: this.#platform.getJsonArrayExistsSQL(from, whereSql), params };
   }
 
   private resolveEmbeddedProp(prop: EntityProperty, key: string): { embProp: EntityProperty; jsonPropName: string } {
@@ -1255,6 +1253,8 @@ export class QueryBuilderHelper {
         continue;
       }
 
+      // Note: $not negates the condition inside EXISTS, meaning "exists an element where NOT (condition)".
+      // For "no element matches", users should use $none instead of $not.
       if (k === '$not') {
         const sub = this.buildEmbeddedArrayWhere(cond[k], prop, jeAlias, referencedProps);
         parts.push(`not (${sub.sql})`);
@@ -1284,6 +1284,8 @@ export class QueryBuilderHelper {
 
   private buildEmbeddedArrayOperatorCondition(lhs: string, value: Dictionary, params: unknown[]): string {
     const parts: string[] = [];
+    // Clone to avoid getOperatorReplacement mutating the original (it sets value[op] = null for $exists).
+    value = { ...value };
 
     for (const op of Object.keys(value)) {
       const replacement = this.getOperatorReplacement(op, value);

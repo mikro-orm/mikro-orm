@@ -228,6 +228,24 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
     return cast(`json_value(${root}, '$.${b.map(quoteKey).join('.')}')`);
   }
 
+  override getJsonArrayFromSQL(column: string, alias: string, properties: { name: string; type: string }[]): string {
+    const typeMap: Record<string, string> = {
+      string: 'nvarchar(max)',
+      number: 'float',
+      bigint: 'bigint',
+      boolean: 'bit',
+    };
+    const columns = properties
+      .map(p => `${this.quoteIdentifier(p.name)} ${typeMap[p.type] ?? 'nvarchar(max)'} '$.${p.name}'`)
+      .join(', ');
+
+    return `openjson(${column}) with (${columns}) as ${this.quoteIdentifier(alias)}`;
+  }
+
+  override getJsonArrayElementPropertySQL(alias: string, property: string): string {
+    return `${this.quoteIdentifier(alias)}.${this.quoteIdentifier(property)}`;
+  }
+
   override normalizePrimaryKey<T extends number | string = number | string>(
     data: Primary<T> | IPrimaryKey | string,
   ): T {

@@ -184,6 +184,12 @@ export class BaseMySqlPlatform extends AbstractSqlPlatform {
     return `${this.quoteIdentifier(alias)}.${this.quoteIdentifier(property)}`;
   }
 
+  // MySQL does not support correlated json_table inside EXISTS subqueries,
+  // so we use a semi-join via the comma-join pattern instead.
+  override getJsonArrayExistsSQL(from: string, where: string): string {
+    return `(select 1 from ${from} where ${where} limit 1) is not null`;
+  }
+
   override getDefaultClientUrl(): string {
     return 'mysql://root@127.0.0.1:3306';
   }
