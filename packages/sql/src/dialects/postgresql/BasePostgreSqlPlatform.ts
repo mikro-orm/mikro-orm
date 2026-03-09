@@ -22,7 +22,7 @@ export class BasePostgreSqlPlatform extends AbstractSqlPlatform {
   protected override readonly exceptionConverter: PostgreSqlExceptionConverter = new PostgreSqlExceptionConverter();
 
   /** Maps JS runtime type names to PostgreSQL cast types for JSON property access. @internal */
-  private readonly jsonTypeCasts: Record<string, string> = { number: 'float8', bigint: 'int8', boolean: 'bool' };
+  readonly #jsonTypeCasts: Record<string, string> = { number: 'float8', bigint: 'int8', boolean: 'bool' };
 
   override createNativeQueryBuilder(): PostgreSqlNativeQueryBuilder {
     return new PostgreSqlNativeQueryBuilder(this);
@@ -318,7 +318,7 @@ export class BasePostgreSqlPlatform extends AbstractSqlPlatform {
     const root = this.quoteIdentifier(aliased ? `${ALIAS_REPLACEMENT}.${first}` : first!);
     type = typeof type === 'string' ? this.getMappedType(type).runtimeType : String(type);
     const cast = (key: string) =>
-      raw(type in this.jsonTypeCasts ? `(${key})::${this.jsonTypeCasts[type as string]}` : key);
+      raw(type in this.#jsonTypeCasts ? `(${key})::${this.#jsonTypeCasts[type as string]}` : key);
     let lastOperator = '->>';
 
     // force `->` for operator payloads with array values
@@ -493,7 +493,7 @@ export class BasePostgreSqlPlatform extends AbstractSqlPlatform {
   override getJsonArrayElementPropertySQL(alias: string, property: string, type: string): string {
     const expr = `${this.quoteIdentifier(alias)}->>'${property}'`;
 
-    return type in this.jsonTypeCasts ? `(${expr})::${this.jsonTypeCasts[type]}` : expr;
+    return type in this.#jsonTypeCasts ? `(${expr})::${this.#jsonTypeCasts[type]}` : expr;
   }
 
   override getDefaultClientUrl(): string {
