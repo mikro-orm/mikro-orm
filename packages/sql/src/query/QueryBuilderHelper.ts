@@ -1215,28 +1215,12 @@ export class QueryBuilderHelper {
     // Top-level $not generates NOT EXISTS (no element matches the inner condition).
     const { $not, ...rest } = cond;
 
-    if (Object.keys(rest).length > 0) {
-      const jeAlias = `__je${this.#jsonAliasCounter++}`;
-      const referencedProps = new Map<string, { name: string; type: string }>();
-      const { sql: whereSql, params } = this.buildEmbeddedArrayWhere(rest, prop, jeAlias, referencedProps);
-
-      if (whereSql) {
-        const from = this.#platform.getJsonArrayFromSQL(column, jeAlias, [...referencedProps.values()]);
-        parts.push(this.#platform.getJsonArrayExistsSQL(from, whereSql));
-        allParams.push(...params);
-      }
+    if (Utils.hasObjectKeys(rest)) {
+      this.appendJsonArrayExists(rest, prop, column, false, parts, allParams);
     }
 
     if ($not != null) {
-      const jeAlias = `__je${this.#jsonAliasCounter++}`;
-      const referencedProps = new Map<string, { name: string; type: string }>();
-      const { sql: whereSql, params } = this.buildEmbeddedArrayWhere($not, prop, jeAlias, referencedProps);
-
-      if (whereSql) {
-        const from = this.#platform.getJsonArrayFromSQL(column, jeAlias, [...referencedProps.values()]);
-        parts.push(`not ${this.#platform.getJsonArrayExistsSQL(from, whereSql)}`);
-        allParams.push(...params);
-      }
+      this.appendJsonArrayExists($not, prop, column, true, parts, allParams);
     }
 
     if (parts.length === 0) {
@@ -1244,6 +1228,26 @@ export class QueryBuilderHelper {
     }
 
     return { sql: parts.join(' and '), params: allParams };
+  }
+
+  private appendJsonArrayExists(
+    cond: Dictionary,
+    prop: EntityProperty,
+    column: string,
+    negate: boolean,
+    parts: string[],
+    allParams: unknown[],
+  ): void {
+    const jeAlias = `__je${this.#jsonAliasCounter++}`;
+    const referencedProps = new Map<string, { name: string; type: string }>();
+    const { sql: whereSql, params } = this.buildEmbeddedArrayWhere(cond, prop, jeAlias, referencedProps);
+
+    if (whereSql) {
+      const from = this.#platform.getJsonArrayFromSQL(column, jeAlias, [...referencedProps.values()]);
+      const exists = this.#platform.getJsonArrayExistsSQL(from, whereSql);
+      parts.push(negate ? `not ${exists}` : exists);
+      allParams.push(...params);
+    }
   }
 
   private resolveEmbeddedProp(prop: EntityProperty, key: string): { embProp: EntityProperty; jsonPropName: string } {
