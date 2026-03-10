@@ -36,6 +36,12 @@ const ORACLE_TYPE_MAP: Record<string, unknown> = {
 export class OraclePlatform extends AbstractSqlPlatform {
   protected override readonly schemaHelper: OracleSchemaHelper = new OracleSchemaHelper(this);
   protected override readonly exceptionConverter: OracleExceptionConverter = new OracleExceptionConverter();
+  readonly #jsonTypeCasts: Record<string, string> = {
+    string: 'varchar2(4000)',
+    number: 'number',
+    bigint: 'number',
+    boolean: 'number',
+  };
 
   /** @inheritDoc */
   override lookupExtensions(orm: MikroORM): void {
@@ -306,10 +312,7 @@ export class OraclePlatform extends AbstractSqlPlatform {
       return raw(`json_equal(${root}, json(?))`, [value]);
     }
 
-    /* v8 ignore next: special-char JSON key quoting */
-    const quoteKey = (key: string) => (/^[a-z]\w*$/i.exec(key) ? key : `"${key}"`);
-
-    return raw(`json_value(${root}, '$.${b.map(quoteKey).join('.')}')`);
+    return raw(`json_value(${root}, '$.${b.map(this.quoteJsonKey).join('.')}')`);
   }
 
   override processJsonCondition<T extends object>(
@@ -336,6 +339,17 @@ export class OraclePlatform extends AbstractSqlPlatform {
     o[k] = path.length > 1 ? (value as any) : [];
 
     return o;
+  }
+
+  override getJsonArrayFromSQL(column: string, alias: string, properties: { name: string; type: string }[]): string {
+    const columns = properties
+      .map(
+        p =>
+          `${this.quoteIdentifier(p.name)} ${this.#jsonTypeCasts[p.type] ?? 'varchar2(4000)'} path '$.${this.quoteJsonKey(p.name)}'`,
+      )
+      .join(', ');
+
+    return `json_table(${column}, '$[*]' columns (${columns})) ${this.quoteIdentifier(alias)}`;
   }
 
   override usesEnumCheckConstraints(): boolean {

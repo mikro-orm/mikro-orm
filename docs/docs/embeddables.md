@@ -636,6 +636,49 @@ addresses: Address[] = [];
   </TabItem>
 </Tabs>
 
+### Querying array embeddables
+
+You can query properties of embedded array elements directly. MikroORM will automatically generate the appropriate SQL using platform-specific JSON array iteration (e.g. `jsonb_array_elements` for PostgreSQL, `json_table` for MySQL/MariaDB, `json_each` for SQLite).
+
+When multiple property conditions are specified, they must all match **the same array element** (similar to MongoDB's `$elemMatch`):
+
+```ts
+// find users who have an address in London
+const users = await em.find(User, {
+  addresses: { city: 'London' },
+});
+
+// find users who have an address in London, UK (same element must match both)
+const users = await em.find(User, {
+  addresses: { city: 'London', country: 'UK' },
+});
+
+// operators work too
+const users = await em.find(User, {
+  addresses: { number: { $gt: 5 } },
+});
+
+// $or/$and within the array element scope
+const users = await em.find(User, {
+  addresses: { $or: [{ city: 'London' }, { city: 'Paris' }] },
+});
+
+// $not finds rows where NO element matches the condition (NOT EXISTS)
+const users = await em.find(User, {
+  addresses: { $not: { city: 'London' } },
+});
+
+// combine $not with positive conditions:
+// at least one element in Paris AND no element in London
+const users = await em.find(User, {
+  addresses: { $not: { city: 'London' }, city: 'Paris' },
+});
+```
+
+> **Note:** Top-level `$not` uses `NOT EXISTS` semantics (no array element matches). Inside `$or`/`$and`, `$not` applies element-level negation instead (the current element does not match).
+
+Array-level operators like `$contains`, `$contained`, and `$overlap` continue to work as before, operating on the array column as a whole.
+
 ## Nested embeddables
 
 You can also nest embeddables, both in inline mode and object mode:

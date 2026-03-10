@@ -15,6 +15,9 @@ class Address1 {
   @Property()
   street?: string;
 
+  @Property({ type: 'double', nullable: true })
+  number?: number;
+
   @Property()
   postalCode?: string;
 
@@ -24,8 +27,9 @@ class Address1 {
   @Property()
   country?: string;
 
-  constructor(street?: string, postalCode?: string, city?: string, country?: string) {
+  constructor(street?: string, number?: number, postalCode?: string, city?: string, country?: string) {
     this.street = street;
+    this.number = number;
     this.postalCode = postalCode;
     this.city = city;
     this.country = country;
@@ -73,6 +77,9 @@ class User {
 
   @Embedded({ object: true, nullable: true })
   address5?: Address1;
+
+  @Embedded(() => Address1, { array: true, nullable: true })
+  addresses: Address1[] | null = [];
 
   @Property({ nullable: true })
   after?: number; // property after embeddables to verify order props in resulting schema
@@ -155,17 +162,17 @@ describe('embedded entities in mysql', () => {
 
   test('persist and load', async () => {
     const user = new User();
-    user.address1 = new Address1('Downing street 10', '123', 'London 1', 'UK 1');
+    user.address1 = new Address1('Downing street 10', 10, '123', 'London 1', 'UK 1');
     user.address2 = new Address2('Downing street 11', 'London 2', 'UK 2');
-    user.address3 = new Address1('Downing street 12', '789', 'London 3', 'UK 3');
-    user.address4 = new Address1('Downing street 13', '10', 'London 4', 'UK 4');
+    user.address3 = new Address1('Downing street 12', 10, '789', 'London 3', 'UK 3');
+    user.address4 = new Address1('Downing street 13', 10, '10', 'London 4', 'UK 4');
 
     const mock = mockLogger(orm, ['query']);
     await orm.em.persist(user).flush();
     orm.em.clear();
     expect(mock.mock.calls[0][0]).toMatch('begin');
     expect(mock.mock.calls[1][0]).toMatch(
-      'insert into `user` (`address1_street`, `address1_postal_code`, `address1_city`, `address1_country`, `addr_street`, `addr_city`, `addr_country`, `street`, `postal_code`, `city`, `country`, `address4`) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      'insert into `user` (`address1_street`, `address1_number`, `address1_postal_code`, `address1_city`, `address1_country`, `addr_street`, `addr_city`, `addr_country`, `street`, `number`, `postal_code`, `city`, `country`, `address4`, `addresses`) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
     );
     expect(mock.mock.calls[2][0]).toMatch('commit');
 
@@ -174,6 +181,7 @@ describe('embedded entities in mysql', () => {
     expect(u.address1).toBeInstanceOf(Address1);
     expect(u.address1).toEqual({
       street: 'Downing street 10',
+      number: 10,
       postalCode: '123',
       city: 'London 1',
       country: 'UK 1',
@@ -188,6 +196,7 @@ describe('embedded entities in mysql', () => {
     expect(u.address3).toBeInstanceOf(Address1);
     expect(u.address3).toEqual({
       street: 'Downing street 12',
+      number: 10,
       postalCode: '789',
       city: 'London 3',
       country: 'UK 3',
@@ -195,6 +204,7 @@ describe('embedded entities in mysql', () => {
     expect(u.address4).toBeInstanceOf(Address1);
     expect(u.address4).toEqual({
       street: 'Downing street 13',
+      number: 10,
       postalCode: '10',
       city: 'London 4',
       country: 'UK 4',

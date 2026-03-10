@@ -195,6 +195,10 @@ export class SqlitePlatform extends AbstractSqlPlatform {
     return value as number;
   }
 
+  override getJsonArrayElementPropertySQL(alias: string, property: string, _type: string): string {
+    return `json_extract(${this.quoteIdentifier(alias)}.value, '$.${this.quoteJsonKey(property)}')`;
+  }
+
   override quoteValue(value: any): string {
     if (value instanceof Date) {
       return '' + +value;

@@ -28,6 +28,12 @@ import type { MsSqlDriver } from './MsSqlDriver.js';
 export class MsSqlPlatform extends AbstractSqlPlatform {
   protected override readonly schemaHelper: MsSqlSchemaHelper = new MsSqlSchemaHelper(this);
   protected override readonly exceptionConverter: MsSqlExceptionConverter = new MsSqlExceptionConverter();
+  readonly #jsonTypeCasts: Record<string, string> = {
+    string: 'nvarchar(max)',
+    number: 'float',
+    bigint: 'bigint',
+    boolean: 'bit',
+  };
 
   /** @inheritDoc */
   override lookupExtensions(orm: MikroORM<MsSqlDriver>): void {
@@ -218,14 +224,24 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
       boolean: 'bit',
     } as Dictionary;
     const cast = (key: string) => raw(type in types ? `cast(${key} as ${types[type]})` : key);
-    const quoteKey = (key: string) => (/^[a-z]\w*$/i.exec(key) ? key : `"${key}"`);
 
     /* v8 ignore next */
     if (path.length === 0) {
-      return cast(`json_value(${root}, '$.${b.map(quoteKey).join('.')}')`);
+      return cast(`json_value(${root}, '$.${b.map(this.quoteJsonKey).join('.')}')`);
     }
 
-    return cast(`json_value(${root}, '$.${b.map(quoteKey).join('.')}')`);
+    return cast(`json_value(${root}, '$.${b.map(this.quoteJsonKey).join('.')}')`);
+  }
+
+  override getJsonArrayFromSQL(column: string, alias: string, properties: { name: string; type: string }[]): string {
+    const columns = properties
+      .map(
+        p =>
+          `${this.quoteIdentifier(p.name)} ${this.#jsonTypeCasts[p.type] ?? 'nvarchar(max)'} '$.${this.quoteJsonKey(p.name)}'`,
+      )
+      .join(', ');
+
+    return `openjson(${column}) with (${columns}) as ${this.quoteIdentifier(alias)}`;
   }
 
   override normalizePrimaryKey<T extends number | string = number | string>(

@@ -104,13 +104,23 @@ export abstract class AbstractSqlPlatform extends Platform {
     value?: unknown,
   ): string | RawQueryFragment {
     const [a, ...b] = path;
-    const quoteKey = (key: string) => (/^[a-z]\w*$/i.exec(key) ? key : `"${key}"`);
 
     if (aliased) {
-      return raw(alias => `json_extract(${this.quoteIdentifier(`${alias}.${a}`)}, '$.${b.map(quoteKey).join('.')}')`);
+      return raw(
+        alias => `json_extract(${this.quoteIdentifier(`${alias}.${a}`)}, '$.${b.map(this.quoteJsonKey).join('.')}')`,
+      );
     }
 
-    return raw(`json_extract(${this.quoteIdentifier(a)}, '$.${b.map(quoteKey).join('.')}')`);
+    return raw(`json_extract(${this.quoteIdentifier(a)}, '$.${b.map(this.quoteJsonKey).join('.')}')`);
+  }
+
+  /**
+   * Quotes a key for use inside a JSON path expression (e.g. `$.key`).
+   * Simple alphanumeric keys are left unquoted; others are wrapped in double quotes.
+   * @internal
+   */
+  quoteJsonKey(key: string): string {
+    return /^[a-z]\w*$/i.exec(key) ? key : `"${key}"`;
   }
 
   override getJsonIndexDefinition(index: IndexDef): string[] {
@@ -166,6 +176,31 @@ export abstract class AbstractSqlPlatform extends Platform {
     if (!/^[\w]+$/.test(collation)) {
       throw new Error(`Invalid collation name: '${collation}'. Collation names must contain only word characters.`);
     }
+  }
+
+  /**
+   * Returns FROM clause for JSON array iteration.
+   * @internal
+   */
+  getJsonArrayFromSQL(column: string, alias: string, _properties: { name: string; type: string }[]): string {
+    return `json_each(${column}) as ${this.quoteIdentifier(alias)}`;
+  }
+
+  /**
+   * Returns SQL expression to access an element's property within a JSON array iteration.
+   * @internal
+   */
+  getJsonArrayElementPropertySQL(alias: string, property: string, _type: string): string {
+    return `${this.quoteIdentifier(alias)}.${this.quoteIdentifier(property)}`;
+  }
+
+  /**
+   * Wraps JSON array FROM clause and WHERE condition into a full EXISTS condition.
+   * MySQL overrides this because `json_table` doesn't support correlated subqueries.
+   * @internal
+   */
+  getJsonArrayExistsSQL(from: string, where: string): string {
+    return `exists (select 1 from ${from} where ${where})`;
   }
 
   /**

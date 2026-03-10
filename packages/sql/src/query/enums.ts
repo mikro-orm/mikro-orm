@@ -8,6 +8,9 @@ export enum QueryType {
   UPSERT = 'UPSERT',
 }
 
+/** Operators that apply to the embedded array column itself, not to individual elements. */
+export const EMBEDDABLE_ARRAY_OPS = ['$contains', '$contained', '$overlap'];
+
 export enum JoinType {
   leftJoin = 'left join',
   innerJoin = 'inner join',

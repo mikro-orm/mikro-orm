@@ -482,7 +482,7 @@ describe('embedded entities in postgres', () => {
       .where({ profile1: { identity: { links: { url: 'foo@bar.baz' } } } })
       .execute(); // object embedded prop does not support nested partial loading
     expect(mock.mock.calls[0][0]).toMatch(
-      `select "u0"."profile1_identity_links" from "user" as "u0" where "u0"."profile1_identity_links"->>'url' = ?`,
+      `select "u0"."profile1_identity_links" from "user" as "u0" where exists (select 1 from jsonb_array_elements("u0"."profile1_identity_links") as "__je0" where "__je0"->>'url' = ?)`,
     );
 
     await orm.em
@@ -493,7 +493,7 @@ describe('embedded entities in postgres', () => {
         { fields: ['profile1.identity.links.url'] },
       ); // object embedded prop does not support nested partial loading
     expect(mock.mock.calls[1][0]).toMatch(
-      `select "u0"."id", "u0"."profile1_identity_links" from "user" as "u0" where "u0"."profile1_identity_links"->>'url' = ? limit ?`,
+      `select "u0"."id", "u0"."profile1_identity_links" from "user" as "u0" where exists (select 1 from jsonb_array_elements("u0"."profile1_identity_links") as "__je0" where "__je0"->>'url' = ?) limit ?`,
     );
 
     await orm.em
@@ -503,7 +503,7 @@ describe('embedded entities in postgres', () => {
       .where({ profile1: { identity: { links: { url: 'foo@bar.baz' } } } })
       .execute();
     expect(mock.mock.calls[2][0]).toMatch(
-      `select "u0"."profile1_identity_links" from "user" as "u0" where "u0"."profile1_identity_links"->>'url' = ?`,
+      `select "u0"."profile1_identity_links" from "user" as "u0" where exists (select 1 from jsonb_array_elements("u0"."profile1_identity_links") as "__je0" where "__je0"->>'url' = ?)`,
     );
 
     await orm.em
@@ -514,7 +514,7 @@ describe('embedded entities in postgres', () => {
         { fields: ['profile1.identity.links'] },
       );
     expect(mock.mock.calls[3][0]).toMatch(
-      `select "u0"."id", "u0"."profile1_identity_links" from "user" as "u0" where "u0"."profile1_identity_links"->>'url' = ? limit ?`,
+      `select "u0"."id", "u0"."profile1_identity_links" from "user" as "u0" where exists (select 1 from jsonb_array_elements("u0"."profile1_identity_links") as "__je0" where "__je0"->>'url' = ?) limit ?`,
     );
 
     mock.mockReset();
@@ -705,5 +705,50 @@ describe('embedded entities in postgres', () => {
     await expect(orm.em.persist([user1, user2]).flush()).rejects.toThrow(
       /duplicate key value violates unique constraint "user_profile1_username_unique"/,
     );
+  });
+
+  test('querying nested embedded arrays (GH #1887)', async () => {
+    const user1 = new User();
+    user1.name = 'Alice';
+    user1.profile1 = new Profile('alice1', new Identity('alice@test.com'));
+    user1.profile1.identity.links.push(new IdentityLink('https://alice.com'), new IdentityLink('https://alice.dev'));
+    user1.profile2 = new Profile('alice2', new Identity('alice2@test.com'));
+    user1.profile2.identity.links.push(new IdentityLink('https://alice-obj.com'));
+
+    const user2 = new User();
+    user2.name = 'Bob';
+    user2.profile1 = new Profile('bob1', new Identity('bob@test.com'));
+    user2.profile1.identity.links.push(new IdentityLink('https://bob.com'));
+    user2.profile2 = new Profile('bob2', new Identity('bob2@test.com'));
+
+    await orm.em.persist([user1, user2]).flush();
+    orm.em.clear();
+
+    const mock = mockLogger(orm, ['query']);
+
+    // query on nested prefix-based embedded array (profile1.identity.links)
+    const r1 = await orm.em.find(User, { profile1: { identity: { links: { url: 'https://alice.com' } } } });
+    expect(r1).toHaveLength(1);
+    expect(r1[0].name).toBe('Alice');
+    expect(mock.mock.calls[0][0]).toMatch(
+      `select "u0".* from "user" as "u0" where exists (select 1 from jsonb_array_elements("u0"."profile1_identity_links") as "__je0" where "__je0"->>'url' = ?)`,
+    );
+
+    // multiple conditions on nested array elements
+    mock.mockReset();
+    const r2 = await orm.em.fork().find(User, {
+      profile1: { identity: { links: { $or: [{ url: 'https://alice.com' }, { url: 'https://bob.com' }] } } },
+    });
+    expect(r2).toHaveLength(2);
+    expect(mock.mock.calls[0][0]).toMatch(
+      `select "u0".* from "user" as "u0" where exists (select 1 from jsonb_array_elements("u0"."profile1_identity_links") as "__je0" where ("__je0"->>'url' = ? or "__je0"->>'url' = ?))`,
+    );
+
+    // no match
+    mock.mockReset();
+    const r3 = await orm.em
+      .fork()
+      .find(User, { profile1: { identity: { links: { url: 'https://nonexistent.com' } } } });
+    expect(r3).toHaveLength(0);
   });
 });

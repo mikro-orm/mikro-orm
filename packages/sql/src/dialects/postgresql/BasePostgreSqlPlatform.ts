@@ -21,6 +21,9 @@ export class BasePostgreSqlPlatform extends AbstractSqlPlatform {
   protected override readonly schemaHelper: PostgreSqlSchemaHelper = new PostgreSqlSchemaHelper(this);
   protected override readonly exceptionConverter: PostgreSqlExceptionConverter = new PostgreSqlExceptionConverter();
 
+  /** Maps JS runtime type names to PostgreSQL cast types for JSON property access. @internal */
+  readonly #jsonTypeCasts: Record<string, string> = { number: 'float8', bigint: 'int8', boolean: 'bool' };
+
   override createNativeQueryBuilder(): PostgreSqlNativeQueryBuilder {
     return new PostgreSqlNativeQueryBuilder(this);
   }
@@ -314,12 +317,8 @@ export class BasePostgreSqlPlatform extends AbstractSqlPlatform {
     const last = path.pop();
     const root = this.quoteIdentifier(aliased ? `${ALIAS_REPLACEMENT}.${first}` : first!);
     type = typeof type === 'string' ? this.getMappedType(type).runtimeType : String(type);
-    const types = {
-      number: 'float8',
-      bigint: 'int8',
-      boolean: 'bool',
-    } as Dictionary;
-    const cast = (key: string) => raw(type in types ? `(${key})::${types[type]}` : key);
+    const cast = (key: string) =>
+      raw(type in this.#jsonTypeCasts ? `(${key})::${this.#jsonTypeCasts[type as string]}` : key);
     let lastOperator = '->>';
 
     // force `->` for operator payloads with array values
@@ -485,6 +484,16 @@ export class BasePostgreSqlPlatform extends AbstractSqlPlatform {
       default:
         return '';
     }
+  }
+
+  override getJsonArrayFromSQL(column: string, alias: string, _properties: { name: string; type: string }[]): string {
+    return `jsonb_array_elements(${column}) as ${this.quoteIdentifier(alias)}`;
+  }
+
+  override getJsonArrayElementPropertySQL(alias: string, property: string, type: string): string {
+    const expr = `${this.quoteIdentifier(alias)}->>${this.quoteValue(property)}`;
+
+    return type in this.#jsonTypeCasts ? `(${expr})::${this.#jsonTypeCasts[type]}` : expr;
   }
 
   override getDefaultClientUrl(): string {
