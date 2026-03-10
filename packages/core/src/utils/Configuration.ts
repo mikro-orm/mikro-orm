@@ -271,14 +271,6 @@ export class Configuration<
     return this.#slowQueryLogger;
   }
 
-  /**
-   * Gets the slow query threshold in milliseconds.
-   * Returns undefined if not configured.
-   */
-  getSlowQueryThreshold(): number | undefined {
-    return this.#options.slowQueryThreshold;
-  }
-
   getDataloaderType(): DataloaderType {
     if (typeof this.#options.dataloader === 'boolean') {
       return this.#options.dataloader ? DataloaderType.ALL : DataloaderType.NONE;

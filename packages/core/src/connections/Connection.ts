@@ -13,6 +13,7 @@ export abstract class Connection {
   protected readonly options: ConnectionOptions;
   protected readonly logger: Logger;
   protected connected = false;
+  readonly #connectionLabel: { type: ConnectionType; name: string | undefined };
 
   constructor(
     protected readonly config: Configuration,
@@ -21,6 +22,7 @@ export abstract class Connection {
   ) {
     this.logger = this.config.getLogger();
     this.platform = this.config.getPlatform();
+    this.#connectionLabel = { type, name: options?.name || config.get('name') || options?.host };
 
     if (options) {
       this.options = Utils.copy(options);
@@ -209,7 +211,7 @@ export abstract class Connection {
   }
 
   private logSlowQuery(query: string, took: number, context?: LogContext): void {
-    const threshold = this.config.getSlowQueryThreshold();
+    const threshold = this.config.get('slowQueryThreshold');
 
     if (threshold == null || took < threshold) {
       return;
@@ -224,13 +226,6 @@ export abstract class Connection {
       connection: this.#connectionLabel,
       query,
     });
-  }
-
-  get #connectionLabel() {
-    return {
-      type: this.type,
-      name: this.options.name || this.config.get('name') || this.options.host,
-    };
   }
 
   protected logQuery(query: string, context: LogContext = {}): void {

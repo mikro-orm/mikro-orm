@@ -219,31 +219,26 @@ describe('logging', () => {
     });
 
     it('logs all queries when threshold is 0', async () => {
+      const zeroLoggerMock = vi.fn();
       const zeroOrm = await MikroORM.init({
         metadataProvider: ReflectMetadataProvider,
         entities: [Example],
         dbName: ':memory:',
         slowQueryThreshold: 0,
-        logger: vi.fn(),
+        slowQueryLoggerFactory: opts =>
+          new DefaultLogger({ ...opts, writer: zeroLoggerMock }),
       });
       await zeroOrm.schema.create();
       await zeroOrm.em.insert(Example, { id: 1 });
       zeroOrm.em.clear();
-
-      const loggerMock = vi.fn();
-      const cfg = zeroOrm['config'];
-      const origLogger = cfg.getSlowQueryLogger();
-      const spy = vi.spyOn(origLogger, 'logQuery').mockImplementation(ctx => {
-        if (ctx.namespace === 'slow-query') {
-          loggerMock(ctx);
-        }
-      });
+      zeroLoggerMock.mockClear();
 
       await zeroOrm.em.fork().findOneOrFail(Example, { id: 1 });
 
-      expect(loggerMock).toHaveBeenCalled();
+      expect(zeroLoggerMock).toHaveBeenCalled();
+      const msg = zeroLoggerMock.mock.calls[0][0] as string;
+      expect(msg).toContain('[slow-query]');
 
-      spy.mockRestore();
       await zeroOrm.close(true);
     });
 
