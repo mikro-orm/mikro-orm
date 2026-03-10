@@ -1221,8 +1221,13 @@ export class QueryBuilderHelper {
     prop: EntityProperty,
     alias: string,
   ): { sql: string; params: unknown[] } {
-    const fieldName = prop.fieldNames[0];
-    const column = this.#platform.quoteIdentifier(`${alias}.${fieldName}`);
+    const column = this.#platform.quoteIdentifier(`${alias}.${prop.fieldNames[0]}`);
+    const resolveProperty = (key: string) => {
+      const { embProp, jsonPropName } = this.resolveEmbeddedProp(prop, key);
+      return { name: jsonPropName, type: embProp.runtimeType ?? 'string' };
+    };
+    const invalidObjectError = (key: string) =>
+      ValidationError.invalidEmbeddableQuery(this.#entityName, key, prop.type);
     const parts: string[] = [];
     const allParams: unknown[] = [];
 
@@ -1230,7 +1235,7 @@ export class QueryBuilderHelper {
     const { $not, ...rest } = cond;
 
     if (Utils.hasObjectKeys(rest)) {
-      const result = this.buildJsonArrayExists(rest, prop, column, false);
+      const result = this.buildJsonArrayExists(rest, column, false, resolveProperty, invalidObjectError);
 
       if (result) {
         parts.push(result.sql);
@@ -1243,7 +1248,7 @@ export class QueryBuilderHelper {
         throw new ValidationError(`Invalid query: $not in embedded array queries expects an object value`);
       }
 
-      const result = this.buildJsonArrayExists($not, prop, column, true);
+      const result = this.buildJsonArrayExists($not, column, true, resolveProperty, invalidObjectError);
 
       if (result) {
         parts.push(result.sql);
@@ -1260,13 +1265,20 @@ export class QueryBuilderHelper {
 
   private buildJsonArrayExists(
     cond: Dictionary,
-    prop: EntityProperty,
     column: string,
     negate: boolean,
+    resolveProperty: (key: string, value: unknown) => { name: string; type: string },
+    invalidObjectError: (key: string) => Error,
   ): { sql: string; params: unknown[] } | null {
     const jeAlias = `__je${this.#jsonAliasCounter++}`;
     const referencedProps = new Map<string, { name: string; type: string }>();
-    const { sql: whereSql, params } = this.buildEmbeddedArrayWhere(cond, prop, jeAlias, referencedProps);
+    const { sql: whereSql, params } = this.buildArrayElementWhere(
+      cond,
+      jeAlias,
+      referencedProps,
+      resolveProperty,
+      invalidObjectError,
+    );
 
     if (!whereSql) {
       return null;
@@ -1290,24 +1302,6 @@ export class QueryBuilderHelper {
     const jsonPropName = raw.startsWith(prefix) ? raw.slice(prefix.length) : raw;
 
     return { embProp, jsonPropName };
-  }
-
-  private buildEmbeddedArrayWhere(
-    cond: Dictionary,
-    prop: EntityProperty,
-    jeAlias: string,
-    referencedProps: Map<string, { name: string; type: string }>,
-  ): { sql: string; params: unknown[] } {
-    return this.buildArrayElementWhere(
-      cond,
-      jeAlias,
-      referencedProps,
-      key => {
-        const { embProp, jsonPropName } = this.resolveEmbeddedProp(prop, key);
-        return { name: jsonPropName, type: embProp.runtimeType ?? 'string' };
-      },
-      key => ValidationError.invalidEmbeddableQuery(this.#entityName, key, prop.type),
-    );
   }
 
   private buildEmbeddedArrayOperatorCondition(lhs: string, value: Dictionary, params: unknown[]): string {
@@ -1351,32 +1345,19 @@ export class QueryBuilderHelper {
     prop: EntityProperty,
     alias: string,
   ): { sql: string; params: unknown[] } {
-    const fieldName = prop.fieldNames[0];
-    const column = this.#platform.quoteIdentifier(`${alias}.${fieldName}`);
-    const jeAlias = `__je${this.#jsonAliasCounter++}`;
-    const referencedProps = new Map<string, { name: string; type: string }>();
-    const { sql: whereSql, params } = this.buildJsonElemMatchWhere(cond, jeAlias, referencedProps);
-    const from = this.#platform.getJsonArrayFromSQL(column, jeAlias, [...referencedProps.values()]);
-
-    return { sql: this.#platform.getJsonArrayExistsSQL(from, whereSql), params };
-  }
-
-  private buildJsonElemMatchWhere(
-    cond: Dictionary,
-    jeAlias: string,
-    referencedProps: Map<string, { name: string; type: string }>,
-  ): { sql: string; params: unknown[] } {
-    return this.buildArrayElementWhere(
+    const column = this.#platform.quoteIdentifier(`${alias}.${prop.fieldNames[0]}`);
+    const result = this.buildJsonArrayExists(
       cond,
-      jeAlias,
-      referencedProps,
+      column,
+      false,
       (key, value) => {
         this.#platform.validateJsonPropertyName(key);
-
         return { name: key, type: this.inferJsonValueType(value) };
       },
       () => ValidationError.invalidQueryCondition(cond),
     );
+
+    return result ?? { sql: '1 = 1', params: [] };
   }
 
   /**
