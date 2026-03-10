@@ -70,19 +70,19 @@ function useFilter<T>(_filter: FilterQuery<T>): void {}
 
 bench('FilterQuery<Author> - simple', () => {
   useFilter<Author>({ name: 'test' });
-}).types([520, 'instantiations']);
+}).types([543, 'instantiations']);
 
 bench('FilterQuery<Author> - with relation', () => {
   useFilter<Author>({ books: { title: 'test' } });
-}).types([1056, 'instantiations']);
+}).types([1085, 'instantiations']);
 
 bench('FilterQuery<Author> - with operators', () => {
   useFilter<Author>({ age: { $gt: 18 }, name: { $like: '%test%' } });
-}).types([666, 'instantiations']);
+}).types([700, 'instantiations']);
 
 bench('FilterQuery<Book> - nested relations', () => {
   useFilter<Book>({ author: { books: { publisher: { name: 'test' } } } });
-}).types([1428, 'instantiations']);
+}).types([1483, 'instantiations']);
 
 // ============================================
 // EntityData benchmarks

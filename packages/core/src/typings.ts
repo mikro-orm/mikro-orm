@@ -338,11 +338,26 @@ type ExpandQueryMerged<T> = [T] extends [object]
     : FilterQuery<MergeUnion<T>>
   : FilterValue<T>;
 
+type ElemMatchCondition<T extends Record<string, any>> = {
+  [K in keyof T]?: T[K] | OperatorMap<T[K]>;
+} & {
+  $or?: ElemMatchCondition<T>[];
+  $and?: ElemMatchCondition<T>[];
+  $not?: ElemMatchCondition<T>;
+};
+
+type ElemMatchFilter<T> = T extends readonly (infer E)[]
+  ? E extends Record<string, any>
+    ? { $elemMatch: ElemMatchCondition<E> }
+    : never
+  : never;
+
 export type FilterObject<T> = {
   -readonly [K in EntityKey<T>]?:
     | ExpandQuery<ExpandProperty<FilterObjectProp<T, K>>>
     | ExpandQueryMerged<ExpandProperty<FilterObjectProp<T, K>>>
     | FilterValue<ExpandProperty<FilterObjectProp<T, K>>>
+    | ElemMatchFilter<FilterObjectProp<T, K>>
     | null;
 };
 

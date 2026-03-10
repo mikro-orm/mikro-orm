@@ -53,6 +53,55 @@ limit 1
 
 > All drivers are currently supported (including sqlite and mongo). In postgres we also try to cast the value if we detect number or boolean on the right-hand side.
 
+## Querying JSON array elements with `$elemMatch`
+
+When a JSON property stores an array of objects, you can use the `$elemMatch` operator to query individual element properties. MikroORM generates an `EXISTS` subquery with platform-specific JSON array iteration (e.g. `jsonb_array_elements` for PostgreSQL, `json_table` for MySQL/MariaDB, `json_each` for SQLite).
+
+Types are automatically inferred from your query values — no schema hints needed:
+
+```ts
+@Entity()
+export class Event {
+
+  @Property({ type: 'json', nullable: true })
+  tags?: { name: string; priority: number }[];
+
+}
+
+// find events with a "typescript" tag
+const events = await em.find(Event, {
+  tags: { $elemMatch: { name: 'typescript' } },
+});
+
+// numeric conditions are automatically cast (e.g. ::float8 on postgres)
+const events = await em.find(Event, {
+  tags: { $elemMatch: { priority: { $gt: 5 } } },
+});
+
+// multiple conditions must match the same array element
+const events = await em.find(Event, {
+  tags: { $elemMatch: { name: 'typescript', priority: { $gte: 8 } } },
+});
+
+// $or/$and/$not work within $elemMatch
+const events = await em.find(Event, {
+  tags: { $elemMatch: { $or: [{ name: 'typescript' }, { name: 'rust' }] } },
+});
+```
+
+`$elemMatch` can be combined with array-level operators using `$and`:
+
+```ts
+const events = await em.find(Event, {
+  $and: [
+    { tags: { $elemMatch: { priority: { $gt: 5 } } } },
+    { tags: { $contains: [{ name: 'typescript' }] } },
+  ],
+});
+```
+
+> For [embedded array properties](./embeddables.md#array-of-embeddables), element-level querying works implicitly without `$elemMatch` since the ORM knows the schema from the embeddable metadata.
+
 ## Indexes on JSON properties
 
 To create an index on a JSON property, use an entity-level `@Index()` decorator with a dot path:

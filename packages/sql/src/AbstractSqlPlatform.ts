@@ -19,6 +19,8 @@ import type { IndexDef } from './typings.js';
 import { NativeQueryBuilder } from './query/NativeQueryBuilder.js';
 
 export abstract class AbstractSqlPlatform extends Platform {
+  static readonly #JSON_PROPERTY_NAME_RE = /^[a-zA-Z_][a-zA-Z0-9_]*$/;
+
   protected readonly schemaHelper?: SchemaHelper;
 
   override usesPivotTable(): boolean {
@@ -175,6 +177,15 @@ export abstract class AbstractSqlPlatform extends Platform {
   protected validateCollationName(collation: string): void {
     if (!/^[\w]+$/.test(collation)) {
       throw new Error(`Invalid collation name: '${collation}'. Collation names must contain only word characters.`);
+    }
+  }
+
+  /** @internal */
+  validateJsonPropertyName(name: string): void {
+    if (!AbstractSqlPlatform.#JSON_PROPERTY_NAME_RE.test(name)) {
+      throw new Error(
+        `Invalid JSON property name: '${name}'. JSON property names must contain only alphanumeric characters and underscores.`,
+      );
     }
   }
 

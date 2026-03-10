@@ -3,6 +3,7 @@ import {
   ALIAS_REPLACEMENT_RE,
   ArrayType,
   type Dictionary,
+  JsonType,
   type EntityData,
   type EntityKey,
   type EntityMetadata,
@@ -668,6 +669,19 @@ export class QueryBuilderHelper {
           return this.processEmbeddedArrayCondition(cond[key], prop, a);
         }
       }
+
+      // $elemMatch on JSON properties — iterate array elements via EXISTS subquery.
+      // When combined with other operators (e.g. $contains), processObjectSubCondition
+      // splits them first (size > 1), so $elemMatch arrives here alone.
+      if (prop && cond[key].$elemMatch != null && Utils.getObjectKeysSize(cond[key]) === 1) {
+        if (!(prop.customType instanceof JsonType)) {
+          throw new ValidationError(
+            `$elemMatch can only be used on JSON array properties, but '${this.#entityName}.${prop.name}' has type '${prop.type}'`,
+          );
+        }
+
+        return this.processJsonElemMatch(cond[key].$elemMatch, prop, a);
+      }
     }
 
     if (Utils.isPlainObject(cond[key]) || cond[key] instanceof RegExp) {
@@ -1207,8 +1221,13 @@ export class QueryBuilderHelper {
     prop: EntityProperty,
     alias: string,
   ): { sql: string; params: unknown[] } {
-    const fieldName = prop.fieldNames[0];
-    const column = this.#platform.quoteIdentifier(`${alias}.${fieldName}`);
+    const column = this.#platform.quoteIdentifier(`${alias}.${prop.fieldNames[0]}`);
+    const resolveProperty = (key: string) => {
+      const { embProp, jsonPropName } = this.resolveEmbeddedProp(prop, key);
+      return { name: jsonPropName, type: embProp.runtimeType ?? 'string' };
+    };
+    const invalidObjectError = (key: string) =>
+      ValidationError.invalidEmbeddableQuery(this.#entityName, key, prop.type);
     const parts: string[] = [];
     const allParams: unknown[] = [];
 
@@ -1216,7 +1235,7 @@ export class QueryBuilderHelper {
     const { $not, ...rest } = cond;
 
     if (Utils.hasObjectKeys(rest)) {
-      const result = this.buildJsonArrayExists(rest, prop, column, false);
+      const result = this.buildJsonArrayExists(rest, column, false, resolveProperty, invalidObjectError);
 
       if (result) {
         parts.push(result.sql);
@@ -1229,7 +1248,7 @@ export class QueryBuilderHelper {
         throw new ValidationError(`Invalid query: $not in embedded array queries expects an object value`);
       }
 
-      const result = this.buildJsonArrayExists($not, prop, column, true);
+      const result = this.buildJsonArrayExists($not, column, true, resolveProperty, invalidObjectError);
 
       if (result) {
         parts.push(result.sql);
@@ -1246,13 +1265,20 @@ export class QueryBuilderHelper {
 
   private buildJsonArrayExists(
     cond: Dictionary,
-    prop: EntityProperty,
     column: string,
     negate: boolean,
+    resolveProperty: (key: string, value: unknown) => { name: string; type: string },
+    invalidObjectError: (key: string) => Error,
   ): { sql: string; params: unknown[] } | null {
     const jeAlias = `__je${this.#jsonAliasCounter++}`;
     const referencedProps = new Map<string, { name: string; type: string }>();
-    const { sql: whereSql, params } = this.buildEmbeddedArrayWhere(cond, prop, jeAlias, referencedProps);
+    const { sql: whereSql, params } = this.buildArrayElementWhere(
+      cond,
+      jeAlias,
+      referencedProps,
+      resolveProperty,
+      invalidObjectError,
+    );
 
     if (!whereSql) {
       return null;
@@ -1276,82 +1302,6 @@ export class QueryBuilderHelper {
     const jsonPropName = raw.startsWith(prefix) ? raw.slice(prefix.length) : raw;
 
     return { embProp, jsonPropName };
-  }
-
-  private buildEmbeddedArrayWhere(
-    cond: Dictionary,
-    prop: EntityProperty,
-    jeAlias: string,
-    referencedProps: Map<string, { name: string; type: string }>,
-  ): { sql: string; params: unknown[] } {
-    const parts: string[] = [];
-    const params: unknown[] = [];
-
-    for (const k of Object.keys(cond)) {
-      if (k === '$and' || k === '$or') {
-        const items = cond[k] as Dictionary[];
-
-        if (items.length === 0) {
-          continue;
-        }
-
-        const subParts: string[] = [];
-
-        for (const item of items) {
-          const sub = this.buildEmbeddedArrayWhere(item, prop, jeAlias, referencedProps);
-
-          if (sub.sql) {
-            subParts.push(sub.sql);
-            params.push(...sub.params);
-          }
-        }
-
-        if (subParts.length > 0) {
-          const joiner = k === '$or' ? ' or ' : ' and ';
-          parts.push(`(${subParts.join(joiner)})`);
-        }
-
-        continue;
-      }
-
-      // Within $or/$and scope, $not provides element-level negation:
-      // "this element does not match the condition".
-      if (k === '$not') {
-        const sub = this.buildEmbeddedArrayWhere(cond[k], prop, jeAlias, referencedProps);
-
-        if (sub.sql) {
-          parts.push(`not (${sub.sql})`);
-          params.push(...sub.params);
-        }
-
-        continue;
-      }
-
-      const { embProp, jsonPropName } = this.resolveEmbeddedProp(prop, k);
-      referencedProps.set(k, { name: jsonPropName, type: embProp.runtimeType ?? 'string' });
-
-      const lhs = this.#platform.getJsonArrayElementPropertySQL(jeAlias, jsonPropName, embProp.runtimeType ?? 'string');
-      const value = cond[k];
-
-      if (Utils.isPlainObject(value)) {
-        // Validate that all keys are operators — nested embeddables within array elements are not supported.
-        const valueKeys = Object.keys(value as Dictionary);
-
-        if (valueKeys.some(vk => !Utils.isOperator(vk))) {
-          throw ValidationError.invalidEmbeddableQuery(this.#entityName, k, prop.type);
-        }
-
-        const sub = this.buildEmbeddedArrayOperatorCondition(lhs, value as Dictionary, params);
-        parts.push(sub);
-      } else if (value === null) {
-        parts.push(`${lhs} is null`);
-      } else {
-        parts.push(`${lhs} = ?`);
-        params.push(value);
-      }
-    }
-
-    return { sql: parts.join(' and '), params };
   }
 
   private buildEmbeddedArrayOperatorCondition(lhs: string, value: Dictionary, params: unknown[]): string {
@@ -1388,6 +1338,148 @@ export class QueryBuilderHelper {
     }
 
     return parts.join(' and ');
+  }
+
+  private processJsonElemMatch(
+    cond: Dictionary,
+    prop: EntityProperty,
+    alias: string,
+  ): { sql: string; params: unknown[] } {
+    const column = this.#platform.quoteIdentifier(`${alias}.${prop.fieldNames[0]}`);
+    const result = this.buildJsonArrayExists(
+      cond,
+      column,
+      false,
+      (key, value) => {
+        this.#platform.validateJsonPropertyName(key);
+        return { name: key, type: this.inferJsonValueType(value) };
+      },
+      () => ValidationError.invalidQueryCondition(cond),
+    );
+
+    return result ?? { sql: '1 = 1', params: [] };
+  }
+
+  /**
+   * Shared logic for building WHERE conditions inside JSON array EXISTS subqueries.
+   * Used by both embedded array queries (metadata-driven) and $elemMatch (type-inferred).
+   */
+  private buildArrayElementWhere(
+    cond: Dictionary,
+    jeAlias: string,
+    referencedProps: Map<string, { name: string; type: string }>,
+    resolveProperty: (key: string, value: unknown) => { name: string; type: string },
+    invalidObjectError: (key: string) => Error,
+  ): { sql: string; params: unknown[] } {
+    const parts: string[] = [];
+    const params: unknown[] = [];
+
+    for (const k of Object.keys(cond)) {
+      if (k === '$and' || k === '$or') {
+        const items = cond[k] as Dictionary[];
+
+        if (items.length === 0) {
+          continue;
+        }
+
+        const subParts: string[] = [];
+
+        for (const item of items) {
+          const sub = this.buildArrayElementWhere(item, jeAlias, referencedProps, resolveProperty, invalidObjectError);
+
+          if (sub.sql) {
+            subParts.push(sub.sql);
+            params.push(...sub.params);
+          }
+        }
+
+        if (subParts.length > 0) {
+          const joiner = k === '$or' ? ' or ' : ' and ';
+          parts.push(`(${subParts.join(joiner)})`);
+        }
+
+        continue;
+      }
+
+      // Within $or/$and scope, $not provides element-level negation:
+      // "this element does not match the condition".
+      if (k === '$not') {
+        const sub = this.buildArrayElementWhere(cond[k], jeAlias, referencedProps, resolveProperty, invalidObjectError);
+
+        if (sub.sql) {
+          parts.push(`not (${sub.sql})`);
+          params.push(...sub.params);
+        }
+
+        continue;
+      }
+
+      const value = cond[k];
+      const { name, type } = resolveProperty(k, value);
+      referencedProps.set(k, { name, type });
+
+      const lhs = this.#platform.getJsonArrayElementPropertySQL(jeAlias, name, type);
+
+      if (Utils.isPlainObject(value)) {
+        const valueKeys = Object.keys(value as Dictionary);
+
+        if (valueKeys.some(vk => !Utils.isOperator(vk))) {
+          throw invalidObjectError(k);
+        }
+
+        const sub = this.buildEmbeddedArrayOperatorCondition(lhs, value as Dictionary, params);
+        parts.push(sub);
+      } else if (value === null) {
+        parts.push(`${lhs} is null`);
+      } else {
+        parts.push(`${lhs} = ?`);
+        params.push(value);
+      }
+    }
+
+    return { sql: parts.join(' and '), params };
+  }
+
+  private inferJsonValueType(value: unknown): string {
+    if (typeof value === 'number') {
+      return 'number';
+    }
+
+    if (typeof value === 'boolean') {
+      return 'boolean';
+    }
+
+    if (typeof value === 'bigint') {
+      return 'bigint';
+    }
+
+    if (Utils.isPlainObject(value)) {
+      for (const v of Object.values(value as Dictionary)) {
+        if (typeof v === 'number') {
+          return 'number';
+        }
+
+        if (typeof v === 'boolean') {
+          return 'boolean';
+        }
+
+        if (typeof v === 'bigint') {
+          return 'bigint';
+        }
+
+        if (Array.isArray(v) && v.length > 0) {
+          if (typeof v[0] === 'number') {
+            return 'number';
+          }
+
+          if (typeof v[0] === 'boolean') {
+            return 'boolean';
+          }
+        }
+      }
+    }
+
+    return 'string';
   }
 
   processOnConflictCondition(cond: FilterQuery<any>, schema?: string): FilterQuery<any> {

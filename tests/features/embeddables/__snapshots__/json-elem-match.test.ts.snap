@@ -1,0 +1,85 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`$elemMatch on JSON properties [mariadb] > basic $elemMatch queries > $in 1`] = `"[query] select \`e0\`.* from \`event\` as \`e0\` where (select 1 from json_table(\`e0\`.\`tags\`, '$[*]' columns (\`name\` text path '$.name')) as \`__je0\` where \`__je0\`.\`name\` in (?, ?) limit 1) is not null"`;
+
+exports[`$elemMatch on JSON properties [mariadb] > basic $elemMatch queries > $not 1`] = `"[query] select \`e0\`.* from \`event\` as \`e0\` where (select 1 from json_table(\`e0\`.\`tags\`, '$[*]' columns (\`name\` text path '$.name')) as \`__je0\` where not (\`__je0\`.\`name\` = ?) limit 1) is not null"`;
+
+exports[`$elemMatch on JSON properties [mariadb] > basic $elemMatch queries > $or 1`] = `"[query] select \`e0\`.* from \`event\` as \`e0\` where (select 1 from json_table(\`e0\`.\`tags\`, '$[*]' columns (\`name\` text path '$.name')) as \`__je0\` where (\`__je0\`.\`name\` = ? or \`__je0\`.\`name\` = ?) limit 1) is not null"`;
+
+exports[`$elemMatch on JSON properties [mariadb] > basic $elemMatch queries > basic equality 1`] = `"[query] select \`e0\`.* from \`event\` as \`e0\` where (select 1 from json_table(\`e0\`.\`tags\`, '$[*]' columns (\`name\` text path '$.name')) as \`__je0\` where \`__je0\`.\`name\` = ? limit 1) is not null"`;
+
+exports[`$elemMatch on JSON properties [mariadb] > basic $elemMatch queries > combined with regular conditions 1`] = `"[query] select \`e0\`.* from \`event\` as \`e0\` where \`e0\`.\`name\` = ? and (select 1 from json_table(\`e0\`.\`tags\`, '$[*]' columns (\`name\` text path '$.name')) as \`__je0\` where \`__je0\`.\`name\` = ? limit 1) is not null"`;
+
+exports[`$elemMatch on JSON properties [mariadb] > basic $elemMatch queries > multiple conditions 1`] = `"[query] select \`e0\`.* from \`event\` as \`e0\` where (select 1 from json_table(\`e0\`.\`tags\`, '$[*]' columns (\`name\` text path '$.name', \`priority\` double path '$.priority')) as \`__je0\` where \`__je0\`.\`name\` = ? and \`__je0\`.\`priority\` > ? limit 1) is not null"`;
+
+exports[`$elemMatch on JSON properties [mariadb] > basic $elemMatch queries > numeric operator 1`] = `"[query] select \`e0\`.* from \`event\` as \`e0\` where (select 1 from json_table(\`e0\`.\`tags\`, '$[*]' columns (\`priority\` double path '$.priority')) as \`__je0\` where \`__je0\`.\`priority\` > ? limit 1) is not null"`;
+
+exports[`$elemMatch on JSON properties [mssql] > basic $elemMatch queries > $in 1`] = `"[query] select [e0].* from [event] as [e0] where exists (select 1 from openjson([e0].[tags]) with ([name] nvarchar(max) '$.name') as [__je0] where [__je0].[name] in (?, ?))"`;
+
+exports[`$elemMatch on JSON properties [mssql] > basic $elemMatch queries > $not 1`] = `"[query] select [e0].* from [event] as [e0] where exists (select 1 from openjson([e0].[tags]) with ([name] nvarchar(max) '$.name') as [__je0] where not ([__je0].[name] = ?))"`;
+
+exports[`$elemMatch on JSON properties [mssql] > basic $elemMatch queries > $or 1`] = `"[query] select [e0].* from [event] as [e0] where exists (select 1 from openjson([e0].[tags]) with ([name] nvarchar(max) '$.name') as [__je0] where ([__je0].[name] = ? or [__je0].[name] = ?))"`;
+
+exports[`$elemMatch on JSON properties [mssql] > basic $elemMatch queries > basic equality 1`] = `"[query] select [e0].* from [event] as [e0] where exists (select 1 from openjson([e0].[tags]) with ([name] nvarchar(max) '$.name') as [__je0] where [__je0].[name] = ?)"`;
+
+exports[`$elemMatch on JSON properties [mssql] > basic $elemMatch queries > combined with regular conditions 1`] = `"[query] select [e0].* from [event] as [e0] where [e0].[name] = ? and exists (select 1 from openjson([e0].[tags]) with ([name] nvarchar(max) '$.name') as [__je0] where [__je0].[name] = ?)"`;
+
+exports[`$elemMatch on JSON properties [mssql] > basic $elemMatch queries > multiple conditions 1`] = `"[query] select [e0].* from [event] as [e0] where exists (select 1 from openjson([e0].[tags]) with ([name] nvarchar(max) '$.name', [priority] float '$.priority') as [__je0] where [__je0].[name] = ? and [__je0].[priority] > ?)"`;
+
+exports[`$elemMatch on JSON properties [mssql] > basic $elemMatch queries > numeric operator 1`] = `"[query] select [e0].* from [event] as [e0] where exists (select 1 from openjson([e0].[tags]) with ([priority] float '$.priority') as [__je0] where [__je0].[priority] > ?)"`;
+
+exports[`$elemMatch on JSON properties [mysql] > basic $elemMatch queries > $in 1`] = `"[query] select \`e0\`.* from \`event\` as \`e0\` where (select 1 from json_table(\`e0\`.\`tags\`, '$[*]' columns (\`name\` text path '$.name')) as \`__je0\` where \`__je0\`.\`name\` in (?, ?) limit 1) is not null"`;
+
+exports[`$elemMatch on JSON properties [mysql] > basic $elemMatch queries > $not 1`] = `"[query] select \`e0\`.* from \`event\` as \`e0\` where (select 1 from json_table(\`e0\`.\`tags\`, '$[*]' columns (\`name\` text path '$.name')) as \`__je0\` where not (\`__je0\`.\`name\` = ?) limit 1) is not null"`;
+
+exports[`$elemMatch on JSON properties [mysql] > basic $elemMatch queries > $or 1`] = `"[query] select \`e0\`.* from \`event\` as \`e0\` where (select 1 from json_table(\`e0\`.\`tags\`, '$[*]' columns (\`name\` text path '$.name')) as \`__je0\` where (\`__je0\`.\`name\` = ? or \`__je0\`.\`name\` = ?) limit 1) is not null"`;
+
+exports[`$elemMatch on JSON properties [mysql] > basic $elemMatch queries > basic equality 1`] = `"[query] select \`e0\`.* from \`event\` as \`e0\` where (select 1 from json_table(\`e0\`.\`tags\`, '$[*]' columns (\`name\` text path '$.name')) as \`__je0\` where \`__je0\`.\`name\` = ? limit 1) is not null"`;
+
+exports[`$elemMatch on JSON properties [mysql] > basic $elemMatch queries > combined with regular conditions 1`] = `"[query] select \`e0\`.* from \`event\` as \`e0\` where \`e0\`.\`name\` = ? and (select 1 from json_table(\`e0\`.\`tags\`, '$[*]' columns (\`name\` text path '$.name')) as \`__je0\` where \`__je0\`.\`name\` = ? limit 1) is not null"`;
+
+exports[`$elemMatch on JSON properties [mysql] > basic $elemMatch queries > multiple conditions 1`] = `"[query] select \`e0\`.* from \`event\` as \`e0\` where (select 1 from json_table(\`e0\`.\`tags\`, '$[*]' columns (\`name\` text path '$.name', \`priority\` double path '$.priority')) as \`__je0\` where \`__je0\`.\`name\` = ? and \`__je0\`.\`priority\` > ? limit 1) is not null"`;
+
+exports[`$elemMatch on JSON properties [mysql] > basic $elemMatch queries > numeric operator 1`] = `"[query] select \`e0\`.* from \`event\` as \`e0\` where (select 1 from json_table(\`e0\`.\`tags\`, '$[*]' columns (\`priority\` double path '$.priority')) as \`__je0\` where \`__je0\`.\`priority\` > ? limit 1) is not null"`;
+
+exports[`$elemMatch on JSON properties [oracledb] > basic $elemMatch queries > $in 1`] = `"[query] select "e0".* from "event" "e0" where exists (select 1 from json_table("e0"."tags", '$[*]' columns ("name" varchar2(4000) path '$.name')) "__je0" where "__je0"."name" in (?, ?))"`;
+
+exports[`$elemMatch on JSON properties [oracledb] > basic $elemMatch queries > $not 1`] = `"[query] select "e0".* from "event" "e0" where exists (select 1 from json_table("e0"."tags", '$[*]' columns ("name" varchar2(4000) path '$.name')) "__je0" where not ("__je0"."name" = ?))"`;
+
+exports[`$elemMatch on JSON properties [oracledb] > basic $elemMatch queries > $or 1`] = `"[query] select "e0".* from "event" "e0" where exists (select 1 from json_table("e0"."tags", '$[*]' columns ("name" varchar2(4000) path '$.name')) "__je0" where ("__je0"."name" = ? or "__je0"."name" = ?))"`;
+
+exports[`$elemMatch on JSON properties [oracledb] > basic $elemMatch queries > basic equality 1`] = `"[query] select "e0".* from "event" "e0" where exists (select 1 from json_table("e0"."tags", '$[*]' columns ("name" varchar2(4000) path '$.name')) "__je0" where "__je0"."name" = ?)"`;
+
+exports[`$elemMatch on JSON properties [oracledb] > basic $elemMatch queries > combined with regular conditions 1`] = `"[query] select "e0".* from "event" "e0" where "e0"."name" = ? and exists (select 1 from json_table("e0"."tags", '$[*]' columns ("name" varchar2(4000) path '$.name')) "__je0" where "__je0"."name" = ?)"`;
+
+exports[`$elemMatch on JSON properties [oracledb] > basic $elemMatch queries > multiple conditions 1`] = `"[query] select "e0".* from "event" "e0" where exists (select 1 from json_table("e0"."tags", '$[*]' columns ("name" varchar2(4000) path '$.name', "priority" number path '$.priority')) "__je0" where "__je0"."name" = ? and "__je0"."priority" > ?)"`;
+
+exports[`$elemMatch on JSON properties [oracledb] > basic $elemMatch queries > numeric operator 1`] = `"[query] select "e0".* from "event" "e0" where exists (select 1 from json_table("e0"."tags", '$[*]' columns ("priority" number path '$.priority')) "__je0" where "__je0"."priority" > ?)"`;
+
+exports[`$elemMatch on JSON properties [postgresql] > basic $elemMatch queries > $in 1`] = `"[query] select "e0".* from "event" as "e0" where exists (select 1 from jsonb_array_elements("e0"."tags") as "__je0" where "__je0"->>'name' in (?, ?))"`;
+
+exports[`$elemMatch on JSON properties [postgresql] > basic $elemMatch queries > $not 1`] = `"[query] select "e0".* from "event" as "e0" where exists (select 1 from jsonb_array_elements("e0"."tags") as "__je0" where not ("__je0"->>'name' = ?))"`;
+
+exports[`$elemMatch on JSON properties [postgresql] > basic $elemMatch queries > $or 1`] = `"[query] select "e0".* from "event" as "e0" where exists (select 1 from jsonb_array_elements("e0"."tags") as "__je0" where ("__je0"->>'name' = ? or "__je0"->>'name' = ?))"`;
+
+exports[`$elemMatch on JSON properties [postgresql] > basic $elemMatch queries > basic equality 1`] = `"[query] select "e0".* from "event" as "e0" where exists (select 1 from jsonb_array_elements("e0"."tags") as "__je0" where "__je0"->>'name' = ?)"`;
+
+exports[`$elemMatch on JSON properties [postgresql] > basic $elemMatch queries > combined with regular conditions 1`] = `"[query] select "e0".* from "event" as "e0" where "e0"."name" = ? and exists (select 1 from jsonb_array_elements("e0"."tags") as "__je0" where "__je0"->>'name' = ?)"`;
+
+exports[`$elemMatch on JSON properties [postgresql] > basic $elemMatch queries > multiple conditions 1`] = `"[query] select "e0".* from "event" as "e0" where exists (select 1 from jsonb_array_elements("e0"."tags") as "__je0" where "__je0"->>'name' = ? and ("__je0"->>'priority')::float8 > ?)"`;
+
+exports[`$elemMatch on JSON properties [postgresql] > basic $elemMatch queries > numeric operator 1`] = `"[query] select "e0".* from "event" as "e0" where exists (select 1 from jsonb_array_elements("e0"."tags") as "__je0" where ("__je0"->>'priority')::float8 > ?)"`;
+
+exports[`$elemMatch on JSON properties [sqlite] > basic $elemMatch queries > $in 1`] = `"[query] select \`e0\`.* from \`event\` as \`e0\` where exists (select 1 from json_each(\`e0\`.\`tags\`) as \`__je0\` where json_extract(\`__je0\`.value, '$.name') in (?, ?))"`;
+
+exports[`$elemMatch on JSON properties [sqlite] > basic $elemMatch queries > $not 1`] = `"[query] select \`e0\`.* from \`event\` as \`e0\` where exists (select 1 from json_each(\`e0\`.\`tags\`) as \`__je0\` where not (json_extract(\`__je0\`.value, '$.name') = ?))"`;
+
+exports[`$elemMatch on JSON properties [sqlite] > basic $elemMatch queries > $or 1`] = `"[query] select \`e0\`.* from \`event\` as \`e0\` where exists (select 1 from json_each(\`e0\`.\`tags\`) as \`__je0\` where (json_extract(\`__je0\`.value, '$.name') = ? or json_extract(\`__je0\`.value, '$.name') = ?))"`;
+
+exports[`$elemMatch on JSON properties [sqlite] > basic $elemMatch queries > basic equality 1`] = `"[query] select \`e0\`.* from \`event\` as \`e0\` where exists (select 1 from json_each(\`e0\`.\`tags\`) as \`__je0\` where json_extract(\`__je0\`.value, '$.name') = ?)"`;
+
+exports[`$elemMatch on JSON properties [sqlite] > basic $elemMatch queries > combined with regular conditions 1`] = `"[query] select \`e0\`.* from \`event\` as \`e0\` where \`e0\`.\`name\` = ? and exists (select 1 from json_each(\`e0\`.\`tags\`) as \`__je0\` where json_extract(\`__je0\`.value, '$.name') = ?)"`;
+
+exports[`$elemMatch on JSON properties [sqlite] > basic $elemMatch queries > multiple conditions 1`] = `"[query] select \`e0\`.* from \`event\` as \`e0\` where exists (select 1 from json_each(\`e0\`.\`tags\`) as \`__je0\` where json_extract(\`__je0\`.value, '$.name') = ? and json_extract(\`__je0\`.value, '$.priority') > ?)"`;
+
+exports[`$elemMatch on JSON properties [sqlite] > basic $elemMatch queries > numeric operator 1`] = `"[query] select \`e0\`.* from \`event\` as \`e0\` where exists (select 1 from json_each(\`e0\`.\`tags\`) as \`__je0\` where json_extract(\`__je0\`.value, '$.priority') > ?)"`;

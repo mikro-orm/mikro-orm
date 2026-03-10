@@ -86,13 +86,13 @@ bench('FilterObject<Author>', () => {
   type R = FilterObject<Author>;
   const x = {} as R;
   void x;
-}).types([320, 'instantiations']);
+}).types([332, 'instantiations']);
 
 bench('FilterObject<Book>', () => {
   type R = FilterObject<Book>;
   const x = {} as R;
   void x;
-}).types([291, 'instantiations']);
+}).types([303, 'instantiations']);
 
 // ============================================
 // FilterQuery benchmarks (already in api-methods but more detailed here)
@@ -102,19 +102,19 @@ bench('FilterQuery<Author> - plain', () => {
   type R = FilterQuery<Author>;
   const x = {} as R;
   void x;
-}).types([536, 'instantiations']);
+}).types([548, 'instantiations']);
 
 bench('FilterQuery<Book> - plain', () => {
   type R = FilterQuery<Book>;
   const x = {} as R;
   void x;
-}).types([505, 'instantiations']);
+}).types([517, 'instantiations']);
 
 bench('FilterQuery<Tag> - simple entity', () => {
   type R = FilterQuery<Tag>;
   const x = {} as R;
   void x;
-}).types([446, 'instantiations']);
+}).types([458, 'instantiations']);
 
 // ============================================
 // Union entity tests
@@ -126,7 +126,7 @@ bench('FilterQuery<Author | Book> - union', () => {
   type R = FilterQuery<AuthorOrBook>;
   const x = {} as R;
   void x;
-}).types([480, 'instantiations']);
+}).types([492, 'instantiations']);
 
 // ============================================
 // Nested filter access simulation
@@ -137,10 +137,10 @@ bench('FilterQuery nested - author.books', () => {
   type R = FilterObject<Author>['books'];
   const x = {} as R;
   void x;
-}).types([1005, 'instantiations']);
+}).types([1027, 'instantiations']);
 
 bench('FilterQuery nested - book.author', () => {
   type R = FilterObject<Book>['author'];
   const x = {} as R;
   void x;
-}).types([1015, 'instantiations']);
+}).types([1035, 'instantiations']);
