@@ -160,6 +160,10 @@ describe('logging', () => {
       vi.clearAllMocks();
     });
 
+    afterEach(() => {
+      vi.restoreAllMocks();
+    });
+
     function mockDateNow(step: number): ReturnType<typeof vi.spyOn> {
       let time = 0;
       return vi.spyOn(Date, 'now').mockImplementation(() => {
@@ -170,7 +174,7 @@ describe('logging', () => {
     }
 
     it('logs slow queries via slow-query namespace when threshold is exceeded', async () => {
-      const nowSpy = mockDateNow(5);
+      mockDateNow(5);
 
       await slowOrm.em.fork().findOneOrFail(Example, { id: 1 });
 
@@ -178,22 +182,18 @@ describe('logging', () => {
       const msg = slowLoggerMock.mock.calls[0][0] as string;
       expect(msg).toContain('[slow-query]');
       expect(msg).toContain('took 5 ms');
-
-      nowSpy.mockRestore();
     });
 
     it('does not log when query is faster than threshold', async () => {
-      const nowSpy = mockDateNow(1); // 1ms < 3ms threshold
+      mockDateNow(1); // 1ms < 3ms threshold
 
       await slowOrm.em.fork().findOneOrFail(Example, { id: 1 });
 
       expect(slowLoggerMock).not.toHaveBeenCalled();
-
-      nowSpy.mockRestore();
     });
 
     it('logs slow queries for failed queries too', async () => {
-      const nowSpy = mockDateNow(5);
+      mockDateNow(5);
 
       const em = slowOrm.em.fork();
       await expect(em.insert(Example, { id: 1 })).rejects.toThrow();
@@ -201,12 +201,10 @@ describe('logging', () => {
       expect(slowLoggerMock).toHaveBeenCalledTimes(1);
       const msg = slowLoggerMock.mock.calls[0][0] as string;
       expect(msg).toContain('[slow-query]');
-
-      nowSpy.mockRestore();
     });
 
     it('logs when query takes exactly the threshold time', async () => {
-      const nowSpy = mockDateNow(3); // exactly 3ms = threshold
+      mockDateNow(3); // exactly 3ms = threshold
 
       await slowOrm.em.fork().findOneOrFail(Example, { id: 1 });
 
@@ -214,8 +212,6 @@ describe('logging', () => {
       const msg = slowLoggerMock.mock.calls[0][0] as string;
       expect(msg).toContain('[slow-query]');
       expect(msg).toContain('took 3 ms');
-
-      nowSpy.mockRestore();
     });
 
     it('logs all queries when threshold is 0', async () => {
@@ -255,9 +251,8 @@ describe('logging', () => {
       fallbackOrm.em.clear();
       mainLoggerMock.mockClear();
 
-      const nowSpy = mockDateNow(5);
+      mockDateNow(5);
       await fallbackOrm.em.fork().findOneOrFail(Example, { id: 1 });
-      nowSpy.mockRestore();
 
       const slowCalls = mainLoggerMock.mock.calls.filter((call: string[]) => call[0].includes('[slow-query]'));
       expect(slowCalls).toHaveLength(1);

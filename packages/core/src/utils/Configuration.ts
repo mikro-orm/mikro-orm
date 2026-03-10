@@ -458,6 +458,7 @@ export class Configuration<
   private sync(): void {
     setEnv('MIKRO_ORM_COLORS', this.#options.colors);
     this.#logger.setDebugMode(this.#options.debug);
+    this.#slowQueryLogger = undefined;
   }
 
   private validateOptions(): void {
@@ -1104,6 +1105,10 @@ export interface Options<
   /**
    * Factory function to create a custom logger instance for slow queries.
    * Has the same shape as `loggerFactory`. When not provided, the main logger instance is used.
+   *
+   * Note: slow query log entries are emitted with `context.enabled = true` to bypass the
+   * debug-mode check. Custom logger implementations must respect `context.enabled` in their
+   * `isEnabled()` method (as `DefaultLogger` does) to ensure slow query logs are always emitted.
    * @default undefined (falls back to main logger)
    */
   slowQueryLoggerFactory?: (options: LoggerOptions) => Logger;

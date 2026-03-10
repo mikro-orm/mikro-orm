@@ -15,7 +15,7 @@ export abstract class Connection {
   protected connected = false;
 
   get #connectionLabel(): { type: ConnectionType; name: string | undefined } {
-    return { type: this.type, name: this.options.name || this.config.get('name') || this.options.host };
+    return { type: this.type, name: this.options.name || this.config.get('name') || this.options.host || this.options.dbName };
   }
 
   constructor(
@@ -193,26 +193,30 @@ export abstract class Connection {
 
   protected async executeQuery<T>(query: string, cb: () => Promise<T>, context?: LogContext): Promise<T> {
     const now = Date.now();
+    const connection = this.#connectionLabel;
 
     try {
       const res = await cb();
       const took = Date.now() - now;
       const results = Array.isArray(res) ? res.length : undefined;
       const affected = Utils.isPlainObject<QueryResult>(res) ? res.affectedRows : undefined;
+      const ctx = { ...context, took, results, affected };
 
-      this.logQuery(query, { ...context, took, results, affected });
-      this.logSlowQuery(query, took, { ...context, results, affected });
+      this.logQuery(query, ctx, connection);
+      this.logSlowQuery(query, took, ctx, connection);
 
       return res;
     } catch (e) {
       const took = Date.now() - now;
-      this.logQuery(query, { ...context, took, level: 'error' });
-      this.logSlowQuery(query, took, { ...context, level: 'error' });
+      const ctx = { ...context, took, level: 'error' as const };
+
+      this.logQuery(query, ctx, connection);
+      this.logSlowQuery(query, took, ctx, connection);
       throw e;
     }
   }
 
-  private logSlowQuery(query: string, took: number, context?: LogContext): void {
+  private logSlowQuery(query: string, took: number, context: LogContext, connection: LogContext['connection']): void {
     const threshold = this.config.get('slowQueryThreshold');
 
     if (threshold == null || took < threshold) {
@@ -224,18 +228,18 @@ export abstract class Connection {
       // `enabled: true` bypasses the debug-mode check in isEnabled(),
       // ensuring slow query logs are always emitted regardless of the `debug` setting.
       enabled: true,
-      level: context?.level ?? 'warning',
+      level: context.level ?? 'warning',
       namespace: 'slow-query',
       took,
-      connection: this.#connectionLabel,
+      connection,
       query,
     });
   }
 
-  protected logQuery(query: string, context: LogContext = {}): void {
+  protected logQuery(query: string, context: LogContext = {}, connection?: LogContext['connection']): void {
     this.logger.logQuery({
       level: 'info',
-      connection: this.#connectionLabel,
+      connection: connection ?? this.#connectionLabel,
       ...context,
       query,
     });
