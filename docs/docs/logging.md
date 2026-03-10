@@ -49,9 +49,41 @@ return MikroORM.init({
 });
 ```
 
-Currently, there are 6 namespaces – `query`, `query-params`, `schema`, `discovery`, `info` and `deprecated`.
+Currently, there are 7 namespaces – `query`, `query-params`, `schema`, `discovery`, `info`, `deprecated` and `slow-query`.
 
 If you provide `query-params` then you must also provide `query` in order for it to take effect.
+
+## Slow Query Logging
+
+You can configure a threshold (in milliseconds) to automatically log queries that take too long. Slow query logs are always emitted when the threshold is met, regardless of the `debug` setting.
+
+```ts
+return MikroORM.init({
+  slowQueryThreshold: 200, // log queries taking 200ms or more
+});
+```
+
+Slow queries are logged via the `slow-query` namespace at `warning` level. Failed slow queries are logged at `error` level. Setting the threshold to `0` will log every query as slow.
+
+```
+[slow-query] select * from `user` where `id` = 1 [took 450 ms]
+```
+
+### Custom slow query logger
+
+By default, slow query logs go through the main logger. You can provide a separate logger instance via `slowQueryLoggerFactory` — for example, to write slow queries to a file or send them to a monitoring service:
+
+```ts
+return MikroORM.init({
+  slowQueryThreshold: 200,
+  slowQueryLoggerFactory: options => new DefaultLogger({
+    ...options,
+    writer: msg => fs.appendFileSync('slow-queries.log', msg + '\n'),
+  }),
+});
+```
+
+The factory has the same shape as `loggerFactory`. Slow query log entries are emitted with `context.enabled = true` to bypass the debug-mode check, so custom logger implementations must respect `context.enabled` in their `isEnabled()` method (as `DefaultLogger` does) for slow query logs to work.
 
 ## Deprecation warnings
 
@@ -203,7 +235,7 @@ interface Logger {
   isEnabled(namespace: LoggerNamespace, context?: LogContext): boolean;
 }
 
-type LoggerNamespace = 'query' | 'query-params' | 'schema' | 'discovery' | 'info';
+type LoggerNamespace = 'query' | 'query-params' | 'schema' | 'discovery' | 'info' | 'deprecated' | 'slow-query';
 
 interface LogContext extends Dictionary {
   query?: string;
