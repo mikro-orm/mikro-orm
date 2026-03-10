@@ -196,6 +196,38 @@ describe('embedded array query in sqlite', () => {
       'select `u0`.* from `user` as `u0` where exists (select 1 from json_each(`u0`.`addresses`) as `__je0` where 1 = 1)',
     );
 
+    // $exists on element property
+    mock.mockReset();
+    const r14b = await orm.em.fork().find(User, { addresses: { city: { $exists: true } } });
+    expect(r14b).toHaveLength(1);
+    expect(mock.mock.calls[0][0]).toMatch(
+      "select `u0`.* from `user` as `u0` where exists (select 1 from json_each(`u0`.`addresses`) as `__je0` where json_extract(`__je0`.value, '$.city') is not null)",
+    );
+
+    // element-level $not inside $or
+    mock.mockReset();
+    const r15 = await orm.em.fork().find(User, { addresses: { $or: [{ $not: { city: 'Nonexistent' } }] } } as any);
+    expect(r15).toHaveLength(1);
+    expect(mock.mock.calls[0][0]).toMatch(
+      "select `u0`.* from `user` as `u0` where exists (select 1 from json_each(`u0`.`addresses`) as `__je0` where (not (json_extract(`__je0`.value, '$.city') = ?)))",
+    );
+
+    // element-level $not with empty object inside $or is handled gracefully
+    mock.mockReset();
+    const r16 = await orm.em.fork().find(User, { addresses: { $or: [{ $not: {} }] } } as any);
+    expect(r16).toHaveLength(1);
+    expect(mock.mock.calls[0][0]).toMatch('select `u0`.* from `user` as `u0` where 1 = 1');
+
+    // unknown property name in embedded array query throws
+    await expect(orm.em.fork().find(User, { addresses: { nonExistent: 'value' } } as any)).rejects.toThrow(
+      /does not exist in embeddable/,
+    );
+
+    // non-operator key inside operator object throws
+    await expect(orm.em.fork().find(User, { addresses: { city: { nested: 'value' } } } as any)).rejects.toThrow(
+      /does not exist in embeddable/,
+    );
+
     // $in with non-array value throws
     await expect(orm.em.fork().find(User, { addresses: { city: { $in: null as any } } })).rejects.toThrow(
       'Invalid query: $in operator expects an array value',
