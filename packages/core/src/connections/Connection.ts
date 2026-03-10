@@ -15,7 +15,10 @@ export abstract class Connection {
   protected connected = false;
 
   get #connectionLabel(): { type: ConnectionType; name: string | undefined } {
-    return { type: this.type, name: this.options.name || this.config.get('name') || this.options.host || this.options.dbName };
+    return {
+      type: this.type,
+      name: this.options.name || this.config.get('name') || this.options.host || this.options.dbName,
+    };
   }
 
   constructor(
