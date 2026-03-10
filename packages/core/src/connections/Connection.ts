@@ -14,6 +14,13 @@ export abstract class Connection {
   protected readonly logger: Logger;
   protected connected = false;
 
+  get #connectionLabel(): { type: ConnectionType; name: string | undefined } {
+    return {
+      type: this.type,
+      name: this.options.name || this.config.get('name') || this.options.host || this.options.dbName,
+    };
+  }
+
   constructor(
     protected readonly config: Configuration,
     options?: ConnectionOptions,
@@ -192,30 +199,45 @@ export abstract class Connection {
 
     try {
       const res = await cb();
-      this.logQuery(query, {
-        ...context,
-        took: Date.now() - now,
-        results: Array.isArray(res) ? res.length : undefined,
-        affected: Utils.isPlainObject<QueryResult>(res) ? res.affectedRows : undefined,
-      });
+      const took = Date.now() - now;
+      const results = Array.isArray(res) ? res.length : undefined;
+      const affected = Utils.isPlainObject<QueryResult>(res) ? res.affectedRows : undefined;
+
+      this.logQuery(query, { ...context, took, results, affected });
 
       return res;
     } catch (e) {
-      this.logQuery(query, { ...context, took: Date.now() - now, level: 'error' });
+      const took = Date.now() - now;
+
+      this.logQuery(query, { ...context, took, level: 'error' as const });
       throw e;
     }
   }
 
   protected logQuery(query: string, context: LogContext = {}): void {
+    const connection = this.#connectionLabel;
+
     this.logger.logQuery({
       level: 'info',
-      connection: {
-        type: this.type,
-        name: this.options.name || this.config.get('name') || this.options.host,
-      },
+      connection,
       ...context,
       query,
     });
+
+    const threshold = this.config.get('slowQueryThreshold');
+
+    if (threshold != null && (context.took ?? 0) >= threshold) {
+      this.config.getSlowQueryLogger().logQuery({
+        ...context,
+        // `enabled: true` bypasses the debug-mode check in isEnabled(),
+        // ensuring slow query logs are always emitted regardless of the `debug` setting.
+        enabled: true,
+        level: context.level ?? 'warning',
+        namespace: 'slow-query',
+        connection,
+        query,
+      });
+    }
   }
 }
 

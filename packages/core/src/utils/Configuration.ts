@@ -171,6 +171,7 @@ export class Configuration<
 > {
   readonly #options: Options<D, EM>;
   readonly #logger: Logger;
+  #slowQueryLogger?: Logger;
   readonly #driver!: D;
   readonly #platform!: ReturnType<D['getPlatform']>;
   readonly #cache = new Map<string, any>();
@@ -252,6 +253,22 @@ export class Configuration<
    */
   getLogger(): Logger {
     return this.#logger;
+  }
+
+  /**
+   * Gets the logger instance for slow queries.
+   * Falls back to the main logger if no custom slow query logger factory is configured.
+   */
+  getSlowQueryLogger(): Logger {
+    this.#slowQueryLogger ??=
+      this.#options.slowQueryLoggerFactory?.({
+        debugMode: this.#options.debug,
+        writer: this.#options.logger,
+        highlighter: this.#options.highlighter,
+        usesReplicas: (this.#options.replicas?.length ?? 0) > 0,
+      }) ?? this.#logger;
+
+    return this.#slowQueryLogger;
   }
 
   getDataloaderType(): DataloaderType {
@@ -441,6 +458,7 @@ export class Configuration<
   private sync(): void {
     setEnv('MIKRO_ORM_COLORS', this.#options.colors);
     this.#logger.setDebugMode(this.#options.debug);
+    this.#slowQueryLogger = undefined;
   }
 
   private validateOptions(): void {
@@ -1076,6 +1094,24 @@ export interface Options<
    * @default DefaultLogger.create
    */
   loggerFactory?: (options: LoggerOptions) => Logger;
+  /**
+   * Threshold in milliseconds for logging slow queries.
+   * Queries taking at least this long will be logged via the 'slow-query' namespace at warning level.
+   * Slow query logs are always emitted when the threshold is met, regardless of the `debug` setting.
+   * Set to `0` to log every query as slow.
+   * @default undefined (slow query logging disabled)
+   */
+  slowQueryThreshold?: number;
+  /**
+   * Factory function to create a custom logger instance for slow queries.
+   * Has the same shape as `loggerFactory`. When not provided, the main logger instance is used.
+   *
+   * Note: slow query log entries are emitted with `context.enabled = true` to bypass the
+   * debug-mode check. Custom logger implementations must respect `context.enabled` in their
+   * `isEnabled()` method (as `DefaultLogger` does) to ensure slow query logs are always emitted.
+   * @default undefined (falls back to main logger)
+   */
+  slowQueryLoggerFactory?: (options: LoggerOptions) => Logger;
   /**
    * Custom error handler for `em.findOneOrFail()` when no entity is found.
    * @param entityName - Name of the entity being queried
