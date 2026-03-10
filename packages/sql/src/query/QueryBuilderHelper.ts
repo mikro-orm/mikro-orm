@@ -1224,7 +1224,7 @@ export class QueryBuilderHelper {
       }
     }
 
-    if ($not != null) {
+    if ($not != null && Utils.isPlainObject($not)) {
       const result = this.buildJsonArrayExists($not, prop, column, true);
 
       if (result) {
@@ -1351,13 +1351,13 @@ export class QueryBuilderHelper {
   }
 
   private buildEmbeddedArrayOperatorCondition(lhs: string, value: Dictionary, params: unknown[]): string {
-    const unsupported = ['$re', '$fulltext', '$some', '$none', '$every', '$size'];
+    const supported = new Set(['$eq', '$ne', '$gt', '$gte', '$lt', '$lte', '$in', '$nin', '$not', '$like', '$exists']);
     const parts: string[] = [];
     // Clone to avoid getOperatorReplacement mutating the original (it sets value[op] = null for $exists).
     value = { ...value };
 
     for (const op of Object.keys(value)) {
-      if (unsupported.includes(op)) {
+      if (!supported.has(op)) {
         throw new ValidationError(`Operator ${op} is not supported in embedded array queries`);
       }
 

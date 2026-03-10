@@ -235,8 +235,12 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
   }
 
   override getJsonArrayFromSQL(column: string, alias: string, properties: { name: string; type: string }[]): string {
+    const quoteKey = (key: string) => (/^[a-z]\w*$/i.exec(key) ? key : `"${key}"`);
     const columns = properties
-      .map(p => `${this.quoteIdentifier(p.name)} ${this.#jsonTypeCasts[p.type] ?? 'nvarchar(max)'} '$.${p.name}'`)
+      .map(
+        p =>
+          `${this.quoteIdentifier(p.name)} ${this.#jsonTypeCasts[p.type] ?? 'nvarchar(max)'} '$.${quoteKey(p.name)}'`,
+      )
       .join(', ');
 
     return `openjson(${column}) with (${columns}) as ${this.quoteIdentifier(alias)}`;

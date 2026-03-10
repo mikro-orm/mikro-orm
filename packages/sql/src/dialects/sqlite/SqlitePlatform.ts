@@ -200,7 +200,8 @@ export class SqlitePlatform extends AbstractSqlPlatform {
   }
 
   override getJsonArrayElementPropertySQL(alias: string, property: string, _type: string): string {
-    return `json_extract(${this.quoteIdentifier(alias)}.value, '$.${property}')`;
+    const quoteKey = (key: string) => (/^[a-z]\w*$/i.exec(key) ? key : `"${key}"`);
+    return `json_extract(${this.quoteIdentifier(alias)}.value, '$.${quoteKey(property)}')`;
   }
 
   override quoteValue(value: any): string {

@@ -32,6 +32,20 @@ class Address {
   }
 }
 
+@Embeddable()
+class PhoneNumber {
+  @Property()
+  type?: string;
+
+  @Property()
+  value?: string;
+
+  constructor(type?: string, value?: string) {
+    this.type = type;
+    this.value = value;
+  }
+}
+
 @Entity()
 class User {
   @PrimaryKey()
@@ -42,6 +56,9 @@ class User {
 
   @Embedded(() => Address, { array: true, nullable: true })
   addresses: Address[] | null = [];
+
+  @Embedded(() => PhoneNumber, { array: true, nullable: true })
+  phones: PhoneNumber[] | null = [];
 }
 
 const options = {
@@ -65,7 +82,7 @@ describe.each(Utils.keys(options))('embedded array query [%s]', type => {
   beforeAll(async () => {
     orm = await MikroORM.init<IDatabaseDriver>({
       metadataProvider: ReflectMetadataProvider,
-      entities: [User],
+      entities: [User, Address, PhoneNumber],
       driver: PLATFORMS[type],
       loggerFactory: SimpleLogger.create,
       ...options[type],
@@ -92,6 +109,10 @@ describe.each(Utils.keys(options))('embedded array query [%s]', type => {
       addresses: [
         { street: 'Downing street 13A', number: 10, city: 'London 4A', country: 'UK 4A' },
         { street: 'Downing street 13B', number: 20, city: 'London 4B', country: 'UK 4B' },
+      ],
+      phones: [
+        { type: 'home', value: '123-456' },
+        { type: 'work', value: '789-012' },
       ],
     });
     await orm.em.persist(user).flush();
@@ -259,5 +280,24 @@ describe.each(Utils.keys(options))('embedded array query [%s]', type => {
     await expect(orm.em.fork().find(User, { addresses: { city: { $fulltext: 'London' } } } as any)).rejects.toThrow(
       'Operator $fulltext is not supported in embedded array queries',
     );
+
+    // $overlap is not supported in embedded array element queries
+    await expect(orm.em.fork().find(User, { addresses: { city: { $overlap: ['London'] } } } as any)).rejects.toThrow(
+      'Operator $overlap is not supported in embedded array queries',
+    );
+
+    // querying two different embedded array fields in the same find (unique aliases)
+    mock.mockReset();
+    const r24 = await orm.em.fork().find(User, { addresses: { city: 'London 4A' }, phones: { type: 'home' } } as any);
+    expect(r24).toHaveLength(1);
+    expect(mock.mock.calls[0][0]).toMatchSnapshot('multiple embedded array fields');
+
+    // top-level $and with separate embedded array conditions (two EXISTS subqueries)
+    mock.mockReset();
+    const r25 = await orm.em.fork().find(User, {
+      $and: [{ addresses: { city: 'London 4A' } }, { addresses: { country: 'UK 4B' } }],
+    });
+    expect(r25).toHaveLength(1); // city=4A in one element AND country=4B in another element
+    expect(mock.mock.calls[0][0]).toMatchSnapshot('top-level $and with embedded arrays');
   });
 });

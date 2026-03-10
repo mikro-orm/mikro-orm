@@ -36,9 +36,13 @@ exports[`embedded array query [mariadb] > querying embedded array properties > e
 
 exports[`embedded array query [mariadb] > querying embedded array properties > multiple conditions same element 1`] = `"[query] select \`u0\`.* from \`user\` as \`u0\` where (select 1 from json_table(\`u0\`.\`addresses\`, '$[*]' columns (\`city\` text path '$.city', \`country\` text path '$.country')) as \`__je0\` where \`__je0\`.\`city\` = ? and \`__je0\`.\`country\` = ? limit 1) is not null"`;
 
+exports[`embedded array query [mariadb] > querying embedded array properties > multiple embedded array fields 1`] = `"[query] select \`u0\`.* from \`user\` as \`u0\` where (select 1 from json_table(\`u0\`.\`addresses\`, '$[*]' columns (\`city\` text path '$.city')) as \`__je0\` where \`__je0\`.\`city\` = ? limit 1) is not null and (select 1 from json_table(\`u0\`.\`phones\`, '$[*]' columns (\`type\` text path '$.type')) as \`__je1\` where \`__je1\`.\`type\` = ? limit 1) is not null"`;
+
 exports[`embedded array query [mariadb] > querying embedded array properties > null value 1`] = `"[query] select \`u0\`.* from \`user\` as \`u0\` where (select 1 from json_table(\`u0\`.\`addresses\`, '$[*]' columns (\`number\` double path '$.number')) as \`__je0\` where \`__je0\`.\`number\` is null limit 1) is not null"`;
 
 exports[`embedded array query [mariadb] > querying embedded array properties > operator with type casting 1`] = `"[query] select \`u0\`.* from \`user\` as \`u0\` where (select 1 from json_table(\`u0\`.\`addresses\`, '$[*]' columns (\`number\` double path '$.number')) as \`__je0\` where \`__je0\`.\`number\` > ? limit 1) is not null"`;
+
+exports[`embedded array query [mariadb] > querying embedded array properties > top-level $and with embedded arrays 1`] = `"[query] select \`u0\`.* from \`user\` as \`u0\` where (select 1 from json_table(\`u0\`.\`addresses\`, '$[*]' columns (\`city\` text path '$.city')) as \`__je0\` where \`__je0\`.\`city\` = ? limit 1) is not null and (select 1 from json_table(\`u0\`.\`addresses\`, '$[*]' columns (\`country\` text path '$.country')) as \`__je1\` where \`__je1\`.\`country\` = ? limit 1) is not null"`;
 
 exports[`embedded array query [mssql] > querying embedded array properties > $eq null 1`] = `"[query] select [u0].* from [user] as [u0] where exists (select 1 from openjson([u0].[addresses]) with ([number] float '$.number') as [__je0] where [__je0].[number] is null)"`;
 
@@ -76,9 +80,13 @@ exports[`embedded array query [mssql] > querying embedded array properties > exp
 
 exports[`embedded array query [mssql] > querying embedded array properties > multiple conditions same element 1`] = `"[query] select [u0].* from [user] as [u0] where exists (select 1 from openjson([u0].[addresses]) with ([city] nvarchar(max) '$.city', [country] nvarchar(max) '$.country') as [__je0] where [__je0].[city] = ? and [__je0].[country] = ?)"`;
 
+exports[`embedded array query [mssql] > querying embedded array properties > multiple embedded array fields 1`] = `"[query] select [u0].* from [user] as [u0] where exists (select 1 from openjson([u0].[addresses]) with ([city] nvarchar(max) '$.city') as [__je0] where [__je0].[city] = ?) and exists (select 1 from openjson([u0].[phones]) with ([type] nvarchar(max) '$.type') as [__je1] where [__je1].[type] = ?)"`;
+
 exports[`embedded array query [mssql] > querying embedded array properties > null value 1`] = `"[query] select [u0].* from [user] as [u0] where exists (select 1 from openjson([u0].[addresses]) with ([number] float '$.number') as [__je0] where [__je0].[number] is null)"`;
 
 exports[`embedded array query [mssql] > querying embedded array properties > operator with type casting 1`] = `"[query] select [u0].* from [user] as [u0] where exists (select 1 from openjson([u0].[addresses]) with ([number] float '$.number') as [__je0] where [__je0].[number] > ?)"`;
+
+exports[`embedded array query [mssql] > querying embedded array properties > top-level $and with embedded arrays 1`] = `"[query] select [u0].* from [user] as [u0] where exists (select 1 from openjson([u0].[addresses]) with ([city] nvarchar(max) '$.city') as [__je0] where [__je0].[city] = ?) and exists (select 1 from openjson([u0].[addresses]) with ([country] nvarchar(max) '$.country') as [__je1] where [__je1].[country] = ?)"`;
 
 exports[`embedded array query [mysql] > querying embedded array properties > $eq null 1`] = `"[query] select \`u0\`.* from \`user\` as \`u0\` where (select 1 from json_table(\`u0\`.\`addresses\`, '$[*]' columns (\`number\` double path '$.number')) as \`__je0\` where \`__je0\`.\`number\` is null limit 1) is not null"`;
 
@@ -116,9 +124,13 @@ exports[`embedded array query [mysql] > querying embedded array properties > exp
 
 exports[`embedded array query [mysql] > querying embedded array properties > multiple conditions same element 1`] = `"[query] select \`u0\`.* from \`user\` as \`u0\` where (select 1 from json_table(\`u0\`.\`addresses\`, '$[*]' columns (\`city\` text path '$.city', \`country\` text path '$.country')) as \`__je0\` where \`__je0\`.\`city\` = ? and \`__je0\`.\`country\` = ? limit 1) is not null"`;
 
+exports[`embedded array query [mysql] > querying embedded array properties > multiple embedded array fields 1`] = `"[query] select \`u0\`.* from \`user\` as \`u0\` where (select 1 from json_table(\`u0\`.\`addresses\`, '$[*]' columns (\`city\` text path '$.city')) as \`__je0\` where \`__je0\`.\`city\` = ? limit 1) is not null and (select 1 from json_table(\`u0\`.\`phones\`, '$[*]' columns (\`type\` text path '$.type')) as \`__je1\` where \`__je1\`.\`type\` = ? limit 1) is not null"`;
+
 exports[`embedded array query [mysql] > querying embedded array properties > null value 1`] = `"[query] select \`u0\`.* from \`user\` as \`u0\` where (select 1 from json_table(\`u0\`.\`addresses\`, '$[*]' columns (\`number\` double path '$.number')) as \`__je0\` where \`__je0\`.\`number\` is null limit 1) is not null"`;
 
 exports[`embedded array query [mysql] > querying embedded array properties > operator with type casting 1`] = `"[query] select \`u0\`.* from \`user\` as \`u0\` where (select 1 from json_table(\`u0\`.\`addresses\`, '$[*]' columns (\`number\` double path '$.number')) as \`__je0\` where \`__je0\`.\`number\` > ? limit 1) is not null"`;
+
+exports[`embedded array query [mysql] > querying embedded array properties > top-level $and with embedded arrays 1`] = `"[query] select \`u0\`.* from \`user\` as \`u0\` where (select 1 from json_table(\`u0\`.\`addresses\`, '$[*]' columns (\`city\` text path '$.city')) as \`__je0\` where \`__je0\`.\`city\` = ? limit 1) is not null and (select 1 from json_table(\`u0\`.\`addresses\`, '$[*]' columns (\`country\` text path '$.country')) as \`__je1\` where \`__je1\`.\`country\` = ? limit 1) is not null"`;
 
 exports[`embedded array query [oracledb] > querying embedded array properties > $eq null 1`] = `"[query] select "u0".* from "user" "u0" where exists (select 1 from json_table("u0"."addresses", '$[*]' columns ("number" number path '$.number')) "__je0" where "__je0"."number" is null)"`;
 
@@ -156,9 +168,13 @@ exports[`embedded array query [oracledb] > querying embedded array properties > 
 
 exports[`embedded array query [oracledb] > querying embedded array properties > multiple conditions same element 1`] = `"[query] select "u0".* from "user" "u0" where exists (select 1 from json_table("u0"."addresses", '$[*]' columns ("city" varchar2(4000) path '$.city', "country" varchar2(4000) path '$.country')) "__je0" where "__je0"."city" = ? and "__je0"."country" = ?)"`;
 
+exports[`embedded array query [oracledb] > querying embedded array properties > multiple embedded array fields 1`] = `"[query] select "u0".* from "user" "u0" where exists (select 1 from json_table("u0"."addresses", '$[*]' columns ("city" varchar2(4000) path '$.city')) "__je0" where "__je0"."city" = ?) and exists (select 1 from json_table("u0"."phones", '$[*]' columns ("type" varchar2(4000) path '$.type')) "__je1" where "__je1"."type" = ?)"`;
+
 exports[`embedded array query [oracledb] > querying embedded array properties > null value 1`] = `"[query] select "u0".* from "user" "u0" where exists (select 1 from json_table("u0"."addresses", '$[*]' columns ("number" number path '$.number')) "__je0" where "__je0"."number" is null)"`;
 
 exports[`embedded array query [oracledb] > querying embedded array properties > operator with type casting 1`] = `"[query] select "u0".* from "user" "u0" where exists (select 1 from json_table("u0"."addresses", '$[*]' columns ("number" number path '$.number')) "__je0" where "__je0"."number" > ?)"`;
+
+exports[`embedded array query [oracledb] > querying embedded array properties > top-level $and with embedded arrays 1`] = `"[query] select "u0".* from "user" "u0" where exists (select 1 from json_table("u0"."addresses", '$[*]' columns ("city" varchar2(4000) path '$.city')) "__je0" where "__je0"."city" = ?) and exists (select 1 from json_table("u0"."addresses", '$[*]' columns ("country" varchar2(4000) path '$.country')) "__je1" where "__je1"."country" = ?)"`;
 
 exports[`embedded array query [sqlite] > querying embedded array properties > $eq null 1`] = `"[query] select \`u0\`.* from \`user\` as \`u0\` where exists (select 1 from json_each(\`u0\`.\`addresses\`) as \`__je0\` where json_extract(\`__je0\`.value, '$.number') is null)"`;
 
@@ -196,6 +212,10 @@ exports[`embedded array query [sqlite] > querying embedded array properties > ex
 
 exports[`embedded array query [sqlite] > querying embedded array properties > multiple conditions same element 1`] = `"[query] select \`u0\`.* from \`user\` as \`u0\` where exists (select 1 from json_each(\`u0\`.\`addresses\`) as \`__je0\` where json_extract(\`__je0\`.value, '$.city') = ? and json_extract(\`__je0\`.value, '$.country') = ?)"`;
 
+exports[`embedded array query [sqlite] > querying embedded array properties > multiple embedded array fields 1`] = `"[query] select \`u0\`.* from \`user\` as \`u0\` where exists (select 1 from json_each(\`u0\`.\`addresses\`) as \`__je0\` where json_extract(\`__je0\`.value, '$.city') = ?) and exists (select 1 from json_each(\`u0\`.\`phones\`) as \`__je1\` where json_extract(\`__je1\`.value, '$.type') = ?)"`;
+
 exports[`embedded array query [sqlite] > querying embedded array properties > null value 1`] = `"[query] select \`u0\`.* from \`user\` as \`u0\` where exists (select 1 from json_each(\`u0\`.\`addresses\`) as \`__je0\` where json_extract(\`__je0\`.value, '$.number') is null)"`;
 
 exports[`embedded array query [sqlite] > querying embedded array properties > operator with type casting 1`] = `"[query] select \`u0\`.* from \`user\` as \`u0\` where exists (select 1 from json_each(\`u0\`.\`addresses\`) as \`__je0\` where json_extract(\`__je0\`.value, '$.number') > ?)"`;
+
+exports[`embedded array query [sqlite] > querying embedded array properties > top-level $and with embedded arrays 1`] = `"[query] select \`u0\`.* from \`user\` as \`u0\` where exists (select 1 from json_each(\`u0\`.\`addresses\`) as \`__je0\` where json_extract(\`__je0\`.value, '$.city') = ?) and exists (select 1 from json_each(\`u0\`.\`addresses\`) as \`__je1\` where json_extract(\`__je1\`.value, '$.country') = ?)"`;
