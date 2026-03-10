@@ -1216,11 +1216,21 @@ export class QueryBuilderHelper {
     const { $not, ...rest } = cond;
 
     if (Utils.hasObjectKeys(rest)) {
-      this.appendJsonArrayExists(rest, prop, column, false, parts, allParams);
+      const result = this.buildJsonArrayExists(rest, prop, column, false);
+
+      if (result) {
+        parts.push(result.sql);
+        allParams.push(...result.params);
+      }
     }
 
     if ($not != null) {
-      this.appendJsonArrayExists($not, prop, column, true, parts, allParams);
+      const result = this.buildJsonArrayExists($not, prop, column, true);
+
+      if (result) {
+        parts.push(result.sql);
+        allParams.push(...result.params);
+      }
     }
 
     if (parts.length === 0) {
@@ -1230,24 +1240,24 @@ export class QueryBuilderHelper {
     return { sql: parts.join(' and '), params: allParams };
   }
 
-  private appendJsonArrayExists(
+  private buildJsonArrayExists(
     cond: Dictionary,
     prop: EntityProperty,
     column: string,
     negate: boolean,
-    parts: string[],
-    allParams: unknown[],
-  ): void {
+  ): { sql: string; params: unknown[] } | null {
     const jeAlias = `__je${this.#jsonAliasCounter++}`;
     const referencedProps = new Map<string, { name: string; type: string }>();
     const { sql: whereSql, params } = this.buildEmbeddedArrayWhere(cond, prop, jeAlias, referencedProps);
 
-    if (whereSql) {
-      const from = this.#platform.getJsonArrayFromSQL(column, jeAlias, [...referencedProps.values()]);
-      const exists = this.#platform.getJsonArrayExistsSQL(from, whereSql);
-      parts.push(negate ? `not ${exists}` : exists);
-      allParams.push(...params);
+    if (!whereSql) {
+      return null;
     }
+
+    const from = this.#platform.getJsonArrayFromSQL(column, jeAlias, [...referencedProps.values()]);
+    const exists = this.#platform.getJsonArrayExistsSQL(from, whereSql);
+
+    return { sql: negate ? `not ${exists}` : exists, params };
   }
 
   private resolveEmbeddedProp(prop: EntityProperty, key: string): { embProp: EntityProperty; jsonPropName: string } {

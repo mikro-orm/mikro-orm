@@ -170,7 +170,6 @@ export abstract class AbstractSqlPlatform extends Platform {
 
   /**
    * Returns FROM clause for JSON array iteration.
-   * Default implementation uses SQLite's json_each.
    * @internal
    */
   getJsonArrayFromSQL(column: string, alias: string, _properties: { name: string; type: string }[]): string {
@@ -179,11 +178,10 @@ export abstract class AbstractSqlPlatform extends Platform {
 
   /**
    * Returns SQL expression to access an element's property within a JSON array iteration.
-   * Default implementation uses SQLite's json_extract on the value.
    * @internal
    */
   getJsonArrayElementPropertySQL(alias: string, property: string, _type: string): string {
-    return `json_extract(${this.quoteIdentifier(alias)}.value, '$.${property}')`;
+    return `${this.quoteIdentifier(alias)}.${this.quoteIdentifier(property)}`;
   }
 
   /**

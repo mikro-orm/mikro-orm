@@ -18,6 +18,12 @@ import { MySqlNativeQueryBuilder } from './MySqlNativeQueryBuilder.js';
 export class BaseMySqlPlatform extends AbstractSqlPlatform {
   protected override readonly schemaHelper: MySqlSchemaHelper = new MySqlSchemaHelper(this);
   protected override readonly exceptionConverter: MySqlExceptionConverter = new MySqlExceptionConverter();
+  readonly #jsonTypeCasts: Record<string, string> = {
+    string: 'text',
+    number: 'double',
+    bigint: 'bigint',
+    boolean: 'unsigned',
+  };
 
   protected readonly ORDER_BY_NULLS_TRANSLATE = {
     [QueryOrder.asc_nulls_first]: 'is not null',
@@ -172,16 +178,11 @@ export class BaseMySqlPlatform extends AbstractSqlPlatform {
   }
 
   override getJsonArrayFromSQL(column: string, alias: string, properties: { name: string; type: string }[]): string {
-    const typeMap: Record<string, string> = { string: 'text', number: 'double', bigint: 'bigint', boolean: 'unsigned' };
     const columns = properties
-      .map(p => `${this.quoteIdentifier(p.name)} ${typeMap[p.type] ?? 'text'} path '$.${p.name}'`)
+      .map(p => `${this.quoteIdentifier(p.name)} ${this.#jsonTypeCasts[p.type] ?? 'text'} path '$.${p.name}'`)
       .join(', ');
 
     return `json_table(${column}, '$[*]' columns (${columns})) as ${this.quoteIdentifier(alias)}`;
-  }
-
-  override getJsonArrayElementPropertySQL(alias: string, property: string, _type: string): string {
-    return `${this.quoteIdentifier(alias)}.${this.quoteIdentifier(property)}`;
   }
 
   // MySQL does not support correlated json_table inside EXISTS subqueries,

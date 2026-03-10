@@ -36,6 +36,12 @@ const ORACLE_TYPE_MAP: Record<string, unknown> = {
 export class OraclePlatform extends AbstractSqlPlatform {
   protected override readonly schemaHelper: OracleSchemaHelper = new OracleSchemaHelper(this);
   protected override readonly exceptionConverter: OracleExceptionConverter = new OracleExceptionConverter();
+  readonly #jsonTypeCasts: Record<string, string> = {
+    string: 'varchar2(4000)',
+    number: 'number',
+    bigint: 'number',
+    boolean: 'number',
+  };
 
   /** @inheritDoc */
   override lookupExtensions(orm: MikroORM): void {
@@ -339,21 +345,11 @@ export class OraclePlatform extends AbstractSqlPlatform {
   }
 
   override getJsonArrayFromSQL(column: string, alias: string, properties: { name: string; type: string }[]): string {
-    const typeMap: Record<string, string> = {
-      string: 'varchar2(4000)',
-      number: 'number',
-      bigint: 'number',
-      boolean: 'number',
-    };
     const columns = properties
-      .map(p => `${this.quoteIdentifier(p.name)} ${typeMap[p.type] ?? 'varchar2(4000)'} path '$.${p.name}'`)
+      .map(p => `${this.quoteIdentifier(p.name)} ${this.#jsonTypeCasts[p.type] ?? 'varchar2(4000)'} path '$.${p.name}'`)
       .join(', ');
 
     return `json_table(${column}, '$[*]' columns (${columns})) ${this.quoteIdentifier(alias)}`;
-  }
-
-  override getJsonArrayElementPropertySQL(alias: string, property: string, _type: string): string {
-    return `${this.quoteIdentifier(alias)}.${this.quoteIdentifier(property)}`;
   }
 
   override usesEnumCheckConstraints(): boolean {

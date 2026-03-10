@@ -28,6 +28,12 @@ import type { MsSqlDriver } from './MsSqlDriver.js';
 export class MsSqlPlatform extends AbstractSqlPlatform {
   protected override readonly schemaHelper: MsSqlSchemaHelper = new MsSqlSchemaHelper(this);
   protected override readonly exceptionConverter: MsSqlExceptionConverter = new MsSqlExceptionConverter();
+  readonly #jsonTypeCasts: Record<string, string> = {
+    string: 'nvarchar(max)',
+    number: 'float',
+    bigint: 'bigint',
+    boolean: 'bit',
+  };
 
   /** @inheritDoc */
   override lookupExtensions(orm: MikroORM<MsSqlDriver>): void {
@@ -229,21 +235,11 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
   }
 
   override getJsonArrayFromSQL(column: string, alias: string, properties: { name: string; type: string }[]): string {
-    const typeMap: Record<string, string> = {
-      string: 'nvarchar(max)',
-      number: 'float',
-      bigint: 'bigint',
-      boolean: 'bit',
-    };
     const columns = properties
-      .map(p => `${this.quoteIdentifier(p.name)} ${typeMap[p.type] ?? 'nvarchar(max)'} '$.${p.name}'`)
+      .map(p => `${this.quoteIdentifier(p.name)} ${this.#jsonTypeCasts[p.type] ?? 'nvarchar(max)'} '$.${p.name}'`)
       .join(', ');
 
     return `openjson(${column}) with (${columns}) as ${this.quoteIdentifier(alias)}`;
-  }
-
-  override getJsonArrayElementPropertySQL(alias: string, property: string, _type: string): string {
-    return `${this.quoteIdentifier(alias)}.${this.quoteIdentifier(property)}`;
   }
 
   override normalizePrimaryKey<T extends number | string = number | string>(
