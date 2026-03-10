@@ -1,14 +1,9 @@
 import { MikroORM } from '@mikro-orm/sqlite';
-import { mockLogger } from '../../helpers';
-import {
-  Embeddable,
-  Embedded,
-  Entity,
-  Enum,
-  PrimaryKey,
-  Property,
-  ReflectMetadataProvider,
-} from '@mikro-orm/decorators/legacy';
+import { TsMorphMetadataProvider } from '@mikro-orm/reflection';
+import { Embeddable, Embedded, Entity, Enum, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
+
+// GH #6522 reproduction: TsMorph + no entity callback on @Embedded
+// This should NOT cause MetadataError about abstract entity
 
 enum ChangeType {
   BOOLEAN = 'BOOLEAN',
@@ -47,7 +42,8 @@ abstract class AbstractChangeType {
 
 @Embeddable({ discriminatorValue: ChangeType.BOOLEAN })
 class ChangeBooleanValue extends AbstractChangeType {
-  @Embedded(() => BooleanChangeEntry, { array: true })
+  // No entity callback - type inferred by TsMorph
+  @Embedded()
   entries: BooleanChangeEntry[];
 
   constructor({ entries }: { entries: BooleanChangeEntry[] }) {
@@ -58,7 +54,8 @@ class ChangeBooleanValue extends AbstractChangeType {
 
 @Embeddable({ discriminatorValue: ChangeType.STRING })
 class ChangeStringValue extends AbstractChangeType {
-  @Embedded(() => StringChangeEntry, { array: true })
+  // No entity callback - type inferred by TsMorph
+  @Embedded()
   entries: StringChangeEntry[];
 
   constructor({ entries }: { entries: StringChangeEntry[] }) {
@@ -72,7 +69,7 @@ class ChangeOwner {
   @PrimaryKey()
   id: number;
 
-  @Embedded(() => [ChangeBooleanValue, ChangeStringValue], { array: true })
+  @Embedded()
   fields: (ChangeBooleanValue | ChangeStringValue)[];
 
   constructor(id: number, fields: (ChangeBooleanValue | ChangeStringValue)[]) {
@@ -85,7 +82,8 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
-    metadataProvider: ReflectMetadataProvider,
+    metadataProvider: TsMorphMetadataProvider,
+    metadataCache: { enabled: false },
     dbName: ':memory:',
     entities: [ChangeOwner, ChangeBooleanValue, ChangeStringValue, BooleanChangeEntry, StringChangeEntry],
   });
@@ -96,7 +94,7 @@ afterAll(async () => {
   await orm.close(true);
 });
 
-test('GH #6522', async () => {
+test('GH #6522 with TsMorph - no MetadataError on init', async () => {
   const changeOwner = new ChangeOwner(1, [
     new ChangeBooleanValue({ entries: [{ value: true }] }),
     new ChangeStringValue({ entries: [{ value: 'hello' }] }),
@@ -106,7 +104,6 @@ test('GH #6522', async () => {
   await orm.em.flush();
   orm.em.clear();
 
-  // Load and verify nested entries are preserved
   const loaded = await orm.em.findOneOrFail(ChangeOwner, 1);
   expect(loaded.fields).toHaveLength(2);
   expect(loaded.fields[0]).toBeInstanceOf(ChangeBooleanValue);
@@ -115,9 +112,4 @@ test('GH #6522', async () => {
   expect(loaded.fields[1]).toBeInstanceOf(ChangeStringValue);
   expect((loaded.fields[1] as ChangeStringValue).entries).toHaveLength(1);
   expect((loaded.fields[1] as ChangeStringValue).entries[0].value).toBe('hello');
-
-  // Verify no spurious update on flush
-  const mock = mockLogger(orm, ['query']);
-  await orm.em.flush();
-  expect(mock.mock.calls).toHaveLength(0);
 });

@@ -811,6 +811,7 @@ export interface EntityProperty<Owner = any, Target = any> {
   nullable?: boolean;
   inherited?: boolean;
   renamedFrom?: string; // Original property name for STI conflict resolution
+  stiMerged?: boolean; // Property type was merged from multiple polymorphic variants
   stiFieldNames?: string[]; // All field names for STI with conflicting columns (flattened)
   stiFieldNameMap?: Dictionary<string>; // Maps discriminator value to field name
   unsigned?: boolean;

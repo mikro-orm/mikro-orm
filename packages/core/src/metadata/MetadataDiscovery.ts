@@ -188,6 +188,7 @@ export class MetadataDiscovery {
       const newMeta = EntitySchema.fromMetadata(meta).init().meta;
       return this.#metadata.set(newMeta.class, newMeta);
     });
+
     filtered.forEach(meta => this.initAutoincrement(meta));
 
     const forEachProp = (cb: (meta: EntityMetadata, prop: EntityProperty) => unknown) => {
@@ -1312,10 +1313,14 @@ export class MetadataDiscovery {
           if (properties[prop.name] && properties[prop.name].type !== prop.type) {
             properties[prop.name].type = `${properties[prop.name].type} | ${prop.type}`;
             properties[prop.name].runtimeType = 'any';
+            properties[prop.name].stiMerged = true;
             return properties[prop.name];
           }
 
-          return (properties[prop.name] = prop);
+          // Deep copy to prevent mutating the original entity's property —
+          // both from the merge path above (GH #6522/#6523) and from
+          // downstream code that mutates nested arrays like fieldNames.
+          return (properties[prop.name] = Utils.copy(prop));
         });
       };
 
@@ -1598,9 +1603,15 @@ export class MetadataDiscovery {
       const newProp = { ...prop };
       const rootProp = meta.root.properties[prop.name];
 
+      // stiMerged is set during inlineProperties when a property was merged
+      // from multiple polymorphic variants with different types. The flag is
+      // cleared implicitly when the first child claims the root property via
+      // addProperty below, so subsequent children correctly trigger renaming.
+      const typesMatch = rootProp?.type === prop.type || rootProp?.stiMerged === true;
+
       if (
         rootProp &&
-        (rootProp.type !== prop.type ||
+        (!typesMatch ||
           (rootProp.fieldNames && prop.fieldNames && !compareArrays(rootProp.fieldNames, prop.fieldNames)))
       ) {
         const name = newProp.name;
