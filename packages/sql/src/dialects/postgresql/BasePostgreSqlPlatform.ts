@@ -491,7 +491,7 @@ export class BasePostgreSqlPlatform extends AbstractSqlPlatform {
   }
 
   override getJsonArrayElementPropertySQL(alias: string, property: string, type: string): string {
-    const expr = `${this.quoteIdentifier(alias)}->>'${property}'`;
+    const expr = `${this.quoteIdentifier(alias)}->>${this.quoteValue(property)}`;
 
     return type in this.#jsonTypeCasts ? `(${expr})::${this.#jsonTypeCasts[type]}` : expr;
   }
