@@ -1267,7 +1267,9 @@ export class QueryBuilderHelper {
       throw ValidationError.invalidEmbeddableQuery(this.#entityName, key, prop.type);
     }
 
-    const jsonPropName = embProp.fieldNames[0].replace(`${prop.fieldNames[0]}~`, '');
+    const prefix = `${prop.fieldNames[0]}~`;
+    const raw = embProp.fieldNames[0];
+    const jsonPropName = raw.startsWith(prefix) ? raw.slice(prefix.length) : raw;
 
     return { embProp, jsonPropName };
   }
@@ -1349,11 +1351,16 @@ export class QueryBuilderHelper {
   }
 
   private buildEmbeddedArrayOperatorCondition(lhs: string, value: Dictionary, params: unknown[]): string {
+    const unsupported = ['$re', '$fulltext', '$some', '$none', '$every', '$size'];
     const parts: string[] = [];
     // Clone to avoid getOperatorReplacement mutating the original (it sets value[op] = null for $exists).
     value = { ...value };
 
     for (const op of Object.keys(value)) {
+      if (unsupported.includes(op)) {
+        throw new ValidationError(`Operator ${op} is not supported in embedded array queries`);
+      }
+
       const replacement = this.getOperatorReplacement(op, value);
       const val = value[op];
 
@@ -1367,6 +1374,8 @@ export class QueryBuilderHelper {
           parts.push(`${lhs} ${replacement} (${val.map(() => '?').join(', ')})`);
         }
       } else if (op === '$exists') {
+        parts.push(`${lhs} ${replacement} null`);
+      } else if (val === null) {
         parts.push(`${lhs} ${replacement} null`);
       } else {
         parts.push(`${lhs} ${replacement} ?`);
