@@ -178,6 +178,15 @@ export abstract class AbstractSqlPlatform extends Platform {
     }
   }
 
+  /** @internal */
+  protected validateJsonPropertyName(name: string): void {
+    if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(name)) {
+      throw new Error(
+        `Invalid JSON property name: '${name}'. JSON property names must contain only alphanumeric characters and underscores.`,
+      );
+    }
+  }
+
   /**
    * Returns FROM clause for JSON array iteration.
    * @internal

@@ -16,6 +16,9 @@ class Event {
 
   @Property({ type: 'json', nullable: true })
   metadata?: Record<string, any>;
+
+  @Property({ nullable: true })
+  description?: string;
 }
 
 describe('$elemMatch on JSON properties in sqlite', () => {
@@ -106,5 +109,18 @@ describe('$elemMatch on JSON properties in sqlite', () => {
       tags: { $elemMatch: { name: 'typescript' } },
     });
     expect(r8).toHaveLength(1);
+  });
+
+  test('$elemMatch on non-JSON property throws', async () => {
+    // non-JSON properties reject $elemMatch at the criteria node level
+    await expect(orm.em.fork().find(Event, { description: { $elemMatch: { foo: 'bar' } } } as any)).rejects.toThrow(
+      `Trying to query by not existing property Event.foo`,
+    );
+  });
+
+  test('$elemMatch with invalid property name throws', async () => {
+    await expect(
+      orm.em.fork().find(Event, { tags: { $elemMatch: { ["x'; drop table event --"]: 'val' } } } as any),
+    ).rejects.toThrow(`Invalid JSON property name`);
   });
 });

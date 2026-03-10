@@ -280,7 +280,7 @@ export class QueryHelper {
       }
 
       // oxfmt-ignore
-      const isJsonProperty = prop?.customType instanceof JsonType && !isRaw(value) && (Utils.isPlainObject(value) ? Object.keys(value)[0] !== '$eq' : !Array.isArray(value));
+      const isJsonProperty = prop?.customType instanceof JsonType && !isRaw(value) && (Utils.isPlainObject(value) ? !['$eq', '$elemMatch'].includes(Object.keys(value)[0]) : !Array.isArray(value));
 
       if (isJsonProperty && prop?.kind !== ReferenceKind.EMBEDDED) {
         return this.processJsonCondition<T>(

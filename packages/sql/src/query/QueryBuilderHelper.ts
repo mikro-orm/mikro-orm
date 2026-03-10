@@ -3,6 +3,7 @@ import {
   ALIAS_REPLACEMENT_RE,
   ArrayType,
   type Dictionary,
+  JsonType,
   type EntityData,
   type EntityKey,
   type EntityMetadata,
@@ -673,6 +674,12 @@ export class QueryBuilderHelper {
       // When combined with other operators (e.g. $contains), processObjectSubCondition
       // splits them first (size > 1), so $elemMatch arrives here alone.
       if (prop && cond[key].$elemMatch != null && Utils.getObjectKeysSize(cond[key]) === 1) {
+        if (!(prop.customType instanceof JsonType)) {
+          throw new ValidationError(
+            `$elemMatch can only be used on JSON array properties, but '${this.#entityName}.${prop.name}' has type '${prop.type}'`,
+          );
+        }
+
         return this.processJsonElemMatch(cond[key].$elemMatch, prop, a);
       }
     }
@@ -1394,12 +1401,18 @@ export class QueryBuilderHelper {
 
         for (const item of items) {
           const sub = this.buildArrayElementWhere(item, jeAlias, referencedProps, resolveProperty, invalidObjectError);
-          subParts.push(sub.sql);
-          params.push(...sub.params);
+
+          if (sub.sql) {
+            subParts.push(sub.sql);
+            params.push(...sub.params);
+          }
         }
 
-        const joiner = k === '$or' ? ' or ' : ' and ';
-        parts.push(`(${subParts.join(joiner)})`);
+        if (subParts.length > 0) {
+          const joiner = k === '$or' ? ' or ' : ' and ';
+          parts.push(`(${subParts.join(joiner)})`);
+        }
+
         continue;
       }
 
@@ -1407,8 +1420,12 @@ export class QueryBuilderHelper {
       // "this element does not match the condition".
       if (k === '$not') {
         const sub = this.buildArrayElementWhere(cond[k], jeAlias, referencedProps, resolveProperty, invalidObjectError);
-        parts.push(`not (${sub.sql})`);
-        params.push(...sub.params);
+
+        if (sub.sql) {
+          parts.push(`not (${sub.sql})`);
+          params.push(...sub.params);
+        }
+
         continue;
       }
 

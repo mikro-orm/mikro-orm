@@ -674,6 +674,16 @@ describe('embedded entities in postgresql', () => {
       `select "u0".* from "user" as "u0" where not exists (select 1 from jsonb_array_elements("u0"."addresses") as "__je0" where "__je0"->>'city' = ?)`,
     );
 
+    // $or + $not combined: inner $not applies element-level negation
+    mock.mockReset();
+    const r6b = await orm.em.fork().find(User, {
+      addresses: { $or: [{ $not: { city: 'London 4A' } }, { country: 'UK 4A' }] },
+    });
+    expect(r6b).toHaveLength(1);
+    expect(mock.mock.calls[0][0]).toMatch(
+      `select "u0".* from "user" as "u0" where exists (select 1 from jsonb_array_elements("u0"."addresses") as "__je0" where (not ("__je0"->>'city' = ?) or "__je0"->>'country' = ?))`,
+    );
+
     // combined with regular conditions
     mock.mockReset();
     const r7 = await orm.em.fork().find(User, { email: user.email, addresses: { city: 'London 4A' } });
