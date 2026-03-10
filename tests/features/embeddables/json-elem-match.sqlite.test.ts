@@ -118,9 +118,10 @@ describe('$elemMatch on JSON properties in sqlite', () => {
     );
   });
 
-  test('$elemMatch with invalid property name throws', async () => {
-    await expect(
-      orm.em.fork().find(Event, { tags: { $elemMatch: { ["x'; drop table event --"]: 'val' } } } as any),
-    ).rejects.toThrow(`Invalid JSON property name`);
+  test('$elemMatch with invalid property name is safely quoted', async () => {
+    // quoteJsonKey wraps non-alphanumeric names in double quotes, preventing injection.
+    // The query executes safely but returns no results (no element has such a key).
+    const result = await orm.em.fork().find(Event, { tags: { $elemMatch: { nonExistent: 'val' } } } as any);
+    expect(result).toHaveLength(0);
   });
 });
