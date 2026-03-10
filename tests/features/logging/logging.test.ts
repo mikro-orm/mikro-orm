@@ -225,8 +225,7 @@ describe('logging', () => {
         entities: [Example],
         dbName: ':memory:',
         slowQueryThreshold: 0,
-        slowQueryLoggerFactory: opts =>
-          new DefaultLogger({ ...opts, writer: zeroLoggerMock }),
+        slowQueryLoggerFactory: opts => new DefaultLogger({ ...opts, writer: zeroLoggerMock }),
       });
       await zeroOrm.schema.create();
       await zeroOrm.em.insert(Example, { id: 1 });
@@ -260,9 +259,7 @@ describe('logging', () => {
       await fallbackOrm.em.fork().findOneOrFail(Example, { id: 1 });
       nowSpy.mockRestore();
 
-      const slowCalls = mainLoggerMock.mock.calls.filter(
-        (call: string[]) => call[0].includes('[slow-query]'),
-      );
+      const slowCalls = mainLoggerMock.mock.calls.filter((call: string[]) => call[0].includes('[slow-query]'));
       expect(slowCalls).toHaveLength(1);
       expect(slowCalls[0][0]).toContain('took 5 ms');
 

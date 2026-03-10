@@ -13,7 +13,10 @@ export abstract class Connection {
   protected readonly options: ConnectionOptions;
   protected readonly logger: Logger;
   protected connected = false;
-  readonly #connectionLabel: { type: ConnectionType; name: string | undefined };
+
+  get #connectionLabel(): { type: ConnectionType; name: string | undefined } {
+    return { type: this.type, name: this.options.name || this.config.get('name') || this.options.host };
+  }
 
   constructor(
     protected readonly config: Configuration,
@@ -22,7 +25,6 @@ export abstract class Connection {
   ) {
     this.logger = this.config.getLogger();
     this.platform = this.config.getPlatform();
-    this.#connectionLabel = { type, name: options?.name || config.get('name') || options?.host || config.get('host') };
 
     if (options) {
       this.options = Utils.copy(options);
