@@ -83,7 +83,9 @@ export class DefaultLogger implements Logger {
    * @inheritDoc
    */
   logQuery(context: { query: string } & LogContext): void {
-    if (!this.isEnabled('query', context)) {
+    const namespace: LoggerNamespace = context.namespace ?? 'query';
+
+    if (!this.isEnabled(namespace, context)) {
       return;
     }
 
@@ -108,7 +110,7 @@ export class DefaultLogger implements Logger {
       msg += colors.cyan(` (via ${context.connection.type} connection '${context.connection.name}')`);
     }
 
-    return this.log('query', msg, context);
+    return this.log(namespace, msg, context);
   }
 
   static create(this: void, options: LoggerOptions): DefaultLogger {

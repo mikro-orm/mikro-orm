@@ -29,7 +29,7 @@ export interface Logger {
   isEnabled(namespace: LoggerNamespace, context?: LogContext): boolean;
 }
 
-export type LoggerNamespace = 'query' | 'query-params' | 'schema' | 'discovery' | 'info' | 'deprecated';
+export type LoggerNamespace = 'query' | 'query-params' | 'schema' | 'discovery' | 'info' | 'deprecated' | 'slow-query';
 
 export interface LogContext extends Dictionary {
   query?: string;

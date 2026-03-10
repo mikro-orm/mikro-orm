@@ -192,18 +192,48 @@ export abstract class Connection {
 
     try {
       const res = await cb();
+      const took = Date.now() - now;
+
       this.logQuery(query, {
         ...context,
-        took: Date.now() - now,
+        took,
+        results: Array.isArray(res) ? res.length : undefined,
+        affected: Utils.isPlainObject<QueryResult>(res) ? res.affectedRows : undefined,
+      });
+      this.logSlowQuery(query, context, took, {
         results: Array.isArray(res) ? res.length : undefined,
         affected: Utils.isPlainObject<QueryResult>(res) ? res.affectedRows : undefined,
       });
 
       return res;
     } catch (e) {
-      this.logQuery(query, { ...context, took: Date.now() - now, level: 'error' });
+      const took = Date.now() - now;
+      this.logQuery(query, { ...context, took, level: 'error' });
+      this.logSlowQuery(query, context, took);
       throw e;
     }
+  }
+
+  private logSlowQuery(query: string, context: LogContext | undefined, took: number, extra?: LogContext): void {
+    const threshold = this.config.getSlowQueryThreshold();
+
+    if (!threshold || took < threshold) {
+      return;
+    }
+
+    this.config.getSlowQueryLogger().logQuery({
+      ...context,
+      ...extra,
+      enabled: true,
+      level: 'warning',
+      namespace: 'slow-query',
+      took,
+      connection: {
+        type: this.type,
+        name: this.options.name || this.config.get('name') || this.options.host,
+      },
+      query,
+    });
   }
 
   protected logQuery(query: string, context: LogContext = {}): void {

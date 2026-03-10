@@ -125,6 +125,93 @@ describe('logging', () => {
     expect(mockedLogger).toHaveBeenCalledTimes(1);
   });
 
+  describe('slow query logging', () => {
+    let slowOrm: MikroORM;
+    let slowLoggerMock: Mock;
+
+    beforeAll(async () => {
+      slowLoggerMock = vi.fn();
+
+      slowOrm = await MikroORM.init({
+        metadataProvider: ReflectMetadataProvider,
+        entities: [Example],
+        dbName: ':memory:',
+        slowQueryThreshold: 3,
+        slowQueryLoggerFactory: opts =>
+          new DefaultLogger({
+            ...opts,
+            writer: slowLoggerMock,
+          }),
+      });
+
+      await slowOrm.schema.create();
+    });
+
+    afterAll(async () => {
+      await slowOrm.close(true);
+    });
+
+    beforeEach(async () => {
+      await slowOrm.schema.clear();
+      const example = new Example();
+      example.id = 1;
+      await slowOrm.em.persist(example).flush();
+      slowOrm.em.clear();
+      vi.clearAllMocks();
+    });
+
+    it('logs slow queries via slow-query namespace when threshold is exceeded', async () => {
+      let time = 0;
+      const nowSpy = vi.spyOn(Date, 'now').mockImplementation(() => {
+        const current = time;
+        time += 5;
+        return current;
+      });
+
+      await slowOrm.em.fork().findOneOrFail(Example, { id: 1 });
+
+      expect(slowLoggerMock).toHaveBeenCalledTimes(1);
+      const msg = slowLoggerMock.mock.calls[0][0] as string;
+      expect(msg).toContain('[slow-query]');
+      expect(msg).toContain('took 5 ms');
+
+      nowSpy.mockRestore();
+    });
+
+    it('does not log when query is faster than threshold', async () => {
+      let time = 0;
+      const nowSpy = vi.spyOn(Date, 'now').mockImplementation(() => {
+        const current = time;
+        time += 1; // 1ms < 3ms threshold
+        return current;
+      });
+
+      await slowOrm.em.fork().findOneOrFail(Example, { id: 1 });
+
+      expect(slowLoggerMock).not.toHaveBeenCalled();
+
+      nowSpy.mockRestore();
+    });
+
+    it('logs slow queries for failed queries too', async () => {
+      let time = 0;
+      const nowSpy = vi.spyOn(Date, 'now').mockImplementation(() => {
+        const current = time;
+        time += 5;
+        return current;
+      });
+
+      const em = slowOrm.em.fork();
+      await expect(em.insert(Example, { id: 1 })).rejects.toThrow();
+
+      expect(slowLoggerMock).toHaveBeenCalledTimes(1);
+      const msg = slowLoggerMock.mock.calls[0][0] as string;
+      expect(msg).toContain('[slow-query]');
+
+      nowSpy.mockRestore();
+    });
+  });
+
   test('json properties respect field names', async () => {
     const mock = mockLogger(orm, ['query', 'query-params']);
 
