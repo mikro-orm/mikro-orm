@@ -100,7 +100,7 @@ const events = await em.find(Event, {
 });
 ```
 
-> For [embedded array properties](./embeddables.md#arrays-of-embeddables), element-level querying works implicitly without `$elemMatch` since the ORM knows the schema from the embeddable metadata.
+> For [embedded array properties](./embeddables.md#array-of-embeddables), element-level querying works implicitly without `$elemMatch` since the ORM knows the schema from the embeddable metadata.
 
 ## Indexes on JSON properties
 
