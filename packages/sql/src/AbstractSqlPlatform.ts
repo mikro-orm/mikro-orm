@@ -181,7 +181,7 @@ export abstract class AbstractSqlPlatform extends Platform {
   }
 
   /** @internal */
-  protected validateJsonPropertyName(name: string): void {
+  validateJsonPropertyName(name: string): void {
     if (!AbstractSqlPlatform.#JSON_PROPERTY_NAME_RE.test(name)) {
       throw new Error(
         `Invalid JSON property name: '${name}'. JSON property names must contain only alphanumeric characters and underscores.`,

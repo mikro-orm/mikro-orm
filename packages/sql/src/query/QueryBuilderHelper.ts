@@ -1370,7 +1370,11 @@ export class QueryBuilderHelper {
       cond,
       jeAlias,
       referencedProps,
-      (key, value) => ({ name: key, type: this.inferJsonValueType(value) }),
+      (key, value) => {
+        this.#platform.validateJsonPropertyName(key);
+
+        return { name: key, type: this.inferJsonValueType(value) };
+      },
       () => ValidationError.invalidQueryCondition(cond),
     );
   }
