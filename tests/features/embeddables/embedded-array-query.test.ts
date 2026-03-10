@@ -181,25 +181,25 @@ describe.each(Utils.keys(options))('embedded array query [%s]', type => {
 
     // empty $or produces 1 = 1 (no restriction)
     mock.mockReset();
-    const r12 = await orm.em.fork().find(User, { addresses: { $or: [] } } as any);
+    const r12 = await orm.em.fork().find(User, { addresses: { $or: [] } });
     expect(r12).toHaveLength(1);
     expect(mock.mock.calls[0][0]).toMatchSnapshot('empty $or');
 
     // empty $and produces 1 = 1 (no restriction)
     mock.mockReset();
-    const r13 = await orm.em.fork().find(User, { addresses: { $and: [] } } as any);
+    const r13 = await orm.em.fork().find(User, { addresses: { $and: [] } });
     expect(r13).toHaveLength(1);
     expect(mock.mock.calls[0][0]).toMatchSnapshot('empty $and');
 
     // $or with empty object items is handled gracefully
     mock.mockReset();
-    const r14 = await orm.em.fork().find(User, { addresses: { $or: [{}] } } as any);
+    const r14 = await orm.em.fork().find(User, { addresses: { $or: [{}] } });
     expect(r14).toHaveLength(1);
     expect(mock.mock.calls[0][0]).toMatchSnapshot('$or with empty object');
 
     // $not with empty object is handled gracefully
     mock.mockReset();
-    const r15 = await orm.em.fork().find(User, { addresses: { $not: {} } } as any);
+    const r15 = await orm.em.fork().find(User, { addresses: { $not: {} } });
     expect(r15).toHaveLength(1);
     expect(mock.mock.calls[0][0]).toMatchSnapshot('$not with empty object');
 
@@ -229,13 +229,13 @@ describe.each(Utils.keys(options))('embedded array query [%s]', type => {
 
     // element-level $not inside $or
     mock.mockReset();
-    const r20 = await orm.em.fork().find(User, { addresses: { $or: [{ $not: { city: 'Nonexistent' } }] } } as any);
+    const r20 = await orm.em.fork().find(User, { addresses: { $or: [{ $not: { city: 'Nonexistent' } }] } });
     expect(r20).toHaveLength(1);
     expect(mock.mock.calls[0][0]).toMatchSnapshot('element-level $not inside $or');
 
     // element-level $not with empty object inside $or is handled gracefully
     mock.mockReset();
-    const r21 = await orm.em.fork().find(User, { addresses: { $or: [{ $not: {} }] } } as any);
+    const r21 = await orm.em.fork().find(User, { addresses: { $or: [{ $not: {} }] } });
     expect(r21).toHaveLength(1);
     expect(mock.mock.calls[0][0]).toMatchSnapshot('element-level $not with empty object');
 
@@ -286,9 +286,20 @@ describe.each(Utils.keys(options))('embedded array query [%s]', type => {
       'Operator $overlap is not supported in embedded array queries',
     );
 
+    // $not with non-object value throws
+    await expect(orm.em.fork().find(User, { addresses: { $not: 'London' } } as any)).rejects.toThrow(
+      'Invalid query: $not in embedded array queries expects an object value',
+    );
+
+    // $like operator
+    mock.mockReset();
+    const r26 = await orm.em.fork().find(User, { addresses: { city: { $like: 'London%' } } });
+    expect(r26).toHaveLength(1);
+    expect(mock.mock.calls[0][0]).toMatchSnapshot('$like operator');
+
     // querying two different embedded array fields in the same find (unique aliases)
     mock.mockReset();
-    const r24 = await orm.em.fork().find(User, { addresses: { city: 'London 4A' }, phones: { type: 'home' } } as any);
+    const r24 = await orm.em.fork().find(User, { addresses: { city: 'London 4A' }, phones: { type: 'home' } });
     expect(r24).toHaveLength(1);
     expect(mock.mock.calls[0][0]).toMatchSnapshot('multiple embedded array fields');
 

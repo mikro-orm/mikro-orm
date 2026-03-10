@@ -195,13 +195,8 @@ export class SqlitePlatform extends AbstractSqlPlatform {
     return value as number;
   }
 
-  override getJsonArrayFromSQL(column: string, alias: string, _properties: { name: string; type: string }[]): string {
-    return `json_each(${column}) as ${this.quoteIdentifier(alias)}`;
-  }
-
   override getJsonArrayElementPropertySQL(alias: string, property: string, _type: string): string {
-    const quoteKey = (key: string) => (/^[a-z]\w*$/i.exec(key) ? key : `"${key}"`);
-    return `json_extract(${this.quoteIdentifier(alias)}.value, '$.${quoteKey(property)}')`;
+    return `json_extract(${this.quoteIdentifier(alias)}.value, '$.${this.quoteJsonKey(property)}')`;
   }
 
   override quoteValue(value: any): string {

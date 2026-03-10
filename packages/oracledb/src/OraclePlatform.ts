@@ -312,10 +312,7 @@ export class OraclePlatform extends AbstractSqlPlatform {
       return raw(`json_equal(${root}, json(?))`, [value]);
     }
 
-    /* v8 ignore next: special-char JSON key quoting */
-    const quoteKey = (key: string) => (/^[a-z]\w*$/i.exec(key) ? key : `"${key}"`);
-
-    return raw(`json_value(${root}, '$.${b.map(quoteKey).join('.')}')`);
+    return raw(`json_value(${root}, '$.${b.map(this.quoteJsonKey).join('.')}')`);
   }
 
   override processJsonCondition<T extends object>(
@@ -345,11 +342,10 @@ export class OraclePlatform extends AbstractSqlPlatform {
   }
 
   override getJsonArrayFromSQL(column: string, alias: string, properties: { name: string; type: string }[]): string {
-    const quoteKey = (key: string) => (/^[a-z]\w*$/i.exec(key) ? key : `"${key}"`);
     const columns = properties
       .map(
         p =>
-          `${this.quoteIdentifier(p.name)} ${this.#jsonTypeCasts[p.type] ?? 'varchar2(4000)'} path '$.${quoteKey(p.name)}'`,
+          `${this.quoteIdentifier(p.name)} ${this.#jsonTypeCasts[p.type] ?? 'varchar2(4000)'} path '$.${this.quoteJsonKey(p.name)}'`,
       )
       .join(', ');
 

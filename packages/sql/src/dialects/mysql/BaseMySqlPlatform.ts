@@ -178,9 +178,11 @@ export class BaseMySqlPlatform extends AbstractSqlPlatform {
   }
 
   override getJsonArrayFromSQL(column: string, alias: string, properties: { name: string; type: string }[]): string {
-    const quoteKey = (key: string) => (/^[a-z]\w*$/i.exec(key) ? key : `"${key}"`);
     const columns = properties
-      .map(p => `${this.quoteIdentifier(p.name)} ${this.#jsonTypeCasts[p.type] ?? 'text'} path '$.${quoteKey(p.name)}'`)
+      .map(
+        p =>
+          `${this.quoteIdentifier(p.name)} ${this.#jsonTypeCasts[p.type] ?? 'text'} path '$.${this.quoteJsonKey(p.name)}'`,
+      )
       .join(', ');
 
     return `json_table(${column}, '$[*]' columns (${columns})) as ${this.quoteIdentifier(alias)}`;

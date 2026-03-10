@@ -8,6 +8,8 @@ exports[`embedded array query [mariadb] > querying embedded array properties > $
 
 exports[`embedded array query [mariadb] > querying embedded array properties > $in operator 1`] = `"[query] select \`u0\`.* from \`user\` as \`u0\` where (select 1 from json_table(\`u0\`.\`addresses\`, '$[*]' columns (\`city\` text path '$.city')) as \`__je0\` where \`__je0\`.\`city\` in (?, ?) limit 1) is not null"`;
 
+exports[`embedded array query [mariadb] > querying embedded array properties > $like operator 1`] = `"[query] select \`u0\`.* from \`user\` as \`u0\` where (select 1 from json_table(\`u0\`.\`addresses\`, '$[*]' columns (\`city\` text path '$.city')) as \`__je0\` where \`__je0\`.\`city\` like ? limit 1) is not null"`;
+
 exports[`embedded array query [mariadb] > querying embedded array properties > $ne null 1`] = `"[query] select \`u0\`.* from \`user\` as \`u0\` where (select 1 from json_table(\`u0\`.\`addresses\`, '$[*]' columns (\`number\` double path '$.number')) as \`__je0\` where \`__je0\`.\`number\` is not null limit 1) is not null"`;
 
 exports[`embedded array query [mariadb] > querying embedded array properties > $nin empty array 1`] = `"[query] select \`u0\`.* from \`user\` as \`u0\` where (select 1 from json_table(\`u0\`.\`addresses\`, '$[*]' columns (\`city\` text path '$.city')) as \`__je0\` where 1 = 1 limit 1) is not null"`;
@@ -51,6 +53,8 @@ exports[`embedded array query [mssql] > querying embedded array properties > $ex
 exports[`embedded array query [mssql] > querying embedded array properties > $in empty array 1`] = `"[query] select [u0].* from [user] as [u0] where exists (select 1 from openjson([u0].[addresses]) with ([city] nvarchar(max) '$.city') as [__je0] where 1 = 0)"`;
 
 exports[`embedded array query [mssql] > querying embedded array properties > $in operator 1`] = `"[query] select [u0].* from [user] as [u0] where exists (select 1 from openjson([u0].[addresses]) with ([city] nvarchar(max) '$.city') as [__je0] where [__je0].[city] in (?, ?))"`;
+
+exports[`embedded array query [mssql] > querying embedded array properties > $like operator 1`] = `"[query] select [u0].* from [user] as [u0] where exists (select 1 from openjson([u0].[addresses]) with ([city] nvarchar(max) '$.city') as [__je0] where [__je0].[city] like ?)"`;
 
 exports[`embedded array query [mssql] > querying embedded array properties > $ne null 1`] = `"[query] select [u0].* from [user] as [u0] where exists (select 1 from openjson([u0].[addresses]) with ([number] float '$.number') as [__je0] where [__je0].[number] is not null)"`;
 
@@ -96,6 +100,8 @@ exports[`embedded array query [mysql] > querying embedded array properties > $in
 
 exports[`embedded array query [mysql] > querying embedded array properties > $in operator 1`] = `"[query] select \`u0\`.* from \`user\` as \`u0\` where (select 1 from json_table(\`u0\`.\`addresses\`, '$[*]' columns (\`city\` text path '$.city')) as \`__je0\` where \`__je0\`.\`city\` in (?, ?) limit 1) is not null"`;
 
+exports[`embedded array query [mysql] > querying embedded array properties > $like operator 1`] = `"[query] select \`u0\`.* from \`user\` as \`u0\` where (select 1 from json_table(\`u0\`.\`addresses\`, '$[*]' columns (\`city\` text path '$.city')) as \`__je0\` where \`__je0\`.\`city\` like ? limit 1) is not null"`;
+
 exports[`embedded array query [mysql] > querying embedded array properties > $ne null 1`] = `"[query] select \`u0\`.* from \`user\` as \`u0\` where (select 1 from json_table(\`u0\`.\`addresses\`, '$[*]' columns (\`number\` double path '$.number')) as \`__je0\` where \`__je0\`.\`number\` is not null limit 1) is not null"`;
 
 exports[`embedded array query [mysql] > querying embedded array properties > $nin empty array 1`] = `"[query] select \`u0\`.* from \`user\` as \`u0\` where (select 1 from json_table(\`u0\`.\`addresses\`, '$[*]' columns (\`city\` text path '$.city')) as \`__je0\` where 1 = 1 limit 1) is not null"`;
@@ -140,6 +146,8 @@ exports[`embedded array query [oracledb] > querying embedded array properties > 
 
 exports[`embedded array query [oracledb] > querying embedded array properties > $in operator 1`] = `"[query] select "u0".* from "user" "u0" where exists (select 1 from json_table("u0"."addresses", '$[*]' columns ("city" varchar2(4000) path '$.city')) "__je0" where "__je0"."city" in (?, ?))"`;
 
+exports[`embedded array query [oracledb] > querying embedded array properties > $like operator 1`] = `"[query] select "u0".* from "user" "u0" where exists (select 1 from json_table("u0"."addresses", '$[*]' columns ("city" varchar2(4000) path '$.city')) "__je0" where "__je0"."city" like ?)"`;
+
 exports[`embedded array query [oracledb] > querying embedded array properties > $ne null 1`] = `"[query] select "u0".* from "user" "u0" where exists (select 1 from json_table("u0"."addresses", '$[*]' columns ("number" number path '$.number')) "__je0" where "__je0"."number" is not null)"`;
 
 exports[`embedded array query [oracledb] > querying embedded array properties > $nin empty array 1`] = `"[query] select "u0".* from "user" "u0" where exists (select 1 from json_table("u0"."addresses", '$[*]' columns ("city" varchar2(4000) path '$.city')) "__je0" where 1 = 1)"`;
@@ -183,6 +191,8 @@ exports[`embedded array query [sqlite] > querying embedded array properties > $e
 exports[`embedded array query [sqlite] > querying embedded array properties > $in empty array 1`] = `"[query] select \`u0\`.* from \`user\` as \`u0\` where exists (select 1 from json_each(\`u0\`.\`addresses\`) as \`__je0\` where 1 = 0)"`;
 
 exports[`embedded array query [sqlite] > querying embedded array properties > $in operator 1`] = `"[query] select \`u0\`.* from \`user\` as \`u0\` where exists (select 1 from json_each(\`u0\`.\`addresses\`) as \`__je0\` where json_extract(\`__je0\`.value, '$.city') in (?, ?))"`;
+
+exports[`embedded array query [sqlite] > querying embedded array properties > $like operator 1`] = `"[query] select \`u0\`.* from \`user\` as \`u0\` where exists (select 1 from json_each(\`u0\`.\`addresses\`) as \`__je0\` where json_extract(\`__je0\`.value, '$.city') like ?)"`;
 
 exports[`embedded array query [sqlite] > querying embedded array properties > $ne null 1`] = `"[query] select \`u0\`.* from \`user\` as \`u0\` where exists (select 1 from json_each(\`u0\`.\`addresses\`) as \`__je0\` where json_extract(\`__je0\`.value, '$.number') is not null)"`;
 

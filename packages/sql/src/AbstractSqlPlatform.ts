@@ -104,13 +104,23 @@ export abstract class AbstractSqlPlatform extends Platform {
     value?: unknown,
   ): string | RawQueryFragment {
     const [a, ...b] = path;
-    const quoteKey = (key: string) => (/^[a-z]\w*$/i.exec(key) ? key : `"${key}"`);
 
     if (aliased) {
-      return raw(alias => `json_extract(${this.quoteIdentifier(`${alias}.${a}`)}, '$.${b.map(quoteKey).join('.')}')`);
+      return raw(
+        alias => `json_extract(${this.quoteIdentifier(`${alias}.${a}`)}, '$.${b.map(this.quoteJsonKey).join('.')}')`,
+      );
     }
 
-    return raw(`json_extract(${this.quoteIdentifier(a)}, '$.${b.map(quoteKey).join('.')}')`);
+    return raw(`json_extract(${this.quoteIdentifier(a)}, '$.${b.map(this.quoteJsonKey).join('.')}')`);
+  }
+
+  /**
+   * Quotes a key for use inside a JSON path expression (e.g. `$.key`).
+   * Simple alphanumeric keys are left unquoted; others are wrapped in double quotes.
+   * @internal
+   */
+  quoteJsonKey(key: string): string {
+    return /^[a-z]\w*$/i.exec(key) ? key : `"${key}"`;
   }
 
   override getJsonIndexDefinition(index: IndexDef): string[] {

@@ -1224,7 +1224,11 @@ export class QueryBuilderHelper {
       }
     }
 
-    if ($not != null && Utils.isPlainObject($not)) {
+    if ($not != null) {
+      if (!Utils.isPlainObject($not)) {
+        throw new ValidationError(`Invalid query: $not in embedded array queries expects an object value`);
+      }
+
       const result = this.buildJsonArrayExists($not, prop, column, true);
 
       if (result) {
