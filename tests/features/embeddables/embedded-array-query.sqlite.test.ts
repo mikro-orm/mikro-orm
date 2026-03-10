@@ -172,6 +172,30 @@ describe('embedded array query in sqlite', () => {
     expect(r12b).toHaveLength(1);
     expect(mock.mock.calls[0][0]).toMatch('select `u0`.* from `user` as `u0` where 1 = 1');
 
+    // null value in element property
+    mock.mockReset();
+    const r12c = await orm.em.fork().find(User, { addresses: { number: null } });
+    expect(r12c).toHaveLength(0); // no addresses have null number
+    expect(mock.mock.calls[0][0]).toMatch(
+      "select `u0`.* from `user` as `u0` where exists (select 1 from json_each(`u0`.`addresses`) as `__je0` where json_extract(`__je0`.value, '$.number') is null)",
+    );
+
+    // $in with empty array produces 1 = 0 (no match)
+    mock.mockReset();
+    const r13 = await orm.em.fork().find(User, { addresses: { city: { $in: [] } } });
+    expect(r13).toHaveLength(0);
+    expect(mock.mock.calls[0][0]).toMatch(
+      'select `u0`.* from `user` as `u0` where exists (select 1 from json_each(`u0`.`addresses`) as `__je0` where 1 = 0)',
+    );
+
+    // $nin with empty array produces 1 = 1 (always true)
+    mock.mockReset();
+    const r14 = await orm.em.fork().find(User, { addresses: { city: { $nin: [] } } });
+    expect(r14).toHaveLength(1);
+    expect(mock.mock.calls[0][0]).toMatch(
+      'select `u0`.* from `user` as `u0` where exists (select 1 from json_each(`u0`.`addresses`) as `__je0` where 1 = 1)',
+    );
+
     // $in with non-array value throws
     await expect(orm.em.fork().find(User, { addresses: { city: { $in: null as any } } })).rejects.toThrow(
       'Invalid query: $in operator expects an array value',
