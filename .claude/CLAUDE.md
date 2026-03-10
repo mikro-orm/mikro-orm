@@ -109,5 +109,6 @@ Heavy use of TypeScript generics. Key types in `packages/core/src/typings.ts`:
 
 - 2-space indentation, semicolons, single quotes
 - No `public` keyword (except constructors)
+- Use native private fields (`#field`) for variables, but regular `private` for methods
 - Prefer `const` over `let`, no `var`
 - Conventional commits: `feat(core):`, `fix(mysql):`, `refactor:`, etc.
