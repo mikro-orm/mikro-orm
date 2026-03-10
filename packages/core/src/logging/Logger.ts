@@ -34,6 +34,7 @@ export type LoggerNamespace = 'query' | 'query-params' | 'schema' | 'discovery' 
 export interface LogContext extends Dictionary {
   query?: string;
   label?: string;
+  namespace?: LoggerNamespace;
   params?: readonly unknown[];
   took?: number;
   results?: number;

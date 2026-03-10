@@ -193,56 +193,50 @@ export abstract class Connection {
     try {
       const res = await cb();
       const took = Date.now() - now;
+      const results = Array.isArray(res) ? res.length : undefined;
+      const affected = Utils.isPlainObject<QueryResult>(res) ? res.affectedRows : undefined;
 
-      this.logQuery(query, {
-        ...context,
-        took,
-        results: Array.isArray(res) ? res.length : undefined,
-        affected: Utils.isPlainObject<QueryResult>(res) ? res.affectedRows : undefined,
-      });
-      this.logSlowQuery(query, context, took, {
-        results: Array.isArray(res) ? res.length : undefined,
-        affected: Utils.isPlainObject<QueryResult>(res) ? res.affectedRows : undefined,
-      });
+      this.logQuery(query, { ...context, took, results, affected });
+      this.logSlowQuery(query, took, { ...context, results, affected });
 
       return res;
     } catch (e) {
       const took = Date.now() - now;
       this.logQuery(query, { ...context, took, level: 'error' });
-      this.logSlowQuery(query, context, took);
+      this.logSlowQuery(query, took, context);
       throw e;
     }
   }
 
-  private logSlowQuery(query: string, context: LogContext | undefined, took: number, extra?: LogContext): void {
+  private logSlowQuery(query: string, took: number, context?: LogContext): void {
     const threshold = this.config.getSlowQueryThreshold();
 
-    if (!threshold || took < threshold) {
+    if (threshold == null || took < threshold) {
       return;
     }
 
     this.config.getSlowQueryLogger().logQuery({
       ...context,
-      ...extra,
       enabled: true,
       level: 'warning',
       namespace: 'slow-query',
       took,
-      connection: {
-        type: this.type,
-        name: this.options.name || this.config.get('name') || this.options.host,
-      },
+      connection: this.#connectionLabel,
       query,
     });
+  }
+
+  get #connectionLabel() {
+    return {
+      type: this.type,
+      name: this.options.name || this.config.get('name') || this.options.host,
+    };
   }
 
   protected logQuery(query: string, context: LogContext = {}): void {
     this.logger.logQuery({
       level: 'info',
-      connection: {
-        type: this.type,
-        name: this.options.name || this.config.get('name') || this.options.host,
-      },
+      connection: this.#connectionLabel,
       ...context,
       query,
     });

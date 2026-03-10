@@ -262,6 +262,7 @@ export class Configuration<
   getSlowQueryLogger(): Logger {
     this.#slowQueryLogger ??=
       this.#options.slowQueryLoggerFactory?.({
+        debugMode: this.#options.debug,
         writer: this.#options.logger,
         highlighter: this.#options.highlighter,
         usesReplicas: (this.#options.replicas?.length ?? 0) > 0,
@@ -1102,7 +1103,9 @@ export interface Options<
   loggerFactory?: (options: LoggerOptions) => Logger;
   /**
    * Threshold in milliseconds for logging slow queries.
-   * Queries taking longer than this value will be logged via the 'slow-query' namespace at warning level.
+   * Queries taking at least this long will be logged via the 'slow-query' namespace at warning level.
+   * Slow query logs are always emitted when the threshold is met, regardless of the `debug` setting.
+   * Set to `0` to log every query as slow.
    * @default undefined (slow query logging disabled)
    */
   slowQueryThreshold?: number;

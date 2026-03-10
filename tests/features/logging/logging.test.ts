@@ -160,13 +160,17 @@ describe('logging', () => {
       vi.clearAllMocks();
     });
 
-    it('logs slow queries via slow-query namespace when threshold is exceeded', async () => {
+    function mockDateNow(step: number): ReturnType<typeof vi.spyOn> {
       let time = 0;
-      const nowSpy = vi.spyOn(Date, 'now').mockImplementation(() => {
+      return vi.spyOn(Date, 'now').mockImplementation(() => {
         const current = time;
-        time += 5;
+        time += step;
         return current;
       });
+    }
+
+    it('logs slow queries via slow-query namespace when threshold is exceeded', async () => {
+      const nowSpy = mockDateNow(5);
 
       await slowOrm.em.fork().findOneOrFail(Example, { id: 1 });
 
@@ -179,12 +183,7 @@ describe('logging', () => {
     });
 
     it('does not log when query is faster than threshold', async () => {
-      let time = 0;
-      const nowSpy = vi.spyOn(Date, 'now').mockImplementation(() => {
-        const current = time;
-        time += 1; // 1ms < 3ms threshold
-        return current;
-      });
+      const nowSpy = mockDateNow(1); // 1ms < 3ms threshold
 
       await slowOrm.em.fork().findOneOrFail(Example, { id: 1 });
 
@@ -194,12 +193,7 @@ describe('logging', () => {
     });
 
     it('logs slow queries for failed queries too', async () => {
-      let time = 0;
-      const nowSpy = vi.spyOn(Date, 'now').mockImplementation(() => {
-        const current = time;
-        time += 5;
-        return current;
-      });
+      const nowSpy = mockDateNow(5);
 
       const em = slowOrm.em.fork();
       await expect(em.insert(Example, { id: 1 })).rejects.toThrow();
@@ -209,6 +203,75 @@ describe('logging', () => {
       expect(msg).toContain('[slow-query]');
 
       nowSpy.mockRestore();
+    });
+
+    it('logs when query takes exactly the threshold time', async () => {
+      const nowSpy = mockDateNow(3); // exactly 3ms = threshold
+
+      await slowOrm.em.fork().findOneOrFail(Example, { id: 1 });
+
+      expect(slowLoggerMock).toHaveBeenCalledTimes(1);
+      const msg = slowLoggerMock.mock.calls[0][0] as string;
+      expect(msg).toContain('[slow-query]');
+      expect(msg).toContain('took 3 ms');
+
+      nowSpy.mockRestore();
+    });
+
+    it('logs all queries when threshold is 0', async () => {
+      const zeroOrm = await MikroORM.init({
+        metadataProvider: ReflectMetadataProvider,
+        entities: [Example],
+        dbName: ':memory:',
+        slowQueryThreshold: 0,
+        logger: vi.fn(),
+      });
+      await zeroOrm.schema.create();
+      await zeroOrm.em.insert(Example, { id: 1 });
+      zeroOrm.em.clear();
+
+      const loggerMock = vi.fn();
+      const cfg = zeroOrm['config'];
+      const origLogger = cfg.getSlowQueryLogger();
+      const spy = vi.spyOn(origLogger, 'logQuery').mockImplementation(ctx => {
+        if (ctx.namespace === 'slow-query') {
+          loggerMock(ctx);
+        }
+      });
+
+      await zeroOrm.em.fork().findOneOrFail(Example, { id: 1 });
+
+      expect(loggerMock).toHaveBeenCalled();
+
+      spy.mockRestore();
+      await zeroOrm.close(true);
+    });
+
+    it('falls back to main logger when slowQueryLoggerFactory is not provided', async () => {
+      const mainLoggerMock = vi.fn();
+      const fallbackOrm = await MikroORM.init({
+        metadataProvider: ReflectMetadataProvider,
+        entities: [Example],
+        dbName: ':memory:',
+        slowQueryThreshold: 3,
+        logger: mainLoggerMock,
+      });
+      await fallbackOrm.schema.create();
+      await fallbackOrm.em.insert(Example, { id: 1 });
+      fallbackOrm.em.clear();
+      mainLoggerMock.mockClear();
+
+      const nowSpy = mockDateNow(5);
+      await fallbackOrm.em.fork().findOneOrFail(Example, { id: 1 });
+      nowSpy.mockRestore();
+
+      const slowCalls = mainLoggerMock.mock.calls.filter(
+        (call: string[]) => call[0].includes('[slow-query]'),
+      );
+      expect(slowCalls).toHaveLength(1);
+      expect(slowCalls[0][0]).toContain('took 5 ms');
+
+      await fallbackOrm.close(true);
     });
   });
 
