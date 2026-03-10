@@ -22,7 +22,7 @@ export abstract class Connection {
   ) {
     this.logger = this.config.getLogger();
     this.platform = this.config.getPlatform();
-    this.#connectionLabel = { type, name: options?.name || config.get('name') || options?.host };
+    this.#connectionLabel = { type, name: options?.name || config.get('name') || options?.host || config.get('host') };
 
     if (options) {
       this.options = Utils.copy(options);
@@ -205,7 +205,7 @@ export abstract class Connection {
     } catch (e) {
       const took = Date.now() - now;
       this.logQuery(query, { ...context, took, level: 'error' });
-      this.logSlowQuery(query, took, context);
+      this.logSlowQuery(query, took, { ...context, level: 'error' });
       throw e;
     }
   }
@@ -219,8 +219,10 @@ export abstract class Connection {
 
     this.config.getSlowQueryLogger().logQuery({
       ...context,
+      // `enabled: true` bypasses the debug-mode check in isEnabled(),
+      // ensuring slow query logs are always emitted regardless of the `debug` setting.
       enabled: true,
-      level: 'warning',
+      level: context?.level ?? 'warning',
       namespace: 'slow-query',
       took,
       connection: this.#connectionLabel,
