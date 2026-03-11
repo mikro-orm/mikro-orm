@@ -47,7 +47,7 @@
     "copy": "node ../../scripts/copy.mjs"
   },
   "dependencies": {
-    "@mikro-orm/sql": "^7.0.0",
+    "@mikro-orm/sql": "7.0.0",
     "kysely": "0.28.11",
     "mysql2": "3.19.1",
     "sqlstring": "2.3.3"

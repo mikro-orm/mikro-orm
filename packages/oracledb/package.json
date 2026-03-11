@@ -42,7 +42,7 @@
     "copy": "node ../../scripts/copy.mjs"
   },
   "dependencies": {
-    "@mikro-orm/sql": "^7.0.0",
+    "@mikro-orm/sql": "7.0.0",
     "kysely": "0.28.11",
     "oracledb": "6.10.0"
   },

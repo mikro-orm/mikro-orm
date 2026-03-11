@@ -1,10 +1,19 @@
 {
   "name": "@mikro-orm/oracledb",
-  "version": "6.6.9",
+  "version": "7.0.0",
   "exports": {
     ".": "./src/index.ts"
   },
   "publish": {
-    "exclude": ["dist/", "node_modules/", "tests/"]
+    "exclude": [
+      "dist/",
+      "node_modules/",
+      "tests/"
+    ]
+  },
+  "imports": {
+    "@mikro-orm/sql": "jsr:@mikro-orm/sql@7.0.0",
+    "kysely": "npm:kysely@0.28.11",
+    "oracledb": "npm:oracledb@6.10.0"
   }
 }

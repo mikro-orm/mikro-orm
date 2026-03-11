@@ -1,10 +1,17 @@
 {
   "name": "@mikro-orm/entity-generator",
-  "version": "6.6.9",
+  "version": "7.0.0",
   "exports": {
     ".": "./src/index.ts"
   },
   "publish": {
-    "exclude": ["dist/", "node_modules/", "tests/"]
+    "exclude": [
+      "dist/",
+      "node_modules/",
+      "tests/"
+    ]
+  },
+  "imports": {
+    "@mikro-orm/sql": "jsr:@mikro-orm/sql@7.0.0"
   }
 }

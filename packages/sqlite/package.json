@@ -47,7 +47,7 @@
     "copy": "node ../../scripts/copy.mjs"
   },
   "dependencies": {
-    "@mikro-orm/sql": "^7.0.0",
+    "@mikro-orm/sql": "7.0.0",
     "better-sqlite3": "12.6.2",
     "kysely": "0.28.11"
   },
