@@ -5,25 +5,19 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 # [7.0.0](https://github.com/mikro-orm/mikro-orm/compare/v7.0.0-rc.3...v7.0.0) (2026-03-11)
 
-
 ### Bug Fixes
 
-* **core:** fix findOne with entity refs for composite PKs with shared FK columns ([b8a39e2](https://github.com/mikro-orm/mikro-orm/commit/b8a39e2eaf5b0d4e898d8d87923c1ec5e2669aa0)), closes [#5629](https://github.com/mikro-orm/mikro-orm/issues/5629)
-* **core:** prevent property mutation during polymorphic embeddable discovery ([#7270](https://github.com/mikro-orm/mikro-orm/issues/7270)) ([c3a5978](https://github.com/mikro-orm/mikro-orm/commit/c3a5978a6c04771295de473c4ee83379e12654fc)), closes [#6522](https://github.com/mikro-orm/mikro-orm/issues/6522) [#6523](https://github.com/mikro-orm/mikro-orm/issues/6523)
-* **core:** respect `exclude` hint in implicit serialization via `toObject` ([#7259](https://github.com/mikro-orm/mikro-orm/issues/7259)) ([cd9e09f](https://github.com/mikro-orm/mikro-orm/commit/cd9e09f45d7091bd944a38a22e31bcc96f29b27a))
-* **mongo:** fix support for deno by handling `TypedArray` when cloning ([#7258](https://github.com/mikro-orm/mikro-orm/issues/7258)) ([17ec4f5](https://github.com/mikro-orm/mikro-orm/commit/17ec4f551fde30277b63897a86dcf1ebba1a0c4c)), closes [/github.com/mongodb/js-bson/blob/0712bb15653093766a80bbd4ba104353cd4581e3/src/utils/byte_utils.ts#L69](https://github.com//github.com/mongodb/js-bson/blob/0712bb15653093766a80bbd4ba104353cd4581e3/src/utils/byte_utils.ts/issues/L69) [/github.com/mongodb/js-bson/blob/0712bb15653093766a80bbd4ba104353cd4581e3/src/utils/node_byte_utils.ts#L150](https://github.com//github.com/mongodb/js-bson/blob/0712bb15653093766a80bbd4ba104353cd4581e3/src/utils/node_byte_utils.ts/issues/L150) [/github.com/mongodb/js-bson/blob/0712bb15653093766a80bbd4ba104353cd4581e3/src/utils/web_byte_utils.ts#L258](https://github.com//github.com/mongodb/js-bson/blob/0712bb15653093766a80bbd4ba104353cd4581e3/src/utils/web_byte_utils.ts/issues/L258)
-
+- **core:** fix findOne with entity refs for composite PKs with shared FK columns ([b8a39e2](https://github.com/mikro-orm/mikro-orm/commit/b8a39e2eaf5b0d4e898d8d87923c1ec5e2669aa0)), closes [#5629](https://github.com/mikro-orm/mikro-orm/issues/5629)
+- **core:** prevent property mutation during polymorphic embeddable discovery ([#7270](https://github.com/mikro-orm/mikro-orm/issues/7270)) ([c3a5978](https://github.com/mikro-orm/mikro-orm/commit/c3a5978a6c04771295de473c4ee83379e12654fc)), closes [#6522](https://github.com/mikro-orm/mikro-orm/issues/6522) [#6523](https://github.com/mikro-orm/mikro-orm/issues/6523)
+- **core:** respect `exclude` hint in implicit serialization via `toObject` ([#7259](https://github.com/mikro-orm/mikro-orm/issues/7259)) ([cd9e09f](https://github.com/mikro-orm/mikro-orm/commit/cd9e09f45d7091bd944a38a22e31bcc96f29b27a))
+- **mongo:** fix support for deno by handling `TypedArray` when cloning ([#7258](https://github.com/mikro-orm/mikro-orm/issues/7258)) ([17ec4f5](https://github.com/mikro-orm/mikro-orm/commit/17ec4f551fde30277b63897a86dcf1ebba1a0c4c)), closes [/github.com/mongodb/js-bson/blob/0712bb15653093766a80bbd4ba104353cd4581e3/src/utils/byte_utils.ts#L69](https://github.com//github.com/mongodb/js-bson/blob/0712bb15653093766a80bbd4ba104353cd4581e3/src/utils/byte_utils.ts/issues/L69) [/github.com/mongodb/js-bson/blob/0712bb15653093766a80bbd4ba104353cd4581e3/src/utils/node_byte_utils.ts#L150](https://github.com//github.com/mongodb/js-bson/blob/0712bb15653093766a80bbd4ba104353cd4581e3/src/utils/node_byte_utils.ts/issues/L150) [/github.com/mongodb/js-bson/blob/0712bb15653093766a80bbd4ba104353cd4581e3/src/utils/web_byte_utils.ts#L258](https://github.com//github.com/mongodb/js-bson/blob/0712bb15653093766a80bbd4ba104353cd4581e3/src/utils/web_byte_utils.ts/issues/L258)
 
 ### Features
 
-* add JSR publishing support ([#7253](https://github.com/mikro-orm/mikro-orm/issues/7253)) ([c93c92a](https://github.com/mikro-orm/mikro-orm/commit/c93c92aae07d40b14a348e957cbc58926d30a714))
-* **core:** add slow query logging support ([#7271](https://github.com/mikro-orm/mikro-orm/issues/7271)) ([13b97f5](https://github.com/mikro-orm/mikro-orm/commit/13b97f5e0b79e21084a3c57bcd1efab2d0c5c260)), closes [#4695](https://github.com/mikro-orm/mikro-orm/issues/4695) [#7237](https://github.com/mikro-orm/mikro-orm/issues/7237) [/github.com/mikro-orm/mikro-orm/pull/7237#issuecomment-3992555251](https://github.com//github.com/mikro-orm/mikro-orm/pull/7237/issues/issuecomment-3992555251)
-* **oracle:** add Oracle DB driver ([#6704](https://github.com/mikro-orm/mikro-orm/issues/6704)) ([ef140af](https://github.com/mikro-orm/mikro-orm/commit/ef140afca122e801243a1b890278dffa3a49d483))
-* **sql:** add `$elemMatch` operator for JSON array properties ([#7265](https://github.com/mikro-orm/mikro-orm/issues/7265)) ([e40a275](https://github.com/mikro-orm/mikro-orm/commit/e40a2753b619d53f77a8cbaaca2855d23f24ba8d))
-
-
-
-
+- add JSR publishing support ([#7253](https://github.com/mikro-orm/mikro-orm/issues/7253)) ([c93c92a](https://github.com/mikro-orm/mikro-orm/commit/c93c92aae07d40b14a348e957cbc58926d30a714))
+- **core:** add slow query logging support ([#7271](https://github.com/mikro-orm/mikro-orm/issues/7271)) ([13b97f5](https://github.com/mikro-orm/mikro-orm/commit/13b97f5e0b79e21084a3c57bcd1efab2d0c5c260)), closes [#4695](https://github.com/mikro-orm/mikro-orm/issues/4695) [#7237](https://github.com/mikro-orm/mikro-orm/issues/7237) [/github.com/mikro-orm/mikro-orm/pull/7237#issuecomment-3992555251](https://github.com//github.com/mikro-orm/mikro-orm/pull/7237/issues/issuecomment-3992555251)
+- **oracle:** add Oracle DB driver ([#6704](https://github.com/mikro-orm/mikro-orm/issues/6704)) ([ef140af](https://github.com/mikro-orm/mikro-orm/commit/ef140afca122e801243a1b890278dffa3a49d483))
+- **sql:** add `$elemMatch` operator for JSON array properties ([#7265](https://github.com/mikro-orm/mikro-orm/issues/7265)) ([e40a275](https://github.com/mikro-orm/mikro-orm/commit/e40a2753b619d53f77a8cbaaca2855d23f24ba8d))
 
 ## [6.6.8](https://github.com/mikro-orm/mikro-orm/compare/v6.6.7...v6.6.8) (2026-03-01)
 

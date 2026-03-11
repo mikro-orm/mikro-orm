@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <title>libSQL</title>
+  <defs>
+    <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4FF8D2"/>
+      <stop offset="100%" stop-color="#00B4D8"/>
+    </linearGradient>
+  </defs>
+  <path fill="url(#g)" d="M32 4C16.536 4 4 16.536 4 32s12.536 28 28 28 28-12.536 28-28S47.464 4 32 4zm-2 40c-5.523 0-10-4.477-10-10v-4c0-5.523 4.477-10 10-10h4c5.523 0 10 4.477 10 10v4c0 5.523-4.477 10-10 10h-4z"/>
+  <path fill="url(#g)" d="M30 26h4c2.21 0 4 1.79 4 4v4c0 2.21-1.79 4-4 4h-4c-2.21 0-4-1.79-4-4v-4c0-2.21 1.79-4 4-4z"/>
+</svg>

@@ -348,7 +348,7 @@ When using the `columnType`, be careful about options like `length` or `precisio
 
 ## Initializing the ORM
 
-The last missing step is to initialize the [`MikroORM`](/api/core/class/MikroORM) to get access to the [`EntityManager`](/api/core/class/EntityManager) and other handy tools (like the [`SchemaGenerator`](/api/knex/class/SqlSchemaGenerator)).
+The last missing step is to initialize the [`MikroORM`](/api/core/class/MikroORM) to get access to the [`EntityManager`](/api/core/class/EntityManager) and other handy tools (like the [`SchemaGenerator`](/api/6.6/knex/class/SqlSchemaGenerator)).
 
 ```ts title='server.ts'
 import { MikroORM } from '@mikro-orm/sqlite'; // or any other driver package
@@ -538,7 +538,7 @@ Running `npm start` again, we get past the global context validation error, but 
 TableNotFoundException: insert into `user` (`bio`, `email`, `full_name`, `password`) values ('', 'foo@bar.com', 'Foo Bar', '123456') - no such table: user
 ```
 
-We forgot to create the database schema. Fortunately, we have all the tools we need at hand. You can use the [`SchemaGenerator`](/api/knex/class/SqlSchemaGenerator) provided by MikroORM to create the schema, as well as to keep it in sync when you change your entities. For the initial testing, let's use the `refreshDatabase()` method, which is handy for testing - it will first drop the schema if it already exists and create it from scratch based on entity definition (metadata).
+We forgot to create the database schema. Fortunately, we have all the tools we need at hand. You can use the [`SchemaGenerator`](/api/6.6/knex/class/SqlSchemaGenerator) provided by MikroORM to create the schema, as well as to keep it in sync when you change your entities. For the initial testing, let's use the `refreshDatabase()` method, which is handy for testing - it will first drop the schema if it already exists and create it from scratch based on entity definition (metadata).
 
 ```ts title='server.ts'
 // recreate the database schema
