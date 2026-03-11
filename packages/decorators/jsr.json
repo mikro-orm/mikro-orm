@@ -6,10 +6,6 @@
     "./legacy": "./src/legacy/index.ts"
   },
   "publish": {
-    "exclude": [
-      "dist/",
-      "node_modules/",
-      "tests/"
-    ]
+    "exclude": ["dist/", "node_modules/", "tests/"]
   }
 }
