@@ -348,7 +348,7 @@ When using the `columnType`, be careful about options like `length` or `precisio
 
 ## Initializing the ORM
 
-The last missing step is to initialize the [`MikroORM`](/api/core/class/MikroORM) to get access to the [`EntityManager`](/api/core/class/EntityManager) and other handy tools (like the [`SchemaGenerator`](/api/6.6/knex/class/SqlSchemaGenerator)).
+The last missing step is to initialize the [`MikroORM`](/api/6.6/core/class/MikroORM) to get access to the [`EntityManager`](/api/6.6/core/class/EntityManager) and other handy tools (like the [`SchemaGenerator`](/api/6.6/6.6-TEMP/knex/class/SqlSchemaGenerator)).
 
 ```ts title='server.ts'
 import { MikroORM } from '@mikro-orm/sqlite'; // or any other driver package
@@ -359,7 +359,7 @@ console.log(orm.em); // access EntityManager via `em` property
 console.log(orm.schema); // access SchemaGenerator via `schema` property
 ```
 
-We used the [`init()`](/api/core/class/MikroORM#init) method without any parameters, which results in the ORM loading the CLI config automatically. In a more explicit way, it's the same as the following code:
+We used the [`init()`](/api/6.6/core/class/MikroORM#init) method without any parameters, which results in the ORM loading the CLI config automatically. In a more explicit way, it's the same as the following code:
 
 ```ts title='server.ts'
 import { MikroORM } from '@mikro-orm/sqlite';
@@ -370,10 +370,10 @@ const orm = await MikroORM.init(config);
 
 :::info Synchronous initialization
 
-As opposed to the async [`MikroORM.init`](/api/core/class/MikroORM#init) method, you can prefer to use synchronous variant [`initSync()`](/api/core/class/MikroORM#initSync). This method has
+As opposed to the async [`MikroORM.init`](/api/6.6/core/class/MikroORM#init) method, you can prefer to use synchronous variant [`initSync()`](/api/6.6/core/class/MikroORM#initSync). This method has
 some limitations:
 
-- database connection will be established when you first interact with the database (or you can use [`orm.connect()`](/api/core/class/MikroORM#connect)
+- database connection will be established when you first interact with the database (or you can use [`orm.connect()`](/api/6.6/core/class/MikroORM#connect)
   explicitly)
 - no loading of the `config` file, `options` parameter is mandatory
 - no support for folder-based discovery
@@ -383,13 +383,13 @@ some limitations:
 
 ## Working with Entity Manager
 
-So now you have the access to [`EntityManager`](/api/core/class/EntityManager), let's talk about how it works and how you can use it.
+So now you have the access to [`EntityManager`](/api/6.6/core/class/EntityManager), let's talk about how it works and how you can use it.
 
 ### Persist and Flush
 
-There are 2 methods we should first describe to understand how persisting works in MikroORM: [`em.persist()`](/api/core/class/EntityManager#persist) and [`em.flush()`](/api/core/class/EntityManager#flush).
+There are 2 methods we should first describe to understand how persisting works in MikroORM: [`em.persist()`](/api/6.6/core/class/EntityManager#persist) and [`em.flush()`](/api/6.6/core/class/EntityManager#flush).
 
-[`em.persist(entity)`](/api/core/class/EntityManager#persist) is used to mark new entities for future persisting. It will make the entity managed by the [`EntityManager`](/api/core/class/EntityManager) and once `flush` will be called, it will be written to the database.
+[`em.persist(entity)`](/api/6.6/core/class/EntityManager#persist) is used to mark new entities for future persisting. It will make the entity managed by the [`EntityManager`](/api/6.6/core/class/EntityManager) and once `flush` will be called, it will be written to the database.
 
 ```ts
 const user = new User();
@@ -403,9 +403,9 @@ await em.flush();
 await em.persist(user).flush();
 ```
 
-To understand `flush`, let's first define what managed entity is: An entity is managed if it's fetched from the database (via [`em.find()`](/api/core/class/EntityManager#find)) or registered as new through [`em.persist()`](/api/core/class/EntityManager#persist) and flushed later (only after the `flush` it becomes managed).
+To understand `flush`, let's first define what managed entity is: An entity is managed if it's fetched from the database (via [`em.find()`](/api/6.6/core/class/EntityManager#find)) or registered as new through [`em.persist()`](/api/6.6/core/class/EntityManager#persist) and flushed later (only after the `flush` it becomes managed).
 
-[`em.flush()`](/api/core/class/EntityManager#flush) will go through all managed entities, compute appropriate change sets and perform according database queries. As an entity loaded from the database becomes managed
+[`em.flush()`](/api/6.6/core/class/EntityManager#flush) will go through all managed entities, compute appropriate change sets and perform according database queries. As an entity loaded from the database becomes managed
 automatically, we do not have to call persist on those, and flush is enough to update them.
 
 ```ts
@@ -440,7 +440,7 @@ If you need to work with the global instance's identity map, use `allowGlobalCon
 or `fork()` instead.
 ```
 
-Remember we said the `orm.em` is a global [`EntityManager`](/api/core/class/EntityManager) instance? Looks like it is not a good idea to use it, in fact, it is disallowed by default. Before we get to the bottom of this message, let's quickly define two more terms we haven't touched yet - the Identity Map and Unit of Work.
+Remember we said the `orm.em` is a global [`EntityManager`](/api/6.6/core/class/EntityManager) instance? Looks like it is not a good idea to use it, in fact, it is disallowed by default. Before we get to the bottom of this message, let's quickly define two more terms we haven't touched yet - the Identity Map and Unit of Work.
 
 - Unit of Work maintains a list of objects (entities) affected by a business transaction and coordinates the writing out of changes.
 - Identity Map ensures that each object (entity) gets loaded only once by keeping every loaded object in a map. Looks up objects using the map when referring to them.
@@ -463,9 +463,9 @@ The Identity Map only knows objects by id, so a query for different criteria has
 
 ### Change Tracking
 
-The identity map has a second, more important use-case. Whenever you call [`em.flush()`](/api/core/class/EntityManager#flush), the ORM will iterate over the Identity Map, and for each entity it compares the original state with the values that are currently set on the entity. If changes are detected, the object is queued for an SQL `UPDATE` operation. Only the fields that changed are part of the update query.
+The identity map has a second, more important use-case. Whenever you call [`em.flush()`](/api/6.6/core/class/EntityManager#flush), the ORM will iterate over the Identity Map, and for each entity it compares the original state with the values that are currently set on the entity. If changes are detected, the object is queued for an SQL `UPDATE` operation. Only the fields that changed are part of the update query.
 
-The following code will update your database with the changes made to the `Author` object, even if you did not call [`em.persist()`](/api/core/class/EntityManager#persist):
+The following code will update your database with the changes made to the `Author` object, even if you did not call [`em.persist()`](/api/6.6/core/class/EntityManager#persist):
 
 ```ts
 const jon = await em.findOne(Author, 1);
@@ -479,7 +479,7 @@ await em.flush();
 
 The most important implication of having Unit of Work is that it allows handling transactions automatically.
 
-When you call [`em.flush()`](/api/core/class/EntityManager#flush), all computed changes are queried inside a database transaction. This means that you can control the boundaries of transactions by calling [`em.persist()`](/api/core/class/EntityManager#persist) and once all your changes are ready, calling `flush()` will run them inside a transaction.
+When you call [`em.flush()`](/api/6.6/core/class/EntityManager#flush), all computed changes are queried inside a database transaction. This means that you can control the boundaries of transactions by calling [`em.persist()`](/api/6.6/core/class/EntityManager#persist) and once all your changes are ready, calling `flush()` will run them inside a transaction.
 
 > You can also control the transaction boundaries manually via `em.transactional(cb)`.
 
@@ -497,7 +497,7 @@ You can find more information about transactions in [Transactions and concurrenc
 
 ### Why is Request Context needed?
 
-Now back to the validation error about global context. With the freshly gained knowledge, we know [`EntityManager`](/api/core/class/EntityManager) maintains a reference to all the managed entities in the Identity Map. Imagine we would use a single Identity Map throughout our application (so a single global context, global [`EntityManager`](/api/core/class/EntityManager)). It will be shared across all request handlers, that can run in parallel.
+Now back to the validation error about global context. With the freshly gained knowledge, we know [`EntityManager`](/api/6.6/core/class/EntityManager) maintains a reference to all the managed entities in the Identity Map. Imagine we would use a single Identity Map throughout our application (so a single global context, global [`EntityManager`](/api/6.6/core/class/EntityManager)). It will be shared across all request handlers, that can run in parallel.
 
 1. growing memory footprint
 
@@ -522,7 +522,7 @@ Now back to the validation error about global context. With the freshly gained k
 
 ### Fork to the win!
 
-So we understand the problem better now, what's the solution? The error suggests it - forking. With the `fork()` method we get a clean [`EntityManager`](/api/core/class/EntityManager) instance, that has a fresh Unit of Work with its own context and Identity Map.
+So we understand the problem better now, what's the solution? The error suggests it - forking. With the `fork()` method we get a clean [`EntityManager`](/api/6.6/core/class/EntityManager) instance, that has a fresh Unit of Work with its own context and Identity Map.
 
 ```ts title='server.ts'
 // fork first to have a separate context
@@ -538,7 +538,7 @@ Running `npm start` again, we get past the global context validation error, but 
 TableNotFoundException: insert into `user` (`bio`, `email`, `full_name`, `password`) values ('', 'foo@bar.com', 'Foo Bar', '123456') - no such table: user
 ```
 
-We forgot to create the database schema. Fortunately, we have all the tools we need at hand. You can use the [`SchemaGenerator`](/api/6.6/knex/class/SqlSchemaGenerator) provided by MikroORM to create the schema, as well as to keep it in sync when you change your entities. For the initial testing, let's use the `refreshDatabase()` method, which is handy for testing - it will first drop the schema if it already exists and create it from scratch based on entity definition (metadata).
+We forgot to create the database schema. Fortunately, we have all the tools we need at hand. You can use the [`SchemaGenerator`](/api/6.6/6.6-TEMP/knex/class/SqlSchemaGenerator) provided by MikroORM to create the schema, as well as to keep it in sync when you change your entities. For the initial testing, let's use the `refreshDatabase()` method, which is handy for testing - it will first drop the schema if it already exists and create it from scratch based on entity definition (metadata).
 
 ```ts title='server.ts'
 // recreate the database schema
@@ -556,7 +556,7 @@ Finally, `npm start` should succeed, and if you enabled the debug mode in your c
 user id is: 1
 ```
 
-You can see the insert query being wrapped inside a transaction. That is another effect of the Unit of Work. The [`em.flush()`](/api/core/class/EntityManager#flush) call will perform all the queries inside a transaction. If something fails, the whole transaction will be rolled back.
+You can see the insert query being wrapped inside a transaction. That is another effect of the Unit of Work. The [`em.flush()`](/api/6.6/core/class/EntityManager#flush) call will perform all the queries inside a transaction. If something fails, the whole transaction will be rolled back.
 
 ### Fetching Entities
 
@@ -594,7 +594,7 @@ users are the same? true
 [query] commit
 ```
 
-Next, let's try to do the same, but with an [`EntityManager`](/api/core/class/EntityManager) fork:
+Next, let's try to do the same, but with an [`EntityManager`](/api/6.6/core/class/EntityManager) fork:
 
 ```ts title='server.ts'
 // now try to create a new fork, does not matter if from `orm.em` or our existing `em` fork, as by default we get a clean one
@@ -624,13 +624,13 @@ You can see there is a select query to load the user. This is because we used a 
 
 The behavior described above is often what we want and serves as a first-level cache, but what if you always want to reload that entity, regardless of the existing state? There are several options:
 
-> [`FindOptions`](/api/core/interface/FindOptions) is the last parameter of `em.find/findOne` methods.
+> [`FindOptions`](/api/6.6/core/interface/FindOptions) is the last parameter of `em.find/findOne` methods.
 
 1. fork first, to have a clear context
 2. use `disableIdentityMap: true` in the `FindOptions`
 3. use `em.refresh(entity)`
 
-The first two have pretty much the same effect, using `disableIdentityMap` just does the forking for us behind the scenes. Let's talk about the last one - refreshing. With `em.refresh()`, the [`EntityManager`](/api/core/class/EntityManager) will ignore the contents of the Identity Map and always fetch the entity from the database.
+The first two have pretty much the same effect, using `disableIdentityMap` just does the forking for us behind the scenes. Let's talk about the last one - refreshing. With `em.refresh()`, the [`EntityManager`](/api/6.6/core/class/EntityManager) will ignore the contents of the Identity Map and always fetch the entity from the database.
 
 ```ts title='server.ts'
 // change the user
@@ -663,9 +663,9 @@ changes are lost User {
 
 ### Removing entities
 
-We touched on creating, reading and updating entities, the last piece of the puzzle to the CRUD riddle is the delete operation. To delete entities via [`EntityManager`](/api/core/class/EntityManager), we have two possibilities:
+We touched on creating, reading and updating entities, the last piece of the puzzle to the CRUD riddle is the delete operation. To delete entities via [`EntityManager`](/api/6.6/core/class/EntityManager), we have two possibilities:
 
-1. Mark entity instance via `em.remove()` - this means we first need to have the entity instance. But don't worry, you can get one even without loading it from the database - via [`em.getReference()`](/api/core/class/EntityManager#getReference).
+1. Mark entity instance via `em.remove()` - this means we first need to have the entity instance. But don't worry, you can get one even without loading it from the database - via [`em.getReference()`](/api/6.6/core/class/EntityManager#getReference).
 2. Fire `DELETE` query via `em.nativeDelete()` - when all you want is a simple delete query, it can be simple as that.
 
 Let's test the first approach with removing by entity instance:
@@ -677,7 +677,7 @@ await em2.remove(myUser3!).flush();
 
 ### Entity references
 
-So what does the [`em.getReference()`](/api/core/class/EntityManager#getReference) method mentioned above do and what is an _entity reference_ in the first place?
+So what does the [`em.getReference()`](/api/6.6/core/class/EntityManager#getReference) method mentioned above do and what is an _entity reference_ in the first place?
 
 MikroORM represents every entity as an object, even those that are not fully loaded. Those are called entity references - they are in fact regular entity class instances, but only with their primary key available. This makes it possible to create them without querying the database. References are stored in the identity map just like any other entity.
 
@@ -710,7 +710,7 @@ The `WrappedEntity` instance also holds the state of the entity at the time it w
 
 ## ⛳ Checkpoint 1
 
-Currently, our app consists of a single `User` entity and a `server.ts` file where we tested how to work with it using [`EntityManager`](/api/core/class/EntityManager). You can find working StackBlitz for the current state here:
+Currently, our app consists of a single `User` entity and a `server.ts` file where we tested how to work with it using [`EntityManager`](/api/6.6/core/class/EntityManager). You can find working StackBlitz for the current state here:
 
 > Due to the nature of how the ESM support in ts-node works, it is not possible to use it inside StackBlitz project - we need to use `node --loader` instead. We also use in-memory database, SQLite feature available via special database name `:memory:`.
 

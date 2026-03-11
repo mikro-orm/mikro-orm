@@ -6,11 +6,11 @@ So far we were just toying around with our entities, let's start building someth
 
 ## Fastify
 
-Let's create new file `app.ts` inside `src` directory, and export a `bootstrap` function from it, where we create the fastify app instance. Remember how we were forking the [`EntityManager`](/api/core/class/EntityManager) to get around the global context validation? For web servers, we can leverage middlewares, or in fastify hooks, to achieve unique request contexts automatically. MikroORM provides a handy helper called `RequestContext` which can be used to create the fork for each request. The [`EntityManager`](/api/core/class/EntityManager) is aware of this class and tries to get the right context from it automatically.
+Let's create new file `app.ts` inside `src` directory, and export a `bootstrap` function from it, where we create the fastify app instance. Remember how we were forking the [`EntityManager`](/api/6.6/core/class/EntityManager) to get around the global context validation? For web servers, we can leverage middlewares, or in fastify hooks, to achieve unique request contexts automatically. MikroORM provides a handy helper called `RequestContext` which can be used to create the fork for each request. The [`EntityManager`](/api/6.6/core/class/EntityManager) is aware of this class and tries to get the right context from it automatically.
 
 :::info How does `RequestContext` helper work?
 
-Internally all [`EntityManager`](/api/core/class/EntityManager) methods that work with the Identity Map (e.g. [`em.find()`](/api/core/class/EntityManager#find) or [`em.getReference()`](/api/core/class/EntityManager#getReference)) first call `em.getContext()` to access the contextual fork. This method will first check if we are running inside `RequestContext` handler and prefer the [`EntityManager`](/api/core/class/EntityManager) fork from it.
+Internally all [`EntityManager`](/api/6.6/core/class/EntityManager) methods that work with the Identity Map (e.g. [`em.find()`](/api/6.6/core/class/EntityManager#find) or [`em.getReference()`](/api/6.6/core/class/EntityManager#getReference)) first call `em.getContext()` to access the contextual fork. This method will first check if we are running inside `RequestContext` handler and prefer the [`EntityManager`](/api/6.6/core/class/EntityManager) fork from it.
 
 ```ts
 // we call em.find() on the global EM instance
@@ -25,7 +25,7 @@ const res = await RequestContext.getEntityManager().find(Book, {});
 
 The `RequestContext.getEntityManager()` method then checks `AsyncLocalStorage` static instance we use for creating new EM forks in the `RequestContext.create()` method.
 
-The [`AsyncLocalStorage`](https://nodejs.org/api/async_context.html#class-asynclocalstorage) class from Node.js core is the magician here. It allows us to track the context throughout the async calls. It allows us to decouple the [`EntityManager`](/api/core/class/EntityManager) fork creation (usually in a middleware as shown in the previous section) from its usage through the global [`EntityManager`](/api/core/class/EntityManager) instance.
+The [`AsyncLocalStorage`](https://nodejs.org/api/async_context.html#class-asynclocalstorage) class from Node.js core is the magician here. It allows us to track the context throughout the async calls. It allows us to decouple the [`EntityManager`](/api/6.6/core/class/EntityManager) fork creation (usually in a middleware as shown in the previous section) from its usage through the global [`EntityManager`](/api/6.6/core/class/EntityManager) instance.
 
 :::
 
@@ -183,11 +183,11 @@ export async function bootstrap(port = 3001) {
 
 :::info Importing `EntityManager` and `EntityRepository` from driver package
 
-While [`EntityManager`](/api/core/class/EntityManager) and [`EntityRepository`](/api/core/class/EntityRepository) classes are provided by the `@mikro-orm/core` package, those are only the base - driver agnostic - implementations. One example of what that means is the `QueryBuilder` - as an SQL concept, it has no place in the `@mikro-orm/core` package, instead, an extension of the [`EntityManager`](/api/core/class/EntityManager) called `SqlEntityManager` is provided by the SQL driver packages (it is defined in `@mikro-orm/knex` package and reexported in every SQL driver packages that depend on it). This `SqlEntityManager` class provides the additional SQL related methods, like `em.createQueryBuilder()`.
+While [`EntityManager`](/api/6.6/core/class/EntityManager) and [`EntityRepository`](/api/6.6/core/class/EntityRepository) classes are provided by the `@mikro-orm/core` package, those are only the base - driver agnostic - implementations. One example of what that means is the `QueryBuilder` - as an SQL concept, it has no place in the `@mikro-orm/core` package, instead, an extension of the [`EntityManager`](/api/6.6/core/class/EntityManager) called `SqlEntityManager` is provided by the SQL driver packages (it is defined in `@mikro-orm/knex` package and reexported in every SQL driver packages that depend on it). This `SqlEntityManager` class provides the additional SQL related methods, like `em.createQueryBuilder()`.
 
-For convenience, the `SqlEntityManager` class is also reexported under [`EntityManager`](/api/core/class/EntityManager) alias. This means we can do `import { EntityManager } from '@mikro-orm/sqlite'` to access it.
+For convenience, the `SqlEntityManager` class is also reexported under [`EntityManager`](/api/6.6/core/class/EntityManager) alias. This means we can do `import { EntityManager } from '@mikro-orm/sqlite'` to access it.
 
-Under the hood, MikroORM will always use this driver-specific [`EntityManager`](/api/core/class/EntityManager) implementation (you can verify that by `console.log(orm.em)`, it will be an instance of `SqlEntityManager`), but for TypeScript to understand it, you will need to use the driver package to import it. The same applies to the [`EntityRepository`](/api/core/class/EntityRepository) and `SqlEntityRepository` classes.
+Under the hood, MikroORM will always use this driver-specific [`EntityManager`](/api/6.6/core/class/EntityManager) implementation (you can verify that by `console.log(orm.em)`, it will be an instance of `SqlEntityManager`), but for TypeScript to understand it, you will need to use the driver package to import it. The same applies to the [`EntityRepository`](/api/6.6/core/class/EntityRepository) and `SqlEntityRepository` classes.
 
 ```ts
 import { EntityManager, EntityRepository } from '@mikro-orm/sqlite'; // or any other driver package
@@ -199,11 +199,11 @@ You can also use `MikroORM`, `defineConfig` and `Options` exported from the driv
 
 ### What is `EntityRepository`
 
-Entity repositories are thin layers on top of [`EntityManager`](/api/core/class/EntityManager). They act as an extension point, so you can add custom methods, or even alter the existing ones. The default [`EntityRepository`](/api/core/class/EntityRepository) implementation just forwards the calls to the underlying [`EntityManager`](/api/core/class/EntityManager) instance.
+Entity repositories are thin layers on top of [`EntityManager`](/api/6.6/core/class/EntityManager). They act as an extension point, so you can add custom methods, or even alter the existing ones. The default [`EntityRepository`](/api/6.6/core/class/EntityRepository) implementation just forwards the calls to the underlying [`EntityManager`](/api/6.6/core/class/EntityManager) instance.
 
-[`EntityRepository`](/api/core/class/EntityRepository) class carries the entity type, so we do not have to pass it to every `find` or `findOne` calls.
+[`EntityRepository`](/api/6.6/core/class/EntityRepository) class carries the entity type, so we do not have to pass it to every `find` or `findOne` calls.
 
-Note that there is no such thing as "flushing a repository" - it is just a shortcut to [`em.flush()`](/api/core/class/EntityManager#flush). In other words, we always flush the whole Unit of Work, not just a single entity that this repository represents.
+Note that there is no such thing as "flushing a repository" - it is just a shortcut to [`em.flush()`](/api/6.6/core/class/EntityManager#flush). In other words, we always flush the whole Unit of Work, not just a single entity that this repository represents.
 
 ## Testing the endpoint
 
@@ -381,7 +381,7 @@ export class TestSeeder extends Seeder {
 }
 ```
 
-We can use the [`em.create()`](/api/core/class/EntityManager#create) function we described earlier. It effectively calls `em.persist(entity)` before it returns the created entity, so you don't even need to do anything with the entity itself, calling [`em.create()`](/api/core/class/EntityManager#create) on its own will be enough. Time to test it!
+We can use the [`em.create()`](/api/6.6/core/class/EntityManager#create) function we described earlier. It effectively calls `em.persist(entity)` before it returns the created entity, so you don't even need to do anything with the entity itself, calling [`em.create()`](/api/6.6/core/class/EntityManager#create) on its own will be enough. Time to test it!
 
 ```ts title='TestSeeder.ts'
 export class TestSeeder extends Seeder {
