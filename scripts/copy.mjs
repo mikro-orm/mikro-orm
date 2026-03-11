@@ -135,6 +135,12 @@ if (options['pin-versions']) {
     }
   }
 
+  for (const dep of Object.keys(pkgJson.peerDependencies ?? {})) {
+    if (dep.startsWith('@mikro-orm/') || dep === 'mikro-orm') {
+      pkgJson.peerDependencies[dep] = version;
+    }
+  }
+
   // eslint-disable-next-line no-console
   console.info(`pin-versions: version ${version}`, pkgJson.dependencies);
 
