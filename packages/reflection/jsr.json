@@ -8,6 +8,6 @@
     "exclude": ["dist/", "node_modules/", "tests/"]
   },
   "imports": {
-    "ts-morph": "npm:ts-morph@27.0.2"
+    "ts-morph": "jsr:@ts-morph/ts-morph@27.0.2"
   }
 }

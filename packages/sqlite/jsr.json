@@ -10,6 +10,6 @@
   "imports": {
     "@mikro-orm/sql": "jsr:@mikro-orm/sql@7.0.1",
     "better-sqlite3": "npm:better-sqlite3@12.6.2",
-    "kysely": "npm:kysely@0.28.11"
+    "kysely": "jsr:@kysely/kysely@0.28.11"
   }
 }

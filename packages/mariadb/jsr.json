@@ -9,6 +9,6 @@
   },
   "imports": {
     "@mikro-orm/mysql": "jsr:@mikro-orm/mysql@7.0.1",
-    "kysely": "npm:kysely@0.28.11"
+    "kysely": "jsr:@kysely/kysely@0.28.11"
   }
 }

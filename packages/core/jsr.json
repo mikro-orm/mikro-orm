@@ -9,6 +9,9 @@
     "./schema": "./src/utils/AbstractSchemaGenerator.ts",
     "./dataloader": "./src/utils/DataloaderUtils.ts"
   },
+  "imports": {
+    "dataloader": "npm:dataloader@2.2.3"
+  },
   "publish": {
     "exclude": ["dist/", "node_modules/", "tests/"]
   }

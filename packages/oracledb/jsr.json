@@ -9,7 +9,7 @@
   },
   "imports": {
     "@mikro-orm/sql": "jsr:@mikro-orm/sql@7.0.1",
-    "kysely": "npm:kysely@0.28.11",
+    "kysely": "jsr:@kysely/kysely@0.28.11",
     "oracledb": "npm:oracledb@6.10.0"
   }
 }

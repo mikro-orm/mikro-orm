@@ -1,6 +1,9 @@
 {
   "name": "@mikro-orm/decorators",
   "version": "7.0.1",
+  "imports": {
+    "reflect-metadata": "npm:reflect-metadata@0.2.2"
+  },
   "exports": {
     "./es": "./src/es/index.ts",
     "./legacy": "./src/legacy/index.ts"

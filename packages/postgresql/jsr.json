@@ -9,7 +9,7 @@
   },
   "imports": {
     "@mikro-orm/sql": "jsr:@mikro-orm/sql@7.0.1",
-    "kysely": "npm:kysely@0.28.11",
+    "kysely": "jsr:@kysely/kysely@0.28.11",
     "pg": "npm:pg@8.20.0",
     "pg-cursor": "npm:pg-cursor@2.19.0",
     "postgres-array": "npm:postgres-array@3.0.4",
