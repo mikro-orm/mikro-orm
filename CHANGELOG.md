@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.0.1](https://github.com/mikro-orm/mikro-orm/compare/v7.0.0...v7.0.1) (2026-03-11)
+
+
+### Bug Fixes
+
+* update lockfile for v7 peer dependencies ([d59eaea](https://github.com/mikro-orm/mikro-orm/commit/d59eaeac650a01dddc35dea189e428c4dbb3c7f4))
+* update peer dependency constraints to v7 and pin on release ([fbeace5](https://github.com/mikro-orm/mikro-orm/commit/fbeace54db9e8b0565fbd841a72cd5f5dee69bb7))
+
+
+
+
+
 # [7.0.0](https://github.com/mikro-orm/mikro-orm/compare/v6.6.9...v7.0.0) (2026-03-11)
 
 
