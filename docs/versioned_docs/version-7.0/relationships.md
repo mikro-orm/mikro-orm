@@ -79,11 +79,8 @@ export class Book {
   @ManyToOne(() => Author) // you need to specify type via callback
   author1!: Author;
 
-  @ManyToOne('Author') // or as a string
-  author2!: Author;
-
   @ManyToOne({ entity: () => Author }) // or use options object
-  author3!: Author;
+  author2!: Author;
 
 }
 ```
