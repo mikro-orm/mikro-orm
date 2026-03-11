@@ -1,6 +1,6 @@
 {
   "name": "@mikro-orm/cli",
-  "version": "6.6.9",
+  "version": "7.0.0",
   "description": "TypeScript ORM for Node.js based on Data Mapper, Unit of Work and Identity Map patterns. Supports MongoDB, MySQL, PostgreSQL and SQLite databases as well as usage with vanilla JavaScript.",
   "keywords": [
     "data-mapper",
@@ -50,8 +50,8 @@
     "copy": "node ../../scripts/copy.mjs"
   },
   "dependencies": {
-    "@mikro-orm/core": "6.6.9",
-    "mikro-orm": "6.6.9",
+    "@mikro-orm/core": "^7.0.0",
+    "mikro-orm": "^7.0.0",
     "yargs": "17.7.2"
   },
   "engines": {
