@@ -137,7 +137,7 @@ jobs:
       - name: Bump version
         run: |
           PREID=${{ inputs.dist-tag == 'rc' && 'rc' || 'dev' }}
-          yarn lerna run copy -- -- --canary=major --preid=$PREID
+          yarn lerna run copy -- -- --canary=patch --preid=$PREID
           git commit -am 'chore: bump ${{ inputs.dist-tag }} versions [skip ci]'
           git fetch --depth=1 origin +refs/tags/*:refs/tags/*
 

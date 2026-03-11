@@ -2,9 +2,9 @@ name: tests
 
 on:
   push:
-    branches: [ master, v7, renovate/** ]
+    branches: [ master, renovate/** ]
   pull_request:
-    branches: [ master, v7 ]
+    branches: [ master ]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.number || github.ref }}
@@ -380,7 +380,7 @@ jobs:
 
   release:
     name: Release
-    if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/v7') && github.repository_owner == 'mikro-orm'
+    if: github.ref == 'refs/heads/master' && github.repository_owner == 'mikro-orm'
     runs-on: ubuntu-latest
     needs: [ build, typecheck, test, lint, docs ]
     steps:
