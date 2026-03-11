@@ -181,6 +181,7 @@ module.exports = {
       logo: {
         alt: 'MikroORM',
         src: 'img/logo.svg',
+        srcDark: 'img/logo-dark.svg',
       },
       items: [
         {
@@ -232,6 +233,10 @@ module.exports = {
     image: 'https://mikro-orm.io/img/og.png',
     footer: {
       style: 'dark',
+      logo: {
+        alt: 'MikroORM',
+        src: 'img/logo-header.svg',
+      },
       links: [
         docsFooterLinks,
         {
@@ -261,10 +266,6 @@ module.exports = {
           ],
         },
       ],
-      logo: {
-        alt: 'MikroORM',
-        src: 'img/logo-header.svg',
-      },
       copyright: `Copyright © 2018-${new Date().getFullYear()} Martin Adámek. Built with Docusaurus.`,
     },
   },
