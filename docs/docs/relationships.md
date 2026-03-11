@@ -165,14 +165,11 @@ export class Author {
   @OneToMany(() => Book, book => book.author)
   books1 = new Collection<Book>(this);
 
-  @OneToMany('Book', 'author')
+  @OneToMany({ mappedBy: book => book.author }) // referenced entity type can be sniffed too
   books2 = new Collection<Book>(this);
 
-  @OneToMany({ mappedBy: book => book.author }) // referenced entity type can be sniffed too
-  books3 = new Collection<Book>(this);
-
   @OneToMany({ entity: () => Book, mappedBy: 'author', orphanRemoval: true })
-  books4 = new Collection<Book>(this);
+  books3 = new Collection<Book>(this);
 
 }
 ```
