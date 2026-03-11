@@ -49,7 +49,7 @@ const docsPluginOptions = {
   ],
   versions: {
     current: {
-      label: '7.0 (next)',
+      label: 'Next',
       noIndex: true,
     },
     ...versions.slice(1).reduce((o, v) => {
