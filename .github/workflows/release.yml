@@ -82,7 +82,9 @@ jobs:
           git config --global user.email 'noreply@mikro-orm.io'
 
       - name: Bump version
-        run: yarn lerna version ${{ github.event.inputs.custom_version || github.event.inputs.version }} --force-publish --yes
+        run: |
+          git pull --rebase
+          yarn lerna version ${{ github.event.inputs.custom_version || github.event.inputs.version }} --force-publish --yes
 
       - name: Pin versions
         run: |
