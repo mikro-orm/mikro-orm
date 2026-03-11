@@ -3,11 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
-# [7.0.0](https://github.com/mikro-orm/mikro-orm/compare/v7.0.0-rc.3...v7.0.0) (2026-03-11)
+# [7.0.0](https://github.com/mikro-orm/mikro-orm/compare/v6.6.9...v7.0.0) (2026-03-11)
+
+### Bug Fixes
+
+- **migrations:** delete snapshot file after `migration:down` ([95e0d88](https://github.com/mikro-orm/mikro-orm/commit/95e0d8898e823d1fda7e7c5419c55d409c94a543))
+- **migrations:** normalize snapshots and write on both up/down ([#7235](https://github.com/mikro-orm/mikro-orm/issues/7235)) ([511d8ad](https://github.com/mikro-orm/mikro-orm/commit/511d8adb48ecbe4906bbf0d8d6cf0c35169c5bde))
+- **migrations:** skip snapshot write on `migration:up` to support read-only filesystems ([c5ebd0a](https://github.com/mikro-orm/mikro-orm/commit/c5ebd0a847c870cecb263aa295fa32758f3f974b))
+- **migrations:** support emitting multiline comments ([#7186](https://github.com/mikro-orm/mikro-orm/issues/7186)) ([2fe61c8](https://github.com/mikro-orm/mikro-orm/commit/2fe61c8c1711d5d5d1cb37ca4c8227998f4081b3))
 
 ### Features
 
-- add JSR publishing support ([#7253](https://github.com/mikro-orm/mikro-orm/issues/7253)) ([c93c92a](https://github.com/mikro-orm/mikro-orm/commit/c93c92aae07d40b14a348e957cbc58926d30a714))
+- **migrations:** remove umzug dependency, improve bundler support ([#7203](https://github.com/mikro-orm/mikro-orm/issues/7203)) ([05f195f](https://github.com/mikro-orm/mikro-orm/commit/05f195f3ac76735688170163748d9a612102595c))
 
 ## [6.6.8](https://github.com/mikro-orm/mikro-orm/compare/v6.6.7...v6.6.8) (2026-03-01)
 

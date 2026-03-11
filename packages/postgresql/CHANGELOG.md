@@ -3,11 +3,15 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
-# [7.0.0](https://github.com/mikro-orm/mikro-orm/compare/v7.0.0-rc.3...v7.0.0) (2026-03-11)
+# [7.0.0](https://github.com/mikro-orm/mikro-orm/compare/v6.6.9...v7.0.0) (2026-03-11)
+
+### Bug Fixes
+
+- **postgres:** fix phantom diffs for complex check constraints ([#7216](https://github.com/mikro-orm/mikro-orm/issues/7216)) ([b0fefd0](https://github.com/mikro-orm/mikro-orm/commit/b0fefd06c0db6404136e8d4c006c17d631b38d4b))
 
 ### Features
 
-- add JSR publishing support ([#7253](https://github.com/mikro-orm/mikro-orm/issues/7253)) ([c93c92a](https://github.com/mikro-orm/mikro-orm/commit/c93c92aae07d40b14a348e957cbc58926d30a714))
+- **postgres:** add support for materialized views ([#7119](https://github.com/mikro-orm/mikro-orm/issues/7119)) ([b68e774](https://github.com/mikro-orm/mikro-orm/commit/b68e774ed96ac6de55f068fd4c4c71954db560b9))
 
 ## [6.6.8](https://github.com/mikro-orm/mikro-orm/compare/v6.6.7...v6.6.8) (2026-03-01)
 

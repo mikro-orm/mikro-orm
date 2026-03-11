@@ -3,16 +3,11 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
-# [7.0.0](https://github.com/mikro-orm/mikro-orm/compare/v7.0.0-rc.3...v7.0.0) (2026-03-11)
-
-### Bug Fixes
-
-- **core:** respect `exclude` hint in implicit serialization via `toObject` ([#7259](https://github.com/mikro-orm/mikro-orm/issues/7259)) ([cd9e09f](https://github.com/mikro-orm/mikro-orm/commit/cd9e09f45d7091bd944a38a22e31bcc96f29b27a))
+# [7.0.0](https://github.com/mikro-orm/mikro-orm/compare/v6.6.9...v7.0.0) (2026-03-11)
 
 ### Features
 
-- add JSR publishing support ([#7253](https://github.com/mikro-orm/mikro-orm/issues/7253)) ([c93c92a](https://github.com/mikro-orm/mikro-orm/commit/c93c92aae07d40b14a348e957cbc58926d30a714))
-- **oracle:** add Oracle DB driver ([#6704](https://github.com/mikro-orm/mikro-orm/issues/6704)) ([ef140af](https://github.com/mikro-orm/mikro-orm/commit/ef140afca122e801243a1b890278dffa3a49d483))
+- **cli:** support various TS loaders ([#6987](https://github.com/mikro-orm/mikro-orm/issues/6987)) ([3fe125c](https://github.com/mikro-orm/mikro-orm/commit/3fe125ca43b72d609bbaa1450e47027c0e02e9da))
 
 ## [6.6.8](https://github.com/mikro-orm/mikro-orm/compare/v6.6.7...v6.6.8) (2026-03-01)
 

@@ -3,15 +3,15 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
-# [7.0.0](https://github.com/mikro-orm/mikro-orm/compare/v7.0.0-rc.3...v7.0.0) (2026-03-11)
+# [7.0.0](https://github.com/mikro-orm/mikro-orm/compare/v6.6.9...v7.0.0) (2026-03-11)
 
 ### Bug Fixes
 
-- **core:** respect `exclude` hint in implicit serialization via `toObject` ([#7259](https://github.com/mikro-orm/mikro-orm/issues/7259)) ([cd9e09f](https://github.com/mikro-orm/mikro-orm/commit/cd9e09f45d7091bd944a38a22e31bcc96f29b27a))
+- **entity-generator:** strip schema prefix from FK property names ([#7134](https://github.com/mikro-orm/mikro-orm/issues/7134)) ([173ff9b](https://github.com/mikro-orm/mikro-orm/commit/173ff9bc033b28410cfda9957095f81236c6eb4c))
 
 ### Features
 
-- add JSR publishing support ([#7253](https://github.com/mikro-orm/mikro-orm/issues/7253)) ([c93c92a](https://github.com/mikro-orm/mikro-orm/commit/c93c92aae07d40b14a348e957cbc58926d30a714))
+- **entity-generator:** add `manyToManyPropertyName` to `NamingStrategy` ([#7130](https://github.com/mikro-orm/mikro-orm/issues/7130)) ([edf1c49](https://github.com/mikro-orm/mikro-orm/commit/edf1c496a626f8cfbf6a078863b062331421521f))
 
 ## [6.6.8](https://github.com/mikro-orm/mikro-orm/compare/v6.6.7...v6.6.8) (2026-03-01)
 

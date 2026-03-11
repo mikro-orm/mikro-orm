@@ -3,15 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
-# [7.0.0](https://github.com/mikro-orm/mikro-orm/compare/v7.0.0-rc.3...v7.0.0) (2026-03-11)
+# [7.0.0](https://github.com/mikro-orm/mikro-orm/compare/v6.6.9...v7.0.0) (2026-03-11)
 
 ### Bug Fixes
 
-- **core:** respect `exclude` hint in implicit serialization via `toObject` ([#7259](https://github.com/mikro-orm/mikro-orm/issues/7259)) ([cd9e09f](https://github.com/mikro-orm/mikro-orm/commit/cd9e09f45d7091bd944a38a22e31bcc96f29b27a))
-
-### Features
-
-- add JSR publishing support ([#7253](https://github.com/mikro-orm/mikro-orm/issues/7253)) ([c93c92a](https://github.com/mikro-orm/mikro-orm/commit/c93c92aae07d40b14a348e957cbc58926d30a714))
+- **mongo:** fix field name conversion when querying object embedded entities ([a713819](https://github.com/mikro-orm/mikro-orm/commit/a713819991938a3b30aea6c3fefc1d7ac167ca35))
+- **mongo:** fix support for deno by handling `TypedArray` when cloning ([#7258](https://github.com/mikro-orm/mikro-orm/issues/7258)) ([17ec4f5](https://github.com/mikro-orm/mikro-orm/commit/17ec4f551fde30277b63897a86dcf1ebba1a0c4c))
+- **mongo:** rework support for serialized primary keys ([54ad3c5](https://github.com/mikro-orm/mikro-orm/commit/54ad3c5c448ded14956085c15e4474fab52b3600))
 
 ## [6.6.8](https://github.com/mikro-orm/mikro-orm/compare/v6.6.7...v6.6.8) (2026-03-01)
 

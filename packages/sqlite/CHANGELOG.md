@@ -3,11 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
-# [7.0.0](https://github.com/mikro-orm/mikro-orm/compare/v7.0.0-rc.3...v7.0.0) (2026-03-11)
+# [7.0.0](https://github.com/mikro-orm/mikro-orm/compare/v6.6.9...v7.0.0) (2026-03-11)
 
 ### Features
 
-- add JSR publishing support ([#7253](https://github.com/mikro-orm/mikro-orm/issues/7253)) ([c93c92a](https://github.com/mikro-orm/mikro-orm/commit/c93c92aae07d40b14a348e957cbc58926d30a714))
+- **sqlite:** add `ATTACH DATABASE` support for multiple database files ([#7131](https://github.com/mikro-orm/mikro-orm/issues/7131)) ([27f9cac](https://github.com/mikro-orm/mikro-orm/commit/27f9cacd4bff486004f6ca405abc0399a43af8d0))
+- **sqlite:** enable down migrations ([bd3bb56](https://github.com/mikro-orm/mikro-orm/commit/bd3bb56d8b48b3513cce986f7a65ae4fa654df3a))
+- **sqlite:** simplify using other sqlite libraries like `node:sqlite` ([#7204](https://github.com/mikro-orm/mikro-orm/issues/7204)) ([7e8da43](https://github.com/mikro-orm/mikro-orm/commit/7e8da4340858e23e49549fdd884351c193e1c0e1))
 
 ## [6.6.8](https://github.com/mikro-orm/mikro-orm/compare/v6.6.7...v6.6.8) (2026-03-01)
 
