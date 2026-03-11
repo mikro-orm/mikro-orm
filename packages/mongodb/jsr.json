@@ -1,11 +1,15 @@
 {
   "name": "@mikro-orm/mongodb",
-  "version": "7.0.0",
+  "version": "7.0.1",
   "exports": {
     ".": "./src/index.ts"
   },
   "publish": {
-    "exclude": ["dist/", "node_modules/", "tests/"]
+    "exclude": [
+      "dist/",
+      "node_modules/",
+      "tests/"
+    ]
   },
   "imports": {
     "mongodb": "npm:mongodb@7.1.0"

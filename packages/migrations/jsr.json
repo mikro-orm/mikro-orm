@@ -1,13 +1,17 @@
 {
   "name": "@mikro-orm/migrations",
-  "version": "7.0.0",
+  "version": "7.0.1",
   "exports": {
     ".": "./src/index.ts"
   },
   "publish": {
-    "exclude": ["dist/", "node_modules/", "tests/"]
+    "exclude": [
+      "dist/",
+      "node_modules/",
+      "tests/"
+    ]
   },
   "imports": {
-    "@mikro-orm/sql": "jsr:@mikro-orm/sql@7.0.0"
+    "@mikro-orm/sql": "jsr:@mikro-orm/sql@7.0.1"
   }
 }

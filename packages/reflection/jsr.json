@@ -1,11 +1,15 @@
 {
   "name": "@mikro-orm/reflection",
-  "version": "7.0.0",
+  "version": "7.0.1",
   "exports": {
     ".": "./src/index.ts"
   },
   "publish": {
-    "exclude": ["dist/", "node_modules/", "tests/"]
+    "exclude": [
+      "dist/",
+      "node_modules/",
+      "tests/"
+    ]
   },
   "imports": {
     "ts-morph": "npm:ts-morph@27.0.2"

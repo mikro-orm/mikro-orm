@@ -1,15 +1,19 @@
 {
   "name": "@mikro-orm/cli",
-  "version": "7.0.0",
+  "version": "7.0.1",
   "exports": {
     ".": "./src/index.ts"
   },
   "publish": {
-    "exclude": ["dist/", "node_modules/", "tests/"]
+    "exclude": [
+      "dist/",
+      "node_modules/",
+      "tests/"
+    ]
   },
   "imports": {
-    "@mikro-orm/core": "jsr:@mikro-orm/core@7.0.0",
-    "mikro-orm": "npm:mikro-orm@7.0.0",
+    "@mikro-orm/core": "jsr:@mikro-orm/core@7.0.1",
+    "mikro-orm": "npm:mikro-orm@7.0.1",
     "yargs": "npm:yargs@17.7.2"
   }
 }

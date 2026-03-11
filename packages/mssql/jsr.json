@@ -1,14 +1,18 @@
 {
   "name": "@mikro-orm/mssql",
-  "version": "7.0.0",
+  "version": "7.0.1",
   "exports": {
     ".": "./src/index.ts"
   },
   "publish": {
-    "exclude": ["dist/", "node_modules/", "tests/"]
+    "exclude": [
+      "dist/",
+      "node_modules/",
+      "tests/"
+    ]
   },
   "imports": {
-    "@mikro-orm/sql": "jsr:@mikro-orm/sql@7.0.0",
+    "@mikro-orm/sql": "jsr:@mikro-orm/sql@7.0.1",
     "kysely": "npm:kysely@0.28.11",
     "tarn": "npm:tarn@3.0.2",
     "tedious": "npm:tedious@19.2.1",

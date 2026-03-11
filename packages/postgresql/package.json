@@ -47,7 +47,7 @@
     "copy": "node ../../scripts/copy.mjs"
   },
   "dependencies": {
-    "@mikro-orm/sql": "^7.0.1",
+    "@mikro-orm/sql": "7.0.1",
     "kysely": "0.28.11",
     "pg": "8.20.0",
     "pg-cursor": "2.19.0",
@@ -59,7 +59,7 @@
     "@mikro-orm/core": "^7.0.1"
   },
   "peerDependencies": {
-    "@mikro-orm/core": "^7.0.0"
+    "@mikro-orm/core": "7.0.1"
   },
   "engines": {
     "node": ">= 22.17.0"

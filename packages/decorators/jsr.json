@@ -1,11 +1,15 @@
 {
   "name": "@mikro-orm/decorators",
-  "version": "7.0.0",
+  "version": "7.0.1",
   "exports": {
     "./es": "./src/es/index.ts",
     "./legacy": "./src/legacy/index.ts"
   },
   "publish": {
-    "exclude": ["dist/", "node_modules/", "tests/"]
+    "exclude": [
+      "dist/",
+      "node_modules/",
+      "tests/"
+    ]
   }
 }

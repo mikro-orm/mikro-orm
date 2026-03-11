@@ -1,14 +1,18 @@
 {
   "name": "@mikro-orm/mysql",
-  "version": "7.0.0",
+  "version": "7.0.1",
   "exports": {
     ".": "./src/index.ts"
   },
   "publish": {
-    "exclude": ["dist/", "node_modules/", "tests/"]
+    "exclude": [
+      "dist/",
+      "node_modules/",
+      "tests/"
+    ]
   },
   "imports": {
-    "@mikro-orm/sql": "jsr:@mikro-orm/sql@7.0.0",
+    "@mikro-orm/sql": "jsr:@mikro-orm/sql@7.0.1",
     "kysely": "npm:kysely@0.28.11",
     "mysql2": "npm:mysql2@3.19.1",
     "sqlstring": "npm:sqlstring@2.3.3"
