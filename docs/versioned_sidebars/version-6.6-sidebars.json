@@ -136,7 +136,7 @@
         {
           "type": "link",
           "label": "QueryBuilder API",
-          "href": "/api/knex/class/QueryBuilder"
+          "href": "/api/6.6/knex/class/QueryBuilder"
         },
         "decorators",
         "configuration"

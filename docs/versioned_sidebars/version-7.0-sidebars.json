@@ -1,0 +1,328 @@
+{
+  "docs": [
+    "quick-start",
+    {
+      "type": "category",
+      "label": "Getting Started",
+      "collapsed": false,
+      "link": {
+        "type": "doc",
+        "id": "guide/introduction"
+      },
+      "items": [
+        "guide/first-entity",
+        "guide/relationships",
+        "guide/project-setup",
+        "guide/advanced",
+        "guide/type-safety"
+      ]
+    },
+    {
+      "type": "category",
+      "label": "Core Concepts",
+      "link": {
+        "type": "generated-index",
+        "title": "Core Concepts",
+        "slug": "/core-concepts",
+        "keywords": [
+          "core",
+          "concepts",
+          "fundamentals"
+        ]
+      },
+      "items": [
+        "architecture",
+        "entity-manager",
+        "unit-of-work",
+        "identity-map",
+        "transactions",
+        "repositories",
+        "collections",
+        "wrap-helper"
+      ]
+    },
+    {
+      "type": "category",
+      "label": "Modeling",
+      "link": {
+        "type": "generated-index",
+        "title": "Modeling",
+        "slug": "/modeling",
+        "keywords": [
+          "modeling",
+          "entities",
+          "defining"
+        ]
+      },
+      "items": [
+        "defining-entities",
+        "relationships",
+        "type-safe-relations",
+        "inheritance-mapping",
+        "indexes",
+        "embeddables",
+        "composite-keys",
+        "json-properties",
+        "custom-types"
+      ]
+    },
+    {
+      "type": "category",
+      "label": "Querying",
+      "link": {
+        "type": "generated-index",
+        "title": "Querying",
+        "slug": "/querying",
+        "keywords": [
+          "querying",
+          "query"
+        ]
+      },
+      "items": [
+        "query-conditions",
+        "populating-relations",
+        "loading-strategies",
+        "filters",
+        "query-builder",
+        "raw-queries",
+        "kysely"
+      ]
+    },
+    {
+      "type": "category",
+      "label": "Schema & Database",
+      "link": {
+        "type": "generated-index",
+        "title": "Schema & Database",
+        "slug": "/schema-database",
+        "keywords": [
+          "schema",
+          "database",
+          "migrations"
+        ]
+      },
+      "items": [
+        "schema-generator",
+        "migrations",
+        "seeding",
+        "entity-generator",
+        "naming-strategy",
+        "multiple-schemas",
+        "virtual-entities",
+        "view-entities",
+        "materialized-views"
+      ]
+    },
+    {
+      "type": "category",
+      "label": "Advanced",
+      "link": {
+        "type": "generated-index",
+        "title": "Advanced",
+        "slug": "/advanced",
+        "keywords": [
+          "advanced"
+        ]
+      },
+      "items": [
+        "events",
+        "cascading",
+        "serializing",
+        "caching",
+        "dataloaders",
+        "streaming",
+        "read-connections",
+        "propagation",
+        "property-validation"
+      ]
+    },
+    {
+      "type": "category",
+      "label": "Configuration",
+      "link": {
+        "type": "doc",
+        "id": "configuration"
+      },
+      "items": [
+        "logging",
+        "deployment",
+        "define-entity",
+        "using-decorators",
+        "folder-based-discovery",
+        "metadata-providers",
+        "metadata-cache"
+      ]
+    },
+    {
+      "type": "category",
+      "label": "Integrations",
+      "link": {
+        "type": "generated-index",
+        "title": "Integrations",
+        "slug": "/integrations",
+        "keywords": [
+          "integrations",
+          "frameworks"
+        ]
+      },
+      "items": [
+        "usage-with-sql",
+        "usage-with-sqlite",
+        "usage-with-cockroachdb",
+        "usage-with-mongo",
+        "usage-with-nestjs",
+        "usage-with-nextjs",
+        "usage-with-jest",
+        "usage-with-js",
+        "usage-with-transpilers",
+        "usage-with-adminjs"
+      ]
+    },
+    {
+      "type": "category",
+      "label": "Recipes",
+      "link": {
+        "type": "generated-index",
+        "title": "Recipes",
+        "slug": "/recipes",
+        "keywords": [
+          "recipes"
+        ]
+      },
+      "items": [
+        "entity-constructors",
+        "schema-first-guide",
+        "transactional-outbox",
+        "using-bigint-pks",
+        "custom-driver"
+      ]
+    },
+    {
+      "type": "category",
+      "label": "Reference",
+      "link": {
+        "type": "generated-index",
+        "title": "Reference",
+        "slug": "/reference",
+        "keywords": [
+          "api",
+          "reference"
+        ]
+      },
+      "items": [
+        {
+          "type": "link",
+          "label": "EntityManager API",
+          "href": "/api/core/class/EntityManager"
+        },
+        {
+          "type": "link",
+          "label": "EntityRepository API",
+          "href": "/api/core/class/EntityRepository"
+        },
+        {
+          "type": "link",
+          "label": "QueryBuilder API",
+          "href": "/api/sql/class/QueryBuilder"
+        },
+        "decorators"
+      ]
+    },
+    {
+      "type": "category",
+      "label": "Example Integrations",
+      "link": {
+        "type": "generated-index",
+        "title": "Example Integrations",
+        "slug": "/examples",
+        "keywords": [
+          "examples"
+        ]
+      },
+      "items": [
+        {
+          "type": "link",
+          "label": "Fastify + SQLite + TypeScript",
+          "href": "https://github.com/mikro-orm/guide"
+        },
+        {
+          "type": "link",
+          "label": "RealWorld example app (Nest + MySQL)",
+          "href": "https://github.com/mikro-orm/nestjs-realworld-example-app"
+        },
+        {
+          "type": "link",
+          "label": "Express + MongoDB + TypeScript",
+          "href": "https://github.com/mikro-orm/express-ts-example-app"
+        },
+        {
+          "type": "link",
+          "label": "NestJS + MySQL + TypeScript",
+          "href": "https://github.com/mikro-orm/nestjs-example-app"
+        },
+        {
+          "type": "link",
+          "label": "Express + SQLite + JavaScript",
+          "href": "https://github.com/mikro-orm/express-js-example-app"
+        },
+        {
+          "type": "link",
+          "label": "Koa + SQLite + TypeScript",
+          "href": "https://github.com/mikro-orm/koa-ts-example-app"
+        },
+        {
+          "type": "link",
+          "label": "Inversify + PostgreSQL",
+          "href": "https://github.com/PodaruDragos/inversify-example-app"
+        },
+        {
+          "type": "link",
+          "label": "NextJS + SQLite",
+          "href": "https://github.com/mikro-orm/nextjs-example-app"
+        },
+        {
+          "type": "link",
+          "label": "GraphQL + PostgreSQL + TypeScript",
+          "href": "https://github.com/driescroons/mikro-orm-graphql-example"
+        },
+        {
+          "type": "link",
+          "label": "Accounts.js REST and GraphQL authentication + SQLite",
+          "href": "https://github.com/darkbasic/mikro-orm-accounts-example"
+        },
+        {
+          "type": "link",
+          "label": "Nest + Shopify + PostgreSQL + GraphQL",
+          "href": "https://github.com/Cloudshelf/Shopify_CSConnector"
+        },
+        {
+          "type": "link",
+          "label": "Elysia.js + libSQL + Bun",
+          "href": "https://github.com/mikro-orm/elysia-bun-example-app"
+        },
+        {
+          "type": "link",
+          "label": "Electron.js + PostgreSQL",
+          "href": "https://github.com/adnanlah/electron-mikro-orm-example-app"
+        }
+      ]
+    },
+    {
+      "type": "category",
+      "label": "Upgrading",
+      "link": {
+        "type": "generated-index",
+        "title": "Upgrading",
+        "slug": "/upgrading",
+        "keywords": [
+          "upgrading"
+        ]
+      },
+      "items": [
+        "upgrading-v6-to-v7",
+        "upgrading-v5-to-v6",
+        "upgrading-v4-to-v5"
+      ]
+    }
+  ]
+}

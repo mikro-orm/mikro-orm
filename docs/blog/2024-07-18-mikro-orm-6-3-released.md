@@ -40,7 +40,7 @@ export default defineConfig({
 });
 ```
 
-For additional options, see [the docs](/docs/usage-with-sql#using-turso-database).
+For additional options, see [the docs](/docs/usage-with-sqlite#using-libsql--turso).
 
 ## Upserting without a unique value
 
