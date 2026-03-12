@@ -115,6 +115,15 @@ export class ChangeSetComputer {
       entity[prop.name] = prop.onCreate(entity, this.#em);
     }
 
+    if (
+      type === ChangeSetType.CREATE &&
+      entity[prop.name] == null &&
+      'default' in prop &&
+      prop.default != null
+    ) {
+      entity[prop.name] = Utils.copy(prop.default) as EntityValue<T>;
+    }
+
     if (prop.onUpdate && type === ChangeSetType.UPDATE) {
       const pairs = map.get(entity) ?? [];
       pairs.push([prop.name, prop.onUpdate(entity, this.#em)]);

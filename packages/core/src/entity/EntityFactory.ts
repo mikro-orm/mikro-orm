@@ -422,6 +422,10 @@ export class EntityFactory {
       if (prop.onCreate) {
         entity[prop.name] ??= prop.onCreate(entity, this.#em);
       }
+
+      if (entity[prop.name] == null && 'default' in prop && prop.default != null) {
+        entity[prop.name] = Utils.copy(prop.default) as EntityValue<T>;
+      }
     }
   }
 
