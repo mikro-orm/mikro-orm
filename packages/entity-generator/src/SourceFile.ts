@@ -127,10 +127,7 @@ export class SourceFile {
     }
 
     ret += this.getEntityClass(classBody ? `${classHead}\n${classBody}` : classHead);
-    ret = `${this.generateImports()}\n\n${ret}`;
-    if (enumDefinitions.length) {
-      ret += '\n' + enumDefinitions.join('\n');
-    }
+    ret = `${this.generateImports()}\n\n${enumDefinitions.length ? enumDefinitions.join('\n') + '\n' : ''}${ret}`;
 
     return ret;
   }
