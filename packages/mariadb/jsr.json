@@ -5,11 +5,7 @@
     ".": "./src/index.ts"
   },
   "publish": {
-    "exclude": [
-      "dist/",
-      "node_modules/",
-      "tests/"
-    ]
+    "exclude": ["dist/", "node_modules/", "tests/"]
   },
   "imports": {
     "@mikro-orm/mysql": "jsr:@mikro-orm/mysql@7.0.1",
