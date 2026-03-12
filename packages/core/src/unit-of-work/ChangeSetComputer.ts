@@ -113,6 +113,13 @@ export class ChangeSetComputer {
         (Utils.isScalarReference(entity[prop.name]) && (entity[prop.name] as Reference<any>).unwrap() == null))
     ) {
       entity[prop.name] = prop.onCreate(entity, this.#em);
+    } else if (
+      prop.default != null &&
+      type === ChangeSetType.CREATE &&
+      (entity[prop.name] == null ||
+        (Utils.isScalarReference(entity[prop.name]) && (entity[prop.name] as Reference<any>).unwrap() == null))
+    ) {
+      entity[prop.name] = prop.default as EntityValue<T>;
     }
 
     if (prop.onUpdate && type === ChangeSetType.UPDATE) {

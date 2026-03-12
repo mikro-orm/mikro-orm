@@ -25,7 +25,6 @@ import type { Configuration } from '../utils/Configuration.js';
 import type { EventManager } from '../events/EventManager.js';
 import type { MetadataStorage } from '../metadata/MetadataStorage.js';
 import { JsonType } from '../types/JsonType.js';
-import { RawQueryFragment } from '../utils/RawQueryFragment.js';
 
 export interface FactoryOptions {
   initialized?: boolean;
@@ -422,16 +421,8 @@ export class EntityFactory {
     for (const prop of meta.props) {
       if (prop.onCreate) {
         entity[prop.name] ??= prop.onCreate(entity, this.#em);
-      }
-
-      if (
-        entity[prop.name] == null &&
-        prop.kind === ReferenceKind.SCALAR &&
-        'default' in prop &&
-        prop.default != null &&
-        !RawQueryFragment.isKnownFragment(prop.default)
-      ) {
-        entity[prop.name] = Utils.copy(prop.default) as EntityValue<T>;
+      } else if (prop.default != null) {
+        entity[prop.name] ??= prop.default as EntityValue<T>;
       }
     }
   }
