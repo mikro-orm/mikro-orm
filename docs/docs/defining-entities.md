@@ -419,7 +419,8 @@ const BookSchema = defineEntity({
 
 em.create(Book, { title: "Alice in Wonderland" }); // ok
 em.create(Book, { title: null }); // ok
-em.create(Book, {}); // compile error: missing title```
+em.create(Book, {}); // compile error: missing title
+```
 
   </TabItem>
 
