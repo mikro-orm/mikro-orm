@@ -159,7 +159,11 @@ export function lookupPathFromDecorator(name: string, stack?: string[]): string 
     line++;
   }
 
-  if (stack[line].replace(/\\/g, '/').includes('node_modules/tslib/tslib')) {
+  // Skip decorator runtime helpers (tslib, @oxc-project/runtime, etc.)
+  while (
+    line < stack.length &&
+    /node_modules\/(tslib\/|@oxc-project\/runtime\/)/.test(stack[line].replace(/\\/g, '/'))
+  ) {
     line++;
   }
 
