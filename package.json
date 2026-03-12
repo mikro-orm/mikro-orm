@@ -129,7 +129,7 @@
     "@types/sqlstring": "2.3.2",
     "@types/uuid": "11.0.0",
     "@types/yargs": "17.0.35",
-    "@vitest/coverage-v8": "4.0.18",
+    "@vitest/coverage-v8": "4.1.0",
     "bson": "7.2.0",
     "conditional-type-checks": "1.0.6",
     "dataloader": "2.2.3",
@@ -150,7 +150,7 @@
     "typescript": "5.9.3",
     "unplugin-swc": "1.5.9",
     "uuid": "11.1.0",
-    "vitest": "4.0.18"
+    "vitest": "4.1.0"
   },
   "packageManager": "yarn@4.12.0"
 }

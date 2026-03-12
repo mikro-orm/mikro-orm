@@ -208,6 +208,13 @@ import { Entity as MikroORM_Entity, Enum as MikroORM_Enum, OneToMany as MikroORM
 import { Book4 } from './Book4';
 import { Publisher4Tests } from './Publisher4Tests';
 
+export const Publisher4Type = {
+  LOCAL: 'local',
+  GLOBAL: 'global',
+} as const;
+
+export type TPublisher4Type = (typeof Publisher4Type)[keyof typeof Publisher4Type];
+
 @MikroORM_Entity()
 export class Publisher4 {
 
@@ -236,13 +243,6 @@ export class Publisher4 {
   publisher4TestsCollection = new MikroORM_Collection<Publisher4Tests>(this);
 
 }
-
-export const Publisher4Type = {
-  LOCAL: 'local',
-  GLOBAL: 'global',
-} as const;
-
-export type TPublisher4Type = (typeof Publisher4Type)[keyof typeof Publisher4Type];
 ",
   "import { type Ref as MikroORM_Ref } from '@mikro-orm/core';
 import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/decorators/legacy';
@@ -317,7 +317,7 @@ export class Test4 {
 
 export abstract class BaseEntity2 {
 
-  @MikroORM_Formula(()=>'SELECT NOW()')
+  @MikroORM_Formula(() => "SELECT NOW()")
   serverTime!: Date;
 
 }
@@ -657,7 +657,7 @@ export abstract class BaseEntity2 {
 export const BaseEntity2Schema = new MikroORM_EntitySchema({
   class: BaseEntity2,
   properties: {
-    serverTime: { type: 'datetime', formula: ()=>'SELECT NOW()' },
+    serverTime: { type: 'datetime', formula: () => "SELECT NOW()" },
   },
 });
 ",
@@ -878,6 +878,13 @@ import { BaseEntity } from './BaseEntity';
 import { Book4 } from './Book4';
 import { Publisher4Tests } from './Publisher4Tests';
 
+export const Publisher4Type = {
+  LOCAL: 'local',
+  GLOBAL: 'global',
+} as const;
+
+export type TPublisher4Type = (typeof Publisher4Type)[keyof typeof Publisher4Type];
+
 @MikroORM_Entity()
 export class Publisher4 extends BaseEntity {
 
@@ -906,13 +913,6 @@ export class Publisher4 extends BaseEntity {
   publisher4TestsCollection = new MikroORM_Collection<Publisher4Tests>(this);
 
 }
-
-export const Publisher4Type = {
-  LOCAL: 'local',
-  GLOBAL: 'global',
-} as const;
-
-export type TPublisher4Type = (typeof Publisher4Type)[keyof typeof Publisher4Type];
 ",
   "import { type Ref as MikroORM_Ref } from '@mikro-orm/core';
 import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/decorators/legacy';
@@ -991,7 +991,7 @@ import { BaseEntity } from './BaseEntity';
 
 export abstract class BaseEntity2 extends BaseEntity {
 
-  @MikroORM_Formula(()=>'SELECT NOW()')
+  @MikroORM_Formula(() => "SELECT NOW()")
   serverTime!: Date;
 
 }
@@ -1349,7 +1349,7 @@ export abstract class BaseEntity2 extends BaseEntity {
 export const BaseEntity2Schema = new MikroORM_EntitySchema({
   class: BaseEntity2,
   properties: {
-    serverTime: { type: 'datetime', formula: ()=>'SELECT NOW()' },
+    serverTime: { type: 'datetime', formula: () => "SELECT NOW()" },
   },
 });
 ",
@@ -1581,6 +1581,13 @@ import { BaseEntity2 } from './BaseEntity2';
 import { Book4 } from './Book4';
 import { Publisher4Tests } from './Publisher4Tests';
 
+export const Publisher4Type = {
+  LOCAL: 'local',
+  GLOBAL: 'global',
+} as const;
+
+export type TPublisher4Type = (typeof Publisher4Type)[keyof typeof Publisher4Type];
+
 @MikroORM_Entity()
 export class Publisher4 extends BaseEntity2 {
 
@@ -1609,13 +1616,6 @@ export class Publisher4 extends BaseEntity2 {
   publisher4TestsCollection = new MikroORM_Collection<Publisher4Tests>(this);
 
 }
-
-export const Publisher4Type = {
-  LOCAL: 'local',
-  GLOBAL: 'global',
-} as const;
-
-export type TPublisher4Type = (typeof Publisher4Type)[keyof typeof Publisher4Type];
 ",
   "import { type Ref as MikroORM_Ref } from '@mikro-orm/core';
 import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/decorators/legacy';
@@ -1697,7 +1697,7 @@ export abstract class BaseEntity2 {
   [MikroORM_Config]?: MikroORM_DefineConfig<{ forceObject: false }>;
 
 
-  @MikroORM_Formula(()=>'SELECT NOW()')
+  @MikroORM_Formula(() => "SELECT NOW()")
   serverTime!: Date;
 
 }
@@ -2046,7 +2046,7 @@ export abstract class BaseEntity2 {
 export const BaseEntity2Schema = new MikroORM_EntitySchema({
   class: BaseEntity2,
   properties: {
-    serverTime: { type: 'datetime', formula: ()=>'SELECT NOW()' },
+    serverTime: { type: 'datetime', formula: () => "SELECT NOW()" },
   },
 });
 ",
@@ -2267,6 +2267,13 @@ import { Book4 } from './Book4';
 import { CustomBase } from './CustomBase';
 import { Publisher4Tests } from './Publisher4Tests';
 
+export const Publisher4Type = {
+  LOCAL: 'local',
+  GLOBAL: 'global',
+} as const;
+
+export type TPublisher4Type = (typeof Publisher4Type)[keyof typeof Publisher4Type];
+
 @MikroORM_Entity()
 export class Publisher4 extends CustomBase {
 
@@ -2295,13 +2302,6 @@ export class Publisher4 extends CustomBase {
   publisher4TestsCollection = new MikroORM_Collection<Publisher4Tests>(this);
 
 }
-
-export const Publisher4Type = {
-  LOCAL: 'local',
-  GLOBAL: 'global',
-} as const;
-
-export type TPublisher4Type = (typeof Publisher4Type)[keyof typeof Publisher4Type];
 ",
   "import { type Ref as MikroORM_Ref } from '@mikro-orm/core';
 import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/decorators/legacy';
@@ -2380,7 +2380,7 @@ import { CustomBase } from './CustomBase';
 
 export abstract class BaseEntity2 extends CustomBase {
 
-  @MikroORM_Formula(()=>'SELECT NOW()')
+  @MikroORM_Formula(() => "SELECT NOW()")
   serverTime!: Date;
 
 }
@@ -2738,7 +2738,7 @@ export abstract class BaseEntity2 extends CustomBase {
 export const BaseEntity2Schema = new MikroORM_EntitySchema({
   class: BaseEntity2,
   properties: {
-    serverTime: { type: 'datetime', formula: ()=>'SELECT NOW()' },
+    serverTime: { type: 'datetime', formula: () => "SELECT NOW()" },
   },
 });
 ",
@@ -2964,6 +2964,13 @@ import { Entity as MikroORM_Entity, Enum as MikroORM_Enum, OneToMany as MikroORM
 import { Book4 } from './Book4';
 import { Publisher4Tests } from './Publisher4Tests';
 
+export const Publisher4Type = {
+  LOCAL: 'local',
+  GLOBAL: 'global',
+} as const;
+
+export type TPublisher4Type = (typeof Publisher4Type)[keyof typeof Publisher4Type];
+
 @MikroORM_Entity()
 export class Publisher4 extends MikroORM_BaseEntity {
 
@@ -2992,13 +2999,6 @@ export class Publisher4 extends MikroORM_BaseEntity {
   publisher4TestsCollection = new MikroORM_Collection<Publisher4Tests>(this);
 
 }
-
-export const Publisher4Type = {
-  LOCAL: 'local',
-  GLOBAL: 'global',
-} as const;
-
-export type TPublisher4Type = (typeof Publisher4Type)[keyof typeof Publisher4Type];
 ",
   "import { BaseEntity as MikroORM_BaseEntity, type Ref as MikroORM_Ref } from '@mikro-orm/core';
 import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/decorators/legacy';
@@ -3074,7 +3074,7 @@ import { Formula as MikroORM_Formula } from '@mikro-orm/decorators/legacy';
 
 export abstract class BaseEntity2 extends MikroORM_BaseEntity {
 
-  @MikroORM_Formula(()=>'SELECT NOW()')
+  @MikroORM_Formula(() => "SELECT NOW()")
   serverTime!: Date;
 
 }
@@ -3414,7 +3414,7 @@ export abstract class BaseEntity2 extends MikroORM_BaseEntity {
 export const BaseEntity2Schema = new MikroORM_EntitySchema({
   class: BaseEntity2,
   properties: {
-    serverTime: { type: 'datetime', formula: ()=>'SELECT NOW()' },
+    serverTime: { type: 'datetime', formula: () => "SELECT NOW()" },
   },
 });
 ",
@@ -3635,6 +3635,13 @@ import { BaseEntity } from './BaseEntity';
 import { Book4 } from './Book4';
 import { Publisher4Tests } from './Publisher4Tests';
 
+export const Publisher4Type = {
+  LOCAL: 'local',
+  GLOBAL: 'global',
+} as const;
+
+export type TPublisher4Type = (typeof Publisher4Type)[keyof typeof Publisher4Type];
+
 @MikroORM_Entity()
 export class Publisher4 extends BaseEntity {
 
@@ -3663,13 +3670,6 @@ export class Publisher4 extends BaseEntity {
   publisher4TestsCollection = new MikroORM_Collection<Publisher4Tests>(this);
 
 }
-
-export const Publisher4Type = {
-  LOCAL: 'local',
-  GLOBAL: 'global',
-} as const;
-
-export type TPublisher4Type = (typeof Publisher4Type)[keyof typeof Publisher4Type];
 ",
   "import { type Ref as MikroORM_Ref } from '@mikro-orm/core';
 import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/decorators/legacy';
@@ -3748,7 +3748,7 @@ import { BaseEntity } from './BaseEntity';
 
 export abstract class BaseEntity2 extends BaseEntity {
 
-  @MikroORM_Formula(()=>'SELECT NOW()')
+  @MikroORM_Formula(() => "SELECT NOW()")
   serverTime!: Date;
 
 }
@@ -4106,7 +4106,7 @@ export abstract class BaseEntity2 extends BaseEntity {
 export const BaseEntity2Schema = new MikroORM_EntitySchema({
   class: BaseEntity2,
   properties: {
-    serverTime: { type: 'datetime', formula: ()=>'SELECT NOW()' },
+    serverTime: { type: 'datetime', formula: () => "SELECT NOW()" },
   },
 });
 ",
@@ -4338,6 +4338,13 @@ import { BaseEntity2 } from './BaseEntity2';
 import { Book4 } from './Book4';
 import { Publisher4Tests } from './Publisher4Tests';
 
+export const Publisher4Type = {
+  LOCAL: 'local',
+  GLOBAL: 'global',
+} as const;
+
+export type TPublisher4Type = (typeof Publisher4Type)[keyof typeof Publisher4Type];
+
 @MikroORM_Entity()
 export class Publisher4 extends BaseEntity2 {
 
@@ -4366,13 +4373,6 @@ export class Publisher4 extends BaseEntity2 {
   publisher4TestsCollection = new MikroORM_Collection<Publisher4Tests>(this);
 
 }
-
-export const Publisher4Type = {
-  LOCAL: 'local',
-  GLOBAL: 'global',
-} as const;
-
-export type TPublisher4Type = (typeof Publisher4Type)[keyof typeof Publisher4Type];
 ",
   "import { type Ref as MikroORM_Ref } from '@mikro-orm/core';
 import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/decorators/legacy';
@@ -4454,7 +4454,7 @@ export abstract class BaseEntity2 extends MikroORM_BaseEntity {
   [MikroORM_Config]?: MikroORM_DefineConfig<{ forceObject: false }>;
 
 
-  @MikroORM_Formula(()=>'SELECT NOW()')
+  @MikroORM_Formula(() => "SELECT NOW()")
   serverTime!: Date;
 
 }
@@ -4803,7 +4803,7 @@ export abstract class BaseEntity2 extends MikroORM_BaseEntity {
 export const BaseEntity2Schema = new MikroORM_EntitySchema({
   class: BaseEntity2,
   properties: {
-    serverTime: { type: 'datetime', formula: ()=>'SELECT NOW()' },
+    serverTime: { type: 'datetime', formula: () => "SELECT NOW()" },
   },
 });
 ",
@@ -5024,6 +5024,13 @@ import { Book4 } from './Book4';
 import { CustomBase } from './CustomBase';
 import { Publisher4Tests } from './Publisher4Tests';
 
+export const Publisher4Type = {
+  LOCAL: 'local',
+  GLOBAL: 'global',
+} as const;
+
+export type TPublisher4Type = (typeof Publisher4Type)[keyof typeof Publisher4Type];
+
 @MikroORM_Entity()
 export class Publisher4 extends CustomBase {
 
@@ -5052,13 +5059,6 @@ export class Publisher4 extends CustomBase {
   publisher4TestsCollection = new MikroORM_Collection<Publisher4Tests>(this);
 
 }
-
-export const Publisher4Type = {
-  LOCAL: 'local',
-  GLOBAL: 'global',
-} as const;
-
-export type TPublisher4Type = (typeof Publisher4Type)[keyof typeof Publisher4Type];
 ",
   "import { type Ref as MikroORM_Ref } from '@mikro-orm/core';
 import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/decorators/legacy';
@@ -5137,7 +5137,7 @@ import { CustomBase } from './CustomBase';
 
 export abstract class BaseEntity2 extends CustomBase {
 
-  @MikroORM_Formula(()=>'SELECT NOW()')
+  @MikroORM_Formula(() => "SELECT NOW()")
   serverTime!: Date;
 
 }
@@ -5495,7 +5495,7 @@ export abstract class BaseEntity2 extends CustomBase {
 export const BaseEntity2Schema = new MikroORM_EntitySchema({
   class: BaseEntity2,
   properties: {
-    serverTime: { type: 'datetime', formula: ()=>'SELECT NOW()' },
+    serverTime: { type: 'datetime', formula: () => "SELECT NOW()" },
   },
 });
 ",
@@ -5721,6 +5721,13 @@ import { Entity as MikroORM_Entity, Enum as MikroORM_Enum, OneToMany as MikroORM
 import { Book4 } from './Book4';
 import { Publisher4Tests } from './Publisher4Tests';
 
+export const Publisher4Type = {
+  LOCAL: 'local',
+  GLOBAL: 'global',
+} as const;
+
+export type TPublisher4Type = (typeof Publisher4Type)[keyof typeof Publisher4Type];
+
 @MikroORM_Entity()
 export class Publisher4 {
 
@@ -5749,13 +5756,6 @@ export class Publisher4 {
   publisher4TestsCollection = new MikroORM_Collection<Publisher4Tests>(this);
 
 }
-
-export const Publisher4Type = {
-  LOCAL: 'local',
-  GLOBAL: 'global',
-} as const;
-
-export type TPublisher4Type = (typeof Publisher4Type)[keyof typeof Publisher4Type];
 ",
   "import { type Ref as MikroORM_Ref } from '@mikro-orm/core';
 import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/decorators/legacy';
@@ -5830,7 +5830,7 @@ export class Test4 {
 
 export abstract class BaseEntity2 {
 
-  @MikroORM_Formula(()=>'SELECT NOW()')
+  @MikroORM_Formula(() => "SELECT NOW()")
   serverTime!: Date;
 
 }
@@ -6180,7 +6180,7 @@ export abstract class BaseEntity2 {
 export const BaseEntity2Schema = new MikroORM_EntitySchema({
   class: BaseEntity2,
   properties: {
-    serverTime: { type: 'datetime', formula: ()=>'SELECT NOW()' },
+    serverTime: { type: 'datetime', formula: () => "SELECT NOW()" },
   },
 });
 ",
@@ -6401,6 +6401,13 @@ import { BaseEntity } from './BaseEntity';
 import { Book4 } from './Book4';
 import { Publisher4Tests } from './Publisher4Tests';
 
+export const Publisher4Type = {
+  LOCAL: 'local',
+  GLOBAL: 'global',
+} as const;
+
+export type TPublisher4Type = (typeof Publisher4Type)[keyof typeof Publisher4Type];
+
 @MikroORM_Entity()
 export class Publisher4 extends BaseEntity {
 
@@ -6429,13 +6436,6 @@ export class Publisher4 extends BaseEntity {
   publisher4TestsCollection = new MikroORM_Collection<Publisher4Tests>(this);
 
 }
-
-export const Publisher4Type = {
-  LOCAL: 'local',
-  GLOBAL: 'global',
-} as const;
-
-export type TPublisher4Type = (typeof Publisher4Type)[keyof typeof Publisher4Type];
 ",
   "import { type Ref as MikroORM_Ref } from '@mikro-orm/core';
 import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/decorators/legacy';
@@ -6514,7 +6514,7 @@ import { BaseEntity } from './BaseEntity';
 
 export abstract class BaseEntity2 extends BaseEntity {
 
-  @MikroORM_Formula(()=>'SELECT NOW()')
+  @MikroORM_Formula(() => "SELECT NOW()")
   serverTime!: Date;
 
 }
@@ -6872,7 +6872,7 @@ export abstract class BaseEntity2 extends BaseEntity {
 export const BaseEntity2Schema = new MikroORM_EntitySchema({
   class: BaseEntity2,
   properties: {
-    serverTime: { type: 'datetime', formula: ()=>'SELECT NOW()' },
+    serverTime: { type: 'datetime', formula: () => "SELECT NOW()" },
   },
 });
 ",
@@ -7105,6 +7105,13 @@ import { BaseEntity2 } from './BaseEntity2';
 import { Book4 } from './Book4';
 import { Publisher4Tests } from './Publisher4Tests';
 
+export const Publisher4Type = {
+  LOCAL: 'local',
+  GLOBAL: 'global',
+} as const;
+
+export type TPublisher4Type = (typeof Publisher4Type)[keyof typeof Publisher4Type];
+
 @MikroORM_Entity()
 export class Publisher4 extends BaseEntity2 {
 
@@ -7133,13 +7140,6 @@ export class Publisher4 extends BaseEntity2 {
   publisher4TestsCollection = new MikroORM_Collection<Publisher4Tests>(this);
 
 }
-
-export const Publisher4Type = {
-  LOCAL: 'local',
-  GLOBAL: 'global',
-} as const;
-
-export type TPublisher4Type = (typeof Publisher4Type)[keyof typeof Publisher4Type];
 ",
   "import { type Ref as MikroORM_Ref } from '@mikro-orm/core';
 import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/decorators/legacy';
@@ -7221,7 +7221,7 @@ export abstract class BaseEntity2 {
   [MikroORM_Config]?: MikroORM_DefineConfig<{ forceObject: true }>;
 
 
-  @MikroORM_Formula(()=>'SELECT NOW()')
+  @MikroORM_Formula(() => "SELECT NOW()")
   serverTime!: Date;
 
 }
@@ -7571,7 +7571,7 @@ export abstract class BaseEntity2 {
 export const BaseEntity2Schema = new MikroORM_EntitySchema({
   class: BaseEntity2,
   properties: {
-    serverTime: { type: 'datetime', formula: ()=>'SELECT NOW()' },
+    serverTime: { type: 'datetime', formula: () => "SELECT NOW()" },
   },
 });
 ",
@@ -7792,6 +7792,13 @@ import { Book4 } from './Book4';
 import { CustomBase } from './CustomBase';
 import { Publisher4Tests } from './Publisher4Tests';
 
+export const Publisher4Type = {
+  LOCAL: 'local',
+  GLOBAL: 'global',
+} as const;
+
+export type TPublisher4Type = (typeof Publisher4Type)[keyof typeof Publisher4Type];
+
 @MikroORM_Entity()
 export class Publisher4 extends CustomBase {
 
@@ -7820,13 +7827,6 @@ export class Publisher4 extends CustomBase {
   publisher4TestsCollection = new MikroORM_Collection<Publisher4Tests>(this);
 
 }
-
-export const Publisher4Type = {
-  LOCAL: 'local',
-  GLOBAL: 'global',
-} as const;
-
-export type TPublisher4Type = (typeof Publisher4Type)[keyof typeof Publisher4Type];
 ",
   "import { type Ref as MikroORM_Ref } from '@mikro-orm/core';
 import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/decorators/legacy';
@@ -7905,7 +7905,7 @@ import { CustomBase } from './CustomBase';
 
 export abstract class BaseEntity2 extends CustomBase {
 
-  @MikroORM_Formula(()=>'SELECT NOW()')
+  @MikroORM_Formula(() => "SELECT NOW()")
   serverTime!: Date;
 
 }
@@ -8263,7 +8263,7 @@ export abstract class BaseEntity2 extends CustomBase {
 export const BaseEntity2Schema = new MikroORM_EntitySchema({
   class: BaseEntity2,
   properties: {
-    serverTime: { type: 'datetime', formula: ()=>'SELECT NOW()' },
+    serverTime: { type: 'datetime', formula: () => "SELECT NOW()" },
   },
 });
 ",
@@ -8490,6 +8490,13 @@ import { Entity as MikroORM_Entity, Enum as MikroORM_Enum, OneToMany as MikroORM
 import { Book4 } from './Book4';
 import { Publisher4Tests } from './Publisher4Tests';
 
+export const Publisher4Type = {
+  LOCAL: 'local',
+  GLOBAL: 'global',
+} as const;
+
+export type TPublisher4Type = (typeof Publisher4Type)[keyof typeof Publisher4Type];
+
 @MikroORM_Entity()
 export class Publisher4 extends MikroORM_BaseEntity {
 
@@ -8518,13 +8525,6 @@ export class Publisher4 extends MikroORM_BaseEntity {
   publisher4TestsCollection = new MikroORM_Collection<Publisher4Tests>(this);
 
 }
-
-export const Publisher4Type = {
-  LOCAL: 'local',
-  GLOBAL: 'global',
-} as const;
-
-export type TPublisher4Type = (typeof Publisher4Type)[keyof typeof Publisher4Type];
 ",
   "import { BaseEntity as MikroORM_BaseEntity, type Ref as MikroORM_Ref } from '@mikro-orm/core';
 import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/decorators/legacy';
@@ -8600,7 +8600,7 @@ import { Formula as MikroORM_Formula } from '@mikro-orm/decorators/legacy';
 
 export abstract class BaseEntity2 extends MikroORM_BaseEntity {
 
-  @MikroORM_Formula(()=>'SELECT NOW()')
+  @MikroORM_Formula(() => "SELECT NOW()")
   serverTime!: Date;
 
 }
@@ -8950,7 +8950,7 @@ export abstract class BaseEntity2 extends MikroORM_BaseEntity {
 export const BaseEntity2Schema = new MikroORM_EntitySchema({
   class: BaseEntity2,
   properties: {
-    serverTime: { type: 'datetime', formula: ()=>'SELECT NOW()' },
+    serverTime: { type: 'datetime', formula: () => "SELECT NOW()" },
   },
 });
 ",
@@ -9171,6 +9171,13 @@ import { BaseEntity } from './BaseEntity';
 import { Book4 } from './Book4';
 import { Publisher4Tests } from './Publisher4Tests';
 
+export const Publisher4Type = {
+  LOCAL: 'local',
+  GLOBAL: 'global',
+} as const;
+
+export type TPublisher4Type = (typeof Publisher4Type)[keyof typeof Publisher4Type];
+
 @MikroORM_Entity()
 export class Publisher4 extends BaseEntity {
 
@@ -9199,13 +9206,6 @@ export class Publisher4 extends BaseEntity {
   publisher4TestsCollection = new MikroORM_Collection<Publisher4Tests>(this);
 
 }
-
-export const Publisher4Type = {
-  LOCAL: 'local',
-  GLOBAL: 'global',
-} as const;
-
-export type TPublisher4Type = (typeof Publisher4Type)[keyof typeof Publisher4Type];
 ",
   "import { type Ref as MikroORM_Ref } from '@mikro-orm/core';
 import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/decorators/legacy';
@@ -9284,7 +9284,7 @@ import { BaseEntity } from './BaseEntity';
 
 export abstract class BaseEntity2 extends BaseEntity {
 
-  @MikroORM_Formula(()=>'SELECT NOW()')
+  @MikroORM_Formula(() => "SELECT NOW()")
   serverTime!: Date;
 
 }
@@ -9642,7 +9642,7 @@ export abstract class BaseEntity2 extends BaseEntity {
 export const BaseEntity2Schema = new MikroORM_EntitySchema({
   class: BaseEntity2,
   properties: {
-    serverTime: { type: 'datetime', formula: ()=>'SELECT NOW()' },
+    serverTime: { type: 'datetime', formula: () => "SELECT NOW()" },
   },
 });
 ",
@@ -9875,6 +9875,13 @@ import { BaseEntity2 } from './BaseEntity2';
 import { Book4 } from './Book4';
 import { Publisher4Tests } from './Publisher4Tests';
 
+export const Publisher4Type = {
+  LOCAL: 'local',
+  GLOBAL: 'global',
+} as const;
+
+export type TPublisher4Type = (typeof Publisher4Type)[keyof typeof Publisher4Type];
+
 @MikroORM_Entity()
 export class Publisher4 extends BaseEntity2 {
 
@@ -9903,13 +9910,6 @@ export class Publisher4 extends BaseEntity2 {
   publisher4TestsCollection = new MikroORM_Collection<Publisher4Tests>(this);
 
 }
-
-export const Publisher4Type = {
-  LOCAL: 'local',
-  GLOBAL: 'global',
-} as const;
-
-export type TPublisher4Type = (typeof Publisher4Type)[keyof typeof Publisher4Type];
 ",
   "import { type Ref as MikroORM_Ref } from '@mikro-orm/core';
 import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/decorators/legacy';
@@ -9991,7 +9991,7 @@ export abstract class BaseEntity2 extends MikroORM_BaseEntity {
   [MikroORM_Config]?: MikroORM_DefineConfig<{ forceObject: true }>;
 
 
-  @MikroORM_Formula(()=>'SELECT NOW()')
+  @MikroORM_Formula(() => "SELECT NOW()")
   serverTime!: Date;
 
 }
@@ -10341,7 +10341,7 @@ export abstract class BaseEntity2 extends MikroORM_BaseEntity {
 export const BaseEntity2Schema = new MikroORM_EntitySchema({
   class: BaseEntity2,
   properties: {
-    serverTime: { type: 'datetime', formula: ()=>'SELECT NOW()' },
+    serverTime: { type: 'datetime', formula: () => "SELECT NOW()" },
   },
 });
 ",
@@ -10562,6 +10562,13 @@ import { Book4 } from './Book4';
 import { CustomBase } from './CustomBase';
 import { Publisher4Tests } from './Publisher4Tests';
 
+export const Publisher4Type = {
+  LOCAL: 'local',
+  GLOBAL: 'global',
+} as const;
+
+export type TPublisher4Type = (typeof Publisher4Type)[keyof typeof Publisher4Type];
+
 @MikroORM_Entity()
 export class Publisher4 extends CustomBase {
 
@@ -10590,13 +10597,6 @@ export class Publisher4 extends CustomBase {
   publisher4TestsCollection = new MikroORM_Collection<Publisher4Tests>(this);
 
 }
-
-export const Publisher4Type = {
-  LOCAL: 'local',
-  GLOBAL: 'global',
-} as const;
-
-export type TPublisher4Type = (typeof Publisher4Type)[keyof typeof Publisher4Type];
 ",
   "import { type Ref as MikroORM_Ref } from '@mikro-orm/core';
 import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/decorators/legacy';
@@ -10675,7 +10675,7 @@ import { CustomBase } from './CustomBase';
 
 export abstract class BaseEntity2 extends CustomBase {
 
-  @MikroORM_Formula(()=>'SELECT NOW()')
+  @MikroORM_Formula(() => "SELECT NOW()")
   serverTime!: Date;
 
 }
@@ -11033,7 +11033,7 @@ export abstract class BaseEntity2 extends CustomBase {
 export const BaseEntity2Schema = new MikroORM_EntitySchema({
   class: BaseEntity2,
   properties: {
-    serverTime: { type: 'datetime', formula: ()=>'SELECT NOW()' },
+    serverTime: { type: 'datetime', formula: () => "SELECT NOW()" },
   },
 });
 ",

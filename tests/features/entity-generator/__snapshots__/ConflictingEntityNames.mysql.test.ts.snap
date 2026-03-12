@@ -35,6 +35,13 @@ import { Entity as MikroORM_Entity, Enum as MikroORM_Enum, ManyToMany as MikroOR
 import { ManyToMany } from './ManyToMany';
 import { Property } from './Property';
 
+export const EntityType = {
+  LEGAL: 'legal',
+  PHYSICAL: 'physical',
+} as const;
+
+export type TEntityType = (typeof EntityType)[keyof typeof EntityType];
+
 @MikroORM_Entity()
 export class Entity {
 
@@ -51,13 +58,6 @@ export class Entity {
   manyToManyCollection = new MikroORM_Collection<ManyToMany>(this);
 
 }
-
-export const EntityType = {
-  LEGAL: 'legal',
-  PHYSICAL: 'physical',
-} as const;
-
-export type TEntityType = (typeof EntityType)[keyof typeof EntityType];
 ",
   "import { Collection as MikroORM_Collection } from '@mikro-orm/core';
 import { Entity as MikroORM_Entity, OneToMany as MikroORM_OneToMany, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/decorators/legacy';

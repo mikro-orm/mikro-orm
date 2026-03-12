@@ -101,6 +101,14 @@ export class Author2 {
   "import { Collection, type Ref } from '@mikro-orm/core';
 import { Entity, Enum, Index, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property, Unique } from '@mikro-orm/decorators/legacy';
 
+export const BaseUser2Type = {
+  EMPLOYEE: 'employee',
+  MANAGER: 'manager',
+  OWNER: 'owner',
+} as const;
+
+export type TBaseUser2Type = (typeof BaseUser2Type)[keyof typeof BaseUser2Type];
+
 @Entity()
 export class BaseUser2 {
 
@@ -141,14 +149,6 @@ export class BaseUser2 {
   baseUser2?: Ref<BaseUser2>;
 
 }
-
-export const BaseUser2Type = {
-  EMPLOYEE: 'employee',
-  MANAGER: 'manager',
-  OWNER: 'owner',
-} as const;
-
-export type TBaseUser2Type = (typeof BaseUser2Type)[keyof typeof BaseUser2Type];
 ",
   "import { Collection } from '@mikro-orm/core';
 import { Entity, ManyToMany, OneToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
@@ -454,6 +454,34 @@ import { Entity, Enum, OneToMany, PrimaryKey, Property } from '@mikro-orm/decora
 import { Book2 } from './Book2';
 import { Publisher2Tests } from './Publisher2Tests';
 
+export const Publisher2Type = {
+  LOCAL: 'local',
+  GLOBAL: 'global',
+} as const;
+
+export type TPublisher2Type = (typeof Publisher2Type)[keyof typeof Publisher2Type];
+
+export const Publisher2Type2 = {
+  LOCAL: 'LOCAL',
+  GLOBAL: 'GLOBAL',
+} as const;
+
+export type TPublisher2Type2 = (typeof Publisher2Type2)[keyof typeof Publisher2Type2];
+
+export const Publisher2Enum4 = {
+  A: 'a',
+  B: 'b',
+  C: 'c',
+} as const;
+
+export type TPublisher2Enum4 = (typeof Publisher2Enum4)[keyof typeof Publisher2Enum4];
+
+export const Publisher2Enum5 = {
+  A: 'a',
+} as const;
+
+export type TPublisher2Enum5 = (typeof Publisher2Enum5)[keyof typeof Publisher2Enum5];
+
 @Entity()
 export class Publisher2 {
 
@@ -491,34 +519,6 @@ export class Publisher2 {
   publisher2TestsCollection = new Collection<Publisher2Tests>(this);
 
 }
-
-export const Publisher2Type = {
-  LOCAL: 'local',
-  GLOBAL: 'global',
-} as const;
-
-export type TPublisher2Type = (typeof Publisher2Type)[keyof typeof Publisher2Type];
-
-export const Publisher2Type2 = {
-  LOCAL: 'LOCAL',
-  GLOBAL: 'GLOBAL',
-} as const;
-
-export type TPublisher2Type2 = (typeof Publisher2Type2)[keyof typeof Publisher2Type2];
-
-export const Publisher2Enum4 = {
-  A: 'a',
-  B: 'b',
-  C: 'c',
-} as const;
-
-export type TPublisher2Enum4 = (typeof Publisher2Enum4)[keyof typeof Publisher2Enum4];
-
-export const Publisher2Enum5 = {
-  A: 'a',
-} as const;
-
-export type TPublisher2Enum5 = (typeof Publisher2Enum5)[keyof typeof Publisher2Enum5];
 ",
   "import { type Ref } from '@mikro-orm/core';
 import { Entity, Index, ManyToOne, PrimaryKey } from '@mikro-orm/decorators/legacy';
@@ -745,6 +745,14 @@ export class Author2 {
   "import { Collection, type Ref } from '@mikro-orm/core';
 import { Entity, Enum, Index, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property, Unique } from '@mikro-orm/decorators/legacy';
 
+export const BaseUser2Type = {
+  EMPLOYEE: 'employee',
+  MANAGER: 'manager',
+  OWNER: 'owner',
+} as const;
+
+export type TBaseUser2Type = (typeof BaseUser2Type)[keyof typeof BaseUser2Type];
+
 @Entity()
 export class BaseUser2 {
 
@@ -785,14 +793,6 @@ export class BaseUser2 {
   baseUser2: Ref<BaseUser2> | null = null;
 
 }
-
-export const BaseUser2Type = {
-  EMPLOYEE: 'employee',
-  MANAGER: 'manager',
-  OWNER: 'owner',
-} as const;
-
-export type TBaseUser2Type = (typeof BaseUser2Type)[keyof typeof BaseUser2Type];
 ",
   "import { Collection } from '@mikro-orm/core';
 import { Entity, ManyToMany, OneToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
@@ -1098,6 +1098,34 @@ import { Entity, Enum, OneToMany, PrimaryKey, Property } from '@mikro-orm/decora
 import { Book2 } from './Book2';
 import { Publisher2Tests } from './Publisher2Tests';
 
+export const Publisher2Type = {
+  LOCAL: 'local',
+  GLOBAL: 'global',
+} as const;
+
+export type TPublisher2Type = (typeof Publisher2Type)[keyof typeof Publisher2Type];
+
+export const Publisher2Type2 = {
+  LOCAL: 'LOCAL',
+  GLOBAL: 'GLOBAL',
+} as const;
+
+export type TPublisher2Type2 = (typeof Publisher2Type2)[keyof typeof Publisher2Type2];
+
+export const Publisher2Enum4 = {
+  A: 'a',
+  B: 'b',
+  C: 'c',
+} as const;
+
+export type TPublisher2Enum4 = (typeof Publisher2Enum4)[keyof typeof Publisher2Enum4];
+
+export const Publisher2Enum5 = {
+  A: 'a',
+} as const;
+
+export type TPublisher2Enum5 = (typeof Publisher2Enum5)[keyof typeof Publisher2Enum5];
+
 @Entity()
 export class Publisher2 {
 
@@ -1135,34 +1163,6 @@ export class Publisher2 {
   publisher2TestsCollection = new Collection<Publisher2Tests>(this);
 
 }
-
-export const Publisher2Type = {
-  LOCAL: 'local',
-  GLOBAL: 'global',
-} as const;
-
-export type TPublisher2Type = (typeof Publisher2Type)[keyof typeof Publisher2Type];
-
-export const Publisher2Type2 = {
-  LOCAL: 'LOCAL',
-  GLOBAL: 'GLOBAL',
-} as const;
-
-export type TPublisher2Type2 = (typeof Publisher2Type2)[keyof typeof Publisher2Type2];
-
-export const Publisher2Enum4 = {
-  A: 'a',
-  B: 'b',
-  C: 'c',
-} as const;
-
-export type TPublisher2Enum4 = (typeof Publisher2Enum4)[keyof typeof Publisher2Enum4];
-
-export const Publisher2Enum5 = {
-  A: 'a',
-} as const;
-
-export type TPublisher2Enum5 = (typeof Publisher2Enum5)[keyof typeof Publisher2Enum5];
 ",
   "import { type Ref } from '@mikro-orm/core';
 import { Entity, Index, ManyToOne, PrimaryKey } from '@mikro-orm/decorators/legacy';
@@ -1389,6 +1389,14 @@ export class Author2 {
   "import { Collection, type Ref } from '@mikro-orm/core';
 import { Entity, Enum, Index, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property, Unique } from '@mikro-orm/decorators/legacy';
 
+export const BaseUser2Type = {
+  EMPLOYEE: 'employee',
+  MANAGER: 'manager',
+  OWNER: 'owner',
+} as const;
+
+export type TBaseUser2Type = (typeof BaseUser2Type)[keyof typeof BaseUser2Type];
+
 @Entity()
 export class BaseUser2 {
 
@@ -1429,14 +1437,6 @@ export class BaseUser2 {
   baseUser2: Ref<BaseUser2> | null = null;
 
 }
-
-export const BaseUser2Type = {
-  EMPLOYEE: 'employee',
-  MANAGER: 'manager',
-  OWNER: 'owner',
-} as const;
-
-export type TBaseUser2Type = (typeof BaseUser2Type)[keyof typeof BaseUser2Type];
 ",
   "import { Collection } from '@mikro-orm/core';
 import { Entity, ManyToMany, OneToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
@@ -1742,6 +1742,34 @@ import { Entity, Enum, OneToMany, PrimaryKey, Property } from '@mikro-orm/decora
 import { Book2 } from './Book2';
 import { Publisher2Tests } from './Publisher2Tests';
 
+export const Publisher2Type = {
+  LOCAL: 'local',
+  GLOBAL: 'global',
+} as const;
+
+export type TPublisher2Type = (typeof Publisher2Type)[keyof typeof Publisher2Type];
+
+export const Publisher2Type2 = {
+  LOCAL: 'LOCAL',
+  GLOBAL: 'GLOBAL',
+} as const;
+
+export type TPublisher2Type2 = (typeof Publisher2Type2)[keyof typeof Publisher2Type2];
+
+export const Publisher2Enum4 = {
+  A: 'a',
+  B: 'b',
+  C: 'c',
+} as const;
+
+export type TPublisher2Enum4 = (typeof Publisher2Enum4)[keyof typeof Publisher2Enum4];
+
+export const Publisher2Enum5 = {
+  A: 'a',
+} as const;
+
+export type TPublisher2Enum5 = (typeof Publisher2Enum5)[keyof typeof Publisher2Enum5];
+
 @Entity()
 export class Publisher2 {
 
@@ -1779,34 +1807,6 @@ export class Publisher2 {
   publisher2TestsCollection = new Collection<Publisher2Tests>(this);
 
 }
-
-export const Publisher2Type = {
-  LOCAL: 'local',
-  GLOBAL: 'global',
-} as const;
-
-export type TPublisher2Type = (typeof Publisher2Type)[keyof typeof Publisher2Type];
-
-export const Publisher2Type2 = {
-  LOCAL: 'LOCAL',
-  GLOBAL: 'GLOBAL',
-} as const;
-
-export type TPublisher2Type2 = (typeof Publisher2Type2)[keyof typeof Publisher2Type2];
-
-export const Publisher2Enum4 = {
-  A: 'a',
-  B: 'b',
-  C: 'c',
-} as const;
-
-export type TPublisher2Enum4 = (typeof Publisher2Enum4)[keyof typeof Publisher2Enum4];
-
-export const Publisher2Enum5 = {
-  A: 'a',
-} as const;
-
-export type TPublisher2Enum5 = (typeof Publisher2Enum5)[keyof typeof Publisher2Enum5];
 ",
   "import { type Ref } from '@mikro-orm/core';
 import { Entity, Index, ManyToOne, PrimaryKey } from '@mikro-orm/decorators/legacy';
@@ -7217,6 +7217,12 @@ export class Author2 {
   "import { Collection, type Ref } from '@mikro-orm/core';
 import { Entity, Enum, Index, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property, Unique } from '@mikro-orm/decorators/legacy';
 
+export enum BaseUser2Type {
+  EMPLOYEE = 'employee',
+  MANAGER = 'manager',
+  OWNER = 'owner',
+}
+
 @Entity()
 export class BaseUser2 {
 
@@ -7256,12 +7262,6 @@ export class BaseUser2 {
   @OneToOne({ entity: () => BaseUser2, ref: true, mappedBy: 'favouriteManager' })
   baseUser2?: Ref<BaseUser2>;
 
-}
-
-export enum BaseUser2Type {
-  EMPLOYEE = 'employee',
-  MANAGER = 'manager',
-  OWNER = 'owner',
 }
 ",
   "import { Collection } from '@mikro-orm/core';
@@ -7568,6 +7568,26 @@ import { Entity, Enum, OneToMany, PrimaryKey, Property } from '@mikro-orm/decora
 import { Book2 } from './Book2';
 import { Publisher2Tests } from './Publisher2Tests';
 
+export enum Publisher2Type {
+  LOCAL = 'local',
+  GLOBAL = 'global',
+}
+
+export enum Publisher2Type2 {
+  LOCAL = 'LOCAL',
+  GLOBAL = 'GLOBAL',
+}
+
+export enum Publisher2Enum4 {
+  A = 'a',
+  B = 'b',
+  C = 'c',
+}
+
+export enum Publisher2Enum5 {
+  A = 'a',
+}
+
 @Entity()
 export class Publisher2 {
 
@@ -7604,26 +7624,6 @@ export class Publisher2 {
   @OneToMany({ entity: () => Publisher2Tests, mappedBy: 'publisher2' })
   publisher2TestsCollection = new Collection<Publisher2Tests>(this);
 
-}
-
-export enum Publisher2Type {
-  LOCAL = 'local',
-  GLOBAL = 'global',
-}
-
-export enum Publisher2Type2 {
-  LOCAL = 'LOCAL',
-  GLOBAL = 'GLOBAL',
-}
-
-export enum Publisher2Enum4 {
-  A = 'a',
-  B = 'b',
-  C = 'c',
-}
-
-export enum Publisher2Enum5 {
-  A = 'a',
 }
 ",
   "import { type Ref } from '@mikro-orm/core';
@@ -7851,6 +7851,12 @@ export class Author2 {
   "import { Collection, type Ref } from '@mikro-orm/core';
 import { Entity, Enum, Index, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property, Unique } from '@mikro-orm/decorators/legacy';
 
+export enum BaseUser2Type {
+  EMPLOYEE = 'employee',
+  MANAGER = 'manager',
+  OWNER = 'owner',
+}
+
 @Entity()
 export class BaseUser2 {
 
@@ -7890,12 +7896,6 @@ export class BaseUser2 {
   @OneToOne({ entity: () => BaseUser2, ref: true, mappedBy: 'favouriteManager' })
   baseUser2: Ref<BaseUser2> | null = null;
 
-}
-
-export enum BaseUser2Type {
-  EMPLOYEE = 'employee',
-  MANAGER = 'manager',
-  OWNER = 'owner',
 }
 ",
   "import { Collection } from '@mikro-orm/core';
@@ -8202,6 +8202,26 @@ import { Entity, Enum, OneToMany, PrimaryKey, Property } from '@mikro-orm/decora
 import { Book2 } from './Book2';
 import { Publisher2Tests } from './Publisher2Tests';
 
+export enum Publisher2Type {
+  LOCAL = 'local',
+  GLOBAL = 'global',
+}
+
+export enum Publisher2Type2 {
+  LOCAL = 'LOCAL',
+  GLOBAL = 'GLOBAL',
+}
+
+export enum Publisher2Enum4 {
+  A = 'a',
+  B = 'b',
+  C = 'c',
+}
+
+export enum Publisher2Enum5 {
+  A = 'a',
+}
+
 @Entity()
 export class Publisher2 {
 
@@ -8238,26 +8258,6 @@ export class Publisher2 {
   @OneToMany({ entity: () => Publisher2Tests, mappedBy: 'publisher2' })
   publisher2TestsCollection = new Collection<Publisher2Tests>(this);
 
-}
-
-export enum Publisher2Type {
-  LOCAL = 'local',
-  GLOBAL = 'global',
-}
-
-export enum Publisher2Type2 {
-  LOCAL = 'LOCAL',
-  GLOBAL = 'GLOBAL',
-}
-
-export enum Publisher2Enum4 {
-  A = 'a',
-  B = 'b',
-  C = 'c',
-}
-
-export enum Publisher2Enum5 {
-  A = 'a',
 }
 ",
   "import { type Ref } from '@mikro-orm/core';
@@ -8485,6 +8485,12 @@ export class Author2 {
   "import { Collection, type Ref } from '@mikro-orm/core';
 import { Entity, Enum, Index, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property, Unique } from '@mikro-orm/decorators/legacy';
 
+export enum BaseUser2Type {
+  EMPLOYEE = 'employee',
+  MANAGER = 'manager',
+  OWNER = 'owner',
+}
+
 @Entity()
 export class BaseUser2 {
 
@@ -8524,12 +8530,6 @@ export class BaseUser2 {
   @OneToOne({ entity: () => BaseUser2, ref: true, mappedBy: 'favouriteManager' })
   baseUser2: Ref<BaseUser2> | null = null;
 
-}
-
-export enum BaseUser2Type {
-  EMPLOYEE = 'employee',
-  MANAGER = 'manager',
-  OWNER = 'owner',
 }
 ",
   "import { Collection } from '@mikro-orm/core';
@@ -8836,6 +8836,26 @@ import { Entity, Enum, OneToMany, PrimaryKey, Property } from '@mikro-orm/decora
 import { Book2 } from './Book2';
 import { Publisher2Tests } from './Publisher2Tests';
 
+export enum Publisher2Type {
+  LOCAL = 'local',
+  GLOBAL = 'global',
+}
+
+export enum Publisher2Type2 {
+  LOCAL = 'LOCAL',
+  GLOBAL = 'GLOBAL',
+}
+
+export enum Publisher2Enum4 {
+  A = 'a',
+  B = 'b',
+  C = 'c',
+}
+
+export enum Publisher2Enum5 {
+  A = 'a',
+}
+
 @Entity()
 export class Publisher2 {
 
@@ -8872,26 +8892,6 @@ export class Publisher2 {
   @OneToMany({ entity: () => Publisher2Tests, mappedBy: 'publisher2' })
   publisher2TestsCollection = new Collection<Publisher2Tests>(this);
 
-}
-
-export enum Publisher2Type {
-  LOCAL = 'local',
-  GLOBAL = 'global',
-}
-
-export enum Publisher2Type2 {
-  LOCAL = 'LOCAL',
-  GLOBAL = 'GLOBAL',
-}
-
-export enum Publisher2Enum4 {
-  A = 'a',
-  B = 'b',
-  C = 'c',
-}
-
-export enum Publisher2Enum5 {
-  A = 'a',
 }
 ",
   "import { type Ref } from '@mikro-orm/core';
@@ -14213,6 +14213,8 @@ export class Author2 {
   "import { Collection, type Ref } from '@mikro-orm/core';
 import { Entity, Enum, Index, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property, Unique } from '@mikro-orm/decorators/legacy';
 
+export type TBaseUser2Type = 'employee' | 'manager' | 'owner';
+
 @Entity()
 export class BaseUser2 {
 
@@ -14253,8 +14255,6 @@ export class BaseUser2 {
   baseUser2?: Ref<BaseUser2>;
 
 }
-
-export type TBaseUser2Type = 'employee' | 'manager' | 'owner';
 ",
   "import { Collection } from '@mikro-orm/core';
 import { Entity, ManyToMany, OneToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
@@ -14560,6 +14560,14 @@ import { Entity, Enum, OneToMany, PrimaryKey, Property } from '@mikro-orm/decora
 import { Book2 } from './Book2';
 import { Publisher2Tests } from './Publisher2Tests';
 
+export type TPublisher2Type = 'local' | 'global';
+
+export type TPublisher2Type2 = 'LOCAL' | 'GLOBAL';
+
+export type TPublisher2Enum4 = 'a' | 'b' | 'c';
+
+export type TPublisher2Enum5 = 'a';
+
 @Entity()
 export class Publisher2 {
 
@@ -14597,14 +14605,6 @@ export class Publisher2 {
   publisher2TestsCollection = new Collection<Publisher2Tests>(this);
 
 }
-
-export type TPublisher2Type = 'local' | 'global';
-
-export type TPublisher2Type2 = 'LOCAL' | 'GLOBAL';
-
-export type TPublisher2Enum4 = 'a' | 'b' | 'c';
-
-export type TPublisher2Enum5 = 'a';
 ",
   "import { type Ref } from '@mikro-orm/core';
 import { Entity, Index, ManyToOne, PrimaryKey } from '@mikro-orm/decorators/legacy';
@@ -14831,6 +14831,8 @@ export class Author2 {
   "import { Collection, type Ref } from '@mikro-orm/core';
 import { Entity, Enum, Index, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property, Unique } from '@mikro-orm/decorators/legacy';
 
+export type TBaseUser2Type = 'employee' | 'manager' | 'owner';
+
 @Entity()
 export class BaseUser2 {
 
@@ -14871,8 +14873,6 @@ export class BaseUser2 {
   baseUser2: Ref<BaseUser2> | null = null;
 
 }
-
-export type TBaseUser2Type = 'employee' | 'manager' | 'owner';
 ",
   "import { Collection } from '@mikro-orm/core';
 import { Entity, ManyToMany, OneToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
@@ -15178,6 +15178,14 @@ import { Entity, Enum, OneToMany, PrimaryKey, Property } from '@mikro-orm/decora
 import { Book2 } from './Book2';
 import { Publisher2Tests } from './Publisher2Tests';
 
+export type TPublisher2Type = 'local' | 'global';
+
+export type TPublisher2Type2 = 'LOCAL' | 'GLOBAL';
+
+export type TPublisher2Enum4 = 'a' | 'b' | 'c';
+
+export type TPublisher2Enum5 = 'a';
+
 @Entity()
 export class Publisher2 {
 
@@ -15215,14 +15223,6 @@ export class Publisher2 {
   publisher2TestsCollection = new Collection<Publisher2Tests>(this);
 
 }
-
-export type TPublisher2Type = 'local' | 'global';
-
-export type TPublisher2Type2 = 'LOCAL' | 'GLOBAL';
-
-export type TPublisher2Enum4 = 'a' | 'b' | 'c';
-
-export type TPublisher2Enum5 = 'a';
 ",
   "import { type Ref } from '@mikro-orm/core';
 import { Entity, Index, ManyToOne, PrimaryKey } from '@mikro-orm/decorators/legacy';
@@ -15449,6 +15449,8 @@ export class Author2 {
   "import { Collection, type Ref } from '@mikro-orm/core';
 import { Entity, Enum, Index, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property, Unique } from '@mikro-orm/decorators/legacy';
 
+export type TBaseUser2Type = 'employee' | 'manager' | 'owner';
+
 @Entity()
 export class BaseUser2 {
 
@@ -15489,8 +15491,6 @@ export class BaseUser2 {
   baseUser2: Ref<BaseUser2> | null = null;
 
 }
-
-export type TBaseUser2Type = 'employee' | 'manager' | 'owner';
 ",
   "import { Collection } from '@mikro-orm/core';
 import { Entity, ManyToMany, OneToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
@@ -15796,6 +15796,14 @@ import { Entity, Enum, OneToMany, PrimaryKey, Property } from '@mikro-orm/decora
 import { Book2 } from './Book2';
 import { Publisher2Tests } from './Publisher2Tests';
 
+export type TPublisher2Type = 'local' | 'global';
+
+export type TPublisher2Type2 = 'LOCAL' | 'GLOBAL';
+
+export type TPublisher2Enum4 = 'a' | 'b' | 'c';
+
+export type TPublisher2Enum5 = 'a';
+
 @Entity()
 export class Publisher2 {
 
@@ -15833,14 +15841,6 @@ export class Publisher2 {
   publisher2TestsCollection = new Collection<Publisher2Tests>(this);
 
 }
-
-export type TPublisher2Type = 'local' | 'global';
-
-export type TPublisher2Type2 = 'LOCAL' | 'GLOBAL';
-
-export type TPublisher2Enum4 = 'a' | 'b' | 'c';
-
-export type TPublisher2Enum5 = 'a';
 ",
   "import { type Ref } from '@mikro-orm/core';
 import { Entity, Index, ManyToOne, PrimaryKey } from '@mikro-orm/decorators/legacy';

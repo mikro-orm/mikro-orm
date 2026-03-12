@@ -5,20 +5,16 @@ import swc from 'unplugin-swc';
 const root = fileURLToPath(new URL('./packages', import.meta.url)).replace(/\\/g, '/');
 
 export default defineConfig({
-  esbuild: {
-    target: 'es2024',
-    keepNames: true,
+  oxc: {
+    decorators: {
+      legacy: true,
+      emitDecoratorMetadata: true,
+    },
   },
   test: {
     projects: [
       {
         extends: true,
-        plugins: [
-          swc.vite({
-            jsc: { target: 'es2024' },
-            sourceMaps: true,
-          }),
-        ],
         test: {
           name: 'legacy',
           include: ['tests/**/*.test.ts'],
@@ -27,6 +23,8 @@ export default defineConfig({
       },
       {
         extends: true,
+        // ES decorators need SWC to downlevel, oxc doesn't support this yet.
+        oxc: false,
         plugins: [
           swc.vite({
             jsc: {

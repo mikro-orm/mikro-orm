@@ -7,6 +7,21 @@ import { Entity, Enum, OneToOne } from '@mikro-orm/decorators/legacy';
 import { E50$37$32of$32stuff } from './E50$37$32of$32stuff';
 import { This$43that } from './This$43that';
 
+export const E_$42miscType = {
+  'APPLICATION/SVG+XML': 'application/svg+xml',
+  'IMAGE/PNG': 'image/png',
+} as const;
+
+export type TE_$42miscType = (typeof E_$42miscType)[keyof typeof E_$42miscType];
+
+export const E_$42miscEnum = {
+  A: 'a',
+  B: 'b',
+  'A+B': 'a+b',
+} as const;
+
+export type TE_$42miscEnum = (typeof E_$42miscEnum)[keyof typeof E_$42miscEnum];
+
 @Entity({ tableName: '*misc' })
 export class E_$42misc {
 
@@ -25,21 +40,6 @@ export class E_$42misc {
   this$43that?: Ref<This$43that>;
 
 }
-
-export const E_$42miscType = {
-  'APPLICATION/SVG+XML': 'application/svg+xml',
-  'IMAGE/PNG': 'image/png',
-} as const;
-
-export type TE_$42miscType = (typeof E_$42miscType)[keyof typeof E_$42miscType];
-
-export const E_$42miscEnum = {
-  A: 'a',
-  B: 'b',
-  'A+B': 'a+b',
-} as const;
-
-export type TE_$42miscEnum = (typeof E_$42miscEnum)[keyof typeof E_$42miscEnum];
 ",
   "import { type Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { Entity, Index, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';

@@ -78,7 +78,7 @@ export const Author2Schema = defineEntity({
   properties: {
     id: p.integer().primary(),
     createdAt: p.datetime().length(3).hidden().defaultRaw(\`current_timestamp(3)\`),
-    updatedAt: p.datetime().columnType('datetime(3)').serializer((v)=>v.toString()).groups('test').defaultRaw(\`current_timestamp(3)\`),
+    updatedAt: p.datetime().columnType('datetime(3)').serializer((v) => v.toString()).groups('test').defaultRaw(\`current_timestamp(3)\`),
     name: p.string().comment('author name').index('custom_idx_name_123'),
     email: p.type(EmailType).columnType('varchar(255)').serializer((v) => EmailSerializer.anonymous(v)).hidden().index('custom_email_index_name').unique('custom_email_unique_name'),
     age: p.integer().nullable().concurrencyCheck(),
@@ -90,7 +90,7 @@ export const Author2Schema = defineEntity({
     favouriteBook: () => p.manyToOne(Book2).updateRule('no action').deleteRule('cascade').nullable().eager().cascade(Cascade.PERSIST, Cascade.MERGE),
     favouriteAuthor: () => p.manyToOne(Author2).updateRule('no action').nullable(),
     identity: () => p.embedded(IdentitiesContainer).array().prefix(false).nullable(),
-    secondsSinceLastModified: p.integer().formula((cols)=>\`TIMESTAMPDIFF(SECONDS, NOW(), \${cols.updatedAt})\`).lazy(),
+    secondsSinceLastModified: p.integer().formula((cols) => \`TIMESTAMPDIFF(SECONDS, NOW(), \${cols.updatedAt})\`).lazy(),
     authorToFriend: () => p.manyToMany(Author2).pivotTable('author_to_friend').joinColumn('author2_1_id').inverseJoinColumn('author2_2_id').hidden(),
     following: () => p.manyToMany(Author2).joinColumn('author2_1_id').inverseJoinColumn('author2_2_id'),
     address2: () => p.oneToOne(Address2).mappedBy('author'),
@@ -604,20 +604,17 @@ export class AuthorPartialView2 {
 export const AuthorPartialView2Schema = defineEntity({
   class: AuthorPartialView2,
   tableName: 'author_partial_view',
-  expression: (em)=>em.createQueryBuilder((0,__vite_ssr_import_4__.Author2)).select([
-                'name',
-                'email'
-            ]),
+  expression: (em) => em.createQueryBuilder((0,__vite_ssr_import_4__.Author2)).select(["name", "email"]),
   comment: 'test',
   virtual: true,
   properties: {
-    name: p.string().onUpdate((owner)=>{
-        owner.name += ' also';
-    }).comment('author name also').index('custom_idx_name_123'),
-    email: p.type(EmailType).columnType('varchar(255)').nullable().serializer((email)=>{
-        const [localPart, hostnamePart] = email.split('@', 2);
-        return \`\${localPart[0]}\${'*'.repeat(localPart.length - 2)}\${localPart[localPart.length - 1]}@\${hostnamePart}\`;
-    }).serializedName('anonymizedEmail').index('custom_email_index_name').unique('custom_email_unique_name'),
+    name: p.string().onUpdate((owner) => {
+		owner.name += " also";
+	}).comment('author name also').index('custom_idx_name_123'),
+    email: p.type(EmailType).columnType('varchar(255)').nullable().serializer((email) => {
+		const [localPart, hostnamePart] = email.split("@", 2);
+		return \`\${localPart[0]}\${"*".repeat(localPart.length - 2)}\${localPart[localPart.length - 1]}@\${hostnamePart}\`;
+	}).serializedName('anonymizedEmail').index('custom_email_index_name').unique('custom_email_unique_name'),
   },
 });
 ",
@@ -776,7 +773,7 @@ export const Author2Schema = new EntitySchema({
     updatedAt: {
       type: 'datetime',
       columnType: 'datetime(3)',
-      serializer: (v)=>v.toString(),
+      serializer: (v) => v.toString(),
       groups: ['test'],
       defaultRaw: \`current_timestamp(3)\`,
     },
@@ -827,7 +824,7 @@ export const Author2Schema = new EntitySchema({
     },
     secondsSinceLastModified: {
       type: 'integer',
-      formula: (cols)=>\`TIMESTAMPDIFF(SECONDS, NOW(), \${cols.updatedAt})\`,
+      formula: (cols) => \`TIMESTAMPDIFF(SECONDS, NOW(), \${cols.updatedAt})\`,
       lazy: true,
     },
     authorToFriend: {
@@ -1544,18 +1541,15 @@ export class AuthorPartialView2 {
 export const AuthorPartialView2Schema = new EntitySchema({
   class: AuthorPartialView2,
   tableName: 'author_partial_view',
-  expression: (em)=>em.createQueryBuilder((0,__vite_ssr_import_4__.Author2)).select([
-                'name',
-                'email'
-            ]),
+  expression: (em) => em.createQueryBuilder((0,__vite_ssr_import_4__.Author2)).select(["name", "email"]),
   comment: 'test',
   virtual: true,
   properties: {
     name: {
       type: 'string',
-      onUpdate: (owner)=>{
-        owner.name += ' also';
-    },
+      onUpdate: (owner) => {
+		owner.name += " also";
+	},
       comment: 'author name also',
       index: 'custom_idx_name_123',
     },
@@ -1563,10 +1557,10 @@ export const AuthorPartialView2Schema = new EntitySchema({
       type: 'EmailType',
       columnType: 'varchar(255)',
       nullable: true,
-      serializer: (email)=>{
-        const [localPart, hostnamePart] = email.split('@', 2);
-        return \`\${localPart[0]}\${'*'.repeat(localPart.length - 2)}\${localPart[localPart.length - 1]}@\${hostnamePart}\`;
-    },
+      serializer: (email) => {
+		const [localPart, hostnamePart] = email.split("@", 2);
+		return \`\${localPart[0]}\${"*".repeat(localPart.length - 2)}\${localPart[localPart.length - 1]}@\${hostnamePart}\`;
+	},
       serializedName: 'anonymizedEmail',
       index: 'custom_email_index_name',
       unique: 'custom_email_unique_name',
@@ -1688,7 +1682,7 @@ export class Author2 {
   @Property({ type: 'datetime', length: 3, hidden: true, defaultRaw: \`current_timestamp(3)\` })
   createdAt!: Date & Hidden & Opt;
 
-  @Property({ type: 'datetime', columnType: 'datetime(3)', serializer: (v)=>v.toString(), groups: ['test'], defaultRaw: \`current_timestamp(3)\` })
+  @Property({ type: 'datetime', columnType: 'datetime(3)', serializer: (v) => v.toString(), groups: ['test'], defaultRaw: \`current_timestamp(3)\` })
   updatedAt!: IType<MyExtendedDataClass, Date, string> & Opt;
 
   @Property({ comment: 'author name', index: 'custom_idx_name_123' })
@@ -1730,7 +1724,7 @@ export class Author2 {
   @Embedded({ entity: () => IdentitiesContainer, array: true, prefix: false, nullable: true })
   identity: IdentitiesContainer[] | null = null;
 
-  @Formula((cols)=>\`TIMESTAMPDIFF(SECONDS, NOW(), \${cols.updatedAt})\`, { lazy: true })
+  @Formula((cols) => \`TIMESTAMPDIFF(SECONDS, NOW(), \${cols.updatedAt})\`, { lazy: true })
   secondsSinceLastModified!: number;
 
   @ManyToMany({ entity: () => Author2, pivotTable: 'author_to_friend', joinColumn: 'author2_1_id', inverseJoinColumn: 'author2_2_id', hidden: true })
@@ -1759,6 +1753,14 @@ export class Author2 {
   "import { Collection } from '@mikro-orm/core';
 import { Entity, Enum, Index, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property, Unique } from '@mikro-orm/decorators/legacy';
 import { CustomBase2 } from './CustomBase2';
+
+export const BaseUser2Type = {
+  EMPLOYEE: 'employee',
+  MANAGER: 'manager',
+  OWNER: 'owner',
+} as const;
+
+export type TBaseUser2Type = (typeof BaseUser2Type)[keyof typeof BaseUser2Type];
 
 @Entity({ abstract: true, discriminatorColumn: 'type', discriminatorMap: { employee: 'Employee2', manager: 'Manager2' } })
 export abstract class BaseUser2 extends CustomBase2 {
@@ -1800,14 +1802,6 @@ export abstract class BaseUser2 extends CustomBase2 {
   baseUser2: BaseUser2 | null = null;
 
 }
-
-export const BaseUser2Type = {
-  EMPLOYEE: 'employee',
-  MANAGER: 'manager',
-  OWNER: 'owner',
-} as const;
-
-export type TBaseUser2Type = (typeof BaseUser2Type)[keyof typeof BaseUser2Type];
 ",
   "import { Collection } from '@mikro-orm/core';
 import { Entity, ManyToMany, OneToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
@@ -2115,6 +2109,34 @@ import { UrlTypeLike } from './../types/UrlTypeLike';
 import { Book2 } from './Book2';
 import { Publisher2Tests } from './Publisher2Tests';
 
+export const Publisher2Type = {
+  LOCAL: 'local',
+  GLOBAL: 'global',
+} as const;
+
+export type TPublisher2Type = (typeof Publisher2Type)[keyof typeof Publisher2Type];
+
+export const Publisher2Type2 = {
+  LOCAL: 'LOCAL',
+  GLOBAL: 'GLOBAL',
+} as const;
+
+export type TPublisher2Type2 = (typeof Publisher2Type2)[keyof typeof Publisher2Type2];
+
+export const Publisher2Enum4 = {
+  A: 'a',
+  B: 'b',
+  C: 'c',
+} as const;
+
+export type TPublisher2Enum4 = (typeof Publisher2Enum4)[keyof typeof Publisher2Enum4];
+
+export const Publisher2Enum5 = {
+  A: 'a',
+} as const;
+
+export type TPublisher2Enum5 = (typeof Publisher2Enum5)[keyof typeof Publisher2Enum5];
+
 @Entity()
 export class Publisher2 {
 
@@ -2152,34 +2174,6 @@ export class Publisher2 {
   publisher2TestsCollection = new Collection<Publisher2Tests>(this);
 
 }
-
-export const Publisher2Type = {
-  LOCAL: 'local',
-  GLOBAL: 'global',
-} as const;
-
-export type TPublisher2Type = (typeof Publisher2Type)[keyof typeof Publisher2Type];
-
-export const Publisher2Type2 = {
-  LOCAL: 'LOCAL',
-  GLOBAL: 'GLOBAL',
-} as const;
-
-export type TPublisher2Type2 = (typeof Publisher2Type2)[keyof typeof Publisher2Type2];
-
-export const Publisher2Enum4 = {
-  A: 'a',
-  B: 'b',
-  C: 'c',
-} as const;
-
-export type TPublisher2Enum4 = (typeof Publisher2Enum4)[keyof typeof Publisher2Enum4];
-
-export const Publisher2Enum5 = {
-  A: 'a',
-} as const;
-
-export type TPublisher2Enum5 = (typeof Publisher2Enum5)[keyof typeof Publisher2Enum5];
 ",
   "import { Entity, Index, ManyToOne, PrimaryKey } from '@mikro-orm/decorators/legacy';
 import { Publisher2 } from './Publisher2';
@@ -2323,21 +2317,18 @@ export class AuthorPartialView {
 import { Entity, Property } from '@mikro-orm/decorators/legacy';
 import Email from './../runtimeTypes/Email';
 
-@Entity({ tableName: 'author_partial_view', expression: (em)=>em.createQueryBuilder((0,__vite_ssr_import_4__.Author2)).select([
-                'name',
-                'email'
-            ]), comment: 'test', virtual: true })
+@Entity({ tableName: 'author_partial_view', expression: (em) => em.createQueryBuilder((0,__vite_ssr_import_4__.Author2)).select(["name", "email"]), comment: 'test', virtual: true })
 export class AuthorPartialView2 {
 
-  @Property({ onUpdate: (owner)=>{
-        owner.name += ' also';
-    }, comment: 'author name also', index: 'custom_idx_name_123' })
+  @Property({ onUpdate: (owner) => {
+		owner.name += " also";
+	}, comment: 'author name also', index: 'custom_idx_name_123' })
   name!: string;
 
-  @Property({ type: 'EmailType', columnType: 'varchar(255)', nullable: true, serializer: (email)=>{
-        const [localPart, hostnamePart] = email.split('@', 2);
-        return \`\${localPart[0]}\${'*'.repeat(localPart.length - 2)}\${localPart[localPart.length - 1]}@\${hostnamePart}\`;
-    }, serializedName: 'anonymizedEmail', index: 'custom_email_index_name', unique: 'custom_email_unique_name' })
+  @Property({ type: 'EmailType', columnType: 'varchar(255)', nullable: true, serializer: (email) => {
+		const [localPart, hostnamePart] = email.split("@", 2);
+		return \`\${localPart[0]}\${"*".repeat(localPart.length - 2)}\${localPart[localPart.length - 1]}@\${hostnamePart}\`;
+	}, serializedName: 'anonymizedEmail', index: 'custom_email_index_name', unique: 'custom_email_unique_name' })
   email!: IType<Email, string | null>;
 
 }
@@ -2462,7 +2453,7 @@ export const Author2Schema = defineEntity({
   properties: {
     id: p.integer().primary(),
     createdAt: p.datetime().length(3).hidden().defaultRaw(\`current_timestamp(3)\`),
-    updatedAt: p.datetime().columnType('datetime(3)').serializer((v)=>v.toString()).groups('test').defaultRaw(\`current_timestamp(3)\`),
+    updatedAt: p.datetime().columnType('datetime(3)').serializer((v) => v.toString()).groups('test').defaultRaw(\`current_timestamp(3)\`),
     name: p.string().comment('author name').index('custom_idx_name_123'),
     email: p.type(EmailType).columnType('varchar(255)').serializer((v) => EmailSerializer.anonymous(v)).hidden().index('custom_email_index_name').unique('custom_email_unique_name'),
     age: p.integer().nullable().concurrencyCheck(),
@@ -2474,7 +2465,7 @@ export const Author2Schema = defineEntity({
     favouriteBook: () => p.manyToOne(Book2).ref().updateRule('no action').deleteRule('cascade').nullable().eager().cascade(Cascade.PERSIST, Cascade.MERGE),
     favouriteAuthor: () => p.manyToOne(Author2).ref().updateRule('no action').nullable(),
     identity: () => p.embedded(IdentitiesContainer).array().prefix(false).nullable(),
-    secondsSinceLastModified: p.integer().formula((cols)=>\`TIMESTAMPDIFF(SECONDS, NOW(), \${cols.updatedAt})\`).lazy(),
+    secondsSinceLastModified: p.integer().formula((cols) => \`TIMESTAMPDIFF(SECONDS, NOW(), \${cols.updatedAt})\`).lazy(),
     authorToFriend: () => p.manyToMany(Author2).pivotTable('author_to_friend').joinColumn('author2_1_id').inverseJoinColumn('author2_2_id').hidden(),
     following: () => p.manyToMany(Author2).joinColumn('author2_1_id').inverseJoinColumn('author2_2_id'),
     address2: () => p.oneToOne(Address2).ref().mappedBy('author'),
@@ -2988,20 +2979,17 @@ export class AuthorPartialView2 {
 export const AuthorPartialView2Schema = defineEntity({
   class: AuthorPartialView2,
   tableName: 'author_partial_view',
-  expression: (em)=>em.createQueryBuilder((0,__vite_ssr_import_4__.Author2)).select([
-                'name',
-                'email'
-            ]),
+  expression: (em) => em.createQueryBuilder((0,__vite_ssr_import_4__.Author2)).select(["name", "email"]),
   comment: 'test',
   virtual: true,
   properties: {
-    name: p.string().onUpdate((owner)=>{
-        owner.name += ' also';
-    }).comment('author name also').index('custom_idx_name_123'),
-    email: p.type(EmailType).columnType('varchar(255)').nullable().serializer((email)=>{
-        const [localPart, hostnamePart] = email.split('@', 2);
-        return \`\${localPart[0]}\${'*'.repeat(localPart.length - 2)}\${localPart[localPart.length - 1]}@\${hostnamePart}\`;
-    }).serializedName('anonymizedEmail').index('custom_email_index_name').unique('custom_email_unique_name'),
+    name: p.string().onUpdate((owner) => {
+		owner.name += " also";
+	}).comment('author name also').index('custom_idx_name_123'),
+    email: p.type(EmailType).columnType('varchar(255)').nullable().serializer((email) => {
+		const [localPart, hostnamePart] = email.split("@", 2);
+		return \`\${localPart[0]}\${"*".repeat(localPart.length - 2)}\${localPart[localPart.length - 1]}@\${hostnamePart}\`;
+	}).serializedName('anonymizedEmail').index('custom_email_index_name').unique('custom_email_unique_name'),
   },
 });
 ",
@@ -3160,7 +3148,7 @@ export const Author2Schema = new EntitySchema({
     updatedAt: {
       type: 'datetime',
       columnType: 'datetime(3)',
-      serializer: (v)=>v.toString(),
+      serializer: (v) => v.toString(),
       groups: ['test'],
       defaultRaw: \`current_timestamp(3)\`,
     },
@@ -3214,7 +3202,7 @@ export const Author2Schema = new EntitySchema({
     },
     secondsSinceLastModified: {
       type: 'integer',
-      formula: (cols)=>\`TIMESTAMPDIFF(SECONDS, NOW(), \${cols.updatedAt})\`,
+      formula: (cols) => \`TIMESTAMPDIFF(SECONDS, NOW(), \${cols.updatedAt})\`,
       lazy: true,
     },
     authorToFriend: {
@@ -3955,18 +3943,15 @@ export class AuthorPartialView2 {
 export const AuthorPartialView2Schema = new EntitySchema({
   class: AuthorPartialView2,
   tableName: 'author_partial_view',
-  expression: (em)=>em.createQueryBuilder((0,__vite_ssr_import_4__.Author2)).select([
-                'name',
-                'email'
-            ]),
+  expression: (em) => em.createQueryBuilder((0,__vite_ssr_import_4__.Author2)).select(["name", "email"]),
   comment: 'test',
   virtual: true,
   properties: {
     name: {
       type: 'string',
-      onUpdate: (owner)=>{
-        owner.name += ' also';
-    },
+      onUpdate: (owner) => {
+		owner.name += " also";
+	},
       comment: 'author name also',
       index: 'custom_idx_name_123',
     },
@@ -3974,10 +3959,10 @@ export const AuthorPartialView2Schema = new EntitySchema({
       type: 'EmailType',
       columnType: 'varchar(255)',
       nullable: true,
-      serializer: (email)=>{
-        const [localPart, hostnamePart] = email.split('@', 2);
-        return \`\${localPart[0]}\${'*'.repeat(localPart.length - 2)}\${localPart[localPart.length - 1]}@\${hostnamePart}\`;
-    },
+      serializer: (email) => {
+		const [localPart, hostnamePart] = email.split("@", 2);
+		return \`\${localPart[0]}\${"*".repeat(localPart.length - 2)}\${localPart[localPart.length - 1]}@\${hostnamePart}\`;
+	},
       serializedName: 'anonymizedEmail',
       index: 'custom_email_index_name',
       unique: 'custom_email_unique_name',
@@ -4099,7 +4084,7 @@ export class Author2 {
   @Property({ type: 'datetime', length: 3, hidden: true, defaultRaw: \`current_timestamp(3)\` })
   createdAt!: Date & Hidden & Opt;
 
-  @Property({ type: 'datetime', columnType: 'datetime(3)', serializer: (v)=>v.toString(), groups: ['test'], defaultRaw: \`current_timestamp(3)\` })
+  @Property({ type: 'datetime', columnType: 'datetime(3)', serializer: (v) => v.toString(), groups: ['test'], defaultRaw: \`current_timestamp(3)\` })
   updatedAt!: IType<MyExtendedDataClass, Date, string> & Opt;
 
   @Property({ comment: 'author name', index: 'custom_idx_name_123' })
@@ -4141,7 +4126,7 @@ export class Author2 {
   @Embedded({ entity: () => IdentitiesContainer, array: true, prefix: false, nullable: true })
   identity: IdentitiesContainer[] | null = null;
 
-  @Formula((cols)=>\`TIMESTAMPDIFF(SECONDS, NOW(), \${cols.updatedAt})\`, { lazy: true })
+  @Formula((cols) => \`TIMESTAMPDIFF(SECONDS, NOW(), \${cols.updatedAt})\`, { lazy: true })
   secondsSinceLastModified!: number;
 
   @ManyToMany({ entity: () => Author2, pivotTable: 'author_to_friend', joinColumn: 'author2_1_id', inverseJoinColumn: 'author2_2_id', hidden: true })
@@ -4170,6 +4155,14 @@ export class Author2 {
   "import { Collection, type Ref } from '@mikro-orm/core';
 import { Entity, Enum, Index, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property, Unique } from '@mikro-orm/decorators/legacy';
 import { CustomBase2 } from './CustomBase2';
+
+export const BaseUser2Type = {
+  EMPLOYEE: 'employee',
+  MANAGER: 'manager',
+  OWNER: 'owner',
+} as const;
+
+export type TBaseUser2Type = (typeof BaseUser2Type)[keyof typeof BaseUser2Type];
 
 @Entity({ abstract: true, discriminatorColumn: 'type', discriminatorMap: { employee: 'Employee2', manager: 'Manager2' } })
 export abstract class BaseUser2 extends CustomBase2 {
@@ -4211,14 +4204,6 @@ export abstract class BaseUser2 extends CustomBase2 {
   baseUser2: Ref<BaseUser2> | null = null;
 
 }
-
-export const BaseUser2Type = {
-  EMPLOYEE: 'employee',
-  MANAGER: 'manager',
-  OWNER: 'owner',
-} as const;
-
-export type TBaseUser2Type = (typeof BaseUser2Type)[keyof typeof BaseUser2Type];
 ",
   "import { Collection } from '@mikro-orm/core';
 import { Entity, ManyToMany, OneToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
@@ -4527,6 +4512,34 @@ import { UrlTypeLike } from './../types/UrlTypeLike';
 import { Book2 } from './Book2';
 import { Publisher2Tests } from './Publisher2Tests';
 
+export const Publisher2Type = {
+  LOCAL: 'local',
+  GLOBAL: 'global',
+} as const;
+
+export type TPublisher2Type = (typeof Publisher2Type)[keyof typeof Publisher2Type];
+
+export const Publisher2Type2 = {
+  LOCAL: 'LOCAL',
+  GLOBAL: 'GLOBAL',
+} as const;
+
+export type TPublisher2Type2 = (typeof Publisher2Type2)[keyof typeof Publisher2Type2];
+
+export const Publisher2Enum4 = {
+  A: 'a',
+  B: 'b',
+  C: 'c',
+} as const;
+
+export type TPublisher2Enum4 = (typeof Publisher2Enum4)[keyof typeof Publisher2Enum4];
+
+export const Publisher2Enum5 = {
+  A: 'a',
+} as const;
+
+export type TPublisher2Enum5 = (typeof Publisher2Enum5)[keyof typeof Publisher2Enum5];
+
 @Entity()
 export class Publisher2 {
 
@@ -4564,34 +4577,6 @@ export class Publisher2 {
   publisher2TestsCollection = new Collection<Publisher2Tests>(this);
 
 }
-
-export const Publisher2Type = {
-  LOCAL: 'local',
-  GLOBAL: 'global',
-} as const;
-
-export type TPublisher2Type = (typeof Publisher2Type)[keyof typeof Publisher2Type];
-
-export const Publisher2Type2 = {
-  LOCAL: 'LOCAL',
-  GLOBAL: 'GLOBAL',
-} as const;
-
-export type TPublisher2Type2 = (typeof Publisher2Type2)[keyof typeof Publisher2Type2];
-
-export const Publisher2Enum4 = {
-  A: 'a',
-  B: 'b',
-  C: 'c',
-} as const;
-
-export type TPublisher2Enum4 = (typeof Publisher2Enum4)[keyof typeof Publisher2Enum4];
-
-export const Publisher2Enum5 = {
-  A: 'a',
-} as const;
-
-export type TPublisher2Enum5 = (typeof Publisher2Enum5)[keyof typeof Publisher2Enum5];
 ",
   "import { type Ref } from '@mikro-orm/core';
 import { Entity, Index, ManyToOne, PrimaryKey } from '@mikro-orm/decorators/legacy';
@@ -4736,21 +4721,18 @@ export class AuthorPartialView {
 import { Entity, Property } from '@mikro-orm/decorators/legacy';
 import Email from './../runtimeTypes/Email';
 
-@Entity({ tableName: 'author_partial_view', expression: (em)=>em.createQueryBuilder((0,__vite_ssr_import_4__.Author2)).select([
-                'name',
-                'email'
-            ]), comment: 'test', virtual: true })
+@Entity({ tableName: 'author_partial_view', expression: (em) => em.createQueryBuilder((0,__vite_ssr_import_4__.Author2)).select(["name", "email"]), comment: 'test', virtual: true })
 export class AuthorPartialView2 {
 
-  @Property({ onUpdate: (owner)=>{
-        owner.name += ' also';
-    }, comment: 'author name also', index: 'custom_idx_name_123' })
+  @Property({ onUpdate: (owner) => {
+		owner.name += " also";
+	}, comment: 'author name also', index: 'custom_idx_name_123' })
   name!: string;
 
-  @Property({ type: 'EmailType', columnType: 'varchar(255)', nullable: true, serializer: (email)=>{
-        const [localPart, hostnamePart] = email.split('@', 2);
-        return \`\${localPart[0]}\${'*'.repeat(localPart.length - 2)}\${localPart[localPart.length - 1]}@\${hostnamePart}\`;
-    }, serializedName: 'anonymizedEmail', index: 'custom_email_index_name', unique: 'custom_email_unique_name' })
+  @Property({ type: 'EmailType', columnType: 'varchar(255)', nullable: true, serializer: (email) => {
+		const [localPart, hostnamePart] = email.split("@", 2);
+		return \`\${localPart[0]}\${"*".repeat(localPart.length - 2)}\${localPart[localPart.length - 1]}@\${hostnamePart}\`;
+	}, serializedName: 'anonymizedEmail', index: 'custom_email_index_name', unique: 'custom_email_unique_name' })
   email!: IType<Email, string | null>;
 
 }
@@ -4875,7 +4857,7 @@ export const Author2Schema = defineEntity({
   properties: {
     id: p.integer().primary(),
     createdAt: p.datetime().length(3).hidden().defaultRaw(\`current_timestamp(3)\`),
-    updatedAt: p.datetime().columnType('datetime(3)').serializer((v)=>v.toString()).groups('test').defaultRaw(\`current_timestamp(3)\`),
+    updatedAt: p.datetime().columnType('datetime(3)').serializer((v) => v.toString()).groups('test').defaultRaw(\`current_timestamp(3)\`),
     name: p.string().comment('author name').index('custom_idx_name_123'),
     email: p.type(EmailType).columnType('varchar(255)').serializer((v) => EmailSerializer.anonymous(v)).hidden().index('custom_email_index_name').unique('custom_email_unique_name'),
     age: p.integer().nullable().concurrencyCheck(),
@@ -4887,7 +4869,7 @@ export const Author2Schema = defineEntity({
     favouriteBook: () => p.manyToOne(Book2).updateRule('no action').deleteRule('cascade').nullable().eager().cascade(Cascade.PERSIST, Cascade.MERGE),
     favouriteAuthor: () => p.manyToOne(Author2).updateRule('no action').nullable(),
     identity: () => p.embedded(IdentitiesContainer).array().prefix(false).nullable(),
-    secondsSinceLastModified: p.integer().formula((cols)=>\`TIMESTAMPDIFF(SECONDS, NOW(), \${cols.updatedAt})\`).lazy(),
+    secondsSinceLastModified: p.integer().formula((cols) => \`TIMESTAMPDIFF(SECONDS, NOW(), \${cols.updatedAt})\`).lazy(),
     authorToFriend: () => p.manyToMany(Author2).pivotTable('author_to_friend').joinColumn('author2_1_id').inverseJoinColumn('author2_2_id').hidden(),
     following: () => p.manyToMany(Author2).joinColumn('author2_1_id').inverseJoinColumn('author2_2_id'),
     address2: () => p.oneToOne(Address2).mappedBy('author'),
@@ -5401,20 +5383,17 @@ export class AuthorPartialView2 {
 export const AuthorPartialView2Schema = defineEntity({
   class: AuthorPartialView2,
   tableName: 'author_partial_view',
-  expression: (em)=>em.createQueryBuilder((0,__vite_ssr_import_4__.Author2)).select([
-                'name',
-                'email'
-            ]),
+  expression: (em) => em.createQueryBuilder((0,__vite_ssr_import_4__.Author2)).select(["name", "email"]),
   comment: 'test',
   virtual: true,
   properties: {
-    name: p.string().onUpdate((owner)=>{
-        owner.name += ' also';
-    }).comment('author name also').index('custom_idx_name_123'),
-    email: p.type(EmailType).columnType('varchar(255)').nullable().serializer((email)=>{
-        const [localPart, hostnamePart] = email.split('@', 2);
-        return \`\${localPart[0]}\${'*'.repeat(localPart.length - 2)}\${localPart[localPart.length - 1]}@\${hostnamePart}\`;
-    }).serializedName('anonymizedEmail').index('custom_email_index_name').unique('custom_email_unique_name'),
+    name: p.string().onUpdate((owner) => {
+		owner.name += " also";
+	}).comment('author name also').index('custom_idx_name_123'),
+    email: p.type(EmailType).columnType('varchar(255)').nullable().serializer((email) => {
+		const [localPart, hostnamePart] = email.split("@", 2);
+		return \`\${localPart[0]}\${"*".repeat(localPart.length - 2)}\${localPart[localPart.length - 1]}@\${hostnamePart}\`;
+	}).serializedName('anonymizedEmail').index('custom_email_index_name').unique('custom_email_unique_name'),
   },
 });
 ",
@@ -5573,7 +5552,7 @@ export const Author2Schema = new EntitySchema({
     updatedAt: {
       type: 'datetime',
       columnType: 'datetime(3)',
-      serializer: (v)=>v.toString(),
+      serializer: (v) => v.toString(),
       groups: ['test'],
       defaultRaw: \`current_timestamp(3)\`,
     },
@@ -5624,7 +5603,7 @@ export const Author2Schema = new EntitySchema({
     },
     secondsSinceLastModified: {
       type: 'integer',
-      formula: (cols)=>\`TIMESTAMPDIFF(SECONDS, NOW(), \${cols.updatedAt})\`,
+      formula: (cols) => \`TIMESTAMPDIFF(SECONDS, NOW(), \${cols.updatedAt})\`,
       lazy: true,
     },
     authorToFriend: {
@@ -6341,18 +6320,15 @@ export class AuthorPartialView2 {
 export const AuthorPartialView2Schema = new EntitySchema({
   class: AuthorPartialView2,
   tableName: 'author_partial_view',
-  expression: (em)=>em.createQueryBuilder((0,__vite_ssr_import_4__.Author2)).select([
-                'name',
-                'email'
-            ]),
+  expression: (em) => em.createQueryBuilder((0,__vite_ssr_import_4__.Author2)).select(["name", "email"]),
   comment: 'test',
   virtual: true,
   properties: {
     name: {
       type: 'string',
-      onUpdate: (owner)=>{
-        owner.name += ' also';
-    },
+      onUpdate: (owner) => {
+		owner.name += " also";
+	},
       comment: 'author name also',
       index: 'custom_idx_name_123',
     },
@@ -6360,10 +6336,10 @@ export const AuthorPartialView2Schema = new EntitySchema({
       type: 'EmailType',
       columnType: 'varchar(255)',
       nullable: true,
-      serializer: (email)=>{
-        const [localPart, hostnamePart] = email.split('@', 2);
-        return \`\${localPart[0]}\${'*'.repeat(localPart.length - 2)}\${localPart[localPart.length - 1]}@\${hostnamePart}\`;
-    },
+      serializer: (email) => {
+		const [localPart, hostnamePart] = email.split("@", 2);
+		return \`\${localPart[0]}\${"*".repeat(localPart.length - 2)}\${localPart[localPart.length - 1]}@\${hostnamePart}\`;
+	},
       serializedName: 'anonymizedEmail',
       index: 'custom_email_index_name',
       unique: 'custom_email_unique_name',
@@ -6485,7 +6461,7 @@ export class Author2 {
   @Property({ type: 'datetime', length: 3, hidden: true, defaultRaw: \`current_timestamp(3)\` })
   createdAt!: Date & Hidden & Opt;
 
-  @Property({ type: 'datetime', columnType: 'datetime(3)', serializer: (v)=>v.toString(), groups: ['test'], defaultRaw: \`current_timestamp(3)\` })
+  @Property({ type: 'datetime', columnType: 'datetime(3)', serializer: (v) => v.toString(), groups: ['test'], defaultRaw: \`current_timestamp(3)\` })
   updatedAt!: IType<MyExtendedDataClass, Date, string> & Opt;
 
   @Property({ comment: 'author name', index: 'custom_idx_name_123' })
@@ -6527,7 +6503,7 @@ export class Author2 {
   @Embedded({ entity: () => IdentitiesContainer, array: true, prefix: false, nullable: true })
   identity?: IdentitiesContainer[];
 
-  @Formula((cols)=>\`TIMESTAMPDIFF(SECONDS, NOW(), \${cols.updatedAt})\`, { lazy: true })
+  @Formula((cols) => \`TIMESTAMPDIFF(SECONDS, NOW(), \${cols.updatedAt})\`, { lazy: true })
   secondsSinceLastModified!: number;
 
   @ManyToMany({ entity: () => Author2, pivotTable: 'author_to_friend', joinColumn: 'author2_1_id', inverseJoinColumn: 'author2_2_id', hidden: true })
@@ -6556,6 +6532,14 @@ export class Author2 {
   "import { Collection } from '@mikro-orm/core';
 import { Entity, Enum, Index, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property, Unique } from '@mikro-orm/decorators/legacy';
 import { CustomBase2 } from './CustomBase2';
+
+export const BaseUser2Type = {
+  EMPLOYEE: 'employee',
+  MANAGER: 'manager',
+  OWNER: 'owner',
+} as const;
+
+export type TBaseUser2Type = (typeof BaseUser2Type)[keyof typeof BaseUser2Type];
 
 @Entity({ abstract: true, discriminatorColumn: 'type', discriminatorMap: { employee: 'Employee2', manager: 'Manager2' } })
 export abstract class BaseUser2 extends CustomBase2 {
@@ -6597,14 +6581,6 @@ export abstract class BaseUser2 extends CustomBase2 {
   baseUser2?: BaseUser2;
 
 }
-
-export const BaseUser2Type = {
-  EMPLOYEE: 'employee',
-  MANAGER: 'manager',
-  OWNER: 'owner',
-} as const;
-
-export type TBaseUser2Type = (typeof BaseUser2Type)[keyof typeof BaseUser2Type];
 ",
   "import { Collection } from '@mikro-orm/core';
 import { Entity, ManyToMany, OneToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
@@ -6912,6 +6888,34 @@ import { UrlTypeLike } from './../types/UrlTypeLike';
 import { Book2 } from './Book2';
 import { Publisher2Tests } from './Publisher2Tests';
 
+export const Publisher2Type = {
+  LOCAL: 'local',
+  GLOBAL: 'global',
+} as const;
+
+export type TPublisher2Type = (typeof Publisher2Type)[keyof typeof Publisher2Type];
+
+export const Publisher2Type2 = {
+  LOCAL: 'LOCAL',
+  GLOBAL: 'GLOBAL',
+} as const;
+
+export type TPublisher2Type2 = (typeof Publisher2Type2)[keyof typeof Publisher2Type2];
+
+export const Publisher2Enum4 = {
+  A: 'a',
+  B: 'b',
+  C: 'c',
+} as const;
+
+export type TPublisher2Enum4 = (typeof Publisher2Enum4)[keyof typeof Publisher2Enum4];
+
+export const Publisher2Enum5 = {
+  A: 'a',
+} as const;
+
+export type TPublisher2Enum5 = (typeof Publisher2Enum5)[keyof typeof Publisher2Enum5];
+
 @Entity()
 export class Publisher2 {
 
@@ -6949,34 +6953,6 @@ export class Publisher2 {
   publisher2TestsCollection = new Collection<Publisher2Tests>(this);
 
 }
-
-export const Publisher2Type = {
-  LOCAL: 'local',
-  GLOBAL: 'global',
-} as const;
-
-export type TPublisher2Type = (typeof Publisher2Type)[keyof typeof Publisher2Type];
-
-export const Publisher2Type2 = {
-  LOCAL: 'LOCAL',
-  GLOBAL: 'GLOBAL',
-} as const;
-
-export type TPublisher2Type2 = (typeof Publisher2Type2)[keyof typeof Publisher2Type2];
-
-export const Publisher2Enum4 = {
-  A: 'a',
-  B: 'b',
-  C: 'c',
-} as const;
-
-export type TPublisher2Enum4 = (typeof Publisher2Enum4)[keyof typeof Publisher2Enum4];
-
-export const Publisher2Enum5 = {
-  A: 'a',
-} as const;
-
-export type TPublisher2Enum5 = (typeof Publisher2Enum5)[keyof typeof Publisher2Enum5];
 ",
   "import { Entity, Index, ManyToOne, PrimaryKey } from '@mikro-orm/decorators/legacy';
 import { Publisher2 } from './Publisher2';
@@ -7120,21 +7096,18 @@ export class AuthorPartialView {
 import { Entity, Property } from '@mikro-orm/decorators/legacy';
 import Email from './../runtimeTypes/Email';
 
-@Entity({ tableName: 'author_partial_view', expression: (em)=>em.createQueryBuilder((0,__vite_ssr_import_4__.Author2)).select([
-                'name',
-                'email'
-            ]), comment: 'test', virtual: true })
+@Entity({ tableName: 'author_partial_view', expression: (em) => em.createQueryBuilder((0,__vite_ssr_import_4__.Author2)).select(["name", "email"]), comment: 'test', virtual: true })
 export class AuthorPartialView2 {
 
-  @Property({ onUpdate: (owner)=>{
-        owner.name += ' also';
-    }, comment: 'author name also', index: 'custom_idx_name_123' })
+  @Property({ onUpdate: (owner) => {
+		owner.name += " also";
+	}, comment: 'author name also', index: 'custom_idx_name_123' })
   name!: string;
 
-  @Property({ type: 'EmailType', columnType: 'varchar(255)', nullable: true, serializer: (email)=>{
-        const [localPart, hostnamePart] = email.split('@', 2);
-        return \`\${localPart[0]}\${'*'.repeat(localPart.length - 2)}\${localPart[localPart.length - 1]}@\${hostnamePart}\`;
-    }, serializedName: 'anonymizedEmail', index: 'custom_email_index_name', unique: 'custom_email_unique_name' })
+  @Property({ type: 'EmailType', columnType: 'varchar(255)', nullable: true, serializer: (email) => {
+		const [localPart, hostnamePart] = email.split("@", 2);
+		return \`\${localPart[0]}\${"*".repeat(localPart.length - 2)}\${localPart[localPart.length - 1]}@\${hostnamePart}\`;
+	}, serializedName: 'anonymizedEmail', index: 'custom_email_index_name', unique: 'custom_email_unique_name' })
   email!: IType<Email, string | undefined>;
 
 }
@@ -7259,7 +7232,7 @@ export const Author2Schema = defineEntity({
   properties: {
     id: p.integer().primary(),
     createdAt: p.datetime().length(3).hidden().defaultRaw(\`current_timestamp(3)\`),
-    updatedAt: p.datetime().columnType('datetime(3)').serializer((v)=>v.toString()).groups('test').defaultRaw(\`current_timestamp(3)\`),
+    updatedAt: p.datetime().columnType('datetime(3)').serializer((v) => v.toString()).groups('test').defaultRaw(\`current_timestamp(3)\`),
     name: p.string().comment('author name').index('custom_idx_name_123'),
     email: p.type(EmailType).columnType('varchar(255)').serializer((v) => EmailSerializer.anonymous(v)).hidden().index('custom_email_index_name').unique('custom_email_unique_name'),
     age: p.integer().nullable().concurrencyCheck(),
@@ -7271,7 +7244,7 @@ export const Author2Schema = defineEntity({
     favouriteBook: () => p.manyToOne(Book2).ref().updateRule('no action').deleteRule('cascade').nullable().eager().cascade(Cascade.PERSIST, Cascade.MERGE),
     favouriteAuthor: () => p.manyToOne(Author2).ref().updateRule('no action').nullable(),
     identity: () => p.embedded(IdentitiesContainer).array().prefix(false).nullable(),
-    secondsSinceLastModified: p.integer().formula((cols)=>\`TIMESTAMPDIFF(SECONDS, NOW(), \${cols.updatedAt})\`).lazy(),
+    secondsSinceLastModified: p.integer().formula((cols) => \`TIMESTAMPDIFF(SECONDS, NOW(), \${cols.updatedAt})\`).lazy(),
     authorToFriend: () => p.manyToMany(Author2).pivotTable('author_to_friend').joinColumn('author2_1_id').inverseJoinColumn('author2_2_id').hidden(),
     following: () => p.manyToMany(Author2).joinColumn('author2_1_id').inverseJoinColumn('author2_2_id'),
     address2: () => p.oneToOne(Address2).ref().mappedBy('author'),
@@ -7785,20 +7758,17 @@ export class AuthorPartialView2 {
 export const AuthorPartialView2Schema = defineEntity({
   class: AuthorPartialView2,
   tableName: 'author_partial_view',
-  expression: (em)=>em.createQueryBuilder((0,__vite_ssr_import_4__.Author2)).select([
-                'name',
-                'email'
-            ]),
+  expression: (em) => em.createQueryBuilder((0,__vite_ssr_import_4__.Author2)).select(["name", "email"]),
   comment: 'test',
   virtual: true,
   properties: {
-    name: p.string().onUpdate((owner)=>{
-        owner.name += ' also';
-    }).comment('author name also').index('custom_idx_name_123'),
-    email: p.type(EmailType).columnType('varchar(255)').nullable().serializer((email)=>{
-        const [localPart, hostnamePart] = email.split('@', 2);
-        return \`\${localPart[0]}\${'*'.repeat(localPart.length - 2)}\${localPart[localPart.length - 1]}@\${hostnamePart}\`;
-    }).serializedName('anonymizedEmail').index('custom_email_index_name').unique('custom_email_unique_name'),
+    name: p.string().onUpdate((owner) => {
+		owner.name += " also";
+	}).comment('author name also').index('custom_idx_name_123'),
+    email: p.type(EmailType).columnType('varchar(255)').nullable().serializer((email) => {
+		const [localPart, hostnamePart] = email.split("@", 2);
+		return \`\${localPart[0]}\${"*".repeat(localPart.length - 2)}\${localPart[localPart.length - 1]}@\${hostnamePart}\`;
+	}).serializedName('anonymizedEmail').index('custom_email_index_name').unique('custom_email_unique_name'),
   },
 });
 ",
@@ -7957,7 +7927,7 @@ export const Author2Schema = new EntitySchema({
     updatedAt: {
       type: 'datetime',
       columnType: 'datetime(3)',
-      serializer: (v)=>v.toString(),
+      serializer: (v) => v.toString(),
       groups: ['test'],
       defaultRaw: \`current_timestamp(3)\`,
     },
@@ -8011,7 +7981,7 @@ export const Author2Schema = new EntitySchema({
     },
     secondsSinceLastModified: {
       type: 'integer',
-      formula: (cols)=>\`TIMESTAMPDIFF(SECONDS, NOW(), \${cols.updatedAt})\`,
+      formula: (cols) => \`TIMESTAMPDIFF(SECONDS, NOW(), \${cols.updatedAt})\`,
       lazy: true,
     },
     authorToFriend: {
@@ -8752,18 +8722,15 @@ export class AuthorPartialView2 {
 export const AuthorPartialView2Schema = new EntitySchema({
   class: AuthorPartialView2,
   tableName: 'author_partial_view',
-  expression: (em)=>em.createQueryBuilder((0,__vite_ssr_import_4__.Author2)).select([
-                'name',
-                'email'
-            ]),
+  expression: (em) => em.createQueryBuilder((0,__vite_ssr_import_4__.Author2)).select(["name", "email"]),
   comment: 'test',
   virtual: true,
   properties: {
     name: {
       type: 'string',
-      onUpdate: (owner)=>{
-        owner.name += ' also';
-    },
+      onUpdate: (owner) => {
+		owner.name += " also";
+	},
       comment: 'author name also',
       index: 'custom_idx_name_123',
     },
@@ -8771,10 +8738,10 @@ export const AuthorPartialView2Schema = new EntitySchema({
       type: 'EmailType',
       columnType: 'varchar(255)',
       nullable: true,
-      serializer: (email)=>{
-        const [localPart, hostnamePart] = email.split('@', 2);
-        return \`\${localPart[0]}\${'*'.repeat(localPart.length - 2)}\${localPart[localPart.length - 1]}@\${hostnamePart}\`;
-    },
+      serializer: (email) => {
+		const [localPart, hostnamePart] = email.split("@", 2);
+		return \`\${localPart[0]}\${"*".repeat(localPart.length - 2)}\${localPart[localPart.length - 1]}@\${hostnamePart}\`;
+	},
       serializedName: 'anonymizedEmail',
       index: 'custom_email_index_name',
       unique: 'custom_email_unique_name',
@@ -8896,7 +8863,7 @@ export class Author2 {
   @Property({ type: 'datetime', length: 3, hidden: true, defaultRaw: \`current_timestamp(3)\` })
   createdAt!: Date & Hidden & Opt;
 
-  @Property({ type: 'datetime', columnType: 'datetime(3)', serializer: (v)=>v.toString(), groups: ['test'], defaultRaw: \`current_timestamp(3)\` })
+  @Property({ type: 'datetime', columnType: 'datetime(3)', serializer: (v) => v.toString(), groups: ['test'], defaultRaw: \`current_timestamp(3)\` })
   updatedAt!: IType<MyExtendedDataClass, Date, string> & Opt;
 
   @Property({ comment: 'author name', index: 'custom_idx_name_123' })
@@ -8938,7 +8905,7 @@ export class Author2 {
   @Embedded({ entity: () => IdentitiesContainer, array: true, prefix: false, nullable: true })
   identity?: IdentitiesContainer[];
 
-  @Formula((cols)=>\`TIMESTAMPDIFF(SECONDS, NOW(), \${cols.updatedAt})\`, { lazy: true })
+  @Formula((cols) => \`TIMESTAMPDIFF(SECONDS, NOW(), \${cols.updatedAt})\`, { lazy: true })
   secondsSinceLastModified!: number;
 
   @ManyToMany({ entity: () => Author2, pivotTable: 'author_to_friend', joinColumn: 'author2_1_id', inverseJoinColumn: 'author2_2_id', hidden: true })
@@ -8967,6 +8934,14 @@ export class Author2 {
   "import { Collection, type Ref } from '@mikro-orm/core';
 import { Entity, Enum, Index, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property, Unique } from '@mikro-orm/decorators/legacy';
 import { CustomBase2 } from './CustomBase2';
+
+export const BaseUser2Type = {
+  EMPLOYEE: 'employee',
+  MANAGER: 'manager',
+  OWNER: 'owner',
+} as const;
+
+export type TBaseUser2Type = (typeof BaseUser2Type)[keyof typeof BaseUser2Type];
 
 @Entity({ abstract: true, discriminatorColumn: 'type', discriminatorMap: { employee: 'Employee2', manager: 'Manager2' } })
 export abstract class BaseUser2 extends CustomBase2 {
@@ -9008,14 +8983,6 @@ export abstract class BaseUser2 extends CustomBase2 {
   baseUser2?: Ref<BaseUser2>;
 
 }
-
-export const BaseUser2Type = {
-  EMPLOYEE: 'employee',
-  MANAGER: 'manager',
-  OWNER: 'owner',
-} as const;
-
-export type TBaseUser2Type = (typeof BaseUser2Type)[keyof typeof BaseUser2Type];
 ",
   "import { Collection } from '@mikro-orm/core';
 import { Entity, ManyToMany, OneToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
@@ -9324,6 +9291,34 @@ import { UrlTypeLike } from './../types/UrlTypeLike';
 import { Book2 } from './Book2';
 import { Publisher2Tests } from './Publisher2Tests';
 
+export const Publisher2Type = {
+  LOCAL: 'local',
+  GLOBAL: 'global',
+} as const;
+
+export type TPublisher2Type = (typeof Publisher2Type)[keyof typeof Publisher2Type];
+
+export const Publisher2Type2 = {
+  LOCAL: 'LOCAL',
+  GLOBAL: 'GLOBAL',
+} as const;
+
+export type TPublisher2Type2 = (typeof Publisher2Type2)[keyof typeof Publisher2Type2];
+
+export const Publisher2Enum4 = {
+  A: 'a',
+  B: 'b',
+  C: 'c',
+} as const;
+
+export type TPublisher2Enum4 = (typeof Publisher2Enum4)[keyof typeof Publisher2Enum4];
+
+export const Publisher2Enum5 = {
+  A: 'a',
+} as const;
+
+export type TPublisher2Enum5 = (typeof Publisher2Enum5)[keyof typeof Publisher2Enum5];
+
 @Entity()
 export class Publisher2 {
 
@@ -9361,34 +9356,6 @@ export class Publisher2 {
   publisher2TestsCollection = new Collection<Publisher2Tests>(this);
 
 }
-
-export const Publisher2Type = {
-  LOCAL: 'local',
-  GLOBAL: 'global',
-} as const;
-
-export type TPublisher2Type = (typeof Publisher2Type)[keyof typeof Publisher2Type];
-
-export const Publisher2Type2 = {
-  LOCAL: 'LOCAL',
-  GLOBAL: 'GLOBAL',
-} as const;
-
-export type TPublisher2Type2 = (typeof Publisher2Type2)[keyof typeof Publisher2Type2];
-
-export const Publisher2Enum4 = {
-  A: 'a',
-  B: 'b',
-  C: 'c',
-} as const;
-
-export type TPublisher2Enum4 = (typeof Publisher2Enum4)[keyof typeof Publisher2Enum4];
-
-export const Publisher2Enum5 = {
-  A: 'a',
-} as const;
-
-export type TPublisher2Enum5 = (typeof Publisher2Enum5)[keyof typeof Publisher2Enum5];
 ",
   "import { type Ref } from '@mikro-orm/core';
 import { Entity, Index, ManyToOne, PrimaryKey } from '@mikro-orm/decorators/legacy';
@@ -9533,21 +9500,18 @@ export class AuthorPartialView {
 import { Entity, Property } from '@mikro-orm/decorators/legacy';
 import Email from './../runtimeTypes/Email';
 
-@Entity({ tableName: 'author_partial_view', expression: (em)=>em.createQueryBuilder((0,__vite_ssr_import_4__.Author2)).select([
-                'name',
-                'email'
-            ]), comment: 'test', virtual: true })
+@Entity({ tableName: 'author_partial_view', expression: (em) => em.createQueryBuilder((0,__vite_ssr_import_4__.Author2)).select(["name", "email"]), comment: 'test', virtual: true })
 export class AuthorPartialView2 {
 
-  @Property({ onUpdate: (owner)=>{
-        owner.name += ' also';
-    }, comment: 'author name also', index: 'custom_idx_name_123' })
+  @Property({ onUpdate: (owner) => {
+		owner.name += " also";
+	}, comment: 'author name also', index: 'custom_idx_name_123' })
   name!: string;
 
-  @Property({ type: 'EmailType', columnType: 'varchar(255)', nullable: true, serializer: (email)=>{
-        const [localPart, hostnamePart] = email.split('@', 2);
-        return \`\${localPart[0]}\${'*'.repeat(localPart.length - 2)}\${localPart[localPart.length - 1]}@\${hostnamePart}\`;
-    }, serializedName: 'anonymizedEmail', index: 'custom_email_index_name', unique: 'custom_email_unique_name' })
+  @Property({ type: 'EmailType', columnType: 'varchar(255)', nullable: true, serializer: (email) => {
+		const [localPart, hostnamePart] = email.split("@", 2);
+		return \`\${localPart[0]}\${"*".repeat(localPart.length - 2)}\${localPart[localPart.length - 1]}@\${hostnamePart}\`;
+	}, serializedName: 'anonymizedEmail', index: 'custom_email_index_name', unique: 'custom_email_unique_name' })
   email!: IType<Email, string | undefined>;
 
 }

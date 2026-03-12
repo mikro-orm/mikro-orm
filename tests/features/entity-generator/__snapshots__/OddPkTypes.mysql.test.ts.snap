@@ -6,6 +6,18 @@ exports[`complex_pks_example > decorators > mysql 1`] = `
 import { Entity, OneToOne, Property } from '@mikro-orm/decorators/legacy';
 import { Events } from './Events';
 
+export const EventDetailsWeekday = {
+  MONDAY: 'Monday',
+  TUESDAY: 'Tuesday',
+  WEDNESDAY: 'Wednesday',
+  THURSDAY: 'Thursday',
+  FRIDAY: 'Friday',
+  SATURDAY: 'Saturday',
+  SUNDAY: 'Sunday',
+} as const;
+
+export type TEventDetailsWeekday = (typeof EventDetailsWeekday)[keyof typeof EventDetailsWeekday];
+
 @Entity()
 export class EventDetails {
 
@@ -18,8 +30,13 @@ export class EventDetails {
   moreInfo?: string;
 
 }
+",
+  "import { PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne, OneToOne, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
+import { EventDetails } from './EventDetails';
+import { Worktime } from './Worktime';
 
-export const EventDetailsWeekday = {
+export const EventsWeekday = {
   MONDAY: 'Monday',
   TUESDAY: 'Tuesday',
   WEDNESDAY: 'Wednesday',
@@ -29,12 +46,7 @@ export const EventDetailsWeekday = {
   SUNDAY: 'Sunday',
 } as const;
 
-export type TEventDetailsWeekday = (typeof EventDetailsWeekday)[keyof typeof EventDetailsWeekday];
-",
-  "import { PrimaryKeyProp, type Ref } from '@mikro-orm/core';
-import { Entity, ManyToOne, OneToOne, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
-import { EventDetails } from './EventDetails';
-import { Worktime } from './Worktime';
+export type TEventsWeekday = (typeof EventsWeekday)[keyof typeof EventsWeekday];
 
 @Entity()
 export class Events {
@@ -54,8 +66,12 @@ export class Events {
   eventDetails?: Ref<EventDetails>;
 
 }
+",
+  "import { Collection, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, Enum, OneToMany, Property } from '@mikro-orm/decorators/legacy';
+import { Events } from './Events';
 
-export const EventsWeekday = {
+export const WorktimeWeekday = {
   MONDAY: 'Monday',
   TUESDAY: 'Tuesday',
   WEDNESDAY: 'Wednesday',
@@ -65,11 +81,7 @@ export const EventsWeekday = {
   SUNDAY: 'Sunday',
 } as const;
 
-export type TEventsWeekday = (typeof EventsWeekday)[keyof typeof EventsWeekday];
-",
-  "import { Collection, PrimaryKeyProp } from '@mikro-orm/core';
-import { Entity, Enum, OneToMany, Property } from '@mikro-orm/decorators/legacy';
-import { Events } from './Events';
+export type TWorktimeWeekday = (typeof WorktimeWeekday)[keyof typeof WorktimeWeekday];
 
 @Entity({ comment: 'Worktime. If a day is holiday, remove the row.' })
 export class Worktime {
@@ -89,18 +101,6 @@ export class Worktime {
   eventsCollection = new Collection<Events>(this);
 
 }
-
-export const WorktimeWeekday = {
-  MONDAY: 'Monday',
-  TUESDAY: 'Tuesday',
-  WEDNESDAY: 'Wednesday',
-  THURSDAY: 'Thursday',
-  FRIDAY: 'Friday',
-  SATURDAY: 'Saturday',
-  SUNDAY: 'Sunday',
-} as const;
-
-export type TWorktimeWeekday = (typeof WorktimeWeekday)[keyof typeof WorktimeWeekday];
 ",
 ]
 `;
