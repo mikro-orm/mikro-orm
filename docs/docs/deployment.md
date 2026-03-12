@@ -93,16 +93,12 @@ export class Book {
   @Enum(() => BookStatus)
   status?: BookStatus;
 
-  @ManyToOne(() => Author) // or `@ManyToOne({ type: 'Author' })` or `@ManyToOne({ entity: () => Author })`
+  @ManyToOne(() => Author) // or `@ManyToOne({ entity: () => Author })`
   author1!: Author;
 
   // or
-  @ManyToOne({ type: 'Author' })
-  author2!: Author;
-
-  // or
   @ManyToOne({ entity: () => Author })
-  author3!: Author;
+  author2!: Author;
 
 }
 
