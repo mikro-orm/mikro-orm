@@ -118,6 +118,7 @@ export class ChangeSetComputer {
     if (
       type === ChangeSetType.CREATE &&
       entity[prop.name] == null &&
+      prop.kind === ReferenceKind.SCALAR &&
       'default' in prop &&
       prop.default != null
     ) {
