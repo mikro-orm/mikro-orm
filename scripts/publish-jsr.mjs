@@ -63,7 +63,19 @@ for (const name of packages.keys()) {
   visit(name);
 }
 
+const failed = [];
+
 for (const { name, dir } of sorted) {
   console.log(`\nPublishing ${name}...`);
-  execSync(`cd ${dir} && jsr publish${flags}`, { stdio: 'inherit' });
+
+  try {
+    execSync(`cd ${dir} && jsr publish${flags}`, { stdio: 'inherit' });
+  } catch {
+    failed.push(name);
+  }
+}
+
+if (failed.length > 0) {
+  console.error(`\nFailed to publish: ${failed.join(', ')}`);
+  process.exit(1);
 }
