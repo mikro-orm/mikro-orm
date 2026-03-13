@@ -105,7 +105,7 @@ export class EntitySchema<Entity = any, Base = never, Class extends EntityCtor =
    * as a fallback when `instanceof` fails due to CJS/ESM dual-package hazard
    * (e.g. when using `tsx` or `@swc-node/register` with `"type": "commonjs"` projects).
    */
-  static isEntitySchema(item: unknown): item is EntitySchema {
+  static is(item: unknown): item is EntitySchema {
     if (item instanceof EntitySchema) {
       return true;
     }

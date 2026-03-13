@@ -26,7 +26,7 @@ async function getEntityClassOrSchema(
 
   // ignore class implementations that are linked from an EntitySchema
   for (const item of targets) {
-    if (EntitySchema.isEntitySchema(item)) {
+    if (EntitySchema.is(item)) {
       for (const item2 of targets) {
         if (item.meta.class === item2) {
           targets.splice(targets.indexOf(item2), 1);
@@ -36,8 +36,7 @@ async function getEntityClassOrSchema(
   }
 
   for (const item of targets) {
-    const validTarget =
-      EntitySchema.isEntitySchema(item) || (item instanceof Function && MetadataStorage.isKnownEntity(item.name));
+    const validTarget = EntitySchema.is(item) || (item instanceof Function && MetadataStorage.isKnownEntity(item.name));
 
     if (validTarget && !allTargets.has(item)) {
       allTargets.set(item, path);

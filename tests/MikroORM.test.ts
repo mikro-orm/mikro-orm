@@ -405,22 +405,22 @@ describe('MikroORM', () => {
     expect(closed).toBe(2);
   });
 
-  test('EntitySchema.isEntitySchema', () => {
+  test('EntitySchema.is', () => {
     const schema = new EntitySchema({ name: 'IsEntitySchemaTest', properties: {} });
     // real instances pass via instanceof
-    expect(EntitySchema.isEntitySchema(schema)).toBe(true);
+    expect(EntitySchema.is(schema)).toBe(true);
     // duck-type fallback: object with matching constructor name and `meta` property
     const fake = Object.create({ constructor: { name: 'EntitySchema' } });
     Object.defineProperty(fake, 'meta', { value: {}, enumerable: true });
-    expect(EntitySchema.isEntitySchema(fake)).toBe(true);
+    expect(EntitySchema.is(fake)).toBe(true);
     // non-matching values
-    expect(EntitySchema.isEntitySchema(null)).toBe(false);
-    expect(EntitySchema.isEntitySchema(undefined)).toBe(false);
-    expect(EntitySchema.isEntitySchema({})).toBe(false);
-    expect(EntitySchema.isEntitySchema('string')).toBe(false);
-    expect(EntitySchema.isEntitySchema(42)).toBe(false);
+    expect(EntitySchema.is(null)).toBe(false);
+    expect(EntitySchema.is(undefined)).toBe(false);
+    expect(EntitySchema.is({})).toBe(false);
+    expect(EntitySchema.is('string')).toBe(false);
+    expect(EntitySchema.is(42)).toBe(false);
     // eslint-disable-next-line @typescript-eslint/no-empty-function
-    expect(EntitySchema.isEntitySchema(() => {})).toBe(false);
+    expect(EntitySchema.is(() => {})).toBe(false);
   });
 
   test('folder based discover with CJS default wrapping', async () => {
