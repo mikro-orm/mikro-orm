@@ -14,13 +14,13 @@ npm install @mikro-orm/migrations-mongodb
 
 ```sh
 # Create a blank migration
-npx mikro-orm-esm migration:create --blank
+npx mikro-orm migration:create --blank
 
 # Run pending migrations
-npx mikro-orm-esm migration:up
+npx mikro-orm migration:up
 
 # Revert the last migration
-npx mikro-orm-esm migration:down
+npx mikro-orm migration:down
 ```
 
 ### Programmatic API
@@ -37,7 +37,7 @@ const orm = await MikroORM.init({
   },
 });
 
-const migrator = orm.getMigrator();
+const migrator = orm.migrator;
 await migrator.up();
 ```
 

@@ -14,13 +14,13 @@ npm install @mikro-orm/migrations
 
 ```sh
 # Generate a migration based on schema changes
-npx mikro-orm-esm migration:create
+npx mikro-orm migration:create
 
 # Run pending migrations
-npx mikro-orm-esm migration:up
+npx mikro-orm migration:up
 
 # Revert the last migration
-npx mikro-orm-esm migration:down
+npx mikro-orm migration:down
 ```
 
 ### Programmatic API
@@ -36,10 +36,10 @@ const orm = await MikroORM.init({
   },
 });
 
-const migrator = orm.getMigrator();
+const migrator = orm.migrator;
 
 // Generate a migration from schema diff
-await migrator.createMigration();
+await migrator.create();
 
 // Run all pending migrations
 await migrator.up();

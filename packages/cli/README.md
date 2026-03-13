@@ -13,32 +13,28 @@ npm install @mikro-orm/cli
 MikroORM CLI requires a configuration file or a `mikro-orm` section in your `package.json`. The simplest setup:
 
 ```sh
-# ESM projects (recommended)
-npx mikro-orm-esm
-
-# CJS projects
 npx mikro-orm
 ```
 
 ## Available Commands
 
 ```sh
-mikro-orm-esm schema:create    # Create database schema
-mikro-orm-esm schema:update    # Update schema to match entities
-mikro-orm-esm schema:drop      # Drop database schema
+mikro-orm schema:create    # Create database schema
+mikro-orm schema:update    # Update schema to match entities
+mikro-orm schema:drop      # Drop database schema
 
-mikro-orm-esm migration:create # Generate migration from schema diff
-mikro-orm-esm migration:up     # Run pending migrations
-mikro-orm-esm migration:down   # Revert last migration
-mikro-orm-esm migration:list   # List executed migrations
+mikro-orm migration:create # Generate migration from schema diff
+mikro-orm migration:up     # Run pending migrations
+mikro-orm migration:down   # Revert last migration
+mikro-orm migration:list   # List executed migrations
 
-mikro-orm-esm seeder:run       # Run database seeders
-mikro-orm-esm seeder:create    # Create a new seeder class
+mikro-orm seeder:run       # Run database seeders
+mikro-orm seeder:create    # Create a new seeder class
 
-mikro-orm-esm generate-entities # Generate entities from database
+mikro-orm generate-entities # Generate entities from database
 
-mikro-orm-esm cache:generate   # Generate metadata cache
-mikro-orm-esm cache:clear      # Clear metadata cache
+mikro-orm cache:generate   # Generate metadata cache
+mikro-orm cache:clear      # Clear metadata cache
 ```
 
 ## Configuration

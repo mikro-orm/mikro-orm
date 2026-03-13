@@ -14,10 +14,10 @@ npm install @mikro-orm/seeder
 
 ```sh
 # Run seeders
-npx mikro-orm-esm seeder:run
+npx mikro-orm seeder:run
 
 # Create a new seeder class
-npx mikro-orm-esm seeder:create DatabaseSeeder
+npx mikro-orm seeder:create DatabaseSeeder
 ```
 
 ### Defining a Seeder

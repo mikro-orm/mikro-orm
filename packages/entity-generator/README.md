@@ -13,7 +13,7 @@ npm install @mikro-orm/entity-generator
 ### Via CLI
 
 ```sh
-npx mikro-orm-esm generate-entities --save --path=./src/entities
+npx mikro-orm generate-entities --save --path=./src/entities
 ```
 
 ### Programmatic API
@@ -22,7 +22,7 @@ npx mikro-orm-esm generate-entities --save --path=./src/entities
 import { MikroORM } from '@mikro-orm/postgresql';
 
 const orm = await MikroORM.init({ ... });
-const generator = orm.getEntityGenerator();
+const generator = orm.entityGenerator;
 
 // Generate entity files from the current database schema
 const dump = await generator.generate({
