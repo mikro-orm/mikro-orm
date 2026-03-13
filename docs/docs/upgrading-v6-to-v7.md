@@ -16,6 +16,36 @@ Support for older node versions was dropped.
 
 Support for older TypeScript versions was dropped. Older versions might work too, but only if your project is also ESM.
 
+## `moduleResolution` must be `node20`, `nodenext`, or `bundler`
+
+MikroORM v7 uses `package.json` `exports` maps extensively. The legacy `moduleResolution: "node"` (aka `node10`) does not support `exports` maps, which leads to incorrect type resolution and confusing type errors — for example, driver classes appearing incompatible with their own interfaces.
+
+This is especially common in NestJS projects that still use `moduleResolution: "node"` in their default `tsconfig.json`. Update your `tsconfig.json`:
+
+```diff
+{
+  "compilerOptions": {
+-   "module": "commonjs",
+-   "moduleResolution": "node",
++   "module": "nodenext",
++   "moduleResolution": "nodenext",
+  }
+}
+```
+
+Or if you use a bundler (webpack, vite, esbuild):
+
+```diff
+{
+  "compilerOptions": {
+-   "moduleResolution": "node",
++   "moduleResolution": "bundler",
+  }
+}
+```
+
+> Note: `moduleResolution: "node"` is deprecated as of TypeScript 6 and will eventually be removed.
+
 ## Decorators moved to `@mikro-orm/decorators` package
 
 The decorators are now available in the `@mikro-orm/decorators` package, so you need to install it explicitly:
