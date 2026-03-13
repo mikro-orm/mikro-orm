@@ -11,25 +11,26 @@ npm install @mikro-orm/core @mikro-orm/postgresql
 ## Usage
 
 ```typescript
-import { MikroORM, EntityManager } from '@mikro-orm/postgresql';
+import { MikroORM } from '@mikro-orm/postgresql';
 
 const orm = await MikroORM.init({
   entities: [Author, Book],
   dbName: 'my-db',
 });
 
-// EntityManager is typed to the PostgreSQL driver
-const em: EntityManager = orm.em;
+// Create and persist entities
+const author = orm.em.create(Author, { name: 'Jon Snow', email: 'snow@wall.st' });
+orm.em.create(Book, { title: 'My Life on The Wall', author });
+await orm.em.flush();
 
-// Use the QueryBuilder for type-safe queries
-const qb = em.createQueryBuilder(Author);
-const authors = await qb
-  .select('*')
-  .where({ name: { $like: '%John%' } })
-  .getResult();
-
-// Use Kysely for raw query building
-const result = await em.getKysely().selectFrom('author').selectAll().execute();
+// Find entities with relations
+const authors = await orm.em.find(
+  Author,
+  { name: { $like: '%Jon%' } },
+  {
+    populate: ['books'],
+  },
+);
 ```
 
 ## Features

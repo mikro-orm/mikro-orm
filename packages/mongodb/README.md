@@ -11,7 +11,7 @@ npm install @mikro-orm/core @mikro-orm/mongodb
 ## Usage
 
 ```typescript
-import { MikroORM, EntityManager } from '@mikro-orm/mongodb';
+import { MikroORM } from '@mikro-orm/mongodb';
 
 const orm = await MikroORM.init({
   entities: [Author, Book],
@@ -19,15 +19,19 @@ const orm = await MikroORM.init({
   clientUrl: 'mongodb://localhost:27017',
 });
 
-// EntityManager is typed to the MongoDB driver
-const em: EntityManager = orm.em;
+// Create and persist entities
+const author = orm.em.create(Author, { name: 'Jon Snow', email: 'snow@wall.st' });
+orm.em.create(Book, { title: 'My Life on The Wall', author });
+await orm.em.flush();
 
-// Use MongoDB-native operations
-const authors = await em.find(Author, { name: /John/ });
-
-// Access the native MongoDB collection
-const collection = em.getCollection(Author);
-const result = await collection.aggregate([...]).toArray();
+// Find entities with relations
+const authors = await orm.em.find(
+  Author,
+  { name: /Jon/ },
+  {
+    populate: ['books'],
+  },
+);
 ```
 
 ## Features

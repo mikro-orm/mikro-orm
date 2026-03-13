@@ -25,7 +25,7 @@ Define entities using [decorators](https://mikro-orm.io/docs/defining-entities),
 
 ```typescript
 import { MikroORM } from '@mikro-orm/postgresql';
-import { Entity, PrimaryKey, Property, ManyToOne, Collection, ManyToMany } from '@mikro-orm/core';
+import { Entity, PrimaryKey, Property, ManyToOne, Collection, OneToMany } from '@mikro-orm/core';
 
 @Entity()
 class Author {
@@ -35,25 +35,41 @@ class Author {
   @Property()
   name!: string;
 
-  @ManyToMany(() => Book)
+  @OneToMany(() => Book, book => book.author)
   books = new Collection<Book>(this);
+}
+
+@Entity()
+class Book {
+  @PrimaryKey()
+  id!: number;
+
+  @Property()
+  title!: string;
+
+  @ManyToOne(() => Author)
+  author!: Author;
 }
 
 // Initialize the ORM
 const orm = await MikroORM.init({
-  entities: [Author],
+  entities: [Author, Book],
   dbName: 'my-db',
 });
 
 // Create and persist entities
-const author = orm.em.create(Author, { name: 'John' });
+const author = orm.em.create(Author, { name: 'Jon Snow' });
+orm.em.create(Book, { title: 'My Life on The Wall', author });
 await orm.em.flush();
 
-// Query entities
-const authors = await orm.em.findAll(Author, {
-  where: { name: { $like: '%John%' } },
-  populate: ['books'],
-});
+// Find entities with relations
+const authors = await orm.em.find(
+  Author,
+  { name: { $like: '%Jon%' } },
+  {
+    populate: ['books'],
+  },
+);
 ```
 
 ## Key Features

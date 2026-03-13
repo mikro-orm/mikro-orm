@@ -11,7 +11,7 @@ npm install @mikro-orm/core @mikro-orm/oracledb
 ## Usage
 
 ```typescript
-import { MikroORM, EntityManager } from '@mikro-orm/oracledb';
+import { MikroORM } from '@mikro-orm/oracledb';
 
 const orm = await MikroORM.init({
   entities: [Author, Book],
@@ -20,15 +20,19 @@ const orm = await MikroORM.init({
   port: 1521,
 });
 
-// EntityManager is typed to the Oracle driver
-const em: EntityManager = orm.em;
+// Create and persist entities
+const author = orm.em.create(Author, { name: 'Jon Snow', email: 'snow@wall.st' });
+orm.em.create(Book, { title: 'My Life on The Wall', author });
+await orm.em.flush();
 
-// Use the QueryBuilder for type-safe queries
-const qb = em.createQueryBuilder(Author);
-const authors = await qb
-  .select('*')
-  .where({ name: { $like: '%John%' } })
-  .getResult();
+// Find entities with relations
+const authors = await orm.em.find(
+  Author,
+  { name: { $like: '%Jon%' } },
+  {
+    populate: ['books'],
+  },
+);
 ```
 
 ## Features

@@ -11,22 +11,26 @@ npm install @mikro-orm/core @mikro-orm/mariadb
 ## Usage
 
 ```typescript
-import { MikroORM, EntityManager } from '@mikro-orm/mariadb';
+import { MikroORM } from '@mikro-orm/mariadb';
 
 const orm = await MikroORM.init({
   entities: [Author, Book],
   dbName: 'my-db',
 });
 
-// EntityManager is typed to the MariaDB driver
-const em: EntityManager = orm.em;
+// Create and persist entities
+const author = orm.em.create(Author, { name: 'Jon Snow', email: 'snow@wall.st' });
+orm.em.create(Book, { title: 'My Life on The Wall', author });
+await orm.em.flush();
 
-// Use the QueryBuilder for type-safe queries
-const qb = em.createQueryBuilder(Author);
-const authors = await qb
-  .select('*')
-  .where({ name: { $like: '%John%' } })
-  .getResult();
+// Find entities with relations
+const authors = await orm.em.find(
+  Author,
+  { name: { $like: '%Jon%' } },
+  {
+    populate: ['books'],
+  },
+);
 ```
 
 ## Features
