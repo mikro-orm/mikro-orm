@@ -406,7 +406,7 @@ export class EntitySchema<Entity = any, Base = never, Class extends EntityCtor =
     let parent = this._meta.extends;
 
     while (parent) {
-      const parentSchema = parent instanceof EntitySchema ? parent : EntitySchema.REGISTRY.get(parent as any);
+      const parentSchema = EntitySchema.is(parent) ? parent : EntitySchema.REGISTRY.get(parent as any);
 
       if (!parentSchema) {
         break;
@@ -500,7 +500,7 @@ export class EntitySchema<Entity = any, Base = never, Class extends EntityCtor =
               .sort()
               .join(' | ')
           : Utils.className(tmp);
-        const target = tmp instanceof EntitySchema ? tmp.meta.class : tmp;
+        const target = EntitySchema.is(tmp) ? tmp.meta.class : tmp;
         return { type, target };
       }
     }

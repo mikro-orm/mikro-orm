@@ -78,7 +78,7 @@ export class TsMorphMetadataProvider extends MetadataProvider {
     }
 
     const tmp = prop.entity() as EntityClass;
-    const target = tmp instanceof EntitySchema ? tmp.meta.class : tmp;
+    const target = EntitySchema.is(tmp) ? tmp.meta.class : tmp;
 
     return { type: Utils.className(target), target };
   }

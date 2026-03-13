@@ -91,7 +91,7 @@ export class MetadataStorage {
       return meta;
     }
 
-    if (entityName instanceof EntitySchema) {
+    if (EntitySchema.is(entityName)) {
       return this.#metadataMap.get(entityName.meta.class) ?? entityName.meta;
     }
 

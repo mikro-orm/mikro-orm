@@ -304,7 +304,7 @@ export class MetadataDiscovery {
 
   private tryDiscoverTargets(targets: EntityClass[]): void {
     for (const target of targets) {
-      const schema = target instanceof EntitySchema ? target : undefined;
+      const schema = EntitySchema.is(target) ? target : undefined;
       const isDiscoverable = typeof target === 'function' || schema;
 
       if (isDiscoverable && target.name) {
@@ -337,7 +337,7 @@ export class MetadataDiscovery {
     for (const meta of this.#metadata) {
       let parent = meta.extends as any;
 
-      if (parent instanceof EntitySchema && !this.#metadata.has(parent.init().meta.class)) {
+      if (EntitySchema.is(parent) && !this.#metadata.has(parent.init().meta.class)) {
         this.discoverReferences([parent], false);
       }
 
@@ -394,24 +394,26 @@ export class MetadataDiscovery {
       entity = EntitySchema.REGISTRY.get(entity)!;
     }
 
-    if (entity instanceof EntitySchema) {
+    if (EntitySchema.is(entity)) {
       const meta = Utils.copy(entity.meta, false);
       return EntitySchema.fromMetadata(meta);
     }
 
-    const path = entity[MetadataStorage.PATH_SYMBOL];
+    // After the EntitySchema check, entity must be an EntityClass
+    const cls = entity as EntityClass<T> & { [MetadataStorage.PATH_SYMBOL]?: string };
+    const path = cls[MetadataStorage.PATH_SYMBOL];
 
     if (path) {
-      const meta = Utils.copy(MetadataStorage.getMetadata(entity.name, path), false);
+      const meta = Utils.copy(MetadataStorage.getMetadata(cls.name, path), false);
       meta.path = path;
-      this.#metadata.set(entity, meta);
+      this.#metadata.set(cls, meta);
     }
 
-    const exists = this.#metadata.has(entity);
-    const meta = this.#metadata.get<T>(entity, true);
+    const exists = this.#metadata.has(cls);
+    const meta = this.#metadata.get<T>(cls, true);
     meta.abstract ??= !(exists && meta.name);
     const schema = EntitySchema.fromMetadata(meta);
-    schema.setClass(entity as EntityCtor<T>);
+    schema.setClass(cls as EntityCtor<T>);
 
     return schema;
   }
@@ -1863,7 +1865,7 @@ export class MetadataDiscovery {
     return metadata.find(m => {
       const ext = meta.extends!;
 
-      if (ext instanceof EntitySchema) {
+      if (EntitySchema.is(ext)) {
         return m.class === ext.meta.class || m.className === ext.meta.className;
       }
 

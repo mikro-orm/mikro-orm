@@ -26,7 +26,7 @@ export class ReflectMetadataProvider extends MetadataProvider {
               .sort()
               .join(' | ')
           : Utils.className(tmp);
-        prop.target = tmp instanceof EntitySchema ? tmp.meta.class : tmp;
+        prop.target = EntitySchema.is(tmp) ? tmp.meta.class : tmp;
       } else {
         this.initPropertyType(meta, prop);
       }

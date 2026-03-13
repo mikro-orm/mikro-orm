@@ -29,7 +29,7 @@ export class MetadataProvider {
               .sort()
               .join(' | ')
           : Utils.className(tmp);
-        prop.target = tmp instanceof EntitySchema ? tmp.meta.class : tmp;
+        prop.target = EntitySchema.is(tmp) ? tmp.meta.class : tmp;
       } else if (!prop.type && !((prop.enum || prop.array) && (prop.items?.length ?? 0) > 0)) {
         throw new Error(`Please provide either 'type' or 'entity' attribute in ${meta.className}.${prop.name}.`);
       }
