@@ -162,15 +162,15 @@ class TestClass5 {
   }
 }
 
+vi.mock('../../../../packages/decorators/src/utils.js', async importOriginal => ({
+  ...(await importOriginal()),
+  getMetadataFromDecorator: (target: any) => {
+    return MetadataStorage.getMetadata(target.name, '/path/to/entity');
+  },
+}));
+
 describe('decorators', () => {
   const hash = Utils.hash('/path/to/entity');
-
-  vi.mock('../../../../packages/decorators/src/utils.js', async importOriginal => ({
-    ...(await importOriginal()),
-    getMetadataFromDecorator: (target: any) => {
-      return MetadataStorage.getMetadata(target.name, '/path/to/entity');
-    },
-  }));
 
   beforeEach(() => {
     // To make sure DI is empty before each test for accurate results
