@@ -2082,8 +2082,11 @@ export class MetadataDiscovery {
     ) {
       // if the type is an ORM defined mapped type without `ensureComparable: true`,
       // we use just the type name, to have more performant hydration code
+      const brand = Type.getOrmType(prop.type as object);
       const type = Utils.keys(t).find(type => {
-        return !Type.getType(t[type]).ensureComparable(meta, prop) && (prop.type as unknown) === t[type];
+        return (
+          !Type.getType(t[type]).ensureComparable(meta, prop) && ((prop.type as unknown) === t[type] || brand === type)
+        );
       });
 
       if (type) {

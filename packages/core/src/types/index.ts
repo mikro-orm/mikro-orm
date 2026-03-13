@@ -19,7 +19,7 @@ import { StringType } from './StringType.js';
 import { TextType } from './TextType.js';
 import { TimeType } from './TimeType.js';
 import { TinyIntType } from './TinyIntType.js';
-import { type IType, type TransformContext, Type } from './Type.js';
+import { type IType, ORM_TYPE, type TransformContext, Type } from './Type.js';
 import { Uint8ArrayType } from './Uint8ArrayType.js';
 import { UnknownType } from './UnknownType.js';
 import { UuidType } from './UuidType.js';
@@ -81,3 +81,14 @@ export const types = {
 } as const;
 
 export const t = types;
+
+/**
+ * Brand each built-in type constructor with its registry key via a cross-module symbol.
+ * Symbol.for() returns the same symbol across CJS/ESM module graphs, so this survives
+ * the dual-package hazard (e.g. when using tsx or @swc-node/register with "type": "commonjs").
+ * Using Object.defineProperty ensures the brand is an own (non-inherited) property,
+ * so subclasses (e.g. MyJsonType extends JsonType) won't be detected as built-in types.
+ */
+for (const [key, type] of Object.entries(types)) {
+  Object.defineProperty(type, ORM_TYPE, { value: key, enumerable: false });
+}
