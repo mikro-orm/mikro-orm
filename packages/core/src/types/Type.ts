@@ -2,6 +2,9 @@ import type { Platform } from '../platforms/Platform.js';
 import type { Constructor, EntityMetadata, EntityProperty } from '../typings.js';
 import { inspect } from '../logging/inspect.js';
 
+/** @internal */
+export const ORM_TYPE = Symbol.for('@mikro-orm/type');
+
 export interface TransformContext {
   fromQuery?: boolean;
   force?: boolean;
@@ -127,6 +130,15 @@ export abstract class Type<JSType = string, DBType = JSType> {
    */
   static isMappedType(data: any): data is Type<any> {
     return !!data?.__mappedType;
+  }
+
+  /**
+   * @internal
+   * Returns the built-in type registry key if the given constructor is a branded ORM type
+   * (not a user subclass). Uses `Symbol.for()` so it works across CJS/ESM module graphs.
+   */
+  static getOrmType(cls: object): string | undefined {
+    return Object.hasOwn(cls, ORM_TYPE) ? (cls as any)[ORM_TYPE] : undefined;
   }
 
   /** @ignore */

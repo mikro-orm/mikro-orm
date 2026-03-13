@@ -19,7 +19,7 @@ import { StringType } from './StringType.js';
 import { TextType } from './TextType.js';
 import { TimeType } from './TimeType.js';
 import { TinyIntType } from './TinyIntType.js';
-import { type IType, type TransformContext, Type } from './Type.js';
+import { type IType, ORM_TYPE, type TransformContext, Type } from './Type.js';
 import { Uint8ArrayType } from './Uint8ArrayType.js';
 import { UnknownType } from './UnknownType.js';
 import { UuidType } from './UuidType.js';
@@ -89,9 +89,6 @@ export const t = types;
  * Using Object.defineProperty ensures the brand is an own (non-inherited) property,
  * so subclasses (e.g. MyJsonType extends JsonType) won't be detected as built-in types.
  */
-const ORM_TYPE = Symbol.for('@mikro-orm/type');
 for (const [key, type] of Object.entries(types)) {
   Object.defineProperty(type, ORM_TYPE, { value: key, enumerable: false });
 }
-
-export { ORM_TYPE };

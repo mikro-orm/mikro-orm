@@ -20,7 +20,7 @@ import { EntitySchema } from './EntitySchema.js';
 import { Cascade, type EventType, ReferenceKind } from '../enums.js';
 import { MetadataError } from '../errors.js';
 import type { Platform } from '../platforms/Platform.js';
-import { ORM_TYPE, t, Type } from '../types/index.js';
+import { t, Type } from '../types/index.js';
 import { colors } from '../logging/colors.js';
 import { raw, Raw } from '../utils/RawQueryFragment.js';
 import type { Logger } from '../logging/Logger.js';
@@ -2082,11 +2082,10 @@ export class MetadataDiscovery {
     ) {
       // if the type is an ORM defined mapped type without `ensureComparable: true`,
       // we use just the type name, to have more performant hydration code
-      const brand = (prop.type as any)[ORM_TYPE];
+      const brand = Type.getOrmType(prop.type as object);
       const type = Utils.keys(t).find(type => {
         return (
-          !Type.getType(t[type]).ensureComparable(meta, prop) &&
-          ((prop.type as unknown) === t[type] || (Object.hasOwn(prop.type as object, ORM_TYPE) && brand === type))
+          !Type.getType(t[type]).ensureComparable(meta, prop) && ((prop.type as unknown) === t[type] || brand === type)
         );
       });
 
