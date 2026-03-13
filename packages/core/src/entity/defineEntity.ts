@@ -1526,10 +1526,12 @@ type MaybeOpt<Value, Options> = Options extends { mapToPk: true }
         | { persist: false }
         | { version: true }
         | { formula: string | ((...args: any[]) => any) }
-    ? Opt<Value>
+    ? Opt<NonNullable<Value>> | Extract<Value, null | undefined>
     : Value;
 
-type MaybeHidden<Value, Options> = Options extends { hidden: true } ? Hidden<Value> : Value;
+type MaybeHidden<Value, Options> = Options extends { hidden: true }
+  ? Hidden<NonNullable<Value>> | Extract<Value, null | undefined>
+  : Value;
 
 type ValueOf<T extends Dictionary> = T[keyof T];
 

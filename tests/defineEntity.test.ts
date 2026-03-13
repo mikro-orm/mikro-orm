@@ -600,6 +600,45 @@ describe('defineEntity', () => {
     expect(Foo.meta).toEqual(asSnapshot(FooSchema.meta));
   });
 
+  // GH #7291
+  it('should define entity with nullable many to one with formula', () => {
+    const Bar = defineEntity({
+      name: 'Bar',
+      properties: {
+        id: p.integer().primary().autoincrement(),
+        phone: p.string(),
+      },
+    });
+
+    const Foo = defineEntity({
+      name: 'Foo',
+      properties: {
+        id: p.integer().primary().autoincrement(),
+        phone: p.string(),
+        // nullable via .nullable()
+        barNullable: () =>
+          p
+            .manyToOne(Bar)
+            .formula(cols => cols.phone)
+            .nullable(),
+        // nullable via .$type
+        barTyped: () =>
+          p
+            .manyToOne(Bar)
+            .formula(cols => cols.phone)
+            .$type<InferEntity<typeof Bar> | null>(),
+        // non-nullable with formula (should be Opt, not nullable)
+        barRequired: () => p.manyToOne(Bar).formula(cols => cols.phone),
+      },
+    });
+
+    type IBar = InferEntity<typeof Bar>;
+    type IFoo = InferEntity<typeof Foo>;
+    assert<IsExact<IFoo['barNullable'], Opt<IBar> | null | undefined>>(true);
+    assert<IsExact<IFoo['barTyped'], Opt<IBar> | null>>(true);
+    assert<IsExact<IFoo['barRequired'], Opt<IBar>>>(true);
+  });
+
   it('should define entity with one to many relation', () => {
     const Folder = defineEntity({
       name: 'Folder',
