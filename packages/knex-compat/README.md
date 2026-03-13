@@ -24,7 +24,9 @@ const k = knex({ client: 'pg' });
 await em.find(User, { [raw(k.raw('lower(name)'))]: name.toLowerCase() });
 
 // Pass a knex QueryBuilder instance
-const subquery = k('book').count('*').where('author_id', k.raw('??', ['author.id']));
+const subquery = k('book')
+  .count('*')
+  .where('author_id', k.raw('??', ['author.id']));
 await em.find(Author, { [raw(subquery)]: { $gt: 5 } });
 ```
 

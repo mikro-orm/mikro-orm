@@ -35,7 +35,8 @@ const authors = await qb
 Access the type-safe Kysely query builder directly for advanced queries:
 
 ```typescript
-const result = await em.getKysely()
+const result = await em
+  .getKysely()
   .selectFrom('author')
   .innerJoin('book', 'book.author_id', 'author.id')
   .select(['author.name', 'book.title'])

@@ -23,7 +23,10 @@ const em: EntityManager = orm.em;
 
 // Use the QueryBuilder for type-safe queries
 const qb = em.createQueryBuilder(Author);
-const authors = await qb.select('*').where({ name: { $like: '%John%' } }).getResult();
+const authors = await qb
+  .select('*')
+  .where({ name: { $like: '%John%' } })
+  .getResult();
 ```
 
 ## Features
