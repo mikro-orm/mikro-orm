@@ -21,35 +21,33 @@ npm install @mikro-orm/core @mikro-orm/oracledb       # Oracle
 
 ## Quick Start
 
-Define entities using [decorators](https://mikro-orm.io/docs/defining-entities), [`EntitySchema`](https://mikro-orm.io/docs/entity-schema), or the [`defineEntity` helper](https://mikro-orm.io/docs/define-entity):
+Define entities using [`defineEntity`](https://mikro-orm.io/docs/define-entity) (recommended), [decorators](https://mikro-orm.io/docs/defining-entities), or [`EntitySchema`](https://mikro-orm.io/docs/entity-schema):
 
 ```typescript
-import { MikroORM } from '@mikro-orm/postgresql';
-import { Entity, PrimaryKey, Property, ManyToOne, Collection, OneToMany } from '@mikro-orm/core';
+import { defineEntity, p, MikroORM } from '@mikro-orm/postgresql';
 
-@Entity()
-class Author {
-  @PrimaryKey()
-  id!: number;
+const AuthorSchema = defineEntity({
+  name: 'Author',
+  properties: {
+    id: p.integer().primary(),
+    name: p.string(),
+    email: p.string(),
+    books: () => p.oneToMany(Book).mappedBy('author'),
+  },
+});
+export class Author extends AuthorSchema.class {}
+AuthorSchema.setClass(Author);
 
-  @Property()
-  name!: string;
-
-  @OneToMany(() => Book, book => book.author)
-  books = new Collection<Book>(this);
-}
-
-@Entity()
-class Book {
-  @PrimaryKey()
-  id!: number;
-
-  @Property()
-  title!: string;
-
-  @ManyToOne(() => Author)
-  author!: Author;
-}
+const BookSchema = defineEntity({
+  name: 'Book',
+  properties: {
+    id: p.integer().primary(),
+    title: p.string(),
+    author: () => p.manyToOne(Author).inversedBy('books'),
+  },
+});
+export class Book extends BookSchema.class {}
+BookSchema.setClass(Book);
 
 // Initialize the ORM
 const orm = await MikroORM.init({
@@ -58,7 +56,7 @@ const orm = await MikroORM.init({
 });
 
 // Create and persist entities
-const author = orm.em.create(Author, { name: 'Jon Snow' });
+const author = orm.em.create(Author, { name: 'Jon Snow', email: 'snow@wall.st' });
 orm.em.create(Book, { title: 'My Life on The Wall', author });
 await orm.em.flush();
 

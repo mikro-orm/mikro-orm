@@ -11,7 +11,29 @@ npm install @mikro-orm/core @mikro-orm/mongodb
 ## Usage
 
 ```typescript
-import { MikroORM } from '@mikro-orm/mongodb';
+import { defineEntity, p, MikroORM } from '@mikro-orm/mongodb';
+
+const AuthorSchema = defineEntity({
+  name: 'Author',
+  properties: {
+    id: p.objectId().primary(),
+    name: p.string(),
+    books: () => p.oneToMany(Book).mappedBy('author'),
+  },
+});
+export class Author extends AuthorSchema.class {}
+AuthorSchema.setClass(Author);
+
+const BookSchema = defineEntity({
+  name: 'Book',
+  properties: {
+    id: p.objectId().primary(),
+    title: p.string(),
+    author: () => p.manyToOne(Author).inversedBy('books'),
+  },
+});
+export class Book extends BookSchema.class {}
+BookSchema.setClass(Book);
 
 const orm = await MikroORM.init({
   entities: [Author, Book],
@@ -19,12 +41,10 @@ const orm = await MikroORM.init({
   clientUrl: 'mongodb://localhost:27017',
 });
 
-// Create and persist entities
-const author = orm.em.create(Author, { name: 'Jon Snow', email: 'snow@wall.st' });
+const author = orm.em.create(Author, { name: 'Jon Snow' });
 orm.em.create(Book, { title: 'My Life on The Wall', author });
 await orm.em.flush();
 
-// Find entities with relations
 const authors = await orm.em.find(
   Author,
   { name: /Jon/ },
