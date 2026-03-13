@@ -22,11 +22,29 @@ class AuthorStats {
 
 const authorStatsSQL = `select name, (select count(*) from book4 b where b.author_id = a.id) as book_count from author4 a`;
 
+// View entity with multiline expression (GH #7292)
+const multilineViewSQL = `
+    SELECT
+    name, (select count(*) from book4 b where b.author_id = a.id) as book_count
+    FROM author4 a`;
+
 const AuthorStatsSchema = defineEntity({
   class: AuthorStats,
   tableName: 'author_stats_view',
   view: true,
   expression: authorStatsSQL,
+  properties: {
+    name: p.string().primary(),
+    bookCount: p.integer(),
+  },
+});
+
+// GH #7292 - multiline expression should not cause perpetual schema diff
+const MultilineAuthorStats = defineEntity({
+  name: 'MultilineAuthorStats',
+  tableName: 'multiline_author_stats_view',
+  view: true,
+  expression: multilineViewSQL,
   properties: {
     name: p.string().primary(),
     bookCount: p.integer(),
@@ -80,6 +98,7 @@ describe('View entities (sqlite)', () => {
         BaseEntity5,
         IdentitySchema,
         AuthorStatsSchema,
+        MultilineAuthorStats,
         BookSummary,
         ProlificAuthors,
       ],
@@ -142,6 +161,13 @@ describe('View entities (sqlite)', () => {
   });
 
   test('updateSchema detects no changes for unchanged views', async () => {
+    const sql = await orm.schema.getUpdateSchemaSQL();
+    expect(sql).toBe('');
+  });
+
+  // GH #7292
+  test('multiline view expressions do not cause perpetual schema changes', async () => {
+    // After creating the schema, the multiline view should not be detected as changed
     const sql = await orm.schema.getUpdateSchemaSQL();
     expect(sql).toBe('');
   });

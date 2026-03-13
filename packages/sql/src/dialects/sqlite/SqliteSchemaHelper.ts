@@ -351,7 +351,7 @@ export class SqliteSchemaHelper extends SchemaHelper {
    * Extracts the SELECT part from a CREATE VIEW statement.
    */
   private extractViewDefinition(viewDefinition: string): string {
-    const match = /create\s+view\s+[`"']?\w+[`"']?\s+as\s+(.*)/i.exec(viewDefinition);
+    const match = /create\s+view\s+[`"']?\w+[`"']?\s+as\s+(.*)/is.exec(viewDefinition);
     /* v8 ignore next - fallback for non-standard view definitions */
     return match ? match[1] : viewDefinition;
   }
