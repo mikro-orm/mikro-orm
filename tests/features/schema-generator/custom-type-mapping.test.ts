@@ -63,7 +63,7 @@ test('getMappedType callback always receives abstract type names', async () => {
   expect(receivedTypes.filter(t => t === 'string').length).toBeGreaterThanOrEqual(2);
 
   // Verify the override was applied
-  const meta = orm2.getMetadata().get('GetMappedTypeTest');
+  const meta = orm2.getMetadata().get(TestEntity);
   expect(meta.properties.name.columnTypes).toEqual(['text']);
   expect(meta.properties.email.columnTypes).toEqual(['text']);
 
