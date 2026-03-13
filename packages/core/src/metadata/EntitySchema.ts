@@ -100,6 +100,19 @@ export class EntitySchema<Entity = any, Base = never, Class extends EntityCtor =
     }
   }
 
+  /**
+   * Checks if the given value is an EntitySchema instance, using duck-typing
+   * as a fallback when `instanceof` fails due to CJS/ESM dual-package hazard
+   * (e.g. when using `tsx` or `@swc-node/register` with `"type": "commonjs"` projects).
+   */
+  static isEntitySchema(item: unknown): item is EntitySchema {
+    if (item instanceof EntitySchema) {
+      return true;
+    }
+
+    return item != null && typeof item === 'object' && item.constructor?.name === 'EntitySchema' && 'meta' in item;
+  }
+
   static fromMetadata<T = AnyEntity, U = never>(
     meta: EntityMetadata<T> | DeepPartial<EntityMetadata<T>>,
   ): EntitySchema<T, U> {

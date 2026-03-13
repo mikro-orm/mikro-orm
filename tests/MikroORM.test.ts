@@ -1,6 +1,6 @@
 process.env.FORCE_COLOR = '0';
 
-import { MikroORM, NullCacheAdapter } from '@mikro-orm/core';
+import { EntitySchema, MikroORM, NullCacheAdapter } from '@mikro-orm/core';
 import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { BASE_DIR } from './helpers.js';
 import { Author, Test } from './entities/index.js';
@@ -403,6 +403,41 @@ describe('MikroORM', () => {
     expect(closed).toBe(0);
     await orm.close();
     expect(closed).toBe(2);
+  });
+
+  test('EntitySchema.isEntitySchema', () => {
+    const schema = new EntitySchema({ name: 'IsEntitySchemaTest', properties: {} });
+    // real instances pass via instanceof
+    expect(EntitySchema.isEntitySchema(schema)).toBe(true);
+    // duck-type fallback: object with matching constructor name and `meta` property
+    const fake = Object.create({ constructor: { name: 'EntitySchema' } });
+    Object.defineProperty(fake, 'meta', { value: {}, enumerable: true });
+    expect(EntitySchema.isEntitySchema(fake)).toBe(true);
+    // non-matching values
+    expect(EntitySchema.isEntitySchema(null)).toBe(false);
+    expect(EntitySchema.isEntitySchema(undefined)).toBe(false);
+    expect(EntitySchema.isEntitySchema({})).toBe(false);
+    expect(EntitySchema.isEntitySchema('string')).toBe(false);
+    expect(EntitySchema.isEntitySchema(42)).toBe(false);
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
+    expect(EntitySchema.isEntitySchema(() => {})).toBe(false);
+  });
+
+  test('folder based discover with CJS default wrapping', async () => {
+    const Author4Schema = (await import('./entities-schema/Author4.js')).Author4Schema;
+    const Author4 = (await import('./entities-schema/Author4.js')).Author4;
+
+    // simulate CJS module loaded via import() — named exports nested inside `default`
+    const spy = vi.spyOn(fs, 'dynamicImport').mockResolvedValueOnce({
+      default: { Author4Schema, Author4 },
+      'module.exports': { Author4Schema, Author4 },
+    });
+
+    const { discoverEntities } = await import('@mikro-orm/core/file-discovery');
+    const entities = [...(await discoverEntities(['entities-schema/Author4.ts'], { baseDir: BASE_DIR }))];
+    expect(entities).toHaveLength(1);
+    expect(entities[0]).toBe(Author4Schema);
+    spy.mockRestore();
   });
 
   test('not supported', async () => {

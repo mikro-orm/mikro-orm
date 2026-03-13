@@ -6,19 +6,6 @@ import { Utils } from '../utils/Utils.js';
 import { MetadataStorage } from './MetadataStorage.js';
 import { EntitySchema } from './EntitySchema.js';
 
-/**
- * Checks if the given value is an EntitySchema instance, using duck-typing
- * as a fallback when `instanceof` fails due to CJS/ESM dual-package hazard
- * (e.g. when using `tsx` with `"type": "commonjs"` projects).
- */
-function isEntitySchema(item: unknown): item is EntitySchema {
-  if (item instanceof EntitySchema) {
-    return true;
-  }
-
-  return item != null && typeof item === 'object' && item.constructor?.name === 'EntitySchema' && 'meta' in item;
-}
-
 async function getEntityClassOrSchema(
   filepath: string,
   allTargets: Map<Constructor | EntitySchema, string>,
@@ -39,7 +26,7 @@ async function getEntityClassOrSchema(
 
   // ignore class implementations that are linked from an EntitySchema
   for (const item of targets) {
-    if (isEntitySchema(item)) {
+    if (EntitySchema.isEntitySchema(item)) {
       for (const item2 of targets) {
         if (item.meta.class === item2) {
           targets.splice(targets.indexOf(item2), 1);
@@ -49,7 +36,8 @@ async function getEntityClassOrSchema(
   }
 
   for (const item of targets) {
-    const validTarget = isEntitySchema(item) || (item instanceof Function && MetadataStorage.isKnownEntity(item.name));
+    const validTarget =
+      EntitySchema.isEntitySchema(item) || (item instanceof Function && MetadataStorage.isKnownEntity(item.name));
 
     if (validTarget && !allTargets.has(item)) {
       allTargets.set(item, path);
