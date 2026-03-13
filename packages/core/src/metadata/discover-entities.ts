@@ -1,7 +1,7 @@
 import { basename } from 'node:path';
 import { fs } from '../utils/fs-utils.js';
 
-import { type Constructor, type Dictionary } from '../typings.js';
+import { type Constructor } from '../typings.js';
 import { Utils } from '../utils/Utils.js';
 import { MetadataStorage } from './MetadataStorage.js';
 import { EntitySchema } from './EntitySchema.js';
@@ -12,16 +12,7 @@ async function getEntityClassOrSchema(
   baseDir: string,
 ): Promise<void> {
   const path = fs.normalizePath(baseDir, filepath);
-  const raw = await fs.dynamicImport(path);
-
-  // CJS modules loaded via `import()` wrap named exports inside `default`.
-  // Merge them to the top level so they are discoverable.
-  const exports: Dictionary = { ...raw };
-
-  if (raw.default != null && typeof raw.default === 'object' && !Array.isArray(raw.default)) {
-    Object.assign(exports, raw.default);
-  }
-
+  const exports = await fs.dynamicImport(path);
   const targets = Object.values<Constructor | EntitySchema>(exports);
 
   // ignore class implementations that are linked from an EntitySchema

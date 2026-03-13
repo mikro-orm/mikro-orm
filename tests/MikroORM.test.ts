@@ -423,20 +423,33 @@ describe('MikroORM', () => {
     expect(EntitySchema.is(() => {})).toBe(false);
   });
 
-  test('folder based discover with CJS default wrapping', async () => {
+  test('folder based discover with duck-typed EntitySchema (CJS/ESM interop)', async () => {
     const Author4Schema = (await import('./entities-schema/Author4.js')).Author4Schema;
     const Author4 = (await import('./entities-schema/Author4.js')).Author4;
 
-    // simulate CJS module loaded via import() — named exports nested inside `default`
+    // simulate dual-package hazard: EntitySchema from a different module graph
+    // where instanceof fails but duck-typing succeeds (same class name, different identity)
+    const ForeignEntitySchema = {
+      EntitySchema: class EntitySchema {
+        get meta() {
+          return Author4Schema.meta;
+        }
+      },
+    };
+    const foreign = new ForeignEntitySchema.EntitySchema();
+
+    expect(foreign instanceof EntitySchema).toBe(false);
+    expect(EntitySchema.is(foreign)).toBe(true);
+
     const spy = vi.spyOn(fs, 'dynamicImport').mockResolvedValueOnce({
-      default: { Author4Schema, Author4 },
-      'module.exports': { Author4Schema, Author4 },
+      Author4Schema: foreign,
+      Author4,
     });
 
     const { discoverEntities } = await import('@mikro-orm/core/file-discovery');
     const entities = [...(await discoverEntities(['entities-schema/Author4.ts'], { baseDir: BASE_DIR }))];
     expect(entities).toHaveLength(1);
-    expect(entities[0]).toBe(Author4Schema);
+    expect(entities[0]).toBe(foreign);
     spy.mockRestore();
   });
 
