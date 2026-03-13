@@ -81,3 +81,17 @@ export const types = {
 } as const;
 
 export const t = types;
+
+/**
+ * Brand each built-in type constructor with its registry key via a cross-module symbol.
+ * Symbol.for() returns the same symbol across CJS/ESM module graphs, so this survives
+ * the dual-package hazard (e.g. when using tsx or @swc-node/register with "type": "commonjs").
+ * Using Object.defineProperty ensures the brand is an own (non-inherited) property,
+ * so subclasses (e.g. MyJsonType extends JsonType) won't be detected as built-in types.
+ */
+const ORM_TYPE = Symbol.for('@mikro-orm/type');
+for (const [key, type] of Object.entries(types)) {
+  Object.defineProperty(type, ORM_TYPE, { value: key, enumerable: false });
+}
+
+export { ORM_TYPE };
