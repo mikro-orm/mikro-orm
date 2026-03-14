@@ -1,10 +1,12 @@
-import { MikroORM, raw } from '@mikro-orm/core';
+import { MikroORM, OptionalProps, raw } from '@mikro-orm/core';
 import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../../helpers.js';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()
 class A {
+  [OptionalProps]?: 'foo1' | 'foo2' | 'foo3' | 'bar' | 'rawDefault' | 'version';
+
   @PrimaryKey()
   id!: number;
 
