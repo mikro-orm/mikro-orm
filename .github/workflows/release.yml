@@ -91,6 +91,7 @@ jobs:
         run: |
           yarn release:pin-versions
           yarn install --no-immutable
+          yarn format
           git add .
           git diff-index --quiet HEAD || git commit -m 'chore(release): update internal dependencies [skip ci]'
           git push
