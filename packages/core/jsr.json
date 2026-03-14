@@ -1,6 +1,6 @@
 {
   "name": "@mikro-orm/core",
-  "version": "7.0.1",
+  "version": "7.0.2",
   "exports": {
     ".": "./src/index.ts",
     "./file-discovery": "./src/metadata/discover-entities.ts",
@@ -9,10 +9,11 @@
     "./schema": "./src/utils/AbstractSchemaGenerator.ts",
     "./dataloader": "./src/utils/DataloaderUtils.ts"
   },
-  "imports": {
-    "dataloader": "npm:dataloader@2.2.3"
-  },
   "publish": {
-    "exclude": ["dist/", "node_modules/", "tests/"]
+    "exclude": [
+      "dist/",
+      "node_modules/",
+      "tests/"
+    ]
   }
 }

@@ -1,15 +1,19 @@
 {
   "name": "@mikro-orm/sqlite",
-  "version": "7.0.1",
+  "version": "7.0.2",
   "exports": {
     ".": "./src/index.ts"
   },
   "publish": {
-    "exclude": ["dist/", "node_modules/", "tests/"]
+    "exclude": [
+      "dist/",
+      "node_modules/",
+      "tests/"
+    ]
   },
   "imports": {
-    "@mikro-orm/sql": "jsr:@mikro-orm/sql@7.0.1",
+    "@mikro-orm/sql": "jsr:@mikro-orm/sql@7.0.2",
     "better-sqlite3": "npm:better-sqlite3@12.8.0",
-    "kysely": "jsr:@kysely/kysely@0.28.12"
+    "kysely": "npm:kysely@0.28.12"
   }
 }

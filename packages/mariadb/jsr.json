@@ -1,14 +1,18 @@
 {
   "name": "@mikro-orm/mariadb",
-  "version": "7.0.1",
+  "version": "7.0.2",
   "exports": {
     ".": "./src/index.ts"
   },
   "publish": {
-    "exclude": ["dist/", "node_modules/", "tests/"]
+    "exclude": [
+      "dist/",
+      "node_modules/",
+      "tests/"
+    ]
   },
   "imports": {
-    "@mikro-orm/mysql": "jsr:@mikro-orm/mysql@7.0.1",
-    "kysely": "jsr:@kysely/kysely@0.28.12"
+    "@mikro-orm/mysql": "jsr:@mikro-orm/mysql@7.0.2",
+    "kysely": "npm:kysely@0.28.12"
   }
 }
