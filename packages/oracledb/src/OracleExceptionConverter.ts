@@ -22,7 +22,7 @@ import {
 /** Converts Oracle native errors into typed MikroORM driver exceptions. */
 export class OracleExceptionConverter extends ExceptionConverter {
   /**
-   * {@link https://docs.oracle.com/cd/B28359_01/server.111/b28278/toc.htm}
+   * @see https://docs.oracle.com/cd/B28359_01/server.111/b28278/toc.htm
    */
   override convertException(exception: Error & Dictionary): DriverException {
     switch (exception.errorNum) {
