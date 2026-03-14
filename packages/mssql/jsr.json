@@ -9,7 +9,7 @@
   },
   "imports": {
     "@mikro-orm/sql": "jsr:@mikro-orm/sql@7.0.1",
-    "kysely": "jsr:@kysely/kysely@0.28.11",
+    "kysely": "jsr:@kysely/kysely@0.28.12",
     "tarn": "npm:tarn@3.0.2",
     "tedious": "npm:tedious@19.2.1",
     "tsqlstring": "npm:tsqlstring@1.0.1"

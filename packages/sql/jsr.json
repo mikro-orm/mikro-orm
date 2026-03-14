@@ -8,6 +8,6 @@
     "exclude": ["dist/", "node_modules/", "tests/"]
   },
   "imports": {
-    "kysely": "jsr:@kysely/kysely@0.28.11"
+    "kysely": "jsr:@kysely/kysely@0.28.12"
   }
 }
