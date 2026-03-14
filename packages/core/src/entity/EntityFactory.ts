@@ -425,6 +425,14 @@ export class EntityFactory {
       } else if (prop.default != null && !isRaw(prop.default) && entity[prop.name] == null) {
         entity[prop.name] = prop.default as EntityValue<T>;
       }
+
+      if (prop.kind === ReferenceKind.EMBEDDED && entity[prop.name]) {
+        const items = prop.array ? entity[prop.name] as T[] : [entity[prop.name] as T];
+
+        for (const item of items) {
+          this.assignDefaultValues(item, prop.targetMeta! as EntityMetadata<T>);
+        }
+      }
     }
   }
 

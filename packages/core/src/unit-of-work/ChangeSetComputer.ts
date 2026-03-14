@@ -130,8 +130,12 @@ export class ChangeSetComputer {
     }
 
     if (prop.kind === ReferenceKind.EMBEDDED && entity[prop.name]) {
-      for (const embeddedProp of prop.targetMeta!.hydrateProps) {
-        this.processPropertyInitializers(entity[prop.name] as T, embeddedProp, type, map, nested || prop.object);
+      const items = prop.array ? entity[prop.name] as T[] : [entity[prop.name] as T];
+
+      for (const item of items) {
+        for (const embeddedProp of prop.targetMeta!.hydrateProps) {
+          this.processPropertyInitializers(item, embeddedProp, type, map, nested || prop.object);
+        }
       }
     }
   }
