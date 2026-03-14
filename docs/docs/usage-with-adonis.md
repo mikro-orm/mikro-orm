@@ -20,7 +20,7 @@ npm install -D @mikro-orm/cli @mikro-orm/migrations @mikro-orm/seeder
 
 Create a MikroORM config file. This is used both by the application and the CLI (for migrations):
 
-```ts title="mikro-orm.config.ts"
+```ts title="config/mikro-orm.config.ts"
 import { defineConfig } from '@mikro-orm/sqlite'
 import { Migrator } from '@mikro-orm/migrations'
 import { SeedManager } from '@mikro-orm/seeder'
@@ -41,7 +41,10 @@ Add the CLI configuration to your `package.json`:
 {
   "mikro-orm": {
     "useTsNode": true,
-    "configPaths": ["./mikro-orm.config.ts"]
+    "configPaths": [
+      "./config/mikro-orm.config.ts",
+      "./build/config/mikro-orm.config.js"
+    ]
   }
 }
 ```
@@ -53,7 +56,7 @@ The service provider registers `MikroORM`, `EntityManager`, and repositories in 
 ```ts title="providers/mikro_orm_provider.ts"
 import { MikroORM, EntityManager } from '@mikro-orm/sqlite'
 import type { ApplicationService } from '@adonisjs/core/types'
-import config from '../mikro-orm.config.js'
+import config from '#config/mikro-orm.config'
 import { UserRepository } from '#repositories/user_repository'
 import { ArticleRepository } from '#repositories/article_repository'
 import { UserSchema } from '#entities/user'
