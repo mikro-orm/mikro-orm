@@ -9,10 +9,6 @@
     "reflect-metadata": "npm:reflect-metadata@0.2.2"
   },
   "publish": {
-    "exclude": [
-      "dist/",
-      "node_modules/",
-      "tests/"
-    ]
+    "exclude": ["dist/", "node_modules/", "tests/"]
   }
 }

@@ -5,11 +5,7 @@
     ".": "./src/index.ts"
   },
   "publish": {
-    "exclude": [
-      "dist/",
-      "node_modules/",
-      "tests/"
-    ]
+    "exclude": ["dist/", "node_modules/", "tests/"]
   },
   "imports": {
     "kysely": "npm:kysely@0.28.12"

@@ -5,15 +5,10 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ## [7.0.2](https://github.com/mikro-orm/mikro-orm/compare/v7.0.1...v7.0.2) (2026-03-14)
 
-
 ### Bug Fixes
 
-* **core:** use EntitySchema.is() instead of instanceof for CJS/ESM dual-package hazard ([#7289](https://github.com/mikro-orm/mikro-orm/issues/7289)) ([355301f](https://github.com/mikro-orm/mikro-orm/commit/355301f1b56c5aeb6092b53b0c8b7d7580f2f08e))
-* **decorators:** skip @oxc-project/runtime frames in decorator path lookup ([199ccd1](https://github.com/mikro-orm/mikro-orm/commit/199ccd1100128179a66bc844f9f65bff70bf4dab))
-
-
-
-
+- **core:** use EntitySchema.is() instead of instanceof for CJS/ESM dual-package hazard ([#7289](https://github.com/mikro-orm/mikro-orm/issues/7289)) ([355301f](https://github.com/mikro-orm/mikro-orm/commit/355301f1b56c5aeb6092b53b0c8b7d7580f2f08e))
+- **decorators:** skip @oxc-project/runtime frames in decorator path lookup ([199ccd1](https://github.com/mikro-orm/mikro-orm/commit/199ccd1100128179a66bc844f9f65bff70bf4dab))
 
 ## [7.0.1](https://github.com/mikro-orm/mikro-orm/compare/v7.0.0...v7.0.1) (2026-03-11)
 

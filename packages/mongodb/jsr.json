@@ -5,11 +5,7 @@
     ".": "./src/index.ts"
   },
   "publish": {
-    "exclude": [
-      "dist/",
-      "node_modules/",
-      "tests/"
-    ]
+    "exclude": ["dist/", "node_modules/", "tests/"]
   },
   "imports": {
     "mongodb": "npm:mongodb@7.1.0"
