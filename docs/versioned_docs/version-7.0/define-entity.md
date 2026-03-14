@@ -204,7 +204,7 @@ Both approaches accept functions (arrow functions, named functions, async functi
 >
   <TabItem value="define-entity-class">
 
-Pass method names as strings in the `hooks` property, then define the methods on the class:
+Use `addHook` after the class is defined for full type safety:
 
 ```ts
 const BookTagSchema = defineEntity({
@@ -216,29 +216,23 @@ const BookTagSchema = defineEntity({
     version: p.integer(),
     books: () => p.manyToMany(Book).mappedBy('tags'),
   },
-  // highlight-start
-  hooks: {
-    beforeCreate: ['initVersion'],
-    beforeUpdate: ['bumpVersion'],
-  },
-  // highlight-end
 });
 
-export class BookTag extends BookTagSchema.class {
-
-  // highlight-start
-  initVersion() {
-    this.version = 1;
-  }
-
-  bumpVersion() {
-    this.version++;
-  }
-  // highlight-end
-
-}
+export class BookTag extends BookTagSchema.class {}
 BookTagSchema.setClass(BookTag);
+
+// highlight-start
+BookTagSchema.addHook('beforeCreate', (args: EventArgs<BookTag>) => {
+  args.entity.version = 1;
+});
+
+BookTagSchema.addHook('beforeUpdate', (args: EventArgs<BookTag>) => {
+  args.entity.version++;
+});
+// highlight-end
 ```
+
+> You can also pass hooks inline via the `hooks` property, but `args.entity` will be typed as `any` there because the entity type is not yet known. Explicitly typing the parameter (e.g. `EventArgs<BookTag>`) won't work either, as it would create a circular reference. Use `addHook` after the class is defined to get full type safety.
 
   </TabItem>
 

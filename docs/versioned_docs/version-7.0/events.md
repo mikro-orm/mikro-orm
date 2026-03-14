@@ -42,10 +42,10 @@ Both approaches support the same events. Hooks are executed before subscribers.
 >
 <TabItem value="define-entity-class">
 
-With `defineEntity + class`, you can pass **method names** in the `hooks` property and define the actual methods on the class. This gives you full type safety via `this`:
+With `defineEntity + class`, use the `addHook` method to register hooks after the class is defined:
 
 ```ts title="./entities/Article.ts"
-import { defineEntity, p } from '@mikro-orm/core';
+import { defineEntity, type EventArgs, p } from '@mikro-orm/core';
 
 const ArticleSchema = defineEntity({
   name: 'Article',
@@ -55,33 +55,26 @@ const ArticleSchema = defineEntity({
     slug: p.string().unique(),
     updatedAt: p.datetime(),
   },
-  // highlight-start
-  hooks: {
-    beforeCreate: ['generateSlug'],
-    beforeUpdate: ['updateTimestamp'],
-  },
-  // highlight-end
 });
 
-export class Article extends ArticleSchema.class {
-
-  // highlight-start
-  generateSlug() {
-    if (!this.slug) {
-      this.slug = this.title.toLowerCase().replace(/\s+/g, '-');
-    }
-  }
-
-  updateTimestamp() {
-    this.updatedAt = new Date();
-  }
-  // highlight-end
-
-}
+export class Article extends ArticleSchema.class {}
 ArticleSchema.setClass(Article);
+
+// highlight-start
+ArticleSchema.addHook('beforeCreate', async (args: EventArgs<Article>) => {
+  const article = args.entity;
+  if (!article.slug) {
+    article.slug = article.title.toLowerCase().replace(/\s+/g, '-');
+  }
+});
+
+ArticleSchema.addHook('beforeUpdate', async (args: EventArgs<Article>) => {
+  args.entity.updatedAt = new Date();
+});
+// highlight-end
 ```
 
-You can also use `addHook` to register function handlers after the entity is defined, or pass function references directly in the `hooks` arrays alongside method names.
+> You can also pass hooks inline via the `hooks` property in the `defineEntity` call, but `args.entity` will be typed as `any` there because the entity type is not yet known. Explicitly typing the parameter (e.g. `EventArgs<Article>`) won't work either, as it would create a circular reference. Use `addHook` after the class is defined to get full type safety.
 
 </TabItem>
 <TabItem value="define-entity">
