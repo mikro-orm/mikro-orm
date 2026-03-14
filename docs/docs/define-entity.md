@@ -187,7 +187,12 @@ export type IBookTag = InferEntity<typeof BookTag>;
 
 ## Hooks example
 
-Entity hooks can be defined either as a property name, or as a function. When defined as a function, the `this` argument will be the entity instance. Arrow functions can be used if desired, and the entity will be available at args.entity. See [Events and Lifecycle Hooks](./events.md) section for more details on `EventArgs`.
+Hooks can be registered in two ways:
+
+- **`hooks` property** — pass an object with arrays of hook handlers directly in the `defineEntity` call.
+- **`addHook` method** — register hook handlers after the entity is defined.
+
+Both approaches accept functions (arrow functions, named functions, async functions). The entity instance is available via `args.entity`. See [Events and Lifecycle Hooks](./events.md) for the full list of available hooks and `EventArgs` details.
 
 <Tabs
   groupId="entity-schema-hooks"
@@ -199,50 +204,68 @@ Entity hooks can be defined either as a property name, or as a function. When de
 >
   <TabItem value="define-entity-class">
 
-```ts
-// Defined outside, this available via args.
-const beforeUpdate = (args: EventArgs) => args.entity.version++;
+Use `addHook` after the class is defined for full type safety:
 
+```ts
 const BookTagSchema = defineEntity({
   name: 'BookTag',
   properties: {
     _id: p.type(ObjectId).primary(),
     id: p.string().serializedPrimaryKey(),
     name: p.string(),
+    version: p.integer(),
     books: () => p.manyToMany(Book).mappedBy('tags'),
-  },
-  hooks: {
-    beforeUpdate: [beforeUpdate],
   },
 });
 
 export class BookTag extends BookTagSchema.class {}
 BookTagSchema.setClass(BookTag);
+
+// highlight-start
+BookTagSchema.addHook('beforeCreate', (args: EventArgs<BookTag>) => {
+  args.entity.version = 1;
+});
+
+BookTagSchema.addHook('beforeUpdate', (args: EventArgs<BookTag>) => {
+  args.entity.version++;
+});
+// highlight-end
 ```
+
+> You can also pass hooks inline via the `hooks` property, but `args.entity` will be typed as `any` there because the entity type is not yet known. Explicitly typing the parameter (e.g. `EventArgs<BookTag>`) won't work either, as it would create a circular reference. Use `addHook` after the class is defined to get full type safety.
 
   </TabItem>
 
   <TabItem value="define-entity">
 
-```ts
-// Defined outside, this available via args.
-const beforeUpdate = (args: EventArgs) => args.entity.version++;
+Use `addHook` after the entity is defined for full type safety:
 
+```ts
 export const BookTag = defineEntity({
   name: 'BookTag',
   properties: {
     _id: p.type(ObjectId).primary(),
     id: p.string().serializedPrimaryKey(),
     name: p.string(),
+    version: p.integer(),
     books: () => p.manyToMany(Book).mappedBy('tags'),
-  },
-  hooks: {
-    beforeUpdate: [beforeUpdate],
   },
 });
 
 export type IBookTag = InferEntity<typeof BookTag>;
+
+// highlight-start
+BookTag.addHook('beforeCreate', (args: EventArgs<IBookTag>) => {
+  args.entity.version = 1;
+});
+
+BookTag.addHook('beforeUpdate', (args: EventArgs<IBookTag>) => {
+  args.entity.version++;
+});
+// highlight-end
 ```
+
+> You can also pass hooks inline via the `hooks` property, but `args.entity` will be typed as `any` there because the entity type is not yet known. Explicitly typing the parameter (e.g. `EventArgs<IBookTag>`) won't work either, as it would create a circular reference. Use `addHook` after the entity and its type alias are defined to get full type safety.
 
   </TabItem>
 </Tabs>

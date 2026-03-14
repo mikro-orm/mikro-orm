@@ -30,16 +30,59 @@ Both approaches support the same events. Hooks are executed before subscribers.
 
 ## Defining Hooks
 
-<Tabs groupId="entity-def" defaultValue="define-entity" values={[
-  {label: 'defineEntity', value: 'define-entity'},
-  {label: 'Decorators', value: 'decorators'},
-]}>
-<TabItem value="define-entity">
+<Tabs
+  groupId="entity-def"
+  defaultValue="define-entity-class"
+  values={[
+    {label: 'defineEntity + class', value: 'define-entity-class'},
+    {label: 'defineEntity', value: 'define-entity'},
+    {label: 'reflect-metadata', value: 'reflect-metadata'},
+    {label: 'ts-morph', value: 'ts-morph'},
+  ]}
+>
+<TabItem value="define-entity-class">
 
-With `defineEntity`, use the `addHook` method to register hook handlers:
+With `defineEntity + class`, use the `addHook` method to register hooks after the class is defined:
 
 ```ts title="./entities/Article.ts"
-import { defineEntity, InferEntity, EventArgs, p } from '@mikro-orm/core';
+import { defineEntity, type EventArgs, p } from '@mikro-orm/core';
+
+const ArticleSchema = defineEntity({
+  name: 'Article',
+  properties: {
+    id: p.integer().primary(),
+    title: p.string(),
+    slug: p.string().unique(),
+    updatedAt: p.datetime(),
+  },
+});
+
+export class Article extends ArticleSchema.class {}
+ArticleSchema.setClass(Article);
+
+// highlight-start
+ArticleSchema.addHook('beforeCreate', async (args: EventArgs<Article>) => {
+  const article = args.entity;
+  if (!article.slug) {
+    article.slug = article.title.toLowerCase().replace(/\s+/g, '-');
+  }
+});
+
+ArticleSchema.addHook('beforeUpdate', async (args: EventArgs<Article>) => {
+  args.entity.updatedAt = new Date();
+});
+// highlight-end
+```
+
+> You can also pass hooks inline via the `hooks` property in the `defineEntity` call, but `args.entity` will be typed as `any` there because the entity type is not yet known. Explicitly typing the parameter (e.g. `EventArgs<Article>`) won't work either, as it would create a circular reference. Use `addHook` after the class is defined to get full type safety.
+
+</TabItem>
+<TabItem value="define-entity">
+
+With `defineEntity` (no class), use the `addHook` method to register hooks after the entity is defined:
+
+```ts title="./entities/Article.ts"
+import { defineEntity, type InferEntity, type EventArgs, p } from '@mikro-orm/core';
 
 export const Article = defineEntity({
   name: 'Article',
@@ -51,8 +94,9 @@ export const Article = defineEntity({
   },
 });
 
-type IArticle = InferEntity<typeof Article>;
+export type IArticle = InferEntity<typeof Article>;
 
+// highlight-start
 Article.addHook('beforeCreate', async (args: EventArgs<IArticle>) => {
   const article = args.entity;
   if (!article.slug) {
@@ -63,14 +107,15 @@ Article.addHook('beforeCreate', async (args: EventArgs<IArticle>) => {
 Article.addHook('beforeUpdate', async (args: EventArgs<IArticle>) => {
   args.entity.updatedAt = new Date();
 });
+// highlight-end
 ```
 
-The `addHook` method must be called after the entity is defined so that the `IArticle` type can be inferred from `typeof Article`.
+> You can also pass hooks inline via the `hooks` property in the `defineEntity` call, but `args.entity` will be typed as `any` there because the entity type is not yet known. Explicitly typing the parameter (e.g. `EventArgs<IArticle>`) won't work either, as it would create a circular reference. Use `addHook` after the entity and its type alias are defined to get full type safety.
 
 </TabItem>
-<TabItem value="decorators">
+<TabItem value="reflect-metadata">
 
-With decorators, mark entity methods with hook decorators:
+With decorators, mark entity methods with hook decorators like `@BeforeCreate()`, `@BeforeUpdate()`, etc.:
 
 ```ts title="./entities/Article.ts"
 import { Entity, PrimaryKey, Property, BeforeCreate, BeforeUpdate } from '@mikro-orm/core';
@@ -105,7 +150,47 @@ export class Article {
 }
 ```
 
-Multiple methods can have the same hook decorator.
+Multiple methods can have the same hook decorator. Inside hook methods, `this` refers to the entity instance.
+
+</TabItem>
+<TabItem value="ts-morph">
+
+With decorators, mark entity methods with hook decorators like `@BeforeCreate()`, `@BeforeUpdate()`, etc.:
+
+```ts title="./entities/Article.ts"
+import { Entity, PrimaryKey, Property, BeforeCreate, BeforeUpdate } from '@mikro-orm/core';
+
+@Entity()
+export class Article {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property()
+  title!: string;
+
+  @Property({ unique: true })
+  slug!: string;
+
+  @Property()
+  updatedAt?: Date;
+
+  @BeforeCreate()
+  generateSlug() {
+    if (!this.slug) {
+      this.slug = this.title.toLowerCase().replace(/\s+/g, '-');
+    }
+  }
+
+  @BeforeUpdate()
+  updateTimestamp() {
+    this.updatedAt = new Date();
+  }
+
+}
+```
+
+Multiple methods can have the same hook decorator. Inside hook methods, `this` refers to the entity instance.
 
 </TabItem>
 </Tabs>
