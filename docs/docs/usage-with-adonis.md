@@ -117,7 +117,7 @@ export default defineConfig({
 
 ## RequestContext Middleware
 
-The most critical part of the integration is the [RequestContext](./identity-map.md#requestcontext-helper-for-di-containers) middleware. It ensures each HTTP request gets its own identity map, preventing entity state from leaking between requests:
+The most critical part of the integration is the [RequestContext](./identity-map.md#request-context) middleware. It ensures each HTTP request gets its own identity map, preventing entity state from leaking between requests:
 
 ```ts title="app/middleware/mikro_orm_middleware.ts"
 import { RequestContext } from '@mikro-orm/core'
