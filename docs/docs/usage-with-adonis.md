@@ -91,8 +91,9 @@ export default class MikroOrmProvider {
 
   async boot() {
     const orm = await this.app.container.make(MikroORM)
-    // run pending migrations on startup (or use schema.update() for development)
-    await orm.migrator.up()
+    // for simplicity, we use `schema.update()` to auto-create/update tables.
+    // in production, use `orm.migrator.up()` with proper migrations instead
+    await orm.schema.update()
   }
 
   async shutdown() {
@@ -219,6 +220,45 @@ export const ArticleSchema = defineEntity({
 export type IArticle = InferEntity<typeof ArticleSchema>
 ```
 
+### Adding Methods and Hooks
+
+To add custom methods to an entity, extend the generated class via `setClass`. Lifecycle hooks are added via `addHook`:
+
+```ts title="app/entities/user.ts"
+import { defineEntity, type EventArgs, p } from '@mikro-orm/core'
+import { hash, verify } from 'argon2'
+import { BaseSchema } from '#entities/base'
+
+export const UserSchema = defineEntity({
+  name: 'User',
+  extends: BaseSchema,
+  properties: {
+    fullName: p.string(),
+    email: p.string(),
+    password: p.string().hidden().lazy(),
+  },
+})
+
+export class User extends UserSchema.class {
+  async verifyPassword(password: string) {
+    return verify(this.password, password)
+  }
+}
+
+UserSchema.setClass(User)
+
+async function hashPassword(args: EventArgs<User>) {
+  const password = args.changeSet?.payload.password
+
+  if (typeof password === 'string') {
+    args.entity.password = await hash(password)
+  }
+}
+
+UserSchema.addHook('beforeCreate', hashPassword)
+UserSchema.addHook('beforeUpdate', hashPassword)
+```
+
 ## Using in Controllers
 
 Controllers inject `EntityManager` and repositories directly via `@inject()`. The `RequestContext` middleware ensures the injected `EntityManager` resolves to the correct request-scoped fork automatically:
@@ -250,7 +290,8 @@ export default class ArticlesController {
   }
 
   async store(ctx: HttpContext) {
-    const article = this.articleRepo.create(ctx.request.body())
+    const { title, text } = ctx.request.body()
+    const article = this.articleRepo.create({ title, text })
     await this.em.flush()
     return article
   }
@@ -282,6 +323,7 @@ import { inject } from '@adonisjs/core'
 import type { HttpContext } from '@adonisjs/core/http'
 import type { NextFn } from '@adonisjs/core/types/http'
 import { UserRepository } from '#repositories/user_repository'
+import { verifyJwt } from '#services/jwt'
 
 @inject()
 export default class AuthMiddleware {
@@ -293,7 +335,7 @@ export default class AuthMiddleware {
     if (header?.startsWith('Bearer ')) {
       const token = header.slice(7)
       try {
-        const payload = verifyJwt(token) // your JWT verification
+        const payload = verifyJwt(token)
         ctx.user = await this.userRepo.findOneOrFail(payload.id)
       } catch {
         // ignore invalid tokens
