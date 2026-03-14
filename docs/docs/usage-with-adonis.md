@@ -133,10 +133,8 @@ import type { NextFn } from '@adonisjs/core/types/http'
 export default class MikroOrmMiddleware {
   constructor(protected orm: MikroORM) {}
 
-  async handle(_ctx: HttpContext, next: NextFn) {
-    await RequestContext.create(this.orm.em, async () => {
-      await next()
-    })
+  handle(_ctx: HttpContext, next: NextFn) {
+    return RequestContext.create(this.orm.em, () => next())
   }
 }
 ```
