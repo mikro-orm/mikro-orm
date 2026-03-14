@@ -6,6 +6,7 @@ import {
   type DriverException,
 } from '@mikro-orm/core';
 
+/** Converts MongoDB native errors into typed MikroORM driver exceptions. */
 export class MongoExceptionConverter extends ExceptionConverter {
   /**
    * @see https://gist.github.com/rluvaton/a97a8da46ab6541a3e5702e83b9d357b

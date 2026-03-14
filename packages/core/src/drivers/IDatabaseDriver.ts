@@ -38,20 +38,27 @@ import type { MikroORM } from '../MikroORM.js';
 import type { LoggingOptions, LogContext } from '../logging/Logger.js';
 import type { Raw } from '../utils/RawQueryFragment.js';
 
+/** Symbol used to extract the EntityManager type from a driver instance. */
 export const EntityManagerType = Symbol('EntityManagerType');
 
+/** Interface defining the contract for all database drivers. */
 export interface IDatabaseDriver<C extends Connection = Connection> {
   [EntityManagerType]: EntityManager<this>;
   readonly config: Configuration;
 
+  /** Creates a new EntityManager instance for this driver. */
   createEntityManager(useContext?: boolean): this[typeof EntityManagerType];
 
+  /** Opens a connection to the database. */
   connect(options?: { skipOnConnect?: boolean }): Promise<C>;
 
+  /** Closes the database connection. */
   close(force?: boolean): Promise<void>;
 
+  /** Closes and re-establishes the database connection. */
   reconnect(options?: { skipOnConnect?: boolean }): Promise<C>;
 
+  /** Returns the underlying database connection (write or read replica). */
   getConnection(type?: ConnectionType): C;
 
   /**
@@ -72,24 +79,28 @@ export interface IDatabaseDriver<C extends Connection = Connection> {
     options?: FindOneOptions<T, P, F, E>,
   ): Promise<EntityData<T> | null>;
 
+  /** Finds entities backed by a virtual (expression-based) definition. */
   findVirtual<T extends object>(
     entityName: EntityName<T>,
     where: FilterQuery<T>,
     options: FindOptions<T, any, any, any>,
   ): Promise<EntityData<T>[]>;
 
+  /** Returns an async iterator that streams query results one entity at a time. */
   stream<T extends object>(
     entityName: EntityName<T>,
     where: FilterQuery<T>,
     options: StreamOptions<T>,
   ): AsyncIterableIterator<T>;
 
+  /** Inserts a single row into the database. */
   nativeInsert<T extends object>(
     entityName: EntityName<T>,
     data: EntityDictionary<T>,
     options?: NativeInsertUpdateOptions<T>,
   ): Promise<QueryResult<T>>;
 
+  /** Inserts multiple rows into the database in a single batch operation. */
   nativeInsertMany<T extends object>(
     entityName: EntityName<T>,
     data: EntityDictionary<T>[],
@@ -97,6 +108,7 @@ export interface IDatabaseDriver<C extends Connection = Connection> {
     transform?: (sql: string) => string,
   ): Promise<QueryResult<T>>;
 
+  /** Updates rows matching the given condition. */
   nativeUpdate<T extends object>(
     entityName: EntityName<T>,
     where: FilterQuery<T>,
@@ -104,6 +116,7 @@ export interface IDatabaseDriver<C extends Connection = Connection> {
     options?: NativeInsertUpdateOptions<T>,
   ): Promise<QueryResult<T>>;
 
+  /** Updates multiple rows with different payloads in a single batch operation. */
   nativeUpdateMany<T extends object>(
     entityName: EntityName<T>,
     where: FilterQuery<T>[],
@@ -111,25 +124,30 @@ export interface IDatabaseDriver<C extends Connection = Connection> {
     options?: NativeInsertUpdateManyOptions<T>,
   ): Promise<QueryResult<T>>;
 
+  /** Deletes rows matching the given condition. */
   nativeDelete<T extends object>(
     entityName: EntityName<T>,
     where: FilterQuery<T>,
     options?: NativeDeleteOptions<T>,
   ): Promise<QueryResult<T>>;
 
+  /** Persists changes to M:N collections (inserts/deletes pivot table rows). */
   syncCollections<T extends object, O extends object>(
     collections: Iterable<Collection<T, O>>,
     options?: DriverMethodOptions,
   ): Promise<void>;
 
+  /** Counts entities matching the given condition. */
   count<T extends object, P extends string = never>(
     entityName: EntityName<T>,
     where: FilterQuery<T>,
     options?: CountOptions<T, P>,
   ): Promise<number>;
 
+  /** Executes a MongoDB aggregation pipeline (MongoDB driver only). */
   aggregate(entityName: EntityName, pipeline: any[]): Promise<any[]>;
 
+  /** Maps raw database result to entity data, converting column names to property names. */
   mapResult<T extends object>(
     result: EntityDictionary<T>,
     meta: EntityMetadata<T>,
@@ -149,10 +167,13 @@ export interface IDatabaseDriver<C extends Connection = Connection> {
     pivotJoin?: boolean,
   ): Promise<Dictionary<T[]>>;
 
+  /** Returns the database platform abstraction for this driver. */
   getPlatform(): Platform;
 
+  /** Sets the metadata storage used by this driver. */
   setMetadata(metadata: MetadataStorage): void;
 
+  /** Returns the metadata storage used by this driver. */
   getMetadata(): MetadataStorage;
 
   /**
@@ -161,6 +182,7 @@ export interface IDatabaseDriver<C extends Connection = Connection> {
    */
   getDependencies(): string[];
 
+  /** Acquires a pessimistic lock on the given entity. */
   lockPessimistic<T extends object>(entity: T, options: LockOptions): Promise<void>;
 
   /**
@@ -179,13 +201,16 @@ export interface IDatabaseDriver<C extends Connection = Connection> {
   getORMClass(): Constructor<MikroORM>;
 }
 
+/** Represents a field selector for entity queries (property name or wildcard). */
 export type EntityField<T, P extends string = PopulatePath.ALL> =
   | keyof T
   | PopulatePath.ALL
   | AutoPath<T, P, `${PopulatePath.ALL}`>;
 
+/** Defines the ordering for query results, either a single order map or an array of them. */
 export type OrderDefinition<T> = (QueryOrderMap<T> & { 0?: never }) | QueryOrderMap<T>[];
 
+/** Options for `em.findAll()`, extends FindOptions with an optional `where` clause. */
 export interface FindAllOptions<
   T,
   P extends string = never,
@@ -195,6 +220,7 @@ export interface FindAllOptions<
   where?: FilterQuery<T>;
 }
 
+/** Options for streaming query results via `em.stream()`. */
 export interface StreamOptions<
   Entity,
   Populate extends string = never,
@@ -216,8 +242,10 @@ export interface StreamOptions<
   mergeResults?: boolean;
 }
 
+/** Configuration for enabling/disabling named filters on a query. */
 export type FilterOptions = Dictionary<boolean | Dictionary> | string[] | boolean;
 
+/** Specifies which relations to populate and which fields to select or exclude. */
 export interface LoadHint<
   Entity,
   Hint extends string = never,
@@ -229,6 +257,7 @@ export interface LoadHint<
   exclude?: readonly AutoPath<Entity, Excludes>[];
 }
 
+/** Options for `em.find()` queries, including population, ordering, pagination, and locking. */
 export interface FindOptions<
   Entity,
   Hint extends string = never,
@@ -345,6 +374,7 @@ export interface FindOptions<
   em?: EntityManager;
 }
 
+/** Options for cursor-based pagination via `em.findByCursor()`. */
 export interface FindByCursorOptions<
   T extends object,
   P extends string = never,
@@ -355,6 +385,7 @@ export interface FindByCursorOptions<
   includeCount?: I;
 }
 
+/** Options for `em.findOne()`, extends FindOptions with optimistic lock version support. */
 export interface FindOneOptions<
   T,
   P extends string = never,
@@ -365,6 +396,7 @@ export interface FindOneOptions<
   lockVersion?: number | Date;
 }
 
+/** Options for `em.findOneOrFail()`, adds a custom error handler for missing entities. */
 export interface FindOneOrFailOptions<
   T extends object,
   P extends string = never,
@@ -375,6 +407,7 @@ export interface FindOneOrFailOptions<
   strict?: boolean;
 }
 
+/** Options for native insert and update operations. */
 export interface NativeInsertUpdateOptions<T> {
   convertCustomTypes?: boolean;
   ctx?: Transaction;
@@ -391,10 +424,12 @@ export interface NativeInsertUpdateOptions<T> {
   em?: EntityManager;
 }
 
+/** Options for batch native insert and update operations. */
 export interface NativeInsertUpdateManyOptions<T> extends NativeInsertUpdateOptions<T> {
   processCollections?: boolean;
 }
 
+/** Options for `em.upsert()`, controlling conflict resolution behavior. */
 export interface UpsertOptions<Entity, Fields extends string = never> extends Omit<
   NativeInsertUpdateOptions<Entity>,
   'upsert'
@@ -407,10 +442,12 @@ export interface UpsertOptions<Entity, Fields extends string = never> extends Om
   disableIdentityMap?: boolean;
 }
 
+/** Options for `em.upsertMany()`, adds batch size control. */
 export interface UpsertManyOptions<Entity, Fields extends string = never> extends UpsertOptions<Entity, Fields> {
   batchSize?: number;
 }
 
+/** Options for `em.count()` queries. */
 export interface CountOptions<T extends object, P extends string = never> {
   filters?: FilterOptions;
   schema?: string;
@@ -443,6 +480,7 @@ export interface CountOptions<T extends object, P extends string = never> {
   em?: EntityManager;
 }
 
+/** Options for `em.qb().update()` operations. */
 export interface UpdateOptions<T> {
   filters?: FilterOptions;
   schema?: string;
@@ -453,6 +491,7 @@ export interface UpdateOptions<T> {
   unionWhereStrategy?: 'union-all' | 'union';
 }
 
+/** Options for `em.qb().delete()` operations. */
 export interface DeleteOptions<T> extends DriverMethodOptions {
   filters?: FilterOptions;
   /** sql only */
@@ -463,6 +502,7 @@ export interface DeleteOptions<T> extends DriverMethodOptions {
   em?: EntityManager;
 }
 
+/** Options for `em.nativeDelete()` operations. */
 export interface NativeDeleteOptions<T> extends DriverMethodOptions {
   filters?: FilterOptions;
   /** sql only */
@@ -473,6 +513,7 @@ export interface NativeDeleteOptions<T> extends DriverMethodOptions {
   em?: EntityManager;
 }
 
+/** Options for pessimistic and optimistic lock operations. */
 export interface LockOptions extends DriverMethodOptions {
   lockMode?: LockMode;
   lockVersion?: number | Date;
@@ -480,12 +521,14 @@ export interface LockOptions extends DriverMethodOptions {
   logging?: LoggingOptions;
 }
 
+/** Base options shared by all driver methods (transaction context, schema, logging). */
 export interface DriverMethodOptions {
   ctx?: Transaction;
   schema?: string;
   loggerContext?: LogContext;
 }
 
+/** MongoDB-style collation options for locale-aware string comparison. */
 export interface CollationOptions {
   locale: string;
   caseLevel?: boolean;
@@ -497,6 +540,7 @@ export interface CollationOptions {
   backwards?: boolean;
 }
 
+/** Options for `em.getReference()`, controlling wrapping and type conversion. */
 export interface GetReferenceOptions {
   wrapped?: boolean;
   convertCustomTypes?: boolean;

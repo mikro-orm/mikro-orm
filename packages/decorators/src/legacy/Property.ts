@@ -1,6 +1,7 @@
 import { Utils, ReferenceKind, type EntityProperty, type EntityKey, type PropertyOptions } from '@mikro-orm/core';
 import { validateSingleDecorator, getMetadataFromDecorator } from '../utils.js';
 
+/** Defines a scalar property on an entity (legacy TypeScript decorator). */
 export function Property<T extends object>(
   options: PropertyOptions<T> = {},
 ): (target: T, propertyName: string) => void {

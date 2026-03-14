@@ -9,6 +9,7 @@ import {
 } from '@mikro-orm/core';
 import { prepareMetadataContext, processDecoratorParameters } from '../utils.js';
 
+/** Defines a many-to-many relationship (TC39 decorator). */
 export function ManyToMany<Target extends object, Owner extends object>(
   entity?: ManyToManyOptions<Owner, Target> | string | (() => EntityName<Target>),
   mappedBy?: (string & keyof Target) | ((e: Target) => any),

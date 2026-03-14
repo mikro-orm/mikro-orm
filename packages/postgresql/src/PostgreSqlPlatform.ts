@@ -4,6 +4,7 @@ import parseDate from 'postgres-date';
 import PostgresInterval, { type IPostgresInterval } from 'postgres-interval';
 import { BasePostgreSqlPlatform, Utils } from '@mikro-orm/sql';
 
+/** Platform implementation for PostgreSQL. */
 export class PostgreSqlPlatform extends BasePostgreSqlPlatform {
   override convertIntervalToJSValue(value: string): unknown {
     return PostgresInterval(value);

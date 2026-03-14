@@ -2,6 +2,7 @@ import { Type } from './Type.js';
 import type { Platform } from '../platforms/Platform.js';
 import type { EntityProperty } from '../typings.js';
 
+/** Maps a database BLOB/BYTEA column to a JS `Uint8Array`. */
 export class Uint8ArrayType extends Type<Uint8Array | null> {
   override convertToDatabaseValue(value: Uint8Array): Buffer {
     if (!value) {

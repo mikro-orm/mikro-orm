@@ -6,6 +6,7 @@ import {
 } from '@mikro-orm/core';
 import type { AbstractSqlDriver } from '@mikro-orm/sql';
 
+/** Base class for generating migration source files from schema diffs. */
 export abstract class MigrationGenerator implements IMigrationGenerator {
   constructor(
     protected readonly driver: AbstractSqlDriver,

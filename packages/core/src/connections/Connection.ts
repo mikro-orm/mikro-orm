@@ -7,6 +7,7 @@ import type { Platform } from '../platforms/Platform.js';
 import type { TransactionEventBroadcaster } from '../events/TransactionEventBroadcaster.js';
 import type { IsolationLevel } from '../enums.js';
 
+/** Abstract base class for database connections, providing transaction and query execution support. */
 export abstract class Connection {
   protected metadata!: MetadataStorage;
   protected platform!: Platform;
@@ -107,6 +108,7 @@ export abstract class Connection {
     }
   }
 
+  /** Executes a callback inside a transaction, committing on success and rolling back on failure. */
   async transactional<T>(
     cb: (trx: Transaction) => Promise<T>,
     options?: {
@@ -120,6 +122,7 @@ export abstract class Connection {
     throw new Error(`Transactions are not supported by current driver`);
   }
 
+  /** Begins a new database transaction and returns the transaction context. */
   async begin(options?: {
     isolationLevel?: IsolationLevel | `${IsolationLevel}`;
     readOnly?: boolean;
@@ -130,6 +133,7 @@ export abstract class Connection {
     throw new Error(`Transactions are not supported by current driver`);
   }
 
+  /** Commits the given transaction. */
   async commit(
     ctx: Transaction,
     eventBroadcaster?: TransactionEventBroadcaster,
@@ -138,6 +142,7 @@ export abstract class Connection {
     throw new Error(`Transactions are not supported by current driver`);
   }
 
+  /** Rolls back the given transaction. */
   async rollback(
     ctx: Transaction,
     eventBroadcaster?: TransactionEventBroadcaster,
@@ -146,6 +151,7 @@ export abstract class Connection {
     throw new Error(`Transactions are not supported by current driver`);
   }
 
+  /** Executes a raw query and returns the result. */
   abstract execute<T>(
     query: string,
     params?: any[],
@@ -153,6 +159,7 @@ export abstract class Connection {
     ctx?: Transaction,
   ): Promise<QueryResult<T> | any | any[]>;
 
+  /** Parses and returns the resolved connection configuration (host, port, user, etc.). */
   getConnectionOptions(): ConnectionConfig {
     const ret: ConnectionConfig = {};
 
@@ -182,14 +189,17 @@ export abstract class Connection {
     return ret;
   }
 
+  /** Sets the metadata storage on this connection. */
   setMetadata(metadata: MetadataStorage): void {
     this.metadata = metadata;
   }
 
+  /** Sets the platform abstraction on this connection. */
   setPlatform(platform: Platform): void {
     this.platform = platform;
   }
 
+  /** Returns the platform abstraction for this connection. */
   getPlatform(): Platform {
     return this.platform;
   }
@@ -241,6 +251,7 @@ export abstract class Connection {
   }
 }
 
+/** Result of a native database query (insert, update, delete). */
 export interface QueryResult<T = { id: number }> {
   affectedRows: number;
   insertId: Primary<T>;
@@ -249,6 +260,7 @@ export interface QueryResult<T = { id: number }> {
   insertedIds?: Primary<T>[];
 }
 
+/** Resolved database connection parameters. */
 export interface ConnectionConfig {
   host?: string;
   port?: number;
@@ -258,4 +270,5 @@ export interface ConnectionConfig {
   schema?: string;
 }
 
+/** Opaque transaction context type, wrapping the driver-specific transaction object. */
 export type Transaction<T = any> = T & {};

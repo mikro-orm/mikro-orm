@@ -1,3 +1,4 @@
+/** Type of SQL query to be generated. */
 export enum QueryType {
   TRUNCATE = 'TRUNCATE',
   SELECT = 'SELECT',
@@ -11,6 +12,7 @@ export enum QueryType {
 /** Operators that apply to the embedded array column itself, not to individual elements. */
 export const EMBEDDABLE_ARRAY_OPS = ['$contains', '$contained', '$overlap'];
 
+/** Type of SQL JOIN clause. */
 export enum JoinType {
   leftJoin = 'left join',
   innerJoin = 'inner join',

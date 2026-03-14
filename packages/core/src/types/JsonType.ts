@@ -2,6 +2,7 @@ import { Type, type TransformContext } from './Type.js';
 import type { Platform } from '../platforms/Platform.js';
 import type { EntityMetadata, EntityProperty } from '../typings.js';
 
+/** Maps a database JSON/JSONB column to a JS object, handling serialization and deserialization. */
 export class JsonType extends Type<unknown, string | null> {
   override convertToDatabaseValue(value: unknown, platform: Platform, context?: TransformContext): string | null {
     if (value == null) {

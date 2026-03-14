@@ -19,15 +19,19 @@ import { helper } from './wrap.js';
 import type { FindOneOptions } from '../drivers/IDatabaseDriver.js';
 import type { PopulatePath } from '../enums.js';
 
+/** Base class for entities providing convenience methods like `assign()`, `toObject()`, and `populate()`. */
 export abstract class BaseEntity {
+  /** Returns whether the entity has been fully loaded from the database. */
   isInitialized(): boolean {
     return helper(this).__initialized;
   }
 
+  /** Marks the entity as populated or not for serialization purposes. */
   populated(populated = true): void {
     helper(this).populated(populated);
   }
 
+  /** Loads the specified relations on this entity. */
   async populate<Entity extends this = this, Hint extends string = never, Fields extends string = never>(
     populate: AutoPath<Entity, Hint, PopulatePath.ALL>[] | false,
     options: EntityLoaderOptions<Entity, Fields> = {},
@@ -35,6 +39,7 @@ export abstract class BaseEntity {
     return helper(this as Entity).populate(populate, options);
   }
 
+  /** Returns a Reference wrapper for this entity. */
   toReference<Entity extends this = this>(): Ref<Entity> & LoadedReference<Loaded<Entity, AddEager<Entity>>> {
     return Reference.create(this) as unknown as Ref<Entity> & LoadedReference<Loaded<Entity, AddEager<Entity>>>;
   }
@@ -109,10 +114,12 @@ export abstract class BaseEntity {
     return helper(this as Entity).toObject(ignoreFields!);
   }
 
+  /** Converts the entity to a plain object, including all properties regardless of serialization rules. */
   toPOJO<Entity extends this = this>(): EntityDTO<Entity> {
     return helper(this as Entity).toPOJO();
   }
 
+  /** Serializes the entity with control over which relations and fields to include or exclude. */
   serialize<
     Entity extends this = this,
     Naked extends FromEntityType<Entity> = FromEntityType<Entity>,
@@ -122,6 +129,7 @@ export abstract class BaseEntity {
     return EntitySerializer.serialize(this as unknown as Naked, options);
   }
 
+  /** Assigns the given data to this entity, updating its properties and relations. */
   assign<
     Entity extends this,
     Naked extends FromEntityType<Entity> = FromEntityType<Entity>,
@@ -136,6 +144,7 @@ export abstract class BaseEntity {
     return EntityAssigner.assign(this as Entity, data as any, options) as any;
   }
 
+  /** Initializes (refreshes) the entity by reloading it from the database. Returns null if not found. */
   init<
     Entity extends this = this,
     Hint extends string = never,
@@ -145,10 +154,12 @@ export abstract class BaseEntity {
     return helper(this as Entity).init(options);
   }
 
+  /** Returns the database schema this entity belongs to. */
   getSchema(): string | undefined {
     return helper(this).getSchema();
   }
 
+  /** Sets the database schema for this entity. */
   setSchema(schema?: string): void {
     helper(this).setSchema(schema);
   }

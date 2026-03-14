@@ -2,6 +2,7 @@ import type { Logger, LoggerNamespace, LogContext, LoggerOptions } from './Logge
 import { colors } from './colors.js';
 import type { Highlighter } from '../typings.js';
 
+/** Default logger implementation with colored output, query formatting, and namespace-based filtering. */
 export class DefaultLogger implements Logger {
   debugMode: boolean | LoggerNamespace[];
   readonly writer: (message: string) => void;
@@ -62,6 +63,7 @@ export class DefaultLogger implements Logger {
     this.debugMode = debugMode;
   }
 
+  /** Checks whether logging is enabled for the given namespace, considering context overrides. */
   isEnabled(namespace: LoggerNamespace, context?: LogContext): boolean {
     if (context?.enabled !== undefined) {
       return context.enabled;
@@ -113,6 +115,7 @@ export class DefaultLogger implements Logger {
     return this.log(namespace, msg, context);
   }
 
+  /** Factory method for creating a new DefaultLogger instance. */
   static create(this: void, options: LoggerOptions): DefaultLogger {
     return new DefaultLogger(options);
   }

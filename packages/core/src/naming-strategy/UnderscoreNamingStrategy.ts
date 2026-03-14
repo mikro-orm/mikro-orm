@@ -1,5 +1,6 @@
 import { AbstractNamingStrategy } from './AbstractNamingStrategy.js';
 
+/** Naming strategy that converts camelCase names to snake_case for table and column names. */
 export class UnderscoreNamingStrategy extends AbstractNamingStrategy {
   classToTableName(entityName: string, tableName?: string): string {
     return tableName ?? this.underscore(entityName);

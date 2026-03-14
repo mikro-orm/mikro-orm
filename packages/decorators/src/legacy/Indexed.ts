@@ -16,12 +16,14 @@ function createDecorator<T extends object>(options: IndexOptions<T> | UniqueOpti
   };
 }
 
+/** Defines a database index on a property or entity class (legacy TypeScript decorator). */
 export function Index<T extends object, H extends string>(
   options: IndexOptions<T, H> = {},
 ): (target: T, propertyName?: T extends EntityClass<unknown> ? undefined : keyof T) => any {
   return createDecorator(options, false);
 }
 
+/** Defines a unique constraint on a property or entity class (legacy TypeScript decorator). */
 export function Unique<T extends object, H extends string>(
   options: UniqueOptions<T, H> = {},
 ): (target: T, propertyName?: T extends EntityClass<unknown> ? undefined : keyof T) => any {

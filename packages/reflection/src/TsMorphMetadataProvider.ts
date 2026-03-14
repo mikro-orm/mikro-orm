@@ -23,6 +23,7 @@ import {
 } from '@mikro-orm/core';
 import { fs } from '@mikro-orm/core/fs-utils';
 
+/** Metadata provider that uses ts-morph to infer property types from TypeScript source files or declaration files. */
 export class TsMorphMetadataProvider extends MetadataProvider {
   private project!: Project;
   private sources!: SourceFile[];

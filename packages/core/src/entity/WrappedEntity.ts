@@ -38,6 +38,7 @@ import { expandDotPaths } from './utils.js';
 import type { Platform } from '../platforms/Platform.js';
 import type { Configuration } from '../utils/Configuration.js';
 
+/** @internal Wrapper attached to every managed entity, holding ORM state such as initialization flags, identity map references, and change tracking snapshots. */
 export class WrappedEntity<Entity extends object> {
   declare __initialized: boolean;
   declare __populated?: boolean;
@@ -92,18 +93,22 @@ export class WrappedEntity<Entity extends object> {
     this.__processing = false;
   }
 
+  /** Returns whether the entity has been fully loaded from the database. */
   isInitialized(): boolean {
     return this.__initialized;
   }
 
+  /** Returns whether the entity is managed by an EntityManager (tracked in the identity map). */
   isManaged(): boolean {
     return !!this.__managed;
   }
 
+  /** Marks the entity as populated or not for serialization purposes. */
   populated(populated: boolean | undefined = true): void {
     this.__populated = populated;
   }
 
+  /** Sets the serialization context with populate hints, field selections, and exclusions. */
   setSerializationContext<Hint extends string = never, Fields extends string = '*', Exclude extends string = never>(
     options: LoadHint<Entity, Hint, Fields, Exclude>,
   ): void {
@@ -122,30 +127,36 @@ export class WrappedEntity<Entity extends object> {
     }
   }
 
+  /** Returns a Reference wrapper for this entity, creating one if it does not already exist. */
   toReference(): Ref<Entity> & LoadedReference<Loaded<Entity, AddEager<Entity>>> {
     this.__reference ??= new Reference(this.entity);
     return this.__reference as Ref<Entity> & LoadedReference<Loaded<Entity, AddEager<Entity>>>;
   }
 
+  /** Converts the entity to a plain object representation, optionally excluding specified fields. */
   toObject<Ignored extends EntityKey<Entity> = never>(ignoreFields?: Ignored[]): Omit<EntityDTO<Entity>, Ignored> {
     return EntityTransformer.toObject(this.entity, ignoreFields);
   }
 
+  /** Serializes the entity with control over which relations and fields to include or exclude. */
   serialize<Hint extends string = never, Exclude extends string = never>(
     options?: SerializeOptions<Entity, Hint, Exclude>,
   ): SerializeDTO<Entity, Hint, Exclude> {
     return EntitySerializer.serialize(this.entity, options);
   }
 
+  /** Converts the entity to a plain object, including all properties regardless of serialization rules. */
   toPOJO(): EntityDTO<Entity> {
     return EntityTransformer.toObject(this.entity, [], true) as EntityDTO<Entity>;
   }
 
+  /** Serializes the entity using its `toJSON` method (supports `JSON.stringify`). */
   toJSON(...args: any[]): EntityDictionary<Entity> {
     // toJSON methods is added to the prototype during discovery to support automatic serialization via JSON.stringify()
     return (this.entity as Dictionary).toJSON(...args);
   }
 
+  /** Assigns the given data to this entity, updating its properties and relations. */
   assign<
     Naked extends FromEntityType<Entity> = FromEntityType<Entity>,
     Convert extends boolean = false,
@@ -163,6 +174,7 @@ export class WrappedEntity<Entity extends object> {
     return EntityAssigner.assign(this.entity, data as any, options) as any;
   }
 
+  /** Initializes (refreshes) the entity by reloading it from the database. Returns null if not found. */
   async init<Hint extends string = never, Fields extends string = '*', Excludes extends string = never>(
     options?: FindOneOptions<Entity, Hint, Fields, Excludes>,
   ): Promise<Loaded<Entity, Hint, Fields, Excludes> | null> {
@@ -177,6 +189,7 @@ export class WrappedEntity<Entity extends object> {
     });
   }
 
+  /** Loads the specified relations on this entity. */
   async populate<Hint extends string = never, Fields extends string = never>(
     populate: AutoPath<Entity, Hint, PopulatePath.ALL>[] | false,
     options: EntityLoaderOptions<Entity, Fields> = {},
@@ -191,11 +204,13 @@ export class WrappedEntity<Entity extends object> {
     return this.entity as Loaded<Entity, Hint>;
   }
 
+  /** Returns whether this entity has a primary key value set. */
   hasPrimaryKey(): boolean {
     const pk = this.getPrimaryKey();
     return pk != null;
   }
 
+  /** Returns the primary key value, optionally converting custom types to their database representation. */
   getPrimaryKey(convertCustomTypes = false): Primary<Entity> | null {
     const prop = this.__meta.getPrimaryProps()[0];
 
@@ -223,7 +238,8 @@ export class WrappedEntity<Entity extends object> {
     return this.__pk ?? this.pkGetter!(this.entity);
   }
 
-  // this method is currently used only in `Driver.syncCollection` and can be probably removed
+  /** Returns all primary key values as an array. Used internally for composite key handling. */
+  // TODO: currently used only in `Driver.syncCollection` — candidate for removal
   getPrimaryKeys(convertCustomTypes = false): Primary<Entity>[] | null {
     const pk = this.getPrimaryKey(convertCustomTypes);
 
@@ -249,19 +265,23 @@ export class WrappedEntity<Entity extends object> {
     return [pk];
   }
 
+  /** Returns the database schema this entity belongs to. */
   getSchema(): string | undefined {
     return this.__schema;
   }
 
+  /** Sets the database schema for this entity. */
   setSchema(schema?: string): void {
     this.__schema = schema;
   }
 
+  /** Sets the primary key value on the entity. */
   setPrimaryKey(id: Primary<Entity> | null) {
     this.entity[this.__meta.primaryKeys[0]] = id as EntityValue<Entity>;
     this.__pk = id!;
   }
 
+  /** Returns the primary key serialized as a string suitable for identity map lookups. */
   getSerializedPrimaryKey(): string {
     return this.pkSerializer!(this.entity);
   }

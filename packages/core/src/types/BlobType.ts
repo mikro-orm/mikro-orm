@@ -2,6 +2,7 @@ import { Uint8ArrayType } from './Uint8ArrayType.js';
 import type { Platform } from '../platforms/Platform.js';
 import type { EntityProperty } from '../typings.js';
 
+/** Maps a database BLOB/BYTEA column to a Node.js `Buffer`. */
 export class BlobType extends Uint8ArrayType {
   override convertToJSValue(value: Buffer): Buffer | null {
     if ((value as unknown) instanceof Buffer || !value) {

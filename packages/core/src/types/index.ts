@@ -53,6 +53,7 @@ export {
   CharacterType,
 };
 
+/** Registry of all built-in type constructors, keyed by their short name (e.g., `types.integer`, `types.uuid`). */
 export const types = {
   date: DateType,
   time: TimeType,
@@ -80,6 +81,7 @@ export const types = {
   unknown: UnknownType,
 } as const;
 
+/** Shorthand alias for the `types` registry. */
 export const t = types;
 
 /**

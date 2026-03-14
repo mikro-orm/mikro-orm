@@ -40,6 +40,7 @@ import { ValidationError } from '../errors.js';
 import { Utils } from '../utils/Utils.js';
 import type { Cursor } from '../utils/Cursor.js';
 
+/** Repository class providing a type-safe API for querying and persisting a specific entity type. */
 export class EntityRepository<Entity extends object> {
   constructor(
     protected readonly em: EntityManager,
@@ -403,6 +404,7 @@ export class EntityRepository<Entity extends object> {
     return this.getEntityManager().count<Entity, Hint>(this.entityName, where as any, options);
   }
 
+  /** Returns the entity class name associated with this repository. */
   getEntityName(): string {
     return Utils.className(this.entityName);
   }

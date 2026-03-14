@@ -1,5 +1,6 @@
 import type { SyncCacheAdapter } from './CacheAdapter.js';
 
+/** No-op cache adapter that never stores or returns any data. Used to disable caching. */
 export class NullCacheAdapter implements SyncCacheAdapter {
   /**
    * @inheritDoc

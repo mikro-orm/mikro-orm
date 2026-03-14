@@ -45,6 +45,7 @@ import { PolymorphicRef } from '../entity/PolymorphicRef.js';
 import { JsonType } from '../types/JsonType.js';
 import { MikroORM } from '../MikroORM.js';
 
+/** Abstract base class for all database drivers, implementing common driver logic. */
 export abstract class DatabaseDriver<C extends Connection> implements IDatabaseDriver<C> {
   [EntityManagerType]!: EntityManager<this>;
 
@@ -112,6 +113,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
     options?: CountOptions<T, P>,
   ): Promise<number>;
 
+  /** Creates a new EntityManager instance bound to this driver. */
   createEntityManager(useContext?: boolean): this[typeof EntityManagerType] {
     const EntityManagerClass = this.config.get('entityManager', EntityManager);
     return new EntityManagerClass(this.config, this, this.metadata, useContext);
@@ -179,6 +181,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
     }
   }
 
+  /** Maps raw database result to entity data, converting column names to property names. */
   mapResult<T extends object>(
     result: EntityDictionary<T>,
     meta?: EntityMetadata<T>,
@@ -191,6 +194,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
     return this.comparator.mapResult<T>(meta, result);
   }
 
+  /** Opens the primary connection and all read replicas. */
   async connect(options?: { skipOnConnect?: boolean }): Promise<C> {
     await this.connection.connect(options);
     await Promise.all(this.replicas.map(replica => replica.connect() as Promise<void>));
@@ -198,6 +202,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
     return this.connection;
   }
 
+  /** Closes all connections and re-establishes them. */
   async reconnect(options?: { skipOnConnect?: boolean }): Promise<C> {
     await this.close(true);
     await this.connect(options);
@@ -205,6 +210,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
     return this.connection;
   }
 
+  /** Returns the write connection or a random read replica. */
   getConnection(type: ConnectionType = 'write'): C {
     if (type === 'write' || this.replicas.length === 0) {
       return this.connection;
@@ -215,15 +221,18 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
     return this.replicas[rand];
   }
 
+  /** Closes the primary connection and all read replicas. */
   async close(force?: boolean): Promise<void> {
     await Promise.all(this.replicas.map(replica => replica.close(force)));
     await this.connection.close(force);
   }
 
+  /** Returns the database platform abstraction for this driver. */
   getPlatform(): Platform {
     return this.platform;
   }
 
+  /** Sets the metadata storage and initializes the comparator for all connections. */
   setMetadata(metadata: MetadataStorage): void {
     this.metadata = metadata;
     this.comparator = new EntityComparator(this.metadata, this.platform);
@@ -235,10 +244,12 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
     });
   }
 
+  /** Returns the metadata storage used by this driver. */
   getMetadata(): MetadataStorage {
     return this.metadata;
   }
 
+  /** Returns the names of native database dependencies required by this driver. */
   getDependencies(): string[] {
     return this.dependencies;
   }
@@ -675,6 +686,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
     return ret;
   }
 
+  /** Acquires a pessimistic lock on the given entity. */
   async lockPessimistic<T extends object>(entity: T, options: LockOptions): Promise<void> {
     throw new Error(`Pessimistic locks are not supported by ${this.constructor.name} driver`);
   }

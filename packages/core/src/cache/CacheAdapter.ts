@@ -1,3 +1,4 @@
+/** Interface for async-capable cache storage used by result cache and metadata cache. */
 export interface CacheAdapter {
   /**
    * Gets the items under `name` key from the cache.
@@ -25,6 +26,7 @@ export interface CacheAdapter {
   close?(): void | Promise<void>;
 }
 
+/** Synchronous variant of CacheAdapter, used for metadata cache where async access is not needed. */
 export interface SyncCacheAdapter extends CacheAdapter {
   /**
    * Gets the items under `name` key from the cache.

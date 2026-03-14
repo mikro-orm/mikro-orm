@@ -11,6 +11,7 @@ import {
   type DriverException,
 } from '@mikro-orm/core';
 
+/** Converts MSSQL native errors into typed MikroORM driver exceptions. */
 export class MsSqlExceptionConverter extends ExceptionConverter {
   /**
    * @see https://docs.microsoft.com/en-us/sql/relational-databases/errors-events/mssqlserver-511-database-engine-error?view=sql-server-ver15

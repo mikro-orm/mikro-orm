@@ -7,6 +7,7 @@ import {
 } from '@mikro-orm/core';
 import { getMetadataFromDecorator } from '../utils.js';
 
+/** Defines a computed SQL formula property on an entity (legacy TypeScript decorator). */
 export function Formula<T extends object>(
   formula: string | FormulaCallback<T>,
   options: PropertyOptions<T> = {},

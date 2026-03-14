@@ -14,6 +14,7 @@ import {
 import type { OracleSchemaHelper } from './OracleSchemaHelper.js';
 import type { OracleConnection } from './OracleConnection.js';
 
+/** Schema generator with Oracle-specific behavior for multi-schema support and privilege management. */
 export class OracleSchemaGenerator extends SchemaGenerator {
   declare protected helper: OracleSchemaHelper;
   declare protected connection: OracleConnection;

@@ -2,6 +2,7 @@ import type { Platform, EntityProperty } from '@mikro-orm/core';
 
 import { UnicodeStringType } from './UnicodeStringType.js';
 
+/** Custom type for MSSQL nchar (fixed-length Unicode character) columns. */
 export class UnicodeCharacterType extends UnicodeStringType {
   override getColumnType(prop: EntityProperty, platform: Platform) {
     const length = prop.length === -1 ? 'max' : (prop.length ?? this.getDefaultLength(platform));

@@ -2,6 +2,7 @@ import { Type } from './Type.js';
 import type { Platform } from '../platforms/Platform.js';
 import type { EntityProperty } from '../typings.js';
 
+/** Maps a database INTEGER/INT column to a JS `number`. */
 export class IntegerType extends Type<number | null | undefined, number | null | undefined> {
   override getColumnType(prop: EntityProperty, platform: Platform): string {
     return platform.getIntegerTypeDeclarationSQL(prop);

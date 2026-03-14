@@ -3,6 +3,7 @@ import { helper } from '../entity/wrap.js';
 import { Utils } from '../utils/Utils.js';
 import { inspect } from '../logging/inspect.js';
 
+/** Represents a pending change (create, update, or delete) for a single entity. */
 export class ChangeSet<T extends object> {
   private primaryKey?: Primary<T> | null;
   private serializedPrimaryKey?: string;
@@ -18,6 +19,7 @@ export class ChangeSet<T extends object> {
     this.schema = helper(entity).__schema ?? meta.root.schema;
   }
 
+  /** Returns the primary key of the entity, optionally as an object for composite keys. */
   getPrimaryKey(object = false): Primary<T> | null {
     if (!this.originalEntity) {
       this.primaryKey ??= helper(this.entity).getPrimaryKey(true);
@@ -45,6 +47,7 @@ export class ChangeSet<T extends object> {
     return this.primaryKey ?? null;
   }
 
+  /** Returns the serialized (string) form of the primary key. */
   getSerializedPrimaryKey(): string | null {
     this.serializedPrimaryKey ??= helper(this.entity).getSerializedPrimaryKey();
     return this.serializedPrimaryKey;
@@ -76,6 +79,7 @@ export interface ChangeSet<T> {
   tptChangeSets?: ChangeSet<T>[];
 }
 
+/** Enumeration of change set operation types. */
 export enum ChangeSetType {
   CREATE = 'create',
   UPDATE = 'update',

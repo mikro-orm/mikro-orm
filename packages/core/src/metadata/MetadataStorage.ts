@@ -12,6 +12,7 @@ function getGlobalStorage(namespace: string): Dictionary {
   return globalThis[key];
 }
 
+/** Registry that stores and provides access to entity metadata by class, name, or id. */
 export class MetadataStorage {
   static readonly PATH_SYMBOL = Symbol.for('@mikro-orm/core/MetadataStorage.PATH_SYMBOL');
 
@@ -33,6 +34,7 @@ export class MetadataStorage {
     }
   }
 
+  /** Returns the global metadata dictionary, or a specific entry by entity name and path. */
   static getMetadata(): Dictionary<EntityMetadata>;
   static getMetadata<T = any>(entity: string, path: string): EntityMetadata<T>;
   static getMetadata<T = any>(entity?: string, path?: string): Dictionary<EntityMetadata> | EntityMetadata<T> {
@@ -49,18 +51,22 @@ export class MetadataStorage {
     return MetadataStorage.#metadata;
   }
 
+  /** Checks whether an entity with the given class name exists in the global metadata. */
   static isKnownEntity(name: string): boolean {
     return !!Object.values(this.#metadata).find(meta => meta.className === name);
   }
 
+  /** Clears all entries from the global metadata registry. */
   static clear(): void {
     Object.keys(this.#metadata).forEach(k => delete this.#metadata[k]);
   }
 
+  /** Returns the map of all registered entity metadata. */
   getAll(): Map<EntityName, EntityMetadata> {
     return this.#metadataMap;
   }
 
+  /** Returns metadata for the given entity, optionally initializing it if not found. */
   get<T = any>(entityName: EntityName<T>, init = false): EntityMetadata<T> {
     const exists = this.find(entityName);
 
@@ -80,6 +86,7 @@ export class MetadataStorage {
     return meta;
   }
 
+  /** Finds metadata for the given entity, returning undefined if not registered. */
   find<T = any>(entityName: EntityName<T>): EntityMetadata<T> | undefined {
     if (!entityName) {
       return;
@@ -98,10 +105,12 @@ export class MetadataStorage {
     return this.#classNameMap[Utils.className(entityName)];
   }
 
+  /** Checks whether metadata exists for the given entity. */
   has<T>(entityName: EntityName<T>): boolean {
     return this.#metadataMap.has(entityName);
   }
 
+  /** Registers metadata for the given entity. */
   set<T>(entityName: EntityName<T>, meta: EntityMetadata): EntityMetadata {
     this.#metadataMap.set(entityName, meta);
     this.#idMap[meta._id] = meta;
@@ -111,6 +120,7 @@ export class MetadataStorage {
     return meta;
   }
 
+  /** Removes metadata for the given entity from all internal maps. */
   reset<T>(entityName: EntityName<T>): void {
     const meta = this.find(entityName);
 
@@ -122,6 +132,7 @@ export class MetadataStorage {
     }
   }
 
+  /** Decorates all entity prototypes with helper methods (e.g. init, toJSON). */
   decorate(em: EntityManager): void {
     [...this.#metadataMap.values()].filter(meta => meta.prototype).forEach(meta => EntityHelper.decorate(meta, em));
   }
@@ -132,10 +143,12 @@ export class MetadataStorage {
     }
   }
 
+  /** Returns metadata by its internal numeric id. */
   getById<T>(id: number): EntityMetadata<T> {
     return this.#idMap[id];
   }
 
+  /** Returns metadata by class name, optionally throwing if not found. */
   getByClassName<T = any, V extends boolean = true>(
     className: string,
     validate = true as V,
@@ -143,6 +156,7 @@ export class MetadataStorage {
     return this.validate(this.#classNameMap[className], className, validate);
   }
 
+  /** Returns metadata by unique name, optionally throwing if not found. */
   getByUniqueName<T = any, V extends boolean = true>(
     uniqueName: string,
     validate = true as V,

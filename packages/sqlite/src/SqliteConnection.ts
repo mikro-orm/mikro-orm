@@ -2,6 +2,7 @@ import { BaseSqliteConnection, type Dictionary } from '@mikro-orm/sql';
 import { type Dialect, SqliteDialect } from 'kysely';
 import Database from 'better-sqlite3';
 
+/** SQLite database connection using the `better-sqlite3` driver. */
 export class SqliteConnection extends BaseSqliteConnection {
   private database!: Database.Database;
 

@@ -13,6 +13,7 @@ import { AbstractSchemaGenerator } from '@mikro-orm/core/schema';
 import type { MongoDriver } from './MongoDriver.js';
 import type { MongoEntityManager } from './MongoEntityManager.js';
 
+/** Schema generator for MongoDB that manages collections and indexes. */
 export class MongoSchemaGenerator extends AbstractSchemaGenerator<MongoDriver> {
   static register(orm: MikroORM): void {
     orm.config.registerExtension(
@@ -301,6 +302,7 @@ export interface MongoCreateSchemaOptions extends CreateSchemaOptions {
   ensureIndexes?: boolean;
 }
 
+/** Options for the `ensureIndexes()` method of `MongoSchemaGenerator`. */
 export interface EnsureIndexesOptions {
   ensureCollections?: boolean;
   retry?: boolean | string[];

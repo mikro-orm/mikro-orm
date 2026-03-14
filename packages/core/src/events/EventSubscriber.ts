@@ -4,6 +4,7 @@ import type { UnitOfWork } from '../unit-of-work/UnitOfWork.js';
 import type { ChangeSet } from '../unit-of-work/ChangeSet.js';
 import type { Transaction } from '../connections/Connection.js';
 
+/** Arguments passed to entity lifecycle event hooks. */
 export interface EventArgs<T> {
   entity: T;
   em: EntityManager;
@@ -11,15 +12,18 @@ export interface EventArgs<T> {
   changeSet?: ChangeSet<T & {}>;
 }
 
+/** Arguments passed to flush lifecycle event hooks (beforeFlush, onFlush, afterFlush). */
 export interface FlushEventArgs extends Omit<EventArgs<any>, 'entity' | 'changeSet' | 'meta'> {
   uow: UnitOfWork;
 }
 
+/** Arguments passed to transaction lifecycle event hooks (start, commit, rollback). */
 export interface TransactionEventArgs extends Omit<EventArgs<any>, 'entity' | 'meta' | 'changeSet'> {
   transaction?: Transaction & { savepointName?: string };
   uow?: UnitOfWork;
 }
 
+/** Interface for subscribing to entity and transaction lifecycle events. */
 export interface EventSubscriber<T = any> {
   getSubscribedEntities?(): EntityName<T>[];
   onInit?(args: EventArgs<T>): void;

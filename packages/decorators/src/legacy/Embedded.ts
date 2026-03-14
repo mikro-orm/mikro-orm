@@ -9,6 +9,7 @@ import {
 } from '@mikro-orm/core';
 import { validateSingleDecorator, getMetadataFromDecorator } from '../utils.js';
 
+/** Defines an embedded property on an entity (legacy TypeScript decorator). */
 export function Embedded<Owner extends object, Target>(
   type: EmbeddedOptions<Owner, Target> | (() => EntityName<Target> | EntityName[]) = {},
   options: EmbeddedOptions<Owner, Target> = {},

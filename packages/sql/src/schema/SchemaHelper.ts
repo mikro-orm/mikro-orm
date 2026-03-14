@@ -5,9 +5,11 @@ import type { CheckDef, Column, ForeignKey, IndexDef, Table, TableDifference } f
 import type { DatabaseSchema } from './DatabaseSchema.js';
 import type { DatabaseTable } from './DatabaseTable.js';
 
+/** Base class for database-specific schema helpers. Provides SQL generation for DDL operations. */
 export abstract class SchemaHelper {
   constructor(protected readonly platform: AbstractSqlPlatform) {}
 
+  /** Returns SQL to prepend to schema migration scripts (e.g., disabling FK checks). */
   getSchemaBeginning(_charset: string, disableForeignKeys?: boolean): string {
     if (disableForeignKeys) {
       return `${this.disableForeignKeysSQL()}\n`;
@@ -16,14 +18,17 @@ export abstract class SchemaHelper {
     return '';
   }
 
+  /** Returns SQL to disable foreign key checks. */
   disableForeignKeysSQL(): string {
     return '';
   }
 
+  /** Returns SQL to re-enable foreign key checks. */
   enableForeignKeysSQL(): string {
     return '';
   }
 
+  /** Returns SQL to append to schema migration scripts (e.g., re-enabling FK checks). */
   getSchemaEnd(disableForeignKeys?: boolean): string {
     if (disableForeignKeys) {
       return `${this.enableForeignKeysSQL()}\n`;
@@ -90,6 +95,7 @@ export abstract class SchemaHelper {
     throw new Error('Not supported by given driver');
   }
 
+  /** Loads table metadata (columns, indexes, foreign keys) from the database information schema. */
   abstract loadInformationSchema(
     schema: DatabaseSchema,
     connection: AbstractSqlConnection,
@@ -97,10 +103,12 @@ export abstract class SchemaHelper {
     schemas?: string[],
   ): Promise<void>;
 
+  /** Returns the SQL query to list all tables in the database. */
   getListTablesSQL(): string {
     throw new Error('Not supported by given driver');
   }
 
+  /** Retrieves all tables from the database. */
   async getAllTables(connection: AbstractSqlConnection, schemas?: string[]): Promise<Table[]> {
     return connection.execute<Table[]>(this.getListTablesSQL());
   }
@@ -113,6 +121,7 @@ export abstract class SchemaHelper {
     throw new Error('Not supported by given driver');
   }
 
+  /** Returns SQL to rename a column in a table. */
   getRenameColumnSQL(tableName: string, oldColumnName: string, to: Column, schemaName?: string): string {
     tableName = this.quote(tableName);
     oldColumnName = this.quote(oldColumnName);
@@ -124,6 +133,7 @@ export abstract class SchemaHelper {
     return `alter table ${tableReference} rename column ${oldColumnName} to ${columnName}`;
   }
 
+  /** Returns SQL to create an index on a table. */
   getCreateIndexSQL(tableName: string, index: IndexDef): string {
     /* v8 ignore next */
     if (index.expression) {
@@ -202,6 +212,7 @@ export abstract class SchemaHelper {
     return index.columnNames.map(c => this.quote(c)).join(', ');
   }
 
+  /** Returns SQL to drop an index. */
   getDropIndexSQL(tableName: string, index: IndexDef): string {
     return `drop index ${this.quote(index.keyName)}`;
   }
@@ -213,6 +224,7 @@ export abstract class SchemaHelper {
     ];
   }
 
+  /** Returns SQL statements to apply a table difference (add/drop/alter columns, indexes, foreign keys). */
   alterTable(diff: TableDifference, safe?: boolean): string[] {
     const ret: string[] = [];
     const [schemaName, tableName] = this.splitTableName(diff.name);
@@ -355,6 +367,7 @@ export abstract class SchemaHelper {
     return ret;
   }
 
+  /** Returns SQL to add columns to an existing table. */
   getAddColumnsSQL(table: DatabaseTable, columns: Column[]): string[] {
     const adds = columns
       .map(column => {
@@ -633,6 +646,7 @@ export abstract class SchemaHelper {
     }
   }
 
+  /** Returns SQL statements to create a table with all its columns, primary key, indexes, and checks. */
   createTable(table: DatabaseTable, alter?: boolean): string[] {
     let sql = `create table ${table.getQuotedName()} (`;
 
@@ -685,6 +699,7 @@ export abstract class SchemaHelper {
     return `alter table ${table.getQuotedName()} comment = ${this.platform.quoteValue(comment ?? '')}`;
   }
 
+  /** Returns SQL to create a foreign key constraint on a table. */
   createForeignKey(table: DatabaseTable, foreignKey: ForeignKey, alterTable = true, inline = false): string {
     if (!this.options.createForeignKeyConstraints) {
       return '';
@@ -829,6 +844,7 @@ export abstract class SchemaHelper {
     return `alter table ${this.quote(table)} drop constraint ${this.quote(name)}`;
   }
 
+  /** Returns SQL to drop a table if it exists. */
   dropTableIfExists(name: string, schema?: string): string {
     let sql = `drop table if exists ${this.quote(this.getTableName(name, schema))}`;
 

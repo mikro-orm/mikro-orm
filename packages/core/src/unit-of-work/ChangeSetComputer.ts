@@ -14,6 +14,7 @@ import type { Platform } from '../platforms/Platform.js';
 import { ReferenceKind } from '../enums.js';
 import type { EntityManager } from '../EntityManager.js';
 
+/** @internal Computes change sets by comparing entity state against original snapshots. */
 export class ChangeSetComputer {
   readonly #comparator: EntityComparator;
   readonly #metadata: MetadataStorage;
@@ -32,6 +33,7 @@ export class ChangeSetComputer {
     this.#comparator = this.#config.getComparator(this.#metadata);
   }
 
+  /** Computes a change set for the given entity by diffing against its original state. */
   computeChangeSet<T extends object>(entity: T): ChangeSet<T> | null {
     const meta = this.#metadata.get((entity as AnyEntity).constructor);
 

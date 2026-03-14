@@ -25,6 +25,7 @@ import { UnicodeCharacterType } from './UnicodeCharacterType.js';
 import { UnicodeString, UnicodeStringType } from './UnicodeStringType.js';
 import type { MsSqlDriver } from './MsSqlDriver.js';
 
+/** Platform implementation for Microsoft SQL Server. */
 export class MsSqlPlatform extends AbstractSqlPlatform {
   protected override readonly schemaHelper: MsSqlSchemaHelper = new MsSqlSchemaHelper(this);
   protected override readonly exceptionConverter: MsSqlExceptionConverter = new MsSqlExceptionConverter();

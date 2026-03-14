@@ -25,12 +25,17 @@ import type { EntityLoaderOptions } from './EntityLoader.js';
 import { QueryHelper } from '../utils/QueryHelper.js';
 import { inspect } from '../logging/inspect.js';
 
+/** Options for the `Collection.matching()` method to query a subset of collection items from the database. */
 export interface MatchingOptions<T extends object, P extends string = never> extends FindOptions<T, P> {
+  /** Additional filtering conditions for the query. */
   where?: FilterQuery<T>;
+  /** Whether to store the matched items in the collection (makes it read-only). */
   store?: boolean;
+  /** Transaction context for the query. */
   ctx?: Transaction;
 }
 
+/** Represents a to-many relation (1:m or m:n) as an iterable, managed collection of entities. */
 export class Collection<T extends object, O extends object = object> {
   [k: number]: T;
 
@@ -148,6 +153,7 @@ export class Collection<T extends object, O extends object = object> {
     return count;
   }
 
+  /** Queries a subset of the collection items from the database with custom filtering, ordering, and pagination. */
   async matching<TT extends T, P extends string = never>(options: MatchingOptions<T, P>): Promise<Loaded<TT, P>[]> {
     const em = this.getEntityManager()!;
     const { where, ctx, ...opts } = options;
@@ -197,6 +203,7 @@ export class Collection<T extends object, O extends object = object> {
     return [...this.#items];
   }
 
+  /** Serializes the collection items to plain JSON objects. Returns an empty array if not initialized. */
   toJSON<TT extends T>(): EntityDTO<TT>[] {
     if (!this.isInitialized()) {
       return [];
@@ -205,6 +212,7 @@ export class Collection<T extends object, O extends object = object> {
     return this.toArray();
   }
 
+  /** Adds one or more items to the collection, propagating the change to the inverse side. Returns the number of items added. */
   add<TT extends T>(
     entity: TT | Reference<TT> | Iterable<TT | Reference<TT>>,
     ...entities: (TT | Reference<TT>)[]
@@ -297,6 +305,7 @@ export class Collection<T extends object, O extends object = object> {
     return removed;
   }
 
+  /** Checks whether the collection contains the given item. */
   contains<TT extends T>(item: TT | Reference<TT>, check = true): boolean {
     if (check) {
       this.checkInitialized();
@@ -306,16 +315,19 @@ export class Collection<T extends object, O extends object = object> {
     return this.#items.has(entity);
   }
 
+  /** Returns the number of items in the collection. Throws if the collection is not initialized. */
   count(): number {
     this.checkInitialized();
     return this.#items.size;
   }
 
+  /** Returns true if the collection has no items. Throws if the collection is not initialized. */
   isEmpty(): boolean {
     this.checkInitialized();
     return this.count() === 0;
   }
 
+  /** Returns whether this collection should be included in serialization based on its populated state. */
   shouldPopulate(populated?: boolean): boolean {
     if (!this.isInitialized(true)) {
       return false;
@@ -328,10 +340,12 @@ export class Collection<T extends object, O extends object = object> {
     return !!populated;
   }
 
+  /** Marks the collection as populated or not for serialization purposes. */
   populated(populated: boolean | undefined = true): void {
     this.#populated = populated;
   }
 
+  /** Initializes the collection by loading its items from the database. */
   async init<TT extends T, P extends string = never>(
     options: InitCollectionOptions<TT, P> = {},
   ): Promise<LoadedCollection<Loaded<TT, P>>> {
@@ -520,6 +534,7 @@ export class Collection<T extends object, O extends object = object> {
     }
   }
 
+  /** Converts all items in the collection to plain DTO objects. */
   toArray<TT extends T>(): EntityDTO<TT>[] {
     if (this.#items.size === 0) {
       return [];
@@ -528,6 +543,7 @@ export class Collection<T extends object, O extends object = object> {
     return this.map(item => wrap(item as TT).toJSON());
   }
 
+  /** Returns the primary key values (or a specific field) of all items in the collection. */
   getIdentifiers<U extends IPrimaryKey = Primary<T> & IPrimaryKey>(field?: string | string[]): U[] {
     const items = this.getItems();
     const targetMeta = this.property.targetMeta!;
@@ -569,6 +585,7 @@ export class Collection<T extends object, O extends object = object> {
     }
   }
 
+  /** Replaces all items in the collection with the given items. */
   set(items: Iterable<T | Reference<T>>): void {
     if (!this.#initialized) {
       this.#initialized = true;
@@ -793,6 +810,7 @@ export class Collection<T extends object, O extends object = object> {
     }, {} as any);
   }
 
+  /** Returns whether the collection has been initialized. Pass `fully = true` to also check that all items are initialized. */
   isInitialized(fully = false): boolean {
     if (!this.#initialized || !fully) {
       return this.#initialized;
@@ -811,6 +829,7 @@ export class Collection<T extends object, O extends object = object> {
     return this.#dirty;
   }
 
+  /** Returns whether the collection was partially loaded (propagation is disabled for partial collections). */
   isPartial(): boolean {
     return this.#partial;
   }
@@ -981,18 +1000,25 @@ Object.defineProperties(Collection.prototype, {
   __collection: { value: true, enumerable: false, writable: false },
 });
 
+/** Options for initializing a collection via `init()` or `load()`. */
 export interface InitCollectionOptions<
   T,
   P extends string = never,
   F extends string = '*',
   E extends string = never,
 > extends EntityLoaderOptions<T, F, E> {
+  /** Whether to use the dataloader for batching collection loads. */
   dataloader?: boolean;
+  /** Relations to populate on the loaded items. */
   populate?: Populate<T, P>;
-  ref?: boolean; // populate only references, works only with M:N collections that use pivot table
+  /** Populate only references (without loading full entities). Works only with M:N collections that use pivot table. */
+  ref?: boolean;
 }
 
+/** Options for the `Collection.loadCount()` method. */
 export interface LoadCountOptions<T extends object> extends CountOptions<T, '*'> {
+  /** Whether to reload the count from the database even if it is already cached. */
   refresh?: boolean;
+  /** Additional filtering conditions for the count query. */
   where?: FilterQuery<T>;
 }

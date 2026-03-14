@@ -68,7 +68,9 @@ function isPopulated(propName: string, options: SerializeOptions<any, any, any>)
   return false;
 }
 
+/** Converts entity instances to plain DTOs via `serialize()`, with fine-grained control over populate, exclude, and serialization groups. */
 export class EntitySerializer {
+  /** Serializes an entity to a plain DTO, with fine-grained control over population, exclusion, groups, and custom types. */
   static serialize<T extends object, P extends string = never, E extends string = never>(
     entity: T,
     options: SerializeOptions<T, P, E> = {},

@@ -3,6 +3,7 @@ import { PopulatePath, type ReferenceKind } from '../enums.js';
 
 const populatePathMembers = Object.values(PopulatePath);
 
+/** Base class for naming strategies, providing default implementations for common naming conventions. */
 export abstract class AbstractNamingStrategy implements NamingStrategy {
   getClassName(file: string, separator = '-'): string {
     const name = file.split('.')[0];

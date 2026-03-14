@@ -8,6 +8,7 @@ import {
 } from '@mikro-orm/core';
 import { prepareMetadataContext } from '../utils.js';
 
+/** Defines an embedded property on an entity (TC39 decorator). */
 export function Embedded<Owner extends object, Target>(
   type: EmbeddedOptions<Owner, Target> | (() => EntityName<Target> | EntityName[]) = {},
   options: EmbeddedOptions<Owner, Target> = {},

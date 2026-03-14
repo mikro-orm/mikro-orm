@@ -74,6 +74,7 @@ export class RequestContext {
   }
 }
 
+/** Options for creating a new RequestContext, allowing schema and logger overrides. */
 export interface CreateContextOptions {
   schema?: string;
   loggerContext?: LoggingOptions;

@@ -20,7 +20,9 @@ import type { Kysely } from 'kysely';
 import type { InferClassEntityDB, InferKyselyDB } from './typings.js';
 import { MikroKyselyPlugin, type MikroKyselyPluginOptions } from './plugin/index.js';
 
+/** Options for `SqlEntityManager.getKysely()`. */
 export interface GetKyselyOptions extends MikroKyselyPluginOptions {
+  /** Connection type to use (`'read'` or `'write'`). */
   type?: ConnectionType;
 }
 
@@ -84,6 +86,7 @@ export class SqlEntityManager<Driver extends AbstractSqlDriver = AbstractSqlDriv
     return kysely;
   }
 
+  /** Executes a raw SQL query, using the current transaction context if available. */
   async execute<T extends QueryResult | EntityData<AnyEntity> | EntityData<AnyEntity>[] = EntityData<AnyEntity>[]>(
     query: string | NativeQueryBuilder | RawQueryFragment,
     params: any[] = [],

@@ -8,6 +8,7 @@ import {
 } from '@mikro-orm/core';
 import { prepareMetadataContext } from '../utils.js';
 
+/** Defines an enum property on an entity (TC39 decorator). */
 export function Enum<Owner extends object>(
   options: EnumOptions<AnyEntity> | (() => Dictionary) = {},
 ): (target: unknown, context: ClassFieldDecoratorContext<Owner>) => void {

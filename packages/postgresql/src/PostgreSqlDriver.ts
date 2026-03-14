@@ -5,6 +5,7 @@ import { PostgreSqlPlatform } from './PostgreSqlPlatform.js';
 import { PostgreSqlMikroORM } from './PostgreSqlMikroORM.js';
 import { PostgreSqlEntityManager } from './PostgreSqlEntityManager.js';
 
+/** Database driver for PostgreSQL. */
 export class PostgreSqlDriver extends AbstractSqlDriver<PostgreSqlConnection> {
   override [EntityManagerType]!: PostgreSqlEntityManager<this>;
 

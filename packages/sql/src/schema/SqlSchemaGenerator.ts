@@ -22,6 +22,7 @@ import { SchemaComparator } from './SchemaComparator.js';
 import type { SchemaHelper } from './SchemaHelper.js';
 import type { SqlEntityManager } from '../SqlEntityManager.js';
 
+/** Generates and manages SQL database schemas based on entity metadata. Supports create, update, and drop operations. */
 export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDriver> implements ISchemaGenerator {
   protected readonly helper: SchemaHelper = this.platform.getSchemaHelper()!;
   protected readonly options: NonNullable<Options['schemaGenerator']> = this.config.get('schemaGenerator');

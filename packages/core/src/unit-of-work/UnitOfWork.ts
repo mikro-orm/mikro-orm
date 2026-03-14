@@ -39,6 +39,7 @@ import type { Platform } from '../platforms/Platform.js';
 // to deal with validation for flush inside flush hooks and `Promise.all`
 const insideFlush = createAsyncContext<boolean>();
 
+/** Implements the Unit of Work pattern: tracks entity changes, computes change sets, and flushes them to the database. */
 export class UnitOfWork {
   /** map of references to managed entities */
   readonly #identityMap: IdentityMap;
@@ -81,6 +82,7 @@ export class UnitOfWork {
     this.#changeSetPersister = new ChangeSetPersister(this.#em);
   }
 
+  /** Merges an entity into the identity map, taking a snapshot of its current state. */
   merge<T extends object>(entity: T, visited?: Set<AnyEntity>): void {
     const wrapped = helper(entity);
     wrapped.__em = this.#em;
@@ -310,6 +312,7 @@ export class UnitOfWork {
     this.#identityMap.storeByKey(entity, key, '' + value, schema);
   }
 
+  /** Attempts to extract a primary key from the where condition and look up the entity in the identity map. */
   tryGetById<T extends object>(
     entityName: EntityName<T>,
     where: FilterQuery<T>,
@@ -339,22 +342,27 @@ export class UnitOfWork {
     return helper(entity).__originalEntityData;
   }
 
+  /** Returns the set of entities scheduled for persistence. */
   getPersistStack(): Set<AnyEntity> {
     return this.#persistStack;
   }
 
+  /** Returns the set of entities scheduled for removal. */
   getRemoveStack(): Set<AnyEntity> {
     return this.#removeStack;
   }
 
+  /** Returns all computed change sets for the current flush. */
   getChangeSets(): ChangeSet<AnyEntity>[] {
     return [...this.#changeSets.values()];
   }
 
+  /** Returns all M:N collections that need synchronization. */
   getCollectionUpdates(): Collection<AnyEntity>[] {
     return [...this.#collectionUpdates];
   }
 
+  /** Returns extra updates needed for relations that could not be resolved in the initial pass. */
   getExtraUpdates(): Set<
     [
       AnyEntity,
@@ -367,6 +375,7 @@ export class UnitOfWork {
     return this.#extraUpdates;
   }
 
+  /** Checks whether an auto-flush is needed before querying the given entity type. */
   shouldAutoFlush<T extends object>(meta: EntityMetadata<T>): boolean {
     if (insideFlush.getStore()) {
       return false;
@@ -383,10 +392,12 @@ export class UnitOfWork {
     return false;
   }
 
+  /** Clears the queue of entity types that triggered auto-flush detection. */
   clearActionsQueue(): void {
     this.#queuedActions.clear();
   }
 
+  /** Computes and registers a change set for the given entity. */
   computeChangeSet<T extends object>(entity: T, type?: ChangeSetType): void {
     const wrapped = helper(entity);
 
@@ -412,6 +423,7 @@ export class UnitOfWork {
     wrapped.__originalEntityData = this.#comparator.prepareEntity(entity);
   }
 
+  /** Recomputes and merges the change set for an already-tracked entity. */
   recomputeSingleChangeSet<T extends object>(entity: T): void {
     const changeSet = this.#changeSets.get(entity);
 
@@ -427,6 +439,7 @@ export class UnitOfWork {
     }
   }
 
+  /** Marks an entity for persistence, cascading to related entities. */
   persist<T extends object>(
     entity: T,
     visited?: Set<AnyEntity>,
@@ -452,6 +465,7 @@ export class UnitOfWork {
     }
   }
 
+  /** Marks an entity for removal, cascading to related entities. */
   remove<T extends object>(entity: T, visited?: Set<AnyEntity>, options: { cascade?: boolean } = {}): void {
     // allow removing not managed entities if they are not part of the persist stack
     if (helper(entity).__managed || !this.#persistStack.has(entity)) {
@@ -488,6 +502,7 @@ export class UnitOfWork {
     }
   }
 
+  /** Flushes all pending changes to the database within a transaction. */
   async commit(): Promise<void> {
     if (this.#working) {
       if (insideFlush.getStore()) {

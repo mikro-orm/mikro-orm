@@ -1,5 +1,6 @@
 import type { RequiredEntityData, EntityData, EntityManager, Constructor } from '@mikro-orm/core';
 
+/** Base class for entity factories used in seeding. Provides methods to create and persist test entities. */
 export abstract class Factory<TEntity extends object, TInput = EntityData<TEntity>> {
   abstract readonly model: Constructor<TEntity>;
   private eachFunction?: (entity: TEntity, index: number) => void;

@@ -2,6 +2,7 @@ import { Type } from './Type.js';
 import type { Platform } from '../platforms/Platform.js';
 import type { EntityProperty } from '../typings.js';
 
+/** Maps a database DATETIME/TIMESTAMP column to a JS `Date` object. */
 export class DateTimeType extends Type<Date, string> {
   override getColumnType(prop: EntityProperty, platform: Platform): string {
     return platform.getDateTimeTypeDeclarationSQL({ length: prop.length });

@@ -1,5 +1,6 @@
 import { MigrationGenerator } from './MigrationGenerator.js';
 
+/** Generates migration files in TypeScript format. */
 export class TSMigrationGenerator extends MigrationGenerator {
   /**
    * @inheritDoc

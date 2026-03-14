@@ -35,29 +35,47 @@ import type { LoggingOptions } from '../logging/Logger.js';
 import { expandDotPaths } from './utils.js';
 import { Raw } from '../utils/RawQueryFragment.js';
 
+/** Options for controlling how relations are loaded by the EntityLoader. */
 export interface EntityLoaderOptions<
   Entity,
   Fields extends string = PopulatePath.ALL,
   Excludes extends string = never,
 > {
+  /** Select specific fields to load (partial loading). */
   fields?: readonly AutoPath<Entity, Fields, `${PopulatePath.ALL}`>[];
+  /** Fields to exclude from loading. */
   exclude?: readonly AutoPath<Entity, Excludes>[];
+  /** Additional filtering conditions applied to populated relations. */
   where?: FilterQuery<Entity>;
+  /** Controls how `where` conditions are applied to populated relations. */
   populateWhere?: PopulateHint | `${PopulateHint}`;
+  /** Ordering for populated relations. */
   orderBy?: QueryOrderMap<Entity> | QueryOrderMap<Entity>[];
+  /** Whether to reload already loaded entities. */
   refresh?: boolean;
+  /** Whether to validate the populate hint against the entity metadata. */
   validate?: boolean;
+  /** Whether to look up eager-loaded relationships automatically. */
   lookup?: boolean;
+  /** Whether to convert custom types during hydration. */
   convertCustomTypes?: boolean;
+  /** Whether to skip loading lazy scalar properties. */
   ignoreLazyScalarProperties?: boolean;
+  /** Filter options to apply when loading relations. */
   filters?: FilterOptions;
+  /** Loading strategy to use (select-in, joined, or balanced). */
   strategy?: LoadStrategy | `${LoadStrategy}`;
+  /** Lock mode for the query (pessimistic locking). */
   lockMode?: Exclude<LockMode, LockMode.OPTIMISTIC>;
+  /** Database schema override. */
   schema?: string;
+  /** Connection type (read or write replica). */
   connectionType?: ConnectionType;
+  /** Logging options for the query. */
   logging?: LoggingOptions;
 }
 
+/** Responsible for batch-loading entity relations using either select-in or joined loading strategies. */
 export class EntityLoader {
   readonly #metadata: MetadataStorage;
   readonly #driver: IDatabaseDriver;
@@ -132,6 +150,7 @@ export class EntityLoader {
     }
   }
 
+  /** Normalizes populate hints into a structured array of PopulateOptions, expanding dot paths and eager relations. */
   normalizePopulate<Entity>(
     entityName: EntityName<Entity>,
     populate: (PopulateOptions<Entity> | boolean)[] | PopulateOptions<Entity> | boolean,

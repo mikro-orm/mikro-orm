@@ -13,6 +13,7 @@ import { MariaDbPlatform } from './MariaDbPlatform.js';
 import { MariaDbQueryBuilder } from './MariaDbQueryBuilder.js';
 import { MariaDbMikroORM } from './MariaDbMikroORM.js';
 
+/** Database driver for MariaDB, extending the MySQL driver with MariaDB-specific behavior. */
 export class MariaDbDriver extends MySqlDriver {
   declare readonly platform: MariaDbPlatform;
 

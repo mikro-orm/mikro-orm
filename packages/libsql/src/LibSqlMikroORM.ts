@@ -12,6 +12,7 @@ import {
 import type { SqlEntityManager } from '@mikro-orm/sql';
 import { LibSqlDriver } from './LibSqlDriver.js';
 
+/** Configuration options for the libSQL driver. */
 export type LibSqlOptions<
   EM extends SqlEntityManager<LibSqlDriver> = SqlEntityManager<LibSqlDriver>,
   Entities extends (string | EntityClass<AnyEntity> | EntitySchema)[] = (
@@ -21,6 +22,7 @@ export type LibSqlOptions<
   )[],
 > = Partial<Options<LibSqlDriver, EM, Entities>>;
 
+/** Creates a type-safe configuration object for the libSQL driver. */
 export function defineLibSqlConfig<
   EM extends SqlEntityManager<LibSqlDriver> = SqlEntityManager<LibSqlDriver>,
   Entities extends (string | EntityClass<AnyEntity> | EntitySchema)[] = (

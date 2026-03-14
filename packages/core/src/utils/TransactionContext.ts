@@ -1,6 +1,7 @@
 import type { EntityManager } from '../EntityManager.js';
 import { createAsyncContext } from './AsyncContext.js';
 
+/** Uses `AsyncLocalStorage` to maintain a transaction-scoped EntityManager context across async operations. */
 export class TransactionContext {
   private static storage = createAsyncContext<TransactionContext>();
   readonly id: number;

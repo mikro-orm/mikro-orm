@@ -7,6 +7,7 @@ import type { MigrationResult } from './typings.js';
 import { TSMigrationGenerator } from './TSMigrationGenerator.js';
 import { JSMigrationGenerator } from './JSMigrationGenerator.js';
 
+/** Manages MongoDB migrations: creation, execution, and rollback. */
 export class Migrator extends AbstractMigrator<MongoDriver> {
   static register(orm: MikroORM): void {
     orm.config.registerExtension('@mikro-orm/migrator', () => new Migrator(orm.em as EntityManager));

@@ -175,6 +175,7 @@ export function lookupPathFromDecorator(name: string, stack?: string[]): string 
   }
 }
 
+/** Retrieves or creates the metadata object for a decorated entity class. */
 export function getMetadataFromDecorator<T = any>(
   target: T & Dictionary & { [MetadataStorage.PATH_SYMBOL]?: string },
 ): EntityMetadata<T> {

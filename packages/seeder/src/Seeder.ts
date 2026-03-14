@@ -1,5 +1,6 @@
 import type { Dictionary, EntityManager } from '@mikro-orm/core';
 
+/** Base class for database seeders. Extend this class and implement `run()` to populate the database with data. */
 export abstract class Seeder<T extends Dictionary = Dictionary> {
   abstract run(em: EntityManager, context?: T): void | Promise<void>;
 

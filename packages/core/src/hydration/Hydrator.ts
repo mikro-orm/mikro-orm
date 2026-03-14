@@ -4,6 +4,7 @@ import type { Platform } from '../platforms/Platform.js';
 import type { MetadataStorage } from '../metadata/MetadataStorage.js';
 import type { Configuration } from '../utils/Configuration.js';
 
+/** Abstract base class for hydrating entity instances from raw database data. */
 /* v8 ignore next */
 export abstract class Hydrator implements IHydrator {
   protected running = false;
@@ -58,6 +59,7 @@ export abstract class Hydrator implements IHydrator {
     this.running = false;
   }
 
+  /** Returns whether the hydrator is currently in the middle of hydrating an entity. */
   isRunning(): boolean {
     return this.running;
   }

@@ -7,6 +7,7 @@ import {
 } from '@mikro-orm/core';
 import { processDecoratorParameters, validateSingleDecorator, getMetadataFromDecorator } from '../utils.js';
 
+/** Defines a many-to-one relationship (legacy TypeScript decorator). */
 export function ManyToOne<Target extends object, Owner extends object>(
   entity: (e?: any) => EntityName<Target> | EntityName[],
   options?: Partial<ManyToOneOptions<Owner, Target>>,

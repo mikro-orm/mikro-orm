@@ -8,6 +8,7 @@ import {
 } from '@mikro-orm/core';
 import { processDecoratorParameters, validateSingleDecorator, getMetadataFromDecorator } from '../utils.js';
 
+/** Defines a one-to-one relationship (legacy TypeScript decorator). */
 export function OneToOne<Target, Owner>(
   entity: (e: Owner) => EntityName<Target> | EntityName[],
   mappedByOrOptions?: (string & keyof Target) | ((e: Target) => any) | Partial<OneToOneOptions<Owner, Target>>,

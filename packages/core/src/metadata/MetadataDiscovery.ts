@@ -26,6 +26,7 @@ import { raw, Raw } from '../utils/RawQueryFragment.js';
 import type { Logger } from '../logging/Logger.js';
 import { BaseEntity } from '../entity/BaseEntity.js';
 
+/** Discovers, validates, and processes entity metadata from configured sources. */
 export class MetadataDiscovery {
   readonly #namingStrategy: NamingStrategy;
   readonly #metadataProvider: MetadataProvider;
@@ -48,6 +49,7 @@ export class MetadataDiscovery {
     this.#schemaHelper = this.#platform.getSchemaHelper();
   }
 
+  /** Discovers all entities asynchronously and returns the populated MetadataStorage. */
   async discover(preferTs = true): Promise<MetadataStorage> {
     this.#discovered.length = 0;
     const startTime = Date.now();
@@ -78,6 +80,7 @@ export class MetadataDiscovery {
     return storage;
   }
 
+  /** Discovers all entities synchronously and returns the populated MetadataStorage. */
   discoverSync(): MetadataStorage {
     this.#discovered.length = 0;
     const startTime = Date.now();
@@ -169,6 +172,7 @@ export class MetadataDiscovery {
     }
   }
 
+  /** Processes discovered entities: initializes relations, embeddables, indexes, and inheritance. */
   processDiscoveredEntities(discovered: EntityMetadata[]): EntityMetadata[] {
     for (const meta of discovered) {
       let i = 1;

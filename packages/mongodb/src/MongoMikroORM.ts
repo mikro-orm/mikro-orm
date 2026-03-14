@@ -13,6 +13,7 @@ import {
 import { MongoDriver } from './MongoDriver.js';
 import type { MongoEntityManager } from './MongoEntityManager.js';
 
+/** Configuration options for the MongoDB driver. */
 export type MongoOptions<
   EM extends MongoEntityManager = MongoEntityManager,
   Entities extends (string | EntityClass<AnyEntity> | EntitySchema)[] = (
@@ -22,6 +23,7 @@ export type MongoOptions<
   )[],
 > = Partial<Options<MongoDriver, EM, Entities>>;
 
+/** Creates a type-safe configuration object for the MongoDB driver. */
 export function defineMongoConfig<
   EM extends MongoEntityManager = MongoEntityManager,
   Entities extends (string | EntityClass<AnyEntity> | EntitySchema)[] = (

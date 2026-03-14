@@ -9,6 +9,7 @@ import {
 } from '@mikro-orm/core';
 import type { Seeder } from './Seeder.js';
 
+/** Manages discovery and execution of database seeders. */
 export class SeedManager implements ISeedManager {
   readonly #config: Configuration;
   readonly #options: SeederOptions;

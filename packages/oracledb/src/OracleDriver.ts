@@ -24,6 +24,7 @@ import { OracleMikroORM } from './OracleMikroORM.js';
 import { OracleQueryBuilder } from './OracleQueryBuilder.js';
 import { OraclePlatform } from './OraclePlatform.js';
 
+/** Database driver for Oracle. */
 export class OracleDriver extends AbstractSqlDriver<OracleConnection, OraclePlatform> {
   constructor(config: Configuration) {
     super(config, new OraclePlatform(), OracleConnection, ['kysely', 'oracledb']);

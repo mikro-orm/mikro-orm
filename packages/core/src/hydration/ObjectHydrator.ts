@@ -20,6 +20,7 @@ type EntityHydrator<T extends object> = (
   normalizeAccessors?: boolean,
 ) => void;
 
+/** @internal JIT-compiled hydrator that converts raw database rows into entity instances with optimized generated code. */
 export class ObjectHydrator extends Hydrator {
   readonly #hydrators = {
     'full~true': new Map<EntityName, EntityHydrator<any>>(),

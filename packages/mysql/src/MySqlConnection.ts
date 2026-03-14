@@ -2,6 +2,7 @@ import { type ControlledTransaction, MysqlDialect } from 'kysely';
 import { createPool, type PoolOptions } from 'mysql2';
 import { type ConnectionConfig, Utils, AbstractSqlConnection, type TransactionEventBroadcaster } from '@mikro-orm/sql';
 
+/** MySQL database connection using the `mysql2` driver. */
 export class MySqlConnection extends AbstractSqlConnection {
   override createKyselyDialect(overrides: PoolOptions): MysqlDialect {
     const options = this.mapOptions(overrides);

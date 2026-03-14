@@ -33,6 +33,7 @@ const ORACLE_TYPE_MAP: Record<string, unknown> = {
   out: oracledb.BIND_OUT,
 };
 
+/** Platform implementation for Oracle Database. */
 export class OraclePlatform extends AbstractSqlPlatform {
   protected override readonly schemaHelper: OracleSchemaHelper = new OracleSchemaHelper(this);
   protected override readonly exceptionConverter: OracleExceptionConverter = new OracleExceptionConverter();
