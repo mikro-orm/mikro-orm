@@ -12,6 +12,7 @@ import { PolymorphicRef } from '../entity/PolymorphicRef.js';
 import { type Collection } from '../entity/Collection.js';
 import type { Platform } from '../platforms/Platform.js';
 import { ReferenceKind } from '../enums.js';
+import { isRaw } from '../utils/RawQueryFragment.js';
 import type { EntityManager } from '../EntityManager.js';
 
 export class ChangeSetComputer {
@@ -113,6 +114,13 @@ export class ChangeSetComputer {
         (Utils.isScalarReference(entity[prop.name]) && (entity[prop.name] as Reference<any>).unwrap() == null))
     ) {
       entity[prop.name] = prop.onCreate(entity, this.#em);
+    } else if (
+      prop.default != null &&
+      !isRaw(prop.default) &&
+      type === ChangeSetType.CREATE &&
+      entity[prop.name] == null
+    ) {
+      entity[prop.name] = prop.default as EntityValue<T>;
     }
 
     if (prop.onUpdate && type === ChangeSetType.UPDATE) {

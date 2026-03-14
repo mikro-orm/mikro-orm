@@ -25,6 +25,7 @@ import type { Configuration } from '../utils/Configuration.js';
 import type { EventManager } from '../events/EventManager.js';
 import type { MetadataStorage } from '../metadata/MetadataStorage.js';
 import { JsonType } from '../types/JsonType.js';
+import { isRaw } from '../utils/RawQueryFragment.js';
 
 export interface FactoryOptions {
   initialized?: boolean;
@@ -421,6 +422,8 @@ export class EntityFactory {
     for (const prop of meta.props) {
       if (prop.onCreate) {
         entity[prop.name] ??= prop.onCreate(entity, this.#em);
+      } else if (prop.default != null && !isRaw(prop.default) && entity[prop.name] == null) {
+        entity[prop.name] = prop.default as EntityValue<T>;
       }
     }
   }
