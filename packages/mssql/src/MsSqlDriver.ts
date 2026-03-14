@@ -21,6 +21,7 @@ import { MsSqlPlatform } from './MsSqlPlatform.js';
 import { MsSqlQueryBuilder } from './MsSqlQueryBuilder.js';
 import { MsSqlMikroORM } from './MsSqlMikroORM.js';
 
+/** Database driver for Microsoft SQL Server. */
 export class MsSqlDriver extends AbstractSqlDriver<MsSqlConnection> {
   constructor(config: Configuration) {
     super(config, new MsSqlPlatform(), MsSqlConnection, ['kysely', 'tedious']);

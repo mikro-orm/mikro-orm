@@ -16,6 +16,7 @@ import { MySqlConnection } from './MySqlConnection.js';
 import { MySqlMikroORM } from './MySqlMikroORM.js';
 import { MySqlPlatform } from './MySqlPlatform.js';
 
+/** Database driver for MySQL. */
 export class MySqlDriver extends AbstractSqlDriver<MySqlConnection, MySqlPlatform> {
   private autoIncrementIncrement?: number;
 

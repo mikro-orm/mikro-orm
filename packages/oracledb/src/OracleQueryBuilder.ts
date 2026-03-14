@@ -10,6 +10,7 @@ import {
 } from '@mikro-orm/core';
 import { type InsertQueryBuilder, type NativeQueryBuilder, type Field, QueryBuilder, QueryType } from '@mikro-orm/sql';
 
+/** Query builder with Oracle-specific behavior such as RETURNING clause handling and lock table conversion. */
 export class OracleQueryBuilder<
   Entity extends object = AnyEntity,
   RootAlias extends string = never,

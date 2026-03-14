@@ -2,6 +2,7 @@ import { EntityRepository, type EntityName } from '@mikro-orm/core';
 import type { SqlEntityManager } from './SqlEntityManager.js';
 import type { QueryBuilder } from './query/QueryBuilder.js';
 
+/** SQL-specific entity repository with QueryBuilder support. */
 export class SqlEntityRepository<Entity extends object> extends EntityRepository<Entity> {
   constructor(
     protected override readonly em: SqlEntityManager,

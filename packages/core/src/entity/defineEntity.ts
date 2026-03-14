@@ -55,6 +55,7 @@ import { EntitySchema } from '../metadata/EntitySchema.js';
 import type { Collection } from './Collection.js';
 import type { FilterOptions } from '../drivers/IDatabaseDriver.js';
 
+/** Union of all option keys supported across all property definition types (scalar, enum, embedded, relations). */
 export type UniversalPropertyKeys =
   | keyof PropertyOptions<any>
   | keyof EnumOptions<any>
@@ -970,6 +971,7 @@ export class UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys extends
   }
 }
 
+/** Empty options object used as the initial state for property builders. */
 export interface EmptyOptions extends Partial<Record<UniversalPropertyKeys, unknown>> {}
 
 /** @internal */
@@ -1095,6 +1097,7 @@ const propertyBuilders: PropertyBuilders = {
 
 type PropertyBuildersOverrideKeys = 'bigint' | 'array' | 'decimal' | 'json' | 'datetime' | 'time' | 'enum';
 
+/** Map of factory functions for creating type-safe property builders (scalars, enums, embeddables, and relations). */
 export type PropertyBuilders = {
   [K in Exclude<keyof typeof types, PropertyBuildersOverrideKeys>]: () => UniversalPropertyOptionsBuilder<
     InferPropertyValueType<(typeof types)[K]>,
@@ -1172,6 +1175,7 @@ function getBuilderOptions(builder: any) {
 /** Own keys + base entity keys (when TBase is not `never`). Guards against `keyof never = string | number | symbol`. */
 type AllKeys<TProperties, TBase> = keyof TProperties | (IsNever<TBase> extends true ? never : keyof TBase);
 
+/** Metadata descriptor for `defineEntity()`, combining entity options with property definitions. */
 export interface EntityMetadataWithProperties<
   TName extends string,
   TTableName extends string,
@@ -1234,6 +1238,7 @@ export interface EntityMetadataWithProperties<
   }[];
 }
 
+/** Defines an entity schema using property builders, with full type inference from the property definitions. */
 export function defineEntity<
   const TName extends string,
   const TTableName extends string,
@@ -1252,6 +1257,7 @@ export function defineEntity<
   TProperties
 >;
 
+/** Defines an entity schema for an existing class, combining the class with property builders. */
 export function defineEntity<
   const TEntity = any,
   const TProperties extends Record<string, any> = Record<string, any>,
@@ -1311,10 +1317,12 @@ export function defineEntity(
 }
 
 defineEntity.properties = propertyBuilders;
+/** Shorthand alias for `defineEntity.properties` - the property builders for use in `defineEntity()`. */
 export { propertyBuilders as p };
 
 type EntityHookValue<T, K extends keyof EventSubscriber<T>> = (keyof T | NonNullable<EventSubscriber<T>[K]>)[];
 
+/** Lifecycle hook definitions for entities created via `defineEntity()`. */
 export interface DefineEntityHooks<T = any> {
   onInit?: EntityHookValue<T, 'onInit'>;
   onLoad?: EntityHookValue<T, 'onLoad'>;
@@ -1416,6 +1424,7 @@ type InferColumnType<T extends string> = T extends
 // before the Base in the intersection — TypeScript picks earlier overloads first.
 type BaseEntityMethodKeys = 'toObject' | 'toPOJO' | 'serialize' | 'assign' | 'populate' | 'init' | 'toReference';
 
+/** Infers the entity type from a `defineEntity()` properties map, resolving builders, base classes, and primary keys. */
 export type InferEntityFromProperties<
   Properties extends Record<string, any>,
   PK extends (keyof Properties)[] | undefined = undefined,
@@ -1465,6 +1474,7 @@ type CombinePrimaryKeys<ChildPK, BasePK> = [ChildPK] extends [never]
       : ChildPK
     : ChildPK | BasePK;
 
+/** Extracts the primary key property names from a properties map by finding builders with `primary: true`. */
 export type InferPrimaryKey<Properties extends Record<string, any>> = {
   [K in keyof Properties]: MaybeReturnType<Properties[K]> extends { '~options': { primary: true } } ? K : never;
 }[keyof Properties];

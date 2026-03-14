@@ -12,6 +12,7 @@ function mapHydrator<T>(items: T[] | undefined, hydrate: (i: string) => T): (i: 
   return hydrate;
 }
 
+/** Maps a database array column to a JS array of enum values, with validation against allowed enum items. */
 export class EnumArrayType<T extends string | number = string> extends ArrayType<T> {
   constructor(
     private readonly owner: string,

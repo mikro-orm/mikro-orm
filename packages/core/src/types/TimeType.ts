@@ -3,6 +3,7 @@ import type { Platform } from '../platforms/Platform.js';
 import type { EntityProperty } from '../typings.js';
 import { ValidationError } from '../errors.js';
 
+/** Maps a database TIME column to a JS `string` in HH:MM:SS format. */
 export class TimeType extends Type {
   override convertToDatabaseValue(value: any, platform: Platform): string {
     if (value && !value.toString().match(/^\d{2,}:(?:[0-5]\d):(?:[0-5]\d)$/)) {

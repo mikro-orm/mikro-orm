@@ -1,6 +1,7 @@
 import { type AnyEntity, QueryFlag, type RequiredEntityData, Utils } from '@mikro-orm/core';
 import { type InsertQueryBuilder, QueryBuilder } from '@mikro-orm/sql';
 
+/** Query builder with MSSQL-specific behavior such as identity insert handling. */
 export class MsSqlQueryBuilder<
   Entity extends object = AnyEntity,
   RootAlias extends string = never,

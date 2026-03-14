@@ -7,8 +7,10 @@ import {
 } from '@mikro-orm/core';
 import type { AbstractSqlDriver, EntityManager, NativeQueryBuilder } from '@mikro-orm/sql';
 
+/** A migration query: raw SQL string, a native query builder instance, or a `raw()` SQL fragment. */
 export type Query = string | NativeQueryBuilder | RawQueryFragment;
 
+/** Base class for SQL database migrations. Extend this class and implement `up()` (and optionally `down()`). */
 export abstract class Migration {
   readonly #queries: Query[] = [];
   protected ctx?: Transaction;

@@ -1,5 +1,6 @@
 import type { CacheAdapter } from './CacheAdapter.js';
 
+/** In-memory cache adapter with time-based expiration. Used as the default result cache. */
 export class MemoryCacheAdapter implements CacheAdapter {
   readonly #data = new Map<string, { data: any; expiration: number }>();
   readonly #options: { expiration: number };

@@ -1,5 +1,6 @@
 import type { AnyEntity, EntityCtor, EntityMetadata } from '../typings.js';
 
+/** @internal Stores managed entity instances keyed by their primary key hash, ensuring each row is loaded once. */
 export class IdentityMap {
   readonly #defaultSchema?: string;
   readonly #registry = new Map<EntityCtor, Map<string, AnyEntity>>();
@@ -10,6 +11,7 @@ export class IdentityMap {
     this.#defaultSchema = defaultSchema;
   }
 
+  /** Stores an entity in the identity map under its primary key hash. */
   store<T>(item: T) {
     this.getStore((item as AnyEntity).__meta!.root).set(this.getPkHash(item), item);
   }
@@ -32,6 +34,7 @@ export class IdentityMap {
     keys.add(hash);
   }
 
+  /** Removes an entity and its alternate key entries from the identity map. */
   delete<T>(item: T) {
     const meta = (item as AnyEntity).__meta!.root;
     const store = this.getStore(meta);
@@ -49,11 +52,13 @@ export class IdentityMap {
     }
   }
 
+  /** Retrieves an entity by its hash key from the identity map. */
   getByHash<T>(meta: EntityMetadata<T>, hash: string): T | undefined {
     const store = this.getStore(meta);
     return store.has(hash) ? store.get(hash) : undefined;
   }
 
+  /** Returns (or creates) the per-entity-class store within the identity map. */
   getStore<T>(meta: EntityMetadata<T>): Map<string, T> {
     const store = this.#registry.get(meta.class) as Map<string, T>;
 
@@ -71,6 +76,7 @@ export class IdentityMap {
     this.#registry.clear();
   }
 
+  /** Returns all entities currently in the identity map. */
   values(): AnyEntity[] {
     const ret: AnyEntity[] = [];
 
@@ -89,6 +95,7 @@ export class IdentityMap {
     }
   }
 
+  /** Returns all hash keys currently in the identity map. */
   keys(): string[] {
     const ret: string[] = [];
 

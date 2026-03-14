@@ -2,6 +2,7 @@ import type { MigrationsOptions, Transaction } from '@mikro-orm/core';
 import type { MongoDriver, MongoConnection } from '@mikro-orm/mongodb';
 import type { Migration } from './Migration.js';
 
+/** Executes individual MongoDB migration files within optional transaction contexts. */
 export class MigrationRunner {
   private readonly connection: MongoConnection;
   private masterTransaction?: Transaction;

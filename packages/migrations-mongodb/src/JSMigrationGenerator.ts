@@ -1,5 +1,6 @@
 import { MigrationGenerator } from './MigrationGenerator.js';
 
+/** Generates MongoDB migration files in CommonJS JavaScript format. */
 export class JSMigrationGenerator extends MigrationGenerator {
   /**
    * @inheritDoc

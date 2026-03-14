@@ -17,12 +17,14 @@ function createDecorator<T extends object>(options: IndexOptions<T> | UniqueOpti
   };
 }
 
+/** Defines a database index on a property or entity class (TC39 decorator). */
 export function Index<T extends object, H extends string>(
   options: IndexOptions<T, H> = {},
 ): (value: unknown, context: ClassDecoratorContext<T & Constructor> | ClassFieldDecoratorContext<T>) => any {
   return createDecorator(options, false);
 }
 
+/** Defines a unique constraint on a property or entity class (TC39 decorator). */
 export function Unique<T extends object, H extends string>(
   options: UniqueOptions<T, H> = {},
 ): (value: unknown, context: ClassDecoratorContext<T & Constructor> | ClassFieldDecoratorContext<T>) => any {

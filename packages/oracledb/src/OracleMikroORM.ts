@@ -12,6 +12,7 @@ import {
 import type { SqlEntityManager } from '@mikro-orm/sql';
 import { OracleDriver } from './OracleDriver.js';
 
+/** Configuration options for the Oracle driver. */
 export type OracleOptions<
   EM extends SqlEntityManager<OracleDriver> = SqlEntityManager<OracleDriver>,
   Entities extends (string | EntityClass<AnyEntity> | EntitySchema)[] = (
@@ -21,6 +22,7 @@ export type OracleOptions<
   )[],
 > = Partial<Options<OracleDriver, EM, Entities>>;
 
+/** Creates a type-safe configuration object for the Oracle driver. */
 export function defineOracleConfig<
   EM extends SqlEntityManager<OracleDriver> = SqlEntityManager<OracleDriver>,
   Entities extends (string | EntityClass<AnyEntity> | EntitySchema)[] = (

@@ -33,6 +33,7 @@ import { MongoPlatform } from './MongoPlatform.js';
 import { MongoEntityManager } from './MongoEntityManager.js';
 import { MongoMikroORM } from './MongoMikroORM.js';
 
+/** Database driver for MongoDB. */
 export class MongoDriver extends DatabaseDriver<MongoConnection> {
   override [EntityManagerType]!: MongoEntityManager<this>;
 

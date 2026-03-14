@@ -29,7 +29,9 @@ function isVisible<Entity extends object>(
   return visible && !prefixed && !ignoreFields.includes(propName);
 }
 
+/** Converts entity instances to plain objects via `toObject()`, respecting populate hints, hidden fields, and serialization context. */
 export class EntityTransformer {
+  /** Converts an entity to a plain object, respecting populate hints, hidden fields, and custom serializers. */
   static toObject<Entity extends object, Ignored extends EntityKey<Entity> = never>(
     entity: Entity,
     ignoreFields: Ignored[] = [],

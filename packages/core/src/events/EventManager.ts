@@ -3,6 +3,7 @@ import type { EventArgs, EventSubscriber, FlushEventArgs, TransactionEventArgs }
 import { Utils } from '../utils/Utils.js';
 import { EventType, EventTypeMap, type TransactionEventType } from '../enums.js';
 
+/** Manages event subscribers and dispatches entity/flush/transaction lifecycle events. */
 export class EventManager {
   readonly #listeners: { [K in EventType]?: Set<EventSubscriber> } = {};
   readonly #entities = new Map<EventSubscriber, Set<string>>();
@@ -15,6 +16,7 @@ export class EventManager {
     }
   }
 
+  /** Registers an event subscriber and indexes its subscribed entities and event types. */
   registerSubscriber(subscriber: EventSubscriber): void {
     if (this.#subscribers.has(subscriber)) {
       return;
@@ -31,6 +33,7 @@ export class EventManager {
       });
   }
 
+  /** Returns the set of all registered event subscribers. */
   getSubscribers(): Set<EventSubscriber> {
     return this.#subscribers;
   }
@@ -88,6 +91,7 @@ export class EventManager {
     return Utils.runSerial(listeners, listener => listener(args));
   }
 
+  /** Checks whether there are any listeners (hooks or subscribers) for the given event type and entity. */
   hasListeners<T>(event: EventType, meta: EntityMetadata<T>): boolean {
     const cacheKey = meta._id + EventTypeMap[event];
 
@@ -115,6 +119,7 @@ export class EventManager {
     return false;
   }
 
+  /** Creates a new EventManager with the same set of subscribers. */
   clone(): EventManager {
     return new EventManager(this.#subscribers);
   }

@@ -26,21 +26,31 @@ import type { EventManager } from '../events/EventManager.js';
 import type { MetadataStorage } from '../metadata/MetadataStorage.js';
 import { JsonType } from '../types/JsonType.js';
 
+/** @internal Options for creating and merging entities via the EntityFactory. */
 export interface FactoryOptions {
+  /** Whether the entity should be marked as initialized. */
   initialized?: boolean;
+  /** Whether the entity is being newly created (uses constructor). */
   newEntity?: boolean;
   /**
    * Property `onCreate` hooks are normally executed during `flush` operation.
    * With this option, they will be processed early inside `em.create()` method.
    */
   processOnCreateHooksEarly?: boolean;
+  /** Whether to merge the entity into the identity map. */
   merge?: boolean;
+  /** Whether to refresh an already loaded entity with new data. */
   refresh?: boolean;
+  /** Whether to convert custom types during hydration. */
   convertCustomTypes?: boolean;
+  /** Whether to recompute the entity snapshot after creation. */
   recomputeSnapshot?: boolean;
-  schema?: string; // schema from FindOptions, overrides default schema
-  parentSchema?: string; // parent entity schema
-  normalizeAccessors?: boolean; // for `em.create`, we need to normalize accessors to the correct property names (this is normally handled via result mapper)
+  /** Schema from FindOptions, overrides default schema. */
+  schema?: string;
+  /** Parent entity schema for nested entity creation. */
+  parentSchema?: string;
+  /** Whether to normalize accessors to the correct property names (normally handled via result mapper). */
+  normalizeAccessors?: boolean;
   /**
    * Property name to use for identity map lookup instead of the primary key.
    * This is useful for creating references by unique non-PK properties.
@@ -48,6 +58,7 @@ export interface FactoryOptions {
   key?: string;
 }
 
+/** @internal Factory responsible for creating, merging, and hydrating entity instances. */
 export class EntityFactory {
   readonly #driver: IDatabaseDriver;
   readonly #platform: Platform;
@@ -69,6 +80,7 @@ export class EntityFactory {
     this.#comparator = this.#em.getComparator();
   }
 
+  /** Creates a new entity instance or returns an existing one from the identity map, hydrating it with the provided data. */
   create<T extends object, P extends string = string>(
     entityName: EntityName<T>,
     data: EntityData<T>,
@@ -178,6 +190,7 @@ export class EntityFactory {
     return entity as New<T, P>;
   }
 
+  /** Merges new data into an existing entity, preserving user-modified properties. */
   mergeData<T extends object>(
     meta: EntityMetadata<T>,
     entity: T,
@@ -285,6 +298,7 @@ export class EntityFactory {
     this.unitOfWork.normalizeEntityData(meta, originalEntityData);
   }
 
+  /** Creates or retrieves an uninitialized entity reference by its primary key or alternate key. */
   createReference<T extends object>(
     entityName: EntityName<T>,
     id: Primary<T> | Primary<T>[] | Record<string, Primary<T>>,
@@ -340,6 +354,7 @@ export class EntityFactory {
     return this.create<T>(entityName, id as EntityData<T>, { ...options, initialized: false }) as T;
   }
 
+  /** Creates an embeddable entity instance from the provided data. */
   createEmbeddable<T extends object>(
     entityName: EntityName<T>,
     data: EntityData<T>,
@@ -352,6 +367,7 @@ export class EntityFactory {
     return this.createEntity(data, meta2, options);
   }
 
+  /** Returns the EntityComparator instance used for diffing entities. */
   getComparator(): EntityComparator {
     return this.#comparator;
   }

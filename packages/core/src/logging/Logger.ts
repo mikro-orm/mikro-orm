@@ -1,5 +1,6 @@
 import type { AnyString, Dictionary, Highlighter } from '../typings.js';
 
+/** Interface for ORM logging, supporting namespaced log levels and query logging. */
 export interface Logger {
   /**
    * Logs a message inside given namespace.
@@ -26,11 +27,14 @@ export interface Logger {
    */
   setDebugMode(debugMode: boolean | LoggerNamespace[]): void;
 
+  /** Checks whether logging is enabled for the given namespace. */
   isEnabled(namespace: LoggerNamespace, context?: LogContext): boolean;
 }
 
+/** Available logging namespaces that can be individually enabled or disabled. */
 export type LoggerNamespace = 'query' | 'query-params' | 'schema' | 'discovery' | 'info' | 'deprecated' | 'slow-query';
 
+/** Contextual metadata passed alongside log messages, including query details and timing. */
 export interface LogContext extends Dictionary {
   query?: string;
   label?: string;
@@ -48,6 +52,7 @@ export interface LogContext extends Dictionary {
   };
 }
 
+/** Options for constructing a Logger instance. */
 export interface LoggerOptions {
   writer: (message: string) => void;
   debugMode?: boolean | LoggerNamespace[];

@@ -2,6 +2,7 @@ import { Type } from './Type.js';
 import type { Platform } from '../platforms/Platform.js';
 import type { EntityProperty } from '../typings.js';
 
+/** Maps a database VARCHAR column to a JS `string`. */
 export class StringType extends Type<string | null | undefined, string | null | undefined> {
   override getColumnType(prop: EntityProperty, platform: Platform): string {
     return platform.getVarcharTypeDeclarationSQL(prop);

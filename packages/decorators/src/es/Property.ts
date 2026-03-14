@@ -1,6 +1,7 @@
 import { type EntityKey, type EntityProperty, type PropertyOptions, ReferenceKind, Utils } from '@mikro-orm/core';
 import { prepareMetadataContext } from '../utils.js';
 
+/** Defines a scalar property on an entity (TC39 decorator). */
 export function Property<T extends object>(
   options: PropertyOptions<T> = {},
 ): (

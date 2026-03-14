@@ -10,7 +10,9 @@ import {
 import { QueryType } from './enums.js';
 import type { AbstractSqlPlatform } from '../AbstractSqlPlatform.js';
 
+/** Options for Common Table Expression (CTE) definitions. */
 export interface CteOptions {
+  /** Column names for the CTE. */
   columns?: string[];
   /** PostgreSQL: MATERIALIZED / NOT MATERIALIZED */
   materialized?: boolean;
@@ -48,6 +50,7 @@ interface Options {
   ctes?: CteClause[];
 }
 
+/** Options for specifying the target table in FROM/INTO clauses. */
 export interface TableOptions {
   schema?: string;
   indexHint?: string;

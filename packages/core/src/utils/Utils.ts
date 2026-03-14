@@ -33,6 +33,7 @@ function compareConstructors(a: any, b: any) {
   return false;
 }
 
+/** Deeply compares two objects for equality, handling dates, regexes, and raw fragments. */
 export function compareObjects(a: any, b: any): boolean {
   if (a === b || (a == null && b == null)) {
     return true;
@@ -91,6 +92,7 @@ export function compareObjects(a: any, b: any): boolean {
   return true;
 }
 
+/** Compares two arrays element-by-element for deep equality. */
 export function compareArrays(a: any[] | string, b: any[] | string): boolean {
   const length = a.length;
 
@@ -108,6 +110,7 @@ export function compareArrays(a: any[] | string, b: any[] | string): boolean {
   return true;
 }
 
+/** Compares two boolean values, treating numeric 0/1 as false/true. */
 export function compareBooleans(a: unknown, b: unknown): boolean {
   a = typeof a === 'number' ? Boolean(a) : a;
   b = typeof b === 'number' ? Boolean(b) : b;
@@ -115,6 +118,7 @@ export function compareBooleans(a: unknown, b: unknown): boolean {
   return a === b;
 }
 
+/** Compares two byte arrays element-by-element. */
 export function compareBuffers(a: Uint8Array, b: Uint8Array): boolean {
   const length = a.length;
 
@@ -156,6 +160,7 @@ export function equals(a: any, b: any): boolean {
 
 const equalsFn = equals;
 
+/** Parses a JSON string safely, returning the original value if parsing fails. */
 export function parseJsonSafe<T = unknown>(value: unknown): T {
   if (typeof value === 'string') {
     /* v8 ignore next */
@@ -170,6 +175,7 @@ export function parseJsonSafe<T = unknown>(value: unknown): T {
   return value as T;
 }
 
+/** Collection of general-purpose utility methods used throughout the ORM. */
 export class Utils {
   static readonly PK_SEPARATOR = '~~~';
   static readonly #ORM_VERSION = '[[MIKRO_ORM_VERSION]]';

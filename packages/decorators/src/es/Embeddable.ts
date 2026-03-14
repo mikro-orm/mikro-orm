@@ -1,6 +1,7 @@
 import { type Constructor, type EmbeddableOptions, type EntityClass, Utils } from '@mikro-orm/core';
 import { getMetadataFromDecorator } from '../utils.js';
 
+/** Marks a class as an embeddable type (TC39 decorator). */
 export function Embeddable<Owner extends EntityClass<unknown> & Constructor>(
   options: EmbeddableOptions<Owner> = {},
 ): (target: Owner, context: ClassDecoratorContext<Owner>) => Owner {

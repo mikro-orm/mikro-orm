@@ -12,6 +12,7 @@ import {
 import { PostgreSqlDriver } from './PostgreSqlDriver.js';
 import type { PostgreSqlEntityManager } from './PostgreSqlEntityManager.js';
 
+/** Configuration options for the PostgreSQL driver. */
 export type PostgreSqlOptions<
   EM extends PostgreSqlEntityManager = PostgreSqlEntityManager,
   Entities extends (string | EntityClass<AnyEntity> | EntitySchema)[] = (
@@ -21,6 +22,7 @@ export type PostgreSqlOptions<
   )[],
 > = Partial<Options<PostgreSqlDriver, EM, Entities>>;
 
+/** Creates a type-safe configuration object for the PostgreSQL driver. */
 export function definePostgreSqlConfig<
   EM extends PostgreSqlEntityManager = PostgreSqlEntityManager,
   Entities extends (string | EntityClass<AnyEntity> | EntitySchema)[] = (

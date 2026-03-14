@@ -135,6 +135,7 @@ class LibSqlKyselyDriver extends SqliteDriver {
   }
 }
 
+/** Kysely dialect adapter for libSQL. */
 export class LibSqlDialect extends SqliteDialect {
   readonly #config: SqliteDialectConfig;
 

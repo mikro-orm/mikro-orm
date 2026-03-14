@@ -2,6 +2,7 @@ import { BaseSqliteConnection, type Dictionary } from '@mikro-orm/sql';
 import Database, { type Options } from 'libsql';
 import { LibSqlDialect } from './LibSqlDialect.js';
 
+/** libSQL database connection supporting both local and remote databases. */
 export class LibSqlConnection extends BaseSqliteConnection {
   private database!: Database.Database;
 

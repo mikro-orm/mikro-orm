@@ -43,6 +43,7 @@ import {
   ValidationError,
 } from '@mikro-orm/core';
 
+/** MongoDB database connection using the official `mongodb` driver. */
 export class MongoConnection extends Connection {
   #client?: MongoClient;
   #db?: Db;
@@ -661,6 +662,7 @@ export class MongoConnection extends Connection {
   }
 }
 
+/** Options shared across MongoDB query operations. */
 export interface MongoQueryOptions {
   collation?: CollationOptions;
   indexHint?: string | Dictionary;
@@ -668,6 +670,7 @@ export interface MongoQueryOptions {
   allowDiskUse?: boolean;
 }
 
+/** Options for MongoDB find operations. */
 export interface MongoFindOptions<T extends object> extends MongoQueryOptions {
   orderBy?: QueryOrderMap<T> | QueryOrderMap<T>[];
   limit?: number;
@@ -677,6 +680,7 @@ export interface MongoFindOptions<T extends object> extends MongoQueryOptions {
   loggerContext?: LoggingOptions;
 }
 
+/** Options for MongoDB count operations. */
 export interface MongoCountOptions extends Omit<MongoQueryOptions, 'allowDiskUse'> {
   ctx?: Transaction<ClientSession>;
   loggerContext?: LoggingOptions;

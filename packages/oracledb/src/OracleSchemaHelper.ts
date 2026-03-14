@@ -18,6 +18,7 @@ import {
   Utils,
 } from '@mikro-orm/sql';
 
+/** Schema introspection helper for Oracle Database. */
 export class OracleSchemaHelper extends SchemaHelper {
   static readonly DEFAULT_VALUES: Record<string, string[]> = {
     true: ['1'],

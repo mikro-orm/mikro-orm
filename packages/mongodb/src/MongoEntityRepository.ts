@@ -2,6 +2,7 @@ import { EntityRepository, type EntityName } from '@mikro-orm/core';
 import type { Collection } from 'mongodb';
 import type { MongoEntityManager } from './MongoEntityManager.js';
 
+/** Entity repository with MongoDB-specific methods such as `aggregate()`. */
 export class MongoEntityRepository<T extends object> extends EntityRepository<T> {
   constructor(
     protected override readonly em: MongoEntityManager,

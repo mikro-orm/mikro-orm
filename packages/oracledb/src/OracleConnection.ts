@@ -15,6 +15,7 @@ import {
 import { CompiledQuery } from 'kysely';
 import oracledb, { type ExecuteOptions, type PoolAttributes } from 'oracledb';
 
+/** Oracle database connection using the `oracledb` driver. */
 export class OracleConnection extends AbstractSqlConnection {
   override async createKyselyDialect(overrides: PoolAttributes): Promise<OracleDialect> {
     const options = this.mapOptions(overrides);

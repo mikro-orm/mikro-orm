@@ -9,6 +9,7 @@ import {
 } from '@mikro-orm/core';
 import { prepareMetadataContext, processDecoratorParameters } from '../utils.js';
 
+/** Defines a one-to-many relationship (TC39 decorator). */
 export function OneToMany<Target extends object, Owner extends object>(
   entity: string | ((e?: Owner) => EntityName<Target>),
   mappedBy: (string & keyof Target) | ((e: Target) => any),

@@ -23,6 +23,7 @@ import { MongoExceptionConverter } from './MongoExceptionConverter.js';
 import { MongoEntityRepository } from './MongoEntityRepository.js';
 import { MongoSchemaGenerator } from './MongoSchemaGenerator.js';
 
+/** Platform implementation for MongoDB. */
 export class MongoPlatform extends Platform {
   protected override readonly exceptionConverter: MongoExceptionConverter = new MongoExceptionConverter();
 

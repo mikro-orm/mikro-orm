@@ -2,6 +2,7 @@ import { type Configuration, type MigrationsOptions, type Transaction, Utils } f
 import type { AbstractSqlConnection, AbstractSqlDriver, SchemaHelper } from '@mikro-orm/sql';
 import type { Migration } from './Migration.js';
 
+/** Executes individual migration files within optional transaction contexts. */
 export class MigrationRunner {
   readonly #connection: AbstractSqlConnection;
   readonly #helper: SchemaHelper;

@@ -9,6 +9,7 @@ import {
 } from '@mikro-orm/sql';
 import type { MigrationRow } from './typings.js';
 
+/** Tracks executed migrations in a database table. */
 export class MigrationStorage {
   readonly #connection: AbstractSqlConnection;
   readonly #helper: SchemaHelper;

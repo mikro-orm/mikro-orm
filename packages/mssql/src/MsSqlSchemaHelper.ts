@@ -19,6 +19,7 @@ import {
 } from '@mikro-orm/sql';
 import { UnicodeStringType } from './UnicodeStringType.js';
 
+/** Schema introspection helper for Microsoft SQL Server. */
 export class MsSqlSchemaHelper extends SchemaHelper {
   static readonly DEFAULT_VALUES = {
     true: ['1'],

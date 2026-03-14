@@ -3,10 +3,12 @@ import type { AnyString, Dictionary, EntityKey } from '../typings.js';
 
 declare const rawFragmentSymbolBrand: unique symbol;
 
+/** Branded symbol type used as a unique key for tracking raw SQL fragments in object properties. */
 export type RawQueryFragmentSymbol = symbol & {
   readonly [rawFragmentSymbolBrand]: true;
 };
 
+/** Represents a raw SQL fragment with optional parameters, usable as both a value and an object key via Symbol coercion. */
 export class RawQueryFragment<Alias extends string = string> {
   static #rawQueryReferences = new WeakMap<RawQueryFragmentSymbol, RawQueryFragment>();
   #key?: RawQueryFragmentSymbol;
@@ -18,6 +20,7 @@ export class RawQueryFragment<Alias extends string = string> {
     readonly params: unknown[] = [],
   ) {}
 
+  /** Returns a unique symbol key for this fragment, creating and caching it on first access. */
   get key(): RawQueryFragmentSymbol {
     if (!this.#key) {
       this.#key = Symbol(this.toJSON()) as RawQueryFragmentSymbol;
@@ -27,6 +30,7 @@ export class RawQueryFragment<Alias extends string = string> {
     return this.#key;
   }
 
+  /** Creates a new fragment with an alias appended via `as ??`. */
   as<A extends string>(alias: A): RawQueryFragment<A> {
     return new RawQueryFragment<A>(`${this.sql} as ??`, [...this.params, alias]);
   }
@@ -54,10 +58,12 @@ export class RawQueryFragment<Alias extends string = string> {
     return this;
   }
 
+  /** Checks whether the given value is a symbol that maps to a known raw query fragment. */
   static isKnownFragmentSymbol(key: unknown): key is RawQueryFragmentSymbol {
     return typeof key === 'symbol' && this.#rawQueryReferences.has(key as RawQueryFragmentSymbol);
   }
 
+  /** Checks whether an object has any symbol keys that are known raw query fragments. */
   static hasObjectFragments(object: unknown): boolean {
     return (
       Utils.isPlainObject(object) &&
@@ -65,6 +71,7 @@ export class RawQueryFragment<Alias extends string = string> {
     );
   }
 
+  /** Checks whether the given value is a RawQueryFragment instance or a known fragment symbol. */
   static isKnownFragment(key: unknown): key is RawQueryFragment | symbol {
     if (key instanceof RawQueryFragment) {
       return true;
@@ -73,6 +80,7 @@ export class RawQueryFragment<Alias extends string = string> {
     return this.isKnownFragmentSymbol(key);
   }
 
+  /** Retrieves the RawQueryFragment associated with the given key (instance or symbol). */
   static getKnownFragment(key: unknown): RawQueryFragment | undefined {
     if (key instanceof RawQueryFragment) {
       return key;
@@ -102,6 +110,7 @@ Object.defineProperties(RawQueryFragment.prototype, {
   __raw: { value: true, enumerable: false },
 });
 
+/** Checks whether the given value is a `RawQueryFragment` instance. */
 export function isRaw(value: unknown): value is RawQueryFragment {
   return typeof value === 'object' && value !== null && '__raw' in value;
 }
@@ -225,6 +234,7 @@ export function sql<R = RawQueryFragment & symbol>(sql: readonly string[], ...va
   return raw<R>(sql.join('?'), values);
 }
 
+/** Creates a raw SQL function expression wrapping the given key (e.g., `lower(name)`). */
 export function createSqlFunction<R = RawQueryFragment & symbol, T extends object = any>(
   func: string,
   key: string | ((alias: string) => string),

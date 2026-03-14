@@ -34,6 +34,7 @@ type PkGetter<T> = (entity: T) => Primary<T>;
 type PkSerializer<T> = (entity: T) => string;
 type CompositeKeyPart = string | CompositeKeyPart[];
 
+/** @internal Generates and caches JIT-compiled functions for comparing, snapshotting, and mapping entity data. */
 export class EntityComparator {
   readonly #comparators = new Map<EntityMetadata, Comparator<any>>();
   readonly #mappers = new Map<EntityMetadata, ResultMapper<any>>();
@@ -65,6 +66,7 @@ export class EntityComparator {
     return Utils.callCompiledFunction(comparator, a as T, b as T, options);
   }
 
+  /** Returns true if two entity snapshots are identical (no differences). */
   matching<T extends object>(entityName: EntityName<T>, a: EntityData<T>, b: EntityData<T>): boolean {
     const diff = this.diffEntities(entityName, a, b);
     return Utils.getObjectKeysSize(diff) === 0;

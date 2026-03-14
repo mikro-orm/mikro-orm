@@ -22,6 +22,7 @@ interface QueryTransformCache {
   entityMap: Map<string, EntityMetadata>;
 }
 
+/** Configuration options for the MikroKyselyPlugin. */
 export interface MikroKyselyPluginOptions {
   /**
    * Use database table names ('table') or entity names ('entity') in queries.
@@ -55,6 +56,7 @@ export interface MikroKyselyPluginOptions {
   convertValues?: boolean;
 }
 
+/** Kysely plugin that transforms queries and results to use MikroORM entity/property naming conventions. */
 export class MikroKyselyPlugin implements KyselyPlugin {
   static #queryNodeCache = new WeakMap<any, QueryTransformCache>();
 

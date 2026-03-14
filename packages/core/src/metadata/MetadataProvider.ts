@@ -13,9 +13,11 @@ export interface IConfiguration {
   getPlatform(): Platform;
 }
 
+/** Base metadata provider that resolves entity type information and manages metadata caching. */
 export class MetadataProvider {
   constructor(protected readonly config: IConfiguration) {}
 
+  /** Resolves entity references and type information for all properties in the given metadata. */
   loadEntityMetadata(meta: EntityMetadata): void {
     for (const prop of meta.props) {
       /* v8 ignore next */
@@ -36,6 +38,7 @@ export class MetadataProvider {
     }
   }
 
+  /** Merges cached metadata into the given entity metadata, preserving function expressions. */
   loadFromCache(meta: EntityMetadata, cache: EntityMetadata): void {
     Object.values(cache.properties).forEach(prop => {
       const metaProp = meta.properties[prop.name];
@@ -73,10 +76,12 @@ export class MetadataProvider {
     }
   }
 
+  /** Whether this provider class uses metadata caching by default. */
   static useCache(): boolean {
     return false;
   }
 
+  /** Whether metadata caching is enabled for this instance. */
   useCache(): boolean {
     return this.config.get('metadataCache').enabled ?? MetadataProvider.useCache();
   }
@@ -85,6 +90,7 @@ export class MetadataProvider {
     //
   }
 
+  /** Attempts to load metadata from cache, returning undefined if not available. */
   getCachedMetadata<T>(
     meta: Pick<EntityMetadata<T>, 'className' | 'path' | 'root'>,
     root: EntityMetadata<T>,
@@ -103,6 +109,7 @@ export class MetadataProvider {
     return cache;
   }
 
+  /** Combines individual metadata cache entries into a single file. */
   combineCache(): void {
     const path = this.config.getMetadataCacheAdapter().combine?.();
 
@@ -112,6 +119,7 @@ export class MetadataProvider {
     }
   }
 
+  /** Returns the cache key for the given entity metadata. */
   getCacheKey(meta: Pick<EntityMetadata, 'className' | 'path'>): string {
     return meta.className;
   }

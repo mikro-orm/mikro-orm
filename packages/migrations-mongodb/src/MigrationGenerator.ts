@@ -6,6 +6,7 @@ import {
 } from '@mikro-orm/core';
 import type { MongoDriver } from '@mikro-orm/mongodb';
 
+/** Base class for generating MongoDB migration source files. */
 export abstract class MigrationGenerator implements IMigrationGenerator {
   constructor(
     protected readonly driver: MongoDriver,

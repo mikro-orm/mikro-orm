@@ -18,6 +18,7 @@ import { type SchemaHelper } from './schema/SchemaHelper.js';
 import type { IndexDef } from './typings.js';
 import { NativeQueryBuilder } from './query/NativeQueryBuilder.js';
 
+/** Base class for SQL database platforms, providing SQL generation and quoting utilities. */
 export abstract class AbstractSqlPlatform extends Platform {
   static readonly #JSON_PROPERTY_NAME_RE = /^[a-zA-Z_][a-zA-Z0-9_]*$/;
 

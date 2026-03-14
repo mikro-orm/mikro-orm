@@ -3,6 +3,7 @@ import type { EntityProperty } from '../typings.js';
 import type { Platform } from '../platforms/Platform.js';
 import { ValidationError } from '../errors.js';
 
+/** Maps a database text/array column to a JS array, using platform-specific marshalling (e.g., PostgreSQL arrays or comma-separated strings). */
 export class ArrayType<T = string> extends Type<T[] | null, string | null> {
   constructor(
     private readonly toJsValue: (i: string) => T = i => i as T,

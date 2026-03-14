@@ -1,5 +1,6 @@
 import { AbstractNamingStrategy } from './AbstractNamingStrategy.js';
 
+/** Naming strategy for MongoDB that uses camelCase property names and hyphenated collection names. */
 export class MongoNamingStrategy extends AbstractNamingStrategy {
   classToTableName(entityName: string, tableName?: string): string {
     return tableName ?? entityName.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();

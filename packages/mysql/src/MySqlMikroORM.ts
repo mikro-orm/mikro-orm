@@ -12,6 +12,7 @@ import {
 import type { SqlEntityManager } from '@mikro-orm/sql';
 import { MySqlDriver } from './MySqlDriver.js';
 
+/** Configuration options for the MySQL driver. */
 export type MySqlOptions<
   EM extends SqlEntityManager<MySqlDriver> = SqlEntityManager<MySqlDriver>,
   Entities extends (string | EntityClass<AnyEntity> | EntitySchema)[] = (
@@ -21,6 +22,7 @@ export type MySqlOptions<
   )[],
 > = Partial<Options<MySqlDriver, EM, Entities>>;
 
+/** Creates a type-safe configuration object for the MySQL driver. */
 export function defineMySqlConfig<
   EM extends SqlEntityManager<MySqlDriver> = SqlEntityManager<MySqlDriver>,
   Entities extends (string | EntityClass<AnyEntity> | EntitySchema)[] = (

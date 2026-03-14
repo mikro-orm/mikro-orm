@@ -7,6 +7,7 @@ import {
 } from '@mikro-orm/core';
 import { prepareMetadataContext } from '../utils.js';
 
+/** Defines a computed SQL formula property on an entity (TC39 decorator). */
 export function Formula<Owner extends object>(
   formula: string | FormulaCallback<Owner>,
   options: PropertyOptions<Owner> = {},

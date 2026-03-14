@@ -28,6 +28,7 @@ import { ReferenceKind } from '../enums.js';
 import type { Platform } from '../platforms/Platform.js';
 import type { EntityManager } from '../EntityManager.js';
 
+/** @internal Executes change sets against the database, handling inserts, updates, and deletes. */
 export class ChangeSetPersister {
   readonly #platform: Platform;
   readonly #comparator: EntityComparator;
@@ -52,6 +53,7 @@ export class ChangeSetPersister {
     this.#usesReturningStatement = this.#platform.usesReturningStatement() || this.#platform.usesOutputStatement();
   }
 
+  /** Executes all pending INSERT change sets, using batch inserts when possible. */
   async executeInserts<T extends object>(
     changeSets: ChangeSet<T>[],
     options?: DriverMethodOptions,
@@ -73,6 +75,7 @@ export class ChangeSetPersister {
     }
   }
 
+  /** Executes all pending UPDATE change sets, using batch updates when possible. */
   async executeUpdates<T extends object>(
     changeSets: ChangeSet<T>[],
     batched: boolean,
@@ -104,6 +107,7 @@ export class ChangeSetPersister {
     }
   }
 
+  /** Executes all pending DELETE change sets in batches. */
   async executeDeletes<T extends object>(
     changeSets: ChangeSet<T>[],
     options?: DriverMethodOptions,

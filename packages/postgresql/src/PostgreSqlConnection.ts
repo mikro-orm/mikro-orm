@@ -4,6 +4,7 @@ import { PostgresDialect } from 'kysely';
 import array from 'postgres-array';
 import { AbstractSqlConnection, Utils } from '@mikro-orm/sql';
 
+/** PostgreSQL database connection using the `pg` driver. */
 export class PostgreSqlConnection extends AbstractSqlConnection {
   override createKyselyDialect(overrides: PoolConfig): PostgresDialect {
     const options = this.mapOptions(overrides);

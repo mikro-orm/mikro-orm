@@ -52,38 +52,47 @@ import type { MikroORM } from '../MikroORM.js';
 import type { TransformContext } from '../types/Type.js';
 import { Raw } from '../utils/RawQueryFragment.js';
 
+/** Symbol used to tag cloned embeddable data for JSON serialization handling. */
 export const JsonProperty = Symbol('JsonProperty');
 
+/** Abstract base class providing database-specific behavior and SQL dialect differences. */
 export abstract class Platform {
   protected readonly exceptionConverter: ExceptionConverter = new ExceptionConverter();
   protected config!: Configuration;
   protected namingStrategy!: NamingStrategy;
   protected timezone?: string;
 
+  /** Whether this driver uses pivot tables for M:N relations (SQL drivers do, MongoDB does not). */
   usesPivotTable(): boolean {
     return false;
   }
 
+  /** Whether this driver supports database transactions. */
   supportsTransactions(): boolean {
     return !this.config.get('disableTransactions');
   }
 
+  /** Whether the driver wraps operations in implicit transactions by default. */
   usesImplicitTransactions(): boolean {
     return true;
   }
 
+  /** Returns the default naming strategy constructor for this platform. */
   getNamingStrategy(): { new (): NamingStrategy } {
     return UnderscoreNamingStrategy;
   }
 
+  /** Whether the driver supports RETURNING clause (e.g. PostgreSQL). */
   usesReturningStatement(): boolean {
     return false;
   }
 
+  /** Whether the driver supports OUTPUT clause (e.g. MSSQL). */
   usesOutputStatement(): boolean {
     return false;
   }
 
+  /** Whether DELETE statements require explicit CASCADE keyword. */
   usesCascadeStatement(): boolean {
     return false;
   }
@@ -98,14 +107,17 @@ export abstract class Platform {
     return false;
   }
 
+  /** Whether this platform supports materialized views. */
   supportsMaterializedViews(): boolean {
     return false;
   }
 
+  /** Returns the schema helper instance for this platform, or undefined if not supported. */
   getSchemaHelper(): unknown {
     return undefined;
   }
 
+  /** Whether the platform automatically creates indexes on foreign key columns. */
   indexForeignKeys(): boolean {
     return false;
   }
@@ -124,6 +136,7 @@ export abstract class Platform {
     return true;
   }
 
+  /** Whether the platform supports the DEFAULT keyword in INSERT statements. */
   usesDefaultKeyword(): boolean {
     return true;
   }
@@ -149,34 +162,42 @@ export abstract class Platform {
     return 'current_timestamp' + (length ? `(${length})` : '');
   }
 
+  /** Returns the SQL type declaration for datetime columns. */
   getDateTimeTypeDeclarationSQL(column: { length?: number }): string {
     return 'datetime' + (column.length ? `(${column.length})` : '');
   }
 
+  /** Returns the default fractional seconds precision for datetime columns. */
   getDefaultDateTimeLength(): number {
     return 0;
   }
 
+  /** Returns the default length for varchar columns. */
   getDefaultVarcharLength(): number {
     return 255;
   }
 
+  /** Returns the default length for char columns. */
   getDefaultCharLength(): number {
     return 1;
   }
 
+  /** Returns the SQL type declaration for date columns. */
   getDateTypeDeclarationSQL(length?: number): string {
     return 'date' + (length ? `(${length})` : '');
   }
 
+  /** Returns the SQL type declaration for time columns. */
   getTimeTypeDeclarationSQL(length?: number): string {
     return 'time' + (length ? `(${length})` : '');
   }
 
+  /** Returns the SQL operator used for regular expression matching. */
   getRegExpOperator(val?: unknown, flags?: string): string {
     return 'regexp';
   }
 
+  /** Builds the SQL clause and parameters for a regular expression condition. */
   mapRegExpCondition(mappedKey: string, value: { $re: string; $flags?: string }): { sql: string; params: unknown[] } {
     const operator = this.getRegExpOperator(value.$re, value.$flags);
     const quotedKey = this.quoteIdentifier(mappedKey);
@@ -184,6 +205,7 @@ export abstract class Platform {
     return { sql: `${quotedKey} ${operator} ?`, params: [value.$re] };
   }
 
+  /** Converts a JavaScript RegExp into a platform-specific regex representation. */
   getRegExpValue(val: RegExp): { $re: string; $flags?: string } {
     if (val.flags.includes('i')) {
       return { $re: `(?i)${val.source}` };
@@ -192,10 +214,12 @@ export abstract class Platform {
     return { $re: val.source };
   }
 
+  /** Whether the given operator is allowed at the top level of a query condition. */
   isAllowedTopLevelOperator(operator: string): boolean {
     return operator === '$not';
   }
 
+  /** Converts a version field value for comparison in optimistic locking queries. */
   convertVersionValue(
     value: Date | number,
     prop: EntityProperty,
@@ -203,26 +227,32 @@ export abstract class Platform {
     return value;
   }
 
+  /** Returns the default fractional seconds precision for version timestamp columns. */
   getDefaultVersionLength(): number {
     return 3;
   }
 
+  /** Whether the platform supports tuple comparison in WHERE clauses. */
   allowsComparingTuples(): boolean {
     return true;
   }
 
+  /** Whether the given property maps to a bigint database column. */
   isBigIntProperty(prop: EntityProperty): boolean {
     return prop.columnTypes?.[0] === 'bigint';
   }
 
+  /** Returns the default schema name for this platform (e.g. "public" for PostgreSQL). */
   getDefaultSchemaName(): string | undefined {
     return undefined;
   }
 
+  /** Returns the SQL type declaration for boolean columns. */
   getBooleanTypeDeclarationSQL(): string {
     return 'boolean';
   }
 
+  /** Returns the SQL type declaration for integer columns. */
   getIntegerTypeDeclarationSQL(column: { length?: number; unsigned?: boolean; autoincrement?: boolean }): string {
     return 'int';
   }
@@ -293,6 +323,7 @@ export abstract class Platform {
     return this.getVarcharTypeDeclarationSQL(column);
   }
 
+  /** Extracts the base type name from a full SQL type declaration (e.g. "varchar(255)" -> "varchar"). */
   extractSimpleType(type: string): string {
     return /[^(), ]+/.exec(type.toLowerCase())![0];
   }
@@ -304,11 +335,13 @@ export abstract class Platform {
     return type.toLowerCase();
   }
 
+  /** Returns the mapped Type instance for a given SQL/runtime type string. */
   getMappedType(type: string): Type<unknown> {
     const mappedType = this.config.get('discovery').getMappedType?.(type, this);
     return mappedType ?? this.getDefaultMappedType(type);
   }
 
+  /** Returns the default mapped Type for a given type string when no custom mapping is configured. */
   getDefaultMappedType(type: string): Type<unknown> {
     if (type.endsWith('[]')) {
       return Type.getType(ArrayType);
@@ -371,6 +404,7 @@ export abstract class Platform {
     }
   }
 
+  /** Whether the platform supports multiple cascade paths to the same table. */
   supportsMultipleCascadePaths(): boolean {
     return true;
   }
@@ -383,22 +417,27 @@ export abstract class Platform {
     return true;
   }
 
+  /** Whether the connection supports executing multiple SQL statements in a single call. */
   supportsMultipleStatements(): boolean {
     return this.config.get('multipleStatements');
   }
 
+  /** Whether the platform supports the UNION WHERE optimization for multi-branch queries. */
   supportsUnionWhere(): boolean {
     return false;
   }
 
+  /** Returns the SQL type declaration used for array storage. */
   getArrayDeclarationSQL(): string {
     return 'text';
   }
 
+  /** Serializes a string array into its database storage format. */
   marshallArray(values: string[]): string {
     return values.join(',');
   }
 
+  /** Deserializes a database-stored array string back into a string array. */
   unmarshallArray(value: string): string[] {
     if (value === '') {
       return [];
@@ -483,14 +522,17 @@ export abstract class Platform {
     throw new Error('Full text searching is not supported by this driver.');
   }
 
+  /** Whether the driver automatically parses JSON columns into JS objects. */
   convertsJsonAutomatically(): boolean {
     return true;
   }
 
+  /** Converts a JS value to its JSON database representation (typically JSON.stringify). */
   convertJsonToDatabaseValue(value: unknown, context?: TransformContext): unknown {
     return JSON.stringify(value);
   }
 
+  /** Converts a database JSON value to its JS representation. */
   convertJsonToJSValue(value: unknown, context?: TransformContext): unknown {
     return parseJsonSafe(value);
   }
@@ -527,6 +569,7 @@ export abstract class Platform {
     return value;
   }
 
+  /** Parses a string or numeric value into a Date object. */
   parseDate(value: string | number): Date {
     const date = new Date(value);
 
@@ -538,14 +581,17 @@ export abstract class Platform {
     return date;
   }
 
+  /** Returns the default EntityRepository class used by this platform. */
   getRepositoryClass<T extends object>(): Constructor<EntityRepository<T>> {
     return EntityRepository;
   }
 
+  /** Returns the default character set for this platform. */
   getDefaultCharset(): string {
     return 'utf8';
   }
 
+  /** Returns the exception converter for translating native errors to driver exceptions. */
   getExceptionConverter(): ExceptionConverter {
     return this.exceptionConverter;
   }
@@ -562,6 +608,7 @@ export abstract class Platform {
     this.lookupExtensions(orm);
   }
 
+  /** Retrieves a registered extension (e.g. SchemaGenerator, Migrator), throwing if not found. */
   getExtension<T>(extensionName: string, extensionKey: string, moduleName: string, em: EntityManager): T {
     const extension = this.config.getExtension<T>(extensionKey);
 
@@ -580,10 +627,12 @@ export abstract class Platform {
     throw new Error(`${driver.constructor.name} does not support SchemaGenerator`);
   }
 
+  /** Processes a date value before persisting, applying timezone or format conversions. */
   processDateProperty(value: unknown): string | number | Date {
     return value as string;
   }
 
+  /** Wraps a table or column identifier with the platform-specific quote character. */
   quoteIdentifier(id: string | { toString: () => string }, quote = '`'): string {
     const raw = Raw.getKnownFragment(id);
 
@@ -594,6 +643,7 @@ export abstract class Platform {
     return `${quote}${id.toString().replace('.', `${quote}.${quote}`)}${quote}`;
   }
 
+  /** Quotes a literal value for safe embedding in SQL. */
   quoteValue(value: any): string {
     return value;
   }
@@ -603,6 +653,7 @@ export abstract class Platform {
     return value;
   }
 
+  /** Replaces `?` placeholders in SQL with quoted parameter values. */
   formatQuery(sql: string, params: readonly any[]): string {
     if (params.length === 0) {
       return sql;
@@ -646,6 +697,7 @@ export abstract class Platform {
     return ret;
   }
 
+  /** Deep-clones embeddable data and tags it for JSON serialization. */
   cloneEmbeddable<T>(data: T): T {
     const copy = clone(data);
     // tag the copy so we know it should be stringified when quoting (so we know how to treat JSON arrays)
@@ -654,6 +706,7 @@ export abstract class Platform {
     return copy;
   }
 
+  /** Initializes the platform with the ORM configuration. */
   setConfig(config: Configuration): void {
     this.config = config;
     this.namingStrategy = config.getNamingStrategy();
@@ -665,23 +718,28 @@ export abstract class Platform {
     }
   }
 
+  /** Returns the current ORM configuration. */
   getConfig(): Configuration {
     return this.config;
   }
 
+  /** Returns the configured timezone, or undefined if not set. */
   getTimezone(): string | undefined {
     return this.timezone;
   }
 
+  /** Whether the given property represents a numeric database column. */
   isNumericProperty(prop: EntityProperty, ignoreCustomType = false): boolean {
     const numericMappedType = prop.columnTypes?.[0] && this.isNumericColumn(this.getMappedType(prop.columnTypes[0]));
     return numericMappedType || prop.type === 'number' || this.isBigIntProperty(prop);
   }
 
+  /** Whether the given mapped type represents a numeric column. */
   isNumericColumn(mappedType: Type<unknown>): boolean {
     return [IntegerType, SmallIntType, BigIntType, TinyIntType].some(t => mappedType instanceof t);
   }
 
+  /** Whether the platform supports unsigned integer columns. */
   supportsUnsigned(): boolean {
     return false;
   }
@@ -697,18 +755,22 @@ export abstract class Platform {
     return this.namingStrategy.indexName(tableName, columns, type);
   }
 
+  /** Returns the default primary key constraint name. */
   getDefaultPrimaryName(tableName: string, columns: string[]): string {
     return 'primary';
   }
 
+  /** Whether the platform supports custom names for primary key constraints. */
   supportsCustomPrimaryKeyNames(): boolean {
     return false;
   }
 
+  /** Whether the given property key is included in the populate hint. */
   isPopulated<T>(key: string, populate: readonly PopulateOptions<T>[] | boolean): boolean {
     return populate === true || (populate !== false && populate.some(p => p.field === key || p.all));
   }
 
+  /** Whether the given property should be included as a column in the SELECT query. */
   shouldHaveColumn<T>(
     prop: EntityProperty<T>,
     populate: readonly PopulateOptions<T>[] | boolean,
@@ -750,14 +812,17 @@ export abstract class Platform {
   /**
    * Currently not supported due to how knex does complex sqlite diffing (always based on current schema)
    */
+  /** Whether the platform supports generating down migrations. */
   supportsDownMigrations(): boolean {
     return true;
   }
 
+  /** Whether the platform supports deferred unique constraints. */
   supportsDeferredUniqueConstraints(): boolean {
     return true;
   }
 
+  /** Platform-specific validation of entity metadata. */
   validateMetadata(meta: EntityMetadata): void {
     return;
   }

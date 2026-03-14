@@ -2,6 +2,7 @@ import type { Configuration, Transaction, EntityName } from '@mikro-orm/core';
 import type { MongoDriver } from '@mikro-orm/mongodb';
 import type { Collection, ClientSession, Document, Db } from 'mongodb';
 
+/** Base class for MongoDB migrations. Extend this class and implement `up()` (and optionally `down()`). */
 export abstract class Migration {
   protected ctx?: Transaction<ClientSession>;
 

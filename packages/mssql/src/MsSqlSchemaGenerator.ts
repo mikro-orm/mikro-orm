@@ -1,6 +1,7 @@
 import { type ClearDatabaseOptions, type DropSchemaOptions, type MikroORM, SchemaGenerator } from '@mikro-orm/sql';
 import type { MsSqlDriver } from './MsSqlDriver.js';
 
+/** Schema generator with MSSQL-specific behavior for clearing and dropping schemas. */
 export class MsSqlSchemaGenerator extends SchemaGenerator {
   static override register(orm: MikroORM<MsSqlDriver>): void {
     orm.config.registerExtension('@mikro-orm/schema-generator', () => new MsSqlSchemaGenerator(orm.em));

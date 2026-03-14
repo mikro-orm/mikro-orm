@@ -35,16 +35,36 @@ import type { FilterOptions, FindOneOptions, FindOptions, LoadHint } from './dri
 import { BaseEntity } from './entity/BaseEntity.js';
 
 export type { Raw };
+
+/** Generic constructor type. Matches any class that can be instantiated with `new`. */
 export type Constructor<T = unknown> = new (...args: any[]) => T;
+
+/** Simple string-keyed object type. Use instead of `Record<string, T>` for convenience. */
 export type Dictionary<T = any> = { [k: string]: T };
+
+/** Record of compiled functions, used internally for hydration and comparison. */
 export type CompiledFunctions = Record<string, (...args: any[]) => any>;
-// `EntityKey<T, true>` will skip scalar properties (and some other scalar like types like Date or Buffer)
+
+/**
+ * Extracts string property keys from an entity, excluding symbols, functions, and internal keys.
+ * Pass `B = true` to also exclude scalar properties (useful for getting only relation keys).
+ */
 export type EntityKey<T = unknown, B extends boolean = false> = string &
   { [K in keyof T]-?: CleanKeys<T, K, B> extends never ? never : K }[keyof T];
+
+/** Resolves to the value type of entity properties (keyed by `EntityKey<T>`). */
 export type EntityValue<T> = T[EntityKey<T>];
+
+/** Resolves to the value type within `EntityData<T>` (the data shape used for create/update). */
 export type EntityDataValue<T> = EntityData<T>[EntityKey<T>];
+
+/** Extracts valid keys for `FilterQuery<T>`. */
 export type FilterKey<T> = keyof FilterQuery<T>;
+
+/** A function type that accepts a dictionary argument and returns a Promise. */
 export type AsyncFunction<R = any, T = Dictionary> = (args: T) => Promise<T>;
+
+/** Identity mapped type that forces TypeScript to eagerly evaluate and flatten `T`. */
 export type Compute<T> = { [K in keyof T]: T[K] } & {};
 type InternalKeys =
   | 'EntityRepositoryType'
@@ -54,6 +74,7 @@ type InternalKeys =
   | 'HiddenProps'
   | '__selectedType'
   | '__loadedType';
+/** Filters out function, symbol, and internal keys from an entity type. When `B = true`, also excludes scalar keys. */
 export type CleanKeys<T, K extends keyof T, B extends boolean = false> = T[K] & {} extends Function
   ? never
   : K extends symbol | InternalKeys
@@ -63,11 +84,23 @@ export type CleanKeys<T, K extends keyof T, B extends boolean = false> = T[K] & 
         ? never
         : K
       : K;
+
+/** Extracts keys of `T` whose values are functions. */
 export type FunctionKeys<T, K extends keyof T> = T[K] extends Function ? K : never;
+
+/** Conditional cast: returns `T` if it extends `R`, otherwise returns `R`. */
 export type Cast<T, R> = T extends R ? T : R;
+
+/** Evaluates to `true` if `T` is the `unknown` type. */
 export type IsUnknown<T> = T extends unknown ? (unknown extends T ? true : never) : never;
+
+/** Evaluates to `true` if `T` is `any`. */
 export type IsAny<T> = 0 extends 1 & T ? true : false;
+
+/** Evaluates to `True` if `T` is `never`, otherwise `False`. */
 export type IsNever<T, True = true, False = false> = [T] extends [never] ? True : False;
+
+/** Represents a value that may be synchronous or wrapped in a Promise. */
 export type MaybePromise<T> = T | Promise<T>;
 
 /**
@@ -118,17 +151,19 @@ type LoadedReferenceShape<T = any> = ReferenceShape & { $: T };
  */
 type LoadableShape = CollectionShape | ReferenceShape | readonly any[];
 
-// Get all keys from all union members (distributes over union)
+/** Gets all keys from all members of a union type (distributes over the union). */
 export type UnionKeys<T> = T extends any ? keyof T : never;
 
-// Get the type of property from all union members that have it
+/** Gets the type of a property from all union members that have it (distributes over the union). */
 export type UnionPropertyType<T, K extends PropertyKey> = T extends any ? (K extends keyof T ? T[K] : never) : never;
 
 // Check if T is a union type (non-distributing check)
 type IsUnion<T, U = T> = T extends any ? ([U] extends [T] ? false : true) : false;
 
-// Merge all union member properties into a single object for filtering
-// Optimized: for non-union types, just returns T directly to avoid expensive key iteration
+/**
+ * Merges all members of a union type into a single object with all their properties.
+ * For non-union types, returns `T` directly to avoid expensive key iteration.
+ */
 export type MergeUnion<T> = [T] extends [object]
   ? T extends Scalar
     ? T
@@ -137,6 +172,7 @@ export type MergeUnion<T> = [T] extends [object]
       : T
   : T;
 
+/** Recursively makes all properties of `T` optional, including nested objects and arrays. */
 export type DeepPartial<T> = T & {
   [P in keyof T]?: T[P] extends (infer U)[]
     ? DeepPartial<U>[]
@@ -145,17 +181,35 @@ export type DeepPartial<T> = T & {
       : DeepPartial<T[P]>;
 };
 
+/** Symbol used to declare a custom repository type on an entity class (e.g., `[EntityRepositoryType]?: BookRepository`). */
 export const EntityRepositoryType = Symbol('EntityRepositoryType');
+
+/** Symbol used to declare the primary key property name(s) on an entity (e.g., `[PrimaryKeyProp]?: 'id'`). */
 export const PrimaryKeyProp = Symbol('PrimaryKeyProp');
+
+/** Symbol used to declare which properties are optional in `em.create()` (e.g., `[OptionalProps]?: 'createdAt'`). */
 export const OptionalProps = Symbol('OptionalProps');
+
+/** Symbol used to declare which relation properties should be eagerly loaded (e.g., `[EagerProps]?: 'author'`). */
 export const EagerProps = Symbol('EagerProps');
+
+/** Symbol used to declare which properties are hidden from serialization (e.g., `[HiddenProps]?: 'password'`). */
 export const HiddenProps = Symbol('HiddenProps');
+
+/** Symbol used to declare type-level configuration on an entity (e.g., `[Config]?: DefineConfig<{ forceObject: true }>`). */
 export const Config = Symbol('Config');
+
+/** Symbol used to declare the entity name as a string literal type (used by `defineEntity`). */
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const EntityName = Symbol('EntityName');
 
+/** Extracts the entity name string literal from an entity type that declares `[EntityName]`. */
 export type InferEntityName<T> = T extends { [EntityName]?: infer Name } ? (Name extends string ? Name : never) : never;
 
+/**
+ * Branded type that marks a property as optional in `em.create()`.
+ * Use as a property type wrapper: `createdAt: Opt<Date>` instead of listing in `[OptionalProps]`.
+ */
 export type Opt<T = unknown> = T & Opt.Brand;
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export declare namespace Opt {
@@ -166,6 +220,10 @@ export declare namespace Opt {
   }
 }
 
+/**
+ * Branded type that marks a nullable property as required in `em.create()`.
+ * By default, nullable properties are treated as optional; this forces them to be explicitly provided.
+ */
 export type RequiredNullable<T = never> = (T & RequiredNullable.Brand) | null;
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export declare namespace RequiredNullable {
@@ -176,6 +234,10 @@ export declare namespace RequiredNullable {
   }
 }
 
+/**
+ * Branded type that marks a property as hidden from serialization.
+ * Use as a property type wrapper: `password: Hidden<string>` instead of listing in `[HiddenProps]`.
+ */
 export type Hidden<T = unknown> = T & Hidden.Brand;
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export declare namespace Hidden {
@@ -186,6 +248,10 @@ export declare namespace Hidden {
   }
 }
 
+/**
+ * Branded type for entity-level configuration (e.g., `[Config]?: DefineConfig<{ forceObject: true }>`).
+ * Controls type-level behavior such as forcing object representation for primary keys in DTOs.
+ */
 export type DefineConfig<T extends TypeConfig> = T & DefineConfig.Brand;
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export declare namespace DefineConfig {
@@ -196,8 +262,10 @@ export declare namespace DefineConfig {
   }
 }
 
+/** Extracts only the `TypeConfig` keys from a branded config type, stripping the brand. */
 export type CleanTypeConfig<T> = Compute<Pick<T, Extract<keyof T, keyof TypeConfig>>>;
 
+/** Configuration options that can be set on an entity via the `[Config]` symbol. */
 export interface TypeConfig {
   forceObject?: boolean;
 }
@@ -223,6 +291,7 @@ export type Prefixes<S extends string> = S extends '*'
     ? H | `${H}.${Prefixes<T>}`
     : S;
 
+/** Unwraps a value to its primary key type. Scalars pass through; References are unwrapped first. */
 export type UnwrapPrimary<T> = T extends Scalar ? T : T extends ReferenceShape<infer U> ? Primary<U> : Primary<T>;
 
 type PrimaryPropToType<T, Keys extends (keyof T)[]> = {
@@ -231,6 +300,10 @@ type PrimaryPropToType<T, Keys extends (keyof T)[]> = {
 
 type ReadonlyPrimary<T> = T extends any[] ? Readonly<T> : T;
 
+/**
+ * Resolves the primary key type for an entity. Uses `[PrimaryKeyProp]` if declared,
+ * otherwise falls back to `_id`, `id`, or `uuid` properties. For composite keys, returns a tuple.
+ */
 export type Primary<T> =
   IsAny<T> extends true
     ? any
@@ -267,9 +340,13 @@ export type PrimaryProperty<T> = T extends { [PrimaryKeyProp]?: infer PK }
         ? 'uuid'
         : never;
 
+/** Union of all allowed primary key value types (number, string, bigint, Date, ObjectId-like). */
 export type IPrimaryKeyValue = number | string | bigint | Date | { toHexString(): string };
+
+/** Alias for a primary key value, constrained to `IPrimaryKeyValue`. */
 export type IPrimaryKey<T extends IPrimaryKeyValue = IPrimaryKeyValue> = T;
 
+/** Union of types considered "scalar" (non-entity) values. Used to distinguish entity relations from plain values. */
 export type Scalar =
   | boolean
   | number
@@ -284,6 +361,7 @@ export type Scalar =
 // Primitive types that don't extend object - used for Hidden brand detection
 type Primitive = boolean | number | string | bigint | symbol;
 
+/** Expands a scalar type to include alternative representations accepted in queries (e.g., `Date | string`). */
 export type ExpandScalar<T> =
   | null
   | (T extends string ? T | RegExp : T extends Date ? Date | string : T extends bigint ? bigint | string | number : T);
@@ -293,6 +371,7 @@ export interface Subquery {
   readonly __subquery: true;
 }
 
+/** Map of query operators (`$eq`, `$gt`, `$in`, etc.) available for filtering a value of type `T`. */
 export type OperatorMap<T> = {
   $and?: ExpandQuery<T>[];
   $or?: ExpandQuery<T>[];
@@ -322,7 +401,10 @@ export type OperatorMap<T> = {
   $hasSomeKeys?: readonly string[];
 };
 
+/** A single filter value: the raw value, its expanded scalar form, its primary key, or a raw SQL expression. */
 export type FilterItemValue<T> = T | ExpandScalar<T> | Primary<T> | Raw;
+
+/** A complete filter value: an operator map, a single value, an array of values, or null. */
 export type FilterValue<T> = OperatorMap<FilterItemValue<T>> | FilterItemValue<T> | FilterItemValue<T>[] | null;
 
 type FilterObjectProp<T, K extends PropertyKey> = K extends keyof MergeUnion<T>
@@ -352,6 +434,7 @@ type ElemMatchFilter<T> = T extends readonly (infer E)[]
     : never
   : never;
 
+/** Object form of a filter query, mapping entity keys to their filter conditions. */
 export type FilterObject<T> = {
   -readonly [K in EntityKey<T>]?:
     | ExpandQuery<ExpandProperty<FilterObjectProp<T, K>>>
@@ -361,16 +444,26 @@ export type FilterObject<T> = {
     | null;
 };
 
+/** Recursively expands a type into its `FilterQuery` form for nested object filtering. */
 export type ExpandQuery<T> = T extends object ? (T extends Scalar ? never : FilterQuery<T>) : FilterValue<T>;
 
+/** Partial entity shape with all entity properties optional. */
 export type EntityProps<T> = { -readonly [K in EntityKey<T>]?: T[K] };
+
+/** Object-based query filter combining operator maps with property-level filters. */
 export type ObjectQuery<T> = OperatorMap<T> & FilterObject<T>;
+
+/**
+ * The main query filter type used in `em.find()`, `em.findOne()`, etc.
+ * Accepts an object query, a primary key value, entity props with operators, or an array of filters.
+ */
 export type FilterQuery<T> =
   | ObjectQuery<T>
   | NonNullable<ExpandScalar<Primary<T>>>
   | NonNullable<EntityProps<T> & OperatorMap<T>>
   | FilterQuery<T>[];
 
+/** Public interface for the entity wrapper, accessible via `wrap(entity)`. Provides helper methods for entity state management. */
 export interface IWrappedEntity<Entity extends object> {
   isInitialized(): boolean;
   isManaged(): boolean;
@@ -412,6 +505,7 @@ export interface IWrappedEntity<Entity extends object> {
   setSchema(schema?: string): void;
 }
 
+/** @internal Extended wrapper interface with internal state used by the ORM runtime. */
 export interface IWrappedEntityInternal<Entity extends object> extends IWrappedEntity<Entity> {
   hasPrimaryKey(): boolean;
   getPrimaryKey(convertCustomTypes?: boolean): Primary<Entity> | null;
@@ -445,11 +539,16 @@ export interface IWrappedEntityInternal<Entity extends object> extends IWrappedE
   };
 }
 
+/** Loose entity type used in generic contexts. Equivalent to `Partial<T>`. */
 export type AnyEntity<T = any> = Partial<T>;
+
+/** A class (function with prototype) whose instances are of type `T`. */
 export type EntityClass<T = any> = Function & { prototype: T };
+
+/** Any valid entity name reference: a class, abstract constructor, or EntitySchema. */
 export type EntityName<T = any> = EntityClass<T> | EntityCtor<T> | EntitySchema<T, any>;
 
-// we need to restrict the type in the generic argument, otherwise inference don't work, so we use two types here
+/** Resolves the custom repository type for an entity (from `[EntityRepositoryType]`), or falls back to `Fallback`. */
 export type GetRepository<
   Entity extends { [k: PropertyKey]: any },
   Fallback,
@@ -469,6 +568,7 @@ type PolymorphicPrimaryInner<T> = T extends object
  */
 export type PolymorphicPrimary<T> = true extends IsUnion<T> ? PolymorphicPrimaryInner<T> : never;
 
+/** Allowed value types when assigning to an entity data property: the entity itself, its PK, or a polymorphic PK tuple. */
 export type EntityDataPropValue<T> = T | Primary<T> | PolymorphicPrimary<T>;
 type ExpandEntityProp<T, C extends boolean = false> =
   T extends Record<string, any>
@@ -498,6 +598,7 @@ type ExpandRequiredEntityPropObject<T, I = never, C extends boolean = false> = {
 
 type NonArrayObject = object & { [Symbol.iterator]?: never };
 
+/** Resolves the allowed input type for a single entity property in `EntityData`. Handles scalars, references, collections, and nested entities. */
 export type EntityDataProp<T, C extends boolean> = T extends Date
   ? string | Date
   : T extends Scalar
@@ -518,6 +619,7 @@ export type EntityDataProp<T, C extends boolean> = T extends Date
                 : U[] | EntityDataNested<U, C>[]
               : EntityDataNested<T, C>;
 
+/** Like `EntityDataProp` but used in `RequiredEntityData` context with required/optional key distinction. */
 export type RequiredEntityDataProp<T, O, C extends boolean> = T extends Date
   ? string | Date
   : Exclude<T, null> extends RequiredNullable.Brand
@@ -540,6 +642,7 @@ export type RequiredEntityDataProp<T, O, C extends boolean> = T extends Date
                   : U[] | RequiredEntityDataNested<U, O, C>[]
                 : RequiredEntityDataNested<T, O, C>;
 
+/** Nested entity data shape for embedded or related entities within `EntityData`. */
 export type EntityDataNested<T, C extends boolean = false> = T extends undefined
   ? never
   : T extends any[]
@@ -550,6 +653,7 @@ type EntityDataItem<T, C extends boolean> = C extends false
   ? UnwrapScalarRef<T> | EntityDataProp<T, C> | Raw | null
   : EntityDataProp<T, C> | Raw | null;
 
+/** Nested entity data shape used within `RequiredEntityData` for embedded or related entities. */
 export type RequiredEntityDataNested<T, O, C extends boolean> = T extends any[]
   ? Readonly<T>
   : RequiredEntityData<T, O> | ExpandRequiredEntityProp<T, O, C>;
@@ -575,7 +679,14 @@ type IsOptional<T, K extends keyof T, I> = T[K] extends CollectionShape
       : false;
 type RequiredKeys<T, K extends keyof T, I> = IsOptional<T, K, I> extends false ? CleanKeys<T, K> : never;
 type OptionalKeys<T, K extends keyof T, I> = IsOptional<T, K, I> extends false ? never : CleanKeys<T, K>;
+/** Data shape for creating or updating entities. All properties are optional. Used in `em.create()` and `em.assign()`. */
 export type EntityData<T, C extends boolean = false> = { [K in EntityKey<T>]?: EntityDataItem<T[K] & {}, C> };
+
+/**
+ * Data shape for `em.create()` with required/optional distinction based on entity metadata.
+ * Properties with defaults, nullable types, `Opt` brand, or `[OptionalProps]` declaration are optional.
+ * `I` excludes additional types from being required (used for inverse side of relations).
+ */
 export type RequiredEntityData<T, I = never, C extends boolean = false> = {
   [K in keyof T as RequiredKeys<T, K, I>]:
     | T[K]
@@ -592,6 +703,7 @@ export type RequiredEntityData<T, I = never, C extends boolean = false> = {
     | Raw
     | null;
 };
+/** `EntityData<T>` extended with an index signature, allowing arbitrary additional properties. */
 export type EntityDictionary<T> = EntityData<T> & Record<any, any>;
 
 type ExtractEagerProps<T> = T extends { [EagerProps]?: infer PK } ? PK : never;
@@ -640,6 +752,7 @@ type DTOWrapper<T, C extends TypeConfig, Flat extends boolean> = Flat extends tr
   ? EntityDTOFlat<T, C>
   : EntityDTO<T, C>;
 
+/** Resolves the serialized (DTO) type for a single entity property. Unwraps references, collections, and custom serialized types. */
 export type EntityDTOProp<E, T, C extends TypeConfig = never, Flat extends boolean = false> = T extends Scalar
   ? T
   : T extends ScalarReference<infer U>
@@ -680,6 +793,10 @@ type DTORequiredKeys<T, K extends keyof T> =
 type DTOOptionalKeys<T, K extends keyof T> =
   DTOIsOptional<T, K> extends false ? never : ExcludeHidden<T, K> & CleanKeys<T, K>;
 
+/**
+ * Plain object (DTO) representation of an entity as returned by `toObject()` / `toPOJO()`.
+ * Unwraps references to PKs, collections to arrays, and respects hidden properties.
+ */
 export type EntityDTO<T, C extends TypeConfig = never> = {
   [K in keyof T as DTORequiredKeys<T, K>]: EntityDTOProp<T, T[K], C> | AddOptional<T[K]>;
 } & {
@@ -711,6 +828,10 @@ type SerializePropValue<T, K extends keyof T, H extends string, C extends TypeCo
       : SerializeDTO<ExpandProperty<T[K]>, SerializeSubHints<K & string, H>, never, C> | Extract<T[K], null | undefined>
     : EntityDTOProp<T, T[K], C>;
 
+/**
+ * Return type of `serialize()`. Combines Loaded + EntityDTO in a single pass for better performance.
+ * Respects populate hints (`H`) and exclude hints (`E`).
+ */
 export type SerializeDTO<
   T,
   H extends string = never,
@@ -726,6 +847,7 @@ export type SerializeDTO<
 
 type TargetKeys<T> = T extends EntityClass<infer P> ? keyof P : keyof T;
 type PropertyName<T> = IsUnknown<T> extends false ? TargetKeys<T> : string;
+/** Table reference object passed to formula callbacks, including alias and schema information. */
 export type FormulaTable = {
   alias: string;
   name: string;
@@ -759,24 +881,32 @@ export type FormulaColumns<T> = Record<PropertyName<T>, string> & { toString(): 
  */
 export type SchemaColumns<T> = Record<PropertyName<T>, string>;
 
+/** Callback for custom index expressions. Receives column mappings, table info, and the index name. */
 export type IndexCallback<T> = (
   columns: Record<PropertyName<T>, string>,
   table: SchemaTable,
   indexName: string,
 ) => string | Raw;
+/** Callback for computed (formula) properties. Receives column mappings and table info, returns a SQL expression. */
 export type FormulaCallback<T> = (columns: FormulaColumns<T>, table: FormulaTable) => string | Raw;
 
+/** Callback for CHECK constraint expressions. Receives column mappings and table info. */
 export type CheckCallback<T> = (columns: Record<PropertyName<T>, string>, table: SchemaTable) => string | Raw;
+
+/** Callback for generated (computed) column expressions. Receives column mappings and table info. */
 export type GeneratedColumnCallback<T> = (columns: Record<PropertyName<T>, string>, table: SchemaTable) => string | Raw;
 
+/** Definition of a CHECK constraint on a table or property. */
 export interface CheckConstraint<T = any> {
   name?: string;
   property?: string;
   expression: string | Raw | CheckCallback<T>;
 }
 
+/** Branded string that accepts any string value while preserving autocompletion for known literals. */
 export type AnyString = string & {};
 
+/** Describes a single property (column, relation, or embedded) within an entity's metadata. */
 export interface EntityProperty<Owner = any, Target = any> {
   name: EntityKey<Owner>;
   entity: () => EntityName<Owner>;
@@ -881,6 +1011,10 @@ export interface EntityProperty<Owner = any, Target = any> {
   foreignKeyName?: string;
 }
 
+/**
+ * Runtime metadata for an entity, holding its properties, relations, indexes, hooks, and more.
+ * Created during metadata discovery and used throughout the ORM lifecycle.
+ */
 export class EntityMetadata<Entity = any, Class extends EntityCtor<Entity> = EntityCtor<Entity>> {
   private static counter = 0;
   readonly _id: number = 1000 * EntityMetadata.counter++; // keep the id >= 1000 to allow computing cache keys by simple addition
@@ -1196,11 +1330,13 @@ export class EntityMetadata<Entity = any, Class extends EntityCtor<Entity> = Ent
   }
 }
 
+/** Minimal column metadata with just a name and database type. */
 export interface SimpleColumnMeta {
   name: string;
   type: string;
 }
 
+/** Abstract constructor type that matches both abstract and concrete entity classes. */
 export type EntityCtor<T = any> = abstract new (...args: any[]) => T;
 
 export interface EntityMetadata<Entity = any, Class extends EntityCtor<Entity> = EntityCtor<Entity>> {
@@ -1320,23 +1456,27 @@ export interface EntityMetadata<Entity = any, Class extends EntityCtor<Entity> =
   readonly _id: number;
 }
 
+/** Options for `ISchemaGenerator.create()`. */
 export interface CreateSchemaOptions {
   wrap?: boolean;
   schema?: string;
 }
 
+/** Options for `ISchemaGenerator.clear()` to truncate/clear database tables. */
 export interface ClearDatabaseOptions {
   schema?: string;
   truncate?: boolean;
   clearIdentityMap?: boolean;
 }
 
+/** Options for `ISchemaGenerator.ensureDatabase()` which creates and optionally clears the database. */
 export interface EnsureDatabaseOptions extends CreateSchemaOptions, ClearDatabaseOptions {
   clear?: boolean;
   create?: boolean;
   forceCheck?: boolean;
 }
 
+/** Options for `ISchemaGenerator.drop()`. */
 export interface DropSchemaOptions {
   wrap?: boolean;
   dropMigrationsTable?: boolean;
@@ -1345,6 +1485,7 @@ export interface DropSchemaOptions {
   schema?: string;
 }
 
+/** Options for `ISchemaGenerator.update()` to apply incremental schema changes. */
 export interface UpdateSchemaOptions<DatabaseSchema = unknown> {
   wrap?: boolean;
   safe?: boolean;
@@ -1354,12 +1495,14 @@ export interface UpdateSchemaOptions<DatabaseSchema = unknown> {
   fromSchema?: DatabaseSchema;
 }
 
+/** Options for `ISchemaGenerator.refresh()` which drops and recreates the schema. */
 export interface RefreshDatabaseOptions extends CreateSchemaOptions {
   ensureIndexes?: boolean;
   dropDb?: boolean;
   createSchema?: boolean;
 }
 
+/** Interface for the schema generator, responsible for creating, updating, and dropping database schemas. */
 export interface ISchemaGenerator {
   create(options?: CreateSchemaOptions): Promise<void>;
   update(options?: UpdateSchemaOptions): Promise<void>;
@@ -1377,6 +1520,7 @@ export interface ISchemaGenerator {
   ensureIndexes(): Promise<void>;
 }
 
+/** Custom resolver for import paths in the entity generator. Returns a path/name pair or undefined to use the default. */
 export type ImportsResolver = (
   alias: string,
   basePath: string,
@@ -1384,6 +1528,7 @@ export type ImportsResolver = (
   originFileName: string,
 ) => { path: string; name: string } | undefined;
 
+/** Options for the entity generator (`IEntityGenerator.generate()`). Controls output format, filtering, and style. */
 export interface GenerateOptions {
   path?: string;
   save?: boolean;
@@ -1415,18 +1560,25 @@ export interface GenerateOptions {
   onProcessedMetadata?: MetadataProcessor;
 }
 
+/** Interface for the entity generator, which reverse-engineers database schema into entity source files. */
 export interface IEntityGenerator {
   generate(options?: GenerateOptions): Promise<string[]>;
 }
 
+/** Basic migration descriptor with a name and optional file path. */
 export type MigrationInfo = { name: string; path?: string };
+
+/** Options for controlling which migrations to run (range, specific list, or transaction). */
 export type MigrateOptions = {
   from?: string | number;
   to?: string | number;
   migrations?: string[];
   transaction?: Transaction;
 };
+/** Result of creating a new migration file, including the generated code and schema diff. */
 export type MigrationResult = { fileName: string; code: string; diff: MigrationDiff };
+
+/** A row from the migrations tracking table, representing an executed migration. */
 export type MigrationRow = { id: number; name: string; executed_at: Date };
 
 /**
@@ -1453,6 +1605,7 @@ export interface IMigratorStorage {
   getTableName?(): { schemaName?: string; tableName: string };
 }
 
+/** Interface for the migrator, responsible for creating and executing database migrations. */
 export interface IMigrator {
   /**
    * Checks current schema for changes, generates new migration if there are any.
@@ -1508,13 +1661,16 @@ export interface IMigrator {
   getStorage(): IMigratorStorage;
 }
 
+/** Events emitted by the migrator during migration execution. */
 export type MigratorEvent = 'migrating' | 'migrated' | 'reverting' | 'reverted';
 
+/** The up and down SQL statements representing a schema diff for a migration. */
 export interface MigrationDiff {
   up: string[];
   down: string[];
 }
 
+/** Interface for generating migration file contents from schema diffs. */
 export interface IMigrationGenerator {
   /**
    * Generates the full contents of migration file. Uses `generateMigrationFile` to get the file contents.
@@ -1532,6 +1688,7 @@ export interface IMigrationGenerator {
   generateMigrationFile(className: string, diff: MigrationDiff): MaybePromise<string>;
 }
 
+/** Interface that all migration classes must implement. */
 export interface Migration {
   up(): Promise<void> | void;
   down(): Promise<void> | void;
@@ -1541,6 +1698,7 @@ export interface Migration {
   getQueries?(): any[];
 }
 
+/** A named migration class reference, used for inline migration registration. */
 export interface MigrationObject {
   name: string;
   class: Constructor<Migration>;
@@ -1565,12 +1723,15 @@ type FilterDefResolved<T extends object = any> = {
   strict?: boolean;
 };
 
+/** Definition of a query filter that can be registered globally or per-entity via `@Filter()`. */
 export type FilterDef<T extends EntityName | readonly EntityName[] = any> = FilterDefResolved<EntityFromInput<T>> & {
   entity?: T;
 };
 
+/** Type for the `populate` option in find methods. An array of relation paths to eagerly load, or `false` to disable. */
 export type Populate<T, P extends string = never> = readonly AutoPath<T, P, `${PopulatePath}`>[] | false;
 
+/** Parsed populate hint for a single relation, including strategy and nested children. */
 export type PopulateOptions<T> = {
   field: EntityKey<T>;
   strategy?: LoadStrategy;
@@ -1582,6 +1743,7 @@ export type PopulateOptions<T> = {
   dataOnly?: boolean;
 };
 
+/** Inline options that can be appended to populate hint strings (e.g., strategy, join type). */
 export type PopulateHintOptions = {
   strategy?: LoadStrategy.JOINED | LoadStrategy.SELECT_IN | 'joined' | 'select-in';
   joinType?: 'inner join' | 'left join';
@@ -1616,6 +1778,10 @@ type Prev = [never, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
 // all relation keys (collections + to-one) - uses CleanKeys with scalar exclusion for efficiency
 type RelationKeys<T> = T extends object ? { [K in keyof T]-?: CleanKeys<T, K, true> }[keyof T] & {} : never;
 
+/**
+ * Autocomplete-friendly type for dot-separated relation paths (e.g., `'author.books'`).
+ * Validates each segment against entity keys and provides IDE suggestions. Depth-limited to prevent infinite recursion.
+ */
 export type AutoPath<
   O,
   P extends string | boolean,
@@ -1643,9 +1809,13 @@ export type AutoPath<
         : never
       : never;
 
+/** Unwraps an array type to its element type; non-arrays pass through unchanged. */
 export type UnboxArray<T> = T extends any[] ? ArrayElement<T> : T;
+
+/** Extracts the element type from an array type. */
 export type ArrayElement<ArrayType extends unknown[]> = ArrayType extends (infer ElementType)[] ? ElementType : never;
 
+/** Unwraps a property type from its wrapper (Reference, Collection, or array) to the inner entity type. */
 export type ExpandProperty<T> =
   T extends ReferenceShape<infer U>
     ? NonNullable<U>
@@ -1673,6 +1843,7 @@ type IsTrue<T> = IsNever<T> extends true ? false : T extends boolean ? (T extend
 type StringLiteral<T> = T extends string ? (string extends T ? never : T) : never;
 type Prefix<T, K> = K extends `${infer S}.${string}` ? S : K extends '*' ? keyof T : K;
 type IsPrefixedExclude<T, K extends keyof T, E extends string> = K extends E ? never : K;
+/** Checks whether a key `K` is included in the populate/fields hints. Used to filter entity keys in `Loaded`/`Selected`. */
 export type IsPrefixed<T, K extends keyof T, L extends string, E extends string = never> =
   IsNever<E> extends false
     ? IsPrefixedExclude<T, K, E>
@@ -1703,6 +1874,7 @@ type Suffix<Key, Hint extends string, All = true | '*'> = Hint extends `${infer 
     ? Hint
     : never;
 
+/** Validates that `U` is a subset of `T`. Returns `{}` if valid, or a mapped type with `never` values to cause a type error. */
 export type IsSubset<T, U> = keyof U extends keyof T
   ? {}
   : string extends keyof U // If U has an index signature (like Dictionary), allow it
@@ -1731,6 +1903,7 @@ export type MergeSelected<T, U, F extends string> = IsLoadedType<T> extends true
 export type MergeLoaded<T, U, P extends string, F extends string, E extends string, R extends boolean = false> =
   IsLoadedType<T> extends true ? T & Loaded<U, P, F, E> : Loaded<T, P, F, E>;
 
+/** Extracts the nullability modifiers (`null`, `undefined`, or both) from a type `T`. */
 export type AddOptional<T> = undefined | null extends T
   ? null | undefined
   : null extends T
@@ -1742,9 +1915,16 @@ type LoadedProp<T, L extends string = never, F extends string = '*', E extends s
   T,
   Loaded<ExtractType<T>, L, F, E>
 >;
+/** Extracts the eager-loaded property names declared via `[EagerProps]` as a string union. */
 export type AddEager<T> = ExtractEagerProps<T> & string;
+
+/** Combines an explicit populate hint `L` with the entity's eagerly loaded properties. */
 export type ExpandHint<T, L extends string> = L | AddEager<T>;
 
+/**
+ * Entity type narrowed to only the selected fields (`F`) and populated relations (`L`).
+ * Used as the return type when `fields` option is specified in find methods.
+ */
 export type Selected<T, L extends string = never, F extends string = '*'> = {
   [K in keyof T as IsPrefixed<T, K, L | F | AddEager<T>> | FunctionKeys<T, K>]: T[K] extends Function
     ? T[K]
@@ -1754,7 +1934,10 @@ export type Selected<T, L extends string = never, F extends string = '*'> = {
 } & { [__selectedType]?: T };
 
 type LoadedEntityType<T> = { [__loadedType]?: T } | { [__selectedType]?: T };
+/** Accepts either a plain entity type or a `Loaded`/`Selected` wrapped version. */
 export type EntityType<T> = T | LoadedEntityType<T>;
+
+/** Extracts the base entity type from a `Loaded`/`Selected` wrapper, or returns `T` as-is. */
 export type FromEntityType<T> = T extends LoadedEntityType<infer U> ? U : T;
 
 type LoadedInternal<T, L extends string = never, F extends string = '*', E extends string = never> = [F] extends ['*']
@@ -1785,28 +1968,34 @@ export type Loaded<T, L extends string = never, F extends string = '*', E extend
   [__loadHint]?: (hint: Prefixes<L>) => void;
 };
 
+/** A `Reference<T>` that is guaranteed to be loaded, providing synchronous access via `$` and `get()`. */
 export interface LoadedReference<T> extends Reference<NonNullable<T>> {
   $: NonNullable<T>;
   get(): NonNullable<T>;
 }
 
+/** A `ScalarReference<T>` that is guaranteed to be loaded, providing synchronous access via `$` and `get()`. */
 export interface LoadedScalarReference<T> extends ScalarReference<T> {
   $: T;
   get(): T;
 }
 
+/** A `Collection<T>` that is guaranteed to be loaded, providing synchronous access via `$`, `get()`, and `getItems()`. */
 export interface LoadedCollection<T extends object> extends Collection<T> {
   $: Collection<T>;
   get(): Collection<T>;
   getItems(check?: boolean): T[];
 }
 
+/** Alias for `Loaded<T, P>`. Represents a newly created entity with all specified relations populated. */
 export type New<T, P extends string = string> = Loaded<T, P>;
 
+/** Interface for SQL/code syntax highlighters used in logging output. */
 export interface Highlighter {
   highlight(text: string): string;
 }
 
+/** Interface for the metadata storage, which holds `EntityMetadata` for all discovered entities. */
 export interface IMetadataStorage {
   getAll(): Map<EntityName, EntityMetadata>;
   get<T = any>(entity: EntityName<T>, init?: boolean, validate?: boolean): EntityMetadata<T>;
@@ -1816,6 +2005,7 @@ export interface IMetadataStorage {
   reset<T>(entity: EntityName<T>): void;
 }
 
+/** Interface for entity hydrators, which populate entity instances from raw database data. */
 export interface IHydrator {
   /**
    * Hydrates the whole entity. This process handles custom type conversions, creating missing Collection instances,
@@ -1851,10 +2041,12 @@ export interface IHydrator {
   isRunning(): boolean;
 }
 
+/** Constructor signature for hydrator implementations. */
 export interface HydratorConstructor {
   new (metadata: MetadataStorage, platform: Platform, config: Configuration): IHydrator;
 }
 
+/** Interface for the seed manager, which runs database seeders. */
 export interface ISeedManager {
   seed(...classNames: Constructor<Seeder>[]): Promise<void>;
   /** @internal */
@@ -1862,21 +2054,30 @@ export interface ISeedManager {
   create(className: string): Promise<string>;
 }
 
+/** Interface that all seeder classes must implement. The `run` method receives an EntityManager. */
 export interface Seeder<T extends Dictionary = Dictionary> {
   run(em: EntityManager, context?: T): void | Promise<void>;
 }
 
+/** A named seeder class reference, used for inline seeder registration. */
 export interface SeederObject {
   name: string;
   class: Constructor<Seeder>;
 }
 
+/** Discriminator for read vs write database connections in read-replica setups. */
 export type ConnectionType = 'read' | 'write';
 
+/** Callback for processing entity metadata during discovery or entity generation. */
 export type MetadataProcessor = (metadata: EntityMetadata[], platform: Platform) => MaybePromise<void>;
 
+/** Extracts the return type if `T` is a function, otherwise returns `T` as-is. */
 export type MaybeReturnType<T> = T extends (...args: any[]) => infer R ? R : T;
 
+/**
+ * Extended `EntitySchema` interface that carries additional type-level metadata (entity name, properties, table name).
+ * Returned by `defineEntity()` to provide strong type inference without explicit generics.
+ */
 export interface EntitySchemaWithMeta<
   TName extends string = string,
   TTableName extends string = string,
@@ -1892,7 +2093,10 @@ export interface EntitySchemaWithMeta<
   readonly '~entity': TEntity;
 }
 
-// Fast path: direct property access avoids pattern matching against 6-parameter generic
+/**
+ * Extracts the entity type from an `EntitySchema`, `EntitySchemaWithMeta`, or entity class.
+ * Uses a fast-path direct property access when available, falling back to generic inference.
+ */
 export type InferEntity<Schema> = Schema extends { '~entity': infer E }
   ? E
   : Schema extends EntitySchema<infer Entity>

@@ -1,5 +1,6 @@
 import { type Platform, Type } from '@mikro-orm/core';
 
+/** Wrapper for string values that should be stored as Unicode (nvarchar) in MSSQL. */
 export class UnicodeString {
   constructor(readonly value: string) {}
 
@@ -20,6 +21,7 @@ export class UnicodeString {
   }
 }
 
+/** Custom type for MSSQL nvarchar columns with automatic Unicode string wrapping. */
 export class UnicodeStringType extends Type<string | null, string | null> {
   override getColumnType(prop: { length?: number }, platform: Platform): string {
     const length = prop.length === -1 ? 'max' : (prop.length ?? this.getDefaultLength(platform));

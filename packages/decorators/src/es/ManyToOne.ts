@@ -9,6 +9,7 @@ import {
 } from '@mikro-orm/core';
 import { prepareMetadataContext, processDecoratorParameters } from '../utils.js';
 
+/** Defines a many-to-one relationship (TC39 decorator). */
 export function ManyToOne<Target extends object, Owner extends object>(
   entity: ManyToOneOptions<Owner, Target> | ((e?: Owner) => EntityName<Target> | EntityName[]) = {},
   options: Partial<ManyToOneOptions<Owner, Target>> = {},

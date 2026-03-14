@@ -10,6 +10,7 @@ import type {
 import { inspect } from './logging/inspect.js';
 import { Utils } from './utils/Utils.js';
 
+/** Base error class for ORM validation errors such as invalid entity state or incorrect usage. */
 export class ValidationError<T extends AnyEntity = AnyEntity> extends Error {
   constructor(
     message: string,
@@ -190,6 +191,7 @@ export class ValidationError<T extends AnyEntity = AnyEntity> extends Error {
   }
 }
 
+/** Error thrown when cursor-based pagination encounters missing or invalid cursor values. */
 export class CursorError<T extends AnyEntity = AnyEntity> extends ValidationError<T> {
   static entityNotPopulated(entity: AnyEntity, prop: string): ValidationError {
     return new CursorError(`Cannot create cursor, value for '${entity.constructor.name}.${prop}' is missing.`);
@@ -200,6 +202,7 @@ export class CursorError<T extends AnyEntity = AnyEntity> extends ValidationErro
   }
 }
 
+/** Error thrown when an optimistic lock conflict is detected during entity persistence. */
 export class OptimisticLockError<T extends AnyEntity = AnyEntity> extends ValidationError<T> {
   static notVersioned(meta: EntityMetadata): OptimisticLockError {
     return new OptimisticLockError(`Cannot obtain optimistic lock on unversioned entity ${meta.className}`);
@@ -227,6 +230,7 @@ export class OptimisticLockError<T extends AnyEntity = AnyEntity> extends Valida
   }
 }
 
+/** Error thrown when entity metadata is invalid, incomplete, or inconsistent. */
 export class MetadataError<T extends AnyEntity = AnyEntity> extends ValidationError<T> {
   static fromMissingPrimaryKey(meta: EntityMetadata): MetadataError {
     return new MetadataError(`${meta.className} entity is missing @PrimaryKey()`);
@@ -453,6 +457,7 @@ export class MetadataError<T extends AnyEntity = AnyEntity> extends ValidationEr
   }
 }
 
+/** Error thrown when an entity lookup fails to find the expected result. */
 export class NotFoundError<T extends AnyEntity = AnyEntity> extends ValidationError<T> {
   static findOneFailed(name: string, where: Dictionary | IPrimaryKey): NotFoundError {
     return new NotFoundError(`${name} not found (${inspect(where)})`);
@@ -470,6 +475,7 @@ export class NotFoundError<T extends AnyEntity = AnyEntity> extends ValidationEr
   }
 }
 
+/** Error thrown when a transaction propagation requirement is not satisfied. */
 export class TransactionStateError extends ValidationError {
   static requiredTransactionNotFound(propagation: string): TransactionStateError {
     return new TransactionStateError(

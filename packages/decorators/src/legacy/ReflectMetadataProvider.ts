@@ -9,6 +9,7 @@ import {
   Utils,
 } from '@mikro-orm/core';
 
+/** Metadata provider that uses `reflect-metadata` to infer property types from TypeScript's emitted design:type metadata. */
 export class ReflectMetadataProvider extends MetadataProvider {
   override loadEntityMetadata(meta: EntityMetadata): void {
     // load types and column names

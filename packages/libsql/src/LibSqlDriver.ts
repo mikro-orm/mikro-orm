@@ -3,6 +3,7 @@ import { AbstractSqlDriver, SqlitePlatform } from '@mikro-orm/sql';
 import { LibSqlConnection } from './LibSqlConnection.js';
 import { LibSqlMikroORM } from './LibSqlMikroORM.js';
 
+/** Database driver for libSQL (Turso). */
 export class LibSqlDriver extends AbstractSqlDriver<LibSqlConnection> {
   constructor(config: Configuration) {
     super(config, new SqlitePlatform(), LibSqlConnection, ['kysely', 'libsql']);

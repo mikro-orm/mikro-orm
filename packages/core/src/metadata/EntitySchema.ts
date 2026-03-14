@@ -44,6 +44,7 @@ type TypeType =
   | Type<any>;
 type TypeDef<Target> = { type: TypeType } | { entity: () => EntityName<Target> | EntityName[] };
 type EmbeddedTypeDef<Target> = { type: TypeType } | { entity: () => EntityName<Target> | EntityName[] };
+/** Union type representing all possible property definition shapes in an EntitySchema. */
 export type EntitySchemaProperty<Target, Owner> =
   | ({ kind: ReferenceKind.MANY_TO_ONE | 'm:1' } & TypeDef<Target> & ManyToOneOptions<Owner, Target>)
   | ({ kind: ReferenceKind.ONE_TO_ONE | '1:1' } & TypeDef<Target> & OneToOneOptions<Owner, Target>)
@@ -55,6 +56,7 @@ export type EntitySchemaProperty<Target, Owner> =
   | ({ enum: true } & EnumOptions<Owner>)
   | (TypeDef<Target> & PropertyOptions<Owner>);
 type OmitBaseProps<Entity, Base> = IsNever<Base> extends true ? Entity : Omit<Entity, keyof Base>;
+/** Configuration object for defining an entity via EntitySchema. */
 export type EntitySchemaMetadata<Entity, Base = never, Class extends EntityCtor = EntityCtor<Entity>> = Omit<
   Partial<EntityMetadata<Entity>>,
   'name' | 'properties' | 'extends'
@@ -68,6 +70,7 @@ export type EntitySchemaMetadata<Entity, Base = never, Class extends EntityCtor 
     };
   } & { inheritance?: 'tpt' };
 
+/** Class-less entity definition that provides a programmatic API for defining entities without decorators. */
 export class EntitySchema<Entity = any, Base = never, Class extends EntityCtor = EntityCtor<Entity>> {
   /**
    * When schema links the entity class via `class` option, this registry allows the lookup from opposite side,
@@ -113,6 +116,7 @@ export class EntitySchema<Entity = any, Base = never, Class extends EntityCtor =
     return item != null && typeof item === 'object' && item.constructor?.name === 'EntitySchema' && 'meta' in item;
   }
 
+  /** Creates an EntitySchema from existing EntityMetadata (used internally). */
   static fromMetadata<T = AnyEntity, U = never>(
     meta: EntityMetadata<T> | DeepPartial<EntityMetadata<T>>,
   ): EntitySchema<T, U> {
@@ -122,6 +126,7 @@ export class EntitySchema<Entity = any, Base = never, Class extends EntityCtor =
     return schema;
   }
 
+  /** Adds a scalar property to the entity schema. */
   addProperty(
     name: EntityKey<Entity>,
     type?: TypeType,
@@ -151,6 +156,7 @@ export class EntitySchema<Entity = any, Base = never, Class extends EntityCtor =
     this._meta.properties[name] = prop;
   }
 
+  /** Adds an enum property to the entity schema. */
   addEnum(name: EntityKey<Entity>, type?: TypeType, options: EnumOptions<Entity> = {}): void {
     if (options.items instanceof Function) {
       options.items = Utils.extractEnumValues(options.items());
@@ -176,14 +182,17 @@ export class EntitySchema<Entity = any, Base = never, Class extends EntityCtor =
     this.addProperty(name, this.internal ? type : type || 'enum', prop);
   }
 
+  /** Adds a version property for optimistic locking. */
   addVersion(name: EntityKey<Entity>, type: TypeType, options: PropertyOptions<Entity> = {}): void {
     this.addProperty(name, type, { version: true, ...options });
   }
 
+  /** Adds a primary key property to the entity schema. */
   addPrimaryKey(name: EntityKey<Entity>, type: TypeType, options: PrimaryKeyOptions<Entity> = {}): void {
     this.addProperty(name, type, { primary: true, ...options });
   }
 
+  /** Adds a serialized primary key property (e.g. for MongoDB ObjectId). */
   addSerializedPrimaryKey(
     name: EntityKey<Entity>,
     type: TypeType,
@@ -193,6 +202,7 @@ export class EntitySchema<Entity = any, Base = never, Class extends EntityCtor =
     this.addProperty(name, type, { serializedPrimaryKey: true, ...options });
   }
 
+  /** Adds an embedded property to the entity schema. */
   addEmbedded<Target = AnyEntity>(name: EntityKey<Entity>, options: EmbeddedOptions<Entity, Target>): void {
     this.renameCompositeOptions(name, options);
     Utils.defaultValue(options, 'prefix', true);
@@ -209,6 +219,7 @@ export class EntitySchema<Entity = any, Base = never, Class extends EntityCtor =
     } as EntityProperty<Entity>;
   }
 
+  /** Adds a many-to-one relation to the entity schema. */
   addManyToOne<Target = AnyEntity>(
     name: EntityKey<Entity>,
     type: TypeType,
@@ -231,6 +242,7 @@ export class EntitySchema<Entity = any, Base = never, Class extends EntityCtor =
     this.addProperty(name, type, prop);
   }
 
+  /** Adds a many-to-many relation to the entity schema. */
   addManyToMany<Target = AnyEntity>(
     name: EntityKey<Entity>,
     type: TypeType,
@@ -253,6 +265,7 @@ export class EntitySchema<Entity = any, Base = never, Class extends EntityCtor =
     this.addProperty(name, type, prop);
   }
 
+  /** Adds a one-to-many relation to the entity schema. */
   addOneToMany<Target = AnyEntity>(
     name: EntityKey<Entity>,
     type: TypeType,
@@ -262,6 +275,7 @@ export class EntitySchema<Entity = any, Base = never, Class extends EntityCtor =
     this.addProperty(name, type, prop);
   }
 
+  /** Adds a one-to-one relation to the entity schema. */
   addOneToOne<Target = AnyEntity>(
     name: EntityKey<Entity>,
     type: TypeType,
@@ -291,22 +305,27 @@ export class EntitySchema<Entity = any, Base = never, Class extends EntityCtor =
     this.addProperty(name, type, prop);
   }
 
+  /** Adds an index definition to the entity schema. */
   addIndex<Key extends string>(options: IndexOptions<Entity, Key>): void {
     this._meta.indexes.push(options as any);
   }
 
+  /** Adds a unique constraint definition to the entity schema. */
   addUnique<Key extends string>(options: UniqueOptions<Entity, Key>): void {
     this._meta.uniques.push(options as any);
   }
 
+  /** Sets a custom repository class for this entity. */
   setCustomRepository(repository: () => Constructor): void {
     this._meta.repository = repository as () => Constructor<EntityRepository<any>>;
   }
 
+  /** Sets the base entity that this schema extends. */
   setExtends(base: EntityName): void {
     this._meta.extends = base;
   }
 
+  /** Sets or replaces the entity class associated with this schema. */
   setClass(cls: Class) {
     const oldClass = this._meta.class;
     const sameClass = this._meta.class === cls;
@@ -338,14 +357,17 @@ export class EntitySchema<Entity = any, Base = never, Class extends EntityCtor =
     }
   }
 
+  /** Returns the underlying EntityMetadata. */
   get meta(): EntityMetadata<Entity, Class> {
     return this._meta;
   }
 
+  /** Returns the entity class name. */
   get name(): string | EntityName<Entity> {
     return this._meta.className;
   }
 
+  /** Returns the database table name. */
   get tableName(): string {
     return this._meta.tableName;
   }

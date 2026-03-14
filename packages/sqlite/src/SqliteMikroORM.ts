@@ -12,6 +12,7 @@ import {
 import type { SqlEntityManager } from '@mikro-orm/sql';
 import { SqliteDriver } from './SqliteDriver.js';
 
+/** Configuration options for the SQLite driver. */
 export type SqliteOptions<
   EM extends SqlEntityManager<SqliteDriver> = SqlEntityManager<SqliteDriver>,
   Entities extends (string | EntityClass<AnyEntity> | EntitySchema)[] = (
@@ -21,6 +22,7 @@ export type SqliteOptions<
   )[],
 > = Partial<Options<SqliteDriver, EM, Entities>>;
 
+/** Creates a type-safe configuration object for the SQLite driver. */
 export function defineSqliteConfig<
   EM extends SqlEntityManager<SqliteDriver> = SqlEntityManager<SqliteDriver>,
   Entities extends (string | EntityClass<AnyEntity> | EntitySchema)[] = (

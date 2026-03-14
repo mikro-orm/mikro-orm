@@ -10,6 +10,7 @@ import {
 } from '@mikro-orm/mysql';
 import { type Dictionary, type Type } from '@mikro-orm/core';
 
+/** Schema introspection helper for MariaDB. */
 export class MariaDbSchemaHelper extends MySqlSchemaHelper {
   protected override appendMySqlIndexSuffix(sql: string, index: IndexDef): string {
     // MariaDB uses IGNORED instead of MySQL's INVISIBLE keyword

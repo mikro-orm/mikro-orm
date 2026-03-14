@@ -1,6 +1,7 @@
 import { RequestContext, TransactionContext } from '@mikro-orm/core';
 import { type ContextProvider, resolveContextProvider } from '../utils.js';
 
+/** Wraps an async method in a new RequestContext, forking the EntityManager (TC39 decorator). */
 export function CreateRequestContext<T extends object>(
   contextProvider?: ContextProvider<T>,
   respectExistingContext = false,
@@ -43,6 +44,7 @@ export function CreateRequestContext<T extends object>(
   };
 }
 
+/** Like `@CreateRequestContext`, but reuses an existing RequestContext if one is available (TC39 decorator). */
 export function EnsureRequestContext<T extends object>(
   context?: ContextProvider<T>,
 ): (

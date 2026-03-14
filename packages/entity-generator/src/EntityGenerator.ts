@@ -26,6 +26,7 @@ import { EntitySchemaSourceFile } from './EntitySchemaSourceFile.js';
 import { NativeEnumSourceFile } from './NativeEnumSourceFile.js';
 import { SourceFile } from './SourceFile.js';
 
+/** Generates entity source files by introspecting an existing database schema. */
 export class EntityGenerator {
   readonly #config: Configuration;
   readonly #driver: AbstractSqlDriver;

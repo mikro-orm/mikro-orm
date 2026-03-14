@@ -23,7 +23,9 @@ import { helper, wrap } from './wrap.js';
 import { EntityHelper } from './EntityHelper.js';
 import { ValidationError } from '../errors.js';
 
+/** Handles assigning data to entities, resolving relations, and propagating changes. */
 export class EntityAssigner {
+  /** Assigns the given data to the entity, resolving relations and handling custom types. */
   static assign<
     Entity extends object,
     Naked extends FromEntityType<Entity> = FromEntityType<Entity>,
@@ -389,6 +391,7 @@ export class EntityAssigner {
 
 export const assign = EntityAssigner.assign;
 
+/** Options controlling how data is assigned to an entity via `assign()`. */
 export interface AssignOptions<Convert extends boolean> {
   /**
    * Allows disabling processing of nested relations. When disabled, an object payload in place of a relation always

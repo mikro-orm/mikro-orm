@@ -99,7 +99,9 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
   static #counter = 1;
   /** @internal */
   readonly _id: number = EntityManager.#counter++;
+  /** Whether this is the global (root) EntityManager instance. */
   readonly global = false;
+  /** The context name of this EntityManager, derived from the ORM configuration. */
   readonly name: string;
   readonly #loaders: Partial<Record<'ref' | '1:m' | 'm:n', { load: (...args: unknown[]) => Promise<unknown> }>> = {};
   readonly #repositoryMap = new Map<EntityMetadata, EntityRepository<any>>();
@@ -428,6 +430,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     return em.loggerContext as T;
   }
 
+  /** Sets the flush mode for this EntityManager. Pass `undefined` to reset to the global default. */
   setFlushMode(flushMode?: FlushMode | `${FlushMode}`): void {
     this.getContext(false).#flushMode = flushMode as FlushMode;
   }
@@ -2352,6 +2355,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     return em;
   }
 
+  /** Gets the EventManager instance used by this EntityManager. */
   getEventManager(): EventManager {
     return this.eventManager;
   }

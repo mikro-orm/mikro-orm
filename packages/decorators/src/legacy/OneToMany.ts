@@ -7,6 +7,7 @@ import {
 } from '@mikro-orm/core';
 import { processDecoratorParameters, validateSingleDecorator, getMetadataFromDecorator } from '../utils.js';
 
+/** Defines a one-to-many relationship (legacy TypeScript decorator). */
 export function OneToMany<Target extends object, Owner extends object>(
   entity: (e?: any) => EntityName<Target>,
   mappedBy: (string & keyof Target) | ((e: Target) => any),

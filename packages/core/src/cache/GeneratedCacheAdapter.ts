@@ -1,6 +1,7 @@
 import type { CacheAdapter } from './CacheAdapter.js';
 import type { Dictionary } from '../typings.js';
 
+/** Cache adapter backed by pre-generated static data, typically produced by the CLI cache:generate command. */
 export class GeneratedCacheAdapter implements CacheAdapter {
   readonly #data: Map<string, { data: Dictionary }>;
 

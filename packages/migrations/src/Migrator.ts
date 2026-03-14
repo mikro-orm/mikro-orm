@@ -24,6 +24,7 @@ import type { MigrationResult } from './typings.js';
 import { TSMigrationGenerator } from './TSMigrationGenerator.js';
 import { JSMigrationGenerator } from './JSMigrationGenerator.js';
 
+/** Manages SQL database migrations: creation, execution, and rollback of schema changes. */
 export class Migrator extends AbstractMigrator<AbstractSqlDriver> {
   readonly #schemaGenerator: SqlSchemaGenerator;
   #snapshotPath?: string;

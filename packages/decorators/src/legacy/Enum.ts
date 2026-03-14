@@ -8,6 +8,7 @@ import {
 } from '@mikro-orm/core';
 import { getMetadataFromDecorator } from '../utils.js';
 
+/** Defines an enum property on an entity (legacy TypeScript decorator). */
 export function Enum<T extends object>(
   options: EnumOptions<AnyEntity> | (() => Dictionary) = {},
 ): (target: T, propertyName: string) => void {

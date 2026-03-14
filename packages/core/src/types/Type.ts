@@ -5,6 +5,7 @@ import { inspect } from '../logging/inspect.js';
 /** @internal */
 export const ORM_TYPE = Symbol.for('@mikro-orm/type');
 
+/** Context passed to type conversion methods, indicating the conversion mode and source. */
 export interface TransformContext {
   fromQuery?: boolean;
   force?: boolean;
@@ -12,12 +13,14 @@ export interface TransformContext {
   mode?: 'hydration' | 'query' | 'query-data' | 'discovery' | 'serialization';
 }
 
+/** Branded type helper for mapping between JS runtime, database raw, and JSON serialized representations. */
 export type IType<Runtime, Raw, Serialized = Raw> = Runtime & {
   __raw?: Raw;
   __runtime?: Runtime;
   __serialized?: Serialized;
 };
 
+/** Abstract base class for custom property types that handle conversion between JS and database representations. */
 export abstract class Type<JSType = string, DBType = JSType> {
   private static readonly types = new Map();
 

@@ -9,6 +9,7 @@ import {
 import type { MongoDriver } from '@mikro-orm/mongodb';
 import type { MigrationRow } from './typings.js';
 
+/** Tracks executed MongoDB migrations in a collection. */
 export class MigrationStorage {
   private masterTransaction?: Transaction;
 

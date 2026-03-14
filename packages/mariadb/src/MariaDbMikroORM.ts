@@ -12,6 +12,7 @@ import {
 import type { SqlEntityManager } from '@mikro-orm/mysql';
 import { MariaDbDriver } from './MariaDbDriver.js';
 
+/** Configuration options for the MariaDB driver. */
 export type MariaDbOptions<
   EM extends SqlEntityManager<MariaDbDriver> = SqlEntityManager<MariaDbDriver>,
   Entities extends (string | EntityClass<AnyEntity> | EntitySchema)[] = (
@@ -21,6 +22,7 @@ export type MariaDbOptions<
   )[],
 > = Partial<Options<MariaDbDriver, EM, Entities>>;
 
+/** Creates a type-safe configuration object for the MariaDB driver. */
 export function defineMariaDbConfig<
   EM extends SqlEntityManager<MariaDbDriver> = SqlEntityManager<MariaDbDriver>,
   Entities extends (string | EntityClass<AnyEntity> | EntitySchema)[] = (

@@ -18,12 +18,15 @@ import {
 import type { AbstractSqlPlatform } from './AbstractSqlPlatform.js';
 import { NativeQueryBuilder } from './query/NativeQueryBuilder.js';
 
+/** Base class for SQL database connections, built on top of Kysely. */
 export abstract class AbstractSqlConnection extends Connection {
   declare protected platform: AbstractSqlPlatform;
   #client?: Kysely<any>;
 
+  /** Creates a Kysely dialect instance with driver-specific configuration. */
   abstract createKyselyDialect(overrides: Dictionary): MaybePromise<Dialect>;
 
+  /** Establishes the database connection and runs the onConnect hook. */
   async connect(options?: { skipOnConnect?: boolean }): Promise<void> {
     await this.initClient();
     this.connected = true;
@@ -33,6 +36,7 @@ export abstract class AbstractSqlConnection extends Connection {
     }
   }
 
+  /** Initializes the Kysely client from driver options or a user-provided Kysely instance. */
   createKysely(): MaybePromise<void> {
     let driverOptions = this.options.driverOptions ?? this.config.get('driverOptions');
 
@@ -93,6 +97,7 @@ export abstract class AbstractSqlConnection extends Connection {
     }
   }
 
+  /** Returns the underlying Kysely client, creating it synchronously if needed. */
   getClient<T = any>(): Kysely<T> {
     if (!this.#client) {
       const maybePromise = this.createKysely();
@@ -108,12 +113,14 @@ export abstract class AbstractSqlConnection extends Connection {
     return this.#client!;
   }
 
+  /** Ensures the Kysely client is initialized, creating it asynchronously if needed. */
   async initClient(): Promise<void> {
     if (!this.#client) {
       await this.createKysely();
     }
   }
 
+  /** Executes a callback within a transaction, committing on success and rolling back on error. */
   override async transactional<T>(
     cb: (trx: Transaction<ControlledTransaction<any, any>>) => Promise<T>,
     options: {
@@ -137,6 +144,7 @@ export abstract class AbstractSqlConnection extends Connection {
     }
   }
 
+  /** Begins a new transaction or creates a savepoint if a transaction context already exists. */
   override async begin(
     options: {
       isolationLevel?: IsolationLevel;
@@ -192,6 +200,7 @@ export abstract class AbstractSqlConnection extends Connection {
     return trx;
   }
 
+  /** Commits the transaction or releases the savepoint. */
   override async commit(
     ctx: ControlledTransaction<any, any>,
     eventBroadcaster?: TransactionEventBroadcaster,
@@ -214,6 +223,7 @@ export abstract class AbstractSqlConnection extends Connection {
     await eventBroadcaster?.dispatchEvent(EventType.afterTransactionCommit, ctx);
   }
 
+  /** Rolls back the transaction or rolls back to the savepoint. */
   override async rollback(
     ctx: ControlledTransaction<any, any>,
     eventBroadcaster?: TransactionEventBroadcaster,
@@ -250,6 +260,7 @@ export abstract class AbstractSqlConnection extends Connection {
     return { query, params, formatted };
   }
 
+  /** Executes a SQL query and returns the result based on the method: `'all'` for rows, `'get'` for single row, `'run'` for affected count. */
   async execute<T extends QueryResult | EntityData<AnyEntity> | EntityData<AnyEntity>[] = EntityData<AnyEntity>[]>(
     query: string | NativeQueryBuilder | RawQueryFragment,
     params: readonly unknown[] = [],
@@ -272,6 +283,7 @@ export abstract class AbstractSqlConnection extends Connection {
     );
   }
 
+  /** Executes a SQL query and returns an async iterable that yields results row by row. */
   async *stream<T extends EntityData<AnyEntity>>(
     query: string | NativeQueryBuilder | RawQueryFragment,
     params: readonly unknown[] = [],

@@ -19,6 +19,7 @@ import type { FindOneOptions, FindOneOrFailOptions } from '../drivers/IDatabaseD
 import { NotFoundError } from '../errors.js';
 import { inspect } from '../logging/inspect.js';
 
+/** Wrapper around an entity that provides lazy loading capabilities and identity-preserving reference semantics. */
 export class Reference<T extends object> {
   private property?: EntityProperty;
 
@@ -43,6 +44,7 @@ export class Reference<T extends object> {
     }
   }
 
+  /** Creates a Reference wrapper for the given entity, preserving identity if one already exists. */
   static create<T extends object>(entity: T | Ref<T>): Ref<T> {
     const unwrapped = Reference.unwrapReference(entity);
     const ref = helper(entity).toReference() as Reference<T>;
@@ -54,6 +56,7 @@ export class Reference<T extends object> {
     return ref as Ref<T>;
   }
 
+  /** Creates a Reference wrapper for an entity identified by its primary key, wrapped in a Ref. */
   static createFromPK<T extends object>(
     entityType: EntityClass<T>,
     pk: Primary<T>,
@@ -63,6 +66,7 @@ export class Reference<T extends object> {
     return helper(ref)?.toReference() ?? ref;
   }
 
+  /** Creates an uninitialized entity reference by primary key without wrapping it in a Reference. */
   static createNakedFromPK<T extends object>(
     entityType: EntityClass<T>,
     pk: Primary<T>,
@@ -180,10 +184,12 @@ export class Reference<T extends object> {
     delete helper(this.entity).__reference;
   }
 
+  /** Returns the underlying entity without checking initialization state. */
   unwrap(): T {
     return this.entity;
   }
 
+  /** Returns the underlying entity, throwing an error if the reference is not initialized. */
   getEntity(): T {
     if (!this.isInitialized()) {
       throw new Error(
@@ -194,10 +200,12 @@ export class Reference<T extends object> {
     return this.entity;
   }
 
+  /** Returns the value of a property on the underlying entity. Throws if the reference is not initialized. */
   getProperty<K extends keyof T>(prop: K): T[K] {
     return this.getEntity()[prop];
   }
 
+  /** Loads the entity if needed, then returns the value of the specified property. */
   async loadProperty<TT extends T, P extends string = never, K extends keyof TT = keyof TT>(
     prop: K,
     options?: LoadReferenceOrFailOptions<TT, P>,
@@ -206,14 +214,17 @@ export class Reference<T extends object> {
     return (this.getEntity() as TT)[prop] as Loaded<TT, P>[K];
   }
 
+  /** Returns whether the underlying entity has been fully loaded from the database. */
   isInitialized(): boolean {
     return helper(this.entity).__initialized;
   }
 
+  /** Marks the underlying entity as populated or not for serialization purposes. */
   populated(populated?: boolean): void {
     helper(this.entity).populated(populated);
   }
 
+  /** Serializes the underlying entity to a plain JSON object. */
   toJSON(...args: any[]): Dictionary {
     return wrap(this.entity as object).toJSON(...args);
   }
@@ -234,6 +245,7 @@ export class Reference<T extends object> {
   }
 }
 
+/** Wrapper for lazy scalar properties that provides on-demand loading from the database. */
 export class ScalarReference<Value> {
   private entity?: object;
   #property?: string;
@@ -286,21 +298,25 @@ export class ScalarReference<Value> {
     return ret;
   }
 
+  /** Sets the scalar value and marks the reference as initialized. */
   set(value: Value): void {
     this.value = value;
     this.#initialized = true;
   }
 
+  /** Binds this scalar reference to a specific entity and property for lazy loading support. */
   bind<Entity extends object>(entity: Entity, property: EntityKey<Entity>): void {
     this.entity = entity;
     this.#property = property;
     Object.defineProperty(this, 'entity', { enumerable: false, value: entity });
   }
 
+  /** Returns the current scalar value, or undefined if not yet loaded. */
   unwrap(): Value | undefined {
     return this.value;
   }
 
+  /** Returns whether the scalar value has been loaded. */
   isInitialized(): boolean {
     return this.#initialized;
   }
@@ -355,21 +371,25 @@ Object.defineProperties(ScalarReference.prototype, {
   },
 });
 
+/** Options for `Reference.load()` to control how the referenced entity is loaded. */
 export interface LoadReferenceOptions<
   T extends object,
   P extends string = never,
   F extends string = '*',
   E extends string = never,
 > extends FindOneOptions<T, P, F, E> {
+  /** Whether to use the dataloader for batching reference loads. */
   dataloader?: boolean;
 }
 
+/** Options for `Reference.loadOrFail()` which throws when the entity is not found. */
 export interface LoadReferenceOrFailOptions<
   T extends object,
   P extends string = never,
   F extends string = '*',
   E extends string = never,
 > extends FindOneOrFailOptions<T, P, F, E> {
+  /** Whether to use the dataloader for batching reference loads. */
   dataloader?: boolean;
 }
 

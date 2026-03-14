@@ -69,6 +69,7 @@ import { SqlEntityManager } from './SqlEntityManager.js';
 import type { InternalField } from './typings.js';
 import { PivotCollectionPersister } from './PivotCollectionPersister.js';
 
+/** Base class for SQL database drivers, implementing find/insert/update/delete using QueryBuilder. */
 export abstract class AbstractSqlDriver<
   Connection extends AbstractSqlConnection = AbstractSqlConnection,
   Platform extends AbstractSqlPlatform = AbstractSqlPlatform,

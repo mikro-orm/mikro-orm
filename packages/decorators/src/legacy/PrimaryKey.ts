@@ -24,12 +24,14 @@ function createDecorator<T extends object>(
   };
 }
 
+/** Marks a property as the primary key of an entity (legacy TypeScript decorator). */
 export function PrimaryKey<T extends object>(
   options: PrimaryKeyOptions<T> = {},
 ): (target: T, propertyName: string) => void {
   return createDecorator(options, false);
 }
 
+/** Marks a property as the serialized form of the primary key, e.g. for MongoDB ObjectId (legacy TypeScript decorator). */
 export function SerializedPrimaryKey<T extends object>(
   options: SerializedPrimaryKeyOptions<T> = {},
 ): (target: T, propertyName: string) => void {

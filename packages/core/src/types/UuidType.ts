@@ -2,6 +2,7 @@ import { Type } from './Type.js';
 import type { Platform } from '../platforms/Platform.js';
 import type { EntityProperty } from '../typings.js';
 
+/** Maps a database UUID column to a JS `string`, with platform-specific normalization. */
 export class UuidType extends Type<string | null | undefined> {
   override getColumnType(prop: EntityProperty, platform: Platform): string {
     return platform.getUuidTypeDeclarationSQL(prop);

@@ -1,6 +1,7 @@
 import { MySqlPlatform, type TransformContext } from '@mikro-orm/mysql';
 import { MariaDbSchemaHelper } from './MariaDbSchemaHelper.js';
 
+/** Platform implementation for MariaDB. */
 export class MariaDbPlatform extends MySqlPlatform {
   protected override readonly schemaHelper: MariaDbSchemaHelper = new MariaDbSchemaHelper(this);
 

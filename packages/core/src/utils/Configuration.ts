@@ -165,6 +165,7 @@ const DEFAULTS = {
   dynamicImportProvider: /* v8 ignore next */ (id: string) => import(id),
 } as const;
 
+/** Holds and validates all ORM configuration options, providing access to drivers, loggers, cache adapters, and other services. */
 export class Configuration<
   D extends IDatabaseDriver = IDatabaseDriver,
   EM extends EntityManager<D> = D[typeof EntityManagerType] & EntityManager<D>,
@@ -214,6 +215,7 @@ export class Configuration<
     }
   }
 
+  /** Returns the database platform instance. */
   getPlatform(): ReturnType<D['getPlatform']> {
     return this.#platform;
   }
@@ -229,6 +231,7 @@ export class Configuration<
     return defaultValue as U;
   }
 
+  /** Returns all configuration options. */
   getAll(): Options<D, EM> {
     return this.#options;
   }
@@ -271,6 +274,7 @@ export class Configuration<
     return this.#slowQueryLogger;
   }
 
+  /** Returns the configured dataloader type, normalizing boolean values. */
   getDataloaderType(): DataloaderType {
     if (typeof this.#options.dataloader === 'boolean') {
       return this.#options.dataloader ? DataloaderType.ALL : DataloaderType.NONE;
@@ -279,6 +283,7 @@ export class Configuration<
     return this.#options.dataloader;
   }
 
+  /** Returns the configured schema name, optionally skipping the platform's default schema. */
   getSchema(skipDefaultSchema = false): string | undefined {
     if (skipDefaultSchema && this.#options.schema === this.#platform.getDefaultSchemaName()) {
       return undefined;
@@ -294,10 +299,12 @@ export class Configuration<
     return this.#driver;
   }
 
+  /** Registers a lazily-initialized extension by name. */
   registerExtension(name: string, cb: () => unknown): void {
     this.#extensions.set(name, cb);
   }
 
+  /** Returns a previously registered extension by name, initializing it on first access. */
   getExtension<T>(name: string): T | undefined {
     if (this.#cache.has(name)) {
       return this.#cache.get(name);
@@ -393,6 +400,7 @@ export class Configuration<
     return this.#cache.get(cls.name);
   }
 
+  /** Clears the cached service instances, forcing re-creation on next access. */
   resetServiceCache(): void {
     this.#cache.clear();
   }

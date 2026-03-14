@@ -23,12 +23,14 @@ function createDecorator<T extends object>(
   };
 }
 
+/** Marks a property as the primary key of an entity (TC39 decorator). */
 export function PrimaryKey<T extends object>(
   options: PrimaryKeyOptions<T> = {},
 ): (value: unknown, context: ClassFieldDecoratorContext<T>) => void {
   return createDecorator(options, false);
 }
 
+/** Marks a property as the serialized form of the primary key, e.g. for MongoDB ObjectId (TC39 decorator). */
 export function SerializedPrimaryKey<T extends object>(
   options: SerializedPrimaryKeyOptions<T> = {},
 ): (value: unknown, context: ClassFieldDecoratorContext<T>) => void {

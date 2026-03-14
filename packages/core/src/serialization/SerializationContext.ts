@@ -39,6 +39,7 @@ export class SerializationContext<T extends object> {
     return false;
   }
 
+  /** Removes the last entry from the visit path after processing a property. */
   leave(entityName: EntityName, prop: string) {
     const last = this.path.pop();
 
@@ -48,6 +49,7 @@ export class SerializationContext<T extends object> {
     }
   }
 
+  /** Cleans up the serialization context by removing root references from all tracked entities. */
   close() {
     for (const entity of this.#entities) {
       delete helper(entity).__serializationContext.root;
@@ -90,6 +92,7 @@ export class SerializationContext<T extends object> {
     }
   }
 
+  /** Checks whether a property is explicitly listed in the populate hints for the current path. */
   isMarkedAsPopulated(entityName: EntityName, prop: string): boolean {
     let populate: PopulateOptions<T>[] = this.#populate ?? [];
 
@@ -117,6 +120,7 @@ export class SerializationContext<T extends object> {
     return !!populate?.some(p => p.field === prop);
   }
 
+  /** Checks whether a property is excluded from serialization via the exclude list. */
   isExcluded(entityName: EntityName, prop: string): boolean {
     if (!this.#exclude || this.#exclude.length === 0) {
       return false;
@@ -127,6 +131,7 @@ export class SerializationContext<T extends object> {
     return this.#exclude.includes(fullPath);
   }
 
+  /** Checks whether a property is included in the partial fields selection for the current path. */
   isPartiallyLoaded(entityName: EntityName, prop: string): boolean {
     if (!this.#fields) {
       return true;
