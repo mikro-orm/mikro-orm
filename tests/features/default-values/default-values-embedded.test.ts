@@ -1,18 +1,18 @@
-import { defineEntity, MikroORM, p, quote, serialize } from "@mikro-orm/sqlite";
+import { defineEntity, MikroORM, p, quote, serialize } from '@mikro-orm/sqlite';
 
 const ClientProductOptionsSchema = defineEntity({
-    embeddable: true,
-    name: "ClientProductOptions",
-    properties: {
-        excludeFromStrictStockManagement: p.boolean().default(false)
-    }
+  embeddable: true,
+  name: 'ClientProductOptions',
+  properties: {
+    excludeFromStrictStockManagement: p.boolean().default(false),
+  },
 });
 
 export class ClientProductOptions extends ClientProductOptionsSchema.class {}
 ClientProductOptionsSchema.setClass(ClientProductOptions);
 
 const ProductSchema = defineEntity({
-  name: "Product",
+  name: 'Product',
   forceObject: true,
   properties: {
     id: p.integer().primary(),
@@ -20,22 +20,22 @@ const ProductSchema = defineEntity({
     clientId: p.string(),
     productId: p.string(),
     options: () =>
-         p
-             .embedded(ClientProductOptions)
-             .object()
-             .onCreate(() => new ClientProductOptions()),
+      p
+        .embedded(ClientProductOptions)
+        .object()
+        .onCreate(() => new ClientProductOptions()),
   },
-  uniques: [{ properties: ["clientId", "productId"] }],
+  uniques: [{ properties: ['clientId', 'productId'] }],
 });
 class Product extends ProductSchema.class {}
 ProductSchema.setClass(Product);
 
-describe("defineEntity formula field INSERT", () => {
+describe('defineEntity formula field INSERT', () => {
   let orm: MikroORM;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
-      dbName: ":memory:",
+      dbName: ':memory:',
       entities: [Product],
       serialization: { forceObject: true },
     });
@@ -44,12 +44,11 @@ describe("defineEntity formula field INSERT", () => {
 
   afterAll(() => orm.close(true));
 
-  it("test", async () => {
-
+  it('test', async () => {
     const product = orm.em.create(Product, {
-      title: "Test",
-      clientId: "client-123",
-      productId: "product-456",
+      title: 'Test',
+      clientId: 'client-123',
+      productId: 'product-456',
     });
 
     await orm.em.flush();

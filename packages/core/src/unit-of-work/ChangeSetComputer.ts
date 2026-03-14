@@ -130,7 +130,7 @@ export class ChangeSetComputer {
     }
 
     if (prop.kind === ReferenceKind.EMBEDDED && entity[prop.name]) {
-      const items = prop.array ? entity[prop.name] as T[] : [entity[prop.name] as T];
+      const items = prop.array ? (entity[prop.name] as T[]) : [entity[prop.name] as T];
 
       for (const item of items) {
         for (const embeddedProp of prop.targetMeta!.hydrateProps) {

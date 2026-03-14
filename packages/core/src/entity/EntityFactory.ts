@@ -427,7 +427,7 @@ export class EntityFactory {
       }
 
       if (prop.kind === ReferenceKind.EMBEDDED && entity[prop.name]) {
-        const items = prop.array ? entity[prop.name] as T[] : [entity[prop.name] as T];
+        const items = prop.array ? (entity[prop.name] as T[]) : [entity[prop.name] as T];
 
         for (const item of items) {
           this.assignDefaultValues(item, prop.targetMeta! as EntityMetadata<T>);
