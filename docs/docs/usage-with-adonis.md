@@ -112,7 +112,8 @@ export default defineConfig({
   providers: [
     () => import('@adonisjs/core/providers/app_provider'),
     () => import('@adonisjs/core/providers/hash_provider'),
-    () => import('#providers/mikro_orm_provider'), // highlight-line
+    // highlight-next-line
+    () => import('#providers/mikro_orm_provider'),
   ],
   preloads: [() => import('#start/routes'), () => import('#start/kernel')],
   // ...
@@ -150,7 +151,8 @@ server.errorHandler(() => import('#exceptions/handler'))
 
 server.use([
   () => import('#middleware/container_bindings_middleware'),
-  () => import('#middleware/mikro_orm_middleware'), // highlight-line
+  // highlight-next-line
+  () => import('#middleware/mikro_orm_middleware'),
 ])
 
 router.use([() => import('@adonisjs/core/bodyparser_middleware')])
