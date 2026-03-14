@@ -25,6 +25,7 @@ import type { Configuration } from '../utils/Configuration.js';
 import type { EventManager } from '../events/EventManager.js';
 import type { MetadataStorage } from '../metadata/MetadataStorage.js';
 import { JsonType } from '../types/JsonType.js';
+import { isRaw } from '../utils/RawQueryFragment.js';
 
 /** @internal Options for creating and merging entities via the EntityFactory. */
 export interface FactoryOptions {
@@ -435,8 +436,22 @@ export class EntityFactory {
 
   private assignDefaultValues<T extends object>(entity: T, meta: EntityMetadata<T>): void {
     for (const prop of meta.props) {
+      if (prop.embedded || [ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind)) {
+        continue;
+      }
+
       if (prop.onCreate) {
         entity[prop.name] ??= prop.onCreate(entity, this.#em);
+      } else if (prop.default != null && !isRaw(prop.default) && entity[prop.name] === undefined) {
+        entity[prop.name] = prop.default as EntityValue<T>;
+      }
+
+      if (prop.kind === ReferenceKind.EMBEDDED && entity[prop.name]) {
+        const items = prop.array ? (entity[prop.name] as T[]) : [entity[prop.name] as T];
+
+        for (const item of items) {
+          this.assignDefaultValues(item, prop.targetMeta! as EntityMetadata<T>);
+        }
       }
     }
   }

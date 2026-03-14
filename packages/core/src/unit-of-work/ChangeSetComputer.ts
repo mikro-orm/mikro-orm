@@ -12,6 +12,7 @@ import { PolymorphicRef } from '../entity/PolymorphicRef.js';
 import { type Collection } from '../entity/Collection.js';
 import type { Platform } from '../platforms/Platform.js';
 import { ReferenceKind } from '../enums.js';
+import { isRaw } from '../utils/RawQueryFragment.js';
 import type { EntityManager } from '../EntityManager.js';
 
 /** @internal Computes change sets by comparing entity state against original snapshots. */
@@ -115,6 +116,14 @@ export class ChangeSetComputer {
         (Utils.isScalarReference(entity[prop.name]) && (entity[prop.name] as Reference<any>).unwrap() == null))
     ) {
       entity[prop.name] = prop.onCreate(entity, this.#em);
+    } else if (
+      prop.default != null &&
+      !isRaw(prop.default) &&
+      ![ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind) &&
+      type === ChangeSetType.CREATE &&
+      entity[prop.name] === undefined
+    ) {
+      entity[prop.name] = prop.default as EntityValue<T>;
     }
 
     if (prop.onUpdate && type === ChangeSetType.UPDATE) {
@@ -124,8 +133,12 @@ export class ChangeSetComputer {
     }
 
     if (prop.kind === ReferenceKind.EMBEDDED && entity[prop.name]) {
-      for (const embeddedProp of prop.targetMeta!.hydrateProps) {
-        this.processPropertyInitializers(entity[prop.name] as T, embeddedProp, type, map, nested || prop.object);
+      const items = prop.array ? (entity[prop.name] as T[]) : [entity[prop.name] as T];
+
+      for (const item of items) {
+        for (const embeddedProp of prop.targetMeta!.hydrateProps) {
+          this.processPropertyInitializers(item, embeddedProp, type, map, nested || prop.object);
+        }
       }
     }
   }
