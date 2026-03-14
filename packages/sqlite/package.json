@@ -48,8 +48,8 @@
   },
   "dependencies": {
     "@mikro-orm/sql": "7.0.1",
-    "better-sqlite3": "12.6.2",
-    "kysely": "0.28.11"
+    "better-sqlite3": "12.8.0",
+    "kysely": "0.28.12"
   },
   "devDependencies": {
     "@mikro-orm/core": "^7.0.1"

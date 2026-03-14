@@ -9,7 +9,7 @@
   },
   "imports": {
     "@mikro-orm/sql": "jsr:@mikro-orm/sql@7.0.1",
-    "better-sqlite3": "npm:better-sqlite3@12.6.2",
-    "kysely": "jsr:@kysely/kysely@0.28.11"
+    "better-sqlite3": "npm:better-sqlite3@12.8.0",
+    "kysely": "jsr:@kysely/kysely@0.28.12"
   }
 }
