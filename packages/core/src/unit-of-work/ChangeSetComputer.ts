@@ -117,8 +117,9 @@ export class ChangeSetComputer {
     } else if (
       prop.default != null &&
       !isRaw(prop.default) &&
+      ![ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind) &&
       type === ChangeSetType.CREATE &&
-      entity[prop.name] == null
+      entity[prop.name] === undefined
     ) {
       entity[prop.name] = prop.default as EntityValue<T>;
     }

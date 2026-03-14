@@ -420,9 +420,13 @@ export class EntityFactory {
 
   private assignDefaultValues<T extends object>(entity: T, meta: EntityMetadata<T>): void {
     for (const prop of meta.props) {
+      if (prop.embedded || [ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind)) {
+        continue;
+      }
+
       if (prop.onCreate) {
         entity[prop.name] ??= prop.onCreate(entity, this.#em);
-      } else if (prop.default != null && !isRaw(prop.default) && entity[prop.name] == null) {
+      } else if (prop.default != null && !isRaw(prop.default) && entity[prop.name] === undefined) {
         entity[prop.name] = prop.default as EntityValue<T>;
       }
 
