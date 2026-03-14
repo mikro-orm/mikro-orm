@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.0.2](https://github.com/mikro-orm/mikro-orm/compare/v7.0.1...v7.0.2) (2026-03-14)
+
+
+### Bug Fixes
+
+* **schema:** handle multiline view expressions in SQLite schema diffing ([#7294](https://github.com/mikro-orm/mikro-orm/issues/7294)) ([2a2ed10](https://github.com/mikro-orm/mikro-orm/commit/2a2ed10ecf180ec8ce97531433b5fa2524b9e1c8)), closes [#7292](https://github.com/mikro-orm/mikro-orm/issues/7292)
+
+
+
+
+
 ## [7.0.1](https://github.com/mikro-orm/mikro-orm/compare/v7.0.0...v7.0.1) (2026-03-11)
 
 ### Bug Fixes

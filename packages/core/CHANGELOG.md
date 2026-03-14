@@ -3,6 +3,21 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.0.2](https://github.com/mikro-orm/mikro-orm/compare/v7.0.1...v7.0.2) (2026-03-14)
+
+
+### Bug Fixes
+
+* **core:** apply property `default` values when creating new entity instances ([#7301](https://github.com/mikro-orm/mikro-orm/issues/7301)) ([b4d1e7f](https://github.com/mikro-orm/mikro-orm/commit/b4d1e7f41f64a38b069802b12ee7c3fe60436f12)), closes [#7284](https://github.com/mikro-orm/mikro-orm/issues/7284)
+* **core:** handle CJS entity files in folder-based discovery ([#7287](https://github.com/mikro-orm/mikro-orm/issues/7287)) ([314626b](https://github.com/mikro-orm/mikro-orm/commit/314626bcbb4194f903f76e14741f69b6280220eb))
+* **core:** preserve nullability in Opt/Hidden branded types for defineEntity ([#7295](https://github.com/mikro-orm/mikro-orm/issues/7295)) ([2b74802](https://github.com/mikro-orm/mikro-orm/commit/2b74802f96fa785e5573b105e021c8dd1b121699)), closes [#7291](https://github.com/mikro-orm/mikro-orm/issues/7291)
+* **core:** use branded types for built-in type detection in CJS/ESM dual-package hazard ([#7293](https://github.com/mikro-orm/mikro-orm/issues/7293)) ([65ae903](https://github.com/mikro-orm/mikro-orm/commit/65ae903b44d16b696b6e23c4ba3c9754d3b60f2f))
+* **core:** use EntitySchema.is() instead of instanceof for CJS/ESM dual-package hazard ([#7289](https://github.com/mikro-orm/mikro-orm/issues/7289)) ([355301f](https://github.com/mikro-orm/mikro-orm/commit/355301f1b56c5aeb6092b53b0c8b7d7580f2f08e))
+
+
+
+
+
 ## [7.0.1](https://github.com/mikro-orm/mikro-orm/compare/v7.0.0...v7.0.1) (2026-03-11)
 
 **Note:** Version bump only for package @mikro-orm/core

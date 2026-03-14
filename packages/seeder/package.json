@@ -1,6 +1,6 @@
 {
   "name": "@mikro-orm/seeder",
-  "version": "7.0.1",
+  "version": "7.0.2",
   "description": "Seeder package for MikroORM.",
   "keywords": [
     "data-mapper",
@@ -48,7 +48,7 @@
     "copy": "node ../../scripts/copy.mjs"
   },
   "devDependencies": {
-    "@mikro-orm/core": "^7.0.1"
+    "@mikro-orm/core": "^7.0.2"
   },
   "peerDependencies": {
     "@mikro-orm/core": "7.0.1"
