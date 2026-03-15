@@ -1,7 +1,7 @@
 #!/usr/bin/env -S node --import @swc-node/register/esm-register
 
 import { bench } from '@ark/attest';
-import { defineEntity, p } from '@mikro-orm/core';
+import { type InferEntity, defineEntity, p } from '@mikro-orm/core';
 
 bench('entity extends entity', () => {
   const base = defineEntity({
@@ -199,3 +199,241 @@ bench('polymorphic embeddables', () => {
     },
   });
 }).types([3253, 'instantiations']);
+
+bench('realistic entity (~20 props, relations, extends)', () => {
+  const base = defineEntity({
+    abstract: true,
+    name: 'BaseEntity',
+    properties: {
+      id: p.integer().primary().autoincrement(),
+      createdAt: p.datetime().onCreate(() => new Date()),
+      updatedAt: p
+        .datetime()
+        .onCreate(() => new Date())
+        .onUpdate(() => new Date()),
+    },
+  });
+
+  const Tag = defineEntity({
+    name: 'Tag',
+    extends: base,
+    properties: {
+      name: p.string(),
+      slug: p.string().unique(),
+    },
+  });
+
+  const Publisher = defineEntity({
+    name: 'Publisher',
+    extends: base,
+    properties: {
+      name: p.string(),
+      website: p.string().nullable(),
+      country: p.string().nullable(),
+    },
+  });
+
+  const Author = defineEntity({
+    name: 'Author',
+    extends: base,
+    properties: {
+      firstName: p.string().length(100),
+      lastName: p.string().length(100),
+      email: p.string().unique(),
+      bio: p.text().nullable(),
+      age: p.integer().nullable(),
+      isActive: p.boolean().default(true),
+      rating: p.double().default(0),
+      avatarUrl: p.string().nullable(),
+      website: p.string().nullable(),
+      locale: p.string().default('en'),
+      termsAccepted: p.boolean().default(false),
+      registeredAt: p.datetime().nullable(),
+      favouriteBook: () => p.manyToOne(Book).nullable(),
+      books: () => p.oneToMany(Book).mappedBy('author'),
+      friends: () => p.manyToMany(Author),
+      tags: () => p.manyToMany(Tag),
+      settings: p.json<{ theme: string; notifications: boolean }>().nullable(),
+      metadata: p.json<Record<string, unknown>>().nullable(),
+    },
+  });
+
+  const Book = defineEntity({
+    name: 'Book',
+    extends: base,
+    properties: {
+      title: p.string(),
+      isbn: p.string().unique().nullable(),
+      price: p.double().nullable(),
+      publisher: () => p.manyToOne(Publisher).nullable(),
+      author: () => p.manyToOne(Author),
+      tags: () => p.manyToMany(Tag),
+    },
+  });
+}).types([7249, 'instantiations']);
+
+bench('realistic entity - InferEntity usage', () => {
+  const base = defineEntity({
+    abstract: true,
+    name: 'BaseEntity',
+    properties: {
+      id: p.integer().primary().autoincrement(),
+      createdAt: p.datetime().onCreate(() => new Date()),
+      updatedAt: p
+        .datetime()
+        .onCreate(() => new Date())
+        .onUpdate(() => new Date()),
+    },
+  });
+
+  const Tag = defineEntity({
+    name: 'Tag',
+    extends: base,
+    properties: {
+      name: p.string(),
+      slug: p.string().unique(),
+    },
+  });
+
+  const Publisher = defineEntity({
+    name: 'Publisher',
+    extends: base,
+    properties: {
+      name: p.string(),
+      website: p.string().nullable(),
+      country: p.string().nullable(),
+    },
+  });
+
+  const Author = defineEntity({
+    name: 'Author',
+    extends: base,
+    properties: {
+      firstName: p.string().length(100),
+      lastName: p.string().length(100),
+      email: p.string().unique(),
+      bio: p.text().nullable(),
+      age: p.integer().nullable(),
+      isActive: p.boolean().default(true),
+      rating: p.double().default(0),
+      avatarUrl: p.string().nullable(),
+      website: p.string().nullable(),
+      locale: p.string().default('en'),
+      termsAccepted: p.boolean().default(false),
+      registeredAt: p.datetime().nullable(),
+      favouriteBook: () => p.manyToOne(Book).nullable(),
+      books: () => p.oneToMany(Book).mappedBy('author'),
+      friends: () => p.manyToMany(Author),
+      tags: () => p.manyToMany(Tag),
+      settings: p.json<{ theme: string; notifications: boolean }>().nullable(),
+      metadata: p.json<Record<string, unknown>>().nullable(),
+    },
+  });
+
+  const Book = defineEntity({
+    name: 'Book',
+    extends: base,
+    properties: {
+      title: p.string(),
+      isbn: p.string().unique().nullable(),
+      price: p.double().nullable(),
+      publisher: () => p.manyToOne(Publisher).nullable(),
+      author: () => p.manyToOne(Author),
+      tags: () => p.manyToMany(Tag),
+    },
+  });
+
+  type IAuthor = InferEntity<typeof Author>;
+  type IBook = InferEntity<typeof Book>;
+  type ITag = InferEntity<typeof Tag>;
+  type IPublisher = InferEntity<typeof Publisher>;
+
+  // Force evaluation of all entity types
+  const _check: [IAuthor, IBook, ITag, IPublisher] = {} as any;
+}).types([7341, 'instantiations']);
+
+bench('realistic entity - setClass pattern', () => {
+  const BaseSchema = defineEntity({
+    abstract: true,
+    name: 'BaseEntity',
+    properties: {
+      id: p.integer().primary().autoincrement(),
+      createdAt: p.datetime().onCreate(() => new Date()),
+      updatedAt: p
+        .datetime()
+        .onCreate(() => new Date())
+        .onUpdate(() => new Date()),
+    },
+  });
+
+  const TagSchema = defineEntity({
+    name: 'Tag',
+    extends: BaseSchema,
+    properties: {
+      name: p.string(),
+      slug: p.string().unique(),
+    },
+  });
+
+  const PublisherSchema = defineEntity({
+    name: 'Publisher',
+    extends: BaseSchema,
+    properties: {
+      name: p.string(),
+      website: p.string().nullable(),
+      country: p.string().nullable(),
+    },
+  });
+
+  const AuthorSchema = defineEntity({
+    name: 'Author',
+    extends: BaseSchema,
+    properties: {
+      firstName: p.string().length(100),
+      lastName: p.string().length(100),
+      email: p.string().unique(),
+      bio: p.text().nullable(),
+      age: p.integer().nullable(),
+      isActive: p.boolean().default(true),
+      rating: p.double().default(0),
+      avatarUrl: p.string().nullable(),
+      website: p.string().nullable(),
+      locale: p.string().default('en'),
+      termsAccepted: p.boolean().default(false),
+      registeredAt: p.datetime().nullable(),
+      favouriteBook: () => p.manyToOne(Book).nullable(),
+      books: () => p.oneToMany(Book).mappedBy('author'),
+      friends: () => p.manyToMany(Author),
+      tags: () => p.manyToMany(Tag),
+      settings: p.json<{ theme: string; notifications: boolean }>().nullable(),
+      metadata: p.json<Record<string, unknown>>().nullable(),
+    },
+  });
+
+  const BookSchema = defineEntity({
+    name: 'Book',
+    extends: BaseSchema,
+    properties: {
+      title: p.string(),
+      isbn: p.string().unique().nullable(),
+      price: p.double().nullable(),
+      publisher: () => p.manyToOne(Publisher).nullable(),
+      author: () => p.manyToOne(Author),
+      tags: () => p.manyToMany(Tag),
+    },
+  });
+
+  class Tag extends TagSchema.class {}
+  class Publisher extends PublisherSchema.class {}
+  class Author extends AuthorSchema.class {
+    fullName() {
+      return `${this.firstName} ${this.lastName}`;
+    }
+  }
+  class Book extends BookSchema.class {}
+
+  TagSchema.setClass(Tag);
+  PublisherSchema.setClass(Publisher);
+  AuthorSchema.setClass(Author);
+  BookSchema.setClass(Book);
+}).types([7357, 'instantiations']);
