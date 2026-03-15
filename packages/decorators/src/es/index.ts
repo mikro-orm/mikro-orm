@@ -1,17 +1,7 @@
 // Polyfill Symbol.metadata for runtimes that do not support it natively
-// (e.g. current Node.js).
-//
-// TypeScript's ES-decorator output uses `Symbol.metadata` as the key to share
-// one metadata object across all decorators in a class:
-//
-//   const _metadata = typeof Symbol === "function" && Symbol.metadata
-//     ? Object.create(null)
-//     : void 0;
-//
-// When the symbol is absent, the runtime sets `_metadata = void 0` and every
-// decorator context receives `metadata: undefined`, making it impossible to
-// propagate field-level metadata to the class decorator. Installing the symbol
-// first ensures `_metadata` is always a proper object.
+// (e.g. current Node.js). Without it, TypeScript's ES-decorator output sets
+// `_metadata = void 0` and decorator contexts receive `metadata: undefined`,
+// making it impossible to propagate field-level metadata to the class decorator.
 /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
 (Symbol as any).metadata ??= Symbol('Symbol.metadata');
 
