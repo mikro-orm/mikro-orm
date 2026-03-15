@@ -385,6 +385,42 @@ describe('defineEntity', () => {
     expect(Foo.meta).toEqual(asSnapshot(FooSchema.meta));
   });
 
+  it('should define entity with strictNullable property', () => {
+    const Foo = defineEntity({
+      name: 'Foo',
+      properties: p => ({
+        id: p.integer().primary().autoincrement(),
+        name: p.string().strictNullable(),
+        settings: p.json<{ theme: string }>().strictNullable(),
+      }),
+    });
+
+    type IFoo = InferEntity<typeof Foo>;
+    assert<
+      IsExact<
+        IFoo,
+        {
+          id: Opt<number>;
+          name: string | null;
+          settings: { theme: string } | null;
+          [PrimaryKeyProp]?: 'id';
+        }
+      >
+    >(true);
+
+    const FooSchema = new EntitySchema({
+      name: 'Foo',
+      properties: {
+        id: { type: types.integer, primary: true, autoincrement: true },
+        name: { type: types.string, nullable: true },
+        settings: { type: types.json, nullable: true },
+      },
+    });
+
+    // strictNullable sets nullable: true in metadata, same as nullable()
+    expect(Foo.meta).toEqual(asSnapshot(FooSchema.meta));
+  });
+
   it('should define entity with reference scalar property', () => {
     const p = defineEntity.properties;
 
