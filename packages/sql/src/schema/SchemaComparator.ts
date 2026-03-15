@@ -173,7 +173,7 @@ export class SchemaComparator {
       } else {
         const fromView = fromSchema.getView(toView.name) ?? fromSchema.getView(viewName);
 
-        if (fromView && this.diffExpression(fromView.definition, toView.definition)) {
+        if (fromView && this.diffViewExpression(fromView.definition, toView.definition)) {
           diff.changedViews[viewName] = { from: fromView, to: toView };
           this.log(`view ${viewName} changed`);
         }
@@ -848,6 +848,31 @@ export class SchemaComparator {
       );
     };
     return simplify(expr1) !== simplify(expr2);
+  }
+
+  /**
+   * Compares two view expressions, with special handling for SELECT *.
+   * Databases like PostgreSQL and MySQL expand `SELECT *` to explicit column names
+   * in their stored view definitions, which makes diffExpression always detect changes.
+   * When SELECT * is present, we strip the first SELECT...FROM column list from both
+   * sides and compare only the structural parts (FROM clause onwards).
+   * Note: this means changes *within* subqueries in the SELECT list of a SELECT * view
+   * may not be detected — an acceptable tradeoff since SELECT * views are inherently
+   * column-list-agnostic.
+   * @see https://github.com/mikro-orm/mikro-orm/issues/7308
+   */
+  private diffViewExpression(fromDef: string, toDef: string): boolean {
+    if (!this.diffExpression(fromDef, toDef)) {
+      return false;
+    }
+
+    // If either expression uses SELECT *, the diff may be due to * expansion
+    if (/\bselect\s+\*/i.test(fromDef) || /\bselect\s+\*/i.test(toDef)) {
+      const stripColumns = (s: string) => s.replace(/\bselect\b[\s\S]*?\bfrom\b/i, 'select from');
+      return this.diffExpression(stripColumns(fromDef), stripColumns(toDef));
+    }
+
+    return true;
   }
 
   parseJsonDefault(defaultValue?: string | null): Dictionary | string | null {

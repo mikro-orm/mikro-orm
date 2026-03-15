@@ -51,6 +51,39 @@ const BookSummary = defineEntity({
   },
 });
 
+// GH #7308 - multiline view expression (without SELECT *)
+const multilineViewSQL = `
+    SELECT
+    name, (select count(*)::int from book2 b where b.author_id = a.id) as book_count
+    FROM author2 a
+    GROUP BY a.id`;
+
+const MultilineAuthorStats = defineEntity({
+  name: 'MultilineAuthorStats',
+  tableName: 'multiline_author_stats_view',
+  view: true,
+  expression: multilineViewSQL,
+  properties: {
+    name: p.string().primary(),
+    bookCount: p.integer(),
+  },
+});
+
+// GH #7308 - view with SELECT * (PostgreSQL expands * to explicit column names)
+const SelectStarView = defineEntity({
+  name: 'SelectStarView',
+  tableName: 'select_star_view',
+  view: true,
+  expression: `
+    SELECT
+    *
+    FROM author2`,
+  properties: {
+    id: p.integer().primary(),
+    name: p.string(),
+  },
+});
+
 // View depending on another view (for testing dependency ordering)
 // This view references author_stats_view
 const ProlificAuthors = defineEntity({
@@ -184,6 +217,8 @@ describe('View entities (postgres)', () => {
         Address2,
         Configuration2,
         AuthorStats,
+        MultilineAuthorStats,
+        SelectStarView,
         BookSummary,
         ProlificAuthors,
       ],
@@ -233,6 +268,7 @@ describe('View entities (postgres)', () => {
     expect(summaries.map(s => s.title).sort()).toEqual(['Book 1', 'Book 2']);
   });
 
+  // GH #7308 - multiline and SELECT * views should not cause perpetual schema changes
   test('updateSchema detects no changes for unchanged views', async () => {
     const sql = await orm.schema.getUpdateSchemaSQL();
     expect(sql).toBe('');
@@ -301,6 +337,46 @@ describe('View entities (postgres)', () => {
     try {
       const sql = await orm2.schema.getUpdateSchemaSQL();
       expect(typeof sql).toBe('string');
+    } finally {
+      await orm2.close();
+    }
+  });
+
+  // GH #7308 - actual changes to SELECT * views should still be detected
+  test('updateSchema detects changes to SELECT * views', async () => {
+    const ModifiedStarView = defineEntity({
+      name: 'ModifiedStarView',
+      tableName: 'select_star_view',
+      view: true,
+      expression: `SELECT * FROM author2 WHERE age > 18`,
+      properties: {
+        id: p.integer().primary(),
+        name: p.string(),
+      },
+    });
+
+    const orm2 = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
+      entities: [
+        Author2,
+        Book2,
+        BookTag2,
+        Publisher2,
+        Test2,
+        FooBar2,
+        FooBaz2,
+        AuthorStats,
+        MultilineAuthorStats,
+        ModifiedStarView,
+        BookSummary,
+        ProlificAuthors,
+      ],
+      dbName: 'mikro_orm_test_views',
+    });
+
+    try {
+      const sql = await orm2.schema.getUpdateSchemaSQL();
+      expect(sql).toContain('select_star_view');
     } finally {
       await orm2.close();
     }
