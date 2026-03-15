@@ -291,9 +291,10 @@ export default class ArticlesController {
     })
   }
 
-  async store(ctx: HttpContext) {
-    const { title, text } = ctx.request.body()
-    const article = this.articleRepo.create({ title, text })
+  async store({ auth, request }: HttpContext) {
+    const author = auth.getUserOrFail()
+    const { title, text } = request.body()
+    const article = this.articleRepo.create({ title, text, author })
     await this.em.flush()
     return article
   }
@@ -302,71 +303,227 @@ export default class ArticlesController {
 
 ## Routes
 
-Register routes in `start/routes.ts` using lazy controller imports:
+Register routes in `start/routes.ts` using lazy controller imports. Protected routes use the `auth` middleware:
 
 ```ts title="start/routes.ts"
 import router from '@adonisjs/core/services/router'
+// highlight-next-line
+import { middleware } from '#start/kernel'
 
 const ArticlesController = () => import('#controllers/articles_controller')
 
+// public routes
 router.get('/article', [ArticlesController, 'index'])
 router.get('/article/:slug', [ArticlesController, 'show'])
-router.post('/article', [ArticlesController, 'store'])
-router.patch('/article/:id', [ArticlesController, 'update'])
-router.delete('/article/:id', [ArticlesController, 'destroy'])
+
+// protected routes
+// highlight-start
+router.group(() => {
+  router.post('/article', [ArticlesController, 'store'])
+  router.patch('/article/:id', [ArticlesController, 'update'])
+  router.delete('/article/:id', [ArticlesController, 'destroy'])
+}).use(middleware.auth())
+// highlight-end
 ```
 
-## Authentication Middleware
+## Authentication
 
-Middleware can also inject dependencies directly:
+Instead of implementing custom JWT authentication, you can use AdonisJS's built-in [`@adonisjs/auth`](https://docs.adonisjs.com/guides/authentication) package with a custom user provider backed by MikroORM. This gives you session-based auth with full framework integration.
 
-```ts title="app/middleware/auth_middleware.ts"
-import { inject } from '@adonisjs/core'
-import type { HttpContext } from '@adonisjs/core/http'
-import type { NextFn } from '@adonisjs/core/types/http'
-import { UserRepository } from '#repositories/user_repository'
-import { verifyJwt } from '#services/jwt'
+### Setup
 
-@inject()
-export default class AuthMiddleware {
-  constructor(protected userRepo: UserRepository) {}
+Install the auth and session packages:
 
-  async handle(ctx: HttpContext, next: NextFn) {
-    const header = ctx.request.header('authorization')
+```bash
+npm install @adonisjs/auth @adonisjs/session
+```
 
-    if (header?.startsWith('Bearer ')) {
-      const token = header.slice(7)
-      try {
-        const payload = verifyJwt(token)
-        ctx.user = await this.userRepo.findOneOrFail(payload.id)
-      } catch {
-        // ignore invalid tokens
-      }
+Register the providers in `adonisrc.ts`:
+
+```ts title="adonisrc.ts"
+export default defineConfig({
+  providers: [
+    // ...
+    // highlight-start
+    () => import('@adonisjs/session/session_provider'),
+    () => import('@adonisjs/auth/auth_provider'),
+    // highlight-end
+    () => import('#providers/mikro_orm_provider'),
+  ],
+})
+```
+
+### User Provider
+
+Implement [`SessionUserProviderContract`](https://v6-docs.adonisjs.com/guides/database/introduction#authentication) to bridge MikroORM with the AdonisJS session guard. The `findById` method uses the `EntityManager`, which resolves to the request-scoped fork via [RequestContext](./identity-map.md#request-context):
+
+```ts title="app/auth/mikro_orm_user_provider.ts"
+import { symbols } from '@adonisjs/auth'
+import type { SessionGuardUser, SessionUserProviderContract } from '@adonisjs/auth/types/session'
+import type { EntityManager } from '@mikro-orm/sqlite'
+import { UserSchema, User } from '#entities/user'
+
+export class MikroOrmUserProvider implements SessionUserProviderContract<User> {
+  declare [symbols.PROVIDER_REAL_USER]: User
+
+  constructor(private em: EntityManager) {}
+
+  async createUserForGuard(user: User): Promise<SessionGuardUser<User>> {
+    return {
+      getId() {
+        return user.id
+      },
+      getOriginal() {
+        return user
+      },
+    }
+  }
+
+  async findById(identifier: number): Promise<SessionGuardUser<User> | null> {
+    const user = await this.em.findOne(UserSchema, identifier)
+
+    if (!user) {
+      return null
     }
 
+    return this.createUserForGuard(user as User)
+  }
+}
+```
+
+### Auth Configuration
+
+Configure the session guard with the custom MikroORM provider using `configProvider.create` for lazy resolution:
+
+```ts title="config/auth.ts"
+import { defineConfig } from '@adonisjs/auth'
+import { sessionGuard } from '@adonisjs/auth/session'
+import { configProvider } from '@adonisjs/core'
+import { EntityManager } from '@mikro-orm/sqlite'
+import type { InferAuthenticators } from '@adonisjs/auth/types'
+
+const authConfig = defineConfig({
+  default: 'web',
+  guards: {
+    web: sessionGuard({
+      useRememberMeTokens: false,
+      provider: configProvider.create(async (app) => {
+        const { MikroOrmUserProvider } = await import('#auth/mikro_orm_user_provider')
+        const em = await app.container.make(EntityManager)
+        return new MikroOrmUserProvider(em)
+      }),
+    }),
+  },
+})
+
+export default authConfig
+
+declare module '@adonisjs/auth/types' {
+  interface Authenticators extends InferAuthenticators<typeof authConfig> {}
+}
+```
+
+### Middleware Stack
+
+Register session and auth middleware in `start/kernel.ts`. The `InitializeAuthMiddleware` adds `ctx.auth` to every request. The named `auth` middleware protects specific routes:
+
+```ts title="start/kernel.ts"
+import router from '@adonisjs/core/services/router'
+import server from '@adonisjs/core/services/server'
+
+server.errorHandler(() => import('#exceptions/handler'))
+
+server.use([
+  () => import('#middleware/container_bindings_middleware'),
+  () => import('#middleware/mikro_orm_middleware'),
+  // highlight-start
+  () => import('@adonisjs/session/session_middleware'),
+  () => import('@adonisjs/auth/initialize_auth_middleware'),
+  // highlight-end
+])
+
+router.use([() => import('@adonisjs/core/bodyparser_middleware')])
+
+// highlight-start
+export const middleware = router.named({
+  auth: () => import('#middleware/auth_middleware'),
+})
+// highlight-end
+```
+
+The auth middleware uses the framework's `authenticateUsing` method:
+
+```ts title="app/middleware/auth_middleware.ts"
+import type { HttpContext } from '@adonisjs/core/http'
+import type { NextFn } from '@adonisjs/core/types/http'
+import type { Authenticators } from '@adonisjs/auth/types'
+
+export default class AuthMiddleware {
+  async handle(ctx: HttpContext, next: NextFn, options: { guards?: (keyof Authenticators)[] } = {}) {
+    await ctx.auth.authenticateUsing(options.guards || [ctx.auth.defaultGuard])
     return next()
   }
 }
 ```
 
-Augment the `HttpContext` type to include your user:
+### Using Auth in Controllers
 
-```ts title="app/types.ts"
-import type { User } from '#entities/user'
+Use `ctx.auth` to log users in and access the authenticated user:
 
-declare module '@adonisjs/core/http' {
-  interface HttpContext {
-    user?: User
+```ts title="app/controllers/users_controller.ts"
+@inject()
+export default class UsersController {
+  constructor(protected em: EntityManager, protected userRepo: UserRepository) {}
+
+  async signIn({ request, response, auth }: HttpContext) {
+    const { email, password } = request.body()
+    const user = await this.userRepo.login(email, password)
+    // highlight-next-line
+    await auth.use('web').login(user)
+    return user
+  }
+
+  async profile({ auth }: HttpContext) {
+    // highlight-next-line
+    return auth.getUserOrFail()
   }
 }
 ```
 
 ## Testing
 
-Tests use Japa (AdonisJS's test runner). The MikroORM provider handles schema setup automatically:
+Tests use Japa (AdonisJS's test runner). Register the `sessionApiClient` and `authApiClient` plugins for session-based auth testing:
+
+```ts title="tests/bootstrap.ts"
+import { assert } from '@japa/assert'
+import { apiClient } from '@japa/api-client'
+import app from '@adonisjs/core/services/app'
+import type { Config } from '@japa/runner/types'
+import { pluginAdonisJS } from '@japa/plugin-adonisjs'
+// highlight-start
+import { authApiClient } from '@adonisjs/auth/plugins/api_client'
+import { sessionApiClient } from '@adonisjs/session/plugins/api_client'
+// highlight-end
+import testUtils from '@adonisjs/core/services/test_utils'
+
+export const plugins: Config['plugins'] = [
+  assert(),
+  apiClient(),
+  pluginAdonisJS(app),
+  // highlight-start
+  sessionApiClient(app),
+  authApiClient(app),
+  // highlight-end
+]
+```
+
+The `authApiClient` plugin adds a `loginAs` helper that authenticates requests via sessions — no manual token handling needed:
 
 ```ts title="tests/functional/user.spec.ts"
 import { test } from '@japa/runner'
+import app from '@adonisjs/core/services/app'
+import { MikroORM } from '@mikro-orm/sqlite'
+import { UserSchema, User } from '#entities/user'
 
 test.group('User', () => {
   test('sign in with valid credentials', async ({ client }) => {
@@ -377,6 +534,19 @@ test.group('User', () => {
 
     response.assertStatus(200)
     response.assertBodyContains({ fullName: 'Foo Bar' })
+  })
+
+  test('update profile', async ({ client, assert }) => {
+    const orm = await app.container.make(MikroORM)
+    const user = await orm.em.fork().findOneOrFail(UserSchema, { email: 'foo@bar.com' })
+
+    // highlight-next-line
+    const response = await client.patch('/user/profile').loginAs(user as User).json({
+      bio: 'Updated bio text',
+    })
+
+    response.assertStatus(200)
+    assert.equal(response.body().bio, 'Updated bio text')
   })
 })
 ```
