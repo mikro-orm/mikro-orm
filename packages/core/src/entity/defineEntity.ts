@@ -66,7 +66,7 @@ export type UniversalPropertyKeys =
   | keyof OneToOneOptions<any, any>
   | keyof ManyToManyOptions<any, any>;
 
-type BuilderExtraKeys = '~options' | '~type' | '$type';
+type BuilderExtraKeys = '~options' | '~type' | '$type' | 'readonly';
 type ExcludeKeys = 'entity' | 'items';
 type BuilderKeys = Exclude<UniversalPropertyKeys, ExcludeKeys> | BuilderExtraKeys;
 
@@ -145,6 +145,7 @@ export interface PropertyChain<Value, Options> {
   index(index?: boolean | string): PropertyChain<Value, Options>;
   unique(unique?: boolean | string): PropertyChain<Value, Options>;
   comment(comment: string): PropertyChain<Value, Options>;
+  readonly(): PropertyChain<Value, Omit<Options, 'readonly'> & { readonly: true }>;
   accessor(accessor?: string | boolean): PropertyChain<Value, Options>;
 
   // Kind-restricted methods — return type resolves to `never` on wrong kind, preventing misuse.
@@ -558,6 +559,17 @@ export class UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys extends
     IncludeKeys
   > {
     return this.assignOptions({ hidden: true });
+  }
+
+  /**
+   * Mark property as readonly on the entity type. Prevents assignment outside the constructor.
+   * This is a TypeScript-only feature and does not affect runtime behavior.
+   */
+  readonly(): Pick<
+    UniversalPropertyOptionsBuilder<Value, Omit<Options, 'readonly'> & { readonly: true }, IncludeKeys>,
+    IncludeKeys
+  > {
+    return this.assignOptions({});
   }
 
   /**
@@ -1252,7 +1264,7 @@ export function defineEntity<
 ): EntitySchemaWithMeta<
   TName,
   TTableName,
-  InferEntityFromProperties<TProperties, TPK, TBase, TRepository, TForceObject>,
+  InferEntityFromProperties<TProperties, TPK, TBase, TRepository, TForceObject, ReadonlyBuilderKeys<TProperties>>,
   TBase,
   TProperties
 >;
@@ -1424,6 +1436,11 @@ type InferColumnType<T extends string> = T extends
 // before the Base in the intersection — TypeScript picks earlier overloads first.
 type BaseEntityMethodKeys = 'toObject' | 'toPOJO' | 'serialize' | 'assign' | 'populate' | 'init' | 'toReference';
 
+/** Extracts property keys whose builder has `readonly: true` in options. */
+type ReadonlyBuilderKeys<Properties> = {
+  [K in keyof Properties]: MaybeReturnType<Properties[K]> extends { '~options': { readonly: true } } ? K : never;
+}[keyof Properties];
+
 /** Infers the entity type from a `defineEntity()` properties map, resolving builders, base classes, and primary keys. */
 export type InferEntityFromProperties<
   Properties extends Record<string, any>,
@@ -1431,6 +1448,7 @@ export type InferEntityFromProperties<
   Base = never,
   Repository = never,
   ForceObject extends boolean = false,
+  RK extends keyof Properties = never,
 > = (IsNever<Base> extends true
   ? {}
   : Base extends { toObject(...args: any[]): any }
@@ -1447,11 +1465,14 @@ export type InferEntityFromProperties<
         >,
         BaseEntityMethodKeys
       >
-    : {}) & {
-  -readonly [K in keyof Properties]: InferBuilderValue<MaybeReturnType<Properties[K]>>;
-} & {
-  [PrimaryKeyProp]?: InferCombinedPrimaryKey<Properties, PK, Base>;
-} & (IsNever<Repository> extends true
+    : {}) &
+  ([RK] extends [never]
+    ? { -readonly [K in keyof Properties]: InferBuilderValue<MaybeReturnType<Properties[K]>> }
+    : { readonly [K in RK & keyof Properties]: InferBuilderValue<MaybeReturnType<Properties[K]>> } & {
+        -readonly [K in Exclude<keyof Properties, RK>]: InferBuilderValue<MaybeReturnType<Properties[K]>>;
+      }) & {
+    [PrimaryKeyProp]?: InferCombinedPrimaryKey<Properties, PK, Base>;
+  } & (IsNever<Repository> extends true
     ? {}
     : { [EntityRepositoryType]?: Repository extends Constructor<infer R> ? R : Repository }) &
   (IsNever<Base> extends true ? {} : Omit<Base, typeof PrimaryKeyProp>) &

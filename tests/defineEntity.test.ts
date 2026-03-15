@@ -385,6 +385,42 @@ describe('defineEntity', () => {
     expect(Foo.meta).toEqual(asSnapshot(FooSchema.meta));
   });
 
+  it('should define entity with readonly property', () => {
+    const Foo = defineEntity({
+      name: 'Foo',
+      properties: p => ({
+        id: p.integer().primary().autoincrement().readonly(),
+        name: p.string(),
+        createdAt: p.datetime().readonly(),
+      }),
+    });
+
+    type IFoo = InferEntity<typeof Foo>;
+    assert<
+      IsExact<
+        IFoo,
+        {
+          readonly id: Opt<number>;
+          name: string;
+          readonly createdAt: Date;
+          [PrimaryKeyProp]?: 'id';
+        }
+      >
+    >(true);
+
+    // readonly is type-only — metadata should match a non-readonly entity
+    const FooSchema = new EntitySchema({
+      name: 'Foo',
+      properties: {
+        id: { type: types.integer, primary: true, autoincrement: true },
+        name: { type: types.string },
+        createdAt: { type: types.datetime },
+      },
+    });
+
+    expect(Foo.meta).toEqual(asSnapshot(FooSchema.meta));
+  });
+
   it('should define entity with reference scalar property', () => {
     const p = defineEntity.properties;
 

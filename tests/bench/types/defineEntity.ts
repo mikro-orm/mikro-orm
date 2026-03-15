@@ -44,7 +44,7 @@ bench('defineEntity only with ref and nullable', () => {
       toOneRefNullable: () => p.oneToOne(Foo).ref().nullable(),
     },
   });
-}).types([1837, 'instantiations']);
+}).types([1982, 'instantiations']);
 
 bench('defineEntity only with nullable and ref', () => {
   const Foo = defineEntity({
@@ -54,7 +54,7 @@ bench('defineEntity only with nullable and ref', () => {
       toOneRefNullable: () => p.oneToOne(Foo).nullable().ref(),
     },
   });
-}).types([1837, 'instantiations']);
+}).types([1982, 'instantiations']);
 
 bench('defineEntity with relations using class', () => {
   class Foo {
@@ -86,7 +86,7 @@ bench('defineEntity with relations using class', () => {
       scalarRefNullable: p.string().ref().nullable(),
     },
   });
-}).types([7044, 'instantiations']);
+}).types([7110, 'instantiations']);
 
 bench('defineEntity with ref and nullable using class', () => {
   class Foo {
@@ -118,7 +118,7 @@ bench('defineEntity with ref and nullable using class', () => {
       scalarRefNullable: p.string().ref().nullable(),
     },
   });
-}).types([7044, 'instantiations']);
+}).types([7110, 'instantiations']);
 
 bench('defineEntity only with ref and nullable using class', () => {
   class Foo {
@@ -136,7 +136,7 @@ bench('defineEntity only with ref and nullable using class', () => {
       toOneRefNullable: () => p.oneToOne(Foo).ref().nullable(),
     },
   });
-}).types([2360, 'instantiations']);
+}).types([2364, 'instantiations']);
 
 bench('defineEntity only with nullable and ref using class', () => {
   class Foo {
@@ -154,7 +154,7 @@ bench('defineEntity only with nullable and ref using class', () => {
       toOneRefNullable: () => p.oneToOne(Foo).nullable().ref(),
     },
   });
-}).types([2360, 'instantiations']);
+}).types([2364, 'instantiations']);
 
 bench('EntitySchema', () => {
   interface IFoo {
