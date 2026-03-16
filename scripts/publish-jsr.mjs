@@ -1,5 +1,5 @@
 import { execSync } from 'node:child_process';
-import { readdirSync, readFileSync, existsSync } from 'node:fs';
+import { readdirSync, readFileSync, existsSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 const dryRun = process.argv.includes('--dry-run');
@@ -10,6 +10,7 @@ const flags = dryRun ? ' --dry-run --allow-dirty' : '';
 // since yarn's topological sort doesn't account for peerDependencies.
 const packagesDir = resolve(import.meta.dirname, '..', 'packages');
 const packages = new Map();
+const originals = new Map();
 
 for (const name of readdirSync(packagesDir)) {
   const jsrPath = resolve(packagesDir, name, 'jsr.json');
@@ -18,8 +19,32 @@ for (const name of readdirSync(packagesDir)) {
     continue;
   }
 
-  const jsr = JSON.parse(readFileSync(jsrPath, 'utf8'));
+  const original = readFileSync(jsrPath, 'utf8');
+  const jsr = JSON.parse(original);
   const pkgJson = JSON.parse(readFileSync(resolve(packagesDir, name, 'package.json'), 'utf8'));
+
+  // Sync jsr.json imports from package.json dependencies so that version
+  // bumps (e.g. from Renovate) are picked up automatically.
+  const imports = {};
+
+  for (const [dep, version] of Object.entries(pkgJson.dependencies ?? {})) {
+    const prefix = dep.startsWith('@mikro-orm/') ? 'jsr' : 'npm';
+    imports[dep] = `${prefix}:${dep}@${version}`;
+  }
+
+  if (Object.keys(imports).length > 0) {
+    jsr.imports = imports;
+  } else {
+    delete jsr.imports;
+  }
+
+  jsr.version = pkgJson.version;
+  const synced = JSON.stringify(jsr, null, 2) + '\n';
+  writeFileSync(jsrPath, synced, { flush: true });
+
+  if (synced !== original) {
+    originals.set(jsrPath, original);
+  }
 
   // Use package.json dependencies and peerDependencies to build the graph,
   // filtering to only @mikro-orm/* packages that are also being published to JSR.
@@ -72,6 +97,13 @@ for (const { name, dir } of sorted) {
     execSync(`cd ${dir} && jsr publish${flags}`, { stdio: 'inherit' });
   } catch {
     failed.push(name);
+  }
+}
+
+// Restore original jsr.json files during dry-run to avoid leaving a dirty tree.
+if (dryRun) {
+  for (const [path, content] of originals) {
+    writeFileSync(path, content, { flush: true });
   }
 }
 
