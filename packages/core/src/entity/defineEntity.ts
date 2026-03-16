@@ -1224,26 +1224,26 @@ export interface EntityMetadataWithProperties<
   concurrencyCheckKeys?: Set<AllKeys<TProperties, TBase>>;
   serializedPrimaryKey?: AllKeys<TProperties, TBase>;
   indexes?: {
-    properties?: keyof TProperties | (keyof TProperties)[];
+    properties?: NoInfer<AllKeys<TProperties, TBase>> | NoInfer<AllKeys<TProperties, TBase>>[];
     name?: string;
     type?: string;
     options?: Dictionary;
     expression?: string | IndexCallback<InferEntityFromProperties<TProperties, TPK, TBase>>;
     columns?: IndexColumnOptions[];
-    include?: keyof TProperties | (keyof TProperties)[];
+    include?: NoInfer<AllKeys<TProperties, TBase>> | NoInfer<AllKeys<TProperties, TBase>>[];
     fillFactor?: number;
     invisible?: boolean;
     disabled?: boolean;
     clustered?: boolean;
   }[];
   uniques?: {
-    properties?: keyof TProperties | (keyof TProperties)[];
+    properties?: NoInfer<AllKeys<TProperties, TBase>> | NoInfer<AllKeys<TProperties, TBase>>[];
     name?: string;
     options?: Dictionary;
     expression?: string | IndexCallback<InferEntityFromProperties<TProperties, TPK, TBase>>;
     deferMode?: DeferMode | `${DeferMode}`;
     columns?: IndexColumnOptions[];
-    include?: keyof TProperties | (keyof TProperties)[];
+    include?: NoInfer<AllKeys<TProperties, TBase>> | NoInfer<AllKeys<TProperties, TBase>>[];
     fillFactor?: number;
     disabled?: boolean;
   }[];
