@@ -33,7 +33,7 @@
     "url": "git+ssh://git@github.com/mikro-orm/mikro-orm.git"
   },
   "bin": {
-    "mikro-orm": "./dist/cli"
+    "mikro-orm": "./dist/cli.js"
   },
   "type": "module",
   "exports": {

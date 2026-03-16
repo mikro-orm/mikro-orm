@@ -190,10 +190,6 @@ if (resolve(process.cwd()) === resolve(root, 'packages/core')) {
       .replace(`import('@mikro-orm/entity-generator')`, `import((() => '@mikro-orm/entity-generator')())`));
 }
 
-if (resolve(process.cwd()) === resolve(root, 'packages/cli')) {
-  copy('cli.js', target, target, 'cli');
-}
-
 rewrite(resolve(target, 'package.json'), pkg => {
   return pkg.replace(/dist\//g, '').replace(/src\/(.*)\.ts/g, '$1.js');
 });
