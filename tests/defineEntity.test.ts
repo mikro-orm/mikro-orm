@@ -1041,6 +1041,125 @@ describe('defineEntity', () => {
     });
   });
 
+  it('should define entity with advanced index options', () => {
+    const Entity = defineEntity({
+      name: 'AdvancedIndexEntity',
+      indexes: [
+        {
+          properties: ['name', 'createdAt'],
+          columns: [
+            { name: 'createdAt', sort: 'DESC' },
+            { name: 'name', sort: 'ASC' },
+          ],
+        },
+        {
+          name: 'covering_idx',
+          properties: ['email'],
+          include: ['name', 'createdAt'],
+        },
+        {
+          name: 'fill_factor_idx',
+          properties: ['name'],
+          fillFactor: 70,
+        },
+        {
+          name: 'invisible_idx',
+          properties: ['email'],
+          invisible: true,
+        },
+        {
+          name: 'disabled_idx',
+          properties: ['email'],
+          disabled: true,
+        },
+        {
+          name: 'clustered_idx',
+          properties: ['name'],
+          clustered: true,
+        },
+      ],
+      uniques: [
+        {
+          properties: ['email'],
+          include: ['name'],
+          fillFactor: 80,
+        },
+        {
+          name: 'deferred_unique',
+          properties: ['name'],
+          deferMode: 'deferred',
+          columns: [{ name: 'name', sort: 'ASC' }],
+          disabled: true,
+        },
+      ],
+      properties: {
+        id: p.integer().primary(),
+        name: p.string(),
+        email: p.string(),
+        createdAt: p.datetime(),
+      },
+    });
+
+    expect(Entity.meta.indexes).toHaveLength(6);
+    expect(Entity.meta.indexes[0].columns).toEqual([
+      { name: 'createdAt', sort: 'DESC' },
+      { name: 'name', sort: 'ASC' },
+    ]);
+    expect(Entity.meta.indexes[1].include).toEqual(['name', 'createdAt']);
+    expect(Entity.meta.indexes[2].fillFactor).toBe(70);
+    expect(Entity.meta.indexes[3].invisible).toBe(true);
+    expect(Entity.meta.indexes[4].disabled).toBe(true);
+    expect(Entity.meta.indexes[5].clustered).toBe(true);
+    expect(Entity.meta.uniques).toHaveLength(2);
+    expect(Entity.meta.uniques[0].include).toEqual(['name']);
+    expect(Entity.meta.uniques[0].fillFactor).toBe(80);
+    expect(Entity.meta.uniques[1].columns).toEqual([{ name: 'name', sort: 'ASC' }]);
+    expect(Entity.meta.uniques[1].disabled).toBe(true);
+  });
+
+  it('should define entity with advanced index options and extends', () => {
+    const Base = defineEntity({
+      abstract: true,
+      forceObject: true,
+      name: 'AdvIdxBase',
+      properties: {
+        id: p.uuid().primary(),
+        createdAt: p.datetime(),
+      },
+    });
+
+    class BaseClass extends Base.class {}
+    Base.setClass(BaseClass);
+
+    const Child = defineEntity({
+      name: 'AdvIdxChild',
+      extends: BaseClass,
+      properties: {
+        name: p.string(),
+        email: p.string(),
+      },
+      indexes: [
+        {
+          properties: ['name', 'email'],
+          columns: [{ name: 'email', sort: 'DESC' }],
+          fillFactor: 90,
+        },
+      ],
+      uniques: [
+        {
+          properties: ['email'],
+          include: ['name'],
+        },
+      ],
+    });
+
+    expect(Child.meta.indexes).toHaveLength(1);
+    expect(Child.meta.indexes[0].columns).toEqual([{ name: 'email', sort: 'DESC' }]);
+    expect(Child.meta.indexes[0].fillFactor).toBe(90);
+    expect(Child.meta.uniques).toHaveLength(1);
+    expect(Child.meta.uniques[0].include).toEqual(['name']);
+  });
+
   it('supports entity inference for hooks', () => {
     const Article = defineEntity({
       name: 'Article',
