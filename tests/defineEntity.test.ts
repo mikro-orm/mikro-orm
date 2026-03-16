@@ -1144,20 +1144,31 @@ describe('defineEntity', () => {
           columns: [{ name: 'email', sort: 'DESC' }],
           fillFactor: 90,
         },
+        {
+          // base entity properties should be allowed in indexes/uniques
+          properties: ['createdAt', 'email'],
+        },
       ],
       uniques: [
         {
           properties: ['email'],
           include: ['name'],
         },
+        {
+          properties: ['createdAt', 'email'],
+          include: ['id'],
+        },
       ],
     });
 
-    expect(Child.meta.indexes).toHaveLength(1);
+    expect(Child.meta.indexes).toHaveLength(2);
     expect(Child.meta.indexes[0].columns).toEqual([{ name: 'email', sort: 'DESC' }]);
     expect(Child.meta.indexes[0].fillFactor).toBe(90);
-    expect(Child.meta.uniques).toHaveLength(1);
+    expect(Child.meta.indexes[1].properties).toEqual(['createdAt', 'email']);
+    expect(Child.meta.uniques).toHaveLength(2);
     expect(Child.meta.uniques[0].include).toEqual(['name']);
+    expect(Child.meta.uniques[1].properties).toEqual(['createdAt', 'email']);
+    expect(Child.meta.uniques[1].include).toEqual(['id']);
   });
 
   it('supports entity inference for hooks', () => {
