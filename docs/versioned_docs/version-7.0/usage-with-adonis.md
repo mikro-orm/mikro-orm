@@ -24,12 +24,12 @@ Create a MikroORM config file. This is used both by the application and the CLI 
 import { defineConfig } from '@mikro-orm/sqlite'
 import { Migrator } from '@mikro-orm/migrations'
 import { SeedManager } from '@mikro-orm/seeder'
-import { UserSchema } from '#entities/user'
+import { User } from '#entities/user'
 import { ArticleSchema } from '#entities/article'
 
 export default defineConfig({
   dbName: 'sqlite.db',
-  entities: [UserSchema, ArticleSchema],
+  entities: [User, ArticleSchema],
   extensions: [Migrator, SeedManager],
   debug: true,
 })
@@ -59,7 +59,7 @@ import type { ApplicationService } from '@adonisjs/core/types'
 import config from '#config/mikro-orm.config'
 import { UserRepository } from '#repositories/user_repository'
 import { ArticleRepository } from '#repositories/article_repository'
-import { UserSchema } from '#entities/user'
+import { User } from '#entities/user'
 import { ArticleSchema } from '#entities/article'
 
 export default class MikroOrmProvider {
@@ -80,7 +80,7 @@ export default class MikroOrmProvider {
     // register custom repositories
     this.app.container.singleton(UserRepository, async (resolver) => {
       const orm = await resolver.make(MikroORM)
-      return orm.em.getRepository(UserSchema)
+      return orm.em.getRepository(User)
     })
 
     this.app.container.singleton(ArticleRepository, async (resolver) => {
@@ -204,7 +204,7 @@ export const BaseSchema = defineEntity({
 ```ts title="app/entities/article.ts"
 import { defineEntity, type InferEntity, p } from '@mikro-orm/core'
 import { BaseSchema } from '#entities/base'
-import { UserSchema } from '#entities/user'
+import { User } from '#entities/user'
 import { ArticleRepository } from '#repositories/article_repository'
 
 export const ArticleSchema = defineEntity({
@@ -215,7 +215,7 @@ export const ArticleSchema = defineEntity({
     slug: p.string().unique(),
     title: p.string().index(),
     text: p.text().lazy(),
-    author: () => p.manyToOne(UserSchema).ref(),
+    author: () => p.manyToOne(User).ref(),
   },
 })
 
