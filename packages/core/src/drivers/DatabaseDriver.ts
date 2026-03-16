@@ -60,13 +60,13 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
     protected readonly dependencies: string[],
   ) {}
 
-  abstract find<T extends object, P extends string = never, F extends string = '*', E extends string = never>(
+  abstract find<T extends object, P extends string = never, F extends string = never, E extends string = never>(
     entityName: EntityName<T>,
     where: FilterQuery<T>,
     options?: FindOptions<T, P, F, E>,
   ): Promise<EntityData<T>[]>;
 
-  abstract findOne<T extends object, P extends string = never, F extends string = '*', E extends string = never>(
+  abstract findOne<T extends object, P extends string = never, F extends string = never, E extends string = never>(
     entityName: EntityName<T>,
     where: FilterQuery<T>,
     options?: FindOneOptions<T, P, F, E>,

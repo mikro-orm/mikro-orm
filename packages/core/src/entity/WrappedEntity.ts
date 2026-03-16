@@ -109,7 +109,7 @@ export class WrappedEntity<Entity extends object> {
   }
 
   /** Sets the serialization context with populate hints, field selections, and exclusions. */
-  setSerializationContext<Hint extends string = never, Fields extends string = '*', Exclude extends string = never>(
+  setSerializationContext<Hint extends string = never, Fields extends string = never, Exclude extends string = never>(
     options: LoadHint<Entity, Hint, Fields, Exclude>,
   ): void {
     const exclude = (options.exclude as readonly string[]) ?? [];
@@ -175,7 +175,7 @@ export class WrappedEntity<Entity extends object> {
   }
 
   /** Initializes (refreshes) the entity by reloading it from the database. Returns null if not found. */
-  async init<Hint extends string = never, Fields extends string = '*', Excludes extends string = never>(
+  async init<Hint extends string = never, Fields extends string = never, Excludes extends string = never>(
     options?: FindOneOptions<Entity, Hint, Fields, Excludes>,
   ): Promise<Loaded<Entity, Hint, Fields, Excludes> | null> {
     if (!this.__em) {

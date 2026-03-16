@@ -206,7 +206,7 @@ export abstract class AbstractSqlDriver<
     return qb;
   }
 
-  async find<T extends object, P extends string = never, F extends string = PopulatePath.ALL, E extends string = never>(
+  async find<T extends object, P extends string = never, F extends string = never, E extends string = never>(
     entityName: EntityName<T>,
     where: ObjectQuery<T>,
     options: FindOptions<T, P, F, E> = {},
@@ -232,12 +232,7 @@ export abstract class AbstractSqlDriver<
     return result;
   }
 
-  async findOne<
-    T extends object,
-    P extends string = never,
-    F extends string = PopulatePath.ALL,
-    E extends string = never,
-  >(
+  async findOne<T extends object, P extends string = never, F extends string = never, E extends string = never>(
     entityName: EntityName<T>,
     where: ObjectQuery<T>,
     options?: FindOneOptions<T, P, F, E>,

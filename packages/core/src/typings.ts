@@ -472,7 +472,7 @@ export interface IWrappedEntity<Entity extends object> {
     populate: readonly AutoPath<Entity, Hint, PopulatePath.ALL>[] | false,
     options?: EntityLoaderOptions<Entity, Fields>,
   ): Promise<Loaded<Entity, Hint>>;
-  init<Hint extends string = never, Fields extends string = '*', Exclude extends string = never>(
+  init<Hint extends string = never, Fields extends string = never, Exclude extends string = never>(
     options?: FindOneOptions<Entity, Hint, Fields, Exclude>,
   ): Promise<Loaded<Entity, Hint, Fields, Exclude> | null>;
   toReference(): Ref<Entity> & LoadedReference<Loaded<Entity, AddEager<Entity>>>;
@@ -488,7 +488,7 @@ export interface IWrappedEntity<Entity extends object> {
   >(
     options?: SerializeOptions<Naked, Hint, Exclude>,
   ): SerializeDTO<Naked, Hint, Exclude>;
-  setSerializationContext<Hint extends string = never, Fields extends string = '*', Exclude extends string = never>(
+  setSerializationContext<Hint extends string = never, Fields extends string = never, Exclude extends string = never>(
     options: LoadHint<Entity, Hint, Fields, Exclude>,
   ): void;
   assign<

@@ -1004,7 +1004,7 @@ Object.defineProperties(Collection.prototype, {
 export interface InitCollectionOptions<
   T,
   P extends string = never,
-  F extends string = '*',
+  F extends string = never,
   E extends string = never,
 > extends EntityLoaderOptions<T, F, E> {
   /** Whether to use the dataloader for batching collection loads. */

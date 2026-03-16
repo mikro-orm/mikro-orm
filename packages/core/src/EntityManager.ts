@@ -192,7 +192,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
   async find<
     Entity extends object,
     Hint extends string = never,
-    Fields extends string = PopulatePath.ALL,
+    Fields extends string = never,
     Excludes extends string = never,
   >(
     entityName: EntityName<Entity>,
@@ -307,7 +307,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
   async *stream<
     Entity extends object,
     Hint extends string = never,
-    Fields extends string = '*',
+    Fields extends string = never,
     Excludes extends string = never,
   >(
     entityName: EntityName<Entity>,
@@ -357,7 +357,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
   async findAll<
     Entity extends object,
     Hint extends string = never,
-    Fields extends string = '*',
+    Fields extends string = never,
     Excludes extends string = never,
   >(
     entityName: EntityName<Entity>,
@@ -438,7 +438,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
   protected async processWhere<
     Entity extends object,
     Hint extends string = never,
-    Fields extends string = '*',
+    Fields extends string = never,
     Excludes extends string = never,
   >(
     entityName: EntityName<Entity>,
@@ -737,7 +737,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
   async findAndCount<
     Entity extends object,
     Hint extends string = never,
-    Fields extends string = '*',
+    Fields extends string = never,
     Excludes extends string = never,
   >(
     entityName: EntityName<Entity>,
@@ -813,7 +813,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
   async findByCursor<
     Entity extends object,
     Hint extends string = never,
-    Fields extends string = '*',
+    Fields extends string = never,
     Excludes extends string = never,
     IncludeCount extends boolean = true,
   >(
@@ -849,7 +849,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     Entity extends object,
     Naked extends FromEntityType<Entity> = FromEntityType<Entity>,
     Hint extends string = never,
-    Fields extends string = '*',
+    Fields extends string = never,
     Excludes extends string = never,
   >(
     entity: Entity,
@@ -876,7 +876,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     Entity extends object,
     Naked extends FromEntityType<Entity> = FromEntityType<Entity>,
     Hint extends string = never,
-    Fields extends string = '*',
+    Fields extends string = never,
     Excludes extends string = never,
   >(
     entity: Entity,
@@ -930,7 +930,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
   async findOne<
     Entity extends object,
     Hint extends string = never,
-    Fields extends string = '*',
+    Fields extends string = never,
     Excludes extends string = never,
   >(
     entityName: EntityName<Entity>,
@@ -1038,7 +1038,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
   async findOneOrFail<
     Entity extends object,
     Hint extends string = never,
-    Fields extends string = '*',
+    Fields extends string = never,
     Excludes extends string = never,
   >(
     entityName: EntityName<Entity>,
@@ -2437,7 +2437,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
   private async lockAndPopulate<
     T extends object,
     P extends string = never,
-    F extends string = '*',
+    F extends string = never,
     E extends string = never,
   >(
     meta: EntityMetadata<T>,
@@ -2616,11 +2616,12 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
    * when the entity is found in identity map, we check if it was partially loaded or we are trying to populate
    * some additional lazy properties, if so, we reload and merge the data from database
    */
-  protected shouldRefresh<T extends object, P extends string = never, F extends string = '*', E extends string = never>(
-    meta: EntityMetadata<T>,
-    entity: T,
-    options: FindOneOptions<T, P, F, E>,
-  ): boolean {
+  protected shouldRefresh<
+    T extends object,
+    P extends string = never,
+    F extends string = never,
+    E extends string = never,
+  >(meta: EntityMetadata<T>, entity: T, options: FindOneOptions<T, P, F, E>): boolean {
     if (!helper(entity).__initialized || options.refresh) {
       return true;
     }

@@ -129,7 +129,7 @@ export class Reference<T extends object> {
    * If the entity is not found in the database (e.g. it was deleted in the meantime, or currently active filters disallow loading of it)
    * the method returns `null`. Use `loadOrFail()` if you want an error to be thrown in such a case.
    */
-  async load<TT extends T, P extends string = never, F extends string = '*', E extends string = never>(
+  async load<TT extends T, P extends string = never, F extends string = never, E extends string = never>(
     options: LoadReferenceOptions<TT, P, F, E> = {},
   ): Promise<Loaded<TT, P, F, E> | null> {
     const wrapped = helper(this.entity as TT & object);
@@ -163,7 +163,7 @@ export class Reference<T extends object> {
    * Ensures the underlying entity is loaded first (without reloading it if it already is loaded).
    * Returns the entity or throws an error just like `em.findOneOrFail()` (and respects the same config options).
    */
-  async loadOrFail<TT extends T, P extends string = never, F extends string = '*', E extends string = never>(
+  async loadOrFail<TT extends T, P extends string = never, F extends string = never, E extends string = never>(
     options: LoadReferenceOrFailOptions<TT, P, F, E> = {},
   ): Promise<Loaded<TT, P, F, E>> {
     const ret = await this.load(options);
@@ -375,7 +375,7 @@ Object.defineProperties(ScalarReference.prototype, {
 export interface LoadReferenceOptions<
   T extends object,
   P extends string = never,
-  F extends string = '*',
+  F extends string = never,
   E extends string = never,
 > extends FindOneOptions<T, P, F, E> {
   /** Whether to use the dataloader for batching reference loads. */
@@ -386,7 +386,7 @@ export interface LoadReferenceOptions<
 export interface LoadReferenceOrFailOptions<
   T extends object,
   P extends string = never,
-  F extends string = '*',
+  F extends string = never,
   E extends string = never,
 > extends FindOneOrFailOptions<T, P, F, E> {
   /** Whether to use the dataloader for batching reference loads. */
