@@ -148,7 +148,7 @@ export abstract class BaseEntity {
   init<
     Entity extends this = this,
     Hint extends string = never,
-    Fields extends string = '*',
+    Fields extends string = never,
     Excludes extends string = never,
   >(options?: FindOneOptions<Entity, Hint, Fields, Excludes>): Promise<Loaded<Entity, Hint, Fields, Excludes> | null> {
     return helper(this as Entity).init(options);

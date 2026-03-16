@@ -64,7 +64,7 @@ export interface IDatabaseDriver<C extends Connection = Connection> {
   /**
    * Finds selection of entities
    */
-  find<T extends object, P extends string = never, F extends string = '*', E extends string = never>(
+  find<T extends object, P extends string = never, F extends string = never, E extends string = never>(
     entityName: EntityName<T>,
     where: FilterQuery<T>,
     options?: FindOptions<T, P, F, E>,
@@ -73,7 +73,7 @@ export interface IDatabaseDriver<C extends Connection = Connection> {
   /**
    * Finds single entity (table row, document)
    */
-  findOne<T extends object, P extends string = never, F extends string = '*', E extends string = never>(
+  findOne<T extends object, P extends string = never, F extends string = never, E extends string = never>(
     entityName: EntityName<T>,
     where: FilterQuery<T>,
     options?: FindOneOptions<T, P, F, E>,
@@ -214,7 +214,7 @@ export type OrderDefinition<T> = (QueryOrderMap<T> & { 0?: never }) | QueryOrder
 export interface FindAllOptions<
   T,
   P extends string = never,
-  F extends string = '*',
+  F extends string = never,
   E extends string = never,
 > extends FindOptions<T, P, F, E> {
   where?: FilterQuery<T>;
@@ -224,7 +224,7 @@ export interface FindAllOptions<
 export interface StreamOptions<
   Entity,
   Populate extends string = never,
-  Fields extends string = '*',
+  Fields extends string = never,
   Exclude extends string = never,
 > extends Omit<
   FindAllOptions<Entity, Populate, Fields, Exclude>,
@@ -249,7 +249,7 @@ export type FilterOptions = Dictionary<boolean | Dictionary> | string[] | boolea
 export interface LoadHint<
   Entity,
   Hint extends string = never,
-  Fields extends string = PopulatePath.ALL,
+  Fields extends string = never,
   Excludes extends string = never,
 > {
   populate?: Populate<Entity, Hint>;
@@ -261,7 +261,7 @@ export interface LoadHint<
 export interface FindOptions<
   Entity,
   Hint extends string = never,
-  Fields extends string = PopulatePath.ALL,
+  Fields extends string = never,
   Excludes extends string = never,
 > extends LoadHint<Entity, Hint, Fields, Excludes> {
   /**
@@ -378,7 +378,7 @@ export interface FindOptions<
 export interface FindByCursorOptions<
   T extends object,
   P extends string = never,
-  F extends string = '*',
+  F extends string = never,
   E extends string = never,
   I extends boolean = true,
 > extends Omit<FindAllOptions<T, P, F, E>, 'limit' | 'offset'> {
@@ -389,7 +389,7 @@ export interface FindByCursorOptions<
 export interface FindOneOptions<
   T,
   P extends string = never,
-  F extends string = '*',
+  F extends string = never,
   E extends string = never,
 > extends Omit<FindOptions<T, P, F, E>, 'limit' | 'lockMode'> {
   lockMode?: LockMode;
@@ -400,7 +400,7 @@ export interface FindOneOptions<
 export interface FindOneOrFailOptions<
   T extends object,
   P extends string = never,
-  F extends string = '*',
+  F extends string = never,
   E extends string = never,
 > extends FindOneOptions<T, P, F, E> {
   failHandler?: (entityName: string, where: Dictionary | IPrimaryKey | any) => Error;

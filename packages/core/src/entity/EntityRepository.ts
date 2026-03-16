@@ -50,7 +50,7 @@ export class EntityRepository<Entity extends object> {
   /**
    * Finds first entity matching your `where` query.
    */
-  async findOne<Hint extends string = never, Fields extends string = '*', Excludes extends string = never>(
+  async findOne<Hint extends string = never, Fields extends string = never, Excludes extends string = never>(
     where: FilterQuery<Entity>,
     options?: FindOneOptions<Entity, Hint, Fields, Excludes>,
   ): Promise<Loaded<Entity, Hint, Fields, Excludes> | null> {
@@ -62,7 +62,7 @@ export class EntityRepository<Entity extends object> {
    * You can override the factory for creating this method via `options.failHandler` locally
    * or via `Configuration.findOneOrFailHandler` globally.
    */
-  async findOneOrFail<Hint extends string = never, Fields extends string = '*', Excludes extends string = never>(
+  async findOneOrFail<Hint extends string = never, Fields extends string = never, Excludes extends string = never>(
     where: FilterQuery<Entity>,
     options?: FindOneOrFailOptions<Entity, Hint, Fields, Excludes>,
   ): Promise<Loaded<Entity, Hint, Fields, Excludes>> {
@@ -137,7 +137,7 @@ export class EntityRepository<Entity extends object> {
   /**
    * Finds all entities matching your `where` query. You can pass additional options via the `options` parameter.
    */
-  async find<Hint extends string = never, Fields extends string = '*', Excludes extends string = never>(
+  async find<Hint extends string = never, Fields extends string = never, Excludes extends string = never>(
     where: FilterQuery<Entity>,
     options?: FindOptions<Entity, Hint, Fields, Excludes>,
   ): Promise<Loaded<Entity, Hint, Fields, Excludes>[]> {
@@ -148,7 +148,7 @@ export class EntityRepository<Entity extends object> {
    * Calls `em.find()` and `em.count()` with the same arguments (where applicable) and returns the results as tuple
    * where first element is the array of entities, and the second is the count.
    */
-  async findAndCount<Hint extends string = never, Fields extends string = '*', Excludes extends string = never>(
+  async findAndCount<Hint extends string = never, Fields extends string = never, Excludes extends string = never>(
     where: FilterQuery<Entity>,
     options?: FindOptions<Entity, Hint, Fields, Excludes>,
   ): Promise<[Loaded<Entity, Hint, Fields, Excludes>[], number]> {
@@ -160,7 +160,7 @@ export class EntityRepository<Entity extends object> {
    */
   async findByCursor<
     Hint extends string = never,
-    Fields extends string = '*',
+    Fields extends string = never,
     Excludes extends string = never,
     IncludeCount extends boolean = true,
   >(
@@ -172,7 +172,7 @@ export class EntityRepository<Entity extends object> {
   /**
    * Finds all entities of given type. You can pass additional options via the `options` parameter.
    */
-  async findAll<Hint extends string = never, Fields extends string = '*', Excludes extends string = never>(
+  async findAll<Hint extends string = never, Fields extends string = never, Excludes extends string = never>(
     options?: FindAllOptions<Entity, Hint, Fields, Excludes>,
   ): Promise<Loaded<Entity, Hint, Fields, Excludes>[]> {
     return this.getEntityManager().findAll(this.entityName, options);
@@ -181,7 +181,7 @@ export class EntityRepository<Entity extends object> {
   /**
    * @inheritDoc EntityManager.stream
    */
-  async *stream<Hint extends string = never, Fields extends string = '*', Excludes extends string = never>(
+  async *stream<Hint extends string = never, Fields extends string = never, Excludes extends string = never>(
     options?: StreamOptions<Entity, Hint, Fields, Excludes>,
   ): AsyncIterableIterator<Loaded<Entity, Hint, Fields, Excludes>> {
     yield* this.getEntityManager().stream(this.entityName, options);

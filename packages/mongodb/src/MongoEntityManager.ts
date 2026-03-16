@@ -36,7 +36,7 @@ export class MongoEntityManager<Driver extends MongoDriver = MongoDriver> extend
   override async *stream<
     Entity extends object,
     Hint extends string = never,
-    Fields extends string = '*',
+    Fields extends string = never,
     Excludes extends string = never,
   >(
     entityName: EntityName<Entity>,

@@ -85,7 +85,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     }
   }
 
-  async find<T extends object, P extends string = never, F extends string = '*', E extends string = never>(
+  async find<T extends object, P extends string = never, F extends string = never, E extends string = never>(
     entityName: EntityName<T>,
     where: FilterQuery<T>,
     options: FindOptions<T, P, F, E> = {},
@@ -154,12 +154,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     return res.map(r => this.mapResult<T>(r, this.metadata.find<T>(entityName))!);
   }
 
-  async findOne<
-    T extends object,
-    P extends string = never,
-    F extends string = PopulatePath.ALL,
-    E extends string = never,
-  >(
+  async findOne<T extends object, P extends string = never, F extends string = never, E extends string = never>(
     entityName: EntityName<T>,
     where: FilterQuery<T>,
     options: FindOneOptions<T, P, F, E> = { populate: [], orderBy: {} },

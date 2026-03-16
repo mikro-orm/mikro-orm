@@ -58,7 +58,7 @@ import { inspect } from '../logging/inspect.js';
 export class Cursor<
   Entity extends object,
   Hint extends string = never,
-  Fields extends string = '*',
+  Fields extends string = never,
   Excludes extends string = never,
   IncludeCount extends boolean = true,
 > {

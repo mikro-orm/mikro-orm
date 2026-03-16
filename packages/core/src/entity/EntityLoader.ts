@@ -36,11 +36,7 @@ import { expandDotPaths } from './utils.js';
 import { Raw } from '../utils/RawQueryFragment.js';
 
 /** Options for controlling how relations are loaded by the EntityLoader. */
-export interface EntityLoaderOptions<
-  Entity,
-  Fields extends string = PopulatePath.ALL,
-  Excludes extends string = never,
-> {
+export interface EntityLoaderOptions<Entity, Fields extends string = never, Excludes extends string = never> {
   /** Select specific fields to load (partial loading). */
   fields?: readonly AutoPath<Entity, Fields, `${PopulatePath.ALL}`>[];
   /** Fields to exclude from loading. */
@@ -91,7 +87,7 @@ export class EntityLoader {
    * Loads specified relations in batch.
    * This will execute one query for each relation, that will populate it on all the specified entities.
    */
-  async populate<Entity extends object, Fields extends string = PopulatePath.ALL>(
+  async populate<Entity extends object, Fields extends string = never>(
     entityName: EntityName<Entity>,
     entities: Entity[],
     populate: PopulateOptions<Entity>[] | boolean,
@@ -182,7 +178,7 @@ export class EntityLoader {
     return this.mergeNestedPopulate(normalized);
   }
 
-  private setSerializationContext<Entity extends object, Fields extends string = PopulatePath.ALL>(
+  private setSerializationContext<Entity extends object, Fields extends string = never>(
     entities: Entity[],
     populate: PopulateOptions<Entity>[] | boolean,
     options: EntityLoaderOptions<Entity, Fields>,
