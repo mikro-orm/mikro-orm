@@ -9,6 +9,7 @@ import type {
   OneToManyOptions,
   OneToOneOptions,
   ManyToManyOptions,
+  IndexColumnOptions,
 } from '../metadata/types.js';
 import type {
   AnyString,
@@ -1228,6 +1229,12 @@ export interface EntityMetadataWithProperties<
     type?: string;
     options?: Dictionary;
     expression?: string | IndexCallback<InferEntityFromProperties<TProperties, TPK, TBase>>;
+    columns?: IndexColumnOptions[];
+    include?: keyof TProperties | (keyof TProperties)[];
+    fillFactor?: number;
+    invisible?: boolean;
+    disabled?: boolean;
+    clustered?: boolean;
   }[];
   uniques?: {
     properties?: keyof TProperties | (keyof TProperties)[];
@@ -1235,6 +1242,10 @@ export interface EntityMetadataWithProperties<
     options?: Dictionary;
     expression?: string | IndexCallback<InferEntityFromProperties<TProperties, TPK, TBase>>;
     deferMode?: DeferMode | `${DeferMode}`;
+    columns?: IndexColumnOptions[];
+    include?: keyof TProperties | (keyof TProperties)[];
+    fillFactor?: number;
+    disabled?: boolean;
   }[];
 }
 
