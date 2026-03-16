@@ -1063,16 +1063,12 @@ export class Utils {
     try {
       return await import(module);
     } catch (err: any) {
-      if (err.code === 'ERR_MODULE_NOT_FOUND') {
-        if (warning) {
-          // eslint-disable-next-line no-console
-          console.warn(warning);
-        }
-
-        return undefined;
+      if (warning && err.code === 'ERR_MODULE_NOT_FOUND') {
+        // eslint-disable-next-line no-console
+        console.warn(warning);
       }
 
-      throw err;
+      return undefined;
     }
   }
 

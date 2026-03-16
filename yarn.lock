@@ -1179,7 +1179,7 @@ __metadata:
     mikro-orm: "npm:7.0.2"
     yargs: "npm:17.7.2"
   bin:
-    mikro-orm: ./dist/cli
+    mikro-orm: ./dist/cli.js
   languageName: unknown
   linkType: soft
 
