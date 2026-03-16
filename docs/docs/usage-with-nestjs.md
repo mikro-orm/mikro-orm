@@ -18,11 +18,11 @@ $ yarn add @mikro-orm/core @mikro-orm/nestjs @mikro-orm/sqlite      # for sqlite
 or
 
 ```bash
-$ npm i -s @mikro-orm/core @mikro-orm/nestjs @mikro-orm/mongodb     # for mongo
-$ npm i -s @mikro-orm/core @mikro-orm/nestjs @mikro-orm/mysql       # for mysql/mariadb
-$ npm i -s @mikro-orm/core @mikro-orm/nestjs @mikro-orm/mariadb     # for mysql/mariadb
-$ npm i -s @mikro-orm/core @mikro-orm/nestjs @mikro-orm/postgresql  # for postgresql
-$ npm i -s @mikro-orm/core @mikro-orm/nestjs @mikro-orm/sqlite      # for sqlite
+$ npm i @mikro-orm/core @mikro-orm/nestjs @mikro-orm/mongodb     # for mongo
+$ npm i @mikro-orm/core @mikro-orm/nestjs @mikro-orm/mysql       # for mysql/mariadb
+$ npm i @mikro-orm/core @mikro-orm/nestjs @mikro-orm/mariadb     # for mysql/mariadb
+$ npm i @mikro-orm/core @mikro-orm/nestjs @mikro-orm/postgresql  # for postgresql
+$ npm i @mikro-orm/core @mikro-orm/nestjs @mikro-orm/sqlite      # for sqlite
 ```
 
 Once the installation process is completed, you can import the `MikroOrmModule` into the root `AppModule`.
