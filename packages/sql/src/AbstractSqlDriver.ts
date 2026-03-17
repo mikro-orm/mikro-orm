@@ -2084,11 +2084,12 @@ export abstract class AbstractSqlDriver<
       const prop = meta.properties[propName];
 
       // Polymorphic to-one: create a LEFT JOIN per target type
-      // Skip :ref hints — polymorphic to-one already has FK + discriminator in the row
+      // Skip regular :ref hints — polymorphic to-one already has FK + discriminator in the row
+      // But allow filter :ref hints through to create per-target LEFT JOINs with filter checks
       if (
         prop.polymorphic &&
         prop.polymorphTargets?.length &&
-        !ref &&
+        (!ref || hint.filter) &&
         [ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind)
       ) {
         const basePath = options.parentJoinPath
@@ -2111,15 +2112,20 @@ export abstract class AbstractSqlDriver<
             schema,
           );
 
-          // Select fields from each target table
-          fields.push(
-            ...this.getFieldsForJoinedLoad(qb, targetMeta as EntityMetadata<T>, {
-              ...options,
-              populate: hint.children as any,
-              parentTableAlias: tableAlias,
-              parentJoinPath: targetPath,
-            }),
-          );
+          if (ref) {
+            // For filter :ref hints, schedule filter check for each target (no field selection)
+            qb.scheduleFilterCheck(targetPath);
+          } else {
+            // Select fields from each target table
+            fields.push(
+              ...this.getFieldsForJoinedLoad(qb, targetMeta as EntityMetadata<T>, {
+                ...options,
+                populate: hint.children as any,
+                parentTableAlias: tableAlias,
+                parentJoinPath: targetPath,
+              }),
+            );
+          }
         }
 
         continue;
