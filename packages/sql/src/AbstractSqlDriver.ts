@@ -2251,13 +2251,12 @@ export abstract class AbstractSqlDriver<
       qb.addPropertyJoin(childMeta.tptInverseProp!, baseAlias, childAlias, JoinType.leftJoin, `[tpt]${meta.className}`);
 
       // Add fields from this child (only ownProps, skip PKs)
-      for (const prop of childMeta.ownProps!.filter(p => !p.primary && this.platform.shouldHaveColumn(p, []))) {
-        for (const fieldName of prop.fieldNames) {
-          const field = `${childAlias}.${fieldName}`;
-          const fieldAlias = `${childAlias}__${fieldName}`;
-          fields.push(raw(`${this.platform.quoteIdentifier(field)} as ${this.platform.quoteIdentifier(fieldAlias)}`));
-        }
-      }
+      const schema = childMeta.schema === '*' ? '*' : this.getSchemaName(childMeta);
+      childMeta
+        .ownProps!.filter(p => !p.primary && this.platform.shouldHaveColumn(p, []))
+        .forEach(prop =>
+          fields.push(...(this.mapPropToFieldNames(qb, prop, childAlias, childMeta, schema) as InternalField<T>[])),
+        );
     }
 
     // Add computed discriminator (descendants already sorted by depth)

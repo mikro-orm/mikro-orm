@@ -2710,6 +2710,89 @@ describe('TPT QueryBuilder update/delete', () => {
     await orm.close();
   });
 
+  test('GH #7329 - populating TPT relationship with embeddable in child entity', async () => {
+    @Embeddable()
+    class AddressEmbed {
+      @Property({ type: 'string' })
+      street!: string;
+
+      @Property({ type: 'string' })
+      city!: string;
+    }
+
+    @Entity({ inheritance: 'tpt' })
+    abstract class Person7329 {
+      @PrimaryKey()
+      id!: number;
+
+      @Property({ type: 'string' })
+      name!: string;
+    }
+
+    @Entity()
+    class Manager7329 extends Person7329 {
+      @Property({ type: 'string' })
+      teamSize!: string;
+    }
+
+    @Entity()
+    class Employee7329 extends Person7329 {
+      @Property({ type: 'string' })
+      department!: string;
+
+      @Embedded(() => AddressEmbed)
+      address!: AddressEmbed;
+    }
+
+    @Entity()
+    class Room7329 {
+      @PrimaryKey()
+      id!: number;
+
+      @ManyToOne(() => Person7329, { ref: false, nullable: true })
+      assignedTo?: Person7329;
+    }
+
+    const orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
+      dbName: ':memory:',
+      entities: [Person7329, Manager7329, Employee7329, Room7329, AddressEmbed],
+    });
+    await orm.schema.create();
+
+    const em = orm.em.fork();
+    const employee = em.create(Employee7329, {
+      name: 'Jane',
+      department: 'Engineering',
+      address: { street: '123 Main St', city: 'Springfield' },
+    });
+    const room = em.create(Room7329, { assignedTo: employee });
+    await em.flush();
+    em.clear();
+
+    // This should not fail with "no such column: e3.address"
+    const loadedRoom = await em.findOneOrFail(Room7329, room.id, { populate: ['assignedTo'] });
+    expect(loadedRoom.assignedTo).toBeInstanceOf(Employee7329);
+    const loadedEmployee = loadedRoom.assignedTo as Employee7329;
+    expect(loadedEmployee.name).toBe('Jane');
+    expect(loadedEmployee.department).toBe('Engineering');
+    expect(loadedEmployee.address.street).toBe('123 Main St');
+    expect(loadedEmployee.address.city).toBe('Springfield');
+
+    // Also test with a Manager to make sure both child types work
+    em.clear();
+    const manager = em.create(Manager7329, { name: 'Bob', teamSize: '5' });
+    const room2 = em.create(Room7329, { assignedTo: manager });
+    await em.flush();
+    em.clear();
+
+    const loadedRoom2 = await em.findOneOrFail(Room7329, room2.id, { populate: ['assignedTo'] });
+    expect(loadedRoom2.assignedTo).toBeInstanceOf(Manager7329);
+    expect((loadedRoom2.assignedTo as Manager7329).teamSize).toBe('5');
+
+    await orm.close();
+  });
+
   test('qb.delete() on child entity targets correct table', async () => {
     const orm = await MikroORM.init({
       metadataProvider: ReflectMetadataProvider,
