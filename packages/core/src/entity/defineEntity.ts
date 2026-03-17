@@ -67,7 +67,7 @@ export type UniversalPropertyKeys =
   | keyof OneToOneOptions<any, any>
   | keyof ManyToManyOptions<any, any>;
 
-type BuilderExtraKeys = '~options' | '~type' | '$type';
+type BuilderExtraKeys = '~options' | '~type' | '$type' | 'strictNullable';
 type ExcludeKeys = 'entity' | 'items';
 type BuilderKeys = Exclude<UniversalPropertyKeys, ExcludeKeys> | BuilderExtraKeys;
 
@@ -99,6 +99,10 @@ export interface PropertyChain<Value, Options> {
 
   // Always-available methods (PropertyOptions keys)
   nullable(): PropertyChain<Value, Omit<Options, 'nullable'> & { nullable: true }>;
+  strictNullable(): PropertyChain<
+    Value,
+    Omit<Options, 'nullable' | 'strictNullable'> & { nullable: true; strictNullable: true }
+  >;
   ref(): PropertyChain<Value, Omit<Options, 'ref'> & { ref: true }>;
   primary(): PropertyChain<Value, Omit<Options, 'primary'> & { primary: true }>;
   hidden(): PropertyChain<Value, Omit<Options, 'hidden'> & { hidden: true }>;
@@ -506,6 +510,21 @@ export class UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys extends
    */
   nullable(): Pick<
     UniversalPropertyOptionsBuilder<Value, Omit<Options, 'nullable'> & { nullable: true }, IncludeKeys>,
+    IncludeKeys
+  > {
+    return this.assignOptions({ nullable: true });
+  }
+
+  /**
+   * Set column as nullable without adding `| undefined` to the type.
+   * Use this when the property is always explicitly set (e.g. in constructor) but can be `null`.
+   */
+  strictNullable(): Pick<
+    UniversalPropertyOptionsBuilder<
+      Value,
+      Omit<Options, 'nullable' | 'strictNullable'> & { nullable: true; strictNullable: true },
+      IncludeKeys
+    >,
     IncludeKeys
   > {
     return this.assignOptions({ nullable: true });
@@ -1507,7 +1526,11 @@ type MaybeArray<Value, Options> = Options extends { array: true } ? Value[] : Va
 
 type MaybeMapToPk<Value, Options> = Options extends { mapToPk: true } ? Primary<Value> : Value;
 
-type MaybeNullable<Value, Options> = Options extends { nullable: true } ? Value | null | undefined : Value;
+type MaybeNullable<Value, Options> = Options extends { nullable: true }
+  ? Options extends { strictNullable: true }
+    ? Value | null
+    : Value | null | undefined
+  : Value;
 
 type MaybeRelationRef<Value, Options> = Options extends { mapToPk: true }
   ? Value
