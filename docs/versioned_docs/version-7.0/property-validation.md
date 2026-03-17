@@ -133,4 +133,4 @@ If for some reason you don't want the ORM to throw on missing properties that ar
 
 ### Note about optional properties and metadata reflection
 
-When you define your entities, you need to be careful about optional properties. With `reflect-metadata` provider (the default one), the property type can be inferred only if you mark properties as optional via `?` suffix - if you use a type union like `string | null`, `reflect-metadata` won't help you with such type, and you will be forced to define it explicitly. This issue is not present with `ts-morph` provider.
+When you define your entities, you need to be careful about optional properties. With `reflect-metadata` provider, the property type can be inferred only if you mark properties as optional via `?` suffix - if you use a type union like `string | null`, `reflect-metadata` won't help you with such type, and you will be forced to define it explicitly. This issue is not present with `ts-morph` provider.
