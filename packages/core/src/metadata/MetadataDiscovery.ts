@@ -2222,13 +2222,13 @@ export class MetadataDiscovery {
 
     if (prop.kind === ReferenceKind.SCALAR && !(mappedType instanceof t.unknown)) {
       if (
-        !prop.columnTypes &&
         prop.nativeEnumName &&
         meta.schema !== this.#platform.getDefaultSchemaName() &&
         meta.schema &&
         !prop.nativeEnumName.includes('.')
       ) {
-        prop.columnTypes = [`${meta.schema}.${prop.nativeEnumName}`];
+        const suffix = prop.columnTypes?.[0]?.endsWith('[]') ? '[]' : '';
+        prop.columnTypes = [`${meta.schema}.${prop.nativeEnumName}${suffix}`];
       } else {
         prop.columnTypes ??= [mappedType.getColumnType(prop, this.#platform)];
       }

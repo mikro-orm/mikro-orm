@@ -424,10 +424,38 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
         comment: col.column_comment,
       };
 
-      if (nativeEnums?.[column.type]) {
+      let enumKey = column.type;
+      let enumEntry = nativeEnums?.[enumKey];
+
+      // for array enum columns, strip the [] suffix and try the base type,
+      // try schema-qualified key first for non-default schemas to avoid
+      // ambiguity when multiple schemas have enums with the same name
+      if (!enumEntry && enumKey.endsWith('[]')) {
+        const baseType = enumKey.slice(0, -2);
+
+        if (col.udt_schema && col.udt_schema !== this.platform.getDefaultSchemaName()) {
+          const schemaKey = `${col.udt_schema}.${baseType}`;
+          enumEntry = nativeEnums?.[schemaKey];
+
+          if (enumEntry) {
+            enumKey = schemaKey;
+            column.type = `${schemaKey}[]`;
+          }
+        }
+
+        if (!enumEntry) {
+          enumEntry = nativeEnums?.[baseType];
+
+          if (enumEntry) {
+            enumKey = baseType;
+          }
+        }
+      }
+
+      if (enumEntry) {
         column.mappedType = Type.getType(EnumType);
-        column.nativeEnumName = column.type;
-        column.enumItems = nativeEnums[column.type]?.items;
+        column.nativeEnumName = enumKey;
+        column.enumItems = enumEntry.items;
       }
 
       ret[key].push(column);
