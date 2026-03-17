@@ -125,7 +125,7 @@ We might have to install additional typings, one example is use of `ObjectId` in
 
 ## JavaScriptMetadataProvider
 
-> `JavaScriptMetadataProvider` is deprecated, [use `EntitySchema` instead](./entity-schema.md).
+> `JavaScriptMetadataProvider` is deprecated, [use `EntitySchema` instead](./define-entity.md#entityschema-low-level-api).
 
 This provider should be used only if we are not using TypeScript at all and therefore we do not use decorators to annotate our properties. It will require us to specify the whole schema manually.
 

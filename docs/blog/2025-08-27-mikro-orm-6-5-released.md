@@ -47,7 +47,7 @@ export const Book = defineEntity({
 export interface IBook extends InferEntity<typeof Book> {}
 ```
 
-Read more about this [here](https://mikro-orm.io/docs/entity-schema#defineentity) or take a look at the examples in the [Defining Entities section](https://mikro-orm.io/docs/defining-entities).
+Read more about this [here](https://mikro-orm.io/docs/define-entity) or take a look at the examples in the [Defining Entities section](https://mikro-orm.io/docs/defining-entities).
 
 > This feature was implemented by [@xcfox](https://github.com/xcfox), all kudos goes to him!
 

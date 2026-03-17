@@ -64,7 +64,7 @@ export class Book extends BookSchema.class {}
 BookSchema.setClass(Book);
 ```
 
-You can also define entities using [decorators](https://mikro-orm.io/docs/defining-entities) or [`EntitySchema`](https://mikro-orm.io/docs/entity-schema). See the [defining entities guide](https://mikro-orm.io/docs/defining-entities) for all options.
+You can also define entities using [decorators](https://mikro-orm.io/docs/using-decorators) or [`EntitySchema`](https://mikro-orm.io/docs/define-entity#entityschema-low-level-api). See the [defining entities guide](https://mikro-orm.io/docs/defining-entities) for all options.
 
 ### Initialize and Use
 

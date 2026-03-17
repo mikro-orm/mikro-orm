@@ -17,7 +17,7 @@ After 4 months of active development, I am thrilled to announce the release of [
 
 Before I dive into all the things v4, let’s recap the major features that landed in 3.x releases:
 
-- [Defining entities via](https://mikro-orm.io/docs/entity-schema)[EntitySchema](https://mikro-orm.io/docs/entity-schema)
+- [Defining entities via EntitySchema](https://mikro-orm.io/docs/define-entity#entityschema-low-level-api)
 - [Propagation of changes to m:1/1:1 to inverse sides](https://mikro-orm.io/docs/propagation)
 - [Transactions in MongoDB](https://mikro-orm.io/docs/usage-with-mongo#transactions)
 - [Composite primary keys](https://mikro-orm.io/docs/composite-keys)

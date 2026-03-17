@@ -112,7 +112,7 @@ const orm = await MikroORM.init({
 
 > For `ts-morph` discovery to work in production, you need to deploy `.d.ts` declaration files. Be sure to enable `compilerOptions.declaration` in your `tsconfig.json`.
 
-You can also use different the default [`ReflectMetadataProvider`](./metadata-providers.md#reflectmetadataprovider) or even write custom one. Using [`EntitySchema`](./entity-schema.md) is another way to define your entities and does not depend on the metadata providers at all.
+You can also use different the default [`ReflectMetadataProvider`](./metadata-providers.md#reflectmetadataprovider) or even write custom one. Using [`EntitySchema`](./define-entity.md#entityschema-low-level-api) is another way to define your entities and does not depend on the metadata providers at all.
 
 ```ts
 import { MikroORM } from '@mikro-orm/postgresql';
