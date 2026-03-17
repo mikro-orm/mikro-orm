@@ -33,7 +33,7 @@ async function tryRegisterExtension(name: string, pkg: string, extensions: Optio
 }
 
 /** @internal */
-export async function loadOptionalDependencies(options: Partial<Options>): Promise<void> {
+export async function loadOptionalDependencies(options: Partial<Options<any, any, any>>): Promise<void> {
   await import('@mikro-orm/core/fs-utils').then(m => m.fs.init()).catch(() => null);
   const extensions = options.extensions ?? [];
   const exists = (name: string) => extensions.some(ext => (ext as any).name === name);
@@ -97,7 +97,7 @@ export class MikroORM<
   Driver extends IDatabaseDriver = IDatabaseDriver,
   EM extends Driver[typeof EntityManagerType] & EntityManager<Driver> = Driver[typeof EntityManagerType] &
     EntityManager<Driver>,
-  Entities extends (string | EntityClass<AnyEntity> | EntitySchema)[] = (
+  Entities extends readonly (string | EntityClass<AnyEntity> | EntitySchema)[] = (
     | string
     | EntityClass<AnyEntity>
     | EntitySchema
@@ -120,7 +120,7 @@ export class MikroORM<
   static async init<
     D extends IDatabaseDriver = IDatabaseDriver,
     EM extends D[typeof EntityManagerType] & EntityManager<D> = D[typeof EntityManagerType] & EntityManager<D>,
-    Entities extends (string | EntityClass<AnyEntity> | EntitySchema)[] = (
+    Entities extends readonly (string | EntityClass<AnyEntity> | EntitySchema)[] = (
       | string
       | EntityClass<AnyEntity>
       | EntitySchema
@@ -158,10 +158,10 @@ export class MikroORM<
     this.#logger = this.config.getLogger();
     this.#logger.log('info', `MikroORM version: ${colors.green(Utils.getORMVersion())}`);
     this.#discovery = new MetadataDiscovery(new MetadataStorage(), this.driver.getPlatform(), this.config);
-    this.driver.getPlatform().init(this);
+    this.driver.getPlatform().init(this as unknown as MikroORM);
 
     for (const extension of this.config.get('extensions')) {
-      extension.register(this);
+      extension.register(this as unknown as MikroORM);
     }
 
     if (!discovery.skipSyncDiscovery) {
