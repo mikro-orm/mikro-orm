@@ -1273,7 +1273,7 @@ export abstract class AbstractSqlDriver<
         }
       }
 
-      params.push(value);
+      params.push(value ?? null);
     };
 
     for (const key of keys) {
