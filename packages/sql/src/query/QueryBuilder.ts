@@ -1423,7 +1423,7 @@ export class QueryBuilder<
                 { [`${join.ownerAlias}.${join.prop.discriminatorColumn}`]: { $ne: discriminatorValue } },
                 { [`${join.alias}.${Utils.getPrimaryKeyHash(pks)}`]: { $ne: null } },
               ],
-            });
+            } as any);
           }
         }
       }
