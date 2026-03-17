@@ -279,6 +279,9 @@ declare const __loadedType: unique symbol;
 // eslint-disable-next-line @typescript-eslint/naming-convention
 declare const __loadHint: unique symbol;
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
+declare const __fieldsHint: unique symbol;
+
 /**
  * Expands a populate hint into all its prefixes.
  * e.g., Prefixes<'a.b.c'> = 'a' | 'a.b' | 'a.b.c'
@@ -821,29 +824,63 @@ export type EntityDTOFlat<T, C extends TypeConfig = never> = {
  */
 type SerializeTopHints<H extends string> = H extends `${infer Top}.${string}` ? Top : H;
 type SerializeSubHints<K extends string, H extends string> = H extends `${K}.${infer Rest}` ? Rest : never;
+type SerializeSubFields<K extends string, F extends string> = K extends F
+  ? '*'
+  : [F extends `${K & string}.${infer Rest}` ? Rest : never] extends [never]
+    ? '*'
+    : F extends `${K & string}.${infer Rest}`
+      ? Rest
+      : never;
+type SerializeFieldsFilter<T, K extends keyof T, F extends string> = K extends Prefix<T, F> | PrimaryProperty<T>
+  ? K
+  : never;
 type SerializePropValue<T, K extends keyof T, H extends string, C extends TypeConfig = never> =
   K & string extends SerializeTopHints<H>
     ? NonNullable<T[K]> extends CollectionShape<infer U>
       ? SerializeDTO<U & object, SerializeSubHints<K & string, H>, never, C>[]
       : SerializeDTO<ExpandProperty<T[K]>, SerializeSubHints<K & string, H>, never, C> | Extract<T[K], null | undefined>
     : EntityDTOProp<T, T[K], C>;
+type SerializePropValueWithFields<T, K extends keyof T, H extends string, C extends TypeConfig, F extends string> =
+  K & string extends SerializeTopHints<H>
+    ? NonNullable<T[K]> extends CollectionShape<infer U>
+      ? SerializeDTO<U & object, SerializeSubHints<K & string, H>, never, C, SerializeSubFields<K & string, F>>[]
+      :
+          | SerializeDTO<
+              ExpandProperty<T[K]>,
+              SerializeSubHints<K & string, H>,
+              never,
+              C,
+              SerializeSubFields<K & string, F>
+            >
+          | Extract<T[K], null | undefined>
+    : EntityDTOProp<T, T[K], C>;
 
 /**
  * Return type of `serialize()`. Combines Loaded + EntityDTO in a single pass for better performance.
- * Respects populate hints (`H`) and exclude hints (`E`).
+ * Respects populate hints (`H`), exclude hints (`E`), and fields hints (`F`).
  */
 export type SerializeDTO<
   T,
   H extends string = never,
   E extends string = never,
   C extends TypeConfig = never,
+  F extends string = '*',
 > = string extends H
   ? EntityDTOFlat<T, C>
-  : {
-      [K in keyof T as ExcludeHidden<T, K> & CleanKeys<T, K> & (IsNever<E> extends true ? K : Exclude<K, E>)]:
-        | SerializePropValue<T, K, H, C>
-        | Extract<T[K], null | undefined>;
-    };
+  : [F] extends ['*']
+    ? {
+        [K in keyof T as ExcludeHidden<T, K> & CleanKeys<T, K> & (IsNever<E> extends true ? K : Exclude<K, E>)]:
+          | SerializePropValue<T, K, H, C>
+          | Extract<T[K], null | undefined>;
+      }
+    : {
+        [K in keyof T as ExcludeHidden<T, K> &
+          CleanKeys<T, K> &
+          (IsNever<E> extends true ? K : Exclude<K, E>) &
+          SerializeFieldsFilter<T, K, F>]:
+          | SerializePropValueWithFields<T, K, H, C, F>
+          | Extract<T[K], null | undefined>;
+      };
 
 type TargetKeys<T> = T extends EntityClass<infer P> ? keyof P : keyof T;
 type PropertyName<T> = IsUnknown<T> extends false ? TargetKeys<T> : string;
@@ -1931,7 +1968,7 @@ export type Selected<T, L extends string = never, F extends string = '*'> = {
     : NonNullable<T[K]> extends Scalar
       ? T[K]
       : LoadedProp<NonNullable<T[K]>, Suffix<K, L, true>, Suffix<K, F, true>> | AddOptional<T[K]>;
-} & { [__selectedType]?: T };
+} & { [__selectedType]?: T; [__fieldsHint]?: (hint: F) => void };
 
 type LoadedEntityType<T> = { [__loadedType]?: T } | { [__selectedType]?: T };
 /** Accepts either a plain entity type or a `Loaded`/`Selected` wrapped version. */
@@ -1939,6 +1976,9 @@ export type EntityType<T> = T | LoadedEntityType<T>;
 
 /** Extracts the base entity type from a `Loaded`/`Selected` wrapper, or returns `T` as-is. */
 export type FromEntityType<T> = T extends LoadedEntityType<infer U> ? U : T;
+
+/** Extracts the fields hint (`F`) from a `Loaded`/`Selected` type, or returns `'*'` (all fields) for unwrapped entities. */
+export type ExtractFieldsHint<T> = T extends { [__fieldsHint]?: (hint: infer F extends string) => void } ? F : '*';
 
 type LoadedInternal<T, L extends string = never, F extends string = '*', E extends string = never> = [F] extends ['*']
   ? IsNever<E> extends true
