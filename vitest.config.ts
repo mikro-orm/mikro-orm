@@ -6,7 +6,7 @@ const root = fileURLToPath(new URL('./packages', import.meta.url)).replace(/\\/g
 
 export default defineConfig({
   oxc: {
-    decorators: {
+    decorator: {
       legacy: true,
       emitDecoratorMetadata: true,
     },
