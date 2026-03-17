@@ -612,3 +612,142 @@ describe('polymorphic relation with default filter on target entity (GH #7317)',
     expect(owners.map(o => o.name)).toEqual(['Owner A', 'Owner B']);
   });
 });
+
+describe('polymorphic relation with default filters on ALL targets (GH #7317)', () => {
+  @Entity()
+  @Filter({ name: 'excludeSoftDeleted', cond: { deletedAt: null }, default: true })
+  class FilteredA {
+    @PrimaryKey()
+    id!: number;
+
+    @Property()
+    value!: string;
+
+    @Property({ nullable: true })
+    deletedAt?: Date;
+  }
+
+  @Entity()
+  @Filter({ name: 'activeOnly', cond: { active: true }, default: true })
+  class FilteredB {
+    @PrimaryKey()
+    id!: number;
+
+    @Property()
+    value!: string;
+
+    @Property()
+    active: boolean = true;
+  }
+
+  @Entity()
+  class PolyOwner2 {
+    @PrimaryKey()
+    id!: number;
+
+    @Property()
+    name!: string;
+
+    @ManyToOne(() => [FilteredA, FilteredB], { nullable: true })
+    poly!: FilteredA | FilteredB | null;
+  }
+
+  let orm: MikroORM;
+
+  beforeAll(async () => {
+    orm = await MikroORM.init({
+      entities: [FilteredA, FilteredB, PolyOwner2],
+      dbName: ':memory:',
+      metadataProvider: ReflectMetadataProvider,
+    });
+    await orm.schema.create();
+  });
+
+  afterAll(() => orm.close(true));
+
+  beforeEach(async () => {
+    await orm.schema.clear();
+    orm.em.clear();
+  });
+
+  test('both targets passing their respective filters', async () => {
+    const a = orm.em.create(FilteredA, { value: 'A' }); // not soft-deleted
+    const b = orm.em.create(FilteredB, { value: 'B', active: true });
+    orm.em.create(PolyOwner2, { name: 'Owner A', poly: a });
+    orm.em.create(PolyOwner2, { name: 'Owner B', poly: b });
+    await orm.em.flush();
+    orm.em.clear();
+
+    const owners = await orm.em.find(PolyOwner2, {}, { orderBy: { name: 'ASC' } });
+    expect(owners).toHaveLength(2);
+    expect(owners.map(o => o.name)).toEqual(['Owner A', 'Owner B']);
+  });
+
+  test('first target filtered out, second passes', async () => {
+    const a = orm.em.create(FilteredA, { value: 'A', deletedAt: new Date() }); // soft-deleted
+    const b = orm.em.create(FilteredB, { value: 'B', active: true });
+    orm.em.create(PolyOwner2, { name: 'Owner A', poly: a });
+    orm.em.create(PolyOwner2, { name: 'Owner B', poly: b });
+    await orm.em.flush();
+    orm.em.clear();
+
+    const owners = await orm.em.find(PolyOwner2, {}, { orderBy: { name: 'ASC' } });
+    expect(owners).toHaveLength(1);
+    expect(owners[0].name).toBe('Owner B');
+  });
+
+  test('first target passes, second filtered out', async () => {
+    const a = orm.em.create(FilteredA, { value: 'A' }); // not soft-deleted
+    const b = orm.em.create(FilteredB, { value: 'B', active: false }); // inactive
+    orm.em.create(PolyOwner2, { name: 'Owner A', poly: a });
+    orm.em.create(PolyOwner2, { name: 'Owner B', poly: b });
+    await orm.em.flush();
+    orm.em.clear();
+
+    const owners = await orm.em.find(PolyOwner2, {}, { orderBy: { name: 'ASC' } });
+    expect(owners).toHaveLength(1);
+    expect(owners[0].name).toBe('Owner A');
+  });
+
+  test('both targets filtered out', async () => {
+    const a = orm.em.create(FilteredA, { value: 'A', deletedAt: new Date() });
+    const b = orm.em.create(FilteredB, { value: 'B', active: false });
+    orm.em.create(PolyOwner2, { name: 'Owner A', poly: a });
+    orm.em.create(PolyOwner2, { name: 'Owner B', poly: b });
+    await orm.em.flush();
+    orm.em.clear();
+
+    const owners = await orm.em.find(PolyOwner2, {}, { orderBy: { name: 'ASC' } });
+    expect(owners).toHaveLength(0);
+  });
+
+  test('null FK not excluded when both targets have filters', async () => {
+    const a = orm.em.create(FilteredA, { value: 'A' });
+    orm.em.create(PolyOwner2, { name: 'Owner A', poly: a });
+    orm.em.create(PolyOwner2, { name: 'Owner null', poly: null });
+    await orm.em.flush();
+    orm.em.clear();
+
+    const owners = await orm.em.find(PolyOwner2, {}, { orderBy: { name: 'ASC' } });
+    expect(owners).toHaveLength(2);
+    expect(owners.map(o => o.name)).toEqual(['Owner A', 'Owner null']);
+  });
+
+  test('mixed: one of each target filtered, one passing, one null', async () => {
+    const a1 = orm.em.create(FilteredA, { value: 'A1' }); // passes
+    const a2 = orm.em.create(FilteredA, { value: 'A2', deletedAt: new Date() }); // filtered
+    const b1 = orm.em.create(FilteredB, { value: 'B1', active: true }); // passes
+    const b2 = orm.em.create(FilteredB, { value: 'B2', active: false }); // filtered
+    orm.em.create(PolyOwner2, { name: 'Owner A1', poly: a1 });
+    orm.em.create(PolyOwner2, { name: 'Owner A2', poly: a2 });
+    orm.em.create(PolyOwner2, { name: 'Owner B1', poly: b1 });
+    orm.em.create(PolyOwner2, { name: 'Owner B2', poly: b2 });
+    orm.em.create(PolyOwner2, { name: 'Owner null', poly: null });
+    await orm.em.flush();
+    orm.em.clear();
+
+    const owners = await orm.em.find(PolyOwner2, {}, { orderBy: { name: 'ASC' } });
+    expect(owners).toHaveLength(3);
+    expect(owners.map(o => o.name)).toEqual(['Owner A1', 'Owner B1', 'Owner null']);
+  });
+});
