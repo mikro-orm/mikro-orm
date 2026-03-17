@@ -134,7 +134,7 @@ We might have to install additional typings, one example is use of `ObjectId` in
 
 ## Using EntitySchema
 
-Alternatively, you can use [`EntitySchema`](./define-entity.md#entityschema-low-level-api) instead, which is suitable for JavaScript only projects.
+Alternatively, you can use [`EntitySchema`](./entity-schema.md) instead, which is suitable for JavaScript only projects.
 
 > If you want to have absolute control, you can also use `EntitySchema.fromMetadata()` factory method.
 

@@ -10,7 +10,7 @@ Entities are simple javascript objects (so called POJO) without restrictions and
 Entities can be defined in two ways:
 
 - Decorated classes - the attributes of the entity, as well as each property are provided via decorators. We use `@Entity()` decorator on the class. Entity properties are decorated either with `@Property` decorator, or with one of reference decorators: `@ManyToOne`, `@OneToMany`, `@OneToOne` and `@ManyToMany`. Check out the full [decorator reference](./decorators.md).
-- `EntitySchema` helper - With `EntitySchema` helper we define the schema programmatically. We can use regular classes as well as interfaces. This approach also allows to re-use partial entity definitions (e.g. traits/mixins). Read more about this in [Defining Entities via EntitySchema section](./define-entity.md#entityschema-low-level-api).
+- `EntitySchema` helper - With `EntitySchema` helper we define the schema programmatically. We can use regular classes as well as interfaces. This approach also allows to re-use partial entity definitions (e.g. traits/mixins). Read more about this in [Defining Entities via EntitySchema section](./entity-schema.md).
 
 Moreover, how the metadata extraction from decorators happens is controlled via `MetadataProvider`. Two main metadata providers are:
 
