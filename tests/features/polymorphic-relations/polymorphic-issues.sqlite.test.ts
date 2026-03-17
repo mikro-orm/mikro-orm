@@ -586,6 +586,19 @@ describe('polymorphic relation with default filter on target entity (GH #7317)',
     expect(owners.map(o => o.name)).toEqual(['Owner A1', 'Owner B']);
   });
 
+  test('null polymorphic FK is not excluded by target filter', async () => {
+    const entityA = orm.em.create(EntityA, { value: 'A' });
+    orm.em.create(PolyOwner, { name: 'Owner A', poly: entityA });
+    orm.em.create(PolyOwner, { name: 'Owner null', poly: null });
+    await orm.em.flush();
+    orm.em.clear();
+
+    // Owner with null poly should not be filtered out by EntityA's soft-delete filter
+    const owners = await orm.em.find(PolyOwner, {}, { orderBy: { name: 'ASC' } });
+    expect(owners).toHaveLength(2);
+    expect(owners.map(o => o.name)).toEqual(['Owner A', 'Owner null']);
+  });
+
   test('disabling filters returns all owners including soft-deleted', async () => {
     const entityA = orm.em.create(EntityA, { value: 'A', deletedAt: new Date() });
     const entityB = orm.em.create(EntityB, { value: 'B' });

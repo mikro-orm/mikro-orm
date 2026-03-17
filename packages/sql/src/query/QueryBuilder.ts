@@ -1407,19 +1407,21 @@ export class QueryBuilder<
         // to other polymorphic targets are not excluded.
         if (
           join.prop.polymorphic &&
+          join.prop.targetMeta &&
           join.type === JoinType.leftJoin &&
           join.prop.discriminatorColumn &&
           join.prop.discriminatorMap
         ) {
           const discriminatorValue = QueryHelper.findDiscriminatorValue(
             join.prop.discriminatorMap,
-            join.prop.targetMeta!.class,
+            join.prop.targetMeta.class,
           );
 
           if (discriminatorValue) {
-            const pks = join.prop.targetMeta!.primaryKeys;
+            const pks = join.prop.targetMeta.primaryKeys;
             this.andWhere({
               $or: [
+                { [`${join.ownerAlias}.${join.prop.discriminatorColumn}`]: null },
                 { [`${join.ownerAlias}.${join.prop.discriminatorColumn}`]: { $ne: discriminatorValue } },
                 { [`${join.alias}.${Utils.getPrimaryKeyHash(pks)}`]: { $ne: null } },
               ],
