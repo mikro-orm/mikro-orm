@@ -15,7 +15,7 @@ import { MariaDbDriver } from './MariaDbDriver.js';
 /** Configuration options for the MariaDB driver. */
 export type MariaDbOptions<
   EM extends SqlEntityManager<MariaDbDriver> = SqlEntityManager<MariaDbDriver>,
-  Entities extends (string | EntityClass<AnyEntity> | EntitySchema)[] = (
+  Entities extends readonly (string | EntityClass<AnyEntity> | EntitySchema)[] = (
     | string
     | EntityClass<AnyEntity>
     | EntitySchema
@@ -25,7 +25,7 @@ export type MariaDbOptions<
 /** Creates a type-safe configuration object for the MariaDB driver. */
 export function defineMariaDbConfig<
   EM extends SqlEntityManager<MariaDbDriver> = SqlEntityManager<MariaDbDriver>,
-  Entities extends (string | EntityClass<AnyEntity> | EntitySchema)[] = (
+  Entities extends readonly (string | EntityClass<AnyEntity> | EntitySchema)[] = (
     | string
     | EntityClass<AnyEntity>
     | EntitySchema
@@ -39,7 +39,7 @@ export function defineMariaDbConfig<
  */
 export class MariaDbMikroORM<
   EM extends SqlEntityManager<MariaDbDriver> = SqlEntityManager<MariaDbDriver>,
-  Entities extends (string | EntityClass<AnyEntity> | EntitySchema)[] = (
+  Entities extends readonly (string | EntityClass<AnyEntity> | EntitySchema)[] = (
     | string
     | EntityClass<AnyEntity>
     | EntitySchema
@@ -51,7 +51,7 @@ export class MariaDbMikroORM<
   static override async init<
     D extends IDatabaseDriver = MariaDbDriver,
     EM extends EntityManager<D> = D[typeof EntityManagerType] & EntityManager<D>,
-    Entities extends (string | EntityClass<AnyEntity> | EntitySchema)[] = (
+    Entities extends readonly (string | EntityClass<AnyEntity> | EntitySchema)[] = (
       | string
       | EntityClass<AnyEntity>
       | EntitySchema

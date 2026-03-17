@@ -15,7 +15,7 @@ import { SqliteDriver } from './SqliteDriver.js';
 /** Configuration options for the SQLite driver. */
 export type SqliteOptions<
   EM extends SqlEntityManager<SqliteDriver> = SqlEntityManager<SqliteDriver>,
-  Entities extends (string | EntityClass<AnyEntity> | EntitySchema)[] = (
+  Entities extends readonly (string | EntityClass<AnyEntity> | EntitySchema)[] = (
     | string
     | EntityClass<AnyEntity>
     | EntitySchema
@@ -25,7 +25,7 @@ export type SqliteOptions<
 /** Creates a type-safe configuration object for the SQLite driver. */
 export function defineSqliteConfig<
   EM extends SqlEntityManager<SqliteDriver> = SqlEntityManager<SqliteDriver>,
-  Entities extends (string | EntityClass<AnyEntity> | EntitySchema)[] = (
+  Entities extends readonly (string | EntityClass<AnyEntity> | EntitySchema)[] = (
     | string
     | EntityClass<AnyEntity>
     | EntitySchema
@@ -39,7 +39,7 @@ export function defineSqliteConfig<
  */
 export class SqliteMikroORM<
   EM extends SqlEntityManager<SqliteDriver> = SqlEntityManager<SqliteDriver>,
-  Entities extends (string | EntityClass<AnyEntity> | EntitySchema)[] = (
+  Entities extends readonly (string | EntityClass<AnyEntity> | EntitySchema)[] = (
     | string
     | EntityClass<AnyEntity>
     | EntitySchema
@@ -51,7 +51,7 @@ export class SqliteMikroORM<
   static override async init<
     D extends IDatabaseDriver = SqliteDriver,
     EM extends EntityManager<D> = D[typeof EntityManagerType] & EntityManager<D>,
-    Entities extends (string | EntityClass<AnyEntity> | EntitySchema)[] = (
+    Entities extends readonly (string | EntityClass<AnyEntity> | EntitySchema)[] = (
       | string
       | EntityClass<AnyEntity>
       | EntitySchema
