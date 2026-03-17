@@ -3,6 +3,7 @@ import {
   Embeddable,
   Embedded,
   Entity,
+  Filter,
   ManyToMany,
   ManyToOne,
   PrimaryKey,
@@ -476,5 +477,125 @@ describe('ChangeSetComputer with polymorphic relations (fixed)', () => {
 
     const parentChanges = changes.filter(cs => cs.entity === parent);
     expect(parentChanges).toHaveLength(0);
+  });
+});
+
+describe('polymorphic relation with default filter on target entity (GH #7317)', () => {
+  @Entity()
+  @Filter({ name: 'excludeSoftDeleted', cond: { deletedAt: null }, default: true })
+  class EntityA {
+    @PrimaryKey()
+    id!: number;
+
+    @Property()
+    value!: string;
+
+    @Property({ nullable: true })
+    deletedAt?: Date;
+  }
+
+  @Entity()
+  class EntityB {
+    @PrimaryKey()
+    id!: number;
+
+    @Property()
+    value!: string;
+  }
+
+  @Entity()
+  class PolyOwner {
+    @PrimaryKey()
+    id!: number;
+
+    @Property()
+    name!: string;
+
+    @ManyToOne(() => [EntityA, EntityB], { nullable: true })
+    poly!: EntityA | EntityB | null;
+  }
+
+  let orm: MikroORM;
+
+  beforeAll(async () => {
+    orm = await MikroORM.init({
+      entities: [EntityA, EntityB, PolyOwner],
+      dbName: ':memory:',
+      metadataProvider: ReflectMetadataProvider,
+    });
+    await orm.schema.create();
+  });
+
+  afterAll(() => orm.close(true));
+
+  beforeEach(async () => {
+    await orm.schema.clear();
+    orm.em.clear();
+  });
+
+  test('default filter on one target does not exclude rows pointing to another target', async () => {
+    const entityB = orm.em.create(EntityB, { value: 'B' });
+    const owner = orm.em.create(PolyOwner, { name: 'Owner B', poly: entityB });
+    await orm.em.flush();
+    orm.em.clear();
+
+    // This should NOT throw NotFoundError — EntityA's filter should not affect EntityB rows
+    const found = await orm.em.findOneOrFail(PolyOwner, { id: owner.id });
+    expect(found.name).toBe('Owner B');
+  });
+
+  test('default filter on one target filters rows pointing to that target correctly', async () => {
+    const entityA = orm.em.create(EntityA, { value: 'A', deletedAt: new Date() });
+    const owner = orm.em.create(PolyOwner, { name: 'Owner A', poly: entityA });
+    await orm.em.flush();
+    orm.em.clear();
+
+    // EntityA is soft-deleted, so the owner should be filtered out
+    const found = await orm.em.findOne(PolyOwner, { id: owner.id });
+    expect(found).toBeNull();
+  });
+
+  test('default filter allows non-deleted entities through', async () => {
+    const entityA = orm.em.create(EntityA, { value: 'A' }); // not soft-deleted
+    const entityB = orm.em.create(EntityB, { value: 'B' });
+    const ownerA = orm.em.create(PolyOwner, { name: 'Owner A', poly: entityA });
+    const ownerB = orm.em.create(PolyOwner, { name: 'Owner B', poly: entityB });
+    await orm.em.flush();
+    orm.em.clear();
+
+    // Both owners should be returned
+    const owners = await orm.em.find(PolyOwner, {}, { orderBy: { id: 'ASC' } });
+    expect(owners).toHaveLength(2);
+    expect(owners[0].name).toBe('Owner A');
+    expect(owners[1].name).toBe('Owner B');
+  });
+
+  test('default filter works correctly with mixed soft-deleted and non-deleted', async () => {
+    const entityA1 = orm.em.create(EntityA, { value: 'A1' }); // not deleted
+    const entityA2 = orm.em.create(EntityA, { value: 'A2', deletedAt: new Date() }); // deleted
+    const entityB = orm.em.create(EntityB, { value: 'B' });
+    orm.em.create(PolyOwner, { name: 'Owner A1', poly: entityA1 });
+    orm.em.create(PolyOwner, { name: 'Owner A2', poly: entityA2 });
+    orm.em.create(PolyOwner, { name: 'Owner B', poly: entityB });
+    await orm.em.flush();
+    orm.em.clear();
+
+    // Owner A2 should be excluded (soft-deleted EntityA), others should remain
+    const owners = await orm.em.find(PolyOwner, {}, { orderBy: { name: 'ASC' } });
+    expect(owners).toHaveLength(2);
+    expect(owners.map(o => o.name)).toEqual(['Owner A1', 'Owner B']);
+  });
+
+  test('disabling filters returns all owners including soft-deleted', async () => {
+    const entityA = orm.em.create(EntityA, { value: 'A', deletedAt: new Date() });
+    const entityB = orm.em.create(EntityB, { value: 'B' });
+    orm.em.create(PolyOwner, { name: 'Owner A', poly: entityA });
+    orm.em.create(PolyOwner, { name: 'Owner B', poly: entityB });
+    await orm.em.flush();
+    orm.em.clear();
+
+    const owners = await orm.em.find(PolyOwner, {}, { filters: false, orderBy: { name: 'ASC' } });
+    expect(owners).toHaveLength(2);
+    expect(owners.map(o => o.name)).toEqual(['Owner A', 'Owner B']);
   });
 });

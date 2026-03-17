@@ -1401,6 +1401,31 @@ export class QueryBuilder<
         } else {
           join.cond = { ...cond };
         }
+
+        // For polymorphic LEFT JOIN filters, add a WHERE condition to enforce the filter
+        // only for rows matching this target's discriminator value. This ensures rows pointing
+        // to other polymorphic targets are not excluded.
+        if (
+          join.prop.polymorphic &&
+          join.type === JoinType.leftJoin &&
+          join.prop.discriminatorColumn &&
+          join.prop.discriminatorMap
+        ) {
+          const discriminatorValue = QueryHelper.findDiscriminatorValue(
+            join.prop.discriminatorMap,
+            join.prop.targetMeta!.class,
+          );
+
+          if (discriminatorValue) {
+            const pks = join.prop.targetMeta!.primaryKeys;
+            this.andWhere({
+              $or: [
+                { [`${join.ownerAlias}.${join.prop.discriminatorColumn}`]: { $ne: discriminatorValue } },
+                { [`${join.alias}.${Utils.getPrimaryKeyHash(pks)}`]: { $ne: null } },
+              ],
+            });
+          }
+        }
       }
     }
   }

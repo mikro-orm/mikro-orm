@@ -620,9 +620,25 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       }
 
       options = { ...options, filters: QueryHelper.mergePropertyFilters(prop.filters, options.filters) };
-      const cond = await this.applyFilters(prop.targetMeta!.class, {}, options.filters, 'read', options);
 
-      if (!Utils.isEmpty(cond)) {
+      // For polymorphic relations, check all targets for filters (not just the first targetMeta)
+      let hasActiveFilter = false;
+
+      if (prop.polymorphic && prop.polymorphTargets?.length) {
+        for (const targetMeta of prop.polymorphTargets) {
+          const cond = await this.applyFilters(targetMeta.class, {}, options.filters, 'read', options);
+
+          if (!Utils.isEmpty(cond)) {
+            hasActiveFilter = true;
+            break;
+          }
+        }
+      } else {
+        const cond = await this.applyFilters(prop.targetMeta!.class, {}, options.filters, 'read', options);
+        hasActiveFilter = !Utils.isEmpty(cond);
+      }
+
+      if (hasActiveFilter) {
         const populated = (options.populate as PopulateOptions<T>[]).filter(
           ({ field }) => field.split(':')[0] === prop.name,
         );
