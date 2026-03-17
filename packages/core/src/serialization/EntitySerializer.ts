@@ -4,16 +4,15 @@ import type {
   AutoPath,
   CleanTypeConfig,
   Dictionary,
-  EntityDTO,
   EntityDTOProp,
+  ExtractFieldsHint,
+  FromEntityType,
   SerializeDTO,
   EntityKey,
   EntityMetadata,
   EntityProperty,
   EntityValue,
-  FromEntityType,
   IPrimaryKey,
-  Loaded,
   TypeConfig,
   UnboxArray,
 } from '../typings.js';
@@ -399,7 +398,7 @@ export function serialize<
   options?: Config & SerializeOptions<UnboxArray<Entity>, Populate, Exclude>,
 ): Naked extends object[]
   ? SerializeDTO<ArrayElement<Naked>, Populate, Exclude, CleanTypeConfig<Config>>[]
-  : SerializeDTO<Naked, Populate, Exclude, CleanTypeConfig<Config>>;
+  : SerializeDTO<Naked, Populate, Exclude, CleanTypeConfig<Config>, ExtractFieldsHint<Entity>>;
 
 /**
  * Converts entity instance to POJO, converting the `Collection`s to arrays and unwrapping the `Reference` wrapper, while respecting the serialization options.
@@ -423,8 +422,8 @@ export function serialize<
   entities: Entity | Entity[],
   options?: SerializeOptions<Entity, Populate, Exclude>,
 ):
-  | SerializeDTO<Naked, Populate, Exclude, CleanTypeConfig<Config>>
-  | SerializeDTO<Naked, Populate, Exclude, CleanTypeConfig<Config>>[] {
+  | SerializeDTO<Naked, Populate, Exclude, CleanTypeConfig<Config>, ExtractFieldsHint<Entity>>
+  | SerializeDTO<Naked, Populate, Exclude, CleanTypeConfig<Config>, ExtractFieldsHint<Entity>>[] {
   if (Array.isArray(entities)) {
     return entities.map(e => EntitySerializer.serialize(e, options)) as any;
   }
