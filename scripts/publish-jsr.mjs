@@ -29,9 +29,11 @@ for (const name of readdirSync(packagesDir)) {
   if (dryRun) {
     const imports = {};
 
-    for (const [dep, version] of Object.entries(pkgJson.dependencies ?? {})) {
-      const prefix = dep.startsWith('@mikro-orm/') ? 'jsr' : 'npm';
-      imports[dep] = `${prefix}:${dep}@${version}`;
+    for (const section of ['dependencies', 'peerDependencies']) {
+      for (const [dep, version] of Object.entries(pkgJson[section] ?? {})) {
+        const prefix = dep.startsWith('@mikro-orm/') ? 'jsr' : 'npm';
+        imports[dep] ??= `${prefix}:${dep}@${version}`;
+      }
     }
 
     if (Object.keys(imports).length > 0) {
