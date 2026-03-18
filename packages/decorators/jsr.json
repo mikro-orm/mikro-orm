@@ -7,5 +7,9 @@
   },
   "publish": {
     "exclude": ["dist/", "node_modules/", "tests/"]
+  },
+  "imports": {
+    "@mikro-orm/core": "jsr:@mikro-orm/core@7.0.3",
+    "reflect-metadata": "npm:reflect-metadata@^0.2.0"
   }
 }
