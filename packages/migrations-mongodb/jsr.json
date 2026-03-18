@@ -1,6 +1,6 @@
 {
   "name": "@mikro-orm/migrations-mongodb",
-  "version": "7.0.2",
+  "version": "7.0.3",
   "exports": {
     ".": "./src/index.ts"
   },
@@ -8,7 +8,7 @@
     "exclude": ["dist/", "node_modules/", "tests/"]
   },
   "imports": {
-    "@mikro-orm/mongodb": "jsr:@mikro-orm/mongodb@7.0.2",
+    "@mikro-orm/mongodb": "jsr:@mikro-orm/mongodb@7.0.3",
     "mongodb": "npm:mongodb@7.1.0"
   }
 }

@@ -5,25 +5,19 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ## [7.0.3](https://github.com/mikro-orm/mikro-orm/compare/v7.0.2...v7.0.3) (2026-03-18)
 
-
 ### Bug Fixes
 
-* **cli:** support Yarn PnP with ESM loader ([#7327](https://github.com/mikro-orm/mikro-orm/issues/7327)) ([af227cb](https://github.com/mikro-orm/mikro-orm/commit/af227cbea85cbf95bd9fe72dfac5fd1f701cf7cd)), closes [#7324](https://github.com/mikro-orm/mikro-orm/issues/7324)
-* **core:** add missing index/unique options to defineEntity type ([#7320](https://github.com/mikro-orm/mikro-orm/issues/7320)) ([289b81d](https://github.com/mikro-orm/mikro-orm/commit/289b81d6fc5f439b21fd18f8e7360499d50f066a))
-* **core:** allow base entity properties in defineEntity indexes/uniques with extends ([#7326](https://github.com/mikro-orm/mikro-orm/issues/7326)) ([364f7ae](https://github.com/mikro-orm/mikro-orm/commit/364f7aed40fd920a8cb5621b38b490b98295956b))
-* **core:** provide intellisense for `fields` hint in find options ([#7325](https://github.com/mikro-orm/mikro-orm/issues/7325)) ([4383d9b](https://github.com/mikro-orm/mikro-orm/commit/4383d9bc718483acc373637c81978dc99d689756))
-* **core:** respect partial loading fields hint in serialize() return type ([#7333](https://github.com/mikro-orm/mikro-orm/issues/7333)) ([b8628c7](https://github.com/mikro-orm/mikro-orm/commit/b8628c72998cc70e614214010f9f462eacdd68a3))
-* **postgres:** handle native enum arrays in non-default schemas ([#7330](https://github.com/mikro-orm/mikro-orm/issues/7330)) ([71a1014](https://github.com/mikro-orm/mikro-orm/commit/71a1014e1513f8befac65d870cf833ea93f59388)), closes [#7318](https://github.com/mikro-orm/mikro-orm/issues/7318)
-* **sql:** fix polymorphic relations with default filters on target entities ([#7332](https://github.com/mikro-orm/mikro-orm/issues/7332)) ([40777d2](https://github.com/mikro-orm/mikro-orm/commit/40777d251dc6b7996838daf81959778c5aa26551)), closes [#7317](https://github.com/mikro-orm/mikro-orm/issues/7317)
-
+- **cli:** support Yarn PnP with ESM loader ([#7327](https://github.com/mikro-orm/mikro-orm/issues/7327)) ([af227cb](https://github.com/mikro-orm/mikro-orm/commit/af227cbea85cbf95bd9fe72dfac5fd1f701cf7cd)), closes [#7324](https://github.com/mikro-orm/mikro-orm/issues/7324)
+- **core:** add missing index/unique options to defineEntity type ([#7320](https://github.com/mikro-orm/mikro-orm/issues/7320)) ([289b81d](https://github.com/mikro-orm/mikro-orm/commit/289b81d6fc5f439b21fd18f8e7360499d50f066a))
+- **core:** allow base entity properties in defineEntity indexes/uniques with extends ([#7326](https://github.com/mikro-orm/mikro-orm/issues/7326)) ([364f7ae](https://github.com/mikro-orm/mikro-orm/commit/364f7aed40fd920a8cb5621b38b490b98295956b))
+- **core:** provide intellisense for `fields` hint in find options ([#7325](https://github.com/mikro-orm/mikro-orm/issues/7325)) ([4383d9b](https://github.com/mikro-orm/mikro-orm/commit/4383d9bc718483acc373637c81978dc99d689756))
+- **core:** respect partial loading fields hint in serialize() return type ([#7333](https://github.com/mikro-orm/mikro-orm/issues/7333)) ([b8628c7](https://github.com/mikro-orm/mikro-orm/commit/b8628c72998cc70e614214010f9f462eacdd68a3))
+- **postgres:** handle native enum arrays in non-default schemas ([#7330](https://github.com/mikro-orm/mikro-orm/issues/7330)) ([71a1014](https://github.com/mikro-orm/mikro-orm/commit/71a1014e1513f8befac65d870cf833ea93f59388)), closes [#7318](https://github.com/mikro-orm/mikro-orm/issues/7318)
+- **sql:** fix polymorphic relations with default filters on target entities ([#7332](https://github.com/mikro-orm/mikro-orm/issues/7332)) ([40777d2](https://github.com/mikro-orm/mikro-orm/commit/40777d251dc6b7996838daf81959778c5aa26551)), closes [#7317](https://github.com/mikro-orm/mikro-orm/issues/7317)
 
 ### Features
 
-* **core:** add `strictNullable()` property builder ([#7314](https://github.com/mikro-orm/mikro-orm/issues/7314)) ([46c353a](https://github.com/mikro-orm/mikro-orm/commit/46c353aa6d8c25fedf29ddf38a1538e85cb86f54)), closes [#7307](https://github.com/mikro-orm/mikro-orm/issues/7307)
-
-
-
-
+- **core:** add `strictNullable()` property builder ([#7314](https://github.com/mikro-orm/mikro-orm/issues/7314)) ([46c353a](https://github.com/mikro-orm/mikro-orm/commit/46c353aa6d8c25fedf29ddf38a1538e85cb86f54)), closes [#7307](https://github.com/mikro-orm/mikro-orm/issues/7307)
 
 ## [7.0.2](https://github.com/mikro-orm/mikro-orm/compare/v7.0.1...v7.0.2) (2026-03-14)
 

@@ -5,14 +5,9 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ## [7.0.3](https://github.com/mikro-orm/mikro-orm/compare/v7.0.2...v7.0.3) (2026-03-18)
 
-
 ### Bug Fixes
 
-* **core:** provide intellisense for `fields` hint in find options ([#7325](https://github.com/mikro-orm/mikro-orm/issues/7325)) ([4383d9b](https://github.com/mikro-orm/mikro-orm/commit/4383d9bc718483acc373637c81978dc99d689756))
-
-
-
-
+- **core:** provide intellisense for `fields` hint in find options ([#7325](https://github.com/mikro-orm/mikro-orm/issues/7325)) ([4383d9b](https://github.com/mikro-orm/mikro-orm/commit/4383d9bc718483acc373637c81978dc99d689756))
 
 ## [7.0.2](https://github.com/mikro-orm/mikro-orm/compare/v7.0.1...v7.0.2) (2026-03-14)
 

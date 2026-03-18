@@ -5,19 +5,14 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ## [7.0.3](https://github.com/mikro-orm/mikro-orm/compare/v7.0.2...v7.0.3) (2026-03-18)
 
-
 ### Bug Fixes
 
-* **core:** provide intellisense for `fields` hint in find options ([#7325](https://github.com/mikro-orm/mikro-orm/issues/7325)) ([4383d9b](https://github.com/mikro-orm/mikro-orm/commit/4383d9bc718483acc373637c81978dc99d689756))
-* **postgres:** handle native enum arrays in non-default schemas ([#7330](https://github.com/mikro-orm/mikro-orm/issues/7330)) ([71a1014](https://github.com/mikro-orm/mikro-orm/commit/71a1014e1513f8befac65d870cf833ea93f59388)), closes [#7318](https://github.com/mikro-orm/mikro-orm/issues/7318)
-* **schema:** handle SELECT * expansion in view schema diffing ([#7313](https://github.com/mikro-orm/mikro-orm/issues/7313)) ([3a05128](https://github.com/mikro-orm/mikro-orm/commit/3a05128f8fed862e77f514f84f961ebfa85b7ce4)), closes [#7308](https://github.com/mikro-orm/mikro-orm/issues/7308)
-* **sql:** convert undefined FK values to null in batch updates ([#7334](https://github.com/mikro-orm/mikro-orm/issues/7334)) ([b2240eb](https://github.com/mikro-orm/mikro-orm/commit/b2240eb93551aeb05c2da6c225abb90d53a8771a))
-* **sql:** fix polymorphic relations with default filters on target entities ([#7332](https://github.com/mikro-orm/mikro-orm/issues/7332)) ([40777d2](https://github.com/mikro-orm/mikro-orm/commit/40777d251dc6b7996838daf81959778c5aa26551)), closes [#7317](https://github.com/mikro-orm/mikro-orm/issues/7317)
-* **sql:** fix populating TPT relations with embeddables or custom types in child entities ([#7331](https://github.com/mikro-orm/mikro-orm/issues/7331)) ([5fc6311](https://github.com/mikro-orm/mikro-orm/commit/5fc63111ceca2822111ab1ff54606b11944a12b3)), closes [#7329](https://github.com/mikro-orm/mikro-orm/issues/7329)
-
-
-
-
+- **core:** provide intellisense for `fields` hint in find options ([#7325](https://github.com/mikro-orm/mikro-orm/issues/7325)) ([4383d9b](https://github.com/mikro-orm/mikro-orm/commit/4383d9bc718483acc373637c81978dc99d689756))
+- **postgres:** handle native enum arrays in non-default schemas ([#7330](https://github.com/mikro-orm/mikro-orm/issues/7330)) ([71a1014](https://github.com/mikro-orm/mikro-orm/commit/71a1014e1513f8befac65d870cf833ea93f59388)), closes [#7318](https://github.com/mikro-orm/mikro-orm/issues/7318)
+- **schema:** handle SELECT \* expansion in view schema diffing ([#7313](https://github.com/mikro-orm/mikro-orm/issues/7313)) ([3a05128](https://github.com/mikro-orm/mikro-orm/commit/3a05128f8fed862e77f514f84f961ebfa85b7ce4)), closes [#7308](https://github.com/mikro-orm/mikro-orm/issues/7308)
+- **sql:** convert undefined FK values to null in batch updates ([#7334](https://github.com/mikro-orm/mikro-orm/issues/7334)) ([b2240eb](https://github.com/mikro-orm/mikro-orm/commit/b2240eb93551aeb05c2da6c225abb90d53a8771a))
+- **sql:** fix polymorphic relations with default filters on target entities ([#7332](https://github.com/mikro-orm/mikro-orm/issues/7332)) ([40777d2](https://github.com/mikro-orm/mikro-orm/commit/40777d251dc6b7996838daf81959778c5aa26551)), closes [#7317](https://github.com/mikro-orm/mikro-orm/issues/7317)
+- **sql:** fix populating TPT relations with embeddables or custom types in child entities ([#7331](https://github.com/mikro-orm/mikro-orm/issues/7331)) ([5fc6311](https://github.com/mikro-orm/mikro-orm/commit/5fc63111ceca2822111ab1ff54606b11944a12b3)), closes [#7329](https://github.com/mikro-orm/mikro-orm/issues/7329)
 
 ## [7.0.2](https://github.com/mikro-orm/mikro-orm/compare/v7.0.1...v7.0.2) (2026-03-14)
 

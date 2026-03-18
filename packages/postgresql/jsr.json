@@ -1,6 +1,6 @@
 {
   "name": "@mikro-orm/postgresql",
-  "version": "7.0.2",
+  "version": "7.0.3",
   "exports": {
     ".": "./src/index.ts"
   },
@@ -8,7 +8,7 @@
     "exclude": ["dist/", "node_modules/", "tests/"]
   },
   "imports": {
-    "@mikro-orm/sql": "jsr:@mikro-orm/sql@7.0.2",
+    "@mikro-orm/sql": "jsr:@mikro-orm/sql@7.0.3",
     "kysely": "npm:kysely@0.28.12",
     "pg": "npm:pg@8.20.0",
     "pg-cursor": "npm:pg-cursor@2.19.0",
