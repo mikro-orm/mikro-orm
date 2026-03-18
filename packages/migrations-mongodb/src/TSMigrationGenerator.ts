@@ -15,7 +15,7 @@ export class TSMigrationGenerator extends MigrationGenerator {
 
     /* v8 ignore next */
     if (diff.down.length > 0) {
-      ret += `  override async down(): Promise<void> {\n`;
+      ret += `  async down(): Promise<void> {\n`;
       diff.down.forEach(sql => (ret += this.createStatement(sql, 4)));
       ret += `  }\n\n`;
     }
