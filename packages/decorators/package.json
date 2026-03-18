@@ -44,7 +44,7 @@
   },
   "scripts": {
     "build": "yarn compile && yarn copy",
-    "clean": "yarn run -T rimraf ./dist",
+    "clean": "yarn run -T rimraf ./dist ./tsconfig.build.tsbuildinfo",
     "compile": "yarn run -T tsc -p tsconfig.build.json",
     "copy": "node ../../scripts/copy.mjs"
   },
