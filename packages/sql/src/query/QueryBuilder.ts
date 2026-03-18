@@ -443,9 +443,20 @@ type RootAliasFilterKeys<RootAlias extends string, Entity> = {
   [K in EntityKey<Entity> as `${RootAlias}.${K}`]?: TypedAliasedFilterValue<Entity[K]>;
 };
 
-// Context keys use simpler AliasedFilterValue for performance
-// (type-aware version would require expensive conditional type inference)
-type ContextFilterKeys<Context> = { [K in ContextFieldKeys<Context>]?: AliasedFilterValue };
+// Context keys are type-aware: extracts property types from Context tuples
+// Each Context entry is [path, alias, Type, select] - we resolve 'alias.prop' to the correct property type
+type ContextFieldType<Context, K extends string> = Context[keyof Context] extends infer Join
+  ? Join extends any
+    ? Join extends [string, infer Alias, infer Type, any]
+      ? K extends `${Alias & string}.${infer Prop}`
+        ? Prop extends keyof Type
+          ? TypedAliasedFilterValue<Type[Prop]>
+          : never
+        : never
+      : never
+    : never
+  : never;
+type ContextFilterKeys<Context> = { [K in ContextFieldKeys<Context>]?: ContextFieldType<Context, K> };
 type RawFilterKeys<RawAliases extends string> = { [K in RawAliases]?: AliasedFilterValue };
 
 // Internal type for nested filter conditions in group operators ($and, $or, $not)
