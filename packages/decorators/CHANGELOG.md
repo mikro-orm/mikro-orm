@@ -7,7 +7,6 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ### Bug Fixes
 
-- **decorators:** add reflect-metadata import map for JSR publishing [skip ci] ([109b8fc](https://github.com/mikro-orm/mikro-orm/commit/109b8fc2f9b3e0c0c2cc0a53a3f9a9cca3ba6dc4))
 - **decorators:** polyfill metadata symbol if not available ([#7312](https://github.com/mikro-orm/mikro-orm/issues/7312)) ([af64dca](https://github.com/mikro-orm/mikro-orm/commit/af64dca781d8c0f9d1d5ec6ecbfc0025905f6f8d))
 
 ## [7.0.2](https://github.com/mikro-orm/mikro-orm/compare/v7.0.1...v7.0.2) (2026-03-14)
