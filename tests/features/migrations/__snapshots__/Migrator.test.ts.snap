@@ -6,11 +6,11 @@ exports[`Migrator > blank initial migration can be created if no entity metadata
 
 export class Migration20191013214813 extends Migration {
 
-  override async up(): Promise<void> {
+  override up(): void {
     this.addSql(\`select 1\`);
   }
 
-  override async down(): Promise<void> {
+  override down(): void {
     this.addSql(\`select 1\`);
   }
 
@@ -34,7 +34,7 @@ exports[`Migrator > do not log a migration if the schema does not exist yet > in
 
 export class Migration20191013214813 extends Migration {
 
-  override async up(): Promise<void> {
+  override up(): void {
     this.addSql(\`create table \\\`base_user2\\\` (\\\`id\\\` int unsigned not null auto_increment primary key, \\\`first_name\\\` varchar(100) not null, \\\`last_name\\\` varchar(100) not null, \\\`type\\\` enum('employee','manager','owner') not null, \\\`owner_prop\\\` varchar(255) null, \\\`favourite_employee_id\\\` int unsigned null, \\\`favourite_manager_id\\\` int unsigned null, \\\`employee_prop\\\` int null, \\\`manager_prop\\\` varchar(255) null) default character set utf8mb4 engine = InnoDB;\`);
     this.addSql(\`alter table \\\`base_user2\\\` add index \\\`base_user2_type_index\\\` (\\\`type\\\`);\`);
     this.addSql(\`alter table \\\`base_user2\\\` add index \\\`base_user2_favourite_employee_id_index\\\` (\\\`favourite_employee_id\\\`);\`);
@@ -540,7 +540,7 @@ exports[`Migrator > generate migration with custom name > migration-dump 1`] = `
 
 export class Migration20191013214813 extends Migration {
 
-  override async up(): Promise<void> {
+  override up(): void {
     this.addSql(\`alter table \\\`foo_param2\\\` drop foreign key \\\`foo_param2_bar_id_foreign\\\`;\`);
     this.addSql(\`alter table \\\`foo_param2\\\` drop foreign key \\\`foo_param2_baz_id_foreign\\\`;\`);
 
@@ -562,7 +562,7 @@ export class Migration20191013214813 extends Migration {
     this.addSql(\`alter table \\\`configuration2\\\` add constraint \\\`configuration2_test_id_foreign\\\` foreign key (\\\`test_id\\\`) references \\\`test2\\\` (\\\`id\\\`);\`);
   }
 
-  override async down(): Promise<void> {
+  override down(): void {
     this.addSql(\`alter table \\\`book2\\\` drop foreign key \\\`book2_publisher_id_foreign\\\`;\`);
 
     this.addSql(\`alter table \\\`configuration2\\\` drop foreign key \\\`configuration2_test_id_foreign\\\`;\`);
@@ -638,7 +638,7 @@ exports[`Migrator > generate schema migration > migration-dump 1`] = `
 
 export class Migration20191013214813 extends Migration {
 
-  override async up(): Promise<void> {
+  override up(): void {
     this.addSql(\`alter table \\\`foo_param2\\\` drop foreign key \\\`foo_param2_bar_id_foreign\\\`;\`);
     this.addSql(\`alter table \\\`foo_param2\\\` drop foreign key \\\`foo_param2_baz_id_foreign\\\`;\`);
 
@@ -660,7 +660,7 @@ export class Migration20191013214813 extends Migration {
     this.addSql(\`alter table \\\`configuration2\\\` add constraint \\\`configuration2_test_id_foreign\\\` foreign key (\\\`test_id\\\`) references \\\`test2\\\` (\\\`id\\\`);\`);
   }
 
-  override async down(): Promise<void> {
+  override down(): void {
     this.addSql(\`alter table \\\`book2\\\` drop foreign key \\\`book2_publisher_id_foreign\\\`;\`);
 
     this.addSql(\`alter table \\\`configuration2\\\` drop foreign key \\\`configuration2_test_id_foreign\\\`;\`);
@@ -736,7 +736,7 @@ exports[`Migrator > log a migration when the schema already exists > initial-mig
 
 export class Migration20191013214813 extends Migration {
 
-  override async up(): Promise<void> {
+  override up(): void {
     this.addSql(\`create table \\\`base_user2\\\` (\\\`id\\\` int unsigned not null auto_increment primary key, \\\`first_name\\\` varchar(100) not null, \\\`last_name\\\` varchar(100) not null, \\\`type\\\` enum('employee','manager','owner') not null, \\\`owner_prop\\\` varchar(255) null, \\\`favourite_employee_id\\\` int unsigned null, \\\`favourite_manager_id\\\` int unsigned null, \\\`employee_prop\\\` int null, \\\`manager_prop\\\` varchar(255) null) default character set utf8mb4 engine = InnoDB;\`);
     this.addSql(\`alter table \\\`base_user2\\\` add index \\\`base_user2_type_index\\\` (\\\`type\\\`);\`);
     this.addSql(\`alter table \\\`base_user2\\\` add index \\\`base_user2_favourite_employee_id_index\\\` (\\\`favourite_employee_id\\\`);\`);
@@ -1040,7 +1040,7 @@ exports[`Migrator > snapshot should not be updated when custom migration fileNam
 
 export class Migration20191013214813_with-custom-name extends Migration {
 
-  override async up(): Promise<void> {
+  override up(): void {
     this.addSql(\`alter table \\\`foo_param2\\\` drop foreign key \\\`foo_param2_bar_id_foreign\\\`;\`);
     this.addSql(\`alter table \\\`foo_param2\\\` drop foreign key \\\`foo_param2_baz_id_foreign\\\`;\`);
 
@@ -1062,7 +1062,7 @@ export class Migration20191013214813_with-custom-name extends Migration {
     this.addSql(\`alter table \\\`configuration2\\\` add constraint \\\`configuration2_test_id_foreign\\\` foreign key (\\\`test_id\\\`) references \\\`test2\\\` (\\\`id\\\`);\`);
   }
 
-  override async down(): Promise<void> {
+  override down(): void {
     this.addSql(\`alter table \\\`book2\\\` drop foreign key \\\`book2_publisher_id_foreign\\\`;\`);
 
     this.addSql(\`alter table \\\`configuration2\\\` drop foreign key \\\`configuration2_test_id_foreign\\\`;\`);

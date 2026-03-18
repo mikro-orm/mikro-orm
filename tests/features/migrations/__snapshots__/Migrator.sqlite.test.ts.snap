@@ -6,7 +6,7 @@ exports[`Migrator (sqlite) > generate initial migration > initial-migration-dump
 
 export class Migration20191013214813 extends Migration {
 
-  override async up(): Promise<void> {
+  override up(): void {
     this.addSql(\`create table \\\`book_tag4\\\` (\\\`id\\\` integer not null primary key autoincrement, \\\`created_at\\\` datetime null, \\\`updated_at\\\` datetime null, \\\`name\\\` text not null, \\\`version\\\` datetime not null default (strftime('%s', 'now') * 1000));\`);
 
     this.addSql(\`create table \\\`foo_baz4\\\` (\\\`id\\\` integer not null primary key autoincrement, \\\`created_at\\\` datetime null, \\\`updated_at\\\` datetime null, \\\`name\\\` text not null, \\\`version\\\` datetime not null default (strftime('%s', 'now') * 1000));\`);
@@ -88,7 +88,7 @@ exports[`Migrator (sqlite) > generate initial migration > initial-migration-dump
 
 export class Migration20191013214813 extends Migration {
 
-  override async up(): Promise<void> {
+  override up(): void {
     this.addSql(\`create table \\\`book_tag4\\\` (\\\`id\\\` integer not null primary key autoincrement, \\\`created_at\\\` datetime null, \\\`updated_at\\\` datetime null, \\\`name\\\` text not null, \\\`version\\\` datetime not null default (strftime('%s', 'now') * 1000));\`);
 
     this.addSql(\`create table \\\`foo_baz4\\\` (\\\`id\\\` integer not null primary key autoincrement, \\\`created_at\\\` datetime null, \\\`updated_at\\\` datetime null, \\\`name\\\` text not null, \\\`version\\\` datetime not null default (strftime('%s', 'now') * 1000));\`);
