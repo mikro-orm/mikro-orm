@@ -6,8 +6,11 @@ import type { EntityProperty } from '../typings.js';
  * Type that maps an SQL DECIMAL to a JS string or number.
  */
 export class DecimalType<Mode extends 'number' | 'string' = 'string'> extends Type<JSTypeByMode<Mode>, string> {
-  constructor(public mode?: Mode) {
+  mode?: Mode;
+
+  constructor(mode?: Mode) {
     super();
+    this.mode = mode;
   }
 
   /* v8 ignore next */
