@@ -6,7 +6,7 @@ exports[`Migrator (mssql) > generate initial migration > initial-migration-dump 
 
 export class Migration20191013214813 extends Migration {
 
-  override up(): void {
+  override up(): void | Promise<void> {
     this.addSql(\`if (schema_id('custom') is null) begin exec ('create schema [custom] authorization [dbo]') end;\`);
     this.addSql(\`create table [custom].[book_tag2] ([id] bigint identity(1,1) not null primary key, [name] nvarchar(50) not null);\`);
 
@@ -198,7 +198,7 @@ exports[`Migrator (mssql) > generate initial migration > initial-migration-dump 
 
 export class Migration20191013214813 extends Migration {
 
-  override up(): void {
+  override up(): void | Promise<void> {
     this.addSql(\`if (schema_id('custom') is null) begin exec ('create schema [custom] authorization [dbo]') end;\`);
     this.addSql(\`create table [custom].[book_tag2] ([id] bigint identity(1,1) not null primary key, [name] nvarchar(50) not null);\`);
 
@@ -447,7 +447,7 @@ import { Migration } from '@mikro-orm/migrations';
 
 export class Migration20191013214813 extends Migration {
 
-  override up(): void {
+  override up(): void | Promise<void> {
     this.addSql(\`alter table [custom].[book2] alter column [double] nvarchar(max);\`);
 
     this.addSql(\`alter table [custom].[book2] drop constraint [book2_foo_default];\`);
@@ -458,7 +458,7 @@ export class Migration20191013214813 extends Migration {
     this.addSql(\`alter table [custom].[test2] drop column [path];\`);
   }
 
-  override down(): void {
+  override down(): void | Promise<void> {
     this.addSql(\`alter table [custom].[book2] alter column [double] nvarchar(max);\`);
 
     this.addSql(\`alter table [custom].[book2] add [foo] varchar(1) null constraint [book2_foo_default] default 'lol';\`);
@@ -499,7 +499,7 @@ exports[`Migrator (mssql) > generate migration with custom name > migration-dump
 
 export class Migration20191013214813 extends Migration {
 
-  override up(): void {
+  override up(): void | Promise<void> {
     this.addSql(\`alter table [custom].[book2] alter column [double] nvarchar(max);\`);
 
     this.addSql(\`alter table [custom].[book2] drop constraint [book2_foo_default];\`);
@@ -510,7 +510,7 @@ export class Migration20191013214813 extends Migration {
     this.addSql(\`alter table [custom].[test2] drop column [path];\`);
   }
 
-  override down(): void {
+  override down(): void | Promise<void> {
     this.addSql(\`alter table [custom].[book2] alter column [double] nvarchar(max);\`);
 
     this.addSql(\`alter table [custom].[book2] add [foo] varchar(1) null constraint [book2_foo_default] default 'lol';\`);
@@ -551,7 +551,7 @@ exports[`Migrator (mssql) > generate migration with custom name with name option
 
 export class Migration20191013214813_custom_name extends Migration {
 
-  override up(): void {
+  override up(): void | Promise<void> {
     this.addSql(\`alter table [custom].[book2] alter column [double] nvarchar(max);\`);
 
     this.addSql(\`alter table [custom].[book2] drop constraint [book2_foo_default];\`);
@@ -562,7 +562,7 @@ export class Migration20191013214813_custom_name extends Migration {
     this.addSql(\`alter table [custom].[test2] drop column [path];\`);
   }
 
-  override down(): void {
+  override down(): void | Promise<void> {
     this.addSql(\`alter table [custom].[book2] alter column [double] nvarchar(max);\`);
 
     this.addSql(\`alter table [custom].[book2] add [foo] varchar(1) null constraint [book2_foo_default] default 'lol';\`);
@@ -603,7 +603,7 @@ exports[`Migrator (mssql) > generate migration with snapshot > migration-snapsho
 
 export class Migration20191013214813 extends Migration {
 
-  override up(): void {
+  override up(): void | Promise<void> {
     this.addSql(\`alter table [custom].[book2] alter column [double] nvarchar(max);\`);
 
     this.addSql(\`alter table [custom].[book2] drop constraint [book2_foo_default];\`);
@@ -614,7 +614,7 @@ export class Migration20191013214813 extends Migration {
     this.addSql(\`alter table [custom].[test2] drop column [path];\`);
   }
 
-  override down(): void {
+  override down(): void | Promise<void> {
     this.addSql(\`alter table [custom].[book2] alter column [double] nvarchar(max);\`);
 
     this.addSql(\`alter table [custom].[book2] add [foo] varchar(1) null constraint [book2_foo_default] default 'lol';\`);
@@ -666,7 +666,7 @@ exports[`Migrator (mssql) > generate schema migration > migration-dump 1`] = `
 
 export class Migration20191013214813 extends Migration {
 
-  override up(): void {
+  override up(): void | Promise<void> {
     this.addSql(\`alter table [custom].[book2] alter column [double] nvarchar(max);\`);
 
     this.addSql(\`alter table [custom].[book2] drop constraint [book2_foo_default];\`);
@@ -677,7 +677,7 @@ export class Migration20191013214813 extends Migration {
     this.addSql(\`alter table [custom].[test2] drop column [path];\`);
   }
 
-  override down(): void {
+  override down(): void | Promise<void> {
     this.addSql(\`alter table [custom].[book2] alter column [double] nvarchar(max);\`);
 
     this.addSql(\`alter table [custom].[book2] add [foo] varchar(1) null constraint [book2_foo_default] default 'lol';\`);
