@@ -1,4 +1,5 @@
 import { existsSync, unlinkSync, readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { type MockInstance } from 'vitest';
 import { EntitySchema, MetadataStorage, Utils } from '@mikro-orm/core';
 import { SqliteDriver } from '@mikro-orm/sqlite';
@@ -297,7 +298,7 @@ describe('DiscoveryExportCommand', () => {
   });
 
   test('writes to file when --dump is not set', async () => {
-    const outPath = '/tmp/mikro-orm-test-entities.generated.ts';
+    const outPath = resolve(process.cwd(), '.mikro-orm-test-entities.generated.ts');
     pathExistsMock.mockImplementation((path: string) => path.includes('mikro-orm.config'));
     dynamicImportMock.mockImplementation((path: string) => {
       if (path.includes('mikro-orm.config')) {
