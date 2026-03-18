@@ -3820,7 +3820,7 @@ export class QueryBuilder<
     const populatePaths = this.getPopulatePaths();
 
     if (!this.#state.fields!.some(field => isRaw(field))) {
-      this.pruneJoinsForPagination(meta, populatePaths);
+      this.pruneJoinsForPagination();
     }
 
     // Transfer WHERE conditions to ORDER BY joins (GH #6160)
@@ -3893,29 +3893,59 @@ export class QueryBuilder<
   /**
    * Removes joins that are not used for population or ordering to improve performance.
    */
-  protected pruneJoinsForPagination(meta: EntityMetadata, populatePaths: Set<string>): void {
-    const orderByAliases = this.#state.orderBy.flatMap(hint => Object.keys(hint)).map(k => k.split('.')[0]);
-
+  protected pruneJoinsForPagination(): void {
     const joins = Object.entries(this.#state.joins);
     const rootAlias = this.alias;
+    const keptAliases = new Set<string>();
 
-    function addParentAlias(alias: string): void {
-      const join = joins.find(j => j[1].alias === alias);
-
-      if (join && join[1].ownerAlias !== rootAlias) {
-        orderByAliases.push(join[1].ownerAlias);
-        addParentAlias(join[1].ownerAlias);
+    // Collect aliases needed for ORDER BY
+    for (const hint of this.#state.orderBy) {
+      for (const k of Object.keys(hint)) {
+        if (!RawQueryFragment.isKnownFragmentSymbol(k)) {
+          keptAliases.add(k.split('.')[0]);
+        }
       }
     }
 
-    for (const orderByAlias of orderByAliases) {
-      addParentAlias(orderByAlias);
+    // Collect aliases needed for population (joined strategy):
+    // 1. Joins tracked in populateMap (OneToOne inverse from processPopulateHint)
+    // 2. Joins tracked in joinedProps (manual joinAndSelect calls)
+    // 3. Joins whose alias is referenced in SELECT fields (JOINED strategy populate fields)
+    for (const [key, join] of joins) {
+      if (key in this.#state.populateMap || this.#state.joinedProps.has(join.alias)) {
+        keptAliases.add(join.alias);
+      }
+    }
+
+    // Check SELECT fields for alias references - keeps joins needed for data loading
+    if (this.#state.fields) {
+      for (const field of this.#state.fields) {
+        const fieldStr = typeof field === 'string' ? field : isRaw(field) ? field.sql : '';
+
+        for (const [, join] of joins) {
+          if (fieldStr.includes(`${join.alias}.`) || fieldStr.includes(`${join.alias}__`)) {
+            keptAliases.add(join.alias);
+          }
+        }
+      }
+    }
+
+    // Also keep parent joins of all kept aliases (e.g. pivot tables for M:N)
+    function addParentAliases(alias: string): void {
+      const join = joins.find(j => j[1].alias === alias);
+
+      if (join && join[1].ownerAlias !== rootAlias && !keptAliases.has(join[1].ownerAlias)) {
+        keptAliases.add(join[1].ownerAlias);
+        addParentAliases(join[1].ownerAlias);
+      }
+    }
+
+    for (const alias of [...keptAliases]) {
+      addParentAliases(alias);
     }
 
     for (const [key, join] of joins) {
-      const path = this.normalizeJoinPath(join, meta);
-
-      if (!populatePaths.has(path) && !orderByAliases.includes(join.alias)) {
+      if (!keptAliases.has(join.alias)) {
         delete this.#state.joins[key];
       }
     }

@@ -94,7 +94,7 @@ export class MariaDbQueryBuilder<
     const populatePaths = this.getPopulatePaths();
 
     // Remove joins that are not used for population or ordering
-    this.pruneJoinsForPagination(meta, populatePaths);
+    this.pruneJoinsForPagination();
 
     // Transfer WHERE conditions to ORDER BY joins (GH #6160)
     this.transferConditionsForOrderByJoins(meta, originalCond, populatePaths);
