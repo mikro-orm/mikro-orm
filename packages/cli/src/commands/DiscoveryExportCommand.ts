@@ -1,5 +1,5 @@
 import { writeFileSync } from 'node:fs';
-import { basename, dirname, relative, resolve } from 'node:path';
+import { basename, dirname, join, relative, resolve } from 'node:path';
 import type { ArgumentsCamelCase, Argv } from 'yargs';
 import { colors, type Configuration, EntitySchema, MetadataStorage } from '@mikro-orm/core';
 import { fs } from '@mikro-orm/core/fs-utils';
@@ -68,7 +68,7 @@ export class DiscoveryExportCommand implements BaseCommand<DiscoveryExportArgs> 
     const driverPackage = this.resolveDriverPackage(config);
 
     if (args.dump) {
-      const output = this.generateFile(discovered, process.cwd(), esm, driverPackage);
+      const output = this.generateFile(discovered, join(process.cwd(), 'entities.generated.ts'), esm, driverPackage);
       CLIHelper.dump(output);
       return;
     }
