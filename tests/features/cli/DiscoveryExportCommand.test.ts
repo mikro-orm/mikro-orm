@@ -74,6 +74,14 @@ describe('DiscoveryExportCommand', () => {
     expect(command.describe).toContain('barrel file');
   });
 
+  test('builder configures yargs options', () => {
+    const args = { option: vi.fn() };
+    command.builder(args as any);
+    expect(args.option).toHaveBeenCalledWith('path', expect.objectContaining({ type: 'string', array: true }));
+    expect(args.option).toHaveBeenCalledWith('out', expect.objectContaining({ type: 'string' }));
+    expect(args.option).toHaveBeenCalledWith('dump', expect.objectContaining({ type: 'boolean' }));
+  });
+
   test('dumps output to stdout with --dump flag', async () => {
     pathExistsMock.mockImplementation((path: string) => path.includes('mikro-orm.config'));
     dynamicImportMock.mockImplementation((path: string) => {
@@ -455,5 +463,398 @@ describe('DiscoveryExportCommand', () => {
 
     const output = dumpSpy.mock.calls[0][0] as string;
     expect(output).toMatchSnapshot();
+  });
+
+  test('skips .d.ts and non-script files', async () => {
+    pathExistsMock.mockImplementation((path: string) => path.includes('mikro-orm.config'));
+    dynamicImportMock.mockImplementation((path: string) => {
+      if (path.includes('mikro-orm.config')) {
+        return config;
+      }
+
+      return { Author };
+    });
+    globMock.mockReturnValue(['Author.ts', 'Author.d.ts', 'readme.md']);
+    isKnownEntityMock.mockImplementation((name: string) => name === 'Author');
+
+    await command.handler({
+      _: ['discovery:export'],
+      $0: 'mikro-orm',
+      contextName: 'default',
+      config: undefined,
+      path: ['./src/entities'],
+      dump: true,
+      out: undefined,
+    } as any);
+
+    // dynamicImport should only be called for config + Author.ts (not .d.ts or .md)
+    const importCalls = dynamicImportMock.mock.calls.map((c: any) => c[0]);
+    expect(importCalls.filter((c: string) => !c.includes('mikro-orm.config'))).toHaveLength(1);
+  });
+
+  test('skips non-entity exports', async () => {
+    pathExistsMock.mockImplementation((path: string) => path.includes('mikro-orm.config'));
+    dynamicImportMock.mockImplementation((path: string) => {
+      if (path.includes('mikro-orm.config')) {
+        return config;
+      }
+
+      // oxlint-disable-next-line no-empty-function
+      return { someHelper: () => {}, CONSTANT: 42, Author };
+    });
+    globMock.mockReturnValue(['Author.ts']);
+    isKnownEntityMock.mockImplementation((name: string) => name === 'Author');
+
+    await command.handler({
+      _: ['discovery:export'],
+      $0: 'mikro-orm',
+      contextName: 'default',
+      config: undefined,
+      path: ['./src/entities'],
+      dump: true,
+      out: undefined,
+    } as any);
+
+    const output = dumpSpy.mock.calls[0][0] as string;
+    expect(output).toContain('Author');
+    expect(output).not.toContain('someHelper');
+    expect(output).not.toContain('CONSTANT');
+  });
+
+  test('skips __esModule exports', async () => {
+    pathExistsMock.mockImplementation((path: string) => path.includes('mikro-orm.config'));
+    dynamicImportMock.mockImplementation((path: string) => {
+      if (path.includes('mikro-orm.config')) {
+        return config;
+      }
+
+      return { __esModule: true, Author };
+    });
+    globMock.mockReturnValue(['Author.ts']);
+    isKnownEntityMock.mockImplementation((name: string) => name === 'Author');
+
+    await command.handler({
+      _: ['discovery:export'],
+      $0: 'mikro-orm',
+      contextName: 'default',
+      config: undefined,
+      path: ['./src/entities'],
+      dump: true,
+      out: undefined,
+    } as any);
+
+    const output = dumpSpy.mock.calls[0][0] as string;
+    expect(output).not.toContain('__esModule');
+    expect(output).toContain('Author');
+  });
+
+  test('handles default exports', async () => {
+    pathExistsMock.mockImplementation((path: string) => path.includes('mikro-orm.config'));
+    dynamicImportMock.mockImplementation((path: string) => {
+      if (path.includes('mikro-orm.config')) {
+        return config;
+      }
+
+      return { default: Author };
+    });
+    globMock.mockReturnValue(['Author.ts']);
+    isKnownEntityMock.mockImplementation((name: string) => name === 'Author');
+
+    await command.handler({
+      _: ['discovery:export'],
+      $0: 'mikro-orm',
+      contextName: 'default',
+      config: undefined,
+      path: ['./src/entities'],
+      dump: true,
+      out: undefined,
+    } as any);
+
+    const output = dumpSpy.mock.calls[0][0] as string;
+    expect(output).toContain("import Author from './Author.js'");
+  });
+
+  test('handles default export of EntitySchema', async () => {
+    pathExistsMock.mockImplementation((path: string) => path.includes('mikro-orm.config'));
+    dynamicImportMock.mockImplementation((path: string) => {
+      if (path.includes('mikro-orm.config')) {
+        return config;
+      }
+
+      return { default: AuthorSchema };
+    });
+    globMock.mockReturnValue(['Author.ts']);
+    isKnownEntityMock.mockReturnValue(false);
+
+    await command.handler({
+      _: ['discovery:export'],
+      $0: 'mikro-orm',
+      contextName: 'default',
+      config: undefined,
+      path: ['./src/entities'],
+      dump: true,
+      out: undefined,
+    } as any);
+
+    const output = dumpSpy.mock.calls[0][0] as string;
+    expect(output).toContain("import Author from './Author.js'");
+  });
+
+  test('avoids duplicate exports from same file', async () => {
+    pathExistsMock.mockImplementation((path: string) => path.includes('mikro-orm.config'));
+    dynamicImportMock.mockImplementation((path: string) => {
+      if (path.includes('mikro-orm.config')) {
+        return config;
+      }
+
+      // default and named export of same entity
+      return { default: Author, Author };
+    });
+    globMock.mockReturnValue(['Author.ts']);
+    isKnownEntityMock.mockImplementation((name: string) => name === 'Author');
+
+    await command.handler({
+      _: ['discovery:export'],
+      $0: 'mikro-orm',
+      contextName: 'default',
+      config: undefined,
+      path: ['./src/entities'],
+      dump: true,
+      out: undefined,
+    } as any);
+
+    const output = dumpSpy.mock.calls[0][0] as string;
+    // Should only have one Author entry, not duplicates
+    expect(output.match(/Author/g)!.length).toBeLessThanOrEqual(4); // import + array + type lines
+  });
+
+  test('resolves output path from config when --out is not set', async () => {
+    pathExistsMock.mockImplementation((path: string) => path.includes('mikro-orm.config'));
+    dynamicImportMock.mockImplementation((path: string) => {
+      if (path.includes('mikro-orm.config')) {
+        return config;
+      }
+
+      return { Author };
+    });
+    globMock.mockReturnValue(['Author.ts']);
+    isKnownEntityMock.mockImplementation((name: string) => name === 'Author');
+    vi.spyOn(CLIHelper, 'getConfigPaths').mockResolvedValue(['./mikro-orm.config.ts']);
+
+    const outPath = resolve(process.cwd(), 'entities.generated.ts');
+
+    await command.handler({
+      _: ['discovery:export'],
+      $0: 'mikro-orm',
+      contextName: 'default',
+      config: undefined,
+      path: ['./src/entities'],
+      dump: false,
+      out: undefined,
+    } as any);
+
+    expect(existsSync(outPath)).toBe(true);
+    unlinkSync(outPath);
+    expect(dumpSpy).toHaveBeenCalledWith(expect.stringContaining('Entity exports generated'));
+  });
+
+  test('falls back to cwd for output path when no config found', async () => {
+    pathExistsMock.mockImplementation(() => false);
+    dynamicImportMock.mockImplementation((path: string) => {
+      if (path.includes('mikro-orm.config')) {
+        return config;
+      }
+
+      return { Author };
+    });
+    globMock.mockReturnValue(['Author.ts']);
+    isKnownEntityMock.mockImplementation((name: string) => name === 'Author');
+    vi.spyOn(CLIHelper, 'getConfigPaths').mockResolvedValue(['./nonexistent.config.ts']);
+
+    // Need to mock getConfiguration to not rely on pathExists for config loading
+    vi.spyOn(CLIHelper, 'getConfiguration').mockResolvedValueOnce({
+      get: (key: string, defaultValue?: any) => {
+        if (key === 'entities') {
+          return ['./src/entities'];
+        }
+        if (key === 'entitiesTs') {
+          return [];
+        }
+        if (key === 'baseDir') {
+          return undefined;
+        }
+        return defaultValue;
+      },
+      getDriver: () => ({ constructor: { name: 'SqliteDriver' } }),
+    } as any);
+
+    const outPath = resolve(process.cwd(), 'entities.generated.ts');
+
+    await command.handler({
+      _: ['discovery:export'],
+      $0: 'mikro-orm',
+      contextName: 'default',
+      config: undefined,
+      path: ['./src/entities'],
+      dump: false,
+      out: undefined,
+    } as any);
+
+    expect(existsSync(outPath)).toBe(true);
+    unlinkSync(outPath);
+  });
+
+  test('falls back to @mikro-orm/sql when getDriver throws', async () => {
+    pathExistsMock.mockImplementation((path: string) => path.includes('mikro-orm.config'));
+    dynamicImportMock.mockImplementation((path: string) => {
+      if (path.includes('mikro-orm.config')) {
+        return config;
+      }
+
+      return { Author };
+    });
+    globMock.mockReturnValue(['Author.ts']);
+    isKnownEntityMock.mockImplementation((name: string) => name === 'Author');
+
+    vi.spyOn(CLIHelper, 'getConfiguration').mockResolvedValueOnce({
+      get: (key: string, defaultValue?: any) => {
+        if (key === 'entities') {
+          return ['./src/entities'];
+        }
+        if (key === 'entitiesTs') {
+          return [];
+        }
+        if (key === 'baseDir') {
+          return undefined;
+        }
+        return defaultValue;
+      },
+      getDriver: () => {
+        throw new Error('no driver');
+      },
+    } as any);
+
+    await command.handler({
+      _: ['discovery:export'],
+      $0: 'mikro-orm',
+      contextName: 'default',
+      config: undefined,
+      path: ['./src/entities'],
+      dump: true,
+      out: undefined,
+    } as any);
+
+    const output = dumpSpy.mock.calls[0][0] as string;
+    expect(output).toContain('@mikro-orm/sql');
+  });
+
+  test('handles default export with no name (DefaultEntity fallback)', async () => {
+    const AnonymousSchema = new EntitySchema({
+      name: undefined as any,
+      class: undefined as any,
+      properties: {
+        id: { type: 'number', primary: true },
+      },
+    });
+    // Override meta to clear className and name
+    (AnonymousSchema as any).meta.className = undefined;
+    (AnonymousSchema as any).meta.name = undefined;
+
+    pathExistsMock.mockImplementation((path: string) => path.includes('mikro-orm.config'));
+    dynamicImportMock.mockImplementation((path: string) => {
+      if (path.includes('mikro-orm.config')) {
+        return config;
+      }
+
+      return { default: AnonymousSchema };
+    });
+    globMock.mockReturnValue(['Entity.ts']);
+    isKnownEntityMock.mockReturnValue(false);
+
+    await command.handler({
+      _: ['discovery:export'],
+      $0: 'mikro-orm',
+      contextName: 'default',
+      config: undefined,
+      path: ['./src/entities'],
+      dump: true,
+      out: undefined,
+    } as any);
+
+    const output = dumpSpy.mock.calls[0][0] as string;
+    expect(output).toContain('DefaultEntity');
+  });
+
+  test('writes CJS output to file', async () => {
+    pkg.type = 'commonjs';
+    const outPath = resolve(process.cwd(), '.mikro-orm-test-cjs.generated.ts');
+    pathExistsMock.mockImplementation((path: string) => path.includes('mikro-orm.config'));
+    dynamicImportMock.mockImplementation((path: string) => {
+      if (path.includes('mikro-orm.config')) {
+        return config;
+      }
+
+      return { Author };
+    });
+    globMock.mockReturnValue(['Author.ts']);
+    isKnownEntityMock.mockImplementation((name: string) => name === 'Author');
+
+    await command.handler({
+      _: ['discovery:export'],
+      $0: 'mikro-orm',
+      contextName: 'default',
+      config: undefined,
+      path: ['./src/entities'],
+      dump: false,
+      out: outPath,
+    } as any);
+
+    expect(existsSync(outPath)).toBe(true);
+    const content = readFileSync(outPath, 'utf-8');
+    expect(content).toContain("from './Author'");
+    expect(content).not.toContain('.js');
+    unlinkSync(outPath);
+  });
+
+  test('falls back to @mikro-orm/sql for unknown driver', async () => {
+    pathExistsMock.mockImplementation((path: string) => path.includes('mikro-orm.config'));
+    dynamicImportMock.mockImplementation((path: string) => {
+      if (path.includes('mikro-orm.config')) {
+        return config;
+      }
+
+      return { Author };
+    });
+    globMock.mockReturnValue(['Author.ts']);
+    isKnownEntityMock.mockImplementation((name: string) => name === 'Author');
+
+    vi.spyOn(CLIHelper, 'getConfiguration').mockResolvedValueOnce({
+      get: (key: string, defaultValue?: any) => {
+        if (key === 'entities') {
+          return ['./src/entities'];
+        }
+        if (key === 'entitiesTs') {
+          return [];
+        }
+        if (key === 'baseDir') {
+          return undefined;
+        }
+        return defaultValue;
+      },
+      getDriver: () => ({ constructor: { name: 'UnknownDriver' } }),
+    } as any);
+
+    await command.handler({
+      _: ['discovery:export'],
+      $0: 'mikro-orm',
+      contextName: 'default',
+      config: undefined,
+      path: ['./src/entities'],
+      dump: true,
+      out: undefined,
+    } as any);
+
+    const output = dumpSpy.mock.calls[0][0] as string;
+    expect(output).toContain('@mikro-orm/sql');
   });
 });
