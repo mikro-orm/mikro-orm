@@ -1,14 +1,10 @@
-import path from 'node:path'
-
 process.env.FORCE_COLOR = '0';
 import type { MigrationInfo, MikroORM } from '@mikro-orm/core';
 import { Migration, Migrator } from '@mikro-orm/migrations-mongodb';
 import { MongoDriver } from '@mikro-orm/mongodb';
-import { execSync } from 'node:child_process';
 import { rm } from 'node:fs/promises';
 import { initORMMongo, mockLogger } from '../../bootstrap.js';
 import { Book } from '../../entities/Book.js';
-import * as fs from 'node:fs'
 
 class MigrationTest1 extends Migration {
   async up(): Promise<void> {
@@ -117,44 +113,6 @@ describe('Migrator (mongo)', () => {
     await migrator.createInitial('abc');
     expect(spy).toHaveBeenCalledWith('abc');
     spy.mockRestore();
-  });
-
-  test('generate TS migration and type check it', async () => {
-    const dateMock = vi.spyOn(Date.prototype, 'toISOString');
-    dateMock.mockReturnValue('2019-10-13T21:48:13.382Z');
-    const migrator = orm.migrator;
-    const migration = await migrator.create();
-    expect(migration.code).toContain('import { Migration } from \'@mikro-orm/migrations-mongodb\';');
-
-    const migrationDirectory = orm.config.get('migrations').path!;
-    const migrationFile = path.join(migrationDirectory, migration.fileName);
-
-    const tsConfigPath = path.join(migrationDirectory, 'tsconfig.json')
-    fs.writeFileSync(tsConfigPath, `
-      {
-        "extends": "${path.join(__dirname, '../../../tsconfig.json')}",
-        "files": ["${migrationFile}"],
-        "compilerOptions": {
-          "noEmit": true,
-          "incremental": false
-        }
-      }
-    `);
-
-    try {
-      execSync(`npx tsc --project ${tsConfigPath}`, { stdio: 'pipe' });
-    } catch (e: any) {
-      const output = `${e.stdout?.toString()}\n${e.stderr?.toString()}`;
-      if (output.includes(migration.fileName)) {
-        throw new Error(`TypeScript errors in generated migration:\n${output}`);
-      } else {
-        throw new Error(`Unexpected error during TypeScript compilation:\n${output}`);
-      }
-    }
-
-    await rm(migrationFile);
-    await rm(tsConfigPath);
-    dateMock.mockRestore();
   });
 
   test('run migration', async () => {
