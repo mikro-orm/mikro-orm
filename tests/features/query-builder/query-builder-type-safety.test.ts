@@ -1,6 +1,44 @@
-import { MikroORM } from '@mikro-orm/mysql';
+import { MikroORM, Type } from '@mikro-orm/mysql';
+import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { Author2 } from '../../entities-sql/index.js';
 import { initORMMySql } from '../../bootstrap.js';
+
+// GH #7341 - custom type for testing QB joined entity filtering
+class MyId {
+  constructor(readonly value: string) {}
+}
+
+class MyIdType extends Type<MyId, string> {
+  override convertToDatabaseValue(value: MyId) {
+    return value.value;
+  }
+
+  override convertToJSValue(value: string) {
+    return new MyId(value);
+  }
+
+  override getColumnType() {
+    return 'varchar(255)';
+  }
+}
+
+@Entity()
+class GH7341Parent {
+  @PrimaryKey()
+  id!: number;
+
+  @Property({ type: MyIdType })
+  externalId!: MyId;
+}
+
+@Entity()
+class GH7341Child {
+  @PrimaryKey()
+  id!: number;
+
+  @ManyToOne(() => GH7341Parent)
+  parent!: GH7341Parent;
+}
 
 describe('QueryBuilder type safety', () => {
   let orm: MikroORM;
@@ -114,6 +152,24 @@ describe('QueryBuilder type safety', () => {
       if (false as boolean) {
         // @ts-expect-error - 'invalidProp' does not exist on Author2
         qb.where({ invalidProp: 'test' });
+      }
+    });
+  });
+
+  describe('custom types in joined entity filters (GH #7341)', () => {
+    test('should accept custom type values in operators on joined alias keys', async () => {
+      // Type-only check (GH7341 entities are not registered with this ORM instance)
+      if (false as boolean) {
+        const qb = orm.em.createQueryBuilder(GH7341Child, 'c').select('*').leftJoin('c.parent', 'p');
+
+        // Custom type values should be accepted in operators on joined entities
+        qb.where({ 'p.externalId': { $eq: new MyId('abc') } });
+        qb.where({ 'p.externalId': { $ne: new MyId('abc') } });
+        qb.where({ 'p.externalId': { $in: [new MyId('a'), new MyId('b')] } });
+        qb.where({ 'p.externalId': { $gt: new MyId('abc') } });
+        qb.where({ 'p.externalId': { $gte: new MyId('abc') } });
+        qb.where({ 'p.externalId': { $lt: new MyId('abc') } });
+        qb.where({ 'p.externalId': { $lte: new MyId('abc') } });
       }
     });
   });

@@ -158,13 +158,13 @@ bench('QBFilterQuery<Author, "a", never> - no context', () => {
 
 bench('QBFilterQuery<Author, "a", SimpleContext> - with join', () => {
   useFilter<Author, 'a', SimpleContext>({ 'b.title': 'test' });
-}).types([226, 'instantiations']);
+}).types([297, 'instantiations']);
 
 bench('QBFilterQuery<Author, "a", SimpleContext> - with $and', () => {
   useFilter<Author, 'a', SimpleContext>({
     $and: [{ 'b.title': 'test' }, { name: 'foo' }],
   });
-}).types([371, 'instantiations']);
+}).types([417, 'instantiations']);
 
 // ============================================
 // ModifyFields benchmarks (Fields tracking)
@@ -264,13 +264,13 @@ bench('execute() return - 2-level nested wildcard', () => {
   const r = {} as SerializeDTO<Author, 'books' | 'books.publisher'>;
   const _: string = r.name;
   void _;
-}).types([587, 'instantiations']);
+}).types([589, 'instantiations']);
 
 bench('execute() return - 3-level nested wildcard', () => {
   const r = {} as SerializeDTO<Author, 'books' | 'books.publisher' | 'books.publisher.books'>;
   const _: string = r.name;
   void _;
-}).types([593, 'instantiations']);
+}).types([595, 'instantiations']);
 
 bench('execute() return - 3-level nested with fields', () => {
   const r = {} as EntityDTOFlat<
@@ -282,7 +282,7 @@ bench('execute() return - 3-level nested with fields', () => {
   >;
   const _: number = r.id;
   void _;
-}).types([1583, 'instantiations']);
+}).types([1697, 'instantiations']);
 
 // ============================================
 // EntityDTOFlat vs EntityDTO comparison (wide entities)
@@ -414,7 +414,7 @@ bench('with().from() - full CTE chain', () => {
   const sub = {} as QueryBuilder<Book>;
   const r = qb.with('cte', sub).from('cte');
   void r;
-}).types([85, 'instantiations']);
+}).types([84, 'instantiations']);
 
 // Verify from() preserves the alias as a literal type
 bench('from() - CTE alias preserved as literal', () => {
