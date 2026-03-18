@@ -23,27 +23,30 @@ for (const name of readdirSync(packagesDir)) {
   const jsr = JSON.parse(original);
   const pkgJson = JSON.parse(readFileSync(resolve(packagesDir, name, 'package.json'), 'utf8'));
 
-  // Sync jsr.json imports from package.json dependencies so that version
-  // bumps (e.g. from Renovate) are picked up automatically.
-  const imports = {};
+  // During dry-run, sync jsr.json from package.json so we validate against
+  // current source. For real publishes, the sync is already committed by
+  // the pin-versions step in copy.mjs.
+  if (dryRun) {
+    const imports = {};
 
-  for (const [dep, version] of Object.entries(pkgJson.dependencies ?? {})) {
-    const prefix = dep.startsWith('@mikro-orm/') ? 'jsr' : 'npm';
-    imports[dep] = `${prefix}:${dep}@${version}`;
-  }
+    for (const [dep, version] of Object.entries(pkgJson.dependencies ?? {})) {
+      const prefix = dep.startsWith('@mikro-orm/') ? 'jsr' : 'npm';
+      imports[dep] = `${prefix}:${dep}@${version}`;
+    }
 
-  if (Object.keys(imports).length > 0) {
-    jsr.imports = imports;
-  } else {
-    delete jsr.imports;
-  }
+    if (Object.keys(imports).length > 0) {
+      jsr.imports = imports;
+    } else {
+      delete jsr.imports;
+    }
 
-  jsr.version = pkgJson.version;
-  const synced = JSON.stringify(jsr, null, 2) + '\n';
-  writeFileSync(jsrPath, synced, { flush: true });
+    jsr.version = pkgJson.version;
+    const synced = JSON.stringify(jsr, null, 2) + '\n';
+    writeFileSync(jsrPath, synced, { flush: true });
 
-  if (synced !== original) {
-    originals.set(jsrPath, original);
+    if (synced !== original) {
+      originals.set(jsrPath, original);
+    }
   }
 
   // Use package.json dependencies and peerDependencies to build the graph,
