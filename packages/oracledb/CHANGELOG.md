@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.0.3](https://github.com/mikro-orm/mikro-orm/compare/v7.0.2...v7.0.3) (2026-03-18)
+
+
+### Bug Fixes
+
+* **oracledb:** use [@see](https://github.com/see) instead of [@link](https://github.com/link) for Oracle error docs reference [skip ci] ([44ee546](https://github.com/mikro-orm/mikro-orm/commit/44ee546a5de0e2feecfcc07dfe12034c6f1325e0))
+* run formatter after version bumps in release workflow, fix [@link](https://github.com/link) tag [skip ci] ([7f27e68](https://github.com/mikro-orm/mikro-orm/commit/7f27e68f609342e9a652b02e8c5b257e53213b0b))
+
+
+
+
+
 ## [7.0.2](https://github.com/mikro-orm/mikro-orm/compare/v7.0.1...v7.0.2) (2026-03-14)
 
 **Note:** Version bump only for package @mikro-orm/oracledb

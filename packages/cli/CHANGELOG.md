@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.0.3](https://github.com/mikro-orm/mikro-orm/compare/v7.0.2...v7.0.3) (2026-03-18)
+
+
+### Bug Fixes
+
+* **cli:** support Yarn PnP with ESM loader ([#7327](https://github.com/mikro-orm/mikro-orm/issues/7327)) ([af227cb](https://github.com/mikro-orm/mikro-orm/commit/af227cbea85cbf95bd9fe72dfac5fd1f701cf7cd)), closes [#7324](https://github.com/mikro-orm/mikro-orm/issues/7324)
+
+
+
+
+
 ## [7.0.2](https://github.com/mikro-orm/mikro-orm/compare/v7.0.1...v7.0.2) (2026-03-14)
 
 **Note:** Version bump only for package @mikro-orm/cli
