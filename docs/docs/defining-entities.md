@@ -1661,8 +1661,16 @@ values={[
   <TabItem value="define-entity-class">
 
 ```ts title="./entities/User.ts"
-export class User {
-  id!: number;
+const UserSchema = defineEntity({
+  name: 'User',
+  properties: {
+    id: p.integer().primary(),
+    // the ORM will use the backing field directly
+    email: p.string().accessor('_email'),
+  },
+});
+
+export class User extends UserSchema.class {
   private _email!: unknown;
 
   get email(): unknown {
@@ -1674,14 +1682,7 @@ export class User {
   }
 }
 
-export const UserSchema = defineEntity({
-  class: User,
-  properties: {
-    id: p.integer().primary(),
-    // the ORM will use the backing field directly
-    email: p.string().accessor('_email'),
-  },
-});
+UserSchema.setClass(User);
 ```
 
   </TabItem>
@@ -1777,21 +1778,8 @@ values={[
   <TabItem value="define-entity-class">
 
 ```ts title="./entities/User.ts"
-export class User {
-  id!: string;
-  #email!: string;
-
-  get email() {
-    return this.#email;
-  }
-
-  set email(email: string) {
-    return this.#email;
-  }
-}
-
-export const UserSchema = defineEntity({
-  class: User,
+const UserSchema = defineEntity({
+  name: 'User',
   // constructors are required for native private fields
   forceConstructor: true,
   properties: {
@@ -1800,6 +1788,20 @@ export const UserSchema = defineEntity({
     email: p.string().accessor(),
   },
 });
+
+export class User extends UserSchema.class {
+  #email!: string;
+
+  get email() {
+    return this.#email;
+  }
+
+  set email(email: string) {
+    this.#email = email;
+  }
+}
+
+UserSchema.setClass(User);
 ```
 
   </TabItem>
@@ -1816,7 +1818,7 @@ export class User {
   }
 
   set email(email: string) {
-    return this.#email;
+    this.#email = email;
   }
 }
 
@@ -1850,7 +1852,7 @@ export class User {
   }
 
   set email(email: string) {
-    return this.#email;
+    this.#email = email;
   }
 }
 ```
@@ -1903,12 +1905,17 @@ values={[
   <TabItem value="define-entity-class">
 
 ```ts title="./entities/User.ts"
-export class User {
+const UserSchema = defineEntity({
+  name: 'User',
+  properties: {
+    firstName: p.string().hidden(),
+    lastName: p.string().hidden(),
+    fullName: p.type('method').persist(false).getter().getterName('getFullName'),
+    fullName2: p.type('method').persist(false).getter(),
+  },
+});
 
-  [HiddenProps]?: 'firstName' | 'lastName';
-
-  firstName!: string;
-  lastName!: string;
+export class User extends UserSchema.class {
 
   getFullName() {
     return `${this.firstName} ${this.lastName}`;
@@ -1918,18 +1925,10 @@ export class User {
   get fullName2(): Opt<string> {
     return `${this.firstName} ${this.lastName}`;
   }
+
 }
 
-export const UserSchema = defineEntity({
-  class: User,
-  name: 'User',
-  properties: {
-    firstName: p.string().hidden(),
-    lastName: p.string().hidden(),
-    fullName: p.type('method').persist(false).getter().getterName('getFullName'),
-    fullName2: p.type('method').persist(false).getter(),
-  },
-});
+UserSchema.setClass(User);
 ```
 
   </TabItem>
