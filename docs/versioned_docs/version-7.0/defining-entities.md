@@ -1914,7 +1914,8 @@ export class User {
     return `${this.firstName} ${this.lastName}`;
   }
 
-  get fullName2() {
+  // Opt return type marks the getter as non-required on entity creation
+  get fullName2(): Opt<string> {
     return `${this.firstName} ${this.lastName}`;
   }
 }
@@ -1947,7 +1948,8 @@ export class User {
     return `${this.firstName} ${this.lastName}`;
   }
 
-  get fullName2() {
+  // Opt return type marks the getter as non-required on entity creation
+  get fullName2(): Opt<string> {
     return `${this.firstName} ${this.lastName}`;
   }
 }
@@ -1984,8 +1986,9 @@ export class User {
     return `${this.firstName} ${this.lastName}`;
   }
 
+  // Opt return type marks the getter as non-required on entity creation
   @Property({ persist: false })
-  get fullName2() {
+  get fullName2(): Opt<string> {
     return `${this.firstName} ${this.lastName}`;
   }
 
@@ -2012,8 +2015,9 @@ export class User {
     return `${this.firstName} ${this.lastName}`;
   }
 
+  // Opt return type marks the getter as non-required on entity creation
   @Property({ persist: false })
-  get fullName2() {
+  get fullName2(): Opt<string> {
     return `${this.firstName} ${this.lastName}`;
   }
 
