@@ -13,7 +13,20 @@ async function getEntityClassOrSchema(
 ): Promise<void> {
   const path = fs.normalizePath(baseDir, filepath);
   const exports = await fs.dynamicImport(path);
-  const targets = Object.values<Constructor | EntitySchema>(exports);
+
+  const buckets = [exports, exports?.default, exports?.['module.exports']].filter(Boolean);
+
+  const dedupe = new Set<Constructor | EntitySchema>();
+  const targets: (Constructor | EntitySchema)[] = [];
+
+  for (const bucket of buckets) {
+    for (const item of Object.values<Constructor | EntitySchema>(bucket)) {
+      if (!dedupe.has(item)) {
+        dedupe.add(item);
+        targets.push(item);
+      }
+    }
+  }
 
   // ignore class implementations that are linked from an EntitySchema
   for (const item of targets) {
