@@ -1163,6 +1163,14 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
           return em.assign(exists, data as any) as any;
         }
       }
+
+      for (const key of Object.keys(data!)) {
+        const prop = meta.properties[key as EntityKey<Entity>];
+
+        if (prop?.persist === false) {
+          delete data![key as EntityKey<Entity>];
+        }
+      }
     }
 
     where = getWhereCondition(meta, options.onConflictFields, data as EntityData<Entity>, where).where;
@@ -1339,6 +1347,14 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
             entities.set(exists, row);
             entitiesByData.set(row, exists);
             continue;
+          }
+        }
+
+        for (const key of Object.keys(row)) {
+          const prop = meta.properties[key as EntityKey<Entity>];
+
+          if (prop?.persist === false) {
+            delete row[key as EntityKey<Entity>];
           }
         }
       }
