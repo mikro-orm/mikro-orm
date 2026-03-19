@@ -49,7 +49,7 @@
   "dependencies": {
     "@mikro-orm/sql": "7.0.3",
     "kysely": "0.28.13",
-    "libsql": "0.5.22"
+    "libsql": "0.5.28"
   },
   "devDependencies": {
     "@mikro-orm/core": "^7.0.3"

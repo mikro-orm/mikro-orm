@@ -152,5 +152,5 @@
     "uuid": "11.1.0",
     "vitest": "4.1.0"
   },
-  "packageManager": "yarn@4.12.0"
+  "packageManager": "yarn@4.13.0"
 }

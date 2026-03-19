@@ -48,5 +48,5 @@
     "@types/react-dom": "^19.1.5",
     "prettier": "^3.5.3"
   },
-  "packageManager": "yarn@4.12.0"
+  "packageManager": "yarn@4.13.0"
 }
