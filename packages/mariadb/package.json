@@ -48,7 +48,7 @@
   },
   "dependencies": {
     "@mikro-orm/mysql": "7.0.3",
-    "kysely": "0.28.12"
+    "kysely": "0.28.13"
   },
   "devDependencies": {
     "@mikro-orm/core": "^7.0.3"

@@ -43,7 +43,7 @@
   },
   "dependencies": {
     "@mikro-orm/sql": "7.0.3",
-    "kysely": "0.28.12",
+    "kysely": "0.28.13",
     "oracledb": "6.10.0"
   },
   "devDependencies": {
