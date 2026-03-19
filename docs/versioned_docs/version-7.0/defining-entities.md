@@ -495,7 +495,7 @@ values={[
 const SomeEntitySchema = defineEntity({
   name: 'SomeEntity',
   properties: {
-    foo: p.number().onCreate(() => 1),
+    foo: p.integer().onCreate(() => 1),
     bar: p.string().onCreate(() => 'abc'),
     baz: p.datetime().onCreate(() => new Date()),
   },
@@ -513,7 +513,7 @@ SomeEntitySchema.setClass(SomeEntity);
 const SomeEntity = defineEntity({
   name: 'SomeEntity',
   properties: {
-    foo: p.number().onCreate(() => 1),
+    foo: p.integer().onCreate(() => 1),
     bar: p.string().onCreate(() => 'abc'),
     baz: p.datetime().onCreate(() => new Date()),
   },
@@ -572,7 +572,7 @@ values={[
 const SomeEntitySchema = defineEntity({
   name: 'SomeEntity',
   properties: {
-    foo: p.number().default(1),
+    foo: p.integer().default(1),
     bar: p.string().default('abc'),
     baz: p.datetime().defaultRaw('now'),
   },
@@ -590,7 +590,7 @@ SomeEntitySchema.setClass(SomeEntity);
 const SomeEntity = defineEntity({
   name: 'SomeEntity',
   properties: {
-    foo: p.number().default(1),
+    foo: p.integer().default(1),
     bar: p.string().default('abc'),
     baz: p.datetime().defaultRaw('now'),
   },
@@ -1088,7 +1088,7 @@ values={[
 const BoxSchema = defineEntity({
   name: 'Box',
   properties: {
-    objectVolume: p.formula<number>('obj_length * obj_height * obj_width'),
+    objectVolume: p.integer().formula('obj_length * obj_height * obj_width'),
   },
 });
 
@@ -1104,7 +1104,7 @@ BoxSchema.setClass(Box);
 export const Box = defineEntity({
   name: 'Box',
   properties: {
-    objectVolume: p.formula<number>('obj_length * obj_height * obj_width'),
+    objectVolume: p.integer().formula('obj_length * obj_height * obj_width'),
   },
 });
 ```
@@ -1149,7 +1149,7 @@ import { quote } from '@mikro-orm/core';
 const BoxSchema = defineEntity({
   name: 'Box',
   properties: {
-    objectVolume: p.formula<number>(cols => quote`${cols.objLength} * ${cols.objHeight} * ${cols.objWidth}`),
+    objectVolume: p.integer().formula(cols => quote`${cols.objLength} * ${cols.objHeight} * ${cols.objWidth}`),
   },
 });
 
@@ -1167,7 +1167,7 @@ import { quote } from '@mikro-orm/core';
 export const Box = defineEntity({
   name: 'Box',
   properties: {
-    objectVolume: p.formula<number>(cols => quote`${cols.objLength} * ${cols.objHeight} * ${cols.objWidth}`),
+    objectVolume: p.integer().formula(cols => quote`${cols.objLength} * ${cols.objHeight} * ${cols.objWidth}`),
   },
 });
 ```
@@ -1248,7 +1248,7 @@ const AuthorSchema = defineEntity({
   name: 'Author',
   properties: {
     email: p.string().unique(),
-    age: p.number().nullable().index(),
+    age: p.integer().nullable().index(),
     born: p.date().nullable().index('born_index'),
     title: p.string(),
     country: p.string(),
@@ -1282,7 +1282,7 @@ export const Author = defineEntity({
   name: 'Author',
   properties: {
     email: p.string().unique(),
-    age: p.number().nullable().index(),
+    age: p.integer().nullable().index(),
     born: p.date().nullable().index('born_index'),
     title: p.string(),
     country: p.string(),
@@ -1411,10 +1411,10 @@ values={[
 const BookSchema = defineEntity({
   name: 'Book',
   properties: {
-    id: p.number().primary(),
-    price1: p.number(),
-    price2: p.number(),
-    price3: p.number(),
+    id: p.integer().primary(),
+    price1: p.integer(),
+    price2: p.integer(),
+    price3: p.integer(),
   },
   checks: [
     { expression: 'price1 >= 0' },
@@ -1437,10 +1437,10 @@ BookSchema.setClass(Book);
 export const Book = defineEntity({
   name: 'Book',
   properties: {
-    id: p.number().primary(),
-    price1: p.number(),
-    price2: p.number(),
-    price3: p.number(),
+    id: p.integer().primary(),
+    price1: p.integer(),
+    price2: p.integer(),
+    price3: p.integer(),
   },
   checks: [
     { expression: 'price1 >= 0' },
@@ -2068,7 +2068,7 @@ const CommentSchema = defineEntity({
   name: 'Comment',
   orderBy: { createdAt: QueryOrder.DESC, id: QueryOrder.DESC },
   properties: {
-    id: p.number().primary(),
+    id: p.integer().primary(),
     createdAt: p.datetime(),
     text: p.string(),
     post: () => p.manyToOne(Post),
@@ -2090,7 +2090,7 @@ export const Comment = defineEntity({
   name: 'Comment',
   orderBy: { createdAt: QueryOrder.DESC, id: QueryOrder.DESC },
   properties: {
-    id: p.number().primary(),
+    id: p.integer().primary(),
     createdAt: p.datetime(),
     text: p.string(),
     post: () => p.manyToOne(Post),
@@ -2172,7 +2172,7 @@ import { defineEntity, p } from '@mikro-orm/core';
 const PostSchema = defineEntity({
   name: 'Post',
   properties: {
-    id: p.number().primary(),
+    id: p.integer().primary(),
     comments: () => p.oneToMany(Comment).mappedBy('post'),
     commentsAlphabetical: () => p.oneToMany(Comment).mappedBy('post').orderBy({ text: QueryOrder.ASC }),
   },
@@ -2192,7 +2192,7 @@ import { defineEntity, p } from '@mikro-orm/core';
 export const Post = defineEntity({
   name: 'Post',
   properties: {
-    id: p.number().primary(),
+    id: p.integer().primary(),
     comments: () => p.oneToMany(Comment).mappedBy('post'),
     commentsAlphabetical: () => p.oneToMany(Comment).mappedBy('post').orderBy({ text: QueryOrder.ASC }),
   },
