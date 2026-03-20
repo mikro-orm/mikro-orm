@@ -165,6 +165,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
+      max-parallel: 8
       matrix:
         node-version: [ 22, 24 ]
         shard: [ 1, 2, 3, 4 ]
