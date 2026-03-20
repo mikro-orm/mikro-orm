@@ -10,6 +10,6 @@
   },
   "imports": {
     "@mikro-orm/core": "jsr:@mikro-orm/core@7.0.4",
-    "reflect-metadata": "npm:reflect-metadata@^0.1.0 || ^0.2.0"
+    "reflect-metadata": "npm:reflect-metadata@^0.2.0"
   }
 }
