@@ -5,24 +5,18 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ## [7.0.4](https://github.com/mikro-orm/mikro-orm/compare/v7.0.3...v7.0.4) (2026-03-20)
 
-
 ### Bug Fixes
 
-* **core:** accept readonly arrays in `EnumOptions.items` ([c287a1f](https://github.com/mikro-orm/mikro-orm/commit/c287a1fe0754bb30abc0cfbcdf5cdb054c290673)), closes [#7352](https://github.com/mikro-orm/mikro-orm/issues/7352)
-* **core:** discover `defineEntity` classes via glob when only class is exported ([#7355](https://github.com/mikro-orm/mikro-orm/issues/7355)) ([fccc42e](https://github.com/mikro-orm/mikro-orm/commit/fccc42e6cd323e818ab40fbd507928b8000137fd))
-* **core:** exclude unloaded lazy ref properties from snapshot generator ([#7353](https://github.com/mikro-orm/mikro-orm/issues/7353)) ([48ea304](https://github.com/mikro-orm/mikro-orm/commit/48ea30409c8734805c9196cd3b04d3d5294bd1c5))
-* **core:** prevent double-wrapping of ScalarReference in hydrator ([ac1f66e](https://github.com/mikro-orm/mikro-orm/commit/ac1f66e732d16afadb64325cabe1ca8cefd82ec2))
-* **core:** strip `persist: false` properties from upsert data ([#7345](https://github.com/mikro-orm/mikro-orm/issues/7345)) ([4b5a833](https://github.com/mikro-orm/mikro-orm/commit/4b5a833011e297154ca48a03298e680278679a72)), closes [#7344](https://github.com/mikro-orm/mikro-orm/issues/7344)
-
+- **core:** accept readonly arrays in `EnumOptions.items` ([c287a1f](https://github.com/mikro-orm/mikro-orm/commit/c287a1fe0754bb30abc0cfbcdf5cdb054c290673)), closes [#7352](https://github.com/mikro-orm/mikro-orm/issues/7352)
+- **core:** discover `defineEntity` classes via glob when only class is exported ([#7355](https://github.com/mikro-orm/mikro-orm/issues/7355)) ([fccc42e](https://github.com/mikro-orm/mikro-orm/commit/fccc42e6cd323e818ab40fbd507928b8000137fd))
+- **core:** exclude unloaded lazy ref properties from snapshot generator ([#7353](https://github.com/mikro-orm/mikro-orm/issues/7353)) ([48ea304](https://github.com/mikro-orm/mikro-orm/commit/48ea30409c8734805c9196cd3b04d3d5294bd1c5))
+- **core:** prevent double-wrapping of ScalarReference in hydrator ([ac1f66e](https://github.com/mikro-orm/mikro-orm/commit/ac1f66e732d16afadb64325cabe1ca8cefd82ec2))
+- **core:** strip `persist: false` properties from upsert data ([#7345](https://github.com/mikro-orm/mikro-orm/issues/7345)) ([4b5a833](https://github.com/mikro-orm/mikro-orm/commit/4b5a833011e297154ca48a03298e680278679a72)), closes [#7344](https://github.com/mikro-orm/mikro-orm/issues/7344)
 
 ### Features
 
-* **cli:** add oxc as a TS loader option via `@oxc-node/core` ([#7354](https://github.com/mikro-orm/mikro-orm/issues/7354)) ([3d62317](https://github.com/mikro-orm/mikro-orm/commit/3d62317c0a20dae73ea149a6abe3827190171b72))
-* **postgresql:** generate check constraints for enum array columns ([#7356](https://github.com/mikro-orm/mikro-orm/issues/7356)) ([ec10597](https://github.com/mikro-orm/mikro-orm/commit/ec10597b74ea4626fffd614b50d9c6b7f4a3f184)), closes [#7352](https://github.com/mikro-orm/mikro-orm/issues/7352)
-
-
-
-
+- **cli:** add oxc as a TS loader option via `@oxc-node/core` ([#7354](https://github.com/mikro-orm/mikro-orm/issues/7354)) ([3d62317](https://github.com/mikro-orm/mikro-orm/commit/3d62317c0a20dae73ea149a6abe3827190171b72))
+- **postgresql:** generate check constraints for enum array columns ([#7356](https://github.com/mikro-orm/mikro-orm/issues/7356)) ([ec10597](https://github.com/mikro-orm/mikro-orm/commit/ec10597b74ea4626fffd614b50d9c6b7f4a3f184)), closes [#7352](https://github.com/mikro-orm/mikro-orm/issues/7352)
 
 ## [7.0.3](https://github.com/mikro-orm/mikro-orm/compare/v7.0.2...v7.0.3) (2026-03-18)
 

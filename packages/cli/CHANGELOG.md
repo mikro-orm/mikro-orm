@@ -5,14 +5,9 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ## [7.0.4](https://github.com/mikro-orm/mikro-orm/compare/v7.0.3...v7.0.4) (2026-03-20)
 
-
 ### Features
 
-* **cli:** add oxc as a TS loader option via `@oxc-node/core` ([#7354](https://github.com/mikro-orm/mikro-orm/issues/7354)) ([3d62317](https://github.com/mikro-orm/mikro-orm/commit/3d62317c0a20dae73ea149a6abe3827190171b72))
-
-
-
-
+- **cli:** add oxc as a TS loader option via `@oxc-node/core` ([#7354](https://github.com/mikro-orm/mikro-orm/issues/7354)) ([3d62317](https://github.com/mikro-orm/mikro-orm/commit/3d62317c0a20dae73ea149a6abe3827190171b72))
 
 ## [7.0.3](https://github.com/mikro-orm/mikro-orm/compare/v7.0.2...v7.0.3) (2026-03-18)
 

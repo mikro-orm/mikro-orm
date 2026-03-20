@@ -5,14 +5,9 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ## [7.0.4](https://github.com/mikro-orm/mikro-orm/compare/v7.0.3...v7.0.4) (2026-03-20)
 
-
 ### Bug Fixes
 
-* **sql:** prune redundant joins in pagination outer query ([#7339](https://github.com/mikro-orm/mikro-orm/issues/7339)) ([48acce9](https://github.com/mikro-orm/mikro-orm/commit/48acce98eabfd8a3ca348f740e25e8d573ee2225)), closes [#6681](https://github.com/mikro-orm/mikro-orm/issues/6681)
-
-
-
-
+- **sql:** prune redundant joins in pagination outer query ([#7339](https://github.com/mikro-orm/mikro-orm/issues/7339)) ([48acce9](https://github.com/mikro-orm/mikro-orm/commit/48acce98eabfd8a3ca348f740e25e8d573ee2225)), closes [#6681](https://github.com/mikro-orm/mikro-orm/issues/6681)
 
 ## [7.0.3](https://github.com/mikro-orm/mikro-orm/compare/v7.0.2...v7.0.3) (2026-03-18)
 

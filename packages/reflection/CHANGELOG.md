@@ -5,14 +5,9 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ## [7.0.4](https://github.com/mikro-orm/mikro-orm/compare/v7.0.3...v7.0.4) (2026-03-20)
 
-
 ### Bug Fixes
 
-* **reflection:** detect array enums from text-based type before clearing enum flag ([02d2b52](https://github.com/mikro-orm/mikro-orm/commit/02d2b52e7d7cc87691686fe8f99bcaf5da629442)), closes [#7352](https://github.com/mikro-orm/mikro-orm/issues/7352)
-
-
-
-
+- **reflection:** detect array enums from text-based type before clearing enum flag ([02d2b52](https://github.com/mikro-orm/mikro-orm/commit/02d2b52e7d7cc87691686fe8f99bcaf5da629442)), closes [#7352](https://github.com/mikro-orm/mikro-orm/issues/7352)
 
 ## [7.0.3](https://github.com/mikro-orm/mikro-orm/compare/v7.0.2...v7.0.3) (2026-03-18)
 

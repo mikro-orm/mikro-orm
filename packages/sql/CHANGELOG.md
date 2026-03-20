@@ -5,20 +5,14 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ## [7.0.4](https://github.com/mikro-orm/mikro-orm/compare/v7.0.3...v7.0.4) (2026-03-20)
 
-
 ### Bug Fixes
 
-* **sql:** accept custom types in QueryBuilder operators for joined entities ([#7342](https://github.com/mikro-orm/mikro-orm/issues/7342)) ([0aaafbf](https://github.com/mikro-orm/mikro-orm/commit/0aaafbfad14678e5bb48bbd2f1a1b13497d8d013)), closes [#7341](https://github.com/mikro-orm/mikro-orm/issues/7341)
-* **sql:** prune redundant joins in pagination outer query ([#7339](https://github.com/mikro-orm/mikro-orm/issues/7339)) ([48acce9](https://github.com/mikro-orm/mikro-orm/commit/48acce98eabfd8a3ca348f740e25e8d573ee2225)), closes [#6681](https://github.com/mikro-orm/mikro-orm/issues/6681)
-
+- **sql:** accept custom types in QueryBuilder operators for joined entities ([#7342](https://github.com/mikro-orm/mikro-orm/issues/7342)) ([0aaafbf](https://github.com/mikro-orm/mikro-orm/commit/0aaafbfad14678e5bb48bbd2f1a1b13497d8d013)), closes [#7341](https://github.com/mikro-orm/mikro-orm/issues/7341)
+- **sql:** prune redundant joins in pagination outer query ([#7339](https://github.com/mikro-orm/mikro-orm/issues/7339)) ([48acce9](https://github.com/mikro-orm/mikro-orm/commit/48acce98eabfd8a3ca348f740e25e8d573ee2225)), closes [#6681](https://github.com/mikro-orm/mikro-orm/issues/6681)
 
 ### Features
 
-* **postgresql:** generate check constraints for enum array columns ([#7356](https://github.com/mikro-orm/mikro-orm/issues/7356)) ([ec10597](https://github.com/mikro-orm/mikro-orm/commit/ec10597b74ea4626fffd614b50d9c6b7f4a3f184)), closes [#7352](https://github.com/mikro-orm/mikro-orm/issues/7352)
-
-
-
-
+- **postgresql:** generate check constraints for enum array columns ([#7356](https://github.com/mikro-orm/mikro-orm/issues/7356)) ([ec10597](https://github.com/mikro-orm/mikro-orm/commit/ec10597b74ea4626fffd614b50d9c6b7f4a3f184)), closes [#7352](https://github.com/mikro-orm/mikro-orm/issues/7352)
 
 ## [7.0.3](https://github.com/mikro-orm/mikro-orm/compare/v7.0.2...v7.0.3) (2026-03-18)
 

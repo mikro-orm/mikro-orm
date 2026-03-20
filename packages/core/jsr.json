@@ -1,6 +1,6 @@
 {
   "name": "@mikro-orm/core",
-  "version": "7.0.3",
+  "version": "7.0.4",
   "exports": {
     ".": "./src/index.ts",
     "./file-discovery": "./src/metadata/discover-entities.ts",
@@ -11,5 +11,8 @@
   },
   "publish": {
     "exclude": ["dist/", "node_modules/", "tests/"]
+  },
+  "imports": {
+    "dataloader": "npm:dataloader@2.2.3"
   }
 }

@@ -5,14 +5,9 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ## [7.0.4](https://github.com/mikro-orm/mikro-orm/compare/v7.0.3...v7.0.4) (2026-03-20)
 
-
 ### Bug Fixes
 
-* **decorators:** handle Rolldown-bundled @oxc-project/runtime in path lookup ([14d04ae](https://github.com/mikro-orm/mikro-orm/commit/14d04ae70df2711e45ae099d970a28ad700dbd62))
-
-
-
-
+- **decorators:** handle Rolldown-bundled @oxc-project/runtime in path lookup ([14d04ae](https://github.com/mikro-orm/mikro-orm/commit/14d04ae70df2711e45ae099d970a28ad700dbd62))
 
 ## [7.0.3](https://github.com/mikro-orm/mikro-orm/compare/v7.0.2...v7.0.3) (2026-03-18)
 
