@@ -210,7 +210,9 @@ export class ObjectHydrator extends Hydrator {
       }
 
       if (prop.ref) {
-        ret.push(`    const value = entity${entityKey};`);
+        ret.push(
+          `    const value = entity${entityKey}?.__scalarReference ? entity${entityKey}.unwrap() : entity${entityKey};`,
+        );
         ret.push(`    entity${entityKey} = oldValue_${idx} ?? new ScalarReference(value);`);
         ret.push(`    entity${entityKey}.bind(entity, '${prop.name}');`);
         ret.push(`    entity${entityKey}.set(value);`);
