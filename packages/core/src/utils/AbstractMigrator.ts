@@ -160,7 +160,21 @@ export abstract class AbstractMigrator<D extends IDatabaseDriver> implements IMi
   protected resolve(params: { name: string; path: string }): RunnableMigration {
     const createMigrationHandler = async (method: 'up' | 'down') => {
       const { fs } = await import('@mikro-orm/core/fs-utils');
-      const migration = await fs.dynamicImport(params.path);
+      const exports = await fs.dynamicImport(params.path);
+
+      const buckets = [exports, exports?.default, exports?.['module.exports']].filter(Boolean);
+      const dedupe = new Set<Constructor<Migration>>();
+      const migration: Constructor<Migration>[] = [];
+
+      for (const bucket of buckets) {
+        for (const item of Object.values<Constructor<Migration>>(bucket)) {
+          if (!dedupe.has(item)) {
+            dedupe.add(item);
+            migration.push(item);
+          }
+        }
+      }
+
       const MigrationClass = Object.values(migration).find(
         cls => typeof cls === 'function' && typeof cls.constructor === 'function',
       ) as Constructor<Migration>;

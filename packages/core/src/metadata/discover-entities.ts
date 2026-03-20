@@ -15,7 +15,6 @@ async function getEntityClassOrSchema(
   const exports = await fs.dynamicImport(path);
 
   const buckets = [exports, exports?.default, exports?.['module.exports']].filter(Boolean);
-
   const dedupe = new Set<Constructor | EntitySchema>();
   const targets: (Constructor | EntitySchema)[] = [];
 

@@ -122,8 +122,16 @@ export class SeedManager implements ISeedManager {
     for (const filePath of files) {
       const exports = await fs.dynamicImport(filePath);
 
-      for (const name of Object.keys(exports)) {
-        classMap.set(name, exports[name]);
+      const buckets = [exports, exports?.default, exports?.['module.exports']].filter(Boolean);
+      const dedupe = new Set<Constructor<Seeder>>();
+
+      for (const bucket of buckets) {
+        for (const item of Object.values<Constructor<Seeder>>(bucket)) {
+          if (!dedupe.has(item)) {
+            dedupe.add(item);
+            classMap.set(item.name, item);
+          }
+        }
       }
     }
 
