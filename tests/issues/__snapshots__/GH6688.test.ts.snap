@@ -28,6 +28,7 @@ exports[`default array values [postgresql] > database default when using arrays 
 "set names 'utf8';
 
 create table "a" ("id" serial primary key, "languages" text[] not null default '{en}', "accounts" jsonb not null default '[]', "items" text[] not null default '{}');
+alter table "a" add constraint "a_items_check" check ("items" <@ array['a'::text, 'b'::text, 'c'::text]);
 "
 `;
 

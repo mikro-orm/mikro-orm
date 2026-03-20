@@ -14,7 +14,7 @@ class Sample {
   porosity: Porosity[] | null = null;
 }
 
-test('GH #7352 - enum array should not generate check constraints', async () => {
+test('GH #7352 - enum array generates proper check constraint for postgres', async () => {
   const orm = await MikroORM.init({
     metadataProvider: TsMorphMetadataProvider,
     metadataCache: { enabled: false },
@@ -23,7 +23,13 @@ test('GH #7352 - enum array should not generate check constraints', async () => 
   });
 
   const meta = orm.getMetadata().get(Sample);
-  expect(meta.checks).toEqual([]);
+  expect(meta.checks).toEqual([
+    {
+      name: 'sample_porosity_check',
+      property: 'porosity',
+      expression: `"porosity" <@ array['meso'::text, 'macro'::text, 'micro'::text]`,
+    },
+  ]);
 
   await orm.schema.refresh();
   const diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
