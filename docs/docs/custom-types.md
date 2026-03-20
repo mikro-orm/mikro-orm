@@ -515,6 +515,47 @@ export class CalendarDateArrayType extends ArrayType<CalendarDate> {
 favoriteDays!: CalendarDate[];
 ```
 
+### NativeArrayType (PostgreSQL)
+
+`NativeArrayType` is a PostgreSQL-specific type (from `@mikro-orm/postgresql`) that wraps any other type and produces a native PostgreSQL typed array column. Unlike the core `ArrayType` which always creates a `text[]` column and marshalls values to a delimited string, `NativeArrayType` derives the element column type from the inner type and appends `[]`, so you get columns like `integer[]`, `decimal(10,2)[]`, `boolean[]`, etc.
+
+Per-element conversion is delegated to the inner type, which means features such as `DecimalType`'s precision-aware comparison and custom `convertToJSValue` continue to work on each array element.
+
+The `nullable` option applies to the array column itself (the column may be `NULL`), while all other property options (e.g. `precision`, `scale`, `length`) are forwarded to the inner type when determining the element column type.
+
+```ts
+import { NativeArrayType } from '@mikro-orm/postgresql';
+import { types, DecimalType } from '@mikro-orm/core';
+
+// integer[] column
+@Property({ type: new NativeArrayType(types.integer) })
+ids!: number[];
+
+// decimal(10,2)[] column – precision and scale are forwarded to the inner DecimalType
+@Property({ type: new NativeArrayType(new DecimalType('number')), precision: 10, scale: 2 })
+prices!: number[];
+
+// nullable text[] column
+@Property({ type: new NativeArrayType(types.string), nullable: true })
+tags?: string[] | null;
+```
+
+With `defineEntity` you can use `p.type()` to attach the custom type:
+
+```ts
+import { defineEntity, p, types, DecimalType } from '@mikro-orm/core';
+import { NativeArrayType } from '@mikro-orm/postgresql';
+
+const Product = defineEntity({
+  name: 'Product',
+  properties: {
+    id: p.integer().primary(),
+    tagIds: p.type(new NativeArrayType(types.integer)),
+    prices: p.type(new NativeArrayType(new DecimalType('number'))).precision(10).scale(2),
+  },
+});
+```
+
 ### BigIntType
 
 Since v6, `bigint`s are represented by the native `BigInt` type, and as such, they don't require explicit type in the decorator options:

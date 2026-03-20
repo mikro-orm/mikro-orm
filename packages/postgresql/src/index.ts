@@ -1,4 +1,5 @@
 export * from '@mikro-orm/sql';
+export * from './NativeArrayType.js';
 export * from './PostgreSqlConnection.js';
 export * from './PostgreSqlDriver.js';
 export * from './PostgreSqlPlatform.js';
