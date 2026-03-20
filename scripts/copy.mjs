@@ -159,8 +159,10 @@ if (options['pin-versions']) {
     const imports = {};
 
     for (const section of ['dependencies', 'peerDependencies']) {
-      for (const [dep, version] of Object.entries(pkgJson[section] ?? {})) {
+      for (const [dep, ver] of Object.entries(pkgJson[section] ?? {})) {
         const prefix = dep.startsWith('@mikro-orm/') ? 'jsr' : 'npm';
+        // JSR doesn't support OR version ranges — pick the last alternative
+        const version = ver.includes('||') ? ver.split('||').pop().trim() : ver;
         imports[dep] ??= `${prefix}:${dep}@${version}`;
       }
     }
