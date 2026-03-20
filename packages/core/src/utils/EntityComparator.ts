@@ -761,7 +761,13 @@ export class EntityComparator {
     object?: boolean,
   ): string {
     const unwrap = prop.ref ? '?.unwrap()' : '';
-    let ret = `  if (${this.getPropertyCondition(path)}) {\n`;
+    let ret = `  if (${this.getPropertyCondition(path)}`;
+
+    if (prop.lazy && prop.ref) {
+      ret += ` && entity${path.map(k => this.wrap(k)).join('')}?.isInitialized()`;
+    }
+
+    ret += `) {\n`;
 
     if (['number', 'string', 'boolean'].includes(prop.type.toLowerCase())) {
       return ret + `    ret${dataKey} = entity${entityKey}${unwrap};\n  }\n`;
