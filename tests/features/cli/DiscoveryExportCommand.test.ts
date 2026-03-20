@@ -1,5 +1,5 @@
-import { existsSync, unlinkSync, readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { existsSync, unlinkSync, readFileSync, rmSync } from 'node:fs';
+import { resolve, join } from 'node:path';
 import { type MockInstance } from 'vitest';
 import { EntitySchema, MetadataStorage, Utils } from '@mikro-orm/core';
 import { SqliteDriver } from '@mikro-orm/sqlite';
@@ -856,5 +856,79 @@ describe('DiscoveryExportCommand', () => {
 
     const output = dumpSpy.mock.calls[0][0] as string;
     expect(output).toContain('@mikro-orm/sql');
+  });
+
+  test('creates parent directories when writing output file', async () => {
+    const outDir = resolve(process.cwd(), '.mikro-orm-test-nested');
+    const outPath = join(outDir, 'sub', 'entities.generated.ts');
+    pathExistsMock.mockImplementation((path: string) => path.includes('mikro-orm.config'));
+    dynamicImportMock.mockImplementation((path: string) => {
+      if (path.includes('mikro-orm.config')) {
+        return config;
+      }
+
+      return { Author };
+    });
+    globMock.mockReturnValue(['Author.ts']);
+    isKnownEntityMock.mockImplementation((name: string) => name === 'Author');
+
+    await command.handler({
+      _: ['discovery:export'],
+      $0: 'mikro-orm',
+      contextName: 'default',
+      config: undefined,
+      path: ['./src/entities'],
+      dump: false,
+      out: outPath,
+    } as any);
+
+    expect(existsSync(outPath)).toBe(true);
+    rmSync(outDir, { recursive: true });
+    expect(dumpSpy).toHaveBeenCalledWith(expect.stringContaining('Entity exports generated'));
+  });
+
+  test('skips Kysely Database type for MongoDB driver', async () => {
+    pathExistsMock.mockImplementation((path: string) => path.includes('mikro-orm.config'));
+    dynamicImportMock.mockImplementation((path: string) => {
+      if (path.includes('mikro-orm.config')) {
+        return config;
+      }
+
+      return { Author };
+    });
+    globMock.mockReturnValue(['Author.ts']);
+    isKnownEntityMock.mockImplementation((name: string) => name === 'Author');
+
+    vi.spyOn(CLIHelper, 'getConfiguration').mockResolvedValueOnce({
+      get: (key: string, defaultValue?: any) => {
+        if (key === 'entities') {
+          return ['./src/entities'];
+        }
+        if (key === 'entitiesTs') {
+          return [];
+        }
+        if (key === 'baseDir') {
+          return undefined;
+        }
+        return defaultValue;
+      },
+      getDriver: () => ({ constructor: { name: 'MongoDriver' } }),
+    } as any);
+
+    await command.handler({
+      _: ['discovery:export'],
+      $0: 'mikro-orm',
+      contextName: 'default',
+      config: undefined,
+      path: ['./src/entities'],
+      dump: true,
+      out: undefined,
+    } as any);
+
+    const output = dumpSpy.mock.calls[0][0] as string;
+    expect(output).not.toContain('Database');
+    expect(output).not.toContain('InferKyselyDB');
+    expect(output).not.toContain('EntitySchemaWithMeta');
+    expect(output).toContain('export const entities');
   });
 });

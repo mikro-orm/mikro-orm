@@ -10,11 +10,8 @@ export class BigIntType<Mode extends 'bigint' | 'number' | 'string' = 'bigint'> 
   JSTypeByMode<Mode> | null | undefined,
   string | null | undefined
 > {
-  mode?: Mode;
-
-  constructor(mode?: Mode) {
+  constructor(public mode?: Mode) {
     super();
-    this.mode = mode;
   }
 
   override convertToDatabaseValue(value: JSTypeByMode<Mode> | null | undefined): string | null | undefined {

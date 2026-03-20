@@ -11,11 +11,8 @@ type FullTextWeight = 'A' | 'B' | 'C' | 'D';
 export type WeightedFullTextValue = { [K in FullTextWeight]?: string | null };
 
 export class FullTextType extends Type<string | WeightedFullTextValue, string | null | RawQueryFragment> {
-  regconfig: string;
-
-  constructor(regconfig = 'simple') {
+  constructor(public regconfig = 'simple') {
     super();
-    this.regconfig = regconfig;
   }
 
   override compareAsType(): string {
