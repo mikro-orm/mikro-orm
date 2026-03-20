@@ -107,6 +107,11 @@ export abstract class Platform {
     return false;
   }
 
+  /** Returns the check constraint expression for an enum array column, or null if unsupported. */
+  getEnumArrayCheckConstraintExpression(column: string, items: string[]): string | null {
+    return null;
+  }
+
   /** Whether this platform supports materialized views. */
   supportsMaterializedViews(): boolean {
     return false;

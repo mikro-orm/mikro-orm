@@ -1921,17 +1921,24 @@ export class MetadataDiscovery {
 
     if (this.#platform.usesEnumCheckConstraints() && !meta.embeddable) {
       for (const prop of meta.props) {
-        if (
-          prop.enum &&
-          prop.persist !== false &&
-          !prop.nativeEnumName &&
-          prop.items?.every(item => typeof item === 'string')
-        ) {
-          this.initFieldName(prop);
+        if (prop.persist === false || prop.nativeEnumName || !prop.items?.every(item => typeof item === 'string')) {
+          continue;
+        }
+
+        this.initFieldName(prop);
+        let expression: string | null = null;
+
+        if (prop.enum) {
+          expression = `${this.#platform.quoteIdentifier(prop.fieldNames[0])} in ('${prop.items.join("', '")}')`;
+        } else if (prop.array) {
+          expression = this.#platform.getEnumArrayCheckConstraintExpression(prop.fieldNames[0], prop.items as string[]);
+        }
+
+        if (expression) {
           meta.checks.push({
             name: this.#namingStrategy.indexName(meta.tableName, prop.fieldNames, 'check'),
             property: prop.name,
-            expression: `${this.#platform.quoteIdentifier(prop.fieldNames[0])} in ('${prop.items.join("', '")}')`,
+            expression,
           });
         }
       }
