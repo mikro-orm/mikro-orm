@@ -133,6 +133,7 @@ Also, the `checkDuplicateEntities` discovery option is removed, since it is no l
 
 TypeScript support was previously provided by `ts-node`. In v7, the CLI supports various TS loaders:
 
+- `oxc` via `@oxc-node/core`, supports metadata reflection
 - `swc` via `@swc-node/register`, supports metadata reflection
 - `tsx`
 - `jiti`

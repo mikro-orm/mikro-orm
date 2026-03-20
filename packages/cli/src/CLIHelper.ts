@@ -371,13 +371,13 @@ export class CLIHelper {
   }
 
   /**
-   * Tries to register TS support in the following order: swc, tsx, jiti, tsimp
+   * Tries to register TS support in the following order: oxc, swc, tsx, jiti, tsimp
    * Use `MIKRO_ORM_CLI_TS_LOADER` env var to set the loader explicitly.
    * This method is used only in CLI context.
    */
   static async registerTypeScriptSupport(
     configPath = 'tsconfig.json',
-    tsLoader?: 'swc' | 'tsx' | 'jiti' | 'tsimp' | 'auto',
+    tsLoader?: 'oxc' | 'swc' | 'tsx' | 'jiti' | 'tsimp' | 'auto',
   ): Promise<boolean> {
     /* v8 ignore if */
     if (process.versions.bun) {
@@ -393,6 +393,7 @@ export class CLIHelper {
       return ((globalThis as any).dynamicImportProvider = (id: string) => import(id).then(mod => mod?.default ?? mod));
     };
     const loaders = {
+      oxc: { esm: '@oxc-node/core/register', cjs: '@oxc-node/core/register' },
       swc: { esm: '@swc-node/register/esm-register', cjs: '@swc-node/register' },
       tsx: { esm: 'tsx/esm/api', cjs: 'tsx/cjs/api', cb: (tsx: any) => tsx.register({ tsconfig: configPath }) },
       jiti: { cjs: 'jiti/register', cb: setEsmImportProvider },
@@ -418,7 +419,7 @@ export class CLIHelper {
 
     // eslint-disable-next-line no-console
     console.warn(
-      'Neither `swc`, `tsx`, `jiti` nor `tsimp` found in the project dependencies, support for working with TypeScript files might not work. To use `swc`, you need to install both `@swc-node/register` and `@swc/core`.',
+      'Neither `oxc`, `swc`, `tsx`, `jiti` nor `tsimp` found in the project dependencies, support for working with TypeScript files might not work. To use `oxc`, install `@oxc-node/core`. To use `swc`, install both `@swc-node/register` and `@swc/core`.',
     );
 
     return false;
@@ -440,7 +441,7 @@ export class CLIHelper {
 export interface Settings {
   verbose?: boolean;
   preferTs?: boolean;
-  tsLoader?: 'swc' | 'tsx' | 'jiti' | 'tsimp' | 'auto';
+  tsLoader?: 'oxc' | 'swc' | 'tsx' | 'jiti' | 'tsimp' | 'auto';
   tsConfigPath?: string;
   configPaths?: string[];
 }

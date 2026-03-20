@@ -311,7 +311,7 @@ Another way to control these CLI-related settings is with the environment variab
 
 - `MIKRO_ORM_CLI_CONFIG`: the path to ORM config file
 - `MIKRO_ORM_CLI_PREFER_TS`: enforce use of the TS paths (e.g. `entitiesTs` or `pathTs`)
-- `MIKRO_ORM_CLI_TS_LOADER`: set preferred TS loader (one of `swc`, `tsx`, `jiti`, `tsimp`)
+- `MIKRO_ORM_CLI_TS_LOADER`: set preferred TS loader (one of `oxc`, `swc`, `tsx`, `jiti`, `tsimp`)
 - `MIKRO_ORM_CLI_TS_CONFIG_PATH`: path to the tsconfig.json (for TS support)
 - `MIKRO_ORM_CLI_ALWAYS_ALLOW_TS`: enable `.ts` files to use without detected TS support
 - `MIKRO_ORM_CLI_VERBOSE`: enable verbose logging (e.g. print queries used in seeder or schema diffing)
