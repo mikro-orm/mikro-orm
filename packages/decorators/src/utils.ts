@@ -160,10 +160,9 @@ export function lookupPathFromDecorator(name: string, stack?: string[]): string 
   }
 
   // Skip decorator runtime helpers (tslib, @oxc-project/runtime, etc.)
-  while (
-    line < stack.length &&
-    /node_modules\/(tslib\/|@oxc-project\/runtime\/)/.test(stack[line].replace(/\\/g, '/'))
-  ) {
+  // The @oxc-project/runtime check covers both node_modules installs and Rolldown-bundled
+  // virtual modules (e.g. \0@oxc-project+runtime@0.120.0/helpers/decorate.js).
+  while (line < stack.length && /node_modules\/tslib\/|@oxc-project[/+]runtime/.test(stack[line].replace(/\\/g, '/'))) {
     line++;
   }
 
