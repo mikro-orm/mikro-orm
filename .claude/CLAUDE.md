@@ -2,6 +2,10 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## General Rules
+
+Keep changes minimal and scoped. Do not fix unrelated issues, touch unrelated files, or 'clean up' code outside the scope of the current task unless explicitly asked.
+
 ## Overview
 
 MikroORM is a TypeScript ORM for Node.js based on Data Mapper, Unit of Work, and Identity Map patterns. Supports
@@ -104,6 +108,28 @@ Heavy use of TypeScript generics. Key types in `packages/core/src/typings.ts`:
 - `EntityData<T>` - Data for creating/updating entities
 - `InferEntity<Schema>` - Extracts entity type from EntitySchema
 - `Loaded<T, P>` - Entity with specific relations populated
+
+## Git Conventions
+
+- Always use `chore:` prefix for non-functional commits (config changes, CI fixes, changelog edits). Only use `fix:` for actual bug fixes in source code. Only use `feat:` for new features.
+- Use `--no-verify` flag with git push when husky/lint-staged hooks fail due to PATH issues in this environment.
+
+## Pre-Commit Checks
+
+Always run `yarn tsc-check-tests` before committing any TypeScript changes. Never assume type safety — verify it.
+
+## Code Editing Rules
+
+When reviewing or editing code, do NOT remove code (assertions, type casts, etc.) unless you have verified it's safe by running the build/type checker. Never claim code is 'redundant' without evidence.
+
+## Testing
+
+- When fixing bugs, write the test FIRST that reproduces the issue, then implement the fix. Do not implement fixes before having a failing test.
+- In test files, never leave debug artifacts (console.log, debug mode flags, commented-out code). Clean up before committing.
+
+## PRs
+
+When opening PRs, write concise descriptions focused on what changed and why. Avoid boilerplate templates or overly verbose descriptions. Skip the "Test plan" section completely, don't state the obvious (e.g., tests pass or other stuff visible from the CI checks).
 
 ## Code Style
 
