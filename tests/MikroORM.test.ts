@@ -164,7 +164,23 @@ describe('MikroORM', () => {
       'AbstractClass',
       'ClassA',
       'ClassB',
+      'User',
     ]);
+  });
+
+  test('should discover defineEntity class via glob when only class is exported', async () => {
+    const orm = await MikroORM.init({
+      driver: SqliteDriver,
+      dbName: ':memory:',
+      baseDir: BASE_DIR,
+      entities: ['complex-entities/define-entity-class-only.entity.js'],
+      entitiesTs: ['complex-entities/define-entity-class-only.entity.ts'],
+    });
+
+    expect(orm).toBeInstanceOf(MikroORM);
+    expect([...orm.getMetadata().getAll().keys()].map(k => k.name).sort()).toEqual(['User']);
+
+    await orm.close();
   });
 
   test('should NOT throw when multiple entities with same file name discovered', async () => {

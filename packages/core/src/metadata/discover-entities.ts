@@ -27,10 +27,18 @@ async function getEntityClassOrSchema(
   }
 
   for (const item of targets) {
-    const validTarget = EntitySchema.is(item) || (item instanceof Function && MetadataStorage.isKnownEntity(item.name));
+    if (EntitySchema.is(item)) {
+      if (!allTargets.has(item)) {
+        allTargets.set(item, path);
+      }
+    } else if (item instanceof Function) {
+      const schema = EntitySchema.REGISTRY.get(item);
 
-    if (validTarget && !allTargets.has(item)) {
-      allTargets.set(item, path);
+      if (schema && !allTargets.has(schema)) {
+        allTargets.set(schema, path);
+      } else if (!schema && MetadataStorage.isKnownEntity(item.name) && !allTargets.has(item)) {
+        allTargets.set(item, path);
+      }
     }
   }
 }
