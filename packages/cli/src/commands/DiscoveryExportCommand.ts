@@ -1,4 +1,4 @@
-import { writeFileSync } from 'node:fs';
+import { mkdirSync, writeFileSync } from 'node:fs';
 import { basename, dirname, join, relative, resolve } from 'node:path';
 import type { ArgumentsCamelCase, Argv } from 'yargs';
 import { colors, type Configuration, EntitySchema, MetadataStorage } from '@mikro-orm/core';
@@ -22,6 +22,7 @@ const driverPackageMap: Record<string, string> = {
   LibSqlDriver: '@mikro-orm/libsql',
   MsSqlDriver: '@mikro-orm/mssql',
   OracleDriver: '@mikro-orm/oracledb',
+  MongoDriver: '@mikro-orm/mongodb',
 };
 
 export class DiscoveryExportCommand implements BaseCommand<DiscoveryExportArgs> {
@@ -75,6 +76,7 @@ export class DiscoveryExportCommand implements BaseCommand<DiscoveryExportArgs> 
 
     const outPath = await this.resolveOutputPath(args);
     const output = this.generateFile(discovered, outPath, esm, driverPackage);
+    mkdirSync(dirname(outPath), { recursive: true });
     writeFileSync(outPath, output);
     CLIHelper.dump(colors.green(`Entity exports generated to ${outPath} (${discovered.length} entities)`));
     CLIHelper.dump(`\nExample usage in your ORM config:\n`);
@@ -249,8 +251,12 @@ export class DiscoveryExportCommand implements BaseCommand<DiscoveryExportArgs> 
       }
     }
 
-    // Type imports
-    lines.push(`import type { EntitySchemaWithMeta, InferKyselyDB, InferClassEntityDB } from '${driverPackage}';`);
+    const isMongo = driverPackage === '@mikro-orm/mongodb';
+
+    // Type imports (Kysely types are not available for MongoDB)
+    if (!isMongo) {
+      lines.push(`import type { EntitySchemaWithMeta, InferKyselyDB, InferClassEntityDB } from '${driverPackage}';`);
+    }
 
     lines.push('');
 
@@ -263,11 +269,13 @@ export class DiscoveryExportCommand implements BaseCommand<DiscoveryExportArgs> 
 
     lines.push('] as const;');
 
-    lines.push('');
+    // Database type (Kysely is SQL-only, skip for MongoDB)
+    if (!isMongo) {
+      lines.push('');
+      lines.push('export type Database = InferKyselyDB<Extract<(typeof entities)[number], EntitySchemaWithMeta>>');
+      lines.push('  & InferClassEntityDB<(typeof entities)[number]>;');
+    }
 
-    // Database type
-    lines.push('export type Database = InferKyselyDB<Extract<(typeof entities)[number], EntitySchemaWithMeta>>');
-    lines.push('  & InferClassEntityDB<(typeof entities)[number]>;');
     lines.push('');
 
     return lines.join('\n');
