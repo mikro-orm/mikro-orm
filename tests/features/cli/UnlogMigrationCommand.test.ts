@@ -40,6 +40,6 @@ describe('UnlogMigrationCommand', () => {
     expect(ensureTable).toHaveBeenCalled();
     expect(unlogMigration).toHaveBeenCalledWith({ name: 'Migration20240101' });
     expect(dumpMock).toHaveBeenCalledWith(expect.stringContaining('unlogged'));
-    expect(closeSpy).toHaveBeenCalledTimes(1);
+    expect(closeSpy).toHaveBeenCalledWith(true);
   });
 });

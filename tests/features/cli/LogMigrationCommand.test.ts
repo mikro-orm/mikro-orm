@@ -40,6 +40,6 @@ describe('LogMigrationCommand', () => {
     expect(ensureTable).toHaveBeenCalled();
     expect(logMigration).toHaveBeenCalledWith({ name: 'Migration20240101' });
     expect(dumpMock).toHaveBeenCalledWith(expect.stringContaining('logged'));
-    expect(closeSpy).toHaveBeenCalledTimes(1);
+    expect(closeSpy).toHaveBeenCalledWith(true);
   });
 });

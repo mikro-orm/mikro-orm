@@ -264,9 +264,7 @@ export class MigrationCommandFactory {
     migrator: IMigrator,
     method: 'log' | 'unlog',
   ) {
-    const storage = migrator.getStorage();
-    await storage.ensureTable?.();
-    await storage[`${method}Migration`]({ name: args.name! });
+    await migrator[`${method}Migration`](args.name!);
     const action = method === 'log' ? 'logged' : 'unlogged';
     CLIHelper.dump(colors.green(`Successfully ${action} migration '${args.name}'`));
   }
