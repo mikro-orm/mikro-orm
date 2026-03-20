@@ -112,6 +112,7 @@ describe('CLIHelper', () => {
   });
 
   test.each([
+    ['oxc', '@oxc-node/core/register'],
     ['swc', '@swc-node/register/esm-register'],
     ['tsx', 'tsx/esm/api'],
     ['jiti', 'jiti/register'],
@@ -153,7 +154,7 @@ describe('CLIHelper', () => {
     });
     const cli = (await configure()) as any;
     expect(cli.$0).toBe('mikro-orm');
-    expect(tryImportMock).toHaveBeenCalledTimes(1);
+    expect(tryImportMock).toHaveBeenCalledTimes(2);
     expect(tryImportMock).toHaveBeenCalledWith({ module: '@swc-node/register/esm-register' });
     pkg['mikro-orm'].preferTs = false;
   });
@@ -165,13 +166,14 @@ describe('CLIHelper', () => {
     const warnSpy = vi.spyOn(console, 'warn').mockImplementation(i => i);
     const cli = (await configure()) as any;
     expect(cli.$0).toBe('mikro-orm');
-    expect(tryImportMock).toHaveBeenCalledTimes(4);
+    expect(tryImportMock).toHaveBeenCalledTimes(5);
+    expect(tryImportMock).toHaveBeenCalledWith({ module: '@oxc-node/core/register' });
     expect(tryImportMock).toHaveBeenCalledWith({ module: '@swc-node/register/esm-register' });
     expect(tryImportMock).toHaveBeenCalledWith({ module: 'tsx/esm/api' });
     expect(tryImportMock).toHaveBeenCalledWith({ module: 'jiti/register' });
     expect(tryImportMock).toHaveBeenCalledWith({ module: 'tsimp/import' });
     const warning =
-      'Neither `swc`, `tsx`, `jiti` nor `tsimp` found in the project dependencies, support for working with TypeScript files might not work. To use `swc`, you need to install both `@swc-node/register` and `@swc/core`.';
+      'Neither `oxc`, `swc`, `tsx`, `jiti` nor `tsimp` found in the project dependencies, support for working with TypeScript files might not work. To use `oxc`, install `@oxc-node/core`. To use `swc`, install both `@swc-node/register` and `@swc/core`.';
     expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining(warning));
     pkg['mikro-orm'].preferTs = false;
   });
@@ -200,7 +202,7 @@ describe('CLIHelper', () => {
     });
     const cli = (await configure()) as any;
     expect(cli.$0).toBe('mikro-orm');
-    expect(tryImportMock).toHaveBeenCalledTimes(1);
+    expect(tryImportMock).toHaveBeenCalledTimes(2);
     expect(tryImportMock).toHaveBeenCalledWith({ module: '@swc-node/register/esm-register' });
 
     delete pkg['mikro-orm'].preferTs;
