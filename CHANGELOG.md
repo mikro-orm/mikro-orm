@@ -3,6 +3,32 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.0.4](https://github.com/mikro-orm/mikro-orm/compare/v7.0.3...v7.0.4) (2026-03-20)
+
+
+### Bug Fixes
+
+* **core:** accept readonly arrays in `EnumOptions.items` ([c287a1f](https://github.com/mikro-orm/mikro-orm/commit/c287a1fe0754bb30abc0cfbcdf5cdb054c290673)), closes [#7352](https://github.com/mikro-orm/mikro-orm/issues/7352)
+* **core:** discover `defineEntity` classes via glob when only class is exported ([#7355](https://github.com/mikro-orm/mikro-orm/issues/7355)) ([fccc42e](https://github.com/mikro-orm/mikro-orm/commit/fccc42e6cd323e818ab40fbd507928b8000137fd))
+* **core:** exclude unloaded lazy ref properties from snapshot generator ([#7353](https://github.com/mikro-orm/mikro-orm/issues/7353)) ([48ea304](https://github.com/mikro-orm/mikro-orm/commit/48ea30409c8734805c9196cd3b04d3d5294bd1c5))
+* **core:** prevent double-wrapping of ScalarReference in hydrator ([ac1f66e](https://github.com/mikro-orm/mikro-orm/commit/ac1f66e732d16afadb64325cabe1ca8cefd82ec2))
+* **core:** strip `persist: false` properties from upsert data ([#7345](https://github.com/mikro-orm/mikro-orm/issues/7345)) ([4b5a833](https://github.com/mikro-orm/mikro-orm/commit/4b5a833011e297154ca48a03298e680278679a72)), closes [#7344](https://github.com/mikro-orm/mikro-orm/issues/7344)
+* **decorators:** handle Rolldown-bundled @oxc-project/runtime in path lookup ([14d04ae](https://github.com/mikro-orm/mikro-orm/commit/14d04ae70df2711e45ae099d970a28ad700dbd62))
+* **migrations:** stop making up() and down() async unnecessarily ([#7338](https://github.com/mikro-orm/mikro-orm/issues/7338)) ([3612f79](https://github.com/mikro-orm/mikro-orm/commit/3612f79c2d150ee158289263a92d8f2d37314e65))
+* **reflection:** detect array enums from text-based type before clearing enum flag ([02d2b52](https://github.com/mikro-orm/mikro-orm/commit/02d2b52e7d7cc87691686fe8f99bcaf5da629442)), closes [#7352](https://github.com/mikro-orm/mikro-orm/issues/7352)
+* **sql:** accept custom types in QueryBuilder operators for joined entities ([#7342](https://github.com/mikro-orm/mikro-orm/issues/7342)) ([0aaafbf](https://github.com/mikro-orm/mikro-orm/commit/0aaafbfad14678e5bb48bbd2f1a1b13497d8d013)), closes [#7341](https://github.com/mikro-orm/mikro-orm/issues/7341)
+* **sql:** prune redundant joins in pagination outer query ([#7339](https://github.com/mikro-orm/mikro-orm/issues/7339)) ([48acce9](https://github.com/mikro-orm/mikro-orm/commit/48acce98eabfd8a3ca348f740e25e8d573ee2225)), closes [#6681](https://github.com/mikro-orm/mikro-orm/issues/6681)
+
+
+### Features
+
+* **cli:** add oxc as a TS loader option via `@oxc-node/core` ([#7354](https://github.com/mikro-orm/mikro-orm/issues/7354)) ([3d62317](https://github.com/mikro-orm/mikro-orm/commit/3d62317c0a20dae73ea149a6abe3827190171b72))
+* **postgresql:** generate check constraints for enum array columns ([#7356](https://github.com/mikro-orm/mikro-orm/issues/7356)) ([ec10597](https://github.com/mikro-orm/mikro-orm/commit/ec10597b74ea4626fffd614b50d9c6b7f4a3f184)), closes [#7352](https://github.com/mikro-orm/mikro-orm/issues/7352)
+
+
+
+
+
 ## [7.0.3](https://github.com/mikro-orm/mikro-orm/compare/v7.0.2...v7.0.3) (2026-03-18)
 
 
