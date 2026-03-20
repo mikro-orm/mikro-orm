@@ -177,10 +177,6 @@ export class TsMorphMetadataProvider extends MetadataProvider {
       }
     }
 
-    if (prop.array && prop.enum) {
-      prop.enum = false;
-    }
-
     let type = typeName;
     const union = type.split(' | ');
     const optional =
@@ -188,6 +184,10 @@ export class TsMorphMetadataProvider extends MetadataProvider {
     type = union.filter(t => !['null', 'undefined'].includes(t)).join(' | ');
 
     prop.array ??= type.endsWith('[]') || !!/Array<(.*)>/.exec(type);
+
+    if (prop.array && prop.enum) {
+      prop.enum = false;
+    }
     type = type
       .replace(/Array<(.*)>/, '$1') // unwrap array
       .replace(/\[]$/, '') // remove array suffix
