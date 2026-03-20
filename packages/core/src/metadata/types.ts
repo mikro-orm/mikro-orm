@@ -649,7 +649,7 @@ export interface EmbeddableOptions<Owner> {
 }
 
 export interface EnumOptions<T> extends PropertyOptions<T> {
-  items?: (number | string)[] | (() => Dictionary);
+  items?: readonly (number | string)[] | (() => Dictionary);
   array?: boolean;
   /** for postgres, by default it uses text column with check constraint */
   nativeEnumName?: string;

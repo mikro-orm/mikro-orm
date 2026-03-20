@@ -4,7 +4,7 @@ import { ValidationError } from '../errors.js';
 import type { TransformContext } from './Type.js';
 import type { EntityProperty } from '../typings.js';
 
-function mapHydrator<T>(items: T[] | undefined, hydrate: (i: string) => T): (i: string) => T {
+function mapHydrator<T>(items: readonly T[] | undefined, hydrate: (i: string) => T): (i: string) => T {
   if (items && items.length > 0 && typeof items[0] === 'number') {
     return (i: string) => +i as unknown as T;
   }
@@ -16,7 +16,7 @@ function mapHydrator<T>(items: T[] | undefined, hydrate: (i: string) => T): (i: 
 export class EnumArrayType<T extends string | number = string> extends ArrayType<T> {
   constructor(
     private readonly owner: string,
-    private readonly items?: T[],
+    private readonly items?: readonly T[],
     hydrate: (i: string) => T = i => i as T,
   ) {
     super(mapHydrator(items, hydrate));
