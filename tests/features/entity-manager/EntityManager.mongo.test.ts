@@ -553,6 +553,48 @@ describe('EntityManagerMongo', () => {
     ).rejects.toThrow('Collation option for MongoDB must be a CollationOptions object');
   });
 
+  test('em.countBy (single field)', async () => {
+    const god = new Author('God', 'hello@heaven.god');
+    const bible = new Book('Bible', god);
+    const bible2 = new Book('Bible pt. 2', god);
+    const author2 = new Author('Author2', 'a2@test.com');
+    const book3 = new Book('Book3', author2);
+    await orm.em.persist([god, author2, bible, bible2, book3]).flush();
+    orm.em.clear();
+
+    const counts = await orm.em.countBy(Book, 'author');
+    expect(counts[String(god._id)]).toBe(2);
+    expect(counts[String(author2._id)]).toBe(1);
+  });
+
+  test('em.countBy with where filter', async () => {
+    const god = new Author('God', 'hello@heaven.god');
+    const bible = new Book('Bible', god);
+    const bible2 = new Book('Bible pt. 2', god);
+    await orm.em.persist([god, bible, bible2]).flush();
+    orm.em.clear();
+
+    const counts = await orm.em.countBy(Book, 'author', { where: { title: 'Bible' } as any });
+    expect(counts[String(god._id)]).toBe(1);
+  });
+
+  test('em.countBy with empty result', async () => {
+    const counts = await orm.em.countBy(Book, 'author', { where: { title: 'nonexistent' } as any });
+    expect(counts).toEqual({});
+  });
+
+  test('repo.countBy', async () => {
+    const god = new Author('God', 'hello@heaven.god');
+    const bible = new Book('Bible', god);
+    const bible2 = new Book('Bible pt. 2', god);
+    await orm.em.persist([god, bible, bible2]).flush();
+    orm.em.clear();
+
+    const repo = orm.em.getRepository(Book);
+    const counts = await repo.countBy('author');
+    expect(counts[String(god._id)]).toBe(2);
+  });
+
   test('should throw when trying to merge entity without id', async () => {
     const author = new Author('test', 'test');
     expect(() => orm.em.merge(author)).toThrow(`You cannot merge entity 'Author' without identifier!`);

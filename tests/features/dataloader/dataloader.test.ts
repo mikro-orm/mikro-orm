@@ -833,4 +833,42 @@ describe('Dataloader', () => {
 
     await orm.close(true);
   });
+
+  test('em.countBy (single field)', async () => {
+    const em = orm.em.fork();
+    const counts = await em.countBy(Book, 'author');
+    // author 1 has 2 books, author 2 has 1, author 3 has 3
+    expect(counts).toEqual({ '1': 2, '2': 1, '3': 3 });
+  });
+
+  test('em.countBy (composite groupBy with ~~~ separator)', async () => {
+    const em = orm.em.fork();
+    const counts = await em.countBy(Book, ['author', 'publisher']);
+    // book 1: author=1, publisher=1; book 2: author=1, publisher=2;
+    // book 3: author=2, publisher=2; books 4-6: author=3, publisher=2
+    expect(counts['1~~~1']).toBe(1);
+    expect(counts['1~~~2']).toBe(1);
+    expect(counts['2~~~2']).toBe(1);
+    expect(counts['3~~~2']).toBe(3);
+  });
+
+  test('em.countBy with where filter', async () => {
+    const em = orm.em.fork();
+    const counts = await em.countBy(Book, 'author', { where: { title: ['One', 'Six'] } as any });
+    // Only "One" (author 1) and "Six" (author 3) match
+    expect(counts).toEqual({ '1': 1, '3': 1 });
+  });
+
+  test('em.countBy with empty result', async () => {
+    const em = orm.em.fork();
+    const counts = await em.countBy(Book, 'author', { where: { title: 'nonexistent' } as any });
+    expect(counts).toEqual({});
+  });
+
+  test('repo.countBy', async () => {
+    const em = orm.em.fork();
+    const repo = em.getRepository(Book);
+    const counts = await repo.countBy('author');
+    expect(counts).toEqual({ '1': 2, '2': 1, '3': 3 });
+  });
 });

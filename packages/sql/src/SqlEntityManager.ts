@@ -1,15 +1,20 @@
 import {
   type EntitySchemaWithMeta,
   EntityManager,
+  raw,
+  Utils,
   type AnyEntity,
   type ConnectionType,
+  type CountByOptions,
+  type Dictionary,
   type EntityData,
+  type EntityKey,
   type EntityName,
   type EntityRepository,
-  type GetRepository,
-  type QueryResult,
   type FilterQuery,
+  type GetRepository,
   type LoggingOptions,
+  type QueryResult,
   type RawQueryFragment,
 } from '@mikro-orm/core';
 import type { AbstractSqlDriver } from './AbstractSqlDriver.js';
@@ -100,6 +105,48 @@ export class SqlEntityManager<Driver extends AbstractSqlDriver = AbstractSqlDriv
       this.getContext(false).getTransactionContext(),
       loggerContext,
     );
+  }
+
+  /**
+   * @inheritDoc
+   */
+  override async countBy<Entity extends object>(
+    entityName: EntityName<Entity>,
+    groupBy: EntityKey<Entity> | readonly EntityKey<Entity>[],
+    options: CountByOptions<Entity> = {},
+  ): Promise<Dictionary<number>> {
+    const em = this.getContext(false) as SqlEntityManager;
+    const meta = em.getMetadata().find(entityName)!;
+    const fields = Utils.asArray(groupBy);
+    const { where, ...countOptions } = options;
+    const qb = em.createQueryBuilder(meta.class);
+
+    (qb as any)
+      .select([...fields, raw('count(*) as "cnt"')])
+      .where(where ?? {})
+      .groupBy(fields as string[]);
+
+    if (countOptions.having) {
+      (qb as any).having(countOptions.having);
+    }
+
+    if (countOptions.schema) {
+      qb.withSchema(countOptions.schema);
+    }
+
+    const rows: any[] = await qb.execute('all', { mapResults: false });
+    const results: Dictionary<number> = {};
+
+    for (const row of rows) {
+      const keyParts = fields.map(f => {
+        const col = meta.properties[f as EntityKey<Entity>]?.fieldNames?.[0] ?? f;
+        return String(row[col]);
+      });
+      const key = keyParts.join(Utils.PK_SEPARATOR);
+      results[key] = +row.cnt;
+    }
+
+    return results;
   }
 
   override getRepository<T extends object, U extends EntityRepository<T> = SqlEntityRepository<T>>(
