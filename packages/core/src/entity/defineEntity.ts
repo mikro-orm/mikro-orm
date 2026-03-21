@@ -38,6 +38,7 @@ import type {
   DefineConfig,
   Config,
   MaybePromise,
+  IndexHints,
 } from '../typings.js';
 import type { Raw } from '../utils/RawQueryFragment.js';
 import type { ScalarReference } from './Reference.js';
@@ -148,8 +149,10 @@ export interface PropertyChain<Value, Options> {
   customOrder(...customOrder: string[] | number[] | boolean[]): PropertyChain<Value, Options>;
   extra(extra: string): PropertyChain<Value, Options>;
   ignoreSchemaChanges(...ignoreSchemaChanges: ('type' | 'extra' | 'default')[]): PropertyChain<Value, Options>;
-  index(index?: boolean | string): PropertyChain<Value, Options>;
-  unique(unique?: boolean | string): PropertyChain<Value, Options>;
+  index<N extends string>(name: N): PropertyChain<Value, Omit<Options, 'index'> & { index: N }>;
+  index(index?: boolean): PropertyChain<Value, Options>;
+  unique<N extends string>(name: N): PropertyChain<Value, Omit<Options, 'unique'> & { unique: N }>;
+  unique(unique?: boolean): PropertyChain<Value, Options>;
   comment(comment: string): PropertyChain<Value, Options>;
   accessor(accessor?: string | boolean): PropertyChain<Value, Options>;
 
@@ -602,19 +605,25 @@ export class UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys extends
 
   /**
    * Explicitly specify index on a property.
+   * When a string name is passed, it is captured as a literal type for use with the `using` option in `FindOptions`.
    */
-  index(
-    index: boolean | string = true,
-  ): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
+  index<N extends string>(
+    name: N,
+  ): Pick<UniversalPropertyOptionsBuilder<Value, Omit<Options, 'index'> & { index: N }, IncludeKeys>, IncludeKeys>;
+  index(index?: boolean): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys>;
+  index(index: boolean | string = true): any {
     return this.assignOptions({ index });
   }
 
   /**
    * Set column as unique for {@link https://mikro-orm.io/docs/schema-generator Schema Generator}. (SQL only)
+   * When a string name is passed, it is captured as a literal type for use with the `using` option in `FindOptions`.
    */
-  unique(
-    unique: boolean | string = true,
-  ): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
+  unique<N extends string>(
+    name: N,
+  ): Pick<UniversalPropertyOptionsBuilder<Value, Omit<Options, 'unique'> & { unique: N }, IncludeKeys>, IncludeKeys>;
+  unique(unique?: boolean): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys>;
+  unique(unique: boolean | string = true): any {
     return this.assignOptions({ unique });
   }
 
@@ -1296,12 +1305,22 @@ export function defineEntity<
   const TBase = never,
   const TRepository = never,
   const TForceObject extends boolean = false,
+  const TIndexDefs extends readonly { name?: string; properties?: any }[] = readonly [],
+  const TUniqueDefs extends readonly { name?: string; properties?: any }[] = readonly [],
 >(
-  meta: EntityMetadataWithProperties<TName, TTableName, TProperties, TPK, TBase, TRepository, TForceObject>,
+  meta: Omit<
+    EntityMetadataWithProperties<TName, TTableName, TProperties, TPK, TBase, TRepository, TForceObject>,
+    'indexes' | 'uniques'
+  > & {
+    indexes?: TIndexDefs &
+      EntityMetadataWithProperties<TName, TTableName, TProperties, TPK, TBase, TRepository, TForceObject>['indexes'];
+    uniques?: TUniqueDefs &
+      EntityMetadataWithProperties<TName, TTableName, TProperties, TPK, TBase, TRepository, TForceObject>['uniques'];
+  },
 ): EntitySchemaWithMeta<
   TName,
   TTableName,
-  InferEntityFromProperties<TProperties, TPK, TBase, TRepository, TForceObject>,
+  InferEntityFromProperties<TProperties, TPK, TBase, TRepository, TForceObject, TIndexDefs, TUniqueDefs>,
   TBase,
   TProperties
 >;
@@ -1480,6 +1499,8 @@ export type InferEntityFromProperties<
   Base = never,
   Repository = never,
   ForceObject extends boolean = false,
+  IndexDefs extends readonly any[] = readonly [],
+  UniqueDefs extends readonly any[] = readonly [],
 > = (IsNever<Base> extends true
   ? {}
   : Base extends { toObject(...args: any[]): any }
@@ -1504,7 +1525,9 @@ export type InferEntityFromProperties<
     ? {}
     : { [EntityRepositoryType]?: Repository extends Constructor<infer R> ? R : Repository }) &
   (IsNever<Base> extends true ? {} : Omit<Base, typeof PrimaryKeyProp>) &
-  (ForceObject extends true ? { [Config]?: DefineConfig<{ forceObject: true }> } : {});
+  (ForceObject extends true ? { [Config]?: DefineConfig<{ forceObject: true }> } : {}) & {
+    [IndexHints]?: InferIndexMap<Properties, IndexDefs, UniqueDefs>;
+  };
 
 // Combines primary keys from child properties and base entity
 type InferCombinedPrimaryKey<Properties extends Record<string, any>, PK, Base> = PK extends undefined
@@ -1622,3 +1645,38 @@ type ValueOf<T extends Dictionary> = T[keyof T] extends infer V
   : never;
 
 type IsUnion<T, U = T> = T extends U ? ([U] extends [T] ? false : true) : false;
+
+/** Extracts `{ indexName: propertyKey }` from property-level `.index('name')` calls. */
+type InferPropertyIndexes<Properties extends Record<string, any>> = {
+  [K in keyof Properties as MaybeReturnType<Properties[K]> extends { '~options': { index: infer N extends string } }
+    ? N
+    : never]: K & string;
+};
+
+/** Extracts `{ uniqueName: propertyKey }` from property-level `.unique('name')` calls. */
+type InferPropertyUniques<Properties extends Record<string, any>> = {
+  [K in keyof Properties as MaybeReturnType<Properties[K]> extends { '~options': { unique: infer N extends string } }
+    ? N
+    : never]: K & string;
+};
+
+/** Extracts `{ name: prop1 | prop2 }` from entity-level `indexes`/`uniques` array. */
+type ExtractIndexDefs<Defs extends readonly any[]> = {
+  [I in Defs[number] as I extends { name: infer N extends string } ? N : never]: I extends { properties: infer P }
+    ? P extends readonly string[]
+      ? P[number]
+      : P extends string
+        ? P
+        : never
+    : never;
+};
+
+/** Merges property-level and entity-level index maps into a single `[IndexHints]` type. */
+type InferIndexMap<
+  Properties extends Record<string, any>,
+  IndexDefs extends readonly any[],
+  UniqueDefs extends readonly any[],
+> = InferPropertyIndexes<Properties> &
+  InferPropertyUniques<Properties> &
+  ExtractIndexDefs<IndexDefs> &
+  ExtractIndexDefs<UniqueDefs>;

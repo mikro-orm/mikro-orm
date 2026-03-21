@@ -164,6 +164,15 @@ export abstract class AbstractSqlDriver<
       where = { [Utils.getPrimaryKeyHash(meta.primaryKeys)]: where } as ObjectQuery<T>;
     }
 
+    if (options.using && !options.indexHint) {
+      const names = Utils.asArray(options.using);
+      const hint = this.platform.formatIndexHint(names);
+
+      if (hint) {
+        options.indexHint = hint;
+      }
+    }
+
     this.validateSqlOptions(options);
 
     const { first, last, before, after } = options as FindByCursorOptions<T>;
@@ -854,6 +863,15 @@ export abstract class AbstractSqlDriver<
 
     if (meta && !Utils.isEmpty(populate)) {
       this.buildFields(meta, populate, joinedProps, qb, qb.alias, options as FindOptions<T>, schema);
+    }
+
+    if ('using' in options && (options as any).using && !options.indexHint) {
+      const names = Utils.asArray((options as any).using);
+      const hint = this.platform.formatIndexHint(names);
+
+      if (hint) {
+        options.indexHint = hint;
+      }
     }
 
     this.validateSqlOptions(options);

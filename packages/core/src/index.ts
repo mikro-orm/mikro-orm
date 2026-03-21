@@ -11,6 +11,7 @@ export {
   HiddenProps,
   Config,
   EntityName,
+  IndexHints,
 } from './typings.js';
 export type {
   CompiledFunctions,
@@ -52,6 +53,10 @@ export type {
   MigrationDiff,
   GenerateOptions,
   FilterObject,
+  IndexFilterQuery,
+  ExtractIndexHints,
+  IndexName,
+  IndexColumns,
   IMigrationRunner,
   IEntityGenerator,
   ISeedManager,

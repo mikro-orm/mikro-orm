@@ -72,6 +72,7 @@ type InternalKeys =
   | 'OptionalProps'
   | 'EagerProps'
   | 'HiddenProps'
+  | 'IndexHints'
   | '__selectedType'
   | '__loadedType';
 /** Filters out function, symbol, and internal keys from an entity type. When `B = true`, also excludes scalar keys. */
@@ -205,6 +206,29 @@ export const EntityName = Symbol('EntityName');
 
 /** Extracts the entity name string literal from an entity type that declares `[EntityName]`. */
 export type InferEntityName<T> = T extends { [EntityName]?: infer Name } ? (Name extends string ? Name : never) : never;
+
+/**
+ * Symbol used to declare index-to-column mappings on an entity type.
+ * For decorator entities, declare as a phantom property:
+ * ```typescript
+ * [IndexHints]?: { idx_email: 'email'; idx_name_age: 'name' | 'age' };
+ * ```
+ * For `defineEntity` entities, index hints are inferred automatically from
+ * named indexes (property-level `.index('name')` and entity-level `indexes`/`uniques`).
+ */
+export const IndexHints = Symbol('IndexHints');
+
+/** Extracts the index hints map from an entity type. Returns `never` when no hints are declared. */
+export type ExtractIndexHints<T> = T extends { [IndexHints]?: infer H } ? H : never;
+
+/** Union of declared index names on an entity. Falls back to `string` when no `[IndexHints]` are declared. */
+export type IndexName<T> = [ExtractIndexHints<T>] extends [never]
+  ? string
+  : (keyof ExtractIndexHints<T> & string) | (string & {});
+
+/** Properties covered by the named index on entity T. Falls back to all entity keys when the index is unknown. */
+export type IndexColumns<T, Name extends string> =
+  ExtractIndexHints<T> extends Record<Name, infer Cols> ? Cols & string : EntityKey<T>;
 
 /**
  * Branded type that marks a property as optional in `em.create()`.
@@ -465,6 +489,24 @@ export type FilterQuery<T> =
   | NonNullable<ExpandScalar<Primary<T>>>
   | NonNullable<EntityProps<T> & OperatorMap<T>>
   | FilterQuery<T>[];
+
+/**
+ * `FilterQuery` restricted to only properties covered by the specified index(es).
+ * Used when `using` option is set in `FindOptions` to enforce type-safe index usage.
+ */
+export type IndexFilterQuery<T, Using extends string> = [Using] extends [never]
+  ? FilterQuery<T>
+  :
+      | (OperatorMap<T> & {
+          -readonly [K in Extract<EntityKey<T>, IndexColumns<T, Using>>]?:
+            | ExpandQuery<ExpandProperty<FilterObjectProp<T, K>>>
+            | ExpandQueryMerged<ExpandProperty<FilterObjectProp<T, K>>>
+            | FilterValue<ExpandProperty<FilterObjectProp<T, K>>>
+            | ElemMatchFilter<FilterObjectProp<T, K>>
+            | null;
+        })
+      | NonNullable<ExpandScalar<Primary<T>>>
+      | IndexFilterQuery<T, Using>[];
 
 /** Public interface for the entity wrapper, accessible via `wrap(entity)`. Provides helper methods for entity state management. */
 export interface IWrappedEntity<Entity extends object> {

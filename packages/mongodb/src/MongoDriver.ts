@@ -433,6 +433,9 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
 
     if (options.indexHint != null) {
       ret.indexHint = options.indexHint;
+    } else if ((options as any).using != null) {
+      const names = Utils.asArray((options as any).using);
+      ret.indexHint = names.length === 1 ? names[0] : names;
     }
 
     if (options.maxTimeMS != null) {

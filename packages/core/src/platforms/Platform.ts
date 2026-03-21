@@ -532,6 +532,14 @@ export abstract class Platform {
     throw new Error('Full text searching is not supported by this driver.');
   }
 
+  /**
+   * Generates the SQL index hint clause for the given index names.
+   * Returns `undefined` when the platform does not support index hints (e.g. PostgreSQL, SQLite).
+   */
+  formatIndexHint(indexNames: string[]): string | undefined {
+    return undefined;
+  }
+
   /** Whether the driver automatically parses JSON columns into JS objects. */
   convertsJsonAutomatically(): boolean {
     return true;

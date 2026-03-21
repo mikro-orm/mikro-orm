@@ -70,19 +70,19 @@ bench('em.find() return type - no options', () => {
   type R = ReturnType<typeof em.find<Author>>;
   const x = {} as R;
   void x;
-}).types([717, 'instantiations']);
+}).types([745, 'instantiations']);
 
 bench('em.find() return type - with populate', () => {
   type R = ReturnType<typeof em.find<Author, 'books'>>;
   const x = {} as R;
   void x;
-}).types([717, 'instantiations']);
+}).types([745, 'instantiations']);
 
 bench('em.find() return type - with populate and fields', () => {
   type R = ReturnType<typeof em.find<Author, 'books', 'name' | 'email'>>;
   const x = {} as R;
   void x;
-}).types([711, 'instantiations']);
+}).types([739, 'instantiations']);
 
 // ============================================
 // em.create() - input and return type computation

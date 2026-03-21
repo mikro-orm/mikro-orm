@@ -64,6 +64,7 @@ import type {
   Ref,
   RequiredEntityData,
   UnboxArray,
+  IndexFilterQuery,
 } from './typings.js';
 import {
   EventType,
@@ -194,6 +195,18 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     Hint extends string = never,
     Fields extends string = never,
     Excludes extends string = never,
+    Using extends string = never,
+  >(
+    entityName: EntityName<Entity>,
+    where: [Using] extends [never] ? FilterQuery<NoInfer<Entity>> : IndexFilterQuery<NoInfer<Entity>, Using>,
+    options?: FindOptions<Entity, Hint, Fields, Excludes> & { using?: Using | Using[] },
+  ): Promise<Loaded<Entity, Hint, Fields, Excludes>[]>;
+
+  async find<
+    Entity extends object,
+    Hint extends string = never,
+    Fields extends string = never,
+    Excludes extends string = never,
   >(
     entityName: EntityName<Entity>,
     where: FilterQuery<NoInfer<Entity>>,
@@ -202,7 +215,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     if (options.disableIdentityMap ?? this.config.get('disableIdentityMap')) {
       const em = this.getContext(false);
       const fork = em.fork({ keepTransactionContext: true });
-      const ret = await fork.find(entityName, where, { ...options, disableIdentityMap: false });
+      const ret = await fork.find(entityName, where as any, { ...options, disableIdentityMap: false });
       fork.clear();
 
       return ret;
@@ -214,6 +227,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     where = await em.processWhere(entityName, where, options, 'read');
     validateParams(where);
     const meta = this.metadata.get<Entity>(entityName);
+    em.validateIndexUsage(meta, where, options);
     if (meta.orderBy) {
       options.orderBy = QueryHelper.mergeOrderBy(options.orderBy, meta.orderBy);
     } else {
@@ -309,9 +323,13 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     Hint extends string = never,
     Fields extends string = never,
     Excludes extends string = never,
+    Using extends string = never,
   >(
     entityName: EntityName<Entity>,
-    options: StreamOptions<NoInfer<Entity>, Hint, Fields, Excludes> = {},
+    options: Omit<StreamOptions<NoInfer<Entity>, Hint, Fields, Excludes>, 'where' | 'using'> & {
+      using?: Using | Using[];
+      where?: [Using] extends [never] ? FilterQuery<NoInfer<Entity>> : IndexFilterQuery<NoInfer<Entity>, Using>;
+    } = {} as any,
   ): AsyncIterableIterator<Loaded<Entity, Hint, Fields, Excludes>> {
     const em = this.getContext();
     em.prepareOptions(options);
@@ -322,6 +340,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     options.orderBy = options.orderBy || {};
     options.populate = (await em.preparePopulate(entityName, options)) as any;
     const meta = this.metadata.get<Entity>(entityName);
+    em.validateIndexUsage(meta, options.where ?? {}, options);
     options = { ...options };
     // save the original hint value so we know it was infer/all
     (options as Dictionary)._populateWhere = options.populateWhere ?? this.config.get('populateWhere');
@@ -359,11 +378,15 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     Hint extends string = never,
     Fields extends string = never,
     Excludes extends string = never,
+    Using extends string = never,
   >(
     entityName: EntityName<Entity>,
-    options?: FindAllOptions<NoInfer<Entity>, Hint, Fields, Excludes>,
+    options?: Omit<FindAllOptions<NoInfer<Entity>, Hint, Fields, Excludes>, 'where' | 'using'> & {
+      using?: Using | Using[];
+      where?: [Using] extends [never] ? FilterQuery<NoInfer<Entity>> : IndexFilterQuery<NoInfer<Entity>, Using>;
+    },
   ): Promise<Loaded<Entity, Hint, Fields, Excludes>[]> {
-    return this.find(entityName, options?.where ?? {}, options);
+    return this.find(entityName, options?.where ?? ({} as any), options as any);
   }
 
   private getPopulateWhere<Entity extends object, Hint extends string = never>(
@@ -755,6 +778,18 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     Hint extends string = never,
     Fields extends string = never,
     Excludes extends string = never,
+    Using extends string = never,
+  >(
+    entityName: EntityName<Entity>,
+    where: [Using] extends [never] ? FilterQuery<NoInfer<Entity>> : IndexFilterQuery<NoInfer<Entity>, Using>,
+    options?: FindOptions<Entity, Hint, Fields, Excludes> & { using?: Using | Using[] },
+  ): Promise<[Loaded<Entity, Hint, Fields, Excludes>[], number]>;
+
+  async findAndCount<
+    Entity extends object,
+    Hint extends string = never,
+    Fields extends string = never,
+    Excludes extends string = never,
   >(
     entityName: EntityName<Entity>,
     where: FilterQuery<NoInfer<Entity>>,
@@ -765,7 +800,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     options.flushMode = 'commit'; // do not try to auto flush again
 
     return Promise.all([
-      em.find(entityName, where, options),
+      em.find(entityName, where as any, options),
       em.count(entityName, where, options as CountOptions<Entity, Hint>),
     ]);
   }
@@ -832,9 +867,13 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     Fields extends string = never,
     Excludes extends string = never,
     IncludeCount extends boolean = true,
+    Using extends string = never,
   >(
     entityName: EntityName<Entity>,
-    options: FindByCursorOptions<Entity, Hint, Fields, Excludes, IncludeCount>,
+    options: Omit<FindByCursorOptions<Entity, Hint, Fields, Excludes, IncludeCount>, 'where' | 'using'> & {
+      using?: Using | Using[];
+      where?: [Using] extends [never] ? FilterQuery<NoInfer<Entity>> : IndexFilterQuery<NoInfer<Entity>, Using>;
+    },
   ): Promise<Cursor<Entity, Hint, Fields, Excludes, IncludeCount>> {
     const em = this.getContext(false);
     options.overfetch ??= true;
@@ -846,14 +885,14 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
 
     const [entities, count] =
       options.includeCount !== false
-        ? await em.findAndCount(entityName, options.where, options)
-        : [await em.find(entityName, options.where, options)];
+        ? await em.findAndCount(entityName, options.where as any, options as any)
+        : [await em.find(entityName, options.where as any, options as any)];
     return new Cursor(
-      entities,
+      entities as any,
       count as IncludeCount extends true ? number : undefined,
-      options,
+      options as any,
       this.metadata.get(entityName),
-    );
+    ) as Cursor<Entity, Hint, Fields, Excludes, IncludeCount>;
   }
 
   /**
@@ -948,6 +987,18 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     Hint extends string = never,
     Fields extends string = never,
     Excludes extends string = never,
+    Using extends string = never,
+  >(
+    entityName: EntityName<Entity>,
+    where: [Using] extends [never] ? FilterQuery<NoInfer<Entity>> : IndexFilterQuery<NoInfer<Entity>, Using>,
+    options?: FindOneOptions<Entity, Hint, Fields, Excludes> & { using?: Using | Using[] },
+  ): Promise<Loaded<Entity, Hint, Fields, Excludes> | null>;
+
+  async findOne<
+    Entity extends object,
+    Hint extends string = never,
+    Fields extends string = never,
+    Excludes extends string = never,
   >(
     entityName: EntityName<Entity>,
     where: FilterQuery<NoInfer<Entity>>,
@@ -956,7 +1007,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     if (options.disableIdentityMap ?? this.config.get('disableIdentityMap')) {
       const em = this.getContext(false);
       const fork = em.fork({ keepTransactionContext: true });
-      const ret = await fork.findOne(entityName, where, { ...options, disableIdentityMap: false });
+      const ret = await fork.findOne(entityName, where as any, { ...options, disableIdentityMap: false });
       fork.clear();
 
       return ret;
@@ -975,6 +1026,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
 
     await em.tryFlush(entityName, options);
     const meta = em.metadata.get<Entity>(entityName);
+    em.validateIndexUsage(meta, where, options);
     where = await em.processWhere(entityName, where, options, 'read');
     validateEmptyWhere(where);
     em.checkLockRequirements(options.lockMode, meta);
@@ -1056,6 +1108,18 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     Hint extends string = never,
     Fields extends string = never,
     Excludes extends string = never,
+    Using extends string = never,
+  >(
+    entityName: EntityName<Entity>,
+    where: [Using] extends [never] ? FilterQuery<NoInfer<Entity>> : IndexFilterQuery<NoInfer<Entity>, Using>,
+    options?: FindOneOrFailOptions<Entity, Hint, Fields, Excludes> & { using?: Using | Using[] },
+  ): Promise<Loaded<Entity, Hint, Fields, Excludes>>;
+
+  async findOneOrFail<
+    Entity extends object,
+    Hint extends string = never,
+    Fields extends string = never,
+    Excludes extends string = never,
   >(
     entityName: EntityName<Entity>,
     where: FilterQuery<NoInfer<Entity>>,
@@ -1065,16 +1129,15 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     let isStrictViolation = false;
 
     if (options.strict) {
-      const ret = await this.find(entityName, where, { ...options, limit: 2 } as FindOptions<
-        Entity,
-        Hint,
-        Fields,
-        Excludes
-      >);
+      const ret = await this.find(
+        entityName,
+        where as any,
+        { ...options, limit: 2 } as FindOptions<Entity, Hint, Fields, Excludes>,
+      );
       isStrictViolation = ret.length !== 1;
       entity = ret[0];
     } else {
-      entity = await this.findOne<Entity, Hint, Fields, Excludes>(entityName, where, options);
+      entity = await this.findOne(entityName, where as any, options);
     }
 
     if (!entity || isStrictViolation) {
@@ -2469,6 +2532,90 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
 
     if ([LockMode.PESSIMISTIC_READ, LockMode.PESSIMISTIC_WRITE].includes(mode) && !this.isInTransaction()) {
       throw ValidationError.transactionRequired();
+    }
+  }
+
+  private validateIndexUsage<Entity extends object>(
+    meta: EntityMetadata<Entity>,
+    where: FilterQuery<Entity> | Dictionary,
+    options: { using?: string | string[]; orderBy?: any },
+  ): void {
+    if (!options.using) {
+      return;
+    }
+
+    const indexNames = Utils.asArray(options.using);
+    const allIndexes = [...meta.indexes, ...meta.uniques];
+
+    // Build a map of all named indexes: { name -> property names }
+    // Includes both entity-level indexes/uniques and property-level index/unique names
+    const indexMap = new Map<string, string[]>();
+
+    for (const idx of allIndexes) {
+      if (idx.name) {
+        indexMap.set(idx.name, Utils.asArray(idx.properties ?? []) as string[]);
+      }
+    }
+
+    // Property-level indexes (prop.index = 'indexName', prop.unique = 'uniqueName')
+    for (const prop of meta.props) {
+      if (typeof prop.index === 'string') {
+        indexMap.set(prop.index, [prop.name]);
+      }
+
+      if (typeof prop.unique === 'string') {
+        indexMap.set(prop.unique, [prop.name]);
+      }
+    }
+
+    const allowedProps = new Set<string>();
+
+    for (const name of indexNames) {
+      const props = indexMap.get(name);
+
+      if (!props) {
+        const available = [...indexMap.keys()];
+        throw new Error(
+          `Index '${name}' not found on entity '${meta.className}'. ` +
+            (available.length > 0 ? `Available indexes: ${available.join(', ')}` : 'No named indexes defined.'),
+        );
+      }
+
+      for (const prop of props) {
+        allowedProps.add(prop);
+      }
+    }
+
+    // Validate where keys
+    if (typeof where === 'object' && where !== null && !Array.isArray(where)) {
+      for (const key of Object.keys(where)) {
+        if (key.startsWith('$')) {
+          continue; // skip operators like $and, $or
+        }
+
+        if (!allowedProps.has(key)) {
+          throw new Error(
+            `Property '${key}' in where clause is not covered by index '${indexNames.join("', '")}'. ` +
+              `Allowed properties: ${[...allowedProps].join(', ')}`,
+          );
+        }
+      }
+    }
+
+    // Validate orderBy keys
+    if (options.orderBy) {
+      const orderMaps = Array.isArray(options.orderBy) ? options.orderBy : [options.orderBy];
+
+      for (const orderMap of orderMaps) {
+        for (const key of Object.keys(orderMap)) {
+          if (!allowedProps.has(key)) {
+            throw new Error(
+              `Property '${key}' in orderBy is not covered by index '${indexNames.join("', '")}'. ` +
+                `Allowed properties: ${[...allowedProps].join(', ')}`,
+            );
+          }
+        }
+      }
     }
   }
 
