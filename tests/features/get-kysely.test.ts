@@ -5,6 +5,7 @@ import {
   EntityName,
   Collection,
   Opt,
+  Rel,
   MikroORM,
   InferClassEntityDB,
   InferDBFromKysely,
@@ -654,20 +655,27 @@ describe('InferClassEntityDB', () => {
   });
 
   test('InferClassEntityDB type utility', () => {
+    // default: column name mapping (snake_case + FK suffix)
     type DB = InferClassEntityDB<typeof Author | typeof Post>;
 
     expectTypeOf<DB>().toHaveProperty('author');
     expectTypeOf<DB>().toHaveProperty('post');
     expectTypeOf<DB['author']['id']>().toEqualTypeOf<number>();
-    expectTypeOf<DB['author']['firstName']>().toEqualTypeOf<string>();
+    expectTypeOf<DB['author']['first_name']>().toEqualTypeOf<string>();
     expectTypeOf<DB['post']['title']>().toEqualTypeOf<string>();
+    expectTypeOf<DB['post']>().toHaveProperty('created_at');
 
-    // collections are excluded, FK columns are inferred for relations
+    // collections are excluded, FK columns are inferred with column names
     type AuthorKeys = keyof DB['author'];
     expectTypeOf<'posts'>().not.toMatchTypeOf<AuthorKeys>();
-    // post has author FK column with PK type
-    expectTypeOf<DB['post']>().toHaveProperty('author');
-    expectTypeOf<DB['post']['author']>().toEqualTypeOf<number>();
+    // post has author_id FK column with PK type
+    expectTypeOf<DB['post']>().toHaveProperty('author_id');
+    expectTypeOf<DB['post']['author_id']>().toEqualTypeOf<number>();
+
+    // property naming strategy
+    type DBProp = InferClassEntityDB<typeof Author | typeof Post, { columnNamingStrategy: 'property' }>;
+    expectTypeOf<DBProp['author']['firstName']>().toEqualTypeOf<string>();
+    expectTypeOf<DBProp['post']['author']>().toEqualTypeOf<number>();
 
     // entity naming strategy
     type DBEntity = InferClassEntityDB<typeof Author | typeof Post, { tableNamingStrategy: 'entity' }>;
@@ -696,14 +704,74 @@ describe('InferClassEntityDB', () => {
       entities: [Book7367, Author7367],
       dbName: ':memory:',
     });
-    await orm.schema.create();
 
+    // default column naming: FK uses column name (author_id)
     const db = orm.em.getKysely();
-
     db.selectFrom('book7367').select('book7367.title');
-    db.selectFrom('book7367').select('book7367.author');
+    db.selectFrom('book7367').select('book7367.author_id');
+
+    // property naming: FK uses property name (author)
+    const db2 = orm.em.getKysely({ columnNamingStrategy: 'property' });
+    db2.selectFrom('book7367').select('book7367.author');
 
     await orm.close(true);
+  });
+
+  test('decorator and defineEntity produce consistent column naming', () => {
+    @Entity()
+    class AuthorDec {
+      [EntityName]?: 'AuthorDec';
+      @PrimaryKey({ type: 'uuid' }) id!: string;
+      @Property() name!: string;
+    }
+
+    @Entity()
+    class BookDec {
+      [EntityName]?: 'BookDec';
+      @PrimaryKey({ type: 'uuid' }) id!: string;
+      @Property() title!: string;
+      @ManyToOne(() => AuthorDec) author!: Rel<AuthorDec>;
+    }
+
+    const AuthorDE = defineEntity({
+      name: 'AuthorDE',
+      properties: {
+        id: p.uuid().primary(),
+        name: p.string(),
+      },
+    });
+
+    const BookDE = defineEntity({
+      name: 'BookDE',
+      properties: {
+        id: p.uuid().primary(),
+        title: p.string(),
+        author: () => p.manyToOne(AuthorDE),
+      },
+    });
+
+    // decorator entities: default column naming (snake_case + FK suffix)
+    type DBDec = InferClassEntityDB<typeof AuthorDec | typeof BookDec>;
+    expectTypeOf<DBDec['author_dec']>().toHaveProperty('id');
+    expectTypeOf<DBDec['author_dec']>().toHaveProperty('name');
+    expectTypeOf<DBDec['book_dec']>().toHaveProperty('id');
+    expectTypeOf<DBDec['book_dec']>().toHaveProperty('title');
+    expectTypeOf<DBDec['book_dec']>().toHaveProperty('author_id');
+    expectTypeOf<DBDec['book_dec']['author_id']>().toEqualTypeOf<string>();
+
+    // defineEntity: same column naming
+    type DBDE = InferKyselyDB<typeof AuthorDE | typeof BookDE>;
+    expectTypeOf<DBDE['author_de']>().toHaveProperty('id');
+    expectTypeOf<DBDE['author_de']>().toHaveProperty('name');
+    expectTypeOf<DBDE['book_de']>().toHaveProperty('id');
+    expectTypeOf<DBDE['book_de']>().toHaveProperty('title');
+    expectTypeOf<DBDE['book_de']>().toHaveProperty('author_id');
+    expectTypeOf<DBDE['book_de']['author_id']>().toEqualTypeOf<string>();
+
+    // property naming strategy: use property names as-is
+    type DBProp = InferClassEntityDB<typeof AuthorDec | typeof BookDec, { columnNamingStrategy: 'property' }>;
+    expectTypeOf<DBProp['book_dec']>().toHaveProperty('author');
+    expectTypeOf<DBProp['book_dec']['author']>().toEqualTypeOf<string>();
   });
 
   test('entities without EntityName are excluded from inference', () => {
