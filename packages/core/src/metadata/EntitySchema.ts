@@ -153,6 +153,11 @@ export class EntitySchema<Entity = any, Base = never, Class extends EntityCtor =
       prop.persist ??= false;
     }
 
+    if ((prop as any).check) {
+      this._meta.checks.push({ property: prop.name, expression: (prop as any).check });
+      delete (prop as any).check;
+    }
+
     this._meta.properties[name] = prop;
   }
 
