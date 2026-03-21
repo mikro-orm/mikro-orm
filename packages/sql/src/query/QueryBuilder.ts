@@ -886,7 +886,7 @@ export class QueryBuilder<
    * ```
    */
   insertFrom(
-    subQuery: AnyQueryBuilder<Entity>,
+    subQuery: QueryBuilder<any>,
     options?: { columns?: Field<Entity, RootAlias, Context>[] },
   ): InsertQueryBuilder<Entity, RootAlias, Context> {
     this.ensureNotFinalized();

@@ -22,6 +22,7 @@ import {
   ManyToMany,
   ReflectMetadataProvider,
 } from '@mikro-orm/decorators/legacy';
+import { ObjectId } from 'bson';
 import { SqlEntityManager } from '@mikro-orm/sql';
 import { mockLogger } from '../../helpers.js';
 import { PLATFORMS } from '../../bootstrap.js';
@@ -30,8 +31,6 @@ import { PLATFORMS } from '../../bootstrap.js';
 
 @Entity()
 class Author {
-  [Opt]?: 'createdAt';
-
   @PrimaryKey()
   id!: number;
 
@@ -142,7 +141,7 @@ class Truck extends Vehicle {
 
 // --- Test options ---
 
-const options: Record<string, Record<string, unknown>> = {
+const options = {
   sqlite: { dbName: ':memory:' },
   postgresql: { dbName: 'mikro_orm_clone' },
   mysql: { dbName: 'mikro_orm_clone', port: 3308 },
@@ -477,5 +476,120 @@ describe.each(Utils.keys(options))('clone [%s]', type => {
       expect(cars[1].brand).toBe('Toyota Clone');
       expect(cars[1].doors).toBe(4);
     });
+  });
+});
+
+// --- MongoDB-specific entities and tests ---
+
+@Entity()
+class MongoAuthor {
+  @PrimaryKey()
+  _id!: ObjectId;
+
+  @Property()
+  name!: string;
+
+  @Property()
+  email!: string;
+
+  @Property()
+  age!: number;
+}
+
+@Entity()
+class MongoCompany {
+  @PrimaryKey()
+  _id!: ObjectId;
+
+  @Property()
+  name!: string;
+
+  @Property({ version: true })
+  version!: number & Opt;
+}
+
+describe('clone [mongo]', () => {
+  let orm: MikroORM;
+
+  beforeAll(async () => {
+    orm = await MikroORM.init<IDatabaseDriver>({
+      entities: [MongoAuthor, MongoCompany],
+      driver: PLATFORMS.mongo,
+      loggerFactory: SimpleLogger.create,
+      metadataProvider: ReflectMetadataProvider,
+      dbName: 'mikro_orm_clone',
+    });
+  });
+
+  beforeEach(async () => {
+    await orm.schema.clear();
+  });
+
+  afterAll(() => orm.close());
+
+  test('em.clone() with overrides', async () => {
+    const author = orm.em.create(MongoAuthor, { name: 'John', email: 'john@test.com', age: 30 });
+    await orm.em.flush();
+    orm.em.clear();
+
+    const cloned = await orm.em.clone(
+      MongoAuthor,
+      { name: 'John' },
+      {
+        email: 'cloned@test.com',
+        age: 99,
+      },
+    );
+
+    expect(cloned).toBeInstanceOf(MongoAuthor);
+    expect(cloned.name).toBe('John');
+    expect(cloned.email).toBe('cloned@test.com');
+    expect(cloned.age).toBe(99);
+  });
+
+  test('em.clone() pure clone', async () => {
+    const author = orm.em.create(MongoAuthor, { name: 'John', email: 'john@test.com', age: 30 });
+    await orm.em.flush();
+    orm.em.clear();
+
+    const cloned = await orm.em.clone(MongoAuthor, { name: 'John' });
+
+    expect(cloned).toBeInstanceOf(MongoAuthor);
+    expect(cloned.name).toBe('John');
+    expect(cloned.age).toBe(30);
+  });
+
+  test('em.clone() from loaded entity', async () => {
+    const author = orm.em.create(MongoAuthor, { name: 'John', email: 'john@test.com', age: 30 });
+    await orm.em.flush();
+    const loaded = await orm.em.findOneOrFail(MongoAuthor, { name: 'John' });
+
+    const cloned = await orm.em.clone(loaded, { email: 'entity-clone@test.com' });
+
+    expect(cloned).toBeInstanceOf(MongoAuthor);
+    expect(cloned.name).toBe('John');
+    expect(cloned.email).toBe('entity-clone@test.com');
+  });
+
+  test('em.clone() version property is reset', async () => {
+    const company = orm.em.create(MongoCompany, { name: 'Acme' });
+    await orm.em.flush();
+    orm.em.clear();
+
+    const loaded = await orm.em.findOneOrFail(MongoCompany, { name: 'Acme' });
+    loaded.name = 'Acme Inc';
+    await orm.em.flush();
+    orm.em.clear();
+
+    const cloned = await orm.em.clone(
+      MongoCompany,
+      { name: 'Acme Inc' },
+      {
+        name: 'Acme Clone',
+      },
+    );
+
+    expect(cloned.version).toBe(1);
+    expect(cloned.name).toBe('Acme Clone');
   });
 });
