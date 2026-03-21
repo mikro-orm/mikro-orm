@@ -607,10 +607,12 @@ describe('InferClassEntityDB', () => {
     expectTypeOf<DB['author']['id']>().toEqualTypeOf<number>();
     expectTypeOf<DB['author']['firstName']>().toEqualTypeOf<string>();
 
-    // post columns: id, title, createdAt (entity reference and collection excluded)
+    // post columns: id, title, createdAt, author (FK as property name)
     expectTypeOf<DB['post']>().toHaveProperty('id');
     expectTypeOf<DB['post']>().toHaveProperty('title');
     expectTypeOf<DB['post']>().toHaveProperty('createdAt');
+    expectTypeOf<DB['post']>().toHaveProperty('author');
+    expectTypeOf<DB['post']['author']>().toEqualTypeOf<number>();
 
     // runtime: insert and select using property names
     await kysely.insertInto('author').values({ id: 1, firstName: 'John', email: 'john@example.com' }).execute();
@@ -660,16 +662,48 @@ describe('InferClassEntityDB', () => {
     expectTypeOf<DB['author']['firstName']>().toEqualTypeOf<string>();
     expectTypeOf<DB['post']['title']>().toEqualTypeOf<string>();
 
-    // collections and entity references are excluded
+    // collections are excluded, FK columns are inferred for relations
     type AuthorKeys = keyof DB['author'];
     expectTypeOf<'posts'>().not.toMatchTypeOf<AuthorKeys>();
-    type PostKeys = keyof DB['post'];
-    expectTypeOf<'author'>().not.toMatchTypeOf<PostKeys>();
+    // post has author FK column with PK type
+    expectTypeOf<DB['post']>().toHaveProperty('author');
+    expectTypeOf<DB['post']['author']>().toEqualTypeOf<number>();
 
     // entity naming strategy
     type DBEntity = InferClassEntityDB<typeof Author | typeof Post, { tableNamingStrategy: 'entity' }>;
     expectTypeOf<DBEntity>().toHaveProperty('Author');
     expectTypeOf<DBEntity>().toHaveProperty('Post');
+  });
+
+  test('FK columns inferred for decorator entities (GH #7367)', async () => {
+    @Entity()
+    class Author7367 {
+      [EntityName]?: 'Author7367';
+      @PrimaryKey({ type: 'uuid' }) id!: string;
+      @Property() name!: string;
+    }
+
+    @Entity()
+    class Book7367 {
+      [EntityName]?: 'Book7367';
+      @PrimaryKey({ type: 'uuid' }) id!: string;
+      @Property() title!: string;
+      @ManyToOne(() => Author7367) author!: Author7367;
+    }
+
+    const orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
+      entities: [Book7367, Author7367],
+      dbName: ':memory:',
+    });
+    await orm.schema.create();
+
+    const db = orm.em.getKysely();
+
+    db.selectFrom('book7367').select('book7367.title');
+    db.selectFrom('book7367').select('book7367.author');
+
+    await orm.close(true);
   });
 
   test('entities without EntityName are excluded from inference', () => {
