@@ -399,7 +399,7 @@ export type InferClassEntityDB<TEntities, TOptions extends MikroKyselyPluginOpti
   ClassEntityDBMap<TEntities, TOptions> extends infer R ? ([keyof R] extends [never] ? unknown : R) : never;
 
 type ClassEntityDBMap<TEntities, TOptions extends MikroKyselyPluginOptions = {}> = {
-  [T in TEntities as ClassEntityTableName<T, TOptions>]: ClassEntityColumns<T>;
+  [T in TEntities as ClassEntityTableName<T, TOptions>]: ClassEntityColumns<T, TOptions>;
 };
 
 type ClassEntityTableName<T, TOptions extends MikroKyselyPluginOptions = {}> = T extends abstract new (
@@ -408,16 +408,29 @@ type ClassEntityTableName<T, TOptions extends MikroKyselyPluginOptions = {}> = T
   ? TransformName<InferEntityName<Instance>, TOptions['tableNamingStrategy'] extends 'entity' ? 'entity' : 'underscore'>
   : never;
 
-type ClassEntityColumns<T> = T extends abstract new (...args: any[]) => infer Instance
-  ? { [K in keyof Instance as ClassEntityColumnName<K, Instance[K]>]: ClassEntityColumnValue<Instance[K]> }
+type ClassEntityColumns<T, TOptions extends MikroKyselyPluginOptions = {}> = T extends abstract new (
+  ...args: any[]
+) => infer Instance
+  ? { [K in keyof Instance as ClassEntityColumnName<K, Instance[K], TOptions>]: ClassEntityColumnValue<Instance[K]> }
   : never;
 
-type ClassEntityColumnName<K, V> = K extends symbol
+type ClassEntityColumnName<K, V, TOptions extends MikroKyselyPluginOptions = {}> = K extends symbol
   ? never
-  : NonNullable<V> extends Scalar
-    ? K
-    : NonNullable<V> extends { [k: number]: any; readonly owner: object }
+  : NonNullable<V> extends infer NV
+    ? NV extends { [k: number]: any; readonly owner: object }
       ? never
-      : K;
+      : TOptions['columnNamingStrategy'] extends 'property'
+        ? K
+        : NV extends Scalar
+          ? K extends string
+            ? SnakeCase<K>
+            : never
+          : K extends string
+            ? ClassEntityJoinColumnName<SnakeCase<K>, NV>
+            : never
+    : never;
+
+type ClassEntityJoinColumnName<TName extends string, V> =
+  PrimaryProperty<V> extends string ? `${TName}_${SnakeCase<PrimaryProperty<V>>}` : never;
 
 type ClassEntityColumnValue<V> = NonNullable<V> extends Scalar ? V : Primary<NonNullable<V>>;
