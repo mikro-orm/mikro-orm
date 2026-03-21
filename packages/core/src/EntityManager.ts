@@ -103,7 +103,9 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
   readonly global = false;
   /** The context name of this EntityManager, derived from the ORM configuration. */
   readonly name: string;
-  readonly #loaders: Partial<Record<'ref' | '1:m' | 'm:n', { load: (...args: unknown[]) => Promise<unknown> }>> = {};
+  readonly #loaders: Partial<
+    Record<'ref' | '1:m' | 'm:n' | 'count', { load: (...args: unknown[]) => Promise<unknown> }>
+  > = {};
   readonly #repositoryMap = new Map<EntityMetadata, EntityRepository<any>>();
   readonly #entityLoader: EntityLoader;
   readonly #comparator: EntityComparator;
@@ -2115,6 +2117,44 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
   }
 
   /**
+   * Returns the count of entities grouped by a property value. Issues a single `GROUP BY` query
+   * on SQL drivers and an aggregation pipeline on MongoDB, instead of N individual count queries.
+   *
+   * Used internally by the dataloader for `Collection.loadCount()`, but can also be used directly.
+   *
+   * @example
+   * ```ts
+   * // Count books per author for authors 1, 2, 3
+   * const counts = await em.countBy(Book, 'author', [1, 2, 3]);
+   * // { '1': 2, '2': 1, '3': 3 }
+   *
+   * // With additional filtering
+   * const counts = await em.countBy(Book, 'author', [1, 2, 3], { active: true });
+   * // { '1': 1, '3': 2 }  — authors with 0 matching books are omitted
+   * ```
+   */
+  async countBy<Entity extends object>(
+    entityName: EntityName<Entity>,
+    prop: EntityKey<Entity>,
+    pks: Primary<any>[],
+    where?: FilterQuery<NoInfer<Entity>>,
+    options: CountOptions<Entity> = {},
+  ): Promise<Dictionary<number>> {
+    const em = this.getContext(false);
+    const results: Dictionary<number> = {};
+
+    await Promise.all(
+      pks.map(async pk => {
+        const cond = { [prop]: pk, ...where } as FilterQuery<NoInfer<Entity>>;
+        const count = await em.count(entityName, cond, options);
+        results[JSON.stringify(pk)] = count;
+      }),
+    );
+
+    return results;
+  }
+
+  /**
    * Tells the EntityManager to make an instance managed and persistent.
    * The entity will be entered into the database at or before transaction commit or as a result of the flush operation.
    */
@@ -2810,7 +2850,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
   }
 
   /** @internal */
-  async getDataLoader(type: 'ref' | '1:m' | 'm:n'): Promise<any> {
+  async getDataLoader(type: 'ref' | '1:m' | 'm:n' | 'count'): Promise<any> {
     const em = this.getContext();
 
     if (em.#loaders[type]) {
@@ -2827,6 +2867,8 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
         return (em.#loaders[type] ??= new DataLoader(DataloaderUtils.getColBatchLoadFn(em)));
       case 'm:n':
         return (em.#loaders[type] ??= new DataLoader(DataloaderUtils.getManyToManyColBatchLoadFn(em)));
+      case 'count':
+        return (em.#loaders[type] ??= new DataLoader(DataloaderUtils.getCountBatchLoadFn(em)));
     }
   }
 

@@ -75,7 +75,7 @@ await author.books.init();
 
 ### Getting the count without loading
 
-Use `loadCount()` to get the number of items from the database without loading the entities. The result is cached — pass `{ refresh: true }` to force a reload, or pass a `where` clause to count a subset (uncached):
+Use `loadCount()` to get the number of items from the database without loading the entities. The result is cached — pass `{ refresh: true }` to force a reload, or pass a `where` clause to count a subset (uncached). When using [dataloaders](./dataloaders.md), pass `{ dataloader: true }` to batch multiple count queries into a single `GROUP BY` query:
 
 ```ts
 const author = await em.findOne(Author, '...');
@@ -83,6 +83,7 @@ const count = await author.books.loadCount(); // SELECT COUNT(*) ...
 const count2 = await author.books.loadCount(); // cached, no query
 const count3 = await author.books.loadCount({ refresh: true }); // forced reload
 const activeCount = await author.books.loadCount({ where: { active: true } }); // filtered count, not cached
+const count4 = await author.books.loadCount({ dataloader: true }); // batched with other loadCount calls
 ```
 
 ### Adding and removing items

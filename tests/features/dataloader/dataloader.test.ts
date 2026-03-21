@@ -833,4 +833,218 @@ describe('Dataloader', () => {
 
     await orm.close(true);
   });
+
+  test('getCountBatchLoadFn', async () => {
+    const countBatchLoadFn = DataloaderUtils.getCountBatchLoadFn(orm.em);
+    const em = orm.em.fork();
+    const authors = await em.find(Author, {}, { first: 3, orderBy: { id: QueryOrder.ASC } });
+    const collections = authors.map(a => a.books);
+    const mock = mockLogger(orm);
+    const res = await countBatchLoadFn(collections.map(col => [col]));
+    expect(mock.mock.calls).toMatchSnapshot();
+    expect(res.length).toBe(3);
+    // author 1 has 2 books, author 2 has 1 book, author 3 has 3 books
+    expect(Array.from(res)).toEqual([2, 1, 3]);
+  });
+
+  test('Collection.loadCount with dataloader (1:M)', async () => {
+    const em = orm.em.fork();
+    const authors = await em.find(Author, {}, { first: 3, orderBy: { id: QueryOrder.ASC } });
+    // Get expected counts without dataloader
+    const expected = [];
+    for (const a of authors) {
+      expected.push(await a.books.loadCount());
+    }
+
+    const em2 = orm.em.fork();
+    const authors2 = await em2.find(Author, {}, { first: 3, orderBy: { id: QueryOrder.ASC } });
+    const mock = mockLogger(orm);
+    const counts = await Promise.all(authors2.map(a => a.books.loadCount({ dataloader: true })));
+    expect(mock.mock.calls).toMatchSnapshot();
+    expect(counts).toEqual(expected);
+  });
+
+  test('Collection.loadCount with dataloader (M:N owner, no inverse side)', async () => {
+    const em = orm.em.fork();
+    const authors = await em.find(Author, {}, { first: 3, orderBy: { id: QueryOrder.ASC } });
+    const expected = [];
+    for (const a of authors) {
+      expected.push(await a.friends.loadCount());
+    }
+
+    const em2 = orm.em.fork();
+    const authors2 = await em2.find(Author, {}, { first: 3, orderBy: { id: QueryOrder.ASC } });
+    const mock = mockLogger(orm);
+    const counts = await Promise.all(authors2.map(a => a.friends.loadCount({ dataloader: true })));
+    expect(mock.mock.calls).toMatchSnapshot();
+    expect(counts).toEqual(expected);
+  });
+
+  test('Collection.loadCount with dataloader (M:N inverse side)', async () => {
+    const em = orm.em.fork();
+    const authors = await em.find(Author, {}, { first: 3, orderBy: { id: QueryOrder.ASC } });
+    const expected = [];
+    for (const a of authors) {
+      expected.push(await a.buddies.loadCount());
+    }
+
+    const em2 = orm.em.fork();
+    const authors2 = await em2.find(Author, {}, { first: 3, orderBy: { id: QueryOrder.ASC } });
+    const mock = mockLogger(orm);
+    const counts = await Promise.all(authors2.map(a => a.buddies.loadCount({ dataloader: true })));
+    expect(mock.mock.calls).toMatchSnapshot();
+    expect(counts).toEqual(expected);
+  });
+
+  test('Collection.loadCount with dataloader and where', async () => {
+    const makeWhere = () => ({ title: ['One', 'Two', 'Six'] });
+
+    const em = orm.em.fork();
+    const authors = await em.find(Author, {}, { first: 3, orderBy: { id: QueryOrder.ASC } });
+    const expected = [];
+    for (const a of authors) {
+      expected.push(await a.books.loadCount({ where: makeWhere() }));
+    }
+
+    const em2 = orm.em.fork();
+    const authors2 = await em2.find(Author, {}, { first: 3, orderBy: { id: QueryOrder.ASC } });
+    const mock = mockLogger(orm);
+    const counts = await Promise.all(authors2.map(a => a.books.loadCount({ where: makeWhere(), dataloader: true })));
+    expect(mock.mock.calls).toMatchSnapshot();
+    expect(counts).toEqual(expected);
+  });
+
+  test('Collection.loadCount caching with dataloader', async () => {
+    const em = orm.em.fork();
+    const author = await em.findOneOrFail(Author, 1);
+    const count1 = await author.books.loadCount({ dataloader: true });
+    const mock = mockLogger(orm);
+    // Second call should return cached result, no new queries
+    const count2 = await author.books.loadCount({ dataloader: true });
+    expect(mock.mock.calls.length).toBe(0);
+    expect(count1).toBe(count2);
+    expect(count1).toBe(2);
+  });
+
+  test('Collection.loadCount with where skips cache', async () => {
+    const em = orm.em.fork();
+    const author = await em.findOneOrFail(Author, 1);
+    await author.books.loadCount({ dataloader: true });
+    const mock = mockLogger(orm);
+    // With where, cache is not used
+    const count = await author.books.loadCount({ where: { title: 'One' }, dataloader: true });
+    expect(mock.mock.calls.length).toBeGreaterThan(0);
+    expect(count).toBe(1);
+  });
+
+  test('Dataloader can be globally enabled for loadCount with DataloaderType.ALL/COLLECTION', async () => {
+    async function getCounts(dataloader: DataloaderType | boolean) {
+      const orm = await MikroORM.init({
+        metadataProvider: ReflectMetadataProvider,
+        dbName: ':memory:',
+        dataloader,
+        entities: [Author, Book, Chat, Message],
+        loggerFactory: SimpleLogger.create,
+      });
+      await orm.schema.create();
+      await populateDatabase(orm.em);
+      const em = orm.em.fork();
+      const authors = await em.find(Author, {}, { first: 3, orderBy: { id: QueryOrder.ASC } });
+      const mock = mockLogger(orm);
+      const counts = await Promise.all(authors.map(a => a.books.loadCount()));
+      await orm.close(true);
+      return { counts, calls: mock.mock.calls };
+    }
+
+    const res = await getCounts(DataloaderType.ALL);
+    expect(res.calls).toMatchSnapshot();
+    expect(res.counts).toEqual([2, 1, 3]);
+    const res2 = await getCounts(DataloaderType.COLLECTION);
+    expect(res2.counts).toEqual(res.counts);
+  });
+
+  test('Dataloader should not be globally enabled for loadCount with DataloaderType.NONE/REFERENCE', async () => {
+    async function getCounts(dataloader: DataloaderType | boolean) {
+      const orm = await MikroORM.init({
+        metadataProvider: ReflectMetadataProvider,
+        dbName: ':memory:',
+        dataloader,
+        entities: [Author, Book, Chat, Message],
+        loggerFactory: SimpleLogger.create,
+      });
+      await orm.schema.create();
+      await populateDatabase(orm.em);
+      const em = orm.em.fork();
+      const authors = await em.find(Author, {}, { first: 3, orderBy: { id: QueryOrder.ASC } });
+      const mock = mockLogger(orm);
+      const counts = await Promise.all(authors.map(a => a.books.loadCount()));
+      await orm.close(true);
+      return { counts, calls: mock.mock.calls };
+    }
+
+    const resNone = await getCounts(DataloaderType.NONE);
+    expect(resNone.calls).toMatchSnapshot();
+    const resFalse = await getCounts(false);
+    expect(resFalse.calls).toEqual(resNone.calls);
+    const resRef = await getCounts(DataloaderType.REFERENCE);
+    expect(resRef.calls).toEqual(resNone.calls);
+  });
+
+  test('loadCount dataloader can be disabled per-query', async () => {
+    const orm2 = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
+      dbName: ':memory:',
+      dataloader: DataloaderType.ALL,
+      entities: [Author, Book, Chat, Message],
+      loggerFactory: SimpleLogger.create,
+    });
+    await orm2.schema.create();
+    await populateDatabase(orm2.em);
+
+    const em = orm2.em.fork();
+    const authors = await em.find(Author, {}, { first: 3, orderBy: { id: QueryOrder.ASC } });
+    const mock = mockLogger(orm2);
+    const counts = await Promise.all(authors.map(a => a.books.loadCount({ dataloader: false })));
+    // With dataloader disabled, should issue individual queries (3 queries instead of 1)
+    expect(mock.mock.calls.length).toBe(3);
+    expect(counts).toEqual([2, 1, 3]);
+
+    await orm2.close(true);
+  });
+
+  test('Collection.loadCount with dataloader (composite PK owner)', async () => {
+    const em = orm.em.fork();
+    const chats = await em.find(Chat, {}, { first: 2 });
+    const expected = [];
+    for (const c of chats) {
+      expected.push(await c.messages.loadCount());
+    }
+
+    const em2 = orm.em.fork();
+    const chats2 = await em2.find(Chat, {}, { first: 2 });
+    const mock = mockLogger(orm);
+    const counts = await Promise.all(chats2.map(c => c.messages.loadCount({ dataloader: true })));
+    expect(mock.mock.calls).toMatchSnapshot();
+    expect(counts).toEqual(expected);
+  });
+
+  test('em.countBy', async () => {
+    const em = orm.em.fork();
+    const counts = await em.countBy(Book, 'author', [1, 2, 3]);
+    expect(counts).toEqual({ '1': 2, '2': 1, '3': 3 });
+  });
+
+  test('em.countBy with where', async () => {
+    const em = orm.em.fork();
+    const counts = await em.countBy(Book, 'author', [1, 2, 3], { title: ['One', 'Six'] } as any);
+    expect(counts).toEqual({ '1': 1, '3': 1 });
+  });
+
+  test('em.countBy with missing PKs', async () => {
+    const em = orm.em.fork();
+    const counts = await em.countBy(Book, 'author', [1, 999]);
+    // Author 999 does not exist, absent from results
+    expect(counts['1']).toBe(2);
+    expect(counts['999']).toBeUndefined();
+  });
 });

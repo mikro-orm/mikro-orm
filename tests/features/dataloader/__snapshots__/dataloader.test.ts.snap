@@ -129,6 +129,61 @@ exports[`Dataloader > Collection.load with wildcard populate 1`] = `
 ]
 `;
 
+exports[`Dataloader > Collection.loadCount with dataloader (1:M) 1`] = `
+[
+  [
+    "[query] select \`b0\`.\`author_id\`, count(*) as "cnt" from \`book\` as \`b0\` where \`b0\`.\`author_id\` in (1, 2, 3) group by \`b0\`.\`author_id\`",
+  ],
+]
+`;
+
+exports[`Dataloader > Collection.loadCount with dataloader (M:N inverse side) 1`] = `
+[
+  [
+    "[query] select count(distinct \`a0\`.\`id\`) as \`count\` from \`author\` as \`a0\` left join \`author_buddies\` as \`a1\` on \`a0\`.\`id\` = \`a1\`.\`author_2_id\` where \`a0\`.\`age\` < 80 and \`a1\`.\`author_1_id\` = 1",
+  ],
+  [
+    "[query] select count(distinct \`a0\`.\`id\`) as \`count\` from \`author\` as \`a0\` left join \`author_buddies\` as \`a1\` on \`a0\`.\`id\` = \`a1\`.\`author_2_id\` where \`a0\`.\`age\` < 80 and \`a1\`.\`author_1_id\` = 2",
+  ],
+  [
+    "[query] select count(distinct \`a0\`.\`id\`) as \`count\` from \`author\` as \`a0\` left join \`author_buddies\` as \`a1\` on \`a0\`.\`id\` = \`a1\`.\`author_2_id\` where \`a0\`.\`age\` < 80 and \`a1\`.\`author_1_id\` = 3",
+  ],
+]
+`;
+
+exports[`Dataloader > Collection.loadCount with dataloader (M:N owner, no inverse side) 1`] = `
+[
+  [
+    "[query] select count(distinct \`a0\`.\`id\`) as \`count\` from \`author\` as \`a0\` left join \`author_friends\` as \`a1\` on \`a0\`.\`id\` = \`a1\`.\`author_2_id\` where \`a0\`.\`age\` < 80 and \`a1\`.\`author_1_id\` = 1",
+  ],
+  [
+    "[query] select count(distinct \`a0\`.\`id\`) as \`count\` from \`author\` as \`a0\` left join \`author_friends\` as \`a1\` on \`a0\`.\`id\` = \`a1\`.\`author_2_id\` where \`a0\`.\`age\` < 80 and \`a1\`.\`author_1_id\` = 2",
+  ],
+  [
+    "[query] select count(distinct \`a0\`.\`id\`) as \`count\` from \`author\` as \`a0\` left join \`author_friends\` as \`a1\` on \`a0\`.\`id\` = \`a1\`.\`author_2_id\` where \`a0\`.\`age\` < 80 and \`a1\`.\`author_1_id\` = 3",
+  ],
+]
+`;
+
+exports[`Dataloader > Collection.loadCount with dataloader (composite PK owner) 1`] = `
+[
+  [
+    "[query] select count(*) as \`count\` from \`message\` as \`m0\` where (\`m0\`.\`chat_owner_id\`, \`m0\`.\`chat_recipient_id\`) = (1, 2)",
+  ],
+  [
+    "[query] select count(*) as \`count\` from \`message\` as \`m0\` where (\`m0\`.\`chat_owner_id\`, \`m0\`.\`chat_recipient_id\`) = (1, 3)",
+  ],
+]
+`;
+
+exports[`Dataloader > Collection.loadCount with dataloader and where 1`] = `
+[
+  [
+    "[query] select \`b0\`.\`author_id\`, count(*) as "cnt" from \`book\` as \`b0\` where \`b0\`.\`author_id\` in (1, 2, 3) and \`b0\`.\`title\` in ('One', 'Two', 'Six') group by \`b0\`.\`author_id\`",
+  ],
+]
+`;
+
 exports[`Dataloader > Dataloader can be globally enabled for Collections with true, DataloaderType.ALL, DataloaderType.COLLECTION 1`] = `
 [
   [
@@ -156,6 +211,14 @@ exports[`Dataloader > Dataloader can be globally enabled for References with tru
   ],
   [
     "[query] select \`b0\`.*, \`a1\`.\`id\` as \`a1__id\` from \`book\` as \`b0\` inner join \`author\` as \`a1\` on \`b0\`.\`author_id\` = \`a1\`.\`id\` and \`a1\`.\`age\` < 80 where \`b0\`.\`id\` in (5, 3, 4)",
+  ],
+]
+`;
+
+exports[`Dataloader > Dataloader can be globally enabled for loadCount with DataloaderType.ALL/COLLECTION 1`] = `
+[
+  [
+    "[query] select \`b0\`.\`author_id\`, count(*) as "cnt" from \`book\` as \`b0\` where \`b0\`.\`author_id\` in (1, 2, 3) group by \`b0\`.\`author_id\`",
   ],
 ]
 `;
@@ -233,6 +296,20 @@ exports[`Dataloader > Dataloader should not be globally enabled for References w
 ]
 `;
 
+exports[`Dataloader > Dataloader should not be globally enabled for loadCount with DataloaderType.NONE/REFERENCE 1`] = `
+[
+  [
+    "[query] select count(*) as \`count\` from \`book\` as \`b0\` inner join \`author\` as \`a1\` on \`b0\`.\`author_id\` = \`a1\`.\`id\` and \`a1\`.\`age\` < 80 where \`b0\`.\`author_id\` = 1",
+  ],
+  [
+    "[query] select count(*) as \`count\` from \`book\` as \`b0\` inner join \`author\` as \`a1\` on \`b0\`.\`author_id\` = \`a1\`.\`id\` and \`a1\`.\`age\` < 80 where \`b0\`.\`author_id\` = 2",
+  ],
+  [
+    "[query] select count(*) as \`count\` from \`book\` as \`b0\` inner join \`author\` as \`a1\` on \`b0\`.\`author_id\` = \`a1\`.\`id\` and \`a1\`.\`age\` < 80 where \`b0\`.\`author_id\` = 3",
+  ],
+]
+`;
+
 exports[`Dataloader > Reference dataloader can be disabled per-query 1`] = `
 [
   [
@@ -292,6 +369,14 @@ exports[`Dataloader > getColBatchLoadFn 1`] = `
   ],
   [
     "[query] select \`a0\`.\`author_1_id\`, \`a0\`.\`author_2_id\`, \`a1\`.\`id\` as \`a1__id\`, \`a1\`.\`name\` as \`a1__name\`, \`a1\`.\`age\` as \`a1__age\`, \`a1\`.\`email\` as \`a1__email\` from \`author_buddies\` as \`a0\` inner join \`author\` as \`a1\` on \`a0\`.\`author_1_id\` = \`a1\`.\`id\` where \`a0\`.\`author_2_id\` in (2, 5, 1) and \`a1\`.\`age\` < 80",
+  ],
+]
+`;
+
+exports[`Dataloader > getCountBatchLoadFn 1`] = `
+[
+  [
+    "[query] select \`b0\`.\`author_id\`, count(*) as "cnt" from \`book\` as \`b0\` where \`b0\`.\`author_id\` in (1, 2, 3) group by \`b0\`.\`author_id\`",
   ],
 ]
 `;

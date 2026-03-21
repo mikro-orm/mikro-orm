@@ -1,15 +1,20 @@
 import {
   type EntitySchemaWithMeta,
   EntityManager,
+  raw,
   type AnyEntity,
   type ConnectionType,
+  type CountOptions,
+  type Dictionary,
   type EntityData,
+  type EntityKey,
   type EntityName,
   type EntityRepository,
-  type GetRepository,
-  type QueryResult,
   type FilterQuery,
+  type GetRepository,
   type LoggingOptions,
+  type Primary,
+  type QueryResult,
   type RawQueryFragment,
 } from '@mikro-orm/core';
 import type { AbstractSqlDriver } from './AbstractSqlDriver.js';
@@ -100,6 +105,47 @@ export class SqlEntityManager<Driver extends AbstractSqlDriver = AbstractSqlDriv
       this.getContext(false).getTransactionContext(),
       loggerContext,
     );
+  }
+
+  /**
+   * @inheritDoc
+   */
+  override async countBy<Entity extends object>(
+    entityName: EntityName<Entity>,
+    prop: EntityKey<Entity>,
+    pks: Primary<any>[],
+    where?: FilterQuery<NoInfer<Entity>>,
+    options: CountOptions<Entity> = {},
+  ): Promise<Dictionary<number>> {
+    const em = this.getContext(false) as SqlEntityManager;
+    const meta = em.getMetadata().find(entityName)!;
+    const propMeta = meta.properties[prop as EntityKey<Entity>];
+
+    if (!propMeta?.fieldNames?.length || propMeta.fieldNames.length > 1) {
+      return super.countBy(entityName, prop, pks, where, options);
+    }
+
+    const fkColumn = propMeta.fieldNames[0];
+    const qb = em.createQueryBuilder(meta.class);
+    const cond = { [prop]: { $in: pks }, ...(where ?? {}) } as FilterQuery<Entity>;
+
+    (qb as any)
+      .select([prop, raw('count(*) as "cnt"')])
+      .where(cond)
+      .groupBy(prop as string);
+
+    if (options.schema) {
+      qb.withSchema(options.schema);
+    }
+
+    const rows: any[] = await qb.execute('all', { mapResults: false });
+    const results: Dictionary<number> = {};
+
+    for (const row of rows) {
+      results[JSON.stringify(row[fkColumn])] = +row.cnt;
+    }
+
+    return results;
   }
 
   override getRepository<T extends object, U extends EntityRepository<T> = SqlEntityRepository<T>>(

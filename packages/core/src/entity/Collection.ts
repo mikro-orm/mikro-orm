@@ -127,7 +127,7 @@ export class Collection<T extends object, O extends object = object> {
    */
   async loadCount(options: LoadCountOptions<T> | boolean = {}): Promise<number> {
     options = typeof options === 'boolean' ? { refresh: options } : options;
-    const { refresh, where, ...countOptions } = options;
+    const { refresh, where, dataloader, ...countOptions } = options;
 
     if (!refresh && !where && this.#count != null) {
       return this.#count;
@@ -141,6 +141,17 @@ export class Collection<T extends object, O extends object = object> {
       this.property.owner
     ) {
       return (this.#count = this.length);
+    }
+
+    if (dataloader ?? [DataloaderType.ALL, DataloaderType.COLLECTION].includes(em.config.getDataloaderType())) {
+      const loader = await em.getDataLoader('count');
+      const count: number = await loader.load([this, { where, ...countOptions }]);
+
+      if (!where) {
+        this.#count = count;
+      }
+
+      return count;
     }
 
     const cond = this.createLoadCountCondition(where ?? ({} as FilterQuery<T>));
@@ -1021,4 +1032,6 @@ export interface LoadCountOptions<T extends object> extends CountOptions<T, '*'>
   refresh?: boolean;
   /** Additional filtering conditions for the count query. */
   where?: FilterQuery<T>;
+  /** Whether to use the dataloader for batching count operations. */
+  dataloader?: boolean;
 }

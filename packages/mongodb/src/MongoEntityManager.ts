@@ -1,12 +1,17 @@
 import {
   EntityManager,
   Utils,
+  type CountOptions,
+  type Dictionary,
+  type EntityKey,
   type EntityName,
   type EntityRepository,
+  type FilterQuery,
   type GetRepository,
-  type TransactionOptions,
-  type StreamOptions,
   type Loaded,
+  type Primary,
+  type StreamOptions,
+  type TransactionOptions,
 } from '@mikro-orm/core';
 import type { Collection, Document, TransactionOptions as MongoTransactionOptions } from 'mongodb';
 import type { MongoDriver } from './MongoDriver.js';
@@ -51,6 +56,41 @@ export class MongoEntityManager<Driver extends MongoDriver = MongoDriver> extend
 
   getCollection<T extends Document>(entityOrCollectionName: EntityName<T> | string): Collection<T> {
     return this.getConnection().getCollection(entityOrCollectionName);
+  }
+
+  /**
+   * @inheritDoc
+   */
+  override async countBy<Entity extends object>(
+    entityName: EntityName<Entity>,
+    prop: EntityKey<Entity>,
+    pks: Primary<any>[],
+    where?: FilterQuery<NoInfer<Entity>>,
+    options: CountOptions<Entity> = {},
+  ): Promise<Dictionary<number>> {
+    const em = this.getContext(false) as MongoEntityManager;
+    const meta = em.getMetadata().find(entityName)!;
+    const propMeta = meta.properties[prop as EntityKey<Entity>];
+
+    if (!propMeta?.fieldNames?.length) {
+      return super.countBy(entityName, prop, pks, where, options);
+    }
+
+    const fkField = propMeta.fieldNames[0];
+    const collection = em.getCollection(meta.collection);
+    const fkCondition = { [fkField]: { $in: pks } };
+    const match = where && Object.keys(where).length > 0 ? { $and: [fkCondition, where] } : fkCondition;
+
+    const pipeline = [{ $match: match }, { $group: { _id: `$${fkField}`, count: { $sum: 1 } } }];
+
+    const rows = await collection.aggregate(pipeline).toArray();
+    const results: Dictionary<number> = {};
+
+    for (const row of rows) {
+      results[JSON.stringify(row._id)] = +row.count;
+    }
+
+    return results;
   }
 
   /**

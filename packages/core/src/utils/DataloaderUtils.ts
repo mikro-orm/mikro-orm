@@ -1,8 +1,9 @@
 import type { Constructor, Dictionary, Primary, Ref } from '../typings.js';
-import { Collection, type InitCollectionOptions } from '../entity/Collection.js';
+import { Collection, type InitCollectionOptions, type LoadCountOptions } from '../entity/Collection.js';
 import { helper } from '../entity/wrap.js';
 import { type EntityManager } from '../EntityManager.js';
 import { type LoadReferenceOptions, Reference } from '../entity/Reference.js';
+import { ReferenceKind } from '../enums.js';
 import { Utils } from './Utils.js';
 
 type BatchLoadFn<K, V> = (keys: readonly K[]) => PromiseLike<ArrayLike<V | Error>>;
@@ -259,6 +260,62 @@ export class DataloaderUtils {
       }
 
       return ret;
+    };
+  }
+
+  /**
+   * Returns the count dataloader batchLoadFn, which aggregates `loadCount()` calls by entity and relation,
+   * issues a single grouped count query per entity+options combination via `em.countBy()`,
+   * and maps each input collection to the corresponding count.
+   */
+  static getCountBatchLoadFn(
+    em: EntityManager,
+  ): BatchLoadFn<[Collection<any>, Omit<LoadCountOptions<any>, 'dataloader' | 'refresh'>?], number> {
+    return async (
+      collsWithOpts: readonly [Collection<any>, Omit<LoadCountOptions<any>, 'dataloader' | 'refresh'>?][],
+    ): Promise<ArrayLike<number | Error>> => {
+      const groups = new Map<
+        string,
+        {
+          fkProp: string;
+          targetClass: any;
+          ownerPKs: Map<string, Primary<any>>;
+          opts: Omit<LoadCountOptions<any>, 'dataloader' | 'refresh'>;
+        }
+      >();
+      const keys: string[] = [];
+
+      for (const [col, opts] of collsWithOpts) {
+        const prop = col.property;
+        const fkProp =
+          prop.kind === ReferenceKind.ONE_TO_MANY ? prop.mappedBy : (prop.owner ? prop.inversedBy : prop.mappedBy)!;
+
+        const key = `${prop.targetMeta!.uniqueName}.${prop.name}|${JSON.stringify(opts ?? {})}`;
+        keys.push(key);
+        let group = groups.get(key);
+
+        if (!group) {
+          group = { fkProp, targetClass: prop.targetMeta!.class, ownerPKs: new Map(), opts: opts ?? {} };
+          groups.set(key, group);
+        }
+
+        const pk = helper(col.owner).getPrimaryKey();
+        group.ownerPKs.set(JSON.stringify(pk), pk);
+      }
+
+      const promises = Array.from(groups.entries()).map(async ([key, group]): Promise<[string, Dictionary<number>]> => {
+        const allPKs = Array.from(group.ownerPKs.values());
+        const { where, ...countOpts } = group.opts;
+        const counts = await em.countBy(group.targetClass, group.fkProp as never, allPKs, where, countOpts as any);
+        return [key, counts];
+      });
+      const resultsMap = new Map(await Promise.all(promises));
+
+      return collsWithOpts.map(([col], i) => {
+        const pk = helper(col.owner).getPrimaryKey();
+        const counts = resultsMap.get(keys[i]);
+        return counts?.[JSON.stringify(pk)] ?? 0;
+      });
     };
   }
 

@@ -5,7 +5,7 @@ sidebar_label: Dataloaders
 
 The n+1 problem is when multiple types of data are requested in one query, but where n requests are required instead of just one. This is typically encountered when data is nested, such as if you were requesting authors and the name of their books. It is an inherent problem of GraphQL APIs and can be solved by batching multiple requests into a single one. This can be automated via the dataloader library which will coalesce all individual loads which occur within a single frame of execution (a single tick of the event loop) and then call your batch function with all requested keys. That means writing a batch loading function for every db call that aggregates multiple queries into a single one, plus filtering the results to reassign them to the original queries. Fortunately, MikroORM has plenty of metadata to transparently automate this process so that you won't have to write your own batch loading functions.
 
-In the current version, MikroORM is able to automatically batch [references](./guide/05-type-safety.md#reference-wrapper) and [collections](./collections.md). However, if you are interested to try it out there is an [out of tree library](https://github.com/darkbasic/mikro-orm-dataloaders) which takes care of batching whole find queries with a subset of the operators supported.
+In the current version, MikroORM is able to automatically batch [references](./guide/05-type-safety.md#reference-wrapper), [collections](./collections.md), and collection counts. However, if you are interested to try it out there is an [out of tree library](https://github.com/darkbasic/mikro-orm-dataloaders) which takes care of batching whole find queries with a subset of the operators supported.
 
 ## Usage
 
@@ -31,7 +31,7 @@ MikroORM.init({
 
 `DataloaderType.REFERENCE` enables the dataloader for [References](./guide/05-type-safety.md#reference-wrapper), `DataloaderType.COLLECTION` enables it for [Collections](./collections.md) while `DataloaderType.ALL` enables it for both. A boolean value is also supported to enable/disable all of them.
 
-The dataloader can also be enabled per-query via the `load()` method options of `Reference` or `Collection` class.
+The dataloader can also be enabled per-query via the `load()` and `loadCount()` method options of `Reference` or `Collection` class.
 
 ### `Reference` properties
 
@@ -63,6 +63,30 @@ This is another example where the dataloader is being used to retrieve multiple 
 ```ts
 const books = await orm.em.find(Book, [1, 2, 3]);
 await Promise.all(books.map(book => book.author.load({ dataloader: true })));
+```
+
+### `Collection.loadCount()`
+
+The dataloader also supports `Collection.loadCount()`, batching multiple count queries into a single `GROUP BY` query:
+
+```ts
+const authors = await orm.em.find(Author, [1, 2, 3]);
+await Promise.all(authors.map(author => author.books.loadCount({ dataloader: true })));
+```
+
+This issues a single query instead of three separate `COUNT` queries.
+
+### `em.countBy()`
+
+Under the hood, the count dataloader uses `em.countBy()`, which is also available as a standalone method for counting entities grouped by a property:
+
+```ts
+const counts = await em.countBy(Book, 'author', [1, 2, 3]);
+// { '1': 2, '2': 1, '3': 3 }
+
+// With additional filtering
+const counts = await em.countBy(Book, 'author', [1, 2, 3], { active: true });
+// { '1': 1, '3': 2 }
 ```
 
 ## GraphQL
