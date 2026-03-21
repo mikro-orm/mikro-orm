@@ -39,6 +39,7 @@ interface Options {
   limit?: number;
   offset?: number;
   data?: Dictionary;
+  insertSubQuery?: { sql: string; params: unknown[] };
   onConflict?: OnConflictClause;
   lockMode?: LockMode;
   lockTables?: string[];
@@ -338,6 +339,15 @@ export class NativeQueryBuilder implements Subquery {
     return this;
   }
 
+  insertSelect(columns: string[], subQuery: NativeQueryBuilder | RawQueryFragment): this {
+    this.type = QueryType.INSERT;
+    const { sql, params } =
+      subQuery instanceof NativeQueryBuilder ? subQuery.compile() : { sql: subQuery.sql, params: [...subQuery.params] };
+    this.options.insertSubQuery = { sql, params };
+    this.options.select = columns.map(c => this.quote(c));
+    return this;
+  }
+
   update(data: Dictionary): this {
     this.type = QueryType.UPDATE;
     this.options.data ??= {};
@@ -510,7 +520,7 @@ export class NativeQueryBuilder implements Subquery {
   }
 
   protected compileInsert() {
-    if (!this.options.data) {
+    if (!this.options.data && !this.options.insertSubQuery) {
       throw new Error('No data provided');
     }
 
@@ -518,7 +528,19 @@ export class NativeQueryBuilder implements Subquery {
     this.addHintComment();
     this.parts.push(`into ${this.getTableName()}`);
 
-    if (Object.keys(this.options.data).length === 0) {
+    if (this.options.insertSubQuery) {
+      // INSERT INTO table (col1, col2) SELECT ...
+      if (this.options.select?.length) {
+        this.parts.push(`(${this.options.select.join(', ')})`);
+      }
+
+      this.addOutputClause('inserted');
+      this.parts.push(this.options.insertSubQuery.sql);
+      this.params.push(...this.options.insertSubQuery.params);
+      return;
+    }
+
+    if (Object.keys(this.options.data!).length === 0) {
       this.addOutputClause('inserted');
       this.parts.push('default values');
       return;
