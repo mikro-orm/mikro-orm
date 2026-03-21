@@ -131,12 +131,10 @@ export function applyPopulateHints<Entity>(
       continue;
     }
 
-    if (hint.strategy != null) {
-      entry.strategy = hint.strategy as LoadStrategy;
-    }
-
-    if (hint.joinType != null) {
-      entry.joinType = hint.joinType;
+    for (const key of Object.keys(hint) as (keyof PopulateHintOptions)[]) {
+      if (hint[key] != null) {
+        (entry as Record<string, unknown>)[key] = hint[key];
+      }
     }
   }
 }

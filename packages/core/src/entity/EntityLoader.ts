@@ -10,6 +10,7 @@ import type {
   EntityValue,
   FilterKey,
   FilterQuery,
+  PopulateHintOptions,
   PopulateOptions,
   Primary,
 } from '../typings.js';
@@ -69,6 +70,8 @@ export interface EntityLoaderOptions<Entity, Fields extends string = never, Excl
   connectionType?: ConnectionType;
   /** Logging options for the query. */
   logging?: LoggingOptions;
+  /** Per-relation populate overrides (limit, offset, orderBy). */
+  populateHints?: Record<string, PopulateHintOptions>;
 }
 
 /** Responsible for batch-loading entity relations using either select-in or joined loading strategies. */
@@ -310,9 +313,10 @@ export class EntityLoader {
       )
       .flatMap(orderBy => orderBy[prop.name]);
     const where = await this.extractChildCondition(options, prop);
+    const mergedOrderBy = populate.orderBy ? Utils.asArray(populate.orderBy) : innerOrderBy;
 
     if (prop.kind === ReferenceKind.MANY_TO_MANY && this.#driver.getPlatform().usesPivotTable()) {
-      const pivotOrderBy = QueryHelper.mergeOrderBy<Entity>(innerOrderBy, prop.orderBy, prop.targetMeta?.orderBy);
+      const pivotOrderBy = QueryHelper.mergeOrderBy<Entity>(mergedOrderBy, prop.orderBy, prop.targetMeta?.orderBy);
       const res = await this.findChildrenFromPivotTable<Entity>(filtered, prop, options, pivotOrderBy, populate, !!ref);
       return Utils.flatten(res);
     }
@@ -320,7 +324,6 @@ export class EntityLoader {
     if (prop.polymorphic && prop.polymorphTargets) {
       return this.populatePolymorphic<Entity>(entities, prop, options, !!ref);
     }
-
     const { items, partial } = await this.findChildren<Entity>(
       (options as Dictionary).filtered ?? entities,
       prop,
@@ -328,12 +331,14 @@ export class EntityLoader {
       {
         ...options,
         where,
-        orderBy: innerOrderBy,
+        orderBy: mergedOrderBy,
       },
       !!(ref || prop.mapToPk),
     );
-    const customOrder = innerOrderBy.length > 0 || !!prop.orderBy || !!prop.targetMeta?.orderBy;
-    this.initializeCollections<Entity>(filtered, prop, field, items, customOrder, partial);
+    const hasLimit = populate.limit != null;
+    const isPartial = partial || hasLimit;
+    const customOrder = mergedOrderBy.length > 0 || !!prop.orderBy || !!prop.targetMeta?.orderBy;
+    this.initializeCollections<Entity>(filtered, prop, field, items, customOrder, isPartial, hasLimit);
 
     return items;
   }
@@ -451,13 +456,14 @@ export class EntityLoader {
     children: AnyEntity[],
     customOrder: boolean,
     partial: boolean,
+    readonly?: boolean,
   ): void {
     if (prop.kind === ReferenceKind.ONE_TO_MANY) {
-      this.initializeOneToMany<Entity>(filtered, children, prop, field, partial);
+      this.initializeOneToMany<Entity>(filtered, children, prop, field, partial, readonly);
     }
 
     if (prop.kind === ReferenceKind.MANY_TO_MANY && !this.#driver.getPlatform().usesPivotTable()) {
-      this.initializeManyToMany<Entity>(filtered, children, prop, field, customOrder, partial);
+      this.initializeManyToMany<Entity>(filtered, children, prop, field, customOrder, partial, readonly);
     }
   }
 
@@ -467,6 +473,7 @@ export class EntityLoader {
     prop: EntityProperty,
     field: keyof Entity,
     partial: boolean,
+    readonly?: boolean,
   ): void {
     const mapToPk = prop.targetMeta!.properties[prop.mappedBy].mapToPk;
     const map: Dictionary<Entity[]> = {};
@@ -487,7 +494,7 @@ export class EntityLoader {
 
     for (const entity of filtered) {
       const key = helper(entity).getSerializedPrimaryKey();
-      (entity[field] as unknown as Collection<Entity>).hydrate(map[key], undefined, partial);
+      (entity[field] as unknown as Collection<Entity>).hydrate(map[key], undefined, partial, readonly);
     }
   }
 
@@ -498,13 +505,14 @@ export class EntityLoader {
     field: keyof Entity,
     customOrder: boolean,
     partial: boolean,
+    readonly?: boolean,
   ): void {
     if (prop.mappedBy) {
       for (const entity of filtered) {
         const items = children.filter(child =>
           (child[prop.mappedBy] as Collection<AnyEntity>).contains(entity as AnyEntity, false),
         );
-        (entity[field] as Collection<AnyEntity>).hydrate(items, true, partial);
+        (entity[field] as Collection<AnyEntity>).hydrate(items, true, partial, readonly);
       }
     } else {
       // owning side of M:N without pivot table needs to be reordered
@@ -516,7 +524,7 @@ export class EntityLoader {
           items.sort((a, b) => order.indexOf(a) - order.indexOf(b));
         }
 
-        (entity[field] as Collection<AnyEntity>).hydrate(items, true, partial);
+        (entity[field] as Collection<AnyEntity>).hydrate(items, true, partial, readonly);
       }
     }
   }
@@ -616,7 +624,7 @@ export class EntityLoader {
 
     const orderBy = QueryHelper.mergeOrderBy(options.orderBy, prop.orderBy);
 
-    const items = await this.#em.find(meta.class, where, {
+    const findOptions: Dictionary = {
       filters,
       convertCustomTypes,
       lockMode,
@@ -635,7 +643,17 @@ export class EntityLoader {
       refresh: refresh && !children.every(item => options.visited.has(item)),
       // @ts-ignore not a public option, will be propagated to the populate call
       visited: options.visited,
-    });
+    };
+
+    if (populate.limit != null) {
+      findOptions._partitionLimit = {
+        partitionBy: fk,
+        limit: populate.limit,
+        offset: populate.offset,
+      };
+    }
+
+    const items = await this.#em.find(meta.class, where, findOptions);
 
     // For targetKey relations, wire up loaded entities to parent references
     // This is needed because the references were created under alternate key,
@@ -850,11 +868,19 @@ export class EntityLoader {
     // oxfmt-ignore
     const exclude = Array.isArray(options.exclude) ? Utils.extractChildElements(options.exclude, prop.name) : options.exclude;
     const populateFilter = (options as Dictionary).populateFilter?.[prop.name];
-    const options2 = { ...options, fields, exclude, populateFilter } as unknown as FindOptions<Entity, any, any, any>;
+    const options2 = { ...options, fields, exclude, populateFilter } as unknown as FindOptions<Entity, any, any, any> &
+      Dictionary;
     (['limit', 'offset', 'first', 'last', 'before', 'after', 'overfetch'] as const).forEach(
       prop => delete options2[prop],
     );
     options2.populate = populate?.children ?? [];
+
+    if (populate?.limit != null) {
+      options2._partitionLimit = {
+        limit: populate.limit,
+        offset: populate.offset,
+      };
+    }
 
     if (!Utils.isEmpty(prop.where)) {
       where = { $and: [where, prop.where] } as FilterQuery<Entity>;
@@ -889,7 +915,8 @@ export class EntityLoader {
         });
         return this.#em.getUnitOfWork().register(entity as AnyEntity, item, { refresh, loaded: true });
       });
-      (entity[prop.name] as unknown as Collection<AnyEntity>).hydrate(items, true);
+      const hasLimit = populate?.limit != null;
+      (entity[prop.name] as unknown as Collection<AnyEntity>).hydrate(items, true, hasLimit, hasLimit);
       children.push(items);
     }
 
