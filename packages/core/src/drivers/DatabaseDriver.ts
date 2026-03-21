@@ -107,6 +107,15 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
     options?: DeleteOptions<T>,
   ): Promise<QueryResult<T>>;
 
+  async nativeClone<T extends object>(
+    entityName: EntityName<T>,
+    where: FilterQuery<T>,
+    overrides?: EntityData<T>,
+    options?: NativeInsertUpdateOptions<T>,
+  ): Promise<QueryResult<T>> {
+    throw new Error(`${this.constructor.name} does not support nativeClone`);
+  }
+
   abstract count<T extends object, P extends string = never>(
     entityName: EntityName<T>,
     where: FilterQuery<T>,
