@@ -268,8 +268,11 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     const meta = this.metadata.find(entityName)!;
     const pk = meta.getPrimaryProps()[0].fieldNames[0] ?? '_id';
 
+    // Normalize PK value to filter object
+    const normalizedWhere = Utils.isPrimaryKey(where) ? ({ [pk]: where } as FilterQuery<T>) : where;
+
     // Find the source document
-    const renameWhere = this.renameFields(entityName, where as unknown as EntityDictionary<T>);
+    const renameWhere = this.renameFields(entityName, normalizedWhere as unknown as EntityDictionary<T>);
     const source = await this.rethrow(
       this.getConnection('read').find<T>(entityName, renameWhere as FilterQuery<T>, { ctx: options.ctx, limit: 1 }),
     );
