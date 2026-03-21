@@ -833,4 +833,119 @@ describe('Dataloader', () => {
 
     await orm.close(true);
   });
+
+  test('getCountBatchLoadFn', async () => {
+    const countBatchLoadFn = DataloaderUtils.getCountBatchLoadFn(orm.em);
+    const em = orm.em.fork();
+    const authors = await em.find(Author, {}, { first: 3, orderBy: { id: QueryOrder.ASC } });
+    const collections = authors.map(a => a.books);
+    const mock = mockLogger(orm);
+    const res = await countBatchLoadFn(collections.map(col => [col]));
+    expect(mock.mock.calls).toMatchSnapshot();
+    expect(res.length).toBe(3);
+    expect(Array.from(res)).toEqual([2, 1, 3]);
+  });
+
+  test('Collection.loadCount with dataloader (1:M)', async () => {
+    const em = orm.em.fork();
+    const authors = await em.find(Author, {}, { first: 3, orderBy: { id: QueryOrder.ASC } });
+    const expected = [];
+    for (const a of authors) {
+      expected.push(await a.books.loadCount());
+    }
+
+    const em2 = orm.em.fork();
+    const authors2 = await em2.find(Author, {}, { first: 3, orderBy: { id: QueryOrder.ASC } });
+    const mock = mockLogger(orm);
+    const counts = await Promise.all(authors2.map(a => a.books.loadCount({ dataloader: true })));
+    expect(mock.mock.calls).toMatchSnapshot();
+    expect(counts).toEqual(expected);
+  });
+
+  test('Collection.loadCount with dataloader (M:N)', async () => {
+    const em = orm.em.fork();
+    const authors = await em.find(Author, {}, { first: 3, orderBy: { id: QueryOrder.ASC } });
+    const expected = [];
+    for (const a of authors) {
+      expected.push(await a.buddies.loadCount());
+    }
+
+    const em2 = orm.em.fork();
+    const authors2 = await em2.find(Author, {}, { first: 3, orderBy: { id: QueryOrder.ASC } });
+    const mock = mockLogger(orm);
+    const counts = await Promise.all(authors2.map(a => a.buddies.loadCount({ dataloader: true })));
+    expect(mock.mock.calls).toMatchSnapshot();
+    expect(counts).toEqual(expected);
+  });
+
+  test('Collection.loadCount with dataloader and where', async () => {
+    const makeWhere = () => ({ title: ['One', 'Two', 'Six'] });
+
+    const em = orm.em.fork();
+    const authors = await em.find(Author, {}, { first: 3, orderBy: { id: QueryOrder.ASC } });
+    const expected = [];
+    for (const a of authors) {
+      expected.push(await a.books.loadCount({ where: makeWhere() }));
+    }
+
+    const em2 = orm.em.fork();
+    const authors2 = await em2.find(Author, {}, { first: 3, orderBy: { id: QueryOrder.ASC } });
+    const mock = mockLogger(orm);
+    const counts = await Promise.all(authors2.map(a => a.books.loadCount({ where: makeWhere(), dataloader: true })));
+    expect(mock.mock.calls).toMatchSnapshot();
+    expect(counts).toEqual(expected);
+  });
+
+  test('Collection.loadCount caching with dataloader', async () => {
+    const em = orm.em.fork();
+    const author = await em.findOneOrFail(Author, 1);
+    const count1 = await author.books.loadCount({ dataloader: true });
+    const mock = mockLogger(orm);
+    const count2 = await author.books.loadCount({ dataloader: true });
+    expect(mock.mock.calls.length).toBe(0);
+    expect(count1).toBe(count2);
+    expect(count1).toBe(2);
+  });
+
+  test('Dataloader can be globally enabled for Collection.loadCount', async () => {
+    const orm2 = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
+      dbName: ':memory:',
+      dataloader: DataloaderType.ALL,
+      entities: [Author, Book, Chat, Message],
+      loggerFactory: SimpleLogger.create,
+    });
+    await orm2.schema.create();
+    await populateDatabase(orm2.em);
+
+    const em = orm2.em.fork();
+    const authors = await em.find(Author, {}, { first: 3, orderBy: { id: QueryOrder.ASC } });
+    const mock = mockLogger(orm2);
+    const counts = await Promise.all(authors.map(a => a.books.loadCount()));
+    expect(mock.mock.calls).toMatchSnapshot();
+    expect(counts).toEqual([2, 1, 3]);
+
+    await orm2.close(true);
+  });
+
+  test('Collection.loadCount dataloader can be disabled per-query', async () => {
+    const orm2 = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
+      dbName: ':memory:',
+      dataloader: DataloaderType.ALL,
+      entities: [Author, Book, Chat, Message],
+      loggerFactory: SimpleLogger.create,
+    });
+    await orm2.schema.create();
+    await populateDatabase(orm2.em);
+
+    const em = orm2.em.fork();
+    const authors = await em.find(Author, {}, { first: 3, orderBy: { id: QueryOrder.ASC } });
+    const mock = mockLogger(orm2);
+    const counts = await Promise.all(authors.map(a => a.books.loadCount({ dataloader: false })));
+    expect(mock.mock.calls.length).toBe(3);
+    expect(counts).toEqual([2, 1, 3]);
+
+    await orm2.close(true);
+  });
 });
