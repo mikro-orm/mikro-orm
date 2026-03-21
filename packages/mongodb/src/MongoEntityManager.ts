@@ -1,12 +1,15 @@
 import {
   EntityManager,
   Utils,
+  type CountByOptions,
+  type Dictionary,
+  type EntityKey,
   type EntityName,
   type EntityRepository,
   type GetRepository,
-  type TransactionOptions,
-  type StreamOptions,
   type Loaded,
+  type StreamOptions,
+  type TransactionOptions,
 } from '@mikro-orm/core';
 import type { Collection, Document, TransactionOptions as MongoTransactionOptions } from 'mongodb';
 import type { MongoDriver } from './MongoDriver.js';
@@ -51,6 +54,44 @@ export class MongoEntityManager<Driver extends MongoDriver = MongoDriver> extend
 
   getCollection<T extends Document>(entityOrCollectionName: EntityName<T> | string): Collection<T> {
     return this.getConnection().getCollection(entityOrCollectionName);
+  }
+
+  /**
+   * @inheritDoc
+   */
+  override async countBy<Entity extends object>(
+    entityName: EntityName<Entity>,
+    groupBy: EntityKey<Entity> | readonly EntityKey<Entity>[],
+    options: CountByOptions<Entity> = {},
+  ): Promise<Dictionary<number>> {
+    const em = this.getContext(false) as MongoEntityManager;
+    const meta = em.getMetadata().find(entityName)!;
+    const fields = Utils.asArray(groupBy);
+    const { where, ...countOptions } = options;
+
+    const fieldNames = fields.map(f => meta.properties[f as EntityKey<Entity>]?.fieldNames?.[0] ?? f);
+    const groupId =
+      fieldNames.length === 1 ? `$${fieldNames[0]}` : Object.fromEntries(fieldNames.map(f => [f, `$${f}`]));
+
+    const pipeline: Dictionary[] = [];
+
+    if (where && Object.keys(where).length > 0) {
+      pipeline.push({ $match: where });
+    }
+
+    pipeline.push({ $group: { _id: groupId, count: { $sum: 1 } } });
+
+    const collection = em.getCollection(meta.collection);
+    const rows = await collection.aggregate(pipeline).toArray();
+    const results: Dictionary<number> = {};
+
+    for (const row of rows) {
+      const key =
+        fieldNames.length === 1 ? String(row._id) : fieldNames.map(f => String(row._id[f])).join(Utils.PK_SEPARATOR);
+      results[key] = +row.count;
+    }
+
+    return results;
   }
 
   /**

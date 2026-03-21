@@ -15,6 +15,7 @@ import { helper } from './entity/wrap.js';
 import { ChangeSet, ChangeSetType } from './unit-of-work/ChangeSet.js';
 import { UnitOfWork } from './unit-of-work/UnitOfWork.js';
 import type {
+  CountByOptions,
   CountOptions,
   DeleteOptions,
   EntityField,
@@ -2118,6 +2119,34 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     await em.storeCache(options.cache, cached!, () => +count);
 
     return +count;
+  }
+
+  /**
+   * Counts entities grouped by one or more properties. Returns a dictionary keyed by the grouped
+   * field value(s), with counts as values. For composite `groupBy`, keys are joined with `~~~`.
+   *
+   * SQL drivers issue a single `GROUP BY` query; MongoDB uses an aggregation pipeline.
+   *
+   * @example
+   * ```ts
+   * // Count books per author
+   * const counts = await em.countBy(Book, 'author');
+   * // { '1': 2, '2': 1, '3': 3 }
+   *
+   * // Count with a filter
+   * const counts = await em.countBy(Book, 'author', { where: { active: true } });
+   *
+   * // Composite groupBy — keys joined with ~~~
+   * const counts = await em.countBy(Order, ['status', 'country']);
+   * // { 'pending~~~US': 5, 'shipped~~~DE': 3 }
+   * ```
+   */
+  async countBy<Entity extends object>(
+    entityName: EntityName<Entity>,
+    groupBy: EntityKey<Entity> | readonly EntityKey<Entity>[],
+    options?: CountByOptions<Entity>,
+  ): Promise<Dictionary<number>> {
+    throw new Error(`${this.constructor.name}.countBy() is not supported by the current driver`);
   }
 
   /**

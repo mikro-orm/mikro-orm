@@ -480,6 +480,14 @@ export interface CountOptions<T extends object, P extends string = never> {
   em?: EntityManager;
 }
 
+/** Options for `em.countBy()` queries. */
+export interface CountByOptions<T extends object, P extends string = never> extends Omit<
+  CountOptions<T, P>,
+  'groupBy'
+> {
+  where?: FilterQuery<T>;
+}
+
 /** Options for `em.qb().update()` operations. */
 export interface UpdateOptions<T> {
   filters?: FilterOptions;

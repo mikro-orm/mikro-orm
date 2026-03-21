@@ -2,12 +2,14 @@ import type { PopulatePath } from '../enums.js';
 import type { CreateOptions, EntityManager, MergeOptions } from '../EntityManager.js';
 import type { AssignOptions } from './EntityAssigner.js';
 import type {
+  Dictionary,
   EntityData,
-  EntityName,
-  Primary,
-  Loaded,
-  FilterQuery,
   EntityDictionary,
+  EntityKey,
+  EntityName,
+  FilterQuery,
+  Loaded,
+  Primary,
   AutoPath,
   RequiredEntityData,
   Ref,
@@ -20,6 +22,7 @@ import type {
   ArrayElement,
 } from '../typings.js';
 import type {
+  CountByOptions,
   CountOptions,
   DeleteOptions,
   FindAllOptions,
@@ -402,6 +405,22 @@ export class EntityRepository<Entity extends object> {
     options: CountOptions<Entity, Hint> = {},
   ): Promise<number> {
     return this.getEntityManager().count<Entity, Hint>(this.entityName, where as any, options);
+  }
+
+  /**
+   * Counts entities grouped by one or more properties.
+   *
+   * @example
+   * ```ts
+   * const counts = await repo.countBy('status');
+   * // { 'active': 5, 'inactive': 2 }
+   * ```
+   */
+  async countBy(
+    groupBy: EntityKey<Entity> | readonly EntityKey<Entity>[],
+    options?: CountByOptions<Entity>,
+  ): Promise<Dictionary<number>> {
+    return this.getEntityManager().countBy<Entity>(this.entityName, groupBy, options);
   }
 
   /** Returns the entity class name associated with this repository. */
