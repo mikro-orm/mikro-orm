@@ -5,17 +5,12 @@ import { NativeQueryBuilder } from '../../query/NativeQueryBuilder.js';
 export class MySqlNativeQueryBuilder extends NativeQueryBuilder {
   protected override compileInsert() {
     if (this.options.insertSubQuery) {
-      // INSERT ... SELECT handled by base class
-      // but we need to handle MySQL's INSERT IGNORE syntax
-      if (this.options.onConflict?.ignore) {
-        // Will be handled after base compileInsert adds 'insert' prefix
-      }
-
       super.compileInsert();
 
-      // Inject 'ignore' after 'insert' for MySQL's INSERT IGNORE syntax
+      // Inject 'ignore' after 'insert' for MySQL's INSERT IGNORE ... SELECT syntax
       if (this.options.onConflict?.ignore) {
         const insertIdx = this.parts.indexOf('insert');
+
         if (insertIdx >= 0) {
           this.parts.splice(insertIdx + 1, 0, 'ignore');
         }

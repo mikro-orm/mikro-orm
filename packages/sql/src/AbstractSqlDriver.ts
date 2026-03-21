@@ -927,7 +927,6 @@ export abstract class AbstractSqlDriver<
     options.convertCustomTypes ??= true;
     const meta = this.metadata.get(entityName);
 
-    // For TPT entities, we need to insert into each table in the hierarchy
     if (meta.inheritanceType === 'tpt' || meta.tptParent) {
       return this.nativeCloneTPT(meta, where, overrides, options);
     }
@@ -941,9 +940,10 @@ export abstract class AbstractSqlDriver<
     overrides?: EntityData<T>,
     options: NativeInsertUpdateOptions<T> = {},
   ): Promise<QueryResult<T>> {
-    const cloneableProps = this.getCloneableProps(meta);
+    const props = this.getCloneableProps(meta);
+    const mappedOverrides = this.mapCloneOverrides(overrides, meta, options);
+    const { selectFields, insertColumns } = this.buildCloneFields(props, mappedOverrides, meta);
 
-    // Build SELECT sub-query
     const selectQb = this.createQueryBuilder<T>(
       meta.class,
       options.ctx,
@@ -951,37 +951,8 @@ export abstract class AbstractSqlDriver<
       options.convertCustomTypes,
       options.loggerContext,
     ).withSchema(this.getSchemaName(meta, options));
-
-    const selectFields: (string | RawQueryFragment)[] = [];
-    const insertColumns: string[] = [];
-    const mappedOverrides = overrides
-      ? super.mapDataToFieldNames(
-          { ...(overrides as Dictionary) },
-          true,
-          meta.properties as any,
-          options.convertCustomTypes,
-        )
-      : undefined;
-
-    for (const prop of cloneableProps) {
-      for (let i = 0; i < prop.fieldNames.length; i++) {
-        const fieldName = prop.fieldNames[i];
-        insertColumns.push(fieldName);
-
-        if (mappedOverrides && fieldName in mappedOverrides) {
-          selectFields.push(raw('? as ??', [mappedOverrides[fieldName], fieldName]));
-        } else if (meta.versionProperty === prop.name) {
-          const initial = prop.runtimeType === 'Date' ? new Date() : 1;
-          selectFields.push(raw('? as ??', [initial, fieldName]));
-        } else {
-          selectFields.push(fieldName);
-        }
-      }
-    }
-
     selectQb.select(selectFields as any).where(where as any);
 
-    // Build INSERT query
     const insertQb = this.createQueryBuilder<T>(
       meta.class,
       options.ctx,
@@ -1003,7 +974,6 @@ export abstract class AbstractSqlDriver<
     overrides?: EntityData<T>,
     options: NativeInsertUpdateOptions<T> = {},
   ): Promise<QueryResult<T>> {
-    // Collect hierarchy from root to leaf
     const hierarchy: EntityMetadata[] = [];
     let current: EntityMetadata | undefined = leafMeta;
 
@@ -1017,7 +987,28 @@ export abstract class AbstractSqlDriver<
     let rootResult: QueryResult<T> | undefined;
 
     for (const tableMeta of hierarchy) {
-      const ownProps = this.getCloneableProps(tableMeta as EntityMetadata<T>, true);
+      const props = this.getCloneableProps(tableMeta as EntityMetadata<T>, true);
+      const mappedOverrides = this.mapCloneOverrides(overrides, tableMeta as EntityMetadata<T>, options);
+      const { selectFields, insertColumns } = this.buildCloneFields(
+        props,
+        mappedOverrides,
+        tableMeta as EntityMetadata<T>,
+      );
+
+      // For child tables, prepend the new PK value
+      if (tableMeta !== rootMeta && newPk != null) {
+        for (const pkName of tableMeta.primaryKeys) {
+          const prop = tableMeta.properties[pkName as EntityKey<T>] as EntityProperty;
+
+          for (const fieldName of prop.fieldNames) {
+            insertColumns.unshift(fieldName);
+            selectFields.unshift(raw('? as ??', [newPk, fieldName]));
+          }
+        }
+      }
+
+      const sourceWhere =
+        tableMeta === rootMeta ? where : ((Utils.extractPK(where as any, tableMeta) as FilterQuery<T>) ?? where);
 
       const selectQb = this.createQueryBuilder<T>(
         tableMeta.class as any,
@@ -1026,49 +1017,6 @@ export abstract class AbstractSqlDriver<
         options.convertCustomTypes,
         options.loggerContext,
       ).withSchema(this.getSchemaName(tableMeta as EntityMetadata<T>, options));
-
-      const selectFields: (string | RawQueryFragment)[] = [];
-      const insertColumns: string[] = [];
-      const mappedOverrides = overrides
-        ? super.mapDataToFieldNames(
-            { ...(overrides as Dictionary) },
-            true,
-            tableMeta.properties as any,
-            options.convertCustomTypes,
-          )
-        : undefined;
-
-      // For child tables, include the new PK value
-      if (tableMeta !== rootMeta && newPk != null) {
-        for (const pkName of tableMeta.primaryKeys) {
-          const prop = tableMeta.properties[pkName as EntityKey<T>] as EntityProperty;
-          for (const fieldName of prop.fieldNames) {
-            insertColumns.push(fieldName);
-            selectFields.push(raw('? as ??', [newPk, fieldName]));
-          }
-        }
-      }
-
-      for (const prop of ownProps) {
-        for (let i = 0; i < prop.fieldNames.length; i++) {
-          const fieldName = prop.fieldNames[i];
-          insertColumns.push(fieldName);
-
-          if (mappedOverrides && fieldName in mappedOverrides) {
-            selectFields.push(raw('? as ??', [mappedOverrides[fieldName], fieldName]));
-          } else if (tableMeta.versionProperty === prop.name) {
-            const initial = prop.runtimeType === 'Date' ? new Date() : 1;
-            selectFields.push(raw('? as ??', [initial, fieldName]));
-          } else {
-            selectFields.push(fieldName);
-          }
-        }
-      }
-
-      // Build the WHERE for source row using original PK
-      const sourceWhere =
-        tableMeta === rootMeta ? where : ((Utils.extractPK(where as any, tableMeta) as FilterQuery<T>) ?? where);
-
       selectQb.select(selectFields as any).where(sourceWhere as any);
 
       const insertQb = this.createQueryBuilder<T>(
@@ -1092,6 +1040,44 @@ export abstract class AbstractSqlDriver<
     }
 
     return rootResult!;
+  }
+
+  private mapCloneOverrides<T extends object>(
+    overrides: EntityData<T> | undefined,
+    meta: EntityMetadata<T>,
+    options: NativeInsertUpdateOptions<T>,
+  ): Dictionary | undefined {
+    if (!overrides) {
+      return undefined;
+    }
+
+    return super.mapDataToFieldNames(overrides as Dictionary, true, meta.properties as any, options.convertCustomTypes);
+  }
+
+  private buildCloneFields<T extends object>(
+    props: EntityProperty<T>[],
+    mappedOverrides: Dictionary | undefined,
+    meta: EntityMetadata<T>,
+  ): { selectFields: (string | RawQueryFragment)[]; insertColumns: string[] } {
+    const selectFields: (string | RawQueryFragment)[] = [];
+    const insertColumns: string[] = [];
+
+    for (const prop of props) {
+      for (const fieldName of prop.fieldNames) {
+        insertColumns.push(fieldName);
+
+        if (mappedOverrides && fieldName in mappedOverrides) {
+          selectFields.push(raw('? as ??', [mappedOverrides[fieldName], fieldName]));
+        } else if (meta.versionProperty === prop.name) {
+          const initial = prop.runtimeType === 'Date' ? new Date() : 1;
+          selectFields.push(raw('? as ??', [initial, fieldName]));
+        } else {
+          selectFields.push(fieldName);
+        }
+      }
+    }
+
+    return { selectFields, insertColumns };
   }
 
   private getCloneableProps<T extends object>(meta: EntityMetadata<T>, ownProps?: boolean): EntityProperty<T>[] {

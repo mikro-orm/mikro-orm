@@ -39,7 +39,7 @@ interface Options {
   limit?: number;
   offset?: number;
   data?: Dictionary;
-  insertSubQuery?: { sql: string; params: unknown[] };
+  insertSubQuery?: { sql: string; params: unknown[]; columns: string[] };
   onConflict?: OnConflictClause;
   lockMode?: LockMode;
   lockTables?: string[];
@@ -343,8 +343,7 @@ export class NativeQueryBuilder implements Subquery {
     this.type = QueryType.INSERT;
     const { sql, params } =
       subQuery instanceof NativeQueryBuilder ? subQuery.compile() : { sql: subQuery.sql, params: [...subQuery.params] };
-    this.options.insertSubQuery = { sql, params };
-    this.options.select = columns.map(c => this.quote(c));
+    this.options.insertSubQuery = { sql, params, columns: columns.map(c => this.quote(c)) };
     return this;
   }
 
@@ -529,9 +528,8 @@ export class NativeQueryBuilder implements Subquery {
     this.parts.push(`into ${this.getTableName()}`);
 
     if (this.options.insertSubQuery) {
-      // INSERT INTO table (col1, col2) SELECT ...
-      if (this.options.select?.length) {
-        this.parts.push(`(${this.options.select.join(', ')})`);
+      if (this.options.insertSubQuery.columns.length) {
+        this.parts.push(`(${this.options.insertSubQuery.columns.join(', ')})`);
       }
 
       this.addOutputClause('inserted');
