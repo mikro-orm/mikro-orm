@@ -1018,13 +1018,27 @@ export abstract class AbstractSqlDriver<
 
     for (const tableMeta of hierarchy) {
       const ownProps = (tableMeta.ownProps ?? tableMeta.props).filter(prop => {
-        if (prop.persist === false) return false;
-        if (prop.primary) return false;
-        if (prop.generated) return false;
-        if (prop.formula) return false;
-        if (!prop.fieldNames?.length) return false;
-        if ([ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(prop.kind)) return false;
-        if (prop.kind === ReferenceKind.EMBEDDED && !prop.object) return false;
+        if (prop.persist === false) {
+          return false;
+        }
+        if (prop.primary) {
+          return false;
+        }
+        if (prop.generated) {
+          return false;
+        }
+        if (prop.formula) {
+          return false;
+        }
+        if (!prop.fieldNames?.length) {
+          return false;
+        }
+        if ([ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(prop.kind)) {
+          return false;
+        }
+        if (prop.kind === ReferenceKind.EMBEDDED && !prop.object) {
+          return false;
+        }
         return true;
       });
 
@@ -1105,14 +1119,30 @@ export abstract class AbstractSqlDriver<
 
   private getCloneableProps<T extends object>(meta: EntityMetadata<T>): EntityProperty<T>[] {
     return meta.props.filter(prop => {
-      if (prop.persist === false) return false;
-      if (prop.primary) return false;
-      if (prop.generated) return false;
-      if (prop.formula) return false;
-      if (prop.inherited) return false;
-      if (!prop.fieldNames?.length) return false;
-      if ([ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(prop.kind)) return false;
-      if (prop.kind === ReferenceKind.EMBEDDED && !prop.object) return false;
+      if (prop.persist === false) {
+        return false;
+      }
+      if (prop.primary) {
+        return false;
+      }
+      if (prop.generated) {
+        return false;
+      }
+      if (prop.formula) {
+        return false;
+      }
+      if (prop.inherited) {
+        return false;
+      }
+      if (!prop.fieldNames?.length) {
+        return false;
+      }
+      if ([ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(prop.kind)) {
+        return false;
+      }
+      if (prop.kind === ReferenceKind.EMBEDDED && !prop.object) {
+        return false;
+      }
       return true;
     });
   }

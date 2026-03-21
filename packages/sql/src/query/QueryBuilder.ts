@@ -885,7 +885,7 @@ export class QueryBuilder<
    * ```
    */
   insertFrom(
-    subQuery: QueryBuilder<Entity, any, any, any, any, any, any>,
+    subQuery: AnyQueryBuilder<Entity>,
     options?: { columns?: Field<Entity, RootAlias, Context>[] },
   ): InsertQueryBuilder<Entity, RootAlias, Context> {
     this.ensureNotFinalized();
@@ -3465,15 +3465,31 @@ export class QueryBuilder<
   /** Returns properties that are safe to clone (persistable, non-PK, non-generated). */
   private getCloneableProps(meta: EntityMetadata): EntityProperty[] {
     return meta.props.filter(prop => {
-      if (prop.persist === false) return false;
-      if (prop.primary) return false;
-      if (prop.generated) return false;
-      if (prop.formula) return false;
-      if (prop.inherited) return false;
-      if (!prop.fieldNames?.length) return false;
-      if ([ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(prop.kind)) return false;
+      if (prop.persist === false) {
+        return false;
+      }
+      if (prop.primary) {
+        return false;
+      }
+      if (prop.generated) {
+        return false;
+      }
+      if (prop.formula) {
+        return false;
+      }
+      if (prop.inherited) {
+        return false;
+      }
+      if (!prop.fieldNames?.length) {
+        return false;
+      }
+      if ([ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(prop.kind)) {
+        return false;
+      }
       // Embedded parent props (non-object) have fieldNames spread across children — skip parent
-      if (prop.kind === ReferenceKind.EMBEDDED && !prop.object) return false;
+      if (prop.kind === ReferenceKind.EMBEDDED && !prop.object) {
+        return false;
+      }
       return true;
     });
   }
