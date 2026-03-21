@@ -3439,11 +3439,7 @@ export class QueryBuilder<
     }
 
     // Tier 3: derive from metadata — all cloneable columns
-    if (!meta) {
-      throw new Error('Cannot derive columns for insertFrom without entity metadata');
-    }
-
-    const cloneableProps = this.getCloneableProps(meta);
+    const cloneableProps = this.getCloneableProps(meta!);
     const selectFields: (string | RawQueryFragment)[] = [];
     const columns: string[] = [];
 
@@ -3471,12 +3467,6 @@ export class QueryBuilder<
       if (prop.primary) {
         return false;
       }
-      if (prop.generated) {
-        return false;
-      }
-      if (prop.formula) {
-        return false;
-      }
       if (prop.inherited) {
         return false;
       }
@@ -3486,7 +3476,6 @@ export class QueryBuilder<
       if ([ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(prop.kind)) {
         return false;
       }
-      // Embedded parent props (non-object) have fieldNames spread across children — skip parent
       if (prop.kind === ReferenceKind.EMBEDDED && !prop.object) {
         return false;
       }
