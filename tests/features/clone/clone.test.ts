@@ -113,6 +113,24 @@ class Article {
   author!: Ref<Author>;
 }
 
+@Entity()
+class Product {
+  @PrimaryKey()
+  id!: number;
+
+  @Property()
+  name!: string;
+
+  @Property()
+  price!: number;
+
+  @Property({ persist: false })
+  transient?: string;
+
+  @Property({ formula: 'price * 1.2' })
+  priceWithTax?: number;
+}
+
 // --- TPT entities ---
 
 @Entity({ inheritance: 'tpt' })
@@ -153,7 +171,7 @@ describe.each(Utils.keys(options))('clone [%s]', type => {
 
   beforeAll(async () => {
     orm = await MikroORM.init<IDatabaseDriver>({
-      entities: [Author, Book, Address, Company, Tag, Article, Vehicle, Car, Truck],
+      entities: [Author, Book, Address, Company, Tag, Article, Product, Vehicle, Car, Truck],
       driver: PLATFORMS[type],
       loggerFactory: SimpleLogger.create,
       metadataProvider: ReflectMetadataProvider,
@@ -276,6 +294,52 @@ describe.each(Utils.keys(options))('clone [%s]', type => {
       orm.em.clear();
       const authors = await orm.em.find(Author, {});
       expect(authors).toHaveLength(1); // no duplicate inserted
+    });
+
+    test('excludes persist:false, formula, M:N from metadata-derived columns', async () => {
+      // Product has persist:false and formula props — tests those filter branches
+      const product = orm.em.create(Product, { name: 'Widget', price: 100 });
+      await orm.em.flush();
+      orm.em.clear();
+
+      const source = (orm.em as SqlEntityManager).createQueryBuilder(Product).where({ id: product.id });
+      await (orm.em as SqlEntityManager).createQueryBuilder(Product).insertFrom(source).execute();
+
+      orm.em.clear();
+      const products = await orm.em.find(Product, {}, { orderBy: { id: 'asc' } });
+      expect(products).toHaveLength(2);
+      expect(products[1].name).toBe('Widget');
+      expect(products[1].price).toBe(100);
+
+      // Article has M:N (tags) and 1:M inverse — tests those filter branches
+      const author = await createAuthor({ name: 'John', email: 'john@test.com', age: 30 });
+      const article = orm.em.create(Article, { title: 'Art 1', author: ref(author) });
+      await orm.em.flush();
+      orm.em.clear();
+
+      const artSource = (orm.em as SqlEntityManager).createQueryBuilder(Article).where({ id: article.id });
+      await (orm.em as SqlEntityManager).createQueryBuilder(Article).insertFrom(artSource).execute();
+
+      orm.em.clear();
+      const articles = await orm.em.find(Article, {}, { orderBy: { id: 'asc' } });
+      expect(articles).toHaveLength(2);
+      expect(articles[1].title).toBe('Art 1');
+
+      // Company has embedded — tests embedded filter branch
+      const company = orm.em.create(Company, {
+        name: 'Acme',
+        address: { street: '123 Main', city: 'Springfield' },
+      });
+      await orm.em.flush();
+      orm.em.clear();
+
+      const compSource = (orm.em as SqlEntityManager).createQueryBuilder(Company).where({ id: company.id });
+      await (orm.em as SqlEntityManager).createQueryBuilder(Company).insertFrom(compSource).execute();
+
+      orm.em.clear();
+      const companies = await orm.em.find(Company, {}, { orderBy: { id: 'asc' } });
+      expect(companies).toHaveLength(2);
+      expect(companies[1].name).toBe('Acme');
     });
 
     test('M:1 FK column is copied', async () => {
@@ -475,6 +539,24 @@ describe.each(Utils.keys(options))('clone [%s]', type => {
       expect(cars).toHaveLength(2);
       expect(cars[1].brand).toBe('Toyota Clone');
       expect(cars[1].doors).toBe(4);
+    });
+
+    test('persist:false and formula properties are excluded from clone', async () => {
+      const product = orm.em.create(Product, { name: 'Widget', price: 100 });
+      await orm.em.flush();
+      orm.em.clear();
+
+      const cloned = await orm.em.clone(
+        Product,
+        { id: product.id },
+        {
+          name: 'Widget Clone',
+        },
+      );
+
+      expect(cloned.name).toBe('Widget Clone');
+      expect(cloned.price).toBe(100);
+      // transient (persist: false) and priceWithTax (formula) should not cause errors
     });
   });
 });
