@@ -1,8 +1,9 @@
-import type { Constructor, Dictionary, Primary, Ref } from '../typings.js';
-import { Collection, type InitCollectionOptions } from '../entity/Collection.js';
+import type { Constructor, Dictionary, EntityKey, Primary, Ref } from '../typings.js';
+import { Collection, type InitCollectionOptions, type LoadCountOptions } from '../entity/Collection.js';
 import { helper } from '../entity/wrap.js';
 import { type EntityManager } from '../EntityManager.js';
 import { type LoadReferenceOptions, Reference } from '../entity/Reference.js';
+import { ReferenceKind } from '../enums.js';
 import { Utils } from './Utils.js';
 
 type BatchLoadFn<K, V> = (keys: readonly K[]) => PromiseLike<ArrayLike<V | Error>>;
@@ -259,6 +260,104 @@ export class DataloaderUtils {
       }
 
       return ret;
+    };
+  }
+
+  /**
+   * Returns the count dataloader batchLoadFn, which aggregates `Collection.loadCount()` calls
+   * by entity and relation, issues a single grouped count query per entity+options combination
+   * via `em.countBy()`, and maps each input collection to the corresponding count.
+   *
+   * For 1:M relations, groups by the FK property on the target entity.
+   * For M:N relations, groups by the owner FK on the pivot entity.
+   */
+  static getCountBatchLoadFn(
+    em: EntityManager,
+  ): BatchLoadFn<[Collection<any>, Omit<LoadCountOptions<any>, 'dataloader' | 'refresh'>?], number> {
+    return async (
+      collsWithOpts: readonly [Collection<any>, Omit<LoadCountOptions<any>, 'dataloader' | 'refresh'>?][],
+    ): Promise<ArrayLike<number | Error>> => {
+      const groups = new Map<
+        string,
+        {
+          fkProp: string;
+          countByClass: any;
+          targetFilterProp?: string;
+          ownerPKs: Map<string, Primary<any>>;
+          opts: Omit<LoadCountOptions<any>, 'dataloader' | 'refresh'>;
+        }
+      >();
+      const keys: string[] = [];
+
+      for (const [col, opts] of collsWithOpts) {
+        const prop = col.property;
+        let fkProp: string;
+        let countByClass: any;
+        let targetFilterProp: string | undefined;
+
+        if (prop.kind === ReferenceKind.ONE_TO_MANY) {
+          fkProp = prop.mappedBy;
+          countByClass = prop.targetMeta!.class;
+        } else {
+          // M:N: group by the owner FK on the pivot entity
+          const pivotMeta = em.getMetadata().get(prop.pivotEntity);
+          const ownerPivotProp = pivotMeta.relations[prop.owner ? 0 : 1];
+          const targetPivotProp = pivotMeta.relations[prop.owner ? 1 : 0];
+          fkProp = ownerPivotProp.name;
+          countByClass = pivotMeta.class;
+          targetFilterProp = targetPivotProp.name;
+        }
+
+        const key = `${prop.targetMeta!.uniqueName}.${prop.name}|${JSON.stringify(opts ?? {})}`;
+        keys.push(key);
+        let group = groups.get(key);
+
+        if (!group) {
+          group = { fkProp, countByClass, targetFilterProp, ownerPKs: new Map(), opts: opts ?? {} };
+          groups.set(key, group);
+        }
+
+        const pk = helper(col.owner).getPrimaryKey();
+        group.ownerPKs.set(JSON.stringify(pk), pk);
+      }
+
+      const promises = Array.from(groups.entries()).map(async ([key, group]): Promise<[string, Dictionary<number>]> => {
+        const allPKs = Array.from(group.ownerPKs.values());
+        const { where, ...countOpts } = group.opts;
+        const conditions: Dictionary[] = [{ [group.fkProp]: { $in: allPKs } }];
+
+        if (where) {
+          conditions.push(where as Dictionary);
+        }
+
+        // For M:N, apply the target entity's filters through the pivot's target relation
+        if (group.targetFilterProp) {
+          const targetMeta = em.getMetadata().find(group.countByClass)!;
+          const targetRelMeta = targetMeta.properties[group.targetFilterProp as EntityKey]?.targetMeta;
+
+          if (targetRelMeta) {
+            const filterCond = await em.applyFilters(targetRelMeta.class, {}, countOpts.filters, 'read');
+
+            if (filterCond && Object.keys(filterCond).length > 0) {
+              conditions.push({ [group.targetFilterProp]: filterCond });
+            }
+          }
+        }
+
+        const fkWhere = conditions.length === 1 ? conditions[0] : { $and: conditions };
+        const counts = await (em as any).countBy(group.countByClass, group.fkProp, {
+          where: fkWhere,
+          ...countOpts,
+        });
+        return [key, counts as Dictionary<number>];
+      });
+      const resultsMap = new Map(await Promise.all(promises));
+
+      return collsWithOpts.map(([col], i) => {
+        const pk = helper(col.owner).getPrimaryKey();
+        const counts = resultsMap.get(keys[i]);
+        return counts?.[String(pk)] ?? 0;
+      });
     };
   }
 

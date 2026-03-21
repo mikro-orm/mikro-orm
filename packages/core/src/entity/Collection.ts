@@ -132,10 +132,11 @@ export class Collection<T extends object, O extends object = object> {
   /**
    * Gets the count of collection items from database instead of counting loaded items.
    * The value is cached (unless you use the `where` option), use `refresh: true` to force reload it.
+   * When the dataloader is enabled (globally or per-query), multiple calls are batched into a single grouped query.
    */
   async loadCount(options: LoadCountOptions<T> | boolean = {}): Promise<number> {
     options = typeof options === 'boolean' ? { refresh: options } : options;
-    const { refresh, where, ...countOptions } = options;
+    const { refresh, where, dataloader, ...countOptions } = options;
 
     if (!refresh && !where && this.#count != null) {
       return this.#count;
@@ -151,8 +152,15 @@ export class Collection<T extends object, O extends object = object> {
       return (this.#count = this.length);
     }
 
-    const cond = this.createLoadCountCondition(where ?? ({} as FilterQuery<T>));
-    const count = await em.count(this.property.targetMeta!.class, cond, countOptions as any);
+    let count: number;
+
+    if (dataloader ?? [DataloaderType.ALL, DataloaderType.COLLECTION].includes(em.config.getDataloaderType())) {
+      const loader = await em.getDataLoader('count');
+      count = await loader.load([this, { where, ...countOptions }]);
+    } else {
+      const cond = this.createLoadCountCondition(where ?? ({} as FilterQuery<T>));
+      count = await em.count(this.property.targetMeta!.class, cond, countOptions as any);
+    }
 
     if (!where) {
       this.#count = count;
@@ -1028,4 +1036,6 @@ export interface LoadCountOptions<T extends object> extends CountOptions<T, '*'>
   refresh?: boolean;
   /** Additional filtering conditions for the count query. */
   where?: FilterQuery<T>;
+  /** Whether to use the dataloader for batching count operations. */
+  dataloader?: boolean;
 }
