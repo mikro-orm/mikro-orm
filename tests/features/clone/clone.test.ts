@@ -674,4 +674,34 @@ describe('clone [mongo]', () => {
     expect(cloned.version).toBe(1);
     expect(cloned.name).toBe('Acme Clone');
   });
+
+  test('em.clone() throws when entity not found', async () => {
+    await expect(orm.em.clone(MongoAuthor, { name: 'nonexistent' })).rejects.toThrow(
+      'Cannot clone: no entity found matching the given condition',
+    );
+  });
+});
+
+// --- Unit tests for driver-specific coverage ---
+
+describe('clone unit tests', () => {
+  test('MsSqlNativeQueryBuilder compileInsert delegates to super for insertSubQuery', async () => {
+    const { MsSqlNativeQueryBuilder } =
+      await import('../../../packages/sql/src/dialects/mssql/MsSqlNativeQueryBuilder.js');
+    const { MsSqlPlatform } = await import('../../../packages/mssql/src/MsSqlPlatform.js');
+    const platform = new MsSqlPlatform();
+    const nqb = new MsSqlNativeQueryBuilder(platform);
+    nqb.from('test_table');
+    nqb.insertSelect(['col1', 'col2'], raw('select a, b from source where id = ?', [1]));
+    const { sql } = nqb.compile();
+    expect(sql).toMatch(/insert into/i);
+    expect(sql).toMatch(/select a, b from source/i);
+  });
+
+  test('DatabaseDriver.nativeClone throws by default', async () => {
+    const { DatabaseDriver } = await import('../../../packages/core/src/drivers/DatabaseDriver.js');
+    const driver = Object.create(DatabaseDriver.prototype);
+    Object.defineProperty(driver, 'constructor', { value: class TestDriver {} });
+    await expect(driver.nativeClone('Test', {})).rejects.toThrow('does not support nativeClone');
+  });
 });

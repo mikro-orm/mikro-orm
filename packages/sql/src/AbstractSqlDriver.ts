@@ -1060,7 +1060,7 @@ export abstract class AbstractSqlDriver<
 
           if (mappedOverrides && fieldName in mappedOverrides) {
             selectFields.push(raw('? as ??', [mappedOverrides[fieldName], fieldName]));
-          } else if ((leafMeta.versionProperty ?? (tableMeta as any).versionProperty) === prop.name) {
+          } else if (tableMeta.versionProperty === prop.name) {
             const initial = prop.runtimeType === 'Date' ? new Date() : 1;
             selectFields.push(raw('? as ??', [initial, fieldName]));
           } else {
@@ -1104,12 +1104,6 @@ export abstract class AbstractSqlDriver<
         return false;
       }
       if (prop.primary) {
-        return false;
-      }
-      if (prop.generated) {
-        return false;
-      }
-      if (prop.formula) {
         return false;
       }
       if (!ownProps && prop.inherited) {
