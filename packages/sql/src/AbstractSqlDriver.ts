@@ -1102,9 +1102,6 @@ export abstract class AbstractSqlDriver<
       if (prop.primary) {
         return false;
       }
-      if (!ownProps && prop.inherited) {
-        return false;
-      }
       if (!prop.fieldNames?.length) {
         return false;
       }

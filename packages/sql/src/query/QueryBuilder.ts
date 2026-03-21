@@ -3419,23 +3419,21 @@ export class QueryBuilder<
     // Tier 2: source QB has explicit select fields
     const sourceFields = subQuery.state.fields;
     if (sourceFields && subQuery.state.type === QueryType.SELECT) {
-      return sourceFields.flatMap((field: any) => {
-        if (typeof field === 'string') {
-          // Strip alias prefix like 'a0.'
-          const bare = field.replace(/^\w+\./, '');
-          const prop = meta?.properties[bare as EntityKey<Entity>];
-          return prop?.fieldNames ?? [bare];
-        }
+      return sourceFields
+        .filter((field: any) => typeof field === 'string' || isRaw(field))
+        .flatMap((field: any) => {
+          if (typeof field === 'string') {
+            // Strip alias prefix like 'a0.'
+            const bare = field.replace(/^\w+\./, '');
+            const prop = meta?.properties[bare as EntityKey<Entity>];
+            return prop?.fieldNames ?? [bare];
+          }
 
-        // RawQueryFragment with alias: raw('...').as('name')
-        if (isRaw(field) && field.sql.endsWith(' as ??') && field.params.length > 0) {
+          // RawQueryFragment with alias: raw('...').as('name')
           const alias = String(field.params[field.params.length - 1]);
           const prop = meta?.properties[alias as EntityKey<Entity>];
           return prop?.fieldNames ?? [alias];
-        }
-
-        return [];
-      });
+        });
     }
 
     // Tier 3: derive from metadata — all cloneable columns
@@ -3465,9 +3463,6 @@ export class QueryBuilder<
         return false;
       }
       if (prop.primary) {
-        return false;
-      }
-      if (prop.inherited) {
         return false;
       }
       if (!prop.fieldNames?.length) {
