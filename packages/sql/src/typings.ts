@@ -409,7 +409,15 @@ type ClassEntityTableName<T, TOptions extends MikroKyselyPluginOptions = {}> = T
   : never;
 
 type ClassEntityColumns<T> = T extends abstract new (...args: any[]) => infer Instance
-  ? { [K in keyof Instance as IsClassEntityColumn<K, Instance[K]>]: Instance[K] }
+  ? { [K in keyof Instance as ClassEntityColumnName<K, Instance[K]>]: ClassEntityColumnValue<Instance[K]> }
   : never;
 
-type IsClassEntityColumn<K, V> = K extends symbol ? never : NonNullable<V> extends Scalar ? K : never;
+type ClassEntityColumnName<K, V> = K extends symbol
+  ? never
+  : NonNullable<V> extends Scalar
+    ? K
+    : NonNullable<V> extends { [k: number]: any; readonly owner: object }
+      ? never
+      : K;
+
+type ClassEntityColumnValue<V> = NonNullable<V> extends Scalar ? V : Primary<NonNullable<V>>;
