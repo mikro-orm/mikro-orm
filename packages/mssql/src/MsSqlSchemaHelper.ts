@@ -31,6 +31,11 @@ export class MsSqlSchemaHelper extends SchemaHelper {
     return 'master';
   }
 
+  override getDropDatabaseSQL(name: string): string {
+    const quoted = this.quote(name);
+    return `if db_id(${this.platform.quoteValue(name)}) is not null begin alter database ${quoted} set single_user with rollback immediate; drop database ${quoted}; end`;
+  }
+
   override disableForeignKeysSQL(): string {
     return `exec sp_MSforeachtable 'alter table ? nocheck constraint all';`;
   }
