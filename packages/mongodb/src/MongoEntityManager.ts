@@ -3,7 +3,9 @@ import {
   Utils,
   type EntityName,
   type EntityRepository,
+  type FilterQuery,
   type GetRepository,
+  type IndexFilterQuery,
   type TransactionOptions,
   type StreamOptions,
   type Loaded,
@@ -38,15 +40,19 @@ export class MongoEntityManager<Driver extends MongoDriver = MongoDriver> extend
     Hint extends string = never,
     Fields extends string = never,
     Excludes extends string = never,
+    Using extends string = never,
   >(
     entityName: EntityName<Entity>,
-    options: StreamOptions<NoInfer<Entity>, Hint, Fields, Excludes> = {},
+    options: Omit<StreamOptions<NoInfer<Entity>, Hint, Fields, Excludes>, 'where' | 'using'> & {
+      using?: Using | Using[];
+      where?: [Using] extends [never] ? FilterQuery<NoInfer<Entity>> : IndexFilterQuery<NoInfer<Entity>, Using>;
+    } = {} as any,
   ): AsyncIterableIterator<Loaded<Entity, Hint, Fields, Excludes>> {
     if (!Utils.isEmpty(options.populate)) {
       throw new Error('Populate option is not supported when streaming results in MongoDB');
     }
 
-    yield* super.stream(entityName, options);
+    yield* super.stream(entityName, options as any);
   }
 
   getCollection<T extends Document>(entityOrCollectionName: EntityName<T> | string): Collection<T> {
