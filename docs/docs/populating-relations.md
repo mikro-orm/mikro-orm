@@ -134,7 +134,18 @@ const tags = await em.find(BookTag, {}, {
 });
 ```
 
-For more information see the [Loading Strategies section](./loading-strategies.md).
+You can also use `populateHints` to limit the number of items loaded per parent:
+
+```ts
+const users = await em.find(User, {}, {
+  populate: ['posts'],
+  populateHints: {
+    posts: { limit: 5, orderBy: { createdAt: 'desc' } },
+  },
+});
+```
+
+For more information see the [Loading Strategies section](./loading-strategies.md#per-parent-limiting).
 
 ## Populating already loaded entities
 
