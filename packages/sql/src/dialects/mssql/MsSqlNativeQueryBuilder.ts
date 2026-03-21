@@ -67,7 +67,8 @@ export class MsSqlNativeQueryBuilder extends NativeQueryBuilder {
 
   protected override compileInsert() {
     if (this.options.insertSubQuery) {
-      return super.compileInsert();
+      super.compileInsert();
+      return;
     }
 
     if (!this.options.data) {
