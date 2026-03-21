@@ -267,11 +267,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
   ): Promise<QueryResult<T>> {
     const meta = this.metadata.find(entityName)!;
     const pk = meta.getPrimaryProps()[0].fieldNames[0] ?? '_id';
-
-    // Normalize PK value to filter object
     const normalizedWhere = Utils.isPrimaryKey(where) ? ({ [pk]: where } as FilterQuery<T>) : where;
-
-    // Find the source document
     const renameWhere = this.renameFields(entityName, normalizedWhere as unknown as EntityDictionary<T>);
     const source = await this.rethrow(
       this.getConnection('read').find<T>(entityName, renameWhere as FilterQuery<T>, { ctx: options.ctx, limit: 1 }),
@@ -282,19 +278,16 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     }
 
     const doc = source[0] as Dictionary;
-    delete doc[pk]; // remove PK — new one will be auto-generated
+    delete doc[pk];
 
-    // Apply overrides
     if (overrides) {
       const mapped = this.renameFields(entityName, overrides as unknown as EntityDictionary<T>);
       Object.assign(doc, mapped);
     }
 
-    // Reset version property
     if (meta.versionProperty) {
       const vProp = meta.properties[meta.versionProperty];
-      const fieldName = vProp.fieldNames[0];
-      doc[fieldName] = vProp.runtimeType === 'Date' ? new Date() : 1;
+      doc[vProp.fieldNames[0]] = vProp.runtimeType === 'Date' ? new Date() : 1;
     }
 
     return this.rethrow(

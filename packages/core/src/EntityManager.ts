@@ -1729,23 +1729,17 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     options ??= {};
     em.prepareOptions(options);
 
-    const meta = this.metadata.get<Entity>(entityName);
-
-    // Execute clone at driver level
+    const meta = em.metadata.get<Entity>(entityName);
     const res = await em.driver.nativeClone<Entity>(entityName, where, overrides, {
       ctx: em.#transactionContext,
       ...options,
     });
 
-    // Get the new PK from the result
     const pk = res.insertId ?? res.row?.[meta.primaryKeys[0]];
 
-    // Fetch the full entity from DB and register in identity map
-    const entity = await em.findOneOrFail<Entity, any>(entityName, pk as any, {
+    return em.findOneOrFail<Entity, any>(entityName, pk as any, {
       schema: options.schema,
     });
-
-    return entity;
   }
 
   /**
