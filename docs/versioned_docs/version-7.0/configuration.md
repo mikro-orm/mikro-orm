@@ -768,7 +768,7 @@ If you also set other environment variables, MikroORM will still search for a co
 
 ### Using `.env` file
 
-If you want to use a `.env` file, you can use the `dotenv` package to load it before initializing the ORM:
+If you want to use a `.env` file, you can use the `dotenv` or `@dotenvx/dotenvx` package to load it before initializing the ORM.
 
 ```ts
 import 'dotenv/config';

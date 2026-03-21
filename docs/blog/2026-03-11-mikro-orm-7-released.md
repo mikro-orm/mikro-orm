@@ -38,7 +38,7 @@ One of the headline features of v7 is that the `@mikro-orm/core` package now has
 
 This has huge implications for bundle size, cold start times (great news for serverless users!), and overall maintainability. Some of these dependencies are still available as optional peer dependencies - for instance, install `dataloader` if you want the dataloader integration, and `reflect-metadata` if you prefer the reflect-based metadata provider.
 
-> Dotenv support has been removed entirely. If you relied on automatic `.env` loading, you'll need to call `dotenv.config()` yourself before initializing the ORM.
+> Dotenv support has been removed entirely. If you relied on automatic `.env` loading, you'll need to call `dotenv.config()` yourself before initializing the ORM, or use [`@dotenvx/dotenvx`](https://github.com/dotenvx/dotenvx) (for added encryption–from the creator of dotenv).
 
 ## Knex replaced with Kysely
 

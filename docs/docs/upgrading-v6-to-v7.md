@@ -481,7 +481,7 @@ npm install tinyglobby
 
 ## Dotenv file support removed
 
-If you want to use a `.env` file, you need to use the `dotenv` package directly (and install it explicitly):
+If you want to use a `.env` file, you need to use the `dotenv` or `@dotenvx/dotenvx` package directly (and install it explicitly):
 
 ```ts
 import 'dotenv/config';
