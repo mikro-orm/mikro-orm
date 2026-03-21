@@ -1017,30 +1017,7 @@ export abstract class AbstractSqlDriver<
     let rootResult: QueryResult<T> | undefined;
 
     for (const tableMeta of hierarchy) {
-      const ownProps = (tableMeta.ownProps ?? tableMeta.props).filter(prop => {
-        if (prop.persist === false) {
-          return false;
-        }
-        if (prop.primary) {
-          return false;
-        }
-        if (prop.generated) {
-          return false;
-        }
-        if (prop.formula) {
-          return false;
-        }
-        if (!prop.fieldNames?.length) {
-          return false;
-        }
-        if ([ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(prop.kind)) {
-          return false;
-        }
-        if (prop.kind === ReferenceKind.EMBEDDED && !prop.object) {
-          return false;
-        }
-        return true;
-      });
+      const ownProps = this.getCloneableProps(tableMeta as EntityMetadata<T>, true);
 
       const selectQb = this.createQueryBuilder<T>(
         tableMeta.class as any,
@@ -1117,8 +1094,8 @@ export abstract class AbstractSqlDriver<
     return rootResult!;
   }
 
-  private getCloneableProps<T extends object>(meta: EntityMetadata<T>): EntityProperty<T>[] {
-    return meta.props.filter(prop => {
+  private getCloneableProps<T extends object>(meta: EntityMetadata<T>, ownProps?: boolean): EntityProperty<T>[] {
+    return (ownProps ? (meta.ownProps ?? meta.props) : meta.props).filter(prop => {
       if (prop.persist === false) {
         return false;
       }
@@ -1131,7 +1108,7 @@ export abstract class AbstractSqlDriver<
       if (prop.formula) {
         return false;
       }
-      if (prop.inherited) {
+      if (!ownProps && prop.inherited) {
         return false;
       }
       if (!prop.fieldNames?.length) {
