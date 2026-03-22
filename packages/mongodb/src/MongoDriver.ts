@@ -417,7 +417,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
   }
 
   private buildQueryOptions(
-    options: Pick<FindOptions<any, any, any, any>, 'collation' | 'indexHint' | 'maxTimeMS' | 'allowDiskUse'>,
+    options: Pick<FindOptions<any, any, any, any>, 'collation' | 'indexHint' | 'using' | 'maxTimeMS' | 'allowDiskUse'>,
   ): MongoQueryOptions {
     if (options.collation != null && typeof options.collation === 'string') {
       throw new Error(
@@ -433,9 +433,10 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
 
     if (options.indexHint != null) {
       ret.indexHint = options.indexHint;
-    } else if ((options as any).using != null) {
-      const names = Utils.asArray((options as any).using);
-      ret.indexHint = names.length === 1 ? names[0] : names;
+    } else if (options.using != null) {
+      const names = Utils.asArray(options.using);
+      // MongoDB only supports a single index hint per query
+      ret.indexHint = names[0];
     }
 
     if (options.maxTimeMS != null) {
