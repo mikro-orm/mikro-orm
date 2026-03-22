@@ -756,9 +756,8 @@ export class SqliteSchemaHelper extends SchemaHelper {
       [tableName],
     );
 
-    const triggers: SqlTriggerDef[] = [];
-    const triggerMap = new Map<string, SqlTriggerDef>();
-
+    // First pass: parse all triggers and collect names to detect multi-event groups
+    const parsedRows: { name: string; parsed: SqlTriggerDef }[] = [];
     for (const row of rows) {
       if (!row.sql) {
         continue;
@@ -766,13 +765,21 @@ export class SqliteSchemaHelper extends SchemaHelper {
 
       const parsed = this.parseTriggerDDL(row.sql, row.name);
 
-      if (!parsed) {
-        continue;
+      if (parsed) {
+        parsedRows.push({ name: row.name, parsed });
       }
+    }
 
-      // Strip event suffix only when it matches the actual event (e.g. trg_insert for INSERT)
+    const allNames = parsedRows.map(r => r.name);
+    const triggers: SqlTriggerDef[] = [];
+    const triggerMap = new Map<string, SqlTriggerDef>();
+
+    for (const { name, parsed } of parsedRows) {
+      // Only strip event suffix when another trigger with the same base exists
       const eventLower = parsed.events[0];
-      const baseName = row.name.endsWith(`_${eventLower}`) ? row.name.slice(0, -eventLower.length - 1) : row.name;
+      const candidateBase = name.endsWith(`_${eventLower}`) ? name.slice(0, -eventLower.length - 1) : null;
+      const baseName =
+        candidateBase && allNames.some(n => n !== name && n.startsWith(`${candidateBase}_`)) ? candidateBase : name;
 
       if (triggerMap.has(baseName)) {
         const existing = triggerMap.get(baseName)!;

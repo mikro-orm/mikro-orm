@@ -460,7 +460,7 @@ export class MsSqlSchemaHelper extends SchemaHelper {
       // Parse body from full trigger definition
       let body = '';
       if (row.definition) {
-        const bodyMatch = /\bas\s+begin\s+([\s\S]*?)\s*end\s*$/i.exec(row.definition);
+        const bodyMatch = /\bas\s+begin\s+([\s\S]*)\s*end\s*$/i.exec(row.definition);
         if (bodyMatch) {
           body = bodyMatch[1].trim().replace(/;\s*$/, '');
         }
@@ -471,7 +471,7 @@ export class MsSqlSchemaHelper extends SchemaHelper {
         name: row.trigger_name,
         timing: row.timing.toLowerCase() as SqlTriggerDef['timing'],
         events: [event],
-        forEach: 'row', // MSSQL triggers are always statement-level; use 'row' to match the default in metadata
+        forEach: 'row', // MSSQL has no FOR EACH ROW/STATEMENT syntax; match the metadata default to avoid false diffs
         body,
       };
       ret[key].push(trigger);

@@ -635,6 +635,9 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       conditions.push(`(t.event_object_schema = ${schemaName} and t.event_object_table in (${names}))`);
     }
 
+    // Function lookup uses the '_fn' suffix convention from createTrigger().
+    // External triggers with different function names will have NULL body;
+    // use the `expression` escape hatch for those.
     return `select t.trigger_name, t.event_object_schema as schema_name, t.event_object_table as table_name,
       t.event_manipulation as event, t.action_timing as timing,
       t.action_orientation as for_each,
