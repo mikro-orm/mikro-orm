@@ -320,6 +320,22 @@ export class DatabaseSchema {
           columnName,
         });
       }
+
+      for (const trigger of meta.triggers) {
+        const body = isRaw(trigger.body)
+          ? platform.formatQuery(trigger.body.sql, trigger.body.params)
+          : (trigger.body as string | undefined);
+
+        table.addTrigger({
+          name: trigger.name!,
+          timing: trigger.timing,
+          events: trigger.events,
+          forEach: trigger.forEach ?? 'row',
+          body: body ?? '',
+          when: trigger.when,
+          expression: trigger.expression,
+        });
+      }
     }
 
     return schema;

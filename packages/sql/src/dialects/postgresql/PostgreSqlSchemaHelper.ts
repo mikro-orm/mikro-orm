@@ -10,7 +10,7 @@ import {
 } from '@mikro-orm/core';
 import { SchemaHelper } from '../../schema/SchemaHelper.js';
 import type { AbstractSqlConnection } from '../../AbstractSqlConnection.js';
-import type { CheckDef, Column, ForeignKey, IndexDef, Table, TableDifference } from '../../typings.js';
+import type { CheckDef, Column, ForeignKey, IndexDef, Table, TableDifference, SqlTriggerDef } from '../../typings.js';
 import type { DatabaseSchema } from '../../schema/DatabaseSchema.js';
 import type { DatabaseTable } from '../../schema/DatabaseTable.js';
 
@@ -205,6 +205,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     const indexes = await this.getAllIndexes(connection, tables, ctx);
     const checks = await this.getAllChecks(connection, tablesBySchema, ctx);
     const fks = await this.getAllForeignKeys(connection, tablesBySchema, ctx);
+    const triggers = await this.getAllTriggers(connection, tablesBySchema);
 
     for (const t of tables) {
       const key = this.getTableKey(t);
@@ -214,6 +215,10 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
 
       if (columns[key]) {
         table.init(columns[key], indexes[key], checks[key], pks, fks[key], enums);
+      }
+
+      if (triggers[key]) {
+        table.setTriggers(triggers[key]);
       }
     }
   }
@@ -535,6 +540,112 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     }
 
     return ret;
+  }
+
+  /** Generates SQL to create a PostgreSQL trigger and its associated function. */
+  override createTrigger(table: DatabaseTable, trigger: SqlTriggerDef): string {
+    if (trigger.expression) {
+      return trigger.expression;
+    }
+
+    const timing = trigger.timing.toUpperCase();
+    const events = trigger.events.map(e => e.toUpperCase()).join(' OR ');
+    const forEach = trigger.forEach === 'statement' ? 'STATEMENT' : 'ROW';
+    const when = trigger.when ? `\n  when (${trigger.when})` : '';
+    const fnName = this.platform.quoteIdentifier(`${trigger.name}_fn`);
+    const triggerName = this.platform.quoteIdentifier(trigger.name);
+
+    const fnSql = `create or replace function ${fnName}() returns trigger as $$ begin ${trigger.body}; end; $$ language plpgsql`;
+    const triggerSql = `create trigger ${triggerName} ${timing} ${events} on ${table.getQuotedName()} for each ${forEach}${when} execute function ${fnName}()`;
+
+    return `${fnSql};\n${triggerSql}`;
+  }
+
+  /** Generates SQL to drop a PostgreSQL trigger and its associated function. */
+  override dropTrigger(table: DatabaseTable, trigger: SqlTriggerDef): string {
+    const triggerName = this.platform.quoteIdentifier(trigger.name);
+    const fnName = this.platform.quoteIdentifier(`${trigger.name}_fn`);
+    return `drop trigger if exists ${triggerName} on ${table.getQuotedName()};\ndrop function if exists ${fnName}()`;
+  }
+
+  async getAllTriggers(
+    connection: AbstractSqlConnection,
+    tablesBySchemas: Map<string | undefined, Table[]>,
+  ): Promise<Dictionary<SqlTriggerDef[]>> {
+    const sql = this.getTriggersSQL(tablesBySchemas);
+    const allTriggers = await connection.execute<
+      {
+        trigger_name: string;
+        schema_name: string;
+        table_name: string;
+        event: string;
+        timing: string;
+        for_each: string;
+        when_clause: string | null;
+        function_body: string | null;
+      }[]
+    >(sql);
+    const ret = {} as Dictionary<SqlTriggerDef[]>;
+    const triggerMap = new Map<string, SqlTriggerDef>();
+
+    for (const row of allTriggers) {
+      const key = this.getTableKey(row);
+      const dedupeKey = `${key}:${row.trigger_name}`;
+
+      if (triggerMap.has(dedupeKey)) {
+        // Same trigger with multiple events — merge events
+        const existing = triggerMap.get(dedupeKey)!;
+        const event = row.event.toLowerCase() as SqlTriggerDef['events'][number];
+        if (!existing.events.includes(event)) {
+          existing.events.push(event);
+        }
+        continue;
+      }
+
+      ret[key] ??= [];
+      // prosrc includes the full function body between $$ delimiters (e.g. " begin RETURN NEW; end;")
+      // Strip the begin/end wrapper to get just the trigger body for round-trip comparison
+      let body = (row.function_body ?? '').trim();
+      const beginEndMatch = /^\s*begin\s+([\s\S]*?)\s*end;?\s*$/i.exec(body);
+      if (beginEndMatch) {
+        body = beginEndMatch[1].trim().replace(/;\s*$/, '');
+      }
+
+      const trigger: SqlTriggerDef = {
+        name: row.trigger_name,
+        timing: row.timing.toLowerCase() as SqlTriggerDef['timing'],
+        events: [row.event.toLowerCase() as SqlTriggerDef['events'][number]],
+        forEach: row.for_each.toLowerCase() as SqlTriggerDef['forEach'],
+        body,
+        when: row.when_clause ?? undefined,
+      };
+      ret[key].push(trigger);
+      triggerMap.set(dedupeKey, trigger);
+    }
+
+    return ret;
+  }
+
+  private getTriggersSQL(tablesBySchemas: Map<string | undefined, Table[]>): string {
+    const conditions: string[] = [];
+
+    for (const [schema, tables] of tablesBySchemas) {
+      const names = tables.map(t => this.platform.quoteValue(t.table_name)).join(', ');
+      const schemaName = this.platform.quoteValue(schema ?? this.platform.getDefaultSchemaName());
+      conditions.push(`(t.event_object_schema = ${schemaName} and t.event_object_table in (${names}))`);
+    }
+
+    return `select t.trigger_name, t.event_object_schema as schema_name, t.event_object_table as table_name,
+      t.event_manipulation as event, t.action_timing as timing,
+      t.action_orientation as for_each,
+      t.action_condition as when_clause,
+      pg_get_functiondef(p.oid) as function_def,
+      p.prosrc as function_body
+    from information_schema.triggers t
+    left join pg_namespace n on n.nspname = t.event_object_schema
+    left join pg_proc p on p.proname = t.trigger_name || '_fn' and p.pronamespace = n.oid
+    where (${conditions.join(' or ')})
+    order by t.trigger_name, t.event_manipulation`;
   }
 
   async getAllForeignKeys(

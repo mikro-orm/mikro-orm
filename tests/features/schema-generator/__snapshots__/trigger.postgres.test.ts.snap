@@ -1,0 +1,36 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`trigger [postgres] > trigger diff [postgres] > postgres-trigger-diff-1 1`] = `
+"create table "trigger_table" ("id" serial primary key, "price" int not null);
+
+create or replace function "trg_audit_fn"() returns trigger as $$ begin RETURN NEW; end; $$ language plpgsql;
+create trigger "trg_audit" AFTER INSERT on "trigger_table" for each ROW execute function "trg_audit_fn"();
+"
+`;
+
+exports[`trigger [postgres] > trigger diff [postgres] > postgres-trigger-diff-2 1`] = `
+"drop trigger if exists "trg_audit" on "trigger_table";
+drop function if exists "trg_audit_fn"();
+create or replace function "trg_audit_fn"() returns trigger as $$ begin RETURN NEW; end; $$ language plpgsql;
+create trigger "trg_audit" AFTER INSERT OR UPDATE on "trigger_table" for each ROW execute function "trg_audit_fn"();
+"
+`;
+
+exports[`trigger [postgres] > trigger diff [postgres] > postgres-trigger-diff-3 1`] = `
+"drop trigger if exists "trg_audit" on "trigger_table";
+drop function if exists "trg_audit_fn"();
+"
+`;
+
+exports[`trigger [postgres] > trigger diff [postgres] > postgres-trigger-diff-4 1`] = `
+"create or replace function "trg_log_fn"() returns trigger as $$ begin RETURN OLD; end; $$ language plpgsql;
+create trigger "trg_log" BEFORE DELETE on "trigger_table" for each ROW execute function "trg_log_fn"();
+"
+`;
+
+exports[`trigger [postgres] > trigger is generated for decorator [postgres] > postgres-trigger-decorator 1`] = `
+"create table "trigger_entity" ("id" serial primary key, "price" int not null, "updated_at" timestamptz not null);
+create or replace function "update_timestamp_fn"() returns trigger as $$ begin NEW.updated_at = NOW(); RETURN NEW; end; $$ language plpgsql;
+create trigger "update_timestamp" BEFORE INSERT OR UPDATE on "trigger_entity" for each ROW execute function "update_timestamp_fn"();
+"
+`;
