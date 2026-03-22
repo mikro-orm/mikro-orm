@@ -75,8 +75,14 @@ export class EntitySchema<Entity = any, Base = never, Class extends EntityCtor =
   /**
    * When schema links the entity class via `class` option, this registry allows the lookup from opposite side,
    * so we can use the class in `entities` option just like the EntitySchema instance.
+   *
+   * Stored on `globalThis` via `Symbol.for` to survive the CJS/ESM dual-package hazard
+   * (e.g. when `tsx` loads the same package in both module systems).
    */
-  static REGISTRY: Map<AnyEntity, EntitySchema> = new Map();
+  static get REGISTRY(): Map<AnyEntity, EntitySchema> {
+    const key = Symbol.for('@mikro-orm/core/EntitySchema.REGISTRY');
+    return ((globalThis as any)[key] ??= new Map());
+  }
 
   /** @internal Type-level marker for fast entity type inference */
   declare readonly '~entity': Entity;
