@@ -224,11 +224,11 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
 
     const em = this.getContext();
     em.prepareOptions(options);
+    const meta = this.metadata.get<Entity>(entityName);
+    em.validateIndexUsage(meta, where, options);
     await em.tryFlush(entityName, options);
     where = await em.processWhere(entityName, where, options, 'read');
     validateParams(where);
-    const meta = this.metadata.get<Entity>(entityName);
-    em.validateIndexUsage(meta, where, options);
     if (meta.orderBy) {
       options.orderBy = QueryHelper.mergeOrderBy(options.orderBy, meta.orderBy);
     } else {
