@@ -160,7 +160,7 @@ execute function "trg_custom_fn"()`,
     }).init().meta;
     meta.set(newTableMeta.class, newTableMeta);
 
-    let diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
+    const diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff).toContain('trg_custom');
     await orm.schema.execute(diff);
 
