@@ -1,7 +1,7 @@
 import { type Connection, type Dictionary, type Transaction, Utils } from '@mikro-orm/core';
 import type { AbstractSqlConnection } from '../../AbstractSqlConnection.js';
 import { SchemaHelper } from '../../schema/SchemaHelper.js';
-import type { CheckDef, Column, IndexDef, Table, TableDifference } from '../../typings.js';
+import type { CheckDef, Column, IndexDef, Table, TableDifference, SqlTriggerDef } from '../../typings.js';
 import type { DatabaseTable } from '../../schema/DatabaseTable.js';
 import type { DatabaseSchema } from '../../schema/DatabaseSchema.js';
 
@@ -157,7 +157,9 @@ export class SqliteSchemaHelper extends SchemaHelper {
       const pks = await this.getPrimaryKeys(connection, indexes, table.name, table.schema, ctx);
       const fks = await this.getForeignKeys(connection, table.name, table.schema, ctx);
       const enums = await this.getEnumDefinitions(connection, table.name, table.schema, ctx);
+      const triggers = await this.getTableTriggers(connection, table.name);
       table.init(cols, indexes, checks, pks, fks, enums);
+      table.setTriggers(triggers);
     }
   }
 
@@ -209,6 +211,10 @@ export class SqliteSchemaHelper extends SchemaHelper {
 
     for (const index of table.getIndexes()) {
       this.append(ret, this.createIndex(index, table));
+    }
+
+    for (const trigger of table.getTriggers()) {
+      this.append(ret, this.createTrigger(table, trigger));
     }
 
     return ret;
@@ -707,7 +713,106 @@ export class SqliteSchemaHelper extends SchemaHelper {
       }
     }
 
+    for (const trigger of Object.values(diff.removedTriggers)) {
+      this.append(ret, this.dropTrigger(diff.toTable, trigger));
+    }
+
+    for (const trigger of Object.values(diff.changedTriggers)) {
+      this.append(ret, this.dropTrigger(diff.toTable, trigger));
+      this.append(ret, this.createTrigger(diff.toTable, trigger));
+    }
+
+    for (const trigger of Object.values(diff.addedTriggers)) {
+      this.append(ret, this.createTrigger(diff.toTable, trigger));
+    }
+
     return ret;
+  }
+
+  /** Generates SQL to create SQLite triggers. SQLite requires one trigger per event. */
+  override createTrigger(table: DatabaseTable, trigger: SqlTriggerDef): string {
+    if (trigger.expression) {
+      return trigger.expression;
+    }
+
+    const timing = trigger.timing.toUpperCase();
+    const forEach = trigger.forEach === 'statement' ? 'STATEMENT' : 'ROW';
+    const ret: string[] = [];
+
+    for (const event of trigger.events) {
+      const name = trigger.events.length > 1 ? `${trigger.name}_${event}` : trigger.name;
+      const when = trigger.when ? `\n  when ${trigger.when}` : '';
+      ret.push(
+        `create trigger ${this.quote(name)} ${timing} ${event.toUpperCase()} on ${table.getQuotedName()} for each ${forEach}${when} begin ${trigger.body}; end`,
+      );
+    }
+
+    return ret.join(';\n');
+  }
+
+  private async getTableTriggers(connection: AbstractSqlConnection, tableName: string): Promise<SqlTriggerDef[]> {
+    const rows = await connection.execute<{ name: string; sql: string }[]>(
+      `select name, sql from sqlite_master where type = 'trigger' and tbl_name = ?`,
+      [tableName],
+    );
+
+    const triggers: SqlTriggerDef[] = [];
+    const triggerMap = new Map<string, SqlTriggerDef>();
+
+    for (const row of rows) {
+      if (!row.sql) {
+        continue;
+      }
+
+      const parsed = this.parseTriggerDDL(row.sql, row.name);
+
+      if (!parsed) {
+        continue;
+      }
+
+      // Group by base name (strip event suffix)
+      const baseName = row.name.replace(/_(insert|update|delete)$/i, '');
+
+      if (triggerMap.has(baseName)) {
+        const existing = triggerMap.get(baseName)!;
+        if (!existing.events.includes(parsed.events[0])) {
+          existing.events.push(parsed.events[0]);
+        }
+        continue;
+      }
+
+      const trigger: SqlTriggerDef = { ...parsed, name: baseName };
+      triggers.push(trigger);
+      triggerMap.set(baseName, trigger);
+    }
+
+    return triggers;
+  }
+
+  private parseTriggerDDL(sql: string, name: string): SqlTriggerDef | null {
+    const match =
+      /create\s+trigger\s+["`]?\w+["`]?\s+(before|after|instead\s+of)\s+(insert|update|delete)\s+on\s+["`]?\w+["`]?\s*(?:for\s+each\s+(row|statement))?\s*(?:when\s+(.*?))?\s*begin\s+([\s\S]*?)\s*end/i.exec(
+        sql,
+      );
+
+    if (!match) {
+      return null;
+    }
+
+    const timing = match[1].toLowerCase() as SqlTriggerDef['timing'];
+    const event = match[2].toLowerCase() as SqlTriggerDef['events'][number];
+    const forEach = (match[3]?.toLowerCase() ?? 'row') as SqlTriggerDef['forEach'];
+    const when = match[4] || undefined;
+    const body = match[5].trim().replace(/;\s*$/, '');
+
+    return {
+      name,
+      timing,
+      events: [event],
+      forEach,
+      body,
+      when,
+    };
   }
 
   private getAlterTempTableSQL(changedTable: TableDifference): string[] {

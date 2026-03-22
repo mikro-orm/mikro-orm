@@ -423,6 +423,10 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
           this.append(sql, this.helper.createCheck(newTable, check));
         }
 
+        for (const trigger of newTable.getTriggers()) {
+          this.append(sql, this.helper.createTrigger(newTable, trigger));
+        }
+
         this.append(ret, sql, true);
       }
     }

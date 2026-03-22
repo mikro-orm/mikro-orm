@@ -930,6 +930,9 @@ export type FormulaCallback<T> = (columns: FormulaColumns<T>, table: FormulaTabl
 /** Callback for CHECK constraint expressions. Receives column mappings and table info. */
 export type CheckCallback<T> = (columns: Record<PropertyName<T>, string>, table: SchemaTable) => string | Raw;
 
+/** Callback for trigger body expressions. Receives column mappings and table info. */
+export type TriggerCallback<T> = (columns: Record<PropertyName<T>, string>, table: SchemaTable) => string | Raw;
+
 /** Callback for generated (computed) column expressions. Receives column mappings and table info. */
 export type GeneratedColumnCallback<T> = (columns: Record<PropertyName<T>, string>, table: SchemaTable) => string | Raw;
 
@@ -938,6 +941,24 @@ export interface CheckConstraint<T = any> {
   name?: string;
   property?: string;
   expression: string | Raw | CheckCallback<T>;
+}
+
+/** Definition of a database trigger on a table. */
+export interface TriggerDef<T = any> {
+  /** Trigger name. Auto-generated if omitted. */
+  name?: string;
+  /** When the trigger fires relative to the event. */
+  timing: 'before' | 'after' | 'instead of';
+  /** Which DML events activate the trigger. */
+  events: ('insert' | 'update' | 'delete' | 'truncate')[];
+  /** Whether the trigger fires once per row or per statement. Defaults to `'row'`. */
+  forEach?: 'row' | 'statement';
+  /** SQL body of the trigger. Can be a string, Raw query, or callback receiving column name mappings. */
+  body?: string | Raw | TriggerCallback<T>;
+  /** Optional SQL WHEN condition for the trigger. */
+  when?: string;
+  /** Raw DDL escape hatch — full CREATE TRIGGER statement. Mutually exclusive with `body`. */
+  expression?: string;
 }
 
 /** Branded string that accepts any string value while preserving autocompletion for known literals. */
@@ -1066,6 +1087,7 @@ export class EntityMetadata<Entity = any, Class extends EntityCtor<Entity> = Ent
     this.indexes = [];
     this.uniques = [];
     this.checks = [];
+    this.triggers = [];
     this.referencingProperties = [];
     this.concurrencyCheckKeys = new Set();
     Object.assign(this, meta);
@@ -1452,6 +1474,7 @@ export interface EntityMetadata<Entity = any, Class extends EntityCtor<Entity> =
     disabled?: boolean;
   }[];
   checks: CheckConstraint<Entity>[];
+  triggers: TriggerDef<Entity>[];
   repositoryClass?: string; // for EntityGenerator
   repository: () => EntityClass<EntityRepository<any>>;
   hooks: { [K in EventType]?: (keyof Entity | EventSubscriber<Entity>[EventType])[] };
