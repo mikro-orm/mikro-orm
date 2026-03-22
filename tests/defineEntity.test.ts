@@ -78,7 +78,7 @@ describe('defineEntity', () => {
     });
 
     type IFoo = InferEntity<typeof Foo>;
-    assert<IsExact<IFoo, { id: Opt<number>; name: string; [PrimaryKeyProp]?: 'id'; [IndexHints]?: {} }>>(true);
+    assert<IsExact<Omit<IFoo, typeof IndexHints>, { id: Opt<number>; name: string; [PrimaryKeyProp]?: 'id' }>>(true);
 
     const FooSchema = new EntitySchema({
       name: 'Foo',
@@ -105,8 +105,8 @@ describe('defineEntity', () => {
     type IBook = InferEntity<typeof Book>;
     assert<
       IsExact<
-        IBook,
-        { _id: ObjectId; id: string; title: string; tags: string[]; [PrimaryKeyProp]?: '_id'; [IndexHints]?: {} }
+        Omit<IBook, typeof IndexHints>,
+        { _id: ObjectId; id: string; title: string; tags: string[]; [PrimaryKeyProp]?: '_id' }
       >
     >(true);
   });
@@ -216,7 +216,7 @@ describe('defineEntity', () => {
     });
     expect(Foo.init().meta.primaryKeys).toEqual(['name']);
     type IFoo = InferEntity<typeof Foo>;
-    assert<IsExact<IFoo, { name: string; [PrimaryKeyProp]?: 'name'; [IndexHints]?: {} }>>(true);
+    assert<IsExact<Omit<IFoo, typeof IndexHints>, { name: string; [PrimaryKeyProp]?: 'name' }>>(true);
 
     const Car = defineEntity({
       name: 'Car',
@@ -227,9 +227,9 @@ describe('defineEntity', () => {
     });
     expect(Car.init().meta.primaryKeys).toEqual(['name', 'year']);
     type ICar = InferEntity<typeof Car>;
-    assert<IsExact<ICar, { name: string; year: number; [PrimaryKeyProp]?: ('name' | 'year')[]; [IndexHints]?: {} }>>(
-      true,
-    );
+    assert<
+      IsExact<Omit<ICar, typeof IndexHints>, { name: string; year: number; [PrimaryKeyProp]?: ('name' | 'year')[] }>
+    >(true);
 
     // @ts-expect-error
     const Car2 = defineEntity({
@@ -256,13 +256,12 @@ describe('defineEntity', () => {
     type IBar = InferEntity<typeof WithPrimaryKeys>;
     assert<
       IsExact<
-        IBar,
+        Omit<IBar, typeof IndexHints>,
         {
           firstName: string;
           lastName: string;
           age: number;
           [PrimaryKeyProp]?: ['firstName', 'lastName'];
-          [IndexHints]?: {};
         }
       >
     >(true);
@@ -285,13 +284,13 @@ describe('defineEntity', () => {
     type IMyEntity = InferEntity<typeof MyEntity>;
     assert<
       IsExact<
-        Primary<IMyEntity>,
-        Primary<{ myClass: IType<MyClass, string>; [PrimaryKeyProp]?: undefined; [IndexHints]?: {} }>
+        Primary<Omit<IMyEntity, typeof IndexHints>>,
+        Primary<{ myClass: IType<MyClass, string>; [PrimaryKeyProp]?: undefined }>
       >
     >(true);
-    assert<IsExact<IMyEntity, { myClass: IType<MyClass, string>; [PrimaryKeyProp]?: undefined; [IndexHints]?: {} }>>(
-      true,
-    );
+    assert<
+      IsExact<Omit<IMyEntity, typeof IndexHints>, { myClass: IType<MyClass, string>; [PrimaryKeyProp]?: undefined }>
+    >(true);
 
     function create<T>(type: EntityName<T>, data: EntityData<T> | RequiredEntityData<T>) {
       //
@@ -339,14 +338,13 @@ describe('defineEntity', () => {
     type IFoo = InferEntity<typeof Foo>;
     assert<
       IsExact<
-        IFoo,
+        Omit<IFoo, typeof IndexHints>,
         {
           id: number;
           name: string;
           createdAt: Opt<Date>;
           updatedAt: Opt<Date>;
           [PrimaryKeyProp]?: 'id';
-          [IndexHints]?: {};
         }
       >
     >(true);
@@ -398,8 +396,8 @@ describe('defineEntity', () => {
     type IFoo = InferEntity<typeof Foo>;
     assert<
       IsExact<
-        IFoo,
-        { id: Opt<number>; name: string; settings: { theme: string }; [PrimaryKeyProp]?: 'id'; [IndexHints]?: {} }
+        Omit<IFoo, typeof IndexHints>,
+        { id: Opt<number>; name: string; settings: { theme: string }; [PrimaryKeyProp]?: 'id' }
       >
     >(true);
 
@@ -424,7 +422,7 @@ describe('defineEntity', () => {
     });
 
     type IBox = InferEntity<typeof Box>;
-    assert<IsExact<IBox, { objectVolume: number; [PrimaryKeyProp]?: undefined; [IndexHints]?: {} }>>(true);
+    assert<IsExact<Omit<IBox, typeof IndexHints>, { objectVolume: number; [PrimaryKeyProp]?: undefined }>>(true);
   });
 
   it('should define entity with nullable property', () => {
@@ -440,13 +438,12 @@ describe('defineEntity', () => {
     type IFoo = InferEntity<typeof Foo>;
     assert<
       IsExact<
-        IFoo,
+        Omit<IFoo, typeof IndexHints>,
         {
           id: Opt<number>;
           name: string | null | undefined;
           settings: { theme: string } | null | undefined;
           [PrimaryKeyProp]?: 'id';
-          [IndexHints]?: {};
         }
       >
     >(true);
@@ -476,13 +473,12 @@ describe('defineEntity', () => {
     type IFoo = InferEntity<typeof Foo>;
     assert<
       IsExact<
-        IFoo,
+        Omit<IFoo, typeof IndexHints>,
         {
           id: Opt<number>;
           name: string | null;
           settings: { theme: string } | null;
           [PrimaryKeyProp]?: 'id';
-          [IndexHints]?: {};
         }
       >
     >(true);
@@ -542,7 +538,7 @@ describe('defineEntity', () => {
     type IFoo = InferEntity<typeof Foo>;
     assert<
       IsExact<
-        IFoo,
+        Omit<IFoo, typeof IndexHints>,
         {
           id: number;
           name: Ref<string>;
@@ -550,7 +546,6 @@ describe('defineEntity', () => {
           profileLazy: ScalarRef<IProfile>;
           profileNullable: ScalarRef<IProfile | null | undefined>;
           [PrimaryKeyProp]?: 'id';
-          [IndexHints]?: {};
         }
       >
     >(true);
@@ -580,7 +575,9 @@ describe('defineEntity', () => {
 
     type IFoo = InferEntity<typeof Foo>;
     type ToObject = EntityDTO<IFoo>;
-    assert<IsExact<IFoo, { id: Opt<number>; name: Hidden<string>; [PrimaryKeyProp]?: 'id'; [IndexHints]?: {} }>>(true);
+    assert<IsExact<Omit<IFoo, typeof IndexHints>, { id: Opt<number>; name: Hidden<string>; [PrimaryKeyProp]?: 'id' }>>(
+      true,
+    );
     assert<IsExact<ToObject, { id: Opt<number> }>>(true);
 
     const FooSchema = new EntitySchema({
@@ -614,7 +611,10 @@ describe('defineEntity', () => {
 
     type IFoo = InferEntity<typeof Foo>;
     assert<
-      IsExact<IFoo, { id: Opt<number>; bar: 'foo' | 'bar' | 1; baz: BaZ; [PrimaryKeyProp]?: 'id'; [IndexHints]?: {} }>
+      IsExact<
+        Omit<IFoo, typeof IndexHints>,
+        { id: Opt<number>; bar: 'foo' | 'bar' | 1; baz: BaZ; [PrimaryKeyProp]?: 'id' }
+      >
     >(true);
 
     const FooSchema = new EntitySchema({
@@ -669,7 +669,10 @@ describe('defineEntity', () => {
     type IFoo = InferEntity<typeof Foo>;
     type IAddress = InferEntity<typeof Address>;
     assert<
-      IsExact<IFoo, { id: Opt<number>; name: string; address: IAddress; [PrimaryKeyProp]?: 'id'; [IndexHints]?: {} }>
+      IsExact<
+        Omit<IFoo, typeof IndexHints>,
+        { id: Opt<number>; name: string; address: IAddress; [PrimaryKeyProp]?: 'id' }
+      >
     >(true);
 
     const AddressSchema = new EntitySchema({
@@ -711,14 +714,13 @@ describe('defineEntity', () => {
     type IFoo = InferEntity<typeof Foo>;
     assert<
       IsExact<
-        IFoo,
+        Omit<IFoo, typeof IndexHints>,
         {
           id: Opt<number>;
           name: string;
           friend: Ref<IFoo>;
           friendNullable: Ref<IFoo> | null | undefined;
           [PrimaryKeyProp]?: 'id';
-          [IndexHints]?: {};
         }
       >
     >(true);
@@ -800,14 +802,14 @@ describe('defineEntity', () => {
     type IFile = InferEntity<typeof File>;
     assert<
       IsExact<
-        IFolder,
-        { id: Opt<number>; name: string; files: Collection<IFile>; [PrimaryKeyProp]?: 'id'; [IndexHints]?: {} }
+        Omit<IFolder, typeof IndexHints>,
+        { id: Opt<number>; name: string; files: Collection<IFile>; [PrimaryKeyProp]?: 'id' }
       >
     >(true);
     assert<
       IsExact<
-        IFile,
-        { id: Opt<number>; name: string; folder: Ref<IFolder>; [PrimaryKeyProp]?: 'id'; [IndexHints]?: {} }
+        Omit<IFile, typeof IndexHints>,
+        { id: Opt<number>; name: string; folder: Ref<IFolder>; [PrimaryKeyProp]?: 'id' }
       >
     >(true);
 
@@ -858,8 +860,8 @@ describe('defineEntity', () => {
     type IFoo = InferEntity<typeof Foo>;
     assert<
       IsExact<
-        IFoo,
-        { id: Opt<number>; name: string; friends: Collection<IFoo>; [PrimaryKeyProp]?: 'id'; [IndexHints]?: {} }
+        Omit<IFoo, typeof IndexHints>,
+        { id: Opt<number>; name: string; friends: Collection<IFoo>; [PrimaryKeyProp]?: 'id' }
       >
     >(true);
 
@@ -972,11 +974,14 @@ describe('defineEntity', () => {
     type IFoo = InferEntity<typeof Foo>;
     type IProfile = InferEntity<typeof Profile>;
     assert<
-      IsExact<IFoo, { id: Opt<number>; name: string; profile: IProfile; [PrimaryKeyProp]?: 'id'; [IndexHints]?: {} }>
+      IsExact<
+        Omit<IFoo, typeof IndexHints>,
+        { id: Opt<number>; name: string; profile: IProfile; [PrimaryKeyProp]?: 'id' }
+      >
     >(true);
-    assert<IsExact<IProfile, { id: Opt<number>; bio: string; foo: IFoo; [PrimaryKeyProp]?: 'id'; [IndexHints]?: {} }>>(
-      true,
-    );
+    assert<
+      IsExact<Omit<IProfile, typeof IndexHints>, { id: Opt<number>; bio: string; foo: IFoo; [PrimaryKeyProp]?: 'id' }>
+    >(true);
 
     const FooSchema = new EntitySchema({
       name: 'Foo',
@@ -1015,7 +1020,7 @@ describe('defineEntity', () => {
     type IFoo = InferEntity<typeof Foo>;
     assert<
       IsExact<
-        IFoo,
+        Omit<IFoo, typeof IndexHints>,
         {
           id: Opt<number>;
           name: string;
@@ -1023,7 +1028,6 @@ describe('defineEntity', () => {
           bigintAsNumber: number;
           bigintAsString: string;
           [PrimaryKeyProp]?: 'id';
-          [IndexHints]?: {};
         }
       >
     >(true);
@@ -1060,7 +1064,7 @@ describe('defineEntity', () => {
     type IFoo = InferEntity<typeof Foo>;
     assert<
       IsExact<
-        IFoo,
+        Omit<IFoo, typeof IndexHints>,
         {
           id: Opt<number>;
           name: string;
@@ -1068,7 +1072,6 @@ describe('defineEntity', () => {
           numbers: number[];
           customArray: { id: number; name: string }[];
           [PrimaryKeyProp]?: 'id';
-          [IndexHints]?: {};
         }
       >
     >(true);
@@ -1117,7 +1120,7 @@ describe('defineEntity', () => {
     // Verify InferEntity gives correct types
     assert<
       IsExact<
-        IBar,
+        Omit<IBar, typeof IndexHints>,
         {
           id: Opt<number>;
           barcodes: string[];
@@ -1125,7 +1128,6 @@ describe('defineEntity', () => {
           numbers: number[];
           tags: string[];
           [PrimaryKeyProp]?: 'id';
-          [IndexHints]?: {};
         }
       >
     >(true);
@@ -1152,7 +1154,7 @@ describe('defineEntity', () => {
     type IFoo = InferEntity<typeof Foo>;
     assert<
       IsExact<
-        IFoo,
+        Omit<IFoo, typeof IndexHints>,
         {
           id: Opt<number>;
           name: string;
@@ -1160,7 +1162,6 @@ describe('defineEntity', () => {
           amount: number;
           balance: string;
           [PrimaryKeyProp]?: 'id';
-          [IndexHints]?: {};
         }
       >
     >(true);
@@ -1465,7 +1466,7 @@ describe('PropertyOptionsBuilder', () => {
     type IFoo = InferEntity<typeof Foo>;
     assert<
       IsExact<
-        IFoo,
+        Omit<IFoo, typeof IndexHints>,
         {
           id: Opt<number>;
           name: string;
@@ -1483,7 +1484,6 @@ describe('PropertyOptionsBuilder', () => {
           hydrateFalse: string;
           returning: string;
           [PrimaryKeyProp]?: 'id';
-          [IndexHints]?: {};
         }
       >
     >(true);
@@ -1532,7 +1532,7 @@ describe('PropertyOptionsBuilder', () => {
     type IFoo = InferEntity<typeof Foo>;
     assert<
       IsExact<
-        IFoo,
+        Omit<IFoo, typeof IndexHints>,
         {
           id: Opt<number>;
           name: string;
@@ -1545,7 +1545,6 @@ describe('PropertyOptionsBuilder', () => {
           status: Opt<('active' | 'inactive')[]>;
           type: number;
           [PrimaryKeyProp]?: 'id';
-          [IndexHints]?: {};
         }
       >
     >(true);
@@ -1836,13 +1835,12 @@ describe('OneToOneRelationOptionsBuilder', () => {
     type IProfile = InferEntity<typeof Profile>;
     assert<
       IsExact<
-        IProfile,
+        Omit<IProfile, typeof IndexHints>,
         {
           id: Opt<number>;
           bio: string;
           user: IUser;
           [PrimaryKeyProp]?: 'id';
-          [IndexHints]?: {};
         }
       >
     >(true);
@@ -1859,13 +1857,12 @@ describe('OneToOneRelationOptionsBuilder', () => {
     type IUser = InferEntity<typeof User>;
     assert<
       IsExact<
-        IUser,
+        Omit<IUser, typeof IndexHints>,
         {
           id: Opt<number>;
           name: string;
           profile: number;
           [PrimaryKeyProp]?: 'id';
-          [IndexHints]?: {};
         }
       >
     >(true);
@@ -1968,12 +1965,11 @@ describe('ManyToOneRelationOptionsBuilder', () => {
     type IGroup = InferEntity<typeof Group>;
     assert<
       IsExact<
-        IGroup,
+        Omit<IGroup, typeof IndexHints>,
         {
           name: Opt<string>;
           users: Collection<IUser>;
           [PrimaryKeyProp]?: 'name';
-          [IndexHints]?: {};
         }
       >
     >(true);
@@ -1990,13 +1986,12 @@ describe('ManyToOneRelationOptionsBuilder', () => {
     type IUser = InferEntity<typeof User>;
     assert<
       IsExact<
-        IUser,
+        Omit<IUser, typeof IndexHints>,
         {
           id: Opt<number>;
           name: string;
           group: string;
           [PrimaryKeyProp]?: 'id';
-          [IndexHints]?: {};
         }
       >
     >(true);

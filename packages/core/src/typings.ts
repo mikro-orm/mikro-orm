@@ -218,8 +218,29 @@ export type InferEntityName<T> = T extends { [EntityName]?: infer Name } ? (Name
  */
 export const IndexHints = Symbol('IndexHints');
 
-/** Extracts the index hints map from an entity type. Returns `never` when no hints are declared. */
-export type ExtractIndexHints<T> = T extends { [IndexHints]?: infer H } ? H : never;
+/**
+ * Extracts the index hints map from an entity type. Returns `never` when no hints are declared.
+ * For decorator entities, `[IndexHints]` contains a pre-computed `{ idxName: 'prop' }` map.
+ * For `defineEntity` entities, `[IndexHints]` contains `[Properties]` (a tuple wrapping the
+ * raw property builders), which is lazily converted to the index map when first accessed.
+ */
+export type ExtractIndexHints<T> = T extends { [IndexHints]?: infer H }
+  ? H extends [infer P extends Record<string, any>]
+    ? InferPropertyIndexMap<P>
+    : H
+  : never;
+
+/**
+ * Extracts `{ indexName: propertyKey }` from property builder options.
+ * Checks `.index('name')` and `.unique('name')` on each property in a single pass.
+ */
+export type InferPropertyIndexMap<Properties extends Record<string, any>> = {
+  [K in keyof Properties as MaybeReturnType<Properties[K]> extends { '~options': { index: infer N extends string } }
+    ? N
+    : MaybeReturnType<Properties[K]> extends { '~options': { unique: infer N extends string } }
+      ? N
+      : never]: K & string;
+};
 
 /** Union of declared index names on an entity. Falls back to `string` when no `[IndexHints]` are declared. */
 export type IndexName<T> = [ExtractIndexHints<T>] extends [never]

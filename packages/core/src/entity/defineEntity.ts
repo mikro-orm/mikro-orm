@@ -39,6 +39,7 @@ import type {
   Config,
   MaybePromise,
   IndexHints,
+  InferPropertyIndexMap,
 } from '../typings.js';
 import type { Raw } from '../utils/RawQueryFragment.js';
 import type { ScalarReference } from './Reference.js';
@@ -1514,7 +1515,7 @@ export type InferEntityFromProperties<
     : { [EntityRepositoryType]?: Repository extends Constructor<infer R> ? R : Repository }) &
   (IsNever<Base> extends true ? {} : Omit<Base, typeof PrimaryKeyProp>) &
   (ForceObject extends true ? { [Config]?: DefineConfig<{ forceObject: true }> } : {}) & {
-    [IndexHints]?: InferPropertyIndexMap<Properties>;
+    [IndexHints]?: [Properties];
   };
 
 // Combines primary keys from child properties and base entity
@@ -1633,16 +1634,3 @@ type ValueOf<T extends Dictionary> = T[keyof T] extends infer V
   : never;
 
 type IsUnion<T, U = T> = T extends U ? ([U] extends [T] ? false : true) : false;
-
-/**
- * Single-pass extraction of `{ indexName: propertyKey }` from property-level
- * `.index('name')` and `.unique('name')` calls. Checks both in one mapped type
- * to minimize type instantiation cost.
- */
-type InferPropertyIndexMap<Properties extends Record<string, any>> = {
-  [K in keyof Properties as MaybeReturnType<Properties[K]> extends { '~options': { index: infer N extends string } }
-    ? N
-    : MaybeReturnType<Properties[K]> extends { '~options': { unique: infer N extends string } }
-      ? N
-      : never]: K & string;
-};
