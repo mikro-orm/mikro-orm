@@ -2579,20 +2579,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       }
     }
 
-    if (typeof where === 'object' && where !== null && !Array.isArray(where)) {
-      for (const key of Object.keys(where)) {
-        if (key.startsWith('$')) {
-          continue;
-        }
-
-        if (!allowedProps.has(key)) {
-          throw new Error(
-            `Property '${key}' in where clause is not covered by index '${indexNames.join("', '")}'. ` +
-              `Allowed properties: ${[...allowedProps].join(', ')}`,
-          );
-        }
-      }
-    }
+    this.validateWhereKeysForIndex(where, allowedProps, indexNames);
 
     if (options.orderBy) {
       const orderMaps = Array.isArray(options.orderBy) ? options.orderBy : [options.orderBy];
@@ -2606,6 +2593,37 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
             );
           }
         }
+      }
+    }
+  }
+
+  private validateWhereKeysForIndex(where: any, allowedProps: Set<string>, indexNames: string[]): void {
+    if (typeof where !== 'object' || where === null) {
+      return;
+    }
+
+    if (Array.isArray(where)) {
+      for (const item of where) {
+        this.validateWhereKeysForIndex(item, allowedProps, indexNames);
+      }
+
+      return;
+    }
+
+    for (const key of Object.keys(where)) {
+      if (key === '$and' || key === '$or') {
+        for (const item of Utils.asArray(where[key])) {
+          this.validateWhereKeysForIndex(item, allowedProps, indexNames);
+        }
+      } else if (key === '$not') {
+        this.validateWhereKeysForIndex(where[key], allowedProps, indexNames);
+      } else if (key.startsWith('$')) {
+        continue;
+      } else if (!allowedProps.has(key)) {
+        throw new Error(
+          `Property '${key}' in where clause is not covered by index '${indexNames.join("', '")}'. ` +
+            `Allowed properties: ${[...allowedProps].join(', ')}`,
+        );
       }
     }
   }

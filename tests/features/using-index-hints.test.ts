@@ -80,17 +80,16 @@ describe.skipIf(true)('using option - type safety', () => {
     em.find(User, { name: 'foo', age: 30 }, { using: 'idx_user_name_email' }) as any;
   });
 
-  test('defineEntity entity infers index hints and narrows where', () => {
+  test('defineEntity entity infers index hints from property-level .index()/.unique()', () => {
     em.find(Article, { title: 'foo' }, { using: 'idx_article_title' }) as any;
     em.find(Article, { slug: 'foo' }, { using: 'uniq_article_slug' }) as any;
-    em.find(Article, { status: 'draft', views: 100 }, { using: 'idx_article_status_views' }) as any;
+    // Entity-level composite indexes (idx_article_status_views) require manual [IndexHints]
+    // for type narrowing; runtime validation still works for all indexes
   });
 
   test('defineEntity entity errors on non-index props', () => {
     // @ts-expect-error 'views' is not in idx_article_title
     em.find(Article, { views: 100 }, { using: 'idx_article_title' }) as any;
-    // @ts-expect-error 'title' is not in idx_article_status_views
-    em.find(Article, { title: 'foo' }, { using: 'idx_article_status_views' }) as any;
   });
 
   test('entity without [IndexHints] allows any string for using', () => {
@@ -212,8 +211,21 @@ describe('using option - runtime validation (SQLite)', () => {
     );
   });
 
-  test('using skips $-prefixed operators in where validation', async () => {
+  test('using validates properties inside $and/$or/$not', async () => {
+    // Valid: property inside $and is covered by index
     await orm.em.find(User, { $and: [{ name: 'foo' }] } as any, { using: 'idx_user_name' });
+    // Invalid: property inside $and is NOT covered by index
+    await expect(orm.em.find(User, { $and: [{ age: 30 }] } as any, { using: 'idx_user_name' })).rejects.toThrow(
+      /Property 'age' in where clause is not covered by index 'idx_user_name'/,
+    );
+    // Invalid: property inside $or is NOT covered
+    await expect(
+      orm.em.find(User, { $or: [{ name: 'foo' }, { age: 30 }] } as any, { using: 'idx_user_name' }),
+    ).rejects.toThrow(/Property 'age'/);
+    // Invalid: property inside $not is NOT covered
+    await expect(orm.em.find(User, { $not: { age: 30 } } as any, { using: 'idx_user_name' })).rejects.toThrow(
+      /Property 'age'/,
+    );
   });
 
   test('using validation lists available indexes in error message', async () => {

@@ -435,7 +435,13 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
       ret.indexHint = options.indexHint;
     } else if (options.using != null) {
       const names = Utils.asArray(options.using);
-      // MongoDB only supports a single index hint per query
+
+      if (names.length > 1) {
+        throw new Error(
+          'MongoDB only supports a single index hint per query. Provide one index name instead of an array.',
+        );
+      }
+
       ret.indexHint = names[0];
     }
 

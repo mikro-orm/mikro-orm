@@ -188,22 +188,6 @@ exports[`SchemaGenerator > rename column [mssql] > mssql-update-schema-add-uniqu
 "
 `;
 
-exports[`SchemaGenerator > rename column [mssql] > mssql-update-schema-alter-column 1`] = `
-"drop index [author2_born_index] on [author2];
-alter table [author2] alter column [born] nvarchar(max);
-alter table [author2] drop constraint [author2_favourite_author_id_foreign];
-
-declare @constraint0 varchar(100) = (select default_constraints.name from sys.all_columns join sys.tables on all_columns.object_id = tables.object_id join sys.schemas on tables.schema_id = schemas.schema_id join sys.default_constraints on all_columns.default_object_id = default_constraints.object_id where schemas.name = 'dbo' and tables.name = 'author2' and all_columns.name = 'age') if @constraint0 is not null exec('alter table [author2] drop constraint ' + @constraint0);
-alter table [author2] add constraint [author2_age_default] default 42 for [age];
-declare @constraint1 varchar(100) = (select default_constraints.name from sys.all_columns join sys.tables on all_columns.object_id = tables.object_id join sys.schemas on tables.schema_id = schemas.schema_id join sys.default_constraints on all_columns.default_object_id = default_constraints.object_id where schemas.name = 'dbo' and tables.name = 'author2' and all_columns.name = 'born') if @constraint1 is not null exec('alter table [author2] drop constraint ' + @constraint1);
-alter table [author2] alter column [born] int not null;
-alter table [author2] add constraint [author2_born_default] default 42 for [born];
-alter table [author2] add constraint [author2_favourite_author_id_foreign] foreign key ([favourite_author_id]) references [foo_bar2] ([id]) on delete set null;
-
-create index [author2_born_index] on [author2] ([born]);
-"
-`;
-
 exports[`SchemaGenerator > rename column [mssql] > mssql-update-schema-drop-index 1`] = `
 "drop index [new_title_idx] on [book2];
 "
@@ -331,12 +315,19 @@ alter table [author2] add constraint [author2_favourite_book_uuid_pk_foreign] fo
 "
 `;
 
-exports[`SchemaGenerator > update schema enums [mssql] > mssql-update-schema-drop-1:1 1`] = `
-"alter table [foo_bar2] drop constraint [foo_bar2_baz_id_foreign];
+exports[`SchemaGenerator > update schema enums [mssql] > mssql-update-schema-alter-column 1`] = `
+"drop index [author2_born_index] on [author2];
+alter table [author2] alter column [born] nvarchar(max);
+alter table [author2] drop constraint [author2_favourite_author_id_foreign];
 
-drop index [foo_bar2_baz_id_unique] on [foo_bar2];
-declare @constraint0 varchar(100) = (select default_constraints.name from sys.all_columns join sys.tables on all_columns.object_id = tables.object_id join sys.schemas on tables.schema_id = schemas.schema_id join sys.default_constraints on all_columns.default_object_id = default_constraints.object_id where schemas.name = 'dbo' and tables.name = 'foo_bar2' and all_columns.name = 'baz_id') if @constraint0 is not null exec('alter table [foo_bar2] drop constraint ' + @constraint0);
-alter table [foo_bar2] drop column [baz_id];
+declare @constraint0 varchar(100) = (select default_constraints.name from sys.all_columns join sys.tables on all_columns.object_id = tables.object_id join sys.schemas on tables.schema_id = schemas.schema_id join sys.default_constraints on all_columns.default_object_id = default_constraints.object_id where schemas.name = 'dbo' and tables.name = 'author2' and all_columns.name = 'age') if @constraint0 is not null exec('alter table [author2] drop constraint ' + @constraint0);
+alter table [author2] add constraint [author2_age_default] default 42 for [age];
+declare @constraint1 varchar(100) = (select default_constraints.name from sys.all_columns join sys.tables on all_columns.object_id = tables.object_id join sys.schemas on tables.schema_id = schemas.schema_id join sys.default_constraints on all_columns.default_object_id = default_constraints.object_id where schemas.name = 'dbo' and tables.name = 'author2' and all_columns.name = 'born') if @constraint1 is not null exec('alter table [author2] drop constraint ' + @constraint1);
+alter table [author2] alter column [born] int not null;
+alter table [author2] add constraint [author2_born_default] default 42 for [born];
+alter table [author2] add constraint [author2_favourite_author_id_foreign] foreign key ([favourite_author_id]) references [foo_bar2] ([id]) on delete set null;
+
+create index [author2_born_index] on [author2] ([born]);
 "
 `;
 

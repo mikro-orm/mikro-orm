@@ -1305,22 +1305,12 @@ export function defineEntity<
   const TBase = never,
   const TRepository = never,
   const TForceObject extends boolean = false,
-  const TIndexDefs extends readonly { name?: string; properties?: any }[] = readonly [],
-  const TUniqueDefs extends readonly { name?: string; properties?: any }[] = readonly [],
 >(
-  meta: Omit<
-    EntityMetadataWithProperties<TName, TTableName, TProperties, TPK, TBase, TRepository, TForceObject>,
-    'indexes' | 'uniques'
-  > & {
-    indexes?: TIndexDefs &
-      EntityMetadataWithProperties<TName, TTableName, TProperties, TPK, TBase, TRepository, TForceObject>['indexes'];
-    uniques?: TUniqueDefs &
-      EntityMetadataWithProperties<TName, TTableName, TProperties, TPK, TBase, TRepository, TForceObject>['uniques'];
-  },
+  meta: EntityMetadataWithProperties<TName, TTableName, TProperties, TPK, TBase, TRepository, TForceObject>,
 ): EntitySchemaWithMeta<
   TName,
   TTableName,
-  InferEntityFromProperties<TProperties, TPK, TBase, TRepository, TForceObject, TIndexDefs, TUniqueDefs>,
+  InferEntityFromProperties<TProperties, TPK, TBase, TRepository, TForceObject>,
   TBase,
   TProperties
 >;
@@ -1499,8 +1489,6 @@ export type InferEntityFromProperties<
   Base = never,
   Repository = never,
   ForceObject extends boolean = false,
-  IndexDefs extends readonly any[] = readonly [],
-  UniqueDefs extends readonly any[] = readonly [],
 > = (IsNever<Base> extends true
   ? {}
   : Base extends { toObject(...args: any[]): any }
@@ -1526,7 +1514,7 @@ export type InferEntityFromProperties<
     : { [EntityRepositoryType]?: Repository extends Constructor<infer R> ? R : Repository }) &
   (IsNever<Base> extends true ? {} : Omit<Base, typeof PrimaryKeyProp>) &
   (ForceObject extends true ? { [Config]?: DefineConfig<{ forceObject: true }> } : {}) & {
-    [IndexHints]?: InferIndexMap<Properties, IndexDefs, UniqueDefs>;
+    [IndexHints]?: InferPropertyIndexMap<Properties>;
   };
 
 // Combines primary keys from child properties and base entity
@@ -1646,37 +1634,15 @@ type ValueOf<T extends Dictionary> = T[keyof T] extends infer V
 
 type IsUnion<T, U = T> = T extends U ? ([U] extends [T] ? false : true) : false;
 
-/** Extracts `{ indexName: propertyKey }` from property-level `.index('name')` calls. */
-type InferPropertyIndexes<Properties extends Record<string, any>> = {
+/**
+ * Single-pass extraction of `{ indexName: propertyKey }` from property-level
+ * `.index('name')` and `.unique('name')` calls. Checks both in one mapped type
+ * to minimize type instantiation cost.
+ */
+type InferPropertyIndexMap<Properties extends Record<string, any>> = {
   [K in keyof Properties as MaybeReturnType<Properties[K]> extends { '~options': { index: infer N extends string } }
     ? N
-    : never]: K & string;
+    : MaybeReturnType<Properties[K]> extends { '~options': { unique: infer N extends string } }
+      ? N
+      : never]: K & string;
 };
-
-/** Extracts `{ uniqueName: propertyKey }` from property-level `.unique('name')` calls. */
-type InferPropertyUniques<Properties extends Record<string, any>> = {
-  [K in keyof Properties as MaybeReturnType<Properties[K]> extends { '~options': { unique: infer N extends string } }
-    ? N
-    : never]: K & string;
-};
-
-/** Extracts `{ name: prop1 | prop2 }` from entity-level `indexes`/`uniques` array. */
-type ExtractIndexDefs<Defs extends readonly any[]> = {
-  [I in Defs[number] as I extends { name: infer N extends string } ? N : never]: I extends { properties: infer P }
-    ? P extends readonly string[]
-      ? P[number]
-      : P extends string
-        ? P
-        : never
-    : never;
-};
-
-/** Merges property-level and entity-level index maps into a single `[IndexHints]` type. */
-type InferIndexMap<
-  Properties extends Record<string, any>,
-  IndexDefs extends readonly any[],
-  UniqueDefs extends readonly any[],
-> = InferPropertyIndexes<Properties> &
-  InferPropertyUniques<Properties> &
-  ExtractIndexDefs<IndexDefs> &
-  ExtractIndexDefs<UniqueDefs>;
