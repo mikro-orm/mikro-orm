@@ -403,20 +403,34 @@ export class MySqlSchemaHelper extends SchemaHelper {
 
     const allTriggers = await connection.execute<any[]>(sql);
     const ret = {} as Dictionary<SqlTriggerDef[]>;
-    const triggerMap = new Map<string, SqlTriggerDef>();
 
+    // First pass: collect all raw trigger names per table to detect multi-event groups.
+    // A base name is only used for grouping if multiple triggers share it (e.g. trg_multi_insert + trg_multi_update).
+    const namesByTable = new Map<string, string[]>();
     for (const row of allTriggers) {
       const key = this.getTableKey(row);
-      // Strip event suffix only when it matches the actual event (e.g. trg_insert for INSERT)
+      namesByTable.set(key, [...(namesByTable.get(key) ?? []), row.trigger_name]);
+    }
+
+    const triggerMap = new Map<string, SqlTriggerDef>();
+    for (const row of allTriggers) {
+      const key = this.getTableKey(row);
       const eventLower = row.event.toLowerCase();
-      const baseName = row.trigger_name.endsWith(`_${eventLower}`)
+      const tableNames = namesByTable.get(key) ?? [];
+
+      // Only strip event suffix when another trigger with the same base exists for this table
+      const candidateBase = row.trigger_name.endsWith(`_${eventLower}`)
         ? row.trigger_name.slice(0, -eventLower.length - 1)
-        : row.trigger_name;
+        : null;
+      const baseName =
+        candidateBase && tableNames.some(n => n !== row.trigger_name && n.startsWith(`${candidateBase}_`))
+          ? candidateBase
+          : row.trigger_name;
       const dedupeKey = `${key}:${baseName}`;
 
       if (triggerMap.has(dedupeKey)) {
         const existing = triggerMap.get(dedupeKey)!;
-        const event = row.event.toLowerCase() as SqlTriggerDef['events'][number];
+        const event = eventLower as SqlTriggerDef['events'][number];
         if (!existing.events.includes(event)) {
           existing.events.push(event);
         }
@@ -426,7 +440,7 @@ export class MySqlSchemaHelper extends SchemaHelper {
       ret[key] ??= [];
       // Strip BEGIN/END wrapper from MySQL action_statement
       let body = row.body ?? '';
-      const beginEndMatch = /^\s*begin\s+([\s\S]*?)\s*end\s*$/i.exec(body);
+      const beginEndMatch = /^\s*begin\s+([\s\S]*)\s*end\s*$/i.exec(body);
       if (beginEndMatch) {
         body = beginEndMatch[1].trim().replace(/;\s*$/, '');
       }
@@ -434,7 +448,7 @@ export class MySqlSchemaHelper extends SchemaHelper {
       const trigger: SqlTriggerDef = {
         name: baseName,
         timing: row.timing.toLowerCase() as SqlTriggerDef['timing'],
-        events: [row.event.toLowerCase() as SqlTriggerDef['events'][number]],
+        events: [eventLower as SqlTriggerDef['events'][number]],
         forEach: (row.for_each ?? 'row').toLowerCase() as SqlTriggerDef['forEach'],
         body,
       };

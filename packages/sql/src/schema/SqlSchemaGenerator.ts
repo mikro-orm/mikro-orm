@@ -433,6 +433,11 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
 
     if (options.dropTables && !options.safe) {
       for (const table of Object.values(schemaDiff.removedTables)) {
+        // Drop triggers before the table so driver-specific cleanup runs (e.g. PostgreSQL function removal)
+        for (const trigger of table.getTriggers()) {
+          this.append(ret, this.helper.dropTrigger(table, trigger));
+        }
+
         this.append(ret, this.helper.dropTableIfExists(table.name, table.schema));
       }
 
