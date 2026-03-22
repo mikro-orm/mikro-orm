@@ -1,6 +1,9 @@
 import { IndexHints, MikroORM, PrimaryKeyProp, type EntityManager, type IndexFilterQuery } from '@mikro-orm/core';
 import { Entity, Index, PrimaryKey, Property, ReflectMetadataProvider, Unique } from '@mikro-orm/decorators/legacy';
 import { defineEntity, p, SqliteDriver } from '@mikro-orm/sqlite';
+import { MySqlDriver } from '@mikro-orm/mysql';
+import { MsSqlDriver } from '@mikro-orm/mssql';
+import { MongoDriver } from '@mikro-orm/mongodb';
 import { mockLogger } from '../helpers.js';
 
 // ==========================================
@@ -44,6 +47,32 @@ const Article = defineEntity({
   indexes: [{ name: 'idx_article_status_views', properties: ['status', 'views'] }],
 });
 
+// Entity with NO named indexes at all (only unnamed)
+@Entity()
+class Plain {
+  @PrimaryKey()
+  id!: number;
+
+  @Property()
+  value!: string;
+}
+
+// MongoDB-compatible entity (uses ObjectId PK)
+@Entity()
+@Index({ name: 'idx_doc_title', properties: ['title'] })
+class Doc {
+  [IndexHints]?: { idx_doc_title: 'title' };
+
+  @PrimaryKey()
+  _id!: string;
+
+  @Property()
+  title!: string;
+
+  @Property({ nullable: true })
+  body?: string;
+}
+
 @Entity()
 class Tag {
   @PrimaryKey()
@@ -63,13 +92,9 @@ describe.skipIf(true)('using option - type safety', () => {
   const em = null as unknown as EntityManager;
 
   test('decorator entity with [IndexHints] narrows where', () => {
-    // Should compile — 'name' is in idx_user_name
     em.find(User, { name: 'foo' }, { using: 'idx_user_name' }) as any;
-    // Should compile — 'name' and 'email' are in idx_user_name_email
     em.find(User, { name: 'foo', email: 'bar' }, { using: 'idx_user_name_email' }) as any;
-    // Should compile — PK is always allowed
     em.find(User, 1, { using: 'idx_user_name' }) as any;
-    // Should compile — no using, full FilterQuery
     em.find(User, { age: 30 }) as any;
   });
 
@@ -83,8 +108,6 @@ describe.skipIf(true)('using option - type safety', () => {
   test('defineEntity entity infers index hints from property-level .index()/.unique()', () => {
     em.find(Article, { title: 'foo' }, { using: 'idx_article_title' }) as any;
     em.find(Article, { slug: 'foo' }, { using: 'uniq_article_slug' }) as any;
-    // Entity-level composite indexes (idx_article_status_views) require manual [IndexHints]
-    // for type narrowing; runtime validation still works for all indexes
   });
 
   test('defineEntity entity errors on non-index props', () => {
@@ -126,7 +149,7 @@ describe.skipIf(true)('using option - type safety', () => {
 });
 
 // ==========================================
-// Runtime Tests - SQLite (validation only, no SQL hints)
+// Runtime Tests - SQLite (validation + all code paths)
 // ==========================================
 
 describe('using option - runtime validation (SQLite)', () => {
@@ -135,7 +158,7 @@ describe('using option - runtime validation (SQLite)', () => {
   beforeAll(async () => {
     orm = await MikroORM.init({
       metadataProvider: ReflectMetadataProvider,
-      entities: [User, Article, Tag],
+      entities: [User, Article, Tag, Plain],
       dbName: ':memory:',
       driver: SqliteDriver,
     });
@@ -145,6 +168,8 @@ describe('using option - runtime validation (SQLite)', () => {
   afterAll(async () => {
     await orm.close(true);
   });
+
+  // --- Basic validation ---
 
   test('using with valid where passes validation', async () => {
     const mock = mockLogger(orm);
@@ -164,31 +189,86 @@ describe('using option - runtime validation (SQLite)', () => {
     );
   });
 
+  test('using throws on unknown index for entity with no named indexes', async () => {
+    await expect(orm.em.find(Plain, { value: 'x' } as any, { using: 'bad_idx' })).rejects.toThrow(
+      /No named indexes defined/,
+    );
+  });
+
+  // --- where validation ---
+
   test('using throws when where property not covered by index', async () => {
     await expect(orm.em.find(User, { age: 30 } as any, { using: 'idx_user_name' })).rejects.toThrow(
       /Property 'age' in where clause is not covered by index 'idx_user_name'/,
     );
   });
 
+  test('using validates properties inside $and/$or/$not', async () => {
+    await orm.em.find(User, { $and: [{ name: 'foo' }] } as any, { using: 'idx_user_name' });
+    await expect(orm.em.find(User, { $and: [{ age: 30 }] } as any, { using: 'idx_user_name' })).rejects.toThrow(
+      /Property 'age'/,
+    );
+    await expect(
+      orm.em.find(User, { $or: [{ name: 'foo' }, { age: 30 }] } as any, { using: 'idx_user_name' }),
+    ).rejects.toThrow(/Property 'age'/);
+    await expect(orm.em.find(User, { $not: { age: 30 } } as any, { using: 'idx_user_name' })).rejects.toThrow(
+      /Property 'age'/,
+    );
+  });
+
+  test('using skips non-condition $ operators like $eq', async () => {
+    await orm.em.find(User, { name: { $eq: 'foo' } } as any, { using: 'idx_user_name' });
+  });
+
+  test('using with empty where passes validation', async () => {
+    await orm.em.find(User, {} as any, { using: 'idx_user_name' });
+  });
+
+  test('using with null/PK where skips where validation', async () => {
+    await orm.em.find(User, 1 as any, { using: 'idx_user_name' });
+  });
+
+  // --- orderBy validation ---
+
   test('using throws when orderBy property not covered by index', async () => {
+    await expect(
+      orm.em.find(User, { name: 'foo' } as any, { using: 'idx_user_name', orderBy: { age: 'asc' } } as any),
+    ).rejects.toThrow(/Property 'age' in orderBy is not covered by index 'idx_user_name'/);
+  });
+
+  test('using validates orderBy array', async () => {
     await expect(
       orm.em.find(
         User,
         { name: 'foo' } as any,
         {
           using: 'idx_user_name',
-          orderBy: { age: 'asc' },
+          orderBy: [{ name: 'asc' }, { age: 'desc' }],
         } as any,
       ),
-    ).rejects.toThrow(/Property 'age' in orderBy is not covered by index 'idx_user_name'/);
+    ).rejects.toThrow(/Property 'age' in orderBy/);
   });
 
+  test('using allows valid orderBy', async () => {
+    await orm.em.find(
+      User,
+      { name: 'foo' } as any,
+      {
+        using: 'idx_user_name',
+        orderBy: { name: 'asc' },
+      } as any,
+    );
+  });
+
+  // --- Multiple indexes ---
+
   test('using with multiple indexes allows union of properties', async () => {
-    // idx_user_name covers 'name', uniq_user_email covers 'email'
     await orm.em.find(User, { name: 'foo', email: 'bar' } as any, {
       using: ['idx_user_name', 'uniq_user_email'],
     });
   });
+
+  // --- indexHint precedence ---
 
   test('using does not override explicit indexHint', async () => {
     const mock = mockLogger(orm);
@@ -199,38 +279,62 @@ describe('using option - runtime validation (SQLite)', () => {
     expect(mock.mock.calls[0][0]).toMatch(/indexed by idx_user_name/);
   });
 
+  // --- All EM methods ---
+
   test('using validates with findOne', async () => {
     await expect(orm.em.findOne(User, { age: 30 } as any, { using: 'idx_user_name' })).rejects.toThrow(
-      /Property 'age' in where clause is not covered by index 'idx_user_name'/,
+      /Property 'age'/,
+    );
+    const mock = mockLogger(orm);
+    await orm.em.findOne(User, { name: 'foo' } as any, { using: 'idx_user_name' });
+    expect(mock.mock.calls[0][0]).toMatch(/select/i);
+  });
+
+  test('using validates with findOneOrFail', async () => {
+    await expect(orm.em.findOneOrFail(User, { age: 30 } as any, { using: 'idx_user_name' })).rejects.toThrow(
+      /Property 'age'/,
     );
   });
 
   test('using validates with findAndCount', async () => {
     await expect(orm.em.findAndCount(User, { age: 30 } as any, { using: 'idx_user_name' })).rejects.toThrow(
-      /Property 'age' in where clause is not covered by index 'idx_user_name'/,
-    );
-  });
-
-  test('using validates properties inside $and/$or/$not', async () => {
-    // Valid: property inside $and is covered by index
-    await orm.em.find(User, { $and: [{ name: 'foo' }] } as any, { using: 'idx_user_name' });
-    // Invalid: property inside $and is NOT covered by index
-    await expect(orm.em.find(User, { $and: [{ age: 30 }] } as any, { using: 'idx_user_name' })).rejects.toThrow(
-      /Property 'age' in where clause is not covered by index 'idx_user_name'/,
-    );
-    // Invalid: property inside $or is NOT covered
-    await expect(
-      orm.em.find(User, { $or: [{ name: 'foo' }, { age: 30 }] } as any, { using: 'idx_user_name' }),
-    ).rejects.toThrow(/Property 'age'/);
-    // Invalid: property inside $not is NOT covered
-    await expect(orm.em.find(User, { $not: { age: 30 } } as any, { using: 'idx_user_name' })).rejects.toThrow(
       /Property 'age'/,
     );
+    const mock = mockLogger(orm);
+    await orm.em.findAndCount(User, { name: 'foo' } as any, { using: 'idx_user_name' });
+    expect(mock.mock.calls[0][0]).toMatch(/select/i);
   });
+
+  test('using validates with findAll', async () => {
+    await expect(orm.em.findAll(User, { where: { age: 30 }, using: 'idx_user_name' } as any)).rejects.toThrow(
+      /Property 'age'/,
+    );
+    const mock = mockLogger(orm);
+    await orm.em.findAll(User, { where: { name: 'foo' }, using: 'idx_user_name' } as any);
+    expect(mock.mock.calls[0][0]).toMatch(/select/i);
+  });
+
+  test('using validates with findByCursor', async () => {
+    await expect(
+      orm.em.findByCursor(User, { where: { age: 30 }, using: 'idx_user_name', orderBy: { name: 'asc' } } as any),
+    ).rejects.toThrow(/Property 'age'/);
+  });
+
+  test('using validates with stream', async () => {
+    await expect(async () => {
+      for await (const _ of orm.em.stream(User, { where: { age: 30 }, using: 'idx_user_name' } as any)) {
+        // should not reach here
+      }
+    }).rejects.toThrow(/Property 'age'/);
+  });
+
+  // --- Available indexes in error message ---
 
   test('using validation lists available indexes in error message', async () => {
     await expect(orm.em.find(User, { name: 'foo' } as any, { using: 'bad_idx' })).rejects.toThrow(/Available indexes/);
   });
+
+  // --- defineEntity entities ---
 
   test('using works with defineEntity entities at runtime', async () => {
     const mock = mockLogger(orm);
@@ -244,7 +348,168 @@ describe('using option - runtime validation (SQLite)', () => {
     );
   });
 
-  test('using with empty where passes validation', async () => {
-    await orm.em.find(User, {} as any, { using: 'idx_user_name' });
+  test('using works with defineEntity entity-level indexes at runtime', async () => {
+    await orm.em.find(Article, { status: 'draft', views: 100 } as any, { using: 'idx_article_status_views' });
+  });
+
+  test('using works with defineEntity unique constraint at runtime', async () => {
+    await orm.em.find(Article, { slug: 'foo' } as any, { using: 'uniq_article_slug' });
+  });
+});
+
+// ==========================================
+// Runtime Tests - MySQL (SQL hint generation)
+// ==========================================
+
+describe('using option - MySQL runtime', () => {
+  let orm: MikroORM;
+
+  beforeAll(async () => {
+    orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
+      entities: [User, Tag, Plain],
+      dbName: 'using_test',
+      driver: MySqlDriver,
+      port: 3308,
+    });
+    await orm.schema.refresh();
+  });
+
+  afterAll(async () => {
+    await orm.schema.drop();
+    await orm.close(true);
+  });
+
+  test('using generates USE INDEX hint for MySQL', async () => {
+    const mock = mockLogger(orm);
+    await orm.em.find(User, { name: 'foo' } as any, { using: 'idx_user_name' });
+    expect(mock.mock.calls[0][0]).toMatch(/use index\(idx_user_name\)/);
+  });
+
+  test('using with multiple indexes generates combined hint', async () => {
+    const mock = mockLogger(orm);
+    await orm.em.find(User, { name: 'foo', email: 'bar' } as any, {
+      using: ['idx_user_name', 'idx_user_name_email'],
+    });
+    expect(mock.mock.calls[0][0]).toMatch(/use index\(idx_user_name, idx_user_name_email\)/);
+  });
+
+  test('using does not override explicit indexHint', async () => {
+    const mock = mockLogger(orm);
+    await orm.em.find(User, { name: 'foo' } as any, {
+      using: 'idx_user_name',
+      indexHint: 'force index(idx_user_name_email)',
+    });
+    expect(mock.mock.calls[0][0]).toMatch(/force index\(idx_user_name_email\)/);
+    expect(mock.mock.calls[0][0]).not.toMatch(/use index/);
+  });
+
+  test('using generates hint for findOne', async () => {
+    const mock = mockLogger(orm);
+    await orm.em.findOne(User, { name: 'foo' } as any, { using: 'idx_user_name' });
+    expect(mock.mock.calls[0][0]).toMatch(/use index\(idx_user_name\)/);
+  });
+
+  test('using generates hint for count (via findAndCount)', async () => {
+    const mock = mockLogger(orm);
+    await orm.em.findAndCount(User, { name: 'foo' } as any, { using: 'idx_user_name' });
+    // Both the find and count queries should have the hint
+    const queries = mock.mock.calls.map((c: any) => c[0]).filter((q: string) => q.includes('idx_user_name'));
+    expect(queries.length).toBeGreaterThanOrEqual(1);
+  });
+});
+
+// ==========================================
+// Runtime Tests - MSSQL (SQL hint generation)
+// ==========================================
+
+describe('using option - MSSQL runtime', () => {
+  let orm: MikroORM;
+
+  beforeAll(async () => {
+    orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
+      entities: [User, Tag, Plain],
+      dbName: 'using_test',
+      driver: MsSqlDriver,
+      password: 'Root.Root',
+    });
+    await orm.schema.refresh();
+  });
+
+  afterAll(async () => {
+    await orm.schema.drop();
+    await orm.close(true);
+  });
+
+  test('using generates WITH (INDEX(...)) hint for MSSQL', async () => {
+    const mock = mockLogger(orm);
+    await orm.em.find(User, { name: 'foo' } as any, { using: 'idx_user_name' });
+    expect(mock.mock.calls[0][0]).toMatch(/with \(index\(idx_user_name\)\)/);
+  });
+
+  test('using with multiple indexes generates combined MSSQL hint', async () => {
+    const mock = mockLogger(orm);
+    await orm.em.find(User, { name: 'foo', email: 'bar' } as any, {
+      using: ['idx_user_name', 'idx_user_name_email'],
+    });
+    expect(mock.mock.calls[0][0]).toMatch(/with \(index\(idx_user_name, idx_user_name_email\)\)/);
+  });
+});
+
+// ==========================================
+// Runtime Tests - MongoDB
+// ==========================================
+
+describe('using option - MongoDB runtime', () => {
+  let orm: MikroORM;
+
+  beforeAll(async () => {
+    orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
+      entities: [Doc],
+      dbName: 'using_test',
+      driver: MongoDriver,
+      clientUrl: 'mongodb://localhost:27017',
+    });
+    await orm.schema.refresh();
+  });
+
+  afterAll(async () => {
+    await orm.schema.drop();
+    await orm.close(true);
+  });
+
+  test('using passes index name as hint to MongoDB', async () => {
+    const mock = mockLogger(orm);
+    await orm.em.find(Doc, { title: 'foo' } as any, { using: 'idx_doc_title' });
+    expect(mock.mock.calls[0][0]).toMatch(/idx_doc_title/);
+  });
+
+  test('using throws when multiple indexes provided for MongoDB', async () => {
+    await expect(
+      orm.em.find(Doc, { title: 'foo' } as any, { using: ['idx_doc_title', 'idx_doc_title'] }),
+    ).rejects.toThrow(/MongoDB only supports a single index hint per query/);
+  });
+
+  test('using does not override explicit indexHint in MongoDB', async () => {
+    const mock = mockLogger(orm);
+    await orm.em.find(Doc, { title: 'foo' } as any, {
+      using: 'idx_doc_title',
+      indexHint: '_id_',
+    });
+    expect(mock.mock.calls[0][0]).toMatch(/_id_/);
+  });
+
+  test('using throws on unknown index (MongoDB)', async () => {
+    await expect(orm.em.find(Doc, { title: 'foo' } as any, { using: 'nonexistent_idx' })).rejects.toThrow(
+      /Index 'nonexistent_idx' not found on entity 'Doc'/,
+    );
+  });
+
+  test('using throws when where property not covered (MongoDB)', async () => {
+    await expect(orm.em.find(Doc, { body: 'x' } as any, { using: 'idx_doc_title' })).rejects.toThrow(
+      /Property 'body' in where clause is not covered by index 'idx_doc_title'/,
+    );
   });
 });
