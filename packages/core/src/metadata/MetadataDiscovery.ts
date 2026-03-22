@@ -2094,7 +2094,13 @@ export class MetadataDiscovery {
       });
 
       if (type) {
-        prop.type = type === 'datetime' ? 'Date' : type;
+        if (prop.array) {
+          // built-in type + array: true — force-create instance for ArrayType wrapping
+          prop.customType = new (prop.type as Constructor<Type>)();
+          prop.type = prop.customType.constructor.name;
+        } else {
+          prop.type = type === 'datetime' ? 'Date' : type;
+        }
       } else {
         prop.customType = new (prop.type as Constructor<Type>)();
         prop.type = prop.customType.constructor.name;
@@ -2103,6 +2109,38 @@ export class MetadataDiscovery {
 
     if (simple) {
       return;
+    }
+
+    if (
+      prop.array &&
+      prop.customType &&
+      !(prop.customType instanceof t.array) &&
+      !(prop.customType instanceof t.enumArray) &&
+      prop.kind === ReferenceKind.SCALAR
+    ) {
+      const innerType = prop.customType;
+      innerType.platform = this.#platform;
+      innerType.meta = meta;
+      innerType.prop = prop;
+
+      if (!prop.columnTypes) {
+        const arrayDecl = this.#platform.getArrayDeclarationSQL();
+
+        if (arrayDecl.endsWith('[]')) {
+          // native array support (e.g. postgres) — use inner type's column type with [] suffix
+          prop.columnTypes = [innerType.getColumnType(prop, this.#platform) + '[]'];
+        } else {
+          // non-native (e.g. mysql, sqlite) — store as text/clob
+          prop.columnTypes = [arrayDecl];
+        }
+      }
+
+      const platform = this.#platform;
+      prop.customType = new t.array(
+        v => innerType.convertToJSValue(v, platform),
+        v => innerType.convertToDatabaseValue(v, platform),
+      );
+      prop.type = prop.customType.constructor.name;
     }
 
     if (!prop.customType && ['json', 'jsonb'].includes(prop.type?.toLowerCase())) {
