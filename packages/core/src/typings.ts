@@ -508,6 +508,12 @@ export type IndexFilterQuery<T, Using extends string> = [Using] extends [never]
       | NonNullable<ExpandScalar<Primary<T>>>
       | IndexFilterQuery<T, Using>[];
 
+/** Replaces `where` and `using` on an options type with index-aware variants when `Using` is specified. */
+export type WithUsingOptions<Opts, Entity, Using extends string> = Omit<Opts, 'where' | 'using'> & {
+  using?: Using | Using[];
+  where?: [Using] extends [never] ? FilterQuery<Entity> : IndexFilterQuery<Entity, Using>;
+};
+
 /** Public interface for the entity wrapper, accessible via `wrap(entity)`. Provides helper methods for entity state management. */
 export interface IWrappedEntity<Entity extends object> {
   isInitialized(): boolean;

@@ -114,7 +114,16 @@ export abstract class AbstractSqlDriver<
     return { alias, name: meta.tableName, schema: effectiveSchema, qualifiedName, toString: () => alias };
   }
 
-  private validateSqlOptions(options: { collation?: any; indexHint?: any }): void {
+  private validateSqlOptions(options: { collation?: any; indexHint?: any; using?: any }): void {
+    if (options.using && !options.indexHint) {
+      const names = Utils.asArray(options.using);
+      const hint = this.platform.formatIndexHint(names);
+
+      if (hint) {
+        options.indexHint = hint;
+      }
+    }
+
     if (options.collation != null && typeof options.collation !== 'string') {
       throw new Error(
         'Collation option for SQL drivers must be a string (collation name). Use a CollationOptions object only with MongoDB.',
@@ -162,15 +171,6 @@ export abstract class AbstractSqlDriver<
 
     if (Utils.isPrimaryKey(where, meta.compositePK)) {
       where = { [Utils.getPrimaryKeyHash(meta.primaryKeys)]: where } as ObjectQuery<T>;
-    }
-
-    if (options.using && !options.indexHint) {
-      const names = Utils.asArray(options.using);
-      const hint = this.platform.formatIndexHint(names);
-
-      if (hint) {
-        options.indexHint = hint;
-      }
     }
 
     this.validateSqlOptions(options);
@@ -863,15 +863,6 @@ export abstract class AbstractSqlDriver<
 
     if (meta && !Utils.isEmpty(populate)) {
       this.buildFields(meta, populate, joinedProps, qb, qb.alias, options as FindOptions<T>, schema);
-    }
-
-    if ('using' in options && (options as any).using && !options.indexHint) {
-      const names = Utils.asArray((options as any).using);
-      const hint = this.platform.formatIndexHint(names);
-
-      if (hint) {
-        options.indexHint = hint;
-      }
     }
 
     this.validateSqlOptions(options);

@@ -19,6 +19,7 @@ import type {
   MergeLoaded,
   ArrayElement,
   IndexFilterQuery,
+  WithUsingOptions,
 } from '../typings.js';
 import type {
   CountOptions,
@@ -182,10 +183,7 @@ export class EntityRepository<Entity extends object> {
     IncludeCount extends boolean = true,
     Using extends string = never,
   >(
-    options: Omit<FindByCursorOptions<Entity, Hint, Fields, Excludes, IncludeCount>, 'where' | 'using'> & {
-      using?: Using | Using[];
-      where?: [Using] extends [never] ? FilterQuery<Entity> : IndexFilterQuery<Entity, Using>;
-    },
+    options: WithUsingOptions<FindByCursorOptions<Entity, Hint, Fields, Excludes, IncludeCount>, Entity, Using>,
   ): Promise<Cursor<Entity, Hint, Fields, Excludes, IncludeCount>> {
     return this.getEntityManager().findByCursor(this.entityName, options as any);
   }
@@ -199,10 +197,7 @@ export class EntityRepository<Entity extends object> {
     Excludes extends string = never,
     Using extends string = never,
   >(
-    options?: Omit<FindAllOptions<Entity, Hint, Fields, Excludes>, 'where' | 'using'> & {
-      using?: Using | Using[];
-      where?: [Using] extends [never] ? FilterQuery<Entity> : IndexFilterQuery<Entity, Using>;
-    },
+    options?: WithUsingOptions<FindAllOptions<Entity, Hint, Fields, Excludes>, Entity, Using>,
   ): Promise<Loaded<Entity, Hint, Fields, Excludes>[]> {
     return this.getEntityManager().findAll(this.entityName, options as any);
   }
@@ -216,10 +211,7 @@ export class EntityRepository<Entity extends object> {
     Excludes extends string = never,
     Using extends string = never,
   >(
-    options?: Omit<StreamOptions<Entity, Hint, Fields, Excludes>, 'where' | 'using'> & {
-      using?: Using | Using[];
-      where?: [Using] extends [never] ? FilterQuery<Entity> : IndexFilterQuery<Entity, Using>;
-    },
+    options?: WithUsingOptions<StreamOptions<Entity, Hint, Fields, Excludes>, Entity, Using>,
   ): AsyncIterableIterator<Loaded<Entity, Hint, Fields, Excludes>> {
     yield* this.getEntityManager().stream(this.entityName, options as any);
   }

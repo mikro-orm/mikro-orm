@@ -57,6 +57,7 @@ export type {
   ExtractIndexHints,
   IndexName,
   IndexColumns,
+  WithUsingOptions,
   IMigrationRunner,
   IEntityGenerator,
   ISeedManager,

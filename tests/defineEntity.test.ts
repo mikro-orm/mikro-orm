@@ -11,6 +11,7 @@ import {
   EntityRepositoryType,
   EntitySchema,
   Hidden,
+  IndexHints,
   InferEntity,
   InferEntityFromProperties,
   IType,
@@ -77,7 +78,7 @@ describe('defineEntity', () => {
     });
 
     type IFoo = InferEntity<typeof Foo>;
-    assert<IsExact<IFoo, { id: Opt<number>; name: string; [PrimaryKeyProp]?: 'id' }>>(true);
+    assert<IsExact<IFoo, { id: Opt<number>; name: string; [PrimaryKeyProp]?: 'id'; [IndexHints]?: {} }>>(true);
 
     const FooSchema = new EntitySchema({
       name: 'Foo',
@@ -102,9 +103,12 @@ describe('defineEntity', () => {
     });
 
     type IBook = InferEntity<typeof Book>;
-    assert<IsExact<IBook, { _id: ObjectId; id: string; title: string; tags: string[]; [PrimaryKeyProp]?: '_id' }>>(
-      true,
-    );
+    assert<
+      IsExact<
+        IBook,
+        { _id: ObjectId; id: string; title: string; tags: string[]; [PrimaryKeyProp]?: '_id'; [IndexHints]?: {} }
+      >
+    >(true);
   });
 
   it('should define entity with class', () => {
@@ -212,7 +216,7 @@ describe('defineEntity', () => {
     });
     expect(Foo.init().meta.primaryKeys).toEqual(['name']);
     type IFoo = InferEntity<typeof Foo>;
-    assert<IsExact<IFoo, { name: string; [PrimaryKeyProp]?: 'name' }>>(true);
+    assert<IsExact<IFoo, { name: string; [PrimaryKeyProp]?: 'name'; [IndexHints]?: {} }>>(true);
 
     const Car = defineEntity({
       name: 'Car',
@@ -223,7 +227,9 @@ describe('defineEntity', () => {
     });
     expect(Car.init().meta.primaryKeys).toEqual(['name', 'year']);
     type ICar = InferEntity<typeof Car>;
-    assert<IsExact<ICar, { name: string; year: number; [PrimaryKeyProp]?: ('name' | 'year')[] }>>(true);
+    assert<IsExact<ICar, { name: string; year: number; [PrimaryKeyProp]?: ('name' | 'year')[]; [IndexHints]?: {} }>>(
+      true,
+    );
 
     // @ts-expect-error
     const Car2 = defineEntity({
@@ -256,6 +262,7 @@ describe('defineEntity', () => {
           lastName: string;
           age: number;
           [PrimaryKeyProp]?: ['firstName', 'lastName'];
+          [IndexHints]?: {};
         }
       >
     >(true);
@@ -276,8 +283,15 @@ describe('defineEntity', () => {
     });
 
     type IMyEntity = InferEntity<typeof MyEntity>;
-    assert<IsExact<Primary<IMyEntity>, Primary<{ myClass: IType<MyClass, string> }>>>(true);
-    assert<IsExact<IMyEntity, { myClass: IType<MyClass, string>; [PrimaryKeyProp]?: undefined }>>(true);
+    assert<
+      IsExact<
+        Primary<IMyEntity>,
+        Primary<{ myClass: IType<MyClass, string>; [PrimaryKeyProp]?: undefined; [IndexHints]?: {} }>
+      >
+    >(true);
+    assert<IsExact<IMyEntity, { myClass: IType<MyClass, string>; [PrimaryKeyProp]?: undefined; [IndexHints]?: {} }>>(
+      true,
+    );
 
     function create<T>(type: EntityName<T>, data: EntityData<T> | RequiredEntityData<T>) {
       //
@@ -324,7 +338,17 @@ describe('defineEntity', () => {
 
     type IFoo = InferEntity<typeof Foo>;
     assert<
-      IsExact<IFoo, { id: number; name: string; createdAt: Opt<Date>; updatedAt: Opt<Date>; [PrimaryKeyProp]?: 'id' }>
+      IsExact<
+        IFoo,
+        {
+          id: number;
+          name: string;
+          createdAt: Opt<Date>;
+          updatedAt: Opt<Date>;
+          [PrimaryKeyProp]?: 'id';
+          [IndexHints]?: {};
+        }
+      >
     >(true);
   });
 
@@ -372,9 +396,12 @@ describe('defineEntity', () => {
     });
 
     type IFoo = InferEntity<typeof Foo>;
-    assert<IsExact<IFoo, { id: Opt<number>; name: string; settings: { theme: string }; [PrimaryKeyProp]?: 'id' }>>(
-      true,
-    );
+    assert<
+      IsExact<
+        IFoo,
+        { id: Opt<number>; name: string; settings: { theme: string }; [PrimaryKeyProp]?: 'id'; [IndexHints]?: {} }
+      >
+    >(true);
 
     const FooSchema = new EntitySchema({
       name: 'Foo',
@@ -397,7 +424,7 @@ describe('defineEntity', () => {
     });
 
     type IBox = InferEntity<typeof Box>;
-    assert<IsExact<IBox, { objectVolume: number; [PrimaryKeyProp]?: undefined }>>(true);
+    assert<IsExact<IBox, { objectVolume: number; [PrimaryKeyProp]?: undefined; [IndexHints]?: {} }>>(true);
   });
 
   it('should define entity with nullable property', () => {
@@ -419,6 +446,7 @@ describe('defineEntity', () => {
           name: string | null | undefined;
           settings: { theme: string } | null | undefined;
           [PrimaryKeyProp]?: 'id';
+          [IndexHints]?: {};
         }
       >
     >(true);
@@ -454,6 +482,7 @@ describe('defineEntity', () => {
           name: string | null;
           settings: { theme: string } | null;
           [PrimaryKeyProp]?: 'id';
+          [IndexHints]?: {};
         }
       >
     >(true);
@@ -521,6 +550,7 @@ describe('defineEntity', () => {
           profileLazy: ScalarRef<IProfile>;
           profileNullable: ScalarRef<IProfile | null | undefined>;
           [PrimaryKeyProp]?: 'id';
+          [IndexHints]?: {};
         }
       >
     >(true);
@@ -550,7 +580,7 @@ describe('defineEntity', () => {
 
     type IFoo = InferEntity<typeof Foo>;
     type ToObject = EntityDTO<IFoo>;
-    assert<IsExact<IFoo, { id: Opt<number>; name: Hidden<string>; [PrimaryKeyProp]?: 'id' }>>(true);
+    assert<IsExact<IFoo, { id: Opt<number>; name: Hidden<string>; [PrimaryKeyProp]?: 'id'; [IndexHints]?: {} }>>(true);
     assert<IsExact<ToObject, { id: Opt<number> }>>(true);
 
     const FooSchema = new EntitySchema({
@@ -583,7 +613,9 @@ describe('defineEntity', () => {
     });
 
     type IFoo = InferEntity<typeof Foo>;
-    assert<IsExact<IFoo, { id: Opt<number>; bar: 'foo' | 'bar' | 1; baz: BaZ; [PrimaryKeyProp]?: 'id' }>>(true);
+    assert<
+      IsExact<IFoo, { id: Opt<number>; bar: 'foo' | 'bar' | 1; baz: BaZ; [PrimaryKeyProp]?: 'id'; [IndexHints]?: {} }>
+    >(true);
 
     const FooSchema = new EntitySchema({
       name: 'Foo',
@@ -636,7 +668,9 @@ describe('defineEntity', () => {
 
     type IFoo = InferEntity<typeof Foo>;
     type IAddress = InferEntity<typeof Address>;
-    assert<IsExact<IFoo, { id: Opt<number>; name: string; address: IAddress; [PrimaryKeyProp]?: 'id' }>>(true);
+    assert<
+      IsExact<IFoo, { id: Opt<number>; name: string; address: IAddress; [PrimaryKeyProp]?: 'id'; [IndexHints]?: {} }>
+    >(true);
 
     const AddressSchema = new EntitySchema({
       name: 'Address',
@@ -684,6 +718,7 @@ describe('defineEntity', () => {
           friend: Ref<IFoo>;
           friendNullable: Ref<IFoo> | null | undefined;
           [PrimaryKeyProp]?: 'id';
+          [IndexHints]?: {};
         }
       >
     >(true);
@@ -763,10 +798,18 @@ describe('defineEntity', () => {
 
     type IFolder = InferEntity<typeof Folder>;
     type IFile = InferEntity<typeof File>;
-    assert<IsExact<IFolder, { id: Opt<number>; name: string; files: Collection<IFile>; [PrimaryKeyProp]?: 'id' }>>(
-      true,
-    );
-    assert<IsExact<IFile, { id: Opt<number>; name: string; folder: Ref<IFolder>; [PrimaryKeyProp]?: 'id' }>>(true);
+    assert<
+      IsExact<
+        IFolder,
+        { id: Opt<number>; name: string; files: Collection<IFile>; [PrimaryKeyProp]?: 'id'; [IndexHints]?: {} }
+      >
+    >(true);
+    assert<
+      IsExact<
+        IFile,
+        { id: Opt<number>; name: string; folder: Ref<IFolder>; [PrimaryKeyProp]?: 'id'; [IndexHints]?: {} }
+      >
+    >(true);
 
     const FolderSchema = new EntitySchema({
       name: 'Folder',
@@ -813,7 +856,12 @@ describe('defineEntity', () => {
     });
 
     type IFoo = InferEntity<typeof Foo>;
-    assert<IsExact<IFoo, { id: Opt<number>; name: string; friends: Collection<IFoo>; [PrimaryKeyProp]?: 'id' }>>(true);
+    assert<
+      IsExact<
+        IFoo,
+        { id: Opt<number>; name: string; friends: Collection<IFoo>; [PrimaryKeyProp]?: 'id'; [IndexHints]?: {} }
+      >
+    >(true);
 
     const Student = defineEntity({
       name: 'Student',
@@ -923,8 +971,12 @@ describe('defineEntity', () => {
 
     type IFoo = InferEntity<typeof Foo>;
     type IProfile = InferEntity<typeof Profile>;
-    assert<IsExact<IFoo, { id: Opt<number>; name: string; profile: IProfile; [PrimaryKeyProp]?: 'id' }>>(true);
-    assert<IsExact<IProfile, { id: Opt<number>; bio: string; foo: IFoo; [PrimaryKeyProp]?: 'id' }>>(true);
+    assert<
+      IsExact<IFoo, { id: Opt<number>; name: string; profile: IProfile; [PrimaryKeyProp]?: 'id'; [IndexHints]?: {} }>
+    >(true);
+    assert<IsExact<IProfile, { id: Opt<number>; bio: string; foo: IFoo; [PrimaryKeyProp]?: 'id'; [IndexHints]?: {} }>>(
+      true,
+    );
 
     const FooSchema = new EntitySchema({
       name: 'Foo',
@@ -971,6 +1023,7 @@ describe('defineEntity', () => {
           bigintAsNumber: number;
           bigintAsString: string;
           [PrimaryKeyProp]?: 'id';
+          [IndexHints]?: {};
         }
       >
     >(true);
@@ -1015,6 +1068,7 @@ describe('defineEntity', () => {
           numbers: number[];
           customArray: { id: number; name: string }[];
           [PrimaryKeyProp]?: 'id';
+          [IndexHints]?: {};
         }
       >
     >(true);
@@ -1071,6 +1125,7 @@ describe('defineEntity', () => {
           numbers: number[];
           tags: string[];
           [PrimaryKeyProp]?: 'id';
+          [IndexHints]?: {};
         }
       >
     >(true);
@@ -1105,6 +1160,7 @@ describe('defineEntity', () => {
           amount: number;
           balance: string;
           [PrimaryKeyProp]?: 'id';
+          [IndexHints]?: {};
         }
       >
     >(true);
@@ -1130,7 +1186,7 @@ describe('defineEntity', () => {
       indexes: [
         {
           name: 'unique_name_children',
-          expression: (columns, table) =>
+          expression: (columns: Record<string, string>, table: { name: string }) =>
             `create unique index ${table.name}_${columns.name}_${columns.children} on ${table.name} (${columns.name}, ${columns.children})`,
         },
       ],
@@ -1427,6 +1483,7 @@ describe('PropertyOptionsBuilder', () => {
           hydrateFalse: string;
           returning: string;
           [PrimaryKeyProp]?: 'id';
+          [IndexHints]?: {};
         }
       >
     >(true);
@@ -1488,6 +1545,7 @@ describe('PropertyOptionsBuilder', () => {
           status: Opt<('active' | 'inactive')[]>;
           type: number;
           [PrimaryKeyProp]?: 'id';
+          [IndexHints]?: {};
         }
       >
     >(true);
@@ -1784,6 +1842,7 @@ describe('OneToOneRelationOptionsBuilder', () => {
           bio: string;
           user: IUser;
           [PrimaryKeyProp]?: 'id';
+          [IndexHints]?: {};
         }
       >
     >(true);
@@ -1806,6 +1865,7 @@ describe('OneToOneRelationOptionsBuilder', () => {
           name: string;
           profile: number;
           [PrimaryKeyProp]?: 'id';
+          [IndexHints]?: {};
         }
       >
     >(true);
@@ -1913,6 +1973,7 @@ describe('ManyToOneRelationOptionsBuilder', () => {
           name: Opt<string>;
           users: Collection<IUser>;
           [PrimaryKeyProp]?: 'name';
+          [IndexHints]?: {};
         }
       >
     >(true);
@@ -1935,6 +1996,7 @@ describe('ManyToOneRelationOptionsBuilder', () => {
           name: string;
           group: string;
           [PrimaryKeyProp]?: 'id';
+          [IndexHints]?: {};
         }
       >
     >(true);
