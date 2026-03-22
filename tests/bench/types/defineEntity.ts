@@ -247,11 +247,11 @@ bench('defineEntity with indexes', () => {
   const Bar = defineEntity({
     name: 'Bar',
     properties: {
-      id: p.number().primary(),
+      id: p.integer().primary(),
       title: p.string().index('idx_title'),
       slug: p.string().unique('uniq_slug'),
       status: p.string(),
-      views: p.number(),
+      views: p.integer(),
     },
     indexes: [{ name: 'idx_status_views', properties: ['status', 'views'] }],
   });

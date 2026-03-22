@@ -3,12 +3,11 @@ import {
   Utils,
   type EntityName,
   type EntityRepository,
-  type FilterQuery,
   type GetRepository,
-  type IndexFilterQuery,
   type TransactionOptions,
   type StreamOptions,
   type Loaded,
+  type WithUsingOptions,
 } from '@mikro-orm/core';
 import type { Collection, Document, TransactionOptions as MongoTransactionOptions } from 'mongodb';
 import type { MongoDriver } from './MongoDriver.js';
@@ -43,10 +42,11 @@ export class MongoEntityManager<Driver extends MongoDriver = MongoDriver> extend
     Using extends string = never,
   >(
     entityName: EntityName<Entity>,
-    options: Omit<StreamOptions<NoInfer<Entity>, Hint, Fields, Excludes>, 'where' | 'using'> & {
-      using?: Using | Using[];
-      where?: [Using] extends [never] ? FilterQuery<NoInfer<Entity>> : IndexFilterQuery<NoInfer<Entity>, Using>;
-    } = {} as any,
+    options: WithUsingOptions<
+      StreamOptions<NoInfer<Entity>, Hint, Fields, Excludes>,
+      NoInfer<Entity>,
+      Using
+    > = {} as any,
   ): AsyncIterableIterator<Loaded<Entity, Hint, Fields, Excludes>> {
     if (!Utils.isEmpty(options.populate)) {
       throw new Error('Populate option is not supported when streaming results in MongoDB');
