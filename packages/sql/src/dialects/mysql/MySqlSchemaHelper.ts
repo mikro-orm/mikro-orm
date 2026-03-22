@@ -368,14 +368,23 @@ export class MySqlSchemaHelper extends SchemaHelper {
       return trigger.expression;
     }
 
+    if (trigger.timing === 'instead of') {
+      throw new Error(`MySQL does not support INSTEAD OF triggers. Use BEFORE or AFTER for trigger "${trigger.name}".`);
+    }
+
+    if (trigger.forEach === 'statement') {
+      throw new Error(
+        `MySQL does not support FOR EACH STATEMENT triggers. Use FOR EACH ROW for trigger "${trigger.name}".`,
+      );
+    }
+
     const timing = trigger.timing.toUpperCase();
-    const forEach = trigger.forEach === 'statement' ? 'STATEMENT' : 'ROW';
     const ret: string[] = [];
 
     for (const event of trigger.events) {
       const name = trigger.events.length > 1 ? `${trigger.name}_${event}` : trigger.name;
       ret.push(
-        `create trigger ${this.quote(name)} ${timing} ${event.toUpperCase()} on ${table.getQuotedName()} for each ${forEach} begin ${trigger.body}; end`,
+        `create trigger ${this.quote(name)} ${timing} ${event.toUpperCase()} on ${table.getQuotedName()} for each ROW begin ${trigger.body}; end`,
       );
     }
 
@@ -398,8 +407,11 @@ export class MySqlSchemaHelper extends SchemaHelper {
 
     for (const row of allTriggers) {
       const key = this.getTableKey(row);
-      // Group triggers by base name (strip event suffix for multi-event triggers)
-      const baseName = row.trigger_name.replace(/_(insert|update|delete)$/i, '');
+      // Strip event suffix only when it matches the actual event (e.g. trg_insert for INSERT)
+      const eventLower = row.event.toLowerCase();
+      const baseName = row.trigger_name.endsWith(`_${eventLower}`)
+        ? row.trigger_name.slice(0, -eventLower.length - 1)
+        : row.trigger_name;
       const dedupeKey = `${key}:${baseName}`;
 
       if (triggerMap.has(dedupeKey)) {

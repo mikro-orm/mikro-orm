@@ -398,10 +398,14 @@ export class MsSqlSchemaHelper extends SchemaHelper {
     return ret;
   }
 
-  /** Generates SQL to create an MSSQL trigger. MSSQL supports multiple events per trigger. */
+  /** Generates SQL to create an MSSQL trigger. MSSQL supports AFTER and INSTEAD OF only. */
   override createTrigger(table: DatabaseTable, trigger: SqlTriggerDef): string {
     if (trigger.expression) {
       return trigger.expression;
+    }
+
+    if (trigger.timing === 'before') {
+      throw new Error(`MSSQL does not support BEFORE triggers. Use AFTER or INSTEAD OF for trigger "${trigger.name}".`);
     }
 
     const timing = trigger.timing.toUpperCase();
@@ -467,7 +471,7 @@ export class MsSqlSchemaHelper extends SchemaHelper {
         name: row.trigger_name,
         timing: row.timing.toLowerCase() as SqlTriggerDef['timing'],
         events: [event],
-        forEach: 'statement',
+        forEach: 'row', // MSSQL triggers are always statement-level; use 'row' to match the default in metadata
         body,
       };
       ret[key].push(trigger);
