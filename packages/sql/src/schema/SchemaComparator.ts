@@ -941,6 +941,18 @@ export class SchemaComparator {
   }
 
   private diffTrigger(from: SqlTriggerDef, to: SqlTriggerDef): boolean {
+    // Raw DDL expression cannot be meaningfully compared to introspected
+    // trigger metadata, so skip diffing when the metadata side uses it.
+    if (to.expression) {
+      // Both sides have expression — compare the raw DDL directly
+      if (from.expression) {
+        return this.diffExpression(from.expression, to.expression);
+      }
+
+      // Only metadata side has expression — cannot diff, assume no change
+      return false;
+    }
+
     if (from.timing !== to.timing || from.forEach !== to.forEach) {
       return true;
     }
@@ -951,10 +963,6 @@ export class SchemaComparator {
 
     if ((from.when ?? '') !== (to.when ?? '')) {
       return true;
-    }
-
-    if (from.expression || to.expression) {
-      return this.diffExpression(from.expression ?? '', to.expression ?? '');
     }
 
     return this.diffExpression(from.body, to.body);

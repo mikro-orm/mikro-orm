@@ -770,8 +770,9 @@ export class SqliteSchemaHelper extends SchemaHelper {
         continue;
       }
 
-      // Group by base name (strip event suffix)
-      const baseName = row.name.replace(/_(insert|update|delete)$/i, '');
+      // Strip event suffix only when it matches the actual event (e.g. trg_insert for INSERT)
+      const eventLower = parsed.events[0];
+      const baseName = row.name.endsWith(`_${eventLower}`) ? row.name.slice(0, -eventLower.length - 1) : row.name;
 
       if (triggerMap.has(baseName)) {
         const existing = triggerMap.get(baseName)!;
