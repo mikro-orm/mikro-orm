@@ -949,7 +949,9 @@ export class SchemaComparator {
         return this.diffExpression(from.expression, to.expression);
       }
 
-      // Only metadata side has expression — cannot diff, assume no change
+      // Only metadata side has expression — the raw DDL cannot be compared to
+      // introspected metadata. Changes to the expression value won't be detected;
+      // drop and recreate the trigger manually to apply expression changes.
       return false;
     }
 

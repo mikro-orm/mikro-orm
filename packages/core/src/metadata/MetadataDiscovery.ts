@@ -1949,6 +1949,12 @@ export class MetadataDiscovery {
     const table = this.createSchemaTable(meta);
 
     for (const trigger of meta.triggers) {
+      if (trigger.body && trigger.expression) {
+        throw new MetadataError(
+          `Trigger "${trigger.name ?? '(unnamed)'}" on entity ${meta.className} defines both 'body' and 'expression'. Use one or the other.`,
+        );
+      }
+
       trigger.name ??= this.#namingStrategy.indexName(meta.tableName, trigger.events, 'trigger');
       trigger.forEach ??= 'row';
 

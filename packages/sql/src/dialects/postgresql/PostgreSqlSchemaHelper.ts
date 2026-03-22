@@ -552,7 +552,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     const events = trigger.events.map(e => e.toUpperCase()).join(' OR ');
     const forEach = trigger.forEach === 'statement' ? 'STATEMENT' : 'ROW';
     const when = trigger.when ? `\n  when (${trigger.when})` : '';
-    const fnName = this.platform.quoteIdentifier(`${trigger.name}_fn`);
+    const fnName = this.platform.quoteIdentifier(`${table.name}_${trigger.name}_fn`);
     const triggerName = this.platform.quoteIdentifier(trigger.name);
 
     const fnSql = `create or replace function ${fnName}() returns trigger as $$ begin ${trigger.body}; end; $$ language plpgsql`;
@@ -564,7 +564,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
   /** Generates SQL to drop a PostgreSQL trigger and its associated function. */
   override dropTrigger(table: DatabaseTable, trigger: SqlTriggerDef): string {
     const triggerName = this.platform.quoteIdentifier(trigger.name);
-    const fnName = this.platform.quoteIdentifier(`${trigger.name}_fn`);
+    const fnName = this.platform.quoteIdentifier(`${table.name}_${trigger.name}_fn`);
     return `drop trigger if exists ${triggerName} on ${table.getQuotedName()};\ndrop function if exists ${fnName}()`;
   }
 
@@ -635,7 +635,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       conditions.push(`(t.event_object_schema = ${schemaName} and t.event_object_table in (${names}))`);
     }
 
-    // Function lookup uses the '_fn' suffix convention from createTrigger().
+    // Function lookup uses the '{table}_{trigger}_fn' convention from createTrigger().
     // External triggers with different function names will have NULL body;
     // use the `expression` escape hatch for those.
     return `select t.trigger_name, t.event_object_schema as schema_name, t.event_object_table as table_name,
@@ -646,7 +646,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       p.prosrc as function_body
     from information_schema.triggers t
     left join pg_namespace n on n.nspname = t.event_object_schema
-    left join pg_proc p on p.proname = t.trigger_name || '_fn' and p.pronamespace = n.oid
+    left join pg_proc p on p.proname = t.event_object_table || '_' || t.trigger_name || '_fn' and p.pronamespace = n.oid
     where (${conditions.join(' or ')})
     order by t.trigger_name, t.event_manipulation`;
   }
