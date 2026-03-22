@@ -150,8 +150,10 @@ export interface PropertyChain<Value, Options> {
   customOrder(...customOrder: string[] | number[] | boolean[]): PropertyChain<Value, Options>;
   extra(extra: string): PropertyChain<Value, Options>;
   ignoreSchemaChanges(...ignoreSchemaChanges: ('type' | 'extra' | 'default')[]): PropertyChain<Value, Options>;
+  /** Explicitly specify index on a property. When a string name is passed, it enables type-safe `using` in `FindOptions`. */
   index<N extends string>(name: N): PropertyChain<Value, Omit<Options, 'index'> & { index: N }>;
   index(index?: boolean): PropertyChain<Value, Options>;
+  /** Set column as unique. When a string name is passed, it enables type-safe `using` in `FindOptions`. (SQL only) */
   unique<N extends string>(name: N): PropertyChain<Value, Omit<Options, 'unique'> & { unique: N }>;
   unique(unique?: boolean): PropertyChain<Value, Options>;
   comment(comment: string): PropertyChain<Value, Options>;
