@@ -1569,6 +1569,8 @@ For full control over the generated DDL, use the `expression` escape hatch inste
 
 > Database triggers are only supported by SQL drivers. Defining triggers on a MongoDB entity will throw an error.
 
+> When using `expression`, changes to the expression value are not detected by subsequent schema diffs. To update an expression-based trigger, drop and recreate it manually. Prefer `body` for triggers that should be fully managed by the migration system.
+
 ## Custom Types
 
 You can define custom types by extending `Type` abstract class. It has 4 optional methods:

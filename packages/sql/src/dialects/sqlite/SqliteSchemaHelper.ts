@@ -798,20 +798,37 @@ export class SqliteSchemaHelper extends SchemaHelper {
   }
 
   private parseTriggerDDL(sql: string, name: string): SqlTriggerDef | null {
-    const match =
-      /create\s+trigger\s+["`]?\w+["`]?\s+(before|after|instead\s+of)\s+(insert|update|delete)\s+on\s+["`]?\w+["`]?\s*(?:for\s+each\s+(row|statement))?\s*(?:when\s+(.*?))?\s*begin\s+([\s\S]*?)\s*end/i.exec(
-        sql,
-      );
+    // Split at the last top-level BEGIN to separate header from body,
+    // so that a WHEN clause containing the word "begin" in a string literal doesn't confuse parsing.
+    const beginIdx = sql.search(/\bbegin\b(?=[^]*$)/i);
 
-    if (!match) {
+    if (beginIdx === -1) {
       return null;
     }
 
-    const timing = match[1].toLowerCase() as SqlTriggerDef['timing'];
-    const event = match[2].toLowerCase() as SqlTriggerDef['events'][number];
-    const forEach = (match[3]?.toLowerCase() ?? 'row') as SqlTriggerDef['forEach'];
-    const when = match[4] || undefined;
-    const body = match[5].trim().replace(/;\s*$/, '');
+    const header = sql.slice(0, beginIdx);
+    const bodyPart = sql.slice(beginIdx);
+
+    const headerMatch =
+      /create\s+trigger\s+["`]?\w+["`]?\s+(before|after|instead\s+of)\s+(insert|update|delete)\s+on\s+["`]?\w+["`]?\s*(?:for\s+each\s+(row|statement))?\s*(?:when\s+([\s\S]*?))?\s*$/i.exec(
+        header,
+      );
+
+    if (!headerMatch) {
+      return null;
+    }
+
+    const bodyMatch = /^begin\s+([\s\S]*?)\s*end/i.exec(bodyPart);
+
+    if (!bodyMatch) {
+      return null;
+    }
+
+    const timing = headerMatch[1].toLowerCase() as SqlTriggerDef['timing'];
+    const event = headerMatch[2].toLowerCase() as SqlTriggerDef['events'][number];
+    const forEach = (headerMatch[3]?.toLowerCase() ?? 'row') as SqlTriggerDef['forEach'];
+    const when = headerMatch[4]?.trim() || undefined;
+    const body = bodyMatch[1].trim().replace(/;\s*$/, '');
 
     return {
       name,
