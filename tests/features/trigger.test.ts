@@ -164,7 +164,7 @@ describe('trigger (defineEntity)', () => {
     await orm2.schema.refresh();
 
     // Change the trigger body
-    const meta = orm2.getMetadata().get('DiffTable');
+    const meta = orm2.getMetadata(schema1);
     meta.triggers = [
       {
         name: 'trg_diff',
@@ -261,7 +261,7 @@ describe('trigger (defineEntity)', () => {
     expect(diff).toBe('');
 
     // Remove and verify clean drop
-    const meta = orm2.getMetadata().get('MultiTable');
+    const meta = orm2.getMetadata(schema1);
     meta.triggers = [];
     const dropDiff = await orm2.schema.getUpdateSchemaSQL({ wrap: false });
     expect(dropDiff).toContain('drop trigger');
