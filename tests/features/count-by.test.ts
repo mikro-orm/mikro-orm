@@ -169,6 +169,16 @@ test('em.countBy with entity filter disabled', async () => {
   expect(counts).toEqual({ '1': 2, '2': 1, '3': 4 });
 });
 
+test('em.countBy with nullable groupBy column', async () => {
+  const em = orm.em.fork();
+  // Book 7 (Draft) has null publisher, but default filter excludes it
+  // With filters disabled, null publisher appears as key "null"
+  const counts = await em.countBy(Book, 'publisher', { filters: false });
+  expect(counts['1']).toBe(1);
+  expect(counts['2']).toBe(5);
+  expect(counts['null']).toBe(1);
+});
+
 test('repo.countBy', async () => {
   const em = orm.em.fork();
   const repo = em.getRepository(Book);
