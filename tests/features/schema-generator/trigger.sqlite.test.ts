@@ -96,6 +96,35 @@ describe('trigger [sqlite]', () => {
     expect(diff).toMatchSnapshot('sqlite-trigger-diff-2');
     await orm.schema.execute(diff);
 
+    // Change trigger timing
+    newTableMeta.triggers = [
+      {
+        name: 'trg_audit',
+        timing: 'before',
+        events: ['insert'],
+        body: `UPDATE trigger_table SET price = price + 2 WHERE id = NEW.id`,
+      },
+    ];
+    diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
+    expect(diff).toContain('drop trigger');
+    expect(diff).toContain('create trigger');
+    await orm.schema.execute(diff);
+
+    // Add a WHEN clause
+    newTableMeta.triggers = [
+      {
+        name: 'trg_audit',
+        timing: 'before',
+        events: ['insert'],
+        body: `UPDATE trigger_table SET price = price + 2 WHERE id = NEW.id`,
+        when: 'NEW.price > 0',
+      },
+    ];
+    diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
+    expect(diff).toContain('drop trigger');
+    expect(diff).toContain('when');
+    await orm.schema.execute(diff);
+
     // Remove trigger
     newTableMeta.triggers = [];
     diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
