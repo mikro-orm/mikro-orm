@@ -1,6 +1,6 @@
 {
   "name": "@mikro-orm/mssql",
-  "version": "7.0.4",
+  "version": "7.0.5",
   "description": "TypeScript ORM for Node.js based on Data Mapper, Unit of Work and Identity Map patterns. Supports MongoDB, MySQL, PostgreSQL and SQLite databases as well as usage with vanilla JavaScript.",
   "keywords": [
     "data-mapper",
@@ -47,14 +47,14 @@
     "copy": "node ../../scripts/copy.mjs"
   },
   "dependencies": {
-    "@mikro-orm/sql": "7.0.4",
+    "@mikro-orm/sql": "^7.0.5",
     "kysely": "0.28.14",
     "tarn": "3.0.2",
     "tedious": "19.2.1",
     "tsqlstring": "1.0.1"
   },
   "devDependencies": {
-    "@mikro-orm/core": "^7.0.4"
+    "@mikro-orm/core": "^7.0.5"
   },
   "peerDependencies": {
     "@mikro-orm/core": "7.0.4"

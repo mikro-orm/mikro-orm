@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.0.5](https://github.com/mikro-orm/mikro-orm/compare/v7.0.4...v7.0.5) (2026-03-23)
+
+
+### Bug Fixes
+
+* **core:** handle `check` constraint in `defineEntity` ([#7374](https://github.com/mikro-orm/mikro-orm/issues/7374)) ([a46ae8a](https://github.com/mikro-orm/mikro-orm/commit/a46ae8a7dce51c388b86e8ec654928e1c7b952af))
+* **core:** handle Bun path lookup for native ES decorators ([#7382](https://github.com/mikro-orm/mikro-orm/issues/7382)) ([9916203](https://github.com/mikro-orm/mikro-orm/commit/991620353ae2892e196078f9c3795c22ddf59b13)), closes [/bun.com/blog/bun-v1.3.10#tc39](https://github.com//bun.com/blog/bun-v1.3.10/issues/tc39) [#7381](https://github.com/mikro-orm/mikro-orm/issues/7381)
+* **core:** handle JSON column type conversion in `em.refresh()` for detached entities ([a6fef86](https://github.com/mikro-orm/mikro-orm/commit/a6fef860bdad6834de983bda152a2a98568149c8)), closes [#7383](https://github.com/mikro-orm/mikro-orm/issues/7383)
+* **core:** handle JSON column type conversion in `em.refresh()` for detached entities ([6c4e896](https://github.com/mikro-orm/mikro-orm/commit/6c4e8960abef3c9385df6c8cea809da8db2dc68a)), closes [#7383](https://github.com/mikro-orm/mikro-orm/issues/7383)
+* **core:** ignore discriminator column in changeset for uninitialized STI references ([#7385](https://github.com/mikro-orm/mikro-orm/issues/7385)) ([a7db194](https://github.com/mikro-orm/mikro-orm/commit/a7db1942ca21cbbbab7d11b4eeac890245a31d7f)), closes [#7384](https://github.com/mikro-orm/mikro-orm/issues/7384)
+* **core:** share EntitySchema.REGISTRY across CJS/ESM module boundaries ([#7377](https://github.com/mikro-orm/mikro-orm/issues/7377)) ([7c1e5d4](https://github.com/mikro-orm/mikro-orm/commit/7c1e5d4c7d965f65f4e49f99a942cd35bd8f4c54)), closes [#7376](https://github.com/mikro-orm/mikro-orm/issues/7376)
+* **mssql:** force-disconnect sessions before dropping database ([bdc45e4](https://github.com/mikro-orm/mikro-orm/commit/bdc45e49798cdb06515995fc98945ff9796ba224))
+* **sql:** infer FK columns for decorator entities in `getKysely` types ([#7368](https://github.com/mikro-orm/mikro-orm/issues/7368)) ([81068f3](https://github.com/mikro-orm/mikro-orm/commit/81068f34993398dc4c2be6531ec4f9e1d07b121d)), closes [#7367](https://github.com/mikro-orm/mikro-orm/issues/7367)
+* **sql:** use column name mapping for decorator entities in `getKysely` types ([#7369](https://github.com/mikro-orm/mikro-orm/issues/7369)) ([d3baa56](https://github.com/mikro-orm/mikro-orm/commit/d3baa56309153c1038329b7be2d34a22abf0c31c)), closes [#7367](https://github.com/mikro-orm/mikro-orm/issues/7367)
+
+
+
+
+
 ## [7.0.4](https://github.com/mikro-orm/mikro-orm/compare/v7.0.3...v7.0.4) (2026-03-20)
 
 

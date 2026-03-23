@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.0.5](https://github.com/mikro-orm/mikro-orm/compare/v7.0.4...v7.0.5) (2026-03-23)
+
+
+### Bug Fixes
+
+* **core:** handle `check` constraint in `defineEntity` ([#7374](https://github.com/mikro-orm/mikro-orm/issues/7374)) ([a46ae8a](https://github.com/mikro-orm/mikro-orm/commit/a46ae8a7dce51c388b86e8ec654928e1c7b952af))
+* **core:** handle JSON column type conversion in `em.refresh()` for detached entities ([6c4e896](https://github.com/mikro-orm/mikro-orm/commit/6c4e8960abef3c9385df6c8cea809da8db2dc68a)), closes [#7383](https://github.com/mikro-orm/mikro-orm/issues/7383)
+* **core:** ignore discriminator column in changeset for uninitialized STI references ([#7385](https://github.com/mikro-orm/mikro-orm/issues/7385)) ([a7db194](https://github.com/mikro-orm/mikro-orm/commit/a7db1942ca21cbbbab7d11b4eeac890245a31d7f)), closes [#7384](https://github.com/mikro-orm/mikro-orm/issues/7384)
+* **core:** share EntitySchema.REGISTRY across CJS/ESM module boundaries ([#7377](https://github.com/mikro-orm/mikro-orm/issues/7377)) ([7c1e5d4](https://github.com/mikro-orm/mikro-orm/commit/7c1e5d4c7d965f65f4e49f99a942cd35bd8f4c54)), closes [#7376](https://github.com/mikro-orm/mikro-orm/issues/7376)
+
+
+
+
+
 ## [7.0.4](https://github.com/mikro-orm/mikro-orm/compare/v7.0.3...v7.0.4) (2026-03-20)
 
 ### Bug Fixes
