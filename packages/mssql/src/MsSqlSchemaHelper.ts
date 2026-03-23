@@ -410,12 +410,23 @@ export class MsSqlSchemaHelper extends SchemaHelper {
 
     const timing = trigger.timing.toUpperCase();
     const events = trigger.events.map(e => e.toUpperCase()).join(', ');
-    return `create trigger ${this.quote(trigger.name)} on ${table.getQuotedName()} ${timing} ${events} as begin ${trigger.body}; end`;
+    const qualifiedName = this.getSchemaQualifiedName(table, trigger.name);
+    return `create trigger ${qualifiedName} on ${table.getQuotedName()} ${timing} ${events} as begin ${trigger.body}; end`;
   }
 
   /** Generates SQL to drop an MSSQL trigger. */
   override dropTrigger(table: DatabaseTable, trigger: SqlTriggerDef): string {
-    return `drop trigger if exists ${this.quote(trigger.name)}`;
+    return `drop trigger if exists ${this.getSchemaQualifiedName(table, trigger.name)}`;
+  }
+
+  private getSchemaQualifiedName(table: DatabaseTable, name: string): string {
+    const defaultSchema = this.platform.getDefaultSchemaName();
+
+    if (table.schema && table.schema !== defaultSchema) {
+      return `${this.quote(table.schema)}.${this.quote(name)}`;
+    }
+
+    return this.quote(name);
   }
 
   async getAllTriggers(
@@ -447,7 +458,7 @@ export class MsSqlSchemaHelper extends SchemaHelper {
     for (const row of allTriggers) {
       const key = this.getTableKey(row);
       const dedupeKey = `${key}:${row.trigger_name}`;
-      const event = row.event.toLowerCase().replace('_', '') as SqlTriggerDef['events'][number];
+      const event = row.event.toLowerCase() as SqlTriggerDef['events'][number];
 
       if (triggerMap.has(dedupeKey)) {
         const existing = triggerMap.get(dedupeKey)!;
