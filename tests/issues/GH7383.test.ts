@@ -4,13 +4,11 @@ import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 @Entity()
 class JsonEntity {
-
   @PrimaryKey()
   id!: number;
 
   @Property({ columnType: 'jsonb', nullable: true })
   data?: Record<string, unknown>[];
-
 }
 
 let orm: MikroORM;
@@ -26,7 +24,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await orm.schema.drop();
+  await orm.schema.dropSchema();
   await orm.close(true);
 });
 
