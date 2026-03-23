@@ -116,6 +116,8 @@ export class SqlEntityManager<Driver extends AbstractSqlDriver = AbstractSqlDriv
     options: CountByOptions<Entity> = {},
   ): Promise<Dictionary<number>> {
     const em = this.getContext(false) as SqlEntityManager;
+    options = { ...options };
+    em.prepareOptions(options);
     const meta = em.getMetadata().find(entityName)!;
     const fields = Utils.asArray(groupBy);
     const { where: rawWhere, ...countOptions } = options;

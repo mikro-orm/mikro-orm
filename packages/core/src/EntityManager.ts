@@ -2716,7 +2716,11 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
   }
 
   protected prepareOptions(
-    options: FindOptions<any, any, any, any> | FindOneOptions<any, any, any, any> | CountOptions<any, any>,
+    options:
+      | FindOptions<any, any, any, any>
+      | FindOneOptions<any, any, any, any>
+      | CountOptions<any, any>
+      | CountByOptions<any>,
   ): void {
     if (!Utils.isEmpty((options as FindOptions<any>).fields) && !Utils.isEmpty((options as FindOptions<any>).exclude)) {
       throw new ValidationError(`Cannot combine 'fields' and 'exclude' option.`);

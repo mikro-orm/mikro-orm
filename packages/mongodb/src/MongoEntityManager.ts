@@ -66,8 +66,15 @@ export class MongoEntityManager<Driver extends MongoDriver = MongoDriver> extend
     options: CountByOptions<Entity> = {},
   ): Promise<Dictionary<number>> {
     const em = this.getContext(false) as MongoEntityManager;
+    options = { ...options };
+    em.prepareOptions(options);
     const meta = em.getMetadata().find(entityName)!;
     const fields = Utils.asArray(groupBy);
+
+    if (options.having) {
+      throw new Error('The `having` option is not supported for MongoDB in `countBy`.');
+    }
+
     await em.tryFlush(entityName, options);
     const rawWhere = options.where;
     const where = await em.processWhere(entityName, rawWhere ?? ({} as FilterQuery<Entity>), options as any, 'read');
