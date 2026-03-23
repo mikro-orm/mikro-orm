@@ -558,6 +558,32 @@ describe('Utils', () => {
         '    at A (bun:wrap:1:2617)',
       ]),
     ).toBe('Book');
+
+    // bun with transpiled decorator helpers (`__decorate`)
+    expect(
+      lookupPathFromDecorator('Book', [
+        'Error',
+        '    at <anonymous> (/usr/local/var/www/my-project/dist/entities/Book.js:16:54)',
+        '    at __decorate (/usr/local/var/www/my-project/dist/entities/Book.js:4:110)',
+        '    at /usr/local/var/www/my-project/dist/entities/Book.js:22',
+        '    at moduleEvaluation (native:1:11)',
+        '    at moduleEvaluation (native:1:11)',
+        '    at loadAndEvaluateModule (native:2)',
+      ]),
+    ).toBe('/usr/local/var/www/my-project/dist/entities/Book.js');
+
+    // bun with native ES decorators (`bun:wrap`)
+    expect(
+      lookupPathFromDecorator('Book', [
+        'Error',
+        '    at <anonymous> (/opt/app/src/entities/Book.ts:5:47)',
+        '    at se (bun:wrap:1:3694)',
+        '    at /opt/app/src/entities/Book.ts:16',
+        '    at moduleEvaluation (native:1:11)',
+        '    at moduleEvaluation (native:1:11)',
+        '    at loadAndEvaluateModule (native:2)',
+      ]),
+    ).toBe('/opt/app/src/entities/Book.ts');
   });
 
   test('lookup path from decorator on windows', () => {
