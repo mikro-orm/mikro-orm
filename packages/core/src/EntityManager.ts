@@ -929,11 +929,11 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       const data = helper(reloaded).serialize({
         ignoreSerializers: true,
         includeHidden: true,
-        convertCustomTypes: true,
+        convertCustomTypes: false,
       }) as object;
       em.config
         .getHydrator(this.metadata)
-        .hydrate(entity, wrapped.__meta, data, em.#entityFactory, 'full', false, true);
+        .hydrate(entity, wrapped.__meta, data, em.#entityFactory, 'full', false, false);
       Utils.merge(wrapped.__originalEntityData, this.#comparator.prepareEntity(reloaded as Entity));
     }
 
