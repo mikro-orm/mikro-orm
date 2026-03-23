@@ -1,6 +1,6 @@
 {
   "name": "@mikro-orm/knex-compat",
-  "version": "7.0.4",
+  "version": "7.0.5",
   "exports": {
     ".": "./src/index.ts"
   },
@@ -8,7 +8,7 @@
     "exclude": ["dist/", "node_modules/", "tests/"]
   },
   "imports": {
-    "@mikro-orm/sql": "jsr:@mikro-orm/sql@7.0.4",
+    "@mikro-orm/sql": "jsr:@mikro-orm/sql@7.0.5",
     "knex": "npm:knex@^3.0.0"
   }
 }

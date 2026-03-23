@@ -5,14 +5,9 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ## [7.0.5](https://github.com/mikro-orm/mikro-orm/compare/v7.0.4...v7.0.5) (2026-03-23)
 
-
 ### Bug Fixes
 
-* **core:** handle Bun path lookup for native ES decorators ([#7382](https://github.com/mikro-orm/mikro-orm/issues/7382)) ([9916203](https://github.com/mikro-orm/mikro-orm/commit/991620353ae2892e196078f9c3795c22ddf59b13)), closes [/bun.com/blog/bun-v1.3.10#tc39](https://github.com//bun.com/blog/bun-v1.3.10/issues/tc39) [#7381](https://github.com/mikro-orm/mikro-orm/issues/7381)
-
-
-
-
+- **core:** handle Bun path lookup for native ES decorators ([#7382](https://github.com/mikro-orm/mikro-orm/issues/7382)) ([9916203](https://github.com/mikro-orm/mikro-orm/commit/991620353ae2892e196078f9c3795c22ddf59b13)), closes [/bun.com/blog/bun-v1.3.10#tc39](https://github.com//bun.com/blog/bun-v1.3.10/issues/tc39) [#7381](https://github.com/mikro-orm/mikro-orm/issues/7381)
 
 ## [7.0.4](https://github.com/mikro-orm/mikro-orm/compare/v7.0.3...v7.0.4) (2026-03-20)
 

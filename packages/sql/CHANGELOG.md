@@ -5,15 +5,10 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ## [7.0.5](https://github.com/mikro-orm/mikro-orm/compare/v7.0.4...v7.0.5) (2026-03-23)
 
-
 ### Bug Fixes
 
-* **sql:** infer FK columns for decorator entities in `getKysely` types ([#7368](https://github.com/mikro-orm/mikro-orm/issues/7368)) ([81068f3](https://github.com/mikro-orm/mikro-orm/commit/81068f34993398dc4c2be6531ec4f9e1d07b121d)), closes [#7367](https://github.com/mikro-orm/mikro-orm/issues/7367)
-* **sql:** use column name mapping for decorator entities in `getKysely` types ([#7369](https://github.com/mikro-orm/mikro-orm/issues/7369)) ([d3baa56](https://github.com/mikro-orm/mikro-orm/commit/d3baa56309153c1038329b7be2d34a22abf0c31c)), closes [#7367](https://github.com/mikro-orm/mikro-orm/issues/7367)
-
-
-
-
+- **sql:** infer FK columns for decorator entities in `getKysely` types ([#7368](https://github.com/mikro-orm/mikro-orm/issues/7368)) ([81068f3](https://github.com/mikro-orm/mikro-orm/commit/81068f34993398dc4c2be6531ec4f9e1d07b121d)), closes [#7367](https://github.com/mikro-orm/mikro-orm/issues/7367)
+- **sql:** use column name mapping for decorator entities in `getKysely` types ([#7369](https://github.com/mikro-orm/mikro-orm/issues/7369)) ([d3baa56](https://github.com/mikro-orm/mikro-orm/commit/d3baa56309153c1038329b7be2d34a22abf0c31c)), closes [#7367](https://github.com/mikro-orm/mikro-orm/issues/7367)
 
 ## [7.0.4](https://github.com/mikro-orm/mikro-orm/compare/v7.0.3...v7.0.4) (2026-03-20)
 

@@ -5,14 +5,9 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ## [7.0.5](https://github.com/mikro-orm/mikro-orm/compare/v7.0.4...v7.0.5) (2026-03-23)
 
-
 ### Bug Fixes
 
-* **mssql:** force-disconnect sessions before dropping database ([bdc45e4](https://github.com/mikro-orm/mikro-orm/commit/bdc45e49798cdb06515995fc98945ff9796ba224))
-
-
-
-
+- **mssql:** force-disconnect sessions before dropping database ([bdc45e4](https://github.com/mikro-orm/mikro-orm/commit/bdc45e49798cdb06515995fc98945ff9796ba224))
 
 ## [7.0.4](https://github.com/mikro-orm/mikro-orm/compare/v7.0.3...v7.0.4) (2026-03-20)
 

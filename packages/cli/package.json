@@ -50,8 +50,8 @@
     "copy": "node ../../scripts/copy.mjs"
   },
   "dependencies": {
-    "@mikro-orm/core": "^7.0.5",
-    "mikro-orm": "^7.0.5",
+    "@mikro-orm/core": "7.0.5",
+    "mikro-orm": "7.0.5",
     "yargs": "17.7.2"
   },
   "engines": {
