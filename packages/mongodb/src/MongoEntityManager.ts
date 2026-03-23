@@ -6,6 +6,7 @@ import {
   type EntityKey,
   type EntityName,
   type EntityRepository,
+  type FilterQuery,
   type GetRepository,
   type Loaded,
   type StreamOptions,
@@ -67,7 +68,10 @@ export class MongoEntityManager<Driver extends MongoDriver = MongoDriver> extend
     const em = this.getContext(false) as MongoEntityManager;
     const meta = em.getMetadata().find(entityName)!;
     const fields = Utils.asArray(groupBy);
-    const { where, ...countOptions } = options;
+    await em.tryFlush(entityName, options);
+    const rawWhere = options.where;
+    const where = await em.processWhere(entityName, rawWhere ?? ({} as FilterQuery<Entity>), options as any, 'read');
+    const renamedWhere = em.getDriver().renameFields(meta.class, where as Entity, true);
 
     const fieldNames = fields.map(f => meta.properties[f as EntityKey<Entity>]?.fieldNames?.[0] ?? f);
     const groupId =
@@ -75,14 +79,13 @@ export class MongoEntityManager<Driver extends MongoDriver = MongoDriver> extend
 
     const pipeline: Dictionary[] = [];
 
-    if (where && Object.keys(where).length > 0) {
-      pipeline.push({ $match: where });
+    if (renamedWhere && Object.keys(renamedWhere).length > 0) {
+      pipeline.push({ $match: renamedWhere });
     }
 
     pipeline.push({ $group: { _id: groupId, count: { $sum: 1 } } });
 
-    const collection = em.getCollection(meta.collection);
-    const rows = await collection.aggregate(pipeline).toArray();
+    const rows = await em.getDriver().aggregate(meta.class, pipeline, em.getTransactionContext());
     const results: Dictionary<number> = {};
 
     for (const row of rows) {

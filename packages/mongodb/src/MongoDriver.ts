@@ -446,7 +446,8 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     return ret;
   }
 
-  private renameFields<T extends object>(
+  /** @internal */
+  renameFields<T extends object>(
     entityName: EntityName<T>,
     data: T,
     dotPaths = false,
