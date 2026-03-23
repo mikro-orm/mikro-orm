@@ -24,7 +24,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await orm.schema.dropSchema();
+  await orm.schema.drop();
   await orm.close(true);
 });
 
