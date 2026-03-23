@@ -779,8 +779,8 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     if (!found) {
-      const data = helper(reloaded).serialize({ ignoreSerializers: true, includeHidden: true, convertCustomTypes: true }) as object;
-      em.config.getHydrator(this.metadata).hydrate(entity, wrapped.__meta, data, em.entityFactory, 'full', false, true);
+      const data = helper(reloaded).serialize({ ignoreSerializers: true, includeHidden: true, convertCustomTypes: false }) as object;
+      em.config.getHydrator(this.metadata).hydrate(entity, wrapped.__meta, data, em.entityFactory, 'full', false, false);
       Utils.merge(wrapped.__originalEntityData, this.comparator.prepareEntity(reloaded as Entity));
     }
 
