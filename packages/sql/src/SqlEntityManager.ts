@@ -118,12 +118,16 @@ export class SqlEntityManager<Driver extends AbstractSqlDriver = AbstractSqlDriv
     const em = this.getContext(false) as SqlEntityManager;
     const meta = em.getMetadata().find(entityName)!;
     const fields = Utils.asArray(groupBy);
-    const { where, ...countOptions } = options;
+    const { where: rawWhere, ...countOptions } = options;
+
+    await em.tryFlush(entityName, options);
+    const where = await em.processWhere(entityName, rawWhere ?? ({} as FilterQuery<Entity>), options as any, 'read');
+
     const qb = em.createQueryBuilder(meta.class);
 
     (qb as any)
-      .select([...fields, raw('count(*) as "cnt"')])
-      .where(where ?? {})
+      .select([...fields, raw('count(*) as cnt')])
+      .where(where)
       .groupBy(fields as string[]);
 
     if (countOptions.having) {
