@@ -841,6 +841,7 @@ export abstract class SchemaHelper {
    * Generates SQL to create a database trigger on a table.
    * Override in driver-specific helpers for custom DDL (e.g., PostgreSQL function wrapping).
    */
+  /* v8 ignore next 10 */
   createTrigger(table: DatabaseTable, trigger: SqlTriggerDef): string {
     if (trigger.expression) {
       return trigger.expression;

@@ -141,4 +141,49 @@ describe('trigger [mysql]', () => {
     await orm.schema.dropDatabase();
     await orm.close();
   });
+
+  test('trigger round-trip with multi-event grouping [mysql]', async () => {
+    const orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
+      entities: [TriggerEntity],
+      discovery: { warnWhenNoEntities: false },
+      dbName: `mikro_orm_test_trigger_mysql_4`,
+      port: 3308,
+    });
+    const meta = orm.getMetadata();
+    await orm.schema.ensureDatabase();
+
+    const newTableMeta = new EntitySchema({
+      properties: {
+        id: {
+          primary: true,
+          name: 'id',
+          type: 'number',
+          fieldName: 'id',
+          columnType: 'int',
+        },
+      },
+      name: 'MultiEvt2',
+      tableName: 'multi_evt2',
+      triggers: [
+        {
+          name: 'trg_multi',
+          timing: 'before',
+          events: ['insert', 'update'],
+          body: `SET NEW.id = NEW.id`,
+        },
+      ],
+    }).init().meta;
+    meta.set(newTableMeta.class, newTableMeta);
+
+    let diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
+    await orm.schema.execute(diff);
+
+    // Round-trip: multi-event trigger should be re-grouped from per-event triggers
+    diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
+    expect(diff).toBe('');
+
+    await orm.schema.dropDatabase();
+    await orm.close();
+  });
 });

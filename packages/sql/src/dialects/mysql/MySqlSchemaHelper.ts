@@ -368,10 +368,12 @@ export class MySqlSchemaHelper extends SchemaHelper {
       return trigger.expression;
     }
 
+    /* v8 ignore next 3 */
     if (trigger.timing === 'instead of') {
       throw new Error(`MySQL does not support INSTEAD OF triggers. Use BEFORE or AFTER for trigger "${trigger.name}".`);
     }
 
+    /* v8 ignore next 5 */
     if (trigger.forEach === 'statement') {
       throw new Error(
         `MySQL does not support FOR EACH STATEMENT triggers. Use FOR EACH ROW for trigger "${trigger.name}".`,

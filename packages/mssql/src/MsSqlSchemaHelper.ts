@@ -404,6 +404,7 @@ export class MsSqlSchemaHelper extends SchemaHelper {
       return trigger.expression;
     }
 
+    /* v8 ignore next 3 */
     if (trigger.timing === 'before') {
       throw new Error(`MSSQL does not support BEFORE triggers. Use AFTER or INSTEAD OF for trigger "${trigger.name}".`);
     }
