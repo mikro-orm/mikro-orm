@@ -552,7 +552,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     const events = trigger.events.map(e => e.toUpperCase()).join(' OR ');
     const forEach = trigger.forEach === 'statement' ? 'STATEMENT' : 'ROW';
     const when = trigger.when ? `\n  when (${trigger.when})` : '';
-    const fnName = this.platform.quoteIdentifier(`${table.name}_${trigger.name}_fn`);
+    const fnName = this.getSchemaQualifiedTriggerFnName(table, trigger);
     const triggerName = this.platform.quoteIdentifier(trigger.name);
 
     const fnSql = `create or replace function ${fnName}() returns trigger as $$ begin ${trigger.body}; end; $$ language plpgsql`;
@@ -564,8 +564,19 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
   /** Generates SQL to drop a PostgreSQL trigger and its associated function. */
   override dropTrigger(table: DatabaseTable, trigger: SqlTriggerDef): string {
     const triggerName = this.platform.quoteIdentifier(trigger.name);
-    const fnName = this.platform.quoteIdentifier(`${table.name}_${trigger.name}_fn`);
+    const fnName = this.getSchemaQualifiedTriggerFnName(table, trigger);
     return `drop trigger if exists ${triggerName} on ${table.getQuotedName()};\ndrop function if exists ${fnName}()`;
+  }
+
+  private getSchemaQualifiedTriggerFnName(table: DatabaseTable, trigger: SqlTriggerDef): string {
+    const rawName = `${table.name}_${trigger.name}_fn`;
+    const defaultSchema = this.platform.getDefaultSchemaName();
+
+    if (table.schema && table.schema !== defaultSchema) {
+      return `${this.platform.quoteIdentifier(table.schema)}.${this.platform.quoteIdentifier(rawName)}`;
+    }
+
+    return this.platform.quoteIdentifier(rawName);
   }
 
   async getAllTriggers(

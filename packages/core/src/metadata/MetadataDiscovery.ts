@@ -1955,6 +1955,12 @@ export class MetadataDiscovery {
         );
       }
 
+      if (!trigger.body && !trigger.expression) {
+        throw new MetadataError(
+          `Trigger "${trigger.name ?? '(unnamed)'}" on entity ${meta.className} must define either 'body' or 'expression'.`,
+        );
+      }
+
       trigger.name ??= this.#namingStrategy.indexName(meta.tableName, trigger.events, 'trigger');
       trigger.forEach ??= 'row';
 
