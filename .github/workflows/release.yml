@@ -17,7 +17,7 @@ on:
         description: NPM dist-tag (prod or next)
         required: false
         type: string
-        default: 'prod'
+        default: 'next-v6'
       ref:
         description: Git ref to publish (branch, tag, or commit SHA)
         type: string
@@ -96,7 +96,7 @@ jobs:
         run: yarn publish:prod --yes
 
   canary-release:
-    if: inputs.dist-tag == 'next'
+    if: inputs.dist-tag == 'next-v6'
     name: Release canary
     runs-on: ubuntu-latest
 

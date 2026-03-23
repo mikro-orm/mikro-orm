@@ -205,5 +205,5 @@ jobs:
           inputs: >
             {
               "ref": "${{ steps.commit.outputs.commit_long_sha || github.sha }}",
-              "dist-tag": "next"
+              "dist-tag": "next-v6"
             }
