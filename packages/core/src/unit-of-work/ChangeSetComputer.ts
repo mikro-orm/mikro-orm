@@ -58,6 +58,10 @@ export class ChangeSetComputer {
     if (type === ChangeSetType.UPDATE && !wrapped.__initialized) {
       const data = this.#comparator.prepareEntity(entity);
 
+      if (meta.root.discriminatorColumn) {
+        delete data[meta.root.discriminatorColumn as EntityKey<T>];
+      }
+
       if (Utils.equals(data, wrapped.__originalEntityData)) {
         return null;
       }
@@ -152,6 +156,13 @@ export class ChangeSetComputer {
     if (!wrapped.__initialized) {
       for (const prop of wrapped.__meta.primaryKeys) {
         delete data[prop];
+      }
+
+      // strip discriminator column for STI entities — it's always hardcoded
+      // in the snapshot generator and not present in __originalEntityData,
+      // causing false dirty detection on uninitialized reference proxies
+      if (wrapped.__meta.root.discriminatorColumn) {
+        delete data[wrapped.__meta.root.discriminatorColumn as EntityKey<T>];
       }
 
       return data;
