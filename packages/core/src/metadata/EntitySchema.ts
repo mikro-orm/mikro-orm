@@ -92,7 +92,11 @@ export class EntitySchema<Entity = any, Base = never, Class extends EntityCtor =
   private initialized = false;
 
   constructor(meta: EntitySchemaMetadata<Entity, Base, Class>) {
-    meta.name = meta.class ? meta.class.name : meta.name;
+    // Skip for internal schemas (fromMetadata) — the name was already resolved,
+    // re-deriving it from class.name would break defineEntity + setClass with a different name (GH #7391).
+    if (!(meta as Dictionary).internal) {
+      meta.name = meta.class ? meta.class.name : meta.name;
+    }
 
     if (meta.name) {
       meta.abstract ??= false;
