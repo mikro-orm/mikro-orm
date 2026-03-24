@@ -47,7 +47,7 @@
     "copy": "node ../../scripts/copy.mjs"
   },
   "dependencies": {
-    "mongodb": "7.1.0"
+    "mongodb": "7.1.1"
   },
   "devDependencies": {
     "@mikro-orm/core": "^7.0.5"
