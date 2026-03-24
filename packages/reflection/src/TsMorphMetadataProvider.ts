@@ -1,13 +1,5 @@
 import { extname } from 'node:path';
-import {
-  ComputedPropertyName,
-  ModuleKind,
-  NoSubstitutionTemplateLiteral,
-  Project,
-  StringLiteral,
-  type PropertyDeclaration,
-  type SourceFile,
-} from 'ts-morph';
+import { ModuleKind, Project, type PropertyDeclaration, type SourceFile } from 'ts-morph';
 import {
   type EntityClass,
   type EntityMetadata,
@@ -102,7 +94,10 @@ export class TsMorphMetadataProvider extends MetadataProvider {
 
   private initPropertyType(meta: EntityMetadata, prop: EntityProperty): void {
     const { type: typeRaw, optional } = this.readTypeFromSource(meta, prop);
-    prop.type = this.cleanUpTypeTags(typeRaw);
+
+    if (typeRaw != null) {
+      prop.type = this.cleanUpTypeTags(typeRaw);
+    }
 
     if (optional) {
       prop.optional = true;
@@ -132,27 +127,9 @@ export class TsMorphMetadataProvider extends MetadataProvider {
       );
     }
 
-    const properties = cls.getInstanceProperties();
-    const property = properties.find(v => {
-      if (v.getName() === prop.name) {
-        return true;
-      }
-
-      const nameNode = v.getNameNode();
-
-      if (nameNode instanceof StringLiteral && nameNode.getLiteralText() === prop.name) {
-        return true;
-      }
-
-      if (nameNode instanceof ComputedPropertyName) {
-        const expr = nameNode.getExpression();
-        if (expr instanceof NoSubstitutionTemplateLiteral && expr.getLiteralText() === prop.name) {
-          return true;
-        }
-      }
-
-      return false;
-    }) as PropertyDeclaration | undefined;
+    const property = (cls.getInstanceProperty(prop.name) ??
+      // fallback to the type checker for inherited properties (e.g. with TC39/ES decorators)
+      cls.getType().getProperty(prop.name)?.getDeclarations()?.[0]) as PropertyDeclaration | undefined;
 
     if (!property) {
       return { type: prop.type, optional: prop.nullable };
