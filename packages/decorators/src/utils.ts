@@ -137,7 +137,9 @@ export function lookupPathFromDecorator(name: string, stack?: string[]): string 
   // __decorate(), replacing it with the constructor name. To support these cases we look for
   // Reflect.decorate() as well. Also when babel is used, we need to check
   // the `_applyDecoratedDescriptor` method instead.
-  let line = stack.findIndex(line => /__decorate|Reflect\.decorate|_applyDecoratedDescriptor/.exec(line));
+  let line = stack.findIndex(line =>
+    /__decorate|Reflect\.decorate|_applyDecoratedDescriptor|applyClassDecs/.exec(line),
+  );
 
   // Bun can skip decorator helper frames. Native ES decorators expose the entity
   // path right after `bun:wrap`, while reflect-metadata stacks reach it via Reflect.js.
