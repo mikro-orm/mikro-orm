@@ -443,7 +443,9 @@ export class SqliteSchemaHelper extends SchemaHelper {
 
         /* v8 ignore next */
         if (match) {
-          o[match[1]] = match[2].split(',').map((item: string) => /^\(?'(.*)'/.exec(item.trim())![1]);
+          o[match[1]] = match[2]
+            .split(/,(?=\s*'(?:[^']|'')*'(?:\s*\)|$))/)
+            .map((item: string) => /^\(?'((?:[^']|'')*)'/.exec(item.trim())![1].replace(/''/g, "'"));
         }
 
         return o;

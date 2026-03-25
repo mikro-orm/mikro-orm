@@ -1929,7 +1929,7 @@ export class MetadataDiscovery {
         let expression: string | null = null;
 
         if (prop.enum) {
-          expression = `${this.#platform.quoteIdentifier(prop.fieldNames[0])} in ('${prop.items.join("', '")}')`;
+          expression = this.#platform.getEnumCheckConstraintExpression(prop.fieldNames[0], prop.items as string[]);
         } else if (prop.array) {
           expression = this.#platform.getEnumArrayCheckConstraintExpression(prop.fieldNames[0], prop.items as string[]);
         }
