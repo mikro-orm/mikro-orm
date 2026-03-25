@@ -658,21 +658,15 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
         const m2 = item.definition?.match(/\(array\[(.*)]\)/i) || item.definition?.match(/ = (.*)\)/i);
 
         if (item.columnName && m1 && m2) {
-          const m3 = m2[1].match(/('[^']*'::text)/g);
-          let items: (string | undefined)[];
-
           /* v8 ignore next */
-          if (m3) {
-            items = m3.map((item: string) => /^\(?'(.*)'/.exec(item.trim())?.[1]);
-          } else {
-            items = m2[1].split(',').map((item: string) => /^\(?'(.*)'/.exec(item.trim())?.[1]);
-          }
+          const parts = m2[1].match(/('(?:[^']|'')*'::\w[\w ]*)/g) ?? m2[1].split(',');
+          let items = parts.map((item: string) => /^\(?'((?:[^']|'')*)'/.exec(item.trim())?.[1]?.replace(/''/g, "'"));
 
           items = items.filter(item => item !== undefined);
 
           if (items.length > 0) {
             o[item.columnName] = items as string[];
-            item.expression = `${this.quote(item.columnName)} in ('${items.join("', '")}')`;
+            item.expression = this.platform.getEnumCheckConstraintExpression(item.columnName, items as string[]);
             item.definition = `check (${item.expression})`;
           }
         }

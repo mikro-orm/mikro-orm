@@ -1253,7 +1253,9 @@ export class EntityMetadata<Entity = any, Class extends EntityCtor<Entity> = Ent
           this.checks.push({
             name,
             property: prop.name,
-            expression: `${config.getPlatform().quoteIdentifier(prop.fieldNames[0])} in ('${prop.items.join("', '")}')`,
+            expression: config
+              .getPlatform()
+              .getEnumCheckConstraintExpression(prop.fieldNames[0], prop.items as string[]),
           });
         }
       }
