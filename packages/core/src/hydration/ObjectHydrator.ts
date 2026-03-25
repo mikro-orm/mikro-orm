@@ -2,6 +2,7 @@ import type { EntityData, EntityMetadata, EntityName, EntityProperty } from '../
 import { Hydrator } from './Hydrator.js';
 import { Collection } from '../entity/Collection.js';
 import { Reference, ScalarReference } from '../entity/Reference.js';
+import { EntityHelper } from '../entity/EntityHelper.js';
 import { PolymorphicRef } from '../entity/PolymorphicRef.js';
 import { parseJsonSafe, Utils } from '../utils/Utils.js';
 import { ReferenceKind } from '../enums.js';
@@ -114,6 +115,8 @@ export class ObjectHydrator extends Hydrator {
     const context = new Map<string, any>();
     const props = this.getProperties(meta, type);
     context.set('isPrimaryKey', Utils.isPrimaryKey);
+    context.set('isEntity', EntityHelper.isEntity);
+    context.set('isScalarReference', ScalarReference.isScalarReference);
     context.set('Collection', Collection);
     context.set('Reference', Reference);
     context.set('PolymorphicRef', PolymorphicRef);
@@ -211,7 +214,7 @@ export class ObjectHydrator extends Hydrator {
 
       if (prop.ref) {
         ret.push(
-          `    const value = entity${entityKey}?.__scalarReference ? entity${entityKey}.unwrap() : entity${entityKey};`,
+          `    const value = isScalarReference(entity${entityKey}) ? entity${entityKey}.unwrap() : entity${entityKey};`,
         );
         ret.push(`    entity${entityKey} = oldValue_${idx} ?? new ScalarReference(value);`);
         ret.push(`    entity${entityKey}.bind(entity, '${prop.name}');`);
@@ -599,7 +602,7 @@ export class ObjectHydrator extends Hydrator {
     lines.push(
       `    if (isPrimaryKey(value, ${meta.compositePK})) return factory.createReference(${targetKey}, value, { convertCustomTypes, schema, normalizeAccessors, merge: true });`,
     );
-    lines.push(`    if (value && value.__entity) return value;`);
+    lines.push(`    if (value && isEntity(value)) return value;`);
 
     lines.push(
       `    return factory.create(${targetKey}, value, { newEntity, convertCustomTypes, schema, normalizeAccessors, merge: true });`,

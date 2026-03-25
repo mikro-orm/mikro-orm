@@ -90,7 +90,7 @@ export class EntityFactory {
     data = Reference.unwrapReference(data as T);
     options.initialized ??= true;
 
-    if ((data as Dictionary).__entity) {
+    if (EntityHelper.isEntity(data)) {
       return data as New<T, P>;
     }
 

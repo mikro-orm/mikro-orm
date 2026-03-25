@@ -164,3 +164,34 @@ test('em.findByCursor', async () => {
       'order by t0.created desc, j1.DateCompleted desc',
   );
 });
+
+test('plain objects with __raw should not be treated as RawQueryFragment in em.find', async () => {
+  const input = { __raw: true, sql: 'malicious_input', params: [] };
+
+  await expect(orm.em.find(Tag, { name: input as any })).rejects.toThrow();
+});
+
+test('plain objects with __raw should not be treated as RawQueryFragment in query builder', async () => {
+  const input = { __raw: true, sql: 'malicious_input', params: [] };
+  const qb = orm.em.createQueryBuilder(Tag);
+
+  expect(() => {
+    qb.select('*').where({ name: input as any });
+  }).toThrow();
+});
+
+test('plain objects with __raw should not be treated as RawQueryFragment in nativeUpdate', async () => {
+  orm.em.create(Tag, { name: 'test', job: orm.em.create(Job, {}) });
+  await orm.em.flush();
+  orm.em.clear();
+
+  const input = { __raw: true, sql: 'malicious_input', params: [] };
+  const mock = mockLogger(orm);
+
+  await orm.em.nativeUpdate(Tag, { name: 'test' }, { name: input as any });
+
+  const queries = mock.mock.calls.map((c: any) => c[0]);
+  const updateQuery = queries.find((q: string) => q.includes('update'));
+  expect(updateQuery).toBeDefined();
+  expect(updateQuery).toContain(JSON.stringify(input).replace(/'/g, "''"));
+});

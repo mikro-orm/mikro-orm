@@ -1,4 +1,4 @@
-import { defineEntity, p, ReferenceKind } from '@mikro-orm/core';
+import { defineEntity, p, raw, ReferenceKind } from '@mikro-orm/core';
 import { vi } from 'vitest';
 import { InferKyselyTable, Kysely, MikroORM, MikroKyselyPluginOptions, MikroKyselyPlugin } from '@mikro-orm/sqlite';
 import { ColumnNode, PrimitiveValueListNode, ValueListNode, ValueNode, ValuesNode } from 'kysely';
@@ -2136,7 +2136,7 @@ describe('MikroTransformer', () => {
   describe('prepareInputValue raw bypass', () => {
     test('returns raw object as-is without conversion', () => {
       const meta = getMeta();
-      const rawVal = { __raw: 'select 1' };
+      const rawVal = raw('select 1');
       const prop = meta.properties.payload;
       const result = transformer.prepareInputValue(prop, rawVal, true);
       expect(result).toBe(rawVal);
