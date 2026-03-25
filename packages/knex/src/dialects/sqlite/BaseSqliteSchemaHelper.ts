@@ -114,7 +114,9 @@ export abstract class BaseSqliteSchemaHelper extends SchemaHelper {
 
       /* istanbul ignore else */
       if (match) {
-        o[match[1]] = match[2].split(',').map((item: string) => item.trim().match(/^\(?'(.*)'/)![1]);
+        o[match[1]] = match[2]
+          .split(/,(?=\s*'(?:[^']|'')*'(?:\s*\)|$))/)
+          .map((item: string) => item.trim().match(/^\(?'((?:[^']|'')*)'/)![1].replace(/''/g, "'"));
       }
 
       return o;

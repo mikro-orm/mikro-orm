@@ -393,15 +393,9 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       const m2 = item.definition?.match(/\(array\[(.*)]\)/i) || item.definition?.match(/ = (.*)\)/i);
 
       if (item.columnName && m1 && m2) {
-        const m3 = m2[1].match(/('[^']*'::text)/g);
-        let items: (string | undefined)[];
-
-        /* istanbul ignore else */
-        if (m3) {
-          items = m3.map((item: string) => item.trim().match(/^\(?'(.*)'/)?.[1]);
-        } else {
-          items = m2[1].split(',').map((item: string) => item.trim().match(/^\(?'(.*)'/)?.[1]);
-        }
+        /* istanbul ignore next */
+        const parts = m2[1].match(/('(?:[^']|'')*'::\w[\w ]*)/g) ?? m2[1].split(',');
+        let items = parts.map((item: string) => item.trim().match(/^\(?'((?:[^']|'')*)'/)?.[1]?.replace(/''/g, "'"));
 
         items = items.filter(item => item !== undefined);
 
@@ -454,7 +448,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       const checkName = this.platform.getConfig().getNamingStrategy().indexName(fromTable.name, [column.name], 'check');
 
       if (changedProperties.has('enumItems') || (!column.nativeEnumName && fromTable.getColumn(column.name)?.nativeEnumName)) {
-        table.check(`${this.platform.quoteIdentifier(column.name)} in ('${(column.enumItems.join("', '"))}')`, {}, this.platform.quoteIdentifier(checkName));
+        table.check(`${this.platform.quoteIdentifier(column.name)} in (${column.enumItems.map(v => this.platform.quoteValue(v)).join(', ')})`, {}, this.platform.quoteIdentifier(checkName));
       }
 
       if (changedProperties.has('type')) {

@@ -1,6 +1,7 @@
 import type { Configuration } from '@mikro-orm/core';
 import { PostgreSqlTableCompiler } from './PostgreSqlTableCompiler';
 import { PostgreSqlQueryCompiler } from './PostgreSqlQueryCompiler';
+import { PostgreSqlColumnCompiler } from './PostgreSqlColumnCompiler';
 import { MonkeyPatchable } from '../../MonkeyPatchable';
 
 export class PostgreSqlKnexDialect extends MonkeyPatchable.PostgresDialect {
@@ -18,6 +19,11 @@ export class PostgreSqlKnexDialect extends MonkeyPatchable.PostgresDialect {
   queryCompiler() {
     // eslint-disable-next-line prefer-rest-params
     return new (PostgreSqlQueryCompiler as any)(this, ...arguments);
+  }
+
+  columnCompiler() {
+    // eslint-disable-next-line prefer-rest-params
+    return new (PostgreSqlColumnCompiler as any)(this, ...arguments);
   }
 
 }
