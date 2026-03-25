@@ -1,5 +1,4 @@
 import { inspect } from 'node:util';
-
 import type { EntityManager } from '../EntityManager';
 import {
   type AnyEntity,
@@ -22,10 +21,16 @@ import { WrappedEntity } from './WrappedEntity';
 import { ReferenceKind } from '../enums';
 import { helper } from './wrap';
 
+const entitySymbol = Symbol('Entity');
+
 /**
  * @internal
  */
 export class EntityHelper {
+
+  static isEntity(data: any): boolean {
+    return data != null && typeof data === 'object' && !!(data as any)[entitySymbol];
+  }
 
   static decorate<T extends object>(meta: EntityMetadata<T>, em: EntityManager): void {
     const fork = em.fork(); // use fork so we can access `EntityFactory`
@@ -79,7 +84,7 @@ export class EntityHelper {
   private static defineBaseProperties<T extends object>(meta: EntityMetadata<T>, prototype: T, em: EntityManager) {
     const helperParams = meta.embeddable || meta.virtual ? [] : [em.getComparator().getPkGetter(meta), em.getComparator().getPkSerializer(meta), em.getComparator().getPkGetterConverted(meta)];
     Object.defineProperties(prototype, {
-      __entity: { value: !meta.embeddable, configurable: true },
+      [entitySymbol]: { value: !meta.embeddable, enumerable: false, configurable: true },
       __meta: { value: meta, configurable: true },
       __config: { value: em.config, configurable: true },
       __platform: { value: em.getPlatform(), configurable: true },

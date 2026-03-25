@@ -2,6 +2,7 @@ import type { EntityData, EntityMetadata, EntityProperty } from '../typings';
 import { Hydrator } from './Hydrator';
 import { Collection } from '../entity/Collection';
 import { Reference, ScalarReference } from '../entity/Reference';
+import { EntityHelper } from '../entity/EntityHelper';
 import { parseJsonSafe, Utils } from '../utils/Utils';
 import { ReferenceKind } from '../enums';
 import type { EntityFactory } from '../entity/EntityFactory';
@@ -59,6 +60,7 @@ export class ObjectHydrator extends Hydrator {
     const context = new Map<string, any>();
     const props = this.getProperties(meta, type);
     context.set('isPrimaryKey', Utils.isPrimaryKey);
+    context.set('isEntity', EntityHelper.isEntity);
     context.set('Collection', Collection);
     context.set('Reference', Reference);
 
@@ -438,7 +440,7 @@ export class ObjectHydrator extends Hydrator {
     }
 
     lines.push(`    if (isPrimaryKey(value, ${meta.compositePK})) return factory.createReference('${prop.type}', value, { convertCustomTypes, schema, normalizeAccessors, merge: true });`);
-    lines.push(`    if (value && value.__entity) return value;`);
+    lines.push(`    if (value && isEntity(value)) return value;`);
 
     lines.push(`    return factory.create('${prop.type}', value, { newEntity, convertCustomTypes, schema, normalizeAccessors, merge: true });`);
     lines.push(`  }`);

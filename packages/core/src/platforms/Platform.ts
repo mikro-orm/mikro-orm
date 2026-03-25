@@ -1,5 +1,6 @@
 import { clone } from '../utils/clone';
-import { EntityRepository } from '../entity';
+import { RawQueryFragment } from '../utils/RawQueryFragment';
+import { EntityRepository } from '../entity/EntityRepository';
 import { UnderscoreNamingStrategy, type NamingStrategy } from '../naming-strategy';
 import type { Constructor, EntityProperty, IPrimaryKey, ISchemaGenerator, PopulateOptions, Primary, EntityMetadata, SimpleColumnMeta } from '../typings';
 import { ExceptionConverter } from './ExceptionConverter';
@@ -198,7 +199,7 @@ export abstract class Platform {
   }
 
   isRaw(value: any): boolean {
-    return typeof value === 'object' && value !== null && '__raw' in value;
+    return RawQueryFragment.isRaw(value);
   }
 
   getDefaultSchemaName(): string | undefined {

@@ -1,6 +1,5 @@
 import {
   type AnyEntity,
-  type Dictionary,
   type EntityKey,
   type EntityMetadata,
   type PopulateOptions,
@@ -93,7 +92,7 @@ export class MariaDbQueryBuilder<
     // multiple sub-queries are needed to get around mysql limitations with order by + limit + where in + group by (o.O)
     // https://stackoverflow.com/questions/17892762/mysql-this-version-of-mysql-doesnt-yet-support-limit-in-all-any-some-subqu
     const subSubQuery = this.getKnex().select(this.knex.raw(`json_arrayagg(${quotedPKs.join(', ')})`)).from(knexQuery);
-    (subSubQuery as Dictionary).__raw = true; // tag it as there is now way to check via `instanceof`
+    RawQueryFragment.markRaw(subSubQuery);
     this._limit = undefined;
     this._offset = undefined;
 

@@ -3,6 +3,8 @@ import { inspect } from 'node:util';
 import { Utils } from './Utils';
 import type { AnyString, Dictionary, EntityKey } from '../typings';
 
+const rawSymbol = Symbol('RawQueryFragment');
+
 export class RawQueryFragment {
 
   static #rawQueryCache = new Map<string, RawQueryFragment>();
@@ -19,6 +21,7 @@ export class RawQueryFragment {
     readonly params: unknown[] = [],
   ) {
     this.#key = `[raw]: ${this.sql} (#${RawQueryFragment.#index++})`;
+    Object.defineProperty(this, rawSymbol, { value: true, enumerable: false });
   }
 
   as(alias: string): RawQueryFragment {
@@ -75,6 +78,16 @@ export class RawQueryFragment {
     return this.#rawQueryCache.size;
   }
 
+  /** @internal */
+  static isRaw(value: unknown): boolean {
+    return typeof value === 'object' && !!value && Object.hasOwn(value, rawSymbol);
+  }
+
+  /** @internal */
+  static markRaw(obj: object): void {
+    Object.defineProperty(obj, rawSymbol, { value: true, enumerable: false });
+  }
+
   static isKnownFragment(key: string | RawQueryFragment) {
     if (key instanceof RawQueryFragment) {
       return true;
@@ -128,10 +141,6 @@ export class RawQueryFragment {
   }
 
 }
-
-Object.defineProperties(RawQueryFragment.prototype, {
-  __raw: { value: true, enumerable: false },
-});
 
 /** @internal */
 export const ALIAS_REPLACEMENT = '[::alias::]';

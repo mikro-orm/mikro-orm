@@ -6,6 +6,8 @@ import { MetadataError, ValidationError } from '../errors';
 import { ReferenceKind } from '../enums';
 import { Utils } from '../utils/Utils';
 
+const collectionSymbol = Symbol('Collection');
+
 export class ArrayCollection<T extends object, O extends object> {
 
   protected readonly items = new Set<T>();
@@ -17,6 +19,8 @@ export class ArrayCollection<T extends object, O extends object> {
   private _property?: EntityProperty;
 
   constructor(readonly owner: O, items?: T[]) {
+    Object.defineProperty(this, collectionSymbol, { value: true, enumerable: false });
+
     /* istanbul ignore next */
     if (items) {
       let i = 0;
@@ -491,6 +495,10 @@ export class ArrayCollection<T extends object, O extends object> {
     }
   }
 
+  static isCollection<T extends object, O extends object>(item: any): item is ArrayCollection<T, O> {
+    return item != null && Object.hasOwn(item, collectionSymbol);
+  }
+
   /** @ignore */
   [inspect.custom](depth = 2) {
     const object = { ...this } as Dictionary;
@@ -503,10 +511,6 @@ export class ArrayCollection<T extends object, O extends object> {
   }
 
 }
-
-Object.defineProperties(ArrayCollection.prototype, {
-  __collection: { value: true, enumerable: false, writable: false },
-});
 
 export interface ArrayCollection<T, O> {
   [k: number]: T;

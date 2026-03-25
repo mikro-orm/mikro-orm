@@ -842,7 +842,7 @@ export class QueryBuilder<
     const qb = this.getQueryBase(processVirtualEntity);
     const schema = this.getSchema(this.mainAlias);
     const type = this.type ?? QueryType.SELECT;
-    (qb as Dictionary).__raw = true; // tag it as there is now way to check via `instanceof`
+    RawQueryFragment.markRaw(qb);
 
     Utils.runIfNotEmpty(() => this.helper.appendQueryCondition(type, this._cond, qb), this._cond && !this._onConflict);
     Utils.runIfNotEmpty(() => qb.groupBy(this.prepareFields(this._groupBy, 'groupBy', schema)), this._groupBy);
@@ -1853,7 +1853,7 @@ export class QueryBuilder<
     // multiple sub-queries are needed to get around mysql limitations with order by + limit + where in + group by (o.O)
     // https://stackoverflow.com/questions/17892762/mysql-this-version-of-mysql-doesnt-yet-support-limit-in-all-any-some-subqu
     const subSubQuery = this.getKnex().select(pks).from(knexQuery);
-    (subSubQuery as Dictionary).__raw = true; // tag it as there is now way to check via `instanceof`
+    RawQueryFragment.markRaw(subSubQuery);
     this._limit = undefined;
     this._offset = undefined;
 
@@ -1914,7 +1914,7 @@ export class QueryBuilder<
     // wrap one more time to get around MySQL limitations
     // https://stackoverflow.com/questions/45494/mysql-error-1093-cant-specify-target-table-for-update-in-from-clause
     const subSubQuery = this.getKnex().select(this.prepareFields(meta.primaryKeys)).from(subQuery.as(this.mainAlias.aliasName));
-    (subSubQuery as Dictionary).__raw = true; // tag it as there is now way to check via `instanceof`
+    RawQueryFragment.markRaw(subSubQuery);
     const method = this.flags.has(QueryFlag.UPDATE_SUB_QUERY) ? 'update' : 'delete';
     this._cond = {}; // otherwise we would trigger validation error
     this._joins = {}; // included in the subquery

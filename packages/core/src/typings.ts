@@ -24,7 +24,8 @@ import type { SerializationContext, SerializeOptions } from './serialization';
 import type { EntitySchema, MetadataStorage } from './metadata';
 import type { Type, types } from './types';
 import type { Platform } from './platforms';
-import type { Configuration, RawQueryFragment } from './utils';
+import type { Configuration } from './utils/Configuration';
+import { RawQueryFragment } from './utils/RawQueryFragment';
 import { Utils } from './utils/Utils';
 import { EntityComparator } from './utils/EntityComparator';
 import type { EntityManager } from './EntityManager';
@@ -755,7 +756,7 @@ export class EntityMetadata<T = any> {
           return this.__helper.__data[prop.name];
         },
         set(val: unknown) {
-          if (typeof val === 'object' && !!val && '__raw' in val) {
+          if (RawQueryFragment.isRaw(val)) {
             (val as Dictionary).assign();
           }
 

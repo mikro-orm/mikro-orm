@@ -7,6 +7,7 @@ import { pathExistsSync } from 'fs-extra';
 import { createHash } from 'node:crypto';
 import { tokenize } from 'esprima';
 import { clone } from './clone';
+import { RawQueryFragment } from './RawQueryFragment';
 import type {
   Dictionary,
   EntityData,
@@ -22,7 +23,9 @@ import { ARRAY_OPERATORS, JSON_KEY_OPERATORS, GroupOperator, PlainObject, QueryO
 import type { Collection } from '../entity/Collection';
 import type { Platform } from '../platforms';
 import { helper } from '../entity/wrap';
-import type { ScalarReference } from '../entity/Reference';
+import { Reference, ScalarReference } from '../entity/Reference';
+import { ArrayCollection } from '../entity/ArrayCollection';
+import { EntityHelper } from '../entity/EntityHelper';
 
 export const ObjectBindingPattern = Symbol('ObjectBindingPattern');
 
@@ -43,7 +46,7 @@ function compareConstructors(a: any, b: any) {
 }
 
 function isRawSql(value: unknown): value is { sql: string; params: unknown[]; use: () => void } {
-  return typeof value === 'object' && !!value && '__raw' in value;
+  return RawQueryFragment.isRaw(value);
 }
 
 export function compareObjects(a: any, b: any) {
@@ -767,18 +770,18 @@ export class Utils {
       return false;
     }
 
-    if (allowReference && !!data.__reference) {
+    if (allowReference && Reference.isReference(data)) {
       return true;
     }
 
-    return !!data.__entity;
+    return EntityHelper.isEntity(data);
   }
 
   /**
    * Checks whether given object is a scalar reference.
    */
-  static isScalarReference<T = unknown>(data: any, allowReference = false): data is ScalarReference<any> & {} {
-    return typeof data === 'object' && data?.__scalarReference;
+  static isScalarReference<T = unknown>(data: any): data is ScalarReference<any> & {} {
+    return ScalarReference.isScalarReference(data);
   }
 
   /**
@@ -930,7 +933,7 @@ export class Utils {
   }
 
   static isCollection<T extends object, O extends object = object>(item: any): item is Collection<T, O> {
-    return item?.__collection;
+    return ArrayCollection.isCollection(item);
   }
 
   static fileURLToPath(url: string | URL) {

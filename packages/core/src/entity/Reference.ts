@@ -14,15 +14,21 @@ import type {
 import type { EntityFactory } from './EntityFactory';
 import { DataloaderType } from '../enums';
 import { helper, wrap } from './wrap';
-import { DataloaderUtils, QueryHelper, Utils } from '../utils';
+import { DataloaderUtils } from '../utils/DataloaderUtils';
+import { QueryHelper } from '../utils/QueryHelper';
+import { Utils } from '../utils/Utils';
 import type { FindOneOptions, FindOneOrFailOptions } from '../drivers/IDatabaseDriver';
 import { NotFoundError } from '../errors';
+
+const referenceSymbol = Symbol('Reference');
+const scalarReferenceSymbol = Symbol('ScalarReference');
 
 export class Reference<T extends object> {
 
   private property?: EntityProperty;
 
   constructor(private entity: T) {
+    Object.defineProperty(this, referenceSymbol, { value: true, enumerable: false });
     this.set(entity);
     const meta = helper(this.entity).__meta;
 
@@ -85,7 +91,7 @@ export class Reference<T extends object> {
    * Checks whether the argument is instance of `Reference` wrapper.
    */
   static isReference<T extends object>(data: any): data is Reference<T> {
-    return data && !!data.__reference;
+    return data != null && Object.hasOwn(data, referenceSymbol);
   }
 
   /**
@@ -217,7 +223,9 @@ export class ScalarReference<Value> {
   private entity?: object;
   private property?: string;
 
-  constructor(private value?: Value, private initialized = value != null) {}
+  constructor(private value?: Value, private initialized = value != null) {
+    Object.defineProperty(this, scalarReferenceSymbol, { value: true, enumerable: false });
+  }
 
   /**
    * Ensures the underlying entity is loaded first (without reloading it if it already is loaded).
@@ -275,6 +283,10 @@ export class ScalarReference<Value> {
     return this.initialized;
   }
 
+  static isScalarReference(data: any): data is ScalarReference<any> {
+    return data != null && typeof data === 'object' && Object.hasOwn(data, scalarReferenceSymbol);
+  }
+
   /* istanbul ignore next */
   /** @ignore */
   [inspect.custom]() {
@@ -284,7 +296,6 @@ export class ScalarReference<Value> {
 }
 
 Object.defineProperties(Reference.prototype, {
-  __reference: { value: true, enumerable: false },
   __meta: { get() { return this.entity.__meta!; } },
   __platform: { get() { return this.entity.__platform!; } },
   __helper: { get() { return this.entity.__helper!; } },
@@ -293,7 +304,6 @@ Object.defineProperties(Reference.prototype, {
 });
 
 Object.defineProperties(ScalarReference.prototype, {
-  __scalarReference: { value: true, enumerable: false },
   $: { get() { return this.value; } },
   get: { get() { return () => this.value; } },
 });
