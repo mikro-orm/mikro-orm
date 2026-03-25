@@ -249,7 +249,7 @@ export class MsSqlSchemaHelper extends SchemaHelper {
       const hasItems = (items?.length ?? 0) > 0;
 
       if (item.columnName && hasItems) {
-        items = items!.map(val => val.trim().replace(`[${item.columnName}]=`, '').match(/^\(?'(.*)'/)?.[1]).filter(Boolean) as string[];
+        items = items!.map(val => val.trim().replace(`[${item.columnName}]=`, '').match(/^\(?'((?:[^']|'')*)'/)?.[1]?.replace(/''/g, "'")).filter(Boolean) as string[];
 
         if (items.length > 0) {
           o[item.columnName] = items.reverse();
@@ -429,7 +429,7 @@ export class MsSqlSchemaHelper extends SchemaHelper {
       const checkName = this.platform.getConfig().getNamingStrategy().indexName(fromTable.name, [column.name], 'check');
 
       if (changedProperties.has('enumItems')) {
-        table.check(`${this.platform.quoteIdentifier(column.name)} in ('${(column.enumItems.join("', '"))}')`, {}, this.platform.quoteIdentifier(checkName));
+        table.check(`${this.platform.quoteIdentifier(column.name)} in (${column.enumItems.map(v => this.platform.quoteValue(v)).join(', ')})`, {}, this.platform.quoteIdentifier(checkName));
       }
 
       /* istanbul ignore next */
