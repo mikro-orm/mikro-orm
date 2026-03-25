@@ -118,6 +118,17 @@ describe('Utils', () => {
     expect(Utils.merge({ nestedData: {}, moreDeep: { moreDeepData: {} } }, source)).toEqual(source);
   });
 
+  test('merge should skip unsafe keys like __proto__', () => {
+    const target = {};
+    Utils.merge(target, JSON.parse('{"__proto__":{"polluted":"yes"}}'));
+    expect(({} as any).polluted).toBeUndefined();
+    expect(target).toEqual({});
+
+    // constructor and prototype should also be skipped
+    Utils.merge(target, { constructor: { polluted: true } });
+    expect(({} as any).polluted).toBeUndefined();
+  });
+
   test('merge Buffers', () => {
     const buffer = Buffer.from('Test buffer');
     expect(Utils.merge({}, { a: buffer })).toEqual({ a: buffer });

@@ -289,6 +289,10 @@ export class Utils {
 
     if (Utils.isObject(target) && Utils.isPlainObject(source)) {
       for (const [key, value] of Object.entries(source)) {
+        if (['__proto__', 'constructor', 'prototype'].includes(key)) {
+          continue;
+        }
+
         if (ignoreUndefined && typeof value === 'undefined') {
           continue;
         }
