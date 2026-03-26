@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.0.6](https://github.com/mikro-orm/mikro-orm/compare/v7.0.5...v7.0.6) (2026-03-26)
+
+
+### Bug Fixes
+
+* **decorators:** handle esbuild ES decorator stack frames in path lookup ([e6ea9fc](https://github.com/mikro-orm/mikro-orm/commit/e6ea9fcfb2ac978773d7a8197fe6cf8a7ed670b6))
+
+
+
+
+
 ## [7.0.5](https://github.com/mikro-orm/mikro-orm/compare/v7.0.4...v7.0.5) (2026-03-23)
 
 ### Bug Fixes

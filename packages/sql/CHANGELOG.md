@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.0.6](https://github.com/mikro-orm/mikro-orm/compare/v7.0.5...v7.0.6) (2026-03-26)
+
+
+### Bug Fixes
+
+* **schema:** escape single quotes in enum CHECK constraints ([#7396](https://github.com/mikro-orm/mikro-orm/issues/7396)) ([3656519](https://github.com/mikro-orm/mikro-orm/commit/365651984c904b7b037574facfd4c6d32a522b7f)), closes [#7395](https://github.com/mikro-orm/mikro-orm/issues/7395)
+
+
+
+
+
 ## [7.0.5](https://github.com/mikro-orm/mikro-orm/compare/v7.0.4...v7.0.5) (2026-03-23)
 
 ### Bug Fixes
