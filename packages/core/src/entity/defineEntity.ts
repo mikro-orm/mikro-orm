@@ -1074,9 +1074,9 @@ const propertyBuilders: PropertyBuilders = {
   type: <T extends PropertyValueType>(type: T) =>
     new UniversalPropertyOptionsBuilder<InferPropertyValueType<T>, EmptyOptions, IncludeKeysForProperty>({ type }),
 
-  enum: <const T extends (number | string)[] | (() => Dictionary)>(items?: T) =>
+  enum: <const T extends readonly (number | string)[] | (() => Dictionary)>(items?: T) =>
     new UniversalPropertyOptionsBuilder<
-      T extends () => Dictionary ? ValueOf<ReturnType<T>> : T extends (infer Value)[] ? Value : T,
+      T extends () => Dictionary ? ValueOf<ReturnType<T>> : T extends readonly (infer Value)[] ? Value : T,
       EmptyOptions,
       IncludeKeysForEnumOptions
     >({
@@ -1164,10 +1164,10 @@ export type PropertyBuilders = {
   type: <T extends PropertyValueType>(
     type: T,
   ) => UniversalPropertyOptionsBuilder<InferPropertyValueType<T>, EmptyOptions, IncludeKeysForProperty>;
-  enum: <const T extends (number | string)[] | (() => Dictionary)>(
+  enum: <const T extends readonly (number | string)[] | (() => Dictionary)>(
     items?: T,
   ) => UniversalPropertyOptionsBuilder<
-    T extends () => Dictionary ? ValueOf<ReturnType<T>> : T extends (infer Value)[] ? Value : T,
+    T extends () => Dictionary ? ValueOf<ReturnType<T>> : T extends readonly (infer Value)[] ? Value : T,
     EmptyOptions,
     IncludeKeysForEnumOptions
   >;
