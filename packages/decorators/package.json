@@ -52,7 +52,7 @@
     "@mikro-orm/core": "^7.0.6"
   },
   "peerDependencies": {
-    "@mikro-orm/core": "7.0.5",
+    "@mikro-orm/core": "7.0.6",
     "reflect-metadata": "^0.1.0 || ^0.2.0"
   },
   "peerDependenciesMeta": {

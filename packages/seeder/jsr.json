@@ -1,6 +1,6 @@
 {
   "name": "@mikro-orm/seeder",
-  "version": "7.0.5",
+  "version": "7.0.6",
   "exports": {
     ".": "./src/index.ts"
   },
@@ -8,6 +8,6 @@
     "exclude": ["dist/", "node_modules/", "tests/"]
   },
   "imports": {
-    "@mikro-orm/core": "jsr:@mikro-orm/core@7.0.5"
+    "@mikro-orm/core": "jsr:@mikro-orm/core@7.0.6"
   }
 }

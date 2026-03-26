@@ -47,14 +47,14 @@
     "copy": "node ../../scripts/copy.mjs"
   },
   "dependencies": {
-    "@mikro-orm/mongodb": "^7.0.6",
+    "@mikro-orm/mongodb": "7.0.6",
     "mongodb": "7.1.1"
   },
   "devDependencies": {
     "@mikro-orm/core": "^7.0.6"
   },
   "peerDependencies": {
-    "@mikro-orm/core": "7.0.5"
+    "@mikro-orm/core": "7.0.6"
   },
   "engines": {
     "node": ">= 22.17.0"

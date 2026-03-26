@@ -7,10 +7,6 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 **Note:** Version bump only for package @mikro-orm/cli
 
-
-
-
-
 ## [7.0.5](https://github.com/mikro-orm/mikro-orm/compare/v7.0.4...v7.0.5) (2026-03-23)
 
 **Note:** Version bump only for package @mikro-orm/cli
