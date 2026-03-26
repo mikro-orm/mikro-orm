@@ -2,6 +2,7 @@
   "extends": "./tsconfig.build.json",
   "compilerOptions": {
     "module": "preserve",
+    "moduleResolution": "bundler",
     "sourceMap": true,
     "paths": {
       "@mikro-orm/*": ["./packages/*/src"],
