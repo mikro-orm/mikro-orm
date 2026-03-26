@@ -361,6 +361,67 @@ describe('defineEntity', () => {
     expect(UserSchema.meta.className).toBe('User');
   });
 
+  it('should inherit property initializers from parent class via extends', () => {
+    const BaseSchema = defineEntity({
+      name: 'BaseWithInit',
+      abstract: true,
+      properties: {
+        id: p.integer().primary(),
+        createdAt: p.datetime(),
+      },
+    });
+
+    class Base extends BaseSchema.class {
+      id = Math.floor(Math.random() * 1000000);
+      createdAt = new Date();
+    }
+
+    BaseSchema.setClass(Base);
+
+    const ChildSchema = defineEntity({
+      name: 'ChildWithInit',
+      extends: BaseSchema,
+      properties: {
+        name: p.string(),
+      },
+    });
+
+    class Child extends ChildSchema.class {
+      name = 'default';
+    }
+
+    ChildSchema.setClass(Child);
+
+    const autoClass = Object.getPrototypeOf(Child);
+    expect(autoClass.prototype).toBeInstanceOf(Base);
+
+    const child = new Child();
+    expect(child.id).toBeDefined();
+    expect(typeof child.id).toBe('number');
+    expect(child.createdAt).toBeInstanceOf(Date);
+    expect(child.name).toBe('default');
+  });
+
+  it('should inherit property initializers via extends with EntitySchema (no setClass)', () => {
+    const BaseSchema = defineEntity({
+      name: 'BaseNoSetClass',
+      properties: {
+        id: p.integer().primary(),
+      },
+    });
+
+    const ChildSchema = defineEntity({
+      name: 'ChildNoSetClass',
+      extends: BaseSchema,
+      properties: {
+        name: p.string(),
+      },
+    });
+
+    const ChildClass = ChildSchema.class as new () => any;
+    expect(new ChildClass()).toBeInstanceOf(BaseSchema.class);
+  });
+
   it('should define entity with json', () => {
     const Foo = defineEntity({
       name: 'Foo',
