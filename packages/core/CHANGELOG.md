@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.6.10](https://github.com/mikro-orm/mikro-orm/compare/v6.6.9...v6.6.10) (2026-03-26)
+
+
+### Bug Fixes
+
+* **core:** handle JSON column type conversion in `em.refresh()` for detached entities ([e41b500](https://github.com/mikro-orm/mikro-orm/commit/e41b500842a764757f06f1cb2089f7fc7f354d49)), closes [#7383](https://github.com/mikro-orm/mikro-orm/issues/7383)
+* **core:** prevent prototype pollution in `Utils.merge` ([06ed5f6](https://github.com/mikro-orm/mikro-orm/commit/06ed5f6b08ce728c0809dd4d4f60fff6e06409f4))
+* **core:** tighten query construction validation ([ad3643e](https://github.com/mikro-orm/mikro-orm/commit/ad3643e53a086a0f168dc5622c31abf74312ddc2))
+
+
+
+
+
 ## [6.6.9](https://github.com/mikro-orm/mikro-orm/compare/v6.6.8...v6.6.9) (2026-03-05)
 
 

@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.6.10](https://github.com/mikro-orm/mikro-orm/compare/v6.6.9...v6.6.10) (2026-03-26)
+
+
+### Bug Fixes
+
+* **core:** tighten query construction validation ([ad3643e](https://github.com/mikro-orm/mikro-orm/commit/ad3643e53a086a0f168dc5622c31abf74312ddc2))
+
+
+
+
+
 ## [6.6.9](https://github.com/mikro-orm/mikro-orm/compare/v6.6.8...v6.6.9) (2026-03-05)
 
 **Note:** Version bump only for package @mikro-orm/mariadb
