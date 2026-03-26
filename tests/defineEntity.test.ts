@@ -521,11 +521,13 @@ describe('defineEntity', () => {
       BAZ = 1,
     }
 
+    const items = ['foo', 'bar', 1] as const;
+
     const Foo = defineEntity({
       name: 'Foo',
       properties: p => ({
         id: p.integer().primary().autoincrement(),
-        bar: p.enum(['foo', 'bar', 1]),
+        bar: p.enum(items),
         baz: p.enum(() => BaZ),
       }),
     });
@@ -537,7 +539,7 @@ describe('defineEntity', () => {
       name: 'Foo',
       properties: {
         id: { type: types.integer, primary: true, autoincrement: true },
-        bar: { enum: true, items: ['foo', 'bar', 1] },
+        bar: { enum: true, items },
         baz: { enum: true, items: () => BaZ },
       },
     });
@@ -977,12 +979,14 @@ describe('defineEntity', () => {
   });
 
   it('should preserve scalar array types in Loaded<>', () => {
+    const paymentMethods = ['CASH', 'CARD', 'CRYPTO'] as const;
+
     const Bar = defineEntity({
       name: 'Bar',
       properties: p => ({
         id: p.integer().primary().autoincrement(),
         barcodes: p.array(String),
-        paymentMethods: p.enum(['CASH', 'CARD', 'CRYPTO'] as const).array(),
+        paymentMethods: p.enum(paymentMethods).array(),
         numbers: p.array(Number),
         tags: p.array(),
       }),
