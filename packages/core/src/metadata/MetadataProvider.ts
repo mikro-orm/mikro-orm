@@ -27,15 +27,33 @@ export class MetadataProvider {
         const tmp = prop.entity() as EntityClass;
         prop.type = Array.isArray(tmp)
           ? tmp
-              .map(t => Utils.className(t))
+              .map(t => this.resolveEntityName(t))
               .sort()
               .join(' | ')
-          : Utils.className(tmp);
+          : this.resolveEntityName(tmp);
         prop.target = EntitySchema.is(tmp) ? tmp.meta.class : tmp;
       } else if (!prop.type && !((prop.enum || prop.array) && (prop.items?.length ?? 0) > 0)) {
         throw new Error(`Please provide either 'type' or 'entity' attribute in ${meta.className}.${prop.name}.`);
       }
     }
+  }
+
+  /**
+   * Resolves the entity name for a given class or schema, respecting explicit names
+   * set via `defineEntity({ name })` + `setClass()`.
+   */
+  private resolveEntityName(entity: EntityClass): string {
+    if (EntitySchema.is(entity)) {
+      return entity.meta.className;
+    }
+
+    const schema = EntitySchema.REGISTRY.get(entity);
+
+    if (schema) {
+      return schema.name as string;
+    }
+
+    return Utils.className(entity);
   }
 
   /** Merges cached metadata into the given entity metadata, preserving function expressions. */
