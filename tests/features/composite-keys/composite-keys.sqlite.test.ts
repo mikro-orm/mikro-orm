@@ -638,11 +638,8 @@ describe('composite keys in sqlite', () => {
     const user = new User12('John', 'Doe');
     user.cars.add(car);
     await orm.em.persist(user).flush();
-    await expect(car.users.loadCount()).rejects.toBeTruthy();
-    await expect(user.cars.loadCount()).rejects.toBeTruthy();
-    // Fails due to a bug with knex: (see https://github.com/knex/knex/pull/2977)
-    // await expect(car.users.loadCount()).resolves.toEqual(1);
-    // await expect(user.cars.loadCount()).resolves.toEqual(1);
+    await expect(car.users.loadCount()).resolves.toEqual(1);
+    await expect(user.cars.loadCount()).resolves.toEqual(1);
   });
 
   afterAll(async () => orm.close(true));

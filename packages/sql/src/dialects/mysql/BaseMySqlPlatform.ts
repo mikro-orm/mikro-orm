@@ -32,6 +32,10 @@ export class BaseMySqlPlatform extends AbstractSqlPlatform {
     [QueryOrder.desc_nulls_last]: 'is null',
   } as const;
 
+  override supportsMultiColumnCountDistinct(): boolean {
+    return true;
+  }
+
   /** @internal */
   override createNativeQueryBuilder(): MySqlNativeQueryBuilder {
     return new MySqlNativeQueryBuilder(this);

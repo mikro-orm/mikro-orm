@@ -420,9 +420,15 @@ export class NativeQueryBuilder implements Subquery {
   }
 
   protected compileSelect() {
+    const wrapCountSubquery = this.needsCountSubquery();
+
+    if (wrapCountSubquery) {
+      this.parts.push(`select count(*) as ${this.quote('count')} from (`);
+    }
+
     this.parts.push('select');
     this.addHintComment();
-    this.parts.push(`${this.getFields()} from ${this.getTableName()}`);
+    this.parts.push(`${this.getFields(wrapCountSubquery)} from ${this.getTableName()}`);
 
     if (this.options.joins) {
       for (const join of this.options.joins) {
@@ -446,27 +452,49 @@ export class NativeQueryBuilder implements Subquery {
       this.params.push(...this.options.having.params);
     }
 
-    if (this.options.orderBy) {
-      this.parts.push(`order by ${this.options.orderBy}`);
+    if (!wrapCountSubquery) {
+      if (this.options.orderBy) {
+        this.parts.push(`order by ${this.options.orderBy}`);
+      }
+
+      if (this.options.limit != null) {
+        this.parts.push(`limit ?`);
+        this.params.push(this.options.limit);
+      }
+
+      if (this.options.offset != null) {
+        this.parts.push(`offset ?`);
+        this.params.push(this.options.offset);
+      }
     }
 
-    if (this.options.limit != null) {
-      this.parts.push(`limit ?`);
-      this.params.push(this.options.limit);
-    }
-
-    if (this.options.offset != null) {
-      this.parts.push(`offset ?`);
-      this.params.push(this.options.offset);
+    if (wrapCountSubquery) {
+      const asKeyword = this.platform.usesAsKeyword() ? ' as ' : ' ';
+      this.parts.push(`)${asKeyword}${this.quote('dcnt')}`);
     }
   }
 
-  protected getFields(): string {
+  /** Whether this COUNT query needs a subquery wrapper for multi-column distinct. */
+  protected needsCountSubquery(): boolean {
+    return (
+      this.type === QueryType.COUNT &&
+      !!this.options.distinct &&
+      this.options.select!.length > 1 &&
+      !this.platform.supportsMultiColumnCountDistinct()
+    );
+  }
+
+  protected getFields(countSubquery?: boolean): string {
     if (!this.options.select || this.options.select.length === 0) {
       throw new Error('No fields selected');
     }
 
     let fields = this.options.select.map(field => this.quote(field)).join(', ');
+
+    // count subquery emits just `distinct col1, col2` — the outer wrapper adds count(*)
+    if (countSubquery) {
+      return `distinct ${fields}`;
+    }
 
     if (this.options.distinct) {
       fields = `distinct ${fields}`;
