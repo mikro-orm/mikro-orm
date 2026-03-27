@@ -479,7 +479,7 @@ export class NativeQueryBuilder implements Subquery {
     return (
       this.type === QueryType.COUNT &&
       !!this.options.distinct &&
-      (this.options.select?.length ?? 0) > 1 &&
+      this.options.select!.length > 1 &&
       !this.platform.supportsMultiColumnCountDistinct()
     );
   }
