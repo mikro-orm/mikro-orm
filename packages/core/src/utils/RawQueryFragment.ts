@@ -203,7 +203,7 @@ export const ALIAS_REPLACEMENT_RE = '\\[::alias::\\]';
  * export class Author { ... }
  * ```
  */
-export function raw<T extends object = any, R = any>(sql: EntityKey<T> | EntityKey<T>[] | AnyString | ((alias: string) => string) | RawQueryFragment, params?: readonly unknown[] | Dictionary<unknown>): NoInfer<R> {
+export function raw<T extends object = any, R = any>(sql: EntityKey<T> | EntityKey<T>[] | AnyString | ((alias: string) => string) | RawQueryFragment, params?: readonly unknown[] | Dictionary<unknown>): R {
   if (sql instanceof RawQueryFragment) {
     return sql as R;
   }
