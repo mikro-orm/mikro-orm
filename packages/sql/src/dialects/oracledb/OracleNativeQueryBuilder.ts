@@ -252,10 +252,16 @@ export class OracleNativeQueryBuilder extends NativeQueryBuilder {
   }
 
   protected override compileSelect() {
+    const wrapCountSubquery = this.needsCountSubquery();
+
+    if (wrapCountSubquery) {
+      this.parts.push(`select count(*) as ${this.quote('count')} from (`);
+    }
+
     this.parts.push('select');
 
     this.addHintComment();
-    this.parts.push(`${this.getFields()} from ${this.getTableName()}`);
+    this.parts.push(`${this.getFields(wrapCountSubquery)} from ${this.getTableName()}`);
 
     if (this.options.joins) {
       for (const join of this.options.joins) {
@@ -279,18 +285,25 @@ export class OracleNativeQueryBuilder extends NativeQueryBuilder {
       this.params.push(...this.options.having.params);
     }
 
-    if (this.options.orderBy) {
-      this.parts.push(`order by ${this.options.orderBy}`);
+    if (!wrapCountSubquery) {
+      if (this.options.orderBy) {
+        this.parts.push(`order by ${this.options.orderBy}`);
+      }
+
+      if (this.options.offset != null) {
+        this.parts.push(`offset ? rows`);
+        this.params.push(this.options.offset);
+      }
+
+      if (this.options.limit != null) {
+        this.parts.push(`fetch next ? rows only`);
+        this.params.push(this.options.limit);
+      }
     }
 
-    if (this.options.offset != null) {
-      this.parts.push(`offset ? rows`);
-      this.params.push(this.options.offset);
-    }
-
-    if (this.options.limit != null) {
-      this.parts.push(`fetch next ? rows only`);
-      this.params.push(this.options.limit);
+    if (wrapCountSubquery) {
+      const asKeyword = this.platform.usesAsKeyword() ? ' as ' : ' ';
+      this.parts.push(`)${asKeyword}${this.quote('dcnt')}`);
     }
   }
 }

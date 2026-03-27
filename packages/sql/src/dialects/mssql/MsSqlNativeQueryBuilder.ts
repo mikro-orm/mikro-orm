@@ -166,15 +166,22 @@ export class MsSqlNativeQueryBuilder extends NativeQueryBuilder {
   }
 
   protected override compileSelect() {
+    const wrapCountSubquery = this.needsCountSubquery();
+
+    if (wrapCountSubquery) {
+      this.parts.push(`select count(*) as ${this.quote('count')} from (`);
+    }
+
     this.parts.push('select');
 
-    if (this.options.limit != null && this.options.offset == null) {
+    // skip top(?) inside the count subquery — it would limit the distinct rows before counting
+    if (this.options.limit != null && this.options.offset == null && !wrapCountSubquery) {
       this.parts.push(`top (?)`);
       this.params.push(this.options.limit);
     }
 
     this.addHintComment();
-    this.parts.push(`${this.getFields()} from ${this.getTableName()}`);
+    this.parts.push(`${this.getFields(wrapCountSubquery)} from ${this.getTableName()}`);
     this.addLockClause();
 
     if (this.options.joins) {
@@ -199,23 +206,30 @@ export class MsSqlNativeQueryBuilder extends NativeQueryBuilder {
       this.params.push(...this.options.having.params);
     }
 
-    if (this.options.orderBy) {
-      this.parts.push(`order by ${this.options.orderBy}`);
+    if (!wrapCountSubquery) {
+      if (this.options.orderBy) {
+        this.parts.push(`order by ${this.options.orderBy}`);
+      }
+
+      if (this.options.offset != null) {
+        /* v8 ignore next */
+        if (!this.options.orderBy) {
+          throw new Error('Order by clause is required for pagination');
+        }
+
+        this.parts.push(`offset ? rows`);
+        this.params.push(this.options.offset);
+
+        if (this.options.limit != null) {
+          this.parts.push(`fetch next ? rows only`);
+          this.params.push(this.options.limit);
+        }
+      }
     }
 
-    if (this.options.offset != null) {
-      /* v8 ignore next */
-      if (!this.options.orderBy) {
-        throw new Error('Order by clause is required for pagination');
-      }
-
-      this.parts.push(`offset ? rows`);
-      this.params.push(this.options.offset);
-
-      if (this.options.limit != null) {
-        this.parts.push(`fetch next ? rows only`);
-        this.params.push(this.options.limit);
-      }
+    if (wrapCountSubquery) {
+      const asKeyword = this.platform.usesAsKeyword() ? ' as ' : ' ';
+      this.parts.push(`)${asKeyword}${this.quote('dcnt')}`);
     }
   }
 
