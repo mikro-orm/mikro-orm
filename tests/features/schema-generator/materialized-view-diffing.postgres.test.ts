@@ -60,6 +60,36 @@ const BookStats0 = defineEntity({
   },
 });
 
+// Materialized view with indexes (GH #7417)
+const AuthorStatsWithIndexes = defineEntity({
+  name: 'AuthorStatsWithIndexes',
+  tableName: 'author_stats_idx_matview',
+  view: { materialized: true },
+  expression: `select a.id, a.name, count(b.id)::int as book_count from author a left join book b on b.author_id = a.id group by a.id`,
+  indexes: [{ properties: ['bookCount'] }],
+  uniques: [{ properties: ['name'] }],
+  properties: {
+    id: p.integer().primary(),
+    name: p.string(),
+    bookCount: p.integer(),
+  },
+});
+
+// Modified materialized view with indexes (additional index)
+const AuthorStatsWithIndexes1 = defineEntity({
+  name: 'AuthorStatsWithIndexes1',
+  tableName: 'author_stats_idx_matview',
+  view: { materialized: true },
+  expression: `select a.id, a.name, count(b.id)::int as book_count from author a left join book b on b.author_id = a.id group by a.id`,
+  indexes: [{ properties: ['bookCount'] }, { properties: ['bookCount', 'name'] }],
+  uniques: [{ properties: ['name'] }],
+  properties: {
+    id: p.integer().primary(),
+    name: p.string(),
+    bookCount: p.integer(),
+  },
+});
+
 // Materialized view with no data on creation
 const AuthorStatsNoData = defineEntity({
   name: 'AuthorStatsNoData',
@@ -215,17 +245,114 @@ describe('materialized view diffing in postgres', () => {
     await orm.schema.execute('drop table if exists book cascade');
     await orm.schema.create();
 
-    // The create SQL should contain WITH NO DATA
-    const createSql = await orm.schema.getCreateSchemaSQL();
+    // The create SQL should contain WITH NO DATA but no indexes
+    const createSql = await orm.schema.getCreateSchemaSQL({ wrap: false });
     expect(createSql).toContain('with no data');
+    expect(createSql).not.toContain('create unique index');
 
-    // Change from withData: false to withData: true
-    // Note: withData is a creation-time option, not a view property that can be diffed.
-    // The view structure itself is the same, so no diff is expected.
-    // To populate a WITH NO DATA view, use REFRESH MATERIALIZED VIEW.
+    // No diff while withData is false — indexes are deferred
+    await expect(orm.schema.getUpdateSchemaSQL({ wrap: false })).resolves.toBe('');
+
+    // Switching to withData: true picks up the deferred indexes but does NOT
+    // refresh the view — the user must run REFRESH MATERIALIZED VIEW separately.
+    // PostgreSQL allows creating indexes on unrefreshed views (they stay empty
+    // until the next REFRESH), so executing this diff is valid.
     orm.discoverEntity(AuthorStatsWithData, AuthorStatsNoData);
     const diff1 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
-    expect(diff1).toBe(''); // No diff expected since withData doesn't affect view structure
+    expect(diff1).toContain('create unique index');
+    await orm.schema.execute(diff1);
+
+    await expect(orm.schema.getUpdateSchemaSQL({ wrap: false })).resolves.toBe('');
+
+    await orm.close(true);
+  });
+
+  // GH #7417
+  test('schema:create generates indexes for materialized views', async () => {
+    const orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
+      entities: [Author, Book, AuthorStatsWithIndexes],
+      dbName: 'mikro_orm_test_matview_diffing',
+    });
+    await orm.schema.ensureDatabase();
+    await orm.schema.execute('drop materialized view if exists author_stats_idx_matview cascade');
+    await orm.schema.execute('drop table if exists author cascade');
+    await orm.schema.execute('drop table if exists book cascade');
+
+    const createSql = await orm.schema.getCreateSchemaSQL({ wrap: false });
+    expect(createSql).toContain('author_stats_idx_matview');
+    expect(createSql).toContain('create index');
+    expect(createSql).toMatchSnapshot();
+
+    await orm.schema.create();
+    // Verify no diff after applying
+    await expect(orm.schema.getUpdateSchemaSQL({ wrap: false })).resolves.toBe('');
+
+    await orm.close(true);
+  });
+
+  // GH #7417
+  test('schema:update adds indexes for new materialized views', async () => {
+    const orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
+      entities: [Author, Book],
+      dbName: 'mikro_orm_test_matview_diffing',
+    });
+    await orm.schema.ensureDatabase();
+    await orm.schema.execute('drop materialized view if exists author_stats_idx_matview cascade');
+    await orm.schema.execute('drop table if exists author cascade');
+    await orm.schema.execute('drop table if exists book cascade');
+    await orm.schema.create();
+
+    // Add a materialized view with indexes
+    orm.discoverEntity(AuthorStatsWithIndexes);
+    const diff1 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
+    expect(diff1).toContain('create materialized view');
+    expect(diff1).toContain('create index');
+    expect(diff1).toMatchSnapshot();
+    await orm.schema.execute(diff1);
+
+    // Verify no diff after applying
+    await expect(orm.schema.getUpdateSchemaSQL({ wrap: false })).resolves.toBe('');
+
+    await orm.close(true);
+  });
+
+  // GH #7417
+  test('schema:update handles index changes on materialized views', async () => {
+    const orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
+      entities: [Author, Book, AuthorStatsWithIndexes],
+      dbName: 'mikro_orm_test_matview_diffing',
+    });
+    await orm.schema.ensureDatabase();
+    await orm.schema.execute('drop materialized view if exists author_stats_idx_matview cascade');
+    await orm.schema.execute('drop table if exists author cascade');
+    await orm.schema.execute('drop table if exists book cascade');
+    await orm.schema.create();
+
+    // Verify no diff with current schema
+    await expect(orm.schema.getUpdateSchemaSQL({ wrap: false })).resolves.toBe('');
+
+    // Add a new index
+    orm.discoverEntity(AuthorStatsWithIndexes1, AuthorStatsWithIndexes);
+    const diff1 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
+    expect(diff1).toContain('create index');
+    expect(diff1).toMatchSnapshot();
+    await orm.schema.execute(diff1);
+
+    // Verify no diff after applying
+    await expect(orm.schema.getUpdateSchemaSQL({ wrap: false })).resolves.toBe('');
+
+    // Remove the added index
+    orm.discoverEntity(AuthorStatsWithIndexes, AuthorStatsWithIndexes1);
+    const diff2 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
+    expect(diff2).toContain('drop index');
+    expect(diff2).toMatchSnapshot();
+    await orm.schema.execute(diff2);
+
+    // Verify no diff after applying
+    await expect(orm.schema.getUpdateSchemaSQL({ wrap: false })).resolves.toBe('');
 
     await orm.close(true);
   });

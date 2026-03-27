@@ -12,7 +12,7 @@ import {
 } from '@mikro-orm/core';
 import type { Column, ForeignKey, IndexDef, SchemaDifference, TableDifference } from '../typings.js';
 import type { DatabaseSchema } from './DatabaseSchema.js';
-import type { DatabaseTable } from './DatabaseTable.js';
+import { DatabaseTable } from './DatabaseTable.js';
 import type { AbstractSqlPlatform } from '../AbstractSqlPlatform.js';
 import type { SchemaHelper } from './SchemaHelper.js';
 
@@ -187,6 +187,37 @@ export class SchemaComparator {
       if (!toSchema.hasView(fromView.name) && !toSchema.hasView(viewName)) {
         diff.removedViews[viewName] = fromView;
         this.log(`view ${viewName} removed`);
+      }
+    }
+
+    // Diff materialized view indexes using the existing table diff infrastructure.
+    // Build transient DatabaseTable objects from view indexes so diffTable handles
+    // added/removed/changed/renamed index detection and alterTable emits correct DDL.
+    for (const toView of toSchema.getViews()) {
+      if (!toView.materialized || toView.withData === false) {
+        continue;
+      }
+
+      const viewName = toView.schema ? `${toView.schema}.${toView.name}` : toView.name;
+
+      // New or definition-changed views have indexes handled during create/recreate
+      if (diff.newViews[viewName] || diff.changedViews[viewName]) {
+        continue;
+      }
+
+      const fromView = fromSchema.getView(toView.name) ?? fromSchema.getView(viewName);
+      if (!fromView) {
+        continue;
+      }
+
+      const fromTable = new DatabaseTable(this.#platform, fromView.name, fromView.schema);
+      fromTable.init([], fromView.indexes ?? [], [], []);
+      const toTable = new DatabaseTable(this.#platform, toView.name, toView.schema);
+      toTable.init([], toView.indexes ?? [], [], []);
+
+      const tableDiff = this.diffTable(fromTable, toTable);
+      if (tableDiff) {
+        diff.changedTables[viewName] = tableDiff;
       }
     }
 

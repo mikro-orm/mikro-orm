@@ -219,13 +219,43 @@ export class DatabaseSchema {
       if (meta.view) {
         const viewDefinition = this.getViewDefinition(meta, em, platform);
         if (viewDefinition) {
-          schema.addView(
+          const view = schema.addView(
             meta.collection,
             this.getSchemaName(meta, config, schemaName),
             viewDefinition,
             meta.materialized,
             meta.withData,
           );
+
+          if (meta.materialized) {
+            const tempTable = new DatabaseTable(
+              platform,
+              meta.collection,
+              this.getSchemaName(meta, config, schemaName),
+            );
+            for (const prop of meta.props) {
+              if (!this.shouldHaveColumn(meta, prop, skipColumns)) {
+                continue;
+              }
+              tempTable.addColumnFromProperty(prop, meta, config);
+            }
+            meta.indexes.forEach(index => tempTable.addIndex(meta, index, 'index'));
+            meta.uniques.forEach(index => tempTable.addIndex(meta, index, 'unique'));
+            const pkProps = meta.props.filter(prop => prop.primary);
+            tempTable.addIndex(meta, { properties: pkProps.map(prop => prop.name) }, 'primary');
+
+            // Materialized views don't have primary keys or constraints in the DB,
+            // convert to match what PostgreSQL stores.
+            view.indexes = tempTable.getIndexes().map(idx => {
+              if (idx.primary) {
+                return { ...idx, primary: false, unique: true, constraint: false };
+              }
+              if (idx.constraint) {
+                return { ...idx, constraint: false };
+              }
+              return idx;
+            });
+          }
         }
         continue;
       }

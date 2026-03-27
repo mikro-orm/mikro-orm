@@ -169,6 +169,8 @@ export interface DatabaseView {
   materialized?: boolean;
   /** For materialized views, whether data was populated on creation. */
   withData?: boolean;
+  /** Indexes on the materialized view. Only materialized views support indexes. */
+  indexes?: IndexDef[];
 }
 
 export interface SchemaDifference {

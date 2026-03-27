@@ -2,22 +2,26 @@
 
 exports[`materialized view diffing in postgres > schema generator adds new materialized view 1`] = `
 "create materialized view "author_stats_matview" as select a.id, a.name, count(b.id)::int as book_count from author a left join book b on b.author_id = a.id group by a.id with data;
+create unique index "author_stats_matview_pkey" on "author_stats_matview" ("id");
 "
 `;
 
 exports[`materialized view diffing in postgres > schema generator handles add, modify, and remove in sequence 1`] = `
 "create materialized view "author_stats_matview" as select a.id, a.name, count(b.id)::int as book_count from author a left join book b on b.author_id = a.id group by a.id with data;
+create unique index "author_stats_matview_pkey" on "author_stats_matview" ("id");
 "
 `;
 
 exports[`materialized view diffing in postgres > schema generator handles add, modify, and remove in sequence 2`] = `
 "create materialized view "book_stats_matview" as select count(*)::int as total_books from book with data;
+create unique index "book_stats_matview_pkey" on "book_stats_matview" ("total_books");
 "
 `;
 
 exports[`materialized view diffing in postgres > schema generator handles add, modify, and remove in sequence 3`] = `
 "drop materialized view if exists "author_stats_matview" cascade;
 create materialized view "author_stats_matview" as select a.id, a.name, a.email, count(b.id)::int as book_count from author a left join book b on b.author_id = a.id group by a.id with data;
+create unique index "author_stats_matview_pkey" on "author_stats_matview" ("id");
 "
 `;
 
@@ -29,10 +33,41 @@ exports[`materialized view diffing in postgres > schema generator handles add, m
 exports[`materialized view diffing in postgres > schema generator modifies materialized view expression 1`] = `
 "drop materialized view if exists "author_stats_matview" cascade;
 create materialized view "author_stats_matview" as select a.id, a.name, a.email, count(b.id)::int as book_count from author a left join book b on b.author_id = a.id group by a.id with data;
+create unique index "author_stats_matview_pkey" on "author_stats_matview" ("id");
 "
 `;
 
 exports[`materialized view diffing in postgres > schema generator removes materialized view 1`] = `
 "drop materialized view if exists "book_stats_matview" cascade;
+"
+`;
+
+exports[`materialized view diffing in postgres > schema:create generates indexes for materialized views 1`] = `
+"create table "author" ("id" serial primary key, "name" varchar(255) not null, "email" varchar(255) not null);
+
+create table "book" ("id" serial primary key, "title" varchar(255) not null, "author_id" int not null);
+
+create materialized view "author_stats_idx_matview" as select a.id, a.name, count(b.id)::int as book_count from author a left join book b on b.author_id = a.id group by a.id with data;
+create index "author_stats_idx_matview_book_count_index" on "author_stats_idx_matview" ("book_count");
+create unique index "author_stats_idx_matview_name_unique" on "author_stats_idx_matview" ("name");
+create unique index "author_stats_idx_matview_pkey" on "author_stats_idx_matview" ("id");
+"
+`;
+
+exports[`materialized view diffing in postgres > schema:update adds indexes for new materialized views 1`] = `
+"create materialized view "author_stats_idx_matview" as select a.id, a.name, count(b.id)::int as book_count from author a left join book b on b.author_id = a.id group by a.id with data;
+create index "author_stats_idx_matview_book_count_index" on "author_stats_idx_matview" ("book_count");
+create unique index "author_stats_idx_matview_name_unique" on "author_stats_idx_matview" ("name");
+create unique index "author_stats_idx_matview_pkey" on "author_stats_idx_matview" ("id");
+"
+`;
+
+exports[`materialized view diffing in postgres > schema:update handles index changes on materialized views 1`] = `
+"create index "author_stats_idx_matview_book_count_name_index" on "author_stats_idx_matview" ("book_count", "name");
+"
+`;
+
+exports[`materialized view diffing in postgres > schema:update handles index changes on materialized views 2`] = `
+"drop index "author_stats_idx_matview_book_count_name_index";
 "
 `;
