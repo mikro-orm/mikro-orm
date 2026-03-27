@@ -1396,7 +1396,7 @@ __metadata:
     husky: "npm:9.1.7"
     jiti: "npm:2.6.1"
     jsr: "npm:0.14.3"
-    knex: "npm:3.2.6"
+    knex: "npm:3.2.7"
     lerna: "npm:9.0.7"
     lint-staged: "npm:16.4.0"
     mongodb-memory-server-core: "npm:11.0.1"
@@ -6154,9 +6154,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"knex@npm:3.2.6":
-  version: 3.2.6
-  resolution: "knex@npm:3.2.6"
+"knex@npm:3.2.7":
+  version: 3.2.7
+  resolution: "knex@npm:3.2.7"
   dependencies:
     colorette: "npm:2.0.19"
     commander: "npm:^10.0.0"
@@ -6193,7 +6193,7 @@ __metadata:
       optional: true
   bin:
     knex: bin/cli.js
-  checksum: 10/5cdc0defd051c58682800cd7e6662948d7dbe9e7cbccc5f7b3caafbe69de77bd2066413117c56e7934b38e9435b21dac94cd8ddadf7e2d358e4abfad7408c7b9
+  checksum: 10/8943ddcbdb24275e6191eef8f9787718ac7728e39b5b4a732a7f4a81dc7ac881a95b00c18e7a39b6496f1a6b0108dd70c08f487b66c174940f3b02993af58d8a
   languageName: node
   linkType: hard
 
