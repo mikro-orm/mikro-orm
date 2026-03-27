@@ -451,7 +451,8 @@ export class EntityFactory {
         const items = prop.array ? (entity[prop.name] as T[]) : [entity[prop.name] as T];
 
         for (const item of items) {
-          this.assignDefaultValues(item, prop.targetMeta! as EntityMetadata<T>, onCreateOnly);
+          // Embedded sub-properties need all defaults since the DB can't apply them within JSON columns.
+          this.assignDefaultValues(item, prop.targetMeta! as EntityMetadata<T>);
         }
       }
     }
