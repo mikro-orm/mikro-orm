@@ -28,7 +28,7 @@ const ClientProductSchema = defineEntity({
 export class ClientProduct extends ClientProductSchema.class {}
 ClientProductSchema.setClass(ClientProduct);
 
-describe('GH #7413', () => {
+describe('GH #7411', () => {
   let orm: MikroORM;
 
   beforeAll(async () => {
