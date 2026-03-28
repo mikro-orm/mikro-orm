@@ -55,7 +55,7 @@ async function getRootVersion(bump = true) {
         break;
       }
       case 'minor': {
-        parts[1] = `${+parts[0] + inc}`;
+        parts[1] = `${+parts[1] + inc}`;
         parts[2] = 0;
         break;
       }
