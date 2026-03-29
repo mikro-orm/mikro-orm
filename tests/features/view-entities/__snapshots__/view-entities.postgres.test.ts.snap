@@ -88,6 +88,7 @@ alter table "test2_bars" add constraint "test2_bars_foo_bar2_id_foreign" foreign
 
 create materialized view "author_stats_nodata_matview" as select min(name) as name, count(*)::int as book_count from author2 a group by a.id with no data;
 create materialized view "author_stats_matview" as select min(name) as name, (select count(*)::int from book2 b where b.author_id = a.id) as book_count from author2 a group by a.id with data;
+create unique index "author_stats_matview_pkey" on "author_stats_matview" ("name");
 "
 `;
 

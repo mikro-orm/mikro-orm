@@ -796,7 +796,8 @@ export abstract class SchemaHelper {
     return `alter table ${table.getQuotedName()} add constraint ${this.quote(check.name)} check (${check.expression})`;
   }
 
-  protected getTableName(table: string, schema?: string): string {
+  /** @internal */
+  getTableName(table: string, schema?: string): string {
     if (schema && schema !== this.platform.getDefaultSchemaName()) {
       return `${schema}.${table}`;
     }

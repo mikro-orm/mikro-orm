@@ -82,7 +82,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
 
   override getListMaterializedViewsSQL(): string {
     return (
-      `select matviewname as view_name, schemaname as schema_name, definition as view_definition ` +
+      `select matviewname as view_name, schemaname as schema_name, definition as view_definition, ispopulated as is_populated ` +
       `from pg_matviews ` +
       `where ${this.getIgnoredNamespacesConditionSQL('schemaname')} ` +
       `order by matviewname`
@@ -94,14 +94,36 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     connection: AbstractSqlConnection,
     schemaName?: string,
   ): Promise<void> {
-    const views = await connection.execute<{ view_name: string; schema_name: string; view_definition: string }[]>(
-      this.getListMaterializedViewsSQL(),
-    );
+    const views = await connection.execute<
+      {
+        view_name: string;
+        schema_name: string;
+        view_definition: string;
+        is_populated: boolean;
+      }[]
+    >(this.getListMaterializedViewsSQL());
 
-    for (const view of views) {
-      const definition = view.view_definition?.trim().replace(/;$/, '') ?? '';
+    if (views.length === 0) {
+      return;
+    }
+
+    const tables = views.map(v => ({ table_name: v.view_name, schema_name: v.schema_name }) as Table);
+    const indexes = await this.getAllIndexes(connection, tables);
+
+    for (let i = 0; i < views.length; i++) {
+      const definition = views[i].view_definition?.trim().replace(/;$/, '') ?? '';
       if (definition) {
-        schema.addView(view.view_name, view.schema_name, definition, true);
+        const dbView = schema.addView(
+          views[i].view_name,
+          views[i].schema_name,
+          definition,
+          true,
+          views[i].is_populated,
+        );
+        const key = this.getTableKey(tables[i]);
+        if (indexes[key]?.length) {
+          dbView.indexes = indexes[key];
+        }
       }
     }
   }

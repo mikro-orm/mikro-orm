@@ -140,18 +140,9 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
       }
     }
 
-    // Create views after tables (views may depend on tables)
-    // Sort views by dependencies (views depending on other views come later)
     const sortedViews = this.sortViewsByDependencies(toSchema.getViews());
     for (const view of sortedViews) {
-      if (view.materialized) {
-        this.append(
-          ret,
-          this.helper.createMaterializedView(view.name, view.schema, view.definition, view.withData ?? true),
-        );
-      } else {
-        this.append(ret, this.helper.createView(view.name, view.schema, view.definition), true);
-      }
+      this.appendViewCreation(ret, view);
     }
 
     return this.wrapSchema(ret, options);
@@ -471,32 +462,15 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
       }
     }
 
-    // Create new views after all table changes are done
-    // Sort views by dependencies (views depending on other views come later)
     const sortedNewViews = this.sortViewsByDependencies(Object.values(schemaDiff.newViews));
     for (const view of sortedNewViews) {
-      if (view.materialized) {
-        this.append(
-          ret,
-          this.helper.createMaterializedView(view.name, view.schema, view.definition, view.withData ?? true),
-        );
-      } else {
-        this.append(ret, this.helper.createView(view.name, view.schema, view.definition), true);
-      }
+      this.appendViewCreation(ret, view);
     }
 
-    // Recreate changed views (also sorted by dependencies)
     const changedViews = Object.values(schemaDiff.changedViews).map(v => v.to);
     const sortedChangedViews = this.sortViewsByDependencies(changedViews);
     for (const view of sortedChangedViews) {
-      if (view.materialized) {
-        this.append(
-          ret,
-          this.helper.createMaterializedView(view.name, view.schema, view.definition, view.withData ?? true),
-        );
-      } else {
-        this.append(ret, this.helper.createView(view.name, view.schema, view.definition), true);
-      }
+      this.appendViewCreation(ret, view);
     }
 
     return this.wrapSchema(ret, options);
@@ -689,6 +663,25 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
 
     // Sort and map back to views
     return calc.sort().map(index => indexToView.get(index)!);
+  }
+
+  private appendViewCreation(ret: string[], view: DatabaseView): void {
+    if (view.materialized) {
+      this.append(
+        ret,
+        this.helper.createMaterializedView(view.name, view.schema, view.definition, view.withData ?? true),
+      );
+      // Skip indexes for WITH NO DATA views — they have no data to index yet.
+      // Indexes will be created on the next schema:update after REFRESH populates data.
+      if (view.withData !== false) {
+        const viewName = this.helper.getTableName(view.name, view.schema);
+        for (const index of view.indexes ?? []) {
+          this.append(ret, this.helper.getCreateIndexSQL(viewName, index));
+        }
+      }
+    } else {
+      this.append(ret, this.helper.createView(view.name, view.schema, view.definition), true);
+    }
   }
 
   private escapeRegExp(string: string): string {
