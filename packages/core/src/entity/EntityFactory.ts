@@ -113,12 +113,37 @@ export class EntityFactory {
     let wrapped = exists && helper(exists);
 
     if (wrapped && !options.refresh) {
+      const wasInitialized = wrapped.isInitialized();
       wrapped.__processing = true;
       Utils.dropUndefinedProperties(data);
       this.mergeData(meta2, exists!, data, options);
       wrapped.__processing = false;
+      wrapped.__initialized ||= !!options.initialized;
 
       if (wrapped.isInitialized()) {
+        if (!wasInitialized) {
+          if (meta.root.inheritanceType && !(exists instanceof meta2.class)) {
+            Object.setPrototypeOf(exists, meta2.prototype as object);
+          }
+
+          if (options.merge && wrapped.hasPrimaryKey()) {
+            this.unitOfWork.register(exists!, data, { loaded: options.initialized });
+
+            // ensure all data keys are tracked as loaded for shouldRefresh checks,
+            // but don't overwrite __originalEntityData — mergeData already set it
+            // with DB values for non-user-modified keys, leaving user changes detectable
+            for (const key of Utils.keys(data)) {
+              if (meta2.properties[key]) {
+                wrapped.__loadedProperties.add(key as string);
+              }
+            }
+          }
+
+          if (this.#eventManager.hasListeners(EventType.onInit, meta2)) {
+            this.#eventManager.dispatchEvent(EventType.onInit, { entity: exists, meta: meta2, em: this.#em });
+          }
+        }
+
         return exists as New<T, P>;
       }
     }
@@ -215,8 +240,17 @@ export class EntityFactory {
 
     const diff2 = this.#comparator.diffEntities(meta.class, existsData, data, { includeInverseSides: true });
 
-    // do not override values changed by user
-    Utils.keys(diff).forEach(key => delete diff2[key]);
+    // do not override values changed by user; for uninitialized entities,
+    // the diff may include stale snapshot entries (value is undefined) — skip those
+    if (helper(entity).__initialized) {
+      Utils.keys(diff).forEach(key => delete diff2[key]);
+    } else {
+      Utils.keys(diff).forEach(key => {
+        if (diff[key] !== undefined) {
+          delete diff2[key];
+        }
+      });
+    }
 
     Utils.keys(diff2)
       .filter(key => {
