@@ -356,4 +356,66 @@ describe('materialized view diffing in postgres', () => {
 
     await orm.close(true);
   });
+
+  test('schema-qualified materialized views with indexes', async () => {
+    // Use schema-qualified table references in the expression since the
+    // tables will be created in 'myschema', not the default search_path
+    const SchemaAuthorStats = defineEntity({
+      name: 'SchemaAuthorStats',
+      tableName: 'author_stats_idx_matview',
+      view: { materialized: true },
+      expression: `select a.id, a.name, count(b.id)::int as book_count from myschema.author a left join myschema.book b on b.author_id = a.id group by a.id`,
+      indexes: [{ properties: ['bookCount'] }],
+      uniques: [{ properties: ['name'] }],
+      properties: {
+        id: p.integer().primary(),
+        name: p.string(),
+        bookCount: p.integer(),
+      },
+    });
+
+    const SchemaAuthorStats1 = defineEntity({
+      name: 'SchemaAuthorStats1',
+      tableName: 'author_stats_idx_matview',
+      view: { materialized: true },
+      expression: `select a.id, a.name, count(b.id)::int as book_count from myschema.author a left join myschema.book b on b.author_id = a.id group by a.id`,
+      indexes: [{ properties: ['bookCount'] }, { properties: ['bookCount', 'name'] }],
+      uniques: [{ properties: ['name'] }],
+      properties: {
+        id: p.integer().primary(),
+        name: p.string(),
+        bookCount: p.integer(),
+      },
+    });
+
+    const orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
+      entities: [Author, Book, SchemaAuthorStats],
+      schema: 'myschema',
+      dbName: 'mikro_orm_test_matview_diffing',
+    });
+    await orm.schema.ensureDatabase();
+    await orm.schema.execute('drop schema if exists myschema cascade');
+
+    // Create — indexes should be schema-qualified
+    const createSql = await orm.schema.getCreateSchemaSQL({ wrap: false });
+    expect(createSql).toContain('"myschema".');
+    expect(createSql).toContain('create index');
+    expect(createSql).toMatchSnapshot();
+
+    await orm.schema.create();
+    await expect(orm.schema.getUpdateSchemaSQL({ wrap: false })).resolves.toBe('');
+
+    // Update — add a new index
+    orm.discoverEntity(SchemaAuthorStats1, SchemaAuthorStats);
+    const diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
+    expect(diff).toContain('create index');
+    expect(diff).toMatchSnapshot();
+    await orm.schema.execute(diff);
+
+    await expect(orm.schema.getUpdateSchemaSQL({ wrap: false })).resolves.toBe('');
+
+    await orm.schema.execute('drop schema if exists myschema cascade');
+    await orm.close(true);
+  });
 });

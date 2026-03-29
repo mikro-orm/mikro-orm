@@ -163,15 +163,16 @@ export class SchemaComparator {
       }
     }
 
-    // Compare views
+    // Compare views — prefer schema-qualified lookup to avoid matching
+    // views with the same name in different schemas
     for (const toView of toSchema.getViews()) {
       const viewName = toView.schema ? `${toView.schema}.${toView.name}` : toView.name;
 
-      if (!fromSchema.hasView(toView.name) && !fromSchema.hasView(viewName)) {
+      if (!fromSchema.hasView(viewName) && !fromSchema.hasView(toView.name)) {
         diff.newViews[viewName] = toView;
         this.log(`view ${viewName} added`);
       } else {
-        const fromView = fromSchema.getView(toView.name) ?? fromSchema.getView(viewName);
+        const fromView = fromSchema.getView(viewName) ?? fromSchema.getView(toView.name);
 
         if (fromView && this.diffViewExpression(fromView.definition, toView.definition)) {
           diff.changedViews[viewName] = { from: fromView, to: toView };
@@ -184,7 +185,7 @@ export class SchemaComparator {
     for (const fromView of fromSchema.getViews()) {
       const viewName = fromView.schema ? `${fromView.schema}.${fromView.name}` : fromView.name;
 
-      if (!toSchema.hasView(fromView.name) && !toSchema.hasView(viewName)) {
+      if (!toSchema.hasView(viewName) && !toSchema.hasView(fromView.name)) {
         diff.removedViews[viewName] = fromView;
         this.log(`view ${viewName} removed`);
       }
@@ -205,13 +206,10 @@ export class SchemaComparator {
         continue;
       }
 
-      const fromView = fromSchema.getView(toView.name) ?? fromSchema.getView(viewName);
-      if (!fromView) {
-        continue;
-      }
-
-      const fromTable = new DatabaseTable(this.#platform, fromView.name, fromView.schema);
-      fromTable.init([], fromView.indexes ?? [], [], []);
+      // If we get here, the view exists in fromSchema (otherwise it would be in diff.newViews)
+      const fromView = fromSchema.getView(viewName) ?? fromSchema.getView(toView.name);
+      const fromTable = new DatabaseTable(this.#platform, fromView!.name, fromView!.schema);
+      fromTable.init([], fromView!.indexes ?? [], [], []);
       const toTable = new DatabaseTable(this.#platform, toView.name, toView.schema);
       toTable.init([], toView.indexes ?? [], [], []);
 

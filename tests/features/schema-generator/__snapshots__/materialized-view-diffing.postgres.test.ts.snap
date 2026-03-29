@@ -71,3 +71,21 @@ exports[`materialized view diffing in postgres > schema:update handles index cha
 "drop index "author_stats_idx_matview_book_count_name_index";
 "
 `;
+
+exports[`materialized view diffing in postgres > schema-qualified materialized views with indexes 1`] = `
+"create schema if not exists "myschema";
+create table "myschema"."author" ("id" serial primary key, "name" varchar(255) not null, "email" varchar(255) not null);
+
+create table "myschema"."book" ("id" serial primary key, "title" varchar(255) not null, "author_id" int not null);
+
+create materialized view "myschema"."author_stats_idx_matview" as select a.id, a.name, count(b.id)::int as book_count from myschema.author a left join myschema.book b on b.author_id = a.id group by a.id with data;
+create index "author_stats_idx_matview_book_count_index" on "myschema"."author_stats_idx_matview" ("book_count");
+create unique index "author_stats_idx_matview_name_unique" on "myschema"."author_stats_idx_matview" ("name");
+create unique index "author_stats_idx_matview_pkey" on "myschema"."author_stats_idx_matview" ("id");
+"
+`;
+
+exports[`materialized view diffing in postgres > schema-qualified materialized views with indexes 2`] = `
+"create index "author_stats_idx_matview_book_count_name_index" on "myschema"."author_stats_idx_matview" ("book_count", "name");
+"
+`;

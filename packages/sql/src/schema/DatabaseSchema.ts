@@ -228,25 +228,21 @@ export class DatabaseSchema {
           );
 
           if (meta.materialized) {
-            const tempTable = new DatabaseTable(
+            // Use a DatabaseTable to resolve property names → field names for indexes.
+            // addIndex only needs meta + table name, not actual columns.
+            const indexTable = new DatabaseTable(
               platform,
               meta.collection,
               this.getSchemaName(meta, config, schemaName),
             );
-            for (const prop of meta.props) {
-              if (!this.shouldHaveColumn(meta, prop, skipColumns)) {
-                continue;
-              }
-              tempTable.addColumnFromProperty(prop, meta, config);
-            }
-            meta.indexes.forEach(index => tempTable.addIndex(meta, index, 'index'));
-            meta.uniques.forEach(index => tempTable.addIndex(meta, index, 'unique'));
+            meta.indexes.forEach(index => indexTable.addIndex(meta, index, 'index'));
+            meta.uniques.forEach(index => indexTable.addIndex(meta, index, 'unique'));
             const pkProps = meta.props.filter(prop => prop.primary);
-            tempTable.addIndex(meta, { properties: pkProps.map(prop => prop.name) }, 'primary');
+            indexTable.addIndex(meta, { properties: pkProps.map(prop => prop.name) }, 'primary');
 
             // Materialized views don't have primary keys or constraints in the DB,
             // convert to match what PostgreSQL stores.
-            view.indexes = tempTable.getIndexes().map(idx => {
+            view.indexes = indexTable.getIndexes().map(idx => {
               if (idx.primary) {
                 return { ...idx, primary: false, unique: true, constraint: false };
               }
