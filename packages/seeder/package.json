@@ -48,7 +48,7 @@
     "access": "public"
   },
   "dependencies": {
-    "fs-extra": "11.3.3",
+    "fs-extra": "11.3.4",
     "globby": "11.1.0"
   },
   "devDependencies": {
