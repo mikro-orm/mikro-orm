@@ -60,7 +60,7 @@
   "dependencies": {
     "@mikro-orm/knex": "6.6.10",
     "fs-extra": "11.3.3",
-    "libsql": "0.5.22",
+    "libsql": "0.5.29",
     "sqlstring-sqlite": "0.1.1"
   },
   "devDependencies": {
