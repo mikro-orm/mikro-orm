@@ -1801,7 +1801,7 @@ __metadata:
   dependencies:
     "@mikro-orm/core": "npm:^6.6.10"
     fs-extra: "npm:11.3.4"
-    knex: "npm:3.2.7"
+    knex: "npm:3.1.0"
     sqlstring: "npm:2.3.3"
   peerDependencies:
     "@mikro-orm/core": ^6.0.0
@@ -8361,9 +8361,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"knex@npm:3.2.7":
-  version: 3.2.7
-  resolution: "knex@npm:3.2.7"
+"knex@npm:3.1.0":
+  version: 3.1.0
+  resolution: "knex@npm:3.1.0"
   dependencies:
     colorette: "npm:2.0.19"
     commander: "npm:^10.0.0"
@@ -8379,8 +8379,6 @@ __metadata:
     resolve-from: "npm:^5.0.0"
     tarn: "npm:^3.0.2"
     tildify: "npm:2.0.0"
-  peerDependencies:
-    pg-query-stream: ^4.14.0
   peerDependenciesMeta:
     better-sqlite3:
       optional: true
@@ -8392,15 +8390,13 @@ __metadata:
       optional: true
     pg-native:
       optional: true
-    pg-query-stream:
-      optional: true
     sqlite3:
       optional: true
     tedious:
       optional: true
   bin:
     knex: bin/cli.js
-  checksum: 10/8943ddcbdb24275e6191eef8f9787718ac7728e39b5b4a732a7f4a81dc7ac881a95b00c18e7a39b6496f1a6b0108dd70c08f487b66c174940f3b02993af58d8a
+  checksum: 10/12eb978ebec9944d6d0225d33d31d44feb54046b3a02f9f14dfa33a4e665a54d784290991b17a68fd8141a14a3336b325c7706af35557f845dae9e500f3c8aae
   languageName: node
   linkType: hard
 
