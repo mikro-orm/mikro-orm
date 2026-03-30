@@ -394,30 +394,25 @@ export class EntityLoader {
         childrenMap.add(helper(child).getSerializedPrimaryKey());
       }
 
-      // For 1:1 inverse (non-owner), `children` contains parent entities, so `childrenMap`
-      // has parent PKs — match against the entity's own PK, not the referenced entity's PK.
-      if (prop.kind === ReferenceKind.ONE_TO_ONE && !prop.owner) {
-        for (const entity of entities) {
-          if (entity[prop.name] == null) {
-            continue;
-          }
+      const isInverseOneToOne = prop.kind === ReferenceKind.ONE_TO_ONE && !prop.owner;
 
-          const entityPk = helper(entity).getSerializedPrimaryKey();
-          const refPk = helper(entity[prop.name] as AnyEntity).getSerializedPrimaryKey();
+      for (const entity of entities) {
+        const ref = entity[prop.name] as AnyEntity | null | undefined;
 
-          if (childrenMap.has(entityPk) && !itemsMap.has(refPk)) {
-            entity[prop.name] = nullVal as EntityValue<Entity>;
-            helper(entity).__originalEntityData![prop.name] = null;
-          }
+        if (ref == null) {
+          continue;
         }
-      } else {
-        for (const entity of entities) {
-          const key = helper(entity[prop.name] as AnyEntity ?? {})?.getSerializedPrimaryKey();
 
-          if (childrenMap.has(key) && !itemsMap.has(key)) {
-            entity[prop.name] = nullVal as EntityValue<Entity>;
-            helper(entity).__originalEntityData![prop.name] = null;
-          }
+        const refPk = helper(ref).getSerializedPrimaryKey();
+        // For 1:1 inverse, `children` contains parent entities, so `childrenMap`
+        // has parent PKs — match against the entity's own PK, not the referenced entity's PK.
+        const childKey = isInverseOneToOne
+          ? helper(entity).getSerializedPrimaryKey()
+          : refPk;
+
+        if (childrenMap.has(childKey) && !itemsMap.has(refPk)) {
+          entity[prop.name] = nullVal as EntityValue<Entity>;
+          helper(entity).__originalEntityData![prop.name] = null;
         }
       }
     }
