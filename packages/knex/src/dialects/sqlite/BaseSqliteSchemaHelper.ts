@@ -1,4 +1,4 @@
-import type { Connection, Dictionary } from '@mikro-orm/core';
+import type { Connection, Dictionary, Transaction } from '@mikro-orm/core';
 import type { AbstractSqlConnection } from '../../AbstractSqlConnection';
 import { SchemaHelper } from '../../schema/SchemaHelper';
 import type { CheckDef, Column, IndexDef, TableDifference } from '../../typings';
@@ -64,10 +64,10 @@ export abstract class BaseSqliteSchemaHelper extends SchemaHelper {
     return columns;
   }
 
-  override async getColumns(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<any[]> {
-    const columns = await connection.execute<any[]>(`pragma table_xinfo('${tableName}')`);
+  override async getColumns(connection: AbstractSqlConnection, tableName: string, schemaName?: string, ctx?: Transaction): Promise<any[]> {
+    const columns = await connection.execute<any[]>(`pragma table_xinfo('${tableName}')`, [], 'all', ctx);
     const sql = `select sql from sqlite_master where type = ? and name = ?`;
-    const tableDefinition = await connection.execute<{ sql: string }>(sql, ['table', tableName], 'get');
+    const tableDefinition = await connection.execute<{ sql: string }>(sql, ['table', tableName], 'get', ctx);
     const composite = columns.reduce((count, col) => count + (col.pk ? 1 : 0), 0) > 1;
     // there can be only one, so naive check like this should be enough
     const hasAutoincrement = tableDefinition.sql.toLowerCase().includes('autoincrement');
@@ -102,9 +102,9 @@ export abstract class BaseSqliteSchemaHelper extends SchemaHelper {
     });
   }
 
-  override async getEnumDefinitions(connection: AbstractSqlConnection, checks: CheckDef[], tableName: string, schemaName: string): Promise<Dictionary<string[]>> {
+  override async getEnumDefinitions(connection: AbstractSqlConnection, checks: CheckDef[], tableName: string, schemaName: string, ctx?: Transaction): Promise<Dictionary<string[]>> {
     const sql = `select sql from sqlite_master where type = ? and name = ?`;
-    const tableDefinition = await connection.execute<{ sql: string }>(sql, ['table', tableName], 'get');
+    const tableDefinition = await connection.execute<{ sql: string }>(sql, ['table', tableName], 'get', ctx);
 
     const checkConstraints = [...tableDefinition.sql.match(/[`["'][^`\]"']+[`\]"'] text check \(.*?\)/gi) ?? []];
     return checkConstraints.reduce((o, item) => {
@@ -123,17 +123,17 @@ export abstract class BaseSqliteSchemaHelper extends SchemaHelper {
     }, {} as Dictionary<string[]>);
   }
 
-  override async getPrimaryKeys(connection: AbstractSqlConnection, indexes: IndexDef[], tableName: string, schemaName?: string): Promise<string[]> {
+  override async getPrimaryKeys(connection: AbstractSqlConnection, indexes: IndexDef[], tableName: string, schemaName?: string, ctx?: Transaction): Promise<string[]> {
     const sql = `pragma table_info(\`${tableName}\`)`;
-    const cols = await connection.execute<{ pk: number; name: string }[]>(sql);
+    const cols = await connection.execute<{ pk: number; name: string }[]>(sql, [], 'all', ctx);
 
     return cols.filter(col => !!col.pk).map(col => col.name);
   }
 
-  override async getIndexes(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<IndexDef[]> {
+  override async getIndexes(connection: AbstractSqlConnection, tableName: string, schemaName?: string, ctx?: Transaction): Promise<IndexDef[]> {
     const sql = `pragma table_info(\`${tableName}\`)`;
-    const cols = await connection.execute<{ pk: number; name: string }[]>(sql);
-    const indexes = await connection.execute<any[]>(`pragma index_list(\`${tableName}\`)`);
+    const cols = await connection.execute<{ pk: number; name: string }[]>(sql, [], 'all', ctx);
+    const indexes = await connection.execute<any[]>(`pragma index_list(\`${tableName}\`)`, [], 'all', ctx);
     const ret: IndexDef[] = [];
 
     for (const col of cols.filter(c => c.pk)) {
@@ -147,7 +147,7 @@ export abstract class BaseSqliteSchemaHelper extends SchemaHelper {
     }
 
     for (const index of indexes.filter(index => !this.isImplicitIndex(index.name))) {
-      const res = await connection.execute<{ name: string }[]>(`pragma index_info(\`${index.name}\`)`);
+      const res = await connection.execute<{ name: string }[]>(`pragma index_info(\`${index.name}\`)`, [], 'all', ctx);
       ret.push(...res.map(row => ({
         columnNames: [row.name],
         keyName: index.name,

@@ -1,4 +1,4 @@
-import { BigIntType, EnumType, Type, Utils, type Dictionary, DeferMode } from '@mikro-orm/core';
+import { BigIntType, EnumType, type Transaction, Type, Utils, type Dictionary, DeferMode } from '@mikro-orm/core';
 import {
   SchemaHelper,
   type AbstractSqlConnection,
@@ -48,11 +48,11 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       + `order by table_name`;
   }
 
-  override async getNamespaces(connection: AbstractSqlConnection): Promise<string[]> {
+  override async getNamespaces(connection: AbstractSqlConnection, ctx?: Transaction): Promise<string[]> {
     const sql = `select schema_name from information_schema.schemata `
       + `where ${this.getIgnoredNamespacesConditionSQL()} `
       + `order by schema_name`;
-    const res = await connection.execute<{ schema_name: string }[]>(sql);
+    const res = await connection.execute<{ schema_name: string }[]>(sql, [], 'all', ctx);
 
     return res.map(row => row.schema_name);
   }
@@ -75,9 +75,9 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     return `${ignoredPrefixes} and "${column}" not in (${ignored})`;
   }
 
-  override async loadInformationSchema(schema: DatabaseSchema, connection: AbstractSqlConnection, tables: Table[], schemas?: string[]): Promise<void> {
+  override async loadInformationSchema(schema: DatabaseSchema, connection: AbstractSqlConnection, tables: Table[], schemas?: string[], ctx?: Transaction): Promise<void> {
     schemas ??= tables.length === 0 ? [schema.name] : tables.map(t => t.schema_name ?? schema.name);
-    const nativeEnums = await this.getNativeEnumDefinitions(connection, schemas);
+    const nativeEnums = await this.getNativeEnumDefinitions(connection, schemas, ctx);
     schema.setNativeEnums(nativeEnums);
 
     if (tables.length === 0) {
@@ -86,10 +86,10 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
 
     const tablesBySchema = this.getTablesGroupedBySchemas(tables);
 
-    const columns = await this.getAllColumns(connection, tablesBySchema, nativeEnums);
-    const indexes = await this.getAllIndexes(connection, tables);
-    const checks = await this.getAllChecks(connection, tablesBySchema);
-    const fks = await this.getAllForeignKeys(connection, tablesBySchema);
+    const columns = await this.getAllColumns(connection, tablesBySchema, nativeEnums, ctx);
+    const indexes = await this.getAllIndexes(connection, tables, ctx);
+    const checks = await this.getAllChecks(connection, tablesBySchema, ctx);
+    const fks = await this.getAllForeignKeys(connection, tablesBySchema, ctx);
 
     for (const t of tables) {
       const key = this.getTableKey(t);
@@ -103,10 +103,10 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     }
   }
 
-  async getAllIndexes(connection: AbstractSqlConnection, tables: Table[]): Promise<Dictionary<IndexDef[]>> {
+  async getAllIndexes(connection: AbstractSqlConnection, tables: Table[], ctx?: Transaction): Promise<Dictionary<IndexDef[]>> {
     const sql = this.getIndexesSQL(tables);
     const unquote = (str: string) => str.replace(/['"`]/g, '');
-    const allIndexes = await connection.execute<any[]>(sql);
+    const allIndexes = await connection.execute<any[]>(sql, [], 'all', ctx);
     const ret = {} as Dictionary;
 
     for (const index of allIndexes) {
@@ -140,7 +140,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     return ret;
   }
 
-  async getAllColumns(connection: AbstractSqlConnection, tablesBySchemas: Map<string | undefined, Table[]>, nativeEnums?: Dictionary<{ name: string; schema?: string; items: string[] }>): Promise<Dictionary<Column[]>> {
+  async getAllColumns(connection: AbstractSqlConnection, tablesBySchemas: Map<string | undefined, Table[]>, nativeEnums?: Dictionary<{ name: string; schema?: string; items: string[] }>, ctx?: Transaction): Promise<Dictionary<Column[]>> {
     const sql = `select table_schema as schema_name, table_name, column_name,
       column_default,
       is_nullable,
@@ -161,7 +161,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       where (${[...tablesBySchemas.entries()].map(([schema, tables]) => `(table_schema = ${this.platform.quoteValue(schema)} and table_name in (${tables.map(t => this.platform.quoteValue(t.table_name)).join(',')}))`).join(' or ')})
       order by ordinal_position`;
 
-    const allColumns = await connection.execute<any[]>(sql);
+    const allColumns = await connection.execute<any[]>(sql, [], 'all', ctx);
     const str = (val: string | number | undefined) => val != null ? '' + val : val;
     const ret = {} as Dictionary;
 
@@ -223,9 +223,9 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     return ret;
   }
 
-  async getAllChecks(connection: AbstractSqlConnection, tablesBySchemas: Map<string | undefined, Table[]>): Promise<Dictionary<CheckDef[]>> {
+  async getAllChecks(connection: AbstractSqlConnection, tablesBySchemas: Map<string | undefined, Table[]>, ctx?: Transaction): Promise<Dictionary<CheckDef[]>> {
     const sql = this.getChecksSQL(tablesBySchemas);
-    const allChecks = await connection.execute<{ name: string; column_name: string; schema_name: string; table_name: string; expression: string }[]>(sql);
+    const allChecks = await connection.execute<{ name: string; column_name: string; schema_name: string; table_name: string; expression: string }[]>(sql, [], 'all', ctx);
     const ret = {} as Dictionary;
     const seen = new Set<string>();
 
@@ -252,7 +252,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     return ret;
   }
 
-  async getAllForeignKeys(connection: AbstractSqlConnection, tablesBySchemas: Map<string | undefined, Table[]>): Promise<Dictionary<Dictionary<ForeignKey>>> {
+  async getAllForeignKeys(connection: AbstractSqlConnection, tablesBySchemas: Map<string | undefined, Table[]>, ctx?: Transaction): Promise<Dictionary<Dictionary<ForeignKey>>> {
     const sql = `select nsp1.nspname schema_name, cls1.relname table_name, nsp2.nspname referenced_schema_name,
       cls2.relname referenced_table_name, a.attname column_name, af.attname referenced_column_name, conname constraint_name,
       confupdtype update_rule, confdeltype delete_rule, array_position(con.conkey,a.attnum) as ord, condeferrable, condeferred,
@@ -268,7 +268,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       and confrelid > 0
       order by nsp1.nspname, cls1.relname, constraint_name, ord`;
 
-    const allFks = await connection.execute<any[]>(sql);
+    const allFks = await connection.execute<any[]>(sql, [], 'all', ctx);
     const ret = {} as Dictionary;
 
     function mapReferentialIntegrity(value: string, def: string) {
@@ -310,7 +310,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     return ret;
   }
 
-  async getNativeEnumDefinitions(connection: AbstractSqlConnection, schemas: string[]): Promise<Dictionary<{ name: string; schema?: string; items: string[] }>> {
+  async getNativeEnumDefinitions(connection: AbstractSqlConnection, schemas: string[], ctx?: Transaction): Promise<Dictionary<{ name: string; schema?: string; items: string[] }>> {
     const uniqueSchemas = Utils.unique(schemas);
     const res = await connection.execute(
       `select t.typname as enum_name, n.nspname as schema_name, array_agg(e.enumlabel order by e.enumsortorder) as enum_value
@@ -320,6 +320,8 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
         where n.nspname in (${Array(uniqueSchemas.length).fill('?').join(', ')})
         group by t.typname, n.nspname`,
       uniqueSchemas,
+      'all',
+      ctx,
     );
 
     return res.reduce((o, row) => {

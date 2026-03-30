@@ -238,6 +238,42 @@ describe('Migrator (postgres)', () => {
     }
   });
 
+  test('migrator.up with external transaction and snapshot: true does not deadlock (GH #7424)', async () => {
+    const migrations = orm.config.get('migrations');
+    migrations.snapshot = true;
+    const path = process.cwd() + '/temp/migrations-456';
+    const snapshotPath = path + '/.snapshot-mikro_orm_test_migrations.json';
+    await remove(snapshotPath);
+
+    const dateMock = jest.spyOn(Date.prototype, 'toISOString');
+    dateMock.mockReturnValue('2019-10-13T21:48:13.382Z');
+    const migration1 = await orm.migrator.create(path, true);
+
+    // mock executeMigrations so no real DDL runs, but runMigrations still
+    // triggers DatabaseSchema.create() for the snapshot update
+    const executeMock = jest.spyOn(Migrator.prototype as any, 'executeMigrations');
+    executeMock.mockResolvedValueOnce([{ name: migration1.fileName }]);
+
+    try {
+      // run migrator.up inside an external transaction — this previously
+      // deadlocked because DatabaseSchema.create() tried to acquire a
+      // separate pool connection while the transaction held locks
+      await orm.em.transactional(async em => {
+        const ret = await orm.migrator.up({ transaction: em.getTransactionContext() });
+        expect(ret).toHaveLength(1);
+      });
+
+      // snapshot should have been written successfully
+      const { existsSync } = await import('node:fs');
+      expect(existsSync(snapshotPath)).toBe(true);
+    } finally {
+      await remove(path + '/' + migration1.fileName);
+      await remove(snapshotPath);
+      executeMock.mockRestore();
+      migrations.snapshot = false;
+    }
+  });
+
   test('generate initial migration', async () => {
     await orm.em.getKnex().schema.dropTableIfExists(orm.config.get('migrations').tableName!).withSchema('custom');
     const getExecutedMigrationsMock = jest.spyOn<any, any>(Migrator.prototype, 'getExecutedMigrations');
