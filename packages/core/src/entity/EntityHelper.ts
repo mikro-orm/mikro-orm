@@ -297,10 +297,12 @@ export class EntityHelper {
           if (old && prop.orphanRemoval) {
             helper(old).__em?.getUnitOfWork().scheduleOrphanRemoval(old);
           }
-        } else if (old && value != null && old !== Reference.unwrapReference(value) && prop.orphanRemoval) {
+        } else if (old && value != null && old !== value && prop.orphanRemoval) {
           // When replacing with a new entity whose inverse already points to the owner,
           // propagation is not needed but orphan removal still must fire for the old entity.
           helper(old).__pk ??= helper(old).getPrimaryKey()!;
+          delete helper(old).__data[prop2.name];
+          old[prop2.name] = null!;
           helper(old).__em?.getUnitOfWork().scheduleOrphanRemoval(old);
         }
       }
