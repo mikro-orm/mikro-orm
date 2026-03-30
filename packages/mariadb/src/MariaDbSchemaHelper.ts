@@ -8,7 +8,7 @@ import {
   type Table,
   MySqlSchemaHelper,
 } from '@mikro-orm/mysql';
-import { type Dictionary, type Type } from '@mikro-orm/core';
+import { type Dictionary, type Transaction, type Type } from '@mikro-orm/core';
 
 /** Schema introspection helper for MariaDB. */
 export class MariaDbSchemaHelper extends MySqlSchemaHelper {
@@ -32,17 +32,19 @@ export class MariaDbSchemaHelper extends MySqlSchemaHelper {
     schema: DatabaseSchema,
     connection: AbstractSqlConnection,
     tables: Table[],
+    schemas?: string[],
+    ctx?: Transaction,
   ): Promise<void> {
     /* v8 ignore next */
     if (tables.length === 0) {
       return;
     }
 
-    const columns = await this.getAllColumns(connection, tables);
-    const indexes = await this.getAllIndexes(connection, tables);
-    const checks = await this.getAllChecks(connection, tables, columns);
-    const fks = await this.getAllForeignKeys(connection, tables);
-    const enums = await this.getAllEnumDefinitions(connection, tables);
+    const columns = await this.getAllColumns(connection, tables, ctx);
+    const indexes = await this.getAllIndexes(connection, tables, ctx);
+    const checks = await this.getAllChecks(connection, tables, ctx, columns);
+    const fks = await this.getAllForeignKeys(connection, tables, ctx);
+    const enums = await this.getAllEnumDefinitions(connection, tables, ctx);
 
     for (const t of tables) {
       const key = this.getTableKey(t);
@@ -52,12 +54,16 @@ export class MariaDbSchemaHelper extends MySqlSchemaHelper {
     }
   }
 
-  override async getAllIndexes(connection: AbstractSqlConnection, tables: Table[]): Promise<Dictionary<IndexDef[]>> {
+  override async getAllIndexes(
+    connection: AbstractSqlConnection,
+    tables: Table[],
+    ctx?: Transaction,
+  ): Promise<Dictionary<IndexDef[]>> {
     const sql = `select table_name as table_name, nullif(table_schema, schema()) as schema_name, index_name as index_name, non_unique as non_unique, column_name as column_name, index_type as index_type, sub_part as sub_part, collation as sort_order /*M!100600 , ignored as ignored */
         from information_schema.statistics where table_schema = database()
         and table_name in (${tables.map(t => this.platform.quoteValue(t.table_name)).join(', ')})
         order by schema_name, table_name, index_name, seq_in_index`;
-    const allIndexes = await connection.execute<any[]>(sql);
+    const allIndexes = await connection.execute<any[]>(sql, [], 'all', ctx);
     const ret = {} as Dictionary;
 
     for (const index of allIndexes) {
@@ -106,7 +112,11 @@ export class MariaDbSchemaHelper extends MySqlSchemaHelper {
     return ret;
   }
 
-  override async getAllColumns(connection: AbstractSqlConnection, tables: Table[]): Promise<Dictionary<Column[]>> {
+  override async getAllColumns(
+    connection: AbstractSqlConnection,
+    tables: Table[],
+    ctx?: Transaction,
+  ): Promise<Dictionary<Column[]>> {
     const sql = `select table_name as table_name,
       nullif(table_schema, schema()) as schema_name,
       column_name as column_name,
@@ -123,7 +133,7 @@ export class MariaDbSchemaHelper extends MySqlSchemaHelper {
       ifnull(datetime_precision, character_maximum_length) length
       from information_schema.columns where table_schema = database() and table_name in (${tables.map(t => this.platform.quoteValue(t.table_name)).join(', ')})
       order by ordinal_position`;
-    const allColumns = await connection.execute<any[]>(sql);
+    const allColumns = await connection.execute<any[]>(sql, [], 'all', ctx);
     const str = (val?: string | number | null) => (val != null ? '' + val : val);
     const extra = (val: string) =>
       val.replace(/auto_increment|default_generated|(stored|virtual) generated/i, '').trim() || undefined;
@@ -170,13 +180,13 @@ export class MariaDbSchemaHelper extends MySqlSchemaHelper {
   override async getAllChecks(
     connection: AbstractSqlConnection,
     tables: Table[],
+    ctx?: Transaction,
     columns?: Dictionary<Column[]>,
   ): Promise<Dictionary<CheckDef[]>> {
     const sql = this.getChecksSQL(tables);
-    const allChecks =
-      await connection.execute<
-        { name: string; column_name: string; schema_name: string; table_name: string; expression: string }[]
-      >(sql);
+    const allChecks = await connection.execute<
+      { name: string; column_name: string; schema_name: string; table_name: string; expression: string }[]
+    >(sql, [], 'all', ctx);
     const ret = {} as Dictionary;
 
     for (const check of allChecks) {

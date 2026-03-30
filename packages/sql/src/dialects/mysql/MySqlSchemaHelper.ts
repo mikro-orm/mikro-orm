@@ -1,4 +1,4 @@
-import { type Dictionary, EnumType, StringType, TextType, type Type } from '@mikro-orm/core';
+import { type Dictionary, EnumType, StringType, TextType, type Transaction, type Type } from '@mikro-orm/core';
 import type { CheckDef, Column, ForeignKey, IndexDef, Table, TableDifference } from '../../typings.js';
 import type { AbstractSqlConnection } from '../../AbstractSqlConnection.js';
 import { SchemaHelper } from '../../schema/SchemaHelper.js';
@@ -58,10 +58,11 @@ export class MySqlSchemaHelper extends SchemaHelper {
     schema: DatabaseSchema,
     connection: AbstractSqlConnection,
     schemaName?: string,
+    ctx?: Transaction,
   ): Promise<void> {
     const views = await connection.execute<
       { view_name: string; schema_name: string | null; view_definition?: string }[]
-    >(this.getListViewsSQL());
+    >(this.getListViewsSQL(), [], 'all', ctx);
 
     for (const view of views) {
       // MySQL information_schema.views.view_definition requires SHOW VIEW privilege
@@ -71,6 +72,9 @@ export class MySqlSchemaHelper extends SchemaHelper {
       if (!definition) {
         const createView = await connection.execute<{ View: string; 'Create View': string }[]>(
           `show create view \`${view.view_name}\``,
+          [],
+          'all',
+          ctx,
         );
         if (createView[0]?.['Create View']) {
           // Extract SELECT statement from CREATE VIEW ... AS SELECT ...
@@ -89,16 +93,18 @@ export class MySqlSchemaHelper extends SchemaHelper {
     schema: DatabaseSchema,
     connection: AbstractSqlConnection,
     tables: Table[],
+    schemas?: string[],
+    ctx?: Transaction,
   ): Promise<void> {
     if (tables.length === 0) {
       return;
     }
 
-    const columns = await this.getAllColumns(connection, tables);
-    const indexes = await this.getAllIndexes(connection, tables);
-    const checks = await this.getAllChecks(connection, tables);
-    const fks = await this.getAllForeignKeys(connection, tables);
-    const enums = await this.getAllEnumDefinitions(connection, tables);
+    const columns = await this.getAllColumns(connection, tables, ctx);
+    const indexes = await this.getAllIndexes(connection, tables, ctx);
+    const checks = await this.getAllChecks(connection, tables, ctx);
+    const fks = await this.getAllForeignKeys(connection, tables, ctx);
+    const enums = await this.getAllEnumDefinitions(connection, tables, ctx);
 
     for (const t of tables) {
       const key = this.getTableKey(t);
@@ -108,12 +114,16 @@ export class MySqlSchemaHelper extends SchemaHelper {
     }
   }
 
-  async getAllIndexes(connection: AbstractSqlConnection, tables: Table[]): Promise<Dictionary<IndexDef[]>> {
+  async getAllIndexes(
+    connection: AbstractSqlConnection,
+    tables: Table[],
+    ctx?: Transaction,
+  ): Promise<Dictionary<IndexDef[]>> {
     const sql = `select table_name as table_name, nullif(table_schema, schema()) as schema_name, index_name as index_name, non_unique as non_unique, column_name as column_name, index_type as index_type, sub_part as sub_part, collation as sort_order /*!80013 , expression as expression, is_visible as is_visible */
         from information_schema.statistics where table_schema = database()
         and table_name in (${tables.map(t => this.platform.quoteValue(t.table_name)).join(', ')})
         order by schema_name, table_name, index_name, seq_in_index`;
-    const allIndexes = await connection.execute<any[]>(sql);
+    const allIndexes = await connection.execute<any[]>(sql, [], 'all', ctx);
     const ret = {} as Dictionary;
 
     for (const index of allIndexes) {
@@ -251,7 +261,11 @@ export class MySqlSchemaHelper extends SchemaHelper {
     return sql;
   }
 
-  async getAllColumns(connection: AbstractSqlConnection, tables: Table[]): Promise<Dictionary<Column[]>> {
+  async getAllColumns(
+    connection: AbstractSqlConnection,
+    tables: Table[],
+    ctx?: Transaction,
+  ): Promise<Dictionary<Column[]>> {
     const sql = `select table_name as table_name,
       nullif(table_schema, schema()) as schema_name,
       column_name as column_name,
@@ -268,7 +282,7 @@ export class MySqlSchemaHelper extends SchemaHelper {
       ifnull(datetime_precision, character_maximum_length) length
       from information_schema.columns where table_schema = database() and table_name in (${tables.map(t => this.platform.quoteValue(t.table_name))})
       order by ordinal_position`;
-    const allColumns = await connection.execute<any[]>(sql);
+    const allColumns = await connection.execute<any[]>(sql, [], 'all', ctx);
     const str = (val?: string | number) => (val != null ? '' + val : val);
     const extra = (val: string) =>
       val.replace(/auto_increment|default_generated|(stored|virtual) generated/i, '').trim() || undefined;
@@ -313,17 +327,20 @@ export class MySqlSchemaHelper extends SchemaHelper {
     return ret;
   }
 
-  async getAllChecks(connection: AbstractSqlConnection, tables: Table[]): Promise<Dictionary<CheckDef[]>> {
+  async getAllChecks(
+    connection: AbstractSqlConnection,
+    tables: Table[],
+    ctx?: Transaction,
+  ): Promise<Dictionary<CheckDef[]>> {
     /* v8 ignore next */
-    if (!(await this.supportsCheckConstraints(connection))) {
+    if (!(await this.supportsCheckConstraints(connection, ctx))) {
       return {};
     }
 
     const sql = this.getChecksSQL(tables);
-    const allChecks =
-      await connection.execute<
-        { name: string; column_name: string; schema_name: string; table_name: string; expression: string }[]
-      >(sql);
+    const allChecks = await connection.execute<
+      { name: string; column_name: string; schema_name: string; table_name: string; expression: string }[]
+    >(sql, [], 'all', ctx);
     const ret = {} as Dictionary;
 
     for (const check of allChecks) {
@@ -343,6 +360,7 @@ export class MySqlSchemaHelper extends SchemaHelper {
   async getAllForeignKeys(
     connection: AbstractSqlConnection,
     tables: Table[],
+    ctx?: Transaction,
   ): Promise<Dictionary<Dictionary<ForeignKey>>> {
     const sql = `select k.constraint_name as constraint_name, nullif(k.table_schema, schema()) as schema_name, k.table_name as table_name, k.column_name as column_name, k.referenced_table_name as referenced_table_name, k.referenced_column_name as referenced_column_name, c.update_rule as update_rule, c.delete_rule as delete_rule
         from information_schema.key_column_usage k
@@ -350,7 +368,7 @@ export class MySqlSchemaHelper extends SchemaHelper {
         where k.table_name in (${tables.map(t => this.platform.quoteValue(t.table_name)).join(', ')})
         and k.table_schema = database() and c.constraint_schema = database() and k.referenced_column_name is not null
         order by constraint_name, k.ordinal_position`;
-    const allFks = await connection.execute<any[]>(sql);
+    const allFks = await connection.execute<any[]>(sql, [], 'all', ctx);
     const ret = {} as Dictionary;
 
     for (const fk of allFks) {
@@ -430,11 +448,12 @@ export class MySqlSchemaHelper extends SchemaHelper {
   async getAllEnumDefinitions(
     connection: AbstractSqlConnection,
     tables: Table[],
+    ctx?: Transaction,
   ): Promise<Dictionary<Dictionary<string[]>>> {
     const sql = `select column_name as column_name, column_type as column_type, table_name as table_name
       from information_schema.columns
       where data_type = 'enum' and table_name in (${tables.map(t => `'${t.table_name}'`).join(', ')}) and table_schema = database()`;
-    const enums = await connection.execute<any[]>(sql);
+    const enums = await connection.execute<any[]>(sql, [], 'all', ctx);
 
     return enums.reduce(
       (o, item) => {
@@ -449,13 +468,13 @@ export class MySqlSchemaHelper extends SchemaHelper {
     );
   }
 
-  private async supportsCheckConstraints(connection: AbstractSqlConnection): Promise<boolean> {
+  private async supportsCheckConstraints(connection: AbstractSqlConnection, ctx?: Transaction): Promise<boolean> {
     if (this.#cache.supportsCheckConstraints != null) {
       return this.#cache.supportsCheckConstraints;
     }
 
     const sql = `select 1 from information_schema.tables where table_name = 'CHECK_CONSTRAINTS' and table_schema = 'information_schema'`;
-    const res = await connection.execute(sql);
+    const res = await connection.execute(sql, [], 'all', ctx);
 
     return (this.#cache.supportsCheckConstraints = res.length > 0);
   }
