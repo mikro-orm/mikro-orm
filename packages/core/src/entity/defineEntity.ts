@@ -1558,6 +1558,12 @@ type MaybeScalarRef<Value, Options> = Options extends { kind: '1:1' | 'm:1' | '1
     ? ScalarReference<Value>
     : Value;
 
+type IsAllPropsOpt<T> = [Exclude<keyof T, symbol>] extends [never]
+  ? false
+  : { [K in Exclude<keyof T, symbol>]-?: T[K] extends Opt ? never : K }[Exclude<keyof T, symbol>] extends never
+    ? true
+    : false;
+
 type MaybeOpt<Value, Options> = Options extends { mapToPk: true }
   ? Value extends Opt<infer OriginalValue>
     ? OriginalValue
@@ -1571,7 +1577,11 @@ type MaybeOpt<Value, Options> = Options extends { mapToPk: true }
         | { version: true }
         | { formula: string | ((...args: any[]) => any) }
     ? Opt<NonNullable<Value>> | Extract<Value, null | undefined>
-    : Value;
+    : Options extends { kind: 'embedded' }
+      ? IsAllPropsOpt<Value> extends true
+        ? Opt<NonNullable<Value>> | Extract<Value, null | undefined>
+        : Value
+      : Value;
 
 type MaybeHidden<Value, Options> = Options extends { hidden: true }
   ? Hidden<NonNullable<Value>> | Extract<Value, null | undefined>
