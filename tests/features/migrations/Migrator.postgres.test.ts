@@ -249,10 +249,10 @@ describe('Migrator (postgres)', () => {
     dateMock.mockReturnValue('2019-10-13T21:48:13.382Z');
     const migration1 = await orm.migrator.createMigration(path, true);
 
-    // mock executeMigrations so no real DDL runs, but runMigrations still
-    // triggers DatabaseSchema.create() for the snapshot update
-    const executeMock = jest.spyOn(Migrator.prototype as any, 'executeMigrations');
-    executeMock.mockResolvedValueOnce([{ name: migration1.fileName }]);
+    // mock the umzug execution so we don't actually run SQL, but runMigrations
+    // still triggers DatabaseSchema.create() for the snapshot update
+    const umzugMock = jest.spyOn(Umzug.prototype, 'up');
+    umzugMock.mockResolvedValueOnce([{ name: migration1.fileName }] as any);
 
     try {
       // run migrator.up inside an external transaction — this previously
@@ -269,7 +269,8 @@ describe('Migrator (postgres)', () => {
     } finally {
       await remove(path + '/' + migration1.fileName);
       await remove(snapshotPath);
-      executeMock.mockRestore();
+      umzugMock.mockRestore();
+      dateMock.mockRestore();
       migrations.snapshot = false;
     }
   });
