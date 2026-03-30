@@ -394,10 +394,23 @@ export class EntityLoader {
         childrenMap.add(helper(child).getSerializedPrimaryKey());
       }
 
-      for (const entity of entities) {
-        const key = helper(entity[prop.name] as AnyEntity ?? {})?.getSerializedPrimaryKey();
+      const isInverseOneToOne = prop.kind === ReferenceKind.ONE_TO_ONE && !prop.owner;
 
-        if (childrenMap.has(key) && !itemsMap.has(key)) {
+      for (const entity of entities) {
+        const ref = entity[prop.name] as AnyEntity | null | undefined;
+
+        if (ref == null) {
+          continue;
+        }
+
+        const refPk = helper(ref).getSerializedPrimaryKey();
+        // For 1:1 inverse, `children` contains parent entities, so `childrenMap`
+        // has parent PKs — match against the entity's own PK, not the referenced entity's PK.
+        const childKey = isInverseOneToOne
+          ? helper(entity).getSerializedPrimaryKey()
+          : refPk;
+
+        if (childrenMap.has(childKey) && !itemsMap.has(refPk)) {
           entity[prop.name] = nullVal as EntityValue<Entity>;
           helper(entity).__originalEntityData![prop.name] = null;
         }
