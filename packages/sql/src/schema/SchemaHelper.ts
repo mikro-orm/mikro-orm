@@ -426,7 +426,15 @@ export abstract class SchemaHelper {
       let type = column.type + (column.generated ? ` generated always as ${column.generated}` : '');
 
       if (column.nativeEnumName) {
-        type = this.quote(this.getTableName(type, table.schema));
+        const parts = type.split('.');
+
+        if (parts.length === 2 && parts[0] === '*' && table.schema) {
+          type = `${table.schema}.${parts[1]}`;
+        } else if (parts.length === 1) {
+          type = this.getTableName(type, table.schema);
+        }
+
+        type = this.quote(type);
       }
 
       sql.push(
