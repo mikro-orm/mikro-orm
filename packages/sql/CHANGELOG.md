@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.0.6](https://github.com/mikro-orm/mikro-orm/compare/v7.0.5...v7.0.6) (2026-03-26)
+
+### Bug Fixes
+
+- **schema:** escape single quotes in enum CHECK constraints ([#7396](https://github.com/mikro-orm/mikro-orm/issues/7396)) ([3656519](https://github.com/mikro-orm/mikro-orm/commit/365651984c904b7b037574facfd4c6d32a522b7f)), closes [#7395](https://github.com/mikro-orm/mikro-orm/issues/7395)
+
+## [7.0.5](https://github.com/mikro-orm/mikro-orm/compare/v7.0.4...v7.0.5) (2026-03-23)
+
+### Bug Fixes
+
+- **sql:** infer FK columns for decorator entities in `getKysely` types ([#7368](https://github.com/mikro-orm/mikro-orm/issues/7368)) ([81068f3](https://github.com/mikro-orm/mikro-orm/commit/81068f34993398dc4c2be6531ec4f9e1d07b121d)), closes [#7367](https://github.com/mikro-orm/mikro-orm/issues/7367)
+- **sql:** use column name mapping for decorator entities in `getKysely` types ([#7369](https://github.com/mikro-orm/mikro-orm/issues/7369)) ([d3baa56](https://github.com/mikro-orm/mikro-orm/commit/d3baa56309153c1038329b7be2d34a22abf0c31c)), closes [#7367](https://github.com/mikro-orm/mikro-orm/issues/7367)
+
 ## [7.0.4](https://github.com/mikro-orm/mikro-orm/compare/v7.0.3...v7.0.4) (2026-03-20)
 
 ### Bug Fixes

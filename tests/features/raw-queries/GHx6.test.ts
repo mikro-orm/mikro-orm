@@ -112,6 +112,48 @@ test('raw fragments with populateOrderBy on relation', async () => {
   );
 });
 
+test('raw fragments with alias callback as value in $nin (GH #7422)', async () => {
+  const mock = mockLogger(orm);
+  await orm.em.findAll(Job, {
+    where: {
+      id: {
+        $nin: raw(alias => `SELECT 1 FROM job j2 WHERE j2.id = ${alias}.id`),
+      },
+    },
+  });
+  expect(mock.mock.calls[0][0]).toMatch(
+    'select `j0`.* from `job` as `j0` where `j0`.`id` not in (SELECT 1 FROM job j2 WHERE j2.id = j0.id)',
+  );
+});
+
+test('raw fragments with alias callback as value in $in', async () => {
+  const mock = mockLogger(orm);
+  await orm.em.findAll(Job, {
+    where: {
+      id: {
+        $in: raw(alias => `SELECT j2.id FROM job j2 WHERE j2.id != ${alias}.id`),
+      },
+    },
+  });
+  expect(mock.mock.calls[0][0]).toMatch(
+    'select `j0`.* from `job` as `j0` where `j0`.`id` in (SELECT j2.id FROM job j2 WHERE j2.id != j0.id)',
+  );
+});
+
+test('raw fragments with alias callback as value in comparison operator', async () => {
+  const mock = mockLogger(orm);
+  await orm.em.findAll(Job, {
+    where: {
+      id: {
+        $gt: raw(alias => `(SELECT count(*) FROM job j2 WHERE j2.id < ${alias}.id)`),
+      },
+    },
+  });
+  expect(mock.mock.calls[0][0]).toMatch(
+    'select `j0`.* from `job` as `j0` where `j0`.`id` > (SELECT count(*) FROM job j2 WHERE j2.id < j0.id)',
+  );
+});
+
 test('raw fragments with multiple items in filter', async () => {
   const mock = mockLogger(orm);
   await orm.em.findAll(Tag, {
@@ -163,4 +205,35 @@ test('em.findByCursor', async () => {
       'inner join `job` as `j1` on `t0`.`custom_name` = `j1`.`id` ' +
       'order by t0.created desc, j1.DateCompleted desc',
   );
+});
+
+test('plain objects with __raw should not be treated as RawQueryFragment in em.find', async () => {
+  const input = { __raw: true, sql: 'malicious_input', params: [] };
+
+  await expect(orm.em.find(Tag, { name: input as any })).rejects.toThrow();
+});
+
+test('plain objects with __raw should not be treated as RawQueryFragment in query builder', async () => {
+  const input = { __raw: true, sql: 'malicious_input', params: [] };
+  const qb = orm.em.createQueryBuilder(Tag);
+
+  expect(() => {
+    qb.select('*').where({ name: input as any });
+  }).toThrow();
+});
+
+test('plain objects with __raw should not be treated as RawQueryFragment in nativeUpdate', async () => {
+  orm.em.create(Tag, { name: 'test', job: orm.em.create(Job, {}) });
+  await orm.em.flush();
+  orm.em.clear();
+
+  const input = { __raw: true, sql: 'malicious_input', params: [] };
+  const mock = mockLogger(orm);
+
+  await orm.em.nativeUpdate(Tag, { name: 'test' }, { name: input as any });
+
+  const queries = mock.mock.calls.map((c: any) => c[0]);
+  const updateQuery = queries.find((q: string) => q.includes('update'));
+  expect(updateQuery).toBeDefined();
+  expect(updateQuery).toContain(JSON.stringify(input).replace(/'/g, "''"));
 });

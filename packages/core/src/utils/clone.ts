@@ -139,6 +139,7 @@ export function clone<T>(parent: T, respectCustomCloneMethod = true): T {
       const descriptor = Object.getOwnPropertyDescriptor(parent, symbol);
 
       if (descriptor && !descriptor.enumerable) {
+        Object.defineProperty(child, symbol, { ...descriptor, value: _clone(descriptor.value) });
         continue;
       }
 

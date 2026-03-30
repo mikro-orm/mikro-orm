@@ -162,6 +162,10 @@ export class ChangeSetPersister {
         !prop.generated &&
         !prop.embedded &&
         ![ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(prop.kind) &&
+        !(
+          prop.kind === ReferenceKind.EMBEDDED &&
+          prop.targetMeta?.props.every(p => p.formula || p.persist === false || p.primary)
+        ) &&
         prop.name !== wrapped.__meta.root.discriminatorColumn &&
         prop.type !== 'ObjectId' &&
         prop.persist !== false &&

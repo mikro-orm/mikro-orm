@@ -23,10 +23,16 @@ import { helper } from './wrap.js';
 import { inspect } from '../logging/inspect.js';
 import { getEnv } from '../utils/env-vars.js';
 
+const entitySymbol = Symbol('Entity');
+
 /**
  * @internal
  */
 export class EntityHelper {
+  static isEntity(data: any): boolean {
+    return data != null && typeof data === 'object' && !!(data as any)[entitySymbol];
+  }
+
   static decorate<T extends object>(meta: EntityMetadata<T>, em: EntityManager): void {
     const fork = em.fork(); // use fork so we can access `EntityFactory`
     const serializedPrimaryKey = meta.props.find(p => p.serializedPrimaryKey);
@@ -81,7 +87,7 @@ export class EntityHelper {
     // oxfmt-ignore
     const helperParams: any[] = meta.embeddable || meta.virtual ? [] : [em.getComparator().getPkGetter(meta), em.getComparator().getPkSerializer(meta), em.getComparator().getPkGetterConverted(meta)];
     Object.defineProperties(prototype, {
-      __entity: { value: !meta.embeddable, configurable: true },
+      [entitySymbol]: { value: !meta.embeddable, enumerable: false, configurable: true },
       __meta: { value: meta, configurable: true },
       __config: { value: em.config, configurable: true },
       __platform: { value: em.getPlatform(), configurable: true },
@@ -287,10 +293,20 @@ export class EntityHelper {
           if (entity && (!prop.owner || helper(entity).__initialized)) {
             EntityHelper.propagateOneToOne(entity, owner, prop, prop2, value, old as T);
           }
+        } else if (old && old !== value) {
+          // Inverse already points to owner — propagation is not needed,
+          // but we still need to clean up old's inverse side.
+          helper(old).__pk ??= helper(old).getPrimaryKey()!;
 
-          if (old && prop.orphanRemoval) {
-            helper(old).__em?.getUnitOfWork().scheduleOrphanRemoval(old);
+          if (old[prop2.name as EntityKey<T>] != null) {
+            delete helper(old).__data[prop2.name];
+            old[prop2.name] = null!;
           }
+        }
+
+        if (old && old !== value && prop.orphanRemoval) {
+          helper(old).__pk ??= helper(old).getPrimaryKey()!;
+          helper(old).__em?.getUnitOfWork().scheduleOrphanRemoval(old);
         }
       }
     }

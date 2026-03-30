@@ -3,6 +3,26 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.0.6](https://github.com/mikro-orm/mikro-orm/compare/v7.0.5...v7.0.6) (2026-03-26)
+
+### Bug Fixes
+
+- **core:** allow `readonly` enum builder items in `defineEntity()` ([#7406](https://github.com/mikro-orm/mikro-orm/issues/7406)) ([ebf87e6](https://github.com/mikro-orm/mikro-orm/commit/ebf87e66d8d5bd7bebb9500783dd346002dec8cd)), closes [#7352](https://github.com/mikro-orm/mikro-orm/issues/7352)
+- **core:** apply onCreate hooks in em.upsert and em.upsertMany ([#7400](https://github.com/mikro-orm/mikro-orm/issues/7400)) ([5bc0e92](https://github.com/mikro-orm/mikro-orm/commit/5bc0e923e92e6e5424e38c7488c4909303761c89)), closes [#7399](https://github.com/mikro-orm/mikro-orm/issues/7399)
+- **core:** preserve explicit entity name in defineEntity + setClass during discovery ([fca6e6b](https://github.com/mikro-orm/mikro-orm/commit/fca6e6b2c6930bed98ef90d879c9e9bb2b25bc91)), closes [#7391](https://github.com/mikro-orm/mikro-orm/issues/7391)
+- **core:** prevent prototype pollution in `Utils.merge` ([954bdba](https://github.com/mikro-orm/mikro-orm/commit/954bdba3f863a0c6007a7cf4f5e67c3c2baf123f))
+- **core:** tighten query construction validation ([f7e59a5](https://github.com/mikro-orm/mikro-orm/commit/f7e59a5ce7820611bc0c20810221477effff302c))
+- **schema:** escape single quotes in enum CHECK constraints ([#7396](https://github.com/mikro-orm/mikro-orm/issues/7396)) ([3656519](https://github.com/mikro-orm/mikro-orm/commit/365651984c904b7b037574facfd4c6d32a522b7f)), closes [#7395](https://github.com/mikro-orm/mikro-orm/issues/7395)
+
+## [7.0.5](https://github.com/mikro-orm/mikro-orm/compare/v7.0.4...v7.0.5) (2026-03-23)
+
+### Bug Fixes
+
+- **core:** handle `check` constraint in `defineEntity` ([#7374](https://github.com/mikro-orm/mikro-orm/issues/7374)) ([a46ae8a](https://github.com/mikro-orm/mikro-orm/commit/a46ae8a7dce51c388b86e8ec654928e1c7b952af))
+- **core:** handle JSON column type conversion in `em.refresh()` for detached entities ([6c4e896](https://github.com/mikro-orm/mikro-orm/commit/6c4e8960abef3c9385df6c8cea809da8db2dc68a)), closes [#7383](https://github.com/mikro-orm/mikro-orm/issues/7383)
+- **core:** ignore discriminator column in changeset for uninitialized STI references ([#7385](https://github.com/mikro-orm/mikro-orm/issues/7385)) ([a7db194](https://github.com/mikro-orm/mikro-orm/commit/a7db1942ca21cbbbab7d11b4eeac890245a31d7f)), closes [#7384](https://github.com/mikro-orm/mikro-orm/issues/7384)
+- **core:** share EntitySchema.REGISTRY across CJS/ESM module boundaries ([#7377](https://github.com/mikro-orm/mikro-orm/issues/7377)) ([7c1e5d4](https://github.com/mikro-orm/mikro-orm/commit/7c1e5d4c7d965f65f4e49f99a942cd35bd8f4c54)), closes [#7376](https://github.com/mikro-orm/mikro-orm/issues/7376)
+
 ## [7.0.4](https://github.com/mikro-orm/mikro-orm/compare/v7.0.3...v7.0.4) (2026-03-20)
 
 ### Bug Fixes

@@ -45,7 +45,7 @@ export class BasePostgreSqlPlatform extends AbstractSqlPlatform {
   }
 
   override getEnumArrayCheckConstraintExpression(column: string, items: string[]): string {
-    return `${this.quoteIdentifier(column)} <@ array[${items.map(item => `'${item}'::text`).join(', ')}]`;
+    return `${this.quoteIdentifier(column)} <@ array[${items.map(item => `${this.quoteValue(item)}::text`).join(', ')}]`;
   }
 
   override supportsMaterializedViews(): boolean {

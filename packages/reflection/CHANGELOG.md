@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.0.6](https://github.com/mikro-orm/mikro-orm/compare/v7.0.5...v7.0.6) (2026-03-26)
+
+### Bug Fixes
+
+- **reflection:** resolve inherited property types with ES decorators in TsMorphMetadataProvider ([8296a0e](https://github.com/mikro-orm/mikro-orm/commit/8296a0e3cf12d892a39e448420483e9a020d8dc6)), closes [#7389](https://github.com/mikro-orm/mikro-orm/issues/7389)
+
+## [7.0.5](https://github.com/mikro-orm/mikro-orm/compare/v7.0.4...v7.0.5) (2026-03-23)
+
+**Note:** Version bump only for package @mikro-orm/reflection
+
 ## [7.0.4](https://github.com/mikro-orm/mikro-orm/compare/v7.0.3...v7.0.4) (2026-03-20)
 
 ### Bug Fixes

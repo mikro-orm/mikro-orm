@@ -929,11 +929,11 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       const data = helper(reloaded).serialize({
         ignoreSerializers: true,
         includeHidden: true,
-        convertCustomTypes: true,
+        convertCustomTypes: false,
       }) as object;
       em.config
         .getHydrator(this.metadata)
-        .hydrate(entity, wrapped.__meta, data, em.#entityFactory, 'full', false, true);
+        .hydrate(entity, wrapped.__meta, data, em.#entityFactory, 'full', false, false);
       Utils.merge(wrapped.__originalEntityData, this.#comparator.prepareEntity(reloaded as Entity));
     }
 
@@ -1151,6 +1151,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       }
 
       where = helper(entity).getPrimaryKey() as FilterQuery<Entity>;
+      em.#entityFactory.assignDefaultValues(entity, meta);
       data = em.#comparator.prepareEntity(entity);
     } else {
       data = Utils.copy(QueryHelper.processParams(data));
@@ -1163,6 +1164,8 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
           return em.assign(exists, data as any) as any;
         }
       }
+
+      em.#entityFactory.assignDefaultValues(data as Entity, meta, true);
 
       for (const key of Object.keys(data!)) {
         const prop = meta.properties[key as EntityKey<Entity>];
@@ -1334,6 +1337,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
         }
 
         where = helper(entity).getPrimaryKey() as FilterQuery<Entity>;
+        em.#entityFactory.assignDefaultValues(entity, meta);
         row = em.#comparator.prepareEntity(entity);
       } else {
         row = data[i] = Utils.copy(QueryHelper.processParams(row));
@@ -1349,6 +1353,8 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
             continue;
           }
         }
+
+        em.#entityFactory.assignDefaultValues(row as Entity, meta, true);
 
         for (const key of Object.keys(row)) {
           const prop = meta.properties[key as EntityKey<Entity>];

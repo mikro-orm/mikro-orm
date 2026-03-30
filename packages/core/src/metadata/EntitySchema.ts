@@ -75,8 +75,14 @@ export class EntitySchema<Entity = any, Base = never, Class extends EntityCtor =
   /**
    * When schema links the entity class via `class` option, this registry allows the lookup from opposite side,
    * so we can use the class in `entities` option just like the EntitySchema instance.
+   *
+   * Stored on `globalThis` via `Symbol.for` to survive the CJS/ESM dual-package hazard
+   * (e.g. when `tsx` loads the same package in both module systems).
    */
-  static REGISTRY: Map<AnyEntity, EntitySchema> = new Map();
+  static get REGISTRY(): Map<AnyEntity, EntitySchema> {
+    const key = Symbol.for('@mikro-orm/core/EntitySchema.REGISTRY');
+    return ((globalThis as any)[key] ??= new Map());
+  }
 
   /** @internal Type-level marker for fast entity type inference */
   declare readonly '~entity': Entity;
@@ -86,7 +92,11 @@ export class EntitySchema<Entity = any, Base = never, Class extends EntityCtor =
   private initialized = false;
 
   constructor(meta: EntitySchemaMetadata<Entity, Base, Class>) {
-    meta.name = meta.class ? meta.class.name : meta.name;
+    // Skip for internal schemas (fromMetadata) — the name was already resolved,
+    // re-deriving it from class.name would break defineEntity + setClass with a different name (GH #7391).
+    if (!(meta as Dictionary).internal) {
+      meta.name = meta.class ? meta.class.name : meta.name;
+    }
 
     if (meta.name) {
       meta.abstract ??= false;
@@ -151,6 +161,11 @@ export class EntitySchema<Entity = any, Base = never, Class extends EntityCtor =
 
     if (prop.formula) {
       prop.persist ??= false;
+    }
+
+    if ((prop as any).check) {
+      this._meta.checks.push({ property: prop.name, expression: (prop as any).check });
+      delete (prop as any).check;
     }
 
     this._meta.properties[name] = prop;

@@ -19,11 +19,15 @@ import type { FindOneOptions, FindOneOrFailOptions } from '../drivers/IDatabaseD
 import { NotFoundError } from '../errors.js';
 import { inspect } from '../logging/inspect.js';
 
+const referenceSymbol = Symbol('Reference');
+const scalarReferenceSymbol = Symbol('ScalarReference');
+
 /** Wrapper around an entity that provides lazy loading capabilities and identity-preserving reference semantics. */
 export class Reference<T extends object> {
   private property?: EntityProperty;
 
   constructor(private entity: T) {
+    Object.defineProperty(this, referenceSymbol, { value: true, enumerable: false });
     this.set(entity);
     const meta = helper(this.entity).__meta;
 
@@ -97,7 +101,7 @@ export class Reference<T extends object> {
    * Checks whether the argument is instance of `Reference` wrapper.
    */
   static isReference<T extends object>(data: any): data is Reference<T> {
-    return data && !!data.__reference;
+    return data != null && Object.hasOwn(data, referenceSymbol);
   }
 
   /**
@@ -255,6 +259,7 @@ export class ScalarReference<Value> {
     private value?: Value,
     initialized = value != null,
   ) {
+    Object.defineProperty(this, scalarReferenceSymbol, { value: true, enumerable: false });
     this.#initialized = initialized;
   }
 
@@ -321,6 +326,10 @@ export class ScalarReference<Value> {
     return this.#initialized;
   }
 
+  static isScalarReference(data: any): data is ScalarReference<any> {
+    return data != null && typeof data === 'object' && Object.hasOwn(data, scalarReferenceSymbol);
+  }
+
   /** @ignore */
   /* v8 ignore next */
   [Symbol.for('nodejs.util.inspect.custom')](): string {
@@ -329,7 +338,6 @@ export class ScalarReference<Value> {
 }
 
 Object.defineProperties(Reference.prototype, {
-  __reference: { value: true, enumerable: false },
   __meta: {
     get() {
       return this.entity.__meta!;
@@ -358,7 +366,6 @@ Object.defineProperties(Reference.prototype, {
 });
 
 Object.defineProperties(ScalarReference.prototype, {
-  __scalarReference: { value: true, enumerable: false },
   $: {
     get() {
       return this.value;

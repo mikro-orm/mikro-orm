@@ -151,4 +151,40 @@ describe('defineEntity with setClass (SQLite)', () => {
       expect(book).toBeInstanceOf(Book);
     }
   });
+
+  test('entity name different from class name does not cause duplicates (GH #7391)', async () => {
+    // When defineEntity name differs from the class name, discovery should
+    // not treat the auto-generated parent class as a separate entity.
+    const TagSchema = defineEntity({
+      name: 'TagEntity',
+      properties: {
+        id: p.integer().primary(),
+        label: p.string(),
+      },
+    });
+
+    class Tag extends TagSchema.class {}
+    TagSchema.setClass(Tag);
+
+    const testOrm = await MikroORM.init({
+      entities: [Tag],
+      dbName: ':memory:',
+    });
+
+    const metadata = [...testOrm.getMetadata().getAll().values()];
+    expect(metadata).toHaveLength(1);
+    expect(metadata[0].className).toBe('TagEntity');
+    expect(metadata[0].class).toBe(Tag);
+
+    await testOrm.schema.create();
+    testOrm.em.create(Tag, { label: 'test' });
+    await testOrm.em.flush();
+    testOrm.em.clear();
+
+    const tag = await testOrm.em.findOneOrFail(Tag, { label: 'test' });
+    expect(tag).toBeInstanceOf(Tag);
+    expect(tag.label).toBe('test');
+
+    await testOrm.close(true);
+  });
 });

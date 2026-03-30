@@ -1253,7 +1253,9 @@ export class EntityMetadata<Entity = any, Class extends EntityCtor<Entity> = Ent
           this.checks.push({
             name,
             property: prop.name,
-            expression: `${config.getPlatform().quoteIdentifier(prop.fieldNames[0])} in ('${prop.items.join("', '")}')`,
+            expression: config
+              .getPlatform()
+              .getEnumCheckConstraintExpression(prop.fieldNames[0], prop.items as string[]),
           });
         }
       }
@@ -2141,6 +2143,8 @@ export interface EntitySchemaWithMeta<
   readonly tableName: TTableName;
   /** @internal Direct entity type access - avoids expensive pattern matching */
   readonly '~entity': TEntity;
+  /** @internal */
+  readonly class: TClass & { '~entityName'?: TName };
 }
 
 /**

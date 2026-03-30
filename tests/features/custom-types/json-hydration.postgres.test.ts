@@ -89,10 +89,7 @@ test('json property hydration 1/2', async () => {
   Page.log = [];
   const results = await orm.em.find(Course, {}, { populate: ['*'] });
   expect(results[0].published?.page.attestations).toEqual(['attestation1', 'attestation2']);
-  expect(Page.log).toEqual([
-    ['attestation1', 'attestation2'],
-    ['attestation1', 'attestation2'],
-  ]);
+  expect(Page.log).toEqual([['attestation1', 'attestation2']]);
 
   const mock = mockLogger(orm);
   await orm.em.flush();

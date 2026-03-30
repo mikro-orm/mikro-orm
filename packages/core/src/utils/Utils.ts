@@ -11,11 +11,12 @@ import type {
   Primary,
 } from '../typings.js';
 import { GroupOperator, PlainObject, QueryOperator, ReferenceKind } from '../enums.js';
-import type { Collection } from '../entity/Collection.js';
 import type { Platform } from '../platforms/Platform.js';
 import { helper } from '../entity/wrap.js';
-import { Reference, type ScalarReference } from '../entity/Reference.js';
-import { Raw, type RawQueryFragmentSymbol } from './RawQueryFragment.js';
+import { Reference, ScalarReference } from '../entity/Reference.js';
+import { Collection } from '../entity/Collection.js';
+import { EntityHelper } from '../entity/EntityHelper.js';
+import { Raw, isRaw, type RawQueryFragmentSymbol } from './RawQueryFragment.js';
 
 function compareConstructors(a: any, b: any) {
   if (a.constructor === b.constructor) {
@@ -43,7 +44,7 @@ export function compareObjects(a: any, b: any): boolean {
     return false;
   }
 
-  if (a.__raw && b.__raw) {
+  if (isRaw(a) && isRaw(b)) {
     // eslint-disable-next-line @typescript-eslint/no-use-before-define
     return a.sql === b.sql && compareArrays(a.params, b.params);
   }
@@ -289,6 +290,10 @@ export class Utils {
 
     if (Utils.isObject(target) && Utils.isPlainObject(source)) {
       for (const [key, value] of Object.entries(source)) {
+        if (['__proto__', 'constructor', 'prototype'].includes(key)) {
+          continue;
+        }
+
         if (ignoreUndefined && typeof value === 'undefined') {
           continue;
         }
@@ -669,18 +674,18 @@ export class Utils {
       return false;
     }
 
-    if (allowReference && !!data.__reference) {
+    if (allowReference && Reference.isReference(data)) {
       return true;
     }
 
-    return !!data.__entity;
+    return EntityHelper.isEntity(data);
   }
 
   /**
    * Checks whether given object is a scalar reference.
    */
-  static isScalarReference<T = unknown>(data: any, allowReference = false): data is ScalarReference<any> & {} {
-    return typeof data === 'object' && data?.__scalarReference;
+  static isScalarReference<T = unknown>(data: any): data is ScalarReference<any> & {} {
+    return ScalarReference.isScalarReference(data);
   }
 
   /**
@@ -790,7 +795,7 @@ export class Utils {
   }
 
   static isCollection<T extends object, O extends object = object>(item: any): item is Collection<T, O> {
-    return item?.__collection;
+    return Collection.isCollection(item);
   }
 
   // FNV-1a 64-bit

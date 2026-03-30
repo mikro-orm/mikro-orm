@@ -40,7 +40,7 @@ exports[`6865 1`] = `
   }
   const createCollectionItem_allowedTokens = (value, entity) => {
     if (isPrimaryKey(value, false)) return factory.createReference(allowed_token_20, value, { convertCustomTypes, schema, normalizeAccessors, merge: true });
-    if (value && value.__entity) return value;
+    if (value && isEntity(value)) return value;
     return factory.create(allowed_token_20, value, { newEntity, convertCustomTypes, schema, normalizeAccessors, merge: true });
   }
   if (data.allowedTokens && !Array.isArray(data.allowedTokens) && typeof data.allowedTokens === 'object') {

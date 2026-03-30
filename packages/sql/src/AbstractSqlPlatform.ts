@@ -141,6 +141,11 @@ export abstract class AbstractSqlPlatform extends Platform {
     return true;
   }
 
+  /** Whether the platform supports `count(distinct col1, col2)` with multiple columns. If false, a subquery wrapper is used instead. */
+  supportsMultiColumnCountDistinct(): boolean {
+    return false;
+  }
+
   supportsSchemas(): boolean {
     return false;
   }

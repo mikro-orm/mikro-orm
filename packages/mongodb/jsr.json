@@ -1,6 +1,6 @@
 {
   "name": "@mikro-orm/mongodb",
-  "version": "7.0.4",
+  "version": "7.0.6",
   "exports": {
     ".": "./src/index.ts"
   },
@@ -8,7 +8,7 @@
     "exclude": ["dist/", "node_modules/", "tests/"]
   },
   "imports": {
-    "mongodb": "npm:mongodb@7.1.0",
-    "@mikro-orm/core": "jsr:@mikro-orm/core@7.0.4"
+    "mongodb": "npm:mongodb@7.1.1",
+    "@mikro-orm/core": "jsr:@mikro-orm/core@7.0.6"
   }
 }

@@ -4,6 +4,7 @@ import {
   type Dictionary,
   type EntityMetadata,
   type EntityProperty,
+  type Transaction,
   isRaw,
 } from '@mikro-orm/core';
 import { DatabaseTable } from './DatabaseTable.js';
@@ -138,9 +139,10 @@ export class DatabaseSchema {
     takeTables?: (string | RegExp)[],
     skipTables?: (string | RegExp)[],
     skipViews?: (string | RegExp)[],
+    ctx?: Transaction,
   ): Promise<DatabaseSchema> {
     const schema = new DatabaseSchema(platform, schemaName ?? config.get('schema') ?? platform.getDefaultSchemaName());
-    const allTables = await platform.getSchemaHelper()!.getAllTables(connection, schemas);
+    const allTables = await platform.getSchemaHelper()!.getAllTables(connection, schemas, ctx);
     const parts = config.get('migrations').tableName!.split('.');
     const migrationsTableName = parts[1] ?? parts[0];
     const migrationsSchemaName = parts.length > 1 ? parts[0] : config.get('schema', platform.getDefaultSchemaName());
@@ -151,14 +153,14 @@ export class DatabaseSchema {
     );
     await platform
       .getSchemaHelper()!
-      .loadInformationSchema(schema, connection, tables, schemas && schemas.length > 0 ? schemas : undefined);
+      .loadInformationSchema(schema, connection, tables, schemas && schemas.length > 0 ? schemas : undefined, ctx);
 
     // Load views from database
-    await platform.getSchemaHelper()!.loadViews(schema, connection);
+    await platform.getSchemaHelper()!.loadViews(schema, connection, schemaName, ctx);
 
     // Load materialized views (PostgreSQL only)
     if (platform.supportsMaterializedViews()) {
-      await platform.getSchemaHelper()!.loadMaterializedViews(schema, connection, schemaName);
+      await platform.getSchemaHelper()!.loadMaterializedViews(schema, connection, schemaName, ctx);
     }
 
     // Filter out skipped views
@@ -219,13 +221,39 @@ export class DatabaseSchema {
       if (meta.view) {
         const viewDefinition = this.getViewDefinition(meta, em, platform);
         if (viewDefinition) {
-          schema.addView(
+          const view = schema.addView(
             meta.collection,
             this.getSchemaName(meta, config, schemaName),
             viewDefinition,
             meta.materialized,
             meta.withData,
           );
+
+          if (meta.materialized) {
+            // Use a DatabaseTable to resolve property names → field names for indexes.
+            // addIndex only needs meta + table name, not actual columns.
+            const indexTable = new DatabaseTable(
+              platform,
+              meta.collection,
+              this.getSchemaName(meta, config, schemaName),
+            );
+            meta.indexes.forEach(index => indexTable.addIndex(meta, index, 'index'));
+            meta.uniques.forEach(index => indexTable.addIndex(meta, index, 'unique'));
+            const pkProps = meta.props.filter(prop => prop.primary);
+            indexTable.addIndex(meta, { properties: pkProps.map(prop => prop.name) }, 'primary');
+
+            // Materialized views don't have primary keys or constraints in the DB,
+            // convert to match what PostgreSQL stores.
+            view.indexes = indexTable.getIndexes().map(idx => {
+              if (idx.primary) {
+                return { ...idx, primary: false, unique: true, constraint: false };
+              }
+              if (idx.constraint) {
+                return { ...idx, constraint: false };
+              }
+              return idx;
+            });
+          }
         }
         continue;
       }

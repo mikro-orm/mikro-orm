@@ -137,22 +137,28 @@ export function lookupPathFromDecorator(name: string, stack?: string[]): string 
   // __decorate(), replacing it with the constructor name. To support these cases we look for
   // Reflect.decorate() as well. Also when babel is used, we need to check
   // the `_applyDecoratedDescriptor` method instead.
-  let line = stack.findIndex(line => /__decorate|Reflect\.decorate|_applyDecoratedDescriptor/.exec(line));
+  let line = stack.findIndex(line =>
+    /__decorate|Reflect\.decorate|_applyDecoratedDescriptor|applyClassDecs/.exec(line),
+  );
 
-  // bun does not have those lines at all, only the DecorateProperty/DecorateConstructor,
-  // but those are also present in node, so we need to check this only if they weren't found.
+  // Bun can skip decorator helper frames. Native ES decorators expose the entity
+  // path right after `bun:wrap`, while reflect-metadata stacks reach it via Reflect.js.
   if (line === -1) {
-    // here we handle bun which stack is different from nodejs so we search for reflect-metadata
-    // Different bun versions might have different stack traces. The "last index" works for both 1.2.6 and 1.2.7.
-    const reflectLine = stack.findLastIndex(line =>
-      line.replace(/\\/g, '/').includes('node_modules/reflect-metadata/Reflect.js'),
-    );
+    const bunWrapLine = stack.findLastIndex(stackLine => stackLine.includes('bun:wrap'));
 
-    if (reflectLine === -1 || reflectLine + 2 >= stack.length || !stack[reflectLine + 1].includes('bun:wrap')) {
-      return name;
+    if (bunWrapLine !== -1 && bunWrapLine + 1 < stack.length) {
+      line = bunWrapLine + 1;
+    } else {
+      const reflectLine = stack.findLastIndex(stackLine =>
+        stackLine.replace(/\\/g, '/').includes('node_modules/reflect-metadata/Reflect.js'),
+      );
+
+      if (reflectLine === -1 || reflectLine + 2 >= stack.length || !stack[reflectLine + 1].includes('bun:wrap')) {
+        return name;
+      }
+
+      line = reflectLine + 2;
     }
-
-    line = reflectLine + 2;
   }
 
   if (stack[line].includes('Reflect.decorate')) {
@@ -167,7 +173,7 @@ export function lookupPathFromDecorator(name: string, stack?: string[]): string 
   }
 
   try {
-    const re = /\(.+\)/i.exec(stack[line]) ? /\((.*):\d+:\d+\)/ : /at\s*(.*):\d+:\d+$/;
+    const re = /\(.+\)/i.exec(stack[line]) ? /\((.*?)(?::\d+){1,2}\)/ : /at\s*(.*?)(?::\d+){1,2}$/;
     return stack[line].match(re)![1];
   } catch {
     return name;

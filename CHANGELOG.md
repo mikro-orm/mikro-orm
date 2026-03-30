@@ -3,6 +3,43 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.0.6](https://github.com/mikro-orm/mikro-orm/compare/v7.0.5...v7.0.6) (2026-03-26)
+
+
+### Bug Fixes
+
+* **core:** allow `readonly` enum builder items in `defineEntity()` ([#7406](https://github.com/mikro-orm/mikro-orm/issues/7406)) ([ebf87e6](https://github.com/mikro-orm/mikro-orm/commit/ebf87e66d8d5bd7bebb9500783dd346002dec8cd)), closes [#7352](https://github.com/mikro-orm/mikro-orm/issues/7352)
+* **core:** apply onCreate hooks in em.upsert and em.upsertMany ([#7400](https://github.com/mikro-orm/mikro-orm/issues/7400)) ([5bc0e92](https://github.com/mikro-orm/mikro-orm/commit/5bc0e923e92e6e5424e38c7488c4909303761c89)), closes [#7399](https://github.com/mikro-orm/mikro-orm/issues/7399)
+* **core:** preserve explicit entity name in defineEntity + setClass during discovery ([fca6e6b](https://github.com/mikro-orm/mikro-orm/commit/fca6e6b2c6930bed98ef90d879c9e9bb2b25bc91)), closes [#7391](https://github.com/mikro-orm/mikro-orm/issues/7391)
+* **core:** prevent prototype pollution in `Utils.merge` ([954bdba](https://github.com/mikro-orm/mikro-orm/commit/954bdba3f863a0c6007a7cf4f5e67c3c2baf123f))
+* **core:** tighten query construction validation ([f7e59a5](https://github.com/mikro-orm/mikro-orm/commit/f7e59a5ce7820611bc0c20810221477effff302c))
+* **decorators:** handle esbuild ES decorator stack frames in path lookup ([e6ea9fc](https://github.com/mikro-orm/mikro-orm/commit/e6ea9fcfb2ac978773d7a8197fe6cf8a7ed670b6))
+* **reflection:** resolve inherited property types with ES decorators in TsMorphMetadataProvider ([8296a0e](https://github.com/mikro-orm/mikro-orm/commit/8296a0e3cf12d892a39e448420483e9a020d8dc6)), closes [#7389](https://github.com/mikro-orm/mikro-orm/issues/7389)
+* **schema:** escape single quotes in enum CHECK constraints ([#7396](https://github.com/mikro-orm/mikro-orm/issues/7396)) ([3656519](https://github.com/mikro-orm/mikro-orm/commit/365651984c904b7b037574facfd4c6d32a522b7f)), closes [#7395](https://github.com/mikro-orm/mikro-orm/issues/7395)
+
+
+
+
+
+## [7.0.5](https://github.com/mikro-orm/mikro-orm/compare/v7.0.4...v7.0.5) (2026-03-23)
+
+
+### Bug Fixes
+
+* **core:** handle `check` constraint in `defineEntity` ([#7374](https://github.com/mikro-orm/mikro-orm/issues/7374)) ([a46ae8a](https://github.com/mikro-orm/mikro-orm/commit/a46ae8a7dce51c388b86e8ec654928e1c7b952af))
+* **core:** handle Bun path lookup for native ES decorators ([#7382](https://github.com/mikro-orm/mikro-orm/issues/7382)) ([9916203](https://github.com/mikro-orm/mikro-orm/commit/991620353ae2892e196078f9c3795c22ddf59b13)), closes [/bun.com/blog/bun-v1.3.10#tc39](https://github.com//bun.com/blog/bun-v1.3.10/issues/tc39) [#7381](https://github.com/mikro-orm/mikro-orm/issues/7381)
+* **core:** handle JSON column type conversion in `em.refresh()` for detached entities ([a6fef86](https://github.com/mikro-orm/mikro-orm/commit/a6fef860bdad6834de983bda152a2a98568149c8)), closes [#7383](https://github.com/mikro-orm/mikro-orm/issues/7383)
+* **core:** handle JSON column type conversion in `em.refresh()` for detached entities ([6c4e896](https://github.com/mikro-orm/mikro-orm/commit/6c4e8960abef3c9385df6c8cea809da8db2dc68a)), closes [#7383](https://github.com/mikro-orm/mikro-orm/issues/7383)
+* **core:** ignore discriminator column in changeset for uninitialized STI references ([#7385](https://github.com/mikro-orm/mikro-orm/issues/7385)) ([a7db194](https://github.com/mikro-orm/mikro-orm/commit/a7db1942ca21cbbbab7d11b4eeac890245a31d7f)), closes [#7384](https://github.com/mikro-orm/mikro-orm/issues/7384)
+* **core:** share EntitySchema.REGISTRY across CJS/ESM module boundaries ([#7377](https://github.com/mikro-orm/mikro-orm/issues/7377)) ([7c1e5d4](https://github.com/mikro-orm/mikro-orm/commit/7c1e5d4c7d965f65f4e49f99a942cd35bd8f4c54)), closes [#7376](https://github.com/mikro-orm/mikro-orm/issues/7376)
+* **mssql:** force-disconnect sessions before dropping database ([bdc45e4](https://github.com/mikro-orm/mikro-orm/commit/bdc45e49798cdb06515995fc98945ff9796ba224))
+* **sql:** infer FK columns for decorator entities in `getKysely` types ([#7368](https://github.com/mikro-orm/mikro-orm/issues/7368)) ([81068f3](https://github.com/mikro-orm/mikro-orm/commit/81068f34993398dc4c2be6531ec4f9e1d07b121d)), closes [#7367](https://github.com/mikro-orm/mikro-orm/issues/7367)
+* **sql:** use column name mapping for decorator entities in `getKysely` types ([#7369](https://github.com/mikro-orm/mikro-orm/issues/7369)) ([d3baa56](https://github.com/mikro-orm/mikro-orm/commit/d3baa56309153c1038329b7be2d34a22abf0c31c)), closes [#7367](https://github.com/mikro-orm/mikro-orm/issues/7367)
+
+
+
+
+
 ## [7.0.4](https://github.com/mikro-orm/mikro-orm/compare/v7.0.3...v7.0.4) (2026-03-20)
 
 

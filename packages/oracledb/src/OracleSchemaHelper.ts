@@ -14,6 +14,7 @@ import {
   type Table,
   type TableDifference,
   TextType,
+  type Transaction,
   type Type,
   Utils,
 } from '@mikro-orm/sql';
@@ -31,9 +32,13 @@ export class OracleSchemaHelper extends SchemaHelper {
     return `select 1 from all_users where username = ${this.platform.quoteValue(name)}`;
   }
 
-  override async getAllTables(connection: AbstractSqlConnection, schemas?: string[]): Promise<Table[]> {
+  override async getAllTables(
+    connection: AbstractSqlConnection,
+    schemas?: string[],
+    ctx?: Transaction,
+  ): Promise<Table[]> {
     if (!schemas || schemas.length === 0) {
-      return connection.execute<Table[]>(this.getListTablesSQL());
+      return connection.execute<Table[]>(this.getListTablesSQL(), [], 'all', ctx);
     }
 
     const conditions = schemas.map(s => `at.owner = ${this.platform.quoteValue(s)}`).join(' or ');
@@ -42,7 +47,7 @@ export class OracleSchemaHelper extends SchemaHelper {
       left join all_tab_comments atc on at.owner = atc.owner and at.table_name = atc.table_name
       where (${conditions})
       order by schema_name, at.table_name`;
-    return connection.execute<Table[]>(sql);
+    return connection.execute<Table[]>(sql, [], 'all', ctx);
   }
 
   override getListTablesSQL(schemaName?: string): string {
@@ -74,9 +79,17 @@ export class OracleSchemaHelper extends SchemaHelper {
       order by view_name`;
   }
 
-  override async loadViews(schema: DatabaseSchema, connection: AbstractSqlConnection): Promise<void> {
+  override async loadViews(
+    schema: DatabaseSchema,
+    connection: AbstractSqlConnection,
+    schemaName?: string,
+    ctx?: Transaction,
+  ): Promise<void> {
     const views = await connection.execute<{ view_name: string; schema_name: string; view_definition: string }[]>(
       this.getListViewsSQL(),
+      [],
+      'all',
+      ctx,
     );
 
     for (const view of views) {
@@ -90,9 +103,9 @@ export class OracleSchemaHelper extends SchemaHelper {
     }
   }
 
-  override async getNamespaces(connection: AbstractSqlConnection): Promise<string[]> {
+  override async getNamespaces(connection: AbstractSqlConnection, ctx?: Transaction): Promise<string[]> {
     const sql = `select username as schema_name from all_users where ${this.getIgnoredNamespacesConditionSQL()} order by username`;
-    const res = await connection.execute<{ schema_name: string }[]>(sql);
+    const res = await connection.execute<{ schema_name: string }[]>(sql, [], 'all', ctx);
     return res.map(row => row.schema_name);
   }
 
@@ -158,6 +171,7 @@ export class OracleSchemaHelper extends SchemaHelper {
   async getAllColumns(
     connection: AbstractSqlConnection,
     tablesBySchemas: Map<string | undefined, Table[]>,
+    ctx?: Transaction,
   ): Promise<Dictionary<Column[]>> {
     const sql = `select
       atc.owner as schema_name,
@@ -181,7 +195,7 @@ export class OracleSchemaHelper extends SchemaHelper {
       where atc.hidden_column = 'NO'
       and (${[...tablesBySchemas.entries()].map(([schema, tables]) => `(atc.table_name in (${tables.map(t => this.platform.quoteValue(t.table_name)).join(', ')}) and atc.owner = ${this.platform.quoteValue(schema)})`).join(' or ')})
       order by atc.owner, atc.table_name, atc.column_id`;
-    const allColumns = await connection.execute<any[]>(sql);
+    const allColumns = await connection.execute<any[]>(sql, [], 'all', ctx);
     const str = (val?: string | number) => (val != null ? '' + val : val);
     const ret = {} as Dictionary;
 
@@ -247,6 +261,7 @@ export class OracleSchemaHelper extends SchemaHelper {
   async getAllIndexes(
     connection: AbstractSqlConnection,
     tablesBySchemas: Map<string | undefined, Table[]>,
+    ctx?: Transaction,
   ): Promise<Dictionary<IndexDef[]>> {
     // Query indexes and join with constraints to identify which indexes back PRIMARY KEY or UNIQUE constraints
     // Also join with all_ind_expressions to get function-based index expressions
@@ -262,7 +277,7 @@ export class OracleSchemaHelper extends SchemaHelper {
       left join all_ind_expressions aie on ind.owner = aie.index_owner and ind.index_name = aie.index_name and aic.column_position = aie.column_position
       where (${[...tablesBySchemas.entries()].map(([schema, tables]) => `(ind.table_name in (${tables.map(t => this.platform.quoteValue(t.table_name)).join(', ')}) and ind.table_owner = ${this.platform.quoteValue(schema)})`).join(' or ')})
       order by ind.table_name, ind.index_name, aic.column_position`;
-    const allIndexes = await connection.execute<any[]>(sql);
+    const allIndexes = await connection.execute<any[]>(sql, [], 'all', ctx);
     const ret = {} as Dictionary;
 
     for (const index of allIndexes) {
@@ -335,6 +350,7 @@ export class OracleSchemaHelper extends SchemaHelper {
   async getAllForeignKeys(
     connection: AbstractSqlConnection,
     tablesBySchemas: Map<string | undefined, Table[]>,
+    ctx?: Transaction,
   ): Promise<Dictionary<Dictionary<ForeignKey>>> {
     const sql = `select fk_cons.constraint_name, fk_cons.table_name, fk_cons.owner as schema_name, fk_cols.column_name,
       fk_cons.r_owner as referenced_schema_name,
@@ -349,7 +365,7 @@ export class OracleSchemaHelper extends SchemaHelper {
       where fk_cons.constraint_type = 'R'
       and (${[...tablesBySchemas.entries()].map(([schema, tables]) => `(fk_cons.table_name in (${tables.map(t => this.platform.quoteValue(t.table_name)).join(', ')}) and fk_cons.owner = ${this.platform.quoteValue(schema)})`).join(' or ')})
       order by fk_cons.owner, fk_cons.table_name, fk_cons.constraint_name, pk_cols.position`;
-    const allFks = await connection.execute<any[]>(sql);
+    const allFks = await connection.execute<any[]>(sql, [], 'all', ctx);
     const ret = {} as Dictionary;
 
     for (const fk of allFks) {
@@ -421,12 +437,12 @@ export class OracleSchemaHelper extends SchemaHelper {
   async getAllChecks(
     connection: AbstractSqlConnection,
     tablesBySchemas: Map<string | undefined, Table[]>,
+    ctx?: Transaction,
   ): Promise<Dictionary<CheckDef[]>> {
     const sql = this.getChecksSQL(tablesBySchemas);
-    const allChecks =
-      await connection.execute<
-        { name: string; column_name: string; schema_name: string; table_name: string; expression: string }[]
-      >(sql);
+    const allChecks = await connection.execute<
+      { name: string; column_name: string; schema_name: string; table_name: string; expression: string }[]
+    >(sql, [], 'all', ctx);
     const ret = {} as Dictionary;
 
     for (const check of allChecks) {
@@ -448,16 +464,18 @@ export class OracleSchemaHelper extends SchemaHelper {
     schema: DatabaseSchema,
     connection: AbstractSqlConnection,
     tables: Table[],
+    schemas?: string[],
+    ctx?: Transaction,
   ): Promise<void> {
     if (tables.length === 0) {
       return;
     }
 
     const tablesBySchema = this.getTablesGroupedBySchemas(tables);
-    const columns = await this.getAllColumns(connection, tablesBySchema);
-    const indexes = await this.getAllIndexes(connection, tablesBySchema);
-    const checks = await this.getAllChecks(connection, tablesBySchema);
-    const fks = await this.getAllForeignKeys(connection, tablesBySchema);
+    const columns = await this.getAllColumns(connection, tablesBySchema, ctx);
+    const indexes = await this.getAllIndexes(connection, tablesBySchema, ctx);
+    const checks = await this.getAllChecks(connection, tablesBySchema, ctx);
+    const fks = await this.getAllForeignKeys(connection, tablesBySchema, ctx);
 
     for (const t of tables) {
       const key = this.getTableKey(t);

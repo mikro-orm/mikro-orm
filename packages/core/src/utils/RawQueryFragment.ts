@@ -1,6 +1,8 @@
 import { Utils } from './Utils.js';
 import type { AnyString, Dictionary, EntityKey } from '../typings.js';
 
+const rawSymbol = Symbol('RawQueryFragment');
+
 declare const rawFragmentSymbolBrand: unique symbol;
 
 /** Branded symbol type used as a unique key for tracking raw SQL fragments in object properties. */
@@ -18,7 +20,9 @@ export class RawQueryFragment<Alias extends string = string> {
   constructor(
     readonly sql: string,
     readonly params: unknown[] = [],
-  ) {}
+  ) {
+    Object.defineProperty(this, rawSymbol, { value: true, enumerable: false });
+  }
 
   /** Returns a unique symbol key for this fragment, creating and caching it on first access. */
   get key(): RawQueryFragmentSymbol {
@@ -106,13 +110,9 @@ export class RawQueryFragment<Alias extends string = string> {
 
 export { RawQueryFragment as Raw };
 
-Object.defineProperties(RawQueryFragment.prototype, {
-  __raw: { value: true, enumerable: false },
-});
-
 /** Checks whether the given value is a `RawQueryFragment` instance. */
 export function isRaw(value: unknown): value is RawQueryFragment {
-  return typeof value === 'object' && value !== null && '__raw' in value;
+  return typeof value === 'object' && value !== null && Object.hasOwn(value, rawSymbol);
 }
 
 /** @internal */

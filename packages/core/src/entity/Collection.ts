@@ -35,6 +35,8 @@ export interface MatchingOptions<T extends object, P extends string = never> ext
   ctx?: Transaction;
 }
 
+const collectionSymbol = Symbol('Collection');
+
 /** Represents a to-many relation (1:m or m:n) as an iterable, managed collection of entities. */
 export class Collection<T extends object, O extends object = object> {
   [k: number]: T;
@@ -54,6 +56,8 @@ export class Collection<T extends object, O extends object = object> {
     items?: T[],
     initialized = true,
   ) {
+    Object.defineProperty(this, collectionSymbol, { value: true, enumerable: false });
+
     /* v8 ignore next */
     if (items) {
       let i = 0;
@@ -67,6 +71,10 @@ export class Collection<T extends object, O extends object = object> {
   /**
    * Creates new Collection instance, assigns it to the owning entity and sets the items to it (propagating them to their inverse sides)
    */
+  static isCollection<T extends object, O extends object>(item: any): item is Collection<T, O> {
+    return item != null && Object.hasOwn(item, collectionSymbol);
+  }
+
   static create<T extends object, O extends object = object>(
     owner: O,
     prop: EntityKey<O>,
@@ -997,7 +1005,6 @@ Object.defineProperties(Collection.prototype, {
       return () => this;
     },
   },
-  __collection: { value: true, enumerable: false, writable: false },
 });
 
 /** Options for initializing a collection via `init()` or `load()`. */

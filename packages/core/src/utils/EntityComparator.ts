@@ -102,13 +102,14 @@ export class EntityComparator {
 
     const lines: string[] = [];
     const context = new Map<string, any>();
+    context.set('isEntityOrRef', (val: any) => Utils.isEntity(val, true));
 
     if (meta.primaryKeys.length > 1) {
       lines.push(`  const cond = {`);
       meta.primaryKeys.forEach(pk => {
         if (meta.properties[pk].kind !== ReferenceKind.SCALAR) {
           lines.push(
-            `    ${pk}: (entity${this.wrap(pk)} != null && (entity${this.wrap(pk)}.__entity || entity${this.wrap(pk)}.__reference)) ? entity${this.wrap(pk)}.__helper.getPrimaryKey() : entity${this.wrap(pk)},`,
+            `    ${pk}: (entity${this.wrap(pk)} != null && isEntityOrRef(entity${this.wrap(pk)})) ? entity${this.wrap(pk)}.__helper.getPrimaryKey() : entity${this.wrap(pk)},`,
           );
         } else {
           lines.push(`    ${pk}: entity${this.wrap(pk)},`);
@@ -121,9 +122,7 @@ export class EntityComparator {
       const pk = meta.primaryKeys[0];
 
       if (meta.properties[pk].kind !== ReferenceKind.SCALAR) {
-        lines.push(
-          `  if (entity${this.wrap(pk)} != null && (entity${this.wrap(pk)}.__entity || entity${this.wrap(pk)}.__reference)) {`,
-        );
+        lines.push(`  if (entity${this.wrap(pk)} != null && isEntityOrRef(entity${this.wrap(pk)})) {`);
         lines.push(`    const pk = entity${this.wrap(pk)}.__helper.getPrimaryKey();`);
 
         if (meta.properties[pk].targetMeta!.compositePK) {
@@ -167,13 +166,14 @@ export class EntityComparator {
 
     const lines: string[] = [];
     const context = new Map<string, any>();
+    context.set('isEntityOrRef', (val: any) => Utils.isEntity(val, true));
 
     if (meta.primaryKeys.length > 1) {
       lines.push(`  const cond = {`);
       meta.primaryKeys.forEach(pk => {
         if (meta.properties[pk].kind !== ReferenceKind.SCALAR) {
           lines.push(
-            `    ${pk}: (entity${this.wrap(pk)} != null && (entity${this.wrap(pk)}.__entity || entity${this.wrap(pk)}.__reference)) ? entity${this.wrap(pk)}.__helper.getPrimaryKey(true) : entity${this.wrap(pk)},`,
+            `    ${pk}: (entity${this.wrap(pk)} != null && isEntityOrRef(entity${this.wrap(pk)})) ? entity${this.wrap(pk)}.__helper.getPrimaryKey(true) : entity${this.wrap(pk)},`,
           );
         } else {
           if (meta.properties[pk].customType) {
@@ -192,7 +192,7 @@ export class EntityComparator {
 
       if (meta.properties[pk].kind !== ReferenceKind.SCALAR) {
         lines.push(
-          `  if (entity${this.wrap(pk)} != null && (entity${this.wrap(pk)}.__entity || entity${this.wrap(pk)}.__reference)) return entity${this.wrap(pk)}.__helper.getPrimaryKey(true);`,
+          `  if (entity${this.wrap(pk)} != null && isEntityOrRef(entity${this.wrap(pk)})) return entity${this.wrap(pk)}.__helper.getPrimaryKey(true);`,
         );
       }
 
@@ -227,6 +227,7 @@ export class EntityComparator {
 
     const lines: string[] = [];
     const context = new Map<string, any>();
+    context.set('isEntityOrRef', (val: any) => Utils.isEntity(val, true));
     context.set('getCompositeKeyValue', (val: any) =>
       Utils.flatten(Utils.getCompositeKeyValue(val, meta, 'convertToDatabaseValue', this.#platform) as unknown[][]),
     );
@@ -237,7 +238,7 @@ export class EntityComparator {
       meta.primaryKeys.forEach(pk => {
         if (meta.properties[pk].kind !== ReferenceKind.SCALAR) {
           lines.push(
-            `    (entity${this.wrap(pk)} != null && (entity${this.wrap(pk)}.__entity || entity${this.wrap(pk)}.__reference)) ? entity${this.wrap(pk)}.__helper.getSerializedPrimaryKey() : entity${this.wrap(pk)},`,
+            `    (entity${this.wrap(pk)} != null && isEntityOrRef(entity${this.wrap(pk)})) ? entity${this.wrap(pk)}.__helper.getSerializedPrimaryKey() : entity${this.wrap(pk)},`,
           );
         } else {
           lines.push(`    entity${this.wrap(pk)},`);
@@ -251,7 +252,7 @@ export class EntityComparator {
 
       if (prop.kind !== ReferenceKind.SCALAR) {
         lines.push(
-          `  if (entity${this.wrap(pk)} != null && (entity${this.wrap(pk)}.__entity || entity${this.wrap(pk)}.__reference)) return entity${this.wrap(pk)}.__helper.getSerializedPrimaryKey();`,
+          `  if (entity${this.wrap(pk)} != null && isEntityOrRef(entity${this.wrap(pk)})) return entity${this.wrap(pk)}.__helper.getSerializedPrimaryKey();`,
         );
       }
 

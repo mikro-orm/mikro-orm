@@ -1,4 +1,11 @@
-import { type Connection, type Dictionary, type Options, RawQueryFragment, Utils } from '@mikro-orm/core';
+import {
+  type Connection,
+  type Dictionary,
+  type Options,
+  type Transaction,
+  RawQueryFragment,
+  Utils,
+} from '@mikro-orm/core';
 import type { AbstractSqlConnection } from '../AbstractSqlConnection.js';
 import type { AbstractSqlPlatform } from '../AbstractSqlPlatform.js';
 import type { CheckDef, Column, ForeignKey, IndexDef, Table, TableDifference } from '../typings.js';
@@ -101,6 +108,7 @@ export abstract class SchemaHelper {
     connection: AbstractSqlConnection,
     tables: Table[],
     schemas?: string[],
+    ctx?: Transaction,
   ): Promise<void>;
 
   /** Returns the SQL query to list all tables in the database. */
@@ -109,15 +117,20 @@ export abstract class SchemaHelper {
   }
 
   /** Retrieves all tables from the database. */
-  async getAllTables(connection: AbstractSqlConnection, schemas?: string[]): Promise<Table[]> {
-    return connection.execute<Table[]>(this.getListTablesSQL());
+  async getAllTables(connection: AbstractSqlConnection, schemas?: string[], ctx?: Transaction): Promise<Table[]> {
+    return connection.execute<Table[]>(this.getListTablesSQL(), [], 'all', ctx);
   }
 
   getListViewsSQL(): string {
     throw new Error('Not supported by given driver');
   }
 
-  async loadViews(schema: DatabaseSchema, connection: AbstractSqlConnection, schemaName?: string): Promise<void> {
+  async loadViews(
+    schema: DatabaseSchema,
+    connection: AbstractSqlConnection,
+    schemaName?: string,
+    ctx?: Transaction,
+  ): Promise<void> {
     throw new Error('Not supported by given driver');
   }
 
@@ -413,7 +426,15 @@ export abstract class SchemaHelper {
       let type = column.type + (column.generated ? ` generated always as ${column.generated}` : '');
 
       if (column.nativeEnumName) {
-        type = this.quote(this.getTableName(type, table.schema));
+        const parts = type.split('.');
+
+        if (parts.length === 2 && parts[0] === '*' && table.schema) {
+          type = `${table.schema}.${parts[1]}`;
+        } else if (parts.length === 1) {
+          type = this.getTableName(type, table.schema);
+        }
+
+        type = this.quote(type);
       }
 
       sql.push(
@@ -494,7 +515,7 @@ export abstract class SchemaHelper {
     return '';
   }
 
-  async getNamespaces(connection: AbstractSqlConnection): Promise<string[]> {
+  async getNamespaces(connection: AbstractSqlConnection, ctx?: Transaction): Promise<string[]> {
     return [];
   }
 
@@ -796,7 +817,8 @@ export abstract class SchemaHelper {
     return `alter table ${table.getQuotedName()} add constraint ${this.quote(check.name)} check (${check.expression})`;
   }
 
-  protected getTableName(table: string, schema?: string): string {
+  /** @internal */
+  getTableName(table: string, schema?: string): string {
     if (schema && schema !== this.platform.getDefaultSchemaName()) {
       return `${schema}.${table}`;
     }
@@ -890,6 +912,7 @@ export abstract class SchemaHelper {
     schema: DatabaseSchema,
     connection: AbstractSqlConnection,
     schemaName?: string,
+    ctx?: Transaction,
   ): Promise<void> {
     throw new Error('Not supported by given driver');
   }

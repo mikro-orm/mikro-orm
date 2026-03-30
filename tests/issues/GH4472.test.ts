@@ -159,5 +159,15 @@ alter table "n2"."category" add constraint "category_topic_id_foreign" foreign k
 
     const diff5 = await orm.schema.getUpdateSchemaSQL({ schema: 'n2', wrap: false });
     expect(diff5).toBe('');
+
+    // change native enum name to trigger an alter column type change with wildcard schema
+    const meta = orm.getMetadata(Topic);
+    meta.properties.enum1.nativeEnumName = 'enum_type_new';
+    meta.properties.enum1.columnTypes = ['*.enum_type_new'];
+    meta.properties.enum1.items = ['foo', 'bar', 'baz'];
+
+    const diff6 = await orm.schema.getUpdateSchemaSQL({ schema: 'n2', wrap: false });
+    expect(diff6).toContain('create type "n2"."enum_type_new"');
+    expect(diff6).toContain('alter table "n2"."topic" alter column "enum1" type "n2"."enum_type_new"');
   });
 });
