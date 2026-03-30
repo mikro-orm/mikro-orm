@@ -293,11 +293,12 @@ export type MapTableName<
     : PreferStringLiteral<NonNullable<P['tableName']>, P['name']>]: P;
 };
 
+type ResolveTableNaming<TOptions extends MikroKyselyPluginOptions> = TOptions['tableNamingStrategy'] extends 'entity'
+  ? 'entity'
+  : 'underscore';
+
 export type MapValueAsTable<TMap extends Record<string, any>, TOptions extends MikroKyselyPluginOptions = {}> = {
-  [K in keyof TMap as TransformName<
-    K,
-    TOptions['tableNamingStrategy'] extends 'entity' ? 'entity' : 'underscore'
-  >]: InferKyselyTable<TMap[K], TOptions>;
+  [K in keyof TMap as TransformName<K, ResolveTableNaming<TOptions>>]: InferKyselyTable<TMap[K], TOptions>;
 };
 
 export type InferKyselyTable<
@@ -404,11 +405,13 @@ type ClassEntityDBMap<TEntities, TOptions extends MikroKyselyPluginOptions = {}>
   [T in TEntities as ClassEntityTableName<T, TOptions>]: ClassEntityColumns<T, TOptions>;
 };
 
-type ClassEntityTableName<T, TOptions extends MikroKyselyPluginOptions = {}> = T extends abstract new (
-  ...args: any[]
-) => infer Instance
-  ? TransformName<InferEntityName<Instance>, TOptions['tableNamingStrategy'] extends 'entity' ? 'entity' : 'underscore'>
-  : never;
+type ClassEntityTableName<T, TOptions extends MikroKyselyPluginOptions = {}> = T extends {
+  '~entityName'?: infer Name extends string;
+}
+  ? TransformName<Name, ResolveTableNaming<TOptions>>
+  : T extends abstract new (...args: any[]) => infer Instance
+    ? TransformName<InferEntityName<Instance>, ResolveTableNaming<TOptions>>
+    : never;
 
 type ClassEntityColumns<T, TOptions extends MikroKyselyPluginOptions = {}> = T extends abstract new (
   ...args: any[]

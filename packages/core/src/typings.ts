@@ -2133,6 +2133,8 @@ export interface EntitySchemaWithMeta<
   readonly tableName: TTableName;
   /** @internal Direct entity type access - avoids expensive pattern matching */
   readonly '~entity': TEntity;
+  /** @internal */
+  readonly class: TClass & { '~entityName'?: TName };
 }
 
 /**
