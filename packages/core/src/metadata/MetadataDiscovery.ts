@@ -566,7 +566,7 @@ export class MetadataDiscovery {
     }
   }
 
-  private initManyToOneFieldName(prop: EntityProperty, name: string, tableName?: string): string[] {
+  private initManyToOneFieldName(prop: EntityProperty, name: string): string[] {
     const meta2 = prop.targetMeta!;
     const ret: string[] = [];
 
@@ -574,7 +574,7 @@ export class MetadataDiscovery {
       this.initFieldName(meta2.properties[primaryKey]);
 
       for (const fieldName of meta2.properties[primaryKey].fieldNames) {
-        ret.push(this.#namingStrategy.joinKeyColumnName(name, fieldName, meta2.compositePK, tableName));
+        ret.push(this.#namingStrategy.joinKeyColumnName(name, fieldName, meta2.compositePK));
       }
     }
 
@@ -644,19 +644,12 @@ export class MetadataDiscovery {
         ),
       );
     } else {
-      const ownerTableName = this.isExplicitTableName(meta.root) ? meta.root.tableName : undefined;
       prop.joinColumns ??= prop.referencedColumnNames.map(referencedColumnName =>
-        this.#namingStrategy.joinKeyColumnName(
-          meta.root.className,
-          referencedColumnName,
-          meta.compositePK,
-          ownerTableName,
-        ),
+        this.#namingStrategy.joinKeyColumnName(meta.root.className, referencedColumnName, meta.compositePK),
       );
     }
 
-    const inverseTableName = this.isExplicitTableName(meta2.root) ? meta2.root.tableName : undefined;
-    prop.inverseJoinColumns ??= this.initManyToOneFieldName(prop, meta2.root.className, inverseTableName);
+    prop.inverseJoinColumns ??= this.initManyToOneFieldName(prop, meta2.root.className);
   }
 
   private isExplicitTableName(meta: EntityMetadata): boolean {
