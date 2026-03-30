@@ -735,6 +735,8 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
 
         if (parts.length === 2 && parts[0] === '*') {
           columnType = `${table.schema}.${parts[1]}`;
+        } else if (parts.length === 1) {
+          columnType = this.getTableName(column.type, table.schema);
         }
 
         if (columnType.endsWith('[]')) {

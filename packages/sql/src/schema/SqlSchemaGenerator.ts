@@ -256,8 +256,8 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
     }
 
     if (this.platform.supportsNativeEnums()) {
-      for (const columnName of Object.keys(schema.getNativeEnums())) {
-        const sql = this.helper.getDropNativeEnumSQL(columnName, options.schema ?? this.config.get('schema'));
+      for (const enumOptions of Object.values(schema.getNativeEnums())) {
+        const sql = this.helper.getDropNativeEnumSQL(enumOptions.name, this.getSchemaName(enumOptions, options));
         this.append(ret, sql);
       }
     }
