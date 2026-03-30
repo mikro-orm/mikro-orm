@@ -123,7 +123,12 @@ export class ChangeSetPersister {
 
     for (let i = 0; i < changeSets.length; i += size) {
       const chunk = changeSets.slice(i, i + size);
-      const pks = chunk.map(cs => cs.getPrimaryKey());
+      const pks = chunk.map(cs => cs.getPrimaryKey()).filter(v => v != null);
+
+      if (pks.length === 0) {
+        continue;
+      }
+
       options = this.prepareOptions(meta, options);
       await this.#driver.nativeDelete(meta.root.class, { [pk]: { $in: pks } } as FilterQuery<T>, options);
     }

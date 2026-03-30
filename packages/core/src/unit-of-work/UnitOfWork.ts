@@ -660,7 +660,7 @@ export class UnitOfWork {
     }
 
     for (const entity of this.#orphanRemoveStack) {
-      if (!helper(entity).__processing) {
+      if (!helper(entity).__processing && helper(entity).hasPrimaryKey()) {
         this.#removeStack.add(entity);
       }
     }
