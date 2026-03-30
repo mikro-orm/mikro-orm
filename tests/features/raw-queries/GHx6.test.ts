@@ -112,6 +112,48 @@ test('raw fragments with populateOrderBy on relation', async () => {
   );
 });
 
+test('raw fragments with alias callback as value in $nin (GH #7422)', async () => {
+  const mock = mockLogger(orm);
+  await orm.em.findAll(Job, {
+    where: {
+      id: {
+        $nin: raw(alias => `SELECT 1 FROM job j2 WHERE j2.id = ${alias}.id`),
+      },
+    },
+  });
+  expect(mock.mock.calls[0][0]).toMatch(
+    'select `j0`.* from `job` as `j0` where `j0`.`id` not in (SELECT 1 FROM job j2 WHERE j2.id = j0.id)',
+  );
+});
+
+test('raw fragments with alias callback as value in $in', async () => {
+  const mock = mockLogger(orm);
+  await orm.em.findAll(Job, {
+    where: {
+      id: {
+        $in: raw(alias => `SELECT j2.id FROM job j2 WHERE j2.id != ${alias}.id`),
+      },
+    },
+  });
+  expect(mock.mock.calls[0][0]).toMatch(
+    'select `j0`.* from `job` as `j0` where `j0`.`id` in (SELECT j2.id FROM job j2 WHERE j2.id != j0.id)',
+  );
+});
+
+test('raw fragments with alias callback as value in comparison operator', async () => {
+  const mock = mockLogger(orm);
+  await orm.em.findAll(Job, {
+    where: {
+      id: {
+        $gt: raw(alias => `(SELECT count(*) FROM job j2 WHERE j2.id < ${alias}.id)`),
+      },
+    },
+  });
+  expect(mock.mock.calls[0][0]).toMatch(
+    'select `j0`.* from `job` as `j0` where `j0`.`id` > (SELECT count(*) FROM job j2 WHERE j2.id < j0.id)',
+  );
+});
+
 test('raw fragments with multiple items in filter', async () => {
   const mock = mockLogger(orm);
   await orm.em.findAll(Tag, {
