@@ -844,7 +844,7 @@ export class QueryBuilder<
     const type = this.type ?? QueryType.SELECT;
     RawQueryFragment.markRaw(qb);
 
-    Utils.runIfNotEmpty(() => this.helper.appendQueryCondition(type, this._cond, qb), this._cond && !this._onConflict);
+    Utils.runIfNotEmpty(() => this.helper.appendQueryCondition(type, this._cond, qb), this._cond && !this._onConflict && type !== QueryType.TRUNCATE);
     Utils.runIfNotEmpty(() => qb.groupBy(this.prepareFields(this._groupBy, 'groupBy', schema)), this._groupBy);
     Utils.runIfNotEmpty(() => this.helper.appendQueryCondition(type, this._having, qb, undefined, 'having'), this._having);
     Utils.runIfNotEmpty(() => {
