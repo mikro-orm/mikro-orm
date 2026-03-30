@@ -71,33 +71,50 @@ beforeAll(async () => {
     forceUndefined: true,
     populateWhere: PopulateHint.INFER,
     loadStrategy: LoadStrategy.JOINED,
-    debug: true,
   });
 
   await orm.schema.createSchema();
+});
 
+beforeEach(async () => {
+  await orm.schema.clearDatabase();
   const em = orm.em.fork();
   const b = em.create(B, { id: 1, filterString: 'test' });
 
-  // A
   const a = em.create(A, { id: 1, bx: b });
   em.create(A, { id: 2, bx: b });
 
-  // Create C - Intentionally create them in reverse order - as the id on the first one will cause the a to not be populated
-  // If they were flipped (the first one had id = 1 it would work as a.id = 1 also)
+  // C entities created in reverse ID order — C2 (with ax=A1) before C1 (without ax).
+  // This causes a PK coincidence: C2.id=2 matches A2.id=2, which triggered the bug.
   em.create(C, { id: 2, bx: b, ax: a });
   em.create(C, { id: 1, bx: b });
 
   await em.flush();
-  em.clear();
 });
 
 afterAll(async () => {
   await orm.close(true);
 });
 
+test('GH #7434 - nullifies stale 1:1 inverse reference on refresh', async () => {
+  const em = orm.em.fork();
+
+  // Load A1 with cx populated — A1.cx = C2 in identity map
+  const a1 = await em.findOneOrFail(A, 1, { populate: ['cx'] });
+  expect(a1.cx).toBeDefined();
+
+  // Delete C2 directly in DB, bypassing the ORM
+  await em.getConnection().execute('delete from `c` where `id` = 2');
+
+  // Re-populate via em.populate with refresh — uses SELECT_IN for the inner query,
+  // so A1.cx retains the stale C2 reference until the null-out logic clears it.
+  await em.populate(a1, ['cx'], { refresh: true });
+  expect(a1.cx).toBeUndefined();
+});
+
 test('GH #7434 - query with crossed relation works', async () => {
-  const loadedAllAs = await orm.em.find(
+  const em = orm.em.fork();
+  const loadedAllAs = await em.find(
     A,
     {},
     {
@@ -105,7 +122,6 @@ test('GH #7434 - query with crossed relation works', async () => {
     },
   );
 
-  // A1 should have cx, A2 should not
   expect(loadedAllAs).toHaveLength(2);
   expect(loadedAllAs.find(x => x.id === 1)!.cx).toBeDefined();
   expect(loadedAllAs.find(x => x.id === 1)!.bx.$.cx.$.length).toEqual(2);

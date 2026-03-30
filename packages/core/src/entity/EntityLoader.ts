@@ -403,8 +403,9 @@ export class EntityLoader {
           }
 
           const entityPk = helper(entity).getSerializedPrimaryKey();
+          const refPk = helper(entity[prop.name] as AnyEntity).getSerializedPrimaryKey();
 
-          if (childrenMap.has(entityPk) && !itemsMap.has(helper(entity[prop.name] as AnyEntity).getSerializedPrimaryKey())) {
+          if (childrenMap.has(entityPk) && !itemsMap.has(refPk)) {
             entity[prop.name] = nullVal as EntityValue<Entity>;
             helper(entity).__originalEntityData![prop.name] = null;
           }
