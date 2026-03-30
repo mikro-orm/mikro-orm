@@ -293,10 +293,20 @@ export class EntityHelper {
           if (entity && (!prop.owner || helper(entity).__initialized)) {
             EntityHelper.propagateOneToOne(entity, owner, prop, prop2, value, old as T);
           }
+        } else if (old && old !== value) {
+          // Inverse already points to owner — propagation is not needed,
+          // but we still need to clean up old's inverse side.
+          helper(old).__pk ??= helper(old).getPrimaryKey()!;
 
-          if (old && prop.orphanRemoval) {
-            helper(old).__em?.getUnitOfWork().scheduleOrphanRemoval(old);
+          if (old[prop2.name as EntityKey<T>] != null) {
+            delete helper(old).__data[prop2.name];
+            old[prop2.name] = null!;
           }
+        }
+
+        if (old && old !== value && prop.orphanRemoval) {
+          helper(old).__pk ??= helper(old).getPrimaryKey()!;
+          helper(old).__em?.getUnitOfWork().scheduleOrphanRemoval(old);
         }
       }
     }
