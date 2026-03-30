@@ -440,7 +440,17 @@ export class Migrator implements IMigrator {
     }
 
     if (result.length > 0 && this.options.snapshot) {
-      const schema = await DatabaseSchema.create(this.em.getConnection(), this.em.getPlatform(), this.config);
+      const ctx = Utils.isObject<MigrateOptions>(options) ? options.transaction : undefined;
+      const schema = await DatabaseSchema.create(
+        this.em.getConnection(),
+        this.em.getPlatform(),
+        this.config,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        ctx,
+      );
 
       try {
         await this.storeCurrentSchema(schema);

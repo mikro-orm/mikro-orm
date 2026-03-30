@@ -5,6 +5,7 @@ import {
   Utils,
   type Connection,
   type Dictionary,
+  type Transaction,
 } from '@mikro-orm/core';
 import type { Knex } from 'knex';
 import type { AbstractSqlConnection } from '../AbstractSqlConnection';
@@ -49,7 +50,7 @@ export abstract class SchemaHelper {
     return true;
   }
 
-  async getPrimaryKeys(connection: AbstractSqlConnection, indexes: IndexDef[] = [], tableName: string, schemaName?: string): Promise<string[]> {
+  async getPrimaryKeys(connection: AbstractSqlConnection, indexes: IndexDef[] = [], tableName: string, schemaName?: string, ctx?: Transaction): Promise<string[]> {
     const pks = indexes.filter(i => i.primary).map(pk => pk.columnNames);
     return Utils.flatten(pks);
   }
@@ -63,8 +64,8 @@ export abstract class SchemaHelper {
     return +match[1];
   }
 
-  async getForeignKeys(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<Dictionary> {
-    const fks = await connection.execute<any[]>(this.getForeignKeysSQL(tableName, schemaName));
+  async getForeignKeys(connection: AbstractSqlConnection, tableName: string, schemaName?: string, ctx?: Transaction): Promise<Dictionary> {
+    const fks = await connection.execute<any[]>(this.getForeignKeysSQL(tableName, schemaName), [], 'all', ctx);
     return this.mapForeignKeys(fks, tableName, schemaName);
   }
 
@@ -83,7 +84,7 @@ export abstract class SchemaHelper {
     return unquote(t.table_name);
   }
 
-  async getEnumDefinitions(connection: AbstractSqlConnection, checks: CheckDef[], tableName: string, schemaName?: string): Promise<Dictionary<string[]>> {
+  async getEnumDefinitions(connection: AbstractSqlConnection, checks: CheckDef[], tableName: string, schemaName?: string, ctx?: Transaction): Promise<Dictionary<string[]>> {
     return {};
   }
 
@@ -99,15 +100,15 @@ export abstract class SchemaHelper {
     throw new Error('Not supported by given driver');
   }
 
-  async loadInformationSchema(schema: DatabaseSchema, connection: AbstractSqlConnection, tables: Table[], schemas?: string[]): Promise<void> {
+  async loadInformationSchema(schema: DatabaseSchema, connection: AbstractSqlConnection, tables: Table[], schemas?: string[], ctx?: Transaction): Promise<void> {
     for (const t of tables) {
       const table = schema.addTable(t.table_name, t.schema_name, t.table_comment);
-      const cols = await this.getColumns(connection, table.name, table.schema);
-      const indexes = await this.getIndexes(connection, table.name, table.schema);
-      const checks = await this.getChecks(connection, table.name, table.schema, cols);
-      const pks = await this.getPrimaryKeys(connection, indexes, table.name, table.schema);
-      const fks = await this.getForeignKeys(connection, table.name, table.schema);
-      const enums = await this.getEnumDefinitions(connection, checks, table.name, table.schema);
+      const cols = await this.getColumns(connection, table.name, table.schema, ctx);
+      const indexes = await this.getIndexes(connection, table.name, table.schema, ctx);
+      const checks = await this.getChecks(connection, table.name, table.schema, cols, ctx);
+      const pks = await this.getPrimaryKeys(connection, indexes, table.name, table.schema, ctx);
+      const fks = await this.getForeignKeys(connection, table.name, table.schema, ctx);
+      const enums = await this.getEnumDefinitions(connection, checks, table.name, table.schema, ctx);
       table.init(cols, indexes, checks, pks, fks, enums);
     }
   }
@@ -237,19 +238,19 @@ export abstract class SchemaHelper {
     return '';
   }
 
-  async getNamespaces(connection: AbstractSqlConnection): Promise<string[]> {
+  async getNamespaces(connection: AbstractSqlConnection, ctx?: Transaction): Promise<string[]> {
     return [];
   }
 
-  async getColumns(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<Column[]> {
+  async getColumns(connection: AbstractSqlConnection, tableName: string, schemaName?: string, ctx?: Transaction): Promise<Column[]> {
     throw new Error('Not supported by given driver');
   }
 
-  async getIndexes(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<IndexDef[]> {
+  async getIndexes(connection: AbstractSqlConnection, tableName: string, schemaName?: string, ctx?: Transaction): Promise<IndexDef[]> {
     throw new Error('Not supported by given driver');
   }
 
-  async getChecks(connection: AbstractSqlConnection, tableName: string, schemaName?: string, columns?: Column[]): Promise<CheckDef[]> {
+  async getChecks(connection: AbstractSqlConnection, tableName: string, schemaName?: string, columns?: Column[], ctx?: Transaction): Promise<CheckDef[]> {
     throw new Error('Not supported by given driver');
   }
 

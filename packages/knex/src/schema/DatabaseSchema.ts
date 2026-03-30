@@ -4,6 +4,7 @@ import {
   type Dictionary,
   type EntityMetadata,
   type EntityProperty,
+  type Transaction,
   RawQueryFragment,
 } from '@mikro-orm/core';
 import { DatabaseTable } from './DatabaseTable';
@@ -79,14 +80,14 @@ export class DatabaseSchema {
     return [...this.namespaces];
   }
 
-  static async create(connection: AbstractSqlConnection, platform: AbstractSqlPlatform, config: Configuration, schemaName?: string, schemas?: string[], takeTables?: (string | RegExp)[], skipTables?: (string | RegExp)[]): Promise<DatabaseSchema> {
+  static async create(connection: AbstractSqlConnection, platform: AbstractSqlPlatform, config: Configuration, schemaName?: string, schemas?: string[], takeTables?: (string | RegExp)[], skipTables?: (string | RegExp)[], ctx?: Transaction): Promise<DatabaseSchema> {
     const schema = new DatabaseSchema(platform, schemaName ?? config.get('schema') ?? platform.getDefaultSchemaName());
-    const allTables = await connection.execute<Table[]>(platform.getSchemaHelper()!.getListTablesSQL());
+    const allTables = await connection.execute<Table[]>(platform.getSchemaHelper()!.getListTablesSQL(), [], 'all', ctx);
     const parts = config.get('migrations').tableName!.split('.');
     const migrationsTableName = parts[1] ?? parts[0];
     const migrationsSchemaName = parts.length > 1 ? parts[0] : config.get('schema', platform.getDefaultSchemaName());
     const tables = allTables.filter(t => this.isTableNameAllowed(t.table_name, takeTables, skipTables) && (t.table_name !== migrationsTableName || (t.schema_name && t.schema_name !== migrationsSchemaName)));
-    await platform.getSchemaHelper()!.loadInformationSchema(schema, connection, tables, schemas && schemas.length > 0 ? schemas : undefined);
+    await platform.getSchemaHelper()!.loadInformationSchema(schema, connection, tables, schemas && schemas.length > 0 ? schemas : undefined, ctx);
 
     return schema;
   }
