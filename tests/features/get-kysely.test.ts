@@ -783,6 +783,27 @@ describe('InferClassEntityDB', () => {
     type DB = InferClassEntityDB<typeof NoName>;
     expectTypeOf<DB>().toEqualTypeOf<unknown>();
   });
+
+  test('class extending defineEntity().class is inferred via ~entityName brand (GH #7423)', () => {
+    const FooSchema = defineEntity({
+      name: 'Foo7423',
+      properties: {
+        id: p.integer().primary(),
+        name: p.string(),
+      },
+    });
+
+    class Foo7423 extends FooSchema.class {}
+    FooSchema.setClass(Foo7423);
+
+    type DB = InferClassEntityDB<typeof Foo7423>;
+    expectTypeOf<DB>().toHaveProperty('foo7423');
+    expectTypeOf<DB['foo7423']>().toHaveProperty('id');
+    expectTypeOf<DB['foo7423']>().toHaveProperty('name');
+
+    type DBEntity = InferClassEntityDB<typeof Foo7423, { tableNamingStrategy: 'entity' }>;
+    expectTypeOf<DBEntity>().toHaveProperty('Foo7423');
+  });
 });
 
 interface Generated<T> {
