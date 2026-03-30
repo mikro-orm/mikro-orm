@@ -566,7 +566,7 @@ export class MetadataDiscovery {
     }
   }
 
-  private initManyToOneFieldName(prop: EntityProperty, name: string, tableName?: string): string[] {
+  private initManyToOneFieldName(prop: EntityProperty, name: string): string[] {
     const meta2 = prop.targetMeta!;
     const ret: string[] = [];
 
@@ -574,7 +574,7 @@ export class MetadataDiscovery {
       this.initFieldName(meta2.properties[primaryKey]);
 
       for (const fieldName of meta2.properties[primaryKey].fieldNames) {
-        ret.push(this.#namingStrategy.joinKeyColumnName(name, fieldName, meta2.compositePK, tableName));
+        ret.push(this.#namingStrategy.joinKeyColumnName(name, fieldName, meta2.compositePK));
       }
     }
 
