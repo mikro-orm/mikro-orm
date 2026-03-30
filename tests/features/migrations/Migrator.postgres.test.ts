@@ -247,7 +247,7 @@ describe('Migrator (postgres)', () => {
 
     const dateMock = jest.spyOn(Date.prototype, 'toISOString');
     dateMock.mockReturnValue('2019-10-13T21:48:13.382Z');
-    const migration1 = await orm.migrator.create(path, true);
+    const migration1 = await orm.migrator.createMigration(path, true);
 
     // mock executeMigrations so no real DDL runs, but runMigrations still
     // triggers DatabaseSchema.create() for the snapshot update
