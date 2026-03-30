@@ -394,12 +394,29 @@ export class EntityLoader {
         childrenMap.add(helper(child).getSerializedPrimaryKey());
       }
 
-      for (const entity of entities) {
-        const key = helper(entity[prop.name] as AnyEntity ?? {})?.getSerializedPrimaryKey();
+      // For 1:1 inverse (non-owner), `children` contains parent entities, so `childrenMap`
+      // has parent PKs — match against the entity's own PK, not the referenced entity's PK.
+      if (prop.kind === ReferenceKind.ONE_TO_ONE && !prop.owner) {
+        for (const entity of entities) {
+          if (entity[prop.name] == null) {
+            continue;
+          }
 
-        if (childrenMap.has(key) && !itemsMap.has(key)) {
-          entity[prop.name] = nullVal as EntityValue<Entity>;
-          helper(entity).__originalEntityData![prop.name] = null;
+          const entityPk = helper(entity).getSerializedPrimaryKey();
+
+          if (childrenMap.has(entityPk) && !itemsMap.has(helper(entity[prop.name] as AnyEntity).getSerializedPrimaryKey())) {
+            entity[prop.name] = nullVal as EntityValue<Entity>;
+            helper(entity).__originalEntityData![prop.name] = null;
+          }
+        }
+      } else {
+        for (const entity of entities) {
+          const key = helper(entity[prop.name] as AnyEntity ?? {})?.getSerializedPrimaryKey();
+
+          if (childrenMap.has(key) && !itemsMap.has(key)) {
+            entity[prop.name] = nullVal as EntityValue<Entity>;
+            helper(entity).__originalEntityData![prop.name] = null;
+          }
         }
       }
     }
