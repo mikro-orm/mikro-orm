@@ -1,4 +1,11 @@
-import { type Connection, type Dictionary, type Options, RawQueryFragment, Utils } from '@mikro-orm/core';
+import {
+  type Connection,
+  type Dictionary,
+  type Options,
+  type Transaction,
+  RawQueryFragment,
+  Utils,
+} from '@mikro-orm/core';
 import type { AbstractSqlConnection } from '../AbstractSqlConnection.js';
 import type { AbstractSqlPlatform } from '../AbstractSqlPlatform.js';
 import type { CheckDef, Column, ForeignKey, IndexDef, Table, TableDifference } from '../typings.js';
@@ -101,6 +108,7 @@ export abstract class SchemaHelper {
     connection: AbstractSqlConnection,
     tables: Table[],
     schemas?: string[],
+    ctx?: Transaction,
   ): Promise<void>;
 
   /** Returns the SQL query to list all tables in the database. */
@@ -109,15 +117,20 @@ export abstract class SchemaHelper {
   }
 
   /** Retrieves all tables from the database. */
-  async getAllTables(connection: AbstractSqlConnection, schemas?: string[]): Promise<Table[]> {
-    return connection.execute<Table[]>(this.getListTablesSQL());
+  async getAllTables(connection: AbstractSqlConnection, schemas?: string[], ctx?: Transaction): Promise<Table[]> {
+    return connection.execute<Table[]>(this.getListTablesSQL(), [], 'all', ctx);
   }
 
   getListViewsSQL(): string {
     throw new Error('Not supported by given driver');
   }
 
-  async loadViews(schema: DatabaseSchema, connection: AbstractSqlConnection, schemaName?: string): Promise<void> {
+  async loadViews(
+    schema: DatabaseSchema,
+    connection: AbstractSqlConnection,
+    schemaName?: string,
+    ctx?: Transaction,
+  ): Promise<void> {
     throw new Error('Not supported by given driver');
   }
 
@@ -494,7 +507,7 @@ export abstract class SchemaHelper {
     return '';
   }
 
-  async getNamespaces(connection: AbstractSqlConnection): Promise<string[]> {
+  async getNamespaces(connection: AbstractSqlConnection, ctx?: Transaction): Promise<string[]> {
     return [];
   }
 
@@ -891,6 +904,7 @@ export abstract class SchemaHelper {
     schema: DatabaseSchema,
     connection: AbstractSqlConnection,
     schemaName?: string,
+    ctx?: Transaction,
   ): Promise<void> {
     throw new Error('Not supported by given driver');
   }

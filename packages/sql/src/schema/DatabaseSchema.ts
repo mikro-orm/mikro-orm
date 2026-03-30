@@ -4,6 +4,7 @@ import {
   type Dictionary,
   type EntityMetadata,
   type EntityProperty,
+  type Transaction,
   isRaw,
 } from '@mikro-orm/core';
 import { DatabaseTable } from './DatabaseTable.js';
@@ -138,9 +139,10 @@ export class DatabaseSchema {
     takeTables?: (string | RegExp)[],
     skipTables?: (string | RegExp)[],
     skipViews?: (string | RegExp)[],
+    ctx?: Transaction,
   ): Promise<DatabaseSchema> {
     const schema = new DatabaseSchema(platform, schemaName ?? config.get('schema') ?? platform.getDefaultSchemaName());
-    const allTables = await platform.getSchemaHelper()!.getAllTables(connection, schemas);
+    const allTables = await platform.getSchemaHelper()!.getAllTables(connection, schemas, ctx);
     const parts = config.get('migrations').tableName!.split('.');
     const migrationsTableName = parts[1] ?? parts[0];
     const migrationsSchemaName = parts.length > 1 ? parts[0] : config.get('schema', platform.getDefaultSchemaName());
@@ -151,14 +153,14 @@ export class DatabaseSchema {
     );
     await platform
       .getSchemaHelper()!
-      .loadInformationSchema(schema, connection, tables, schemas && schemas.length > 0 ? schemas : undefined);
+      .loadInformationSchema(schema, connection, tables, schemas && schemas.length > 0 ? schemas : undefined, ctx);
 
     // Load views from database
-    await platform.getSchemaHelper()!.loadViews(schema, connection);
+    await platform.getSchemaHelper()!.loadViews(schema, connection, schemaName, ctx);
 
     // Load materialized views (PostgreSQL only)
     if (platform.supportsMaterializedViews()) {
-      await platform.getSchemaHelper()!.loadMaterializedViews(schema, connection, schemaName);
+      await platform.getSchemaHelper()!.loadMaterializedViews(schema, connection, schemaName, ctx);
     }
 
     // Filter out skipped views
