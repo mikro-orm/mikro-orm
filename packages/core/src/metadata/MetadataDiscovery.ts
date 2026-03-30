@@ -644,19 +644,12 @@ export class MetadataDiscovery {
         ),
       );
     } else {
-      const ownerTableName = this.isExplicitTableName(meta.root) ? meta.root.tableName : undefined;
       prop.joinColumns ??= prop.referencedColumnNames.map(referencedColumnName =>
-        this.#namingStrategy.joinKeyColumnName(
-          meta.root.className,
-          referencedColumnName,
-          meta.compositePK,
-          ownerTableName,
-        ),
+        this.#namingStrategy.joinKeyColumnName(meta.root.className, referencedColumnName, meta.compositePK),
       );
     }
 
-    const inverseTableName = this.isExplicitTableName(meta2.root) ? meta2.root.tableName : undefined;
-    prop.inverseJoinColumns ??= this.initManyToOneFieldName(prop, meta2.root.className, inverseTableName);
+    prop.inverseJoinColumns ??= this.initManyToOneFieldName(prop, meta2.root.className);
   }
 
   private isExplicitTableName(meta: EntityMetadata): boolean {
