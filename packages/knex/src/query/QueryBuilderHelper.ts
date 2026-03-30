@@ -49,7 +49,7 @@ export class QueryBuilderHelper {
   mapper(field: string | Knex.Raw, type?: QueryType, value?: any, alias?: string | null, schema?: string): string;
   mapper(field: string | Knex.Raw, type = QueryType.SELECT, value?: any, alias?: string | null, schema?: string): string | Knex.Raw {
     if (Utils.isRawSql(field)) {
-      return this.knex.raw(field.sql, field.params);
+      return this.knex.raw(field.sql, field.params as readonly Knex.RawBinding[]);
     }
 
     /* istanbul ignore next */
@@ -517,7 +517,7 @@ export class QueryBuilderHelper {
       let sub: Knex.OnConflictQueryBuilder<any, any>;
 
       if (Utils.isRawSql<RawQueryFragment>(item.fields)) {
-        sub = qb.onConflict(this.knex.raw(item.fields.sql, item.fields.params));
+        sub = qb.onConflict(this.knex.raw(item.fields.sql, item.fields.params as readonly Knex.RawBinding[]));
       } else if (item.fields.length > 0) {
         sub = qb.onConflict(item.fields);
       } else {
@@ -571,7 +571,7 @@ export class QueryBuilderHelper {
     const m = operator === '$or' ? 'orWhere' : method;
 
     if (cond[key] instanceof RawQueryFragment) {
-      cond[key] = this.knex.raw(cond[key].sql, cond[key].params);
+      cond[key] = this.knex.raw(cond[key].sql, cond[key].params as readonly Knex.RawBinding[]);
     }
 
     if (this.isSimpleRegExp(cond[key])) {
@@ -589,10 +589,10 @@ export class QueryBuilderHelper {
       const value = Utils.asArray(cond[key]);
 
       if (value.length > 0) {
-        return void qb[m](this.knex.raw(raw.sql, raw.params), op, value[0]);
+        return void qb[m](this.knex.raw(raw.sql, raw.params as readonly Knex.RawBinding[]), op, value[0]);
       }
 
-      return void qb[m](this.knex.raw(raw.sql, raw.params));
+      return void qb[m](this.knex.raw(raw.sql, raw.params as readonly Knex.RawBinding[]));
     }
 
     if (this.subQueries[key]) {
@@ -646,20 +646,20 @@ export class QueryBuilderHelper {
           const conds = value[op].map(() => {
             return `(${mapped.map(field => `${this.platform.quoteIdentifier(field)} = ?`).join(' and ')})`;
           });
-          return void qb[m](this.knex.raw(`(${conds.join(' or ')})`, Utils.flatten(value[op])));
+          return void qb[m](this.knex.raw(`(${conds.join(' or ')})`, Utils.flatten(value[op]) as Knex.RawBinding[]));
         }
 
-        return void qb[m](this.knex.raw(`${mapped.map(field => `${this.platform.quoteIdentifier(field)} = ?`).join(' and ')}`, Utils.flatten(value[op])));
+        return void qb[m](this.knex.raw(`${mapped.map(field => `${this.platform.quoteIdentifier(field)} = ?`).join(' and ')}`, Utils.flatten(value[op]) as Knex.RawBinding[]));
       }
 
       if (singleTuple) {
         const tmp = value[op].length === 1 && Utils.isPlainObject(value[op][0]) ? fields.map(f => value[op][0][f]) : value[op];
-        value[op] = this.knex.raw(`(${fields.map(() => '?').join(', ')})`, tmp);
+        value[op] = this.knex.raw(`(${fields.map(() => '?').join(', ')})`, tmp as Knex.RawBinding[]);
       }
     }
 
     if (value[op] instanceof RawQueryFragment) {
-      value[op] = this.knex.raw(value[op].sql, value[op].params);
+      value[op] = this.knex.raw(value[op].sql, value[op].params as readonly Knex.RawBinding[]);
     }
 
     if (this.subQueries[key]) {
