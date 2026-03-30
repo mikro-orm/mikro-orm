@@ -828,7 +828,7 @@ export class QueryBuilderHelper {
       const query = value[op] instanceof Raw ? value[op] : value[op].toRaw();
       const mappedKey = this.mapper(key, type, query, null);
 
-      let sql = query.sql;
+      let sql = query.sql.replaceAll(ALIAS_REPLACEMENT, this.#alias);
 
       if (['$in', '$nin'].includes(op)) {
         sql = `(${sql})`;
