@@ -293,16 +293,19 @@ export class EntityHelper {
           if (entity && (!prop.owner || helper(entity).__initialized)) {
             EntityHelper.propagateOneToOne(entity, owner, prop, prop2, value, old as T);
           }
-
-          if (old && prop.orphanRemoval) {
-            helper(old).__em?.getUnitOfWork().scheduleOrphanRemoval(old);
-          }
-        } else if (old && value != null && old !== value && prop.orphanRemoval) {
-          // When replacing with a new entity whose inverse already points to the owner,
-          // propagation is not needed but orphan removal still must fire for the old entity.
+        } else if (old && old !== value) {
+          // Inverse already points to owner — propagation is not needed,
+          // but we still need to clean up old's inverse side.
           helper(old).__pk ??= helper(old).getPrimaryKey()!;
-          delete helper(old).__data[prop2.name];
-          old[prop2.name] = null!;
+
+          if (old[prop2.name as EntityKey<T>] != null) {
+            delete helper(old).__data[prop2.name];
+            old[prop2.name] = null!;
+          }
+        }
+
+        if (old && old !== value && prop.orphanRemoval) {
+          helper(old).__pk ??= helper(old).getPrimaryKey()!;
           helper(old).__em?.getUnitOfWork().scheduleOrphanRemoval(old);
         }
       }
