@@ -1342,7 +1342,7 @@ export abstract class AbstractSqlDriver<
     const pkProps = meta.primaryKeys.concat(...meta.concurrencyCheckKeys);
     const pks = Utils.flatten(pkProps.map(pk => meta.properties[pk].fieldNames));
 
-    const useTupleIn = pks.length <= 1 || this.platform.supportsTupleIn();
+    const useTupleIn = pks.length <= 1 || this.platform.allowsComparingTuples();
 
     const conds = where.map(cond => {
       if (Utils.isPlainObject(cond) && Utils.getObjectKeysSize(cond) === 1) {
