@@ -1341,10 +1341,8 @@ export abstract class AbstractSqlDriver<
     sql = sql.substring(0, sql.length - 2) + ' where ';
     const pkProps = meta.primaryKeys.concat(...meta.concurrencyCheckKeys);
     const pks = Utils.flatten(pkProps.map(pk => meta.properties[pk].fieldNames));
-    sql +=
-      pks.length > 1
-        ? `(${pks.map(pk => this.platform.quoteIdentifier(pk)).join(', ')})`
-        : this.platform.quoteIdentifier(pks[0]);
+
+    const useTupleIn = pks.length <= 1 || this.platform.supportsTupleIn();
 
     const conds = where.map(cond => {
       if (Utils.isPlainObject(cond) && Utils.getObjectKeysSize(cond) === 1) {
@@ -1359,13 +1357,25 @@ export abstract class AbstractSqlDriver<
             params.push(cond[pk as keyof FilterQuery<T>]);
           }
         });
-        return `(${Array.from({ length: pks.length }).fill('?').join(', ')})`;
+
+        return useTupleIn
+          ? `(${Array.from({ length: pks.length }).fill('?').join(', ')})`
+          : `(${pks.map(pk => `${this.platform.quoteIdentifier(pk)} = ?`).join(' and ')})`;
       }
 
       params.push(cond);
       return '?';
     });
-    sql += ` in (${conds.join(', ')})`;
+
+    if (useTupleIn) {
+      sql +=
+        pks.length > 1
+          ? `(${pks.map(pk => this.platform.quoteIdentifier(pk)).join(', ')})`
+          : this.platform.quoteIdentifier(pks[0]);
+      sql += ` in (${conds.join(', ')})`;
+    } else {
+      sql += conds.join(' or ');
+    }
 
     if (this.platform.usesReturningStatement() && returning.size > 0) {
       const returningFields = Utils.flatten([...returning].map(prop => meta.properties[prop].fieldNames));

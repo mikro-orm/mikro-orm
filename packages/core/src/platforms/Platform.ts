@@ -432,6 +432,11 @@ export abstract class Platform {
     return this.config.get('multipleStatements');
   }
 
+  /** Whether the platform supports `(col1, col2) in ((val1, val2), ...)` syntax. */
+  supportsTupleIn(): boolean {
+    return true;
+  }
+
   /** Whether the platform supports the UNION WHERE optimization for multi-branch queries. */
   supportsUnionWhere(): boolean {
     return false;

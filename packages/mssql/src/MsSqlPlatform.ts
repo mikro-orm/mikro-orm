@@ -268,6 +268,10 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
     return true;
   }
 
+  override supportsTupleIn(): boolean {
+    return false;
+  }
+
   override quoteIdentifier(id: string | { toString: () => string }): string {
     if (RawQueryFragment.isKnownFragment(id as string)) {
       return super.quoteIdentifier(id);
