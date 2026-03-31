@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.6.11](https://github.com/mikro-orm/mikro-orm/compare/v6.6.10...v6.6.11) (2026-03-31)
+
+
+### Bug Fixes
+
+* **core:** fire orphan removal for OneToOne replacement when inverse already set ([#7439](https://github.com/mikro-orm/mikro-orm/issues/7439)) ([674efd0](https://github.com/mikro-orm/mikro-orm/commit/674efd03c1b96c55edde7837003b909a7d562aa1)), closes [#7436](https://github.com/mikro-orm/mikro-orm/issues/7436)
+* **core:** prevent incorrect nullification of 1:1 inverse relations during joined loading ([#7434](https://github.com/mikro-orm/mikro-orm/issues/7434)) ([1d46f0f](https://github.com/mikro-orm/mikro-orm/commit/1d46f0f577eb64788baae3047ce3f75640e5e5ea))
+* **knex:** allow contextual type inference for `raw()` with string inputs ([1683a54](https://github.com/mikro-orm/mikro-orm/commit/1683a545dd68b0185a3b9a1e75c5232746404a7d))
+
+
+
+
+
 ## [6.6.10](https://github.com/mikro-orm/mikro-orm/compare/v6.6.9...v6.6.10) (2026-03-26)
 
 

@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.6.11](https://github.com/mikro-orm/mikro-orm/compare/v6.6.10...v6.6.11) (2026-03-31)
+
+
+### Bug Fixes
+
+* **sql:** pass transaction context through schema introspection to avoid deadlock ([#7431](https://github.com/mikro-orm/mikro-orm/issues/7431)) ([03bd640](https://github.com/mikro-orm/mikro-orm/commit/03bd6405df4794b66ed484bb75614974450d67f9)), closes [#7426](https://github.com/mikro-orm/mikro-orm/issues/7426) [#7424](https://github.com/mikro-orm/mikro-orm/issues/7424)
+
+
+
+
+
 ## [6.6.10](https://github.com/mikro-orm/mikro-orm/compare/v6.6.9...v6.6.10) (2026-03-26)
 
 **Note:** Version bump only for package @mikro-orm/migrations
