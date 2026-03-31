@@ -1606,6 +1606,10 @@ type MaybeHidden<Value, Options> = Options extends { hidden: true }
   ? Hidden<NonNullable<Value>> | Extract<Value, null | undefined>
   : Value;
 
-type ValueOf<T extends Dictionary> = T[keyof T];
+type ValueOf<T extends Dictionary> = T[keyof T] extends infer V
+  ? V extends (...args: any[]) => any
+    ? never
+    : V
+  : never;
 
 type IsUnion<T, U = T> = T extends U ? ([U] extends [T] ? false : true) : false;
