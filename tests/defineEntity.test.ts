@@ -31,6 +31,21 @@ import type { PropertyChain, UniversalPropertyOptionsBuilder } from '../packages
 import { IsExact, assert } from 'conditional-type-checks';
 import { ObjectId } from 'bson';
 
+// GH #7446 - enum merged with namespace (must be at module level)
+enum Status7446 {
+  Pending = 0,
+  Success = 1,
+  Error = 2,
+  Running = 3,
+}
+
+// eslint-disable-next-line @typescript-eslint/no-namespace
+namespace Status7446 {
+  export function isComplete(status: Status7446): boolean {
+    return status === Status7446.Success || status === Status7446.Error;
+  }
+}
+
 // Compile-time assertion: PropertyChain method parameters must match
 // UniversalPropertyOptionsBuilder. Catches signature drift between the lightweight
 // interface and the implementation class. Return types are intentionally different.
@@ -580,6 +595,21 @@ describe('defineEntity', () => {
     });
 
     expect(Foo.meta).toEqual(asSnapshot(FooSchema.meta));
+  });
+
+  // GH #7446
+  it('should define entity with enum merged with namespace', () => {
+    const Foo = defineEntity({
+      name: 'Foo',
+      properties: {
+        id: p.uuid().primary(),
+        status: p.enum(() => Status7446),
+      },
+    });
+
+    type IFoo = InferEntity<typeof Foo>;
+    // The type should only include enum values, not namespace functions
+    assert<IsExact<IFoo['status'], Status7446>>(true);
   });
 
   it('should define entity with embedded', () => {
