@@ -37,6 +37,7 @@ import type {
   IWrappedEntity,
   DefineConfig,
   Config,
+  MaybePromise,
 } from '../typings.js';
 import type { Raw } from '../utils/RawQueryFragment.js';
 import type { ScalarReference } from './Reference.js';
@@ -54,7 +55,7 @@ import type { IType, Type } from '../types/Type.js';
 import { types } from '../types/index.js';
 import { EntitySchema } from '../metadata/EntitySchema.js';
 import type { Collection } from './Collection.js';
-import type { FilterOptions } from '../drivers/IDatabaseDriver.js';
+import type { FilterOptions, FindOptions, FindOneOptions } from '../drivers/IDatabaseDriver.js';
 
 /** Union of all option keys supported across all property definition types (scalar, enum, embedded, relations). */
 export type UniversalPropertyKeys =
@@ -1217,6 +1218,7 @@ export interface EntityMetadataWithProperties<
   | 'indexes'
   | 'uniques'
   | 'repository'
+  | 'filters'
   | 'orderBy'
 > {
   name: TName;
@@ -1229,6 +1231,23 @@ export interface EntityMetadataWithProperties<
   hooks?: DefineEntityHooks;
   // Capture the repository type for InferEntity to include EntityRepositoryType
   repository?: () => TRepository;
+  // mirrors FilterDefResolved with Dictionary instead of FilterQuery for cond to avoid circular type inference (GH #7440)
+  filters?: Dictionary<{
+    name: string;
+    cond:
+      | Dictionary
+      | ((
+          args: Dictionary,
+          type: 'read' | 'update' | 'delete',
+          em: any,
+          options?: FindOptions<any, any, any, any> | FindOneOptions<any, any, any, any>,
+          entityName?: string,
+        ) => MaybePromise<FilterQuery<any>>);
+    default?: boolean;
+    entity?: EntityName<any> | EntityName<any>[];
+    args?: boolean;
+    strict?: boolean;
+  }>;
   forceObject?: TForceObject;
 
   // Table-per-type inheritance (each entity has its own table)

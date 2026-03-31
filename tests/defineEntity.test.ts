@@ -153,6 +153,41 @@ describe('defineEntity', () => {
     assert<IsExact<QuxRepoType & {}, QuxRepository>>(true);
   });
 
+  // GH #7440
+  it('should work with custom repository and filters', () => {
+    class UserRepository extends EntityRepository<User> {}
+
+    const UserSchema = defineEntity({
+      name: 'FilterRepoUser',
+      tableName: 'users',
+      repository: () => UserRepository,
+      properties: {
+        id: p.integer().primary().autoincrement(),
+        name: p.string(),
+        email: p.string().unique(),
+        deletedAt: p.datetime().nullable(),
+      },
+      filters: {
+        softDelete: {
+          name: 'softDelete',
+          cond: { deletedAt: null },
+          default: true,
+        },
+      },
+    });
+
+    class User extends UserSchema.class {}
+    UserSchema.setClass(User);
+
+    expect(UserSchema.init().meta.filters.softDelete).toBeDefined();
+    expect(UserSchema.init().meta.filters.softDelete.default).toBe(true);
+
+    type IUser = InferEntity<typeof UserSchema>;
+    assert<IsExact<IUser['name'], string>>(true);
+    type UserRepoType = IUser[typeof EntityRepositoryType];
+    assert<IsExact<UserRepoType & {}, UserRepository>>(true);
+  });
+
   it('should define entity with primary keys', () => {
     const Foo = defineEntity({
       name: 'Foo',
