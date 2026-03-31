@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.0.7](https://github.com/mikro-orm/mikro-orm/compare/v7.0.6...v7.0.7) (2026-03-31)
+
+
+### Bug Fixes
+
+* **mssql:** use equality conditions for composite PK batch updates ([#7442](https://github.com/mikro-orm/mikro-orm/issues/7442)) ([ba4063b](https://github.com/mikro-orm/mikro-orm/commit/ba4063bffdfc7ea3e5495b2235f7778d6b1abf06))
+* **sql:** fix count queries with composite PKs and toMany joins ([#7415](https://github.com/mikro-orm/mikro-orm/issues/7415)) ([bb0d66c](https://github.com/mikro-orm/mikro-orm/commit/bb0d66cf41bbff7ed9cefe37b4e3d3f4f945a5a5)), closes [#7414](https://github.com/mikro-orm/mikro-orm/issues/7414)
+* **sql:** fix nativeEnumName schema handling with config-level schema ([#7435](https://github.com/mikro-orm/mikro-orm/issues/7435)) ([2ddd288](https://github.com/mikro-orm/mikro-orm/commit/2ddd28839662412fce2ab4a4c0cb054ade0fdba3)), closes [#7432](https://github.com/mikro-orm/mikro-orm/issues/7432)
+* **sql:** generate indexes for materialized view entities ([#7419](https://github.com/mikro-orm/mikro-orm/issues/7419)) ([bf86941](https://github.com/mikro-orm/mikro-orm/commit/bf86941e27b75e23cf69bd5d51df88fd2e585ccc)), closes [#7417](https://github.com/mikro-orm/mikro-orm/issues/7417)
+* **sql:** infer Kysely table names for classes extending `defineEntity().class` ([#7425](https://github.com/mikro-orm/mikro-orm/issues/7425)) ([469a667](https://github.com/mikro-orm/mikro-orm/commit/469a66720157ea3dd1564d0502f3e9dae097b0c4)), closes [#7423](https://github.com/mikro-orm/mikro-orm/issues/7423)
+* **sql:** pass transaction context through schema introspection to avoid deadlock ([#7426](https://github.com/mikro-orm/mikro-orm/issues/7426)) ([2a1bc05](https://github.com/mikro-orm/mikro-orm/commit/2a1bc05452cd34361bcef8d8f0a1cc110bd6cf72)), closes [#7424](https://github.com/mikro-orm/mikro-orm/issues/7424)
+* **sql:** resolve alias placeholder in raw fragments used as operator values ([#7427](https://github.com/mikro-orm/mikro-orm/issues/7427)) ([d23d30b](https://github.com/mikro-orm/mikro-orm/commit/d23d30b172cf3a5574e40744f3d1499dc5e0427b)), closes [#7422](https://github.com/mikro-orm/mikro-orm/issues/7422)
+
+
+
+
+
 ## [7.0.6](https://github.com/mikro-orm/mikro-orm/compare/v7.0.5...v7.0.6) (2026-03-26)
 
 ### Bug Fixes

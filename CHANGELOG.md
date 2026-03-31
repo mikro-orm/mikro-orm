@@ -3,6 +3,32 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.0.7](https://github.com/mikro-orm/mikro-orm/compare/v7.0.6...v7.0.7) (2026-03-31)
+
+
+### Bug Fixes
+
+* **core:** apply embedded sub-property defaults during upsert ([#7411](https://github.com/mikro-orm/mikro-orm/issues/7411)) ([baf89e1](https://github.com/mikro-orm/mikro-orm/commit/baf89e1269985eebb906afbc601e1d3aa3c7e66f))
+* **core:** fire orphan removal for OneToOne replacement when inverse already set ([#7436](https://github.com/mikro-orm/mikro-orm/issues/7436)) ([6e4fe2a](https://github.com/mikro-orm/mikro-orm/commit/6e4fe2af14ddf613d086969fa8bb3a5a18dfe76a))
+* **core:** preserve user changes on references during initialization ([#7421](https://github.com/mikro-orm/mikro-orm/issues/7421)) ([69ed5be](https://github.com/mikro-orm/mikro-orm/commit/69ed5be3213672e81135da00f6819c3b19de0b94))
+* **core:** prevent incorrect nullification of 1:1 inverse relations during joined loading ([#7434](https://github.com/mikro-orm/mikro-orm/issues/7434)) ([725e924](https://github.com/mikro-orm/mikro-orm/commit/725e9244f19057f99423a2e1bcc6e3fcff9d6f3d))
+* **core:** resolve circular type inference in defineEntity with repository + filters ([#7441](https://github.com/mikro-orm/mikro-orm/issues/7441)) ([0ad9c60](https://github.com/mikro-orm/mikro-orm/commit/0ad9c60153997e9821e03602874c33916b7ba0c7)), closes [#7440](https://github.com/mikro-orm/mikro-orm/issues/7440)
+* **core:** resolve entity name from registry in MetadataProvider ([#7408](https://github.com/mikro-orm/mikro-orm/issues/7408)) ([6953f34](https://github.com/mikro-orm/mikro-orm/commit/6953f3426e931f4be6054674f8d13efe7527fd9f))
+* **core:** skip required validation for embeddables with only formula properties ([#7429](https://github.com/mikro-orm/mikro-orm/issues/7429)) ([88eb092](https://github.com/mikro-orm/mikro-orm/commit/88eb0923937540765265bd2b8f2b232948f4bab4))
+* **core:** use className instead of tableName for pivot join column names ([#7430](https://github.com/mikro-orm/mikro-orm/issues/7430)) ([5767c20](https://github.com/mikro-orm/mikro-orm/commit/5767c202f268af1e7f3b1abac0e013cce4e0a843))
+* **mssql:** use equality conditions for composite PK batch updates ([#7442](https://github.com/mikro-orm/mikro-orm/issues/7442)) ([ba4063b](https://github.com/mikro-orm/mikro-orm/commit/ba4063bffdfc7ea3e5495b2235f7778d6b1abf06))
+* **repo:** use npx to invoke lint-staged and commitlint in husky hooks ([b9fda19](https://github.com/mikro-orm/mikro-orm/commit/b9fda192f9699903f5640e71e572ca6371601fd3))
+* **sql:** fix count queries with composite PKs and toMany joins ([#7415](https://github.com/mikro-orm/mikro-orm/issues/7415)) ([bb0d66c](https://github.com/mikro-orm/mikro-orm/commit/bb0d66cf41bbff7ed9cefe37b4e3d3f4f945a5a5)), closes [#7414](https://github.com/mikro-orm/mikro-orm/issues/7414)
+* **sql:** fix nativeEnumName schema handling with config-level schema ([#7435](https://github.com/mikro-orm/mikro-orm/issues/7435)) ([2ddd288](https://github.com/mikro-orm/mikro-orm/commit/2ddd28839662412fce2ab4a4c0cb054ade0fdba3)), closes [#7432](https://github.com/mikro-orm/mikro-orm/issues/7432)
+* **sql:** generate indexes for materialized view entities ([#7419](https://github.com/mikro-orm/mikro-orm/issues/7419)) ([bf86941](https://github.com/mikro-orm/mikro-orm/commit/bf86941e27b75e23cf69bd5d51df88fd2e585ccc)), closes [#7417](https://github.com/mikro-orm/mikro-orm/issues/7417)
+* **sql:** infer Kysely table names for classes extending `defineEntity().class` ([#7425](https://github.com/mikro-orm/mikro-orm/issues/7425)) ([469a667](https://github.com/mikro-orm/mikro-orm/commit/469a66720157ea3dd1564d0502f3e9dae097b0c4)), closes [#7423](https://github.com/mikro-orm/mikro-orm/issues/7423)
+* **sql:** pass transaction context through schema introspection to avoid deadlock ([#7426](https://github.com/mikro-orm/mikro-orm/issues/7426)) ([2a1bc05](https://github.com/mikro-orm/mikro-orm/commit/2a1bc05452cd34361bcef8d8f0a1cc110bd6cf72)), closes [#7424](https://github.com/mikro-orm/mikro-orm/issues/7424)
+* **sql:** resolve alias placeholder in raw fragments used as operator values ([#7427](https://github.com/mikro-orm/mikro-orm/issues/7427)) ([d23d30b](https://github.com/mikro-orm/mikro-orm/commit/d23d30b172cf3a5574e40744f3d1499dc5e0427b)), closes [#7422](https://github.com/mikro-orm/mikro-orm/issues/7422)
+
+
+
+
+
 ## [7.0.6](https://github.com/mikro-orm/mikro-orm/compare/v7.0.5...v7.0.6) (2026-03-26)
 
 

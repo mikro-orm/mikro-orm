@@ -1,6 +1,6 @@
 {
   "name": "@mikro-orm/knex-compat",
-  "version": "7.0.6",
+  "version": "7.0.7",
   "description": "TypeScript ORM for Node.js based on Data Mapper, Unit of Work and Identity Map patterns. Supports MongoDB, MySQL, PostgreSQL and SQLite databases as well as usage with vanilla JavaScript.",
   "keywords": [
     "data-mapper",
@@ -47,7 +47,7 @@
     "copy": "node ../../scripts/copy.mjs"
   },
   "devDependencies": {
-    "@mikro-orm/sql": "^7.0.6"
+    "@mikro-orm/sql": "^7.0.7"
   },
   "peerDependencies": {
     "@mikro-orm/sql": "7.0.6",

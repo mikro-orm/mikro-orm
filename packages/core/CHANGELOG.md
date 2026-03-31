@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.0.7](https://github.com/mikro-orm/mikro-orm/compare/v7.0.6...v7.0.7) (2026-03-31)
+
+
+### Bug Fixes
+
+* **core:** apply embedded sub-property defaults during upsert ([#7411](https://github.com/mikro-orm/mikro-orm/issues/7411)) ([baf89e1](https://github.com/mikro-orm/mikro-orm/commit/baf89e1269985eebb906afbc601e1d3aa3c7e66f))
+* **core:** fire orphan removal for OneToOne replacement when inverse already set ([#7436](https://github.com/mikro-orm/mikro-orm/issues/7436)) ([6e4fe2a](https://github.com/mikro-orm/mikro-orm/commit/6e4fe2af14ddf613d086969fa8bb3a5a18dfe76a))
+* **core:** preserve user changes on references during initialization ([#7421](https://github.com/mikro-orm/mikro-orm/issues/7421)) ([69ed5be](https://github.com/mikro-orm/mikro-orm/commit/69ed5be3213672e81135da00f6819c3b19de0b94))
+* **core:** prevent incorrect nullification of 1:1 inverse relations during joined loading ([#7434](https://github.com/mikro-orm/mikro-orm/issues/7434)) ([725e924](https://github.com/mikro-orm/mikro-orm/commit/725e9244f19057f99423a2e1bcc6e3fcff9d6f3d))
+* **core:** resolve circular type inference in defineEntity with repository + filters ([#7441](https://github.com/mikro-orm/mikro-orm/issues/7441)) ([0ad9c60](https://github.com/mikro-orm/mikro-orm/commit/0ad9c60153997e9821e03602874c33916b7ba0c7)), closes [#7440](https://github.com/mikro-orm/mikro-orm/issues/7440)
+* **core:** resolve entity name from registry in MetadataProvider ([#7408](https://github.com/mikro-orm/mikro-orm/issues/7408)) ([6953f34](https://github.com/mikro-orm/mikro-orm/commit/6953f3426e931f4be6054674f8d13efe7527fd9f))
+* **core:** skip required validation for embeddables with only formula properties ([#7429](https://github.com/mikro-orm/mikro-orm/issues/7429)) ([88eb092](https://github.com/mikro-orm/mikro-orm/commit/88eb0923937540765265bd2b8f2b232948f4bab4))
+* **core:** use className instead of tableName for pivot join column names ([#7430](https://github.com/mikro-orm/mikro-orm/issues/7430)) ([5767c20](https://github.com/mikro-orm/mikro-orm/commit/5767c202f268af1e7f3b1abac0e013cce4e0a843))
+* **sql:** infer Kysely table names for classes extending `defineEntity().class` ([#7425](https://github.com/mikro-orm/mikro-orm/issues/7425)) ([469a667](https://github.com/mikro-orm/mikro-orm/commit/469a66720157ea3dd1564d0502f3e9dae097b0c4)), closes [#7423](https://github.com/mikro-orm/mikro-orm/issues/7423)
+
+
+
+
+
 ## [7.0.6](https://github.com/mikro-orm/mikro-orm/compare/v7.0.5...v7.0.6) (2026-03-26)
 
 ### Bug Fixes
