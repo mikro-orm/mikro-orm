@@ -1343,6 +1343,9 @@ export abstract class AbstractSqlDriver<
     const pks = Utils.flatten(pkProps.map(pk => meta.properties[pk].fieldNames));
 
     const useTupleIn = pks.length <= 1 || this.platform.allowsComparingTuples();
+    const condTemplate = useTupleIn
+      ? `(${pks.map(() => '?').join(', ')})`
+      : `(${pks.map(pk => `${this.platform.quoteIdentifier(pk)} = ?`).join(' and ')})`;
 
     const conds = where.map(cond => {
       if (Utils.isPlainObject(cond) && Utils.getObjectKeysSize(cond) === 1) {
@@ -1358,9 +1361,7 @@ export abstract class AbstractSqlDriver<
           }
         });
 
-        return useTupleIn
-          ? `(${Array.from({ length: pks.length }).fill('?').join(', ')})`
-          : `(${pks.map(pk => `${this.platform.quoteIdentifier(pk)} = ?`).join(' and ')})`;
+        return condTemplate;
       }
 
       params.push(cond);
