@@ -1227,7 +1227,7 @@ export interface EntityMetadataWithProperties<
   // Also accepts entity constructors for compatibility with class-based entities
   extends?: { '~entity': TBase } | EntityCtor<TBase>;
   properties: TProperties | ((properties: PropertyBuilders) => TProperties);
-  primaryKeys?: TPK & InferPrimaryKey<TProperties>[];
+  primaryKeys?: TPK & InferPrimaryKeyConstraint<TProperties>[];
   hooks?: DefineEntityHooks;
   // Capture the repository type for InferEntity to include EntityRepositoryType
   repository?: () => TRepository;
@@ -1526,6 +1526,15 @@ type CombinePrimaryKeys<ChildPK, BasePK> = [ChildPK] extends [never]
 /** Extracts the primary key property names from a properties map by finding builders with `primary: true`. */
 export type InferPrimaryKey<Properties extends Record<string, any>> = {
   [K in keyof Properties]: MaybeReturnType<Properties[K]> extends { '~options': { primary: true } } ? K : never;
+}[keyof Properties];
+
+/** Like InferPrimaryKey, but skips evaluating function return types to prevent circular inference (GH #7445). */
+export type InferPrimaryKeyConstraint<Properties extends Record<string, any>> = {
+  [K in keyof Properties]: Properties[K] extends (...args: any) => any
+    ? K
+    : Properties[K] extends { '~options': { primary: true } }
+      ? K
+      : never;
 }[keyof Properties];
 
 type InferBuilderValue<Builder> = Builder extends { '~type'?: { value: infer Value }; '~options'?: infer Options }
