@@ -1,6 +1,6 @@
 {
   "name": "@mikro-orm/core",
-  "version": "7.0.6",
+  "version": "7.0.7",
   "exports": {
     ".": "./src/index.ts",
     "./file-discovery": "./src/metadata/discover-entities.ts",
