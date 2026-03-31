@@ -27,6 +27,18 @@ class MigrationTest1 extends Migration {
 
 }
 
+class MigrationTestAlterTable extends Migration {
+
+  async up(): Promise<void> {
+    this.addSql('alter table "custom"."author2" add column "temp_test_col" varchar(255)');
+  }
+
+  async down(): Promise<void> {
+    this.addSql('alter table "custom"."author2" drop column "temp_test_col"');
+  }
+
+}
+
 class MigrationTest2 extends Migration {
 
   async up(): Promise<void> {
@@ -274,6 +286,29 @@ describe('Migrator (postgres)', () => {
       migrations.snapshot = false;
     }
   });
+
+  test('migrator.up with external transaction and snapshot: true does not deadlock with real DDL (GH #7424)', async () => {
+    const migrationsConfig = orm.config.get('migrations');
+    const origSnapshot = migrationsConfig.snapshot;
+    const origMigrationsList = migrationsConfig.migrationsList;
+    migrationsConfig.snapshot = true;
+    migrationsConfig.migrationsList = [{ class: MigrationTestAlterTable, name: 'MigrationTestAlterTable' }];
+    orm.config.resetServiceCache();
+
+    try {
+      await orm.em.transactional(async em => {
+        const ret = await orm.migrator.up({ transaction: em.getTransactionContext() });
+        expect(ret).toHaveLength(1);
+      });
+    } finally {
+      await orm.schema.execute('alter table "custom"."author2" drop column if exists "temp_test_col"');
+      const knex = orm.em.getKnex();
+      await knex('mikro_orm_migrations').withSchema('custom').where('name', 'MigrationTestAlterTable').delete();
+      migrationsConfig.snapshot = origSnapshot;
+      migrationsConfig.migrationsList = origMigrationsList;
+      orm.config.resetServiceCache();
+    }
+  }, 10_000);
 
   test('generate initial migration', async () => {
     await orm.em.getKnex().schema.dropTableIfExists(orm.config.get('migrations').tableName!).withSchema('custom');
