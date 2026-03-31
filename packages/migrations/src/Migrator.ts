@@ -429,18 +429,19 @@ export class Migrator implements IMigrator {
   private async runMigrations(method: 'up' | 'down', options?: string | string[] | MigrateOptions) {
     await this.ensureDatabase();
 
+    // Save transaction reference before prefix() deletes it from options
+    const ctx = Utils.isObject<MigrateOptions>(options) ? options.transaction : undefined;
     let result: UmzugMigration[];
 
     if (!this.options.transactional || !this.options.allOrNothing) {
       result = await this.umzug[method](this.prefix(options as string[]));
-    } else if (Utils.isObject<MigrateOptions>(options) && options.transaction) {
-      result = await this.runInTransaction(options.transaction, method, options);
+    } else if (ctx) {
+      result = await this.runInTransaction(ctx, method, options);
     } else {
       result = await this.driver.getConnection().transactional(trx => this.runInTransaction(trx, method, options));
     }
 
     if (result.length > 0 && this.options.snapshot) {
-      const ctx = Utils.isObject<MigrateOptions>(options) ? options.transaction : undefined;
       const schema = await DatabaseSchema.create(
         this.em.getConnection(),
         this.em.getPlatform(),
