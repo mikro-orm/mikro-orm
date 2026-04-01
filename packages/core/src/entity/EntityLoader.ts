@@ -1141,7 +1141,7 @@ export class EntityLoader {
           strategy: LoadStrategy.SELECT_IN,
           all: true,
         } as PopulateOptions<Entity>;
-        await this.populateField(childMeta.className as unknown as EntityName<Entity>, childEntities, pop, options);
+        await this.populateField(childMeta.class as EntityName<Entity>, childEntities, pop, options);
       }
     }
   }
