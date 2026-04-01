@@ -141,14 +141,27 @@ export class EntityLoader {
       await this.populateField<Entity>(entityName, entities, pop, options as Required<EntityLoaderOptions<Entity>>);
     }
 
-    // For TPT entities with populate: *, also populate child-specific relations (GH #7453).
+    // For TPT entities with populate: *, re-populate each child type so child-specific relations get loaded (GH #7453).
     if (
       Array.isArray(populate) &&
       populate.some(p => p.all) &&
       meta.inheritanceType === 'tpt' &&
       meta.tptChildren?.length
     ) {
-      await this.populateTPTChildRelations<Entity>(meta, entities, options as Required<EntityLoaderOptions<Entity>>);
+      const byType = new Map<EntityMetadata, Entity[]>();
+
+      for (const entity of entities) {
+        const entityMeta = helper(entity).__meta;
+
+        if (entityMeta !== meta) {
+          const group = byType.get(entityMeta);
+          group ? group.push(entity) : byType.set(entityMeta, [entity]);
+        }
+      }
+
+      for (const [childMeta, group] of byType) {
+        await this.populate(childMeta.class as EntityName<Entity>, group, true, { ...options, lookup: false });
+      }
     }
 
     for (const entity of entities) {
@@ -1103,57 +1116,12 @@ export class EntityLoader {
     });
 
     // For TPT parents with child types, keep an all:true sentinel so the populate
-    // loop doesn't exit early and populateTPTChildRelations can run after it.
+    // loop doesn't exit early and the TPT child relation population can run after it.
     if (ret.length === 0 && meta.inheritanceType === 'tpt' && meta.tptChildren?.length) {
       ret.push({ field: meta.primaryKeys[0], strategy: LoadStrategy.SELECT_IN, all: true } as PopulateOptions<Entity>);
     }
 
     return ret;
-  }
-
-  /**
-   * For TPT entities queried via a parent type with `populate: *`, the parent metadata
-   * only knows about its own relations. Child-specific relations are missed. This method
-   * groups entities by their concrete type and populates any relations not in the parent.
-   */
-  private async populateTPTChildRelations<Entity extends object>(
-    parentMeta: EntityMetadata<Entity>,
-    entities: Entity[],
-    options: Required<EntityLoaderOptions<Entity>>,
-  ): Promise<void> {
-    const parentRelNames = new Set(parentMeta.relations.map(r => r.name as string));
-    const byType = new Map<EntityMetadata, Entity[]>();
-
-    for (const entity of entities) {
-      const entityMeta = helper(entity).__meta;
-
-      if (entityMeta === parentMeta) {
-        continue;
-      }
-
-      const group = byType.get(entityMeta);
-
-      if (group) {
-        group.push(entity);
-      } else {
-        byType.set(entityMeta, [entity]);
-      }
-    }
-
-    for (const [childMeta, childEntities] of byType) {
-      for (const prop of childMeta.relations) {
-        if (parentRelNames.has(prop.name as string)) {
-          continue;
-        }
-
-        const pop = {
-          field: this.getRelationName(childMeta as EntityMetadata<Entity>, prop as EntityProperty<Entity>),
-          strategy: LoadStrategy.SELECT_IN,
-          all: true,
-        } as PopulateOptions<Entity>;
-        await this.populateField(childMeta.class as EntityName<Entity>, childEntities, pop, options);
-      }
-    }
   }
 
   private getRelationName<Entity>(meta: EntityMetadata<Entity>, prop: EntityProperty<Entity>): EntityKey<Entity> {
