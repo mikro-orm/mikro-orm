@@ -3235,4 +3235,102 @@ describe('TPT recomputeSingleChangeSet regression', () => {
 
     await orm.close();
   });
+
+  test('recomputeSingleChangeSet creates tptChangeSets when entity added via computeChangeSet', async () => {
+    const orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
+      dbName: ':memory:',
+      entities: [Integration, FooIntegration, BarIntegration, BazIntegration],
+    });
+    await orm.schema.create();
+
+    // In onFlush, add a NEW TPT entity via computeChangeSet (which does NOT
+    // call createTPTChangeSets, so tptChangeSets is not set on the changeset).
+    // Then modify and recomputeSingleChangeSet — this exercises the else branch
+    // that creates parent changesets from scratch.
+    class Subscriber implements EventSubscriber {
+      async onFlush(args: FlushEventArgs): Promise<void> {
+        const changeSets = args.uow.getChangeSets();
+        const trigger = changeSets.find(
+          cs =>
+            cs.type === ChangeSetType.CREATE &&
+            cs.entity instanceof BarIntegration &&
+            !(cs.entity instanceof BazIntegration),
+        );
+
+        if (trigger) {
+          const foo = args.em.create(FooIntegration, {
+            name: 'Dynamic Foo',
+            fooData: 'original',
+          });
+          args.uow.computeChangeSet(foo);
+          foo.fooData = 'recomputed';
+          args.uow.recomputeSingleChangeSet(foo);
+        }
+      }
+    }
+
+    const em = orm.em.fork();
+    em.getEventManager().registerSubscriber(new Subscriber());
+
+    em.create(BarIntegration, {
+      name: 'Trigger',
+      barData: 'trigger',
+    });
+
+    await em.flush();
+
+    em.clear();
+    const loaded = await em.findOneOrFail(FooIntegration, { name: 'Dynamic Foo' });
+    expect(loaded.fooData).toBe('recomputed');
+    expect(loaded.name).toBe('Dynamic Foo');
+
+    await orm.close();
+  });
+
+  test('recomputeSingleChangeSet creates tptChangeSets for multi-level TPT via computeChangeSet', async () => {
+    const orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
+      dbName: ':memory:',
+      entities: [Integration, FooIntegration, BarIntegration, BazIntegration],
+    });
+    await orm.schema.create();
+
+    class Subscriber implements EventSubscriber {
+      async onFlush(args: FlushEventArgs): Promise<void> {
+        const changeSets = args.uow.getChangeSets();
+        const trigger = changeSets.find(cs => cs.type === ChangeSetType.CREATE && cs.entity instanceof FooIntegration);
+
+        if (trigger) {
+          const baz = args.em.create(BazIntegration, {
+            name: 'Dynamic Baz',
+            barData: 'bar',
+            bazData: 'original',
+          });
+          args.uow.computeChangeSet(baz);
+          baz.bazData = 'recomputed';
+          baz.name = 'Recomputed Baz';
+          args.uow.recomputeSingleChangeSet(baz);
+        }
+      }
+    }
+
+    const em = orm.em.fork();
+    em.getEventManager().registerSubscriber(new Subscriber());
+
+    em.create(FooIntegration, {
+      name: 'Trigger',
+      fooData: 'trigger',
+    });
+
+    await em.flush();
+
+    em.clear();
+    const loaded = await em.findOneOrFail(BazIntegration, { name: 'Recomputed Baz' });
+    expect(loaded.bazData).toBe('recomputed');
+    expect(loaded.barData).toBe('bar');
+    expect(loaded.name).toBe('Recomputed Baz');
+
+    await orm.close();
+  });
 });

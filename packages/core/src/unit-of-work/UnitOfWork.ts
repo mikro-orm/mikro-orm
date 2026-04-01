@@ -471,6 +471,17 @@ export class UnitOfWork {
             }
           }
 
+          // For CREATE on non-root tables, add the PK (EntityIdentifier for deferred resolution)
+          if (changeSet.type === ChangeSetType.CREATE && wrapped.__meta.tptParent) {
+            const identifier = wrapped.__identifier;
+            const identifiers = Array.isArray(identifier) ? identifier : [identifier];
+
+            for (let i = 0; i < wrapped.__meta.primaryKeys.length; i++) {
+              const pk = wrapped.__meta.primaryKeys[i];
+              (changeSet.payload as Dictionary)[pk] = identifiers[i] ?? fullPayload[pk];
+            }
+          }
+
           const parentChangeSets: ChangeSet<T>[] = [];
           let current: EntityMetadata | undefined = wrapped.__meta.tptParent;
 
