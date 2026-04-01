@@ -2865,6 +2865,7 @@ describe('TPT sequential flush regression', () => {
     await orm.close();
   });
 });
+
 // GH #7453
 describe('TPT child relation population regression', () => {
   @Entity({ inheritance: 'tpt' })
@@ -2917,6 +2918,31 @@ describe('TPT child relation population regression', () => {
     expect((person as Employee7453).address).toBeDefined();
     expect((person as Employee7453).address!.unwrap()).toBeInstanceOf(Address7453);
     expect((person as Employee7453).address!.unwrap().street).toBe('123 Main St');
+
+    await orm.close();
+  });
+
+  test('child-specific relations are populated with populate: true (boolean form)', async () => {
+    const orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
+      dbName: ':memory:',
+      entities: [Person7453, Employee7453, Address7453],
+    });
+    await orm.schema.create();
+
+    const address = orm.em.create(Address7453, { street: '456 Oak Ave' });
+    orm.em.create(Employee7453, {
+      name: 'Jane Doe',
+      department: 'Sales',
+      address,
+    });
+    await orm.em.flush();
+    orm.em.clear();
+
+    const person = await orm.em.findOneOrFail(Person7453, { name: 'Jane Doe' }, { populate: true as any });
+    expect(person).toBeInstanceOf(Employee7453);
+    expect((person as Employee7453).address!.unwrap()).toBeInstanceOf(Address7453);
+    expect((person as Employee7453).address!.unwrap().street).toBe('456 Oak Ave');
 
     await orm.close();
   });
