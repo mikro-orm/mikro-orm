@@ -418,7 +418,13 @@ export class UnitOfWork {
     }
 
     this.initIdentifier(entity);
-    this.#changeSets.set(entity, cs);
+
+    if (wrapped.__meta.inheritanceType === 'tpt' && wrapped.__meta.tptParent) {
+      this.createTPTChangeSets(entity, cs);
+    } else {
+      this.#changeSets.set(entity, cs);
+    }
+
     this.#persistStack.delete(entity);
     wrapped.__originalEntityData = this.#comparator.prepareEntity(entity);
   }
@@ -434,8 +440,44 @@ export class UnitOfWork {
     const cs = this.#changeSetComputer.computeChangeSet(entity);
 
     if (cs && !this.checkUniqueProps(cs)) {
-      Object.assign(changeSet.payload, cs.payload);
-      helper(entity).__originalEntityData = this.#comparator.prepareEntity(entity);
+      const wrapped = helper(entity);
+
+      // For TPT entities, update only each table's own properties so parent
+      // columns don't leak into the leaf table's INSERT/UPDATE (GH #7455).
+      if (wrapped.__meta.inheritanceType === 'tpt' && wrapped.__meta.tptParent) {
+        for (const prop of wrapped.__meta.ownProps!) {
+          if (prop.name in cs.payload) {
+            (changeSet.payload as Dictionary)[prop.name] = (cs.payload as Dictionary)[prop.name];
+          }
+        }
+
+        changeSet.tptChangeSets ??= [];
+        let current: EntityMetadata | undefined = wrapped.__meta.tptParent;
+        let idx = 0;
+
+        while (current) {
+          let parentCs = changeSet.tptChangeSets.find(pc => pc.meta === current);
+
+          if (!parentCs) {
+            parentCs = new ChangeSet(entity, changeSet.type, {} as EntityDictionary<T>, current as EntityMetadata<T>);
+            changeSet.tptChangeSets.splice(idx, 0, parentCs);
+          }
+
+          idx++;
+
+          for (const prop of current.ownProps!) {
+            if (prop.name in cs.payload) {
+              (parentCs.payload as Dictionary)[prop.name] = (cs.payload as Dictionary)[prop.name];
+            }
+          }
+
+          current = current.tptParent;
+        }
+      } else {
+        Object.assign(changeSet.payload, cs.payload);
+      }
+
+      wrapped.__originalEntityData = this.#comparator.prepareEntity(entity);
     }
   }
 
