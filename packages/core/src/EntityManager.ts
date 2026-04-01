@@ -104,7 +104,9 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
   readonly global = false;
   /** The context name of this EntityManager, derived from the ORM configuration. */
   readonly name: string;
-  readonly #loaders: Partial<Record<'ref' | '1:m' | 'm:n', { load: (...args: unknown[]) => Promise<unknown> }>> = {};
+  readonly #loaders: Partial<
+    Record<'ref' | '1:m' | 'm:n' | 'count', { load: (...args: unknown[]) => Promise<unknown> }>
+  > = {};
   readonly #repositoryMap = new Map<EntityMetadata, EntityRepository<any>>();
   readonly #entityLoader: EntityLoader;
   readonly #comparator: EntityComparator;
@@ -2849,7 +2851,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
   }
 
   /** @internal */
-  async getDataLoader(type: 'ref' | '1:m' | 'm:n'): Promise<any> {
+  async getDataLoader(type: 'ref' | '1:m' | 'm:n' | 'count'): Promise<any> {
     const em = this.getContext();
 
     if (em.#loaders[type]) {
@@ -2866,6 +2868,8 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
         return (em.#loaders[type] ??= new DataLoader(DataloaderUtils.getColBatchLoadFn(em)));
       case 'm:n':
         return (em.#loaders[type] ??= new DataLoader(DataloaderUtils.getManyToManyColBatchLoadFn(em)));
+      case 'count':
+        return (em.#loaders[type] ??= new DataLoader(DataloaderUtils.getCountBatchLoadFn(em)));
     }
   }
 

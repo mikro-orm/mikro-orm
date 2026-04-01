@@ -129,6 +129,38 @@ exports[`Dataloader > Collection.load with wildcard populate 1`] = `
 ]
 `;
 
+exports[`Dataloader > Collection.loadCount with dataloader (1:M) 1`] = `
+[
+  [
+    "[query] select \`b0\`.\`author_id\`, count(*) as "cnt" from \`book\` as \`b0\` where \`b0\`.\`author_id\` in (1, 2, 3) group by \`b0\`.\`author_id\`",
+  ],
+]
+`;
+
+exports[`Dataloader > Collection.loadCount with dataloader (M:N) 1`] = `
+[
+  [
+    "[query] select \`a0\`.\`author_1_id\`, count(*) as "cnt" from \`author_buddies\` as \`a0\` inner join \`author\` as \`a1\` on \`a0\`.\`author_2_id\` = \`a1\`.\`id\` where \`a0\`.\`author_1_id\` in (1, 2, 3) and \`a1\`.\`age\` < 80 group by \`a0\`.\`author_1_id\`",
+  ],
+]
+`;
+
+exports[`Dataloader > Collection.loadCount with dataloader and where 1`] = `
+[
+  [
+    "[query] select \`b0\`.\`author_id\`, count(*) as "cnt" from \`book\` as \`b0\` where \`b0\`.\`author_id\` in (1, 2, 3) and \`b0\`.\`title\` in ('One', 'Two', 'Six') group by \`b0\`.\`author_id\`",
+  ],
+]
+`;
+
+exports[`Dataloader > Dataloader can be globally enabled for Collection.loadCount 1`] = `
+[
+  [
+    "[query] select \`b0\`.\`author_id\`, count(*) as "cnt" from \`book\` as \`b0\` where \`b0\`.\`author_id\` in (1, 2, 3) group by \`b0\`.\`author_id\`",
+  ],
+]
+`;
+
 exports[`Dataloader > Dataloader can be globally enabled for Collections with true, DataloaderType.ALL, DataloaderType.COLLECTION 1`] = `
 [
   [
@@ -292,6 +324,14 @@ exports[`Dataloader > getColBatchLoadFn 1`] = `
   ],
   [
     "[query] select \`a0\`.\`author_1_id\`, \`a0\`.\`author_2_id\`, \`a1\`.\`id\` as \`a1__id\`, \`a1\`.\`name\` as \`a1__name\`, \`a1\`.\`age\` as \`a1__age\`, \`a1\`.\`email\` as \`a1__email\` from \`author_buddies\` as \`a0\` inner join \`author\` as \`a1\` on \`a0\`.\`author_1_id\` = \`a1\`.\`id\` where \`a0\`.\`author_2_id\` in (2, 5, 1) and \`a1\`.\`age\` < 80",
+  ],
+]
+`;
+
+exports[`Dataloader > getCountBatchLoadFn 1`] = `
+[
+  [
+    "[query] select \`b0\`.\`author_id\`, count(*) as "cnt" from \`book\` as \`b0\` where \`b0\`.\`author_id\` in (1, 2, 3) group by \`b0\`.\`author_id\`",
   ],
 ]
 `;
