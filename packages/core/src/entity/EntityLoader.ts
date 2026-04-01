@@ -93,12 +93,11 @@ export class EntityLoader {
     populate: PopulateOptions<Entity>[] | boolean,
     options: EntityLoaderOptions<Entity, Fields>,
   ): Promise<void> {
-    const meta = this.#metadata.find(entityName)!;
-    const populateAll = !!(options as Dictionary).populateAll;
-
-    if (entities.length === 0 || (Utils.isEmpty(populate) && !populateAll)) {
+    if (entities.length === 0 || Utils.isEmpty(populate)) {
       return this.setSerializationContext(entities, populate, options);
     }
+
+    const meta = this.#metadata.find(entityName)!;
 
     if ((entities as AnyEntity[]).some(e => !e.__helper)) {
       const entity = entities.find(e => !Utils.isEntity(e));
@@ -143,7 +142,12 @@ export class EntityLoader {
     }
 
     // For TPT entities with populate: *, also populate child-specific relations (GH #7453).
-    if (populateAll && meta.inheritanceType === 'tpt' && meta.tptChildren?.length) {
+    if (
+      Array.isArray(populate) &&
+      populate.some(p => p.all) &&
+      meta.inheritanceType === 'tpt' &&
+      meta.tptChildren?.length
+    ) {
       await this.populateTPTChildRelations<Entity>(meta, entities, options as Required<EntityLoaderOptions<Entity>>);
     }
 
@@ -1097,6 +1101,12 @@ export class EntityLoader {
         all: true,
       });
     });
+
+    // For TPT parents with child types, keep an all:true sentinel so the populate
+    // loop doesn't exit early and populateTPTChildRelations can run after it.
+    if (ret.length === 0 && meta.inheritanceType === 'tpt' && meta.tptChildren?.length) {
+      ret.push({ field: meta.primaryKeys[0], strategy: LoadStrategy.SELECT_IN, all: true } as PopulateOptions<Entity>);
+    }
 
     return ret;
   }
