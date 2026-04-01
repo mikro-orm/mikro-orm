@@ -269,7 +269,8 @@ export class EntityHelper {
           // but we still need to clean up old's inverse side.
           helper(old).__pk ??= helper(old).getPrimaryKey()!;
 
-          if (old[prop2.name as EntityKey<T>] != null) {
+          // Don't nullify the FK if it's part of the PK — the entity will be deleted via orphan removal
+          if (old[prop2.name as EntityKey<T>] != null && !(prop.orphanRemoval && prop2.primary)) {
             delete helper(old).__data[prop2.name];
             old[prop2.name as EntityKey<T>] = null!;
           }
@@ -310,7 +311,8 @@ export class EntityHelper {
       entity[prop2.name] = Reference.wrapReference(owner, prop) as EntityValue<T>;
     }
 
-    if (old?.[prop2.name] != null) {
+    // Don't nullify the FK if it's part of the PK — the entity will be deleted via orphan removal
+    if (old?.[prop2.name] != null && !(prop.orphanRemoval && prop2.primary)) {
       delete helper(old).__data[prop2.name];
       old[prop2.name] = null!;
     }
