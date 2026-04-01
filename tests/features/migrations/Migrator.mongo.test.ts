@@ -371,3 +371,159 @@ describe('Migrator (mongo) - with explicit migrations class only (#6099)', () =>
     await orm.close();
   });
 });
+
+describe('Migrator (mongo) - rollup', () => {
+  let orm: MikroORM<MongoDriver>;
+  const migrationsPath = process.cwd() + '/temp/migrations-mongo-rollup';
+
+  beforeAll(async () => {
+    orm = await initORMMongo(true, {
+      migrations: { path: migrationsPath },
+    });
+  });
+
+  beforeEach(async () => {
+    const { rm: rmdir } = await import('node:fs/promises');
+    await rmdir(migrationsPath, { recursive: true, force: true });
+    const storage = orm.migrator.getStorage();
+    const executed = await storage.executed();
+    for (const name of executed) {
+      await storage.unlogMigration({ name });
+    }
+    orm.config.resetServiceCache();
+  });
+
+  afterAll(async () => {
+    await orm.close();
+  });
+
+  test('rollup combines mongo migrations', async () => {
+    const dateMock = vi.spyOn(Date.prototype, 'toISOString');
+    dateMock.mockReturnValueOnce('2020-01-01T00:00:00.000Z');
+    dateMock.mockReturnValueOnce('2020-02-01T00:00:00.000Z');
+
+    const migrator = orm.migrator;
+    const m1 = await migrator.create(migrationsPath);
+    const m2 = await migrator.create(migrationsPath);
+
+    // overwrite with known content
+    const { writeFile } = await import('node:fs/promises');
+    const m1Content = `import { Migration } from '@mikro-orm/migrations-mongodb';\n\nexport class ${m1.fileName.replace('.ts', '')} extends Migration {\n\n  async up(): Promise<void> {\n    await this.getCollection('test').insertOne({ a: 1 });\n  }\n\n  async down(): Promise<void> {\n    await this.getCollection('test').deleteOne({ a: 1 });\n  }\n\n}\n`;
+    const m2Content = `import { Migration } from '@mikro-orm/migrations-mongodb';\n\nexport class ${m2.fileName.replace('.ts', '')} extends Migration {\n\n  async up(): Promise<void> {\n    await this.getCollection('test').insertOne({ b: 2 });\n  }\n\n  async down(): Promise<void> {\n    await this.getCollection('test').deleteOne({ b: 2 });\n  }\n\n}\n`;
+
+    await writeFile(migrationsPath + '/' + m1.fileName, m1Content);
+    await writeFile(migrationsPath + '/' + m2.fileName, m2Content);
+
+    const executeMock = vi.spyOn(Migrator.prototype as any, 'executeMigrations');
+    executeMock.mockResolvedValue([]);
+
+    // manually log as executed
+    const storage = migrator.getStorage();
+    await storage.logMigration({ name: m1.fileName });
+    await storage.logMigration({ name: m2.fileName });
+
+    dateMock.mockReturnValueOnce('2020-03-01T00:00:00.000Z');
+    const result = await migrator.rollup();
+
+    expect(result.fileName).toMatch(/\.ts$/);
+    expect(result.code).toContain('merged from');
+    expect(result.code).toContain('insertOne({ a: 1 })');
+    expect(result.code).toContain('insertOne({ b: 2 })');
+    expect(result.code).toContain('deleteOne({ a: 1 })');
+    expect(result.code).toContain('deleteOne({ b: 2 })');
+    expect(result.code).toContain('@mikro-orm/migrations-mongodb');
+
+    // verify down is in reverse
+    const downSection = result.code.slice(result.code.indexOf('down()'));
+    const downIdx1 = downSection.indexOf('deleteOne({ b: 2 })');
+    const downIdx2 = downSection.indexOf('deleteOne({ a: 1 })');
+    expect(downIdx1).toBeLessThan(downIdx2);
+
+    const { existsSync } = await import('node:fs');
+    expect(existsSync(migrationsPath + '/' + m1.fileName)).toBe(false);
+    expect(existsSync(migrationsPath + '/' + m2.fileName)).toBe(false);
+    expect(existsSync(migrationsPath + '/' + result.fileName)).toBe(true);
+
+    executeMock.mockRestore();
+    dateMock.mockRestore();
+  });
+
+  test('rollup throws with less than 2 mongo migrations', async () => {
+    const dateMock = vi.spyOn(Date.prototype, 'toISOString');
+    dateMock.mockReturnValue('2020-01-01T00:00:00.000Z');
+
+    const migrator = orm.migrator;
+    const m1 = await migrator.create(migrationsPath);
+
+    const storage = migrator.getStorage();
+    await storage.logMigration({ name: m1.fileName });
+
+    await expect(migrator.rollup()).rejects.toThrow('At least 2 executed migrations are required for rollup');
+
+    dateMock.mockRestore();
+  });
+});
+
+describe('Migrator (mongo) - rollup coverage', () => {
+  test('mongo JS generator rollup', async () => {
+    const orm = await initORMMongo(true, {
+      migrations: {
+        path: process.cwd() + '/temp/migrations-mongo-rollup-js',
+        emit: 'js',
+      },
+    });
+
+    const dateMock = vi.spyOn(Date.prototype, 'toISOString');
+    dateMock.mockReturnValueOnce('2020-01-01T00:00:00.000Z');
+    dateMock.mockReturnValueOnce('2020-02-01T00:00:00.000Z');
+
+    const migrator = orm.migrator;
+    const m1 = await migrator.create();
+    const m2 = await migrator.create();
+
+    const storage = migrator.getStorage();
+    await storage.logMigration({ name: m1.fileName });
+    await storage.logMigration({ name: m2.fileName });
+
+    dateMock.mockReturnValueOnce('2020-03-01T00:00:00.000Z');
+    const result = await migrator.rollup();
+
+    expect(result.fileName).toMatch(/\.js$/);
+    expect(result.code).toContain("require('@mikro-orm/migrations-mongodb')");
+    expect(result.code).toContain('async up()');
+
+    const { rm: rmdir } = await import('node:fs/promises');
+    await rmdir(process.cwd() + '/temp/migrations-mongo-rollup-js', { recursive: true, force: true });
+    dateMock.mockRestore();
+    await orm.close();
+  });
+
+  test('mongo rollup without down methods', async () => {
+    const orm = await initORMMongo(true, {
+      migrations: { path: process.cwd() + '/temp/migrations-mongo-rollup-nodown' },
+    });
+
+    const dateMock = vi.spyOn(Date.prototype, 'toISOString');
+    dateMock.mockReturnValueOnce('2020-01-01T00:00:00.000Z');
+    dateMock.mockReturnValueOnce('2020-02-01T00:00:00.000Z');
+
+    const migrator = orm.migrator;
+    const m1 = await migrator.create();
+    const m2 = await migrator.create();
+
+    // blank migrations have no down() — covers the false branch
+    const storage = migrator.getStorage();
+    await storage.logMigration({ name: m1.fileName });
+    await storage.logMigration({ name: m2.fileName });
+
+    dateMock.mockReturnValueOnce('2020-03-01T00:00:00.000Z');
+    const result = await migrator.rollup();
+
+    expect(result.code).not.toContain('down()');
+
+    const { rm: rmdir } = await import('node:fs/promises');
+    await rmdir(process.cwd() + '/temp/migrations-mongo-rollup-nodown', { recursive: true, force: true });
+    dateMock.mockRestore();
+    await orm.close();
+  });
+});

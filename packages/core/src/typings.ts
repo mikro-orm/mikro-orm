@@ -1685,6 +1685,12 @@ export interface IMigrator {
   down(options?: string | string[] | Omit<MigrateOptions, 'from'>): Promise<MigrationInfo[]>;
 
   /**
+   * Combines multiple executed migrations into a single migration file.
+   * Concatenates source code without touching the database schema.
+   */
+  rollup(migrations?: string[]): Promise<MigrationResult>;
+
+  /**
    * Registers event handler.
    */
   on(event: MigratorEvent, listener: (event: MigrationInfo) => MaybePromise<void>): IMigrator;
