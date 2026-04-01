@@ -5,14 +5,9 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ## [7.0.8](https://github.com/mikro-orm/mikro-orm/compare/v7.0.7...v7.0.8) (2026-04-01)
 
-
 ### Bug Fixes
 
-* **sql:** use pivot entity schema for wildcard check in M:N joins ([#7466](https://github.com/mikro-orm/mikro-orm/issues/7466)) ([cd0d47d](https://github.com/mikro-orm/mikro-orm/commit/cd0d47d012947e1872877ec97544c104110f3ca6))
-
-
-
-
+- **sql:** use pivot entity schema for wildcard check in M:N joins ([#7466](https://github.com/mikro-orm/mikro-orm/issues/7466)) ([cd0d47d](https://github.com/mikro-orm/mikro-orm/commit/cd0d47d012947e1872877ec97544c104110f3ca6))
 
 ## [7.0.7](https://github.com/mikro-orm/mikro-orm/compare/v7.0.6...v7.0.7) (2026-03-31)
 
