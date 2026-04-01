@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.0.8](https://github.com/mikro-orm/mikro-orm/compare/v7.0.7...v7.0.8) (2026-04-01)
+
+
+### Bug Fixes
+
+* **core:** exclude namespace functions from enum type inference in `defineEntity` ([#7449](https://github.com/mikro-orm/mikro-orm/issues/7449)) ([3ed8060](https://github.com/mikro-orm/mikro-orm/commit/3ed806004f5226d0e44cf71d04e826cb8e9256ab)), closes [#7446](https://github.com/mikro-orm/mikro-orm/issues/7446)
+* **core:** fix wrong column name for nested inline embeddables when parent is null ([#7464](https://github.com/mikro-orm/mikro-orm/issues/7464)) ([b784da9](https://github.com/mikro-orm/mikro-orm/commit/b784da9efbbbe826f84f7a7c1222ad2f8eddc27c)), closes [#7463](https://github.com/mikro-orm/mikro-orm/issues/7463)
+* **core:** make recomputeSingleChangeSet TPT-aware ([#7460](https://github.com/mikro-orm/mikro-orm/issues/7460)) ([618695d](https://github.com/mikro-orm/mikro-orm/commit/618695d292021036364cb1fe9d756e390e3d7772)), closes [#7455](https://github.com/mikro-orm/mikro-orm/issues/7455)
+* **core:** populate child-specific relations for TPT entities with `populate: ['*']` ([#7459](https://github.com/mikro-orm/mikro-orm/issues/7459)) ([8962ef9](https://github.com/mikro-orm/mikro-orm/commit/8962ef9bb0e1cadef2513b98ca08c62daad903f9)), closes [#7453](https://github.com/mikro-orm/mikro-orm/issues/7453)
+* **core:** resolve circular type inference in `defineEntity` with composite `primaryKeys` ([#7447](https://github.com/mikro-orm/mikro-orm/issues/7447)) ([b5e6442](https://github.com/mikro-orm/mikro-orm/commit/b5e6442bb43772547013f49cf2818843cfc3e66b)), closes [#7445](https://github.com/mikro-orm/mikro-orm/issues/7445)
+* **core:** skip FK nullification on orphan removal when FK is part of PK ([#7462](https://github.com/mikro-orm/mikro-orm/issues/7462)) ([134eca7](https://github.com/mikro-orm/mikro-orm/commit/134eca70ba5fcfbfb7f6ca1e544decaaa357d116)), closes [#7461](https://github.com/mikro-orm/mikro-orm/issues/7461)
+* **core:** use full entity snapshot for TPT entities in commitCreateChangeSets ([#7458](https://github.com/mikro-orm/mikro-orm/issues/7458)) ([0a0a1c0](https://github.com/mikro-orm/mikro-orm/commit/0a0a1c0b37027e102fbf98a140336a9855c19104)), closes [#7454](https://github.com/mikro-orm/mikro-orm/issues/7454)
+* **sql:** use pivot entity schema for wildcard check in M:N joins ([#7466](https://github.com/mikro-orm/mikro-orm/issues/7466)) ([cd0d47d](https://github.com/mikro-orm/mikro-orm/commit/cd0d47d012947e1872877ec97544c104110f3ca6))
+
+
+
+
+
 ## [7.0.7](https://github.com/mikro-orm/mikro-orm/compare/v7.0.6...v7.0.7) (2026-03-31)
 
 
