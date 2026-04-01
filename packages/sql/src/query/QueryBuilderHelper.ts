@@ -343,7 +343,7 @@ export class QueryBuilderHelper {
         primaryKeys: prop.referencedColumnNames,
         cond: {},
         table: pivotMeta.tableName,
-        schema: prop.targetMeta?.schema === '*' ? '*' : this.#driver.getSchemaName(pivotMeta, { schema }),
+        schema: pivotMeta.schema === '*' ? '*' : this.#driver.getSchemaName(pivotMeta, { schema }),
         path: path.endsWith('[pivot]') ? path : `${path}[pivot]`,
       } as JoinOptions,
     };
