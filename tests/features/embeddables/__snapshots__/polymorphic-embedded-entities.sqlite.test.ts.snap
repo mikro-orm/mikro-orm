@@ -602,7 +602,8 @@ exports[`polymorphic embeddables in sqlite diffing 2`] = `
     ret.pet_type = null;
     ret.pet_name = null;
     ret.pet_canMeow = null;
-    ret.pet_food = null;
+    ret.pet_food_cats = null;
+    ret.pet_food_mice = null;
   }
   if (entity.pet != null) {
     if (typeof entity.pet.canBark !== 'undefined') ret.pet_canBark = clone(entity.pet.canBark);
