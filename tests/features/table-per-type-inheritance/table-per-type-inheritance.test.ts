@@ -1,4 +1,6 @@
 import { Collection, EntitySchema, MikroORM, quote, Ref, wrap, raw, Type, Opt } from '@mikro-orm/sqlite';
+import type { EventSubscriber, FlushEventArgs } from '@mikro-orm/sqlite';
+import { ChangeSetType } from '@mikro-orm/sqlite';
 import {
   Embeddable,
   Embedded,
@@ -2810,6 +2812,156 @@ describe('TPT QueryBuilder update/delete', () => {
 
     const logs = mock.mock.calls.map(c => c[0]);
     expect(logs.some((l: string) => l.includes('delete from `foo_integration`'))).toBe(true);
+
+    await orm.close();
+  });
+});
+
+// GH #7454
+describe('TPT sequential flush regression', () => {
+  test('sequential flush of unchanged TPT entity does not trigger update', async () => {
+    const orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
+      dbName: ':memory:',
+      entities: [Integration, FooIntegration, BarIntegration, BazIntegration],
+    });
+    await orm.schema.create();
+
+    orm.em.create(FooIntegration, {
+      name: 'Foo Integration',
+      fooData: 'foo-data',
+    });
+    await orm.em.flush();
+
+    const mock = mockLogger(orm);
+    // Second flush without changes — should NOT produce any queries
+    await orm.em.flush();
+
+    const logs = mock.mock.calls.map(c => c[0]);
+    expect(logs.some((l: string) => l.includes('update'))).toBe(false);
+
+    await orm.close();
+  });
+
+  test('sequential flush of unchanged multi-level TPT entity does not trigger update', async () => {
+    const orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
+      dbName: ':memory:',
+      entities: [Integration, FooIntegration, BarIntegration, BazIntegration],
+    });
+    await orm.schema.create();
+
+    orm.em.create(BazIntegration, {
+      name: 'Baz Integration',
+      barData: 'bar-data',
+      bazData: 'baz-data',
+    });
+    await orm.em.flush();
+
+    const mock = mockLogger(orm);
+    await orm.em.flush();
+
+    const logs = mock.mock.calls.map(c => c[0]);
+    expect(logs.some((l: string) => l.includes('update'))).toBe(false);
+
+    await orm.close();
+  });
+});
+
+// GH #7455
+describe('TPT recomputeSingleChangeSet regression', () => {
+  test('recomputeSingleChangeSet works for TPT entities in onFlush', async () => {
+    const orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
+      dbName: ':memory:',
+      entities: [Integration, FooIntegration, BarIntegration, BazIntegration],
+    });
+    await orm.schema.create();
+
+    class Subscriber implements EventSubscriber {
+      async onFlush(args: FlushEventArgs): Promise<void> {
+        const changeSets = args.uow.getChangeSets();
+        const cs = changeSets.find(cs => cs.type === ChangeSetType.CREATE && cs.entity instanceof FooIntegration);
+
+        if (cs) {
+          (cs.entity as FooIntegration).fooData = 'modified-in-hook';
+          args.uow.recomputeSingleChangeSet(cs.entity);
+        }
+      }
+    }
+
+    const em = orm.em.fork();
+    em.getEventManager().registerSubscriber(new Subscriber());
+
+    em.create(FooIntegration, {
+      name: 'Foo Integration',
+      fooData: 'original',
+    });
+
+    // Should not throw "table foo_integration has no column named name"
+    await em.flush();
+
+    em.clear();
+    const loaded = await em.findOneOrFail(FooIntegration, { name: 'Foo Integration' });
+    expect(loaded.fooData).toBe('modified-in-hook');
+    expect(loaded.name).toBe('Foo Integration');
+
+    await orm.close();
+  });
+});
+
+// GH #7453
+describe('TPT child relation population regression', () => {
+  @Entity({ inheritance: 'tpt' })
+  abstract class Person7453 {
+    @PrimaryKey()
+    id!: number;
+
+    @Property()
+    name!: string;
+  }
+
+  @Entity()
+  class Address7453 {
+    @PrimaryKey()
+    id!: number;
+
+    @Property()
+    street!: string;
+  }
+
+  @Entity()
+  class Employee7453 extends Person7453 {
+    @Property()
+    department!: string;
+
+    @ManyToOne(() => Address7453, { ref: true, nullable: true })
+    address?: Ref<Address7453>;
+  }
+
+  test('child-specific relations are populated when querying via parent type with populate: *', async () => {
+    const orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
+      dbName: ':memory:',
+      entities: [Person7453, Employee7453, Address7453],
+    });
+    await orm.schema.create();
+
+    const address = orm.em.create(Address7453, { street: '123 Main St' });
+    orm.em.create(Employee7453, {
+      name: 'John Doe',
+      department: 'Engineering',
+      address,
+    });
+    await orm.em.flush();
+    orm.em.clear();
+
+    // Query via parent type with populate: ['*']
+    const person = await orm.em.findOneOrFail(Person7453, { name: 'John Doe' }, { populate: ['*'] });
+    expect(person).toBeInstanceOf(Employee7453);
+    expect((person as Employee7453).address).toBeDefined();
+    expect((person as Employee7453).address!.unwrap()).toBeInstanceOf(Address7453);
+    expect((person as Employee7453).address!.unwrap().street).toBe('123 Main St');
 
     await orm.close();
   });

@@ -93,11 +93,12 @@ export class EntityLoader {
     populate: PopulateOptions<Entity>[] | boolean,
     options: EntityLoaderOptions<Entity, Fields>,
   ): Promise<void> {
-    if (entities.length === 0 || Utils.isEmpty(populate)) {
+    const meta = this.#metadata.find(entityName)!;
+    const populateAll = !!(options as Dictionary).populateAll;
+
+    if (entities.length === 0 || (Utils.isEmpty(populate) && !populateAll)) {
       return this.setSerializationContext(entities, populate, options);
     }
-
-    const meta = this.#metadata.find(entityName)!;
 
     if ((entities as AnyEntity[]).some(e => !e.__helper)) {
       const entity = entities.find(e => !Utils.isEntity(e));
@@ -139,6 +140,11 @@ export class EntityLoader {
 
     for (const pop of populate) {
       await this.populateField<Entity>(entityName, entities, pop, options as Required<EntityLoaderOptions<Entity>>);
+    }
+
+    // For TPT entities with populate: *, also populate child-specific relations (GH #7453).
+    if (populateAll && meta.inheritanceType === 'tpt' && meta.tptChildren?.length) {
+      await this.populateTPTChildRelations<Entity>(meta, entities, options as Required<EntityLoaderOptions<Entity>>);
     }
 
     for (const entity of entities) {
@@ -1093,6 +1099,48 @@ export class EntityLoader {
     });
 
     return ret;
+  }
+
+  /**
+   * For TPT entities queried via a parent type with `populate: *`, the parent metadata
+   * only knows about its own relations. Child-specific relations are missed. This method
+   * groups entities by their concrete type and populates any relations not in the parent.
+   */
+  private async populateTPTChildRelations<Entity extends object>(
+    parentMeta: EntityMetadata<Entity>,
+    entities: Entity[],
+    options: Required<EntityLoaderOptions<Entity>>,
+  ): Promise<void> {
+    const parentRelNames = new Set<string>(parentMeta.relations.map(r => r.name as string));
+    const byType = new Map<EntityMetadata, Entity[]>();
+
+    for (const entity of entities) {
+      const entityMeta = helper(entity).__meta;
+
+      if (entityMeta !== parentMeta) {
+        let group = byType.get(entityMeta);
+
+        if (!group) {
+          group = [];
+          byType.set(entityMeta, group);
+        }
+
+        group.push(entity);
+      }
+    }
+
+    for (const [childMeta, childEntities] of byType) {
+      const childOnlyRelations = childMeta.relations.filter(r => !parentRelNames.has(r.name as string));
+
+      for (const prop of childOnlyRelations) {
+        const pop = {
+          field: prop.name,
+          strategy: LoadStrategy.SELECT_IN,
+          all: true,
+        } as PopulateOptions<Entity>;
+        await this.populateField(childMeta.className as unknown as EntityName<Entity>, childEntities, pop, options);
+      }
+    }
   }
 
   private getRelationName<Entity>(meta: EntityMetadata<Entity>, prop: EntityProperty<Entity>): EntityKey<Entity> {
