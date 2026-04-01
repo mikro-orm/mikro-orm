@@ -2622,6 +2622,11 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
         .flat() as any;
     }
 
+    // Save flag before normalization replaces it (needed for TPT child relation population, GH #7453)
+    if (Utils.asArray(options.populate).some((p: any) => p === true || (typeof p === 'object' && p.all))) {
+      (options as Dictionary).populateAll = true;
+    }
+
     const populate: PopulateOptions<Entity>[] = this.#entityLoader.normalizePopulate<Entity>(
       entityName,
       options.populate as true,

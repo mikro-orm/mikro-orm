@@ -2865,3 +2865,59 @@ describe('TPT sequential flush regression', () => {
     await orm.close();
   });
 });
+// GH #7453
+describe('TPT child relation population regression', () => {
+  @Entity({ inheritance: 'tpt' })
+  abstract class Person7453 {
+    @PrimaryKey()
+    id!: number;
+
+    @Property()
+    name!: string;
+  }
+
+  @Entity()
+  class Address7453 {
+    @PrimaryKey()
+    id!: number;
+
+    @Property()
+    street!: string;
+  }
+
+  @Entity()
+  class Employee7453 extends Person7453 {
+    @Property()
+    department!: string;
+
+    @ManyToOne(() => Address7453, { ref: true, nullable: true })
+    address?: Ref<Address7453>;
+  }
+
+  test('child-specific relations are populated when querying via parent type with populate: *', async () => {
+    const orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
+      dbName: ':memory:',
+      entities: [Person7453, Employee7453, Address7453],
+    });
+    await orm.schema.create();
+
+    const address = orm.em.create(Address7453, { street: '123 Main St' });
+    orm.em.create(Employee7453, {
+      name: 'John Doe',
+      department: 'Engineering',
+      address,
+    });
+    await orm.em.flush();
+    orm.em.clear();
+
+    // Query via parent type with populate: ['*']
+    const person = await orm.em.findOneOrFail(Person7453, { name: 'John Doe' }, { populate: ['*'] });
+    expect(person).toBeInstanceOf(Employee7453);
+    expect((person as Employee7453).address).toBeDefined();
+    expect((person as Employee7453).address!.unwrap()).toBeInstanceOf(Address7453);
+    expect((person as Employee7453).address!.unwrap().street).toBe('123 Main St');
+
+    await orm.close();
+  });
+});
