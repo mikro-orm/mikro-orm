@@ -1,4 +1,5 @@
 import { Entity, ManyToOne, MikroORM, OneToOne, PrimaryKey, PrimaryKeyProp, Property, Ref, ref, ReflectMetadataProvider } from '@mikro-orm/sqlite';
+import { mockLogger } from '../helpers';
 
 @Entity()
 class Organization {
@@ -126,6 +127,12 @@ describe('GH7436', () => {
     expect(oldSync.author).not.toBeNull();
 
     await em.flush();
+
+    // Second flush should produce no queries (no stale state from the skipped nullification)
+    const mock = mockLogger(orm);
+    await em.flush();
+    expect(mock.mock.calls).toHaveLength(0);
+
     em.clear();
 
     const reloaded = await em.findOneOrFail(Author, { id: 3 }, { populate: ['sync'] });
