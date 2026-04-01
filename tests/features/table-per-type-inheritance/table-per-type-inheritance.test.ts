@@ -2865,3 +2865,210 @@ describe('TPT sequential flush regression', () => {
     await orm.close();
   });
 });
+
+// GH #7453
+describe('TPT child relation population regression', () => {
+  @Entity({ inheritance: 'tpt' })
+  abstract class Person7453 {
+    @PrimaryKey()
+    id!: number;
+
+    @Property()
+    name!: string;
+  }
+
+  @Entity()
+  class Address7453 {
+    @PrimaryKey()
+    id!: number;
+
+    @Property()
+    street!: string;
+  }
+
+  @Entity()
+  class Employee7453 extends Person7453 {
+    @Property()
+    department!: string;
+
+    @ManyToOne(() => Address7453, { ref: true, nullable: true })
+    address?: Ref<Address7453>;
+  }
+
+  test('child-specific relations are populated when querying via parent type with populate: *', async () => {
+    const orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
+      dbName: ':memory:',
+      entities: [Person7453, Employee7453, Address7453],
+    });
+    await orm.schema.create();
+
+    const address = orm.em.create(Address7453, { street: '123 Main St' });
+    orm.em.create(Employee7453, {
+      name: 'John Doe',
+      department: 'Engineering',
+      address,
+    });
+    await orm.em.flush();
+    orm.em.clear();
+
+    // Query via parent type with populate: ['*']
+    const person = await orm.em.findOneOrFail(Person7453, { name: 'John Doe' }, { populate: ['*'] });
+    expect(person).toBeInstanceOf(Employee7453);
+    expect((person as Employee7453).address).toBeDefined();
+    expect((person as Employee7453).address!.unwrap()).toBeInstanceOf(Address7453);
+    expect((person as Employee7453).address!.unwrap().street).toBe('123 Main St');
+
+    await orm.close();
+  });
+
+  test('child-specific relations are populated with populate: true (boolean form)', async () => {
+    const orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
+      dbName: ':memory:',
+      entities: [Person7453, Employee7453, Address7453],
+    });
+    await orm.schema.create();
+
+    const address = orm.em.create(Address7453, { street: '456 Oak Ave' });
+    orm.em.create(Employee7453, {
+      name: 'Jane Doe',
+      department: 'Sales',
+      address,
+    });
+    await orm.em.flush();
+    orm.em.clear();
+
+    const person = await orm.em.findOneOrFail(Person7453, { name: 'Jane Doe' }, { populate: true as any });
+    expect(person).toBeInstanceOf(Employee7453);
+    expect((person as Employee7453).address!.unwrap()).toBeInstanceOf(Address7453);
+    expect((person as Employee7453).address!.unwrap().street).toBe('456 Oak Ave');
+
+    await orm.close();
+  });
+});
+
+// GH #7453 — additional coverage for populateTPTChildRelations branches
+describe('TPT child relation population - additional coverage', () => {
+  @Entity()
+  class Addr7453 {
+    @PrimaryKey()
+    id!: number;
+
+    @Property()
+    street!: string;
+  }
+
+  @Entity({ inheritance: 'tpt' })
+  abstract class Base7453 {
+    @PrimaryKey()
+    id!: number;
+
+    @Property()
+    name!: string;
+
+    @ManyToOne(() => Addr7453, { ref: true, nullable: true })
+    sharedAddr?: Ref<Addr7453>;
+  }
+
+  @Entity()
+  class Child7453 extends Base7453 {
+    @Property()
+    extra!: string;
+
+    @ManyToOne(() => Addr7453, { ref: true, nullable: true })
+    childAddr?: Ref<Addr7453>;
+  }
+
+  test('multiple children with inherited + own relations are all populated', async () => {
+    const orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
+      dbName: ':memory:',
+      entities: [Base7453, Child7453, Addr7453],
+    });
+    await orm.schema.create();
+
+    const shared = orm.em.create(Addr7453, { street: 'Shared St' });
+    const addr1 = orm.em.create(Addr7453, { street: 'Child St 1' });
+    const addr2 = orm.em.create(Addr7453, { street: 'Child St 2' });
+    orm.em.create(Child7453, { name: 'A', extra: 'a', sharedAddr: shared, childAddr: addr1 });
+    orm.em.create(Child7453, { name: 'B', extra: 'b', sharedAddr: shared, childAddr: addr2 });
+    await orm.em.flush();
+    orm.em.clear();
+
+    const results = await orm.em.find(Base7453, {}, { populate: ['*'] });
+    expect(results).toHaveLength(2);
+
+    for (const entity of results) {
+      expect(entity).toBeInstanceOf(Child7453);
+      const child = entity as Child7453;
+      // Parent relation (inherited) should be populated via main loop
+      expect(child.sharedAddr!.unwrap().street).toBe('Shared St');
+      // Child-only relation should be populated via populateTPTChildRelations
+      expect(child.childAddr!.unwrap()).toBeInstanceOf(Addr7453);
+    }
+
+    expect((results[0] as Child7453).childAddr!.unwrap().street).toBe('Child St 1');
+    expect((results[1] as Child7453).childAddr!.unwrap().street).toBe('Child St 2');
+
+    await orm.close();
+  });
+});
+
+// GH #7453 — covers continue branch when entity is the parent type itself
+describe('TPT child relation population - non-abstract parent', () => {
+  @Entity()
+  class Tag7453 {
+    @PrimaryKey()
+    id!: number;
+
+    @Property()
+    label!: string;
+  }
+
+  @Entity({ inheritance: 'tpt' })
+  class Vehicle7453 {
+    @PrimaryKey()
+    id!: number;
+
+    @Property()
+    brand!: string;
+  }
+
+  @Entity()
+  class Car7453 extends Vehicle7453 {
+    @Property()
+    doors!: number;
+
+    @ManyToOne(() => Tag7453, { ref: true, nullable: true })
+    tag?: Ref<Tag7453>;
+  }
+
+  test('parent-type entities are skipped in populateTPTChildRelations', async () => {
+    const orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
+      dbName: ':memory:',
+      entities: [Vehicle7453, Car7453, Tag7453],
+    });
+    await orm.schema.create();
+
+    const tag = orm.em.create(Tag7453, { label: 'sedan' });
+    // One plain parent entity (Vehicle) and one child entity (Car)
+    orm.em.create(Vehicle7453, { brand: 'Generic' });
+    orm.em.create(Car7453, { brand: 'Toyota', doors: 4, tag });
+    await orm.em.flush();
+    orm.em.clear();
+
+    const results = await orm.em.find(Vehicle7453, {}, { populate: ['*'] });
+    expect(results).toHaveLength(2);
+
+    const vehicle = results.find(r => !(r instanceof Car7453))!;
+    const car = results.find(r => r instanceof Car7453)! as Car7453;
+
+    expect(vehicle.brand).toBe('Generic');
+    expect(car.brand).toBe('Toyota');
+    expect(car.tag!.unwrap().label).toBe('sedan');
+
+    await orm.close();
+  });
+});
