@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.6.12](https://github.com/mikro-orm/mikro-orm/compare/v6.6.11...v6.6.12) (2026-04-01)
+
+
+### Bug Fixes
+
+* **migrations:** save transaction ref before prefix() deletes it from options ([#7443](https://github.com/mikro-orm/mikro-orm/issues/7443)) ([586f5b9](https://github.com/mikro-orm/mikro-orm/commit/586f5b900810003080357b520278916654bbb2af)), closes [#7424](https://github.com/mikro-orm/mikro-orm/issues/7424)
+
+
+
+
+
 ## [6.6.11](https://github.com/mikro-orm/mikro-orm/compare/v6.6.10...v6.6.11) (2026-03-31)
 
 

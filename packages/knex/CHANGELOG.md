@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.6.12](https://github.com/mikro-orm/mikro-orm/compare/v6.6.11...v6.6.12) (2026-04-01)
+
+
+### Bug Fixes
+
+* **knex:** use pivot entity schema for wildcard check in M:N joins ([#7467](https://github.com/mikro-orm/mikro-orm/issues/7467)) ([795d62b](https://github.com/mikro-orm/mikro-orm/commit/795d62b814a5d813b2f4af2aa903e1bef774d5f7)), closes [#7466](https://github.com/mikro-orm/mikro-orm/issues/7466)
+
+
+
+
+
 ## [6.6.11](https://github.com/mikro-orm/mikro-orm/compare/v6.6.10...v6.6.11) (2026-03-31)
 
 

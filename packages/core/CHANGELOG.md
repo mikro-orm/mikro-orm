@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.6.12](https://github.com/mikro-orm/mikro-orm/compare/v6.6.11...v6.6.12) (2026-04-01)
+
+
+### Bug Fixes
+
+* **core:** recursively nullify nested inline embeddable columns when parent is null ([#7465](https://github.com/mikro-orm/mikro-orm/issues/7465)) ([a711523](https://github.com/mikro-orm/mikro-orm/commit/a7115238bc3f11c6b3d66fee44d0ed2239576db7)), closes [#6966](https://github.com/mikro-orm/mikro-orm/issues/6966) [#7463](https://github.com/mikro-orm/mikro-orm/issues/7463)
+* **core:** skip FK nullification on orphan removal when FK is part of PK ([#7461](https://github.com/mikro-orm/mikro-orm/issues/7461)) ([7cc10c0](https://github.com/mikro-orm/mikro-orm/commit/7cc10c04053585bec3b709677d5a6b3b0c907558)), closes [#7439](https://github.com/mikro-orm/mikro-orm/issues/7439) [#7436](https://github.com/mikro-orm/mikro-orm/issues/7436)
+
+
+
+
+
 ## [6.6.11](https://github.com/mikro-orm/mikro-orm/compare/v6.6.10...v6.6.11) (2026-03-31)
 
 

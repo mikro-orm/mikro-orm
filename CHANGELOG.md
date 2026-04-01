@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.6.12](https://github.com/mikro-orm/mikro-orm/compare/v6.6.11...v6.6.12) (2026-04-01)
+
+
+### Bug Fixes
+
+* **core:** recursively nullify nested inline embeddable columns when parent is null ([#7465](https://github.com/mikro-orm/mikro-orm/issues/7465)) ([a711523](https://github.com/mikro-orm/mikro-orm/commit/a7115238bc3f11c6b3d66fee44d0ed2239576db7)), closes [#6966](https://github.com/mikro-orm/mikro-orm/issues/6966) [#7463](https://github.com/mikro-orm/mikro-orm/issues/7463)
+* **core:** skip FK nullification on orphan removal when FK is part of PK ([#7461](https://github.com/mikro-orm/mikro-orm/issues/7461)) ([7cc10c0](https://github.com/mikro-orm/mikro-orm/commit/7cc10c04053585bec3b709677d5a6b3b0c907558)), closes [#7439](https://github.com/mikro-orm/mikro-orm/issues/7439) [#7436](https://github.com/mikro-orm/mikro-orm/issues/7436)
+* **knex:** use pivot entity schema for wildcard check in M:N joins ([#7467](https://github.com/mikro-orm/mikro-orm/issues/7467)) ([795d62b](https://github.com/mikro-orm/mikro-orm/commit/795d62b814a5d813b2f4af2aa903e1bef774d5f7)), closes [#7466](https://github.com/mikro-orm/mikro-orm/issues/7466)
+* **migrations:** save transaction ref before prefix() deletes it from options ([#7443](https://github.com/mikro-orm/mikro-orm/issues/7443)) ([586f5b9](https://github.com/mikro-orm/mikro-orm/commit/586f5b900810003080357b520278916654bbb2af)), closes [#7424](https://github.com/mikro-orm/mikro-orm/issues/7424)
+
+
+
+
+
 ## [6.6.11](https://github.com/mikro-orm/mikro-orm/compare/v6.6.10...v6.6.11) (2026-03-31)
 
 
