@@ -1,4 +1,5 @@
 import { MikroORM, PrimaryKeyProp, Ref, ref } from '@mikro-orm/sqlite';
+import { mockLogger } from '../helpers';
 import {
   Entity,
   ManyToOne,
@@ -97,6 +98,49 @@ describe('GH7436', () => {
     expect(reloaded.sync!.externalId).toBe('ext-2');
 
     const allSyncs = await em.find(AuthorSync, {});
+    expect(allSyncs).toHaveLength(1);
+  });
+
+  test('replacing OneToOne with orphanRemoval should not nullify FK that is part of PK on old entity', async () => {
+    const em = orm.em.fork();
+
+    const org = em.create(Organization, { id: 3, name: 'Org3' });
+    const author = em.create(Author, { id: 3, organization: org, name: 'Charlie' });
+    em.create(AuthorSync, { author: ref(author), organization: org, externalId: 'ext-5' });
+    await em.flush();
+    em.clear();
+
+    const loaded = await em.findOneOrFail(Author, { id: 3 }, { populate: ['sync'] });
+    const oldSync = loaded.sync!;
+    expect(oldSync.externalId).toBe('ext-5');
+
+    // Create a new sync entity WITHOUT pre-setting the `author` FK.
+    // This means propagateOneToOne will be invoked (not the shortcut path)
+    // and will attempt to nullify old.author — which is part of the PK.
+    // On PostgreSQL this causes: NotNullConstraintViolationException: SET "author_id" = NULL
+    const newSync = em.create(AuthorSync, {
+      organization: em.getReference(Organization, 3),
+      externalId: 'ext-6',
+    } as any);
+    em.assign(loaded, { sync: newSync });
+
+    // The old entity's FK should NOT be nullified — it's part of the PK
+    // and the entity will be removed via orphan removal anyway.
+    expect(oldSync.author).not.toBeNull();
+
+    await em.flush();
+
+    // Second flush should produce no queries (no stale state from the skipped nullification)
+    const mock = mockLogger(orm);
+    await em.flush();
+    expect(mock.mock.calls).toHaveLength(0);
+
+    em.clear();
+
+    const reloaded = await em.findOneOrFail(Author, { id: 3 }, { populate: ['sync'] });
+    expect(reloaded.sync!.externalId).toBe('ext-6');
+
+    const allSyncs = await em.find(AuthorSync, { organization: 3 });
     expect(allSyncs).toHaveLength(1);
   });
 
