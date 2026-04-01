@@ -2988,3 +2988,61 @@ describe('TPT child relation population - additional coverage', () => {
     await orm.close();
   });
 });
+
+// GH #7453 — covers continue branch when entity is the parent type itself
+describe('TPT child relation population - non-abstract parent', () => {
+  @Entity()
+  class Tag7453 {
+    @PrimaryKey()
+    id!: number;
+
+    @Property()
+    label!: string;
+  }
+
+  @Entity({ inheritance: 'tpt' })
+  class Vehicle7453 {
+    @PrimaryKey()
+    id!: number;
+
+    @Property()
+    brand!: string;
+  }
+
+  @Entity()
+  class Car7453 extends Vehicle7453 {
+    @Property()
+    doors!: number;
+
+    @ManyToOne(() => Tag7453, { ref: true, nullable: true })
+    tag?: Ref<Tag7453>;
+  }
+
+  test('parent-type entities are skipped in populateTPTChildRelations', async () => {
+    const orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
+      dbName: ':memory:',
+      entities: [Vehicle7453, Car7453, Tag7453],
+    });
+    await orm.schema.create();
+
+    const tag = orm.em.create(Tag7453, { label: 'sedan' });
+    // One plain parent entity (Vehicle) and one child entity (Car)
+    orm.em.create(Vehicle7453, { brand: 'Generic' });
+    orm.em.create(Car7453, { brand: 'Toyota', doors: 4, tag });
+    await orm.em.flush();
+    orm.em.clear();
+
+    const results = await orm.em.find(Vehicle7453, {}, { populate: ['*'] });
+    expect(results).toHaveLength(2);
+
+    const vehicle = results.find(r => !(r instanceof Car7453))!;
+    const car = results.find(r => r instanceof Car7453)! as Car7453;
+
+    expect(vehicle.brand).toBe('Generic');
+    expect(car.brand).toBe('Toyota');
+    expect(car.tag!.unwrap().label).toBe('sedan');
+
+    await orm.close();
+  });
+});
