@@ -24,7 +24,7 @@ exports[`embedded entities with custom types > snapshot generator 1`] = `
 
   if (entity.nested === null) {
     ret.nested_someValue = null;
-    ret.nested_deep = null;
+    ret.nested_deep_someValue = null;
   }
   if (entity.nested != null) {
     if (typeof entity.nested.someValue !== 'undefined') ret.nested_someValue = clone(convertToDatabaseValue_nested_someValue(entity.nested.someValue));
