@@ -1402,7 +1402,7 @@ __metadata:
     mongodb-memory-server-core: "npm:11.0.1"
     oxfmt: "npm:0.43.0"
     oxlint: "npm:1.58.0"
-    oxlint-tsgolint: "npm:^0.18.0"
+    oxlint-tsgolint: "npm:^0.19.0"
     reflect-metadata: "npm:0.2.2"
     rimraf: "npm:6.1.3"
     tsimp: "npm:2.0.12"
@@ -2257,44 +2257,44 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@oxlint-tsgolint/darwin-arm64@npm:0.18.0":
-  version: 0.18.0
-  resolution: "@oxlint-tsgolint/darwin-arm64@npm:0.18.0"
+"@oxlint-tsgolint/darwin-arm64@npm:0.19.0":
+  version: 0.19.0
+  resolution: "@oxlint-tsgolint/darwin-arm64@npm:0.19.0"
   conditions: os=darwin & cpu=arm64
   languageName: node
   linkType: hard
 
-"@oxlint-tsgolint/darwin-x64@npm:0.18.0":
-  version: 0.18.0
-  resolution: "@oxlint-tsgolint/darwin-x64@npm:0.18.0"
+"@oxlint-tsgolint/darwin-x64@npm:0.19.0":
+  version: 0.19.0
+  resolution: "@oxlint-tsgolint/darwin-x64@npm:0.19.0"
   conditions: os=darwin & cpu=x64
   languageName: node
   linkType: hard
 
-"@oxlint-tsgolint/linux-arm64@npm:0.18.0":
-  version: 0.18.0
-  resolution: "@oxlint-tsgolint/linux-arm64@npm:0.18.0"
+"@oxlint-tsgolint/linux-arm64@npm:0.19.0":
+  version: 0.19.0
+  resolution: "@oxlint-tsgolint/linux-arm64@npm:0.19.0"
   conditions: os=linux & cpu=arm64
   languageName: node
   linkType: hard
 
-"@oxlint-tsgolint/linux-x64@npm:0.18.0":
-  version: 0.18.0
-  resolution: "@oxlint-tsgolint/linux-x64@npm:0.18.0"
+"@oxlint-tsgolint/linux-x64@npm:0.19.0":
+  version: 0.19.0
+  resolution: "@oxlint-tsgolint/linux-x64@npm:0.19.0"
   conditions: os=linux & cpu=x64
   languageName: node
   linkType: hard
 
-"@oxlint-tsgolint/win32-arm64@npm:0.18.0":
-  version: 0.18.0
-  resolution: "@oxlint-tsgolint/win32-arm64@npm:0.18.0"
+"@oxlint-tsgolint/win32-arm64@npm:0.19.0":
+  version: 0.19.0
+  resolution: "@oxlint-tsgolint/win32-arm64@npm:0.19.0"
   conditions: os=win32 & cpu=arm64
   languageName: node
   linkType: hard
 
-"@oxlint-tsgolint/win32-x64@npm:0.18.0":
-  version: 0.18.0
-  resolution: "@oxlint-tsgolint/win32-x64@npm:0.18.0"
+"@oxlint-tsgolint/win32-x64@npm:0.19.0":
+  version: 0.19.0
+  resolution: "@oxlint-tsgolint/win32-x64@npm:0.19.0"
   conditions: os=win32 & cpu=x64
   languageName: node
   linkType: hard
@@ -7817,16 +7817,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"oxlint-tsgolint@npm:^0.18.0":
-  version: 0.18.0
-  resolution: "oxlint-tsgolint@npm:0.18.0"
+"oxlint-tsgolint@npm:^0.19.0":
+  version: 0.19.0
+  resolution: "oxlint-tsgolint@npm:0.19.0"
   dependencies:
-    "@oxlint-tsgolint/darwin-arm64": "npm:0.18.0"
-    "@oxlint-tsgolint/darwin-x64": "npm:0.18.0"
-    "@oxlint-tsgolint/linux-arm64": "npm:0.18.0"
-    "@oxlint-tsgolint/linux-x64": "npm:0.18.0"
-    "@oxlint-tsgolint/win32-arm64": "npm:0.18.0"
-    "@oxlint-tsgolint/win32-x64": "npm:0.18.0"
+    "@oxlint-tsgolint/darwin-arm64": "npm:0.19.0"
+    "@oxlint-tsgolint/darwin-x64": "npm:0.19.0"
+    "@oxlint-tsgolint/linux-arm64": "npm:0.19.0"
+    "@oxlint-tsgolint/linux-x64": "npm:0.19.0"
+    "@oxlint-tsgolint/win32-arm64": "npm:0.19.0"
+    "@oxlint-tsgolint/win32-x64": "npm:0.19.0"
   dependenciesMeta:
     "@oxlint-tsgolint/darwin-arm64":
       optional: true
@@ -7842,7 +7842,7 @@ __metadata:
       optional: true
   bin:
     tsgolint: bin/tsgolint.js
-  checksum: 10/cd7186d48cc4f47e44bb6402194aadf623eae17433f8cc53253d9344cdefaf0194869a76cf3d899785a13d39767d68da90a5c79294a6104e304fecd503ef9955
+  checksum: 10/b87f9650029b8f4b2cd9ca4042a7807965453f0cae7842d56d5ad2068d6d15475f726dad94d6d7ac31224bec0bfdf28a60765c16f620ebd0602974bbe5c5b5dd
   languageName: node
   linkType: hard
 
