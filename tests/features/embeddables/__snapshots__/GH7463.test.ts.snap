@@ -1,0 +1,30 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`GH #7463 - snapshot generator 1`] = `
+"function(entity) {
+  const ret = {};
+  if (typeof entity.id !== 'undefined') {
+    ret.id = entity.id;
+  }
+
+  if (typeof entity.name !== 'undefined') {
+    ret.name = entity.name;
+  }
+
+  if (entity.outer === null) {
+    ret.outer_inner_name = null;
+  }
+  if (entity.outer != null) {
+
+    if (entity.outer.inner === null) {
+      ret.outer_inner_name = null;
+    }
+    if (entity.outer.inner != null) {
+      if (typeof entity.outer.inner.name !== 'undefined') ret.outer_inner_name = clone(entity.outer.inner.name);
+    }
+
+  }
+
+  return ret;
+}"
+`;
