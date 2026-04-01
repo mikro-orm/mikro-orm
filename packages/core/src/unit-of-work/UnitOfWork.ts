@@ -434,8 +434,83 @@ export class UnitOfWork {
     const cs = this.#changeSetComputer.computeChangeSet(entity);
 
     if (cs && !this.checkUniqueProps(cs)) {
-      Object.assign(changeSet.payload, cs.payload);
-      helper(entity).__originalEntityData = this.#comparator.prepareEntity(entity);
+      const wrapped = helper(entity);
+
+      // For TPT entities, split the recomputed payload among the leaf and parent changesets,
+      // so parent columns don't leak into the leaf table's INSERT/UPDATE (GH #7455).
+      if (wrapped.__meta.inheritanceType === 'tpt' && wrapped.__meta.tptParent) {
+        for (const prop of wrapped.__meta.ownProps!) {
+          if (prop.name in cs.payload) {
+            (changeSet.payload as Dictionary)[prop.name] = (cs.payload as Dictionary)[prop.name];
+          }
+        }
+
+        if (changeSet.tptChangeSets) {
+          for (const parentCs of changeSet.tptChangeSets) {
+            for (const prop of parentCs.meta.ownProps!) {
+              if (prop.name in cs.payload) {
+                (parentCs.payload as Dictionary)[prop.name] = (cs.payload as Dictionary)[prop.name];
+              }
+            }
+          }
+        } else {
+          // The leaf changeset was created without TPT splitting (e.g. via the public
+          // computeChangeSet). Merge the recomputed diff, then split the full payload
+          // across leaf and parent changesets so each table gets only its own columns.
+          Object.assign(changeSet.payload, cs.payload);
+          const fullPayload = { ...changeSet.payload } as Dictionary;
+
+          // Rebuild the leaf payload to only include leaf ownProps
+          for (const key of Object.keys(changeSet.payload)) {
+            delete (changeSet.payload as Dictionary)[key];
+          }
+
+          for (const prop of wrapped.__meta.ownProps!) {
+            if (prop.name in fullPayload) {
+              (changeSet.payload as Dictionary)[prop.name] = fullPayload[prop.name];
+            }
+          }
+
+          const parentChangeSets: ChangeSet<T>[] = [];
+          let current: EntityMetadata | undefined = wrapped.__meta.tptParent;
+
+          while (current) {
+            const payload: Dictionary = {};
+
+            for (const prop of current.ownProps!) {
+              if (prop.name in fullPayload) {
+                payload[prop.name] = fullPayload[prop.name];
+              }
+            }
+
+            if (Object.keys(payload).length > 0 || changeSet.type === ChangeSetType.CREATE) {
+              if (changeSet.type === ChangeSetType.CREATE && current.tptParent) {
+                const identifier = wrapped.__identifier;
+                const identifiers = Array.isArray(identifier) ? identifier : [identifier];
+
+                for (let i = 0; i < current.primaryKeys.length; i++) {
+                  const pk = current.primaryKeys[i];
+                  payload[pk] = identifiers[i] ?? fullPayload[pk];
+                }
+              }
+
+              parentChangeSets.push(
+                new ChangeSet(entity, changeSet.type, payload as EntityDictionary<T>, current as EntityMetadata<T>),
+              );
+            }
+
+            current = current.tptParent;
+          }
+
+          if (parentChangeSets.length > 0) {
+            changeSet.tptChangeSets = parentChangeSets;
+          }
+        }
+      } else {
+        Object.assign(changeSet.payload, cs.payload);
+      }
+
+      wrapped.__originalEntityData = this.#comparator.prepareEntity(entity);
     }
   }
 

@@ -1,4 +1,5 @@
-import { Collection, EntitySchema, MikroORM, quote, Ref, wrap, raw, Type, Opt } from '@mikro-orm/sqlite';
+import { Collection, EntitySchema, MikroORM, quote, Ref, wrap, raw, Type, Opt, ChangeSetType } from '@mikro-orm/sqlite';
+import type { EventSubscriber, FlushEventArgs } from '@mikro-orm/sqlite';
 import {
   Embeddable,
   Embedded,
@@ -3068,6 +3069,169 @@ describe('TPT child relation population - non-abstract parent', () => {
     expect(vehicle.brand).toBe('Generic');
     expect(car.brand).toBe('Toyota');
     expect(car.tag!.unwrap().label).toBe('sedan');
+
+    await orm.close();
+  });
+});
+// GH #7455
+describe('TPT recomputeSingleChangeSet regression', () => {
+  test('recomputeSingleChangeSet works for TPT entities in onFlush', async () => {
+    const orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
+      dbName: ':memory:',
+      entities: [Integration, FooIntegration, BarIntegration, BazIntegration],
+    });
+    await orm.schema.create();
+
+    class Subscriber implements EventSubscriber {
+      async onFlush(args: FlushEventArgs): Promise<void> {
+        const changeSets = args.uow.getChangeSets();
+        const cs = changeSets.find(cs => cs.type === ChangeSetType.CREATE && cs.entity instanceof FooIntegration);
+
+        if (cs) {
+          (cs.entity as FooIntegration).fooData = 'modified-in-hook';
+          args.uow.recomputeSingleChangeSet(cs.entity);
+        }
+      }
+    }
+
+    const em = orm.em.fork();
+    em.getEventManager().registerSubscriber(new Subscriber());
+
+    em.create(FooIntegration, {
+      name: 'Foo Integration',
+      fooData: 'original',
+    });
+
+    // Should not throw "table foo_integration has no column named name"
+    await em.flush();
+
+    em.clear();
+    const loaded = await em.findOneOrFail(FooIntegration, { name: 'Foo Integration' });
+    expect(loaded.fooData).toBe('modified-in-hook');
+    expect(loaded.name).toBe('Foo Integration');
+
+    await orm.close();
+  });
+
+  test('recomputeSingleChangeSet works for TPT UPDATE in onFlush', async () => {
+    const orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
+      dbName: ':memory:',
+      entities: [Integration, FooIntegration, BarIntegration, BazIntegration],
+    });
+    await orm.schema.create();
+
+    orm.em.create(FooIntegration, {
+      name: 'Foo Integration',
+      fooData: 'original',
+    });
+    await orm.em.flush();
+
+    class Subscriber implements EventSubscriber {
+      async onFlush(args: FlushEventArgs): Promise<void> {
+        const changeSets = args.uow.getChangeSets();
+        const cs = changeSets.find(cs => cs.type === ChangeSetType.UPDATE && cs.entity instanceof FooIntegration);
+
+        if (cs) {
+          (cs.entity as FooIntegration).name = 'Updated In Hook';
+          args.uow.recomputeSingleChangeSet(cs.entity);
+        }
+      }
+    }
+
+    orm.em.getEventManager().registerSubscriber(new Subscriber());
+
+    const foo = await orm.em.findOneOrFail(FooIntegration, { name: 'Foo Integration' });
+    foo.fooData = 'updated';
+    await orm.em.flush();
+
+    orm.em.clear();
+    const loaded = await orm.em.findOneOrFail(FooIntegration, { fooData: 'updated' });
+    expect(loaded.name).toBe('Updated In Hook');
+    expect(loaded.fooData).toBe('updated');
+
+    await orm.close();
+  });
+
+  test('recomputeSingleChangeSet updates both leaf and parent properties in onFlush', async () => {
+    const orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
+      dbName: ':memory:',
+      entities: [Integration, FooIntegration, BarIntegration, BazIntegration],
+    });
+    await orm.schema.create();
+
+    class Subscriber implements EventSubscriber {
+      async onFlush(args: FlushEventArgs): Promise<void> {
+        const changeSets = args.uow.getChangeSets();
+        const cs = changeSets.find(cs => cs.type === ChangeSetType.CREATE && cs.entity instanceof FooIntegration);
+
+        if (cs) {
+          // Modify both leaf and parent properties
+          (cs.entity as FooIntegration).fooData = 'modified-data';
+          (cs.entity as FooIntegration).name = 'Modified Name';
+          args.uow.recomputeSingleChangeSet(cs.entity);
+        }
+      }
+    }
+
+    const em = orm.em.fork();
+    em.getEventManager().registerSubscriber(new Subscriber());
+
+    em.create(FooIntegration, {
+      name: 'Original',
+      fooData: 'original',
+    });
+
+    await em.flush();
+
+    em.clear();
+    const loaded = await em.findOneOrFail(FooIntegration, { name: 'Modified Name' });
+    expect(loaded.fooData).toBe('modified-data');
+    expect(loaded.name).toBe('Modified Name');
+
+    await orm.close();
+  });
+
+  test('recomputeSingleChangeSet works for multi-level TPT entity in onFlush', async () => {
+    const orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
+      dbName: ':memory:',
+      entities: [Integration, FooIntegration, BarIntegration, BazIntegration],
+    });
+    await orm.schema.create();
+
+    class Subscriber implements EventSubscriber {
+      async onFlush(args: FlushEventArgs): Promise<void> {
+        const changeSets = args.uow.getChangeSets();
+        const cs = changeSets.find(cs => cs.type === ChangeSetType.CREATE && cs.entity instanceof BazIntegration);
+
+        if (cs) {
+          (cs.entity as BazIntegration).bazData = 'modified-baz';
+          (cs.entity as BazIntegration).barData = 'modified-bar';
+          (cs.entity as BazIntegration).name = 'Modified Name';
+          args.uow.recomputeSingleChangeSet(cs.entity);
+        }
+      }
+    }
+
+    const em = orm.em.fork();
+    em.getEventManager().registerSubscriber(new Subscriber());
+
+    em.create(BazIntegration, {
+      name: 'Baz',
+      barData: 'bar',
+      bazData: 'baz',
+    });
+
+    await em.flush();
+
+    em.clear();
+    const loaded = await em.findOneOrFail(BazIntegration, { name: 'Modified Name' });
+    expect(loaded.bazData).toBe('modified-baz');
+    expect(loaded.barData).toBe('modified-bar');
+    expect(loaded.name).toBe('Modified Name');
 
     await orm.close();
   });
