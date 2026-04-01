@@ -418,7 +418,13 @@ export class UnitOfWork {
     }
 
     this.initIdentifier(entity);
-    this.#changeSets.set(entity, cs);
+
+    if (wrapped.__meta.inheritanceType === 'tpt' && wrapped.__meta.tptParent) {
+      this.createTPTChangeSets(entity, cs);
+    } else {
+      this.#changeSets.set(entity, cs);
+    }
+
     this.#persistStack.delete(entity);
     wrapped.__originalEntityData = this.#comparator.prepareEntity(entity);
   }
@@ -436,58 +442,42 @@ export class UnitOfWork {
     if (cs && !this.checkUniqueProps(cs)) {
       const wrapped = helper(entity);
 
-      // For TPT entities, split the recomputed payload among the leaf and parent changesets,
-      // so parent columns don't leak into the leaf table's INSERT/UPDATE (GH #7455).
+      // For TPT entities, update only each table's own properties so parent
+      // columns don't leak into the leaf table's INSERT/UPDATE (GH #7455).
       if (wrapped.__meta.inheritanceType === 'tpt' && wrapped.__meta.tptParent) {
-        this.recomputeTPTChangeSet(entity, changeSet, cs);
+        for (const prop of wrapped.__meta.ownProps!) {
+          if (prop.name in cs.payload) {
+            (changeSet.payload as Dictionary)[prop.name] = (cs.payload as Dictionary)[prop.name];
+          }
+        }
+
+        changeSet.tptChangeSets ??= [];
+        let current: EntityMetadata | undefined = wrapped.__meta.tptParent;
+        let idx = 0;
+
+        while (current) {
+          let parentCs = changeSet.tptChangeSets.find(pc => pc.meta === current);
+
+          if (!parentCs) {
+            parentCs = new ChangeSet(entity, changeSet.type, {} as EntityDictionary<T>, current as EntityMetadata<T>);
+            changeSet.tptChangeSets.splice(idx, 0, parentCs);
+          }
+
+          idx++;
+
+          for (const prop of current.ownProps!) {
+            if (prop.name in cs.payload) {
+              (parentCs.payload as Dictionary)[prop.name] = (cs.payload as Dictionary)[prop.name];
+            }
+          }
+
+          current = current.tptParent;
+        }
       } else {
         Object.assign(changeSet.payload, cs.payload);
       }
 
       wrapped.__originalEntityData = this.#comparator.prepareEntity(entity);
-    }
-  }
-
-  /**
-   * Merges a recomputed changeset into the existing TPT leaf + parent changesets.
-   * When tptChangeSets already exist, updates each one in place; otherwise builds
-   * them from scratch so each table receives only its own columns.
-   */
-  private recomputeTPTChangeSet<T extends object>(entity: T, changeSet: ChangeSet<T>, cs: ChangeSet<T>): void {
-    const wrapped = helper(entity);
-    const recomputed = cs.payload as Dictionary;
-
-    // Update the leaf changeset with recomputed leaf-owned properties
-    this.mergeOwnProps(wrapped.__meta, recomputed, changeSet.payload as Dictionary);
-
-    if (changeSet.tptChangeSets) {
-      for (const parentCs of changeSet.tptChangeSets) {
-        this.mergeOwnProps(parentCs.meta, recomputed, parentCs.payload as Dictionary);
-      }
-
-      return;
-    }
-
-    // The leaf changeset was created without TPT splitting (e.g. via the public
-    // computeChangeSet). Split the full payload across leaf and parent changesets.
-    const fullPayload = { ...changeSet.payload, ...recomputed } as Dictionary;
-
-    // Rebuild the leaf payload to only include leaf-owned properties
-    for (const key of Object.keys(changeSet.payload)) {
-      delete (changeSet.payload as Dictionary)[key];
-    }
-
-    this.mergeOwnProps(wrapped.__meta, fullPayload, changeSet.payload as Dictionary);
-
-    // For CREATE on non-root leaf, include the PK (EntityIdentifier for deferred resolution)
-    if (changeSet.type === ChangeSetType.CREATE) {
-      this.addTPTIdentifiers(entity, wrapped.__meta, changeSet.payload as Dictionary, fullPayload);
-    }
-
-    const parentChangeSets = this.buildTPTParentChangeSets(entity, changeSet.type, fullPayload);
-
-    if (parentChangeSets.length > 0) {
-      changeSet.tptChangeSets = parentChangeSets;
     }
   }
 
@@ -873,27 +863,54 @@ export class UnitOfWork {
   private createTPTChangeSets<T extends object>(entity: T, originalChangeSet: ChangeSet<T>): void {
     const meta = helper(entity).__meta;
     const isCreate = originalChangeSet.type === ChangeSetType.CREATE;
-    const fullPayload = originalChangeSet.payload as Dictionary;
-
-    // Build the leaf changeset with only leaf-owned properties
-    const leafPayload: Dictionary = {};
-    this.mergeOwnProps(meta, fullPayload, leafPayload);
-
-    // For CREATE on non-root leaf, include the PK (EntityIdentifier for deferred resolution)
-    if (isCreate && meta.tptParent) {
-      this.addTPTIdentifiers(entity, meta, leafPayload, fullPayload);
-    }
-
+    let current: EntityMetadata | undefined = meta;
     let leafCs: ChangeSet<T> | undefined;
+    const parentChangeSets: ChangeSet<T>[] = [];
 
-    if (isCreate || Object.keys(leafPayload).length > 0) {
-      leafCs = new ChangeSet(entity, originalChangeSet.type, leafPayload as EntityDictionary<T>, meta);
-      leafCs.originalEntity = originalChangeSet.originalEntity;
+    while (current) {
+      const isRoot = !current.tptParent;
+      const payload: Dictionary = {};
+
+      for (const prop of current.ownProps!) {
+        if (prop.name in originalChangeSet.payload) {
+          payload[prop.name] = (originalChangeSet.payload as Dictionary)[prop.name];
+        }
+      }
+
+      // For CREATE on non-root tables, include the PK (EntityIdentifier for deferred resolution)
+      if (isCreate && !isRoot) {
+        const wrapped = helper(entity);
+        const identifier = wrapped.__identifier;
+        const identifiers = Array.isArray(identifier) ? identifier : [identifier];
+        for (let i = 0; i < current.primaryKeys.length; i++) {
+          const pk = current.primaryKeys[i];
+          payload[pk] = identifiers[i] ?? (originalChangeSet.payload as Dictionary)[pk];
+        }
+      }
+
+      if (!isCreate && Object.keys(payload).length === 0) {
+        current = current.tptParent;
+        continue;
+      }
+
+      const cs = new ChangeSet(
+        entity,
+        originalChangeSet.type,
+        payload as EntityDictionary<T>,
+        current as EntityMetadata<T>,
+      );
+
+      if (current === meta) {
+        cs.originalEntity = originalChangeSet.originalEntity;
+        leafCs = cs;
+      } else {
+        parentChangeSets.push(cs);
+      }
+
+      current = current.tptParent;
     }
 
-    const parentChangeSets = this.buildTPTParentChangeSets(entity, originalChangeSet.type, fullPayload);
-
-    // When only parent properties changed (UPDATE), leaf payload is empty — create a stub anchor
+    // When only parent properties changed (UPDATE), leaf payload is empty—create a stub anchor
     if (!leafCs && parentChangeSets.length > 0) {
       leafCs = new ChangeSet(entity, originalChangeSet.type, {} as EntityDictionary<T>, meta);
       leafCs.originalEntity = originalChangeSet.originalEntity;
@@ -906,66 +923,6 @@ export class UnitOfWork {
       }
 
       this.#changeSets.set(entity, leafCs);
-    }
-  }
-
-  /**
-   * Walks the TPT parent chain starting from the entity's immediate parent,
-   * building a changeset for each ancestor table that has relevant properties.
-   */
-  private buildTPTParentChangeSets<T extends object>(
-    entity: T,
-    type: ChangeSetType,
-    fullPayload: Dictionary,
-  ): ChangeSet<T>[] {
-    const isCreate = type === ChangeSetType.CREATE;
-    const parentChangeSets: ChangeSet<T>[] = [];
-    let current: EntityMetadata | undefined = helper(entity).__meta.tptParent;
-
-    while (current) {
-      const payload: Dictionary = {};
-      this.mergeOwnProps(current, fullPayload, payload);
-
-      // For CREATE on non-root tables, include the PK (EntityIdentifier for deferred resolution)
-      if (isCreate && current.tptParent) {
-        this.addTPTIdentifiers(entity, current, payload, fullPayload);
-      }
-
-      if (Object.keys(payload).length > 0 || isCreate) {
-        parentChangeSets.push(
-          new ChangeSet(entity, type, payload as EntityDictionary<T>, current as EntityMetadata<T>),
-        );
-      }
-
-      current = current.tptParent;
-    }
-
-    return parentChangeSets;
-  }
-
-  /** Copies properties owned by `meta` from `source` into `target`. */
-  private mergeOwnProps(meta: EntityMetadata, source: Dictionary, target: Dictionary): void {
-    for (const prop of meta.ownProps!) {
-      if (prop.name in source) {
-        target[prop.name] = source[prop.name];
-      }
-    }
-  }
-
-  /** Adds PK identifiers to a TPT payload for deferred resolution during CREATE. */
-  private addTPTIdentifiers<T extends object>(
-    entity: T,
-    meta: EntityMetadata,
-    payload: Dictionary,
-    fallback: Dictionary,
-  ): void {
-    const wrapped = helper(entity);
-    const identifier = wrapped.__identifier;
-    const identifiers = Array.isArray(identifier) ? identifier : [identifier];
-
-    for (let i = 0; i < meta.primaryKeys.length; i++) {
-      const pk = meta.primaryKeys[i];
-      payload[pk] = identifiers[i] ?? fallback[pk];
     }
   }
 

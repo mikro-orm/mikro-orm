@@ -3244,10 +3244,7 @@ describe('TPT recomputeSingleChangeSet regression', () => {
     });
     await orm.schema.create();
 
-    // In onFlush, add a NEW TPT entity via computeChangeSet (which does NOT
-    // call createTPTChangeSets, so tptChangeSets is not set on the changeset).
-    // Then modify and recomputeSingleChangeSet — this exercises the else branch
-    // that creates parent changesets from scratch.
+    // Add a NEW TPT entity in onFlush via computeChangeSet, then modify and recompute.
     class Subscriber implements EventSubscriber {
       async onFlush(args: FlushEventArgs): Promise<void> {
         const changeSets = args.uow.getChangeSets();
