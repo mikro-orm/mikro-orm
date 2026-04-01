@@ -2921,3 +2921,70 @@ describe('TPT child relation population regression', () => {
     await orm.close();
   });
 });
+
+// GH #7453 — additional coverage for populateTPTChildRelations branches
+describe('TPT child relation population - additional coverage', () => {
+  @Entity()
+  class Addr7453 {
+    @PrimaryKey()
+    id!: number;
+
+    @Property()
+    street!: string;
+  }
+
+  @Entity({ inheritance: 'tpt' })
+  abstract class Base7453 {
+    @PrimaryKey()
+    id!: number;
+
+    @Property()
+    name!: string;
+
+    @ManyToOne(() => Addr7453, { ref: true, nullable: true })
+    sharedAddr?: Ref<Addr7453>;
+  }
+
+  @Entity()
+  class Child7453 extends Base7453 {
+    @Property()
+    extra!: string;
+
+    @ManyToOne(() => Addr7453, { ref: true, nullable: true })
+    childAddr?: Ref<Addr7453>;
+  }
+
+  test('multiple children with inherited + own relations are all populated', async () => {
+    const orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
+      dbName: ':memory:',
+      entities: [Base7453, Child7453, Addr7453],
+    });
+    await orm.schema.create();
+
+    const shared = orm.em.create(Addr7453, { street: 'Shared St' });
+    const addr1 = orm.em.create(Addr7453, { street: 'Child St 1' });
+    const addr2 = orm.em.create(Addr7453, { street: 'Child St 2' });
+    orm.em.create(Child7453, { name: 'A', extra: 'a', sharedAddr: shared, childAddr: addr1 });
+    orm.em.create(Child7453, { name: 'B', extra: 'b', sharedAddr: shared, childAddr: addr2 });
+    await orm.em.flush();
+    orm.em.clear();
+
+    const results = await orm.em.find(Base7453, {}, { populate: ['*'] });
+    expect(results).toHaveLength(2);
+
+    for (const entity of results) {
+      expect(entity).toBeInstanceOf(Child7453);
+      const child = entity as Child7453;
+      // Parent relation (inherited) should be populated via main loop
+      expect(child.sharedAddr!.unwrap().street).toBe('Shared St');
+      // Child-only relation should be populated via populateTPTChildRelations
+      expect(child.childAddr!.unwrap()).toBeInstanceOf(Addr7453);
+    }
+
+    expect((results[0] as Child7453).childAddr!.unwrap().street).toBe('Child St 1');
+    expect((results[1] as Child7453).childAddr!.unwrap().street).toBe('Child St 2');
+
+    await orm.close();
+  });
+});
