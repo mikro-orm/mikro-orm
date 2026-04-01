@@ -520,14 +520,7 @@ export class EntityComparator {
       ret += `${padding}if (${nullCond}) ret${dataKey} = null;\n`;
     } else {
       ret += `${padding}if (${nullCond}) {\n`;
-      ret += meta.props.filter(p =>
-        p.embedded?.[0] === prop.name
-        // object for JSON embeddable
-        && (p.object || (p.persist !== false)),
-      ).map(childProp => {
-        const childDataKey = meta.embeddable || prop.object ? dataKey + this.wrap(childProp.embedded![1]) : this.wrap(childProp.name);
-        return `${padding}  ret${childDataKey} = null;`;
-      }).join('\n') + `\n`;
+      ret += this.getInlineEmbeddedNullLines(meta, prop.name, padding, dataKey, !!(meta.embeddable || prop.object)).join('\n') + `\n`;
       ret += `${padding}}\n`;
     }
 
@@ -586,6 +579,21 @@ export class EntityComparator {
     }
 
     return `${ret}${padding}}`;
+  }
+
+  private getInlineEmbeddedNullLines<T>(meta: EntityMetadata<T>, parentName: string, padding: string, dataKey: string, useEmbeddedKey: boolean): string[] {
+    return meta.props.filter(p =>
+      p.embedded?.[0] === parentName
+      && (p.object || (p.persist !== false)),
+    ).flatMap(childProp => {
+      const childDataKey = useEmbeddedKey ? dataKey + this.wrap(childProp.embedded![1]) : this.wrap(childProp.name);
+
+      if (childProp.kind === ReferenceKind.EMBEDDED && !childProp.object) {
+        return this.getInlineEmbeddedNullLines(meta, childProp.name, padding, childDataKey, useEmbeddedKey);
+      }
+
+      return [`${padding}  ret${childDataKey} = null;`];
+    });
   }
 
   private registerCustomType<T>(prop: EntityProperty<T>, context: Map<string, any>) {

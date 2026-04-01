@@ -13,14 +13,18 @@ exports[`embedded entities in postgres diffing 1`] = `
 
   if (entity.profile1 === null) {
     ret.profile1_username = null;
-    ret.profile1_identity = null;
+    ret.profile1_identity_email = null;
+    ret.profile1_identity_meta_foo = null;
+    ret.profile1_identity_meta_bar = null;
+    ret.profile1_identity_links = null;
   }
   if (entity.profile1 != null) {
     if (typeof entity.profile1.username !== 'undefined') ret.profile1_username = clone(entity.profile1.username);
 
     if (entity.profile1.identity === null) {
       ret.profile1_identity_email = null;
-      ret.profile1_identity_meta = null;
+      ret.profile1_identity_meta_foo = null;
+      ret.profile1_identity_meta_bar = null;
       ret.profile1_identity_links = null;
     }
     if (entity.profile1.identity != null) {
