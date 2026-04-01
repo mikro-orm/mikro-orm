@@ -141,7 +141,7 @@ export class EntityLoader {
       await this.populateField<Entity>(entityName, entities, pop, options as Required<EntityLoaderOptions<Entity>>);
     }
 
-    // For TPT entities with populate: *, re-populate each child type so child-specific relations get loaded (GH #7453).
+    // Child-specific relations exist only on child metadata, so the parent-scoped populate loop above skips them (GH #7453).
     if (
       Array.isArray(populate) &&
       populate.some(p => p.all) &&
@@ -155,12 +155,20 @@ export class EntityLoader {
 
         if (entityMeta !== meta) {
           const group = byType.get(entityMeta);
-          group ? group.push(entity) : byType.set(entityMeta, [entity]);
+          if (group) {
+            group.push(entity);
+          } else {
+            byType.set(entityMeta, [entity]);
+          }
         }
       }
 
       for (const [childMeta, group] of byType) {
-        await this.populate(childMeta.class as EntityName<Entity>, group, true, { ...options, lookup: false });
+        await this.populate(childMeta.class as EntityName<Entity>, group, true, {
+          ...options,
+          lookup: false,
+          validate: false,
+        });
       }
     }
 
