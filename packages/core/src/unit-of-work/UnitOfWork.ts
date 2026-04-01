@@ -1304,7 +1304,14 @@ export class UnitOfWork {
     await this.#changeSetPersister.executeInserts(changeSets, { ctx });
 
     for (const changeSet of changeSets) {
-      this.register<T>(changeSet.entity, changeSet.payload, { refresh: true });
+      // For TPT entities, use the full entity snapshot instead of the partial changeset payload,
+      // since each table's changeset only contains its own properties. Without this, the snapshot
+      // would only have the last table's properties, causing spurious UPDATEs on next flush (GH #7454).
+      const data =
+        changeSet.meta.inheritanceType === 'tpt'
+          ? (this.#comparator.prepareEntity(changeSet.entity) as EntityData<T>)
+          : changeSet.payload;
+      this.register<T>(changeSet.entity, data, { refresh: true });
       await this.runHooks(EventType.afterCreate, changeSet);
     }
   }

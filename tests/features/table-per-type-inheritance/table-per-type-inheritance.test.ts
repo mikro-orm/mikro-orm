@@ -2814,3 +2814,54 @@ describe('TPT QueryBuilder update/delete', () => {
     await orm.close();
   });
 });
+
+// GH #7454
+describe('TPT sequential flush regression', () => {
+  test('sequential flush of unchanged TPT entity does not trigger update', async () => {
+    const orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
+      dbName: ':memory:',
+      entities: [Integration, FooIntegration, BarIntegration, BazIntegration],
+    });
+    await orm.schema.create();
+
+    orm.em.create(FooIntegration, {
+      name: 'Foo Integration',
+      fooData: 'foo-data',
+    });
+    await orm.em.flush();
+
+    const mock = mockLogger(orm);
+    // Second flush without changes — should NOT produce any queries
+    await orm.em.flush();
+
+    const logs = mock.mock.calls.map(c => c[0]);
+    expect(logs.some((l: string) => l.includes('update'))).toBe(false);
+
+    await orm.close();
+  });
+
+  test('sequential flush of unchanged multi-level TPT entity does not trigger update', async () => {
+    const orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
+      dbName: ':memory:',
+      entities: [Integration, FooIntegration, BarIntegration, BazIntegration],
+    });
+    await orm.schema.create();
+
+    orm.em.create(BazIntegration, {
+      name: 'Baz Integration',
+      barData: 'bar-data',
+      bazData: 'baz-data',
+    });
+    await orm.em.flush();
+
+    const mock = mockLogger(orm);
+    await orm.em.flush();
+
+    const logs = mock.mock.calls.map(c => c[0]);
+    expect(logs.some((l: string) => l.includes('update'))).toBe(false);
+
+    await orm.close();
+  });
+});
