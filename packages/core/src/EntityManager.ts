@@ -2623,7 +2623,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     // Save flag before normalization replaces it (needed for TPT child relation population, GH #7453)
-    if (Utils.asArray(options.populate).some((p: any) => p === true || (typeof p === 'object' && p.all))) {
+    if (Utils.asArray(options.populate).some((p: any) => p === true || p.all)) {
       (options as Dictionary).populateAll = true;
     }
 

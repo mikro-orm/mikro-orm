@@ -1111,28 +1111,31 @@ export class EntityLoader {
     entities: Entity[],
     options: Required<EntityLoaderOptions<Entity>>,
   ): Promise<void> {
-    const parentRelNames = new Set<string>(parentMeta.relations.map(r => r.name as string));
+    const parentRelNames = new Set(parentMeta.relations.map(r => r.name as string));
     const byType = new Map<EntityMetadata, Entity[]>();
 
     for (const entity of entities) {
       const entityMeta = helper(entity).__meta;
 
-      if (entityMeta !== parentMeta) {
-        let group = byType.get(entityMeta);
+      if (entityMeta === parentMeta) {
+        continue;
+      }
 
-        if (!group) {
-          group = [];
-          byType.set(entityMeta, group);
-        }
+      const group = byType.get(entityMeta);
 
+      if (group) {
         group.push(entity);
+      } else {
+        byType.set(entityMeta, [entity]);
       }
     }
 
     for (const [childMeta, childEntities] of byType) {
-      const childOnlyRelations = childMeta.relations.filter(r => !parentRelNames.has(r.name as string));
+      for (const prop of childMeta.relations) {
+        if (parentRelNames.has(prop.name as string)) {
+          continue;
+        }
 
-      for (const prop of childOnlyRelations) {
         const pop = {
           field: this.getRelationName(childMeta as EntityMetadata<Entity>, prop as EntityProperty<Entity>),
           strategy: LoadStrategy.SELECT_IN,
