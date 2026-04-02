@@ -535,6 +535,10 @@ export abstract class AbstractSqlDriver<
       if (parentAlias) {
         // Rename columns from this parent table
         for (const prop of parentMeta.ownProps!) {
+          if (!prop.fieldNames) {
+            continue;
+          }
+
           for (const fieldName of prop.fieldNames) {
             const aliasedKey = `${parentAlias}__${fieldName}` as EntityKey<T>;
 
