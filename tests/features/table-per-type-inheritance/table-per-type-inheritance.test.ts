@@ -3330,4 +3330,56 @@ describe('TPT recomputeSingleChangeSet regression', () => {
 
     await orm.close();
   });
+
+  // GH #7471 - TPT parent with 1:m relation causes "prop.fieldNames is not iterable"
+  test('find on TPT leaf when parent has OneToMany relation', async () => {
+    @Entity({ inheritance: 'tpt' })
+    abstract class Person7471 {
+      @PrimaryKey()
+      id!: number;
+
+      @Property()
+      name!: string;
+
+      @OneToMany(() => Asset7471, a => a.owner)
+      assets = new Collection<Asset7471>(this);
+    }
+
+    @Entity()
+    class Employee7471 extends Person7471 {
+      @Property()
+      department!: string;
+    }
+
+    @Entity()
+    class Asset7471 {
+      @PrimaryKey()
+      id!: number;
+
+      @Property()
+      label!: string;
+
+      @ManyToOne(() => Person7471, { ref: true })
+      owner!: Ref<Person7471>;
+    }
+
+    const orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
+      dbName: ':memory:',
+      entities: [Person7471, Employee7471, Asset7471],
+    });
+    await orm.schema.create();
+
+    const emp = orm.em.create(Employee7471, { name: 'John', department: 'IT' });
+    orm.em.create(Asset7471, { label: 'Laptop', owner: emp });
+    await orm.em.flush();
+    orm.em.clear();
+
+    const employees = await orm.em.findAll(Employee7471);
+    expect(employees).toHaveLength(1);
+    expect(employees[0].name).toBe('John');
+    expect(employees[0].department).toBe('IT');
+
+    await orm.close();
+  });
 });
