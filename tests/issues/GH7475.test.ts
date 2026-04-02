@@ -1,6 +1,6 @@
 import { MikroORM, PrimaryKeyProp, Ref } from '@mikro-orm/sqlite';
 import { Entity, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
-import { mockLogger } from '../helpers';
+import { mockLogger } from '../helpers.js';
 
 @Entity()
 class Organization {
