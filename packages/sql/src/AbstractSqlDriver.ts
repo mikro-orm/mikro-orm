@@ -2178,6 +2178,27 @@ export abstract class AbstractSqlDriver<
         prop.targetMeta!.schema === '*' ? (options?.schema ?? this.config.get('schema')) : prop.targetMeta!.schema;
       qb.join(field as any, tableAlias, {}, joinType, path, schema);
 
+      // For relations to TPT child entities, INNER JOIN parent tables (GH #7469)
+      if (meta2.inheritanceType === 'tpt' && meta2.tptParent) {
+        let childAlias = tableAlias;
+        let childMeta: EntityMetadata = meta2;
+        while (childMeta.tptParent) {
+          const parentMeta = childMeta.tptParent;
+          const parentAlias = qb.getNextAlias(parentMeta.className);
+          qb.createAlias(parentMeta.class, parentAlias);
+          qb.state.tptAlias[`${tableAlias}:${parentMeta.className}`] = parentAlias;
+          qb.addPropertyJoin(
+            childMeta.tptParentProp!,
+            childAlias,
+            parentAlias,
+            JoinType.innerJoin,
+            `${path}.[tpt]${childMeta.className}`,
+          );
+          childAlias = parentAlias;
+          childMeta = parentMeta;
+        }
+      }
+
       // For relations to TPT base classes, add LEFT JOINs for all child tables (polymorphic loading)
       if (meta2.inheritanceType === 'tpt' && meta2.tptChildren?.length && !ref) {
         // Use the registry metadata to ensure allTPTDescendants is available
@@ -2448,8 +2469,9 @@ export abstract class AbstractSqlDriver<
       return [raw(`${this.evaluateFormula(prop.formula, columns, table)} as ${aliased}`)];
     }
 
+    const sourceAlias = qb.helper.getTPTAliasForProperty(prop.name, tableAlias);
     return prop.fieldNames.map(fieldName => {
-      return raw('?? as ??', [`${tableAlias}.${fieldName}`, `${tableAlias}__${fieldName}`]);
+      return raw('?? as ??', [`${sourceAlias}.${fieldName}`, `${tableAlias}__${fieldName}`]);
     });
   }
 
