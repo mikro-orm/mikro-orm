@@ -1032,7 +1032,7 @@ export abstract class AbstractSqlDriver<
               if (prop.polymorphic && target instanceof PolymorphicRef) {
                 rawParam = target.toTuple();
               } else {
-                rawParam = Utils.asArray(target) ?? prop.fieldNames.map(() => null);
+                rawParam = target == null ? prop.fieldNames.map(() => null) : Utils.asArray(target);
               }
 
               // Deep flatten nested arrays when needed (for deeply nested composite keys like Tag -> Comment -> Post -> User)
