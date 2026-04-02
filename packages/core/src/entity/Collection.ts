@@ -1,18 +1,19 @@
-import type {
-  AnyEntity,
-  Dictionary,
-  EntityData,
-  EntityDTO,
-  EntityKey,
-  EntityProperty,
-  EntityValue,
-  FilterKey,
-  FilterQuery,
-  IPrimaryKey,
-  Loaded,
-  LoadedCollection,
-  Populate,
-  Primary,
+import {
+  type AnyEntity,
+  type Dictionary,
+  type EntityData,
+  type EntityDTO,
+  type EntityKey,
+  type EntityProperty,
+  type EntityValue,
+  type FilterKey,
+  type FilterQuery,
+  type IPrimaryKey,
+  type Loaded,
+  type LoadedCollection,
+  type Populate,
+  type Primary,
+  CollectionBrand,
 } from '../typings.js';
 import { Utils } from '../utils/Utils.js';
 import { MetadataError, ValidationError } from '../errors.js';
@@ -40,6 +41,7 @@ const collectionSymbol = Symbol('Collection');
 /** Represents a to-many relation (1:m or m:n) as an iterable, managed collection of entities. */
 export class Collection<T extends object, O extends object = object> {
   [k: number]: T;
+  declare readonly [CollectionBrand]: true;
 
   readonly #items = new Set<T>();
   #initialized = true;

@@ -9,6 +9,8 @@ import {
   serialize,
   EntityOptions,
   EntityRepositoryType,
+  defineEntity,
+  p,
 } from '@mikro-orm/core';
 import type {
   BaseEntity,
@@ -1283,6 +1285,28 @@ describe('check typings', () => {
         // @ts-expect-error - populateHints not allowed with empty populate
         { populate: [], populateHints: { books: { joinType: 'left join' } } },
       );
+    }
+  });
+
+  test('GH #7470 - entity with relation named "owner" should not break populate types', async () => {
+    const UserSchema = defineEntity({
+      name: 'User7470',
+      properties: {
+        id: p.integer().primary(),
+      },
+    });
+
+    const ReproductionSchema = defineEntity({
+      name: 'Reproduction7470',
+      properties: {
+        id: p.integer().primary(),
+        owner: p.oneToOne(UserSchema),
+      },
+    });
+
+    const em = {} as EntityManager;
+    if (false as boolean) {
+      await em.findOne(ReproductionSchema, {}, { populate: ['owner'] });
     }
   });
 });
