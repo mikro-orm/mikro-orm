@@ -3331,3 +3331,72 @@ describe('TPT recomputeSingleChangeSet regression', () => {
     await orm.close();
   });
 });
+
+describe('GH #7469 - populate 1:1 on TPT leaf entity with reverse declared', () => {
+  test('owning side of 1:1 on TPT leaf populates when reverse is declared', async () => {
+    @Entity({ inheritance: 'tpt' })
+    abstract class Person7469 {
+      @PrimaryKey()
+      id!: number;
+
+      @Property()
+      name!: string;
+    }
+
+    @Entity()
+    class Employee7469 extends Person7469 {
+      @Property()
+      department!: string;
+
+      @OneToOne(() => OfficeSpace7469, { owner: true, nullable: true, ref: true })
+      officeSpace?: Ref<OfficeSpace7469>;
+    }
+
+    @Entity()
+    class OfficeSpace7469 {
+      @PrimaryKey()
+      id!: number;
+
+      @Property()
+      location!: string;
+
+      @OneToOne(() => Employee7469, e => e.officeSpace)
+      employee?: Employee7469;
+    }
+
+    const orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
+      dbName: ':memory:',
+      entities: [OfficeSpace7469, Person7469, Employee7469],
+    });
+
+    await orm.schema.create();
+
+    const officeSpace = orm.em.create(OfficeSpace7469, { location: 'Building A' });
+    const employee = orm.em.create(Employee7469, { name: 'Alice', department: 'Engineering', officeSpace });
+    await orm.em.flush();
+    orm.em.clear();
+
+    // Loading employee with populate of the owning 1:1 should work (joined strategy)
+    const loadedEmployee = await orm.em.findOneOrFail(Employee7469, employee.id, {
+      populate: ['officeSpace'],
+      strategy: 'joined',
+    });
+    expect(loadedEmployee.name).toBe('Alice');
+    expect(loadedEmployee.department).toBe('Engineering');
+    expect(loadedEmployee.officeSpace?.unwrap().location).toBe('Building A');
+
+    orm.em.clear();
+
+    // Loading office space with populate of the reverse 1:1 should also work (joined strategy)
+    const loadedOffice = await orm.em.findOneOrFail(OfficeSpace7469, officeSpace.id, {
+      populate: ['employee'],
+      strategy: 'joined',
+    });
+    expect(loadedOffice.location).toBe('Building A');
+    expect(loadedOffice.employee?.name).toBe('Alice');
+    expect(loadedOffice.employee?.department).toBe('Engineering');
+
+    await orm.close();
+  });
+});

@@ -88,7 +88,8 @@ export class QueryBuilderHelper {
     let parentMeta: EntityMetadata | undefined = meta.tptParent;
 
     while (parentMeta) {
-      const parentAlias = this.#tptAliasMap[parentMeta.className];
+      const parentAlias =
+        this.#tptAliasMap[`${defaultAlias}:${parentMeta.className}`] ?? this.#tptAliasMap[parentMeta.className];
 
       if (parentAlias && parentMeta.ownProps?.some(p => p.name === propName || p.fieldNames?.includes(propName))) {
         return parentAlias;
