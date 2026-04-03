@@ -1384,7 +1384,7 @@ __metadata:
     "@types/oracledb": "npm:6.10.2"
     "@types/pg": "npm:8.20.0"
     "@types/pg-cursor": "npm:2.7.2"
-    "@types/picomatch": "npm:4.0.2"
+    "@types/picomatch": "npm:4.0.3"
     "@types/semver": "npm:7.7.1"
     "@types/sqlstring": "npm:2.3.2"
     "@types/uuid": "npm:11.0.0"
@@ -3010,10 +3010,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/picomatch@npm:4.0.2":
-  version: 4.0.2
-  resolution: "@types/picomatch@npm:4.0.2"
-  checksum: 10/7b74f860c4c2bf30f7952254717df2dd78441b0add79858dffe7f6a30c9dd6da6c3d7769d2a9f0c499bc5ffe820c629bffc7c5128948febfc2b935800169b1c3
+"@types/picomatch@npm:4.0.3":
+  version: 4.0.3
+  resolution: "@types/picomatch@npm:4.0.3"
+  checksum: 10/6aa8d30d0c868ad1b09f695ecf9a40025277a2f862cb7e9814c4ea3c36295ec546450726d9862667eb326d927815c90c1168af51b9c0e830e9e5e014c12a45a6
   languageName: node
   linkType: hard
 
