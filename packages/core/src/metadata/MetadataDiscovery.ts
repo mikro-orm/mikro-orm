@@ -1651,6 +1651,21 @@ export class MetadataDiscovery {
         newProp.items = Utils.unique([...rootProp.items, ...prop.items]);
       }
 
+      // When multiple STI children share the same unique relation (OneToOne/ManyToOne),
+      // replace the simple unique with a composite one including the discriminator column
+      // so different subtypes can independently reference the same target row.
+      if (
+        rootProp?.unique &&
+        newProp.unique &&
+        [ReferenceKind.ONE_TO_ONE, ReferenceKind.MANY_TO_ONE].includes(newProp.kind)
+      ) {
+        newProp.unique = false;
+        rootProp.unique = false;
+        meta.root.uniques.push({
+          properties: [prop.name, meta.root.discriminatorColumn!] as EntityKey[],
+        });
+      }
+
       newProp.nullable = true;
       newProp.inherited = !rootProp;
       meta.root.addProperty(newProp);
