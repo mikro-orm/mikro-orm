@@ -120,7 +120,7 @@
     "@swc-node/register": "1.11.1",
     "@swc/core": "1.15.21",
     "@types/better-sqlite3": "7.6.13",
-    "@types/node": "24.12.0",
+    "@types/node": "24.12.2",
     "@types/oracledb": "6.10.2",
     "@types/pg": "8.20.0",
     "@types/pg-cursor": "2.7.2",
