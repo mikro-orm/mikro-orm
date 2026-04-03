@@ -3,7 +3,7 @@ alter system set commit_wait = 'NOWAIT' scope=memory;
 alter system set commit_logging = 'BATCH' scope=memory;
 
 -- Skip recycle bin for faster DROP TABLE
-alter system set recyclebin = OFF scope=memory;
+alter system set recyclebin = OFF scope=spfile;
 
 -- Disable account locking on failed logins (tests connect as non-existent users triggering ORA-01017)
 alter profile default limit failed_login_attempts unlimited;
@@ -13,7 +13,7 @@ alter profile default limit failed_login_attempts unlimited;
 -- Performance tuning inside the PDB
 alter system set commit_wait = 'NOWAIT' scope=memory;
 alter system set commit_logging = 'BATCH' scope=memory;
-alter system set recyclebin = OFF scope=memory;
+alter system set recyclebin = OFF scope=spfile;
 
 -- Pre-create tablespace and test users to avoid CREATE USER overhead during tests
 create tablespace "mikro_orm" datafile 'mikro_orm.dbf' size 100M autoextend on;
